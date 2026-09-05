@@ -2607,7 +2607,21 @@ if [ "$mode" = telo ]; then
   if [ -z "$TELO_OTP" ]; then
     err "В ОТПЕЧАТКЕ НЕТ ТЕЛА СЕМЕНИ: $SEED_STAMP"
     err "Он снят прибором старше 31 августа 2026 — тот покрывал входы печати и не"
-    err "покрывал её выход. Снять заново: sh scripts/raskrutka.sh --otpechatok"
+    err "покрывал её выход."
+    err ""
+    err "СНИМАТЬ ЗАНОВО ЗДЕСЬ, СКОРЕЕ ВСЕГО, НЕЛЬЗЯ. Прежний совет звучал просто"
+    err "«--otpechatok», и его выполняли не думая — так в дерево попадал отпечаток,"
+    err "называвший коммит, при котором тело семени ДРУГОЕ (задача 2573). Снимать"
+    err "надо там, откуда семя печаталось:"
+    err ""
+    err "  git log -1 \$(git log -1 --format=%H -- $DIR)   # чем пришло семя и откуда печаталось"
+    err "  git worktree add --detach <кат> <коммит-источник>"
+    err "  cp $DIR/* <кат>/$DIR/"
+    err "  sh <кат>/scripts/raskrutka.sh --otpechatok"
+    err ""
+    err "Если перепечатка только что прошла ЗДЕСЬ и семя правлено в рабочем дереве —"
+    err "тогда «sh scripts/raskrutka.sh --otpechatok» и правда то, что нужно."
+    err "Разбор породы: docs/zettel/re-taking-a-fingerprint-turns-red-green-without-reprinting.md"
     exit 1
   fi
   SEEDB=$(seed_body_paths "$ROOT" | tr '\n' ' ')

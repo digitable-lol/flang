@@ -7469,6 +7469,67 @@ static void proof_say_verdict(const char *path, const proof_tally *t, int code) 
  * нарушений по примерам в замыкании нет, и ведомость честно говорит «не
  * искали», а не «не найдено»).
  */
+/*
+ * ПУТЬ В ШАПКЕ ЗАПИСИ — ОТНОСИТЕЛЬНЫЙ, и это не косметика.
+ *
+ * Слой на flang получает вход ОДНОЙ строкой, и она служит сразу двум делам:
+ * ключом поиска текста в замыкании («Текст входа» сличает «файл».«путь» с
+ * «вход» точным равенством, compiler.flang) и путём, который уезжает в шапку
+ * записи. Ключ обязан быть абсолютным — от него разрешаются импорты, — а
+ * шапка обязана быть переносимой: у записи и у сверяющего в разных клонах
+ * пути разные, и `zapis.flang` говорит это своими словами: «„исходник" —
+ * примета для человека, а не привязка».
+ *
+ * Развести два дела можно ТОЛЬКО ЗДЕСЬ. В flang это один довод, и разделить
+ * их там значит поменять подпись «Ведомость исходников», то есть ждать
+ * перепечатку. Привязку правка не трогает: её держит SHA-256, а не путь.
+ *
+ * УЛИКА, РАДИ КОТОРОЙ ПРАВКА (задача 8690). Прибор доли корпуса читает эту
+ * строку и приписывает к ней корень дерева: `s=$root/$(grep -m1 '^исходник ')`
+ * (`доля-корпуса.sh`). С абсолютным путём выходит «$root//srv/…», исходник не
+ * находится, и доля считается по нулю записей. Записи корпуса, лежащие в
+ * дереве, все до одной относительные — и были такими с первого коммита.
+ *
+ * Файл ВНЕ рабочего каталога даёт путь с «../». Это хуже, чем путь внутри
+ * дерева, но лучше абсолютного: он переносим между клонами с той же
+ * раскладкой, а абсолютный не переносим ни между какими.
+ */
+static void proof_head_relative(repl_buf *out, const char *utf8, size_t bytes,
+                                const char *base, const char *full) {
+  static const char METKA[] = "исходник ";
+  const size_t metka = sizeof(METKA) - 1;
+  const char *stroka = NULL;
+  const char *konec = NULL;
+  char *otnositelno = NULL;
+  size_t nachalo = 0;
+  buf_reset(out);
+  stroka = (const char *)memchr(utf8, '\n', bytes);
+  if (stroka == NULL) {
+    buf_add(out, utf8, bytes);
+    return;
+  }
+  nachalo = (size_t)(stroka - utf8) + 1;
+  if (bytes - nachalo < metka || memcmp(utf8 + nachalo, METKA, metka) != 0) {
+    buf_add(out, utf8, bytes);
+    return;
+  }
+  konec = (const char *)memchr(utf8 + nachalo, '\n', bytes - nachalo);
+  if (konec == NULL) {
+    buf_add(out, utf8, bytes);
+    return;
+  }
+  otnositelno = repl_relative(base, full);
+  if (otnositelno == NULL) {
+    buf_add(out, utf8, bytes);
+    return;
+  }
+  buf_add(out, utf8, nachalo);
+  buf_add(out, METKA, metka);
+  buf_put(out, otnositelno);
+  buf_add(out, konec, bytes - (size_t)(konec - utf8));
+  free(otnositelno);
+}
+
 static int proof_file(const char *path, bool json, const char *record, bool strict) {
   repl_strings paths;
   repl_strings texts;
@@ -7488,9 +7549,12 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
   base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
   full = repl_resolve(base, path);
   text = repl_read_file(full, &bytes);
-  free(base);
+  /* `base` НЕ освобождается здесь: от него считается относительный путь для
+     шапки записи (см. `proof_head_relative`). Освобождение — ниже, на каждом
+     выходе. */
   if (text == NULL) {
     fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(base);
     free(full);
     return 2;
   }
@@ -7502,6 +7566,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
   if (!lock_beside(full)) {
     free(text);
     free(full);
+    free(base);
     return 1;
   }
 
@@ -7576,6 +7641,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
       strings_free(&queue);
       free(text);
       free(full);
+      free(base);
       return 1;
     }
     bads_free(&bads);
@@ -7636,6 +7702,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
         strings_free(&queue);
         free(text);
         free(full);
+        free(base);
         /* КОД 2, А НЕ 3: у ведомости третий исход уже занят и значит «в
            программе объявлено то, чьи законы бинарник не считает». Это оно и
            есть, только про устройство, — и слово у него то же. */
@@ -7682,10 +7749,14 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
           fprintf(stderr, "FLANG_CLI: не открыт для записи файл %s\n", record);
           code = 2;
         } else {
-          if (fwrite(utf8, 1, bytes, out) != bytes) {
+          repl_buf golova;
+          buf_init(&golova);
+          proof_head_relative(&golova, utf8, bytes, base, full);
+          if (fwrite(golova.data, 1, golova.used, out) != golova.used) {
             fprintf(stderr, "FLANG_CLI: не записан файл %s\n", record);
             code = 2;
           }
+          buf_free(&golova);
           fclose(out);
         }
       } else {
@@ -7718,6 +7789,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
   strings_free(&queue);
   free(text);
   free(full);
+  free(base);
   return code;
 }
 

@@ -56,9 +56,17 @@
 // Шапка пугала 999 секундами на один файл (`sets-oracle`); на этой выборке
 // такого не встретилось.
 //
-// ОСТАЛОСЬ ТРИ, и они названы: examples/db/sqlite-insert.flang,
-// examples/db/sqlite-overflow.flang, flang/scripts/direct-run.flang — код 124
-// на сроке 90 с каждый. Это «не мерено», и «×» им ставить нельзя.
+// ТРИ ПОСЛЕДНИХ ВЗЯТЫ, И СРОК БЫЛ МОЙ, А НЕ ИХ. На сроке 90 с они давали
+// код 124, и первый вывод был «не уложились». Неверно: при сроке 900 с все
+// три досчитались — sqlite-insert 170 с (код 3), sqlite-overflow 168 с
+// (код 0), direct-run 112 с (код 0). Ведомость снялась у всех, строки внесены
+// полными. Урок ровно тот же, что и с «×»: «не уложился в МОЙ срок» — это не
+// свойство файла.
+//
+// ИТОГ: опись сходится с деревом, бед 0.
+//   «обеспечивает» по дереву 13811 = «написано» по описи 13811
+//   «требует»+«закон» 102 = «без приговора» 102
+//   строк 585, с ведомостью 483, с «×» 102
 //
 // ────────── 97 без приговора: две кучи, и они разные ──────────
 //
@@ -590,6 +598,8 @@ f9974bc9b8eb0a44af13fed4b58d67d2|5|5|0|0|0|examples/crypto/x25519-vectors.flang
 f51d8e584f7ceeea80d76dd53d890a48|19|×|×|×|0|examples/db/postgres-plan.flang
 639fa825f2df988e10dce84ea1b2d048|33|—|—|—|0|examples/db/postgres-scram-plan.flang
 d855c80785fe708b31895afabff10ee0|23|11|12|0|0|examples/db/redis-plan.flang
+c35f3c95ad1e2062937b7dddc5208074|1|0|0|1|0|examples/db/sqlite-insert.flang
+5b8a531ffef89281556c8427509b9687|1|1|0|0|0|examples/db/sqlite-overflow.flang
 b416a4b5b59da1e7ceead41fd8663e34|4|0|0|4|0|examples/db/sqlite-read.flang
 b2119902224261a6c6ad7283d6558f09|98|88|4|6|0|examples/driver/msi/msi.flang
 7fef0d8aedf2e2c7b62c7559c639f79c|8|6|1|1|0|examples/driver/uart.flang
@@ -813,6 +823,7 @@ fc0678159995bc7ac6a3b9efa4e845fe|2|×|×|×|0|flang/proof/чекер/пробы/
 a5769e76ad82b8770ec8ab9c2ec0c1b5|20|19|1|0|0|flang/scripts/code-forgery.flang
 d0cab5c3b3582125fc3a846cc6fac322|9|9|0|0|0|flang/scripts/code-guard.flang
 9959f505c2c9240c1c9a9f07466925f6|9|9|0|0|0|flang/scripts/conc-link-emitted.flang
+1469a8903aa6c3c05a8a0a7ab2ae13d1|1|1|0|0|0|flang/scripts/direct-run.flang
 83b9d7d007d8fb1d4ca0fc391ae599fc|48|48|0|0|0|flang/scripts/emptiness-guard.flang
 dd5c6fa5aeaa9edc65474e5cf9df01fe|21|21|0|0|0|flang/scripts/guards-start.flang
 540f341358b194e39f9fe1eba88bced0|2|0|2|0|0|flang/scripts/jargon-guard.flang

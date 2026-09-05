@@ -2894,6 +2894,72 @@ static char *telo_bez_pust(Sp stroki, long a, long b) {
   return telo;
 }
 
+/* ЦЕЛЬ СЛЕДУЕТ ИЗ ОБЪЯВЛЕННОГО О ДОВОДАХ. Довод берётся ИЗ ИСХОДНИКА — тем же
+   `dovod_tipa`, каким его уже берёт спуск индукции, — и даёт РОВНО то, что
+   объявление обещает, ничего сверх. Список закрыт: три случая, каждый сторожит
+   своя проба.
+
+   Строгости, и каждая нужна:
+     · «плюс» с двумя `нат` даёт неотрицательность, а «минус» НЕ даёт — это
+       называет сам корпус (`corpus-natural` против `corpus-natural-ceiling`),
+       и сторожит проба `vychitanie-ne-sohranyaet`;
+     · потолок даёт ТИП РЕЗУЛЬТАТА, а не тип доводов: замерено прогоном ядра —
+       `возвращает число` при той же цели ЛОЖНО (код 1), `целое` и `нат` верны;
+     · «не убывает» держится на типе ВТОРОГО слагаемого; первое может быть
+       каким угодно `число` (`order`), поэтому требовать `нат` от обоих нельзя. */
+static int tip_rezultata(Sp stroki, long a, long b, const char *tip) {
+  long i;
+  for (i = a; i < b; i++) {
+    char *l = kak_chitaet_yazyk(chast(stroki, i));
+    if (!nachinaetsya(l, "возвращает ")) continue;
+    return strcmp(obrezat(hvost_posle(l, "возвращает ")), tip) == 0;
+  }
+  return 0;
+}
+
+static int nat_dovod(Sp stroki, long a, long b, const char *t) {
+  return *t && dovod_tipa(stroki, a, b, t, "нат");
+}
+
+static int iz_obyavlennogo(const char *syroy, Sp stroki, long a, long b) {
+  static const char *NM[1]  = { " не меньше " };
+  static const char *NB[1]  = { " не больше " };
+  static const char *PL[1]  = { " плюс " };
+  char *t = bez_vneshnih(syroy), *tk = NULL, *pod = NULL;
+  char *levo, *pravo, *p1, *p2; long gde; int kakoe;
+
+  /* Случай 3 — под оговоркой о конечности: `X не больше (X плюс Y)`, Y: нат. */
+  if (ogovorka_o_konechnosti(t, stroki, &tk, &pod)) t = bez_vneshnih(pod);
+
+  /* Случай 1 — `A плюс B не меньше 0`, оба довода `нат`. */
+  if (nayti_sverhu(t, NM, 1, &gde, &kakoe)) {
+    levo  = bez_vneshnih(kopiya(t, (size_t)gde));
+    pravo = bez_vneshnih(t + gde + strlen(" не меньше "));
+    if (strcmp(pravo, "0") == 0 && nayti_sverhu(levo, PL, 1, &gde, &kakoe)) {
+      p1 = bez_vneshnih(kopiya(levo, (size_t)gde));
+      p2 = bez_vneshnih(levo + gde + strlen(" плюс "));
+      if (nat_dovod(stroki, a, b, p1) && nat_dovod(stroki, a, b, p2)) return 1;
+    }
+    return 0;
+  }
+
+  if (!nayti_sverhu(t, NB, 1, &gde, &kakoe)) return 0;
+  levo  = bez_vneshnih(kopiya(t, (size_t)gde));
+  pravo = bez_vneshnih(t + gde + strlen(" не больше "));
+
+  /* Случай 2 — точный потолок от ТИПА РЕЗУЛЬТАТА. */
+  if (strcmp(pravo, "9007199254740991") == 0)
+    return tip_rezultata(stroki, a, b, "целое") || tip_rezultata(stroki, a, b, "нат");
+
+  /* Случай 3 (продолжение) — прибавление `нат` не убывает. */
+  if (!nayti_sverhu(pravo, PL, 1, &gde, &kakoe)) return 0;
+  p1 = bez_vneshnih(kopiya(pravo, (size_t)gde));
+  p2 = bez_vneshnih(pravo + gde + strlen(" плюс "));
+  if (tozhdestvenny(levo, p1, stroki, 0) && nat_dovod(stroki, a, b, p2)) return 1;
+  if (tozhdestvenny(levo, p2, stroki, 0) && nat_dovod(stroki, a, b, p1)) return 1;
+  return 0;
+}
+
 /* Проиграть заново узел «разбор цели по условию».
    1 — проигран, и место снимается со слова ядра. */
 static int razborom_celi(Sverka *s, Sp svoi, Sp stroki,
@@ -2911,6 +2977,7 @@ static int razborom_celi(Sverka *s, Sp svoi, Sp stroki,
   cel = vstavit_vmesto(term(cel_syraya), "результат", telo);
   if (est_svyazyvatel(cel)) { s->razbor_mimo++; return 0; }
   if (polovina_zakryta(cel, stroki, 0, NULL)) return 1;
+  if (iz_obyavlennogo(cel, stroki, a, b)) return 1;
   /* Половина не закрылась — это «не берусь», а НЕ «неправда»: сочетание
      значений условий бывает невыполнимым, и кричать тут было бы ложью. Имя
      утверждения названо числом, а не строкой: строка на всякое незакрытое место

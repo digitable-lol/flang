@@ -1,0 +1,69 @@
+diff --git "a/flang/proof/\321\207\320\265\320\272\320\265\321\200/\321\201\320\262\320\265\321\200\321\211\320\270\320\272.c" "b/flang/proof/\321\207\320\265\320\272\320\265\321\200/\321\201\320\262\320\265\321\200\321\211\320\270\320\272.c"
+index 65c844f8..8c7c6957 100644
+--- "a/flang/proof/\321\207\320\265\320\272\320\265\321\200/\321\201\320\262\320\265\321\200\321\211\320\270\320\272.c"
++++ "b/flang/proof/\321\207\320\265\320\272\320\265\321\200/\321\201\320\262\320\265\321\200\321\211\320\270\320\272.c"
+@@ -2811,6 +2811,36 @@ static int kvadrat_pod_ogovorkoy(const char *t, Sp stroki, const char *konechen)
+    половины сжимались до `не ( ( 2 ) больше 2 )` и `не ( ( 0 ) больше 2 )`, и
+    обе оставались незакрытыми: отрицания в списке не было. Замер: эта запись
+    стояла в ОДНОМ месте от кода 0 и несла девять утверждений. */
++/* ЗЕРКАЛО ПОРЯДКА И РЕФЛЕКСИВНОСТЬ НА МЕРЕ — задача 9951 (F4), реализация 8690.
++   ОТКАЧЕНО из дерева: закрывает подделку Ч369-П1 (закрытие законно, но проба
++   класса P ждёт кода 3), а доли Г4 не даёт — см. задачу 8690.
++
++   ЗЕРКАЛО. `A не больше B` и `B не меньше A` — одна мысль двумя записями.
++   Равносильность проверена прогоном ядра: на числах обе сошлись (2<3, 3=3,
++   4>3), на не-числах обе дают одну ошибку «сравнения порядка допустимы только
++   для чисел».
++
++   РЕФЛЕКСИВНОСТЬ. `X не меньше X` истинно, когда X заведомо число. Способ 5
++   для неравенств запрещён намеренно; запрет снимается там, где его причина не
++   действует: `длина …` не-числом не бывает.
++
++   ГДЕ СТОИТ. ПОСЛЕ всех шести дверей, а не перед ними: так правило может
++   только добавить закрытие и не может изменить прежний ответ. */
++static int zerkalo_poryadka(const char *t, Sp stroki, int deleniy,
++                            const char *konechen);
++
++static int refleksivnost_mery(const char *t, Sp stroki) {
++  static const char *NM[1] = { " не меньше " };
++  char *l, *p; long gde; int kakoe;
++  if (!nayti_sverhu(t, NM, 1, &gde, &kakoe)) return 0;
++  l = bez_vneshnih(svesti_term(bez_vneshnih(kopiya(t, (size_t)gde)), stroki, 4));
++  p = bez_vneshnih(svesti_term(bez_vneshnih(t + gde + strlen(" не меньше ")), stroki, 4));
++  /* Сводить ОБЕ стороны обязательно: к этому месту `результат` уже заменён
++     телом функции, и буквально одинаковыми стороны не бывают почти никогда. */
++  if (strcmp(l, p) != 0) return 0;
++  return nachinaetsya(l, "длина ");
++}
++
+ static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy,
+                             const char *konechen) {
+   static const char *SVYAZKI[2] = { " и притом ", " или " };
+@@ -2857,10 +2887,27 @@ static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy,
+     if (prostoy(l) && prostoy(p) && tozhdestvenny(l, p, stroki, 6)) return 1;
+   }
+   if (mera_neotricatelna(t, stroki)) return 1;
++  if (refleksivnost_mery(t, stroki)) return 1;
++  if (zerkalo_poryadka(t, stroki, deleniy, konechen)) return 1;
+   if (pervoe_uslovie(t, &u)) return delenie(t, u, stroki, deleniy, konechen);
+   return 0;
+ }
+ 
++/* Зеркало зовётся последним и ровно один раз: переписанная запись содержит
++   « не меньше » и не содержит « не больше » наверху. Простоты сторон НЕ
++   требуем — `nayti_sverhu` уже нашла связку наверху терма, разрез верен; так
++   же поступает соседняя дверь `mera_neotricatelna`. */
++static int zerkalo_poryadka(const char *t, Sp stroki, int deleniy,
++                            const char *konechen) {
++  static const char *NB[1] = { " не больше " };
++  char *l, *p, *z; long gde; int kakoe;
++  if (!nayti_sverhu(t, NB, 1, &gde, &kakoe)) return 0;
++  l = bez_vneshnih(kopiya(t, (size_t)gde));
++  p = bez_vneshnih(t + gde + strlen(" не больше "));
++  z = fmt("%s не меньше %s", p, l);
++  return polovina_zakryta(z, stroki, deleniy, konechen);
++}
++
+ /* Тело функции ОДНИМ термом, `пусть` развёрнут подстановкой. Язык чист и
+    тотален, поэтому `пусть имя равно значение` есть ровно подстановка значения
+    вместо имени, а `пусть`, которым никто не пользуется, исчезает целиком — на

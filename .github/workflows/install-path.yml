@@ -195,7 +195,23 @@ jobs:
         run: |
           set -eu
           printf '%s\n' 'модуль «Проба»' '' 'тотальная функция «Два»' '  возвращает число' '  2' > проба.flang
-          "$(brew --prefix)/bin/flang" --version
+          # Ответ ЧИТАЕТСЯ, а не выбрасывается. Прежде здесь стоял голый вызов
+          # `--version`: команда шла как дым, «не упало — и ладно». Ровно этот
+          # вопрос — «как поставленный двоичный себя зовёт» — и есть предмет
+          # задачи 9959, где он дважды отвечал не так, и оба раза нашёл человек.
+          # Формула объявляет `version` сама, есть с чем сверять.
+          otvet="$("$(brew --prefix)/bin/flang" --version)"
+          v_formule="$(sed -n 's/^  version "\([^"]*\)"$/\1/p' packaging/homebrew/flang.rb)"
+          if [ -z "$v_formule" ]; then
+            echo "::error::в packaging/homebrew/flang.rb не нашлось поля version — поправить надо ЭТОТ шаг"
+            exit 1
+          fi
+          if [ "$otvet" != "flang $v_formule" ]; then
+            echo "::error::brew поставил двоичный, который отвечает «$otvet», а формула объявляет version $v_formule"
+            echo "::error::Формула и отгруженный архив разошлись — это беда задачи 9959, а не придирка."
+            exit 1
+          fi
+          echo "поставленный brew двоичный и формула сошлись: $v_formule"
           "$(brew --prefix)/bin/flang" emit проба.flang --target c --out печать
           test -f печать/flang_runtime.h
           grep -q 'SPDX-FileCopyrightText' печать/flang_runtime.h

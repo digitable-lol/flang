@@ -2627,19 +2627,86 @@ static int mera_neotricatelna(const char *t, Sp stroki) {
   return nachinaetsya(bez_vneshnih(svesti_term(l, stroki, 4)), "длина ");
 }
 
-static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy);
+static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy,
+                            const char *konechen);
 
 /* Разделить цель по условию и закрыть ОБЕ половины. Замен обязано быть хоть
    одна и ПОРОВНУ в обеих половинах: разное число значило бы, что заменено не
    одно и то же место, а половины тогда — не половины этой цели. */
-static int delenie(const char *t, const char *u, Sp stroki, int deleniy) {
+static int delenie(const char *t, const char *u, Sp stroki, int deleniy,
+                   const char *konechen) {
   char *da, *net; long n1, n2;
   if (deleniy >= PREDEL_VETVLENIYA || est_svyazyvatel(t)) return 0;
   da  = podstavit_uslovie(t, u, "да",  &n1);
   net = podstavit_uslovie(t, u, "нет", &n2);
   if (n1 < 1 || n1 != n2) return 0;
-  return polovina_zakryta(da, stroki, deleniy + 1) &&
-         polovina_zakryta(net, stroki, deleniy + 1);
+  return polovina_zakryta(da, stroki, deleniy + 1, konechen) &&
+         polovina_zakryta(net, stroki, deleniy + 1, konechen);
+}
+
+/* ОГОВОРКА О КОНЕЧНОСТИ. Цель вида `не ((Т минус Т) равен 0) или Ц` означает
+   «Т конечно ⟹ Ц»: у конечного Т разность с собой равна нулю, значит левый
+   дизъюнкт ложен и цель сводится к Ц; у «не числа» разность с собой нулю не
+   равна, левый дизъюнкт истинен и цель верна сама по себе. Так это читает и
+   ядро — правило описано его же словами в шапке
+   `flang/test/fixtures/poddelka-ogovorka-o-konechnosti.flang`.
+
+   Снятая оговорка даёт РОВНО ОДИН факт — конечность именно ЭТОГО терма — и
+   ничего сверх; закрывать цель она не вправе. Отсюда обе строгости ниже:
+   стороны `минус` обязаны быть тождественны (иначе это не «Т минус Т»), а
+   правая сторона `равен` обязана быть литеральным нулём. */
+static int ogovorka_o_konechnosti(const char *t, Sp stroki,
+                                  char **term_konechen, char **pod_ogovorkoy) {
+  static const char *ILI[1]   = { " или " };
+  static const char *RAVEN[1] = { " равен " };
+  static const char *MINUS[1] = { " минус " };
+  char *levyy, *vnutri, *sleva, *sprava, *m1, *m2; long gde; int kakoe;
+  if (!nayti_sverhu(t, ILI, 1, &gde, &kakoe)) return 0;
+  levyy = bez_vneshnih(kopiya(t, (size_t)gde));
+  if (!nachinaetsya(levyy, "не ")) return 0;
+  vnutri = bez_vneshnih(levyy + strlen("не "));
+  if (!nayti_sverhu(vnutri, RAVEN, 1, &gde, &kakoe)) return 0;
+  sleva  = bez_vneshnih(kopiya(vnutri, (size_t)gde));
+  sprava = bez_vneshnih(vnutri + gde + strlen(" равен "));
+  if (strcmp(sprava, "0") != 0) return 0;
+  if (!nayti_sverhu(sleva, MINUS, 1, &gde, &kakoe)) return 0;
+  m1 = bez_vneshnih(kopiya(sleva, (size_t)gde));
+  m2 = bez_vneshnih(sleva + gde + strlen(" минус "));
+  if (!tozhdestvenny(m1, m2, stroki, 0)) return 0;
+  nayti_sverhu(t, ILI, 1, &gde, &kakoe);
+  *term_konechen = m1;
+  *pod_ogovorkoy = bez_vneshnih(t + gde + strlen(" или "));
+  return 1;
+}
+
+/* КВАДРАТ КОНЕЧНОГО НЕОТРИЦАТЕЛЕН. Единственный факт, который здесь покупает
+   снятая оговорка: точное `е·е` при конечном `е` неотрицательно, а округление
+   к ближайшему знака не меняет.
+
+   Четыре строгости — и все четыре сторожит подделка
+   `poddelka-ogovorka-o-konechnosti`, где каждая пробита отдельной функцией:
+     · оговорка обязана БЫТЬ (без неё правило FLANG_BOUND_ON_NAN отвергает
+       файл, и закрывать тут нечего) — отсюда проверка `konechen`;
+     · оговорка обязана быть О ТОМ ЖЕ терме, что возводится в квадрат:
+       конечность «второго» о «х» не говорит ничего;
+     · сомножители обязаны быть ТОЖДЕСТВЕННЫ: у произведения разных термов
+       знак от конечности одного не зависит, и `1 · (−1)` это показывает;
+     · граница обязана быть литеральным НУЛЁМ: `квадрат не меньше самого
+       числа` ложно уже на 0,5. */
+static int kvadrat_pod_ogovorkoy(const char *t, Sp stroki, const char *konechen) {
+  static const char *NM[1]  = { " не меньше " };
+  static const char *UMN[1] = { " умножить на " };
+  char *l, *p, *e1, *e2; long gde; int kakoe;
+  if (!konechen) return 0;
+  if (!nayti_sverhu(t, NM, 1, &gde, &kakoe)) return 0;
+  l = bez_vneshnih(kopiya(t, (size_t)gde));
+  p = bez_vneshnih(t + gde + strlen(" не меньше "));
+  if (strcmp(p, "0") != 0) return 0;
+  if (!nayti_sverhu(l, UMN, 1, &gde, &kakoe)) return 0;
+  e1 = bez_vneshnih(kopiya(l, (size_t)gde));
+  e2 = bez_vneshnih(l + gde + strlen(" умножить на "));
+  if (!tozhdestvenny(e1, e2, stroki, 0)) return 0;
+  return tozhdestvenny(e1, konechen, stroki, 0);
 }
 
 /* ПОЛОВИНА ЗАКРЫТА? Способов ровно СЕМЬ, список закрыт:
@@ -2673,7 +2740,8 @@ static int delenie(const char *t, const char *u, Sp stroki, int deleniy) {
    половины сжимались до `не ( ( 2 ) больше 2 )` и `не ( ( 0 ) больше 2 )`, и
    обе оставались незакрытыми: отрицания в списке не было. Замер: эта запись
    стояла в ОДНОМ месте от кода 0 и несла девять утверждений. */
-static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy) {
+static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy,
+                            const char *konechen) {
   static const char *SVYAZKI[2] = { " и притом ", " или " };
   static const char *RAVNO[1] = { " равен " };
   char *t = bez_vneshnih(sozhat_vybory(bez_vneshnih(syroy)));
@@ -2683,9 +2751,9 @@ static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy) {
   if (strcmp(t, "нет") == 0) return 0;
   if (razrez_vybora(t, &u, &a, &b)) {
     char *uu = bez_vneshnih(u);
-    if (strcmp(uu, "да") == 0)  return polovina_zakryta(a, stroki, deleniy);
-    if (strcmp(uu, "нет") == 0) return polovina_zakryta(b, stroki, deleniy);
-    return delenie(t, uu, stroki, deleniy);
+    if (strcmp(uu, "да") == 0)  return polovina_zakryta(a, stroki, deleniy, konechen);
+    if (strcmp(uu, "нет") == 0) return polovina_zakryta(b, stroki, deleniy, konechen);
+    return delenie(t, uu, stroki, deleniy, konechen);
   }
   z = znach_moya(t, stroki, 0);
   if (z.vid == 3) return z.ch != 0;
@@ -2693,12 +2761,22 @@ static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy) {
     Znach v = znach_moya(t + strlen("не "), stroki, 0);
     if (v.vid == 3 && v.ch == 0) return 1;
   }
+  /* Оговорка о конечности снимается ДО общей связки: разбирать `не (…) или Ц`
+     как обычную дизъюнкцию бесполезно — левая половина не закрыта (она ложна,
+     а ложь этот список объявлять не вправе), правая без факта конечности тоже.
+     Снятие даёт факт и передаёт его вглубь. */
+  {
+    char *tk, *pod;
+    if (ogovorka_o_konechnosti(t, stroki, &tk, &pod))
+      return polovina_zakryta(pod, stroki, deleniy, tk);
+  }
+  if (kvadrat_pod_ogovorkoy(t, stroki, konechen)) return 1;
   if (nayti_sverhu(t, SVYAZKI, 2, &gde, &kakoe)) {
     l = kopiya(t, (size_t)gde);
     p = t + gde + strlen(SVYAZKI[kakoe]);
     if (prostoy(l) && prostoy(p)) {
-      int el = polovina_zakryta(l, stroki, deleniy);
-      int ep = polovina_zakryta(p, stroki, deleniy);
+      int el = polovina_zakryta(l, stroki, deleniy, konechen);
+      int ep = polovina_zakryta(p, stroki, deleniy, konechen);
       if (kakoe == 0 ? (el && ep) : (el || ep)) return 1;
     }
   }
@@ -2708,7 +2786,7 @@ static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy) {
     if (prostoy(l) && prostoy(p) && tozhdestvenny(l, p, stroki, 6)) return 1;
   }
   if (mera_neotricatelna(t, stroki)) return 1;
-  if (pervoe_uslovie(t, &u)) return delenie(t, u, stroki, deleniy);
+  if (pervoe_uslovie(t, &u)) return delenie(t, u, stroki, deleniy, konechen);
   return 0;
 }
 
@@ -2761,7 +2839,7 @@ static int razborom_celi(Sverka *s, Sp svoi, Sp stroki,
   if (!*telo || !kavychki_chisty(telo)) { s->razbor_mimo++; return 0; }
   cel = vstavit_vmesto(term(cel_syraya), "результат", telo);
   if (est_svyazyvatel(cel)) { s->razbor_mimo++; return 0; }
-  if (polovina_zakryta(cel, stroki, 0)) return 1;
+  if (polovina_zakryta(cel, stroki, 0, NULL)) return 1;
   /* Половина не закрылась — это «не берусь», а НЕ «неправда»: сочетание
      значений условий бывает невыполнимым, и кричать тут было бы ложью. Имя
      утверждения названо числом, а не строкой: строка на всякое незакрытое место

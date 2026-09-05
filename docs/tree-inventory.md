@@ -65,7 +65,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 101 | 17 841 | 90 | 11 645 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 101 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17841 --> |
+| оболочка | 101 | 17 888 | 90 | 11 645 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 101 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17888 --> |
 | C | 38 | 774 603 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774603 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 22 | 7 744 | 16 | 3 843 <!-- СНЯТО 2026-09-05 файлов *.py = 22 --><!-- СНЯТО 2026-09-05 строк-в *.py = 7744 --> |
@@ -81,7 +81,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 | Rust | 3 | 3 855 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.rs = 3 --><!-- СНЯТО 2026-08-31 строк-в *.rs = 3855 --> |
 | Lua | 3 | 224 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.lua = 3 --><!-- СНЯТО 2026-08-31 строк-в *.lua = 224 --> |
 | Vimscript | 8 | 390 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.vim = 8 --><!-- СНЯТО 2026-08-31 строк-в *.vim = 390 --> |
-| Ruby | 1 | 271 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.rb = 1 --><!-- СНЯТО 2026-09-05 строк-в *.rb = 271 --> |
+| Ruby | 1 | 334 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.rb = 1 --><!-- СНЯТО 2026-09-05 строк-в *.rb = 334 --> |
 
 
 ### Почему у столбцов долга приметы нет, и её нечем поставить

@@ -708,6 +708,8 @@
 
 ## Ещё не разобранное
 
+- [Проба порчей, которая ничего не испортила, выглядит как успех](a-sabotage-test-that-sabotages-nothing-looks-like-success.md)
+- [Семя нельзя подправить руками — оно не слинкуется](the-seed-cannot-be-patched-by-hand-it-will-not-link.md)
 - [Отпечаток, снятый заново, делает красное зелёным, не перепечатав ни байта](re-taking-a-fingerprint-turns-red-green-without-reprinting.md)
 
 ## Как добавлять

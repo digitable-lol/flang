@@ -43,8 +43,8 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 105 | 17 110 | 94 | 11 276 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all = 105 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all = 17110 --> |
-| C | 38 | 774 066 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774066 --> |
+| оболочка | 105 | 17 156 | 94 | 11 276 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all = 105 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all = 17156 --> |
+| C | 38 | 774 073 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774073 --> |
 | Python | 22 | 7 744 | 9 | 2 520 <!-- СНЯТО 2026-09-05 файлов *.py = 22 --><!-- СНЯТО 2026-09-05 строк-в *.py = 7744 --> |
 | HTML | 4 | 1 226 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.html = 4 --><!-- СНЯТО 2026-08-31 строк-в *.html = 1226 --> |
 | CSS | 1 | 559 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.css = 1 --><!-- СНЯТО 2026-08-31 строк-в *.css = 559 --> |

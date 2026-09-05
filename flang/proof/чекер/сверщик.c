@@ -269,7 +269,6 @@ static long nomer_posle(const char *s, const char *metka) {
 static char *hvost_posle(const char *s, const char *metka) {
   return soderzhit(s, metka) ? obrezat(chast(razdelit(s, metka), 2)) : (char *)"";
 }
-static char *stroka_po_nomeru(Sp stroki, long n) { return obrezat(chast(stroki, n)); }
 
 /* ═══ ЧИТАТЬ ИСХОДНИК ТАК ЖЕ, КАК ЕГО ЧИТАЕТ ЯЗЫК — ЯЧЕЙКИ Ч119 и Ч126 ═══════
    ПЕРЕНЕСЕНО В СТВОЛ ЯЧЕЙКОЙ Ч166, и перенесено НЕ ЦЕЛИКОМ. Пятое место
@@ -318,6 +317,14 @@ static char *imya_funkcii(const char *syraya) {
   if (!nachinaetsya(b, "функция «") && !nachinaetsya(b, "тотальная функция «"))
     return (char *)"";
   return v_yolochkah(b, 1);
+}
+
+/* Строка исходника по номеру — В ТОМ ВИДЕ, В КАКОМ ЕЁ ЧИТАЕТ ЯЗЫК. Примечание
+   снимается ЗДЕСЬ, у единственной двери: двадцать пять мест сверщика читают
+   исходник через эту функцию, и правило «читать как язык» обязано стоять у
+   двери, а не переписываться в каждом. Отступ снимается, как и прежде. */
+static char *stroka_po_nomeru(Sp stroki, long n) {
+  return obrezat(bez_primechaniya(chast(stroki, n)));
 }
 
 /* Имя, стоящее в записи, обязано стоять и в исходнике. Имя пишется в языке и
@@ -576,7 +583,7 @@ static const char *vid_stroki_teoremy(const char *s) {
 static Sp razmetka_teoremy(Sp stroki, long nachalo) {
   Sp metki = PUSTO; long i;
   for (i = nachalo; i <= stroki.n; i++) {
-    char *syraya = chast(stroki, i), *s = obrezat(syraya);
+    char *syraya = chast(stroki, i), *s = obrezat(bez_primechaniya(syraya));
     const char *vid;
     if (i > nachalo && *syraya && !nachinaetsya(syraya, " ")) break;
     if (nachinaetsya(s, "//") || !*s) continue;
@@ -601,7 +608,7 @@ static Sp varianty_tipa(Sp stroki, const char *imya) {
   }
   zag = fmt("тип «%s»", imya);
   for (i = 0; i < stroki.n; i++) {
-    char *s = obrezat(stroki.e[i]);
+    char *s = obrezat(bez_primechaniya(stroki.e[i]));
     if (strcmp(s, zag) == 0) { vnutri = 1; continue; }
     if (!vnutri) continue;
     if (nachinaetsya(s, "вариант ")) { dobavit(&v, imya_varianta(s)); continue; }
@@ -614,7 +621,7 @@ static Sp varianty_tipa(Sp stroki, const char *imya) {
 static char *stroka_varianta_tipa(Sp stroki, const char *tip, const char *variant) {
   char *zag = fmt("тип «%s»", tip), *tekst = (char *)""; int i, vnutri = 0;
   for (i = 0; i < stroki.n; i++) {
-    char *s = obrezat(stroki.e[i]);
+    char *s = obrezat(bez_primechaniya(stroki.e[i]));
     if (strcmp(s, zag) == 0) { vnutri = 1; continue; }
     if (!vnutri) continue;
     if (nachinaetsya(s, "вариант ")) { if (strcmp(imya_varianta(s), variant) == 0) tekst = s; continue; }
@@ -3497,7 +3504,7 @@ static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
   int i, spryatana = 0, proigran, perepisan, razobran, dokazano;
   char *cel;
   for (i = 0; i < stroki.n; i++)
-    if (strcmp(obrezat(stroki.e[i]), fmt("теорема «%s»", imya)) == 0) spryatana = 1;
+    if (strcmp(obrezat(bez_primechaniya(stroki.e[i])), fmt("теорема «%s»", imya)) == 0) spryatana = 1;
   esli_ne(s, !spryatana,
           fmt("в записи сказано «теоремы нет», а в исходнике теорема «%s» написана", imya));
   dokazano = strcmp(verdikt, "доказано") == 0;

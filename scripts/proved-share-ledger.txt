@@ -774,6 +774,7 @@ f86f9eb968c70d67793d7495de048ad3|8|×|×|×|0|flang/proof/чекер/пробы/
 8ae7b112b5833b3d39d2a8074fc54bd6|2|×|×|×|0|flang/proof/чекер/пробы/записи/9991-nachinaetsya-s/lozhnoe-nachalo.flang
 f5015f489c18a8ee9a1ef58a8e4aced0|2|×|×|×|0|flang/proof/чекер/пробы/записи/9991-rezultat-raven/storozh-razvyortki.flang
 f8006e65a3d5a0edea7e0c7f5cf0406b|1|0|0|1|0|flang/proof/чекер/пробы/записи/v1-g2/tip-za-primechaniem.flang
+5c5a31528ff52dddef31191447ba5480|1|1|0|0|0|flang/proof/чекер/пробы/записи/v1-g2/вариант-за-примечанием.flang
 e0618f75ae00c1886ce5d01616ef1f9e|3|3|0|0|0|flang/proof/чекер/пробы/записи/Ч363/00-нетронутый.flang
 6287757de691e288eece8d707339894f|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/01-дно-лжёт.flang
 2d779464e0b18989a037101662b45475|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/02-спуска-нет.flang

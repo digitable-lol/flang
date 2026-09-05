@@ -65,8 +65,8 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 100 | 17 502 | 89 | 11 562 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 100 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17502 --> |
-| C | 38 | 774 574 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774574 --> |
+| оболочка | 100 | 17 442 | 89 | 11 562 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 100 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17442 --> |
+| C | 38 | 774 540 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774540 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 22 | 7 744 | 16 | 3 843 <!-- СНЯТО 2026-09-05 файлов *.py = 22 --><!-- СНЯТО 2026-09-05 строк-в *.py = 7744 --> |
 | HTML | 4 | 1 226 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.html = 4 --><!-- СНЯТО 2026-08-31 строк-в *.html = 1226 --> |
@@ -152,7 +152,7 @@ flang в C.
 | довод | что под ним | файлов | строк |
 |---|---|---:|---:|
 | напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 736 625 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-09-05 строк-в bootstrap/*.c,bootstrap/*.h = 736625 --> |
-| рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 28 | 45 867 <!-- СНЯТО 2026-09-05 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 28 --><!-- СНЯТО 2026-09-05 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 45867 --> |
+| рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 28 | 45 896 <!-- СНЯТО 2026-09-05 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 28 --><!-- СНЯТО 2026-09-05 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 45896 --> |
 | замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/conc/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
 | проба рантайма C | `flang/проверки/oblast/*.c` и `flang/conc/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
 | чужая среда: редактор | `editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 614 <!-- СНЯТО 2026-08-31 файлов editors/vim/*.vim,editors/vim/*.lua = 11 --><!-- СНЯТО 2026-08-31 строк-в editors/vim/*.vim,editors/vim/*.lua = 614 --> |
@@ -223,7 +223,7 @@ flang в C.
 | файл | строк | что делает |
 |---|---:|---|
 | `target-collisions.sh` | 337 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-08-31 строк scripts/target-collisions.sh = 337 --> |
-| `bad-octet-guard.sh` | 322 | сторож негодных октетов <!-- СНЯТО 2026-09-05 строк scripts/bad-octet-guard.sh = 322 --> |
+| `bad-octet-guard.sh` | 314 | сторож негодных октетов <!-- СНЯТО 2026-08-29 строк scripts/bad-octet-guard.sh = 314 --> |
 | `seed-knows-type-words-guard.sh` | 309 | слова в позициях типа известны закоммиченному семени (стоит первой работой в `ci.yml`) <!-- СНЯТО 2026-09-01 строк scripts/seed-knows-type-words-guard.sh = 309 --> |
 | `prose-numbers-guard.sh` | 416 | числа, набранные в прозе рукой, сходятся с деревом сегодня <!-- СНЯТО 2026-09-05 строк scripts/prose-numbers-guard.sh = 416 --> |
 | `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |

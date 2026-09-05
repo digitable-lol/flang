@@ -16,6 +16,50 @@
 // несут 30 из 97; остальные 67 стоят у файлов с ведомостью. Сумма поля по описи
 // обязана сходиться со счётом по дереву, и сегодня сходится: 97 и 97.
 //
+// ────────── ⚑ 5 сентября 2026: опись сведена с деревом, 194 беды → 3 ──────────
+//
+// ГЛАВНОЕ: врала не опись, а прибор сверки. Он искал `^ *обеспечивает `, а
+// язык пишет обязательство и второй формой — с квантором:
+//
+//     для всех элементы обеспечивает «длина неотрицательна» результат не меньше 0
+//
+// Таких в дереве 165 в 94 файлах, и 79 файлов несут ТОЛЬКО её. Прибор считал
+// их пустыми и объявлял их строки лишними. Из 71 «лишней» 69 приходились на
+// живые файлы, и ВСЕ 69 были этой породы.
+//
+// Старший прибор `scripts/proved-share-of-a-file.py` квантор знал с самого
+// начала (строки 31-34). Разошлись две редакции одного счёта — ровно то, от
+// чего сверка и заведена.
+//
+// ЧТО ИЗМЕНЕНО В ОПИСИ:
+//
+//   «написано»          55 строк пересчитаны по исходнику
+//   «без приговора»      1 строка
+//   убрано                2 строки — файлов нет в дереве с 3 сентября (5d876b0e)
+//   добавлено 31 строку   с полным приговором, ведомость снята прогоном
+//   добавлено 38 строк    с «×» — ведомости у них быть НЕ МОЖЕТ
+//
+// ПОЧЕМУ «×» У ЭТИХ 38, а не «не мерено». Это пробы и подделки: `flang check`
+// отвергает их по замыслу — `FLANG_PARSE` у файла с нарочно сломанным
+// синтаксисом, `FLANG_PROOF_STEP` у пробы на плохой шаг доказательства.
+// Проверено прогоном на выборке. Шапка ниже предупреждает, что прочерк
+// когда-то оказался «не мерено», а не «мерить нечем», — здесь наоборот, и это
+// установлено, а не предположено.
+//
+// ЧИСЛИТЕЛЬ СТАРЫХ СТРОК НЕ ТРОНУТ НИ РАЗУ. «Доказано», «сетка», «объявлено» —
+// приговор ядра; переписать их без прогона значило бы соврать в приборе,
+// которым потом меряют. По той же причине не тронут md5: он ДАТИРУЕТ числитель.
+// Протухших строк как было 155, так и осталось — это честный долг, а не беда
+// сверки.
+//
+// ЦЕНА, померена прогоном: все 72 недостающие ведомости — 6,4 минуты вместе.
+// Шапка пугала 999 секундами на один файл (`sets-oracle`); на этой выборке
+// такого не встретилось.
+//
+// ОСТАЛОСЬ ТРИ, и они названы: examples/db/sqlite-insert.flang,
+// examples/db/sqlite-overflow.flang, flang/scripts/direct-run.flang — код 124
+// на сроке 90 с каждый. Это «не мерено», и «×» им ставить нельзя.
+//
 // ────────── 97 без приговора: две кучи, и они разные ──────────
 //
 // Снято 30 августа 2026 на стволе `5c0d35c9`, двоичный собран из семени этого же
@@ -479,6 +523,9 @@
 
 142c9f65e36bf025c6b07eb20cf81140|2|2|0|0|0|benchmarks/proof-cost/probe-closed-goal.flang
 f371ae4318c70abf98f5b3641ba17dc6|1|×|×|×|0|benchmarks/proof-cost/probe-forgery.flang
+08f2bb2c578f2e18c8ce6e2b33de8bce|2|×|×|×|0|benchmarks/кеш-доказанного/проба-места.flang
+2b8970e08db7f1d000ea8d269de5aa19|4|4|0|0|3|benchmarks/кеш-доказанного/проба.flang
+fba5ff6beca731554ac578d06b44b0fe|1|1|0|0|0|benchmarks/кеш-приговоров/проба.flang
 5d96729211a2a87a7448b3b6cab6f04c|1|×|×|×|0|docs/benchmark/01-link-key.flang
 aec86952f766b306d663f0c424873e5a|1|0|0|1|0|docs/benchmark/02-node-key.flang
 3c5bf2d37560c9a5e3ac79068b5eca32|1|×|×|×|0|docs/benchmark/03-insert.flang
@@ -523,8 +570,10 @@ b4c06c4145ce3782ff20ce2e06aedce5|1|×|×|×|0|docs/benchmark2/20-trim-spaces.fla
 56cc68097cc546efffdc2486f3fffc37|1|1|0|0|1|docs/examples/package/discount.flang
 ef527d1266eba835998db9851cb290be|0|0|0|0|1|docs/examples/package/shop/shop.flang
 9de471867d78163faf232d3386b49c05|3|1|1|1|1|docs/examples/tutorial.flang
+c9814b86964188c64523ac4d74a7d6bf|1|1|0|0|0|docs/site/build.flang
 bf8c0880c1071d0ab9bab9f467a0ccfd|4|0|1|0|0|docs/site/numbers.flang
 09fad27f4a1529c83d303d716f825369|1|0|1|0|0|docs/site/podsvetka.flang
+4f254fbf1b1d39db99d419be5f2fcda9|6|6|0|0|0|docs/site/sitemap.flang
 59e40510fb0bb42d6e4622c380a9b343|1|×|×|×|0|docs/zamer-teorkat/class-string-to-string.flang
 be21be0ca643efa00fc02e9e3b64edd1|90|79|7|4|0|examples/allocator/allocator.flang
 c110934b654de80f02da0999dfd1c88d|0|0|0|0|2|examples/cat/modules/orders.flang
@@ -699,11 +748,66 @@ ce12c504e1fa4df42abe479c03e47f99|7|1|4|2|0|flang/proof/map/substantive.flang
 8164145ce77e46f97cefe08e068a6021|1|×|×|×|0|flang/proof/midpoint-verdicts.flang
 5700462cd82330248c2967137b7b66ee|52|52|0|0|0|flang/proof/малый-сводитель.flang
 806cdb557cd3e282124d2c22145566c7|1|0|0|1|0|flang/proof/подделки/делением.flang
+f46e0a43c8c85be08701f1d981c834d2|1|1|0|0|0|flang/proof/подделки/дно-с-полем.flang
 fdd2edb52bc8f68942221aea61c2353f|1|×|×|×|0|flang/proof/подделки/круг.flang
 a247e7b6269b93c8b0a925847ae32661|10|5|5|0|0|flang/proof/подделки/переходность.flang
+eaa43d3e6390cad900eaa98f820c690a|1|1|0|0|0|flang/proof/подделки/сведённое-дно.flang
 5671d038fc0a663f8d9acea9fc4ec5c4|6|1|0|5|0|flang/proof/подделки/счёт-частей-ложь.flang
 56d0e4660bd3c90a5c3f984f60853e8d|4|0|0|4|0|flang/proof/подделки/счёт-частей-правда.flang
+444138d6a539c4d35fc2576ac21819c9|1|1|0|0|0|flang/proof/подделки/тождеством.flang
 84968c9bff8b2271c8747b1ce6beb99d|209|209|0|0|0|flang/proof/сверщик.flang
+c38a30141877ddbd9a200019d1365c03|2|×|×|×|0|flang/proof/чекер/пробы/записи/10003-uslovnoe-po-vetvyam/lozhnoe-otricanie.flang
+4dab8482ee917e4193111bc9f69df318|1|1|0|0|0|flang/proof/чекер/пробы/записи/8615-teorema-ne-ronyaet/otschyot-s-teoremoy.flang
+e85193f8b0642bbf5e02681b3b843dbb|1|×|×|×|0|flang/proof/чекер/пробы/записи/8615-teorema-ne-ronyaet/spusk-ne-ubyvaet.flang
+f86f9eb968c70d67793d7495de048ad3|8|×|×|×|0|flang/proof/чекер/пробы/записи/9951-zakony/granicy-zakonov.flang
+2f580cd2b5cc90b4b26363aa6499a887|5|3|0|2|0|flang/proof/чекер/пробы/записи/9951-zakony/zakony-pod-ohranoy.flang
+8ae7b112b5833b3d39d2a8074fc54bd6|2|×|×|×|0|flang/proof/чекер/пробы/записи/9991-nachinaetsya-s/lozhnoe-nachalo.flang
+f5015f489c18a8ee9a1ef58a8e4aced0|2|×|×|×|0|flang/proof/чекер/пробы/записи/9991-rezultat-raven/storozh-razvyortki.flang
+f8006e65a3d5a0edea7e0c7f5cf0406b|1|0|0|1|0|flang/proof/чекер/пробы/записи/v1-g2/tip-za-primechaniem.flang
+e0618f75ae00c1886ce5d01616ef1f9e|3|3|0|0|0|flang/proof/чекер/пробы/записи/Ч363/00-нетронутый.flang
+6287757de691e288eece8d707339894f|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/01-дно-лжёт.flang
+2d779464e0b18989a037101662b45475|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/02-спуска-нет.flang
+a780ee8bad61921195bfb03bd1b7443a|3|2|1|0|0|flang/proof/чекер/пробы/записи/Ч363/03-слагаемое-минус.flang
+e353842a769bc334be6e6081d8de97a8|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/04-форма-незнакома.flang
+a06de170c4b109cf55452393035b60a6|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/05-ветви-переставлены.flang
+c6c1ddf3bf2e80dc6081f95f669e65ad|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/06-чужое-слагаемое.flang
+e11cdc88cebb9cd7f4edaac05e121625|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П1-цель-не-равенство.flang
+d1b6ac193af2751100c7e5abff4c77f8|7|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П10-э2-даёт-чужой-элемент.flang
+9688bbe83a8c016bb5d747271cc81314|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П2-тело-мимо-цели.flang
+3b5353d1b26a9eba213ed67428815232|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П3-ассоциативность-вместо-двери.flang
+8ce82620ed766456c4785b91876b8436|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П4-перестановка-через-узел.flang
+a1328af8ebee6f09517815a437880213|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П5-тело-не-одной-строкой.flang
+dcabd7acec84d465b16352fce05756f9|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П6-закон-вне-закрытого-списка.flang
+55810337afe558ce6e02412323d786ef|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П7-замкнутая-ложь-без-требует.flang
+70f82180dd187b49a866710525c68e8d|4|×|×|×|2|flang/proof/чекер/пробы/записи/Ч365/П8-та-же-ложь-под-допущением.flang
+f47b94334d03e26b9dd2e9f09eab458d|7|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П9-номер-вне-границ-списка.flang
+7c3f8006b226e28f81a2b84f88b4cef5|7|7|0|0|0|flang/proof/чекер/пробы/записи/Ч369/00-нетронутый.flang
+b6de7a0ea3f445278209e5e224de2f61|7|7|0|0|0|flang/proof/чекер/пробы/записи/Ч369/П1-порядок-вместо-равенства.flang
+c0fbe1c8a41bc2c46d3b398f7d579bf6|7|6|0|1|0|flang/proof/чекер/пробы/записи/Ч369/П2-охрана-цели-мимо-тела.flang
+71ae216461bf9a7635b350c47ea4d88d|7|×|×|×|0|flang/proof/чекер/пробы/записи/Ч369/П3-пусть-связывает-чужое-имя.flang
+544304f8e20b73a8e1dd946bafc90a18|7|6|0|1|0|flang/proof/чекер/пробы/записи/Ч369/П4-связыватель-остался.flang
+eed1a66d5c7ea84bdb2144799440d769|7|7|0|0|0|flang/proof/чекер/пробы/записи/Ч369/П5-закон-вне-закрытого-списка.flang
+2bf87a0d06c17fe9a97d92ea448fde60|7|6|0|1|0|flang/proof/чекер/пробы/записи/Ч369/П6-мера-подменена.flang
+79d960c8096b8b10d2323681e1cd3be3|7|7|0|0|0|flang/proof/чекер/пробы/записи/Ч369/П7-предел-ветвления.flang
+b9576655e54624f65755b791725a8e3b|7|6|0|1|0|flang/proof/чекер/пробы/записи/Ч369/П8-место-замены-чужое.flang
+0a3c2acf2ad7fff068ff3b8386bac4ab|1|0|0|1|0|flang/proof/чекер/пробы/записи/типы-доводов/vychitanie-ne-sohranyaet.flang
+38d4cafb2a945b2f2a3886a2a3ce008d|1|×|×|×|0|flang/proof/чекер/пробы/программы/lozh-derevo.flang
+abb2cd80fd5f454cc49f17edc35ed7f8|1|0|1|0|0|flang/proof/чекер/пробы/программы/lozh-raznost-chistaya.flang
+e099498a5c59b03063c2bd9f7aa671b9|1|×|×|×|0|flang/proof/чекер/пробы/программы/lozh-stolknovenie.flang
+ee0c51702104603e1fe93aa0afc8344c|4|×|×|×|0|flang/proof/чекер/пробы/программы/Ч392-примечание-вместо-постусловия.flang
+1044061302a1b418d56d31d8ca6164e9|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч407-promezhutochnyy-shag-primechaniem.flang
+075abc76c004dadbbd648fb2b12b4a0b|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-lozh-chuzhoy-variant.flang
+b4899a1b34a557f3f253fff3b14cc5d4|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-1-telo-mimo-primera.flang
+80db07cfb0fc39f33a997f020dc3300a|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-2-cel-lozhna.flang
+258c349c62bc086448d6e179518a038d|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-3-metki-sovpali.flang
+d47bdadcfadc5c7bc8383b56b5ab2e3c|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-4-otnoshenie-neznakomo.flang
+979bffd211a73728ac90f9c869ecbe9f|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-5-dlina-na-odin-bolshe.flang
+43fd3c1ba5872af3ec8c57159d658d18|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-6-cifry-podmeneny.flang
+7b2082fc6e67243d89865472b4e26bed|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-9-telo-ne-odin-literal.flang
+ad5f06b92cd90957a21ab20c11445c9b|2|×|×|×|0|flang/proof/чекер/пробы/программы/Ч87-F1-cel-lozhna.flang
+0f1b5ffadf64511eb50fb79dd50da166|2|×|×|×|0|flang/proof/чекер/пробы/программы/Ч87-F2-telo-mimo-primera.flang
+fc0678159995bc7ac6a3b9efa4e845fe|2|×|×|×|0|flang/proof/чекер/пробы/программы/Ч87-F3-dva-zvena-v-stroke.flang
+7d9dcdd44cc21307265cf2829adfdb06|2|×|×|×|0|flang/proof/чекер/пробы/программы/Ч87-F4-zveno-zakommentirovano.flang
 3eadfffaa256eae3b0ad59183d95037e|1|0|1|0|0|flang/scripts/binary.flang
 9a006efd285c04e39ecdb51f3f3f1747|1|1|0|0|0|flang/scripts/closed-length-guard.flang
 a5769e76ad82b8770ec8ab9c2ec0c1b5|20|19|1|0|0|flang/scripts/code-forgery.flang
@@ -715,9 +819,14 @@ dd5c6fa5aeaa9edc65474e5cf9df01fe|21|21|0|0|0|flang/scripts/guards-start.flang
 189756bd10259ae42cd4965cdfde056b|71|67|4|0|0|flang/scripts/kernel-forgeries.flang
 c1a1a43d923eeeb5cbf0b5f33800b262|40|38|0|0|0|flang/scripts/kernel-lines-to-trust.flang
 948a418a6ae7751f23fbe4f17496eb17|19|19|0|0|0|flang/scripts/ledger-summary.flang
+a822333cf70717fa58947cceec0d615d|4|4|0|0|0|flang/scripts/link-across-targets.flang
+25746e0bfb02956ce5182ac4543e7a5b|1|1|0|0|0|flang/scripts/link-collision-guard.flang
 17fa49007181f60a256b3bde9a0ed530|44|44|0|0|0|flang/scripts/memory-guard.flang
 c649864fff7dcb487da259f6b32f9fe9|7|7|0|0|0|flang/scripts/node-across-targets.flang
+a37d42d0e65d4ddde220dd09d2b5a529|4|4|0|0|0|flang/scripts/porodit-atomy.flang
 f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.flang
+7e965224ae21472df5dabe540ea8328b|4|4|0|0|0|flang/scripts/scheduler-across-targets.flang
+876784406adee381267f78a50f2c72f1|2|2|0|0|0|flang/scripts/supervisor-across-targets.flang
 b2de588854f4726fc6d0bf03e1db7858|28|25|2|0|0|flang/scripts/tasks.flang
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.flang
 ae47a476c0aa3a419fcd566e9a5ca799|1|0|1|0|0|flang/scripts/жаргон-образцы.flang
@@ -865,6 +974,7 @@ ffc205fa1f93ea9820625f28a67c678f|4|×|×|×|0|flang/test/fixtures/poddelka-svyor
 cc47f0dabed0a9d160625b619d44d163|1|0|0|1|0|flang/test/fixtures/poddelka-vhozhdenie.flang
 a80ef10ab4efd47d8ab5264097301964|3|0|0|3|0|flang/test/fixtures/svyortka-prefiks-chestnaya.flang
 461385f824bb8118c584ebe8cc7e1237|18|16|2|0|0|flang/проверки/korpus-http.flang
+cc471be74d8c4180292b5b9847697496|1|1|0|0|0|flang/проверки/process-failures.flang
 90e74d4f92b91cc50f646f424a4ed9f3|2|1|1|0|0|fspec/experience/01-discount-coarse.flang
 aa82f1d7ac9e7246e9a006b658bd3c6f|2|2|0|0|0|fspec/experience/02-discount-exact.flang
 703430520ca062e5698afd12a810375d|2|×|×|×|0|fspec/experience/03-discount-false.flang
@@ -941,6 +1051,7 @@ cb83af3366e1aedcf2980e68974f26bc|21|20|1|0|0|scripts/asdf-plugin-published.flang
 1ada44f6de654f4caad9cc2ebd440616|10|10|0|0|0|scripts/asdf-version-list.flang
 dfebe4f2679f7178c4cd355cd58af957|25|25|0|0|0|scripts/bidi-control-guard.flang
 d35764bb36d532c1d8b36cf43e5604e2|7|7|0|0|0|scripts/bootstrap-point-by-binary.flang
+21694e99131f1c8371df99b0b8f40500|1|1|0|0|0|scripts/changelog-page.flang
 ebdc27acc46e32bd14a60bd9d9086ba7|15|14|0|0|0|scripts/check-before-run.flang
 c0e37ea32cceee7ea280fb07ffd8433d|4|3|1|0|0|scripts/child-timeout.flang
 4f41091ee19c484539732da21c423474|30|21|8|1|0|scripts/conc-link-emit.flang
@@ -955,6 +1066,7 @@ ef39e47ca6526bb1d5f92b29cb0a3644|12|12|0|0|0|scripts/emit-promises-guard.flang
 b9355c30780244f70669d1308c60cf41|13|6|0|0|0|scripts/file-extensions.flang
 d5cfd2ef8d49ec0f5b2cc8a84752d0d6|57|42|8|7|0|scripts/homebrew-formula-guard.flang
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/input-boundary.flang
+549dc14d48a6d1300aacb42533fe4cc6|2|0|2|0|0|scripts/jargon-guard.flang
 9226c12745c52e368e33c2d313d40200|23|11|2|3|0|scripts/kernel-abilities-guard.flang
 6ef17c004db92a56a4491f404c23a13d|1|1|0|0|0|scripts/language-words.flang
 a72ce1dbc033191cc6867ee134a3212d|6|6|0|0|0|scripts/license-guard.flang
@@ -979,6 +1091,7 @@ d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/string-measure.flang
 b84d7c3b1bf00b6bfe83e62e063aea2d|21|21|0|0|0|scripts/surfaces-page.flang
 0f8b911ee5eb576b3d68d807d6937d17|5|3|2|0|0|scripts/tab-host-guard.flang
 69bf909a9e2049e05ba96acc758128a1|25|19|5|1|0|scripts/tree-inventory.flang
+42d8f37919203b62c6e3362c82d81593|8|3|3|2|0|scripts/version-guard.flang
 53f94937b541c4d0ce9569351f7f23ec|11|11|0|0|0|scripts/vim-highlight-check.flang
 e3e12eb0215c5a68744c935ef6ee0619|9|9|0|0|0|scripts/vim-highlighting.flang
 1231974321a7a26bcf88a014ebc00252|16|16|0|0|0|scripts/vim-rules.flang

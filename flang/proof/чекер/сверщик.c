@@ -2895,14 +2895,46 @@ static long shagov_sluchaya(Sp svoi, Sp stroki, const char *variant) {
    из 6, «спуск» step 6 из 6, «начало свёртки» base 4 из 4, «шаг свёртки» step
    4 из 4 — ни одного исключения ни в одну сторону.
 
-   Носитель `algebra` сюда НЕ ВХОДИТ намеренно: там имена посылок — это имена
-   вариантов типа, выбранные автором («Узел», «Лист», «Звено»), и вид у них
-   определяется не именем, а тем, рекурсивен ли вариант в ОБЪЯВЛЕНИИ ТИПА.
-   Это проверяется по исходнику и здесь не сделано — см. задачу 9984. */
+   Носитель `algebra` сюда не входит: там имена посылок — это имена вариантов
+   типа, выбранные автором («Узел», «Лист», «Звено»), и судит о них своя
+   функция ниже, по объявлению типа. */
 static const char *vid_po_imeni_posylki(const char *imya_p) {
   if (strcmp(imya_p, "дно") == 0 || strcmp(imya_p, "начало свёртки") == 0) return "base";
   if (strcmp(imya_p, "спуск") == 0 || strcmp(imya_p, "шаг свёртки") == 0) return "step";
   return NULL;
+}
+
+/* Какой «вид» ОБЯЗАНА нести посылка носителя `algebra`, или NULL, если судить
+   нечем: типа нет в исходнике, либо у него нет такого варианта.
+
+   Здесь вид тоже не свободен, но знание берётся не из словаря ядра, а из
+   ОБЪЯВЛЕНИЯ ТИПА: индукция по алгебраическому типу спускается ровно по тем
+   вариантам, что содержат поле своего же типа. Вариант с таким полем —
+   рекурсивный, и посылка при нём «step»; вариант без полей своего типа
+   дальше не ведёт, и это «base». Запись, поменявшая их местами, лжёт о
+   строении индукции ровно так же, как переставленные «дно» и «спуск».
+
+   Замер по всем 86 записям корпуса (80 посылок на этом носителе): правило
+   совпало с записью 80 раз из 80, разошлось 0, объявления не нашлось 0.
+
+   Встроенные `список` и `строка` объявления не имеют вовсе — это суммы
+   самого языка, и знать их чекеру позволено (тот же довод, что у
+   `varianty_tipa` выше): «пусто» не ведёт дальше, «голова и хвост» ведёт.
+
+   Рекурсия ищется В ХВОСТЕ ПОСЛЕ «содержит », а не по всей строке: у типа,
+   чей вариант назван именем самого типа (`тип «Узел»` с `вариант «Узел»`),
+   имя в заголовке варианта иначе сошло бы за поле и сделало базу шагом. */
+static const char *vid_po_variantu_tipa(Sp stroki, const char *tip, const char *variant) {
+  char *stroka;
+  if (strcmp(tip, "список") == 0 || strcmp(tip, "строка") == 0) {
+    if (strcmp(variant, "пусто") == 0) return "base";
+    if (strcmp(variant, "голова и хвост") == 0) return "step";
+    return NULL;
+  }
+  stroka = stroka_varianta_tipa(stroki, tip, variant);
+  if (!*stroka) return NULL;
+  if (!soderzhit(stroka, "содержит ")) return "base";
+  return soderzhit(hvost_posle(stroka, "содержит "), fmt("«%s»", tip)) ? "step" : "base";
 }
 
 /* Поля посылки: «закрыта» из закрытого списка двух слов, объявленное число
@@ -2910,18 +2942,30 @@ static const char *vid_po_imeni_posylki(const char *imya_p) {
    спорит с именем посылки там, где имя пишет ядро. */
 static void sverit_polya_posylok(Sverka *s, Sp svoi, Sp stroki, const char *imya_t) {
   Sp posylki = vse_s_nachalom(svoi, "посылка "); int i;
+  char *princip = pervaya_s_nachalom(svoi, "принцип тип ");
+  int po_algebre = *princip && strcmp(slovo_posle(princip, "носитель "), "algebra") == 0;
+  char *tip_principa = po_algebre ? v_yolochkah(princip, 1) : (char *)"";
   for (i = 0; i < posylki.n; i++) {
     char *q = posylki.e[i];
     char *zakryta = slovo_posle(q, "закрыта "), *vid = slovo_posle(q, "вид ");
     const char *zhdyom = vid_po_imeni_posylki(v_yolochkah(q, 1));
+    /* Ч9984, вторая половина: носитель algebra судится не словарём ядра, а
+       объявлением типа — см. `vid_po_variantu_tipa`. Имя посылки там
+       авторское, поэтому спрашиваем по ВАРИАНТУ, а не по имени. */
+    if (!zhdyom && po_algebre) zhdyom = vid_po_variantu_tipa(stroki, tip_principa, v_yolochkah(q, 2));
     esli_ne(s, strcmp(vid, "base") == 0 || strcmp(vid, "step") == 0,
             fmt("теорема «%s»: посылка «вид %s» — сверщику известны только «base» и «step»", imya_t, vid));
     /* Ч9984: без этого запись переставляла базу и шаг местами и оставалась
        «ПРОВЕРЕНО»: узел проигран заново, а его посылки при этом больше не
        считаются на слово ядра — и ложь в них не ловил никто. */
     esli_ne(s, !zhdyom || strcmp(vid, zhdyom) == 0,
-            fmt("теорема «%s», посылка «%s»: объявлена «вид %s», а имя ядра «%s» — это всегда «вид %s»",
-                imya_t, v_yolochkah(q, 1), vid, v_yolochkah(q, 1), zhdyom ? zhdyom : ""));
+            vid_po_imeni_posylki(v_yolochkah(q, 1))
+              ? fmt("теорема «%s», посылка «%s»: объявлена «вид %s», а имя ядра «%s» — это всегда «вид %s»",
+                    imya_t, v_yolochkah(q, 1), vid, v_yolochkah(q, 1), zhdyom ? zhdyom : "")
+              : fmt("теорема «%s», посылка «%s»: объявлена «вид %s», а вариант «%s» типа «%s» — %s, значит «вид %s»",
+                    imya_t, v_yolochkah(q, 1), vid, v_yolochkah(q, 2), tip_principa,
+                    zhdyom && strcmp(zhdyom, "step") == 0 ? "рекурсивный" : "без поля своего типа",
+                    zhdyom ? zhdyom : ""));
     char *variant = v_yolochkah(q, 2);
     long shagov = nomer_posle(q, "шагов "), v_sluchae = shagov_sluchaya(svoi, stroki, variant);
     if (strcmp(zakryta, "reduction") == 0)

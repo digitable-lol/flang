@@ -594,6 +594,46 @@ jobs:
   # Сверяются ОБЕ цели на одном входе. Одной цели мало: напечатанное можно
   # собрать и получить неверный ответ, а разойдись ответы — виновата печать,
   # а не пример.
+  #
+  # ── ЕЩЁ ШЕСТЬ ЦЕЛЕЙ, И ОДНА ОСТАЛАСЬ БЕЗ ПРИСМОТРА ────────────────────────
+  # Задача 1470. После 8460 в CI собирались и запускались ДВЕ цели из девяти,
+  # а семь — `go`, `rust`, `java`, `js`, `python`, `csharp`, `elixir` — не
+  # собирались ни разу: про них было известно только то, что печать не падает.
+  #
+  # Померено 5 сентября 2026. Шесть из семи тулчейнов УЖЕ ЛЕЖАТ в образе
+  # `ubuntu-latest` (опись `actions/runner-images`, Ubuntu 24.04): Go, cargo,
+  # JDK, Node, Python3, .NET SDK (в том числе 8.0.x — под него и печатается
+  # `net8.0`). Ставить не надо ничего, поэтому связка ниже расширена с двух
+  # целей до ВОСЬМИ.
+  #
+  # Цена, снятая на холодных кешах (пустые GOCACHE, CARGO_HOME, NUGET_PACKAGES):
+  #
+  #   цель     печать   сборка   прогон
+  #   c          0,13     1,13     0,00
+  #   cpp        0,14     1,32     0,00
+  #   go         0,15     6,57     0,02   ← холодный GOCACHE, тёплый 0,71
+  #   rust       0,12     0,77     0,00
+  #   java       0,13     1,18     0,08
+  #   js         0,12        —     0,10
+  #   python     0,36        —     0,04
+  #   csharp     0,18     3,09     0,06   ← холодный NuGet, тёплый 2,05
+  #
+  # Вся связка восьми целиком — 15,83 с против 2,79 с у прежней пары, то есть
+  # +13 с на работу, которая и без того тратит 26,7 с на `emit-and-examples`
+  # и минуты на сборку двоичного. Работа не удлиняется и наполовину.
+  #
+  # БЕЗ ПРИСМОТРА ОСТАЁТСЯ ОДНА ЦЕЛЬ ИЗ ДЕВЯТИ — `elixir`, и молчать об этом
+  # нельзя. Причина не в секундах: сам её прогон стоит 2,05 с (печать 0,12,
+  # `elixirc --warnings-as-errors` 1,51, запуск 0,69) и связка девяти сходится
+  # знак в знак — проверено в тот же день на машине с Elixir 1.18/OTP 29.
+  # Причина в том, что Elixir и Erlang — единственные из девяти, которых в
+  # образе НЕТ вовсе. Их надо ставить: `sudo apt-get update && sudo apt-get
+  # install -y elixir` — 11 пакетов, 24 МБ (загрузка 0,85 с, распаковка 0,20 с,
+  # остальное — обновление индексов apt и настройка dpkg). Это единственный шаг
+  # во всей работе, который может покраснеть от зеркала Ubuntu, а не от языка,
+  # и красит он тогда ложно. Цена включения названа здесь целиком, чтобы
+  # решение было решением, а не умолчанием: одна строка установки плюс ветка
+  # `elixir` в связке ниже.
   pechat:
     name: emit-guard
     runs-on: ubuntu-latest
@@ -603,26 +643,79 @@ jobs:
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/emit-and-examples.flang
-      - name: Девятая цель печатается, собирается и отвечает как C
+      # Порча — умножение в рантайме Go: `Number(a * b)` меняется на
+      # `Number(a + b)`. Она СОБИРАЕТСЯ (`go build` проходит), а 10! даёт 55
+      # вместо 3628800, то есть ответ Go расходится с C. Проба, которая не
+      # собралась, не доказывала бы ничего. Задача 1470.
+      - name: Сверка целей умеет краснеть
+        run: |
+          set -u
+          podlog=flang/src/emit/go/flang_runtime.go
+          cp "$podlog" "$podlog.do"
+          sed -i 's/return Number(a \* b), nil/return Number(a + b), nil/' "$podlog"
+          if cmp -s "$podlog.do" "$podlog"; then
+            rm -f "$podlog.do"; git checkout -- "$podlog"
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: строки «return Number(a * b), nil» в $podlog уже нет — поправить подлог, сверка ни при чём" >&2
+            exit 1
+          fi
+          rm -f "$podlog.do"
+          rm -rf podlog-c podlog-go
+          bootstrap/flang emit examples/rosetta/factorial.flang --target c  --out podlog-c
+          bootstrap/flang emit examples/rosetta/factorial.flang --target go --out podlog-go
+          git checkout -- "$podlog"
+          make -C podlog-c  -j"$(nproc)" >/dev/null || { echo "ПОДЛОГ НЕ СОБРАЛСЯ: цель c" >&2; exit 1; }
+          make -C podlog-go -j"$(nproc)" >/dev/null || { echo "ПОДЛОГ НЕ СОБРАЛСЯ: цель go" >&2; exit 1; }
+          vopros='{"fn":"Факториал","args":[{"n":"10"}]}'
+          printf '%s\n' "$vopros" | ./podlog-c/flang_cli  > podlog-c.txt
+          printf '%s\n' "$vopros" | ./podlog-go/flang_cli > podlog-go.txt
+          if cmp -s podlog-c.txt podlog-go.txt; then
+            echo "сверка промолчала на подлоге: c и go ответили одинаково ($(cat podlog-c.txt)) — проверять ей нечего" >&2
+            exit 1
+          fi
+          echo "подлог пойман: c=$(cat podlog-c.txt) go=$(cat podlog-go.txt)"
+          rm -rf podlog-c podlog-go podlog-c.txt podlog-go.txt
+
+      # Восемь целей из девяти. Девятая, `elixir`, без присмотра — почему
+      # именно она и чего стоит её завести, сказано в комментарии над работой.
+      - name: Восемь целей из девяти печатаются, собираются и отвечают одинаково
         run: |
           set -eu
           vopros='{"fn":"Факториал","args":[{"n":"10"}]}'
-          for cel in c cpp; do
+          for cel in c cpp go rust java js python csharp; do
             bootstrap/flang emit examples/rosetta/factorial.flang --target "$cel" --out "pechat-$cel"
-            make -C "pechat-$cel" -j"$(nproc)"
-            printf '%s\n' "$vopros" | "./pechat-$cel/flang_cli" > "otvet-$cel.txt"
           done
-          if ! cmp -s otvet-c.txt otvet-cpp.txt; then
-            echo "::error::цели c и cpp разошлись на одном входе"
-            echo "c:   $(cat otvet-c.txt)"
-            echo "cpp: $(cat otvet-cpp.txt)"
-            exit 1
-          fi
-          grep -q '"n":"3628800"' otvet-cpp.txt || {
-            echo "::error::обе цели ответили одинаково, но неверно: $(cat otvet-cpp.txt)"
+          make -C pechat-c      -j"$(nproc)" >/dev/null
+          make -C pechat-cpp    -j"$(nproc)" >/dev/null
+          make -C pechat-go     -j"$(nproc)" >/dev/null
+          make -C pechat-rust   build >/dev/null
+          make -C pechat-java   build >/dev/null
+          make -C pechat-csharp build >/dev/null
+          # `make run` у C# на .NET новее восьмого падает: ключ `--nologo`
+          # доезжает до самой программы. Зовём собранную сборку напрямую.
+          dll=$(find pechat-csharp/bin/Debug -name flang.dll | head -1)
+          test -n "$dll" || { echo "::error::C# собрался, а flang.dll не найден"; exit 1; }
+          printf '%s\n' "$vopros" | ./pechat-c/flang_cli   > otvet-c.txt
+          printf '%s\n' "$vopros" | ./pechat-cpp/flang_cli > otvet-cpp.txt
+          printf '%s\n' "$vopros" | ./pechat-go/flang_cli  > otvet-go.txt
+          printf '%s\n' "$vopros" | ./pechat-rust/target/debug/flang_cli > otvet-rust.txt
+          printf '%s\n' "$vopros" | java -cp pechat-java FlangCli Factorial > otvet-java.txt
+          printf '%s\n' "$vopros" | ( cd pechat-js     && node flang_cli.js ./factorial.js ) > otvet-js.txt
+          printf '%s\n' "$vopros" | ( cd pechat-python && python3 flang_cli.py factorial )   > otvet-python.txt
+          printf '%s\n' "$vopros" | dotnet "$dll" Factorial > otvet-csharp.txt
+          rashod=0
+          for cel in cpp go rust java js python csharp; do
+            if ! cmp -s otvet-c.txt "otvet-$cel.txt"; then
+              echo "::error::цель $cel разошлась с C на одном входе: c=$(cat otvet-c.txt) $cel=$(cat otvet-$cel.txt)"
+              rashod=1
+            fi
+          done
+          [ "$rashod" = 0 ] || exit 1
+          grep -q '"n":"3628800"' otvet-c.txt || {
+            echo "::error::все восемь ответили одинаково, но неверно: $(cat otvet-c.txt)"
             exit 1
           }
-          echo "цели c и cpp сошлись знак в знак: $(cat otvet-cpp.txt)"
+          echo "восемь целей из девяти сошлись знак в знак: $(cat otvet-c.txt)"
+          echo "БЕЗ ПРИСМОТРА ОСТАЁТСЯ 1 ЦЕЛЬ ИЗ 9: elixir — тулчейна нет в образе раннера"
 
   # Прогонщик корпуса: каталог, маска и ведомость строкой. Отдельной работой —
   # зависимостей нет, семь секунд.

@@ -720,10 +720,23 @@ static char *cel_pri_znachenii(Obst *o, const char *znachenie) {
   char *vyzov = term(fmt("«%s» от %s%s", o->funkciya, v_skobki(znachenie), o->hvost));
   return term(vstavit_vmesto(vstavit_vmesto(o->cel, "результат", vyzov), o->po, znachenie));
 }
+/* ВТОРОЙ ИСТОЧНИК КОНСТРУКТОРА — ОБЪЯВЛЕНИЕ ТИПА (задача 9986). Автор пишет
+   случай не под каждую посылку: базу, которую ядро закрывает сведением, он
+   вправе не писать вовсе — в `body-forms` теорема несёт только «Слой», а «Дно»
+   приходит из маршрута ядра (`закрыта reduction шагов 0`). Прежде чекер требовал
+   авторский случай на КАЖДУЮ посылку и на честной свежей печати выдавал «случая
+   варианта «Дно» в теореме нет», а следом ещё три жалобы: без «ход цель» весь
+   разбор ходов сыпался каскадом.
+   Берётся ТОЛЬКО у варианта БЕЗ ПОЛЕЙ: у варианта с полями конструктор требует
+   имён связывания, а их даёт лишь авторский случай — выдумывать их нельзя.
+   Вариант, которого в объявлении типа нет вовсе, по-прежнему отвергается: на
+   этом стоят пробы `9986/variant-ne-iz-istochnika-{base,step}`. */
 static char *nachalnaya_cel(Obst *o, const char *variant) {
-  char *sl = sluchay_varianta(o, variant);
-  if (!*sl) return (char *)"";
-  return cel_pri_znachenii(o, term(konstruktor_sluchaya(sl)));
+  char *sl = sluchay_varianta(o, variant), *v;
+  if (*sl) return cel_pri_znachenii(o, term(konstruktor_sluchaya(sl)));
+  v = stroka_varianta_tipa(o->stroki, o->tip, variant);
+  if (!*v || soderzhit(v, " содержит ")) return (char *)"";
+  return cel_pri_znachenii(o, term(v));
 }
 
 typedef struct { Sp celi, dano, bedy; long hodov, proigrano, bez_privyazki;
@@ -1547,42 +1560,40 @@ static char *bez_probelov_vne_kavychek(const char *s) {
   return v_kav ? (char *)"" : r;
 }
 
-/* Строка — РОВНО ОДНО звено списка. Запятая верхнего уровня позволена только
-   последним знаком: иначе счёт звеньев по строкам был бы ложью. Скобки и
-   кавычки обязаны сойтись в пределах строки — перенос звена тоже «не берусь».
-   Поэтому одинокая «[» звеном не считается никогда, и на этом стоит поиск. */
-static int odno_zveno(const char *z, int posledneye) {
-  size_t d = strlen(z), i; long gl = 0; int v_kav = 0;
-  if (!d || nachinaetsya(z, "//")) return 0;
+/* Счёт звеньев ПО СТРОКАМ убран задачей 9986 вместе с правилом «одно звено на
+   строку» (`odno_zveno`), которое было его единственным потребителем: правило
+   требовало звена на строку и на таблице, записанной плотнее, давало ноль — то
+   есть обвиняло во лжи честную запись. Две его работы разошлись по двум местам:
+   число оглавления сверяется с числом СТРОК между скобками (там же, где его
+   печатает `zapis.flang:1540`), а звенья для значения считает функция ниже. */
+
+/* Звенья по ЗАПЯТЫМ ВЕРХНЕГО УРОВНЯ. Ноль — «не берусь», а не «пусто».
+   Примечания сюда не доходят: их снимает `bez_primechaniya` построчно, ещё до
+   слияния строк, поэтому закомментированное звено не считается — и запись,
+   объявившая его, расходится с исходником арифметикой, а не молчанием. */
+static long zvenev_po_zapyatym(const char *t) {
+  size_t d = strlen(t), i; long gl = 0, n = 0; int v_kav = 0, est_bukvy = 0;
   for (i = 0; i < d; i++) {
     if (v_kav) {
-      if (z[i] == '\\' && i + 1 < d) i++;
-      else if (z[i] == '"') v_kav = 0;
+      if (t[i] == '\\' && i + 1 < d) i++;
+      else if (t[i] == '"') v_kav = 0;
       continue;
     }
-    if (z[i] == '"') { v_kav = 1; continue; }
-    if (z[i] == '(' || z[i] == '[') { gl++; continue; }
-    if (z[i] == ')' || z[i] == ']') { gl--; continue; }
-    if (z[i] == ',' && gl == 0 && i + 1 < d) return 0;
+    if (t[i] == '"') { v_kav = 1; est_bukvy = 1; continue; }
+    if (t[i] == '[' || t[i] == '(') { gl++; continue; }
+    if (t[i] == ']' || t[i] == ')') { gl--; continue; }
+    if (gl == 1 && t[i] == ',') { n++; continue; }
+    if (gl >= 1 && t[i] != ' ') est_bukvy = 1;
   }
   if (v_kav || gl != 0) return 0;
-  return posledneye ? (z[d - 1] != ',') : (z[d - 1] == ',');
+  return est_bukvy ? n + 1 : 0;
 }
 
-/* Звенья в диапазоне a…b: КАЖДАЯ строка обязана быть одним звеном. Ноль — не
-   «пусто», а «не берусь»: счёт по строкам на таком диапазоне не годится. */
-static long zvenev_v_diapazone(Sp stroki, long a, long b) {
-  long i;
-  if (a < 1 || b < a || b > stroki.n) return 0;
-  for (i = a; i <= b; i++)
-    if (!odno_zveno(stroka_po_nomeru(stroki, i), i == b)) return 0;
-  return b - a + 1;
-}
-
-/* Текст литерала целиком (со скобками), пробелы вне кавычек долой. */
+/* Текст литерала целиком (со скобками), примечания и пробелы вне кавычек долой. */
 static char *tekst_spiska(Sp stroki, long a, long b) {
   Sp v = PUSTO; long i;
-  for (i = a - 1; i <= b + 1; i++) dobavit(&v, stroka_po_nomeru(stroki, i));
+  for (i = a - 1; i <= b + 1; i++)
+    dobavit(&v, bez_primechaniya(stroka_po_nomeru(stroki, i)));
   return bez_probelov_vne_kavychek(soedinit(v, " "));
 }
 
@@ -1619,9 +1630,15 @@ static int literal_spiska(Sp stroki, const char *imya, long *a, long *b) {
         dobavit(&OGL_BEDY, fmt("оглавление зовёт таблицей «%s», а у этой функции есть доводы", imya));
         return 0;
       }
-    n = zvenev_v_diapazone(stroki, a0 + 1, b0 - 1);
+    /* Число «звеньев» в оглавлении СВЕРЯЕТСЯ С ТЕМ, ЧТО ЕГО ПЕЧАТАЕТ (задача
+       9986): `zapis.flang:1540` кладёт туда `закрыта − открыта − 1`, то есть
+       число СТРОК между скобками. Сверять его со счётом ЗВЕНЬЕВ можно было,
+       пока все таблицы дерева писались по звену на строку; на таблице в три
+       строки по одиннадцать звеньев тот счёт обвинял честную запись. Подмена
+       чисел в оглавлении ловится здесь по-прежнему: строки пересчитываются. */
+    n = b0 - a0 - 1;
     if (n != n0) {
-      dobavit(&OGL_BEDY, fmt("оглавление объявляет у «%s» звеньев %ld, а сверщик насчитал %ld",
+      dobavit(&OGL_BEDY, fmt("оглавление объявляет у «%s» звеньев %ld, а строк между скобками %ld",
                              imya, n0, n));
       return 0;
     }
@@ -1631,11 +1648,13 @@ static int literal_spiska(Sp stroki, const char *imya, long *a, long *b) {
   return 0;
 }
 
-/* Значение функции-таблицы со списочным телом. */
+/* Значение функции-таблицы со списочным телом. Звенья считаются по запятым
+   верхнего уровня (задача 9986): счёт по строкам годился, пока каждое звено
+   стояло на своей строке, а таблица, записанная плотнее, давала ноль. */
 static Znach tablica_spiskom(Sp stroki, const char *imya) {
   long a, b, n;
   if (!literal_spiska(stroki, imya, &a, &b)) return NE_BERUS;
-  n = zvenev_v_diapazone(stroki, a, b);
+  n = zvenev_po_zapyatym(tekst_spiska(stroki, a, b));
   if (n < 1) return NE_BERUS;
   return kak_spisok(tekst_spiska(stroki, a, b), n);
 }
@@ -3089,7 +3108,17 @@ static const char *OBRAZCY[] = {
   "посылка «» вид . вариант «» вердикт нет вердикта закрыта . шагов # правило «»",
   "конец утверждения", "конец записи", "ход …",
   /* Ч87: оглавление списочных литералов. Вид закрыт так же, как прочие. */
-  "таблиц #", "таблица «» открыта # закрыта # звеньев #"
+  "таблиц #", "таблица «» открыта # закрыта # звеньев #",
+  /* 9616 + 9986: ВЕРДИКТ ПО ОБЪЯВЛЕНИЮ. Печать этих двух строк уже написана
+     (`flang/self/zapis.flang`, «Строки объявленного правила», коммит 818a2a7c),
+     но в семени её ещё нет — значит первая же перепечатка принесёт их в записи.
+     Без образцов чекер отверг бы их вслух («строка не узнана»), и покраснели бы
+     честные записи всюду, где ядро закрыло цель объявлением.
+     ЧЕСТНО О ГРАНИЦЕ: здесь строки только УЗНАЮТСЯ, но не читаются — доли Г4
+     это не двигает, и вычислять по ним нечего, пока не сделана задача 9616.
+     Узнать не значит пропустить: значение «по объявлению» закрыто списком из
+     двух слов, а не точкой, поэтому третье значение будет отвергнуто вслух. */
+  "правило «»", "по объявлению да", "по объявлению нет"
 };
 static int znakomaya_stroka(const char *s) {
   char *sk = skelet(s); int i;

@@ -1,0 +1,122 @@
+#!/bin/sh
+# ХУК ПЕРЕД ПУШЕМ: гоняет ДЕШЁВЫХ сторожей, чтобы в GitHub уезжало зелёное.
+#
+# ЗАЧЕМ. Полный набор проверок стоит около 134 минут раннера на один пуш, и
+# красное всё равно приезжает: на `main` CI был красен с 4 сентября, а на
+# `dev` он до 5 сентября не ходил вовсе — 74 пуша без надзора, и за это
+# время незамеченным прошёл регресс гейта Г3.
+#
+# ПОЧЕМУ НЕ ВЕСЬ НАБОР. Хук на 134 минуты обойдут через `--no-verify`, и он
+# станет хуже, чем никакого: будет создавать чувство проверенности, не
+# проверяя. Поэтому здесь только те проверки, что укладываются в секунды, а
+# долгие остаются CI. Что именно НЕ проверено — печатается ниже словами, и
+# это не вежливость: молчащий о своих границах хук врёт самим фактом
+# зелёного вывода.
+#
+# ЧТО СЮДА НЕ ВЗЯТО И ПОЧЕМУ (замерено 5 сентября 2026 на машине под
+# нагрузкой, `/usr/bin/time`):
+#   ./ярлык тесты                       дольше 2 минут
+#   набор проб чекера (прогон.sh)       минуты
+#   ./ярлык сколько-верим (потолок Г3)  минуты, нужен --max-steps 2e9
+#   сборка bootstrap                    5–6 минут
+#   ещё семь сторожей дороже 120 с      см. scripts/kto-zovet-storozhey.sh
+#   scripts/chto-otstalo-ot-semeni.sh   краснеть НЕ УМЕЕТ (только exit 2,
+#                                       если семени нет) — это отчёт, не
+#                                       сторож, и в хуке был бы украшением
+#
+# КОГДА ОБХОД `--no-verify` ЗАКОНЕН:
+#   · пушите ветку работника, которую всё равно не сливают напрямую в dev;
+#   · чините сам хук;
+#   · дерево заведомо красно по названному долгу, и вы это знаете.
+# Во всех прочих случаях обход значит «пусть CI жжёт минуты за меня».
+#
+# СТАВИТСЯ ОДНОЙ КОМАНДОЙ:  git config core.hooksPath .githooks
+set -u
+
+KOREN=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+cd "$KOREN" || exit 0
+
+RAB=${FLANG_TMP:-/srv/tmp}/pre-push.$$
+mkdir -p "$RAB" || exit 0
+trap 'rm -rf "$RAB"' EXIT INT TERM
+
+# Проверки, которым НУЖЕН собранный двоичный. Без него `./ярлык` полез бы
+# собирать (5–6 минут) — этого хук не делает и говорит об этом вслух.
+S_DVOICHNYM="версия:проверка пакет:проверка лицензии:проверка задачник:проверка"
+# Проверки, которым двоичный не нужен.
+BEZ_DVOICHNOGO="prose-numbers-guard.sh semya-rantayma-eto-istochnik.sh"
+
+zapusk() { # имя, команда…
+  imya=$1; shift
+  ( "$@" >"$RAB/$imya.out" 2>&1; echo $? >"$RAB/$imya.kod" ) &
+}
+
+echo "хук перед пушем: дешёвые сторожа, долгие оставлены CI"
+echo
+
+NACHALO=$(date +%s)
+
+zapusk proza          sh scripts/prose-numbers-guard.sh
+zapusk semya          sh scripts/semya-rantayma-eto-istochnik.sh
+zapusk zov            sh scripts/kto-zovet-storozhey.sh --check
+zapusk podlog         sh scripts/storozha-bez-podloga.sh --check
+zapusk opis           sh scripts/pol-dokazannogo-sverka.sh
+
+DVOICHNYY=да
+if [ ! -x bootstrap/flang ]; then
+  DVOICHNYY=нет
+else
+  zapusk versiya  ./ярлык версия:проверка
+  zapusk paket    ./ярлык пакет:проверка
+  zapusk licenzii ./ярлык лицензии:проверка
+  zapusk zadachnik ./ярлык задачник:проверка
+fi
+
+wait
+
+BEDA=0
+for f in "$RAB"/*.kod; do
+  [ -f "$f" ] || continue
+  imya=$(basename "$f" .kod)
+  kod=$(cat "$f")
+  if [ "$kod" = 0 ]; then
+    printf '  зелен   %s\n' "$imya"
+  else
+    printf '  КРАСЕН  %s (код %s)\n' "$imya" "$kod"
+    BEDA=$((BEDA+1))
+  fi
+done
+
+KONEC=$(date +%s)
+echo
+printf 'проверено за %s с\n' "$((KONEC-NACHALO))"
+
+echo
+echo "ЧЕГО ХУК НЕ ПРОВЕРИЛ (это делает CI):"
+echo "  · тесты, набор проб чекера, потолок доверия Г3 — минуты каждый"
+echo "  · сборку двоичного и всё, что её требует"
+echo "  · семь сторожей дороже 120 с и четырнадцать, красных по долгу дерева"
+if [ "$DVOICHNYY" = нет ]; then
+  echo "  · версию, пакет, лицензии и задачник — НЕТ bootstrap/flang,"
+  echo "    а собирать его хук не станет (5–6 минут). Соберите: make -C bootstrap"
+fi
+
+if [ "$BEDA" -gt 0 ]; then
+  echo
+  printf 'ПУШ ОСТАНОВЛЕН: красных проверок %s. Разбор — в выводе ниже.\n' "$BEDA" >&2
+  echo >&2
+  for f in "$RAB"/*.kod; do
+    [ -f "$f" ] || continue
+    imya=$(basename "$f" .kod)
+    [ "$(cat "$f")" = 0 ] && continue
+    printf '───── %s ─────\n' "$imya" >&2
+    tail -20 "$RAB/$imya.out" >&2
+    echo >&2
+  done
+  echo "Обойти можно: git push --no-verify (когда это законно — см. шапку хука)" >&2
+  exit 1
+fi
+
+echo
+echo "всё дешёвое зелено — можно пушить"
+exit 0

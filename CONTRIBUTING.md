@@ -278,10 +278,37 @@ Fork the repository, branch off `main`, and open a pull request. Small first: on
 change, one reason, and a commit message that says what the tree now does that it
 did not do before.
 
-CI runs on tags and on demand, not on every push, so a pull request does not turn
-green by itself. Say in the description what you ran. If you could not run
-something — a backend whose toolchain you do not have, the full suite on a laptop
-— say that too: a named gap is worth more than a tick nobody earned.
+CI runs on pushes to `main` and `dev`, on tags, and on demand. It is not cheap:
+one push costs about 134 minutes of runner time, because 27 of its 38 jobs build
+the bootstrap compiler again from scratch. Say in the description what you ran.
+If you could not run something — a backend whose toolchain you do not have, the
+full suite on a laptop — say that too: a named gap is worth more than a tick
+nobody earned.
+
+### Run the cheap guards before you push
+
+There is a hook that runs the guards that cost seconds, so that red does not
+reach the runner in the first place. Install it once:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+It runs nine checks in parallel and takes about 50 seconds on a loaded machine
+(the slowest single one, `задачник:проверка`, is 48 of those seconds; run one
+after another they would be 83). On success it says so; on failure it stops the
+push and prints the guard, the file and the line.
+
+**It does not run the whole suite, and it says so out loud every time.** The
+tests, the checker's probe battery, the trust-ceiling guard and the bootstrap
+build are minutes each and stay in CI. A hook that took 134 minutes would be
+bypassed with `--no-verify` and would then be worse than no hook at all: it
+would create the feeling of being checked without checking.
+
+`--no-verify` stays available on purpose. It is legitimate when you push a
+working branch that is not merged directly, when you are fixing the hook itself,
+or when the tree is knowingly red on a named debt. Otherwise it means "let CI
+burn the minutes instead of me".
 
 Bugs and questions go to
 [issues](https://github.com/digitable-lol/flang/issues). A report that carries

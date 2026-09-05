@@ -589,8 +589,8 @@
 
 тотальная функция «Наши файлы»
   возвращает список строки
-  обеспечивает «длина постоянного списка наши файлы» (длина результат) равен 18
-  ["base64.flang", "datetime.flang", "dictionary.flang", "hashmap.flang", "higher-order.flang", "http.flang", "logic.flang", "numbers.flang", "numtree.flang", "optional.flang", "wire.flang", "redis.flang", "result.flang", "sets.flang", "sha256.flang", "strings.flang", "strlists.flang", "tree.flang"]
+  обеспечивает «длина постоянного списка наши файлы» (длина результат) равен 20
+  ["base64.flang", "math-classics-lists.flang", "registry.flang", "datetime.flang", "dictionary.flang", "hashmap.flang", "higher-order.flang", "http.flang", "logic.flang", "numbers.flang", "numtree.flang", "optional.flang", "wire.flang", "redis.flang", "result.flang", "sets.flang", "sha256.flang", "strings.flang", "strlists.flang", "tree.flang"]
 
 тотальная функция «Отложенные»
   возвращает список строки
@@ -618,7 +618,7 @@
   возвращает список строки
   пример «Названный файл исчез»
     дано имена равно ["logic.flang"]
-    ожидается ["base64.flang", "datetime.flang", "dictionary.flang", "hashmap.flang", "higher-order.flang", "http.flang", "numbers.flang", "numtree.flang", "optional.flang", "wire.flang", "redis.flang", "result.flang", "sets.flang", "sha256.flang", "strings.flang", "strlists.flang", "tree.flang"]
+    ожидается ["base64.flang", "math-classics-lists.flang", "registry.flang", "datetime.flang", "dictionary.flang", "hashmap.flang", "higher-order.flang", "http.flang", "numbers.flang", "numtree.flang", "optional.flang", "wire.flang", "redis.flang", "result.flang", "sets.flang", "sha256.flang", "strings.flang", "strlists.flang", "tree.flang"]
   отфильтровать («Наши файлы») где имя → не (имена содержит имя)
 
 // ── Судейство: куча одного утверждения ─────────────────────────────────────

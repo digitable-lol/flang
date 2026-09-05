@@ -65,8 +65,8 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 100 | 17 494 | 89 | 11 562 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 100 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17494 --> |
-| C | 38 | 774 574 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774574 --> |
+| оболочка | 100 | 17 450 | 89 | 11 562 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 100 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17450 --> |
+| C | 38 | 774 511 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774511 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 22 | 7 744 | 16 | 3 843 <!-- СНЯТО 2026-09-05 файлов *.py = 22 --><!-- СНЯТО 2026-09-05 строк-в *.py = 7744 --> |
 | HTML | 4 | 1 226 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.html = 4 --><!-- СНЯТО 2026-08-31 строк-в *.html = 1226 --> |
@@ -223,7 +223,7 @@ flang в C.
 | файл | строк | что делает |
 |---|---:|---|
 | `target-collisions.sh` | 337 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-08-31 строк scripts/target-collisions.sh = 337 --> |
-| `bad-octet-guard.sh` | 314 | сторож негодных октетов <!-- СНЯТО 2026-08-29 строк scripts/bad-octet-guard.sh = 314 --> |
+| `bad-octet-guard.sh` | 322 | сторож негодных октетов <!-- СНЯТО 2026-09-05 строк scripts/bad-octet-guard.sh = 322 --> |
 | `seed-knows-type-words-guard.sh` | 309 | слова в позициях типа известны закоммиченному семени (стоит первой работой в `ci.yml`) <!-- СНЯТО 2026-09-01 строк scripts/seed-knows-type-words-guard.sh = 309 --> |
 | `prose-numbers-guard.sh` | 416 | числа, набранные в прозе рукой, сходятся с деревом сегодня <!-- СНЯТО 2026-09-05 строк scripts/prose-numbers-guard.sh = 416 --> |
 | `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |

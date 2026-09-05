@@ -580,6 +580,20 @@ jobs:
 
   # Печать не печатает непроверенного, а что из проверок печать не делает —
   # названо в её же справке. Отдельной работой: зависимостей нет, десять секунд.
+  #
+  # ── ВТОРАЯ ЦЕЛЬ ЗДЕСЬ ЖЕ, И ВОТ ПОЧЕМУ ────────────────────────────────────
+  # До задачи 8460 во всём CI печаталась ровно ОДНА цель — `--target c`
+  # (`install-path.yml`), и восемь остальных не печатались ни разу. Девятая,
+  # `cpp`, заведена последней и не проверялась ничем.
+  #
+  # Замер 5 сентября 2026 на этой машине: печать в C++ — 0,16 с, сборка
+  # напечатанного `g++ -std=c++20 -Wall -Wextra -Werror -pedantic` — 1,32 с;
+  # та же пара для C — 1,24 с. Вся связка ниже стоит около 3 с при работе в
+  # десять секунд, поэтому она здесь, а не отдельной работой.
+  #
+  # Сверяются ОБЕ цели на одном входе. Одной цели мало: напечатанное можно
+  # собрать и получить неверный ответ, а разойдись ответы — виновата печать,
+  # а не пример.
   pechat:
     name: emit-guard
     runs-on: ubuntu-latest
@@ -589,6 +603,26 @@ jobs:
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
       - run: bootstrap/flang io scripts/emit-and-examples.flang
+      - name: Девятая цель печатается, собирается и отвечает как C
+        run: |
+          set -eu
+          vopros='{"fn":"Факториал","args":[{"n":"10"}]}'
+          for cel in c cpp; do
+            bootstrap/flang emit examples/rosetta/factorial.flang --target "$cel" --out "pechat-$cel"
+            make -C "pechat-$cel" -j"$(nproc)"
+            printf '%s\n' "$vopros" | "./pechat-$cel/flang_cli" > "otvet-$cel.txt"
+          done
+          if ! cmp -s otvet-c.txt otvet-cpp.txt; then
+            echo "::error::цели c и cpp разошлись на одном входе"
+            echo "c:   $(cat otvet-c.txt)"
+            echo "cpp: $(cat otvet-cpp.txt)"
+            exit 1
+          fi
+          grep -q '"n":"3628800"' otvet-cpp.txt || {
+            echo "::error::обе цели ответили одинаково, но неверно: $(cat otvet-cpp.txt)"
+            exit 1
+          }
+          echo "цели c и cpp сошлись знак в знак: $(cat otvet-cpp.txt)"
 
   # Прогонщик корпуса: каталог, маска и ведомость строкой. Отдельной работой —
   # зависимостей нет, семь секунд.

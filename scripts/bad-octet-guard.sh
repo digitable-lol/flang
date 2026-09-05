@@ -111,7 +111,7 @@ WORK=${RABOTA:-$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" storozh-oktet.XXXXXX)}
 mkdir -p "$WORK"
 
 # Программа судится любая: сторож смотрит на прогонщик, а не на программу.
-# Взят пример с мерой — он собирается всеми восемью целями и уже стоит в
+# Взят пример с мерой — он собирается всеми девятью целями и уже стоит в
 # docs/ifl/measure-across-targets.sh, то есть проверен переносимостью.
 SRC=examples/measure/euclid.flang
 CEL="{\"fn\":\"НОД\",\"args\":[{\"n\":\"1071\"},{\"n\":\"462\"}]}"
@@ -136,11 +136,11 @@ CEL="{\"fn\":\"НОД\",\"args\":[{\"n\":\"1071\"},{\"n\":\"462\"}]}"
 } > "$WORK/negodnyy.jsonl"
 
 # Эталон отказа. Он ЗДЕСЬ, а не берётся у первой отозвавшейся цели: сторож,
-# сверяющий цели друг с другом, зеленеет и тогда, когда все восемь сломаны
+# сверяющий цели друг с другом, зеленеет и тогда, когда все девять сломаны
 # одинаково.
 ETALON='FLANG_IO_NOT_TEXT: строка 2 не текст: октет 8 из 22 (0xFF) не складывается в UTF-8; запрос обязан ехать в UTF-8'
 
-VSE="c go rust python java csharp elixir js"
+VSE="c cpp go rust python java csharp elixir js"
 [ -n "$ONE" ] && VSE="$ONE"
 
 KRASNYH=0
@@ -153,6 +153,7 @@ BEZ_TULCHEJNA=0
 sobrat() {
   case "$1" in
     c)      ( cd "$WORK/c" && make -s ) ;;
+    cpp)    ( cd "$WORK/cpp" && make -s ) ;;
     go)     ( cd "$WORK/go" && go build -o flang_cli ./cli ) ;;
     rust)   ( cd "$WORK/rust" && cargo build --quiet --release --offline ) ;;
     python) : ;;
@@ -166,6 +167,7 @@ sobrat() {
 est_tulchejn() {
   case "$1" in
     c)      command -v cc >/dev/null ;;
+    cpp)    command -v g++ >/dev/null || command -v c++ >/dev/null ;;
     go)     command -v go >/dev/null ;;
     rust)   command -v cargo >/dev/null ;;
     python) command -v python3 >/dev/null ;;
@@ -180,6 +182,7 @@ progon() {
   target=$1; vhod=$2; vyhod=$3; oshibki=$4
   case "$target" in
     c)      "$WORK/c/flang_cli" ;;
+    cpp)    "$WORK/cpp/flang_cli" ;;
     go)     "$WORK/go/flang_cli" ;;
     rust)   "$WORK/rust/target/release/flang_cli" ;;
     python) ( cd "$WORK/python" && python3 -B flang_cli.py evklid ) ;;
@@ -203,8 +206,13 @@ for target in $VSE; do
     BEZ_TULCHEJNA=$((BEZ_TULCHEJNA + 1))
     continue
   fi
+  # У «cpp» договор ключа «--runtime» СВОЙ, и это замерено 5 сентября 2026, а
+  # не предположено: восемь целей ждут каталог самой цели («flang/src/emit/c»),
+  # а девятая — КОРЕНЬ («flang/src/emit»), потому что ищет в нём «cpp/flang_cpp.hpp».
+  # Передай ей то же, что остальным, — печать отказывает кодом 2.
+  if [ "$target" = cpp ]; then RT_CEL=$RT; else RT_CEL=$RT/$target; fi
   if ! "$FL" emit "$SRC" --target "$target" --out "$WORK/$target" \
-        --runtime "$RT/$target" > "$WORK/$target.pechat" 2>&1; then
+        --runtime "$RT_CEL" > "$WORK/$target.pechat" 2>&1; then
     stroka "$target" — — "НЕ НАПЕЧАТАЛОСЬ (см. $WORK/$target.pechat)"
     KRASNYH=$((KRASNYH + 1))
     continue

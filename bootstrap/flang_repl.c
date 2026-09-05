@@ -253,7 +253,7 @@ static char *repl_read_all(FILE *stream, size_t *length) {
  * СОБРАННОГО бинарника. Иначе `flang --version` однажды назвал бы версию,
  * которой нет ни в одном релизе.
  */
-#define FLANG_VERSION "0.7.0"
+#define FLANG_VERSION "0.7.11"
 
 static const char REPL_GREETING[] =
     "flang " FLANG_VERSION " — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.\n"
@@ -7478,6 +7478,67 @@ static void proof_say_verdict(const char *path, const proof_tally *t, int code) 
  * нарушений по примерам в замыкании нет, и ведомость честно говорит «не
  * искали», а не «не найдено»).
  */
+/*
+ * ПУТЬ В ШАПКЕ ЗАПИСИ — ОТНОСИТЕЛЬНЫЙ, и это не косметика.
+ *
+ * Слой на flang получает вход ОДНОЙ строкой, и она служит сразу двум делам:
+ * ключом поиска текста в замыкании («Текст входа» сличает «файл».«путь» с
+ * «вход» точным равенством, compiler.flang) и путём, который уезжает в шапку
+ * записи. Ключ обязан быть абсолютным — от него разрешаются импорты, — а
+ * шапка обязана быть переносимой: у записи и у сверяющего в разных клонах
+ * пути разные, и `zapis.flang` говорит это своими словами: «„исходник" —
+ * примета для человека, а не привязка».
+ *
+ * Развести два дела можно ТОЛЬКО ЗДЕСЬ. В flang это один довод, и разделить
+ * их там значит поменять подпись «Ведомость исходников», то есть ждать
+ * перепечатку. Привязку правка не трогает: её держит SHA-256, а не путь.
+ *
+ * УЛИКА, РАДИ КОТОРОЙ ПРАВКА (задача 8690). Прибор доли корпуса читает эту
+ * строку и приписывает к ней корень дерева: `s=$root/$(grep -m1 '^исходник ')`
+ * (`доля-корпуса.sh`). С абсолютным путём выходит «$root//srv/…», исходник не
+ * находится, и доля считается по нулю записей. Записи корпуса, лежащие в
+ * дереве, все до одной относительные — и были такими с первого коммита.
+ *
+ * Файл ВНЕ рабочего каталога даёт путь с «../». Это хуже, чем путь внутри
+ * дерева, но лучше абсолютного: он переносим между клонами с той же
+ * раскладкой, а абсолютный не переносим ни между какими.
+ */
+static void proof_head_relative(repl_buf *out, const char *utf8, size_t bytes,
+                                const char *base, const char *full) {
+  static const char METKA[] = "исходник ";
+  const size_t metka = sizeof(METKA) - 1;
+  const char *stroka = NULL;
+  const char *konec = NULL;
+  char *otnositelno = NULL;
+  size_t nachalo = 0;
+  buf_reset(out);
+  stroka = (const char *)memchr(utf8, '\n', bytes);
+  if (stroka == NULL) {
+    buf_add(out, utf8, bytes);
+    return;
+  }
+  nachalo = (size_t)(stroka - utf8) + 1;
+  if (bytes - nachalo < metka || memcmp(utf8 + nachalo, METKA, metka) != 0) {
+    buf_add(out, utf8, bytes);
+    return;
+  }
+  konec = (const char *)memchr(utf8 + nachalo, '\n', bytes - nachalo);
+  if (konec == NULL) {
+    buf_add(out, utf8, bytes);
+    return;
+  }
+  otnositelno = repl_relative(base, full);
+  if (otnositelno == NULL) {
+    buf_add(out, utf8, bytes);
+    return;
+  }
+  buf_add(out, utf8, nachalo);
+  buf_add(out, METKA, metka);
+  buf_put(out, otnositelno);
+  buf_add(out, konec, bytes - (size_t)(konec - utf8));
+  free(otnositelno);
+}
+
 static int proof_file(const char *path, bool json, const char *record, bool strict) {
   repl_strings paths;
   repl_strings texts;
@@ -7497,9 +7558,12 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
   base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
   full = repl_resolve(base, path);
   text = repl_read_file(full, &bytes);
-  free(base);
+  /* `base` НЕ освобождается здесь: от него считается относительный путь для
+     шапки записи (см. `proof_head_relative`). Освобождение — ниже, на каждом
+     выходе. */
   if (text == NULL) {
     fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", path);
+    free(base);
     free(full);
     return 2;
   }
@@ -7511,6 +7575,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
   if (!lock_beside(full)) {
     free(text);
     free(full);
+    free(base);
     return 1;
   }
 
@@ -7523,6 +7588,137 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
   repl_imports_of(text, bytes, full, &queue);
   args[0] = repl_closure(&paths, &texts, &queue);
   args[1] = repl_value_say(full);
+
+  /*
+   * ═══ ТА ЖЕ ДОРОГА, ЧТО У `check`, И ПО ТОМУ ЖЕ ДОВОДУ (задача 9712) ═══
+   *
+   * Прежде ведомость шла ОДНИМ вызовом — «Ведомость исходников», — а `check`
+   * тремя, и приговоры двух дорог одного двоичного расходились. Замер на
+   * четырнадцати подделках `flang/test/fixtures/binary-rules`:
+   *
+   *   equality-not-symmetric   check 1  →  ведомость 0
+   *   category-not-closed      check 2  →  ведомость 0
+   *   morphism-compose         check 2  →  ведомость 0
+   *
+   * Худшая — первая: `check` не «недосудил», а ОТВЕРГ, назвав правило
+   * FLANG_EQUALITY_NOT_SYMMETRIC на паре значений сетки, — а ведомость на том
+   * же файле писала «ПРОВЕРЕНО САМОСТОЯТЕЛЬНО» и код 0, и запись
+   * доказательства НАПЕЧАТАЛАСЬ. Сверщик записи (`flang/proof/чекер`) её
+   * принимал кодом 0: подделка проходила всю цепь до конца.
+   *
+   * ДЫР БЫЛО ДВЕ, и лечатся они одним вызовом, но разными его частями.
+   *
+   * ПЕРВАЯ — законы категории. «Ведомость исходников» зовёт «Проверить
+   * связанное с примерами», а та — «Проверить связанное», где слиты типы,
+   * тотальность, процессы, планы и ядро (`compiler.flang:912`). Законов
+   * категории там нет: они пятый шаг, и делает его этот файл сам, в
+   * `repl_check_sources` под `categories`. Оттого нарушение, НАЙДЕННОЕ ядром,
+   * до ведомости не доезжало.
+   *
+   * ВТОРАЯ — две фразы из трёх о несуждённом. `check` спрашивает три:
+   * «Что бинарник не судил», «Устройство категорий не сверялось» и «Что у
+   * процессов не сверялось». Ведомость спрашивала одну — «Непосчитанное в
+   * бинарнике» (`compiler.flang:1713`), и та берёт список С ВЫЧЕТОМ уже
+   * судимого. Законы категорий судит `setoid.flang`, вычет их снимает, и
+   * отказ молчал; а про УСТРОЙСТВО (замкнутость под композицией, единицы,
+   * сходимость концов) умеет сказать только вторая фраза, которой ведомость
+   * не задавала.
+   *
+   * ЯДРО И ПРИМЕРЫ ЗДЕСЬ НЕ ГОНЯЮТСЯ (`kernel` и `examples` — нет): их считает
+   * сама ведомость шагом ниже, и второй счёт спорил бы с первым — ровно то,
+   * чего этот файл избегает везде. Берётся отсюда одно, чего у ведомости нет:
+   * законы категории и разбор входного файла для двух фраз.
+   */
+  {
+    repl_bads bads;
+    fl_value program = fl_nothing();
+    fl_value linked = fl_nothing();
+    fl_value own = fl_nothing();
+    bool has_program = false;
+    bool judged = true;
+    bads_init(&bads);
+    judged = repl_check_sources(args[0], full, &bads, &program, &has_program, NULL, false, false, true, NULL,
+                                &linked, NULL, &own);
+    if (!judged) {
+      check_print_bads(&bads, path, paths.count);
+      fflush(stderr);
+      printf("%s: не проверено — ведомость не печатается у программы с замечаниями\n", path);
+      fflush(stdout);
+      bads_free(&bads);
+      strings_free(&paths);
+      strings_free(&texts);
+      strings_free(&queue);
+      free(text);
+      free(full);
+      free(base);
+      return 1;
+    }
+    bads_free(&bads);
+    /*
+     * ДВЕ НЕДОСТАЮЩИЕ ФРАЗЫ. Оба вызова — тотальные функции, возвращающие
+     * строку, и оба берут те же два довода, что у `check`: связанную программу
+     * и разобранный ВХОДНОЙ файл. Разбирается вход отдельно потому же, почему
+     * и там: связывание теряет свойства и преобразования, и по одной связанной
+     * записи бинарник промолчал бы ровно о двух поверхностях из четырнадцати.
+     *
+     * Ничто в `own` значит «разбор не дошёл» — тогда спрашивают связанную,
+     * ровно как спрашивает `check`.
+     */
+    if (has_program) {
+      fl_value obstacle = fl_nothing();
+      fl_value obstacle_args[2];
+      const char *say = NULL;
+      size_t say_bytes = 0;
+      bool unjudged = false;
+      obstacle_args[0] = linked.tag == FL_NOTHING ? program : linked;
+      obstacle_args[1] = own.tag == FL_NOTHING ? program : own;
+      if (repl_call("Устройство категорий не сверялось", obstacle_args, 2, &obstacle) == FL_OK
+          && val_text(obstacle, &say, &say_bytes) && say_bytes > 0) {
+        fprintf(stderr, "%.*s\n", (int)say_bytes, say);
+        unjudged = true;
+      }
+      /*
+       * ТРЕТЬЯ ФРАЗА («Что у процессов не сверялось») ЗДЕСЬ НЕ ЗАДАЁТСЯ, И ЭТО
+       * ВЫБОР ПО ЗАМЕРУ, А НЕ ЗАБЫВЧИВОСТЬ.
+       *
+       * Оба варианта собраны и померены. С третьей фразой ведомость перестаёт
+       * печататься у ЧЕТЫРНАДЦАТИ из шестнадцати `flang/conc/examples` — тех
+       * самых честных программ, что сегодня получают её кодом 0. Без неё —
+       * ни у одной, а все три расхождения на подделках закрываются ОДИНАКОВО
+       * (проверено: equality-not-symmetric 1, category-not-closed 2,
+       * morphism-compose 2 — те же числа в обоих вариантах).
+       *
+       * Разница в том, ЧТО говорят вторая и третья фразы. Вторая — «устройство
+       * не судится вовсе, правил нет ни одной строкой»; третья — «сверено, но
+       * НЕ ДО КОНЦА». Первое отменяет доказательство: раздел законов в записи
+       * был бы неправдой. Второе — нет: посчитанное посчитано, и названный
+       * остаток не делает посчитанное ложью.
+       *
+       * Это ровно та развилка, на которой дерево уже стояло: прежний отказ по
+       * общему списку стоил «68 обязательств в 17 файлах каталога flang/conc», и
+       * оттого в «Названия несудимых» завели вычет. Задать третью фразу здесь
+       * значило бы вернуть ту же цену через другую дверь.
+       *
+       * `check` третью фразу задаёт и отвечает кодом 2 — и правильно делает:
+       * он говорит о полноте ПРОВЕРКИ. Ведомость говорит о доказательстве, и
+       * названный пробел проверки её не отменяет. Дороги сходятся там, где
+       * обязаны: где `check` отвергает, ведомость больше не выдаёт нуля.
+       */
+      if (unjudged) {
+        fflush(stderr);
+        strings_free(&paths);
+        strings_free(&texts);
+        strings_free(&queue);
+        free(text);
+        free(full);
+        free(base);
+        /* КОД 2, А НЕ 3: у ведомости третий исход уже занят и значит «в
+           программе объявлено то, чьи законы бинарник не считает». Это оно и
+           есть, только про устройство, — и слово у него то же. */
+        return 2;
+      }
+    }
+  }
 
   if (repl_call("Ведомость исходников", args, 2, &result) != FL_OK) {
     code = 1;
@@ -7562,10 +7758,14 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
           fprintf(stderr, "FLANG_CLI: не открыт для записи файл %s\n", record);
           code = 2;
         } else {
-          if (fwrite(utf8, 1, bytes, out) != bytes) {
+          repl_buf golova;
+          buf_init(&golova);
+          proof_head_relative(&golova, utf8, bytes, base, full);
+          if (fwrite(golova.data, 1, golova.used, out) != golova.used) {
             fprintf(stderr, "FLANG_CLI: не записан файл %s\n", record);
             code = 2;
           }
+          buf_free(&golova);
           fclose(out);
         }
       } else {
@@ -7598,6 +7798,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
   strings_free(&queue);
   free(text);
   free(full);
+  free(base);
   return code;
 }
 

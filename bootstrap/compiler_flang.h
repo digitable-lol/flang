@@ -68336,6 +68336,15 @@ fl_status compiler_flang_stroki_principa(fl_ctx *ctx, fl_value verdikt, fl_value
 fl_status compiler_flang_stroki_pravil_svedeniya(fl_ctx *ctx, fl_value verdikt, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Строки объявленного правила».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param verdikt — «вердикт»: «Значение»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_stroki_obyavlennogo_pravila(fl_ctx *ctx, fl_value verdikt, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Строки поля записи».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -70951,6 +70960,17 @@ fl_status compiler_flang_nomer_korziny(fl_ctx *ctx, fl_value klyuch, fl_value *r
  * @return значение: строка
  */
 fl_status compiler_flang_otpechatok_stroki_kesha(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Значение без мест рекурсивно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_znachenie_bez_mest_rekursivno(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Отпечаток узлов кеша».

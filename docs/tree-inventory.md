@@ -66,7 +66,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
 | оболочка | 100 | 17 222 | 89 | 11 342 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 100 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17222 --> |
-| C | 38 | 774 073 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774073 --> |
+| C | 38 | 774 511 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774511 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 22 | 7 744 | 16 | 3 843 <!-- СНЯТО 2026-09-05 файлов *.py = 22 --><!-- СНЯТО 2026-09-05 строк-в *.py = 7744 --> |
 | HTML | 4 | 1 226 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.html = 4 --><!-- СНЯТО 2026-08-31 строк-в *.html = 1226 --> |
@@ -136,10 +136,10 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 двумя днями раньше — за два дня прибавилось 856 строк, и опись этого не
 заметила, потому что число было набрано рукой и сторожа над ним не было.)
 
-Три четверти миллиона строк C — это не долг и даже не почти долг: 607 199 из
+Три четверти миллиона строк C — это не долг и даже не почти долг: 607 416 из
 них — `bootstrap/compiler_flang.c`, то есть сам компилятор, напечатанный из
 flang в C.
-<!-- СНЯТО 2026-09-04 строк bootstrap/compiler_flang.c = 607199 -->
+<!-- СНЯТО 2026-09-05 строк bootstrap/compiler_flang.c = 607416 -->
 Ровно этот файл и есть доказательство того, что язык себя обслуживает.
 
 ## Не долг: двенадцать доводов, у каждого свой счёт
@@ -151,7 +151,7 @@ flang в C.
 
 | довод | что под ним | файлов | строк |
 |---|---|---:|---:|
-| напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 736 187 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-09-04 строк-в bootstrap/*.c,bootstrap/*.h = 736187 --> |
+| напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 736 625 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-09-05 строк-в bootstrap/*.c,bootstrap/*.h = 736625 --> |
 | рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 28 | 45 867 <!-- СНЯТО 2026-09-05 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 28 --><!-- СНЯТО 2026-09-05 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 45867 --> |
 | замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/conc/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
 | проба рантайма C | `flang/проверки/oblast/*.c` и `flang/conc/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |

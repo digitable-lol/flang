@@ -1,9 +1,9 @@
-# Опись дерева по языкам: 266 файлов вне flang, долг вне JavaScript — 106 при потолке 63
-<!-- СНЯТО 2026-09-05 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 266 -->
+# Опись дерева по языкам: 267 файлов вне flang, долг вне JavaScript — 107 при потолке 63
+<!-- СНЯТО 2026-09-05 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 267 -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
-JavaScript: файлов 106, строк 15484, потолок файлов 63» — «ДОЛГ ВЫРОС».
+JavaScript: файлов 107, строк 15567, потолок файлов 63» — «ДОЛГ ВЫРОС».
 Разбор и перевод — [задача
 4838](../tasks/4838-the-debt-outside-flang-crossed-its-ceiling.md), счёт по
 родам — [задача 9688](../tasks/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
@@ -65,8 +65,8 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 100 | 17 538 | 89 | 11 562 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 100 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17538 --> |
-| C | 38 | 774 603 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774603 --> |
+| оболочка | 101 | 17 525 | 90 | 11 645 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 101 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17525 --> |
+| C | 38 | 774 073 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774073 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 22 | 7 744 | 16 | 3 843 <!-- СНЯТО 2026-09-05 файлов *.py = 22 --><!-- СНЯТО 2026-09-05 строк-в *.py = 7744 --> |
 | HTML | 4 | 1 226 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.html = 4 --><!-- СНЯТО 2026-08-31 строк-в *.html = 1226 --> |
@@ -128,7 +128,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 Для файла оболочки без расширения ВНЕ `.githooks/` дыра остаётся открытой —
 закрыть её нечем, кроме чтения первой строки, а этого опись не делает.
 
-**Долг вне JavaScript — 106 файлов, 15 484 строки.** JavaScript опись считает, но
+**Долг вне JavaScript — 107 файлов, 15 567 строк.** JavaScript опись считает, но
 по кучам не раскладывает: его раскладывает
 [`javascript-inventory.md`](javascript-inventory.md), и два разных разбора
 одного языка разъехались бы на первой же правке. Числа этой описи и той
@@ -136,10 +136,10 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 двумя днями раньше — за два дня прибавилось 856 строк, и опись этого не
 заметила, потому что число было набрано рукой и сторожа над ним не было.)
 
-Три четверти миллиона строк C — это не долг и даже не почти долг: 607 416 из
+Три четверти миллиона строк C — это не долг и даже не почти долг: 607 199 из
 них — `bootstrap/compiler_flang.c`, то есть сам компилятор, напечатанный из
 flang в C.
-<!-- СНЯТО 2026-09-05 строк bootstrap/compiler_flang.c = 607416 -->
+<!-- СНЯТО 2026-09-04 строк bootstrap/compiler_flang.c = 607199 -->
 Ровно этот файл и есть доказательство того, что язык себя обслуживает.
 
 ## Не долг: двенадцать доводов, у каждого свой счёт
@@ -151,8 +151,8 @@ flang в C.
 
 | довод | что под ним | файлов | строк |
 |---|---|---:|---:|
-| напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 736 625 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-09-05 строк-в bootstrap/*.c,bootstrap/*.h = 736625 --> |
-| рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 28 | 45 896 <!-- СНЯТО 2026-09-05 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 28 --><!-- СНЯТО 2026-09-05 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 45896 --> |
+| напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 736 187 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-09-04 строк-в bootstrap/*.c,bootstrap/*.h = 736187 --> |
+| рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 28 | 45 867 <!-- СНЯТО 2026-09-05 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 28 --><!-- СНЯТО 2026-09-05 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 45867 --> |
 | замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/conc/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
 | проба рантайма C | `flang/проверки/oblast/*.c` и `flang/conc/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
 | чужая среда: редактор | `editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 614 <!-- СНЯТО 2026-08-31 файлов editors/vim/*.vim,editors/vim/*.lua = 11 --><!-- СНЯТО 2026-08-31 строк-в editors/vim/*.vim,editors/vim/*.lua = 614 --> |
@@ -184,10 +184,12 @@ flang в C.
 Оболочка при этом ничего нового на путь сборки не приносит: `sh`, `make`, `cc`
 и `cmp` там нужны и так, а Node не нужен ни на одном шаге.
 
-## Долг: 106 файлов, 15 484 строки
+## Долг: 107 файлов, 15 567 строк
 
 Снято прогоном `./ярлык опись:языки` 5 сентября 2026, уже по починенному
-правилу (задача 7405). По языкам: оболочка 89, Python 16, awk 1.
+правилу (задача 7405) и с поправкой на `flang/проверки/обход-self.sh`
+(задача 8118, +1 файл и 303 строки оболочки). По языкам: оболочка 90,
+Python 16, awk 1.
 
 | место | файлов | строк | чем это держится |
 |---|---:|---:|---|
@@ -223,7 +225,7 @@ flang в C.
 | файл | строк | что делает |
 |---|---:|---|
 | `target-collisions.sh` | 337 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-08-31 строк scripts/target-collisions.sh = 337 --> |
-| `bad-octet-guard.sh` | 322 | сторож негодных октетов <!-- СНЯТО 2026-09-05 строк scripts/bad-octet-guard.sh = 322 --> |
+| `bad-octet-guard.sh` | 314 | сторож негодных октетов <!-- СНЯТО 2026-08-29 строк scripts/bad-octet-guard.sh = 314 --> |
 | `seed-knows-type-words-guard.sh` | 309 | слова в позициях типа известны закоммиченному семени (стоит первой работой в `ci.yml`) <!-- СНЯТО 2026-09-01 строк scripts/seed-knows-type-words-guard.sh = 309 --> |
 | `prose-numbers-guard.sh` | 416 | числа, набранные в прозе рукой, сходятся с деревом сегодня <!-- СНЯТО 2026-09-05 строк scripts/prose-numbers-guard.sh = 416 --> |
 | `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |

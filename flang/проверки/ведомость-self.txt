@@ -1,0 +1,61 @@
+flang/self/bootstrap/compiler.flang	вне присмотра 3
+flang/self/bootstrap/corpus.flang	92 92 0 76
+flang/self/bounded.flang	271 271 0 114
+flang/self/builtins.flang	267 267 0 112
+flang/self/carriers.flang	вне присмотра 6
+flang/self/cli.flang	78 78 0 75
+flang/self/commutative.flang	191 191 0 7
+flang/self/conc.flang	644 644 0 145
+flang/self/defunc.flang	134 134 0 134
+flang/self/distributed.flang	206 206 0 70
+flang/self/distributive.flang	193 193 0 9
+flang/self/emit-c.flang	378 378 0 235
+flang/self/emit-cpp.flang	вне присмотра 10
+flang/self/emit-csharp.flang	394 394 0 258
+flang/self/emit-elixir.flang	224 224 0 88
+flang/self/emit-go.flang	478 478 0 100
+flang/self/emit-java.flang	311 311 0 175
+flang/self/emit-js.flang	255 255 0 50
+flang/self/emit-python.flang	404 404 0 268
+flang/self/emit-rust.flang	340 340 0 91
+flang/self/factcheck.flang	121 121 0 103
+flang/self/failures.flang	254 254 0 112
+flang/self/functor-oracle.flang	436 436 0 38
+flang/self/functor.flang	вне присмотра 2
+flang/self/grid.flang	вне присмотра 24
+flang/self/hotswap.flang	196 196 0 42
+flang/self/idempotent.flang	194 194 0 10
+flang/self/interpret.flang	382 382 0 160
+flang/self/io.flang	172 172 0 32
+flang/self/iso.flang	190 190 0 25
+flang/self/law-oracle.flang	441 441 0 43
+flang/self/lexer.flang	170 170 0 161
+flang/self/link.flang	вне присмотра 3
+flang/self/lsp.flang	196 196 0 152
+flang/self/mcp.flang	36 36 0 15
+flang/self/monad-expand.flang	129 129 0 111
+flang/self/monad.flang	вне присмотра 2
+flang/self/monoid.flang	184 184 0 27
+flang/self/monotone.flang	218 218 0 11
+flang/self/obligations.flang	вне присмотра 4
+flang/self/obyazatelstva-i-yadro.flang	вне присмотра 4
+flang/self/oracle.flang	вне присмотра 2
+flang/self/otkazy-tipov.flang	вне присмотра 3
+flang/self/otkazy-totalnosti.flang	вне присмотра 6
+flang/self/parser.flang	490 490 0 191
+flang/self/partialorder.flang	207 207 0 23
+flang/self/processes.flang	170 170 0 30
+flang/self/proof-initial.flang	вне присмотра 78
+flang/self/proof-kernel.flang	вне присмотра 37
+flang/self/proof.flang	413 413 0 242
+flang/self/proofterm.flang	1289 1289 0 37
+flang/self/repl/repl.flang	вне присмотра 14
+flang/self/setoid-oracle.flang	вне присмотра 3
+flang/self/setoid.flang	216 216 0 51
+flang/self/sets-oracle.flang	вне присмотра 12
+flang/self/sets.flang	вне присмотра 3
+flang/self/svoystva.flang	184 184 0 19
+flang/self/tags.flang	151 151 0 14
+flang/self/totality.flang	448 448 0 275
+flang/self/types.flang	352 352 0 191
+flang/self/zapis.flang	431 431 0 107

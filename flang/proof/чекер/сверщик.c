@@ -3459,7 +3459,34 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
     o.hvost = hvost_dovodov(stroki, chya); }
   p = proigrat_blok(&o);
   vlit_progon(s, &p, imya_t);
-  sverit_pokrytie(s, svoi, stroki, imya_t, verdikt, mesto, 0);
+  /* УЗЕЛ ВЕРДИКТА ПРОИГРЫВАЕТСЯ И ПОД ТЕОРЕМОЙ. Прежде здесь стоял ноль
+     жёстко, и оттого написанная теорема РОНЯЛА долю: узел «разбором по
+     случаям» тот же самый — принцип, две посылки, та же цель, — но на этой
+     дороге его никто не проигрывал, и обе посылки уходили на слово ядра.
+     Замер на `if-over-a-segment`: без теоремы код 0 и «на слово ядра 0», с
+     теоремой код 3 и «на слово ядра 2», хотя ядро теорему приняло. Чем
+     честнее написана теорема, тем сильнее падала доля — дорога вверх была
+     закрыта наглухо.
+
+     Приём законен ровно потому, что `proigrat_uzel` не верит записи: он
+     читает ТЕЛО ФУНКЦИИ из исходника и сам сверяет дно и спуск. Написана
+     теорема или нет, тело функции одно и то же, и проигрыш от неё не
+     зависит. Цель берётся оттуда же, откуда её берут шаги выше, — из строки
+     `утверждаем` исходника, прочитанной так, как её читает язык.
+
+     Второй и третий подмаршруты (`perepiskoy`, `razborom_celi`) здесь НЕ
+     зовутся нарочно: их узлов у теоремы в записи нет ни строкой, и звать их
+     значило бы снимать места, которых никто не проигрывал. */
+  { char *sk = pervaya_s_nachalom(svoi, "цель ");
+    long gc = nomer_posle(sk, "строка ");
+    char *cel_uzla = gc < 1 ? v_ugolkah(sk, 1)
+                            : hvost_posle(kak_chitaet_yazyk(stroka_po_nomeru(stroki, gc)),
+                                          "утверждаем ");
+    int proigran = strcmp(verdikt, "доказано") == 0 &&
+                   proigrat_uzel(s, svoi, stroki, imya_t, chya, cel_uzla);
+    sverit_pokrytie(s, svoi, stroki, imya_t, verdikt, mesto, proigran);
+    s->uzlov += proigran ? 1 : 0;
+    s->uzlov_mest += proigran ? posylki_na_slovo(svoi) : 0; }
 }
 
 /* Утверждение, доказанное БЕЗ теоремы, сверять нечем: доказательства в исходнике

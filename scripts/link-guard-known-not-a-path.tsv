@@ -144,35 +144,35 @@ flang/cat/POLY.md	examples/maybe-poly.flang	иллюстративное имя 
 flang/cat/SETS.md	scripts/sync-flang-vendor.mjs	план: пункт списка в SETS.md, не заведён
 flang/proof/SPEC.md	…-english.flang	шаблон-многоточие в имени, не файл
 flang/self/SPEC.md	self/emit-common.flang	пример правки «ради вида» в SPEC.md, не итоговый файл
-tasks/0001-ci-targets-inventory.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/0001-ci-targets-inventory.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/completed/0001-ci-targets-inventory.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/completed/0001-ci-targets-inventory.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
 tasks/0003-seed-reprint-finishes.md	dlina-100.flang	шаблон нумерованного упражнения, не файл
 tasks/0003-seed-reprint-finishes.md	dlina-1000.flang	шаблон нумерованного упражнения, не файл
-tasks/0004-arena-returns-chunks.md	zadachi-granicy-yazyka.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/0005-postgres-redis-proofs.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/0005-postgres-redis-proofs.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/completed/0004-arena-returns-chunks.md	zadachi-granicy-yazyka.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/completed/0005-postgres-redis-proofs.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/completed/0005-postgres-redis-proofs.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
 tasks/0006-three-big-compiler-files.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
 tasks/0006-three-big-compiler-files.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
 tasks/0026-zettel-names-in-english.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/0029-typescript-target-buys-almost-nothing.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/0032-printing-streams-to-the-file.md	parser_flang.c	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/0033-obligations-check-spreads-over-cores.md	merge-shape-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/completed/0029-typescript-target-buys-almost-nothing.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
+tasks/completed/0032-printing-streams-to-the-file.md	parser_flang.c	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/completed/0033-obligations-check-spreads-over-cores.md	merge-shape-probe.flang	иллюстративное имя пробы в тексте, не файл
 tasks/0037-docs-live-in-one-folder.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/0040-reprint-reuses-what-did-not-change.md	A.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
-tasks/0040-reprint-reuses-what-did-not-change.md	B.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
-tasks/0040-reprint-reuses-what-did-not-change.md	nizh.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/0040-reprint-reuses-what-did-not-change.md	verh-debtor.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/0040-reprint-reuses-what-did-not-change.md	verh_platyaschiy.c	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/completed/0040-reprint-reuses-what-did-not-change.md	A.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
+tasks/completed/0040-reprint-reuses-what-did-not-change.md	B.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
+tasks/completed/0040-reprint-reuses-what-did-not-change.md	nizh.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/completed/0040-reprint-reuses-what-did-not-change.md	verh-debtor.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/completed/0040-reprint-reuses-what-did-not-change.md	verh_platyaschiy.c	учебный/иллюстративный пример на C или Python, не файл проекта
 tasks/0049-the-last-javascript-leaves-the-tree.md	count-library.flang	концептуальный шаг в задаче 0049, не файл
 tasks/0049-the-last-javascript-leaves-the-tree.md	work.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X-english.flang	пример на чужом языке (rosetta), не файл проекта
-tasks/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X.flang	пример на чужом языке (rosetta), не файл проекта
-tasks/0055-leetcode-and-rosetta-examples-are-proved.md	rosetta/X-english.flang	пример на чужом языке (rosetta), не файл проекта
-tasks/0055-leetcode-and-rosetta-examples-are-proved.md	rosetta/X.flang	пример на чужом языке (rosetta), не файл проекта
-tasks/0059-walking-the-functions-costs-a-frame-each.md	dictionary-real-probe.flang	иллюстративное имя пробы в тексте, не файл
-tasks/0059-walking-the-functions-costs-a-frame-each.md	frame-depth-probe.flang	иллюстративное имя пробы в тексте, не файл
-tasks/0059-walking-the-functions-costs-a-frame-each.md	frame-order-probe.flang	иллюстративное имя пробы в тексте, не файл
-tasks/0059-walking-the-functions-costs-a-frame-each.md	promise-count-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X-english.flang	пример на чужом языке (rosetta), не файл проекта
+tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X.flang	пример на чужом языке (rosetta), не файл проекта
+tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	rosetta/X-english.flang	пример на чужом языке (rosetta), не файл проекта
+tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	rosetta/X.flang	пример на чужом языке (rosetta), не файл проекта
+tasks/completed/0059-walking-the-functions-costs-a-frame-each.md	dictionary-real-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/completed/0059-walking-the-functions-costs-a-frame-each.md	frame-depth-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/completed/0059-walking-the-functions-costs-a-frame-each.md	frame-order-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/completed/0059-walking-the-functions-costs-a-frame-each.md	promise-count-probe.flang	иллюстративное имя пробы в тексте, не файл
 tasks/0060-a-function-promises-its-cost.md	driver.c	учебный/иллюстративный пример на C или Python, не файл проекта
 tasks/0060-a-function-promises-its-cost.md	works.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	env-threshold.flang	иллюстративное имя в разборе задачи/заметки, не файл
@@ -183,28 +183,28 @@ tasks/1186-a-module-gets-its-english-name-from-the-author.md	fibonachchi.py	уч
 tasks/1186-a-module-gets-its-english-name-from-the-author.md	zapis_uroborosa.py	учебный/иллюстративный пример на C или Python, не файл проекта
 tasks/1389-every-guard-is-shown-to-redden-on-a-deliberate-break.md	docs/proba-imeni.flang	иллюстративный пример в тексте, не файл
 tasks/1389-every-guard-is-shown-to-redden-on-a-deliberate-break.md	proba-zanyatosti.flang	иллюстративный пример в тексте, не файл
-tasks/1477-a-promise-should-not-cost-a-frame.md	proven-promise-probe.flang	иллюстративное имя пробы в тексте, не файл
-tasks/1600-real-mutual-recursion-cycles-are-measured.md	reify-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/completed/1477-a-promise-should-not-cost-a-frame.md	proven-promise-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/completed/1600-real-mutual-recursion-cycles-are-measured.md	reify-probe.flang	иллюстративное имя пробы в тексте, не файл
 tasks/1722-the-discriminating-search-writes-a-temp-dir-into-the-tree.md	proba-zanyatosti.flang	иллюстративный пример в тексте, не файл
-tasks/4454-why-the-order-rule-does-not-fire.md	dopushchenie.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/4454-why-the-order-rule-does-not-fire.md	konechnost.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/4454-why-the-order-rule-does-not-fire.md	literalom.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/4454-why-the-order-rule-does-not-fire.md	obe-polovinu.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/4454-why-the-order-rule-does-not-fire.md	trebuet.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/4501-sqlite-overflow-and-row-insert.md	sqlite-perepolnenie.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/4501-sqlite-overflow-and-row-insert.md	sqlite-zapis.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/4837-trampolines-come-back-with-one-example.md	koltso.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/5732-all-superlinearities-are-named-and-measured.md	find-descents-full.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/5732-all-superlinearities-are-named-and-measured.md	find-descents.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/5732-all-superlinearities-are-named-and-measured.md	find-nesting-recursion.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/5732-all-superlinearities-are-named-and-measured.md	reify-probe.flang	иллюстративное имя пробы в тексте, не файл
-tasks/6128-the-way-to-take-a-ledger-nothing-could-take-is-written-down.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/6128-the-way-to-take-a-ledger-nothing-could-take-is-written-down.md	pusk-yadro.sh	внешний: сам текст называет путь `/srv/tmp/`
+tasks/completed/4454-why-the-order-rule-does-not-fire.md	dopushchenie.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/completed/4454-why-the-order-rule-does-not-fire.md	konechnost.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/completed/4454-why-the-order-rule-does-not-fire.md	literalom.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/completed/4454-why-the-order-rule-does-not-fire.md	obe-polovinu.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/completed/4454-why-the-order-rule-does-not-fire.md	trebuet.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/completed/4501-sqlite-overflow-and-row-insert.md	sqlite-perepolnenie.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/completed/4501-sqlite-overflow-and-row-insert.md	sqlite-zapis.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/completed/4837-trampolines-come-back-with-one-example.md	koltso.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/completed/5732-all-superlinearities-are-named-and-measured.md	find-descents-full.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/completed/5732-all-superlinearities-are-named-and-measured.md	find-descents.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/completed/5732-all-superlinearities-are-named-and-measured.md	find-nesting-recursion.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/completed/5732-all-superlinearities-are-named-and-measured.md	reify-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/completed/6128-the-way-to-take-a-ledger-nothing-could-take-is-written-down.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/completed/6128-the-way-to-take-a-ledger-nothing-could-take-is-written-down.md	pusk-yadro.sh	внешний: сам текст называет путь `/srv/tmp/`
 tasks/6329-the-four-files-around-the-kernel-get-their-ledger.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/6532-a-red-example-hides-the-ledger.md	before.mjs	иллюстративное имя в разборе задачи 6532, не файл
-tasks/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-filler.flang	шаблон нумерованного упражнения, не файл
-tasks/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-first.flang	шаблон нумерованного упражнения, не файл
-tasks/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-last.flang	шаблон нумерованного упражнения, не файл
+tasks/completed/6532-a-red-example-hides-the-ledger.md	before.mjs	иллюстративное имя в разборе задачи 6532, не файл
+tasks/completed/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-filler.flang	шаблон нумерованного упражнения, не файл
+tasks/completed/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-first.flang	шаблон нумерованного упражнения, не файл
+tasks/completed/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-last.flang	шаблон нумерованного упражнения, не файл
 tasks/8398-plans-are-judged-and-the-compiler-says-so.md	plany.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/8398-plans-are-judged-and-the-compiler-says-so.md	schet.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/8398-plans-are-judged-and-the-compiler-says-so.md	sud.flang	иллюстративное имя в разборе задачи/заметки, не файл

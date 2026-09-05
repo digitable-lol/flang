@@ -507,17 +507,33 @@ jobs:
           set -u
           echo "## Ссылки в документации" >> "$GITHUB_STEP_SUMMARY"
           echo >> "$GITHUB_STEP_SUMMARY"
+          # ПРИЧИНА ПЕЧАТАЕТСЯ И В ЛОГ, А НЕ ТОЛЬКО В СВОДКУ.
+          #
+          # Раньше здесь стояло `::warning ... подробности в сводке прогона`, и
+          # это был единственный след в логе: весь ответ сторожа уезжал в
+          # `$GITHUB_STEP_SUMMARY`. Сводка стареет вместе с прогоном, а лог
+          # остаётся — и разобрать красноту через `gh run view --log-failed`
+          # было НЕЛЬЗЯ. 5 сентября 2026 работник, разбиравший шесть красных
+          # работ, пять назвал поимённо, а про эту написал «НЕ УСТАНОВЛЕНО»
+          # именно поэтому.
+          #
+          # Теперь ответ идёт в оба места. Сводка остаётся ради разметки, лог
+          # получает то же дословно.
           if bootstrap/flang io scripts/link-guard.flang > /tmp/link-guard.out 2> /tmp/link-guard.err; then
+            cat /tmp/link-guard.out
             echo '```' >> "$GITHUB_STEP_SUMMARY"
             cat /tmp/link-guard.out >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
           else
+            echo "── СТОРОЖ ССЫЛОК КРАСЕН, вот его ответ целиком ──"
+            cat /tmp/link-guard.out /tmp/link-guard.err
+            echo "── конец ответа сторожа ──"
             echo "**СТОРОЖ КРАСЕН** (это пока совет, не приговор — тег не заблокирован):" >> "$GITHUB_STEP_SUMMARY"
             echo >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
             cat /tmp/link-guard.out /tmp/link-guard.err >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
-            echo "::warning title=Мёртвые ссылки::сторож ссылок красен — подробности в сводке прогона"
+            echo "::warning title=Мёртвые ссылки::сторож ссылок красен — ответ целиком выше в логе и в сводке прогона"
             exit 1
           fi
 

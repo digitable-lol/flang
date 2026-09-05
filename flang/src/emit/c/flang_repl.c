@@ -4359,6 +4359,35 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
           }
         }
       }
+      /*
+       * ПРИБОР КЕША: попаданий, промахов, доля — числом, и в КАЖДУЮ печать, где
+       * кеш включён, а не по отдельной переменной среды. До этой строки о кеше
+       * судили по стенным секундам двух прогонов, а стенные секунды меняет ещё
+       * и рост дерева между прогонами: два разных дерева о кеше не говорят
+       * ничего, сколько бы секунд между ними ни было.
+       *
+       * СЧИТАЕТ ЯДРО, а не рантайм: попадание видно только тому, кто сверял
+       * ключ («Спросить кеш» в flang/self/proofterm.flang), а ключа рантайм не
+       * видит ни разу — иначе правило доверия уехало бы из слоя недоверия.
+       * Здесь только названо посчитанное.
+       */
+      if (kesh_stamp != NULL) {
+        fl_value kesh_popal = fl_nothing();
+        fl_value kesh_promah = fl_nothing();
+        double popal = val_field(kesh_itog, "попаданий", &kesh_popal) && kesh_popal.tag == FL_NUMBER
+                           ? kesh_popal.as.number
+                           : 0.0;
+        double promah = val_field(kesh_itog, "промахов", &kesh_promah) && kesh_promah.tag == FL_NUMBER
+                            ? kesh_promah.as.number
+                            : 0.0;
+        double sprosov = popal + promah;
+        if (sprosov > 0.0) {
+          fprintf(stderr, "кеш приговоров: спросов %.0f, попаданий %.0f, промахов %.0f, доля попаданий %.1f %%\n",
+                  sprosov, popal, promah, 100.0 * popal / sprosov);
+        } else {
+          fprintf(stderr, "кеш приговоров: спросов 0 — судить о кеше не по чему\n");
+        }
+      }
       free(kesh_stamp);
     }
     if (stages) {

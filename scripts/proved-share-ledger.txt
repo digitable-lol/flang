@@ -1106,7 +1106,7 @@ b84d7c3b1bf00b6bfe83e62e063aea2d|21|21|0|0|0|scripts/surfaces-page.flang
 0f8b911ee5eb576b3d68d807d6937d17|5|3|2|0|0|scripts/tab-host-guard.flang
 3d728e469ba38b286052864886f91340|2|2|0|0|0|scripts/target-function-drift.flang
 69bf909a9e2049e05ba96acc758128a1|32|19|5|1|0|scripts/tree-inventory.flang
-42d8f37919203b62c6e3362c82d81593|8|3|3|2|0|scripts/version-guard.flang
+c8de4c61ea8d34635084dc47d7a7460e|24|8|8|8|0|scripts/version-guard.flang
 53f94937b541c4d0ce9569351f7f23ec|11|11|0|0|0|scripts/vim-highlight-check.flang
 e3e12eb0215c5a68744c935ef6ee0619|9|9|0|0|0|scripts/vim-highlighting.flang
 1231974321a7a26bcf88a014ebc00252|16|16|0|0|0|scripts/vim-rules.flang

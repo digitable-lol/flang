@@ -645,6 +645,7 @@ reports, the knowledge base and the conference submission. Parts of it still des
 with two implementations in it and have not caught up with this page.
 
 Further reading — in Russian (the language surface is Russian, and so is most of the prose):
+[Что это за язык — сводка с пруфами](DESCRIPTION.md) ·
 [Раскладка проекта](docs/guide/project-layout.ru.md) ·
 [flang SPEC](flang/SPEC.md) · [self-hosting contract](flang/self/SPEC.md) ·
 [core-in-flang contract](flang/core/SPEC.md) · [proof core](flang/proof/SPEC.md) ·

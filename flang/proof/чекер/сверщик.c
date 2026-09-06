@@ -1033,6 +1033,11 @@ static void novaya_posylka(Progon *p, const char *stroka) {
    тело стоит сразу за `ocenit_term`. */
 static void hod_vychisleniya(Progon *p, const char *stroka, Obst *o);
 
+/* Ход `переписать формой` применяет ОДИН названный закон формы Д1–Д5, а
+   `forma_zakonom` (его опора) стоит рядом с законами калькулятора ниже по
+   файлу — потому здесь ход лишь ОБЪЯВЛЕН, тело стоит там же, где законы. */
+static void hod_perepiski_formoy(Progon *p, const char *stroka);
+
 /* НОМЕР ХОДА СЧИТАЕТСЯ, а не украшает: пропавший посередине ход виден и по
    номеру, и по несошедшейся цели, и первое сообщение понятнее второго. */
 static void hod_shaga(Progon *p, const char *stroka, Obst *o) {
@@ -1051,7 +1056,8 @@ static void hod_shaga(Progon *p, const char *stroka, Obst *o) {
   else if (strcmp(rod, "закон") == 0) hod_zakona(p, stroka);
   else if (strcmp(rod, "закрыть") == 0) hod_zakrytiya(p, stroka, o);
   else if (strcmp(rod, "вычислить") == 0) hod_vychisleniya(p, stroka, o);
-  else beda_progona(p, fmt("ход «%s» сверщику неизвестен: первичных ходов восемь, и список закрыт", rod));
+  else if (strcmp(rod, "переписать") == 0) hod_perepiski_formoy(p, stroka);
+  else beda_progona(p, fmt("ход «%s» сверщику неизвестен: первичных ходов девять, и список закрыт", rod));
 }
 
 static Progon proigrat_blok(Obst *o) {
@@ -3422,6 +3428,72 @@ static char *svesti_term(const char *syroy, Sp stroki, int gl) {
     return fmt("элемент %s в %s", v_skobki(n), v_skobki(sp2));
   }
   return t;
+}
+
+/* ═══ ПЕРЕПИСАТЬ ФОРМОЙ — ход, задача 4106 (семья С3 «Длина») ═══════════════
+   Применение ОДНОГО названного закона формы Д1–Д5, а не общий переписыватель.
+   Запись несёт ИМЯ закона; переигрыватель проверяет, что левая сторона в цели
+   правда той формы, и САМ пересобирает правую по закону — не берёт её из
+   записи (иначе снимок-со-снимком, §6). Пересобранная ≠ записанной → отказ.
+   Законы — те же, что в калькуляторе (`svesti_term` выше), но применяются
+   РОВНО РАЗ, без рекурсивного сведения подтермов: один ход — одно применение.
+     Д1/Д2 «Мера прибавления»  длина (добавить|приписать Э к Л) → (длина Л) плюс 1
+     Д3    «Мера склейки»       длина (соединить А с Б)          → (длина А) плюс (длина Б)
+     Д4    «Мера разложения»    длина (разложить Т на символы)   → длина Т
+     Д5    «Мера построения»    длина (отобразить Л как …)       → длина Л            */
+static int zakon_formy_est(const char *z) {
+  return strcmp(z, "Мера прибавления") == 0 || strcmp(z, "Мера склейки") == 0 ||
+         strcmp(z, "Мера разложения") == 0 || strcmp(z, "Мера построения") == 0;
+}
+
+/* Правая сторона названного закона, СОБРАННАЯ ПЕРЕИГРЫВАТЕЛЕМ из левой (подтермы
+   берутся как записаны, без сведения). Форма под закон не подходит — 0. Разбор
+   формы слово в слово из `svesti_term`, только без рекурсии по `gl`. */
+static char *forma_zakonom(const char *levo, const char *zakon) {
+  char *t = term(levo), *a, *l, *p;
+  if (!nachinaetsya(t, "длина ")) return 0;
+  a = uzhat(obrezat(t + strlen("длина ")));
+  if (strcmp(zakon, "Мера прибавления") == 0)
+    return (razrez_slovom(a, " к ", &l, &p) &&
+            (nachinaetsya(l, "добавить ") || nachinaetsya(l, "приписать ")))
+           ? term(fmt("( длина %s ) плюс 1", v_skobki(p))) : 0;
+  if (strcmp(zakon, "Мера склейки") == 0)
+    return (razrez_slovom(a, " с ", &l, &p) && nachinaetsya(l, "соединить "))
+           ? term(fmt("( длина %s ) плюс ( длина %s )",
+                      v_skobki(slova_posle(l, 1)), v_skobki(p))) : 0;
+  if (strcmp(zakon, "Мера разложения") == 0)
+    return (razrez_slovom(a, " на ", &l, &p) && nachinaetsya(l, "разложить ") &&
+            strcmp(p, "символы") == 0)
+           ? term(fmt("длина %s", v_skobki(slova_posle(l, 1)))) : 0;
+  if (strcmp(zakon, "Мера построения") == 0)
+    return (razrez_slovom(a, " как ", &l, &p) && nachinaetsya(l, "отобразить "))
+           ? term(fmt("длина %s", v_skobki(slova_posle(l, 1)))) : 0;
+  return 0;
+}
+
+/* Проиграть ход `переписать формой ⟨A⟩ = ⟨B⟩ законом «имя»`: проверить форму A,
+   пересобрать правую по закону, сверить с B — и лишь тогда переписать A→B в
+   цели. `svesti_term`/`perepiskoy` сюда не тянутся. */
+static void hod_perepiski_formoy(Progon *p, const char *stroka) {
+  char *levo = term(v_ugolkah(stroka, 1)), *pravo = term(v_ugolkah(stroka, 2));
+  /* Имя закона — ёлочки ПОСЛЕ слова «законом», а не первые в строке: сам терм
+     несёт ёлочки (например `отобразить … как «Ф»`), и `v_yolochkah(stroka,1)`
+     схватил бы их, а не закон. */
+  char *zakon = v_yolochkah(hvost_posle(stroka, "законом "), 1), *sobrano;
+  if (strcmp(slovo(stroka, 4), "формой") != 0) {
+    beda_progona(p, fmt("ход «переписать %s» неизвестен: есть «переписать формой»", slovo(stroka, 4))); return; }
+  if (!*pravo) {
+    beda_progona(p, fmt("переписать формой «%s»: вторым уголком ⟨…⟩ не стоит правая сторона", levo)); return; }
+  if (!zakon_formy_est(zakon)) {
+    beda_progona(p, fmt("переписать формой: закон «%s» не из списка Д1–Д5 (Мера прибавления / склейки / разложения / построения)", zakon)); return; }
+  if (!est_term(pervaya_cel(p), levo)) {
+    beda_progona(p, fmt("переписать формой: в цели «%s» нет терма «%s»", pervaya_cel(p), levo)); return; }
+  sobrano = forma_zakonom(levo, zakon);
+  if (!sobrano) {
+    beda_progona(p, fmt("переписать формой законом «%s»: левая сторона «%s» не той формы, какой закон требует", zakon, levo)); return; }
+  if (strcmp(sobrano, pravo) != 0) {
+    beda_progona(p, fmt("переписать формой законом «%s»: правая пересобрана как «%s», а запись несёт «%s»", zakon, sobrano, pravo)); return; }
+  odna_cel(p, term(vstavit_vmesto(pervaya_cel(p), levo, pravo)));
 }
 
 /* Сошлись ли стороны. Три двери названы в шапке приёма; четвёртой нет. */

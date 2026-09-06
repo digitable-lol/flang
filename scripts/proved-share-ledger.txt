@@ -1077,6 +1077,7 @@ ef39e47ca6526bb1d5f92b29cb0a3644|12|12|0|0|0|scripts/emit-promises-guard.flang
 91128ae65d62f7aee67ef6e15ae3599a|81|80|0|1|0|scripts/error-code-guard.flang
 b9355c30780244f70669d1308c60cf41|13|6|0|0|0|scripts/file-extensions.flang
 d5cfd2ef8d49ec0f5b2cc8a84752d0d6|57|42|8|7|0|scripts/homebrew-formula-guard.flang
+b00f9a812077e3b8497c15864acff995|10|7|3|0|0|scripts/io-dictionary-copies-guard.flang
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/input-boundary.flang
 549dc14d48a6d1300aacb42533fe4cc6|2|0|2|0|0|scripts/jargon-guard.flang
 9226c12745c52e368e33c2d313d40200|23|11|2|3|0|scripts/kernel-abilities-guard.flang

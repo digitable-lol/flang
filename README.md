@@ -197,7 +197,7 @@ tar -xzf flang-*-c.tar.gz   # inside: C99 sources, a Makefile and the flang.1 ma
 make                        # cc -std=c99 -Wall -Wextra -Werror -pedantic -O2
 sudo make install           # from 0.5.1; in the 0.5.0 archive there is no such
                             # target — copy `flang_cli` to bin/flang by hand
-flang --help                # twelve commands, the language server among them
+flang --help                # thirteen commands, the language server among them
 flang check m.flang         # parse, types, totality, proofs, examples — in words, not JSON
 flang                       # on a terminal: the shell. Piped: JSON in, JSON out
 ```
@@ -245,9 +245,9 @@ The asdf (and mise) plugin installs the same archive from the same releases, and
 can lag behind this tree's latest release. Neither needs anything but a C compiler. This is how
 self-hosting languages ship — Go carried generated C for years, Nim still does.
 
-**Be clear about what that binary is.** It answers to all twelve commands, the editor
+**Be clear about what that binary is.** It answers to all thirteen commands, the editor
 language server among them: `check`, `test`, `run`, `emit`, `ast`, `tokens`, `facts`, `io`,
-`lock`, `package`, `repl` and `lsp`. It prints into all nine targets. What it does not have is a separate
+`lock`, `package`, `new`, `repl` and `lsp`. It prints into all nine targets. What it does not have is a separate
 evaluator — which is why `flang repl` evaluates the only honest way it can: it prints the
 session to C, builds it with the system `cc` against the runtime installed beside it, and runs
 that. Without a `cc` the shell does not switch off — it keeps checking parse, types and

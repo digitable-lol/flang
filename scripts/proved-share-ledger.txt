@@ -1066,6 +1066,7 @@ d35764bb36d532c1d8b36cf43e5604e2|7|7|0|0|0|scripts/bootstrap-point-by-binary.fla
 21694e99131f1c8371df99b0b8f40500|1|1|0|0|0|scripts/changelog-page.flang
 ebdc27acc46e32bd14a60bd9d9086ba7|15|14|0|0|0|scripts/check-before-run.flang
 c0e37ea32cceee7ea280fb07ffd8433d|4|3|1|0|0|scripts/child-timeout.flang
+c432b1228e1590cee11e7cddc141b646|5|4|1|0|0|scripts/cli-commands-guard.flang
 4f41091ee19c484539732da21c423474|30|21|8|1|0|scripts/conc-link-emit.flang
 17bd2146713103e0881432cf8ba5f7ca|67|67|0|0|0|scripts/corpus-runner.flang
 9a1d779542ab08a5a1416bbdc99c0563|10|10|0|0|0|scripts/dictionary-guard.flang

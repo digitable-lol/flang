@@ -207,8 +207,8 @@ sources into the output **verbatim**, so it reads them from disk — in turn fro
 from `$FLANG_RUNTIME_DIR`, and from `share/flang/<target>` next to the command. Nothing found and
 `flang emit` answers «не найдены исходники рантайма» and prints nothing at all.
 
-**The installation carries the runtimes of all nine targets** — 32 files, 2,435,747 bytes, in nine
-`share/flang/<target>` directories. <!-- СНЯТО 2026-09-05 файлов flang/src/emit/*/* = 32 --> The
+**The installation carries the runtimes of all nine targets** — 34 files, 2,435,747 bytes, in nine
+`share/flang/<target>` directories. <!-- СНЯТО 2026-09-06 файлов flang/src/emit/*/* = 34 --> The
 Homebrew formula, the asdf plugin and the release archive all do this (the archive carries them in
 a `runtime/` directory). Verified by a run on 5 September 2026: archive built, installed by the
 plugin, and from the installed prefix all nine targets print with no flags at all.

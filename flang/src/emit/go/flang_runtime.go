@@ -55,6 +55,8 @@
 package flangrt
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"math"
 	"strconv"
@@ -1122,6 +1124,22 @@ func BCharFromCode(ctx *Ctx, code Value) (Value, error) {
 			"«символ по коду»: код %s — половина суррогатной пары, а не символ", NumberText(point))
 	}
 	return Text(string(rune(int32(point)))), nil
+}
+
+// BHash256 — «хеш256»: SHA-256 байтов строки шестнадцатеричной записью.
+//
+// Берётся `crypto/sha256` стандартной библиотеки Go: своей зависимости он не
+// приносит, а писать восьмой раз тот же FIPS 180-4 значило бы завести восьмое
+// место, где можно ошибиться поодиночке. Строка Go — уже UTF-8, поэтому
+// хешируются ровно её байты, и отпечаток совпадает с `sha256sum` и с прочими
+// восемью целями знак в знак.
+func BHash256(ctx *Ctx, text Value) (Value, error) {
+	body, err := expectString("хеш256", text, "строка")
+	if err != nil {
+		return Nothing(), err
+	}
+	svod := sha256.Sum256([]byte(body))
+	return Text(hex.EncodeToString(svod[:])), nil
 }
 
 // BContains — «содержит»: подстрока в строке либо значение в списке.

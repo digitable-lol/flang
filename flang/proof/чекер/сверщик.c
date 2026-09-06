@@ -1400,7 +1400,12 @@ static int cel_derzhitsya(const char *cel, const char *znachenie, int *znakom) {
 
    ГДЕ ПРИЁМ КОНЧАЕТСЯ, И ГРАНИЦА ЭТА НАРОЧНАЯ (замер Ч76 по 86 записям):
      • тело-СПИСОК (вида ["а", "б"]) не подставляется вовсе — 27 мест из 47;
+       [Ч87 это снял: тело-список подставляется видом 4, см. `tablica_spiskom`.]
      • `свёртка`, `разложить … на символы`, `голова`, поле записи — незнакомы;
+       [8690-V4 и Ч7104 сняли и это: все четыре формы читает `ocenit_term`,
+        свёртка — со стеком кадров. Строка оставлена как след замера, а не как
+        описание сегодняшнего кода: проза, сторожащая снимок кода, которого
+        больше нет, — та же порода, что зелёный сторож на половине работы.]
      • функция с параметрами не берётся: у неё `результат` не одно значение;
      • литерал с нулевым знаком (escape u плюс четыре нуля) или со знаком вне
        базовой плоскости отвергается — 3 места: длину такой строки язык считает
@@ -1436,6 +1441,15 @@ static Znach kak_zapis(char *s) { Znach z; z.vid = 5; z.s = s; z.ch = 0; return 
    зависит — её и несёт `ch`. Всякое отношение на этом виде обязано отвечать
    «не берусь»: единственное, что с ним делают, — форма `длина`. */
 static Znach kak_dlina_bez_stroki(long n) { Znach z; z.vid = 6; z.s = NULL; z.ch = (double)n; return z; }
+/* ВИД, У КОТОРОГО `ch` — МЕРА ЗНАЧЕНИЯ, А НЕ САМО ЗНАЧЕНИЕ. Сегодня такой один
+   (вид 6), и в этом вся опасность: в сверщике ПЯТЬ мест, решающих равенство
+   так — «строка и список сличаются текстом, ВСЁ ОСТАЛЬНОЕ — числом `ch`».
+   Для видов 2 и 3 это верно, для вида 6 — ложь: две разные строки одной длины
+   вышли бы «равными», а с разной длиной честное равенство вышло бы «НЕ
+   СОШЛОСЬ». Спрашивать это обязано КАЖДОЕ такое место, и потому вопрос вынесен
+   в имя, а не переписан пять раз. Проба `Ч7104-нулевой-знак` держит все пять:
+   без ответа хоть в одном из них подделка проходит кодом 0. */
+static int mera_a_ne_znachenie(int vid) { return vid == 6; }
 
 /* Строковый литерал исходника → значение. Экранирование — ровно то, что
    принимает лексер языка (`flang/self/lexer.flang`, «Экранированный» и
@@ -1917,9 +1931,7 @@ static Znach ocenit_term(const char *syroy, Sp stroki, Znach rezultat, int glubi
     if (kakoe == 2 || kakoe == 3) {
       int ravny;
       if (a.vid != b.vid) return NE_BERUS;
-      /* Вид 6 несёт длину, а не строку: `a.ch == b.ch` сравнил бы ДЛИНЫ и
-         объявил равными два разных литерала одной длины. Отказ, а не догадка. */
-      if (a.vid == 6) return NE_BERUS;
+      if (mera_a_ne_znachenie(a.vid)) return NE_BERUS;
       ravny = (a.vid == 1 || a.vid == 4) ? (strcmp(a.s, b.s) == 0) : (a.ch == b.ch);
       return kak_priznak(kakoe == 2 ? !ravny : ravny);
     }
@@ -3196,7 +3208,7 @@ static int tozhdestvenny(const char *sa, const char *sb, Sp stroki, int gl) {
         if (tozhdestvenny(a1, b2, stroki, gl - 1) && tozhdestvenny(a2, b1, stroki, gl - 1)) return 1;
       }
   { Znach za = ocenit_term(a, stroki, NE_BERUS, 0), zb = ocenit_term(b, stroki, NE_BERUS, 0);
-    if (za.vid && za.vid == zb.vid)
+    if (za.vid && za.vid == zb.vid && !mera_a_ne_znachenie(za.vid))
       return (za.vid == 1 || za.vid == 4) ? strcmp(za.s, zb.s) == 0 : za.ch == zb.ch; }
   return 0;
 }
@@ -3208,6 +3220,12 @@ static int storony_razoshlis(const char *sa, const char *sb, Sp stroki) {
   Znach za = ocenit_term(svesti_term(sa, stroki, 8), stroki, NE_BERUS, 0);
   Znach zb = ocenit_term(svesti_term(sb, stroki, 8), stroki, NE_BERUS, 0);
   if (!za.vid || za.vid != zb.vid) return 0;
+  /* ЕДИНСТВЕННОЕ ИЗ ПЯТИ МЕСТ, ГДЕ `ch` У ВИДА-МЕРЫ ГОДИТСЯ, и потому здесь
+     нет `mera_a_ne_znachenie`. Вопрос тут не «равны ли», а «точно ли разные», и
+     на него мера отвечает верно в обе стороны: разная длина — это заведомо
+     разные строки (разошлись), равная — «не знаю», и функция отвечает 0, то
+     есть «не разошлись», что и значит здесь «не берусь». Поставить отказ и
+     сюда значило бы ослабить проверку без выигрыша в честности. */
   if (za.vid == 1 || za.vid == 4) return strcmp(za.s, zb.s) != 0;
   if (za.ch != za.ch || zb.ch != zb.ch) return 0;
   return za.ch != zb.ch;
@@ -3528,7 +3546,7 @@ static Znach znach_moya(const char *syroy, Sp stroki, int gl) {
       Sp chleny = chleny_spiska(bez_vneshnih(ls)); int i;
       for (i = 0; i < chleny.n; i++) {
         Znach c = znach_moya(chleny.e[i], stroki, gl + 1);
-        if (c.vid != b.vid) continue;
+        if (c.vid != b.vid || mera_a_ne_znachenie(c.vid)) continue;
         if ((c.vid == 1 || c.vid == 4) ? (strcmp(c.s, b.s) == 0) : (c.ch == b.ch))
           return kak_priznak(1);
       }
@@ -3536,7 +3554,7 @@ static Znach znach_moya(const char *syroy, Sp stroki, int gl) {
     }
     if (kakoe == 2 || kakoe == 3) {                    /* не равен / равен */
       int ravny;
-      if (a.vid != b.vid) return NE_BERUS;
+      if (a.vid != b.vid || mera_a_ne_znachenie(a.vid)) return NE_BERUS;
       ravny = (a.vid == 1 || a.vid == 4) ? (strcmp(a.s, b.s) == 0) : (a.ch == b.ch);
       return kak_priznak(kakoe == 2 ? !ravny : ravny);
     }

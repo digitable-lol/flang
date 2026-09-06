@@ -1135,6 +1135,9 @@ b3e74b9533e258c8364f00d8f5d31657|1|×|×|×|0|flang/proof/чекер/пробы/
 260fd32a05ef7c136979c1f2cfdb4551|7|×|×|×|0|flang/proof/чекер/пробы/семьи/refleksiv.flang
 645abd7267f1cb3fb6d8386a09b9d59b|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ne-lozhitsya/r6-dlina-skobki.flang
 e598a78d4912e73586a817fb75964a7b|1|×|×|×|0|flang/proof/чекер/пробы/семьи/granica/r2-setka-distributivnost.flang
+e318225cca6f90010bcc808ed89f4e32|5|×|×|×|0|flang/proof/чекер/пробы/семьи/половина-б/dlina.flang
+5dce6b43b1039d2b51ef3aeb22a14933|7|×|×|×|0|flang/proof/чекер/пробы/семьи/половина-б/element.flang
+a556bd715aef70740ddb3d166813a1b0|1|×|×|×|0|flang/proof/чекер/пробы/семьи/половина-б/arithmetic.flang
 dcc1953cd5acc1b24859a0d654638b8f|5|2|3|0|0|examples/frameworks/react-invoice/core/cart.flang
 d2cc0dc445665e98265edb9ab98b63b6|1|1|0|0|0|examples/frameworks/react-invoice/core/catalog.flang
 7fd0028def86e3c49bccc7d5b364b16e|7|7|0|0|0|examples/frameworks/vue-roman/core/roman-numerals.flang

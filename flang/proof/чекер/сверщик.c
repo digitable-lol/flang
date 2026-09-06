@@ -748,18 +748,28 @@ static Sp argumenty_vyzova(const char *vyzov, const char *imya_g) {
   return razdelit_sverhu(hv, "и");
 }
 
-/* Первое предусловие функции — строка «требует …» в её блоке, или пусто. На нём
-   стоит ОПЛАТА (проект §3): постусловие вызванной верно лишь при выполненном
-   предусловии; фактом его берут только там, где `требует` вызванной снят. */
-static char *trebuet_funkcii(Sp stroki, const char *funkciya) {
-  int i, vnutri = 0;
+/* Все предусловия функции — строки «требует …» её блока, по порядку (пусто —
+   их нет). На них стоит ОПЛАТА (проект §3): постусловие вызванной верно лишь при
+   выполненных предусловиях; фактом его берут только там, где КАЖДОЕ `требует`
+   вызванной снято в точке вызова. Читаются так же, как язык (bez_primechaniya).
+   Все — а не первое: у вызванной с двумя `требует` погашение одного не делает
+   постусловие взятым, иначе второе предусловие протекает молча (соундность). */
+static Sp vse_trebovaniya_funkcii(Sp stroki, const char *funkciya) {
+  Sp r = PUSTO; int i, vnutri = 0;
   for (i = 0; i < stroki.n; i++) {
     char *syraya = stroki.e[i], *l = obrezat(bez_primechaniya(syraya));
     char *imya_z = imya_funkcii(syraya);
     if (*imya_z) vnutri = (strcmp(imya_z, funkciya) == 0);
-    else if (vnutri && nachinaetsya(l, "требует ")) return l;
+    else if (vnutri && nachinaetsya(l, "требует ")) dobavit(&r, l);
   }
-  return (char *)"";
+  return r;
+}
+/* Формула предусловия — то, что стоит за `требует «имя» `. Имя — в первых
+   ёлочках строки. Служит и ОПЛАТЕ (инстанцируется по вызову), и сверке с
+   предусловием вызывающей (её `требует` — законное допущение тела, A10). */
+static char *formula_trebovaniya(const char *trebuet_liniya) {
+  char *imya = v_yolochkah(trebuet_liniya, 1);
+  return obrezat(hvost_posle(trebuet_liniya, fmt("требует «%s» ", imya)));
 }
 
 /* Цели равны, если равны их стороны с точностью до ОБЪЕМЛЮЩЕЙ пары скобок.
@@ -1136,7 +1146,7 @@ static void hod_fakta_svoystvom(Progon *p, const char *stroka, Obst *o) {
   long gde = nomer_posle(stroka, "строка ");
   char *vyzov = term(v_ugolkah(stroka, 1));          /* «Г» от а₁ … аₙ */
   char *imya_g = v_yolochkah(vyzov, 1);
-  char *v_ish, *telo_p, *treb; Sp param, argy; int i, ranshe = 0;
+  char *v_ish, *telo_p; Sp param, argy, treb_g, treb_f; int i, j, ranshe = 0;
   if (!*imya_p || gde < 1 || !*imya_g) {
     beda_progona(p, fmt("факт по свойству: ход «%s» неполон — нужны «имя-П», «строка N» и «вызов ⟨«Г» от …⟩»", stroka)); return;
   }
@@ -1169,24 +1179,50 @@ static void hod_fakta_svoystvom(Progon *p, const char *stroka, Obst *o) {
     beda_progona(p, fmt("факт по свойству «%s»: строка %ld — не первое объявление постусловия (первое — %ld)",
                         imya_p, gde, nomer_svoystva(o->stroki, imya_p))); return;
   }
-  /* ОПЛАТА `требует`: постусловие вызванной верно лишь при выполненном предусловии.
-     Консервативно (оценка сверху, ядро proofterm.flang 2483): у вызванной с хоть
-     одним непогашенным `требует` факт не берётся вовсе. Смычку с `закрыть
-     требованием` — снятие предусловия в точке вызова — эта волна не строит. */
-  treb = trebuet_funkcii(o->stroki, imya_g);
-  if (*treb) {
-    beda_progona(p, fmt("факт по свойству «%s»: у вызванной «%s» есть предусловие «%s» — под непогашенным «требует» постусловие фактом не берётся", imya_p, imya_g, treb)); return;
-  }
   /* (б) ИНСТАНЦИЯ ПО ВЫЗОВУ. Арность обязана совпасть: параметров у «Г» столько
-     же, сколько аргументов в узле. Затем ДВЕ подстановки (проект §1.2): параметры
-     → аргументы и связка `результат` → сам узел вызова. Подстановку выполняет
-     стоящий `vstavit_vmesto`; узел называет сам сертификат, перебирать нечего. */
+     же, сколько аргументов в узле. Инстанцию строят ДВЕ подстановки (проект §1.2):
+     параметры → аргументы и связка `результат` → сам узел вызова. Их же вычислено
+     хватает и захвату (б′), и оплате — потому арность и параметры сюда, ПЕРЕД ними. */
   telo_p = obrezat(hvost_posle(v_ish, fmt("обеспечивает «%s» ", imya_p)));
   param = parametry_funkcii(o->stroki, imya_g);
   argy = argumenty_vyzova(vyzov, imya_g);
   if (param.n != argy.n) {
     beda_progona(p, fmt("факт по свойству «%s»: у «%s» параметров %d, а в вызове аргументов %d — арность не совпала",
                         imya_p, imya_g, param.n, argy.n)); return;
+  }
+  /* (б′) ЗАХВАТ ИМЕНИ. Подстановка `vstavit_vmesto` идёт ПОСЛЕДОВАТЕЛЬНО, и при
+     перестановке имён параметров она алиасит: имя аргумента, свободно совпавшее с
+     параметром, который ещё подставится, было бы переписано второй подстановкой
+     (`«Г» от б и а` при параметрах а,б: а→б делает б, следом б→а рушит оба в а).
+     Ядро в таком месте инстанцию НЕ строит, а отказывает (proofterm.flang 1174:
+     «подстановка ЗАХВАТИЛА БЫ имя»). Повторяем ровно это: аргумент argy[i] несёт
+     свободным именем параметр param[j] с j>i — захват, инстанции нет. */
+  for (i = 0; i < param.n; i++)
+    for (j = i + 1; j < param.n; j++)
+      if (est_term(argy.e[i], param.e[j])) {
+        beda_progona(p, fmt("факт по свойству «%s»: подстановка захватила бы имя — в аргументе «%s» свободно имя «%s», а оно ещё подставится параметром (перестановка имён); инстанции нет",
+                            imya_p, term(argy.e[i]), param.e[j])); return;
+      }
+  /* ОПЛАТА `требует` (проект §3). Постусловие вызванной верно лишь при выполненных
+     предусловиях. Не над-отклоняем более всё скопом: КАЖДОЕ предусловие вызванной
+     инстанцируем ПО ВЫЗОВУ (те же param→argy) и требуем, чтобы оно было СНЯТО в
+     точке вызова — совпало с одним из `требует` ВЫЗЫВАЮЩЕЙ (её предусловия суть
+     законные допущения тела, A10 — та же смычка, что у хода `закрыть требованием`).
+     СОУНДНОСТЬ прежде полноты: не нашлось снимающего — факт НЕ берётся (КОД 1).
+     Погашение вычислением/охраной эта волна не читает — такие места ждут. */
+  treb_g = vse_trebovaniya_funkcii(o->stroki, imya_g);
+  if (treb_g.n) {
+    treb_f = vse_trebovaniya_funkcii(o->stroki, o->funkciya);
+    for (i = 0; i < treb_g.n; i++) {
+      char *p_inst = formula_trebovaniya(treb_g.e[i]); int snyato = 0;
+      for (j = 0; j < param.n; j++) p_inst = vstavit_vmesto(p_inst, param.e[j], term(argy.e[j]));
+      for (j = 0; j < treb_f.n; j++)
+        if (sovpali_celi(term(p_inst), term(formula_trebovaniya(treb_f.e[j])))) { snyato = 1; break; }
+      if (!snyato) {
+        beda_progona(p, fmt("факт по свойству «%s»: предусловие «%s» вызванной «%s» в точке вызова не снято — инстанция «%s» не совпала ни с одним «требует» вызывающей «%s»; постусловие фактом не берётся",
+                            imya_p, formula_trebovaniya(treb_g.e[i]), imya_g, term(p_inst), o->funkciya)); return;
+      }
+    }
   }
   { char *inst = telo_p;
     for (i = 0; i < param.n; i++) inst = vstavit_vmesto(inst, param.e[i], term(argy.e[i]));
@@ -5340,8 +5376,13 @@ static Sverka sverit(const char *ishodnik, const char *zapis, const char *put,
     /* 4123, S2: реестр доказанного пополняется ПОСЛЕ утверждения — на следующем
        он держит ровно предыдущие. Кладём имя постусловия, чей вердикт «доказано»
        и по которому запись не покраснела; сторож круга хода `факт по свойству`
-       берёт факт только из этого реестра. */
-    if (strcmp(verdikt, "доказано") == 0 && s.bedy.n == b0)
+       берёт факт только из этого реестра.
+       4126, СТОРОЖ КРУГА УР.2: и только ПРОВЕРЕННОЕ ПО СУЩЕСТВУ (`na_slovo==0`:
+       ни посылки, ни шага, взятых на слово ядра). Взятое на слово — не звено
+       независимой перепроверки: фактом от него цепочка независимости рвётся, и
+       постусловие-на-слове могло бы протащить в факт то, чего никто не проверял. */
+    if (strcmp(verdikt, "доказано") == 0 && s.bedy.n == b0
+        && s.na_slovo == d0 && s.shagov_na_slovo == sh0)
       dobavit(&s.dokazannye_svoystva, imya);
   }
   sverit_krugi(&s, bloki);

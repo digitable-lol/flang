@@ -1022,7 +1022,7 @@ typedef struct { Sp bedy, primety; long na_slovo, shagov, utverzhdeniy, svedeniy
                     числами: проиграно, снято мест, вне приёма, разобрано но не
                     закрылось. */
                  razbor, razbor_mest, razbor_mimo, razbor_ne_zakrylas,
-                 bez_privyazki, shagov_na_slovo, shagov_primerom, dokazannyh,
+                 bez_privyazki, shagov_na_slovo, shagov_primerom, shagov_svoystvom, dokazannyh,
                  /* Ч375: мест, где термин и номер строки стоят РЯДОМ и сверены
                     друг против друга (третья ветка, ниже, задача 9612). */
                  svereno_oboimi; char *sha; int kripto;
@@ -1230,16 +1230,22 @@ static void sverit_cel(Sverka *s, Sp svoi, Sp stroki, const char *mesto,
    нет. Проверка 6 заменяет прогон только там, где ветвь тела — литерал; где
    тело считает, остаётся на слове ядра, и это сказано числом. */
 #define METKA_PRIMERA " пример строка "
+/* Задача 3455: та же привязка, тем же приёмом, для шага `по свойству» —
+   номер строки, где ВПЕРВЫЕ ПО ВСЕМУ ФАЙЛУ объявлено постусловие с этим
+   именем (см. «Номер свойства записи» в zapis.flang; проверка — ниже,
+   sverit_shag_svoystvom). */
+#define METKA_SVOYSTVA " свойство строка "
 
 /* Обоснование шага без дописанной привязки: сверять с исходником надо ровно то,
    что в исходнике написано, а привязки там нет. */
 /* Привязка стоит В САМОМ КОНЦЕ строки и кончается цифрами — только такое
-   вхождение метки и отрезается. Иначе имя примера, в которое вписаны слова
-   «пример строка», прятало бы за собой настоящую привязку. */
-static char *bez_privyazki_primera(const char *sh) {
-  const char *p = sh, *q, *nashli = NULL;
-  while ((q = strstr(p, METKA_PRIMERA)) != NULL) {
-    const char *c = q + strlen(METKA_PRIMERA);
+   вхождение метки и отрезается. Иначе имя примера (или свойства), в которое
+   вписаны слова метки, прятало бы за собой настоящую привязку. Метка одна из
+   двух за раз — `по примеру` и `по свойству» в одном шаге не встречаются. */
+static char *bez_privyazki_metkoy(const char *sh, const char *metka) {
+  const char *p = sh, *q, *nashli = NULL; size_t d = strlen(metka);
+  while ((q = strstr(p, metka)) != NULL) {
+    const char *c = q + d;
     if (*c >= '0' && *c <= '9') {
       const char *k = c;
       while (*k >= '0' && *k <= '9') k++;
@@ -1249,6 +1255,8 @@ static char *bez_privyazki_primera(const char *sh) {
   }
   return nashli ? kopiya(sh, (size_t)(nashli - sh)) : (char *)sh;
 }
+static char *bez_privyazki_primera(const char *sh) { return bez_privyazki_metkoy(sh, METKA_PRIMERA); }
+static char *bez_privyazki_svoystva(const char *sh) { return bez_privyazki_metkoy(sh, METKA_SVOYSTVA); }
 
 /* «Вид» (закрывающий/промежуточный) и обоснование шага, ПОСЛОВНО, независимо
    от того, чем шаг привязан — номером, термином или обоими: «шаг K строка N»
@@ -1259,7 +1267,8 @@ static char *shag_vid(const char *sh) {
   return slovo(shag_slovami(sh), nomer_posle(sh, "строка ") >= 1 ? 5 : 3);
 }
 static char *shag_obosnovanie(const char *sh) {
-  return slova_posle(bez_privyazki_primera(shag_slovami(sh)), nomer_posle(sh, "строка ") >= 1 ? 5 : 3);
+  char *bez = bez_privyazki_svoystva(bez_privyazki_primera(shag_slovami(sh)));
+  return slova_posle(bez, nomer_posle(sh, "строка ") >= 1 ? 5 : 3);
 }
 
 /* Блок функции: строка её заголовка и первая строка ЗА блоком.
@@ -1851,6 +1860,55 @@ static int sverit_shag_primerom(Sverka *s, const char *sh, Sp stroki, const char
   return 1;
 }
 
+/* ═══ ШАГ АВТОРА `по свойству`: ПРИВЯЗКА К ИСТОЧНИКУ — ЗАДАЧА 3455 ══════════
+   ЧТО БЫЛО. Шаг `по свойству «имя»` не проверялся вовсе: сверщик сверял
+   только сам текст обоснования с исходником (строкой шага) и сразу считал
+   место «на слово ядра» — тем же счётом, что и `по закону`. Существует ли
+   постусловие с таким именем хоть у одной функции модуля, не проверял никто.
+   Замер Ч71: таких мест в корпусе 4 из 97, и все четыре держат единственную
+   запись `honest-modus-ponens-by-guard`.
+
+   ЧТО СТАЛО. Ядро выписывает в конец строки шага ПРИВЯЗКУ — `свойство строка
+   N`, тем же приёмом, что и `по примеру`: N — номер строки, на которой
+   ВПЕРВЫЕ ПО ВСЕМУ ФАЙЛУ (а не в блоке одной функции) объявлено постусловие
+   с этим именем. Сверщик читает исходник САМ и заново ищет, на какой строке
+   это постусловие объявлено первым; сошлось с привязкой — шаг проверен по
+   существу и с «на слово» снимается, разошлось — «НЕ СОШЛОСЬ».
+
+   ЧЕГО ЭТО НЕ ДАЁТ. Сверщик не повторяет вывод — не проверяет, что цель
+   шага ДЕЙСТВИТЕЛЬНО следует из найденного постусловия (это делает ядро на
+   каждом возврате, тем же способом, что у седьмого хода). Проверено ровно
+   одно: имя, которым автор сослался, — не выдумка, а существующее в модуле
+   постусловие, и привязка указывает на то самое (первое) его объявление,
+   которое взяло бы правило. */
+static long nomer_svoystva(Sp stroki, const char *imya) {
+  char *metka = fmt("обеспечивает «%s»", imya); long i;
+  for (i = 1; i <= stroki.n; i++) {
+    char *z = stroka_po_nomeru(stroki, i);
+    if (!nachinaetsya(z, "обеспечивает «") && !nachinaetsya(z, "для всех ")) continue;
+    if (soderzhit(z, metka)) return i;
+  }
+  return 0;
+}
+/* Одна проверка шага `по свойству`. Возвращает 1, если привязка сошлась с
+   исходником по существу и шаг с «на слово» снимается. */
+static int sverit_shag_svoystvom(Sverka *s, const char *sh, Sp stroki, const char *imya_t) {
+  char *imya_p = v_yolochkah(shag_slovami(sh), 1);
+  long p = nomer_posle(sh, METKA_SVOYSTVA), nastoyashchiy;
+  if (p < 1) { s->bez_privyazki++; return 0; }
+  nastoyashchiy = nomer_svoystva(stroki, imya_p);
+  esli_ne(s, nastoyashchiy >= 1,
+          fmt("теорема «%s»: свойство «%s» привязано к строке %ld, а объявления «обеспечивает «%s»»"
+              " в исходнике нет вовсе",
+              imya_t, imya_p, p, imya_p));
+  if (nastoyashchiy < 1) return 0;
+  esli_ne(s, p == nastoyashchiy,
+          fmt("теорема «%s»: свойство «%s» привязано к строке %ld, а первое (и единственно"
+              " законное — как ищет само правило) его объявление в модуле — строка %ld",
+              imya_t, imya_p, p, nastoyashchiy));
+  return p == nastoyashchiy;
+}
+
 /* Каждый записанный шаг обязан быть НАПИСАН в исходнике теми же словами. */
 static void sverit_shagi(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
                          const char *chya, const char *cel) {
@@ -1867,13 +1925,17 @@ static void sverit_shagi(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
     gde = nomer_posle(sh, "строка ");
     vid = shag_vid(sh); obosnovanie = shag_obosnovanie(sh);
     s->shagov++;
-    /* Шаг, обоснованный свойством или законом, чекер НЕ пересчитывает: он
-       сверяет, что так написано в исходнике, а держится ли обоснование —
-       решало ядро. Шаг `по примеру` с привязкой проверяется по существу. */
+    /* Шаг, обоснованный законом, чекер НЕ пересчитывает: он сверяет, что так
+       написано в исходнике, а держится ли обоснование — решало ядро. Шаги
+       `по примеру` и `по свойству» с привязкой проверяются по существу
+       (задача 3455 — второе). */
     if (nachinaetsya(obosnovanie, "по примеру")) {
       if (sverit_shag_primerom(s, sh, stroki, imya_t, chya, po, sluchay_gde, cel, svobodnye)) s->shagov_primerom++;
       else s->shagov_na_slovo++;
-    } else if (nachinaetsya(obosnovanie, "по свойству") || nachinaetsya(obosnovanie, "по закону"))
+    } else if (nachinaetsya(obosnovanie, "по свойству")) {
+      if (sverit_shag_svoystvom(s, sh, stroki, imya_t)) s->shagov_svoystvom++;
+      else s->shagov_na_slovo++;
+    } else if (nachinaetsya(obosnovanie, "по закону"))
       s->shagov_na_slovo++;
     if (gde < 1) {
       sverit_term_bez_nomera(s, sh, obosnovanie, imya_t, fmt("шаг %s", slovo(sh, 2)));
@@ -3909,6 +3971,7 @@ int main(int argc, char **argv) {
            " (снято со слова ядра мест %ld),"
            " вне приёма сверщика %ld, разобрано, но не закрылось %ld."
            " Шагов по примеру проверено по существу %ld."
+           " Шагов по свойству проверено по существу %ld."
            " Строк без привязки к исходнику %ld."
            " Мест, сверенных ОБОИМИ свидетелями (термин и номер строки), %ld."
            " Привязка к программе: %s."
@@ -3917,7 +3980,7 @@ int main(int argc, char **argv) {
            s.na_slovo, s.shagov_na_slovo, s.uzlov, s.uzlov_mest, s.uzlov_mimo,
            s.tozhdestv, s.tozhdestv_mest, s.tozhdestv_mimo, s.tozhdestv_ne_soshlos,
            s.razbor, s.razbor_mest, s.razbor_mimo, s.razbor_ne_zakrylas,
-           s.shagov_primerom, s.bez_privyazki, s.svereno_oboimi,
+           s.shagov_primerom, s.shagov_svoystvom, s.bez_privyazki, s.svereno_oboimi,
            s.kripto ? "SHA-256 сошёлся" : "только свёртка ядра — она ломается",
            s.sha);
     if (s.primety.n) printf("ПРИМЕТЫ (на исход не влияют): %s\n", soedinit(s.primety, "; "));

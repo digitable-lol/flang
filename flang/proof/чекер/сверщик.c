@@ -1023,6 +1023,13 @@ typedef struct { Sp bedy, primety; long na_slovo, shagov, utverzhdeniy, svedeniy
                     закрылось. */
                  razbor, razbor_mest, razbor_mimo, razbor_ne_zakrylas,
                  bez_privyazki, shagov_na_slovo, shagov_primerom, shagov_svoystvom, dokazannyh,
+                 /* Ч7104: из `shagov_na_slovo` — те шаги, которых сверщик не
+                    проигрывает вовсе (сегодня это «по предположению»). Число
+                    нужно затем, что узел вердикта, проигранный заново, эти
+                    самые шаги УЖЕ проверил: он прочёл тело функции и сверил
+                    дно со спуском. Брать за них плату второй раз значило бы
+                    ронять долю ложью, а не поднимать честностью. */
+                 shagov_ne_proigryvaemyh,
                  /* Ч375: мест, где термин и номер строки стоят РЯДОМ и сверены
                     друг против друга (третья ветка, ниже, задача 9612). */
                  svereno_oboimi; char *sha; int kripto;
@@ -2390,6 +2397,22 @@ static void sverit_shagi(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
               fmt("теорема «%s»: шаг «%s» обоснован законом — сверщик закон не переигрывает, место на слове ядра",
                   imya_t, obosnovanie));
       s->shagov_na_slovo++;
+    } else {
+      /* Ч7104: ЗДЕСЬ БЫЛА ДЫРА, И ЧЕРЕЗ НЕЁ ШЁЛ РАБОЧИЙ РЕЦЕПТ НАКРУТКИ Г4.
+         Цепочка кончалась на «по закону», и шаг «по предположению» (25 таких
+         в корпусе) не попадал НИ В ОДНУ ветвь: ни проверен по существу, ни
+         положен в долг. Утверждение с теоремой при этом не платит того «+1»,
+         какой ему даёт `bez_teoremy`. Сложив одно с другим, пять дописанных
+         строк — теорема с единственным шагом `по предположению` — переводили
+         запись из Р2 в Р0, не проиграв НИЧЕГО: замер 7114 на `four-words`,
+         где само утверждение вдобавок ложно (при −1 «Утроить» даёт −3).
+         Ветвь ловит ЛЮБОЕ обоснование, а не одно «по предположению»: список
+         из трёх имён и был тем, что молчало о четвёртом. */
+      dobavit(&s->ne_vzyalsya,
+              fmt("теорема «%s»: шаг «%s» сверщик по существу не проигрывает, место на слове ядра",
+                  imya_t, *obosnovanie ? obosnovanie : slovo(sh, 2)));
+      s->shagov_na_slovo++;
+      s->shagov_ne_proigryvaemyh++;
     }
     if (gde < 1) {
       sverit_term_bez_nomera(s, sh, obosnovanie, imya_t, fmt("шаг %s", slovo(sh, 2)));
@@ -4484,6 +4507,7 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
   Sp ozhidaemaya, nastoyashchaya; int bez_nomerov = 0;
   char *a, *b;
   Obst o; Progon p;
+  long ne_proigryvaemyh_do = 0, moih_ne_proigryvaemyh;
   esli_ne(s, strcmp(stroka_po_nomeru(stroki, nachalo), fmt("теорема «%s»", imya_t)) == 0,
           fmt("строка %ld исходника — не «теорема «%s»»", nachalo, imya_t));
   ozhidaemaya = razmetka_zapisi(svoi, nachalo, &bez_nomerov);
@@ -4504,6 +4528,7 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
      для цели шагов и для цели проигрывания). */
   { char *sk = pervaya_s_nachalom(svoi, "цель ");
     long gc = nomer_posle(sk, "строка ");
+    ne_proigryvaemyh_do = s->shagov_ne_proigryvaemyh;
     sverit_shagi(s, svoi, stroki, imya_t, chya,
                  gc < 1 ? v_ugolkah(sk, 1) : hvost_posle(kak_chitaet_yazyk(stroka_po_nomeru(stroki, gc)), "утверждаем ")); }
   sverit_zakrytie(s, svoi, imya_t, verdikt);
@@ -4545,7 +4570,25 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
                    proigrat_uzel(s, svoi, stroki, imya_t, chya, cel_uzla);
     sverit_pokrytie(s, svoi, stroki, imya_t, verdikt, mesto, proigran);
     s->uzlov += proigran ? 1 : 0;
-    s->uzlov_mest += proigran ? posylki_na_slovo(svoi) : 0; }
+    s->uzlov_mest += proigran ? posylki_na_slovo(svoi) : 0;
+    /* Ч7104, ВТОРАЯ ПОЛОВИНА ЗАКРЫТИЯ РЕЦЕПТА. Шаг, которого сверщик не
+       проигрывает, только что лёг в долг — и это верно везде, КРОМЕ одного
+       места: узел вердикта, проигранный заново, эти самые шаги уже проверил
+       по существу. `proigrat_uzel` не верит записи — он читает ТЕЛО ФУНКЦИИ
+       и сам сверяет дно со спуском, то есть ровно то, на что ссылается «по
+       предположению». Взять плату и здесь значило бы уронить долю ложью:
+       место снято, а числилось бы долгом. Снимаются РОВНО шаги этой теоремы
+       (разница счётчика до и после `sverit_shagi`), и снятое прибавляется к
+       `uzlov_mest`, чтобы счёт мест и счёт снятого сошлись.
+       РЕЦЕПТ ЭТИМ НЕ ОТКРЫВАЕТСЯ ОБРАТНО: дописанная теорема без принципа
+       даёт `proigran` = 0 первой же строкой `proigrat_uzel`, а с принципом
+       заставляет его читать НАСТОЯЩЕЕ тело функции — там ложное утверждение
+       не сойдётся. Проба на это стоит ниже в наборе. */
+    moih_ne_proigryvaemyh = s->shagov_ne_proigryvaemyh - ne_proigryvaemyh_do;
+    if (proigran && moih_ne_proigryvaemyh > 0) {
+      s->shagov_na_slovo -= moih_ne_proigryvaemyh;
+      s->uzlov_mest += moih_ne_proigryvaemyh;
+    } }
 }
 
 /* Утверждение, доказанное БЕЗ теоремы, сверять нечем: доказательства в исходнике

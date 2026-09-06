@@ -66,6 +66,7 @@ Python выглядит близким к flang (динамические зна
 совпасть с ядром.
 """
 
+import hashlib
 import math
 import sys
 import threading
@@ -1079,6 +1080,19 @@ def b_char_from_code(ctx, code):
             f"«символ по коду»: код {number_text(point)} — половина суррогатной пары, а не символ",
         )
     return Value(TAG_STRING, chr(int(point)))
+
+
+def b_hash256(ctx, text):
+    """«хеш256»: SHA-256 байтов строки шестнадцатеричной записью.
+
+    Берётся `hashlib` стандартной библиотеки: своей зависимости он не приносит,
+    а восьмая рукописная копия FIPS 180-4 была бы восьмым местом, где можно
+    ошибиться поодиночке. Строка Python — кодовые точки, поэтому байты берутся
+    явной кодировкой UTF-8: ровно те же байты, что хеширует C, и оттого
+    отпечаток совпадает с `sha256sum` и с прочими восемью целями знак в знак.
+    """
+    body = _expect_string("хеш256", text, "строка")
+    return Value(TAG_STRING, hashlib.sha256(body.encode("utf-8")).hexdigest())
 
 
 def b_contains(ctx, left, right):

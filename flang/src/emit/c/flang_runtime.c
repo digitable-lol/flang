@@ -4674,6 +4674,148 @@ fl_status fl_b_simvol_po_kodu(fl_ctx *ctx, fl_value code, fl_value *out, fl_erro
   return fl_text(ctx, buffer, bytes, out, error);
 }
 
+/* ─────────────────────────── «хеш256»: SHA-256 текста ───────────────────────
+ *
+ * FIPS 180-4, тот же алгоритм, что уже стоит в оболочке (`flang_repl.c`) для
+ * адреса модуля и для отпечатка проверяльщика. Здесь он повторён потому, что
+ * рантайм и оболочка — разные файлы печати: рантайм едет в КАЖДУЮ напечатанную
+ * программу, а оболочка только в компилятор. Общего места для них нет, и
+ * заводить его значило бы тянуть оболочку во всякую напечатанную программу.
+ *
+ * Что эта форма даёт языку: криптографический отпечаток БЕЗ битовых операций,
+ * которых в языке нет вовсе. На flang тот же счёт написан
+ * (`flang/stdlib/sha256.flang`, 889 строк) и стоит 21,6 мкс на байт —
+ * в 31 000 раз дороже этого. Замер задачи 6754.
+ *
+ * Считается на `unsigned long`, а не на `uint32_t`: <stdint.h> в C99
+ * обязателен, но точная ширина — нет. Отсюда маска `& 0xffffffffUL` после
+ * каждого сложения и сдвига: на машине с 64-битным `long` перенос ушёл бы в
+ * старшие биты и отпечаток разошёлся бы с `sha256sum` молча.
+ */
+static const unsigned long FL_SHA256_K[64] = {
+    0x428a2f98UL, 0x71374491UL, 0xb5c0fbcfUL, 0xe9b5dba5UL, 0x3956c25bUL, 0x59f111f1UL, 0x923f82a4UL, 0xab1c5ed5UL,
+    0xd807aa98UL, 0x12835b01UL, 0x243185beUL, 0x550c7dc3UL, 0x72be5d74UL, 0x80deb1feUL, 0x9bdc06a7UL, 0xc19bf174UL,
+    0xe49b69c1UL, 0xefbe4786UL, 0x0fc19dc6UL, 0x240ca1ccUL, 0x2de92c6fUL, 0x4a7484aaUL, 0x5cb0a9dcUL, 0x76f988daUL,
+    0x983e5152UL, 0xa831c66dUL, 0xb00327c8UL, 0xbf597fc7UL, 0xc6e00bf3UL, 0xd5a79147UL, 0x06ca6351UL, 0x14292967UL,
+    0x27b70a85UL, 0x2e1b2138UL, 0x4d2c6dfcUL, 0x53380d13UL, 0x650a7354UL, 0x766a0abbUL, 0x81c2c92eUL, 0x92722c85UL,
+    0xa2bfe8a1UL, 0xa81a664bUL, 0xc24b8b70UL, 0xc76c51a3UL, 0xd192e819UL, 0xd6990624UL, 0xf40e3585UL, 0x106aa070UL,
+    0x19a4c116UL, 0x1e376c08UL, 0x2748774cUL, 0x34b0bcb5UL, 0x391c0cb3UL, 0x4ed8aa4aUL, 0x5b9cca4fUL, 0x682e6ff3UL,
+    0x748f82eeUL, 0x78a5636fUL, 0x84c87814UL, 0x8cc70208UL, 0x90befffaUL, 0xa4506cebUL, 0xbef9a3f7UL, 0xc67178f2UL};
+
+static unsigned long fl_sha256_rotr(unsigned long value, unsigned by) {
+  return ((value >> by) | (value << (32u - by))) & 0xffffffffUL;
+}
+
+static void fl_sha256_block(unsigned long *state, const unsigned char *block) {
+  unsigned long w[64];
+  unsigned long a = state[0];
+  unsigned long b = state[1];
+  unsigned long c = state[2];
+  unsigned long d = state[3];
+  unsigned long e = state[4];
+  unsigned long f = state[5];
+  unsigned long g = state[6];
+  unsigned long h = state[7];
+  size_t i = 0;
+  for (i = 0; i < 16; i += 1) {
+    w[i] = ((unsigned long)block[i * 4] << 24) | ((unsigned long)block[i * 4 + 1] << 16) |
+           ((unsigned long)block[i * 4 + 2] << 8) | (unsigned long)block[i * 4 + 3];
+  }
+  for (i = 16; i < 64; i += 1) {
+    const unsigned long s0 = fl_sha256_rotr(w[i - 15], 7) ^ fl_sha256_rotr(w[i - 15], 18) ^ (w[i - 15] >> 3);
+    const unsigned long s1 = fl_sha256_rotr(w[i - 2], 17) ^ fl_sha256_rotr(w[i - 2], 19) ^ (w[i - 2] >> 10);
+    w[i] = (w[i - 16] + s0 + w[i - 7] + s1) & 0xffffffffUL;
+  }
+  for (i = 0; i < 64; i += 1) {
+    const unsigned long S1 = fl_sha256_rotr(e, 6) ^ fl_sha256_rotr(e, 11) ^ fl_sha256_rotr(e, 25);
+    const unsigned long ch = (e & f) ^ ((e ^ 0xffffffffUL) & g);
+    const unsigned long t1 = (h + S1 + ch + FL_SHA256_K[i] + w[i]) & 0xffffffffUL;
+    const unsigned long S0 = fl_sha256_rotr(a, 2) ^ fl_sha256_rotr(a, 13) ^ fl_sha256_rotr(a, 22);
+    const unsigned long maj = (a & b) ^ (a & c) ^ (b & c);
+    const unsigned long t2 = (S0 + maj) & 0xffffffffUL;
+    h = g;
+    g = f;
+    f = e;
+    e = (d + t1) & 0xffffffffUL;
+    d = c;
+    c = b;
+    b = a;
+    a = (t1 + t2) & 0xffffffffUL;
+  }
+  state[0] = (state[0] + a) & 0xffffffffUL;
+  state[1] = (state[1] + b) & 0xffffffffUL;
+  state[2] = (state[2] + c) & 0xffffffffUL;
+  state[3] = (state[3] + d) & 0xffffffffUL;
+  state[4] = (state[4] + e) & 0xffffffffUL;
+  state[5] = (state[5] + f) & 0xffffffffUL;
+  state[6] = (state[6] + g) & 0xffffffffUL;
+  state[7] = (state[7] + h) & 0xffffffffUL;
+}
+
+/* «хеш256»: SHA-256 байтов строки, шестнадцатеричной записью строчными
+   буквами — знак в знак то, что печатает `sha256sum` и `digest("hex")`.
+
+   Строка языка — уже UTF-8 (`flang_runtime.h`), поэтому перекодировать нечего:
+   хешируются ровно те байты, которыми строка и лежит. Оттого все девять целей
+   и дают один отпечаток — каждая берёт UTF-8-байты своей строки. */
+fl_status fl_b_hesh256(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error) {
+  unsigned long state[8];
+  unsigned char block[64];
+  char hex[65];
+  const unsigned char *bytes = NULL;
+  size_t total = 0;
+  size_t at = 0;
+  size_t filled = 0;
+  unsigned long long bits = 0;
+  FL_TRY(fl_expect_string(ctx, "хеш256", text, "строка", error));
+  state[0] = 0x6a09e667UL;
+  state[1] = 0xbb67ae85UL;
+  state[2] = 0x3c6ef372UL;
+  state[3] = 0xa54ff53aUL;
+  state[4] = 0x510e527fUL;
+  state[5] = 0x9b05688cUL;
+  state[6] = 0x1f83d9abUL;
+  state[7] = 0x5be0cd19UL;
+  bytes = (const unsigned char *)text.as.string.utf8;
+  total = text.as.string.bytes;
+  bits = (unsigned long long)total * 8u;
+  for (at = 0; at < total; at += 1) {
+    block[filled] = bytes[at];
+    filled += 1;
+    if (filled == 64) {
+      fl_sha256_block(state, block);
+      filled = 0;
+    }
+  }
+  block[filled] = 0x80u;
+  filled += 1;
+  if (filled > 56) {
+    while (filled < 64) {
+      block[filled] = 0u;
+      filled += 1;
+    }
+    fl_sha256_block(state, block);
+    filled = 0;
+  }
+  while (filled < 56) {
+    block[filled] = 0u;
+    filled += 1;
+  }
+  for (at = 0; at < 8; at += 1) {
+    block[56 + at] = (unsigned char)((bits >> (8 * (7 - at))) & 0xffu);
+  }
+  fl_sha256_block(state, block);
+  for (at = 0; at < 8; at += 1) {
+    sprintf(hex + at * 8, "%08lx", state[at]);
+  }
+  hex[64] = '\0';
+  /* Работа пропорциональна длине входа, и счётчик шагов обязан это видеть:
+     иначе предел шагов перестал бы ловить программу, которая хеширует
+     мегабайты в цикле. */
+  fl_charge(ctx, total + 1);
+  return fl_text(ctx, hex, 64, out, error);
+}
+
 fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
   if (left.tag == FL_LIST) {
     size_t index = 0;

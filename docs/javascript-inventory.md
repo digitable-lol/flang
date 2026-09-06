@@ -33,7 +33,7 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
 считает [`tree-inventory.md`](tree-inventory.md) (5 сентября 2026: 267 файлов вне flang,
 <!-- СНЯТО 2026-09-05 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 267 -->
-долг вне JavaScript — **107 файлов, 15 567 строк при потолке 63**: храповик
+долг вне JavaScript — **107 файлов, 16 029 строк при потолке 63**: храповик
 красен, разбор — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
 28 327 строк этой описи — нижняя оценка.

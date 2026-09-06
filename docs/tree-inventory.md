@@ -2,8 +2,11 @@
 <!-- СНЯТО 2026-09-05 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 267 -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
-`./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
-JavaScript: файлов 107, строк 15567, потолок файлов 63» — «ДОЛГ ВЫРОС».
+`./ярлык опись:языки` **6 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
+JavaScript: файлов 107, строк 16029, потолок файлов 63» — «ДОЛГ ВЫРОС».
+Файлов столько же: 234 строки из 16029 прибавила задача 2390 (приговор ядра
+внутри `flang/proof/доля-корпуса.sh`), НОВЫХ ФАЙЛОВ вне flang не заведено, и
+потолок стоит на файлах.
 Разбор и перевод — [задача
 4838](../tasks/4838-the-debt-outside-flang-crossed-its-ceiling.md), счёт по
 родам — [задача 9688](../tasks/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
@@ -65,7 +68,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 101 | 17 888 | 90 | 11 645 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 101 --><!-- СНЯТО 2026-09-05 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 17888 --> |
+| оболочка | 101 | 18 122 | 90 | 12 107 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 101 --><!-- СНЯТО 2026-09-06 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 18122 --> |
 | C | 38 | 774 633 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774633 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 22 | 7 744 | 16 | 3 843 <!-- СНЯТО 2026-09-05 файлов *.py = 22 --><!-- СНЯТО 2026-09-05 строк-в *.py = 7744 --> |
@@ -128,7 +131,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 Для файла оболочки без расширения ВНЕ `.githooks/` дыра остаётся открытой —
 закрыть её нечем, кроме чтения первой строки, а этого опись не делает.
 
-**Долг вне JavaScript — 107 файлов, 15 567 строк.** JavaScript опись считает, но
+**Долг вне JavaScript — 107 файлов, 16 029 строк.** JavaScript опись считает, но
 по кучам не раскладывает: его раскладывает
 [`javascript-inventory.md`](javascript-inventory.md), и два разных разбора
 одного языка разъехались бы на первой же правке. Числа этой описи и той
@@ -184,7 +187,7 @@ flang в C.
 Оболочка при этом ничего нового на путь сборки не приносит: `sh`, `make`, `cc`
 и `cmp` там нужны и так, а Node не нужен ни на одном шаге.
 
-## Долг: 107 файлов, 15 567 строк
+## Долг: 107 файлов, 16 029 строк
 
 Снято прогоном `./ярлык опись:языки` 5 сентября 2026, уже по починенному
 правилу (задача 7405) и с поправкой на `flang/проверки/обход-self.sh`

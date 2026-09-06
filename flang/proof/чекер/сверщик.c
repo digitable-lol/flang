@@ -2630,6 +2630,19 @@ static void nazvat_posylku(Sverka *sv, const char *imya, const char *stroka) {
 }
 static long posylki_na_slovo_(Sp svoi, Sverka *sv, const char *imya) {
   int i, pravilo = 0, hody = 0; long dolg = 0; char *pred = (char *)"";
+  /* ХОД СНИМАЕТ ДОЛГ ТОЛЬКО ТАМ, ГДЕ ХОД ПРОИГРЫВАЮТ (замер 7111 и 7113,
+     независимо друг от друга). Движок ходов `proigrat_blok` зовётся из ОДНОГО
+     места — `sverit_teoremu`; `bez_teoremy` не зовёт его ни строкой. Значит на
+     дороге без теоремы «ход N …» не проверял никто, а долг снимался за одно
+     его наличие: две дописанные строки с заведомо ложным ходом (`закон «этого
+     закона нет»`, развёртка несуществующей функции на строке 9999) роняли
+     `poddelka-dlina` с 6 мест до 4 без единой жалобы, и подделка по числу
+     выглядела вдвое правдивее правды. Ширина по всем 86: шесть записей.
+     У ЧЕСТНЫХ ЗАПИСЕЙ ЭТИМ НЕ ОТНИМАЕТСЯ НИЧЕГО: на дороге без теоремы ходов
+     нет ни одного (замер 7111 по всем 251 записи дерева — 53 узла, ходов 0).
+     Асимметрия и есть доказательство: та же подделка ПОД ТЕОРЕМОЙ даёт код 1,
+     и каждое место названо. */
+  int hody_schitayutsya = *pervaya_s_nachalom(svoi, "теорема «") != 0;
   for (i = 0; i < svoi.n; i++) {
     char *s = obrezat(svoi.e[i]);
     if (nachinaetsya(s, "посылка ")) {
@@ -2648,7 +2661,7 @@ static long posylki_na_slovo_(Sp svoi, Sverka *sv, const char *imya) {
       pravilo = *v_yolochkah(s, 3) != 0 ||
                 strcmp(slovo_posle(s, "закрыта "), "reduction") == 0;
       hody = 0; pred = s;
-    } else if (nachinaetsya(s, "ход ") && strcmp(s, "ход конец") != 0) hody = 1;
+    } else if (hody_schitayutsya && nachinaetsya(s, "ход ") && strcmp(s, "ход конец") != 0) hody = 1;
   }
   if (pravilo && !hody) { nazvat_posylku(sv, imya, pred); return dolg + 1; }
   return dolg;

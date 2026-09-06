@@ -2,14 +2,14 @@
 # SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
 # SPDX-License-Identifier: BSD-2-Clause
 #
-# scripts/test-remote.sh — прогон набора на машине, где есть все восемь тулчейнов.
+# scripts/test-remote.sh — прогон набора на машине, где есть все девять тулчейнов.
 #
 # ЗАЧЕМ. Тест бэкенда доказывает кодогенерацию тем, что настоящий компилятор
-# принял порождённый код. Восьми тулчейнов на ноутбуке обычно нет, и тесты
+# принял порождённый код. Девяти тулчейнов на ноутбуке обычно нет, и тесты
 # отсутствующих молча пропускаются — набор зелёный, а половина бэкендов не
 # проверена ни разу. Так ушёл выпуск 0.4.6 с дефектом кодогенерации Go.
 #
-# Лечится не уговорами, а местом прогона: на хосте, где стоят все восемь,
+# Лечится не уговорами, а местом прогона: на хосте, где стоят все девять,
 # пропусков нет по построению, и там же прогон банально быстрее — ядер больше.
 #
 #   scripts/test-remote.sh                  весь набор (ярлык «тесты»)
@@ -44,7 +44,7 @@ die()  { printf '%sОШИБКА%s %s\n' "$RED" "$RST" "$*" >&2; exit 1; }
 
 command -v rsync >/dev/null 2>&1 || die "нужен rsync"
 [ -n "$REMOTE" ] \
-  || die "не задан хост. FLANG_REMOTE=<ваш ssh-алиас> scripts/test-remote.sh — нужна машина, где стоят все восемь тулчейнов и куда пускают по ключу"
+  || die "не задан хост. FLANG_REMOTE=<ваш ssh-алиас> scripts/test-remote.sh — нужна машина, где стоят все девять тулчейнов и куда пускают по ключу"
 ssh -o BatchMode=yes -o ConnectTimeout=10 "$REMOTE" true 2>/dev/null \
   || die "хост «$REMOTE» недоступен по ssh без пароля"
 
@@ -68,7 +68,25 @@ show_info() {
       csharp   "$(dotnet --version 2>/dev/null || echo НЕТ)" \
       python   "$(python3 --version 2>/dev/null || echo НЕТ)" \
       elixir   "$(elixir --version 2>/dev/null | tail -1 || echo НЕТ)" \
-      node     "$(node --version 2>/dev/null || echo НЕТ)"'
+      node     "$(node --version 2>/dev/null || echo НЕТ)" \
+      cpp      "$(g++ --version 2>/dev/null | head -1 || echo НЕТ)"'
+}
+
+# ЦЕЛЕЙ ПЕЧАТИ ДЕВЯТЬ, И ТУЛЧЕЙНОВ ТОЖЕ ДЕВЯТЬ. Восемь из них роняет прогон сам:
+# FTS_REQUIRE_TOOLCHAINS=all превращает пропуск в падение, но список id, которые
+# оно знает, — восемь (flang/test/toolchain-guard.mjs: c, csharp, elixir, go,
+# java, js, python, rust). Девятой, «cpp», в нём нет, её компилятора не просил
+# никто, и хост без g++ давал «НАБОР ПРОЙДЕН». Отсюда своя проверка, и она
+# ДО синхронизации: платить за rsync и прогон, чтобы узнать про нехватку в
+# конце, незачем.
+TULCHEYNY='cc:c g++:cpp go:go rustc:rust javac:java dotnet:csharp python3:python elixir:elixir node:js'
+check_toolchains() {
+  NET=$(ssh "$REMOTE" "$REMOTE_ENV"'
+    for para in '"$TULCHEYNY"'; do
+      command -v "${para%%:*}" >/dev/null 2>&1 || printf "%s " "${para#*:}(нет ${para%%:*})"
+    done')
+  [ -z "$NET" ] \
+    || die "на хосте «$REMOTE» не хватает тулчейнов: $NET— прогон был бы зелен на целях, которых никто не собирал. Поставьте недостающее: девять целей печати — девять тулчейнов"
 }
 
 sync_tree() {
@@ -107,6 +125,7 @@ esac
 TARGET="${1:-тесты}"
 
 show_info
+check_toolchains
 sync_tree
 
 say "Прогон: ./ярлык $TARGET (FTS_REQUIRE_TOOLCHAINS=$REQUIRE)"
@@ -122,7 +141,7 @@ printf '\n%s==> Итог%s\n' "$BOLD" "$RST"
 info "хост:  $REMOTE:$REMOTE_DIR"
 info "время: ${ELAPSED} с"
 if [ "$STATUS" -eq 0 ]; then
-  printf '    %sНАБОР ПРОЙДЕН%s — все восемь тулчейнов присутствовали, пропусков по тулчейнам не было\n' "$GRN" "$RST"
+  printf '    %sНАБОР ПРОЙДЕН%s — все девять тулчейнов присутствовали, пропусков по тулчейнам не было\n' "$GRN" "$RST"
 else
   printf '    %sНАБОР НЕ ПРОЙДЕН%s (код %d)\n' "$RED" "$RST" "$STATUS"
 fi

@@ -83,9 +83,23 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "uzel_zamera.h"
-
+/*
+ * Имя напечатанного модуля и имя цели приезжают ключами сборки, а не правкой
+ * этого файла. Цель «cpp» печатает тот же самый модуль в `uzel_zamera.hpp` и
+ * собирает ЭТОТ ЖЕ файл компилятором C++ (`-x c++`) — второй копии хозяина в
+ * дереве нет и быть не должно: она разошлась бы с подлинником молча, ровно как
+ * разошёлся бы второй рантайм у самой цели «cpp».
+ *
+ * Умолчания — цели «c»: без ключей файл собирается ровно как собирался.
+ */
+#ifndef ZAGOLOVOK_MODULYA
+#define ZAGOLOVOK_MODULYA "uzel_zamera.h"
+#endif
+#ifndef CEL
 #define CEL "c"
+#endif
+
+#include ZAGOLOVOK_MODULYA
 #define SVYAZEY 8
 #define PROCESSOV 16
 #define TAYMEROV 64

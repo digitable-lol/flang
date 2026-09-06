@@ -1721,7 +1721,7 @@
   принимает «идентификатор»: строка
   возвращает признак
   обеспечивает «let начинает выражение» если «идентификатор» равен "let" то результат равен да иначе да
-  «Есть в списке имён» от ["litTrue", "litFalse", "litNull", "empty", "emptyList", "listOf", "length", "head", "tail", "toNumber", "toNumberOrFail", "toText", "char", "item", "substring", "join", "split", "add", "prepend", "variant", "record", "field", "result", "if", "match", "map", "filter", "fold", "let"] и «идентификатор»
+  «Есть в списке имён» от ["litTrue", "litFalse", "litNull", "empty", "emptyList", "listOf", "length", "head", "tail", "toNumber", "toNumberOrFail", "toText", "char", "item", "substring", "join", "split", "add", "prepend", "variant", "record", "field", "result", "if", "match", "map", "filter", "fold", "let", "hash256"] и «идентификатор»
 
 тотальная функция «Сравнение по слову»
   принимает «идентификатор»: строка
@@ -3456,7 +3456,7 @@
             иначе
               если «идентификатор» равен "toNumber"
                 то "к числу"
-                иначе (если «идентификатор» равен "toText" то "к строке" иначе "")
+                иначе (если «идентификатор» равен "toText" то "к строке" иначе (если «идентификатор» равен "hash256" то "хеш256" иначе ""))
 
 // Одноместная встроенная форма. Если аргумента нет, слово читается как имя:
 // образец `голова и хвост` связывает именно `голова` и `хвост`, и тело случая

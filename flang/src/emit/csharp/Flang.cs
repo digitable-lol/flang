@@ -759,6 +759,27 @@ public static class Flang
         return Value.Text(char.ConvertFromUtf32((int)point));
     }
 
+    /// <summary>«хеш256»: SHA-256 байтов строки шестнадцатеричной записью.</summary>
+    /// <remarks>
+    /// Берётся System.Security.Cryptography.SHA256 — он лежит в самом
+    /// фреймворке, то есть своей зависимости не приносит; восьмая рукописная
+    /// копия FIPS 180-4 была бы восьмым местом, где можно ошибиться
+    /// поодиночке. Строка C# — UTF-16, поэтому байты берутся явной кодировкой
+    /// UTF-8: ровно те же, что хеширует C, и оттого отпечаток совпадает с
+    /// sha256sum и с прочими восемью целями знак в знак.
+    /// </remarks>
+    public static Value BHash256(Ctx ctx, Value text)
+    {
+        string body = ExpectString("хеш256", text, "строка");
+        byte[] svod = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(body));
+        StringBuilder outText = new StringBuilder(64);
+        foreach (byte one in svod)
+        {
+            outText.Append(one.ToString("x2", CultureInfo.InvariantCulture));
+        }
+        return Value.Text(outText.ToString());
+    }
+
     public static Value BSplit(Ctx ctx, Value source, Value separator)
     {
         string value = ExpectString("разделить", source, "строка");

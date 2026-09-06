@@ -660,6 +660,37 @@ public final class Flang {
   }
 
   /**
+   * «хеш256»: SHA-256 байтов строки шестнадцатеричной записью строчными буквами.
+   *
+   * Берётся `java.security.MessageDigest` — он лежит в `java.base`, то есть
+   * своей зависимости не приносит; восьмая рукописная копия FIPS 180-4 была бы
+   * восьмым местом, где можно ошибиться поодиночке. Строка Java — UTF-16,
+   * поэтому байты берутся явной кодировкой UTF-8: ровно те же, что хеширует C,
+   * и оттого отпечаток совпадает с `sha256sum` и с прочими восемью целями знак
+   * в знак.
+   *
+   * «SHA-256» обязателен для всякой реализации Java (спецификация платформы),
+   * поэтому NoSuchAlgorithmException здесь недостижим; он переложен в отказ
+   * рантайма, а не проглочен, потому что молчащая ветвь хуже названной.
+   */
+  public static Value bHash256(Ctx ctx, Value text) {
+    String body = expectString("хеш256", text, "строка");
+    try {
+      byte[] svod =
+          java.security.MessageDigest.getInstance("SHA-256")
+              .digest(body.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+      StringBuilder out = new StringBuilder(64);
+      for (byte one : svod) {
+        out.append(Character.forDigit((one >> 4) & 0xf, 16));
+        out.append(Character.forDigit(one & 0xf, 16));
+      }
+      return Value.text(out.toString());
+    } catch (java.security.NoSuchAlgorithmException nomehow) {
+      throw fail(FlangError.CODE_BUILTIN_ARGS, "«хеш256»: SHA-256 недоступен этой машине Java");
+    }
+  }
+
+  /**
    * «разделить … по …».
    *
    * Поиск идёт по единицам UTF-16, пока у разделителя целые края: у такого

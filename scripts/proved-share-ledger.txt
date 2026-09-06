@@ -1056,8 +1056,8 @@ d5c13131139cbbb4d9cffbbb4f9f1cdc|2|2|0|0|0|fspec/spec/38-booking-rules.flang
 2fa4d87913ebe6385c4b8172ff408f64|4|4|0|0|0|fspec/spec/40-age-restriction.flang
 33150d7b5a9856f61b5cc79a7eb83ff0|4|4|0|0|0|fspec/spec/41-consent-scope.flang
 7aa7708e0ac4beb6aa74eb4de9efe769|2|2|0|0|0|fspec/spec/42-data-retention.flang
-787b6dc899122cc81b0ec3ecbde56e24|49|43|2|4|0|packaging/install-check.flang
-3e789a6b546b45604afbc5d66e6bb80b|25|25|0|0|0|packaging/install-parity.flang
+4c48d2e335559c98f1526b5e57c5120f|58|55|3|0|0|packaging/install-check.flang
+65dd1810a18ec87eea4c5bc328feeb75|25|25|0|0|0|packaging/install-parity.flang
 541c3766e167de86d411bf6abf80f2e9|22|15|7|0|0|scripts/adr-numbers-guard.flang
 cb83af3366e1aedcf2980e68974f26bc|21|20|1|0|0|scripts/asdf-plugin-published.flang
 1ada44f6de654f4caad9cc2ebd440616|10|10|0|0|0|scripts/asdf-version-list.flang
@@ -1076,7 +1076,7 @@ c5a0345c44c46c293d187f192b3ea621|4|11|0|0|0|scripts/emit-package.flang
 ef39e47ca6526bb1d5f92b29cb0a3644|12|12|0|0|0|scripts/emit-promises-guard.flang
 91128ae65d62f7aee67ef6e15ae3599a|81|80|0|1|0|scripts/error-code-guard.flang
 b9355c30780244f70669d1308c60cf41|13|6|0|0|0|scripts/file-extensions.flang
-d5cfd2ef8d49ec0f5b2cc8a84752d0d6|57|42|8|7|0|scripts/homebrew-formula-guard.flang
+f93ca414eb631442b9cef287e164a648|60|48|9|3|0|scripts/homebrew-formula-guard.flang
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/input-boundary.flang
 549dc14d48a6d1300aacb42533fe4cc6|2|0|2|0|0|scripts/jargon-guard.flang
 9226c12745c52e368e33c2d313d40200|23|11|2|3|0|scripts/kernel-abilities-guard.flang
@@ -1084,7 +1084,7 @@ d5cfd2ef8d49ec0f5b2cc8a84752d0d6|57|42|8|7|0|scripts/homebrew-formula-guard.flan
 a72ce1dbc033191cc6867ee134a3212d|6|6|0|0|0|scripts/license-guard.flang
 7d437b36d827aebf6f3a99929ea04d00|78|34|44|0|0|scripts/link-guard.flang
 764ea6a077d30318d14a8a0f3da8aea8|23|23|0|0|0|scripts/lsp-check.flang
-5def98b4bc9fe3ad5ef96f982fe9f288|13|11|0|0|0|scripts/manpage-guard.flang
+13843d0af99ca84e07c8f0021d1f80ec|15|13|2|0|0|scripts/manpage-guard.flang
 f8e01fecff7e47ed055e836a42195ee0|15|15|0|0|0|scripts/module-name-guard.flang
 a63d8465a17432a9e21c55efe890d510|27|26|0|1|0|scripts/name-collision-guard.flang
 b227c0ad335b884661247019d31270e6|22|22|0|0|0|scripts/name-splicing-guard.flang

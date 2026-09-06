@@ -1421,6 +1421,13 @@ static Znach kak_priznak(int b)   { Znach z; z.vid = 3; z.s = NULL; z.ch = b ? 1
    (по нему решается равенство), и число звеньев (по нему — «длина»). Считать
    элементы по отдельности сверщик не берётся: это был бы разбор значений. */
 static Znach kak_spisok(char *s, long n) { Znach z; z.vid = 4; z.s = s; z.ch = (double)n; return z; }
+/* Вид 5 — ЗАПИСЬ (минимальный вариант свёртки, задача 8690-V4). Несёт сырой,
+   ещё не вычисленный текст ОДНОГО звена списка вида
+   `(запись «Тип» с «поле» равным ЗНАЧ и «поле2» равным ЗНАЧ2)`. Поле берёт
+   `pole_zapisi` по требованию проекции `X.«поле»` — вычислять все поля звена,
+   которое проекция не спросит, сверщик не берётся (то же правило Ч87, что и у
+   вида 4: считать больше, чем спросили, — значит гадать за отсутствием спроса). */
+static Znach kak_zapis(char *s) { Znach z; z.vid = 5; z.s = s; z.ch = 0; return z; }
 
 /* Строковый литерал исходника → значение. Экранирование — ровно то, что
    принимает лексер языка (`flang/self/lexer.flang`, «Экранированный» и
@@ -1492,11 +1499,16 @@ static int podstroka_znakov(const char *s, long a, long b, char **out) {
 
 /* СПИСОК ОТНОШЕНИЙ ЗАКРЫТ. Порядок важен: длинное имя стоит раньше короткого,
    чтобы «не равен» не разрезалось как «равен». */
+/* «и притом» дописано задачей 8690-V4: связка ДВУХ признаков внутри тела
+   свёртки (обе половины уже сведены к да/нет, дальше — не отношение, а союз).
+   Числа и строки этот знак не сравнивает — под него заведена своя проверка
+   видов, а не общая ветка кода 2/3, чтобы не путать «и притом» с равенством. */
 static const char *OTNOSHENIYA[] = {
   " содержит ", " начинается с ", " не равен ", " равен ",
-  " не меньше ", " не больше ", " меньше ", " больше ", " плюс ", " минус "
+  " не меньше ", " не больше ", " меньше ", " больше ", " плюс ", " минус ",
+  " и притом "
 };
-#define OTNOSHENIY 10
+#define OTNOSHENIY 11
 
 /* Первое вхождение знака операции ВЕРХНЕГО УРОВНЯ: вне скобок и ВНЕ КАВЫЧЕК.
    Наивное деление по пробелам (как в `razdelit_sverhu`) здесь не годится: в
@@ -1728,6 +1740,48 @@ static int telo_tablicy(Sp stroki, const char *imya, char **znachenie) {
   return razobrat_literal(stroka_po_nomeru(stroki, telo), znachenie);
 }
 
+/* ═══ СВЁРТКА, МИНИМАЛЬНЫЙ ВАРИАНТ — задача 8690-V4, ячейка Ч71/Ч76 ═══════════
+   Именованных связываний РОВНО ДВА — аккумулятор и элемент, оба слота, не
+   стек и не окружение. Вложенная свёртка НЕ «пока не поддержана» — она явно
+   ЗАПРЕЩЕНА кодом (SV_V_SVYORTKE), иначе граница осталась бы обещанием в
+   комментарии, а не свойством программы. Второй вычислитель языка внутри
+   сверщика этим не заводится (предупреждение Ч76 остаётся в силе для всего,
+   что дальше этой границы: вызов чужой таблицы по ключу, откат, перебор). */
+/* Вперёд: определения — ниже, звеньям списка и разбору «если…то…иначе…» без
+   надобности ждать своей строки в файле, а свёртке обе нужны уже здесь.
+   `razrez_vybora` — чужой, уже написанный разбор (ячейка «разбора цели по
+   условию»); переиспользуется, а не переписывается заново, ровно как чекер
+   переиспользует `chleny_spiska` вместо второго счёта запятых. */
+static Sp chleny_spiska(const char *t);
+static int razrez_vybora(const char *t, char **u, char **a, char **b);
+static int kavychki_chisty(const char *t);
+
+static const char *SV_AKK_IMYA = NULL, *SV_ELEM_IMYA = NULL;
+static Znach SV_AKK_ZNACH, SV_ELEM_ZNACH;
+static int SV_V_SVYORTKE = 0;
+
+/* Поле именованного звена `(запись «Тип» с «поле» равным ЗНАЧ и «поле2» равным
+   ЗНАЧ2)`. Звено приходит БЕЗ пробелов вне кавычек (Ч87, `tekst_spiska`), и
+   метка ищется слитно; значение тянется до следующего «и«» ВЕРХНЕГО уровня
+   или до закрывающей скобки звена — кавычки и скобки внутри значения не в
+   счёт. Не запись целиком или поля нет — NULL, а не пустая строка: молчания
+   о звене, которое чекер не понял, здесь не бывает, есть только «не берусь»
+   выше по стеку. */
+static char *pole_zapisi(const char *rec, const char *pole) {
+  char *metka = fmt("«%s»равным", pole);
+  const char *p, *q; int v = 0; long gl = 0;
+  if (!nachinaetsya(rec, "(запись«") || !(p = strstr(rec, metka))) return NULL;
+  p += strlen(metka);
+  for (q = p; *q; q++) {
+    if (v) { if (*q == '\\' && q[1]) { q++; continue; } if (*q == '"') v = 0; continue; }
+    if (*q == '"') { v = 1; continue; }
+    if (*q == '(') { gl++; continue; }
+    if (*q == ')') { if (gl == 0) break; gl--; continue; }
+    if (gl == 0 && nachinaetsya(q, "и«")) break;
+  }
+  return kopiya(p, (size_t)(q - p));
+}
+
 /* Значение замкнутого терма. `rezultat` — тело функции, за которой стоит
    теорема; им и замыкается слово `результат`. Глубина ограничена: терм цели
    короток, а бесконечного спуска в сверщике быть не должно. */
@@ -1750,6 +1804,10 @@ static Znach ocenit_term(const char *syroy, Sp stroki, Znach rezultat, int glubi
       ravny = (a.vid == 1 || a.vid == 4) ? (strcmp(a.s, b.s) == 0) : (a.ch == b.ch);
       return kak_priznak(kakoe == 2 ? !ravny : ravny);
     }
+    if (kakoe == 10) {
+      if (a.vid != 3 || b.vid != 3) return NE_BERUS;
+      return kak_priznak(a.ch != 0 && b.ch != 0);
+    }
     if (a.vid != 2 || b.vid != 2) return NE_BERUS;
     switch (kakoe) {
       case 4: return kak_priznak(a.ch >= b.ch);
@@ -1763,6 +1821,11 @@ static Znach ocenit_term(const char *syroy, Sp stroki, Znach rezultat, int glubi
   if (strcmp(t, "результат") == 0) return rezultat;
   if (strcmp(t, "да") == 0) return kak_priznak(1);
   if (strcmp(t, "нет") == 0) return kak_priznak(0);
+  /* Связывания свёртки — ДВА фиксированных слота, проверяются как «результат»
+     выше: слово совпало — значение известно, свёртки нет вовсе — слоты пусты
+     (SV_V_SVYORTKE=0), и совпасть с NULL имя не может. */
+  if (SV_V_SVYORTKE && SV_AKK_IMYA && strcmp(t, SV_AKK_IMYA) == 0) return SV_AKK_ZNACH;
+  if (SV_V_SVYORTKE && SV_ELEM_IMYA && strcmp(t, SV_ELEM_IMYA) == 0) return SV_ELEM_ZNACH;
   if (razobrat_literal(t, &lit)) return kak_stroka(lit);
   if (chislo_tochno(t, &ch)) {
     /* МИНУС НОЛЬ СЮДА НЕ ПУСКАЕТСЯ: ядро считает `0` и минус ноль одним термом,
@@ -1776,6 +1839,16 @@ static Znach ocenit_term(const char *syroy, Sp stroki, Znach rezultat, int glubi
     if (telo_tablicy(stroki, im, &v)) return kak_stroka(v);
     return tablica_spiskom(stroki, im);
   }
+  /* Списочный литерал, выписанный ПРЯМО В ТЕРМЕ, а не за именем функции —
+     тот же приём, что уже стоит в `znach_moya` (Ч365) для той же формы;
+     здесь понадобился задаче 8690-V4: поле звена свёртки само бывает
+     списком (`«поле» равным ["слово"]»), а не только строкой или числом. */
+  { char *bp = bez_probelov_vne_kavychek(t); size_t bd = strlen(bp);
+    if (bd >= 2 && bp[0] == '[' && bp[bd - 1] == ']' && kavychki_chisty(t)) {
+      Sp ch2 = chleny_spiska(bp);
+      if (ch2.n) return kak_spisok(bp, ch2.n);
+    }
+  }
   if (nachinaetsya(t, "длина ")) {
     Znach a = ocenit_term(t + strlen("длина "), stroki, rezultat, glubina + 1);
     if (a.vid == 4) return kak_chislo(a.ch);          /* длина списка — звенья */
@@ -1784,17 +1857,125 @@ static Znach ocenit_term(const char *syroy, Sp stroki, Znach rezultat, int glubi
   if (nachinaetsya(t, "подстрока ")) {
     static const char *S_[] = { " с " }, *PO_[] = { " по " };
     char *h = t + strlen("подстрока "), *rez; long i1, i2, a1, b1; int nn;
+    size_t ds = strlen(S_[0]), dpo = strlen(PO_[0]);
     Znach x, p, q;
     if (!nayti_sverhu(h, S_, 1, &i1, &nn)) return NE_BERUS;
-    if (!nayti_sverhu(h + i1 + 3, PO_, 1, &i2, &nn)) return NE_BERUS;
+    /* БЫЛА БЕДА (найдена задачей 8690-V4, но долг не её — старый долг Ч71):
+       скачок за маркером стоял ЖЁСТКИМИ числами 3 и 4, а «с»/«по» — кириллица,
+       по два байта на знак в UTF-8, и настоящая длина маркеров — 4 и 6 байт.
+       Второму доводу (p) это сходило с рук: скачок на 3 останавливался на
+       ЗАВЕРШАЮЩЕМ пробеле маркера «с», а его подъедает `obrezat` внутри
+       `bez_vneshnih`. Третьему доводу (q) — нет: скачок на 3+4=7 останавливался
+       ПОСЕРЕДИНЕ буквы «о» маркера «по», отдавал рваный UTF-8 с первого же
+       байта — терм такого вида сверщик не разбирает НИКАК, и q тихо становился
+       «не берусь». Это НЕ дыра честности: неверная («не берусь» вместо числа)
+       оценка только МЕШАЕТ проверке пройти, соврать «сошлось» на лжи ею
+       нельзя — потому проба ни разу не покраснела ни на одной подделке, только
+       недосчитывала на честных. Скачок теперь — точная длина маркера в байтах. */
+    if (!nayti_sverhu(h + i1 + ds, PO_, 1, &i2, &nn)) return NE_BERUS;
     x = ocenit_term(kopiya(h, (size_t)i1), stroki, rezultat, glubina + 1);
-    p = ocenit_term(kopiya(h + i1 + 3, (size_t)i2), stroki, rezultat, glubina + 1);
-    q = ocenit_term(h + i1 + 3 + i2 + 4, stroki, rezultat, glubina + 1);
+    p = ocenit_term(kopiya(h + i1 + ds, (size_t)i2), stroki, rezultat, glubina + 1);
+    q = ocenit_term(h + i1 + ds + i2 + dpo, stroki, rezultat, glubina + 1);
     if (x.vid != 1 || p.vid != 2 || q.vid != 2) return NE_BERUS;
     a1 = (long)p.ch; b1 = (long)q.ch;
     if ((double)a1 != p.ch || (double)b1 != q.ch) return NE_BERUS;
     if (!podstroka_znakov(x.s, a1, b1, &rez)) return NE_BERUS;
     return kak_stroka(rez);
+  }
+  { char *u, *vetv_a, *vetv_b;
+    if (razrez_vybora(t, &u, &vetv_a, &vetv_b)) {
+      Znach usl = ocenit_term(u, stroki, rezultat, glubina + 1);
+      if (usl.vid != 3) return NE_BERUS;
+      return ocenit_term(usl.ch != 0 ? vetv_a : vetv_b, stroki, rezultat, glubina + 1);
+    }
+  }
+  if (nachinaetsya(t, "голова ")) {
+    Znach a = ocenit_term(t + strlen("голова "), stroki, rezultat, glubina + 1);
+    Sp chl;
+    if (a.vid != 4) return NE_BERUS;
+    chl = chleny_spiska(a.s);
+    if (!chl.n) return NE_BERUS;
+    return nachinaetsya(chl.e[0], "(запись«") ? kak_zapis(chl.e[0])
+         : ocenit_term(chl.e[0], stroki, rezultat, glubina + 1);
+  }
+  /* Проекция поля `ЛЕВОЕ.«поле»`: последняя точка ВЕРХНЕГО уровня терма, а
+     дальше — ровно одна пара ёлочек и больше ничего до конца строки. Слева
+     может стоять как голое имя связывания свёртки, так и «голова …». */
+  { char *tochka = strrchr(t, '.');
+    if (tochka && tochka != t) {
+      char *pole = v_yolochkah(tochka + 1, 1);
+      if (*pole && strcmp(fmt("«%s»", pole), tochka + 1) == 0) {
+        Znach baza = ocenit_term(kopiya(t, (size_t)(tochka - t)), stroki, rezultat, glubina + 1);
+        char *zn = baza.vid == 5 ? pole_zapisi(baza.s, pole) : NULL;
+        return zn ? ocenit_term(zn, stroki, rezultat, glubina + 1) : NE_BERUS;
+      }
+    }
+  }
+  if (nachinaetsya(t, "свёртка ") && !SV_V_SVYORTKE) {
+    static const char *NACH_[] = { " начиная с " }, *KAK_[] = { " как " },
+                       *I_[] = { " и " }, *STR_[] = { " → " };
+    char *h = t + strlen("свёртка "), *spisok_t, *init_t, *akk_imya, *elem_slovo, *telo_t, *elem_imya;
+    long i1, i2, i3, i4; int nn, j, iz_razlozheniya = 0;
+    Sp chleny = PUSTO;
+    Znach akk;
+    if (!nayti_sverhu(h, NACH_, 1, &i1, &nn)) return NE_BERUS;
+    spisok_t = obrezat(kopiya(h, (size_t)i1));
+    h += i1 + strlen(NACH_[0]);
+    if (!nayti_sverhu(h, KAK_, 1, &i2, &nn)) return NE_BERUS;
+    init_t = obrezat(kopiya(h, (size_t)i2));
+    h += i2 + strlen(KAK_[0]);
+    if (!nayti_sverhu(h, I_, 1, &i3, &nn)) return NE_BERUS;
+    akk_imya = obrezat(kopiya(h, (size_t)i3));
+    h += i3 + strlen(I_[0]);
+    if (!nayti_sverhu(h, STR_, 1, &i4, &nn)) return NE_BERUS;
+    elem_slovo = obrezat(kopiya(h, (size_t)i4));
+    telo_t = obrezat(h + i4 + strlen(STR_[0]));
+    elem_imya = v_yolochkah(elem_slovo, 1);
+    if (!*akk_imya || !*elem_imya || strcmp(fmt("«%s»", elem_imya), elem_slovo) != 0)
+      return NE_BERUS;
+    { char *sp_bv = bez_vneshnih(spisok_t);
+      static const char *NA_SIMVOLY = " на символы";
+      size_t dl = strlen(sp_bv), sl = strlen(NA_SIMVOLY), pref = strlen("разложить ");
+      if (nachinaetsya(sp_bv, "разложить ") && dl > pref + sl &&
+          strcmp(sp_bv + dl - sl, NA_SIMVOLY) == 0) {
+        Znach osn = ocenit_term(kopiya(sp_bv + pref, dl - pref - sl), stroki, rezultat, glubina + 1);
+        long n, k; char *zn;
+        if (osn.vid != 1) return NE_BERUS;
+        iz_razlozheniya = 1;
+        n = dlina_znakov(osn.s);
+        for (k = 1; k <= n; k++) {
+          if (!podstroka_znakov(osn.s, k, k, &zn)) return NE_BERUS;
+          dobavit(&chleny, zn);
+        }
+      } else {
+        Znach spisok_z = ocenit_term(sp_bv, stroki, rezultat, glubina + 1);
+        if (spisok_z.vid != 4) return NE_BERUS;
+        chleny = chleny_spiska(spisok_z.s);
+        if (!chleny.n) return NE_BERUS;
+      }
+    }
+    akk = ocenit_term(init_t, stroki, rezultat, glubina + 1);
+    if (!akk.vid) return NE_BERUS;
+    SV_V_SVYORTKE = 1; SV_AKK_IMYA = akk_imya; SV_ELEM_IMYA = elem_slovo;
+    for (j = 0; j < chleny.n; j++) {
+      char *el = chleny.e[j];
+      /* Звено «разложить … на символы» — уже готовый знак (взят вырезкой, не
+         переписан синтаксисом строки), и второй раз его через `ocenit_term`
+         не читают: там, где сам знак — кавычка или экранирующий обратный
+         слеш, разбор синтаксиса солгал бы о значении. Звено выписанного
+         списка — наоборот, ЕЩЁ строка исходника, и его читает ровно тот же
+         разбор, что и любой терм (запись — своим видом 5, прочее — тем же
+         `ocenit_term`, что и раньше). */
+      Znach elem_z = iz_razlozheniya ? kak_stroka(el)
+                   : nachinaetsya(el, "(запись«") ? kak_zapis(el)
+                   : ocenit_term(el, stroki, rezultat, glubina + 1);
+      if (!elem_z.vid) { akk = NE_BERUS; break; }
+      SV_AKK_ZNACH = akk; SV_ELEM_ZNACH = elem_z;
+      akk = ocenit_term(telo_t, stroki, rezultat, glubina + 1);
+      if (!akk.vid) break;
+    }
+    SV_V_SVYORTKE = 0; SV_AKK_IMYA = NULL; SV_ELEM_IMYA = NULL;
+    return akk;
   }
   return NE_BERUS;
 }
@@ -1805,8 +1986,12 @@ static Znach ocenit_term(const char *syroy, Sp stroki, Znach rezultat, int glubi
         замена прогону там, где прогонять нечего: тело и есть литерал);
      8. цель, замкнутая подстановкой тела, ДЕРЖИТСЯ (счётом самого сверщика).
    Расхождение в 7 или 8 — «НЕ СОШЛОСЬ». Незнакомая форма — «не берусь». */
+/* Задачей 8690-V4 у помощника появился ВТОРОЙ звонящий: шаг «по примеру»
+   ВНУТРИ случая (sverit_shag_primerom), у которого своя дюжина причин не
+   взяться. Текст обязан годиться для обоих — «вне случая» отсюда убрано, а
+   не подменено на «внутри»: правда для звонящего снаружи, а не про случай. */
 static int ne_vzyalsya(Sverka *s, const char *imya_t, const char *pochemu) {
-  dobavit(&s->ne_vzyalsya, fmt("теорема «%s»: шаг вне случая не проверен — %s", imya_t, pochemu));
+  dobavit(&s->ne_vzyalsya, fmt("теорема «%s»: шаг «по примеру» не проверен по существу — %s", imya_t, pochemu));
   return 0;
 }
 static int sverit_shag_vne_sluchaya(Sverka *s, Sp stroki, const char *imya_t,
@@ -1856,7 +2041,13 @@ static int sverit_shag_primerom(Sverka *s, const char *sh, Sp stroki, const char
   char *imya_p = v_yolochkah(shag_slovami(sh), 1);
   long p = nomer_posle(sh, METKA_PRIMERA), a, b;
   char *ozh, *dano, *obrazec, *obrazec_sverki, *obrazec_golyy, *vetv; int znakom = 0;
-  if (p < 1) { s->bez_privyazki++; return 0; }
+  /* Правило Ч27 задачей 8690-V4 доведено и досюда: шаг вне случая (ниже,
+     `sverit_shag_vne_sluchaya`) уже называл причину поимённо через
+     `ne_vzyalsya`, а близнец внутри случая молчал большинством путей —
+     число «на слово» печаталось честно, а «почему» не было нигде, кроме как
+     в этом самом файле руками. R6a/R6b (пример не даёт значения довода) не
+     тронуты здесь нарочно: это площадка задачи `dano_primera`, чужая. */
+  if (p < 1) { s->bez_privyazki++; return ne_vzyalsya(s, imya_t, "шаг «по примеру» без привязки к строке примера"); }
   a = blok_funkcii(stroki, chya, &b);
   esli_ne(s, a > 0, fmt("теорема «%s»: функции «%s» в исходнике нет, а пример «%s» записан за ней",
                         imya_t, chya, imya_p));
@@ -1869,7 +2060,7 @@ static int sverit_shag_primerom(Sverka *s, const char *sh, Sp stroki, const char
               imya_t, imya_p, p, chya, a, b - 1));
   if (strcmp(stroka_po_nomeru(stroki, p), fmt("пример «%s»", imya_p)) != 0 || p < a || p >= b) return 0;
   ozh = ozhidaetsya_primera(stroki, p, b);
-  if (!*ozh) return 0;                       /* примера без «ожидается» язык не принимает */
+  if (!*ozh) return ne_vzyalsya(s, imya_t, fmt("у примера «%s» нет доступного «ожидается»", imya_p));
   /* ШАГ ВНЕ СЛУЧАЯ — дорога Ч76: замкнутость цели решается подстановкой тела. */
   if (sluchay_gde < 1)
     return sverit_shag_vne_sluchaya(s, stroki, imya_t, imya_p, chya, ozh, cel, est_svobodnye);
@@ -1892,6 +2083,10 @@ static int sverit_shag_primerom(Sverka *s, const char *sh, Sp stroki, const char
   obrazec_sverki = (nachinaetsya(obrazec, "«") && !nachinaetsya(obrazec, "вариант «"))
                      ? fmt("вариант %s", obrazec) : obrazec;
   if (!obrazec_sovpal(obrazec_sverki, dano, &znakom)) {
+    if (!znakom)
+      return ne_vzyalsya(s, imya_t,
+                         fmt("образец случая «%s» или значение примера «%s» (%s) сверщику незнакомы",
+                             obrazec, po, dano));
     esli_ne(s, !znakom,
             fmt("теорема «%s»: случай разбирает «%s», а пример «%s» задаёт «%s» как «%s» — это о другом значении",
                 imya_t, obrazec, imya_p, po, dano));
@@ -1909,7 +2104,7 @@ static int sverit_shag_primerom(Sverka *s, const char *sh, Sp stroki, const char
     obrazec_golyy = obrazec + strlen("вариант ");
     vetv = vetv_tela(stroki, a, b, obrazec_golyy);
   }
-  if (!*vetv) return 0;                      /* ветвь тела не литерал — прогон не повторить */
+  if (!*vetv) return ne_vzyalsya(s, imya_t, fmt("ветвь тела на образец «%s» не литерал — прогон не повторить", obrazec));
   esli_ne(s, strcmp(vetv, ozh) == 0,
           fmt("теорема «%s»: пример «%s» ждёт «%s», а ветвь тела на «%s» даёт «%s»",
               imya_t, imya_p, ozh, obrazec, vetv));
@@ -1922,13 +2117,17 @@ static int sverit_shag_primerom(Sverka *s, const char *sh, Sp stroki, const char
      sverit_shag_vne_sluchaya: подставить проверенное значение вместо
      «результат» и посчитать терм целиком). Значение проверено ДВАЖДЫ до
      этой строки: строка «ветвь тела» совпала со строкой «ожидается» СИМВОЛ В
-     СИМВОЛ (strcmp выше) — подставляется то же значение, что уже сверено. */
+     СИМВОЛ (strcmp выше) — подставляется то же значение, что уже сверено.
+     Задачей 8690-V4 у ocenit_term внутри этого же вызова прибавилась свёртка,
+     голова, проекция поля, «и притом» — они здесь заработали БЕСПЛАТНО, тем
+     же вызовом, без отдельной правки: ячейка проверяет вид цели, а не то,
+     каким именно приёмом ocenit_term до него дошёл. */
   {
     Znach rez = ocenit_term(ozh, stroki, NE_BERUS, 0);
     Znach z;
-    if (!rez.vid) return 0;             /* значение примера само не разобралось */
+    if (!rez.vid) return ne_vzyalsya(s, imya_t, fmt("значение примера «%s» (%s) сверщику незнакомо", imya_p, ozh));
     z = ocenit_term(cel, stroki, rez, 0);
-    if (z.vid != 3) return 0;           /* вид цели сверщику незнаком — не берусь */
+    if (z.vid != 3) return ne_vzyalsya(s, imya_t, fmt("вид цели «%s» сверщику незнаком", cel));
     esli_ne(s, z.ch != 0,
             fmt("теорема «%s»: цель «%s» на значении примера «%s» (%s) НЕ держится",
                 imya_t, cel, imya_p, ozh));
@@ -2733,7 +2932,12 @@ static Sp chleny_spiska(const char *t) {
   if (d < 3 || t[0] != '[' || t[d - 1] != ']') return r;
   for (i = 1; i < d - 1; i++) {
     char c = t[i];
-    if (v) { if (c == '"') v = 0; continue; }
+    /* Экранированная кавычка (задача 8690-V4, тот же приём, что в
+       `nayti_sverhu`): без пропуска знака за «\» звено вида "\"" закрывало
+       кавычку на своём же экранирующем знаке, и счёт запятых верхнего уровня
+       дальше расходился со скобками — до сих пор не было звена со своей
+       экранированной кавычкой, и брешь молчала. */
+    if (v) { if (c == '\\' && t[i + 1]) { i++; continue; } if (c == '"') v = 0; continue; }
     if (c == '"') v = 1;
     else if (c == '(') kr++;
     else if (c == ')') kr--;

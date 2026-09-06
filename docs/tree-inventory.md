@@ -68,15 +68,15 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 101 | 18 122 | 90 | 12 107 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 101 --><!-- СНЯТО 2026-09-06 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 18122 --> |
-| C | 38 | 774 633 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774633 --> |
+| оболочка | 101 | 18 141 | 90 | 12 107 <!-- СНЯТО 2026-09-05 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 101 --><!-- СНЯТО 2026-09-06 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 18141 --> |
+| C | 38 | 774 647 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-05 строк-в *.c,*.h = 774647 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 22 | 7 744 | 16 | 3 843 <!-- СНЯТО 2026-09-05 файлов *.py = 22 --><!-- СНЯТО 2026-09-05 строк-в *.py = 7744 --> |
 | HTML | 4 | 1 226 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.html = 4 --><!-- СНЯТО 2026-08-31 строк-в *.html = 1226 --> |
 | CSS | 1 | 559 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.css = 1 --><!-- СНЯТО 2026-08-31 строк-в *.css = 559 --> |
 | awk | 1 | 79 | 1 | 79 <!-- СНЯТО 2026-08-31 файлов *.awk = 1 --><!-- СНЯТО 2026-08-31 строк-в *.awk = 79 --> |
 | Erlang | 1 | 69 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.erl = 1 --><!-- СНЯТО 2026-08-31 строк-в *.erl = 69 --> |
-| JavaScript | 62 | 28 327 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-04 файлов *.js,*.mjs = 62 --><!-- СНЯТО 2026-09-05 строк-в *.js,*.mjs = 28327 --> ||
+| JavaScript | 62 | 28 343 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-04 файлов *.js,*.mjs = 62 --><!-- СНЯТО 2026-09-05 строк-в *.js,*.mjs = 28343 --> ||
 | Java | 7 | 3 910 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.java = 7 --><!-- СНЯТО 2026-08-31 строк-в *.java = 3910 --> |
 | C# | 7 | 4 451 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.cs = 7 --><!-- СНЯТО 2026-08-31 строк-в *.cs = 4451 --> |
 | Elixir | 4 | 4 619 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.ex,*.exs = 4 --><!-- СНЯТО 2026-08-31 строк-в *.ex,*.exs = 4619 --> |
@@ -234,7 +234,7 @@ Python 16, awk 1.
 | `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |
 | `target-census.sh` | 214 | перепись целей <!-- СНЯТО 2026-08-29 строк scripts/target-census.sh = 214 --> |
 | `seed-freshness.sh` | 188 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-08-31 строк scripts/seed-freshness.sh = 188 --> |
-| `test-remote.sh` | 129 | прогон на чужой машине <!-- СНЯТО 2026-08-29 строк scripts/test-remote.sh = 129 --> |
+| `test-remote.sh` | 148 | прогон на чужой машине <!-- СНЯТО 2026-09-06 строк scripts/test-remote.sh = 148 --> |
 | `one-string-measure-guard.sh` | 119 | подаёт сырые октеты в `string-measure.flang` <!-- СНЯТО 2026-08-29 строк scripts/one-string-measure-guard.sh = 119 --> |
 | `identical-declarations.sh` | 118 | что можно ввезти вместо переименования <!-- СНЯТО 2026-08-29 строк scripts/identical-declarations.sh = 118 --> |
 | `seed-parses-sources-guard.sh` | 220 | семя разбирает исходники, которые потом печатает <!-- СНЯТО 2026-08-31 строк scripts/seed-parses-sources-guard.sh = 220 --> |

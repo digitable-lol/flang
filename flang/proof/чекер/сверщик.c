@@ -1040,7 +1040,9 @@ typedef struct { Sp bedy, primety; long na_slovo, shagov, utverzhdeniy, svedeniy
                     брать нельзя — это и есть правило Ч27 о закрытых списках:
                     сломайся приём, и он обязан назвать причину поимённо, а не
                     просто «проверить меньше». */
-                 Sp ne_vzyalsya; } Sverka;
+                 Sp ne_vzyalsya;
+                 /* Ч7104, буфер причин по непроигрываемым шагам одной теоремы. */
+                 Sp shagi_otlozhennye; } Sverka;
 
 static void esli_ne(Sverka *s, int uslovie, char *tekst) { if (!uslovie) dobavit(&s->bedy, tekst); }
 
@@ -2198,6 +2200,36 @@ static int sverit_shag_vne_sluchaya(Sverka *s, Sp stroki, const char *imya_t,
   return z.ch != 0;
 }
 
+/* ЗАПАСНОЙ ХОД ДЛЯ ФУНКЦИЙ-ОТРЕЗКОВ (замер 7105, ячейка Ч7104). `vetv_tela`
+   ищет в теле строку `случай <образец>` — но у функции по отрезку такого тела
+   НЕ БЫВАЕТ И БЫТЬ НЕ МОЖЕТ: язык отвергает `разбор шагов / случай 0`
+   отказом FLANG_NOT_TOTAL, и разбор по числу пишется одним `если`. Шаг
+   `по примеру` в случае `0` оставался поэтому на слове ядра не по существу
+   дела, а по форме записи тела.
+   Ход берётся ТОЛЬКО при полном совпадении: тело — ровно одно `если` с одной
+   парой ветвей (тот же счёт, что в `proigrat_uzel`), условие замыкается
+   подстановкой значения примера вместо довода индукции и считается обычным
+   `ocenit_term`, и лишь по СЧИТАННОМУ условию берётся ветвь. Условие не
+   посчиталось — «не берусь», а не догадка: ветвь наугад была бы верой. */
+static int vetv_esli_po_dovodu(Sp stroki, long a, long b, const char *po,
+                               const char *dano, char **vetv) {
+  long i, eslej = 0, n_to = 0, n_inache = 0;
+  char *usl = (char *)"", *v_to = (char *)"", *v_inache = (char *)"";
+  Znach z;
+  if (!*po || !*dano) return 0;
+  for (i = a; i < b; i++) {
+    char *z2 = kak_chitaet_yazyk(chast(stroki, i));
+    if (nachinaetsya(z2, "если ")) { eslej++; usl = hvost_posle(z2, "если "); }
+    else if (nachinaetsya(z2, "то ")) { n_to++; v_to = hvost_posle(z2, "то "); }
+    else if (nachinaetsya(z2, "иначе ")) { n_inache++; v_inache = hvost_posle(z2, "иначе "); }
+  }
+  if (eslej != 1 || n_to != 1 || n_inache != 1) return 0;
+  z = ocenit_term(vstavit_vmesto(usl, po, dano), stroki, NE_BERUS, 0);
+  if (z.vid != 3) return 0;
+  *vetv = term(z.ch != 0 ? v_to : v_inache);
+  return **vetv != 0;
+}
+
 /* Одна проверка шага `по примеру`. Возвращает 1, если шаг проверен по существу
    и с «на слово» снимается; причина, по которой не снимается, называется. */
 static int sverit_shag_primerom(Sverka *s, const char *sh, Sp stroki, const char *imya_t,
@@ -2271,6 +2303,10 @@ static int sverit_shag_primerom(Sverka *s, const char *sh, Sp stroki, const char
     obrazec_golyy = obrazec + strlen("вариант ");
     vetv = vetv_tela(stroki, a, b, obrazec_golyy);
   }
+  /* Ч7104: тела `разбор/случай` у функции по отрезку не бывает — берём ветвь
+     по СЧИТАННОМУ условию `если`. Значение довода тут уже сверено с образцом
+     случая (`obrazec_sovpal` выше), подставляется именно оно. */
+  if (!*vetv) { char *v2; if (vetv_esli_po_dovodu(stroki, a, b, po, dano, &v2)) vetv = v2; }
   if (!*vetv) return ne_vzyalsya(s, imya_t, fmt("ветвь тела на образец «%s» не литерал — прогон не повторить", obrazec));
   esli_ne(s, strcmp(vetv, ozh) == 0,
           fmt("теорема «%s»: пример «%s» ждёт «%s», а ветвь тела на «%s» даёт «%s»",
@@ -2408,7 +2444,7 @@ static void sverit_shagi(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
          где само утверждение вдобавок ложно (при −1 «Утроить» даёт −3).
          Ветвь ловит ЛЮБОЕ обоснование, а не одно «по предположению»: список
          из трёх имён и был тем, что молчало о четвёртом. */
-      dobavit(&s->ne_vzyalsya,
+      dobavit(&s->shagi_otlozhennye,
               fmt("теорема «%s»: шаг «%s» сверщик по существу не проигрывает, место на слове ядра",
                   imya_t, *obosnovanie ? obosnovanie : slovo(sh, 2)));
       s->shagov_na_slovo++;
@@ -3047,8 +3083,21 @@ static int proigrat_uzel(Sverka *s, Sp svoi, Sp stroki, const char *imya,
   /* ВНЕ ПРИЁМА — не поломка: узел остаётся на слове ядра и считается числом. */
   vne = strcmp(nositel, "segment") != 0 || posylki.n != 2 || shag < 1
         || strcmp(cel, "результат не меньше 0") != 0;
-  for (i = 0; !vne && i < posylki.n; i++)
-    if (strcmp(v_yolochkah(posylki.e[i], 3), "неотрицательность по построению") != 0) vne = 1;
+  /* ПУСТОЕ ПРАВИЛО ПОСЫЛКИ НЕ РОНЯЕТ УЗЕЛ (замер 7105; та же форма, что у
+     соседней ветки `algebra` строкой выше по файлу). Прежде цикл ронял весь
+     узел, если правило ЛЮБОЙ посылки не «неотрицательность по построению», —
+     а пустое оно ровно там, где автор закрыл базу СВОИМ шагом `по примеру`
+     (`segment.запись`, посылка «дно»). Выходило, что чекер наказывает за
+     честность: чем подробнее написано доказательство, тем меньше он берётся
+     проиграть. Комментарий Ч7104-ловушки объявляет это закрытым — закрыто
+     было в ветке `algebra`, а здесь осталось. Ветви тела сверщик и так
+     проверяет ОБЕ, дно и спуск, независимо от того, что запись сказала о
+     правилах: правило посылки — фильтр «понимаю ли, о чём запись», а не
+     довод. */
+  for (i = 0; !vne && i < posylki.n; i++) {
+    char *pr = v_yolochkah(posylki.e[i], 3);
+    if (*pr && strcmp(pr, "неотрицательность по построению") != 0) vne = 1;
+  }
   if (vne) { s->uzlov_mimo++; return 0; }
   a = blok_funkcii(stroki, chya, &b);
   if (a < 1) return 0;                   /* функции в исходнике нет — об этом скажет сверка имён */
@@ -4633,7 +4682,14 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
     if (proigran && moih_ne_proigryvaemyh > 0) {
       s->shagov_na_slovo -= moih_ne_proigryvaemyh;
       s->uzlov_mest += moih_ne_proigryvaemyh;
-    } }
+    }
+    /* Причины по этим шагам названы, только если места остались за ними: узел
+       снял место — снимается и строка, иначе список причин был бы длиннее
+       числа мест и сам вводил бы в заблуждение. */
+    if (!proigran) { int k;
+      for (k = 0; k < s->shagi_otlozhennye.n; k++)
+        dobavit(&s->ne_vzyalsya, s->shagi_otlozhennye.e[k]); }
+    s->shagi_otlozhennye = PUSTO; }
 }
 
 /* Утверждение, доказанное БЕЗ теоремы, сверять нечем: доказательства в исходнике

@@ -1028,6 +1028,11 @@ static void novaya_posylka(Progon *p, const char *stroka) {
   p->variant = v_yolochkah(stroka, 1);
 }
 
+/* Ход `вычислить` СЧИТАЕТ замкнутый терм, а счёт (`ocenit_term`) определён ниже
+   по файлу — потому здесь ход лишь ОБЪЯВЛЕН, чтобы диспетчер знал его имя, а
+   тело стоит сразу за `ocenit_term`. */
+static void hod_vychisleniya(Progon *p, const char *stroka, Obst *o);
+
 /* НОМЕР ХОДА СЧИТАЕТСЯ, а не украшает: пропавший посередине ход виден и по
    номеру, и по несошедшейся цели, и первое сообщение понятнее второго. */
 static void hod_shaga(Progon *p, const char *stroka, Obst *o) {
@@ -1045,7 +1050,8 @@ static void hod_shaga(Progon *p, const char *stroka, Obst *o) {
   else if (strcmp(rod, "деление") == 0) hod_deleniya(p, stroka);
   else if (strcmp(rod, "закон") == 0) hod_zakona(p, stroka);
   else if (strcmp(rod, "закрыть") == 0) hod_zakrytiya(p, stroka, o);
-  else beda_progona(p, fmt("ход «%s» сверщику неизвестен: первичных ходов семь, и список закрыт", rod));
+  else if (strcmp(rod, "вычислить") == 0) hod_vychisleniya(p, stroka, o);
+  else beda_progona(p, fmt("ход «%s» сверщику неизвестен: первичных ходов восемь, и список закрыт", rod));
 }
 
 static Progon proigrat_blok(Obst *o) {
@@ -2206,6 +2212,40 @@ static Znach ocenit_term(const char *syroy, Sp stroki, Znach rezultat, int glubi
     return akk;
   }
   return NE_BERUS;
+}
+
+/* Значение — в строку РАДИ СООБЩЕНИЯ, а не ради сверки: сверка идёт значением
+   (ниже), а человеку в беде нужно видеть, ЧТО именно посчитал сверщик. */
+static char *znach_v_stroku(Znach z) {
+  if (z.vid == 1 || z.vid == 4) return z.s;
+  if (z.vid == 3) return (char *)(z.ch != 0 ? "да" : "нет");
+  if (z.vid == 2) { long n = (long)z.ch; return (double)n == z.ch ? fmt("%ld", n) : fmt("%.17g", z.ch); }
+  return (char *)"не берусь";
+}
+
+/* ВЫЧИСЛЕНИЕ ЗАМКНУТОГО НАЗЕМНОГО ТЕРМА (ход P8, задача 4105). Единственный ход,
+   который СЧИТАЕТ, — и потому огорожен ровно как `reflexivity`/`compute` в
+   Coq/Lean: считается ТОЛЬКО замкнутый наземный терм, готовым и тотальным
+   `ocenit_term`; калькулятор `perepiskoy` сюда не тянется и не зовётся.
+   `результат` в счёт НЕ передаётся (третий довод — NE_BERUS): встретив его или
+   любое иное свободное имя (или неарифметический конструктор), `ocenit_term`
+   вернёт «не берусь», и ход ОТКАЖЕТ (беда, код ≠ 0), а не посчитает вслепую —
+   на этом стоит граница доверия Г7. С записанным ⟨V⟩ посчитанное сверяется
+   ЗНАЧЕНИЕМ, через ту же проверку равенства самого `ocenit_term` (`T равен V`);
+   сошлось — и лишь тогда T в цели заменяется на V. */
+static void hod_vychisleniya(Progon *p, const char *stroka, Obst *o) {
+  char *chto = term(v_ugolkah(stroka, 1)), *zap = term(v_ugolkah(stroka, 2));
+  Znach t_zn, sverka;
+  if (!*zap) { beda_progona(p, fmt("вычислить «%s»: вторым уголком не стоит значение ⟨V⟩", chto)); return; }
+  if (!est_term(pervaya_cel(p), chto)) {
+    beda_progona(p, fmt("вычислить: в цели «%s» нет терма «%s»", pervaya_cel(p), chto)); return; }
+  t_zn = ocenit_term(chto, o->stroki, NE_BERUS, 0);
+  if (!t_zn.vid) {
+    beda_progona(p, fmt("вычислить «%s»: терм не замкнут (свободное имя или неарифметический конструктор) — считать нечего", chto)); return; }
+  sverka = ocenit_term(fmt("( %s ) равен ( %s )", chto, zap), o->stroki, NE_BERUS, 0);
+  if (sverka.vid != 3 || sverka.ch == 0) {
+    beda_progona(p, fmt("вычислить «%s»: терм посчитан = %s, а запись несёт ⟨%s⟩", chto, znach_v_stroku(t_zn), zap)); return; }
+  odna_cel(p, term(vstavit_vmesto(pervaya_cel(p), chto, zap)));
 }
 
 /* Шаг автора ВНЕ случая. Возвращает 1, если шаг проверен по существу.

@@ -72,7 +72,7 @@
 class Flang < Formula
   desc "Проверяемый язык: исполняемая спецификация, печатается в восемь языков"
   homepage "https://github.com/digitable-lol/flang"
-  url "https://github.com/digitable-lol/flang/releases/download/v0.7.10/flang-0.7.10-c.tar.gz"
+  url "https://github.com/digitable-lol/flang/releases/download/v0.7.12/flang-0.7.12-c.tar.gz"
   # Хеш архива, собранного `bootstrap/flang io scripts/release-in-c.flang` и упакованного
   # командой ниже. Пересчитывается при каждом релизе: brew сверяет его сам, и
   # расхождение остановит установку до распаковки.
@@ -173,7 +173,7 @@ class Flang < Formula
   # release-versions/9959.md; тот же класс беды снова нашёлся и починен
   # для 0.7.10 — задача 9983). b8d82b1c… от выпуска 0.6.2 стоял ещё раньше,
   # 2 995 862 байта.
-  sha256 "825a2b5b1d65e9a8f339df1b92fd15554f5b9d4c2a48961e76d31be1948c80bf" # снят workflow_dispatch на main ДО тега — настоящий, не плейсхолдер
+  sha256 "e619e1d37b9f48c3ea5455e71d66b202390a9d10fc37e9465994cb1e125c8f9f" # снят с ОПУБЛИКОВАННОГО архива: скачан с гитхаба и сверен с собранным, 6 сентября 2026
   license "BSD-2-Clause"
   version "0.7.12"
 

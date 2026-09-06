@@ -1304,12 +1304,20 @@ static char *ozhidaetsya_primera(Sp stroki, long p, long konec) {
   return (char *)"";
 }
 
-/* Значение, которое пример даёт названному доводу. Пусто — не даёт. */
+/* Значение, которое пример даёт названному доводу. Пусто — не даёт.
+   ДОВОД ПИШЕТСЯ ДВУМЯ ЗАКОННЫМИ СПОСОБАМИ (R6b): голым словом
+   («дано свет равно …», traffic-light.flang) и в ёлочках («дано «носитель»
+   равно …», corpus-carrier.flang, corpus-json.flang) — второе имя пришло из
+   `индукция по «носитель»`, где оно тоже стоит в ёлочках, и запись их не
+   снимает. Оба написания — один и тот же язык, и сверщик обязан читать
+   исходник обоими, а не одним из них. */
 static char *dano_primera(Sp stroki, long p, long konec, const char *dovod) {
   long i;
   for (i = p + 1; i < konec; i++) {
     char *z = stroka_po_nomeru(stroki, i);
-    if (nachinaetsya(z, fmt("дано %s равно ", dovod))) return hvost_posle(z, "равно ");
+    if (nachinaetsya(z, fmt("дано %s равно ", dovod)) ||
+        nachinaetsya(z, fmt("дано «%s» равно ", dovod)))
+      return hvost_posle(z, "равно ");
     if (nachinaetsya(z, "ожидается ")) return (char *)"";
     if (!nachinaetsya(z, "дано ") && *z) return (char *)"";
   }
@@ -1664,12 +1672,41 @@ static int literal_spiska(Sp stroki, const char *imya, long *a, long *b) {
   return 0;
 }
 
+/* ТЕЛО-СПИСОК В ОДНУ СТРОКУ (V2). literal_spiska берёт МЕСТО из ОГЛАВЛЕНИЯ
+   записи — указателя, который печать даёт только многострочным таблицам
+   (`[` и `]` каждая на своей строке). Список в одну строку («Длины фраз»
+   corpus-phrases.flang: `[4, 3, 2, 1]», и так же corpus-endings.flang,
+   corpus-signs.flang) оглавления не получает вовсе, и literal_spiska о нём
+   не знает НИКАК — не по ошибке разбора, а потому что печать не оставила
+   указателя. Здесь то же самое МЕСТО ищется тем же приёмом, что и у
+   telo_tablicy (Ч76: функция БЕЗ параметров, тело — последняя непустая
+   строка блока) — запись не читается вовсе, это прямое чтение исходника, а
+   не доверие печати. Отличие от telo_tablicy — только в форме литерала:
+   там строка в кавычках, здесь «[» и «]» на этой же строке. */
+static int telo_spiskom(Sp stroki, const char *imya, long *a, long *b) {
+  long nach, konec, i, telo = 0; char *z; size_t d;
+  nach = blok_funkcii(stroki, imya, &konec);
+  if (nach < 1) return 0;
+  for (i = nach + 1; i < konec; i++) {
+    char *stroka = stroka_po_nomeru(stroki, i);
+    if (nachinaetsya(stroka, "принимает ")) return 0;   /* у функции есть доводы */
+    if (*stroka && !nachinaetsya(stroka, "//")) telo = i;
+  }
+  if (telo < 1) return 0;
+  z = stroka_po_nomeru(stroki, telo); d = strlen(z);
+  if (d < 2 || z[0] != '[' || z[d - 1] != ']') return 0;   /* не списочный литерал */
+  *a = telo + 1; *b = telo - 1;   /* приём literal_spiska: tekst_spiska(a,b)
+                                      сам достраивает диапазон назад до «telo» */
+  return 1;
+}
+
 /* Значение функции-таблицы со списочным телом. Звенья считаются по запятым
    верхнего уровня (задача 9986): счёт по строкам годился, пока каждое звено
    стояло на своей строке, а таблица, записанная плотнее, давала ноль. */
 static Znach tablica_spiskom(Sp stroki, const char *imya) {
   long a, b, n;
-  if (!literal_spiska(stroki, imya, &a, &b)) return NE_BERUS;
+  if (!literal_spiska(stroki, imya, &a, &b) && !telo_spiskom(stroki, imya, &a, &b))
+    return NE_BERUS;
   n = zvenev_po_zapyatym(tekst_spiska(stroki, a, b));
   if (n < 1) return NE_BERUS;
   return kak_spisok(tekst_spiska(stroki, a, b), n);
@@ -1818,7 +1855,7 @@ static int sverit_shag_primerom(Sverka *s, const char *sh, Sp stroki, const char
      ёлочках», и без выреза оно перехватило бы первое место у имени примера. */
   char *imya_p = v_yolochkah(shag_slovami(sh), 1);
   long p = nomer_posle(sh, METKA_PRIMERA), a, b;
-  char *ozh, *dano, *obrazec, *vetv; int znakom = 0;
+  char *ozh, *dano, *obrazec, *obrazec_sverki, *obrazec_golyy, *vetv; int znakom = 0;
   if (p < 1) { s->bez_privyazki++; return 0; }
   a = blok_funkcii(stroki, chya, &b);
   esli_ne(s, a > 0, fmt("теорема «%s»: функции «%s» в исходнике нет, а пример «%s» записан за ней",
@@ -1839,25 +1876,64 @@ static int sverit_shag_primerom(Sverka *s, const char *sh, Sp stroki, const char
   obrazec = hvost_posle(stroka_po_nomeru(stroki, sluchay_gde), "случай ");
   dano = dano_primera(stroki, p, b, po);
   if (!*dano || !*obrazec) return 0;
-  if (!obrazec_sovpal(obrazec, dano, &znakom)) {
+  /* R6b, ВТОРАЯ ПОЛОВИНА. Нульарный вариант (тип «Носитель» и подобные — БЕЗ
+     «содержит»-полей) в `случай` вправе писаться и голым тегом «X»
+     (corpus-carrier.flang, corpus-json.flang: `случай «Композицией»`), и тем
+     же тегом со словом «вариант» (traffic-light.flang: `случай вариант
+     «Красный»`) — оба вида законно называют одно и то же значение суммы.
+     А ПРИМЕР называет его всегда СО словом «вариант» впереди: `дано
+     «носитель» равно вариант «Композицией»`. obrazec_sovpal сравнивает
+     точным текстом и своего закрытого списка не меняет (Ч27, список
+     образцов) — здесь только достраивается ДЛЯ СВЕРКИ копия образца до вида,
+     в котором его называет пример, если сам образец короче. Голый образец
+     сверщик сегодня не узнаёт вовсе (не «вариант «» — падает в «незнакомо» в
+     любом случае), поэтому достройка не может испортить ни один случай,
+     который уже сходился: там образец уже начинается словом «вариант». */
+  obrazec_sverki = (nachinaetsya(obrazec, "«") && !nachinaetsya(obrazec, "вариант «"))
+                     ? fmt("вариант %s", obrazec) : obrazec;
+  if (!obrazec_sovpal(obrazec_sverki, dano, &znakom)) {
     esli_ne(s, !znakom,
             fmt("теорема «%s»: случай разбирает «%s», а пример «%s» задаёт «%s» как «%s» — это о другом значении",
                 imya_t, obrazec, imya_p, po, dano));
     return 0;
   }
   vetv = vetv_tela(stroki, a, b, obrazec);
+  if (!*vetv && nachinaetsya(obrazec, "вариант «")) {
+    /* ГОЛЫЙ ТЕГ В «РАЗБОРЕ» ФУНКЦИИ (R6b, довесок). Индукция теоремы вправе
+       писать образец словом «вариант» (traffic-light.flang и обе здешние
+       теоремы), а «разбор» тела нульарного варианта — тем же тегом БЕЗ
+       этого слова (corpus-carrier.flang: `разбор «носитель» случай
+       «Композицией»`, без «вариант», двумя строками ниже своей же теоремы,
+       где `случай вариант «Композицией»`). Один тег, два места, два законных
+       написания — вторая попытка ищет ветвь тем же именем без слова спереди. */
+    obrazec_golyy = obrazec + strlen("вариант ");
+    vetv = vetv_tela(stroki, a, b, obrazec_golyy);
+  }
   if (!*vetv) return 0;                      /* ветвь тела не литерал — прогон не повторить */
   esli_ne(s, strcmp(vetv, ozh) == 0,
           fmt("теорема «%s»: пример «%s» ждёт «%s», а ветвь тела на «%s» даёт «%s»",
               imya_t, imya_p, ozh, obrazec, vetv));
   if (strcmp(vetv, ozh) != 0) return 0;
-  if (!cel_derzhitsya(cel, ozh, &znakom)) {
-    esli_ne(s, !znakom,
+  /* ЦЕЛЬ ВНУТРИ СЛУЧАЯ — ТЕМ ЖЕ ЗАКРЫТЫМ СЧЁТОМ, ЧТО И ВНЕ СЛУЧАЯ (Ч76).
+     cel_derzhitsya понимает только «результат <отношение> ЧИСЛО»: обе здешние
+     цели — «(результат содержит " ") равен нет» и сравнение через «длина» и
+     вызов соседней функции — вида, который cel_derzhitsya не читает вовсе, а
+     ocenit_term читает (тот же приём, что четырьмя строками выше в
+     sverit_shag_vne_sluchaya: подставить проверенное значение вместо
+     «результат» и посчитать терм целиком). Значение проверено ДВАЖДЫ до
+     этой строки: строка «ветвь тела» совпала со строкой «ожидается» СИМВОЛ В
+     СИМВОЛ (strcmp выше) — подставляется то же значение, что уже сверено. */
+  {
+    Znach rez = ocenit_term(ozh, stroki, NE_BERUS, 0);
+    Znach z;
+    if (!rez.vid) return 0;             /* значение примера само не разобралось */
+    z = ocenit_term(cel, stroki, rez, 0);
+    if (z.vid != 3) return 0;           /* вид цели сверщику незнаком — не берусь */
+    esli_ne(s, z.ch != 0,
             fmt("теорема «%s»: цель «%s» на значении примера «%s» (%s) НЕ держится",
                 imya_t, cel, imya_p, ozh));
-    return 0;
+    return z.ch != 0;
   }
-  return 1;
 }
 
 /* ═══ ШАГ АВТОРА `по свойству`: ПРИВЯЗКА К ИСТОЧНИКУ — ЗАДАЧА 3455 ══════════

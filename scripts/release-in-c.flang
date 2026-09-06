@@ -46,9 +46,9 @@
 // — из `cpp/`. Разложи иначе — и `--target cpp` не заработает, как бы верно ни
 // лежало всё прочее (это нашла задача 8460).
 //
-// Весит всё девять каталогов 2 435 747 байт в 32 файлах — то есть спор о
+// Весит всё девять каталогов 2 457 813 байт в 33 файлах — то есть спор о
 // раздувании архива не стоит того, чтобы его вести.
-// СНЯТО 2026-09-05 файлов flang/src/emit/*/* = 32
+// СНЯТО 2026-09-06 файлов flang/src/emit/*/* = 33
 
 // ── раскладка ───────────────────────────────────────────────────────────────
 
@@ -95,20 +95,20 @@
 // сломается молча при первой такой правке.
 //
 // Порядок внутри цели `c` тот же, что в её настройках, — так его проще сверять
-// глазами с таблицей целей в `flang_repl.c`. Всего файлов 32.
-// СНЯТО 2026-09-05 список scripts/release-in-c.flang:113 = 32
+// глазами с таблицей целей в `flang_repl.c`. Всего файлов 34.
+// СНЯТО 2026-09-06 список scripts/release-in-c.flang:113 = 33
 тотальная функция «Файлы рантайма»
   возвращает список строки
-  обеспечивает «длина постоянного списка — Файлы рантайма» (длина результат) равен 32
-  пример «Тридцать два файла девяти целей»
+  обеспечивает «длина постоянного списка — Файлы рантайма» (длина результат) равен 34
+  пример «Тридцать четыре файла девяти целей»
     ожидается ["c/flang_runtime.h", "c/flang_runtime.c", "c/flang_cli.c", "c/flang_repl.c", "c/flang_conc.h", "c/flang_conc.c",
                "cpp/flang_cpp.hpp",
                "csharp/Ctx.cs", "csharp/Field.cs", "csharp/Flang.cs", "csharp/FlangCli.cs", "csharp/FlangError.cs", "csharp/Value.cs",
                "elixir/flang_cli.ex", "elixir/flang_conc.ex", "elixir/flang_runtime.ex",
                "go/flang_cli.go", "go/flang_runtime.go",
                "java/Ctx.java", "java/Field.java", "java/Flang.java", "java/FlangCli.java", "java/FlangError.java", "java/Value.java",
-               "js/flang_cli.js", "js/flang_conc.js", "js/flang_host_browser.js", "js/flang_io.js",
-               "python/flang_cli.py", "python/flang_runtime.py",
+               "js/flang_cli.js", "js/flang_conc.js", "js/flang_host_browser.js", "js/flang_host_node.js", "js/flang_io.js",
+               "python/flang_cli.py", "python/flang_io.py", "python/flang_runtime.py",
                "rust/flang_cli.rs", "rust/flang_runtime.rs"]
   ["c/flang_runtime.h", "c/flang_runtime.c", "c/flang_cli.c", "c/flang_repl.c", "c/flang_conc.h", "c/flang_conc.c",
    "cpp/flang_cpp.hpp",
@@ -116,8 +116,8 @@
    "elixir/flang_cli.ex", "elixir/flang_conc.ex", "elixir/flang_runtime.ex",
    "go/flang_cli.go", "go/flang_runtime.go",
    "java/Ctx.java", "java/Field.java", "java/Flang.java", "java/FlangCli.java", "java/FlangError.java", "java/Value.java",
-   "js/flang_cli.js", "js/flang_conc.js", "js/flang_host_browser.js", "js/flang_io.js",
-   "python/flang_cli.py", "python/flang_runtime.py",
+   "js/flang_cli.js", "js/flang_conc.js", "js/flang_host_browser.js", "js/flang_host_node.js", "js/flang_io.js",
+   "python/flang_cli.py", "python/flang_io.py", "python/flang_runtime.py",
    "rust/flang_cli.rs", "rust/flang_runtime.rs"]
 
 // Что в каталоге точки НЕ относится к точке: пояснение и продукты сборки.
@@ -407,9 +407,9 @@
 // У `cp` в журнале лежат два имени, и содержимое не лежит вовсе.
 //
 // Читается по-прежнему то, у чего стоит сторож происхождения: шапку иначе не
-// увидеть. Это 32 файла рантайма девяти целей на 2 435 747 байт — журнал с
+// увидеть. Это 33 файла рантайма девяти целей на 2 457 813 байт — журнал с
 // ними остаётся читаемым, а 25 МБ точки раскрутки в него больше не попадают.
-// СНЯТО 2026-09-05 файлов flang/src/emit/*/* = 32
+// СНЯТО 2026-09-06 файлов flang/src/emit/*/* = 33
 тотальная функция «Дальше по очереди»
   принимает очередь: список «Копия», сделано: число
   возвращает «Продолжение»

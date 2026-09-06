@@ -2598,7 +2598,20 @@ static long posylki_na_slovo_(Sp svoi, Sverka *sv, const char *imya) {
     char *s = obrezat(svoi.e[i]);
     if (nachinaetsya(s, "посылка ")) {
       if (pravilo && !hody) { dolg++; nazvat_posylku(sv, imya, pred); }
-      pravilo = *v_yolochkah(s, 3) != 0; hody = 0; pred = s;
+      /* ПУСТОЕ ПРАВИЛО У ПОСЫЛКИ, ЗАКРЫТОЙ СВЕДЕНИЕМ, — ТОЖЕ ДОЛГ (замер 7107).
+         Пустое правило законно ровно у посылки, закрытой ШАГАМИ АВТОРА
+         (`закрыта term`): там за нею стоят шаги исходника, и их сверяют
+         порознь. У `закрыта reduction` шагов автора нет по определению — и
+         если правило не названо, за посылкой не стоит НИЧЕГО. Прежде такая
+         посылка не считалась ничем: ни правила, чтобы уйти в долг, ни ходов,
+         чтобы быть проверенной. Стирание имени правила вместе со строкой
+         `сведение «…»` снимало долг молча — на `corpus-factorial` две строки
+         правки давали «на слово ядра 0» и код 0 при нуле проигранного. В
+         честных записях дерева формы `закрыта reduction … правило «»` нет ни
+         одной; все 15 её вхождений — подделки проб Ч71. */
+      pravilo = *v_yolochkah(s, 3) != 0 ||
+                strcmp(slovo_posle(s, "закрыта "), "reduction") == 0;
+      hody = 0; pred = s;
     } else if (nachinaetsya(s, "ход ") && strcmp(s, "ход конец") != 0) hody = 1;
   }
   if (pravilo && !hody) { nazvat_posylku(sv, imya, pred); return dolg + 1; }
@@ -2697,6 +2710,25 @@ static const char *vetv_dna(const char *uslovie, const char *po) {
   for (k = 0; k < 5; k++)
     if (nachinaetsya(hvost, otn[k]) && chislo_tochno(hvost + strlen(otn[k]), &v)) return gde[k];
   return "";
+}
+
+/* Довод индукции в ветви СПУСКА строго положителен: в неё вычисление попадает
+   ровно тогда, когда условие дна ЛОЖНО, и это вторая половина той же формы, с
+   которой прочитано дно. Форм из пяти годятся две, список закрыт:
+     `по не больше К` — дно «то», спуск при `по больше К`, строго при К ≥ 0;
+     `по меньше К`    — дно «то», спуск при `по не меньше К`, строго при К > 0.
+   Прочие три (`не меньше`, `больше`, `равно`) нижней границы в спуске не дают
+   вовсе. КОНЕЧНОСТЬ этим не даётся — её даёт объявленный тип-отрезок, и
+   спрашивает её вызывающий отдельно. (Замер и довод — работник 7107.) */
+static int po_strogo_polozhitelen(const char *uslovie, const char *po) {
+  char *hvost; double v;
+  if (strcmp(slovo(uslovie, 1), po) != 0) return 0;
+  hvost = slova_posle(uslovie, 1);
+  if (nachinaetsya(hvost, "не больше ") && chislo_tochno(hvost + strlen("не больше "), &v))
+    return v >= 0;
+  if (nachinaetsya(hvost, "меньше ") && chislo_tochno(hvost + strlen("меньше "), &v))
+    return v > 0;
+  return 0;
 }
 
 static int ne_proigran(Sverka *s, const char *imya, char *pochemu) {
@@ -3040,9 +3072,22 @@ static int proigrat_uzel(Sverka *s, Sp svoi, Sp stroki, const char *imya,
   vyzov = term(fmt("«%s» от ( %s минус %ld )", chya, po, shag));
   sum = razrez_po(t_spusk, "плюс");
   { int nat = dovod_tipa(stroki, a, b, po, "нат");
+    Razrez pro;
     if (sum.est && strcmp(uzhat(sum.pravo), vyzov) == 0 && neotricatelen(uzhat(sum.levo), po, nat)) return 1;
-    if (sum.est && strcmp(uzhat(sum.levo), vyzov) == 0 && neotricatelen(uzhat(sum.pravo), po, nat)) return 1; }
-  return ne_proigran(s, imya, fmt("спуск «%s» — не сумма неотрицательного по построению с вызовом «%s»",
+    if (sum.est && strcmp(uzhat(sum.levo), vyzov) == 0 && neotricatelen(uzhat(sum.pravo), po, nat)) return 1;
+    /* ВТОРОЙ СЛУЧАЙ УМНОЖЕНИЯ, слово в слово тот же, каким его берёт ядро
+       (`flang/self/proof-kernel.flang`, «Правило неотрицательности»): ОДИН
+       сомножитель лежит в (0, конечное], и тогда второму хватает дна. Пара
+       здесь ровно одна и список закрыт: довод индукции `по` — строго
+       положителен фактом ветви спуска (выше) и конечен ОБЪЯВЛЕННЫМ отрезком
+       `нат`, — и вызов на «по минус шаг», он же допущение индукции.
+       Дна одного мало и здесь: `0 умножить на +∞` есть не-число, поэтому
+       строгость и конечность спрашиваются ОБЕ, а не одна. */
+    pro = razrez_po(t_spusk, "умножить на");
+    if (pro.est && nat && po_strogo_polozhitelen(usl, po)) {
+      if (strcmp(uzhat(pro.pravo), vyzov) == 0 && strcmp(uzhat(pro.levo), po) == 0) return 1;
+      if (strcmp(uzhat(pro.levo), vyzov) == 0 && strcmp(uzhat(pro.pravo), po) == 0) return 1; } }
+  return ne_proigran(s, imya, fmt("спуск «%s» — ни сумма неотрицательного по построению, ни произведение строго положительного довода индукции — с вызовом «%s»",
                                   t_spusk, vyzov));
 }
 

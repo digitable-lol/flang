@@ -4758,16 +4758,20 @@ static void fl_sha256_block(unsigned long *state, const unsigned char *block) {
    Строка языка — уже UTF-8 (`flang_runtime.h`), поэтому перекодировать нечего:
    хешируются ровно те байты, которыми строка и лежит. Оттого все девять целей
    и дают один отпечаток — каждая берёт UTF-8-байты своей строки. */
-fl_status fl_b_hesh256(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error) {
+/* Сам счёт — отдельной функцией по УКАЗАТЕЛЮ И ДЛИНЕ, а не по полям значения:
+   проверка вида здесь, арифметика там.
+   Беду цели C++ это НЕ лечит, и врать об этом не надо: `g++ -flto -Werror`
+   прослеживает поля аргумента до неинициализированного `fl_value
+   args[FL_MAX_ARGS]` в прогонщике и валит сборку своим
+   `-Wmaybe-uninitialized`. Встаёт она и на СУЩЕСТВУЮЩЕЙ форме `разделить`
+   (проверено отдельной пробой), то есть заведена не здесь; обход назван самим
+   напечатанным Makefile — `make CXXFLAGS='-std=c++20 -O2'`. */
+static void fl_sha256_hex(const unsigned char *data, size_t bytes, char *hex) {
   unsigned long state[8];
   unsigned char block[64];
-  char hex[65];
-  const unsigned char *bytes = NULL;
-  size_t total = 0;
   size_t at = 0;
   size_t filled = 0;
-  unsigned long long bits = 0;
-  FL_TRY(fl_expect_string(ctx, "хеш256", text, "строка", error));
+  const unsigned long long bits = (unsigned long long)bytes * 8u;
   state[0] = 0x6a09e667UL;
   state[1] = 0xbb67ae85UL;
   state[2] = 0x3c6ef372UL;
@@ -4776,11 +4780,8 @@ fl_status fl_b_hesh256(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *erro
   state[5] = 0x9b05688cUL;
   state[6] = 0x1f83d9abUL;
   state[7] = 0x5be0cd19UL;
-  bytes = (const unsigned char *)text.as.string.utf8;
-  total = text.as.string.bytes;
-  bits = (unsigned long long)total * 8u;
-  for (at = 0; at < total; at += 1) {
-    block[filled] = bytes[at];
+  for (at = 0; at < bytes; at += 1) {
+    block[filled] = data[at];
     filled += 1;
     if (filled == 64) {
       fl_sha256_block(state, block);
@@ -4809,10 +4810,22 @@ fl_status fl_b_hesh256(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *erro
     sprintf(hex + at * 8, "%08lx", state[at]);
   }
   hex[64] = '\0';
+}
+
+fl_status fl_b_hesh256(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error) {
+  char hex[65];
+  const unsigned char *data = (const unsigned char *)"";
+  size_t bytes = 0;
+  FL_TRY(fl_expect_string(ctx, "хеш256", text, "строка", error));
+  if (text.as.string.utf8 != NULL) {
+    data = (const unsigned char *)text.as.string.utf8;
+    bytes = text.as.string.bytes;
+  }
   /* Работа пропорциональна длине входа, и счётчик шагов обязан это видеть:
-     иначе предел шагов перестал бы ловить программу, которая хеширует
-     мегабайты в цикле. */
-  fl_charge(ctx, total + 1);
+     иначе предел шагов перестал бы ловить программу, которая хеширует мегабайты
+     в цикле. */
+  fl_charge(ctx, bytes + 1);
+  fl_sha256_hex(data, bytes, hex);
   return fl_text(ctx, hex, 64, out, error);
 }
 

@@ -858,7 +858,7 @@ db8148fa41aba54509a56dfb508e7d57|20|10|0|10|0|flang/self/distributive.flang
 caaf904e4d7d18d2a71461497aec5b31|142|88|4|50|0|flang/self/emit-elixir.flang
 e59799ce2a54b21d3850df779b84162a|194|148|7|39|0|flang/self/emit-go.flang
 878d6d6ef38e40dc7ed2166fd3588d35|205|137|7|61|0|flang/self/emit-java.flang
-55ff0213154f4aa6e2f597f806ab0f89|149|145|0|4|0|flang/self/emit-js.flang
+55ff0213154f4aa6e2f597f806ab0f89|152|145|0|4|0|flang/self/emit-js.flang
 813fb2c0ab486e6d8d1e726880ae2fb9|646|584|24|38|0|flang/self/emit-python.flang
 d9b007ea6b879fc0b01153a1ab4293b1|114|79|0|35|0|flang/self/emit-rust.flang
 bc5cbdc5167ec7f3809e1bea340b6442|156|79|24|53|0|flang/self/factcheck.flang
@@ -899,7 +899,7 @@ c3e9988435d72d7cdd3bcc04e7bfef81|101|79|0|22|0|flang/self/setoid.flang
 013c88e8f24b8452d4b61148038b0c27|19|12|2|5|0|flang/self/svoystva.flang
 286dcc638067945698d6992f0003e47b|18|15|0|3|0|flang/self/tags.flang
 5b51eba5dc6c62cd8cb7c8dac7995004|279|231|11|37|0|flang/self/totality.flang
-15aabaef6bce430bf87f27c3e2f70de6|388|119|4|265|0|flang/self/types.flang
+15aabaef6bce430bf87f27c3e2f70de6|389|119|4|265|0|flang/self/types.flang
 54b4ec1e8dbd5c637251879ebcd94f91|101|44|26|2|0|flang/self/zapis.flang
 56d52b403f9e95aa9cfdd0e1e462f55c|218|129|81|8|0|flang/stdlib/aes.flang
 ffb6e5860533af4659ebb397200e0fbb|127|120|6|1|0|flang/stdlib/automaton.flang

@@ -1663,12 +1663,41 @@ static int literal_spiska(Sp stroki, const char *imya, long *a, long *b) {
   return 0;
 }
 
+/* ТЕЛО-СПИСОК В ОДНУ СТРОКУ (V2). literal_spiska берёт МЕСТО из ОГЛАВЛЕНИЯ
+   записи — указателя, который печать даёт только многострочным таблицам
+   (`[` и `]` каждая на своей строке). Список в одну строку («Длины фраз»
+   corpus-phrases.flang: `[4, 3, 2, 1]», и так же corpus-endings.flang,
+   corpus-signs.flang) оглавления не получает вовсе, и literal_spiska о нём
+   не знает НИКАК — не по ошибке разбора, а потому что печать не оставила
+   указателя. Здесь то же самое МЕСТО ищется тем же приёмом, что и у
+   telo_tablicy (Ч76: функция БЕЗ параметров, тело — последняя непустая
+   строка блока) — запись не читается вовсе, это прямое чтение исходника, а
+   не доверие печати. Отличие от telo_tablicy — только в форме литерала:
+   там строка в кавычках, здесь «[» и «]» на этой же строке. */
+static int telo_spiskom(Sp stroki, const char *imya, long *a, long *b) {
+  long nach, konec, i, telo = 0; char *z; size_t d;
+  nach = blok_funkcii(stroki, imya, &konec);
+  if (nach < 1) return 0;
+  for (i = nach + 1; i < konec; i++) {
+    char *stroka = stroka_po_nomeru(stroki, i);
+    if (nachinaetsya(stroka, "принимает ")) return 0;   /* у функции есть доводы */
+    if (*stroka && !nachinaetsya(stroka, "//")) telo = i;
+  }
+  if (telo < 1) return 0;
+  z = stroka_po_nomeru(stroki, telo); d = strlen(z);
+  if (d < 2 || z[0] != '[' || z[d - 1] != ']') return 0;   /* не списочный литерал */
+  *a = telo + 1; *b = telo - 1;   /* приём literal_spiska: tekst_spiska(a,b)
+                                      сам достраивает диапазон назад до «telo» */
+  return 1;
+}
+
 /* Значение функции-таблицы со списочным телом. Звенья считаются по запятым
    верхнего уровня (задача 9986): счёт по строкам годился, пока каждое звено
    стояло на своей строке, а таблица, записанная плотнее, давала ноль. */
 static Znach tablica_spiskom(Sp stroki, const char *imya) {
   long a, b, n;
-  if (!literal_spiska(stroki, imya, &a, &b)) return NE_BERUS;
+  if (!literal_spiska(stroki, imya, &a, &b) && !telo_spiskom(stroki, imya, &a, &b))
+    return NE_BERUS;
   n = zvenev_po_zapyatym(tekst_spiska(stroki, a, b));
   if (n < 1) return NE_BERUS;
   return kak_spisok(tekst_spiska(stroki, a, b), n);

@@ -337,6 +337,13 @@ mut Ч363 05-ветви-переставлены  3 P
 mut Ч363 06-чужое-слагаемое     3 P
 
 say ""
+say "── Ч131-algebra: тот же узел, носитель algebra, 1 надзорный + 3 мутанта ──"
+mut Ч131-algebra 00-нетронутый       0 C
+mut Ч131-algebra 01-vetv-lzhet       3 P
+mut Ч131-algebra 02-variant-podmenen 1 P
+mut Ч131-algebra 03-pokrytie-nepolno 1 P
+
+say ""
 say "── Ч365: приём «тождество после переписки», 10 мутантов ──"
 mut Ч365 П1-цель-не-равенство            3 P
 mut Ч365 П2-тело-мимо-цели               3 P

@@ -2324,7 +2324,13 @@ static long nomer_svoystva(Sp stroki, const char *imya) {
 static int sverit_shag_svoystvom(Sverka *s, const char *sh, Sp stroki, const char *imya_t) {
   char *imya_p = v_yolochkah(shag_slovami(sh), 1);
   long p = nomer_posle(sh, METKA_SVOYSTVA), nastoyashchiy;
-  if (p < 1) { s->bez_privyazki++; return 0; }
+  /* Ч7104: место молчало. Своё `dobavit`, а не `ne_vzyalsya`: тот помощник
+     зашивает в текст слова «шаг „по примеру“», а здесь шаг другой. */
+  if (p < 1) { s->bez_privyazki++;
+    dobavit(&s->ne_vzyalsya,
+            fmt("теорема «%s»: шаг «по свойству «%s»» не проверен по существу — ядро не выписало привязку «свойство строка N»",
+                imya_t, imya_p));
+    return 0; }
   nastoyashchiy = nomer_svoystva(stroki, imya_p);
   esli_ne(s, nastoyashchiy >= 1,
           fmt("теорема «%s»: свойство «%s» привязано к строке %ld, а объявления «обеспечивает «%s»»"
@@ -2364,8 +2370,15 @@ static void sverit_shagi(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
     } else if (nachinaetsya(obosnovanie, "по свойству")) {
       if (sverit_shag_svoystvom(s, sh, stroki, imya_t)) s->shagov_svoystvom++;
       else s->shagov_na_slovo++;
-    } else if (nachinaetsya(obosnovanie, "по закону"))
+    } else if (nachinaetsya(obosnovanie, "по закону")) {
+      /* Ч7104: закон сверщик не переигрывает — но и молчать об этом не вправе.
+         Сегодня таких шагов в корпусе ноль; строка стоит затем, чтобы первый
+         же появившийся был виден, а не сосчитан молча. */
+      dobavit(&s->ne_vzyalsya,
+              fmt("теорема «%s»: шаг «%s» обоснован законом — сверщик закон не переигрывает, место на слове ядра",
+                  imya_t, obosnovanie));
       s->shagov_na_slovo++;
+    }
     if (gde < 1) {
       sverit_term_bez_nomera(s, sh, obosnovanie, imya_t, fmt("шаг %s", slovo(sh, 2)));
       s->bez_privyazki++; continue;
@@ -2530,17 +2543,33 @@ static void sverit_obyavlenie(Sverka *s, Sp svoi, const char *o_chyom) {
    ядра» 3 против честных 6. Замер по всем 226 записям дерева: блоков с
    нумерованными ходами 98, без блока вовсе 228, пустых блоков из одного
    `ход конец` — 6, и все шесть в подделке `9984-hody-pryachut-dolg`. */
-static long posylki_na_slovo(Sp svoi) {
-  int i, pravilo = 0, hody = 0; long dolg = 0;
+/* Ч7104: считать МОЛЧА эта функция больше не вправе. Долг был самой крупной
+   безымянной кучей набора — 29 мест, ни одного имени: чинить такое место
+   некому, потому что его никто не видит. Названо — имя утверждения, имя
+   посылки и правило, которым она сведена.
+   ЗВОНЯЩИХ ДВА, И ИМ НУЖНО РАЗНОЕ. `sverit_pokrytie` кладёт долг НА СЛОВО и
+   обязан его назвать; `sverit_teoremu` тем же счётом считает места, которые
+   узел УЖЕ СНЯЛ, и называть их значило бы соврать в другую сторону. Поэтому
+   имя-приёмник необязателен: NULL — «сосчитай, но молчи». */
+static void nazvat_posylku(Sverka *sv, const char *imya, const char *stroka) {
+  if (!sv) return;
+  dobavit(&sv->ne_vzyalsya,
+          fmt("утверждение «%s»: посылка «%s» сведена правилом «%s» и ни одного хода не записано — место на слове ядра",
+              imya, v_yolochkah(stroka, 1), v_yolochkah(stroka, 3)));
+}
+static long posylki_na_slovo_(Sp svoi, Sverka *sv, const char *imya) {
+  int i, pravilo = 0, hody = 0; long dolg = 0; char *pred = (char *)"";
   for (i = 0; i < svoi.n; i++) {
     char *s = obrezat(svoi.e[i]);
     if (nachinaetsya(s, "посылка ")) {
-      if (pravilo && !hody) dolg++;
-      pravilo = *v_yolochkah(s, 3) != 0; hody = 0;
+      if (pravilo && !hody) { dolg++; nazvat_posylku(sv, imya, pred); }
+      pravilo = *v_yolochkah(s, 3) != 0; hody = 0; pred = s;
     } else if (nachinaetsya(s, "ход ") && strcmp(s, "ход конец") != 0) hody = 1;
   }
-  return (pravilo && !hody) ? dolg + 1 : dolg;
+  if (pravilo && !hody) { nazvat_posylku(sv, imya, pred); return dolg + 1; }
+  return dolg;
 }
+static long posylki_na_slovo(Sp svoi) { return posylki_na_slovo_(svoi, NULL, NULL); }
 
 /* Стоит ли имя доводом той функции, в чьём объявлении написано постусловие.
    Нужно там, где сверить имя переменной индукции больше не с чем: у утверждения
@@ -3956,7 +3985,7 @@ static void sverit_pokrytie(Sverka *s, Sp svoi, Sp stroki, const char *imya_t,
   for (i = 0; i < posylki.n; i++)
     if (strcmp(slovo_posle(posylki.e[i], "вердикт "), "доказано") != 0) slabyh++;
   /* Ч363: узел вердикта проигран заново — посылки его больше не на слово. */
-  if (!proigran) s->na_slovo += posylki_na_slovo(svoi);
+  if (!proigran) s->na_slovo += posylki_na_slovo_(svoi, s, imya_t);
   esli_ne(s, !dokazano || slabyh == 0,
           fmt("теорема «%s»: вердикт «доказано», а посылок не доказано %d", imya_t, slabyh));
   if (!*princip) return;      /* прямое доказательство: принципа нет вовсе */
@@ -4560,6 +4589,16 @@ static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
       dobavit(&s->ne_vzyalsya,
               fmt("утверждение «%s»: значение «по объявлению %s» — сверщик не повторяет изъятие объявленного типа, место на слове ядра",
                   imya, slovo_posle(po, "по объявлению ")));
+    /* Ч7104: и вторая половина ветки молчала — 13 мест, у которых строки «по
+       объявлению» нет вовсе. ЧИСЕЛ ЗДЕСЬ НЕТ НАРОЧНО: счётчики `uzlov_mimo`,
+       `tozhdestv_ne_soshlos`, `razbor_ne_zakrylas` копятся по ВСЕЙ записи, и
+       подставить их в строку про ОДНО утверждение значило бы подписать общим
+       числом частный случай — ровно та порода, которую мы ловим. Сводка ниже
+       печатает эти числа там, где они верны. */
+    else
+      dobavit(&s->ne_vzyalsya,
+              fmt("утверждение «%s»: вердикт «доказано», а за узел не взялся ни один из трёх приёмов (ни проигрыванием, ни переписком, ни разбором цели) — место на слове ядра",
+                  imya));
   }
 }
 
@@ -4714,9 +4753,16 @@ int main(int argc, char **argv) {
   if (poimenno) for (i = 0; i < s.po_utverzhdeniyam.n; i++) printf("%s\n", s.po_utverzhdeniyam.e[i]);
   if (s.bedy.n) { printf("НЕ СОШЛОСЬ: %s\n", soedinit(s.bedy, "; ")); return 1; }
   /* Ч76: за что сверщик НЕ ВЗЯЛСЯ, названо вслух и поимённо. Приём, который
-     ломается молча, отличить от приёма, которому нечего проверять, нельзя. */
+     ломается молча, отличить от приёма, которому нечего проверять, нельзя.
+     Ч7104: ПОДПИСЬ ВРАЛА. Печаталось число СТРОК, а подписано было «мест», и
+     совпадали они лишь случайно — по всему корпусу мест было 145, а строк
+     102. Теперь печатаются оба числа порознь. Строк бывает БОЛЬШЕ мест: у
+     непроигранного узла своя строка объясняет, почему приём не взялся, а
+     само место называет строка посылки под ним. Меньше мест строк быть не
+     должно: место без имени — это место, которое никто не починит. */
   if (s.ne_vzyalsya.n)
-    printf("НЕ ВЗЯЛСЯ (мест %d): %s\n", s.ne_vzyalsya.n, soedinit(s.ne_vzyalsya, "; "));
+    printf("НЕ ВЗЯЛСЯ (строк причин %d; мест на слово ядра %ld): %s\n",
+           s.ne_vzyalsya.n, s.na_slovo + s.shagov_na_slovo, soedinit(s.ne_vzyalsya, "; "));
   { int na_slovo_est = (s.na_slovo || s.shagov_na_slovo) ? 1 : 0;
     const char *golova;
     d = (na_slovo_est || !s.kripto) ? 1 : 0;

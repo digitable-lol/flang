@@ -8732,6 +8732,10 @@ static int run_file(int argc, char **argv) {
 #define EMIT_FIELD_MAX 17
 #define EMIT_RUNTIME_MAX 6
 
+/* Потолок списка программ, которыми напечатанное собирается. Три — у Elixir
+   (`make`, `elixirc`, `elixir`), у остальных одна или две. */
+#define EMIT_BUILD_MAX 3
+
 /**
  * Что двоичный знает о цели печати — ОДНОЙ СТРОКОЙ ТАБЛИЦЫ.
  *
@@ -8758,6 +8762,29 @@ typedef struct {
   size_t runtime_count;
   const char *runtime_files[EMIT_RUNTIME_MAX];
   const char *build_say;
+  /*
+   * ЧЕМ НАПЕЧАТАННОЕ СОБИРАЕТСЯ — программы, которые должны быть в $PATH,
+   * чтобы строка `build_say` (а у цели «c» — напечатанный Makefile) вообще
+   * прошла. Заканчивается NULL.
+   *
+   * ЗАЧЕМ ОТДЕЛЬНЫМ ПОЛЕМ, А НЕ РАЗБОРОМ `build_say`. Совет — текст для
+   * человека, и в нём стоят не только имена программ: «cd <каталог> &&»,
+   * «./...», «target/debug/flang_cli <модуль>». Выковыривать имена оттуда
+   * значило бы завести второй разборщик, который молча разойдётся с текстом
+   * при первой же его правке. Здесь имена названы, и правка совета без правки
+   * списка видна глазом — они стоят рядом.
+   *
+   * ПОЧЕМУ У «c» СПИСОК ЕСТЬ, ХОТЯ `build_say` У НЕЁ NULL. Совета она не даёт,
+   * но Makefile печатает, и собирается он ровно `make` и `cc` (`CC ?= cc` в
+   * шапке напечатанного Makefile). Молчание про нехватку было бы тем же
+   * пробелом, что и у остальных восьми, только без совета впереди.
+   *
+   * ИМЕНА — УМОЛЧАНИЯ НАПЕЧАТАННЫХ MAKEFILE, а не единственно возможное:
+   * `CC ?= cc`, `CXX ?= g++`, `JAVAC ?= javac`, `ELIXIRC ?= elixirc`.
+   * Переопределившему их (`make CC=gcc`) сообщение соврёт про имя, но не про
+   * суть: умолчания на этой машине нет.
+   */
+  const char *build_needs[EMIT_BUILD_MAX];
   /* Имя обёртки на flang, которой у цели проверяются столкновения имён после
      транслитерации, — или NULL, если проверки у цели нет. Зовётся она из
      `repl_check_sources` ПЕРЕД судом ядра, чтобы отказ приходил за минуты, а
@@ -8796,17 +8823,20 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
      EMIT_FIELDS_C, 6,
      {"flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c", "flang_conc.h", "flang_conc.c"},
      NULL,
+     {"make", "cc", NULL},
      "Столкновения имён"},
     {"go", "Go", "flang_runtime.go", {"flang/src/emit/go", "share/flang/go"}, "Напечатать связанное в Go",
      true,
      15, EMIT_FIELDS_GO, 4, {"", "flang_runtime.go", "flang_cli.go", ""},
      "собрать: cd <каталог> && go build ./...",
+     {"go", NULL, NULL},
      NULL},
     {"rust", "Rust", "flang_runtime.rs", {"flang/src/emit/rust", "share/flang/rust"},
      "Напечатать связанное в Rust", true, 12,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
       "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
      2, {"flang_runtime.rs", "flang_cli.rs"}, "собрать: cd <каталог> && cargo build, запустить target/debug/flang_cli <модуль>",
+     {"cargo", NULL, NULL},
      NULL},
     {"java", "Java", "Value.java", {"flang/src/emit/java", "share/flang/java"},
      "Напечатать связанное в Java",
@@ -8816,6 +8846,7 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "типы входа", "поля входа", "варианты входа", "параметры входа"},
      6, {"Value.java", "Field.java", "FlangError.java", "Ctx.java", "Flang.java", "FlangCli.java"},
      "собрать: cd <каталог> && make",
+     {"make", "javac", NULL},
      NULL},
     /* У JavaScript рантайм лежит ЛИТЕРАЛАМИ внутри `emit-js.flang`: снаружи
        приезжают только прогонщик, планировщик и исполнитель планов, и по
@@ -8841,6 +8872,7 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "варианты входа", "параметры входа"},
      3, {"flang_conc.js", "flang_cli.js", "flang_io.js"},
      "запустить: cd <каталог> && node flang_cli.js ./<имя>.js",
+     {"node", NULL, NULL},
      NULL},
     {"elixir", "Elixir", "flang_runtime.ex", {"flang/src/emit/elixir", "share/flang/elixir"},
      "Напечатать связанное в Elixir", true, 13,
@@ -8848,12 +8880,14 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "исходник прогонщика", "исходник конкурентности", "типы входа", "поля входа", "варианты входа",
       "параметры входа"},
      3, {"flang_runtime.ex", "flang_cli.ex", "flang_conc.ex"}, "собрать и запустить: cd <каталог> && make run",
+     {"make", "elixirc", "elixir"},
      NULL},
     {"python", "Python", "flang_runtime.py", {"flang/src/emit/python", "share/flang/python"},
      "Напечатать связанное в Python", true, 12,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
       "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
      2, {"flang_runtime.py", "flang_cli.py"}, "запустить: cd <каталог> && python3 flang_cli.py <модуль>",
+     {"python3", NULL, NULL},
      NULL},
     {"csharp", "C#", "Value.cs", {"flang/src/emit/csharp", "share/flang/csharp"},
      "Напечатать связанное в CSharp", true, 16,
@@ -8862,6 +8896,7 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "типы входа", "поля входа", "варианты входа", "параметры входа"},
      6, {"Value.cs", "Field.cs", "FlangError.cs", "Ctx.cs", "Flang.cs", "FlangCli.cs"},
      "собрать: cd <каталог> && dotnet build",
+     {"dotnet", NULL, NULL},
      NULL},
     /* У C++ РАНТАЙМ ТОТ ЖЕ, ЧТО У «c», и это единственная строка таблицы, где
        `places` называет РОДИТЕЛЬСКИЙ каталог целей, а не каталог одной цели:
@@ -8886,6 +8921,7 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "поля входа", "варианты входа", "параметры входа"},
      4, {"c/flang_runtime.h", "c/flang_runtime.c", "c/flang_cli.c", "cpp/flang_cpp.hpp"},
      "собрать: cd <каталог> && make",
+     {"make", "g++", NULL},
      NULL},
 };
 
@@ -10143,6 +10179,81 @@ static int emit_file(int argc, char **argv, const char *self) {
       }
       if (EMIT_TARGET_TABLE[chosen].build_say != NULL && one == NULL) {
         fprintf(stderr, "%s\n", EMIT_TARGET_TABLE[chosen].build_say);
+      }
+      /*
+       * ЧЕМ СОБИРАТЬ — ЕСТЬ ЛИ ОНО ЗДЕСЬ.
+       *
+       * ── ЧТО БЫЛО ─────────────────────────────────────────────────────────
+       * Совет строкой выше звал тулчейн, не проверив, что тулчейн есть.
+       * Замерено 6 сентября 2026 на этом дереве, все девять целей,
+       * `env PATH=/nonexistent bootstrap/flang emit hello.flang --target ЦЕЛЬ
+       * --out КАТ`: девять раз код 0, девять раз строка «напечатано файлов N»,
+       * и ни у одной цели ни слова о том, что собрать напечатанное здесь
+       * нечем. Печать считала файлы, которые положила, и зеленела; соберётся
+       * ли положенное — не считал никто.
+       *
+       * ── ПОЧЕМУ ПРЕДУПРЕЖДЕНИЕ, А НЕ ОТКАЗ КОДОМ ──────────────────────────
+       * Потому что печать УДАЛАСЬ: тем же замером показано, что тулчейн ей не
+       * нужен вовсе — все девять целей напечатались при `PATH=/nonexistent`
+       * полностью и верно. Значит его отсутствие не делает вывод ни неполным,
+       * ни неправильным, и отказ кодом сломал бы законный ход — напечатать на
+       * одной машине, собрать на другой (кросс-печать, выкладка в образ,
+       * машина сборки без компиляторов). Отказ был бы уместен, будь тулчейн
+       * нужен УЖЕ НА ПЕЧАТИ; замер говорит, что ни одной цели он там не нужен.
+       * Правило на будущее: появится цель, зовущая тулчейн во время печати, —
+       * ей место в отказе выше, рядом с ненайденным рантаймом, а не здесь.
+       *
+       * Молчание при этом кончается: строка идёт в поток ошибок, называет
+       * недостающее поимённо и говорит, что делать. Кто ждёт нуля — получает
+       * ноль; кто читает вывод — узнаёт о пробеле сразу, а не на сборке.
+       *
+       * ── ПОЧЕМУ ЗДЕСЬ, А НЕ ПЕРЕД ПЕЧАТЬЮ ─────────────────────────────────
+       * Порядок «сколько напечатано → чем собрать → чего для этого нет»
+       * читается сверху вниз одной мыслью. Проверка перед печатью назвала бы
+       * нехватку раньше, чем стало ясно, есть ли вообще что собирать: печать
+       * могла отмениться замечанием, и тогда речь о тулчейне — шум.
+       *
+       * ── ЦЕНА ─────────────────────────────────────────────────────────────
+       * `repl_in_path` — это `access(X_OK)` по каталогам $PATH, не более трёх
+       * имён на цель, и зовётся оно один раз за печать, уже после записи
+       * файлов. На фоне печати не измеримо.
+       */
+      if (one == NULL) {
+        char missing[256];
+        size_t filled = 0;
+        size_t need = 0;
+        missing[0] = '\0';
+        for (need = 0; need < EMIT_BUILD_MAX; need += 1) {
+          const char *name = EMIT_TARGET_TABLE[chosen].build_needs[need];
+          char *found = NULL;
+          if (name == NULL) {
+            break;
+          }
+          found = repl_in_path(name);
+          if (found != NULL) {
+            free(found);
+            continue;
+          }
+          if (filled > 0 && filled + 2 < sizeof(missing)) {
+            memcpy(missing + filled, ", ", 2);
+            filled += 2;
+            missing[filled] = '\0';
+          }
+          if (filled + strlen(name) + 1 < sizeof(missing)) {
+            memcpy(missing + filled, name, strlen(name));
+            filled += strlen(name);
+            missing[filled] = '\0';
+          }
+        }
+        if (filled > 0) {
+          fprintf(stderr,
+                  "СОБРАТЬ ЭТО ЗДЕСЬ НЕЧЕМ: в $PATH нет %s — а напечатанное в %s собирается\n"
+                  "именно этим. Файлы записаны и верны: САМОЙ ПЕЧАТИ тулчейн не нужен, поэтому\n"
+                  "она и не отказывает — печатать на одной машине, а собирать на другой законно.\n"
+                  "Что делать: поставить названное, или собрать напечатанное там, где оно есть.\n"
+                  "Код не меняется и остаётся прежним: ответ emit — это ФАЙЛЫ, и они напечатаны.\n",
+                  missing, EMIT_TARGET_TABLE[chosen].title);
+        }
       }
     }
   }

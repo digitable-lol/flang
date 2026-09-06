@@ -3430,8 +3430,9 @@ static char *svesti_term(const char *syroy, Sp stroki, int gl) {
   return t;
 }
 
-/* ═══ ПЕРЕПИСАТЬ ФОРМОЙ — ход, задача 4106 (семья С3 «Длина») ═══════════════
-   Применение ОДНОГО названного закона формы Д1–Д5, а не общий переписыватель.
+/* ═══ ПЕРЕПИСАТЬ ФОРМОЙ — ход, задачи 4106 (С3 «Длина») и 4107 (С4 «Элемент») ══
+   Применение ОДНОГО названного закона формы (Д1–Д5 длины, Э1–Э4 элемента по
+   номеру — «Развернуть элемент по номеру»), а не общий переписыватель.
    Запись несёт ИМЯ закона; переигрыватель проверяет, что левая сторона в цели
    правда той формы, и САМ пересобирает правую по закону — не берёт её из
    записи (иначе снимок-со-снимком, §6). Пересобранная ≠ записанной → отказ.
@@ -3443,14 +3444,48 @@ static char *svesti_term(const char *syroy, Sp stroki, int gl) {
      Д5    «Мера построения»    длина (отобразить Л как …)       → длина Л            */
 static int zakon_formy_est(const char *z) {
   return strcmp(z, "Мера прибавления") == 0 || strcmp(z, "Мера склейки") == 0 ||
-         strcmp(z, "Мера разложения") == 0 || strcmp(z, "Мера построения") == 0;
+         strcmp(z, "Мера разложения") == 0 || strcmp(z, "Мера построения") == 0 ||
+         strcmp(z, "Развернуть элемент по номеру") == 0;
+}
+
+/* Правая сторона закона «Развернуть элемент по номеру» (Э1–Э4, задача 4107),
+   собранная переигрывателем из левой РОВНО ОДНИМ применением: подтермы берутся
+   как записаны, номер считает сам, рекурсии по подтермам нет. Форма под закон не
+   подходит — 0. Разбор слово в слово из ветки `элемент … в …` в `svesti_term`
+   выше, только без сведения подтермов.
+     Э1  элемент 1 в (приписать Г к Х)         → Г
+     Э2  элемент К в (приписать Г к Х), К≥2     → элемент (К−1) в Х   (К−1 считаем сами)
+     Э3  элемент ((длина Х) плюс 1) в (добавить Э к Х) → Э            (номер сверяем сами)
+     Э4  элемент К в [Э₁ … Эн], 1≤К≤н           → Эк                  (границы считаем сами) */
+static char *forma_elementom(const char *levo) {
+  char *t = term(levo), *nom, *spis, *l, *p; double v; Sp chleny;
+  if (!nachinaetsya(t, "элемент ")) return 0;
+  if (!razrez_slovom(uzhat(obrezat(t + strlen("элемент "))), " в ", &nom, &spis)) return 0;
+  nom = uzhat(nom); spis = uzhat(spis);   /* номер и список приезжают обёрнутыми в скобки подстановкой — снимаем внешнюю пару, как Д-путь снимает её у аргумента длины */
+  if (razrez_slovom(spis, " к ", &l, &p)) {
+    if (nachinaetsya(l, "приписать ") && chislo_tochno(nom, &v) && v == (double)(long)v) {
+      if ((long)v == 1) return term(slova_posle(l, 1));
+      if ((long)v >= 2) return term(fmt("элемент %ld в %s", (long)v - 1, v_skobki(p)));
+    }
+    if (nachinaetsya(l, "добавить ") &&
+        (strcmp(nom, fmt("( длина %s ) плюс 1", v_skobki(p))) == 0 ||
+         strcmp(nom, fmt("1 плюс ( длина %s )", v_skobki(p))) == 0))
+      return term(slova_posle(l, 1));
+  }
+  chleny = chleny_spiska(spis);
+  if (chleny.n && chislo_tochno(nom, &v) && v == (double)(long)v &&
+      (long)v >= 1 && (long)v <= chleny.n)
+    return term(chast(chleny, (long)v));
+  return 0;
 }
 
 /* Правая сторона названного закона, СОБРАННАЯ ПЕРЕИГРЫВАТЕЛЕМ из левой (подтермы
    берутся как записаны, без сведения). Форма под закон не подходит — 0. Разбор
    формы слово в слово из `svesti_term`, только без рекурсии по `gl`. */
 static char *forma_zakonom(const char *levo, const char *zakon) {
-  char *t = term(levo), *a, *l, *p;
+  char *t, *a, *l, *p;
+  if (strcmp(zakon, "Развернуть элемент по номеру") == 0) return forma_elementom(levo);
+  t = term(levo);
   if (!nachinaetsya(t, "длина ")) return 0;
   a = uzhat(obrezat(t + strlen("длина ")));
   if (strcmp(zakon, "Мера прибавления") == 0)
@@ -3485,7 +3520,7 @@ static void hod_perepiski_formoy(Progon *p, const char *stroka) {
   if (!*pravo) {
     beda_progona(p, fmt("переписать формой «%s»: вторым уголком ⟨…⟩ не стоит правая сторона", levo)); return; }
   if (!zakon_formy_est(zakon)) {
-    beda_progona(p, fmt("переписать формой: закон «%s» не из списка Д1–Д5 (Мера прибавления / склейки / разложения / построения)", zakon)); return; }
+    beda_progona(p, fmt("переписать формой: закон «%s» не из списка Д1–Д5 / Э1–Э4 (Мера прибавления / склейки / разложения / построения / Развернуть элемент по номеру)", zakon)); return; }
   if (!est_term(pervaya_cel(p), levo)) {
     beda_progona(p, fmt("переписать формой: в цели «%s» нет терма «%s»", pervaya_cel(p), levo)); return; }
   sobrano = forma_zakonom(levo, zakon);

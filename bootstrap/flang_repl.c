@@ -253,7 +253,7 @@ static char *repl_read_all(FILE *stream, size_t *length) {
  * СОБРАННОГО бинарника. Иначе `flang --version` однажды назвал бы версию,
  * которой нет ни в одном релизе.
  */
-#define FLANG_VERSION "0.7.11"
+#define FLANG_VERSION "0.7.12"
 
 static const char REPL_GREETING[] =
     "flang " FLANG_VERSION " — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.\n"
@@ -8750,6 +8750,10 @@ static int run_file(int argc, char **argv) {
 #define EMIT_FIELD_MAX 17
 #define EMIT_RUNTIME_MAX 6
 
+/* Потолок списка программ, которыми напечатанное собирается. Три — у Elixir
+   (`make`, `elixirc`, `elixir`), у остальных одна или две. */
+#define EMIT_BUILD_MAX 3
+
 /**
  * Что двоичный знает о цели печати — ОДНОЙ СТРОКОЙ ТАБЛИЦЫ.
  *
@@ -8776,6 +8780,35 @@ typedef struct {
   size_t runtime_count;
   const char *runtime_files[EMIT_RUNTIME_MAX];
   const char *build_say;
+  /*
+   * ЧЕМ НАПЕЧАТАННОЕ СОБИРАЕТСЯ — программы, которые должны быть в $PATH,
+   * чтобы строка `build_say` (а у цели «c» — напечатанный Makefile) вообще
+   * прошла. Заканчивается NULL.
+   *
+   * ЗАЧЕМ ОТДЕЛЬНЫМ ПОЛЕМ, А НЕ РАЗБОРОМ `build_say`. Совет — текст для
+   * человека, и в нём стоят не только имена программ: «cd <каталог> &&»,
+   * «./...», «target/debug/flang_cli <модуль>». Выковыривать имена оттуда
+   * значило бы завести второй разборщик, который молча разойдётся с текстом
+   * при первой же его правке. Здесь имена названы, и правка совета без правки
+   * списка видна глазом — они стоят рядом.
+   *
+   * ПОЧЕМУ У «c» СПИСОК ЕСТЬ, ХОТЯ `build_say` У НЕЁ NULL. Совета она не даёт,
+   * но Makefile печатает, и собирается он ровно `make` и `cc` (`CC ?= cc` в
+   * шапке напечатанного Makefile). Молчание про нехватку было бы тем же
+   * пробелом, что и у остальных восьми, только без совета впереди.
+   *
+   * ИМЕНА — УМОЛЧАНИЯ НАПЕЧАТАННЫХ MAKEFILE, а не единственно возможное:
+   * `CC ?= cc`, `CXX ?= g++`, `JAVAC ?= javac`, `ELIXIRC ?= elixirc`.
+   * Переопределившему их (`make CC=gcc`) сообщение соврёт про имя, но не про
+   * суть: умолчания на этой машине нет.
+   */
+  const char *build_needs[EMIT_BUILD_MAX];
+  /* Что сказать человеку про ПЛАН — и только ему. Печатается ровно тогда, когда
+     в программе есть план: тогда же рядом с выводом ложится хозяин. Отдельной
+     строкой, а не хвостом `build_say`, потому что программе без плана хозяина
+     не кладут, и обещать его ей значило бы назвать файл, которого нет. NULL —
+     цель плана не печатает вовсе (сегодня таких восемь из девяти). */
+  const char *plan_say;
   /* Имя обёртки на flang, которой у цели проверяются столкновения имён после
      транслитерации, — или NULL, если проверки у цели нет. Зовётся она из
      `repl_check_sources` ПЕРЕД судом ядра, чтобы отказ приходил за минуты, а
@@ -8814,18 +8847,22 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
      EMIT_FIELDS_C, 6,
      {"flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c", "flang_conc.h", "flang_conc.c"},
      NULL,
+     {"make", "cc", NULL},
+     NULL,
      "Столкновения имён"},
     {"go", "Go", "flang_runtime.go", {"flang/src/emit/go", "share/flang/go"}, "Напечатать связанное в Go",
      true,
      15, EMIT_FIELDS_GO, 4, {"", "flang_runtime.go", "flang_cli.go", ""},
      "собрать: cd <каталог> && go build ./...",
-     NULL},
+     {"go", NULL, NULL},
+     NULL, NULL},
     {"rust", "Rust", "flang_runtime.rs", {"flang/src/emit/rust", "share/flang/rust"},
      "Напечатать связанное в Rust", true, 12,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
       "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
      2, {"flang_runtime.rs", "flang_cli.rs"}, "собрать: cd <каталог> && cargo build, запустить target/debug/flang_cli <модуль>",
-     NULL},
+     {"cargo", NULL, NULL},
+     NULL, NULL},
     {"java", "Java", "Value.java", {"flang/src/emit/java", "share/flang/java"},
      "Напечатать связанное в Java",
      true, 16,
@@ -8834,7 +8871,8 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "типы входа", "поля входа", "варианты входа", "параметры входа"},
      6, {"Value.java", "Field.java", "FlangError.java", "Ctx.java", "Flang.java", "FlangCli.java"},
      "собрать: cd <каталог> && make",
-     NULL},
+     {"make", "javac", NULL},
+     NULL, NULL},
     /* У JavaScript рантайм лежит ЛИТЕРАЛАМИ внутри `emit-js.flang`: снаружи
        приезжают только прогонщик, планировщик и исполнитель планов, и по
        прогонщику же узнаётся каталог.
@@ -8851,14 +8889,30 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
 
        ПОРЯДОК ИМЁН ЗДЕСЬ ЗНАЧИМ: файлы рантайма разбираются подряд теми
        полями, которых `emit_call` не знает по имени. Их три и они идут в том
-       же порядке, что и `runtime_files`: планировщик, прогонщик, исполнитель. */
+       же порядке, что и `runtime_files`: планировщик, прогонщик, исполнитель.
+
+       ЧЕТВЁРТЫЙ ФАЙЛ ПОЛЯ НЕ ЗАНИМАЕТ, И ЭТО НЕ ОПЛОШНОСТЬ. `flang_host_node.js`
+       — ХОЗЯИН, а не рантайм: его не во что вшивать и не с чем сливать, он едет
+       рядом с напечатанным дословно, как приезжает на диск. Три первых
+       разбираются полями (`taken` доходит до трёх), четвёртый остаётся, и
+       `emit_along` кладёт его в вывод сам — целиком в C, без правки печати на
+       flang. Довод целиком записан там же.
+
+       ЗАЧЕМ ОН ВООБЩЕ. Программа на flang побочных действий не имеет: она
+       ОПИСЫВАЕТ действия поручениями, а исполняет их хозяин. Напечатанный
+       `flang_io.js` — это ЦИКЛ, он поручение только выдаёт наружу; `flang_cli.js`
+       про план не знает вовсе (ноль упоминаний `ioRun` и `ioPlan`). То есть до
+       четвёртого файла человек, напечатавший в JS программу с планом, получал
+       цикл БЕЗ хозяина и обязан был написать «поручение → отклик» сам. */
     {"js", "JavaScript", "flang_cli.js", {"flang/src/emit/js", "share/flang/js"},
      "Напечатать связанное в JS", true, 13,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "исходник планировщика",
       "прогонщик", "исходник прогонщика", "исходник исполнителя", "типы входа", "поля входа",
       "варианты входа", "параметры входа"},
-     3, {"flang_conc.js", "flang_cli.js", "flang_io.js"},
+     4, {"flang_conc.js", "flang_cli.js", "flang_io.js", "flang_host_node.js"},
      "запустить: cd <каталог> && node flang_cli.js ./<имя>.js",
+     {"node", NULL, NULL},
+     "план исполняет ХОЗЯИН, а не прогонщик: cd <каталог> && node flang_host_node.js ./<имя>.js",
      NULL},
     {"elixir", "Elixir", "flang_runtime.ex", {"flang/src/emit/elixir", "share/flang/elixir"},
      "Напечатать связанное в Elixir", true, 13,
@@ -8866,13 +8920,37 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "исходник прогонщика", "исходник конкурентности", "типы входа", "поля входа", "варианты входа",
       "параметры входа"},
      3, {"flang_runtime.ex", "flang_cli.ex", "flang_conc.ex"}, "собрать и запустить: cd <каталог> && make run",
-     NULL},
+     {"make", "elixirc", "elixir"},
+     NULL, NULL},
+    /* ТРЕТИЙ ФАЙЛ У PYTHON — `flang_io.py`, исполнитель плана: тот же цикл
+       «поручение → отклик», что и `flang_io.js` у JavaScript, портированный на
+       значения рантайма Python. Здесь он положен ВПЕРЁД печати: цель `python`
+       объявление «план» ещё не печатает (её `emit-python.flang` не просит поля
+       «исходник исполнителя», и `flang emit --target python` на программе с
+       планом отвечает кодом 1 и текстом FLANG_PLAN_UNSUPPORTED). Порядок
+       обратен порядку у JavaScript, где сперва просили поле, а таблица о нём не
+       знала, и печать ЛЮБОЙ программы с планом обрывалась замечанием про
+       недостающее поле.
+
+       ПОЧЕМУ ЛИШНЕЕ ПОЛЕ БЕЗВРЕДНО, пока его никто не читает: запись настроек
+       уезжает в компилятор через `compiler_flang_call`, а не через
+       `compiler_flang_enter` (см. `#define FL_PROGRAM_CALL` в начале этого
+       файла), то есть БЕЗ границы входа, где лишнее поле записи считалось бы
+       несоответствием типу. Печать читает поля по имени, и незапрошенное просто
+       не читается.
+
+       ПОРЯДОК ИМЁН ЗДЕСЬ ЗНАЧИМ: поля, которых `emit_call` не знает по имени,
+       разбирают `runtime_files` подряд. Их три и они идут в том же порядке, что
+       и файлы: рантайм, прогонщик, исполнитель. */
     {"python", "Python", "flang_runtime.py", {"flang/src/emit/python", "share/flang/python"},
-     "Напечатать связанное в Python", true, 12,
+     "Напечатать связанное в Python", true, 13,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
-      "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
-     2, {"flang_runtime.py", "flang_cli.py"}, "запустить: cd <каталог> && python3 flang_cli.py <модуль>",
-     NULL},
+      "исходник прогонщика", "исходник исполнителя", "типы входа", "поля входа", "варианты входа",
+      "параметры входа"},
+     3, {"flang_runtime.py", "flang_cli.py", "flang_io.py"},
+     "запустить: cd <каталог> && python3 flang_cli.py <модуль>",
+     {"python3", NULL, NULL},
+     NULL, NULL},
     {"csharp", "C#", "Value.cs", {"flang/src/emit/csharp", "share/flang/csharp"},
      "Напечатать связанное в CSharp", true, 16,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм значение",
@@ -8880,7 +8958,8 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "типы входа", "поля входа", "варианты входа", "параметры входа"},
      6, {"Value.cs", "Field.cs", "FlangError.cs", "Ctx.cs", "Flang.cs", "FlangCli.cs"},
      "собрать: cd <каталог> && dotnet build",
-     NULL},
+     {"dotnet", NULL, NULL},
+     NULL, NULL},
     /* У C++ РАНТАЙМ ТОТ ЖЕ, ЧТО У «c», и это единственная строка таблицы, где
        `places` называет РОДИТЕЛЬСКИЙ каталог целей, а не каталог одной цели:
        три файла из четырёх читаются из `c/`, и только «лицо» цели —
@@ -8904,7 +8983,8 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
       "поля входа", "варианты входа", "параметры входа"},
      4, {"c/flang_runtime.h", "c/flang_runtime.c", "c/flang_cli.c", "cpp/flang_cpp.hpp"},
      "собрать: cd <каталог> && make",
-     NULL},
+     {"make", "g++", NULL},
+     NULL, NULL},
 };
 
 /** Ключи командной строки печати — одни на все цели. */
@@ -9528,8 +9608,70 @@ static int emit_files_out(fl_value files, const char *out, const char *one, size
  *
  * Восьми копий этой сборки настроек не будет: цель добавляется СТРОКОЙ ТАБЛИЦЫ.
  */
+/*
+ * ФАЙЛ РАНТАЙМА, КОТОРОГО ПЕЧАТЬ НЕ ПРОСИТ ПОЛЕМ, ЕДЕТ В ВЫВОД ДОСЛОВНО.
+ *
+ * ── Почему такой путь вообще нужен ─────────────────────────────────────────
+ *
+ * Три файла рантайма JavaScript печать РАЗБИРАЕТ: планировщик и исполнитель
+ * плана вшиваются в модуль, прогонщик приезжает со своей шапкой. Хозяин —
+ * четвёртый, и разбирать в нём нечего: он самостоятелен, не ввозит из дерева
+ * ни строки и обязан лечь рядом с напечатанной программой ровно таким, каким
+ * лежит на диске. Заводить ему поле настроек значило бы просить печать
+ * переложить текст из входа в выход, ничего по дороге с ним не сделав.
+ *
+ * ── Кому файл едет, а кому нет ─────────────────────────────────────────────
+ *
+ * Только программе С ПЛАНОМ, и это не экономия байтов. Хозяин отвечает на
+ * поручения; программа без плана поручений не выдаёт ни одного, и файл рядом с
+ * ней был бы вещью, на которую нечем указать. Признак приходит сверху
+ * (`with_plans`), потому что «есть ли план» знает разбор программы, а не
+ * таблица целей.
+ *
+ * ── Что здесь НЕ делается ──────────────────────────────────────────────────
+ *
+ * Ни одной правки печати на flang (`flang/self/emit-js.flang`). Список файлов
+ * вывода она возвращает своим, а здесь он ДОПОЛНЯЕТСЯ — тем же видом записи
+ * («путь», «содержимое»), какой она кладёт сама, и потому `emit_files_out`
+ * ниже не отличает дописанное от напечатанного и не должен отличать.
+ */
+static void emit_along(const emit_target *target, size_t taken, char *const *texts, const size_t *sizes,
+                       bool with_plans, fl_value *files) {
+  static const char *const PAIR[2] = {"путь", "содержимое"};
+  const size_t had = files->as.list.count;
+  fl_value *items = NULL;
+  size_t index = 0;
+  size_t at = 0;
+  if (!with_plans || taken >= target->runtime_count) return;
+  /* Массив здесь ВРЕМЕННЫЙ, и список из него строится `repl_value_list`, а не
+     `fl_list`: второй ничего не копирует — он кладёт в значение сам указатель,
+     и список пережил бы `free` ниже висячей ссылкой. Стоило это одного прогона:
+     печать сказала «файлов 3», а на диск легло 3 файла из которых 2 пустых, и
+     `emit_files_out` молча пропустил их, не найдя полей. */
+  items = (fl_value *)repl_alloc((had + (target->runtime_count - taken)) * sizeof(fl_value));
+  for (at = 0; at < had; at += 1) {
+    items[at] = files->as.list.items[at];
+  }
+  for (index = taken; index < target->runtime_count; index += 1) {
+    const char *whole = target->runtime_files[index];
+    const char *slash = NULL;
+    fl_value pair[2];
+    if (whole[0] == '\0') continue;
+    /* Имя берётся ПОСЛЕДНЕЙ долей пути: у «cpp» файлы рантайма названы через
+       каталог цели («c/flang_runtime.h»), и рядом с выводом им лежать своим
+       именем, а не чужим каталогом. */
+    slash = strrchr(whole, '/');
+    pair[0] = repl_value_say(slash == NULL ? whole : slash + 1);
+    pair[1] = repl_value_text(texts[index], sizes[index]);
+    items[at] = repl_value_record(PAIR, pair, 2);
+    at += 1;
+  }
+  *files = repl_value_list(items, at);
+  free(items);
+}
+
 static int emit_call(const emit_target *target, fl_value subject, bool fits, const fl_entry_table *table,
-                     const char *runtime, const emit_wish *wish, fl_value *files) {
+                     const char *runtime, const emit_wish *wish, bool with_plans, fl_value *files) {
   fl_value values[EMIT_FIELD_MAX];
   fl_value args[2];
   fl_value result = fl_nothing();
@@ -9610,6 +9752,8 @@ static int emit_call(const emit_target *target, fl_value subject, bool fits, con
     } else if (!val_field(result, "файлы", files) || files->tag != FL_LIST) {
       fputs("flang emit: печать не вернула файлов\n", stderr);
       code = 1;
+    } else {
+      emit_along(target, taken, texts, sizes, with_plans, files);
     }
   }
 
@@ -9651,6 +9795,11 @@ static int emit_file(int argc, char **argv, const char *self) {
   int chosen = -1;
   bool fits = false;
   bool opened = false;
+  /* Есть ли в программе план — считается рядом с печатью (там жив разбор), а
+     говорится в самом конце, вместе с прочими словами о напечатанном. Между
+     этими точками лежит сама печать, поэтому признак приходится нести с собой —
+     ровно как строку `unjudged` выше. */
+  bool with_plans = false;
   /*
    * ЯДРО ДОКАЗАТЕЛЬСТВ — ЕДИНСТВЕННОЕ, ЧТО СНИМАЕТ ЗДЕСЬ «--no-check».
    *
@@ -10002,10 +10151,19 @@ static int emit_file(int argc, char **argv, const char *self) {
                   (unsigned long)drop_count);
         }
         if (code == 0) {
+          /* Планы спрашиваются у ПРОГРАММЫ, а не у связанного: план —
+             объявление, а связывание к объявлениям не прикасается. Тем же
+             вопросом и тем же ключом решает печать на flang («Плановая
+             программа» в `emit-js.flang`), и второго ответа на один вопрос
+             здесь заводить нельзя. */
+          const fl_value *plans = NULL;
+          size_t plan_count = 0;
+          zn_field_items(program, "plans", &plans, &plan_count);
+          with_plans = plan_count > 0;
           fits = emit_entry_fits(program, table);
           code = emit_call(&EMIT_TARGET_TABLE[chosen],
                            EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, fits, table,
-                           runtime, &wish, &files);
+                           runtime, &wish, with_plans, &files);
         }
       }
     }
@@ -10161,6 +10319,88 @@ static int emit_file(int argc, char **argv, const char *self) {
       }
       if (EMIT_TARGET_TABLE[chosen].build_say != NULL && one == NULL) {
         fprintf(stderr, "%s\n", EMIT_TARGET_TABLE[chosen].build_say);
+      }
+      /*
+       * ЧЕМ СОБИРАТЬ — ЕСТЬ ЛИ ОНО ЗДЕСЬ.
+       *
+       * ── ЧТО БЫЛО ─────────────────────────────────────────────────────────
+       * Совет строкой выше звал тулчейн, не проверив, что тулчейн есть.
+       * Замерено 6 сентября 2026 на этом дереве, все девять целей,
+       * `env PATH=/nonexistent bootstrap/flang emit hello.flang --target ЦЕЛЬ
+       * --out КАТ`: девять раз код 0, девять раз строка «напечатано файлов N»,
+       * и ни у одной цели ни слова о том, что собрать напечатанное здесь
+       * нечем. Печать считала файлы, которые положила, и зеленела; соберётся
+       * ли положенное — не считал никто.
+       *
+       * ── ПОЧЕМУ ПРЕДУПРЕЖДЕНИЕ, А НЕ ОТКАЗ КОДОМ ──────────────────────────
+       * Потому что печать УДАЛАСЬ: тем же замером показано, что тулчейн ей не
+       * нужен вовсе — все девять целей напечатались при `PATH=/nonexistent`
+       * полностью и верно. Значит его отсутствие не делает вывод ни неполным,
+       * ни неправильным, и отказ кодом сломал бы законный ход — напечатать на
+       * одной машине, собрать на другой (кросс-печать, выкладка в образ,
+       * машина сборки без компиляторов). Отказ был бы уместен, будь тулчейн
+       * нужен УЖЕ НА ПЕЧАТИ; замер говорит, что ни одной цели он там не нужен.
+       * Правило на будущее: появится цель, зовущая тулчейн во время печати, —
+       * ей место в отказе выше, рядом с ненайденным рантаймом, а не здесь.
+       *
+       * Молчание при этом кончается: строка идёт в поток ошибок, называет
+       * недостающее поимённо и говорит, что делать. Кто ждёт нуля — получает
+       * ноль; кто читает вывод — узнаёт о пробеле сразу, а не на сборке.
+       *
+       * ── ПОЧЕМУ ЗДЕСЬ, А НЕ ПЕРЕД ПЕЧАТЬЮ ─────────────────────────────────
+       * Порядок «сколько напечатано → чем собрать → чего для этого нет»
+       * читается сверху вниз одной мыслью. Проверка перед печатью назвала бы
+       * нехватку раньше, чем стало ясно, есть ли вообще что собирать: печать
+       * могла отмениться замечанием, и тогда речь о тулчейне — шум.
+       *
+       * ── ЦЕНА ─────────────────────────────────────────────────────────────
+       * `repl_in_path` — это `access(X_OK)` по каталогам $PATH, не более трёх
+       * имён на цель, и зовётся оно один раз за печать, уже после записи
+       * файлов. На фоне печати не измеримо.
+       */
+      if (one == NULL) {
+        char missing[256];
+        size_t filled = 0;
+        size_t need = 0;
+        missing[0] = '\0';
+        for (need = 0; need < EMIT_BUILD_MAX; need += 1) {
+          const char *name = EMIT_TARGET_TABLE[chosen].build_needs[need];
+          char *found = NULL;
+          if (name == NULL) {
+            break;
+          }
+          found = repl_in_path(name);
+          if (found != NULL) {
+            free(found);
+            continue;
+          }
+          if (filled > 0 && filled + 2 < sizeof(missing)) {
+            memcpy(missing + filled, ", ", 2);
+            filled += 2;
+            missing[filled] = '\0';
+          }
+          if (filled + strlen(name) + 1 < sizeof(missing)) {
+            memcpy(missing + filled, name, strlen(name));
+            filled += strlen(name);
+            missing[filled] = '\0';
+          }
+        }
+        if (filled > 0) {
+          fprintf(stderr,
+                  "СОБРАТЬ ЭТО ЗДЕСЬ НЕЧЕМ: в $PATH нет %s — а напечатанное в %s собирается\n"
+                  "именно этим. Файлы записаны и верны: САМОЙ ПЕЧАТИ тулчейн не нужен, поэтому\n"
+                  "она и не отказывает — печатать на одной машине, а собирать на другой законно.\n"
+                  "Что делать: поставить названное, или собрать напечатанное там, где оно есть.\n"
+                  "Код не меняется и остаётся прежним: ответ emit — это ФАЙЛЫ, и они напечатаны.\n",
+                  missing, EMIT_TARGET_TABLE[chosen].title);
+        }
+      }
+      /* Про хозяина говорится ТОЛЬКО программе с планом, потому что только ей
+         его и кладут. Сказать это всем значило бы назвать файл, которого рядом
+         с напечатанным нет; промолчать — оставить человека с прогонщиком,
+         который план не исполняет, и без единого указания, чем исполнять. */
+      if (with_plans && EMIT_TARGET_TABLE[chosen].plan_say != NULL && one == NULL) {
+        fprintf(stderr, "%s\n", EMIT_TARGET_TABLE[chosen].plan_say);
       }
     }
   }

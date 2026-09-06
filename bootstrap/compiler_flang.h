@@ -1893,6 +1893,10 @@ fl_status compiler_flang_sozdat_poisk_stroki_zapisi(fl_ctx *ctx, fl_value schyot
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_poisk_primera_zapisi(fl_ctx *ctx, fl_value etap, fl_value schyot, fl_value nomer, fl_value *out, fl_error *error);
 
+/* Запись FTS «Поиск свойства записи»: «счёт», «номер». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_poisk_svoystva_zapisi(fl_ctx *ctx, fl_value schyot, fl_value nomer, fl_value *out, fl_error *error);
+
 /* Запись FTS «Свод ходов»: «ходы», «часть», «берёмся». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_svod_hodov(fl_ctx *ctx, fl_value hody, fl_value chast, fl_value beryomsya, fl_value *out, fl_error *error);
@@ -67534,6 +67538,37 @@ fl_status compiler_flang_nomer_primera_zapisi(fl_ctx *ctx, fl_value stroki, fl_v
  * @return значение: «Поиск примера записи»
  */
 fl_status compiler_flang_shag_poiska_primera_zapisi(fl_ctx *ctx, fl_value v, fl_value stroka, fl_value funkciya, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это объявление свойства записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: строка
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_obyavlenie_svoystva_zapisi(fl_ctx *ctx, fl_value stroka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг поиска свойства записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param v — «в»: «Поиск свойства записи»
+ * @param stroka — «строка»: строка
+ * @param imya — «имя»: строка
+ * @return значение: «Поиск свойства записи»
+ */
+fl_status compiler_flang_shag_poiska_svoystva_zapisi(fl_ctx *ctx, fl_value v, fl_value stroka, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Номер свойства записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param imya — «имя»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_nomer_svoystva_zapisi(fl_ctx *ctx, fl_value stroki, fl_value imya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Привязка шага записи».

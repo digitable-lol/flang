@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 281 файлов вне flang, долг вне JavaScript — 107 при потолке 63
-<!-- СНЯТО 2026-09-06 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 281 -->
+# Опись дерева по языкам: 282 файлов вне flang, долг вне JavaScript — 107 при потолке 63
+<!-- СНЯТО 2026-09-06 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 282 -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
@@ -65,7 +65,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 105 | 20 060 | 90 | 11 645 <!-- СНЯТО 2026-09-06 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 105 --><!-- СНЯТО 2026-09-06 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 20060 --> |
+| оболочка | 106 | 20 193 | 90 | 11 645 <!-- СНЯТО 2026-09-06 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 106 --><!-- СНЯТО 2026-09-06 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 20193 --> |
 | C | 38 | 772 418 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-06 строк-в *.c,*.h = 772418 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 23 | 8 022 | 16 | 3 843 <!-- СНЯТО 2026-09-06 файлов *.py = 23 --><!-- СНЯТО 2026-09-06 строк-в *.py = 8022 --> |

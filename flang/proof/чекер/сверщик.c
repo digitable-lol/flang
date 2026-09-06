@@ -666,7 +666,11 @@ static char *hozyain_stroki(Sp stroki, long gde) {
 
 /* ═══════════════════════ обстановка и проигрывание сведения ════════════════ */
 
-typedef struct { Sp stroki, svoi; char *cel, *funkciya, *po, *tip, *hvost; } Obst;
+typedef struct { Sp stroki, svoi; char *cel, *funkciya, *po, *tip, *hvost;
+                 /* 4123, S2: имя доказываемого сейчас постусловия (для сторожа
+                    круга — прямой самоссылки по имени) и снимок реестра доказанных
+                    РАНЬШЕ постусловий (для сторожа круга через рекурсию). */
+                 char *obyaz; Sp dokazannye; } Obst;
 
 /* ПРОЧИЕ ДОВОДЫ ФУНКЦИИ — «и дно», «и предел» и так далее. Прежде вызов строился
    ОДНОДОВОДНЫМ («Ф» от значение), и на функции с двумя доводами цель посылки
@@ -704,6 +708,56 @@ static char *pervyy_dovod(Sp stroki, const char *funkciya) {
     if (*imya_z) vnutri = (strcmp(imya_z, funkciya) == 0);
     else if (vnutri && nachinaetsya(l, "принимает "))
       return obrezat(chast(razdelit(chast(razdelit(hvost_posle(l, "принимает "), ","), 1), ":"), 1));
+  }
+  return (char *)"";
+}
+
+/* ═══ 4123, S2 «постусловие вызванной»: ЧТЕНИЕ ВЫЗВАННОЙ ФУНКЦИИ ИЗ ИСХОДНИКА ═══
+   Инстанция постусловия строится ДВУМЯ подстановками (проект §1.2, ядро
+   proofterm.flang 1326): параметры вызванной → аргументы узла вызова, и связка
+   `результат` → сам узел. Ниже — три чтения, на которых стоят перепроверки (а),
+   (б) и оплата `требует`. Все читают исходник так, как его читает язык. */
+
+/* Все имена параметров функции — из строки «принимает», по порядку. Служит
+   перепроверке (б): арность обязана совпасть с числом аргументов вызова, а имена
+   идут под подстановку. Ёлочки снимаются (`golo`): имя пишется и голым, и в них. */
+static Sp parametry_funkcii(Sp stroki, const char *funkciya) {
+  Sp r = PUSTO; int i, vnutri = 0;
+  for (i = 0; i < stroki.n; i++) {
+    char *syraya = stroki.e[i], *l = obrezat(bez_primechaniya(syraya));
+    char *imya_z = imya_funkcii(syraya);
+    if (*imya_z) vnutri = (strcmp(imya_z, funkciya) == 0);
+    else if (vnutri && nachinaetsya(l, "принимает ")) {
+      Sp ch = razdelit(hvost_posle(l, "принимает "), ","); int j;
+      for (j = 0; j < ch.n; j++) {
+        char *imya = obrezat(chast(razdelit(ch.e[j], ":"), 1));
+        if (*imya) dobavit(&r, golo(imya));
+      }
+      return r;
+    }
+  }
+  return r;
+}
+
+/* Аргументы узла вызова `«Г» от а₁ и а₂ и …` — то, что стоит после «Г» от».
+   Соседние доводы функция ядра печатает через « и » (как `hvost_dovodov`);
+   разрез по верхнему уровню, чтобы «и» ВНУТРИ подтерма его не рвало. */
+static Sp argumenty_vyzova(const char *vyzov, const char *imya_g) {
+  char *hv = obrezat(hvost_posle(vyzov, fmt("«%s» от ", imya_g)));
+  if (!*hv) return PUSTO;
+  return razdelit_sverhu(hv, "и");
+}
+
+/* Первое предусловие функции — строка «требует …» в её блоке, или пусто. На нём
+   стоит ОПЛАТА (проект §3): постусловие вызванной верно лишь при выполненном
+   предусловии; фактом его берут только там, где `требует` вызванной снят. */
+static char *trebuet_funkcii(Sp stroki, const char *funkciya) {
+  int i, vnutri = 0;
+  for (i = 0; i < stroki.n; i++) {
+    char *syraya = stroki.e[i], *l = obrezat(bez_primechaniya(syraya));
+    char *imya_z = imya_funkcii(syraya);
+    if (*imya_z) vnutri = (strcmp(imya_z, funkciya) == 0);
+    else if (vnutri && nachinaetsya(l, "требует ")) return l;
   }
   return (char *)"";
 }
@@ -801,7 +855,16 @@ static char *nachalnaya_cel(Obst *o, const char *variant) {
 }
 
 typedef struct { Sp celi, dano, bedy; long hodov, proigrano, bez_privyazki;
-                 int idyot; char *variant; } Progon;
+                 int idyot; char *variant;
+                 /* 4123, S2: инстанцированное постусловие вызванной, внесённое
+                    ходом `факт по свойству` и потребляемое ходом `закрыть по
+                    свойству` (модус-поненс). Пусто — факта нет. */
+                 char *posl_fakt; } Progon;
+
+/* 4123, S2: атрибуция (а) переиспользует `nomer_svoystva` (первое по файлу
+   объявление постусловия), а та стоит ниже по файлу у тракта 3455 — здесь лишь
+   объявление, чтобы ход `факт по свойству` знал её имя. */
+static long nomer_svoystva(Sp stroki, const char *imya);
 
 static void beda_progona(Progon *p, char *t) { dobavit(&p->bedy, t); p->idyot = 0; }
 static char *pervaya_cel(Progon *p) { return p->celi.n ? p->celi.e[0] : (char *)""; }
@@ -1009,7 +1072,128 @@ static void hod_zakrytiya(Progon *p, const char *stroka, Obst *o) {
     else if (!sovpali_celi(term(fakt), term(cel)))
       beda_progona(p, fmt("закрыть требованием «%s»: требование «%s» не совпало с целью «%s»", imya, term(fakt), cel));
     else vmesto_pervoy(p, PUSTO);
+  } else if (strcmp(chem, "по") == 0) {
+    /* 4123, ХОД S2 «закрыть по свойству» — перепроверка (в)+(г). Внесённый
+       ходом `факт по свойству` факт замыкает цель МОДУС-ПОНЕНСОМ. При охране
+       (`по охране ⟨У⟩`) и цель, и факт стоят под одной охраной `если У то … иначе
+       да`: (в) охрана хода обязана БЫТЬ той посылкой, что стоит условием в цели, а
+       не приписанной рядом; берётся ветвь `да`, ветвь `иначе да` закрывается
+       истиной. (г) факт-равенство `L равен R` даёт подстановку правой стороны в
+       да-ветвь цели, и цель обязана свестись к тождеству. Не свелась — «НЕ СОШЛОСЬ».
+       Голое равенство (охраны нет) идёт тем же (г) без разреза. Это «модус поненс
+       по охране» ядра (proof-kernel.flang 7928), перенесённый в чекер. */
+    char *ohrana = obrezat(v_ugolkah(stroka, 1));   /* пусто, если охраны нет */
+    char *fakt = p->posl_fakt ? p->posl_fakt : (char *)"";
+    char *cel_da = cel, *ravenstvo = fakt;
+    if (!*fakt) {
+      beda_progona(p, (char *)"закрыть по свойству: факта не внесено — нет хода «факт по свойству» перед закрытием"); return;
+    }
+    if (*ohrana) {
+      Razrez cel_to = razrez_po(cel, "то"),  cel_v = razrez_po(cel_to.pravo, "иначе");
+      Razrez f_to  = razrez_po(fakt, "то"),  f_v   = razrez_po(f_to.pravo, "иначе");
+      char *u_cel  = slova_posle(cel_to.levo, 1);
+      int fakt_pod_ohranoy = f_to.est && f_v.est && nachinaetsya(f_to.levo, "если ");
+      if (!(cel_to.est && cel_v.est && nachinaetsya(cel_to.levo, "если ") &&
+            strcmp(uzhat(u_cel), uzhat(ohrana)) == 0)) {
+        beda_progona(p, fmt("закрыть по свойству по охране ⟨%s⟩: цель «%s» не стоит под этой охраной условием", ohrana, cel)); return;
+      }
+      if (strcmp(uzhat(cel_v.pravo), "да") != 0) {
+        beda_progona(p, fmt("закрыть по свойству: ветвь «иначе» цели «%s» не «да» — истиной не закрыть", cel)); return;
+      }
+      cel_da = cel_v.levo;
+      /* Факт под ТОЙ ЖЕ охраной — берём его да-ветвь. Факт БЕЗУСЛОВНЫЙ (`L равен
+         R` без «если») верен на любой ветви, в том числе на да, — годится как
+         есть. Факт под ЧУЖОЙ охраной — отвергается. */
+      if (fakt_pod_ohranoy) {
+        if (strcmp(uzhat(slova_posle(f_to.levo, 1)), uzhat(ohrana)) != 0) {
+          beda_progona(p, fmt("закрыть по свойству по охране ⟨%s⟩: факт «%s» стоит под другой охраной", ohrana, fakt)); return;
+        }
+        ravenstvo = f_v.levo;
+      } else ravenstvo = fakt;
+    }
+    { Razrez fr = razrez_po(ravenstvo, "равен");
+      if (!fr.est) fr = razrez_po(ravenstvo, "равно");
+      if (!fr.est) {
+        beda_progona(p, fmt("закрыть по свойству: факт «%s» — не равенство, модус-поненс им цель не замыкает", fakt)); return;
+      }
+      { char *posle = term(vstavit_vmesto(cel_da, fr.levo, fr.pravo));
+        Razrez g = razrez_po(posle, "равно");
+        if (!g.est) g = razrez_po(posle, "равен");
+        if (g.est && strcmp(uzhat(g.levo), uzhat(g.pravo)) == 0) { p->posl_fakt = (char *)""; vmesto_pervoy(p, PUSTO); }
+        else beda_progona(p, fmt("закрыть по свойству: факт «%s» цель «%s» не закрывает", fakt, cel));
+      } }
   } else beda_progona(p, fmt("закрыть «%s» сверщику неизвестно", chem));
+}
+
+/* 4123, ХОД S2 «факт по свойству» — перепроверки (а), (б), сторож круга, оплата.
+   `ход K факт по свойству «имя-П» строка N вызов ⟨«Г» от а₁ … аₙ⟩` вносит
+   ИНСТАНЦИРОВАННОЕ постусловие вызванной функции как ФАКТ. Инстанцию чекер строит
+   САМ (двумя подстановками), не берёт из записи — иначе снимок-со-снимком. Факт не
+   закрывает цель, а лишь ложится в `posl_fakt`; замыкает его следующий ход
+   `закрыть по свойству`. */
+static void hod_fakta_svoystvom(Progon *p, const char *stroka, Obst *o) {
+  char *imya_p = v_yolochkah(stroka, 1);
+  long gde = nomer_posle(stroka, "строка ");
+  char *vyzov = term(v_ugolkah(stroka, 1));          /* «Г» от а₁ … аₙ */
+  char *imya_g = v_yolochkah(vyzov, 1);
+  char *v_ish, *telo_p, *treb; Sp param, argy; int i, ranshe = 0;
+  if (!*imya_p || gde < 1 || !*imya_g) {
+    beda_progona(p, fmt("факт по свойству: ход «%s» неполон — нужны «имя-П», «строка N» и «вызов ⟨«Г» от …⟩»", stroka)); return;
+  }
+  /* СТОРОЖ КРУГА, УРОВЕНЬ 1 — прямая самоссылка по имени: функция не вправе
+     обосновать себя своим же ещё-не-доказанным постусловием (ядро proofterm.flang
+     1110). Повторяем ровно это над обязательством записи. */
+  if (*o->obyaz && strcmp(imya_p, o->obyaz) == 0) {
+    beda_progona(p, fmt("факт по свойству «%s»: это круг — постусловие ссылается на само себя", imya_p)); return;
+  }
+  /* СТОРОЖ КРУГА, УРОВЕНЬ 2 — через рекурсию/взаимную рекурсию, ПОСТРОЕНИЕМ:
+     фактом вправе стать лишь постусловие, ДОКАЗАННОЕ РАНЬШЕ этой цели. Реестр
+     `o->dokazannye` держит имена постусловий, проверенных до текущего (порядок
+     записи линеен). Нет в реестре — рекурсия начаться не может (проект §3). */
+  for (i = 0; i < o->dokazannye.n; i++) if (strcmp(o->dokazannye.e[i], imya_p) == 0) { ranshe = 1; break; }
+  if (!ranshe) {
+    beda_progona(p, fmt("факт по свойству «%s»: постусловие не доказано РАНЬШЕ этой цели — фактом брать нельзя (круг или обратный порядок)", imya_p)); return;
+  }
+  /* (а) АТРИБУЦИЯ ПО РЕБРУ: строка N исходника несёт «обеспечивает «имя-П»», лежит
+     в блоке ИМЕННО той «Г», что вызвана в узле (не первой одноимённой у чужой
+     функции), и N — первое по файлу объявление (как ищет само правило, 3455). */
+  v_ish = stroka_po_nomeru(o->stroki, gde);
+  if (!nachinaetsya(v_ish, fmt("обеспечивает «%s» ", imya_p))) {
+    beda_progona(p, fmt("факт по свойству «%s»: строка %ld исходника не несёт «обеспечивает «%s»» (стоит «%s»)", imya_p, gde, imya_p, v_ish)); return;
+  }
+  if (strcmp(hozyain_stroki(o->stroki, gde), imya_g) != 0) {
+    beda_progona(p, fmt("факт по свойству «%s»: строка %ld стоит в функции «%s», а вызвана «%s» — привязка НЕ ПО РЕБРУ",
+                        imya_p, gde, hozyain_stroki(o->stroki, gde), imya_g)); return;
+  }
+  if (nomer_svoystva(o->stroki, imya_p) != gde) {
+    beda_progona(p, fmt("факт по свойству «%s»: строка %ld — не первое объявление постусловия (первое — %ld)",
+                        imya_p, gde, nomer_svoystva(o->stroki, imya_p))); return;
+  }
+  /* ОПЛАТА `требует`: постусловие вызванной верно лишь при выполненном предусловии.
+     Консервативно (оценка сверху, ядро proofterm.flang 2483): у вызванной с хоть
+     одним непогашенным `требует` факт не берётся вовсе. Смычку с `закрыть
+     требованием` — снятие предусловия в точке вызова — эта волна не строит. */
+  treb = trebuet_funkcii(o->stroki, imya_g);
+  if (*treb) {
+    beda_progona(p, fmt("факт по свойству «%s»: у вызванной «%s» есть предусловие «%s» — под непогашенным «требует» постусловие фактом не берётся", imya_p, imya_g, treb)); return;
+  }
+  /* (б) ИНСТАНЦИЯ ПО ВЫЗОВУ. Арность обязана совпасть: параметров у «Г» столько
+     же, сколько аргументов в узле. Затем ДВЕ подстановки (проект §1.2): параметры
+     → аргументы и связка `результат` → сам узел вызова. Подстановку выполняет
+     стоящий `vstavit_vmesto`; узел называет сам сертификат, перебирать нечего. */
+  telo_p = obrezat(hvost_posle(v_ish, fmt("обеспечивает «%s» ", imya_p)));
+  param = parametry_funkcii(o->stroki, imya_g);
+  argy = argumenty_vyzova(vyzov, imya_g);
+  if (param.n != argy.n) {
+    beda_progona(p, fmt("факт по свойству «%s»: у «%s» параметров %d, а в вызове аргументов %d — арность не совпала",
+                        imya_p, imya_g, param.n, argy.n)); return;
+  }
+  { char *inst = telo_p;
+    for (i = 0; i < param.n; i++) inst = vstavit_vmesto(inst, param.e[i], term(argy.e[i]));
+    inst = vstavit_vmesto(inst, "результат", v_skobki(vyzov));
+    p->posl_fakt = term(inst);
+    p->hodov++;    /* факт цель не меняет — счётчик хода двигаем сами */
+  }
 }
 
 static void hod_celi(Progon *p, Obst *o) {
@@ -1018,7 +1202,7 @@ static void hod_celi(Progon *p, Obst *o) {
     beda_progona(p, fmt("ход цель: случая варианта «%s» в теореме нет", p->variant)); return;
   }
   p->celi = PUSTO; dobavit(&p->celi, nachalo);
-  p->dano = PUSTO; p->hodov = 0; p->idyot = 1;
+  p->dano = PUSTO; p->hodov = 0; p->idyot = 1; p->posl_fakt = (char *)"";
 }
 
 /* ДОПУЩЕНИЕ ИНДУКЦИИ не читается из записи: чекер считает его сам — то же
@@ -1048,7 +1232,7 @@ static void hod_konca(Progon *p) {
 static void novaya_posylka(Progon *p, const char *stroka) {
   if (p->idyot) beda_progona(p, fmt("сведение посылки «%s» оборвано: «ход конец» не стоит", p->variant));
   p->celi = PUSTO; p->dano = PUSTO; p->hodov = 0; p->idyot = 0;
-  p->variant = v_yolochkah(stroka, 1);
+  p->variant = v_yolochkah(stroka, 1); p->posl_fakt = (char *)"";
 }
 
 /* Ход `вычислить` СЧИТАЕТ замкнутый терм, а счёт (`ocenit_term`) определён ниже
@@ -1080,12 +1264,13 @@ static void hod_shaga(Progon *p, const char *stroka, Obst *o) {
   else if (strcmp(rod, "закрыть") == 0) hod_zakrytiya(p, stroka, o);
   else if (strcmp(rod, "вычислить") == 0) hod_vychisleniya(p, stroka, o);
   else if (strcmp(rod, "переписать") == 0) hod_perepiski_formoy(p, stroka);
-  else beda_progona(p, fmt("ход «%s» сверщику неизвестен: первичных ходов девять, и список закрыт", rod));
+  else if (strcmp(rod, "факт") == 0) hod_fakta_svoystvom(p, stroka, o);   /* 4123, S2 */
+  else beda_progona(p, fmt("ход «%s» сверщику неизвестен: первичных ходов десять, и список закрыт", rod));
 }
 
 static Progon proigrat_blok(Obst *o) {
   Progon p; int i;
-  memset(&p, 0, sizeof p); p.variant = (char *)"";
+  memset(&p, 0, sizeof p); p.variant = (char *)""; p.posl_fakt = (char *)"";
   for (i = 0; i < o->svoi.n; i++) {
     char *s = obrezat(o->svoi.e[i]);
     if (nachinaetsya(s, "посылка ")) { novaya_posylka(&p, s); continue; }
@@ -1136,7 +1321,15 @@ typedef struct { Sp bedy, primety; long na_slovo, shagov, utverzhdeniy, svedeniy
                     просто «проверить меньше». */
                  Sp ne_vzyalsya;
                  /* Ч7104, буфер причин по непроигрываемым шагам одной теоремы. */
-                 Sp shagi_otlozhennye; } Sverka;
+                 Sp shagi_otlozhennye;
+                 /* 4123, S2 «постусловие вызванной»: реестр постусловий, уже
+                    ДОКАЗАННЫХ РАНЬШЕ по порядку записи. Ход `факт по свойству`
+                    вправе внести фактом лишь то, что стоит в этом реестре, —
+                    сторож круга через рекурсию/взаимную рекурсию (проект §3:
+                    неподвижная точка «Закрыть без теорем», ядро proofterm.flang
+                    2490). Пополняется в главном цикле ПОСЛЕ каждого утверждения,
+                    поэтому на утверждении K держит ровно 1..K−1. */
+                 Sp dokazannye_svoystva; } Sverka;
 
 static void esli_ne(Sverka *s, int uslovie, char *tekst) { if (!uslovie) dobavit(&s->bedy, tekst); }
 
@@ -4875,8 +5068,16 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
     o.stroki = stroki; o.svoi = svoi; o.funkciya = (char *)chya;
     o.cel = term(gde < 1 ? v_ugolkah(stroka_celi, 1)
                          : hvost_posle(kak_chitaet_yazyk(stroka_po_nomeru(stroki, gde)), "утверждаем "));
-    o.po = v_yolochkah(princip, 2); o.tip = v_yolochkah(princip, 1);
-    o.hvost = hvost_dovodov(stroki, chya); }
+    /* 4123: у индуктивной теоремы `результат`→самовызов идёт по переменной
+       принципа; у ПРЯМОЙ (принципа нет) — по свободной переменной `дано «имя»`,
+       иначе `ход цель` строит вызов без аргумента и развёртка не находит терма.
+       Старую форму (без ходов) это не трогает: `proigrat_blok` без «ход »
+       `nachalnaya_cel` не зовёт. */
+    o.po = *princip ? v_yolochkah(princip, 2)
+                    : v_yolochkah(pervaya_s_nachalom(svoi, "дано «"), 1);
+    o.tip = v_yolochkah(princip, 1);
+    o.hvost = hvost_dovodov(stroki, chya);
+    o.obyaz = (char *)imya; o.dokazannye = s->dokazannye_svoystva; }
   p = proigrat_blok(&o);
   vlit_progon(s, &p, imya_t);
   /* УЗЕЛ ВЕРДИКТА ПРОИГРЫВАЕТСЯ И ПОД ТЕОРЕМОЙ. Прежде здесь стоял ноль
@@ -4976,6 +5177,7 @@ static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
       o.stroki = stroki; o.svoi = svoi; o.funkciya = (char *)chya;
       o.cel = term(cel); o.tip = (char *)"";
       o.po = pervyy_dovod(stroki, chya); o.hvost = hvost_dovodov(stroki, chya);
+      o.obyaz = (char *)imya; o.dokazannye = s->dokazannye_svoystva;   /* 4123, S2 */
       p = proigrat_blok(&o);
       esli_ne(s, p.bedy.n == 0, fmt("утверждение «%s», сведение: %s", imya, soedinit(p.bedy, "; ")));
       proigran_hodami = p.bedy.n == 0 && p.proigrano > 0;
@@ -5135,6 +5337,12 @@ static Sverka sverit(const char *ishodnik, const char *zapis, const char *put,
     dobavit(&s.po_utverzhdeniyam,
             fmt("  утверждение «%s»: %s (на слово ядра: посылок и утверждений %ld, шагов %ld)",
                 imya, itog, s.na_slovo - d0, s.shagov_na_slovo - sh0));
+    /* 4123, S2: реестр доказанного пополняется ПОСЛЕ утверждения — на следующем
+       он держит ровно предыдущие. Кладём имя постусловия, чей вердикт «доказано»
+       и по которому запись не покраснела; сторож круга хода `факт по свойству`
+       берёт факт только из этого реестра. */
+    if (strcmp(verdikt, "доказано") == 0 && s.bedy.n == b0)
+      dobavit(&s.dokazannye_svoystva, imya);
   }
   sverit_krugi(&s, bloki);
   for (i = 0; i < OGL_BEDY.n; i++) dobavit(&s.bedy, OGL_BEDY.e[i]);

@@ -2120,6 +2120,298 @@ static int ne_proigran(Sverka *s, const char *imya, char *pochemu) {
   return 0;
 }
 
+/* ═══ УЗЕЛ ВЕРДИКТА «РАЗБОРОМ ПО СЛУЧАЯМ», ВТОРОЙ НОСИТЕЛЬ: ALGEBRA ═════════
+   Замер (клетка 131, перепечатка): за «вне приёма» у этого узла стоит носитель
+   `algebra` чаще любого отдельного правила — 21 узел, 42 места на слове ядра,
+   и один этим закрывает 9 записей из 53 невзятых. Тот же самый довод, что и у
+   `segment`: `proigrat_uzel` не верит записи, а читает ТЕЛО ФУНКЦИИ и сам
+   проверяет каждую ветвь — только тело здесь не «если/то/иначе», а
+   `разбор X / случай …`, и ветвей не две, а по числу вариантов типа.
+
+   ЧТО ПРОИГРЫВАЕТСЯ, и список форм ЗАКРЫТ: цель ровно «результат не меньше 0»
+   (то же сужение, что у segment), а у посылки, где правило НАЗВАНО, оно
+   обязано быть ровно «неотрицательность по построению» — посылка с ПУСТЫМ
+   правилом («закрыта term», без ходов) на слове ядра уже не числится
+   (`posylki_na_slovo`), и её случай не проверяется вовсе: нечем и незачем. На
+   каждый вариант с названным правилом берётся его случай ИЗ ИСХОДНИКА,
+   «пусть»-имена разворачиваются подстановкой (`telo_sluchaya`, тот же приём,
+   каким `telo_bez_pust` разворачивает их у Ч365/Ч369, только со своим «то»),
+   и получившийся терм проверяется грамматикой «неотрицательно по
+   построению»:
+     · замкнутое число ≥0 — лист;
+     · вызов «chya» от имени, СВЯЗАННОГО ЭТИМ ЖЕ случаем, — допущение индукции,
+       доверенное точно так же, как у segment доверяется «по минус шаг»
+       (аргумент обязан быть ИМЕННО связанным именем, а не любым вызовом chya —
+       иначе это было бы верой в круг, а не индукцией);
+     · «А плюс Б» — оба слагаемых, рекурсивно;
+     · «если … то А иначе Б» — ОБЕ ветви, рекурсивно; что решит условие, не
+       смотрится вовсе — важно, что неотрицательны обе, при любом исходе;
+     · один шаг развёртки ЧУЖОЙ функции по объявлению, когда та функция —
+       «плоское определение» (ни единого вызова в её собственном теле, то же
+       слово, каким его называет Ч369): вызов подставляется её телом с
+       фактическими доводами на месте объявленных, и разбор идёт по итогу
+       дальше. Глубже одного шага чекер не заходит — это самостоятельный узел
+       грамматики, а не второй вычислитель языка внутри чекера.
+   Форма, которой в этом списке нет, — «не взялся», с причиной по имени, а не
+   тихий отказ и не подделанное «доказано».
+
+   ГДЕ УЗЕЛ ОСТАЁТСЯ ВНЕ ПРИЁМА, И ЭТО ЧИСЛО, А НЕ ПОЛОМКА: цель — не
+   «результат не меньше 0» (уравнения и потолки — другая клетка); правило
+   посылки — не «неотрицательность по построению»; посылок не столько же,
+   сколько вариантов у типа. Ни одна из этих причин не проверяется чтением
+   тела — здесь нечего проигрывать по устройству, и узел остаётся на слове
+   ядра, как и был у segment. */
+
+static int neotricatelno_algebra(const char *t_syroy, const char *chya, Sp bound,
+                                 Sp stroki, int glubina, char **pochemu);
+/* Три вперёд-объявления: определения стоят дальше по файлу (там, где уже
+   разбирают тело теоремы и терм цели), а зовутся отсюда — ветка `algebra`
+   ничего в них не меняет, только читает. */
+static char *telo_bez_pust(Sp stroki, long a, long b);
+static int razrez_vybora(const char *t, char **u, char **a, char **b);
+static char *variant_sluchaya(const char *hvost);
+
+/* Плоское тело чужой функции: у неё нет «разбор», всё тело — один терм после
+   разворачивания «пусть» (`telo_bez_pust`), и в нём НЕТ НИ ОДНОГО вызова.
+   Вызов внутри значил бы догонять кернел вглубь — сверщик за это не берётся.
+
+   ВТОРАЯ ФОРМА: многострочное «если …/ то …/ иначе …» БЕЗ единого «пусть»
+   (три хвоста, а не один) — `telo_bez_pust` такое не читает, она ждёт ровно
+   один хвост после сложенных «пусть». Строки здесь разнесены только ради
+   чтения — значения перенос не несёт, — и склейка пробелом даёт тот же терм,
+   каким его прочтёт язык. Принимается ТОЛЬКО если склейка целиком читается
+   как «если … то … иначе …» (`razrez_vybora`); что-то ещё — не плоское тело,
+   а другая форма, и эта дорога её не берёт. */
+static char *ploskoye_telo(Sp stroki, const char *funkciya) {
+  static const char *OBYAVLENIYA[10] = {
+    "принимает ", "возвращает ", "обеспечивает ", "требует ", "для всех ",
+    "пример «", "дано ", "ожидается ", "теорема «", "использует "
+  };
+  long a, b, i; char *telo, *sklejka; Sp stroki_tela = PUSTO;
+  a = blok_funkcii(stroki, funkciya, &b);
+  if (a < 1) return (char *)"";
+  telo = telo_bez_pust(stroki, a, b);
+  if (*telo) return soderzhit(telo, "» от ") ? (char *)"" : telo;
+  { int k; char *u, *aa, *bb;
+    for (i = a + 1; i < b; i++) {
+      char *l = kak_chitaet_yazyk(chast(stroki, i)); int obyavlenie = 0;
+      if (!*l) continue;
+      for (k = 0; k < 10; k++) if (nachinaetsya(l, OBYAVLENIYA[k])) obyavlenie = 1;
+      if (!obyavlenie) dobavit(&stroki_tela, l);
+    }
+    sklejka = soedinit(stroki_tela, " ");
+    if (!*sklejka) return (char *)"";
+    telo = term(sklejka);
+    if (!razrez_vybora(telo, &u, &aa, &bb)) return (char *)"";
+  }
+  return soderzhit(telo, "» от ") ? (char *)"" : telo;
+}
+
+/* Имена доводов функции по счёту объявления, тем же разрезом строки
+   «принимает», каким её читает `dovod_funkcii` выше. */
+static Sp imena_dovodov_funkcii(Sp stroki, const char *funkciya) {
+  long a, b, i; Sp r = PUSTO;
+  a = blok_funkcii(stroki, funkciya, &b);
+  if (a < 1) return r;
+  for (i = a; i < b; i++) {
+    char *l = kak_chitaet_yazyk(chast(stroki, i));
+    if (!nachinaetsya(l, "принимает ")) continue;
+    { Sp dovody = razdelit(slova_posle(l, 1), ","); int k;
+      for (k = 0; k < dovody.n; k++) {
+        const char *dv = strstr(dovody.e[k], ":");
+        char *nazvano = dv ? kopiya(dovody.e[k], (size_t)(dv - dovody.e[k])) : dovody.e[k];
+        dobavit(&r, golo(obrezat(nazvano)));
+      } }
+    return r;
+  }
+  return r;
+}
+
+/* Развернуть один вызов «ХЕЛПЕР» от А и Б по ПЛОСКОМУ определению ХЕЛПЕРА:
+   фактические доводы становятся именами, и разбор идёт дальше по итогу. Не
+   chya САМ (это не развёртка чужого, а допущение индукции — предыдущая
+   ветка), и число доводов обязано сойтись с числом фактических, иначе не
+   берёмся. `*vzyalsya` — пробовал ли этот шаг вообще, отдельно от «сошлось». */
+static int razvernut_vyzov(const char *t, const char *chya, Sp bound, Sp stroki,
+                           int glubina, char **pochemu, int *vzyalsya) {
+  char *imya_f = v_yolochkah(t, 1), *hvost, *telo_h, *rezultat; Sp dovody, args; int i;
+  *vzyalsya = 0;
+  if (!*imya_f || !nachinaetsya(t, fmt("«%s» от ", imya_f))) return 0;
+  if (strcmp(imya_f, chya) == 0) return 0;
+  hvost = obrezat(hvost_posle(t, fmt("«%s» от ", imya_f)));
+  telo_h = ploskoye_telo(stroki, imya_f);
+  if (!*telo_h) return 0;
+  dovody = imena_dovodov_funkcii(stroki, imya_f);
+  args = razdelit_sverhu(hvost, "и");
+  if (dovody.n == 0 || dovody.n != args.n) return 0;
+  *vzyalsya = 1;
+  rezultat = telo_h;
+  for (i = 0; i < dovody.n; i++)
+    rezultat = vstavit_vmesto(rezultat, dovody.e[i], term(obrezat(args.e[i])));
+  return neotricatelno_algebra(rezultat, chya, bound, stroki, glubina + 1, pochemu);
+}
+
+/* Грамматика «неотрицательно по построению», список форм закрыт пятью
+   строками ниже. `glubina` — не от бесконечной рекурсии (терм строго мельчает
+   на каждом шаге, кроме одной развёртки, а её `razvernut_vyzov` берёт лишь у
+   ПЛОСКОГО — то есть заведомо бессвязного дальше — тела), а на всякий случай,
+   той же порукой, какой держится `PREDEL_VETVLENIYA` у Ч369. */
+static int neotricatelno_algebra(const char *t_syroy, const char *chya, Sp bound,
+                                 Sp stroki, int glubina, char **pochemu) {
+  char *t = uzhat(t_syroy); double v; Razrez sum; char *u, *a, *b; int i, vzyalsya;
+  if (glubina > 12) { *pochemu = fmt("глубина разбора терма «%s» больше 12 — не берусь", t); return 0; }
+  if (chislo_tochno(t, &v)) {
+    if (v >= 0) return 1;
+    *pochemu = fmt("лист «%s» — отрицательное число", t); return 0;
+  }
+  for (i = 0; i < bound.n; i++) {
+    char *ozhid = uzhat(term(fmt("«%s» от %s", chya, bound.e[i])));
+    if (strcmp(t, ozhid) == 0) return 1;
+    /* «от» держит родительный падеж; из связанных имён этой дорогой встречается
+       ровно одно словарное слово языка, чей родительный отличается от
+       именительного, — «хвост»/«хвоста». Это не морфология вообще, а один
+       закрытый факт о встроенном имени, той же породы, что у `varianty_tipa`
+       выше про «пусто»/«голова и хвост». */
+    if (strcmp(bound.e[i], "хвост") == 0 &&
+        strcmp(t, uzhat(term(fmt("«%s» от хвоста", chya)))) == 0) return 1;
+  }
+  /* «если» — ПЕРВОЙ, раньше «плюс»: скобки у обеих ветвей «если» держат
+     баланс уже ДО собственного «плюс» внутри ветви (Ч369 не оборачивает
+     ветви в скобки, только вызовы), и `razrez_po` считает исключительно
+     скобки — она бы честно нашла «плюс» ветви и расколола терм НЕ по границе
+     «если», а посередине одной из ветвей. Проверено прогоном: без этой
+     очерёдности `corpus-tree-depth`/`corpus-tree-height` (обе — «Глубже» от
+     двух вызовов внутри «если … то 1 плюс …» ) раскалывались посередине
+     первой же ветви и не проигрывались вовсе. */
+  if (razrez_vybora(t, &u, &a, &b))
+    return neotricatelno_algebra(a, chya, bound, stroki, glubina + 1, pochemu)
+        && neotricatelno_algebra(b, chya, bound, stroki, glubina + 1, pochemu);
+  sum = razrez_po(t, "плюс");
+  if (sum.est)
+    return neotricatelno_algebra(sum.levo, chya, bound, stroki, glubina + 1, pochemu)
+        && neotricatelno_algebra(sum.pravo, chya, bound, stroki, glubina + 1, pochemu);
+  if (razvernut_vyzov(t, chya, bound, stroki, glubina, pochemu, &vzyalsya)) return 1;
+  if (vzyalsya) return 0;                /* причина уже названа внутри развёртки */
+  *pochemu = fmt("форма «%s» сверщику незнакома", t);
+  return 0;
+}
+
+/* Связанные именем случая: `с левое как л и правое как п` даёт [л,п]; у
+   `голова и хвост` (и его именованного вида `голова Г и хвост Х») имена свои,
+   без единого «с … как …» — тем же словом, каким их зовёт `varianty_tipa`
+   выше; у варианта без полей (`пусто`, голый вариант без «содержит») имён
+   нет вовсе. Список форм тот же, что уже читает `pole_obrazca` рядом. */
+static Sp bound_imena_sluchaya(const char *hvost) {
+  Sp r = PUSTO;
+  if (nachinaetsya(hvost, "голова")) {
+    Sp ch = razdelit_sverhu(hvost, "и"); char *g, *x;
+    if (ch.n != 2) return r;
+    g = strcmp(obrezat(ch.e[0]), "голова") == 0
+          ? (char *)"голова" : obrezat(hvost_posle(obrezat(ch.e[0]), "голова "));
+    x = strcmp(obrezat(ch.e[1]), "хвост") == 0
+          ? (char *)"хвост" : obrezat(hvost_posle(obrezat(ch.e[1]), "хвост "));
+    if (*g) dobavit(&r, g);
+    if (*x) dobavit(&r, x);
+    return r;
+  }
+  if (strcmp(hvost, "пусто") == 0) return r;
+  { char *posle_s = sprava_ot(hvost, "с"); Sp chasti; int i;
+    if (!*posle_s) return r;             /* вариант без полей */
+    chasti = razdelit_sverhu(posle_s, "и");
+    for (i = 0; i < chasti.n; i++) {
+      char *im = obrezat(sprava_ot(chasti.e[i], "как"));
+      if (*im) dobavit(&r, im);
+    } }
+  return r;
+}
+
+/* Строка `случай <образец>`, разбирающая названный вариант, — В ТЕЛЕ ФУНКЦИИ
+   [a,b), не в теореме: `variant_sluchaya` и `imya_varianta` те же, что уже
+   читают эту строку у `est_vetv_varianta`. Нет случая — «случая нет» само по
+   себе; вызывающий назовёт это причиной. */
+static long nayti_sluchay(Sp stroki, long a, long b, const char *variant) {
+  long i;
+  for (i = a; i < b; i++) {
+    char *l = kak_chitaet_yazyk(chast(stroki, i));
+    if (nachinaetsya(l, "случай ") && strcmp(variant_sluchaya(slova_posle(l, 1)), variant) == 0)
+      return i;
+  }
+  return -1;
+}
+
+/* Тело случая, начатого на строке `ci`, до следующего «случай» или до конца
+   блока функции. Пустые строки (частый пробел перед следующим «случай» или
+   перед концом блока) не считаются — иначе однострочный случай с пустой
+   строкой ПОСЛЕ читался бы как двухстрочный. Форм две: однострочная — сама
+   `то <терм>`; многострочная — ноль и более `пусть … равно …`, а ПОСЛЕДНЯЯ
+   непустая строка — терм, и «то » на ней тоже возможен (короткие случаи вида
+   `случай Лист / то 0`, где вся ветвь — одна эта строка). Приём тот же, что у
+   `telo_bez_pust` (Ч365/Ч369), но написан заново: та функция «то » не знает —
+   её тело никогда не начинается со слова случая. Предел в пять строк —
+   тот же самый предел, что и там. */
+static char *telo_sluchaya(Sp stroki, long ci, long konec_bloka) {
+  long i, kraj = konec_bloka; Sp neprazdnye = PUSTO; char *telo;
+  for (i = ci + 1; i < konec_bloka; i++)
+    if (nachinaetsya(kak_chitaet_yazyk(chast(stroki, i)), "случай ")) { kraj = i; break; }
+  for (i = ci + 1; i < kraj; i++) {
+    char *l = kak_chitaet_yazyk(chast(stroki, i));
+    if (*l) dobavit(&neprazdnye, l);
+  }
+  if (neprazdnye.n == 0 || neprazdnye.n > 5) return (char *)"";
+  telo = chast(neprazdnye, neprazdnye.n);
+  if (nachinaetsya(telo, "то ")) telo = hvost_posle(telo, "то ");
+  telo = term(telo);
+  for (i = neprazdnye.n - 1; i >= 1; i--) {
+    char *l = chast(neprazdnye, i), *imya = slovo(l, 2), *znach = slova_posle(l, 3);
+    if (!nachinaetsya(l, "пусть ") || strcmp(slovo(l, 3), "равно") != 0) return (char *)"";
+    if (!*imya || !*znach || soderzhit(imya, "(")) return (char *)"";
+    telo = vstavit_vmesto(telo, imya, term(znach));
+  }
+  return telo;
+}
+
+/* Узел «разбором по случаям» носителя `algebra`. 1 — проигран целиком, и
+   посылки его тоже (тот же смысл, что у `proigrat_uzel` про segment). */
+static int proigrat_uzel_algebra(Sverka *s, Sp stroki, const char *imya,
+                                 const char *chya, const char *cel, const char *princip,
+                                 Sp posylki) {
+  char *tip = v_yolochkah(princip, 1);
+  Sp variants = varianty_tipa(stroki, tip);
+  long a, b, i;
+  if (variants.n == 0 || posylki.n != variants.n || strcmp(cel, "результат не меньше 0") != 0) {
+    s->uzlov_mimo++; return 0;
+  }
+  /* Правило посылки, где оно ЕСТЬ, обязано быть ровно «неотрицательность по
+     построению» — тем же сужением, что у segment. Посылка с ПУСТЫМ правилом
+     («закрыта term», без единого «ход») на слове ядра уже не числится
+     (`posylki_na_slovo` выше считает долг только по названному правилу и
+     отсутствию ходов) — её случай ЗДЕСЬ проверять НЕЧЕМ и незачем: она уже
+     сведена в другом месте (шагами теоремы), и заваливать из-за нeё узел,
+     который иначе проигрался бы, значило бы отнимать снятое у соседней
+     посылки, которая честно должна была закрыться. */
+  for (i = 0; i < posylki.n; i++) {
+    char *pr = v_yolochkah(posylki.e[i], 3);
+    if (*pr && strcmp(pr, "неотрицательность по построению") != 0) { s->uzlov_mimo++; return 0; }
+  }
+  a = blok_funkcii(stroki, chya, &b);
+  if (a < 1) return 0;                   /* функции в исходнике нет — об этом скажет сверка имён */
+  for (i = 0; i < posylki.n; i++) {
+    char *rule = v_yolochkah(posylki.e[i], 3), *variant, *telo, *pochemu = (char *)""; Sp bound; long ci;
+    if (!*rule) continue;                /* уже не на слове ядра — проверять здесь нечего */
+    variant = v_yolochkah(posylki.e[i], 2);
+    ci = nayti_sluchay(stroki, a, b, variant);
+    if (ci < 0)
+      return ne_proigran(s, imya, fmt("случай варианта «%s» не найден в теле функции «%s»", variant, chya));
+    telo = telo_sluchaya(stroki, ci, b);
+    if (!*telo)
+      return ne_proigran(s, imya, fmt("тело случая «%s» не читается одним термом", variant));
+    bound = bound_imena_sluchaya(slova_posle(kak_chitaet_yazyk(chast(stroki, ci)), 1));
+    if (!neotricatelno_algebra(telo, chya, bound, stroki, 0, &pochemu))
+      return ne_proigran(s, imya, fmt("случай «%s»: %s", variant, pochemu));
+  }
+  return 1;
+}
+
 /* Проиграть узел вердикта заново. 1 — проигран целиком, и посылки его тоже. */
 static int proigrat_uzel(Sverka *s, Sp svoi, Sp stroki, const char *imya,
                          const char *chya, const char *cel) {
@@ -2131,6 +2423,11 @@ static int proigrat_uzel(Sverka *s, Sp svoi, Sp stroki, const char *imya,
   const char *dno; char *t_dno, *t_spusk, *vyzov; Razrez sum; int znakom = 0;
   int vne;
   if (!*princip) return 0;               /* «по объявленному типу»: узла в записи нет */
+  /* Носитель `algebra` — своя ветка, своя грамматика тела (`разбор/случай», а
+     не «если/то/иначе»): передаётся ей целиком, и «вне приёма» там считается
+     тем же счётчиком, если её собственные условия не сошлись. */
+  if (strcmp(nositel, "algebra") == 0)
+    return proigrat_uzel_algebra(s, stroki, imya, chya, cel, princip, posylki);
   /* ВНЕ ПРИЁМА — не поломка: узел остаётся на слове ядра и считается числом. */
   vne = strcmp(nositel, "segment") != 0 || posylki.n != 2 || shag < 1
         || strcmp(cel, "результат не меньше 0") != 0;

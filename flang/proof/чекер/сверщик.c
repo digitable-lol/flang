@@ -669,6 +669,22 @@ static char *hvost_dovodov(Sp stroki, const char *funkciya) {
   return hv;
 }
 
+/* ПЕРВЫЙ ДОВОД ФУНКЦИИ — имя в «принимает» до первой запятой (задача 4102).
+   Постусловию без индукции он служит тем же, чем теореме — переменная индукции:
+   под него подставляется вызов функции. Нет «принимает» — параметров нет,
+   довод пуст. */
+static char *pervyy_dovod(Sp stroki, const char *funkciya) {
+  int i, vnutri = 0;
+  for (i = 0; i < stroki.n; i++) {
+    char *syraya = stroki.e[i], *l = obrezat(bez_primechaniya(syraya));
+    char *imya_z = imya_funkcii(syraya);
+    if (*imya_z) vnutri = (strcmp(imya_z, funkciya) == 0);
+    else if (vnutri && nachinaetsya(l, "принимает "))
+      return obrezat(chast(razdelit(chast(razdelit(hvost_posle(l, "принимает "), ","), 1), ":"), 1));
+  }
+  return (char *)"";
+}
+
 /* Цели равны, если равны их стороны с точностью до ОБЪЕМЛЮЩЕЙ пары скобок.
    Снимается только пара, обнимающая сторону целиком: она группировки не меняет,
    а `( а плюс б ) плюс в` от `а плюс ( б плюс в )` этим не спутать — там скобки
@@ -741,6 +757,21 @@ static char *cel_pri_znachenii(Obst *o, const char *znachenie) {
 static char *nachalnaya_cel(Obst *o, const char *variant) {
   char *sl = sluchay_varianta(o, variant), *v;
   if (*sl) return cel_pri_znachenii(o, term(konstruktor_sluchaya(sl)));
+  /* ПОСТУСЛОВИЕ БЕЗ ИНДУКЦИИ (задача 4102). Ни случая, ни принципа: вариант
+     пуст И тип принципа пуст — это простая линейная цепочка под постусловием
+     (bez_teoremy строит `о` ровно так). Цель — само постусловие, где `результат`
+     заменён вызовом функции на её параметрах: `о->по` — первый довод (или пусто
+     у функции без параметров), `о->хвост` — прочие. Дальше её разворачивают
+     ходы. cel_pri_znachenii здесь не годится — он подставляет `о->по` значением,
+     а у постусловия значения нет, довод свободен. */
+  if (!*variant && !*o->tip) {
+    /* Довод в скобках — как его печатает ядро в терме развёртки («Ф» от (н)):
+       v_skobki одно слово не оборачивает, а ход оборачивает, и est_term (разрез
+       по подстроке) их бы не свёл. Скобки ставим прямо. */
+    char *vyzov = *o->po ? fmt("«%s» от ( %s )%s", o->funkciya, o->po, o->hvost)
+                         : fmt("«%s»%s", o->funkciya, o->hvost);
+    return term(vstavit_vmesto(o->cel, "результат", vyzov));
+  }
   v = stroka_varianta_tipa(o->stroki, o->tip, variant);
   if (!*v || soderzhit(v, " содержит ")) return (char *)"";
   return cel_pri_znachenii(o, term(v));
@@ -807,6 +838,25 @@ static void hod_razvyortki(Progon *p, const char *stroka, Obst *o) {
   telo = stroka_po_nomeru(o->stroki, gde);
   obrazec = stroka_po_nomeru(o->stroki, gde - 1);
   hozyain = hozyain_stroki(o->stroki, gde);
+  /* ТЕЛО БЕЗ СЛУЧАЯ (задача 4102). Довод развёртки — не вариант-конструктор
+     («н», а не «вариант «Звено» …»): imya_varianta дала пустой вариант, значит
+     функция разбираемого случая не несёт, и её тело — ОДНА форма на строке gde,
+     а не ветвь «то …». Проверки «случай над строкой» и «строка начата «то»» тут
+     не к месту: их обе несёт только разбор. Сверяется ровно то, что общего у
+     обеих форм: строка стоит в названной функции, и (если запись несёт тело
+     термом) записанное тело сходится с исходником знак в знак. */
+  if (!*variant) {
+    char *telo_t = term(obrezat(telo));
+    char *napisano = v_ugolkah(stroka, 2);
+    if (*napisano && strcmp(bez_skobok(napisano), bez_skobok(telo_t)) != 0) {
+      beda_progona(p, fmt("развёртка «%s»: запись несёт тело ⟨%s⟩, а в строке %ld исходника написано «%s»",
+                          imya, napisano, gde, telo_t)); return;
+    }
+    if (strcmp(hozyain, imya) != 0)
+      beda_progona(p, fmt("развёртка «%s»: строка %ld исходника стоит в функции «%s»", imya, gde, hozyain));
+    else razvernut_po_telu(p, chto, (char *)"", *napisano ? term(napisano) : telo_t, dovod);
+    return;
+  }
   /* ТЕРМ ПРИ НОМЕРЕ СТРОКИ — ДВОЙНАЯ ПРИВЯЗКА, А НЕ ВТОРОЙ ИСТОЧНИК. Ядро
      печатает тело ветви термом И называет строку, с которой его прочло; чекер
      читает ту же строку сам и сличает. Разойтись им позволено ровно скобками:
@@ -905,7 +955,16 @@ static void hod_zakrytiya(Progon *p, const char *stroka, Obst *o) {
     if (strcmp(uzhat(fakt), uzhat(cel)) == 0) vmesto_pervoy(p, PUSTO);
     else beda_progona(p, fmt("закрыть дано %ld: цель «%s» не совпала с допущением «%s»", nomer, cel, fakt));
   } else if (strcmp(chem, "тождеством") == 0) {
+    /* Цель-равенство язык пишет ДВУМЯ токенами: «равно» (утверждаем «Ф» от
+       результат равно …, stack.flang) и «равен» — доминирующий оператор
+       Object.is, которым записаны и постусловия (обеспечивает … результат
+       равен …), и большинство утверждаем. Авторский трек (ocenit_term,
+       cel_derzhitsya) знает «равен»; этот ход знал только «равно». Разрез идёт
+       по " равно " (существующая дорога цела), а не нашлось — по " равен ".
+       Оба разреза по " op " (razdelit_sverhu), граница слова чиста: «X не равен
+       Y» режется как «X не»/«Y» и тождеством не закрывается — это верно. */
     Razrez r = razrez_po(cel, "равно");
+    if (!r.est) r = razrez_po(cel, "равен");
     if (r.est && strcmp(uzhat(r.levo), uzhat(r.pravo)) == 0) vmesto_pervoy(p, PUSTO);
     else beda_progona(p, fmt("закрыть тождеством: у цели «%s» стороны равенства разные", cel));
   } else if (strcmp(chem, "истиной") == 0) {
@@ -4710,7 +4769,8 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
    числом. Два он всё же проверяет: что теоремы правда нет и что правила из списка. */
 static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
                         const char *verdikt, const char *mesto, const char *chya) {
-  int i, spryatana = 0, proigran, perepisan, razobran, dokazano;
+  int i, spryatana = 0, proigran = 0, perepisan = 0, razobran = 0, dokazano;
+  int est_hody, est_princip, proigran_hodami = 0;
   char *cel;
   for (i = 0; i < stroki.n; i++)
     if (strcmp(obrezat(bez_primechaniya(stroki.e[i])), fmt("теорема «%s»", imya)) == 0) spryatana = 1;
@@ -4720,24 +4780,49 @@ static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
   /* Цель у обоих подмаршрутов ОДНА и берётся из ИСХОДНИКА, хвостом постусловия:
      запись о ней не говорит ни строкой, и спрашивать её тут не у кого. */
   cel = hvost_posle(kak_chitaet_yazyk(mesto), fmt("обеспечивает «%s» ", imya));
-  /* Ч363: подмаршрут «разбором по случаям» — узел вердикта, который можно
-     проиграть заново. */
-  proigran = dokazano && proigrat_uzel(s, svoi, stroki, imya, chya, cel);
-  /* Ч365: ВТОРОЙ подмаршрут — «тождество после переписки допущением». Зовётся
-     только там, где первый не взялся, и это не осторожность, а разные узлы:
-     у первого в записи есть принцип с посылками, у второго нет ни строки. */
-  perepisan = !proigran && dokazano && perepiskoy(s, svoi, stroki, imya, chya, cel);
-  /* Ч369: ТРЕТИЙ подмаршрут — «разбор цели по условию». Зовётся последним, и не
-     из осторожности: два первых приёма берут узлы, у которых цель уже сведена
-     тождеством или принципом, а этот берётся за цель, которую ещё НАДО поделить.
-     Порядок этот — не старшинство правил, а бережливость: место, снятое первым
-     приёмом, второй раз снимать нечем. */
-  razobran = !proigran && !perepisan && dokazano &&
-             razborom_celi(s, svoi, stroki, chya, cel);
+  /* ПЕРЕИГРЫВАТЕЛЬ ГЕЙТИТ РАВЕНСТВА (задача 4102). Есть цепочка ходов
+     («ход цель») И нет принципа — это простая линейная цепочка под
+     постусловием (как её пишет ядро для цели-равенства, без разбора по
+     случаям). Тогда её ПРОИГРЫВАЮТ заново: ложный ход больше не инертен,
+     расхождение даёт КОД 1. Прежде этот маршрут не звал переигрыватель ни
+     строкой, и ложный ход под постусловием чекер игнорировал.
+     ДОБАВОЧНО, а не взамен: где цепочки нет — прежний путь (proigrat_uzel /
+     perepiskoy / razborom_celi) цел строка в строку. Записи С принципом (в том
+     числе постусловия-подделки 7111 с ложными ходами под посылками) идут той же
+     прежней дорогой — переигрыватель их не трогает, и набор проб не движется. */
+  est_hody = *pervaya_s_nachalom(svoi, "ход цель") != 0;
+  est_princip = *pervaya_s_nachalom(svoi, "принцип ") != 0;
+  if (est_hody && !est_princip) {
+    if (dokazano) {
+      Obst o; Progon p;
+      o.stroki = stroki; o.svoi = svoi; o.funkciya = (char *)chya;
+      o.cel = term(cel); o.tip = (char *)"";
+      o.po = pervyy_dovod(stroki, chya); o.hvost = hvost_dovodov(stroki, chya);
+      p = proigrat_blok(&o);
+      esli_ne(s, p.bedy.n == 0, fmt("утверждение «%s», сведение: %s", imya, soedinit(p.bedy, "; ")));
+      proigran_hodami = p.bedy.n == 0 && p.proigrano > 0;
+      s->svedeniy += p.proigrano; s->hodov += p.hodov; s->bez_privyazki += p.bez_privyazki;
+    }
+  } else {
+    /* Ч363: подмаршрут «разбором по случаям» — узел вердикта, который можно
+       проиграть заново. */
+    proigran = dokazano && proigrat_uzel(s, svoi, stroki, imya, chya, cel);
+    /* Ч365: ВТОРОЙ подмаршрут — «тождество после переписки допущением». Зовётся
+       только там, где первый не взялся, и это не осторожность, а разные узлы:
+       у первого в записи есть принцип с посылками, у второго нет ни строки. */
+    perepisan = !proigran && dokazano && perepiskoy(s, svoi, stroki, imya, chya, cel);
+    /* Ч369: ТРЕТИЙ подмаршрут — «разбор цели по условию». Зовётся последним, и не
+       из осторожности: два первых приёма берут узлы, у которых цель уже сведена
+       тождеством или принципом, а этот берётся за цель, которую ещё НАДО поделить.
+       Порядок этот — не старшинство правил, а бережливость: место, снятое первым
+       приёмом, второй раз снимать нечем. */
+    razobran = !proigran && !perepisan && dokazano &&
+               razborom_celi(s, svoi, stroki, chya, cel);
+  }
   sverit_pravila(s, svoi, fmt("утверждение «%s»", imya));
   sverit_polya_posylok(s, svoi, stroki, imya, chya);
   sverit_svedenie(s, svoi, imya);
-  sverit_pokrytie(s, svoi, stroki, imya, verdikt, mesto, proigran || perepisan || razobran);
+  sverit_pokrytie(s, svoi, stroki, imya, verdikt, mesto, proigran || perepisan || razobran || proigran_hodami);
   /* Ч363: и узлы, и СНЯТЫЕ ИМИ МЕСТА — числом. Второе нужно тому, кто считает
      породы мест по тексту записи: без него два прибора разойдутся на честной
      записи, и расхождение это будет не находкой, а слепотой мерки.
@@ -4750,6 +4835,11 @@ static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
      не проигрывает и потому их не считает: берётся он только там, где посылок
      нет ни одной. */
   else if (razobran) { s->razbor++; s->razbor_mest++; }
+  /* Задача 4102: узел проигран цепочкой ходов заново — место снято со слова
+     ядра, долга нет. Счёт его виден числами «сведений проиграно заново» и
+     «ходов проверено» (влиты выше), отдельного счётчика пород он не заводит:
+     порода одна — «проиграно заново», и она уже посчитана. */
+  else if (proigran_hodami) { }
   /* 9616-Б: место, которого не проиграл НИКТО из трёх приёмов выше — а
      значит и то, чей маршрут кернела был «по объявлению», раз до сих пор
      не снято, — идёт на слово ядра тем же +1, каким шло всегда. Разница

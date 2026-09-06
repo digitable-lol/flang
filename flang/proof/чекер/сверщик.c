@@ -2714,6 +2714,48 @@ static int mera_neotricatelna(const char *t, Sp stroki) {
   return nachinaetsya(bez_vneshnih(svesti_term(l, stroki, 4)), "длина ");
 }
 
+/* «Т НАЧИНАЕТСЯ С П» ПО ПОСТРОЕНИЮ (задача 9998). Т обязан быть склейкой
+   `соединить Л с Р` — иначе дверь молчит, это не её случай. Тогда итог
+   склейки несёт знаки Л, за ними знаки Р, и потому Т начинается с П, если Л
+   начинается с П, при ЛЮБОМ Р — Р эта дверь не смотрит и не вправе.
+
+   «Л начинается с П» проверяется ДВУМЯ доводами по очереди:
+     · ТОЖДЕСТВОМ термов (`tozhdestvenny`) — тот же приём, каким закрывается
+       `равен`; ловит и Л, не являющийся литералом (то же имя, что и П);
+     · при неудаче — ЗНАЧЕНИЕМ: Л и П считаются замкнутым счётчиком
+       `ocenit_term` (тем же, каким читается всякий литерал) и сравниваются
+       ПОСИМВОЛЬНО, `nachinaetsya` на уже разобранных строках. Это доводит
+       дело до конца ровно там, где тождество останавливается на полпути:
+       Л и П — оба литералы, но П лишь ГОЛОВА Л, не весь Л.
+
+   Второй довод найден НЕ на «честном» корпусе 9998 (там ему употребления не
+   нашлось ни разу), а на подделке `poddelka-nachalo-po-postroeniyu`:
+   «Обещает первый знак» несёт единственное честное утверждение всей записи
+   — `(соединить "аб" с хвост) начинается с "а"` — и тут Л="аб", П="а"
+   тождества не сходится, а строка "аб" строкой "а" НАЧИНАЕТСЯ. Это не
+   второй вычислитель языка внутри сверщика (яма, которой избегает шапка
+   9998): `ocenit_term` уже был общим счётчиком ЗАМКНУТЫХ термов раньше и
+   везде в этом файле, здесь он просто позван ещё раз, на других сторонах.
+
+   Ни один довод не смотрит на Р, и ни один не разбирает П как «приставку
+   переменной строки»: приставка ПЕРЕМЕННОЙ — гипотеза, а не значение, и
+   третьей двери под это тут нет и не будет. */
+static int nachalo_po_postroeniyu(const char *t, Sp stroki) {
+  static const char *NS[1] = { " начинается с " };
+  char *l, *p, *sl, *levyy, *pravyy, *golova; long gde; int kakoe;
+  if (!nayti_sverhu(t, NS, 1, &gde, &kakoe)) return 0;
+  l = bez_vneshnih(kopiya(t, (size_t)gde));
+  p = bez_vneshnih(t + gde + strlen(" начинается с "));
+  if (strcmp(p, "\"\"") == 0) return 1;
+  sl = bez_vneshnih(l);
+  if (!razrez_slovom(sl, " с ", &levyy, &pravyy)) return 0;
+  if (!nachinaetsya(levyy, "соединить ")) return 0;
+  golova = slova_posle(levyy, 1);
+  if (tozhdestvenny(golova, p, stroki, 6)) return 1;
+  { Znach zg = ocenit_term(golova, stroki, NE_BERUS, 0), zp = ocenit_term(p, stroki, NE_BERUS, 0);
+    return zg.vid == 1 && zp.vid == 1 && nachinaetsya(zg.s, zp.s); }
+}
+
 static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy,
                             const char *konechen);
 
@@ -2796,7 +2838,7 @@ static int kvadrat_pod_ogovorkoy(const char *t, Sp stroki, const char *konechen)
   return tozhdestvenny(e1, konechen, stroki, 0);
 }
 
-/* ПОЛОВИНА ЗАКРЫТА? Способов ровно СЕМЬ, список закрыт:
+/* ПОЛОВИНА ЗАКРЫТА? Способов ровно ВОСЕМЬ, список закрыт:
      1. литерал `да`;
      2. выбор с литеральным условием — закрыта выбранная ветвь;
      3. замкнутый счёт даёт истину;
@@ -2808,7 +2850,11 @@ static int kvadrat_pod_ogovorkoy(const char *t, Sp stroki, const char *konechen)
         «х не больше результат» стоит под оговоркой о конечности;
      6. мера неотрицательна по объявлению встроенной формы;
      7. ОТРИЦАНИЕ замкнутого признака: `не Х` закрыто, когда замкнутый счёт
-        дал Х определённую ЛОЖЬ.
+        дал Х определённую ЛОЖЬ;
+     8. НАЧАЛО ПО ПОСТРОЕНИЮ: склейка `соединить Л с Р` начинается своим
+        левым куском Л, если Л начинается с искомого П — тождеством термов
+        либо, при обоих замкнутых, вычисленным значением. Правило 9998;
+        разбор — у `nachalo_po_postroeniyu`.
    и сверх них — само ДЕЛЕНИЕ по условию первого `если`.
    Ни один способ не объявляет половину ЛОЖНОЙ: незакрытая половина значит
    «не берусь».
@@ -2873,6 +2919,7 @@ static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy,
     if (prostoy(l) && prostoy(p) && tozhdestvenny(l, p, stroki, 6)) return 1;
   }
   if (mera_neotricatelna(t, stroki)) return 1;
+  if (nachalo_po_postroeniyu(t, stroki)) return 1;
   if (pervoe_uslovie(t, &u)) return delenie(t, u, stroki, deleniy, konechen);
   return 0;
 }

@@ -66,7 +66,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
 | оболочка | 102 | 18 819 | 90 | 11 645 <!-- СНЯТО 2026-09-06 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 102 --><!-- СНЯТО 2026-09-06 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 18819 --> |
-| C | 38 | 775 565 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-06 строк-в *.c,*.h = 775565 --> |
+| C | 38 | 775 676 | 0 | 0 <!-- СНЯТО 2026-09-04 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-06 строк-в *.c,*.h = 775676 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 23 | 8 008 | 16 | 3 843 <!-- СНЯТО 2026-09-06 файлов *.py = 23 --><!-- СНЯТО 2026-09-06 строк-в *.py = 8008 --> |
 | HTML | 4 | 1 226 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.html = 4 --><!-- СНЯТО 2026-08-31 строк-в *.html = 1226 --> |
@@ -152,7 +152,7 @@ flang в C.
 | довод | что под ним | файлов | строк |
 |---|---|---:|---:|
 | напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 736 611 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-09-06 строк-в bootstrap/*.c,bootstrap/*.h = 736611 --> |
-| рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 29 | 46 319 <!-- СНЯТО 2026-09-06 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 29 --><!-- СНЯТО 2026-09-06 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 46319 --> |
+| рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 29 | 46 430 <!-- СНЯТО 2026-09-06 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 29 --><!-- СНЯТО 2026-09-06 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 46430 --> |
 | замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/conc/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
 | проба рантайма C | `flang/проверки/oblast/*.c` и `flang/conc/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
 | чужая среда: редактор | `editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 614 <!-- СНЯТО 2026-08-31 файлов editors/vim/*.vim,editors/vim/*.lua = 11 --><!-- СНЯТО 2026-08-31 строк-в editors/vim/*.vim,editors/vim/*.lua = 614 --> |

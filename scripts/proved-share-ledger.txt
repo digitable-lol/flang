@@ -1131,3 +1131,6 @@ e115e809a3685b17510b8e8c01385301|17|17|0|0|0|web/app/hailstone.flang
 a8a1e131d2f35f0071f646f2e9f5581c|3|×|×|×|2|flang/proof/чекер/пробы/программы/Ч7104-nakrutka-po-predpolozheniyu.flang
 905c250bd3dd21a26df72a2039b2f731|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-chestnaya.flang
 b3e74b9533e258c8364f00d8f5d31657|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-lozh.flang
+dcc1953cd5acc1b24859a0d654638b8f|5|2|3|0|0|examples/frameworks/react-invoice/core/cart.flang
+d2cc0dc445665e98265edb9ab98b63b6|1|1|0|0|0|examples/frameworks/react-invoice/core/catalog.flang
+7fd0028def86e3c49bccc7d5b364b16e|7|7|0|0|0|examples/frameworks/vue-roman/core/roman-numerals.flang

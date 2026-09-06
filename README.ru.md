@@ -105,7 +105,7 @@ flang/проверки/   проверки, написанные на flang; о�
 flang/test/       прежний набор проб: написан против удалённой реализации и сегодня не запускается
 flang/cat/        контракт категорной поверхности
 flang/conc/       контракт конкурентности и её примеры
-examples/         193 программы на flang в 22 наборах: leetcode, rosetta, crypto, io, web, db, wal, library-api и ещё четырнадцать
+examples/         197 программ на flang в 23 наборах: leetcode, rosetta, crypto, io, web, db, wal, library-api и ещё пятнадцать
 editors/          языковой сервер .flang, подсветка для vim и заготовка заявки в github-linguist
 packaging/        Homebrew, asdf и страница flang.1
 scripts/          перепечатка точки раскрутки, указателя библиотеки, журнала изменений и релизного C
@@ -631,7 +631,7 @@ CI гоняет их на каждый пуш.
 - **Полноразмерная раскладка** — [`examples/library-api`](examples/library-api/README.md):
   предметная половина REST-сервиса библиотеки, семь модулей на flang. Он отвечает на один
   вопрос — что где лежит и почему именно там.
-- **Остальные примеры** — ещё 178 программ в [`examples/`](examples), в 22 наборах; что где
+- **Остальные примеры** — ещё 182 программы в [`examples/`](examples), в 23 наборах; что где
   лежит, перечислено в [`examples/README.md`](examples/README.md).
 - **Редакторы** — языковой сервер `.flang` (`flang lsp`, описанный в
   [`editors/flang-lsp`](editors/flang-lsp/README.md)) и подсветка для vim в

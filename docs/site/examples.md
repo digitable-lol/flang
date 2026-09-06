@@ -1,12 +1,12 @@
 # The catalogue of examples
 
-Every example program in flang lives in one directory — `examples/`: <!-- СНЯТО 2026-09-03 файлов examples/*.flang = 193 --> 193 files in
-twenty-one sets and one full-size project. There is no second directory of examples
+Every example program in flang lives in one directory — `examples/`: <!-- СНЯТО 2026-09-06 файлов examples/*.flang = 197 --> 197 files in
+twenty-two sets and one full-size project. There is no second directory of examples
 in the repository: until 24 August 2026 a hundred and fifty programs stood a floor
 below, and they could not be found at a glance.
 
 The number is recounted by one command:
-`git -c core.quotepath=false ls-files examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-03 файлов examples/*.flang = 193 --> 193 (measured 3 September 2026).
+`git -c core.quotepath=false ls-files examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-06 файлов examples/*.flang = 197 --> 197 (measured 6 September 2026).
 
 ## The sets
 
@@ -60,7 +60,7 @@ refusal code rather than skipped in silence.
 ## About `library-api`
 
 `library-api` stands apart in this row, and that is the only thing in which the
-sets here differ from one another. The other twenty-one are programs: a file with
+sets here differ from one another. The other twenty-two are programs: a file with
 declarations that carry their own examples. `library-api` is a project: seven flang
 modules, one of them its own, with a directory layout of its own. The example shows
 not HTTP but a border: what moves into the language, where a piece of logic has a

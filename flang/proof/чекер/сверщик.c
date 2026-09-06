@@ -1784,12 +1784,25 @@ static Znach ocenit_term(const char *syroy, Sp stroki, Znach rezultat, int glubi
   if (nachinaetsya(t, "подстрока ")) {
     static const char *S_[] = { " с " }, *PO_[] = { " по " };
     char *h = t + strlen("подстрока "), *rez; long i1, i2, a1, b1; int nn;
+    size_t ds = strlen(S_[0]), dpo = strlen(PO_[0]);
     Znach x, p, q;
     if (!nayti_sverhu(h, S_, 1, &i1, &nn)) return NE_BERUS;
-    if (!nayti_sverhu(h + i1 + 3, PO_, 1, &i2, &nn)) return NE_BERUS;
+    /* БЫЛА БЕДА (найдена задачей 8690-V4, но долг не её — старый долг Ч71):
+       скачок за маркером стоял ЖЁСТКИМИ числами 3 и 4, а «с»/«по» — кириллица,
+       по два байта на знак в UTF-8, и настоящая длина маркеров — 4 и 6 байт.
+       Второму доводу (p) это сходило с рук: скачок на 3 останавливался на
+       ЗАВЕРШАЮЩЕМ пробеле маркера «с», а его подъедает `obrezat` внутри
+       `bez_vneshnih`. Третьему доводу (q) — нет: скачок на 3+4=7 останавливался
+       ПОСЕРЕДИНЕ буквы «о» маркера «по», отдавал рваный UTF-8 с первого же
+       байта — терм такого вида сверщик не разбирает НИКАК, и q тихо становился
+       «не берусь». Это НЕ дыра честности: неверная («не берусь» вместо числа)
+       оценка только МЕШАЕТ проверке пройти, соврать «сошлось» на лжи ею
+       нельзя — потому проба ни разу не покраснела ни на одной подделке, только
+       недосчитывала на честных. Скачок теперь — точная длина маркера в байтах. */
+    if (!nayti_sverhu(h + i1 + ds, PO_, 1, &i2, &nn)) return NE_BERUS;
     x = ocenit_term(kopiya(h, (size_t)i1), stroki, rezultat, glubina + 1);
-    p = ocenit_term(kopiya(h + i1 + 3, (size_t)i2), stroki, rezultat, glubina + 1);
-    q = ocenit_term(h + i1 + 3 + i2 + 4, stroki, rezultat, glubina + 1);
+    p = ocenit_term(kopiya(h + i1 + ds, (size_t)i2), stroki, rezultat, glubina + 1);
+    q = ocenit_term(h + i1 + ds + i2 + dpo, stroki, rezultat, glubina + 1);
     if (x.vid != 1 || p.vid != 2 || q.vid != 2) return NE_BERUS;
     a1 = (long)p.ch; b1 = (long)q.ch;
     if ((double)a1 != p.ch || (double)b1 != q.ch) return NE_BERUS;
@@ -2704,7 +2717,12 @@ static Sp chleny_spiska(const char *t) {
   if (d < 3 || t[0] != '[' || t[d - 1] != ']') return r;
   for (i = 1; i < d - 1; i++) {
     char c = t[i];
-    if (v) { if (c == '"') v = 0; continue; }
+    /* Экранированная кавычка (задача 8690-V4, тот же приём, что в
+       `nayti_sverhu`): без пропуска знака за «\» звено вида "\"" закрывало
+       кавычку на своём же экранирующем знаке, и счёт запятых верхнего уровня
+       дальше расходился со скобками — до сих пор не было звена со своей
+       экранированной кавычкой, и брешь молчала. */
+    if (v) { if (c == '\\' && t[i + 1]) { i++; continue; } if (c == '"') v = 0; continue; }
     if (c == '"') v = 1;
     else if (c == '(') kr++;
     else if (c == ')') kr--;

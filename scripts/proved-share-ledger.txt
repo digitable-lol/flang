@@ -1082,6 +1082,7 @@ d5cfd2ef8d49ec0f5b2cc8a84752d0d6|57|42|8|7|0|scripts/homebrew-formula-guard.flan
 9226c12745c52e368e33c2d313d40200|23|11|2|3|0|scripts/kernel-abilities-guard.flang
 6ef17c004db92a56a4491f404c23a13d|1|1|0|0|0|scripts/language-words.flang
 a72ce1dbc033191cc6867ee134a3212d|6|6|0|0|0|scripts/license-guard.flang
+d2a70a1e10cbaa0709b4efb93d9a0fda|14|14|0|0|0|scripts/lico-celi-cpp.flang
 7d437b36d827aebf6f3a99929ea04d00|78|34|44|0|0|scripts/link-guard.flang
 764ea6a077d30318d14a8a0f3da8aea8|23|23|0|0|0|scripts/lsp-check.flang
 5def98b4bc9fe3ad5ef96f982fe9f288|13|11|0|0|0|scripts/manpage-guard.flang

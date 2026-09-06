@@ -1131,6 +1131,10 @@ e115e809a3685b17510b8e8c01385301|17|17|0|0|0|web/app/hailstone.flang
 a8a1e131d2f35f0071f646f2e9f5581c|3|×|×|×|2|flang/proof/чекер/пробы/программы/Ч7104-nakrutka-po-predpolozheniyu.flang
 905c250bd3dd21a26df72a2039b2f731|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-chestnaya.flang
 b3e74b9533e258c8364f00d8f5d31657|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-lozh.flang
+3b07a690daa31ca5a1256ecfe69b6874|3|×|×|×|0|flang/proof/чекер/пробы/семьи/sosedi.flang
+260fd32a05ef7c136979c1f2cfdb4551|7|×|×|×|0|flang/proof/чекер/пробы/семьи/refleksiv.flang
+645abd7267f1cb3fb6d8386a09b9d59b|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ne-lozhitsya/r6-dlina-skobki.flang
+e598a78d4912e73586a817fb75964a7b|1|×|×|×|0|flang/proof/чекер/пробы/семьи/granica/r2-setka-distributivnost.flang
 dcc1953cd5acc1b24859a0d654638b8f|5|2|3|0|0|examples/frameworks/react-invoice/core/cart.flang
 d2cc0dc445665e98265edb9ab98b63b6|1|1|0|0|0|examples/frameworks/react-invoice/core/catalog.flang
 7fd0028def86e3c49bccc7d5b364b16e|7|7|0|0|0|examples/frameworks/vue-roman/core/roman-numerals.flang

@@ -765,7 +765,7 @@ eaa43d3e6390cad900eaa98f820c690a|1|1|0|0|0|flang/proof/подделки/свед
 5671d038fc0a663f8d9acea9fc4ec5c4|6|1|0|5|0|flang/proof/подделки/счёт-частей-ложь.flang
 56d0e4660bd3c90a5c3f984f60853e8d|4|0|0|4|0|flang/proof/подделки/счёт-частей-правда.flang
 444138d6a539c4d35fc2576ac21819c9|1|1|0|0|0|flang/proof/подделки/тождеством.flang
-84968c9bff8b2271c8747b1ce6beb99d|209|209|0|0|0|flang/proof/сверщик.flang
+0541b9b17eb22872bce6a37d8f90926e|211|211|0|0|0|flang/proof/сверщик.flang
 c38a30141877ddbd9a200019d1365c03|2|×|×|×|0|flang/proof/чекер/пробы/записи/10003-uslovnoe-po-vetvyam/lozhnoe-otricanie.flang
 4dab8482ee917e4193111bc9f69df318|1|1|0|0|0|flang/proof/чекер/пробы/записи/8615-teorema-ne-ronyaet/otschyot-s-teoremoy.flang
 e85193f8b0642bbf5e02681b3b843dbb|1|×|×|×|0|flang/proof/чекер/пробы/записи/8615-teorema-ne-ronyaet/spusk-ne-ubyvaet.flang
@@ -802,6 +802,10 @@ eed1a66d5c7ea84bdb2144799440d769|7|7|0|0|0|flang/proof/чекер/пробы/з�
 79d960c8096b8b10d2323681e1cd3be3|7|7|0|0|0|flang/proof/чекер/пробы/записи/Ч369/П7-предел-ветвления.flang
 b9576655e54624f65755b791725a8e3b|7|6|0|1|0|flang/proof/чекер/пробы/записи/Ч369/П8-место-замены-чужое.flang
 0a3c2acf2ad7fff068ff3b8386bac4ab|1|0|0|1|0|flang/proof/чекер/пробы/записи/типы-доводов/vychitanie-ne-sohranyaet.flang
+ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/чекер/пробы/записи/Ч131-algebra/00-нетронутый.flang
+a650eaf9749ba464ed39e21eef233356|1|×|×|×|0|flang/proof/чекер/пробы/записи/Ч131-algebra/01-vetv-lzhet.flang
+ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/чекер/пробы/записи/Ч131-algebra/02-variant-podmenen.flang
+ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/чекер/пробы/записи/Ч131-algebra/03-pokrytie-nepolno.flang
 38d4cafb2a945b2f2a3886a2a3ce008d|1|×|×|×|0|flang/proof/чекер/пробы/программы/lozh-derevo.flang
 abb2cd80fd5f454cc49f17edc35ed7f8|1|0|1|0|0|flang/proof/чекер/пробы/программы/lozh-raznost-chistaya.flang
 e099498a5c59b03063c2bd9f7aa671b9|1|×|×|×|0|flang/proof/чекер/пробы/программы/lozh-stolknovenie.flang
@@ -819,6 +823,11 @@ ad5f06b92cd90957a21ab20c11445c9b|2|×|×|×|0|flang/proof/чекер/пробы/
 0f1b5ffadf64511eb50fb79dd50da166|2|×|×|×|0|flang/proof/чекер/пробы/программы/Ч87-F2-telo-mimo-primera.flang
 fc0678159995bc7ac6a3b9efa4e845fe|2|×|×|×|0|flang/proof/чекер/пробы/программы/Ч87-F3-dva-zvena-v-stroke.flang
 7d9dcdd44cc21307265cf2829adfdb06|2|×|×|×|0|flang/proof/чекер/пробы/программы/Ч87-F4-zveno-zakommentirovano.flang
+6b7f63947440f5887f85fe1a01812324|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-cel-ne-derzhitsya.flang
+d5ed36bbd1852f0fd00ad240d2b598b1|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-primer-bez-ozhidaniya.flang
+df0cd86a8d925671e35b6433f926e44d|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-primer-lzhyot-o-znachenii.flang
+ec04945faa16af3ff50fc5fa72b59f51|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-primer-vne-bloka.flang
+1d8909699ec44c70ea17756360e29285|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-sluchay-s-tem-zhe-znacheniem.flang
 3eadfffaa256eae3b0ad59183d95037e|1|0|1|0|0|flang/scripts/binary.flang
 9a006efd285c04e39ecdb51f3f3f1747|1|1|0|0|0|flang/scripts/closed-length-guard.flang
 a5769e76ad82b8770ec8ab9c2ec0c1b5|20|19|1|0|0|flang/scripts/code-forgery.flang
@@ -900,7 +909,7 @@ c3e9988435d72d7cdd3bcc04e7bfef81|101|79|0|22|0|flang/self/setoid.flang
 286dcc638067945698d6992f0003e47b|18|15|0|3|0|flang/self/tags.flang
 5b51eba5dc6c62cd8cb7c8dac7995004|279|231|11|37|0|flang/self/totality.flang
 15aabaef6bce430bf87f27c3e2f70de6|388|119|4|265|0|flang/self/types.flang
-54b4ec1e8dbd5c637251879ebcd94f91|101|44|26|2|0|flang/self/zapis.flang
+96f30877ce3341874a61d40c6e669897|106|71|33|2|0|flang/self/zapis.flang
 56d52b403f9e95aa9cfdd0e1e462f55c|218|129|81|8|0|flang/stdlib/aes.flang
 ffb6e5860533af4659ebb397200e0fbb|127|120|6|1|0|flang/stdlib/automaton.flang
 36b0896ba41510dde1dc0a003cbc9d20|103|55|26|22|0|flang/stdlib/base64.flang

@@ -170,7 +170,7 @@ examples/measure/natural.flang: не проверено — замечаний 9
 | `examples/rosetta/fibonacci.flang` | 3 | 96 111 149 |
 | `examples/wal/append-plan.flang` | 2 | 53 130 |
 | `examples/wal/write-ahead-log.flang` | 17 | 62 70 86 87 87 88 109 156 189 342 374 405 495 675 694 695 722 |
-| `flang/проверки/korpus-http.flang` | 1 | 159 |
+| `flang/проверки/http.flang` | 1 | 159 |
 | `flang/proof/подделки/счёт-частей-правда.flang` | 1 | 37 |
 | `flang/proof/examples/corpus-factorial.flang` | 2 | 67 91 |
 | `flang/proof/examples/corpus-natural-ceiling.flang` | 2 | 48 48 |

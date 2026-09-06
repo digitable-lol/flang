@@ -994,7 +994,7 @@ ffc205fa1f93ea9820625f28a67c678f|4|×|×|×|0|flang/test/fixtures/poddelka-svyor
 4943ee09b660b7cc76688bf96e3a1d7e|5|2|1|2|1|flang/test/fixtures/poddelka-svyortka-shagom.flang
 cc47f0dabed0a9d160625b619d44d163|1|0|0|1|0|flang/test/fixtures/poddelka-vhozhdenie.flang
 a80ef10ab4efd47d8ab5264097301964|3|0|0|3|0|flang/test/fixtures/svyortka-prefiks-chestnaya.flang
-461385f824bb8118c584ebe8cc7e1237|18|16|2|0|0|flang/проверки/korpus-http.flang
+461385f824bb8118c584ebe8cc7e1237|18|16|2|0|0|flang/проверки/http.flang
 cc471be74d8c4180292b5b9847697496|1|1|0|0|0|flang/проверки/process-failures.flang
 90e74d4f92b91cc50f646f424a4ed9f3|2|1|1|0|0|fspec/experience/01-discount-coarse.flang
 aa82f1d7ac9e7246e9a006b658bd3c6f|2|2|0|0|0|fspec/experience/02-discount-exact.flang

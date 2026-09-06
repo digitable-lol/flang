@@ -615,7 +615,7 @@ flang/test/fixtures/razrez-kruga/poddelka-uzel-celikom.flang	3
 flang/test/fixtures/razrez-kruga/prodolzhenie-cherez-vlozhennuyu-nagruzku.flang	4
 flang/test/fixtures/razrez-kruga/sverka-pechati-literala.flang	6
 flang/test/fixtures/svyortka-prefiks-chestnaya.flang	27
-flang/проверки/korpus-http.flang	69
+flang/проверки/http.flang	2
 flang/проверки/process-failures.flang	55
 flang/проверки/встроенные-формы.flang	76
 flang/проверки/прогонщик-корпуса.flang	37

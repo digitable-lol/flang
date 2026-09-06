@@ -1,37 +1,5 @@
 module «Towers of Hanoi»
 
-// Rosetta Code — Towers of Hanoi, written on the ENGLISH keyword surface. The
-// same program as `towers-of-hanoi.flang`, keyword for keyword.
-//
-// Move a tower of n disks from one peg to another using a third; one disk at a
-// time, and a larger disk may never rest on a smaller one.
-//
-// The task is interesting here for exactly one thing: it is usually written as
-// recursion on the NUMBER of disks, and then it cannot be proved in this
-// language — «n minus 1» is the result of arithmetic, not a part of a value.
-// But a tower is not a number, it is a stack. Write it as a list and the
-// recursion goes along the TAIL: lift the upper disks, move the bottom one, put
-// the upper ones back. The tail of a list is something the termination analysis
-// accepts, and «Move tower» is proved entirely, without a single extra
-// parameter and without fuel.
-//
-// This is the general technique of the language rather than a trick for one
-// task: where one usually counts «how many are left», here one keeps what is
-// left itself.
-//
-// The list runs BOTTOM UP: the head is the largest disk resting on the peg, the
-// tail is the stack above it. Otherwise the recursion would go along the wrong
-// part.
-//
-// One function — «Tower of», which builds the list [n … 1] from the number n —
-// is proved not by structure but by NUMBER: the step is constant («n minus 1»)
-// and the floor comes from the check «if count is not greater than 0». The
-// proof is complete, but it is not free: the recursive call carries one check
-// at run time, because on IEEE-754 «x minus 1» equals x itself for large |x|.
-// The task requires such an input (a number of disks is given), and hiding the
-// price would be dishonest: the other four functions of this file cost nothing
-// while running.
-
 object «Move»
   «disk»: number
   «source»: string
@@ -54,9 +22,6 @@ total function «Concatenate moves»
 
   fold rights starting with lefts as acc and move → add move to acc
 
-// The solution itself. The head of the list is the bottom, largest disk; the
-// tail is everything standing on it. The recursion receives the tail, so
-// termination is proved.
 total function «Move tower»
   accepts disks: list of number, source: string, target: string, spare: string
   returns list of «Move»
@@ -95,15 +60,6 @@ total function «Move tower»
       let restore equals «Move tower» of upper and spare and target and source
       «Concatenate moves» of («Concatenate moves» of lift and shift) and restore
 
-// The number of moves without building the moves themselves: 2·k + 1 along the
-// tail. Proved as well, and it is a handy check — it must agree with the length
-// of the list of moves.
-// The claim on this function is neither a comment nor a test. The core proves it
-// by induction over the STRUCTURE of the list: an empty tower gives 0, and a turn
-// gives «2 times the moves of the tail plus 1», and about the tail the induction
-// hypothesis already says what is needed. The move count of the Towers of Hanoi
-// is 2^n-1; what is proved here is the part of that the core can state today —
-// that it is non-negative for ANY tower, not for the three that were written down.
 total function «Number of moves»
   accepts disks: list of number
   returns number
@@ -123,15 +79,6 @@ total function «Number of moves»
     case head and tail
       then (2 times («Number of moves» of tail)) plus 1
 
-// ─────────────────────────────────────────────────────────────────────────
-// Below — counting by number rather than by structure, and it is not free.
-// ─────────────────────────────────────────────────────────────────────────
-
-// A tower of n disks: [n, n−1, …, 1], bottom up. Recursion on a number: the
-// step is constant and the check gives the floor — proved, but with a guard in
-// the printed code. Declaring «count: nat» to drop the guard is not possible
-// here: «Towers of Hanoi» receives the disk count as «number», and the type
-// checker would reject the call.
 total function «Tower of»
   accepts count: number
   returns list of number
@@ -147,7 +94,6 @@ total function «Tower of»
       let upper equals «Tower of» of (count minus 1)
       fold upper starting with [count] as acc and disk → add disk to acc
 
-// The whole task: given a number of disks, give the list of moves.
 total function «Towers of Hanoi»
   accepts disks: number
   returns list of «Move»
@@ -156,14 +102,6 @@ total function «Towers of Hanoi»
     expected [(record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "B"), (record «Move» with «disk» equals 1 and «source» equals "C" and «target» equals "B"), (record «Move» with «disk» equals 3 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "B" and «target» equals "A"), (record «Move» with «disk» equals 2 and «source» equals "B" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C")]
   «Move tower» of («Tower of» of disks) and "A" and "C" and "B"
 
-// ─────────────────────────────────────────────────────────────────────────
-// The proof. The induction here runs over the STRUCTURE of the list, not over a
-// number, which is why no `decreases` is needed: the tail of a list is smaller
-// than the list by construction, so there is nothing to prove about descent.
-// ─────────────────────────────────────────────────────────────────────────
-//
-// There is no bottom case in the theorem: on an empty tower the body is 0, and
-// the goal «0 is at least 0» the core reduces by itself. One case is left: the turn.
 theorem «a move count is never negative»
   given disks: list of number
   claim result is at least 0

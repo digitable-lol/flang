@@ -1,46 +1,5 @@
 module «Primes by trial division»
 
-// Rosetta Code — Sequence of primes by trial division, written on the ENGLISH
-// keyword surface. The same program as `primes-by-trial-division.flang`,
-// keyword for keyword.
-//
-// Primes up to a limit: take the first number left, declare it prime, throw
-// away everything divisible by it, repeat.
-//
-// ── Why NOT «Sieve of Eratosthenes» ───────────────────────────────────────
-// It is tempting to put this very program on the Sieve of Eratosthenes page,
-// and that would be untrue. A genuine sieve CROSSES OUT multiples, stepping
-// through an array by p; here every remaining number is divided by p with a
-// remainder, that is, trial division. The difference was analysed by Melissa E.
-// O'Neill, «The Genuine Sieve of Eratosthenes», Journal of Functional
-// Programming 19(1):95–106, 2009 (doi:10.1017/S0956796808007004).
-//
-// A genuine sieve needs an array with indexed writes, and the language has none.
-// So this program belongs on «Sequence of primes by trial division», where the
-// task explicitly allows «filtering operation, or a sieving operation».
-//
-// ── What the language shows here ──────────────────────────────────────────
-// The same algorithm is written TWICE, and the difference between the two
-// versions is the most instructive thing in the file.
-//
-// «Sift» is written the way such a thing is written everywhere: recursion on
-// the filtered remainder. The compiler answers FLANG_NOT_TOTAL, and it is right
-// literally: a filtered list is a BUILT value, and about a built value the
-// analysis knows nothing. There is a decrease here — by MEASURE (length) — and
-// the analysis can only do STRUCTURE.
-//
-// «Sift with fuel» is the same algorithm with one extra parameter. Fuel is a
-// list whose tail is taken at every turn; there are certainly no more turns
-// than there are numbers in the original list, so the fuel suffices, and the
-// tail of a list is something the analysis accepts. The same computation — and
-// a proved termination.
-//
-// The price of the trick is visible at once: fuel litters the signature. It
-// means nothing for the task and everything for the proof. Showing both
-// versions side by side is more honest than choosing one: the first is how the
-// task is solved, the second is what the proof costs.
-
-// The same algorithm — with fuel. Proved.
 total function «Sift with fuel»
   accepts fuel: list of number, candidates: list of number
   returns list of number
@@ -63,13 +22,6 @@ total function «Sift with fuel»
           let sifted equals filter others where n → (n modulo prime) is not equal to 0
           prepend prime to («Sift with fuel» of onward and sifted)
 
-// ─────────────────────────────────────────────────────────────────────────
-// Below — ordinary functions.
-// ─────────────────────────────────────────────────────────────────────────
-
-// The same algorithm without fuel — the way it is actually written.
-// FLANG_NOT_TOTAL: the recursion receives the result of `filter`, not the tail
-// of its own argument.
 function «Sift»
   accepts candidates: list of number
   returns list of number
@@ -102,7 +54,6 @@ function «Numbers from and to»
     then empty list
     else prepend start to («Numbers from and to» of (start plus 1) and finish)
 
-// The task.
 function «Primes up to»
   accepts limit: number
   returns list of number
@@ -117,8 +68,6 @@ function «Primes up to»
     expected empty list
   «Sift» of («Numbers from and to» of 2 and limit)
 
-// The same through the proved half. The fuel is the candidate list itself:
-// there are no more turns of the sieve than there are numbers in it.
 function «Primes up to, with fuel»
   accepts limit: number
   returns list of number

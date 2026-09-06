@@ -1,41 +1,5 @@
 module «Merge sort»
 
-// Rosetta Code — Sorting algorithms/Merge sort, written on the ENGLISH keyword
-// surface. The same program as `merge-sort.flang`, keyword for keyword.
-//
-// Split the list in half, sort the halves, merge them.
-//
-// Total throughout — and this is perhaps the most interesting solution in the
-// set, because neither of its two parts can be proved directly.
-//
-// Merging. The classical merge recurses now on the first list, now on the
-// second. The termination analysis demands ONE argument position that decreases
-// on EVERY recursive call (the rule «every call decreases somewhere» is wrong:
-// two functions can shrink different arguments in turn and grow together
-// forever). A merge has two such positions, so
-// directly — FLANG_NOT_TOTAL.
-//
-// Splitting. Half of a list is not a structural part of it: «Take first» builds
-// a new list, and about a built value the analysis knows nothing. Again
-// FLANG_NOT_TOTAL.
-//
-// The common cure for both is fuel: alongside the real arguments travels a list
-// whose tail is taken at every step. It decreases structurally, so the recursion
-// is provably finite, and the algorithm itself guarantees that the fuel
-// suffices:
-//
-//   a merge takes exactly as many steps as there are items in total — the fuel
-//   is the concatenation of both lists;
-//   a split recurses log₂n deep and is given n — with room to spare.
-//
-// The trick is honest: the length of the fuel is a genuine upper bound on the
-// number of steps, and the proof rests on it rather than dodging it. But it is
-// a trick, and it shows what the language lacks: decrease by measure.
-//
-// The direct, readable, but ordinary sort is in the neighbouring
-// `quicksort.flang` — together the two files show the choice the language
-// leaves to the author.
-
 total function «Prepend»
   accepts element: number, items: list of number
   returns list of number
@@ -85,9 +49,6 @@ total function «Drop first»
         then items
         else «Drop first» of tail and (count minus 1)
 
-// Merging with fuel. The decreasing position is the first one, the fuel, and it
-// decreases on both recursive calls; the real lists meanwhile shrink in turn,
-// as a merge should. Complexity O(n+m).
 total function «Merge with fuel»
   accepts fuel: list of number, left: list of number, right: list of number
   returns list of number
@@ -125,10 +86,6 @@ total function «Merge»
     expected [2, 4]
   «Merge with fuel» of («Concatenate lists» of left and right) and left and right
 
-// Splitting with fuel. Here log₂n of fuel is needed and n is given — the slack
-// is deliberate: computing the exact bound would be more correct but would
-// require a logarithm, which the language does not have, and an overestimate
-// does the proof no harm.
 total function «Merge sort with fuel»
   accepts fuel: list of number, items: list of number
   returns list of number

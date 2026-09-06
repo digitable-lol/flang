@@ -1,35 +1,5 @@
 module «Levenshtein distance»
 
-// Rosetta Code — Levenshtein distance, written on the ENGLISH keyword surface.
-// The same program as `levenshtein-distance.flang`, keyword for keyword: the
-// trees match up to a one-to-one renaming, and that is checked by machine.
-//
-// The least number of insertions, deletions and substitutions turning one
-// string into another. «kitten» → «sitting» costs three.
-//
-// The task was chosen deliberately: this is dynamic programming, that is,
-// exactly the class about which the list of the language's shortcomings says
-// literally «heaps, DP tables and two-dimensional grids break on this». A table
-// with random access does not exist in the language, and there is nothing to
-// replace it with. But Levenshtein does not need the WHOLE table: every row is
-// computed from the previous one, and only one has to be kept.
-//
-// And one row is a list. The language has lists, and a list has a tail. So the
-// whole solution is proved total, including the walk over both strings:
-//
-//   • the outer pass goes over the characters of the first string — a fold over
-//     a ready list produced by `decompose … into characters`;
-//   • the inner pass goes over the characters of the second string — recursion
-//     on the TAIL of that list, not on an index.
-//
-// The price is named honestly and it is real: every cell needs three
-// neighbours — left, above and diagonal. «Left» is carried as an argument,
-// «above» and «diagonal» are taken as the head and the second head of the
-// previous row. Because of that the previous row must be exactly one longer
-// than the remaining letters, and this is an invariant held by construction
-// rather than by a check: the language cannot express it. Break it and «head»
-// of an empty list will stop the computation, with nothing to catch it.
-
 object «Step»
   «row»: list of number
   «index»: number
@@ -74,8 +44,6 @@ total function «Last»
     expected 0
   fold items starting with 0 as acc and elem → elem
 
-// The zeroth row of the table: [0, 1, 2, … m]. Built by a fold over the letters
-// of the second string — not by counting up to m, hence proved.
 total function «Zero row»
   accepts letters: list of string
   returns list of number
@@ -87,9 +55,6 @@ total function «Zero row»
     expected [0]
   fold letters starting with [0] as acc and letter → add (length acc) to acc
 
-// The tail of the next row. `left` is the cell to the left, already computed;
-// `previous` is the previous row starting at the diagonal neighbour. The
-// recursion receives the tail of the list of letters, so termination is proved.
 total function «Onward along the row»
   accepts left: number, previous: list of number, letters: list of string, letter: string
   returns list of number
@@ -99,7 +64,7 @@ total function «Onward along the row»
     given letters equals empty list
     given letter equals "a"
     expected empty list
-  example «One letter, a match»
+  example «One letter, a match — previous carries exactly one more cell than the letters left to walk»
     given left equals 1
     given previous equals [0, 1]
     given letters equals ["a"]
@@ -132,7 +97,6 @@ total function «New row»
     expected [1, 0, 1]
   «Prepend» of index and («Onward along the row» of index and previous and letters and letter)
 
-// The task. Proved total throughout.
 total function «Distance»
   accepts left: string, right: string
   returns number

@@ -1,43 +1,9 @@
 module «Roman numerals»
 
-// Rosetta Code — Roman numerals/Encode and Roman numerals/Decode, written on
-// the ENGLISH keyword surface. The same program as `roman-numerals.flang`,
-// keyword for keyword.
-//
-// Write a number in Roman numerals and read a Roman numeral back.
-//
-// Both tasks are in one module on purpose. Separately each is checked by
-// examples — «1990 gives MCMXC», «MCMXC gives 1990» — and that is exactly the
-// kind of check this project starts from: an example confirms a point, not a
-// rule. Together they give a CLAIM: writing and reading are inverse to each
-// other. It is written as the function «Round trip» and checked at the edges of
-// the range. Split the tasks into separate files and there would be nothing
-// left to check.
-//
-// ALL functions of the module are total, including both main ones. That is not
-// automatic: both writing and reading are usually written with a loop («while
-// the remainder is greater than zero»), and a loop over a number cannot be
-// proved in this language. Here there are none:
-//
-//   • writing goes by PLACES, of which there are exactly four, and each place
-//     is arithmetic without recursion; repeating a symbol (no more than three
-//     times) is a fold over the ready list [1, 2, 3];
-//   • reading goes over the LIST OF CHARACTERS produced by the built-in form
-//     `decompose … into characters`, and a fold over a ready list terminates by
-//     construction.
-//
-// The range is 1 to 3999, as in the task: classical notation does not cover
-// larger numbers without overbars.
-
 object «Roman parse»
   «sum»: number
   «maximum»: number
 
-// Repeating a symbol up to three times — a fold over the list [1, 2, 3]. That
-// list is enough because in Roman notation one symbol never stands more than
-// three times in a row. Writing this as recursion on «count minus 1» would be
-// more natural and would give FLANG_NOT_TOTAL: a number decreases, not a
-// structure.
 total function «Repeat symbol»
   accepts symbol: string, count: number
   returns string
@@ -54,9 +20,6 @@ total function «Repeat symbol»
       then join acc with symbol
       else acc
 
-// One digit of one place. Three symbols: the small one (I), the middle one (V)
-// and the small symbol of the NEXT place (X) — needed for the subtractive form
-// «nine». For hundreds these are C, D, M; for tens X, L, C; for units I, V, X.
 total function «Roman group»
   accepts digit: number, small: string, middle: string, large: string
   returns string
@@ -102,8 +65,6 @@ total function «Roman group»
             then join middle with («Repeat symbol» of small and (digit minus 5))
             else «Repeat symbol» of small and digit
 
-// The digit of a place: the hundreds of 1990 are 9. The language has no integer
-// division, so the whole part is obtained by subtracting the remainder.
 total function «Digit of place»
   accepts value: number, place: number
   returns number
@@ -132,7 +93,6 @@ total function «Thousands»
     expected 0
   (value minus (value modulo 1000)) divided by 1000
 
-// The first task. Four places, not a single recursion — hence proved.
 total function «To Roman»
   accepts value: number
   returns string
@@ -160,25 +120,6 @@ total function «To Roman»
   let ones equals «Roman group» of («Digit of place» of value and 1) and "I" and "V" and "X"
   join (join (join thousands with hundreds) with tens) with ones
 
-// A claim about behaviour, not an example of it: the value of a symbol is never
-// negative — on ALL strings, not on the three written below. The kernel proves
-// this line instead of checking it: eight branches of choice end in eight
-// literals, every one of them at least zero, and "a choice between non-negative
-// values is non-negative" is a rule of the kernel proved about IEEE-754. That is
-// why the ledger says "proved" here and not "grid, 3 values".
-//
-// This is true, not merely hoped for, and it rests on the eighth branch: an
-// unknown symbol yields ZERO, and the example «Not a Roman symbol — zero» is
-// exactly about it. Writing `is at least 1` here would be a lie on that very
-// example.
-//
-// The second claim is about the UPPER bound, and another rule of the kernel
-// takes it ("bounded by construction"): the same eight literals, and none of
-// them is above a thousand, because M is the highest symbol of the Roman table.
-// There are two questions — the sign of the result and its ceiling — so there
-// are two claims: the language has no form for "result between 0 and 1000", and
-// merging two different rules of the kernel into one line would state a goal the
-// kernel would still read as two.
 total function «Value of a symbol»
   accepts symbol: string
   returns number
@@ -233,13 +174,6 @@ total function «Reverse symbols»
     expected ["X", "V", "I"]
   fold items starting with empty list as acc and symbol → «Prepend symbol» of symbol and acc
 
-// The second task. It reads right to left: a symbol smaller than the maximum
-// already seen is subtracted (IV, IX, XL). The fold goes over a ready list of
-// characters, hence proved.
-//
-// A fold cannot look ahead, and that is exactly why the parse is turned around:
-// left to right one would have to know the next symbol, right to left only the
-// maximum already seen, and the fold carries that along.
 total function «From Roman»
   accepts text: string
   returns number
@@ -265,9 +199,6 @@ total function «From Roman»
         else record «Roman parse» with «sum» equals (acc.«sum» plus value) and «maximum» equals value
   parsed.«sum»
 
-// A claim, not an example: writing and reading are inverse to each other.
-// Checked at the edges of the range and on numbers where every subtractive form
-// occurs.
 total function «Round trip»
   accepts value: number
   returns boolean

@@ -1,36 +1,5 @@
 module «Palindrome»
 
-// Rosetta Code — Palindrome detection, written on the ENGLISH keyword surface.
-// The same program as `palindrome.flang`, keyword for keyword.
-//
-// A string reads the same in both directions. The extended statement asks to
-// ignore case and punctuation.
-//
-// The whole file is total: the compiler proved that no function here can loop
-// forever. That is worth explaining, because until recently it was impossible,
-// and the reason is instructive.
-//
-// Normalisation (drop the marks, fold the case) was always provable: it folds
-// over a LITERAL list — the alphabet and the set of marks are finite and
-// written right in the source — and occurrences are found by the built-in
-// `split`. A fold over a ready list is always total.
-//
-// But the one-line «compare with yourself backwards» had nothing to prove it
-// with. Reversing requires walking the string character by character, pattern
-// matching worked on a list only back then («empty», «head and tail»), and the
-// walk went by position — that is, a NUMBER decreased, not a value. The termination
-// analysis does not count a numeric decrease as part of a value, and it is not
-// being pedantic: «size minus position» does shrink, but termination cannot be
-// justified by that without reasoning the compiler does not do.
-//
-// The form `decompose … into characters` closes exactly that: the string
-// becomes a list, a list has a tail, a fold over it is provable. Later the same
-// two patterns learned to read a string as well — it has exactly two cases — so
-// the direct character-by-character walk now carries the same proof. The
-// difference between a string and a list, for the sake of which «Palindrome of
-// a list» is shown separately below, remains in the language — but it stopped
-// costing totality.
-
 total function «Prepend»
   accepts element: number, items: list of number
   returns list of number
@@ -48,12 +17,6 @@ total function «Reverse list»
     expected [3, 2, 1]
   fold items starting with empty list as acc and elem → «Prepend» of elem and acc
 
-// Comparing lists is written by hand: the operator `equals` is allowed by the
-// type checker only over scalars (FLANG_TYPE: «only scalars can be compared for
-// equality»), although the language itself compares values structurally. The
-// recursion goes along the tails of both lists, and the decreasing position is
-// the same on every call — so the termination analysis accepts the function at
-// once.
 total function «Lists are equal»
   accepts left: list of number, right: list of number
   returns boolean
@@ -77,8 +40,6 @@ total function «Lists are equal»
             then false
             else «Lists are equal» of t and t2
 
-// The palindrome test for a list — total. Exactly the same thought as for a
-// string, but a list has structure the compiler knows how to take apart.
 total function «Palindrome of a list»
   accepts items: list of number
   returns boolean
@@ -116,10 +77,6 @@ total function «Replace»
     expected "абв"
   «Join strings» of (split text by needle) and replacement
 
-// One more claim closed by the core without a theorem. It says something real:
-// the function returns 0 when the substring is absent — that is, "not found" is
-// NOT encoded as minus one here, and that is proved about every input rather
-// than checked on the examples.
 total function «Position of substring»
   accepts text: string, part: string
   returns number
@@ -182,10 +139,6 @@ total function «Normalise»
     given text equals "A man, a plan, a canal: Panama!"
     expected "amanaplanacanalpanama"
   «Strip punctuation» of («To lower case» of text)
-
-// ─────────────────────────────────────────────────────────────────────────
-// Below — walking a string, which used to mean walking by position.
-// ─────────────────────────────────────────────────────────────────────────
 
 total function «Prepend string»
   accepts element: string, items: list of string

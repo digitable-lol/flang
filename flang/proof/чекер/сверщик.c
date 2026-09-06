@@ -2714,6 +2714,48 @@ static int mera_neotricatelna(const char *t, Sp stroki) {
   return nachinaetsya(bez_vneshnih(svesti_term(l, stroki, 4)), "длина ");
 }
 
+/* «Т НАЧИНАЕТСЯ С П» ПО ПОСТРОЕНИЮ (задача 9998). Т обязан быть склейкой
+   `соединить Л с Р` — иначе дверь молчит, это не её случай. Тогда итог
+   склейки несёт знаки Л, за ними знаки Р, и потому Т начинается с П, если Л
+   начинается с П, при ЛЮБОМ Р — Р эта дверь не смотрит и не вправе.
+
+   «Л начинается с П» проверяется ДВУМЯ доводами по очереди:
+     · ТОЖДЕСТВОМ термов (`tozhdestvenny`) — тот же приём, каким закрывается
+       `равен`; ловит и Л, не являющийся литералом (то же имя, что и П);
+     · при неудаче — ЗНАЧЕНИЕМ: Л и П считаются замкнутым счётчиком
+       `ocenit_term` (тем же, каким читается всякий литерал) и сравниваются
+       ПОСИМВОЛЬНО, `nachinaetsya` на уже разобранных строках. Это доводит
+       дело до конца ровно там, где тождество останавливается на полпути:
+       Л и П — оба литералы, но П лишь ГОЛОВА Л, не весь Л.
+
+   Второй довод найден НЕ на «честном» корпусе 9998 (там ему употребления не
+   нашлось ни разу), а на подделке `poddelka-nachalo-po-postroeniyu`:
+   «Обещает первый знак» несёт единственное честное утверждение всей записи
+   — `(соединить "аб" с хвост) начинается с "а"` — и тут Л="аб", П="а"
+   тождества не сходится, а строка "аб" строкой "а" НАЧИНАЕТСЯ. Это не
+   второй вычислитель языка внутри сверщика (яма, которой избегает шапка
+   9998): `ocenit_term` уже был общим счётчиком ЗАМКНУТЫХ термов раньше и
+   везде в этом файле, здесь он просто позван ещё раз, на других сторонах.
+
+   Ни один довод не смотрит на Р, и ни один не разбирает П как «приставку
+   переменной строки»: приставка ПЕРЕМЕННОЙ — гипотеза, а не значение, и
+   третьей двери под это тут нет и не будет. */
+static int nachalo_po_postroeniyu(const char *t, Sp stroki) {
+  static const char *NS[1] = { " начинается с " };
+  char *l, *p, *sl, *levyy, *pravyy, *golova; long gde; int kakoe;
+  if (!nayti_sverhu(t, NS, 1, &gde, &kakoe)) return 0;
+  l = bez_vneshnih(kopiya(t, (size_t)gde));
+  p = bez_vneshnih(t + gde + strlen(" начинается с "));
+  if (strcmp(p, "\"\"") == 0) return 1;
+  sl = bez_vneshnih(l);
+  if (!razrez_slovom(sl, " с ", &levyy, &pravyy)) return 0;
+  if (!nachinaetsya(levyy, "соединить ")) return 0;
+  golova = slova_posle(levyy, 1);
+  if (tozhdestvenny(golova, p, stroki, 6)) return 1;
+  { Znach zg = ocenit_term(golova, stroki, NE_BERUS, 0), zp = ocenit_term(p, stroki, NE_BERUS, 0);
+    return zg.vid == 1 && zp.vid == 1 && nachinaetsya(zg.s, zp.s); }
+}
+
 static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy,
                             const char *konechen);
 
@@ -2796,7 +2838,7 @@ static int kvadrat_pod_ogovorkoy(const char *t, Sp stroki, const char *konechen)
   return tozhdestvenny(e1, konechen, stroki, 0);
 }
 
-/* ПОЛОВИНА ЗАКРЫТА? Способов ровно СЕМЬ, список закрыт:
+/* ПОЛОВИНА ЗАКРЫТА? Способов ровно ВОСЕМЬ, список закрыт:
      1. литерал `да`;
      2. выбор с литеральным условием — закрыта выбранная ветвь;
      3. замкнутый счёт даёт истину;
@@ -2808,7 +2850,11 @@ static int kvadrat_pod_ogovorkoy(const char *t, Sp stroki, const char *konechen)
         «х не больше результат» стоит под оговоркой о конечности;
      6. мера неотрицательна по объявлению встроенной формы;
      7. ОТРИЦАНИЕ замкнутого признака: `не Х` закрыто, когда замкнутый счёт
-        дал Х определённую ЛОЖЬ.
+        дал Х определённую ЛОЖЬ;
+     8. НАЧАЛО ПО ПОСТРОЕНИЮ: склейка `соединить Л с Р` начинается своим
+        левым куском Л, если Л начинается с искомого П — тождеством термов
+        либо, при обоих замкнутых, вычисленным значением. Правило 9998;
+        разбор — у `nachalo_po_postroeniyu`.
    и сверх них — само ДЕЛЕНИЕ по условию первого `если`.
    Ни один способ не объявляет половину ЛОЖНОЙ: незакрытая половина значит
    «не берусь».
@@ -2873,6 +2919,7 @@ static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy,
     if (prostoy(l) && prostoy(p) && tozhdestvenny(l, p, stroki, 6)) return 1;
   }
   if (mera_neotricatelna(t, stroki)) return 1;
+  if (nachalo_po_postroeniyu(t, stroki)) return 1;
   if (pervoe_uslovie(t, &u)) return delenie(t, u, stroki, deleniy, konechen);
   return 0;
 }
@@ -2976,6 +3023,78 @@ static int iz_obyavlennogo(const char *syroy, Sp stroki, long a, long b) {
   return 0;
 }
 
+/* Разбор ОДНОЙ посылки на стороны и оператор. Список короче OTNOSHENIYA —
+   только пять сравнений, из которых складывается граница несовместимости
+   ниже. Порядок хранит то же правило, что и там: длинное имя раньше
+   короткого, чтобы «не меньше»/«не больше» не резались по «меньше»/«больше». */
+static int razbor_sravneniya(const char *t, char **l, int *op, char **p) {
+  static const char *SRAVNENIYA[5] = {
+    " не меньше ", " не больше ", " равен ", " меньше ", " больше "
+  };
+  long gde; int kakoe;
+  if (!nayti_sverhu(t, SRAVNENIYA, 5, &gde, &kakoe)) return 0;
+  *l = bez_vneshnih(kopiya(t, (size_t)gde));
+  *p = bez_vneshnih(t + gde + strlen(SRAVNENIYA[kakoe]));
+  *op = kakoe;
+  return 1;
+}
+
+/* НЕСОВМЕСТИМАЯ ПАРА ДОПУЩЕНИЙ. Граница взята дословно из шапки подделки
+   `poddelka-protivorechie.flang`, а не изобретена: первое сравнение обязано
+   быть СТРОГИМ («меньше» либо «больше», op 3 либо 4 выше); второе — обратным
+   ему строгим (те же стороны переставлены, тот же строгий знак), обратным
+   нестрогим (переставленные стороны, знак ослаблен И перевёрнут) либо
+   РАВЕНСТВОМ тех же сторон в любом порядке. Список закрыт: пара сверх него
+   считается СОВМЕСТИМОЙ, и молчание тут — верный ответ, не пробел. Тем же
+   исходником сторожится и граница: «первое меньше второе» с «первое меньше
+   (второе плюс 1)» задевает только op1, стороны второй посылки не совпадают
+   ни с чем — правило молчит, и это проверено на себе. */
+static int nesovmestima_para(const char *f1, const char *f2, Sp stroki) {
+  char *l1, *p1, *l2, *p2; int op1, op2;
+  if (!razbor_sravneniya(f1, &l1, &op1, &p1)) return 0;
+  if (op1 != 3 && op1 != 4) return 0;                  /* первое обязано быть строгим */
+  if (!razbor_sravneniya(f2, &l2, &op2, &p2)) return 0;
+  if (op2 == 2)                                        /* равенство тех же сторон */
+    return (tozhdestvenny(l2, l1, stroki, 0) && tozhdestvenny(p2, p1, stroki, 0)) ||
+           (tozhdestvenny(l2, p1, stroki, 0) && tozhdestvenny(p2, l1, stroki, 0));
+  if (!tozhdestvenny(l2, p1, stroki, 0) || !tozhdestvenny(p2, l1, stroki, 0)) return 0;
+  return op1 == 3 ? (op2 == 3 || op2 == 1)             /* меньше: больше́ / не-больше́ */
+                  : (op2 == 4 || op2 == 0);            /* больше: меньше́ / не-меньше́ */
+}
+
+/* Посылки функции ИЗ ИСХОДНИКА: текст после «ИМЯ» в строке
+   `требует «ИМЯ» ФОРМУЛА`, читанной так же, как язык. У узла «разбор цели по
+   условию» посылок в ЗАПИСИ нет и быть не может (см. отказ по «принцип тип »/
+   «посылка » в razborom_celi ниже — это домен Ч363), поэтому довод берётся
+   там же, где и тело: у исходника. */
+static Sp trebovaniya_funkcii(Sp stroki, long a, long b) {
+  Sp r = PUSTO; long i;
+  for (i = a + 1; i < b; i++) {
+    char *l = kak_chitaet_yazyk(chast(stroki, i));
+    if (nachinaetsya(l, "требует ") && soderzhit(l, "» "))
+      dobavit(&r, term(hvost_posle(l, "» ")));
+  }
+  return r;
+}
+
+/* НЕВЫПОЛНИМАЯ ПОСЫЛКА. Найдись среди объявленных допущений функции ХОТЬ
+   ОДНА несовместимая пара — входов, доходящих до тела, нет вовсе, и
+   постусловие истинно ПУСТО, каким бы оно ни было. Цель поэтому тут не
+   смотрится совсем: это и есть весь смысл приёма (`poddelka-protivorechie`,
+   функция «Не врёт противоречием» — из `первое меньше второе` и `второе не
+   больше первое» следует что угодно, в частности заведомо ложное на вид
+   `1 равен 2`), а не пробел в нём. Тот же приём, замером на `abilities.flang`
+   («Несовместимые допущения», У23 — то же правило, что и здесь, названо в
+   исходнике словом), снимает со слова ядра ещё одно место сверх записи
+   `poddelka-protivorechie`, не давая ей кода 0: мест там больше одного. */
+static int nevypolnimaya_posylka(Sp stroki, long a, long b) {
+  Sp t = trebovaniya_funkcii(stroki, a, b); int i, j;
+  for (i = 0; i < t.n; i++)
+    for (j = 0; j < t.n; j++)
+      if (i != j && nesovmestima_para(t.e[i], t.e[j], stroki)) return 1;
+  return 0;
+}
+
 /* Проиграть заново узел «разбор цели по условию».
    1 — проигран, и место снимается со слова ядра. */
 static int razborom_celi(Sverka *s, Sp svoi, Sp stroki,
@@ -2994,6 +3113,7 @@ static int razborom_celi(Sverka *s, Sp svoi, Sp stroki,
   if (est_svyazyvatel(cel)) { s->razbor_mimo++; return 0; }
   if (polovina_zakryta(cel, stroki, 0, NULL)) return 1;
   if (iz_obyavlennogo(cel, stroki, a, b)) return 1;
+  if (nevypolnimaya_posylka(stroki, a, b)) return 1;
   /* Половина не закрылась — это «не берусь», а НЕ «неправда»: сочетание
      значений условий бывает невыполнимым, и кричать тут было бы ложью. Имя
      утверждения названо числом, а не строкой: строка на всякое незакрытое место

@@ -1961,13 +1961,13 @@ fl_status compiler_flang_sozdat_zakrytoe(fl_ctx *ctx, fl_value id, fl_value klyu
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_otvet_kesha(fl_ctx *ctx, fl_value est, fl_value verdikt, fl_value *out, fl_error *error);
 
-/* Запись FTS «Ход без теорем»: «закрытые», «новые». */
+/* Запись FTS «Ход без теорем»: «закрытые», «новые», «попаданий». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_hod_bez_teorem(fl_ctx *ctx, fl_value zakrytye, fl_value novye, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_hod_bez_teorem(fl_ctx *ctx, fl_value zakrytye, fl_value novye, fl_value popadaniy, fl_value *out, fl_error *error);
 
-/* Запись FTS «Итог с кешем»: «узел», «кеш». */
+/* Запись FTS «Итог с кешем»: «узел», «кеш», «попаданий», «промахов». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_itog_s_keshem(fl_ctx *ctx, fl_value uzel, fl_value kesh, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_itog_s_keshem(fl_ctx *ctx, fl_value uzel, fl_value kesh, fl_value popadaniy, fl_value promahov, fl_value *out, fl_error *error);
 
 /* Запись FTS «Требование»: «имя», «функция», «условия». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -70971,17 +70971,6 @@ fl_status compiler_flang_otpechatok_stroki_kesha(fl_ctx *ctx, fl_value tekst, fl
  * @return значение: «Значение»
  */
 fl_status compiler_flang_znachenie_bez_mest_rekursivno(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Отпечаток узлов кеша».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param uzly — «узлы»: список: «Значение»
- * @param mnozhitel — «множитель»: число
- * @param modul — «модуль»: число
- * @return значение: число
- */
-fl_status compiler_flang_otpechatok_uzlov_kesha(fl_ctx *ctx, fl_value uzly, fl_value mnozhitel, fl_value modul, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Отпечаток поля кеша».

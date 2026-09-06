@@ -175,7 +175,7 @@ class Flang < Formula
   # 2 995 862 байта.
   sha256 "825a2b5b1d65e9a8f339df1b92fd15554f5b9d4c2a48961e76d31be1948c80bf" # снят workflow_dispatch на main ДО тега — настоящий, не плейсхолдер
   license "BSD-2-Clause"
-  version "0.7.11"
+  version "0.7.12"
 
   # Node не нужен: в архиве C99 и Makefile. Из внешнего нужен только `make` —
   # он и объявлен; всё остальное даёт компилятор C, который есть в системе

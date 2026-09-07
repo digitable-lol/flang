@@ -587,6 +587,11 @@ be21be0ca643efa00fc02e9e3b64edd1|90|79|7|4|0|examples/allocator/allocator.flang
 c110934b654de80f02da0999dfd1c88d|0|0|0|0|2|flang/ct/modules/orders.flang
 65de6a234d3abe159672760a3f98dba5|1|×|×|×|0|flang/ct/monoid-and-monad.flang
 2532d2f0982166760ed7fd3b5961be72|0|×|×|×|3|flang/ct/order-shipment.flang
+bdff7b7e5851be32fe218a7ca696ebca|2|×|×|×|0|flang/ct/set-mail-routing.flang
+df8d71ded0766702962164b5cb394f16|3|×|×|×|0|flang/ct/vect-plane.flang
+ffc0184f83e59cd8b172ef67b28742d2|4|×|×|×|0|flang/ct/grp-clock-shifts.flang
+fc7a77af11f020be6d3ba57f7efe6909|6|×|×|×|0|flang/ct/pos-approval.flang
+f7c2a36f3b5d690600431dbbeaeff6f6|1|×|×|×|0|flang/ct/mon-free-forgetful.flang
 029fbccafd8b593f0fcafc24d6a14a21|14|9|4|1|0|examples/crypto/aes-vectors.flang
 e3dce4b7d377d2076ca7154cade67ec6|2|1|1|0|0|examples/crypto/certificate.flang
 b6df92b9fab4356571dced4966d981fb|3|2|0|1|0|examples/crypto/ecdsa-digest.flang

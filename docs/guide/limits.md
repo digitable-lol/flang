@@ -28,7 +28,7 @@ attaching a solver to the verification conditions is an open task, not a feature
 - Functions are first-class values in the language, and they print to all eight targets. The
   restriction was lifted by defunctionalization (Reynolds, 1972): a function value is a tag,
   `функция «Удвоить»`, and an application `ф от 5` is a dispatcher over a finite list of tags — so
-  targets without closures and the termination proof both survive (`flang/cat/HOF.md`). The
+  targets without closures and the termination proof both survive (`docs/archive/hof.md`). The
   lowering is ONE pass before printing (`flang/self/defunc.flang`): each backend receives a
   first-order program, so none of the eight sees higher order at all. The printed code is built
   with real toolchains and checked against the interpreter over a grid of inputs. What is still
@@ -49,9 +49,9 @@ attaching a solver to the verification conditions is an open task, not a feature
   no longer polymorphism: parametric types are in the language, in self-application and in the
   standard library (`«Возможно» от «А»` in `flang/stdlib/optional.flang`). What is missing is the
   category layer: the functor check knows a type's name, not its application — phase 3 in
-  `flang/cat/POLY.md`. Until then, sequencing is expressed by a continuation machine where the
+  `docs/archive/poly.md`. Until then, sequencing is expressed by a continuation machine where the
   continuation is a declared value rather than a hidden closure; how that differs from a monad is
-  in `flang/cat/SPEC.md`. Emitting a program with a `план` declaration works for
+  in `docs/ct/spec.md`. Emitting a program with a `план` declaration works for
   ONE target out of eight: `js` emits the declaration in full and exits 0, and the other seven
   refuse with `FLANG_PLAN_UNSUPPORTED`, name the plan and write no file (the refusal text is in
   `flang/self/bootstrap/compiler.flang`). Until 22 August 2026 those same seven emitted the
@@ -103,7 +103,7 @@ nothing together), `пересечение` is a pullback over the ambient set. 
 matching declarations; injectivity of an embedding is checked on the author's own values and, when
 the arrow glues, the message presents the counterexample; non-emptiness of a common part is
 confirmed by a witness. Universality of the common part stays the author's assumption, and the
-compiler draws no consequences from it ([`flang/cat/SETS.md`](../../flang/cat/SETS.md)). Union did NOT
+compiler draws no consequences from it ([`docs/ct/sets.md`](../../docs/ct/sets.md)). Union did NOT
 become a word: the coproduct is already in the language — it is `тип … вариант …` with exhaustive
 `разбор`. An arrow may carry a law: `даёт` names the function, `закон` carries the examples, and
 a broken law fails `flang test` naming both the arrow and the law. Isomorphism invertibility is
@@ -115,10 +115,10 @@ computed because there is nothing to prove there. Its cost is named in bytes: a 
 `требует` at all emits byte for byte as before, and a program with one grows by exactly the door —
 334 bytes in Python, 349 in Java, 369 in Elixir, 387 in C#, 452 in Rust, 462 in Go, 477 in C and
 1 654 in JavaScript ([`flang/SPEC.md`](../../flang/SPEC.md), "Предусловия функции"). Natural transformations are specified in
-[`flang/cat/SPEC.md`](../../flang/cat/SPEC.md) and are not implemented. Category names in a functor declaration are a note for the reader, not a
+[`docs/ct/spec.md`](../../docs/ct/spec.md) and are not implemented. Category names in a functor declaration are a note for the reader, not a
 checked claim. A list — and anything recursive, I/O included — cannot be declared a monad today:
 the endofunctor map is printed in place, so the parameter must occupy a whole field
-([`flang/cat/MONAD.md`](../../flang/cat/MONAD.md)).
+([`docs/archive/monad.md`](../../docs/archive/monad.md)).
 
 **Concurrency.** The scheduler in the C runtime runs in two modes. The checking one is a single
 thread interleaving by seed: it produces byte for byte the same delivery log as the witness, and

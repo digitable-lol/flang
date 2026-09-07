@@ -49,7 +49,7 @@
 проверять нечего: пока не сказано, когда два значения равны, слова
 «ассоциативность композиции» не значат ничего.
 
-Вот работающий кусок из `examples/cat/order-shipment.flang` — заказ,
+Вот работающий кусок из `flang/ct/order-shipment.flang` — заказ,
 отгрузка, накладная:
 
 ```flang
@@ -116,7 +116,7 @@ flowchart TD
 Отчёт обязан назвать размер сетки, и называет:
 
 ```
-$ flang check examples/cat/order-shipment.flang
+$ flang check flang/ct/order-shipment.flang
 категория «Отгрузки»: сетка 5 значений на 3 объектах, троек стрелок 7,
 нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 ```
@@ -187,7 +187,7 @@ $ echo $?
 называет их поимённо и отвечает кодом 2:
 
 ```
-$ flang check examples/cat/monoid-and-monad.flang
+$ flang check flang/ct/monoid-and-monad.flang
 проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе —
 monoids, monads.
 $ echo $?
@@ -197,8 +197,8 @@ $ echo $?
 Примеры при этом прогоняются, как у любой программы:
 
 ```
-$ flang test examples/cat/monoid-and-monad.flang
-examples/cat/monoid-and-monad.flang: примеров 20, прошло 20, не прошло 0
+$ flang test flang/ct/monoid-and-monad.flang
+flang/ct/monoid-and-monad.flang: примеров 20, прошло 20, не прошло 0
 $ echo $?
 0
 ```
@@ -229,7 +229,7 @@ $ echo $?
 
 ## Где написано остальное
 
-Полный контракт поверхности — `flang/cat/SPEC.md`: форма каждого объявления до
+Полный контракт поверхности — `docs/ct/spec.md`: форма каждого объявления до
 последнего падежа, код диагностики на каждую беду и поимённый список того, чего
 компилятор не проверяет. Рядом — разборы отдельных кусков: `HOF.md`, `POLY.md`,
 `MONAD.md`, `SETS.md`, `ZAKONY.md`.

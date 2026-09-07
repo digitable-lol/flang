@@ -1,12 +1,12 @@
 # The catalogue of examples
 
-Every example program in flang lives in one directory — `examples/`: <!-- СНЯТО 2026-09-06 файлов examples/*.flang = 197 --> 197 files in
-twenty-two sets and one full-size project. There is no second directory of examples
+Every example program in flang lives in one directory — `examples/`: <!-- СНЯТО 2026-09-06 файлов examples/*.flang = 185 --> 185 files in
+twenty-one sets and one full-size project. There is no second directory of examples
 in the repository: until 24 August 2026 a hundred and fifty programs stood a floor
 below, and they could not be found at a glance.
 
 The number is recounted by one command:
-`git -c core.quotepath=false ls-files examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-06 файлов examples/*.flang = 197 --> 197 (measured 6 September 2026).
+`git -c core.quotepath=false ls-files examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-06 файлов examples/*.flang = 185 --> 185 (measured 6 September 2026).
 
 ## The sets
 
@@ -14,7 +14,6 @@ The number is recounted by one command:
 |---|---:|---|
 | [`leetcode/`](examples/leetcode) | 82 | solutions to LeetCode problems; every file is self-contained on purpose — why, is said in [`index.json`](examples/leetcode/index.json). The account of this set is [82 problems](case-studies.html) |
 | [`rosetta/`](examples/rosetta) | 28 | the canonical Rosetta Code tasks |
-| [`cat/`](examples/cat) | 12 | category theory on applied problems: arrows with promises of their own, laws, CRDT merge |
 | [`web/`](examples/web) | 13 | HTTP: an orders service, the [URL shortener](shortener.html) and a marketplace API of three services — catalogue, cart, orders |
 | [`io/`](examples/io) | <!-- СНЯТО 2026-09-03 файлов examples/io/*.flang = 9 --> 9 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet |
 | [`crypto/`](examples/crypto) | 8 | AES, ECDSA, X25519, X.509, a revocation list, a TLS hello — on real test vectors that lie next to them |
@@ -60,7 +59,7 @@ refusal code rather than skipped in silence.
 ## About `library-api`
 
 `library-api` stands apart in this row, and that is the only thing in which the
-sets here differ from one another. The other twenty-two are programs: a file with
+sets here differ from one another. The other twenty-one are programs: a file with
 declarations that carry their own examples. `library-api` is a project: seven flang
 modules, one of them its own, with a directory layout of its own. The example shows
 not HTTP but a border: what moves into the language, where a piece of logic has a

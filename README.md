@@ -103,9 +103,9 @@ flang/stdlib/     the standard library; its index is printed from the modules th
 flang/proof/      what the proof core may and may not conclude, and why
 flang/проверки/   checks written in flang, walked by the binary
 flang/test/       the old test run: written against the deleted implementation, and today it does not start
-flang/cat/        the category-surface contract
+flang/ct/         category-theory implementations; the surface contract lives in docs/ct/
 flang/conc/       the concurrency contract and its examples
-examples/         197 flang programs in 23 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and fifteen more
+examples/         185 flang programs in 22 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and fifteen more
 editors/          the .flang language server, a vim plugin and a github-linguist submission stub
 packaging/        Homebrew, asdf and the flang.1 man page
 scripts/          reprinting the bootstrap point, the library index, the changelog and the release C
@@ -632,7 +632,7 @@ above about `./ярлык тесты`.
 - **A full-size layout** — [`examples/library-api`](examples/library-api/README.md): the domain
   half of a library REST service, seven flang modules. It answers one question: what goes where,
   and why there.
-- **The other examples** — 182 more programs in [`examples/`](examples), in 23 sets; what sits
+- **The other examples** — 170 more programs in [`examples/`](examples), in 22 sets; what sits
   where is listed in [`examples/README.md`](examples/README.md).
 - **Editors** — the `.flang` language server (`flang lsp`, described in
   [`editors/flang-lsp`](editors/flang-lsp/README.md)) and a vim plugin with syntax highlighting
@@ -649,7 +649,7 @@ Further reading — in Russian (the language surface is Russian, and so is most 
 [Раскладка проекта](docs/guide/project-layout.ru.md) ·
 [flang SPEC](flang/SPEC.md) · [self-hosting contract](flang/self/SPEC.md) ·
 [core-in-flang contract](flang/core/SPEC.md) · [proof core](flang/proof/SPEC.md) ·
-[category contract](flang/cat/SPEC.md) · [concurrency contract](flang/conc/SPEC.md).
+[category contract](docs/ct/spec.md) · [concurrency contract](flang/conc/SPEC.md).
 
 The documentation naming rule: an `.md` file with no language suffix is English, `X.ru.md` is its
 Russian version. The exception is `README.md` and `SPEC.md` next to code — they keep those names

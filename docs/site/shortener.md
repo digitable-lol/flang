@@ -433,7 +433,7 @@ alongside:
   the way the concurrency scheduler is: the module stays self-contained;
 * **the silence** is fixed separately from the emission: a target must either emit
   the plan or refuse, naming the plan — there is no third outcome. That rule is
-  written in `flang/cat/SPEC.md`, and as of 22 August 2026 the binary holds it:
+  written in `docs/ct/spec.md`, and as of 22 August 2026 the binary holds it:
   `emit --target js` emits the declaration and answers 0, the other seven targets
   refuse with `FLANG_PLAN_UNSUPPORTED` and code 1 without writing a file.
   `scripts/plan-across-targets.flang` checks this.

@@ -25,7 +25,7 @@ flang такое ловит. Глава про то, как это устрое�
 
 ## Три модуля об одном заказе
 
-`examples/cat/modules/` — четыре файла. Модуль заказов объявляет свой
+`flang/ct/modules/` — четыре файла. Модуль заказов объявляет свой
 интерфейс списком того, что он умеет:
 
 ```
@@ -100,7 +100,7 @@ flang такое ловит. Глава про то, как это устрое�
 тело — иначе отказ придёт от примера, а не от квадрата, и опыт ничего не покажет.
 
 ```bash
-cp -r examples/cat/modules ./modules
+cp -r flang/ct/modules ./modules
 # правим ./modules/reconciliation.flang
 flang check modules/reconciliation.flang
 ```
@@ -221,7 +221,7 @@ FLANG_EXAMPLE: пример «отменённый заказ остаётся �
 ## Задача
 
 ```bash
-cp -r examples/cat/modules ./modules
+cp -r flang/ct/modules ./modules
 ```
 
 1. Прогоните `flang check modules/reconciliation.flang` **до всякой порчи** и

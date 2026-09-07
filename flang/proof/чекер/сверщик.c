@@ -138,6 +138,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <dirent.h>
 
 /* ═══════════════════════════ основа: память и строки ═══════════════════════ */
 
@@ -5456,7 +5457,7 @@ static long stroka_samovyzova(Sp stroki, const char *funkciya, Sp izvestnye) {
    ли он доказан РАНЬШЕ по порядку» — переигрыш стал НЕЗАВИСИМ ОТ ПОРЯДКА блоков.
    Ацикличность графа «F зовёт G» стережёт не порядок, а отдельный проход
    `sverit_krugi_totalnosti` (топосортировка) в главном цикле. */
-static void sverit_totalnost(Sverka *s, const char *blok, Sp stroki, Sp vse_imena) {
+static void sverit_totalnost(Sverka *s, const char *blok, Sp stroki, Sp vse_imena, Sp vne_nabora) {
   Sp svoi = razdelit(blok, "\n");
   char *imya = v_yolochkah(chast(svoi, 1), 1);
   long gde = nomer_posle(chast(svoi, 1), "строка ");
@@ -5511,12 +5512,20 @@ static void sverit_totalnost(Sverka *s, const char *blok, Sp stroki, Sp vse_imen
      секции (`vse_imena`, собран первым проходом). Примитив в `zovyot_zapis` не
      попадает (у него своя строка «зовёт примитив»), значит зовомый обязан быть
      пользовательской функцией с блоком. Ацикличность стережёт отдельно
-     `sverit_krugi_totalnosti`; порядок объявления здесь роли не играет. */
+     `sverit_krugi_totalnosti`; порядок объявления здесь роли не играет.
+     [Ш3+] МЕЖМОДУЛЬНОЕ: зовомый G может жить в ДРУГОМ модуле. Тогда его блока нет
+     в `vse_imena` этой записи, но он мог быть проигран в поданном наборе-
+     зависимостей: `vne_nabora` — реестр имён, чей блок пред-проход проиграл против
+     ЕГО исходника до дна из 15 примитивов (см. `predprohod`). Реестр — это ВХОД,
+     а не аксиома: имя в нём стоит лишь потому, что его блок перепроигран, иначе
+     его там нет. Доверенное ядро (15 примитивов) не растёт. Одиночный режим:
+     `vne_nabora` пуст, вторая петля ничего не находит — поведение прежнее. */
   for (i = 0; i < zovyot_zapis.n; i++) {
     int est = 0;
     for (j = 0; j < vse_imena.n; j++) if (strcmp(zovyot_zapis.e[i], vse_imena.e[j]) == 0) { est = 1; break; }
+    for (j = 0; !est && j < vne_nabora.n; j++) if (strcmp(zovyot_zapis.e[i], vne_nabora.e[j]) == 0) est = 1;
     esli_ne(s, est,
-            fmt("тотальность «%s»: «%s» не примитив и не имеет блока тотальности в записи — тотальность зовомого не доказана", imya, zovyot_zapis.e[i]));
+            fmt("тотальность «%s»: «%s» не примитив и не имеет блока тотальности НИ в записи, НИ в поданном наборе — тотальность зовомого не доказана", imya, zovyot_zapis.e[i]));
   }
 }
 
@@ -5583,8 +5592,109 @@ static void sverit_utverzhdenie(Sverka *s, const char *blok, Sp stroki) {
   else bez_teoremy(s, svoi, stroki, imya, verdikt, mesto, chya);
 }
 
+/* ═══ [Ш3+] МЕЖМОДУЛЬНАЯ ЛИНКОВКА: пред-проход по набору-зависимостей ═════════
+   Проект docs/design/proof-object-crossmodule-link.md, путь (1) — многозаписьное
+   замыкание. Сверщику ПОМИМО главной пары (исходник, запись) подаётся НАБОР пар
+   зависимостей. Тотальность межмодульной G берётся в доверие ТОЛЬКО если её блок
+   тотальности проигран (`sverit_totalnost` с нулём бед) против ЕЁ исходника И все
+   её зовомые уже примитивы или в реестре — транзитивно до дна из 15 примитивов.
+   Реестр наполняется до неподвижной точки (fixpoint): круг между записями до
+   примитива не доходит НИКОГДА, поэтому ни одна его функция в реестр не попадёт.
+   Доверенное ядро не растёт: набор добавляет ВХОД, а не аксиомы. */
+
+/* Блоки секции тотальности записи (как в `sverit`): голова — часть 1, блоки —
+   части 2.. по сепаратору «\nтотальность ». Запись без секции даёт пусто. */
+static Sp bloki_totalnosti(const char *zapis) {
+  Sp t = razdelit(zapis, "\nтотальность "), r = PUSTO; int i;
+  for (i = 2; i <= t.n; i++) dobavit(&r, chast(t, i));
+  return r;
+}
+
+/* Имя, строка объявления и различитель (имя|sha исходника|строка) первого блока —
+   для сторожа коллизии имён. Разбор одной строки заголовка блока. */
+static char *imya_bloka_t(const char *blok) { return v_yolochkah(chast(razdelit(blok, "\n"), 1), 1); }
+static long stroka_bloka_t(const char *blok) { return nomer_posle(chast(razdelit(blok, "\n"), 1), "строка "); }
+
+/* Зовёт-функции блока (строки «зовёт «G»», БЕЗ примитивов — у тех своя строка). */
+static Sp zovyot_bloka_t(const char *blok) {
+  Sp svoi = razdelit(blok, "\n"), r = PUSTO; int m;
+  for (m = 0; m < svoi.n; m++) {
+    char *l = obrezat(svoi.e[m]);
+    if (nachinaetsya(l, "зовёт «")) dobavit(&r, v_yolochkah(l, 1));
+  }
+  return r;
+}
+
+/* ПРЕД-ПРОХОД. Наполняет `*reestr` (имена межмодульных тотальных) до неподвижной
+   точки и собирает `*vse_bloki` (все блоки набора — для объединённого графа круга).
+   Беды сторожа коллизии текут в главную `s` (→ код 1); беды перепроигрывания
+   блоков — в ОТДЕЛЬНУЮ `tmp` (в главный счёт не текут: провал блока лишь не даёт
+   имени войти в реестр, а зовущий тогда сам покраснеет в (г)). */
+static void predprohod(Sverka *s, Sp nabor_ish, Sp nabor_zap, Sp *reestr, Sp *vse_bloki) {
+  int d, i, j, rosla;
+  Sp imena = PUSTO, klyuchi = PUSTO, soobshcheno = PUSTO;
+  *reestr = PUSTO; *vse_bloki = PUSTO;
+  /* СТОРОЖ КОЛЛИЗИИ ИМЁН (проект §4.2.6): два блока с ОДНИМ именем, но разным
+     различителем (иной исходник или строка объявления) — код 1. Без него
+     подделыватель отмыл бы ложную G, подложив честную одноимённую (проба П4):
+     проверка (г) нашла бы тёзку и пропустила самозванца — имя не различает. */
+  for (d = 0; d < nabor_ish.n; d++) {
+    Sp bloki = bloki_totalnosti(nabor_zap.e[d]);
+    char *sha = sha256(nabor_ish.e[d]);
+    for (i = 0; i < bloki.n; i++) {
+      char *imya = imya_bloka_t(bloki.e[i]);
+      char *raz = fmt("%s|%s|%ld", imya, sha, stroka_bloka_t(bloki.e[i]));
+      dobavit(vse_bloki, bloki.e[i]);
+      for (j = 0; j < imena.n; j++)
+        if (strcmp(imena.e[j], imya) == 0 && strcmp(klyuchi.e[j], raz) != 0) {
+          int uzhe = 0, m;
+          for (m = 0; m < soobshcheno.n; m++) if (strcmp(soobshcheno.e[m], imya) == 0) { uzhe = 1; break; }
+          if (!uzhe) {
+            dobavit(&s->bedy, fmt("в наборе два разных определения «%s» — имя не различает, кому верить", imya));
+            dobavit(&soobshcheno, imya);
+          }
+          break;
+        }
+      dobavit(&imena, imya); dobavit(&klyuchi, raz);
+    }
+  }
+  /* ЗАМЫКАНИЕ ДО НЕПОДВИЖНОЙ ТОЧКИ. Блок принимается в реестр, когда он проигран
+     против ЕГО исходника с нулём бед И каждый его зовомый уже в реестре (примитивы
+     ловит `sverit_totalnost` строкой «зовёт примитив»). `vse_imena` записи-
+     зависимости служит `sverit_totalnost` лишь распознаванием вызовов в теле
+     (проверки б/в); попадание в реестр решает СТРОГО проверка «зовомые в реестре»,
+     а не наличие тёзки в той же записи — иначе ложный блок отмылся бы соседом. */
+  rosla = 1;
+  while (rosla) {
+    rosla = 0;
+    for (d = 0; d < nabor_ish.n; d++) {
+      Sp stroki = razdelit(nabor_ish.e[d], "\n");
+      Sp bloki = bloki_totalnosti(nabor_zap.e[d]);
+      Sp vse_imena = PUSTO;
+      for (i = 0; i < bloki.n; i++) dobavit(&vse_imena, imya_bloka_t(bloki.e[i]));
+      for (i = 0; i < bloki.n; i++) {
+        char *imya = imya_bloka_t(bloki.e[i]);
+        Sverka tmp; Sp zovyot; int uzhe = 0, k, vse_v_reestre = 1;
+        for (k = 0; k < reestr->n; k++) if (strcmp(reestr->e[k], imya) == 0) { uzhe = 1; break; }
+        if (uzhe) continue;
+        memset(&tmp, 0, sizeof tmp);
+        sverit_totalnost(&tmp, bloki.e[i], stroki, vse_imena, *reestr);
+        if (tmp.bedy.n != 0) continue;             /* §2 не прошёл — не в реестр */
+        zovyot = zovyot_bloka_t(bloki.e[i]);
+        for (j = 0; j < zovyot.n && vse_v_reestre; j++) {
+          int est = 0;
+          for (k = 0; k < reestr->n; k++) if (strcmp(zovyot.e[j], reestr->e[k]) == 0) { est = 1; break; }
+          if (!est) vse_v_reestre = 0;
+        }
+        if (!vse_v_reestre) continue;              /* зовомый ещё не проигран */
+        dobavit(reestr, imya); rosla = 1;
+      }
+    }
+  }
+}
+
 static Sverka sverit(const char *ishodnik, const char *zapis, const char *put,
-                     const char *zhdyom) {
+                     const char *zhdyom, Sp nabor_ish, Sp nabor_zap) {
   Sverka s;
   /* [Ш3] Секция тотальности-композиции стоит МЕЖДУ блоками утверждений и «конец
      записи» (проект §6). Отсекаем её ПЕРЕД разбором утверждений: иначе строка
@@ -5680,12 +5790,21 @@ static Sverka sverit(const char *ishodnik, const char *zapis, const char *put,
       esli_ne(&s, nomer_posle(stroka_t, "тотальностей ") == totalnosti.n,
               fmt("шапка обещает тотальностей %ld, а в записи блоков %d — печать назвала не всё",
                   nomer_posle(stroka_t, "тотальностей "), totalnosti.n)); }
-  { Sp vse_imena = PUSTO;
+  { Sp vse_imena = PUSTO, vne_nabora = PUSTO, nabor_bloki = PUSTO, obyed = PUSTO;
     for (i = 0; i < totalnosti.n; i++)                    /* проход 1: имена */
       dobavit(&vse_imena, v_yolochkah(chast(razdelit(totalnosti.e[i], "\n"), 1), 1));
+    /* [Ш3+] ПРЕД-ПРОХОД по набору-зависимостям: наполнить реестр межмодульных
+       тотальных (до неподвижной точки) и собрать блоки набора для графа круга.
+       Одиночный режим (nabor_ish.n==0): реестр пуст, поведение прежнее. */
+    if (nabor_ish.n) predprohod(&s, nabor_ish, nabor_zap, &vne_nabora, &nabor_bloki);
     for (i = 0; i < totalnosti.n; i++)                    /* проход 2: каждый блок */
-      sverit_totalnost(&s, totalnosti.e[i], stroki, vse_imena);
-    sverit_krugi_totalnosti(&s, totalnosti);              /* ацикличность графа */
+      sverit_totalnost(&s, totalnosti.e[i], stroki, vse_imena, vne_nabora);
+    /* Круг — на ОБЪЕДИНЁННОМ графе (блоки главной записи + всех записей набора),
+       чтобы межзаписьный круг был назван вслух, а не только молча не-подтверждён.
+       Без набора объединение = сами `totalnosti`, поведение прежнее. */
+    for (i = 0; i < totalnosti.n; i++) dobavit(&obyed, totalnosti.e[i]);
+    for (i = 0; i < nabor_bloki.n; i++) dobavit(&obyed, nabor_bloki.e[i]);
+    sverit_krugi_totalnosti(&s, obyed);                   /* ацикличность графа */
   }
   for (i = 0; i < OGL_BEDY.n; i++) dobavit(&s.bedy, OGL_BEDY.e[i]);
   return s;
@@ -5712,19 +5831,67 @@ static Sverka sverit(const char *ishodnik, const char *zapis, const char *put,
    именно затем, чтобы код 0 под ним нельзя было прочесть как приёмку: замером
    Ч55 показано, что под прежним `--мягко` ложь Ч40 `lozh-1-verdikt` получала
    код 0 — тот же код, что и честная проверенная запись. */
+
+/* [Ш3+] Прочитать пару (исходник, запись) в набор-зависимостей. 0 — успех; иначе
+   имя непрочитанного файла напечатано, и звавший вернёт код 2 (кривой вызов). */
+static int dobavit_paru(Sp *nabor_ish, Sp *nabor_zap, const char *put_ish, const char *put_zap) {
+  char *ish = prochitat_fajl(put_ish), *zap;
+  if (!ish) { fprintf(stderr, "исходник зависимости не прочитан: %s\n", put_ish); return 2; }
+  zap = prochitat_fajl(put_zap);
+  if (!zap) { fprintf(stderr, "запись зависимости не прочитана: %s\n", put_zap); return 2; }
+  dobavit(nabor_ish, ish); dobavit(nabor_zap, zap);
+  return 0;
+}
+
+/* [Ш3+] Все `*.запись` каталога — в набор. Исходник каждой берётся из её поля
+   `исходник` (строка 2), путь его — от корня дерева (cwd), как в остальном чекере. */
+static int dobavit_katalog(Sp *nabor_ish, Sp *nabor_zap, const char *kat) {
+  DIR *dir = opendir(kat); struct dirent *e; const char *suf = ".запись"; size_t ls = strlen(suf);
+  if (!dir) { fprintf(stderr, "каталог набора не открыт: %s\n", kat); return 2; }
+  while ((e = readdir(dir)) != NULL) {
+    size_t ln = strlen(e->d_name);
+    char *put_zap, *zap, *put_ish, *ish;
+    if (ln < ls || strcmp(e->d_name + ln - ls, suf) != 0) continue;
+    put_zap = fmt("%s/%s", kat, e->d_name);
+    zap = prochitat_fajl(put_zap);
+    if (!zap) { fprintf(stderr, "запись набора не прочитана: %s\n", put_zap); closedir(dir); return 2; }
+    put_ish = hvost_posle(chast(razdelit(zap, "\n"), 2), "исходник ");
+    if (!*put_ish) { fprintf(stderr, "у записи набора нет поля «исходник»: %s\n", put_zap); closedir(dir); return 2; }
+    ish = prochitat_fajl(put_ish);
+    if (!ish) { fprintf(stderr, "исходник записи набора не прочитан: %s (из %s)\n", put_ish, put_zap); closedir(dir); return 2; }
+    dobavit(nabor_ish, ish); dobavit(nabor_zap, zap);
+  }
+  closedir(dir);
+  return 0;
+}
+
 int main(int argc, char **argv) {
   char *ishodnik, *zapis, *zhdyom = NULL; Sverka s; int staryy = 0, d = 0, i, poimenno = 0;
   const char *dovody[3]; int n = 0;
+  Sp nabor_ish = PUSTO, nabor_zap = PUSTO;   /* [Ш3+] набор-зависимостей */
   /* Список ключей закрыт (правило Ч27): ключ, которого чекер не знает, — отказ
      кодом 2, а не довод и не «ладно». Иначе забытый `--мягко` уехал бы третьим
-     доводом и вышел бы ложным «НЕ СОШЛОСЬ» вместо честного «звать не так». */
+     доводом и вышел бы ложным «НЕ СОШЛОСЬ» вместо честного «звать не так».
+     [Ш3+] `--набор КАТАЛОГ` — все `*.запись` каталога зависимостями; повторяемый
+     `--зависимость ИСХОДНИК ЗАПИСЬ` — одна пара. Набор — ВХОД доверия сверщику,
+     а не аксиомы: имя G входит в реестр лишь перепроигрыванием её блока. */
   for (i = 1; i < argc; i++) {
     if (strcmp(argv[i], "--старый-код-не-приёмка") == 0) staryy = 1;
     else if (strcmp(argv[i], "--по-утверждениям") == 0) poimenno = 1;
+    else if (strcmp(argv[i], "--набор") == 0) {
+      if (i + 1 >= argc) { fprintf(stderr, "--набор без каталога\n"); return 2; }
+      { int e = dobavit_katalog(&nabor_ish, &nabor_zap, argv[i + 1]); if (e) return e; }
+      i += 1;
+    }
+    else if (strcmp(argv[i], "--зависимость") == 0) {
+      if (i + 2 >= argc) { fprintf(stderr, "--зависимость ждёт ИСХОДНИК и ЗАПИСЬ\n"); return 2; }
+      { int e = dobavit_paru(&nabor_ish, &nabor_zap, argv[i + 1], argv[i + 2]); if (e) return e; }
+      i += 2;
+    }
     else if (nachinaetsya(argv[i], "--")) {
-      fprintf(stderr, "чекер не знает ключа «%s». Ключей ровно два: "
-                      "--старый-код-не-приёмка (им заменён прежний --мягко) "
-                      "и --по-утверждениям\n", argv[i]);
+      fprintf(stderr, "чекер не знает ключа «%s». Ключей ровно четыре: "
+                      "--старый-код-не-приёмка (им заменён прежний --мягко), "
+                      "--по-утверждениям, --набор КАТАЛОГ и --зависимость ИСХОДНИК ЗАПИСЬ\n", argv[i]);
       return 2;
     }
     else if (n < 3) dovody[n++] = argv[i];
@@ -5732,6 +5899,7 @@ int main(int argc, char **argv) {
   }
   if (n < 2 || n > 3) {
     fprintf(stderr, "звать: сверщик [--старый-код-не-приёмка] [--по-утверждениям]"
+                    " [--набор КАТАЛОГ] [--зависимость ИСХОДНИК ЗАПИСЬ]..."
                     " <исходник.flang> <запись> [ожидаемый sha256]\n");
     return 2;
   }
@@ -5740,7 +5908,7 @@ int main(int argc, char **argv) {
   if (!ishodnik) { fprintf(stderr, "исходник не прочитан: %s\n", dovody[0]); return 2; }
   zapis = prochitat_fajl(dovody[1]);
   if (!zapis) { fprintf(stderr, "запись не прочитана: %s\n", dovody[1]); return 2; }
-  s = sverit(ishodnik, zapis, dovody[0], zhdyom);
+  s = sverit(ishodnik, zapis, dovody[0], zhdyom, nabor_ish, nabor_zap);
   /* Ч56: вердикт по каждому утверждению порознь. Печатается ДО общего — он и
      объясняет, откуда общий взялся. */
   if (poimenno) for (i = 0; i < s.po_utverzhdeniyam.n; i++) printf("%s\n", s.po_utverzhdeniyam.e[i]);

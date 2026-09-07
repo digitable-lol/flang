@@ -1418,15 +1418,7 @@ typedef struct { Sp bedy, primety; long na_slovo, shagov, utverzhdeniy, svedeniy
                     неподвижная точка «Закрыть без теорем», ядро proofterm.flang
                     2490). Пополняется в главном цикле ПОСЛЕ каждого утверждения,
                     поэтому на утверждении K держит ровно 1..K−1. */
-                 Sp dokazannye_svoystva;
-                 /* [Ш3] СЕРТИФИКАТ ТОТАЛЬНОСТИ-КОМПОЗИЦИИ: реестр функций, чей блок
-                    «тотальность «F»» УЖЕ проигран и прошёл четыре перепроверки
-                    РАНЬШЕ по секции. Пополняется ПОСЛЕ прошедшего блока (порядок
-                    секции линеен), поэтому на блоке F держит ровно предыдущих.
-                    Ход `зовёт «G» тотальна` законен лишь если G ∈ этого реестра —
-                    сторож круга, дословно приём S2 (`dokazannye_svoystva`, §4
-                    проекта proof-object-po-obyavleniyu-trace.md). */
-                 Sp totalnye; } Sverka;
+                 Sp dokazannye_svoystva; } Sverka;
 
 static void esli_ne(Sverka *s, int uslovie, char *tekst) { if (!uslovie) dobavit(&s->bedy, tekst); }
 
@@ -5376,63 +5368,95 @@ static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
    проверяемых утверждения о функции F. Чекер держит строки исходника сам и НЕ
    верит записи: он перечитывает тело F из ПРОГРАММЫ. Четыре независимые проверки
    (проект proof-object-po-obyavleniyu-trace.md §2):
-     (а) привязка к объявлению — строка M несёт «тотальная функция «F»»;
-     (б) самовызова нет — перечитать тело САМ, найти «F» от в теле — красное;
+     (а) привязка к объявлению — строка M несёт «тотальная функция «F»» (с любым
+         хвостом родовых доводов «от «А» …»);
+     (б) самовызова нет — перечитать ТЕЛО САМ (без шапки и примеров), найти в нём
+         «F» — красное;
      (в) список зовомых — пересобрать САМ из тела, сверить множества с записью;
-     (г) тотальность каждого зовомого — по реестру `totalnye` (доказан РАНЬШЕ)
-         либо по закрытому списку примитивов языка (§3 — граница доверия).
+     (г) у каждого зовомого ЕСТЬ свой блок тотальности в записи (независимо от
+         порядка) либо он в закрытом списке примитивов языка (§3 — граница
+         доверия). Ацикличность графа «F зовёт G» стережёт `sverit_krugi_totalnosti`.
    Границей доверия остаётся ТОЛЬКО тотальность примитивов; всё прочее снято
-   чтением программы. */
+   чтением программы. Переигрыш НЕЗАВИСИМ ОТ ПОРЯДКА блоков: два прохода
+   (собрать имена → проверить каждый) плюс топосортировка вместо реестра «раньше». */
 
-/* Все пользовательские вызовы «X» от … в одной строке: имя в ёлочках, за которым
-   СЛЕДУЮЩИМ словом стоит «от». Примитив (плюс, длина, свёртка…) сюда не попадёт —
-   у него нет ни ёлочек, ни ` от ` (проект §2в, синтаксическая отличимость). */
-static Sp vyzovy_v_stroke(const char *s) {
+/* Все пользовательские вызовы в ОДНОЙ строке ТЕЛА F. «X» от … — применённый
+   вызов (имя в ёлочках, следующим словом «от»; примитив — плюс, длина, свёртка… —
+   сюда не попадёт: у него ни ёлочек, ни «от»). Голое «X» без «от» — вызов ЛИШЬ
+   когда X это сама F или функция с блоком тотальности (`izvestnye`): нульместная
+   функция зовётся как значение (`свёртка «Все знаки» …`, `… и «Замены в верхний
+   регистр»`), а прочее голое ёлочное имя — переменная, поле записи или вариант, и
+   вызовом не является (проект §2в, синтаксическая отличимость). */
+static Sp vyzovy_v_tele_stroke(const char *s, const char *funkciya, Sp izvestnye) {
   Sp r = PUSTO; const char *otk = "«", *zak = "»", *p = s;
   size_t lo = strlen(otk), lz = strlen(zak);
   while ((p = strstr(p, otk)) != NULL) {
     const char *k = strstr(p + lo, zak);
+    char *imya; int j, vyzov;
     if (!k) break;
-    if (strcmp(slovo(obrezat(k + lz), 1), "от") == 0)
-      dobavit(&r, kopiya(p + lo, (size_t)(k - (p + lo))));
+    imya = kopiya(p + lo, (size_t)(k - (p + lo)));
+    vyzov = (strcmp(slovo(obrezat(k + lz), 1), "от") == 0) || (strcmp(imya, funkciya) == 0);
+    for (j = 0; !vyzov && j < izvestnye.n; j++)
+      if (strcmp(imya, izvestnye.e[j]) == 0) vyzov = 1;
+    if (vyzov) dobavit(&r, imya);
     p = k + lz;
   }
   return r;
 }
 
-/* СВОЙ список вызовов тела F: обход строк исходника от объявления F до следующего
-   объявления (тот же обход владельца, что hvost_dovodov), выписаны все «X» от.
+/* Строка блока функции — часть ТЕЛА, а не шапки и не примера. Печать
+   (`Ходы тела`, zapis.flang) собирает вызовы РОВНО из тела: подпись
+   («принимает»/«возвращает»), предусловие («требует»), постусловие
+   («обеспечивает», «для всех … обеспечивает»), мера («убывает»/«мера») и примеры
+   («пример»/«дано»/«ожидается») в граф вызовов НЕ входят. Иначе «круг через
+   постусловие» (честный krug-tuda-i-obratno: «Меньшее» и «Большее» ссылаются друг
+   на друга ТОЛЬКО в постусловии, тела же зовут лишь примитив «если») ложно
+   назвался бы взаимной рекурсией, а самовызов из постусловия («Переворот от
+   результат», «Удвоить монотонно от н») — прямым. */
+static int stroka_tela(const char *syraya) {
+  char *l = obrezat(bez_primechaniya(syraya));
+  if (!*l) return 0;
+  return !(nachinaetsya(l, "принимает ") || nachinaetsya(l, "возвращает ") ||
+           nachinaetsya(l, "обеспечивает ") || nachinaetsya(l, "для всех ") ||
+           nachinaetsya(l, "требует ") || nachinaetsya(l, "убывает ") ||
+           nachinaetsya(l, "мера ") || nachinaetsya(l, "пример ") ||
+           nachinaetsya(l, "дано ") || nachinaetsya(l, "ожидается "));
+}
+
+/* СВОЙ список вызовов тела F: блок функции (`blok_funkcii` — от объявления до
+   следующего верхнего конструкта: функции, теоремы, типа), одни лишь строки тела.
    Запись НЕ участвует — список пересобран из программы (проект §2в). */
-static Sp vyzovy_tela(Sp stroki, const char *funkciya) {
-  Sp r = PUSTO; int i, j, vnutri = 0;
-  for (i = 0; i < stroki.n; i++) {
-    char *imya_z = imya_funkcii(stroki.e[i]);
-    if (*imya_z) { vnutri = (strcmp(imya_z, funkciya) == 0); continue; }
-    if (!vnutri) continue;
-    { Sp v = vyzovy_v_stroke(bez_primechaniya(stroki.e[i]));
+static Sp vyzovy_tela(Sp stroki, const char *funkciya, Sp izvestnye) {
+  Sp r = PUSTO; long konec, nachalo = blok_funkcii(stroki, funkciya, &konec), i; int j;
+  for (i = nachalo + 1; nachalo && i < konec; i++) {
+    char *syr = stroka_po_nomeru(stroki, i);
+    if (!stroka_tela(syr)) continue;
+    { Sp v = vyzovy_v_tele_stroke(syr, funkciya, izvestnye);
       for (j = 0; j < v.n; j++) dobavit(&r, v.e[j]); }
   }
   return r;
 }
 
-/* Номер строки тела F, где стоит самовызов «F» от, или 0, если его нет.
-   Перечитывает ПРОГРАММУ, а не сверяет запись с записью (проект §2б). */
-static long stroka_samovyzova(Sp stroki, const char *funkciya) {
-  int i, j, vnutri = 0;
-  for (i = 0; i < stroki.n; i++) {
-    char *imya_z = imya_funkcii(stroki.e[i]);
-    if (*imya_z) { vnutri = (strcmp(imya_z, funkciya) == 0); continue; }
-    if (!vnutri) continue;
-    { Sp v = vyzovy_v_stroke(bez_primechaniya(stroki.e[i]));
-      for (j = 0; j < v.n; j++) if (strcmp(v.e[j], funkciya) == 0) return i + 1; }
+/* Номер строки ТЕЛА F, где стоит самовызов «F» (применённый «F» от или голое «F»
+   как значение), или 0, если его нет. Перечитывает ПРОГРАММУ (проект §2б). */
+static long stroka_samovyzova(Sp stroki, const char *funkciya, Sp izvestnye) {
+  long konec, nachalo = blok_funkcii(stroki, funkciya, &konec), i; int j;
+  for (i = nachalo + 1; nachalo && i < konec; i++) {
+    char *syr = stroka_po_nomeru(stroki, i);
+    if (!stroka_tela(syr)) continue;
+    { Sp v = vyzovy_v_tele_stroke(syr, funkciya, izvestnye);
+      for (j = 0; j < v.n; j++) if (strcmp(v.e[j], funkciya) == 0) return i; }
   }
   return 0;
 }
 
 /* Один блок «тотальность «F» строка M … конец тотальности». Четыре проверки §2.
-   Реестр `s->totalnye` пополняет НЕ здесь, а в главном цикле ПОСЛЕ прошедшего
-   блока (образец S2, `dokazannye_svoystva`): на блоке F реестр держит предыдущих. */
-static void sverit_totalnost(Sverka *s, const char *blok, Sp stroki) {
+   `vse_imena` — имена ВСЕХ блоков секции, собранные ПЕРВЫМ проходом главного
+   цикла: проверка (г) спрашивает «есть ли у зовомого блок тотальности», а не «был
+   ли он доказан РАНЬШЕ по порядку» — переигрыш стал НЕЗАВИСИМ ОТ ПОРЯДКА блоков.
+   Ацикличность графа «F зовёт G» стережёт не порядок, а отдельный проход
+   `sverit_krugi_totalnosti` (топосортировка) в главном цикле. */
+static void sverit_totalnost(Sverka *s, const char *blok, Sp stroki, Sp vse_imena) {
   Sp svoi = razdelit(blok, "\n");
   char *imya = v_yolochkah(chast(svoi, 1), 1);
   long gde = nomer_posle(chast(svoi, 1), "строка ");
@@ -5458,17 +5482,20 @@ static void sverit_totalnost(Sverka *s, const char *blok, Sp stroki) {
               imya, vid, samo, konec));
   esli_ne(s, *pervaya_s_nachalom(svoi, "вид composition") != 0,
           fmt("тотальность «%s»: заявлен вид не composition — это другая семья, здесь отвергается вслух", imya));
-  /* (а) ПРИВЯЗКА К ОБЪЯВЛЕНИЮ. */
+  /* (а) ПРИВЯЗКА К ОБЪЯВЛЕНИЮ. Родовая функция несёт доводы в объявлении
+     («тотальная функция «Отобразить» от «А» и «Б»»): сверяется НАЧАЛО строки и
+     первое имя в ёлочках, а не строка целиком, иначе честная родовая функция
+     отвергалась бы за хвост доводов. */
   v_ish = stroka_po_nomeru(stroki, gde);
-  esli_ne(s, strcmp(v_ish, fmt("тотальная функция «%s»", imya)) == 0,
+  esli_ne(s, nachinaetsya(v_ish, "тотальная функция «") && strcmp(imya_funkcii(v_ish), imya) == 0,
           fmt("тотальность «%s»: строка %ld исходника — не «тотальная функция «%s»» (стоит «%s»)",
               imya, gde, imya, v_ish));
   /* (б) САМОВЫЗОВА НЕТ — ПЕРЕЧИТАТЬ ТЕЛО САМ. Запись не участвует. */
-  ns = stroka_samovyzova(stroki, imya);
+  ns = stroka_samovyzova(stroki, imya, vse_imena);
   esli_ne(s, ns == 0,
           fmt("тотальность «%s»: тело зовёт саму F в строке %ld — это НЕ композиция", imya, ns));
   /* (в) СПИСОК ЗОВОМЫХ — ПЕРЕСОБРАТЬ САМ, потом сверить множества. */
-  zovyot_telo = vyzovy_tela(stroki, imya);
+  zovyot_telo = vyzovy_tela(stroki, imya, vse_imena);
   for (i = 0; i < zovyot_zapis.n; i++) {
     int est = 0;
     for (j = 0; j < zovyot_telo.n; j++) if (strcmp(zovyot_zapis.e[i], zovyot_telo.e[j]) == 0) { est = 1; break; }
@@ -5480,13 +5507,52 @@ static void sverit_totalnost(Sverka *s, const char *blok, Sp stroki) {
     for (i = 0; i < zovyot_zapis.n; i++) if (strcmp(zovyot_telo.e[j], zovyot_zapis.e[i]) == 0) { est = 1; break; }
     esli_ne(s, est, fmt("тотальность «%s»: тело F зовёт «%s», а запись о нём молчит", imya, zovyot_telo.e[j]));
   }
-  /* (г) ТОТАЛЬНОСТЬ КАЖДОГО ЗОВОМОГО — ПО РЕЕСТРУ, не по слову (сторож круга §4). */
+  /* (г) У КАЖДОГО ЗОВОМОГО ЕСТЬ СВОЙ БЛОК ТОТАЛЬНОСТИ — не по порядку, а по всей
+     секции (`vse_imena`, собран первым проходом). Примитив в `zovyot_zapis` не
+     попадает (у него своя строка «зовёт примитив»), значит зовомый обязан быть
+     пользовательской функцией с блоком. Ацикличность стережёт отдельно
+     `sverit_krugi_totalnosti`; порядок объявления здесь роли не играет. */
   for (i = 0; i < zovyot_zapis.n; i++) {
-    int ranshe = 0;
-    for (j = 0; j < s->totalnye.n; j++) if (strcmp(zovyot_zapis.e[i], s->totalnye.e[j]) == 0) { ranshe = 1; break; }
-    esli_ne(s, ranshe,
-            fmt("тотальность «%s»: «%s» не доказана РАНЬШЕ — круг или обратный порядок", imya, zovyot_zapis.e[i]));
+    int est = 0;
+    for (j = 0; j < vse_imena.n; j++) if (strcmp(zovyot_zapis.e[i], vse_imena.e[j]) == 0) { est = 1; break; }
+    esli_ne(s, est,
+            fmt("тотальность «%s»: «%s» не примитив и не имеет блока тотальности в записи — тотальность зовомого не доказана", imya, zovyot_zapis.e[i]));
   }
+}
+
+/* ── круг тотальности: взаимная (и через третьих) рекурсия «F зовёт G зовёт … F» ──
+   ЗАМЕНА ПОРЯДКОВОМУ РЕЕСТРУ. Переигрыш блоков стал независим от порядка (проверка
+   (г) спрашивает лишь «есть ли блок»), и одинокого сторожа круга — реестра «раньше»
+   — не стало. Его место занимает этот проход: рёбра «F зовёт G» берутся из строк
+   «зовёт «G»» всех блоков (примитивы «зовёт примитив «…»» рёбер не дают — они листья
+   доверия), замыкаются по достижимости (тот же приём, что `sverit_krugi`), и всякая
+   функция, достижимая из самой себя, названа кругом. Топосортировка «не сходится»
+   ровно на таком множестве. Прямой самовызов ловит раньше и точнее (б). */
+static void sverit_krugi_totalnosti(Sverka *s, Sp bloki) {
+  Sp iz = PUSTO, v = PUSTO, krugi = PUSTO; int i, j, k, rosla = 1;
+  for (i = 0; i < bloki.n; i++) {
+    Sp svoi = razdelit(bloki.e[i], "\n");
+    char *imya = v_yolochkah(chast(svoi, 1), 1); int m;
+    for (m = 0; m < svoi.n; m++)
+      if (nachinaetsya(obrezat(svoi.e[m]), "зовёт «"))
+        { dobavit(&iz, imya); dobavit(&v, v_yolochkah(obrezat(svoi.e[m]), 1)); }
+  }
+  while (rosla) {                       /* замыкание по достижимости */
+    rosla = 0;
+    for (i = 0; i < iz.n; i++) for (j = 0; j < iz.n; j++) {
+      if (strcmp(v.e[i], iz.e[j]) != 0) continue;
+      for (k = 0; k < iz.n; k++) if (!strcmp(iz.e[k], iz.e[i]) && !strcmp(v.e[k], v.e[j])) break;
+      if (k == iz.n) { dobavit(&iz, iz.e[i]); dobavit(&v, v.e[j]); rosla = 1; }
+    }
+  }
+  for (i = 0; i < iz.n; i++) {
+    if (strcmp(iz.e[i], v.e[i]) != 0) continue;
+    for (k = 0; k < krugi.n; k++) if (strcmp(krugi.e[k], iz.e[i]) == 0) break;
+    if (k == krugi.n) dobavit(&krugi, iz.e[i]);
+  }
+  esli_ne(s, krugi.n == 0,
+          fmt("тотальность: функции зовомы по кругу — взаимная рекурсия, композицией не доказана: %s",
+              soedinit(krugi, ", ")));
 }
 
 static void sverit_utverzhdenie(Sverka *s, const char *blok, Sp stroki) {
@@ -5601,20 +5667,25 @@ static Sverka sverit(const char *ishodnik, const char *zapis, const char *put,
       dobavit(&s.dokazannye_svoystva, imya);
   }
   sverit_krugi(&s, bloki);
-  /* [Ш3] СЕКЦИЯ ТОТАЛЬНОСТИ-КОМПОЗИЦИИ. Шапка обещает столько блоков, сколько в
-     секции (иначе печать назвала не всё) — проверяется, лишь когда секция есть,
-     чтобы прежние записи без неё не краснели. Каждый блок — четыре проверки §2;
-     реестр `totalnye` пополняется ПОСЛЕ прошедшего блока (сторож круга §4). */
+  /* [Ш3] СЕКЦИЯ ТОТАЛЬНОСТИ-КОМПОЗИЦИИ — В ДВА ПРОХОДА, НЕЗАВИСИМО ОТ ПОРЯДКА
+     БЛОКОВ. Шапка обещает столько блоков, сколько в секции (иначе печать назвала
+     не всё) — проверяется, лишь когда секция есть, чтобы прежние записи без неё не
+     краснели. ПЕРВЫЙ проход собирает имена ВСЕХ блоков (`vse_imena`); ВТОРОЙ
+     проверяет каждый блок независимо (четыре проверки §2, зовомый доказан, если у
+     него ЕСТЬ блок — не «раньше по порядку»). Круг (взаимная рекурсия) ловит
+     отдельный проход-топосортировка `sverit_krugi_totalnosti`; прямой самовызов —
+     проверка (б) внутри блока. */
   { char *stroka_t = pervaya_s_nachalom(shapka, "тотальностей ");
     if (*stroka_t || totalnosti.n)
       esli_ne(&s, nomer_posle(stroka_t, "тотальностей ") == totalnosti.n,
               fmt("шапка обещает тотальностей %ld, а в записи блоков %d — печать назвала не всё",
                   nomer_posle(stroka_t, "тотальностей "), totalnosti.n)); }
-  for (i = 0; i < totalnosti.n; i++) {
-    long b0 = s.bedy.n;
-    char *imya = v_yolochkah(chast(razdelit(totalnosti.e[i], "\n"), 1), 1);
-    sverit_totalnost(&s, totalnosti.e[i], stroki);
-    if (s.bedy.n == b0) dobavit(&s.totalnye, imya);
+  { Sp vse_imena = PUSTO;
+    for (i = 0; i < totalnosti.n; i++)                    /* проход 1: имена */
+      dobavit(&vse_imena, v_yolochkah(chast(razdelit(totalnosti.e[i], "\n"), 1), 1));
+    for (i = 0; i < totalnosti.n; i++)                    /* проход 2: каждый блок */
+      sverit_totalnost(&s, totalnosti.e[i], stroki, vse_imena);
+    sverit_krugi_totalnosti(&s, totalnosti);              /* ацикличность графа */
   }
   for (i = 0; i < OGL_BEDY.n; i++) dobavit(&s.bedy, OGL_BEDY.e[i]);
   return s;

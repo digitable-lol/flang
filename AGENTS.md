@@ -551,25 +551,43 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 Метка `vX.Y.Z` на этом дереве публикует архив на GitHub и обновляет
 `packaging/homebrew/flang.rb` — но это НЕ то, откуда ставит `brew`.
 Настоящий адрес установки — отдельный репозиторий-кран,
-`digitable-lol/homebrew-tap` (`Formula/flang.rb`), локальный клон обычно
-лежит в `/srv/tmp/dokazuemyy/homebrew-tap`. Синхронизация РУЧНАЯ, ничем
-не принуждена — и однажды (4 сентября 2026, версии 0.7.4–0.7.10) шесть
-релизов подряд ушли без неё: тег и формула в основном репозитории были
-верны, а `brew install` ставил протухшую 0.7.3, и никто про это не знал,
-пока не спросили напрямую.
+`digitable-lol/homebrew-tap` (`Formula/flang.rb`). Синхронизация была
+РУЧНОЙ и ничем не принуждённой — и однажды (4 сентября 2026, версии
+0.7.4–0.7.10) шесть релизов подряд ушли без неё: тег и формула в основном
+репозитории были верны, а `brew install` ставил протухшую 0.7.3, и никто
+про это не знал, пока не спросили напрямую.
 
-**После КАЖДОЙ метки, которая реально дошла до публикации** (проверено:
-`gh release view vX.Y.Z --json assets` — есть архив, хеш сошёлся):
+С 7 сентября 2026 кран — **сабмодуль `packaging/homebrew-tap`**
+(`.gitmodules`), и забыть его нельзя: три числа его формулы (version, url,
+sha256) обязаны совпасть с `packaging/homebrew/flang.rb`. Это сверяют без
+сети `формула:проверка` (`scripts/homebrew-formula-guard.flang`, зовётся в
+`install-path.yml`) и шаг «Кран не отстал от дерева» в `release.yml` —
+ДО выкладки архива; `release.yml` и `install-path.yml` берут дерево с
+`submodules: true`. Расхождение и неразвёрнутый сабмодуль — красное.
+`выпуск:проверка` (с сетью) сверх того спрашивает у GitHub, что кран на
+`main` отдаёт выпущенную версию. После `git clone` — `git submodule
+update --init packaging/homebrew-tap`, иначе `формула:проверка` красна.
 
-```
-cp packaging/homebrew/flang.rb /srv/tmp/dokazuemyy/homebrew-tap/Formula/flang.rb
-cd /srv/tmp/dokazuemyy/homebrew-tap
-git add Formula/flang.rb && git commit -m "flang X.Y.Z: синхронизировано с packaging/homebrew/flang.rb в основном репозитории"
-git push origin main
-```
+**Порядок выпуска с краном** (кран правится ТОЛЬКО через сабмодуль, коммит и
+push в кране — руками владельца, автоматики нет по-прежнему):
 
-Проверка, что дошло: `curl -sL https://raw.githubusercontent.com/digitable-lol/homebrew-tap/main/Formula/flang.rb | grep version` — должно назвать только что выпущенную версию, не старую.
+1. `./ярлык версия X.Y.Z` — поднимает version/url в формуле дерева И в
+   рабочей копии крана; sha256 в обеих остаётся старый.
+2. Сухой прогон `release.yml` (`workflow_dispatch` с ветки) даёт sha256
+   свежего архива — вписать его в `packaging/homebrew/flang.rb`.
+3. Кран, тем же файлом:
+   ```
+   cp packaging/homebrew/flang.rb packaging/homebrew-tap/Formula/flang.rb
+   git -C packaging/homebrew-tap commit -am "flang X.Y.Z: url, sha256, version"
+   git -C packaging/homebrew-tap push origin main
+   git add packaging/homebrew-tap      # указатель сабмодуля — в коммит выпуска
+   ```
+   Пока указатель не поднят, `формула:проверка` и `release.yml` красны.
+4. Коммит выпуска, `./ярлык формула:проверка` зелёный, метка `vX.Y.Z`.
 
-Не дошедшие до публикации теги (сверка хеша упала на конвейере до
-выкладки) синхронизировать НЕ нужно — кран должен указывать на
-последнюю ДЕЙСТВИТЕЛЬНО опубликованную версию, не на последнюю метку.
+Метка, НЕ дошедшая до публикации после шага 3 (упала сверка в
+`release.yml`), оставляет кран впереди опубликованного: вернуть коммит
+крана (`git -C packaging/homebrew-tap revert HEAD` и push) и указатель —
+кран обязан указывать на последнюю ДЕЙСТВИТЕЛЬНО опубликованную версию.
+Проверка, что дошло: `curl -sL https://raw.githubusercontent.com/digitable-lol/homebrew-tap/main/Formula/flang.rb | grep version`
+называет только что выпущенную версию, не старую.

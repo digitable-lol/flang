@@ -1086,7 +1086,7 @@ c5a0345c44c46c293d187f192b3ea621|4|11|0|0|0|scripts/emit-package.flang
 ef39e47ca6526bb1d5f92b29cb0a3644|12|12|0|0|0|scripts/emit-promises-guard.flang
 91128ae65d62f7aee67ef6e15ae3599a|81|80|0|1|0|scripts/error-code-guard.flang
 b9355c30780244f70669d1308c60cf41|13|6|0|0|0|scripts/file-extensions.flang
-f93ca414eb631442b9cef287e164a648|60|48|9|3|0|scripts/homebrew-formula-guard.flang
+43a4d7d6d4935f31c848d28b9b23c41b|63|49|11|3|0|scripts/homebrew-formula-guard.flang
 b00f9a812077e3b8497c15864acff995|10|7|3|0|0|scripts/io-dictionary-copies-guard.flang
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/input-boundary.flang
 549dc14d48a6d1300aacb42533fe4cc6|2|0|2|0|0|scripts/jargon-guard.flang
@@ -1107,7 +1107,7 @@ c25748ca72cfdca2554269b3c8bcf185|9|9|0|0|0|scripts/occupancy-check.flang
 cd5ba8e6506a5d6b59898333c0d061b2|26|26|0|0|0|scripts/plan-across-targets.flang
 b7b038af83dfc2fd177142569ecab833|33|30|0|0|0|scripts/region-in-c-target.flang
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.flang
-8c3d550e05448975c2bc923b8671b80d|8|8|0|0|0|scripts/release-guard.flang
+1083cc30fab03e5f16e2060519b7c8c1|8|8|0|0|0|scripts/release-guard.flang
 6532ecb8603b4f6eb127b8d911d1d5d9|26|22|2|0|0|scripts/release-in-c.flang
 da53a2289cac09470f6f1d20ee509c82|10|7|3|0|0|scripts/reprint-freshness.flang
 10960d449237ada36a5330f39f6695a3|3|2|1|0|0|scripts/stale-pages-guard.flang

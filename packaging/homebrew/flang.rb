@@ -72,7 +72,7 @@
 class Flang < Formula
   desc "Проверяемый язык: исполняемая спецификация, печатается в восемь языков"
   homepage "https://github.com/digitable-lol/flang"
-  url "https://github.com/digitable-lol/flang/releases/download/v0.7.13/flang-0.7.13-c.tar.gz"
+  url "https://github.com/digitable-lol/flang/releases/download/v0.7.14/flang-0.7.14-c.tar.gz"
   # Хеш архива, собранного `bootstrap/flang io scripts/release-in-c.flang` и упакованного
   # командой ниже. Пересчитывается при каждом релизе: brew сверяет его сам, и
   # расхождение остановит установку до распаковки.
@@ -175,7 +175,7 @@ class Flang < Formula
   # 2 995 862 байта.
   sha256 "9fb23f32a79e7c88dc766ae18bdbcafaa802314b4a0d4454cc9da54d632bb47b" # снят с воспроизводимо собранного архива 0.7.13 (tar --mtime=@0, gzip -9n), 6 сентября 2026; выпуск сверяет его со своей сборкой до публикации, tap — со скачанным после
   license "BSD-2-Clause"
-  version "0.7.13"
+  version "0.7.14"
 
   # Node не нужен: в архиве C99 и Makefile. Из внешнего нужен только `make` —
   # он и объявлен; всё остальное даёт компилятор C, который есть в системе

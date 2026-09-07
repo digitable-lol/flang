@@ -5083,7 +5083,21 @@ static const char *OBRAZCY[] = {
      `sverit_stroki_zapisi` отверг бы честную секцию как «строку не узнал». */
   "тотальностей #", "тотальность «» строка #", "вид composition",
   "зовёт «» строка # тотальна", "зовёт примитив «»",
-  "самовызова нет", "конец тотальности"
+  "самовызова нет", "конец тотальности",
+  /* [Ш3+] СЁСТРЫ КОМПОЗИЦИИ: РЕКУРСИЯ. Реализованы structure и step (см.
+     `sverit_rekursiyu`); measure сюда НЕ добавлен НАРОЧНО — строка «вид measure»
+     остаётся «не узнана» (код 1), потому что состоятельное переигрывание СТРОГОГО
+     убывания меры требует правила «строгий порядок по построению», которого в
+     переигрывателе ходов нет (два закона A3 — только про «≥ 0»); дать его — вырастить
+     доверенную базу, а маршрут «через требует» для саморекурсии НЕсостоятелен (ядро
+     ловит его FLANG_PRECONDITION_CALL: самовызов сам обязан снять предусловие). Граница
+     названа вслух: measure — следующей волной, с отдельным судом о доверии.
+     Строки носителя структуры/шага — данные, ПЕРЕПРОВЕРЯЕМЫЕ чтением исходника и
+     подстановкой (проект docs/design/proof-object-recursion-totality.md §2.1–§2.2). */
+  "вид structure", "вид step",
+  "убывает аргумент # «»", "дно тип «»",
+  "виток строка # «» от …", "часть «» поле «» варианта «»",
+  "мера не меньше 0 тип «»", "самовызов строка #"
 };
 static int znakomaya_stroka(const char *s) {
   char *sk = skelet(s); int i;
@@ -5451,25 +5465,191 @@ static long stroka_samovyzova(Sp stroki, const char *funkciya, Sp izvestnye) {
   return 0;
 }
 
-/* Один блок «тотальность «F» строка M … конец тотальности». Четыре проверки §2.
-   `vse_imena` — имена ВСЕХ блоков секции, собранные ПЕРВЫМ проходом главного
-   цикла: проверка (г) спрашивает «есть ли у зовомого блок тотальности», а не «был
-   ли он доказан РАНЬШЕ по порядку» — переигрыш стал НЕЗАВИСИМ ОТ ПОРЯДКА блоков.
-   Ацикличность графа «F зовёт G» стережёт не порядок, а отдельный проход
-   `sverit_krugi_totalnosti` (топосортировка) в главном цикле. */
+/* ═══ [Ш3+] ТОТАЛЬНОСТЬ РЕКУРСИИ: structure / step / measure ══════════════════
+   Проект docs/design/proof-object-recursion-totality.md. Сёстры композиции: у
+   рекурсии самовызов ЕСТЬ и служит опорой (ИНВЕРСИЯ проверки б), а завершение
+   доказывается либо СТРУКТУРНО (убывающая часть значения — проверка чтения из S1,
+   `pole_rekursivno`), либо ЧИСЛОМ (точный шаг вниз / объявленная мера убывает; дно
+   фундировано типом-отрезком или переигранным законом неотрицательности). Доверенное
+   дно НЕ растёт: те же 15 примитивов (`PRIMITIVY`) + `ocenit_term` + два закона A3;
+   переигрыватель ходов (`proigrat_blok`) и проверка типа поля (`pole_rekursivno`) уже
+   стоят и здесь ЛИШЬ ПЕРЕИСПОЛЬЗУЮТСЯ. Новый ход и новый закон не заводятся. */
+
+/* Тип объявлен вариантами (индуктивен) — дно СТРУКТУРНОЙ рекурсии фундировано:
+   цепочка частей конечного значения обрывается сама. Встроенные суммы список/строка
+   индуктивны (`varianty_tipa` знает их). */
+static int tip_induktiven(Sp stroki, const char *tip) { return varianty_tipa(stroki, tip).n > 0; }
+
+/* Числовой тип-отрезок с ДНОМ 0 — закрытый список встроенных отрезков языка
+   [0, 2⁵³−1] (`flang/self/types.flang`: «неотрицательное» ≤ «целое» ≤ «число»; «нат»
+   — то же имя в подписях корпуса). Это ЯЗЫКОВОЕ распознавание, того же рода, что
+   знание `varianty_tipa` о встроенных суммах: НЕ доказательный примитив и НЕ закон
+   (`PRIMITIVY`/`PRAVILA` не трогаются). Тип вне списка дна не даёт — «целое»/«число»
+   тянутся в −∞, и спуск по ним бесконечен (проба `rec-step-bezdna`). */
+static int tip_otrezok_s_dnom(const char *tip) {
+  return strcmp(tip, "нат") == 0 || strcmp(tip, "неотрицательное") == 0;
+}
+
+/* Тип N-го (с 1) параметра функции — всё после двоеточия N-й части «принимает».
+   Нет такого параметра — пустая строка. */
+static char *tip_parametra(Sp stroki, const char *funkciya, long n) {
+  int i, vnutri = 0;
+  for (i = 0; i < stroki.n; i++) {
+    char *l = obrezat(bez_primechaniya(stroki.e[i]));
+    char *iz = imya_funkcii(stroki.e[i]);
+    if (*iz) vnutri = (strcmp(iz, funkciya) == 0);
+    else if (vnutri && nachinaetsya(l, "принимает ")) {
+      Sp ch = razdelit(hvost_posle(l, "принимает "), ",");
+      if (n < 1 || n > ch.n) return (char *)"";
+      return obrezat(chast(razdelit(chast(ch, n), ":"), 2));
+    }
+  }
+  return (char *)"";
+}
+
+/* Строка `случай вариант «В» …` в ТЕЛЕ функции (разборе), или пусто. Читает
+   исходник, не запись. */
+static char *sluchay_tela_varianta(Sp stroki, const char *funkciya, const char *variant) {
+  long konec, nachalo = blok_funkcii(stroki, funkciya, &konec), i;
+  for (i = nachalo + 1; nachalo && i < konec; i++) {
+    char *l = stroka_po_nomeru(stroki, i);
+    if (nachinaetsya(l, "случай ") && strcmp(imya_varianta(slova_posle(l, 1)), variant) == 0) return l;
+  }
+  return (char *)"";
+}
+
+/* Аргумент на позиции N (с 1) самовызова, ЗАПИСАННОГО витком как `от <аргтекст>`,
+   ПОСЛЕ сверки, что этот самый вызов стоит в строке K исходника (привязка: запись
+   лишь УКАЗЫВАЕТ, исходник ПОДТВЕРЖДАЕТ). `*est` = 1, когда вызов найден в строке K.
+   Пусто — вызова там нет или позиции нет. */
+static char *argument_vitka(Sp stroki, const char *funkciya, long k,
+                            const char *argtekst, long n, int *est) {
+  char *vyzov = obrezat(fmt("«%s» от %s", funkciya, argtekst));
+  char *v_ish = stroka_po_nomeru(stroki, k);
+  Sp argy;
+  *est = soderzhit(bez_skobok(v_ish), bez_skobok(vyzov));
+  if (!*est) return (char *)"";
+  argy = argumenty_vyzova(vyzov, funkciya);
+  if (n < 1 || n > argy.n) return (char *)"";
+  return term(argy.e[n - 1]);
+}
+
+/* Диспетчер завершения по РЕКУРСИВНОМУ виду. Инверсия (б) уже требует ns!=0. */
+static void sverit_rekursiyu(Sverka *s, Sp svoi, Sp stroki, const char *imya,
+                             const char *vid, long ns) {
+  int i;
+  esli_ne(s, ns != 0,
+          fmt("тотальность «%s»: вид %s, а рекурсии (самовызова) в теле нет", imya, vid));
+
+  if (strcmp(vid, "structure") == 0) {
+    char *ub = pervaya_s_nachalom(svoi, "убывает аргумент ");
+    long n_arg = nomer_posle(ub, "аргумент ");
+    char *dno = pervaya_s_nachalom(svoi, "дно тип «");
+    char *tip = v_yolochkah(dno, 1);
+    int est_vitok = 0;
+    esli_ne(s, *ub, fmt("тотальность «%s» вид structure: нет строки «убывает аргумент N «имя»»", imya));
+    esli_ne(s, *dno, fmt("тотальность «%s» вид structure: нет строки «дно тип «T»»", imya));
+    esli_ne(s, strcmp(golo(tip), golo(tip_parametra(stroki, imya, n_arg))) == 0,
+            fmt("тотальность «%s» вид structure: дно «%s» не совпало с типом аргумента %ld («%s»)",
+                imya, tip, n_arg, golo(tip_parametra(stroki, imya, n_arg))));
+    esli_ne(s, tip_induktiven(stroki, tip),
+            fmt("тотальность «%s» вид structure: дно не фундировано — тип «%s» не объявлен вариантами (не индуктивен)", imya, tip));
+    for (i = 0; i < svoi.n; i++) {
+      char *l = obrezat(svoi.e[i]), *chast_str, *p_imya, *pole, *variant, *sluchay, *arg_v, *argtekst; long k; int ev;
+      if (!nachinaetsya(l, "виток строка ")) continue;
+      est_vitok = 1;
+      k = nomer_posle(l, "строка ");
+      argtekst = obrezat(hvost_posle(l, fmt("«%s» от ", imya)));
+      chast_str = (i + 1 < svoi.n) ? obrezat(svoi.e[i + 1]) : (char *)"";
+      if (!nachinaetsya(chast_str, "часть «")) {
+        esli_ne(s, 0, fmt("тотальность «%s» вид structure: у витка (строка %ld) нет строки «часть «имя» поле «поле» варианта «В»»", imya, k));
+        continue;
+      }
+      p_imya = v_yolochkah(chast_str, 1); pole = v_yolochkah(chast_str, 2); variant = v_yolochkah(chast_str, 3);
+      esli_ne(s, *stroka_varianta_tipa(stroki, tip, variant),
+              fmt("тотальность «%s» вид structure: у типа «%s» нет варианта «%s»", imya, tip, variant));
+      { Obst o; memset(&o, 0, sizeof o); o.stroki = stroki; o.tip = tip;
+        esli_ne(s, pole_rekursivno(&o, variant, pole),
+                fmt("тотальность «%s» вид structure: поле «%s» варианта «%s» не того же типа «%s» — это круг, а не убывание", imya, pole, variant, tip)); }
+      sluchay = sluchay_tela_varianta(stroki, imya, variant);
+      esli_ne(s, *sluchay && strcmp(pole_obrazca(sluchay, p_imya), pole) == 0,
+              fmt("тотальность «%s» вид structure: имя «%s» не связано полем «%s» варианта «%s» в разборе тела", imya, p_imya, pole, variant));
+      arg_v = argument_vitka(stroki, imya, k, argtekst, n_arg, &ev);
+      esli_ne(s, ev, fmt("тотальность «%s» вид structure: самовызова «%s» от … в строке %ld исходника нет", imya, imya, k));
+      if (ev) esli_ne(s, strcmp(term(arg_v), term(p_imya)) == 0,
+              fmt("тотальность «%s» вид structure: на убывающей позиции витка стоит «%s», а часть названа «%s»", imya, arg_v, p_imya));
+    }
+    esli_ne(s, est_vitok, fmt("тотальность «%s» вид structure: нет ни одного витка", imya));
+  }
+
+  else if (strcmp(vid, "step") == 0) {
+    char *ub = pervaya_s_nachalom(svoi, "убывает аргумент ");
+    long n_arg = nomer_posle(ub, "аргумент ");
+    char *arg = v_yolochkah(ub, 1);
+    char *dno = pervaya_s_nachalom(svoi, "дно тип «");
+    char *tip = v_yolochkah(dno, 1);
+    char *tip_arg = golo(tip_parametra(stroki, imya, n_arg));
+    char *m0 = pervaya_s_nachalom(svoi, "мера не меньше 0");
+    int est_vitok = 0;
+    esli_ne(s, *ub, fmt("тотальность «%s» вид step: нет строки «убывает аргумент N «имя»»", imya));
+    esli_ne(s, *dno, fmt("тотальность «%s» вид step: нет строки «дно тип «T»»", imya));
+    esli_ne(s, tip_otrezok_s_dnom(golo(tip)),
+            fmt("тотальность «%s» вид step: дно не фундировано — тип «%s» не числовой отрезок с дном 0", imya, tip));
+    esli_ne(s, strcmp(golo(tip), tip_arg) == 0,
+            fmt("тотальность «%s» вид step: дно «%s» не совпало с типом аргумента %ld («%s»)", imya, tip, n_arg, tip_arg));
+    esli_ne(s, *m0, fmt("тотальность «%s» вид step: нет строки «мера не меньше 0 тип «T»»", imya));
+    if (*m0 && soderzhit(m0, "тип «"))
+      esli_ne(s, strcmp(v_yolochkah(m0, 1), golo(tip)) == 0,
+              fmt("тотальность «%s» вид step: «мера не меньше 0» названа типом «%s», а дно — «%s»", imya, v_yolochkah(m0, 1), tip));
+    for (i = 0; i < svoi.n; i++) {
+      char *l = obrezat(svoi.e[i]), *argtekst, *shag; long k; int ev; Razrez r;
+      if (!nachinaetsya(l, "виток строка ")) continue;
+      est_vitok = 1;
+      k = nomer_posle(l, "строка ");
+      argtekst = obrezat(hvost_posle(l, fmt("«%s» от ", imya)));
+      shag = argument_vitka(stroki, imya, k, argtekst, n_arg, &ev);
+      esli_ne(s, ev, fmt("тотальность «%s» вид step: самовызова «%s» от … в строке %ld исходника нет", imya, imya, k));
+      if (!ev) continue;
+      r = razrez_po(shag, "минус");
+      esli_ne(s, r.est && strcmp(uzhat(r.levo), arg) == 0 && chislo_iz_slova(uzhat(r.pravo)) > 0,
+              fmt("тотальность «%s» вид step: аргумент в самовызове (строка %ld) — «%s», не убывание точным шагом «%s минус <положительное>» (после не меньше до)", imya, k, shag, arg));
+    }
+    esli_ne(s, est_vitok, fmt("тотальность «%s» вид step: нет ни одного витка", imya));
+  }
+
+  /* measure сюда не доходит: строка «вид measure» не в OBRAZCY (не узнаётся, код 1).
+     Причина — граница доверия, названная там же: строгое убывание общей меры требует
+     правила «строгий порядок по построению», которого в переигрывателе ходов нет. */
+  else
+    esli_ne(s, 0, fmt("тотальность «%s»: вид «%s» — не structure и не step", imya, vid));
+}
+
+/* Один блок «тотальность «F» строка M … конец тотальности». Диспетчер по `вид`:
+   composition — четыре проверки §2; structure/step — переигрыватель рекурсии
+   `sverit_rekursiyu` (measure — следующей волной, см. OBRAZCY). `vse_imena` — имена
+   ВСЕХ блоков секции, собранные ПЕРВЫМ проходом
+   главного цикла: проверка (г) спрашивает «есть ли у зовомого блок тотальности», а не
+   «был ли он доказан РАНЬШЕ по порядку» — переигрыш НЕЗАВИСИМ ОТ ПОРЯДКА блоков.
+   Ацикличность графа «F зовёт G» стережёт отдельный проход `sverit_krugi_totalnosti`;
+   ПРЯМОЙ самовызов рекурсии рёбер `зовёт «…»` не даёт (он записан `самовызов строка N`,
+   отдельной строкой), поэтому честная рекурсия кругом не названа. */
 static void sverit_totalnost(Sverka *s, const char *blok, Sp stroki, Sp vse_imena, Sp vne_nabora) {
   Sp svoi = razdelit(blok, "\n");
   char *imya = v_yolochkah(chast(svoi, 1), 1);
   long gde = nomer_posle(chast(svoi, 1), "строка ");
-  char *v_ish;
+  char *v_ish, *vid_val;
   Sp zovyot_zapis = PUSTO, zovyot_telo;
-  int vid = 0, samo = 0, konec = 0, i, j; long ns;
+  int vid = 0, samo_net = 0, samo_est = 0, konec = 0, i, j, comp, rekur; long ns;
   s->svedeniy++;   /* числитель растёт на честном проигрывании — как для тождества */
+  vid_val = slovo(pervaya_s_nachalom(svoi, "вид "), 2);
+  comp = strcmp(vid_val, "composition") == 0;
+  rekur = strcmp(vid_val, "structure") == 0 || strcmp(vid_val, "step") == 0;
   /* ЦЕЛОСТНОСТЬ БЛОКА и (г-примитив) заодно: одним проходом. */
   for (i = 0; i < svoi.n; i++) {
     char *l = obrezat(svoi.e[i]);
     if (nachinaetsya(l, "вид ")) vid++;
-    else if (strcmp(l, "самовызова нет") == 0) samo++;
+    else if (strcmp(l, "самовызова нет") == 0) samo_net++;
+    else if (nachinaetsya(l, "самовызов строка ")) samo_est++;
     else if (strcmp(l, "конец тотальности") == 0) konec++;
     else if (nachinaetsya(l, "зовёт примитив «")) {
       char *pr = v_yolochkah(l, 1);
@@ -5478,11 +5658,16 @@ static void sverit_totalnost(Sverka *s, const char *blok, Sp stroki, Sp vse_imen
     }
     else if (nachinaetsya(l, "зовёт «")) dobavit(&zovyot_zapis, v_yolochkah(l, 1));
   }
-  esli_ne(s, vid == 1 && samo == 1 && konec == 1,
-          fmt("тотальность «%s» записана не целиком: вид %d, «самовызова нет» %d, конец %d — обязано быть по одному",
-              imya, vid, samo, konec));
-  esli_ne(s, *pervaya_s_nachalom(svoi, "вид composition") != 0,
-          fmt("тотальность «%s»: заявлен вид не composition — это другая семья, здесь отвергается вслух", imya));
+  esli_ne(s, vid == 1 && konec == 1,
+          fmt("тотальность «%s» записана не целиком: вид %d, конец %d — обязано быть по одному", imya, vid, konec));
+  esli_ne(s, comp || rekur,
+          fmt("тотальность «%s»: вид «%s» вне закрытого списка composition/structure/step — отвергается вслух", imya, vid_val));
+  /* КОМПОЗИЦИЯ несёт «самовызова нет» (самовызова нет), РЕКУРСИЯ — «самовызов строка N»
+     (инверсия проверки б): ровно по одному, и не вперемешку. */
+  if (comp) esli_ne(s, samo_net == 1 && samo_est == 0,
+          fmt("тотальность «%s» вид composition: обязана нести ровно одно «самовызова нет» (нет %d, есть %d)", imya, samo_net, samo_est));
+  if (rekur) esli_ne(s, samo_est == 1 && samo_net == 0,
+          fmt("тотальность «%s» вид %s: обязана нести ровно одно «самовызов строка N» (нет %d, есть %d)", imya, vid_val, samo_net, samo_est));
   /* (а) ПРИВЯЗКА К ОБЪЯВЛЕНИЮ. Родовая функция несёт доводы в объявлении
      («тотальная функция «Отобразить» от «А» и «Б»»): сверяется НАЧАЛО строки и
      первое имя в ёлочках, а не строка целиком, иначе честная родовая функция
@@ -5491,11 +5676,15 @@ static void sverit_totalnost(Sverka *s, const char *blok, Sp stroki, Sp vse_imen
   esli_ne(s, nachinaetsya(v_ish, "тотальная функция «") && strcmp(imya_funkcii(v_ish), imya) == 0,
           fmt("тотальность «%s»: строка %ld исходника — не «тотальная функция «%s»» (стоит «%s»)",
               imya, gde, imya, v_ish));
-  /* (б) САМОВЫЗОВА НЕТ — ПЕРЕЧИТАТЬ ТЕЛО САМ. Запись не участвует. */
+  /* (б) САМОВЫЗОВ — ПЕРЕЧИТАТЬ ТЕЛО САМ. Запись не участвует. Композиция требует
+     ns==0 (самовызова нет); рекурсия — ns!=0 (инверсия, проверяется в
+     `sverit_rekursiyu`). */
   ns = stroka_samovyzova(stroki, imya, vse_imena);
-  esli_ne(s, ns == 0,
+  if (comp) esli_ne(s, ns == 0,
           fmt("тотальность «%s»: тело зовёт саму F в строке %ld — это НЕ композиция", imya, ns));
-  /* (в) СПИСОК ЗОВОМЫХ — ПЕРЕСОБРАТЬ САМ, потом сверить множества. */
+  if (rekur) sverit_rekursiyu(s, svoi, stroki, imya, vid_val, ns);
+  /* (в) СПИСОК ЗОВОМЫХ — ПЕРЕСОБРАТЬ САМ, потом сверить множества. Общий для обеих
+     семей: композиция-на-рекурсии закрывается тем же реестром `vse_imena` (§3.3). */
   zovyot_telo = vyzovy_tela(stroki, imya, vse_imena);
   for (i = 0; i < zovyot_zapis.n; i++) {
     int est = 0;

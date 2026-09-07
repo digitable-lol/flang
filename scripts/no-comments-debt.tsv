@@ -501,7 +501,6 @@ fspec/spec/39-booking-cancellation.flang	18
 fspec/spec/40-age-restriction.flang	15
 fspec/spec/41-consent-scope.flang	14
 fspec/spec/42-data-retention.flang	15
-packaging/install-check.flang	111
 packaging/install-parity.flang	71
 scripts/adr-numbers-guard.flang	34
 scripts/asdf-plugin-published.flang	33

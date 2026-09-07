@@ -3455,7 +3455,12 @@ static char *telo_sluchaya(Sp stroki, long ci, long konec_bloka) {
   }
   if (neprazdnye.n == 0 || neprazdnye.n > 5) return (char *)"";
   telo = chast(neprazdnye, neprazdnye.n);
-  if (nachinaetsya(telo, "то ")) telo = hvost_posle(telo, "то ");
+  /* Снять ВЕДУЩЕЕ «то », и только его: `hvost_posle` резал бы по КАЖДОМУ «то », а
+     тело случая-выбора `то (если У то А иначе Б)` несёт «то » и внутри — и бралась
+     тогда середина между первым и вторым «то » (`(если У`), тело обрывалось на
+     первом же вложенном условии. Ведущее слово известно проверкой `nachinaetsya`
+     строкой выше, поэтому режется ровно его длина, а не найденное вхождение. */
+  if (nachinaetsya(telo, "то ")) telo = obrezat(telo + strlen("то "));
   telo = term(telo);
   for (i = neprazdnye.n - 1; i >= 1; i--) {
     char *l = chast(neprazdnye, i), *imya = slovo(l, 2), *znach = slova_posle(l, 3);

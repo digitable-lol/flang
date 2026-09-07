@@ -3266,6 +3266,10 @@ static int neotricatelno_algebra(const char *t_syroy, const char *chya, Sp bound
 static char *telo_bez_pust(Sp stroki, long a, long b);
 static int razrez_vybora(const char *t, char **u, char **a, char **b);
 static char *variant_sluchaya(const char *hvost);
+/* Булево замыкание цели случая зовёт эти двое; определения — ниже (там, где уже
+   разбирают термы цели). Ветка `algebra` их только читает. */
+static int polovina_zakryta(const char *syroy, Sp stroki, int deleniy, const char *konechen);
+static int est_svyazyvatel(const char *t);
 
 /* Плоское тело чужой функции: у неё нет «разбор», всё тело — один терм после
    разворачивания «пусть» (`telo_bez_pust`), и в нём НЕТ НИ ОДНОГО вызова.
@@ -3471,17 +3475,35 @@ static char *telo_sluchaya(Sp stroki, long ci, long konec_bloka) {
   return telo;
 }
 
+/* Правила, какими ядро сводит БУЛЕВУ цель случая (не `результат не меньше 0`).
+   Список — подмножество закрытого `PRAVILA`: ровно те, что суть булево замыкание,
+   а его умеет `polovina_zakryta`. Правило — фильтр «о том ли запись», а не довод:
+   ложное правило лишь заведёт не ту ветку, а замыкание всё равно СОУНДНО (само
+   ложную цель не закроет). Пустое правило сюда не входит — его посылка пропускается
+   (сведена в другом месте), как и в ветке неотрицательности. */
+static int bulevo_pravilo(const char *pr) {
+  static const char *B[] = {
+    "вычисление замкнутой цели", "разбор случаев по внутреннему условию цели",
+    "цель-выбор с истинной ветвью", "равенство, решённое счётом замкнутых частей"
+  };
+  int k;
+  for (k = 0; k < (int)(sizeof B / sizeof *B); k++) if (strcmp(pr, B[k]) == 0) return 1;
+  return 0;
+}
+
 /* Узел «разбором по случаям» носителя `algebra`. 1 — проигран целиком, и
-   посылки его тоже (тот же смысл, что у `proigrat_uzel` про segment). */
+   посылки его тоже (тот же смысл, что у `proigrat_uzel` про segment).
+   ДВА ДОМЕНА ЦЕЛИ: `результат не меньше 0` — неотрицательность по построению
+   (`neotricatelno_algebra`); всякая ДРУГАЯ — БУЛЕВА, закрывается подстановкой тела
+   случая в `результат` и `polovina_zakryta`, тем же приёмом, что `razborom_celi`. */
 static int proigrat_uzel_algebra(Sverka *s, Sp stroki, const char *imya,
                                  const char *chya, const char *cel, const char *princip,
                                  Sp posylki) {
   char *tip = v_yolochkah(princip, 1);
   Sp variants = varianty_tipa(stroki, tip);
+  int nonneg = strcmp(cel, "результат не меньше 0") == 0;
   long a, b, i;
-  if (variants.n == 0 || posylki.n != variants.n || strcmp(cel, "результат не меньше 0") != 0) {
-    s->uzlov_mimo++; return 0;
-  }
+  if (variants.n == 0 || posylki.n != variants.n) { s->uzlov_mimo++; return 0; }
   /* Правило посылки, где оно ЕСТЬ, обязано быть ровно «неотрицательность по
      построению» — тем же сужением, что у segment. Посылка с ПУСТЫМ правилом
      («закрыта term», без единого «ход») на слове ядра уже не числится
@@ -3492,7 +3514,8 @@ static int proigrat_uzel_algebra(Sverka *s, Sp stroki, const char *imya,
      посылки, которая честно должна была закрыться. */
   for (i = 0; i < posylki.n; i++) {
     char *pr = v_yolochkah(posylki.e[i], 3);
-    if (*pr && strcmp(pr, "неотрицательность по построению") != 0) { s->uzlov_mimo++; return 0; }
+    if (*pr && (nonneg ? strcmp(pr, "неотрицательность по построению") != 0
+                       : !bulevo_pravilo(pr))) { s->uzlov_mimo++; return 0; }
   }
   a = blok_funkcii(stroki, chya, &b);
   if (a < 1) return 0;                   /* функции в исходнике нет — об этом скажет сверка имён */
@@ -3506,9 +3529,21 @@ static int proigrat_uzel_algebra(Sverka *s, Sp stroki, const char *imya,
     telo = telo_sluchaya(stroki, ci, b);
     if (!*telo)
       return ne_proigran(s, imya, fmt("тело случая «%s» не читается одним термом", variant));
-    bound = bound_imena_sluchaya(slova_posle(kak_chitaet_yazyk(chast(stroki, ci)), 1));
-    if (!neotricatelno_algebra(telo, chya, bound, stroki, 0, &pochemu))
-      return ne_proigran(s, imya, fmt("случай «%s»: %s", variant, pochemu));
+    if (nonneg) {
+      bound = bound_imena_sluchaya(slova_posle(kak_chitaet_yazyk(chast(stroki, ci)), 1));
+      if (!neotricatelno_algebra(telo, chya, bound, stroki, 0, &pochemu))
+        return ne_proigran(s, imya, fmt("случай «%s»: %s", variant, pochemu));
+    } else {
+      /* БУЛЕВА ЦЕЛЬ СЛУЧАЯ. Подставить тело случая вместо `результат` и замкнуть
+         `polovina_zakryta` — тем же булевым замыканием (да/нет, связки да/или/не,
+         `равен`-тождество, замкнутый счёт), каким `razborom_celi` закрывает половины
+         разбора цели по условию. Связыватель в теле (`свёртка`/`разбор`/…) замыканию
+         не по зубам — честный отказ, а не догадка. Замыкание СОУНДНО: ложную цель
+         оно не закроет, значит место лишь останется на слове ядра, не примется. */
+      char *cel_sl = vstavit_vmesto(term(cel), "результат", telo);
+      if (est_svyazyvatel(cel_sl) || !polovina_zakryta(cel_sl, stroki, 0, NULL))
+        return ne_proigran(s, imya, fmt("случай «%s»: булева цель «%s» не замкнулась", variant, cel_sl));
+    }
   }
   return 1;
 }

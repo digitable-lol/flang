@@ -1401,7 +1401,14 @@ typedef struct { Sp bedy, primety; long na_slovo, shagov, utverzhdeniy, svedeniy
                  shagov_ne_proigryvaemyh,
                  /* Ч375: мест, где термин и номер строки стоят РЯДОМ и сверены
                     друг против друга (третья ветка, ниже, задача 9612). */
-                 svereno_oboimi; char *sha; int kripto;
+                 svereno_oboimi,
+                 /* Вариант А, «типовые законы»: мест, закрытых ИМЕНОВАННОЙ
+                    аксиомой типового закона (`AKSIOMY[]`) — НОВЫЙ разряд
+                    числителя доли. Имя правила из записи ВЫБИРАЕТ аксиому,
+                    применение сверщик перепроверяет сам по объявлениям типов
+                    исходника. Это не «на слово ядра» и не «снято калькулятором»,
+                    а третья, названная порода: закрытие проверяемой аксиомой. */
+                 aksiom_mest; char *sha; int kripto;
                  /* Ч56: вердикт по каждому утверждению порознь (ключ
                     `--по-утверждениям`), а не один на весь файл. */
                  Sp po_utverzhdeniyam;
@@ -1419,7 +1426,10 @@ typedef struct { Sp bedy, primety; long na_slovo, shagov, utverzhdeniy, svedeniy
                     неподвижная точка «Закрыть без теорем», ядро proofterm.flang
                     2490). Пополняется в главном цикле ПОСЛЕ каждого утверждения,
                     поэтому на утверждении K держит ровно 1..K−1. */
-                 Sp dokazannye_svoystva; } Sverka;
+                 Sp dokazannye_svoystva;
+                 /* Вариант А: имена утверждений, закрытых именованной аксиомой,
+                    и какой именно — для печати аудит-строкой рядом с числом. */
+                 Sp aksiomami; } Sverka;
 
 static void esli_ne(Sverka *s, int uslovie, char *tekst) { if (!uslovie) dobavit(&s->bedy, tekst); }
 
@@ -4554,6 +4564,75 @@ static int iz_obyavlennogo(const char *syroy, Sp stroki, long a, long b) {
   return 0;
 }
 
+/* ═══ ИМЕНОВАННЫЕ АКСИОМЫ ТИПОВЫХ ЗАКОНОВ (вариант А) ══════════════════════════
+   Закрытие узла «по объявлению» — это НЕ «на слово ядра» и НЕ «снято
+   калькулятором», а третья, НАЗВАННАЯ порода: узел закрыт проверяемой аксиомой
+   о типе, и потому идёт в ЧИСЛИТЕЛЬ доли отдельным разрядом (`aksiom_mest`).
+
+   Разделение труда ровно то, что просит вариант А: имя правила из записи
+   («правило «неотрицательность по построению»») лишь ВЫБИРАЕТ аксиому из
+   закрытого списка `AKSIOMY[]`; ПРИМЕНЕНИЕ сверщик перепроверяет сам, читая
+   ОБЪЯВЛЕНИЯ типов из исходника, привязанного SHA-256. Имени на веру берётся
+   ровно столько, чтобы выбрать проверку; сама проверка — своя. Список закрыт:
+   правило, которого в `AKSIOMY[]` нет, узел не закрывает (уходит как был), —
+   тот же приём закрытого списка, что и у `PRAVILA`/`ZAKONY`.
+
+   Что входит в TCB этой аксиомой (растёт доверенная база НЕЗАВИСИМОГО сверщика,
+   не ядра-прувера — у них разные субъекты): дно 0 у отрезочных типов `нат` и
+   `неотрицательное`. Это ФАКТ ТИПА, читаемый глазами в каноне языка —
+   `flang/self/types.flang:405` «Тип точного неотрицательного» объявляет отрезок
+   с «низ» равным 0, и `:877` ставит `неотрицательное ≤ целое ≤ число`. Тип `вес`
+   в аксиому НЕ входит: канон (`:429`) объявляет его СВОИМ видом, допускающим
+   бесконечность, а не отрезком с дном 0. Ничего сверх объявления аксиома не
+   считает (пункт A7 TCB цел): это чтение `возвращает`/`принимает` плюс сверка
+   ФОРМЫ цели, не вычисление значения. */
+static int cel_neotric_forma(const char *cel_raw) {
+  char *t = term(cel_raw);
+  return strcmp(t, "результат не меньше 0") == 0
+      || strcmp(t, "0 не больше результат") == 0;
+}
+
+/* Аксиома «неотрицательность по построению». Держит цель `результат не меньше 0`
+   (равно `0 не больше результат`) РОВНО когда дно 0 читается из объявления:
+     (A) `возвращает нат` либо `возвращает неотрицательное` — дно типа результата;
+     (B) тело — `A плюс B`, оба довода `нат` (сложение неотрицательных не выходит
+         из дна; `минус` — выходит, `2 минус 3 = −1`, потому его тут нет). Случай
+         (B) переиспользует `iz_obyavlennogo` на ПОДСТАВЛЕННОМ теле — ту же
+         проверенную пробами машинерию, что уже стоит.
+   Форма цели сверяется первой: подделка `результат не меньше 5` дна из типа НЕ
+   получает (5 ≠ 0) и аксиомой не закрывается — так дыра доверия закрыта. */
+static int derzhit_neotricatelnost(const char *cel_raw, const char *cel_subst,
+                                   Sp stroki, long a, long b) {
+  if (!cel_neotric_forma(cel_raw)) return 0;
+  if (tip_rezultata(stroki, a, b, "нат")
+      || tip_rezultata(stroki, a, b, "неотрицательное")) return 1;
+  if (iz_obyavlennogo(cel_subst, stroki, a, b)) return 1;
+  return 0;
+}
+
+/* Закрытый список именованных аксиом. Один пункт — первый инкремент варианта А
+   («неотрицательность по построению»); остальные семейства пристраиваются сюда
+   следующими инкрементами ПОСЛЕ замера каждого прогоном. */
+typedef struct {
+  const char *imya;   /* совпадает с именем правила, какое ядро ставит в запись */
+  int (*derzhit)(const char *cel_raw, const char *cel_subst, Sp stroki, long a, long b);
+} Aksioma;
+static const Aksioma AKSIOMY[] = {
+  { "неотрицательность по построению", derzhit_neotricatelnost },
+};
+
+/* Выбрать аксиому по имени правила и перепроверить её на этом узле. Имени нет в
+   списке — не закрываем (0): список закрыт, чужое имя молча не пролезет. */
+static int zakryto_aksiomoy(const char *imya_pravila, const char *cel_raw,
+                            const char *cel_subst, Sp stroki, long a, long b) {
+  size_t i;
+  if (!imya_pravila || !*imya_pravila) return 0;
+  for (i = 0; i < sizeof AKSIOMY / sizeof AKSIOMY[0]; i++)
+    if (strcmp(AKSIOMY[i].imya, imya_pravila) == 0)
+      return AKSIOMY[i].derzhit(cel_raw, cel_subst, stroki, a, b);
+  return 0;
+}
+
 /* Разбор ОДНОЙ посылки на стороны и оператор. Список короче OTNOSHENIYA —
    только пять сравнений, из которых складывается граница несовместимости
    ниже. Порядок хранит то же правило, что и там: длинное имя раньше
@@ -4629,8 +4708,9 @@ static int nevypolnimaya_posylka(Sp stroki, long a, long b) {
 /* Проиграть заново узел «разбор цели по условию».
    1 — проигран, и место снимается со слова ядра. */
 static int razborom_celi(Sverka *s, Sp svoi, Sp stroki,
-                         const char *chya, const char *cel_syraya) {
-  char *cel, *telo; long a, b;
+                         const char *chya, const char *cel_syraya, int *aksiomoy) {
+  char *cel, *telo, *imya_pravila; long a, b;
+  if (aksiomoy) *aksiomoy = 0;
   /* Узел Ч363 — принцип с посылками — не этот приём. И посылок у ЭТОГО узла
      быть не может: он их не проигрывает, а стало быть и снять их со слова ядра
      не вправе; счёт снятого держится на этой строке. */
@@ -4642,6 +4722,16 @@ static int razborom_celi(Sverka *s, Sp svoi, Sp stroki,
   if (!*telo || !kavychki_chisty(telo)) { s->razbor_mimo++; return 0; }
   cel = vstavit_vmesto(term(cel_syraya), "результат", telo);
   if (est_svyazyvatel(cel)) { s->razbor_mimo++; return 0; }
+  /* Вариант А: ПРЕЖДЕ калькулятора — попытка закрыть узел ИМЕНОВАННОЙ аксиомой,
+     выбранной по правилу записи. Порядок не старшинство: место, которое держит
+     ФАКТ ТИПА (`возвращает нат` ⟹ дно 0), честнее приписать названной аксиоме
+     в числитель, чем калькуляторному «снято» вне числителя. Не закрылось —
+     падаем в прежний путь без изменений. */
+  imya_pravila = v_yolochkah(pervaya_s_nachalom(svoi, "правило «"), 1);
+  if (zakryto_aksiomoy(imya_pravila, cel_syraya, cel, stroki, a, b)) {
+    if (aksiomoy) *aksiomoy = 1;
+    return 1;
+  }
   if (polovina_zakryta(cel, stroki, 0, NULL)) return 1;
   if (iz_obyavlennogo(cel, stroki, a, b)) return 1;
   if (nevypolnimaya_posylka(stroki, a, b)) return 1;
@@ -5272,7 +5362,7 @@ static void sverit_teoremu(Sverka *s, Sp svoi, Sp stroki, const char *verdikt,
 static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
                         const char *verdikt, const char *mesto, const char *chya) {
   int i, spryatana = 0, proigran = 0, perepisan = 0, razobran = 0, dokazano;
-  int est_hody, est_princip, proigran_hodami = 0;
+  int est_hody, est_princip, proigran_hodami = 0, aks_zakryto = 0;
   char *cel;
   for (i = 0; i < stroki.n; i++)
     if (strcmp(obrezat(bez_primechaniya(stroki.e[i])), fmt("теорема «%s»", imya)) == 0) spryatana = 1;
@@ -5328,7 +5418,7 @@ static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
        Порядок этот — не старшинство правил, а бережливость: место, снятое первым
        приёмом, второй раз снимать нечем. */
     razobran = !proigran && !perepisan && dokazano &&
-               razborom_celi(s, svoi, stroki, chya, cel);
+               razborom_celi(s, svoi, stroki, chya, cel, &aks_zakryto);
   }
   sverit_pravila(s, svoi, fmt("утверждение «%s»", imya));
   sverit_polya_posylok(s, svoi, stroki, imya, chya);
@@ -5344,7 +5434,16 @@ static void bez_teoremy(Sverka *s, Sp svoi, Sp stroki, const char *imya,
   else if (perepisan) { s->tozhdestv++; s->tozhdestv_mest++; }
   /* Ч369: приём разбора снимает РОВНО ОДНО место — само утверждение. Посылок он
      не проигрывает и потому их не считает: берётся он только там, где посылок
-     нет ни одной. */
+     нет ни одной.
+     Вариант А: если это место закрыла ИМЕНОВАННАЯ аксиома (не калькулятор), оно
+     идёт в СВОЙ разряд `aksiom_mest` — числитель доли, — а не в «снято». Порода
+     названа поимённо строкой аудита рядом с числом. */
+  else if (razobran && aks_zakryto) {
+    s->aksiom_mest++;
+    dobavit(&s->aksiomami,
+            fmt("утверждение «%s»: закрыто именованной аксиомой «%s» (перепроверено по объявлению типа)",
+                imya, v_yolochkah(pervaya_s_nachalom(svoi, "правило «"), 1)));
+  }
   else if (razobran) { s->razbor++; s->razbor_mest++; }
   /* Задача 4102: узел проигран цепочкой ходов заново — место снято со слова
      ядра, долга нет. Счёт его виден числами «сведений проиграно заново» и
@@ -6142,6 +6241,7 @@ int main(int argc, char **argv) {
            " вне приёма сверщика %ld, разобрано, но не закрылось %ld."
            " Шагов по примеру проверено по существу %ld."
            " Шагов по свойству проверено по существу %ld."
+           " Именованной аксиомой закрыто мест %ld."
            " Строк без привязки к исходнику %ld."
            " Мест, сверенных ОБОИМИ свидетелями (термин и номер строки), %ld."
            " Привязка к программе: %s."
@@ -6150,9 +6250,10 @@ int main(int argc, char **argv) {
            s.na_slovo, s.shagov_na_slovo, s.uzlov, s.uzlov_mest, s.uzlov_mimo,
            s.tozhdestv, s.tozhdestv_mest, s.tozhdestv_mimo, s.tozhdestv_ne_soshlos,
            s.razbor, s.razbor_mest, s.razbor_mimo, s.razbor_ne_zakrylas,
-           s.shagov_primerom, s.shagov_svoystvom, s.bez_privyazki, s.svereno_oboimi,
+           s.shagov_primerom, s.shagov_svoystvom, s.aksiom_mest, s.bez_privyazki, s.svereno_oboimi,
            s.kripto ? "SHA-256 сошёлся" : "только свёртка ядра — она ломается",
            s.sha);
+    if (s.aksiomami.n) printf("ИМЕНОВАННОЙ АКСИОМОЙ (в числитель доли): %s\n", soedinit(s.aksiomami, "; "));
     if (s.primety.n) printf("ПРИМЕТЫ (на исход не влияют): %s\n", soedinit(s.primety, "; "));
     if (d && staryy)
       fprintf(stderr, "ВНИМАНИЕ: ключ --старый-код-не-приёмка обменял исход 3 на код 0."

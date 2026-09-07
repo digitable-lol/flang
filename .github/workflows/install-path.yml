@@ -198,7 +198,7 @@ jobs:
       # `gtar: share: Cannot stat`, то есть работа brew ниже не доходила до
       # brew вовсе. Проверено прогоном 5 сентября 2026: та же команда со словом
       # `share` даёт код 2, со словом `runtime` — собирает архив.
-      - name: Собрать архив и упаковать той же командой, что в формуле
+      - name: Собрать архив и упаковать той же командой, что в release.yml
         run: |
           set -eu
           LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-in-c.flang --timeout 1800000

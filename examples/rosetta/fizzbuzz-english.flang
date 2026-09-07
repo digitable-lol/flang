@@ -1,24 +1,5 @@
 module «FizzBuzz»
 
-// Rosetta Code — FizzBuzz, written on the ENGLISH keyword surface.
-//
-// Тот же самый FizzBuzz, что в `fizzbuzz.flang`, набранный английскими
-// ключевыми словами. Файл существует ради одного факта, который иначе
-// приходится принимать на слово: у языка ДВЕ равноправные поверхности, и обе
-// дают один и тот же AST. `модуль` и `module`, `тотальная функция` и
-// `total function`, `свёртка … начиная с … как … и …` и
-// `fold … starting with … as … and …` — это не перевод документации, а одно и
-// то же ключевое слово в таблице разборщика.
-//
-// Для витрины это важно практически: читатель Rosetta Code, скорее всего, не
-// читает по-русски, и решение, набранное словами, которых он не знает, он
-// пролистает. Здесь он может прочитать хотя бы одно.
-//
-// Граница тотальности здесь ровно та же, что в русском файле, — 3 из 5, — и это
-// не совпадение: анализ работает с AST и о поверхности не знает ничего.
-//
-// Дословный английский комментарий для вики — в `WIKI.en.md`.
-
 total function «Prepend»
   accepts element: number, items: list of number
   returns list of number
@@ -67,8 +48,6 @@ total function «FizzBuzz of list»
     expected empty list
   map items as elem → «Word for number» of elem
 
-// Counting up to N cannot be proved terminating: the analysis accepts only
-// structural descent, and «n plus 1» is arithmetic, not part of a value.
 function «Numbers from and to»
   accepts start: number, finish: number
   returns list of number

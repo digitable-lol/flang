@@ -1,39 +1,5 @@
 module «Ackermann function»
 
-// Rosetta Code — Ackermann function, written on the ENGLISH keyword surface.
-// The same program as `ackermann-function.flang`, keyword for keyword.
-//
-// A(0, n) = n + 1; A(m, 0) = A(m−1, 1); A(m, n) = A(m−1, A(m, n−1)).
-//
-// This task is in the set not for the function but for what it shows about the
-// boundary of the language — and it shows it better than any explanation.
-//
-// The Ackermann function TERMINATES on every pair of non-negative integers.
-// That is proved mathematically: the pair (m, n) decreases lexicographically,
-// and the lexicographic order on pairs of naturals is well-founded. The proof
-// is not hard, but it reasons about natural numbers.
-//
-// flang does not carry out that reasoning. Its termination analysis knows
-// exactly one argument: the argument of the recursive call is a structural PART
-// of the caller's argument (the tail of a list, a field of a record, a field of
-// a variant). Numbers have no parts. So this file honestly says `function` and
-// not `total`, and writing `total` yields FLANG_NOT_TOTAL.
-//
-// Hence the point worth taking away: `total` does NOT mean «terminates». It
-// means «termination is proved BY THIS analysis». The converse does not hold,
-// and Ackermann is the best-known witness. A language pretending that its class
-// of total functions coincides with the class of terminating ones is lying: by
-// Rice's theorem no such analysis exists at all, and every real one draws the
-// line somewhere earlier. The only question is whether the line is named.
-//
-// Fuel does not help here. In merge sort and in the sieve the depth of the
-// recursion is at most the length of the input list, and the list serves as
-// fuel. In Ackermann the depth grows faster than any primitive recursive
-// function: A(4, 2) is a power of two with 19 729 digits. A list of that length
-// does not exist, and not because of memory: there is no way to build it.
-
-// Ordinary — for the reason in the module header. Writing `total` is not
-// allowed.
 function «Ackermann»
   accepts m: number, n: number
   returns number
@@ -78,11 +44,6 @@ function «Ackermann»
         then «Ackermann» of (m minus 1) and 1
         else «Ackermann» of (m minus 1) and («Ackermann» of m and (n minus 1))
 
-// A closed form for the first three rows — it IS total, because there is no
-// recursion in it at all. Standing next to the recursive version it shows that
-// the matter is not the values: the very same number is computed provably by
-// one function and not by the other. The only difference is how the
-// computation is written.
 total function «Ackermann in closed form»
   accepts m: number, n: number
   returns number
@@ -110,8 +71,6 @@ total function «Ackermann in closed form»
         else
           if m equals 2 then (2 times n) plus 3 else 0
 
-// A claim: on the first three rows the recursive and the closed form agree.
-// Ordinary — it calls an ordinary function.
 function «The two forms agree»
   accepts m: number, n: number
   returns boolean

@@ -1,28 +1,6 @@
 модуль «SQLite insert»
   использует «SQLite» из "../../flang/stdlib/sqlite.flang"
 
-// ЗАПИСЬ СТРОКИ В ГОТОВЫЙ ФАЙЛ SQLite 3. План читает файл базы октетами,
-// собирает ячейку новой строки, правит заголовок готового листа и записывает
-// файл обратно — ТЕМ ЖЕ числом октетов, что и был.
-//
-// Это не «Собрать базу»: там образ пишется с нуля и о чужом файле речи нет.
-// Здесь правится ГОТОВАЯ база, сделанная сторонней sqlite3, и проверяется
-// ВСТРЕЧНО: пишет эта программа, читает python3 и его `pragma integrity_check`.
-//
-// Образец (страница нарочно мелкая, 1024 октета — так свободная середина листа
-// видна на глаз); путь в поручении разбирается ОТНОСИТЕЛЬНО каталога исходника:
-//
-//   cd examples/db
-//   python3 -c "import sqlite3; c=sqlite3.connect('insert.db'); c.execute('pragma page_size=1024'); c.execute('create table люди(имя text, лет integer)'); c.executemany('insert into люди values (?,?)',[('Аня',31),('Боря',44),('Вера',7)]); c.commit()"
-//
-// Прогон из корня дерева:
-//   bootstrap/flang io examples/db/sqlite-insert.flang --max-steps 2000000000
-//
-// Сверка — сторонним прибором:
-//   python3 -c "import sqlite3; c=sqlite3.connect('examples/db/insert.db'); print(list(c.execute('select rowid,* from люди'))); print(list(c.execute('pragma integrity_check')))"
-//
-// Каждый прогон дописывает ОДНУ строку с номером на единицу больше последнего.
-
 тип «Ход»
   вариант «Начало»
   вариант «Ждём октеты»

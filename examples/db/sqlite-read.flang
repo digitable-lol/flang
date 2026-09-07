@@ -1,24 +1,6 @@
 модуль «SQLite read»
   использует «SQLite» из "../../flang/stdlib/sqlite.flang"
 
-// ЧТЕНИЕ НАСТОЯЩЕГО ФАЙЛА БАЗЫ SQLite 3. План берёт у хозяина октеты файла
-// одним поручением и печатает: магию, размер страницы, число страниц, имена
-// таблиц из `sqlite_master` и все строки таблицы «люди».
-//
-// Файл-образец делается сторонней `sqlite3` (питоновским модулем), чтобы
-// сверять было с чем. Путь в поручении разбирается ОТНОСИТЕЛЬНО каталога этого
-// исходника, поэтому образец кладётся рядом с ним:
-//
-//   cd examples/db
-//   python3 -c "import sqlite3; c=sqlite3.connect('obrazec.db'); c.execute('create table люди(имя text, лет integer)'); c.executemany('insert into люди values (?,?)',[('Аня',31),('Боря',44),('Вера',7)]); c.commit()"
-//
-// Прогон из корня дерева. Ключ «--max-steps» ОБЯЗАТЕЛЕН: умолчание — 10 000 000
-// шагов, а разбор восьми килобайт базы стоит больше.
-//   bootstrap/flang io examples/db/sqlite-read.flang --max-steps 2000000000
-//
-// Сверка — тем же select у sqlite3:
-//   python3 -c "import sqlite3; [print(r) for r in sqlite3.connect('examples/db/obrazec.db').execute('select rowid,имя,лет from люди')]"
-
 тип «Ход»
   вариант «Начало»
   вариант «Ждём октеты»

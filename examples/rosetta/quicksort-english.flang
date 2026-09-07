@@ -1,34 +1,5 @@
 module «Quicksort»
 
-// Rosetta Code — Sorting algorithms/Quicksort, written on the ENGLISH keyword
-// surface. The same program as `quicksort.flang`, keyword for keyword.
-//
-// Take a pivot, split the rest into smaller and not-smaller, sort both parts,
-// glue them back together.
-//
-// An ordinary function, and the reason is visible in the body. The recursion
-// receives not the tail of a list but the result of `filter` — a new list built
-// by computation. The termination analysis tracks the provenance of a value
-// («which parameter is this a part of»), and provenance is lost on everything
-// that is built: a list literal, `add … to …`, a variant constructor, the
-// result of any call. A filtered list is a built value, so nothing is known
-// about its size, so FLANG_NOT_TOTAL.
-//
-// Note: it is not that there is no decrease. There is one — the pivot is gone
-// and both parts are shorter. It is just a decrease by MEASURE (length), and
-// the analysis only knows decrease by STRUCTURE. That is exactly the difference
-// between «terminates» and «is proved to terminate».
-//
-// There is a way around it: carry «fuel» alongside the real arguments — a list
-// whose tail is taken at every step. That is how merge sort is written in the
-// neighbouring `merge-sort.flang`, and it is total throughout. Here there is
-// deliberately no fuel: the Rosetta Code task is about the algorithm, and the
-// reader should see quicksort, not the bookkeeping around it.
-//
-// A total sort with no tricks at all also exists in the language — insertion
-// sort: it recurses exactly on the tail, and the compiler proves it at once.
-// It is below, for comparison.
-
 total function «Prepend»
   accepts element: number, items: list of number
   returns list of number
@@ -47,9 +18,6 @@ total function «Concatenate lists»
     expected [1, 2, 3]
   fold right starting with left as acc and elem → add elem to acc
 
-// Insertion sort — total. The recursion goes along the tail of the second
-// argument, that is along a genuine structural part of the value, and it is
-// proved without a single extra parameter. The price is O(n²).
 total function «Insert in order»
   accepts value: number, items: list of number
   returns list of number
@@ -79,10 +47,6 @@ total function «Insertion sort»
     given items equals empty list
     expected empty list
   fold items starting with empty list as acc and elem → «Insert in order» of elem and acc
-
-// ─────────────────────────────────────────────────────────────────────────
-// Quicksort. Ordinary — for the reason in the module header.
-// ─────────────────────────────────────────────────────────────────────────
 
 function «Quicksort»
   accepts items: list of number

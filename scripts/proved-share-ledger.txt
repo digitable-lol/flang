@@ -105,14 +105,14 @@
 //    `equality-not-symmetric.flang` (1) и `iso-mismatch.flang` (3). Файлы эти
 //    написаны затем, чтобы быть отвергнутыми: первый объявляет равенством
 //    несимметричное отношение и ждёт `FLANG_EQUALITY_NOT_SYMMETRIC`; второй —
-//    посимвольная копия честного `examples/cat/order-shipment.flang` с ОДНОЙ
+//    посимвольная копия честного `flang/ct/order-shipment.flang` с ОДНОЙ
 //    правкой (`обратный морфизм «по накладной»` → `«отгрузить»`). У программы,
 //    которую двоичный обязан отвергнуть, ведомости не бывает и не будет никогда.
 //
 // НЕЛЬЗЯ СЕГОДНЯШНИМ ДВОИЧНЫМ — 5 строк. Остаются в знаменателе.
 //
-//  • 5 «закон» в двух честных примерах: `examples/cat/order-shipment.flang` (3)
-//    и `examples/cat/modules/orders.flang` (2). Оба отвечают кодом 2:
+//  • 5 «закон» в двух честных примерах: `flang/ct/order-shipment.flang` (3)
+//    и `flang/ct/modules/orders.flang` (2). Оба отвечают кодом 2:
 //    «ведомость не печатается: в программе объявлено то, чьи законы бинарник не
 //    считает — isomorphisms, categories, morphisms … У названного судьи нет
 //    вовсе: правил, которые сверяли бы эти объявления, в дереве не написано ни
@@ -368,8 +368,8 @@
 //     касается. Абзац оставлен как есть — он описывает замер до правки;
 //   • 6 честных программ с той же стеной (18): examples/paths/shortest-path (7,
 //     monoids), examples/money/exact-decimal (4, monoids),
-//     examples/cat/order-shipment (3), examples/cat/modules/orders (2),
-//     examples/cat/monoid-and-monad (1), docs/zamer-teorkat/class-string-to-string
+//     flang/ct/order-shipment (3), flang/ct/modules/orders (2),
+//     flang/ct/monoid-and-monad (1), docs/zamer-teorkat/class-string-to-string
 //     (1, properties). Судьи этих поверхностей нет ни у двоичного, ни у дерева;
 //   • 24 файла docs/benchmark/** и docs/benchmark2/** (26) — долг доказательства
 //     автора: INDUCTION_STEP 9, INDUCTION_BRANCH 4, EXAMPLE 3, INDUCTION_CASES 2,
@@ -412,7 +412,7 @@
 // ────────── 30 августа 2026: 16 крестов сняты ПРАВКОЙ, задача 3714 ──────────
 //
 // Крестов было 80 на 234 обязательствах, стало 64 на 175. Шестнадцать строк
-// ниже несут приговор: пятнадцать flang/conc/** и examples/cat/modules/orders.
+// ниже несут приговор: пятнадцать flang/conc/** и flang/ct/modules/orders.
 //
 // ПОЧЕМУ ОТКРЫЛОСЬ. Отказ ведомости («Непосчитанное в бинарнике»,
 // flang/self/bootstrap/compiler.flang) спрашивал «Названия двух» — ВСЕ
@@ -465,7 +465,7 @@
 //     беда в самих файлах. Ствольный 82f9ac40 на них печатает именно стену,
 //     потому в разборе выше и стоит 17 файлов и 68 обязательств: разошлись не
 //     замеры, а двоичные. Кресты у обоих остаются;
-//   • examples/cat/order-shipment.flang (3): отказ СЪЁЖИЛСЯ с трёх поверхностей
+//   • flang/ct/order-shipment.flang (3): отказ СЪЁЖИЛСЯ с трёх поверхностей
 //     до одной — «isomorphisms», единственной несудимой, — но остался. Крест;
 //   • shortest-path (7, monoids), exact-decimal (4, monoids),
 //     monoid-and-monad (1, monoids/monads), class-string-to-string
@@ -584,9 +584,9 @@ bf8c0880c1071d0ab9bab9f467a0ccfd|4|0|1|0|0|docs/site/numbers.flang
 4f254fbf1b1d39db99d419be5f2fcda9|6|6|0|0|0|docs/site/sitemap.flang
 59e40510fb0bb42d6e4622c380a9b343|1|×|×|×|0|docs/zamer-teorkat/class-string-to-string.flang
 be21be0ca643efa00fc02e9e3b64edd1|90|79|7|4|0|examples/allocator/allocator.flang
-c110934b654de80f02da0999dfd1c88d|0|0|0|0|2|examples/cat/modules/orders.flang
-65de6a234d3abe159672760a3f98dba5|1|×|×|×|0|examples/cat/monoid-and-monad.flang
-2532d2f0982166760ed7fd3b5961be72|0|×|×|×|3|examples/cat/order-shipment.flang
+c110934b654de80f02da0999dfd1c88d|0|0|0|0|2|flang/ct/modules/orders.flang
+65de6a234d3abe159672760a3f98dba5|1|×|×|×|0|flang/ct/monoid-and-monad.flang
+2532d2f0982166760ed7fd3b5961be72|0|×|×|×|3|flang/ct/order-shipment.flang
 029fbccafd8b593f0fcafc24d6a14a21|14|9|4|1|0|examples/crypto/aes-vectors.flang
 e3dce4b7d377d2076ca7154cade67ec6|2|1|1|0|0|examples/crypto/certificate.flang
 b6df92b9fab4356571dced4966d981fb|3|2|0|1|0|examples/crypto/ecdsa-digest.flang

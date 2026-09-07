@@ -48,7 +48,7 @@ arrows count as the same one. That last part is what makes anything checkable:
 until it is said when two values are equal, "associativity of composition" means
 nothing.
 
-Here is a working excerpt from `examples/cat/order-shipment.flang` — an
+Here is a working excerpt from `flang/ct/order-shipment.flang` — an
 order, a shipment, an invoice:
 
 ```flang
@@ -115,7 +115,7 @@ computed. The values come from the examples attached to the arrows.
 The report must state the size of the grid, and it does:
 
 ```
-$ flang check examples/cat/order-shipment.flang
+$ flang check flang/ct/order-shipment.flang
 категория «Отгрузки»: сетка 5 значений на 3 объектах, троек стрелок 7,
 нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 ```
@@ -187,7 +187,7 @@ Their rules are neither computed over a grid nor checked by comparing
 declarations. The compiler names them one by one and answers with exit code 2:
 
 ```
-$ flang check examples/cat/monoid-and-monad.flang
+$ flang check flang/ct/monoid-and-monad.flang
 проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе —
 monoids, monads.
 $ echo $?
@@ -197,8 +197,8 @@ $ echo $?
 The examples still run, as in any program:
 
 ```
-$ flang test examples/cat/monoid-and-monad.flang
-examples/cat/monoid-and-monad.flang: примеров 20, прошло 20, не прошло 0
+$ flang test flang/ct/monoid-and-monad.flang
+flang/ct/monoid-and-monad.flang: примеров 20, прошло 20, не прошло 0
 $ echo $?
 0
 ```
@@ -231,7 +231,7 @@ the expected type.
 
 ## Where the rest is written
 
-The full surface contract is `flang/cat/SPEC.md`: the form of every declaration
+The full surface contract is `docs/ct/spec.md`: the form of every declaration
 down to the last case ending, the diagnostic code for every trouble, and a
 by-name list of what the compiler does not check. Beside it are the pieces:
 `HOF.md`, `POLY.md`, `MONAD.md`, `SETS.md`, `ZAKONY.md`.

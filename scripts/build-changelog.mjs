@@ -133,7 +133,7 @@ const ВИДИМОСТЬ = new Map([
   // А это рассказ о языке или обслуживание разработки.
   ["flang/SPEC.md", false],
   ["flang/PLAN.md", false],
-  ["flang/cat", false], // категорные заметки: HOF, MONAD, POLY
+  ["flang/ct", true], // реализации теорката (перенесены из examples/cat); проза — docs/ct и docs/archive
   ["flang/scripts", false], // сторожа разработки: claim-guard сверяет прозу с лексером
   ["flang/test", false],
   /* Обходчики проверок, написанных на самом языке, и их ведомости. Невидимы по
@@ -617,7 +617,7 @@ const ВЫДУМКА = {
           date: "2026-08-01T08:00:00+00:00",
           subject: "План языка догнал сделанное",
           body: "",
-          files: ["flang/PLAN.md", "flang/cat/HOF.md"],
+          files: ["flang/PLAN.md", "docs/archive/hof.md"],
         },
       ],
     },

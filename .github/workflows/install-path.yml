@@ -106,6 +106,10 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # «формула:проверка» ниже сверяет формулу дерева с формулой крана —
+          # сабмодулем packaging/homebrew-tap. Не развёрнут — сторож красен.
+          submodules: true
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       # `cache: npm` и `npm ci` сняты вместе с `package-lock.json`. Двоичный

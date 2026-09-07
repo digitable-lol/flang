@@ -1,0 +1,3 @@
+[submodule "packaging/homebrew-tap"]
+	path = packaging/homebrew-tap
+	url = https://github.com/digitable-lol/homebrew-tap

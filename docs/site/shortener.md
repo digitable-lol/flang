@@ -82,7 +82,7 @@ things about a substring, and the kernel has no such rule. The label is honest �
 the word "proved" stands only where the statement covers all inputs.
 
 **The importing file's ledger does not carry the three inductions**, and that is
-not a loss: `flang/src/link.mjs` deliberately does not merge theorems of imported
+not a loss: `flang/self/link.flang` deliberately does not merge theorems of imported
 modules — a proof is closed where the theorem is written, and re-checking someone
 else's work in every importer would mean doing the same work as many times as
 there are imports. That is why in the ledger of `server.flang` the same three
@@ -105,12 +105,12 @@ time. Hence the division the compiler considers right: **totality removes
 
 ### What it can do today and what it cannot
 
-It can (checked by the `serve.mjs` run, sixteen requests): all ten outcomes,
+It can (checked by the `plan.flang` run, sixteen requests): all ten outcomes,
 including four malicious inputs — a truncated request (silence, not a refusal),
 two body lengths (400), a megabyte header (431), a hundred and one headers (431),
 a megabyte body (413).
 
-**It works OVER THE NETWORK** — the `serve-network.mjs` run, the same sixteen
+**It works OVER THE NETWORK** — the `plan-network.flang` run, the same sixteen
 requests but through a real socket on `127.0.0.1:39281`, one connection per
 request:
 
@@ -119,7 +119,7 @@ request:
 ```
 
 The codes are compared inside the run itself against those produced by
-`serve.mjs`, where the bytes were passed as a value; if even one diverged, the
+`plan.flang`, where the bytes were passed as a value; if even one diverged, the
 run fails. Zero is the silence on a truncated request: the connection is closed
 without a single byte written. 413 is for the megabyte body that arrived over TCP
 in pieces and was assembled by the PROGRAM, not by the host.
@@ -144,7 +144,7 @@ What it cannot do, stated with numbers:
 | what is missing | price |
 |---|---|
 | keep-alive: an accepted connection lives for one exchange | 1 order "close connection" + a branch in the plan; today `«Ответить в соединение»` writes the answer and closes the socket |
-| the PROCESS server (`server.flang`) over the network | 229 lines here and all of `conc.mjs`: the scheduler is synchronous, and `«Принять соединение»` has to wait. The same barrier as `«Запросить»`, and it is named in `nodeHostSync` |
+| the PROCESS server (`server.flang`) over the network | 229 lines here and all of the scheduler of the JavaScript host: it is synchronous, and `«Принять соединение»` has to wait. The same barrier as `«Запросить»`, and it is named in `nodeHostSync` |
 | `Content-Length` in octets | 1 function "how many bytes in a UTF-8 string": `длина` counts characters, the specification counts octets, and on Cyrillic that is twice as many |
 | resuming the parse where it stopped | 75 reads instead of 16 over sixteen connections: "serve" parses what has accumulated FROM THE START, and two megabyte inputs account for nearly all the extra work |
 
@@ -171,9 +171,12 @@ through files, the second through a socket). The service did not change by a
 single character; the plan did.
 
 ```sh
-node examples/web/shortener/serve-durable.mjs     # three runs
-node --test flang/test/shortener-durable.test.mjs        # 11 checks
+bootstrap/flang io examples/web/shortener/plan-durable.flang --in-dir
 ```
+
+The harness that drove the three runs below, and the eleven checks beside it,
+were JavaScript and went with the second implementation on 20 August 2026: the
+plan is in the tree, the driver is not.
 
 **What the shape of the program proves.** A successful answer to a mutating
 request is built in exactly one place in the whole module — inside the branch
@@ -181,7 +184,7 @@ request is built in exactly one place in the whole module — inside the branch
 answers is closed by the language) finds that place exactly once; on any other
 answer a 503 goes out, and the **old** storage and the **old** log travel on.
 
-**What the run shows.** `serve-durable.mjs`, three runs:
+**What the run shows.** `plan-durable.flang`, three runs:
 
 | run | what | result |
 |---|---|---|
@@ -210,13 +213,13 @@ the extra code is not correctness but bytes: 7 records against 9 on the same
 scenario.
 
 **Evidence found by the pairing.** While the service answered in the same step in
-which it read, `serve-network.mjs` passed all sixteen connections. The moment a
+which it read, `plan-network.flang` passed all sixteen connections. The moment a
 log was put between the read and the answer, 5 mutating requests out of 8 got
 **zero bytes** instead of an answer — even though the host executed all eight
 "answer into connection" orders and the log on disk was correct. The cause was
 `createServer` without `allowHalfOpen`: node closed its half of the connection on
-the client's FIN. One word of a fix in `flang/src/host/node.mjs`; after it
-`serve-network.mjs` gives the same 16 codes.
+the client's FIN. One word of a fix in the Node host; after it
+`plan-network.flang` gives the same 16 codes.
 
 **What this service does NOT guarantee.**
 
@@ -249,7 +252,7 @@ browser and the service, listed below.
 |---:|---|---|
 | **488** | `client.flang` — the whole application | flang |
 | 106 | `index.html` — markup and 4 lines of startup | HTML |
-| 342 | `flang/test/app-shortener.test.mjs` — a run without a browser | JavaScript |
+| 342 | the run without a browser, removed with the JavaScript implementation | JavaScript |
 
 Of the 488 flang lines, **186** are examples (`пример`, `дано`, `ожидается`):
 38 % of the file are checks lying right next to what they check. **32** functions,
@@ -273,7 +276,7 @@ same assignment forbids editing it.** The order `«Показать»` carries a
 a text. For it to carry a markup tree, the dictionary would need a fourth sum — a
 recursive named type inside a built-in sum — whereas the fields of built-in sums
 are flat today (`string`, `number`, `any`). The dictionary exists in two copies at
-once (`flang/src/io.mjs` and its twin in flang) and is compared byte for byte, so
+once (`flang/self/io.flang`) and is compared byte for byte, so
 the edit means work in both implementations and in eight emit targets.
 
 **Second: a second answer to the same question diverges from the first silently.**
@@ -338,7 +341,7 @@ exactly where it lives for the service.
 
 ### A run in a real browser
 
-`web/shortener/probe.mjs` (deleted), HeadlessChrome 151, the harness came up by
+the browser probe script (deleted), HeadlessChrome 151, the harness came up by
 itself. Six screen comparisons, all byte-for-byte, all green:
 
 ```
@@ -425,8 +428,8 @@ alongside:
 
 * **the plan descriptor** is emitted as data (`const $io = {…}`) and handed out
   through two doors — `ioPlan()` and `ioRun(name, host)`. By the same generator
-  that emits `concPlan()`, and on both sides at once: `flang/src/emit/js.mjs` and
-  `flang/self/emit-js.flang` are compared byte for byte, 108 corpus programs out
+  that emits `concPlan()`, and on both sides at once: the JavaScript generator and
+  `flang/self/emit-js.flang` were compared byte for byte, 108 corpus programs out
   of 108;
 * **the plan runner** — `flang/src/emit/js/flang_io.js`, a port of `runPlan` onto
   the value representation of the emitted module. It is emitted INSIDE the module,
@@ -439,7 +442,7 @@ alongside:
   `scripts/plan-across-targets.flang` checks this.
 
 The host moved to `flang/src/emit/js/flang_host_browser.js` with zero imports;
-`flang/src/host/browser.mjs` became a transitional line that substitutes the
+the browser host of the JavaScript implementation became a transitional line that substitutes the
 interpreter's variant factory. There is ONE host implementation, not two.
 
 ### CLOSED: percent-decoding ran into one missing form

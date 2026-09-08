@@ -90,8 +90,9 @@ more, the minimum being exactly 2.
 
 **Esperanto** is written in Latin with diacritics (`ĉ ĝ ĥ ĵ ŝ ŭ`), so counting goes over `\p{L}`
 after NFC normalisation. Otherwise `ĉ` would count as two units and a three-letter Esperanto word
-would pass where a Russian one failed. Checked in both encodings — `flang/test/name-guard.test.mjs`,
-"эсперантская диакритика считается за одну букву".
+would pass where a Russian one failed. Checked in both encodings by the guard's own test, "эсперантская диакритика
+считается за одну букву"; that test went with the JavaScript implementation on
+20 August 2026.
 
 The script is decided by **the name itself**, not by the file, and word by word. A Russian file is
 entitled to call a function «Печать в C» or «Число Elixir»: `C`, `TS`, `JS`, `AST`, `IEEE` are proper
@@ -161,8 +162,8 @@ declarations and parsed piece by piece — at the time that saved 277 functions 
 The hole was closed on trunk (`57a193bb`, `7f95df5d`), and `ПОТЕРИ` is now empty: all 280 functions
 parse whole. The fallback stays — it is the insurance against the next such hole — but the list is
 compared **in both directions**: a new loss goes red, and so does the tombstone of a removed one. An
-entry that outlived its reason lies exactly as much as a missing one; `ОБЪЯВЛЕНО_НЕ_СДЕЛАНО` in
-`flang/scripts/code-guard.mjs` is kept by the same rule.
+entry that outlived its reason lies exactly as much as a missing one; the «Объявлено, не сделано» list in
+`flang/scripts/code-guard.flang` is kept by the same rule.
 
 ### What the guard does not look at
 
@@ -212,7 +213,8 @@ the change.
   Transliteration appears in names in exactly one place, and it is **not carelessness**: 31 functions
   in `flang/self/emit-js.flang` are named «Текст b_dlina JS», «Текст b_soedinit JS», «Текст b_kod_simvola JS»
   — after the identifier each one prints into JavaScript. That identifier is transliterated by
-  `flang/src/naming.mjs`, because JavaScript will not take Cyrillic in helper names, and the printing
+  the printer itself (`flang/self/emit-js.flang` and its seven twins), because
+  JavaScript will not take Cyrillic in helper names, and the printing
   function's name repeats what is printed, word for word. Same argument as `сkind` under Р4 — except
   here it creates no lookalikes, and so it stands.
 - **File names carry no transliteration at all.** A Latin extension means an English-worded name:
@@ -221,18 +223,18 @@ the change.
 
   | Name | What it is |
   |---|---|
-  | `flang/src/svoystva.mjs`, `benchmarks/speed/memory.flang` | hand-written sources |
+  | `flang/self/svoystva.flang`, `benchmarks/speed/memory.flang` | hand-written sources |
   | `flang/test/zakon-*.test.mjs` (six of them) | hand-written tests |
-  | `docs/HANDOVER.md`, `ZAKONY.md`, `zakony-kak-ukazatel.md` | prose |
+  | `docs/HANDOVER.md`, `docs/ct/zakony.md`, `zakony-kak-ukazatel.md` | prose |
 
   `docs/rukovodstvo/` was the fourteenth and became `docs/guide/` on 18 August, together with 70
   links across 17 files. The remaining eleven cost the same order: a file name lives in prose, in
   imports and in `package.json`, and a tree-wide `grep` is the only way to find every site. This
   becomes a rule when that price is measured, and not before.
 
-  The table's first row was `bootstrap/kompilyator_flang.c`, `.h` — the bootstrap print. It was removed on
+  The table's first row was the bootstrap print in C, whose files were then named in transliteration. It was removed on
   19 August, and removed NOT by patching the printing machinery: the file name there comes from
-  `naming.mjs` off the module name, the contract «a module name reaches the target» is shared by all
+  the same transliteration off the module name, the contract «a module name reaches the target» is shared by all
   eight targets, and carving a special case into it for one program would fix our tree at every other
   tree's expense. It was removed by renaming the module itself — «Компилятор flang» → «Compiler
   flang» — because that module's name is the only one in `flang/self/` that reaches a foreign

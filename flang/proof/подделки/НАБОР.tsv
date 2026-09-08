@@ -1,0 +1,82 @@
+# МАНИФЕСТ НАБОРА ПОДДЕЛОК — объявленный руками список, а не приставка в имени.
+#
+# Решение ADR-0023 «Подделки живут отдельным набором, а не в корпусе метрики»,
+# шаг Ш1. До него подделку опознавали ТРИ несовпадающих правила: регулярное
+# выражение по имени файла в доля-корпуса.sh, список PUSTO_V_CHISLITELE_ZAKONNO
+# и разбор `case` в прогон.sh. Здесь их место занимает один закрытый список:
+# имя файла больше ничего не решает.
+#
+# КТО ЧИТАЕТ ЭТОТ ФАЙЛ:
+#   flang/proof/чекер/пробы/прогон.sh   — класс и ожидаемый исход каждой пробы;
+#   flang/proof/доля-корпуса.sh         — какие места вынести из знаменателя;
+#   scripts/доказуемость.sh             — проверки 3 и 4 (набор и храповик).
+#
+# СТОЛБЦЫ (разделитель — ОДИН знак табуляции, семь полей):
+#   1 имя              — имя подделки, оно же основа имён исходника и записи;
+#   2 исходник         — путь от корня дерева до .flang с ложью;
+#   3 запись           — путь от корня дерева до .запись доказательства;
+#   4 что стережёт     — какое правило ядра эта подделка не даёт ослабить;
+#   5 ожидаемый исход  — код чекера: «1» либо «0|3» (см. класс);
+#   6 класс            — «лжёт-запись» либо «лжёт-программа»;
+#   7 заведена         — дата первого коммита исходника.
+#
+# ДВА КЛАССА, И ОНИ РАЗВОДЯТ ТО, ЧТО ПРЕЖДЕ БЫЛО СМЕШАНО:
+#   лжёт-запись     — запись ПРОТИВОРЕЧИТ исходнику: она объявляет доказанным
+#                     то, чего записанные ходы не проигрывают. Обязателен код 1;
+#                     приём кодом 0 — провал набора. Обязательства такой записи
+#                     в числитель не попадают НИКОГДА, и линейка выносит их из
+#                     знаменателя как недостижимые;
+#   лжёт-программа  — ложна ПРОГРАММА, а запись честна: она записывает, что ядро
+#                     на ложной половине ничего не доказало, и записывает всё,
+#                     что ядро доказало на честной половине того же файла. Верен
+#                     код 0 либо 3; отказ кодом 1 — провал: значит честная
+#                     половина перестала доказываться.
+#
+# КЛАСС КАЖДОЙ СТРОКИ ПОДТВЕРЖДЁН ЧТЕНИЕМ ШАПКИ ИСХОДНИКА (ADR-0023 §9), а не
+# взят по умолчанию. Шапки всех 31 говорят одно: ложна программа, и ложная
+# половина обязана остаться недоказанной. Единственное исключение —
+# poddelka-svyortka-nad-pustym: там лжёт САМА ЗАПИСЬ (ход «закрыть тождеством»
+# при разных сторонах равенства и «ход конец» без «ход цель»), и чекер это
+# опровергает кодом 1 словами «НЕ СОШЛОСЬ».
+#
+# ГДЕ ЗАМЕР РАЗОШЁЛСЯ С ОЖИДАНИЕМ ADR. ADR-0023 §4.1 ждал ДВЕ строки класса
+# «лжёт-запись» — poddelka-svyortka-nad-pustym и poddelka-svyortka-shagom.
+# Замер 8 сентября 2026 на этом дереве: у второй чекер печатает дословно
+# «запись не противоречит исходнику» и даёт код 3. Значит её класс —
+# «лжёт-программа», и в наборе строк класса «лжёт-запись» сегодня ОДНА.
+#
+# СПИСОК ЗАКРЫТ И ХОДИТ ПОД ХРАПОВИКОМ (ХРАПОВИК.txt): убыль строк роняет
+# вердикт «ДОКАЗУЕМ». Прибавлять — руками и с доводом в коммите.
+#
+имя	исходник	запись	что стережёт	ожидаемый исход	класс	заведена
+forgery-binder-hides-the-condition	flang/proof/examples/forgery-binder-hides-the-condition.flang	flang/proof/чекер/пробы/записи/корпус/forgery-binder-hides-the-condition.запись	правило, снимающее стену связывателя, не вправе доказать заведомо ложное	0|3	лжёт-программа	2026-08-30
+forgery-if-without-descent	flang/proof/examples/forgery-if-without-descent.flang	flang/proof/чекер/пробы/записи/корпус/forgery-if-without-descent.запись	принцип по отрезку не даётся телу-«если», у которого убывания нет	0|3	лжёт-программа	2026-08-24
+poddelka-builtin-emptiness-fact	flang/test/fixtures/poddelka-builtin-emptiness-fact.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-builtin-emptiness-fact.запись	встроенная пустота «пусто Л» есть тот же факт, что «(длина Л) равен 0», и не шире	0|3	лжёт-программа	2026-08-24
+poddelka-dlina	flang/test/fixtures/poddelka-dlina.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-dlina.запись	три точные меры длины — голова, звено, склейка — по паре половин на каждый факт	0|3	лжёт-программа	2026-08-21
+poddelka-dno-proizvedeniya	flang/test/fixtures/poddelka-dno-proizvedeniya.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-dno-proizvedeniya.запись	дно произведения берётся лишь при строго положительном дне ОБОИХ сомножителей	0|3	лжёт-программа	2026-08-23
+poddelka-element-po-nomeru	flang/test/fixtures/poddelka-element-po-nomeru.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-element-po-nomeru.запись	переписка «элемент N в …» идёт только по построению списка	0|3	лжёт-программа	2026-08-23
+poddelka-integrality-from-fact	flang/test/fixtures/poddelka-integrality-from-fact.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-integrality-from-fact.запись	целость, сказанная фактом, не даёт ни знака, ни потолка, ни целости соседнему терму	0|3	лжёт-программа	2026-08-24
+poddelka-istinnaya-vetv	flang/test/fixtures/poddelka-istinnaya-vetv.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-istinnaya-vetv.запись	у цели-выбора с истинной ветвью ветвь «то» обязана быть литералом «да»	0|3	лжёт-программа	2026-08-20
+poddelka-konyunkciya	flang/test/fixtures/poddelka-konyunkciya.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-konyunkciya.запись	конъюнкция выводится, только когда доказаны ОБЕ половины	0|3	лжёт-программа	2026-08-22
+poddelka-krug-pri-rabote	flang/test/fixtures/poddelka-krug-pri-rabote.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-krug-pri-rabote.запись	развязка постусловий не снимает сторожа круга в НАПЕЧАТАННОМ коде	0|3	лжёт-программа	2026-08-20
+poddelka-lozhnaya-polovina	flang/test/fixtures/poddelka-lozhnaya-polovina.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-lozhnaya-polovina.запись	допущением становится условие ТОЛЬКО истинной половины	0|3	лжёт-программа	2026-08-21
+poddelka-mera-dliny-stroki	flang/test/fixtures/poddelka-mera-dliny-stroki.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-mera-dliny-stroki.запись	список точных мер длины строки закрыт тремя формами	0|3	лжёт-программа	2026-08-21
+poddelka-nachalo-po-postroeniyu	flang/test/fixtures/poddelka-nachalo-po-postroeniyu.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-nachalo-po-postroeniyu.запись	начало по построению: ни правый кусок склейки, ни одна ветвь, ни сличение не с начала	0|3	лжёт-программа	2026-08-23
+poddelka-ogovorka-o-konechnosti	flang/test/fixtures/poddelka-ogovorka-o-konechnosti.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-ogovorka-o-konechnosti.запись	оговорка о конечности читается ядром лишь в четырёх названных границах	0|3	лжёт-программа	2026-08-21
+poddelka-order-arithmetic	flang/test/fixtures/poddelka-order-arithmetic.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-order-arithmetic.запись	у рефлексивности и монотонности сложения есть посылка про не-число	0|3	лжёт-программа	2026-08-24
+poddelka-porjadok-sosednih	flang/test/fixtures/poddelka-porjadok-sosednih.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-porjadok-sosednih.запись	порядок соседних по построению не читает ложную ветвь фактом	0|3	лжёт-программа	2026-08-20
+poddelka-protivorechie	flang/test/fixtures/poddelka-protivorechie.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-protivorechie.запись	список несовместимых пар закрыт: на совместимых допущениях правило молчит	0|3	лжёт-программа	2026-08-22
+poddelka-ravenstvo-v-tele-ne-dokazyvaet	flang/test/fixtures/poddelka-ravenstvo-v-tele-ne-dokazyvaet.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-ravenstvo-v-tele-ne-dokazyvaet.запись	разрешение сличать в теле — не разрешение выводить равенство	0|3	лжёт-программа	2026-08-21
+poddelka-razbor-sluchaev	flang/test/fixtures/poddelka-razbor-sluchaev.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-razbor-sluchaev.запись	разбор случаев сводит цель ДВАЖДЫ, а не кладёт дизъюнкт в факты	0|3	лжёт-программа	2026-08-21
+poddelka-razbor-spiska	flang/test/fixtures/poddelka-razbor-spiska.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-razbor-spiska.запись	разбор списка по построению: две двери, и ветвь выбирается точно	0|3	лжёт-программа	2026-08-24
+poddelka-razbor-vnutrennim	flang/test/fixtures/poddelka-razbor-vnutrennim.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-razbor-vnutrennim.запись	разбор внутренним условием требует ОБЕИХ половин	0|3	лжёт-программа	2026-08-22
+poddelka-razdvoenie-diz	flang/test/fixtures/poddelka-razdvoenie-diz.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-razdvoenie-diz.запись	расщепляется РОВНО конъюнкция в допущении, а не дизъюнкция	0|3	лжёт-программа	2026-08-21
+poddelka-refleksivnost	flang/test/fixtures/poddelka-refleksivnost.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-refleksivnost.запись	снятый запрет равенства в позиции утверждения не даёт права на вывод	0|3	лжёт-программа	2026-08-20
+poddelka-slova-celey	flang/test/fixtures/poddelka-slova-celey.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-slova-celey.запись	экранирование имён у восьми целей печати: занятое слово не ломает печать	0|3	лжёт-программа	2026-08-21
+poddelka-slovo-o-dokazannosti	flang/test/fixtures/poddelka-slovo-o-dokazannosti.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-slovo-o-dokazannosti.запись	сильное слово о доказанности нельзя сказать про слабое основание	0|3	лжёт-программа	2026-08-21
+poddelka-snyatie-storozha	flang/test/fixtures/poddelka-snyatie-storozha.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-snyatie-storozha.запись	сторож постусловия снимается лишь при «доказано обо ВСЕХ входах» и при примерах	0|3	лжёт-программа	2026-08-20
+poddelka-sortirovka-ne-ubyvaet	flang/test/fixtures/poddelka-sortirovka-ne-ubyvaet.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-sortirovka-ne-ubyvaet.запись	«сортировка не убывает» ложно на «не числе» и обязано остаться недоказанным	0|3	лжёт-программа	2026-08-20
+poddelka-strict-order	flang/test/fixtures/poddelka-strict-order.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-strict-order.запись	строгий порядок по построению: строгость обязана прийти НАЗВАННОЙ	0|3	лжёт-программа	2026-08-24
+poddelka-svyortka-nad-pustym	flang/test/fixtures/poddelka-svyortka-nad-pustym.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-svyortka-nad-pustym.запись	свёртка над пустым переписывается лишь при известной пустоте ИМЕННО ЭТОГО списка	1	лжёт-запись	2026-08-23
+poddelka-svyortka-shagom	flang/test/fixtures/poddelka-svyortka-shagom.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-svyortka-shagom.запись	шаг свёртки стоит под связывателем: внешнее равенство витку не подсунуть	0|3	лжёт-программа	2026-08-20
+poddelka-vhozhdenie	flang/test/fixtures/poddelka-vhozhdenie.flang	flang/proof/чекер/пробы/записи/корпус/poddelka-vhozhdenie.запись	вхождение по построению: «добавить э к л» не говорит ничего про «д»	0|3	лжёт-программа	2026-08-20

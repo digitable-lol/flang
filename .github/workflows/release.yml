@@ -320,6 +320,41 @@ jobs:
           fi
           echo "кран совпал с деревом по version, url и sha256: $(git -C packaging/homebrew-tap rev-parse --short HEAD)"
 
+      - name: Плагин asdf не отстал от дерева
+        # `asdf plugin add flang` клонирует digitable-lol/asdf-flang — сабмодуль
+        # packaging/asdf-plugin, — а не packaging/asdf. Копия отставала молча:
+        # опубликованный bin/install искал flang_cli, когда сборка уже клала
+        # flang, и `asdf install` падал последним шагом. Здесь четыре файла
+        # плагина сверяются с деревом побайтово ДО выкладки, три скрипта — на
+        # бит исполнимости. Расхождение — красное; неразвёрнутый сабмодуль —
+        # тоже. Ту же сверку без сети держит «плагин:проверка»
+        # (scripts/asdf-plugin-guard.flang).
+        run: |
+          set -eu
+          plagin=packaging/asdf-plugin
+          if [ ! -f "$plagin/README.md" ]; then
+            echo "::error::$plagin/README.md нет — сабмодуль плагина asdf не развёрнут (checkout с submodules: true?)"
+            exit 1
+          fi
+          beda=0
+          for f in README.md bin/download bin/install bin/list-all; do
+            if ! cmp -s "packaging/asdf/$f" "$plagin/$f"; then
+              echo "::error::$f: в плагине не тот же файл, что в packaging/asdf — плагин отстал, «asdf plugin add flang» привезёт не то"
+              beda=$((beda + 1))
+            fi
+          done
+          for f in bin/download bin/install bin/list-all; do
+            if [ ! -x "$plagin/$f" ]; then
+              echo "::error::$f: в плагине снят бит исполнимости — asdf этот скрипт не запустит"
+              beda=$((beda + 1))
+            fi
+          done
+          if [ "$beda" -ne 0 ]; then
+            echo "::error::Лечится: cp -R packaging/asdf/. $plagin/; коммит и push в asdf-flang; git add $plagin; повторить тег."
+            exit 1
+          fi
+          echo "плагин asdf совпал с деревом по четырём файлам: $(git -C "$plagin" rev-parse --short HEAD)"
+
       - name: Приложить архив к релизу
         # `gh release create` на уже существующем релизе отвечает ошибкой —
         # поэтому сначала спрашиваем.

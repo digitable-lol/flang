@@ -3,31 +3,48 @@
 # Laying out a flang project
 
 This document is not a wish list. Every rule here is derived from a working
-example — [`examples/library-api`](../../examples/library-api/README.md), a
-library REST service — and points at it.
+example — [`examples/library-api`](../../examples/library-api), the domain half of
+a library REST service: lending books, the catalogue, fines for overdue returns —
+and points at it.
 
 Half of that example has since been removed: the Node host went on 20 August 2026
 along with the rest of the JavaScript tooling. So the rules about what stays with
 the host can no longer be shown on the tree — they are marked as such where they
-stand, and they lean on the example's README, which names the removed files one by
-one. The rules about flang modules are still checkable on the tree as before.
+stand, and they speak of the removed host in the past tense. The rules about flang
+modules are still checkable on the tree as before.
 
 The example is laid out like this:
 
 ```
 examples/library-api/
-  lib/       flang pure functions over the project's data, domain rules included
-  stdlib/    flang the project's own library: knows nothing about the domain
+  lib/                 flang: pure functions over the project's data, domain rules included
+    api.flang          module «Library API» — the only entry, links the rest
+    catalog.flang      module «Catalog» — selection, summary, book cards
+    fine.flang         module «Fine» — the fine tariff for overdue returns
+    isbn.flang         module «ISBN» — the check digit, the book key
+    loan.flang         module «Loan» — whether a book may be lent
+    query.flang        module «Query» — parsing the query string «?a=1&b=2»
+  stdlib/              flang: the project's own library, knows nothing about the domain
+    text.flang         module «Project text» — functions over a list of strings
 ```
 
-There were four directories. `host/` (HTTP, storage, percent-decoding on Node) and
-`test/` were removed on 20 August 2026 along with the rest of the JavaScript
-tooling, and they are no longer in the tree — the provenance is in the
-[example's README](../../examples/library-api/README.md). The rules about the
-boundary with the host did not change because of it: a boundary is visible from
-one side too, and the README names the code that used to sit on the other side.
-Where the text below says "in the example's host", it means the removed host, and
-it says so in the past tense.
+There were four directories. `host/` and `test/` were removed on 20 August 2026
+along with the rest of the JavaScript tooling, and they are no longer in the tree.
+What they held:
+
+```
+host/server.mjs             the HTTP server: six routes — GET /health, GET /books (with
+                            selection by author and shelf), GET /books/summary, POST /books,
+                            POST /loans, POST /returns; percent-decoding of the path
+host/storage.mjs            storage in the process memory
+host/flang.mjs              the bridge to the language: loading lib/api.flang and evaluating functions
+test/library-api.test.mjs   the example's run on Node
+```
+
+The removal is commits 8f229280, 501327bb, 22cff289 and 7d95994a. The rules about
+the boundary with the host did not change because of it: a boundary is visible from
+one side too. Where the text below says "in the example's host", it means the
+removed host, and it says so in the past tense.
 
 ---
 
@@ -41,7 +58,7 @@ finds them itself and fails when the behaviour has drifted. The same arithmetic
 written inside an HTTP handler is checked only by whatever test somebody bothers
 to write separately.
 
-**Where to look.** The example's host (`examples/library-api/host/server.mjs`,
+**Where to look.** The example's host (the file host/server.mjs from the list above,
 removed along with the JavaScript implementation of the language) held not a
 single number from the fine schedule, no ISBN check digit, no query-string
 parsing, and no "who is allowed to borrow" condition. All of that lives in
@@ -191,7 +208,7 @@ client that knows nothing about the model, and they are part of the protocol
 rather than of the domain. JSON body keys stay Russian (`«код»`, `«на полке»`),
 because those are model fields: a second dictionary of names would have to be kept
 in agreement by hand, and no type catches two dictionaries drifting apart (which
-is what happened in the removed host's storage — `host/storage.mjs`, no longer in
+is what happened in the removed host's storage, the file host/storage.mjs from the list above, no longer in
 the tree).
 
 ---
@@ -368,6 +385,11 @@ flang test  examples/library-api/lib/api.flang
 every assembled function — its own and imported ones. That is why naming one file is
 enough: add a module and it arrives in the check along with linking, without editing
 a list of files.
+
+Printing the same library to a target language is the same command on the same
+entry module: `flang emit examples/library-api/lib/api.flang --target js --out <dir>`.
+Printing is cancelled if the program does not pass the check: `emit` looks at the
+same things `check` does and names the same remarks.
 
 **What used to stand here and why it is gone.** It said: "today both answer with a
 refusal, `FLANG_UNKNOWN_NAME`, unknown function `«Все не меньше»`". That function has

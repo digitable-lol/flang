@@ -18,6 +18,10 @@
 #       крана (если развёрнут): чтобы кран не отстал молча, как отставал
 #       шесть выпусков подряд (0.7.4–0.7.10). Коммит и push в кране и подъём
 #       указателя сабмодуля — руками, шаги печатаются в конце.
+#   packaging/asdf-plugin/ — сабмодуль плагина asdf (digitable-lol/asdf-flang).
+#       Числа версии в нём НЕТ: bin/list-all спрашивает выпуски у GitHub. Скрипт
+#       его не правит, а СВЕРЯЕТ с packaging/asdf и, если копия отстала,
+#       печатает шаги (тот же порядок, что у крана). Судья — `плагин:проверка`.
 #
 # `#define` в C нельзя «прочитать из файла» при сборке (иначе пришлось бы
 # трогать печатаемый bootstrap/Makefile или шаблон emit-c.flang, общий для всех
@@ -41,10 +45,30 @@ REPL=flang/src/emit/c/flang_repl.c
 MAN=packaging/flang.1
 FORMULA=packaging/homebrew/flang.rb
 KRAN=packaging/homebrew-tap/Formula/flang.rb
+PLAGIN=packaging/asdf-plugin
 BINARY=bootstrap/flang
 
 tekushchaya() {
   grep -oE '^  "[0-9]+\.[0-9]+\.[0-9]+"$' "$ISTOCHNIK" | tr -d ' "' | head -1
+}
+
+# Плагин asdf: версии в нём нет, сверяются сами файлы. Печатает одну строку
+# состояния; коды: 0 совпал, 1 отстал (файлы названы), 2 не развёрнут.
+plagin_sostoyanie() {
+  if [ ! -f "$PLAGIN/README.md" ]; then
+    echo "  $PLAGIN/  НЕ РАЗВЁРНУТ: git submodule update --init $PLAGIN"
+    return 2
+  fi
+  otstali=
+  for f in README.md bin/download bin/install bin/list-all; do
+    cmp -s "packaging/asdf/$f" "$PLAGIN/$f" || otstali="$otstali $f"
+  done
+  if [ -n "$otstali" ]; then
+    echo "  $PLAGIN/  ОТСТАЛ от packaging/asdf:$otstali  (сабмодуль $(git -C "$PLAGIN" rev-parse --short HEAD 2>/dev/null))"
+    return 1
+  fi
+  echo "  $PLAGIN/  совпадает с packaging/asdf  (плагин asdf, сабмодуль $(git -C "$PLAGIN" rev-parse --short HEAD 2>/dev/null))"
+  return 0
 }
 
 NOVAYA=${1:-}
@@ -63,6 +87,7 @@ if [ -z "$NOVAYA" ]; then
   else
     echo "  $KRAN  НЕ РАЗВЁРНУТ: git submodule update --init packaging/homebrew-tap"
   fi
+  plagin_sostoyanie || true
   echo
   echo "поднять: ./ярлык версия <НОВОЕ ЧИСЛО>   (например ./ярлык версия 0.7.13)"
   exit 0
@@ -124,4 +149,14 @@ echo "  cp $FORMULA $KRAN"
 echo "  git -C packaging/homebrew-tap commit -am 'flang $NOVAYA: url, sha256, version' && git -C packaging/homebrew-tap push origin main"
 echo "  git add packaging/homebrew-tap   # указатель сабмодуля — в тот же коммит выпуска"
 echo "Пока указатель не поднят, «формула:проверка» и release.yml КРАСНЫ — это и есть защита от забытого крана."
+echo
+echo "Плагин asdf (сабмодуль $PLAGIN) — числа версии в нём нет, поднимать нечего; сверка файлов:"
+if plagin_sostoyanie; then
+  echo "  трогать нечего."
+else
+  echo "  cp -R packaging/asdf/. $PLAGIN/"
+  echo "  git -C $PLAGIN commit -am 'Плагин догнал packaging/asdf (flang $NOVAYA)' && git -C $PLAGIN push origin main"
+  echo "  git add $PLAGIN   # указатель сабмодуля — в тот же коммит выпуска"
+  echo "Пока указатель не поднят, «плагин:проверка» и release.yml КРАСНЫ — это и есть защита от забытого плагина."
+fi
 exit 0

@@ -24,7 +24,7 @@
 
 ```
 *.flang    1245 → 1255   ровно +10, все добавлены с 4 сентября:
-           девять проб чекера (8615, 9951, 9991, 10003, v1-g2, типы-доводов)
+           девять проб чекера (8615, 9951, 9991, 3314, v1-g2, типы-доводов)
            и scripts/version-guard.flang
 *.sh         94 →  101   десять новых приборов: kto-zovet-storozhey,
            storozha-bez-podloga, pol-dokazannogo-sverka, semya-rantayma-eto-

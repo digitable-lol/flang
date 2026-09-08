@@ -205,8 +205,18 @@ by promises.
 
 ## An example that actually runs
 
-`examples/host-boundary/` is the whole junction: `gatekeeper.flang` decides who
-gets through, `host.c` runs the loop and prints the answers.
+`examples/host-boundary/` is the whole junction, three files:
+
+| file | what it is |
+|---|---|
+| `examples/host-boundary/gatekeeper.flang` | the decision: who gets through, who is refused, with which code. Module «Gatekeeper» |
+| `examples/host-boundary/host.c` | the execution: the loop, input-output, mutable state |
+| `examples/host-boundary/run.sh` | print to C, build with the system `cc`, run |
+
+The decisions — parsing the request, checking rights, the budget and its
+refill, the state transition, the response codes — are all on this side of the
+line. The host builds a value, calls one function and carries out what it
+returned.
 
 On the flang side there are eight functions, all total. Not one of them does
 anything — each returns a value:
@@ -233,6 +243,39 @@ for (;;) {
 
 This loop is in C not because it is infinite — the language accepts non-total
 functions. It is in C because of one line inside it: `fgets` **waits**.
+
+The decision is checked with the usual commands:
+
+```
+bootstrap/flang check examples/host-boundary/gatekeeper.flang --proof
+bootstrap/flang test  examples/host-boundary/gatekeeper.flang
+```
+
+The `--proof` report says: all functions are total, each termination is proved
+by composition; there are no assertions "declared, not proved"; some
+postconditions are proved for all inputs by reducing the goal to the function
+body, some are on the grid of examples — among them «ГЛАВНОЕ: из годных врат
+выходят годные» of «Шаг привратника»: an inequality over record fields is not
+taken by the kernel. How many of each is printed on the last line of the report.
+Proved postconditions are not printed into the generated code as checks — the
+printer says so on its first line («проверок при работе снято …»); an unproved
+promise would ride along as a check on every return.
+
+**The run does not build today.** Since 29 August 2026 the module is named
+«Gatekeeper» — all example modules were given English names so that the printed
+file is not a transliteration — and the printer emits files and functions under
+that name, while the host and the run script expect the old ones:
+
+```
+printer: gatekeeper.c  gatekeeper.h      gatekeeper_enter(…)  gatekeeper_sozdat_vrata(…)
+host.c:  #include "privratnik.h"         privratnik_enter(…)  privratnik_sozdat_vrata(…)
+run.sh:  cc … privratnik.c …
+```
+
+The first step of the run (printing) and both commands above pass; the second
+step — the build — fails. The output below was recorded before the rename; to
+reproduce it, the names in `examples/host-boundary/host.c` and
+`examples/host-boundary/run.sh` have to be brought to the new ones.
 
 ```
 $ bash examples/host-boundary/run.sh
@@ -262,11 +305,28 @@ broken argument — a budget above the capacity — and the boundary preconditio
 turns it away. The refusal arrives as a status, not as a crash: the host loop
 goes on.
 
+Three details of the junction that are visible only in the sources:
+
+* printing is invoked with the flag `--no-cli`: the program has its own entry
+  point, in `examples/host-boundary/host.c`, and two `main` functions in one
+  build do not link;
+* the printed module's memory lives in an arena, and the host returns it on
+  every iteration with one call to `fl_arena_reset` — everything flang built has
+  by then been copied into the host's state;
+* the precondition `требует «запас не выше ёмкости»` stands on «Шаг привратника»
+  — the function the host calls. It cannot be kept on the internal «Пропуск
+  врат»: the call from «Запрос к вратам» does not discharge the precondition,
+  and the compiler answers `FLANG_PRECONDITION_CALL`. The rule: `требует` goes
+  on the boundary function; internal ones make do with promises.
+
 Next to it in the tree sits a second junction, made the first way — through the
 dictionary of orders: `examples/io/фильтр-пакетов.flang` parses an IPv4
 datagram header together with the TCP destination port and decides whether to
 let it through. Eighteen functions, all total; the octets leave for the
-operating system and come back through `write` and `read`.
+operating system and come back through `write` and `read`. The same line on
+other tasks: `examples/driver/` — on hardware (the [MSI
+driver](msi-driver.html)), `examples/web/orders-api.flang` — on a REST service,
+`examples/io/link-report.flang` — on input-output.
 
 ## What this does not solve
 

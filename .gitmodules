@@ -1,3 +1,6 @@
 [submodule "packaging/homebrew-tap"]
 	path = packaging/homebrew-tap
 	url = https://github.com/digitable-lol/homebrew-tap
+[submodule "packaging/asdf-plugin"]
+	path = packaging/asdf-plugin
+	url = https://github.com/digitable-lol/asdf-flang

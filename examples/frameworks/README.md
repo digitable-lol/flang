@@ -1,40 +1,7 @@
-# flang под JS-фреймворками
+# flang · JS frameworks
 
-Три приложения, одна граница: ядро логики написано и доказано на flang,
-напечатано в JS (`emit --target js`), а JS-фреймворк — хозяин: он держит сокет,
-HTTP, состояние UI и рендер, а решение зовёт у ядра.
+**[Documentation](https://digitable-lol.github.io/flang/en/examples.html)** ·
+**[Документация](https://digitable-lol.github.io/flang/examples.html)**
 
-```
-nestjs-orders/    REST-служба заказов; хозяин NestJS, ядро — orders-api.flang
-react-invoice/    точный счёт корзины; хозяин React, ядро — cart.flang (+catalog)
-vue-roman/        римские цифры; хозяин Vue, ядро — roman-numerals.flang
-```
-
-## Один и тот же признак границы
-
-Тот же, что в `examples/host-boundary/` (там хозяин — на C): на flang пишется
-то, что **решает**, а хозяину остаётся то, что **ждёт и держит управление между
-решениями** — сокет, DOM, состояние формы. Разница лишь в хозяине: здесь это
-NestJS, React и Vue вместо рукописного цикла на C.
-
-Напечатанный модуль каждого примера **самодостаточен**: ни одной зависимости,
-идёт и в Node, и в браузере. Значения на стыке: список → массив, запись →
-объект, вариант → экземпляр класса, «ничто» → `null`. Имена функций translit из
-русских: «Обработать запрос» → `obrabotatZapros`, «Сумма корзины» →
-`summaKorziny`, «В римские» → `vRimskie`.
-
-## Что проверено
-
-Для каждого примера: ядро печатается в JS (`emit … --target js`, код 0),
-напечатанный модуль прогнан под `node` прямым вызовом (верный ответ), и обёртка
-фреймворка реально импортирует этот модуль.
-
-- **nestjs-orders** — собран (`tsc`), поднят живой сервер, шесть маршрутов дали
-  верные коды (201/400/200/400/405/404).
-- **react-invoice** — собран целиком (`vite build`), `tsc --noEmit` чист, генерат
-  ядра попадает в бандл.
-- **vue-roman** — собран целиком (`vite build`), `vue-tsc --noEmit` чист, генерат
-  ядра попадает в бандл.
-
-`node_modules/` и `dist/` в каждом примере — в `.gitignore`. Как переиздать
-ядро — в README каждого примера.
+Four applications where a flang core, printed to JavaScript, is driven by a JS framework host: NestJS, React, Vue, and React + TypeScript with zero lines of logic in the components (`react-ts-pure`, Web Vitals measured in its ЗАМЕР.md).
+Четыре приложения, где ядро на flang, напечатанное в JavaScript, зовёт хозяин-фреймворк: NestJS, React, Vue и React + TypeScript без единой строки логики в компонентах (`react-ts-pure`, замер Web Vitals — в его ЗАМЕР.md).

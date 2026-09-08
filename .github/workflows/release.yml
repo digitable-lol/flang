@@ -91,6 +91,10 @@ jobs:
           # указывает. Так вышел релиз v0.7.3 на main (найдено и починено
           # там же 3 сентября 2026) — перенесено сюда той же правкой.
           fetch-tags: true
+          # Кран Homebrew — сабмодуль packaging/homebrew-tap: шаг «Кран не
+          # отстал от дерева» читает его формулу. Без развёрнутого сабмодуля
+          # читать нечего, а «нечего читать» здесь — красное, не зелёное.
+          submodules: true
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
         with:
@@ -282,6 +286,39 @@ jobs:
             exit 1
           fi
           echo "хеш архива совпал с формулой: $sobran"
+
+      - name: Кран не отстал от дерева
+        # `brew install digitable-lol/tap/flang` ставит НЕ packaging/homebrew/flang.rb,
+        # а Formula/flang.rb из репозитория-крана digitable-lol/homebrew-tap. Кран
+        # правится руками, и шесть выпусков подряд (0.7.4–0.7.10) ушли без него:
+        # тег и формула дерева были верны, а brew ставил протухшую 0.7.3. Теперь
+        # кран — сабмодуль packaging/homebrew-tap, и три числа его формулы
+        # (version, url, sha256) обязаны совпасть с формулой дерева ДО выкладки.
+        # Расхождение — красное; сабмодуль, указывающий на непушенный коммит
+        # крана, checkout выше не развернёт вовсе — тоже красное. Ту же сверку
+        # без сети держит «формула:проверка» (scripts/homebrew-formula-guard.flang).
+        run: |
+          set -eu
+          kran=packaging/homebrew-tap/Formula/flang.rb
+          derevo=packaging/homebrew/flang.rb
+          if [ ! -f "$kran" ]; then
+            echo "::error::$kran нет — сабмодуль крана не развёрнут (checkout с submodules: true?)"
+            exit 1
+          fi
+          beda=0
+          for pole in version url sha256; do
+            v_derevo="$(sed -n 's/^  '"$pole"' "\([^"]*\)".*/\1/p' "$derevo")"
+            v_kran="$(sed -n 's/^  '"$pole"' "\([^"]*\)".*/\1/p' "$kran")"
+            if [ "$v_derevo" != "$v_kran" ]; then
+              echo "::error::$pole: в кране «$v_kran», а в дереве «$v_derevo» — кран отстал, brew поставит не то"
+              beda=$((beda + 1))
+            fi
+          done
+          if [ "$beda" -ne 0 ]; then
+            echo "::error::Лечится: cp $derevo $kran; коммит и push в кране; git add packaging/homebrew-tap; повторить тег."
+            exit 1
+          fi
+          echo "кран совпал с деревом по version, url и sha256: $(git -C packaging/homebrew-tap rev-parse --short HEAD)"
 
       - name: Приложить архив к релизу
         # `gh release create` на уже существующем релизе отвечает ошибкой —

@@ -14,6 +14,10 @@
 #   flang/src/emit/c/flang_repl.c   #define FLANG_VERSION — генерируется здесь
 #   packaging/flang.1               .TH и обе расшифровки «flang X»
 #   packaging/homebrew/flang.rb     version, тег и имя архива в url
+#   packaging/homebrew-tap/Formula/flang.rb — то же, в рабочей копии сабмодуля
+#       крана (если развёрнут): чтобы кран не отстал молча, как отставал
+#       шесть выпусков подряд (0.7.4–0.7.10). Коммит и push в кране и подъём
+#       указателя сабмодуля — руками, шаги печатаются в конце.
 #
 # `#define` в C нельзя «прочитать из файла» при сборке (иначе пришлось бы
 # трогать печатаемый bootstrap/Makefile или шаблон emit-c.flang, общий для всех
@@ -36,6 +40,7 @@ ISTOCHNIK=scripts/emit-package.flang
 REPL=flang/src/emit/c/flang_repl.c
 MAN=packaging/flang.1
 FORMULA=packaging/homebrew/flang.rb
+KRAN=packaging/homebrew-tap/Formula/flang.rb
 BINARY=bootstrap/flang
 
 tekushchaya() {
@@ -53,6 +58,11 @@ if [ -z "$NOVAYA" ]; then
   echo "  $REPL  $(sed -n 's/^#define FLANG_VERSION "\([^"]*\)".*/FLANG_VERSION \1/p' "$REPL")"
   echo "  $MAN               .TH $(grep -oE 'flang [0-9]+\.[0-9]+\.[0-9]+' "$MAN" | sort -u | tr '\n' ' ')"
   echo "  $FORMULA  $(sed -n 's/^  version "\([^"]*\)".*/version \1/p' "$FORMULA")"
+  if [ -f "$KRAN" ]; then
+    echo "  $KRAN  $(sed -n 's/^  version "\([^"]*\)".*/version \1/p' "$KRAN")  (кран, сабмодуль $(git -C packaging/homebrew-tap rev-parse --short HEAD 2>/dev/null))"
+  else
+    echo "  $KRAN  НЕ РАЗВЁРНУТ: git submodule update --init packaging/homebrew-tap"
+  fi
   echo
   echo "поднять: ./ярлык версия <НОВОЕ ЧИСЛО>   (например ./ярлык версия 0.7.13)"
   exit 0
@@ -86,6 +96,14 @@ sed -i -E 's/flang [0-9]+\.[0-9]+\.[0-9]+/flang '"$NOVAYA"'/g' "$MAN"
 sed -i -E 's/^  version "[0-9]+\.[0-9]+\.[0-9]+"$/  version "'"$NOVAYA"'"/' "$FORMULA"
 sed -i -E 's#/download/v[0-9]+\.[0-9]+\.[0-9]+/flang-[0-9]+\.[0-9]+\.[0-9]+-c\.tar\.gz#/download/v'"$NOVAYA"'/flang-'"$NOVAYA"'-c.tar.gz#' "$FORMULA"
 
+# ── формула в кране (сабмодуль): те же два числа, sha256 так же НЕ трогаем ──
+if [ -f "$KRAN" ]; then
+  sed -i -E 's/^  version "[0-9]+\.[0-9]+\.[0-9]+"$/  version "'"$NOVAYA"'"/' "$KRAN"
+  sed -i -E 's#/download/v[0-9]+\.[0-9]+\.[0-9]+/flang-[0-9]+\.[0-9]+\.[0-9]+-c\.tar\.gz#/download/v'"$NOVAYA"'/flang-'"$NOVAYA"'-c.tar.gz#' "$KRAN"
+else
+  echo "кран $KRAN НЕ РАЗВЁРНУТ — не поднят. Разверните и повторите: git submodule update --init packaging/homebrew-tap" >&2
+fi
+
 # ── package.json: перепечатать из источника (знак-в-знак, как ждёт пакет:проверка) ─
 if [ -x "$BINARY" ]; then
   "$BINARY" io "$ISTOCHNIK" --plan 'Напечатать пакет' >/dev/null 2>&1 \
@@ -100,4 +118,10 @@ fi
 echo
 echo "готово. Проверить сведение: sh scripts/version-derivations-guard.sh"
 echo "Не поднято намеренно (это делает выпуск): sha256 формулы, changelog.json, семя bootstrap/flang_repl.c."
+echo
+echo "Кран Homebrew (сабмодуль packaging/homebrew-tap) — ПОСЛЕ того, как sha256 архива вписан в $FORMULA:"
+echo "  cp $FORMULA $KRAN"
+echo "  git -C packaging/homebrew-tap commit -am 'flang $NOVAYA: url, sha256, version' && git -C packaging/homebrew-tap push origin main"
+echo "  git add packaging/homebrew-tap   # указатель сабмодуля — в тот же коммит выпуска"
+echo "Пока указатель не поднят, «формула:проверка» и release.yml КРАСНЫ — это и есть защита от забытого крана."
 exit 0

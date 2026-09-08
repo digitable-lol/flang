@@ -21,7 +21,7 @@ allocator](allocator.html).
 
 ```flang
 тотальная функция «Занять вектор»
-  принимает контроллер: «Состояние MSI», вектор: нат, безопасен: признак
+  принимает контроллер: «Состояние MSI», вектор: неотрицательное, безопасен: признак
   возвращает «Отклик MSI»
 ```
 
@@ -101,7 +101,7 @@ takes](kak-dokazat.html).
 
 All functions are total. For two — «Вес вектора» and «Бит взведён» — termination
 is proved by a constant step, and for them a descent check is placed in the
-printed code: the descent runs over the type `число` (the difference `нат минус
+printed code: the descent runs over the type `число` (the difference `неотрицательное минус
 1` does not flow back into `нат`), and on IEEE-754 a constant step does not
 always change the magnitude. For the rest — by composition, with no checks in
 the printed code.

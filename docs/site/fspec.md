@@ -396,4 +396,6 @@ is named wrongly while the goal is right, it stays silent.
 - [When a proof is refused](proof-refused.html) — why the kernel refuses and what to do.
 - [Clarifying questions](dlya-ii.html) — how an unproved promise turns into a question for whoever wrote the requirement.
 - `examples/web/marketplace/README.md` in the tree — the same example in more detail, with the file layout.
-- `fspec/README.md` — how the spec catalogue is laid out.
+- [The spec catalogue: the stand, the guard, the snapshot](spec-catalog.html) —
+  how `fspec/` is laid out: the acceptance rule, the snapshot, the forgery and
+  the boundaries.

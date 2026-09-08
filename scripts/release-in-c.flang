@@ -24,15 +24,15 @@
 
 тотальная функция «Цели печати»
   возвращает список строки
-  обеспечивает «длина постоянного списка — Цели печати» (длина результат) равен 9
-  пример «Девять, как в справке двоичного»
-    ожидается ["c", "cpp", "csharp", "elixir", "go", "java", "js", "python", "rust"]
-  ["c", "cpp", "csharp", "elixir", "go", "java", "js", "python", "rust"]
+  обеспечивает «длина постоянного списка — Цели печати» (длина результат) равен 10
+  пример «Десять, как каталогов под flang/src/emit»
+    ожидается ["c", "cpp", "csharp", "elixir", "go", "java", "js", "python", "rust", "ts"]
+  ["c", "cpp", "csharp", "elixir", "go", "java", "js", "python", "rust", "ts"]
 
 тотальная функция «Файлы рантайма»
   возвращает список строки
-  обеспечивает «длина постоянного списка — Файлы рантайма» (длина результат) равен 34
-  пример «Тридцать четыре файла девяти целей»
+  обеспечивает «длина постоянного списка — Файлы рантайма» (длина результат) равен 35
+  пример «Тридцать пять файлов десяти целей»
     ожидается ["c/flang_runtime.h", "c/flang_runtime.c", "c/flang_cli.c", "c/flang_repl.c", "c/flang_conc.h", "c/flang_conc.c",
                "cpp/flang_cpp.hpp",
                "csharp/Ctx.cs", "csharp/Field.cs", "csharp/Flang.cs", "csharp/FlangCli.cs", "csharp/FlangError.cs", "csharp/Value.cs",
@@ -41,7 +41,8 @@
                "java/Ctx.java", "java/Field.java", "java/Flang.java", "java/FlangCli.java", "java/FlangError.java", "java/Value.java",
                "js/flang_cli.js", "js/flang_conc.js", "js/flang_host_browser.js", "js/flang_host_node.js", "js/flang_io.js",
                "python/flang_cli.py", "python/flang_io.py", "python/flang_runtime.py",
-               "rust/flang_cli.rs", "rust/flang_runtime.rs"]
+               "rust/flang_cli.rs", "rust/flang_runtime.rs",
+               "ts/tsconfig.json"]
   ["c/flang_runtime.h", "c/flang_runtime.c", "c/flang_cli.c", "c/flang_repl.c", "c/flang_conc.h", "c/flang_conc.c",
    "cpp/flang_cpp.hpp",
    "csharp/Ctx.cs", "csharp/Field.cs", "csharp/Flang.cs", "csharp/FlangCli.cs", "csharp/FlangError.cs", "csharp/Value.cs",
@@ -50,7 +51,8 @@
    "java/Ctx.java", "java/Field.java", "java/Flang.java", "java/FlangCli.java", "java/FlangError.java", "java/Value.java",
    "js/flang_cli.js", "js/flang_conc.js", "js/flang_host_browser.js", "js/flang_host_node.js", "js/flang_io.js",
    "python/flang_cli.py", "python/flang_io.py", "python/flang_runtime.py",
-   "rust/flang_cli.rs", "rust/flang_runtime.rs"]
+   "rust/flang_cli.rs", "rust/flang_runtime.rs",
+   "ts/tsconfig.json"]
 
 тотальная функция «Не точка»
   возвращает список строки
@@ -259,9 +261,9 @@
 
 тотальная функция «Доводы заведения»
   возвращает список строки
-  обеспечивает «длина постоянного списка — Доводы заведения» (длина результат) равен 10
-  пример «Ключ и девять каталогов»
-    ожидается ["-p", "../output/release-c/runtime/c", "../output/release-c/runtime/cpp", "../output/release-c/runtime/csharp", "../output/release-c/runtime/elixir", "../output/release-c/runtime/go", "../output/release-c/runtime/java", "../output/release-c/runtime/js", "../output/release-c/runtime/python", "../output/release-c/runtime/rust"]
+  обеспечивает «длина постоянного списка — Доводы заведения» (длина результат) равен 11
+  пример «Ключ и десять каталогов»
+    ожидается ["-p", "../output/release-c/runtime/c", "../output/release-c/runtime/cpp", "../output/release-c/runtime/csharp", "../output/release-c/runtime/elixir", "../output/release-c/runtime/go", "../output/release-c/runtime/java", "../output/release-c/runtime/js", "../output/release-c/runtime/python", "../output/release-c/runtime/rust", "../output/release-c/runtime/ts"]
   свёртка («Цели печати») начиная с ["-p"] как всё и цель
     добавить («Каталог цели в архиве» от цель) к всё
 
@@ -833,10 +835,10 @@
 тотальная функция «Набрать страницу»
   принимает путь: строка
   возвращает «Поручение»
-  пример «groff и снятие разметки терминала одним поручением»
+  пример «нет groff или col — поручение отвечает 127, а не пустотой с нулём»
     дано путь равно "../output/release-c/flang.1"
-    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "groff -K utf8 -man -Tutf8 \"$0\" | sed 's/\\x1b\\[[0-9;]*m//g'", "../output/release-c/flang.1"]
-  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "groff -K utf8 -man -Tutf8 \"$0\" | sed 's/\\x1b\\[[0-9;]*m//g'", путь]
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "command -v groff >/dev/null 2>&1 && command -v col >/dev/null 2>&1 || exit 127; GROFF_NO_SGR=1 groff -K utf8 -man -Tutf8 \"$0\" | col -b", "../output/release-c/flang.1"]
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "command -v groff >/dev/null 2>&1 && command -v col >/dev/null 2>&1 || exit 127; GROFF_NO_SGR=1 groff -K utf8 -man -Tutf8 \"$0\" | col -b", путь]
 
 тотальная функция «Убрать пробы»
   возвращает «Поручение»

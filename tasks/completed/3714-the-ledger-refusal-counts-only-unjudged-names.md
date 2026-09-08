@@ -232,6 +232,17 @@ $ /srv/flang-rabota/b-batut/bootstrap/flang check flang/conc/examples/counter.fl
 `flang/test/fixtures/ledger-refuses-only-unjudged-surfaces.flang`, опись —
 шестнадцать строк `scripts/proved-share-ledger.txt`.
 
+
+### Улики: коммиты ствола
+
+Добавлено 8 сентября 2026: раздел выше называл сделанное словами, но SHA в нём
+не было — проверить пересказ нечем. Коммиты взяты из `git log gh/dev` и
+проверены `git cat-file -e <sha>^{commit}`.
+
+- статус «сделана» поставлен коммитом `3c8619d6` (2026-08-30) — «docs(задачник): 3714 — отказ ведомости считает несудимое, и цена названа числами»
+- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- номер задачи назван в 2 коммитах ствола: `git log gh/dev --oneline --grep=3714`
+
 ## Что от неё зависит
 
 * **5710**: куча «ДЕРЖИТСЯ НА ДРУГОМ» худеет на 17 файлов и 70 обязательств —

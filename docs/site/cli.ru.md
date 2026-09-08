@@ -179,7 +179,7 @@ $ flang run привет.flang --function «Удвоить» --args '{"н":21}'
 цель.
 
 ```bash
-flang emit <файл.flang> --target c|go|rust|java|js|elixir|python|csharp
+flang emit <файл.flang> --target c|cpp|go|rust|java|js|ts|elixir|python|csharp
                         [--out каталог | --file имя] [--cli|--no-cli] [--repl]
                         [--runtime каталог] [--index-base 0|1]
                         [--max-steps N] [--max-depth N]
@@ -187,7 +187,7 @@ flang emit <файл.flang> --target c|go|rust|java|js|elixir|python|csharp
 
 | Ключ | Что делает |
 | --- | --- |
-| `--target <цель>` | `c`, `go`, `rust`, `java`, `js`, `elixir`, `python`, `csharp`. Обязателен |
+| `--target <цель>` | `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `python`, `csharp`. Обязателен |
 | `--out каталог` | Записать все файлы в каталог |
 | `--file имя` | Один файл на стандартный вывод |
 | `--cli`, `--no-cli` | Печатать ли прогонщик |

@@ -86,8 +86,8 @@ survived both changes, because it rests on examples rather than on a list of wha
 the language lacks.
 
 **You can check that the boundary is drawn right by emitting.** `flang emit` emits
-the whole project library into all eight target languages — `c`, `go`, `rust`,
-`python`, `java`, `csharp`, `elixir`, `js` — and the host emits nowhere, because
+the whole project library into all ten target languages — `c`, `cpp`, `go`, `rust`,
+`python`, `java`, `csharp`, `elixir`, `js`, `ts` — and the host emits nowhere, because
 there is nothing to emit. If emission broke after you moved another piece into
 `lib/`, you moved the wrong piece.
 
@@ -157,7 +157,7 @@ extension is parsed by the wrong parser and gives an incomprehensible error.
 **When it is otherwise.** A suffix a tool looks for beats the rule: if your host's
 runner finds files by a pattern, the name obeys the pattern, not this section. A
 project document is `README.md` even when written in Russian: that is what the
-documentation naming rule in [README.ru.md](../../README.ru.md) says — `README.md`
+documentation naming rule in [README.ru.md](../README.ru.md) says — `README.md`
 and `SPEC.md` next to code keep those names in whatever language they are written,
 because GitHub shows them as the directory's front page. The `X.ru.md` suffix is
 for documents in `docs/`, where it tells the languages apart.

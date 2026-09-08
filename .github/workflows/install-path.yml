@@ -137,6 +137,68 @@ jobs:
       - name: Сборка на Darwin не сломана молча
         run: ./ярлык дарвин:проверка
 
+      # ── АРХИВ, ЗА КОТОРЫМ ХОДИТ BREW ──────────────────────────────────────
+      #
+      # Шаг ниже («формула:проверка») сверяет объявленный в формуле sha256 с
+      # архивом и КРАСНЕЕТ, когда архива нет: хеш, который никто не может
+      # сверить, — это хеш, который никто и не сверял. Архива в этой работе не
+      # собиралось никогда, поэтому шаг был красен с 0.7.9 на обеих платформах
+      # (прогон 34012604580 от 6 сентября 2026, обе работы `install-path`).
+      #
+      # ОТКУДА БЕРЁТСЯ АРХИВ — ЭТО РЕШЕНИЕ, А НЕ МЕЛОЧЬ, И ВОТ ОНО.
+      #
+      # Работа зовётся «путь установки», а путь установки начинается с того,
+      # что brew скачивает файл ПО ССЫЛКЕ ИЗ ФОРМУЛЫ и сверяет его sha256. Тот
+      # самый файл здесь и берётся — ссылкой из самой формулы, а не сборкой
+      # своими руками. Так проверяется ровно то, что случится у человека:
+      # ссылка ведёт куда обещано, и лежащий по ней архив отвечает объявленному
+      # числу.
+      #
+      # ПОЧЕМУ НЕ СОБИРАТЬ ЕГО ЗДЕСЬ ВСЕГДА — ЗАМЕРЕНО, А НЕ ПРИКИНУТО. Дерево
+      # ветки уходит вперёд выпуска: после v0.7.14 на dev лёг `394b2607`
+      # (редактор строки в repl), и архив, собранный из нынешнего дерева, весит
+      # 4 794 370 байт против 4 775 478 опубликованных, sha256
+      # 31a51749… против 7106c141…. Сборка своими руками сделала бы работу
+      # КРАСНОЙ НАВСЕГДА между выпусками — а вечно красный сторож это
+      # выключенный сторож. Дерево при этом не сломано: расхождение снимает
+      # следующий выпуск, где `bump-version` пересчитывает и версию, и хеш.
+      #
+      # НА МЕТКЕ ССЫЛКИ ЕЩЁ НЕТ: `release.yml` выкладывает архив в конце своего
+      # прогона, а эта работа идёт с ним рядом. Тогда — и только тогда — архив
+      # собирается тем же составным действием, каким его собирает `release.yml`
+      # (сборка идёт около шести минут). Проверка не пропускается ни в одном из
+      # двух случаев: в обоих у сторожа на руках настоящий архив.
+      - name: Архив выпуска — тот, за которым ходит brew
+        id: arhiv_vypuska
+        run: |
+          set -u
+          ssylka="$(sed -n 's/^  url "\(.*\)"$/\1/p' packaging/homebrew/flang.rb)"
+          if [ -z "$ssylka" ]; then
+            echo "::error::в packaging/homebrew/flang.rb не нашлось поля url — сверять нечего, и поправить надо ЭТОТ шаг" >&2
+            exit 1
+          fi
+          imya="${ssylka##*/}"
+          case "$imya" in
+            *.tar.gz) : ;;
+            *) echo "::error::ссылка формулы ведёт не на архив: $ssylka" >&2; exit 1 ;;
+          esac
+          mkdir -p output
+          echo "иду по ссылке формулы: $ssylka"
+          if curl -fL --retry 3 --retry-delay 2 -o "output/$imya" "$ssylka"; then
+            ls -l "output/$imya"
+            echo "vzyat=da" >> "$GITHUB_OUTPUT"
+            echo "архив выпуска взят по ссылке формулы — ровно тот файл, что скачает brew"
+          else
+            rm -f "output/$imya"
+            echo "vzyat=net" >> "$GITHUB_OUTPUT"
+            echo "по ссылке формулы архива нет — так бывает на метке: выпуск идёт прямо сейчас."
+            echo "Собираю архив сам, тем же действием, что и release.yml."
+          fi
+
+      - name: Собрать архив, пока выпуск не выложен
+        if: steps.arhiv_vypuska.outputs.vzyat != 'da'
+        uses: ./.github/actions/release-archive
+
       - name: Формула Homebrew сходится сама с собой
         run: ./ярлык формула:проверка
 
@@ -230,32 +292,44 @@ jobs:
       # `gtar: share: Cannot stat`, то есть работа brew ниже не доходила до
       # brew вовсе. Проверено прогоном 5 сентября 2026: та же команда со словом
       # `share` даёт код 2, со словом `runtime` — собирает архив.
-      - name: Собрать архив и упаковать той же командой, что в release.yml
-        run: |
-          set -eu
-          LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-in-c.flang --timeout 1800000
-          gtar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
-               --mtime=@0 --mode=u=rw,go=r,a+X -C output/release-c -cf - \
-               LICENSE Makefile compiler_flang.c compiler_flang.h flang.1 \
-               flang_cli.c flang_repl.c flang_runtime.c flang_runtime.h runtime \
-            | gzip -9n > "$PWD/output/flang-local-c.tar.gz"
+      # ОБЕЩАНИЕ «ТОЙ ЖЕ КОМАНДОЙ» ТЕПЕРЬ ИСПОЛНЯЕТСЯ, А НЕ ПОВТОРЯЕТСЯ СЛОВАМИ.
+      #
+      # Здесь стояла КОПИЯ шага из `release.yml`, и в имени шага было написано
+      # «той же командой». Копия разошлась с подлинником молча и в двух местах:
+      # перечисляла файлы архива руками (подлинник берёт их вычитанием) и не
+      # собирала точку раскрутки вовсе — `bootstrap/flang: No such file or
+      # directory`, работа красна с 0.7.9 (прогон 34012604580). Теперь команда
+      # одна на три работы: `.github/actions/release-archive`, и разойтись ей
+      # не с чем. Путь собранного архива действие кладёт в `$ARHIV`.
+      - name: Собрать архив тем же действием, что и release.yml
+        uses: ./.github/actions/release-archive
 
+      # ФОРМУЛУ ИЗ ФАЙЛА BREW БОЛЬШЕ НЕ СТАВИТ, И ЭТО ЗАМЕРЕНО.
+      #
+      # Здесь стояло `brew install --build-from-source ./output/tap/flang.rb`.
+      # Нынешний Homebrew отвечает на это отказом: «Homebrew requires formulae
+      # to be in a tap, rejecting: ./output/tap/flang.rb» (прогон 34263934131
+      # от 8 сентября 2026). Поэтому формула кладётся в ЛОКАЛЬНЫЙ кран, заведённый
+      # тут же. Имя крана `flang/proba` — нарочно НЕ `digitable-lol/tap`:
+      # настоящий кран трогать нельзя, его сверяет отдельный сторож.
       - name: Формула на свежий архив
         run: |
           set -eu
           # Имена переменных латиницей: оболочка берёт в имена только ASCII, и
           # «архив=…» она читает как команду. Эта ошибка в этом репозитории уже
           # случалась, в workflow публикации, и стоила шага с кодом 127.
-          archive="$PWD/output/flang-local-c.tar.gz"
+          archive="$PWD/$ARHIV"
           digest="$(shasum -a 256 "$archive" | cut -d' ' -f1)"
-          mkdir -p output/tap
+          brew tap-new flang/proba
+          kran="$(brew --repository flang/proba)"
+          mkdir -p "$kran/Formula"
           sed -e "s|^  url .*|  url \"file://${archive}\"|" \
               -e "s|^  sha256 .*|  sha256 \"${digest}\"|" \
-              packaging/homebrew/flang.rb > output/tap/flang.rb
-          brew install --build-from-source --verbose ./output/tap/flang.rb
+              packaging/homebrew/flang.rb > "$kran/Formula/flang.rb"
+          brew install --build-from-source --verbose flang/proba/flang
 
       - name: Блок test do формулы
-        run: brew test flang
+        run: brew test flang/proba/flang
 
       - name: Поставленное brew умеет печатать в C
         run: |

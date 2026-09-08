@@ -27,12 +27,22 @@
 # ни за чем: ни двоичного, ни git, ни отпечатка этой проверке не нужно.
 #
 # ── Что спрашивается ─────────────────────────────────────────────────────────
-#   • номер из имени файла (первые четыре цифры) не занят второй задачей;
+#   • номер из имени файла (первые четыре цифры) не занят второй задачей —
+#     СРАЗУ ПО ТРЁМ каталогам: `tasks/`, `tasks/completed/`, `tasks/rejected/`;
 #   • номер в шапке (`номер:`) сходится с именем файла;
-#   • номер — ровно четыре цифры.
+#   • номер — ровно четыре цифры;
+#   • у каждой задачи в `tasks/rejected/` статус «отклонена», раздел
+#     «Почему отклонена», а в нём строка `решение: кто — когда` с годом.
 #
 # Файлы без четырёх цифр в начале имени (`README.md`) задачами не считаются —
 # так же, как их не считает `flang/scripts/tasks.flang`.
+#
+# ── Почему три каталога, а не один ───────────────────────────────────────────
+# До 8 сентября 2026 сторож смотрел только в `tasks/`. Номер, занятый закрытой
+# задачей, для него был свободен, и выдать его второй раз он не мешал ничем —
+# ровно это и случилось 5 сентября с номером 1306 (задача 1652). У отклонённых
+# цена ошибки выше: к номеру привязан ДОВОД ОТКАЗА, и, достанься он чужой
+# работе, следующий прочитает «не делаем» про то, чего никто не отклонял.
 #
 # ── Как звать ────────────────────────────────────────────────────────────────
 #   sh scripts/task-numbers-guard.sh            спросить
@@ -70,37 +80,91 @@ esac
 # Вынесено в функцию, потому что `--подлог` зовёт его ДВАЖДЫ на разных каталогах
 # и сравнивает ответы. Второе воплощение правила здесь было бы ровно тем
 # «вторым читателем», который расходится с первым молча.
+# Список задач одного каталога, по строке на файл: «номер<таб>путь».
+# Имена переменных здесь СВОИ (`p_`): у оболочки локальных переменных нет, и
+# `kat=$1` внутри вспомогательной функции затирает `kat` вызывающего. Ровно на
+# этом счёт задач напечатался нулями, пока каталогов было три.
+perechen() {
+  p_kat=$1
+  [ -d "$p_kat" ] || return 0
+  ls -1 "$p_kat" 2>/dev/null | grep -E '^[0-9]{4}-.*\.md$' | while read -r p_f; do
+    printf '%s\t%s/%s\n' "$(printf '%s' "$p_f" | cut -c1-4)" "$p_kat" "$p_f"
+  done
+}
+
+# Правила, касающиеся ТОЛЬКО отклонённых: отказ без довода и без даты — это не
+# решение, а забытая задача, и через неделю её предложат снова.
+sudit_otkazy() {
+  o_kat=$1
+  o_bed=0
+  [ -d "$o_kat" ] || return 0
+  for f in $(ls -1 "$o_kat" 2>/dev/null | grep -E '^[0-9]{4}-.*\.md$' || true); do
+    status=$(grep -m1 '^статус:' "$o_kat/$f" 2>/dev/null | sed 's/^статус:[[:space:]]*//' || true)
+    case $status in
+      отклонена|отклонена\ *) ;;
+      *) printf '%s: лежит в rejected, а статус «%s» — не «отклонена»\n' "$f" "$status" >&2
+         o_bed=1 ;;
+    esac
+    if ! grep -q '^## Почему отклонена' "$o_kat/$f" 2>/dev/null; then
+      printf '%s: в отклонённой задаче нет раздела «Почему отклонена»\n' "$f" >&2
+      o_bed=1
+      continue
+    fi
+    telo=$(awk 'BEGIN{v=0} /^## Почему отклонена/{v=1;next} /^## /{if(v==1)v=0} v==1{print}' "$o_kat/$f")
+    if ! printf '%s\n' "$telo" | grep -qE '^решение: .*20[0-9][0-9]'; then
+      printf '%s: в разделе «Почему отклонена» нет строки «решение: кто — когда» с годом\n' "$f" >&2
+      o_bed=1
+    fi
+    if [ "$(printf '%s\n' "$telo" | grep -c '[^[:space:]]')" -lt 3 ]; then
+      printf '%s: довод отказа короче трёх строк — это не довод\n' "$f" >&2
+      o_bed=1
+    fi
+  done
+  return "$o_bed"
+}
+
 sudit() {
   kat=$1
   [ -d "$kat" ] || { printf 'НЕ СУДИЛ: нет каталога задач %s\n' "$kat" >&2; return 2; }
 
-  spisok=$(ls -1 "$kat" 2>/dev/null | grep -E '^[0-9]{4}-.*\.md$' || true)
+  # ТРИ каталога сразу: живой, архив сделанных и каталог отказов. Номер занят
+  # задачей в любом из них, и второй раз выдан быть не может.
+  spisok=$( { perechen "$kat"; perechen "$kat/completed"; perechen "$kat/rejected"; } | sort )
   [ -n "$spisok" ] || { printf 'НЕ СУДИЛ: в %s ни одной задачи вида NNNN-имя.md\n' "$kat" >&2; return 2; }
 
   bed=0
 
-  # Двойники по имени файла.
-  dvoyniki=$(printf '%s\n' "$spisok" | cut -c1-4 | sort | uniq -d)
+  # Двойники по номеру — где бы обе задачи ни лежали.
+  dvoyniki=$(printf '%s\n' "$spisok" | cut -f1 | sort | uniq -d)
   if [ -n "$dvoyniki" ]; then
     for n in $dvoyniki; do
       printf 'НОМЕР %s ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:\n' "$n" >&2
-      printf '%s\n' "$spisok" | grep "^$n-" | sed 's|^|  · |' >&2
+      printf '%s\n' "$spisok" | grep "^$n	" | cut -f2 | sed 's|^|  · |' >&2
     done
     bed=1
   fi
 
-  # Шапка против имени файла.
-  for f in $spisok; do
-    imya=$(printf '%s' "$f" | cut -c1-4)
-    shapka=$(grep -m1 '^номер:' "$kat/$f" 2>/dev/null | sed 's/^номер:[[:space:]]*//' || true)
-    if [ "$shapka" != "$imya" ]; then
-      printf '%s: в шапке номер «%s», а имя файла говорит «%s»\n' "$f" "$shapka" "$imya" >&2
-      bed=1
-    fi
-  done
+  # Шапка против имени файла. Список подаётся здесь-документом, а не через
+  # трубу: тело `while` за трубой идёт в ПОДОБОЛОЧКЕ, и `bed=1` в ней пропадёт
+  # молча — сторож станет зелёным по построению.
+  while IFS='	' read -r n put; do
+    [ -n "$put" ] || continue
+    shapka=$(grep -m1 '^номер:' "$put" 2>/dev/null | sed 's/^номер:[[:space:]]*//' || true)
+    [ "$shapka" = "$n" ] && continue
+    printf '%s: в шапке номер «%s», а имя файла говорит «%s»\n' "$(basename "$put")" "$shapka" "$n" >&2
+    bed=1
+  done <<KONEC_SPISKA
+$spisok
+KONEC_SPISKA
+
+  sudit_otkazy "$kat/rejected" || bed=1
 
   if [ "$bed" -eq 0 ]; then
-    printf 'номера задач целы: задач %s, двойных номеров 0\n' "$(printf '%s\n' "$spisok" | grep -c .)"
+    zhivyh=$(perechen "$kat" | grep -c . || true)
+    sdelano=$(perechen "$kat/completed" | grep -c . || true)
+    otkazov=$(perechen "$kat/rejected" | grep -c . || true)
+    printf 'номера задач целы: задач %s (открытых %s, сделанных %s, отклонённых %s), двойных номеров 0\n' \
+      "$(printf '%s\n' "$spisok" | grep -c .)" "$zhivyh" "$sdelano" "$otkazov"
   fi
   return "$bed"
 }
@@ -142,4 +206,77 @@ sudit "$TMP/tasks" || kod=$?
 echo "код $kod — зеленеет, как и должен"
 
 echo
-echo 'обе стороны показаны прогоном.'
+echo '── сторона третья: номер из completed/ занят живой задачей, ждём код 1 ──'
+zakrytyy=$(ls -1 "$TMP/tasks/completed" 2>/dev/null | grep -E '^[0-9]{4}-.*\.md$' | head -1 || true)
+if [ -n "$zakrytyy" ]; then
+  cp "$TMP/tasks/completed/$zakrytyy" "$TMP/tasks/$zakrytyy"
+  kod=0
+  sudit "$TMP/tasks" || kod=$?
+  [ "$kod" -eq 1 ] || { printf 'ждали код 1 на номере из архива, получили %s\n' "$kod" >&2; exit 1; }
+  echo "код $kod — двойник ЧЕРЕЗ каталоги пойман"
+  rm -f "$TMP/tasks/$zakrytyy"
+else
+  echo 'архива нет — сторону показать нечем (это не зелёный, это «нечем»)'
+fi
+
+echo
+echo '── сторона четвёртая: отказ без довода, ждём код 1 ──'
+mkdir -p "$TMP/tasks/rejected"
+# Номер пробы выбирается СВОБОДНЫЙ, а не вписанный числом: 9999 уже занят
+# задачей в архиве, и подлог о доводе спрятался бы за подлогом о двойнике.
+svobodnyy=$(perechen "$TMP/tasks" ; perechen "$TMP/tasks/completed" ; perechen "$TMP/tasks/rejected")
+svobodnyy=$(printf '%s\n' "$svobodnyy" | cut -f1 | sort -u | awk 'BEGIN{for(i=1000;i<=9999;i++)e[sprintf("%04d",i)]=1} {delete e[$1]} END{for(k in e){print k; exit}}')
+[ -n "$svobodnyy" ] || { echo 'свободного номера для пробы нет' >&2; exit 1; }
+cat > "$TMP/tasks/rejected/$svobodnyy-podlog-otkaz-bez-dovoda.md" <<KONEC_PODLOGA
+---
+номер: $svobodnyy
+заголовок: Подлог: отказ без довода
+статус: отклонена
+исполнитель: —
+ветка: —
+команда: любая
+карта: —
+рядом: —
+---
+
+# $svobodnyy. Подлог
+KONEC_PODLOGA
+kod=0
+sudit "$TMP/tasks" || kod=$?
+[ "$kod" -eq 1 ] || { printf 'ждали код 1 на отказе без довода, получили %s\n' "$kod" >&2; exit 1; }
+echo "код $kod — отказ без раздела «Почему отклонена» пойман"
+rm -f "$TMP/tasks/rejected/$svobodnyy-podlog-otkaz-bez-dovoda.md"
+
+echo
+echo '── сторона пятая: тот же отказ С доводом, ждём код 0 ──'
+cat > "$TMP/tasks/rejected/$svobodnyy-podlog-otkaz-s-dovodom.md" <<KONEC_PODLOGA
+---
+номер: $svobodnyy
+заголовок: Подлог: отказ с доводом
+статус: отклонена
+исполнитель: —
+ветка: —
+команда: любая
+карта: —
+рядом: —
+---
+
+# $svobodnyy. Подлог
+
+## Почему отклонена
+
+решение: проба сторожа — 8 сентября 2026
+
+Это временная задача пробы, заведённая самим сторожем во временном каталоге.
+Она показывает, что законный отказ проходит, а не только что незаконный
+краснеет: сторож, умеющий лишь краснеть, ничем не лучше сторожа, умеющего лишь
+зеленеть.
+KONEC_PODLOGA
+kod=0
+sudit "$TMP/tasks" || kod=$?
+[ "$kod" -eq 0 ] || { printf 'ждали код 0 на законном отказе, получили %s\n' "$kod" >&2; exit 1; }
+echo "код $kod — законный отказ принят"
+rm -f "$TMP/tasks/rejected/$svobodnyy-podlog-otkaz-s-dovodom.md"
+
+echo
+echo 'все пять сторон показаны прогоном.'

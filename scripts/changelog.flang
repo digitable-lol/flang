@@ -258,7 +258,7 @@
 
 тотальная функция «Служебные корни»
   возвращает список строки
-  ["flang/SPEC.md", "flang/PLAN.md", "flang/cat", "flang/scripts", "flang/test", "flang/проверки", "docs", "benchmarks", "scripts", ".github", ".gitattributes", ".gitignore", "AGENTS.md", "CONTRIBUTING.md", "LICENSE", "LICENSE-RU.md", "MIGRATION.md", "README.md", "README.ru.md", "package-lock.json", "tsconfig.json", "dist", "node_modules", "output", "$ВЫВОД", ".claude", "svod.mjs", "test", "tools", "action.yml", ".rab", "fspec", "web"]
+  ["flang/SPEC.md", "flang/PLAN.md", "flang/cat", "flang/scripts", "flang/test", "flang/проверки", "docs", "benchmarks", "scripts", ".github", ".gitattributes", ".gitignore", ".ai", "AGENTS.md", "CONTRIBUTING.md", "LICENSE", "LICENSE-RU.md", "MIGRATION.md", "README.md", "README.ru.md", "package-lock.json", "tsconfig.json", "dist", "node_modules", "output", "$ВЫВОД", ".claude", "svod.mjs", "test", "tools", "action.yml", ".rab", "fspec", "web"]
 
 тотальная функция «Не изменение»
   возвращает список строки

@@ -247,7 +247,7 @@ static char *repl_read_all(FILE *stream, size_t *length) {
  * СОБРАННОГО бинарника. Иначе `flang --version` однажды назвал бы версию,
  * которой нет ни в одном релизе.
  */
-#define FLANG_VERSION "0.7.14"
+#define FLANG_VERSION "0.7.15"
 
 /*
  * ОТПЕЧАТОК ОБОЛОЧКИ: восемь знаков sha256 этого файла без самой этой строки.

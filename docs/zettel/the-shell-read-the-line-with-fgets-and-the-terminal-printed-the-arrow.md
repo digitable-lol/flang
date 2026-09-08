@@ -3,7 +3,7 @@
 Вопрос владельца 7 сентября 2026: почему в `flang repl` стрелка печатает
 `^[[A`, Backspace виден знаком, а ⌥← даёт `^[b`, и нельзя ли взять
 [flang-tui](https://github.com/digitable-lol/flang-tui). Замер — задача
-[3636](../../tasks/3636-the-repl-edits-the-line-and-wears-digitable-colours.md).
+[3636](../../tasks/completed/3636-the-repl-edits-the-line-and-wears-digitable-colours.md).
 
 **Где живёт оболочка.** `flang/src/emit/c/flang_repl.c` — рукописный C, а не
 печать из `flang/self/**`. Бэкенд C увозит его в семя дословно и приписывает

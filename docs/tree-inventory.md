@@ -65,8 +65,8 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 108 | 21 606 | 97 | 14 544 <!-- СНЯТО 2026-09-08 долг файлов/строк оболочки = 97/14544, планом «Опись дерева по языкам» (было 96/14 267 тем же днём: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-08 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 108 --><!-- СНЯТО 2026-09-08 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 21606 --> |
-| C | 38 | 794 155 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-08 строк-в *.c,*.h = 794155 --> |
+| оболочка | 110 | 22 424 | 97 | 14 544 <!-- СНЯТО 2026-09-08 долг файлов/строк оболочки = 97/14544, планом «Опись дерева по языкам» (было 96/14 267 тем же днём: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-08 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 110 --><!-- СНЯТО 2026-09-08 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 22424 --> |
+| C | 38 | 794 192 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-08 строк-в *.c,*.h = 794192 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 23 | 8 022 | 16 | 3 843 <!-- СНЯТО 2026-09-06 файлов *.py = 23 --><!-- СНЯТО 2026-09-06 строк-в *.py = 8022 --> |
 | HTML | 6 | 1 250 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.html = 6 --><!-- СНЯТО 2026-09-06 строк-в *.html = 1250 --> |

@@ -50,7 +50,7 @@ signature mismatch`, на 70 и дальше — `RuntimeError: memory access ou
 bounds`.
 
 **Почему это не мелочь.** Множество отказов flang **замкнуто и вычислимо**
-(`flang/src/failures.mjs`), и непокрытый отказ — ошибка сборки
+(`flang/self/failures.flang`), и непокрытый отказ — ошибка сборки
 (`FLANG_UNCOVERED_FAILURE`). Ни «смерть вкладки», ни `memory access out of
 bounds`, ни `function signature mismatch` в это множество не входят и входить не
 должны. Пока они были достижимы, замкнутость не была правдой — а замкнутость и

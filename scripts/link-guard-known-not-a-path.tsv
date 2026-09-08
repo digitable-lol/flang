@@ -75,7 +75,6 @@ docs/site/shortener.ru.md	flang/stdlib/view.flang	явное отрицание 
 editors/vscode/README.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
 flang/SPEC.md	json.py	учебный/иллюстративный пример на C или Python, не файл проекта
 flang/SPEC.md	факты.json	иллюстративный пример входа в SPEC.md, не файл
-docs/ct/sets.md	scripts/sync-flang-vendor.mjs	план: пункт списка в SETS.md, не заведён
 flang/proof/SPEC.md	…-english.flang	шаблон-многоточие в имени, не файл
 tasks/0049-the-last-javascript-leaves-the-tree.md	work.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/0060-a-function-promises-its-cost.md	driver.c	учебный/иллюстративный пример на C или Python, не файл проекта

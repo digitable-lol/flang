@@ -121,8 +121,7 @@ whatever the seed contains.
 
 Three changes to the proof kernel were lost this way in a single day, 21–22
 August 2026: the finiteness proviso, the induction principle over strings, and
-the conjunction rule. The guard that used to catch it
-(`flang/test/self-bootstrap.test.mjs`) was deleted along with the JavaScript
+the conjunction rule. The guard that used to catch it was deleted along with the JavaScript
 implementation, and from that day nobody checked the seed at all.
 
 Two checks do it now, and they answer different questions.

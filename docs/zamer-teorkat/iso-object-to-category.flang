@@ -1,7 +1,7 @@
 модуль «Measurement isomorphism from object to category»
-  использует «Orders» из "../../examples/cat/modules/orders.flang"
-  использует «Payments» из "../../examples/cat/modules/payments.flang"
-  использует «Shipping» из "../../examples/cat/modules/shipping.flang"
+  использует «Orders» из "../../flang/ct/modules/orders.flang"
+  использует «Payments» из "../../flang/ct/modules/payments.flang"
+  использует «Shipping» из "../../flang/ct/modules/shipping.flang"
 
 // ХОД ВЛАДЕЛЬЦА, ЗАПИСАННЫЙ ДОСЛОВНО.
 //

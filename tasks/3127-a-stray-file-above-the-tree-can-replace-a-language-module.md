@@ -83,20 +83,20 @@ $ echo $?
 | имя модуля | чужой файл | что перекрывает в дереве |
 |---|---|---|
 | «JSON» | `/srv/tmp/json.baseline.flang` | `flang/stdlib/json.flang` |
-| «Лексер flang» | `b-lexer-87.flang`, `b-lexer-orig.flang`, `b-lexer-orig2.flang` | `flang/self/lexer.flang` |
-| «Проверка типов» | `types.b1.flang`, `types.base.flang` | `flang/self/types.flang` |
-| «Сведение к допущениям» | `base-kernel.flang`, `k-storona.flang`, `kernel-stvol.flang`, `pk-backup-1787489359.flang`, `pk-new.flang` | `flang/self/proof-kernel.flang` |
-| «Compiler flang» | `sudya-compiler-orig.flang`, `sudya-compiler-orig2.flang`, `sudya-compiler-s-sloyami.flang` | `flang/self/bootstrap/compiler.flang` |
-| «Вычислитель flang» | `interp-prev-base.flang`, `interpret-slovar.flang` | `flang/self/interpret.flang` |
-| «Печать в C» | `emitc-b1ok.flang`, `emitc-backup-1482916.flang` | `flang/self/emit-c.flang` |
-| «Планировщик конкурентности» | `conc-slovar.flang` | `flang/self/conc.flang` |
-| «Планировщик узла» | `poddelka.flang`, `poddelka2.flang` | `flang/conc/scheduler.flang` |
-| «Запись доказательства» | `zp-do.flang` | `flang/self/zapis.flang` |
-| «Сверщик доказательств» | `sv-do.flang` | `flang/proof/сверщик.flang` |
-| «Подделки ядра» | `pod-head.flang`, `pod-mine.flang` | `flang/scripts/kernel-forgeries.flang` |
+| «Лексер flang» | `/srv/tmp/b-lexer-87.flang`, `/srv/tmp/b-lexer-orig.flang`, `/srv/tmp/b-lexer-orig2.flang` | `flang/self/lexer.flang` |
+| «Проверка типов» | `/srv/tmp/types.b1.flang`, `/srv/tmp/types.base.flang` | `flang/self/types.flang` |
+| «Сведение к допущениям» | `/srv/tmp/base-kernel.flang`, `/srv/tmp/k-storona.flang`, `/srv/tmp/kernel-stvol.flang`, `/srv/tmp/pk-backup-1787489359.flang`, `/srv/tmp/pk-new.flang` | `flang/self/proof-kernel.flang` |
+| «Compiler flang» | `/srv/tmp/sudya-compiler-orig.flang`, `/srv/tmp/sudya-compiler-orig2.flang`, `/srv/tmp/sudya-compiler-s-sloyami.flang` | `flang/self/bootstrap/compiler.flang` |
+| «Вычислитель flang» | `/srv/tmp/interp-prev-base.flang`, `/srv/tmp/interpret-slovar.flang` | `flang/self/interpret.flang` |
+| «Печать в C» | `/srv/tmp/emitc-b1ok.flang`, `/srv/tmp/emitc-backup-1482916.flang` | `flang/self/emit-c.flang` |
+| «Планировщик конкурентности» | `/srv/tmp/conc-slovar.flang` | `flang/self/conc.flang` |
+| «Планировщик узла» | `/srv/tmp/poddelka.flang`, `/srv/tmp/poddelka2.flang` | `flang/conc/scheduler.flang` |
+| «Запись доказательства» | `/srv/tmp/zp-do.flang` | `flang/self/zapis.flang` |
+| «Сверщик доказательств» | `/srv/tmp/sv-do.flang` | `flang/proof/сверщик.flang` |
+| «Подделки ядра» | `/srv/tmp/pod-head.flang`, `/srv/tmp/pod-mine.flang` | `flang/scripts/kernel-forgeries.flang` |
 | «Сторож умений ядра» | `/srv/tmp/dokazuemyy/ст-ум.flang` | `scripts/kernel-abilities-guard.flang` |
-| «Спека 1: потолок скидки» | `spec-backup.flang` | `fspec/spec/01-discount-cap.flang` |
-| «Подделка примером под квантором» | `dyra.flang` | `flang/test/fixtures/poddelka-primer-pod-kvantorom.flang` |
+| «Спека 1: потолок скидки» | `/srv/tmp/spec-backup.flang` | `fspec/spec/01-discount-cap.flang` |
+| «Подделка примером под квантором» | `/srv/tmp/dyra.flang` | `flang/test/fixtures/poddelka-primer-pod-kvantorom.flang` |
 | «Длина списка», «Отрезок», «Градины», «Проба», «Ярлыки» | ещё 19 файлов | примеры и корпус |
 
 **Живых подмен сегодня пять**, и все пять — «JSON»:

@@ -1,7 +1,7 @@
 # The catalogue of examples
 
 Every example program in flang lives in one directory — `examples/`: <!-- СНЯТО 2026-09-06 файлов examples/*.flang = 185 --> 185 files in
-twenty-one sets and one full-size project. There is no second directory of examples
+twenty-two sets and one full-size project. There is no second directory of examples
 in the repository: until 24 August 2026 a hundred and fifty programs stood a floor
 below, and they could not be found at a glance.
 
@@ -13,13 +13,14 @@ The number is recounted by one command:
 | Directory | `.flang` files | About what |
 |---|---:|---|
 | [`leetcode/`](examples/leetcode) | 82 | solutions to LeetCode problems; every file is self-contained on purpose — why, is said in [`index.json`](examples/leetcode/index.json). The account of this set is [82 problems](case-studies.html) |
-| [`rosetta/`](examples/rosetta) | 28 | the canonical Rosetta Code tasks |
+| [`rosetta/`](examples/rosetta) | 28 | the canonical Rosetta Code tasks, each on the Russian and on the English surface of the language. The account of the set is [Rosetta Code](rosetta.html) |
 | [`web/`](examples/web) | 13 | HTTP: an orders service, the [URL shortener](shortener.html) and a marketplace API of three services — catalogue, cart, orders |
 | [`io/`](examples/io) | <!-- СНЯТО 2026-09-03 файлов examples/io/*.flang = 9 --> 9 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet |
 | [`crypto/`](examples/crypto) | 8 | AES, ECDSA, X25519, X.509, a revocation list, a TLS hello — on real test vectors that lie next to them |
 | [`library-api/`](examples/library-api) | 7 | the domain half of a library REST service: lending, catalogue, fines. The only set that shows a **project layout** in full |
 | [`db/`](examples/db) | <!-- СНЯТО 2026-09-03 файлов examples/db/*.flang = 6 --> 6 | talking to PostgreSQL (SCRAM included), to Redis, and reading an SQLite file |
 | [`service-on-processes/`](examples/service-on-processes) | 4 | a service on processes rather than on a three-function example: the claim about an own alternative to OTP, checked at full size |
+| [`frameworks/`](examples/frameworks) | <!-- СНЯТО 2026-09-08 файлов examples/frameworks/*.flang = 4 --> 4 | a flang decision core under a JavaScript framework host: NestJS, React, Vue. The core is printed to JS and lies next to the host — see below |
 | [`https/`](examples/https) | 3 | TLS: the RFC 8448 records, the system trust store, a hello to a real host |
 | [`proof-probes/`](examples/proof-probes) | 3 | probes of the proof core itself: the typed-AST door, a refused generic descent, a variant with fields |
 | [`driver/`](examples/driver) | 2 | hardware drivers where every function must provably terminate: a UART and an MSI |
@@ -58,15 +59,57 @@ refusal code rather than skipped in silence.
 
 ## About `library-api`
 
-`library-api` stands apart in this row, and that is the only thing in which the
-sets here differ from one another. The other twenty-one are programs: a file with
-declarations that carry their own examples. `library-api` is a project: seven flang
+`library-api` stands apart in this row. The other sets are programs: a file with
+declarations that carry their own examples (in `frameworks/` a TypeScript host lies
+next to such files, see below). `library-api` is a project: seven flang
 modules, one of them its own, with a directory layout of its own. The example shows
 not HTTP but a border: what moves into the language, where a piece of logic has a
 runnable example, and what stays with the host. The host here was on Node and was
 removed on 20 August 2026 together with the rest of the JavaScript scaffolding; the
 flang half remained and is checked by a command. The rules drawn from this layout
 are collected in the [repository layout](project-layout.html).
+
+## Under JS frameworks
+
+`examples/frameworks/` — three applications with one border: the core of the logic
+is written in flang and printed to JavaScript (`bootstrap/flang emit … --target js`),
+and the host is a JS framework. The host holds the socket, HTTP, form state and
+rendering, and asks the core for the decision. The mark of the border is the same as
+in `examples/host-boundary/` with a C host: flang is for what **decides**; the host
+keeps what **waits and holds control between decisions**.
+
+| Directory | Host | Core | What the core decides |
+|---|---|---|---|
+| `examples/frameworks/nestjs-orders/` | NestJS | `core/orders-api.flang` | an orders REST service: query-string parsing, required fields, routing by method and path, the response code (201/200/400/404/405) |
+| `examples/frameworks/react-invoice/` | React | `core/cart.flang`, `core/catalog.flang` | a cart total in whole kopecks: the sum, discount steps, the total, invoice lines |
+| `examples/frameworks/vue-roman/` | Vue | `core/roman-numerals.flang` | Roman numerals there and back in the range 1..3999 |
+
+The printed module lies in `printed/` of each example and is self-contained: no
+dependencies, runs both in Node and in the browser. The host imports it directly
+(`src/orders.controller.ts`, `src/App.tsx`, `src/App.vue`). Values at the seam:
+list → array, record → object; records are built by `sozdat…` factories from objects
+with Russian keys. Function names are transliterations of the Russian ones:
+«Обработать запрос» → `obrabotatZapros`, «Сумма корзины» → `summaKorziny`,
+«В римские» → `vRimskie`.
+
+What is checked on the tree (measured 8 September 2026): every core passes
+`bootstrap/flang check`; a fresh `emit --target js` matches the code in `printed/`
+(on top of the code there is a header with the licence and the reprint command);
+the printed module answers correctly under `node` by a direct call:
+
+```bash
+cd examples/frameworks/vue-roman && node --input-type=module -e \
+  'import("./printed/roman_numerals.js").then(m => console.log(m.vRimskie(2024), m.izRimskih("MCMLXXXIV")))'
+# MMXXIV 1984
+```
+
+Building the host is done with the framework's own commands from each example's
+`package.json`: `npm install`, `npm run typecheck`, `npm run build`. It is not
+checked on the tree: it needs packages from the network. `node_modules/` and `dist/`
+are not part of the examples. To reprint a core, run from the root of the tree, for
+example
+`bootstrap/flang emit examples/frameworks/vue-roman/core/roman-numerals.flang --target js --out examples/frameworks/vue-roman/printed`;
+the files in `printed/` are printed by the compiler and are not edited by hand.
 
 ## Where to go next
 

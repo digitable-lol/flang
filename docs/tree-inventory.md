@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 281 файл вне flang, долг вне JavaScript — 107 при потолке 63
-<!-- СНЯТО 2026-09-08 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 281 -->
+# Опись дерева по языкам: 283 файла вне flang, долг вне JavaScript — 109 при потолке 63
+<!-- СНЯТО 2026-09-08 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 283 -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
@@ -65,7 +65,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 108 | 21 483 | 97 | 14 544 <!-- СНЯТО 2026-09-08 долг файлов/строк оболочки = 97/14544, планом «Опись дерева по языкам» (было 96/14 267 тем же днём: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-08 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 108 --><!-- СНЯТО 2026-09-08 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 21483 --> |
+| оболочка | 110 | 21 950 | 99 | 15 148 <!-- СНЯТО 2026-09-08 долг файлов/строк оболочки = 99/15148, планом «Опись дерева по языкам» (было 97/14 544 тем же днём: решение ADR-0022 завело scripts/flangrc.sh и scripts/flangrc-guard.sh, 604 строки на двоих; ещё раньше 96/14 267 — задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-08 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 110 --><!-- СНЯТО 2026-09-08 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 21950 --> |
 | C | 38 | 793 451 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-08 строк-в *.c,*.h = 793451 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 23 | 8 022 | 16 | 3 843 <!-- СНЯТО 2026-09-06 файлов *.py = 23 --><!-- СНЯТО 2026-09-06 строк-в *.py = 8022 --> |
@@ -128,7 +128,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 Для файла оболочки без расширения ВНЕ `.githooks/` дыра остаётся открытой —
 закрыть её нечем, кроме чтения первой строки, а этого опись не делает.
 
-**Долг вне JavaScript — 107 файлов, 15 567 строк.** JavaScript опись считает, но
+**Долг вне JavaScript — 109 файлов, 16 171 строка.** JavaScript опись считает, но
 по кучам не раскладывает: его раскладывает
 [`javascript-inventory.md`](javascript-inventory.md), и два разных разбора
 одного языка разъехались бы на первой же правке. Числа этой описи и той
@@ -184,7 +184,7 @@ flang в C.
 Оболочка при этом ничего нового на путь сборки не приносит: `sh`, `make`, `cc`
 и `cmp` там нужны и так, а Node не нужен ни на одном шаге.
 
-## Долг: 107 файлов, 15 567 строк
+## Долг: 109 файлов, 16 171 строка
 
 Снято прогоном `./ярлык опись:языки` 5 сентября 2026, уже по починенному
 правилу (задача 7405) и с поправкой на `flang/проверки/обход-self.sh`

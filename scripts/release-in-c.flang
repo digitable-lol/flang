@@ -46,9 +46,9 @@
 // — из `cpp/`. Разложи иначе — и `--target cpp` не заработает, как бы верно ни
 // лежало всё прочее (это нашла задача 8460).
 //
-// Весит всё девять каталогов 2 457 813 байт в 34 файлах — то есть спор о
+// Весит всё десять каталогов 2 533 815 байт в 35 файлах — то есть спор о
 // раздувании архива не стоит того, чтобы его вести.
-// СНЯТО 2026-09-06 файлов flang/src/emit/*/* = 34
+// СНЯТО 2026-09-08 файлов flang/src/emit/*/* = 35
 
 // ── раскладка ───────────────────────────────────────────────────────────────
 
@@ -80,10 +80,10 @@
 // заведение каталога в языке нет.
 тотальная функция «Цели печати»
   возвращает список строки
-  обеспечивает «длина постоянного списка — Цели печати» (длина результат) равен 9
-  пример «Девять, как в справке двоичного»
-    ожидается ["c", "cpp", "csharp", "elixir", "go", "java", "js", "python", "rust"]
-  ["c", "cpp", "csharp", "elixir", "go", "java", "js", "python", "rust"]
+  обеспечивает «длина постоянного списка — Цели печати» (длина результат) равен 10
+  пример «Десять, как каталогов под flang/src/emit»
+    ожидается ["c", "cpp", "csharp", "elixir", "go", "java", "js", "python", "rust", "ts"]
+  ["c", "cpp", "csharp", "elixir", "go", "java", "js", "python", "rust", "ts"]
 
 // ВСЕ файлы девяти каталогов, а не только те, что читает цель C. Путь дан от
 // корня рантаймов, потому что и в архиве, и в `share/flang` раскладка та же —
@@ -95,12 +95,12 @@
 // сломается молча при первой такой правке.
 //
 // Порядок внутри цели `c` тот же, что в её настройках, — так его проще сверять
-// глазами с таблицей целей в `flang_repl.c`. Всего файлов 34.
-// СНЯТО 2026-09-06 список scripts/release-in-c.flang:113 = 34
+// глазами с таблицей целей в `flang_repl.c`. Всего файлов 35.
+// СНЯТО 2026-09-08 список scripts/release-in-c.flang:114 = 35
 тотальная функция «Файлы рантайма»
   возвращает список строки
-  обеспечивает «длина постоянного списка — Файлы рантайма» (длина результат) равен 34
-  пример «Тридцать четыре файла девяти целей»
+  обеспечивает «длина постоянного списка — Файлы рантайма» (длина результат) равен 35
+  пример «Тридцать пять файлов десяти целей»
     ожидается ["c/flang_runtime.h", "c/flang_runtime.c", "c/flang_cli.c", "c/flang_repl.c", "c/flang_conc.h", "c/flang_conc.c",
                "cpp/flang_cpp.hpp",
                "csharp/Ctx.cs", "csharp/Field.cs", "csharp/Flang.cs", "csharp/FlangCli.cs", "csharp/FlangError.cs", "csharp/Value.cs",
@@ -109,7 +109,8 @@
                "java/Ctx.java", "java/Field.java", "java/Flang.java", "java/FlangCli.java", "java/FlangError.java", "java/Value.java",
                "js/flang_cli.js", "js/flang_conc.js", "js/flang_host_browser.js", "js/flang_host_node.js", "js/flang_io.js",
                "python/flang_cli.py", "python/flang_io.py", "python/flang_runtime.py",
-               "rust/flang_cli.rs", "rust/flang_runtime.rs"]
+               "rust/flang_cli.rs", "rust/flang_runtime.rs",
+               "ts/tsconfig.json"]
   ["c/flang_runtime.h", "c/flang_runtime.c", "c/flang_cli.c", "c/flang_repl.c", "c/flang_conc.h", "c/flang_conc.c",
    "cpp/flang_cpp.hpp",
    "csharp/Ctx.cs", "csharp/Field.cs", "csharp/Flang.cs", "csharp/FlangCli.cs", "csharp/FlangError.cs", "csharp/Value.cs",
@@ -118,7 +119,8 @@
    "java/Ctx.java", "java/Field.java", "java/Flang.java", "java/FlangCli.java", "java/FlangError.java", "java/Value.java",
    "js/flang_cli.js", "js/flang_conc.js", "js/flang_host_browser.js", "js/flang_host_node.js", "js/flang_io.js",
    "python/flang_cli.py", "python/flang_io.py", "python/flang_runtime.py",
-   "rust/flang_cli.rs", "rust/flang_runtime.rs"]
+   "rust/flang_cli.rs", "rust/flang_runtime.rs",
+   "ts/tsconfig.json"]
 
 // Что в каталоге точки НЕ относится к точке: пояснение и продукты сборки.
 тотальная функция «Не точка»
@@ -359,9 +361,9 @@
 // `добавить` унесло бы его в хвост, за имена, и `mkdir` понял бы его каталогом.
 тотальная функция «Доводы заведения»
   возвращает список строки
-  обеспечивает «длина постоянного списка — Доводы заведения» (длина результат) равен 10
-  пример «Ключ и девять каталогов»
-    ожидается ["-p", "../output/release-c/runtime/c", "../output/release-c/runtime/cpp", "../output/release-c/runtime/csharp", "../output/release-c/runtime/elixir", "../output/release-c/runtime/go", "../output/release-c/runtime/java", "../output/release-c/runtime/js", "../output/release-c/runtime/python", "../output/release-c/runtime/rust"]
+  обеспечивает «длина постоянного списка — Доводы заведения» (длина результат) равен 11
+  пример «Ключ и десять каталогов»
+    ожидается ["-p", "../output/release-c/runtime/c", "../output/release-c/runtime/cpp", "../output/release-c/runtime/csharp", "../output/release-c/runtime/elixir", "../output/release-c/runtime/go", "../output/release-c/runtime/java", "../output/release-c/runtime/js", "../output/release-c/runtime/python", "../output/release-c/runtime/rust", "../output/release-c/runtime/ts"]
   свёртка («Цели печати») начиная с ["-p"] как всё и цель
     добавить («Каталог цели в архиве» от цель) к всё
 
@@ -407,9 +409,9 @@
 // У `cp` в журнале лежат два имени, и содержимое не лежит вовсе.
 //
 // Читается по-прежнему то, у чего стоит сторож происхождения: шапку иначе не
-// увидеть. Это 34 файла рантайма девяти целей на 2 457 813 байт — журнал с
+// увидеть. Это 35 файлов рантайма десяти целей на 2 533 815 байт — журнал с
 // ними остаётся читаемым, а 25 МБ точки раскрутки в него больше не попадают.
-// СНЯТО 2026-09-06 файлов flang/src/emit/*/* = 34
+// СНЯТО 2026-09-08 файлов flang/src/emit/*/* = 35
 тотальная функция «Дальше по очереди»
   принимает очередь: список «Копия», сделано: число
   возвращает «Продолжение»

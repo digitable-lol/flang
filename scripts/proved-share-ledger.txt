@@ -856,7 +856,8 @@ f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.flang
 b2de588854f4726fc6d0bf03e1db7858|28|25|2|0|0|flang/scripts/tasks.flang
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.flang
 ae47a476c0aa3a419fcd566e9a5ca799|1|0|1|0|0|flang/scripts/жаргон-образцы.flang
-8d5b3563e183f50b5756cd207d1e60e6|4|×|×|×|0|flang/self/bootstrap/compiler.flang
+5e25008c62a23af432bc3b5546bbacef|4|×|×|×|0|flang/self/bootstrap/compiler.flang
+fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-source.flang
 ad73c9e1fa30c764827a6e691c908703|153|84|32|37|0|flang/self/bounded.flang
 a65e584e8201199562b70129276a7da0|98|48|22|28|0|flang/self/builtins.flang
 ad1ac900e42f9208ee148029edcc821c|10|6|0|4|0|flang/self/carriers.flang
@@ -872,9 +873,10 @@ db8148fa41aba54509a56dfb508e7d57|20|10|0|10|0|flang/self/distributive.flang
 caaf904e4d7d18d2a71461497aec5b31|142|88|4|50|0|flang/self/emit-elixir.flang
 e59799ce2a54b21d3850df779b84162a|194|148|7|39|0|flang/self/emit-go.flang
 878d6d6ef38e40dc7ed2166fd3588d35|205|137|7|61|0|flang/self/emit-java.flang
-55ff0213154f4aa6e2f597f806ab0f89|152|145|0|4|0|flang/self/emit-js.flang
+d716fe052f0b062a45a29f4156e34603|156|152|0|4|0|flang/self/emit-js.flang
 813fb2c0ab486e6d8d1e726880ae2fb9|646|584|24|38|0|flang/self/emit-python.flang
 d9b007ea6b879fc0b01153a1ab4293b1|114|79|0|35|0|flang/self/emit-rust.flang
+72150e5aad967e98fb24fdecbaedd803|1|1|0|0|0|flang/self/emit-ts.flang
 bc5cbdc5167ec7f3809e1bea340b6442|156|79|24|53|0|flang/self/factcheck.flang
 6109c2e12ae4f40729e4dd5a7e62ff41|138|90|3|45|0|flang/self/failures.flang
 52c2edddee3fc0281a82077be7132973|38|17|21|0|0|flang/self/functor-oracle.flang
@@ -1114,7 +1116,7 @@ cd5ba8e6506a5d6b59898333c0d061b2|26|26|0|0|0|scripts/plan-across-targets.flang
 b7b038af83dfc2fd177142569ecab833|33|30|0|0|0|scripts/region-in-c-target.flang
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.flang
 1083cc30fab03e5f16e2060519b7c8c1|8|8|0|0|0|scripts/release-guard.flang
-6532ecb8603b4f6eb127b8d911d1d5d9|26|22|2|0|0|scripts/release-in-c.flang
+b2defbc51e2b11a46d19c284e53069eb|26|22|2|0|0|scripts/release-in-c.flang
 da53a2289cac09470f6f1d20ee509c82|10|7|3|0|0|scripts/reprint-freshness.flang
 10960d449237ada36a5330f39f6695a3|3|2|1|0|0|scripts/stale-pages-guard.flang
 d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/string-measure.flang

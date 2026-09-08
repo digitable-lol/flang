@@ -1,12 +1,12 @@
-# Опись дерева по языкам: 280 файлов вне flang, долг вне JavaScript — 107 при потолке 63
-<!-- СНЯТО 2026-09-08 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 280 -->
+# Опись дерева по языкам: 281 файл вне flang, долг вне JavaScript — 107 при потолке 63
+<!-- СНЯТО 2026-09-08 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 281 -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
 JavaScript: файлов 107, строк 15567, потолок файлов 63» — «ДОЛГ ВЫРОС».
 Разбор и перевод — [задача
 4838](../tasks/4838-the-debt-outside-flang-crossed-its-ceiling.md), счёт по
-родам — [задача 9688](../tasks/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
+родам — [задача 9688](../tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
 починка самого правила и первые закрытия — [задача
 7405](../tasks/7405-dolg-vne-flang-razobran-po-razryadam-i-pravilo-scheta-pochineno.md).
 
@@ -65,7 +65,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 107 | 20 985 | 96 | 14 267 <!-- СНЯТО 2026-09-08 долг файлов/строк оболочки = 96/14267, планом «Опись дерева по языкам» (было 90/11 645 на 5 сентября) --><!-- СНЯТО 2026-09-08 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 107 --><!-- СНЯТО 2026-09-08 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 20985 --> |
+| оболочка | 108 | 21 262 | 97 | 14 544 <!-- СНЯТО 2026-09-08 долг файлов/строк оболочки = 97/14544, планом «Опись дерева по языкам» (было 96/14 267 тем же днём: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-08 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 108 --><!-- СНЯТО 2026-09-08 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 21262 --> |
 | C | 38 | 782 349 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-08 строк-в *.c,*.h = 782349 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 23 | 8 022 | 16 | 3 843 <!-- СНЯТО 2026-09-06 файлов *.py = 23 --><!-- СНЯТО 2026-09-06 строк-в *.py = 8022 --> |
@@ -258,7 +258,7 @@ Python 16, awk 1.
 Закрыто шесть файлов, и все шесть — одного рода: **записки отдельных прогонов,
 прибитые к чужим машинам.** Ни один не запускался из свежего клона, потому что
 первой же строкой делал `cd` на путь, которого в дереве нет. Разбор рода —
-[задача 9688](../tasks/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
+[задача 9688](../tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
 там же они названы поимённо.
 
 Пути ниже в дереве уже не лежат, поэтому названы в блоке, а не ссылками:

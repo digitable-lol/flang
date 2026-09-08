@@ -167,7 +167,7 @@ is part of what is compared.
 
 ### 3.3 What a measure does not buy: bounds
 
-Termination is not a time bound. A separate analysis (`flang/src/bounded.mjs`)
+Termination is not a time bound. A separate analysis (`flang/self/bounded.flang`)
 computes a polynomial upper bound on turns as a function of input size, with
 numeric coefficients rather than an O(·) — `turns ≤ 12·n + 7` can be compared
 against a scheduler quantum, "linear" cannot. It covers non-recursive functions,

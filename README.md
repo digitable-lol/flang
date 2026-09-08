@@ -5,7 +5,8 @@
 flang is a pure functional language with strict static typing, written in words rather than
 symbols. A function carries its examples and its claims about the result next to its body; the
 compiler checks the file before anything runs, and `flang emit` prints a checked program into a
-target language — C, C++, Go, Rust, Java, JavaScript, Elixir, Python or C#. There is one compiler,
+target language — C, C++, Go, Rust, Java, JavaScript, TypeScript, Elixir, Python or C#. There is one
+compiler,
 and it is written in flang itself; the tree carries it already printed to C99, so building it
 needs a C compiler and `make` and nothing else.
 
@@ -37,18 +38,35 @@ independently, rather than takes on the kernel's word:
 
 ```bash
 sh flang/proof/доля-корпуса.sh --набор корпус --проигрыванием
-# → доля-проигрыванием = 409 / 617 = 66.29 %      (8 September 2026, this tree)
+# → доля-проигрыванием = 517 / 665 = 77.74 %      (8 September 2026, this tree)
 # → порог Г4 = 95 %; добрала ли доля порога: НЕТ
 sh scripts/доказуемость.sh          # → НЕ ДОКАЗУЕМ, exit 1
 ```
 
-The second command is the verdict in one word: the language is **not** formally provable today.
-The checker still contains a step that proves an equation by computing it instead of replaying
-recorded steps, and while that step is there the share above is not an independent measure. Both
+Read the fraction as a fraction. The numerator, 517, is what the C checker established without
+asking the kernel: 390 obligations replayed from the recorded moves, 93 recomputed on the spot
+where the record says «по примеру» or «по свойству», and 34 totality nodes walked again
+structurally. The denominator, 665, is every obligation in that record set, so the 148 that are
+missing from the numerator are the honest cost: 109 premises and claims and 17 steps that the
+checker takes on the kernel's word, 8 closed by computing an identity rather than by replaying it,
+and 14 belonging to the one record of 86 the checker refused outright. The denominator is what
+caps the number: it counts the deliberate forgeries the record set keeps, and a forgery is never
+supposed to be replayable, so 100 % is not the target — the gate asks for 95 %.
+
+The second command is the verdict in one word: the language is **not** formally provable today,
+and it exits 1. The reason is not the share. The checker still contains a step that proves an
+equation by computing it instead of replaying recorded steps (`перепиской` appears twice in
+`сверщик.c`), and `scripts/доказуемость.sh` stops on that alone: while a checker can compute, the
+share it reports is not an independent measure and the rest of the run is beside the point. Both
 numbers are printed by a run, and they will move; the commands are how to re-take them. The
 longer account is on the site — [What is proved and what is
 not](https://digitable-lol.github.io/flang/en/what-is-proved.html) — and in
 [`docs/what-blocks-1-0.md`](docs/what-blocks-1-0.md).
+
+What the compiler hands the checker grew on 8 September 2026: the kernel now prints the moves of
+its proof for two families instead of asserting the conclusion — «тождество после переписки», 18
+places, and «разбор цели по условию», 33 places — and the checker replays them. That is where most
+of the 108 obligations the numerator gained came from.
 
 Two surfaces the binary does not judge at all: the categorical surface (monoids, monads, functors,
 declared properties) and processes with supervision. `flang check` names what it left unchecked
@@ -79,8 +97,9 @@ flang --version
 The Homebrew formula is [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb), served
 from [`digitable-lol/homebrew-tap`](https://github.com/digitable-lol/homebrew-tap); the asdf
 plugin (mise reads it too) is [`packaging/asdf/`](packaging/asdf/README.md), published as
-[`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang) and kept here as the submodule
-`packaging/asdf-plugin`, checked against the source before every release. Both install the release
+[`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang). Both published
+repositories are kept here as submodules — `packaging/homebrew-tap` and `packaging/asdf-plugin` —
+and each is checked against the source in this tree before every release. Both install the release
 archive `flang-<version>-c.tar.gz` from GitHub Releases: printed C99 sources, a Makefile and the
 `flang.1` man page. Details and what each path installs —
 [Install](https://digitable-lol.github.io/flang/en/install.html).
@@ -91,7 +110,7 @@ archive `flang-<version>-c.tar.gz` from GitHub Releases: printed C99 sources, a 
 модуль «Привет»
 
 тотальная функция «Удвоить»
-  принимает н: натуральное
+  принимает н: неотрицательное
   возвращает число
   обеспечивает «удвоенное не меньше исходного» результат не меньше н
   пример «дважды два»
@@ -116,7 +135,9 @@ $ flang run привет.flang --function «Удвоить» --args '{"н": 21}'
 42
 ```
 
-Exit code 0 in all three cases. Declare `н: число` instead of `натуральное` and the check refuses
+Exit code 0 in all three cases. The type is spelled `неотрицательное`; `нат` and `натуральное`
+lex to the same type and stay accepted as synonyms until 1.0. Declare `н: число` instead and the
+check refuses
 with `FLANG_BOUND_ON_NAN`: the type `число` contains "not a number", which is outside every
 order, so the postcondition is false and the counterexample is named. The rest of the walk —
 [Your first program](https://digitable-lol.github.io/flang/en/getting-started.html), then the
@@ -130,16 +151,22 @@ language server among them: `check`, `test`, `run`, `emit`, `ast`, `tokens`, `fa
 `lock`, `package`, `new`, `repl` and `lsp`. It prints into 10 target languages.
 <!-- СНЯТО 2026-09-08 файлов flang/self/emit-*.flang = 10 -->
 
+One place where the authority is behind the binary it describes: the tenth target, `ts`, works —
+`flang emit … --target ts` exits 0 and writes four files — but `flang emit --help` still says
+«во все восемь целей» and lists nine, and the refusal for an unknown target still says «целей
+здесь ДЕВЯТЬ». That text is compiled into the binary and only a reprint of the seed can move it,
+so it is named here rather than papered over.
+
 | command | what it does |
 | --- | --- |
 | `flang check <file>` | parsing, linking, types, totality, the proof kernel, the examples. `--proof` prints what carries each promise; `--быстро` skips the kernel and the examples and says so, exit 4 |
 | `flang test <file\|dir>` | runs the examples declared inside functions, one file or a whole directory |
 | `flang run <file> --function «Имя» --args '{…}'` | evaluates one function and prints the value |
-| `flang emit <file> --target <t> --out <dir>` | prints the program into `c`, `cpp`, `go`, `rust`, `java`, `js`, `elixir`, `python` or `csharp`. The program is checked first — the same road as `check` — and nothing is written when it fails |
+| `flang emit <file> --target <t> --out <dir>` | prints the program into `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `python` or `csharp`. The program is checked first — the same road as `check` — and nothing is written when it fails |
 | `flang io <file>` | runs a plan: files, directories, processes, network. Every check in this tree that is written in flang runs this way |
 | `flang ast`, `flang tokens` | the parsed program as JSON; the token stream |
 | `flang facts <file> --claims '[…]'` | checks claims against facts |
-| `flang lock`, `flang package`, `flang new` | a lock file that carries the dependencies themselves; a package with a name, a version and a manifest; a new package from scratch |
+| `flang lock`, `flang package`, `flang new` | a lock file that carries the dependencies themselves; a package with a name, a version and a manifest — `package` builds none today, it exits 1 on `FLANG_TYPE` (task 3401, open); a new package from scratch |
 | `flang`, `flang repl` | the shell: declare and evaluate at once. Piped, with no terminal, the binary is a JSON-in/JSON-out driver instead |
 | `flang lsp --stdio` | the language server for editors; `flang --mcp-mode` is the service for an AI assistant |
 
@@ -212,8 +239,10 @@ Eight backends emit the module, a runtime, a JSON-in/JSON-out driver, a build fi
 the target has one — a package manifest (`go.mod`, `Cargo.toml`, `flang.csproj`); the JavaScript
 backend emits a single self-contained module plus the same driver next to it (`flang_cli.js`,
 dropped by `--no-cli`), and the module itself stays one self-contained file that runs in Node and
-in the browser. Two of the nine are shown here, only the second function of each, pasted from the
-run above and not edited:
+in the browser. The two without a `Makefile` are those last two: `js`, and `ts`, which prints the
+module as one `.ts` file beside the JavaScript runtime, the same driver and a `tsconfig.json` —
+`tsc -p .` is its build step. Two of the ten are shown here, only the second function of each,
+pasted from the run above and not edited:
 
 <details>
 <summary><b>C</b> — <code>out-c/search_insert_position.c</code></summary>
@@ -347,9 +376,9 @@ the 170 more programs in the other sets are single files, the LeetCode set among
 **The bootstrap point.** `bootstrap/` holds the compiler already printed to C99, which is why
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the
 result is compared with what is committed: `sh scripts/raskrutka.sh --check`. The inputs of the
-last print are recorded in `scripts/otpechatok-semeni`, one hashed line each — 47 lines. The
-seed lags the sources today: `sh scripts/chto-otstalo-ot-semeni.sh` lists which files and
-functions are newer than the seed, and a reprint (`sh scripts/raskrutka.sh`, hours on one core)
+last print are recorded in `scripts/otpechatok-semeni`, one hashed line each — 48 lines. The
+seed lags the sources today, in three files and 77 functions: `sh scripts/chto-otstalo-ot-semeni.sh`
+lists which files and functions are newer than the seed, and a reprint (`sh scripts/raskrutka.sh`, hours on one core)
 is how edits to `flang/self/` reach the binary. What the seed is and what guards it —
 [`bootstrap/README.md`](bootstrap/README.md) and [the bootstrap circle](docs/guide/bootstrap-circle.md).
 
@@ -376,7 +405,9 @@ The walk runs 180 checks written in flang and diffs the result against
 <!-- СНЯТО 2026-09-08 строк flang/проверки/ведомость.txt = 180 -->
 `flang/проверки/ведомость.txt`, one line per check. The hook runs the guards that finish in
 seconds and names what it did not run; the long ones are CI (`.github/workflows/binary.yml`). Work is tracked in [`tasks/`](tasks/README.md), one file per
-task, taken and closed by a commit — `./ярлык задачник:доска` prints the board. The rules of the
+task, taken and closed by a commit — `./ярлык задачник:доска` prints the board. A task can also
+end without being done: `tasks/rejected/` holds the ones that were considered and turned down, so
+the reason survives the decision. The rules of the
 tree that are not visible from the code — what breaks silently, the cost of a reprint, what a
 guard is for — are in [`AGENTS.md`](AGENTS.md); how to build, run the checks and send a change is
 [`CONTRIBUTING.md`](CONTRIBUTING.md). Decisions are recorded in [`docs/adr/`](docs/adr); the

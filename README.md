@@ -256,6 +256,20 @@ surface: monoids, monads, morphisms, processes and the declared properties. It d
 such a program in silence either — `flang check` names what it left unchecked and exits with
 code 2, because saying "no findings" there would be untrue.
 
+**Under a terminal the shell edits the line and wears the digitable colours.** When both ends are a
+terminal, `flang repl` leaves canonical mode and reads keys itself: ←/→, Home/End, Ctrl-A/E move
+along the line; ⌥←/⌥→, Alt-←/→ and Ctrl-←/→ move by words; Backspace, Delete, ⌥Backspace and
+Ctrl-W erase a character or a word; Ctrl-U/K erase to either edge; ↑/↓ walk the session history.
+An arrow no longer prints as `^[[A`. The line you type is highlighted as you go — keywords, «names»,
+numbers, "strings", comments — in the Digitable portal palette (`digitable.tokens.css`, the same one
+as the owner's dotfiles); an answer is white, a failure code red. Colour depth follows
+[flang-env](https://github.com/digitable-lol/flang-env): `NO_COLOR` switches colour off by its mere
+presence, so does `TERM=dumb`; `COLORTERM=truecolor` gives true colour, a `TERM` containing `256`
+the palette. ⌘-arrows never reach the shell — the terminal application takes them; in Terminal.app
+and iTerm2 word moves need Option sent as Esc+. Under a pipe (`flang repl < script`) none of this
+exists: the same `fgets`, the output byte for byte as before and without a single ESC — held by
+`scripts/repl-proba.sh`.
+
 **Install from the clone, from the release archive or from brew — the registry is not an
 option any more.** Nothing was ever published under the name `@digitable-lol/flang`, and nothing
 will be: npm publishing was removed on 3 September 2026. What still sits on npm is a build from

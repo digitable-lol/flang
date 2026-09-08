@@ -203,6 +203,8 @@ flang/proof/чекер/пробы/программы/Ч87-F1-cel-lozhna.flang	33
 flang/proof/чекер/пробы/программы/Ч87-F2-telo-mimo-primera.flang	33
 flang/proof/чекер/пробы/программы/Ч87-F3-dva-zvena-v-stroke.flang	33
 flang/proof/чекер/пробы/программы/Ч87-F4-zveno-zakommentirovano.flang	34
+flang/proof/чекер/пробы/семьи/булева-цель/priznak.flang	5
+flang/proof/чекер/пробы/семьи/ветка-если/vysota.flang	7
 flang/scripts/binary.flang	93
 flang/scripts/closed-length-guard.flang	141
 flang/scripts/code-forgery.flang	70
@@ -461,7 +463,6 @@ fspec/spec/39-booking-cancellation.flang	18
 fspec/spec/40-age-restriction.flang	15
 fspec/spec/41-consent-scope.flang	14
 fspec/spec/42-data-retention.flang	15
-packaging/install-check.flang	111
 packaging/install-parity.flang	71
 scripts/adr-numbers-guard.flang	34
 scripts/asdf-plugin-published.flang	33

@@ -1,25 +1,7 @@
-# Заявка в github-linguist
+# flang · linguist
 
-Здесь лежит заготовка записи для [github-linguist/linguist](https://github.com/github-linguist/linguist)
-— того файла `languages.yml`, по которому GitHub раскрашивает исходники и
-считает языки репозитория.
+**[Documentation](https://digitable-lol.github.io/flang/en/editor.html)** ·
+**[Документация](https://digitable-lol.github.io/flang/editor.html)**
 
-## Что здесь есть и чего нет
-
-Запись для flang лежит рядом файлом `languages-flang.yml`. Каталога `samples/`
-здесь нет, а linguist требует образцы, чтобы обучить свой определитель, — это
-названный долг заявки, а не забытая мелочь.
-
-## Что понадобится, когда заявка появится
-
-Требования linguist (см. его `CONTRIBUTING.md`), проверенные на прошлой заявке:
-
-- **`language_id` не выбирается автором.** Его присваивают сопровождающие
-  linguist прогоном `script/update-ids`, когда заявку принимают, и после этого
-  он не меняется никогда.
-- **Нужны образцы.** Каталог `samples/<Имя языка>/` с настоящими файлами языка:
-  определитель linguist учится на них, а не на описании.
-- **Порядок записей — алфавитный.** Запись вставляется туда, где имя языка
-  сортируется среди существующих.
-- **Расширение обязано быть свободным** или разрешаться однозначно: `.flang`
-  сегодня не занят никем.
+Draft entry for github-linguist, so that GitHub colours `.flang` files; not submitted yet.
+Заготовка записи для github-linguist, чтобы GitHub раскрашивал файлы `.flang`; заявка не подана.

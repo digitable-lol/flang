@@ -849,7 +849,7 @@ a822333cf70717fa58947cceec0d615d|4|4|0|0|0|flang/scripts/link-across-targets.fla
 25746e0bfb02956ce5182ac4543e7a5b|1|1|0|0|0|flang/scripts/link-collision-guard.flang
 17fa49007181f60a256b3bde9a0ed530|44|44|0|0|0|flang/scripts/memory-guard.flang
 c649864fff7dcb487da259f6b32f9fe9|7|7|0|0|0|flang/scripts/node-across-targets.flang
-a37d42d0e65d4ddde220dd09d2b5a529|4|4|0|0|0|flang/scripts/porodit-atomy.flang
+75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/породить-атомы.flang
 f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.flang
 7e965224ae21472df5dabe540ea8328b|4|4|0|0|0|flang/scripts/scheduler-across-targets.flang
 876784406adee381267f78a50f2c72f1|2|2|0|0|0|flang/scripts/supervisor-across-targets.flang

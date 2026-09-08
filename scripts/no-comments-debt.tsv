@@ -218,7 +218,6 @@ flang/scripts/kernel-lines-to-trust.flang	295
 flang/scripts/ledger-summary.flang	68
 flang/scripts/memory-guard.flang	115
 flang/scripts/node-across-targets.flang	80
-flang/scripts/porodit-atomy.flang	108
 flang/scripts/proven-guard.flang	118
 flang/scripts/tasks.flang	107
 flang/scripts/tempdir-guard.flang	89

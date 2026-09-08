@@ -5,7 +5,9 @@
 # Заход 2 (34263619913): на `macos-latest` groff НЕ СТОИТ вовсе, а труба
 # отвечала нулём — отсюда ложный «страница набралась, но это не страница про
 # flang».
-# Заход 3 (здесь): та же работа `brew` целиком, после правки поручения.
+# Заход 3 (34263934131): архив на macOS собрался, но brew отказался ставить
+# формулу из файла — «Homebrew requires formulae to be in a tap».
+# Заход 4 (здесь): формула кладётся в локальный кран.
 
 name: Проба ветки
 
@@ -35,13 +37,15 @@ jobs:
           set -eu
           archive="$PWD/$ARHIV"
           digest="$(shasum -a 256 "$archive" | cut -d' ' -f1)"
-          mkdir -p output/tap
+          brew tap-new flang/proba
+          kran="$(brew --repository flang/proba)"
+          mkdir -p "$kran/Formula"
           sed -e "s|^  url .*|  url \"file://${archive}\"|" \
               -e "s|^  sha256 .*|  sha256 \"${digest}\"|" \
-              packaging/homebrew/flang.rb > output/tap/flang.rb
-          brew install --build-from-source --verbose ./output/tap/flang.rb
+              packaging/homebrew/flang.rb > "$kran/Formula/flang.rb"
+          brew install --build-from-source --verbose flang/proba/flang
       - name: Блок test do формулы
-        run: brew test flang
+        run: brew test flang/proba/flang
       - name: Поставленное brew умеет печатать в C
         run: |
           set -eu

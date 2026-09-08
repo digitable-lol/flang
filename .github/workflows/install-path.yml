@@ -304,6 +304,14 @@ jobs:
       - name: Собрать архив тем же действием, что и release.yml
         uses: ./.github/actions/release-archive
 
+      # ФОРМУЛУ ИЗ ФАЙЛА BREW БОЛЬШЕ НЕ СТАВИТ, И ЭТО ЗАМЕРЕНО.
+      #
+      # Здесь стояло `brew install --build-from-source ./output/tap/flang.rb`.
+      # Нынешний Homebrew отвечает на это отказом: «Homebrew requires formulae
+      # to be in a tap, rejecting: ./output/tap/flang.rb» (прогон 34263934131
+      # от 8 сентября 2026). Поэтому формула кладётся в ЛОКАЛЬНЫЙ кран, заведённый
+      # тут же. Имя крана `flang/proba` — нарочно НЕ `digitable-lol/tap`:
+      # настоящий кран трогать нельзя, его сверяет отдельный сторож.
       - name: Формула на свежий архив
         run: |
           set -eu
@@ -312,14 +320,16 @@ jobs:
           # случалась, в workflow публикации, и стоила шага с кодом 127.
           archive="$PWD/$ARHIV"
           digest="$(shasum -a 256 "$archive" | cut -d' ' -f1)"
-          mkdir -p output/tap
+          brew tap-new flang/proba
+          kran="$(brew --repository flang/proba)"
+          mkdir -p "$kran/Formula"
           sed -e "s|^  url .*|  url \"file://${archive}\"|" \
               -e "s|^  sha256 .*|  sha256 \"${digest}\"|" \
-              packaging/homebrew/flang.rb > output/tap/flang.rb
-          brew install --build-from-source --verbose ./output/tap/flang.rb
+              packaging/homebrew/flang.rb > "$kran/Formula/flang.rb"
+          brew install --build-from-source --verbose flang/proba/flang
 
       - name: Блок test do формулы
-        run: brew test flang
+        run: brew test flang/proba/flang
 
       - name: Поставленное brew умеет печатать в C
         run: |

@@ -249,7 +249,7 @@
       "зачем": "первое, что читает пришедший с GitHub"
     },
     {
-      "маска": "README.ru.md",
+      "маска": "docs/README.ru.md",
       "вид": "проза",
       "зачем": "то же по-русски"
     },
@@ -447,7 +447,7 @@
   "долг": {
     "CONTRIBUTING.md": 5,
     "README.md": 1,
-    "README.ru.md": 0,
+    "docs/README.ru.md": 0,
     "docs/benchmark-proof-cost-2.md": 10,
     "docs/benchmark-proof-cost.md": 9,
     "docs/benchmark-speed.md": 27,

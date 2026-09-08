@@ -249,6 +249,31 @@ static char *repl_read_all(FILE *stream, size_t *length) {
  */
 #define FLANG_VERSION "0.7.14"
 
+/*
+ * ОТПЕЧАТОК ОБОЛОЧКИ: восемь знаков sha256 этого файла без самой этой строки.
+ *
+ * Заведён по улике 8 сентября 2026. Владелец запустил ПОСТАВЛЕННЫЙ двоичный
+ * 0.7.14 и получил `^[[D^[[D` на стрелках, тогда как свежесобранный из того же
+ * дерева строку правит. Отличить их было нечем: `--version` у обоих отвечал
+ * «flang 0.7.14», и первая строка приветствия совпадала до знака. Номер выпуска
+ * говорит о ВЫПУСКЕ, а не о том, что в двоичном лежит: между выпусками
+ * оболочка меняется, а число — нет.
+ *
+ * Почему не дата сборки, хотя она напрашивается. `scripts/binary-origin.sh`
+ * пересобирает двоичный из семени и сверяет с лежащим ПОБАЙТОВО (`cmp`); это
+ * и есть та проверка, которой 23 августа 2026 не было и шесть суток язык судил
+ * двоичный с невлитым кодом. `__DATE__`/`__TIME__` сделали бы две сборки одного
+ * дерева разными и погасили бы её. Отпечаток же — чистая функция файла: одно
+ * дерево — один отпечаток, изменилась оболочка — изменился и он.
+ *
+ * Ставится не рукой: `sh scripts/repl-proba.sh --отпечаток` печатает верное
+ * значение, а сама проба краснеет, пока строка ниже не сходится с файлом.
+ */
+#define FLANG_SHELL_ID "fd002c5a"
+
+/* Чем эта сборка оболочки отличается от прежних — одной строкой, для «--version». */
+#define FLANG_SHELL_ABLE "правит строку (стрелки, слова, история, Tab), цвет digitable"
+
 static const char REPL_GREETING[] =
     "flang " FLANG_VERSION " — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.\n"
     "Объявление заканчивается пустой строкой, выражение вычисляется сразу.";
@@ -954,8 +979,9 @@ static const char REPL_HELP[] =
     "  .сохранить <файл>          записать исходник сессии в файл\n"
     "  .загрузить <файл>          добавить объявления из файла .flang\n"
     "  .сбросить                  забыть всё объявленное\n"
+    "  .очистить                  очистить экран\n"
     "  .выход                     закончить работу\n"
-    "По-английски: .help .list .source .save .load .reset .quit\n"
+    "По-английски: .help .list .source .save .load .reset .clear .quit\n"
     "\n"
     "Клавиши (когда на обоих концах терминал):\n"
     "  ←/→, Home/End, Ctrl-A/Ctrl-E      по строке\n"
@@ -964,7 +990,9 @@ static const char REPL_HELP[] =
     "                                    оболочки не доходят — их берёт себе приложение\n"
     "  Backspace, Delete, ⌥Backspace, Ctrl-W   стереть знак слева, справа, слово слева\n"
     "  Ctrl-U, Ctrl-K                    стереть до начала, до конца строки\n"
-    "  ↑/↓                               история этой сессии\n"
+    "  Tab                               дополнить: «имя сессии, ключевое слово,\n"
+    "                                    .команду; в начале строки — отступ\n"
+    "  ↑/↓                               история: этой сессии и прошлых запусков\n"
     "  Ctrl-L                            очистить экран; Ctrl-D на пустой строке — конец\n"
     "Цвета — тема digitable; NO_COLOR или TERM=dumb их выключают.\n"
     "\n"
@@ -1215,6 +1243,181 @@ static char *repl_painted(repl_depth depth, repl_hue hue, bool bold, const char 
   buf_put(&out, text);
   repl_ink_off(&out, depth);
   return out.data;
+}
+
+/* ──────────────────── что умеет ЭТА сборка и эта сессия ─────────────────── */
+
+/*
+ * Ответ на вопрос «почему у меня стрелки не работают» человек обязан получить
+ * от самого двоичного, а не из переписки. Здесь собрано то, что решается не
+ * номером выпуска, а сборкой и сегодняшним окружением: правит ли строку
+ * оболочка, чем красит, чем вычисляет, где помнит историю.
+ */
+static bool repl_can_edit(void) {
+  struct termios probe;
+  return isatty(0) == 1 && isatty(1) == 1 && tcgetattr(0, &probe) == 0;
+}
+
+/*
+ * История ввода. В сессии она живёт всегда, между запусками — файлом, и путь
+ * называется вслух: молчаливая запись в чужой домашний каталог — не услуга.
+ * `FLANG_HISTORY` называет свой файл; «нет», «no», «0» и пустое значение
+ * выключают запись вовсе. Умолчание — XDG_STATE_HOME, иначе ~/.local/state.
+ *
+ * У `iex` такой истории по умолчанию НЕТ (замер на OTP 29: `shell_history`
+ * равно undefined, включается ключом `--erl "-kernel shell_history enabled"`),
+ * у оболочек ОС она есть. Взято поведение оболочек ОС: человек, нажимающий
+ * стрелку вверх, ждёт вчерашнюю строку. Но с названным файлом и выключателем.
+ */
+#define REPL_HISTORY_KEEP 500
+
+static const char *repl_history_file(void) {
+  static char path[1024];
+  const char *told = getenv("FLANG_HISTORY");
+  const char *state = getenv("XDG_STATE_HOME");
+  const char *home = getenv("HOME");
+  if (told != NULL) {
+    if (told[0] == '\0' || strcmp(told, "нет") == 0 || strcmp(told, "no") == 0 || strcmp(told, "0") == 0) {
+      return NULL;
+    }
+    if (strlen(told) + 1 > sizeof(path)) {
+      return NULL;
+    }
+    strcpy(path, told);
+    return path;
+  }
+  if (state != NULL && state[0] != '\0') {
+    if (strlen(state) + sizeof("/flang/repl-history") > sizeof(path)) {
+      return NULL;
+    }
+    strcpy(path, state);
+    strcat(path, "/flang/repl-history");
+    return path;
+  }
+  if (home == NULL || home[0] == '\0' ||
+      strlen(home) + sizeof("/.local/state/flang/repl-history") > sizeof(path)) {
+    return NULL;
+  }
+  strcpy(path, home);
+  strcat(path, "/.local/state/flang/repl-history");
+  return path;
+}
+
+typedef struct repl_past {
+  char **items;
+  size_t count;
+  size_t capacity;
+} repl_past;
+
+static repl_past repl_lines = {NULL, 0, 0};
+
+static void repl_remember(const char *line) {
+  if (line[0] == '\0') {
+    return;
+  }
+  if (repl_lines.count > 0 && strcmp(repl_lines.items[repl_lines.count - 1], line) == 0) {
+    return;
+  }
+  if (repl_lines.count == repl_lines.capacity) {
+    repl_lines.capacity = repl_lines.capacity == 0 ? 64 : repl_lines.capacity * 2;
+    repl_lines.items = (char **)repl_grow(repl_lines.items, repl_lines.capacity * sizeof(char *));
+  }
+  repl_lines.items[repl_lines.count] = repl_say(line);
+  repl_lines.count += 1;
+}
+
+/** Прошлые запуски: молча, потому что отсутствие файла истории — не беда. */
+static void repl_history_load(void) {
+  const char *path = repl_history_file();
+  repl_buf line;
+  FILE *file = NULL;
+  int symbol = 0;
+  if (path == NULL) {
+    return;
+  }
+  file = fopen(path, "r");
+  if (file == NULL) {
+    return;
+  }
+  buf_init(&line);
+  for (;;) {
+    symbol = fgetc(file);
+    if (symbol == '\n' || symbol == EOF) {
+      if (line.used > 0) {
+        repl_remember(line.data);
+      }
+      buf_reset(&line);
+      if (symbol == EOF) {
+        break;
+      }
+      continue;
+    }
+    buf_char(&line, (char)symbol);
+  }
+  buf_free(&line);
+  fclose(file);
+}
+
+/** Каталоги под файл истории заводятся по одному: mkdir -p без оболочки. */
+static void repl_history_dirs(const char *path) {
+  char work[1024];
+  size_t at = 0;
+  if (strlen(path) + 1 > sizeof(work)) {
+    return;
+  }
+  strcpy(work, path);
+  for (at = 1; work[at] != '\0'; at += 1) {
+    if (work[at] == '/') {
+      work[at] = '\0';
+      mkdir(work, 0700);
+      work[at] = '/';
+    }
+  }
+}
+
+static void repl_history_save(void) {
+  const char *path = repl_history_file();
+  size_t from = 0;
+  size_t index = 0;
+  FILE *file = NULL;
+  if (path == NULL || repl_lines.count == 0) {
+    return;
+  }
+  repl_history_dirs(path);
+  file = fopen(path, "w");
+  if (file == NULL) {
+    return;
+  }
+  from = repl_lines.count > REPL_HISTORY_KEEP ? repl_lines.count - REPL_HISTORY_KEEP : 0;
+  for (index = from; index < repl_lines.count; index += 1) {
+    fprintf(file, "%s\n", repl_lines.items[index]);
+  }
+  fclose(file);
+}
+
+/**
+ * «Что у меня за сборка» — печатается в `.помощь` и решает спор о клавишах.
+ * Все ответы сняты здесь и сейчас, а не записаны словами: сборка, терминал,
+ * окружение и найденный `cc` расходятся даже на одной машине.
+ */
+static void repl_say_build(const char *why_no_eval) {
+  const char *path = repl_history_file();
+  printf("Эта сборка: flang %s, оболочка %s.\n", FLANG_VERSION, FLANG_SHELL_ID);
+  if (repl_can_edit()) {
+    printf("  строку правит оболочка: стрелки, слова, история, Tab — дополнение\n");
+  } else if (isatty(0) != 1) {
+    printf("  строку оболочка не правит: ввод не терминал (труба или файл) — так и задумано\n");
+  } else {
+    printf("  строку правит терминал: raw-режим недоступен, стрелки напечатаются знаками\n");
+  }
+  printf("  цвет: %s\n", repl_depth_out == REPL_TRUE      ? "истинный, тема digitable"
+                         : repl_depth_out == REPL_CUBE    ? "палитра xterm-256, тема digitable"
+                         : repl_depth_out == REPL_SIXTEEN ? "шестнадцать цветов, тема digitable"
+                         : getenv("NO_COLOR") != NULL     ? "выключен: стоит NO_COLOR"
+                                                          : "выключен: вывод не терминал или TERM без цвета");
+  printf("  вычисление: %s\n", why_no_eval == NULL ? "системным cc, рядом с двоичным" : why_no_eval);
+  printf("  история: строк в этой сессии %lu; между запусками — %s\n", (unsigned long)repl_lines.count,
+         path == NULL ? "выключена (FLANG_HISTORY)" : path);
 }
 
 /*
@@ -6758,6 +6961,8 @@ static bool repl_command(repl_session *session, const char *line, bool *quit) {
   argument = repl_dup(rest, end);
   if (strcmp(name.data, ".помощь") == 0 || strcmp(name.data, ".help") == 0 || strcmp(name.data, ".?") == 0) {
     printf("%s\n", REPL_HELP);
+    printf("\n");
+    repl_say_build(session->why_no_eval);
   } else if (strcmp(name.data, ".объявления") == 0 || strcmp(name.data, ".list") == 0) {
     ok = repl_command_list(session);
   } else if (strcmp(name.data, ".исходник") == 0 || strcmp(name.data, ".source") == 0) {
@@ -6769,6 +6974,14 @@ static bool repl_command(repl_session *session, const char *line, bool *quit) {
   } else if (strcmp(name.data, ".сбросить") == 0 || strcmp(name.data, ".reset") == 0) {
     repl_reset(session);
     printf("сессия сброшена: объявлений нет\n");
+  } else if (strcmp(name.data, ".очистить") == 0 || strcmp(name.data, ".clear") == 0) {
+    /* Как `clear` у iex: очистка — это ESC-последовательность, и терминалу без
+       неё сказать нечего. Под трубой не печатается вовсе, иначе мусор уехал бы
+       в вывод сценария. */
+    if (isatty(1) == 1) {
+      fputs("\033[H\033[2J", stdout);
+      fflush(stdout);
+    }
   } else if (strcmp(name.data, ".выход") == 0 || strcmp(name.data, ".quit") == 0 ||
              strcmp(name.data, ".exit") == 0) {
     *quit = true;
@@ -7022,29 +7235,6 @@ static repl_read repl_read_line(repl_buf *line) {
  * ↑/↓. Ctrl-C остаётся сигналом (ISIG не снят) и идёт прежней дорогой.
  * Труба этого кода не видит вовсе.
  */
-typedef struct repl_past {
-  char **items;
-  size_t count;
-  size_t capacity;
-} repl_past;
-
-static repl_past repl_lines = {NULL, 0, 0};
-
-static void repl_remember(const char *line) {
-  if (line[0] == '\0') {
-    return;
-  }
-  if (repl_lines.count > 0 && strcmp(repl_lines.items[repl_lines.count - 1], line) == 0) {
-    return;
-  }
-  if (repl_lines.count == repl_lines.capacity) {
-    repl_lines.capacity = repl_lines.capacity == 0 ? 64 : repl_lines.capacity * 2;
-    repl_lines.items = (char **)repl_grow(repl_lines.items, repl_lines.capacity * sizeof(char *));
-  }
-  repl_lines.items[repl_lines.count] = repl_say(line);
-  repl_lines.count += 1;
-}
-
 static size_t repl_cp_back(const char *text, size_t at) {
   if (at == 0) {
     return 0;
@@ -7238,6 +7428,7 @@ typedef struct repl_editor {
   size_t from;
   size_t past_at;
   char *kept;
+  const repl_strings *known; /* имена сессии — для дополнения по Tab */
 } repl_editor;
 
 static void repl_tty_put(const char *data, size_t bytes) {
@@ -7334,12 +7525,139 @@ static void repl_recall(repl_editor *editor, size_t at) {
   editor->cursor = line->used;
 }
 
-static bool repl_can_edit(void) {
-  struct termios probe;
-  return isatty(0) == 1 && isatty(1) == 1 && tcgetattr(0, &probe) == 0;
+/*
+ * ДОПОЛНЕНИЕ ПО Tab. Правило взято у `iex` и проверено на нём: одна
+ * кандидатура — дописывается целиком, несколько — дописывается общий начаток,
+ * а список печатается ниже. Отличие от `iex` одно и оно от языка: имена flang
+ * стоят в ёлочках и содержат пробелы, поэтому начаток имени ищется от
+ * незакрытой «, а не от ближайшего пробела.
+ *
+ * Отступ Tab тоже нужен — тело объявления задаётся отступом, — и спорить им не
+ * о чем: в начале строки (слева от курсора только пробелы) Tab по-прежнему
+ * ставит два пробела, дополнять там нечего.
+ */
+static const char *const REPL_COMMANDS[] = {
+    ".помощь",  ".объявления", ".исходник", ".сохранить", ".загрузить", ".сбросить", ".очистить", ".выход",
+    ".help",    ".list",       ".source",   ".save",      ".load",      ".reset",    ".clear",    ".quit",
+    NULL};
+
+/** Начаток имени в ёлочках: смещение первого байта после незакрытой «, или -1. */
+static size_t repl_name_from(const char *text, size_t at) {
+  size_t index = 0;
+  size_t found = (size_t)-1;
+  for (index = 0; index + 1 < at; index += 1) {
+    if ((unsigned char)text[index] == 0xC2 && (unsigned char)text[index + 1] == 0xAB) {
+      found = index + 2;
+    } else if ((unsigned char)text[index] == 0xC2 && (unsigned char)text[index + 1] == 0xBB) {
+      found = (size_t)-1;
+    }
+  }
+  return found;
 }
 
-static repl_read repl_edit_line(repl_buf *line, const char *prompt, repl_hue hue) {
+static void repl_complete(repl_editor *editor) {
+  repl_buf *line = editor->line;
+  const size_t name_at = repl_name_from(line->data, editor->cursor);
+  const bool name_mode = name_at != (size_t)-1;
+  size_t from = name_at;
+  const char *found[64];
+  size_t count = 0;
+  size_t index = 0;
+  size_t common = 0;
+  if (!name_mode) {
+    from = editor->cursor;
+    while (from > 0 && repl_word_byte((unsigned char)line->data[from - 1])) {
+      from = repl_cp_back(line->data, from);
+    }
+    if (from == editor->cursor) {
+      /* Слева от курсора не слово: это отступ, а не начаток имени. */
+      repl_insert(editor, "  ", 2);
+      return;
+    }
+    if (line->data[from] == '.' || (from > 0 && line->data[from - 1] == '.')) {
+      from = line->data[from] == '.' ? from : from - 1;
+    }
+  }
+  {
+    const char *prefix = line->data + from;
+    const size_t bytes = editor->cursor - from;
+    if (name_mode) {
+      for (index = 0; editor->known != NULL && index < editor->known->count && count < 64; index += 1) {
+        const char *known = editor->known->items[index];
+        if (strncmp(known, prefix, bytes) == 0) {
+          found[count] = known;
+          count += 1;
+        }
+      }
+    } else if (bytes > 0 && prefix[0] == '.') {
+      for (index = 0; REPL_COMMANDS[index] != NULL && count < 64; index += 1) {
+        if (strncmp(REPL_COMMANDS[index], prefix, bytes) == 0) {
+          found[count] = REPL_COMMANDS[index];
+          count += 1;
+        }
+      }
+    } else {
+      for (index = 0; REPL_WORDS[index] != NULL && count < 64; index += 1) {
+        if (strncmp(REPL_WORDS[index], prefix, bytes) == 0) {
+          found[count] = REPL_WORDS[index];
+          count += 1;
+        }
+      }
+    }
+    if (count == 0) {
+      return;
+    }
+    /* Общий начаток всех найденных — его можно дописать, не выбирая за человека. */
+    common = strlen(found[0]);
+    for (index = 1; index < count; index += 1) {
+      size_t same = 0;
+      while (same < common && found[index][same] == found[0][same]) {
+        same += 1;
+      }
+      common = same;
+    }
+    while (common > bytes && ((unsigned char)found[0][common] & 0xC0) == 0x80) {
+      common -= 1;
+    }
+    if (common > bytes) {
+      repl_insert(editor, found[0] + bytes, common - bytes);
+    }
+    if (count == 1) {
+      if (name_mode) {
+        repl_insert(editor, "»", 2);
+      } else {
+        repl_insert(editor, " ", 1);
+      }
+      return;
+    }
+    /* Несколько — печатаются списком, и строка ввода рисуется заново под ним. */
+    repl_tty_put("\n", 1);
+    for (index = 0; index < count; index += 1) {
+      repl_tty_put("  ", 2);
+      repl_tty_put(found[index], strlen(found[index]));
+      repl_tty_put("\n", 1);
+    }
+  }
+}
+
+/*
+ * Ждёт ли ввод прямо сейчас. Нужно ровно для вставки: терминал отдаёт вставку
+ * одним куском, и перерисовка на КАЖДЫЙ байт превращала вставку в мельтешение:
+ * замер 8 сентября 2026 на вставке объявления в четыре строки (149 байт) —
+ * 90 перерисовок строки против 10 после правки, по одной на строку. Когда
+ * следующий байт уже лежит, рисовать нечего — строка всё равно изменится.
+ * Перед подачей строки перерисовка делается всегда, поэтому вставленное видно
+ * целиком и по одному разу на строку.
+ */
+static bool repl_more_input(void) {
+  struct pollfd waiting;
+  waiting.fd = 0;
+  waiting.events = POLLIN;
+  waiting.revents = 0;
+  return poll(&waiting, 1, 0) > 0;
+}
+
+static repl_read repl_edit_line(repl_buf *line, const char *prompt, repl_hue hue, const repl_strings *known) {
   struct termios saved;
   struct termios raw;
   repl_editor editor;
@@ -7364,6 +7682,7 @@ static repl_read repl_edit_line(repl_buf *line, const char *prompt, repl_hue hue
   editor.from = 0;
   editor.past_at = repl_lines.count;
   editor.kept = NULL;
+  editor.known = known;
   repl_redraw(&editor);
   for (;;) {
     unsigned char byte = 0;
@@ -7429,10 +7748,13 @@ static repl_read repl_edit_line(repl_buf *line, const char *prompt, repl_hue hue
         length += 1;
       }
       repl_insert(&editor, point, length);
-      repl_redraw(&editor);
+      if (!repl_more_input()) {
+        repl_redraw(&editor);
+      }
       continue;
     }
     if (key == KEY_ENTER) {
+      repl_redraw(&editor);
       break;
     }
     if (key == KEY_END_OF_INPUT) {
@@ -7457,7 +7779,7 @@ static repl_read repl_edit_line(repl_buf *line, const char *prompt, repl_hue hue
       case KEY_KILL_START: repl_cut(&editor, 0, editor.cursor); break;
       case KEY_KILL_END: repl_cut(&editor, editor.cursor, line->used); break;
       case KEY_CLEAR: repl_tty_put("\033[H\033[2J", 7); break;
-      case KEY_TAB: repl_insert(&editor, "  ", 2); break;
+      case KEY_TAB: repl_complete(&editor); break;
       case KEY_UP:
         if (editor.past_at > 0) {
           repl_recall(&editor, editor.past_at - 1);
@@ -7470,7 +7792,9 @@ static repl_read repl_edit_line(repl_buf *line, const char *prompt, repl_hue hue
         break;
       default: break;
     }
-    repl_redraw(&editor);
+    if (!repl_more_input()) {
+      repl_redraw(&editor);
+    }
   }
   tcsetattr(0, TCSANOW, &saved);
   repl_tty_put("\n", 1);
@@ -7486,10 +7810,10 @@ static repl_read repl_edit_line(repl_buf *line, const char *prompt, repl_hue hue
  * fgets, байт в байт. С приглашением — человек: редактор, когда терминал на
  * обоих концах, иначе приглашение и тот же fgets.
  */
-static repl_read repl_read_input(repl_buf *line, const char *prompt, repl_hue hue) {
+static repl_read repl_read_input(repl_buf *line, const char *prompt, repl_hue hue, const repl_strings *known) {
   repl_read got = REPL_LINE;
   if (prompt != NULL && repl_can_edit()) {
-    return repl_edit_line(line, prompt, hue);
+    return repl_edit_line(line, prompt, hue, known);
   }
   if (prompt != NULL) {
     char *painted = repl_painted(repl_depth_out, hue, false, prompt);
@@ -11295,6 +11619,26 @@ static int repl_loop(int argc, char **argv, const char *self) {
      соврать первой строкой — её и прочтут. */
   if (interactive) {
     repl_greet(session.why_no_eval == NULL ? REPL_GREETING : REPL_GREETING_NO_EVAL);
+    /* Вторая строка — про ЭТУ сборку и ЭТОТ терминал. Она и разрешает спор
+       «почему у меня стрелки печатаются знаками»: поставленный двоичный, где
+       оболочка строку не правит, такой строки не печатает вовсе, а тот, где
+       правит, называет свой отпечаток. */
+    {
+      repl_buf say;
+      char id[64];
+      buf_init(&say);
+      sprintf(id, "оболочка %s: ", FLANG_SHELL_ID);
+      buf_put(&say, id);
+      buf_put(&say, repl_can_edit() ? "строку правит сама (Tab — дополнение, «.помощь» — клавиши)"
+                                    : "строку правит терминал — raw-режим недоступен");
+      {
+        char *painted = repl_painted(repl_depth_out, HUE_MUTED, false, say.data);
+        printf("%s\n", painted);
+        free(painted);
+      }
+      buf_free(&say);
+    }
+    repl_history_load();
   }
   /* Про отсутствие вычислителя — один раз и в stderr: stdout принадлежит
      результату сценария. */
@@ -11310,7 +11654,7 @@ static int repl_loop(int argc, char **argv, const char *self) {
   for (;;) {
     const bool more = buffer.used > 0;
     const char *prompt = !interactive ? NULL : more ? REPL_CONTINUATION : REPL_PROMPT;
-    const repl_read got = repl_read_input(&line, prompt, more ? HUE_MUTED : HUE_CYAN);
+    const repl_read got = repl_read_input(&line, prompt, more ? HUE_MUTED : HUE_CYAN, &session.known);
     if (got == REPL_INTERRUPT) {
       buf_reset(&buffer);
       continue;
@@ -11343,6 +11687,9 @@ static int repl_loop(int argc, char **argv, const char *self) {
   }
   fflush(stdout);
 
+  if (interactive) {
+    repl_history_save();
+  }
   buf_free(&buffer);
   buf_free(&line);
   repl_close_session(&session);
@@ -18069,7 +18416,12 @@ int fl_human_main(int argc, char **argv, const char *self) {
   }
 
   if (asks_version) {
+    /* Первая строка неизменна: её сверяют формула Homebrew (`assert_match
+       "flang #{version}"`), проба плагина asdf и всё, что берёт `head -1`.
+       Вторая отвечает на вопрос, которого номер выпуска не решает: ЧТО у
+       человека в руках. Поставленный 0.7.14 её не печатает вовсе. */
     printf("flang %s\n", FLANG_VERSION);
+    printf("оболочка %s: %s\n", FLANG_SHELL_ID, FLANG_SHELL_ABLE);
   } else if (asks_help) {
     /* О ЧЁМ спрашивают: у `flang help check` тема стоит третьим словом, у
        `flang check --help` темой служит сама команда, у голого `flang --help`

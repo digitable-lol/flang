@@ -1,4 +1,4 @@
-**English** · [Русский](README.ru.md) · [Documentation site](https://digitable-lol.github.io/flang/en/index.html)
+**English** · [Русский](docs/README.ru.md) · [Documentation site](https://digitable-lol.github.io/flang/en/index.html)
 
 # flang — a language whose specification is the program
 
@@ -184,6 +184,15 @@ and iTerm2 word moves need Option sent as Esc+. Under a pipe (`flang repl < scri
 exists: the same `fgets`, the output byte for byte as before and without a single ESC — held by
 `scripts/repl-proba.sh`.
 
+Tab completes: a session name in guillemets (`«Втр` → `«Втрое»`), a keyword of the language, a dot
+command; at the start of a line it still indents by two spaces. Pasting a multi-line declaration is
+taken exactly as typed. History survives restarts — `$XDG_STATE_HOME/flang/repl-history`, or the file
+named by `FLANG_HISTORY` (`FLANG_HISTORY=нет` switches the file off). What YOUR build can do the
+build says itself: `flang --version` prints a second line with the shell fingerprint and its
+abilities, and `.помощь` reports whether the shell edits the line in this terminal, which colour
+depth it uses, what it evaluates with and where it keeps the history. A binary installed before this
+work prints no second line at all — that is how you tell them apart.
+
 Command reference with every flag — [Commands](https://digitable-lol.github.io/flang/en/cli.html);
 the codes a refusal carries — [Diagnostics](https://digitable-lol.github.io/flang/en/diagnostics.html).
 
@@ -345,7 +354,7 @@ fspec/            business rules written as proved specifications, and the check
 docs/             documentation: the site sources, the guide, decisions (adr/), measurement reports, the knowledge base
 tasks/            the open and closed work of the tree, one file per task
 .github/          CI and release workflows
-.claude/          skills for an assistant working in this tree
+.ai/              what an assistant working in this tree reads: AGENTS.md and .claude/skills; the root keeps `AGENTS.md` and `.claude` as symbolic links into it, and both are still found by their old names
 ```
 
 <!-- КАРТА-КОНЕЦ -->
@@ -382,8 +391,10 @@ lists which files and functions are newer than the seed, and a reprint (`sh scri
 is how edits to `flang/self/` reach the binary. What the seed is and what guards it —
 [`bootstrap/README.md`](bootstrap/README.md) and [the bootstrap circle](docs/guide/bootstrap-circle.md).
 
-The loose files in the root: `README.md` · `README.ru.md` (this page), `LICENSE` · `LICENSE-RU.md`,
-`CONTRIBUTING.md`, `AGENTS.md` (guidance for an agent working in the tree), `DESCRIPTION.md` (a
+The loose files in the root: `README.md` (this page; the Russian edition is a page of its own,
+[`docs/README.ru.md`](docs/README.ru.md)), `LICENSE` · `LICENSE-RU.md`,
+`CONTRIBUTING.md`, `AGENTS.md` (guidance for an agent working in the tree — a symbolic link to
+`.ai/AGENTS.md`, as `.claude` is a link to `.ai/.claude`), `DESCRIPTION.md` (a
 long-form description of the language, in Russian), `ROADMAP.md` (measured, not intended),
 `CHANGELOG.md` · `changelog.json` (printed from tags and commit subjects, never edited by hand),
 `package.json` (the version lives here; printed by `./ярлык пакет`, not published anywhere) and

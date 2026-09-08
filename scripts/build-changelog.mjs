@@ -147,12 +147,19 @@ const ВИДИМОСТЬ = new Map([
   [".github", false],
   [".gitattributes", false],
   [".gitignore", false],
+  /* Указания и навыки помощника: `.ai/` — настоящее место, а `AGENTS.md` и
+     `.claude` в корне — символические ссылки на него (задача 8235). Корень
+     обязан быть назван, иначе перепечатка журнала падает на «незнакомом». */
+  [".ai", false],
   ["AGENTS.md", false],
   ["CONTRIBUTING.md", false],
   ["LICENSE", false],
   ["LICENSE-RU.md", false],
   ["MIGRATION.md", false],
   ["README.md", false],
+  /* Страница уехала в `docs/` (задача 8235), но в истории она лежала в
+     корне — и корень обязан остаться названным, иначе перепечатка давних
+     коммитов падает на «незнакомом корне». */
   ["README.ru.md", false],
   ["package-lock.json", false],
   ["tsconfig.json", false],

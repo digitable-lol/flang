@@ -1,22 +1,24 @@
 файл	цель	почему_не_путь
 README.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-README.ru.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-README.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-docs/README.ru.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-docs/HANDOFF.md	saluto.eo.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/README.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/README.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-docs/adr/0007-encryption-by-request-to-an-external-host.md	zamer-openssl.c	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/adr/0010-compatibility-promise-for-0-x.md	docs/compatibility.md	план: «Завести docs/compatibility.md» — прямо названо будущим
-docs/adr/0013-a-typed-node-enters-through-a-door-at-the-layer-boundary.md	flang/self/ast.flang	архитектурное упоминание в ADR, не найден текущий файл
-docs/adr/0016-three-file-extensions.md	svodka.flang	иллюстративный контраст имён в тексте («сводка.фп», а не svodka.flang), не файл
+docs/README.ru.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/benchmark-speed.md	proverka_tipov.c	иллюстративный пример в тексте, не файл
-docs/branches-2026-08-15.md	saluto.eo.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/ci-inventory.md	output/storozh-zanyatogo.json	явное отрицание в тексте: «output/storozh-zanyatogo.json нет»
 docs/course/02-first-program.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/course/06-cost.md	-2.md	обозначение расширения/суффикса-конвенции, не имя файла
+docs/course/09-eight-targets.md	flang/src/emit/c.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
 docs/course/09-eight-targets.md	out-c/mesto_vstavki.c	учебный пример docs/course/09-eight-targets.md
 docs/course/README.md	content/post/flang-kurs/NN-slug.md	шаблон курса (нумерованный слаг), не файл
+docs/design/proof-object-lemma-po-svoystvu.md	источник-разрыв.flang	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
+docs/design/proof-object-migration-po-svoystvu.md	источник-разрыв.flang	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
+docs/design/proof-object-migration-po-svoystvu.md	источник.flang	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
+docs/design/proof-object-roadmap.md	-lemma-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/design/proof-object-roadmap.md	-migration.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/design/proof-object-roadmap.md	-po-primeru.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/design/proof-object-roadmap.md	-po-sluchayam.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/design/proof-object-roadmap.md	-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/design/proof-object-roadmap.md	-razbor-celi.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/guide/how-to-write-flang.ru.md	flang/проверки/korpus-http.flang	иллюстрация «плохо» в руководстве по именам, не файл
 docs/guide/naming.ru.md	moy_kalkulyator.c	учебный/иллюстративный пример на C или Python, не файл проекта
 docs/guide/naming.ru.md	имя-english.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/guide/naming.ru.md	имя.flang	иллюстративное имя в разборе задачи/заметки, не файл
@@ -36,20 +38,51 @@ docs/integer-closed-under-addition.md	proba-korpus.mjs	иллюстративн�
 docs/integer-closed-under-addition.md	proba-nat.mjs	иллюстративный пример в тексте, не файл
 docs/integer-closed-under-addition.md	proba-obhod.mjs	иллюстративный пример в тексте, не файл
 docs/integer-closed-under-addition.md	proba-vstrechno.mjs	иллюстративный пример в тексте, не файл
-docs/javascript-inventory.md	work.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/javascript-removal.md	self/emit-X.flang	шаблон: буква X в имени цели печати
-docs/javascript-removal.md	src/emit/X.mjs	шаблонное имя-плейсхолдер (буква вместо имени), не файл
-docs/javascript-removal.md	главный.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/javascript-removal.md	опора.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/journal-carried-out-of-sources.md	conc.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	docs/zamer-skorosti.md	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/examples/io/dvoichnyy-fayl-tuda-i-obratno.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/scripts/poddelki-yadra.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/src/commutative.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/src/distributive.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/src/emit/elixir.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/src/self.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/src/types.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/corpus-claims.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/emit-names.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-conc.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-csharp.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-elixir.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-go.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-js.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-python.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-rust.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-functor.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-hotswap.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-interpret.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-laws.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-lsp.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-obligations.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-totality.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	scripts/storozh-hozyaina-vkladki.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	src/natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
+docs/journal-carried-out-of-sources.md	src/parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
+docs/journal-carried-out-of-sources.md	src/utility.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 docs/modularity-and-packages.md	flang.json	явное отрицание в тексте: «манифеста проекта нет: ни flang.json...»
 docs/modularity-and-packages.md	flang/src/manifest.mjs	план: помечено «(новый)» в таблице модульности
 docs/modularity-and-packages.md	flang/src/store.mjs	план: помечено «(новый)» в таблице модульности
 docs/modularity-and-packages.md	flang/src/versions.mjs	план: помечено «(новый)» в таблице модульности
 docs/modularity-and-packages.md	flang/test/manifest.test.mjs	план: столбец «~500» из той же таблицы модульности
+docs/modularity-and-packages.md	src/certificate.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 docs/modularity-and-packages.md	store.test.mjs	план: та же таблица модульности, «новый»
 docs/native-x86-backend.md	stupen_1.c	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/open-work.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/open-work.md	pusk-yadro.sh	внешний: сам текст называет путь `/srv/tmp/`
+docs/overview.ru.md	github.com/digitable-lol/flang	адрес репозитория на GitHub, не путь в дереве
+docs/releases/0.7.13.md	-lemma-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/releases/0.7.13.md	-migration.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/releases/0.7.13.md	-po-primeru.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/releases/0.7.13.md	-po-sluchayam.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/releases/0.7.13.md	-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/releases/0.7.13.md	-razbor-celi.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
+docs/releases/0.7.13.md	-roadmap.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
 docs/reprint-cost.md	pusk.sh	внешний: инструмент вне дерева (docs/reprint-cost.md)
 docs/resource-plan.md	claims.tsv	внешний: координационный файл /srv/priyom, не файл этого дерева
 docs/resource-plan.md	svod.sh	внешний: инструмент /srv/priyom, не файл этого дерева
@@ -87,95 +120,27 @@ docs/site/index.md	hello.flang	иллюстративное имя в разбо
 docs/site/index.ru.md	privet.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/install.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/install.ru.md	privet.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/site/packages.md	node_modules/.bin/flang	файл установки npm у читателя, не файл этого дерева
+docs/site/packages.ru.md	node_modules/.bin/flang	файл установки npm у читателя, не файл этого дерева
 docs/site/shortener.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
 docs/site/shortener.ru.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
-docs/zettel/a-generated-file-name-is-fixed-in-the-module-name.md	flang_compiler.c	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/zettel/a-generated-file-name-is-fixed-in-the-module-name.md	moy_kalkulyator.c	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/zettel/a-hash-dictionary-became-parametric-and-a-foreign-module-copy-broke-the-import.md	u-dok-hash-z1.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/zettel/a-hash-dictionary-became-parametric-and-a-foreign-module-copy-broke-the-import.md	u-teoremy-hashmap-hm-BAZA.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/zettel/a-measurement-that-guards-its-own-threshold-sends-heavy-runs-through-the-gate.md	reify-bisect.sh	внешний: инструмент задачи 5732, вне дерева
-docs/zettel/a-pair-of-live-nodes-starts-from-one-shell-and-flang-judges-them-by-journals.md	plan-bez.json	пример входного файла в описании, не файл
-docs/zettel/a-pair-of-live-nodes-starts-from-one-shell-and-flang-judges-them-by-journals.md	plan-porog.json	пример входного файла в описании, не файл
-docs/zettel/a-pair-of-live-nodes-starts-from-one-shell-and-flang-judges-them-by-journals.md	plan.json	пример входного файла в описании, не файл
-docs/zettel/a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md	dictionary-real-probe.flang	иллюстративное имя пробы в тексте, не файл
-docs/zettel/a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md	dictionary-shape-probe.flang	иллюстративное имя пробы в тексте, не файл
-docs/zettel/a-postcondition-on-the-caller-turns-every-tail-call-into-a-frame.md	frame-depth-probe.flang	иллюстративное имя пробы в тексте, не файл
-docs/zettel/a-print-target-costs-the-runner-nothing-and-the-flag-90-lines-of-c.md	../share/flang/c	относительный путь в примере, сам не файл
-docs/zettel/a-stray-draft-above-the-tree-shadows-the-library-silently.md	u-dok-hash-z1.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/zettel/a-stray-draft-above-the-tree-shadows-the-library-silently.md	u-teoremy-hashmap-hm-BAZA.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/zettel/a-syntactic-path-check-in-backticks-recovers-500-more-dead-references-at-a-known-price.md	../../flang/src/a.mjs	относительный путь в примере, сам не файл
-docs/zettel/a-syntactic-path-check-in-backticks-recovers-500-more-dead-references-at-a-known-price.md	026-remove-duplicates...flang	относительный путь в примере, сам не файл
-docs/zettel/a-syntactic-path-check-in-backticks-recovers-500-more-dead-references-at-a-known-price.md	Factorial.cs	пример на чужом языке (embedding/rosetta), не файл проекта
-docs/zettel/a-syntactic-path-check-in-backticks-recovers-500-more-dead-references-at-a-known-price.md	NNNN-english-words.md	шаблон курса (нумерованный слаг), не файл
-docs/zettel/a-syntactic-path-check-in-backticks-recovers-500-more-dead-references-at-a-known-price.md	X.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
-docs/zettel/a-tail-call-under-a-promise-cannot-be-elided-and-the-printer-says-so-too.md	promise-count-probe.flang	иллюстративное имя пробы в тексте, не файл
-docs/zettel/an-intermediate-fact-opened-a-door-with-nothing-behind-it.md	.scratch/dvavfakta.mjs	локальный: .scratch не отслеживается по конвенции
-docs/zettel/browser-app-gap.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
-docs/zettel/dropping-unreachable-code-in-flang-costs-180-times-more.md	flang/self/reachable.flang	уже в известном списке B5 (сверено отдельно, не путать с флагом ложной тревоги)
-docs/zettel/if-bodies-get-induction-but-assertions-still-block.md	…-teorema.flang	шаблон-многоточие в имени, не файл
-docs/zettel/javascript-printing-is-blocked-by-the-entry-boundary-not-by-the-runtime.md	scripts/stolknoveniya-celey.mjs	внешний: инструмент стороннего агента, не файл этого дерева
-docs/zettel/mirroring-assumptions-costs-nothing-and-gave-nothing.md	u-zerkalo-uglu.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/zettel/obligations-list-built-by-descent-costs-a-square.md	merge-shape-probe.flang	иллюстративное имя пробы в тексте, не файл
-docs/zettel/octet-orders-are-in-the-dictionary-but-no-host-executes-them.md	.scratch/proba-oktetov.flang	локальный: .scratch не отслеживается по конвенции
-docs/zettel/only-does-not-carry-types-so-a-shared-module-is-taken-whole.md	a.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
-docs/zettel/only-does-not-carry-types-so-a-shared-module-is-taken-whole.md	b.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
-docs/zettel/printed-runner-already-carries-a-json-reader.md	src/cli.rs	пример на чужом языке (embedding/rosetta), не файл проекта
-docs/zettel/printing-must-ask-the-checker-and-name-its-subset-as-a-number.md	подделка.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/zettel/reprint-cache-key-cannot-name-the-dependency-that-exists.md	lekser_flang.c	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/zettel/reprint-cache-key-cannot-name-the-dependency-that-exists.md	nizh.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/zettel/the-arena-liveness-check-makes-every-accumulating-fold-quadratic.md	proba.flang	иллюстративный пример в тексте, не файл
-docs/zettel/the-entry-boundary-was-a-debt-of-printing-not-a-subtraction-in-the-check.md	src/cli.rs	пример на чужом языке (embedding/rosetta), не файл проекта
-docs/zettel/the-price-of-a-print-target-is-reference-debt-not-name-collisions.md	scripts/stolknoveniya-celey.mjs	внешний: инструмент стороннего агента, не файл этого дерева
-docs/zettel/the-unison-diamond-breaks-on-a-type-edit-not-a-version-bump.md	unique-type-churn.md	внешний: ссылка на github.com/unisonweb/unison, не файл этого дерева
-docs/zettel/two-calls-refusal-is-about-the-callee-body-not-the-let-name.md	p20.flang	шаблон нумерованного упражнения, не файл
-docs/zettel/two-calls-refusal-is-about-the-callee-body-not-the-let-name.md	p21.flang	шаблон нумерованного упражнения, не файл
-docs/zettel/two-rewrites-of-one-file-may-be-halves.md	flang/self/X.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
-docs/zettel/typescript-target-buys-almost-nothing.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
-docs/zettel/what-the-kernel-cannot-do-is-a-statement-about-the-seed-not-the-language.md	literalom.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/zettel/what-the-kernel-cannot-do-is-a-statement-about-the-seed-not-the-language.md	obe-polovinu.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/zettel/what-the-kernel-cannot-do-is-a-statement-about-the-seed-not-the-language.md	trebuet.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/спецификации/язык-доказательств.md	.scratch/dvavfakta.mjs	локальный: .scratch не отслеживается по конвенции
-docs/спецификации/язык-доказательств.md	.scratch/opyt.mjs	локальный: .scratch не отслеживается по конвенции
-docs/спецификации/язык-доказательств.md	.scratch/svod-teorem.mjs	локальный: .scratch не отслеживается по конвенции
+docs/site/spec-catalog.md	43-….flang	шаблон-многоточие в имени, не файл
+docs/site/spec-catalog.ru.md	43-….flang	шаблон-многоточие в имени, не файл
+docs/site/troubleshooting.md	./bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
+docs/site/troubleshooting.ru.md	./bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
+editors/vim/README.md	flang/bin/flang-lsp.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет (обёртка снята с npm 6 сентября 2026)
 editors/vscode/README.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
+examples/rosetta/WIKI.en.md	flang-outreach/rosetta-как-выложить.md	внешний: материалы flang-outreach, не файл этого дерева
 flang/SPEC.md	json.py	учебный/иллюстративный пример на C или Python, не файл проекта
 flang/SPEC.md	факты.json	иллюстративный пример входа в SPEC.md, не файл
-docs/archive/poly.md	examples/maybe-poly.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/ct/sets.md	scripts/sync-flang-vendor.mjs	план: пункт списка в SETS.md, не заведён
+flang/core/SPEC.md	natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
+flang/core/SPEC.md	src/natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
+flang/core/SPEC.md	src/parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
+flang/core/SPEC.md	src/utility.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 flang/proof/SPEC.md	…-english.flang	шаблон-многоточие в имени, не файл
-tasks/completed/0001-ci-targets-inventory.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/completed/0001-ci-targets-inventory.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/completed/0003-seed-reprint-finishes.md	dlina-100.flang	шаблон нумерованного упражнения, не файл
-tasks/completed/0003-seed-reprint-finishes.md	dlina-1000.flang	шаблон нумерованного упражнения, не файл
-tasks/completed/0004-arena-returns-chunks.md	zadachi-granicy-yazyka.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/completed/0005-postgres-redis-proofs.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/completed/0005-postgres-redis-proofs.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/completed/0006-three-big-compiler-files.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/completed/0006-three-big-compiler-files.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/completed/0026-zettel-names-in-english.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/completed/0029-typescript-target-buys-almost-nothing.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/completed/0032-printing-streams-to-the-file.md	parser_flang.c	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/0006-three-big-compiler-files.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/0006-three-big-compiler-files.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/0026-zettel-names-in-english.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/rejected/0029-typescript-target-buys-almost-nothing.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/rejected/0032-printing-streams-to-the-file.md	parser_flang.c	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/completed/0033-obligations-check-spreads-over-cores.md	merge-shape-probe.flang	иллюстративное имя пробы в тексте, не файл
-tasks/0037-docs-live-in-one-folder.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/rejected/0040-reprint-reuses-what-did-not-change.md	A.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
-tasks/rejected/0040-reprint-reuses-what-did-not-change.md	B.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
-tasks/rejected/0040-reprint-reuses-what-did-not-change.md	nizh.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/rejected/0040-reprint-reuses-what-did-not-change.md	verh-debtor.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/rejected/0040-reprint-reuses-what-did-not-change.md	verh_platyaschiy.c	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/0045-the-old-jargon-guard-is-removed.md	flang/src/parser.mjs	явное отрицание в тексте: «которого нет с fe8e8a37»
+tasks/0049-the-last-javascript-leaves-the-tree.md	binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
 tasks/0049-the-last-javascript-leaves-the-tree.md	work.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X-english.flang	пример на чужом языке (rosetta), не файл проекта
-tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X.flang	пример на чужом языке (rosetta), не файл проекта
-tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	rosetta/X-english.flang	пример на чужом языке (rosetta), не файл проекта
-tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	rosetta/X.flang	пример на чужом языке (rosetta), не файл проекта
-tasks/completed/0059-walking-the-functions-costs-a-frame-each.md	dictionary-real-probe.flang	иллюстративное имя пробы в тексте, не файл
-tasks/completed/0059-walking-the-functions-costs-a-frame-each.md	frame-depth-probe.flang	иллюстративное имя пробы в тексте, не файл
-tasks/completed/0059-walking-the-functions-costs-a-frame-each.md	frame-order-probe.flang	иллюстративное имя пробы в тексте, не файл
-tasks/completed/0059-walking-the-functions-costs-a-frame-each.md	promise-count-probe.flang	иллюстративное имя пробы в тексте, не файл
 tasks/0060-a-function-promises-its-cost.md	driver.c	учебный/иллюстративный пример на C или Python, не файл проекта
 tasks/0060-a-function-promises-its-cost.md	works.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	env-threshold.flang	иллюстративное имя в разборе задачи/заметки, не файл
@@ -184,191 +149,24 @@ tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	length-probe.flang	
 tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	tower.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/1186-a-module-gets-its-english-name-from-the-author.md	fibonachchi.py	учебный/иллюстративный пример на C или Python, не файл проекта
 tasks/1186-a-module-gets-its-english-name-from-the-author.md	zapis_uroborosa.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/completed/1389-every-guard-is-shown-to-redden-on-a-deliberate-break.md	docs/proba-imeni.flang	иллюстративный пример в тексте, не файл
-tasks/completed/1389-every-guard-is-shown-to-redden-on-a-deliberate-break.md	proba-zanyatosti.flang	иллюстративный пример в тексте, не файл
-tasks/completed/1477-a-promise-should-not-cost-a-frame.md	proven-promise-probe.flang	иллюстративное имя пробы в тексте, не файл
-tasks/completed/1600-real-mutual-recursion-cycles-are-measured.md	reify-probe.flang	иллюстративное имя пробы в тексте, не файл
+tasks/1315-vremennoe-v-dereve-ishodnikov.md	g3.json	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
+tasks/1315-vremennoe-v-dereve-ishodnikov.md	proba-stolknoveniy.flang	временный файл прогона, который сам себя убирает; в тексте сказано «ПОЧИНЕНО»
 tasks/1722-the-discriminating-search-writes-a-temp-dir-into-the-tree.md	proba-zanyatosti.flang	иллюстративный пример в тексте, не файл
-tasks/completed/4454-why-the-order-rule-does-not-fire.md	dopushchenie.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/completed/4454-why-the-order-rule-does-not-fire.md	konechnost.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/completed/4454-why-the-order-rule-does-not-fire.md	literalom.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/completed/4454-why-the-order-rule-does-not-fire.md	obe-polovinu.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/completed/4454-why-the-order-rule-does-not-fire.md	trebuet.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/completed/4501-sqlite-overflow-and-row-insert.md	sqlite-perepolnenie.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/completed/4501-sqlite-overflow-and-row-insert.md	sqlite-zapis.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/completed/4837-trampolines-come-back-with-one-example.md	koltso.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/completed/5732-all-superlinearities-are-named-and-measured.md	find-descents-full.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/completed/5732-all-superlinearities-are-named-and-measured.md	find-descents.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/completed/5732-all-superlinearities-are-named-and-measured.md	find-nesting-recursion.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/completed/5732-all-superlinearities-are-named-and-measured.md	reify-probe.flang	иллюстративное имя пробы в тексте, не файл
-tasks/completed/6128-the-way-to-take-a-ledger-nothing-could-take-is-written-down.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/completed/6128-the-way-to-take-a-ledger-nothing-could-take-is-written-down.md	pusk-yadro.sh	внешний: сам текст называет путь `/srv/tmp/`
-tasks/completed/6329-the-four-files-around-the-kernel-get-their-ledger.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/completed/6532-a-red-example-hides-the-ledger.md	before.mjs	иллюстративное имя в разборе задачи 6532, не файл
-tasks/completed/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-filler.flang	шаблон нумерованного упражнения, не файл
-tasks/completed/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-first.flang	шаблон нумерованного упражнения, не файл
-tasks/completed/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-last.flang	шаблон нумерованного упражнения, не файл
+tasks/1734-element-n-counts-the-number-not-the-list.md	flang/src/bounded.mjs	явное отрицание в тексте: «файла в дереве больше нет»
+tasks/3403-postanovshchik-paketov-manifest-set-zamok.md	scripts/paket.flang	план: файл, который эта задача велит завести
+tasks/6127-goal-split-places-are-replayed-by-local-moves.md	ПЕРЕДАЧА/karta-kalkulyatora.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
+tasks/6127-goal-split-places-are-replayed-by-local-moves.md	ПЕРЕДАЧА/proverka-uzlov.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
+tasks/6130-vedomost-pravil-vyvoda-v-dvuh-notaciyah.md	flang/proof/ПРАВИЛА-ВЫВОДА.tsv	план: файл, который эта задача велит завести («Завести …»)
+tasks/8398-plans-are-judged-and-the-compiler-says-so.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
 tasks/8398-plans-are-judged-and-the-compiler-says-so.md	plany.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/8398-plans-are-judged-and-the-compiler-says-so.md	schet.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/8398-plans-are-judged-and-the-compiler-says-so.md	sud.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/8398-plans-are-judged-and-the-compiler-says-so.md	tree-plans.flang	план в перечне задачи 8398, не файл
 tasks/8398-plans-are-judged-and-the-compiler-says-so.md	vsyo.sh	план в тексте задачи: перечень будущих скриптов, не файл
 tasks/8567-the-fifth-reprint-run-starts-on-a-grown-closure.md	versiya.sh	внешний: инструмент /srv/priyom, не файл этого дерева
 tasks/8570-the-print-is-outrun-because-it-is-slow.md	hranitel-tikov.sh	внешний: инструмент вне дерева, соседствует с pusk.sh
 tasks/8570-the-print-is-outrun-because-it-is-slow.md	pusk.sh	внешний: инструмент вне дерева (docs/reprint-cost.md)
-tasks/README.md	NNNN-english-words.md	шаблон курса (нумерованный слаг), не файл
-docs/zettel/a-category-surface-costs-forty-unwritten-rules-not-a-bigger-closure.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-docs/zettel/a-trimmed-build-must-say-what-it-did-not-check.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-docs/zettel/a-two-implementation-check-goes-blind-on-what-was-subtracted-before-comparing.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-docs/zettel/printing-must-ask-the-checker-and-name-its-subset-as-a-number.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-tasks/completed/0016-guards-move-from-javascript.md	binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-tasks/0049-the-last-javascript-leaves-the-tree.md	binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-tasks/completed/1305-svodka-vypuska-po-poverhnostyam.md	flang/scripts/cli-keys-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/cli-keys-guard.flang; упоминание историческое, в задаче/заметке
-tasks/completed/1853-nobody-judges-processes-supervisors-and-runs.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-tasks/completed/3902-a-file-from-the-first-wave-arrived-without-its-licence-line.md	flang/scripts/direct-run-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/direct-run-guard.flang; упоминание историческое, в задаче/заметке
-tasks/4053-flang-doctor-stavit-runtime-i-daet-karkas-hozyaina.md	scripts/cli-keys-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/cli-keys-guard.flang; упоминание историческое, в задаче/заметке
-tasks/5090-six-promised-self-checks-are-missing-from-the-tree.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-tasks/8398-plans-are-judged-and-the-compiler-says-so.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-tasks/completed/8649-npm-leaves-the-tree.md	flang/scripts/direct-run-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/direct-run-guard.flang; упоминание историческое, в задаче/заметке
+tasks/8596-typescript-target-over-the-javascript-printer.md	.d.ts	обозначение расширения, не имя файла
+tasks/9528-an-en-view-is-not-checked-against-its-promise.md	tools/check-flang-en-views.sh	внешний: файл репозитория digitwm, не файл этого дерева
 tasks/9614-the-five-code-vocabulary-never-reaches-the-tape.md	cli-keys-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/cli-keys-guard.flang; упоминание историческое, в задаче/заметке
 tasks/9614-the-five-code-vocabulary-never-reaches-the-tape.md	scripts/cli-keys-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/cli-keys-guard.flang; упоминание историческое, в задаче/заметке
-tasks/completed/2398-proof-corpus-examples-lift-runtime-checks.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-docs/HANDOFF.md	github.com/digitable-lol/flang	адрес репозитория на GitHub, не путь в дереве
-docs/branches-2026-08-15.md	src/natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-docs/design/proof-object-corpus-migration.md	-lemma-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-corpus-migration.md	-migration.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-corpus-migration.md	-po-primeru.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-corpus-migration.md	-po-sluchayam.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-corpus-migration.md	-po-svoystvu-stdlib.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-corpus-migration.md	-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-corpus-migration.md	-razbor-celi.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-hody-razbora-celi.md	ПЕРЕДАЧА/karta-kalkulyatora.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/proof-object-lemma-po-svoystvu.md	источник-разрыв.flang	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/proof-object-migration-po-sluchayam.md	оснастка/proba-razbor.flang	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/proof-object-migration-po-svoystvu.md	источник-разрыв.flang	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/proof-object-migration-po-svoystvu.md	источник.flang	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/proof-object-migration-razbor-celi.md	оснастка/proba-razbor.flang	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/proof-object-migration-razbor-celi.md	оснастка/shapka.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/proof-object-roadmap.md	-lemma-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-roadmap.md	-migration.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-roadmap.md	-po-primeru.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-roadmap.md	-po-sluchayam.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-roadmap.md	-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-roadmap.md	-razbor-celi.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/guide/how-to-write-flang.ru.md	flang/проверки/korpus-http.flang	иллюстрация «плохо» в руководстве по именам, не файл
-docs/journal-carried-out-of-sources.md	src/natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-docs/journal-carried-out-of-sources.md	src/parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-docs/journal-carried-out-of-sources.md	src/utility.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-docs/json-judged-with-a-high-ceiling.md	./bootstrap-vysokiy/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
-docs/json-judged-with-a-high-ceiling.md	./bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
-docs/modularity-and-packages.md	src/certificate.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-docs/overview.ru.md	github.com/digitable-lol/flang	адрес репозитория на GitHub, не путь в дереве
-docs/releases/0.7.13.md	-lemma-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-migration.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-po-primeru.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-po-sluchayam.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-razbor-celi.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-roadmap.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/site/packages.md	node_modules/.bin/flang	файл установки npm у читателя, не файл этого дерева
-docs/site/packages.ru.md	node_modules/.bin/flang	файл установки npm у читателя, не файл этого дерева
-docs/site/troubleshooting.md	./bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
-docs/site/troubleshooting.ru.md	./bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
-docs/tree-inventory.md	resource-plan.py	внешний: вынесен из дерева 30 августа 2026, живёт в /srv/work/resource-plan.py — сам текст это и говорит
-docs/tree-inventory.md	scripts/resource-plan.py	внешний: вынесен из дерева 30 августа 2026, живёт в /srv/work/resource-plan.py — сам текст это и говорит
-docs/what-blocks-1-0.md	B4/PROBA-IZYATIEM.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	BATAREYA-114.tsv	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	DOBAVKA-114.tsv	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	KORPUS-344.tsv	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	sverschik.c	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	Ч103-bez-proverki-pereschet/rez-svod.json	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	Ч119-schel-D1/rabota/pribor/sverschik.c	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	Ч119-schel-D1/ПОПЫТКИ.tsv	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	Ч121-spiski-rukami/СПИСКИ.tsv	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	Ч124-slepye-69/ved-otkaz35-svod.json	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	Ч126-vernut-g2/rabota/ZVATELI.tsv	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	Ч127-spiski-vo-flang/ИТОГ.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/what-blocks-1-0.md	Ч127-spiski-vo-flang/СПИСКИ.tsv	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/zettel/minus-zero-fixed-twice-and-both-times-past-the-mark.md	ПОДДЕЛКИ.tsv	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/zettel/minus-zero-fixed-twice-and-both-times-past-the-mark.md	ЧИСЛА.tsv	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/zettel/reserved-words-of-the-target-leak-into-printed-code.md	fl_flang.c	имя НАПЕЧАТАННОГО файла цели C, не файл дерева
-examples/rosetta/WIKI.en.md	flang-outreach/rosetta-как-выложить.md	внешний: материалы flang-outreach, не файл этого дерева
-flang/core/SPEC.md	natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-flang/core/SPEC.md	src/natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-flang/core/SPEC.md	src/parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-flang/core/SPEC.md	src/utility.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-tasks/1310-semya-sverka-zheleza.md	ПЕРЕДАЧА/g6-zapusk.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/1315-vremennoe-v-dereve-ishodnikov.md	g3.json	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/3636-the-repl-edits-the-line-and-wears-digitable-colours.md	ПЕРЕДАЧА/karta-repl.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/4707-ast-does-not-say-which-file-a-function-came-from.md	привязка-полная-2.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/4707-ast-does-not-say-which-file-a-function-came-from.md	привязка-полная.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/6127-goal-split-places-are-replayed-by-local-moves.md	ПЕРЕДАЧА/karta-kalkulyatora.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/6127-goal-split-places-are-replayed-by-local-moves.md	ПЕРЕДАЧА/proverka-uzlov.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
 tasks/9622-the-seed-is-laid-into-the-tree-in-place-and-a-break-leaves-it-mixed.md	pechat-0-7-0/спаситель.sh	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/1300-sbor-slov-obyavlen-dvazhdy.md	Ч4-merka/merka.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/1301-peredacha-1-sentyabrya.md	ОТЧЁТ.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/2044-chekter-chital-obyavlenie-tipa-cherez-primechanie.md	vedomost/sdelat-vedomost.sh	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/2044-chekter-chital-obyavlenie-tipa-cherez-primechanie.md	zvat-chekera.sh	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/2573-seed-fingerprint-named-a-commit-whose-seed-differs.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/completed/3488-nachalo-imeni-bralo-chetyre-znaka-a-nomera-za-9999-krasili-storozha.md	10001-forma-...md	шаблон-многоточие в имени, не файл
-tasks/completed/4471-prose-numbers-two-thirds-live-and-fix-would-falsify-tasks.md	…guard.sh	шаблон-многоточие в имени, не файл
-tasks/completed/4838-the-debt-outside-flang-crossed-its-ceiling.md	resource-plan.py	внешний: вынесен из дерева 30 августа 2026, живёт в /srv/work/resource-plan.py — сам текст это и говорит
-tasks/completed/4838-the-debt-outside-flang-crossed-its-ceiling.md	scripts/resource-plan.py	внешний: вынесен из дерева 30 августа 2026, живёт в /srv/work/resource-plan.py — сам текст это и говорит
-tasks/completed/6805-the-code-guard-remembers-a-forgery-after-it-is-gone.md	../../bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
-tasks/completed/7855-g5-has-a-number-for-binding-but-the-roundtrip-instrument-is-outside-the-tree.md	krugooborot.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9751-roundtrip-instrument-lived-in-a-temp-dir-and-the-doc-pointed-there.md	krugooborot.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9751-roundtrip-instrument-lived-in-a-temp-dir-and-the-doc-pointed-there.md	pravka-a-kommentarii.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9751-roundtrip-instrument-lived-in-a-temp-dir-and-the-doc-pointed-there.md	razbor-prichin.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9960-node-tooling-rewritten-in-flang-twelve-cells.md	Ч380-slova-imena/ОТЧЁТ.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9983-version-string-drifts-every-release.md	release-versions/9959.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9985-verdict-cache-key-position-leak-unconfirmed.md	ОТЧЁТ.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9986-g2-svezhaya-pechat-protivorechit-chekeru-na-2-iz-43.md	Ч417-g2-svezhaya-pechat/ОТЧЁТ.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9987-g5-privyazka-chinit-chuzhie-funktsii.md	оснастка/привязка-полная-2.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9987-g5-privyazka-chinit-chuzhie-funktsii.md	оснастка/привязка-полная.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9987-g5-privyazka-chinit-chuzhie-funktsii.md	оснастка/привязка-широкая.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9987-g5-privyazka-chinit-chuzhie-funktsii.md	привязка-полная.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9987-g5-privyazka-chinit-chuzhie-funktsii.md	привязка-широкая.py	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9988-print-launcher-breaks-end-of-print-contract-again.md	пуск.sh	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9995-zadachnik-zelyon-i-postavlen-v-CI-vorotami.md	release-versions/9959.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9999-cel-sleduet-iz-obyavlennogo-o-dovodakh-gotovo-pod-klyuch.md	диагностика/сверщик-наив.c	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/completed/9999-cel-sleduet-iz-obyavlennogo-o-dovodakh-gotovo-pod-klyuch.md	диагностика/сверщик-правило.c	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/course/09-eight-targets.md	flang/src/emit/c.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	conc.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	docs/zamer-skorosti.md	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/examples/io/dvoichnyy-fayl-tuda-i-obratno.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/scripts/poddelki-yadra.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/src/commutative.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/src/distributive.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/src/emit/elixir.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/src/self.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/src/types.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/corpus-claims.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/emit-names.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-conc.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-csharp.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-elixir.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-go.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-js.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-python.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-rust.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-functor.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-hotswap.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-interpret.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-laws.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-lsp.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-obligations.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-totality.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	scripts/storozh-hozyaina-vkladki.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/zettel/a-farewell-paragraph-outlives-what-it-says-goodbye-to.md	.github/workflows/fts-example.yml	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/zettel/a-farewell-paragraph-outlives-what-it-says-goodbye-to.md	flang/test/compat.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/zettel/a-farewell-paragraph-outlives-what-it-says-goodbye-to.md	host/fts.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/zettel/a-farewell-paragraph-outlives-what-it-says-goodbye-to.md	src/lexer.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/zettel/a-side-may-already-exist-check-before-writing.md	reachable.flang	явное отрицание в тексте: «искать reachable.flang бесполезно» — файла с таким именем нет
-docs/zettel/one-binary-one-ledger-the-whole-tree.md	tasks/a-verdict-on-a-file-does-not-depend-on-who-imported-it.md	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-flang/conc/RESILIENCE.md	builtins.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-flang/conc/SPEC.md	builtins.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-tasks/5406-journal-left-where-comments-are-not.md	builtins.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-tasks/completed/0021-hot-swap-reaches-a-live-node.md	flang/src/hotswap.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-tasks/completed/6551-occupied-names-guard-dies-in-a-fresh-checkout.md	../output/storozh-zanyatogo.json	файл, который сторож ПИШЕТ при прогоне, не файл дерева
-tasks/completed/9043-five-codes-named-by-prose-are-absent-from-the-sources.md	package-lock.json	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-tasks/completed/9220-six-green-guards-verified-three-wired-into-ci.md	output/storozh-zanyatogo.json	файл, который сторож ПИШЕТ при прогоне, не файл дерева
+tasks/README.md	NNNN-english-words.md	шаблон курса (нумерованный слаг), не файл

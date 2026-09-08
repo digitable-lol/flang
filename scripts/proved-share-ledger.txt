@@ -1093,7 +1093,7 @@ ce97ff0ab2094dce6783702de4290b85|34|32|0|2|0|scripts/emit-and-examples.flang
 18806901f644c701a3a572d18a5cbe7b|14|14|0|0|0|scripts/emit-dictionary.flang
 5f0d2e189fb05b4383ad353ab7f23fa7|48|42|3|3|0|scripts/emit-law.flang
 6e853bc74ce6a194834bd7cedcfc79e6|4|11|0|0|0|scripts/emit-package.flang
-ac7f0e744d17d80be435f36596d43646|12|12|0|0|0|scripts/emit-promises-guard.flang
+35bc4b6ceba5235a93625a25ded7023f|12|12|0|0|0|scripts/emit-promises-guard.flang
 91128ae65d62f7aee67ef6e15ae3599a|81|80|0|1|0|scripts/error-code-guard.flang
 5556ed1d30344a013bd914c7f4033071|13|6|0|0|0|scripts/file-extensions.flang
 d59dd44ec88f4735e5b5dd785acc0ca4|63|49|11|3|0|scripts/homebrew-formula-guard.flang
@@ -1104,7 +1104,7 @@ ea1518a801b7e78ee25788b065921aff|23|11|2|3|0|scripts/kernel-abilities-guard.flan
 986fad97002d55a23e04a3dca541f8a5|1|1|0|0|0|scripts/language-words.flang
 5ab01492f40c7c4a19b89433856c1786|6|6|0|0|0|scripts/license-guard.flang
 3aacb84b2e4c0a5ce961a5aff8676834|14|14|0|0|0|scripts/lico-celi-cpp.flang
-cf95fcf20f082af0afc707c84e4de314|78|34|44|0|0|scripts/link-guard.flang
+4513584f34eca442e744d2b05863e98a|85|34|44|0|0|scripts/link-guard.flang
 764ea6a077d30318d14a8a0f3da8aea8|23|23|0|0|0|scripts/lsp-check.flang
 3eea8a647996e57cc3e492c8f4e4763e|15|13|2|0|0|scripts/manpage-guard.flang
 f8e01fecff7e47ed055e836a42195ee0|15|15|0|0|0|scripts/module-name-guard.flang
@@ -1120,7 +1120,7 @@ c25748ca72cfdca2554269b3c8bcf185|9|9|0|0|0|scripts/occupancy-check.flang
 1083cc30fab03e5f16e2060519b7c8c1|8|8|0|0|0|scripts/release-guard.flang
 c2739d00803c1d831f6341abe1382f25|26|22|2|0|0|scripts/release-in-c.flang
 6bec7ed819a851590422857589b315ec|10|7|3|0|0|scripts/reprint-freshness.flang
-409c7c8fe2ba48c1daaaa2d4420dd461|3|3|0|0|0|scripts/settings-file.flang
+623521ff6a7758d61e2f16f8cf510c90|3|3|0|0|0|scripts/settings-file.flang
 6428b484fce59de690810ba7fcdce7f4|3|2|1|0|0|scripts/stale-pages-guard.flang
 d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/string-measure.flang
 b84d7c3b1bf00b6bfe83e62e063aea2d|21|21|0|0|0|scripts/surfaces-page.flang

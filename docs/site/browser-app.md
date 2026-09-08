@@ -16,8 +16,8 @@ bootstrap/flang io web/stand.flang --max-orders 1000000   # bring the harness up
 No Node, no npm, no `python3 -m http.server`: the binary compiler emits the
 module, and a harness written in flang (`web/stand.flang`) serves the page.
 
-There used to be no build at all — the page imported `flang/src/parser.mjs` and
-parsed `hailstone.flang` right inside the tab. The second implementation of the
+There used to be no build at all — the page imported the parser of the
+JavaScript implementation and parsed `hailstone.flang` right inside the tab. The second implementation of the
 language is no longer in the tree, and with it the page lost all three imports:
 **the application would not open at all**. Now an emitted module travels into the
 tab — 61 453 bytes against nearly two megabytes of compiler.
@@ -83,8 +83,8 @@ host wants it to be.
 **1. The order limit is a batch program's measure.** `DEFAULT_MAX_ORDERS` is
 10 000, and for a program that ends this is a trap for a looping one. For a tab
 the same number means "the application dies after five thousand key presses". It
-is fixed by the caller (`maxOrders: Infinity` in `index.html`), no edit in
-`io.mjs` was needed — but the default is wrong for an application, and that is
+is fixed by the caller (`maxOrders: Infinity` in `index.html`), no edit in the
+effects dictionary was needed — but the default is wrong for an application, and that is
 worth remembering.
 
 **2. The `runPlan` log is a leak that grows at the speed of a person's actions.**
@@ -92,8 +92,9 @@ The log accumulates `{order, answer}` for every order and is handed to nobody
 until the end of the plan, which an application does not have. One flight of the
 number 27 is **225 records** over forty seconds. A tab left open for an hour with
 "run" on will accumulate hundreds of thousands of them. This is **not fixed**:
-fixing it means editing `io.mjs`, and every edit there drags the reference
-implementation along, so doing it in passing would be dishonest. It is stated with
+fixing it means editing the effects dictionary (`flang/self/io.flang`), and an
+edit there reaches every host at once, so doing it in passing would be
+dishonest. It is stated with
 a number so it does not get forgotten.
 
 **3. The continuation machine waits for EXACTLY ONE thing.** `«Продолжение»`
@@ -107,7 +108,7 @@ to the host, while the program names both conditions at once.
 ## What was not dragged into the language, and why
 
 Neither `DOM`, nor `window`, nor `addEventListener`, nor `querySelector` — not in
-the dictionary (`flang/src/io.mjs`), not in the specification, not in a single
+the dictionary (`flang/self/io.flang`), not in the specification, not in a single
 line of `.flang`. The program names a **place** — the string `"экран"`, which it
 invented itself — and does not know where the host will put that place. The border
 is the same as the one between a path and a file descriptor.
@@ -135,7 +136,8 @@ be exactly the same total step the request handler already was.
 
 Two runs, and the second found what the first had missed.
 
-**`flang/test/host-browser.test.mjs` — without a browser.** A stand-in document:
+**The check without a browser** (removed with the JavaScript implementation on
+20 August 2026). A stand-in document:
 an object with `querySelector`, `querySelectorAll` and `addEventListener`, thirty
 lines. The real host works with it the same way it works with a tab's window — the
 same technique by which `nodeHost` is checked without a network. Six checks, among

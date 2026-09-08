@@ -63,10 +63,9 @@ Before the run, the preflight prints what is actually going to be checked:
   Скрыто тестов:             33 — elixir 33
 ```
 
-There is no such report in the tree any more: `scripts/preflight.mjs` imported
-`flang/src/targets.mjs`, which went away with the JavaScript implementation, and
-the script was deleted on 20 August together with the list of targets that lived
-only there. There is no `preflight` shortcut either — the list in
+There is no such report in the tree any more: the preflight script read the
+list of targets from the JavaScript implementation, and both went away with it
+on 20 August 2026. There is no `preflight` shortcut either — the list in
 `ярлыки.flang` never had one. The argument below still holds, and it is the reason the table above was worth printing. A backend test proves code generation exactly one way: a real
 compiler accepted the emitted code, and the result agreed with the interpreter.
 Eight toolchains rarely live on one machine, the tests of the missing ones skip,
@@ -229,8 +228,8 @@ What this means when you write:
   `строк` and `lines`, `в` and `in`.
 - **Diagnostic codes.** A `FLANG_*` in prose must exist in a non-test source file.
   If it is a promise rather than a fact, mark it *объявлено, не сделано* in the
-  prose and add an entry with a reason to `ОБЪЯВЛЕНО_НЕ_СДЕЛАНО` in
-  `flang/scripts/code-guard.mjs`. That list goes red in both directions: once the
+  prose and add an entry with a reason to the «Объявлено, не сделано» list in
+  `flang/scripts/code-guard.flang`. That list goes red in both directions: once the
   code exists, the entry must go.
 - **Names.** A parameter, a `пусть` binding or a fold item may not be one letter,
   may not be shorter than three letters (two characters on the Chinese surface),
@@ -266,7 +265,7 @@ None of them may be "fixed" by loosening the guard. The tree is the measurer.
   compare a compiled binary against the interpreter, so a divergence is a failure,
   not a note;
 - a debt entry in `flang/core/SPEC.md` when a divergence from the frozen answer
-  table (`flang/test/fts-oracle.mjs`) is left in deliberately.
+  table (`flang/test/fixtures/fts-oracle.json`) is left in deliberately.
 
 Do not add product-specific structures, filesystem access, or network access to
 the language. Build integrations as separate packages over the JSON that

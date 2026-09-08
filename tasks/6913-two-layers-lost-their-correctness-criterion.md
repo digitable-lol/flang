@@ -23,8 +23,8 @@
 
 | файл | каким был критерий |
 |---|---|
-| `flang/self/emit-csharp.flang` | побайтовая сверка печати с `flang/src/emit/csharp.mjs` |
-| `flang/self/lsp.flang` | побайтовая сверка потока JSON-RPC со свидетелем `src/lsp.mjs` |
+| `flang/self/emit-csharp.flang` | побайтовая сверка печати с генератором C# на JavaScript |
+| `flang/self/lsp.flang` | побайтовая сверка потока JSON-RPC с языковым сервером на JavaScript |
 
 Прочие слои держатся на живых опорах — примерах, обещаниях, сверке с рантаймом
 в `flang/src/emit/<цель>/`, — и у них потеря дифференциального критерия не

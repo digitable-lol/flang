@@ -6,6 +6,109 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.14 — 7 September 2026
+
+**The checker replays termination proofs itself**
+
+### What appeared
+
+- A totality certificate for COMPOSITION. The binary prints into the proof record the evidence «this function terminates because it has no recursion — only calls to already-terminating functions», and the independent checker replays that evidence (`сверить_тотальность`) instead of trusting the name of the rule. The replay does not depend on the order of blocks in the record: two passes plus cycle detection. The seed was reprinted and 82 corpus records were printed anew. Commits `ff1dc5b7`, `cbac34ce`, `7cd56073`, `fba02c9a`.
+- A totality certificate for RECURSION, kinds `structure` and `step`: termination by descent along a variant of an inductive type, and by a decreasing measure bounded below by zero. The binary prints the node with the full witness — decreasing argument, floor, turns, self-call — and the checker replays it. Honestly: on the current corpus the share gains about nothing, because the corpus proves termination of recursion over the built-in list by a type law rather than by these certificates; the ability landed as groundwork. Commits `4bfbd217`, `5d73d391`, `d1bbbf94`.
+- A share-by-replay instrument: `sh flang/proof/доля-корпуса.sh --проигрыванием`. The numerator counts obligations the checker really replayed; the denominator counts ALL obligations of the corpus, including those taken on the kernel’s word and those of rejected records. No record drops out of the denominator. Commits `00a56ba5`, `682006f5`.
+- Cross-module linking of the totality certificate (`--набор`, `--зависимость`): trust in a set of records is granted only through a replayed carrier. On the current corpus there are zero such sites — this landed as groundwork, not out of need. Commit `4743a313`.
+
+### What changed
+
+- The share ruler now counts differently, and the number is not comparable with earlier releases: steps «by example» and «by property», which the checker already verifies by computation, now go into the numerator and not only into the denominator. After the composition totality certificate the share is 47.33%, after crediting what is verified on the merits — 60.78%; the trusted base does not grow and no reprint is needed. The share printout breaks the number down: by moves, and on the merits. Commit `f5ca9e8f`.
+- Category theory moved: the `flang/cat` directory became `flang/ct`, its prose `docs/ct`. Commits `acca80a3`, `8142524b`.
+- `//` comments and duplicates were removed from 192 example files, and `http.flang` was rewritten as a data table instead of 55 near-identical entries. Commits `bfd86834`, `853d2f01`, `d2779328`.
+
+### What broke
+
+- The language is still NOT formally provable. A fallback calculator, `перепиской`, remains in the checker: it recomputes some goals rather than replaying the recorded moves. While it is there the `доказуемость` shortcut answers NOT PROVABLE, and the calculator cannot be removed partially — the share would collapse outright.
+- The 95% threshold is not guaranteed on this corpus even in the limit: deliberate corpus forgeries are kept in the denominator (otherwise the share could be inflated) and can never enter the numerator, so the structural ceiling lies roughly between 91% and 96% — the threshold sits inside that bracket.
+
+## 0.7.13 — 6 September 2026
+
+**The proof object: the checker verifies the kernel’s finished derivation instead of recomputing it**
+
+### What appeared
+
+- The binary itself now prints a replayable proof trace for five identity families — neighbours, reflexivity, length, element, compute. Until now only the checker could build the chain of moves. The first end-to-end run is green: the binary emits the trace, the independent checker replays it, «taken on the kernel’s word: 0». The seed was reprinted. Commits `2eb5633e`, `c3d17187`.
+- The «postcondition of the callee» technique: the checker builds an instance of the callee’s postcondition from the call site itself — arity, parameters substituted by arguments and the result by the node — and closes the goal by modus ponens, instead of the old name-plus-line binding. It catches a real forgery: a theorem claiming «the result equals 3» over a body that yields 0 used to pass with code 0 and now gives code 1. Commits `e5a75366`, `d433f3b2`.
+- The moves «compute» (closed arithmetic such as «2 plus 2 equals 4») and «rewrite by form» (the length and element laws) are replayed by explicit primitives over `оценить_терм` rather than accepted on the kernel’s word. Commits `a1f19f27`, `269d3ccf`, `b0ef3a31`.
+- `хеш256` became a built-in word of the language: SHA-256 is computed by the runtime of each of the nine emit targets, not by a flang library. Commits `5c90d6f7`, `ee3b0121`.
+- The `js` target got a Node host — `flang/src/emit/js/flang_host_node.js`. A program with an input/output plan, printed to JavaScript, now actually runs: nine kinds of orders out of twenty-two, with a clear refusal for the rest. Commit `7e7007a2`.
+- A plan executor for the `python` target landed in the tree — `flang/src/emit/python/flang_io.py`. The `python` target still refuses to print a program WITH a plan (`FLANG_PLAN_UNSUPPORTED`): the executor is waiting for the emitter. Commit `e84e290b`.
+- Three examples under real frameworks — `examples/frameworks/`: `nestjs-orders`, `react-invoice`, `vue-roman`. A proven core in flang is printed to JavaScript and runs under Nest, React and Vue; each example’s README states where the boundary lies: the decision is in flang, the socket and the rendering belong to the host framework. Commit `374e9aaa`.
+- `./ярлык доказуемость` prints a single word — PROVABLE or NOT PROVABLE — from three numbers taken by a run, not from a judgement written into prose. Commit `7b03ee3a`.
+- `./ярлык версия X.Y.Z` raises the version number in one source and propagates it to the derived places — package.json, the `#define` in C, the man page, the Homebrew formula; a guard reddens if any of them falls behind. Commits `3071b76c`, `d676ec12`.
+
+### What changed
+
+- The replayer now gates equality postconditions on the chain of moves. Previously a false move under an equality postcondition passed with code 3, indistinguishable from an honest one, because the replayer was called on zero lines; now such a move gives code 1. Commit `3931ae1a`.
+- Two checker complaints are closed: a premise under `принцип …` without an explicitly written `теорема` never reached the replayer (the moves beneath it were decoration), and `вставить_вместо` unconditionally wrapped the inserted body in one extra pair of parentheses, so on a compound condition no wording of the argument ever reached the goal. Commit `3cb04bcb`.
+- The seed can be re-sown quickly, without a full reprint, when `flang/self` is untouched. Commit `d0060d56`.
+- The list of `flang` commands is checked against five places at once: the man page and both READMEs did not know the `new` command. Commit `fb29de4d`.
+- The ninth emit target, `elixir`, came under CI supervision, and divergence between the nine targets on one program is now watched by a separate instrument. Commits `5a5e9a74`, `532e6f2b`.
+
+### What broke
+
+- The language is NOT formally provable, and that is a machine verdict rather than an opinion: `git grep -c перепиской flang/proof/чекер/сверщик.c` gives 10, not 0, and `./ярлык доказуемость` answers NOT PROVABLE. Two of the criterion’s seven gates are taken.
+- A narrow subclass of sites is not migrated: the «by declaration» route — 146 of 159 «proved» sites — prints only the name of the rule, with no chain of moves, so the replayer has nothing to replay.
+- Paying for `требует` in the new technique is partial: a callee’s precondition counts as discharged only if it syntactically matched one of the caller’s own `требует`. Discharge by computation or by an `если` guard is not read by this wave — such sites are honestly rejected with code 1 rather than wrongly accepted.
+
+## 0.7.12 — 6 September 2026
+
+**An install now carries the runtimes of all nine emit targets, not one**
+
+### What appeared
+
+- A walker over the `flang/self` examples, and a CI job around it: 4350 examples of 4445 are supervised. Before this nobody ran them file by file — zero in CI. The full run was taken end to end: 55 minutes 19 seconds, exit code 0, 12,530 examples. Commits `a35a4b42`, `ec039e7f`, `3690acf4`.
+- A second carrier for the «by case analysis» technique — `algebra`, with forgery probes. Commits `e11ed933`, `bb1e15a8`.
+- Two checker rules: «start by construction» by value and not only by identity, and «unsatisfiable premise» — anything follows from incompatible assumptions. Counted by corpus records that is 28 of 86 against 30 of 86. Commits `2d58f99e`, `3e2ac46c`.
+- The verdict cache printout names its hits and misses by number. Commit `c137e8d5`.
+
+### What changed
+
+- The release archive now carries a `runtime/<target>/` directory — 32 files, 2,435,747 bytes — and the Homebrew formula and the asdf plugin move its whole root into `share/flang`. Previously exactly one target of nine was installed: the other eight were promised by the man page, both READMEs and the binary’s own help, and did not work for whoever installed it. Commit `11295873`.
+- The verdict cache key is computed with SHA-256 instead of a polynomial: the old key, advertised at 59.79 bits, was forged in 3.6 seconds. Commit `deea0d61`.
+- The corpus was reprinted with the current binary — 67 records. The checker-verified share went 13.75% → 17.77% (17.92% was expected; the difference is a shifted denominator): the share had been held down by stale records, not by the checker. Commits `e1e362da`, `ed5de60a`.
+- The hole «moves without a theorem hide the debt» is closed on both halves: «closed by reduction» is checked against the source, and an empty «move end» no longer hides the debt. Commit `817be78a`.
+- «This number» was added to the `proofterm` import list — 1289 examples had never run at all. Commit `a85c7bb4`.
+- The ninth emit target was added to five guards that did not see it; along the way it turned out that the `cpp` target escapes names by the `c` target’s list. Commit `9fb0f293`.
+
+### What broke
+
+- The language is still NOT formally provable: the checker replayed 30 corpus records of 86, against a gate threshold of 95%.
+- CI builds and runs eight emit targets of nine; as of this release the ninth is only named by a number — it came under supervision in 0.7.13. Commit `6c0deb07`.
+
+## 0.7.11 — 5 September 2026
+
+**Supervision is back on dev, and guards prove by a run that they can redden**
+
+### What appeared
+
+- The `.githooks/pre-push` hook runs the cheap guards before a push and says out loud what it did NOT check. The full set costs about 134 runner minutes — a hook that long would be bypassed with `--no-verify` and would be worse than none. Installed with one command: `git config core.hooksPath .githooks`. Commit `1de3cf23`.
+- An instrument for «who has been shown by a run to redden»: a guard without a forgery probe is a guard that is trusted for nothing. Commits `ff354a73`, `69550a3e`, `dc24ffa3`, `83a838b2`.
+- A census of «which guards CI never calls»: the number had been counted by hand, and it was wrong. Commits `b29e8fa6`, `3fa4c09f`.
+- A guard over the derived version numbers: the version string in the seed had been systematically falling behind the release; now the divergence reddens, and the version is checked against the release ARTEFACT rather than against a file lying next to it. Commits `2532b671`, `cf337f76`.
+- The proved-share ledger checks its own table against the tree and is wired into both the shortcut list and CI. Commits `1bfe1e7d`, `5dba51a1`, `2aa82f5c`.
+
+### What changed
+
+- The checker learned three rules: negation of a closed computation, the finiteness proviso taken as a premise, and «the goal follows from what was declared about the arguments». The checker-verified share of the corpus went 7.50% → 13.75%. Commits `25181b19`, `ee23dd75`, `f5d378a1`.
+- The last named hole in gate G2 is closed: the induction argument is taken BEFORE the colon. Separately, a false acceptance is closed — a type declaration was being read through a trailing comment — and with it five false alarms. A wider measurement gives 62 false alarms out of 923 for the old checker and 0 for the new one. Commits `002b20f6`, `a54d4b55`, `56a8441c`.
+- CI runs on the `dev` branch again: nineteen jobs had checked none of 74 pushes. The CI build became twice as fast and the binary is cached. Commits `8f90f49a`, `15e89235`.
+- Syncing the Homebrew tap is written into the release procedure: six releases in a row, 0.7.4 through 0.7.10, went out without it, and all that time `brew install` was installing 0.7.3. Commit `db23eb3b`.
+- The 0.7.x release notes were taken from `main` wholesale: they had been written there and never came back to `dev`, because a release is made on `main`. Eleven versions were added and none rewritten. Commit `532468f2`.
+
+### What broke
+
+- The language is still NOT formally provable: the checker-verified share of the corpus is 13.75% against a gate threshold of 95%. And at this point it is held down not by the checker’s rules but by stale corpus records — the measurement promises 17.92% from a reprint. Commit `7e369d98`.
+- Only 8 guards of 58 have been shown by a run that they can redden, and CI was trusting twenty of the unproven ones for nothing. Commit `ff354a73`.
+- The guard census as of 5 September 2026: 56 guards, CI calls 29, twenty-seven are called by nobody. Commit `3fa4c09f`.
+
 ## 0.7.10 — 4 September 2026
 
 **Hotfix: the live shell crashed on every line of input**

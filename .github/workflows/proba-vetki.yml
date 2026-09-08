@@ -1,10 +1,11 @@
 # ВРЕМЕННАЯ РАБОТА ВЕТКИ `r/ci-install-path` — СНИМАЕТСЯ ПЕРЕД СЛИЯНИЕМ.
 #
-# Первый заход (прогон 34261764782) показал: `put` зелена на обеих площадках,
-# а `brew` встаёт внутри `scripts/release-in-c.flang` на проверке страницы
-# руководства — «страница набралась, но это не страница про flang». Здесь
-# замер того, чем именно она давится на macOS: чем набирает groff и что
-# оставляет sed.
+# Заход 1 (34261764782): `put` зелена на обеих площадках; `brew` встала внутри
+# `release-in-c.flang` на проверке страницы руководства.
+# Заход 2 (34263619913): на `macos-latest` groff НЕ СТОИТ вовсе, а труба
+# отвечала нулём — отсюда ложный «страница набралась, но это не страница про
+# flang».
+# Заход 3 (здесь): та же работа `brew` целиком, после правки поручения.
 
 name: Проба ветки
 
@@ -16,27 +17,55 @@ permissions:
   contents: read
 
 jobs:
-  groff:
-    name: proba-groff
+  brew:
+    name: proba-homebrew
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Чем набирают и чем чистят
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+      - run: brew install gnu-tar
+      - name: Собрать архив тем же действием, что и release.yml
+        uses: ./.github/actions/release-archive
+      - name: Формула на свежий архив
         run: |
-          groff --version 2>&1 | head -1 || true
-          sed --version 2>&1 | head -1 || true
-          command -v col || true
-      - name: Три вида одной и той же страницы
+          set -eu
+          archive="$PWD/$ARHIV"
+          digest="$(shasum -a 256 "$archive" | cut -d' ' -f1)"
+          mkdir -p output/tap
+          sed -e "s|^  url .*|  url \"file://${archive}\"|" \
+              -e "s|^  sha256 .*|  sha256 \"${digest}\"|" \
+              packaging/homebrew/flang.rb > output/tap/flang.rb
+          brew install --build-from-source --verbose ./output/tap/flang.rb
+      - name: Блок test do формулы
+        run: brew test flang
+      - name: Поставленное brew умеет печатать в C
         run: |
-          set -u
-          echo "── как сейчас: groff | sed 's/\\x1b\\[…m//g'"
-          sh -c 'groff -K utf8 -man -Tutf8 "$0" | sed "s/\x1b\[[0-9;]*m//g" | head -2 | cat -v' packaging/flang.1 || true
-          echo
-          echo "── ESC собран printf-ом"
-          sh -c 'esc=$(printf "\033"); groff -K utf8 -man -Tutf8 "$0" | sed "s/${esc}\[[0-9;]*m//g" | head -2 | cat -v' packaging/flang.1 || true
-          echo
-          echo "── GROFF_NO_SGR + col -b"
-          sh -c 'GROFF_NO_SGR=1 groff -K utf8 -man -Tutf8 "$0" | col -b | head -2 | cat -v' packaging/flang.1 || true
-          echo
-          echo "── сырой groff, без чистки"
-          sh -c 'groff -K utf8 -man -Tutf8 "$0" | head -2 | cat -v' packaging/flang.1 || true
+          set -eu
+          printf '%s\n' 'модуль «Проба»' '' 'тотальная функция «Два»' '  возвращает число' '  2' > проба.flang
+          otvet="$("$(brew --prefix)/bin/flang" --version)"
+          v_formule="$(sed -n 's/^  version "\([^"]*\)"$/\1/p' packaging/homebrew/flang.rb)"
+          if [ "$otvet" != "flang $v_formule" ]; then
+            echo "::error::brew поставил двоичный, который отвечает «$otvet», а формула объявляет version $v_formule"
+            exit 1
+          fi
+          "$(brew --prefix)/bin/flang" emit проба.flang --target c --out печать
+          test -f печать/flang_runtime.h
+      - name: Поставленное brew умеет печатать во все цели, какие называет само
+        run: |
+          set -eu
+          printf '%s\n' 'модуль «Проба»' '' 'тотальная функция «Два»' '  возвращает число' '  2' > проба.flang
+          beda=0
+          celi="$("$(brew --prefix)/bin/flang" --help | grep -- '--target' | tr ' ' '\n' | grep '|' | tr '|' ' ')"
+          for cel in $celi; do
+            if "$(brew --prefix)/bin/flang" emit проба.flang --target "$cel" --out "печать-$cel"; then
+              echo "  зелена  $cel"
+            else
+              echo "::error::цель $cel не печатается из установки brew"
+              beda=$((beda + 1))
+            fi
+          done
+          test "$beda" -eq 0

@@ -139,11 +139,14 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <termios.h>
 #include <unistd.h>
 
 /*
@@ -954,6 +957,17 @@ static const char REPL_HELP[] =
     "  .выход                     закончить работу\n"
     "По-английски: .help .list .source .save .load .reset .quit\n"
     "\n"
+    "Клавиши (когда на обоих концах терминал):\n"
+    "  ←/→, Home/End, Ctrl-A/Ctrl-E      по строке\n"
+    "  ⌥←/⌥→, Alt-←/→, Ctrl-←/→          по словам; в Terminal.app и iTerm2 для этого\n"
+    "                                    Option должен слать Esc+ (Meta); ⌘-стрелки до\n"
+    "                                    оболочки не доходят — их берёт себе приложение\n"
+    "  Backspace, Delete, ⌥Backspace, Ctrl-W   стереть знак слева, справа, слово слева\n"
+    "  Ctrl-U, Ctrl-K                    стереть до начала, до конца строки\n"
+    "  ↑/↓                               история этой сессии\n"
+    "  Ctrl-L                            очистить экран; Ctrl-D на пустой строке — конец\n"
+    "Цвета — тема digitable; NO_COLOR или TERM=dumb их выключают.\n"
+    "\n"
     "Модули подключаются строкой языка, а не командой:\n"
     "  использует «Списки» из \"flang/stdlib/lists.flang\"\n"
     "\n"
@@ -1086,6 +1100,270 @@ static void buf_reset(repl_buf *buf) {
   buf->used = 0;
   buf->data[0] = '\0';
 }
+
+/* ───────────────────────────── цвет ───────────────────────────── */
+
+/*
+ * Тема — digitable: палитра портала courses.digitable.life (digitable.tokens.css)
+ * и dotfiles владельца (.alacritty.toml, .vim/colors/digitable.vim — оттуда же
+ * индексы xterm-256). Глубина цвета — правила digitable-lol/flang-env, снятые с
+ * digitdisk: NO_COLOR действует самим наличием, пустой и «dumb» TERM — без
+ * цвета, COLORTERM truecolor/24bit и TERM с «direct» — истинный цвет, TERM с
+ * «256» — палитра, иначе шестнадцать. Красится только поток, за которым
+ * терминал: под трубой вывод остаётся байт в байт прежним.
+ */
+typedef enum repl_depth { REPL_PLAIN, REPL_SIXTEEN, REPL_CUBE, REPL_TRUE } repl_depth;
+
+typedef enum repl_hue {
+  HUE_CYAN,
+  HUE_CYAN_SOFT,
+  HUE_BLUE,
+  HUE_GREEN,
+  HUE_YELLOW,
+  HUE_ORANGE,
+  HUE_PURPLE,
+  HUE_RED,
+  HUE_WHITE,
+  HUE_MUTED,
+  HUE_SUBTLE
+} repl_hue;
+
+typedef struct repl_swatch {
+  unsigned char red, green, blue, cube, basic;
+} repl_swatch;
+
+static const repl_swatch REPL_PALETTE[] = {
+    {0x00, 0xe5, 0xe5, 44, 36},  /* cyan      #00e5e5 */
+    {0x00, 0xd8, 0xff, 45, 96},  /* cyan-soft #00d8ff */
+    {0x3c, 0xa9, 0xff, 75, 34},  /* blue      #3ca9ff */
+    {0x7c, 0xff, 0x6b, 119, 32}, /* green     #7cff6b */
+    {0xff, 0xc2, 0x47, 214, 33}, /* yellow    #ffc247 */
+    {0xff, 0x8a, 0x2a, 208, 33}, /* orange    #ff8a2a */
+    {0xb6, 0x5c, 0xff, 135, 35}, /* purple    #b65cff */
+    {0xff, 0x5b, 0x5b, 203, 31}, /* red       #ff5b5b */
+    {0xf5, 0xf7, 0xfa, 231, 37}, /* white     #f5f7fa */
+    {0x9b, 0xaa, 0xb8, 248, 37}, /* muted     #9baab8 */
+    {0x71, 0x86, 0x95, 67, 90},  /* subtle    #718695 */
+};
+
+static repl_depth repl_depth_out = REPL_PLAIN;
+static repl_depth repl_depth_err = REPL_PLAIN;
+
+static repl_depth repl_depth_of_env(void) {
+  const char *term = getenv("TERM");
+  const char *colour = getenv("COLORTERM");
+  if (getenv("NO_COLOR") != NULL) {
+    return REPL_PLAIN;
+  }
+  if (term == NULL || term[0] == '\0' || strcmp(term, "dumb") == 0) {
+    return REPL_PLAIN;
+  }
+  if (colour != NULL) {
+    char low[16];
+    size_t at = 0;
+    for (at = 0; colour[at] != '\0' && at + 1 < sizeof(low); at += 1) {
+      low[at] = colour[at] >= 'A' && colour[at] <= 'Z' ? (char)(colour[at] + ('a' - 'A')) : colour[at];
+    }
+    low[at] = '\0';
+    if (strcmp(low, "truecolor") == 0 || strcmp(low, "24bit") == 0) {
+      return REPL_TRUE;
+    }
+  }
+  if (strstr(term, "direct") != NULL) {
+    return REPL_TRUE;
+  }
+  if (strstr(term, "256") != NULL) {
+    return REPL_CUBE;
+  }
+  return REPL_SIXTEEN;
+}
+
+static void repl_paint_init(void) {
+  const repl_depth depth = repl_depth_of_env();
+  repl_depth_out = isatty(1) == 1 ? depth : REPL_PLAIN;
+  repl_depth_err = isatty(2) == 1 ? depth : REPL_PLAIN;
+}
+
+static void repl_ink(repl_buf *out, repl_depth depth, repl_hue hue, bool bold) {
+  const repl_swatch *swatch = &REPL_PALETTE[hue];
+  char sequence[48];
+  if (depth == REPL_PLAIN) {
+    return;
+  }
+  if (depth == REPL_TRUE) {
+    sprintf(sequence, "\033[%s38;2;%u;%u;%um", bold ? "1;" : "", (unsigned)swatch->red, (unsigned)swatch->green,
+            (unsigned)swatch->blue);
+  } else if (depth == REPL_CUBE) {
+    sprintf(sequence, "\033[%s38;5;%um", bold ? "1;" : "", (unsigned)swatch->cube);
+  } else {
+    sprintf(sequence, "\033[%s%um", bold ? "1;" : "", (unsigned)swatch->basic);
+  }
+  buf_put(out, sequence);
+}
+
+static void repl_ink_off(repl_buf *out, repl_depth depth) {
+  if (depth != REPL_PLAIN) {
+    buf_put(out, "\033[0m");
+  }
+}
+
+/** Слово, выкрашенное для потока; при пустой глубине — слово как есть. Во владении. */
+static char *repl_painted(repl_depth depth, repl_hue hue, bool bold, const char *text) {
+  repl_buf out;
+  buf_init(&out);
+  repl_ink(&out, depth, hue, bold);
+  buf_put(&out, text);
+  repl_ink_off(&out, depth);
+  return out.data;
+}
+
+/*
+ * Слова языка для подсветки набираемой строки — русская и английская
+ * поверхности таблицы лексера («Куски поверхностей», flang/self/lexer.flang),
+ * длинные фразы раньше коротких, чтобы «умножить на» не читалось как «на».
+ */
+static const char *const REPL_WORDS[] = {
+    "затем применить морфизм", "отображается в морфизм", "отображаются в морфизм", "следовательно доказано",
+    "to number or failure", "then apply morphism", "отображается в поле", "character by code",
+    "failure threshold", "вложена структура", "затем по морфизму", "применить морфизм", "forward morphism",
+    "inverse morphism", "maps to morphism", "nested structure", "then by morphism", "therefore proved",
+    "к числу или беда", "обратный морфизм", "обратный элемент", "по предположению", "into characters",
+    "inverse element", "is greater than", "is not equal to", "map to morphism", "иногда является",
+    "apply morphism", "character code", "голова и хвост", "отображается в", "отображаются в",
+    "прямой морфизм", "символ по коду", "by hypothesis", "head and tail", "maps to field", "multiplied by",
+    "nested object", "starting with", "вложен объект", "отфильтровать", "порог отказов", "пустой список",
+    "следовательно", "greater than", "induction on", "intersection", "is less than", "with mailbox",
+    "начинается с", "обеспечивает", "обрабатывает", "экспортирует", "begins with", "by morphism",
+    "by property", "is at least", "isomorphism", "proposition", "starts with", "supervision", "with budget",
+    "индукция по", "код символа", "пересечение", "по морфизму", "по свойству", "умножить на", "утверждение",
+    "by example", "divided by", "empty list", "find where", "is at most", "not equals", "возвращает",
+    "изоморфизм", "использует", "на символы", "начинает с", "остаток от", "отобразить", "по примеру",
+    "примечание", "соединение", "состоянием", "утверждаем", "bifunctor", "decompose", "decreases",
+    "embedding", "less than", "morphisms", "operation", "structure", "substring", "therefore", "to number",
+    "under law", "бифунктор", "делить на", "категория", "найти где", "начиная с", "не больше", "не меньше",
+    "ожидается", "по закону", "подстрока", "признаком", "принимает", "приписать", "процентов", "разделить",
+    "разложить", "результат", "с запасом", "соединить", "состояние", "список из", "стратегия", "структура",
+    "тотальная", "and also", "at least", "category", "contains", "equal to", "expected", "function",
+    "identity", "in monad", "morphism", "percents", "property", "requires", "strategy", "в данных",
+    "в монаде", "вложение", "деньгами", "для всех", "добавить", "и притом", "к строке", "морфизмы",
+    "не равен", "не равна", "не равно", "носитель", "операция", "получаем", "признака", "процента",
+    "с ящиком", "свойство", "содержит", "функтора", "является", "accepts", "at most", "boolean", "carrier",
+    "ensures", "example", "exports", "flatten", "for all", "functor", "handles", "hash256", "in data",
+    "list of", "maps to", "objects", "percent", "prepend", "process", "returns", "theorem", "to text",
+    "utility", "variant", "вариант", "возврат", "единица", "к числу", "морфизм", "объекты", "правило",
+    "признак", "процент", "процесс", "свертка", "свёртка", "сначала", "строкой", "текстом", "теорема",
+    "требует", "убывает", "утилита", "функтор", "функция", "цепочка", "элемент", "equals", "filter", "length",
+    "map to", "may be", "module", "modulo", "monoid", "number", "object", "record", "result", "return",
+    "string", "больше", "голова", "деньги", "запись", "меньше", "модуль", "монада", "моноид", "надзор",
+    "объект", "пример", "прогон", "равное", "равной", "равным", "разбор", "символ", "случай", "список",
+    "строка", "строки", "строку", "только", "хеш256", "числом", "after", "chain", "claim", "empty", "false",
+    "field", "first", "given", "gives", "match", "minus", "monad", "money", "split", "state", "times",
+    "total", "where", "датой", "длина", "закон", "затем", "имеет", "иначе", "любое", "минус", "ничто",
+    "после", "пусто", "пусть", "равен", "равна", "равно", "хвост", "числа", "число", "числу", "case", "char",
+    "date", "else", "flag", "fold", "from", "head", "into", "item", "join", "list", "next", "note", "null",
+    "only", "onto", "plan", "plus", "rule", "seed", "tail", "then", "true", "type", "uses", "with", "дано",
+    "дата", "дату", "даты", "даёт", "если", "план", "плюс", "поле", "поля", "семя", "add", "and", "any",
+    "has", "law", "let", "map", "not", "run", "yes", "где", "или", "как", "нет", "тип", "это", "as", "at",
+    "by", "if", "in", "is", "no", "of", "or", "to", "да", "из", "не", "от", "по", "то", "в", "и", "к", "с",
+    "у",
+    NULL};
+
+static bool repl_word_byte(unsigned char byte) {
+  return (byte >= '0' && byte <= '9') || (byte >= 'a' && byte <= 'z') || (byte >= 'A' && byte <= 'Z') ||
+         byte == '_' || byte >= 0x80;
+}
+
+static size_t repl_word_here(const char *text, size_t used, size_t at) {
+  size_t index = 0;
+  for (index = 0; REPL_WORDS[index] != NULL; index += 1) {
+    const size_t length = strlen(REPL_WORDS[index]);
+    if (at + length <= used && memcmp(text + at, REPL_WORDS[index], length) == 0 &&
+        (at + length == used || !repl_word_byte((unsigned char)text[at + length]))) {
+      return length;
+    }
+  }
+  return 0;
+}
+
+static void repl_span(repl_buf *out, repl_depth depth, repl_hue hue, const char *text, size_t bytes) {
+  repl_ink(out, depth, hue, false);
+  buf_add(out, text, bytes);
+  repl_ink_off(out, depth);
+}
+
+/** Строка ввода с подсветкой: ключевые слова, «имена», числа, "строки", // и команды с точки. */
+static void repl_highlight(repl_buf *out, repl_depth depth, const char *text, size_t used) {
+  size_t at = 0;
+  if (depth == REPL_PLAIN) {
+    buf_add(out, text, used);
+    return;
+  }
+  while (at < used && text[at] == ' ') {
+    at += 1;
+  }
+  if (at < used && text[at] == '.') {
+    repl_span(out, depth, HUE_PURPLE, text, used);
+    return;
+  }
+  at = 0;
+  while (at < used) {
+    const unsigned char byte = (unsigned char)text[at];
+    const bool starts = at == 0 || !repl_word_byte((unsigned char)text[at - 1]);
+    size_t end = at;
+    if (byte == '/' && at + 1 < used && text[at + 1] == '/') {
+      repl_span(out, depth, HUE_SUBTLE, text + at, used - at);
+      return;
+    }
+    if (byte == '"') {
+      end = at + 1;
+      while (end < used && text[end] != '"') {
+        end += 1;
+      }
+      end = end < used ? end + 1 : used;
+      repl_span(out, depth, HUE_GREEN, text + at, end - at);
+      at = end;
+      continue;
+    }
+    if (byte == 0xC2 && at + 1 < used && (unsigned char)text[at + 1] == 0xAB) {
+      end = at + 2;
+      while (end + 1 < used && !((unsigned char)text[end] == 0xC2 && (unsigned char)text[end + 1] == 0xBB)) {
+        end += 1;
+      }
+      end = end + 1 < used ? end + 2 : used;
+      repl_span(out, depth, HUE_CYAN, text + at, end - at);
+      at = end;
+      continue;
+    }
+    if (byte >= '0' && byte <= '9' && starts) {
+      end = at;
+      while (end < used && ((text[end] >= '0' && text[end] <= '9') ||
+                            (text[end] == '.' && end + 1 < used && text[end + 1] >= '0' && text[end + 1] <= '9'))) {
+        end += 1;
+      }
+      repl_span(out, depth, HUE_ORANGE, text + at, end - at);
+      at = end;
+      continue;
+    }
+    if (starts && repl_word_byte(byte)) {
+      const size_t word = repl_word_here(text, used, at);
+      if (word > 0) {
+        repl_span(out, depth, HUE_BLUE, text + at, word);
+        at += word;
+        continue;
+      }
+      end = at;
+      while (end < used && repl_word_byte((unsigned char)text[end])) {
+        end += 1;
+      }
+      buf_add(out, text + at, end - at);
+      at = end;
+      continue;
+    }
+    buf_char(out, text[at]);
+    at += 1;
+  }
+}
+
 
 /**
  * Список строк во владении: имена объявлений, пути, экспорты — и ИСХОДНИКИ.
@@ -2385,8 +2663,8 @@ static void bads_take_analysis(repl_bads *list, fl_value bad) {
             column.tag == FL_NUMBER ? (size_t)column.as.number : 0);
 }
 
-static void repl_print_bad(const char *code, const char *message, const char *where, const char *name, size_t line,
-                           size_t column) {
+static void repl_print_bad_plain(const char *code, const char *message, const char *where, const char *name,
+                                 size_t line, size_t column) {
   if (where == NULL) {
     fprintf(stderr, "%s: %s\n", code, message);
     return;
@@ -2425,6 +2703,14 @@ static void repl_print_bad(const char *code, const char *message, const char *wh
   }
   fprintf(stderr, "%s в объявлении (%s), строка %lu: %s\n", code, name == NULL ? "?" : name, (unsigned long)line,
           message);
+}
+
+/* Код отказа — красным, когда за stderr терминал; текст места и сообщения — как есть. */
+static void repl_print_bad(const char *code, const char *message, const char *where, const char *name, size_t line,
+                           size_t column) {
+  char *painted = repl_painted(repl_depth_err, HUE_RED, true, code);
+  repl_print_bad_plain(painted, message, where, name, line, column);
+  free(painted);
 }
 
 /**
@@ -5874,7 +6160,19 @@ static bool repl_run(repl_session *session, const char *function) {
   repl_litter(session, "err.txt");
   if (system(command.data) == 0) {
     text = repl_read_file(out, &bytes);
-    if (text != NULL) {
+    if (text != NULL && bytes > 0 && repl_depth_out != REPL_PLAIN) {
+      const size_t tail = text[bytes - 1] == '\n' ? 1 : 0;
+      repl_buf shown;
+      buf_init(&shown);
+      repl_ink(&shown, repl_depth_out, HUE_WHITE, true);
+      buf_add(&shown, text, bytes - tail);
+      repl_ink_off(&shown, repl_depth_out);
+      if (tail == 1) {
+        buf_char(&shown, '\n');
+      }
+      fwrite(shown.data, 1, shown.used, stdout);
+      buf_free(&shown);
+    } else if (text != NULL) {
       fwrite(text, 1, bytes, stdout);
     }
   } else {
@@ -5971,9 +6269,11 @@ static void repl_report(const repl_nodes *nodes, const repl_strings *proven, con
       const repl_node *node = &nodes->items[index];
       const int total =
           node->total == 1 && proven != NULL && !strings_has(proven, node->name, strlen(node->name)) ? 0 : node->total;
-      printf("объявлено: %s%s\n", node->label,
+      char *word = repl_painted(repl_depth_out, HUE_GREEN, false, "объявлено:");
+      printf("%s %s%s\n", word, node->label,
              total == 1 ? " — завершение доказано"
                         : total == 0 ? " — завершение не доказано: вычисление ограничено лимитом шагов" : "");
+      free(word);
     }
   }
   if (from != NULL) {
@@ -6169,10 +6469,14 @@ static bool repl_evaluate(repl_session *session, const char *text, size_t indent
     /* Вычислять нечем — но проверка прошла, и сказать об этом надо: молчание
        читалось бы как «ничего не случилось». Чем именно нечем, сказано один раз
        при запуске, а не на каждой строке. */
-    printf("проверено\n");
+    char *word = repl_painted(repl_depth_out, HUE_GREEN, false, "проверено");
+    printf("%s\n", word);
+    free(word);
     ok = true;
   } else if (!repl_compile(session, program, &error)) {
-    fprintf(stderr, "FLANG_CLI: %s\n", error == NULL ? "сессия не собралась" : error);
+    char *code = repl_painted(repl_depth_err, HUE_RED, true, "FLANG_CLI");
+    fprintf(stderr, "%s: %s\n", code, error == NULL ? "сессия не собралась" : error);
+    free(code);
   } else {
     ok = repl_run(session, name.data);
   }
@@ -6707,6 +7011,497 @@ static repl_read repl_read_line(repl_buf *line) {
     }
     return line->used > 0 ? REPL_LINE : REPL_EOF;
   }
+}
+
+/* ────────────────────────────── клавиши ─────────────────────────────────── */
+
+/*
+ * Редактор строки — только когда на обоих концах терминал. Канонический режим
+ * снимается, и клавиши разбираются здесь: стрелки, Home/End, слово влево и
+ * вправо (Option/Alt и Ctrl), Backspace, Delete, Ctrl-A/E/W/U/K/L, история
+ * ↑/↓. Ctrl-C остаётся сигналом (ISIG не снят) и идёт прежней дорогой.
+ * Труба этого кода не видит вовсе.
+ */
+typedef struct repl_past {
+  char **items;
+  size_t count;
+  size_t capacity;
+} repl_past;
+
+static repl_past repl_lines = {NULL, 0, 0};
+
+static void repl_remember(const char *line) {
+  if (line[0] == '\0') {
+    return;
+  }
+  if (repl_lines.count > 0 && strcmp(repl_lines.items[repl_lines.count - 1], line) == 0) {
+    return;
+  }
+  if (repl_lines.count == repl_lines.capacity) {
+    repl_lines.capacity = repl_lines.capacity == 0 ? 64 : repl_lines.capacity * 2;
+    repl_lines.items = (char **)repl_grow(repl_lines.items, repl_lines.capacity * sizeof(char *));
+  }
+  repl_lines.items[repl_lines.count] = repl_say(line);
+  repl_lines.count += 1;
+}
+
+static size_t repl_cp_back(const char *text, size_t at) {
+  if (at == 0) {
+    return 0;
+  }
+  at -= 1;
+  while (at > 0 && ((unsigned char)text[at] & 0xC0) == 0x80) {
+    at -= 1;
+  }
+  return at;
+}
+
+static size_t repl_cp_forward(const char *text, size_t used, size_t at) {
+  if (at >= used) {
+    return used;
+  }
+  at += 1;
+  while (at < used && ((unsigned char)text[at] & 0xC0) == 0x80) {
+    at += 1;
+  }
+  return at;
+}
+
+static size_t repl_cols(const char *text, size_t bytes) {
+  size_t cols = 0;
+  size_t at = 0;
+  for (at = 0; at < bytes; at += 1) {
+    if (((unsigned char)text[at] & 0xC0) != 0x80) {
+      cols += 1;
+    }
+  }
+  return cols;
+}
+
+static size_t repl_byte_of_col(const char *text, size_t used, size_t col) {
+  size_t at = 0;
+  while (col > 0 && at < used) {
+    at = repl_cp_forward(text, used, at);
+    col -= 1;
+  }
+  return at;
+}
+
+/* Часть слова: буквы, цифры, подчёркивание и всё не-ASCII, кроме «», — и … */
+static bool repl_word_cp(const char *text, size_t used, size_t at) {
+  const unsigned char byte = (unsigned char)text[at];
+  unsigned long point = 0;
+  if (byte < 0x80) {
+    return repl_word_byte(byte);
+  }
+  if ((byte & 0xE0) == 0xC0 && at + 1 < used) {
+    point = ((unsigned long)(byte & 0x1F) << 6) | ((unsigned char)text[at + 1] & 0x3F);
+  } else if ((byte & 0xF0) == 0xE0 && at + 2 < used) {
+    point = ((unsigned long)(byte & 0x0F) << 12) | (((unsigned long)(unsigned char)text[at + 1] & 0x3F) << 6) |
+            ((unsigned char)text[at + 2] & 0x3F);
+  } else {
+    return true;
+  }
+  return !(point == 0xAB || point == 0xBB || point == 0xA0 || point == 0x2013 || point == 0x2014 || point == 0x2026);
+}
+
+static size_t repl_word_left(const char *text, size_t used, size_t at) {
+  while (at > 0 && !repl_word_cp(text, used, repl_cp_back(text, at))) {
+    at = repl_cp_back(text, at);
+  }
+  while (at > 0 && repl_word_cp(text, used, repl_cp_back(text, at))) {
+    at = repl_cp_back(text, at);
+  }
+  return at;
+}
+
+static size_t repl_word_right(const char *text, size_t used, size_t at) {
+  while (at < used && !repl_word_cp(text, used, at)) {
+    at = repl_cp_forward(text, used, at);
+  }
+  while (at < used && repl_word_cp(text, used, at)) {
+    at = repl_cp_forward(text, used, at);
+  }
+  return at;
+}
+
+typedef enum repl_key {
+  KEY_NONE,
+  KEY_LEFT,
+  KEY_RIGHT,
+  KEY_WORD_LEFT,
+  KEY_WORD_RIGHT,
+  KEY_HOME,
+  KEY_END,
+  KEY_UP,
+  KEY_DOWN,
+  KEY_BACKSPACE,
+  KEY_DELETE,
+  KEY_WORD_BACKSPACE,
+  KEY_WORD_DELETE,
+  KEY_KILL_START,
+  KEY_KILL_END,
+  KEY_CLEAR,
+  KEY_TAB,
+  KEY_ENTER,
+  KEY_END_OF_INPUT
+} repl_key;
+
+static int repl_key_byte(int wait_ms) {
+  struct pollfd waiting;
+  unsigned char byte = 0;
+  waiting.fd = 0;
+  waiting.events = POLLIN;
+  waiting.revents = 0;
+  if (poll(&waiting, 1, wait_ms) <= 0) {
+    return -1;
+  }
+  if (read(0, &byte, 1) != 1) {
+    return -1;
+  }
+  return (int)byte;
+}
+
+/* Последовательность после ESC: ESC b/f/d/Backspace, CSI и SS3 с модификаторами. */
+static repl_key repl_escape(void) {
+  char params[16];
+  size_t count = 0;
+  int byte = repl_key_byte(60);
+  bool meta = false;
+  int final = 0;
+  if (byte < 0) {
+    return KEY_NONE;
+  }
+  if (byte == 'b') {
+    return KEY_WORD_LEFT;
+  }
+  if (byte == 'f') {
+    return KEY_WORD_RIGHT;
+  }
+  if (byte == 'd') {
+    return KEY_WORD_DELETE;
+  }
+  if (byte == 0x7f || byte == 0x08) {
+    return KEY_WORD_BACKSPACE;
+  }
+  if (byte == 0x1b) {
+    meta = true;
+    byte = repl_key_byte(60);
+  }
+  if (byte != '[' && byte != 'O') {
+    return KEY_NONE;
+  }
+  for (;;) {
+    final = repl_key_byte(60);
+    if (final < 0) {
+      return KEY_NONE;
+    }
+    if (final >= 0x40 && final <= 0x7e) {
+      break;
+    }
+    if (count + 1 < sizeof(params)) {
+      params[count] = (char)final;
+      count += 1;
+    }
+  }
+  params[count] = '\0';
+  {
+    const char *semicolon = strchr(params, ';');
+    const int modifier = semicolon != NULL ? atoi(semicolon + 1) : (final == 'C' || final == 'D') ? atoi(params) : 0;
+    const bool word = meta || (modifier != 0 && modifier != 1 && modifier != 2);
+    switch (final) {
+      case 'A': return KEY_UP;
+      case 'B': return KEY_DOWN;
+      case 'C': return word ? KEY_WORD_RIGHT : KEY_RIGHT;
+      case 'D': return word ? KEY_WORD_LEFT : KEY_LEFT;
+      case 'H': return KEY_HOME;
+      case 'F': return KEY_END;
+      case '~':
+        switch (atoi(params)) {
+          case 1:
+          case 7: return KEY_HOME;
+          case 4:
+          case 8: return KEY_END;
+          case 3: return KEY_DELETE;
+          default: return KEY_NONE;
+        }
+      default: return KEY_NONE;
+    }
+  }
+}
+
+typedef struct repl_editor {
+  repl_buf *line;
+  size_t cursor;
+  const char *prompt;
+  repl_hue prompt_hue;
+  size_t from;
+  size_t past_at;
+  char *kept;
+} repl_editor;
+
+static void repl_tty_put(const char *data, size_t bytes) {
+  while (bytes > 0) {
+    const ssize_t wrote = write(1, data, bytes);
+    if (wrote <= 0) {
+      if (wrote < 0 && errno == EINTR) {
+        continue;
+      }
+      return;
+    }
+    data += (size_t)wrote;
+    bytes -= (size_t)wrote;
+  }
+}
+
+static size_t repl_width(void) {
+#ifdef TIOCGWINSZ
+  struct winsize size;
+  if (ioctl(1, TIOCGWINSZ, &size) == 0 && size.ws_col > 0) {
+    return size.ws_col;
+  }
+#endif
+  return 80;
+}
+
+static void repl_redraw(repl_editor *editor) {
+  const char *text = editor->line->data;
+  const size_t used = editor->line->used;
+  const size_t prompt_cols = repl_cols(editor->prompt, strlen(editor->prompt));
+  const size_t width = repl_width();
+  const size_t room = width > prompt_cols + 1 ? width - prompt_cols - 1 : 1;
+  const size_t cursor_col = repl_cols(text, editor->cursor);
+  const size_t total_cols = repl_cols(text, used);
+  size_t from_col = repl_cols(text, editor->from);
+  size_t to = 0;
+  char move[32];
+  repl_buf frame;
+  if (cursor_col < from_col) {
+    from_col = cursor_col;
+  }
+  if (cursor_col - from_col >= room) {
+    from_col = cursor_col - room + 1;
+  }
+  editor->from = repl_byte_of_col(text, used, from_col);
+  to = repl_byte_of_col(text, used, from_col + room < total_cols ? from_col + room : total_cols);
+  buf_init(&frame);
+  buf_char(&frame, '\r');
+  repl_ink(&frame, repl_depth_out, editor->prompt_hue, false);
+  buf_put(&frame, editor->prompt);
+  repl_ink_off(&frame, repl_depth_out);
+  repl_highlight(&frame, repl_depth_out, text + editor->from, to - editor->from);
+  buf_put(&frame, "\033[K\r");
+  if (prompt_cols + cursor_col - from_col > 0) {
+    sprintf(move, "\033[%luC", (unsigned long)(prompt_cols + cursor_col - from_col));
+    buf_put(&frame, move);
+  }
+  repl_tty_put(frame.data, frame.used);
+  buf_free(&frame);
+}
+
+static void repl_insert(repl_editor *editor, const char *bytes, size_t count) {
+  repl_buf *line = editor->line;
+  buf_add(line, bytes, count);
+  memmove(line->data + editor->cursor + count, line->data + editor->cursor, line->used - count - editor->cursor);
+  memcpy(line->data + editor->cursor, bytes, count);
+  editor->cursor += count;
+}
+
+static void repl_cut(repl_editor *editor, size_t from, size_t to) {
+  repl_buf *line = editor->line;
+  if (from >= to) {
+    return;
+  }
+  memmove(line->data + from, line->data + to, line->used - to);
+  line->used -= to - from;
+  line->data[line->used] = '\0';
+  if (editor->cursor > to) {
+    editor->cursor -= to - from;
+  } else if (editor->cursor > from) {
+    editor->cursor = from;
+  }
+}
+
+static void repl_recall(repl_editor *editor, size_t at) {
+  repl_buf *line = editor->line;
+  if (editor->past_at == repl_lines.count) {
+    free(editor->kept);
+    editor->kept = repl_dup(line->data, line->used);
+  }
+  editor->past_at = at;
+  buf_reset(line);
+  buf_put(line, at == repl_lines.count ? (editor->kept != NULL ? editor->kept : "") : repl_lines.items[at]);
+  editor->cursor = line->used;
+}
+
+static bool repl_can_edit(void) {
+  struct termios probe;
+  return isatty(0) == 1 && isatty(1) == 1 && tcgetattr(0, &probe) == 0;
+}
+
+static repl_read repl_edit_line(repl_buf *line, const char *prompt, repl_hue hue) {
+  struct termios saved;
+  struct termios raw;
+  repl_editor editor;
+  repl_read got = REPL_LINE;
+  if (tcgetattr(0, &saved) != 0) {
+    return REPL_EOF;
+  }
+  raw = saved;
+  raw.c_lflag &= (tcflag_t)~(ICANON | ECHO | IEXTEN);
+  raw.c_iflag &= (tcflag_t)~(ICRNL | IXON);
+  raw.c_cc[VMIN] = 1;
+  raw.c_cc[VTIME] = 0;
+  raw.c_cc[VSUSP] = _POSIX_VDISABLE;
+  if (tcsetattr(0, TCSANOW, &raw) != 0) {
+    return REPL_EOF;
+  }
+  buf_reset(line);
+  editor.line = line;
+  editor.cursor = 0;
+  editor.prompt = prompt;
+  editor.prompt_hue = hue;
+  editor.from = 0;
+  editor.past_at = repl_lines.count;
+  editor.kept = NULL;
+  repl_redraw(&editor);
+  for (;;) {
+    unsigned char byte = 0;
+    repl_key key = KEY_NONE;
+    const ssize_t read_got = read(0, &byte, 1);
+    if (read_got < 0) {
+      if (errno == EINTR && repl_interrupted) {
+        repl_interrupted = 0;
+        got = REPL_INTERRUPT;
+        break;
+      }
+      if (errno == EINTR) {
+        continue;
+      }
+      got = line->used > 0 ? REPL_LINE : REPL_EOF;
+      break;
+    }
+    if (read_got == 0) {
+      got = line->used > 0 ? REPL_LINE : REPL_EOF;
+      break;
+    }
+    if (byte == 0x1b) {
+      key = repl_escape();
+    } else if (byte == '\r' || byte == '\n') {
+      key = KEY_ENTER;
+    } else if (byte == 0x7f || byte == 0x08) {
+      key = KEY_BACKSPACE;
+    } else if (byte == 0x01) {
+      key = KEY_HOME;
+    } else if (byte == 0x05) {
+      key = KEY_END;
+    } else if (byte == 0x02) {
+      key = KEY_LEFT;
+    } else if (byte == 0x06) {
+      key = KEY_RIGHT;
+    } else if (byte == 0x04) {
+      key = line->used == 0 ? KEY_END_OF_INPUT : KEY_DELETE;
+    } else if (byte == 0x0b) {
+      key = KEY_KILL_END;
+    } else if (byte == 0x15) {
+      key = KEY_KILL_START;
+    } else if (byte == 0x17) {
+      key = KEY_WORD_BACKSPACE;
+    } else if (byte == 0x0c) {
+      key = KEY_CLEAR;
+    } else if (byte == 0x09) {
+      key = KEY_TAB;
+    } else if (byte == 0x10) {
+      key = KEY_UP;
+    } else if (byte == 0x0e) {
+      key = KEY_DOWN;
+    } else if (byte >= 0x20) {
+      char point[4];
+      size_t length = 1;
+      size_t need = (byte & 0xE0) == 0xC0 ? 2 : (byte & 0xF0) == 0xE0 ? 3 : (byte & 0xF8) == 0xF0 ? 4 : 1;
+      point[0] = (char)byte;
+      while (length < need) {
+        const int next = repl_key_byte(60);
+        if (next < 0) {
+          break;
+        }
+        point[length] = (char)next;
+        length += 1;
+      }
+      repl_insert(&editor, point, length);
+      repl_redraw(&editor);
+      continue;
+    }
+    if (key == KEY_ENTER) {
+      break;
+    }
+    if (key == KEY_END_OF_INPUT) {
+      got = REPL_EOF;
+      break;
+    }
+    switch (key) {
+      case KEY_LEFT: editor.cursor = repl_cp_back(line->data, editor.cursor); break;
+      case KEY_RIGHT: editor.cursor = repl_cp_forward(line->data, line->used, editor.cursor); break;
+      case KEY_WORD_LEFT: editor.cursor = repl_word_left(line->data, line->used, editor.cursor); break;
+      case KEY_WORD_RIGHT: editor.cursor = repl_word_right(line->data, line->used, editor.cursor); break;
+      case KEY_HOME: editor.cursor = 0; break;
+      case KEY_END: editor.cursor = line->used; break;
+      case KEY_BACKSPACE: repl_cut(&editor, repl_cp_back(line->data, editor.cursor), editor.cursor); break;
+      case KEY_DELETE: repl_cut(&editor, editor.cursor, repl_cp_forward(line->data, line->used, editor.cursor)); break;
+      case KEY_WORD_BACKSPACE:
+        repl_cut(&editor, repl_word_left(line->data, line->used, editor.cursor), editor.cursor);
+        break;
+      case KEY_WORD_DELETE:
+        repl_cut(&editor, editor.cursor, repl_word_right(line->data, line->used, editor.cursor));
+        break;
+      case KEY_KILL_START: repl_cut(&editor, 0, editor.cursor); break;
+      case KEY_KILL_END: repl_cut(&editor, editor.cursor, line->used); break;
+      case KEY_CLEAR: repl_tty_put("\033[H\033[2J", 7); break;
+      case KEY_TAB: repl_insert(&editor, "  ", 2); break;
+      case KEY_UP:
+        if (editor.past_at > 0) {
+          repl_recall(&editor, editor.past_at - 1);
+        }
+        break;
+      case KEY_DOWN:
+        if (editor.past_at < repl_lines.count) {
+          repl_recall(&editor, editor.past_at + 1);
+        }
+        break;
+      default: break;
+    }
+    repl_redraw(&editor);
+  }
+  tcsetattr(0, TCSANOW, &saved);
+  repl_tty_put("\n", 1);
+  if (got == REPL_LINE) {
+    repl_remember(line->data);
+  }
+  free(editor.kept);
+  return got;
+}
+
+/*
+ * Одна дверь для чтения строки. NULL вместо приглашения — конвейер: прежний
+ * fgets, байт в байт. С приглашением — человек: редактор, когда терминал на
+ * обоих концах, иначе приглашение и тот же fgets.
+ */
+static repl_read repl_read_input(repl_buf *line, const char *prompt, repl_hue hue) {
+  repl_read got = REPL_LINE;
+  if (prompt != NULL && repl_can_edit()) {
+    return repl_edit_line(line, prompt, hue);
+  }
+  if (prompt != NULL) {
+    char *painted = repl_painted(repl_depth_out, hue, false, prompt);
+    fputs(painted, stdout);
+    fflush(stdout);
+    free(painted);
+  }
+  got = repl_read_line(line);
+  if (got == REPL_INTERRUPT && prompt != NULL) {
+    fputs("\n", stdout);
+  }
+  return got;
 }
 
 /** Каталог под печать и сборку сессии; NULL — вычислять негде. */
@@ -10411,6 +11206,22 @@ static int emit_file(int argc, char **argv, const char *self) {
 static const char REPL_PROMPT[] = "» ";
 static const char REPL_CONTINUATION[] = "… ";
 
+/* Приветствие: имя с версией — белым, остальное — приглушённо; без цвета — как есть. */
+static void repl_greet(const char *text) {
+  const char head[] = "flang " FLANG_VERSION;
+  char *name = NULL;
+  char *rest = NULL;
+  if (repl_depth_out == REPL_PLAIN || strncmp(text, head, sizeof(head) - 1) != 0) {
+    printf("%s\n", text);
+    return;
+  }
+  name = repl_painted(repl_depth_out, HUE_WHITE, true, head);
+  rest = repl_painted(repl_depth_out, HUE_MUTED, false, text + sizeof(head) - 1);
+  printf("%s%s\n", name, rest);
+  free(name);
+  free(rest);
+}
+
 /**
  * Терминал вокруг сессии: приглашения, склейка многострочного ввода и выбор
  * потока для печати. Всё, что решает, чем является строка и что с ней делать,
@@ -10436,6 +11247,7 @@ static int repl_loop(int argc, char **argv, const char *self) {
   repl_open_session(&session, self);
   repl_open = &session;
   atexit(repl_sweep);
+  repl_paint_init();
 
   for (index = 1; index < argc; index += 1) {
     if (strcmp(argv[index], "--max-steps") == 0 && index + 1 < argc) {
@@ -10462,7 +11274,7 @@ static int repl_loop(int argc, char **argv, const char *self) {
      вычисление, а следующей строкой признаваться, что вычислять нечем, значит
      соврать первой строкой — её и прочтут. */
   if (interactive) {
-    printf("%s\n", session.why_no_eval == NULL ? REPL_GREETING : REPL_GREETING_NO_EVAL);
+    repl_greet(session.why_no_eval == NULL ? REPL_GREETING : REPL_GREETING_NO_EVAL);
   }
   /* Про отсутствие вычислителя — один раз и в stderr: stdout принадлежит
      результату сценария. */
@@ -10475,18 +11287,12 @@ static int repl_loop(int argc, char **argv, const char *self) {
 
   buf_init(&buffer);
   buf_init(&line);
-  if (interactive) {
-    fputs(REPL_PROMPT, stdout);
-    fflush(stdout);
-  }
   for (;;) {
-    const repl_read got = repl_read_line(&line);
+    const bool more = buffer.used > 0;
+    const char *prompt = !interactive ? NULL : more ? REPL_CONTINUATION : REPL_PROMPT;
+    const repl_read got = repl_read_input(&line, prompt, more ? HUE_MUTED : HUE_CYAN);
     if (got == REPL_INTERRUPT) {
       buf_reset(&buffer);
-      if (interactive) {
-        printf("\n%s", REPL_PROMPT);
-        fflush(stdout);
-      }
       continue;
     }
     if (got == REPL_EOF) {
@@ -10497,10 +11303,6 @@ static int repl_loop(int argc, char **argv, const char *self) {
     }
     buf_add(&buffer, line.data, line.used);
     if (repl_needs_more(&session, buffer.data)) {
-      if (interactive) {
-        fputs(REPL_CONTINUATION, stdout);
-        fflush(stdout);
-      }
       continue;
     }
     {
@@ -10514,10 +11316,6 @@ static int repl_loop(int argc, char **argv, const char *self) {
     fflush(stdout);
     if (quit) {
       break;
-    }
-    if (interactive) {
-      fputs(REPL_PROMPT, stdout);
-      fflush(stdout);
     }
   }
   if (!quit && buffer.used > 0 && !repl_submit(&session, buffer.data, &quit)) {

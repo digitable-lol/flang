@@ -1,7 +1,7 @@
 ---
 номер: 3636
 заголовок: Оболочка редактирует строку, помнит историю и носит цвета digitable
-статус: в работе
+статус: сделана (редактор строки, история, тема digitable; семя пересеяно быстрым путём; проба scripts/repl-proba.sh зелена на трубе и pty)
 исполнитель: Marat
 ветка: r/repl-tui
 команда: вторая
@@ -81,3 +81,16 @@ with the host». Разбора клавиш, termios, редактора стр
   `ESC[3`/`ESC[9`/`ESC[1m`.
 - `sh scripts/semya-rantayma-eto-istochnik.sh --после-печати` → 0 после пересева;
   `sh .githooks/pre-push` → 0.
+
+## Чем закрыта
+
+Коммит `394b2607` на ветке `r/repl-tui`: `flang/src/emit/c/flang_repl.c` (+795 строк:
+цвет, подсветка, редактор, история), `bootstrap/flang_repl.c` и
+`scripts/otpechatok-semeni` быстрым пересевом, `scripts/repl-proba.sh`, README
+(ru/en), `packaging/flang.1`, заметка `docs/zettel/the-shell-read-the-line-with-fgets-and-the-terminal-printed-the-arrow.md`,
+приметы описи. Проверено: `sh scripts/repl-proba.sh` → 0 на `bootstrap/flang`;
+`sh .githooks/pre-push` → 0; `semya-rantayma-eto-istochnik.sh --после-печати` → 0.
+
+Не сделано: ключ `--без-цвета` (эталон ключей — `flang/self/cli.flang`, замыкание
+семени); история не пишется на диск; строка шире окна прокручивается, а не
+переносится; ⌘-стрелки принципиально не доходят до tty.

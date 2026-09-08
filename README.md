@@ -1,4 +1,4 @@
-**English** · [Русский](README.ru.md) · [Documentation site](https://digitable-lol.github.io/flang/en/index.html)
+**English** · [Русский](docs/README.ru.md) · [Documentation site](https://digitable-lol.github.io/flang/en/index.html)
 
 # flang — a language whose specification is the program
 
@@ -353,7 +353,8 @@ functions are newer than the seed, and a reprint (`sh scripts/raskrutka.sh`, hou
 is how edits to `flang/self/` reach the binary. What the seed is and what guards it —
 [`bootstrap/README.md`](bootstrap/README.md) and [the bootstrap circle](docs/guide/bootstrap-circle.md).
 
-The loose files in the root: `README.md` · `README.ru.md` (this page), `LICENSE` · `LICENSE-RU.md`,
+The loose files in the root: `README.md` (this page; the Russian edition is a page of its own,
+[`docs/README.ru.md`](docs/README.ru.md)), `LICENSE` · `LICENSE-RU.md`,
 `CONTRIBUTING.md`, `AGENTS.md` (guidance for an agent working in the tree — a symbolic link to
 `.ai/AGENTS.md`, as `.claude` is a link to `.ai/.claude`), `DESCRIPTION.md` (a
 long-form description of the language, in Russian), `ROADMAP.md` (measured, not intended),

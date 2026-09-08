@@ -157,6 +157,9 @@ const ВИДИМОСТЬ = new Map([
   ["LICENSE-RU.md", false],
   ["MIGRATION.md", false],
   ["README.md", false],
+  /* Страница уехала в `docs/` (задача 8235), но в истории она лежала в
+     корне — и корень обязан остаться названным, иначе перепечатка давних
+     коммитов падает на «незнакомом корне». */
   ["README.ru.md", false],
   ["package-lock.json", false],
   ["tsconfig.json", false],

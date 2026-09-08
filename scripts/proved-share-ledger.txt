@@ -851,7 +851,7 @@ dd5c6fa5aeaa9edc65474e5cf9df01fe|21|21|0|0|0|flang/scripts/guards-start.flang
 25746e0bfb02956ce5182ac4543e7a5b|1|1|0|0|0|flang/scripts/link-collision-guard.flang
 17fa49007181f60a256b3bde9a0ed530|44|44|0|0|0|flang/scripts/memory-guard.flang
 b056e5f716302ad221f1ef4b5d0d08fc|7|7|0|0|0|flang/scripts/node-across-targets.flang
-a37d42d0e65d4ddde220dd09d2b5a529|4|4|0|0|0|flang/scripts/porodit-atomy.flang
+75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/породить-атомы.flang
 f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.flang
 0cbae1cda9157bd593f3040c05b775a2|4|4|0|0|0|flang/scripts/scheduler-across-targets.flang
 46e68d5d9cbd802722fc7b9d9df265df|2|2|0|0|0|flang/scripts/supervisor-across-targets.flang
@@ -1118,7 +1118,7 @@ c25748ca72cfdca2554269b3c8bcf185|9|9|0|0|0|scripts/occupancy-check.flang
 9c2d3aecbfe7786b9701fb51fd4b1147|33|30|0|0|0|scripts/region-in-c-target.flang
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.flang
 1083cc30fab03e5f16e2060519b7c8c1|8|8|0|0|0|scripts/release-guard.flang
-b2defbc51e2b11a46d19c284e53069eb|26|22|2|0|0|scripts/release-in-c.flang
+4ae7d8c95239a9f4910750531ae75e7a|26|22|2|0|0|scripts/release-in-c.flang
 6bec7ed819a851590422857589b315ec|10|7|3|0|0|scripts/reprint-freshness.flang
 6428b484fce59de690810ba7fcdce7f4|3|2|1|0|0|scripts/stale-pages-guard.flang
 d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/string-measure.flang

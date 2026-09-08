@@ -106,7 +106,7 @@
 //       Своя нумерация расширения редактора (0.1.0); к версии языка отношения
 //       не имеет, и сводить их нельзя.
 //   docs/site/releases.md, docs/site/releases.ru.md, docs/release-notes.json,
-//   README.md, README.ru.md, docs/course/09-eight-targets.md
+//   README.md, docs/README.ru.md, docs/course/09-eight-targets.md
 //       Перечни выпущенного, проза про старые версии и чужие замеры с датой.
 //       Перечни держит `выпуски:страница:проверка`; прозу и замеры — никто, и
 //       требовать от них свежести нельзя: замер с датой верен своей дате.

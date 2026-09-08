@@ -622,11 +622,11 @@ proza() {
   pr_naborov=$(find examples -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
   pr_ostalnyh=$(find examples -name '*.flang' \
                 | grep -vE '^examples/(web/shortener|library-api)/' | wc -l | tr -d ' ')
-  skazat "README.ru: программ"  "$(grep -oE 'examples/ +[0-9]+ программ' README.ru.md | grep -oE '[0-9]+')" "$pr_vsego"
+  skazat "README.ru: программ"  "$(grep -oE 'examples/ +[0-9]+ программ' docs/README.ru.md | grep -oE '[0-9]+')" "$pr_vsego"
   skazat "README: программ"     "$(grep -oE 'examples/ +[0-9]+ flang programs' README.md | grep -oE '[0-9]+')" "$pr_vsego"
-  skazat "README.ru: наборов"   "$(grep -oE 'программ[^ ]* на flang в [0-9]+ наборах' README.ru.md | grep -oE '[0-9]+' | tail -1)" "$pr_naborov"
+  skazat "README.ru: наборов"   "$(grep -oE 'программ[^ ]* на flang в [0-9]+ наборах' docs/README.ru.md | grep -oE '[0-9]+' | tail -1)" "$pr_naborov"
   skazat "README: наборов"      "$(grep -oE 'flang programs in [0-9]+ sets' README.md | grep -oE '[0-9]+')" "$pr_naborov"
-  skazat "README.ru: остальных" "$(grep -oE 'ещё [0-9]+ программ' README.ru.md | grep -oE '[0-9]+')" "$pr_ostalnyh"
+  skazat "README.ru: остальных" "$(grep -oE 'ещё [0-9]+ программ' docs/README.ru.md | grep -oE '[0-9]+')" "$pr_ostalnyh"
   skazat "README: остальных"    "$(grep -oE '[0-9]+ more programs in' README.md | grep -oE '[0-9]+')" "$pr_ostalnyh"
 
   # Библиотека: модулей, функций, тотальных, примеров — одной фразой в обоих README.
@@ -635,8 +635,8 @@ proza() {
     [ -f "$f" ] || continue
     bf=$((bf + 1)); bfn=$((bfn + $(fn "$f"))); btot=$((btot + $(tot "$f"))); bpr=$((bpr + $(pr "$f")))
   done
-  skazat "README.ru: модулей"   "$(grep -oE '\*\*[0-9]+ модул[^,]+, [0-9]+ функц' README.ru.md | grep -oE '[0-9]+' | head -1)" "$bf"
-  skazat "README.ru: функций"   "$(grep -oE '\*\*[0-9]+ модул[^,]+, [0-9]+ функц' README.ru.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
+  skazat "README.ru: модулей"   "$(grep -oE '\*\*[0-9]+ модул[^,]+, [0-9]+ функц' docs/README.ru.md | grep -oE '[0-9]+' | head -1)" "$bf"
+  skazat "README.ru: функций"   "$(grep -oE '\*\*[0-9]+ модул[^,]+, [0-9]+ функц' docs/README.ru.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
   skazat "README: модулей"      "$(grep -oE '\*\*[0-9]+ modules, [0-9]+' README.md | grep -oE '[0-9]+' | head -1)" "$bf"
   skazat "README: функций"      "$(grep -oE '\*\*[0-9]+ modules, [0-9]+' README.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
 
@@ -674,7 +674,7 @@ proza() {
   # разом, а README всегда говорило только о первой — числа разошлись бы даже
   # на дереве, где всё остальное верно, и находка выглядела бы как чужая беда.
   otp=$(awk '/^# ── тело семени ──$/{exit} NF==2 && $1 ~ /^[0-9a-f]{64}$/' scripts/otpechatok-semeni | wc -l | tr -d ' ')
-  skazat "README.ru: строк отпечатка" "$(grep -oE 'хешированной строке на файл — [0-9]+ строк' README.ru.md | grep -oE '[0-9]+')" "$otp"
+  skazat "README.ru: строк отпечатка" "$(grep -oE 'хешированной строке на файл — [0-9]+ строк' docs/README.ru.md | grep -oE '[0-9]+')" "$otp"
   skazat "README: строк отпечатка"    "$(grep -oE 'one hashed line each — [0-9]+ lines' README.md | grep -oE '[0-9]+')" "$otp"
 
   # Подделок в каталоге — то же число называет сторож ядра.
@@ -756,7 +756,7 @@ karta() {
   find . -mindepth 1 -maxdepth 1 -type d ! -name '.*' -printf '%f\n' | LC_ALL=C sort > "$VREMENNO.derevo"
   n_dereve=$(wc -l < "$VREMENNO.derevo" | tr -d ' ')
 
-  for f in README.md README.ru.md; do
+  for f in README.md docs/README.ru.md; do
     skazano=$(grep -aoE '(There are|У корня) [0-9]+ (directories at the root|каталогов)' "$f" \
               | head -1 | grep -oE '[0-9]+')
     skazat "$f: число у корня" "${skazano:-нет}" "$n_dereve"

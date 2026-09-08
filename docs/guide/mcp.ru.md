@@ -1,4 +1,4 @@
-[К README](../../README.ru.md) · [Указатель документации](../README.md)
+[К README](../README.ru.md) · [Указатель документации](../README.md)
 
 # Доступ для ИИ-помощника: `flang --mcp-mode`
 

@@ -1073,6 +1073,7 @@ d5c13131139cbbb4d9cffbbb4f9f1cdc|2|2|0|0|0|fspec/spec/38-booking-rules.flang
 e277c894907d052cc910984ba43b6679|58|55|3|0|0|packaging/install-check.flang
 a69c24d54cb5ba2dc5e5f1ac2b5475e5|23|23|0|0|0|packaging/install-parity.flang
 541c3766e167de86d411bf6abf80f2e9|22|15|7|0|0|scripts/adr-numbers-guard.flang
+22c4edbe688f3595740c7f4c0ed6a51b|20|20|0|0|0|scripts/asdf-plugin-guard.flang
 cb83af3366e1aedcf2980e68974f26bc|21|20|1|0|0|scripts/asdf-plugin-published.flang
 1ada44f6de654f4caad9cc2ebd440616|10|10|0|0|0|scripts/asdf-version-list.flang
 dfebe4f2679f7178c4cd355cd58af957|25|25|0|0|0|scripts/bidi-control-guard.flang

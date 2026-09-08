@@ -241,8 +241,9 @@ The Homebrew formula is [`packaging/homebrew/flang.rb`](packaging/homebrew/flang
 tap — [`digitable-lol/homebrew-tap`](https://github.com/digitable-lol/homebrew-tap) — serves it.
 The asdf (and mise) plugin installs the same archive from the same releases, and its source is
 [`packaging/asdf/`](packaging/asdf/README.md) — but asdf clones a plugin as a whole repository:
-[`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang), published, though it
-can lag behind this tree's latest release. Neither needs anything but a C compiler. This is how
+[`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang), kept here as the
+submodule `packaging/asdf-plugin` and checked against the source before every release. Neither
+needs anything but a C compiler. This is how
 self-hosting languages ship — Go carried generated C for years, Nim still does.
 
 **Be clear about what that binary is.** It answers to all thirteen commands, the editor

@@ -236,8 +236,9 @@ flang emit м.flang --target js --out вывод --runtime flang/flang/src/emit/
 — [`digitable-lol/homebrew-tap`](https://github.com/digitable-lol/homebrew-tap). Плагин asdf (и
 mise) ставит тот же архив из тех же релизов, его исходник —
 [`packaging/asdf/`](packaging/asdf/README.md), а сам плагин asdf клонирует целым репозиторием:
-[`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang) — он опубликован, хотя
-может отставать от этого дерева. Ни тому, ни другому не нужно ничего, кроме компилятора C. Так
+[`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang) — здесь он сабмодуль
+`packaging/asdf-plugin` и сверяется с источником перед каждым выпуском. Ни тому, ни другому не
+нужно ничего, кроме компилятора C. Так
 распространяются самоприменяющиеся языки: Go долго возил сгенерированный C, Nim возит до сих пор.
 
 **Стоит назвать прямо, что это за бинарник.** Он отвечает на все тринадцать команд языка, и

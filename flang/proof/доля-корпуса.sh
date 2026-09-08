@@ -1563,7 +1563,7 @@ proba_podloga() {
 # 30 из них лежат вне коммита (ведомость молчит, и это разряд Р5 линейки), 108
 # судимы ядром — код 0 у 101, код 1 у семи. Все семь названы ниже.
 YADRO_OTVERGAET_ZAKONNO="flang/proof/подделки/круг.flang
-flang/proof/чекер/пробы/записи/10003-uslovnoe-po-vetvyam/lozhnoe-otricanie.flang
+flang/proof/чекер/пробы/записи/3314-uslovnoe-po-vetvyam/lozhnoe-otricanie.flang
 flang/proof/чекер/пробы/записи/9991-nachinaetsya-s/lozhnoe-nachalo.flang
 flang/proof/чекер/пробы/записи/Ч369/П3-пусть-связывает-чужое-имя.flang
 flang/proof/чекер/пробы/программы/lozh-stolknovenie.flang

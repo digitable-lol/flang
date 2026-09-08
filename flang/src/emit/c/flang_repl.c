@@ -16372,7 +16372,9 @@ static bool pkg_ledger(fl_value program, const repl_strings *own, repl_buf *out)
   if (repl_call("Элементы поля", args, 2, &obligations) != FL_OK || obligations.tag != FL_LIST) {
     return false;
   }
-  if (repl_call("Прогоны для ядра", &program, 1, &runs) != FL_OK) {
+  args[0] = program;
+  args[1] = obligations;
+  if (repl_call("Прогоны для ядра", args, 2, &runs) != FL_OK) {
     return false;
   }
   args[0] = program;

@@ -157,6 +157,15 @@ and iTerm2 word moves need Option sent as Esc+. Under a pipe (`flang repl < scri
 exists: the same `fgets`, the output byte for byte as before and without a single ESC — held by
 `scripts/repl-proba.sh`.
 
+Tab completes: a session name in guillemets (`«Втр` → `«Втрое»`), a keyword of the language, a dot
+command; at the start of a line it still indents by two spaces. Pasting a multi-line declaration is
+taken exactly as typed. History survives restarts — `$XDG_STATE_HOME/flang/repl-history`, or the file
+named by `FLANG_HISTORY` (`FLANG_HISTORY=нет` switches the file off). What YOUR build can do the
+build says itself: `flang --version` prints a second line with the shell fingerprint and its
+abilities, and `.помощь` reports whether the shell edits the line in this terminal, which colour
+depth it uses, what it evaluates with and where it keeps the history. A binary installed before this
+work prints no second line at all — that is how you tell them apart.
+
 Command reference with every flag — [Commands](https://digitable-lol.github.io/flang/en/cli.html);
 the codes a refusal carries — [Diagnostics](https://digitable-lol.github.io/flang/en/diagnostics.html).
 

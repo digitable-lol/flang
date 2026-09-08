@@ -86,8 +86,8 @@ survived both changes, because it rests on examples rather than on a list of wha
 the language lacks.
 
 **You can check that the boundary is drawn right by emitting.** `flang emit` emits
-the whole project library into all eight target languages — `c`, `go`, `rust`,
-`python`, `java`, `csharp`, `elixir`, `js` — and the host emits nowhere, because
+the whole project library into all ten target languages — `c`, `cpp`, `go`, `rust`,
+`python`, `java`, `csharp`, `elixir`, `js`, `ts` — and the host emits nowhere, because
 there is nothing to emit. If emission broke after you moved another piece into
 `lib/`, you moved the wrong piece.
 

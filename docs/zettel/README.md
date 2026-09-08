@@ -302,6 +302,8 @@
 
 ## Найденные ошибки
 
+- [Новую цель печати можно прогнать до перепечатки семени: компилятор, напечатанный в JavaScript, отвечает за секунды там, где интерпретатор идёт десять минут](a-compiler-printed-to-javascript-runs-a-new-target-in-seconds.md)
+
 - [Изменившийся вердикт при снятии правки — ещё не доказанная ложь: доказанным надо проверить, ложь ли это](a-changed-verdict-on-removal-is-not-a-proven-lie.md)
 - [Проверка, живущая внутри одной команды, — это класс дефектов, и он всплыл трижды](a-check-that-skips-a-check-is-a-class.md)
 - [Поправка, написанная под деление с усечением, применённая к делению вниз, срабатывает дважды — и календарь до нашей эры уезжает на год](a-correction-written-for-truncation-fires-twice-under-floor-division.md)
@@ -347,6 +349,8 @@
 - [Веер оснастки считается по ядрам, а кончается память — и правило «не больше двух прогонов» тут не помогает](veer-osnastki-schitaetsya-po-yadram-a-konchaetsya-pamyat.md)
 
 ## Отвергнутые пути
+
+- [Цель TypeScript — это печать в JavaScript с признаком «типизировано», а не десятый печатник](typescript-target-is-the-javascript-printer-with-a-flag.md)
 
 - [Постусловие, зовущее свою же функцию, уходит в бесконечный спуск](a-postcondition-that-calls-its-own-function-never-ends.md)
 - [MD5 в библиотеку заводить не стоит, и цена отказа — ровно один способ входа в PostgreSQL](md5-is-not-worth-adding-and-what-that-costs.md)
@@ -397,6 +401,7 @@
 - [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](a-changed-verdict-must-be-carried-to-a-full-run.md)
 - [Проверка, переведённая на двоичный, выпадает из прогона молча — потому что CI не собирал двоичный ни разу](a-check-moved-to-the-binary-drops-out-of-ci-silently.md)
 - [Новое правило проверки, написанное на flang, испытывается толкователем того же двоичного — круг пять минут, а не перепечатка](a-checker-rule-written-in-flang-is-tried-by-the-interpreter-not-by-a-reprint.md)
+- [Запись доказательства печатается из исходника `zapis.flang` толкователем двоичного за двенадцать минут — правку печати можно измерить без перепечатки семени](a-proof-record-prints-from-source-in-twelve-minutes-without-a-reprint.md)
 - [Потомок у `flang io` запускается в каталоге ПЛАНА, а не в рабочем каталоге прогона](a-child-process-starts-in-the-plan-directory-not-the-working-one.md)
 - [Замкнутая цель под охраной берётся НЕСТРОГИМ знаком, если она про число, только равенством, если про длину, и не берётся строгим никогда](a-closed-numeric-goal-takes-any-sign-but-a-closed-length-goal-takes-only-equality.md)
 - [Карта столкновений имён, снятая по каждой цели порознь, слепа к столкновениям целей МЕЖДУ СОБОЙ: у go с rust их пять](a-collision-map-taken-per-target-is-blind-to-target-against-target.md)

@@ -35,7 +35,7 @@
 пригодным для поиска.
 
 **Рекомендация с ценой** — та же, что в
-[`docs/modulnost-i-pakety.md`](../modularity-and-packages.md), раздел 9, и я её
+[`docs/modularity-and-packages.md`](../modularity-and-packages.md), раздел 9, и я её
 подтверждаю, а не переоткрываю:
 
 1. **Хеш нормализованного определения.** ~1000 строк с тестами, около недели.
@@ -52,7 +52,7 @@
 **Чем подтверждено.** Замеры 2026-08-18 на ветке `work/packages-research`,
 описанные в трёх связанных заметках; числа про Unison и место — прогоны
 2026-08-15, `ucm release/1.3.0` ([[unison-measured]]); цены шагов — разбор по
-файлам в `docs/modulnost-i-pakety.md`, раздел 9.
+файлам в `docs/modularity-and-packages.md`, раздел 9.
 
 **Чем ограничено.**
 

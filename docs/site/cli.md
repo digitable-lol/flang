@@ -184,7 +184,7 @@ directory named by `--out` is created for you, together with intermediate ones
 and with whatever subdirectories the target asks for.
 
 ```bash
-flang emit <файл.flang> --target c|go|rust|java|js|elixir|python|csharp
+flang emit <файл.flang> --target c|cpp|go|rust|java|js|ts|elixir|python|csharp
                         [--out каталог | --file имя] [--cli|--no-cli] [--repl]
                         [--runtime каталог] [--index-base 0|1]
                         [--max-steps N] [--max-depth N]
@@ -192,7 +192,7 @@ flang emit <файл.flang> --target c|go|rust|java|js|elixir|python|csharp
 
 | Key | What it does |
 | --- | --- |
-| `--target <target>` | `c`, `go`, `rust`, `java`, `js`, `elixir`, `python`, `csharp`. Required |
+| `--target <target>` | `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `python`, `csharp`. Required |
 | `--out каталог` | Write all files into a directory |
 | `--file имя` | One file on standard output |
 | `--cli`, `--no-cli` | Whether to print the runner |

@@ -127,8 +127,8 @@ order, so the postcondition is false and the counterexample is named. The rest o
 `bootstrap/flang --help` is the authority; the man page `packaging/flang.1` and this list are
 checked against it on every push. The binary answers to thirteen commands, the editor
 language server among them: `check`, `test`, `run`, `emit`, `ast`, `tokens`, `facts`, `io`,
-`lock`, `package`, `new`, `repl` and `lsp`. It prints into 9 target languages.
-<!-- СНЯТО 2026-09-08 файлов flang/self/emit-*.flang = 9 -->
+`lock`, `package`, `new`, `repl` and `lsp`. It prints into 10 target languages.
+<!-- СНЯТО 2026-09-08 файлов flang/self/emit-*.flang = 10 -->
 
 | command | what it does |
 | --- | --- |
@@ -321,8 +321,8 @@ tasks/            the open and closed work of the tree, one file per task
 
 <!-- КАРТА-КОНЕЦ -->
 
-Inside `flang/`: [`flang/self/`](flang/self) is the compiler, 61 files of flang —
-<!-- СНЯТО 2026-09-08 файлов flang/self/*.flang = 61 -->
+Inside `flang/`: [`flang/self/`](flang/self) is the compiler, 63 files of flang —
+<!-- СНЯТО 2026-09-08 файлов flang/self/*.flang = 63 -->
 lexer, parser, types, totality, proof kernel and one printer per target; what the layers owe each
 other is [`flang/self/SPEC.md`](flang/self/SPEC.md). [`flang/stdlib/`](flang/stdlib) is the
 standard library — **42 modules, 1474 functions and 2713 examples** that run on every check:

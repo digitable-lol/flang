@@ -1104,7 +1104,7 @@ c8a346854e3b8817b0d6a001b9bbc033|23|11|2|3|0|scripts/kernel-abilities-guard.flan
 986fad97002d55a23e04a3dca541f8a5|1|1|0|0|0|scripts/language-words.flang
 5ab01492f40c7c4a19b89433856c1786|6|6|0|0|0|scripts/license-guard.flang
 d2a70a1e10cbaa0709b4efb93d9a0fda|14|14|0|0|0|scripts/lico-celi-cpp.flang
-7d437b36d827aebf6f3a99929ea04d00|78|34|44|0|0|scripts/link-guard.flang
+7d437b36d827aebf6f3a99929ea04d00|85|34|44|0|0|scripts/link-guard.flang
 764ea6a077d30318d14a8a0f3da8aea8|23|23|0|0|0|scripts/lsp-check.flang
 13843d0af99ca84e07c8f0021d1f80ec|15|13|2|0|0|scripts/manpage-guard.flang
 f8e01fecff7e47ed055e836a42195ee0|15|15|0|0|0|scripts/module-name-guard.flang

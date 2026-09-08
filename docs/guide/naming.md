@@ -213,7 +213,7 @@ the change.
   Transliteration appears in names in exactly one place, and it is **not carelessness**: 31 functions
   in `flang/self/emit-js.flang` are named «Текст b_dlina JS», «Текст b_soedinit JS», «Текст b_kod_simvola JS»
   — after the identifier each one prints into JavaScript. That identifier is transliterated by
-  the printer itself (`flang/self/emit-js.flang` and its seven twins), because
+  the printer itself (`flang/self/emit-js.flang` and the seven other printers), because
   JavaScript will not take Cyrillic in helper names, and the printing
   function's name repeats what is printed, word for word. Same argument as `сkind` under Р4 — except
   here it creates no lookalikes, and so it stands.

@@ -152,15 +152,15 @@ tasks/completed/0005-postgres-redis-proofs.md	zadachi-vypusk-0-7-0.md	внешн
 tasks/0006-three-big-compiler-files.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
 tasks/0006-three-big-compiler-files.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
 tasks/0026-zettel-names-in-english.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/completed/0029-typescript-target-buys-almost-nothing.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/completed/0032-printing-streams-to-the-file.md	parser_flang.c	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/rejected/0029-typescript-target-buys-almost-nothing.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
+tasks/rejected/0032-printing-streams-to-the-file.md	parser_flang.c	учебный/иллюстративный пример на C или Python, не файл проекта
 tasks/completed/0033-obligations-check-spreads-over-cores.md	merge-shape-probe.flang	иллюстративное имя пробы в тексте, не файл
 tasks/0037-docs-live-in-one-folder.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-tasks/completed/0040-reprint-reuses-what-did-not-change.md	A.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
-tasks/completed/0040-reprint-reuses-what-did-not-change.md	B.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
-tasks/completed/0040-reprint-reuses-what-did-not-change.md	nizh.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/completed/0040-reprint-reuses-what-did-not-change.md	verh-debtor.flang	иллюстративное имя в разборе задачи/заметки, не файл
-tasks/completed/0040-reprint-reuses-what-did-not-change.md	verh_platyaschiy.c	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/rejected/0040-reprint-reuses-what-did-not-change.md	A.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
+tasks/rejected/0040-reprint-reuses-what-did-not-change.md	B.flang	шаблонное имя-плейсхолдер (буква вместо имени), не файл
+tasks/rejected/0040-reprint-reuses-what-did-not-change.md	nizh.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/rejected/0040-reprint-reuses-what-did-not-change.md	verh-debtor.flang	иллюстративное имя в разборе задачи/заметки, не файл
+tasks/rejected/0040-reprint-reuses-what-did-not-change.md	verh_platyaschiy.c	учебный/иллюстративный пример на C или Python, не файл проекта
 tasks/0049-the-last-javascript-leaves-the-tree.md	work.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X-english.flang	пример на чужом языке (rosetta), не файл проекта
 tasks/completed/0055-leetcode-and-rosetta-examples-are-proved.md	examples/rosetta/X.flang	пример на чужом языке (rosetta), не файл проекта

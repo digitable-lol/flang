@@ -63,7 +63,8 @@ Limits, stated plainly:
   wrapper in the `.ts` that hands the runtime the program module's address: the
   worker has to import the program, not the runtime;
 * everything else — refusal texts, codes, step and depth limits, field order —
-  matches byte for byte: the runner answers the same questions the same way.
+  is identical, and a comparison of the two outputs shows no difference: the runner
+  answers the same questions the same way.
 
 ## Where it lives in the tree
 

@@ -5,7 +5,7 @@
 Write a rule once, in the words its domain already uses, and the same file is the
 implementation, the test suite and the documentation at once: the examples sit inside the
 function and run on every check, the compiler *proves* termination instead of taking your word
-for it, and one command prints the rule into C, C++, Go, Rust, Java, JavaScript, Elixir,
+for it, and one command prints the rule into C, C++, Go, Rust, Java, JavaScript, TypeScript, Elixir,
 Python or C#. A written specification drifts from the code the day after it is merged. Here there is
 nothing to drift, because the specification **is** the program.
 
@@ -35,7 +35,7 @@ next to its body and run on every check of the file.
 The rest of the shape: sum types, pattern matching, lists, strings as data, a module
 system that links by name, indentation instead of brackets, and two keyword surfaces —
 Russian and English — that lex into the very same identifiers. One source is printed
-into nine target languages. The compiler is written in flang itself.
+into ten target languages. The compiler is written in flang itself.
 
 ## What kind of language this is
 
@@ -45,7 +45,7 @@ carries its own examples and its own promise about the result right next to its 
 `тотальная` marker is not a wish: the compiler proves termination itself and refuses a function
 it cannot prove. The language has sum types, lists, strings as data, recursion, pattern
 matching, module linking, a category surface and a concurrency surface, and one source is
-printed into nine target languages.
+printed into ten target languages.
 
 **There is one compiler, and it is written in flang.** It lives in
 [`flang/self/`](flang/self) — 57 files, 113,693 lines (measured 29 August 2026; 60 files and 118,918 lines
@@ -96,7 +96,7 @@ point, packaging, measurements, documentation and the example programs.
 
 ```
 bootstrap/        the bootstrap point: the compiler printed to C99 — «make -C bootstrap»
-flang/self/       the compiler: lexer, parser, types, totality, proof core, nine printers
+flang/self/       the compiler: lexer, parser, types, totality, proof core, ten printers
 flang/core/       a lexer, a parser, an evaluator and JSON printing, written in flang
 flang/src/        the target runtimes, copied verbatim into printed code — C, C++, Go, Rust, Java, JS, Elixir, Python, C#
 flang/stdlib/     the standard library; its index is printed from the modules themselves
@@ -207,8 +207,10 @@ sources into the output **verbatim**, so it reads them from disk — in turn fro
 from `$FLANG_RUNTIME_DIR`, and from `share/flang/<target>` next to the command. Nothing found and
 `flang emit` answers «не найдены исходники рантайма» and prints nothing at all.
 
-**The installation carries the runtimes of all nine targets** — 34 files, 2,435,747 bytes, in nine
-`share/flang/<target>` directories. <!-- СНЯТО 2026-09-06 файлов flang/src/emit/*/* = 34 --> The
+**The installation carries the runtimes of all ten targets** — 35 files, 2,533,815 bytes, in ten
+`share/flang/<target>` directories. <!-- СНЯТО 2026-09-08 файлов flang/src/emit/*/* = 35 --> The tenth,
+TypeScript (`--target ts`), lives in the compiler's source and reaches the prebuilt binary with the
+next reprint of the seed; until then the binary lists nine. The
 Homebrew formula, the asdf plugin and the release archive all do this (the archive carries them in
 a `runtime/` directory). Verified by a run on 5 September 2026: archive built, installed by the
 plugin, and from the installed prefix all nine targets print with no flags at all.
@@ -274,7 +276,7 @@ What the bootstrap point is, what guards it and how it is updated:
 
 ---
 
-## One function, nine targets
+## One function, ten targets
 
 This is `examples/leetcode/035-search-insert-position.flang` — LeetCode 35, the position
 where a value belongs in a sorted list. One fold, proven terminating:
@@ -428,7 +430,7 @@ program at all — not types, not totality — so run `flang check` first and re
 ## Why this exists
 
 A rule is written once, in the form a domain expert reads, not only a programmer. From that
-single source come the implementation, the tests and the checks — in nine languages at once,
+single source come the implementation, the tests and the checks — in ten languages at once,
 and a declared `свойство` becomes a postcondition of the emitted code: a Python service, a Go
 service and a C binary refuse the same input with the same words.
 

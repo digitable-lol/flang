@@ -105,7 +105,7 @@ flang/проверки/   checks written in flang, walked by the binary
 flang/test/       the old test run: written against the deleted implementation, and today it does not start
 flang/ct/         category-theory implementations; the surface contract lives in docs/ct/
 flang/conc/       the concurrency contract and its examples
-examples/         185 flang programs in 22 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and fifteen more
+examples/         187 flang programs in 22 sets: leetcode, rosetta, crypto, io, web, db, wal, library-api and fifteen more
 editors/          the .flang language server, a vim plugin and a github-linguist submission stub
 packaging/        Homebrew, asdf and the flang.1 man page
 scripts/          reprinting the bootstrap point, the library index, the changelog and the release C

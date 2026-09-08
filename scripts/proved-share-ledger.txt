@@ -1143,4 +1143,6 @@ a556bd715aef70740ddb3d166813a1b0|1|×|×|×|0|flang/proof/чекер/пробы/
 8358c893c799244b885734453a1140c9|1|×|×|×|0|flang/proof/чекер/пробы/семьи/булева-цель/порча/lozh.flang
 dcc1953cd5acc1b24859a0d654638b8f|5|2|3|0|0|examples/frameworks/react-invoice/core/cart.flang
 d2cc0dc445665e98265edb9ab98b63b6|1|1|0|0|0|examples/frameworks/react-invoice/core/catalog.flang
+16b27f88abc9217d9a019ffbdd329c4c|16|10|6|0|0|examples/frameworks/react-ts-pure/core/storefront.flang
+350c6da0d131bdd24fac32731e171887|3|1|2|0|0|examples/frameworks/react-ts-pure/scripts/markup-without-logic.flang
 7fd0028def86e3c49bccc7d5b364b16e|7|7|0|0|0|examples/frameworks/vue-roman/core/roman-numerals.flang

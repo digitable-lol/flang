@@ -105,7 +105,7 @@ flang/проверки/   проверки, написанные на flang; о�
 flang/test/       прежний набор проб: написан против удалённой реализации и сегодня не запускается
 flang/ct/         реализации теории категорий; контракт поверхности — в docs/ct/
 flang/conc/       контракт конкурентности и её примеры
-examples/         185 программ на flang в 22 наборах: leetcode, rosetta, crypto, io, web, db, wal, library-api и ещё пятнадцать
+examples/         187 программ на flang в 22 наборах: leetcode, rosetta, crypto, io, web, db, wal, library-api и ещё пятнадцать
 editors/          языковой сервер .flang, подсветка для vim и заготовка заявки в github-linguist
 packaging/        Homebrew, asdf и страница flang.1
 scripts/          перепечатка точки раскрутки, указателя библиотеки, журнала изменений и релизного C

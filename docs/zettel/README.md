@@ -395,6 +395,7 @@
 - [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](a-changed-verdict-must-be-carried-to-a-full-run.md)
 - [Проверка, переведённая на двоичный, выпадает из прогона молча — потому что CI не собирал двоичный ни разу](a-check-moved-to-the-binary-drops-out-of-ci-silently.md)
 - [Новое правило проверки, написанное на flang, испытывается толкователем того же двоичного — круг пять минут, а не перепечатка](a-checker-rule-written-in-flang-is-tried-by-the-interpreter-not-by-a-reprint.md)
+- [Запись доказательства печатается из исходника `zapis.flang` толкователем двоичного за двенадцать минут — правку печати можно измерить без перепечатки семени](a-proof-record-prints-from-source-in-twelve-minutes-without-a-reprint.md)
 - [Потомок у `flang io` запускается в каталоге ПЛАНА, а не в рабочем каталоге прогона](a-child-process-starts-in-the-plan-directory-not-the-working-one.md)
 - [Замкнутая цель под охраной берётся НЕСТРОГИМ знаком, если она про число, только равенством, если про длину, и не берётся строгим никогда](a-closed-numeric-goal-takes-any-sign-but-a-closed-length-goal-takes-only-equality.md)
 - [Карта столкновений имён, снятая по каждой цели порознь, слепа к столкновениям целей МЕЖДУ СОБОЙ: у go с rust их пять](a-collision-map-taken-per-target-is-blind-to-target-against-target.md)

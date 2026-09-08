@@ -1,7 +1,7 @@
 # Липкий бит на чужом каталоге останавливает `git merge` целиком, а обходится одним коммитом
 
 `git merge github/main` отказался на первом же файле: «unable to unlink old
-`flang/test/zapis/vedomost-etalona.json`: Operation not permitted». Слияние при
+`flang/test/zapis/witness-ledger.json`: Operation not permitted». Слияние при
 этом не начиналось — ни `MERGE_HEAD`, ни изменённых отслеживаемых файлов, зато в
 дереве осталось 40 неотслеживаемых, которые git успел записать до отказа.
 

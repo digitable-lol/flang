@@ -9539,7 +9539,7 @@ static int run_file(int argc, char **argv) {
 #define EMIT_TARGET_PYTHON 6
 #define EMIT_TARGET_CSHARP 7
 #define EMIT_TARGET_CPP 8
-#define EMIT_TARGET_COUNT 9
+#define EMIT_TARGET_COUNT 10
 
 /** Потолки таблицы: полей в записи настроек и файлов рантайма у одной цели. */
 #define EMIT_FIELD_MAX 17
@@ -9708,6 +9708,26 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
      "запустить: cd <каталог> && node flang_cli.js ./<имя>.js",
      {"node", NULL, NULL},
      "план исполняет ХОЗЯИН, а не прогонщик: cd <каталог> && node flang_host_node.js ./<имя>.js",
+     NULL},
+    /* TypeScript — та же печать, что у «js», с типами в подписях. Рантайм у неё
+       НЕ вшивается в модуль, а печатается соседним файлом `flang_runtime.js`
+       из тех же кусков; `.ts` его ввозит, и tsc при allowJs выводит типы из
+       JS сам. Поэтому файлы рантайма здесь — те же три из `js/` (планировщик,
+       прогонщик, исполнитель) плюс `ts/tsconfig.json` четвёртым полем
+       («настройки tsc»): он печатается рядом, чтобы `tsc -p .` в каталоге
+       вывода проверял модуль strict-режимом без единого ключа. Хозяин
+       `flang_host_node.js` — пятым, дословно и только программе с планом, как
+       у «js». `places` называет родительский каталог по правилу «cpp»: файлы
+       лежат в двух каталогах цели. */
+    {"ts", "TypeScript", "ts/tsconfig.json", {"flang/src/emit", "share/flang"},
+     "Напечатать связанное в TS", true, 14,
+     {"путь", "есть путь", "база", "предел глубины", "предел шагов", "исходник планировщика",
+      "прогонщик", "исходник прогонщика", "исходник исполнителя", "настройки tsc", "типы входа",
+      "поля входа", "варианты входа", "параметры входа"},
+     5, {"js/flang_conc.js", "js/flang_cli.js", "js/flang_io.js", "ts/tsconfig.json", "js/flang_host_node.js"},
+     "проверить: cd <каталог> && tsc -p .; запустить: cd <каталог> && node flang_cli.js ./<имя>.ts (Node 23.6+)",
+     {"node", NULL, NULL},
+     "план исполняет ХОЗЯИН, а не прогонщик: cd <каталог> && node flang_host_node.js ./<имя>.ts",
      NULL},
     {"elixir", "Elixir", "flang_runtime.ex", {"flang/src/emit/elixir", "share/flang/elixir"},
      "Напечатать связанное в Elixir", true, 13,

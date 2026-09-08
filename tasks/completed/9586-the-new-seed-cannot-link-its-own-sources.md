@@ -114,3 +114,15 @@ flang emit flang/self/bootstrap/compiler.flang --target c … --max-steps 140000
 `flang/self/conc.flang:119`, `flang/stdlib/datetime.flang:62`,
 `docs/site/kak-dokazat.ru.md:1348`). Это заведено отдельной задачей — сюда оно
 не относится: задача была про число в `raskrutka.sh`, а не про прозу о нём.
+
+
+### Улики: коммиты ствола
+
+Добавлено 8 сентября 2026: раздел выше называл сделанное словами, но SHA в нём
+не было — проверить пересказ нечем. Коммиты взяты из `git log gh/dev` и
+проверены `git cat-file -e <sha>^{commit}`.
+
+- статус «сделана» поставлен коммитом `28747cca` (2026-08-30) — «docs(tasks): двадцать две открытые работы заведены задачами, и одна закрыта как уже сделанная»
+- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- номер задачи назван в 2 коммитах ствола: `git log gh/dev --oneline --grep=9586`
+

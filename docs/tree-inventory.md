@@ -6,7 +6,7 @@
 JavaScript: файлов 107, строк 15567, потолок файлов 63» — «ДОЛГ ВЫРОС».
 Разбор и перевод — [задача
 4838](../tasks/4838-the-debt-outside-flang-crossed-its-ceiling.md), счёт по
-родам — [задача 9688](../tasks/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
+родам — [задача 9688](../tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
 починка самого правила и первые закрытия — [задача
 7405](../tasks/7405-dolg-vne-flang-razobran-po-razryadam-i-pravilo-scheta-pochineno.md).
 
@@ -258,7 +258,7 @@ Python 16, awk 1.
 Закрыто шесть файлов, и все шесть — одного рода: **записки отдельных прогонов,
 прибитые к чужим машинам.** Ни один не запускался из свежего клона, потому что
 первой же строкой делал `cd` на путь, которого в дереве нет. Разбор рода —
-[задача 9688](../tasks/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
+[задача 9688](../tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
 там же они названы поимённо.
 
 Пути ниже в дереве уже не лежат, поэтому названы в блоке, а не ссылками:

@@ -587,6 +587,11 @@ be21be0ca643efa00fc02e9e3b64edd1|90|79|7|4|0|examples/allocator/allocator.flang
 c110934b654de80f02da0999dfd1c88d|0|0|0|0|2|flang/ct/modules/orders.flang
 65de6a234d3abe159672760a3f98dba5|1|×|×|×|0|flang/ct/monoid-and-monad.flang
 2532d2f0982166760ed7fd3b5961be72|0|×|×|×|3|flang/ct/order-shipment.flang
+bdff7b7e5851be32fe218a7ca696ebca|2|×|×|×|0|flang/ct/set-mail-routing.flang
+df8d71ded0766702962164b5cb394f16|3|×|×|×|0|flang/ct/vect-plane.flang
+ffc0184f83e59cd8b172ef67b28742d2|4|×|×|×|0|flang/ct/grp-clock-shifts.flang
+fc7a77af11f020be6d3ba57f7efe6909|6|×|×|×|0|flang/ct/pos-approval.flang
+f7c2a36f3b5d690600431dbbeaeff6f6|1|×|×|×|0|flang/ct/mon-free-forgetful.flang
 029fbccafd8b593f0fcafc24d6a14a21|14|9|4|1|0|examples/crypto/aes-vectors.flang
 e3dce4b7d377d2076ca7154cade67ec6|2|1|1|0|0|examples/crypto/certificate.flang
 b6df92b9fab4356571dced4966d981fb|3|2|0|1|0|examples/crypto/ecdsa-digest.flang
@@ -1086,7 +1091,7 @@ c5a0345c44c46c293d187f192b3ea621|4|11|0|0|0|scripts/emit-package.flang
 ef39e47ca6526bb1d5f92b29cb0a3644|12|12|0|0|0|scripts/emit-promises-guard.flang
 91128ae65d62f7aee67ef6e15ae3599a|81|80|0|1|0|scripts/error-code-guard.flang
 b9355c30780244f70669d1308c60cf41|13|6|0|0|0|scripts/file-extensions.flang
-f93ca414eb631442b9cef287e164a648|60|48|9|3|0|scripts/homebrew-formula-guard.flang
+43a4d7d6d4935f31c848d28b9b23c41b|63|49|11|3|0|scripts/homebrew-formula-guard.flang
 b00f9a812077e3b8497c15864acff995|10|7|3|0|0|scripts/io-dictionary-copies-guard.flang
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/input-boundary.flang
 549dc14d48a6d1300aacb42533fe4cc6|2|0|2|0|0|scripts/jargon-guard.flang
@@ -1107,7 +1112,7 @@ c25748ca72cfdca2554269b3c8bcf185|9|9|0|0|0|scripts/occupancy-check.flang
 cd5ba8e6506a5d6b59898333c0d061b2|26|26|0|0|0|scripts/plan-across-targets.flang
 b7b038af83dfc2fd177142569ecab833|33|30|0|0|0|scripts/region-in-c-target.flang
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.flang
-8c3d550e05448975c2bc923b8671b80d|8|8|0|0|0|scripts/release-guard.flang
+1083cc30fab03e5f16e2060519b7c8c1|8|8|0|0|0|scripts/release-guard.flang
 6532ecb8603b4f6eb127b8d911d1d5d9|26|22|2|0|0|scripts/release-in-c.flang
 da53a2289cac09470f6f1d20ee509c82|10|7|3|0|0|scripts/reprint-freshness.flang
 10960d449237ada36a5330f39f6695a3|3|2|1|0|0|scripts/stale-pages-guard.flang

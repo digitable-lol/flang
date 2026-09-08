@@ -325,3 +325,43 @@ tasks/completed/9988-print-launcher-breaks-end-of-print-contract-again.md	пус
 tasks/completed/9995-zadachnik-zelyon-i-postavlen-v-CI-vorotami.md	release-versions/9959.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
 tasks/completed/9999-cel-sleduet-iz-obyavlennogo-o-dovodakh-gotovo-pod-klyuch.md	диагностика/сверщик-наив.c	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
 tasks/completed/9999-cel-sleduet-iz-obyavlennogo-o-dovodakh-gotovo-pod-klyuch.md	диагностика/сверщик-правило.c	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
+docs/course/09-eight-targets.md	flang/src/emit/c.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	conc.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	docs/zamer-skorosti.md	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/examples/io/dvoichnyy-fayl-tuda-i-obratno.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/scripts/poddelki-yadra.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/src/commutative.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/src/distributive.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/src/emit/elixir.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/src/self.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/src/types.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/corpus-claims.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/emit-names.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-conc.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-csharp.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-elixir.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-go.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-js.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-python.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-emit-rust.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-functor.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-hotswap.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-interpret.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-laws.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-lsp.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-obligations.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	flang/test/self-totality.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/journal-carried-out-of-sources.md	scripts/storozh-hozyaina-vkladki.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/zettel/a-farewell-paragraph-outlives-what-it-says-goodbye-to.md	.github/workflows/fts-example.yml	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/zettel/a-farewell-paragraph-outlives-what-it-says-goodbye-to.md	flang/test/compat.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/zettel/a-farewell-paragraph-outlives-what-it-says-goodbye-to.md	host/fts.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/zettel/a-farewell-paragraph-outlives-what-it-says-goodbye-to.md	src/lexer.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+docs/zettel/a-side-may-already-exist-check-before-writing.md	reachable.flang	явное отрицание в тексте: «искать reachable.flang бесполезно» — файла с таким именем нет
+docs/zettel/one-binary-one-ledger-the-whole-tree.md	tasks/a-verdict-on-a-file-does-not-depend-on-who-imported-it.md	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+flang/conc/RESILIENCE.md	builtins.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+flang/conc/SPEC.md	builtins.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+tasks/5406-journal-left-where-comments-are-not.md	builtins.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+tasks/completed/0021-hot-swap-reaches-a-live-node.md	flang/src/hotswap.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+tasks/completed/6551-occupied-names-guard-dies-in-a-fresh-checkout.md	../output/storozh-zanyatogo.json	файл, который сторож ПИШЕТ при прогоне, не файл дерева
+tasks/completed/9043-five-codes-named-by-prose-are-absent-from-the-sources.md	package-lock.json	явное отрицание в тексте: рядом сказано, что файла в дереве нет
+tasks/completed/9220-six-green-guards-verified-three-wired-into-ci.md	output/storozh-zanyatogo.json	файл, который сторож ПИШЕТ при прогоне, не файл дерева

@@ -61,7 +61,7 @@ TypeScript — это JavaScript плюс типы, и генератор это
 ## Как проверяется без перепечатки семени
 
 Двоичный не знает новой цели, пока семя не перепечатано. Поэтому пробы идут
-через `flang/self/bootstrap/pechat-iz-istochnika.flang`: план `flang io`,
+через `flang/self/bootstrap/emit-from-source.flang`: план `flang io`,
 который ввозит «Compiler flang» ИЗ ИСХОДНИКА, читает заказ
 `tmp/pechat-iz-istochnika/zakaz.txt` (куда, вход, файлы ввоза), зовёт
 «Печать в TS от исходников» и пишет файлы. Медленно, но честно: работает тот

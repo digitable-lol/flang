@@ -77,7 +77,8 @@ $ grep -ran 'использует «Проверка планов»' --include='
   тринадцати подделок и на честном `00-tselyj.flang`.
 
 Пробы для этого уже собраны: `/srv/tmp/m-processes/proba/plany.flang`,
-`sud.flang`, `svyaz.flang`, `schet.flang`.
+`/srv/tmp/m-processes/proba/sud.flang`, `/srv/tmp/m-processes/proba/svyaz.flang`,
+`/srv/tmp/m-processes/proba/schet.flang`.
 
 ## Переснято 30 августа 2026 на стволе `f9e67fa6`
 

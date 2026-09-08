@@ -81,7 +81,7 @@ JavaScript, 25 487 строк**, и **долгом из них являются 
 | `flang/test` — проверки | 9 | 1 991 | ввозят функции, а не зовут команды; `--test` от Node |
 | `flang/conc` — оснастка узла | 4 | 1 376 | `bin/node.js` 719 — полный узел на цели js |
 | `benchmarks` — замеры | 3 | 579 | ничем; самое дешёвое, что есть |
-| прочее (упаковка, редактор, wasm, lsp) | 5 | 354 | `postinstall.mjs`, `extension.js` — npm и VS Code, чужие точки входа |
+| прочее (упаковка, редактор, wasm, lsp) | 5 | 354 | крючок установки npm и `extension.js` — npm и VS Code, чужие точки входа |
 
 Самые крупные поимённо: `binary.mjs` 830, `link-collision-guard.mjs` 828,
 `binary-rules-guard.mjs` 779, `proof-ledger.mjs` 768, `build.mjs` 958,
@@ -222,9 +222,9 @@ $ echo $?
 из них (`glob`, `surface-pair`, `tempdir`, `toolchain-guard`) на тесты не
 работают вовсе или не только на них — их тянут сторожа и узел сайта.
 
-**«Прочее» (5 файлов, 354) — целиком не долг.** `packaging/flang-launch.mjs` и
-`flang/bin/flang-lsp.mjs` стоят в `"bin"` пакета npm (круг: до их работы flang в
-системе ещё нет), `packaging/postinstall.mjs` — крючок `"postinstall"`,
+**«Прочее» (5 файлов, 354) — целиком не долг.** Запускатель и обёртка языкового
+сервера стояли в `"bin"` пакета npm (круг: до их работы flang в системе ещё
+нет), третий файл был крючком `"postinstall"`,
 `editors/vscode/extension.js` — точка входа расширения, которую VS Code грузит в
 свой процесс Node, `web/wasm/probe.mjs` ведёт настоящий браузер через Playwright.
 Каждый называет свою причину в собственной шапке.

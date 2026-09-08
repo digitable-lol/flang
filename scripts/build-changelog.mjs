@@ -207,6 +207,44 @@ const ВИДИМОСТЬ = new Map([
   [".rab", false],
   ["fspec", false],
   ["web", false],
+  /*
+   * ДЕВЯТНАДЦАТЬ КОРНЕЙ, НАЗВАННЫХ `--check` 8 сентября 2026 после выпуска
+   * 0.7.14: journal отставал на четыре выпуска, и перепечатка показала, чего
+   * правило не знает. Тем же порядком, что и восемь корней выше: каждый
+   * назван вслух с доводом, а не молча пропущен.
+   *
+   * Два меняли язык — это прежние места того, что видимо и сегодня:
+   *   `flang/cat` — реализации теорката до переезда в `flang/ct` (acca80a3);
+   *   `flang/examples` — примеры до сведения в один `examples/` (08ba3cf5).
+   * Живые корни обслуживания, в пакет не входят:
+   *   `.githooks` — хук перед пушем; `.gitmodules` — только имя внешнего
+   *   репозитория крана Homebrew, сам кран лежит под `packaging` и виден там;
+   *   `DESCRIPTION.md`, `ROADMAP.md` — рассказ о языке; `tasks` — задачник;
+   *   `ярлык`, `ярлыки.flang` — ярлыки команд разработки.
+   * Десять — мусор истории, в дереве их нет: `.rabdir`, `.reader-pages.txt`,
+   *   `.sborka.kod`, `.tmpdir`, `bootstrap-vysokiy`, `client2.txt`, `schet`,
+   *   `schet2`, `МОЯ-ДОЛЯ.txt`, `ОТЧЁТ.md` — рабочие файлы и отчёты, однажды
+   *   закоммиченные по недосмотру (23 августа — 2 сентября 2026) и снятые.
+   */
+  ["flang/cat", true],
+  ["flang/examples", true],
+  [".githooks", false],
+  [".gitmodules", false],
+  ["DESCRIPTION.md", false],
+  ["ROADMAP.md", false],
+  ["tasks", false],
+  ["ярлык", false],
+  ["ярлыки.flang", false],
+  [".rabdir", false],
+  [".reader-pages.txt", false],
+  [".sborka.kod", false],
+  [".tmpdir", false],
+  ["bootstrap-vysokiy", false],
+  ["client2.txt", false],
+  ["schet", false],
+  ["schet2", false],
+  ["МОЯ-ДОЛЯ.txt", false],
+  ["ОТЧЁТ.md", false],
 ])
 
 /*

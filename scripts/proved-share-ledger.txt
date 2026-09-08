@@ -853,7 +853,7 @@ a37d42d0e65d4ddde220dd09d2b5a529|4|4|0|0|0|flang/scripts/porodit-atomy.flang
 f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.flang
 0cbae1cda9157bd593f3040c05b775a2|4|4|0|0|0|flang/scripts/scheduler-across-targets.flang
 46e68d5d9cbd802722fc7b9d9df265df|2|2|0|0|0|flang/scripts/supervisor-across-targets.flang
-e3a358ceb0ffc0e0046344c6db8eb5e5|28|25|2|0|0|flang/scripts/tasks.flang
+6d5d5cb743d555e44e1d8ccca9d90d99|29|27|2|0|0|flang/scripts/tasks.flang
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.flang
 e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/жаргон-образцы.flang
 af296a5839d250342ca4c8cf67e66060|4|×|×|×|0|flang/self/bootstrap/compiler.flang
@@ -1088,7 +1088,7 @@ c432b1228e1590cee11e7cddc141b646|5|4|1|0|0|scripts/cli-commands-guard.flang
 539d8b46495e537c0c3258e76c3547e7|67|67|0|0|0|scripts/corpus-runner.flang
 9a1d779542ab08a5a1416bbdc99c0563|10|10|0|0|0|scripts/dictionary-guard.flang
 ce97ff0ab2094dce6783702de4290b85|34|32|0|2|0|scripts/emit-and-examples.flang
-56508dd7ba9db80804b800be9ddc2518|14|14|0|0|0|scripts/emit-dictionary.flang
+18806901f644c701a3a572d18a5cbe7b|14|14|0|0|0|scripts/emit-dictionary.flang
 5f0d2e189fb05b4383ad353ab7f23fa7|48|42|3|3|0|scripts/emit-law.flang
 6e853bc74ce6a194834bd7cedcfc79e6|4|11|0|0|0|scripts/emit-package.flang
 a7a4538992c2bf1adb566dbf96206538|12|12|0|0|0|scripts/emit-promises-guard.flang
@@ -1135,7 +1135,7 @@ a781034b78cf3d516bd825fa2dfd3b93|10|8|2|0|0|scripts/сторож-дарвина.
 e115e809a3685b17510b8e8c01385301|17|17|0|0|0|web/app/hailstone.flang
 704fe0f011c617acd4cff9afd576a5de|43|43|0|0|0|web/shortener/client.flang
 08e7e8cb7e8abb0e1a64a2c8901d7fde|25|19|6|0|0|web/stand.flang
-7fde406068114a370354d24b87ae862b|17|14|3|0|0|ярлыки.flang
+3fa1793f9f66d185d968315fd5631fb9|17|14|3|0|0|ярлыки.flang
 a8a1e131d2f35f0071f646f2e9f5581c|3|×|×|×|2|flang/proof/чекер/пробы/программы/Ч7104-nakrutka-po-predpolozheniyu.flang
 905c250bd3dd21a26df72a2039b2f731|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-chestnaya.flang
 b3e74b9533e258c8364f00d8f5d31657|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-lozh.flang

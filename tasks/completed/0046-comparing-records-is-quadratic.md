@@ -179,3 +179,15 @@ Failure to open any events for recording.
 
 Разбор:
 `docs/zettel/equality-walked-the-whole-tree-because-the-pointer-was-never-compared.md`.
+
+
+### Улики: коммиты ствола
+
+Добавлено 8 сентября 2026: раздел выше называл сделанное словами, но SHA в нём
+не было — проверить пересказ нечем. Коммиты взяты из `git log gh/dev` и
+проверены `git cat-file -e <sha>^{commit}`.
+
+- статус «сделана» поставлен коммитом `efd952f3` (2026-08-26) — «docs(tasks): 0046 сделана — квадрат был не в переборе полей, а в том, что fl_equal не сверял указатели»
+- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- номер задачи назван в 9 коммитах ствола: `git log gh/dev --oneline --grep=0046`
+

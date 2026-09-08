@@ -87,16 +87,17 @@ of the classics are simply **false**:
 (0 делить на 0) не больше (0 делить на 0)           →  false
 ```
 
-So wherever they write `nat` we write `нат` — the exact range `[0, 2⁵³−1]`. This
+So wherever they write `nat` we write `неотрицательное` — the exact range `[0, 2⁵³−1]`. This
 is not cosmetics but a condition of an honest translation; the same argument is
 recorded in `flang/test/fixtures/poddelka-order-arithmetic.flang`.
 
 **A side measurement that cost one run.** In the compiler sources and in
-`flang/SPEC.md` the same type is called `неотрицательное`, and
-`flang/stdlib/strlists.flang` uses that name. The **printed binary** does not know
-it: `flang check` on the stock `strlists.flang` answers `FLANG_UNKNOWN_NAME …
-неизвестный тип «неотрицательное»`, while the kernel's own refusal texts call the
-type `нат`. The binary lags the sources until the seed is reprinted; write `нат`.
+`flang/SPEC.md` the same type is called `неотрицательное`; `нат` is the outdated
+short spelling of the same name, accepted until 1.0. Before the seed reprint of
+3 September 2026 (v0.7.11) the printed binary did not know the long name:
+`flang check` on `strlists.flang` answered `FLANG_UNKNOWN_NAME … неизвестный тип
+«неотрицательное»`. Since that reprint the binary knows both names and calls the
+type `неотрицательное` in its own refusals and in the ledger; write that one.
 
 ## Table: arithmetic
 
@@ -265,7 +266,7 @@ difference is exactly whether the goal's tree matched the body's tree.
 One and the same lemma `Nat.le_add_r` yields two different verdicts:
 
 ```
-«Сумма», body а плюс б with б: нат — addend a TERM:
+«Сумма», body а плюс б with б: неотрицательное — addend a TERM:
   а не больше результат   — grid
   б не больше результат   — grid
 
@@ -275,7 +276,7 @@ One and the same lemma `Nat.le_add_r` yields two different verdicts:
 
 Both literal cases came back as "proved **by the declared types of the
 arguments**: the goal was reduced by the rule 'order by construction'". So the
-kernel does read the range that the type `нат` gives — but only when the second
+kernel does read the range that the type `неотрицательное` gives — but only when the second
 summand is a written number. This is **the same dividing line as for the
 remainder** (`Nat.mod_bound_pos`): not the "difficulty" of the lemma but the kind
 of the second argument.
@@ -294,7 +295,7 @@ written with a guard copied from the body word for word:
 ```
 
 Under the guard the body reduces to `а` and the goal to reflexivity, which the
-type `нат` supplies. Technique 1 of ["Which promises the kernel
+type `неотрицательное` supplies. Technique 1 of ["Which promises the kernel
 takes"](kak-dokazat.html) works on a `не больше` goal too, not only on equalities.
 
 **The mirrored spelling does not help here, measured three times.** For
@@ -306,7 +307,7 @@ rolled back; the first two were kept so the reader can see both spellings. Split
 same zero — three claims, no gain, rolled back.
 
 `Nat.sub_add` is a special case: over IEEE-754 the law is **false**, with the
-counterexample `(9007199254740994 минус 1) плюс 1 = 9007199254740992`. Over `нат`
+counterexample `(9007199254740994 минус 1) плюс 1 = 9007199254740992`. Over `неотрицательное`
 it holds, but the kernel has no rule that would tell the exact integer grid apart
 from the rest of the numbers in a subtraction, and by the note in
 `flang/self/proof-kernel.flang` it will not get one.
@@ -471,7 +472,7 @@ straight off the number.
 
 **Second: an exact type works, and works for free.** Twelve of the twenty-nine
 proved claims in arithmetic came **by declared type** (`объявленным типом 12` in
-the report) — three times more than in the previous measurement. `нат` gives both
+the report) — three times more than in the previous measurement. `неотрицательное` gives both
 a floor and a ceiling; on it we got reflexivity, non-negativity, both bounds of a
 remainder by a literal, both bounds of min and max, and monotonicity of addition
 with a literal addend. It is the cheapest technique in the whole file.

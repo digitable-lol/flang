@@ -34,7 +34,7 @@ could not prove it. It has five ways to do that:
 | --- | --- | --- |
 | by composition | there is no recursion at all | none |
 | by structure | the step goes down a part of the value: the tail of a list, a field of a variant | none |
-| by exact step | descent over `нат` by exactly one | none |
+| by exact step | descent over `неотрицательное` by exactly one | none |
 | by constant step | a number falls by a constant amount and a condition holds it from below | one check per turn |
 | by declared measure | the author wrote `убывает …` and the compiler recomputes the measure on every turn | one check per turn |
 

@@ -234,7 +234,7 @@ the expected type.
 The full surface contract is `docs/ct/spec.md`: the form of every declaration
 down to the last case ending, the diagnostic code for every trouble, and a
 by-name list of what the compiler does not check. Beside it are the pieces:
-`HOF.md`, `POLY.md`, `MONAD.md`, `SETS.md`, `ZAKONY.md`.
+`docs/archive/hof.md`, `docs/archive/poly.md`, `docs/archive/monad.md`, `docs/ct/sets.md`, `docs/ct/zakony.md`.
 
 It is a contract, not a tutorial, and on the site it sits behind the [for
 contributors](contributing.html) door.

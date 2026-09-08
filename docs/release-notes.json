@@ -155,6 +155,7 @@
           "Заметки о выпусках 0.7.x взяты с `main` целиком: они были написаны там и в `dev` не возвращались, потому что выпуск делается на `main`. Одиннадцать версий добавлены, ни одна не переписана. Коммит `532468f2`."
         ],
         "сломалось": [
+          "Архив 0.7.11 так и не вышел, и релиза на GitHub у этого тега нет. Конвейер выпуска остановился на шаге «Сверить хеш архива с формулой Homebrew»: в формуле на теге стоял sha256 архива 0.7.10 (`825a2b5b…`, тот же, что и на v0.7.10) — `./ярлык версия` sha256 намеренно не трогает, его вписывают отдельным коммитом после сухого прогона, и для 0.7.11 такого коммита не сделали. Следующий шаг, выкладку, конвейер пропустил; ничего битого не вышло, тег не удалялся.",
           "Язык по-прежнему НЕ формально доказуемый: доля корпуса, проверенная чекером, 13,75 % при пороге гейта 95 %. И держат её на этот момент не правила чекера, а протухшие записи корпуса — замер обещает от перепечатки 17,92 %. Коммит `7e369d98`.",
           "Показано прогоном, что умеет краснеть, только у 8 сторожей из 58, и двадцати из непроверенных CI верил зря. Коммит `ff354a73`.",
           "Перепись сторожей на 5 сентября 2026: сторожей 56, CI зовёт 29, двадцать семь не зовёт никто. Коммит `3fa4c09f`."
@@ -177,6 +178,7 @@
           "The 0.7.x release notes were taken from `main` wholesale: they had been written there and never came back to `dev`, because a release is made on `main`. Eleven versions were added and none rewritten. Commit `532468f2`."
         ],
         "сломалось": [
+          "The 0.7.11 archive never shipped, and this tag has no GitHub release. The release pipeline stopped at the step «check the archive hash against the Homebrew formula»: the formula at that tag still carried the sha256 of the 0.7.10 archive (`825a2b5b…`, the very one from v0.7.10) — `./ярлык версия` deliberately does not touch sha256, it is written in by a separate commit after a dry run, and for 0.7.11 that commit was never made. The pipeline skipped the upload step; nothing broken went out, and the tag was not deleted.",
           "The language is still NOT formally provable: the checker-verified share of the corpus is 13.75% against a gate threshold of 95%. And at this point it is held down not by the checker’s rules but by stale corpus records — the measurement promises 17.92% from a reprint. Commit `7e369d98`.",
           "Only 8 guards of 58 have been shown by a run that they can redden, and CI was trusting twenty of the unproven ones for nothing. Commit `ff354a73`.",
           "The guard census as of 5 September 2026: 56 guards, CI calls 29, twenty-seven are called by nobody. Commit `3fa4c09f`."

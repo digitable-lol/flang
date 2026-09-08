@@ -106,6 +106,10 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # «формула:проверка» ниже сверяет формулу дерева с формулой крана —
+          # сабмодулем packaging/homebrew-tap. Не развёрнут — сторож красен.
+          submodules: true
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       # `cache: npm` и `npm ci` сняты вместе с `package-lock.json`. Двоичный
@@ -198,7 +202,7 @@ jobs:
       # `gtar: share: Cannot stat`, то есть работа brew ниже не доходила до
       # brew вовсе. Проверено прогоном 5 сентября 2026: та же команда со словом
       # `share` даёт код 2, со словом `runtime` — собирает архив.
-      - name: Собрать архив и упаковать той же командой, что в формуле
+      - name: Собрать архив и упаковать той же командой, что в release.yml
         run: |
           set -eu
           LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-in-c.flang --timeout 1800000

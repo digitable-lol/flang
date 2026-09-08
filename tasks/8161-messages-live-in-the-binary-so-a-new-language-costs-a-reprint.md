@@ -31,7 +31,7 @@
 
 Вынести сообщения в таблицу РЯДОМ С ДВОИЧНЫМ, чтобы новый язык был одним
 положенным файлом, а не перепечаткой. Решение и доводы —
-[ADR-0022](../docs/adr/0022-the-settings-file-and-the-language-of-output.md),
+[ADR-0024](../docs/adr/0024-the-settings-file-and-the-language-of-output.md),
 раздел 7.
 
 ```

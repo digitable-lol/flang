@@ -57,4 +57,4 @@
 
 Значит переводить надо прозу, а машинную часть не трогать, и 14 проверок
 переводить на коды. Решение —
-`docs/adr/0022-the-settings-file-and-the-language-of-output.md`.
+`docs/adr/0024-the-settings-file-and-the-language-of-output.md`.

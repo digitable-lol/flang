@@ -14,7 +14,7 @@
 Файл настроек, его разбор и старшинство источников написаны и прогнаны
 (`scripts/settings-file.flang`, `scripts/flangrc.sh`, `.flangrc` в корне,
 `docs/guide/settings.ru.md`, решение
-[ADR-0022](../docs/adr/0022-the-settings-file-and-the-language-of-output.md)).
+[ADR-0024](../docs/adr/0024-the-settings-file-and-the-language-of-output.md)).
 Читает их сегодня только оснастка. **Сам `bootstrap/flang` о настройках не знает
 ничего.**
 
@@ -35,14 +35,14 @@ $ grep -oE '"--[^"]{2,40}"' bootstrap/flang_repl.c | grep -ci 'lang\|язык'
 
 1. **Ключ CLI** `--язык ru|en|eo|zh` и латинский близнец `--lang`, годный при
    любой команде — по образцу `--предел-глубины`/`--depth-limit`.
-2. **Чтение `.flangrc`** в самом двоичном, по правилу из ADR-0022: подъём от
+2. **Чтение `.flangrc`** в самом двоичном, по правилу из ADR-0024: подъём от
    рабочего каталога, обрыв на первой примете (`.flangrc`, `.git`,
    `flang.package`), потом `$HOME/.flangrc`. Правило уже пересчитано в
    `scripts/flangrc.sh` и проверено `scripts/flangrc-guard.sh` — расходиться
    этим двум записям нельзя, и за этим должна следить проверка.
 3. **Переменные среды** `FLANG_LANG`, `FLANG_SURFACE`, `FLANG_COLOR`,
    `FLANG_MANPAGE` — латиницей, потому что `bash` и `dash` кириллическое имя
-   переменной не принимают вовсе (код 127; замер в ADR-0022).
+   переменной не принимают вовсе (код 127; замер в ADR-0024).
 4. **Локаль** — `LC_ALL`, затем `LC_MESSAGES`, затем `LANG`; `C` и `POSIX`
    кодом языка не считаются.
 5. **Старшинство** ровно то, что записано в «Выбранное значение»

@@ -545,7 +545,7 @@ jobs:
         run: ./bootstrap/flang io scripts/dictionary-guard.flang
       - name: Справочная страница (man) отвечает исходнику
         run: ./bootstrap/flang io scripts/manpage-guard.flang
-      # Порча — переписанное обещание в README.ru.md. Сторож держит фразу
+      # Порча — переписанное обещание в docs/README.ru.md. Сторож держит фразу
       # дословно и обязан сказать «обещание пропало», а не промолчать. 6612.
       # Подлог ПЕРЕВЁРНУТ против первой редакции пробы: 5 сентября проза стала
       # говорить «из девяти» (целей и правда девять), и порча теперь — вернуть
@@ -554,7 +554,7 @@ jobs:
       - name: Сторож обещаний о печати умеет краснеть
         run: |
           set -u
-          podlog=README.ru.md
+          podlog=docs/README.ru.md
           cp "$podlog" "$podlog.do"
           sed 's/Здесь показаны две цели из девяти/Здесь показаны две цели из восьми/' "$podlog.do" > "$podlog"
           if cmp -s "$podlog.do" "$podlog"; then

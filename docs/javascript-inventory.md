@@ -24,6 +24,19 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 своё место по убыванию, и число `count-library.mjs` в ней приведено к 280 —
 к тому, что четырьмя абзацами выше уже сказано прозой.
 
+**Сдвинулось 7 сентября 2026: три файла снесены, 1 828 строк.** Из `flang/scripts/`
+ушли `binary-rules-guard` (900 строк), `cli-keys-guard` (372) и `direct-run-guard`
+(556) на JavaScript: у каждого был двойник на flang, и прогоном на этом дереве
+(двоичный из семени `7c4f074d`) двойники дали тот же приговор — правила: те же
+7 находок, код 1 (38 с против 5 с); ключи: код 0 и те же восемь разрядов долга
+(39 с против 0,2 с), проба подлога `--fast` красит; прямой запуск: те же три копии
+в `examples/frameworks/*/printed/flang_cli.js` плюс одна, которую JavaScript
+прощал списком (`flang_host_node.js:497`), — звал его никто. Ярлыки
+`правила:проверка` и `ключи:проверка` и работа `cli-keys` в `ci.yml` зовут теперь
+`flang io`, и работе больше не нужен `setup-node`. Файлов JavaScript стало 66,
+строк 31 525. Разбор по каждому из четырнадцати файлов `flang/scripts/*.mjs` —
+`/srv/tmp/dokazuemyy/ПЕРЕДАЧА/karta-mjs.md` (вне дерева).
+
 Двоичный, которым сняты все остальные числа этой описи, —
 `/srv/flang-rabota/w-predely/bootstrap/flang` (0.6.2), собран 23 августа 2026
 17:00 UTC; дерево сборки не установлено, не новее `883fe9a9` (родословная —
@@ -31,13 +44,13 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 
 Эта опись считает ОДИН язык. Остальные шестнадцать — оболочка, C, C++, Python,
 HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
-считает [`tree-inventory.md`](tree-inventory.md) (6 сентября 2026: 282 файлов вне flang,
-<!-- СНЯТО 2026-09-06 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 282 -->
+считает [`tree-inventory.md`](tree-inventory.md) (7 сентября 2026: 280 файлов вне flang,
+<!-- СНЯТО 2026-09-08 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 280 -->
 долг вне JavaScript — **107 файлов, 16 029 строк при потолке 63**: храповик
 красен, разбор — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
-33 353 строки этой описи — нижняя оценка.
-<!-- СНЯТО 2026-09-06 строк-в *.js,*.mjs = 33353 -->
+31 525 строк этой описи — нижняя оценка.
+<!-- СНЯТО 2026-09-07 строк-в *.js,*.mjs = 31525 -->
 (29 августа здесь стояло 25 527: за два дня прибавилось 2 313 строк. Ещё 64
 строки прибавились 2 сентября: `scripts/latin-collision-guard.mjs` сравнивает
 теперь ПРОСЬБЫ печати, а не объявленные имена, и довод к этому записан там же.)
@@ -216,7 +229,6 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 | `scripts/build-changelog-page.mjs` | 833 | журнал |
 | `flang/scripts/binary.mjs` | 830 | мост |
 | `flang/scripts/link-collision-guard.mjs` | 828 | сторож |
-| `flang/scripts/binary-rules-guard.mjs` | 779 | сторож |
 | `flang/scripts/proof-ledger.mjs` | 768 | сторож |
 | `flang/scripts/word-guard.mjs` | 683 | сторож |
 | `flang/scripts/discriminating-search.mjs` | 561 | сторож |

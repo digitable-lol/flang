@@ -1,14 +1,10 @@
 # ВРЕМЕННАЯ РАБОТА ВЕТКИ `r/ci-install-path` — СНИМАЕТСЯ ПЕРЕД СЛИЯНИЕМ.
 #
-# `install-path.yml` и `ci.yml` выключены владельцем, и выключенные работы не
-# ходят ни на пуш, ни на `workflow_dispatch`. Проверить починку прогоном иначе
-# нечем: новый файл работы — единственный способ, а включать чужие выключенные
-# работы этой ветке нельзя.
-#
-# Здесь стоят ровно те шаги, что починены в `install-path.yml`, плюс два
-# ЗАМЕРА, ради которых работа и заведена:
-#   · повторим ли архив на macOS так же, как на Linux (Apple gzip против GNU);
-#   · чем именно давится цель `elixir` из `ci.yml` на раннере.
+# Первый заход (прогон 34261764782) показал: `put` зелена на обеих площадках,
+# а `brew` встаёт внутри `scripts/release-in-c.flang` на проверке страницы
+# руководства — «страница набралась, но это не страница про flang». Здесь
+# замер того, чем именно она давится на macOS: чем набирает groff и что
+# оставляет sed.
 
 name: Проба ветки
 
@@ -20,148 +16,27 @@ permissions:
   contents: read
 
 jobs:
-  put:
-    name: proba-install-path (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          submodules: true
-      - name: Выпуск не опирается на кеш приговоров
-        uses: ./.github/actions/release-without-cache
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 24
-      - name: GNU tar на macOS
-        if: runner.os == 'macOS'
-        run: brew install gnu-tar
-      - name: Сборка на Darwin не сломана молча
-        run: ./ярлык дарвин:проверка
-      - name: Архив выпуска — тот, за которым ходит brew
-        id: arhiv_vypuska
-        run: |
-          set -u
-          ssylka="$(sed -n 's/^  url "\(.*\)"$/\1/p' packaging/homebrew/flang.rb)"
-          if [ -z "$ssylka" ]; then
-            echo "::error::в packaging/homebrew/flang.rb не нашлось поля url" >&2
-            exit 1
-          fi
-          imya="${ssylka##*/}"
-          mkdir -p output
-          echo "иду по ссылке формулы: $ssylka"
-          if curl -fL --retry 3 --retry-delay 2 -o "output/$imya" "$ssylka"; then
-            ls -l "output/$imya"
-            echo "vzyat=da" >> "$GITHUB_OUTPUT"
-          else
-            rm -f "output/$imya"
-            echo "vzyat=net" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Собрать архив, пока выпуск не выложен
-        if: steps.arhiv_vypuska.outputs.vzyat != 'da'
-        uses: ./.github/actions/release-archive
-      - name: Формула Homebrew сходится сама с собой
-        run: ./ярлык формула:проверка
-      - name: Плагин asdf не отстал от дерева
-        run: ./ярлык плагин:проверка
-      - name: FLANG_VERSION совпадает с package.json
-        run: ./ярлык версия:проверка
-
-  # ЗАМЕР ПОВТОРИМОСТИ. Тот же архив, собранный на Linux у себя, дал sha256
-  # 31a51749762a658d6c900bb98f4de70828981521fc327fa1e116a19d0fed8d8c (дерево
-  # dev 08220eaa). Здесь то же самое считает раннер — и отдельно macOS.
-  arhiv:
-    name: proba-arhiv (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: GNU tar на macOS
-        if: runner.os == 'macOS'
-        run: brew install gnu-tar
-      - uses: ./.github/actions/release-archive
-      - name: Тот же архив, но GNU gzip вместо системного
-        if: runner.os == 'macOS'
-        run: |
-          set -eu
-          brew install gzip
-          gnu_gzip="$(brew --prefix gzip)/bin/gzip"
-          "$gnu_gzip" --version | head -1
-          files="$(cd output/release-c && ls | grep -Ev '\.(o|a)$|^flang(_cli)?$')"
-          gtar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
-               --mtime=@0 --mode=u=rw,go=r,a+X -C output/release-c -cf - $files \
-            | "$gnu_gzip" -9n > output/gnu-gzip.tar.gz
-          shasum -a 256 output/gnu-gzip.tar.gz
-
-  brew:
-    name: proba-homebrew
+  groff:
+    name: proba-groff
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Выпуск не опирается на кеш приговоров
-        uses: ./.github/actions/release-without-cache
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 24
-      - run: brew install gnu-tar
-      - name: Собрать архив тем же действием, что и release.yml
-        uses: ./.github/actions/release-archive
-      - name: Формула на свежий архив
+      - name: Чем набирают и чем чистят
         run: |
-          set -eu
-          archive="$PWD/$ARHIV"
-          digest="$(shasum -a 256 "$archive" | cut -d' ' -f1)"
-          mkdir -p output/tap
-          sed -e "s|^  url .*|  url \"file://${archive}\"|" \
-              -e "s|^  sha256 .*|  sha256 \"${digest}\"|" \
-              packaging/homebrew/flang.rb > output/tap/flang.rb
-          brew install --build-from-source --verbose ./output/tap/flang.rb
-      - name: Блок test do формулы
-        run: brew test flang
-      - name: Поставленное brew умеет печатать во все цели, какие называет само
-        run: |
-          set -eu
-          printf '%s\n' 'модуль «Проба»' '' 'тотальная функция «Два»' '  возвращает число' '  2' > проба.flang
-          beda=0
-          celi="$("$(brew --prefix)/bin/flang" --help | grep -- '--target' | tr ' ' '\n' | grep '|' | tr '|' ' ')"
-          for cel in $celi; do
-            if "$(brew --prefix)/bin/flang" emit проба.flang --target "$cel" --out "печать-$cel"; then
-              echo "  зелена  $cel"
-            else
-              echo "::error::цель $cel не печатается из установки brew"
-              beda=$((beda + 1))
-            fi
-          done
-          test "$beda" -eq 0
-
-  # ЗАМЕР ДОЛГА `ci.yml`: чем давится цель elixir. Сторож `link-across-targets`
-  # прячет вывод цели, поэтому здесь та же печать и та же сборка зовутся
-  # руками, и ответ компилятора Elixir виден целиком.
-  elixir:
-    name: proba-elixir
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Elixir и Erlang — единственные из девяти, которых нет в образе
-        run: sudo apt-get update && sudo apt-get install -y elixir
-      - name: Что за Elixir приехал из образа
-        run: |
-          elixir --version || true
-          erl -noshell -eval 'io:format("OTP ~s~n",[erlang:system_info(otp_release)]),halt().' || true
-      - run: make -C bootstrap -j"$(nproc)"
-      - name: Печать цели elixir и попытка сборки — с ответом компилятора
+          groff --version 2>&1 | head -1 || true
+          sed --version 2>&1 | head -1 || true
+          command -v col || true
+      - name: Три вида одной и той же страницы
         run: |
           set -u
-          rm -rf tmp/proba-elixir
-          mkdir -p tmp/proba-elixir
-          bootstrap/flang emit flang/conc/link.flang --target elixir --out tmp/proba-elixir
-          cd tmp/proba-elixir
-          ls -l
-          elixirc --warnings-as-errors -o _build flang_runtime.ex svyaz_uzlov.ex flang_cli.ex
-          echo "КОД СБОРКИ=$?"
+          echo "── как сейчас: groff | sed 's/\\x1b\\[…m//g'"
+          sh -c 'groff -K utf8 -man -Tutf8 "$0" | sed "s/\x1b\[[0-9;]*m//g" | head -2 | cat -v' packaging/flang.1 || true
+          echo
+          echo "── ESC собран printf-ом"
+          sh -c 'esc=$(printf "\033"); groff -K utf8 -man -Tutf8 "$0" | sed "s/${esc}\[[0-9;]*m//g" | head -2 | cat -v' packaging/flang.1 || true
+          echo
+          echo "── GROFF_NO_SGR + col -b"
+          sh -c 'GROFF_NO_SGR=1 groff -K utf8 -man -Tutf8 "$0" | col -b | head -2 | cat -v' packaging/flang.1 || true
+          echo
+          echo "── сырой groff, без чистки"
+          sh -c 'groff -K utf8 -man -Tutf8 "$0" | head -2 | cat -v' packaging/flang.1 || true

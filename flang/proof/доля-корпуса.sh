@@ -955,9 +955,17 @@ izmerit() {
     cat "$tab" >> "$dump"
   fi
 
-  awk -F'\t' -v nabor="$name" -v dir="$dir" -v razoshlos="$razoshlos" \
+  # Имена записей набора подделок — по одному в строке, для awk-множества ниже.
+  nabor_imena=$tmp/набор-имена.txt
+  : > "$nabor_imena"
+  [ -f "$NABOR_TSV" ] && awk -F'\t' '
+      /^#/ { next }
+      $1 == "имя" { next }
+      NF >= 6 { n = split($3, ch, "/"); print ch[n] }' "$NABOR_TSV" > "$nabor_imena"
+  awk -F'\t' -v nabor_f="$nabor_imena" -v nabor="$name" -v dir="$dir" -v razoshlos="$razoshlos" \
       -v vedimya="$vedimya" -v vedstrok="$vedstrok" '
     function dolya(n,d){ return d>0 ? sprintf("%.2f %%", 100*n/d) : "знаменатель ноль" }
+    BEGIN{ while ((getline stroka < nabor_f) > 0) if (stroka != "") nab_imena[stroka]=1 }
     { vsego++
       kod[$3]++; kodd[$4]++
       utv+=$5; dok+=$6; nsl+=$7; nsh+=$8; p1+=$9; p2+=$10; p3+=$11
@@ -969,7 +977,13 @@ izmerit() {
       nr++; ap1[nr]=$9; ap2[nr]=$10; ap3[nr]=$11+$19; ad[nr]=$6
       if ($3==0) { z0++; d0+=$6; if ($6+0==0) pusto++ }
       if ($4==0) { zd0++; dd0+=$6 }
-      if ($2 ~ /poddelka|forgery|подделк/) { podd++; if ($3==0) podd0++ }
+      # НАБОР ПОДДЕЛОК — ПО МАНИФЕСТУ, А НЕ ПО ИМЕНИ ФАЙЛА (ADR-0023, Ш5).
+      # До 8 сентября 2026 здесь стояло `$2 ~ /poddelka|forgery|подделк/` — то
+      # есть подделку опознавала ПРИСТАВКА В ИМЕНИ исходника. Переименование
+      # файла двигало это число молча, и задача 4258 звала такое «самой дешёвой
+      # и самой незаметной в диффе накруткой». Теперь спрашивается объявленный
+      # список под храповиком: имя файла записи — лишь ключ его строки.
+      if (($1) in nab_imena) { podd++; if ($3==0) podd0++ }
     }
     END{
       printf "\n═══ НАБОР «%s» ═══\n", nabor
@@ -1006,7 +1020,7 @@ izmerit() {
       # программ: часть его заведена на исходники ПОДДЕЛОЧНЫХ программ, на
       # которых стоят пробы чекера. Числа печатаются, чтобы «86 записей
       # дерева» не читалось как «86 честных доказательств».
-      printf "  записей на исходники подделочных программ\t%d\n", podd+0
+      printf "  записей набора подделок (манифест, не имя файла)\t%d\n", podd+0
       printf "  из них в числителе\t%d\n", podd0+0
       printf "по ЗАПИСЯМ, снят разряд Р1\t%d из %d\t%s\n", zd0+0, vsego, dolya(zd0+0,vsego)
       printf "по УТВЕРЖДЕНИЯМ, сегодня\t%d из %d\t%s\n", d0+0, dok, dolya(d0+0,dok)

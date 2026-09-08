@@ -147,6 +147,10 @@ const ВИДИМОСТЬ = new Map([
   [".github", false],
   [".gitattributes", false],
   [".gitignore", false],
+  /* Указания и навыки помощника: `.ai/` — настоящее место, а `AGENTS.md` и
+     `.claude` в корне — символические ссылки на него (задача 8235). Корень
+     обязан быть назван, иначе перепечатка журнала падает на «незнакомом». */
+  [".ai", false],
   ["AGENTS.md", false],
   ["CONTRIBUTING.md", false],
   ["LICENSE", false],

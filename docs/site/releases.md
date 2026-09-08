@@ -105,6 +105,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### What broke
 
+- The 0.7.11 archive never shipped, and this tag has no GitHub release. The release pipeline stopped at the step «check the archive hash against the Homebrew formula»: the formula at that tag still carried the sha256 of the 0.7.10 archive (`825a2b5b…`, the very one from v0.7.10) — `./ярлык версия` deliberately does not touch sha256, it is written in by a separate commit after a dry run, and for 0.7.11 that commit was never made. The pipeline skipped the upload step; nothing broken went out, and the tag was not deleted.
 - The language is still NOT formally provable: the checker-verified share of the corpus is 13.75% against a gate threshold of 95%. And at this point it is held down not by the checker’s rules but by stale corpus records — the measurement promises 17.92% from a reprint. Commit `7e369d98`.
 - Only 8 guards of 58 have been shown by a run that they can redden, and CI was trusting twenty of the unproven ones for nothing. Commit `ff354a73`.
 - The guard census as of 5 September 2026: 56 guards, CI calls 29, twenty-seven are called by nobody. Commit `3fa4c09f`.

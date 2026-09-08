@@ -853,7 +853,7 @@ a37d42d0e65d4ddde220dd09d2b5a529|4|4|0|0|0|flang/scripts/porodit-atomy.flang
 f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.flang
 7e965224ae21472df5dabe540ea8328b|4|4|0|0|0|flang/scripts/scheduler-across-targets.flang
 876784406adee381267f78a50f2c72f1|2|2|0|0|0|flang/scripts/supervisor-across-targets.flang
-b2de588854f4726fc6d0bf03e1db7858|28|25|2|0|0|flang/scripts/tasks.flang
+6d5d5cb743d555e44e1d8ccca9d90d99|29|27|2|0|0|flang/scripts/tasks.flang
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.flang
 ae47a476c0aa3a419fcd566e9a5ca799|1|0|1|0|0|flang/scripts/жаргон-образцы.flang
 8d5b3563e183f50b5756cd207d1e60e6|4|×|×|×|0|flang/self/bootstrap/compiler.flang

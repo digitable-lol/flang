@@ -272,6 +272,7 @@
 - [Подстановка, не попавшая в образец, доезжает до читателя двойными скобками — и молча](a-substitution-that-misses-the-pattern-reaches-the-reader.md)
 - [Режим `--mode=u=rw,go=r`, заданный ради повторимости архива, запирает каталоги наглухо](a-tar-mode-for-files-locks-directories.md)
 - [Проверку пути установки нельзя целиком написать на flang: хозяин убивает процесс на 30 000 мс, а сборка идёт 128 000 мс](host-timeout-of-30-seconds-keeps-builds-out-of-flang-plans.md)
+- [`package.json` давно не источник версии, а её отпечаток — и убирать из корня нечего](package-json-is-no-longer-the-source-of-the-version.md)
 - [Расшифровка прогона на странице — это замер, и после тега его надо переснимать](stale-pages-are-measurements-nobody-retakes.md)
 - [Лицензионный гейт берёт новый каталог под опубликованным путём сразу, и первый же файл без шапки красит CI](the-license-gate-covers-new-files-from-birth.md)
 - [Старый проект FTS нельзя вынести из репозитория дёшево: от него зависят все восемь генераторов кода flang](two-projects-tied-by-generators.md)
@@ -288,24 +289,26 @@
 - [Голая команда открывает оболочку, а справку печатает только тот, кого о ней спросили](bare-command-opens-the-shell.md)
 - [Проверки переезжают на flang планами ввода-вывода, а упираются в журнал поручений](checks-move-to-flang-as-io-plans.md)
 - [Справка командной строки расходится между двумя реализациями чаще всего остального — и молча](cli-help-diverges-between-the-two-implementations.md)
+- [Ключевых поверхностей четыре, все приняты одновременно, и переключателя нет ни одного](four-keyword-surfaces-are-accepted-at-once-and-nothing-switches-them.md)
 - [Прогонщик корпуса написан на flang целиком; на C осталось 59 строк невыразимого и 419 строк перевозки](instrument-yazyka-pishetsya-na-yazyke-krome-effektov.md)
 - [Ключ `--предел-шагов` ЗАДАЁТ предел, а не поднимает его, — и умолчание лежит НЕ там, где его ищут](library-step-limit-key-sets-not-raises.md)
 - [«Показать» у двоичного отвечает отказом, а прогон продолжается — прежний замер устарел](pokazat-otvechaet-sboem-a-ne-ronyaet-progon.md)
 - [Проверку, которая зовёт компилятор, а не разбирает `.flang` сама, переносить на flang почти нечего — мешает только чтение ответа](proverka-zovushchaya-kompilyator-perenositsya-na-flang-mehanicheski.md)
 - [Предел глубины поднимается только вместе со стеком, поэтому ключ к нему разбирается ДО команды](raising-the-depth-limit-means-raising-the-stack.md)
 - [Написание, которого нет в таблице слов, в документацию не попадает вовсе](spellings-outside-the-word-table-stay-undocumented.md)
+- [Отвечает flang только по-русски, и выбрать язык ответа сегодня нечем](the-compiler-answers-only-in-russian-and-nothing-can-change-that.md)
 - [Ссылка на «полный список кодов» вела туда, где нет ни одного отказа ядра: 0 из 13](the-full-list-of-codes-named-none-of-the-kernel-refusals.md)
 - [Функция, названную которой печатает отказ при исчерпании предела, — не та, где уходит время](the-function-named-when-the-limit-runs-out-is-not-where-the-time-goes.md)
 - [Двоичный файл — подмножество языка, и подмножество обязано называть себя, а не отвечать «неизвестная команда»](the-installed-binary-is-a-named-subset.md)
 - [Путь установки не проходил целиком никто, и потому `flang emit --target c` не работал НИ У ОДНОГО поставившего язык](the-installed-path-was-never-walked-end-to-end.md)
+- [Оболочка читала строку каноническим fgets, и стрелку печатал терминал, а не она; клавиш flang-tui не разбирает, а файл оболочки уезжает в семя дословно — правка доезжает быстрым пересевом, не перепечаткой](the-shell-read-the-line-with-fgets-and-the-terminal-printed-the-arrow.md)
 - [Два плана postgres держит не предел шагов, а стек хозяина: 1 ГиБ и 2 074 970 кадров, и ключами это не двигается](two-postgres-plans-are-held-by-the-host-stack-not-the-step-limit.md)
 
 ## Найденные ошибки
 
-- [Новую цель печати можно прогнать до перепечатки семени: компилятор, напечатанный в JavaScript, отвечает за секунды там, где интерпретатор идёт десять минут](a-compiler-printed-to-javascript-runs-a-new-target-in-seconds.md)
-
 - [Изменившийся вердикт при снятии правки — ещё не доказанная ложь: доказанным надо проверить, ложь ли это](a-changed-verdict-on-removal-is-not-a-proven-lie.md)
 - [Проверка, живущая внутри одной команды, — это класс дефектов, и он всплыл трижды](a-check-that-skips-a-check-is-a-class.md)
+- [Новую цель печати можно прогнать до перепечатки семени: компилятор, напечатанный в JavaScript, отвечает за секунды там, где интерпретатор идёт десять минут](a-compiler-printed-to-javascript-runs-a-new-target-in-seconds.md)
 - [Поправка, написанная под деление с усечением, применённая к делению вниз, срабатывает дважды — и календарь до нашей эры уезжает на год](a-correction-written-for-truncation-fires-twice-under-floor-division.md)
 - [Ведущий нулевой октет DER делал отозванный сертификат неотозванным: 1 серийный номер из 7 разошёлся с openssl](a-der-leading-zero-turns-a-revoked-certificate-into-an-unrevoked-one.md)
 - [Словарь встроенных форм лежал в девяти местах, и три копии уже разошлись](a-dictionary-copied-into-nine-places-drifts-silently.md)
@@ -350,12 +353,11 @@
 
 ## Отвергнутые пути
 
-- [Цель TypeScript — это печать в JavaScript с признаком «типизировано», а не десятый печатник](typescript-target-is-the-javascript-printer-with-a-flag.md)
-
 - [Постусловие, зовущее свою же функцию, уходит в бесконечный спуск](a-postcondition-that-calls-its-own-function-never-ends.md)
 - [MD5 в библиотеку заводить не стоит, и цена отказа — ровно один способ входа в PostgreSQL](md5-is-not-worth-adding-and-what-that-costs.md)
 - [Чтение условий `если` закрывает ноль целей, и причина в идиоме кода](reading-if-conditions-closed-zero-goals.md)
 - [Автоматический вывод регионов — мимо цели, а не дорого](region-inference-misses-the-point.md)
+- [Цель TypeScript — это печать в JavaScript с признаком «типизировано», а не десятый печатник](typescript-target-is-the-javascript-printer-with-a-flag.md)
 - [Z3 можно взять оракулом, нельзя судьёй](z3-as-oracle-not-judge.md)
 
 ## Модульность и пакеты
@@ -401,7 +403,6 @@
 - [«Вердикт изменился» — не то же самое, что «доказана ложь»: изъятие надо доводить до прогона](a-changed-verdict-must-be-carried-to-a-full-run.md)
 - [Проверка, переведённая на двоичный, выпадает из прогона молча — потому что CI не собирал двоичный ни разу](a-check-moved-to-the-binary-drops-out-of-ci-silently.md)
 - [Новое правило проверки, написанное на flang, испытывается толкователем того же двоичного — круг пять минут, а не перепечатка](a-checker-rule-written-in-flang-is-tried-by-the-interpreter-not-by-a-reprint.md)
-- [Запись доказательства печатается из исходника `zapis.flang` толкователем двоичного за двенадцать минут — правку печати можно измерить без перепечатки семени](a-proof-record-prints-from-source-in-twelve-minutes-without-a-reprint.md)
 - [Потомок у `flang io` запускается в каталоге ПЛАНА, а не в рабочем каталоге прогона](a-child-process-starts-in-the-plan-directory-not-the-working-one.md)
 - [Замкнутая цель под охраной берётся НЕСТРОГИМ знаком, если она про число, только равенством, если про длину, и не берётся строгим никогда](a-closed-numeric-goal-takes-any-sign-but-a-closed-length-goal-takes-only-equality.md)
 - [Карта столкновений имён, снятая по каждой цели порознь, слепа к столкновениям целей МЕЖДУ СОБОЙ: у go с rust их пять](a-collision-map-taken-per-target-is-blind-to-target-against-target.md)
@@ -454,6 +455,7 @@
 - [У двоичного два входа, и цель печати достаётся человеку и машине разной ценой: прогонщику JSON — даром, ключу `--target` — 90 строк C](a-print-target-costs-the-runner-nothing-and-the-flag-90-lines-of-c.md)
 - [Дно произведения работает только в паре с зеркалом, и на библиотеке это стоит одного обещания](a-product-floor-works-only-paired-with-a-mirror.md)
 - [Обещание, дописанное звену хвостового круга, стирает батут из напечатанного кода — и главный цикл вычислителя становится рекурсией по стеку](a-promise-added-to-a-tail-cycle-deletes-the-trampoline-from-the-printed-code.md)
+- [Запись доказательства печатается из ИСХОДНИКА `zapis.flang` толкователем двоичного за двенадцать минут — правку печати можно измерить без перепечатки семени](a-proof-record-prints-from-source-in-twelve-minutes-without-a-reprint.md)
 - [Доказанное постусловие снимает проверку при работе только вместе с примером — условий у печати ДВА, а не одно](a-proved-postcondition-drops-its-runtime-check-only-with-an-example.md)
 - [Доказанное постусловие в напечатанный код больше не едет, и цена утверждений на сортировке упала с 3,23× до 2,72×](a-proved-postcondition-no-longer-reaches-printed-code.md)
 - [Квантор по соседним парам стоил ДВУХ файлов вместо двадцати девяти — потому что разбор собрал его из уже существующих узлов](a-quantifier-over-adjacent-pairs-cost-two-files-not-twenty-nine.md)
@@ -609,7 +611,7 @@
 - [Печать в C и в Python выводит двунаправленные управляющие сырыми — в комментарий шапки](printing-to-c-and-python-emits-bidirectional-controls-raw.md)
 - [Печать в C ищет исходники рантайма рядом с ДВОИЧНЫМ, и в дереве репозитория это работает по совпадению раскладки](printing-to-c-looks-for-runtime-sources-next-to-the-binary.md)
 - [Втаскивание модуля в самоприменённый компилятор стоит не по размеру модуля, а по числу столкновений имён с уже втащенными](pulling-a-module-into-the-self-hosted-compiler-pays-for-meetings-not-size.md)
-- [Отпечаток, снятый заново, делает красное зелёным, не перепечатав ни байта — прибор, берущий эталон с того же предмета, что проверяет, не проверяет ничего](re-taking-a-fingerprint-turns-red-green-without-reprinting.md)
+- [Отпечаток, снятый заново, делает красное зелёным, не перепечатав ни байта](re-taking-a-fingerprint-turns-red-green-without-reprinting.md)
 - [Заявленных чисел о дереве 1693 строки в 89 файлах, и делятся они на три кучи: перемеряемое за минуту, перемеряемое за часы и не перемеряемое никогда](recount-claimed-numbers-have-three-kinds-and-only-one-can-be-rechecked.md)
 - [У общего двоичного нет воспроизводимой родословной: время сборки известно, дерево — нет, а называемый коммит на два часа его моложе](recount-the-shared-binary-has-no-reproducible-pedigree.md)
 - [Рефлексивности `а не больше а` над типом `число` у сегодняшнего двоичного нет, и закрывает она не только себя](reflexivity-over-the-number-type-is-missing-and-that-is-what-closes-the-fold-principle.md)
@@ -712,12 +714,6 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
-
-## Ещё не разобранное
-
-- [Проба порчей, которая ничего не испортила, выглядит как успех](a-sabotage-test-that-sabotages-nothing-looks-like-success.md)
-- [Семя нельзя подправить руками — оно не слинкуется](the-seed-cannot-be-patched-by-hand-it-will-not-link.md)
-- [Отпечаток, снятый заново, делает красное зелёным, не перепечатав ни байта](re-taking-a-fingerprint-turns-red-green-without-reprinting.md)
 
 ## Как добавлять
 

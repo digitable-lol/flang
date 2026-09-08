@@ -1,4 +1,4 @@
-[English](README.md) · **Русский** · [Сайт документации](https://digitable-lol.github.io/flang/)
+[English](../README.md) · **Русский** · [Сайт документации](https://digitable-lol.github.io/flang/)
 
 # flang — язык, в котором спецификация и есть программа
 
@@ -19,7 +19,7 @@ flang; дерево держит его уже напечатанным в C99, 
 входе; компилятор доказывает это сам — структурным убыванием или объявленной мерой — и отказывает
 файлу, когда доказать не может. `обеспечивает` задаёт постусловие; ядро доказательств замыкает его
 обо всех входах там, где умеет, и говорит словами, где не смогло. Полное определение языка —
-[`flang/SPEC.md`](flang/SPEC.md); справочник по конструкциям — на сайте:
+[`flang/SPEC.md`](../flang/SPEC.md); справочник по конструкциям — на сайте:
 [Справочник конструкций](https://digitable-lol.github.io/flang/language.html).
 
 ## Что доказано сегодня, а что нет
@@ -27,9 +27,9 @@ flang; дерево держит его уже напечатанным в C99, 
 Утверждения судит ядро `flang/self/proof-kernel.flang`; `flang check <файл> --proof` печатает по
 каждой функции, чем несётся каждое обещание — доказательством, сеткой собственных значений автора
 или ничем. `--записать <файл>` выписывает запись доказательства, а независимый чекер читает её
-обратно: [`flang/proof/чекер/сверщик.c`](flang/proof/чекер/сверщик.c) — программа на C, которая
+обратно: [`flang/proof/чекер/сверщик.c`](../flang/proof/чекер/сверщик.c) — программа на C, которая
 берёт исходник и запись и отвечает, сходятся ли они; ни одной строки компилятора в ней нет. Что
-ядру позволено заключать, а что нет — [`flang/proof/SPEC.md`](flang/proof/SPEC.md).
+ядру позволено заключать, а что нет — [`flang/proof/SPEC.md`](../flang/proof/SPEC.md).
 
 Мера этого чекера — доля обязательств доказательств в репозитории, которую он проигрывает
 независимо, а не берёт на слово у ядра:
@@ -46,7 +46,7 @@ sh scripts/доказуемость.sh          # → НЕ ДОКАЗУЕМ, к�
 доля выше — не независимая мера. Оба числа печатает прогон, и они будут двигаться; команды — способ
 снять их заново. Подробный разбор — на сайте: [Что доказано, а что
 нет](https://digitable-lol.github.io/flang/what-is-proved.html) — и в
-[`docs/what-blocks-1-0.md`](docs/what-blocks-1-0.md).
+[`docs/what-blocks-1-0.md`](what-blocks-1-0.md).
 
 Две поверхности двоичный не судит вовсе: категорную (моноиды, монады, функторы, объявленные
 свойства) и процессы с надзором. `flang check` называет, чего не проверил, и отвечает кодом 2,
@@ -74,9 +74,9 @@ sudo make -C bootstrap install        # или PREFIX=$HOME/.local, без sudo
 flang --version
 ```
 
-Формула Homebrew — [`packaging/homebrew/flang.rb`](packaging/homebrew/flang.rb), её раздаёт
+Формула Homebrew — [`packaging/homebrew/flang.rb`](../packaging/homebrew/flang.rb), её раздаёт
 [`digitable-lol/homebrew-tap`](https://github.com/digitable-lol/homebrew-tap); плагин asdf (его
-читает и mise) — [`packaging/asdf/`](packaging/asdf/README.md), опубликован как
+читает и mise) — [`packaging/asdf/`](../packaging/asdf/README.md), опубликован как
 [`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang) и хранится здесь сабмодулем
 `packaging/asdf-plugin`, который сверяется с источником перед каждым выпуском. Оба ставят релизный
 архив `flang-<версия>-c.tar.gz` из GitHub Releases: напечатанные исходники C99, Makefile и
@@ -168,7 +168,7 @@ Tab дополняет: имя сессии в ёлочках (`«Втр` → `�
 
 ### Печать в целевой язык
 
-Это [`examples/leetcode/035-search-insert-position.flang`](examples/leetcode/035-search-insert-position.flang)
+Это [`examples/leetcode/035-search-insert-position.flang`](../examples/leetcode/035-search-insert-position.flang)
 как он лежит в дереве — место, куда значение встаёт в отсортированном списке:
 
 ```flang
@@ -276,14 +276,14 @@ export function mestoVstavki(elementy, cel) {
 которого в дереве больше нет; эту строку пишет печать, и вставка оставлена как напечатана.
 Исходники рантайма каждой цели копируются в вывод дословно — из `share/flang/<цель>/` рядом с
 двоичным или из `--runtime <каталог>`. Как проверяются цели и насколько неровно —
-[Известные ограничения](docs/guide/limits.ru.md).
+[Известные ограничения](guide/limits.ru.md).
 
 ## Документация
 
 Сайт собирается из `docs/site/` в двух редакциях —
 [Русский](https://digitable-lol.github.io/flang/) ·
 [English](https://digitable-lol.github.io/flang/en/index.html) — и читать надо его; указатель
-всего остального под `docs/` — [`docs/README.md`](docs/README.md).
+всего остального под `docs/` — [`docs/README.md`](README.md).
 
 | чтобы… | читать |
 | --- | --- |
@@ -291,9 +291,9 @@ export function mestoVstavki(elementy, cel) {
 | найти конструкцию | [Справочник конструкций](https://digitable-lol.github.io/flang/language.html) · [Справочник библиотеки](https://digitable-lol.github.io/flang/stdlib.html) · [Справочник отказов](https://digitable-lol.github.io/flang/diagnostics.html) |
 | понять доказательства | [Что доказано](https://digitable-lol.github.io/flang/what-is-proved.html) · [Какие обещания ядро берёт](https://digitable-lol.github.io/flang/kak-dokazat.html) · [Ядро отказало: чья это ошибка](https://digitable-lol.github.io/flang/proof-refused.html) |
 | запустить где-то | [Установка](https://digitable-lol.github.io/flang/install.html) · [Справочник команд](https://digitable-lol.github.io/flang/cli.html) · [Редактор](https://digitable-lol.github.io/flang/editor.html) · [Процессы, надзор, распределённость](https://digitable-lol.github.io/flang/processes.html) |
-| посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`examples/`](examples) |
-| прочесть контракты | [`flang/SPEC.md`](flang/SPEC.md) · [`flang/self/SPEC.md`](flang/self/SPEC.md) · [`flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`flang/conc/SPEC.md`](flang/conc/SPEC.md) · [`docs/ct/spec.md`](docs/ct/spec.md) |
-| узнать, куда это идёт | [`ROADMAP.md`](ROADMAP.md) · [`docs/road-to-1-0.md`](docs/road-to-1-0.md) · [`docs/open-work.md`](docs/open-work.md) |
+| посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`examples/`](../examples) |
+| прочесть контракты | [`flang/SPEC.md`](../flang/SPEC.md) · [`flang/self/SPEC.md`](../flang/self/SPEC.md) · [`flang/proof/SPEC.md`](../flang/proof/SPEC.md) · [`flang/conc/SPEC.md`](../flang/conc/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
+| узнать, куда это идёт | [`ROADMAP.md`](../ROADMAP.md) · [`docs/road-to-1-0.md`](road-to-1-0.md) · [`docs/open-work.md`](open-work.md) |
 
 Правило имён: файл без языкового суффикса — английский; суффикс `.ru.md` отмечает его русскую
 редакцию. Исключение — `README.md` и `SPEC.md` рядом с кодом: они держат эти имена на любом
@@ -321,15 +321,17 @@ fspec/            бизнес-правила, записанные доказа
 docs/             документация: исходники сайта, руководство, решения (adr/), отчёты замеров, база знаний
 tasks/            открытая и закрытая работа дерева, по файлу на задачу
 .github/          CI и выпуск
-.claude/          навыки помощника, работающего в этом дереве
+.ai/              что читает помощник, работающий в дереве: AGENTS.md и .claude/skills; в корне `AGENTS.md` и `.claude` оставлены символическими ссылками сюда, и по старым именам оба по-прежнему находятся
 ```
 
 <!-- КАРТА-КОНЕЦ -->
 
 Внутри `flang/`: [`flang/self/`](flang/self) — компилятор, 63 файл на flang —
 <!-- СНЯТО 2026-09-08 файлов flang/self/*.flang = 63 -->
+Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 63 файл на flang —
+<!-- СНЯТО 2026-09-08 файлов flang/self/*.flang = 63 -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель; чем слои
-обязаны друг другу — [`flang/self/SPEC.md`](flang/self/SPEC.md). [`flang/stdlib/`](flang/stdlib) —
+обязаны друг другу — [`flang/self/SPEC.md`](../flang/self/SPEC.md). [`flang/stdlib/`](../flang/stdlib) —
 стандартная библиотека: **42 модуля, 1474 функции и 2713 примеров**, которые прогоняются при
 каждой проверке:
 <!-- СНЯТО 2026-09-08 файлов flang/stdlib/*.flang = 42 -->
@@ -337,14 +339,14 @@ tasks/            открытая и закрытая работа дерева
 списки, строки, числа, множества, словари, JSON, UTF-8, даты, а за ними два драйвера баз данных
 (`postgres`, `sqlite`), сеть (`http`, `tls`, `redis`), криптография, написанная на flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`), и движок регулярных выражений.
-[`flang/src/emit/`](flang/src/emit) держит рантайм каждой цели, копируемый в напечатанный код
-дословно. [`flang/проверки/`](flang/проверки) — проверки на flang, которые обходит двоичный;
-[`flang/test/`](flang/test) — то, что осталось от набора проб, написанного против удалённой
+[`flang/src/emit/`](../flang/src/emit) держит рантайм каждой цели, копируемый в напечатанный код
+дословно. [`flang/проверки/`](../flang/проверки) — проверки на flang, которые обходит двоичный;
+[`flang/test/`](../flang/test) — то, что осталось от набора проб, написанного против удалённой
 реализации на JavaScript; хранится как образцы.
 
-Два набора примеров — полноразмерные проекты: [`examples/web/shortener`](examples/web/shortener/README.md),
+Два набора примеров — полноразмерные проекты: [`examples/web/shortener`](../examples/web/shortener/README.md),
 сокращатель ссылок, где между байтами запроса и байтами ответа нет ничего, кроме flang, и
-[`examples/library-api`](examples/library-api/README.md), предметная половина библиотечной службы;
+[`examples/library-api`](../examples/library-api/README.md), предметная половина библиотечной службы;
 ещё 170 программ в остальных наборах — отдельные файлы, среди них набор LeetCode: 82 решения с
 806 примерами.
 <!-- СНЯТО 2026-09-08 файлов examples/leetcode/*.flang = 82 -->
@@ -357,10 +359,12 @@ tasks/            открытая и закрытая работа дерева
 исходников: `sh scripts/chto-otstalo-ot-semeni.sh` перечисляет, какие файлы и функции новее
 семени, а перепечатка (`sh scripts/raskrutka.sh`, часы на одном ядре) — единственный путь, которым
 правки `flang/self/` доезжают до двоичного. Что такое семя и что его держит —
-[`bootstrap/README.md`](bootstrap/README.md) и [круг раскрутки](docs/guide/bootstrap-circle.ru.md).
+[`bootstrap/README.md`](../bootstrap/README.md) и [круг раскрутки](guide/bootstrap-circle.ru.md).
 
-Файлы корня россыпью: `README.md` · `README.ru.md` (эта страница), `LICENSE` · `LICENSE-RU.md`,
-`CONTRIBUTING.md`, `AGENTS.md` (указания агенту, работающему в дереве), `DESCRIPTION.md`
+Файлы корня россыпью: `README.md` (вход хранилища; эта страница — его русская редакция и лежит
+отдельно, [`docs/README.ru.md`](README.ru.md)), `LICENSE` · `LICENSE-RU.md`,
+`CONTRIBUTING.md`, `AGENTS.md` (указания агенту, работающему в дереве — символическая ссылка на
+`.ai/AGENTS.md`, как и `.claude` — ссылка на `.ai/.claude`), `DESCRIPTION.md`
 (развёрнутое описание языка), `ROADMAP.md` (замер, а не намерение), `CHANGELOG.md` ·
 `changelog.json` (печатаются из тегов и тем коммитов, руками не правятся), `package.json` (здесь
 живёт версия; печатается `./ярлык пакет`, никуда не публикуется) и `ярлык` · `ярлыки.flang` —
@@ -382,12 +386,12 @@ git config core.hooksPath .githooks      # хук перед пушем: деш�
 <!-- СНЯТО 2026-09-08 строк flang/проверки/ведомость.txt = 180 -->
 `flang/проверки/ведомость.txt` — по строке на проверку. Хук гоняет проверки, укладывающиеся в
 секунды, и называет, чего не гонял; долгие — дело CI (`.github/workflows/binary.yml`). Работа
-ведётся в [`tasks/`](tasks/README.md): один файл — одна задача, берётся и закрывается коммитом;
+ведётся в [`tasks/`](../tasks/README.md): один файл — одна задача, берётся и закрывается коммитом;
 `./ярлык задачник:доска` печатает доску. Правила дерева, которых из кода не видно, — что ломается
-молча, сколько стоит перепечатка, зачем нужна каждая проверка — в [`AGENTS.md`](AGENTS.md); как
-собрать, прогнать проверки и прислать правку — [`CONTRIBUTING.md`](CONTRIBUTING.md). Решения
-записаны в [`docs/adr/`](docs/adr); база знаний — измеренные факты и отвергнутые пути — в
-[`docs/zettel/`](docs/zettel/README.md).
+молча, сколько стоит перепечатка, зачем нужна каждая проверка — в [`AGENTS.md`](../AGENTS.md); как
+собрать, прогнать проверки и прислать правку — [`CONTRIBUTING.md`](../CONTRIBUTING.md). Решения
+записаны в [`docs/adr/`](adr); база знаний — измеренные факты и отвергнутые пути — в
+[`docs/zettel/`](zettel/README.md).
 
 Проза этого дерева держится при дереве прогонами, а не памятью: число, набранное рукой, несёт
 примету о том, чем снято (`scripts/prose-numbers-guard.sh`), путь в ссылке обязан существовать
@@ -402,10 +406,10 @@ git config core.hooksPath .githooks      # хук перед пушем: деш�
 [digitdisk](https://github.com/digitable-lol/digitdisk),
 [flang-ribbon](https://github.com/digitable-lol/flang-ribbon) и
 [flang-env](https://github.com/digitable-lol/flang-env). Что стоит между деревом и 1.0, с числами,
-— [`docs/what-blocks-1-0.md`](docs/what-blocks-1-0.md).
+— [`docs/what-blocks-1-0.md`](what-blocks-1-0.md).
 
 ## Лицензия
 
-BSD 2-Clause — [LICENSE](LICENSE); русская редакция без юридической силы —
-[LICENSE-RU.md](LICENSE-RU.md). Прежние версии выходили под Apache-2.0, и получивший код на тех
+BSD 2-Clause — [LICENSE](../LICENSE); русская редакция без юридической силы —
+[LICENSE-RU.md](../LICENSE-RU.md). Прежние версии выходили под Apache-2.0, и получивший код на тех
 условиях сохраняет те права.

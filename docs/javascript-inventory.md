@@ -44,13 +44,13 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 
 Эта опись считает ОДИН язык. Остальные шестнадцать — оболочка, C, C++, Python,
 HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
-считает [`tree-inventory.md`](tree-inventory.md) (8 сентября 2026: 281 файл вне flang,
-<!-- СНЯТО 2026-09-08 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 281 -->
-долг вне JavaScript — **107 файлов, 16 029 строк при потолке 63**: храповик
+считает [`tree-inventory.md`](tree-inventory.md) (8 сентября 2026: 283 файла вне flang,
+<!-- СНЯТО 2026-09-08 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 283 -->
+долг вне JavaScript — **109 файлов, 16 633 строки при потолке 63**: храповик
 красен, разбор — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
-31 633 строк этой описи — нижняя оценка.
-<!-- СНЯТО 2026-09-08 строк-в *.js,*.mjs = 31633 -->
+31 640 строк этой описи — нижняя оценка.
+<!-- СНЯТО 2026-09-08 строк-в *.js,*.mjs = 31640 -->
 (29 августа здесь стояло 25 527: за два дня прибавилось 2 313 строк. Ещё 64
 строки прибавились 2 сентября: `scripts/latin-collision-guard.mjs` сравнивает
 теперь ПРОСЬБЫ печати, а не объявленные имена, и довод к этому записан там же.)

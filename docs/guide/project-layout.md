@@ -157,7 +157,7 @@ extension is parsed by the wrong parser and gives an incomprehensible error.
 **When it is otherwise.** A suffix a tool looks for beats the rule: if your host's
 runner finds files by a pattern, the name obeys the pattern, not this section. A
 project document is `README.md` even when written in Russian: that is what the
-documentation naming rule in [README.ru.md](../../README.ru.md) says — `README.md`
+documentation naming rule in [README.ru.md](../README.ru.md) says — `README.md`
 and `SPEC.md` next to code keep those names in whatever language they are written,
 because GitHub shows them as the directory's front page. The `X.ru.md` suffix is
 for documents in `docs/`, where it tells the languages apart.

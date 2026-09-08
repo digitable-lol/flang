@@ -1,6 +1,6 @@
 файл	цель	почему_не_путь
-README.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-README.ru.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+README.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+README.ru.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/HANDOFF.md	saluto.eo.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/README.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/README.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
@@ -138,20 +138,19 @@ docs/спецификации/язык-доказательств.md	.scratch/sv
 editors/vscode/README.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
 flang/SPEC.md	json.py	учебный/иллюстративный пример на C или Python, не файл проекта
 flang/SPEC.md	факты.json	иллюстративный пример входа в SPEC.md, не файл
-flang/cat/POLY.md	examples/maybe-poly.flang	иллюстративное имя в разборе задачи/заметки, не файл
-flang/cat/SETS.md	scripts/sync-flang-vendor.mjs	план: пункт списка в SETS.md, не заведён
+docs/archive/poly.md	examples/maybe-poly.flang	иллюстративное имя в разборе задачи/заметки, не файл
+docs/ct/sets.md	scripts/sync-flang-vendor.mjs	план: пункт списка в SETS.md, не заведён
 flang/proof/SPEC.md	…-english.flang	шаблон-многоточие в имени, не файл
-flang/self/SPEC.md	self/emit-common.flang	пример правки «ради вида» в SPEC.md, не итоговый файл
 tasks/completed/0001-ci-targets-inventory.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
 tasks/completed/0001-ci-targets-inventory.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/0003-seed-reprint-finishes.md	dlina-100.flang	шаблон нумерованного упражнения, не файл
-tasks/0003-seed-reprint-finishes.md	dlina-1000.flang	шаблон нумерованного упражнения, не файл
+tasks/completed/0003-seed-reprint-finishes.md	dlina-100.flang	шаблон нумерованного упражнения, не файл
+tasks/completed/0003-seed-reprint-finishes.md	dlina-1000.flang	шаблон нумерованного упражнения, не файл
 tasks/completed/0004-arena-returns-chunks.md	zadachi-granicy-yazyka.md	внешняя ссылка на /srv/work, не файл этого дерева
 tasks/completed/0005-postgres-redis-proofs.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
 tasks/completed/0005-postgres-redis-proofs.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/0006-three-big-compiler-files.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/0006-three-big-compiler-files.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
-tasks/0026-zettel-names-in-english.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+tasks/completed/0006-three-big-compiler-files.md	zadachi-dlya-vtoroy-komandy.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/completed/0006-three-big-compiler-files.md	zadachi-vypusk-0-7-0.md	внешняя ссылка на /srv/work, не файл этого дерева
+tasks/completed/0026-zettel-names-in-english.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 tasks/completed/0029-typescript-target-buys-almost-nothing.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
 tasks/completed/0032-printing-streams-to-the-file.md	parser_flang.c	учебный/иллюстративный пример на C или Python, не файл проекта
 tasks/completed/0033-obligations-check-spreads-over-cores.md	merge-shape-probe.flang	иллюстративное имя пробы в тексте, не файл
@@ -178,8 +177,8 @@ tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	length-probe.flang	
 tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	tower.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/1186-a-module-gets-its-english-name-from-the-author.md	fibonachchi.py	учебный/иллюстративный пример на C или Python, не файл проекта
 tasks/1186-a-module-gets-its-english-name-from-the-author.md	zapis_uroborosa.py	учебный/иллюстративный пример на C или Python, не файл проекта
-tasks/1389-every-guard-is-shown-to-redden-on-a-deliberate-break.md	docs/proba-imeni.flang	иллюстративный пример в тексте, не файл
-tasks/1389-every-guard-is-shown-to-redden-on-a-deliberate-break.md	proba-zanyatosti.flang	иллюстративный пример в тексте, не файл
+tasks/completed/1389-every-guard-is-shown-to-redden-on-a-deliberate-break.md	docs/proba-imeni.flang	иллюстративный пример в тексте, не файл
+tasks/completed/1389-every-guard-is-shown-to-redden-on-a-deliberate-break.md	proba-zanyatosti.flang	иллюстративный пример в тексте, не файл
 tasks/completed/1477-a-promise-should-not-cost-a-frame.md	proven-promise-probe.flang	иллюстративное имя пробы в тексте, не файл
 tasks/completed/1600-real-mutual-recursion-cycles-are-measured.md	reify-probe.flang	иллюстративное имя пробы в тексте, не файл
 tasks/1722-the-discriminating-search-writes-a-temp-dir-into-the-tree.md	proba-zanyatosti.flang	иллюстративный пример в тексте, не файл
@@ -197,7 +196,7 @@ tasks/completed/5732-all-superlinearities-are-named-and-measured.md	find-nesting
 tasks/completed/5732-all-superlinearities-are-named-and-measured.md	reify-probe.flang	иллюстративное имя пробы в тексте, не файл
 tasks/completed/6128-the-way-to-take-a-ledger-nothing-could-take-is-written-down.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
 tasks/completed/6128-the-way-to-take-a-ledger-nothing-could-take-is-written-down.md	pusk-yadro.sh	внешний: сам текст называет путь `/srv/tmp/`
-tasks/6329-the-four-files-around-the-kernel-get-their-ledger.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
+tasks/completed/6329-the-four-files-around-the-kernel-get-their-ledger.md	dolya-fajla.py	учебный/иллюстративный пример на C или Python, не файл проекта
 tasks/completed/6532-a-red-example-hides-the-ledger.md	before.mjs	иллюстративное имя в разборе задачи 6532, не файл
 tasks/completed/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-filler.flang	шаблон нумерованного упражнения, не файл
 tasks/completed/6614-why-finding-a-declaration-gets-dearer-as-it-runs.md	p-first.flang	шаблон нумерованного упражнения, не файл
@@ -215,15 +214,15 @@ docs/zettel/a-category-surface-costs-forty-unwritten-rules-not-a-bigger-closure.
 docs/zettel/a-trimmed-build-must-say-what-it-did-not-check.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
 docs/zettel/a-two-implementation-check-goes-blind-on-what-was-subtracted-before-comparing.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
 docs/zettel/printing-must-ask-the-checker-and-name-its-subset-as-a-number.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-tasks/0016-guards-move-from-javascript.md	binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
+tasks/completed/0016-guards-move-from-javascript.md	binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
 tasks/0049-the-last-javascript-leaves-the-tree.md	binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-tasks/1305-svodka-vypuska-po-poverhnostyam.md	flang/scripts/cli-keys-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/cli-keys-guard.flang; упоминание историческое, в задаче/заметке
-tasks/1853-nobody-judges-processes-supervisors-and-runs.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-tasks/3902-a-file-from-the-first-wave-arrived-without-its-licence-line.md	flang/scripts/direct-run-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/direct-run-guard.flang; упоминание историческое, в задаче/заметке
+tasks/completed/1305-svodka-vypuska-po-poverhnostyam.md	flang/scripts/cli-keys-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/cli-keys-guard.flang; упоминание историческое, в задаче/заметке
+tasks/completed/1853-nobody-judges-processes-supervisors-and-runs.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
+tasks/completed/3902-a-file-from-the-first-wave-arrived-without-its-licence-line.md	flang/scripts/direct-run-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/direct-run-guard.flang; упоминание историческое, в задаче/заметке
 tasks/4053-flang-doctor-stavit-runtime-i-daet-karkas-hozyaina.md	scripts/cli-keys-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/cli-keys-guard.flang; упоминание историческое, в задаче/заметке
 tasks/5090-six-promised-self-checks-are-missing-from-the-tree.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
 tasks/8398-plans-are-judged-and-the-compiler-says-so.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
-tasks/8649-npm-leaves-the-tree.md	flang/scripts/direct-run-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/direct-run-guard.flang; упоминание историческое, в задаче/заметке
+tasks/completed/8649-npm-leaves-the-tree.md	flang/scripts/direct-run-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/direct-run-guard.flang; упоминание историческое, в задаче/заметке
 tasks/9614-the-five-code-vocabulary-never-reaches-the-tape.md	cli-keys-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/cli-keys-guard.flang; упоминание историческое, в задаче/заметке
 tasks/9614-the-five-code-vocabulary-never-reaches-the-tape.md	scripts/cli-keys-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/cli-keys-guard.flang; упоминание историческое, в задаче/заметке
 tasks/completed/2398-proof-corpus-examples-lift-runtime-checks.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке

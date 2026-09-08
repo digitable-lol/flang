@@ -48,7 +48,7 @@ flang \- проверить программу на flang и напечатат�
 .B flang emit
 .I файл.flang
 .B \-\-target
-.IR c | cpp | go | rust | java | js | elixir | python | csharp
+.IR c | cpp | go | rust | java | js | ts | elixir | python | csharp
 .br
 .B flang ast
 .I файл.flang
@@ -313,8 +313,11 @@ $ echo '«Сумма» от [3, 1, 2]' | flang repl проба.flang
 .RE
 .TP
 .BI "emit " "файл.flang " \-\-target " цель"
-Напечатать программу в целевой язык. Целей девять, и все они здесь:
-.IR c ", " cpp ", " go ", " rust ", " java ", " js ", " elixir ", " python ", " csharp .
+Напечатать программу в целевой язык. Целей десять, и все они здесь:
+.IR c ", " cpp ", " go ", " rust ", " java ", " js ", " ts ", " elixir ", " python ", " csharp .
+Десятая,
+.IR ts ,
+живёт в исходнике компилятора и доезжает до собранного двоичного перепечаткой семени; двоичный, собранный из прежнего семени, на неё отвечает отказом с именем недостающей функции.
 Куда:
 .B \-\-out
 .I каталог
@@ -760,10 +763,10 @@ FLANG_TYPE в файле проба.flang, строка 5, столбец 3: ф�
 Исходники рантайма цели, которые
 .B flang emit
 кладёт в вывод дословно. Без них печать в эту цель отказывает. Каталогов здесь
-ДЕВЯТЬ — по одному на цель:
-.IR c ", " cpp ", " csharp ", " elixir ", " go ", " java ", " js ", " python
+ДЕСЯТЬ — по одному на цель:
+.IR c ", " cpp ", " csharp ", " elixir ", " go ", " java ", " js ", " python ", " rust
 и
-.IR rust ;
+.IR ts ;
 кладут их все и
 .BR brew ,
 и

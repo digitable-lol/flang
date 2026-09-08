@@ -1,0 +1,124 @@
+# СБОРКА РЕЛИЗНОГО АРХИВА C — ОДНО МЕСТО НА ТРИ РАБОТЫ.
+#
+# ── Зачем заведено ──────────────────────────────────────────────────────────
+#
+# Команда сборки архива стояла ДВУМЯ копиями: `release.yml`, шаг «Собрать
+# релизный архив C», и `install-path.yml`, работа `brew`, шаг, обещавший в
+# своём же имени «той же командой, что в release.yml». Обещание было ложным, и
+# копии разошлись молча — ровно та порода, от которой заведён сосед
+# `release-without-cache`.
+#
+# Разошлись в двух местах, и оба стоили работы:
+#
+#   · копия перечисляла файлы архива РУКАМИ, а подлинник берёт их вычитанием
+#     (`ls | grep -Ev`), потому что между 0.5.1 и 0.5.2 два файла из девяти
+#     переименовались и выписанный список отстал бы молча;
+#   · копия не собирала точку раскрутки вовсе. `release.yml` перед архивом
+#     делает `make -C bootstrap`, а работа `brew` звала `bootstrap/flang` прямо
+#     на выкладке — и получала `bootstrap/flang: No such file or directory`.
+#     Работа красна с 0.7.9; последний прогон — 34012604580 от 6 сентября 2026.
+#
+# ── Почему составное действие, а не файл в scripts/ ─────────────────────────
+#
+# Довод соседа `release-without-cache` целиком: храповик описи дерева сегодня
+# красен, новый файл на оболочке прибавил бы к долгу, который сейчас
+# выплачивают, а оснастка CI в счёт не идёт — все вставки оболочки в
+# `.github/workflows/**` живут в YAML. Здесь довод даже прямее: этот шаг ЧИТАЕТ
+# среду раннера (`GITHUB_ENV`, `GITHUB_OUTPUT`) и пишет в неё.
+#
+# ЦЕНА НАЗВАНА ВСЛУХ, как и у соседа: составное действие не позвать руками. На
+# своей машине те же три команды гоняют так (они и есть всё тело шага):
+#
+#   make -C bootstrap -j4
+#   LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-in-c.flang --timeout 1800000
+#   tar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
+#       --mtime=@0 --mode=u=rw,go=r,a+X -C output/release-c -cf - $files | gzip -9n
+#
+# ── Ключи tar — ради ПОВТОРИМОСТИ, а не ради красоты ────────────────────────
+#
+# Простой `tar -czf` кладёт в архив время правки, права и владельца, и один и
+# тот же каталог даёт разные байты. Хеш, который нельзя повторить, нельзя и
+# проверить — а на нём стоят и `формула:проверка`, и `brew install`.
+#
+# На macOS обычный `tar` — это bsdtar, у него нет ни `--sort`, ни `--mtime`.
+# Поэтому ищется `gtar` (ставится `brew install gnu-tar`), и если найденный tar
+# не GNU — шаг падает по имени, а не выдаёт архив с другими байтами.
+
+name: Собрать релизный архив C
+description: >-
+  Печатает компилятор в C99, собирает напечатанное и упаковывает
+  output/flang-<версия>-c.tar.gz повторимым tar. Путь кладётся в $ARHIV,
+  путь и sha256 — в выводы действия.
+
+outputs:
+  arhiv:
+    description: Путь к собранному архиву от корня дерева.
+    value: ${{ steps.sobrat.outputs.arhiv }}
+  hash:
+    description: sha256 собранного архива.
+    value: ${{ steps.sobrat.outputs.hash }}
+
+runs:
+  using: composite
+  steps:
+    - id: sobrat
+      shell: bash
+      run: |
+        set -eu
+
+        # Точка раскрутки собирается ТОЛЬКО если двоичного нет: `make` здесь
+        # ни при чём — работа, собравшая его шагом выше, второй раз не платит.
+        # Ровно так же ведёт себя `./ярлык` и `scripts/raskrutka.sh`.
+        if [ ! -x bootstrap/flang ]; then
+          echo "двоичного bootstrap/flang нет — собираю из точки раскрутки: make -C bootstrap"
+          make -C bootstrap -j"$(getconf _NPROCESSORS_ONLN)"
+        fi
+
+        # Скрипт не только печатает компилятор в C99, но и СОБИРАЕТ
+        # напечатанное в окружении без Node в PATH и запускает собранное.
+        # Битый архив дальше этого шага не уедет.
+        LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-in-c.flang --timeout 1800000
+
+        version="$(sed -n 's/^  "version": "\([^"]*\)",$/\1/p' package.json)"
+        if [ -z "$version" ]; then
+          echo "::error::версию не вычитать из package.json — вид файла изменился, а его печатает scripts/emit-package.flang" >&2
+          exit 1
+        fi
+
+        # GNU tar под своим именем: на macOS он `gtar`, на Linux `tar`.
+        TAR=tar
+        if command -v gtar >/dev/null 2>&1; then TAR=gtar; fi
+        if ! "$TAR" --version 2>/dev/null | head -1 | grep -q 'GNU tar'; then
+          echo "::error::$TAR — не GNU tar: ключей --sort/--mtime у него нет, и архив вышел бы с другими байтами и другим sha256" >&2
+          echo "::error::На macOS: brew install gnu-tar (шаг «GNU tar на macOS»)." >&2
+          exit 1
+        fi
+
+        # Список файлов берётся ВЫЧИТАНИЕМ, а не перечислением: сборка идёт в
+        # том же каталоге и оставляет рядом *.o, libcompiler_flang.a и сам
+        # бинарник — `tar … .` унёс бы человеку бинарник чужой машины вместо
+        # исходников.
+        files="$(cd output/release-c && ls | grep -Ev '\.(o|a)$|^flang(_cli)?$')"
+        echo "в архив идут файлы:"; echo "$files" | sed 's/^/  /'
+
+        arhiv="output/flang-$version-c.tar.gz"
+        "$TAR" --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
+               --mtime=@0 --mode=u=rw,go=r,a+X -C output/release-c -cf - $files \
+          | gzip -9n > "$arhiv"
+        ls -l "$arhiv"
+
+        # sha256sum на macOS нет — там `shasum -a 256`. Имя счётчика называется
+        # вслух: разойдись они, разошёлся бы и хеш, а не только команда.
+        if command -v sha256sum >/dev/null 2>&1; then
+          hash="$(sha256sum "$arhiv" | cut -d' ' -f1)"
+        else
+          hash="$(shasum -a 256 "$arhiv" | cut -d' ' -f1)"
+        fi
+        echo "sha256 архива: $hash"
+        # Чем сжимали — называется вслух: `gzip -9n` у GNU и у Apple это РАЗНЫЕ
+        # программы, и повторимость архива держится на том, какая из них тут.
+        gzip --version 2>&1 | head -1
+
+        echo "ARHIV=$arhiv" >> "$GITHUB_ENV"
+        echo "arhiv=$arhiv" >> "$GITHUB_OUTPUT"
+        echo "hash=$hash" >> "$GITHUB_OUTPUT"

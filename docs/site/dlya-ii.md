@@ -204,7 +204,7 @@ FLANG_BOUND_ON_NAN, строка 6, столбец 3: постусловие «�
 объявлен типом «число», а «не число» живёт в этом типе и стоит ВНЕ ПОРЯДКА —
 оно не больше и не меньше ничего, включая самоё себя. […] Позовите «Дней
 осталось» от (0 делить на 0) — рантайм ответит FLANG_PROPERTY. Чинится тремя
-способами: объявить вход отрезком («нат», «целое») […]; поставить предусловие
+способами: объявить вход отрезком («неотрицательное», «целое») […]; поставить предусловие
 […]; либо оговорить границу […]
 ```
 
@@ -212,7 +212,7 @@ The postcondition is FALSE and the counterexample is named: `выдан` is decl
 `число`, and "not a number" lives in that type and stands OUTSIDE THE ORDER — it
 is neither greater nor smaller than anything, itself included. Call the function
 with `0 делить на 0` and the runtime answers `FLANG_PROPERTY`. Three repairs are
-offered: declare the input over an interval (`нат`, `целое`), add a
+offered: declare the input over an interval (`неотрицательное`, `целое`), add a
 precondition, or qualify the bound.
 
 The counterexample is not the one the author had in mind. The author was

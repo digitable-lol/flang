@@ -857,7 +857,6 @@ e3a358ceb0ffc0e0046344c6db8eb5e5|28|25|2|0|0|flang/scripts/tasks.flang
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.flang
 e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/жаргон-образцы.flang
 af296a5839d250342ca4c8cf67e66060|4|×|×|×|0|flang/self/bootstrap/compiler.flang
-fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-source.flang
 ecd81513258fe500beadfeab45b681e5|153|84|32|37|0|flang/self/bounded.flang
 81def025878dbf7d4983ba958afcf0dd|98|48|22|28|0|flang/self/builtins.flang
 b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
@@ -873,10 +872,11 @@ e6a1c5149ebb9e155fd5cd9c13fae314|7|4|0|3|0|flang/self/emit-cpp.flang
 cc8efee04153882fa095db14dfa0548d|142|88|4|50|0|flang/self/emit-elixir.flang
 a21cc98b06700c8c8fb3a0f414a84f23|194|148|7|39|0|flang/self/emit-go.flang
 b1818a43c9906c906ad3d8521756d44b|205|137|7|61|0|flang/self/emit-java.flang
+fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-source.flang
+72150e5aad967e98fb24fdecbaedd803|1|1|0|0|0|flang/self/emit-ts.flang
 d716fe052f0b062a45a29f4156e34603|156|152|0|4|0|flang/self/emit-js.flang
 f13484b53a5c82fb325806ab879986a2|646|584|24|38|0|flang/self/emit-python.flang
 3ce042a5f1a0c6f91894e71ae4c7452e|114|79|0|35|0|flang/self/emit-rust.flang
-72150e5aad967e98fb24fdecbaedd803|1|1|0|0|0|flang/self/emit-ts.flang
 44e846ef996390de2dc8f73b3fab2bf4|156|79|24|53|0|flang/self/factcheck.flang
 04095860964e3e5ec6e910c41115b3a3|138|90|3|45|0|flang/self/failures.flang
 a91ae4dd453568a691d07c06503f7344|38|17|21|0|0|flang/self/functor-oracle.flang
@@ -916,7 +916,7 @@ a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 e6bd6e2dcbd72e44099aeb3d412d2167|279|231|11|37|0|flang/self/totality.flang
 6f5995562eb91e54ecbcd9bde4c4853e|389|119|4|265|0|flang/self/types.flang
-6cc17c833170d77eb5b87967e3c27e80|138|85|51|2|0|flang/self/zapis.flang
+826a400591fa9f0803fe123cf6223e0b|153|96|55|2|0|flang/self/zapis.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang

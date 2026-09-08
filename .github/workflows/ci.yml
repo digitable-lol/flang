@@ -571,7 +571,7 @@ jobs:
   # разрешает ссылку для первого и не разрешает для второго. Породу эту умеет
   # только Node, и точек входа на Node в дереве больше нет — обе обёртки
   # (`packaging/flang-launch.mjs`, `flang/bin/flang-lsp.mjs`) удалены. Само
-  # написание запрещено сторожем `flang/scripts/direct-run-guard.mjs`, который
+  # написание запрещено сторожем `flang/scripts/direct-run-guard.flang`, который
   # ходит по всем `.mjs` дерева и краснеет на возврат породы.
   #
   # ЖИВОЙ ЗАПУСК ЧЕРЕЗ ССЫЛКУ ПРИ ЭТОМ НЕ ПОТЕРЯН: `brew` кладёт двоичный
@@ -1001,7 +1001,10 @@ jobs:
   # свидетеля на JavaScript; свидетеля сняли 20 августа, и сверять наборы
   # перестал кто бы то ни было. Сторож снимает оба набора сам — прогоном
   # справки двоичного и разбором исходников — и называет разошедшийся ключ
-  # поимённо. Отдельной работой: нужен только компилятор и node, полсекунды.
+  # поимённо. Отдельной работой: нужен только компилятор — сторож написан на
+  # flang (`flang/scripts/cli-keys-guard.flang`), node ему не нужен; замер
+  # 7 сентября 2026: 38 с, пик 0,68 ГиБ (прежний на JavaScript шёл 0,2 с —
+  # цена названа, а не спрятана).
   klyuchi:
     name: cli-keys
     runs-on: ubuntu-latest
@@ -1009,9 +1012,6 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 24
       - run: make -C bootstrap -j"$(nproc)"
       # Порча — снятая запись из ведомости долга. Ведомость сверяется в обе
       # стороны, и снятая запись обязана дать «незнакомец». Задача 6612.
@@ -1035,13 +1035,13 @@ jobs:
             echo "ПОДЛОГ НЕ СОБРАЛСЯ: ведомость $podlog не изменилась — поправить подлог, сторож ни при чём" >&2
             exit 1
           fi
-          if node flang/scripts/cli-keys-guard.mjs; then
+          if bootstrap/flang io flang/scripts/cli-keys-guard.flang --max-steps 200000000 --timeout 600000; then
             mv "$podlog.do" "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           mv "$podlog.do" "$podlog"
-      - run: node flang/scripts/cli-keys-guard.mjs
+      - run: bootstrap/flang io flang/scripts/cli-keys-guard.flang --max-steps 200000000 --timeout 600000
 
   # Страницы, отставшие от дерева: расшифровка прогона на странице — это замер,
   # и после тега он тухнет так же, как всякий замер. Отдельной работой, потому

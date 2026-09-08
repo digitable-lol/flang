@@ -161,7 +161,7 @@ utf8 — −5,5 и −7 (остальные вне его отрезка). Пр�
 
 Тем же обходом нашлись три МЁРТВЫХ ввоза, о которых не знал никто:
 `docs/zamer-teorkat/iso-object-to-category.flang` ссылался на
-`examples/cat/moduli/zakazy.flang` при живом
+`flang/ct/modules/orders.flang` при живом
 `examples/cat/modules/orders.flang`. `bootstrap/flang check` этого файла
 отвечал FLANG_IMPORT_NOT_FOUND и кодом 1 — и отвечал бы сколько угодно долго,
 потому что в CI этот файл не гонял никто.

@@ -201,3 +201,15 @@ package-lock.json:     "version": "0.6.3"
 `packaging/flang-launch.mjs`, `flang/bin/flang-lsp.mjs`) остались.** Они не
 метаданные, а сам путь установки; выносить их — отдельная работа и отдельное
 решение владельца о том, нужен ли npm.
+
+
+### Улики: коммиты ствола
+
+Добавлено 8 сентября 2026: раздел выше называл сделанное словами, но SHA в нём
+не было — проверить пересказ нечем. Коммиты взяты из `git log gh/dev` и
+проверены `git cat-file -e <sha>^{commit}`.
+
+- статус «сделана» поставлен коммитом `43f5741c` (2026-08-26) — «feat(scripts): package.json и package-lock.json печатаются пакетировщиком на flang, и напечатанное сошлось с прежним знак в знак»
+- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- номер задачи назван в 4 коммитах ствола: `git log gh/dev --oneline --grep=0036`
+

@@ -93,3 +93,15 @@ scripts/raskrutka.sh --bystro` на стволе называет **одинна
 ## Чем закрыта
 
 Коммитом ветки `a/emit-without-postconditions`.
+
+
+### Улики: коммиты ствола
+
+Добавлено 8 сентября 2026: раздел выше называл сделанное словами, но SHA в нём
+не было — проверить пересказ нечем. Коммиты взяты из `git log gh/dev` и
+проверены `git cat-file -e <sha>^{commit}`.
+
+- статус «сделана» поставлен коммитом `e9f0b953` (2026-09-02) — «feat(emit): ключ --no-postconditions печатает код без сторожей обещаний, а ворота остаются на месте»
+- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- номер задачи назван в 2 коммитах ствола: `git log gh/dev --oneline --grep=9601`
+

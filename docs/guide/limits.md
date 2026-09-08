@@ -127,7 +127,7 @@ request and measured directly: on a program with parallel work the pool is 1.85�
 already at one run per handoff, and on a program with NO parallelism it is 6.7 times slower while
 burning fifteen cores (measurements in
 [`docs/scheduler-benchmark.md`](../../docs/scheduler-benchmark.md)). THREE targets emit processes —
-C, Elixir and JavaScript; the other five (Go, Rust, Python, Java, C#) REFUSE to emit a program with
+C, Elixir, JavaScript and TypeScript; the other five (Go, Rust, Python, Java, C#) REFUSE to emit a program with
 `процесс` at all, with `FLANG_CONC_UNSUPPORTED`, rather than emitting half of it. `породить` spawns
 instances of declared kinds at run time in the witness and in target C; the JavaScript and Elixir
 schedulers answer that action with a named error. The parent names the child, because a described

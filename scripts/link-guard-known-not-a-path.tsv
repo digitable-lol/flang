@@ -136,7 +136,6 @@ docs/спецификации/язык-доказательств.md	.scratch/dv
 docs/спецификации/язык-доказательств.md	.scratch/opyt.mjs	локальный: .scratch не отслеживается по конвенции
 docs/спецификации/язык-доказательств.md	.scratch/svod-teorem.mjs	локальный: .scratch не отслеживается по конвенции
 editors/vscode/README.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
-examples/driver/msi/README.md	sys/arch/riscv/starfive/jh7110_pcie_msi.c	внешний: путь чужого репозитория (NetBSD/BeamOS), не этого дерева
 flang/SPEC.md	json.py	учебный/иллюстративный пример на C или Python, не файл проекта
 flang/SPEC.md	факты.json	иллюстративный пример входа в SPEC.md, не файл
 flang/cat/POLY.md	examples/maybe-poly.flang	иллюстративное имя в разборе задачи/заметки, не файл

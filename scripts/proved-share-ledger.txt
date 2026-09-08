@@ -920,9 +920,9 @@ ffb6e5860533af4659ebb397200e0fbb|127|120|6|1|0|flang/stdlib/automaton.flang
 36b0896ba41510dde1dc0a003cbc9d20|103|55|26|22|0|flang/stdlib/base64.flang
 991f7132f9817ab2c56b2d423d893654|68|52|15|1|0|flang/stdlib/crl.flang
 b1a40e3ce864472988dc50b62886cb56|53|27|26|0|0|flang/stdlib/datetime.flang
-4ff2200043aef543c3ff861c14fbf937|69|48|17|4|0|flang/stdlib/der.flang
+940851f35850194f9a0583619631d854|69|48|17|4|0|flang/stdlib/der.flang
 1dc48f2c0e97d185c86f703a6c3337ac|34|23|8|3|0|flang/stdlib/dictionary.flang
-c18c0a3a707c1f1781b8097faf3c4d73|35|29|1|5|0|flang/stdlib/ecdsa.flang
+16becdf35d073fac6ec30e8a8a047aa3|35|29|1|5|0|flang/stdlib/ecdsa.flang
 32dc6cb3a1375821e76ca3f206f0f648|41|26|13|2|0|flang/stdlib/hashmap.flang
 582f2e47dba7641c140b69127e3379bb|62|40|19|3|0|flang/stdlib/higher-order.flang
 97a1542e308c3d13387b049108f3ca17|27|9|13|5|0|flang/stdlib/hmac.flang
@@ -930,9 +930,9 @@ c834eeb890638afeab0a45cc23e8d55d|136|62|68|6|0|flang/stdlib/http.flang
 08c0556d326a252355df3e9fcb2b9955|110|13|63|34|0|flang/stdlib/json.flang
 d7d04c1b5205721dbc3ec0844ef38238|11|8|3|0|0|flang/stdlib/kdf.flang
 2c2c2e665857ba5f1bd83655ed8bae4f|66|33|28|5|0|flang/stdlib/lists.flang
-842c96a75d5fcc246482bcf3b484024a|16|13|3|0|0|flang/stdlib/logic.flang
-69252b6542a29268aea7fbc7847c01ce|37|16|21|0|3|flang/stdlib/math-classics-lists.flang
-7bcd1b48f14055d094949017e8870325|70|32|38|0|14|flang/stdlib/math-classics.flang
+efaae27f0f5763ab87ecf6a4395dba43|16|13|3|0|0|flang/stdlib/logic.flang
+16061d8a985f656d22fff50302172181|37|16|21|0|3|flang/stdlib/math-classics-lists.flang
+4eb09c2bc2424d04201f52e628522aef|70|32|38|0|14|flang/stdlib/math-classics.flang
 5c4586f9a89fabedaec6b128e1394131|58|37|21|0|0|flang/stdlib/numbers.flang
 9e51a9c1dfe29e649fe8673f7d968461|13|5|6|2|0|flang/stdlib/numtree.flang
 48a111e5506449a7b29aa5d4ce33b4cf|22|12|7|3|0|flang/stdlib/optional.flang
@@ -940,7 +940,7 @@ d7d04c1b5205721dbc3ec0844ef38238|11|8|3|0|0|flang/stdlib/kdf.flang
 9f530a5622bad022262c0ac728c7296a|92|42|46|4|0|flang/stdlib/redis.flang
 fa27c2b55c7564265f98ba2b86034f43|20|20|0|0|0|flang/stdlib/registry.flang
 92d80317b32a2be31c32f68efc2b12c2|15|12|0|3|0|flang/stdlib/result.flang
-c99b0f90d78b2ddebd00a3a1dcba8104|17|10|1|6|0|flang/stdlib/rsa.flang
+a8202687b0ee577697f43c44add4ba7b|17|10|1|6|0|flang/stdlib/rsa.flang
 461bf41b16ebbe179e5db6bb8e484f42|23|12|9|2|0|flang/stdlib/scram.flang
 11af2cfd5943fdf9ac42baa2fbff1721|43|30|12|1|0|flang/stdlib/sets.flang
 a3eaf30fa978447f0fd7b42d562244b5|64|47|8|9|0|flang/stdlib/sha1.flang
@@ -949,13 +949,13 @@ a3eaf30fa978447f0fd7b42d562244b5|64|47|8|9|0|flang/stdlib/sha1.flang
 acf7726ba33626a87674e6fcd4b394b6|120|60|59|1|0|flang/stdlib/strings.flang
 f11576faec6e723699dffd947eeba42a|22|9|13|0|0|flang/stdlib/strlists.flang
 c94ff2cc4a2fac87794eff2c769352b6|55|44|5|6|0|flang/stdlib/tls-handshake.flang
-0b91c487ad52126bcda608a64c4a26e9|153|94|46|13|0|flang/stdlib/tls.flang
+9465548a657a7e096ddece95e6611f61|153|94|46|13|0|flang/stdlib/tls.flang
 b0c8bbfee71572860019c721da2064ee|67|28|31|8|0|flang/stdlib/tree.flang
-091ac632c8539f97dbda065cb429a4ec|23|14|2|7|0|flang/stdlib/trust-store.flang
+4ff57fa1afa5f1c16c315f3392c0141d|23|14|2|7|0|flang/stdlib/trust-store.flang
 ce966cd97ac6a55b10b0d4eee9405e9f|84|46|25|13|0|flang/stdlib/utf8.flang
 5fefa46a5163bc7b962950c12a329154|98|65|34|0|0|flang/stdlib/wire.flang
 820a0d145ce2553dddaa3a5120ecc4c9|35|12|8|15|0|flang/stdlib/x25519.flang
-229c5ac1ba7bad78bbf3a72396000e17|84|71|13|0|0|flang/stdlib/x509.flang
+eaace46d041a7b9b469921b8b762c436|84|71|13|0|0|flang/stdlib/x509.flang
 43eace0771fdf5cc874f852818b1a343|53|30|17|6|0|flang/stdlib/образцы.flang
 219e3eb9ee5ee9caf328888bcf9c9b1e|0|×|×|×|1|flang/test/fixtures/binary-rules/equality-not-symmetric.flang
 230faddc30a313a5aff2daf9d3f6821f|0|×|×|×|3|flang/test/fixtures/binary-rules/iso-mismatch.flang
@@ -1073,6 +1073,7 @@ d5c13131139cbbb4d9cffbbb4f9f1cdc|2|2|0|0|0|fspec/spec/38-booking-rules.flang
 e277c894907d052cc910984ba43b6679|58|55|3|0|0|packaging/install-check.flang
 a69c24d54cb5ba2dc5e5f1ac2b5475e5|23|23|0|0|0|packaging/install-parity.flang
 541c3766e167de86d411bf6abf80f2e9|22|15|7|0|0|scripts/adr-numbers-guard.flang
+22c4edbe688f3595740c7f4c0ed6a51b|20|20|0|0|0|scripts/asdf-plugin-guard.flang
 cb83af3366e1aedcf2980e68974f26bc|21|20|1|0|0|scripts/asdf-plugin-published.flang
 1ada44f6de654f4caad9cc2ebd440616|10|10|0|0|0|scripts/asdf-version-list.flang
 dfebe4f2679f7178c4cd355cd58af957|25|25|0|0|0|scripts/bidi-control-guard.flang
@@ -1146,6 +1147,8 @@ a556bd715aef70740ddb3d166813a1b0|1|×|×|×|0|flang/proof/чекер/пробы/
 180287e8ecf6eff1432960ed998b8ec8|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ветка-если/vysota.flang
 79bc318d1d20d5fa77d0c813e63823e7|1|×|×|×|0|flang/proof/чекер/пробы/семьи/булева-цель/priznak.flang
 8358c893c799244b885734453a1140c9|1|×|×|×|0|flang/proof/чекер/пробы/семьи/булева-цель/порча/lozh.flang
+8b8626f261982ab23a457da5a66d8bec|11|×|×|×|0|flang/proof/чекер/пробы/семьи/razbor-celi/razbor.flang
+e2e368b9b053bcde70aa3de7278278ba|11|×|×|×|0|flang/proof/чекер/пробы/семьи/razbor-celi/порча/lozh.flang
 dcc1953cd5acc1b24859a0d654638b8f|5|2|3|0|0|examples/frameworks/react-invoice/core/cart.flang
 d2cc0dc445665e98265edb9ab98b63b6|1|1|0|0|0|examples/frameworks/react-invoice/core/catalog.flang
 7fd0028def86e3c49bccc7d5b364b16e|7|7|0|0|0|examples/frameworks/vue-roman/core/roman-numerals.flang

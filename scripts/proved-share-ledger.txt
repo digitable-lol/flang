@@ -811,6 +811,8 @@ ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/чекер/пробы/з�
 a650eaf9749ba464ed39e21eef233356|1|×|×|×|0|flang/proof/чекер/пробы/записи/Ч131-algebra/01-vetv-lzhet.flang
 ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/чекер/пробы/записи/Ч131-algebra/02-variant-podmenen.flang
 ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/чекер/пробы/записи/Ч131-algebra/03-pokrytie-nepolno.flang
+f21adab22639a55dcc9bea8976078b1f|1|1|0|0|0|flang/proof/чекер/пробы/программы/1573-schyotnoe-telo.flang
+255807096f2fc49a5eb2c5a13c1db26d|2|2|0|0|0|flang/proof/чекер/пробы/программы/1573-vychislitel.flang
 38d4cafb2a945b2f2a3886a2a3ce008d|1|×|×|×|0|flang/proof/чекер/пробы/программы/lozh-derevo.flang
 abb2cd80fd5f454cc49f17edc35ed7f8|1|0|1|0|0|flang/proof/чекер/пробы/программы/lozh-raznost-chistaya.flang
 e099498a5c59b03063c2bd9f7aa671b9|1|×|×|×|0|flang/proof/чекер/пробы/программы/lozh-stolknovenie.flang

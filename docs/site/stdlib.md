@@ -1,6 +1,6 @@
 # Standard library reference
 
-The library sits next to the compiler and is written in flang itself. Every function in it goes through the same path your program does: parsing, types, termination, examples. Below is a section per module and a table of all its functions.
+The library sits next to the compiler and is written in flang itself. Every function in it goes through the same path your program does: parsing, types, termination, examples. It holds <!-- СНЯТО 2026-09-08 файлов flang/stdlib/*.flang = 42 --> 42 modules. Below is a section per module and a table of all its functions; the modules that have no table yet are listed at the end of the page.
 
 `использует` is the import. A module is attached by name — no path needed:
 
@@ -23,6 +23,12 @@ FLANG_NOT_TOTAL, строка 569, столбец 3: тотальная функ
 ```
 
 Add the missing name after a comma — or take the module whole.
+
+Examples travel with the declaration and are checked on the importer's side. So `использует «Higher order» только «Свернуть»` is refused not in the function's body but on its examples — they need «Сложить», «Умножить» and «Большее»:
+
+```
+FLANG_UNKNOWN_NAME, строка 251, столбец 3: пример «Сумма»: аргумент «ф»: функции «Сложить» нет
+```
 
 In the tables below, “takes” and “returns” are the signature from the source, word for word. “What it does” is the function’s postcondition — the `обеспечивает` line of its declaration — also word for word, and in Russian like the code. Hence the author’s turns of phrase inside it: «довод» means argument, «октеты» means bytes.
 
@@ -1358,6 +1364,24 @@ Types: `«Ход разбора utf8»`.
 | `«Байты годны как UTF-8»` | `байты: список числа` | `признак` | пустое годно |
 | `«Круговой ход держится»` | `текст: строка` | `признак` | круговой ход держится ровно там, где одиноких суррогатов нет |
 | `«Списки точек равны»` | `первый: список числа, второй: список числа` | `признак` | равные списки одной длины и с одной головой |
+
+## Modules without a table
+
+These modules have no table of functions on this page yet. What each one does is taken from the file's header; the list of functions and what proves the termination of each is printed by `bootstrap/flang check flang/stdlib/<file> --proof`.
+
+| Module | File | What it does |
+|---|---|---|
+| `«Automaton»` | `automaton.flang` | regular expressions by a finite automaton, without backtracking; the pattern arrives as a string |
+| `«Samples»` | `образцы.flang` | pattern matching without a regular-expression engine: five kinds of pattern, each its own function |
+| `«ECDSA»` | `ecdsa.flang` | ECDSA signature verification on the NIST P-256 curve, `ecdsa-with-SHA256` |
+| `«RSA signature»` | `rsa.flang` | RSA signature verification by PKCS#1 v1.5 over SHA-256 |
+| `«Revocation list»` | `crl.flang` | the certificate revocation list (CRL, RFC 5280): issuer, issue dates, "serial number + revocation date" entries |
+| `«Trust store»` | `trust-store.flang` | the store of roots and the linking of chain links; the roots arrive as text, an argument of the program |
+| `«TLS records»` | `tls.flang` | TLS 1.3 records (RFC 8446): the wire format of the conversation, reading the plaintext handshake and decrypting records |
+| `«TLS handshake»` | `tls-handshake.flang` | the TLS 1.3 handshake from a parsed record to a verified peer |
+| `«Registry»` | `registry.flang` | a package registry: lookup by name, version order, ranges, dependency resolution — with no access to the world |
+| `«Math classics»` | `math-classics.flang` | classical arithmetic lemmas from Coq and Lean/Mathlib4, written as promises over functions; kept to measure which of them the kernel proves |
+| `«Math classics for lists»` | `math-classics-lists.flang` | the same for lemmas about lists |
 
 ## Next
 

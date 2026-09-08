@@ -6,7 +6,7 @@
 // ОДНА ПРОГРАММА, ДЕВЯТЬ ЦЕЛЕЙ, ОДИНАКОВОЕ ЧИСЛО ФУНКЦИЙ — ИЛИ НАЗВАННЫЙ ДОЛГ.
 //
 //   bootstrap/flang io scripts/target-function-drift.flang
-//   bootstrap/flang io scripts/target-function-drift.flang --plan «Подлог краснит сторожа расхождения»
+//   bootstrap/flang io scripts/target-function-drift.flang --plan 'Подлог краснит сторожа расхождения'
 //
 // Коды: 0 — расхождения ровно те, что записаны долгом; 1 — расхождение,
 // которого в долге нет (или долг, который стал неправдой); 3 — смотреть было

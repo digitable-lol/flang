@@ -32,14 +32,21 @@ asdf install flang {{выпуск.версия}}
 asdf set -u flang {{выпуск.версия}}
 ```
 
-Ставит в каталог версии `bin/flang`, `lib/libcompiler_flang.a` и два заголовка.
+Ставит в каталог версии `bin/flang`, `lib/libcompiler_flang.a`, заголовки в
+`include/` и исходники рантайма каждой цели печати в `share/flang/<цель>/` — без
+них `flang emit` нечего класть в вывод. Плагин собирает архив выпуска `cc` и
+`make`, а потом щупает собранное: `flang --version` обязан назвать запрошенную
+версию, а если в архиве есть рантайм — `flang emit` обязан напечатать в каждую
+цель, которую двоичный называет сам. Ставятся только выпущенные версии:
+`asdf install flang ref:main` откажет намеренно — сборке из ветки нужен Node.
 Третья строка — `asdf set`, а не `asdf global`: `global` и `local` удалены в
 asdf 0.16.0. Тот же плагин понимает mise:
 `mise plugin add flang https://github.com/digitable-lol/asdf-flang.git`.
 
-Не работает: плагин выложен в отдельном репозитории и отстаёт от этого дерева,
-поэтому `asdf install flang {{выпуск.версия}}` может ответить отказом. Пока он
-не догнал — берите Homebrew или исходники.
+Плагин живёт в своём репозитории,
+[`asdf-flang`](https://github.com/digitable-lol/asdf-flang); это дерево держит
+его сабмодулем `packaging/asdf-plugin` и не выпускается, пока он расходится с
+`packaging/asdf/`.
 
 ## Из исходников
 

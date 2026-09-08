@@ -108,7 +108,7 @@ python3 benchmarks/кеш-приговоров/наложить.py [<tree root>]
 ```
 
 - `пробы.sh` asks four questions and answers each with a number: does the
-  printing of several programs with and without the cache match byte for byte;
+  printing of several programs with and without the cache match to the last byte;
   does the cache miss when the body of a called function is edited while the
   function with the postcondition is untouched (`проба.flang` and a corrupted
   copy produced from it by one line of `sed`); does it hit when the sound one

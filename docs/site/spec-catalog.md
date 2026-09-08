@@ -250,8 +250,8 @@ $ flang io fspec/guard.flang
 ```
 
 All 79 troubles are of one kind, and they have one cause: **the `check --proof`
-report no longer carries the claims of imported modules.** The heir gets a ledger
-saying "CHECKED ON ITS OWN", holding only its own claims — while the second
+report no longer carries the claims of imported modules.** The heir gets a proof
+report saying "CHECKED ON ITS OWN", holding only its own claims — while the second
 acceptance rule demands that the predecessor's claim be found there.
 
 ```

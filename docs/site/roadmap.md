@@ -146,7 +146,7 @@ never close. Regular expressions arrived in the language, but there are no
 lookaheads or lookbehinds in them and there never will be (see below) — and the
 guards are written with them: `claim-guard.mjs` has three, `count-guard.mjs`
 three, the JavaScript binary-rules guard two (that file was removed on 7 September
-2026: its flang twin `flang/scripts/binary-rules-guard.flang` reports the same seven
+2026: its flang rewrite `flang/scripts/binary-rules-guard.flang` reports the same seven
 findings and is what the shortcut runs now). Free of them are `name-guard.mjs` and
 `jargon-guard.mjs`: those two are portable with the new engine today, the other
 three are not, and what has to be rewritten in them is not the pattern but the

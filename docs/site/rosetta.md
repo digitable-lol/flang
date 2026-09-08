@@ -28,7 +28,7 @@ bootstrap/flang check examples/rosetta/towers-of-hanoi.flang --proof  # the ledg
 ```
 
 `test` runs the examples declared inside the functions. `check --proof` prints the
-ledger: what carries the promise «тотальная» for each function, and what carries
+proof report: what carries the promise «тотальная» for each function, and what carries
 each stated claim. For the Towers of Hanoi it ends like this (run of 8 September
 2026):
 
@@ -37,11 +37,11 @@ each stated claim. For the Towers of Hanoi it ends like this (run of 8 September
   постусловие «ходов не бывает отрицательно» функции «Число ходов» — доказано индукцией по «список»: база 1 случай, шаг при допущении на частях (1 случай), правила сведения: неотрицательность по построению — утверждение обо ВСЕХ входах типа «список», а не о написанных
 ```
 
-The words of the ledger are not interchangeable: «доказано» (proved) is a claim
+The words of the proof report are not interchangeable: «доказано» (proved) is a claim
 about all inputs; «сетка N» (grid N) is computed on N values of the author's, and
 that is not a proof; «объявлено, не доказано» (stated, not proved) is a claim with
 no proof attached. On the run of 8 September 2026 every stated claim in every file
-of the set stands in the ledger with the word «доказано»; there is no «сетка» line
+of the set stands in the proof report with the word «доказано»; there is no «сетка» line
 and no «объявлено, не доказано» line in any of them.
 
 Both files of each task are checked by the run separately. A check that the two
@@ -91,10 +91,10 @@ gives](totality.html); here only what the set shows that border on is named.
   all. Neither structural descent nor a measure.
 - **Two arguments, neither decreasing on its own.** The Ackermann function.
 
-That a constant step has a footing outside the shape of the program, the ledger
-says itself: «на IEEE-754 шаг не всегда меняет число, поэтому сторож» — into every
-call proved by a step the compiler inserts a check of the decrease, and a step that
-did not decrease gives the refusal `FLANG_MEASURE` rather than an endless loop.
+That a constant step has a footing outside the shape of the program, the proof
+report says itself: «на IEEE-754 шаг не всегда меняет число, поэтому сторож» — into
+every call proved by a step the compiler inserts a check of the decrease, and a step
+that did not decrease gives the refusal `FLANG_MEASURE` rather than an endless loop.
 
 ## What the set does not have
 
@@ -114,4 +114,4 @@ did not decrease gives the refusal `FLANG_MEASURE` rather than an endless loop.
 
 - [The catalogue of examples](examples.html) — every set in the `examples/` directory
 - [What the mark «тотальная» gives](totality.html) — the ways of proving termination
-- [A study of leetcode problems](case-studies.html) — five problems with their ledgers in full
+- [A study of leetcode problems](case-studies.html) — five problems with their proof reports in full

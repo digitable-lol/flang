@@ -97,7 +97,7 @@ short spelling of the same name, accepted until 1.0. Before the seed reprint of
 3 September 2026 (v0.7.11) the printed binary did not know the long name:
 `flang check` on `strlists.flang` answered `FLANG_UNKNOWN_NAME … неизвестный тип
 «неотрицательное»`. Since that reprint the binary knows both names and calls the
-type `неотрицательное` in its own refusals and in the ledger; write that one.
+type `неотрицательное` in its own refusals and in the proof report; write that one.
 
 ## Table: arithmetic
 

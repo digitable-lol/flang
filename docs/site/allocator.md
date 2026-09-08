@@ -105,7 +105,7 @@ as an equality ("the remainder starts exactly where the issued segment ends") is
 proved. The rule for the writer: write segment bounds as equalities.
 
 Separately, about types: the fields «начало» and «длина» have the type `число`
-rather than `нат`, because the sum of two `нат` in the language has the type
+rather than `неотрицательное`, because the sum of two `неотрицательное` in the language has the type
 `число`. The promise «конец не левее начала» is therefore not merely unproved —
 with a negative length it is false, and the kernel's refusal here is on the
 merits.

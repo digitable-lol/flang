@@ -1,6 +1,190 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.14": {
+      "ru": {
+        "заголовок": "Чекер сам проигрывает доказательства завершения",
+        "появилось": [
+          "Сертификат тотальности КОМПОЗИЦИИ. Двоичный печатает в запись доказательства свидетельство «функция завершается, потому что рекурсии в ней нет — только вызовы уже завершённых», а независимый чекер проигрывает это свидетельство заново (`сверить_тотальность`), а не верит имени правила. Переигрыш не зависит от порядка блоков в записи: два прохода и обнаружение цикла. Семя перепечатано, 82 записи корпуса напечатаны заново. Коммиты `ff1dc5b7`, `cbac34ce`, `7cd56073`, `fba02c9a`.",
+          "Сертификат тотальности РЕКУРСИИ, виды `structure` и `step`: завершение по спуску вдоль варианта индуктивного типа и по убывающей мере, не меньшей нуля. Двоичный печатает узел с полным свидетелем — убывающий довод, дно, витки, самовызов, — чекер его проигрывает. Честно: на нынешнем корпусе прирост доли около нуля, потому что корпус доказывает завершение рекурсии над встроенным списком типовым законом, а не этими сертификатами; способность влита как задел. Коммиты `4bfbd217`, `5d73d391`, `d1bbbf94`.",
+          "Прибор доли-проигрыванием: `sh flang/proof/доля-корпуса.sh --проигрыванием`. Числитель — обязательства, которые чекер действительно проиграл заново; знаменатель — ВСЕ обязательства корпуса, включая снятые на слово ядра и обязательства отвергнутых записей. Ни одна запись из знаменателя не выпадает. Коммиты `00a56ba5`, `682006f5`.",
+          "Межмодульная линковка сертификата тотальности (`--набор`, `--зависимость`): доверие набору записей берётся только по проигранному носителю. На нынешнем корпусе таких мест ноль — вписано впрок, а не по нужде. Коммит `4743a313`."
+        ],
+        "изменилось": [
+          "Линейка доли считает по-новому, и число с прежними выпусками несравнимо: шаги «по примеру» и «по свойству», которые чекер и так проверяет вычислением, попадают теперь в числитель, а не только в знаменатель. После сертификата тотальности композиции доля 47,33 %, после кредита за проверенное по существу — 60,78 %; доверенная база при этом не растёт и перепечатка не нужна. Печать доли даёт разбивку: ходами и по существу. Коммит `f5ca9e8f`.",
+          "Теория категорий переехала: каталог `flang/cat` стал `flang/ct`, проза — `docs/ct`. Коммиты `acca80a3`, `8142524b`.",
+          "Из 192 файлов примеров убраны `//`-комментарии и дубли, а `http.flang` переписан таблицей данных вместо 55 однотипных записей. Коммиты `bfd86834`, `853d2f01`, `d2779328`."
+        ],
+        "сломалось": [
+          "Язык по-прежнему НЕ формально доказуемый. В чекере остаётся запасной калькулятор `перепиской`: часть целей он пересчитывает, а не проигрывает записанные ходы. Пока он на месте, ярлык `доказуемость` отвечает НЕ ДОКАЗУЕМ, и снять калькулятор частично нельзя — доля обрушится целиком.",
+          "Порог 95 % на этом корпусе не гарантирован даже в пределе: подделки корпуса нарочно держатся в знаменателе (иначе долю можно было бы накрутить), а в числитель попасть не могут, поэтому структурный потолок лежит примерно между 91 % и 96 % — порог внутри этой вилки."
+        ]
+      },
+      "en": {
+        "заголовок": "The checker replays termination proofs itself",
+        "появилось": [
+          "A totality certificate for COMPOSITION. The binary prints into the proof record the evidence «this function terminates because it has no recursion — only calls to already-terminating functions», and the independent checker replays that evidence (`сверить_тотальность`) instead of trusting the name of the rule. The replay does not depend on the order of blocks in the record: two passes plus cycle detection. The seed was reprinted and 82 corpus records were printed anew. Commits `ff1dc5b7`, `cbac34ce`, `7cd56073`, `fba02c9a`.",
+          "A totality certificate for RECURSION, kinds `structure` and `step`: termination by descent along a variant of an inductive type, and by a decreasing measure bounded below by zero. The binary prints the node with the full witness — decreasing argument, floor, turns, self-call — and the checker replays it. Honestly: on the current corpus the share gains about nothing, because the corpus proves termination of recursion over the built-in list by a type law rather than by these certificates; the ability landed as groundwork. Commits `4bfbd217`, `5d73d391`, `d1bbbf94`.",
+          "A share-by-replay instrument: `sh flang/proof/доля-корпуса.sh --проигрыванием`. The numerator counts obligations the checker really replayed; the denominator counts ALL obligations of the corpus, including those taken on the kernel’s word and those of rejected records. No record drops out of the denominator. Commits `00a56ba5`, `682006f5`.",
+          "Cross-module linking of the totality certificate (`--набор`, `--зависимость`): trust in a set of records is granted only through a replayed carrier. On the current corpus there are zero such sites — this landed as groundwork, not out of need. Commit `4743a313`."
+        ],
+        "изменилось": [
+          "The share ruler now counts differently, and the number is not comparable with earlier releases: steps «by example» and «by property», which the checker already verifies by computation, now go into the numerator and not only into the denominator. After the composition totality certificate the share is 47.33%, after crediting what is verified on the merits — 60.78%; the trusted base does not grow and no reprint is needed. The share printout breaks the number down: by moves, and on the merits. Commit `f5ca9e8f`.",
+          "Category theory moved: the `flang/cat` directory became `flang/ct`, its prose `docs/ct`. Commits `acca80a3`, `8142524b`.",
+          "`//` comments and duplicates were removed from 192 example files, and `http.flang` was rewritten as a data table instead of 55 near-identical entries. Commits `bfd86834`, `853d2f01`, `d2779328`."
+        ],
+        "сломалось": [
+          "The language is still NOT formally provable. A fallback calculator, `перепиской`, remains in the checker: it recomputes some goals rather than replaying the recorded moves. While it is there the `доказуемость` shortcut answers NOT PROVABLE, and the calculator cannot be removed partially — the share would collapse outright.",
+          "The 95% threshold is not guaranteed on this corpus even in the limit: deliberate corpus forgeries are kept in the denominator (otherwise the share could be inflated) and can never enter the numerator, so the structural ceiling lies roughly between 91% and 96% — the threshold sits inside that bracket."
+        ]
+      }
+    },
+    "0.7.13": {
+      "ru": {
+        "заголовок": "Объект доказательства: чекер проверяет готовый вывод ядра, а не пересчитывает его",
+        "появилось": [
+          "Двоичный сам печатает переигрываемый след доказательства для пяти семей тождества — соседи, рефлексивность, длина, элемент, вычислить. До сих пор цепочку ходов умел строить только чекер. Первый сквозной прогон зелёный: двоичный издаёт след, независимый сверщик проигрывает его, «на слово ядра 0». Семя перепечатано. Коммиты `2eb5633e`, `c3d17187`.",
+          "Приём «постусловие вызванной»: чекер сам строит инстанцию постусловия по вызову — арность, подстановка параметров аргументами и результата узлом — и закрывает цель модус-поненсом, вместо прежней привязки «имя плюс строка». Приём ловит настоящую подделку: теорема с целью «результат равен 3» при теле, дающем 0, раньше проходила кодом 0, теперь даёт код 1. Коммиты `e5a75366`, `d433f3b2`.",
+          "Ходы «вычислить» (замкнутый счёт вида «2 плюс 2 равно 4») и «переписать формой» (законы длины и элемента) проигрываются явными примитивами поверх `оценить_терм`, а не принимаются на слово ядра. Коммиты `a1f19f27`, `269d3ccf`, `b0ef3a31`.",
+          "`хеш256` стал встроенным словом языка: SHA-256 считает рантайм каждой из девяти целей печати, а не библиотека на flang. Коммиты `5c90d6f7`, `ee3b0121`.",
+          "У цели `js` появился хозяин на Node — `flang/src/emit/js/flang_host_node.js`. Программа с планом ввода-вывода, напечатанная в JavaScript, теперь исполняется: девять родов поручений из двадцати двух, остальным внятный отказ. Коммит `7e7007a2`.",
+          "Исполнитель плана для цели `python` лёг в дерево — `flang/src/emit/python/flang_io.py`. Саму программу С ПЛАНОМ цель `python` пока печатать отказывается (`FLANG_PLAN_UNSUPPORTED`): исполнитель ждёт печати. Коммит `e84e290b`.",
+          "Три примера под настоящими фреймворками — `examples/frameworks/`: `nestjs-orders`, `react-invoice`, `vue-roman`. Доказанное ядро на flang печатается в JavaScript и работает под Nest, React и Vue; где проходит граница, сказано в README каждого примера: решение — на flang, сокет и отрисовка — у хозяина-фреймворка. Коммит `374e9aaa`.",
+          "`./ярлык доказуемость` печатает одно слово — ДОКАЗУЕМ или НЕ ДОКАЗУЕМ — по трём числам, снятым прогоном, а не по суждению, вписанному в прозу. Коммит `7b03ee3a`.",
+          "`./ярлык версия X.Y.Z` поднимает число версии в одном источнике и разносит его по производным местам — package.json, `#define` в C, страница man, формула Homebrew; сторож производных краснеет, если хоть одно отстало. Коммиты `3071b76c`, `d676ec12`."
+        ],
+        "изменилось": [
+          "Переигрыватель гейтит равенства-постусловия по цепочке ходов. Раньше ложный ход под постусловием-равенством проходил кодом 3, неотличимым от честного, потому что переигрыватель звался нулём строк; теперь такой ход даёт код 1. Коммит `3931ae1a`.",
+          "Две придирки чекера закрыты: посылка под `принцип …` без явно написанной `теорема` до переигрывателя не доходила (ходы под ней были декорацией), а `вставить_вместо` безусловно оборачивал вставляемое тело лишней парой скобок, и на составном условии до цели не дотягивалось ни одно написание довода. Коммит `3cb04bcb`.",
+          "Семя пересевается быстро, без полной перепечатки, когда `flang/self` не тронут. Коммит `d0060d56`.",
+          "Перечень команд `flang` сверяется сразу по пяти местам: страница man и оба README не знали команду `new`. Коммит `fb29de4d`.",
+          "Девятая цель печати, `elixir`, взята под присмотр CI, и расхождение девяти целей на одной программе стережётся отдельным прибором. Коммиты `5a5e9a74`, `532e6f2b`."
+        ],
+        "сломалось": [
+          "Язык НЕ формально доказуемый, и это машинный вердикт, а не оценка: `git grep -c перепиской flang/proof/чекер/сверщик.c` даёт 10, а не 0, и `./ярлык доказуемость` отвечает НЕ ДОКАЗУЕМ. Взято 2 гейта критерия из 7.",
+          "Узкий подкласс мест не мигрирован: маршрут «по объявлению» — 146 мест «доказано» из 159 — печатает только имя правила, без цепочки ходов, и переигрывателю нечего проигрывать.",
+          "Оплата `требует` в новом приёме частичная: предусловие вызванной считается снятым, только если синтаксически совпало с одним из `требует` вызывающей. Погашение вычислением или охраной `если` эта волна не читает — такие места честно отвергаются кодом 1, а не принимаются по ошибке."
+        ]
+      },
+      "en": {
+        "заголовок": "The proof object: the checker verifies the kernel’s finished derivation instead of recomputing it",
+        "появилось": [
+          "The binary itself now prints a replayable proof trace for five identity families — neighbours, reflexivity, length, element, compute. Until now only the checker could build the chain of moves. The first end-to-end run is green: the binary emits the trace, the independent checker replays it, «taken on the kernel’s word: 0». The seed was reprinted. Commits `2eb5633e`, `c3d17187`.",
+          "The «postcondition of the callee» technique: the checker builds an instance of the callee’s postcondition from the call site itself — arity, parameters substituted by arguments and the result by the node — and closes the goal by modus ponens, instead of the old name-plus-line binding. It catches a real forgery: a theorem claiming «the result equals 3» over a body that yields 0 used to pass with code 0 and now gives code 1. Commits `e5a75366`, `d433f3b2`.",
+          "The moves «compute» (closed arithmetic such as «2 plus 2 equals 4») and «rewrite by form» (the length and element laws) are replayed by explicit primitives over `оценить_терм` rather than accepted on the kernel’s word. Commits `a1f19f27`, `269d3ccf`, `b0ef3a31`.",
+          "`хеш256` became a built-in word of the language: SHA-256 is computed by the runtime of each of the nine emit targets, not by a flang library. Commits `5c90d6f7`, `ee3b0121`.",
+          "The `js` target got a Node host — `flang/src/emit/js/flang_host_node.js`. A program with an input/output plan, printed to JavaScript, now actually runs: nine kinds of orders out of twenty-two, with a clear refusal for the rest. Commit `7e7007a2`.",
+          "A plan executor for the `python` target landed in the tree — `flang/src/emit/python/flang_io.py`. The `python` target still refuses to print a program WITH a plan (`FLANG_PLAN_UNSUPPORTED`): the executor is waiting for the emitter. Commit `e84e290b`.",
+          "Three examples under real frameworks — `examples/frameworks/`: `nestjs-orders`, `react-invoice`, `vue-roman`. A proven core in flang is printed to JavaScript and runs under Nest, React and Vue; each example’s README states where the boundary lies: the decision is in flang, the socket and the rendering belong to the host framework. Commit `374e9aaa`.",
+          "`./ярлык доказуемость` prints a single word — PROVABLE or NOT PROVABLE — from three numbers taken by a run, not from a judgement written into prose. Commit `7b03ee3a`.",
+          "`./ярлык версия X.Y.Z` raises the version number in one source and propagates it to the derived places — package.json, the `#define` in C, the man page, the Homebrew formula; a guard reddens if any of them falls behind. Commits `3071b76c`, `d676ec12`."
+        ],
+        "изменилось": [
+          "The replayer now gates equality postconditions on the chain of moves. Previously a false move under an equality postcondition passed with code 3, indistinguishable from an honest one, because the replayer was called on zero lines; now such a move gives code 1. Commit `3931ae1a`.",
+          "Two checker complaints are closed: a premise under `принцип …` without an explicitly written `теорема` never reached the replayer (the moves beneath it were decoration), and `вставить_вместо` unconditionally wrapped the inserted body in one extra pair of parentheses, so on a compound condition no wording of the argument ever reached the goal. Commit `3cb04bcb`.",
+          "The seed can be re-sown quickly, without a full reprint, when `flang/self` is untouched. Commit `d0060d56`.",
+          "The list of `flang` commands is checked against five places at once: the man page and both READMEs did not know the `new` command. Commit `fb29de4d`.",
+          "The ninth emit target, `elixir`, came under CI supervision, and divergence between the nine targets on one program is now watched by a separate instrument. Commits `5a5e9a74`, `532e6f2b`."
+        ],
+        "сломалось": [
+          "The language is NOT formally provable, and that is a machine verdict rather than an opinion: `git grep -c перепиской flang/proof/чекер/сверщик.c` gives 10, not 0, and `./ярлык доказуемость` answers NOT PROVABLE. Two of the criterion’s seven gates are taken.",
+          "A narrow subclass of sites is not migrated: the «by declaration» route — 146 of 159 «proved» sites — prints only the name of the rule, with no chain of moves, so the replayer has nothing to replay.",
+          "Paying for `требует` in the new technique is partial: a callee’s precondition counts as discharged only if it syntactically matched one of the caller’s own `требует`. Discharge by computation or by an `если` guard is not read by this wave — such sites are honestly rejected with code 1 rather than wrongly accepted."
+        ]
+      }
+    },
+    "0.7.12": {
+      "ru": {
+        "заголовок": "Установка везёт рантаймы всех девяти целей печати, а не одной",
+        "появилось": [
+          "Обходчик примеров `flang/self` и работа CI при нём: 4350 примеров из 4445 под присмотром. До этого их не гонял пофайлово никто — ноль в CI. Полный прогон снят целиком: 55 минут 19 секунд, код 0, 12 530 примеров. Коммиты `a35a4b42`, `ec039e7f`, `3690acf4`.",
+          "Второй носитель приёма «разбором по случаям» — `algebra`, с пробами. Коммиты `e11ed933`, `bb1e15a8`.",
+          "Два правила чекера: «начало по построению» значением, а не только тождеством, и «невыполнимая посылка» — из несовместимых допущений следует что угодно. По счёту записей корпуса это 28 записей из 86 против 30 из 86. Коммиты `2d58f99e`, `3e2ac46c`.",
+          "Печать кеша приговоров называет попадания и промахи числом. Коммит `c137e8d5`."
+        ],
+        "изменилось": [
+          "Релизный архив кладёт каталог `runtime/<цель>/` — 32 файла, 2 435 747 байт, — а формула Homebrew и плагин asdf переносят его корень целиком в `share/flang`. Раньше ставилась одна цель из девяти: остальные восемь обещаны в странице man, в обоих README и в справке двоичного, и у поставившего не работали. Коммит `11295873`.",
+          "Ключ кеша приговоров считается SHA-256 вместо многочлена: старый ключ при заявленных 59,79 бита подделывался за 3,6 секунды. Коммит `deea0d61`.",
+          "Корпус перепечатан нынешним двоичным — 67 записей. Доля, проверенная чекером, 13,75 % → 17,77 % (обещали 17,92 %, разница от сдвинувшегося знаменателя): долю держали протухшие записи, а не чекер. Коммиты `e1e362da`, `ed5de60a`.",
+          "Дыра «ходы без теоремы прячут долг» закрыта обеими половинами: «закрыта reduction» сверяется с исходником, а пустой «ход конец» больше не прячет долг. Коммит `817be78a`.",
+          "«Это число» дописано в список ввоза `proofterm` — 1289 примеров не шли никогда. Коммит `a85c7bb4`.",
+          "Девятая цель печати дописана пяти сторожам, которые её не видели; там же нашлось, что цель `cpp` экранирует имена по списку цели `c`. Коммит `9fb0f293`."
+        ],
+        "сломалось": [
+          "Язык по-прежнему НЕ формально доказуемый: чекер проиграл 30 записей корпуса из 86 при пороге гейта 95 %.",
+          "В CI собираются и гоняются восемь целей печати из девяти; девятая на этот выпуск только названа числом, под присмотр она попала уже в 0.7.13. Коммит `6c0deb07`."
+        ]
+      },
+      "en": {
+        "заголовок": "An install now carries the runtimes of all nine emit targets, not one",
+        "появилось": [
+          "A walker over the `flang/self` examples, and a CI job around it: 4350 examples of 4445 are supervised. Before this nobody ran them file by file — zero in CI. The full run was taken end to end: 55 minutes 19 seconds, exit code 0, 12,530 examples. Commits `a35a4b42`, `ec039e7f`, `3690acf4`.",
+          "A second carrier for the «by case analysis» technique — `algebra`, with forgery probes. Commits `e11ed933`, `bb1e15a8`.",
+          "Two checker rules: «start by construction» by value and not only by identity, and «unsatisfiable premise» — anything follows from incompatible assumptions. Counted by corpus records that is 28 of 86 against 30 of 86. Commits `2d58f99e`, `3e2ac46c`.",
+          "The verdict cache printout names its hits and misses by number. Commit `c137e8d5`."
+        ],
+        "изменилось": [
+          "The release archive now carries a `runtime/<target>/` directory — 32 files, 2,435,747 bytes — and the Homebrew formula and the asdf plugin move its whole root into `share/flang`. Previously exactly one target of nine was installed: the other eight were promised by the man page, both READMEs and the binary’s own help, and did not work for whoever installed it. Commit `11295873`.",
+          "The verdict cache key is computed with SHA-256 instead of a polynomial: the old key, advertised at 59.79 bits, was forged in 3.6 seconds. Commit `deea0d61`.",
+          "The corpus was reprinted with the current binary — 67 records. The checker-verified share went 13.75% → 17.77% (17.92% was expected; the difference is a shifted denominator): the share had been held down by stale records, not by the checker. Commits `e1e362da`, `ed5de60a`.",
+          "The hole «moves without a theorem hide the debt» is closed on both halves: «closed by reduction» is checked against the source, and an empty «move end» no longer hides the debt. Commit `817be78a`.",
+          "«This number» was added to the `proofterm` import list — 1289 examples had never run at all. Commit `a85c7bb4`.",
+          "The ninth emit target was added to five guards that did not see it; along the way it turned out that the `cpp` target escapes names by the `c` target’s list. Commit `9fb0f293`."
+        ],
+        "сломалось": [
+          "The language is still NOT formally provable: the checker replayed 30 corpus records of 86, against a gate threshold of 95%.",
+          "CI builds and runs eight emit targets of nine; as of this release the ninth is only named by a number — it came under supervision in 0.7.13. Commit `6c0deb07`."
+        ]
+      }
+    },
+    "0.7.11": {
+      "ru": {
+        "заголовок": "Надзор возвращён на dev, и сторожа доказывают прогоном, что умеют краснеть",
+        "появилось": [
+          "Хук `.githooks/pre-push` гоняет дешёвых сторожей перед пушем и вслух называет то, чего он НЕ проверил. Весь набор стоит около 134 минут раннера — такой хук обходили бы через `--no-verify`, и он был бы хуже никакого. Ставится одной командой: `git config core.hooksPath .githooks`. Коммит `1de3cf23`.",
+          "Прибор «у кого показано прогоном, что он краснеет»: сторож без пробы порчи — это сторож, которому верят зря. Коммиты `ff354a73`, `69550a3e`, `dc24ffa3`, `83a838b2`.",
+          "Перепись «каких сторожей CI не зовёт»: число до этого считали рукой, и оно было неверным. Коммиты `b29e8fa6`, `3fa4c09f`.",
+          "Сторож производных версии: строка версии в семени систематически отставала от выпуска, теперь расхождение краснеет, а сама версия сверяется с АРТЕФАКТОМ выпуска, а не с файлом рядом. Коммиты `2532b671`, `cf337f76`.",
+          "Опись доказанного сверяет свою же таблицу с деревом и вписана в ярлык и в CI. Коммиты `1bfe1e7d`, `5dba51a1`, `2aa82f5c`."
+        ],
+        "изменилось": [
+          "Чекер выучил три правила: отрицание замкнутого счёта, оговорка о конечности как посылка, «цель следует из объявленного о доводах». Доля корпуса, проверенная чекером, 7,50 % → 13,75 %. Коммиты `25181b19`, `ee23dd75`, `f5d378a1`.",
+          "Закрыта последняя названная дыра гейта Г2: довод индукции берётся ДО двоеточия. Отдельно закрыт ложный приём — объявление типа читалось сквозь примечание — и с ним пять ложных тревог. Расширенный замер даёт 62 ложные тревоги из 923 у старого чекера и 0 у нового. Коммиты `002b20f6`, `a54d4b55`, `56a8441c`.",
+          "CI снова ходит по ветке `dev`: девятнадцать работ не проверяли ни один из 74 пушей. Сборка в CI стала вдвое быстрее, двоичный кешируется. Коммиты `8f90f49a`, `15e89235`.",
+          "Синхронизация крана Homebrew записана в порядок выпуска: шесть выпусков подряд, с 0.7.4 по 0.7.10, ушли без неё, и `brew install` всё это время ставил 0.7.3. Коммит `db23eb3b`.",
+          "Заметки о выпусках 0.7.x взяты с `main` целиком: они были написаны там и в `dev` не возвращались, потому что выпуск делается на `main`. Одиннадцать версий добавлены, ни одна не переписана. Коммит `532468f2`."
+        ],
+        "сломалось": [
+          "Архив 0.7.11 так и не вышел, и релиза на GitHub у этого тега нет. Конвейер выпуска остановился на шаге «Сверить хеш архива с формулой Homebrew»: в формуле на теге стоял sha256 архива 0.7.10 (`825a2b5b…`, тот же, что и на v0.7.10) — `./ярлык версия` sha256 намеренно не трогает, его вписывают отдельным коммитом после сухого прогона, и для 0.7.11 такого коммита не сделали. Следующий шаг, выкладку, конвейер пропустил; ничего битого не вышло, тег не удалялся.",
+          "Язык по-прежнему НЕ формально доказуемый: доля корпуса, проверенная чекером, 13,75 % при пороге гейта 95 %. И держат её на этот момент не правила чекера, а протухшие записи корпуса — замер обещает от перепечатки 17,92 %. Коммит `7e369d98`.",
+          "Показано прогоном, что умеет краснеть, только у 8 сторожей из 58, и двадцати из непроверенных CI верил зря. Коммит `ff354a73`.",
+          "Перепись сторожей на 5 сентября 2026: сторожей 56, CI зовёт 29, двадцать семь не зовёт никто. Коммит `3fa4c09f`."
+        ]
+      },
+      "en": {
+        "заголовок": "Supervision is back on dev, and guards prove by a run that they can redden",
+        "появилось": [
+          "The `.githooks/pre-push` hook runs the cheap guards before a push and says out loud what it did NOT check. The full set costs about 134 runner minutes — a hook that long would be bypassed with `--no-verify` and would be worse than none. Installed with one command: `git config core.hooksPath .githooks`. Commit `1de3cf23`.",
+          "An instrument for «who has been shown by a run to redden»: a guard without a forgery probe is a guard that is trusted for nothing. Commits `ff354a73`, `69550a3e`, `dc24ffa3`, `83a838b2`.",
+          "A census of «which guards CI never calls»: the number had been counted by hand, and it was wrong. Commits `b29e8fa6`, `3fa4c09f`.",
+          "A guard over the derived version numbers: the version string in the seed had been systematically falling behind the release; now the divergence reddens, and the version is checked against the release ARTEFACT rather than against a file lying next to it. Commits `2532b671`, `cf337f76`.",
+          "The proved-share ledger checks its own table against the tree and is wired into both the shortcut list and CI. Commits `1bfe1e7d`, `5dba51a1`, `2aa82f5c`."
+        ],
+        "изменилось": [
+          "The checker learned three rules: negation of a closed computation, the finiteness proviso taken as a premise, and «the goal follows from what was declared about the arguments». The checker-verified share of the corpus went 7.50% → 13.75%. Commits `25181b19`, `ee23dd75`, `f5d378a1`.",
+          "The last named hole in gate G2 is closed: the induction argument is taken BEFORE the colon. Separately, a false acceptance is closed — a type declaration was being read through a trailing comment — and with it five false alarms. A wider measurement gives 62 false alarms out of 923 for the old checker and 0 for the new one. Commits `002b20f6`, `a54d4b55`, `56a8441c`.",
+          "CI runs on the `dev` branch again: nineteen jobs had checked none of 74 pushes. The CI build became twice as fast and the binary is cached. Commits `8f90f49a`, `15e89235`.",
+          "Syncing the Homebrew tap is written into the release procedure: six releases in a row, 0.7.4 through 0.7.10, went out without it, and all that time `brew install` was installing 0.7.3. Commit `db23eb3b`.",
+          "The 0.7.x release notes were taken from `main` wholesale: they had been written there and never came back to `dev`, because a release is made on `main`. Eleven versions were added and none rewritten. Commit `532468f2`."
+        ],
+        "сломалось": [
+          "The 0.7.11 archive never shipped, and this tag has no GitHub release. The release pipeline stopped at the step «check the archive hash against the Homebrew formula»: the formula at that tag still carried the sha256 of the 0.7.10 archive (`825a2b5b…`, the very one from v0.7.10) — `./ярлык версия` deliberately does not touch sha256, it is written in by a separate commit after a dry run, and for 0.7.11 that commit was never made. The pipeline skipped the upload step; nothing broken went out, and the tag was not deleted.",
+          "The language is still NOT formally provable: the checker-verified share of the corpus is 13.75% against a gate threshold of 95%. And at this point it is held down not by the checker’s rules but by stale corpus records — the measurement promises 17.92% from a reprint. Commit `7e369d98`.",
+          "Only 8 guards of 58 have been shown by a run that they can redden, and CI was trusting twenty of the unproven ones for nothing. Commit `ff354a73`.",
+          "The guard census as of 5 September 2026: 56 guards, CI calls 29, twenty-seven are called by nobody. Commit `3fa4c09f`."
+        ]
+      }
+    },
     "0.7.10": {
       "ru": {
         "заголовок": "Хотфикс: живая оболочка падала на каждой строке ввода",

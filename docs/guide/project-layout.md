@@ -313,6 +313,12 @@ once in `FLANG_MODULE_DIR` (directories separated by colons). A path, when writt
 is taken relative to the file's directory; an absolute path makes a project
 non-portable, and there is not one in the example.
 
+The search goes up as long as the next parent directory holds at least one
+`.flang` — so it can leave the project altogether, and then a stray file one
+directory up shadows the module silently. `FLANG_MODULE_ROOT` sets the limit: it
+names the directory above which the search does not climb. Unset — the old
+behaviour.
+
 ---
 
 ## 8. The project library (`stdlib/`)

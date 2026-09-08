@@ -61,7 +61,8 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
 
 Пять сторожей переносимы уже сегодня: ярлыки зовут их без ключей, выход 0/1,
 поручений хватает — `claim-guard.mjs` (442), `count-guard.mjs` (611),
-`name-guard.mjs` (529), `binary-rules-guard.mjs` (778), `jargon-guard.mjs` (475).
+`name-guard.mjs` (529), binary-rules-guard на JavaScript (778; снесён 7 сентября 2026 —
+двойник `flang/scripts/binary-rules-guard.flang` даёт те же семь находок), `jargon-guard.mjs` (475).
 
 Из пяти **один уже переписан**: `jargon-guard.mjs` → `flang/scripts/jargon-guard.flang`
 (1967 строк, 129 функций, у всех завершение доказано — `flang check --proof`

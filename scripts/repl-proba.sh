@@ -6,6 +6,7 @@
 #
 #   sh scripts/repl-proba.sh                 судить bootstrap/flang
 #   sh scripts/repl-proba.sh <двоичный>      судить названный
+#   sh scripts/repl-proba.sh --отпечаток     напечатать верный FLANG_SHELL_ID
 #
 # Коды возврата:
 #   0  труба дала ожидаемый вывод без единого ESC, клавиши под pty сделали
@@ -35,9 +36,44 @@
 #
 #   ЦВЕТ.   NO_COLOR действует самим наличием (правило flang-env): под pty с
 #           NO_COLOR= в выводе не должно быть ни одной последовательности SGR.
+#
+#   ОТПЕЧАТОК. Задача 3637: поставленный двоичный 0.7.14 и свежий отвечали на
+#           `--version` одинаково, и человек не мог узнать, что у него в руках.
+#           Теперь оболочка называет восемь знаков sha256 своего исходника, и
+#           РУКОЙ это число не ставится: здесь оно считается заново и сверяется
+#           и с `#define FLANG_SHELL_ID`, и с тем, что печатает двоичный. Файл
+#           изменили, а строку забыли — проба красна и печатает верное значение.
+#
+#   ИСТОРИЯ И Tab. И то и другое видно только под pty: история проверяется
+#           двумя запусками подряд с общим FLANG_HISTORY (второй обязан помнить
+#           строку первого), дополнение — тем, что «Втр + Tab даёт «Втрое».
+#           Файл истории у пробы всегда свой, в каталоге прогона: писать в
+#           домашний каталог того, кто гоняет пробу, она не имеет права.
 set -u
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ISTOCHNIK=$ROOT/flang/src/emit/c/flang_repl.c
+
+# Отпечаток оболочки: sha256 исходника БЕЗ строки самого отпечатка — иначе
+# число зависело бы от себя. Восемь знаков: столкновений на одном файле не
+# ждём, а читать человеку.
+otpechatok() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    LC_ALL=C grep -av '^#define FLANG_SHELL_ID ' "$ISTOCHNIK" | sha256sum | cut -c1-8
+  elif command -v shasum >/dev/null 2>&1; then
+    LC_ALL=C grep -av '^#define FLANG_SHELL_ID ' "$ISTOCHNIK" | shasum -a 256 | cut -c1-8
+  else
+    echo ''
+  fi
+}
+
+if [ "${1:-}" = "--отпечаток" ] || [ "${1:-}" = "--fingerprint" ]; then
+  ID=$(otpechatok)
+  [ -n "$ID" ] || { echo "нечем считать sha256 (код 2)" >&2; exit 2; }
+  printf '#define FLANG_SHELL_ID "%s"\n' "$ID"
+  exit 0
+fi
+
 BIN=${1:-$ROOT/bootstrap/flang}
 [ -x "$BIN" ] || { echo "нет двоичного: $BIN — судить нечем (код 2)" >&2; exit 2; }
 command -v python3 >/dev/null 2>&1 || { echo "нет python3 — pty взять нечем (код 2)" >&2; exit 2; }
@@ -48,6 +84,27 @@ RAB=${FLANG_TMP:-/srv/tmp}/repl-proba.$$
 mkdir -p "$RAB" || exit 2
 trap 'rm -rf "$RAB"' EXIT INT TERM
 BEDA=0
+
+# ── отпечаток оболочки ───────────────────────────────────────────────────────
+ID=$(otpechatok)
+V_FILE=$(LC_ALL=C sed -n 's/^#define FLANG_SHELL_ID "\([0-9a-f]*\)".*/\1/p' "$ISTOCHNIK" | head -1)
+if [ -z "$ID" ]; then
+  echo "нечем считать sha256 — отпечаток не сверен (код 2)" >&2; exit 2
+fi
+if [ "$ID" != "$V_FILE" ]; then
+  echo "отпечаток: в файле «$V_FILE», а исходник даёт «$ID» — поставьте строку:"
+  echo "  sh scripts/repl-proba.sh --отпечаток"
+  BEDA=1
+fi
+V_BIN=$(env -u NO_COLOR LC_ALL=C.UTF-8 "$BIN" --version 2>/dev/null | sed -n 's/^оболочка \([0-9a-f]*\):.*/\1/p' | head -1)
+if [ -z "$V_BIN" ]; then
+  echo "отпечаток: «$BIN --version» не назвал оболочку — это двоичный старее задачи 3637"
+  BEDA=1
+elif [ "$V_BIN" != "$V_FILE" ]; then
+  echo "отпечаток: двоичный говорит «$V_BIN», а исходник дерева — «$V_FILE»: двоичный не пересобран"
+  BEDA=1
+fi
+[ "$BEDA" = 0 ] && echo "  зелен  отпечаток: исходник, строка и двоичный сошлись ($ID)"
 
 # ── труба ────────────────────────────────────────────────────────────────────
 printf '2 плюс 2\nтотальная функция «Удвоить»\n  принимает х: число\n  возвращает число\n  х умножить на 2\n\n«Удвоить» от 21\n«Нет такой» от 1\n.выход\n' > "$RAB/vhod"
@@ -75,7 +132,7 @@ python3 - "$BIN" "$RAB" <<'PY'
 import os, pty, re, sys, time, select
 binary, rab = sys.argv[1], sys.argv[2]
 
-def run(env_extra, keys):
+def run(env_extra, keys, first=1.0):
     env = dict(os.environ, LC_ALL='C.UTF-8', TERM='xterm-256color', COLORTERM='truecolor')
     env.pop('FLANG_MODULE_DIR', None); env.pop('NO_COLOR', None)
     env.update(env_extra)
@@ -96,43 +153,63 @@ def run(env_extra, keys):
                 if not data:
                     return
                 out += data
-    drain(1.0)
+    drain(first)
     for data, wait in keys:
         os.write(fd, data); drain(wait)
-    os.write(fd, b'\x04'); drain(1.0)
-    try:
-        os.waitpid(pid, 0)
-    except ChildProcessError:
-        pass
+    # Ctrl-U перед Ctrl-D намеренно: Ctrl-D на НЕПУСТОЙ строке стирает знак
+    # справа (как в bash и в iex), а не заканчивает ввод, и проба ждала бы
+    # выхода вечно. Сначала пустая строка, потом конец ввода.
+    os.write(fd, b'\x15\x04'); drain(1.5)
+    end = time.time() + 20.0
+    while time.time() < end:
+        try:
+            done, _ = os.waitpid(pid, os.WNOHANG)
+        except ChildProcessError:
+            break
+        if done != 0:
+            break
+        drain(0.2)
+    else:
+        os.kill(pid, 9)
+        try:
+            os.waitpid(pid, 0)
+        except ChildProcessError:
+            pass
+        print('pty: оболочка не вышла по Ctrl-D — снята силой')
+    os.close(fd)
     return out
+
+def strip(raw):
+    plain = raw.replace(b'\r\n', b'\n')
+    while b'\x1b[' in plain:
+        at = plain.index(b'\x1b[')
+        end = at + 2
+        while end < len(plain) and not (0x40 <= plain[end] <= 0x7e):
+            end += 1
+        plain = plain[:at] + plain[end + 1:]
+    return plain.decode('utf-8', 'replace')
+
+def answers(raw):
+    got = []
+    for line in strip(raw).split('\n'):
+        line = line.strip()
+        if line and all(ch in '0123456789' for ch in line):
+            got.append(line)
+    return got
 
 ESC = b'\x1b'
 HOME, END, UP = ESC + b'[H', ESC + b'[F', ESC + b'[A'
-CTRL_LEFT, ALT_B, CTRL_U, BACKSPACE = ESC + b'[1;5D', ESC + b'b', b'\x15', b'\x7f'
-answer_wait = 6.0
+CTRL_LEFT, ALT_B, CTRL_U, BACKSPACE, TAB = ESC + b'[1;5D', ESC + b'b', b'\x15', b'\x7f', b'\t'
+answer_wait = 8.0
+beda = 0
+
+# ── правка строки: Home/End, Backspace, история, слова ──
 out = run({}, [
     ('плюс 3'.encode(), 0.3), (HOME, 0.3), ('2 '.encode(), 0.3), (END, 0.3), (b'\r', answer_wait),
     ('2 плюс 4'.encode(), 0.3), (BACKSPACE, 0.3), (b'3', 0.3), (b'\r', answer_wait),
     (UP, 0.3), (ALT_B, 0.3), (CTRL_LEFT, 0.3), (CTRL_U, 0.3), ('7 минус 1'.encode(), 0.3), (b'\r', answer_wait),
 ])
 open(os.path.join(rab, 'pty.out'), 'wb').write(out)
-beda = 0
-def answers(raw):
-    # Ответ печатается своей строкой после \r\n; цвет ответа — bold white.
-    lines = raw.replace(b'\r\n', b'\n').split(b'\n')
-    got = []
-    for line in lines:
-        plain = line
-        while b'\x1b[' in plain:
-            at = plain.index(b'\x1b[')
-            end = at + 2
-            while end < len(plain) and not (0x40 <= plain[end] <= 0x7e):
-                end += 1
-            plain = plain[:at] + plain[end + 1:]
-        plain = plain.strip()
-        if plain and all(ch in b'0123456789' for ch in plain):
-            got.append(plain.decode())
-    return got
 got = answers(out)
 if got != ['5', '5', '9']:
     print('pty: ответы', got, 'ждали [5, 5, 9] — Home/End, Backspace, история или слова не сработали'); beda = 1
@@ -142,14 +219,60 @@ if b'\x1b[38;2;' not in out:
     print('pty: под truecolor нет ни одной последовательности 38;2 — тема не красит'); beda = 1
 if b'\x1b[1;38;2;245;247;250m5' not in out:
     print('pty: ответ 5 не выкрашен белым полужирным (палитра digitable)'); beda = 1
-plain = run({'NO_COLOR': ''}, [('1 плюс 1'.encode(), 0.3), (b'\r', answer_wait)])
+if beda == 0:
+    print('  зелен  pty: Home/End/Backspace/↑/⌥b/Ctrl-←/Ctrl-U сработали, ответы 5, 5, 9')
+
+# ── вставка, дополнение по Tab, справка о сборке, очистка экрана ──
+history = os.path.join(rab, 'history')
+paste = 'тотальная функция «Втрое»\r  принимает х: число\r  возвращает число\r  х умножить на 3\r\r'.encode()
+out = run({'FLANG_HISTORY': history}, [
+    (paste, 12.0),
+    ('«Втр'.encode(), 0.4), (TAB, 0.6), (' от 5'.encode(), 0.3), (b'\r', answer_wait),
+    ('.пом'.encode(), 0.4), (TAB, 0.6), (b'\r', 1.5),
+    ('.оч'.encode(), 0.4), (TAB, 0.6), (b'\r', 1.0),
+])
+open(os.path.join(rab, 'pty-tab.out'), 'wb').write(out)
+vidno = strip(out)
+if 'объявлено: тотальная функция «Втрое»' not in vidno:
+    print('pty: вставка четырёх строк одним куском не приняла объявление'); beda = 1
+if answers(out)[-1:] != ['15']:
+    print('pty: «Втр + Tab + « от 5» дало', answers(out)[-1:], 'ждали [15] — дополнение имени не сработало'); beda = 1
+# Перерисовка на каждый байт вставки — то, от чего чинили: сотня очисток строки
+# на шесть строк вставки. Считаем очистки за время вставки: их обязано быть по
+# горстке на строку, а не по одной на знак.
+paste_part = out[:out.find('объявлено'.encode())] if 'объявлено'.encode() in out else out
+if paste_part.count(b'\x1b[K') > 30:
+    print('pty: вставка перерисовала строку', paste_part.count(b'\x1b[K'), 'раз — мельтешение вернулось'); beda = 1
+if 'Эта сборка: flang' not in vidno or 'строку правит оболочка' not in vidno:
+    print('pty: «.пом + Tab» не дало справки со сведениями о сборке'); beda = 1
+if 'история: строк в этой сессии' not in vidno:
+    print('pty: справка не сказала про историю'); beda = 1
+if b'\x1b[2J' not in out:
+    print('pty: «.оч + Tab» не очистило экран — команды не дополняются'); beda = 1
+if not os.path.exists(history):
+    print('pty: файл истории', history, 'не заведён'); beda = 1
+
+# ── история между запусками: второй запуск помнит строку первого ──
+# Стрелка вверх поднимает ПОСЛЕДНЮЮ строку прошлого запуска, а последней там
+# была команда очистки; ждать «Втрое» от 5 значило бы ждать четвёртой сверху.
+out = run({'FLANG_HISTORY': history}, [(UP, 0.6)])
+open(os.path.join(rab, 'pty-history.out'), 'wb').write(out)
+if '.очистить' not in strip(out):
+    print('pty: второй запуск не вспомнил строку первого — история между запусками потеряна'); beda = 1
+elif beda == 0:
+    print('  зелен  pty: вставка, Tab («имя, ключевое слово, .команда), справка о сборке, история между запусками')
+
+# ── цвет выключается по NO_COLOR ──
+plain = run({'NO_COLOR': '', 'FLANG_HISTORY': 'нет'}, [('1 плюс 1'.encode(), 0.3), (b'\r', answer_wait)])
 open(os.path.join(rab, 'pty-nocolor.out'), 'wb').write(plain)
 if re.search(rb'\x1b\[[0-9;]*m', plain):
     print('pty: NO_COLOR= стоит, а цвет (SGR) есть'); beda = 1
 if answers(plain) != ['2']:
     print('pty: без цвета ответ', answers(plain), 'ждали [2]'); beda = 1
+if 'выключен: стоит NO_COLOR' not in strip(run({'NO_COLOR': '', 'FLANG_HISTORY': 'нет'}, [('.помощь'.encode(), 0.3), (b'\r', 1.5)])):
+    print('pty: при NO_COLOR справка не назвала причину выключенного цвета'); beda = 1
 if beda == 0:
-    print('  зелен  pty: Home/End/Backspace/↑/⌥b/Ctrl-←/Ctrl-U сработали, ответы 5, 5, 9; NO_COLOR снял цвет')
+    print('  зелен  pty: NO_COLOR снял цвет и назван причиной в справке; FLANG_HISTORY=нет выключил файл')
 sys.exit(beda)
 PY
 [ $? = 0 ] || BEDA=1

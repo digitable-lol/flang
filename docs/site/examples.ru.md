@@ -83,6 +83,7 @@ flang пишется то, что **решает**; хозяину остаёт�
 | `examples/frameworks/nestjs-orders/` | NestJS | `core/orders-api.flang` | REST-служба заказов: разбор строки запроса, обязательные поля, маршрут по методу и пути, код ответа (201/200/400/404/405) |
 | `examples/frameworks/react-invoice/` | React | `core/cart.flang`, `core/catalog.flang` | счёт корзины целым числом копеек: сумма, ступени скидки, итог, строки счёта |
 | `examples/frameworks/vue-roman/` | Vue | `core/roman-numerals.flang` | римские цифры туда и обратно в диапазоне 1..3999 |
+| `examples/frameworks/react-ts-pure/` | React + TypeScript | `core/storefront.flang` | витрина, где в компонентах ноль строк логики: корзина, ступени скидки, запись рублей и редьюсер — всё на flang; `ЗАМЕР.md` сравнивает бандл и Web Vitals с `react-invoice` |
 
 Напечатанный модуль лежит в `printed/` каждого примера и самодостаточен: без
 зависимостей, идёт и в Node, и в браузере. Хозяин импортирует его напрямую

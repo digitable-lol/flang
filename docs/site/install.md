@@ -31,14 +31,22 @@ asdf install flang {{выпуск.версия}}
 asdf set -u flang {{выпуск.версия}}
 ```
 
-Installs `bin/flang`, `lib/libcompiler_flang.a` and two headers into the version
-directory. The third line is `asdf set`, not `asdf global`: `global` and `local`
+Installs into the version directory `bin/flang`, `lib/libcompiler_flang.a`, the
+headers in `include/` and the runtime sources of every emit target under
+`share/flang/<target>/` — without them `flang emit` has nothing to copy. The
+plugin builds the release archive with `cc` and `make`, then probes the result:
+`flang --version` must name the requested version, and — when the archive
+carries the runtime — `flang emit` must print into every target the binary
+itself lists. Only released versions install:
+`asdf install flang ref:main` refuses on purpose, since building from a branch
+needs Node. The third line is `asdf set`, not `asdf global`: `global` and `local`
 were removed in asdf 0.16.0. The same plugin works with mise:
 `mise plugin add flang https://github.com/digitable-lol/asdf-flang.git`.
 
-Does not work: the plugin is published in a separate repository and lags behind
-this tree, so `asdf install flang {{выпуск.версия}}` can end in a refusal —
-until it catches up, take Homebrew or the source.
+The plugin lives in its own repository,
+[`asdf-flang`](https://github.com/digitable-lol/asdf-flang); this tree keeps it
+as the submodule `packaging/asdf-plugin` and does not release while it differs
+from `packaging/asdf/`.
 
 ## From source
 

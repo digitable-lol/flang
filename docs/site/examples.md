@@ -83,6 +83,7 @@ keeps what **waits and holds control between decisions**.
 | `examples/frameworks/nestjs-orders/` | NestJS | `core/orders-api.flang` | an orders REST service: query-string parsing, required fields, routing by method and path, the response code (201/200/400/404/405) |
 | `examples/frameworks/react-invoice/` | React | `core/cart.flang`, `core/catalog.flang` | a cart total in whole kopecks: the sum, discount steps, the total, invoice lines |
 | `examples/frameworks/vue-roman/` | Vue | `core/roman-numerals.flang` | Roman numerals there and back in the range 1..3999 |
+| `examples/frameworks/react-ts-pure/` | React + TypeScript | `core/storefront.flang` | a storefront where the components carry zero lines of logic: cart, discount steps, rouble formatting and the reducer are all flang; `ЗАМЕР.md` compares bundle size and Web Vitals with `react-invoice` |
 
 The printed module lies in `printed/` of each example and is self-contained: no
 dependencies, runs both in Node and in the browser. The host imports it directly

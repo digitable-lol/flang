@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 278 файлов вне flang, долг вне JavaScript — 108 при потолке 63
-<!-- СНЯТО 2026-09-09 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 278 -->
+# Опись дерева по языкам: 275 файлов вне flang, долг вне JavaScript — 108 при потолке 63
+<!-- СНЯТО 2026-09-09 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 275 -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
@@ -73,7 +73,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 | CSS | 1 | 559 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.css = 1 --><!-- СНЯТО 2026-08-31 строк-в *.css = 559 --> |
 | awk | 1 | 79 | 1 | 79 <!-- СНЯТО 2026-08-31 файлов *.awk = 1 --><!-- СНЯТО 2026-08-31 строк-в *.awk = 79 --> |
 | Erlang | 1 | 69 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.erl = 1 --><!-- СНЯТО 2026-08-31 строк-в *.erl = 69 --> |
-| JavaScript | 58 | 30 817 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-09 файлов *.js,*.mjs = 58 --><!-- СНЯТО 2026-09-09 строк-в *.js,*.mjs = 30817 --> ||
+| JavaScript | 55 | 29 733 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-09 файлов *.js,*.mjs = 55 --><!-- СНЯТО 2026-09-09 строк-в *.js,*.mjs = 29733 --> ||
 | Java | 7 | 3 941 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.java = 7 --><!-- СНЯТО 2026-09-06 строк-в *.java = 3941 --> |
 | C# | 7 | 4 472 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.cs = 7 --><!-- СНЯТО 2026-09-06 строк-в *.cs = 4472 --> |
 | Elixir | 4 | 4 634 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.ex,*.exs = 4 --><!-- СНЯТО 2026-09-06 строк-в *.ex,*.exs = 4634 --> |

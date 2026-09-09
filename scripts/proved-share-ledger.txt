@@ -1158,6 +1158,10 @@ a556bd715aef70740ddb3d166813a1b0|1|×|×|×|0|flang/proof/чекер/пробы/
 5f52d3d676ec123ad7024da8abb11211|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/порча/pred-zov-vyshe.flang
 621e15b4f215a10766a324050f935ca6|8|×|×|×|3|flang/proof/чекер/пробы/семьи/вывод/vyvod.flang
 5c2c97049229761478861c571f43ee92|25|×|×|×|16|flang/proof/чекер/пробы/семьи/семейства/semeystva.flang
+16d8ee803746576b1ea37331f9706731|3|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/imya-naturalnoe.flang
+5d8f64a5690e59d340d774fae83f3842|1|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/psevdonim-otrezok.flang
+a255093f2d4bb66a4bc0e41a09027ec8|1|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/chislo-segment.flang
+ebeaf18162d971206534e00af3a63ee8|1|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/psevdonim-ne-otrezok.flang
 37c434ce21a4d10295988be6acd720a3|1|×|×|×|1|flang/proof/чекер/пробы/семьи/семейства/порча/strogiy-iz-nestrogogo.flang
 5a4b5d63affc5a4466b39e35dfe16867|1|×|×|×|0|flang/proof/чекер/пробы/семьи/семейства/порча/vhozhdenie-drugogo-chlena.flang
 23aa4769959a3fb0dd742c7069ef5aed|1|×|×|×|0|flang/proof/чекер/пробы/семьи/семейства/порча/sosedi-bez-dopushcheniya.flang

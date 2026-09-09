@@ -1,4 +1,11 @@
 файл	цель	почему_не_путь
+CHANGELOG.md	flang/test/changelog.test.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+CHANGELOG.md	distributed.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+CHANGELOG.md	compat.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+CHANGELOG.md	obligations.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+CHANGELOG.md	src/types.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+CHANGELOG.md	flang/src/proof.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+CHANGELOG.md	io.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
 README.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/README.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/README.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
@@ -86,6 +93,14 @@ docs/releases/0.7.13.md	-roadmap.md	сокращение имени по суф�
 docs/reprint-cost.md	pusk.sh	внешний: инструмент вне дерева (docs/reprint-cost.md)
 docs/resource-plan.md	claims.tsv	внешний: координационный файл /srv/priyom, не файл этого дерева
 docs/resource-plan.md	svod.sh	внешний: инструмент /srv/priyom, не файл этого дерева
+docs/site/changelog.md	flang/test/changelog-page.test.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+docs/site/changelog.md	compat.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+docs/site/changelog.md	obligations.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+docs/site/changelog.md	src/types.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+docs/site/changelog.md	io.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+docs/site/changelog.md	flang/src/proof.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+docs/site/changelog.md	builtins.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
+docs/site/changelog.md	failures.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
 docs/site/editor.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
 docs/site/editor.ru.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
 docs/site/embedding.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
@@ -114,6 +129,8 @@ docs/site/embedding.ru.md	src/factorial.rs	пример на чужом язык
 docs/site/embedding.ru.md	src/lib.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	src/main.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	src/runtime.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/site/examples.md	core/storefront.flang	план: пример react-ts-pure живёт на ветке r/react-ts-pure и в ствол не влит; страница уехала вперёд дерева
+docs/site/examples.md	ЗАМЕР.md	план: пример react-ts-pure живёт на ветке r/react-ts-pure и в ствол не влит; страница уехала вперёд дерева
 docs/site/getting-started.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/getting-started.ru.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/index.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
@@ -133,6 +150,7 @@ editors/vscode/README.md	.vscode/tasks.json	локальный: редактор
 examples/rosetta/WIKI.en.md	flang-outreach/rosetta-как-выложить.md	внешний: материалы flang-outreach, не файл этого дерева
 flang/SPEC.md	json.py	учебный/иллюстративный пример на C или Python, не файл проекта
 flang/SPEC.md	факты.json	иллюстративный пример входа в SPEC.md, не файл
+flang/conc/DISTRIBUTED.md	flang/src/conc.mjs	явное отрицание в тексте: рядом сказано, что файл снят 20 августа 2026 (fe8e8a37)
 flang/core/SPEC.md	natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 flang/core/SPEC.md	src/natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 flang/core/SPEC.md	src/parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
@@ -153,10 +171,14 @@ tasks/1315-vremennoe-v-dereve-ishodnikov.md	g3.json	внешний: рабочи
 tasks/1315-vremennoe-v-dereve-ishodnikov.md	proba-stolknoveniy.flang	временный файл прогона, который сам себя убирает; в тексте сказано «ПОЧИНЕНО»
 tasks/1722-the-discriminating-search-writes-a-temp-dir-into-the-tree.md	proba-zanyatosti.flang	иллюстративный пример в тексте, не файл
 tasks/1734-element-n-counts-the-number-not-the-list.md	flang/src/bounded.mjs	явное отрицание в тексте: «файла в дереве больше нет»
+tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md	над/чужой-черновик.flang	иллюстративное имя пробы в тексте (каталог «над» вне дерева), не файл
+tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md	дерево/scripts/proba.flang	иллюстративное имя пробы в тексте (каталог «дерево» — копия), не файл
 tasks/3403-postanovshchik-paketov-manifest-set-zamok.md	scripts/paket.flang	план: файл, который эта задача велит завести
+tasks/4271-pechatnik-elixir-pechataet-myortvuyu-stroku-rezultata.md	zond-elx.flang	внешний: обёртка вне дерева (в тексте так и сказано), не файл этого дерева
+tasks/4271-pechatnik-elixir-pechataet-myortvuyu-stroku-rezultata.md	svyaz_uzlov.ex	внешний: файл, напечатанный пробой вне дерева, не файл этого дерева
 tasks/6127-goal-split-places-are-replayed-by-local-moves.md	ПЕРЕДАЧА/karta-kalkulyatora.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
 tasks/6127-goal-split-places-are-replayed-by-local-moves.md	ПЕРЕДАЧА/proverka-uzlov.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-tasks/6130-vedomost-pravil-vyvoda-v-dvuh-notaciyah.md	flang/proof/ПРАВИЛА-ВЫВОДА.tsv	план: файл, который эта задача велит завести («Завести …»)
+tasks/6201-tree-still-cites-the-removed-javascript-implementation.md	proba-vstrechno.mjs	иллюстративное имя пробы в тексте, не файл: проба снята вместе с реализацией на JavaScript (fe8e8a37)
 tasks/8398-plans-are-judged-and-the-compiler-says-so.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
 tasks/8398-plans-are-judged-and-the-compiler-says-so.md	plany.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/8398-plans-are-judged-and-the-compiler-says-so.md	tree-plans.flang	план в перечне задачи 8398, не файл

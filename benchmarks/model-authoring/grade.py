@@ -2,22 +2,36 @@
 """Оценка одной программы четырьмя командами самого компилятора.
 #
 # Ни одного числа, посчитанного здесь, нет мимо CLI: каждая строчка ведомости —
-# это код возврата и JSON от `flang check`, `flang test`, `flang run`,
+# это код возврата и вывод `flang check`, `flang test --json`, `flang run`,
 # `flang emit --target c`. Разбирается только их вывод.
 #
 #   parse   — check прошёл, диагностик нет
 #   test    — test прошёл, примеров больше нуля, упавших нет
-#   total   — check назвал целевую функцию тотальной
+#   total   — ведомость `check --proof --json` назвала целевую функцию тотальной
 #   emit    — печать в C прошла (она сама зовёт check и печатает только проверенное)
 #   sem     — скрытые входы: run дал ровно ожидаемое значение (модель их не видит)
+#
+# Прибор — двоичный `bootstrap/flang` из этого же дерева. До 20 августа 2026
+# здесь звался `node flang/bin/flang.mjs`, и ведомость читалась из его JSON;
+# реализация на JavaScript снята (`fe8e8a37`), и разбор переписан под вывод
+# двоичного 9 сентября 2026 (задача 6201). Что изменилось по существу:
+# диагностики `check` приходят строками «FLANG_… в файле …», а не JSON, поэтому
+# коды берутся из текста; `run --args` принимает только плоский объект
+# скаляров — скрытый вход со списком или записью этим прибором не проверить,
+# и такой случай назван кодом `вход-не-скаляр`, а не спрятан.
 """
 
 import json
 import os
+import re
 import subprocess
+import tempfile
 
-ROOT = "/home/m/projects/flang-rest"
-FLANG = [ "node", os.path.join(ROOT, "flang/bin/flang.mjs") ]
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+FLANG = [os.path.join(ROOT, "bootstrap", "flang")]
+
+КОД = re.compile(r"\bFLANG_[A-Z_]+\b")
 
 
 def _run(args, timeout=120):
@@ -29,15 +43,27 @@ def _run(args, timeout=120):
 
 
 def _codes(text):
-    """Коды диагностик из JSON-вывода команды; при неразборном выводе — пусто."""
+    """Коды диагностик из вывода команды: из JSON (`diagnostics[].code`,
+    `results[].code`), а если вывод не JSON — из текста строк «FLANG_… в файле».
+    При пустом выводе — пусто."""
     out = []
+    data = None
     try:
         data = json.loads(text)
     except Exception:
-        return out
-    for d in data.get("diagnostics", []) or []:
-        if isinstance(d, dict) and d.get("code"):
-            out.append(d["code"])
+        data = None
+    if isinstance(data, dict):
+        for d in data.get("diagnostics", []) or []:
+            if isinstance(d, dict) and d.get("code"):
+                out.append(d["code"])
+        for r in data.get("results", []) or []:
+            if isinstance(r, dict) and r.get("code"):
+                out.append(r["code"])
+        if out:
+            return out
+    for m in КОД.finditer(text or ""):
+        if m.group(0) not in out:
+            out.append(m.group(0))
     return out
 
 
@@ -61,16 +87,26 @@ def grade(path, task):
              examples=0, failed=0, codes=[], stage="check", detail="")
 
     rc, out, err = _run(["check", path])
+    # Код 2 у двоичного — «проверено НЕ ДО КОНЦА»: разбор, типы, завершаемость,
+    # ядро и примеры прошли, но часть объявлений (процессы, законы) этот
+    # двоичный не судит. Это не замечание к программе, и разбор засчитывается;
+    # что судили не всё — видно кодом в ведомости.
+    if rc == 2 and "НЕ ДО КОНЦА" in (out + err):
+        v["codes"].append("проверено-не-до-конца")
+        rc = 0
     if rc != 0:
-        v["codes"] = _codes(err) or ["FLANG_NO_JSON"]
+        v["codes"] = _codes(err) or _codes(out) or ["FLANG_NO_JSON"]
         v["detail"] = (err or out)[:2000]
         return v
     v["parse"] = True
+    # Тотальность — из ведомости: `check` без ключей печатает прозу, а
+    # `functions[].total` есть только у `--proof --json`.
+    rc, out, err = _run(["check", path, "--proof", "--json"])
     try:
         chk = json.loads(out)
     except Exception:
-        v["codes"] = ["FLANG_NO_JSON"]
-        v["detail"] = out[:2000]
+        v["codes"] = _codes(err) or ["FLANG_NO_JSON"]
+        v["detail"] = (err or out)[:2000]
         v["parse"] = False
         return v
 
@@ -85,8 +121,8 @@ def grade(path, task):
         v["detail"] = "нет тотальной «%s»; есть: %s" % (task["fn"], ", ".join(sorted(names)) or "—")
 
     v["stage"] = "test"
-    rc, out, err = _run(["test", path])
-    body = out if rc == 0 else err
+    rc, out, err = _run(["test", path, "--json"])
+    body = out if rc == 0 else (out or err)
     try:
         tst = json.loads(body)
         v["examples"] = tst.get("total", 0)
@@ -106,7 +142,10 @@ def grade(path, task):
         v["detail"] = body[:2000]
 
     v["stage"] = "emit"
-    rc, out, err = _run(["emit", path, "--target", "c"])
+    # Двоичный печатает только в названное место (`--out каталог`); печать
+    # уходит во временный каталог и стирается — считается лишь код возврата.
+    with tempfile.TemporaryDirectory(prefix="flang-grade-") as куда:
+        rc, out, err = _run(["emit", path, "--target", "c", "--out", куда])
     v["emit"] = rc == 0
     if not v["emit"]:
         v["codes"] = v["codes"] + (_codes(err) or ["FLANG_EMIT_FAIL"])
@@ -122,6 +161,12 @@ def grade(path, task):
     else:
         ok = True
         for args, expect in checks:
+            if not all(v_ is None or isinstance(v_, (bool, int, float, str)) for v_ in args.values()):
+                ok = False
+                v["codes"].append("вход-не-скаляр")
+                if not v["detail"]:
+                    v["detail"] = "вход %s не проверить: `run --args` двоичного берёт только скаляры" % json.dumps(args, ensure_ascii=False)
+                break
             rc, out, err = _run(["run", path, "--function", task["fn"], "--args", json.dumps(args, ensure_ascii=False)])
             if rc != 0:
                 ok = False
@@ -130,7 +175,7 @@ def grade(path, task):
                     v["detail"] = err[:800]
                 break
             try:
-                got = json.loads(out)["result"]
+                got = json.loads(out)  # двоичный печатает голое значение JSON
             except Exception:
                 ok = False
                 break
@@ -165,7 +210,7 @@ def diagnostics_text(path, task):
     rc, out, err = _run(["test", path])
     if rc != 0:
         return "flang test " + os.path.basename(path) + "\n" + (err or out)[:2500]
-    rc2, out2, err2 = _run(["check", path])
+    rc2, out2, err2 = _run(["check", path, "--proof", "--json"])
     names = {}
     try:
         names = {f["name"]: f.get("total") is True for f in json.loads(out2).get("functions", [])}
@@ -175,7 +220,8 @@ def diagnostics_text(path, task):
         return ("flang check " + os.path.basename(path) + "\n"
                 + "разобралось, но тотальной функции «%s» в программе нет; объявлены: %s"
                 % (task["fn"], ", ".join(sorted(names)) or "ни одной"))
-    rc, out, err = _run(["emit", path, "--target", "c"])
+    with tempfile.TemporaryDirectory(prefix="flang-grade-") as куда:
+        rc, out, err = _run(["emit", path, "--target", "c", "--out", куда])
     if rc != 0:
         return "flang emit --target c " + os.path.basename(path) + "\n" + (err or out)[:2500]
     # Скрытые входы в круг исправления НЕ едут: они не диагностика компилятора, и

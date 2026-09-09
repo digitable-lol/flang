@@ -114,14 +114,17 @@
 идёт. Проверяй перед тем, как считать работу сделанной:
 
 ```bash
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs check файл.flang
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs check файл.flang --proof --pretty
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs run файл.flang --function «Имя» --args '{"н": 5}'
+bootstrap/flang check файл.flang
+bootstrap/flang check файл.flang --proof --pretty
+bootstrap/flang run файл.flang --function «Имя» --args '{"н": 5}'
 ```
 
-`LC_ALL=C.UTF-8` обязателен — без него русские буквы в среде портятся. Что
-`check` и `test` на одной программе не должны расходиться в ответе — стережёт
-`scripts/check-before-run.flang`.
+Двоичный собирается `make -C bootstrap`; установленный `flang` зовётся так же,
+без приставки `bootstrap/`. До 20 августа 2026 здесь стояло `node
+flang/bin/flang.mjs` с обязательным `LC_ALL=C.UTF-8` — реализация на JavaScript
+снята (`fe8e8a37`), а у двоичного локаль лишь выбирает язык диагностик
+(`settings.ru.md`, «Что старше чего»). Что `check` и `test` на одной программе
+не должны расходиться в ответе — стережёт `scripts/check-before-run.flang`.
 
 ## Имя файла — по сути, без транслита и без лишних слов
 

@@ -1153,6 +1153,7 @@ a556bd715aef70740ddb3d166813a1b0|1|×|×|×|0|flang/proof/чекер/пробы/
 79bc318d1d20d5fa77d0c813e63823e7|1|×|×|×|0|flang/proof/чекер/пробы/семьи/булева-цель/priznak.flang
 8358c893c799244b885734453a1140c9|1|×|×|×|0|flang/proof/чекер/пробы/семьи/булева-цель/порча/lozh.flang
 8b8626f261982ab23a457da5a66d8bec|11|×|×|×|0|flang/proof/чекер/пробы/семьи/razbor-celi/razbor.flang
+621e15b4f215a10766a324050f935ca6|8|×|×|×|3|flang/proof/чекер/пробы/семьи/вывод/vyvod.flang
 e2e368b9b053bcde70aa3de7278278ba|11|×|×|×|0|flang/proof/чекер/пробы/семьи/razbor-celi/порча/lozh.flang
 6627a652f6e91c37e51f992360f53826|5|2|3|0|0|examples/frameworks/react-invoice/core/cart.flang
 f198f629adf34e113e458f37f95b2ce4|1|1|0|0|0|examples/frameworks/react-invoice/core/catalog.flang

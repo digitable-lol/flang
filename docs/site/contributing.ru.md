@@ -30,8 +30,8 @@ flang {{выпуск.версия}}
 bootstrap/flang check examples/rosetta/towers-of-hanoi.flang
 ```
 
-Пакет объявляет ноль зависимостей: `npm install` нечего скачивать. На Node
-работает только языковой сервер — `node flang/bin/flang-lsp.mjs`.
+На Node здесь не работает ничего: языковой сервер лежит в том же двоичном —
+`flang lsp --stdio` (см. [страницу редактора](editor.html)).
 
 ## Проверьте
 

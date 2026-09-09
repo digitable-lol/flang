@@ -11,6 +11,14 @@
 `flang/src/proofterm.mjs` и `flang/proof/initial.mjs` этой веткой не менялись.
 Аксиом по-прежнему ноль.
 
+> **Сверка с живым деревом, 9 сентября 2026 (задача 6201).** Ядро сегодня —
+> `flang/self/proof-kernel.flang`, `flang/self/proofterm.flang`,
+> `flang/self/proof-initial.flang`; ни `flang/proof/reduce.mjs`, ни
+> `flang/proof/initial.mjs`, ни `flang/src/*.mjs` в дереве нет. Перенос теорем
+> по ребру импорта сделан: `flang/self/link.flang:1179` («Донести теоремы
+> файла»). Конфликтам, названным в разделе о вливании, конфликтовать больше не
+> в чем.
+
 ## Числа
 
 | | этой работой |

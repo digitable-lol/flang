@@ -316,6 +316,7 @@
 - [Поле встроенного словаря, названное ключевым словом, ставится и не читается — и проверять это надо ДО того, как имя выбрано](a-dictionary-field-named-like-a-keyword-cannot-be-read.md)
 - [Макрос `_POSIX_C_SOURCE` открывает функцию на glibc и закрывает её на Darwin](a-feature-macro-that-opens-on-glibc-closes-on-darwin.md)
 - [Отказ ворот приходит тем же кодом, что вердикт проверки](a-gate-refusal-looks-like-a-verdict.md)
+- [Защита, поставленная у одного из двух правил-близнецов, оставляет второе открытым — и автор при этом ЗНАЛ об опасности](a-guard-put-on-one-of-two-twin-rules-leaves-the-other-open.md)
 - [Сетка спрятала ложное утверждение: «результат не больше довода» неверно на не-числе](a-grid-hid-a-claim-false-on-not-a-number.md)
 - [Постусловие о длине, прошедшее сетку, всё ещё может быть ложным — ловит фаззинг напечатанного кода](a-grid-passed-length-claim-can-still-be-false-on-surrogates.md)
 - [Тип функции на английской поверхности не записывается словами: `to number` съедает встроенная форма](a-longer-builtin-phrase-eats-a-type-on-the-english-surface.md)

@@ -156,7 +156,6 @@ flang/core/SPEC.md	src/natural-parser.ts	внешний: файл вынесен
 flang/core/SPEC.md	src/parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 flang/core/SPEC.md	src/utility.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 flang/proof/SPEC.md	…-english.flang	шаблон-многоточие в имени, не файл
-tasks/0045-the-old-jargon-guard-is-removed.md	flang/src/parser.mjs	явное отрицание в тексте: «которого нет с fe8e8a37»
 tasks/0049-the-last-javascript-leaves-the-tree.md	binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.flang; упоминание историческое, в задаче/заметке
 tasks/0049-the-last-javascript-leaves-the-tree.md	work.flang	иллюстративное имя в разборе задачи/заметки, не файл
 tasks/0060-a-function-promises-its-cost.md	driver.c	учебный/иллюстративный пример на C или Python, не файл проекта
@@ -204,3 +203,9 @@ tasks/0049-the-last-javascript-leaves-the-tree.md	latin-collision-guard.mjs	ис
 tasks/0049-the-last-javascript-leaves-the-tree.md	jargon-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (превзойдён flang/scripts/jargon-guard.flang и flang/проверки/жаргон.flang); имя оставлено, чтобы опись сходилась с git log
 tasks/0049-the-last-javascript-leaves-the-tree.md	jargon-guard.test.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (превзойдён flang/scripts/jargon-guard.flang и flang/проверки/жаргон.flang); имя оставлено, чтобы опись сходилась с git log
 tasks/0049-the-last-javascript-leaves-the-tree.md	flang/test/jargon-guard.test.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (превзойдён flang/scripts/jargon-guard.flang и flang/проверки/жаргон.flang); имя оставлено, чтобы опись сходилась с git log
+tasks/0049-the-last-javascript-leaves-the-tree.md	scripts/wasm-run.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026; имя оставлено, чтобы опись сходилась с git log
+tasks/0049-the-last-javascript-leaves-the-tree.md	scripts/type-collision-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026; имя оставлено, чтобы опись сходилась с git log
+tasks/0049-the-last-javascript-leaves-the-tree.md	scripts/latin-collision-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026; имя оставлено, чтобы опись сходилась с git log
+tasks/0049-the-last-javascript-leaves-the-tree.md	scripts/jargon-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026; имя оставлено, чтобы опись сходилась с git log
+docs/site/roadmap.md	jargon-guard.mjs	история: страница дорожной карты вспоминает сторож жаргона на JavaScript, снятый 9 сентября 2026 (задача 0049) после переноса на flang/scripts/jargon-guard.flang; docs/site — вне стека того захода, слово за координатором
+docs/site/roadmap.ru.md	jargon-guard.mjs	история: страница дорожной карты вспоминает сторож жаргона на JavaScript, снятый 9 сентября 2026 (задача 0049) после переноса на flang/scripts/jargon-guard.flang; docs/site — вне стека того захода, слово за координатором

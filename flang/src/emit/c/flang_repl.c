@@ -269,7 +269,7 @@ static char *repl_read_all(FILE *stream, size_t *length) {
  * Ставится не рукой: `sh scripts/repl-proba.sh --отпечаток` печатает верное
  * значение, а сама проба краснеет, пока строка ниже не сходится с файлом.
  */
-#define FLANG_SHELL_ID "fd002c5a"
+#define FLANG_SHELL_ID "9f361fce"
 
 /* Чем эта сборка оболочки отличается от прежних — одной строкой, для «--version». */
 #define FLANG_SHELL_ABLE "правит строку (стрелки, слова, история, Tab), цвет digitable"

@@ -1,6 +1,56 @@
 {
  "формат": 1,
  "выпуски": {
+  "0.7.16": {
+   "ru": {
+    "заголовок": "Чекер переигрывает вывод факта о типе; дорога до конца измерена поимённо",
+    "появилось": [
+     "ПРИЁМ «ВЫВОД»: независимый чекер переигрывает записанный вывод факта о типе — шаг за шагом, а не по имени правила. Заключение каждого шага записано формулой языка и сличается знак в знак; цель блока сверяется С ИСХОДНИКОМ, а не берётся из записи; каждое основание проверяется по существу (строка обязана быть объявлением довода, допущением либо телом той функции, о которой речь); имена, помеченные в списке правил как запрет, отвергаются. Решение ADR-0022: факт о типе едет в записи ВЫВОДОМ, а не аксиомой и не именем правила.",
+     "Проб на подлог стало 219 вместо 200: девятнадцать новых ловят ложь именно в блоке вывода — чужая цель, номер мимо объявления, пропущенная посылка, не та посылка, переставленный шаг, развёртка не на тело, оборванный вывод, имя вне списка правил, подмена вычитания суммой, ссылка на запрет вместо правила. Ни одна подделка не принята, ни одна честная запись не отвергнута.",
+     "`flangtutor` — проводник по языку, как `vimtutor`: пять уроков по нарастанию, от модуля и функции до постусловия и отчёта о доказательстве. Ответ человека судит НАСТОЯЩИЙ компилятор — разбор, типы, завершаемость, примеры, — а не сличение строк. Место в уроках запоминается, работа продолжается с прерванного. Язык берётся из файла настроек.",
+     "Ctrl+L в оболочке очищает экран и возвращает набранное на место. Клавиша работала и раньше, но не была закреплена ни одной проверкой — теперь закреплена обеими половинами.",
+     "`flang package` снова работает. Он был сломан на любом входе с 29 августа: ведомость звалась одним доводом при функции о двух. Проверено сквозным прогоном: `flang new` создаёт пакет, `flang package` его собирает, пакет ввозится.",
+     "`FLANG_MODULE_ROOT` обрывает поиск модуля выше названного корня. До этого поиск поднимался ВЫШЕ корня дерева, и файл-предок каталогом выше побивал библиотеку языка — шесть живых мест, ни одной проверкой не пойманных.",
+     "Тип `нат` называется `неотрицательное`. Сокращение не читалось; старое имя остаётся синонимом до 1.0."
+    ],
+    "изменилось": [
+     "Доля корпуса, проверенная независимым чекером: 517 / 651 = 79,42 % → 520 / 651 = 79,88 %. Прибавка от двух новых печатников; знаменатель не двигался.",
+     "Печать в Elixir перестала лить мёртвую строку результата на каждое постусловие — семнадцать предупреждений в одном файле ушли в ноль.",
+     "Внутренние слова проекта убраны из страниц для читателя: тринадцать мест переписаны словами, «проверка» вместо «сторож», «отчёт» вместо «ведомости». Две строки оставлены — это дословная цитата вывода компилятора, и переписать её значило бы соврать о том, что читатель увидит у себя.",
+     "Битых ссылок в дереве 1947 → 18. Проверка научена отличать запись о прошлом (сделанную задачу, датированный отчёт) от обещания о настоящем и печатает число пропущенного, а не прячет его.",
+     "Список правил вывода вырос до 71 строки в двух записях, логической и категорной, сверенных с кодом ядра построчно."
+    ],
+    "сломалось": [
+     "Вердикт по-прежнему НЕ ДОКАЗУЕМ: три проверки из четырёх сошлись, доля 79,88 % при пороге 95 %.",
+     "Дорога до конца измерена поимённо и лежит в `docs/road-to-one-hundred-measured.md`: недостижимых мест НЕТ НИ ОДНОГО, потолок работы 643 / 651 = 98,77 %. Последние восемь мест — не работа, а решение о том, что именно обещает число.",
+     "Найдено при выпуске и не скрыто: релизный архив не совпадает побайтно между сборкой на своей машине и сборкой в конвейере, хотя собирается нарочно повторимым способом. Обещание «соберите сами и сверьте» сегодня не выполняется."
+    ]
+   },
+   "en": {
+    "заголовок": "The checker replays a derivation of a type fact; the road to the end is measured place by place",
+    "появилось": [
+     "A DERIVATION REPLAY: the independent checker now replays a recorded derivation of a type fact step by step, rather than trusting a rule name. Each step's conclusion is written as a formula of the language and compared sign for sign; the block's goal is checked AGAINST THE SOURCE rather than taken from the record; every premise is checked on its merits (the line must be an argument declaration, an assumption, or the body of the function in question); names marked in the rule list as prohibitions are rejected. Decision ADR-0022: a type fact travels in the record as a DERIVATION, not as an axiom and not as a rule name.",
+     "Forgery probes went from 200 to 219: nineteen new ones catch a lie inside the derivation block — a foreign goal, a line number that misses the declaration, a missing premise, the wrong premise, reordered steps, an unfolding that is not the body, an unterminated derivation, a name outside the rule list, subtraction passed off as a sum, a reference to a prohibition instead of a rule. No forgery was accepted and no honest record rejected.",
+     "`flangtutor`, a guided tour of the language in the spirit of `vimtutor`: five lessons in increasing order, from module and function to postcondition and proof report. The learner's answer is judged by the REAL compiler — parsing, types, termination, examples — not by string comparison. Progress is remembered and an interrupted session resumes.",
+     "Ctrl+L in the shell clears the screen and puts the typed line back. The key worked before but no check held it in place; now both halves are checked.",
+     "`flang package` works again. It had been broken on every input since 29 August: the ledger was called with one argument against a two-argument function. Verified end to end: `flang new` creates a package, `flang package` builds it, the package imports.",
+     "`FLANG_MODULE_ROOT` stops module lookup from climbing above the named root. Until now lookup walked ABOVE the tree root and an ancestor file one directory up beat the language library — six live cases, caught by no check.",
+     "The type `нат` is now `неотрицательное` (non-negative). The abbreviation did not read; the old name stays a synonym until 1.0."
+    ],
+    "изменилось": [
+     "The share of the corpus verified by the independent checker: 517 / 651 = 79.42 % → 520 / 651 = 79.88 %. The gain comes from two new printers; the denominator did not move.",
+     "The Elixir target no longer emits a dead result line per postcondition — seventeen warnings in one file went to zero.",
+     "Internal project words are out of reader-facing pages: thirteen places rewritten in plain words. Two lines were kept — they quote the compiler's own output verbatim, and rewriting them would misreport what the reader will see.",
+     "Broken links in the tree: 1947 → 18. The check now tells a record of the past (a completed task, a dated report) from a promise about the present, and prints how many it skipped instead of hiding it.",
+     "The derivation rule list grew to 71 rows in two notations, logical and categorical, checked against the kernel code row by row."
+    ],
+    "сломалось": [
+     "The verdict is still NOT PROVABLE: three checks of four agree, the share is 79.88 % against a 95 % threshold.",
+     "The road to the end is measured place by place in `docs/road-to-one-hundred-measured.md`: NOT ONE place is unreachable, and the ceiling of engineering work is 643 / 651 = 98.77 %. The last eight places are not work but a decision about what the number promises.",
+     "Found during the release and not hidden: the release archive is not byte-identical between a local build and the pipeline build, although it is assembled by a deliberately reproducible recipe. The promise «build it yourself and compare» does not hold today."
+    ]
+   }
+  },
   "0.7.15": {
    "ru": {
     "заголовок": "Калькулятор снят из чекера: гейт независимой проверки закрыт",

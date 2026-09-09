@@ -349,7 +349,7 @@ proigrat_dolyu() { # каталог; печатает 23 поля: ЧИСЛ ЗН
   files=$(find "$dir" -name '*.запись' | sort)
   [ -n "$files" ] || { echo "в «$dir» нет ни одной записи" >&2; return 2; }
   chisl=0; znam=0; zapisey=0; poruch=0; otverg=0; hod_v=0; nesut=0
-  nsl_v=0; nsh_v=0; snyato_v=0; prim_v=0; svoy_v=0; obyav=0; znam_otv=0; uzly_v=0; bulevo_v=0
+  nsl_v=0; nsh_v=0; snyato_v=0; prim_v=0; svoy_v=0; obyav=0; znam_otv=0; uzly_v=0; bulevo_v=0; vyvody_v=0
   nedost=0; nab_zap=0; nab_chisl=0; nab_znam=0; nab_lz=0; nab_lz_otv=0; nab_lz_prin0=0
   for z in $files; do
     zapisey=$((zapisey+1))
@@ -407,28 +407,37 @@ proigrat_dolyu() { # каталог; печатает 23 поля: ЧИСЛ ЗН
     bulevo=$(printf '%s\n' "$v" | sed -n 's/.*из них булевой веткой снято мест \([0-9]*\),.*/\1/p'); bulevo=${bulevo:-0}
     uzly=$((uzly-bulevo)); bulevo_v=$((bulevo_v+bulevo))
     snyato=$((snyato-uzly))
+    # 6131: ПЕРЕИГРЫШ ЗАПИСАННОГО ВЫВОДА ФАКТА О ТИПЕ — ещё одна строка «снято…», и
+    # она тоже НЕ калькулятор. Сверщик читает вывод по шагу и каждый шаг сверяет с
+    # исходником и с прежними шагами; ядру на слово при этом не верится ни разу.
+    # Берётся по якорю СВОЕЙ строки сводки, как берётся `uzly`, и вычитается из
+    # общей суммы «снято…», чтобы место не считалось дважды. На записях БЕЗ блока
+    # вывода число это ноль, и доля от правки не двигается ни на место (замер:
+    # 517 из 651 до и после).
+    vyvody=$(printf '%s\n' "$v" | sed -n 's/.*Выводов факта о типе проиграно заново [0-9]* (снято со слова ядра мест \([0-9]*\)).*/\1/p'); vyvody=${vyvody:-0}
+    snyato=$((snyato-vyvody))
     prim=$(printf '%s\n' "$v" | sed -n 's/.*Шагов по примеру проверено по существу \([0-9]*\)\..*/\1/p'); prim=${prim:-0}
     svoy=$(printf '%s\n' "$v" | sed -n 's/.*Шагов по свойству проверено по существу \([0-9]*\)\..*/\1/p'); svoy=${svoy:-0}
     # `uzly` в знаменателе там же, где был (внутри прежнего `snyato`): знаменатель от
     # перекладки не двигается ни на место, растёт только числитель.
-    notrep=$((nsl+nsh+snyato+prim+svoy+uzly))
+    notrep=$((nsl+nsh+snyato+prim+svoy+uzly+vyvody))
     if [ -n "$kl" ]; then
       # ЧИСЛИТЕЛЬ НАБОРА — честные половины подделочных файлов, проигранные
       # заново. Тот же счёт, что у корпуса (ходы/тотальность + по существу +
       # узлы), но сложенный только по строкам манифеста: под храповиком стоит
       # он, а не число строк, потому что файл можно оставить в списке, а его
       # честную половину тихо перестать проигрывать.
-      nab_chisl=$((nab_chisl+sved+prim+svoy+uzly)); nab_znam=$((nab_znam+sved+notrep))
+      nab_chisl=$((nab_chisl+sved+prim+svoy+uzly+vyvody)); nab_znam=$((nab_znam+sved+notrep))
     fi
     chisl=$((chisl+sved)); znam=$((znam+sved+notrep)); hod_v=$((hod_v+hod)); uzly_v=$((uzly_v+uzly))
     nsl_v=$((nsl_v+nsl)); nsh_v=$((nsh_v+nsh)); snyato_v=$((snyato_v+snyato))
-    prim_v=$((prim_v+prim)); svoy_v=$((svoy_v+svoy))
+    prim_v=$((prim_v+prim)); svoy_v=$((svoy_v+svoy)); vyvody_v=$((vyvody_v+vyvody))
     [ "$sved" -gt 0 ] && nesut=$((nesut+1))
   done
-  printf '%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n' \
+  printf '%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n' \
     "$chisl" "$znam" "$zapisey" "$poruch" "$otverg" "$hod_v" "$nesut" \
     "$nsl_v" "$nsh_v" "$snyato_v" "$prim_v" "$svoy_v" "$obyav" "$znam_otv" "$uzly_v" "$bulevo_v" \
-    "$nedost" "$nab_zap" "$nab_chisl" "$nab_znam" "$nab_lz" "$nab_lz_otv" "$nab_lz_prin0"
+    "$nedost" "$nab_zap" "$nab_chisl" "$nab_znam" "$nab_lz" "$nab_lz_otv" "$nab_lz_prin0" "$vyvody_v"
 }
 
 if [ "$proigr" -eq 1 ]; then
@@ -491,6 +500,7 @@ if [ "$proigr" -eq 1 ]; then
   CHISL=$1; ZNAM=$2; ZAPISEY=$3; PORUCH=$4; OTVERG=$5; HODOV=$6; NESUT=$7
   NSL=$8; NSH=$9; shift 9; SNYATO=$1; PRIM=$2; SVOY=$3; OBYAV=$4; ZNAM_OTV=$5; UZLY=$6; BULEVO=$7
   NEDOST=$8; NAB_ZAP=$9; shift 9; NAB_CHISL=$1; NAB_ZNAM=$2; NAB_LZ=$3; NAB_LZ_OTV=$4; NAB_LZ_PRIN0=$5
+  VYVODY=$6
   POROG_G4=95
   # ЧИСЛИТЕЛЬ = независимо проверенное чекером: проиграно ходами/тотальностью (CHISL)
   # ПЛЮС проверено ПО СУЩЕСТВУ вычислением — шаги «по примеру»/«по свойству» (SUSCH).
@@ -502,7 +512,10 @@ if [ "$proigr" -eq 1 ]; then
   # ПЛЮС структурный переигрыш узлов тотальности (UZLY): сверщик прочёл ТЕЛО ФУНКЦИИ и
   # сам сверил дно со спуском (шапка выше, «структурный переигрыш»). Вычислитель не
   # зовётся, ядру на слово не верится — третья строка числителя, отдельно от ходов.
-  CHISL_V=$((CHISL+SUSCH+UZLY))
+  # ПЛЮС переигранные выводы факта о типе (VYVODY, задача 6131): сверщик прочёл вывод
+  # по шагу и каждый шаг сверил с исходником и с прежними шагами — пятая строка
+  # числителя, отдельно от узлов.
+  CHISL_V=$((CHISL+SUSCH+UZLY+VYVODY))
   dolya=$(awk -v a="$CHISL_V" -v b="$ZNAM" 'BEGIN{ if (b>0) printf "%.2f", 100*a/b; else printf "—" }')
   dobral=$(awk -v a="$CHISL_V" -v b="$ZNAM" -v p="$POROG_G4" 'BEGIN{ print (b>0 && 100*a/b >= p) ? "ДА" : "НЕТ" }')
   neprov=$((NSL+NSH+SNYATO))
@@ -526,7 +539,8 @@ if [ "$proigr" -eq 1 ]; then
   echo "ЧИСЛИТЕЛЬ   — Σ независимо проверенного чекером (ходами/тотальностью + по существу + узлы): $CHISL_V"
   echo "  ├ проиграно ходами/тотальностью:                                       $CHISL"
   echo "  ├ проверено по существу вычислением («по примеру»/«по свойству»):        $SUSCH"
-  echo "  └ структурный переигрыш узлов тотальности (дно/спуск по телу функции):    $UZLY"
+  echo "  ├ структурный переигрыш узлов тотальности (дно/спуск по телу функции):    $UZLY"
+  echo "  └ переигранные выводы факта о типе (по шагу на правило):                 $VYVODY"
   echo "ЗНАМЕНАТЕЛЬ — Σ обязательств корпуса за вычетом недостижимых:                          $ZNAM"
   echo "доля-проигрыванием = $CHISL_V / $ZNAM = ${dolya} %"
   echo

@@ -1163,6 +1163,10 @@ df4debf8a4b83e23d253c78cbc2c765a|25|×|×|×|16|flang/proof/чекер/проб�
 5d8f64a5690e59d340d774fae83f3842|1|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/psevdonim-otrezok.flang
 a255093f2d4bb66a4bc0e41a09027ec8|1|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/chislo-segment.flang
 ebeaf18162d971206534e00af3a63ee8|1|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/psevdonim-ne-otrezok.flang
+35cc8c0fe7082e6c9a4c7ad3dce28580|1|×|×|×|0|flang/proof/чекер/пробы/семьи/algebra-domeny/golova.flang
+13faa2dc2519be91c8b4a48906393168|1|×|×|×|0|flang/proof/чекер/пробы/семьи/algebra-domeny/ohrana.flang
+64ef202b0aee11ecd672a3e823986eb7|1|×|×|×|0|flang/proof/чекер/пробы/семьи/algebra-domeny/порча/golova-lzhet.flang
+79794bebd6d1c503cd52f3a31864ca48|1|×|×|×|0|flang/proof/чекер/пробы/семьи/algebra-domeny/порча/ohrana-lzhet.flang
 37c434ce21a4d10295988be6acd720a3|1|×|×|×|1|flang/proof/чекер/пробы/семьи/семейства/порча/strogiy-iz-nestrogogo.flang
 5a4b5d63affc5a4466b39e35dfe16867|1|×|×|×|0|flang/proof/чекер/пробы/семьи/семейства/порча/vhozhdenie-drugogo-chlena.flang
 23aa4769959a3fb0dd742c7069ef5aed|1|×|×|×|0|flang/proof/чекер/пробы/семьи/семейства/порча/sosedi-bez-dopushcheniya.flang

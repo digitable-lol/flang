@@ -73,12 +73,13 @@ description: Как писать flang, чтобы он проходил про�
 ## Проверить свою работу до сдачи
 
 ```bash
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs check файл.flang           # типы, тотальность, примеры, доказательства
-LC_ALL=C.UTF-8 node flang/bin/flang.mjs check файл.flang --proof --pretty
+bootstrap/flang check файл.flang           # типы, тотальность, примеры, доказательства
+bootstrap/flang check файл.flang --proof --pretty
 ```
 
-`LC_ALL=C.UTF-8` обязателен. Число в отчёте — только снятое прогоном, и рядом
-сказано, чем снято (навык `report-plainly`).
+Двоичный собирается `make -C bootstrap` (5–6 минут); `node flang/bin/flang.mjs`
+не существует с 20 августа 2026 (`fe8e8a37`). Число в отчёте — только снятое
+прогоном, и рядом сказано, чем снято (навык `report-plainly`).
 
 Сторожа, которых нельзя оставить красными:
 

@@ -122,7 +122,8 @@ const CASES = [
  * дефект, которым теневой стек заезжал в кучу, — и называть её отказом языка
  * значило бы спрятать дефект под именем отказа. Она остаётся ЛОВУШКОЙ и видна.
  */
-// Образец тот же, что у `$STACK_OVERFLOW` в печати JavaScript (flang/src/emit/js.mjs):
+// Образец тот же, что у `$STACK_OVERFLOW` в печати JavaScript
+// (flang/self/emit-js.flang:2570; до 20 августа 2026 — flang/src/emit/js.mjs):
 // V8 и JavaScriptCore говорят «Maximum call stack size exceeded», SpiderMonkey —
 // «too much recursion», wasmtime — «call stack exhausted». Два разных образца на
 // один вопрос разошлись бы молча в тот день, когда добавится четвёртый движок.

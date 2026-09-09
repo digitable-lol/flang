@@ -78,7 +78,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ "$REZHIM" = pomosh ]; then
-  sed -n '5,18p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '5,20p' "$0" | sed 's/^# \{0,1\}//'
   exit 0
 fi
 

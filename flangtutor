@@ -1,0 +1,325 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# FLANGTUTOR — ПРОВОДНИК ПО ЯЗЫКУ: УРОКИ ПО ПОРЯДКУ, ОТВЕТ СУДИТ КОМПИЛЯТОР.
+#
+#   ./flangtutor                 начать или продолжить с того урока, где встали
+#   ./flangtutor --урок 3        начать с названного урока
+#   ./flangtutor --только 3      пройти ровно один урок и остановиться
+#   ./flangtutor --сначала       забыть пройденное и начать с первого
+#   ./flangtutor --список        перечислить уроки и не начинать
+#   ./flangtutor --язык en       говорить по-английски, не спрашивая настроек
+#   ./flangtutor --помощь
+#
+# Латиницей то же: --lesson --only --restart --list --lang --help.
+#
+# Коды: 0 — все уроки пройдены, или человек вышел сам, запомнив место;
+#       1 — уроки не пройдены (ответ так и не сошёлся, ввод кончился);
+#       2 — довод непонятен;
+#       3 — учить нечем: нет двоичного или нет уроков.
+#
+# ── Почему отдельный файл, а не команда двоичного и не команда оболочки ─────
+# Три пути, и выбор сделан замером, а не удобством.
+#
+#   `flang tutor` НЕ ГОДИТСЯ СЕГОДНЯ. Перечень команд двоичного лежит не в
+#   рукописном C, а в исходнике компилятора на самом языке
+#   (`flang/self/cli.flang`, функция «Команды»), и новая команда требует
+#   правки там и полной перепечатки семени. Перепечатка идёт около шести
+#   часов и сейчас закрыта. Путь остаётся открытым на будущее, и этот файл
+#   ему не мешает: уроки лежат отдельно от того, кто их ведёт.
+#
+#   `.урок` В ОБОЛОЧКЕ НЕ ГОДИТСЯ ПО ДРУГОЙ ПРИЧИНЕ. Замер по дереву: слов
+#   `flangrc` в `flang/src/emit/c/*.c` нет ни одного — двоичный файла настроек
+#   не читает вовсе, его читают `scripts/flangrc.sh` и `ярлыки.flang`. Учить
+#   человека на языке, который он выбрал (решение ADR-0024), команда внутри
+#   двоичного смогла бы только вторым читателем настроек, написанным на C.
+#
+#   ОБОЛОЧКА ЗАПУСКАЕТ, КОМПИЛЯТОР СУДИТ — уже принятый в дереве уклад:
+#   так же разделены `ярлык` и `ярлыки.flang`, `scripts/flangrc.sh` и
+#   `scripts/settings-file.flang`. Довод там записан прогоном и годится здесь
+#   слово в слово: у `flang io` нет способа принять довод, вывод потомка он
+#   копит до конца, а экрана у него нет вовсе. Проводнику нужно ровно
+#   обратное: живой вывод, чтение ответа и настоящий код возврата.
+#
+#   И тот же выбор сделан у vimtutor: это не команда редактора, а короткий
+#   сценарий оболочки рядом с ним (`/usr/local/bin/vimtutor` на этой машине).
+#
+# ── Чем судится ответ ───────────────────────────────────────────────────────
+# Ничего не сличается со строками. Ответ человека кладётся в файл, к нему
+# приписывается функция «Проверка урока» из самого урока, и дальше говорит
+# НАСТОЯЩИЙ компилятор: `flang check` — разбор, типы, завершаемость и
+# доказательства; `flang test` — прогон примеров; `flang run` — значение.
+# Урок, требующий доказанного обещания, спрашивает ещё и `flang check --proof`.
+#
+# ИМЕНА ПЕРЕМЕННЫХ ЗДЕСЬ ЛАТИНИЦЕЙ, как в `ярлык` и `scripts/flangrc.sh`: ни
+# dash, ни bash не принимают кириллицу в именах переменных.
+set -u
+
+KOREN=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+UROKI=$KOREN/docs/tutor
+BIN=${FLANG:-$KOREN/bootstrap/flang}
+
+REZHIM=vesti
+NACHAT=
+TOLKO=нет
+YAZYK=
+
+while [ $# -gt 0 ]; do
+  case $1 in
+    --урок|--lesson) NACHAT=${2:-}; [ -n "$NACHAT" ] || { echo "flangtutor: --урок требует номера" >&2; exit 2; }; shift 2 ;;
+    --только|--only) NACHAT=${2:-}; TOLKO=да; [ -n "$NACHAT" ] || { echo "flangtutor: --только требует номера" >&2; exit 2; }; shift 2 ;;
+    --сначала|--restart) REZHIM=snachala; shift ;;
+    --список|--list) REZHIM=spisok; shift ;;
+    --язык|--lang) YAZYK=${2:-}; [ -n "$YAZYK" ] || { echo "flangtutor: --язык требует кода" >&2; exit 2; }; shift 2 ;;
+    --помощь|--help|-h) REZHIM=pomosh; shift ;;
+    *) printf 'flangtutor: непонятный довод «%s». «--помощь» — что он умеет.\n' "$1" >&2; exit 2 ;;
+  esac
+done
+
+if [ "$REZHIM" = pomosh ]; then
+  sed -n '5,18p' "$0" | sed 's/^# \{0,1\}//'
+  exit 0
+fi
+
+# ── язык вывода: решают настройки, а не этот файл (ADR-0024) ────────────────
+# Уроки написаны на двух языках. Настройки допускают четыре кода; на код, урока
+# для которого нет, берётся английский, и об этом говорится вслух — молчаливая
+# подмена языка была бы хуже отказа.
+if [ -z "$YAZYK" ] && [ -x "$BIN" ]; then
+  YAZYK=$(sh "$KOREN/scripts/flangrc.sh" язык 2>/dev/null)
+fi
+[ -n "$YAZYK" ] || YAZYK=ru
+NET_UROKOV_NA=
+case $YAZYK in
+  ru|en) : ;;
+  *) NET_UROKOV_NA=$YAZYK; YAZYK=en ;;
+esac
+
+# ── цвет: NO_COLOR действует самим наличием, TERM=dumb тоже ─────────────────
+ZHIRNYY='' TUSKLYY='' GOLYY=''
+if [ -z "${NO_COLOR+есть}" ] && [ "${TERM:-dumb}" != dumb ] && [ -t 1 ]; then
+  ZHIRNYY=$(printf '\033[1m'); TUSKLYY=$(printf '\033[2m'); GOLYY=$(printf '\033[0m')
+fi
+
+skazat() { printf '%s\n' "$*"; }
+ryadom() { # надпись на выбранном языке: русская, английская
+  if [ "$YAZYK" = ru ]; then printf '%s' "$1"; else printf '%s' "$2"; fi
+}
+
+# ── уроки ───────────────────────────────────────────────────────────────────
+[ -d "$UROKI" ] || { skazat "$(ryadom "нет каталога уроков: $UROKI" "no lesson directory: $UROKI")" >&2; exit 3; }
+SPISOK=$(/bin/ls "$UROKI" | grep '\.урок$' | sort)
+[ -n "$SPISOK" ] || { skazat "$(ryadom "в $UROKI нет ни одного урока" "no lessons in $UROKI")" >&2; exit 3; }
+VSEGO=$(printf '%s\n' "$SPISOK" | wc -l | tr -d ' ')
+
+razdel() { # файл, метка → строки раздела
+  awk -v m="=$2=" '$0 == m { v = 1; next } /^=[^=]*=$/ { v = 0 } v { print }' "$1"
+}
+urok_fajl() { # номер → путь
+  printf '%s\n' "$SPISOK" | sed -n "$1p" | sed "s|^|$UROKI/|"
+}
+
+if [ "$REZHIM" = spisok ]; then
+  n=1
+  while [ "$n" -le "$VSEGO" ]; do
+    f=$(urok_fajl "$n")
+    printf '%s %s · %s\n' "$(ryadom урок lesson)" "$n" "$(razdel "$f" "имя-$YAZYK")"
+    n=$((n + 1))
+  done
+  exit 0
+fi
+
+[ -x "$BIN" ] || {
+  skazat "$(ryadom "нет двоичного $BIN — судить ответы нечем. Соберите: make -C bootstrap" \
+                   "no binary at $BIN — nothing to judge answers with. Build it: make -C bootstrap")" >&2
+  exit 3
+}
+
+# ── где помнится место: тот же уклад, что у истории оболочки ────────────────
+# `FLANG_TUTOR_STATE` называет свой файл; «нет», «no», «0» и пустое значение
+# выключают запись вовсе. Умолчание — XDG_STATE_HOME, иначе ~/.local/state.
+MESTO=
+if [ -n "${FLANG_TUTOR_STATE+есть}" ]; then
+  case ${FLANG_TUTOR_STATE} in
+    ''|нет|no|0) MESTO= ;;
+    *) MESTO=$FLANG_TUTOR_STATE ;;
+  esac
+elif [ -n "${XDG_STATE_HOME:-}" ]; then
+  MESTO=$XDG_STATE_HOME/flang/tutor
+elif [ -n "${HOME:-}" ]; then
+  MESTO=$HOME/.local/state/flang/tutor
+fi
+
+prochitat_mesto() {
+  [ -n "$MESTO" ] && [ -f "$MESTO" ] || { echo 0; return; }
+  z=$(head -1 "$MESTO" 2>/dev/null | tr -dc '0-9')
+  [ -n "$z" ] || z=0
+  echo "$z"
+}
+zapisat_mesto() { # номер пройденного
+  [ -n "$MESTO" ] || return 0
+  mkdir -p "$(dirname "$MESTO")" 2>/dev/null || return 0
+  printf '%s\n' "$1" > "$MESTO" 2>/dev/null || return 0
+}
+
+[ "$REZHIM" = snachala ] && zapisat_mesto 0
+if [ -z "$NACHAT" ]; then
+  NACHAT=$(($(prochitat_mesto) + 1))
+fi
+case $NACHAT in
+  ''|*[!0-9]*) skazat "flangtutor: номер урока — число, а не «$NACHAT»" >&2; exit 2 ;;
+esac
+[ "$NACHAT" -ge 1 ] || NACHAT=1
+if [ "$NACHAT" -gt "$VSEGO" ]; then
+  skazat "$(ryadom "все $VSEGO уроков уже пройдены. Начать заново: ./flangtutor --сначала" \
+                   "all $VSEGO lessons are already done. Start over: ./flangtutor --restart")"
+  exit 0
+fi
+
+RAB=${FLANG_TMP:-${TMPDIR:-/tmp}}/flangtutor.$$
+mkdir -p "$RAB" || { skazat "$(ryadom "негде разложить ответ: $RAB" "nowhere to put the answer: $RAB")" >&2; exit 3; }
+trap 'rm -rf "$RAB"' EXIT INT TERM
+
+# ── что говорит компилятор об ответе ────────────────────────────────────────
+# Возвращает 0, если ответ сошёлся; иначе печатает, ЧТО именно не сошлось,
+# словами компилятора, а не своими.
+sudit() { # файл урока, файл ответа
+  u=$1; otvet=$2
+  cat "$otvet" > "$RAB/urok.flang"
+  printf '\n' >> "$RAB/urok.flang"
+  razdel "$u" хвост >> "$RAB/urok.flang"
+
+  if ! LC_ALL=C.UTF-8 "$BIN" check "$RAB/urok.flang" > "$RAB/check.out" 2>&1; then
+    skazat "$(ryadom 'компилятор не принял ответ:' 'the compiler did not accept the answer:')"
+    sed "s|$RAB/urok.flang|$(ryadom 'ваш ответ' 'your answer')|g" "$RAB/check.out"
+    return 1
+  fi
+
+  nado=$(razdel "$u" примеров | head -1 | tr -dc '0-9')
+  [ -n "$nado" ] || nado=0
+  if [ "$nado" -gt 0 ]; then
+    LC_ALL=C.UTF-8 "$BIN" test "$RAB/urok.flang" > "$RAB/test.out" 2>&1
+    est=$(sed -n 's/.*примеров \([0-9]*\),.*/\1/p' "$RAB/test.out" | head -1)
+    [ -n "$est" ] || est=0
+    if [ "$est" -lt "$nado" ]; then
+      skazat "$(ryadom "компилятор насчитал примеров: $est, а урок просит хотя бы $nado" \
+                       "the compiler counted $est example(s); the lesson asks for at least $nado")"
+      return 1
+    fi
+  fi
+
+  zhdem=$(razdel "$u" ждём | head -1)
+  vyshlo=$(LC_ALL=C.UTF-8 "$BIN" run "$RAB/urok.flang" --function '«Проверка урока»' 2>&1)
+  if [ "$vyshlo" != "$zhdem" ]; then
+    skazat "$(ryadom "проверка урока ждала $zhdem, а вышло:" "the lesson check expected $zhdem, and got:")"
+    printf '%s\n' "$vyshlo" | sed "s|$RAB/urok.flang|$(ryadom 'ваш ответ' 'your answer')|g"
+    return 1
+  fi
+
+  otchet=$(razdel "$u" отчёт | head -1)
+  if [ -n "$otchet" ]; then
+    LC_ALL=C.UTF-8 "$BIN" check "$RAB/urok.flang" --proof > "$RAB/proof.out" 2>&1
+    if ! grep -q -- "$otchet" "$RAB/proof.out"; then
+      skazat "$(ryadom "в отчёте о доказательствах нет строки «$otchet». Отчёт говорит:" \
+                       "the proof report has no line «$otchet». It says:")"
+      sed -n '/^итог:/,$p' "$RAB/proof.out" | sed "s|$RAB/urok.flang|$(ryadom 'ваш ответ' 'your answer')|g"
+      return 1
+    fi
+  fi
+  return 0
+}
+
+# ── работа ──────────────────────────────────────────────────────────────────
+skazat ""
+skazat "${ZHIRNYY}$(ryadom "flangtutor — проводник по языку flang" "flangtutor — a guided tour of flang")${GOLYY}"
+skazat "$(ryadom "уроков $VSEGO; место запоминается, продолжить можно в любой день." \
+                 "$VSEGO lessons; your place is kept, come back any day.")"
+if [ -n "$NET_UROKOV_NA" ]; then
+  skazat "$(ryadom "уроков на «$NET_UROKOV_NA» пока нет — веду по-английски." \
+                   "no lessons in «$NET_UROKOV_NA» yet — going on in English.")"
+fi
+[ -n "$MESTO" ] || skazat "$(ryadom "место не запоминается: FLANG_TUTOR_STATE выключил запись." \
+                                    "your place is not being kept: FLANG_TUTOR_STATE turned it off.")"
+
+KONEC_NA=$VSEGO
+[ "$TOLKO" = да ] && KONEC_NA=$NACHAT
+
+NOMER=$NACHAT
+while [ "$NOMER" -le "$KONEC_NA" ]; do
+  U=$(urok_fajl "$NOMER")
+  skazat ""
+  skazat "${ZHIRNYY}$(ryadom "урок $NOMER из $VSEGO" "lesson $NOMER of $VSEGO") · $(razdel "$U" "имя-$YAZYK")${GOLYY}"
+  skazat ""
+  razdel "$U" "текст-$YAZYK"
+  skazat ""
+  skazat "${TUSKLYY}$(ryadom "Наберите ответ целиком, начиная со строки «модуль «Урок»». Конец ответа — строка из одной точки." \
+                              "Type the whole answer, starting with the line «модуль «Урок»». End it with a line holding a single dot.")${GOLYY}"
+  skazat "${TUSKLYY}$(ryadom ".ответ — показать разбор урока; .бросить — выйти, место запомнится." \
+                              ".answer — show a worked answer; .quit — leave, your place is kept.")${GOLYY}"
+
+  SOSHLOS=нет
+  while [ "$SOSHLOS" = нет ]; do
+    : > "$RAB/otvet.flang"
+    PUSTO=да
+    KONEC_VVODA=нет
+    printf '%s' '» '
+    # Конец ввода ловится ЗДЕСЬ, а не по коду цикла: у `while` код возврата —
+    # это код последней команды тела, и на кончившемся вводе он был бы нулём.
+    while IFS= read -r STROKA || { KONEC_VVODA=да; [ -n "$STROKA" ]; }; do
+      case $STROKA in
+        .|.готово|.done) break ;;
+        .ответ|.answer)
+          skazat ""
+          razdel "$U" ответ
+          skazat ""
+          : > "$RAB/otvet.flang"; PUSTO=да
+          printf '%s' '» '
+          continue ;;
+        .бросить|.quit|.выход|.exit)
+          skazat "$(ryadom "остановились на уроке $NOMER. Продолжить: ./flangtutor" \
+                           "stopped at lesson $NOMER. Continue with: ./flangtutor")"
+          exit 0 ;;
+      esac
+      printf '%s\n' "$STROKA" >> "$RAB/otvet.flang"
+      [ -n "$STROKA" ] && PUSTO=нет
+      printf '%s' '» '
+    done
+    skazat ""
+
+    if [ "$PUSTO" = да ]; then
+      if [ "$KONEC_VVODA" = да ]; then
+        skazat "$(ryadom "ввод кончился, а урок $NOMER не пройден." "input ended, and lesson $NOMER is not done.")" >&2
+        exit 1
+      fi
+      skazat "$(ryadom "ответ пуст — наберите его и закончите строкой из одной точки." \
+                       "the answer is empty — type it and finish with a line holding a single dot.")"
+      continue
+    fi
+
+    if sudit "$U" "$RAB/otvet.flang"; then
+      SOSHLOS=да
+    elif [ "$KONEC_VVODA" = да ]; then
+      skazat "$(ryadom "ввод кончился, а урок $NOMER не пройден." "input ended, and lesson $NOMER is not done.")" >&2
+      exit 1
+    else
+      skazat "$(ryadom "попробуйте ещё раз." "try again.")"
+    fi
+  done
+
+  skazat "${ZHIRNYY}$(ryadom "урок $NOMER пройден: ответ проверил сам компилятор." \
+                              "lesson $NOMER done: the compiler itself checked the answer.")${GOLYY}"
+  zapisat_mesto "$NOMER"
+  NOMER=$((NOMER + 1))
+done
+
+skazat ""
+if [ "$KONEC_NA" -lt "$VSEGO" ]; then
+  skazat "$(ryadom "дальше урок $((KONEC_NA + 1)) из $VSEGO: ./flangtutor" \
+                   "next is lesson $((KONEC_NA + 1)) of $VSEGO: ./flangtutor")"
+  exit 0
+fi
+skazat "${ZHIRNYY}$(ryadom "все $VSEGO уроков пройдены." "all $VSEGO lessons are done.")${GOLYY}"
+skazat "$(ryadom "дальше: flang repl — набирать язык руками; docs/course — курс подробнее." \
+                 "next: flang repl to type the language by hand; docs/course for a longer course.")"
+exit 0

@@ -3297,10 +3297,66 @@ static void repl_library_places(repl_strings *places) {
   free(self_dir);
 }
 
+/*
+ * ПРЕДЕЛ ПОДЪЁМА: `FLANG_MODULE_ROOT` называет каталог, выше которого поиск
+ * модуля не идёт.
+ *
+ * ЗАЧЕМ. Подъём вверх обрывается одним условием — каталогом без единого
+ * `.flang`, — и потому выходит ЗА ПРЕДЕЛЫ дерева всюду, где цепочка каталогов
+ * наверх не прерывается. В корне дерева лежит `ярлыки.flang`, значит цепочка не
+ * прерывается, и соседний черновик из общей рабочей зоны подменяет модуль языка
+ * целиком: замер 8 сентября 2026 — `flang check scripts/releases.flang` берёт
+ * «JSON» из `/srv/tmp/json.baseline.flang`, отвечает «замечаний нет» и кодом 0
+ * (задача 3127). Дважды это уже стоило дереву времени: час поиска изъяна языка,
+ * которого нет (24 августа), и перепечатка на 27 ч 41 мин, отвергнутая 7595
+ * замечаниями (27–28 августа).
+ *
+ * ПОЧЕМУ ПЕРЕМЕННАЯ СРЕДЫ, А НЕ КЛЮЧ КОМАНДНОЙ СТРОКИ. Поиск модуля общий для
+ * всех тринадцати команд, и `flang lsp` с `--mcp-mode` доводов от человека не
+ * получают вовсе — ключу там неоткуда взяться. Рядом, в этом же поиске, уже
+ * стоит `FLANG_MODULE_DIR` (`repl_library_places`): предел подъёма — тот же род
+ * настройки, читается в том же месте и тем же способом, и не заводит ни нового
+ * слова языка, ни новой строки в справке, ни записи в долге ключей.
+ *
+ * НЕ НАЗВАН — ВЕДЁТ СЕБЯ КАК ПРЕЖДЕ. Названный несуществующий каталог берётся
+ * как написан: `realpath` от него отказывает, и тогда предел не отменяется, а
+ * просто не совпадёт ни с одним каталогом — поиск остановится сразу, а не
+ * молча вернётся к подъёму до корня файловой системы.
+ */
+static char *repl_module_root(void) {
+  const char *named = getenv("FLANG_MODULE_ROOT");
+  char *real = NULL;
+  if (named == NULL || named[0] == '\0') {
+    return NULL;
+  }
+  real = realpath(named, NULL);
+  return real == NULL ? repl_say(named) : real;
+}
+
+/** Лежит ли каталог внутри названного корня (сам корень — лежит). */
+static bool repl_within_root(const char *root, const char *dir) {
+  char *real = NULL;
+  size_t bytes = 0;
+  bool inside = false;
+  if (root == NULL) {
+    return true;
+  }
+  real = realpath(dir, NULL);
+  if (real == NULL) {
+    return false;
+  }
+  bytes = strlen(root);
+  inside = strncmp(real, root, bytes) == 0 &&
+           (real[bytes] == '\0' || real[bytes] == '/' || (bytes == 1 && root[0] == '/'));
+  free(real);
+  return inside;
+}
+
 /** Все места для файла `importer`, в порядке просмотра. */
 static void repl_places_of(const char *importer, repl_strings *places) {
   char *directory = repl_dirname(importer);
   char *walk = repl_say(directory);
+  char *root = repl_module_root();
   for (;;) {
     char *up = NULL;
     if (!strings_has(places, walk, strlen(walk))) {
@@ -3315,7 +3371,11 @@ static void repl_places_of(const char *importer, repl_strings *places) {
     if (!repl_dir_has_flang(walk)) {
       break;
     }
+    if (!repl_within_root(root, walk)) {
+      break;
+    }
   }
+  free(root);
   free(walk);
   free(directory);
   repl_library_places(places);
@@ -16381,7 +16441,9 @@ static bool pkg_ledger(fl_value program, const repl_strings *own, repl_buf *out)
   if (repl_call("Элементы поля", args, 2, &obligations) != FL_OK || obligations.tag != FL_LIST) {
     return false;
   }
-  if (repl_call("Прогоны для ядра", &program, 1, &runs) != FL_OK) {
+  args[0] = program;
+  args[1] = obligations;
+  if (repl_call("Прогоны для ядра", args, 2, &runs) != FL_OK) {
     return false;
   }
   args[0] = program;

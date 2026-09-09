@@ -1913,6 +1913,10 @@ fl_status compiler_flang_sozdat_sbor_dovodov_zapisi(fl_ctx *ctx, fl_value i, fl_
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_poisk_stroki_zapisi(fl_ctx *ctx, fl_value schyot, fl_value nomer, fl_value *out, fl_error *error);
 
+/* Запись FTS «Поиск требования записи»: «этап», «счёт», «номер». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_poisk_trebovaniya_zapisi(fl_ctx *ctx, fl_value etap, fl_value schyot, fl_value nomer, fl_value *out, fl_error *error);
+
 /* Запись FTS «Поиск примера записи»: «этап», «счёт», «номер». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_poisk_primera_zapisi(fl_ctx *ctx, fl_value etap, fl_value schyot, fl_value nomer, fl_value *out, fl_error *error);
@@ -17295,7 +17299,7 @@ fl_status compiler_flang_hvostovoy_cikl(fl_ctx *ctx, fl_value argumenty, fl_valu
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param skolko — «сколько»: «нат»
+ * @param skolko — «сколько»: «неотрицательное»
  * @return значение: строка
  */
 fl_status compiler_flang_probely(fl_ctx *ctx, fl_value skolko, fl_value *result, fl_error *error);
@@ -68463,6 +68467,29 @@ fl_status compiler_flang_nomer_trebovaniya_zapisi(fl_ctx *ctx, fl_value stroki, 
 fl_status compiler_flang_imya_trebovaniya_zapisi(fl_ctx *ctx, fl_value stroka, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Шаг поиска требования записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param v — «в»: «Поиск требования записи»
+ * @param stroka — «строка»: строка
+ * @param funkciya — «функция»: строка
+ * @param fakt — «факт»: строка
+ * @return значение: «Поиск требования записи»
+ */
+fl_status compiler_flang_shag_poiska_trebovaniya_zapisi(fl_ctx *ctx, fl_value v, fl_value stroka, fl_value funkciya, fl_value fakt, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Номер требования функции записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param funkciya — «функция»: строка
+ * @param fakt — «факт»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_nomer_trebovaniya_funkcii_zapisi(fl_ctx *ctx, fl_value stroki, fl_value funkciya, fl_value fakt, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Это заголовок функции записи».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -69692,7 +69719,7 @@ fl_status compiler_flang_sravnit_znacheniya_zapisi(fl_ctx *ctx, fl_value otnoshe
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param syroy — «сырой»: строка
- * @param goryuchee — «горючее»: «нат»
+ * @param goryuchee — «горючее»: «неотрицательное»
  * @return значение: «Значение записи вычислителя»
  */
 fl_status compiler_flang_znachenie_terma_zapisi(fl_ctx *ctx, fl_value syroy, fl_value goryuchee, fl_value *result, fl_error *error);
@@ -69787,7 +69814,7 @@ fl_status compiler_flang_hod_vychisleniya_storony_zapisi(fl_ctx *ctx, fl_value c
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param cel — «цель»: строка
- * @param goryuchee — «горючее»: «нат»
+ * @param goryuchee — «горючее»: «неотрицательное»
  * @return значение: «План разбора записи»
  */
 fl_status compiler_flang_reshit_cel_zapisi(fl_ctx *ctx, fl_value cel, fl_value goryuchee, fl_value *result, fl_error *error);
@@ -69879,6 +69906,17 @@ fl_status compiler_flang_pravilo_razbora_celi_zapisi(fl_ctx *ctx, fl_value pravi
  * @return значение
  */
 fl_status compiler_flang_telo_planirovschiku_po_silam_zapisi(fl_ctx *ctx, fl_value telo, fl_value utverzhdenie, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ходы допущением постусловия записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obyazatelstvo — «обязательство»: «Значение»
+ * @param stroki — «строки»: список: строка
+ * @param funkciya — «функция»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hody_dopuscheniem_postusloviya_zapisi(fl_ctx *ctx, fl_value obyazatelstvo, fl_value stroki, fl_value funkciya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Ходы разбора цели постусловия записи».

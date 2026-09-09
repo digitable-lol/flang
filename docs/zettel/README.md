@@ -280,9 +280,8 @@
 
 ## Интерфейс инструмента
 
-- [Номер выпуска не отвечает на вопрос «что у меня в руках»: два двоичных 0.7.14 вели себя по-разному, и отличить их можно было только по поведению](the-release-number-cannot-say-what-is-inside-the-binary.md)
-- [Оболочка читала строку каноническим fgets, и стрелку печатал терминал, а не она; клавиш flang-tui не разбирает, а файл оболочки уезжает в семя дословно — правка доезжает быстрым пересевом](the-shell-read-the-line-with-fgets-and-the-terminal-printed-the-arrow.md)
 - [Знак сайта на 24 пикселях держит одну строку брусков, а не две — и видно это только на растре в натуральную величину](a-24-pixel-mark-holds-one-row-not-two.md)
+- [Клавиша, которую не нажимает ни одна проверка, — это обещание справки, а не поведение](a-key-no-probe-presses-is-a-promise-not-a-behaviour.md)
 - [Идущая программа сама пишет, где она](a-running-program-writes-its-own-pulse-to-a-file.md)
 - [Сообщение, объясняющее устройство инструмента, читается как поломка — и признак у таких сообщений всего три](a-tool-that-explains-itself-instead-of-the-persons-work.md)
 - [Числовой код выхода нельзя вывести из именованного кода отказа — его берут из природы беды](an-exit-code-cannot-come-from-a-named-failure.md)
@@ -301,6 +300,7 @@
 - [Функция, названную которой печатает отказ при исчерпании предела, — не та, где уходит время](the-function-named-when-the-limit-runs-out-is-not-where-the-time-goes.md)
 - [Двоичный файл — подмножество языка, и подмножество обязано называть себя, а не отвечать «неизвестная команда»](the-installed-binary-is-a-named-subset.md)
 - [Путь установки не проходил целиком никто, и потому `flang emit --target c` не работал НИ У ОДНОГО поставившего язык](the-installed-path-was-never-walked-end-to-end.md)
+- [Номер выпуска не отвечает на вопрос «что у меня в руках»: два двоичных 0.7.14 вели себя по-разному, и отличить их можно было только по поведению](the-release-number-cannot-say-what-is-inside-the-binary.md)
 - [Оболочка читала строку каноническим fgets, и стрелку печатал терминал, а не она; клавиш flang-tui не разбирает, а файл оболочки уезжает в семя дословно — правка доезжает быстрым пересевом, не перепечаткой](the-shell-read-the-line-with-fgets-and-the-terminal-printed-the-arrow.md)
 - [Два плана postgres держит не предел шагов, а стек хозяина: 1 ГиБ и 2 074 970 кадров, и ключами это не двигается](two-postgres-plans-are-held-by-the-host-stack-not-the-step-limit.md)
 
@@ -500,6 +500,7 @@
 - [Точный шаг по `нат` доказывает только ПРЯМУЮ рекурсию: цикл через три функции ядро отвергает](an-exact-step-proves-only-direct-recursion.md)
 - [Промежуточный факт открыл дверь, а взять через неё в библиотеке нечего: 1545 цепочек, ноль](an-intermediate-fact-opened-a-door-with-nothing-behind-it.md)
 - [Пакет npm нельзя унести из корня в подкаталог: он уедет пустым, а не подорожает](an-npm-package-cannot-move-out-of-the-root-into-a-subdirectory.md)
+- [Открытое место — это всегда место, на котором ПЕЧАТНИК ПРОМОЛЧАЛ, а не место, которого не умеет чекер](an-open-place-is-always-one-the-printer-stayed-silent-on.md)
 - [Открытая труба стандартного ввода — это не «ввода нет», а «ввод будет позже», и потомок ждёт до срока хозяина](an-open-stdin-pipe-means-input-later-not-no-input.md)
 - [Поток, который нечем разметить по границам, дочитывается завершителем фазы, а не разбором](an-unframeable-stream-is-drained-by-the-phase-finalizer-not-the-parser.md)
 - [Модуль, не подключённый ни к чему, копит имена, которые уже заняты, — и подключить его потом нельзя](an-unlinked-module-collects-names-that-are-already-taken.md)
@@ -611,11 +612,13 @@
 - [Печать в C и в Python выводит двунаправленные управляющие сырыми — в комментарий шапки](printing-to-c-and-python-emits-bidirectional-controls-raw.md)
 - [Печать в C ищет исходники рантайма рядом с ДВОИЧНЫМ, и в дереве репозитория это работает по совпадению раскладки](printing-to-c-looks-for-runtime-sources-next-to-the-binary.md)
 - [Втаскивание модуля в самоприменённый компилятор стоит не по размеру модуля, а по числу столкновений имён с уже втащенными](pulling-a-module-into-the-self-hosted-compiler-pays-for-meetings-not-size.md)
+- [Разбор цели по условию закрывает места, но доли не двигает](razbor-tseli-mimo-chislitelya.md)
 - [Отпечаток, снятый заново, делает красное зелёным, не перепечатав ни байта](re-taking-a-fingerprint-turns-red-green-without-reprinting.md)
 - [Заявленных чисел о дереве 1693 строки в 89 файлах, и делятся они на три кучи: перемеряемое за минуту, перемеряемое за часы и не перемеряемое никогда](recount-claimed-numbers-have-three-kinds-and-only-one-can-be-rechecked.md)
 - [У общего двоичного нет воспроизводимой родословной: время сборки известно, дерево — нет, а называемый коммит на два часа его моложе](recount-the-shared-binary-has-no-reproducible-pedigree.md)
 - [Рефлексивности `а не больше а` над типом `число` у сегодняшнего двоичного нет, и закрывает она не только себя](reflexivity-over-the-number-type-is-missing-and-that-is-what-closes-the-fold-principle.md)
 - [«Вынут из решения» и «вынут из загрузки» — два разных события, и второе бывает дороже первого](removed-from-the-decision-and-removed-from-the-load-are-two-events.md)
+- [Снятый в одном месте прувер-переписыватель немедленно переезжает в другое](removing-the-rewriting-prover-from-one-place-moves-it-to-another.md)
 - [Переименовать заметку стоит не переименования, а правки ссылающихся: 191 имя потянуло 443 ссылки в 234 файлах](renaming-a-note-costs-the-referrers-not-the-rename.md)
 - [Кэш перепечатки по отпечатку неверен не редко, а по устройству: зависимость идёт ВВЕРХ по ввозам, а ключ смотрит вниз](reprint-cache-key-cannot-name-the-dependency-that-exists.md)
 - [Прогон примеров по каталогу копит память до 44 ГиБ и гибнет от нехватки, а тот же корпус по одному файлу проходит за 19 минут малой памятью](running-examples-by-directory-accumulates-memory-by-file-does-not.md)
@@ -714,6 +717,7 @@
 - [Из семи утверждений, которые ядро доказывало в трёх строковых модулях, пять оказались даровыми — ядро берёт ровно тот класс, который переживает подмену тела заглушкой](what-the-kernel-proves-is-almost-exactly-what-is-gratis.md)
 - [Запись ответов свидетеля снимается ДО удаления, и замораживать надо не только ответы, но и список входов](witness-answers-must-be-recorded-before-the-deletion.md)
 - [Разбиение имени на слова в эталонах печати сделано таблицей ASCII, а у свидетеля — классами Юникода, и на любой не-кириллической букве они расходятся](word-splitting-is-ascii-in-flang-and-unicode-in-the-witness.md)
+- [Подделочная программа и лгущая запись — разные вещи, и в знаменатель они идут по-разному](подделка-и-подделочная-запись-это-разные-вещи.md)
 
 ## Как добавлять
 

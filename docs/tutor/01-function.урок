@@ -1,0 +1,73 @@
+=номер=
+1
+=имя-ru=
+Модуль, функция, вызов
+=имя-en=
+A module, a function, a call
+=текст-ru=
+Программа на flang — это модуль, а в модуле функции.
+
+    модуль «Урок»
+
+    тотальная функция «Удвоить»
+      принимает х: число
+      возвращает число
+      х умножить на 2
+
+Первая строка называет модуль. Дальше идут функции, и порядок частей у функции
+закреплён: сначала «принимает» и «возвращает» — типы обязательны, — потом тело,
+одной формой, последним.
+
+Слово «тотальная» — обещание: функция заканчивает работу на любом входе.
+Компилятор это обещание проверяет и откажет, если доказать не сможет.
+
+Имена функций и типов стоят в ёлочках, а вызов пишется словом «от»:
+
+    «Удвоить» от 21
+
+ЗАДАНИЕ. Напишите модуль «Урок», а в нём тотальную функцию «Удвоить»:
+принимает х: число, возвращает число, тело — «х умножить на 2».
+=текст-en=
+A flang program is a module, and a module holds functions.
+
+    модуль «Урок»
+
+    тотальная функция «Удвоить»
+      принимает х: число
+      возвращает число
+      х умножить на 2
+
+The first line names the module. Then come the functions, and the order of the
+parts is fixed: "принимает" (accepts) and "возвращает" (returns) first — types
+are required — and the body last, as a single form.
+
+The word "тотальная" (total) is a promise: the function finishes on every input.
+The compiler checks that promise and refuses if it cannot prove it.
+
+Names of functions and types are written in « », and a call uses "от" (of):
+
+    «Удвоить» от 21
+
+The same words also exist in English, and mixing them is allowed: "модуль" is
+also "module", "тотальная функция" is "total функция", "принимает" is "accepts",
+"возвращает" is "returns". Names in « » are never translated.
+
+YOUR TASK. Write a module «Урок» holding a total function «Удвоить»: it accepts
+х of type число (number), returns число, and its body is "х умножить на 2"
+(х times 2).
+=ответ=
+модуль «Урок»
+
+тотальная функция «Удвоить»
+  принимает х: число
+  возвращает число
+  х умножить на 2
+=хвост=
+тотальная функция «Проверка урока»
+  возвращает число
+  «Удвоить» от 21
+=ждём=
+42
+=примеров=
+0
+=отчёт=

@@ -200,6 +200,7 @@ def answers(raw):
 ESC = b'\x1b'
 HOME, END, UP = ESC + b'[H', ESC + b'[F', ESC + b'[A'
 CTRL_LEFT, ALT_B, CTRL_U, BACKSPACE, TAB = ESC + b'[1;5D', ESC + b'b', b'\x15', b'\x7f', b'\t'
+CTRL_L = b'\x0c'
 answer_wait = 8.0
 beda = 0
 
@@ -221,6 +222,23 @@ if b'\x1b[1;38;2;245;247;250m5' not in out:
     print('pty: ответ 5 не выкрашен белым полужирным (палитра digitable)'); beda = 1
 if beda == 0:
     print('  зелен  pty: Home/End/Backspace/↑/⌥b/Ctrl-←/Ctrl-U сработали, ответы 5, 5, 9')
+
+# ── Ctrl-L: экран чистится, а набранное остаётся на месте ──
+# Клавиша работает с задачи 3636, но проба её не нажимала ни разу, и обещание
+# справки («Ctrl-L очистить экран») ничем не держалось: пропади разбор байта
+# 0x0c — покраснеть было бы нечему. Судятся обе половины обещания сразу:
+# ЭКРАН ЧИСТИТСЯ (последовательность 2J) и СТРОКА НЕ ТЕРЯЕТСЯ (набранное до
+# нажатия перерисовано после очистки и досчитывается до ответа).
+out = run({}, [('4 плюс'.encode(), 0.3), (CTRL_L, 0.6), (' 4'.encode(), 0.3), (b'\r', answer_wait)])
+open(os.path.join(rab, 'pty-ctrl-l.out'), 'wb').write(out)
+if b'\x1b[2J' not in out:
+    print('pty: Ctrl-L не очистил экран — последовательности 2J в выводе нет'); beda = 1
+elif '4 плюс' not in strip(out[out.rindex(b'\x1b[2J') + 4:]):
+    print('pty: после Ctrl-L набранное не перерисовано — строка потеряна вместе с экраном'); beda = 1
+if answers(out) != ['8']:
+    print('pty: после Ctrl-L ответ', answers(out), 'ждали [8] — набранное до очистки не досчиталось'); beda = 1
+if beda == 0:
+    print('  зелен  pty: Ctrl-L очистил экран и вернул набранное на место, ответ 8')
 
 # ── вставка, дополнение по Tab, справка о сборке, очистка экрана ──
 history = os.path.join(rab, 'history')

@@ -1,0 +1,65 @@
+=номер=
+3
+=имя-ru=
+Список и свёртка
+=имя-en=
+A list and a fold
+=текст-ru=
+Список пишется в квадратных скобках: [2, 3, 5]. Пустой список так и зовётся —
+«пустой список». Тип списка чисел записывается «список числа».
+
+Обойти список ровно один раз — это «свёртка»:
+
+    свёртка числа начиная с 0 как акк и эл
+      акк плюс эл
+
+Читается так: идём по списку «числа», начинаем с 0, на каждом шаге у нас есть
+накопленное «акк» и очередной элемент «эл», а строка ниже говорит, чем станет
+накопленное. Свёртка заканчивается всегда: список конечен, а обход один.
+
+Изменить элемент списка нельзя — можно только построить новый список. Имя,
+связанное словом «пусть», связывается один раз и не меняется.
+
+ЗАДАНИЕ. Напишите модуль «Урок», а в нём тотальную функцию «Сумма»: принимает
+числа: список числа, возвращает число, отдаёт сумму всех элементов. На пустом
+списке — 0.
+=текст-en=
+A list is written in square brackets: [2, 3, 5]. The empty list is called
+"пустой список". The type of a list of numbers is written "список числа".
+
+Walking a list exactly once is a fold, "свёртка":
+
+    свёртка числа начиная с 0 как акк и эл
+      акк плюс эл
+
+Read it as: walk the list "числа", start from 0, at each step we hold the
+accumulated "акк" and the current element "эл", and the line below says what the
+accumulated value becomes. A fold always finishes: the list is finite and it is
+walked once.
+
+You cannot change an element of a list — you can only build a new list. A name
+bound by "пусть" (let) is bound once and does not change.
+
+YOUR TASK. Write a module «Урок» holding a total function «Сумма»: it accepts
+числа of type "список числа" (list of numbers), returns число, and gives back
+the sum of all elements. On the empty list the answer is 0.
+=ответ=
+модуль «Урок»
+
+тотальная функция «Сумма»
+  принимает числа: список числа
+  возвращает число
+  пример «пусто — ноль»
+    дано числа равно пустой список
+    ожидается 0
+  свёртка числа начиная с 0 как акк и эл
+    акк плюс эл
+=хвост=
+тотальная функция «Проверка урока»
+  возвращает число
+  «Сумма» от [2, 3, 5]
+=ждём=
+10
+=примеров=
+0
+=отчёт=

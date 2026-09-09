@@ -535,7 +535,7 @@ perepis() {
           flang/src/emit/*)         k="рантайм цели печати" ;;
           flang/conc/bin/node.*)    k="хозяин узла на цели" ;;
           benchmarks/*|examples/host-boundary/*) k="замеряемый материал" ;;
-          editors/*|packaging/homebrew/*|docs/site/poisk.js|docs/site/poisk-proverka.mjs|web/wasm/probe.mjs|scripts/wasm-run.mjs)
+          editors/*|packaging/homebrew/*|docs/site/poisk.js|docs/site/poisk-proverka.mjs|web/wasm/probe.mjs)
                                     k="чужая среда" ;;
           *)                        k="ДОЛГ" ;;
         esac

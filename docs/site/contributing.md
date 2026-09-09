@@ -31,8 +31,8 @@ The built binary is what you run from then on:
 bootstrap/flang check examples/rosetta/towers-of-hanoi.flang
 ```
 
-The package declares zero dependencies: `npm install` has nothing to fetch. Only
-the language server runs on Node — `node flang/bin/flang-lsp.mjs`.
+Nothing here runs on Node: the language server ships inside the same binary —
+`flang lsp --stdio` (see [the editor page](editor.html)).
 
 ## Run the checks
 

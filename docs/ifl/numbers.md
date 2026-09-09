@@ -155,11 +155,11 @@ SPEC отдельным коммитом — к подаче оно отноше
 
 | Утверждение | Как проверено |
 |---|---|
-| у бэкенда JS нет ни предела шагов, ни предела глубины, ни `FLANG_RECURSION_LIMIT`; у остальных семи всё три есть | раздел 4 `docs/ifl/reproduce.sh` — печатает «Вечно» во все восемь целей и ищет счётчики в тексте |
-| признано самим бэкендом | `flang/src/emit/js.mjs:52-57` |
-| конкурентность печатают 2 цели из 8 | `grep -l '\.processes' flang/src/emit/*.mjs` → `c.mjs`, `elixir.mjs` |
-| остальные шесть выбрасывают процессы молча, код возврата 0 | `for t in go rust python java csharp js; do bootstrap/flang emit flang/conc/examples/budget.flang --target $t >/dev/null; echo "$t код=$?"; done` |
-| замкнутое множество отказов — пять видов | `node -e 'import("./flang/src/failures.mjs").then(м => console.log(Object.values(м.КОДЫ_ОТКАЗА)))'` |
+| у бэкенда JS нет ни предела шагов, ни предела глубины, ни `FLANG_RECURSION_LIMIT`; у остальных семи всё три есть | раздел 4 `docs/ifl/reproduce.sh` — печатает «Вечно» во все восемь целей и ищет счётчики в тексте. **Опровергнуто** (см. врезку выше): 9 сентября 2026 `FLANG_RECURSION_LIMIT` печатает и JS — `flang/self/emit-js.flang:2362`, `:3887` |
+| признано самим бэкендом | было `flang/src/emit/js.mjs:52-57`; файла нет с 20 августа 2026 (`fe8e8a37`), в `flang/self/emit-js.flang` признания нет — пределы стоят |
+| конкурентность печатают 2 цели из 8 | было `grep -l '\.processes' flang/src/emit/*.mjs` → `c.mjs`, `elixir.mjs`. 9 сентября 2026: `grep -l '"processes"' flang/self/emit-*.flang` → **семь из десяти** (`c`, `cpp`, `elixir`, `go`, `js`, `java`, `rust`) |
+| остальные шесть выбрасывают процессы молча, код возврата 0 | `for t in go rust python java csharp js; do bootstrap/flang emit flang/conc/examples/budget.flang --target $t >/dev/null; echo "$t код=$?"; done` — число «шесть» устарело вместе со строкой выше |
+| замкнутое множество отказов — пять видов | было `node -e 'import("./flang/src/failures.mjs")…'`. 9 сентября 2026: «Коды отказа», `flang/self/failures.flang:192`, постусловие «кодов отказа ровно **одиннадцать**» |
 | `FLANG_MEMORY` рантайм C выдаёт, а в множестве его нет | `grep -n FL_CODE_MEMORY flang/src/emit/c/flang_runtime.h` (строка 228) плюс проверка вхождения в множество — раздел 4 скрипта |
 | в C сторож глубины — счётчик кадров на стеке главного потока; семь остальных целей заводят поток с большим стеком | `grep -n 'pthread\|setrlimit\|RLIMIT_STACK' flang/src/emit/c/*.c` (пусто) против `flang/src/emit/rust/flang_cli.rs:34-51`, `flang/src/emit/java/Flang.java:50,72`, `flang/src/emit/csharp/Flang.cs:53,64`, `flang/src/emit/python/flang_runtime.py:439,456-479` |
 | рабочего параллельного режима на потоках ОС нет | `flang/conc/SPEC.md:12-15`, `flang/conc/SPEC.md:1549-1552`, `flang/conc/RESILIENCE.md:940-972`; `grep -rn pthread flang/src/emit/c/` пусто |

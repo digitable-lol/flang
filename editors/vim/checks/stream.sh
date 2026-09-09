@@ -52,8 +52,9 @@ else
   printf 'двоичный flang lsp: не собран (bootstrap/flang), замера нет\n'
 fi
 
-if command -v node > /dev/null 2>&1; then
-  zamer 'flang-lsp на Node' node "$koren/flang/bin/flang-lsp.mjs" --stdio
-else
-  printf 'flang-lsp на Node: node не найден, замера нет\n'
-fi
+# Второго сервера для сравнения больше нет: `flang/bin/flang-lsp.mjs` снят
+# 20 августа 2026 вместе с реализацией на JavaScript (`fe8e8a37`), обёртка
+# `flang-lsp` — вместе с npm 6 сентября (задача 8649). Числа сравнения того
+# дня записаны в README.md рядом; здесь строка печатается, чтобы вывод не
+# менял формы и не молчал о том, чего не померил.
+printf 'flang-lsp на Node: снят из дерева (fe8e8a37, задача 8649), замера нет\n'

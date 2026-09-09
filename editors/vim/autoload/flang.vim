@@ -21,11 +21,15 @@
 "   1. flang-lsp из PATH                    — пакет npm, поставленный глобально;
 "   2. node_modules/.bin/flang-lsp          — тот же пакет в этом проекте;
 "   3. flang-lsp рядом с самим редактором   — сборка «всё в одном каталоге»;
-"   4. flang/bin/flang-lsp.mjs в дереве     — работа над самим языком;
-"   5. flang lsp из PATH                    — ТОЛЬКО по явной просьбе
+"   4. flang lsp из PATH                    — ТОЛЬКО по явной просьбе
 "                                             (`let g:flang_dvoichnyy_lsp = 1`).
 "
-" Пункт 5 останется выключенным, пока двоичный не научится отвечать на лету.
+" Пункта «flang/bin/flang-lsp.mjs в дереве — работа над самим языком» больше
+" нет: файл снят 20 августа 2026 вместе с реализацией на JavaScript
+" (`fe8e8a37`), обёртка `flang-lsp` — вместе с npm 6 сентября (задача 8649);
+" искать его редактор перестал 9 сентября (задача 6201).
+"
+" Пункт 4 останется выключенным, пока двоичный не научится отвечать на лету.
 " Когда научится — проверка `scripts/lsp-check.flang` позеленеет, и пункт
 " можно будет поднять наверх: тогда Node для редактора станет не нужен.
 
@@ -79,11 +83,6 @@ function! flang#Server() abort
     return [l:sosed, '--stdio']
   endif
 
-  let l:derevo = s:VverhDo(l:ot, 'flang/bin/flang-lsp.mjs')
-  if !empty(l:derevo) && executable('node')
-    return [exepath('node'), l:derevo, '--stdio']
-  endif
-
   if get(g:, 'flang_dvoichnyy_lsp', 0) && executable('flang') && s:UmeetLsp(exepath('flang'))
     return [exepath('flang'), 'lsp', '--stdio']
   endif
@@ -102,11 +101,10 @@ endfunction
 function! flang#Pochemu() abort
   let l:stroki = [
         \ 'flang: языковой сервер не найден — подсказок и диагностики не будет.',
-        \ 'Искали четыре места:',
+        \ 'Искали три места:',
         \ '  1. flang-lsp из PATH                (npm install -g @digitable-lol/flang)',
         \ '  2. node_modules/.bin/flang-lsp      рядом с проектом',
         \ '  3. flang-lsp рядом с ' . s:Ryadom(),
-        \ '  4. flang/bin/flang-lsp.mjs в дереве языка (нужен node)',
         \ ]
   if flang#DvoichnyyEst()
     call add(l:stroki, 'Двоичный flang с подкомандой lsp рядом ЕСТЬ, но он не взят:')

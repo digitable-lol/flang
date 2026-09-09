@@ -16,7 +16,7 @@ show where the compiler stops speaking.
 | file | what it does | measured |
 |---|---|---|
 | [`spec/*.flang`](fspec/spec) | the specs themselves: the domain rules | 42 files <!-- СНЯТО 2026-09-08 файлов fspec/spec/*.flang = 42 -->, 140 examples of their own <!-- СНЯТО 2026-09-08 примеров-в fspec/spec/*.flang = 140 --> |
-| [`policy.flang`](fspec/policy.flang) | the acceptance rule, written in the language itself: what counts as proved, what "agrees with its predecessor" means, what "the content was not rewritten" means | 359 lines <!-- СНЯТО 2026-09-08 строк fspec/policy.flang = 359 --> |
+| [`policy.flang`](fspec/policy.flang) | the acceptance rule, written in the language itself: what counts as proved, what "agrees with its predecessor" means, what "the content was not rewritten" means | 361 lines <!-- СНЯТО 2026-09-09 строк fspec/policy.flang = 361 --> |
 | [`guard.flang`](fspec/guard.flang) | the plan: read the snapshot, find the specs, ask the compiler, name the trouble, set the exit code | 1583 lines <!-- СНЯТО 2026-09-08 строк fspec/guard.flang = 1583 -->, 138 examples <!-- СНЯТО 2026-09-08 примеров-в fspec/guard.flang = 138 --> |
 | [`snapshot.flang`](fspec/snapshot.flang) | the tooling: rewrite the snapshot from the current specs | 140 lines <!-- СНЯТО 2026-09-08 строк fspec/snapshot.flang = 140 --> |
 | [`snapshot.txt`](fspec/snapshot.txt) | the snapshot itself: one line per promise — file, function, name, goal | 100 lines <!-- СНЯТО 2026-09-08 строк fspec/snapshot.txt = 100 --> |

@@ -16,10 +16,18 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from tasks import TASKS  # noqa: E402
 
+# Ключевые слова русской поверхности — из таблицы самого лексера:
+# `flang/self/lexer.flang`, «Куски таблицы», строки вида `|фраза:идентификатор|…`.
+# До 20 августа 2026 они читались из `KEYWORDS` в `flang/src/lexer.mjs`; файл
+# снят вместе с реализацией на JavaScript (`fe8e8a37`), и путь к нему был
+# абсолютным путём чужой машины. Берутся фразы с кириллицей; записи вида
+# `понятие@ru:слово` из соседней таблицы отсеиваются по знаку `@`.
+ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 KEYWORDS = set()
-for m in re.finditer(r"ru:\s*\[([^\]]*)\]", open("/home/m/projects/flang-rest/flang/src/lexer.mjs", encoding="utf-8").read()):
-    for w in re.findall(r'"([^"]+)"', m.group(1)):
-        KEYWORDS.add(w)
+with open(os.path.join(ROOT, "flang", "self", "lexer.flang"), encoding="utf-8") as _f:
+    for phrase in re.findall(r'\|([^|:"]+):[A-Za-z][A-Za-z0-9]*(?=\|)', _f.read()):
+        if "@" not in phrase and re.search(r"[А-Яа-яЁё]", phrase):
+            KEYWORDS.add(phrase)
 
 
 def unexpected_word(rec):

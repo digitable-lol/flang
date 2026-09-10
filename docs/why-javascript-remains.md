@@ -23,8 +23,10 @@ flang io: непонятный ключ «--n=5»
 Держит: `word-occupancy.mjs`, `link-collision-guard.mjs` (зовётся `--дерево`),
 `proof-ledger.mjs` (`--pustota`), `word-guard.mjs` (`--porcha vse`),
 `build-changelog.mjs` (`--check`/`--self-test`), `build-changelog-page.mjs`,
-`discriminating-search.mjs`, `gen.mjs` (пять ключей), `work.mjs`, `wasm-run.mjs`,
-`flang-launch.mjs`.
+`gen.mjs` (пять ключей), `work.mjs`, `wasm-run.mjs`, `flang-launch.mjs`.
+Обход найден 10 сентября 2026 (задача 0049): режим — отдельный план, ключ —
+`--plan`. Так переписаны подлог сторожа слов («Подлог слов»), сверка журнала
+изменений («Журнал не отстал») и различающий поиск, `.mjs` которого снят.
 
 ## Дыра 2. «Удалить файл» и «завести каталог»: в словаре есть, в двоичном нет — держит 7 файлов
 

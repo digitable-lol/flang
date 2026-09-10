@@ -1986,7 +1986,7 @@ BW=flang/proof/examples/binder-wall-map.flang
 CL=flang/proof/examples/corpus-lists.flang
 FW=flang/proof/examples/four-words.flang
 LZ=$VV/порча/fold-and-product-lies.flang
-opyt C "Н7: счёт свёрткой под выбором (binder-wall-map)" 3 "$BW" "$RR/binder-wall-map.запись"
+opyt C "Н7: счёт свёрткой под выбором (binder-wall-map)" 0 "$BW" "$RR/binder-wall-map.запись"
 opyt C "Н7: счёт по условию под «для всех» (corpus-hof)" 3 "$HF" "$RR/corpus-hof-n7.запись"
 opyt C "Н7: счёт вхождений под «для всех» (corpus-lists)" 0 "$CL" "$RR/corpus-lists.запись"
 opyt C "Н8: произведение на положительный литерал (four-words)" 3 "$FW" "$RR/four-words.запись"

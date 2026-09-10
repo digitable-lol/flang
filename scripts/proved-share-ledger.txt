@@ -1167,6 +1167,8 @@ a556bd715aef70740ddb3d166813a1b0|1|×|×|×|0|flang/proof/чекер/пробы/
 63443a4700e9f3773bfa9fb285ec95aa|11|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/порча/boundaries-dva.flang
 5f52d3d676ec123ad7024da8abb11211|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/порча/pred-zov-vyshe.flang
 8b9ca14b85ff37109091e2027cacbe7d|4|×|×|×|2|flang/proof/чекер/пробы/семьи/вывод/порча/fold-and-product-lies.flang
+cd07ab2421d95d2443e3483e887332a3|4|×|×|×|3|flang/proof/чекер/пробы/семьи/вывод/порча/integrality-by-type-lies.flang
+fe977e02d41354787a912070768d3079|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/порча/integrality-fractional-example.flang
 621e15b4f215a10766a324050f935ca6|8|×|×|×|3|flang/proof/чекер/пробы/семьи/вывод/vyvod.flang
 df4debf8a4b83e23d253c78cbc2c765a|25|×|×|×|16|flang/proof/чекер/пробы/семьи/семейства/semeystva.flang
 16d8ee803746576b1ea37331f9706731|3|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/imya-naturalnoe.flang

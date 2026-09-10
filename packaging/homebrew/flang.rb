@@ -12,6 +12,21 @@ class Flang < Formula
     system "make", "CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic -O2"
     собрано = File.exist?("flang") ? "flang" : "flang_cli"
     bin.install собрано => "flang"
+
+    # Проводник по языку и его уроки. Ставятся ТОЛЬКО если архив их несёт:
+    # формула ставит и выпуски постарше, а в них проводника нет вовсе, и
+    # безусловная строка отказала бы на них по делу.
+    #
+    # УРОКИ ЛОЖАТСЯ В share/flang-tutor, А НЕ В share/flang, и это не вкус.
+    # Проба ниже требует, чтобы каталогов под share/flang было РОВНО столько,
+    # сколько целей у печати; то же требует packaging/asdf/bin/install. Уроки
+    # шестым каталогом покрасили бы обе установки, ничего при этом не сломав
+    # по существу, — то есть научили бы не верить проверке.
+    if File.exist?("flangtutor")
+      bin.install "flangtutor"
+      (share/"flang-tutor").install Dir["tutor/*"] if Dir.exist?("tutor")
+    end
+
     lib.install Dir["lib*.a"]
     include.install Dir["*.h"]
     if Dir.exist?("runtime")
@@ -77,6 +92,16 @@ class Flang < Formula
       shell_output("#{bin}/flang emit проба.flang --target #{цель} --out печать-целей/#{цель} 2>&1")
       refute_empty Dir[testpath/"печать-целей/#{цель}/*"],
                    "flang emit --target #{цель} отчитался успехом, но файлов не положил"
+    end
+
+    # Проводник обязан находить уроки ПОСЛЕ УСТАНОВКИ, а не только в дереве:
+    # он ищет их рядом с собой и на этаж выше, в share/flang-tutor. Спрашивается
+    # ровно то, что человек наберёт первым, и молча этот вопрос не отвечается:
+    # без уроков «--список» уходит ненулевым кодом, и shell_output поднимет беду.
+    if (bin/"flangtutor").exist?
+      уроки = shell_output("#{bin}/flangtutor --список")
+      refute_empty уроки.lines, "flangtutor --список не назвал ни одного урока"
+      assert_match(/^урок 1 · /, уроки)
     end
 
     assert_predicate share/"flang/cpp/flang_cpp.hpp", :exist?

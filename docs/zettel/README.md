@@ -99,6 +99,7 @@
 - [Тавтология закрывается даром, поэтому число «доказано без теоремы» само по себе ничего не значит](tautologies-close-for-free.md)
 - [Терм в сверщике можно держать строкой, потому что flang скобит каждую двуместную форму](terms-as-strings-work-because-flang-parenthesises-every-binary-form.md)
 - [Узкое место прувера — сила правил, а не ненаписанные доказательства](the-bottleneck-is-rule-strength.md)
+- [Ядро печатает вывод факта о типе на 4 местах из 35: узкое место — не печать, а список написанных правил](the-derivation-block-prints-for-four-of-thirty-five-places.md)
 - [Доказали самое видное утверждение сортировки — цена при работе не сдвинулась: платит не оно](the-guard-that-costs-the-time-is-not-the-one-you-proved.md)
 - [Заключение посылки — это уже развёрнутое тело ветви, поэтому первый ход записи ядру ничего не стоит](the-premise-goal-is-already-the-unfolded-body-so-the-first-move-is-free.md)
 - [Доказанное постусловие при `flang test` стоит не прогона, а ВТОРОГО прохода ядра по всем утверждениям модуля — и потому снимать его в проверке нечего и нельзя](the-price-of-a-proved-claim-is-one-extra-kernel-pass.md)

@@ -37,6 +37,21 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 строк 31 525. Разбор по каждому из четырнадцати файлов `flang/scripts/*.mjs` —
 `/srv/tmp/dokazuemyy/ПЕРЕДАЧА/karta-mjs.md` (вне дерева).
 
+**Сдвинулось 9 сентября 2026: одиннадцать файлов снесены, 1 907 строк** (задача 0049,
+ветка `r/js-osnastka-na-flang`). Из `flang/test/` ушли мост `flang-bridge.mjs` и
+пять обёрток `*.flang.mjs` над двойниками на flang — их не ввозил никто; из
+`scripts/` — `wasm-run.mjs` (среда WASI — `wasmtime`, а не `node:wasi`) и
+`type-collision-guard.mjs` (двойник `scripts/type-collision-guard.flang` на том же
+дереве даёт тот же приговор: 9 известных, 0 новых). Ещё три ушли с
+переключением CI на двойники: `latin-collision-guard.mjs` (`ci.yml` и
+`reprint.yml` зовут `scripts/latin-collision-guard.flang`, оба красны на
+подложенной паре имён), `jargon-guard.mjs` и его пробы
+`flang/test/jargon-guard.test.mjs` (11 из 14 проб перенесены в
+`flang/проверки/жаргон.flang`, работа `jargon` зовёт `flang test`). Файлов
+JavaScript стало 55, строк 29 733; в трёх каталогах оснастки (`scripts/`,
+`flang/scripts/`, `flang/test/`) осталось 21 файлов — решение по каждому
+записано в задаче 0049.
+
 Двоичный, которым сняты все остальные числа этой описи, —
 `/srv/flang-rabota/w-predely/bootstrap/flang` (0.6.2), собран 23 августа 2026
 17:00 UTC; дерево сборки не установлено, не новее `883fe9a9` (родословная —
@@ -44,13 +59,13 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 
 Эта опись считает ОДИН язык. Остальные шестнадцать — оболочка, C, C++, Python,
 HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
-считает [`tree-inventory.md`](tree-inventory.md) (9 сентября 2026: 286 файлов вне flang,
-<!-- СНЯТО 2026-09-09 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 286 -->
+считает [`tree-inventory.md`](tree-inventory.md) (9 сентября 2026: 275 файлов вне flang,
+<!-- СНЯТО 2026-09-09 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 275 -->
 долг вне JavaScript — **108 файлов, 16 486 строк при потолке 63**: храповик
 красен, разбор — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
-31 640 строк этой описи — нижняя оценка.
-<!-- СНЯТО 2026-09-08 строк-в *.js,*.mjs = 31640 -->
+29 733 строк этой описи — нижняя оценка.
+<!-- СНЯТО 2026-09-09 строк-в *.js,*.mjs = 29733 -->
 (29 августа здесь стояло 25 527: за два дня прибавилось 2 313 строк. Ещё 64
 строки прибавились 2 сентября: `scripts/latin-collision-guard.mjs` сравнивает
 теперь ПРОСЬБЫ печати, а не объявленные имена, и довод к этому записан там же.)

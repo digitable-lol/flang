@@ -1176,3 +1176,5 @@ e2e368b9b053bcde70aa3de7278278ba|11|×|×|×|0|flang/proof/чекер/пробы
 6627a652f6e91c37e51f992360f53826|5|2|3|0|0|examples/frameworks/react-invoice/core/cart.flang
 f198f629adf34e113e458f37f95b2ce4|1|1|0|0|0|examples/frameworks/react-invoice/core/catalog.flang
 86d4c59623a2c9ceb230600bc4fa5730|7|7|0|0|0|examples/frameworks/vue-roman/core/roman-numerals.flang
+104536571beef7384dcca670f38bae4a|2|×|×|×|5|flang/proof/чекер/пробы/семьи/квантор/два-имени.flang
+47a5846c7b8ea082dc87afe8efbe0590|3|×|×|×|5|flang/proof/чекер/пробы/семьи/квантор/имя-вне-списка.flang

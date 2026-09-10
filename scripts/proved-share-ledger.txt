@@ -1186,3 +1186,6 @@ f198f629adf34e113e458f37f95b2ce4|1|1|0|0|0|examples/frameworks/react-invoice/cor
 86d4c59623a2c9ceb230600bc4fa5730|7|7|0|0|0|examples/frameworks/vue-roman/core/roman-numerals.flang
 104536571beef7384dcca670f38bae4a|3|×|×|×|5|flang/proof/чекер/пробы/семьи/квантор/два-имени.flang
 47a5846c7b8ea082dc87afe8efbe0590|3|×|×|×|5|flang/proof/чекер/пробы/семьи/квантор/имя-вне-списка.flang
+bc17b199769f3c2a966e71d18ebcee89|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ограничение/ф09-ограниченный.flang
+43516f88b43387599d936a2979af66d1|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ограничение/к2бк-теорема-таких-что.flang
+f156b44ebb9d062276fb048d8d558551|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ограничение/к2б-прямая-теорема-гипотеза.flang

@@ -528,6 +528,12 @@
 // flang/self/link.flang, flang/self/bootstrap/corpus.flang и оба файла
 // flang/проверки/**. Слова «обеспечивает»/«требует» в них стоят только в
 // комментариях, а счётчик читает их с начала строки.
+//
+// Три строки flang/scripts — claim-guard.flang, link-collision-tree.flang,
+// target-words.flang (двойники проверок на JavaScript, задача 0049) — сняты
+// 10 сентября 2026 на стволе `0c0c4279c` (ветка r/js-osnastka-volna-2)
+// двоичным 1311b4b4… (md5 1768ca5a…), собранным из семени этого же ствола,
+// командой scripts/take-proof-ledger.sh.
 
 142c9f65e36bf025c6b07eb20cf81140|2|2|0|0|0|benchmarks/proof-cost/probe-closed-goal.flang
 f371ae4318c70abf98f5b3641ba17dc6|1|×|×|×|0|benchmarks/proof-cost/probe-forgery.flang
@@ -836,6 +842,7 @@ df0cd86a8d925671e35b6433f926e44d|1|×|×|×|0|flang/proof/чекер/пробы/
 ec04945faa16af3ff50fc5fa72b59f51|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-primer-vne-bloka.flang
 1d8909699ec44c70ea17756360e29285|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-sluchay-s-tem-zhe-znacheniem.flang
 ea1158594f0caa46237101fc3a6b2ddf|1|0|1|0|0|flang/scripts/binary.flang
+47700ac76c714a188e2e9ea3e0bcfa95|2|0|2|0|0|flang/scripts/claim-guard.flang
 44d471d298687c75ab7111710b28ca0f|1|1|0|0|0|flang/scripts/closed-length-guard.flang
 da7fad16a84c755f2638b38faa0a9c94|20|19|1|0|0|flang/scripts/code-forgery.flang
 54d6ade0bf153baec190cba632e72154|9|9|0|0|0|flang/scripts/code-guard.flang
@@ -849,12 +856,14 @@ dd5c6fa5aeaa9edc65474e5cf9df01fe|21|21|0|0|0|flang/scripts/guards-start.flang
 948a418a6ae7751f23fbe4f17496eb17|19|19|0|0|0|flang/scripts/ledger-summary.flang
 45f28e9045116a07b5ac7028d18d2bf8|4|4|0|0|0|flang/scripts/link-across-targets.flang
 ed9c9b6a5de7aca5154692ab88afd44c|1|1|0|0|0|flang/scripts/link-collision-guard.flang
+6bbd455d53e1eb78717e51e80ebf0c05|1|1|0|0|0|flang/scripts/link-collision-tree.flang
 17fa49007181f60a256b3bde9a0ed530|44|44|0|0|0|flang/scripts/memory-guard.flang
 2a69079431f766d92cfdab344330f844|7|7|0|0|0|flang/scripts/node-across-targets.flang
 75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/породить-атомы.flang
 f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.flang
 1bbbe53ed137d4778f4c528b52e7a785|4|4|0|0|0|flang/scripts/scheduler-across-targets.flang
 2886864b965d7a0ddedcc3a2c40826c1|2|2|0|0|0|flang/scripts/supervisor-across-targets.flang
+20f7f7e9cd7aaf78ab7d05eb270ae99d|2|2|0|0|0|flang/scripts/target-words.flang
 1bbb59151e04b30c062f30b1347e8b81|29|27|2|0|0|flang/scripts/tasks.flang
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.flang
 e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/жаргон-образцы.flang

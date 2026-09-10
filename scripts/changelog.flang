@@ -258,7 +258,7 @@
 
 тотальная функция «Служебные корни»
   возвращает список строки
-  ["flang/SPEC.md", "flang/PLAN.md", "flang/scripts", "flang/test", "flang/проверки", "docs", "benchmarks", "scripts", ".github", ".gitattributes", ".gitignore", ".ai", "AGENTS.md", "CONTRIBUTING.md", "LICENSE", "LICENSE-RU.md", "MIGRATION.md", "README.md", "README.ru.md", "package-lock.json", "tsconfig.json", "dist", "node_modules", "output", "$ВЫВОД", ".claude", "svod.mjs", "test", "tools", "action.yml", ".rab", "fspec", "web", ".githooks", ".gitmodules", "DESCRIPTION.md", "ROADMAP.md", "tasks", "ярлык", "ярлыки.flang", ".rabdir", ".reader-pages.txt", ".sborka.kod", ".tmpdir", "bootstrap-vysokiy", "client2.txt", "schet", "schet2", "МОЯ-ДОЛЯ.txt", "ОТЧЁТ.md"]
+  ["flang/SPEC.md", "flang/PLAN.md", "flang/scripts", "flang/test", "flang/проверки", "docs", "benchmarks", "scripts", ".github", ".gitattributes", ".gitignore", ".ai", "AGENTS.md", "CONTRIBUTING.md", "LICENSE", "LICENSE-RU.md", "MIGRATION.md", "README.md", "README.ru.md", "package-lock.json", "tsconfig.json", "dist", "node_modules", "output", "$ВЫВОД", ".claude", "svod.mjs", "test", "tools", "action.yml", ".rab", "fspec", "web", ".githooks", ".gitmodules", "DESCRIPTION.md", "ROADMAP.md", "tasks", "ярлык", "ярлыки.flang", ".rabdir", ".reader-pages.txt", ".sborka.kod", ".tmpdir", "bootstrap-vysokiy", "client2.txt", "schet", "schet2", "МОЯ-ДОЛЯ.txt", "ОТЧЁТ.md", ".flangrc", "flangtutor"]
 
 тотальная функция «Не изменение»
   возвращает список строки
@@ -1031,7 +1031,7 @@
 
 тотальная функция «Шапка»
   возвращает список строки
-  ["# Журнал изменений flang", "", "<!-- Файл печатается `node scripts/build-changelog.mjs` из тегов и коммитов.", "     Править его руками бессмысленно: `flang/test/changelog.test.mjs` сверяет", "     записанное с напечатанным и покраснеет при первом расхождении.", "     Меняйте историю и перепечатывайте журнал. -->", "", "Релиз языка — это тег `vX.Y.Z`, а по нему архив формулы и публикация в npm.", "Строки под релизом — заголовки коммитов, вошедших в него: в этом репозитории", "заголовок пишется утверждением о том, что теперь правда, поэтому он и есть", "готовая запись журнала. Правки, от которых язык снаружи не меняется, —", "планы, спецификации, тесты, скрипты, — сосчитаны, но не перечислены."]
+  ["# Журнал изменений flang", "", "<!-- Файл печатается `./ярлык журнал` (план «Напечатать журнал изменений»", "     в scripts/build-changelog.flang) из тегов и коммитов. Править его руками", "     бессмысленно: `./ярлык журнал:проверка` сверяет записанное с напечатанным", "     и покраснеет при первом расхождении. Меняйте историю и перепечатывайте журнал. -->", "", "Релиз языка — это тег `vX.Y.Z`, а по нему архив формулы и публикация в npm.", "Строки под релизом — заголовки коммитов, вошедших в него: в этом репозитории", "заголовок пишется утверждением о том, что теперь правда, поэтому он и есть", "готовая запись журнала. Правки, от которых язык снаружи не меняется, —", "планы, спецификации, тесты, скрипты, — сосчитаны, но не перечислены."]
 
 тотальная функция «Слово правок»
   принимает сколько: число

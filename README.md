@@ -363,9 +363,9 @@ Inside `flang/`: [`flang/self/`](flang/self) is the compiler, 63 files of flang 
 <!-- СНЯТО 2026-09-08 файлов flang/self/*.flang = 63 -->
 lexer, parser, types, totality, proof kernel and one printer per target; what the layers owe each
 other is [`flang/self/SPEC.md`](flang/self/SPEC.md). [`flang/stdlib/`](flang/stdlib) is the
-standard library — **42 modules, 1474 functions and 2713 examples** that run on every check:
-<!-- СНЯТО 2026-09-08 файлов flang/stdlib/*.flang = 42 -->
-<!-- СНЯТО 2026-09-08 примеров-в flang/stdlib/*.flang = 2713 -->
+standard library — **50 modules, 1474 functions and 3663 examples** that run on every check:
+<!-- СНЯТО 2026-09-10 файлов flang/stdlib/*.flang = 50 -->
+<!-- СНЯТО 2026-09-10 примеров-в flang/stdlib/*.flang = 3663 -->
 lists, strings, numbers, sets, maps, JSON, UTF-8, dates, and beyond them two database drivers
 (`postgres`, `sqlite`), networking (`http`, `tls`, `redis`), a cryptography set written in flang
 (`aes`, `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`) and a regular-expression engine.

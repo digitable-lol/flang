@@ -32,7 +32,7 @@
 #   make -C bootstrap -j4
 #   LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-in-c.flang --timeout 1800000
 #   tar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
-#       --mtime=@0 --mode=u=rw,go=r,a+X -C output/release-c -cf - $files | gzip -9n
+#       --mtime=@0 --mode=u=rwX,go=rX -C output/release-c -cf - $files | gzip -9n
 #
 # ── Ключи tar — ради ПОВТОРИМОСТИ, а не ради красоты ────────────────────────
 #
@@ -43,6 +43,20 @@
 # На macOS обычный `tar` — это bsdtar, у него нет ни `--sort`, ни `--mtime`.
 # Поэтому ищется `gtar` (ставится `brew install gnu-tar`), и если найденный tar
 # не GNU — шаг падает по имени, а не выдаёт архив с другими байтами.
+#
+# ── Почему права записаны `u=rwX,go=rX`, а не `u=rw,go=r,a+X` ───────────────
+#
+# Прежняя запись СНИМАЛА бит исполнимости с файлов, у которых он был, и это
+# измерено: `flangtutor` уезжал в архив как `-rw-r--r--`. Ключи символьного
+# режима применяются слева направо, и `X` смотрит на права, уже изменённые
+# предыдущими ключами: `u=rw` и `go=r` гасят все три бита исполнимости, после
+# чего `a+X` не находит ни одного и не ставит ничего. Каталогам он права давал
+# только потому, что для каталога `X` действует всегда.
+#
+# `u=rwX,go=rX` даёт то же самое всем, кроме исполняемых: `X` внутри первого же
+# ключа читает ИСХОДНЫЕ права. Обычный файл остаётся 644, каталог — 755,
+# исполняемый — 755. Повторимость не страдает: строка постоянна, и одни и те же
+# входные права дают одни и те же выходные.
 
 name: Собрать релизный архив C
 description: >-
@@ -103,7 +117,7 @@ runs:
 
         arhiv="output/flang-$version-c.tar.gz"
         "$TAR" --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
-               --mtime=@0 --mode=u=rw,go=r,a+X -C output/release-c -cf - $files \
+               --mtime=@0 --mode=u=rwX,go=rX -C output/release-c -cf - $files \
           | gzip -9n > "$arhiv"
         ls -l "$arhiv"
 

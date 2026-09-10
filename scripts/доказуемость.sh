@@ -156,12 +156,14 @@ fi
 #                выводе не названо, след вида стоит в записи, счётчик вида в сводке
 #                больше нуля. Без этой половины проверку 1 брал бы и чекер,
 #                сломанный до «ничего не доказываю»; до К11 она стерегла один вид.
+# Девятая колонка «пометка» — чем запись отличается от печати ядра (рукотворная
+# правка); прибор её не читает, читает человек: цель с пометкой — не вывод ядра.
 # Отпечаток исходника подаётся ТРЕТЬИМ доводом: часть записей зовёт своим
 # исходником путь вне дерева (мутанты, рождённые во времянках), и без отпечатка
 # чекер честно откажется судить чужое дело.
 TAB=$(printf '\t')
 KALKULYATOR=0; NA_SLOVE=0; VIDOV=0; VIDOV_KRASNO=0; P1_BEDY=""
-while IFS="$TAB" read -r vid zhdem ish zap cel sled priznak kod; do
+while IFS="$TAB" read -r vid zhdem ish zap cel sled priznak kod pometka; do
   [ -n "$vid" ] || continue
   [ -f "$ish" ] && [ -f "$zap" ] \
     || { echo "не смог измерить: у вида «$vid» нет пары $ish / $zap" >&2; exit 2; }
@@ -187,7 +189,7 @@ while IFS="$TAB" read -r vid zhdem ish zap cel sled priznak kod; do
     *) echo "не смог измерить: в таблице ловушки неизвестное «ждём» — «$zhdem» (вид «$vid»)" >&2; exit 2 ;;
   esac
 done <<LOVUSHKA_STROKI
-$(awk -F'\t' '/^#/ { next } $1 == "вид" { next } NF == 8' "$LOVUSHKA_TSV")
+$(awk -F'\t' '/^#/ { next } $1 == "вид" { next } NF == 9' "$LOVUSHKA_TSV")
 LOVUSHKA_STROKI
 P1_BEDY=${P1_BEDY#; }
 

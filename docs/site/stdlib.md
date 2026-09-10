@@ -1382,6 +1382,14 @@ These modules have no table of functions on this page yet. What each one does is
 | `«Registry»` | `registry.flang` | a package registry: lookup by name, version order, ranges, dependency resolution — with no access to the world |
 | `«Math classics»` | `math-classics.flang` | classical arithmetic lemmas from Coq and Lean/Mathlib4, written as promises over functions; kept to measure which of them the kernel proves |
 | `«Math classics for lists»` | `math-classics-lists.flang` | the same for lemmas about lists |
+| `«Number format»` | `number-format.flang` | printing a non-negative number in bases 2–16 and with a fixed number of digits after the point (rounding on the scaled value); 7 functions, 51 examples |
+| `«UUID»` | `uuid.flang` | UUID (RFC 9562): parsing 8-4-4-4-12 with a named reason for each refusal, printing, comparison, version and variant, v5 from a namespace and a name via SHA-1, v4 from sixteen random bytes passed as an argument; 29 functions, 97 examples |
+| `«Statistics»` | `stats.flang` | descriptive statistics over a list of numbers: mean, median, mode, population and sample variance, quantile by linear interpolation, its own square root; 16 functions, 58 examples |
+| `«DNS»` | `dns.flang` | DNS packets (RFC 1035): header, names with compression (a looping or forward pointer is refused with a named reason), A/AAAA/CNAME/NS/MX/TXT records, building a query; no socket; 38 functions, 120 examples |
+| `«Protobuf»` | `protobuf.flang` | the Protocol Buffers wire format without a schema: varint, tag, fixed32/fixed64, a message as a list of fields; values up to 2^53−1, anything wider is a named refusal; 33 functions, 129 examples |
+| `«CLI»` | `cli.flang` | command-line arguments of a user program, parsed against a declaration of flags: each kind of refusal is its own variant, and the `--help` text is computed from the same declaration; 32 functions, 101 examples |
+| `«WebSocket»` | `websocket.flang` | WebSocket (RFC 6455): the answer to an upgrade request (built from HTTP, SHA-1 and Base64) and the binary frame — three length forms, mask removal, building a frame; no socket; 40 functions, 126 examples |
+| `«TOML»` | `toml.flang` | TOML, a named subset: key–value pairs, `[table]` and `[a.b]` headers, strings, integers, floats, booleans, one-line arrays, comments; anything outside the subset is refused with a line number; 45 functions, 205 examples |
 
 ## Next
 

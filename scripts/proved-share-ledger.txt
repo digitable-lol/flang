@@ -854,14 +854,14 @@ dd5c6fa5aeaa9edc65474e5cf9df01fe|21|21|0|0|0|flang/scripts/guards-start.flang
 883a7e54f0a693993d0d8f58f98bc4e4|71|67|4|0|0|flang/scripts/kernel-forgeries.flang
 73bf5c6a64f0209a9cc4e03fa73f1c90|40|38|0|0|0|flang/scripts/kernel-lines-to-trust.flang
 948a418a6ae7751f23fbe4f17496eb17|19|19|0|0|0|flang/scripts/ledger-summary.flang
-45f28e9045116a07b5ac7028d18d2bf8|4|4|0|0|0|flang/scripts/link-across-targets.flang
+ab165b8b111fc24802ea6c107bc52a94|6|6|0|0|0|flang/scripts/link-across-targets.flang
 ed9c9b6a5de7aca5154692ab88afd44c|1|1|0|0|0|flang/scripts/link-collision-guard.flang
 6bbd455d53e1eb78717e51e80ebf0c05|1|1|0|0|0|flang/scripts/link-collision-tree.flang
 17fa49007181f60a256b3bde9a0ed530|44|44|0|0|0|flang/scripts/memory-guard.flang
 2a69079431f766d92cfdab344330f844|7|7|0|0|0|flang/scripts/node-across-targets.flang
 75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/породить-атомы.flang
 f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.flang
-1bbbe53ed137d4778f4c528b52e7a785|4|4|0|0|0|flang/scripts/scheduler-across-targets.flang
+41ff43f2cca335b1ac94a00de37d57f4|6|6|0|0|0|flang/scripts/scheduler-across-targets.flang
 2886864b965d7a0ddedcc3a2c40826c1|2|2|0|0|0|flang/scripts/supervisor-across-targets.flang
 20f7f7e9cd7aaf78ab7d05eb270ae99d|2|2|0|0|0|flang/scripts/target-words.flang
 1bbb59151e04b30c062f30b1347e8b81|29|27|2|0|0|flang/scripts/tasks.flang
@@ -1129,7 +1129,7 @@ f8e01fecff7e47ed055e836a42195ee0|15|15|0|0|0|scripts/module-name-guard.flang
 a63d8465a17432a9e21c55efe890d510|27|26|0|1|0|scripts/name-collision-guard.flang
 b227c0ad335b884661247019d31270e6|22|22|0|0|0|scripts/name-splicing-guard.flang
 fa5067d21a8ef524d58b5b8117c253b4|4|0|0|4|0|scripts/new-binary-acceptance-probe.flang
-c25748ca72cfdca2554269b3c8bcf185|9|9|0|0|0|scripts/occupancy-check.flang
+76e306cbb502d04abaef8d8b0807eb8d|7|7|0|0|0|scripts/occupancy-check.flang
 7feca661ed8e0a679823c1b6f0a431fe|24|24|0|0|0|scripts/occupied-names-guard.flang
 9da7ac83e58dcd6ede242456ab630ee4|14|14|0|0|0|scripts/path-without-node.flang
 8d77245282ed034860ef3855371b30a0|26|26|0|0|0|scripts/plan-across-targets.flang

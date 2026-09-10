@@ -1,6 +1,6 @@
 # Standard library reference
 
-The library sits next to the compiler and is written in flang itself. Every function in it goes through the same path your program does: parsing, types, termination, examples. It holds <!-- СНЯТО 2026-09-08 файлов flang/stdlib/*.flang = 42 --> 42 modules. Below is a section per module and a table of all its functions; the modules that have no table yet are listed at the end of the page.
+The library sits next to the compiler and is written in flang itself. Every function in it goes through the same path your program does: parsing, types, termination, examples. It holds <!-- СНЯТО 2026-09-10 файлов flang/stdlib/*.flang = 50 --> 50 modules. Below is a section per module and a table of all its functions; the modules that have no table yet are listed at the end of the page.
 
 `использует` is the import. A module is attached by name — no path needed:
 

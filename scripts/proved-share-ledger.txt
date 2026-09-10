@@ -1165,6 +1165,7 @@ a556bd715aef70740ddb3d166813a1b0|1|×|×|×|0|flang/proof/чекер/пробы/
 7185d1fd09a3e3cfbe6693541cc98b9a|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/pred-zov-nechem.flang
 1431332ebdea0ff5ef1bcd7841c05e0a|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/pred-zov.flang
 5f52d3d676ec123ad7024da8abb11211|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/порча/pred-zov-vyshe.flang
+8b9ca14b85ff37109091e2027cacbe7d|4|×|×|×|2|flang/proof/чекер/пробы/семьи/вывод/порча/fold-and-product-lies.flang
 621e15b4f215a10766a324050f935ca6|8|×|×|×|3|flang/proof/чекер/пробы/семьи/вывод/vyvod.flang
 df4debf8a4b83e23d253c78cbc2c765a|25|×|×|×|16|flang/proof/чекер/пробы/семьи/семейства/semeystva.flang
 16d8ee803746576b1ea37331f9706731|3|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/imya-naturalnoe.flang

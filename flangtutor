@@ -57,8 +57,39 @@
 set -u
 
 KOREN=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-UROKI=$KOREN/docs/tutor
-BIN=${FLANG:-$KOREN/bootstrap/flang}
+
+# ── ГДЕ УРОКИ И ЧЕМ СУДИТЬ: ТРИ ДОРОГИ, И ПОТОМУ ТРИ МЕСТА ──────────────────
+# Проводник обязан работать не только в дереве, откуда его писали. Дорог, по
+# которым он попадает к человеку, три, и в каждой раскладка своя:
+#
+#   В ДЕРЕВЕ           уроки — docs/tutor, двоичный — bootstrap/flang.
+#   В АРХИВЕ ВЫПУСКА   уроки — tutor рядом с этим файлом, а `make` кладёт
+#                      собранный `flang` туда же, рядом.
+#   ПОСЛЕ УСТАНОВКИ    сам файл лежит в bin/, уроки — в share/flang-tutor
+#                      (то есть ../share/flang-tutor от bin/), а двоичный
+#                      зовётся `flang` и стоит в PATH.
+#
+# УРОКИ НЕ КЛАДУТСЯ В share/flang, хотя каталог рядом и напрашивается: там
+# лежат исходники рантайма целей печати, и обе упаковки требуют, чтобы
+# каталогов под share/flang было РОВНО столько, сколько целей у печати
+# (проба формулы Homebrew и packaging/asdf/bin/install считают их числом).
+# Шестой каталог `tutor` покрасил бы обе установки по делу.
+#
+# FLANG задаёт двоичный поверх поиска — им пользуется проба проводника.
+UROKI=
+for k in "$KOREN/docs/tutor" "$KOREN/tutor" "$KOREN/../share/flang-tutor"; do
+  if [ -d "$k" ]; then UROKI=$k; break; fi
+done
+[ -n "$UROKI" ] || UROKI=$KOREN/docs/tutor
+
+BIN=${FLANG:-}
+if [ -z "$BIN" ]; then
+  for k in "$KOREN/bootstrap/flang" "$KOREN/flang"; do
+    if [ -x "$k" ]; then BIN=$k; break; fi
+  done
+fi
+[ -n "$BIN" ] || BIN=$(command -v flang 2>/dev/null)
+[ -n "$BIN" ] || BIN=$KOREN/bootstrap/flang
 
 REZHIM=vesti
 NACHAT=
@@ -86,7 +117,9 @@ fi
 # Уроки написаны на двух языках. Настройки допускают четыре кода; на код, урока
 # для которого нет, берётся английский, и об этом говорится вслух — молчаливая
 # подмена языка была бы хуже отказа.
-if [ -z "$YAZYK" ] && [ -x "$BIN" ]; then
+# Читатель настроек лежит в дереве и в поставку не едет: настройки — дело
+# дерева, а не установленной программы. Нет его — язык берётся русским.
+if [ -z "$YAZYK" ] && [ -x "$BIN" ] && [ -f "$KOREN/scripts/flangrc.sh" ]; then
   YAZYK=$(sh "$KOREN/scripts/flangrc.sh" язык 2>/dev/null)
 fi
 [ -n "$YAZYK" ] || YAZYK=ru
@@ -320,6 +353,6 @@ if [ "$KONEC_NA" -lt "$VSEGO" ]; then
   exit 0
 fi
 skazat "${ZHIRNYY}$(ryadom "все $VSEGO уроков пройдены." "all $VSEGO lessons are done.")${GOLYY}"
-skazat "$(ryadom "дальше: flang repl — набирать язык руками; docs/course — курс подробнее." \
-                 "next: flang repl to type the language by hand; docs/course for a longer course.")"
+skazat "$(ryadom "дальше: flang repl — набирать язык руками; подробный курс — https://digitable-lol.github.io/flang/" \
+                 "next: flang repl to type the language by hand; a longer course — https://digitable-lol.github.io/flang/en/")"
 exit 0

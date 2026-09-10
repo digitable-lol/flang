@@ -1124,10 +1124,11 @@ c25748ca72cfdca2554269b3c8bcf185|9|9|0|0|0|scripts/occupancy-check.flang
 7feca661ed8e0a679823c1b6f0a431fe|24|24|0|0|0|scripts/occupied-names-guard.flang
 9da7ac83e58dcd6ede242456ab630ee4|14|14|0|0|0|scripts/path-without-node.flang
 8d77245282ed034860ef3855371b30a0|26|26|0|0|0|scripts/plan-across-targets.flang
+d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/postavka-guard.flang
 9c2d3aecbfe7786b9701fb51fd4b1147|33|30|0|0|0|scripts/region-in-c-target.flang
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.flang
 1083cc30fab03e5f16e2060519b7c8c1|8|8|0|0|0|scripts/release-guard.flang
-c2739d00803c1d831f6341abe1382f25|26|22|2|0|0|scripts/release-in-c.flang
+75df33ec0a0a8e68cdc8aea00c04beb9|29|25|2|0|0|scripts/release-in-c.flang
 6bec7ed819a851590422857589b315ec|10|7|3|0|0|scripts/reprint-freshness.flang
 623521ff6a7758d61e2f16f8cf510c90|3|3|0|0|0|scripts/settings-file.flang
 6428b484fce59de690810ba7fcdce7f4|3|2|1|0|0|scripts/stale-pages-guard.flang
@@ -1195,6 +1196,10 @@ d10f7559f19e2c79a1249fad2fc746bd|1|×|×|×|0|flang/proof/чекер/пробы/
 363238b2a10e5217893cdb927cae8d59|1|×|×|×|0|flang/proof/чекер/пробы/семьи/существование/ф10б-существование-выражением.flang
 b0ffe96d43bf0ec50c6c3307dac16ca4|2|×|×|×|0|flang/proof/чекер/пробы/семьи/существование/факт-со-свидетелем.flang
 85adaff534a8513b549a67bd01ebd688|2|×|×|×|0|flang/proof/чекер/пробы/семьи/существование/факт-с-чужим-свидетелем.flang
+592a82e9f2c5e3b171565995fdefbdd0|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/к3c-применение-утверждения.flang
+f5a8ef6df0c4f1421f459afe0984d24d|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/к3c-ход-подстановкой.flang
+3f5794f41973794bbd0c22ef05054d39|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/порча/к3c-ложный-вывод.flang
+3600a221a17f086fcead91a20413746e|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/порча/к3c-тип-не-тот.flang
 d6d765704cb9d7b4e987687d663ebef5|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/ф05к-утверждение.flang
 91994d0f41d91dbe7eb634f17c2be0f7|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/теорема-о-другом.flang
 edd199f400faf9219e5fb5d0bfd937fe|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/утверждение-с-ограничением.flang

@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 286 файлов вне flang, долг вне JavaScript — 108 при потолке 63
-<!-- СНЯТО 2026-09-09 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 286 -->
+# Опись дерева по языкам: 275 файлов вне flang, долг вне JavaScript — 108 при потолке 63
+<!-- СНЯТО 2026-09-09 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 275 -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
@@ -65,15 +65,15 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 113 | 23 547 | 98 | 14 991 <!-- СНЯТО 2026-09-08 долг файлов/строк оболочки = 98/15001, планом «Опись дерева по языкам» (было 96/14 267 тем же днём: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-09 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 113 --><!-- СНЯТО 2026-09-09 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 23547 --> |
-| C | 38 | 796 695 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-09 строк-в *.c,*.h = 796695 --> |
+| оболочка | 113 | 23 892 | 98 | 14 991 <!-- СНЯТО 2026-09-08 долг файлов/строк оболочки = 98/15001, планом «Опись дерева по языкам» (было 96/14 267 тем же днём: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-09 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 113 --><!-- СНЯТО 2026-09-10 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 23892 --> |
+| C | 38 | 797 080 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-10 строк-в *.c,*.h = 797080 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 23 | 8 076 | 16 | 3 843 <!-- СНЯТО 2026-09-06 файлов *.py = 23 --><!-- СНЯТО 2026-09-09 строк-в *.py = 8076 --> |
 | HTML | 6 | 1 251 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.html = 6 --><!-- СНЯТО 2026-09-09 строк-в *.html = 1251 --> |
 | CSS | 1 | 559 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.css = 1 --><!-- СНЯТО 2026-08-31 строк-в *.css = 559 --> |
 | awk | 1 | 79 | 1 | 79 <!-- СНЯТО 2026-08-31 файлов *.awk = 1 --><!-- СНЯТО 2026-08-31 строк-в *.awk = 79 --> |
 | Erlang | 1 | 69 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.erl = 1 --><!-- СНЯТО 2026-08-31 строк-в *.erl = 69 --> |
-| JavaScript | 66 | 31 640 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-07 файлов *.js,*.mjs = 66 --><!-- СНЯТО 2026-09-08 строк-в *.js,*.mjs = 31640 --> ||
+| JavaScript | 55 | 29 733 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-09 файлов *.js,*.mjs = 55 --><!-- СНЯТО 2026-09-09 строк-в *.js,*.mjs = 29733 --> ||
 | Java | 7 | 3 941 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.java = 7 --><!-- СНЯТО 2026-09-06 строк-в *.java = 3941 --> |
 | C# | 7 | 4 472 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.cs = 7 --><!-- СНЯТО 2026-09-06 строк-в *.cs = 4472 --> |
 | Elixir | 4 | 4 634 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.ex,*.exs = 4 --><!-- СНЯТО 2026-09-06 строк-в *.ex,*.exs = 4634 --> |

@@ -412,6 +412,7 @@ flang/test/fixtures/svyortka-prefiks-chestnaya.flang	27
 flang/проверки/http.flang	2
 flang/проверки/process-failures.flang	55
 flang/проверки/встроенные-формы.flang	76
+flang/проверки/жаргон.flang	2
 flang/проверки/прогонщик-корпуса.flang	37
 fspec/clarifications.flang	103
 fspec/experience/01-discount-coarse.flang	7

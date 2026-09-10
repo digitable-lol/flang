@@ -22,6 +22,8 @@ on:
       - 'flang/conc/SPEC.md'
       - 'scripts/build-changelog-page.mjs'
       - 'scripts/build-changelog.mjs'
+      - 'scripts/build-changelog.flang'
+      - 'scripts/changelog.flang'
       - 'scripts/releases.flang'
       - 'scripts/releases-page.flang'
       - '.github/workflows/pages.yml'

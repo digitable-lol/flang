@@ -55,7 +55,7 @@ import { fileURLToPath } from "node:url"
 import { запущенНапрямую } from "../../flang/scripts/direct-run.mjs"
 
 import { деревоРазбора, таблицаСлов } from "../../flang/scripts/binary.mjs"
-import { связаноИмён, сверитьПоверхности } from "../../flang/test/surface-pair.mjs"
+import { связаноИмён, сверитьПоверхности } from "./lib/surface-pair.mjs"
 
 const КОРЕНЬ = fileURLToPath(new URL("../../", import.meta.url))
 const прочесть = (путь) => readFileSync(КОРЕНЬ + путь, "utf8")

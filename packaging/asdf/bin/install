@@ -36,6 +36,22 @@ built="${build}/flang"
 
 mkdir -p "${ASDF_INSTALL_PATH}/bin" "${ASDF_INSTALL_PATH}/lib" "${ASDF_INSTALL_PATH}/include"
 install -m 0755 "$built" "${ASDF_INSTALL_PATH}/bin/flang"
+
+# Проводник по языку — тем же условием, что и в формуле Homebrew: плагин ставит
+# И СТАРЫЕ выпуски, а до 0.7.17 архив проводника не нёс. Найдено владельцем:
+# проводник жил только в дереве, до поставки не доезжал ни одним путём. Уроки
+# кладутся ОТДЕЛЬНЫМ каталогом, а не под share/flang: и проба формулы, и проверка
+# ниже требуют, чтобы каталогов под share/flang было ровно столько, сколько целей
+# печати, и шестой покрасил бы обе установки.
+if [ -x "${build}/flangtutor" ]; then
+  install -m 0755 "${build}/flangtutor" "${ASDF_INSTALL_PATH}/bin/flangtutor"
+  if [ -d "${build}/tutor" ]; then
+    mkdir -p "${ASDF_INSTALL_PATH}/share/flang-tutor"
+    cp -R "${build}"/tutor/* "${ASDF_INSTALL_PATH}/share/flang-tutor/"
+    find "${ASDF_INSTALL_PATH}/share/flang-tutor" -type f -exec chmod 0644 {} +
+    find "${ASDF_INSTALL_PATH}/share/flang-tutor" -type d -exec chmod 0755 {} +
+  fi
+fi
 # Библиотека зовётся по имени модуля компилятора, а имя это менялось: до 0.5.2
 # модуль звался «Компилятор flang» и печать давала `libkompilyator_flang.a`,
 # с 0.5.2 он «Compiler flang» и печать даёт `libcompiler_flang.a` (транслит в
@@ -85,6 +101,20 @@ fi
 # Проверяем не «запустился», а «понял язык»: подаём модуль и требуем, чтобы
 # компилятор насчитал в нём ровно одну связанную функцию. Битая установка
 # обязана падать здесь, а не у человека при первом запуске.
+# Проводник обязан находить уроки ПОСЛЕ установки, а не только в дереве: он и
+# уроки лежат в разных каталогах, и связь между ними — единственное, что здесь
+# может тихо порваться. Спрашиваем его самого, а не смотрим на файлы.
+if [ -x "${ASDF_INSTALL_PATH}/bin/flangtutor" ]; then
+  spisok="$("${ASDF_INSTALL_PATH}/bin/flangtutor" --список 2>&1)" || {
+    echo "установленный flangtutor не отвечает на «--список»: $spisok" >&2
+    exit 1
+  }
+  if ! printf '%s\n' "$spisok" | grep -q "урок 1"; then
+    echo "установленный flangtutor не назвал ни одного урока — уроки до поставки не доехали" >&2
+    exit 1
+  fi
+fi
+
 probe='{"fn":"Число связанных функций","args":[{"l":[{"r":[["путь",{"s":"проба.flang"}],["текст",{"s":"модуль «Проба»\n\nтотальная функция «Два»\n  возвращает число\n  2\n"}]]}]},{"s":"проба.flang"}]}'
 answer="$(printf '%s\n' "$probe" | "${ASDF_INSTALL_PATH}/bin/flang")"
 case "$answer" in

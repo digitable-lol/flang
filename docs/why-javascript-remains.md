@@ -55,7 +55,7 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
 `diagram.mjs`, `podsvetka.mjs`, `numbers.mjs`, `poisk.mjs` — потому что **JavaScript
 не умеет ввозить flang**: двойник на flang зовётся только отдельным процессом,
 значит модуль снимается лишь вместе со стволом, который его ввозит.
-Плюс `target-words.mjs` и `count-library.mjs`.
+Плюс `count-library.mjs`.
 
 ## Дыра 3. Нет регулярных выражений — делает перенос дорогим, но возможным
 

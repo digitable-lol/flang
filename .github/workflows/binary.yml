@@ -572,7 +572,7 @@ jobs:
       - name: Числа прозы о печати сходятся с прогоном
         run: ./bootstrap/flang io scripts/emit-promises-guard.flang
       - name: Сильное слово о доказанности не сказано про слабое основание
-        run: node flang/scripts/word-guard.mjs
+        run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/word-guard.flang --plan 'Сторож слов' --max-steps 2000000000
       - name: Все 28 умений ядра доказаны прогоном, а не перечислены
         run: ./bootstrap/flang check --proof flang/proof/map/abilities.flang
 
@@ -1530,7 +1530,7 @@ jobs:
       # каждая из пяти порч обязана быть поймана. Зелёный без показанной порчи
       # ничего не значит.
       - name: Сторож слов о доказанности краснеет на подмене и молчит, когда чисто
-        run: node flang/scripts/word-guard.mjs --porcha vse
+        run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/word-guard.flang --plan 'Подлог слов' --max-steps 2000000000
 
       # ── ПОДДЕЛКИ ЯДРА: ни одного шага CI у них не было НИ РАЗУ ─────────────
       #

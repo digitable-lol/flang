@@ -1838,8 +1838,12 @@ opyt C "Р: охрана ГипО → С4 из шага → Разв2 → Р1" 3
 opyt C "Р: ГипО → Р5 (ветвь пусто) / Р6 (начало свёртки) → Р1" 3 "$BU" "$RR/builtin-emptiness.запись"
 opyt C "Р: ГипД ×2 → П2 из шага / Или1, Или2 → Р4 → Разв2" 0 "$RS" "$RR/razbor-sluchaev.запись"
 opyt C "Р: Выч ×2 → Р3 сличением половин → Разв2" 3 "$HF" "$RR/corpus-hof.запись"
-for z in strict-order builtin-emptiness razbor-sluchaev corpus-hof; do
-  case $z in strict-order) I=$SO; zh=1;; builtin-emptiness) I=$BU; zh=2;; razbor-sluchaev) I=$RS; zh=2;; *) I=$HF; zh=1;; esac
+# Е-1 без печати С/О: запись рукотворная (копия корпусной с блоком у :35) — ГипО
+# охраны «( х минус х ) равен 0» → Кон3 «х : кон» → О2 → Разв2 → Р1.
+OA=flang/test/fixtures/poddelka-order-arithmetic.flang
+opyt C "Р: ГипО → Кон3 (конечность из охраны) → О2 → Разв2 → Р1" 3 "$OA" "$RR/order-arithmetic.запись"
+for z in strict-order builtin-emptiness razbor-sluchaev corpus-hof order-arithmetic; do
+  case $z in strict-order) I=$SO; zh=1;; builtin-emptiness) I=$BU; zh=2;; razbor-sluchaev) I=$RS; zh=2;; order-arithmetic) I=$OA; zh=1;; *) I=$HF; zh=1;; esac
   set +e; v=$("$C" "$I" "$RR/$z.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
   [ "${v:-0}" = "$zh" ] || { say "ПРОВАЛ Р: $z — выводов проиграно ждали $zh, вышло ${v:-«числа нет»}"; BAD=$((BAD+1)); }
 done
@@ -1869,6 +1873,10 @@ podd "Или1: посылка — правая половина" "$RS" "$RR/razb
   's/Или1 ⟨( н не больше 0 ) или ( н не меньше 0 )⟩ из 3/Или1 ⟨( н не больше 0 ) или ( н не меньше 0 )⟩ из 1/'
 podd "Р3: тело подставлено без скобок — условие восстанавливается не то" "$HF" "$RR/corpus-hof.запись" \
   's/вывод 3 Р3 ⟨( не ( ( х остаток от 2 ) равен 0 ) ) или/вывод 3 Р3 ⟨( не ( х остаток от 2 ) равен 0 ) или/'
+podd "Кон3: разность не «Т минус Т» — конечность не следует" "$OA" "$RR/order-arithmetic.запись" \
+  's/вывод 1 ГипО ⟨( х минус х ) равен 0⟩ сам/вывод 1 ГипО ⟨( х минус 1 ) равен 0⟩ сам/'
+podd "Кон3: конечность заключена о другом терме" "$OA" "$RR/order-arithmetic.запись" \
+  's/вывод 2 Кон3 ⟨х : кон⟩ из 1/вывод 2 Кон3 ⟨у : кон⟩ из 1/'
 
 say ""
 say "── семья «носитель» (задача 6203, ADR-0026 Ш0): носитель читается с объявления типа ──"

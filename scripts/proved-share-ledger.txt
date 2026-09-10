@@ -1150,6 +1150,7 @@ e115e809a3685b17510b8e8c01385301|17|17|0|0|0|web/app/hailstone.flang
 08e7e8cb7e8abb0e1a64a2c8901d7fde|25|19|6|0|0|web/stand.flang
 85322a38f7e60b8a3e786fb994be27b6|17|14|3|0|0|ярлыки.flang
 a8a1e131d2f35f0071f646f2e9f5581c|3|×|×|×|2|flang/proof/чекер/пробы/программы/Ч7104-nakrutka-po-predpolozheniyu.flang
+91009603bba720c2187145617a5a9db1|3|×|×|×|2|flang/proof/чекер/пробы/программы/Ч7104-nakrutka-neproveryaemaya.flang
 905c250bd3dd21a26df72a2039b2f731|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-chestnaya.flang
 b3e74b9533e258c8364f00d8f5d31657|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-lozh.flang
 3b07a690daa31ca5a1256ecfe69b6874|3|×|×|×|0|flang/proof/чекер/пробы/семьи/sosedi.flang
@@ -1211,4 +1212,11 @@ e7979c2cdfeb659a5d1a5f9187302b0f|1|×|×|×|0|flang/proof/чекер/пробы/
 8801471210cb06da9bd81d348d68ab14|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/охрана-другой-порог.flang
 12d215120f6b52cffd8713bc41215488|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/охрана-ложный-вывод.flang
 903313021206e0b2628c86e3a223125d|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/охрана-то-же-условие.flang
+e441be5272f082f83f53d9c4dd45a6f4|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/удвоить-литерал.flang
+61f2598e92d6a73e3effe09213f745d2|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/удвоить-на-ноль.flang
+e279ab8172f5180d9708b8b3b0cc6c1f|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/удвоить-сомножитель-минус.flang
+eaabe25feb0b757450265ea179b3316a|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/о9-начало-один.flang
+0ee25761bb60a1e76e81540809c4a794|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/о9-счёт.flang
+e7fa504862be222fef1625779920da41|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/о9-чужой-список.flang
+b9834cb375178096f907d6c2bdf7285c|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/о9-шаг-два.flang
 adaa6ab31e8515078c5baf8fdba4e5ba|3|×|×|×|5|flang/proof/чекер/пробы/семьи/покрытие/тело-не-неотрицательно.flang

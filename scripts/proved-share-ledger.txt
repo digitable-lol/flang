@@ -1164,6 +1164,7 @@ a556bd715aef70740ddb3d166813a1b0|1|×|×|×|0|flang/proof/чекер/пробы/
 8b8626f261982ab23a457da5a66d8bec|11|×|×|×|0|flang/proof/чекер/пробы/семьи/razbor-celi/razbor.flang
 7185d1fd09a3e3cfbe6693541cc98b9a|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/pred-zov-nechem.flang
 1431332ebdea0ff5ef1bcd7841c05e0a|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/pred-zov.flang
+63443a4700e9f3773bfa9fb285ec95aa|11|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/порча/boundaries-dva.flang
 5f52d3d676ec123ad7024da8abb11211|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/порча/pred-zov-vyshe.flang
 621e15b4f215a10766a324050f935ca6|8|×|×|×|3|flang/proof/чекер/пробы/семьи/вывод/vyvod.flang
 df4debf8a4b83e23d253c78cbc2c765a|25|×|×|×|16|flang/proof/чекер/пробы/семьи/семейства/semeystva.flang

@@ -62,6 +62,7 @@
 - [Постусловие вызванной функции годится ядру в факты только ПОСЛЕ того, как оно доказано, — и этим же закрыт круг](callee-postcondition-is-a-fact-only-after-it-is-proved.md)
 - [Две трети того, что ядро не берёт у библиотеки, — это сравнение длины результата с длиной входа](claims-about-length-are-two-thirds-of-what-the-kernel-refuses.md)
 - [Замкнутую цель надо считать, а не выводить: 50 доказательств без единого нового правила](closed-goals-must-be-computed.md)
+- [Двадцать пять мест разбора цели по условию распадаются на пять форм, и три из них закрываются без единой новой арифметики](case-analysis-places-fall-into-five-forms-and-three-need-no-arithmetic.md)
 - [Правила отношений в чекере достают 10 мест корпуса из 22, а доля не двигается ни на одно: печати нет](relation-rules-in-the-checker-reach-ten-of-twenty-two-places.md)
 - [Постоянные в цели можно складывать только вокруг ОДНОЙ длины: вокруг произвольного числа это ложь на 10¹⁶](constants-in-a-goal-fold-only-around-one-length.md)
 - [Сила Coq не в ядре, а в библиотеке доказанных лемм](coq-strength-is-in-its-lemmas.md)

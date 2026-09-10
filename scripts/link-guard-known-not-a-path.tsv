@@ -1,5 +1,4 @@
 файл	цель	почему_не_путь
-CHANGELOG.md	flang/test/changelog.test.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
 CHANGELOG.md	distributed.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
 CHANGELOG.md	compat.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
 CHANGELOG.md	obligations.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/build-changelog.mjs); правится только историей
@@ -209,3 +208,12 @@ tasks/0049-the-last-javascript-leaves-the-tree.md	scripts/latin-collision-guard.
 tasks/0049-the-last-javascript-leaves-the-tree.md	scripts/jargon-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026; имя оставлено, чтобы опись сходилась с git log
 docs/site/roadmap.md	jargon-guard.mjs	история: страница дорожной карты вспоминает сторож жаргона на JavaScript, снятый 9 сентября 2026 (задача 0049) после переноса на flang/scripts/jargon-guard.flang; docs/site — вне стека того захода, слово за координатором
 docs/site/roadmap.ru.md	jargon-guard.mjs	история: страница дорожной карты вспоминает сторож жаргона на JavaScript, снятый 9 сентября 2026 (задача 0049) после переноса на flang/scripts/jargon-guard.flang; docs/site — вне стека того захода, слово за координатором
+tasks/0049-the-last-javascript-leaves-the-tree.md	target-words.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 10 сентября 2026 (превзойдён flang/scripts/target-words.flang, который и зовёт ярлык слова:проверка); имя оставлено, чтобы опись сходилась с git log
+tasks/0049-the-last-javascript-leaves-the-tree.md	flang/scripts/target-words.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 10 сентября 2026; имя оставлено, чтобы опись сходилась с git log
+tasks/0049-the-last-javascript-leaves-the-tree.md	claim-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 10 сентября 2026 (превзойдён flang/scripts/claim-guard.flang, который и зовёт ярлык утверждения:проверка); имя оставлено, чтобы опись сходилась с git log
+tasks/0049-the-last-javascript-leaves-the-tree.md	flang/scripts/claim-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 10 сентября 2026; имя оставлено, чтобы опись сходилась с git log
+tasks/1722-the-discriminating-search-writes-a-temp-dir-into-the-tree.md	flang/scripts/target-words.mjs	история: задача называет места, где проверка на JavaScript заводила временные каталоги; файл снят 10 сентября 2026 (задача 0049), двойник flang/scripts/target-words.flang
+tasks/6858-the-flang-twins-of-the-node-guards-do-not-finish-a-run.md	target-words.mjs	история: опись двойников 7–8 сентября называет проверку на JavaScript, снятую 10 сентября 2026 (задача 0049) после двойника flang/scripts/target-words.flang
+ROADMAP.md	claim-guard.mjs	история: дорожная карта вспоминает сторож утверждений на JavaScript с просмотрами в регулярках, снятый 10 сентября 2026 (задача 0049) после переноса на flang/scripts/claim-guard.flang
+docs/site/roadmap.md	claim-guard.mjs	история: страница дорожной карты вспоминает сторож утверждений на JavaScript, снятый 10 сентября 2026 (задача 0049) после переноса на flang/scripts/claim-guard.flang; docs/site — вне стека C, слово за координатором
+docs/site/roadmap.ru.md	claim-guard.mjs	история: страница дорожной карты вспоминает сторож утверждений на JavaScript, снятый 10 сентября 2026 (задача 0049) после переноса на flang/scripts/claim-guard.flang; docs/site — вне стека C, слово за координатором

@@ -871,7 +871,7 @@ f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.flang
 41ff43f2cca335b1ac94a00de37d57f4|6|6|0|0|0|flang/scripts/scheduler-across-targets.flang
 2886864b965d7a0ddedcc3a2c40826c1|2|2|0|0|0|flang/scripts/supervisor-across-targets.flang
 20f7f7e9cd7aaf78ab7d05eb270ae99d|2|2|0|0|0|flang/scripts/target-words.flang
-1bbb59151e04b30c062f30b1347e8b81|29|27|2|0|0|flang/scripts/tasks.flang
+8ee325b60830da216694b989ab60926b|30|28|2|0|0|flang/scripts/tasks.flang
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.flang
 e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/жаргон-образцы.flang
 af296a5839d250342ca4c8cf67e66060|5|×|×|×|0|flang/self/bootstrap/compiler.flang

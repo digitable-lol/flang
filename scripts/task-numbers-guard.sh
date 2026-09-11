@@ -28,8 +28,7 @@
 #
 # ── Что спрашивается ─────────────────────────────────────────────────────────
 #   • номер из имени файла (первые четыре цифры) не занят второй задачей —
-#     СРАЗУ ПО ЧЕТЫРЁМ каталогам: `tasks/`, `tasks/completed/`, `tasks/rejected/`,
-#     `tasks/archive/` (сданные в архив без работы: дубли, перекрытые ADR);
+#     СРАЗУ ПО ЧЕТЫРЁМ каталогам: `tasks/`, `completed/`, `rejected/`, `archive/`;
 #   • номер в шапке (`номер:`) сходится с именем файла;
 #   • номер — ровно четыре цифры;
 #   • у каждой задачи в `tasks/rejected/` статус «отклонена», раздел
@@ -164,9 +163,8 @@ KONEC_SPISKA
     zhivyh=$(perechen "$kat" | grep -c . || true)
     sdelano=$(perechen "$kat/completed" | grep -c . || true)
     otkazov=$(perechen "$kat/rejected" | grep -c . || true)
-    sdannyh=$(perechen "$kat/archive" | grep -c . || true)
     printf 'номера задач целы: задач %s (открытых %s, сделанных %s, отклонённых %s, сданных в архив %s), двойных номеров 0\n' \
-      "$(printf '%s\n' "$spisok" | grep -c .)" "$zhivyh" "$sdelano" "$otkazov" "$sdannyh"
+      "$(printf '%s\n' "$spisok" | grep -c .)" "$zhivyh" "$sdelano" "$otkazov" "$(perechen "$kat/archive" | grep -c . || true)"
   fi
   return "$bed"
 }

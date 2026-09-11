@@ -1,0 +1,88 @@
+=номер=
+10
+=имя-ru=
+Условие на входе: требует
+=имя-en=
+A condition on the input: требует
+=текст-ru=
+Обещание бывает не только о результате, но и о входе. Пишется словом «требует»
+и стоит перед «обеспечивает»:
+
+    требует «х неотрицателен» х не меньше 0
+
+Доказывает его тот, кто зовёт функцию: вызов «Сдача» от 10 и 35 при условии
+«внесено не меньше цена» компилятор отвергает сразу, с кодом ошибки
+FLANG_PRECONDITION_CALL и словами «вызов не снимает предусловие».
+
+Зато внутри функции условие уже известно, и на него опирается доказательство
+обещания о результате. Три прогона одной и той же функции «х плюс 1» с
+обещанием «результат не меньше 0» — и три разных ответа компилятора:
+
+    с «требует х не меньше 0»       доказано 1                   код 0
+    без «требует», х: число         ЛОЖНО, контрпример назван    код 1
+    «внесено минус цена не меньше 0» объявлено, не доказано      код 3
+
+Второй ответ честный: без условия на входе х бывает «не числом», и сравнение
+с ним ложно. Третий — обещание, которого компилятор вывести не может: разность
+двух чисел он неотрицательной не считает; такое обещание остаётся объявленным
+и проверяется при работе программы, а код 3 говорит об этом вслух.
+
+ЗАДАНИЕ. Впишите ⟨1⟩ — условие на входе для функции «Следующее» с именем «х
+неотрицателен»: х не меньше 0. Урок засчитается, когда обещание о результате
+окажется доказанным.
+=текст-en=
+A promise can be about the input, not only about the result. It is written with
+"требует" (requires) and stands before "обеспечивает":
+
+    требует «х неотрицателен» х не меньше 0
+
+It is proved by whoever calls the function: the call «Сдача» от 10 и 35 under
+the condition "внесено не меньше цена" is refused at once, with the error code
+FLANG_PRECONDITION_CALL and the words "the call does not discharge the
+precondition".
+
+Inside the function, though, the condition is already known, and the proof of
+the promise about the result rests on it. Three runs of the same function
+"х плюс 1" with the promise "результат не меньше 0" — and three different
+answers from the compiler:
+
+    with «требует х не меньше 0»        proved 1                    code 0
+    without «требует», х: число         FALSE, counterexample named code 1
+    «внесено минус цена не меньше 0»    stated, not proved          code 3
+
+The second answer is honest: without a condition on the input, х may be "not a
+number", and a comparison with it is false. The third is a promise the compiler
+cannot derive: it does not take a difference of two numbers to be non-negative;
+such a promise stays stated and is checked while the program runs, and code 3
+says so out loud.
+
+YOUR TASK. Fill in ⟨1⟩ — the input condition for «Следующее» (next) named «х
+неотрицателен»: х не меньше 0. The lesson counts as passed once the promise
+about the result is proved.
+=шаблон=
+модуль «Урок»
+
+тотальная функция «Следующее»
+  принимает х: число
+  возвращает число
+  ___
+  обеспечивает «результат неотрицателен» результат не меньше 0
+  х плюс 1
+=подсказки-ru=
+условие на входе: требует «х неотрицателен» …
+=подсказки-en=
+the input condition: требует «х неотрицателен» …
+=впиши=
+требует «х неотрицателен» х не меньше 0
+.
+=хвост=
+тотальная функция «Проверка урока»
+  возвращает число
+  «Следующее» от 41
+=ждём=
+42
+=примеров=
+0
+=отчёт=
+утверждений 1: доказано 1
+=печать=

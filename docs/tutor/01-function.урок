@@ -16,17 +16,19 @@ A module, a function, a call
 
 Первая строка называет модуль. Дальше идут функции, и порядок частей у функции
 закреплён: сначала «принимает» и «возвращает» — типы обязательны, — потом тело,
-одной формой, последним.
+одной формой, последним. Части функции стоят на два пробела правее её заголовка.
 
-Слово «тотальная» — обещание: функция заканчивает работу на любом входе.
-Компилятор это обещание проверяет и откажет, если доказать не сможет.
+Имя пишется в кавычках: ёлочки «Удвоить» и прямые "Удвоить" для компилятора
+одно и то же. Слово «тотальная» — обещание: функция заканчивает работу на любом
+входе. Компилятор это обещание проверяет и откажет, если доказать не сможет.
 
-Имена функций и типов стоят в ёлочках, а вызов пишется словом «от»:
+Вызов пишется словом «от»: «Удвоить» от 21. Место вызову — ВНУТРИ функции, в её
+теле; строка вызова сама по себе, между функциями, — ошибка разбора. В этом
+уроке вызов делает функция «Проверка урока»: проводник дописывает её к ответу
+сам и ждёт от неё 42.
 
-    «Удвоить» от 21
-
-ЗАДАНИЕ. Напишите модуль «Урок», а в нём тотальную функцию «Удвоить»:
-принимает х: число, возвращает число, тело — «х умножить на 2».
+ЗАДАНИЕ. Впишите два пропуска: ⟨1⟩ имя модуля — Урок; ⟨2⟩ тело функции —
+х умножить на 2.
 =текст-en=
 A flang program is a module, and a module holds functions.
 
@@ -39,29 +41,41 @@ A flang program is a module, and a module holds functions.
 
 The first line names the module. Then come the functions, and the order of the
 parts is fixed: "принимает" (accepts) and "возвращает" (returns) first — types
-are required — and the body last, as a single form.
+are required — and the body last, as a single form. The parts of a function
+stand two spaces to the right of its header.
 
+A name goes in quotes: «Удвоить» and "Удвоить" are the same to the compiler.
 The word "тотальная" (total) is a promise: the function finishes on every input.
 The compiler checks that promise and refuses if it cannot prove it.
 
-Names of functions and types are written in « », and a call uses "от" (of):
-
-    «Удвоить» от 21
+A call uses the word "от" (of): «Удвоить» от 21. A call lives INSIDE a function,
+in its body; a call standing on its own between functions is a parse error. In
+this lesson the call is made by «Проверка урока»: the tutor appends that
+function to your answer itself and expects 42 from it.
 
 The same words also exist in English, and mixing them is allowed: "модуль" is
 also "module", "тотальная функция" is "total функция", "принимает" is "accepts",
-"возвращает" is "returns". Names in « » are never translated.
+"возвращает" is "returns". Names in quotes are never translated.
 
-YOUR TASK. Write a module «Урок» holding a total function «Удвоить»: it accepts
-х of type число (number), returns число, and its body is "х умножить на 2"
-(х times 2).
-=ответ=
-модуль «Урок»
+YOUR TASK. Fill in two blanks: ⟨1⟩ the module name — Урок; ⟨2⟩ the body of the
+function — х умножить на 2 (х times 2).
+=шаблон=
+модуль ___
 
 тотальная функция «Удвоить»
   принимает х: число
   возвращает число
-  х умножить на 2
+  ___
+=подсказки-ru=
+имя модуля
+тело функции: х умножить на 2
+=подсказки-en=
+the module name
+the function body: х умножить на 2
+=впиши=
+Урок
+х умножить на 2
+.
 =хвост=
 тотальная функция «Проверка урока»
   возвращает число
@@ -71,3 +85,4 @@ YOUR TASK. Write a module «Урок» holding a total function «Удвоить
 =примеров=
 0
 =отчёт=
+=печать=

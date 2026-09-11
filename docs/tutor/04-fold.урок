@@ -1,5 +1,5 @@
 =номер=
-3
+4
 =имя-ru=
 Список и свёртка
 =имя-en=
@@ -20,9 +20,9 @@ A list and a fold
 Изменить элемент списка нельзя — можно только построить новый список. Имя,
 связанное словом «пусть», связывается один раз и не меняется.
 
-ЗАДАНИЕ. Напишите модуль «Урок», а в нём тотальную функцию «Сумма»: принимает
-числа: список числа, возвращает число, отдаёт сумму всех элементов. На пустом
-списке — 0.
+ЗАДАНИЕ. Впишите ⟨1⟩ — тело функции «Сумма»: свёртка списка «числа», начиная
+с 0, шаг — накопленное плюс элемент. Шаг стоит на два пробела глубже слова
+«свёртка». На пустом списке ответ 0.
 =текст-en=
 A list is written in square brackets: [2, 3, 5]. The empty list is called
 "пустой список". The type of a list of numbers is written "список числа".
@@ -40,20 +40,25 @@ walked once.
 You cannot change an element of a list — you can only build a new list. A name
 bound by "пусть" (let) is bound once and does not change.
 
-YOUR TASK. Write a module «Урок» holding a total function «Сумма»: it accepts
-числа of type "список числа" (list of numbers), returns число, and gives back
-the sum of all elements. On the empty list the answer is 0.
-=ответ=
+YOUR TASK. Fill in ⟨1⟩ — the body of «Сумма» (sum): a fold over the list
+"числа", starting from 0, the step is the accumulated value plus the element.
+The step stands two spaces deeper than the word "свёртка". On the empty list the
+answer is 0.
+=шаблон=
 модуль «Урок»
 
 тотальная функция «Сумма»
   принимает числа: список числа
   возвращает число
-  пример «пусто — ноль»
-    дано числа равно пустой список
-    ожидается 0
-  свёртка числа начиная с 0 как акк и эл
-    акк плюс эл
+  ___
+=подсказки-ru=
+тело: свёртка числа начиная с 0 …, шаг строкой ниже
+=подсказки-en=
+the body: свёртка числа начиная с 0 …, the step on the next line
+=впиши=
+свёртка числа начиная с 0 как акк и эл
+  акк плюс эл
+.
 =хвост=
 тотальная функция «Проверка урока»
   возвращает число
@@ -63,3 +68,4 @@ the sum of all elements. On the empty list the answer is 0.
 =примеров=
 0
 =отчёт=
+=печать=

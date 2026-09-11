@@ -4,7 +4,7 @@
 предел-глубины 20000
 вход flang/self/bootstrap/compiler.flang
 ключи --cli --repl
-коммит дерево-правлено
+коммит 31bc8046467e58e30c56289df07f53c2d10ac038
 ddb5f077f95050492d4af2a51e6c423f72a9e0b079dc7812d3349427d896f3ff  flang/core/evaluate.flang
 db15fbd442e2b5d193487f37d93e00eb14f491d2887aa7d8ce8a55d2243c5f08  flang/core/json.flang
 aed778db5c90f35fe6c42b8fd645b34dfd5797a41af5465dcfb56f5db3fc3649  flang/self/bootstrap/compiler.flang
@@ -24,7 +24,7 @@ cf64fb96e72d22bf8481fcb3697b37148803673c6df4e3b4f9af379b9da6db96  flang/self/emi
 81d8ec02cc1229975cd1d4642df979398a3b4b2f3f01c1c097efeebf557b3042  flang/self/factcheck.flang
 2959634a278d17d3e400e13d9e91b00f56e02eaa7ccba700499116976da91e61  flang/self/functor.flang
 fa691a31af67c2925884e1bc063f65ef25b6632251e99cde6cff371e1ad1084f  flang/self/interpret.flang
-635a8a2c9b4e1210eee1fb109d8aae5811815a364a5fea4ae84c51843928a934  flang/self/io.flang
+e1517a70417904bce24595529f667f65190a82acede3e94321da58266b9db6f9  flang/self/io.flang
 7cb81faade71403e9831d414cfaf04342cc982a90b9f8641d3f30e4ef23c37d4  flang/self/lexer.flang
 3a1e9d45d563b7465e266dcdeba11ae448be02352a8cf72b427cfb8bdb53f41c  flang/self/link.flang
 865b6c93710d97595ac29d8a7ac94300502c6ea5b733b8a1875fe823d7f8d7f0  flang/self/lsp.flang

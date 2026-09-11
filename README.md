@@ -412,8 +412,8 @@ sh flang/проверки/обход.sh               # the checks written in fl
 git config core.hooksPath .githooks      # the pre-push hook: the cheap guards, before CI
 ```
 
-The walk runs 180 checks written in flang and diffs the result against
-<!-- СНЯТО 2026-09-08 строк flang/проверки/ведомость.txt = 180 -->
+The walk runs 205 checks written in flang and diffs the result against
+<!-- СНЯТО 2026-09-11 строк flang/проверки/ведомость.txt = 205 -->
 `flang/проверки/ведомость.txt`, one line per check. The hook runs the guards that finish in
 seconds and names what it did not run; the long ones are CI (`.github/workflows/binary.yml`). Work is tracked in [`tasks/`](tasks/README.md), one file per
 task, taken and closed by a commit — `./ярлык задачник:доска` prints the board. A task can also

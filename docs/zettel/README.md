@@ -195,6 +195,7 @@
 
 - [Проверка, зовущая свидетеля напрямую, не держит правило работающего слоя: изъятие не покрасило ничего](a-check-that-calls-the-witness-does-not-hold-the-working-layer.md)
 - [Проверка кодов отказа смотрит только приставку `FLANG_`, поэтому восемь кодов из семнадцати обещаны прозой и не существуют нигде](a-code-guard-that-matches-one-prefix-checks-only-that-prefix.md)
+- [Приставка семейства в прозе (`FLANG_MONOID_*`) — не имя кода, и сторож кодов теперь это различает](a-family-prefix-in-prose-names-a-family-not-a-code.md)
 - [Сверка не видит различия, которого нет в представлении, — и остаётся зелёной на настоящей ошибке](a-comparison-cannot-see-a-distinction-the-representation-cannot-express.md)
 - [Порча попадает туда, где считают, только если корпус сверки доходит до каталога с единственным случаем](a-corruption-lands-only-where-the-corpus-reaches.md)
 - [Объявленный и ни разу не вызванный список — это обещание без исполнителя, и комментарий над ним читается как гарантия](a-declared-and-never-called-list-is-a-promise-with-no-executor.md)
@@ -271,6 +272,7 @@
 ## Устройство репозитория
 
 - [Указатель поиска по 244 страницам весит 371 КиБ, если класть заголовки и первые 700 знаков, а не весь текст](a-client-side-index-holds-headings-not-full-text.md)
+- [Таблица описи дерева расходится при каждой правке файла оболочки, и ловить это дешевле до пуша](the-inventory-table-drifts-with-every-shell-line-so-the-hook-checks-it-before-push.md)
 - [Инструкция для посторонних, зовущая внутренний прогон, публикует чужую машину, а не удобство](a-convenience-script-in-contributing-publishes-your-machine.md)
 - [Прощальный абзац — «что здесь было и куда делось» — переживает то, о чём прощается, и держит мёртвые пути дольше всей остальной прозы](a-farewell-paragraph-outlives-what-it-says-goodbye-to.md)
 - [Копия упаковщика, живущая в чужом репозитории, расходится с деревом в обе стороны, и ни одна проверка этого дерева этого не видит](a-packaging-copy-in-another-repository-drifts-both-ways.md)

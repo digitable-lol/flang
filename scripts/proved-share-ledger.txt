@@ -852,7 +852,7 @@ ea1158594f0caa46237101fc3a6b2ddf|1|0|1|0|0|flang/scripts/binary.flang
 47700ac76c714a188e2e9ea3e0bcfa95|2|0|2|0|0|flang/scripts/claim-guard.flang
 44d471d298687c75ab7111710b28ca0f|1|1|0|0|0|flang/scripts/closed-length-guard.flang
 da7fad16a84c755f2638b38faa0a9c94|20|19|1|0|0|flang/scripts/code-forgery.flang
-54d6ade0bf153baec190cba632e72154|9|9|0|0|0|flang/scripts/code-guard.flang
+856cb1c31b4ce4c379aff5cfc5077213|10|10|0|0|0|flang/scripts/code-guard.flang
 682ba913b6af96bceeb7c67341575bdf|9|9|0|0|0|flang/scripts/conc-link-emitted.flang
 cd50b4ec140445992c5b5051918b76b0|1|1|0|0|0|flang/scripts/direct-run.flang
 4660f4078dbb69ef66df64263cb80208|48|48|0|0|0|flang/scripts/emptiness-guard.flang

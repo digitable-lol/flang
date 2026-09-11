@@ -606,7 +606,7 @@ $ python3 dolya-fajla.py flang/self/proof-kernel.flang <выход>.out
 ## Куда разошлась работа из этого списка
 
 29 августа список разобран на задачи, и раздавать надо по ним, а не по этому
-файлу. Оглавление всех открытых работ — [`docs/open-work.md`](../docs/open-work.md).
+файлу. Оглавление всех открытых работ — [`docs/archive/open-work.md`](../docs/archive/open-work.md).
 
 | пункт списка | задачи |
 |---|---|

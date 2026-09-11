@@ -9,8 +9,8 @@
 `доля-корпуса.sh --проигрыванием` на `gh/dev` `5f679521` и на снимке ветки
 `r/batch-rebuild` `c817ed39`, плюс полный `flang/proof/чекер/пробы/прогон.sh`.
 **Рядом:** [ADR-0014](0014-proof-language.md) — язык доказательств;
-задача [9965](../../tasks/9965-gate-g4-checker-coverage-95-percent.md) — гейт Г4;
-задача [9967](../../tasks/9967-gate-g7-independent-verification-share.md) — Г7;
+задача [9965](../../tasks/completed/9965-gate-g4-checker-coverage-95-percent.md) — гейт Г4;
+задача [9967](../../tasks/completed/9967-gate-g7-independent-verification-share.md) — Г7;
 **закрытая задача
 [4258](../../tasks/completed/4258-forgery-fixtures-in-the-g4-denominator-are-honest-halves.md)
 — она уже отвечала на этот вопрос «оставить как есть», и §8 отвечает ей.**

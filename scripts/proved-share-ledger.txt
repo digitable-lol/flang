@@ -584,6 +584,13 @@ b4c06c4145ce3782ff20ce2e06aedce5|1|×|×|×|0|docs/benchmark2/20-trim-spaces.fla
 56cc68097cc546efffdc2486f3fffc37|1|1|0|0|1|docs/examples/package/discount.flang
 0b65cd04cbfffd119a3a6bed32ebfe0b|0|0|0|0|1|docs/examples/package/shop/shop.flang
 9de471867d78163faf232d3386b49c05|3|1|1|1|1|docs/examples/tutorial.flang
+020f10cb610b8f64f660d49d1633b9d9|1|1|0|0|0|docs/examples/применение/итог-заказа.flang
+b6ae2d8064a42d42d92275998604ab11|2|0|2|0|2|docs/examples/применение/место-слева.flang
+bb79af496ca2601075d5029485a570e5|2|×|×|×|2|docs/examples/применение/место-слева-вызов.flang
+fbc28603198c58cdfceb8448a8735719|2|0|2|0|2|docs/examples/применение/место-слева-по-ключу.flang
+0c115d4d53bae94d4877e85e65060c22|2|×|×|×|5|docs/examples/применение/место-слева-с-отрезком.flang
+296b01e724efac130d6e8b4c08ee0000|1|0|0|1|1|docs/examples/применение/скидка.flang
+d4ae0219a73f513c49ded21b2a4ea7a9|0|0|0|0|1|docs/examples/применение/скидка-на-вызове.flang
 bdfed2d3f41e6eb7bee5d707cde1cba5|1|1|0|0|0|docs/site/build.flang
 b57a57345cf23de663529ed06d1b1d58|4|0|1|0|0|docs/site/numbers.flang
 8f96129010142d48352032b9d1a52f5c|1|0|1|0|0|docs/site/podsvetka.flang

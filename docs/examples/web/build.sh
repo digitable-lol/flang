@@ -27,7 +27,7 @@
 # Имена переменных латиницей: dash не принимает кириллицу в именах.
 set -eu
 
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 cd "$ROOT"
 
 FLANG=${FLANG:-./bootstrap/flang}
@@ -36,7 +36,7 @@ if [ ! -x "$FLANG" ]; then
   make -C bootstrap >&2
 fi
 
-PROGRAMS="web/app/hailstone.flang web/shortener/client.flang"
+PROGRAMS="docs/examples/web/browser-app/hailstone.flang docs/examples/web/shortener-client/client.flang"
 
 status=0
 for source in $PROGRAMS; do
@@ -54,9 +54,9 @@ done
 if [ "$status" -eq 0 ]; then
   echo
   echo "размеры напечатанного:"
-  ls -l web/app/*.js web/shortener/*.js 2>/dev/null | awk '{ printf "  %9d  %s\n", $5, $9 }'
+  ls -l docs/examples/web/browser-app/*.js docs/examples/web/shortener-client/*.js 2>/dev/null | awk '{ printf "  %9d  %s\n", $5, $9 }'
   echo
-  echo "стенд:  $FLANG io web/stand.flang --max-orders 100000"
+  echo "стенд:  $FLANG io docs/examples/web/stand.flang --max-orders 100000"
   echo "адрес:  http://127.0.0.1:8908/"
 fi
 exit "$status"

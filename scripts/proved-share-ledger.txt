@@ -175,7 +175,7 @@
 //
 // Ещё две строки сведены с готовых выходов второго захода
 // /srv/tmp/m-raise-proved-share/obhod2 (код 0, двоичный f32d89f5…, приём 6128):
-// flang/proof/сверщик.flang — 209 доказанных из 209, web/stand.flang — 19 из 25.
+// flang/proof/сверщик.flang — 209 доказанных из 209, docs/examples/web/stand.flang — 19 из 25.
 // md5 исходников сверен, оба совпали; перегонять их заново было не нужно.
 //
 // Два семени судят ПО-РАЗНОМУ, и это видно на числах. Из 33 файлов, где
@@ -1163,9 +1163,9 @@ e3e12eb0215c5a68744c935ef6ee0619|9|9|0|0|0|scripts/vim-highlighting.flang
 6749e762ed618bbcd5dd488b169cd63e|9|9|0|0|0|scripts/vscode-highlighting.flang
 6d3f808f631c688e4a87d590d305e029|12|12|0|0|0|scripts/vscode-rules.flang
 a781034b78cf3d516bd825fa2dfd3b93|10|8|2|0|0|scripts/сторож-дарвина.flang
-e115e809a3685b17510b8e8c01385301|17|17|0|0|0|web/app/hailstone.flang
-704fe0f011c617acd4cff9afd576a5de|43|43|0|0|0|web/shortener/client.flang
-08e7e8cb7e8abb0e1a64a2c8901d7fde|25|19|6|0|0|web/stand.flang
+e115e809a3685b17510b8e8c01385301|17|17|0|0|0|docs/examples/web/browser-app/hailstone.flang
+704fe0f011c617acd4cff9afd576a5de|43|43|0|0|0|docs/examples/web/shortener-client/client.flang
+08e7e8cb7e8abb0e1a64a2c8901d7fde|25|19|6|0|0|docs/examples/web/stand.flang
 85322a38f7e60b8a3e786fb994be27b6|17|14|3|0|0|ярлыки.flang
 a8a1e131d2f35f0071f646f2e9f5581c|3|×|×|×|2|flang/proof/чекер/пробы/программы/Ч7104-nakrutka-po-predpolozheniyu.flang
 91009603bba720c2187145617a5a9db1|3|×|×|×|2|flang/proof/чекер/пробы/программы/Ч7104-nakrutka-neproveryaemaya.flang

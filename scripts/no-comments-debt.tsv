@@ -533,7 +533,7 @@ scripts/vscode-highlight-check.flang	27
 scripts/vscode-highlighting.flang	17
 scripts/vscode-rules.flang	44
 scripts/сторож-дарвина.flang	33
-web/app/hailstone.flang	62
-web/shortener/client.flang	76
-web/stand.flang	116
-web/wasm/descent.flang	8
+docs/examples/web/browser-app/hailstone.flang	62
+docs/examples/web/shortener-client/client.flang	76
+docs/examples/web/stand.flang	116
+docs/examples/web/wasm/descent.flang	8

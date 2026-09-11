@@ -178,7 +178,7 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 | `benchmarks/speed/programs/tasks.mjs` | 181 | **это и есть замеряемая реализация на JavaScript**, соседка `tasks.flang`, `tasks.py` и `reference.c`. `benchmarks/speed/work.mjs` зовёт её строкой `node: (з) => прогон("node", [.../tasks.mjs, …])` — это ряд «node» в таблице замера. Переписать на flang — стереть у замера столбец сравнения |
 | `docs/site/poisk-proverka.mjs` | 175 | поднимает браузерный `poisk.js` внутри себя через `node:vm` и проверяет **тот же файл**, который читает браузер. Двойник на flang проверял бы другой файл — это подмена сторожа, а не перенос |
 | `scripts/wasm-run.mjs` | 65 | средой WASI служит сам Node (`node:wasi`, preview1). Модуль `wasm32-wasi` без такой среды не запускается вовсе |
-| `web/wasm/probe.mjs` | 63 | ведёт НАСТОЯЩИЙ браузер через Playwright и ловит падение вкладки |
+| `docs/examples/web/wasm/probe.mjs` | 63 | ведёт НАСТОЯЩИЙ браузер через Playwright и ловит падение вкладки |
 | `editors/vscode/extension.js` | 46 | точка входа расширения VS Code: редактор грузит модуль в свой процесс Node, другого способа подключиться у него нет. Знания о языке в файле нет ни одного — оно всё в `flang lsp`, написанном на flang |
 
 Шесть из семи прежняя опись уже так и разобрала. Новое здесь одно, и оно

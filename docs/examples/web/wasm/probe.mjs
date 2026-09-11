@@ -1,5 +1,5 @@
 /**
- * Прогон web/wasm/demo в НАСТОЯЩЕМ браузере и печать чисел.
+ * Прогон docs/examples/web/wasm/demo в НАСТОЯЩЕМ браузере и печать чисел.
  *
  * Зачем отдельный прогонщик, а не «откройте страницу и посмотрите». Затем, что
  * два случая из восьми РОНЯЮТ ВКЛАДКУ, и в открытой руками странице это выглядит
@@ -10,8 +10,8 @@
  * Playwright в зависимостях flang нет и не будет (ядро без зависимостей), путь к
  * нему берётся из переменной окружения:
  *
- *   python3 -m http.server 8907 --directory web/wasm/demo &
- *   PLAYWRIGHT=/путь/к/node_modules/playwright/index.mjs node web/wasm/probe.mjs
+ *   python3 -m http.server 8907 --directory docs/examples/web/wasm/demo &
+ *   PLAYWRIGHT=/путь/к/node_modules/playwright/index.mjs node docs/examples/web/wasm/probe.mjs
  */
 const адрес = process.env.ДЕМО ?? "http://127.0.0.1:8907/index.html"
 const playwright = process.env.PLAYWRIGHT

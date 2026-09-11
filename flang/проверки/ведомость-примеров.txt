@@ -771,4 +771,4 @@ fspec/experiments/theorem-on-false.flang	отказ
 fspec/policy.flang	22 22 0
 fspec/spec/01-discount-cap.flang	1 1 0
 fspec/spec/02-promo.flang	3 3 0
-web/wasm/descent.flang	3 3 0
+docs/examples/web/wasm/descent.flang	3 3 0

@@ -8,19 +8,19 @@ rule: an even one is halved, an odd one is tripled plus one. "Step" moves it by
 one tick, "run" counts by itself until stopped.
 
 ```sh
-sh web/sobrat.sh                                          # emit the module in JavaScript
-bootstrap/flang io web/stand.flang --max-orders 100000    # bring the harness up
+sh docs/examples/web/build.sh                                          # emit the module in JavaScript
+bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000    # bring the harness up
 # open http://127.0.0.1:8908/
 ```
 
 No Node, no npm, no `python3 -m http.server`: the binary compiler emits the
-module, and a harness written in flang (`web/stand.flang`) serves the page.
+module, and a harness written in flang (`docs/examples/web/stand.flang`) serves the page.
 
 There used to be no build at all — the page imported the parser of the
 JavaScript implementation and parsed `hailstone.flang` right inside the tab. The second implementation of the
 language is no longer in the tree, and with it the page lost all three imports:
 **the application would not open at all**. Now an emitted module travels into the
-tab: 72 952 bytes (`sh web/sobrat.sh` on 11 September 2026 at commit 2c40752d0;
+tab: 72 952 bytes (`sh docs/examples/web/build.sh` on 11 September 2026 at commit 2c40752d0;
 on the day the page was written, 24 August, it was 61 453) against nearly two
 megabytes that the second implementation weighed.
 
@@ -28,11 +28,11 @@ megabytes that the second implementation weighed.
 
 | lines | what | in what |
 |---:|---|---|
-| **318** | `web/app/hailstone.flang` — the whole application | flang |
-| **513** | `web/stand.flang` — the harness that serves the page | flang |
+| **318** | `docs/examples/web/browser-app/hailstone.flang` — the whole application | flang |
+| **513** | `docs/examples/web/stand.flang` — the harness that serves the page | flang |
 | 397 | `flang/src/emit/js/flang_host_browser.js` — the tab's host | JavaScript |
-| 241 | `web/browser-probe.sh` — a run in a real browser | shell |
-| 88 | `web/app/index.html` — markup; lines of JavaScript in it: **zero** | HTML |
+| 241 | `docs/examples/web/browser-probe.sh` — a run in a real browser | shell |
+| 88 | `docs/examples/web/browser-app/index.html` — markup; lines of JavaScript in it: **zero** | HTML |
 
 <!-- сверено 2026-09-11 на коммите 2c40752d0: wc -l, grep -c, ./bootstrap/flang check --proof, test -->
 
@@ -148,7 +148,7 @@ same technique by which `nodeHost` is checked without a network. Six checks, amo
 them "the clock wakes the plan by itself" (6 → 1 in 8 steps without a single key
 press) and "presses that happened while the plan was computing are not lost".
 
-**`web/browser-probe.sh` — in a real browser, without Node and without npm.**
+**`docs/examples/web/browser-probe.sh` — in a real browser, without Node and without npm.**
 Playwright is taken from the environment, it is not among flang's dependencies.
 Six screen comparisons, all byte-for-byte.
 

@@ -151,7 +151,7 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
   системе ещё нет, круг. **Снят 3 сентября** вместе с npm (`5d876b0e2`).
 - `packaging/postinstall.mjs` — крючок жизненного цикла npm, его запускает `node`.
   **Снят 3 сентября** (`5d876b0e2`).
-- `web/wasm/probe.mjs` — ведёт настоящий браузер через Playwright.
+- `docs/examples/web/wasm/probe.mjs` — ведёт настоящий браузер через Playwright.
 - `scripts/wasm-run.mjs` — средой WASI служит сам Node. **Снят 9 сентября**
   (`8fea01c39`): средой WASI служит `wasmtime`, а не `node:wasi`.
 - `benchmarks/…/programs/tasks.mjs` — это и есть замеряемая реализация на

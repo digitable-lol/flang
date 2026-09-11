@@ -152,10 +152,10 @@ export const РАЗДЕЛЫ = [
          язык умеет; эти две показывают, чего это стоило на живом коде — с
          ведомостью доказательства, весом вкладки и поимённым перечнем того,
          что упёрлось. Обе переехали из README каталогов: `shortener` собран из
-         двух половин сразу (`web/shortener/README.md` — клиент,
+         двух половин сразу (`docs/examples/web/shortener-client/README.md` — клиент,
          `examples/web/shortener/README.md` — служба), потому что половины
          описывали одну демонстрацию и повторяли друг друга;
-         `browser-app` — из `web/app/README.md`. */
+         `browser-app` — из `docs/examples/web/browser-app/README.md`. */
       { адрес: 'shortener.html', имя: 'Сокращатель ссылок: служба и клиент', из: 'docs/site/shortener.ru.md' },
       { адрес: 'browser-app.html', имя: 'Приложение в браузере', из: 'docs/site/browser-app.ru.md' },
       /* ТРИ ЧИСТЫХ АВТОМАТА БЕЗ ХОЗЯИНА, следом за двумя программами выше и тем

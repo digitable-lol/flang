@@ -27,10 +27,10 @@
 # вкладке по нашей просьбе.
 #
 # ── Как звать ────────────────────────────────────────────────────────────────
-#   TMPDIR=<куда класть временное> sh web/browser-probe.sh
+#   TMPDIR=<куда класть временное> sh docs/examples/web/browser-probe.sh
 #
-# Стенд обязан быть уже поднят (`bootstrap/flang io web/stand.flang`), а модули
-# напечатаны (`sh web/sobrat.sh`). Куда стучаться — в ADRES, куда класть снимок
+# Стенд обязан быть уже поднят (`bootstrap/flang io docs/examples/web/stand.flang`), а модули
+# напечатаны (`sh docs/examples/web/build.sh`). Куда стучаться — в ADRES, куда класть снимок
 # — в SNIMOK.
 #
 # Коды возврата: 0 — всё сошлось; 1 — что-то не сошлось, названо построчно;
@@ -39,13 +39,13 @@
 # Имена переменных латиницей: dash не принимает кириллицу в именах.
 set -eu
 
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 cd "$ROOT"
 
 ADDRESS=${ADRES:-http://127.0.0.1:8908/}
 CHROME=${CHROME:-/usr/bin/google-chrome}
 SHOT=${SNIMOK:-$ROOT/web/gradiny.png}
-BASE=${TMPDIR:?нужен каталог для временного: TMPDIR=<каталог> sh web/browser-probe.sh}
+BASE=${TMPDIR:?нужен каталог для временного: TMPDIR=<каталог> sh docs/examples/web/browser-probe.sh}
 
 command -v jq >/dev/null 2>&1 || { echo "нужен jq" >&2; exit 2; }
 [ -x "$CHROME" ] || { echo "нет браузера: $CHROME (переопределяется CHROME=)" >&2; exit 2; }

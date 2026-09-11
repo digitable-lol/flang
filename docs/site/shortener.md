@@ -5,7 +5,7 @@ One demonstration in two halves, and both are written entirely in flang.
 - **The service** — `examples/web/shortener/`: the input is the bytes the host
   read from the connection, the output is the bytes the host will send back.
   Between them there is not one line written in anything but flang.
-- **The client** — `web/shortener/`: the form, the submit, the list of links and
+- **The client** — `docs/examples/web/shortener-client/`: the form, the submit, the list of links and
   the redirect counter, in a browser tab. Not a harness and not another counter
   demo: a real service answers it.
 
@@ -21,13 +21,13 @@ bootstrap/flang io    examples/web/shortener/plan.flang --in-dir
 The client in a tab:
 
 ```sh
-sh web/sobrat.sh
-bootstrap/flang io web/stand.flang --max-orders 100000
+sh docs/examples/web/build.sh
+bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000
 # open http://127.0.0.1:8908/web/shortener/index.html
 ```
 
 No Node, no npm, no `python3 -m http.server`: the binary compiler emits the
-module and a harness written in flang (`web/stand.flang`) serves the page.
+module and a harness written in flang (`docs/examples/web/stand.flang`) serves the page.
 
 ## The service
 
@@ -401,7 +401,7 @@ there is no file in the tree, so there is nothing to go stale. By hand the same 
 done like this:
 
 ```
-bootstrap/flang emit web/shortener/client.flang \
+bootstrap/flang emit docs/examples/web/shortener-client/client.flang \
   --target js --no-cli --out <directory>
 ```
 

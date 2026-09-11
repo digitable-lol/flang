@@ -386,9 +386,9 @@ benchmarks/model-authoring/queue-fix-arm.sh         8  то же
 | файл | всего строк | из них JavaScript внутри `<script>` |
 |---|---:|---:|
 | `docs/zettel/index.html` | 851 | 396 (строки 455–850) |
-| `web/wasm/demo/index.html` | 187 | 173 (строки 14–186) |
-| `web/shortener/index.html` | 100 | 0 |
-| `web/app/index.html` | 88 | 0 |
+| `docs/examples/web/wasm/demo/index.html` | 187 | 173 (строки 14–186) |
+| `docs/examples/web/shortener-client/index.html` | 100 | 0 |
+| `docs/examples/web/browser-app/index.html` | 88 | 0 |
 
 Две страницы из четырёх чисты, и это не случайность, а решение: их тег `<script>`
 несёт только `src` на напечатанный модуль, и страница сайта об этом прямо

@@ -25,9 +25,9 @@
   их код хозяина, написанный один раз на всё дерево.
 
   Модуль `stoyka_ssylok.js` — это `client.flang`, напечатанный в JavaScript
-  двоичным компилятором:  sh web/sobrat.sh
+  двоичным компилятором:  sh docs/examples/web/build.sh
 
-  Запуск стенда:  bootstrap/flang io web/stand.flang --max-orders 1000000
+  Запуск стенда:  bootstrap/flang io docs/examples/web/stand.flang --max-orders 1000000
   и открыть http://127.0.0.1:8908/web/shortener/index.html
 
   ★ ЧЕГО СЕЙЧАС НЕ РАБОТАЕТ И ПОЧЕМУ. Страница откроется и покажет себя, но
@@ -96,5 +96,5 @@
 
 <p данные-место="итог"></p>
 
-<script type="module" src="../../flang/src/emit/js/flang_host_browser.js"
+<script type="module" src="../../../../flang/src/emit/js/flang_host_browser.js"
         данные-модуль="./stoyka_ssylok.js"></script>

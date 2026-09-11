@@ -5,7 +5,7 @@
 - **Служба** — `examples/web/shortener/`: вход — байты, которые хозяин прочитал
   из соединения; выход — байты, которые хозяин пошлёт обратно. Между ними нет ни
   одной строки, написанной не на flang.
-- **Клиент** — `web/shortener/`: форма, отправка, список ссылок, счётчик
+- **Клиент** — `docs/examples/web/shortener-client/`: форма, отправка, список ссылок, счётчик
   переходов во вкладке браузера. Не стенд и не второе «приложение-счётчик»:
   отвечает ему настоящая служба.
 
@@ -21,13 +21,13 @@ bootstrap/flang io    examples/web/shortener/plan.flang --in-dir
 Клиент во вкладке:
 
 ```sh
-sh web/sobrat.sh
-bootstrap/flang io web/stand.flang --max-orders 100000
+sh docs/examples/web/build.sh
+bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000
 # открыть http://127.0.0.1:8908/web/shortener/index.html
 ```
 
 Ни Node, ни npm, ни `python3 -m http.server`: модуль печатает двоичный
-компилятор, страницу отдаёт стенд, написанный на flang (`web/stand.flang`).
+компилятор, страницу отдаёт стенд, написанный на flang (`docs/examples/web/stand.flang`).
 
 ## Служба
 
@@ -387,7 +387,7 @@ bootstrap/flang io examples/web/shortener/plan-durable.flang --in-dir
 дереве нет, значит нечему устареть. Руками то же делается так:
 
 ```
-bootstrap/flang emit web/shortener/client.flang \
+bootstrap/flang emit docs/examples/web/shortener-client/client.flang \
   --target js --no-cli --out <каталог>
 ```
 

@@ -435,7 +435,7 @@ jobs:
       # функция «Потолок долга») числом 63, а живых файлов долга сейчас 90:
       # ДОЛГ ВЫРОС: файлов 90 при потолке 63 (разбор — 27 файлов сверх
       # потолка, поимённо в выводе шага; benchmarks/, docs/tools/,
-      # editors/vim/checks/, flang/conc/bench/, flang/proof/, scripts/, web/).
+      # editors/vim/checks/, flang/conc/bench/, flang/proof/, scripts/, docs/examples/web/).
       #
       # ПОЧЕМУ ЭТО НЕ УВИДЕЛИ РАНЬШЕ, СКАЗАНО ПРЯМО: этот шаг — двенадцатый из
       # двадцати одного в работе «sborka», и он идёт, только если ОБА шага до

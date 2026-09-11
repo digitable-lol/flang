@@ -8,18 +8,18 @@
 такт, «бег» считает сам, пока не остановят.
 
 ```sh
-sh web/sobrat.sh                                          # напечатать модуль в JavaScript
-bootstrap/flang io web/stand.flang --max-orders 100000    # поднять стенд
+sh docs/examples/web/build.sh                                          # напечатать модуль в JavaScript
+bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000    # поднять стенд
 # открыть http://127.0.0.1:8908/
 ```
 
 Ни Node, ни npm, ни `python3 -m http.server`: печатает модуль двоичный
-компилятор, отдаёт страницу стенд, написанный на flang (`web/stand.flang`).
+компилятор, отдаёт страницу стенд, написанный на flang (`docs/examples/web/stand.flang`).
 
 Раньше сборки не было вовсе — страница ввозила разборщик реализации на
 JavaScript и разбирала `hailstone.flang` прямо во вкладке. Второй реализации языка в дереве
 больше нет, и вместе с ней у страницы пропали все три ввоза: **приложение не
-открывалось никак**. Теперь во вкладку едет напечатанный модуль: 72 952 байта (`sh web/sobrat.sh`
+открывалось никак**. Теперь во вкладку едет напечатанный модуль: 72 952 байта (`sh docs/examples/web/build.sh`
 11 сентября 2026 на коммите 2c40752d0; на день записи страницы, 24 августа,
 было 61 453) против почти двух мегабайт, которые весила вторая реализация.
 
@@ -27,11 +27,11 @@ JavaScript и разбирала `hailstone.flang` прямо во вкладк�
 
 | строк | что | на чём |
 |---:|---|---|
-| **318** | `web/app/hailstone.flang` — всё приложение | flang |
-| **513** | `web/stand.flang` — стенд, отдающий страницу | flang |
+| **318** | `docs/examples/web/browser-app/hailstone.flang` — всё приложение | flang |
+| **513** | `docs/examples/web/stand.flang` — стенд, отдающий страницу | flang |
 | 397 | `flang/src/emit/js/flang_host_browser.js` — хозяин вкладки | JavaScript |
-| 241 | `web/browser-probe.sh` — прогон в настоящем браузере | оболочка |
-| 88 | `web/app/index.html` — разметка; строк JavaScript в ней **ноль** | HTML |
+| 241 | `docs/examples/web/browser-probe.sh` — прогон в настоящем браузере | оболочка |
+| 88 | `docs/examples/web/browser-app/index.html` — разметка; строк JavaScript в ней **ноль** | HTML |
 
 <!-- сверено 2026-09-11 на коммите 2c40752d0: wc -l, grep -c, ./bootstrap/flang check --proof, test -->
 
@@ -139,7 +139,7 @@ JavaScript и разбирала `hailstone.flang` прямо во вкладк�
 «часы будят план сами» (6 → 1 за 8 шагов без единого нажатия) и «нажатия,
 случившиеся пока план считал, не теряются».
 
-**`web/browser-probe.sh` — в настоящем браузере, без Node и без npm.**
+**`docs/examples/web/browser-probe.sh` — в настоящем браузере, без Node и без npm.**
 Playwright берётся из окружения, в зависимости flang не входит. Шесть сверок
 экрана, все побайтовые.
 

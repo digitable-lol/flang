@@ -28,11 +28,11 @@
   Модуль `gradiny.js` — это `hailstone.flang`, напечатанный в JavaScript тем же
   двоичным компилятором. Он производная, в дереве его нет; печатает его
 
-    sh web/sobrat.sh
+    sh docs/examples/web/build.sh
 
   Запуск стенда — тоже без Node и без python3, стенд написан на flang:
 
-    bootstrap/flang io web/stand.flang --max-orders 100000
+    bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000
 
   и открыть http://127.0.0.1:8908/
 -->
@@ -84,5 +84,5 @@
 
 <p данные-место="итог"></p>
 
-<script type="module" src="../../flang/src/emit/js/flang_host_browser.js"
+<script type="module" src="../../../../flang/src/emit/js/flang_host_browser.js"
         данные-модуль="./gradiny.js"></script>

@@ -65,7 +65,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 113 | 24 412 | 98 | 14 991 <!-- СНЯТО 2026-09-08 долг файлов/строк оболочки = 98/15001, планом «Опись дерева по языкам» (было 96/14 267 тем же днём: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-09 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 113 --><!-- СНЯТО 2026-09-10 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 24412 --> |
+| оболочка | 113 | 24 481 | 98 | 14 991 <!-- СНЯТО 2026-09-08 долг файлов/строк оболочки = 98/15001, планом «Опись дерева по языкам» (было 96/14 267 тем же днём: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-09 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 113 --><!-- СНЯТО 2026-09-11 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 24481 --> |
 | C | 38 | 821 673 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-10 строк-в *.c,*.h = 821673 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 23 | 8 076 | 16 | 3 843 <!-- СНЯТО 2026-09-06 файлов *.py = 23 --><!-- СНЯТО 2026-09-09 строк-в *.py = 8076 --> |
@@ -136,7 +136,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 двумя днями раньше — за два дня прибавилось 856 строк, и опись этого не
 заметила, потому что число было набрано рукой и сторожа над ним не было.)
 
-Три четверти миллиона строк C — это не долг и даже не почти долг: 619 557 из
+Три четверти миллиона строк C — это не долг и даже не почти долг: 640 389 из
 них — `bootstrap/compiler_flang.c`, то есть сам компилятор, напечатанный из
 flang в C.
 <!-- СНЯТО 2026-09-09 строк bootstrap/compiler_flang.c = 640389 -->

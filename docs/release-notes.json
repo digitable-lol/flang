@@ -5,47 +5,47 @@
    "ru": {
     "заголовок": "Язык прошёл собственную проверку на доказуемость",
     "появилось": [
-     "Прибор `./ярлык доказуемость` впервые печатает ДОКАЗУЕМ. Он гоняет четыре проверки и печатает все четыре числами. Что это значит по существу: компилятор при проверке программы печатает протокол — какое утверждение доказано и какими шагами. Отдельная программа на C, которая компилятора не видела, берёт исходник и протокол и переигрывает каждый шаг заново. 625 обязательств из 651 переиграны, это 96 %.",
-     "Проверка «в проверяющем нет шага, который доказывает вычислением вместо переигрывания» больше не грепает имя функции, а гоняет живую пару исходник-протокол. В ней есть цели, доказуемые только переписыванием, и честный проверяющий обязан за них не взяться. Под этой проверкой 34 вида обязательства.",
-     "Набор подделок вырос до 401. Каждая лжёт по-своему: подменяет тело функции, ссылается на запрет вместо правила, выдаёт вычитание за сложение, ставит номер строки мимо объявления. Ни одна не принята. Мы не утверждаем, что проверяющий правильный, — мы показываем 401 попытку его обмануть.",
-     "88 правил вывода проверены вторым, чужим судьёй — ядром Lean 4. Рядом с каждой леммой лежит наша строка дословно, чтобы человек мог сверить глазами. Восемь намеренно испорченных правил Lean отверг все восемь.",
-     "`flangtutor` — проводник по языку в духе `vimtutor`, теперь доезжает до поставки. Пять уроков, ответ проверяет настоящий компилятор. Ставится вместе с `flang` через Homebrew и asdf.",
-     "Проверка свежести протоколов отличает подделку, испорченную нарочно, от протокола, отставшего от компилятора, и отказывается мерить устаревшим двоичным."
+     "Команда `./ярлык доказуемость` впервые отвечает ДОКАЗУЕМ. Как это работает: когда компилятор проверяет программу, он записывает, какое утверждение доказано и какими шагами. Отдельная программа на C, написанная без оглядки на компилятор, берёт исходник и эту запись и повторяет каждый шаг сама. Повторено 625 обязательств из 651 — 96 %.",
+     "Проверка «проверяющая программа не считает сама вместо повторения шагов» теперь не ищет имя функции в коде, а запускает настоящую пару исходник + запись, в которой есть цели, доказуемые только переписыванием. Честная программа за такие цели не берётся. Под этой проверкой 34 вида обязательства.",
+     "Подложных записей стало 401. Каждая лжёт по-своему: подменяет тело функции, ссылается на запрет вместо правила, выдаёт вычитание за сложение, ставит номер строки мимо объявления. Ни одна не принята. Мы не говорим, что проверяющая программа правильная, — мы показываем 401 попытку её обмануть.",
+     "88 правил вывода проверены второй, независимой системой — Lean 4. Рядом с каждой леммой лежит наша строка правила дословно, чтобы человек мог сверить глазами. Восемь нарочно испорченных правил Lean отверг все восемь.",
+     "`flangtutor` — учебник в терминале в духе `vimtutor` — теперь входит в поставку. Пять уроков, ответ проверяет настоящий компилятор. Ставится вместе с `flang` через Homebrew и asdf.",
+     "Проверка свежести записей отличает запись, испорченную нарочно, от записи, отставшей от компилятора, и отказывается мерить устаревшим двоичным файлом."
     ],
     "изменилось": [
-     "Доля проверенного независимой программой: 79,88 % → 96,01 %. Прибавка легла в переигрыш, а не в вычисление: разряд «снято вычислением» упал с 8 до 6.",
-     "Lean нашёл у нас несостоятельное правило и оно починено. Правило про прибавление одного и того же к обеим сторонам требовало от прибавки быть «ограниченной», а это слово собиралось в том числе из ограниченности сверху, куда проходит минус бесконечность. Разница между рабочим правилом и ложным была в одном слове.",
+     "Доля обязательств, повторённых независимой программой: 79,88 % → 96,01 %. Прибавка получена повторением шагов, а не вычислением: мест, закрытых вычислением, стало меньше — 8 → 6.",
+     "Lean нашёл у нас неверное правило, и оно починено. Правило о прибавлении одного и того же к обеим сторонам неравенства требовало, чтобы прибавляемое было «ограничено», а это слово допускало и ограниченность только сверху — то есть минус бесконечность. Рабочее правило от ложного отличалось одним словом.",
      "Тип `нат` называется `неотрицательное`. Старое имя остаётся синонимом до 1.0.",
-     "`flang package` работает. Он был сломан на любом входе с 29 августа: вызов с одним доводом при функции о двух."
+     "`flang package` снова работает. Он был сломан на любом входе с 29 августа: функция о двух аргументах вызывалась с одним."
     ],
     "сломалось": [
-     "Доказательство привязано к `flang check` и НЕ покрывает собранный код: никто не проверяет, что напечатанный C соответствует исходной программе. Тот же разрыв есть у Coq, Lean и Idris. Как его закрывать — записано в решении ADR-0030: проверять не печатник целиком, а каждый его запуск.",
-     "Что логика умеет и чего нет, измерено прогоном. «Итог не меньше стоимости товаров» при сложении — доказано. «Скидка не делает цену отрицательной» при вычитании с предусловием — объявлено, не доказано. Про состояние во времени, эффекты и параллелизм в логике нет ничего.",
-     "Писать софт для медицины, авиации и космоса на flang нельзя. Там требуется сертификация процесса — прослеживаемость требования до кода и теста, квалифицированные инструменты, доказанные границы времени отклика, поведение при отказе железа. Ничего из этого у нас нет, и доля процентов это не заменяет. Разбор — в решении ADR-0031.",
-     "Релизный архив не совпадает побайтно между сборкой на своей машине и сборкой в конвейере, хотя собирается нарочно повторимым способом."
+     "Доказательство относится к `flang check` и НЕ покрывает собранный код: никто не проверяет, что напечатанный C соответствует исходной программе. Тот же разрыв есть у Coq, Lean и Idris. Как его закрывать — в решении ADR-0030: проверять каждый запуск печатника, а не печатник целиком.",
+     "Что логика умеет и чего нет, измерено запуском. «Итог не меньше стоимости товаров» при сложении — доказано. «Скидка не делает цену отрицательной» при вычитании с предусловием — объявлено, не доказано. О состоянии во времени, побочных эффектах и параллелизме логика не знает ничего.",
+     "Писать на flang программы для медицины, авиации и космоса нельзя. Там требуется сертификация процесса: след от требования к коду и тесту, квалифицированные инструменты, доказанные границы времени отклика, поведение при отказе оборудования. Ничего из этого у нас нет, и проценты это не заменяют. Разбор — в решении ADR-0031.",
+     "Архив выпуска не совпадает побайтно между сборкой на своей машине и сборкой в конвейере GitHub, хотя собирается нарочно повторимым способом."
     ]
    },
    "en": {
     "заголовок": "The language passed its own provability check",
     "появилось": [
-     "`./ярлык доказуемость` prints PROVABLE for the first time. It runs four checks and prints all four with numbers. What this means concretely: when the compiler checks a program it prints a record — which claim was proved and by which steps. A separate C program that has never seen the compiler takes the source and the record and replays every step. 625 of 651 obligations were replayed, which is 96 %.",
-     "The check «the checker has no step that proves by computing instead of replaying» is no longer a grep for a function name. It runs a live source-and-record pair containing goals provable only by rewriting, which an honest checker must refuse to take. 34 kinds of obligation sit under that check.",
-     "The forgery set grew to 401. Each lies in its own way: a substituted function body, a reference to a prohibition instead of a rule, subtraction passed off as a sum, a line number that misses the declaration. None was accepted. We do not claim the checker is correct — we show 401 attempts to fool it.",
-     "88 inference rules were checked by a second, foreign judge: the Lean 4 kernel. Our row sits verbatim next to each lemma so a human can compare by eye. Eight deliberately broken rules were all rejected.",
-     "`flangtutor`, a guided tour in the spirit of `vimtutor`, now reaches the shipped package. Five lessons, answers judged by the real compiler. Installed alongside `flang` by Homebrew and asdf.",
-     "The record-freshness check now tells a deliberately corrupted forgery from a record that lags the compiler, and refuses to measure with a stale binary."
+     "`./ярлык доказуемость` answers PROVABLE for the first time. How it works: when the compiler checks a program, it writes down which claim was proved and by which steps. A separate C program, written without reference to the compiler, takes the source and that record and repeats every step itself. 625 of 651 obligations were repeated — 96 %.",
+     "The check «the checking program does not compute instead of repeating steps» no longer looks for a function name in the code. It runs a real source + record pair that contains goals provable only by rewriting; an honest checker must refuse them. 34 kinds of obligation sit under that check.",
+     "There are now 401 forged records. Each lies in its own way: a swapped function body, a reference to a prohibition instead of a rule, subtraction passed off as addition, a line number that misses the declaration. None was accepted. We do not claim the checker is correct — we show 401 attempts to fool it.",
+     "88 inference rules were checked by a second, independent system — Lean 4. Our rule text sits verbatim next to each lemma so a human can compare by eye. Eight deliberately broken rules were all rejected.",
+     "`flangtutor`, a terminal tutorial in the spirit of `vimtutor`, is now part of the package. Five lessons; answers are judged by the real compiler. Installed alongside `flang` by Homebrew and asdf.",
+     "The record-freshness check now tells a deliberately corrupted record from one that merely lags the compiler, and refuses to measure with a stale binary."
     ],
     "изменилось": [
-     "Share verified by the independent program: 79.88 % → 96.01 %. The gain went into replay, not computation: the «closed by computing» class fell from 8 to 6.",
-     "Lean found an unsound rule of ours and it is fixed. The rule about adding the same value to both sides required the addend to be «bounded», and that word was assembled partly from bounded-above, which negative infinity satisfies. One word of the premise separated a working rule from a false one.",
+     "Share of obligations repeated by the independent program: 79.88 % → 96.01 %. The gain came from repeating steps, not from computing: places closed by computation went down, 8 → 6.",
+     "Lean found a wrong rule of ours and it is fixed. The rule about adding the same value to both sides of an inequality required the addend to be «bounded», and that word also allowed bounded-above only — i.e. negative infinity. One word separated the working rule from the false one.",
      "The type `нат` is now `неотрицательное` (non-negative). The old name stays a synonym until 1.0.",
-     "`flang package` works. It had been broken on every input since 29 August."
+     "`flang package` works again. It had been broken on every input since 29 August: a two-argument function was called with one."
     ],
     "сломалось": [
-     "The proof is tied to `flang check` and does NOT cover the built binary: nothing verifies that the emitted C matches the source program. Coq, Lean and Idris have the same gap. How we intend to close it is written in ADR-0030: check each run of the printer rather than the printer itself.",
-     "What the logic can and cannot prove was measured by running it. «The total is not less than the goods» over addition — proved. «A discount cannot make the price negative» over subtraction with a precondition — declared, not proved. There is nothing about state over time, effects or concurrency.",
-     "flang must not be used for medical, avionic or space software. Those require process certification — traceability from requirement to code and test, qualified tools, proved response-time bounds, behaviour under hardware failure. We have none of that, and a percentage does not replace it. See ADR-0031.",
-     "The release archive is not byte-identical between a local build and the pipeline build, although it is assembled by a deliberately reproducible recipe."
+     "The proof applies to `flang check` and does NOT cover the built binary: nothing checks that the emitted C matches the source program. Coq, Lean and Idris have the same gap. How we intend to close it is in ADR-0030: check each run of the printer rather than the printer itself.",
+     "What the logic can and cannot prove was measured by running it. «The total is not less than the goods» over addition — proved. «A discount cannot make the price negative» over subtraction with a precondition — declared, not proved. The logic knows nothing about state over time, side effects or concurrency.",
+     "flang must not be used for medical, avionic or space software. Those require process certification: a trail from requirement to code and test, qualified tools, proved response-time bounds, behaviour under hardware failure. We have none of that, and percentages do not replace it. See ADR-0031.",
+     "The release archive is not byte-identical between a local build and the GitHub pipeline build, although it is assembled by a deliberately reproducible recipe."
     ]
    }
   },

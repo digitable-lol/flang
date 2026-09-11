@@ -535,11 +535,9 @@
 // двоичным 1311b4b4… (md5 1768ca5a…), собранным из семени этого же ствола,
 // командой scripts/take-proof-ledger.sh.
 
-142c9f65e36bf025c6b07eb20cf81140|2|2|0|0|0|benchmarks/proof-cost/probe-closed-goal.flang
-f371ae4318c70abf98f5b3641ba17dc6|1|×|×|×|0|benchmarks/proof-cost/probe-forgery.flang
-08f2bb2c578f2e18c8ce6e2b33de8bce|2|×|×|×|0|benchmarks/кеш-доказанного/проба-места.flang
-2b8970e08db7f1d000ea8d269de5aa19|4|4|0|0|3|benchmarks/кеш-доказанного/проба.flang
-fba5ff6beca731554ac578d06b44b0fe|1|1|0|0|0|benchmarks/кеш-приговоров/проба.flang
+142c9f65e36bf025c6b07eb20cf81140|2|2|0|0|0|docs/benchmarks/proof-cost/probe-closed-goal.flang
+f371ae4318c70abf98f5b3641ba17dc6|1|×|×|×|0|docs/benchmarks/proof-cost/probe-forgery.flang
+fba5ff6beca731554ac578d06b44b0fe|1|1|0|0|0|docs/benchmarks/verdict-cache/проба.flang
 5d96729211a2a87a7448b3b6cab6f04c|1|×|×|×|0|docs/benchmark/01-link-key.flang
 aec86952f766b306d663f0c424873e5a|1|0|0|1|0|docs/benchmark/02-node-key.flang
 3c5bf2d37560c9a5e3ac79068b5eca32|1|×|×|×|0|docs/benchmark/03-insert.flang

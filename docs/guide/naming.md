@@ -178,7 +178,7 @@ are not an oversight:
 
 | Outside coverage | Count | Why |
 |---|---|---|
-| benchmark output (`benchmarks/model-authoring/out/`, `docs/benchmark*`) | 500 | it is the output of a run, not a source |
+| benchmark output (`docs/benchmark*`) | 500 | it is the output of a run, not a source |
 | test fixtures (`flang/test/fixtures/`) | 14 | their names are deliberately malformed; that is what makes them fixtures |
 | hand-written code outside the four directories (`flang/proof/examples`, `flang/conc/examples`, `examples/library-api`, `fspec`, `docs/examples/web/wasm`, `flang/проверки`) | **70** | worth covering, but their price has not been measured |
 
@@ -226,7 +226,7 @@ the change.
 
   | Name | What it is |
   |---|---|
-  | `flang/self/svoystva.flang`, `benchmarks/speed/memory.flang` | hand-written sources |
+  | `flang/self/svoystva.flang`, `docs/benchmarks/speed/memory.flang` | hand-written sources |
   | `flang/test/zakon-*.test.mjs` (six of them) | hand-written tests — no longer in the tree (removed 20 August 2026, `fe8e8a37`) |
   | `docs/HANDOVER.md`, `docs/ct/zakony.md`, `zakony-kak-ukazatel.md` | prose |
 

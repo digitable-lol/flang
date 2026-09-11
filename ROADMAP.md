@@ -335,7 +335,7 @@ Lean на машине этого замера не стоит, прогон н�
 (`docs/benchmark2/`), и подмена тела заглушкой — пережило ли утверждение подмену.
 
 ```
-./bootstrap/flang io benchmarks/proof-cost/count-20.flang        (11 сентября 2026)
+./bootstrap/flang io docs/benchmarks/proof-cost/count-20.flang        (11 сентября 2026)
 → содержательных: 11  ослабленных: 6  даровых: 1  не проверено: 2
   хоть что-нибудь: 14 из 20
 ```
@@ -453,7 +453,7 @@ sh flang/proof/доля-корпуса.sh --проигрыванием          
 ./bootstrap/flang check --proof ФАЙЛ                     отчёт о доказательствах файла
 ./bootstrap/flang check --proof ФАЙЛ --записать З         запись доказательства
 make -C flang/proof/чекер && flang/proof/чекер/сверщик ФАЙЛ З   независимая проверка записи
-./bootstrap/flang io benchmarks/proof-cost/count-20.flang   цена доказательства
+./bootstrap/flang io docs/benchmarks/proof-cost/count-20.flang   цена доказательства
 SEMYA_OTSTALO_ZNAYU=1 ./ярлык подделки:проверка          ядро не берёт ложь (сегодня красная, см. выше)
 ./ярлык аксиомы:проверка                                 аксиом ноль
 sh scripts/chto-otstalo-ot-semeni.sh                     что отстало от семени

@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 272 файлов вне flang, долг вне JavaScript — 119 при потолке 63
-<!-- СНЯТО 2026-09-10 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 272 -->
+# Опись дерева по языкам: 243 файлов вне flang, долг вне JavaScript — 119 при потолке 63
+<!-- СНЯТО 2026-09-11 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 243 -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
@@ -81,7 +81,7 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 | оболочка | 113 | 24 635 | 102 | 16 724 <!-- СНЯТО 2026-09-11 долг файлов/строк оболочки = 102/16724, планом «Опись дерева по языкам» на dev 75557af02 с хуком перед пушем этой ветки (учебник прибавил 37 строк в scripts/flangtutor-proba.sh, хук — 5 строк в .githooks/pre-push; до них на 4e9a7a8c3 было 102/16682) (8 сентября было 98/15001: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-09 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 113 --><!-- СНЯТО 2026-09-11 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 24635 --> |
 | C | 38 | 821 684 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-11 строк-в *.c,*.h = 821684 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
-| Python | 23 | 8 076 | 16 | 3 897 <!-- СНЯТО 2026-09-06 файлов *.py = 23 --><!-- СНЯТО 2026-09-09 строк-в *.py = 8076 --> |
+| Python | 16 | 6 024 | 16 | 3 897 <!-- СНЯТО 2026-09-11 файлов *.py = 16 --><!-- СНЯТО 2026-09-11 строк-в *.py = 6024 --> |
 | HTML | 6 | 1 251 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.html = 6 --><!-- СНЯТО 2026-09-09 строк-в *.html = 1251 --> |
 | CSS | 1 | 559 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.css = 1 --><!-- СНЯТО 2026-08-31 строк-в *.css = 559 --> |
 | awk | 1 | 79 | 1 | 79 <!-- СНЯТО 2026-08-31 файлов *.awk = 1 --><!-- СНЯТО 2026-08-31 строк-в *.awk = 79 --> |
@@ -278,17 +278,17 @@ Python 16, awk 1.
 
 ```
 убрано                                          строк  почему это сор, а не долг
-benchmarks/proof-cost/all-20.sh                    24  зовёт vydelit.mjs, которого в дереве нет
+benchmarks/proof-cost/all-20.sh                         24  зовёт vydelit.mjs, которого в дереве нет
                                                        (ведомость перечней звала его мёртвым с задачи 4717)
-benchmarks/proof-cost/check.sh                     13  cd на рабочий каталог агента
-benchmarks/proof-cost/prove.sh                      5  cd на рабочий каталог агента
-benchmarks/proof-cost/test.sh                       5  cd на рабочий каталог агента
+benchmarks/proof-cost/check.sh                          13  cd на рабочий каталог агента
+benchmarks/proof-cost/prove.sh                           5  cd на рабочий каталог агента
+benchmarks/proof-cost/test.sh                            5  cd на рабочий каталог агента
 benchmarks/model-authoring/queue-extra-arms.sh      7  cd на /home/m/..., sudo -u m, pgrep -f
 benchmarks/model-authoring/queue-fix-arm.sh         8  то же
 ```
 
 Два файла того же рода ОСТАВЛЕНЫ, а `cd` у них переведён на путь от себя:
-`benchmarks/proof-cost/all-tests.sh` (на него ссылается сторож
+`benchmarks/proof-cost/all-tests.sh` (снят 11 сентября 2026; на него ссылался сторож
 `scripts/file-extensions.flang`) и `benchmarks/суд-ядра-по-ядрам/доли.sh`
 (часть живого замера Ч180; каталог вывода тоже отвязан от чужой машины). Долга
 они не двигают: файлы остаются в дереве и в долге.

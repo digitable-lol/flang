@@ -23,7 +23,7 @@ bootstrap/flang io    examples/web/shortener/plan.flang --in-dir
 ```sh
 sh docs/examples/web/build.sh
 bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000
-# открыть http://127.0.0.1:8908/web/shortener/index.html
+# открыть http://127.0.0.1:8908/docs/examples/web/shortener-client/index.html
 ```
 
 Ни Node, ни npm, ни `python3 -m http.server`: модуль печатает двоичный

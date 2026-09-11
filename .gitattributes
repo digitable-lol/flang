@@ -37,7 +37,7 @@ bootstrap/README.md diff merge -linguist-generated
 # «пишет ли на языке модель, а не человек» и 20 файлов замера цены
 # доказательства попадали бы в языковую статистику наравне с библиотекой и
 # врали бы о том, из чего состоит проект.
-benchmarks/** linguist-vendored
+docs/benchmarks/** linguist-vendored
 docs/benchmark/** linguist-vendored
 docs/benchmark2/** linguist-vendored
 

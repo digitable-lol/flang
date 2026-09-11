@@ -23,7 +23,7 @@ The client in a tab:
 ```sh
 sh docs/examples/web/build.sh
 bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000
-# open http://127.0.0.1:8908/web/shortener/index.html
+# open http://127.0.0.1:8908/docs/examples/web/shortener-client/index.html
 ```
 
 No Node, no npm, no `python3 -m http.server`: the binary compiler emits the

@@ -75,13 +75,13 @@ docs/examples/web/wasm/demo/*.wasm
 # bootstrap/*.c.
 dvoichnyy/
 
-# Временные файлы счёта двадцати (benchmarks/proof-cost/count-20.flang): тот
+# Временные файлы счёта двадцати (docs/benchmarks/proof-cost/count-20.flang): тот
 # же файл замера без примеров и он же с телом-заглушкой. Пишутся при каждом
 # прогоне и переписываются поверх; убрать их за собой план не может — поручения
 # «Удалить файл» в словаре ввода-вывода нет. Имена с точки и без «.flang»
 # намеренно: так их не подберёт ни один обход корпуса.
-benchmarks/proof-cost/.proba-golyy
-benchmarks/proof-cost/.proba-zaglushka
+docs/benchmarks/proof-cost/.proba-golyy
+docs/benchmarks/proof-cost/.proba-zaglushka
 
 # Напечатанные браузерные модули: производная от .flang рядом со страницей.
 # Печатает их `sh docs/examples/web/build.sh`; в истории им делать нечего — исходник это
@@ -97,9 +97,9 @@ docs/examples/web/*.png
 examples/io/.kopiya-dvoichnogo
 
 # Каталог замера скорости и памяти: восемь сборок одной программы плюс эталон
-# на C, всё создаётся benchmarks/speed/assemble.sh. Имя с точки, потому
+# на C, всё создаётся docs/benchmarks/speed/assemble.sh. Имя с точки, потому
 # что оно названо числом в memory.flang — у плана доводов нет.
-benchmarks/speed/.sborka
+docs/benchmarks/speed/.sborka
 
 # Личные списки долей агентов: у каждого свой, в стволе бессмысленны и
 # конфликтуют при каждом своде.

@@ -220,7 +220,7 @@ flang emit: печать отказала — имя функции «乘积» �
 
 | Вне охвата | Сколько | Почему |
 |---|---|---|
-| печать замеров (`benchmarks/**`, `docs/benchmark*`) | 241 | это вывод прогона, а не исходник |
+| печать замеров (`docs/benchmarks/**`, `docs/benchmark*`) | 241 | это вывод прогона, а не исходник |
 | образцы и проверки (`flang/test`, `flang/proof`, `fspec/**`) | 232 | их печатают редко, а имена части из них нарочно кривые |
 | проверки и планы (`scripts`, `flang/scripts`, `flang/conc`, `web`, `packaging`, `editors`) | 103 | их зовут через `flang io`, а не печатают в чужой язык |
 
@@ -343,7 +343,7 @@ flang emit: печать отказала — имя функции «乘积» �
 
 | Вне охвата | Сколько | Почему |
 |---|---|---|
-| печать замеров (`benchmarks/model-authoring/out/`, `docs/benchmark*`) | 500 | это вывод прогона, а не исходник |
+| печать замеров (`docs/benchmark*`) | 500 | это вывод прогона, а не исходник |
 | образцы тестов (`flang/test/fixtures/`) | 14 | их имена нарочно кривые, они тем и образцы |
 | рукописное вне четырёх каталогов (`flang/proof/examples`, `flang/conc/examples`, `examples/library-api`, `fspec`, `docs/examples/web/wasm`, `flang/проверки`) | **70** | охватить стоит, но цена по ним не мерена |
 
@@ -394,7 +394,7 @@ flang emit: печать отказала — имя функции «乘积» �
 
   | Имя | Что это |
   |---|---|
-  | `flang/self/svoystva.flang`, `benchmarks/speed/memory.flang` | рукописные исходники |
+  | `flang/self/svoystva.flang`, `docs/benchmarks/speed/memory.flang` | рукописные исходники |
   | `flang/test/zakon-*.test.mjs` (шесть) | рукописные тесты — в дереве их больше нет (сняты 20 августа 2026, `fe8e8a37`) |
   | `docs/HANDOVER.md`, `docs/ct/zakony.md`, `zakony-kak-ukazatel.md` | проза |
 

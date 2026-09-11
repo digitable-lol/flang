@@ -341,7 +341,7 @@ whichever language they are written, because GitHub shows them as a directory's 
 
 ## How the repository is laid out
 
-There are 10 directories at the root. Everything that is the language lives under `flang/`;
+There are 9 directories at the root. Everything that is the language lives under `flang/`;
 outside it is what the language is not: the bootstrap point, packaging, examples, measurements,
 documentation and the task list. `sh scripts/published-vs-tree.sh --карта` checks this map
 against the tree on every push.
@@ -356,7 +356,6 @@ examples/         185 flang programs in 22 sets: leetcode, rosetta, crypto, db, 
 editors/          the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/        the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
 scripts/          guards of the tree, the reprint of the bootstrap point, the release archive, the changelog
-benchmarks/       measurements: speed against Python and Node, the cost of a proof, model authoring
 fspec/            business rules written as proved specifications, and the check that a new rule does not undo an old one
 docs/             documentation: the site sources, the guide, decisions (adr/), measurement reports, the knowledge base
 tasks/            the open and closed work of the tree, one file per task

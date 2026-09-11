@@ -541,44 +541,38 @@ n промежуточных накопителей длины 1…n перек�
 языка: они зовут харнессы замера прямо из дерева исходников. Тому, кто языком
 пользуется, ничего из этого не нужно.
 
-Все скрипты лежат в `benchmarks/speed/`. Ни один не трогает репозиторий:
+Все скрипты лежат в `docs/benchmarks/speed/` (до 11 сентября 2026 — `benchmarks/speed/`; замеры времени компиляции `kompilyaciya.mjs` и `faz.mjs` сняты вместе с остальным JavaScript, их числа в тексте выше — от прогонов тех дней). Ни один не трогает репозиторий:
 всё собирается в указанный каталог.
 
 ```bash
 # 1. Собрать восемь вариантов одной программы плюс эталон на C
-benchmarks/speed/assemble.sh /tmp/zamer
+docs/benchmarks/speed/assemble.sh /tmp/zamer
 
 # 2. Время работы: пять задач, восемь сборок, чередование, 11 кругов
-node benchmarks/speed/work.mjs /tmp/zamer --кругов 11
+node docs/benchmarks/speed/work.mjs /tmp/zamer --кругов 11
 
 # 3. Пиковая память тех же задач.
 #    Замер написан планом на flang, и каталог сборки назван в нём числом —
 #    «.sborka» рядом с планом, — потому что доводов у плана нет. Готовится он
 #    тем же assemble.sh, запущенным без довода.
-benchmarks/speed/assemble.sh
-bootstrap/flang io benchmarks/speed/memory.flang
+docs/benchmarks/speed/assemble.sh
+bootstrap/flang io docs/benchmarks/speed/memory.flang
 
 # 4. Рост арены на «Сортировке вставками» (с пределом адресного пространства)
 mkdir -p /tmp/zamer/qs
 bootstrap/flang emit examples/rosetta/quicksort.flang \
   --target c --out /tmp/zamer/qs --max-steps 2000000000
 make -C /tmp/zamer/qs -j4
-benchmarks/speed/arena.sh /tmp/zamer/qs
+docs/benchmarks/speed/arena.sh /tmp/zamer/qs
 
-# 5. Время компиляции: итоги процессами, вместе с точками сравнения
-node benchmarks/speed/kompilyaciya.mjs --кругов 5
-
-# 6. Время компиляции: слагаемые внутри одного процесса
-node benchmarks/speed/faz.mjs flang/self/types.flang --повторов 7
-
-# 7. Свод по корпусу: чем несётся обещание «тотальная» и где сторожа
+# 5. Свод по корпусу: чем несётся обещание «тотальная» и где сторожа
 ./ярлык доказательства:ведомость
 ```
 
 Разовая проба одной задачи на трёх языках, с временем и памятью:
 
 ```bash
-benchmarks/speed/probe.sh /tmp/zamer/base/flang_cli "Обход дерева" дерево 100000
+docs/benchmarks/speed/probe.sh /tmp/zamer/base/flang_cli "Обход дерева" дерево 100000
 ```
 
 **Перед `node` в ручных прогонах ставьте `LC_ALL=C.UTF-8`** — имена задач
@@ -588,8 +582,8 @@ benchmarks/speed/probe.sh /tmp/zamer/base/flang_cli "Обход дерева" д
 ## Приложение: тексты на Python и JavaScript
 
 Приложены целиком, чтобы сравнение можно было проверить, а не принять на веру.
-Текст на flang — `benchmarks/speed/programs/tasks.flang` (432 строки),
-эталон на C — `benchmarks/speed/programs/reference.c` (242 строки).
+Текст на flang — `docs/benchmarks/speed/programs/tasks.flang` (432 строки),
+эталон на C — `docs/benchmarks/speed/programs/reference.c` (242 строки).
 
 ### `tasks.py`
 

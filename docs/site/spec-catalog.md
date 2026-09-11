@@ -238,7 +238,7 @@ inputs.
 
 ## Today the stand is red, and here is what by
 
-This is the run on 8 September 2026, binary 0.7.14:
+This is the run on 11 September 2026, binary 0.7.17 (commit 2c40752d0; first taken on 8 September with 0.7.14, unchanged since):
 
 ```
 $ flang io fspec/guard.flang
@@ -271,7 +271,7 @@ state the guard reddens on every heir, not only on your mistake.
 ## The boundary: what a lone `flang check` does not see
 
 The programs in `experiments/` show where the compiler speaks and where it stays
-quiet. The codes were taken on 8 September 2026 with binary 0.7.14 by
+quiet. The codes were taken on 8 September 2026 with binary 0.7.14 and re-checked on 11 September with binary 0.7.17 (commit 2c40752d0) by
 `flang check <file> --proof`:
 
 | program | what is written in it | code |

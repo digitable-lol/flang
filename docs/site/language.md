@@ -72,7 +72,7 @@ comma-separated. Signs are not in the glossary: it holds words only.
 ```flang
 module «Report»
   exports «Total»
-  uses «Списки»
+  uses «Lists»
 
 total function «Total»
   accepts items: list number
@@ -86,24 +86,26 @@ total function «Total»
 **Take `only` with care, and here is why.** The word decides not what the
 importer sees but **what reaches the assembled program at all**: whatever is not
 on the list is not in the program. An imported function may have claims of its
-own that call its neighbours. Replace the third line above with `uses «Списки»
+own that call its neighbours. Replace the third line above with `uses «Lists»
 only «Сумма», «Уникальные»` and the check refuses:
 
 ```
-FLANG_UNKNOWN_NAME, строка 635, столбец 74: неизвестная функция «Все не меньше»
-FLANG_UNKNOWN_NAME, строка 635, столбец 130: неизвестная функция «Максимум»
+FLANG_UNKNOWN_NAME, строка 460, столбец 47: неизвестная функция «Шаг суммы»
+FLANG_UNKNOWN_NAME, строка 453, столбец 74: неизвестная функция «Все не меньше»
+FLANG_UNKNOWN_NAME, строка 453, столбец 130: неизвестная функция «Максимум»
 ```
 
 (Compiler diagnostics are printed in Russian whatever surface the file is
 written on. `неизвестная функция` — unknown function.)
 
-Line 635 is the postcondition of `«Сумма»` itself in `lists.flang`: "the sum of
+Line 453 is the postcondition of `«Сумма»` itself in `lists.flang`: "the sum of
 non-negative numbers is at least the largest of them". It calls `«Все не меньше»`
-and `«Максимум»`, and `only` did not let them in. The same file with a plain
-`uses «Списки»` passes with exit code 0.
+and `«Максимум»`, and line 460 is the body of `«Сумма»`, which calls `«Шаг суммы»`;
+`only` did not let them in (run of 11 September 2026, binary 0.7.17, commit 2c40752d0). The same file with a plain
+`uses «Lists»` passes with exit code 0.
 
 There is no path in the line: **a module is found by name**. The name is what
-stands on the first line of the file in `module «Списки»`; the file name and its
+stands on the first line of the file in `module «Lists»`; the file name and its
 directory play no part, and a module moved to another directory keeps being
 found.
 
@@ -122,8 +124,10 @@ file, not from the root, and works for a package too: `from "name.flang-package"
 One name on two found modules is a refusal listing both paths, not a silent pick
 of the first.
 
-Edge: module names are not translated. The Russian `«Списки»` is imported under
-that name from a file written in English words.
+Edge: module names are not translated. The library's list module is called
+`«Lists»` (first line of `flang/stdlib/lists.flang`), and it is imported under
+that name from a file written in Russian words too; `uses «Списки»` answers
+`FLANG_IMPORT_NOT_FOUND` (run of 11 September 2026, binary 0.7.17, commit 2c40752d0).
 
 ## Function
 

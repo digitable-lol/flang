@@ -4,9 +4,11 @@
 message per line. The assistant starts it, not a human: started by hand it waits
 for lines in silence — that is not a hang.
 
-Everything on this page was taken from runs on 24 August 2026 against
-`flang {{выпуск.версия}}`. Every number and every quotation has the command that produces it
-standing next to it; answers are quoted verbatim — including the places where
+Everything on this page was taken from runs on 24 August 2026; the service's
+answers — `initialize`, `tools/list`, the three protocol errors, the first line
+of the report, the `FLANG_BOUND_ON_NAN` refusal — were re-checked on
+11 September 2026 with 0.7.17 and match verbatim. Every number and every
+quotation has the command that produces it standing next to it; answers are quoted verbatim — including the places where
 the service does not behave the way you would expect. The service answers in
 Russian, so its own words are left untranslated and glossed instead.
 
@@ -364,8 +366,8 @@ machine.
 | What is checked | Size | Time |
 |---|---|---|
 | one function with a promise and an example | 12 lines, 1 function | 0.03 s |
-| `examples/leetcode/001-two-sum.flang` | 65 lines, 3 functions | 0.12 s |
-| `examples/crypto/certificate.flang` with imports | 121 functions, 5 files | 92 s |
+| `examples/leetcode/001-two-sum.flang` | 56 lines, 3 functions | 0.13 s (11 September 2026, 0.7.17) |
+| `examples/crypto/certificate.flang` with imports | 121 functions, 5 files | 92 s (24 August); 114 s (11 September 2026, 0.7.17) |
 
 ```bash
 /usr/bin/time -f '%e s' flang check examples/leetcode/001-two-sum.flang

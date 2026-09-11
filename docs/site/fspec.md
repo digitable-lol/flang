@@ -80,12 +80,12 @@ would live in two places and diverge at the first repricing.
 
 ```
 examples/web/marketplace/
-  catalog.flang   136   goods, price, stock, "how many to hand out"
-  cart.flang      130   line items, the bill, tiered discount
-  orders.flang    245   order states and the transitions between them
-  gateway.flang   482   response codes, routes, bytes in — bytes out
+  catalog.flang   113   goods, price, stock, "how many to hand out"
+  cart.flang      111   line items, the bill, tiered discount
+  orders.flang    225   order states and the transitions between them
+  gateway.flang   430   response codes, routes, bytes in — bytes out
                   ─────
-                  993   lines, all of them flang
+                  879   lines, all of them flang (wc -l, commit 2c40752d0)
 ```
 
 What the gateway answers:
@@ -195,23 +195,22 @@ $ flang check examples/web/marketplace/catalog.flang --proof
   утверждений 1: доказано 1 (из них без теоремы 1), сетка 0, объявлено, не доказано 0
 
 $ flang check examples/web/marketplace/cart.flang --proof
-  функций 16: тотальных 16, обычных 0
-  утверждений 6: доказано 3 (из них без теоремы 3), сетка 3, объявлено, не доказано 0
+  функций 8: тотальных 8, обычных 0
+  утверждений 5: доказано 2 (из них без теоремы 2), сетка 3, объявлено, не доказано 0
 
 $ flang check examples/web/marketplace/orders.flang --proof
   функций 7: тотальных 7, обычных 0
   утверждений 3: доказано 2 (из них индукцией 2), сетка 1, объявлено, не доказано 0 (шагов в термах 12)
 
 $ flang check examples/web/marketplace/gateway.flang --proof
-  функций 106: тотальных 106, обычных 0
-  утверждений 146: доказано 70 (из них индукцией 10) (из них без теоремы 58, объявленным типом 2), сетка 76, объявлено, не доказано 0 (шагов в термах 32)
+  функций 17: тотальных 17, обычных 0
+  утверждений 2: доказано 2 (из них индукцией 2), сетка 0, объявлено, не доказано 0 (шагов в термах 18)
 ```
 
-The gateway's numbers stand out for a plain reason: `gateway.flang` pulls the
-HTTP parsing library in with it, and the report counts everything checked
-alongside it — 106 functions against the catalogue's eight. The gateway's own
-claims are two, and both are proved by induction over the declared sum of
-outcomes:
+The summaries are from the run of 11 September 2026, binary 0.7.17, commit 2c40752d0; the
+report counts only the functions and claims of the file itself, the imported
+HTTP parsing library is not in these numbers. The gateway's own claims are two,
+and both are proved by induction over the declared sum of outcomes:
 
 ```
   постусловие «код ответа из объявленного набора» функции «Код исхода» — доказано индукцией по «Исход»: база 9 случаев, шаг при допущении на частях (0 случаев) — утверждение обо ВСЕХ входах типа «Исход», а не о написанных
@@ -245,9 +244,9 @@ flang check examples/web/marketplace/gateway.flang --proof
 
 ```
 место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 7, а диагностика компилятора имени файла не несёт
-FLANG_PROOF_STEP, строка 129, столбец 10: шаг 1, база «Товара не хватает» теоремы «код ответа из объявленного набора»: пример «товара не хватает — четыреста девять» не проходит: нарушено свойство «код ответа из объявленного набора» функции «Код исхода». Утверждение на этом значении неверно, значит случай им не закрывается. к этому месту не известно ничего, кроме гипотез «дано»
+FLANG_PROOF_STEP, строка 101, столбец 10: шаг 1, база «Товара не хватает» теоремы «код ответа из объявленного набора»: пример «товара не хватает — четыреста девять» не проходит: нарушено свойство «код ответа из объявленного набора» функции «Код исхода». Утверждение на этом значении неверно, значит случай им не закрывается. к этому месту не известно ничего, кроме гипотез «дано»
 место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 7, а диагностика компилятора имени файла не несёт
-FLANG_PROOF_STEP, строка 156, столбец 10: шаг 1, база «Товара не хватает» теоремы «пояснение кода непусто»: пример «товара не хватает — четыреста девять» не проходит: нарушено свойство «код ответа из объявленного набора» функции «Код исхода». Утверждение на этом значении неверно, значит случай им не закрывается. к этому месту не известно ничего, кроме гипотез «дано»
+FLANG_PROOF_STEP, строка 125, столбец 10: шаг 1, база «Товара не хватает» теоремы «пояснение кода непусто»: пример «товара не хватает — четыреста девять» не проходит: нарушено свойство «код ответа из объявленного набора» функции «Код исхода». Утверждение на этом значении неверно, значит случай им не закрывается. к этому месту не известно ничего, кроме гипотез «дано»
 examples/web/marketplace/gateway.flang: не проверено — ведомость не печатается у программы с замечаниями
 ```
 
@@ -347,12 +346,17 @@ two people read the code. Here it is one command:
 ./ярлык спеки:проверка
 ```
 
-```
-спеки согласны: спек 42, утверждений 295, и каждое доказано из нуля аксиом
-```
-
-"From zero axioms" means nothing was taken on faith: under every claim there is a
-chain that reaches the rules of the language itself.
+The answer "specs agree" is the goal of this command, not today's run: on the
+run of 11 September 2026, binary 0.7.17, commit 2c40752d0 the command answers
+`бед в системе спек: 79` (79 troubles in the spec system), exit code 1. All 79
+are of one kind — the `check --proof` report no longer carries the claims of
+imported modules, and the rule "the predecessor's claim is still proved" cannot
+find them. What this means and how to read it is laid out on
+[The spec catalogue: the stand, the check and the snapshot](spec-catalog.html),
+section "Today the stand is red". The acceptance rule itself does not change: a
+spec is accepted only if every claim of it is proved, and nothing is taken on
+faith — under every claim there is a chain that reaches the rules of the
+language itself.
 
 The first two specs in the catalogue show exactly the LINK between two rules, not
 a strong claim: they are written as an upper bound, and an upper bound survives
@@ -368,8 +372,8 @@ spoiled, and the check must go red on every one.
 
 Among the things it catches: a rule weakened under the same name; a spec with no
 predecessor; a translated view promising something the original does not; a typo
-in the language tag; a translated function name. There are fourteen cases, and
-the check must catch each — while staying **silent** on an honest change,
+in the language tag; a translated function name. The run of 8 September 2026
+counted 19 forged cases (see the spec catalogue page), and the check must catch each — while staying **silent** on an honest change,
 otherwise it is not catching forgery, it is catching movement.
 
 ## A rule in another language is the same rule

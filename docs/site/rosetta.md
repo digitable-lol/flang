@@ -29,8 +29,7 @@ bootstrap/flang check examples/rosetta/towers-of-hanoi.flang --proof  # the ledg
 
 `test` runs the examples declared inside the functions. `check --proof` prints the
 proof report: what carries the promise «тотальная» for each function, and what carries
-each stated claim. For the Towers of Hanoi it ends like this (run of 8 September
-2026):
+each stated claim. For the Towers of Hanoi it ends like this (run of 11 September 2026, binary 0.7.17, commit 2c40752d0):
 
 ```
 что высказано и чем это несётся:
@@ -40,7 +39,7 @@ each stated claim. For the Towers of Hanoi it ends like this (run of 8 September
 The words of the proof report are not interchangeable: «доказано» (proved) is a claim
 about all inputs; «сетка N» (grid N) is computed on N values of the author's, and
 that is not a proof; «объявлено, не доказано» (stated, not proved) is a claim with
-no proof attached. On the run of 8 September 2026 every stated claim in every file
+no proof attached. On the run of 11 September 2026 (0.7.17, commit 2c40752d0) every stated claim in every file
 of the set stands in the proof report with the word «доказано»; there is no «сетка» line
 and no «объявлено, не доказано» line in any of them.
 
@@ -103,7 +102,7 @@ that did not decrease gives the refusal `FLANG_MEASURE` rather than an endless l
 - **Tasks that need strings ordered** (Anagrams, Letter frequency). `меньше` and
   `больше` on strings are refused by the type check —
   `FLANG_TYPE: … сравнения порядка допустимы только для чисел` (checked on
-  8 September 2026 on a one-function file). The letters of a word cannot be sorted
+  11 September 2026, binary 0.7.17, on a one-function file). The letters of a word cannot be sorted
   without a "letter → number" table, and with it the solution stops being a
   solution of this task.
 - **Tasks about infinite sequences.** There is no laziness; a finite approximation

@@ -12,18 +12,20 @@ flang test docs/examples/operations.flang
 ```
 
 ```
-docs/examples/operations.flang: примеров 254, прошло 254, не прошло 0
+docs/examples/operations.flang: примеров 274, прошло 274, не прошло 0
 ```
 
-Six of those examples are written here; the other 248 arrive with the library: an
-imported module carries its own examples, and they run alongside yours.
+Six of those examples are written here; the other 268 arrive with the library: an
+imported module carries its own examples, and they run alongside yours. (The
+numbers on this page were taken from binary 0.7.17 on 11 September 2026; the
+library function counts are by `функция «…»` headers in the `flang/stdlib/` files.)
 
 ## Importing a module
 
 `использует` is the import. A module is attached by name, with no path:
 
 ```flang
-модуль «Операции»
+модуль «Operations»
   использует «Lists»
   использует «Strings»
   использует «String sets»
@@ -67,14 +69,14 @@ itself and living in `flang/stdlib/`:
 
 | Module | File | Functions |
 | --- | --- | --- |
-| «Списки» (lists) | `flang/stdlib/lists.flang` | 35 |
-| «Строки» (strings) | `flang/stdlib/strings.flang` | 37 |
-| «Списки строк» (string lists) | `flang/stdlib/strlists.flang` | 12 |
-| «Множество строк» (string sets) | `flang/stdlib/sets.flang` | 9 |
+| «Списки» (lists) | `flang/stdlib/lists.flang` | 38 |
+| «Строки» (strings) | `flang/stdlib/strings.flang` | 39 |
+| «Списки строк» (string lists) | `flang/stdlib/strlists.flang` | 13 |
+| «Множество строк» (string sets) | `flang/stdlib/sets.flang` | 16 |
 | «Числа» (numbers) | `flang/stdlib/numbers.flang` | 16 |
 | «Высший порядок» (higher-order) | `flang/stdlib/higher-order.flang` | 35 |
 | «Словарь» (dictionary) | `flang/stdlib/dictionary.flang` | 14 |
-| «Словарь хешем» (hash dictionary) | `flang/stdlib/hashmap.flang` | 23 |
+| «Словарь хешем» (hash dictionary) | `flang/stdlib/hashmap.flang` | 25 |
 
 ## Lists
 
@@ -326,11 +328,12 @@ individually:
 
 ```
 итог:
-  функций 115: тотальных 111, обычных 4
-  обещание несёт: композиция 95, структура 11, точный шаг 3, постоянный шаг 2, объявленная мера 0
-  сторожей в рантайме: 2 места
+  функций 6: тотальных 6, обычных 0
+  обещание несёт: композиция 6, структура 0, точный шаг 0, постоянный шаг 0, объявленная мера 0
+  сторожей в рантайме: 0 мест
   законов на сетке: 0 (значений в сетках 0); на веру: 0
-  утверждений 238: доказано 101 (из них индукцией 7) (из них без теоремы 93), сетка 137, объявлено, не доказано 0 (шагов в термах 2)
+  утверждений 2: доказано 0, сетка 2, объявлено, не доказано 0
+docs/examples/operations.flang: ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ (спросить: --строго) — утверждений 2: доказано 0, условно 0, сетка 2, объявлено, не доказано 0, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 0
 ```
 
 The word «сетка» — "grid" — the report defines in its own header: **"counted on N
@@ -345,9 +348,13 @@ The report says so outright:
 постусловие «общих не больше, чем в первом наборе» функции «Общих меток» — сетка 1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано только их число. Это не доказательство — теоремы при утверждении нет
 ```
 
-All 101 proven claims came **from the library** imported by this file, not from
-anything written here. Writing a postcondition is easy; getting a proof under it
-is separate work, and the compiler does not pretend that work is done. What it
+In 0.7.17 the report counts only the functions and claims of the file itself; the
+claims of the imported library are not in its summary. The words «с опорой, и
+опора не судилась» ("with support, and the support was not judged") in the last
+line mean exactly this: both claims leaned on the grid of examples, and the exit
+code is still 0 — ask more strictly with `--строго`, and the code becomes 4.
+Writing a postcondition is easy; getting a proof under it is separate work, and
+the compiler does not pretend that work is done. What it
 costs and when it succeeds is on [Why and how](proofs.html).
 
 ## Next

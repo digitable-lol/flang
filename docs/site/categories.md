@@ -120,6 +120,11 @@ $ flang check flang/ct/order-shipment.flang
 нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 ```
 
+The same file further down also declares an `isomorphism`, which the binary
+does not judge (see the sections below), so the whole command answers with
+exit code 2 and the line «проверено НЕ ДО КОНЦА» ("checked, not to the end") —
+run of `bootstrap/flang` 0.7.17, commit `2c40752d0`, 11 September 2026.
+
 **"Computed over a grid" is not "proved".** Five values are five values; a sixth
 may break the law, and the count says nothing about that. The word "proved" is
 deliberately not used here.

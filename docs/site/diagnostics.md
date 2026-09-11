@@ -10,7 +10,11 @@ Find your code on this page: one line for what it means, one for what to do.
 Codes are grouped by the layer that produces them: parsing comes before types,
 types come before proofs.
 
-Exit codes: `0` — checked, `1` — findings, `2` — bad invocation.
+Exit codes: `0` — checked, `1` — findings, `2` — bad invocation, `3` — with
+`--proof`: a claim is declared and has no proof, `4` — part of the checks did
+not run (`--быстро`) or everything is proved but leans on a grid
+(`--proof --строго`). All outputs below were taken from binary 0.7.17
+(11 September 2026).
 
 ## Three traps that cost a day
 
@@ -64,15 +68,16 @@ flang check ввоз.flang
 ```
 модуль «Ввоз»: функций 2, из них с доказанным завершением 0; типов 0; файлов вместе с импортами 2
 без доказанного завершения: «Учтено» «Проба»
+место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 2, а диагностика компилятора имени файла не несёт
 FLANG_UNKNOWN_NAME, строка 12, столбец 4: неизвестная функция «Двойка»
-FLANG_UNKNOWN_NAME, строка 11, столбец 50: неизвестная функция «Двойка»
+FLANG_UNKNOWN_NAME, строка 11, столбец 56: неизвестная функция «Двойка»
 FLANG_NOT_TOTAL, строка 12, столбец 4: тотальная функция «Учтено» вызывает неизвестную функцию «Двойка»: завершение доказать нельзя
 ввоз.flang: не проверено — замечаний 3
 ```
 
 The import `только «Учтено»` brings in one name. Both the body and the
 postcondition of «Учтено» call «Двойка», which the importer does not have.
-Column 50 points inside the postcondition — the line number belongs to the
+Column 56 points inside the postcondition — the line number belongs to the
 imported file, and no file is named because two files were checked together.
 
 What to do — one of three:
@@ -87,7 +92,8 @@ What to do — one of three:
 
 `flang check` without flags checks parsing, types, termination and examples. A
 postcondition it can neither prove nor refute is passed over in silence. The
-postcondition «меньше двойки» above is false — and the file is green.
+postcondition «не меньше двойки» above is proved by nothing — without `--proof`
+the file is green, exit 0; with `--proof` the same file exits with 3.
 
 Ask directly:
 
@@ -96,7 +102,9 @@ flang check ядро.flang --proof
 ```
 
 ```
-  постусловие «меньше двойки» функции «Учтено» — объявлено, не доказано: ни теоремы, ни примеров. Его считает рантайм после каждого возврата — на тех входах, которые придут
+  постусловие «не меньше двойки» функции «Учтено» — объявлено, не доказано: ни теоремы, ни примеров. Его считает рантайм после каждого возврата — на тех входах, которые придут
+…
+ядро.flang: НЕ ПРОВЕРЕНО — утверждений 1: доказано 0, условно 0, сетка 0, объявлено, не доказано 1, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 3
 ```
 
 Read the words literally: «доказано» — about all inputs; «сетка N» — computed

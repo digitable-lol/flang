@@ -14,7 +14,9 @@ The first {{отказы.обязательств}} say the theorem does not lin
 function and are fixed inside the theorem; the other {{отказы.вывода}} say the
 derivation was not built, and half of those name a limit the language does not
 cross today. All thirteen were produced by actual runs on small programs: the
-message texts below are the compiler's output, not a retelling.
+message texts below are the compiler's output, not a retelling (taken in August
+2026; `FLANG_PROOF_NO_GOAL` and "exit code 0 without a theorem" were re-checked
+on 11 September 2026 with 0.7.17 — they match).
 
 ## A diagnostic has five parts
 
@@ -34,7 +36,7 @@ Read the tail of the message, and not out of politeness. For three of the six
 derivation refusals — `FLANG_PROOF_STEP`, `FLANG_PROOF_INDUCTION_STEP`,
 `FLANG_PROOF_INDUCTION_BRANCH` — the tail is exactly where the kernel says what
 it knew at that point (`известно: предусловие функции «Сумма»`) and which ways
-it tried (`правил пять — …`). That is the answer to "mine or not mine": an empty
+it tried (`правил десять — …`). That is the answer to "mine or not mine": an empty
 `известно:` means nothing to stand on, a list of rules means the wrong goal
 shape.
 
@@ -88,7 +90,7 @@ flowchart TD
   B -->|STEP and INDUCTION| D{what the tail says}
   C --> G([fix the theorem:<br>its name, its variables,<br>the words of the claim])
   D -->|it knew such and such| E([not enough to stand on:<br>требует or индукция по])
-  D -->|five rules<br>from TWO body forms<br>exactly н минус 1| F([boundary of the kernel:<br>the language cannot<br>do this here])
+  D -->|ten rules<br>from TWO body forms<br>exactly н минус 1| F([boundary of the kernel:<br>the language cannot<br>do this here])
   class G vyvod
   class E glavnoe
   class F otkaz
@@ -223,20 +225,27 @@ FLANG_PROOF_INDUCTION_DESCENT … спуск в шаге «Сумма до» н�
 
 There is no way around this one: a step that subtracts two is not proved today.
 
-### `FLANG_PROOF_STEP`: five goal shapes, and a sixth way
+### `FLANG_PROOF_STEP`: ten goal shapes, and an eleventh way
 
 `FLANG_PROOF_STEP` is the one refusal that lists everything it tried:
 
 ```
 FLANG_PROOF_STEP … цель не сведена к 1 предусловию функции: у цели этого
-случая нет вида, к которому у ядра есть правило: правил пять — «не меньше 0»,
-«не больше конечного литерала», «не больше терма», «равно» и «содержит», и все
-пять названы в отказе, чтобы список был виден целиком. Вида цели не спрашивает
-только шестое, «цель есть допущение», и оно тоже не прошло: ни одно допущение
-не совпало с целью знак в знак. известно: предусловие функции «Сумма»
+случая нет вида, к которому у ядра есть правило: правил десять — «не меньше 0»,
+«не больше конечного литерала», «не больше терма», «не меньше терма», «меньше
+терма», «больше терма», «равно», «содержит», «не убывает» и «начинается с», и
+все десять названы в отказе, чтобы список был виден целиком. … известно:
+предусловие функции «Сумма»
 ```
 
-Read it like this: if your goal is not one of those five shapes, the kernel has
+This used to say "five rules". The list has grown to ten — the text above is
+taken from the kernel's source (`flang/self/proof-kernel.flang`, the function
+that prints this refusal, commit `2c40752d0`, 11 September 2026); a full run
+reproducing the refusal verbatim was not taken again. Only the eleventh move,
+"the goal is an assumption", does not ask for the goal's shape: it matches the
+goal against an assumption sign for sign.
+
+Read it like this: if your goal is not one of those ten shapes, the kernel has
 nothing to prove it with, and it is the claim that has to be rewritten, not the
 proof. If the shape does fit but `известно:` is empty or names the wrong fact,
 what is missing is something to stand on — a `требует` on the function or an

@@ -28,6 +28,22 @@ be written in flang at all.
 There are no axioms in these files: the "taken on faith" column of both reports
 is empty (`принято на веру: ничего`).
 
+> **Measured with what, and when.** The numbers on this page — the tables, the
+> per-lemma verdicts, the stubs — were taken with the binary
+> `/srv/flang-rabota/w-predely/bootstrap/flang` (built 23 August 2026 with a
+> raised step limit). Re-check on 11 September 2026 with 0.7.17 (commit
+> `2c40752d0`, seed reprinted at `0ce948bfd`):
+> `./bootstrap/flang check flang/stdlib/math-classics-lists.flang --proof` →
+> `утверждений 37: доказано 19 (из них без теоремы 19), сетка 18` — three more
+> proved than in the list table below; which three was not worked out again.
+> `./bootstrap/flang check flang/stdlib/math-classics.flang --proof` on 0.7.17
+> prints no report: the run stops with
+> `FLANG_PROPERTY: нарушено свойство «чужой заголовок не признаётся своим»
+> функции «Это заголовок функции записи»` (a postcondition of the compiler
+> itself, `flang/self/zapis.flang`), exit code 1. Until that is fixed the
+> arithmetic table is the 23 August measurement and there is nothing to
+> re-check it with.
+
 **What changed since the previous measurement.** It was 73 claims and 29 proved,
 forty-seven lemmas of which thirteen were taken outright. The gain came not from
 rewriting old postconditions but from new lemmas and from two measured boundaries
@@ -492,11 +508,13 @@ equality of two lists was taken. The wall is flat and runs through one place.
 ## Reproducing the measurement
 
 ```sh
-PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- \
-  ./bootstrap/flang check flang/stdlib/math-classics.flang --proof
-PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- \
-  ./bootstrap/flang check flang/stdlib/math-classics-lists.flang --proof
+./bootstrap/flang check flang/stdlib/math-classics.flang --proof
+./bootstrap/flang check flang/stdlib/math-classics-lists.flang --proof
 ```
+
+(The 23 August measurement went through the out-of-tree memory guard
+`flang-vorota`; on 0.7.17 the second file passes in three seconds without it, the
+first stops with a refusal — see the note at the top of the page.)
 
 The line to look at is the last one of the proof report:
 
@@ -509,9 +527,9 @@ the rest of the inputs.
 
 The measurement was taken with the binary
 `/srv/flang-rabota/w-predely/bootstrap/flang` (built 23 August 2026, with a raised
-step limit). A binary built from this tree's seed may answer differently: some
-kernel rules were written into the sources after the seed and will only arrive
-with the next reprint. If your numbers disagree with this page, first check which
+step limit). The seed has since been reprinted (`0ce948bfd`), and the 0.7.17
+binary answers differently on the list file — 19 proved instead of 16 (note at
+the top of the page). If your numbers disagree with this page, first check which
 binary you counted with.
 
 

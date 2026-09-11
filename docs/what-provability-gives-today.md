@@ -99,8 +99,11 @@ Not expressible — there is no place to write it:
 - **Grids.** Examples are counted, not proved; `flang check` does not even run
   them — `flang test` does.
 - **Space, medicine, aviation.** Standards ask for traceability, tool
-  qualification, proved response bounds, behaviour on hardware failure — none of
-  it exists, and a percentage does not replace it
+  qualification, proved response bounds, behaviour on hardware failure. Of these
+  only traceability exists, and with gaps: `./ярлык прослеживаемость:проверка`
+  on 11 September — 409 postconditions, 322 with an example, 361 in a record,
+  244 proved, gaps 62 and 68 (task 1407). The rest does not exist, and a
+  percentage does not replace it
   ([ADR-0031](adr/0031-certification-is-a-process-not-a-property-of-the-language.md)).
   Two of those rows are measured separately: «terminates within N steps» exists
   only as an analysis (`flang/self/bounded.flang`) and is not printed into the
@@ -138,4 +141,4 @@ Five stages in [`ROADMAP.md`](../ROADMAP.md), no dates:
 | 2. Proved translation to C | printed C covered by nothing | `emit` comes with a translation protocol and a comparator's verdict; a swapped function in C is caught | ADR-0030; 1401, 1402 |
 | 3. Logic | subtraction under `требует` exits 3; nothing to say about processes, plans, effects | the second run exits 0 (1403); a place for claims about steps, plans, ownership (1404–1406, measurement first) | ADR-0032 |
 | 4. Quantifiers | one quantifier, over one function's inputs; induction carrier from a closed list of three | «для всех л: список числа» outside a function; carrier read from the type | ADR-0026; 6202, 6203 |
-| 5. Traceability, response, failure | no requirement → code → example → record chain; a step bound exists as analysis only; failure is described, not proved | the chain is walked both ways by a run (1407); the step bound is in the record and replayed (1408), seconds for a named machine with a spread (1409); failure behaviour on one page with a counter of swallowed «Сбой» (1410); seconds and hardware failure still unproved | ADR-0031, 0033, 0034; 1407–1410 |
+| 5. Traceability, response, failure | the requirement → code → example → record chain is walked both ways by a guard, gaps 62 and 68 (1407 done on 11 September); a step bound exists as analysis only; failure is described, not proved | the gaps go to zero under a ratchet; the step bound is in the record and replayed (1408), seconds for a named machine with a spread (1409); failure behaviour on one page with a counter of swallowed «Сбой» (1410); seconds and hardware failure still unproved | ADR-0031, 0033, 0034; 1407–1410 |

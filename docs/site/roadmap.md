@@ -75,9 +75,16 @@ the checking program, not an add-on:
 **5. Traceability, response and refusals.** Certification is a process, not a
 property of the language:
 `docs/adr/0031-certification-is-a-process-not-a-property-of-the-language.md`.
-What it needs beyond the proof — tracing a requirement down to the code, the
-compiler's response, and the list of refusals — is task 1407. Space, medicine
-and aviation are not promised (ADR-0031, §5.4).
+Of what it needs beyond the proof, traceability requirement → code → example →
+record exists as a guard since 11 September 2026
+(`scripts/traceability-guard.flang`, task 1407): 409 postconditions, 322 with an
+example, 361 in a record, 244 proved; gaps 62 and 68, under a ratchet. Response
+bounds exist only as an analysis and are not printed into the proof record
+(`docs/adr/0033-termination-is-not-a-bound-on-steps.md`, tasks 1408 and 1409);
+behaviour on failure is described, not proved — an I/O failure arrives as data,
+hardware failure the language does not see
+(`docs/adr/0034-hardware-failure-is-described-not-proved.md`, task 1410). Space,
+medicine and aviation are not promised (ADR-0031, §5.4).
 
 ## What used to stand here
 

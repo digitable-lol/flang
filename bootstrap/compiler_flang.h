@@ -70886,6 +70886,16 @@ fl_status compiler_flang_list_neotricatelnosti_vyvoda_zapisi(fl_ctx *ctx, fl_val
 fl_status compiler_flang_list_potolka_vyvoda_zapisi(fl_ctx *ctx, fl_value levoe, fl_value potolok, fl_value formula, fl_value stroki, fl_value funkciya, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Отбор не удлиняет записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levo — «лево»: строка
+ * @param pravo — «право»: строка
+ * @return значение
+ */
+fl_status compiler_flang_otbor_ne_udlinyaet_zapisi(fl_ctx *ctx, fl_value levo, fl_value pravo, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Лист вывода записи».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -70895,6 +70905,68 @@ fl_status compiler_flang_list_potolka_vyvoda_zapisi(fl_ctx *ctx, fl_value levoe,
  * @return значение: «Шаг вывода записи»
  */
 fl_status compiler_flang_list_vyvoda_zapisi(fl_ctx *ctx, fl_value formula, fl_value stroki, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Неубывание цели записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param term — «терм»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_neubyvanie_celi_zapisi(fl_ctx *ctx, fl_value term, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Одиночное звено записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param spisok — «список»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_odinochnoe_zveno_zapisi(fl_ctx *ctx, fl_value spisok, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаги соседних вывода записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levoe — «левое»: строка
+ * @param stroki — «строки»: список: строка
+ * @param funkciya — «функция»: строка
+ * @return значение: список: «Шаг вывода записи»
+ */
+fl_status compiler_flang_shagi_sosednih_vyvoda_zapisi(fl_ctx *ctx, fl_value levoe, fl_value stroki, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строго положительный довод записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param term — «терм»: строка
+ * @param stroki — «строки»: список: строка
+ * @param funkciya — «функция»: строка
+ * @return значение
+ */
+fl_status compiler_flang_strogo_polozhitelnyy_dovod_zapisi(fl_ctx *ctx, fl_value term, fl_value stroki, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаги квадрата вывода записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levoe — «левое»: строка
+ * @param stroki — «строки»: список: строка
+ * @param funkciya — «функция»: строка
+ * @return значение: список: «Шаг вывода записи»
+ */
+fl_status compiler_flang_shagi_kvadrata_vyvoda_zapisi(fl_ctx *ctx, fl_value levoe, fl_value stroki, fl_value funkciya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаги произведения вывода записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levoe — «левое»: строка
+ * @param stroki — «строки»: список: строка
+ * @param funkciya — «функция»: строка
+ * @return значение: список: «Шаг вывода записи»
+ */
+fl_status compiler_flang_shagi_proizvedeniya_vyvoda_zapisi(fl_ctx *ctx, fl_value levoe, fl_value stroki, fl_value funkciya, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Шаги суммы вывода записи».

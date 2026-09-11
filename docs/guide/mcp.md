@@ -63,7 +63,7 @@ Exactly the same one as for the language server:
 
 | where | what |
 |---|---|
-| `flang/self/mcp.flang` (343 lines of flang) | WHAT a message is, what to answer, and in which words |
+| `flang/self/mcp.flang` (352 lines of flang) | WHAT a message is, what to answer, and in which words |
 | `flang/src/emit/c/flang_repl.c` | everything that is not a decision: reading lines, parsing JSON, reading imported files, and running the check itself |
 
 Let that boundary slip and what the assistant learns about a program would depend

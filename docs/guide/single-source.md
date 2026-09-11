@@ -42,7 +42,7 @@ program with `FLANG_MEASURE` during the run. Which of the two carries the promis
 is what `flang check --proof` says; the breakdown is in
 ["What the `тотальная` marker gives you"](totality.md).
 
-From that single source you get the implementation, the examples and the checks — in eight
+From that single source you get the implementation, the examples and the checks — in ten
 languages at once. The `обеспечивает` above is not a comment: it becomes a postcondition in the
 emitted code.
 
@@ -50,7 +50,11 @@ emitted code.
 flang emit examples/library-api/lib/fine.flang --target python --out вывод
 ```
 
-produces in `вывод/shtrafy.py`, verbatim:
+produces `вывод/fine.py` — and there is NO postcondition check in it: the kernel proved
+«Штраф ограничен» for all inputs (`flang check examples/library-api/lib/fine.flang --proof` on
+11 September 2026, binary 0.7.17: «доказано сведением цели с телом функции», exit 0), and what
+is proven is not printed. The door appears when the kernel is not called — `--no-check`; then
+`вывод/fine.py` contains, verbatim:
 
 ```python
     # постусловие «Штраф ограничен»
@@ -61,3 +65,7 @@ produces in `вывод/shtrafy.py`, verbatim:
 `FLANG_PROPERTY` is the language's own diagnostic code, and the message is the language's own
 wording. A Python service, a Go service and a C binary printed from this function refuse the same
 input with the same words. That is what "one source of truth" has to mean to be worth anything.
+
+This page used to say "produces `вывод/shtrafy.py`": the module has since been named «Fine»
+(rule R7 in [Names in code](naming.md)), and the kernel has learned to prove the postcondition,
+so without `--no-check` there is no door in the printed code.

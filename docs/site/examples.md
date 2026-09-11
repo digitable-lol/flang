@@ -15,7 +15,7 @@ The number is recounted by one command:
 | [`leetcode/`](examples/leetcode) | 82 | solutions to LeetCode problems; every file is self-contained on purpose — why, is said in [`index.json`](examples/leetcode/index.json). The account of this set is [82 problems](case-studies.html) |
 | [`rosetta/`](examples/rosetta) | 28 | the canonical Rosetta Code tasks, each on the Russian and on the English surface of the language. The account of the set is [Rosetta Code](rosetta.html) |
 | [`web/`](examples/web) | 13 | HTTP: an orders service, the [URL shortener](shortener.html) and a marketplace API of three services — catalogue, cart, orders |
-| [`io/`](examples/io) | <!-- СНЯТО 2026-09-03 файлов examples/io/*.flang = 9 --> 9 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet |
+| [`io/`](examples/io) | <!-- СНЯТО 2026-09-11 файлов examples/io/*.flang = 9 --> 9 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet |
 | [`crypto/`](examples/crypto) | 8 | AES, ECDSA, X25519, X.509, a revocation list, a TLS hello — on real test vectors that lie next to them |
 | [`library-api/`](examples/library-api) | 7 | the domain half of a library REST service: lending, catalogue, fines. The only set that shows a **project layout** in full |
 | [`db/`](examples/db) | <!-- СНЯТО 2026-09-03 файлов examples/db/*.flang = 6 --> 6 | talking to PostgreSQL (SCRAM included), to Redis, and reading an SQLite file |
@@ -43,12 +43,12 @@ they are run by the binary:
 
 ```bash
 bootstrap/flang test examples/rosetta/   # one set
-bootstrap/flang test examples/           # the whole catalogue, 193 files
+bootstrap/flang test examples/           # the whole catalogue, 185 files
 ```
 
 The sets cost very different amounts, and that is worth knowing before you start.
 The run of 24 August 2026: `leetcode` — 82 files, 804 examples, 12 seconds
-(that set holds 806 examples today);
+(806 examples, 23 s — run of 11 September 2026, binary 0.7.17, commit 2c40752d0);
 `crypto` — 8 files, 1223 examples, 39 minutes, because it computes real AES and
 ECDSA test vectors (that set holds 1802 examples today, and
 `bootstrap/flang test examples/crypto/ --json` took 20 min 30 s, 0 failures —

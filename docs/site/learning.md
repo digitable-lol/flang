@@ -22,8 +22,10 @@ flowchart LR
 
 **After this step:** the `flang` command answers `--version`.
 
-Read [Installation](install.html). There are four roads; the shortest is one
-Homebrew command, with no Node and no building from source.
+Read [Installation](install.html). There are three roads — Homebrew, asdf, from
+source (the npm road was removed on 3 September 2026, commit `5d876b0e2`); the
+shortest is one Homebrew command, with no building from source. None of them
+needs Node.
 
 ```bash
 flang --version
@@ -94,8 +96,7 @@ This is the middle of the language, and it is worth the longest stop.
 
 - [What is proved and what is not](what-is-proved.html) — the border is drawn
   explicitly;
-- [Why and how](proofs.html) — the three deciding rules of the kernel, each
-  readable in full;
+- [Why and how](proofs.html) — the rules of the kernel, each readable in full;
 - [The kernel refused: whose mistake is it](proof-refused.html) — every kernel
   refusal by name: which are fixed in the theorem and which hit a limit of the
   language;
@@ -135,7 +136,7 @@ explanation:
 ```bash
 flang check file.flang         # what did not add up
 flang check file.flang --proof # what exactly is proved and what is not
-flang --help                   # twelve commands and what each one does
+flang --help                   # thirteen commands and what each one does
 ```
 
 A refusal starts with a name: `FLANG_TYPE`, `FLANG_NOT_TOTAL`,

@@ -54,11 +54,13 @@ runner over a pipe.
 ## What arrives in the directory
 
 One run per target, the same program every time —
-`examples/rosetta/factorial-english.flang`:
+`examples/rosetta/factorial-english.flang` (the file lists and byte counts on
+this page were taken from binary 0.7.17 on 11 September 2026):
 
 | target | files |
 |---|---|
 | `c` | `flang_runtime.h` `flang_runtime.c` `factorial.h` `factorial.c` `flang_cli.c` `Makefile` |
+| `cpp` | `flang_runtime.hpp` `flang_runtime.cpp` `flang_cpp.hpp` `factorial.hpp` `factorial.cpp` `flang_cli.cpp` `Makefile` |
 | `csharp` | `Value.cs` `Field.cs` `FlangError.cs` `Ctx.cs` `Flang.cs` `Factorial.cs` `FlangCli.cs` `flang.csproj` `Makefile` |
 | `elixir` | `flang_runtime.ex` `factorial.ex` `flang_cli.ex` `Makefile` |
 | `go` | `go.mod` `flangrt/flang_runtime.go` `flang/factorial.go` `cli/main.go` `Makefile` |
@@ -66,6 +68,7 @@ One run per target, the same program every time —
 | `js` | `factorial.js` `flang_cli.js` |
 | `python` | `flang_runtime.py` `factorial.py` `flang_cli.py` `Makefile` |
 | `rust` | `Cargo.toml` `src/runtime.rs` `src/factorial.rs` `src/lib.rs` `src/cli.rs` `src/main.rs` `Makefile` |
+| `ts` | `factorial.ts` `flang_runtime.js` `flang_cli.js` `tsconfig.json` |
 
 The layout is the same everywhere: a **runtime** (values, arithmetic,
 diagnostics), the **program module** (one function per flang function), a
@@ -81,7 +84,7 @@ functions and the calling is yours. Concurrency per target is also named in the
 
 ```bash
 $ flang emit examples/rosetta/factorial-english.flang --target c --out ./out-c
-напечатано файлов 6, байт 280565, в ./out-c
+напечатано файлов 6, байт 432289, в ./out-c
 $ ls ./out-c
 Makefile  factorial.c  factorial.h  flang_cli.c  flang_runtime.c  flang_runtime.h
 ```
@@ -274,7 +277,7 @@ dynamically.
 
 ```bash
 $ flang emit examples/rosetta/factorial-english.flang --target js --no-cli --out ./out-js
-напечатано файлов 1, байт 18621, в ./out-js
+напечатано файлов 1, байт 18624, в ./out-js
 $ ls ./out-js
 factorial.js
 ```
@@ -390,7 +393,7 @@ $ printf '%s\n' '{"fn":"Factorial","args":[{"n":"10"}]}' \
                 '{"fn":"Factorial","args":[{"s":"x"}]}' | node flang_cli.js ./factorial.js
 {"ok":true,"value":{"n":"3628800"}}
 {"ok":true,"value":{"n":"24"}}
-{"ok":false,"code":"FLANG_TYPE","message":"вызов функции «Factorial»: аргумент «n» не соответствует типу неотрицательное"}
+{"ok":false,"code":"FLANG_TYPE","message":"сравнения порядка допустимы только для чисел"}
 ```
 
 The same input fed to the `./flang_cli` binary built from the `c` target gives
@@ -406,12 +409,15 @@ slug. Values are tagged, because JSON is poorer than the language:
 | `{"v":"Name","f":[…]}` | a variant |
 | `null`, `true`/`false` | "nothing", a flag |
 
-This road has something the direct call does not: **the runner checks arguments
-against the declared types before the call** — using the table emission placed
-beside the module (`factorial_entry` in C, `$PROGRAM.entry` in JS). Hence the
-difference in the messages above: the direct call `factorial("x")` gets as far as
-the comparison and answers «сравнения порядка допустимы только для чисел», while
-the runner answers earlier and more precisely.
+The table of declared parameter types is printed beside the module
+(`factorial_entry` in C, `$PROGRAM.entry` in JS), but in 0.7.17 the binary
+leaves it empty and says so on every print: «аргументы напечатанной программы по
+типам не проверяются» — "the arguments of the printed program are not checked
+against types". So the runner answers `{"s":"x"}` with the same words as the
+direct call `factorial("x")` — «сравнения порядка допустимы только для чисел»,
+"order comparisons are only allowed for numbers" — and not with "argument does
+not match the type"; a type check before the call exists only on the `c` target
+at the `enter` door (see [the host boundary](host-boundary.html)).
 
 ## What is not promised
 
@@ -422,8 +428,9 @@ the runner answers earlier and more precisely.
   comments inside the module, enough for editor hints, not for a strict build;
 - **concurrency everywhere.** Processes run on `c` and `elixir`, parallelism on
   `elixir`;
-- **type-checked arguments on a direct call.** The table on the entry boundary
-  is left empty; the runner over a pipe checks them, a direct call does not.
+- **type-checked arguments** — neither on a direct call nor in the runner over a
+  pipe: in 0.7.17 the table on the entry boundary is left empty, and the binary
+  says so when printing. The exception is the `enter` door on the `c` target.
 
 ## Next
 

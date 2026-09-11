@@ -48,5 +48,4 @@ enabled"`, лежит в `~/.cache/erlang-history` форматом `disk_log`).
 значения, а наша сессия хранит исходник и вычисляет выражение отдельной
 программой — возвращать в язык нечего, пока не закрыт долг вычислителя.
 
-Соседи: [[the-shell-read-the-line-with-fgets-and-the-terminal-printed-the-arrow]],
-[[version-string-drifts-every-release]].
+Соседи: [[the-shell-read-the-line-with-fgets-and-the-terminal-printed-the-arrow]].

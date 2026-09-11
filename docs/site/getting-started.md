@@ -3,8 +3,9 @@
 Five steps: write a file, check it, run the examples, run a function, emit the
 program into C. You need `flang` installed — [how to install it](install.html).
 
-Every output block below is the answer of a real run. The commands can be copied
-one after another.
+Every output block below is the answer of a real run: binary 0.7.17, built from
+`bootstrap/` at commit `2c40752d0` (11 September 2026). The commands can be
+copied one after another.
 
 ## Write
 
@@ -132,12 +133,15 @@ not only on the 2 from the example. About this program it answers:
   «Twice»  доказано композицией: рекурсии нет, обещание сложено из обещаний тех, кого зовёт
 
 что высказано и чем это несётся:
-  постусловие «the doubled value is at least the original» функции «Twice» — сетка
-  1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было,
-  посчитано только их число. Это не доказательство — теоремы при утверждении нет
+  постусловие «the doubled value is at least the original» функции «Twice» — доказано по
+  объявленным типам аргументов: цель сведена правилом «порядок по построению» — утверждение
+  обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
 ```
 
-Three words of that report, and they are not interchangeable:
+This postcondition the kernel proves on its own, with no theorem: `n` is
+non-negative, so `n plus n` is at least `n`. The report's last line says
+`код возврата 0` (exit code 0). It is not always so, and the report keeps three
+words apart:
 
 | word | what it means |
 | --- | --- |
@@ -155,7 +159,9 @@ flang emit hello.flang --target c --out ./output
 ```
 
 ```
-напечатано файлов 6, байт 297283, в ./output
+проверок при работе снято 1: постусловие доказано ядром обо всех входах и
+проверено примерами функции — в напечатанный код оно не едет.
+напечатано файлов 6, байт 422986, в ./output
 аргументы напечатанной программы по типам не проверяются: это ограничение двоичного flang, полная проверка есть в версии для Node
 проверено перед печатью — разбор, типы, завершаемость и ядро доказательств.
 ПРИМЕРЫ НЕ ПРОГНАНЫ: их считает вычислитель на самом языке, и на самых больших
@@ -163,6 +169,12 @@ flang emit hello.flang --target c --out ./output
 печать, и компилятор перестал бы печатать сам себя. Прогоните их отдельно:
 flang test <файл>
 ```
+
+The first line follows from the report above: a proved postcondition is not
+emitted into C, there is nothing to check at run time. The line about a
+"version for Node" is a stale message of the binary itself: there has been no
+Node implementation since 20 August 2026 (commit `fe8e8a37`), and a full type
+check of the emitted program's arguments exists nowhere today.
 
 The output directory is created for you. What is emitted builds with an ordinary
 `make`:
@@ -186,8 +198,11 @@ is a refusal rather than a silent rename. Call the function `«Double»` and the
 is no emission into C at all:
 
 ```
-flang emit: печать отказала — имена «Double» и «зарезервировано в целевом языке: double» дают один идентификатор «double» — переименуйте одно из них в модели
+FLANG_CLI: имена «Double» и «зарезервировано в целевом языке: double» дают один идентификатор «double» — переименуйте одно из них в модели
+flang emit: печать отменена — программа не проходит проверку, замечаний 1.
 ```
+
+Exit code 1.
 
 The refusal names both sides of the collision, so the fix is one word in the
 model.
@@ -202,7 +217,7 @@ flang emit hello.flang --target rust --out ./output-rust
 ```
 
 ```
-напечатано файлов 7, байт 134379, в ./output-rust
+напечатано файлов 7, байт 138939, в ./output-rust
 …
 собрать: cd <каталог> && cargo build, запустить target/debug/flang_cli <модуль>
 ```

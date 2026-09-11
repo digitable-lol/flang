@@ -10,16 +10,16 @@
 `bootstrap/` начнёт собирать прошлый компилятор молча:
 
 ```bash
-sh scripts/raskrutka.sh           # перепечатать bootstrap/ (≈11 минут: двоичный печатает сам себя)
+sh scripts/raskrutka.sh           # перепечатать bootstrap/ (часы: 11 сентября 2026 — 7 ч 28 мин, коммит 0ce948bfd)
 sh scripts/raskrutka.sh --check   # сверить с исходниками побайтово, код 1 при расхождении
-sh scripts/raskrutka.sh --stroki  # 0,4 с: все строковые литералы рантайма C закрыты
+sh scripts/raskrutka.sh --stroki  # 0,6 с (11 сентября 2026): все строковые литералы рантайма C закрыты
 ```
 
 Печатает эти байты сам двоичный компилятор (`bootstrap/flang emit … --target c`); если двоичного
 нет, скрипт сначала соберёт его из `bootstrap/`.
 
-Сверка стоит столько же, сколько печать, — около одиннадцати минут плюс `make`, если двоичный не
-собран. Зовите `--check` перед слиянием правки в `flang/self/` или `flang/src/emit/c/`, а не на
+Сверка печатает заново и стоит столько же, сколько печать (7 ч 28 мин на перепечатке 11 сентября
+2026), плюс `make`, если двоичный не собран. Зовите `--check` перед слиянием правки в `flang/self/` или `flang/src/emit/c/`, а не на
 каждое сохранение.
 
 Команды, на которые язык отвечает:
@@ -42,7 +42,7 @@ flang run examples/leetcode/035-search-insert-position.flang \
   --function "Место вставки" --args '{"цель":2}'
 # функции со списочным доводом зовутся своими примерами: flang test <файл>
 
-# напечатать — цели: c | csharp | elixir | go | java | js | python | rust
+# напечатать — цели: c | cpp | csharp | elixir | go | java | js | python | rust | ts
 flang emit examples/leetcode/035-search-insert-position.flang \
   --target python --out ./out-python
 ```

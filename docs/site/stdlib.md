@@ -18,16 +18,17 @@ The WHOLE module comes in, and the printed code carries all of it. Need a single
 `только` does not pull in what the named function calls. Ask for `«Двоичный поиск»` without `«Поиск в диапазоне»` and the compiler answers:
 
 ```
-FLANG_UNKNOWN_NAME, строка 569, столбец 3: неизвестная функция «Поиск в диапазоне»
-FLANG_NOT_TOTAL, строка 569, столбец 3: тотальная функция «Двоичный поиск» вызывает неизвестную функцию «Поиск в диапазоне»: завершение доказать нельзя
+FLANG_UNKNOWN_NAME, строка 328, столбец 3: неизвестная функция «Поиск в диапазоне»
+FLANG_NOT_TOTAL, строка 328, столбец 3: тотальная функция «Двоичный поиск» вызывает неизвестную функцию «Поиск в диапазоне»: завершение доказать нельзя
 ```
 
-Add the missing name after a comma — or take the module whole.
+Add the missing name after a comma — or take the module whole. The line numbers in both answers point into `flang/stdlib/*.flang`, run of 11 September 2026, binary 0.7.17, commit 2c40752d0.
 
 Examples travel with the declaration and are checked on the importer's side. So `использует «Higher order» только «Свернуть»` is refused not in the function's body but on its examples — they need «Сложить», «Умножить» and «Большее»:
 
 ```
-FLANG_UNKNOWN_NAME, строка 251, столбец 3: пример «Сумма»: аргумент «ф»: функции «Сложить» нет
+FLANG_UNKNOWN_NAME, строка 131, столбец 3: пример «Сумма»: аргумент «ф»: функции «Сложить» нет
+FLANG_UNKNOWN_NAME, строка 136, столбец 3: пример «Произведение той же свёрткой»: аргумент «ф»: функции «Умножить» нет
 ```
 
 In the tables below, “takes” and “returns” are the signature from the source, word for word. “What it does” is the function’s postcondition — the `обеспечивает` line of its declaration — also word for word, and in Russian like the code. Hence the author’s turns of phrase inside it: «довод» means argument, «октеты» means bytes.
@@ -447,7 +448,7 @@ Types: `«Значение json»`, `«Поле json»`, `«Итог json»`, `�
 | `«Напечатать строку json»` | `текст: строка` | `строка` | печать строки — кавычки плюс не меньше знаков, чем было |
 | `«Напечатать json»` | `значение: «Значение json»` | `строка` | напечатанное значение непусто |
 
-A whole program — checked by `flang check`:
+A whole program — checked by `flang check`, but noticeably slower than the others on this page: the JSON module is large, and the check ran for more than five minutes (exit code 0; run of 11 September 2026, binary 0.7.17, commit 2c40752d0):
 
 ```flang
 модуль «Проба json»

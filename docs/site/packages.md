@@ -5,21 +5,18 @@ depends on. No registry, no store, no `~/.flang`. Publishing a package means
 committing a file to git; using one means writing a single line; building on
 another machine means copying two files over and running `flang check`.
 
-`package` and `lock` live in the `flang` installed by `npm install`
-([the fourth way](install.html), `node_modules/.bin/flang`). The standalone
-binary has neither and says so:
-
-```bash
-$ flang package skidka/discount.flang
-flang: неизвестная команда «package». «flang --help» — что умеет бинарник.
-```
+Both commands — `flang package` and `flang lock` — are in the `flang` binary
+0.7.17 (`flang package --help`, `flang lock --help`). The JavaScript
+implementation and the `npm install` route were removed from the tree on
+20 August 2026 (commit `fe8e8a37`); every output on this page was taken from the
+binary on 11 September 2026 on the example in `docs/examples/package/`.
 
 ## Take someone else's package
 
 Drop the package file next to your program and write one line:
 
 ```
-модуль «Витрина»
+модуль «Shop»
   использует «Скидка» из "discount.flang-package"
 ```
 
@@ -28,12 +25,11 @@ $ ls
 discount.flang-package  shop.flang
 
 $ flang check shop.flang
-{"valid":true,"module":"Витрина","functions":[{"name":"Скидка в копейках","total":true},
- {"name":"Цена за вычетом","total":true},{"name":"Цена в витрине","total":true},
- {"name":"Сколько скинули","total":true}],"types":[],"diagnostics":[]}
+модуль «Shop»: функций 4, из них с доказанным завершением 4; типов 0; файлов вместе с импортами 2
+shop.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 
 $ flang test shop.flang
-… "total":7,"passed":7,"failed":0 …
+shop.flang: примеров 7, прошло 7, не прошло 0
 ```
 
 The library's sources are not in this directory: its functions arrived inside
@@ -45,8 +41,8 @@ check refuses and names both:
 
 ```bash
 $ flang check shop.flang
-{"error":"модуль в …/discount.flang-package называется «Скидка»,
- а импортируется как «Скидочка»","diagnostics":[{"code":"FLANG_IMPORT_NAME", …}]}
+FLANG_IMPORT_NAME, строка 1, столбец 1: модуль в …/discount.flang-package называется «Скидка», а импортируется как «Скидочка»
+shop.flang: не проверено — замечаний 1
 ```
 
 Preconditions travel with the code and are paid at every call site. Drop a
@@ -55,9 +51,8 @@ not change:
 
 ```bash
 $ flang check shop.flang
-{"code":"FLANG_PRECONDITION_CALL",
- "message":"вызов «Скидка в копейках» в функции «Сколько скинули» не снимает
-  предусловие «доля не больше ста»: …"}
+FLANG_PRECONDITION_CALL, строка 34, столбец 3: вызов «Скидка в копейках» в функции «Сколько скинули» не снимает предусловие «доля не больше ста»: …
+shop.flang: не проверено — замечаний 1
 ```
 
 ## Declare your own package
@@ -79,12 +74,21 @@ assembled:
 
 ```bash
 $ flang package skidka/discount.flang
-{"error":"в flang.package пакет назван «Не Скидка», а модуль в
- skidka/discount.flang называется «Скидка»", …}
+FLANG_PACKAGE: в flang.package пакет назван «Не Скидка», а модуль в skidka/discount.flang называется «Скидка»
+$ echo $?
+1
 ```
 
 Nothing new was added to the language for this: `skidka/discount.flang` is an
 ordinary module with an ordinary `модуль` / `экспортирует` header.
+
+Honestly about the example in the tree: on 29 August 2026 the example modules
+were given English names (commit `03f0359ab`), and
+`docs/examples/package/discount.flang` is now called «Discount», while the
+manifest next to it still says «Скидка». So on 0.7.17 the command
+`flang package docs/examples/package/discount.flang` refuses with exactly this
+refusal, and the package `shop/discount.flang-package` that `shop.flang` works
+with was built before the rename and carries the module «Скидка».
 
 ## Build it
 
@@ -100,18 +104,18 @@ $ ls -la skidka/
 A package is built **only from checked code**: `flang package` first runs the
 same checks `flang check` runs and refuses on a program with a type error.
 
-The package is a JSON file. Here it is with the payload (the base64 `адрес`
-field) cut out for readability:
+The package is a JSON file. Here it is with the payload (the `исходник` field —
+the module text in full, uncompressed, no base64) cut out for readability:
 
 ```json
 {
-  "схема": 1,
+  "схема": 2,
   "имя": "Скидка",
   "версия": "1.0.0",
   "вход": "./discount.flang",
   "модули": [
     { "имя": "Скидка", "путь": "./discount.flang", "функций": 2,
-      "печать": "f859823c12859d95a764b801914fdc0e481a3d68e4997e69ff24590570959ea1" }
+      "исходник": "модуль «Скидка»\n  экспортирует «Скидка в копейках», «Цена за вычетом»\n…" }
   ],
   "ведомость": [
     { "функция": "Цена за вычетом",
@@ -144,18 +148,14 @@ by mail, off a USB stick. There is no registry to upload to, and no
 
 ## A library of several modules
 
-If the library is several files, all of them travel:
-
-```bash
-$ flang package examples/library-api/lib/api.flang > api.flang-package
-$ ls -la api.flang-package
--rw-rw-r-- 1 b b 13161 api.flang-package
-```
-
-The closure follows import edges and leaves the library's own directory when the
-author wrote it that way: `catalog.flang` pulls `«Списки»` from
-`"../../../flang/stdlib/lists.flang"`, and `lists.flang` travels with the rest.
-Whoever uses the package need not know.
+If the library is several files, all of them travel: the closure follows import
+edges and leaves the library's own directory when the author wrote it that way;
+whoever uses the package need not know. The example in the tree,
+`examples/library-api/lib/`, does not build as a package today: there is no
+`flang.package` next to `api.flang`, and
+`flang package examples/library-api/lib/api.flang` on 0.7.17 answers
+`FLANG_PACKAGE: рядом с … нет объявления flang.package` (run on 11 September
+2026). Put a manifest there, and the command is the same as above.
 
 The payload is **not compressed**. A module's address is the sha256 of its
 source, 64 characters, and the payload is checked against it when the package is
@@ -188,7 +188,9 @@ on read and will not match.
 ```bash
 $ sed -i 's/"версия":"1.0.0"/"версия":"9.9.9"/' vitrina/discount.flang-package
 $ flang check vitrina/shop.flang
-{"error":"печать пакета «Скидка» не сходится: пакет правлен или испорчен", …}
+FLANG_PACKAGE: печать пакета «Скидка» не сходится: пакет правлен или испорчен
+$ echo $?
+1
 ```
 
 There are no version ranges (`^1.2`, `~> 1.2`). The program gets exactly the file
@@ -203,7 +205,8 @@ network**: there is nothing to fetch, because the code is already in the file.
 $ ls
 discount.flang-package  shop.flang
 $ flang check shop.flang
-{"valid":true,"module":"Витрина", …}
+модуль «Shop»: функций 4, из них с доказанным завершением 4; типов 0; файлов вместе с импортами 2
+shop.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
 That is also the answer to "will it build on another machine": move two files and
@@ -220,7 +223,7 @@ diff -r ./from-package ./from-sources && echo same
 
 | Tampered with | Answer |
 | --- | --- |
-| one character in a module's payload | `FLANG_PACKAGE`: "груз модуля «Скидка» в пакете «Скидка 1.0.0» не разворачивается" |
+| one character in a module's payload | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится: пакет правлен или испорчен" |
 | the version | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится" |
 | the package name | `FLANG_PACKAGE`: "печать пакета не сходится" |
 | the source URL | `FLANG_PACKAGE`: "печать пакета не сходится" |
@@ -266,10 +269,10 @@ They do not interfere: a program may have both a `flang.lock` and packages.
 - **partial updates.** An update is a full `flang package` again;
 - **an author's signature.** The seal is self-certified integrity;
 - **packages in the shell and the language server.** `flang repl` and
-  `flang-lsp` link imports themselves and know nothing of packages:
+  `flang lsp` link imports themselves and know nothing of packages:
   `flang repl shop.flang`, in the very directory where `flang check` answers
-  `{"valid":true,…}`, gives `FLANG_PARSE, заголовок модуля, строка 1`;
-- **packages in the standalone `flang`.** It has neither `package` nor `lock`.
+  «замечаний нет», gives `FLANG_PARSE, заголовок модуля, строка 1` (the shell
+  was checked on 0.7.17; the server was not).
 
 ## Where to next
 

@@ -29,7 +29,9 @@ Highlighting exists for Vim 8/9, Neovim and VS Code; other editors have none.
 
 One limitation decides everything here: **while standard input is open the
 server sends no bytes at all**, and an editor never closes input. Replies come
-only after input is closed. The configuration below is correct and will be
+only after input is closed (re-checked on 11 September 2026 on 0.7.17: the same
+`initialize` with input held open for 6 seconds — 0 bytes in 3 seconds; with
+input closed — an immediate reply). The configuration below is correct and will be
 needed once the server answers on the fly; until then an editor gives you
 highlighting, and diagnostics come from `flang check` — the key binding is at
 the end of this page.

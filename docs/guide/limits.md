@@ -9,28 +9,34 @@ is drawn in [`docs/overview.ru.md`](../../docs/overview.ru.md); the full lists a
 **Three words that are not confused here.** The distinctions matter and the words sound alike, so:
 
 - *proven* (`доказано`) — statements about **all** inputs, established by the compiler: termination
-  (`тотальная`), types and exhaustiveness of `разбор`, composition and chain wiring, and the
-  three functor laws;
+  (`тотальная`), types and exhaustiveness of `разбор`, composition and chain wiring, the three
+  functor laws — and `обеспечивает` postconditions the kernel derived from the declarations and the
+  body (88 inference rules; every proof is replayed by an independent C program,
+  `flang/proof/чекер/сверщик.c`, and `sh scripts/доказуемость.sh` on 11 September 2026 answers
+  «ДОКАЗУЕМ»: 625 obligations out of 651 replayed, 96.01 %);
 - *grid N* (`сетка N`) — computed on a **finite** set of the author's own values: utility
   properties, declared examples, concurrency runs, and the agreement between the interpreter and
-  the eight backends. Nothing is known about the other inputs. **This is not a proof**;
+  the ten backends. Nothing is known about the other inputs. **This is not a proof**;
 - *stated, not proven* (`объявлено, не доказано`) — the claim is written down and nothing backs it.
 
 The three words are not prose decoration: they are exactly what the proof report
 (`flang check --proof`) and the assistant service answer with, and this page does not use one for
 another.
 
-Extending what is proven is possible — conditions that fit linear arithmetic are decidable — but
-attaching a solver to the verification conditions is an open task, not a feature.
+What the kernel takes today: inequalities over numbers, list lengths, order, one quantifier —
+"for all inputs of the function". What it does not: ∃, claims not attached to a function, state over
+time, effects, concurrency (ADR-0026, ADR-0032). The printed code — C and the other targets — is not
+covered by the proof: the printer is not proven (ADR-0030, tasks 1401/1402). No external solver is
+attached to the verification conditions.
 
 **The language.**
 
-- Functions are first-class values in the language, and they print to all eight targets. The
+- Functions are first-class values in the language, and they print to all ten targets. The
   restriction was lifted by defunctionalization (Reynolds, 1972): a function value is a tag,
   `функция «Удвоить»`, and an application `ф от 5` is a dispatcher over a finite list of tags — so
   targets without closures and the termination proof both survive (`docs/archive/hof.md`). The
   lowering is ONE pass before printing (`flang/self/defunc.flang`): each backend receives a
-  first-order program, so none of the eight sees higher order at all. The printed code is built
+  first-order program, so none of the ten sees higher order at all. The printed code is built
   with real toolchains and checked against the interpreter over a grid of inputs. What is still
   missing is self-application: `self/` does not know the new form, so the repository's own
   programs (`stdlib`, `examples`) do not use it.
@@ -52,9 +58,11 @@ attaching a solver to the verification conditions is an open task, not a feature
   `docs/archive/poly.md`. Until then, sequencing is expressed by a continuation machine where the
   continuation is a declared value rather than a hidden closure; how that differs from a monad is
   in `docs/ct/spec.md`. Emitting a program with a `план` declaration works for
-  ONE target out of eight: `js` emits the declaration in full and exits 0, and the other seven
-  refuse with `FLANG_PLAN_UNSUPPORTED`, name the plan and write no file (the refusal text is in
-  `flang/self/bootstrap/compiler.flang`). Until 22 August 2026 those same seven emitted the
+  TWO targets out of ten: `js` and `ts` emit the declaration in full together with the host
+  `flang_host_node.js` and exit 0, and the other eight refuse with `FLANG_PLAN_UNSUPPORTED`, name
+  the plan and write no file (the refusal text is in `flang/self/bootstrap/compiler.flang`; run on
+  11 September 2026 on the «План записи» module from `DESCRIPTION.md` §9: `js`, `ts` — exit 0,
+  `c`, `cpp`, `go` — exit 1). Until 22 August 2026 (eight targets then) the other seven emitted the
   program with exit code 0 and silently dropped the declaration — the worst of the outcomes,
   because the module built and did not work. The breakdown is in
   `docs/zettel/pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.md`.
@@ -80,7 +88,7 @@ attaching a solver to the verification conditions is an open task, not a feature
   forever, so the guard on a declared measure checks three things at once — strict decrease,
   non-negativity and WHOLENESS. The constant-step measure is propped up by the same guard for a
   different reason: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|. No
-  decrease means a `FLANG_MEASURE` refusal — identical in the interpreter and in all eight targets
+  decrease means a `FLANG_MEASURE` refusal — identical in the interpreter and in all ten targets
   — not a hang.
 - The constant-step guard is DROPPED when the parameter is declared an exact natural (`неотрицательное` — a
   whole number in [0, 2^53−1]). The type supplies both ends the argument was missing: a floor of
@@ -126,9 +134,10 @@ that is what it is for. The second is a worker pool, switched on by the `workers
 request and measured directly: on a program with parallel work the pool is 1.85–4.80 times faster
 already at one run per handoff, and on a program with NO parallelism it is 6.7 times slower while
 burning fifteen cores (measurements in
-[`docs/scheduler-benchmark.md`](../../docs/scheduler-benchmark.md)). THREE targets emit processes —
-C, Elixir, JavaScript and TypeScript; the other five (Go, Rust, Python, Java, C#) REFUSE to emit a program with
-`процесс` at all, with `FLANG_CONC_UNSUPPORTED`, rather than emitting half of it. `породить` spawns
+[`docs/scheduler-benchmark.md`](../../docs/scheduler-benchmark.md)). FOUR targets emit processes —
+C, Elixir, JavaScript and TypeScript; the other six (C++, Go, Rust, Python, Java, C#) REFUSE to emit a program with
+`процесс` at all («у цели «…» нет планировщика конкурентности», exit 1, no files), rather than emitting half of it
+(run on 11 September 2026 on the «Счётчик» module from `DESCRIPTION.md` §10 across all ten targets). `породить` spawns
 instances of declared kinds at run time in the witness and in target C; the JavaScript and Elixir
 schedulers answer that action with a named error. The parent names the child, because a described
 action cannot return anything; a message addressee must still be a literal, so you can only speak

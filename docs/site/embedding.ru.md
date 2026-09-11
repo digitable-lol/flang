@@ -53,11 +53,13 @@ ls: cannot access './вывод': No such file or directory
 ## Что приезжает в каталоге
 
 Один прогон на цель, программа одна и та же —
-`examples/rosetta/factorial-english.flang`:
+`examples/rosetta/factorial-english.flang` (списки файлов и числа байт на этой
+странице сняты с двоичного 0.7.17 11 сентября 2026):
 
 | цель | файлы |
 |---|---|
 | `c` | `flang_runtime.h` `flang_runtime.c` `factorial.h` `factorial.c` `flang_cli.c` `Makefile` |
+| `cpp` | `flang_runtime.hpp` `flang_runtime.cpp` `flang_cpp.hpp` `factorial.hpp` `factorial.cpp` `flang_cli.cpp` `Makefile` |
 | `csharp` | `Value.cs` `Field.cs` `FlangError.cs` `Ctx.cs` `Flang.cs` `Factorial.cs` `FlangCli.cs` `flang.csproj` `Makefile` |
 | `elixir` | `flang_runtime.ex` `factorial.ex` `flang_cli.ex` `Makefile` |
 | `go` | `go.mod` `flangrt/flang_runtime.go` `flang/factorial.go` `cli/main.go` `Makefile` |
@@ -65,6 +67,7 @@ ls: cannot access './вывод': No such file or directory
 | `js` | `factorial.js` `flang_cli.js` |
 | `python` | `flang_runtime.py` `factorial.py` `flang_cli.py` `Makefile` |
 | `rust` | `Cargo.toml` `src/runtime.rs` `src/factorial.rs` `src/lib.rs` `src/cli.rs` `src/main.rs` `Makefile` |
+| `ts` | `factorial.ts` `flang_runtime.js` `flang_cli.js` `tsconfig.json` |
 
 Раскладка везде одна: **рантайм** (значения, арифметика, диагностики),
 **модуль программы** (по функции на функцию flang), **прогонщик** и сборочный
@@ -80,7 +83,7 @@ ls: cannot access './вывод': No such file or directory
 
 ```bash
 $ flang emit examples/rosetta/factorial-english.flang --target c --out ./вывод-c
-напечатано файлов 6, байт 280565, в ./вывод-c
+напечатано файлов 6, байт 432289, в ./вывод-c
 $ ls ./вывод-c
 Makefile  factorial.c  factorial.h  flang_cli.c  flang_runtime.c  flang_runtime.h
 ```
@@ -265,7 +268,7 @@ except rt.FlangError as e:
 
 ```bash
 $ flang emit examples/rosetta/factorial-english.flang --target js --no-cli --out ./вывод-js
-напечатано файлов 1, байт 18621, в ./вывод-js
+напечатано файлов 1, байт 18624, в ./вывод-js
 $ ls ./вывод-js
 factorial.js
 ```
@@ -381,7 +384,7 @@ $ printf '%s\n' '{"fn":"Factorial","args":[{"n":"10"}]}' \
                 '{"fn":"Factorial","args":[{"s":"x"}]}' | node flang_cli.js ./factorial.js
 {"ok":true,"value":{"n":"3628800"}}
 {"ok":true,"value":{"n":"24"}}
-{"ok":false,"code":"FLANG_TYPE","message":"вызов функции «Factorial»: аргумент «n» не соответствует типу неотрицательное"}
+{"ok":false,"code":"FLANG_TYPE","message":"сравнения порядка допустимы только для чисел"}
 ```
 
 Тот же ввод, поданный собранному из цели `c` двоичному `./flang_cli`, даёт те
@@ -397,11 +400,13 @@ $ printf '%s\n' '{"fn":"Factorial","args":[{"n":"10"}]}' \
 | `{"v":"Имя","f":[…]}` | вариант |
 | `null`, `true`/`false` | «ничто», признак |
 
-У этой дороги есть то, чего нет у прямого вызова: **прогонщик сверяет аргументы
-с объявленными типами до вызова** — по таблице, которую печать положила рядом
-(`factorial_entry` в C, `$PROGRAM.entry` в JS). Отсюда и разница в сообщениях
-выше: прямой вызов `factorial("x")` доходит до сравнения и отвечает «сравнения
-порядка допустимы только для чисел», а прогонщик отвечает раньше и точнее.
+Таблица объявленных типов параметров печатается рядом (`factorial_entry` в C,
+`$PROGRAM.entry` в JS), но в 0.7.17 двоичный оставляет её пустой и говорит об
+этом при каждой печати: «аргументы напечатанной программы по типам не
+проверяются». Поэтому прогонщик отвечает на `{"s":"x"}` тем же словом, что и
+прямой вызов `factorial("x")`, — «сравнения порядка допустимы только для
+чисел», — а не «аргумент не соответствует типу»; сверка по типам до вызова
+есть только на цели `c` у двери `enter` (см. [границу хозяина](host-boundary.html)).
 
 ## Чего не обещано
 
@@ -413,8 +418,9 @@ $ printf '%s\n' '{"fn":"Factorial","args":[{"n":"10"}]}' \
   редактора, но не для строгой сборки;
 - **конкурентность везде.** Процессы работают на `c` и `elixir`, параллелизм —
   на `elixir`;
-- **сверка аргументов по типам при прямом вызове.** Таблица на границе входа
-  остаётся пустой; прогонщик через трубу аргументы сверяет, прямой вызов — нет.
+- **сверка аргументов по типам** — ни при прямом вызове, ни у прогонщика через
+  трубу: таблица на границе входа в 0.7.17 остаётся пустой, и двоичный говорит
+  об этом при печати. Исключение — дверь `enter` на цели `c`.
 
 ## Дальше
 

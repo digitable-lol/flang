@@ -295,6 +295,15 @@ the example (`«Код верен»` calls `«Цифры»` and `«Контро�
 «Списки» and «Текст проекта» are taken selectively: there every needed function is
 self-contained. Both reasons are written in the file headers.
 
+That was true when this was written; on 11 September 2026 it no longer is. `flang check
+examples/library-api/lib/api.flang` (binary 0.7.17) answers «не проверено — замечаний 8»,
+exit 1: `«Сумма»`, `«Минимум»`, `«Максимум»` and `«Все не меньше»` in
+`flang/stdlib/lists.flang` now call helpers `«Шаг суммы»`, `«Шаг минимума»`, `«Шаг
+максимума»`, `«Шаг все не меньше»`, which are not in the `только` list of `catalog.flang` —
+`FLANG_UNKNOWN_NAME` and then `FLANG_NOT_TOTAL` on each. That is exactly the refusal this
+paragraph warns about; the fix is widening the `только` list in `catalog.flang`, not editing
+this page.
+
 **Why narrow at all.** Not for cleanliness: a name conflict at link time is an
 error, not silent shadowing. A twenty-name module brought in whole is twenty future
 `FLANG_DUPLICATE_NAME`s, and the first collision stops the build.
@@ -400,9 +409,9 @@ same things `check` does and names the same remarks.
 **What used to stand here and why it is gone.** It said: "today both answer with a
 refusal, `FLANG_UNKNOWN_NAME`, unknown function `«Все не меньше»`". That function has
 since appeared in the library (`flang/stdlib/lists.flang`), and `catalog.flang`
-imports it by name, so the named cause of the refusal is gone. Whether both commands
-exit 0 today is not stated here: that is taken by a run rather than by reading, and
-passing reading off as a run is not allowed on a page about checkability.
+imports it by name, so the named cause of the refusal is gone. Today's answer was taken
+by a run on 11 September 2026: `flang check examples/library-api/lib/api.flang` — exit 1,
+«не проверено — замечаний 8»; the cause and the fix are named in section 7.
 
 ---
 

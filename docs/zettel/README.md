@@ -196,6 +196,8 @@
 - [Проверка, зовущая свидетеля напрямую, не держит правило работающего слоя: изъятие не покрасило ничего](a-check-that-calls-the-witness-does-not-hold-the-working-layer.md)
 - [Проверка кодов отказа смотрит только приставку `FLANG_`, поэтому восемь кодов из семнадцати обещаны прозой и не существуют нигде](a-code-guard-that-matches-one-prefix-checks-only-that-prefix.md)
 - [Приставка семейства в прозе (`FLANG_MONOID_*`) — не имя кода, и сторож кодов теперь это различает](a-family-prefix-in-prose-names-a-family-not-a-code.md)
+- [Сторож подделок обязан принимать код 3: с 0.7.17 «объявлено, не доказано» — это код возврата, а не только строка отчёта](a-forgery-guard-must-accept-exit-code-three.md)
+- [Работа CI останавливается на первом красном шаге и скрывает остальные — полный список красных даёт только локальный прогон всех шагов подряд](a-job-that-stops-at-the-first-red-step-hides-the-rest.md)
 - [Сверка не видит различия, которого нет в представлении, — и остаётся зелёной на настоящей ошибке](a-comparison-cannot-see-a-distinction-the-representation-cannot-express.md)
 - [Порча попадает туда, где считают, только если корпус сверки доходит до каталога с единственным случаем](a-corruption-lands-only-where-the-corpus-reaches.md)
 - [Объявленный и ни разу не вызванный список — это обещание без исполнителя, и комментарий над ним читается как гарантия](a-declared-and-never-called-list-is-a-promise-with-no-executor.md)

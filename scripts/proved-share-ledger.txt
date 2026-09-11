@@ -858,7 +858,7 @@ cd50b4ec140445992c5b5051918b76b0|1|1|0|0|0|flang/scripts/direct-run.flang
 4660f4078dbb69ef66df64263cb80208|48|48|0|0|0|flang/scripts/emptiness-guard.flang
 dd5c6fa5aeaa9edc65474e5cf9df01fe|21|21|0|0|0|flang/scripts/guards-start.flang
 540f341358b194e39f9fe1eba88bced0|2|0|2|0|0|flang/scripts/jargon-guard.flang
-883a7e54f0a693993d0d8f58f98bc4e4|71|67|4|0|0|flang/scripts/kernel-forgeries.flang
+b5d5de206e3e2e080e221df607a92c9b|73|69|4|0|0|flang/scripts/kernel-forgeries.flang
 73bf5c6a64f0209a9cc4e03fa73f1c90|40|38|0|0|0|flang/scripts/kernel-lines-to-trust.flang
 948a418a6ae7751f23fbe4f17496eb17|19|19|0|0|0|flang/scripts/ledger-summary.flang
 ab165b8b111fc24802ea6c107bc52a94|6|6|0|0|0|flang/scripts/link-across-targets.flang
@@ -1116,12 +1116,12 @@ c0e37ea32cceee7ea280fb07ffd8433d|4|3|1|0|0|scripts/child-timeout.flang
 539d8b46495e537c0c3258e76c3547e7|67|67|0|0|0|scripts/corpus-runner.flang
 9a1d779542ab08a5a1416bbdc99c0563|10|10|0|0|0|scripts/dictionary-guard.flang
 ce97ff0ab2094dce6783702de4290b85|34|32|0|2|0|scripts/emit-and-examples.flang
-18806901f644c701a3a572d18a5cbe7b|14|14|0|0|0|scripts/emit-dictionary.flang
+5e4578f4c48ff79aa6669de59fecb019|14|14|0|0|0|scripts/emit-dictionary.flang
 5f0d2e189fb05b4383ad353ab7f23fa7|48|42|3|3|0|scripts/emit-law.flang
 6e853bc74ce6a194834bd7cedcfc79e6|4|11|0|0|0|scripts/emit-package.flang
 35bc4b6ceba5235a93625a25ded7023f|12|12|0|0|0|scripts/emit-promises-guard.flang
 91128ae65d62f7aee67ef6e15ae3599a|81|80|0|1|0|scripts/error-code-guard.flang
-5556ed1d30344a013bd914c7f4033071|13|6|0|0|0|scripts/file-extensions.flang
+866bb0d2a5dcddc8a0a98cd0318d45a9|13|12|1|0|0|scripts/file-extensions.flang
 d59dd44ec88f4735e5b5dd785acc0ca4|63|49|11|3|0|scripts/homebrew-formula-guard.flang
 b00f9a812077e3b8497c15864acff995|10|7|3|0|0|scripts/io-dictionary-copies-guard.flang
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/input-boundary.flang

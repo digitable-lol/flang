@@ -14,7 +14,7 @@
 ## Откуда
 
 Разбор всех 134 открытых мест поимённо —
-[`docs/road-to-one-hundred-measured.md`](../docs/road-to-one-hundred-measured.md)
+[`docs/road-to-one-hundred-measured.md`](../../docs/road-to-one-hundred-measured.md)
 (9 сентября 2026, дерево `r/karta-100` от `gh/dev` `3b16fab3e`). Пятьдесят мест
 из 126, названных проверкой поимённо, стоят под 20 утверждениями с разбором по
 случаям в 13 записях, и приём `проиграть_узел` (`flang/proof/чекер/сверщик.c`)

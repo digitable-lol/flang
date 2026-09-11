@@ -285,7 +285,7 @@ git fetch /srv/flang-priyom.git main && git checkout -B main FETCH_HEAD
   копии, где сошлись ДВЕ невлитые ветки: ключ `--предел-шагов` (`dd5fe0fd`) и
   быстрое сравнение имён `fl_name_same` (`b7f3bd5e`). Сплошной перебор 5418
   коммитов такого дерева не нашёл; ловит это теперь
-  `sh scripts/binary-origin.sh` — по именам функций в двоичном, а не по размеру.
+  `sh scripts/seed/binary-origin.sh` — по именам функций в двоичном, а не по размеру.
   Ближайший коммит с тем же семенем, `58596087`, даёт 14 068 168 байт
   (`090ef472`) — на 80 байт меньше: `.rodata` совпадает байт в байт, расходятся
   `.text` (384) и `.eh_frame` (2880). Значит не воспроизводится ДЕРЕВО, а не
@@ -436,7 +436,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 
 | стек | пишет | НЕ пишет |
 |---|---|---|
-| **А — печать и семя** | `scripts/raskrutka.sh`, `scripts/print-progress.sh`, `scripts/two-prints-identical.sh`, `bootstrap/**`, `.github/workflows/reprint.yml`, `docs/reprint-*.md` | всё `flang/**` |
+| **А — печать и семя** | `scripts/raskrutka.sh`, `scripts/seed/print-progress.sh`, `scripts/seed/two-prints-identical.sh`, `bootstrap/**`, `.github/workflows/reprint.yml`, `docs/reprint-*.md` | всё `flang/**` |
 | **Б — язык и доказательства** | `flang/**`, `.claude/skills/**`, `docs/zettel/**` | всё, что в стеке А |
 
 **Спорные файлы — у каждого ОДИН хозяин, записано здесь:**
@@ -446,7 +446,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 | `flang/self/zapis.flang` | Б | формат записи доказательства |
 | `flang/self/lexer.flang`, `parser.flang` | Б | терм-примечание живёт там |
 | `flang/src/emit/c/flang_repl.c` | Б | это язык, хотя и вход печати |
-| `scripts/proved-share-ledger.txt` | А | опись снимается печатью |
+| `scripts/ledgers/proved-share-ledger.txt` | А | опись снимается печатью |
 
 Старший (тот, кто держит всю картину) не пишет ничего, кроме `КРИТЕРИЙ.md`,
 `AGENTS.md`, `CHANGELOG.md`, и делает всё необратимое: слияния в ствол, метки,
@@ -566,7 +566,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 С 7 сентября 2026 кран — **сабмодуль `packaging/homebrew-tap`**
 (`.gitmodules`), и забыть его нельзя: три числа его формулы (version, url,
 sha256) обязаны совпасть с `packaging/homebrew/flang.rb`. Это сверяют без
-сети `формула:проверка` (`scripts/homebrew-formula-guard.flang`, зовётся в
+сети `формула:проверка` (`scripts/guards/homebrew-formula-guard.flang`, зовётся в
 `install-path.yml`) и шаг «Кран не отстал от дерева» в `release.yml` —
 ДО выкладки архива; `release.yml` и `install-path.yml` берут дерево с
 `submodules: true`. Расхождение и неразвёрнутый сабмодуль — красное.
@@ -580,7 +580,7 @@ update --init`, иначе `формула:проверка` и `плагин:п
 плагина (`README.md`, `bin/download`, `bin/install`, `bin/list-all`)
 обязаны совпасть с копией в сабмодуле знак в знак, три скрипта — быть
 исполняемыми, лишних файлов сверх `LICENSE` — не быть. Сверяют без сети
-`плагин:проверка` (`scripts/asdf-plugin-guard.flang`, зовётся в
+`плагин:проверка` (`scripts/guards/asdf-plugin-guard.flang`, зовётся в
 `install-path.yml` вместе с пробой порчи `плагин:подлог`) и шаг «Плагин
 asdf не отстал от дерева» в `release.yml` — ДО выкладки архива. Числа
 версии в плагине нет (`bin/list-all` спрашивает выпуски у GitHub), поэтому
@@ -623,7 +623,7 @@ push в кране — руками владельца, автоматики н�
 
 **Тело релиза на GitHub пишется НЕ руками.** С 8 сентября 2026 шаг «Тело
 релиза собрано из заметок» (`release.yml`) зовёт
-`bootstrap/flang io scripts/release-body.flang --max-steps 40000000`: план
+`bootstrap/flang io scripts/site/release-body.flang --max-steps 40000000`: план
 берёт версию из `package.json`, заметку — из `docs/release-notes.json`, и
 кладёт в `output/` тело (обе половины, `ru` и `en`, плюс ссылки на страницу
 выпусков и на архив) и имя вида `flang X.Y.Z — заголовок`. Их и подаёт

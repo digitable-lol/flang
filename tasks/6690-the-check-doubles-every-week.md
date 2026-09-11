@@ -31,8 +31,8 @@
 | прогон | пик | время |
 |---|---:|---:|
 | `flang check flang/self/parser.flang` | 37,11 ГиБ | 471,38 с |
-| `io scripts/name-splicing-guard.flang --max-orders 2000` | 31,63 ГиБ | 367,31 с |
-| `io scripts/link-guard.flang` | 15,02 ГиБ | 40,08 с |
+| `io scripts/guards/name-splicing-guard.flang --max-orders 2000` | 31,63 ГиБ | 367,31 с |
+| `io scripts/guards/link-guard.flang` | 15,02 ГиБ | 40,08 с |
 
 Прогулка соседа за сорок минут между двумя замерами прибавила 2,3 ГиБ (29,3 →
 31,63) на четырёх новых файлах — около 0,6 ГиБ на файл. У проверки разборщика

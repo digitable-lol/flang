@@ -129,7 +129,7 @@ jobs:
 
   # ── ПЕЧАТЬ СВЯЗИ: тоже КРАСЕН ПО ДЕЛУ, и долг называется числом ───────────
   #
-  # `scripts/conc-link-emit.flang` сверяет напечатанные модули узла с их
+  # `scripts/targets/conc-link-emit.flang` сверяет напечатанные модули узла с их
   # исходниками на flang знак в знак. Свой прогон: код 1, 34,6 с, пик 329 МБ,
   # расхождений ТРИ, и все три — одна и та же строка шапки:
   #
@@ -152,4 +152,4 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - name: Напечатанные модули узла совпадают со своими исходниками
-        run: bootstrap/flang io scripts/conc-link-emit.flang
+        run: bootstrap/flang io scripts/targets/conc-link-emit.flang

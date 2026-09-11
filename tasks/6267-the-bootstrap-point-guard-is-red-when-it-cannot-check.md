@@ -7,7 +7,7 @@
 команда: вторая
 карта: Цена доказательства
 рядом: 0003, 0043, 8721
-нужность: 2 — scripts/bootstrap-point-by-binary.flang:178-184: «Не проверено» строит «Конец работы» (код 0) в 5 ветвях (195,197,200,223,226); файл не менялся с 6e4ef9ea2
+нужность: 2 — scripts/seed/bootstrap-point-by-binary.flang:178-184: «Не проверено» строит «Конец работы» (код 0) в 5 ветвях (195,197,200,223,226); файл не менялся с 6e4ef9ea2
 ---
 
 # 6267. Сторож круга раскрутки зелен, когда проверить нечем
@@ -17,9 +17,9 @@
 Снято 30 августа 2026 на стволе `f9e67fa6`; строки перепроверены 8 сентября 2026.
 
 Ярлык `точка:проверка` — `ярлыки.flang:256`,
-`bootstrap/flang io scripts/bootstrap-point-by-binary.flang --timeout 2400000`.
+`bootstrap/flang io scripts/seed/bootstrap-point-by-binary.flang --timeout 2400000`.
 Стережёт он круг раскрутки, и сказано это его же шапкой
-(`scripts/bootstrap-point-by-binary.flang:15–18`).
+(`scripts/seed/bootstrap-point-by-binary.flang:15–18`).
 
 **Порог 32 ГиБ зашит и закреплён обещанием** — строки 137–139:
 

@@ -118,12 +118,12 @@
      "Битых ссылок в дереве 1947 → 18. Сторож научен отличать запись о прошлом (сделанная задача, датированный отчёт) от обещания о настоящем, и число пропущенного печатает в вердикте, а не прячет. Список исключений при этом не раздут, а сокращён: 373 строки → 171.",
      "Тело выпуска на GitHub печатается из `docs/release-notes.json`, а не из строки в конвейере. У 0.7.14 на 93 коммита приходилось 168 знаков тела. Выпуск без записанных заметок теперь отвергается.",
      "`.claude` и `AGENTS.md` переехали в `.ai/`, `README.ru.md` — в `docs/`. Корень отделяет язык от оснастки.",
-     "Версия больше не живёт в `package.json`: он печатается из `scripts/emit-package.flang`."
+     "Версия больше не живёт в `package.json`: он печатается из `scripts/release/emit-package.flang`."
     ],
     "сломалось": [
      "Доля с прежними выпусками несравнима второй раз подряд: 0.7.14 сменил числитель, 0.7.15 сужает знаменатель. Обе меры печатаются с разбивкой, и баланс знаменателя сверяется прибором.",
      "`flang package` не работает ни на одном входе с 29 августа: вызов с одним доводом при функции о двух. Найдено прогоном, починка — одна строка, доедет следующей перепечаткой семени (задача 3401).",
-     "Поиск модулей поднимается выше корня дерева, и файл-предок каталогом выше побивает библиотеку языка. Дыра названа и померена: 20 имён затеняемы, 5 затенений живых. Сторож `scripts/module-origin-guard.sh` её видит, починка в двоичном ждёт перепечатки (задача 3127).",
+     "Поиск модулей поднимается выше корня дерева, и файл-предок каталогом выше побивает библиотеку языка. Дыра названа и померена: 20 имён затеняемы, 5 затенений живых. Сторож `scripts/guards/module-origin-guard.sh` её видит, починка в двоичном ждёт перепечатки (задача 3127).",
      "Вердикт по-прежнему НЕ ДОКАЗУЕМ: три проверки из четырёх сошлись, доля 79,42 % при пороге 95 %."
     ]
    },
@@ -145,7 +145,7 @@
      "Broken links in the tree: 1947 → 18. The sentinel now tells a record of the past (a completed task, a dated report) from a promise about the present, and prints how many it skipped rather than hiding it. The exception list shrank rather than grew: 373 rows → 171.",
      "The GitHub release body is printed from `docs/release-notes.json` instead of a string in the pipeline. Version 0.7.14 had 168 characters of body for 93 commits. A release with no recorded notes is now refused.",
      "`.claude` and `AGENTS.md` moved to `.ai/`, `README.ru.md` to `docs/`.",
-     "The version no longer lives in `package.json`: that file is printed from `scripts/emit-package.flang`."
+     "The version no longer lives in `package.json`: that file is printed from `scripts/release/emit-package.flang`."
     ],
     "сломалось": [
      "The share is incomparable with earlier releases for the second time running: 0.7.14 changed the numerator, 0.7.15 narrows the denominator. Both measures print a breakdown, and the denominator balance is verified by an instrument.",
@@ -614,7 +614,7 @@
      "Поиск по кодам отказа в документации находит 13 кодов из 13 — было 0 из 13."
     ],
     "сломалось": [
-     "Ярлык `emit:check` убран: проверку печати делает `pechat:check` на самом языке, а `occupied:check` зовёт `scripts/occupied-names-guard.flang` вместо снятого скрипта на JavaScript.",
+     "Ярлык `emit:check` убран: проверку печати делает `pechat:check` на самом языке, а `occupied:check` зовёт `scripts/guards/occupied-names-guard.flang` вместо снятого скрипта на JavaScript.",
      "Общая половина драйвера PostgreSQL уехала в модуль «Провод». Программы, звавшие `«Знак байта»`, `«Четыре октета»`, `«Два октета»` и соседей прямо у «Разговора с базой», должны ввозить «Провод»."
     ]
    },
@@ -636,7 +636,7 @@
      "Searching the documentation by refusal code finds 13 codes out of 13 — it used to find 0 of 13."
     ],
     "сломалось": [
-     "The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/occupied-names-guard.flang` instead of the removed JavaScript script.",
+     "The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/guards/occupied-names-guard.flang` instead of the removed JavaScript script.",
      "The shared half of the PostgreSQL driver moved into the \"Wire\" module. Programs that called `«Знак байта»`, `«Четыре октета»`, `«Два октета»` and their neighbours directly from the database module must now import \"Wire\"."
     ]
    }

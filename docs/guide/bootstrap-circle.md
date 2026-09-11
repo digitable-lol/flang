@@ -39,7 +39,7 @@ The seed was reprinted on 10–11 September 2026, commit `0ce948bfd`:
 `sh scripts/raskrutka.sh` answered «РЕПРИНТ КОД=0, семя годное» — 7 files,
 41 564 839 bytes, 7 h 28 min (start 02:08:53Z, end 09:36:56Z; all of it is in the
 commit message). The sources have moved on since: on 11 September
-`sh scripts/chto-otstalo-ot-semeni.sh` names 3 files and 77 functions (`functor`,
+`sh scripts/seed/chto-otstalo-ot-semeni.sh` names 3 files and 77 functions (`functor`,
 `monoid`, `svoystva`) that the binary built from the seed does not know.
 `sh scripts/raskrutka.sh --bystro` on the same day answers «ОТПЕЧАТОК СНЯТ С
 ПРАВЛЕНОГО ДЕРЕВА»: the emission inputs in the reprint tree differed from its
@@ -151,7 +151,7 @@ on 11 September 2026 did not reach an answer in 8 minutes (run ceiling 500 s): i
 was still at «Связать исходники», 19 billion steps, 6.6 GiB. The answer that used
 to stand here ("не проверено — замечаний 29", exit 1) was taken from the seed
 before the reprint. What the seed binary does not know is reported not by `check`
-but by `sh scripts/chto-otstalo-ot-semeni.sh` — 3 files, 77 functions.
+but by `sh scripts/seed/chto-otstalo-ot-semeni.sh` — 3 files, 77 functions.
 
 **Rebuilding needs the tree, not the seed directory.** Emission reads the C
 runtime sources from disk (`flang/src/emit/c/`), and there are no copies of them

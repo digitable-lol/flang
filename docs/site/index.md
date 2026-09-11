@@ -83,13 +83,13 @@ and have not been re-measured since.** They are measured by the compiler in a
 run over the whole corpus (hours), and on the day of measurement it was built
 from a seed that had fallen behind the sources. The seed has since been
 reprinted (10–11 September 2026, commit `0ce948bfd`; `sh
-scripts/chto-otstalo-ot-semeni.sh` on 11 September names 3 files, 77 functions,
+scripts/seed/chto-otstalo-ot-semeni.sh` on 11 September names 3 files, 77 functions,
 still behind), and the expensive numbers have not been re-measured yet — when
 they are, the date above changes.
 
 The cheap numbers on this page — how many files, lines, functions and examples
 the tree holds — are recomputed without the compiler in nine seconds and are
-checked on every push (`sh scripts/published-vs-tree.sh --числа`). The gap
+checked on every push (`sh scripts/guards/published-vs-tree.sh --числа`). The gap
 between the two halves is measured as a number, not as a word: the same command
 prints how many files have moved since that measurement.
 

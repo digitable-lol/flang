@@ -8,7 +8,7 @@
 #
 #   git clone --depth 1 https://github.com/prabirshrestha/vim-lsp.git   ~/vimlsp/vim-lsp
 #   git clone --depth 1 https://github.com/prabirshrestha/async.vim.git ~/vimlsp/async.vim
-#   FLANG_VIM_LSP=~/vimlsp flang io scripts/lsp-check.flang
+#   FLANG_VIM_LSP=~/vimlsp flang io scripts/editors/lsp-check.flang
 set -eu
 
 koren=$(cd "$(dirname "$0")/../../.." && pwd)

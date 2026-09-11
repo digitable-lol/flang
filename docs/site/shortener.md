@@ -457,7 +457,7 @@ alongside:
   `emit --target js` emits the declaration and answers 0, the other nine targets
   refuse with `FLANG_PLAN_UNSUPPORTED` and code 1 without writing a file
   (re-checked on 11 September 2026 for `python` and `go`).
-  `scripts/plan-across-targets.flang` checks this.
+  `scripts/targets/plan-across-targets.flang` checks this.
 
 The host moved to `flang/src/emit/js/flang_host_browser.js` with zero imports;
 the browser host of the JavaScript implementation became a transitional line that substitutes the

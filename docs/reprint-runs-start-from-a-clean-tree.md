@@ -195,6 +195,6 @@ $ for f in bootstrap/compiler_flang.c bootstrap/compiler_flang.h bootstrap/flang
 
 Она не про цену перепечатки — цена в [`reprint-cost.md`](reprint-cost.md) и в
 [`reprint-ledger.tsv`](reprint-ledger.tsv). Не про свежесть семени — это
-`scripts/seed-freshness.sh` и `sh scripts/raskrutka.sh --bystro`, и они отвечают
+`scripts/seed/seed-freshness.sh` и `sh scripts/raskrutka.sh --bystro`, и они отвечают
 на другой вопрос: «те ли входы у печати», а не «чиста ли копия, из которой
 печатают».

@@ -254,7 +254,7 @@ the change.
 ./ярлык имена:проверка                         # the guard
 node flang/scripts/name-guard.mjs --list       # the debt per file, by name
 node flang/scripts/name-guard.mjs --debt       # rewrite the debt after cleaning
-bootstrap/flang test scripts/module-name-guard.flang   # the 34 examples of the R7 check (11 September 2026: 34 of 34)
+bootstrap/flang test scripts/guards/module-name-guard.flang   # the 34 examples of the R7 check (11 September 2026: 34 of 34)
 ```
 
 The R1–R6 guard used to be checked by forty-one assertions (`flang/test/name-guard.test.mjs`) — that file

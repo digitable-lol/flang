@@ -62,7 +62,7 @@ FLANG_PACKAGE: в flang.package пакет назван «Скидка»,
 3. Поправить пункт 6 `docs/road-to-1-0.md`: назвать, что уже есть
    (`flang/stdlib/registry.flang` 617 строк, `scripts/registry-tool.flang` 473,
    четыре плана прогнаны), и оставить в «чего нет» только установку и раздачу.
-4. Заодно снять устаревший комментарий `scripts/asdf-version-list.flang:40-41`
+4. Заодно снять устаревший комментарий `scripts/release/asdf-version-list.flang:40-41`
    («у хозяина нет шифрования, на https он отвечает FLANG_IO_NO_TLS») — с
    ADR-0007 https работает через внешний `curl`.
 

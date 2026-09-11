@@ -12,8 +12,8 @@
 
 По дереву 0.5.0 встречается 109 раз. Огромное большинство законно — это история
 выпусков и её проверки: `CHANGELOG.md`, `changelog.json`,
-`docs/release-notes.json`, `scripts/asdf-version-list.flang` (31),
-`scripts/release-guard.flang` (28), `scripts/homebrew-formula-guard.flang` (20),
+`docs/release-notes.json`, `scripts/release/asdf-version-list.flang` (31),
+`scripts/guards/release-guard.flang` (28), `scripts/guards/homebrew-formula-guard.flang` (20),
 `packaging/install-check.flang` (19), оба `README` («с 0.5.1; в архиве 0.5.0
 такой цели нет»). Сторож, краснеющий на истории, будет отключён в первый же
 день, и вместе с ним умрёт настоящая проверка.
@@ -169,6 +169,6 @@ FLANG_BOUND_ON_NAN … постусловие «удвоенное не мень
 и покраснеет.
 
 Чинится это в 0055: страница объявляет замер машиночитаемо,
-`scripts/stale-pages-guard.flang` сверяет объявленное с деревом, ярлык
+`scripts/guards/stale-pages-guard.flang` сверяет объявленное с деревом, ярлык
 `страницы:отстали` собирает семью проверок в один список, и ярлык прицеплен к
 тегу — потому что проверка, которой нет в списке, тихо мертвеет.

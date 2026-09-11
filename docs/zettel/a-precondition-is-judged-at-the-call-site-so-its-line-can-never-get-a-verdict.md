@@ -109,7 +109,7 @@ flang/self/distributed.flang --proof --json` (ворота `PIK=12G PAMYAT=60G`)
 Двоичный, к слову, сошёлся с соседским побайтово: `4e32f9f76d8215c3b5df1b6abe0b6a68`
 у обоих, собран независимо `make -C bootstrap -j8` из семени ствола.
 
-**Чем подтверждено.** `sh scripts/published-vs-tree.sh --доля` печатает
+**Чем подтверждено.** `sh scripts/guards/published-vs-tree.sh --доля` печатает
 разложение знаменателя и обе кучи; `PODROBNO=1` добавляет сверку суммы поля
 «без приговора» описи с деревом — 97 и 97.
 

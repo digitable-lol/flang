@@ -45,7 +45,7 @@
 7,3 ГиБ пика, около 560 байт памяти на октет; половина платы — журнал прогона,
 который держит список дважды, а ключа «не вести журнал» у `flang io` нет.
 Хозяин вкладки на JavaScript от словаря отстал на два поручения, и сторож
-`scripts/tab-host-guard.flang` говорит об этом кодом 1.
+`scripts/guards/tab-host-guard.flang` говорит об этом кодом 1.
 
 Связано: [[the-binary-host-cuts-content-at-the-first-zero-octet]],
 [[octets-are-expressible-as-a-list-of-numbers-not-as-a-string]],

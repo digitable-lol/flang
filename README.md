@@ -343,11 +343,11 @@ whichever language they are written, because GitHub shows them as a directory's 
 
 There are 9 directories at the root. Everything that is the language lives under `flang/`;
 outside it is what the language is not: the bootstrap point, packaging, examples, measurements,
-documentation and the task list. `sh scripts/published-vs-tree.sh --карта` checks this map
+documentation and the task list. `sh scripts/guards/published-vs-tree.sh --карта` checks this map
 against the tree on every push.
 
 <!-- КАРТА-НАЧАЛО: между этими метками каждая строка начинается с имени каталога корня;
-     sh scripts/published-vs-tree.sh --карта сличает состав с деревом. -->
+     sh scripts/guards/published-vs-tree.sh --карта сличает состав с деревом. -->
 
 ```
 bootstrap/        the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
@@ -392,7 +392,7 @@ the 170 more programs in the other sets are single files, the LeetCode set among
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the
 result is compared with what is committed: `sh scripts/raskrutka.sh --check`. The inputs of the
 last print are recorded in `scripts/otpechatok-semeni`, one hashed line each — 48 lines. The
-seed lags the sources today, in three files and 77 functions: `sh scripts/chto-otstalo-ot-semeni.sh`
+seed lags the sources today, in three files and 77 functions: `sh scripts/seed/chto-otstalo-ot-semeni.sh`
 lists which files and functions are newer than the seed, and a reprint (`sh scripts/raskrutka.sh`, hours on one core)
 is how edits to `flang/self/` reach the binary. What the seed is and what guards it —
 [`bootstrap/README.md`](bootstrap/README.md) and [the bootstrap circle](docs/guide/bootstrap-circle.md).
@@ -431,8 +431,8 @@ guard is for — are in [`AGENTS.md`](AGENTS.md); how to build, run the checks a
 knowledge base of measured facts and rejected paths is [`docs/zettel/`](docs/zettel/README.md).
 
 Prose in this tree is held to the tree by runs, not by memory: a number written by hand carries a
-note saying how it was measured (`scripts/prose-numbers-guard.sh`), a path in a link must exist
-(`scripts/link-guard.flang`), and a word of internal jargon on a page for an outside reader is
+note saying how it was measured (`scripts/guards/prose-numbers-guard.sh`), a path in a link must exist
+(`scripts/guards/link-guard.flang`), and a word of internal jargon on a page for an outside reader is
 refused (`flang/scripts/jargon-guard.flang`). This page is one of the pages those checks read.
 
 ## Status

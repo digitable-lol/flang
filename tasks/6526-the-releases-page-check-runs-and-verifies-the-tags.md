@@ -17,7 +17,7 @@
 Снято 30 августа 2026 на стволе `f9e67fa6`.
 
 Ярлык `выпуски:страница:проверка` — `ярлыки.flang:170`,
-`bootstrap/flang io scripts/releases-page-verify.flang`. **Ключа `--max-steps` в
+`bootstrap/flang io scripts/site/releases-page-verify.flang`. **Ключа `--max-steps` в
 строке нет**, значит действует умолчание `io` — **10 000 000** шагов
 (`flang/src/emit/c/flang_repl.c:12083`; таблица в `ярлыки.flang:38–40`).
 
@@ -33,7 +33,7 @@ docs/ci-inventory.md:143   75 выпуски:страница:проверка �
 что делает задача, — снимает его и заносит.
 
 **А добежав, он не проверил бы ничего на клоне без тегов.**
-`scripts/releases-page-verify.flang:91`:
+`scripts/site/releases-page-verify.flang:91`:
 
 ```
 вариант «Конец работы» с значение равным … " — клон без тегов."

@@ -58,7 +58,7 @@
 
 Тридцать семь программ дерева с объявлением `процесс` прогнаны обоими
 двоичными. Расхождение ровно одно и оно желаемое:
-`examples/web/shortener/handler-without-budget.flang` — файл, заведённый уликой
+`examples/docs/examples/web/shortener-client/handler-without-budget.flang` — файл, заведённый уликой
 того, что программа без `с запасом N витков` не собирается, — было «замечаний
 нет», стало `FLANG_HANDLER_NOT_TOTAL`.
 

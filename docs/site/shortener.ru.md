@@ -441,7 +441,7 @@ bootstrap/flang emit docs/examples/web/shortener-client/client.flang \
   `emit --target js` печатает объявление и отвечает 0, остальные девять целей
   отказывают `FLANG_PLAN_UNSUPPORTED` кодом 1, не записав ни файла (11 сентября
   2026 перепроверено на `python` и `go`). Сверяет это
-  `scripts/plan-across-targets.flang`.
+  `scripts/targets/plan-across-targets.flang`.
 
 Хозяин переехал в `flang/src/emit/js/flang_host_browser.js` с нулём ввозов;
 браузерный хозяин реализации на JavaScript стал переходной строкой, подставляющей

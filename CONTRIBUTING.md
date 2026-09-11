@@ -160,8 +160,8 @@ every run, so the duplicate cannot drift in silence.
 | `./ярлык тесты:по-ssh` | the same suite on a host of your choosing, over ssh |
 | `./ярлык раскрутка` · `./ярлык раскрутка:проверка` · `./ярлык строки:проверка` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
 | `./ярлык утверждения:проверка` · `./ярлык подсчёты:проверка` · `./ярлык коды:проверка` · `./ярлык печать:проверка` · `./ярлык имена:проверка` | the five prose guards below |
-| `./ярлык лицензии:проверка` | SPDX marking of every code file under `flang/` and `examples/` (not `bootstrap/` — see below); **CI runs the file directly** (`bootstrap/flang io scripts/license-guard.flang`), not through the shortcut |
-| `./ярлык ссылки:проверка` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/link-guard.flang`) |
+| `./ярлык лицензии:проверка` | SPDX marking of every code file under `flang/` and `examples/` (not `bootstrap/` — see below); **CI runs the file directly** (`bootstrap/flang io scripts/guards/license-guard.flang`), not through the shortcut |
+| `./ярлык ссылки:проверка` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/guards/link-guard.flang`) |
 | `./ярлык сайт` · `./ярлык сайт:проверка` | build the documentation site and check its links; **Pages runs the file directly** |
 | `./ярлык числа` · `./ярлык числа:проверка` | reprint the site pages' own numbers from the measurer, and check them against it |
 | `./ярлык словарь` · `./ярлык словарь:проверка` | print `docs/glossary.md` from the surface table, and check it is fresh |
@@ -201,7 +201,7 @@ suite before publishing. npm was removed from the tree on 3 September 2026
 
 What is left is the **version**, the licence and the two addresses — read by the
 site build, by the Homebrew formula guard and by the release workflow. The file
-is printed from `scripts/emit-package.flang` and never hand-edited:
+is printed from `scripts/release/emit-package.flang` and never hand-edited:
 `./ярлык пакет` prints it, `./ярлык пакет:проверка` refuses if the two have
 drifted.
 
@@ -242,7 +242,7 @@ What this means when you write:
   diff of lists, not of counts. New code goes red; the debt must shrink. Do not
   add to it, and do not rewrite it to make your change pass.
 - **Cost claims.** The one cost table is in `flang/SPEC.md`. Each cell is backed by
-  an exact snippet of the target's runtime in `scripts/emit-promises-guard.flang`;
+  an exact snippet of the target's runtime in `scripts/guards/emit-promises-guard.flang`;
   change the runtime and the guard demands the table be revisited.
 - **Licence headers.** Every source file under `flang/` and `examples/` with one
   of thirteen code extensions carries an SPDX header — 75 files as of 29 August

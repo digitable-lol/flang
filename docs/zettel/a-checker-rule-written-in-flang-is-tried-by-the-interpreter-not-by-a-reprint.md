@@ -44,7 +44,7 @@ flang доступа к миру нет.
 
 | прогон | ответ пробы |
 |---|---|
-| `examples/web/shortener/handler-without-budget.flang` | `FLANG_HANDLER_NOT_TOTAL, строка 30: обработчик «шаг разбора» процесса «Разборщик» не помечен тотальным…` |
+| `examples/docs/examples/web/shortener-client/handler-without-budget.flang` | `FLANG_HANDLER_NOT_TOTAL, строка 30: обработчик «шаг разбора» процесса «Разборщик» не помечен тотальным…` |
 | та же программа плюс `с запасом 2000 витков` | `[]` |
 
 Круг правки — **от трёх до пяти с половиной минут** на прогон (замеры от 190 до

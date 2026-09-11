@@ -85,9 +85,9 @@ $ pochinka/flang package проба.flang
 
 1. Правку внести в **источник** `flang/src/emit/c/flang_repl.c` (руками
    `bootstrap/*.c` не трогать — отпечаток прочтёт это как подлог).
-2. Доставить быстрым пересевом `sh scripts/semya-osvezhit.sh`: `flang_repl.c`
+2. Доставить быстрым пересевом `sh scripts/seed/semya-osvezhit.sh`: `flang_repl.c`
    не печатается из `flang/self`, а копируется в семя дословно (заслон
-   `scripts/semya-rantayma-eto-istochnik.sh`; `diff` источника и семени — ровно
+   `scripts/seed/semya-rantayma-eto-istochnik.sh`; `diff` источника и семени — ровно
    9 строк шапки). Полная перепечатка **не нужна**.
 3. Завести сторожа, которого нет: `flang new` во временном каталоге →
    `flang package` → код 0 → ввоз получившегося пакета чужой программой. Место —
@@ -114,7 +114,7 @@ args[1] = obligations;` и `repl_call("Прогоны для ядра", args, 2,
 (`flang/src/emit/c/flang_repl.c`, `repl_call_within("Прогоны для ядра", pair, 2, …)`).
 
 **Проверено прогоном, а не рассуждением.** Двоичный собран ВНЕ дерева приёмом из
-шапки `scripts/semya-rantayma-eto-istochnik.sh` (шапка 9 строк + источник →
+шапки `scripts/seed/semya-rantayma-eto-istochnik.sh` (шапка 9 строк + источник →
 копия `bootstrap/`, `make -j8`); дерево не тронуто.
 
 | прогон | до | после |
@@ -130,7 +130,7 @@ args[1] = obligations;` и `repl_call("Прогоны для ядра", args, 2,
    собранного двоичного и образца `fspec/` рядом с ним (без него `flang new`
    отвечает `FLANG_NEW: не найден образец fspec/`), то есть в хук перед пушем
    не помещается, а заведение ярлыка тянет за собой запись в
-   `scripts/storozha-bez-podloga.json` и пробу порчи. Отдельная работа.
+   `scripts/ledgers/storozha-bez-podloga.json` и пробу порчи. Отдельная работа.
 2. **Семь пакетов `scripts/registry-example/` не пересобраны** — приговор
    после сужения прогонов 29 августа на них не сверен.
 3. Правка живёт в источнике: `bootstrap/flang` в дереве по-прежнему отвечает

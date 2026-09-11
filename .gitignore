@@ -7,7 +7,7 @@ generated/
 coverage/
 tmp/
 # Каталог сборки релиза: там напечатанный C и архивы, всё это создаётся
-# scripts/release-in-c.flang и в истории не нужно.
+# scripts/release/release-in-c.flang и в истории не нужно.
 output/
 
 # Временные каталоги проверок: их заводит `flang io` под своим прогоном и

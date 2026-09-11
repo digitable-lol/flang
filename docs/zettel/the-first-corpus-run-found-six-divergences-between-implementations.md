@@ -21,7 +21,7 @@
 в `morphisms`, а не в `functions`, и здесь их нет. Четыре программы названы там
 же числом, и прогон нашёл ровно четыре: `cat/modules/orders.flang` (4 против 6),
 `cat/modules/reconciliation.flang` (12 против 14), `cat/order-shipment.flang`
-(0 против 4) и `web/shortener/server.flang` (240 против 243).
+(0 против 4) и `docs/examples/web/shortener-client/server.flang` (240 против 243).
 
 Первая строка — самая тихая и нигде не записанная. `прогон «имя»` модели
 процессов — это тоже пример для `flang test` у свидетеля, а «Прогон примеров
@@ -41,7 +41,7 @@ flang/conc/examples/race.flang: примеров 0, прошло 0, не про�
 | что | двоичный | свидетель на Node |
 |---|---|---|
 | `flang/test/fixtures/plany/*.flang` (12 файлов) | ВЗЯТЫ, 0 примеров, код 0 | отказ `FLANG_PLAN` |
-| `examples/web/shortener/handler-without-budget.flang` | ВЗЯТ, код 0 | отказ `FLANG_HANDLER_NOT_TOTAL` |
+| `examples/docs/examples/web/shortener-client/handler-without-budget.flang` | ВЗЯТ, код 0 | отказ `FLANG_HANDLER_NOT_TOTAL` |
 
 Это тринадцать фикстур, заведённых как ЗАВЕДОМО НЕГОДНЫЕ программы: у каждой
 своя поломка плана или необработанный отказ. Свидетель их отвергает — на то они

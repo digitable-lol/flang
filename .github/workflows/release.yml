@@ -78,7 +78,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           # Вся история и все теги: журнал изменений печатается из них
-          # (scripts/build-changelog.flang, ярлык `журнал`), и сверка сверяет
+          # (scripts/site/build-changelog.flang, ярлык `журнал`), и сверка сверяет
           # записанный файл с историей. В клоне из одной ревизии эта сверка сравнивает пустоту с
           # пустотой и молчит.
           fetch-depth: 0
@@ -114,7 +114,7 @@ jobs:
 
       - name: Собранный двоичный называет ту же версию, что package.json
         # ЗАЧЕМ ОТДЕЛЬНО ОТ «версия:проверка» (install-path.yml:138). Тот сторож
-        # (scripts/version-guard.flang) читает ИСХОДНИК —
+        # (scripts/guards/version-guard.flang) читает ИСХОДНИК —
         # flang/src/emit/c/flang_repl.c. А выпуск собирается из СЕМЕНИ (шаг
         # выше, make -C bootstrap), и между перепечатками эти два файла
         # расходятся ЗАКОННО. Значит зелёный «версия:проверка» ничего не
@@ -142,7 +142,7 @@ jobs:
           set -eu
           package_version="$(sed -n 's/^  "version": "\([^"]*\)",$/\1/p' package.json)"
           if [ -z "$package_version" ]; then
-            echo "::error::версию не вычитать из package.json — вид файла изменился, а его печатает scripts/emit-package.flang"
+            echo "::error::версию не вычитать из package.json — вид файла изменился, а его печатает scripts/release/emit-package.flang"
             exit 1
           fi
           # `head -1` — не украшение. С 8 сентября 2026 оболочка печатает ВТОРУЮ
@@ -193,14 +193,14 @@ jobs:
         #
         # Версия читается `sed`-ом, а не `node -p require("./package.json")`:
         # путь выпуска не обязан звать Node ради одной строки, а вид файла
-        # закреплён — `package.json` печатается из `scripts/emit-package.flang`
+        # закреплён — `package.json` печатается из `scripts/release/emit-package.flang`
         # знак в знак, и отступ в два пробела там часть договора.
         run: |
           set -eu
           tag_version="${GITHUB_REF_NAME#v}"
           package_version="$(sed -n 's/^  "version": "\([^"]*\)",$/\1/p' package.json)"
           if [ -z "$package_version" ]; then
-            echo "::error::версию не вычитать из package.json — вид файла изменился, а его печатает scripts/emit-package.flang"
+            echo "::error::версию не вычитать из package.json — вид файла изменился, а его печатает scripts/release/emit-package.flang"
             exit 1
           fi
           if [ "$tag_version" != "$package_version" ]; then
@@ -222,7 +222,7 @@ jobs:
       #
       # Заметка о выпуске в дереве уже есть и уже сверяется: из
       # `docs/release-notes.json` печатается страница «Выпуски», и
-      # `scripts/releases-page-verify.flang` краснеет на теге без заметки.
+      # `scripts/site/releases-page-verify.flang` краснеет на теге без заметки.
       # Здесь тот же файл становится телом релиза — обеими половинами, русской
       # и английской, — чтобы опубликованное и страница сайта не могли
       # разойтись: у них один источник.
@@ -245,14 +245,14 @@ jobs:
         run: |
           set -eu
           mkdir -p output
-          LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-body.flang --max-steps 40000000
+          LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.flang --max-steps 40000000
           echo "имя релиза: $(cat output/release-title.txt)"
           echo "знаков в теле: $(wc -c < output/release-body.md)"
 
       # ПОКАЗАНО ПРОГОНОМ, ЧТО СТОРОЖ ВЫШЕ УМЕЕТ КРАСНЕТЬ.
       #
       # Сторож, у которого не показано, что он краснеет, — это сторож, которому
-      # верят зря: ровно этот род долга считает `scripts/storozha-bez-podloga.sh`.
+      # верят зря: ровно этот род долга считает `scripts/guards/storozha-bez-podloga.sh`.
       # Проба подставляет версию, заметки о которой в json заведомо нет, и
       # требует от плана ОТКАЗА. Прошёл план — красный здесь, а не молчание.
       #
@@ -263,7 +263,7 @@ jobs:
         run: |
           set -eu
           sed -i 's/^  "version": ".*",$/  "version": "0.0.0",/' package.json
-          if LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-body.flang --max-steps 40000000 >/dev/null 2>&1; then
+          if LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.flang --max-steps 40000000 >/dev/null 2>&1; then
             git checkout -- package.json
             echo "::error::проба не сработала: тело собралось для версии 0.0.0, о которой заметки нет."
             echo "::error::Значит шаг «Тело релиза собрано из заметок» пропустит выпуск без заметки — сторожа нет."
@@ -287,7 +287,7 @@ jobs:
       #
       # Список файлов выше берётся ВЫЧИТАНИЕМ (`ls | grep -Ev`), и это верно: он
       # не отстаёт при переименовании. Но у вычитания есть обратная сторона —
-      # оно молча пропускает и ПРОПАЖУ. Перестань `scripts/release-in-c.flang`
+      # оно молча пропускает и ПРОПАЖУ. Перестань `scripts/release/release-in-c.flang`
       # класть каталог `runtime`, и архив уедет без рантаймов, хеш сойдётся,
       # формула поставится, а `flang emit --target js` откажет у каждого
       # поставившего. Ровно это и была задача 7261, найденная владельцем живьём
@@ -315,7 +315,7 @@ jobs:
               beda=$((beda + 1))
             fi
           done
-          # Файлов рантайма 32 на девять целей; число сторожит scripts/release-in-c.flang
+          # Файлов рантайма 32 на девять целей; число сторожит scripts/release/release-in-c.flang
           # своим примером, здесь же проверяется, что они доехали до архива.
           fajlov="$(printf '%s\n' "$sostav" | grep -c '^runtime/[^/]*/[^/]' || true)"
           echo "файлов рантайма в архиве: $fajlov"
@@ -350,7 +350,7 @@ jobs:
         # (version, url, sha256) обязаны совпасть с формулой дерева ДО выкладки.
         # Расхождение — красное; сабмодуль, указывающий на непушенный коммит
         # крана, checkout выше не развернёт вовсе — тоже красное. Ту же сверку
-        # без сети держит «формула:проверка» (scripts/homebrew-formula-guard.flang).
+        # без сети держит «формула:проверка» (scripts/guards/homebrew-formula-guard.flang).
         run: |
           set -eu
           kran=packaging/homebrew-tap/Formula/flang.rb
@@ -382,7 +382,7 @@ jobs:
         # плагина сверяются с деревом побайтово ДО выкладки, три скрипта — на
         # бит исполнимости. Расхождение — красное; неразвёрнутый сабмодуль —
         # тоже. Ту же сверку без сети держит «плагин:проверка»
-        # (scripts/asdf-plugin-guard.flang).
+        # (scripts/guards/asdf-plugin-guard.flang).
         run: |
           set -eu
           plagin=packaging/asdf-plugin

@@ -182,7 +182,7 @@ SPEC отдельным коммитом — к подаче оно отноше
 
 - **три теста сейчас падают**, и «2763 зелёных» было бы неправдой:
   `flang/test/changelog.test.mjs:64` (каталог `flang/scripts` не внесён в список
-  `ВИДИМОСТЬ` в `scripts/build-changelog.mjs` — настоящий дефект ветки) и два в
+  `ВИДИМОСТЬ` в `scripts/site/build-changelog.mjs` — настоящий дефект ветки) и два в
   `flang/test/emit-elixir.test.mjs` (отрицательный ноль на OTP 25);
 - **чужими руками восемь тулчейнов не воспроизводятся через CI**:
   `.github/workflows/ci.yml` гоняет только `ubuntu-latest` × Node 20/22/24,

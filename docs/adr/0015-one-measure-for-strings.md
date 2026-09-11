@@ -5,7 +5,7 @@
 **Основание:** рантаймы `flang/src/emit/c/flang_runtime.c`,
 `flang/src/emit/go/flang_runtime.go`, `flang/src/emit/elixir/flang_runtime.ex`;
 спецификация [`flang/SPEC.md`](../../flang/SPEC.md), раздел «У строки одна мера — знаки»;
-проверка `scripts/one-string-measure-guard.sh` и программа `scripts/string-measure.flang`.
+проверка `scripts/guards/one-string-measure-guard.sh` и программа `scripts/guards/string-measure.flang`.
 **Продолжает** коммит `c015f452` («У строки одна мера — знаки»), который свёл меры у
 трёх целей с UTF-16 и записал в спецификацию, что у остальных пяти сводить нечего.
 **Номер 0007, а не 0006:** 0006 занят неслитой веткой `u/bajty-fajlov` (октеты у файлов).
@@ -147,7 +147,7 @@ Rust её не бывает вовсе. Одинаковый ответ у во�
 
 ## Чем подтверждено — порчей, а не прогоном
 
-`scripts/one-string-measure-guard.sh` кладёт октеты доводом командной строки и
+`scripts/guards/one-string-measure-guard.sh` кладёт октеты доводом командной строки и
 сверяет ответы форм между собой (23 сверки: 10 на правильном UTF-8, 8 на негодном,
 5 на склейке).
 

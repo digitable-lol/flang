@@ -77,7 +77,7 @@
 
 Семь — это `stdlib/lists.flang`, `stdlib/utf8.flang`, `examples/rosetta/palindrome`,
 `examples/rosetta/hundred-doors`, `examples/leetcode/100-same-tree`,
-`scripts/corpus-runner.flang` и сама подделка. Показателен
+`scripts/guards/corpus-runner.flang` и сама подделка. Показателен
 `progonshchik-korpusa`: он сличает два списка строк через скалярную проекцию —
 `(соединить левый по "\n") равен (соединить правый по "\n")`. Ровно тот обход,
 который шапка `stdlib/strlists.flang` описывает как единственный доступный.
@@ -140,7 +140,7 @@ FLANG_TYPE: сравнивать на равенство значения-фун
 |---|---|---|
 | `db/postgres-plan`, `db/postgres-scram-plan` | `FLANG_DUPLICATE_NAME`: «Целая часть» в `stdlib/postgres.flang` и `stdlib/numbers.flang` | тот же (на стволе уже починено) |
 | `monad/order-total` | `FLANG_TYPE_PARAM`: «Беда» не определяется | тот же |
-| `web/shortener/{service,server,plan,plan-network,plan-durable}` | по 3 примера про пути процентами и кириллицу — одна беда в `service.flang`, видная из пяти файлов | те же три дословно |
+| `docs/examples/web/shortener-client/{service,server,plan,plan-network,plan-durable}` | по 3 примера про пути процентами и кириллицу — одна беда в `service.flang`, видная из пяти файлов | те же три дословно |
 
 Правило идёт с двумя подделками:
 `poddelka-ravenstvo-v-tele.flang` (значения-функции обязаны быть отвергнуты) и

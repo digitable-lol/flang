@@ -9,9 +9,9 @@
 печать из `flang/self/**`. Бэкенд C увозит его в семя дословно и приписывает
 сверху шапку: `diff flang/src/emit/c/flang_repl.c bootstrap/flang_repl.c` —
 ровно девять строк, все в шапке (заслон
-`scripts/semya-rantayma-eto-istochnik.sh`, задача 4088). Отсюда следствие,
+`scripts/seed/semya-rantayma-eto-istochnik.sh`, задача 4088). Отсюда следствие,
 которое стоит помнить: правка оболочки доезжает до двоичного **быстрым
-пересевом** `sh scripts/semya-osvezhit.sh` (задача 3388), а не
+пересевом** `sh scripts/seed/semya-osvezhit.sh` (задача 3388), а не
 перепечаткой в четыре с половиной часа. Пересев 8 сентября занял 71 с, потому
 что объекты семени были свежи и пересобрался один `flang_repl.o`.
 `flang/self/repl/repl.flang` — другая оболочка, побайтовый двойник Node-версии;

@@ -4,7 +4,7 @@
 > прогоном 30 августа 2026 на стволе `9190b0be`: знаменатель дерева — не 13341,
 > а **13 581** (240 сверху; счёт по первому слову строки не видел кванторной
 > формы `для всех … обеспечивает`), а числитель 8147 **поимённо не разложен и
-> потому непроверяем** — `sh scripts/published-vs-tree.sh --доля` отвечает
+> потому непроверяем** — `sh scripts/guards/published-vs-tree.sh --доля` отвечает
 > «числитель 8147 — под вопросом на 1995 обязательств из 13341». Отчётное число
 > одно, и оно в [`ROADMAP.md`](../../ROADMAP.md): **4028 из 13 489 = 29,9 %**,
 > нижняя оценка — у 185 файлов из 510 (7751 обязательство, 57 % написанного)
@@ -116,7 +116,7 @@ make -C bootstrap -j8                       # 62,67 с, пик 1,04 ГиБ
 
 Закрыта 30 августа 2026, задача 2469. **22 файла из 25** сняты заходом
 `m/raise-proved-share` — приговор по каждому лежит в
-`scripts/proved-share-ledger.txt` (1028 обязательств, доказано 605). Прежний
+`scripts/ledgers/proved-share-ledger.txt` (1028 обязательств, доказано 605). Прежний
 список — в истории файла.
 
 **Последние три перемеряны нынешним стволом, и ни один не упирается в шаги.**
@@ -253,7 +253,7 @@ make -C bootstrap -j8                       # 62,67 с, пик 1,04 ГиБ
 * `fspec/spec/17-stock-reserve.flang` — 3 — (2 из 3)
 * `fspec/spec/13-subscription-refund.flang` — 3 — (2 из 3)
 * `fspec/experiments/contradiction-without-example.flang` — 3 — (2 из 3)
-* `examples/web/shortener/service.flang` — 3 — (8 из 3)
+* `examples/docs/examples/web/shortener-client/service.flang` — 3 — (8 из 3)
 * `examples/rosetta/fibonacci.flang` — 3 — (1 из 3)
 * `fspec/spec/23-money-minor-units.flang` — 2 — (1 из 2)
 * `docs/examples/package/discount.flang` — 2 — (1 из 2)

@@ -63,8 +63,8 @@ flang читает файл настроек `.flangrc`. В нём выбира�
 Проверяется прогоном:
 
 ```
-sh scripts/flangrc-guard.sh            # оба обещания поиска
-sh scripts/flangrc-guard.sh --подлог   # а способна ли эта проверка покраснеть
+sh scripts/guards/flangrc-guard.sh            # оба обещания поиска
+sh scripts/guards/flangrc-guard.sh --подлог   # а способна ли эта проверка покраснеть
 ```
 
 ## Что старше чего

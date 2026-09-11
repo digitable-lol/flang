@@ -212,7 +212,12 @@ while [ $# -gt 0 ]; do
 done
 
 checker=$root/flang/proof/чекер/сверщик
-[ -x "$checker" ] || { echo "нет чекера $checker — собрать: make -C flang/proof/чекер" >&2; exit 2; }
+# Отпечатку семени и его подлогу чекер не нужен: они смотрят только на
+# bootstrap/. Требовать его здесь значило бы ронять шаг CI «Отпечаток семени
+# записан при двоичном», стоящий ДО сборки чекера (прогон 34637639507, код 2).
+if [ "$otpechatok" -eq 0 ] && [ "$podlog_otp" -eq 0 ]; then
+  [ -x "$checker" ] || { echo "нет чекера $checker — собрать: make -C flang/proof/чекер" >&2; exit 2; }
+fi
 
 tmp=${TMPDIR:-/tmp}/доля-корпуса.$$
 mkdir -p "$tmp" || exit 2

@@ -93,7 +93,7 @@ FLANG_MAX_DEPTH='20000'
 FLANG_MEASURED_COST='456857834234'
 # Что в `bootstrap/` НЕ относится к печати: проза и продукты сборки. Тот же
 # Файл на JavaScript, где этот список дублировался, снят 21 августа 2026.
-FLANG_NOT_EMITTED='README.md flang flang.exe flang_cli flang_cli.exe libcompiler_flang.a'
+FLANG_NOT_EMITTED='README.md flang flang.exe flang_cli flang_cli.exe libcompiler_flang.a flang.seed-sha256'
 
 koren=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$koren"

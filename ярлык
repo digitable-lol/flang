@@ -142,7 +142,11 @@ if [ "$name" = "сборка" ]; then
   fi
   [ -z "$say_drift" ] || { err "$say_drift"; exit 3; }
   proverit_telo
-  exec $BUILD -j"$(cores)" "$@"
+  $BUILD -j"$(cores)" "$@"
+  # Отпечаток семени при двоичном — пишет тот, кто собрал (см. .gitignore и
+  # flang/proof/доля-корпуса.sh --вложенность): по нему свежесть ядра судится
+  # содержимым, а не временем файлов.
+  exec sh "$ROOT/flang/proof/доля-корпуса.sh" --отпечаток
 fi
 
 if [ -z "$name" ]; then

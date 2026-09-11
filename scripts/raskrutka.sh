@@ -479,7 +479,7 @@ fi
 
 # Что в bootstrap/ НЕ относится к точке раскрутки: пояснение и продукты сборки.
 # Список повторён здесь затем, чтобы сверка работала и на дереве без .git.
-NOT_SEED="README.md flang flang.exe flang_cli flang_cli.exe libcompiler_flang.a"
+NOT_SEED="README.md flang flang.exe flang_cli flang_cli.exe libcompiler_flang.a flang.seed-sha256"
 
 # ── ОТПЕЧАТОК ВХОДОВ ПЕЧАТИ: чем сверять семя, когда печатать нечем ──────────
 #

@@ -40,6 +40,7 @@
 
 ## Доказательства
 
+- [Прослеживаемость собирается из того, что уже лежит в дереве: постусловие, пример и запись доказательства сшиваются по трём ключам, и разрывов сегодня 62 и 68](traceability-is-a-join-over-files-that-already-exist.md)
 - [Обещание о ВЕТВИ тела ядро берёт там, где обещание о функции целиком не берётся](a-branch-promise-is-what-the-kernel-can-take-when-the-whole-promise-is-not.md)
 - [Ядро подставляет равенство вызванной, но не ослабляет её неравенство: «не больше одного» у помощника не доказывает «не больше чем на один длиннее» у зовущего](a-callee-promise-reaches-the-handler-through-seven-branches-not-fifteen.md)
 - [Про значение объявленной суммы в постусловии нельзя сказать ничего: ни сравнить, ни разобрать](a-declared-sum-cannot-be-spoken-about-in-a-postcondition.md)

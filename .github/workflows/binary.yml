@@ -531,6 +531,25 @@ jobs:
             exit 1
           fi
 
+      # Прослеживаемость (задача 1407, ADR-0031): цепочка требование → код →
+      # пример → запись доказательства проходится по всему набору, и число
+      # разрывов в обе стороны сверяется с scripts/traceability-debt.tsv.
+      # Четыре шага одного файла, ~90 с каждый на sbx (11 с у двух направлений:
+      # дорог не разбор, а сводка по всем 409 постусловиям). Подлог прячет
+      # постусловие из flang/proof/map/abilities.flang в памяти, не на диске.
+      - name: Цепочка требование → код → пример → запись сходится с записанным долгом
+        run: LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/traceability-guard.flang --plan 'Разрывы' --max-steps 4000000000
+      - name: Сторож прослеживаемости умеет краснеть
+        run: |
+          if LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/traceability-guard.flang --plan 'Подлог' --max-steps 4000000000; then
+            echo "сторож промолчал на спрятанном постусловии — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: От требования к коду и проверке
+        run: LC_ALL=C.UTF-8 FLANG_TRACE='У1 сумма читается в обратном порядке' ./bootstrap/flang io scripts/traceability-guard.flang --plan 'От требования' --max-steps 4000000000
+      - name: От строки кода к требованию
+        run: LC_ALL=C.UTF-8 FLANG_TRACE='flang/proof/map/abilities.flang:34' ./bootstrap/flang io scripts/traceability-guard.flang --plan 'От строки' --max-steps 4000000000
+
       # ── Шесть сторожей, найденных «не запускается нигде» (Ч77, 31 авг 2026) ──
       #
       # Прогнаны с этим же двоичным (`bootstrap/flang 0.6.2`) на этом же дереве:

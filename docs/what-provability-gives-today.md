@@ -102,6 +102,12 @@ Not expressible — there is no place to write it:
   qualification, proved response bounds, behaviour on hardware failure — none of
   it exists, and a percentage does not replace it
   ([ADR-0031](adr/0031-certification-is-a-process-not-a-property-of-the-language.md)).
+  Two of those rows are measured separately: «terminates within N steps» exists
+  only as an analysis (`flang/self/bounded.flang`) and is not printed into the
+  proof record ([ADR-0033](adr/0033-termination-is-not-a-bound-on-steps.md));
+  an I/O failure arrives as data, but 79 handlers out of 309 swallow it with
+  `случай любое`, and hardware failure the language does not see at all
+  ([ADR-0034](adr/0034-hardware-failure-is-described-not-proved.md)).
   We do not promise it.
 
 ## What «96 %» means
@@ -132,4 +138,4 @@ Five stages in [`ROADMAP.md`](../ROADMAP.md), no dates:
 | 2. Proved translation to C | printed C covered by nothing | `emit` comes with a translation protocol and a comparator's verdict; a swapped function in C is caught | ADR-0030; 1401, 1402 |
 | 3. Logic | subtraction under `требует` exits 3; nothing to say about processes, plans, effects | the second run exits 0 (1403); a place for claims about steps, plans, ownership (1404–1406, measurement first) | ADR-0032 |
 | 4. Quantifiers | one quantifier, over one function's inputs; induction carrier from a closed list of three | «для всех л: список числа» outside a function; carrier read from the type | ADR-0026; 6202, 6203 |
-| 5. Traceability | no requirement → code → example → record chain | the chain is walked both ways by a run; response bounds and failure behaviour still not done | ADR-0031; 1407 |
+| 5. Traceability, response, failure | no requirement → code → example → record chain; a step bound exists as analysis only; failure is described, not proved | the chain is walked both ways by a run (1407); the step bound is in the record and replayed (1408), seconds for a named machine with a spread (1409); failure behaviour on one page with a counter of swallowed «Сбой» (1410); seconds and hardware failure still unproved | ADR-0031, 0033, 0034; 1407–1410 |

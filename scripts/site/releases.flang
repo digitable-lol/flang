@@ -260,13 +260,15 @@
   «изменилось»: строка
   «сломалось»: строка
 
-// `../../` у английской половины — потому что она лежит в `en/`, а обоих журналов
-// английской половины нет: они печатаются из истории и не переводятся.
+// `../` у английской половины — потому что она лежит в `en/`, на один уровень
+// вглубь корня сайта. Двойной подъём уводил выше корня, и сборка сайта
+// краснела четырьмя мёртвыми ссылками. Обоих журналов на английском нет:
+// они печатаются из истории и не переводятся.
 тотальная функция «Слова языка»
   принимает язык: строка
   возвращает «Слова»
   если язык равен "en"
-    то запись «Слова» с «заголовок» равным "Releases" и «вступление» равным "A release is a `vX.Y.Z` tag, and behind it an archive and a package publication. This page is printed from the tags: as many entries as there are tags, and a release cannot be skipped." и «ящики» равным "There are three boxes: **what appeared**, **what changed**, **what broke**. An empty box is not printed — \"broke: nothing\" nine releases in a row tells the reader nothing." и «хвост» равным "The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../../changelog.html) (in Russian); every commit subject is in the [commit journal](../../journal.html)." и «появилось» равным "What appeared" и «изменилось» равным "What changed" и «сломалось» равным "What broke"
+    то запись «Слова» с «заголовок» равным "Releases" и «вступление» равным "A release is a `vX.Y.Z` tag, and behind it an archive and a package publication. This page is printed from the tags: as many entries as there are tags, and a release cannot be skipped." и «ящики» равным "There are three boxes: **what appeared**, **what changed**, **what broke**. An empty box is not printed — \"broke: nothing\" nine releases in a row tells the reader nothing." и «хвост» равным "The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html)." и «появилось» равным "What appeared" и «изменилось» равным "What changed" и «сломалось» равным "What broke"
     иначе запись «Слова» с «заголовок» равным "Выпуски" и «вступление» равным "Выпуск — это тег `vX.Y.Z`, а по нему архив и публикация пакета. Страница печатается из тегов: сколько тегов, столько записей, пропустить выпуск нельзя." и «ящики» равным "Ящика три: **что появилось**, **что изменилось**, **что сломалось**. Пустой ящик не печатается — «сломалось: ничего» на девяти выпусках подряд читателю ничего не сообщает." и «хвост» равным "Записи ниже написаны про язык, а не про работу над ним. Что приехало в ствол после последнего выпуска, показывает [журнал вливаний](changelog.html); заголовки всех коммитов — [журнал коммитов](journal.html)." и «появилось» равным "Что появилось" и «изменилось» равным "Что изменилось" и «сломалось» равным "Что сломалось"
 
 тотальная функция «Ящики»

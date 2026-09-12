@@ -133,7 +133,7 @@ grep -c FUNCTOR bootstrap/compiler_flang.c
 ### 3. `--args` не берёт списки
 
 ```bash
-flang run examples/leetcode/035-search-insert-position.flang \
+flang run docs/examples/leetcode/035-search-insert-position.flang \
   --function "Место вставки" --args '{"элементы": [1,3,5,6], "цель": 5}'
 ```
 

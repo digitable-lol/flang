@@ -144,7 +144,7 @@ docs/site/troubleshooting.md	./bootstrap/flang	собранный двоичны
 docs/site/troubleshooting.ru.md	./bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
 editors/vim/README.md	flang/bin/flang-lsp.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет (обёртка снята с npm 6 сентября 2026)
 editors/vscode/README.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
-examples/rosetta/WIKI.en.md	flang-outreach/rosetta-как-выложить.md	внешний: материалы flang-outreach, не файл этого дерева
+docs/examples/rosetta/WIKI.en.md	flang-outreach/rosetta-как-выложить.md	внешний: материалы flang-outreach, не файл этого дерева
 flang/SPEC.md	json.py	учебный/иллюстративный пример на C или Python, не файл проекта
 flang/SPEC.md	факты.json	иллюстративный пример входа в SPEC.md, не файл
 flang/conc/DISTRIBUTED.md	flang/src/conc.mjs	явное отрицание в тексте: рядом сказано, что файл снят 20 августа 2026 (fe8e8a37)

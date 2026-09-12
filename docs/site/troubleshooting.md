@@ -55,7 +55,7 @@ flang check neighbour.flang
 To see that the message is exactly this one, force it with a tiny limit:
 
 ```bash
-flang run examples/rosetta/factorial.flang --function 'Факториал' --args '{"н":30}' --max-steps 3
+flang run docs/examples/rosetta/factorial.flang --function 'Факториал' --args '{"н":30}' --max-steps 3
 ```
 
 It prints `FLANG_RECURSION_LIMIT: функция «Факториал» исчерпала лимит шагов (3)
@@ -71,7 +71,7 @@ behaves differently depending on where you emitted it:
 | `c`, `elixir`, `js`, `ts` | the scheduler is emitted (for `c` it is `flang_conc.c` next to the program), exit code 0 |
 | `cpp`, `csharp`, `go`, `java`, `python`, `rust` | emitting refuses outright, exit code 1, not a single file written |
 
-Taken on `examples/service-on-processes/service.flang` (three processes, a
+Taken on `docs/examples/service-on-processes/service.flang` (three processes, a
 supervisor, three runs), run of 11 September 2026, binary 0.7.17, commit 2c40752d0.
 
 The refusal for `go` reads verbatim:

@@ -263,7 +263,7 @@ export async function измерить() {
   const с = покрытие()
   const база = модуль("flang/stdlib/postgres.flang")
   const провод = модуль("flang/stdlib/wire.flang")
-  const план = модуль("examples/db/postgres-plan.flang")
+  const план = модуль("docs/examples/db/postgres-plan.flang")
   const планировщик = модуль("flang/conc/scheduler.flang")
   const связь = модуль("flang/conc/link.flang")
   const отказы = отказыЯдра()

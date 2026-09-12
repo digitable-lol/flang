@@ -91,10 +91,10 @@ docs/examples/web/shortener-client/*.js
 docs/examples/web/*.png
 
 # Копия двоичного, которую пишет пример «Двоичный файл туда и обратно»
-# (examples/io/binary-file-round-trip.flang). Продукт прогона, а не
+# (docs/examples/io/binary-file-round-trip.flang). Продукт прогона, а не
 # исходник: убрать её за собой план не может — поручения «Удалить файл» в
 # словаре ввода-вывода нет.
-examples/io/.kopiya-dvoichnogo
+docs/examples/io/.kopiya-dvoichnogo
 
 # Каталог замера скорости и памяти: восемь сборок одной программы плюс эталон
 # на C, всё создаётся docs/benchmarks/speed/assemble.sh. Имя с точки, потому

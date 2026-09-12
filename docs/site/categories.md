@@ -229,7 +229,7 @@ a category and of a transformation, and they are computed over a finite grid.**
 
 A chain of computations, any of which may fail, is written without binding each
 step by hand. The compiler parses and expands the form; in the tree it stands in
-`examples/monad/order-total.flang`. That file does carry diagnostics
+`docs/examples/monad/order-total.flang`. That file does carry diagnostics
 today, and they are not about the monad: `FLANG_TYPE_PARAM` inside the expanded
 code — the type parameter `«Беда»` is determined neither by the arguments nor by
 the expected type.

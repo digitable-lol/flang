@@ -74,7 +74,7 @@ The printer is `flang/self/emit-ts.flang` on top of `flang/self/emit-js.flang`
 `flang/src/emit/js/`); the target table row is in
 `flang/src/emit/c/flang_repl.c`. The seed was reprinted on 11 September 2026
 (commit `0ce948bfd`), and the binary built from it prints `ts`: on the same day
-`./bootstrap/flang emit examples/import-check.flang --target ts --out dir`
+`./bootstrap/flang emit docs/examples/import-check.flang --target ts --out dir`
 produced `import_check.ts`, `flang_runtime.js`, `flang_cli.js`, `tsconfig.json`,
 exit 0. `flang emit --help` still says «во все восемь целей» and lists nine
 targets without `ts` — the text is baked into `flang/src/emit/c/flang_repl.c`

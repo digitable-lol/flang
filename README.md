@@ -206,7 +206,7 @@ the codes a refusal carries — [Diagnostics](https://digitable-lol.github.io/fl
 
 ### Printing into a target language
 
-This is [`examples/leetcode/035-search-insert-position.flang`](examples/leetcode/035-search-insert-position.flang)
+This is [`docs/examples/leetcode/035-search-insert-position.flang`](docs/examples/leetcode/035-search-insert-position.flang)
 as it stands in the tree — the position where a value belongs in a sorted list:
 
 ```flang
@@ -248,8 +248,8 @@ as it stands in the tree — the position where a value belongs in a sorted list
 ```
 
 ```bash
-flang emit examples/leetcode/035-search-insert-position.flang --target c  --out out-c
-flang emit examples/leetcode/035-search-insert-position.flang --target js --out out-js
+flang emit docs/examples/leetcode/035-search-insert-position.flang --target c  --out out-c
+flang emit docs/examples/leetcode/035-search-insert-position.flang --target js --out out-js
 ```
 
 Eight backends emit the module, a runtime, a JSON-in/JSON-out driver, a build file and — where
@@ -331,7 +331,7 @@ everything else under `docs/` is [`docs/README.md`](docs/README.md).
 | look a construct up | [Language](https://digitable-lol.github.io/flang/en/language.html) · [Standard library](https://digitable-lol.github.io/flang/en/stdlib.html) · [Diagnostics](https://digitable-lol.github.io/flang/en/diagnostics.html) |
 | understand the proofs | [What is proved](https://digitable-lol.github.io/flang/en/what-is-proved.html) · [Which claims the kernel takes](https://digitable-lol.github.io/flang/en/kak-dokazat.html) · [The kernel refused: whose error](https://digitable-lol.github.io/flang/en/proof-refused.html) |
 | run it somewhere | [Install](https://digitable-lol.github.io/flang/en/install.html) · [Commands](https://digitable-lol.github.io/flang/en/cli.html) · [Editor](https://digitable-lol.github.io/flang/en/editor.html) · [Processes and supervision](https://digitable-lol.github.io/flang/en/processes.html) |
-| see real programs | [Examples](https://digitable-lol.github.io/flang/en/examples.html) — the sets under [`examples/`](examples) |
+| see real programs | [Examples](https://digitable-lol.github.io/flang/en/examples.html) — the sets under [`docs/examples/`](docs/examples) |
 | read the contracts | [`flang/SPEC.md`](flang/SPEC.md) · [`flang/self/SPEC.md`](flang/self/SPEC.md) · [`flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`flang/conc/SPEC.md`](flang/conc/SPEC.md) · [`docs/ct/spec.md`](docs/ct/spec.md) |
 | know where it is going | [`ROADMAP.md`](ROADMAP.md) — five stages, what each changes for a developer · [`docs/what-provability-gives-today.md`](docs/what-provability-gives-today.md) · [`docs/road-to-1-0.md`](docs/road-to-1-0.md) |
 
@@ -352,7 +352,7 @@ against the tree on every push.
 ```
 bootstrap/        the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
 flang/            the language: self/ (the compiler), core/, stdlib/, proof/, conc/, ct/, src/emit/ (target runtimes), scripts/, проверки/, test/, SPEC.md
-examples/         185 flang programs in 22 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
+docs/examples/         185 flang programs in 22 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
 editors/          the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/        the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
 scripts/          guards of the tree, the reprint of the bootstrap point, the release archive, the changelog
@@ -380,13 +380,13 @@ verbatim. [`flang/проверки/`](flang/проверки) holds the checks w
 walks; [`flang/test/`](flang/test) is what is left of a test suite written against a deleted
 JavaScript implementation, kept as fixtures.
 
-Two of the example sets are full-size projects — [`examples/web/shortener`](examples/web/shortener/README.md),
+Two of the example sets are full-size projects — [`docs/examples/web/shortener`](docs/examples/web/shortener/README.md),
 a link shortener with nothing but flang between the request bytes and the response bytes, and
-[`examples/library-api`](examples/library-api/README.md), the domain half of a library service;
+[`docs/examples/library-api`](docs/examples/library-api/README.md), the domain half of a library service;
 the 170 more programs in the other sets are single files, the LeetCode set among them:
 82 solutions carrying 806 examples.
-<!-- СНЯТО 2026-09-08 файлов examples/leetcode/*.flang = 82 -->
-<!-- СНЯТО 2026-09-08 примеров-в examples/leetcode/*.flang = 806 -->
+<!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
+<!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->
 
 **The bootstrap point.** `bootstrap/` holds the compiler already printed to C99, which is why
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the

@@ -2,7 +2,7 @@
 
 Одна демонстрация из двух половин, и обе написаны целиком на flang.
 
-- **Служба** — `examples/web/shortener/`: вход — байты, которые хозяин прочитал
+- **Служба** — `docs/examples/web/shortener/`: вход — байты, которые хозяин прочитал
   из соединения; выход — байты, которые хозяин пошлёт обратно. Между ними нет ни
   одной строки, написанной не на flang.
 - **Клиент** — `docs/examples/web/shortener-client/`: форма, отправка, список ссылок, счётчик
@@ -13,9 +13,9 @@
 
 ```sh
 export LC_ALL=C.UTF-8
-bootstrap/flang check examples/web/shortener/service.flang --proof
-bootstrap/flang test  examples/web/shortener/server.flang
-bootstrap/flang io    examples/web/shortener/plan.flang --in-dir
+bootstrap/flang check docs/examples/web/shortener/service.flang --proof
+bootstrap/flang test  docs/examples/web/shortener/server.flang
+bootstrap/flang io    docs/examples/web/shortener/plan.flang --in-dir
 ```
 
 Клиент во вкладке:
@@ -67,7 +67,7 @@ handler-without-budget.flang    36   УЛИКА: не собирается, и �
 
 ### Что доказано, а что проверено
 
-`bootstrap/flang check examples/web/shortener/service.flang --proof`, прогон
+`bootstrap/flang check docs/examples/web/shortener/service.flang --proof`, прогон
 11 сентября 2026 на коммите 2c40752d0 (двоичный 0.7.17): **функций 24, тотальных
 24, обычных 0. Утверждений 8: доказано 5 (из них индукцией 4), сетка 3,
 объявлено, не доказано 0, отвергнуто 0; законов на веру 0. Код возврата 0.**
@@ -176,7 +176,7 @@ handler-without-budget.flang    36   УЛИКА: не собирается, и �
 через сокет). Служба не изменилась ни на знак; изменился план.
 
 ```sh
-bootstrap/flang io examples/web/shortener/plan-durable.flang --in-dir
+bootstrap/flang io docs/examples/web/shortener/plan-durable.flang --in-dir
 ```
 
 Стенд, которым сделаны три прогона ниже, и одиннадцать проверок при нём были

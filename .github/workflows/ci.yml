@@ -746,8 +746,8 @@ jobs:
           fi
           rm -f "$podlog.do"
           rm -rf podlog-c podlog-go
-          bootstrap/flang emit examples/rosetta/factorial.flang --target c  --out podlog-c
-          bootstrap/flang emit examples/rosetta/factorial.flang --target go --out podlog-go
+          bootstrap/flang emit docs/examples/rosetta/factorial.flang --target c  --out podlog-c
+          bootstrap/flang emit docs/examples/rosetta/factorial.flang --target go --out podlog-go
           git checkout -- "$podlog"
           make -C podlog-c  -j"$(nproc)" >/dev/null || { echo "ПОДЛОГ НЕ СОБРАЛСЯ: цель c" >&2; exit 1; }
           make -C podlog-go -j"$(nproc)" >/dev/null || { echo "ПОДЛОГ НЕ СОБРАЛСЯ: цель go" >&2; exit 1; }
@@ -821,7 +821,7 @@ jobs:
             celi="$celi elixir"
           fi
           for cel in $celi; do
-            bootstrap/flang emit examples/rosetta/factorial.flang --target "$cel" --out "pechat-$cel"
+            bootstrap/flang emit docs/examples/rosetta/factorial.flang --target "$cel" --out "pechat-$cel"
           done
           make -C pechat-c      -j"$(nproc)" >/dev/null
           make -C pechat-cpp    -j"$(nproc)" >/dev/null

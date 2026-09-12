@@ -18,95 +18,95 @@
       "акк",
       "эл"
     ],
-    "examples/errors/column-total.flang": [
+    "docs/examples/errors/column-total.flang": [
       "н"
     ],
-    "examples/errors/number-parsing.flang": [
+    "docs/examples/errors/number-parsing.flang": [
       "зн",
       "н"
     ],
-    "examples/leetcode/013-roman-to-integer.flang": [
+    "docs/examples/leetcode/013-roman-to-integer.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/014-longest-common-prefix.flang": [
+    "docs/examples/leetcode/014-longest-common-prefix.flang": [
       "акк"
     ],
-    "examples/leetcode/015-3sum.flang": [
+    "docs/examples/leetcode/015-3sum.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/017-letter-combinations-of-a-phone-number.flang": [
+    "docs/examples/leetcode/017-letter-combinations-of-a-phone-number.flang": [
       "акк"
     ],
-    "examples/leetcode/020-valid-parentheses.flang": [
+    "docs/examples/leetcode/020-valid-parentheses.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/022-generate-parentheses.flang": [
+    "docs/examples/leetcode/022-generate-parentheses.flang": [
       "н"
     ],
-    "examples/leetcode/026-remove-duplicates-from-sorted-array.flang": [
+    "docs/examples/leetcode/026-remove-duplicates-from-sorted-array.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/027-remove-element.flang": [
+    "docs/examples/leetcode/027-remove-element.flang": [
       "эл"
     ],
-    "examples/leetcode/035-search-insert-position.flang": [
+    "docs/examples/leetcode/035-search-insert-position.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/046-permutations.flang": [
+    "docs/examples/leetcode/046-permutations.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/049-group-anagrams.flang": [
+    "docs/examples/leetcode/049-group-anagrams.flang": [
       "акк"
     ],
-    "examples/leetcode/053-maximum-subarray.flang": [
+    "docs/examples/leetcode/053-maximum-subarray.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/056-merge-intervals.flang": [
+    "docs/examples/leetcode/056-merge-intervals.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/066-plus-one.flang": [
+    "docs/examples/leetcode/066-plus-one.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/069-sqrtx.flang": [
+    "docs/examples/leetcode/069-sqrtx.flang": [
       "н"
     ],
-    "examples/leetcode/070-climbing-stairs.flang": [
+    "docs/examples/leetcode/070-climbing-stairs.flang": [
       "н"
     ],
-    "examples/leetcode/076-minimum-window-substring.flang": [
+    "docs/examples/leetcode/076-minimum-window-substring.flang": [
       "бг",
       "бх"
     ],
-    "examples/leetcode/078-subsets.flang": [
+    "docs/examples/leetcode/078-subsets.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/088-merge-sorted-array.flang": [
+    "docs/examples/leetcode/088-merge-sorted-array.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/094-binary-tree-inorder-traversal.flang": [
+    "docs/examples/leetcode/094-binary-tree-inorder-traversal.flang": [
       "акк",
       "зн",
       "л",
       "п",
       "эл"
     ],
-    "examples/leetcode/098-validate-binary-search-tree.flang": [
+    "docs/examples/leetcode/098-validate-binary-search-tree.flang": [
       "зн",
       "л",
       "п"
     ],
-    "examples/leetcode/100-same-tree.flang": [
+    "docs/examples/leetcode/100-same-tree.flang": [
       "зн",
       "зн2",
       "л",
@@ -114,7 +114,7 @@
       "п",
       "п2"
     ],
-    "examples/leetcode/101-symmetric-tree.flang": [
+    "docs/examples/leetcode/101-symmetric-tree.flang": [
       "зн",
       "зн2",
       "л",
@@ -122,37 +122,37 @@
       "п",
       "п2"
     ],
-    "examples/leetcode/104-maximum-depth-of-binary-tree.flang": [
+    "docs/examples/leetcode/104-maximum-depth-of-binary-tree.flang": [
       "акк",
       "зн",
       "л",
       "п",
       "эл"
     ],
-    "examples/leetcode/110-balanced-binary-tree.flang": [
+    "docs/examples/leetcode/110-balanced-binary-tree.flang": [
       "акк",
       "зн",
       "л",
       "п",
       "эл"
     ],
-    "examples/leetcode/112-path-sum.flang": [
+    "docs/examples/leetcode/112-path-sum.flang": [
       "зн",
       "л",
       "п"
     ],
-    "examples/leetcode/121-best-time-to-buy-and-sell-stock.flang": [
+    "docs/examples/leetcode/121-best-time-to-buy-and-sell-stock.flang": [
       "акк"
     ],
-    "examples/leetcode/125-valid-palindrome.flang": [
+    "docs/examples/leetcode/125-valid-palindrome.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/136-single-number.flang": [
+    "docs/examples/leetcode/136-single-number.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/148-sort-list.flang": [
+    "docs/examples/leetcode/148-sort-list.flang": [
       "акк",
       "вг",
       "вх",
@@ -160,167 +160,167 @@
       "пх",
       "эл"
     ],
-    "examples/leetcode/150-evaluate-reverse-polish-notation.flang": [
+    "docs/examples/leetcode/150-evaluate-reverse-polish-notation.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/152-maximum-product-subarray.flang": [
+    "docs/examples/leetcode/152-maximum-product-subarray.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/169-majority-element.flang": [
+    "docs/examples/leetcode/169-majority-element.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/179-largest-number.flang": [
+    "docs/examples/leetcode/179-largest-number.flang": [
       "акк",
       "вг",
       "вх",
       "пг",
       "пх"
     ],
-    "examples/leetcode/189-rotate-array.flang": [
+    "docs/examples/leetcode/189-rotate-array.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/198-house-robber.flang": [
+    "docs/examples/leetcode/198-house-robber.flang": [
       "акк"
     ],
-    "examples/leetcode/200-number-of-islands.flang": [
+    "docs/examples/leetcode/200-number-of-islands.flang": [
       "акк"
     ],
-    "examples/leetcode/202-happy-number.flang": [
+    "docs/examples/leetcode/202-happy-number.flang": [
       "акк",
       "н",
       "эл"
     ],
-    "examples/leetcode/205-isomorphic-strings.flang": [
+    "docs/examples/leetcode/205-isomorphic-strings.flang": [
       "акк"
     ],
-    "examples/leetcode/207-course-schedule.flang": [
+    "docs/examples/leetcode/207-course-schedule.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/208-implement-trie-prefix-tree.flang": [
+    "docs/examples/leetcode/208-implement-trie-prefix-tree.flang": [
       "акк"
     ],
-    "examples/leetcode/226-invert-binary-tree.flang": [
+    "docs/examples/leetcode/226-invert-binary-tree.flang": [
       "акк",
       "зн",
       "л",
       "п",
       "эл"
     ],
-    "examples/leetcode/236-lowest-common-ancestor-of-a-binary-tree.flang": [
+    "docs/examples/leetcode/236-lowest-common-ancestor-of-a-binary-tree.flang": [
       "зн",
       "л",
       "п"
     ],
-    "examples/leetcode/238-product-of-array-except-self.flang": [
+    "docs/examples/leetcode/238-product-of-array-except-self.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/242-valid-anagram.flang": [
+    "docs/examples/leetcode/242-valid-anagram.flang": [
       "акк"
     ],
-    "examples/leetcode/268-missing-number.flang": [
+    "docs/examples/leetcode/268-missing-number.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/283-move-zeroes.flang": [
+    "docs/examples/leetcode/283-move-zeroes.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/300-longest-increasing-subsequence.flang": [
+    "docs/examples/leetcode/300-longest-increasing-subsequence.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/344-reverse-string.flang": [
+    "docs/examples/leetcode/344-reverse-string.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/349-intersection-of-two-arrays.flang": [
+    "docs/examples/leetcode/349-intersection-of-two-arrays.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/383-ransom-note.flang": [
+    "docs/examples/leetcode/383-ransom-note.flang": [
       "акк"
     ],
-    "examples/leetcode/424-longest-repeating-character-replacement.flang": [
+    "docs/examples/leetcode/424-longest-repeating-character-replacement.flang": [
       "акк"
     ],
-    "examples/leetcode/438-find-all-anagrams-in-a-string.flang": [
+    "docs/examples/leetcode/438-find-all-anagrams-in-a-string.flang": [
       "акк"
     ],
-    "examples/leetcode/509-fibonacci-number.flang": [
+    "docs/examples/leetcode/509-fibonacci-number.flang": [
       "н"
     ],
-    "examples/leetcode/543-diameter-of-binary-tree.flang": [
+    "docs/examples/leetcode/543-diameter-of-binary-tree.flang": [
       "зн",
       "л",
       "п"
     ],
-    "examples/leetcode/547-number-of-provinces.flang": [
+    "docs/examples/leetcode/547-number-of-provinces.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/567-permutation-in-string.flang": [
+    "docs/examples/leetcode/567-permutation-in-string.flang": [
       "акк"
     ],
-    "examples/leetcode/733-flood-fill.flang": [
+    "docs/examples/leetcode/733-flood-fill.flang": [
       "акк"
     ],
-    "examples/leetcode/739-daily-temperatures.flang": [
+    "docs/examples/leetcode/739-daily-temperatures.flang": [
       "акк",
       "эл"
     ],
-    "examples/leetcode/977-squares-of-a-sorted-array.flang": [
+    "docs/examples/leetcode/977-squares-of-a-sorted-array.flang": [
       "акк",
       "эл"
     ],
-    "examples/measure/euclid.flang": [
+    "docs/examples/measure/euclid.flang": [
       "а",
       "б"
     ],
-    "examples/measure/natural.flang": [
+    "docs/examples/measure/natural.flang": [
       "н"
     ],
-    "examples/paths/shortest-path.flang": [
+    "docs/examples/paths/shortest-path.flang": [
       "акк",
       "зв"
     ],
-    "examples/rosetta/ackermann-function.flang": [
+    "docs/examples/rosetta/ackermann-function.flang": [
       "м",
       "н"
     ],
-    "examples/rosetta/factorial-english.flang": [
+    "docs/examples/rosetta/factorial-english.flang": [
       "acc",
       "elem"
     ],
-    "examples/rosetta/factorial.flang": [
+    "docs/examples/rosetta/factorial.flang": [
       "акк",
       "н",
       "эл"
     ],
-    "examples/rosetta/fibonacci-english.flang": [
+    "docs/examples/rosetta/fibonacci-english.flang": [
       "acc",
       "elem"
     ],
-    "examples/rosetta/fibonacci.flang": [
+    "docs/examples/rosetta/fibonacci.flang": [
       "акк",
       "н",
       "эл"
     ],
-    "examples/rosetta/fizzbuzz-english.flang": [
+    "docs/examples/rosetta/fizzbuzz-english.flang": [
       "acc",
       "elem"
     ],
-    "examples/rosetta/fizzbuzz.flang": [
+    "docs/examples/rosetta/fizzbuzz.flang": [
       "акк",
       "н",
       "эл"
     ],
-    "examples/rosetta/hundred-doors-english.flang": [
+    "docs/examples/rosetta/hundred-doors-english.flang": [
       "acc",
       "elem",
       "hl",
@@ -328,7 +328,7 @@
       "tl",
       "tr"
     ],
-    "examples/rosetta/hundred-doors.flang": [
+    "docs/examples/rosetta/hundred-doors.flang": [
       "акк",
       "гв",
       "гп",
@@ -337,15 +337,15 @@
       "хп",
       "эл"
     ],
-    "examples/rosetta/levenshtein-distance-english.flang": [
+    "docs/examples/rosetta/levenshtein-distance-english.flang": [
       "acc",
       "elem"
     ],
-    "examples/rosetta/levenshtein-distance.flang": [
+    "docs/examples/rosetta/levenshtein-distance.flang": [
       "акк",
       "эл"
     ],
-    "examples/rosetta/merge-sort-english.flang": [
+    "docs/examples/rosetta/merge-sort-english.flang": [
       "acc",
       "elem",
       "f",
@@ -355,7 +355,7 @@
       "tl",
       "tr"
     ],
-    "examples/rosetta/merge-sort.flang": [
+    "docs/examples/rosetta/merge-sort.flang": [
       "акк",
       "г1",
       "г2",
@@ -365,7 +365,7 @@
       "хт",
       "эл"
     ],
-    "examples/rosetta/palindrome-english.flang": [
+    "docs/examples/rosetta/palindrome-english.flang": [
       "acc",
       "elem",
       "h",
@@ -373,7 +373,7 @@
       "t",
       "t2"
     ],
-    "examples/rosetta/palindrome.flang": [
+    "docs/examples/rosetta/palindrome.flang": [
       "акк",
       "г",
       "г2",
@@ -381,59 +381,59 @@
       "х2",
       "эл"
     ],
-    "examples/rosetta/primes-by-trial-division.flang": [
+    "docs/examples/rosetta/primes-by-trial-division.flang": [
       "н"
     ],
-    "examples/rosetta/quicksort-english.flang": [
+    "docs/examples/rosetta/quicksort-english.flang": [
       "acc",
       "elem"
     ],
-    "examples/rosetta/quicksort.flang": [
+    "docs/examples/rosetta/quicksort.flang": [
       "акк",
       "эл"
     ],
-    "examples/rosetta/reverse-string-english.flang": [
+    "docs/examples/rosetta/reverse-string-english.flang": [
       "acc",
       "elem"
     ],
-    "examples/rosetta/reverse-string.flang": [
+    "docs/examples/rosetta/reverse-string.flang": [
       "акк",
       "эл"
     ],
-    "examples/rosetta/roman-numerals-english.flang": [
+    "docs/examples/rosetta/roman-numerals-english.flang": [
       "acc",
       "elem"
     ],
-    "examples/rosetta/roman-numerals.flang": [
+    "docs/examples/rosetta/roman-numerals.flang": [
       "акк",
       "эл"
     ],
-    "examples/rosetta/run-length-encoding-english.flang": [
+    "docs/examples/rosetta/run-length-encoding-english.flang": [
       "acc"
     ],
-    "examples/rosetta/run-length-encoding.flang": [
+    "docs/examples/rosetta/run-length-encoding.flang": [
       "акк"
     ],
-    "examples/rosetta/towers-of-hanoi-english.flang": [
+    "docs/examples/rosetta/towers-of-hanoi-english.flang": [
       "acc"
     ],
-    "examples/rosetta/towers-of-hanoi.flang": [
+    "docs/examples/rosetta/towers-of-hanoi.flang": [
       "акк"
     ],
-    "examples/surfaces/factorial.eo.flang": [
+    "docs/examples/surfaces/factorial.eo.flang": [
       "elem"
     ],
-    "examples/web/shortener/plan-durable.flang": [
+    "docs/examples/web/shortener/plan-durable.flang": [
       "хр"
     ],
-    "examples/web/shortener/plan-network.flang": [
+    "docs/examples/web/shortener/plan-network.flang": [
       "хр"
     ],
-    "examples/web/shortener/plan.flang": [
+    "docs/examples/web/shortener/plan.flang": [
       "кд",
       "хр"
     ],
-    "examples/web/shortener/service.flang": [
+    "docs/examples/web/shortener/service.flang": [
       "вр",
       "кд",
       "мт",
@@ -441,7 +441,7 @@
       "тл",
       "цл"
     ],
-    "examples/web/shortener/store.flang": [
+    "docs/examples/web/shortener/store.flang": [
       "акк"
     ],
     "flang/self/bootstrap/compiler.flang": [

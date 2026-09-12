@@ -674,7 +674,7 @@ JSON как значение: разметка, разбор, печать. Ни
 
 Чтение файла базы SQLite 3: заголовок, страницы, ячейки, значения. Запись тоже
 есть — сборка файла с нуля (`«Собрать базу»`) и вставка строки в готовый чужой
-файл (`«База со строкой»`, [`examples/db/sqlite-insert.flang`](https://github.com/digitable-lol/flang/blob/main/examples/db/sqlite-insert.flang)) —
+файл (`«База со строкой»`, [`docs/examples/db/sqlite-insert.flang`](https://github.com/digitable-lol/flang/blob/main/examples/db/sqlite-insert.flang)) —
 но ниже расписаны только читающие функции; пишущие называет сам исходник
 `flang/stdlib/sqlite.flang`.
 
@@ -793,7 +793,7 @@ flang io заголовок.flang
 
 **Чего этот модуль сегодня не даст.** Заголовок, схема и имена таблиц читаются;
 на значениях строк вычисление упирается в предел шагов. План
-[`examples/db/sqlite-read.flang`](https://github.com/digitable-lol/flang/blob/main/examples/db/sqlite-read.flang),
+[`docs/examples/db/sqlite-read.flang`](https://github.com/digitable-lol/flang/blob/main/examples/db/sqlite-read.flang),
 который печатает ещё и строки таблицы, на базе в 2 КиБ отвечает так:
 
 ```

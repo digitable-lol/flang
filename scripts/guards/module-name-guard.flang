@@ -62,7 +62,7 @@
 // шестьдесят два (латиница, цифры, подчёркивание), иероглиф в них не входит, и
 // «Змейка» отдаёт `value`. Проверено прогоном 29 августа 2026:
 //
-//   flang emit examples/surfaces/factorial.zh.flang --target python
+//   flang emit docs/examples/surfaces/factorial.zh.flang --target python
 //   flang emit: печать отказала — имя функции «乘积» даёт идентификатор
 //   «fn_value», уже занятый (функции «前置»)
 //
@@ -193,8 +193,8 @@
   возвращает список строки
   обеспечивает «команда корпуса идёт через ключ -c» результат содержит "-c"
   пример «И файлы, и шапки спрашиваются у git одним заходом, а не переписаны руками»
-    ожидается ["-c", "cd ../.. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'flang/self/*.flang' 'examples/*.flang' 'docs/*.flang' ':(exclude)docs/benchmark*' ':(exclude)*/.flang-storozh-*/*') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H -E '^(модуль|module|modulo|模块) '"]
-  ["-c", "cd ../.. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'flang/self/*.flang' 'examples/*.flang' 'docs/*.flang' ':(exclude)docs/benchmark*' ':(exclude)*/.flang-storozh-*/*') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H -E '^(модуль|module|modulo|模块) '"]
+    ожидается ["-c", "cd ../.. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'flang/self/*.flang' 'docs/examples/*.flang' 'docs/*.flang' ':(exclude)docs/benchmark*' ':(exclude)*/.flang-storozh-*/*') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H -E '^(модуль|module|modulo|模块) '"]
+  ["-c", "cd ../.. && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'flang/self/*.flang' 'docs/examples/*.flang' 'docs/*.flang' ':(exclude)docs/benchmark*' ':(exclude)*/.flang-storozh-*/*') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H -E '^(модуль|module|modulo|模块) '"]
 
 тотальная функция «Кусок файлов»
   принимает вывод: строка
@@ -216,21 +216,21 @@
   принимает строчка: строка
   возвращает строка
   пример «Путь стоит перед первым двоеточием»
-    дано строчка равно "examples/rosetta/fibonacci.flang:модуль «Фибоначчи»"
-    ожидается "examples/rosetta/fibonacci.flang"
+    дано строчка равно "docs/examples/rosetta/fibonacci.flang:модуль «Фибоначчи»"
+    ожидается "docs/examples/rosetta/fibonacci.flang"
   «До метки» от строчка и ":"
 
 тотальная функция «Имя шапки»
   принимает строчка: строка
   возвращает строка
   пример «Имя берётся из ёлочек шапки»
-    дано строчка равно "examples/rosetta/fibonacci.flang:модуль «Фибоначчи»"
+    дано строчка равно "docs/examples/rosetta/fibonacci.flang:модуль «Фибоначчи»"
     ожидается "Фибоначчи"
   пример «Английская поверхность читается так же»
-    дано строчка равно "examples/rosetta/fibonacci-english.flang:module «Fibonacci»"
+    дано строчка равно "docs/examples/rosetta/fibonacci-english.flang:module «Fibonacci»"
     ожидается "Fibonacci"
   пример «Китайская поверхность читается так же»
-    дано строчка равно "examples/surfaces/factorial.zh.flang:模块 «阶乘»"
+    дано строчка равно "docs/examples/surfaces/factorial.zh.flang:模块 «阶乘»"
     ожидается "阶乘"
   «До метки» от («После метки» от строчка и "«") и "»"
 
@@ -409,8 +409,8 @@
   принимает строчка: строка
   возвращает строка
   пример «Нарушение названо путём и именем»
-    дано строчка равно "examples/rosetta/fibonacci.flang:модуль «Фибоначчи»"
-    ожидается "examples/rosetta/fibonacci.flang — модуль «Фибоначчи» напечатается транслитом"
+    дано строчка равно "docs/examples/rosetta/fibonacci.flang:модуль «Фибоначчи»"
+    ожидается "docs/examples/rosetta/fibonacci.flang — модуль «Фибоначчи» напечатается транслитом"
   соединить [(«Путь шапки» от строчка), " — модуль «", («Имя шапки» от строчка), "» напечатается транслитом"] по ""
 
 тотальная функция «Строки новых»

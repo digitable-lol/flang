@@ -16,10 +16,10 @@
 
 тотальная функция «Программа опыта»
   возвращает строка
-  обеспечивает «опыт ставится на программе дерева, а не на выдуманной» результат содержит "examples/"
+  обеспечивает «опыт ставится на программе дерева, а не на выдуманной» результат содержит "docs/examples/"
   пример «Опыт ставится на настоящей программе дерева»
-    ожидается "examples/allocator/allocator.flang"
-  "examples/allocator/allocator.flang"
+    ожидается "docs/examples/allocator/allocator.flang"
+  "docs/examples/allocator/allocator.flang"
 
 тотальная функция «Заведомо не C++»
   возвращает строка
@@ -115,7 +115,7 @@
   возвращает строка
   обеспечивает «печать зовётся с целью cpp» результат содержит "--target cpp"
   пример «Путь вывода разворачивается до перехода в корень»
-    ожидается "D=$(cd \"$1\" && pwd) && cd ../.. && exec bootstrap/flang emit examples/allocator/allocator.flang --target cpp --out \"$D\""
+    ожидается "D=$(cd \"$1\" && pwd) && cd ../.. && exec bootstrap/flang emit docs/examples/allocator/allocator.flang --target cpp --out \"$D\""
   соединить ["D=$(cd \"$1\" && pwd) && cd ../.. && exec bootstrap/flang emit ", («Программа опыта»), " --target cpp --out \"$D\""] по ""
 
 тотальная функция «Довод сборки»

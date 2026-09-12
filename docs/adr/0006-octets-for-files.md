@@ -5,7 +5,7 @@
 **Основание:** словарь эффектов [`flang/self/parser.flang`](../../flang/self/parser.flang),
 хозяин двоичного `flang/src/emit/c/flang_repl.c`, хозяин конкурентности
 `flang/src/emit/c/flang_conc.c`, рантайм `flang/src/emit/c/flang_runtime.c`, программа
-[`examples/io/binary-file-round-trip.flang`](../../examples/io/binary-file-round-trip.flang).
+[`docs/examples/io/binary-file-round-trip.flang`](../examples/io/binary-file-round-trip.flang).
 **Продолжает** [ADR-0004](0004-octets-in-the-effects-dictionary.md), который завёл октетную пару
 СОЕДИНЕНИЮ и честно записал в «цену»: «Октетной пары **нет у файлов**… Это та же дыра, тем же
 лекарством, но другой работой». Вот эта работа.

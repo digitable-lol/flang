@@ -1,20 +1,20 @@
 # Write-ahead log
 
-`examples/wal/` holds two flang programs: parsing, printing and recovery of a
+`docs/examples/wal/` holds two flang programs: parsing, printing and recovery of a
 write-ahead log after truncation, and a plan that appends one record to the log
 through input-output orders. Both are written entirely in flang; neither writes
 to disk — the host that carries out the plan's orders does.
 
 ## What is in the directory
 
-There are 2 `.flang` files: <!-- СНЯТО 2026-09-08 файлов examples/wal/*.flang = 2 -->
+There are 2 `.flang` files: <!-- СНЯТО 2026-09-08 файлов docs/examples/wal/*.flang = 2 -->
 
 | file | what it is | lines |
 |---|---|---:|
-| `examples/wal/write-ahead-log.flang` | module «Write ahead log»: the record format, character-by-character parsing, printing, recovery up to the last whole record, the next number | 579 <!-- СНЯТО 2026-09-08 строк examples/wal/write-ahead-log.flang = 579 --> |
-| `examples/wal/append-plan.flang` | module «Append plan»: the plan «Дописать в журнал» — read the file, append a record, confirm with its number. Uses the first module | 95 <!-- СНЯТО 2026-09-08 строк examples/wal/append-plan.flang = 95 --> |
+| `docs/examples/wal/write-ahead-log.flang` | module «Write ahead log»: the record format, character-by-character parsing, printing, recovery up to the last whole record, the next number | 579 <!-- СНЯТО 2026-09-08 строк docs/examples/wal/write-ahead-log.flang = 579 --> |
+| `docs/examples/wal/append-plan.flang` | module «Append plan»: the plan «Дописать в журнал» — read the file, append a record, confirm with its number. Uses the first module | 95 <!-- СНЯТО 2026-09-08 строк docs/examples/wal/append-plan.flang = 95 --> |
 
-The two files together carry 110 examples <!-- СНЯТО 2026-09-08 примеров-в examples/wal/*.flang = 110 -->;
+The two files together carry 110 examples <!-- СНЯТО 2026-09-08 примеров-в docs/examples/wal/*.flang = 110 -->;
 they are declared inside the functions and run with `bootstrap/flang test`.
 
 ## Record format
@@ -46,10 +46,10 @@ tail of its body as the start of the next record.
 ## How to run
 
 ```
-bootstrap/flang check examples/wal/write-ahead-log.flang --proof
-bootstrap/flang check examples/wal/append-plan.flang --proof
-bootstrap/flang test  examples/wal/write-ahead-log.flang
-bootstrap/flang test  examples/wal/append-plan.flang
+bootstrap/flang check docs/examples/wal/write-ahead-log.flang --proof
+bootstrap/flang check docs/examples/wal/append-plan.flang --proof
+bootstrap/flang test  docs/examples/wal/write-ahead-log.flang
+bootstrap/flang test  docs/examples/wal/append-plan.flang
 ```
 
 The first line of `check` prints the number of functions and the number with a
@@ -62,7 +62,7 @@ file the plan answers «Провал» with the code `FLANG_IO_READ` (exit code 
 avoid writing into the tree, copy both files to a separate directory:
 
 ```
-mkdir -p /tmp/wal && cp examples/wal/*.flang /tmp/wal/ && : > /tmp/wal/журнал.wal
+mkdir -p /tmp/wal && cp docs/examples/wal/*.flang /tmp/wal/ && : > /tmp/wal/журнал.wal
 bootstrap/flang io /tmp/wal/append-plan.flang
 ```
 

@@ -28,7 +28,7 @@ what guards it: [`bootstrap/README.md`](bootstrap/README.md).
 The built binary is what you then run:
 
 ```bash
-bootstrap/flang check examples/rosetta/towers-of-hanoi.flang
+bootstrap/flang check docs/examples/rosetta/towers-of-hanoi.flang
 ```
 
 The tree declares zero dependencies and has no package manager on the build
@@ -160,7 +160,7 @@ every run, so the duplicate cannot drift in silence.
 | `./ярлык тесты:по-ssh` | the same suite on a host of your choosing, over ssh |
 | `./ярлык раскрутка` · `./ярлык раскрутка:проверка` · `./ярлык строки:проверка` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
 | `./ярлык утверждения:проверка` · `./ярлык подсчёты:проверка` · `./ярлык коды:проверка` · `./ярлык печать:проверка` · `./ярлык имена:проверка` | the five prose guards below |
-| `./ярлык лицензии:проверка` | SPDX marking of every code file under `flang/` and `examples/` (not `bootstrap/` — see below); **CI runs the file directly** (`bootstrap/flang io scripts/guards/license-guard.flang`), not through the shortcut |
+| `./ярлык лицензии:проверка` | SPDX marking of every code file under `flang/` and `docs/examples/` (not `bootstrap/` — see below); **CI runs the file directly** (`bootstrap/flang io scripts/guards/license-guard.flang`), not through the shortcut |
 | `./ярлык ссылки:проверка` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/guards/link-guard.flang`) |
 | `./ярлык сайт` · `./ярлык сайт:проверка` | build the documentation site and check its links; **Pages runs the file directly** |
 | `./ярлык числа` · `./ярлык числа:проверка` | reprint the site pages' own numbers from the measurer, and check them against it |
@@ -253,7 +253,7 @@ What this means when you write:
 - **Cost claims.** The one cost table is in `flang/SPEC.md`. Each cell is backed by
   an exact snippet of the target's runtime in `scripts/guards/emit-promises-guard.flang`;
   change the runtime and the guard demands the table be revisited.
-- **Licence headers.** Every source file under `flang/` and `examples/` with one
+- **Licence headers.** Every source file under `flang/` and `docs/examples/` with one
   of thirteen code extensions carries an SPDX header — 75 files as of 29 August
   2026. The list is derived from the tree, not written down, so a new file
   without a header fails the gate rather than leaving the repository quietly

@@ -675,7 +675,7 @@ Import: `использует «X.509»`.
 Reading a SQLite 3 database file: header, pages, cells, values. Writing exists
 too — building a file from nothing (`«Собрать базу»`) and inserting a row into
 someone else's ready file (`«База со строкой»`,
-[`examples/db/sqlite-insert.flang`](https://github.com/digitable-lol/flang/blob/main/examples/db/sqlite-insert.flang)) —
+[`docs/examples/db/sqlite-insert.flang`](https://github.com/digitable-lol/flang/blob/main/examples/db/sqlite-insert.flang)) —
 but only the reading functions are listed below; the writing ones are named in
 `flang/stdlib/sqlite.flang` itself.
 
@@ -794,7 +794,7 @@ flang io заголовок.flang
 
 **What this module will not give you today.** The header, the schema and the table
 names read fine; on row values the evaluation runs into the step limit. The plan
-[`examples/db/sqlite-read.flang`](https://github.com/digitable-lol/flang/blob/main/examples/db/sqlite-read.flang),
+[`docs/examples/db/sqlite-read.flang`](https://github.com/digitable-lol/flang/blob/main/examples/db/sqlite-read.flang),
 which also prints the rows of a table, answers this on a 2 KiB database:
 
 ```

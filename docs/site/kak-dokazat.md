@@ -364,8 +364,8 @@ removed. Measured on another binary, without reprinting the seed:
 
 | file | before | after |
 |---|---|---|
-| `examples/driver/msi/msi.flang` | proven 86, declared 5 | proven 90 (2 by induction), declared 4 |
-| `examples/allocator/allocator.flang` | proven 79 (1 by induction), declared 3 | proven 82 (3 by induction), declared 1 |
+| `docs/examples/driver/msi/msi.flang` | proven 86, declared 5 | proven 90 (2 by induction), declared 4 |
+| `docs/examples/allocator/allocator.flang` | proven 79 (1 by induction), declared 3 | proven 82 (3 by induction), declared 1 |
 
 Across both programs `declared, not proven` went from 8 to 5, and all three that
 moved are about folds. The iteration needs its **own** step claim, without a
@@ -521,7 +521,7 @@ the measurements above is that there the scrutinee was the ARGUMENT ITSELF, here
 it is the result of a call; which of the two differences decides is not known."
 **The scrutinee has nothing to do with it, and that was settled by a run on
 26 August 2026** with the same binary. The probe is
-`examples/proof-probes/variant-with-fields.flang`: one module, one sum with
+`docs/examples/proof-probes/variant-with-fields.flang`: one module, one sum with
 fields, one thought written twenty-three ways, exactly one thing changed per pair.
 
 | what changes in the wording | verdict |

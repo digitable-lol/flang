@@ -36,7 +36,7 @@
 // подделок: **девять файлов на 656 строк** ввозят чужое и не имеют НИ ОДНОГО
 // своего примера — `scripts/editors/vim-rules.flang` (133 строки, 16 обещаний),
 // `flang/proof/midpoint-price.flang` (195), `flang/proof/midpoint-verdicts.flang`
-// (157), `examples/web/shortener/server-network.flang` (77),
+// (157), `docs/examples/web/shortener/server-network.flang` (77),
 // `docs/zamer-teorkat/iso-object-to-category.flang` (22) и четыре опыта в
 // `fspec/experiments/` по 11–25 строк. Число «девять» то же, что стояло здесь
 // раньше, а файлы ДРУГИЕ и строк вместо 11 683 — 656. Совпадение числа

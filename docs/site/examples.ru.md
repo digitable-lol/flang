@@ -1,40 +1,40 @@
 # Каталог примеров
 
-Все примеры-программы на flang лежат в одном каталоге — `examples/`: <!-- СНЯТО 2026-09-06 файлов examples/*.flang = 185 --> 185 файлов в
-двадцати двух наборах и одном полноразмерном проекте. Второго каталога с примерами
+Все примеры-программы на flang лежат в одном каталоге — `docs/examples/`: <!-- СНЯТО 2026-09-12 файлов docs/examples/*.flang = 200 --> 200 файлов в
+двадцати четырёх наборах и одном полноразмерном проекте. Второго каталога с примерами
 в репозитории нет: до 24 августа 2026 полторы сотни программ стояли этажом ниже,
 и найти их с первого взгляда было нельзя.
 
 Число пересчитывается одной командой:
-`git -c core.quotepath=false ls-files examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-06 файлов examples/*.flang = 185 --> 185 (замер 6 сентября 2026).
+`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-12 файлов docs/examples/*.flang = 200 --> 200 (замер 6 сентября 2026).
 
 ## Наборы
 
 | Каталог | Файлов `.flang` | Про что |
 |---|---:|---|
-| [`leetcode/`](examples/leetcode) | 82 | решения задач LeetCode; каждый файл самодостаточен нарочно — почему, сказано в [`index.json`](examples/leetcode/index.json). Разбор этого набора — [82 задачи](case-studies.html) |
-| [`rosetta/`](examples/rosetta) | 28 | канонические задачи Rosetta Code, каждая на русской и на английской поверхности языка. Разбор набора — [Rosetta Code](rosetta.html) |
-| [`web/`](examples/web) | 13 | HTTP: служба заказов, [сокращатель ссылок](shortener.html) и API маркетплейса из трёх служб — каталог, корзина, заказы |
-| [`io/`](examples/io) | <!-- СНЯТО 2026-09-11 файлов examples/io/*.flang = 9 --> 9 | поручения ввода-вывода: двоичный файл туда и обратно, октеты по проводу, потомок, запрос по HTTPS, временный каталог, разбор пакета |
-| [`crypto/`](examples/crypto) | 8 | AES, ECDSA, X25519, X.509, список отзыва, привет TLS — на настоящих контрольных векторах, которые лежат рядом |
-| [`library-api/`](examples/library-api) | 7 | предметная половина REST-сервиса библиотеки: выдача книг, каталог, штрафы. Единственный набор, показывающий **раскладку проекта** целиком |
-| [`db/`](examples/db) | <!-- СНЯТО 2026-09-03 файлов examples/db/*.flang = 6 --> 6 | разговор с PostgreSQL (в том числе SCRAM), с Redis и чтение файла SQLite |
-| [`service-on-processes/`](examples/service-on-processes) | 4 | служба на процессах, а не пример на три функции: заявление о своей замене OTP, проверенное в полный рост |
-| [`frameworks/`](examples/frameworks) | <!-- СНЯТО 2026-09-08 файлов examples/frameworks/*.flang = 4 --> 4 | ядро решения на flang под хозяином-фреймворком на JavaScript: NestJS, React, Vue. Ядро напечатано в JS и лежит рядом с хозяином — см. ниже |
-| [`https/`](examples/https) | 3 | TLS: записи RFC 8448, системное хранилище доверия, привет настоящему узлу |
-| [`proof-probes/`](examples/proof-probes) | 3 | пробы самого ядра доказательств: дверь к типизированному дереву, отказ от общего спуска, вариант с полями |
-| [`driver/`](examples/driver) | 2 | драйверы железа там, где каждая функция обязана доказано завершаться: UART и MSI |
-| [`measure/`](examples/measure) | 3 | завершаемость по объявленной мере: Евклид, двоичный поиск, натуральные числа |
-| [`errors/`](examples/errors) | 2 | отказ значением, а не падением: итог столбца пришедших строками чисел, разбор чисел |
-| [`surfaces/`](examples/surfaces) | 2 | факториал на китайской и эсперанто-поверхности языка |
-| [`wal/`](examples/wal) | 2 | журнал упреждающей записи: разбор, печать, восстановление после обрыва |
-| [`monad/`](examples/monad) | 1 | итог заказа на форме `в монаде` |
-| [`money/`](examples/money) | 1 | деньги на точном десятичном типе `сотых` |
-| [`paths/`](examples/paths) | 1 | кратчайший путь по сети с недостижимыми узлами |
-| [`allocator/`](examples/allocator) | 1 | распределитель памяти как чистый автомат: можно ли написать `malloc` на flang и что про него возьмёт ядро |
-| [`host-boundary/`](examples/host-boundary) | 1 | стык: flang считает решение, хозяин на C исполняет — напечатано в C, собрано системным `cc`, прогнано целиком |
-| [`service/`](examples/service) | 1 | обращение к службе |
-| [`import-check.flang`](examples/import-check.flang) | 1 | проба связывания модулей по имени |
+| [`leetcode/`](docs/examples/leetcode) | 82 | решения задач LeetCode; каждый файл самодостаточен нарочно — почему, сказано в [`index.json`](docs/examples/leetcode/index.json). Разбор этого набора — [82 задачи](case-studies.html) |
+| [`rosetta/`](docs/examples/rosetta) | 28 | канонические задачи Rosetta Code, каждая на русской и на английской поверхности языка. Разбор набора — [Rosetta Code](rosetta.html) |
+| [`web/`](docs/examples/web) | 13 | HTTP: служба заказов, [сокращатель ссылок](shortener.html) и API маркетплейса из трёх служб — каталог, корзина, заказы |
+| [`io/`](docs/examples/io) | <!-- СНЯТО 2026-09-11 файлов docs/examples/io/*.flang = 9 --> 9 | поручения ввода-вывода: двоичный файл туда и обратно, октеты по проводу, потомок, запрос по HTTPS, временный каталог, разбор пакета |
+| [`crypto/`](docs/examples/crypto) | 8 | AES, ECDSA, X25519, X.509, список отзыва, привет TLS — на настоящих контрольных векторах, которые лежат рядом |
+| [`library-api/`](docs/examples/library-api) | 7 | предметная половина REST-сервиса библиотеки: выдача книг, каталог, штрафы. Единственный набор, показывающий **раскладку проекта** целиком |
+| [`db/`](docs/examples/db) | <!-- СНЯТО 2026-09-03 файлов docs/examples/db/*.flang = 6 --> 6 | разговор с PostgreSQL (в том числе SCRAM), с Redis и чтение файла SQLite |
+| [`service-on-processes/`](docs/examples/service-on-processes) | 4 | служба на процессах, а не пример на три функции: заявление о своей замене OTP, проверенное в полный рост |
+| [`frameworks/`](docs/examples/frameworks) | <!-- СНЯТО 2026-09-08 файлов docs/examples/frameworks/*.flang = 4 --> 4 | ядро решения на flang под хозяином-фреймворком на JavaScript: NestJS, React, Vue. Ядро напечатано в JS и лежит рядом с хозяином — см. ниже |
+| [`https/`](docs/examples/https) | 3 | TLS: записи RFC 8448, системное хранилище доверия, привет настоящему узлу |
+| [`proof-probes/`](docs/examples/proof-probes) | 3 | пробы самого ядра доказательств: дверь к типизированному дереву, отказ от общего спуска, вариант с полями |
+| [`driver/`](docs/examples/driver) | 2 | драйверы железа там, где каждая функция обязана доказано завершаться: UART и MSI |
+| [`measure/`](docs/examples/measure) | 3 | завершаемость по объявленной мере: Евклид, двоичный поиск, натуральные числа |
+| [`errors/`](docs/examples/errors) | 2 | отказ значением, а не падением: итог столбца пришедших строками чисел, разбор чисел |
+| [`surfaces/`](docs/examples/surfaces) | 2 | факториал на китайской и эсперанто-поверхности языка |
+| [`wal/`](docs/examples/wal) | 2 | журнал упреждающей записи: разбор, печать, восстановление после обрыва |
+| [`monad/`](docs/examples/monad) | 1 | итог заказа на форме `в монаде` |
+| [`money/`](docs/examples/money) | 1 | деньги на точном десятичном типе `сотых` |
+| [`paths/`](docs/examples/paths) | 1 | кратчайший путь по сети с недостижимыми узлами |
+| [`allocator/`](docs/examples/allocator) | 1 | распределитель памяти как чистый автомат: можно ли написать `malloc` на flang и что про него возьмёт ядро |
+| [`host-boundary/`](docs/examples/host-boundary) | 1 | стык: flang считает решение, хозяин на C исполняет — напечатано в C, собрано системным `cc`, прогнано целиком |
+| [`service/`](docs/examples/service) | 1 | обращение к службе |
+| [`import-check.flang`](docs/examples/import-check.flang) | 1 | проба связывания модулей по имени |
 
 ## Как прогонять
 
@@ -42,15 +42,15 @@
 прогоняются двоичным:
 
 ```bash
-bootstrap/flang test examples/rosetta/   # один набор
-bootstrap/flang test examples/           # весь каталог, 185 файлов
+bootstrap/flang test docs/examples/rosetta/   # один набор
+bootstrap/flang test docs/examples/           # весь каталог, 185 файлов
 ```
 
 Наборы считаются очень по-разному, и это стоит знать до запуска. Прогон
 24 августа 2026: `leetcode` — 82 файла, 804 примера, 12 секунд (806 примеров, 23 с — прогон 11 сентября 2026, двоичный 0.7.17, коммит 2c40752d0); `crypto` —
 8 файлов, 1223 примера, 39 минут, потому что считает настоящие контрольные
 векторы AES и ECDSA (сегодня в этом наборе 1802 примера, прогон
-`bootstrap/flang test examples/crypto/ --json` занял 20 мин 30 с, отказов 0
+`bootstrap/flang test docs/examples/crypto/ --json` занял 20 мин 30 с, отказов 0
 — замер 3 сентября 2026 на загруженной машине, число выросло за счёт
 модулей библиотеки, которые `crypto/` подключает, а не за счёт самого
 набора). Файл, который двоичный не взял, он называет вместе с
@@ -70,19 +70,19 @@ bootstrap/flang test examples/           # весь каталог, 185 файл
 
 ## Под JS-фреймворками
 
-`examples/frameworks/` — три приложения с одной границей: ядро логики написано на
+`docs/examples/frameworks/` — три приложения с одной границей: ядро логики написано на
 flang и напечатано в JavaScript (`bootstrap/flang emit … --target js`), а хозяин —
 JS-фреймворк. Хозяин держит сокет, HTTP, состояние формы и рендер, а решение зовёт
-у ядра. Признак границы тот же, что у `examples/host-boundary/` с хозяином на C: на
+у ядра. Признак границы тот же, что у `docs/examples/host-boundary/` с хозяином на C: на
 flang пишется то, что **решает**; хозяину остаётся то, что **ждёт и держит
 управление между решениями**.
 
 | Каталог | Хозяин | Ядро | Что решает ядро |
 |---|---|---|---|
-| `examples/frameworks/nestjs-orders/` | NestJS | `core/orders-api.flang` | REST-служба заказов: разбор строки запроса, обязательные поля, маршрут по методу и пути, код ответа (201/200/400/404/405) |
-| `examples/frameworks/react-invoice/` | React | `core/cart.flang`, `core/catalog.flang` | счёт корзины целым числом копеек: сумма, ступени скидки, итог, строки счёта |
-| `examples/frameworks/vue-roman/` | Vue | `core/roman-numerals.flang` | римские цифры туда и обратно в диапазоне 1..3999 |
-| `examples/frameworks/react-ts-pure/` | React + TypeScript | `core/storefront.flang` | витрина, где в компонентах ноль строк логики: корзина, ступени скидки, запись рублей и редьюсер — всё на flang; `ЗАМЕР.md` сравнивает бандл и Web Vitals с `react-invoice` |
+| `docs/examples/frameworks/nestjs-orders/` | NestJS | `core/orders-api.flang` | REST-служба заказов: разбор строки запроса, обязательные поля, маршрут по методу и пути, код ответа (201/200/400/404/405) |
+| `docs/examples/frameworks/react-invoice/` | React | `core/cart.flang`, `core/catalog.flang` | счёт корзины целым числом копеек: сумма, ступени скидки, итог, строки счёта |
+| `docs/examples/frameworks/vue-roman/` | Vue | `core/roman-numerals.flang` | римские цифры туда и обратно в диапазоне 1..3999 |
+| `docs/examples/frameworks/react-ts-pure/` | React + TypeScript | `core/storefront.flang` | витрина, где в компонентах ноль строк логики: корзина, ступени скидки, запись рублей и редьюсер — всё на flang; `ЗАМЕР.md` сравнивает бандл и Web Vitals с `react-invoice` |
 
 Напечатанный модуль лежит в `printed/` каждого примера и самодостаточен: без
 зависимостей, идёт и в Node, и в браузере. Хозяин импортирует его напрямую
@@ -97,7 +97,7 @@ flang пишется то, что **решает**; хозяину остаёт�
 напечатанный модуль отвечает верно под `node` прямым вызовом:
 
 ```bash
-cd examples/frameworks/vue-roman && node --input-type=module -e \
+cd docs/examples/frameworks/vue-roman && node --input-type=module -e \
   'import("./printed/roman_numerals.js").then(m => console.log(m.vRimskie(2024), m.izRimskih("MCMLXXXIV")))'
 # MMXXIV 1984
 ```
@@ -106,7 +106,7 @@ cd examples/frameworks/vue-roman && node --input-type=module -e \
 `npm install`, `npm run typecheck`, `npm run build`. На дереве она не проверяется:
 ей нужны пакеты из сети. `node_modules/` и `dist/` в примеры не входят. Переиздать
 ядро — из корня дерева, например
-`bootstrap/flang emit examples/frameworks/vue-roman/core/roman-numerals.flang --target js --out examples/frameworks/vue-roman/printed`;
+`bootstrap/flang emit docs/examples/frameworks/vue-roman/core/roman-numerals.flang --target js --out docs/examples/frameworks/vue-roman/printed`;
 файлы в `printed/` печатает компилятор, руками их не правят.
 
 ## Куда идти дальше

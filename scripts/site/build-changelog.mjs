@@ -133,7 +133,7 @@ const ВИДИМОСТЬ = new Map([
   // А это рассказ о языке или обслуживание разработки.
   ["flang/SPEC.md", false],
   ["flang/PLAN.md", false],
-  ["flang/ct", true], // реализации теорката (перенесены из examples/cat); проза — docs/ct и docs/archive
+  ["flang/ct", true], // реализации теорката (перенесены из docs/examples/cat); проза — docs/ct и docs/archive
   ["flang/scripts", false], // сторожа разработки: claim-guard сверяет прозу с лексером
   ["flang/test", false],
   /* Обходчики проверок, написанных на самом языке, и их ведомости. Невидимы по
@@ -222,7 +222,7 @@ const ВИДИМОСТЬ = new Map([
    *
    * Два меняли язык — это прежние места того, что видимо и сегодня:
    *   `flang/cat` — реализации теорката до переезда в `flang/ct` (acca80a3);
-   *   `flang/examples` — примеры до сведения в один `examples/` (08ba3cf5).
+   *   `flang/examples` — примеры до сведения в один `docs/examples/` (08ba3cf5).
    * Живые корни обслуживания, в пакет не входят:
    *   `.githooks` — хук перед пушем; `.gitmodules` — только имя внешнего
    *   репозитория крана Homebrew, сам кран лежит под `packaging` и виден там;

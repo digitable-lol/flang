@@ -3,7 +3,7 @@
 # Раскладка проекта на flang
 
 Этот документ не список пожеланий. Каждое правило здесь выведено из работающего
-примера — [`examples/library-api`](../../examples/library-api), предметной половины
+примера — [`docs/examples/library-api`](../examples/library-api), предметной половины
 REST-сервиса библиотеки: выдача книг, каталог, штрафы за просрочку, — и на этот
 пример ссылается.
 
@@ -16,7 +16,7 @@ REST-сервиса библиотеки: выдача книг, каталог,
 Пример устроен так:
 
 ```
-examples/library-api/
+docs/examples/library-api/
   lib/                 flang: чистые функции над данными проекта, включая предметные правила
     api.flang          модуль «Library API» — единственный вход, связывает остальные
     catalog.flang      модуль «Catalog» — отбор, сводка, карточки книг
@@ -61,7 +61,7 @@ test/library-api.test.mjs   прогон примера на Node
 снят вместе с реализацией языка на JavaScript) не было ни одного числа из тарифа
 штрафов, ни проверки контрольной цифры ISBN, ни разбора строки запроса, ни
 условия «кому можно выдавать книги». Всё это лежит в файлах
-`examples/library-api/lib/*.flang`, проверяемых командой.
+`docs/examples/library-api/lib/*.flang`, проверяемых командой.
 
 **Что остаётся хозяину и почему именно ему.** Ввод-вывод в языке ОПИСЫВАЕТСЯ, но
 не выполняется: `вариант «Прочитать файл» с путь равным …` строит значение —
@@ -108,10 +108,10 @@ test/library-api.test.mjs   прогон примера на Node
 который страшно трогать.
 
 **Где смотреть.**
-[`lib/fine.flang`](../../examples/library-api/lib/fine.flang) — тариф штрафа и
+[`lib/fine.flang`](../examples/library-api/lib/fine.flang) — тариф штрафа и
 его потолок: три надбавки (50, 150 и 300 — в сумме ровно потолок), пять примеров
 и одно `обеспечивает`, читается без программиста.
-[`lib/isbn.flang`](../../examples/library-api/lib/isbn.flang) — разложение строки
+[`lib/isbn.flang`](../examples/library-api/lib/isbn.flang) — разложение строки
 на символы, свёртка с записью-аккумулятором, остаток от деления: тому, кто
 правит тариф, здесь делать нечего.
 
@@ -124,7 +124,7 @@ test/library-api.test.mjs   прогон примера на Node
 **Чего этим способом уже не получить.** Право выдать книгу когда-то принимала не
 функция, а доказательство: по снимку данных строился сертификат, и отказ
 назывался «предпосылка не нашлась», а не «условие ложно». Сегодня это обычная
-функция ([`lib/loan.flang`](../../examples/library-api/lib/loan.flang)) — тот же
+функция ([`lib/loan.flang`](../examples/library-api/lib/loan.flang)) — тот же
 ответ на тех же входах, но подкреплён он только своим телом и примерами.
 Разница между «доказано» и «посчитано» названа в шапке файла, а не потеряна
 молча.
@@ -170,7 +170,7 @@ test/library-api.test.mjs   прогон примера на Node
 **Почему не латиницей.** Поверхность языка русская целиком, и правило читает
 тот же человек, который читает его название. Смешение алфавитов в одной строке
 — лишняя работа глазу без единой выгоды. Английская поверхность у языка есть,
-но она отдельная и целиком — [`examples/rosetta/factorial-english.flang`](../../examples/rosetta/factorial-english.flang)
+но она отдельная и целиком — [`docs/examples/rosetta/factorial-english.flang`](../examples/rosetta/factorial-english.flang)
 рядом с `factorial.flang`, а не вперемешку в одном файле.
 
 **Почему ёлочки.** Имя из нескольких слов иначе не отличить от продолжения
@@ -233,11 +233,11 @@ flang и только по неизменяемой основе; на имен�
 
 **Граница модуля — по вопросу «что меняется вместе».** Правила отбора книг
 меняются вместе; формула контрольной суммы ISBN с ними не меняется никогда —
-поэтому [`lib/catalog.flang`](../../examples/library-api/lib/catalog.flang) и
-[`lib/isbn.flang`](../../examples/library-api/lib/isbn.flang) разные файлы.
+поэтому [`lib/catalog.flang`](../examples/library-api/lib/catalog.flang) и
+[`lib/isbn.flang`](../examples/library-api/lib/isbn.flang) разные файлы.
 
 **Модуль не знает про своих потребителей.**
-[`lib/query.flang`](../../examples/library-api/lib/query.flang) не знает ни про
+[`lib/query.flang`](../examples/library-api/lib/query.flang) не знает ни про
 книги, ни про ISBN: любой проект со строкой запроса взял бы его как есть. Знание
 про книги живёт этажом выше.
 
@@ -262,7 +262,7 @@ api.flang ──> catalog.flang ──> isbn.flang
 читается не из тела файла, а из отказа связывания.
 
 **У библиотеки проекта один входной модуль.**
-[`lib/api.flang`](../../examples/library-api/lib/api.flang) — единственный файл,
+[`lib/api.flang`](../examples/library-api/lib/api.flang) — единственный файл,
 который загружает хозяин; всё остальное подтягивает связывание. Причина в
 устройстве языка: импорт — это слияние объявлений, а не пространство имён, и
 загрузить два модуля по отдельности значит держать на хозяине две программы и
@@ -288,7 +288,7 @@ api.flang ──> catalog.flang ──> isbn.flang
 записаны прямо в шапках файлов.
 
 Так было при написании; на 11 сентября 2026 это уже не так. `flang check
-examples/library-api/lib/api.flang` (двоичный 0.7.17) отвечает «не проверено —
+docs/examples/library-api/lib/api.flang` (двоичный 0.7.17) отвечает «не проверено —
 замечаний 8», код 1: `«Сумма»`, `«Минимум»`, `«Максимум»` и `«Все не меньше»` из
 `flang/stdlib/lists.flang` зовут теперь помощников `«Шаг суммы»`, `«Шаг
 минимума»`, `«Шаг максимума»`, `«Шаг все не меньше»`, которых в списке `только` у
@@ -342,7 +342,7 @@ flang, её место не здесь, а в `flang/stdlib` — с шапкой
 заново, и писать их лучше один раз в одном месте.
 
 **Где смотреть.**
-[`stdlib/text.flang`](../../examples/library-api/stdlib/text.flang) — четыре
+[`stdlib/text.flang`](../examples/library-api/stdlib/text.flang) — четыре
 функции над списком строк, ни одна не знает слова «книга».
 
 ---
@@ -383,8 +383,8 @@ flang, её место не здесь, а в `flang/stdlib` — с шапкой
 **Команды, которыми проверяется проект:**
 
 ```bash
-flang check examples/library-api/lib/api.flang
-flang test  examples/library-api/lib/api.flang
+flang check docs/examples/library-api/lib/api.flang
+flang test  docs/examples/library-api/lib/api.flang
 ```
 
 `check` входного модуля собирает всю программу; `test` прогоняет примеры всех
@@ -393,7 +393,7 @@ flang test  examples/library-api/lib/api.flang
 связыванием, без правки списка файлов.
 
 Печать той же библиотеки в целевой язык — той же командой на тот же входной
-модуль: `flang emit examples/library-api/lib/api.flang --target js --out <каталог>`.
+модуль: `flang emit docs/examples/library-api/lib/api.flang --target js --out <каталог>`.
 Печать отменяется, если программа не проходит проверку: `emit` смотрит то же, что
 `check`, и называет те же замечания.
 
@@ -401,7 +401,7 @@ flang test  examples/library-api/lib/api.flang
 отказом `FLANG_UNKNOWN_NAME`, неизвестная функция `«Все не меньше»`». Функция с
 тех пор в библиотеке появилась (`flang/stdlib/lists.flang`), и `catalog.flang`
 ввозит её по имени, так что названной причины отказа больше нет. Сегодняшний
-ответ снят прогоном 11 сентября 2026: `flang check examples/library-api/lib/api.flang`
+ответ снят прогоном 11 сентября 2026: `flang check docs/examples/library-api/lib/api.flang`
 — код 1, «не проверено — замечаний 8»; причина и лечение названы в разделе 7.
 
 ---

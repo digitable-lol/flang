@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+// SPDX-License-Identifier: BSD-2-Clause
+
 /**
  * Прогон docs/examples/web/wasm/demo в НАСТОЯЩЕМ браузере и печать чисел.
  *

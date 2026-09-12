@@ -180,9 +180,9 @@ flang test  проба.фп   код 2   не нашлось ни одного .
 `flang/scripts/word-occupancy.mjs` убран один образец из трёх:
 
 ```
-до порчи   ФАЙЛЫ 661, из новых: [examples/proba.fp, examples/проба.фп]   код 0
-порча      ФАЙЛЫ 660, из новых: [examples/proba.fp]                      код 1
-возврат    ФАЙЛЫ 661, из новых: [examples/proba.fp, examples/проба.фп]   код 0
+до порчи   ФАЙЛЫ 661, из новых: [docs/examples/proba.fp, docs/examples/проба.фп]   код 0
+порча      ФАЙЛЫ 660, из новых: [docs/examples/proba.fp]                      код 1
+возврат    ФАЙЛЫ 661, из новых: [docs/examples/proba.fp, docs/examples/проба.фп]   код 0
 ```
 
 То же на оболочечном отборе `flang/проверки/обход.sh`: строка правки берёт

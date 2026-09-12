@@ -180,7 +180,7 @@ are not an oversight:
 |---|---|---|
 | benchmark output (`docs/benchmark*`) | 500 | it is the output of a run, not a source |
 | test fixtures (`flang/test/fixtures/`) | 14 | their names are deliberately malformed; that is what makes them fixtures |
-| hand-written code outside the four directories (`flang/proof/examples`, `flang/conc/examples`, `examples/library-api`, `fspec`, `docs/examples/web/wasm`, `flang/проверки`) | **70** | worth covering, but their price has not been measured |
+| hand-written code outside the four directories (`flang/proof/examples`, `flang/conc/examples`, `docs/examples/library-api`, `fspec`, `docs/examples/web/wasm`, `flang/проверки`) | **70** | worth covering, but their price has not been measured |
 
 Those last 66 are a named coverage debt. Widening the coverage without re-measuring the price would
 mean landing a rule the corpus was never checked against. If the numbers move, the test goes red and
@@ -262,5 +262,5 @@ went with the JavaScript implementation on 20 August 2026, and `name-guard.mjs` 
 It was: eleven fakes, one per rule; a fake supplied as a whole
 file; a healthy file supplied the same way; twenty healthy names across all four surfaces; and the
 count of what failed to parse. It was also checked against the real tree: a fake dropped into
-`examples/` exits 1 and names three names; a healthy file in the same place exits 0. A guard
+`docs/examples/` exits 1 and names three names; a healthy file in the same place exits 0. A guard
 that cannot go red looks exactly like a guard that has nothing to report.

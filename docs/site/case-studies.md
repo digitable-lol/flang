@@ -1,6 +1,6 @@
 # A case taken apart: leetcode tasks, their solutions, and what is proved about them
 
-`examples/leetcode/` — 82 files, 6 205 lines, 301 functions and 806 executable
+`docs/examples/leetcode/` — 82 files, 6 205 lines, 301 functions and 806 executable
 examples (measured 11 September 2026 at commit `2c40752d0`: `wc -l`, `grep -c`
 over function and example headers; 0.7.14 removed the `//` comments from the
 examples, hence fewer lines than on 29 August). Not an example written for this
@@ -60,7 +60,7 @@ it.
 return the index of the target (from zero) or −1 if it is not there. O(log n)
 required.
 
-**The whole solution** (`examples/leetcode/704-binary-search.flang`; the file's
+**The whole solution** (`docs/examples/leetcode/704-binary-search.flang`; the file's
 opening comment is omitted, it is retold below):
 
 ```flang
@@ -114,7 +114,7 @@ opening comment is omitted, it is retold below):
 **What is proved:**
 
 ```
-flang check examples/leetcode/704-binary-search.flang --proof
+flang check docs/examples/leetcode/704-binary-search.flang --proof
 ```
 
 ```
@@ -151,7 +151,7 @@ by structure is free.
 
 **Statement.** Sort a list in ascending order in O(n log n).
 
-**The whole solution** (`examples/leetcode/148-sort-list.flang`):
+**The whole solution** (`docs/examples/leetcode/148-sort-list.flang`):
 
 ```flang
 модуль «Sort list»
@@ -254,7 +254,7 @@ by structure is free.
 **What is proved:**
 
 ```
-flang check examples/leetcode/148-sort-list.flang --proof
+flang check docs/examples/leetcode/148-sort-list.flang --proof
 ```
 
 ```
@@ -298,7 +298,7 @@ in the built program where the measure is recomputed at run time. The two helper
 in the pits after rain: above each bar stands as much water as the smaller of
 the two highest bars to its left and right, minus the bar itself.
 
-**The whole solution** (`examples/leetcode/042-trapping-rain-water.flang`):
+**The whole solution** (`docs/examples/leetcode/042-trapping-rain-water.flang`):
 
 ```flang
 модуль «Trapping rain water»
@@ -381,7 +381,7 @@ the two highest bars to its left and right, minus the bar itself.
 **What is proved:**
 
 ```
-flang check examples/leetcode/042-trapping-rain-water.flang --proof
+flang check docs/examples/leetcode/042-trapping-rain-water.flang --proof
 ```
 
 ```
@@ -426,7 +426,7 @@ six `обеспечивает` postconditions on the digit-value function (two a
 and four about the first letters of the table; this used to say "two", the four
 were added in commit `c549be91a`).
 
-**The whole solution** (`examples/leetcode/013-roman-to-integer.flang`):
+**The whole solution** (`docs/examples/leetcode/013-roman-to-integer.flang`):
 
 ```flang
 модуль «Roman to integer»
@@ -519,7 +519,7 @@ were added in commit `c549be91a`).
 **What is proved:**
 
 ```
-flang check examples/leetcode/013-roman-to-integer.flang --proof
+flang check docs/examples/leetcode/013-roman-to-integer.flang --proof
 ```
 
 ```
@@ -573,7 +573,7 @@ falls into a cycle.
 This task is here because the proof **does not go through** on it, and the file
 says so outright.
 
-**The whole solution** (`examples/leetcode/202-happy-number.flang`):
+**The whole solution** (`docs/examples/leetcode/202-happy-number.flang`):
 
 ```flang
 модуль «Happy number»
@@ -657,7 +657,7 @@ says so outright.
 **What is proved:**
 
 ```
-flang check examples/leetcode/202-happy-number.flang --proof
+flang check docs/examples/leetcode/202-happy-number.flang --proof
 ```
 
 ```

@@ -54,7 +54,7 @@ flang check сосед.flang
 Проверить на маленьком пределе, что сообщение именно это:
 
 ```bash
-flang run examples/rosetta/factorial.flang --function 'Факториал' --args '{"н":30}' --max-steps 3
+flang run docs/examples/rosetta/factorial.flang --function 'Факториал' --args '{"н":30}' --max-steps 3
 ```
 
 Печатает `FLANG_RECURSION_LIMIT: функция «Факториал» исчерпала лимит шагов (3)
@@ -70,7 +70,7 @@ flang run examples/rosetta/factorial.flang --function 'Факториал' --arg
 | `c`, `elixir`, `js`, `ts` | планировщик печатается (у `c` это `flang_conc.c` рядом с программой), код 0 |
 | `cpp`, `csharp`, `go`, `java`, `python`, `rust` | печать отказывает целиком, код 1, ни файла не записано |
 
-Снято на `examples/service-on-processes/service.flang` (три процесса, надзор,
+Снято на `docs/examples/service-on-processes/service.flang` (три процесса, надзор,
 три прогона), прогон 11 сентября 2026, двоичный 0.7.17, коммит 2c40752d0.
 
 Отказ у `go` выглядит дословно так:

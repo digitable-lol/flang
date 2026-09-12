@@ -3,7 +3,7 @@
 # Зачем это нужно
 
 Здесь правило написано один раз и в той форме, которую читает человек из предметной области, а не
-только программист (фрагмент [`examples/library-api/lib/fine.flang`](../../examples/library-api/lib/fine.flang)):
+только программист (фрагмент [`docs/examples/library-api/lib/fine.flang`](../examples/library-api/lib/fine.flang)):
 
 ```flang
 объект «Просроченная выдача»
@@ -44,11 +44,11 @@
 языках. `обеспечивает` выше не комментарий: оно превращается в постусловие напечатанного кода.
 
 ```bash
-flang emit examples/library-api/lib/fine.flang --target python --out вывод
+flang emit docs/examples/library-api/lib/fine.flang --target python --out вывод
 ```
 
 даёт `вывод/fine.py` — и проверки постусловия в нём НЕТ: ядро доказало «Штраф ограничен»
-обо всех входах (`flang check examples/library-api/lib/fine.flang --proof` 11 сентября 2026,
+обо всех входах (`flang check docs/examples/library-api/lib/fine.flang --proof` 11 сентября 2026,
 двоичный 0.7.17: «доказано сведением цели с телом функции», код 0), а доказанное в код не
 печатается. Дверь появляется, если ядро не звать — `--no-check`; тогда в `вывод/fine.py`
 стоит дословно:

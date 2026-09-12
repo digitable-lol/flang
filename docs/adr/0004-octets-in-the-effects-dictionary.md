@@ -7,7 +7,7 @@
 разборщик [`flang/self/parser.flang`](../../flang/self/parser.flang), хозяин двоичного
 `flang/src/emit/c/flang_repl.c`, цикл поручений `flang/src/emit/js/flang_io.js`, хозяин
 вкладки `flang/src/emit/js/flang_host_browser.js`, программы
-`examples/io/octets-over-the-wire.flang` и `examples/db/postgres-plan.flang`.
+`docs/examples/io/octets-over-the-wire.flang` и `docs/examples/db/postgres-plan.flang`.
 
 ---
 
@@ -157,7 +157,7 @@ gRPC, ни к TLS. Улика в дереве: драйвер PostgreSQL из в
 отвечал, `flang check` работал. Ни одна проверка не звала октетное поручение у
 хозяина в C: та, что звала (`flang/test/oktety.test.mjs`), не входит в путь,
 которым это дерево проверяют. Улика была бы получена одной командой —
-`flang io examples/io/octets-over-the-wire.flang`, — и её никто не дал.
+`flang io docs/examples/io/octets-over-the-wire.flang`, — и её никто не дал.
 
 **Что из потерянного восстановлено здесь:** октетная пара. **Что осталось
 потерянным:** `«Запустить процесс с вводом»` у хозяина в C (`grep -c` даёт 0) —

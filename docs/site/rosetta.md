@@ -1,11 +1,11 @@
 # Rosetta Code in flang
 
-`examples/rosetta/` — the canonical Rosetta Code tasks, solved in flang. It is a
+`docs/examples/rosetta/` — the canonical Rosetta Code tasks, solved in flang. It is a
 showcase: here the language is compared with the same solution in other languages,
 so what matters is not brevity but what is visible on reading — where termination
 is proved, and where the language says it cannot prove it.
 
-The set holds <!-- СНЯТО 2026-09-08 файлов examples/rosetta/*.flang = 28 --> 28 files,
+The set holds <!-- СНЯТО 2026-09-08 файлов docs/examples/rosetta/*.flang = 28 --> 28 files,
 two per task: each is written on the Russian surface of the language and on the
 English one (`*-english.flang`). This is not a translation of documentation: the
 language has four equal writing surfaces — Russian, English, Esperanto and
@@ -14,17 +14,17 @@ Chinese — and `тотальная функция` / `total function` are one a
 surfaces](../surfaces.html), in Russian). Two are taken here because on a Rosetta Code task page
 the second listing is there for the reader: next to the Russian listing, the
 English one shows that the Russian spelling is a choice, not a limitation. All four
-surfaces on one task are in `examples/surfaces/`.
+surfaces on one task are in `docs/examples/surfaces/`.
 
-Ready text for the wiki pages is in `examples/rosetta/WIKI.en.md`. The publishing
+Ready text for the wiki pages is in `docs/examples/rosetta/WIKI.en.md`. The publishing
 procedure, the licence caveat and the language page are described outside this
 repository.
 
 ## How to run it
 
 ```bash
-bootstrap/flang test examples/rosetta/                                # the examples of every file in the set
-bootstrap/flang check examples/rosetta/towers-of-hanoi.flang --proof  # the ledger of one file
+bootstrap/flang test docs/examples/rosetta/                                # the examples of every file in the set
+bootstrap/flang check docs/examples/rosetta/towers-of-hanoi.flang --proof  # the ledger of one file
 ```
 
 `test` runs the examples declared inside the functions. `check --proof` prints the
@@ -71,8 +71,8 @@ the same functions stand under English names.
 | Towers of Hanoi | `towers-of-hanoi.flang` | — | all total; the non-negativity of «Число ходов» is proved by induction on the structure of the list |
 
 The "not total" column is taken from a file by
-`grep '^функция ' examples/rosetta/<file>`; what proves each total one is printed
-by `bootstrap/flang check examples/rosetta/<file> --proof`.
+`grep '^функция ' docs/examples/rosetta/<file>`; what proves each total one is printed
+by `bootstrap/flang check docs/examples/rosetta/<file> --proof`.
 
 ## Why some solutions are not total
 
@@ -97,7 +97,7 @@ that did not decrease gives the refusal `FLANG_MEASURE` rather than an endless l
 
 ## What the set does not have
 
-- **Tasks with input and output.** The language has I/O orders (`examples/io/`),
+- **Tasks with input and output.** The language has I/O orders (`docs/examples/io/`),
   but the Rosetta Code tasks here are about the algorithm, not about the host.
 - **Tasks that need strings ordered** (Anagrams, Letter frequency). `меньше` and
   `больше` on strings are refused by the type check —
@@ -111,6 +111,6 @@ that did not decrease gives the refusal `FLANG_MEASURE` rather than an endless l
 
 ## Next
 
-- [The catalogue of examples](examples.html) — every set in the `examples/` directory
+- [The catalogue of examples](examples.html) — every set in the `docs/examples/` directory
 - [What the mark «тотальная» gives](totality.html) — the ways of proving termination
 - [A study of leetcode problems](case-studies.html) — five problems with their proof reports in full

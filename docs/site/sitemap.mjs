@@ -134,7 +134,7 @@ export const РАЗДЕЛЫ = [
          примеры в ней четвёртый шаг. Это перечень того, что на языке уже
          написано: пятнадцать наборов и один проект, с числом файлов у каждого.
          Отвечает он ровно на вопрос этого раздела — «а что на нём вообще
-         пишут». Содержимое переехало из `examples/README.md`, где лежало
+         пишут». Содержимое переехало из `docs/examples/README.md`, где лежало
          русским текстом в файле с английским именем. */
       { адрес: 'examples.html', имя: 'Каталог примеров', из: 'docs/site/examples.ru.md' },
       /* ROSETTA CODE СТОИТ СРАЗУ ЗА КАТАЛОГОМ. Каталог называет набор одной
@@ -143,7 +143,7 @@ export const РАЗДЕЛЫ = [
          leetcode (`case-studies.html`) показывает пять задач с ведомостями
          целиком — здесь другое: граница тотальности по всем задачам набора и
          две поверхности записи на каждую. Содержимое переехало из
-         `examples/rosetta/README.md`. */
+         `docs/examples/rosetta/README.md`. */
       { адрес: 'rosetta.html', имя: 'Rosetta Code: граница тотальности', из: 'docs/site/rosetta.ru.md' },
       { адрес: 'database.html', имя: 'Базы данных', из: 'docs/site/database.ru.md' },
       { адрес: 'processes.html', имя: 'Процессы, надзор, распределённость', из: 'docs/site/processes.ru.md' },
@@ -153,7 +153,7 @@ export const РАЗДЕЛЫ = [
          ведомостью доказательства, весом вкладки и поимённым перечнем того,
          что упёрлось. Обе переехали из README каталогов: `shortener` собран из
          двух половин сразу (`docs/examples/web/shortener-client/README.md` — клиент,
-         `examples/web/shortener/README.md` — служба), потому что половины
+         `docs/examples/web/shortener/README.md` — служба), потому что половины
          описывали одну демонстрацию и повторяли друг друга;
          `browser-app` — из `docs/examples/web/browser-app/README.md`. */
       { адрес: 'shortener.html', имя: 'Сокращатель ссылок: служба и клиент', из: 'docs/site/shortener.ru.md' },
@@ -165,8 +165,8 @@ export const РАЗДЕЛЫ = [
          месту (неравенства и свёртка по всей строке), и читать их стоит рядом.
          Чисел «доказано N» на страницах нет: их печатает отчёт `check --proof`,
          и они меняются с ядром. Переехали из README каталогов примеров:
-         `examples/wal/README.md`, `examples/allocator/README.md`,
-         `examples/driver/msi/README.md`. */
+         `docs/examples/wal/README.md`, `docs/examples/allocator/README.md`,
+         `docs/examples/driver/msi/README.md`. */
       { адрес: 'wal.html', имя: 'Журнал упреждающей записи', из: 'docs/site/wal.ru.md' },
       { адрес: 'allocator.html', имя: 'Распределитель памяти', из: 'docs/site/allocator.ru.md' },
       { адрес: 'msi-driver.html', имя: 'Драйвер MSI на flang', из: 'docs/site/msi-driver.ru.md' },
@@ -222,7 +222,7 @@ export const РАЗДЕЛЫ = [
       { адрес: 'totality.html', имя: 'Что даёт признак «тотальная»', из: 'docs/guide/totality.ru.md' },
       /* СТРАНИЦА ЛЕЖАЛА В `docs/site/` С ОБЕИМИ РЕДАКЦИЯМИ, НО В КАРТЕ НЕ
          СТОЯЛА — адреса у неё не было, и ссылки на неё с других страниц
-         сборка звала битыми (2026-09-08, при переносе `examples/host-boundary/README.md`).
+         сборка звала битыми (2026-09-08, при переносе `docs/examples/host-boundary/README.md`).
          Стоит здесь, а не в «Что язык умеет»: она отвечает не «что написано»,
          а «почему цикл службы на flang не пишется» — признак границы между
          решением и ожиданием, следом за страницей о признаке «тотальная». */
@@ -424,13 +424,13 @@ export const ПЕРЕЕЗДЫ = {
 export const ПРИМЕРЫ_НА_ГЛАВНОЙ = [
   {
     ключ: 'факториал',
-    файл: 'examples/rosetta/factorial.flang',
+    файл: 'docs/examples/rosetta/factorial.flang',
     объявление: 'Факториал',
     подпись: 'Взято из дерева целиком, знак в знак —',
   },
   {
     ключ: 'factorial',
-    файл: 'examples/rosetta/factorial-english.flang',
+    файл: 'docs/examples/rosetta/factorial-english.flang',
     объявление: 'Factorial',
     подпись: 'Taken from the tree verbatim —',
   },

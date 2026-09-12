@@ -2,7 +2,7 @@
 
 One demonstration in two halves, and both are written entirely in flang.
 
-- **The service** — `examples/web/shortener/`: the input is the bytes the host
+- **The service** — `docs/examples/web/shortener/`: the input is the bytes the host
   read from the connection, the output is the bytes the host will send back.
   Between them there is not one line written in anything but flang.
 - **The client** — `docs/examples/web/shortener-client/`: the form, the submit, the list of links and
@@ -13,9 +13,9 @@ One demonstration in two halves, and both are written entirely in flang.
 
 ```sh
 export LC_ALL=C.UTF-8
-bootstrap/flang check examples/web/shortener/service.flang --proof
-bootstrap/flang test  examples/web/shortener/server.flang
-bootstrap/flang io    examples/web/shortener/plan.flang --in-dir
+bootstrap/flang check docs/examples/web/shortener/service.flang --proof
+bootstrap/flang test  docs/examples/web/shortener/server.flang
+bootstrap/flang io    docs/examples/web/shortener/plan.flang --in-dir
 ```
 
 The client in a tab:
@@ -67,7 +67,7 @@ taken, 413 request body longer than 2048, 422 address is neither http nor https.
 
 ### What is proved and what is merely run
 
-`bootstrap/flang check examples/web/shortener/service.flang --proof`, run on
+`bootstrap/flang check docs/examples/web/shortener/service.flang --proof`, run on
 11 September 2026 at commit 2c40752d0 (binary 0.7.17): **24 functions, 24 total,
 0 ordinary. 8 claims: 5 proved (4 of them by induction), 3 by grid, 0 declared
 and unproved, 0 rejected; 0 laws on faith. Exit code 0.**
@@ -183,7 +183,7 @@ through files, the second through a socket). The service did not change by a
 single character; the plan did.
 
 ```sh
-bootstrap/flang io examples/web/shortener/plan-durable.flang --in-dir
+bootstrap/flang io docs/examples/web/shortener/plan-durable.flang --in-dir
 ```
 
 The harness that drove the three runs below, and the eleven checks beside it,

@@ -271,8 +271,8 @@ poschitat() { # каталог-корень -> строки «ключ<TAB>зн�
   # незаданный вопрос не краснеет никогда.
   printf 'провод.тотальных\t%s\n' "$(tot flang/stdlib/wire.flang)"
   printf 'провод.примеров\t%s\n'  "$(pr flang/stdlib/wire.flang)"
-  printf 'план.строк\t%s\n'    "$(strok examples/db/postgres-plan.flang)"
-  printf 'план.примеров\t%s\n' "$(pr examples/db/postgres-plan.flang)"
+  printf 'план.строк\t%s\n'    "$(strok docs/examples/db/postgres-plan.flang)"
+  printf 'план.примеров\t%s\n' "$(pr docs/examples/db/postgres-plan.flang)"
   printf 'планировщик.строк\t%s\n'    "$(strok flang/conc/scheduler.flang)"
   printf 'планировщик.функций\t%s\n'  "$(fn flang/conc/scheduler.flang)"
   printf 'планировщик.примеров\t%s\n' "$(pr flang/conc/scheduler.flang)"
@@ -534,7 +534,7 @@ perepis() {
         case "$f" in
           flang/src/emit/*)         k="рантайм цели печати" ;;
           flang/conc/bin/node.*)    k="хозяин узла на цели" ;;
-          docs/benchmarks/*|examples/host-boundary/*) k="замеряемый материал" ;;
+          docs/benchmarks/*|docs/examples/host-boundary/*) k="замеряемый материал" ;;
           editors/*|packaging/homebrew/*|docs/site/poisk.js|docs/site/poisk-proverka.mjs|docs/examples/web/wasm/probe.mjs)
                                     k="чужая среда" ;;
           *)                        k="ДОЛГ" ;;
@@ -621,9 +621,9 @@ proza() {
   pr_vsego=$(find examples -name '*.flang' | wc -l | tr -d ' ')
   pr_naborov=$(find examples -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
   pr_ostalnyh=$(find examples -name '*.flang' \
-                | grep -vE '^examples/(web/shortener|library-api)/' | wc -l | tr -d ' ')
-  skazat "README.ru: программ"  "$(grep -oE 'examples/ +[0-9]+ программ' docs/README.ru.md | grep -oE '[0-9]+')" "$pr_vsego"
-  skazat "README: программ"     "$(grep -oE 'examples/ +[0-9]+ flang programs' README.md | grep -oE '[0-9]+')" "$pr_vsego"
+                | grep -vE '^docs/examples/(web/shortener|library-api)/' | wc -l | tr -d ' ')
+  skazat "README.ru: программ"  "$(grep -oE 'docs/examples/ +[0-9]+ программ' docs/README.ru.md | grep -oE '[0-9]+')" "$pr_vsego"
+  skazat "README: программ"     "$(grep -oE 'docs/examples/ +[0-9]+ flang programs' README.md | grep -oE '[0-9]+')" "$pr_vsego"
   skazat "README.ru: наборов"   "$(grep -oE 'программ[^ ]* на flang в [0-9]+ наборах' docs/README.ru.md | grep -oE '[0-9]+' | tail -1)" "$pr_naborov"
   skazat "README: наборов"      "$(grep -oE 'flang programs in [0-9]+ sets' README.md | grep -oE '[0-9]+')" "$pr_naborov"
   skazat "README.ru: остальных" "$(grep -oE 'ещё [0-9]+ программ' docs/README.ru.md | grep -oE '[0-9]+')" "$pr_ostalnyh"

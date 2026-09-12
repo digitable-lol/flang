@@ -223,8 +223,8 @@ node docs/site/glossary.mjs --check
 | `flang/src/lexer.mjs` | 313 |
 | `flang/self/lexer.flang` | 63 |
 | `flang/test/surfaces.test.mjs` (новый сторож) | 123 |
-| `examples/surfaces/factorial.eo.flang` (новый) | 84 |
-| `examples/surfaces/factorial.zh.flang` (новый) | 80 |
+| `docs/examples/surfaces/factorial.eo.flang` (новый) | 84 |
+| `docs/examples/surfaces/factorial.zh.flang` (новый) | 80 |
 | `flang/test/self-lexer.test.mjs` | 7 |
 | `flang/self/SPEC.md` | 2 |
 

@@ -32,7 +32,7 @@
 Поэтому дерево и написано на двух поверхностях из четырёх, а не на четырёх:
 эсперанто и китайский существуют в таблице целиком, но пользоваться ими всерьёз
 пока нельзя — из 1101 программы дерева на них написаны две, обе демонстрационные,
-и лежат они в `examples/surfaces/`.
+и лежат они в `docs/examples/surfaces/`.
 
 Полная таблица слов — на странице [Словарь языка](glossary.html); она печатается
 из той же единственной таблицы, по которой разбирается любой файл, и пустая клетка
@@ -70,7 +70,7 @@ Dafny. Придуманное слово хуже отсутствующего: 
 узнать об этом можно было, только попробовав.
 
 ```
-$ flang emit examples/surfaces/factorial.zh.flang --target python
+$ flang emit docs/examples/surfaces/factorial.zh.flang --target python
 flang emit: печать отказала — имя функции «乘积» даёт идентификатор «fn_value»,
 уже занятый (функции «前置») — переименуйте одно из имён в модели
 ```
@@ -155,14 +155,14 @@ se n ne pli granda ol 1  tiam 1  alie n fojoj («Faktorialo» de (n minus 1))
 ```
 
 Это четыре строки из четырёх файлов дерева, а не выдумка страницы:
-`examples/rosetta/factorial.flang`, `examples/rosetta/factorial-english.flang`,
-`examples/surfaces/factorial.eo.flang`, `examples/surfaces/factorial.zh.flang`.
+`docs/examples/rosetta/factorial.flang`, `docs/examples/rosetta/factorial-english.flang`,
+`docs/examples/surfaces/factorial.eo.flang`, `docs/examples/surfaces/factorial.zh.flang`.
 Каждый проходит проверку сам по себе — одной и той же командой, меняется только
 имя файла:
 
 ```
-flang check examples/rosetta/factorial.flang
-flang check examples/surfaces/factorial.zh.flang
+flang check docs/examples/rosetta/factorial.flang
+flang check docs/examples/surfaces/factorial.zh.flang
 ```
 
 Все четыре отвечают одинаково: «функций 5, из них с доказанным завершением 3;

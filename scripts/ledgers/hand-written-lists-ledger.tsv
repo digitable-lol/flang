@@ -28,7 +28,7 @@
 #   документации, и он назван долгом прямо, а не спрятан за словом «замер».
 #
 #   Прежние имена, переезды и сабмодули: 29 записей путей. Снятые файлы
-#   JavaScript, каталоги examples/cat и flang/cat, задачи, переехавшие в
+#   JavaScript, каталоги docs/examples/cat и flang/cat, задачи, переехавшие в
 #   tasks/completed, входы примеров и содержимое невыкаченных сабмодулей
 #   packaging/asdf-plugin и packaging/homebrew-tap.
 #
@@ -112,9 +112,9 @@
 ЦЕЛИ	tasks/completed/4025-the-seed-stopped-dropping-processes-and-the-network.md	161	закрытая задача: таблица замера на день закрытия
 ЦЕЛИ	tasks/completed/8460-the-occupied-names-guard-was-blind-to-the-ninth-target.md	117	закрытая задача: «семь целей из девяти без присмотра» — высказывание о подмножестве на день закрытия
 ПУТИ	docs/site/build.flang	71	входы ПРИМЕРОВ функции (docs/site/limits.ru.md → docs/site/limits.md), а не имена дерева: входы примера не протухают
-ПУТИ	examples/frameworks/nestjs-orders/printed/flang_cli.js	533	прежняя реализация на JavaScript (flang/scripts/direct-run-guard.mjs), вынесенная из дерева; имя стоит в шапке НАПЕЧАТАННОГО файла и правится печатью, а не рукой
-ПУТИ	examples/frameworks/react-invoice/printed/flang_cli.js	533	то же напечатанное лицо, вторая рамка; правится печатью, а не рукой
-ПУТИ	examples/frameworks/vue-roman/printed/flang_cli.js	533	то же напечатанное лицо, третья рамка; правится печатью, а не рукой
+ПУТИ	docs/examples/frameworks/nestjs-orders/printed/flang_cli.js	533	прежняя реализация на JavaScript (flang/scripts/direct-run-guard.mjs), вынесенная из дерева; имя стоит в шапке НАПЕЧАТАННОГО файла и правится печатью, а не рукой
+ПУТИ	docs/examples/frameworks/react-invoice/printed/flang_cli.js	533	то же напечатанное лицо, вторая рамка; правится печатью, а не рукой
+ПУТИ	docs/examples/frameworks/vue-roman/printed/flang_cli.js	533	то же напечатанное лицо, третья рамка; правится печатью, а не рукой
 ПУТИ	flang/scripts/binary-rules-guard.flang	237	прежние имена на JavaScript (flang/bin/flang.mjs, flang/src/lsp.mjs, io.mjs, factcheck.mjs) в поле «почему» записей: имя стоит как история, а не как живой файл
 ПУТИ	flang/scripts/code-guard.flang	214	ожидаемые значения ПРИМЕРА: задачи 6805 и 0003 переехали в tasks/completed, а пример показывает прежний путь; правится вместе с примером
 ПУТИ	flang/scripts/code-guard.flang	229	второй пример того же вида; правится вместе с примером
@@ -127,7 +127,7 @@
 ПУТИ	scripts/guards/asdf-plugin-guard.flang	361	содержимое сабмодуля packaging/asdf-plugin: в git ls-files лежит одно имя сабмодуля, а не его файлы, и перепись их не видит, пока сабмодуль не выкачен
 ПУТИ	scripts/guards/asdf-plugin-guard.flang	372	тот же сабмодуль, перечень ожидаемых файлов плагина
 ПУТИ	scripts/guards/asdf-plugin-guard.flang	388	тот же сабмодуль, перечень исполняемых файлов плагина
-ПУТИ	scripts/site/build-changelog.mjs	134	исторический корень examples/cat, снятый переездом в flang/ct; перечень корней обязан помнить путь, которого в дереве уже нет
+ПУТИ	scripts/site/build-changelog.mjs	134	исторический корень docs/examples/cat, снятый переездом в flang/ct; перечень корней обязан помнить путь, которого в дереве уже нет
 ПУТИ	scripts/site/build-changelog.mjs	217	прямо названы ПРЕЖНИЕ места (flang/cat, flang/examples): перечень корней помнит историю нарочно
 ПУТИ	scripts/release/bump-version.sh	144	ложное срабатывание переписи: точка предложения приклеилась к имени (bootstrap/flang_repl.c.), сам файл в дереве есть
 ПУТИ	scripts/site/changelog.flang	257	исторический корень flang/bin, удалённый 3 сентября 2026 вместе с обёртками npm (задача 8649); перечень корней обязан его помнить
@@ -135,7 +135,7 @@
 ПУТИ	scripts/site/changelog.flang	271	входы ПРИМЕРОВ функции на прежних именах (flang/src/lexer.mjs, docs/adr/0006.md); входы примера не протухают
 ПУТИ	scripts/site/changelog.flang	828	ожидаемые значения ПРИМЕРА о НЕИЗВЕСТНОМ корне (turbo/run.mjs, turbo/README.md): имена выдуманы нарочно, дерева они не описывают
 ПУТИ	scripts/site/changelog.flang	1202	вход ПРИМЕРА — строка вывода git с управляющими знаками; «u0003» приклеилось к имени разбором, а flang/src/lexer.mjs здесь прежнее имя из истории
-ПУТИ	scripts/targets/emit-law.flang	99	постоянный перечень программ, из которого печатается закон: шесть имён под examples/cat не существуют — каталог переехал в flang/ct; настоящий долг, правка меняет предмет закона
+ПУТИ	scripts/targets/emit-law.flang	99	постоянный перечень программ, из которого печатается закон: шесть имён под docs/examples/cat не существуют — каталог переехал в flang/ct; настоящий долг, правка меняет предмет закона
 ПУТИ	scripts/release/emit-package.flang	17	задача 8649 переехала в tasks/completed; имя стоит в комментарии как ссылка на разбор, а не как живой файл
 ПУТИ	scripts/guards/homebrew-formula-guard.flang	484	содержимое сабмодуля packaging/homebrew-tap: в git ls-files лежит одно имя сабмодуля, а не Formula/flang.rb
 ПУТИ	scripts/release/release-in-c.flang	158	«куда» ПРИМЕРА — каталог, который складывает прогон выпуска (output/release-c/…); в дереве его нет по устройству

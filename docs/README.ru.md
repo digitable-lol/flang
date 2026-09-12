@@ -198,7 +198,7 @@ Tab дополняет: имя сессии в ёлочках (`«Втр` → `�
 
 ### Печать в целевой язык
 
-Это [`examples/leetcode/035-search-insert-position.flang`](../examples/leetcode/035-search-insert-position.flang)
+Это [`docs/examples/leetcode/035-search-insert-position.flang`](examples/leetcode/035-search-insert-position.flang)
 как он лежит в дереве — место, куда значение встаёт в отсортированном списке:
 
 ```flang
@@ -240,8 +240,8 @@ Tab дополняет: имя сессии в ёлочках (`«Втр` → `�
 ```
 
 ```bash
-flang emit examples/leetcode/035-search-insert-position.flang --target c  --out out-c
-flang emit examples/leetcode/035-search-insert-position.flang --target js --out out-js
+flang emit docs/examples/leetcode/035-search-insert-position.flang --target c  --out out-c
+flang emit docs/examples/leetcode/035-search-insert-position.flang --target js --out out-js
 ```
 
 Восемь целей печатают модуль, рантайм, прогонщик с JSON на входе и выходе, файл сборки и — где
@@ -323,7 +323,7 @@ export function mestoVstavki(elementy, cel) {
 | найти конструкцию | [Справочник конструкций](https://digitable-lol.github.io/flang/language.html) · [Справочник библиотеки](https://digitable-lol.github.io/flang/stdlib.html) · [Справочник отказов](https://digitable-lol.github.io/flang/diagnostics.html) |
 | понять доказательства | [Что доказано](https://digitable-lol.github.io/flang/what-is-proved.html) · [Какие обещания ядро берёт](https://digitable-lol.github.io/flang/kak-dokazat.html) · [Ядро отказало: чья это ошибка](https://digitable-lol.github.io/flang/proof-refused.html) |
 | запустить где-то | [Установка](https://digitable-lol.github.io/flang/install.html) · [Справочник команд](https://digitable-lol.github.io/flang/cli.html) · [Редактор](https://digitable-lol.github.io/flang/editor.html) · [Процессы, надзор, распределённость](https://digitable-lol.github.io/flang/processes.html) |
-| посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`examples/`](../examples) |
+| посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`docs/examples/`](../examples) |
 | прочесть контракты | [`flang/SPEC.md`](../flang/SPEC.md) · [`flang/self/SPEC.md`](../flang/self/SPEC.md) · [`flang/proof/SPEC.md`](../flang/proof/SPEC.md) · [`flang/conc/SPEC.md`](../flang/conc/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
 | узнать, куда это идёт | [`ROADMAP.md`](../ROADMAP.md) — пять этапов и что каждый меняет для разработчика · [`docs/what-provability-gives-today.ru.md`](what-provability-gives-today.ru.md) · [`docs/road-to-1-0.md`](road-to-1-0.md) |
 
@@ -343,7 +343,7 @@ export function mestoVstavki(elementy, cel) {
 ```
 bootstrap/        компилятор, напечатанный в C99, и его Makefile: «make -C bootstrap» собирает двоичный
 flang/            язык: self/ (компилятор), core/, stdlib/, proof/, conc/, ct/, src/emit/ (рантаймы целей), scripts/, проверки/, test/, SPEC.md
-examples/         185 программ на flang в 22 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
+docs/examples/         185 программ на flang в 22 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
 editors/          языковой сервер, подсветка для Vim и VS Code, заявка в github-linguist
 packaging/        формула Homebrew, плагин asdf, страница flang.1, проверки установки
 scripts/          проверки дерева, перепечатка точки раскрутки, релизный архив, журнал изменений
@@ -374,13 +374,13 @@ tasks/            открытая и закрытая работа дерева
 [`flang/test/`](../flang/test) — то, что осталось от набора проб, написанного против удалённой
 реализации на JavaScript; хранится как образцы.
 
-Два набора примеров — полноразмерные проекты: [`examples/web/shortener`](../examples/web/shortener/README.md),
+Два набора примеров — полноразмерные проекты: [`docs/examples/web/shortener`](examples/web/shortener/README.md),
 сокращатель ссылок, где между байтами запроса и байтами ответа нет ничего, кроме flang, и
-[`examples/library-api`](../examples/library-api/README.md), предметная половина библиотечной службы;
+[`docs/examples/library-api`](examples/library-api/README.md), предметная половина библиотечной службы;
 ещё 170 программ в остальных наборах — отдельные файлы, среди них набор LeetCode: 82 решения с
 806 примерами.
-<!-- СНЯТО 2026-09-08 файлов examples/leetcode/*.flang = 82 -->
-<!-- СНЯТО 2026-09-08 примеров-в examples/leetcode/*.flang = 806 -->
+<!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
+<!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->
 
 **Точка раскрутки.** В `bootstrap/` лежит компилятор, уже напечатанный в C99, — поэтому один
 `make` даёт рабочий `flang`. Этот двоичный печатает исходники компилятора заново, и результат

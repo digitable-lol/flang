@@ -279,8 +279,8 @@
   обеспечивает «команда корпуса — два довода» (длина результат) равен 2
   обеспечивает «команда корпуса идёт через ключ -c» результат содержит "-c"
   пример «И файлы, и шапки спрашиваются у git одним заходом, а не переписаны руками»
-    ожидается ["-c", "cd ../.. && mkdir -p output && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'examples/*.flang') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H '^модуль '"]
-  ["-c", "cd ../.. && mkdir -p output && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'examples/*.flang') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H '^модуль '"]
+    ожидается ["-c", "cd ../.. && mkdir -p output && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'docs/examples/*.flang') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H '^модуль '"]
+  ["-c", "cd ../.. && mkdir -p output && s=$(git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/stdlib/*.flang' 'flang/core/*.flang' 'docs/examples/*.flang') && printf 'ФАЙЛЫ\n%s\nМОДУЛИ\n' \"$s\" && printf '%s\n' \"$s\" | xargs -r grep -m1 -H '^модуль '"]
 
 тотальная функция «Имя модуля»
   принимает строчка: строка

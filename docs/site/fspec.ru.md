@@ -16,7 +16,7 @@
 ## Как выглядит правило
 
 Вот функция из службы корзины — целиком, как она лежит в дереве
-(`examples/web/marketplace/cart.flang`):
+(`docs/examples/web/marketplace/cart.flang`):
 
 ```flang
 тотальная функция «Скидка в процентах»
@@ -64,7 +64,7 @@
 переоценке.
 
 ```
-examples/web/marketplace/
+docs/examples/web/marketplace/
   catalog.flang   113   товары, цена, остаток, «сколько выдать»
   cart.flang      111   позиции, счёт, скидка ступенями
   orders.flang    225   состояния заказа и переходы между ними
@@ -112,7 +112,7 @@ examples/web/marketplace/
 решить**, а не то, как дождаться байтов из сети. Зато всё, что написано, —
 проверяется примером, без единого поднятого сервера.
 
-Что это не заготовка, видно рядом: в `examples/web/shortener/` та же граница
+Что это не заготовка, видно рядом: в `docs/examples/web/shortener/` та же граница
 доведена до конца — служба на 1 150 строк, которую хозяин водит по настоящему
 сокету, и `curl` получает от неё 200, 201, 301 и 204.
 
@@ -131,7 +131,7 @@ examples/web/marketplace/
 Вот что отвечает проверка по службе заказов:
 
 ```
-flang check examples/web/marketplace/orders.flang --proof
+flang check docs/examples/web/marketplace/orders.flang --proof
 ```
 
 ```
@@ -171,19 +171,19 @@ flang check examples/web/marketplace/orders.flang --proof
 своей строкой итога:
 
 ```
-$ flang check examples/web/marketplace/catalog.flang --proof
+$ flang check docs/examples/web/marketplace/catalog.flang --proof
   функций 8: тотальных 8, обычных 0
   утверждений 1: доказано 1 (из них без теоремы 1), сетка 0, объявлено, не доказано 0
 
-$ flang check examples/web/marketplace/cart.flang --proof
+$ flang check docs/examples/web/marketplace/cart.flang --proof
   функций 8: тотальных 8, обычных 0
   утверждений 5: доказано 2 (из них без теоремы 2), сетка 3, объявлено, не доказано 0
 
-$ flang check examples/web/marketplace/orders.flang --proof
+$ flang check docs/examples/web/marketplace/orders.flang --proof
   функций 7: тотальных 7, обычных 0
   утверждений 3: доказано 2 (из них индукцией 2), сетка 1, объявлено, не доказано 0 (шагов в термах 12)
 
-$ flang check examples/web/marketplace/gateway.flang --proof
+$ flang check docs/examples/web/marketplace/gateway.flang --proof
   функций 17: тотальных 17, обычных 0
   утверждений 2: доказано 2 (из них индукцией 2), сетка 0, объявлено, не доказано 0 (шагов в термах 18)
 ```
@@ -219,7 +219,7 @@ $ flang check examples/web/marketplace/gateway.flang --proof
 отвечает не 409, а 500:
 
 ```sh
-flang check examples/web/marketplace/gateway.flang --proof
+flang check docs/examples/web/marketplace/gateway.flang --proof
 ```
 
 ```
@@ -227,7 +227,7 @@ flang check examples/web/marketplace/gateway.flang --proof
 FLANG_PROOF_STEP, строка 101, столбец 10: шаг 1, база «Товара не хватает» теоремы «код ответа из объявленного набора»: пример «товара не хватает — четыреста девять» не проходит: нарушено свойство «код ответа из объявленного набора» функции «Код исхода». Утверждение на этом значении неверно, значит случай им не закрывается. к этому месту не известно ничего, кроме гипотез «дано»
 место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 7, а диагностика компилятора имени файла не несёт
 FLANG_PROOF_STEP, строка 125, столбец 10: шаг 1, база «Товара не хватает» теоремы «пояснение кода непусто»: пример «товара не хватает — четыреста девять» не проходит: нарушено свойство «код ответа из объявленного набора» функции «Код исхода». Утверждение на этом значении неверно, значит случай им не закрывается. к этому месту не известно ничего, кроме гипотез «дано»
-examples/web/marketplace/gateway.flang: не проверено — ведомость не печатается у программы с замечаниями
+docs/examples/web/marketplace/gateway.flang: не проверено — ведомость не печатается у программы с замечаниями
 ```
 
 Пятисотый в объявленном наборе не значится, и утверждение падает. Не «падает
@@ -238,12 +238,12 @@ examples/web/marketplace/gateway.flang: не проверено — ведомо
 из остатка 5 при запросе 2 выдаётся 3:
 
 ```sh
-flang check examples/web/marketplace/catalog.flang --proof
+flang check docs/examples/web/marketplace/catalog.flang --proof
 ```
 
 ```
 FLANG_EXAMPLE: пример «остатка хватает» функции «Сколько выдать»: значение не совпало с ожидаемым: ожидалось 3, получено 2
-examples/web/marketplace/catalog.flang: не проверено — ведомость не печатается у программы с замечаниями
+docs/examples/web/marketplace/catalog.flang: не проверено — ведомость не печатается у программы с замечаниями
 ```
 
 Примеры — часть программы, а не отдельный набор тестов: они прогоняются при
@@ -376,6 +376,6 @@ function Cart() {
 - [Что вообще доказано](what-is-proved.html) — числа по дереву, а не обещания.
 - [Отказы доказательства](proof-refused.html) — почему ядро отказывает и что с этим делать.
 - [Уточняющие вопросы](dlya-ii.html) — как из недоказанного обещания получается вопрос к автору требования.
-- `examples/web/marketplace/README.md` в дереве — тот же пример подробнее, вместе с устройством файлов.
+- `docs/examples/web/marketplace/README.md` в дереве — тот же пример подробнее, вместе с устройством файлов.
 - [Каталог спек: стенд, проверка и слепок](spec-catalog.html) — устройство
   каталога `fspec/`: правило приёмки, слепок обещаний, подлог и границы.

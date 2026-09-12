@@ -61,13 +61,13 @@
 
 ## Прогон, который это показывает
 
-Взята настоящая программа дерева — `examples/web/orders-api.flang`, служба
+Взята настоящая программа дерева — `docs/examples/web/orders-api.flang`, служба
 REST с тремя импортами из `flang/stdlib`. Собран замок, программа с замком
 скопирована в **пустой каталог**, исходников зависимостей рядом нет.
 
 ```
-$ flang lock examples/web/orders-api.flang > /пусто/flang.lock
-$ cp examples/web/orders-api.flang /пусто/
+$ flang lock docs/examples/web/orders-api.flang > /пусто/flang.lock
+$ cp docs/examples/web/orders-api.flang /пусто/
 $ ls /пусто
 flang.lock  orders-api.flang
 
@@ -108,9 +108,9 @@ $ flang check /пусто/orders-api.flang
 
 | программа | модулей | функций | исходники | **замок** | на функцию | было (схема 1) |
 |---|---|---|---|---|---|---|
-| `examples/web/orders-api.flang` | 3 | 48 | 81,1 КБ | **83,6 КБ** | 1784 Б | 9,1 КБ |
-| `examples/library-api/lib/api.flang` | 7 | 50 | 90,4 КБ | **93,4 КБ** | 1912 Б | 12,0 КБ |
-| `examples/import-check.flang` | 1 | 28 | 52,3 КБ | **53,4 КБ** | 1954 Б | 5,0 КБ |
+| `docs/examples/web/orders-api.flang` | 3 | 48 | 81,1 КБ | **83,6 КБ** | 1784 Б | 9,1 КБ |
+| `docs/examples/library-api/lib/api.flang` | 7 | 50 | 90,4 КБ | **93,4 КБ** | 1912 Б | 12,0 КБ |
+| `docs/examples/import-check.flang` | 1 | 28 | 52,3 КБ | **53,4 КБ** | 1954 Б | 5,0 КБ |
 
 **Замок вырос в 8—11 раз: 85 654 Б там, где схема 1 давала 9,1 КБ.** Число
 названо и принято, а не спрятано. Три вещи, которые надо знать рядом с ним:

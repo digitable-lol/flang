@@ -11,8 +11,8 @@
 [разрез круга](../zettel/a-mutual-recursion-circle-over-a-tree-is-cut-by-a-payload-record.md)
 и
 [перепись 0028](../zettel/typed-ast-typing-alone-fixes-one-recursion-edge-in-six.md);
-пробы `examples/proof-probes/typed-ast-door.flang` и
-`examples/proof-probes/typed-ast-generic-descent-is-refused.flang`
+пробы `docs/examples/proof-probes/typed-ast-door.flang` и
+`docs/examples/proof-probes/typed-ast-generic-descent-is-refused.flang`
 
 ---
 
@@ -71,7 +71,7 @@
 Дверь внутрь тотальной быть не может — она ищет ключ. И это **вся** цена:
 **на слой одна недоказанная функция вместо круга из восьмидесяти пяти.**
 
-Проба `examples/proof-probes/typed-ast-door.flang`, прогон 26 августа 2026:
+Проба `docs/examples/proof-probes/typed-ast-door.flang`, прогон 26 августа 2026:
 
 ```
 модуль «Проба двери типизированного узла»: функций 30,
@@ -205,7 +205,7 @@ record  2365 узлов:  kind, type, fields    ← ВЫРАЖЕНИЕ «зап�
 **Шаг 1 — перепись и решение.** Сделано этой веткой: `u/typed-ast`.
 
 **Шаг 2 — проба двери.** Сделано этой веткой: два файла в
-`examples/proof-probes/`. Ни один файл компилятора не тронут.
+`docs/examples/proof-probes/`. Ни один файл компилятора не тронут.
 
 **Шаг 3 — сумма типов ЗАВЕДЕНА и НЕ ПРИМЕНЕНА.** Новый модуль
 `flang/self/ast.flang`: типы `«Узел»`, `«Образец»`, записи-нагрузки, двери
@@ -298,11 +298,11 @@ JavaScript на `fields`, `params`, `variants`, `cases`, `args`, которые 
 ```sh
 # дверь и круговой перевод — 26 тотальных из 30, примеры проходят
 PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- \
-  flang check examples/proof-probes/typed-ast-door.flang --proof
+  flang check docs/examples/proof-probes/typed-ast-door.flang --proof
 
 # подделка — ОБЯЗАНА быть отвергнута, код 1, четыре FLANG_NOT_TOTAL
 PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- \
-  flang check examples/proof-probes/typed-ast-generic-descent-is-refused.flang
+  flang check docs/examples/proof-probes/typed-ast-generic-descent-is-refused.flang
 
 # что типизация НЕ чинит — уже лежит в дереве и по-прежнему отвергается
 PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- \

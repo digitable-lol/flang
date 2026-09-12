@@ -163,7 +163,7 @@
 // scripts/ledgers/proved-share.json.
 //
 // Из 110: ведомость дали 50 (написано 181, доказано 89, сетка 45, объявлено
-// 47), 59 помечены «×», один (examples/db/postgres-scram-plan.flang) не уложился
+// 47), 59 помечены «×», один (docs/examples/db/postgres-scram-plan.flang) не уложился
 // в срок 900 с при пике 7,0 ГиБ и остаётся прочерком. Причины у крестов
 // названы поимённо в задаче 9204; ни одна из них — не глубина.
 //
@@ -185,8 +185,8 @@
 // «правил шесть» против «правил девять»); scripts/guards/adr-numbers-guard.flang
 // 15/7/0 против 13/8/1; scripts/guards/kernel-abilities-guard.flang 12/2/2 против
 // 11/2/3. Три файла, что перепечатанному семени с ключом 200 000 не дались по
-// глубине (examples/crypto/certificate, examples/web/shortener/plan-durable,
-// examples/web/marketplace/gateway), ствольное берёт без всякого ключа: 442 с,
+// глубине (docs/examples/crypto/certificate, docs/examples/web/shortener/plan-durable,
+// docs/examples/web/marketplace/gateway), ствольное берёт без всякого ключа: 442 с,
 // 149 с и 109 с, пики 4,2 / 4,3 / 2,3 ГиБ.
 //
 // Прочерк вместо чисел — ведомость этого файла не снята, и в числитель файл не
@@ -366,8 +366,8 @@
 //     ⚠ ПРАВКА СДЕЛАНА 30 августа, задача 3714 — раздел ниже: 15 из 17 файлов
 //     открылись, 57 приговоров, все «доказано»; двух оставшихся правка не
 //     касается. Абзац оставлен как есть — он описывает замер до правки;
-//   • 6 честных программ с той же стеной (18): examples/paths/shortest-path (7,
-//     monoids), examples/money/exact-decimal (4, monoids),
+//   • 6 честных программ с той же стеной (18): docs/examples/paths/shortest-path (7,
+//     monoids), docs/examples/money/exact-decimal (4, monoids),
 //     flang/ct/order-shipment (3), flang/ct/modules/orders (2),
 //     flang/ct/monoid-and-monad (1), docs/zamer-teorkat/class-string-to-string
 //     (1, properties). Судьи этих поверхностей нет ни у двоичного, ни у дерева;
@@ -379,7 +379,7 @@
 //     у 08-maximum она зовётся «максимум не меньше любого элемента», но цель —
 //     ВЫЗОВ предиката, а не сравнение с термом, и правило «не меньше терма» её
 //     не берёт;
-//   • examples/db/postgres-plan.flang (19) — ДВА предела, а записан был один.
+//   • docs/examples/db/postgres-plan.flang (19) — ДВА предела, а записан был один.
 //     Ствольным: 699,80 с, пик 6,38 ГиБ, «Сторожа в полях» исчерпала лимит шагов
 //     (1000000000). Ключ его снимает — и встаёт второй: двоичным приёма 6128 с
 //     --предел-шагов 400000000000 за 263,06 с (пик 3,65 ГиБ) приходит
@@ -397,7 +397,7 @@
 //      верен, механизм, записанный выше в этой шапке, — нет.
 //   2. Крест flang/self/repl/repl.flang записан как «стена глубины», а это стена
 //      ШАГОВ (см. выше).
-//   3. Крест examples/db/postgres-plan.flang записан одним пределом, а их два.
+//   3. Крест docs/examples/db/postgres-plan.flang записан одним пределом, а их два.
 //   4. Восемнадцать крестов flang/conc/** несли в поле «без приговора» знак «×»,
 //      а не число, вопреки записанному в 9204 «у всех восемнадцати было нулём».
 //      Сумма не поехала лишь потому, что сверка читает поле как ^[0-9]+$
@@ -504,7 +504,7 @@
 //     FL_STACK_MAX перепечаткой.
 //  2. Замечание В САМОМ ФАЙЛЕ: у программы с замечаниями ведомости не бывает.
 //     Так отвечают семь файлов карты отказов и подделок (flang/proof/map/**,
-//     flang/proof/подделки/круг.flang, examples/forgery-*, honest-modus-ponens-
+//     flang/proof/подделки/круг.flang, docs/examples/forgery-*, honest-modus-ponens-
 //     by-guard) — они и обязаны отвечать так, это их назначение, — и
 //     flang/proof/midpoint-verdicts.flang, где отказ настоящий:
 //     `FLANG_NOT_TOTAL: тотальная функция «Вердикт цепочки» вызывает обычную
@@ -594,7 +594,7 @@ b57a57345cf23de663529ed06d1b1d58|4|0|1|0|0|docs/site/numbers.flang
 8f96129010142d48352032b9d1a52f5c|1|0|1|0|0|docs/site/podsvetka.flang
 f4d48585e82e235a1f8d25bd19d21afa|6|6|0|0|0|docs/site/sitemap.flang
 e94014e3cb5e300e46424a7f8072899b|1|×|×|×|0|docs/zamer-teorkat/class-string-to-string.flang
-8327a820ef3553039861636d5ed5cc06|90|79|7|4|0|examples/allocator/allocator.flang
+8327a820ef3553039861636d5ed5cc06|90|79|7|4|0|docs/examples/allocator/allocator.flang
 588c8e29d920e58aad94759543a57ada|0|0|0|0|2|flang/ct/modules/orders.flang
 128489ee024ef84c3f552e6264a968cf|1|×|×|×|0|flang/ct/monoid-and-monad.flang
 096bdeaf265157e0d04c9ff9390d578b|0|×|×|×|3|flang/ct/order-shipment.flang
@@ -603,90 +603,90 @@ df8d71ded0766702962164b5cb394f16|3|×|×|×|0|flang/ct/vect-plane.flang
 ffc0184f83e59cd8b172ef67b28742d2|4|×|×|×|0|flang/ct/grp-clock-shifts.flang
 fc7a77af11f020be6d3ba57f7efe6909|6|×|×|×|0|flang/ct/pos-approval.flang
 f7c2a36f3b5d690600431dbbeaeff6f6|1|×|×|×|0|flang/ct/mon-free-forgetful.flang
-a9dcb183b91d6879230a947a37fe09f8|14|9|4|1|0|examples/crypto/aes-vectors.flang
-2c9cb66a08ba2962ad9bf7bdaa75f198|2|1|1|0|0|examples/crypto/certificate.flang
-228cd74719402cf8b3d16a35c471b275|3|2|0|1|0|examples/crypto/ecdsa-digest.flang
-b8c028463543065ebf3bb9ced5ac598d|5|5|0|0|0|examples/crypto/ecdsa-signature.flang
-bcfb8eb1e730b2dc30b34ac8192d0197|5|1|4|0|0|examples/crypto/revocation.flang
-e0ae007b093a5d4b335bdfbecfb90048|2|1|0|1|0|examples/crypto/signature.flang
-14a37420c55520bb24ff99193735d475|11|3|5|3|0|examples/crypto/tls-hello.flang
-627d5df5fec696d099c4d17c99633d28|5|5|0|0|0|examples/crypto/x25519-vectors.flang
-b191b765603843509872cea954ea2e5d|19|×|×|×|0|examples/db/postgres-plan.flang
-91e94ce23391b2ba4c1aaf29cd7806fc|33|—|—|—|0|examples/db/postgres-scram-plan.flang
-0d747f31e1b62c3a93ee003bf7e32763|23|11|12|0|0|examples/db/redis-plan.flang
-9dfd6da9c9e163af5414ecb6fb0c0022|1|0|0|1|0|examples/db/sqlite-insert.flang
-30ee71015195febcd5766b044f8b4437|1|1|0|0|0|examples/db/sqlite-overflow.flang
-139ff6cb0dc4850e03d4516630b9240e|4|0|0|4|0|examples/db/sqlite-read.flang
-e257752320734279a328e9ee416f98ac|98|88|4|6|0|examples/driver/msi/msi.flang
-e96ae2033a6506f5a52e80c775cb7231|8|6|1|1|0|examples/driver/uart.flang
-e07209a571c5b7a7031595bca0afb0ac|31|22|9|0|4|examples/host-boundary/gatekeeper.flang
-1909164e843b7558cbfe4c37a8d57246|13|12|0|1|0|examples/https/rfc8448-records.flang
-ada9a11a9352cf26bc4bbc46e17bee86|7|6|0|1|0|examples/https/system-trust-store.flang
-d59c491c3270da2e822836b0b032e1bb|20|17|0|3|0|examples/https/tls-hello-to-a-real-host.flang
-af797bbe3f8d1559b382faf03ab90a2a|10|7|0|3|0|examples/io/gcm-vectors.flang
-bd09fe77da04835c18cab5e865115fdf|11|7|0|4|0|examples/io/inverse-cipher-vectors.flang
-eb3fc68c4901b24dde8a6ceb2c7cf143|6|6|0|0|0|examples/leetcode/004-median-of-two-sorted-arrays.flang
-f1b8c4e51ddc8cb491996e5fd4420f02|4|4|0|0|0|examples/leetcode/011-container-with-most-water.flang
-295a369527eb668cb3c1e38eb8eb2d5e|6|6|0|0|0|examples/leetcode/013-roman-to-integer.flang
-f6e0850649bc6049256d1956b866ca18|2|2|0|0|0|examples/leetcode/015-3sum.flang
-df36507c43ad40b00a14246d58f242dd|1|1|0|0|0|examples/leetcode/017-letter-combinations-of-a-phone-number.flang
-c558c843f899c2e859ca980cde7ef8f1|3|3|0|0|0|examples/leetcode/020-valid-parentheses.flang
-557f23045c0c541d2578ac5dac1b1bed|2|2|0|0|0|examples/leetcode/022-generate-parentheses.flang
-a04b09b8a8c47199b239830b0fc8e2be|3|3|0|0|0|examples/leetcode/028-find-the-index-of-the-first-occurrence-in-a-string.flang
-0be2e40e0d5b26c57abe2082fa406384|2|2|0|0|0|examples/leetcode/035-search-insert-position.flang
-6b0c64fa3429b3af828625733c6be358|2|2|0|0|0|examples/leetcode/042-trapping-rain-water.flang
-572b8064548e956549e29bf07fa72dea|2|2|0|0|0|examples/leetcode/050-powx-n.flang
-804188d88d845c365d39761479873f95|4|4|0|0|0|examples/leetcode/064-minimum-path-sum.flang
-7b45a67d2a8abac735f0b82154a66d81|2|2|0|0|0|examples/leetcode/069-sqrtx.flang
-9a278c4a1293874b2b66f396fdb8f4ea|1|1|0|0|0|examples/leetcode/076-minimum-window-substring.flang
-076ce579a15031adc32ba906090f1b07|1|1|0|0|0|examples/leetcode/094-binary-tree-inorder-traversal.flang
-ff01a2791b184f2791c70c452fba2b5a|3|3|0|0|0|examples/leetcode/098-validate-binary-search-tree.flang
-89f1c58166f35f2cb1852e16ff34b808|1|1|0|0|0|examples/leetcode/100-same-tree.flang
-8238c8ba9303bc8c5b40f86103ec578f|2|2|0|0|0|examples/leetcode/101-symmetric-tree.flang
-3e3e72a8002662744bf059e59e47869c|3|2|0|1|0|examples/leetcode/112-path-sum.flang
-2d3097b2f22639f8b222b5b3e49a2eee|1|1|0|0|0|examples/leetcode/125-valid-palindrome.flang
-ede32ea3067fc68ec9dba93a49342092|3|3|0|0|0|examples/leetcode/150-evaluate-reverse-polish-notation.flang
-f32714325d3e78df7a78ed12623be2c2|2|2|0|0|0|examples/leetcode/153-find-minimum-in-rotated-sorted-array.flang
-b4f5576847d41d4d64827a746f9c09e1|1|1|0|0|0|examples/leetcode/189-rotate-array.flang
-0e9bbefc30e1a58051b68c20052e6e06|2|2|0|0|0|examples/leetcode/200-number-of-islands.flang
-9ae494daf7f61211407f00b2b17b06bd|1|1|0|0|0|examples/leetcode/202-happy-number.flang
-d5b4be7cc12647dbae40c4d37d098a77|3|3|0|0|0|examples/leetcode/205-isomorphic-strings.flang
-073594ae881355d415726eaeafa24147|2|2|0|0|0|examples/leetcode/208-implement-trie-prefix-tree.flang
-6891adbca61e269950e187eba6296d26|3|3|0|0|0|examples/leetcode/209-minimum-size-subarray-sum.flang
-7bf57ddaa0b483426ef9934d3f512715|2|2|0|0|0|examples/leetcode/236-lowest-common-ancestor-of-a-binary-tree.flang
-e705ee91b064ab3653b3cd7fd012fafc|1|1|0|0|0|examples/leetcode/242-valid-anagram.flang
-d8b2a066d7023cf1fce969d40b0b98af|1|1|0|0|0|examples/leetcode/383-ransom-note.flang
-51d6f25bb7c65d4c429ab7edb071d813|1|1|0|0|0|examples/leetcode/424-longest-repeating-character-replacement.flang
-dac3e069efb3a0306ad09a5b426ba1e9|4|4|0|0|0|examples/leetcode/438-find-all-anagrams-in-a-string.flang
-0213a5ff78c00fdc62615be240e4a819|1|1|0|0|0|examples/leetcode/516-longest-palindromic-subsequence.flang
-a36e994aa9da7a2a93a1bfef27584abc|3|3|0|0|0|examples/leetcode/543-diameter-of-binary-tree.flang
-cd0aafd77ce794f684c57c3187044e7a|3|3|0|0|0|examples/leetcode/567-permutation-in-string.flang
-0fd2166aa8049b479480a684051f7f0a|1|1|0|0|0|examples/leetcode/746-min-cost-climbing-stairs.flang
-e41eadc71f70f2b6ee6ba28470c5afbc|1|1|0|0|0|examples/library-api/lib/fine.flang
-cf33385b9e12ef2c7c5a8629611c8ab9|2|2|0|0|0|examples/measure/natural.flang
-18bf3d607027fe0012dc25e455b151bf|4|×|×|×|0|examples/money/exact-decimal.flang
-3cc6dcc5ca02003de391d31e7d525454|7|×|×|×|0|examples/paths/shortest-path.flang
-177d0b43467cb93997a95bf3dccec23c|14|11|0|3|0|examples/proof-probes/typed-ast-door.flang
-651c96b6e6b36c16899a552aba77486c|23|20|0|3|0|examples/proof-probes/variant-with-fields.flang
-e16e4024656f83a5de55aa36a4e9db67|2|2|0|0|0|examples/rosetta/ackermann-function.flang
-d57b39db4f04e0c22f983974210b6a9e|1|0|0|1|2|examples/rosetta/fibonacci.flang
-d2cbdf5cda09499dd174c37d19279ef5|4|4|0|0|0|examples/rosetta/fizzbuzz.flang
-f654b01a6065b7e097c4032ced632f87|2|2|0|0|0|examples/rosetta/hundred-doors.flang
-0a05634b584dac3eae79fb5078ff555a|1|0|0|1|0|examples/rosetta/merge-sort.flang
-fc4675d698959b6dc1e19843cfb778bd|4|4|0|0|0|examples/rosetta/palindrome.flang
-f03c14013d48e773dc5f4d5f3d563e8c|1|1|0|0|0|examples/rosetta/primes-by-trial-division.flang
-86d4c59623a2c9ceb230600bc4fa5730|7|7|0|0|0|examples/rosetta/roman-numerals.flang
-26f347d9b1d9ae50d1943065809938c8|4|4|0|0|0|examples/rosetta/run-length-encoding.flang
-2dbb95ded1a49f091abfce6a1da08ddd|1|0|0|1|0|examples/rosetta/towers-of-hanoi.flang
-0f0b8492e84433798a6f080fcc72751d|9|6|3|0|0|examples/service-on-processes/core.flang
-e83765edf4aae6d265a79c8db4bad9e7|17|7|7|3|0|examples/wal/write-ahead-log.flang
-6627a652f6e91c37e51f992360f53826|5|2|3|0|0|examples/web/marketplace/cart.flang
-f198f629adf34e113e458f37f95b2ce4|1|1|0|0|0|examples/web/marketplace/catalog.flang
-2e7571393015fa92adbff504b92c5b2f|2|0|0|2|0|examples/web/marketplace/gateway.flang
-96a5474f588d2e2d12dd05b2efa26088|3|0|1|2|0|examples/web/marketplace/orders.flang
-19ee8d1ab33a1c5e5d7877c704c22b1a|1|0|1|0|0|examples/web/shortener/plan-durable.flang
-38ea4e6c78ef0d7fb34ddb375b5975eb|8|1|4|3|0|examples/web/shortener/service.flang
-6564f0a31b1cae56a4efddcb1601db34|1|1|0|0|0|examples/web/shortener/store.flang
+a9dcb183b91d6879230a947a37fe09f8|14|9|4|1|0|docs/examples/crypto/aes-vectors.flang
+2c9cb66a08ba2962ad9bf7bdaa75f198|2|1|1|0|0|docs/examples/crypto/certificate.flang
+228cd74719402cf8b3d16a35c471b275|3|2|0|1|0|docs/examples/crypto/ecdsa-digest.flang
+b8c028463543065ebf3bb9ced5ac598d|5|5|0|0|0|docs/examples/crypto/ecdsa-signature.flang
+bcfb8eb1e730b2dc30b34ac8192d0197|5|1|4|0|0|docs/examples/crypto/revocation.flang
+e0ae007b093a5d4b335bdfbecfb90048|2|1|0|1|0|docs/examples/crypto/signature.flang
+14a37420c55520bb24ff99193735d475|11|3|5|3|0|docs/examples/crypto/tls-hello.flang
+627d5df5fec696d099c4d17c99633d28|5|5|0|0|0|docs/examples/crypto/x25519-vectors.flang
+b191b765603843509872cea954ea2e5d|19|×|×|×|0|docs/examples/db/postgres-plan.flang
+91e94ce23391b2ba4c1aaf29cd7806fc|33|—|—|—|0|docs/examples/db/postgres-scram-plan.flang
+0d747f31e1b62c3a93ee003bf7e32763|23|11|12|0|0|docs/examples/db/redis-plan.flang
+9dfd6da9c9e163af5414ecb6fb0c0022|1|0|0|1|0|docs/examples/db/sqlite-insert.flang
+30ee71015195febcd5766b044f8b4437|1|1|0|0|0|docs/examples/db/sqlite-overflow.flang
+139ff6cb0dc4850e03d4516630b9240e|4|0|0|4|0|docs/examples/db/sqlite-read.flang
+e257752320734279a328e9ee416f98ac|98|88|4|6|0|docs/examples/driver/msi/msi.flang
+e96ae2033a6506f5a52e80c775cb7231|8|6|1|1|0|docs/examples/driver/uart.flang
+e07209a571c5b7a7031595bca0afb0ac|31|22|9|0|4|docs/examples/host-boundary/gatekeeper.flang
+1909164e843b7558cbfe4c37a8d57246|13|12|0|1|0|docs/examples/https/rfc8448-records.flang
+ada9a11a9352cf26bc4bbc46e17bee86|7|6|0|1|0|docs/examples/https/system-trust-store.flang
+d59c491c3270da2e822836b0b032e1bb|20|17|0|3|0|docs/examples/https/tls-hello-to-a-real-host.flang
+af797bbe3f8d1559b382faf03ab90a2a|10|7|0|3|0|docs/examples/io/gcm-vectors.flang
+bd09fe77da04835c18cab5e865115fdf|11|7|0|4|0|docs/examples/io/inverse-cipher-vectors.flang
+eb3fc68c4901b24dde8a6ceb2c7cf143|6|6|0|0|0|docs/examples/leetcode/004-median-of-two-sorted-arrays.flang
+f1b8c4e51ddc8cb491996e5fd4420f02|4|4|0|0|0|docs/examples/leetcode/011-container-with-most-water.flang
+295a369527eb668cb3c1e38eb8eb2d5e|6|6|0|0|0|docs/examples/leetcode/013-roman-to-integer.flang
+f6e0850649bc6049256d1956b866ca18|2|2|0|0|0|docs/examples/leetcode/015-3sum.flang
+df36507c43ad40b00a14246d58f242dd|1|1|0|0|0|docs/examples/leetcode/017-letter-combinations-of-a-phone-number.flang
+c558c843f899c2e859ca980cde7ef8f1|3|3|0|0|0|docs/examples/leetcode/020-valid-parentheses.flang
+557f23045c0c541d2578ac5dac1b1bed|2|2|0|0|0|docs/examples/leetcode/022-generate-parentheses.flang
+a04b09b8a8c47199b239830b0fc8e2be|3|3|0|0|0|docs/examples/leetcode/028-find-the-index-of-the-first-occurrence-in-a-string.flang
+0be2e40e0d5b26c57abe2082fa406384|2|2|0|0|0|docs/examples/leetcode/035-search-insert-position.flang
+6b0c64fa3429b3af828625733c6be358|2|2|0|0|0|docs/examples/leetcode/042-trapping-rain-water.flang
+572b8064548e956549e29bf07fa72dea|2|2|0|0|0|docs/examples/leetcode/050-powx-n.flang
+804188d88d845c365d39761479873f95|4|4|0|0|0|docs/examples/leetcode/064-minimum-path-sum.flang
+7b45a67d2a8abac735f0b82154a66d81|2|2|0|0|0|docs/examples/leetcode/069-sqrtx.flang
+9a278c4a1293874b2b66f396fdb8f4ea|1|1|0|0|0|docs/examples/leetcode/076-minimum-window-substring.flang
+076ce579a15031adc32ba906090f1b07|1|1|0|0|0|docs/examples/leetcode/094-binary-tree-inorder-traversal.flang
+ff01a2791b184f2791c70c452fba2b5a|3|3|0|0|0|docs/examples/leetcode/098-validate-binary-search-tree.flang
+89f1c58166f35f2cb1852e16ff34b808|1|1|0|0|0|docs/examples/leetcode/100-same-tree.flang
+8238c8ba9303bc8c5b40f86103ec578f|2|2|0|0|0|docs/examples/leetcode/101-symmetric-tree.flang
+3e3e72a8002662744bf059e59e47869c|3|2|0|1|0|docs/examples/leetcode/112-path-sum.flang
+2d3097b2f22639f8b222b5b3e49a2eee|1|1|0|0|0|docs/examples/leetcode/125-valid-palindrome.flang
+ede32ea3067fc68ec9dba93a49342092|3|3|0|0|0|docs/examples/leetcode/150-evaluate-reverse-polish-notation.flang
+f32714325d3e78df7a78ed12623be2c2|2|2|0|0|0|docs/examples/leetcode/153-find-minimum-in-rotated-sorted-array.flang
+b4f5576847d41d4d64827a746f9c09e1|1|1|0|0|0|docs/examples/leetcode/189-rotate-array.flang
+0e9bbefc30e1a58051b68c20052e6e06|2|2|0|0|0|docs/examples/leetcode/200-number-of-islands.flang
+9ae494daf7f61211407f00b2b17b06bd|1|1|0|0|0|docs/examples/leetcode/202-happy-number.flang
+d5b4be7cc12647dbae40c4d37d098a77|3|3|0|0|0|docs/examples/leetcode/205-isomorphic-strings.flang
+073594ae881355d415726eaeafa24147|2|2|0|0|0|docs/examples/leetcode/208-implement-trie-prefix-tree.flang
+6891adbca61e269950e187eba6296d26|3|3|0|0|0|docs/examples/leetcode/209-minimum-size-subarray-sum.flang
+7bf57ddaa0b483426ef9934d3f512715|2|2|0|0|0|docs/examples/leetcode/236-lowest-common-ancestor-of-a-binary-tree.flang
+e705ee91b064ab3653b3cd7fd012fafc|1|1|0|0|0|docs/examples/leetcode/242-valid-anagram.flang
+d8b2a066d7023cf1fce969d40b0b98af|1|1|0|0|0|docs/examples/leetcode/383-ransom-note.flang
+51d6f25bb7c65d4c429ab7edb071d813|1|1|0|0|0|docs/examples/leetcode/424-longest-repeating-character-replacement.flang
+dac3e069efb3a0306ad09a5b426ba1e9|4|4|0|0|0|docs/examples/leetcode/438-find-all-anagrams-in-a-string.flang
+0213a5ff78c00fdc62615be240e4a819|1|1|0|0|0|docs/examples/leetcode/516-longest-palindromic-subsequence.flang
+a36e994aa9da7a2a93a1bfef27584abc|3|3|0|0|0|docs/examples/leetcode/543-diameter-of-binary-tree.flang
+cd0aafd77ce794f684c57c3187044e7a|3|3|0|0|0|docs/examples/leetcode/567-permutation-in-string.flang
+0fd2166aa8049b479480a684051f7f0a|1|1|0|0|0|docs/examples/leetcode/746-min-cost-climbing-stairs.flang
+e41eadc71f70f2b6ee6ba28470c5afbc|1|1|0|0|0|docs/examples/library-api/lib/fine.flang
+cf33385b9e12ef2c7c5a8629611c8ab9|2|2|0|0|0|docs/examples/measure/natural.flang
+18bf3d607027fe0012dc25e455b151bf|4|×|×|×|0|docs/examples/money/exact-decimal.flang
+3cc6dcc5ca02003de391d31e7d525454|7|×|×|×|0|docs/examples/paths/shortest-path.flang
+177d0b43467cb93997a95bf3dccec23c|14|11|0|3|0|docs/examples/proof-probes/typed-ast-door.flang
+651c96b6e6b36c16899a552aba77486c|23|20|0|3|0|docs/examples/proof-probes/variant-with-fields.flang
+e16e4024656f83a5de55aa36a4e9db67|2|2|0|0|0|docs/examples/rosetta/ackermann-function.flang
+d57b39db4f04e0c22f983974210b6a9e|1|0|0|1|2|docs/examples/rosetta/fibonacci.flang
+d2cbdf5cda09499dd174c37d19279ef5|4|4|0|0|0|docs/examples/rosetta/fizzbuzz.flang
+f654b01a6065b7e097c4032ced632f87|2|2|0|0|0|docs/examples/rosetta/hundred-doors.flang
+0a05634b584dac3eae79fb5078ff555a|1|0|0|1|0|docs/examples/rosetta/merge-sort.flang
+fc4675d698959b6dc1e19843cfb778bd|4|4|0|0|0|docs/examples/rosetta/palindrome.flang
+f03c14013d48e773dc5f4d5f3d563e8c|1|1|0|0|0|docs/examples/rosetta/primes-by-trial-division.flang
+86d4c59623a2c9ceb230600bc4fa5730|7|7|0|0|0|docs/examples/rosetta/roman-numerals.flang
+26f347d9b1d9ae50d1943065809938c8|4|4|0|0|0|docs/examples/rosetta/run-length-encoding.flang
+2dbb95ded1a49f091abfce6a1da08ddd|1|0|0|1|0|docs/examples/rosetta/towers-of-hanoi.flang
+0f0b8492e84433798a6f080fcc72751d|9|6|3|0|0|docs/examples/service-on-processes/core.flang
+e83765edf4aae6d265a79c8db4bad9e7|17|7|7|3|0|docs/examples/wal/write-ahead-log.flang
+6627a652f6e91c37e51f992360f53826|5|2|3|0|0|docs/examples/web/marketplace/cart.flang
+f198f629adf34e113e458f37f95b2ce4|1|1|0|0|0|docs/examples/web/marketplace/catalog.flang
+2e7571393015fa92adbff504b92c5b2f|2|0|0|2|0|docs/examples/web/marketplace/gateway.flang
+96a5474f588d2e2d12dd05b2efa26088|3|0|1|2|0|docs/examples/web/marketplace/orders.flang
+19ee8d1ab33a1c5e5d7877c704c22b1a|1|0|1|0|0|docs/examples/web/shortener/plan-durable.flang
+38ea4e6c78ef0d7fb34ddb375b5975eb|8|1|4|3|0|docs/examples/web/shortener/service.flang
+6564f0a31b1cae56a4efddcb1601db34|1|1|0|0|0|docs/examples/web/shortener/store.flang
 a8a4bc5a69a3ca169dc935df04d2b9a7|4|4|0|0|0|flang/conc/examples/backpressure.flang
 ec1f624e7568f4537f7518b1b4c0d0fd|1|1|0|0|0|flang/conc/examples/budget.flang
 06ad4d0486befb5d8b1bf5b7a66e08dc|3|3|0|0|0|flang/conc/examples/counter.flang
@@ -1202,9 +1202,9 @@ ebeaf18162d971206534e00af3a63ee8|1|×|×|×|0|flang/proof/чекер/пробы/
 f2cd752c1cec39d322b5544173ee96eb|1|×|×|×|1|flang/proof/чекер/пробы/семьи/семейства/порча/o5-beskonechnaya-pribavka.flang
 1577bc0054020aa3d225a44a047e84f5|1|×|×|×|0|flang/proof/чекер/пробы/семьи/конструктор/kopiya.flang
 e2e368b9b053bcde70aa3de7278278ba|11|×|×|×|0|flang/proof/чекер/пробы/семьи/razbor-celi/порча/lozh.flang
-6627a652f6e91c37e51f992360f53826|5|2|3|0|0|examples/frameworks/react-invoice/core/cart.flang
-f198f629adf34e113e458f37f95b2ce4|1|1|0|0|0|examples/frameworks/react-invoice/core/catalog.flang
-86d4c59623a2c9ceb230600bc4fa5730|7|7|0|0|0|examples/frameworks/vue-roman/core/roman-numerals.flang
+6627a652f6e91c37e51f992360f53826|5|2|3|0|0|docs/examples/frameworks/react-invoice/core/cart.flang
+f198f629adf34e113e458f37f95b2ce4|1|1|0|0|0|docs/examples/frameworks/react-invoice/core/catalog.flang
+86d4c59623a2c9ceb230600bc4fa5730|7|7|0|0|0|docs/examples/frameworks/vue-roman/core/roman-numerals.flang
 104536571beef7384dcca670f38bae4a|3|×|×|×|5|flang/proof/чекер/пробы/семьи/квантор/два-имени.flang
 47a5846c7b8ea082dc87afe8efbe0590|3|×|×|×|5|flang/proof/чекер/пробы/семьи/квантор/имя-вне-списка.flang
 bc17b199769f3c2a966e71d18ebcee89|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ограничение/ф09-ограниченный.flang

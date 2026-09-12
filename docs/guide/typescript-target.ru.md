@@ -71,7 +71,7 @@ Node 23.6 и новее читает `.ts` сам, снимая типы; на N
 (один файл `tsconfig.json`; остальное — из `flang/src/emit/js/`), строка
 таблицы целей — `flang/src/emit/c/flang_repl.c`. Семя перепечатано 11 сентября
 2026 (коммит `0ce948bfd`), и двоичный из него печатает в `ts`: в тот же день
-`./bootstrap/flang emit examples/import-check.flang --target ts --out каталог`
+`./bootstrap/flang emit docs/examples/import-check.flang --target ts --out каталог`
 дал `import_check.ts`, `flang_runtime.js`, `flang_cli.js`, `tsconfig.json`, код 0.
 Справка `flang emit --help` при этом всё ещё говорит «во все восемь целей» и
 перечисляет девять без `ts` — текст вшит в `flang/src/emit/c/flang_repl.c`

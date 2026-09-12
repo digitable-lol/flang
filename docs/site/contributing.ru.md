@@ -27,7 +27,7 @@ flang {{выпуск.версия}}
 Собранный двоичный — это то, что вы дальше запускаете:
 
 ```bash
-bootstrap/flang check examples/rosetta/towers-of-hanoi.flang
+bootstrap/flang check docs/examples/rosetta/towers-of-hanoi.flang
 ```
 
 На Node здесь не работает ничего: языковой сервер лежит в том же двоичном —

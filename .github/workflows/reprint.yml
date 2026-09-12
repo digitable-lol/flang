@@ -78,7 +78,7 @@ jobs:
       - name: Свежесть побайтовой сверки
         id: svezhest
         continue-on-error: true
-        run: ./bootstrap/flang io scripts/reprint-freshness.flang 2>&1 | tee /tmp/svezhest.txt
+        run: ./bootstrap/flang io scripts/seed/reprint-freshness.flang 2>&1 | tee /tmp/svezhest.txt
 
       - name: Сказать вслух, на чём сверку считать
         if: always()
@@ -123,7 +123,7 @@ jobs:
             if [ "${MASHINA:-}" = "da" ]; then
               echo "Работа **«Две печати одного дерева совпадают побайтово» запускалась этим"
               echo "прогоном** — её приговор стоит отдельной строкой в этой же ленте, вместе"
-              echo "с кодом прибора \`scripts/two-prints-identical.sh\`."
+              echo "с кодом прибора \`scripts/seed/two-prints-identical.sh\`."
               echo
               echo "Если её строки в ленте всё же нет, значит её не пустила работа"
               echo "«Постоянные под пределом C99», которую она ждёт. Тогда вопрос гейта Г6"
@@ -136,7 +136,7 @@ jobs:
               echo "Её отсутствие не значит «печать воспроизводима». Оно значит, что вопрос"
               echo "гейта Г6 на ПОЛНОМ замыкании компилятора — даёт ли одно дерево при двух"
               echo "заходах побайтово одно и то же — **никем не задан**. Прибор"
-              echo "\`scripts/two-prints-identical.sh\` в дереве лежит, но пока эта работа не"
+              echo "\`scripts/seed/two-prints-identical.sh\` в дереве лежит, но пока эта работа не"
               echo "идёт, он зовётся только руками, а Г6 требует дословно «проверяется"
               echo "автоматически, а не разово руками»: разовая сверка руками гейта не берёт,"
               echo "даже когда сошлась."
@@ -200,11 +200,11 @@ jobs:
       # лежит в дереве.
       - run: make -C bootstrap -j"$(nproc)"
       - name: сторож краснеет на подложенной длинной постоянной
-        run: sh scripts/overlong-string-guard.sh --подлог
+        run: sh scripts/guards/overlong-string-guard.sh --подлог
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: длинных строковых постоянных нет ни в семени, ни во входах печати
-        run: sh scripts/overlong-string-guard.sh
+        run: sh scripts/guards/overlong-string-guard.sh
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -234,7 +234,7 @@ jobs:
   # паре «Обойти занятое целью C++» / «Обойти занятое целью C» — оба красны,
   # называют `oboyti_zanyatoe_celyu_c`. Двойник смотрит все `.flang` четырёх
   # каталогов (108 файлов), а не замыкание `compiler.flang` (44), и ведомость
-  # `latin-collision-guard-known.tsv` не читает (записей в ней 0). Node здесь
+  # `latin-collision-guard-known.tsv` не читает (записей в ней было 0; ведомость снята 11 сентября 2026). Node здесь
   # больше не нужен; в `scripts/raskrutka.sh` его нет намеренно.
   stolknoveniya:
     name: id-collisions
@@ -243,7 +243,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - name: имена замыкания компилятора не схлопываются после «Змейки»
-        run: bootstrap/flang io scripts/latin-collision-guard.flang --max-steps 2000000000
+        run: bootstrap/flang io scripts/guards/latin-collision-guard.flang --max-steps 2000000000
 
   # ── Дёшево и по расписанию: та же повторимость, но на входе побольше ──────
   #
@@ -275,11 +275,11 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - name: Прибор краснеет на подложенном расхождении
-        run: sh scripts/pechat-povtorima.sh --подлог
+        run: sh scripts/seed/pechat-povtorima.sh --подлог
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: Две печати входа побольше совпадают побайтово
-        run: sh scripts/pechat-povtorima.sh --вход flang/self/emit-c.flang
+        run: sh scripts/seed/pechat-povtorima.sh --вход flang/self/emit-c.flang
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -360,7 +360,7 @@ jobs:
   # ПОЧЕМУ РАБОТОЙ В CI, А НЕ ПРОГОНОМ РУКАМИ. Г6 требует дословно
   # «проверяется автоматически, а не разово руками». Разовая сверка руками,
   # даже сошедшаяся, гейт не берёт: её нельзя повторить и никто не знает, что
-  # именно сверяли. Прибор `scripts/two-prints-identical.sh` лежал в дереве с
+  # именно сверяли. Прибор `scripts/seed/two-prints-identical.sh` лежал в дереве с
   # 1 сентября 2026 и звался только руками — то есть гейта не брал.
   #
   # ── ЗАЧЕМ РАБОТА САМА ПИШЕТ «ПЕЧАТЬ КОД=» ───────────────────────────────
@@ -472,7 +472,7 @@ jobs:
           #
           # `2>&1` ОБЯЗАТЕЛЬНО, а не для порядка: отметки хода печать пишет в
           # stderr (flang/src/emit/c/flang_repl.c:1557). Без него в журнале не
-          # будет ни одной отметки, и `scripts/print-progress.sh` над ним
+          # будет ни одной отметки, и `scripts/seed/print-progress.sh` над ним
           # сказать ничего не сможет.
           timeout 39600 sh scripts/raskrutka.sh > "$ZH" 2>&1
           kod=$?
@@ -545,7 +545,7 @@ jobs:
           echo "журнал второй печати:  $ZH2"
           # Опять В ФАЙЛ и `kod=$?` СЛЕДУЮЩЕЙ СТРОКОЙ. Прибор различает 0/1/2/3,
           # и весь смысл работы в том, чтобы этот код дошёл до приговора целым.
-          ZHURNAL_1="$ZH1" ZHURNAL_2="$ZH2" timeout 1800 sh scripts/two-prints-identical.sh "$BAZA/pervaya/derevo" "$BAZA/vtoraya/derevo" > "$VYVOD" 2>&1
+          ZHURNAL_1="$ZH1" ZHURNAL_2="$ZH2" timeout 1800 sh scripts/seed/two-prints-identical.sh "$BAZA/pervaya/derevo" "$BAZA/vtoraya/derevo" > "$VYVOD" 2>&1
           kod=$?
           cat "$VYVOD"
           echo "DVE_PECHATI_KOD=$kod" >> "$GITHUB_ENV"
@@ -588,7 +588,7 @@ jobs:
           skazat "воспроизводимость печати, а про разницу деревьев."
           skazat ""
           skazat "Код первой печати: \`$kod1\`. Код второй печати: \`$kod2\`."
-          skazat "Код прибора \`scripts/two-prints-identical.sh\`: \`$kod\`."
+          skazat "Код прибора \`scripts/seed/two-prints-identical.sh\`: \`$kod\`."
           skazat ""
           skazat '```'
           if [ -f "$BAZA/prigovor.txt" ]; then

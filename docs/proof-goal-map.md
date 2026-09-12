@@ -51,7 +51,7 @@
 
 Перечень внутри каждого правила длиннее любой таблицы в этом файле на 28 умений:
 `flang/proof/УМЕНИЯ.tsv`, улики — `flang/proof/map/abilities.flang`, сторож —
-`bootstrap/flang io scripts/kernel-abilities-guard.flang`.
+`bootstrap/flang io scripts/guards/kernel-abilities-guard.flang`.
 
 Сверх правил есть четыре хода, вида цели не меняющих: разбор цели по условию
 (`если`), цель-выбор с истинной ветвью, вычисление замкнутой цели и индукция
@@ -80,7 +80,7 @@
 считает и каталог улик, и даёт те же числа:
 
 ```
-sh scripts/target-census.sh flang/proof/map
+sh scripts/targets/target-census.sh flang/proof/map
   → модулей измерено: 8, не измерено: 3
     утверждений в разборе: 80; с вердиктом: 79; охран «иначе да» снято: 4
     ИТОГО 79  дказ 55  инд 5  сетка 18  объявл 1
@@ -305,7 +305,7 @@ bootstrap/flang check flang/proof/map/sources.flang --proof
 командой:
 
 ```
-sh scripts/target-census.sh flang/stdlib
+sh scripts/targets/target-census.sh flang/stdlib
 ```
 
 Вид цели читается с разбора самого языка (`bootstrap/flang ast`) — форма
@@ -607,7 +607,7 @@ bootstrap/flang check flang/proof/map/<файл>.flang --proof
 |---|---:|---|
 | `boundaries.flang`, `equality.flang`, `forms.flang`, `order.flang`, `types.flang`, `substantive.flang` | 0 | вердикт ведомости по каждому виду цели |
 | `sources.flang` | 3 | то же; одно утверждение в нём — «объявлено, не доказано» (клетка карты), поэтому код не нулевой |
-| `abilities.flang` | 0 | по функции на каждое умение ядра из `flang/proof/УМЕНИЯ.tsv`; все <!-- СНЯТО 2026-09-08 строк flang/proof/УМЕНИЯ.tsv = 28 --> 28 обязаны быть «доказано», расхождение ловит `bootstrap/flang io scripts/kernel-abilities-guard.flang` |
+| `abilities.flang` | 0 | по функции на каждое умение ядра из `flang/proof/УМЕНИЯ.tsv`; все <!-- СНЯТО 2026-09-08 строк flang/proof/УМЕНИЯ.tsv = 28 --> 28 обязаны быть «доказано», расхождение ловит `bootstrap/flang io scripts/guards/kernel-abilities-guard.flang` |
 | `refusal-boundaries.flang`, `refusal-order.flang`, `refusal-substantive.flang` | 1 | дословный текст отказа ядра на теоремах, которые ядро отвергает |
 
 Нулевой код у `refusal-*.flang` означал бы, что ядро приняло ложь либо цель

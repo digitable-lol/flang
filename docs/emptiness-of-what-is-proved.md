@@ -34,7 +34,7 @@
 
 ## Команды
 
-Прибор в дереве уже есть — `benchmarks/proof-cost/count-library.mjs`; он
+Прибор в дереве уже есть — `docs/benchmarks/proof-cost/count-library.flang` (прогон ниже шёл его предшественником на JavaScript, `benchmarks/proof-cost/count-library.mjs`, снятым 11 сентября 2026: `git show b5fcb2ae4:benchmarks/proof-cost/count-library.mjs`); он
 зовёт `flang check --proof` по разу на каждое доказанное утверждение. Его копия
 запускалась из СВОЕГО каталога (`mktemp -d -p /srv/tmp`) над КОПИЕЙ
 `flang/stdlib` — оригинал прибора кладёт времянку `~zamer-<имя>` рядом с

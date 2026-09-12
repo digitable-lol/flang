@@ -10,7 +10,7 @@
 `u-network` на стволе `9ad072b1`, прогон через ворота `PAMYAT=45G`.
 
 ```
-$ flang io examples/web/shortener/plan-network.flang --plan "Обслужить по сети" &
+$ flang io examples/docs/examples/web/shortener-client/plan-network.flang --plan "Обслужить по сети" &
 $ printf 'GET /здоровье HTTP/1.1\r\nHost: x\r\n\r\n' | nc 127.0.0.1 39281
 HTTP/1.1 200 OK
 Content-Type: text/plain; charset=utf-8
@@ -24,7 +24,7 @@ Content-Length: 5
 `«Принять соединение»`, читает `«Прочитать из соединения»`, отвечает `«Ответить
 в соединение»` и возвращается к приёму. Хозяин — двоичный на C, не Node: реализация
 на JavaScript снята коммитом `fe8e8a37`, и комментарий в `plan-network.flang`,
-обещающий запуск через `node examples/web/shortener/serve-network.mjs`, устарел
+обещающий запуск через `node examples/docs/examples/web/shortener-client/serve-network.mjs`, устарел
 вместе с ней.
 
 **Почему задача разошлась с деревом.** Последний барьер снят `7ebaabc3` от
@@ -42,7 +42,7 @@ Content-Length: 5
 `«Соединение открыто»`. Ни `«Закрыть соединение»`, ни чего-либо ещё сетевого в
 словаре нет, и это решение ADR-0002, а не пропуск.
 
-**Что попутно снято тем же прогоном** — две беды `examples/web/shortener/`,
+**Что попутно снято тем же прогоном** — две беды `examples/docs/examples/web/shortener-client/`,
 названные, а не починенные:
 
 * `Content-Length` считается **знаками**, а не октетами. Тело `нет такого пути`

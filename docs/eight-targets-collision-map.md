@@ -14,8 +14,8 @@
 Все числа сняты прогоном на дереве `061b09c9`:
 
 ```bash
-scripts/target-collisions.sh            # столкновения и карта переименований
-scripts/identical-declarations.sh         # что можно ввезти вместо переименования
+scripts/targets/target-collisions.sh            # столкновения и карта переименований
+scripts/targets/identical-declarations.sh         # что можно ввезти вместо переименования
 ```
 
 Полная карта переименований — [`eight-targets-renames.tsv`](eight-targets-renames.tsv),
@@ -63,10 +63,10 @@ scripts/identical-declarations.sh         # что можно ввезти вм�
 
 **Правило есть в языке, и в обеих его реализациях**: `flang/self/types.flang`
 строка 2789 и `flang/src/types.mjs` строка 4085. Улика на семи строках —
-`scripts/variant-probe.flang`:
+`scripts/targets/variant-probe.flang`:
 
 ```
-flang check scripts/variant-probe.flang
+flang check scripts/targets/variant-probe.flang
   FLANG_TYPE: вариант «Есть оно» объявлен и в «Может быть первое»,
   и в «Может быть второе»: имена вариантов должны быть уникальны
 ```
@@ -98,7 +98,7 @@ flang check scripts/variant-probe.flang
 сегодня** — сегодня их пересечение пусто. Признак, по которому оно ищется
 заранее: имя варианта, чья сумма стоит в списке столкнувшихся типов.
 
-Считает это `scripts/target-collisions.sh` столбцом «типы»: 8 имён вариантов,
+Считает это `scripts/targets/target-collisions.sh` столбцом «типы»: 8 имён вариантов,
 30 переименований по модулям.
 
 | цель | вариантов | какие |
@@ -239,7 +239,7 @@ flang run flang/self/emit-c.flang --function "«Змейка»" --args '{"зна
   объявление убрать. Работает, только если объявления ОДИНАКОВЫ, — иначе это
   молчаливая подмена поведения.
 
-`scripts/identical-declarations.sh` сличает разобранные деревья объявлений
+`scripts/targets/identical-declarations.sh` сличает разобранные деревья объявлений
 (места выброшены) и отвечает, для скольких имён верно второе:
 
 | цель | столкнулось | одинаковых | разошлось |
@@ -353,10 +353,10 @@ elixir 168 591, js 73 873. Без них двоичный не напечата�
 
 | файл | что делает | строк |
 |---|---|---:|
-| `scripts/target-collisions.sh` | замер трёх судей и карта переименований | 311 |
-| `scripts/names-in-c.awk` | «идентификатор C → русское объявление» из печати | 79 |
-| `scripts/identical-declarations.sh` | что можно ввезти вместо переименования | 83 |
-| `scripts/variant-probe.flang` | улика на третьего судью | 64 |
+| `scripts/targets/target-collisions.sh` | замер трёх судей и карта переименований | 311 |
+| `scripts/targets/names-in-c.awk` | «идентификатор C → русское объявление» из печати | 79 |
+| `scripts/targets/identical-declarations.sh` | что можно ввезти вместо переименования | 83 |
+| `scripts/targets/variant-probe.flang` | улика на третьего судью | 64 |
 | `docs/eight-targets-renames.tsv` | карта, 1057 переименований | 1058 |
 
 **Ни одной строки на JavaScript.** Судят собственные слои языка — связывание

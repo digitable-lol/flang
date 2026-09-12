@@ -40,7 +40,7 @@ The entries below are about the language, not about the work on it. What has lan
 - `хеш256` became a built-in word of the language: SHA-256 is computed by the runtime of each of the nine emit targets, not by a flang library. Commits `5c90d6f7`, `ee3b0121`.
 - The `js` target got a Node host — `flang/src/emit/js/flang_host_node.js`. A program with an input/output plan, printed to JavaScript, now actually runs: nine kinds of orders out of twenty-two, with a clear refusal for the rest. Commit `7e7007a2`.
 - A plan executor for the `python` target landed in the tree — `flang/src/emit/python/flang_io.py`. The `python` target still refuses to print a program WITH a plan (`FLANG_PLAN_UNSUPPORTED`): the executor is waiting for the emitter. Commit `e84e290b`.
-- Three examples under real frameworks — `examples/frameworks/`: `nestjs-orders`, `react-invoice`, `vue-roman`. A proven core in flang is printed to JavaScript and runs under Nest, React and Vue; each example’s README states where the boundary lies: the decision is in flang, the socket and the rendering belong to the host framework. Commit `374e9aaa`.
+- Three examples under real frameworks — `docs/examples/frameworks/`: `nestjs-orders`, `react-invoice`, `vue-roman`. A proven core in flang is printed to JavaScript and runs under Nest, React and Vue; each example’s README states where the boundary lies: the decision is in flang, the socket and the rendering belong to the host framework. Commit `374e9aaa`.
 - `./ярлык доказуемость` prints a single word — PROVABLE or NOT PROVABLE — from three numbers taken by a run, not from a judgement written into prose. Commit `7b03ee3a`.
 - `./ярлык версия X.Y.Z` raises the version number in one source and propagates it to the derived places — package.json, the `#define` in C, the man page, the Homebrew formula; a guard reddens if any of them falls behind. Commits `3071b76c`, `d676ec12`.
 
@@ -282,7 +282,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### What broke
 
-- The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/occupied-names-guard.flang` instead of the removed JavaScript script.
+- The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/guards/occupied-names-guard.flang` instead of the removed JavaScript script.
 - The shared half of the PostgreSQL driver moved into the "Wire" module. Programs that called `«Знак байта»`, `«Четыре октета»`, `«Два октета»` and their neighbours directly from the database module must now import "Wire".
 
 ## 0.5.1 — 19 August 2026

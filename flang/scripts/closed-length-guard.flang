@@ -665,7 +665,7 @@
 тотальная функция «Каталоги»
   возвращает список строки
   обеспечивает «каталогов ровно двадцать один» (длина результат) равен 21
-  ["../..", ".", "../self", "../self/bootstrap", "../self/repl", "../stdlib", "../core", "../conc", "../proof", "../proof/examples", "../проверки", "../../scripts", "../../packaging", "../../fspec", "../../fspec/spec", "../../examples/crypto", "../../examples/io", "../../examples/https", "../../examples/db", "../../examples/driver/msi", "../../web/shortener"]
+  ["../..", ".", "../self", "../self/bootstrap", "../self/repl", "../stdlib", "../core", "../conc", "../proof", "../proof/examples", "../проверки", "../../scripts", "../../packaging", "../../fspec", "../../fspec/spec", "../../docs/examples/crypto", "../../docs/examples/io", "../../docs/examples/https", "../../docs/examples/db", "../../docs/examples/driver/msi", "../../docs/examples/web/shortener-client"]
 
 тотальная функция «Только flang»
   принимает имена: список строки

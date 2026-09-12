@@ -273,10 +273,10 @@ jobs:
       # зеленеет. Второй шаг подкладывает ему программу с заведомо чужим именем
       # и требует отказа; без него первый шаг ничего не доказывает.
       - name: Двоичный собран из семени этого дерева
-        run: sh scripts/binary-origin.sh --чем "работа «Двоичный»"
+        run: sh scripts/seed/binary-origin.sh --чем "работа «Двоичный»"
 
       - name: Сторож происхождения умеет краснеть
-        run: sh scripts/binary-origin.sh --подлог
+        run: sh scripts/seed/binary-origin.sh --подлог
 
       # Собралось — ещё не значит работает. Проверяется то, что человек наберёт
       # первым, и настоящий файл дерева, а не выдуманный.
@@ -386,9 +386,9 @@ jobs:
       #
       # Счётчиков долга в дереве было три — раздел «Вне языка» в ROADMAP.md,
       # docs/javascript-inventory.md и числа сайта, — и все три считали ОДИН
-      # язык: JavaScript. Оболочка (108 файлов, 24110 строк), HTML, CSS, пробы на
-      # СНЯТО 2026-09-09 файлов *.sh = 108
-      # СНЯТО 2026-09-12 строк-в *.sh = 24110
+      # язык: JavaScript. Оболочка (92 файлов, 22867 строк), HTML, CSS, пробы на
+      # СНЯТО 2026-09-11 файлов *.sh = 92
+      # СНЯТО 2026-09-12 строк-в *.sh = 22867
       # C, Python, awk и Erlang не считались нигде и ни в одной проверке. Долг,
       # которого никто не считает, не убывает: его не видно ни в отчёте, ни в
       # ленте, и растёт он молча.
@@ -399,9 +399,9 @@ jobs:
       # оболочке или на Python останавливает работу в тот же день.
       #
       # Замер на этом дереве: 17,7 с и 471 МБ, двоичному хватает `git` и `wc`.
-      # Предел шагов поднят с умолчания (10 млн): опись обходит 272 файлов и
+      # Предел шагов поднят с умолчания (10 млн): опись обходит 240 файлов и
       # семнадцать языков, и в умолчание не укладывается.
-      # СНЯТО 2026-09-10 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 272
+      # СНЯТО 2026-09-11 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 240
       #
       # СКОЛЬКО ИЗ ЭТИХ ПЯТИДЕСЯТИ МИЛЛИОНОВ УХОДИТ, замер 29 августа 2026.
       # Меряно перебором самого предела: при 10 500 000 опись умирает
@@ -421,7 +421,7 @@ jobs:
       # кладёт `fl_charge`, он не трогает вовсе. Проверено двумя двоичными на
       # одном входе: семя (заряд не считает) и прибор со счётом заряда ведут
       # себя одинаково на каждом пределе — 100 000, 150 000, 180 000, 200 000
-      # на scripts/module-name-guard.flang.
+      # на scripts/guards/module-name-guard.flang.
       #
       # Второй счётчик — потолок самого двоичного (`#define FL_MAX_STEPS`) —
       # под заряд ПОПАДАЕТ, и его запас здесь тоже снят ведомостью: шагов всего
@@ -431,11 +431,11 @@ jobs:
       #
       # ⚠ НАЙДЕНО 3 сентября 2026 (ячейка Ч370, «CI не должен жечь часы на
       # пуш»): ШАГ СЕГОДНЯ КРАСНЫЙ, И ЭТО НЕ НОВАЯ ПОЛОМКА — потолок долга вне
-      # JavaScript записан в самом сторожа (scripts/tree-inventory.flang,
+      # JavaScript записан в самом сторожа (scripts/guards/tree-inventory.flang,
       # функция «Потолок долга») числом 63, а живых файлов долга сейчас 90:
       # ДОЛГ ВЫРОС: файлов 90 при потолке 63 (разбор — 27 файлов сверх
-      # потолка, поимённо в выводе шага; benchmarks/, docs/tools/,
-      # editors/vim/checks/, flang/conc/bench/, flang/proof/, scripts/, web/).
+      # потолка, поимённо в выводе шага; docs/benchmarks/, docs/tools/,
+      # editors/vim/checks/, flang/conc/bench/, flang/proof/, scripts/, docs/examples/web/).
       #
       # ПОЧЕМУ ЭТО НЕ УВИДЕЛИ РАНЬШЕ, СКАЗАНО ПРЯМО: этот шаг — двенадцатый из
       # двадцати одного в работе «sborka», и он идёт, только если ОБА шага до
@@ -469,14 +469,14 @@ jobs:
       # объяснением, часть, может быть, удалить как мёртвый груз.
       - name: Опись дерева по языкам (долг не вырос)
         continue-on-error: true
-        run: ./bootstrap/flang io scripts/tree-inventory.flang --plan 'Опись дерева по языкам' --max-steps 50000000
+        run: ./bootstrap/flang io scripts/guards/tree-inventory.flang --plan 'Опись дерева по языкам' --max-steps 50000000
       # Столбцы долга в docs/tree-inventory.md не стерёг никто: сторож чисел
       # прозы считает по образцу пути, а долг определяет правило из
       # четырнадцати ветвей (задача 2599). Сверять таблицу обязана опись —
       # она эти столбцы уже считает. Проверено пробой: подкрученное число
       # долга сторож прозы пропускал кодом 0, эта сверка краснеет (2600).
       - name: Таблица описи сходится с тем, что опись насчитала
-        run: ./bootstrap/flang io scripts/tree-inventory.flang --plan 'Опись сходится с документом' --max-steps 50000000
+        run: ./bootstrap/flang io scripts/guards/tree-inventory.flang --plan 'Опись сходится с документом' --max-steps 50000000
       # Шаг выше без этого — обещание проверки: сверка могла бы отвечать
       # «сходится» на любой таблице, и сказать об этом было бы некому. План
       # «Подлог» приписывает первому языку лишний файл В ПАМЯТИ (файл дерева не
@@ -489,7 +489,7 @@ jobs:
       # возвращающая пустой список на любом входе, даёт этому шагу код 0.
       - name: Сверка описи умеет краснеть
         run: |
-          if ./bootstrap/flang io scripts/tree-inventory.flang --plan 'Подлог' --max-steps 50000000; then
+          if ./bootstrap/flang io scripts/guards/tree-inventory.flang --plan 'Подлог' --max-steps 50000000; then
             echo "сверка промолчала на подложенной строке — проверять ею нечего" >&2
             exit 1
           fi
@@ -523,32 +523,32 @@ jobs:
       # на пяти входах соответственно. Стоят здесь, а не отдельными работами:
       # двоичный уже собран, и обе вместе отвечают за три секунды.
       - name: Номера решений заняты по одному
-        run: ./bootstrap/flang io scripts/adr-numbers-guard.flang --plan 'Номера решений'
+        run: ./bootstrap/flang io scripts/guards/adr-numbers-guard.flang --plan 'Номера решений'
       - name: Сторож номеров решений умеет краснеть
         run: |
-          if ./bootstrap/flang io scripts/adr-numbers-guard.flang --plan 'Подлог'; then
+          if ./bootstrap/flang io scripts/guards/adr-numbers-guard.flang --plan 'Подлог'; then
             echo "сторож промолчал на подложенной двойне — проверять им нечего" >&2
             exit 1
           fi
 
       # Прослеживаемость (задача 1407, ADR-0031): цепочка требование → код →
       # пример → запись доказательства проходится по всему набору, и число
-      # разрывов в обе стороны сверяется с scripts/traceability-debt.tsv.
+      # разрывов в обе стороны сверяется с scripts/ledgers/traceability-debt.tsv.
       # Четыре шага одного файла, ~90 с каждый на sbx (11 с у двух направлений:
       # дорог не разбор, а сводка по всем 409 постусловиям). Подлог прячет
       # постусловие из flang/proof/map/abilities.flang в памяти, не на диске.
       - name: Цепочка требование → код → пример → запись сходится с записанным долгом
-        run: LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/traceability-guard.flang --plan 'Разрывы' --max-steps 4000000000
+        run: LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/guards/traceability-guard.flang --plan 'Разрывы' --max-steps 4000000000
       - name: Сторож прослеживаемости умеет краснеть
         run: |
-          if LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/traceability-guard.flang --plan 'Подлог' --max-steps 4000000000; then
+          if LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/guards/traceability-guard.flang --plan 'Подлог' --max-steps 4000000000; then
             echo "сторож промолчал на спрятанном постусловии — проверять им нечего" >&2
             exit 1
           fi
       - name: От требования к коду и проверке
-        run: LC_ALL=C.UTF-8 FLANG_TRACE='У1 сумма читается в обратном порядке' ./bootstrap/flang io scripts/traceability-guard.flang --plan 'От требования' --max-steps 4000000000
+        run: LC_ALL=C.UTF-8 FLANG_TRACE='У1 сумма читается в обратном порядке' ./bootstrap/flang io scripts/guards/traceability-guard.flang --plan 'От требования' --max-steps 4000000000
       - name: От строки кода к требованию
-        run: LC_ALL=C.UTF-8 FLANG_TRACE='flang/proof/map/abilities.flang:34' ./bootstrap/flang io scripts/traceability-guard.flang --plan 'От строки' --max-steps 4000000000
+        run: LC_ALL=C.UTF-8 FLANG_TRACE='flang/proof/map/abilities.flang:34' ./bootstrap/flang io scripts/guards/traceability-guard.flang --plan 'От строки' --max-steps 4000000000
 
       # ── Шесть сторожей, найденных «не запускается нигде» (Ч77, 31 авг 2026) ──
       #
@@ -559,11 +559,11 @@ jobs:
       # именно сторож покраснел, а не «что-то в пачке». Отдельными работами
       # не заводим: раннер и checkout стоят на порядок дороже самих проверок.
       - name: Расширения имени файла сведены к одному списку
-        run: ./bootstrap/flang io scripts/file-extensions.flang
+        run: ./bootstrap/flang io scripts/guards/file-extensions.flang
       - name: Страница словаря покрывает таблицу слов языка целиком
-        run: ./bootstrap/flang io scripts/dictionary-guard.flang
+        run: ./bootstrap/flang io scripts/guards/dictionary-guard.flang
       - name: Справочная страница (man) отвечает исходнику
-        run: ./bootstrap/flang io scripts/manpage-guard.flang
+        run: ./bootstrap/flang io scripts/guards/manpage-guard.flang
       # Порча — переписанное обещание в docs/README.ru.md. Сторож держит фразу
       # дословно и обязан сказать «обещание пропало», а не промолчать. 6612.
       # Подлог ПЕРЕВЁРНУТ против первой редакции пробы: 5 сентября проза стала
@@ -584,14 +584,14 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./bootstrap/flang io scripts/emit-promises-guard.flang; then
+          if ./bootstrap/flang io scripts/guards/emit-promises-guard.flang; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Числа прозы о печати сходятся с прогоном
-        run: ./bootstrap/flang io scripts/emit-promises-guard.flang
+        run: ./bootstrap/flang io scripts/guards/emit-promises-guard.flang
       - name: Сильное слово о доказанности не сказано про слабое основание
         run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/word-guard.flang --plan 'Сторож слов' --max-steps 2000000000
       - name: Все 28 умений ядра доказаны прогоном, а не перечислены
@@ -854,7 +854,7 @@ jobs:
   #
   # ПЕРВАЯ ПОЛОВИНА ДОКАЗАНА 6 сентября 2026: пара печатей с дерева `d3b121b5`
   # (клоны одного коммита), 16 404 с и 16 929 с, обе кодом 0;
-  # `scripts/two-prints-identical.sh` — код 0, «печати совпали побайтово:
+  # `scripts/seed/two-prints-identical.sh` — код 0, «печати совпали побайтово:
   # файлов 4, байт 1 229 825». ВТОРАЯ осталась открытой: сверку позвала рука.
   #
   # ТОЙ ЖЕ ПАРОЙ ВТОРУЮ ПОЛОВИНУ НЕ ЗАКРЫТЬ. 2 x 4,6 ч машины на пуш не ставят.
@@ -869,8 +869,8 @@ jobs:
   # процессов), и сверка байт в байт.
   #
   # ЦЕНА, ЗАМЕР 6 сентября 2026 на машине отряда, `bootstrap/flang` 0.7.11:
-  #   sh scripts/pechat-povtorima.sh            24,4 с   (две печати по 12,2 с)
-  #   sh scripts/pechat-povtorima.sh --подлог   12,3 с   (одна печать)
+  #   sh scripts/seed/pechat-povtorima.sh            24,4 с   (две печати по 12,2 с)
+  #   sh scripts/seed/pechat-povtorima.sh --подлог   12,3 с   (одна печать)
   # Для сравнения, тем же прогоном и тем же двоичным:
   #   sh scripts/raskrutka.sh --telo             0,15 с
   #   sh scripts/raskrutka.sh --bystro           1,50 с
@@ -935,16 +935,16 @@ jobs:
             make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
           fi
       # ПРОБА ИДЁТ ПЕРВОЙ И СТОИТ ОДНУ ПЕЧАТЬ ИЗ ТРЁХ. Сторож, которого нельзя
-      # покрасить, неотличим от выключенного (scripts/storozha-bez-podloga.sh:
+      # покрасить, неотличим от выключенного (scripts/guards/storozha-bez-podloga.sh:
       # за одни сутки 5 сентября 2026 эта порода поймана четырежды, и ни разу
       # прибором). Проба подкладывает сверщику изменённый байт и пропавший
       # файл и требует красноты, а от дословной копии — молчания.
       - name: Прибор краснеет на подложенном расхождении
-        run: sh scripts/pechat-povtorima.sh --подлог
+        run: sh scripts/seed/pechat-povtorima.sh --подлог
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: Две печати одного входа в разных средах совпадают побайтово
-        run: sh scripts/pechat-povtorima.sh
+        run: sh scripts/seed/pechat-povtorima.sh
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -958,14 +958,14 @@ jobs:
   # по всему корпусу, и в CI её не было ни разу.
   #
   # Здесь зовётся дешёвая половина: правила счёта переписаны в
-  # `scripts/published-vs-tree.sh` из `docs/site/site-numbers.mjs` один в один,
+  # `scripts/guards/published-vs-tree.sh` из `docs/site/site-numbers.mjs` один в один,
   # и она отвечает за девять секунд без двоичного и без Node. Дорогие ключи
   # (`корпус.функций`, `утверждения.*`, `носители.*`, `сторож.*`, `словарь.*`)
   # она НЕ проверяет и говорит об этом вслух — их держит `числа:проверка`.
   #
   # ПОЧЕМУ ЗДЕСЬ НЕ ВСЯ СВЕРКА, А ДВА ЕЁ РАЗДЕЛА ИЗ ТРЁХ. Третий раздел —
   # `--доля` — спрашивает долю доказанного, а она снимается 437 прогонами по
-  # 12,7 часа (`scripts/proved-share.json`, поле «как снято»). Требовать от
+  # 12,7 часа (`scripts/ledgers/proved-share.json`, поле «как снято»). Требовать от
   # каждого пуша, чтобы это число было свежим, нельзя: дерево сдвигает файл с
   # обязательствами за минуту, а пересъёмка стоит половину суток. Работа,
   # красная от того, чего ни один пуш починить не может, за неделю приучает не
@@ -994,18 +994,18 @@ jobs:
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - name: Дешёвые числа сайта пересчитаны по исходникам
-        run: sh scripts/published-vs-tree.sh --числа
+        run: sh scripts/guards/published-vs-tree.sh --числа
       - name: Объявленная версия выпущена, и невыпущенное названо числом
-        run: sh scripts/published-vs-tree.sh --выпуск
+        run: sh scripts/guards/published-vs-tree.sh --выпуск
       - name: Карта раскладки в README отвечает корню дерева
-        run: sh scripts/published-vs-tree.sh --карта
+        run: sh scripts/guards/published-vs-tree.sh --карта
       # Напечатанная команда — такое же утверждение о дереве, как число, и
       # обязана проверяться так же. 29 августа 2026 команда, подтверждающая
       # «аксиом ноль», стояла на ГЛАВНОЙ странице сайта в форме, которая
       # отвечает «непонятный ключ «ноль»»» и кодом 2: имя плана написано в
       # ёлочках и без кавычек оболочки. Таких мест в дереве нашлось тридцать пять.
       - name: Напечатанные команды работают как напечатаны
-        run: sh scripts/published-vs-tree.sh --команды
+        run: sh scripts/guards/published-vs-tree.sh --команды
       # Числа, набранные в прозе РУКОЙ, — README, шапки страниц, ROADMAP. Их не
       # держала подстановка `{{ключ}}`, и не сторожило ничто: 29 августа 2026
       # примеров было объявлено 190 при 191, «ещё 183» при 176, отпечаток семени
@@ -1013,9 +1013,9 @@ jobs:
       # странице, где двенадцать. Здесь спрашиваются только те из них, что
       # считаются без двоичного.
       - name: Числа прозы отвечают дереву
-        run: sh scripts/published-vs-tree.sh --проза
+        run: sh scripts/guards/published-vs-tree.sh --проза
       - name: Перепись того, что в дереве не на flang
-        run: sh scripts/published-vs-tree.sh --перепись
+        run: sh scripts/guards/published-vs-tree.sh --перепись
 
   imena:
     name: link-collisions
@@ -1074,7 +1074,7 @@ jobs:
       # проверил, а список проверяемых (`ведомость-примеров.txt`) короче дерева.
       #
       # ЗДЕСЬ ЭТОТ ШАГ СТОЯЛ И НЕ ПРОХОДИЛ НИ РАЗУ. Проверка переписана на flang
-      # (`scripts/name-splicing-guard.flang`, коммит `fd9edd54` от 22 августа
+      # (`scripts/guards/name-splicing-guard.flang`, коммит `fd9edd54` от 22 августа
       # 2026), `flang/scripts/srashchivanie.mjs` при этом снят. В шапку была
       # записана цена «3 мин 44 с, пик памяти 24 ГиБ» на 571 файле — и на этом
       # дело стало: у раннера GitHub 16 ГиБ. Не «медленно», а НЕ ВЛЕЗАЕТ, ровно
@@ -1199,7 +1199,7 @@ jobs:
       # Само-проверка сторожа никуда не делась и лежит там, где сторож: подлог
       # (`тотальная функция «Куски таблицы»` из `flang/self/lexer.flang`,
       # подложенная в `flang/self/monad-expand.flang`) описан прогоном в шапке
-      # `scripts/name-collision-guard.flang`. Шаг выше — `node
+      # `scripts/guards/name-collision-guard.flang`. Шаг выше — `node
       # flang/scripts/link-collision-guard.mjs --дерево` — считает то же самое
       # второй реализацией и остаётся.
 
@@ -1292,7 +1292,7 @@ jobs:
             echo "::warning::двоичный из кеша не запускается — собираю заново"
             make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
           fi
-      - run: ./bootstrap/flang io scripts/name-splicing-guard.flang --max-orders 2000
+      - run: ./bootstrap/flang io scripts/guards/name-splicing-guard.flang --max-orders 2000
       - name: Сколько памяти оставалось
         if: always()
         run: sh scripts/memory-headroom.sh --отчёт --итог "${{ job.status }}"
@@ -1322,7 +1322,7 @@ jobs:
   # (`scripts/storozh-*.flang`, `flang/scripts/*.flang`, `fspec/guard.flang`)
   # сюда не попадают: «заводится ли» спрашивается прогоном `node --test`, а
   # программу на flang заводит `flang io`. Подлогом проверено 22 августа: к
-  # `scripts/homebrew-formula-guard.flang` дописана строка, после которой файл не
+  # `scripts/guards/homebrew-formula-guard.flang` дописана строка, после которой файл не
   # разбирается, — работа осталась зелёной. Само число теперь называет свой род
   # («файлов проверок «*.test.mjs» в дереве 15»), чтобы 15 не читалось как «все».
   # ── НЕЗАВИСИМЫЙ ЧЕКЕР ЗАПИСИ: ОТДЕЛЬНАЯ РАБОТА, И ЭТО ГЛАВНОЕ В НЕЙ ───────
@@ -1490,7 +1490,7 @@ jobs:
       # же): «Спросить сторожа» зовёт `code-guard.flang` ПОДПРОЦЕССОМ, а у
       # `flang io` есть свой, не связанный с `--max-steps` срок на КАЖДОГО
       # потомка — 30 000 мс по умолчанию, назван и объяснён в
-      # `scripts/child-timeout.flang`. Сторож кодов на нынешнем дереве идёт
+      # `scripts/guards/child-timeout.flang`. Сторож кодов на нынешнем дереве идёт
       # ~32-33 с (замер трижды, устойчиво), то есть неизбежно упирается в
       # чужой срок и гибнет сигналом SIG9 — не находка про сторож, а про сам
       # срок. `--timeout` ЗДЕСЬ, на внешнем вызове, — это и есть тот рычаг:
@@ -1505,7 +1505,7 @@ jobs:
       #
       # Шаг выше спрашивает, УМЕЕТ ли сторож краснеть. Этот спрашивает, ЧИСТО
       # ли дерево, — и до 5 сентября 2026 его тут не было. Причина названа
-      # прямо в `scripts/storozha-bez-zova.json`: сторож был КРАСЕН ПО ДЕЛУ,
+      # прямо в `scripts/ledgers/storozha-bez-zova.json`: сторож был КРАСЕН ПО ДЕЛУ,
       # в прозе висели пять имён, которых в исходниках нет. Красный сторож в
       # CI красит работу всегда и потому выключается первым — ставить его
       # было нельзя, пока долг не закрыт.

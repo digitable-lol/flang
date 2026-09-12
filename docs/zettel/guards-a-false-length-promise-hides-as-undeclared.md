@@ -18,12 +18,12 @@
 
 | файл | функция | обещано | на деле |
 |---|---|---:|---:|
-| `scripts/input-boundary.flang` | «Хвост» | 24 | 36 |
-| `scripts/input-boundary.flang` | «Образец» | 39 | 33 |
-| `scripts/emit-promises-guard.flang` | «Программа улика» | 59 | 53 |
-| `scripts/name-splicing-guard.flang` | «Файл долга» | 37 | 32 |
-| `scripts/plan-across-targets.flang` | «Файл» | 39 | 33 |
-| `scripts/vim-highlight-check.flang` | «Куда слова» | 33 | 31 |
+| `scripts/guards/input-boundary.flang` | «Хвост» | 24 | 36 |
+| `scripts/guards/input-boundary.flang` | «Образец» | 39 | 33 |
+| `scripts/guards/emit-promises-guard.flang` | «Программа улика» | 59 | 53 |
+| `scripts/guards/name-splicing-guard.flang` | «Файл долга» | 37 | 32 |
+| `scripts/targets/plan-across-targets.flang` | «Файл» | 39 | 33 |
+| `scripts/editors/vim-highlight-check.flang` | «Куда слова» | 33 | 31 |
 
 Пять первых кричат: у их функций есть примеры, примеры зовут функцию, проверка
 при работе срабатывает и валит весь файл — `FLANG_PROPERTY: нарушено свойство
@@ -59,7 +59,7 @@
 
 Выше сказано, что наивный счёт даёт ложные ТРЕВОГИ. Он даёт и ложные ОБЕЩАНИЯ,
 и это дороже. Порождая `(длина результат) равен N` для шести списков
-`scripts/emit-dictionary.flang`, я посчитал элементы по скобкам и запятым
+`scripts/site/emit-dictionary.flang`, я посчитал элементы по скобкам и запятым
 самого текста — и получил:
 
 | функция | наивно | на деле |

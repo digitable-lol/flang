@@ -1,9 +1,9 @@
 # Почему в дереве всё ещё JavaScript: разбор 23 августа 2026
 
-Файлов на JavaScript было 53 (23 августа); на 11 сентября 2026 — **52**
+Файлов на JavaScript было 53 (23 августа); на 11 сентября 2026 — **51**
 (`git ls-files '*.mjs' '*.js' | wc -l`, коммит `2c40752d0`; счёт по файлам ведёт
 [`javascript-inventory.md`](javascript-inventory.md)).
-<!-- СНЯТО 2026-09-11 файлов *.js,*.mjs = 52 -->
+<!-- СНЯТО 2026-09-11 файлов *.js,*.mjs = 51 -->
 Их не переписывают не потому, что руки не дошли:
 **четыре возможности отсутствуют в самом языке**, и пока их нет, часть файлов
 переписать нельзя в принципе. Ниже — что именно, сколько файлов держит каждая
@@ -45,7 +45,7 @@ flang io: непонятный ключ «--n=5»
 вторая половина видна прогоном:
 
 ```
-$ bootstrap/flang check examples/io/temp-directory.flang; echo $?
+$ bootstrap/flang check docs/examples/io/temp-directory.flang; echo $?
 модуль «Временный каталог»: функций 10, из них с доказанным завершением 10; типов 4
 FLANG_UNKNOWN_NAME … строка 89: неизвестный конструктор варианта «Завести временный каталог»
 … замечаний 14
@@ -151,10 +151,10 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
   системе ещё нет, круг. **Снят 3 сентября** вместе с npm (`5d876b0e2`).
 - `packaging/postinstall.mjs` — крючок жизненного цикла npm, его запускает `node`.
   **Снят 3 сентября** (`5d876b0e2`).
-- `web/wasm/probe.mjs` — ведёт настоящий браузер через Playwright.
+- `docs/examples/web/wasm/probe.mjs` — ведёт настоящий браузер через Playwright.
 - `scripts/wasm-run.mjs` — средой WASI служит сам Node. **Снят 9 сентября**
   (`8fea01c39`): средой WASI служит `wasmtime`, а не `node:wasi`.
-- `benchmarks/…/programs/tasks.mjs` — это и есть замеряемая реализация на
+- `docs/benchmarks/speed/programs/tasks.mjs` — это и есть замеряемая реализация на
   JavaScript, соседка `tasks.flang` и `tasks.py`. Снять — сломать замер.
 
 ---

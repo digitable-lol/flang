@@ -14,8 +14,8 @@ description: Как писать flang, чтобы он проходил про�
 
 1. **Комментариев в `.flang` не пишешь.** Лексер их выбрасывает — комментарий не
    терм, его не проверить, он тихо устареет. Объясняй **именем, типами,
-   `обеспечивает` и `пример`ом**. Прибавку не пустит `scripts/no-comments-guard.sh`
-   (храповик по `scripts/no-comments-debt.tsv`, крутится только вниз).
+   `обеспечивает` и `пример`ом**. Прибавку не пустит `scripts/guards/no-comments-guard.sh`
+   (храповик по `scripts/ledgers/no-comments-debt.tsv`, крутится только вниз).
 
 2. **Нужна пометка в коде — делай её термом, а не `//`.** Канон терм-заметки:
    **именованный `пример`** (имя — целое предложение, оно прогоняется) и рядом
@@ -37,8 +37,8 @@ description: Как писать flang, чтобы он проходил про�
 
 6. **Не дублируешь.** Один исходник даёт реализацию, тесты и постусловия сразу —
    не пиши тесты рядом руками. Перечень, который дерево выводит само, руками не
-   набираешь: следит `scripts/hand-written-lists-ledger.tsv`
-   (`sh scripts/hand-written-lists.sh --check`).
+   набираешь: следит `scripts/ledgers/hand-written-lists-ledger.tsv`
+   (`sh scripts/guards/hand-written-lists.sh --check`).
 
 7. **`тотальная` доказываешь дёшево.** Предпочитай `разбор` суммы типов и спуск по
    `неотрицательное` на 1 — они бесплатны при работе. `убывает <выражение>` ставит проверку в
@@ -66,7 +66,7 @@ description: Как писать flang, чтобы он проходил про�
    ```
 
 10. **Расширение файла — любое из четырёх равноправных:** `.flang`, `.fp`, `.фп`,
-    `.фланг` (головное `.flang`). Канон — `scripts/file-extensions.flang`, решения
+    `.фланг` (головное `.flang`). Канон — `scripts/guards/file-extensions.flang`, решения
     ADR-0016/0018. Смыкается с правилом 9: **русское имя → `.фп`/`.фланг`,
     английское имя → `.flang`/`.fp`**.
 
@@ -83,11 +83,11 @@ bootstrap/flang check файл.flang --proof --pretty
 
 Сторожа, которых нельзя оставить красными:
 
-- `sh scripts/no-comments-guard.sh` — комментариев не прибавилось;
+- `sh scripts/guards/no-comments-guard.sh` — комментариев не прибавилось;
 - `flang/scripts/name-guard.mjs` — имена в порядке;
-- `sh scripts/hand-written-lists.sh --check` — рукописных перечней не завёл;
+- `sh scripts/guards/hand-written-lists.sh --check` — рукописных перечней не завёл;
 - `flang check` на файле — код 0, и `check`/`test` не расходятся
-  (`scripts/check-before-run.flang`).
+  (`scripts/guards/check-before-run.flang`).
 
 ## Признак готовности
 

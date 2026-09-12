@@ -253,7 +253,7 @@
 
 тотальная функция «Подделки врозь»
   возвращает список строки
-  ["examples/web/shortener/handler-without-budget.flang"]
+  ["docs/examples/web/shortener/handler-without-budget.flang"]
 
 объект «Пара регистра»
   «большая»: строка

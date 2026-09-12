@@ -119,7 +119,7 @@ nt2.flang: примеров 1, прошло 1, не прошло 0
 
 Когда убывает не аргумент, а выражение от аргументов. Строка `убывает …` стоит
 сразу после `возвращает`. Пример целиком —
-[`examples/measure/binary-search.flang`](../../examples/measure/binary-search.flang):
+[`docs/examples/measure/binary-search.flang`](../examples/measure/binary-search.flang):
 
 ```flang
 тотальная функция «Поиск в диапазоне»
@@ -141,11 +141,11 @@ nt2.flang: примеров 1, прошло 1, не прошло 0
 ```
 
 ```bash
-flang test examples/measure/binary-search.flang
+flang test docs/examples/measure/binary-search.flang
 ```
 
 ```
-examples/measure/binary-search.flang: примеров 5, прошло 5, не прошло 0
+docs/examples/measure/binary-search.flang: примеров 5, прошло 5, не прошло 0
 ```
 
 ## `убывает` — это проверка при запуске, а не при сборке
@@ -225,7 +225,7 @@ FLANG_NOT_TOTAL в файле nt3.flang, строка 8, столбец 11: то
 Строковые задачи эту границу перешли иначе: встроенная форма
 `разложить … на символы` раскладывает строку в список односимвольных строк по
 кодовым точкам, и посимвольный проход становится рекурсией по хвосту. Благодаря
-ей [`examples/rosetta/reverse-string.flang`](../../examples/rosetta/reverse-string.flang)
+ей [`docs/examples/rosetta/reverse-string.flang`](../examples/rosetta/reverse-string.flang)
 тотален целиком — вместе с кириллицей и эмодзи.
 
 ## Зачем это нужно: проверка фактов не берёт нетотальные функции
@@ -264,14 +264,14 @@ flang facts fc1.flang --claims '["«Цифр в числе» от 5 равно 1
 проходить не должен — код `FLANG_HANDLER_NOT_TOTAL`.
 
 Сегодня двоичный это судит, но отвечает другим кодом. Вот что он отвечает на
-[`examples/web/shortener/handler-without-budget.flang`](../../examples/web/shortener/handler-without-budget.flang),
+[`docs/examples/web/shortener/handler-without-budget.flang`](../examples/web/shortener/handler-without-budget.flang),
 файле, написанном специально для проверки этого правила (прогон 11 сентября 2026,
 двоичный 0.7.17 из семени `0ce948bfd`):
 
 ```
-FLANG_UNCOVERED_FAILURE в файле examples/web/shortener/handler-without-budget.flang, строка 13, столбец 1: у процесса «Разборщик» обработчик «шаг разбора» без доказанного завершения — значит отказ «запас витков исчерпан» достижим, — а под надзором этот процесс не стоит: такой отказ уронит программу целиком
+FLANG_UNCOVERED_FAILURE в файле docs/examples/web/shortener/handler-without-budget.flang, строка 13, столбец 1: у процесса «Разборщик» обработчик «шаг разбора» без доказанного завершения — значит отказ «запас витков исчерпан» достижим, — а под надзором этот процесс не стоит: такой отказ уронит программу целиком
 …
-examples/web/shortener/handler-without-budget.flang: не проверено — замечаний 2
+docs/examples/web/shortener/handler-without-budget.flang: не проверено — замечаний 2
 ```
 
 Код возврата 1. `FLANG_HANDLER_NOT_TOTAL` по-прежнему не выдаётся: нетотальный

@@ -1,11 +1,11 @@
 # Rosetta Code на flang
 
-`examples/rosetta/` — канонические задачи Rosetta Code, решённые на flang. Это
+`docs/examples/rosetta/` — канонические задачи Rosetta Code, решённые на flang. Это
 витрина: язык здесь сравнивают с тем же решением на других языках, поэтому важнее
 не краткость, а то, что видно при чтении — где завершение доказано, а где язык
 говорит, что доказать не может.
 
-Файлов в наборе <!-- СНЯТО 2026-09-08 файлов examples/rosetta/*.flang = 28 --> 28,
+Файлов в наборе <!-- СНЯТО 2026-09-08 файлов docs/examples/rosetta/*.flang = 28 --> 28,
 по два на задачу: каждая записана на русской поверхности языка и на английской
 (`*-english.flang`). Это не перевод документации: у языка четыре равноправные
 поверхности записи — русская, английская, эсперанто и китайская, — и `тотальная
@@ -14,17 +14,17 @@
 Здесь взяты две, потому что на странице задачи Rosetta Code второй листинг стоит
 ради читателя: рядом с русским листингом английский показывает, что русская
 запись — выбор, а не ограничение. Все четыре поверхности на одной задаче —
-в `examples/surfaces/`.
+в `docs/examples/surfaces/`.
 
-Готовый текст для страниц вики — `examples/rosetta/WIKI.en.md`. Порядок
+Готовый текст для страниц вики — `docs/examples/rosetta/WIKI.en.md`. Порядок
 публикации, лицензионная оговорка и языковая страница описаны вне этого
 репозитория.
 
 ## Как прогнать
 
 ```bash
-bootstrap/flang test examples/rosetta/                                # примеры всех файлов набора
-bootstrap/flang check examples/rosetta/towers-of-hanoi.flang --proof  # ведомость одного файла
+bootstrap/flang test docs/examples/rosetta/                                # примеры всех файлов набора
+bootstrap/flang check docs/examples/rosetta/towers-of-hanoi.flang --proof  # ведомость одного файла
 ```
 
 `test` прогоняет примеры, объявленные внутри функций. `check --proof` печатает
@@ -71,8 +71,8 @@ bootstrap/flang check examples/rosetta/towers-of-hanoi.flang --proof  # ведо
 | Towers of Hanoi | `towers-of-hanoi.flang` | — | все тотальны; неотрицательность «Число ходов» доказана индукцией по структуре списка |
 
 Столбец «не тотальны» снимается с файла командой
-`grep '^функция ' examples/rosetta/<файл>`; чем доказана каждая тотальная —
-`bootstrap/flang check examples/rosetta/<файл> --proof`.
+`grep '^функция ' docs/examples/rosetta/<файл>`; чем доказана каждая тотальная —
+`bootstrap/flang check docs/examples/rosetta/<файл> --proof`.
 
 ## Почему часть решений не тотальна
 
@@ -97,7 +97,7 @@ bootstrap/flang check examples/rosetta/towers-of-hanoi.flang --proof  # ведо
 ## Чего в наборе нет
 
 - **Задач с вводом-выводом.** Поручения ввода-вывода в языке есть
-  (`examples/io/`), но задачи Rosetta Code здесь — про алгоритм, а не про хозяина.
+  (`docs/examples/io/`), но задачи Rosetta Code здесь — про алгоритм, а не про хозяина.
 - **Задач, где нужно упорядочить строки** (Anagrams, Letter frequency). `меньше`
   и `больше` для строк отвергаются проверкой типов —
   `FLANG_TYPE: … сравнения порядка допустимы только для чисел` (проверено
@@ -109,6 +109,6 @@ bootstrap/flang check examples/rosetta/towers-of-hanoi.flang --proof  # ведо
 
 ## Дальше
 
-- [Каталог примеров](examples.html) — все наборы каталога `examples/`
+- [Каталог примеров](examples.html) — все наборы каталога `docs/examples/`
 - [Что даёт признак «тотальная»](totality.html) — способы доказать завершение
 - [Разбор: задачи с leetcode](case-studies.html) — пять задач с отчётами о доказательствах целиком

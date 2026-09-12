@@ -29,7 +29,7 @@ that had fallen behind the sources. What was checked on the tree of
 11 September 2026 (0.7.17, commit `2c40752d0`):
 
 - the bootstrap seed was reprinted on 10–11 September (commit `0ce948bfd`);
-  `sh scripts/chto-otstalo-ot-semeni.sh` names 3 files, 77 functions, still
+  `sh scripts/seed/chto-otstalo-ot-semeni.sh` names 3 files, 77 functions, still
   behind;
 - `sh scripts/доказуемость.sh` answers **PROVABLE**: the independent checker
   (`flang/proof/чекер/сверщик.c`) replayed 625 obligations of the compiler's own
@@ -77,7 +77,7 @@ property of the language:
 `docs/adr/0031-certification-is-a-process-not-a-property-of-the-language.md`.
 Of what it needs beyond the proof, traceability requirement → code → example →
 record exists as a guard since 11 September 2026
-(`scripts/traceability-guard.flang`, task 1407): 409 postconditions, 322 with an
+(`scripts/guards/traceability-guard.flang`, task 1407): 409 postconditions, 322 with an
 example, 361 in a record, 244 proved; gaps 62 and 68, under a ratchet. Response
 bounds exist only as an analysis and are not printed into the proof record
 (`docs/adr/0033-termination-is-not-a-bound-on-steps.md`, tasks 1408 and 1409);

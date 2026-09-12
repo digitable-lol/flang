@@ -20,12 +20,12 @@ on:
       - 'flang/proof/SPEC.md'
       - 'flang/cat/SPEC.md'
       - 'flang/conc/SPEC.md'
-      - 'scripts/build-changelog-page.mjs'
-      - 'scripts/build-changelog.mjs'
-      - 'scripts/build-changelog.flang'
-      - 'scripts/changelog.flang'
-      - 'scripts/releases.flang'
-      - 'scripts/releases-page.flang'
+      - 'scripts/site/build-changelog-page.mjs'
+      - 'scripts/site/build-changelog.mjs'
+      - 'scripts/site/build-changelog.flang'
+      - 'scripts/site/changelog.flang'
+      - 'scripts/site/releases.flang'
+      - 'scripts/site/releases-page.flang'
       - '.github/workflows/pages.yml'
       # Подсветка блоков кода красит НАСТОЯЩИМ лексером языка, а он живёт в
       # двоичном компиляторе: правка точки раскрутки или двери к двоичному
@@ -100,7 +100,7 @@ jobs:
       # опубликованное всегда свежее. Сборка НЕ коммитит: дерево правит человек,
       # а не работник.
       - name: Перепечатать журнал вливаний
-        run: node scripts/build-changelog-page.mjs
+        run: node scripts/site/build-changelog-page.mjs
 
       # По той же причине, что и журнал: страница выпусков печатается из тегов,
       # и между новым тегом и перепечаткой она отстаёт. Опубликованное всегда
@@ -114,7 +114,7 @@ jobs:
       # исчерпала лимит шагов (10000000)». Замерено здесь же: с ключом план
       # доходит до конца и печатает «Напечатано: выпусков 14».
       - name: Перепечатать страницу выпусков
-        run: LC_ALL=C.UTF-8 bootstrap/flang io scripts/releases-page.flang --max-steps 40000000
+        run: LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/releases-page.flang --max-steps 40000000
 
       # Отдельным шагом до сборки: если ссылки битые, видно сразу и по имени,
       # а не среди вывода сборки.

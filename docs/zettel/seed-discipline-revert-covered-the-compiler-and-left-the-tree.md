@@ -18,7 +18,7 @@
 
 **Почему это не заметили двое суток.** Потому что заметить было нечем. Из 78
 файлов ярлыком гонялись пятеро: `ярлыки.flang`, `flang/proof/map/abilities.flang`,
-`docs/site/storozh-kontrasta.flang`, `scripts/license-guard.flang` и каталог
+`docs/site/storozh-kontrasta.flang`, `scripts/guards/license-guard.flang` и каталог
 `fspec/spec/**`. Остальные семьдесят три не проверяет сегодня НИЧТО — ровно как
 `examples/driver/uart.flang`, до которого откат тоже не дошёл и который пролежал
 сломанным двое суток.
@@ -41,7 +41,7 @@
   пересборки пакета даёт `FLANG_PACKAGE: адрес не сходится с исходником`.
 
 **Чем подтверждено.** Задача 0034. Прогон чужого двоичного по 62 починенным
-файлам: до — 60 красных, после — 0. `sh scripts/seed-knows-type-words-guard.sh`
+файлам: до — 60 красных, после — 0. `sh scripts/guards/seed-knows-type-words-guard.sh`
 на 1116 файлах: было 180, стало 46, и все 46 — в трёх каталогах, занятых
 соседями.
 

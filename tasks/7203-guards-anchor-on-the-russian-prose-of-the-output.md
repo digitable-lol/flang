@@ -31,8 +31,8 @@
 `"доказано ПРИ УСЛОВИИ"`, `"объявлено, не доказано"`, `"утверждений "`,
 `"непонятный ключ"`, `"нарушено свойство «утверждение»"`.
 
-Файлы строгого круга: `scripts/raskrutka.sh`, `scripts/new-binary-acceptance.sh`,
-`scripts/target-census.sh`, `scripts/seed-parses-sources-guard.sh`,
+Файлы строгого круга: `scripts/raskrutka.sh`, `scripts/seed/new-binary-acceptance.sh`,
+`scripts/targets/target-census.sh`, `scripts/guards/seed-parses-sources-guard.sh`,
 `scripts/доказуемость.sh`, `flang/scripts/proven-guard.flang`,
 `flang/scripts/word-guard.flang`, `flang/scripts/word-guard.mjs`,
 `flang/scripts/ledger-summary.flang`, `flang/scripts/emptiness-guard.flang`,
@@ -41,7 +41,7 @@
 `flang/scripts/discriminating-search.mjs`,
 `flang/scripts/binary-rules-guard.flang`.
 
-Отдельно: `scripts/cli-commands-guard.flang:339` держит якорь
+Отдельно: `scripts/guards/cli-commands-guard.flang:339` держит якорь
 `"Здесь все N команд"` — единственную русскую фразу этого файла, взятую из
 ТЕКСТА двоичного, а не из документов.
 
@@ -59,7 +59,7 @@
 1. Каждую из 14 проверок перевести на то, что от языка не зависит: код
    возврата, код `FLANG_*`, поле машинного вывода `--json`. Свод доказательств
    уже так устроен — он и есть образец.
-2. `scripts/cli-commands-guard.flang` — снять якорь на фразу вывода.
+2. `scripts/guards/cli-commands-guard.flang` — снять якорь на фразу вывода.
 3. Пока это не сделано, **оснастка дерева обязана гоняться с `FLANG_LANG=ru`**, и
    ставить это должна она сама, а не человек. Иначе первый же прогон с чужой
    локалью покрасит проверки, и виноват будет не тот.

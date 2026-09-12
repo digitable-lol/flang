@@ -138,7 +138,7 @@ flang test <файл.flang | каталог | маска> [--no-check] [--json] 
 
 ```bash
 flang test flang/stdlib/                весь каталог, вглубь
-flang test 'examples/**/*.flang'  по маске (кавычки — от оболочки)
+flang test 'docs/examples/**/*.flang'  по маске (кавычки — от оболочки)
 ```
 
 Коды: `0` — взяты все файлы и сошлись все примеры; `1` — что-то не сошлось или
@@ -434,7 +434,7 @@ $ echo $?
 своей функции «начинает с», а не с доводов вызова.
 
 ```bash
-$ flang io examples/crypto/revocation.flang --args '{}'
+$ flang io docs/examples/crypto/revocation.flang --args '{}'
 flang io: непонятный ключ «--args»
 $ echo $?
 2

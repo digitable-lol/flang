@@ -141,7 +141,7 @@ question mark, is a set of files rather than a file:
 
 ```bash
 flang test flang/stdlib/                the whole directory, recursively
-flang test 'examples/**/*.flang'  by mask (quotes keep the shell out)
+flang test 'docs/examples/**/*.flang'  by mask (quotes keep the shell out)
 ```
 
 Codes: `0` — every file was taken and every example matched; `1` — something did
@@ -438,7 +438,7 @@ allowed": running a program with this command is your consent to what it does.
 its own "начинает с" function, not from call arguments.
 
 ```bash
-$ flang io examples/crypto/revocation.flang --args '{}'
+$ flang io docs/examples/crypto/revocation.flang --args '{}'
 flang io: непонятный ключ «--args»
 $ echo $?
 2

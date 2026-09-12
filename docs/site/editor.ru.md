@@ -49,11 +49,11 @@ editors/
 намерение.** В `editors/vim/syntax/flang.vim` — <!-- СНЯТО 2026-09-08 строк editors/vim/syntax/flang.vim = 46 --> 46 строк, в
 `editors/vscode/syntaxes/flang.tmLanguage.json` — <!-- СНЯТО 2026-09-08 строк editors/vscode/syntaxes/flang.tmLanguage.json = 60 --> 60 строк, и обе печатаются из
 таблицы ключевых слов языка программами на самом flang
-(`scripts/vim-highlighting.flang`, `scripts/vscode-highlighting.flang`). Список
+(`scripts/editors/vim-highlighting.flang`, `scripts/editors/vscode-highlighting.flang`). Список
 слов, набранный отдельно, — это второе описание языка, и оно расходится с первым
 в первый же день. И то и другое проверяется настоящим редактором, запущенным без
-окна и человека: `flang io scripts/vim-highlight-check.flang`,
-`flang io scripts/lsp-check.flang`. Вторая проверка открывает файл в `nvim
+окна и человека: `flang io scripts/editors/vim-highlight-check.flang`,
+`flang io scripts/editors/lsp-check.flang`. Вторая проверка открывает файл в `nvim
 --headless` и спрашивает четыре вещи: дошла ли диагностика до буфера с местом и
 кодом, привёл ли переход к объявлению туда, где оно стоит, показало ли наведение
 подпись — и отвечает ли сервер, пока ввод открыт. Четвёртый вопрос сегодня

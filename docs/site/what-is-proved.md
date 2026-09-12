@@ -13,14 +13,14 @@ flang check <file> --proof --json
 
 > **When the numbers on this page were measured.** Files and lines are
 > recomputed from the sources in nine seconds and are checked on every push
-> (`sh scripts/published-vs-tree.sh --числа`). Everything else — termination,
+> (`sh scripts/guards/published-vs-tree.sh --числа`). Everything else — termination,
 > carriers, guard sites, claims about behaviour — is printed by the compiler in a
 > run over the whole corpus (hours), and it printed them on **23 August 2026**
 > (commit `252606e8`). They have not been re-measured since.
 >
 > On the day of measurement the compiler was built from a seed that had fallen
 > behind the sources; the seed has since been reprinted (10–11 September 2026,
-> commit `0ce948bfd`; `sh scripts/chto-otstalo-ot-semeni.sh` on 11 September
+> commit `0ce948bfd`; `sh scripts/seed/chto-otstalo-ot-semeni.sh` on 11 September
 > names 3 files, 77 functions, still behind). The expensive numbers have not been
 > re-measured yet; the same `published-vs-tree.sh --числа` prints how many
 > `.flang` files have moved since `252606e8`.

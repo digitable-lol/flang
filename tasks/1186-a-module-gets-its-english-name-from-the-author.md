@@ -30,7 +30,7 @@
 ## Ограничение, которое нельзя нарушить до конца перепечатки
 
 **Цель `c` не трогать.** Примета 1 приёмки нового двоичного вкопала в себя
-нынешний вид имени — `scripts/new-binary-acceptance.sh:110`, снято 29 августа
+нынешний вид имени — `scripts/seed/new-binary-acceptance.sh:110`, снято 29 августа
 2026:
 
 ```sh
@@ -79,7 +79,7 @@ IMENA=$(nm -a "$DVOICHNYY" 2>/dev/null | grep -o 'compiler_flang_[a-z_]*konkuren
 
 * правило **Р7** — `docs/guide/naming.ru.md:75`, «у модуля есть английское имя.
   Это правило про НАПЕЧАТАННОЕ, а не про наше дерево» (коммит `e4216cb9`);
-* сторож — `scripts/module-name-guard.flang`, **409 строк**, ярлыком
+* сторож — `scripts/guards/module-name-guard.flang`, **409 строк**, ярлыком
   `имена-модулей:проверка` (`ярлыки.flang:60`). Строка отчёта:
   `имена модулей: шапок 237, без английского имени 4, из них в долге 4, новых 0,
   надгробий 0`;
@@ -98,7 +98,7 @@ IMENA=$(nm -a "$DVOICHNYY" 2>/dev/null | grep -o 'compiler_flang_[a-z_]*konkuren
 ## Что осталось открытым — и это измерено
 
 **Сторож смотрит три каталога из многих.** Р7 глядит `flang/stdlib`,
-`flang/core` и `examples` — те же, что `scripts/occupied-names-guard.flang`.
+`flang/core` и `examples` — те же, что `scripts/guards/occupied-names-guard.flang`.
 Остаток назван числом, а не словом «остальное» (`docs/guide/naming.ru.md:182`,
 замер 29 августа по всем 849 файлам `.flang` вне `bootstrap/`; ещё 299 файлов
 шапки модуля не имеют вовсе):
@@ -121,7 +121,7 @@ IMENA=$(nm -a "$DVOICHNYY" 2>/dev/null | grep -o 'compiler_flang_[a-z_]*konkuren
 ## Ограничение, которое нельзя нарушить до конца перепечатки
 
 **Цель `c` не трогать.** Примета 1 приёмки нового двоичного вкопала в себя
-нынешний вид имени — `scripts/new-binary-acceptance.sh:110`, проверено
+нынешний вид имени — `scripts/seed/new-binary-acceptance.sh:110`, проверено
 29 августа, строка на месте:
 
 ```sh

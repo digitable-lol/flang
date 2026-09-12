@@ -20,7 +20,7 @@
 ## Случаи
 
 **1. `proba-stolknoveniy.flang`, 305 901 байт — ПОЧИНЕНО.**
-`scripts/target-collisions.sh:94` кладёт временный вход в
+`scripts/targets/target-collisions.sh:94` кладёт временный вход в
 `flang/self/bootstrap/` и убирает его `trap 'rm -rf "$TMP" "$ROOT/$PROBE"' EXIT`.
 Ячейка увидела, как файл появился в её клоне и через три минуты исчез, и он
 успел попасть в её коммит. Она правильно подняла тревогу вместо того, чтобы

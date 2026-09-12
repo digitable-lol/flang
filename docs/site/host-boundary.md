@@ -125,7 +125,7 @@ An interrupt handler does terminate, and still cannot be written in flang as a
 whole — because the other half of its job is waiting and hardware. But the first
 half can be, and that is not a small thing.
 
-The tree carries this as a separate example, `examples/driver/uart.flang`. The
+The tree carries this as a separate example, `docs/examples/driver/uart.flang`. The
 driver there is a pure function: "state and event → new state and a list of
 register writes". It writes nothing; it **answers what to write**. The host does
 the writing, and its whole job is a six-line loop. The state machine, meanwhile,
@@ -207,13 +207,13 @@ by promises.
 
 ## An example that actually runs
 
-`examples/host-boundary/` is the whole junction, three files:
+`docs/examples/host-boundary/` is the whole junction, three files:
 
 | file | what it is |
 |---|---|
-| `examples/host-boundary/gatekeeper.flang` | the decision: who gets through, who is refused, with which code. Module «Gatekeeper» |
-| `examples/host-boundary/host.c` | the execution: the loop, input-output, mutable state |
-| `examples/host-boundary/run.sh` | print to C, build with the system `cc`, run |
+| `docs/examples/host-boundary/gatekeeper.flang` | the decision: who gets through, who is refused, with which code. Module «Gatekeeper» |
+| `docs/examples/host-boundary/host.c` | the execution: the loop, input-output, mutable state |
+| `docs/examples/host-boundary/run.sh` | print to C, build with the system `cc`, run |
 
 The decisions — parsing the request, checking rights, the budget and its
 refill, the state transition, the response codes — are all on this side of the
@@ -249,8 +249,8 @@ functions. It is in C because of one line inside it: `fgets` **waits**.
 The decision is checked with the usual commands:
 
 ```
-bootstrap/flang check examples/host-boundary/gatekeeper.flang --proof
-bootstrap/flang test  examples/host-boundary/gatekeeper.flang
+bootstrap/flang check docs/examples/host-boundary/gatekeeper.flang --proof
+bootstrap/flang test  docs/examples/host-boundary/gatekeeper.flang
 ```
 
 The `--proof` report says: all functions are total, each termination is proved
@@ -278,13 +278,13 @@ run.sh:  cc … privratnik.c …
 
 The first step of the run (printing) and both commands above pass; the second
 step — the build — fails (re-checked on 11 September 2026 on 0.7.17: `bash
-examples/host-boundary/run.sh` → «privratnik.h: No such file or directory»,
+docs/examples/host-boundary/run.sh` → «privratnik.h: No such file or directory»,
 «сборка отказала, код 1»). The output below was recorded before the rename; to
-reproduce it, the names in `examples/host-boundary/host.c` and
-`examples/host-boundary/run.sh` have to be brought to the new ones.
+reproduce it, the names in `docs/examples/host-boundary/host.c` and
+`docs/examples/host-boundary/run.sh` have to be brought to the new ones.
 
 ```
-$ bash examples/host-boundary/run.sh
+$ bash docs/examples/host-boundary/run.sh
 …
 == 3. прогон: девять событий на стандартный ввод
 хозяин: врата открыты. ёмкость 3, уровень ключа 2, запас 0
@@ -314,7 +314,7 @@ goes on.
 Three details of the junction that are visible only in the sources:
 
 * printing is invoked with the flag `--no-cli`: the program has its own entry
-  point, in `examples/host-boundary/host.c`, and two `main` functions in one
+  point, in `docs/examples/host-boundary/host.c`, and two `main` functions in one
   build do not link;
 * the printed module's memory lives in an arena, and the host returns it on
   every iteration with one call to `fl_arena_reset` — everything flang built has
@@ -326,13 +326,13 @@ Three details of the junction that are visible only in the sources:
   on the boundary function; internal ones make do with promises.
 
 Next to it in the tree sits a second junction, made the first way — through the
-dictionary of orders: `examples/io/фильтр-пакетов.flang` parses an IPv4
+dictionary of orders: `docs/examples/io/фильтр-пакетов.flang` parses an IPv4
 datagram header together with the TCP destination port and decides whether to
 let it through. Seventeen functions, all total; the octets leave for the
 operating system and come back through `write` and `read`. The same line on
-other tasks: `examples/driver/` — on hardware (the [MSI
-driver](msi-driver.html)), `examples/web/orders-api.flang` — on a REST service,
-`examples/io/link-report.flang` — on input-output.
+other tasks: `docs/examples/driver/` — on hardware (the [MSI
+driver](msi-driver.html)), `docs/examples/web/orders-api.flang` — on a REST service,
+`docs/examples/io/link-report.flang` — on input-output.
 
 ## What this does not solve
 

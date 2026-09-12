@@ -1,6 +1,6 @@
 # The MSI driver in flang
 
-`examples/driver/msi/msi.flang` is the MSI controller of the JH7110 PCIe bridge
+`docs/examples/driver/msi/msi.flang` is the MSI controller of the JH7110 PCIe bridge
 (the VisionFive 2 board, PLDA XpressRICH bridge), rewritten in flang from a
 driver in the NetBSD kernel. The source is the files jh7110_pcie_msi.c (the
 controller itself) and jh7110_pcievar.h (types and register addresses) in the
@@ -16,7 +16,7 @@ during this work.
 
 Every function is pure: "controller state and event → new state, a list of
 register writes and a list of bits to dispatch". The same approach as in the
-UART driver `examples/driver/uart.flang` and the [memory
+UART driver `docs/examples/driver/uart.flang` and the [memory
 allocator](allocator.html).
 
 ```flang
@@ -50,7 +50,7 @@ What the language had to replace:
 
 ## What is in the file
 
-1 file, 426 lines <!-- СНЯТО 2026-09-08 файлов examples/driver/msi/*.flang = 1 --> <!-- СНЯТО 2026-09-08 строк examples/driver/msi/msi.flang = 426 -->.
+1 file, 426 lines <!-- СНЯТО 2026-09-08 файлов docs/examples/driver/msi/*.flang = 1 --> <!-- СНЯТО 2026-09-08 строк docs/examples/driver/msi/msi.flang = 426 -->.
 
 Types: «Запись в регистр» (register write: address, value), «Разряд» (bit:
 vector, clear, call), «Вектор MSI» (taken, handler, safe), «Состояние MSI»
@@ -86,8 +86,8 @@ exclusion, memory allocation and debug printing — those are the host's work.
 ## How to run
 
 ```
-bootstrap/flang check examples/driver/msi/msi.flang --proof
-bootstrap/flang test  examples/driver/msi/msi.flang
+bootstrap/flang check docs/examples/driver/msi/msi.flang --proof
+bootstrap/flang test  docs/examples/driver/msi/msi.flang
 ```
 
 The `--proof` report prints a verdict for every postcondition and, on its last

@@ -161,7 +161,7 @@ resident set size`, то есть память, а не диск. После т�
 `a/задачник-и-документы` — ветку Ч160 вливать поверх не надо, будет конфликт.**
 Правлены те же три места и ещё девять сверх них: `.github/workflows/reprint.yml`
 (шапка, сводка прогона, предупреждение, снятый отказ «FLANG не задан»),
-`scripts/reprint-freshness.flang` (обе строки; `flang check` — 13 функций из 13),
+`scripts/seed/reprint-freshness.flang` (обе строки; `flang check` — 13 функций из 13),
 `docs/gate-rules.md` (`PAMYAT=400G` → `80G`), `AGENTS.md`, `ROADMAP.md` (заведён
 раздел «Цена самосборки»), `docs/kernel-ledger.md`, `docs/tree-inventory.md`,
 `docs/guide/naming.ru.md`, `docs/ifl/reproduce.sh`, `scripts/raskrutka.sh` и
@@ -173,7 +173,7 @@ resident set size`, то есть память, а не диск. После т�
 * Там же снят отказ `exit 1` «FLANG не задан»: довод устарел, семя несёт
   `FL_MAX_STEPS 1400000000000` само, и заход 31 августа шёл стоковым
   `bootstrap/flang`. Отказ теперь останавливал бы заход, который дошёл бы.
-* `scripts/reprint-freshness.flang` — та же цена в двух местах; эта проверка
+* `scripts/seed/reprint-freshness.flang` — та же цена в двух местах; эта проверка
   идёт всегда и печатала «5 ч 30 мин, 258,9 ГиБ» всякому. После правки
   `flang check` без замечаний, 13 функций из 13.
 

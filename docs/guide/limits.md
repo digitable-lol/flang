@@ -81,10 +81,10 @@ attached to the verification conditions.
   positive (`н минус ш` under `если ш не больше 0`). Where the step CHANGES from turn to turn there
   is nothing to infer it from, so the author NAMES the measure — a `убывает <expression>` line.
   That is how binary search (`убывает верх минус низ плюс 1`) and Euclid (`убывает б`) are
-  written; they no longer need a "fuel" list — see `examples/measure/`. **Counting UP is not
+  written; they no longer need a "fuel" list — see `docs/examples/measure/`. **Counting UP is not
   written with a measure**: it has no upper bound and nothing to prove with. It is turned into
   counting down over a `неотрицательное` parameter, and then the type itself proves it
-  (`examples/measure/natural.flang`). Decrease with a floor is not enough: 1, ½, ¼ … stays above zero
+  (`docs/examples/measure/natural.flang`). Decrease with a floor is not enough: 1, ½, ¼ … stays above zero
   forever, so the guard on a declared measure checks three things at once — strict decrease,
   non-negativity and WHOLENESS. The constant-step measure is propped up by the same guard for a
   different reason: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|. No
@@ -99,7 +99,7 @@ attached to the verification conditions.
   constant step with a guard, {{носители.точныйШаг}} carry it by exact step with none, and the
   guard stands at {{сторож.мест}} sites in {{сторож.функций}} functions. The move to `неотрицательное` added ZERO sites — overflow is caught by widening the type
   (`неотрицательное плюс неотрицательное` is `число`), not by a check in the emitted code. Worked
-  example: `examples/measure/natural.flang`.
+  example: `docs/examples/measure/natural.flang`.
 - A variant named like a keyword (`Да`, `Плюс`, `Больше`) is not matched in patterns, and the
   diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use
   the explicit `случай вариант «Имя»` form the stdlib uses.

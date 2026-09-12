@@ -3,7 +3,7 @@
 # Laying out a flang project
 
 This document is not a wish list. Every rule here is derived from a working
-example — [`examples/library-api`](../../examples/library-api), the domain half of
+example — [`docs/examples/library-api`](../examples/library-api), the domain half of
 a library REST service: lending books, the catalogue, fines for overdue returns —
 and points at it.
 
@@ -16,7 +16,7 @@ modules are still checkable on the tree as before.
 The example is laid out like this:
 
 ```
-examples/library-api/
+docs/examples/library-api/
   lib/                 flang: pure functions over the project's data, domain rules included
     api.flang          module «Library API» — the only entry, links the rest
     catalog.flang      module «Catalog» — selection, summary, book cards
@@ -62,7 +62,7 @@ to write separately.
 removed along with the JavaScript implementation of the language) held not a
 single number from the fine schedule, no ISBN check digit, no query-string
 parsing, and no "who is allowed to borrow" condition. All of that lives in
-`examples/library-api/lib/*.flang`, which a command checks.
+`docs/examples/library-api/lib/*.flang`, which a command checks.
 
 **What stays with the host, and why it is the host's.** I/O in the language is
 DESCRIBED but not performed: `вариант «Прочитать файл» с путь равным …` builds a
@@ -110,10 +110,10 @@ changes. Put them in one file and a tariff edit has to be made in a file people
 are afraid to touch.
 
 **Where to look.**
-[`lib/fine.flang`](../../examples/library-api/lib/fine.flang) — the fine schedule
+[`lib/fine.flang`](../examples/library-api/lib/fine.flang) — the fine schedule
 and its ceiling: three surcharges (50, 150 and 300 — exactly the ceiling when
 summed), five examples and one `обеспечивает`, readable without a programmer.
-[`lib/isbn.flang`](../../examples/library-api/lib/isbn.flang) — splitting a string
+[`lib/isbn.flang`](../examples/library-api/lib/isbn.flang) — splitting a string
 into characters, a fold with a record accumulator, a remainder: whoever edits the
 tariff has nothing to do in here.
 
@@ -127,7 +127,7 @@ exceeded on any input. The reason is written in the file's header.
 decided not by a function but by a proof: a certificate was built from a snapshot
 of the data, and a refusal was called "the premise was not found" rather than "the
 condition is false". Today it is an ordinary function
-([`lib/loan.flang`](../../examples/library-api/lib/loan.flang)) — the same answer
+([`lib/loan.flang`](../examples/library-api/lib/loan.flang)) — the same answer
 on the same inputs, but backed only by its body and its examples. The difference
 between "proven" and "computed" is named in the file's header rather than lost
 quietly.
@@ -174,7 +174,7 @@ guillemets: `«Рассчитать штраф»`, `«дней просрочк�
 read by the same person who reads its name. Mixing alphabets within one line is
 extra work for the eye with no benefit at all. The language does have an English
 surface, but it is separate and complete —
-[`examples/rosetta/factorial-english.flang`](../../examples/rosetta/factorial-english.flang)
+[`docs/examples/rosetta/factorial-english.flang`](../examples/rosetta/factorial-english.flang)
 sits next to `factorial.flang` rather than mixed into one file.
 
 **Why guillemets.** A multi-word name is otherwise indistinguishable from the
@@ -238,12 +238,12 @@ the reader sees one name and gets declarations from another file.
 
 **A module boundary follows the question "what changes together".** The book
 selection rules change together; the ISBN checksum formula never changes with them
-— which is why [`lib/catalog.flang`](../../examples/library-api/lib/catalog.flang)
-and [`lib/isbn.flang`](../../examples/library-api/lib/isbn.flang) are different
+— which is why [`lib/catalog.flang`](../examples/library-api/lib/catalog.flang)
+and [`lib/isbn.flang`](../examples/library-api/lib/isbn.flang) are different
 files.
 
 **A module does not know about its consumers.**
-[`lib/query.flang`](../../examples/library-api/lib/query.flang) knows nothing about
+[`lib/query.flang`](../examples/library-api/lib/query.flang) knows nothing about
 books or ISBNs: any project with a query string would take it as is. Knowledge
 about books lives one floor up.
 
@@ -269,7 +269,7 @@ them the module did not link at all. The reason is written right in the header o
 body of the file but from a linking refusal.
 
 **A project library has one entry module.**
-[`lib/api.flang`](../../examples/library-api/lib/api.flang) is the only file the
+[`lib/api.flang`](../examples/library-api/lib/api.flang) is the only file the
 host loads; linking pulls in everything else. The reason is in how the language
 works: an import is a merge of declarations, not a namespace, and loading two
 modules separately means keeping two programs on the host and remembering which
@@ -296,7 +296,7 @@ the example (`«Код верен»` calls `«Цифры»` and `«Контро�
 self-contained. Both reasons are written in the file headers.
 
 That was true when this was written; on 11 September 2026 it no longer is. `flang check
-examples/library-api/lib/api.flang` (binary 0.7.17) answers «не проверено — замечаний 8»,
+docs/examples/library-api/lib/api.flang` (binary 0.7.17) answers «не проверено — замечаний 8»,
 exit 1: `«Сумма»`, `«Минимум»`, `«Максимум»` and `«Все не меньше»` in
 `flang/stdlib/lists.flang` now call helpers `«Шаг суммы»`, `«Шаг минимума»`, `«Шаг
 максимума»`, `«Шаг все не меньше»`, which are not in the `только` list of `catalog.flang` —
@@ -352,7 +352,7 @@ splitting a string is — needs those functions written again, and writing them 
 in one place is better.
 
 **Where to look.**
-[`stdlib/text.flang`](../../examples/library-api/stdlib/text.flang) — four
+[`stdlib/text.flang`](../examples/library-api/stdlib/text.flang) — four
 functions over a list of strings, not one of which knows the word "book".
 
 ---
@@ -392,8 +392,8 @@ is taken by a run, not by counting in files.
 **The commands that check the project:**
 
 ```bash
-flang check examples/library-api/lib/api.flang
-flang test  examples/library-api/lib/api.flang
+flang check docs/examples/library-api/lib/api.flang
+flang test  docs/examples/library-api/lib/api.flang
 ```
 
 `check` on the entry module assembles the whole program; `test` runs the examples of
@@ -402,7 +402,7 @@ enough: add a module and it arrives in the check along with linking, without edi
 a list of files.
 
 Printing the same library to a target language is the same command on the same
-entry module: `flang emit examples/library-api/lib/api.flang --target js --out <dir>`.
+entry module: `flang emit docs/examples/library-api/lib/api.flang --target js --out <dir>`.
 Printing is cancelled if the program does not pass the check: `emit` looks at the
 same things `check` does and names the same remarks.
 
@@ -410,7 +410,7 @@ same things `check` does and names the same remarks.
 refusal, `FLANG_UNKNOWN_NAME`, unknown function `«Все не меньше»`". That function has
 since appeared in the library (`flang/stdlib/lists.flang`), and `catalog.flang`
 imports it by name, so the named cause of the refusal is gone. Today's answer was taken
-by a run on 11 September 2026: `flang check examples/library-api/lib/api.flang` — exit 1,
+by a run on 11 September 2026: `flang check docs/examples/library-api/lib/api.flang` — exit 1,
 «не проверено — замечаний 8»; the cause and the fix are named in section 7.
 
 ---

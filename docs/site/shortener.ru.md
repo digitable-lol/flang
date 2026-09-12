@@ -2,10 +2,10 @@
 
 Одна демонстрация из двух половин, и обе написаны целиком на flang.
 
-- **Служба** — `examples/web/shortener/`: вход — байты, которые хозяин прочитал
+- **Служба** — `docs/examples/web/shortener/`: вход — байты, которые хозяин прочитал
   из соединения; выход — байты, которые хозяин пошлёт обратно. Между ними нет ни
   одной строки, написанной не на flang.
-- **Клиент** — `web/shortener/`: форма, отправка, список ссылок, счётчик
+- **Клиент** — `docs/examples/web/shortener-client/`: форма, отправка, список ссылок, счётчик
   переходов во вкладке браузера. Не стенд и не второе «приложение-счётчик»:
   отвечает ему настоящая служба.
 
@@ -13,21 +13,21 @@
 
 ```sh
 export LC_ALL=C.UTF-8
-bootstrap/flang check examples/web/shortener/service.flang --proof
-bootstrap/flang test  examples/web/shortener/server.flang
-bootstrap/flang io    examples/web/shortener/plan.flang --in-dir
+bootstrap/flang check docs/examples/web/shortener/service.flang --proof
+bootstrap/flang test  docs/examples/web/shortener/server.flang
+bootstrap/flang io    docs/examples/web/shortener/plan.flang --in-dir
 ```
 
 Клиент во вкладке:
 
 ```sh
-sh web/sobrat.sh
-bootstrap/flang io web/stand.flang --max-orders 100000
-# открыть http://127.0.0.1:8908/web/shortener/index.html
+sh docs/examples/web/build.sh
+bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000
+# открыть http://127.0.0.1:8908/docs/examples/web/shortener-client/index.html
 ```
 
 Ни Node, ни npm, ни `python3 -m http.server`: модуль печатает двоичный
-компилятор, страницу отдаёт стенд, написанный на flang (`web/stand.flang`).
+компилятор, страницу отдаёт стенд, написанный на flang (`docs/examples/web/stand.flang`).
 
 ## Служба
 
@@ -67,7 +67,7 @@ handler-without-budget.flang    36   УЛИКА: не собирается, и �
 
 ### Что доказано, а что проверено
 
-`bootstrap/flang check examples/web/shortener/service.flang --proof`, прогон
+`bootstrap/flang check docs/examples/web/shortener/service.flang --proof`, прогон
 11 сентября 2026 на коммите 2c40752d0 (двоичный 0.7.17): **функций 24, тотальных
 24, обычных 0. Утверждений 8: доказано 5 (из них индукцией 4), сетка 3,
 объявлено, не доказано 0, отвергнуто 0; законов на веру 0. Код возврата 0.**
@@ -176,7 +176,7 @@ handler-without-budget.flang    36   УЛИКА: не собирается, и �
 через сокет). Служба не изменилась ни на знак; изменился план.
 
 ```sh
-bootstrap/flang io examples/web/shortener/plan-durable.flang --in-dir
+bootstrap/flang io docs/examples/web/shortener/plan-durable.flang --in-dir
 ```
 
 Стенд, которым сделаны три прогона ниже, и одиннадцать проверок при нём были
@@ -387,7 +387,7 @@ bootstrap/flang io examples/web/shortener/plan-durable.flang --in-dir
 дереве нет, значит нечему устареть. Руками то же делается так:
 
 ```
-bootstrap/flang emit web/shortener/client.flang \
+bootstrap/flang emit docs/examples/web/shortener-client/client.flang \
   --target js --no-cli --out <каталог>
 ```
 
@@ -441,7 +441,7 @@ bootstrap/flang emit web/shortener/client.flang \
   `emit --target js` печатает объявление и отвечает 0, остальные девять целей
   отказывают `FLANG_PLAN_UNSUPPORTED` кодом 1, не записав ни файла (11 сентября
   2026 перепроверено на `python` и `go`). Сверяет это
-  `scripts/plan-across-targets.flang`.
+  `scripts/targets/plan-across-targets.flang`.
 
 Хозяин переехал в `flang/src/emit/js/flang_host_browser.js` с нулём ввозов;
 браузерный хозяин реализации на JavaScript стал переходной строкой, подставляющей

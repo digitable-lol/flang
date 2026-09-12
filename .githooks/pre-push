@@ -19,12 +19,12 @@
 #   набор проб чекера (прогон.sh)       минуты
 #   ./ярлык сколько-верим (потолок Г3)  минуты, нужен --max-steps 2e9
 #   сборка bootstrap                    5–6 минут
-#   ещё десять сторожей дороже 200 с    см. scripts/kto-zovet-storozhey.sh
+#   ещё десять сторожей дороже 200 с    см. scripts/guards/kto-zovet-storozhey.sh
 #                                       (было семь: запись, сведение и
 #                                       пустота переехали из «красных по
 #                                       делу» сюда — вырос бюджет сверщика,
 #                                       а не корпус; задача 5612)
-#   scripts/chto-otstalo-ot-semeni.sh   краснеть НЕ УМЕЕТ (только exit 2,
+#   scripts/seed/chto-otstalo-ot-semeni.sh   краснеть НЕ УМЕЕТ (только exit 2,
 #                                       если семени нет) — это отчёт, не
 #                                       сторож, и в хуке был бы украшением
 #
@@ -60,18 +60,18 @@ echo
 
 NACHALO=$(date +%s)
 
-zapusk proza          sh scripts/prose-numbers-guard.sh
-zapusk semya          sh scripts/semya-rantayma-eto-istochnik.sh
+zapusk proza          sh scripts/guards/prose-numbers-guard.sh
+zapusk semya          sh scripts/seed/semya-rantayma-eto-istochnik.sh
 # semya-osvezhit --check: годен ли быстрый пересев (задача 3388). Краснеет
 # только на подлоге происхождения — рантайм догнал источник (как после
 # быстрого пересева), а замыкание flang/self ушло вперёд отпечатка: тогда
 # compiler_flang.c старый, а семя подано свежим. Обычное отставание середины
 # работы (отстают и рантайм, и замыкание) — зелёное, это не его предмет.
-zapusk semyaosv       sh scripts/semya-osvezhit.sh --check
-zapusk versii-vezde   sh scripts/version-derivations-guard.sh
-zapusk zov            sh scripts/kto-zovet-storozhey.sh --check
-zapusk podlog         sh scripts/storozha-bez-podloga.sh --check
-zapusk opis           sh scripts/pol-dokazannogo-sverka.sh
+zapusk semyaosv       sh scripts/seed/semya-osvezhit.sh --check
+zapusk versii-vezde   sh scripts/guards/version-derivations-guard.sh
+zapusk zov            sh scripts/guards/kto-zovet-storozhey.sh --check
+zapusk podlog         sh scripts/guards/storozha-bez-podloga.sh --check
+zapusk opis           sh scripts/guards/pol-dokazannogo-sverka.sh
 
 DVOICHNYY=да
 if [ ! -x bootstrap/flang ]; then

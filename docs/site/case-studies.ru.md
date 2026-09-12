@@ -1,6 +1,6 @@
 # Разбор: задачи с leetcode, решения и то, что о них доказано
 
-Каталог `examples/leetcode/` — 82 файла, 6 205 строк, 301 функция и 806
+Каталог `docs/examples/leetcode/` — 82 файла, 6 205 строк, 301 функция и 806
 исполняемых примеров (замер 11 сентября 2026 на коммите `2c40752d0`: `wc -l`,
 `grep -c` по заголовкам функций и примеров; в 0.7.14 из примеров убраны
 `//`-комментарии, отсюда меньше строк, чем было 29 августа). Это не пример,
@@ -43,7 +43,7 @@
 Вернуть номер цели (считая с нуля) или −1, если её в списке нет. Требуется
 O(log n).
 
-**Решение целиком** (`examples/leetcode/704-binary-search.flang`; вводный
+**Решение целиком** (`docs/examples/leetcode/704-binary-search.flang`; вводный
 комментарий файла опущен, он пересказан ниже):
 
 ```flang
@@ -97,7 +97,7 @@ O(log n).
 **Что доказано:**
 
 ```
-flang check examples/leetcode/704-binary-search.flang --proof
+flang check docs/examples/leetcode/704-binary-search.flang --proof
 ```
 
 ```
@@ -133,7 +133,7 @@ flang check examples/leetcode/704-binary-search.flang --proof
 
 **Условие.** Отсортировать список по возрастанию за O(n log n).
 
-**Решение целиком** (`examples/leetcode/148-sort-list.flang`):
+**Решение целиком** (`docs/examples/leetcode/148-sort-list.flang`):
 
 ```flang
 модуль «Sort list»
@@ -236,7 +236,7 @@ flang check examples/leetcode/704-binary-search.flang --proof
 **Что доказано:**
 
 ```
-flang check examples/leetcode/148-sort-list.flang --proof
+flang check docs/examples/leetcode/148-sort-list.flang --proof
 ```
 
 ```
@@ -280,7 +280,7 @@ flang check examples/leetcode/148-sort-list.flang --proof
 ямах после дождя: над каждым столбиком стоит столько воды, сколько даёт меньшая
 из двух наибольших высот слева и справа, минус сам столбик.
 
-**Решение целиком** (`examples/leetcode/042-trapping-rain-water.flang`):
+**Решение целиком** (`docs/examples/leetcode/042-trapping-rain-water.flang`):
 
 ```flang
 модуль «Trapping rain water»
@@ -363,7 +363,7 @@ flang check examples/leetcode/148-sort-list.flang --proof
 **Что доказано:**
 
 ```
-flang check examples/leetcode/042-trapping-rain-water.flang --proof
+flang check docs/examples/leetcode/042-trapping-rain-water.flang --proof
 ```
 
 ```
@@ -407,7 +407,7 @@ flang check examples/leetcode/042-trapping-rain-water.flang --proof
 границах и четыре о первых буквах таблицы; здесь стояло «два», четыре добавлены
 коммитом `c549be91a`).
 
-**Решение целиком** (`examples/leetcode/013-roman-to-integer.flang`):
+**Решение целиком** (`docs/examples/leetcode/013-roman-to-integer.flang`):
 
 ```flang
 модуль «Roman to integer»
@@ -500,7 +500,7 @@ flang check examples/leetcode/042-trapping-rain-water.flang --proof
 **Что доказано:**
 
 ```
-flang check examples/leetcode/013-roman-to-integer.flang --proof
+flang check docs/examples/leetcode/013-roman-to-integer.flang --proof
 ```
 
 ```
@@ -553,7 +553,7 @@ flang check examples/leetcode/013-roman-to-integer.flang --proof
 Эта задача здесь потому, что на ней доказательство **не проходит**, и файл об
 этом говорит прямо.
 
-**Решение целиком** (`examples/leetcode/202-happy-number.flang`):
+**Решение целиком** (`docs/examples/leetcode/202-happy-number.flang`):
 
 ```flang
 модуль «Happy number»
@@ -637,7 +637,7 @@ flang check examples/leetcode/013-roman-to-integer.flang --proof
 **Что доказано:**
 
 ```
-flang check examples/leetcode/202-happy-number.flang --proof
+flang check docs/examples/leetcode/202-happy-number.flang --proof
 ```
 
 ```

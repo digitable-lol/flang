@@ -1,7 +1,10 @@
 # ADR-0020. Корень хранилища отделяет язык от оснастки: стенд уезжает в `tools/`, браузерные образцы — в `packaging/`
 
-**Состояние:** предложено — спека и репетиция на копии дерева; перемещение файлов
-не начато и не начнётся раньше, чем закончится идущая перепечатка семени.
+**Состояние:** заменено словами владельца 11 сентября 2026 (задача
+[1745](../../tasks/1745-the-tree-is-reorganized-by-the-owners-words-of-11-september.md)):
+`web/` уехал в `docs/examples/web/`, а не в `packaging/`; `benchmarks/` — в `docs/`,
+а не в `tools/`. Замер корня и репетиция ниже остаются в силе как метод; адреса
+назначения — нет.
 **Дата:** 8 сентября 2026
 **Основание:** задача [8235](../../tasks/8235-the-repository-layout-says-what-the-project-is.md)
 (замечание владельца от 28 августа, «ок» на исполнение — 8 сентября); замер
@@ -13,7 +16,7 @@
 проза → `docs/ct`, 54 файла правки на один каталог).
 **Проверяется:** после переезда — `sh scripts/raskrutka.sh --bystro` (отпечаток
 цел), `./ярлык тесты` (ссылки не порваны), `sh .githooks/pre-push`, сборка сайта
-`node docs/site/build.mjs --check`, `bootstrap/flang io scripts/link-guard.flang`.
+`node docs/site/build.mjs --check`, `bootstrap/flang io scripts/guards/link-guard.flang`.
 
 ---
 
@@ -36,7 +39,7 @@
 | --- | --- | ---: | ---: | --- | --- |
 | `bootstrap/` | **язык: семя** — компилятор, напечатанный в C | 8 | 481 | не переезжает (запрет задачи) | отпечаток семени, приёмная отвергает `bootstrap/**`, `release.yml` |
 | `flang/` | **язык**: `self/` компилятор, `core/`, `stdlib/`, `proof/`, `conc/`, `ct/`, `src/emit/` рантаймы, `test/`, `проверки/`; внутри — `flang/scripts/` (53 файла оснастки языка, 271 ссылка) | 955 | 647 (`self/`), 417 (`stdlib/`), 408 (`src/`) | не переезжает | 48 из 55 строк отпечатка — пути `flang/…`; двоичный ищет библиотеку по `<каталог двоичного>/../flang/stdlib` |
-| `examples/` | **язык: корпус** — 185 программ в 22 наборах | 242 | 303 | не переезжает | `published-vs-tree.sh` сверяет числа README; сайт берёт два файла из `examples/rosetta/` |
+| `docs/examples/` | **язык: корпус** — 185 программ в 22 наборах | 242 | 303 | не переезжает | `published-vs-tree.sh` сверяет числа README; сайт берёт два файла из `docs/examples/rosetta/` |
 | `fspec/` | **язык: образец пакета** — `flang new` копирует его по пути `<каталог двоичного>/../fspec` (`flang_repl.c:16359`) | 77 | 60 | **переезд = правка входа семени = перепечатка**; не переезжает | семя |
 | `ярлык`, `ярлыки.flang` | вход оснастки: оболочка запуска и список целей | 2 | 55 | остаются в корне (`./ярлык тесты` в README, хук) | — |
 | `scripts/` | **оснастка**: сторожа, перепечатка семени, релиз, журнал | 141 | 453 (workflows 9, оболочка 53, flang 86, js/json 23, md 255, tsv 9) | ≈450 файлов; плюс 365 путей `"../` в 56 планах, если меняется глубина; плюс строки справки двоичного `scripts/raskrutka.sh`, `scripts/otpechatok-semeni` в `flang/self/cli.flang` и `flang/src/emit/c/flang_repl.c` — **входы семени** | перепечатка обязательна; хук, все восемь workflows |
@@ -47,14 +50,14 @@
 | `docs/` | документация (сайт, руководство, решения, заметки) | 931 | 427 | не переезжает (задача 0037 только что собрала её) | `pages.yml` строится по `docs/**` |
 | `tasks/` | задачник | 371 (107 открытых) | 53 | не переезжает | `task-numbers-guard.sh`, `flang/scripts/tasks.flang` |
 | `.githooks/`, `.github/`, `.claude/` | служебная оснастка | 1 / 13 / 4 | 8 / — / 15 | не переезжают | — |
-| `package.json` | описание пакета — уже **печатается** языком (`scripts/emit-package.flang`) | 1 | 65 | пункт 4 задачи; читают код: `release.yml` (версия для тега и архива, 4 места), `ci.yml:1437`, `install-path.yml:182`, `docs/site/build.flang:559` | версия выпуска |
+| `package.json` | описание пакета — уже **печатается** языком (`scripts/release/emit-package.flang`) | 1 | 65 | пункт 4 задачи; читают код: `release.yml` (версия для тега и архива, 4 места), `ci.yml:1437`, `install-path.yml:182`, `docs/site/build.flang:559` | версия выпуска |
 | `changelog.json` | машинный журнал изменений, 550 КБ | 1 | 21 | остаётся (`scripts/build-changelog*`) | — |
 | `README*`, `LICENSE*`, `AGENTS.md`, `CONTRIBUTING.md`, `DESCRIPTION.md`, `ROADMAP.md`, `CHANGELOG.md` | корневые документы | 9 | — | остаются; карта раскладки в `README.md:307–317` и `README.ru.md:303–313` правится с переездом | `published-vs-tree.sh` сверяет числа README |
 
 Что видно по замеру:
 
 1. **Три четверти корня — язык или то, без чего он не собирается** (`bootstrap/`,
-   `flang/`, `examples/`, `fspec/`, `ярлык`). Их не переносить.
+   `flang/`, `docs/examples/`, `fspec/`, `ярлык`). Их не переносить.
 2. **Дорого — только `scripts/`.** 453 файла и, главное, строки справки двоичного
    во входах семени: любое новое имя для `scripts/` требует перепечатки.
 3. **Дёшево — `benchmarks/` и `web/`**: вместе ≈135 файлов правки, семя не
@@ -71,7 +74,7 @@
 - `package.json` печатать при сборке пакета (отдельным шагом, после замера
   читателей — они названы в таблице).
 
-Корень после: `bootstrap/ flang/ examples/ fspec/ · docs/ tasks/ · scripts/ tools/
+Корень после: `bootstrap/ flang/ docs/examples/ fspec/ · docs/ tasks/ · scripts/ tools/
 packaging/ editors/ · ярлык ярлыки.flang` и девять документов. Каталогов
 верхнего уровня 10 вместо 12. Имя `tools/` — английское, по правилу
 `AGENTS.md` («имена новых файлов — английские, не транслит»); кириллица в именах
@@ -81,7 +84,7 @@ packaging/ editors/ · ярлык ярлыки.flang` и девять докум
 
 То же, что А, плюс `scripts/` → `tools/` (переименование **в той же глубине**,
 чтобы 365 путей `"../` в планах не менялись), `editors/` → `tools/editors/`.
-Корень: `bootstrap/ flang/ examples/ fspec/ docs/ tasks/ tools/ packaging/`.
+Корень: `bootstrap/ flang/ docs/examples/ fspec/ docs/ tasks/ tools/ packaging/`.
 
 Цена: ≈450 файлов правки и **перепечатка семени** — справка двоичного называет
 `scripts/raskrutka.sh` и `scripts/otpechatok-semeni`
@@ -134,7 +137,7 @@ git mv web packaging/web
 ### Шаг 2. Правка ссылок — по категориям (замер репетицией, см. ниже)
 
 Правило замены: `benchmarks/` → `tools/benchmarks/`, `web/` → `packaging/web/`,
-только на границе слова (не трогать `examples/web/`, `docs/benchmark/`).
+только на границе слова (не трогать `docs/examples/web/`, `docs/benchmark/`).
 **Не править**: `CHANGELOG.md`, `changelog.json`, `docs/archive/`,
 `tasks/completed/` (история), `bootstrap/**` (семя) и входы семени
 `flang/src/emit/c/*`, `flang/self/**` (их правит только перепечатка).
@@ -142,12 +145,12 @@ git mv web packaging/web
 | Категория | Где | Что |
 | --- | --- | --- |
 | Workflows | `.github/workflows/binary.yml` | пути стенда в комментариях и шагах |
-| Хук и сторожа на оболочке | `scripts/published-vs-tree.sh`, `seed-knows-type-words-guard.sh`, `flang/проверки/обход-примеров.sh` | образцы путей |
-| Планы на flang | `scripts/tree-inventory.flang` (правило «замеряемый материал»), `file-extensions.flang`, `name-splicing-guard.flang`, `flang/scripts/code-guard.flang`, `memory-guard.flang`, `flang/test/glob.flang`, `flang/conc/bench/gen.flang` | строки-образцы и примеры |
-| JavaScript | `flang/test/glob.mjs` (`СЫРЬЁ_ЗАМЕРОВ`), `flang/scripts/name-guard.mjs`, `word-guard.mjs`, `link-collision-guard.mjs`, `scripts/build-changelog-page.mjs`, `docs/site/sitemap.mjs` (комментарии) | образцы и исключения |
-| Ведомости с путями | `scripts/no-comments-debt.tsv`, `scripts/proved-share-ledger.txt` (строки «md5|…|путь» — md5 не меняется, путь меняется), `scripts/hand-written-lists-ledger.tsv`, `flang/проверки/ведомость-примеров.txt` | путь в строке |
+| Хук и сторожа на оболочке | `scripts/guards/published-vs-tree.sh`, `seed-knows-type-words-guard.sh`, `flang/проверки/обход-примеров.sh` | образцы путей |
+| Планы на flang | `scripts/guards/tree-inventory.flang` (правило «замеряемый материал»), `file-extensions.flang`, `name-splicing-guard.flang`, `flang/scripts/code-guard.flang`, `memory-guard.flang`, `flang/test/glob.flang`, `flang/conc/bench/gen.flang` | строки-образцы и примеры |
+| JavaScript | `flang/test/glob.mjs` (`СЫРЬЁ_ЗАМЕРОВ`), `flang/scripts/name-guard.mjs`, `word-guard.mjs`, `link-collision-guard.mjs`, `scripts/site/build-changelog-page.mjs`, `docs/site/sitemap.mjs` (комментарии) | образцы и исключения |
+| Ведомости с путями | `scripts/ledgers/no-comments-debt.tsv`, `scripts/ledgers/proved-share-ledger.txt` (строки «md5|…|путь» — md5 не меняется, путь меняется), `scripts/ledgers/hand-written-lists-ledger.tsv`, `flang/проверки/ведомость-примеров.txt` | путь в строке |
 | Настройки git | `.gitignore` (5 строк `web/`, 4 строки `benchmarks/`), `.gitattributes` (`benchmarks/** linguist-vendored`) | образцы |
-| Документы | README-карта раскладки (`README.md:307–317`, `README.ru.md:303–313`), `AGENTS.md`, страницы сайта `docs/site/browser-app*`, `shortener*`, `embedding*`, руководство, заметки `docs/zettel/`, открытые задачи | пути в прозе и в обратных кавычках — их проверяет `scripts/link-guard.flang` |
+| Документы | README-карта раскладки (`README.md:307–317`, `README.ru.md:303–313`), `AGENTS.md`, страницы сайта `docs/site/browser-app*`, `shortener*`, `embedding*`, руководство, заметки `docs/zettel/`, открытые задачи | пути в прозе и в обратных кавычках — их проверяет `scripts/guards/link-guard.flang` |
 | Переехавшие скрипты | `web/sobrat.sh`, `web/browser-probe.sh` (корень = `..` → `../..`), `web/wasm/build.sh`, `benchmarks/speed/assemble.sh`, `systems/measure.sh`, `without-libc/measure.sh`, `proof-cost/postcondition-pairs.sh` (`../..` → `../../..`) | глубина корня |
 | Переехавшие планы | `web/stand.flang` (7 путей `"../`), `benchmarks/proof-cost/*.flang` (18) | пути от каталога плана |
 | Приметы `СНЯТО … файлов <образец>` | ни одна примета не называет `benchmarks/` или `web/` — `prose-numbers-guard.sh` переезда не заметит | — |
@@ -166,7 +169,7 @@ git mv web packaging/web
 ```sh
 sh .githooks/pre-push                          # дешёвые сторожа
 sh scripts/raskrutka.sh --bystro               # отпечаток цел (переезд его не трогает)
-bootstrap/flang io scripts/link-guard.flang    # ни одной битой ссылки в прозе
+bootstrap/flang io scripts/guards/link-guard.flang    # ни одной битой ссылки в прозе
 node docs/site/build.mjs --check               # сайт собирается, ссылки целы
 ./ярлык опись:языки                            # опись дерева пересчитана
 ./ярлык тесты
@@ -199,7 +202,7 @@ node docs/site/build.mjs --check               # сайт собирается, 
 | GitHub, статистика языков | `.gitattributes`: `benchmarks/** linguist-vendored` | образец обновить, иначе стенд начнёт считаться кодом проекта |
 | Сайт (`pages.yml`) | адреса страниц не меняются (`browser-app.html`, `shortener.html`); внутри страниц — пути в прозе | `build.mjs --check` и `link-guard` в шаге 4 |
 | Homebrew / asdf | формула и плагин читают пути внутри релизного архива (`bootstrap/`, `flang/src/emit/`, `packaging/flang.1`), волна 1 их не трогает | — |
-| Релизный архив (`release.yml`, `scripts/release-in-c.flang`) | состав: семь файлов `bootstrap/`, рантаймы `flang/src/emit/`, `flang.1`, `LICENSE` — без `benchmarks/` и `web/` | — |
+| Релизный архив (`release.yml`, `scripts/release/release-in-c.flang`) | состав: семь файлов `bootstrap/`, рантаймы `flang/src/emit/`, `flang.1`, `LICENSE` — без `benchmarks/` и `web/` | — |
 | Фильтры `paths:` workflows | `install-path.yml` (`packaging/**`) начнёт запускаться на правки `packaging/web/` | принять или сузить фильтр |
 
 ## Репетиция на копии (8 сентября 2026)
@@ -218,20 +221,20 @@ plan-8235-layout.md): клон ветки, готовый двоичный то�
 | Сторож | До | После | Что это значит |
 | --- | :---: | :---: | --- |
 | `sh .githooks/pre-push` | 0 | 0 | переезд хук не красит |
-| `scripts/prose-numbers-guard.sh` | 0 | 0 | ни одна примета `СНЯТО` не называет `benchmarks/` или `web/` |
-| `scripts/pol-dokazannogo-sverka.sh` | 0 | 0 | пути ведомости правятся заменой заодно |
-| `scripts/semya-rantayma-eto-istochnik.sh` | 0 | 0 | семя не тронуто |
+| `scripts/guards/prose-numbers-guard.sh` | 0 | 0 | ни одна примета `СНЯТО` не называет `benchmarks/` или `web/` |
+| `scripts/guards/pol-dokazannogo-sverka.sh` | 0 | 0 | пути ведомости правятся заменой заодно |
+| `scripts/seed/semya-rantayma-eto-istochnik.sh` | 0 | 0 | семя не тронуто |
 | `sh scripts/raskrutka.sh --telo` | 0 | 0 | тело семени цело |
 | `sh scripts/raskrutka.sh --bystro` | 1 | 1 | **красен и до, и после по своей причине** («отпечаток снят с правленого дерева» — состояние ствола), переезд его не меняет |
-| `scripts/kto-zovet-storozhey.sh --check` | 0 | 0 | — |
-| `scripts/storozha-bez-podloga.sh --check` | 0 | 0 | — |
+| `scripts/guards/kto-zovet-storozhey.sh --check` | 0 | 0 | — |
+| `scripts/guards/storozha-bez-podloga.sh --check` | 0 | 0 | — |
 | `node docs/site/build.mjs --check` | 0 | 0 | сайт собирается, ссылки страниц целы |
-| `scripts/link-guard.flang` | 1 | 1 | число битых **не изменилось**: 2163 из 15703 в обоих прогонах — переезд не порвал ни одной ссылки; дерево красно по старому долгу (упоминания `.mjs`, которых давно нет) |
-| `scripts/file-extensions.flang` | 0 | 0 | — |
+| `scripts/guards/link-guard.flang` | 1 | 1 | число битых **не изменилось**: 2163 из 15703 в обоих прогонах — переезд не порвал ни одной ссылки; дерево красно по старому долгу (упоминания `.mjs`, которых давно нет) |
+| `scripts/guards/file-extensions.flang` | 0 | 0 | — |
 | `./ярлык пакет:проверка` | 0 | 0 | — |
-| `scripts/hand-written-lists.sh --check` | 1 | 1 | красен по своему долгу и до, и после |
+| `scripts/guards/hand-written-lists.sh --check` | 1 | 1 | красен по своему долгу и до, и после |
 | `./ярлык опись:языки` | 1 | 1 | код тот же, **но число другое — см. ниже** |
-| `scripts/published-vs-tree.sh` | 1 | 1 | код тот же, **но мест расхождения 5 → 9** |
+| `scripts/guards/published-vs-tree.sh` | 1 | 1 | код тот же, **но мест расхождения 5 → 9** |
 | `make -C bootstrap` | — | 0 | двоичный собирается из семени после переезда |
 
 ### Две находки, ради которых репетиция и делалась
@@ -240,7 +243,7 @@ plan-8235-layout.md): клон ветки, готовый двоичный то�
 «долг вне JavaScript: файлов 113, строк 18149», после: «файлов 110, строк
 17773». Из счёта ушли ровно три файла — `web/browser-probe.sh`, `web/sobrat.sh`,
 `web/wasm/build.sh`. Причина в правиле счёта
-(`scripts/tree-inventory.flang:231`): у пути, начинающегося с `packaging/`, стоит
+(`scripts/guards/tree-inventory.flang:231`): у пути, начинающегося с `packaging/`, стоит
 довод «чужая среда: установщик зовёт эти файлы до того, как flang в системе
 есть». Три скрипта сборки браузерного стенда установщиками не являются, и переезд
 дал бы им это освобождение даром — храповик долга показал бы улучшение, которого

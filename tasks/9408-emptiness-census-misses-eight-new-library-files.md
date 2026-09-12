@@ -39,5 +39,5 @@ cli eae241bd7, toml 735043361, uuid e389bc6de, websocket 760717ff0). В
 
 ```sh
 SEMYA_OTSTALO_ZNAYU=1 ./ярлык пустота:проверка   # код 0
-sh scripts/hand-written-lists.sh                 # перечень не вырос
+sh scripts/guards/hand-written-lists.sh                 # перечень не вырос
 ```

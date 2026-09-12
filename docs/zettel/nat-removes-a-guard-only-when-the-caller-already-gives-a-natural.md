@@ -29,7 +29,7 @@
 Равенство границы не даёт по делу: `«Ф» от (−5)` при базе `если н равен 0`
 уходит в минус бесконечность и не останавливается никогда. Ровно на этом стоят
 три `«крутить»` корпуса (`conc/examples/budget.flang`,
-`examples/web/shortener/server.flang`, `…/handler-without-budget.flang`) — база у
+`examples/docs/examples/web/shortener-client/server.flang`, `…/handler-without-budget.flang`) — база у
 них написана равенством, и они обычны по делу, а не по недосмотру.
 
 **Чему учит.** Правило «объявляй `нат` там, где значение неотрицательно» верно,

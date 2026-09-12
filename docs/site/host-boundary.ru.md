@@ -124,7 +124,7 @@ $ flang check flang/conc/scheduler.flang; echo $?
 потому что вторая половина его работы это ожидание и железо. Зато первая
 половина пишется, и это не мелочь.
 
-В дереве есть отдельный пример, `examples/driver/uart.flang`. Драйвер там —
+В дереве есть отдельный пример, `docs/examples/driver/uart.flang`. Драйвер там —
 чистая функция «состояние и событие → новое состояние и список записей в
 регистры». Она ничего не пишет: она **отвечает, что записать**. Записывает
 хозяин, и вся его работа — цикл на шесть строк. Автомат при этом доказан
@@ -200,13 +200,13 @@ fl_status privratnik_enter(fl_ctx *ctx, const char *name, ...);
 
 ## Пример, который прогоняется
 
-`examples/host-boundary/` — стык целиком, три файла:
+`docs/examples/host-boundary/` — стык целиком, три файла:
 
 | файл | что это |
 |---|---|
-| `examples/host-boundary/gatekeeper.flang` | решение: кого пропустить, кому отказать, с каким кодом. Модуль «Gatekeeper» |
-| `examples/host-boundary/host.c` | исполнение: цикл, ввод-вывод, изменяемое состояние |
-| `examples/host-boundary/run.sh` | напечатать в C, собрать системным `cc`, прогнать |
+| `docs/examples/host-boundary/gatekeeper.flang` | решение: кого пропустить, кому отказать, с каким кодом. Модуль «Gatekeeper» |
+| `docs/examples/host-boundary/host.c` | исполнение: цикл, ввод-вывод, изменяемое состояние |
+| `docs/examples/host-boundary/run.sh` | напечатать в C, собрать системным `cc`, прогнать |
 
 Решения — разбор запроса, проверка прав, запас и его пополнение, переход
 состояния, коды ответа — все по эту сторону границы. Хозяин строит значение,
@@ -241,8 +241,8 @@ for (;;) {
 Решение проверяется обычными командами:
 
 ```
-bootstrap/flang check examples/host-boundary/gatekeeper.flang --proof
-bootstrap/flang test  examples/host-boundary/gatekeeper.flang
+bootstrap/flang check docs/examples/host-boundary/gatekeeper.flang --proof
+bootstrap/flang test  docs/examples/host-boundary/gatekeeper.flang
 ```
 
 Отчёт `--proof` говорит: все функции тотальны, завершение каждой доказано
@@ -269,13 +269,13 @@ run.sh:  cc … privratnik.c …
 
 Первый шаг прогона (печать) и обе команды выше проходят; второй шаг — сборка —
 отказывает (перепроверено 11 сентября 2026 на 0.7.17: `bash
-examples/host-boundary/run.sh` → «privratnik.h: No such file or directory»,
+docs/examples/host-boundary/run.sh` → «privratnik.h: No such file or directory»,
 «сборка отказала, код 1»). Вывод ниже снят до переименования; чтобы повторить его, имена в
-`examples/host-boundary/host.c` и `examples/host-boundary/run.sh` надо привести
+`docs/examples/host-boundary/host.c` и `docs/examples/host-boundary/run.sh` надо привести
 к новым.
 
 ```
-$ bash examples/host-boundary/run.sh
+$ bash docs/examples/host-boundary/run.sh
 …
 == 3. прогон: девять событий на стандартный ввод
 хозяин: врата открыты. ёмкость 3, уровень ключа 2, запас 0
@@ -304,7 +304,7 @@ $ bash examples/host-boundary/run.sh
 Три подробности стыка, которые видны только в исходниках:
 
 * печать позвана с ключом `--no-cli`: точка входа у программы своя, в
-  `examples/host-boundary/host.c`, а две функции `main` в одной сборке не
+  `docs/examples/host-boundary/host.c`, а две функции `main` в одной сборке не
   слинкуются;
 * память напечатанного модуля живёт ареной, и хозяин отдаёт её на каждом витке
   одним вызовом `fl_arena_reset` — всё, что построил flang, к этому моменту уже
@@ -316,12 +316,12 @@ $ bash examples/host-boundary/run.sh
   внутренние обходятся обещаниями.
 
 Рядом в дереве лежит второй стык, сделанный первым способом — через словарь
-поручений: `examples/io/фильтр-пакетов.flang` разбирает заголовок дейтаграммы
+поручений: `docs/examples/io/фильтр-пакетов.flang` разбирает заголовок дейтаграммы
 IPv4 вместе с портом TCP и решает, пропускать её или отбросить. Семнадцать
 функций, все тотальные; октеты уходят в операционную систему и возвращаются
-через `write` и `read`. Та же граница на других задачах: `examples/driver/` —
-на железе ([драйвер MSI](msi-driver.html)), `examples/web/orders-api.flang` —
-на службе REST, `examples/io/link-report.flang` — на вводе-выводе.
+через `write` и `read`. Та же граница на других задачах: `docs/examples/driver/` —
+на железе ([драйвер MSI](msi-driver.html)), `docs/examples/web/orders-api.flang` —
+на службе REST, `docs/examples/io/link-report.flang` — на вводе-выводе.
 
 ## Что этим НЕ решено
 

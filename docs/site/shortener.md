@@ -2,10 +2,10 @@
 
 One demonstration in two halves, and both are written entirely in flang.
 
-- **The service** — `examples/web/shortener/`: the input is the bytes the host
+- **The service** — `docs/examples/web/shortener/`: the input is the bytes the host
   read from the connection, the output is the bytes the host will send back.
   Between them there is not one line written in anything but flang.
-- **The client** — `web/shortener/`: the form, the submit, the list of links and
+- **The client** — `docs/examples/web/shortener-client/`: the form, the submit, the list of links and
   the redirect counter, in a browser tab. Not a harness and not another counter
   demo: a real service answers it.
 
@@ -13,21 +13,21 @@ One demonstration in two halves, and both are written entirely in flang.
 
 ```sh
 export LC_ALL=C.UTF-8
-bootstrap/flang check examples/web/shortener/service.flang --proof
-bootstrap/flang test  examples/web/shortener/server.flang
-bootstrap/flang io    examples/web/shortener/plan.flang --in-dir
+bootstrap/flang check docs/examples/web/shortener/service.flang --proof
+bootstrap/flang test  docs/examples/web/shortener/server.flang
+bootstrap/flang io    docs/examples/web/shortener/plan.flang --in-dir
 ```
 
 The client in a tab:
 
 ```sh
-sh web/sobrat.sh
-bootstrap/flang io web/stand.flang --max-orders 100000
-# open http://127.0.0.1:8908/web/shortener/index.html
+sh docs/examples/web/build.sh
+bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000
+# open http://127.0.0.1:8908/docs/examples/web/shortener-client/index.html
 ```
 
 No Node, no npm, no `python3 -m http.server`: the binary compiler emits the
-module and a harness written in flang (`web/stand.flang`) serves the page.
+module and a harness written in flang (`docs/examples/web/stand.flang`) serves the page.
 
 ## The service
 
@@ -67,7 +67,7 @@ taken, 413 request body longer than 2048, 422 address is neither http nor https.
 
 ### What is proved and what is merely run
 
-`bootstrap/flang check examples/web/shortener/service.flang --proof`, run on
+`bootstrap/flang check docs/examples/web/shortener/service.flang --proof`, run on
 11 September 2026 at commit 2c40752d0 (binary 0.7.17): **24 functions, 24 total,
 0 ordinary. 8 claims: 5 proved (4 of them by induction), 3 by grid, 0 declared
 and unproved, 0 rejected; 0 laws on faith. Exit code 0.**
@@ -183,7 +183,7 @@ through files, the second through a socket). The service did not change by a
 single character; the plan did.
 
 ```sh
-bootstrap/flang io examples/web/shortener/plan-durable.flang --in-dir
+bootstrap/flang io docs/examples/web/shortener/plan-durable.flang --in-dir
 ```
 
 The harness that drove the three runs below, and the eleven checks beside it,
@@ -401,7 +401,7 @@ there is no file in the tree, so there is nothing to go stale. By hand the same 
 done like this:
 
 ```
-bootstrap/flang emit web/shortener/client.flang \
+bootstrap/flang emit docs/examples/web/shortener-client/client.flang \
   --target js --no-cli --out <directory>
 ```
 
@@ -457,7 +457,7 @@ alongside:
   `emit --target js` emits the declaration and answers 0, the other nine targets
   refuse with `FLANG_PLAN_UNSUPPORTED` and code 1 without writing a file
   (re-checked on 11 September 2026 for `python` and `go`).
-  `scripts/plan-across-targets.flang` checks this.
+  `scripts/targets/plan-across-targets.flang` checks this.
 
 The host moved to `flang/src/emit/js/flang_host_browser.js` with zero imports;
 the browser host of the JavaScript implementation became a transitional line that substitutes the

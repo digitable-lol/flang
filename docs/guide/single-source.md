@@ -3,7 +3,7 @@
 # Why this exists
 
 Here the rule is written once, in a form a domain expert can read
-(an excerpt from [`examples/library-api/lib/fine.flang`](../../examples/library-api/lib/fine.flang)):
+(an excerpt from [`docs/examples/library-api/lib/fine.flang`](../examples/library-api/lib/fine.flang)):
 
 ```flang
 объект «Просроченная выдача»
@@ -47,11 +47,11 @@ languages at once. The `обеспечивает` above is not a comment: it bec
 emitted code.
 
 ```bash
-flang emit examples/library-api/lib/fine.flang --target python --out вывод
+flang emit docs/examples/library-api/lib/fine.flang --target python --out вывод
 ```
 
 produces `вывод/fine.py` — and there is NO postcondition check in it: the kernel proved
-«Штраф ограничен» for all inputs (`flang check examples/library-api/lib/fine.flang --proof` on
+«Штраф ограничен» for all inputs (`flang check docs/examples/library-api/lib/fine.flang --proof` on
 11 September 2026, binary 0.7.17: «доказано сведением цели с телом функции», exit 0), and what
 is proven is not printed. The door appears when the kernel is not called — `--no-check`; then
 `вывод/fine.py` contains, verbatim:

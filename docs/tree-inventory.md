@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 272 файлов вне flang, долг вне JavaScript — 119 при потолке 63
-<!-- СНЯТО 2026-09-10 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 272 -->
+# Опись дерева по языкам: 240 файлов вне flang, долг вне JavaScript — 97 при потолке 63
+<!-- СНЯТО 2026-09-11 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 240 -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
@@ -51,7 +51,7 @@ flang 272, строк 905 528; «ДОЛГ ВНЕ JavaScript: файлов **119*
 
 ```
 $ ./ярлык опись:языки
-$ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
+$ bootstrap/flang io scripts/guards/tree-inventory.flang --max-steps 50000000
 ```
 
 Прогон стоит 17,7 секунды и 471 МБ; двоичному нужны только `git ls-files` и
@@ -78,15 +78,15 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 113 | 24 749 | 102 | 16 734 <!-- СНЯТО 2026-09-12 долг файлов/строк оболочки = 102/16734, планом «Опись дерева по языкам» на стволе 94a9ccd3d (слияние партии №2) с хуком перед пушем этой ветки (учебник прибавил 37 строк в scripts/flangtutor-proba.sh, хук — 5 строк в .githooks/pre-push; до них на 4e9a7a8c3 было 102/16682) (8 сентября было 98/15001: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-09 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 113 --><!-- СНЯТО 2026-09-12 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 24749 --> |
-| C | 38 | 823 754 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.c,*.h = 38 --><!-- СНЯТО 2026-09-12 строк-в *.c,*.h = 823754 --> |
+| оболочка | 99 | 24 140 | 88 | 16 125 <!-- СНЯТО 2026-09-12 долг файлов/строк оболочки = 88/16125, планом «Опись дерева по языкам» на стволе 24e6edb33 со слитой уборкой дерева (учебник прибавил 37 строк в scripts/flangtutor-proba.sh, хук — 5 строк в .githooks/pre-push; до них на 4e9a7a8c3 было 102/16682) (8 сентября было 98/15001: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-12 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 97 --><!-- СНЯТО 2026-09-12 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 23506 --> | По узкому списку масок (`*.sh`, `ярлык`, три файла плагина asdf, хук перед пушем) выходит 97 файлов и 23 506 строк: переезд скриптов в подпапки `scripts/**` забрал у этого списка 2 файла и 634 строки, а опись правилом «Язык пути» видит их и даёт 99 и 24 140. Оба числа верны в своих границах, и потому названы оба.
+| C | 30 | 822 096 | 0 | 0 <!-- СНЯТО 2026-09-12 файлов *.c,*.h = 30 --><!-- СНЯТО 2026-09-12 строк-в *.c,*.h = 822096 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
-| Python | 23 | 8 076 | 16 | 3 897 <!-- СНЯТО 2026-09-06 файлов *.py = 23 --><!-- СНЯТО 2026-09-09 строк-в *.py = 8076 --> |
+| Python | 16 | 6 029 | 10 | 2 880 <!-- СНЯТО 2026-09-11 файлов *.py = 16 --><!-- СНЯТО 2026-09-11 строк-в *.py = 6029 --> |
 | HTML | 6 | 1 251 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.html = 6 --><!-- СНЯТО 2026-09-09 строк-в *.html = 1251 --> |
 | CSS | 1 | 559 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.css = 1 --><!-- СНЯТО 2026-08-31 строк-в *.css = 559 --> |
 | awk | 1 | 79 | 1 | 79 <!-- СНЯТО 2026-08-31 файлов *.awk = 1 --><!-- СНЯТО 2026-08-31 строк-в *.awk = 79 --> |
 | Erlang | 1 | 69 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.erl = 1 --><!-- СНЯТО 2026-08-31 строк-в *.erl = 69 --> |
-| JavaScript | 52 | 28 408 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-10 файлов *.js,*.mjs = 52 --><!-- СНЯТО 2026-09-11 строк-в *.js,*.mjs = 28408 --> ||
+| JavaScript | 55 | 31 143 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-12 файлов *.js,*.mjs = 51 --><!-- СНЯТО 2026-09-12 строк-в *.js,*.mjs = 28121 --> || По маскам `*.js,*.mjs` выходит 51 файл и 28 121 строка, по описи правилом «Язык пути» — 55 и 31 143: разницу дал переезд браузерных образцов в `docs/examples/web/`. Оба числа верны в своих границах, и потому названы оба.
 | Java | 7 | 3 941 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.java = 7 --><!-- СНЯТО 2026-09-06 строк-в *.java = 3941 --> |
 | C# | 7 | 4 472 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.cs = 7 --><!-- СНЯТО 2026-09-06 строк-в *.cs = 4472 --> |
 | Elixir | 4 | 4 634 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.ex,*.exs = 4 --><!-- СНЯТО 2026-09-06 строк-в *.ex,*.exs = 4634 --> |
@@ -99,14 +99,14 @@ $ bootstrap/flang io scripts/tree-inventory.flang --max-steps 50000000
 
 ### Почему у столбцов долга приметы нет, и её нечем поставить
 
-Числа «файлов» и «строк» здесь стережёт `scripts/prose-numbers-guard.sh`:
+Числа «файлов» и «строк» здесь стережёт `scripts/guards/prose-numbers-guard.sh`:
 рядом с каждым стоит примета, и сторож пересчитывает её на каждом пуше.
 **У столбцов «долг файлов» и «долг строк» приметы нет ни в одной строке**, и
 это не забывчивость.
 
 У сторожа пять приборов — `строк`, `файлов`, `строк-в`, `примеров-в`,
 `список`, — и все пять считают по ОБРАЗЦУ ПУТИ. Долг образцом не считается:
-он определяется функцией `«Довод не-долга»` (`scripts/tree-inventory.flang`),
+он определяется функцией `«Довод не-долга»` (`scripts/guards/tree-inventory.flang`),
 а это правило из пятнадцати ветвей, где у каждого исключения свой довод, и
 дозволенное основание ровно одно — КРУГ. Прибор, считающий долг «по
 образцу», давал бы другое число, чем опись, и приметы разошлись бы с ней
@@ -158,7 +158,7 @@ flang в C.
 ## Не долг: двенадцать доводов, у каждого свой счёт
 
 У каждой строки не-долга есть довод, а не мнение. Опись хранит их не в прозе, а
-в самой программе — функция «Довод не-долга» в `scripts/tree-inventory.flang`
+в самой программе — функция «Довод не-долга» в `scripts/guards/tree-inventory.flang`
 называет причину для каждого пути, и проверка падает, если в дереве появился
 файл, которому довода нет.
 
@@ -167,14 +167,14 @@ flang в C.
 | напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 777 466 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-09-12 строк-в bootstrap/*.c,bootstrap/*.h = 777466 --> |
 | рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 29 | 48 032 <!-- СНЯТО 2026-09-06 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 29 --><!-- СНЯТО 2026-09-08 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 48032 --> |
 | замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/conc/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
-| проба рантайма C | `flang/проверки/oblast/*.c` и `flang/conc/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
+| проба рантайма C | `flang/проверки/oblast/*.c` и `flang/conc/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/targets/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
 | чужая среда: редактор | `editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 612 <!-- СНЯТО 2026-08-31 файлов editors/vim/*.vim,editors/vim/*.lua = 11 --><!-- СНЯТО 2026-09-09 строк-в editors/vim/*.vim,editors/vim/*.lua = 612 --> |
 | код на стороне цели | `flang/conc/bin/node.{c,cs,ex,go,java,py,rs}` — семь хозяев узлов на семи языках, и `peer.py` — конец связи на цели python | 8 | 8 227 |
 | разметка и оформление | четыре `.html` и `docs/site/style.css` — цели HTML у языка нет и не заявлено | 5 | 1 785 |
 | чужая среда: установщик | `packaging/homebrew/flang.rb` и три файла `packaging/asdf/bin/` — homebrew понимает Ruby, asdf зовёт свои три раньше, чем flang в системе есть | 4 | 470 |
-| точка раскрутки и приёмка | `scripts/raskrutka.sh`, `scripts/bootstrap-c.sh`, `scripts/new-binary-acceptance.sh`, `scripts/build-ledger-binary.sh` — разобраны отдельно ниже | 4 | 4 080 |
-| сверка двоичного и его печати | `scripts/binary-origin.sh` и `scripts/overlong-string-guard.sh` — заведены 29 августа, разобраны 30-го, см. ниже | 2 | 876 |
-| чужой хозяин примера | `examples/host-boundary/host.c` — этим примером и показывают границу с чужим кодом | 1 | 227 <!-- СНЯТО 2026-08-31 строк examples/host-boundary/host.c = 227 --> |
+| точка раскрутки и приёмка | `scripts/raskrutka.sh`, `scripts/bootstrap-c.sh`, `scripts/seed/new-binary-acceptance.sh`, `scripts/seed/build-ledger-binary.sh` — разобраны отдельно ниже | 4 | 4 080 |
+| сверка двоичного и его печати | `scripts/seed/binary-origin.sh` и `scripts/guards/overlong-string-guard.sh` — заведены 29 августа, разобраны 30-го, см. ниже | 2 | 876 |
+| чужой хозяин примера | `docs/examples/host-boundary/host.c` — этим примером и показывают границу с чужим кодом | 1 | 227 <!-- СНЯТО 2026-08-31 строк docs/examples/host-boundary/host.c = 227 --> |
 | независимый чекер записи | `flang/proof/чекер/**` — сверщик записи доказательства на C, прогон его проб и одна проба-подделка на оболочке; заведён 31 августа, разобран ниже | 3 | 4 417 |
 
 Восьмой хозяин узла (`node.js`) и восьмой рантайм (`flang/src/emit/js/**`)
@@ -192,7 +192,7 @@ flang в C.
 ответ переставал бы что-либо значить: сломанный двоичный одинаково способен и
 напечатать не то, и сказать, что напечатал то. То же у
 `scripts/bootstrap-c.sh` (второй путь печати) и у
-`scripts/new-binary-acceptance.sh` (приёмка нового двоичного после перепечатки).
+`scripts/seed/new-binary-acceptance.sh` (приёмка нового двоичного после перепечатки).
 
 Оболочка при этом ничего нового на путь сборки не приносит: `sh`, `make`, `cc`
 и `cmp` там нужны и так, а Node не нужен ни на одном шаге.
@@ -218,14 +218,14 @@ Python 16, awk 1.
 | `docs/ifl` — воспроизведение чисел статьи | 2 | 262 | переводимо |
 | `ярлык` — точка входа репозитория | 1 | 186 | круг: спрашивает двоичный о команде и запускает ответ. **Довода ему не выписано** — см. ниже |
 | `.githooks/pre-push` — хук перед пушем | 1 | 122 | зовёт дешёвых сторожей; переводимо, но зовёт его git, а не flang |
-| `examples/host-boundary/run.sh` — прогон стыка | 1 | 54 | переводимо |
+| `docs/examples/host-boundary/run.sh` — прогон стыка | 1 | 54 | переводимо |
 
 ### `ярлык` в долге, а рядом написано «круг» — это не описка
 
 Столбец «чем это держится» у `ярлык` говорит «круг», и это правда: чтобы
 прочитать `ярлыки.flang`, нужен двоичный, а ярлык умеет собирать его сам, когда
 двоичного ещё нет. Ровно по этому основанию из долга вычеркнуты
-`scripts/raskrutka.sh` и `scripts/binary-origin.sh`.
+`scripts/raskrutka.sh` и `scripts/seed/binary-origin.sh`.
 
 **Довода `ярлык` всё-таки не выписано, и это решение, а не забывчивость.**
 Выписать его — значит опустить долг на единицу и на ту же единицу ослабить
@@ -237,19 +237,19 @@ Python 16, awk 1.
 
 | файл | строк | что делает |
 |---|---:|---|
-| `target-collisions.sh` | 337 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-08-31 строк scripts/target-collisions.sh = 337 --> |
-| `bad-octet-guard.sh` | 338 | сторож негодных октетов <!-- СНЯТО 2026-09-06 строк scripts/bad-octet-guard.sh = 338 --> |
-| `seed-knows-type-words-guard.sh` | 309 | слова в позициях типа известны закоммиченному семени (стоит первой работой в `ci.yml`) <!-- СНЯТО 2026-09-01 строк scripts/seed-knows-type-words-guard.sh = 309 --> |
-| `prose-numbers-guard.sh` | 416 | числа, набранные в прозе рукой, сходятся с деревом сегодня <!-- СНЯТО 2026-09-05 строк scripts/prose-numbers-guard.sh = 416 --> |
+| `target-collisions.sh` | 337 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-08-31 строк scripts/targets/target-collisions.sh = 337 --> |
+| `bad-octet-guard.sh` | 338 | сторож негодных октетов <!-- СНЯТО 2026-09-06 строк scripts/guards/bad-octet-guard.sh = 338 --> |
+| `seed-knows-type-words-guard.sh` | 317 | слова в позициях типа известны закоммиченному семени (стоит первой работой в `ci.yml`) <!-- СНЯТО 2026-09-12 строк scripts/guards/seed-knows-type-words-guard.sh = 317 --> |
+| `prose-numbers-guard.sh` | 416 | числа, набранные в прозе рукой, сходятся с деревом сегодня <!-- СНЯТО 2026-09-05 строк scripts/guards/prose-numbers-guard.sh = 416 --> |
 | `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |
-| `target-census.sh` | 214 | перепись целей <!-- СНЯТО 2026-08-29 строк scripts/target-census.sh = 214 --> |
-| `seed-freshness.sh` | 197 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-08-31 строк scripts/seed-freshness.sh = 197 --> |
+| `target-census.sh` | 214 | перепись целей <!-- СНЯТО 2026-08-29 строк scripts/targets/target-census.sh = 214 --> |
+| `seed-freshness.sh` | 197 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-08-31 строк scripts/seed/seed-freshness.sh = 197 --> |
 | `test-remote.sh` | 148 | прогон на чужой машине <!-- СНЯТО 2026-09-06 строк scripts/test-remote.sh = 148 --> |
-| `one-string-measure-guard.sh` | 119 | подаёт сырые октеты в `string-measure.flang` <!-- СНЯТО 2026-08-29 строк scripts/one-string-measure-guard.sh = 119 --> |
-| `identical-declarations.sh` | 118 | что можно ввезти вместо переименования <!-- СНЯТО 2026-08-29 строк scripts/identical-declarations.sh = 118 --> |
-| `seed-parses-sources-guard.sh` | 220 | семя разбирает исходники, которые потом печатает <!-- СНЯТО 2026-08-31 строк scripts/seed-parses-sources-guard.sh = 220 --> |
-| `targets-inventory.sh` | 79 | опись целей: имя, код, время, причина <!-- СНЯТО 2026-08-29 строк scripts/targets-inventory.sh = 79 --> |
-| `names-in-c.awk` | 79 | «идентификатор C → русское объявление» из напечатанного заголовка <!-- СНЯТО 2026-08-29 строк scripts/names-in-c.awk = 79 --> |
+| `one-string-measure-guard.sh` | 119 | подаёт сырые октеты в `string-measure.flang` <!-- СНЯТО 2026-08-29 строк scripts/guards/one-string-measure-guard.sh = 119 --> |
+| `identical-declarations.sh` | 118 | что можно ввезти вместо переименования <!-- СНЯТО 2026-08-29 строк scripts/targets/identical-declarations.sh = 118 --> |
+| `seed-parses-sources-guard.sh` | 220 | семя разбирает исходники, которые потом печатает <!-- СНЯТО 2026-08-31 строк scripts/guards/seed-parses-sources-guard.sh = 220 --> |
+| `targets-inventory.sh` | 79 | опись целей: имя, код, время, причина <!-- СНЯТО 2026-08-29 строк scripts/targets/targets-inventory.sh = 79 --> |
+| `names-in-c.awk` | 79 | «идентификатор C → русское объявление» из напечатанного заголовка <!-- СНЯТО 2026-08-29 строк scripts/targets/names-in-c.awk = 79 --> |
 
 Три из них — `seed-knows-type-words-guard.sh`, `seed-freshness.sh`,
 `seed-parses-sources-guard.sh` — стоят рядом с точкой раскрутки, но НЕ под тем
@@ -278,22 +278,22 @@ Python 16, awk 1.
 
 ```
 убрано                                          строк  почему это сор, а не долг
-benchmarks/proof-cost/all-20.sh                    24  зовёт vydelit.mjs, которого в дереве нет
+benchmarks/proof-cost/all-20.sh                         24  зовёт vydelit.mjs, которого в дереве нет
                                                        (ведомость перечней звала его мёртвым с задачи 4717)
-benchmarks/proof-cost/check.sh                     13  cd на рабочий каталог агента
-benchmarks/proof-cost/prove.sh                      5  cd на рабочий каталог агента
-benchmarks/proof-cost/test.sh                       5  cd на рабочий каталог агента
+benchmarks/proof-cost/check.sh                          13  cd на рабочий каталог агента
+benchmarks/proof-cost/prove.sh                           5  cd на рабочий каталог агента
+benchmarks/proof-cost/test.sh                            5  cd на рабочий каталог агента
 benchmarks/model-authoring/queue-extra-arms.sh      7  cd на /home/m/..., sudo -u m, pgrep -f
 benchmarks/model-authoring/queue-fix-arm.sh         8  то же
 ```
 
 Два файла того же рода ОСТАВЛЕНЫ, а `cd` у них переведён на путь от себя:
-`benchmarks/proof-cost/all-tests.sh` (на него ссылается сторож
-`scripts/file-extensions.flang`) и `benchmarks/суд-ядра-по-ядрам/доли.sh`
+`benchmarks/proof-cost/all-tests.sh` (снят 11 сентября 2026; на него ссылался сторож
+`scripts/guards/file-extensions.flang`) и `benchmarks/суд-ядра-по-ядрам/доли.sh`
 (часть живого замера Ч180; каталог вывода тоже отвязан от чужой машины). Долга
 они не двигают: файлы остаются в дереве и в долге.
 
-Две строки из `scripts/hand-written-lists-ledger.tsv` убраны вместе с файлами:
+Две строки из `scripts/ledgers/hand-written-lists-ledger.tsv` убраны вместе с файлами:
 ведомость сверяется в обе стороны и покраснела бы на записи, переставшей быть
 расхождением.
 
@@ -304,8 +304,8 @@ benchmarks/model-authoring/queue-fix-arm.sh         8  то же
 
 | было | стало | сверка |
 |---|---|---|
-| `scripts/adr-numbers-are-unique-guard.sh`, 93 строки | `scripts/adr-numbers-guard.flang` | шесть входов, вывод знак в знак, коды совпали |
-| `scripts/kernel-abilities-guard.sh`, 108 строк | `scripts/kernel-abilities-guard.flang` | пять входов, вывод знак в знак, коды совпали |
+| `scripts/adr-numbers-are-unique-guard.sh`, 93 строки | `scripts/guards/adr-numbers-guard.flang` | шесть входов, вывод знак в знак, коды совпали |
+| `scripts/kernel-abilities-guard.sh`, 108 строк | `scripts/guards/kernel-abilities-guard.flang` | пять входов, вывод знак в знак, коды совпали |
 
 **Номера решений** — шесть входов: дерево как есть (код 0, 91 байт), подлог с
 двумя двойнями (код 1, 239 байт), решение без номера в заголовке (код 1,
@@ -386,9 +386,9 @@ benchmarks/model-authoring/queue-fix-arm.sh         8  то же
 | файл | всего строк | из них JavaScript внутри `<script>` |
 |---|---:|---:|
 | `docs/zettel/index.html` | 851 | 396 (строки 455–850) |
-| `web/wasm/demo/index.html` | 187 | 173 (строки 14–186) |
-| `web/shortener/index.html` | 100 | 0 |
-| `web/app/index.html` | 88 | 0 |
+| `docs/examples/web/wasm/demo/index.html` | 187 | 173 (строки 14–186) |
+| `docs/examples/web/shortener-client/index.html` | 100 | 0 |
+| `docs/examples/web/browser-app/index.html` | 88 | 0 |
 
 Две страницы из четырёх чисты, и это не случайность, а решение: их тег `<script>`
 несёт только `src` на напечатанный модуль, и страница сайта об этом прямо
@@ -414,15 +414,15 @@ benchmarks/model-authoring/queue-fix-arm.sh         8  то же
 
 | файл | строк | заведён | решение |
 |---|---:|---|---|
-| `scripts/build-ledger-binary.sh` | 130 | 30 авг, `42c641be` | **не долг**: третий путь сборки компилятора |
-| `scripts/binary-origin.sh` | 549 | 29 авг, `b10bff9a` | **не долг**: спрашивает у двоичного о нём самом |
-| `scripts/overlong-string-guard.sh` | 327 | 29 авг, `f36239c0` | **не долг**: обязан отвечать, когда семя не собирается |
+| `scripts/seed/build-ledger-binary.sh` | 130 | 30 авг, `42c641be` | **не долг**: третий путь сборки компилятора |
+| `scripts/seed/binary-origin.sh` | 549 | 29 авг, `b10bff9a` | **не долг**: спрашивает у двоичного о нём самом |
+| `scripts/guards/overlong-string-guard.sh` | 327 | 29 авг, `f36239c0` | **не долг**: обязан отвечать, когда семя не собирается |
 | `scripts/resource-plan.py` | 975 | 30 авг, `7544e149` | **вынесен из дерева 30 авг**: живёт в `/srv/work/resource-plan.py` — прибор машины и смены, а не языка |
-| `scripts/published-vs-tree.sh` | 796 | 31 авг, `03fb4060`+Ч72 | **долг**: переводим; работа `published` в CI нарочно идёт без собранного двоичного |
+| `scripts/guards/published-vs-tree.sh` | 796 | 31 авг, `03fb4060`+Ч72 | **долг**: переводим; работа `published` в CI нарочно идёт без собранного двоичного |
 | `docs/tools/binder-rule-reach.py` | 242 | 30 авг, `0e3b8918` | **долг**: прибор незакрытой задачи 9952 |
 | `docs/tools/binder-goal-share.py` | 169 | 30 авг, `0e3b8918` | **долг**: прибор незакрытой задачи 9952 |
-| `scripts/take-proof-ledger.sh` | 106 | 30 авг, `42c641be` | **долг**: переводим — это оснастка, а не сборка |
-| `scripts/proved-share-of-a-file.py` | 88 | 29 авг, `0a9ea2d1` | **долг**: переводим; накладывается на `flang/scripts/per-file-proof-share.py` |
+| `scripts/ledgers/take-proof-ledger.sh` | 106 | 30 авг, `42c641be` | **долг**: переводим — это оснастка, а не сборка |
+| `scripts/ledgers/proved-share-of-a-file.py` | 88 | 29 авг, `0a9ea2d1` | **долг**: переводим; накладывается на `flang/scripts/per-file-proof-share.py` |
 
 Три первых вычеркнуты из долга разбором, а не подъёмом потолка: **72 → 69**.
 Четвёртым ушёл `resource-plan.py` — не разбором и не переводом, а ВЫНОСОМ из
@@ -499,7 +499,7 @@ git скорость, цену и потери; долгом дерева он �
 же день, а не через месяц на чьей-то описи.
 
 Опустить потолок обязан каждый, кто перевёл файл: число живёт в функции
-«Потолок долга» в `scripts/tree-inventory.flang` и там же объяснено.
+«Потолок долга» в `scripts/guards/tree-inventory.flang` и там же объяснено.
 
 **Новый довод не-долга заводится только разбором, и разбор дороже перевода.**
 Дозволенное основание одно — круг: файл судит или собирает то, чем его самого

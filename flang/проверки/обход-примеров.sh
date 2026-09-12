@@ -60,11 +60,11 @@
 #   двоичный не взял                                   428
 #
 # Семнадцать несошедшихся лежат в 13 файлах, и НИ ОДНОГО из них нет в корпусе:
-# 15 — в выходах замера авторства (`benchmarks/model-authoring/out`: их писала
+# 15 — в выходах замера авторства (каталог замера авторства снят 11 сентября 2026; их писала
 # модель, ломали нарочно, это фикстуры отказа), 1 — в задании замера стоимости
 # доказательства (`docs/benchmark2/13-even.flang`), 1 — в опыте `fspec/`
 # `contradiction-one-function.flang`, где нарушенное свойство и есть предмет
-# опыта. Корпус — `flang/`, `examples/`, `fspec/spec/` — зелен целиком.
+# опыта. Корпус — `flang/`, `docs/examples/`, `fspec/spec/` — зелен целиком.
 #
 # Первый счёт этой шапки говорил «4353, не сошлось 0», и он был НЕВЕРЕН: разбор
 # сырого вывода читал только первую строку ответа, а у файла с провалившимся
@@ -74,9 +74,9 @@
 # потому что это ровно тот случай, ради которого ведомость и сверяется целиком.
 #
 # Настоящий зазор — четыре файла, и он назван, чтобы его закрывали, а не искали:
-#   examples/monad/order-total.flang     27 примеров  FLANG_TYPE_PARAM
-#   examples/money/exact-decimal.flang   27 примеров  FLANG_UNKNOWN_NAME
-#   examples/paths/shortest-path.flang   22 примера   FLANG_UNKNOWN_NAME
+#   docs/examples/monad/order-total.flang     27 примеров  FLANG_TYPE_PARAM
+#   docs/examples/money/exact-decimal.flang   27 примеров  FLANG_UNKNOWN_NAME
+#   docs/examples/paths/shortest-path.flang   22 примера   FLANG_UNKNOWN_NAME
 #   flang/self/repl/repl.flang                 14 примеров  FLANG_RECURSION_LIMIT
 # и `flang/self/bootstrap/compiler.flang` — тот же лимит шагов (40 000 000),
 # примеров у него нет. Свидетель на Node эти файлы берёт; двоичный пока нет.

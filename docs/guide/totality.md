@@ -122,7 +122,7 @@ floor at all: `ш`, `ш делить на 2`, … add up to less than `2ш`.
 
 For when what decreases is not an argument but an expression over them. The
 `убывает …` line goes right after `возвращает`. The full example is
-[`examples/measure/binary-search.flang`](../../examples/measure/binary-search.flang):
+[`docs/examples/measure/binary-search.flang`](../examples/measure/binary-search.flang):
 
 ```flang
 тотальная функция «Поиск в диапазоне»
@@ -144,11 +144,11 @@ For when what decreases is not an argument but an expression over them. The
 ```
 
 ```bash
-flang test examples/measure/binary-search.flang
+flang test docs/examples/measure/binary-search.flang
 ```
 
 ```
-examples/measure/binary-search.flang: примеров 5, прошло 5, не прошло 0
+docs/examples/measure/binary-search.flang: примеров 5, прошло 5, не прошло 0
 ```
 
 ## `убывает` is checked at run time, not at build time
@@ -228,7 +228,7 @@ arrives unchanged on every turn. Turn the count around and go down.
 String code crossed the same border differently: the built-in form
 `разложить … на символы` turns a string into a list of one-character strings by
 code points, and the walk becomes recursion over a tail. That is why
-[`examples/rosetta/reverse-string.flang`](../../examples/rosetta/reverse-string.flang)
+[`docs/examples/rosetta/reverse-string.flang`](../examples/rosetta/reverse-string.flang)
 is total throughout, emoji and Cyrillic included.
 
 ## Why it is worth it: the fact checker refuses non-total functions
@@ -268,14 +268,14 @@ through — code `FLANG_HANDLER_NOT_TOTAL`.
 
 Today the binary does judge it, but answers with a different code. Here is what
 it answers on
-[`examples/web/shortener/handler-without-budget.flang`](../../examples/web/shortener/handler-without-budget.flang),
+[`docs/examples/web/shortener/handler-without-budget.flang`](../examples/web/shortener/handler-without-budget.flang),
 a file written precisely to test this rule (run on 11 September 2026, binary
 0.7.17 from seed `0ce948bfd`):
 
 ```
-FLANG_UNCOVERED_FAILURE в файле examples/web/shortener/handler-without-budget.flang, строка 13, столбец 1: у процесса «Разборщик» обработчик «шаг разбора» без доказанного завершения — значит отказ «запас витков исчерпан» достижим, — а под надзором этот процесс не стоит: такой отказ уронит программу целиком
+FLANG_UNCOVERED_FAILURE в файле docs/examples/web/shortener/handler-without-budget.flang, строка 13, столбец 1: у процесса «Разборщик» обработчик «шаг разбора» без доказанного завершения — значит отказ «запас витков исчерпан» достижим, — а под надзором этот процесс не стоит: такой отказ уронит программу целиком
 …
-examples/web/shortener/handler-without-budget.flang: не проверено — замечаний 2
+docs/examples/web/shortener/handler-without-budget.flang: не проверено — замечаний 2
 ```
 
 Exit code 1. `FLANG_HANDLER_NOT_TOTAL` is still not issued: a non-total handler

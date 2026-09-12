@@ -343,8 +343,8 @@
 тотальная функция «Пути именованных файлов»
   возвращает список строки
   пример «Шесть путей по порядку»
-    ожидается ["flang/stdlib/postgres.flang", "flang/stdlib/wire.flang", "examples/db/postgres-plan.flang", "flang/conc/scheduler.flang", "flang/conc/link.flang", "package.json"]
-  ["flang/stdlib/postgres.flang", "flang/stdlib/wire.flang", "examples/db/postgres-plan.flang", "flang/conc/scheduler.flang", "flang/conc/link.flang", "package.json"]
+    ожидается ["flang/stdlib/postgres.flang", "flang/stdlib/wire.flang", "docs/examples/db/postgres-plan.flang", "flang/conc/scheduler.flang", "flang/conc/link.flang", "package.json"]
+  ["flang/stdlib/postgres.flang", "flang/stdlib/wire.flang", "docs/examples/db/postgres-plan.flang", "flang/conc/scheduler.flang", "flang/conc/link.flang", "package.json"]
 
 тотальная функция «Пути файлов отказов»
   возвращает список строки

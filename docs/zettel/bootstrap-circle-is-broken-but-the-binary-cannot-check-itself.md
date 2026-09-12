@@ -104,7 +104,7 @@ JIT-компиляцией V8.
   С ключом `--proof` он тот же файл честно отвергает кодом 2 и называет
   препятствие. То есть отказ есть у ведомости и **нет у проверки**;
 - **запас витков у обработчика не требуется.**
-  `examples/web/shortener/handler-without-budget.flang`: Node —
+  `examples/docs/examples/web/shortener-client/handler-without-budget.flang`: Node —
   `FLANG_HANDLER_NOT_TOTAL`, код 1; двоичный — код 0;
 - **примеры при морфизмах не гоняются.** `examples/cat/order-shipment.flang`:
   Node прогоняет 4 примера, двоичный — 0. Так же `modules/orders.flang` 6 против
@@ -130,7 +130,7 @@ JSON, двоичный — человеческую прозу; у `run` дво�
 256 ядер) и на версии 0.5.0. Отношения скорости — про эту пару реализаций, а не
 про «C медленнее JavaScript»: сравниваются вычислитель на flang, собранный в
 машинный код, и прямая реализация на JavaScript, а не два одинаковых алгоритма.
-`io` на `examples/web/shortener/plan-durable.flang` не сверен: он не завершается
+`io` на `examples/docs/examples/web/shortener-client/plan-durable.flang` не сверен: он не завершается
 за 120 с ни на одной стороне и требует среды, которой в замере не было.
 
 ## Дополнение 20 августа 2026: Node ушёл, рецепт остался, сверка подорожала в 200 раз

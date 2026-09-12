@@ -155,7 +155,7 @@ not in the glossary that gets shipped: an assistant that parses the answer
 against five words will trip over it.
 
 The last lines of the report count the outcomes. Here they are from a real
-module — `examples/crypto/certificate.flang`, an X.509 parser of 121 functions:
+module — `docs/examples/crypto/certificate.flang`, an X.509 parser of 121 functions:
 
 ```
 итог:
@@ -352,7 +352,7 @@ goes through and prints the full report — the only thing changed is the
 directory:
 
 ```bash
-cd examples/crypto && flang --mcp-mode < zapros.jsonl | tail -1
+cd docs/examples/crypto && flang --mcp-mode < zapros.jsonl | tail -1
 ```
 
 So there are two cures: start the service with the project as its working
@@ -366,12 +366,12 @@ machine.
 | What is checked | Size | Time |
 |---|---|---|
 | one function with a promise and an example | 12 lines, 1 function | 0.03 s |
-| `examples/leetcode/001-two-sum.flang` | 56 lines, 3 functions | 0.13 s (11 September 2026, 0.7.17) |
-| `examples/crypto/certificate.flang` with imports | 121 functions, 5 files | 92 s (24 August); 114 s (11 September 2026, 0.7.17) |
+| `docs/examples/leetcode/001-two-sum.flang` | 56 lines, 3 functions | 0.13 s (11 September 2026, 0.7.17) |
+| `docs/examples/crypto/certificate.flang` with imports | 121 functions, 5 files | 92 s (24 August); 114 s (11 September 2026, 0.7.17) |
 
 ```bash
-/usr/bin/time -f '%e s' flang check examples/leetcode/001-two-sum.flang
-/usr/bin/time -f '%e s' flang check examples/crypto/certificate.flang
+/usr/bin/time -f '%e s' flang check docs/examples/leetcode/001-two-sum.flang
+/usr/bin/time -f '%e s' flang check docs/examples/crypto/certificate.flang
 ```
 
 The same computation as a Python script takes 0.01 s; 0.01 s of every row in

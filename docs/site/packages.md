@@ -151,9 +151,9 @@ by mail, off a USB stick. There is no registry to upload to, and no
 If the library is several files, all of them travel: the closure follows import
 edges and leaves the library's own directory when the author wrote it that way;
 whoever uses the package need not know. The example in the tree,
-`examples/library-api/lib/`, does not build as a package today: there is no
+`docs/examples/library-api/lib/`, does not build as a package today: there is no
 `flang.package` next to `api.flang`, and
-`flang package examples/library-api/lib/api.flang` on 0.7.17 answers
+`flang package docs/examples/library-api/lib/api.flang` on 0.7.17 answers
 `FLANG_PACKAGE: рядом с … нет объявления flang.package` (run on 11 September
 2026). Put a manifest there, and the command is the same as above.
 

@@ -178,9 +178,9 @@ are not an oversight:
 
 | Outside coverage | Count | Why |
 |---|---|---|
-| benchmark output (`benchmarks/model-authoring/out/`, `docs/benchmark*`) | 500 | it is the output of a run, not a source |
+| benchmark output (`docs/benchmark*`) | 500 | it is the output of a run, not a source |
 | test fixtures (`flang/test/fixtures/`) | 14 | their names are deliberately malformed; that is what makes them fixtures |
-| hand-written code outside the four directories (`flang/proof/examples`, `flang/conc/examples`, `examples/library-api`, `fspec`, `web/wasm`, `flang/проверки`) | **70** | worth covering, but their price has not been measured |
+| hand-written code outside the four directories (`flang/proof/examples`, `flang/conc/examples`, `docs/examples/library-api`, `fspec`, `docs/examples/web/wasm`, `flang/проверки`) | **70** | worth covering, but their price has not been measured |
 
 Those last 66 are a named coverage debt. Widening the coverage without re-measuring the price would
 mean landing a rule the corpus was never checked against. If the numbers move, the test goes red and
@@ -226,7 +226,7 @@ the change.
 
   | Name | What it is |
   |---|---|
-  | `flang/self/svoystva.flang`, `benchmarks/speed/memory.flang` | hand-written sources |
+  | `flang/self/svoystva.flang`, `docs/benchmarks/speed/memory.flang` | hand-written sources |
   | `flang/test/zakon-*.test.mjs` (six of them) | hand-written tests — no longer in the tree (removed 20 August 2026, `fe8e8a37`) |
   | `docs/HANDOVER.md`, `docs/ct/zakony.md`, `zakony-kak-ukazatel.md` | prose |
 
@@ -254,7 +254,7 @@ the change.
 ./ярлык имена:проверка                         # the guard
 node flang/scripts/name-guard.mjs --list       # the debt per file, by name
 node flang/scripts/name-guard.mjs --debt       # rewrite the debt after cleaning
-bootstrap/flang test scripts/module-name-guard.flang   # the 34 examples of the R7 check (11 September 2026: 34 of 34)
+bootstrap/flang test scripts/guards/module-name-guard.flang   # the 34 examples of the R7 check (11 September 2026: 34 of 34)
 ```
 
 The R1–R6 guard used to be checked by forty-one assertions (`flang/test/name-guard.test.mjs`) — that file
@@ -262,5 +262,5 @@ went with the JavaScript implementation on 20 August 2026, and `name-guard.mjs` 
 It was: eleven fakes, one per rule; a fake supplied as a whole
 file; a healthy file supplied the same way; twenty healthy names across all four surfaces; and the
 count of what failed to parse. It was also checked against the real tree: a fake dropped into
-`examples/` exits 1 and names three names; a healthy file in the same place exits 0. A guard
+`docs/examples/` exits 1 and names three names; a healthy file in the same place exits 0. A guard
 that cannot go red looks exactly like a guard that has nothing to report.

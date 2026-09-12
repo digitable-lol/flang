@@ -83,8 +83,8 @@ ln -s "$PWD/editors/vscode" ~/.vscode/extensions/flang
 («Куски таблицы» в `flang/self/lexer.flang`), программой на flang:
 
 ```bash
-flang io scripts/vscode-highlighting.flang     # перепечатать
-flang io scripts/vscode-highlight-check.flang  # проверить, что не отстало
+flang io scripts/editors/vscode-highlighting.flang     # перепечатать
+flang io scripts/editors/vscode-highlight-check.flang  # проверить, что не отстало
 ```
 
 Проверка отвечает на два вопроса: та ли грамматика лежит в дереве, что

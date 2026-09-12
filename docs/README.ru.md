@@ -198,7 +198,7 @@ Tab дополняет: имя сессии в ёлочках (`«Втр` → `�
 
 ### Печать в целевой язык
 
-Это [`examples/leetcode/035-search-insert-position.flang`](../examples/leetcode/035-search-insert-position.flang)
+Это [`docs/examples/leetcode/035-search-insert-position.flang`](examples/leetcode/035-search-insert-position.flang)
 как он лежит в дереве — место, куда значение встаёт в отсортированном списке:
 
 ```flang
@@ -240,8 +240,8 @@ Tab дополняет: имя сессии в ёлочках (`«Втр` → `�
 ```
 
 ```bash
-flang emit examples/leetcode/035-search-insert-position.flang --target c  --out out-c
-flang emit examples/leetcode/035-search-insert-position.flang --target js --out out-js
+flang emit docs/examples/leetcode/035-search-insert-position.flang --target c  --out out-c
+flang emit docs/examples/leetcode/035-search-insert-position.flang --target js --out out-js
 ```
 
 Восемь целей печатают модуль, рантайм, прогонщик с JSON на входе и выходе, файл сборки и — где
@@ -323,7 +323,7 @@ export function mestoVstavki(elementy, cel) {
 | найти конструкцию | [Справочник конструкций](https://digitable-lol.github.io/flang/language.html) · [Справочник библиотеки](https://digitable-lol.github.io/flang/stdlib.html) · [Справочник отказов](https://digitable-lol.github.io/flang/diagnostics.html) |
 | понять доказательства | [Что доказано](https://digitable-lol.github.io/flang/what-is-proved.html) · [Какие обещания ядро берёт](https://digitable-lol.github.io/flang/kak-dokazat.html) · [Ядро отказало: чья это ошибка](https://digitable-lol.github.io/flang/proof-refused.html) |
 | запустить где-то | [Установка](https://digitable-lol.github.io/flang/install.html) · [Справочник команд](https://digitable-lol.github.io/flang/cli.html) · [Редактор](https://digitable-lol.github.io/flang/editor.html) · [Процессы, надзор, распределённость](https://digitable-lol.github.io/flang/processes.html) |
-| посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`examples/`](../examples) |
+| посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`docs/examples/`](../examples) |
 | прочесть контракты | [`flang/SPEC.md`](../flang/SPEC.md) · [`flang/self/SPEC.md`](../flang/self/SPEC.md) · [`flang/proof/SPEC.md`](../flang/proof/SPEC.md) · [`flang/conc/SPEC.md`](../flang/conc/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
 | узнать, куда это идёт | [`ROADMAP.md`](../ROADMAP.md) — пять этапов и что каждый меняет для разработчика · [`docs/what-provability-gives-today.ru.md`](what-provability-gives-today.ru.md) · [`docs/road-to-1-0.md`](road-to-1-0.md) |
 
@@ -333,22 +333,20 @@ export function mestoVstavki(elementy, cel) {
 
 ## Как устроен репозиторий
 
-У корня 11 каталогов. Всё, что есть язык, лежит под `flang/`; снаружи — то, что языком не
+У корня 9 каталогов. Всё, что есть язык, лежит под `flang/`; снаружи — то, что языком не
 является: точка раскрутки, упаковка, примеры, замеры, документация и задачник.
-`sh scripts/published-vs-tree.sh --карта` сверяет эту карту с деревом на каждый пуш.
+`sh scripts/guards/published-vs-tree.sh --карта` сверяет эту карту с деревом на каждый пуш.
 
 <!-- КАРТА-НАЧАЛО: между этими метками каждая строка начинается с имени каталога корня;
-     sh scripts/published-vs-tree.sh --карта сличает состав с деревом. -->
+     sh scripts/guards/published-vs-tree.sh --карта сличает состав с деревом. -->
 
 ```
 bootstrap/        компилятор, напечатанный в C99, и его Makefile: «make -C bootstrap» собирает двоичный
 flang/            язык: self/ (компилятор), core/, stdlib/, proof/, conc/, ct/, src/emit/ (рантаймы целей), scripts/, проверки/, test/, SPEC.md
-examples/         185 программ на flang в 22 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
+docs/examples/         185 программ на flang в 22 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
 editors/          языковой сервер, подсветка для Vim и VS Code, заявка в github-linguist
 packaging/        формула Homebrew, плагин asdf, страница flang.1, проверки установки
 scripts/          проверки дерева, перепечатка точки раскрутки, релизный архив, журнал изменений
-benchmarks/       замеры: скорость против Python и Node, цена доказательства, авторство моделей
-web/              flang в браузере: сборка в WebAssembly, приложение во вкладке, сокращатель ссылок
 fspec/            бизнес-правила, записанные доказанными спецификациями, и проверка, что новое правило не отменяет старое
 docs/             документация: исходники сайта, руководство, решения (adr/), отчёты замеров, база знаний
 tasks/            открытая и закрытая работа дерева, по файлу на задачу
@@ -376,19 +374,19 @@ tasks/            открытая и закрытая работа дерева
 [`flang/test/`](../flang/test) — то, что осталось от набора проб, написанного против удалённой
 реализации на JavaScript; хранится как образцы.
 
-Два набора примеров — полноразмерные проекты: [`examples/web/shortener`](../examples/web/shortener/README.md),
+Два набора примеров — полноразмерные проекты: [`docs/examples/web/shortener`](examples/web/shortener/README.md),
 сокращатель ссылок, где между байтами запроса и байтами ответа нет ничего, кроме flang, и
-[`examples/library-api`](../examples/library-api/README.md), предметная половина библиотечной службы;
+[`docs/examples/library-api`](examples/library-api/README.md), предметная половина библиотечной службы;
 ещё 170 программ в остальных наборах — отдельные файлы, среди них набор LeetCode: 82 решения с
 806 примерами.
-<!-- СНЯТО 2026-09-08 файлов examples/leetcode/*.flang = 82 -->
-<!-- СНЯТО 2026-09-08 примеров-в examples/leetcode/*.flang = 806 -->
+<!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
+<!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->
 
 **Точка раскрутки.** В `bootstrap/` лежит компилятор, уже напечатанный в C99, — поэтому один
 `make` даёт рабочий `flang`. Этот двоичный печатает исходники компилятора заново, и результат
 сверяется с закоммиченным: `sh scripts/raskrutka.sh --check`. Входы последней печати записаны в
 `scripts/otpechatok-semeni`, по хешированной строке на файл — 48 строк. Сегодня семя отстаёт от
-исходников — на три файла и 77 функций: `sh scripts/chto-otstalo-ot-semeni.sh` перечисляет, какие
+исходников — на три файла и 77 функций: `sh scripts/seed/chto-otstalo-ot-semeni.sh` перечисляет, какие
 файлы и функции новее
 семени, а перепечатка (`sh scripts/raskrutka.sh`, часы на одном ядре) — единственный путь, которым
 правки `flang/self/` доезжают до двоичного. Что такое семя и что его держит —
@@ -399,8 +397,9 @@ tasks/            открытая и закрытая работа дерева
 `CONTRIBUTING.md`, `AGENTS.md` (указания агенту, работающему в дереве — символическая ссылка на
 `.ai/AGENTS.md`, как и `.claude` — ссылка на `.ai/.claude`), `DESCRIPTION.md`
 (развёрнутое описание языка), `ROADMAP.md` (замер, а не намерение), `CHANGELOG.md` ·
-`changelog.json` (печатаются из тегов и тем коммитов, руками не правятся), `package.json` (здесь
-живёт версия; печатается `./ярлык пакет`, никуда не публикуется) и `ярлык` · `ярлыки.flang` —
+`changelog.json` (печатаются из тегов и тем коммитов, руками не правятся), `package.json` (не пакет npm — npm ушёл из дерева в сентябре 2026; держится как
+единственное место, откуда берут версию, лицензию и два адреса: подвал сайта, работа
+выпуска и сторож формулы Homebrew. Печатается `./ярлык пакет`, никуда не публикуется) и `ярлык` · `ярлыки.flang` —
 ярлыки дерева и точка входа на `sh`, которая их запускает: `./ярлык задачник:доска`,
 `./ярлык спеки:проверка`.
 
@@ -427,8 +426,8 @@ git config core.hooksPath .githooks      # хук перед пушем: деш�
 [`docs/zettel/`](zettel/README.md).
 
 Проза этого дерева держится при дереве прогонами, а не памятью: число, набранное рукой, несёт
-примету о том, чем снято (`scripts/prose-numbers-guard.sh`), путь в ссылке обязан существовать
-(`scripts/link-guard.flang`), а внутреннее слово на странице для читателя со стороны получает
+примету о том, чем снято (`scripts/guards/prose-numbers-guard.sh`), путь в ссылке обязан существовать
+(`scripts/guards/link-guard.flang`), а внутреннее слово на странице для читателя со стороны получает
 отказ (`flang/scripts/jargon-guard.flang`). Эта страница — одна из тех, что эти проверки читают.
 
 ## Состояние

@@ -39,7 +39,7 @@ $ grep -oE '"--[^"]{2,40}"' bootstrap/flang_repl.c | grep -ci 'lang\|язык'
 2. **Чтение `.flangrc`** в самом двоичном, по правилу из ADR-0024: подъём от
    рабочего каталога, обрыв на первой примете (`.flangrc`, `.git`,
    `flang.package`), потом `$HOME/.flangrc`. Правило уже пересчитано в
-   `scripts/flangrc.sh` и проверено `scripts/flangrc-guard.sh` — расходиться
+   `scripts/flangrc.sh` и проверено `scripts/guards/flangrc-guard.sh` — расходиться
    этим двум записям нельзя, и за этим должна следить проверка.
 3. **Переменные среды** `FLANG_LANG`, `FLANG_SURFACE`, `FLANG_COLOR`,
    `FLANG_MANPAGE` — латиницей, потому что `bash` и `dash` кириллическое имя
@@ -63,5 +63,5 @@ $ grep -oE '"--[^"]{2,40}"' bootstrap/flang_repl.c | grep -ci 'lang\|язык'
   об этом одной строкой, а не молчит;
 * `.flangrc` с `язык = eo` меняет ответ `flang --version` в части прозы;
 * чужой `.flangrc` выше корня проекта НЕ действует — то же, что проверяет
-  `sh scripts/flangrc-guard.sh --подлог`;
+  `sh scripts/guards/flangrc-guard.sh --подлог`;
 * `flang --json` и коды `FLANG_*` от ключа языка не зависят ни в одном прогоне.

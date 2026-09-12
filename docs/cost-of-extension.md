@@ -223,8 +223,8 @@ node docs/site/glossary.mjs --check
 | `flang/src/lexer.mjs` | 313 |
 | `flang/self/lexer.flang` | 63 |
 | `flang/test/surfaces.test.mjs` (новый сторож) | 123 |
-| `examples/surfaces/factorial.eo.flang` (новый) | 84 |
-| `examples/surfaces/factorial.zh.flang` (новый) | 80 |
+| `docs/examples/surfaces/factorial.eo.flang` (новый) | 84 |
+| `docs/examples/surfaces/factorial.zh.flang` (новый) | 80 |
 | `flang/test/self-lexer.test.mjs` | 7 |
 | `flang/self/SPEC.md` | 2 |
 
@@ -474,18 +474,18 @@ c, 14 450 строк в шести файлах. Всего по восьми ц
 * `flang/src/targets.mjs:41–51` — таблица `ЦЕЛИ`;
 * `flang/src/conc.mjs:493–518` — `ВОЗМОЖНОСТИ_ЦЕЛЕЙ`, без строки тест падает;
 * `flang/src/target-occupied.mjs:231–240` — `ЗАНЯТО_ЦЕЛЬЮ`;
-* `scripts/emit-promises-guard.flang:61–68` — свой зашитый список целей;
-* `scripts/occupied-names-guard.flang:88–97` — список восьми целей с цепочкой имён,
+* `scripts/guards/emit-promises-guard.flang:61–68` — свой зашитый список целей;
+* `scripts/guards/occupied-names-guard.flang:88–97` — список восьми целей с цепочкой имён,
   обходом и таблицей. Арифметики `модулей * 8` тут больше нет: сторож считает
   `модулей умножить на (длина («Цели»))`, то есть по своему же списку. Девятая
   цель требует одной строки в списке, а не починки счёта.
 
 > **Смета сбылась дословно, и строку не дописали.** Цель `cpp` завели, а списки
-> двух сторожей оставили восьмёркой. `scripts/emit-promises-guard.flang` из-за
+> двух сторожей оставили восьмёркой. `scripts/guards/emit-promises-guard.flang` из-за
 > этого считал «целей напечатано 8» и расходился с прозой; строка дописана
 > 5 сентября 2026, и сторож сразу нашёл второе расхождение, которого никто не
 > видел: файл сборки печатают **восемь** целей, а оба README обещали семь.
-> `scripts/occupied-names-guard.flang` свою восьмёрку держит до сих пор и при
+> `scripts/guards/occupied-names-guard.flang` свою восьмёрку держит до сих пор и при
 > этом возвращает **0** — зелен и девятую не смотрит. Это ровно то, что здесь
 > названо «опаснее падения».
 * `flang/test/precondition.test.mjs:399–408` — таблица `ЦЕНА` с точными байтами

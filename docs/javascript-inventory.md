@@ -11,7 +11,7 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 
 **Пересверено 29 августа 2026, файл за файлом.** Состав не изменился: те же
 54 файла, ни один не пришёл и не ушёл. Сдвинулся ровно один —
-`benchmarks/proof-cost/count-library.mjs`, 240 строк стало 280. На эти же
+`benchmarks/proof-cost/count-library.mjs` (снят 11 сентября 2026: двойник `docs/benchmarks/proof-cost/count-library.flang` в дереве), 240 строк стало 280. На эти же
 40 строк подросли оба итога: всего **25 527** вместо 25 487, долг —
 **13 507** вместо 13 467; куча «benchmarks — замеры» стала 438 строк вместо 398.
 Остальные 53 строки описи сошлись знак в знак. Числа ниже по тексту оставлены
@@ -30,7 +30,7 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 (двоичный из семени `7c4f074d`) двойники дали тот же приговор — правила: те же
 7 находок, код 1 (38 с против 5 с); ключи: код 0 и те же восемь разрядов долга
 (39 с против 0,2 с), проба подлога `--fast` красит; прямой запуск: те же три копии
-в `examples/frameworks/*/printed/flang_cli.js` плюс одна, которую JavaScript
+в `docs/examples/frameworks/*/printed/flang_cli.js` плюс одна, которую JavaScript
 прощал списком (`flang_host_node.js:497`), — звал его никто. Ярлыки
 `правила:проверка` и `ключи:проверка` и работа `cli-keys` в `ci.yml` зовут теперь
 `flang io`, и работе больше не нужен `setup-node`. Файлов JavaScript стало 66,
@@ -41,10 +41,10 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 ветка `r/js-osnastka-na-flang`). Из `flang/test/` ушли мост `flang-bridge.mjs` и
 пять обёрток `*.flang.mjs` над двойниками на flang — их не ввозил никто; из
 `scripts/` — `wasm-run.mjs` (среда WASI — `wasmtime`, а не `node:wasi`) и
-`type-collision-guard.mjs` (двойник `scripts/type-collision-guard.flang` на том же
+`type-collision-guard.mjs` (двойник `scripts/type-collision-guard.flang` — тот снят 11 сентября 2026 как незваный — на том же
 дереве даёт тот же приговор: 9 известных, 0 новых). Ещё три ушли с
 переключением CI на двойники: `latin-collision-guard.mjs` (`ci.yml` и
-`reprint.yml` зовут `scripts/latin-collision-guard.flang`, оба красны на
+`reprint.yml` зовут `scripts/guards/latin-collision-guard.flang`, оба красны на
 подложенной паре имён), `jargon-guard.mjs` и его пробы
 `flang/test/jargon-guard.test.mjs` (11 из 14 проб перенесены в
 `flang/проверки/жаргон.flang`, работа `jargon` зовёт `flang test`). Файлов
@@ -55,8 +55,8 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 **Сдвинулось 10 сентября 2026: ещё три файла снесены** (задача 0049, ячейки 11,
 12, 14 — `flang/scripts/target-words.mjs`, `claim-guard.mjs`,
 `discriminating-search.mjs`; коммиты `09985c756`, `27e5ff559`, `d6139b409`).
-На 11 сентября (`2c40752d0`): `git ls-files '*.mjs' '*.js' | wc -l` → **52**,
-строк **28 408**. <!-- СНЯТО 2026-09-11 файлов *.js,*.mjs = 52 -->
+На 11 сентября (`2c40752d0`): `git ls-files '*.mjs' '*.js' | wc -l` → **51**,
+строк **28 121**. <!-- СНЯТО 2026-09-12 файлов *.js,*.mjs = 51 -->
 
 Двоичный, которым сняты все остальные числа этой описи, —
 `/srv/flang-rabota/w-predely/bootstrap/flang` (0.6.2), собран 23 августа 2026
@@ -65,13 +65,13 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 
 Эта опись считает ОДИН язык. Остальные шестнадцать — оболочка, C, C++, Python,
 HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
-считает [`tree-inventory.md`](tree-inventory.md) (10 сентября 2026: 272 файлов вне flang,
-<!-- СНЯТО 2026-09-10 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 272 -->
-долг вне JavaScript — **108 файлов, 16 486 строк при потолке 63**: храповик
+считает [`tree-inventory.md`](tree-inventory.md) (10 сентября 2026: 240 файлов вне flang,
+<!-- СНЯТО 2026-09-11 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 240 -->
+долг вне JavaScript — **97 файлов, 18 427 строк при потолке 63**: храповик
 красен, разбор — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
-28 408 строк этой описи — нижняя оценка.
-<!-- СНЯТО 2026-09-11 строк-в *.js,*.mjs = 28408 -->
+28 121 строк этой описи — нижняя оценка.
+<!-- СНЯТО 2026-09-12 строк-в *.js,*.mjs = 28121 -->
 (29 августа здесь стояло 25 527: за два дня прибавилось 2 313 строк. Ещё 64
 строки прибавились 2 сентября: `scripts/latin-collision-guard.mjs` сравнивает
 теперь ПРОСЬБЫ печати, а не объявленные имена, и довод к этому записан там же.)
@@ -99,9 +99,9 @@ JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по им
 | `flang/scripts/storozh-slov.mjs` | `flang/scripts/word-guard.mjs` |
 | `flang/scripts/razlichitelnyy-poisk.mjs` | `flang/scripts/discriminating-search.mjs` |
 | `flang/scripts/slova-celey.mjs` | `flang/scripts/target-words.mjs` |
-| `benchmarks/zamer-skorosti/rabota.mjs` | `benchmarks/speed/work.mjs` |
+| `benchmarks/zamer-skorosti/rabota.mjs` | `docs/benchmarks/speed/work.mjs` |
 | `benchmarks/zamer-tseny/schyot-biblioteki.mjs` | `benchmarks/proof-cost/count-library.mjs` |
-| `benchmarks/…/programs/zadachi.mjs` | `benchmarks/speed/programs/tasks.mjs` |
+| `benchmarks/…/programs/zadachi.mjs` | `docs/benchmarks/speed/programs/tasks.mjs` |
 | `packaging/flang-zapusk.mjs` | `packaging/flang-launch.mjs` |
 
 **Второе: состав разошёлся ровно на три файла**, и 53 с 54 сходится так:
@@ -175,10 +175,10 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 |---|---:|---|
 | `flang/conc/bin/node.js` | 719 | **хозяин узла на цели `js`** — восьмой из восьми: рядом лежат `node.c`, `node.cs`, `node.ex`, `node.go`, `node.java`, `node.py`, `node.rs`. Все восемь названы поимённо в `flang/scripts/node-across-targets.flang` (строка «js», хозяин `node.js`, запуск `node node.js`). Убрать его — вычеркнуть цель `js` из счёта работающих целей |
 | `docs/site/poisk.js` | 355 | исполняется браузером читателя на статике; исполнителя JavaScript у flang нет |
-| `benchmarks/speed/programs/tasks.mjs` | 181 | **это и есть замеряемая реализация на JavaScript**, соседка `tasks.flang`, `tasks.py` и `reference.c`. `benchmarks/speed/work.mjs` зовёт её строкой `node: (з) => прогон("node", [.../tasks.mjs, …])` — это ряд «node» в таблице замера. Переписать на flang — стереть у замера столбец сравнения |
+| `docs/benchmarks/speed/programs/tasks.mjs` | 181 | **это и есть замеряемая реализация на JavaScript**, соседка `tasks.flang`, `tasks.py` и `reference.c`. `docs/benchmarks/speed/work.mjs` зовёт её строкой `node: (з) => прогон("node", [.../tasks.mjs, …])` — это ряд «node» в таблице замера. Переписать на flang — стереть у замера столбец сравнения |
 | `docs/site/poisk-proverka.mjs` | 175 | поднимает браузерный `poisk.js` внутри себя через `node:vm` и проверяет **тот же файл**, который читает браузер. Двойник на flang проверял бы другой файл — это подмена сторожа, а не перенос |
 | `scripts/wasm-run.mjs` | 65 | средой WASI служит сам Node (`node:wasi`, preview1). Модуль `wasm32-wasi` без такой среды не запускается вовсе |
-| `web/wasm/probe.mjs` | 63 | ведёт НАСТОЯЩИЙ браузер через Playwright и ловит падение вкладки |
+| `docs/examples/web/wasm/probe.mjs` | 63 | ведёт НАСТОЯЩИЙ браузер через Playwright и ловит падение вкладки |
 | `editors/vscode/extension.js` | 46 | точка входа расширения VS Code: редактор грузит модуль в свой процесс Node, другого способа подключиться у него нет. Знания о языке в файле нет ни одного — оно всё в `flang lsp`, написанном на flang |
 
 Шесть из семи прежняя опись уже так и разобрала. Новое здесь одно, и оно
@@ -246,8 +246,8 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 |---|---:|---|
 | `flang/scripts/count-guard.mjs` | 970 | сторож |
 | `docs/site/build.mjs` | 958 | сайт |
-| `scripts/build-changelog.mjs` | 878 | журнал |
-| `scripts/build-changelog-page.mjs` | 833 | журнал |
+| `scripts/site/build-changelog.mjs` | 878 | журнал |
+| `scripts/site/build-changelog-page.mjs` | 833 | журнал |
 | `flang/scripts/binary.mjs` | 830 | мост |
 | `flang/scripts/link-collision-guard.mjs` | 828 | сторож |
 | `flang/scripts/proof-ledger.mjs` | 768 | сторож |
@@ -264,10 +264,9 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 | `docs/site/podsvetka.mjs` | 333 | сайт |
 | `docs/site/markdown.mjs` | 311 | сайт |
 | `flang/scripts/word-occupancy.mjs` | 311 | сторож |
-| `benchmarks/proof-cost/count-library.mjs` | 280 | замер |
 | `flang/scripts/target-words.mjs` | 309 | сторож |
 | `flang/conc/bin/wire.mjs` | 159 | узел |
-| `benchmarks/speed/work.mjs` | 158 | замер |
+| `docs/benchmarks/speed/work.mjs` | 158 | замер |
 | `flang/conc/bench/node-death-targets.mjs` | 147 | узел |
 | `docs/site/poisk.mjs` | 111 | сайт |
 | `docs/site/numbers.mjs` | 107 | сайт |
@@ -295,9 +294,9 @@ flang io <файл.flang> [--plan «Имя»] [--max-orders N] [--seed N] [--in-
 заведомо кривым ключом рядом, значит проверка настоящая:
 
 ```
-$ flang io benchmarks/proof-cost/count-20.flang --args '{"файл":"logic.flang"}'
+$ flang io docs/benchmarks/proof-cost/count-20.flang --args '{"файл":"logic.flang"}'
 flang io: непонятный ключ «--args»
-$ flang io benchmarks/proof-cost/count-20.flang --нет-такого-ключа
+$ flang io docs/benchmarks/proof-cost/count-20.flang --нет-такого-ключа
 flang io: непонятный ключ «--нет-такого-ключа»
 ```
 
@@ -307,7 +306,7 @@ flang io: непонятный ключ «--нет-такого-ключа»
 смешивала.** У дыры есть два обхода, оба уже применены в дереве:
 
 * **довод-путь называется в самом плане числом**, а каталог кладётся рядом с
-  планом под условленным именем — так сделан `benchmarks/speed/memory.flang`
+  планом под условленным именем — так сделан `docs/benchmarks/speed/memory.flang`
   (`.sborka`, готовит его `assemble.sh` без довода);
 * **довод-РЕЖИМ становится отдельным планом** — `--plan 'Имя'` у `flang io`
   есть, и `--check` против `--self-test` ложится на два плана одного файла
@@ -349,7 +348,7 @@ $ grep -c 'work.mjs\|count-library.mjs' ярлыки.flang
 
 Зовут их руками, и **с доводами** — так это и записано в дереве:
 
-* `docs/benchmark-speed.md:552` — `node benchmarks/speed/work.mjs /tmp/zamer --кругов 11`;
+* `docs/benchmark-speed.md:552` — `node docs/benchmarks/speed/work.mjs /tmp/zamer --кругов 11`;
 * `docs/emptiness-of-what-is-proved.md:51` — `node $W/schyot.mjs <модуль>.flang`,
   и рядом прямо сказано: «**по одному модулю за раз**».
 
@@ -362,7 +361,7 @@ $ grep -c 'work.mjs\|count-library.mjs' ярлыки.flang
 
 Довод «первым аргументом идёт каталог сборки, а плану довода не передать» верен
 буквально и неверен по сути: **обход уже придуман, применён и лежит в том же
-каталоге.** `benchmarks/speed/memory.flang` (299 строк) — замер пиковой памяти
+каталоге.** `docs/benchmarks/speed/memory.flang` (299 строк) — замер пиковой памяти
 тех же пяти задач на тех же сборках, **план на flang**, и каталог сборки в нём
 назван числом:
 
@@ -374,12 +373,12 @@ $ grep -c 'work.mjs\|count-library.mjs' ярлыки.flang
   ".sborka"
 ```
 
-`benchmarks/speed/assemble.sh` без довода кладёт сборку именно туда, и так это
+`docs/benchmarks/speed/assemble.sh` без довода кладёт сборку именно туда, и так это
 записано в `docs/benchmark-speed.md`:
 
 ```bash
-benchmarks/speed/assemble.sh
-bootstrap/flang io benchmarks/speed/memory.flang
+docs/benchmarks/speed/assemble.sh
+bootstrap/flang io docs/benchmarks/speed/memory.flang
 ```
 
 Значит `work.flang` пишется не с нуля, а **по соседу**: у `memory.flang` уже
@@ -406,7 +405,7 @@ bootstrap/flang io benchmarks/speed/memory.flang
 надо знать до начала, а не после.
 
 **`count-library.mjs` (240) переписуем, и машинерия для него в дереве уже
-лежит** — `benchmarks/proof-cost/count-20.flang` (1 341 строка) делает ровно то
+лежит** — `docs/benchmarks/proof-cost/count-20.flang` (1 341 строка) делает ровно то
 же самое над `docs/benchmark2`: перечисляет каталог, зовёт `flang ast` и
 `flang check --proof` процессом, читает ответы счётом скобок, пишет времянку с
 телом-заглушкой и спрашивает ведомость заново. Отличий от `count-library.mjs`
@@ -582,12 +581,12 @@ $ echo $?
 Порядок изменился против прежней описи, и изменил его обход `.sborka`: два
 долговых файла `benchmarks` дыры 1 НЕ ждут.
 
-1. **`benchmarks/speed/work.mjs` (158)** — образец лежит рядом,
-   `benchmarks/speed/memory.flang` (299 строк), каталог сборки берётся числом
+1. **`docs/benchmarks/speed/work.mjs` (158)** — образец лежит рядом,
+   `docs/benchmarks/speed/memory.flang` (299 строк), каталог сборки берётся числом
    `.sborka`. Работы больше, чем строк: девять участников вместо четырёх, круги
    с чередованием и медиана. Доказательство будет неполным по природе замера —
    сверять можно только контрольные суммы, не времена.
-2. **`benchmarks/proof-cost/count-library.mjs` (240)** — образец
+2. **`benchmarks/proof-cost/count-library.mjs` (240)** — сделано, снят 11 сентября 2026; образец
    `count-20.flang`, цена по скорости втрое, а не в семьсот раз (замерено).
    Заходя, **сперва починить меру**: счётчик на JavaScript теряет вердикт
    файла с красным примером молча, и двойник этого наследовать не должен.

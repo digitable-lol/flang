@@ -82,4 +82,4 @@ AddressSanitizer этой записи не показывает: она вну�
 `«Прочитать из соединения»` отказывать на куске TCP, законно разрезавшем знак.
 
 Связанное: `docs/adr/0015-one-measure-for-strings.md`,
-`scripts/one-string-measure-guard.sh`, `scripts/string-measure.flang`.
+`scripts/guards/one-string-measure-guard.sh`, `scripts/guards/string-measure.flang`.

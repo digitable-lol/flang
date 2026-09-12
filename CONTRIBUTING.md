@@ -200,10 +200,19 @@ suite before publishing. npm was removed from the tree on 3 September 2026
 `npm publish` refuses on its own.
 
 What is left is the **version**, the licence and the two addresses — read by the
-site build, by the Homebrew formula guard and by the release workflow. The file
-is printed from `scripts/release/emit-package.flang` and never hand-edited:
-`./ярлык пакет` prints it, `./ярлык пакет:проверка` refuses if the two have
-drifted.
+site build, by the Homebrew formula guard and by the release workflow — plus
+`name`, `private`, `type` and `engines`. `type: "module"` is load-bearing: the
+`.js` files in the tree are loaded by Node as ES modules. `engines` is not about
+npm either — it names the Node version the `.mjs` tooling that is left is run on.
+
+On 12 September 2026 the three fields nobody read — `description`, `homepage`
+and `keywords` — were dropped (task 1745, the owner's first point). Searched
+before removing, not assumed: no workflow, guard, test or build ever looked at
+any of them; the long description of the language lives in `DESCRIPTION.md`.
+
+The file is printed from `scripts/release/emit-package.flang` and never
+hand-edited: `./ярлык пакет` prints it, `./ярлык пакет:проверка` refuses if the
+two have drifted.
 
 ## Prose is checked, not trusted
 

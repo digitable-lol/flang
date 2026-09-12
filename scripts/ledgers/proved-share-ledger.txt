@@ -1116,7 +1116,7 @@ c0e37ea32cceee7ea280fb07ffd8433d|4|3|1|0|0|scripts/guards/child-timeout.flang
 ce97ff0ab2094dce6783702de4290b85|34|32|0|2|0|scripts/targets/emit-and-examples.flang
 5e4578f4c48ff79aa6669de59fecb019|14|14|0|0|0|scripts/site/emit-dictionary.flang
 5f0d2e189fb05b4383ad353ab7f23fa7|48|42|3|3|0|scripts/targets/emit-law.flang
-6e853bc74ce6a194834bd7cedcfc79e6|4|11|0|0|0|scripts/release/emit-package.flang
+6e853bc74ce6a194834bd7cedcfc79e6|3|11|0|0|0|scripts/release/emit-package.flang
 35bc4b6ceba5235a93625a25ded7023f|12|12|0|0|0|scripts/guards/emit-promises-guard.flang
 866bb0d2a5dcddc8a0a98cd0318d45a9|13|12|1|0|0|scripts/guards/file-extensions.flang
 d59dd44ec88f4735e5b5dd785acc0ca4|63|49|11|3|0|scripts/guards/homebrew-formula-guard.flang

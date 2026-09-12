@@ -403,7 +403,7 @@ The loose files in the root: `README.md` (this page; the Russian edition is a pa
 `.ai/AGENTS.md`, as `.claude` is a link to `.ai/.claude`), `DESCRIPTION.md` (a
 long-form description of the language, in Russian), `ROADMAP.md` (measured, not intended),
 `CHANGELOG.md` · `changelog.json` (printed from tags and commit subjects, never edited by hand),
-`package.json` (the version lives here; printed by `./ярлык пакет`, not published anywhere) and
+`package.json` (not an npm package — npm left the tree in September 2026; it is kept as the one place the version, the licence and the two addresses are read from: the site footer, the release workflow and the Homebrew formula guard. Printed by `./ярлык пакет`, never published) and
 `ярлык` · `ярлыки.flang` — the shortcuts of the tree and the `sh` entry point that runs them:
 `./ярлык задачник:доска`, `./ярлык спеки:проверка`.
 

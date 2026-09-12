@@ -372,7 +372,7 @@ jobs:
             exit 1
           fi
           if [ "$otvet" != "flang $v_formule" ]; then
-            echo "::error::brew поставил двоичный, который отвечает «$otvet», а формула объявляет version $v_formule"
+            echo "::error::brew поставил двоичный, который отвечает «${otvet}», а формула объявляет version $v_formule"
             echo "::error::Формула и отгруженный архив разошлись — это беда задачи 9959, а не придирка."
             exit 1
           fi

@@ -171,12 +171,12 @@ jobs:
             *) binary_version="" ;;
           esac
           if [ -z "$binary_version" ]; then
-            echo "::error::«flang --version» ответил «$otvet», а ждали «flang <версия>» одной строкой"
+            echo "::error::«flang --version» ответил «${otvet}», а ждали «flang <версия>» одной строкой"
             echo "::error::Поправить надо ЭТОТ шаг: вид ответа изменился, двоичный ни при чём."
             exit 1
           fi
           if [ "$binary_version" != "$package_version" ]; then
-            echo "::error::собранный двоичный зовёт себя «$binary_version», а package.json объявляет «$package_version»"
+            echo "::error::собранный двоичный зовёт себя «${binary_version}», а package.json объявляет «${package_version}»"
             echo "::error::Выпуск собирается из СЕМЕНИ (bootstrap/), и версию в нём поднимает ПЕРЕПЕЧАТКА,"
             echo "::error::а не правка flang/src/emit/c/flang_repl.c — её видит только «версия:проверка»."
             echo "::error::Так вышли 9959 («двоичный называл себя версией на два релиза позади») и 9983."
@@ -364,7 +364,7 @@ jobs:
             v_derevo="$(sed -n 's/^  '"$pole"' "\([^"]*\)".*/\1/p' "$derevo")"
             v_kran="$(sed -n 's/^  '"$pole"' "\([^"]*\)".*/\1/p' "$kran")"
             if [ "$v_derevo" != "$v_kran" ]; then
-              echo "::error::$pole: в кране «$v_kran», а в дереве «$v_derevo» — кран отстал, brew поставит не то"
+              echo "::error::$pole: в кране «${v_kran}», а в дереве «${v_derevo}» — кран отстал, brew поставит не то"
               beda=$((beda + 1))
             fi
           done

@@ -618,9 +618,9 @@ proza() {
   echo "ЧИСЛА ПРОЗЫ (README и страницы против дерева):"
 
   # Примеры: сколько программ и сколько наборов.
-  pr_vsego=$(find examples -name '*.flang' | wc -l | tr -d ' ')
-  pr_naborov=$(find examples -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
-  pr_ostalnyh=$(find examples -name '*.flang' \
+  pr_vsego=$(find docs/examples -name '*.flang' | wc -l | tr -d ' ')
+  pr_naborov=$(find docs/examples -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
+  pr_ostalnyh=$(find docs/examples -name '*.flang' \
                 | grep -vE '^docs/examples/(web/shortener|library-api)/' | wc -l | tr -d ' ')
   skazat "README.ru: программ"  "$(grep -oE 'docs/examples/ +[0-9]+ программ' docs/README.ru.md | grep -oE '[0-9]+')" "$pr_vsego"
   skazat "README: программ"     "$(grep -oE 'docs/examples/ +[0-9]+ flang programs' README.md | grep -oE '[0-9]+')" "$pr_vsego"

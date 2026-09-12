@@ -352,7 +352,7 @@ against the tree on every push.
 ```
 bootstrap/        the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
 flang/            the language: self/ (the compiler), core/, stdlib/, proof/, conc/, ct/, src/emit/ (target runtimes), scripts/, проверки/, test/, SPEC.md
-docs/examples/         185 flang programs in 22 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
+docs/examples/         200 flang programs in 24 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
 editors/          the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/        the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
 scripts/          guards of the tree, the reprint of the bootstrap point, the release archive, the changelog
@@ -383,7 +383,7 @@ JavaScript implementation, kept as fixtures.
 Two of the example sets are full-size projects — [`docs/examples/web/shortener`](docs/examples/web/shortener/README.md),
 a link shortener with nothing but flang between the request bytes and the response bytes, and
 [`docs/examples/library-api`](docs/examples/library-api/README.md), the domain half of a library service;
-the 170 more programs in the other sets are single files, the LeetCode set among them:
+the 185 more programs in the other sets are single files, the LeetCode set among them:
 82 solutions carrying 806 examples.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
 <!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->

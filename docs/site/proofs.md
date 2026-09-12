@@ -61,7 +61,7 @@ as in Coq and Isabelle: **write the proof by hand**. The word `теорема` w
 structured steps (`дано`, `утверждаем`, `затем … по свойству «…»`,
 `индукция по …`, `следовательно доказано`) is a surface in the spirit of Isar,
 and the kernel checks such a derivation step by step, searching for nothing.
-There are 277 such theorems in the language tree, 55 of them in the standard
+There are 284 such theorems in the language tree, 55 of them in the standard
 library (`grep -rac '^\s*теорема ' flang --include='*.flang'`, 11 September
 2026, commit `d6e88d50b`). The difference from Coq and Lean is not that this option exists, but how
 rarely it is reached for: the verdict prints, as a separate number, how many
@@ -113,7 +113,7 @@ talk about programs, and programs compute.
 
 ### What zero axioms does not buy
 
-You still trust something, just less of it: that the twelve decision rules are
+You still trust something, just less of it: that the thirteen decision rules are
 written correctly, that the kernel implementation is correct, that the compiler
 underneath it is correct, that the hardware computes correctly.
 
@@ -127,9 +127,9 @@ checked on every claim in the repository, not on the ones somebody remembered.
 
 ## How the kernel is built
 
-Twelve decision rules, each readable in one sitting; the kernel names them in the
+Thirteen decision rules, each readable in one sitting; the kernel names them in the
 text of its refusals, and the count is taken from the kernel itself
-(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 12). Most
+(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 13). Most
 of them ask about the SHAPE of the goal ("not less than 0", "not greater than a
 literal", "equals", "not greater than a term", "contains", "starts with",
 "non-decreasing"); the rest do not: "goal is an assumption" matches the goal
@@ -140,7 +140,7 @@ derive it, and splitting a goal on an `если` condition.
 
 There used to be three rules, then eight, and older sections of the specification
 still name the count as it stood on the day they were written. Today there are
-twelve, and that number can only be argued with the kernel in hand.
+thirteen, and that number can only be argued with the kernel in hand.
 
 Proof **search** stands apart, and how it is built matters: it **believes
 nothing**. It only proposes, and the kernel re-checks everything. That is why

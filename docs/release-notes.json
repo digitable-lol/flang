@@ -948,6 +948,46 @@
      "The `emit` command: emission into a target language from the command line."
     ]
    }
+  },
+  "0.7.18": {
+   "ru": {
+    "заголовок": "Проверка стала строже, а дерево — понятнее",
+    "появилось": [
+     "Независимая проверка теперь повторяет 629 обязательств из 651 вместо 625 — это 96,62 %. Мест, где она верит компилятору на слово, стало 12 вместо 16. Прибавка получена повторением шагов, а не вычислением: разряд «закрыто вычислением» остался прежним, 6.",
+     "Учебник в терминале вырос с пяти уроков до двенадцати. Он больше не просит набрать программу целиком: даёт готовый текст с пропусками и спрашивает их по очереди, а после каждой строки говорит, что понял. Имя можно писать и ёлочками «Удвоить», и прямыми кавычками — компилятор принимает оба вида, и учебник больше не спорит об этом.",
+     "Проверка обязательств у свободного утверждения (того, что стоит не при функции) теперь доходит до машинного отчёта `flang check --proof --json`. Раньше такие утверждения выпадали из отчёта в трёх местах отбора, и их не видели ни опись доказанного, ни числа на сайте."
+    ],
+    "изменилось": [
+     "Примеры программ переехали из `examples/` в `docs/examples/`: 200 программ в 24 каталогах. Рабочие скрипты разложены по восьми папкам — у корня каталога `scripts/` осталось 13 файлов вместо 136. Замеры, которые давно не гонялись, сняты; живые переехали в `docs/benchmarks/` с английскими именами.",
+     "Браузерные образцы (`web/`) стали тем, чем они и были, — примерами: теперь они лежат в `docs/examples/web/`.",
+     "Файл `package.json` оставлен, но вычищен: из него сняты три поля, которых не читает ни один инструмент. Он нужен не для npm, а как единственное место, откуда выпуск, два сторожа, формула Homebrew и сборка сайта берут версию, лицензию и адреса.",
+     "Сторож имён поймал настоящее столкновение: тип «Документ» объявлен и в разборе JSON, и в языковом сервере, а зонд проверки сводил оба в одну программу. Починен не сторож, а причина — из зонда снят ввоз, которым он не пользовался."
+    ],
+    "сломалось": [
+     "Кванторы по элементам списка, вложенные кванторы, индукция по вашему собственному типу, утверждения не при функции и шаги доказательства, названные человеком, в этот выпуск НЕ вошли. Они сделаны и проверены, но доходят до собранного компилятора только перепечаткой семени — она идёт и займёт ещё несколько часов. Выйдут следующим выпуском.",
+     "Доказательство по-прежнему относится к `flang check` и не покрывает собранный код: никто не проверяет, что напечатанный C соответствует исходной программе. Тот же разрыв есть у Coq, Lean и Idris.",
+     "Опись примеров (`ведомость-примеров.txt`) держит прежние пути: обходчик, который её печатает, идёт два часа сорок минут и ни разу не дошёл до конца — ни у нас, ни в конвейере. Переписать её руками нельзя: сверка идёт построчным сличением, а порядок строк там — порядок обхода."
+    ]
+   },
+   "en": {
+    "заголовок": "The checker got stricter, and the tree got clearer",
+    "появилось": [
+     "The independent checker now replays 629 of 651 obligations instead of 625 — 96.62 %. Places where it takes the compiler's word dropped from 16 to 12. The gain came from replaying steps, not from computing: the «closed by computing» class stayed at 6.",
+     "The terminal tutorial grew from five lessons to twelve. It no longer asks you to type a whole program: it gives the text with gaps and asks for them one at a time, saying after each line what it understood. A name may be written with guillemets «Удвоить» or plain quotes — the compiler accepts both, and the tutorial no longer argues about it.",
+     "Obligations of a free statement (one that stands outside a function) now reach the machine report `flang check --proof --json`. They used to be filtered out in three places, so neither the proved-share ledger nor the site numbers could see them."
+    ],
+    "изменилось": [
+     "Example programs moved from `examples/` to `docs/examples/`: 200 programs in 24 directories. Working scripts are sorted into eight folders — the root of `scripts/` now holds 13 files instead of 136. Benchmarks that had not been run in a long time were removed; the live ones moved to `docs/benchmarks/` with English names.",
+     "Browser samples (`web/`) became what they always were — examples: they now live in `docs/examples/web/`.",
+     "`package.json` stays, but three fields no tool reads were removed. It is not there for npm: it is the single place from which the release, two guards, the Homebrew formula and the site build take the version, licence and URLs.",
+     "The name-collision guard caught a real one: the type «Документ» is declared both in the JSON reader and in the language server, and a probe pulled both into one program. The cause was fixed rather than the guard — the probe lost an import it never used."
+    ],
+    "сломалось": [
+     "Quantifiers over list elements, nested quantifiers, induction over your own declared type, statements outside functions, and proof steps named by a human did NOT make this release. They are written and checked, but they reach the built compiler only by reprinting the seed, which is still running. They will ship in the next release.",
+     "The proof still applies to `flang check` and does not cover the built binary: nothing verifies that the emitted C matches the source program. Coq, Lean and Idris have the same gap.",
+     "The example ledger (`ведомость-примеров.txt`) still holds the old paths: the walker that prints it runs for two hours forty minutes and has never finished — neither here nor in CI. It cannot be rewritten by hand: the check is a line-by-line diff, and the line order there is the walk order."
+    ]
+   }
   }
  }
 }

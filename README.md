@@ -341,7 +341,7 @@ whichever language they are written, because GitHub shows them as a directory's 
 
 ## How the repository is laid out
 
-There are 9 directories at the root. Everything that is the language lives under `flang/`;
+There are 8 directories at the root. Everything that is the language lives under `flang/`;
 outside it is what the language is not: the bootstrap point, packaging, examples, measurements,
 documentation and the task list. `sh scripts/guards/published-vs-tree.sh --карта` checks this map
 against the tree on every push.

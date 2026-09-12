@@ -1,5 +1,5 @@
 модуль «Проверки жаргона»
-  использует «Сторож жаргона» из "../scripts/guards/jargon-guard.flang"
+  использует «Сторож жаргона» из "../scripts/jargon-guard.flang"
 
 // SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
 // SPDX-License-Identifier: BSD-2-Clause

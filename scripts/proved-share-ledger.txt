@@ -947,13 +947,13 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 3f8970a696cb0bc0b668c6e31668b8bf|41|11|0|30|0|flang/self/oracle.flang
 5fffa3b0c7a035479c3b55c3731fb99a|1|0|1|0|0|flang/self/otkazy-tipov.flang
 6c68e5bf49b6c4f3e184ef519b324d7a|3|0|2|1|0|flang/self/otkazy-totalnosti.flang
-54cfb1a8e907051aafea33efa6ac337d|779|446|22|261|0|flang/self/parser.flang
+54cfb1a8e907051aafea33efa6ac337d|782|446|22|261|0|flang/self/parser.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|94|82|2|10|0|flang/self/proof-initial.flang
 e801b6f3712625187e803957115f8ba2|49|44|0|0|0|flang/self/proof-kernel.flang
 6caf41ec0a767163f46212d635157227|337|268|26|41|0|flang/self/proof.flang
-c9e3ee258bfab2a0503a1214f8d1034f|166|46|1|91|0|flang/self/proofterm.flang
+c9e3ee258bfab2a0503a1214f8d1034f|179|46|1|91|0|flang/self/proofterm.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|×|×|×|0|flang/self/repl/repl.flang
 bddb9033aaa4c5848f9eb45f5b8780b7|88|24|0|64|0|flang/self/setoid-oracle.flang
 283bcb74a49880f90b1aa8497a73236d|101|79|0|22|0|flang/self/setoid.flang
@@ -963,7 +963,7 @@ a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 e6bd6e2dcbd72e44099aeb3d412d2167|279|231|11|37|0|flang/self/totality.flang
 6f5995562eb91e54ecbcd9bde4c4853e|408|119|4|265|0|flang/self/types.flang
-d061dcce73d965616552242fff51a218|205|98|57|3|0|flang/self/zapis.flang
+d061dcce73d965616552242fff51a218|212|98|57|3|0|flang/self/zapis.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang
@@ -1306,3 +1306,7 @@ dcdf98a5c22b7eac4510ef6d47df7db2|1|×|×|×|1|flang/proof/чекер/пробы/
 1915c3d6e90512f502a20d5bc245741a|1|×|×|×|0|flang/proof/чекер/пробы/семьи/все-элементы/отбор-положительных.flang
 e38549edddece72770b5d9e3a4f8abc6|1|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/первое-по-требованию.flang
 cbbefa6d3f601f802164e4178c37c51c|1|×|×|×|0|flang/proof/чекер/пробы/семьи/все-элементы/рекурсией.flang
+// ⚑ 12 сентября 2026: та же причина у семьи «шаги ведомости» (задача 3464) —
+// форма «затем … по закону «Имя» из N» появилась в исходниках, в семя не
+// напечатана, check --proof --json отвечает FLANG_PARSE на строке 15.
+ae5f395a5a682cf58723197aabf0a420|3|×|×|×|2|flang/proof/чекер/пробы/семьи/шаги-ведомости/шаги.flang

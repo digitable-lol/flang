@@ -1,7 +1,7 @@
 {
   "name": "@digitable-lol/flang",
   "private": true,
-  "version": "0.7.17",
+  "version": "0.7.18",
   "type": "module",
   "license": "BSD-2-Clause",
   "repository": {

@@ -923,7 +923,7 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|94|82|2|10|0|flang/self/proof-initial.flang
-e801b6f3712625187e803957115f8ba2|45|44|0|0|0|flang/self/proof-kernel.flang
+e801b6f3712625187e803957115f8ba2|46|44|0|0|0|flang/self/proof-kernel.flang
 6caf41ec0a767163f46212d635157227|337|268|26|41|0|flang/self/proof.flang
 c9e3ee258bfab2a0503a1214f8d1034f|166|46|1|91|0|flang/self/proofterm.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|×|×|×|0|flang/self/repl/repl.flang
@@ -935,7 +935,7 @@ a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 e6bd6e2dcbd72e44099aeb3d412d2167|279|231|11|37|0|flang/self/totality.flang
 6f5995562eb91e54ecbcd9bde4c4853e|405|119|4|265|0|flang/self/types.flang
-d061dcce73d965616552242fff51a218|192|98|57|3|0|flang/self/zapis.flang
+d061dcce73d965616552242fff51a218|202|98|57|3|0|flang/self/zapis.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang
@@ -1232,6 +1232,11 @@ d6d765704cb9d7b4e987687d663ebef5|1|×|×|×|0|flang/proof/чекер/пробы/
 edd199f400faf9219e5fb5d0bfd937fe|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/утверждение-с-ограничением.flang
 32ff64fc4a3742a55946b475e40c2f09|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/несколько-связываний.flang
 e7979c2cdfeb659a5d1a5f9187302b0f|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/имя-вне-вызова.flang
+d20313c4998d7f800bc92a83f2c83771|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/сложение-перестановочно.flang
+8418e04883bbeda5e54d2fcf71aee2c4|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/ноль-нейтрален.flang
+5460e552bbc5bd88daed192c67144b5d|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/длина-пустого-списка.flang
+e18d79716b7e9d989ea2d6fdf38b6c14|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/порча/ноль-плюс-один.flang
+6364cd4b39b55966314908c75988bf37|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/порча/ноль-без-посылки.flang
 8801471210cb06da9bd81d348d68ab14|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/охрана-другой-порог.flang
 12d215120f6b52cffd8713bc41215488|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/охрана-ложный-вывод.flang
 903313021206e0b2628c86e3a223125d|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/охрана-то-же-условие.flang

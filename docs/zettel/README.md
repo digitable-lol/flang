@@ -317,6 +317,7 @@
 
 ## Найденные ошибки
 
+- [Перепечатанное семя может нести квантор, которым не может воспользоваться ни одна программа](a-reprinted-seed-can-carry-a-quantifier-that-no-program-can-use.md)
 - [NaN достижим изнутри языка и делает «очевидные» правила ложными](nan-is-reachable.md)
 - [`git stash` общий на все рабочие деревья репозитория, поэтому в рабочих деревьях им пользоваться нельзя](git-stash-is-shared-across-worktrees.md)
 - [Байтовый поиск и знаковый счёт — это две меры на всякой строке, которая не является правильным UTF-8](byte-search-and-character-count-are-two-measures-on-every-ill-formed-string.md)

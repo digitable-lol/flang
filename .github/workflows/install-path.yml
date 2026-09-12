@@ -430,7 +430,13 @@ jobs:
               beda=$((beda + 1))
             fi
           done
-          celey=$(find "$(brew --prefix)/share/flang" -mindepth 1 -maxdepth 1 -type d | wc -l)
+          # ПО ССЫЛКАМ ХОДИТЬ ОБЯЗАТЕЛЬНО (-L). Homebrew кладёт содержимое в Cellar,
+          # а в share/flang оставляет ССЫЛКИ. `find ... -type d` без -L их не видит и
+          # считает ноль — при том что цикл выше, спрашивающий каждую цель через
+          # `[ -d ... ]`, проходит: проверка каталога по ссылке ХОДИТ. Так и вышло
+          # 12 сентября 2026, когда шаг выполнился впервые: «легло каталогов 0, а
+          # печать обещает 10» при десяти зелёных целях и ни одной жалобы поимённо.
+          celey=$(find -L "$(brew --prefix)/share/flang" -mindepth 1 -maxdepth 1 -type d | wc -l)
           if [ "$celey" -ne "$n_celey" ]; then
             echo "::error::в share/flang легло каталогов целей: $celey, а печать обещает $n_celey"
             beda=$((beda + 1))

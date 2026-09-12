@@ -16,8 +16,8 @@
 # эти же исходники. Круг замкнулся. Полдня ушло на откат в 52 местах, и откат
 # вышел НЕПОЛНЫМ: 26 августа тем же способом, каким считает этот сторож, нашлось
 # ещё 180 применений в 78 файлах — `e6795b02` тронул `flang/self`,
-# `flang/stdlib`, `flang/conc` и `ярлыки.flang`, а `examples/**`, `fspec/**`,
-# `flang/proof/**`, `docs/**`, `packaging/**`, `benchmarks/**` не тронул вовсе.
+# `flang/stdlib`, `flang/conc` и `ярлыки.flang`, а `docs/examples/**`, `fspec/**`,
+# `flang/proof/**`, `docs/**`, `packaging/**`, `docs/benchmarks/**` не тронул вовсе.
 # Разбор — задача 0034.
 #
 # ── Правило, которое здесь принуждается ────────────────────────────────────
@@ -109,15 +109,15 @@
 #   тип «Имя» является ТИП          псевдоним
 #
 # ── Звать ──────────────────────────────────────────────────────────────────
-#   sh scripts/seed-knows-type-words-guard.sh            всё дерево
-#   sh scripts/seed-knows-type-words-guard.sh ФАЙЛ…      только названные файлы
-#   sh scripts/seed-knows-type-words-guard.sh --подлог   проба самого сторожа
+#   sh scripts/guards/seed-knows-type-words-guard.sh            всё дерево
+#   sh scripts/guards/seed-knows-type-words-guard.sh ФАЙЛ…      только названные файлы
+#   sh scripts/guards/seed-knows-type-words-guard.sh --подлог   проба самого сторожа
 #
 # Код возврата: 0 — чисто; 1 — найдено применение, которого семя не знает;
 # 2 — семени нет или оно нечитаемо.
 set -eu
 
-KOREN=$(cd "$(dirname "$0")/.." && pwd)
+KOREN=$(cd "$(dirname "$0")/../.." && pwd)
 SEMYA=${SEMYA:-$KOREN/bootstrap}
 PODLOG=0
 

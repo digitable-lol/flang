@@ -130,15 +130,15 @@
  * переставшая сравнивать, продолжает зеленеть.
  *
  * Поэтому охват ПЕЧАТАЕТСЯ каждым прогоном и закреплён тестом «охват сторожа
- * назван числом»: 300 файлов из 963. Остальные 1101 — не упущение:
+ * назван числом»: 300 файлов из 963. Остальные 1099 — не упущение:
  * СНЯТО 2026-09-12 файлов *.flang = 963
  *
- *   • 503 — печать замеров (`benchmarks/model-authoring/out/`, `docs/benchmark*`):
+ *   • 503 — печать замеров (`docs/benchmark*`):
  *     это ВЫВОД прогона, а не исходник, и правилам имени он не подчиняется;
  *   • 99 — образцы тестов (`flang/test/fixtures/`): их имена нарочно кривые,
  *     они тем и образцы;
  *   • 273 — рукописный код вне четырёх каталогов (`flang/proof/examples`,
- *     `flang/conc/examples`, `examples/library-api`, `fspec`, `web/wasm`).
+ *     `flang/conc/examples`, `docs/examples/library-api`, `fspec`, `docs/examples/web/wasm`).
  *     Вот эти охватить СТОИТ, и не охвачены они по одной причине: правило
  *     заводилось замером по четырём каталогам, а расширять охват, не перемерив
  *     цену, значит завести правило, под которое корпус не проверяли.
@@ -160,7 +160,7 @@ import { запущенНапрямую } from "./direct-run.mjs"
 import { деревоИсходника, отсеятьЧужое, прогреть, своё } from "./binary.mjs"
 
 const КОРЕНЬ = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
-const КАТАЛОГИ = ["flang/stdlib", "flang/core", "flang/self", "examples"]
+const КАТАЛОГИ = ["flang/stdlib", "flang/core", "flang/self", "docs/examples"]
 const ФАЙЛ_ДОЛГА = join(КОРЕНЬ, "flang/scripts/name-debt.json")
 
 /* Места связывания, где имя выбирает автор и где заводятся сокращения. Имена
@@ -212,14 +212,14 @@ export const ПОТОЛОК_ПРИМЕРА = 96
    математической записью, — а этого прогоном не проверить, поэтому список
    ведётся руками и поимённо. */
 export const ИСКЛЮЧЕНИЯ = new Map([
-  ["examples/rosetta/ackermann-function-english.flang", new Set(["m", "n"])],
-  ["examples/rosetta/factorial-english.flang", new Set(["n"])],
-  ["examples/rosetta/fibonacci-english.flang", new Set(["n"])],
-  ["examples/rosetta/fizzbuzz-english.flang", new Set(["n"])],
-  ["examples/rosetta/hundred-doors-english.flang", new Set(["n"])],
-  ["examples/rosetta/primes-by-trial-division-english.flang", new Set(["n"])],
-  ["examples/surfaces/factorial.eo.flang", new Set(["n"])],
-  ["examples/surfaces/factorial.zh.flang", new Set(["n"])],
+  ["docs/examples/rosetta/ackermann-function-english.flang", new Set(["m", "n"])],
+  ["docs/examples/rosetta/factorial-english.flang", new Set(["n"])],
+  ["docs/examples/rosetta/fibonacci-english.flang", new Set(["n"])],
+  ["docs/examples/rosetta/fizzbuzz-english.flang", new Set(["n"])],
+  ["docs/examples/rosetta/hundred-doors-english.flang", new Set(["n"])],
+  ["docs/examples/rosetta/primes-by-trial-division-english.flang", new Set(["n"])],
+  ["docs/examples/surfaces/factorial.eo.flang", new Set(["n"])],
+  ["docs/examples/surfaces/factorial.zh.flang", new Set(["n"])],
   /* Второй род исключения, и он тоже про смысл, заданный СНАРУЖИ. Имя `пусть`
      в этих двух файлах повторяет ключ канонического JSON, и ключ стоит в
      кавычках соседним словом той же строки:
@@ -428,7 +428,7 @@ export function охват(корень = КОРЕНЬ, каталоги = КА�
   const вне = все.filter((ф) => !смотрим.includes(ф))
   const корни = {}
   for (const ф of вне) {
-    const ключ = ф.startsWith("benchmarks/") || ф.startsWith("docs/benchmark")
+    const ключ = ф.startsWith("docs/benchmark")
       ? "печать замеров"
       : ф.startsWith("flang/test/fixtures/")
         ? "образцы тестов"

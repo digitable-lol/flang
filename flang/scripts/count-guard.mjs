@@ -627,7 +627,7 @@ export const ПРИСВОЕНИЯ = [
   { образец: /\b(?:FLANG_)?(?:MEASURED_COST|POL_IZMERENNYY)\s*=\s*'?(\d[\d\s ]*)'?/u, поле: "MEASURED_COST", что: "измеренная цена шага печати" },
   { образец: /\b(?:FLANG_)?MAX_DEPTH\s*=\s*'?(\d[\d\s ]*)'?/u, поле: "MAX_DEPTH", что: "MAX_DEPTH" },
   /* `#define FL_MAX_STEPS` пишут не только про НАШЕ семя: им показывают клеймо
-     чужого двоичного (`scripts/binary-origin.sh`) и печать с потолком в единицу
+     чужого двоичного (`scripts/seed/binary-origin.sh`) и печать с потолком в единицу
      (`docs/reprint-cost.md`, показ бага). Поэтому число засчитывается за
      утверждение о семени дерева, только если рядом назван сам файл семени. */
   { образец: /#define\s+FL_MAX_STEPS\s+(\d[\d\s ]*)/u, поле: "FL_MAX_STEPS", что: "#define FL_MAX_STEPS", при: /bootstrap\/flang_runtime\.h/u },

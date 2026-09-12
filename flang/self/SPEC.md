@@ -48,7 +48,7 @@ JavaScript снята 20 августа 2026 (коммит `fe8e8a37`), и св�
 | `emit-python.flang` | «Печать в Python» |
 | `emit-csharp.flang` | «Печать в C#» |
 
-Цели те же, что принимает `flang emit --target`: `c|cpp|go|rust|java|js|elixir|python|csharp`.
+Цели те же, что принимает `flang emit --target`: `c|cpp|go|rust|java|js|ts|elixir|python|csharp`.
 
 ### Доказательства
 

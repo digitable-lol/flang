@@ -190,14 +190,14 @@ jobs:
         uses: ./.github/actions/release-without-cache
       - name: сторож краснеет на подложенном слове
         run: |
-          if sh scripts/seed-knows-type-words-guard.sh --подлог; then
+          if sh scripts/guards/seed-knows-type-words-guard.sh --подлог; then
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: слова в позициях типа известны закоммиченному семени
-        run: sh scripts/seed-knows-type-words-guard.sh
+        run: sh scripts/guards/seed-knows-type-words-guard.sh
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -207,7 +207,7 @@ jobs:
   # число разошлось с тем, что лежит рядом: `docs/tree-inventory.md` считала
   # `seed-parses-sources-guard.sh` в 83 строки при 195, оболочку — в 66 файлов
   # при 71 тогдашних — сегодня их 92;
-  # СНЯТО 2026-09-12 файлов *.sh = 92 `flang/cat/SPEC.md` обещала восемнадцать поручений при 22;
+  # СНЯТО 2026-09-11 файлов *.sh = 92 `flang/cat/SPEC.md` обещала восемнадцать поручений при 22;
   # `flang/PLAN.md` — пять вариантов «Поручение» при 22. Каждое из этих чисел
   # было ВЕРНО В ДЕНЬ ЗАПИСИ и солгало назавтра, и сторожа не было ни на одном.
   #
@@ -226,12 +226,12 @@ jobs:
         uses: ./.github/actions/release-without-cache
       - name: сторож чисел краснеет на подложенном числе
         run: |
-          if sh scripts/prose-numbers-guard.sh --подлог; then
+          if sh scripts/guards/prose-numbers-guard.sh --подлог; then
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
       - name: числа, набранные в прозе рукой, сходятся с деревом
-        run: sh scripts/prose-numbers-guard.sh
+        run: sh scripts/guards/prose-numbers-guard.sh
 
   # ФАЙЛ НАСТРОЕК ЧИТАЕТСЯ ТОЛЬКО ИЗ ДЕРЕВА И ИЗ ДОМА.
   #
@@ -258,12 +258,12 @@ jobs:
         uses: ./.github/actions/release-without-cache
       - name: проверка мест краснеет на читателе без обрыва подъёма
         run: |
-          if ! sh scripts/flangrc-guard.sh --подлог; then
+          if ! sh scripts/guards/flangrc-guard.sh --подлог; then
             echo "проба порчи не сошлась — проверять этим нечего" >&2
             exit 1
           fi
       - name: настройки читаются только из дерева и из дома
-        run: sh scripts/flangrc-guard.sh
+        run: sh scripts/guards/flangrc-guard.sh
 
   # ЗАДАЧНИК СВЕРЯЕТСЯ АВТОМАТИКОЙ, А НЕ ПО ПАМЯТИ.
   #
@@ -332,11 +332,11 @@ jobs:
       # лежит в дереве.
       - run: make -C bootstrap -j"$(nproc)"
       - name: сторож краснеет на подложенной длинной постоянной
-        run: sh scripts/overlong-string-guard.sh --подлог
+        run: sh scripts/guards/overlong-string-guard.sh --подлог
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: длинных строковых постоянных нет ни в семени, ни во входах печати
-        run: sh scripts/overlong-string-guard.sh
+        run: sh scripts/guards/overlong-string-guard.sh
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -356,13 +356,13 @@ jobs:
   # 9 сентября 2026 (задача 0049) сторож на Node снят, зовётся его двойник на
   # flang. Замер на дереве `6dff8a3a9`, двоичный из его семени, 0.7.16:
   #   node scripts/latin-collision-guard.mjs              0,36 с, 101 МиБ, код 0
-  #   bootstrap/flang io scripts/latin-collision-guard.flang
+  #   bootstrap/flang io scripts/guards/latin-collision-guard.flang
   #     --max-steps 2000000000                             374 с, 5,5 ГиБ, код 0
   # Оба — «новых столкновений 0»; на подложенной паре «Обойти занятое целью C++»
   # / «Обойти занятое целью C» оба красны и называют `oboyti_zanyatoe_celyu_c`.
   # Двойник смотрит все `.flang` четырёх каталогов (108 файлов, 12 022 просьбы
   # имён), а не замыкание `compiler.flang` (44 файла, 9192) — то есть строже, и
-  # ведомость `latin-collision-guard-known.tsv` не читает (записей в ней 0).
+  # ведомость `latin-collision-guard-known.tsv` не читает (записей в ней было 0; снята 11 сентября 2026).
   #
   # 374 с плюс сборка семени — дороже границы «пять минут на пуш» (шапка), и
   # граница задним числом не двигается: работа идёт по тегу и по кнопке, а
@@ -371,7 +371,7 @@ jobs:
   #
   # Скомпилированный путь (напечатать сторож в C и собрать `cc`, как делает
   # `scripts/raskrutka.sh` для компилятора) ПРОВЕРЕН 9 сентября 2026 и не
-  # открылся: `bootstrap/flang emit scripts/latin-collision-guard.flang
+  # открылся: `bootstrap/flang emit scripts/guards/latin-collision-guard.flang
   # --target c --cli --runtime flang/src/emit/c` отвечает за 17,7 с кодом 1
   # «FLANG_PLAN_UNSUPPORTED: цель «c» не умеет печатать объявление «план»
   # … Сегодня объявление «план» печатает одна цель — «js»; исполнить его умеет
@@ -385,7 +385,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - name: имена замыкания компилятора не схлопываются после «Змейки»
-        run: bootstrap/flang io scripts/latin-collision-guard.flang --max-steps 2000000000
+        run: bootstrap/flang io scripts/guards/latin-collision-guard.flang --max-steps 2000000000
 
   # ПРОБЫ СТОРОЖА ЖАРГОНА — НА FLANG, ДЁШЕВО И НА ПУШ.
   #
@@ -435,7 +435,7 @@ jobs:
         node-version: [20, 22, 24]
     steps:
       # Вся история и все теги: журнал изменений печатается из них
-      # (scripts/build-changelog.flang, ярлык `журнал`), и ярлык
+      # (scripts/site/build-changelog.flang, ярлык `журнал`), и ярлык
       # `журнал:проверка` сверяет записанный файл с историей. Клон по умолчанию — одна ревизия без единого
       # тега, и в нём эта сверка сравнивать нечего с чем: она осталась бы
       # зелёной, ничего не проверив.
@@ -455,7 +455,7 @@ jobs:
       # Двоичный собирается ДО прогона, потому что часть проб дерева ходит
       # именно в него, а без него не падает, а ПРОПУСКАЕТСЯ: корпусный режим
       # `flang test <каталог>` есть только у двоичного (судит его теперь
-      # `scripts/corpus-runner.flang`). Пропуск в отчёте читается как
+      # `scripts/guards/corpus-runner.flang`). Пропуск в отчёте читается как
       # «всё хорошо», и до этой правки так и читался — двоичный не собирался в
       # CI на Linux ни разу. Сборка стоит около минуты на четырёх ядрах против
       # двух часов самого прогона; вместе с `FTS_REQUIRE_BINARY: 1` ниже это
@@ -518,13 +518,13 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if bootstrap/flang io scripts/license-guard.flang; then
+          if bootstrap/flang io scripts/guards/license-guard.flang; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
-      - run: bootstrap/flang io scripts/license-guard.flang
+      - run: bootstrap/flang io scripts/guards/license-guard.flang
 
   # ── ССЫЛКИ: НАЗАД НА ОБЫЧНЫЙ РАННЕР, НО ПОКА СОВЕТОМ, А НЕ ПРИГОВОРОМ ────
   #
@@ -540,7 +540,7 @@ jobs:
   # проверки в кавычках («Ч41-ssylki», 31 августа) тогда ещё не было. Замер
   # ячейки Ч57, ствол `03fb4060` + правка проверки в кавычках, двоичный
   # `bootstrap/flang` собран из этого же дерева, прогон `bootstrap/flang io
-  # scripts/link-guard.flang` ИЗ ДЕРЕВА (`/usr/bin/time -v`):
+  # scripts/guards/link-guard.flang` ИЗ ДЕРЕВА (`/usr/bin/time -v`):
   #
   #   4 мин 38,90 с, пик занятой памяти 1 289 312 кБ = 1,23 ГиБ, код 1
   #   (2136 битых из 12507 — правка ниже сводит их к настоящим находкам)
@@ -552,7 +552,7 @@ jobs:
   # около 280–380 с), и ничто не мешает памяти повести себя так же.
   #
   # ПОЧЕМУ НЕ ГЕЙТ С ПЕРВОГО ДНЯ. Даже после правки кавычек и списка известных
-  # не-путей (`scripts/link-guard-known-not-a-path.tsv`, ячейка Ч57) в дереве
+  # не-путей (`scripts/ledgers/link-guard-known-not-a-path.tsv`, ячейка Ч57) в дереве
   # остаётся порядка 470–500 подтверждённых историей мёртвых ссылок — работа
   # ячеек Ч41/Ч57 их находит и называет, но НЕ чинит: это отдельный объём
   # работы. Сделать этот шаг обязательным сегодня — значит покрасить CI на
@@ -565,7 +565,7 @@ jobs:
   #   (а) снять `continue-on-error`, когда подтверждённый список сведён к
   #       нулю (отдельная работа, не эта ячейка);
   #   (б) завести ВТОРОЙ закрытый список — снимок сегодняшних подтверждённых
-  #       находок (по образцу `scripts/link-guard-known-not-a-path.tsv`, но
+  #       находок (по образцу `scripts/ledgers/link-guard-known-not-a-path.tsv`, но
   #       без пометки «не путь»: это настоящие дыры на исправление) — и
   #       гейтить только НОВОЕ сверх снимка, чтобы регресс ловился сегодня, а
   #       старый долг чинился отдельно и снимался из снимка по мере починки.
@@ -596,7 +596,7 @@ jobs:
           #
           # Теперь ответ идёт в оба места. Сводка остаётся ради разметки, лог
           # получает то же дословно.
-          if bootstrap/flang io scripts/link-guard.flang > /tmp/link-guard.out 2> /tmp/link-guard.err; then
+          if bootstrap/flang io scripts/guards/link-guard.flang > /tmp/link-guard.out 2> /tmp/link-guard.err; then
             cat /tmp/link-guard.out
             echo '```' >> "$GITHUB_STEP_SUMMARY"
             cat /tmp/link-guard.out >> "$GITHUB_STEP_SUMMARY"
@@ -728,7 +728,7 @@ jobs:
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
-      - run: bootstrap/flang io scripts/emit-and-examples.flang
+      - run: bootstrap/flang io scripts/targets/emit-and-examples.flang
       # Порча — умножение в рантайме Go: `Number(a * b)` меняется на
       # `Number(a + b)`. Она СОБИРАЕТСЯ (`go build` проходит), а 10! даёт 55
       # вместо 3628800, то есть ответ Go расходится с C. Проба, которая не
@@ -746,8 +746,8 @@ jobs:
           fi
           rm -f "$podlog.do"
           rm -rf podlog-c podlog-go
-          bootstrap/flang emit examples/rosetta/factorial.flang --target c  --out podlog-c
-          bootstrap/flang emit examples/rosetta/factorial.flang --target go --out podlog-go
+          bootstrap/flang emit docs/examples/rosetta/factorial.flang --target c  --out podlog-c
+          bootstrap/flang emit docs/examples/rosetta/factorial.flang --target go --out podlog-go
           git checkout -- "$podlog"
           make -C podlog-c  -j"$(nproc)" >/dev/null || { echo "ПОДЛОГ НЕ СОБРАЛСЯ: цель c" >&2; exit 1; }
           make -C podlog-go -j"$(nproc)" >/dev/null || { echo "ПОДЛОГ НЕ СОБРАЛСЯ: цель go" >&2; exit 1; }
@@ -821,7 +821,7 @@ jobs:
             celi="$celi elixir"
           fi
           for cel in $celi; do
-            bootstrap/flang emit examples/rosetta/factorial.flang --target "$cel" --out "pechat-$cel"
+            bootstrap/flang emit docs/examples/rosetta/factorial.flang --target "$cel" --out "pechat-$cel"
           done
           make -C pechat-c      -j"$(nproc)" >/dev/null
           make -C pechat-cpp    -j"$(nproc)" >/dev/null
@@ -893,13 +893,13 @@ jobs:
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
-      - run: bootstrap/flang io scripts/corpus-runner.flang
+      - run: bootstrap/flang io scripts/guards/corpus-runner.flang
 
   # test проверяет программу прежде, чем прогонять её примеры, а --no-check
   # снимает ровно проверку. Отдельной работой: зависимостей нет, двенадцать секунд.
   # ПОЧИНЕНА, И ПОЭТОМУ ИДЁТ НА КАЖДЫЙ ПУШ — УСЛОВИЯ ЗДЕСЬ БОЛЬШЕ НЕТ.
   # Была красна с 26 августа: код 1, расхождений 3 — «в ответе нет "total":69»
-  # и «нет "passed":64». Числа 69/64 вписаны в `scripts/check-before-run.flang`
+  # и «нет "passed":64». Числа 69/64 вписаны в `scripts/guards/check-before-run.flang`
   # 24 августа (`b3167200`) и описывали `flang/stdlib/lists.flang` того дня;
   # файл с тех пор трогали четырежды, примеров стало 82. Узнать об этом было
   # неоткуда: последняя метка — 22 августа.
@@ -922,7 +922,7 @@ jobs:
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
-      - run: bootstrap/flang io scripts/check-before-run.flang
+      - run: bootstrap/flang io scripts/guards/check-before-run.flang
 
   # Граница входа: довод «--args» сверяется объявленному типу до вычисления.
   # Отдельной работой: зависимостей нет, две секунды.
@@ -934,7 +934,7 @@ jobs:
       - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
-      - run: bootstrap/flang io scripts/input-boundary.flang
+      - run: bootstrap/flang io scripts/guards/input-boundary.flang
 
   # Область на вызов в цели C: двенадцать проб на самом C, собранных теми же
   # флагами, что и напечатанное, плюс валгринд и настоящая сортировка вставками
@@ -942,7 +942,7 @@ jobs:
   # ПОЧИНЕНА, И ПОЭТОМУ ИДЁТ НА КАЖДЫЙ ПУШ — УСЛОВИЯ ЗДЕСЬ БОЛЬШЕ НЕТ.
   # Была красна с 29 августа: код 1, FLANG_OBLAST_NECHEM_SMOTRET — «двоичный не
   # напечатал пробу в C… смотреть нечем, и это не приговор области». Проба,
-  # вшитая в `scripts/region-in-c-target.flang`, ввозила модуль как «Быстрая
+  # вшитая в `scripts/targets/region-in-c-target.flang`, ввозила модуль как «Быстрая
   # сортировка», а `03f0359a` (переименование 206 модулей) назвал его
   # «Quicksort». Сторож при этом был честен — он говорил «смотреть нечем», а не
   # выдавал зелень; красным его делала именно эта честность.
@@ -963,7 +963,7 @@ jobs:
         uses: ./.github/actions/release-without-cache
       - run: sudo apt-get update && sudo apt-get install -y valgrind
       - run: make -C bootstrap -j"$(nproc)"
-      - run: bootstrap/flang io scripts/region-in-c-target.flang
+      - run: bootstrap/flang io scripts/targets/region-in-c-target.flang
 
   # Закрытый список правил сведения сверщика против набора имён, которые ядро
   # способно поставить в поле правила. Разошлись они однажды молча — и честная
@@ -1146,12 +1146,12 @@ jobs:
         with:
           node-version: '22'
       - run: make -C bootstrap -j"$(nproc)"
-      - run: bootstrap/flang io scripts/stale-pages-guard.flang --plan 'Страницы не отстали' --timeout 900000
+      - run: bootstrap/flang io scripts/guards/stale-pages-guard.flang --plan 'Страницы не отстали' --timeout 900000
 
   # ── СТОРОЖА, КОТОРЫХ НИКТО НЕ ЗВАЛ ──────────────────────────────────────────
   #
   # Перепись снимается ПРИБОРОМ, а не рукой: `./ярлык зов:проверка`
-  # (scripts/kto-zovet-storozhey.sh, четверть секунды). Числа здесь нарочно НЕ
+  # (scripts/guards/kto-zovet-storozhey.sh, четверть секунды). Числа здесь нарочно НЕ
   # повторены — они уже протухали: рука насчитала «сторожей 56, зовёт 29», а
   # прибор даёт другое, потому что рука считала записи из блоков `пример` за
   # ярлыки и принимала путь в фильтре `paths:` за вызов (задача 7298).
@@ -1338,7 +1338,7 @@ jobs:
             echo "ПОДЛОГ НЕ СОБРАЛСЯ: якорь в $podlog уже не тот — поправить подлог, сторож ни при чём" >&2
             exit 1
           fi
-          if sh scripts/kto-zovet-storozhey.sh --check; then
+          if sh scripts/guards/kto-zovet-storozhey.sh --check; then
             mv "$podlog.do" "$podlog"
             echo "сверка промолчала на новом незваном — проверять ею нечего" >&2
             exit 1
@@ -1347,19 +1347,19 @@ jobs:
       - name: сверка краснеет на закрытом долге
         run: |
           set -u
-          podlog=scripts/storozha-bez-zova.json
+          podlog=scripts/ledgers/storozha-bez-zova.json
           cp "$podlog" "$podlog.do"
           # Второе направление: сторож, которого УЖЕ зовут, но он всё ещё
           # числится в ведомости. Берём любого званого и вписываем его туда.
           python3 - <<'PY'
           import io, json
-          p = 'scripts/storozha-bez-zova.json'
+          p = 'scripts/ledgers/storozha-bez-zova.json'
           d = json.load(io.open(p, encoding='utf-8'))
           d['длина:проверка'] = 'ПОДЛОГ CI: этого зовут, запись обязана стать неправдой'
           io.open(p, 'w', encoding='utf-8').write(
               json.dumps(d, ensure_ascii=False, indent=2) + '\n')
           PY
-          if sh scripts/kto-zovet-storozhey.sh --check; then
+          if sh scripts/guards/kto-zovet-storozhey.sh --check; then
             mv "$podlog.do" "$podlog"
             echo "сверка промолчала на закрытом долге — половина проверки мертва" >&2
             exit 1
@@ -1468,7 +1468,7 @@ jobs:
             ln -sf "$put" "$podstavnoy/$programma"
           done
           # Вызов стоит В УСЛОВИИ `if`, и это не вкусовщина: перепись проб
-          # (scripts/storozha-bez-podloga.sh) засчитывает пробу только такой
+          # (scripts/guards/storozha-bez-podloga.sh) засчитывает пробу только такой
           # форме. Записанный как `otvet=$(…) && { … }`, тот же шаг работает,
           # но прибор его не видит, и сторож числится беспробным.
           if otvet=$(PATH="$podstavnoy" ./ярлык путь:проверка 2>&1); then

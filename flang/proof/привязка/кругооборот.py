@@ -26,10 +26,15 @@
 результат (задачи 7855 и эта).
 
 КОРПУС — правилом, а не списком, чтобы не протухал:
-    flang/proof/examples/*.flang   45
-    flang/self/*.flang             58   (верхний уровень, без подкаталогов)
-    examples/**/*.flang           193
-                                  296
+    flang/proof/examples/*.flang    45
+    flang/self/*.flang              59   (верхний уровень, без подкаталогов)
+    docs/examples/**/*.flang       200
+                                   304
+
+ОПОРА ПЕРЕСНЯТА: 289 -> 304, 12 сентября 2026, перенос examples -> docs/examples
+(задача 1745, пункт 3). Прибавились 15 файлов, которые и раньше лежали в
+docs/examples, но в правило обхода не попадали: правило называло только верхний
+examples. Число снято ПРОГОНОМ этого файла, а не сложением.
 
 Поверхностный вид по видам токенов — правило названо, чтобы число было
 проверяемо:
@@ -67,7 +72,7 @@ def корпус():
     d = os.path.join(КОРЕНЬ, "flang", "self")
     из_ += [os.path.join(d, f) for f in os.listdir(d)
             if f.endswith(".flang") and os.path.isfile(os.path.join(d, f))]
-    for корень, _, файлы in os.walk(os.path.join(КОРЕНЬ, "examples")):
+    for корень, _, файлы in os.walk(os.path.join(КОРЕНЬ, "docs", "examples")):
         из_ += [os.path.join(корень, f) for f in файлы if f.endswith(".flang")]
     return sorted(из_)
 

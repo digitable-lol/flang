@@ -12,21 +12,18 @@ flang check <file> --proof --json
 ```
 
 > **When the numbers on this page were measured.** Files and lines are
-> recomputed from the sources in nine seconds and are checked on every push.
-> Everything else — termination, carriers, guard sites, claims about behaviour —
-> is printed by the compiler, and it printed them on **23 August 2026**.
+> recomputed from the sources in nine seconds and are checked on every push
+> (`sh scripts/guards/published-vs-tree.sh --числа`). Everything else — termination,
+> carriers, guard sites, claims about behaviour — is printed by the compiler in a
+> run over the whole corpus (hours), and it printed them on **23 August 2026**
+> (commit `252606e8`). They have not been re-measured since.
 >
-> They have not been re-measured since, and the reason is named plainly: the
-> compiler is built from the bootstrap seed, and the seed has fallen behind the
-> sources. `sh scripts/seed-freshness.sh` answers with a refusal — **44 files**
-> have diverged, among them `proof-kernel`, `proof`, `obligations`, `totality`
-> and `types`, that is exactly the ones that decide what counts as proved.
-> Re-measuring today would produce verdicts about rules that are no longer in the
-> tree; it waits for the seed to be reprinted (`sh scripts/raskrutka.sh`, hours).
->
-> How far the tree has moved since that measurement is not left to a word either:
-> `sh scripts/published-vs-tree.sh --числа` prints it as a count of files that
-> have shifted.
+> On the day of measurement the compiler was built from a seed that had fallen
+> behind the sources; the seed has since been reprinted (10–11 September 2026,
+> commit `0ce948bfd`; `sh scripts/seed/chto-otstalo-ot-semeni.sh` on 11 September
+> names 3 files, 77 functions, still behind). The expensive numbers have not been
+> re-measured yet; the same `published-vs-tree.sh --числа` prints how many
+> `.flang` files have moved since `252606e8`.
 
 For every claim that is stated, the kernel answers with one of three words, and
 they are not interchangeable.
@@ -114,13 +111,36 @@ flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
 ```
 
 What that command does not confirm: that every rule rejects its own forgery. That
-is the second end of the same guard, and today it is red — nine rules have been
-written into the kernel's source and have not yet reached the built compiler.
+is the second end of the same guard — the plan `'Подделки остаются недоказанными'`
+— and today it is red (run on 11 September 2026 with 0.7.17, exit code 1). The
+reason is not that the kernel took a falsehood: on the forgery
+`flang/test/fixtures/poddelka-order-arithmetic.flang` the compiler answers with
+exit code 3 ("declared, not proved: 5"), while the plan expects a different code
+and counts the forgery as unchecked. The independent checker's own forgery set
+is a different one, and it is green — see the next section.
 
 For a reader this means one thing: when the report says "proved for all inputs",
 there is no invisible side condition behind that line that somebody once found
 obvious. Trust is still required — in the kernel's rules, in the compiler under
 them, in the hardware — but not in a separate list of exemptions.
+
+### The proof is replayed by an independent checker
+
+The word "proved" in the compiler's report need not be taken on trust.
+`flang check --proof --записать <file>` writes the proof itself to a file, and a
+separate C program — `flang/proof/чекер/сверщик.c`, which has never seen the
+compiler — takes the source and the record and replays every step anew. The run
+`sh scripts/доказуемость.sh` on 11 September 2026 with 0.7.17 (commit
+`2c40752d0`, about 13 seconds) answers **PROVABLE** and prints four checks as
+numbers: **625 obligations out of 651 replayed (96.01 %)**; forgery set 33 of 33;
+401 forgery probes, none accepted; 197 honest records, none rejected.
+
+Read the 96 % precisely: it is the share of places **in the compiler's own
+proof** (the corpus of records) where the independent checker replayed the step
+— not "96 % of programs are proved". The inference rules the checker uses have
+also been checked by a foreign judge: 88 rules were translated into Lean 4 lemmas
+and accepted by its kernel (release note for 0.7.17 in
+`docs/release-notes.json`; report in `docs/lean-checks-the-inference-rules.md`).
 
 ---
 
@@ -221,9 +241,14 @@ $ flang check граница.flang --proof
 постусловие «модуль неотрицателен» функции «Модуль» — объявлено, не доказано:
 ни теоремы, ни примеров. Его считает рантайм после каждого возврата — на тех
 входах, которые придут
+граница.flang: НЕ ПРОВЕРЕНО — утверждений 1: доказано 0, условно 0, сетка 0,
+объявлено, не доказано 1, отвергнуто 0, нарушено 0 … — код возврата 3
 $ echo $?
-0
+3
 ```
+
+With `--proof` an unproved claim gives exit code 3, not 0 (run on 11 September
+2026, 0.7.17); without `--proof` the same file passes with exit code 0.
 
 The runtime check catches it on the first "not a number":
 
@@ -352,15 +377,22 @@ Today's compiler does refuse that program, and names what was missing:
 
 ```
 $ flang check вечность.flang
-FLANG_NOT_TOTAL, строка 11: тотальная функция «Вечно»: рекурсивный вызов «Вечно»
-не убывает — аргумент 1 («Само» от «значение») не выведен ни из одного параметра
+без доказанного завершения: «Вечно»
+FLANG_NOT_TOTAL в файле вечность.flang, строка 11, столбец 3: тотальная функция
+«Вечно»: рекурсивный вызов «Вечно» не убывает — аргумент 1 («Само» от
+«значение») не выведен ни из одного параметра. Передавайте часть аргумента: хвост
+списка из образца «голова и хвост», поле варианта из образца, поле записи или
+элемент коллекции
+вечность.flang: не проверено — замечаний 1
 $ echo $?
 1
 ```
 
+(Output of 0.7.17, 11 September 2026.)
+
 There is no check today that keeps that program in the tree and watches it has
 not turned green: the fixture directory `flang/test/fixtures/binary-rules/` does
-not hold it.
+not hold it (`grep -rl Вечно flang/test/fixtures/` is empty, 11 September 2026).
 
 Its honest replacement closes **exactly zero**, and the reason is substantive
 rather than a matter of effort: in a tree walker the base branch returns a
@@ -394,22 +426,24 @@ The five hundred functions between 574 and 75 are reachable by nothing short of
 types on the parse tree — and that is no longer a rule somebody can write down but
 work the language does not yet have.
 
-### The compiler does not check its own sources
+### The compiler does not check its own sources in full
 
-`flang check` on the compiler's own sources runs into the step limit and stops:
-`FLANG_RECURSION_LIMIT`. Parsing and linking do go all the way through — 29 files
-including imports, zero import errors — and it is the example run that exhausts
-the budget.
+On the 23 August 2026 measurement `flang check` on the compiler's own sources ran
+into the step limit and stopped: `FLANG_RECURSION_LIMIT`. Parsing and linking did
+go all the way through — 29 files including imports, zero import errors — and it
+was the example run that exhausted the budget.
 
-**`check` has no flag that raises the limit, and that is by design, not an
-omission.** The number is baked into the binary itself and is changed by
-reprinting the bootstrap point, not by a command-line option: it takes part in the
-self-assembly match, where the binary must come out identical to the one that
-printed it, and a binary built with a different limit would stop emitting
-itself. The procedure is written at the top of `scripts/raskrutka.sh`.
+This page used to say: "`check` has no flag that raises the limit". Today that is
+not so: `flang check --help` in 0.7.17 names `--предел-шагов N` (in Latin
+`--step-limit`) and `--предел-глубины N`; the default is baked into the binary
+(`FL_MAX_STEPS` in `bootstrap/flang_runtime.h`, 1 400 000 000 000) and takes
+part in the self-assembly match. Whether `check` over all compiler sources would
+go through to the end today was not checked: the run takes hours. What is checked
+is that the compiler's proof is replayed by the independent checker (section
+above).
 
-Of the {{корпус.файлов}} files, the report came out for 244. The rest are
-named one by one, and they are three different things:
+Of the {{корпус.файлов}} files, the report came out for 244 (measured 23 August
+2026). The rest are named one by one, and they are three different things:
 
 | Why there is no report | Files |
 |---|---:|

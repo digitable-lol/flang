@@ -1,6 +1,6 @@
 # Драйвер MSI на flang
 
-`examples/driver/msi/msi.flang` — контроллер MSI моста PCIe JH7110 (плата
+`docs/examples/driver/msi/msi.flang` — контроллер MSI моста PCIe JH7110 (плата
 VisionFive 2, мост PLDA XpressRICH), переписанный на flang с драйвера из ядра
 NetBSD. Источник — файлы jh7110_pcie_msi.c (сам контроллер) и jh7110_pcievar.h
 (типы и адреса регистров) в каталоге sys/arch/riscv/starfive нашей ветки дерева
@@ -14,7 +14,7 @@ NetBSD; в апстриме этого драйвера нет. Проверял
 
 Каждая функция чистая: «состояние контроллера и событие → новое состояние,
 список записей в регистры и список разрядов, которые надо раздать». Тот же
-приём, что у драйвера UART `examples/driver/uart.flang` и у [распределителя
+приём, что у драйвера UART `docs/examples/driver/uart.flang` и у [распределителя
 памяти](allocator.html).
 
 ```flang
@@ -47,7 +47,7 @@ MSI, позвать «Раздать прерывание», для каждог
 
 ## Что лежит в файле
 
-Файл один, 426 строк <!-- СНЯТО 2026-09-08 файлов examples/driver/msi/*.flang = 1 --> <!-- СНЯТО 2026-09-08 строк examples/driver/msi/msi.flang = 426 -->.
+Файл один, 426 строк <!-- СНЯТО 2026-09-08 файлов docs/examples/driver/msi/*.flang = 1 --> <!-- СНЯТО 2026-09-08 строк docs/examples/driver/msi/msi.flang = 426 -->.
 
 Типы: «Запись в регистр» (адрес, значение), «Разряд» (вектор, сброс, звать),
 «Вектор MSI» (занят, обработчик, безопасен), «Состояние MSI» (звонок, адрес
@@ -84,8 +84,8 @@ MSI/MSI-X/INTx (`jh7110_pcie_intr_alloc`), функции MSI-X (в этом м�
 ## Как запустить
 
 ```
-bootstrap/flang check examples/driver/msi/msi.flang --proof
-bootstrap/flang test  examples/driver/msi/msi.flang
+bootstrap/flang check docs/examples/driver/msi/msi.flang --proof
+bootstrap/flang test  docs/examples/driver/msi/msi.flang
 ```
 
 Отчёт `--proof` печатает вердикт по каждому постусловию и последней строкой —

@@ -86,8 +86,8 @@ $ ./bootstrap/flang run flang/self/lexer.flang --function 'Слово на по�
 руками.
 
 Отдельно: слов «четыре поверхности» в дереве больше, чем в этом файле — часть
-проверок и генераторов страниц (`scripts/surfaces-page.flang`,
-`scripts/vim-rules.flang`, `scripts/kernel-abilities-guard.flang`,
+проверок и генераторов страниц (`scripts/site/surfaces-page.flang`,
+`scripts/editors/vim-rules.flang`, `scripts/guards/kernel-abilities-guard.flang`,
 `docs/site/site-numbers.mjs` и другие) держат число прозой или постусловием.
 Пятая поверхность требует свести и их — список мест не входит в этот гайд, он
 разросся бы до отдельного замера.

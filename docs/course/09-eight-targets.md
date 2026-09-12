@@ -24,7 +24,7 @@ npm его же и запускает — [разобрано в главе пр
 
 ## Берём одну функцию из дерева
 
-`examples/leetcode/035-search-insert-position.flang`, LeetCode 35:
+`docs/examples/leetcode/035-search-insert-position.flang`, LeetCode 35:
 
 ```
 тотальная функция «Шаг места вставки»
@@ -55,7 +55,7 @@ npm его же и запускает — [разобрано в главе пр
 
 ```bash
 for t in c csharp elixir go java js python rust; do
-  flang emit examples/leetcode/035-search-insert-position.flang \
+  flang emit docs/examples/leetcode/035-search-insert-position.flang \
         --target $t --out ./out-$t
 done
 ```
@@ -202,7 +202,7 @@ rust    {"ok":true,"value":{"n":"2"}}
 честная поправка к прошлой редакции главы.** Она обещала её так:
 
 ```bash
-flang run examples/leetcode/035-search-insert-position.flang \
+flang run docs/examples/leetcode/035-search-insert-position.flang \
   --function "Место вставки" --args '{"элементы": [1,3,5,6], "цель": 5}'
 ```
 
@@ -222,7 +222,7 @@ npm — **тот же самый двоичный**, и отвечает она 
 строку, а тем, что живёт внутри программы, — примером:
 
 ```bash
-flang test examples/leetcode/035-search-insert-position.flang
+flang test docs/examples/leetcode/035-search-insert-position.flang
 ```
 
 Это и есть отличие третье, снятое прогоном, а не обещанное.
@@ -332,7 +332,7 @@ JavaScript удалили, и сверять стало нечего с чем. 
 
 ## Задача
 
-Возьмите **другой** файл из `examples/leetcode/` — например
+Возьмите **другой** файл из `docs/examples/leetcode/` — например
 `217-contains-duplicate.flang` — и напечатайте его в три цели: `c`, `go`, `js`.
 Соберите и прогоните каждую с одним и тем же запросом.
 

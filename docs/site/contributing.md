@@ -28,7 +28,7 @@ flang {{выпуск.версия}}
 The built binary is what you run from then on:
 
 ```bash
-bootstrap/flang check examples/rosetta/towers-of-hanoi.flang
+bootstrap/flang check docs/examples/rosetta/towers-of-hanoi.flang
 ```
 
 Nothing here runs on Node: the language server ships inside the same binary —

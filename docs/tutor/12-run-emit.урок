@@ -1,0 +1,86 @@
+=номер=
+12
+=имя-ru=
+Из терминала: flang run и печать в C
+=имя-en=
+From the terminal: flang run and printing to C
+=текст-ru=
+Всё, что проводник делал за вас, делается тремя командами. Сохраните программу
+в файл урок.flang и спросите компилятор:
+
+    flang check урок.flang
+    flang run урок.flang --function '«Ответ»'
+
+Первая — разбор, типы, завершаемость, примеры и доказательства; вторая считает
+одну функцию и печатает значение. Функции с доводами доводы передаются так:
+--args '{"х": 21}'.
+
+Печать в другой язык — «flang emit». Программа на C складывается в каталог и
+собирается обычным make:
+
+    flang emit урок.flang --target c --out урок-c
+    cd урок-c && make
+    printf '{"fn":"Ответ","args":[]}\n' | ./flang_cli
+
+Последняя строка — вызов из напечатанной программы: запрос одной строкой в
+формате JSON, ответ такой же строкой: {"ok":true,"value":{"n":"42"}}. Так
+программу на flang зовут из любого языка, где есть трубы. Целей печати девять:
+c, cpp, go, rust, java, js, elixir, python, csharp — одно и то же слово
+--target.
+
+Печать проверяет программу перед тем, как печатать: непроверенную она
+печатать откажется.
+
+ЗАДАНИЕ. Впишите ⟨1⟩ — тело функции «Ответ»: 6 умножить на 7. Проводник
+проверит ответ как обычно, а потом ещё и напечатает его в C.
+=текст-en=
+Everything the tutor did for you is done with three commands. Save the program
+to a file урок.flang and ask the compiler:
+
+    flang check урок.flang
+    flang run урок.flang --function '«Ответ»'
+
+The first is parsing, types, termination, examples and proofs; the second
+computes one function and prints the value. Arguments for a function with
+parameters are passed like this: --args '{"х": 21}'.
+
+Printing to another language is "flang emit". A program in C is placed in a
+directory and built with plain make:
+
+    flang emit урок.flang --target c --out урок-c
+    cd урок-c && make
+    printf '{"fn":"Ответ","args":[]}\n' | ./flang_cli
+
+The last line is a call into the printed program: a one-line JSON request, and
+a one-line answer: {"ok":true,"value":{"n":"42"}}. That is how a flang program
+is called from any language that has pipes. There are nine targets: c, cpp, go,
+rust, java, js, elixir, python, csharp — the same --target word.
+
+Printing checks the program before printing it: an unchecked program is refused.
+
+YOUR TASK. Fill in ⟨1⟩ — the body of «Ответ» (answer): 6 умножить на 7. The
+tutor checks the answer as usual, and then also prints it to C.
+=шаблон=
+модуль «Урок»
+
+тотальная функция «Ответ»
+  возвращает число
+  ___
+=подсказки-ru=
+тело: 6 умножить на 7
+=подсказки-en=
+the body: 6 умножить на 7
+=впиши=
+6 умножить на 7
+.
+=хвост=
+тотальная функция «Проверка урока»
+  возвращает число
+  «Ответ»
+=ждём=
+42
+=примеров=
+0
+=отчёт=
+=печать=
+c

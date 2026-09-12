@@ -1,6 +1,6 @@
 # Memory allocator
 
-`examples/allocator/allocator.flang` is a memory allocator written as a pure
+`docs/examples/allocator/allocator.flang` is a memory allocator written as a pure
 function. The heap is data: a list of free segments and the total size. A
 request is a value: «Взять» (take) so many, or «Вернуть» (return) an address and
 a length. The allocator is the function «Шаг кучи», which returns the new heap,
@@ -14,7 +14,7 @@ an address and the flag «удалось» (succeeded):
 
 The function does not touch memory — it answers what is now to be considered
 taken. The approach is the same as in the UART driver
-`examples/driver/uart.flang` and in the [MSI driver](msi-driver.html).
+`docs/examples/driver/uart.flang` and in the [MSI driver](msi-driver.html).
 
 The program answers the question "can an allocator be expressed in flang, and
 what about it is provable". It is not a replacement for `malloc` in the runtime
@@ -22,7 +22,7 @@ printed to C: the runtime needs memory before the first «Куча» value exist
 
 ## What is in the file
 
-1 file, 416 lines <!-- СНЯТО 2026-09-08 файлов examples/allocator/*.flang = 1 --> <!-- СНЯТО 2026-09-08 строк examples/allocator/allocator.flang = 416 -->.
+1 file, 416 lines <!-- СНЯТО 2026-09-08 файлов docs/examples/allocator/*.flang = 1 --> <!-- СНЯТО 2026-09-08 строк docs/examples/allocator/allocator.flang = 416 -->.
 
 Types: «Отрезок» (segment: start, length), «Куча» (heap: free segments, total),
 «Запрос» (request: the variants «Взять» and «Вернуть»), «Отклик кучи» (heap
@@ -49,8 +49,8 @@ What the functions do:
 ## How to run
 
 ```
-bootstrap/flang check examples/allocator/allocator.flang --proof
-bootstrap/flang test  examples/allocator/allocator.flang
+bootstrap/flang check docs/examples/allocator/allocator.flang --proof
+bootstrap/flang test  docs/examples/allocator/allocator.flang
 ```
 
 The `--proof` report prints a verdict for every postcondition and, on its last

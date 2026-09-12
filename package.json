@@ -1,29 +1,17 @@
 {
   "name": "@digitable-lol/flang",
   "private": true,
-  "version": "0.7.17",
-  "description": "flang: проверяемый язык с тотальными и обычными функциями, ядром доказательств на нуле аксиом и печатью в C, C++, Go, Rust, Python, Java, C#, Elixir, JavaScript и TypeScript.",
+  "version": "0.7.18",
   "type": "module",
   "license": "BSD-2-Clause",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/digitable-lol/flang.git"
   },
-  "homepage": "https://github.com/digitable-lol/flang#readme",
   "bugs": {
     "url": "https://github.com/digitable-lol/flang/issues"
   },
   "engines": {
     "node": ">=20"
-  },
-  "keywords": [
-    "flang",
-    "programming-language",
-    "totality-checking",
-    "formal-methods",
-    "proof-carrying-data",
-    "category-theory",
-    "russian-language",
-    "ai-agents"
-  ]
+  }
 }

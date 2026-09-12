@@ -1721,7 +1721,7 @@ TypeScript — не удалённый свидетель на JavaScript, а в
 > // А БУКВЫ ДВУХ ЗАЯВЛЕННЫХ ПОВЕРХНОСТЕЙ ТЕРЯЛИСЬ ВМЕСТЕ С ПРЕПИНАНИЕМ.
 > // Замер 29 августа 2026, двоичный собран из семени этого дерева:
 > //
-> //   flang emit examples/surfaces/factorial.zh.flang --target python
+> //   flang emit docs/examples/surfaces/factorial.zh.flang --target python
 > //   → печать ОТКАЗАЛА: имя функции «乘积» даёт идентификатор «fn_value»,
 > //     уже занятый (функции «前置»)
 > //
@@ -1915,7 +1915,7 @@ TypeScript — не удалённый свидетель на JavaScript, а в
 > А БУКВЫ ДВУХ ЗАЯВЛЕННЫХ ПОВЕРХНОСТЕЙ ТЕРЯЛИСЬ ВМЕСТЕ С ПРЕПИНАНИЕМ.
 > Замер 29 августа 2026, двоичный собран из семени этого дерева:
 >
->   flang emit examples/surfaces/factorial.zh.flang --target python
+>   flang emit docs/examples/surfaces/factorial.zh.flang --target python
 >   → печать ОТКАЗАЛА: имя функции «乘积» даёт идентификатор «fn_value»,
 >     уже занятый (функции «前置»)
 >
@@ -2214,7 +2214,7 @@ TypeScript — не удалённый свидетель на JavaScript, а в
 
 > Замер 29 августа 2026, двоичный собран из семени этого дерева:
 >
->     flang emit examples/surfaces/factorial.zh.flang --target python
+>     flang emit docs/examples/surfaces/factorial.zh.flang --target python
 >     → печать ОТКАЗАЛА: имя функции «乘积» даёт идентификатор «fn_value»,
 >       уже занятый (функции «前置»)
 >
@@ -2379,18 +2379,18 @@ TypeScript — не удалённый свидетель на JavaScript, а в
 > тронули. Цель ЗАМКНУТА — у функции нет входов, — значит ядро её вычисляет, и
 > вердикт «объявлено, не доказано» означал не нехватку вывода, а ЛОЖЬ.
 
-### Два замера TypeScript на `examples/leetcode`
+### Два замера TypeScript на `docs/examples/leetcode`
 
 Было у печати конструктора варианта:
 
 > отвечает TS2739 на КАЖДЫЙ такой конструктор (замер на 36 программах
-> `examples/leetcode` — 8 замечаний из 87, все здесь).
+> `docs/examples/leetcode` — 8 замечаний из 87, все здесь).
 
 Было у печати таблицы `$PROGRAM`:
 
 > берёт тип пары из ПЕРВОЙ строки таблицы, и каждая следующая функция с
 > другой подписью становится замечанием TS2769. Замер на 36 программах
-> `examples/leetcode`: 79 замечаний из 87, все этого вида.
+> `docs/examples/leetcode`: 79 замечаний из 87, все этого вида.
 
 Сами утверждения о TS2739 и TS2769 (почему приведение стоит на литерале массива
 и почему у варианта с полями нет значения по умолчанию) в файле остались.
@@ -2492,7 +2492,7 @@ TypeScript — не удалённый свидетель на JavaScript, а в
 > А БУКВЫ ДВУХ ЗАЯВЛЕННЫХ ПОВЕРХНОСТЕЙ ТЕРЯЛИСЬ ВМЕСТЕ С ПРЕПИНАНИЕМ.
 > Замер 29 августа 2026, двоичный собран из семени этого дерева:
 >
->   flang emit examples/surfaces/factorial.zh.flang --target python
+>   flang emit docs/examples/surfaces/factorial.zh.flang --target python
 >   → печать ОТКАЗАЛА: имя функции «乘积» даёт идентификатор «fn_value»,
 >     уже занятый (функции «前置»)
 >
@@ -3607,7 +3607,7 @@ TypeScript — не удалённый свидетель на JavaScript, а в
 Проверка объявления `план` — на самом flang.
 
 Три приметы «снято» в шапке НЕ ТРОНУТЫ: их читает
-`scripts/prose-numbers-guard.sh`, и числа 22, 20 и 4 стоят от них в тех же трёх
+`scripts/guards/prose-numbers-guard.sh`, и числа 22, 20 и 4 стоят от них в тех же трёх
 строках выше, что и прежде.
 
 ### Эталон, семь его спутников и дифференциальный критерий
@@ -6008,7 +6008,7 @@ TypeScript — не удалённый свидетель на JavaScript, а в
 Было у функции «Слагаемое границы»:
 
 > // ЦЕНА ОТСУТСТВИЯ ЭТОГО ХОДА ЗАМЕРЕНА. Распределитель памяти
-> // (`examples/allocator/allocator.flang`, 89 утверждений) назвал его первым в
+> // (`docs/examples/allocator/allocator.flang`, 89 утверждений) назвал его первым в
 > // списке недостающего: «границы отрезка приходится писать равенствами, а не
 > // неравенствами — одна и та же мысль равенством доказывается, неравенством
 > // остаётся сеткой». Прогон 24 августа 2026 на стволе, `а: нат`, `б: нат`,
@@ -9939,7 +9939,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 > // коллекций было только `добавить … к …`, дописывающее в конец, поэтому
 > // приписывание в начало писалось свёрткой, дописывающей КАЖДЫЙ элемент хвоста в
 > // свежий накопитель. Цена той записи измерена, и она не в разах, а в КЛАССЕ
-> // сложности. Замер — «Простые до N» из examples/rosetta на одном и том же
+> // сложности. Замер — «Простые до N» из docs/examples/rosetta на одном и том же
 > // исходнике, четыре размера, удвоение N (tmp/bench/primes-curve.mjs):
 > //
 
@@ -10011,7 +10011,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 > // анализа — свидетельский и самоприменённый, — потому что `flang/stdlib/*.flang`
 > // входит в корпус неподвижной точки целиком. Проверять это надо корпусом
 > // самораскрутки, а не чтением. В примерах `убывает` живёт спокойно:
-> // `examples/measure/` в тот корпус не входит.
+> // `docs/examples/measure/` в тот корпус не входит.
 > //
 
 Осталось в исходнике:
@@ -10025,7 +10025,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 > // библиотеке доступно ровно то подмножество языка, которое понимает
 > // самоприменённый анализ, — потому что `flang/stdlib/*.flang` входит в корпус
 > // неподвижной точки целиком. Проверять это надо корпусом самораскрутки, а не
-> // чтением. В примерах `убывает` живёт спокойно: `examples/measure/` в тот
+> // чтением. В примерах `убывает` живёт спокойно: `docs/examples/measure/` в тот
 > // корпус не входит.
 > //
 
@@ -10928,9 +10928,9 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 > //
 > // Почему этого не заметили раньше: единственный файл дерева, где форма написана
 > // ФОРМОЙ, а не помянута в строке-таблице или в комментарии, — это
-> // `examples/errors/column-total.flang`, и лежит он в каталоге, который
+> // `docs/examples/errors/column-total.flang`, и лежит он в каталоге, который
 > // входит в корпус сверки РАЗБОРЩИКА и не входит в сверки типов и печати (те
-> // смотрят `flang/stdlib`, `flang/core`, `examples/leetcode`,
+> // смотрят `flang/stdlib`, `flang/core`, `docs/examples/leetcode`,
 > // `flang/self`). Продукцию держал он — но только продукцию.
 > //
 > // Поэтому написанные функции лежат ТАМ ЖЕ, рядом с ним:
@@ -11617,7 +11617,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 >          обрезан на полуслове;
 >   стало: «знаков в тексте: 1200», и текст совпал с питоновским знак в знак.
 >
-> Вставка строки: `examples/db/sqlite-insert.flang` вписывает четвёртую строку
+> Вставка строки: `docs/examples/db/sqlite-insert.flang` вписывает четвёртую строку
 > в базу из трёх, файл остаётся ровно 2048 октетов, python3 читает
 > [(1,'Аня',31),(2,'Боря',44),(3,'Вера',7),(4,'Гриша',55)], а
 > `pragma integrity_check` отвечает `ok`.
@@ -12105,7 +12105,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 > // Обрезать до предела. Обратная к «Дополнить слева» и «Дополнить справа», и до
 > // сих пор её здесь не было: замер по службам дерева нашёл её написанной руками
-> // в `examples/web/shortener/service.flang` («Урезать», 17 строк) — там
+> // в `docs/examples/web/shortener/service.flang` («Урезать», 17 строк) — там
 > // ею режут адрес перед тем, как положить его в ответ.
 > //
 
@@ -13099,7 +13099,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/db/postgres-scram-plan.flang`
+## `docs/examples/db/postgres-scram-plan.flang`
 
 ### Абзац о двух парах поручений: вычеркнут замер против слушателя
 
@@ -13139,7 +13139,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 > 21 августа 2026, настоящий PostgreSQL 17.10 на 127.0.0.1:55433, роль
 > `probnik1` с паролем, хранимым как `SCRAM-SHA-256$1:…`:
 >
->     flang io examples/db/postgres-scram-plan.flang --max-steps 900000000
+>     flang io docs/examples/db/postgres-scram-plan.flang --max-steps 900000000
 >     {"plan":"Войти в постгрес по scram",
 >      "result":"вход scram-sha-256: витков 1, подпись сервера сошлась | ответ: probnik1",
 >      "orders":10}
@@ -13172,7 +13172,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/roman-numerals-english.flang`
+## `docs/examples/rosetta/roman-numerals-english.flang`
 
 ### Шапка: вычеркнута сверка двух деревьев свидетелем на JavaScript
 
@@ -13208,7 +13208,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/cat/monoid-and-monad.flang`
+## `docs/examples/cat/monoid-and-monad.flang`
 
 ### Зачем написан файл: вычеркнута вторая причина — с датой и состоянием дерева
 
@@ -13236,7 +13236,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/hundred-doors.flang`
+## `docs/examples/rosetta/hundred-doors.flang`
 
 ### Сравнение двух списков: вычеркнуто «здесь стояло» и «примеры те же»
 
@@ -13251,7 +13251,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/merge-sort-english.flang`
+## `docs/examples/rosetta/merge-sort-english.flang`
 
 ### Шапка: вычеркнута сверка двух деревьев свидетелем на JavaScript
 
@@ -13275,7 +13275,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/004-median-of-two-sorted-arrays.flang`
+## `docs/examples/leetcode/004-median-of-two-sorted-arrays.flang`
 
 ### Задача числилась НЕВЫРАЗИМОЙ — врезка целиком (в исходнике оставлено про меру и подпись)
 
@@ -13294,7 +13294,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/palindrome.flang`
+## `docs/examples/rosetta/palindrome.flang`
 
 ### Сравнение списков: вычеркнуто «здесь стояло» и «примеры те же»
 
@@ -13310,7 +13310,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/proof-probes/typed-ast-door.flang`
+## `docs/examples/proof-probes/typed-ast-door.flang`
 
 ### Шапка: ссылка на задачу по номеру и на ADR
 
@@ -13337,13 +13337,13 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/surfaces/factorial.eo.flang`
+## `docs/examples/surfaces/factorial.eo.flang`
 
 ### Ĉapo: вычеркнута сверка двух деревьев свидетелем на JavaScript
 
 Строки 5–8 на момент выноса.
 
-> La sama programo kiel `examples/rosetta/factorial.flang`, vorto post
+> La sama programo kiel `docs/examples/rosetta/factorial.flang`, vorto post
 > vorto. Tio ne estas aserto pri dokumentado: `flang/test/surfaces.test.mjs`
 > komparas la du sintaksarbojn kaj postulas, ke ili koincidu ĝis reciproke
 > unusenca renomado.
@@ -13351,7 +13351,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/070-climbing-stairs.flang`
+## `docs/examples/leetcode/070-climbing-stairs.flang`
 
 ### Раньше здесь стояло «мер он не знает»
 
@@ -13364,7 +13364,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/palindrome-english.flang`
+## `docs/examples/rosetta/palindrome-english.flang`
 
 ### Шапка: вычеркнута сверка двух деревьев свидетелем на JavaScript
 
@@ -13377,7 +13377,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/db/postgres-plan.flang`
+## `docs/examples/db/postgres-plan.flang`
 
 ### Заголовок врезки о трубе: вычеркнуто «главное отличие от прежней редакции»
 
@@ -13399,7 +13399,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/errors/number-parsing.flang`
+## `docs/examples/errors/number-parsing.flang`
 
 ### Почему файл не в stdlib: две красные сверки со свидетелем и снятие сверок коммитом
 
@@ -13434,9 +13434,9 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 > `flang/self/emit-c.flang` формы нет ни в одной из трёх таблиц. Разбор — один
 > слой из восьми, и он форму знает; сверку держат ещё два, и они не знают.
 >
-> Каталог `examples/errors` входит в корпус сверки РАЗБОРЩИКА
+> Каталог `docs/examples/errors` входит в корпус сверки РАЗБОРЩИКА
 > (`flang/test/self-parser.test.mjs`) и не входит в сверки типов и печати — те
-> смотрят `flang/stdlib`, `flang/core`, `examples/leetcode` и
+> смотрят `flang/stdlib`, `flang/core`, `docs/examples/leetcode` и
 > `flang/self`. Ровно поэтому соседний `column-total.flang` держал продукцию
 > формы и не показывал остального долга.
 >
@@ -13485,7 +13485,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/driver/msi/msi.flang`
+## `docs/examples/driver/msi/msi.flang`
 
 ### «Было / Стало» у прохода правки: свёртка из-под проекции на верхний уровень
 
@@ -13529,7 +13529,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/web/shortener/plan.flang`
+## `docs/examples/web/shortener/plan.flang`
 
 ### Предсказание, сбывшееся буквально, и цена, разошедшаяся с замером
 
@@ -13610,7 +13610,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/crypto/ecdsa-signature.flang`
+## `docs/examples/crypto/ecdsa-signature.flang`
 
 ### Дата изготовления ключа и подписи openssl
 
@@ -13651,7 +13651,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/web/shortener/plan-durable.flang`
+## `docs/examples/web/shortener/plan-durable.flang`
 
 ### Перебор состояний против всех откликов — в shortener-durable.test.mjs
 
@@ -13670,7 +13670,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/fizzbuzz-english.flang`
+## `docs/examples/rosetta/fizzbuzz-english.flang`
 
 ### Таблица поверхностей в flang/src/lexer.mjs
 
@@ -13687,7 +13687,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/factorial.flang`
+## `docs/examples/rosetta/factorial.flang`
 
 ### «Раньше здесь стояло»: FLANG_NOT_TOTAL у рекурсивного факториала
 
@@ -13704,7 +13704,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/110-balanced-binary-tree.flang`
+## `docs/examples/leetcode/110-balanced-binary-tree.flang`
 
 ### «Здесь стояло»: в языке не было логических «и» и «или»
 
@@ -13725,7 +13725,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/cat/modules/reconciliation.flang`
+## `docs/examples/cat/modules/reconciliation.flang`
 
 ### «До этой работы категория до проверки не доезжала вовсе»
 
@@ -13744,7 +13744,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/io/https-request.flang`
+## `docs/examples/io/https-request.flang`
 
 ### «до 22 августа 2026 адрес по https упирался в отказ FLANG_IO_NO_TLS»
 
@@ -13763,7 +13763,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/web/shortener/handler-without-budget.flang`
+## `docs/examples/web/shortener/handler-without-budget.flang`
 
 ### Отказ печатает serve.mjs последней строкой прогона
 
@@ -13783,7 +13783,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/levenshtein-distance-english.flang`
+## `docs/examples/rosetta/levenshtein-distance-english.flang`
 
 ### Сверка двух деревьев в flang/test/rosetta.test.mjs
 
@@ -13801,25 +13801,25 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/surfaces/factorial.zh.flang`
+## `docs/examples/surfaces/factorial.zh.flang`
 
 ### Сверка двух деревьев в flang/test/surfaces.test.mjs
 
 Строки 5–7 на момент выноса.
 
-> 与 `examples/rosetta/factorial.flang` 逐词对应。这不是文档里的说法：
+> 与 `docs/examples/rosetta/factorial.flang` 逐词对应。这不是文档里的说法：
 > `flang/test/surfaces.test.mjs` 比较两棵语法树，要求它们在一一对应的改名之下
 > 完全相同。
 
 В исходнике на её месте осталось:
 
-    与 `examples/rosetta/factorial.flang` 逐词对应。这不是文档里的说法：两棵语法树
+    与 `docs/examples/rosetta/factorial.flang` 逐词对应。这不是文档里的说法：两棵语法树
     在一一对应的改名之下完全相同，而这是由机器比对的，不是靠眼睛看的。
 
 
 ---
 
-## `examples/io/binary-file-round-trip.flang`
+## `docs/examples/io/binary-file-round-trip.flang`
 
 ### Что здесь было до октетной пары у файлов
 
@@ -13849,7 +13849,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/allocator/allocator.flang`
+## `docs/examples/allocator/allocator.flang`
 
 ### Было / Стало: проход берёт сам список, а не кучу
 
@@ -13870,7 +13870,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/money/exact-decimal.flang`
+## `docs/examples/money/exact-decimal.flang`
 
 ### Чем проверены постусловия «Копеек в остатке»
 
@@ -13900,7 +13900,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/db/redis-plan.flang`
+## `docs/examples/db/redis-plan.flang`
 
 ### Что этот файл доказывает, кроме самого себя: счёт общего у двух драйверов и ответ на вопрос владельца
 
@@ -13951,7 +13951,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/db/sqlite-overflow.flang`
+## `docs/examples/db/sqlite-overflow.flang`
 
 ### Прогон, которым замерена обрезка длинного текста
 
@@ -13967,7 +13967,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/125-valid-palindrome.flang`
+## `docs/examples/leetcode/125-valid-palindrome.flang`
 
 ### Что здесь стояло про причину таблицы из двух алфавитов
 
@@ -13985,7 +13985,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/web/shortener/server-network.flang`
+## `docs/examples/web/shortener/server-network.flang`
 
 ### Чем отвечал хозяин планировщика на поручения соединения раньше
 
@@ -14007,7 +14007,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/merge-sort.flang`
+## `docs/examples/rosetta/merge-sort.flang`
 
 ### Ссылка на свидетеля в разборе завершаемости слияния
 
@@ -14023,7 +14023,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/library-api/lib/api.flang`
+## `docs/examples/library-api/lib/api.flang`
 
 ### Ссылка на свидетеля в объяснении связывания
 
@@ -14038,7 +14038,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/014-longest-common-prefix.flang`
+## `docs/examples/leetcode/014-longest-common-prefix.flang`
 
 ### Что здесь стояло до формы «разложить … на символы»
 
@@ -14059,7 +14059,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/ackermann-function-english.flang`
+## `docs/examples/rosetta/ackermann-function-english.flang`
 
 ### Чем сверялись два дерева поверхностей
 
@@ -14072,7 +14072,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/reverse-string-english.flang`
+## `docs/examples/rosetta/reverse-string-english.flang`
 
 ### Чем сверялись два дерева поверхностей
 
@@ -14085,7 +14085,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/measure/natural.flang`
+## `docs/examples/measure/natural.flang`
 
 ### Мёртвая ссылка на свидетель `types.mjs` в границе анализа
 
@@ -14134,7 +14134,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/paths/shortest-path.flang`
+## `docs/examples/paths/shortest-path.flang`
 
 ### Мёртвый свидетель и ведомость «до 17 августа 2026» в списке доказанного
 
@@ -14176,7 +14176,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/704-binary-search.flang`
+## `docs/examples/leetcode/704-binary-search.flang`
 
 ### Мёртвая ссылка на `totality.mjs`
 
@@ -14212,7 +14212,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/179-largest-number.flang`
+## `docs/examples/leetcode/179-largest-number.flang`
 
 ### «Задача числилась НЕВЫРАЗИМОЙ», запись в index.json и дата разложения строки
 
@@ -14230,7 +14230,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/020-valid-parentheses.flang`
+## `docs/examples/leetcode/020-valid-parentheses.flang`
 
 ### «Здесь стояло, что тотальной она быть не может» и как это стало неправдой
 
@@ -14249,7 +14249,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/015-3sum.flang`
+## `docs/examples/leetcode/015-3sum.flang`
 
 ### «Здесь стояло» про запрет равенства списков и снятие запрета 21 августа 2026
 
@@ -14265,7 +14265,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/066-plus-one.flang`
+## `docs/examples/leetcode/066-plus-one.flang`
 
 ### «Здесь стояло», что приписать в начало нельзя, и дата появления формы
 
@@ -14283,7 +14283,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/db/sqlite-read.flang`
+## `docs/examples/db/sqlite-read.flang`
 
 ### Замер времени разбора базы
 
@@ -14291,12 +14291,12 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 > Прогон из корня дерева. Ключ «--max-steps» ОБЯЗАТЕЛЕН: умолчание — 10 000 000
 > шагов, а разбор восьми килобайт базы стоит больше. Замер: 16 секунд.
->   bootstrap/flang io examples/db/sqlite-read.flang --max-steps 2000000000
+>   bootstrap/flang io docs/examples/db/sqlite-read.flang --max-steps 2000000000
 
 
 ---
 
-## `examples/rosetta/factorial-english.flang`
+## `docs/examples/rosetta/factorial-english.flang`
 
 ### Dead witness: `flang/src/lexer.mjs` и `flang/test/rosetta.test.mjs`
 
@@ -14311,7 +14311,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/fibonacci-english.flang`
+## `docs/examples/rosetta/fibonacci-english.flang`
 
 ### Dead witness: `flang/test/rosetta.test.mjs`
 
@@ -14335,7 +14335,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/run-length-encoding-english.flang`
+## `docs/examples/rosetta/run-length-encoding-english.flang`
 
 ### Dead witness: `flang/test/rosetta.test.mjs`
 
@@ -14348,7 +14348,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/proof-probes/variant-with-fields.flang`
+## `docs/examples/proof-probes/variant-with-fields.flang`
 
 ### Ссылка на задачу 0024 и «перемер спорного замера»
 
@@ -14365,7 +14365,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/errors/column-total.flang`
+## `docs/examples/errors/column-total.flang`
 
 ### Мёртвая ссылка на свидетеля: где лежало обоснование «отказа, ставшего значением»
 
@@ -14397,7 +14397,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/web/shortener/service.flang`
+## `docs/examples/web/shortener/service.flang`
 
 ### Три свои функции разбора пути, ушедшие в библиотеку, и сдвиг счёта кусков на единицу
 
@@ -14482,7 +14482,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/io/temp-directory.flang`
+## `docs/examples/io/temp-directory.flang`
 
 ### Чего не хватало словарю ввода-вывода до 23 августа 2026: удаления и временного каталога
 
@@ -14510,7 +14510,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/567-permutation-in-string.flang`
+## `docs/examples/leetcode/567-permutation-in-string.flang`
 
 ### Что было бы написано здесь прежде: «окно в языке невыразимо»
 
@@ -14522,7 +14522,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/cat/retry-safe.flang`
+## `docs/examples/cat/retry-safe.flang`
 
 ### Мёртвая ссылка на свидетеля: `наСередине` в отчёте `conc.mjs`
 
@@ -14534,7 +14534,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/wal/append-plan.flang`
+## `docs/examples/wal/append-plan.flang`
 
 ### Мёртвая ссылка на свидетеля: кто исполняет описание действия
 
@@ -14557,7 +14557,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/measure/binary-search.flang`
+## `docs/examples/measure/binary-search.flang`
 
 ### Замер витками интерпретатора: обход против встроенной формы, 500…8000, и показатель роста
 
@@ -14582,7 +14582,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/library-api/lib/loan.flang`
+## `docs/examples/library-api/lib/loan.flang`
 
 ### Что здесь стало слабее: правило было теоремой старого проекта, вынесенного из репозитория
 
@@ -14605,7 +14605,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/088-merge-sorted-array.flang`
+## `docs/examples/leetcode/088-merge-sorted-array.flang`
 
 ### Мёртвая ссылка на свидетеля: контрпример в шапке `totality.mjs`
 
@@ -14618,7 +14618,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/primes-by-trial-division-english.flang`
+## `docs/examples/rosetta/primes-by-trial-division-english.flang`
 
 ### Мёртвая ссылка на свидетеля: сверка двух поверхностей в `rosetta.test.mjs`
 
@@ -14632,7 +14632,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/hundred-doors-english.flang`
+## `docs/examples/rosetta/hundred-doors-english.flang`
 
 ### Мёртвая ссылка на свидетеля: сверка двух поверхностей в `rosetta.test.mjs`
 
@@ -14645,7 +14645,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/towers-of-hanoi-english.flang`
+## `docs/examples/rosetta/towers-of-hanoi-english.flang`
 
 ### Мёртвая ссылка на свидетеля: сверка двух поверхностей в `rosetta.test.mjs`
 
@@ -14658,7 +14658,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/io/child-process.flang`
+## `docs/examples/io/child-process.flang`
 
 ### Обе дыры, найденные тремя работами подряд: 59 строк на оболочке и сборка релизного C в 128 000 мс
 
@@ -14691,7 +14691,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/web/shortener/server.flang`
+## `docs/examples/web/shortener/server.flang`
 
 ### Чем поправлена первая редакция файла
 
@@ -14727,7 +14727,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/leetcode/013-roman-to-integer.flang`
+## `docs/examples/leetcode/013-roman-to-integer.flang`
 
 ### Как задача становилась тотальной: «здесь стояло» и появление формы
 
@@ -14774,7 +14774,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/crypto/x25519-vectors.flang`
+## `docs/examples/crypto/x25519-vectors.flang`
 
 ### ЧТО ЭТО СТОИТ, ЧИСЛОМ: замер на этой машине 23 августа 2026
 
@@ -14789,7 +14789,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/roman-numerals.flang`
+## `docs/examples/rosetta/roman-numerals.flang`
 
 ### Где живёт правило ядра: `flang/proof/reduce.mjs`
 
@@ -14809,7 +14809,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/service-on-processes/core.flang`
+## `docs/examples/service-on-processes/core.flang`
 
 ### Улика по процентам снята прогоном и записана в ADR-0011; починка задачей 5754
 
@@ -14846,7 +14846,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/rosetta/quicksort-english.flang`
+## `docs/examples/rosetta/quicksort-english.flang`
 
 ### Чем сверяются две поверхности: `flang/test/rosetta.test.mjs`
 
@@ -14859,7 +14859,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `examples/web/shortener/plan-network.flang`
+## `docs/examples/web/shortener/plan-network.flang`
 
 ### Что не изменилось ни на знак, и чем это запускалось: `serve-network.mjs`
 
@@ -14872,7 +14872,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 >
 > Запускается это одной строкой и работает сегодня:
 >
->   node examples/web/shortener/serve-network.mjs
+>   node docs/examples/web/shortener/serve-network.mjs
 >
 
 ### Накопление байтов: чего ожидали от хозяина и что не понадобилось

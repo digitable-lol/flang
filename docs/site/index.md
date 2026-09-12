@@ -8,7 +8,12 @@ every input, and **the compiler** proves it, not a person. The word `ensures` is
 a promise about the result, and the kernel closes it over **every input**, not
 over the written examples. The kernel has zero axioms, and that is checked by a
 run: `flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'`
-answers with exit code 0.
+answers with exit code 0. The proof itself is not taken on the compiler's word:
+`flang check --proof --записать` writes it to a file, and an independent C
+program (`flang/proof/чекер/сверщик.c`) replays every step anew. The run
+`sh scripts/доказуемость.sh` on 11 September 2026 with 0.7.17 (commit
+`2c40752d0`): **PROVABLE**, 625 obligations out of 651 replayed (96.01 %), 401
+forgeries rejected, 197 honest records accepted.
 
 The language is self-hosted: the flang compiler is written in flang, prints
 itself, and prints to {{цели.словом}} more target languages. The standard
@@ -73,18 +78,18 @@ How much of that is proved: {{корпус.тотальных}} functions out of
 {{утверждения.доказано}} — the line is drawn explicitly on
 [What is proved and what is not](what-is-proved.html).
 
-**The four numbers above were measured on 23 August 2026, and today they
-describe a tree that does not exist.** They are measured by the compiler built
-from the bootstrap seed, and the seed has fallen behind the sources:
-`sh scripts/seed-freshness.sh` answers with a refusal — **44 files** have
-diverged. Among them are `proof-kernel`, `proof`, `obligations`, `totality` and
-`types` — exactly the ones that decide what counts as proved. So the compiler
-judged by rules that are no longer in the tree, and these numbers can only be
-recomputed after the seed is reprinted (`sh scripts/raskrutka.sh`, hours).
+**The four numbers above were measured on 23 August 2026 (commit `252606e8`)
+and have not been re-measured since.** They are measured by the compiler in a
+run over the whole corpus (hours), and on the day of measurement it was built
+from a seed that had fallen behind the sources. The seed has since been
+reprinted (10–11 September 2026, commit `0ce948bfd`; `sh
+scripts/seed/chto-otstalo-ot-semeni.sh` on 11 September names 3 files, 77 functions,
+still behind), and the expensive numbers have not been re-measured yet — when
+they are, the date above changes.
 
 The cheap numbers on this page — how many files, lines, functions and examples
 the tree holds — are recomputed without the compiler in nine seconds and are
-checked on every push (`sh scripts/published-vs-tree.sh --числа`). The gap
+checked on every push (`sh scripts/guards/published-vs-tree.sh --числа`). The gap
 between the two halves is measured as a number, not as a word: the same command
 prints how many files have moved since that measurement.
 
@@ -102,17 +107,18 @@ prints how many files have moved since that measurement.
 **Not in who writes the proof.** You can write one by hand here too: the word
 `теорема` with the steps `дано`, `утверждаем`, `затем … по свойству «…»`,
 `индукция по …` and `следовательно доказано` — a structured proof in the spirit
-of Isabelle's Isar, not a script of tactics. There are **241** such theorems in
-the language tree, **55** of them in the standard library
-(`grep -rac '^\s*теорема ' flang --include=*.flang`, summed with `awk`; the `-a`
+of Isabelle's Isar, not a script of tactics. There are **277** such theorems in
+the language tree, **55** of them in the standard library (measured on
+11 September 2026 at commit `d6e88d50b`;
+`grep -rac '^\s*теорема ' flang --include='*.flang'`, summed with `awk`; the `-a`
 is not optional — without it `flang/conc/link.flang` is skipped silently).
 
 The difference is **what is left for the hand to write**. The kernel closes a
 claim on its own, by twelve rules, and a written theorem is needed only for the
 remainder. The verdict line reports that as a separate number. Measured on
-`flang/stdlib/sha1.flang` together with its imports (`flang check --proof`):
-`утверждений 177: доказано 114 … из них без теоремы 54` — nearly half of what is
-proved is closed without a single written line. Coq and Lean have no such number:
+`flang/stdlib/sha1.flang` (`flang check --proof`, 0.7.17, 11 September 2026,
+about four minutes): `утверждений 64: доказано 54 … из них без теоремы 45` — most
+of what is proved is closed without a single written line. Coq and Lean have no such number:
 there every claim gets either a term or a tactic written for it. Which promises
 the kernel takes on its own is worked through form by form on
 [which promises the kernel takes](kak-dokazat.html).

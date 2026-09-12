@@ -7,6 +7,7 @@
 команда: вторая
 карта: Что уже есть
 рядом: 3401, 3403, 9968, 1186
+нужность: 2 — discount.flang:1 «Discount» vs flang.package «Скидка»: flang package 0.7.17 → код 1 FLANG_PACKAGE; packages.ru.md:14,107,268 («неизвестная команда», «схема 1», «нет package/lock») стоят; asdf:40 стоит
 ---
 
 # 3402. Пример, который нельзя пересобрать, и три неверных утверждения на страницах
@@ -61,7 +62,7 @@ FLANG_PACKAGE: в flang.package пакет назван «Скидка»,
 3. Поправить пункт 6 `docs/road-to-1-0.md`: назвать, что уже есть
    (`flang/stdlib/registry.flang` 617 строк, `scripts/registry-tool.flang` 473,
    четыре плана прогнаны), и оставить в «чего нет» только установку и раздачу.
-4. Заодно снять устаревший комментарий `scripts/asdf-version-list.flang:40-41`
+4. Заодно снять устаревший комментарий `scripts/release/asdf-version-list.flang:40-41`
    («у хозяина нет шифрования, на https он отвечает FLANG_IO_NO_TLS») — с
    ADR-0007 https работает через внешний `curl`.
 

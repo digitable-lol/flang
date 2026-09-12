@@ -38,8 +38,11 @@ plugin builds the release archive with `cc` and `make`, then probes the result:
 `flang --version` must name the requested version, and — when the archive
 carries the runtime — `flang emit` must print into every target the binary
 itself lists. Only released versions install:
-`asdf install flang ref:main` refuses on purpose, since building from a branch
-needs Node. The third line is `asdf set`, not `asdf global`: `global` and `local`
+`asdf install flang ref:main` refuses on purpose: the plugin installs release
+archives only. The reason it prints while refusing — "needs Node" — is stale:
+there has been no Node implementation since 20 August 2026 (commit `fe8e8a37`),
+and a clone of any branch builds with `make -C bootstrap`, as in the section
+below. The third line is `asdf set`, not `asdf global`: `global` and `local`
 were removed in asdf 0.16.0. The same plugin works with mise:
 `mise plugin add flang https://github.com/digitable-lol/asdf-flang.git`.
 

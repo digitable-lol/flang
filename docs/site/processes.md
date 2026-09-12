@@ -119,17 +119,22 @@ The whole shop is in the tree — `flang/conc/examples/supervision.flang`:
 ```bash
 $ flang check flang/conc/examples/supervision.flang
 модуль «Цех и учёт»: функций 4, из них с доказанным завершением 4; типов 7
-проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе —
-processes, supervisors, runs. […]
+объявления эти сверены НЕ ДО КОНЦА — processes, supervisors, runs: сверено, что
+имена сходятся, что у нетотального обработчика назван запас витков, что у отказа
+один судья, […]
 flang/conc/examples/supervision.flang: проверено НЕ ДО КОНЦА — разбор, типы,
 завершаемость, ядро и примеры прошли
 $ echo $?
 2
 ```
 
+(Output captured on 11 September 2026, binary 0.7.17, commit 2c40752d0.)
+
 Exit code 2 means "not checked all the way through", not "all good": the
 handlers, their types and their examples are checked, the `процесс` and
-`надзор` declarations are read but not judged. `flang test <file>` runs the
+`надзор` declarations have their names and message types verified, but whether
+a failure is reachable inside a total handler the binary does not judge — and
+says so. `flang test <file>` runs the
 handler examples and exits 0.
 
 ## Nodes: who runs where
@@ -154,13 +159,15 @@ Move a process to another host by editing this file, not the program.
 
 | | processes and supervision |
 | --- | --- |
-| `c`, `elixir` | emitted with a scheduler: the processes run |
-| the other six targets | the handler is emitted as an ordinary function; you call it yourself |
+| `c`, `elixir`, `js`, `ts` | emitted with a scheduler: the processes run |
+| `cpp`, `csharp`, `go`, `java`, `python`, `rust` | emission refuses with code 1: "the target has no concurrency scheduler" — the handler is not emitted as an ordinary function |
+
+(Run of `flang emit flang/conc/examples/supervision.flang --target …` on 11 September 2026, commit 2c40752d0: `js`, `ts`, `elixir`, `c` — code 0; `python`, `csharp` — code 1; for `cpp`, `go`, `java`, `rust` the same refusal is written in their emitters `flang/self/emit-*.flang`.)
 
 Two limits to keep in mind: the recipient of a message must be a literal name,
 and a live node is not brought up by the binary compiler today — the
 declarations are checked as part of the program, the processes themselves are
-run by the emitted C or Elixir.
+run by the emitted C, Elixir, JavaScript or TypeScript.
 
 ## Where to go next
 

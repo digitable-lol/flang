@@ -100,7 +100,7 @@ if [ ! -x "$tool" ]; then
 fi
 
 # Число СВОИХ примеров файла — тем же образцом, каким его считает пятый прибор
-# сторожа чисел прозы (`scripts/prose-numbers-guard.sh`, `primerov_v`).
+# сторожа чисел прозы (`scripts/guards/prose-numbers-guard.sh`, `primerov_v`).
 svoih() { grep -ac '^ *пример «' "$1" 2>/dev/null || true; }
 
 # ── Один проход: прогнать под присмотром, собрать ведомость ─────────────────

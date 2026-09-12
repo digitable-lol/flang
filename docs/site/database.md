@@ -29,7 +29,7 @@ functions, and why `flang check` needs no server.
 | --- | --- | ---: | ---: | ---: |
 | `flang/stdlib/wire.flang` | octets, network-order integers, NUL-terminated strings, cutting a stream | {{провод.строк}} | {{провод.функций}} | {{провод.примеров}} |
 | `flang/stdlib/postgres.flang` | protocol version 3.0: client messages built, server answers parsed | {{база.строк}} | {{база.функций}} | {{база.примеров}} |
-| `examples/db/postgres-plan.flang` | the whole five-step conversation | {{план.строк}} | | {{план.примеров}} |
+| `docs/examples/db/postgres-plan.flang` | the whole five-step conversation | {{план.строк}} | | {{план.примеров}} |
 
 A simple query is built like this — taken from the tree verbatim:
 
@@ -45,7 +45,7 @@ $ flang test flang/stdlib/postgres.flang
 The conversation itself does need a live server:
 
 ```bash
-$ flang io examples/db/postgres-plan.flang | python3 -c \
+$ flang io docs/examples/db/postgres-plan.flang | python3 -c \
     "import sys,json; print(json.load(sys.stdin)['result'])"
 1 пуск: | | | in_hot_standby=off … server_version=17.10 server_encoding=UTF8
 2 создание: INSERT 0 1| | |
@@ -70,8 +70,9 @@ the functions at the top of the plan.
 | | |
 | --- | --- |
 | `trust` and cleartext password | works |
-| `md5`, `scram-sha-256` | no: HMAC and PBKDF2 are not in the library. The plan keeps reading and waits |
-| TLS | no. The conversation runs in the clear — for a database on the same machine |
+| `scram-sha-256` | as a separate plan, `docs/examples/db/postgres-scram-plan.flang`, on top of `flang/stdlib/scram.flang` (with `hmac.flang` and `sha256.flang`; SCRAM client — commit 7bd68b79, 20 August 2026). The `postgres-plan.flang` above knows nothing about SASL: on `md5` and SCRAM it keeps reading and waits |
+| `md5` | no: `postgres.flang` parses it as «Вход не поддержан» (example «пятёрка — md5, и он не поддержан») |
+| TLS | no. The library holds `flang/stdlib/tls-handshake.flang` (a TLS 1.3 client, checked against the RFC 8448 vectors), but it is not wired to the PostgreSQL driver: the conversation runs in the clear — for a database on the same machine |
 | column types in `RowDescription` | only the number of columns is taken out. Pass the type number of a column yourself |
 | a null value | not parsed: its length is minus one, and parsing asks for 4 294 967 295 octets |
 | length of a message you send | the four octets of the length must all be below 128; a query is padded with spaces, 200 in reserve. A parameter value is at most 127 bytes |
@@ -91,7 +92,7 @@ $ python3 -c "import sqlite3,os; d='/srv/tmp/sqlite-obrazec'; os.makedirs(d,exis
   c=sqlite3.connect(d+'/proba.db'); c.execute('create table люди(имя text, лет integer)'); \
   c.executemany('insert into люди values (?,?)',[('Аня',31),('Боря',44),('Вера',7)]); c.commit()"
 
-$ flang io examples/db/sqlite-read.flang | python3 -c \
+$ flang io docs/examples/db/sqlite-read.flang | python3 -c \
     "import sys,json; print(json.load(sys.stdin)['result'])"
 магия SQLite: да
 размер страницы: 4096
@@ -106,7 +107,7 @@ SQL: CREATE TABLE люди(имя text, лет integer)
 3 | Вера | 7
 ```
 
-The plan is `examples/db/sqlite-read.flang`; the path to the file and
+The plan is `docs/examples/db/sqlite-read.flang`; the path to the file and
 the name of the table stand in it as two one-line functions — `«Откуда»` and
 `«Какая таблица»`.
 
@@ -122,7 +123,7 @@ the name of the table stand in it as two one-line functions — `«Откуда�
 | a record | null, integers of all six widths, the 0 and 1 of serial types 8 and 9, text through UTF-8, binary |
 | real numbers (serial type 7) | read whole, in variant «Дробное»; not written back — there is no inverse into sign, exponent and mantissa |
 | building a file from scratch | `«Собрать база»` — a whole image, header through leaves, checked by reading its own output back |
-| inserting a row into an existing file | `«База со строкой»` (`examples/db/sqlite-insert.flang`, checked against real `sqlite3`): into a ready leaf's free middle, file length unchanged, row number one past the last. A page split, an out-of-order insertion, a row needing an overflow page, an edit, a delete, a journal — every one of those is refused as empty, not a corrupt file |
+| inserting a row into an existing file | `«База со строкой»` (`docs/examples/db/sqlite-insert.flang`, checked against real `sqlite3`): into a ready leaf's free middle, file length unchanged, row number one past the last. A page split, an out-of-order insertion, a row needing an overflow page, an edit, a delete, a journal — every one of those is refused as empty, not a corrupt file |
 | indexes (page kinds 2 and 10) | no: they are not table rows |
 
 ## Where to go next

@@ -162,7 +162,7 @@ JavaScript):
 ## Задача
 
 Возьмите `«Место вставки»` из
-`examples/leetcode/035-search-insert-position.flang` — функцию, написанную
+`docs/examples/leetcode/035-search-insert-position.flang` — функцию, написанную
 свёрткой:
 
 ```flang

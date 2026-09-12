@@ -256,7 +256,7 @@ static char *repl_read_all(FILE *stream, size_t *length) {
  * СОБРАННОГО бинарника. Иначе `flang --version` однажды назвал бы версию,
  * которой нет ни в одном релизе.
  */
-#define FLANG_VERSION "0.7.17"
+#define FLANG_VERSION "0.7.18"
 
 /*
  * ОТПЕЧАТОК ОБОЛОЧКИ: восемь знаков sha256 этого файла без самой этой строки.
@@ -326,7 +326,7 @@ static const char REPL_GREETING_NO_EVAL[] =
  * цель втаскивают, каждая его копия становится ЛОЖЬЮ. Копий здесь две, и обе
  * ниже: одна называет, что есть, вторая — чего нет.
  */
-#define EMIT_TARGETS_WORDS "c|cpp|go|rust|java|js|elixir|python|csharp"
+#define EMIT_TARGETS_WORDS "c|cpp|go|rust|java|js|ts|elixir|python|csharp"
 #define EMIT_TARGETS_MISSING \
   "ЗАКОНЫ КАТЕГОРИИ бинарник СЧИТАЕТ САМ — на сетке, с названным числом\n"\
   "значений: что объявленное равенство есть эквивалентность, что композиция\n"\

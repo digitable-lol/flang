@@ -122,7 +122,7 @@ floor at all: `ш`, `ш делить на 2`, … add up to less than `2ш`.
 
 For when what decreases is not an argument but an expression over them. The
 `убывает …` line goes right after `возвращает`. The full example is
-[`examples/measure/binary-search.flang`](../../examples/measure/binary-search.flang):
+[`docs/examples/measure/binary-search.flang`](../examples/measure/binary-search.flang):
 
 ```flang
 тотальная функция «Поиск в диапазоне»
@@ -144,11 +144,11 @@ For when what decreases is not an argument but an expression over them. The
 ```
 
 ```bash
-flang test examples/measure/binary-search.flang
+flang test docs/examples/measure/binary-search.flang
 ```
 
 ```
-examples/measure/binary-search.flang: примеров 5, прошло 5, не прошло 0
+docs/examples/measure/binary-search.flang: примеров 5, прошло 5, не прошло 0
 ```
 
 ## `убывает` is checked at run time, not at build time
@@ -228,7 +228,7 @@ arrives unchanged on every turn. Turn the count around and go down.
 String code crossed the same border differently: the built-in form
 `разложить … на символы` turns a string into a list of one-character strings by
 code points, and the walk becomes recursion over a tail. That is why
-[`examples/rosetta/reverse-string.flang`](../../examples/rosetta/reverse-string.flang)
+[`docs/examples/rosetta/reverse-string.flang`](../examples/rosetta/reverse-string.flang)
 is total throughout, emoji and Cyrillic included.
 
 ## Why it is worth it: the fact checker refuses non-total functions
@@ -259,23 +259,27 @@ Exit code 1. The mode has no file, network or clock access, and a hard step
 budget: the answer depends only on `(program, facts, claims, limits)`, which is
 what makes it reproducible.
 
-## Processes: the rule is written down, the check is not
+## Processes: the rule is written down, the check exists, the code differs
 
 By the specification a server in flang is an infinite sequence of terminating
 turns: the scheduler is infinite, the handler it calls must terminate. A handler
 that is neither `тотальная` nor carries `с запасом N витков` should not get
 through — code `FLANG_HANDLER_NOT_TOTAL`.
 
-Today it does not work that way. The binary compiler does not judge `процесс`
-declarations at all. Here is what it answers on
-[`examples/web/shortener/handler-without-budget.flang`](../../examples/web/shortener/handler-without-budget.flang),
-a file written precisely to test this rule:
+Today the binary does judge it, but answers with a different code. Here is what
+it answers on
+[`docs/examples/web/shortener/handler-without-budget.flang`](../examples/web/shortener/handler-without-budget.flang),
+a file written precisely to test this rule (run on 11 September 2026, binary
+0.7.17 from seed `0ce948bfd`):
 
 ```
-проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе — processes.
+FLANG_UNCOVERED_FAILURE в файле docs/examples/web/shortener/handler-without-budget.flang, строка 13, столбец 1: у процесса «Разборщик» обработчик «шаг разбора» без доказанного завершения — значит отказ «запас витков исчерпан» достижим, — а под надзором этот процесс не стоит: такой отказ уронит программу целиком
 …
-examples/web/shortener/handler-without-budget.flang: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли
+docs/examples/web/shortener/handler-without-budget.flang: не проверено — замечаний 2
 ```
 
-Exit code 2, but no `FLANG_HANDLER_NOT_TOTAL`. The rule lives in the
-specification; the check for it is not written in the compiler.
+Exit code 1. `FLANG_HANDLER_NOT_TOTAL` is still not issued: a non-total handler
+without a budget is caught as an uncovered failure (`FLANG_UNCOVERED_FAILURE`),
+not under the name from the specification. This section used to say "the binary
+does not judge `процесс` at all, exit 2" — that was the seed before the
+`0ce948bfd` reprint.

@@ -120,6 +120,11 @@ $ flang check flang/ct/order-shipment.flang
 нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 ```
 
+The same file further down also declares an `isomorphism`, which the binary
+does not judge (see the sections below), so the whole command answers with
+exit code 2 and the line «проверено НЕ ДО КОНЦА» ("checked, not to the end") —
+run of `bootstrap/flang` 0.7.17, commit `2c40752d0`, 11 September 2026.
+
 **"Computed over a grid" is not "proved".** Five values are five values; a sixth
 may break the law, and the count says nothing about that. The word "proved" is
 deliberately not used here.
@@ -224,7 +229,7 @@ a category and of a transformation, and they are computed over a finite grid.**
 
 A chain of computations, any of which may fail, is written without binding each
 step by hand. The compiler parses and expands the form; in the tree it stands in
-`examples/monad/order-total.flang`. That file does carry diagnostics
+`docs/examples/monad/order-total.flang`. That file does carry diagnostics
 today, and they are not about the monad: `FLANG_TYPE_PARAM` inside the expanded
 code — the type parameter `«Беда»` is determined neither by the arguments nor by
 the expected type.

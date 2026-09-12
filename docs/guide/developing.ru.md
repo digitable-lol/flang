@@ -10,40 +10,40 @@
 `bootstrap/` начнёт собирать прошлый компилятор молча:
 
 ```bash
-sh scripts/raskrutka.sh           # перепечатать bootstrap/ (≈11 минут: двоичный печатает сам себя)
+sh scripts/raskrutka.sh           # перепечатать bootstrap/ (часы: 11 сентября 2026 — 7 ч 28 мин, коммит 0ce948bfd)
 sh scripts/raskrutka.sh --check   # сверить с исходниками побайтово, код 1 при расхождении
-sh scripts/raskrutka.sh --stroki  # 0,4 с: все строковые литералы рантайма C закрыты
+sh scripts/raskrutka.sh --stroki  # 0,6 с (11 сентября 2026): все строковые литералы рантайма C закрыты
 ```
 
 Печатает эти байты сам двоичный компилятор (`bootstrap/flang emit … --target c`); если двоичного
 нет, скрипт сначала соберёт его из `bootstrap/`.
 
-Сверка стоит столько же, сколько печать, — около одиннадцати минут плюс `make`, если двоичный не
-собран. Зовите `--check` перед слиянием правки в `flang/self/` или `flang/src/emit/c/`, а не на
+Сверка печатает заново и стоит столько же, сколько печать (7 ч 28 мин на перепечатке 11 сентября
+2026), плюс `make`, если двоичный не собран. Зовите `--check` перед слиянием правки в `flang/self/` или `flang/src/emit/c/`, а не на
 каждое сохранение.
 
 Команды, на которые язык отвечает:
 
 ```bash
 # разобрать, проверить типы, доказать тотальность
-flang check examples/leetcode/035-search-insert-position.flang --pretty
+flang check docs/examples/leetcode/035-search-insert-position.flang --pretty
 
 # прогнать примеры, объявленные внутри функций
-flang test examples/leetcode/035-search-insert-position.flang --pretty
+flang test docs/examples/leetcode/035-search-insert-position.flang --pretty
 
 # то же по КОРПУСУ: каталог или маска вместо файла (только у двоичного).
 # Печатается каждый не прошедший пример и каждый не взятый файл, прошедшие —
 # числом; код возврата 0 — чисто, 1 — упало или файл не взят, 2 — кривой вызов.
 flang test flang/stdlib/
-flang test 'examples/**/*.flang' --json
+flang test 'docs/examples/**/*.flang' --json
 
 # вызвать функцию: --args берёт ПЛОСКИЙ объект скаляров, список туда не подать
-flang run examples/leetcode/035-search-insert-position.flang \
+flang run docs/examples/leetcode/035-search-insert-position.flang \
   --function "Место вставки" --args '{"цель":2}'
 # функции со списочным доводом зовутся своими примерами: flang test <файл>
 
-# напечатать — цели: c | csharp | elixir | go | java | js | python | rust
-flang emit examples/leetcode/035-search-insert-position.flang \
+# напечатать — цели: c | cpp | csharp | elixir | go | java | js | python | rust | ts
+flang emit docs/examples/leetcode/035-search-insert-position.flang \
   --target python --out ./out-python
 ```
 

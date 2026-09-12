@@ -6,7 +6,7 @@ This page shows where the `flang` command comes from when the compiler is
 written in flang itself, and how it is checked that the built compiler
 understands the language the same way its sources do. By the end you can rebuild
 the compiler from scratch with nothing but `cc` and `make`, run that check
-yourself and read its answer — today it refuses, and the reason is below.
+yourself and read its answer — and learn what it does not check.
 
 ## The problem
 
@@ -33,26 +33,22 @@ If they match, the built compiler understands the language exactly as the
 sources it was built from do. If they do not, they have diverged — and what
 diverged is shown by file and by byte.
 
-## Today the circle is open, and here is where
+## Where the circle stands today
 
-The check refuses, and it refuses loudly. On this tree
-`sh scripts/raskrutka.sh --check` never reaches the file comparison: the compiler
-built from the seed **refuses to emit today's sources** — 29 diagnostics, the
-first `FLANG_PARSE`, then `FLANG_UNKNOWN_NAME` on the names `«Вызвать»`, `«Знач»`,
-`«Итог прогона»`, `«Готовая программа»`, and one `FLANG_NOT_TOTAL`.
+The seed was reprinted on 10–11 September 2026, commit `0ce948bfd`:
+`sh scripts/raskrutka.sh` answered «РЕПРИНТ КОД=0, семя годное» — 7 files,
+41 564 839 bytes, 7 h 28 min (start 02:08:53Z, end 09:36:56Z; all of it is in the
+commit message). The sources have moved on since: on 11 September
+`sh scripts/seed/chto-otstalo-ot-semeni.sh` names 3 files and 77 functions (`functor`,
+`monoid`, `svoystva`) that the binary built from the seed does not know.
+`sh scripts/raskrutka.sh --bystro` on the same day answers «ОТПЕЧАТОК СНЯТ С
+ПРАВЛЕНОГО ДЕРЕВА»: the emission inputs in the reprint tree differed from its
+commit, so the fingerprint names no input commit
+(`docs/reprint-runs-start-from-a-clean-tree.md`).
 
-```
-flang emit: печать отменена — программа не проходит проверку, замечаний 29.
-```
-
-It reads unambiguously: **the seed has fallen behind the sources.** Names and
-forms have appeared in the sources that the compiler in the seed does not know —
-and until the seed is re-emitted, the circle does not close: there is a first
-binary but no second one.
-
-This is not a broken build — `make -C bootstrap` works, and the `flang` it
-produces checks and emits ordinary programs. What is open is the circle itself:
-the step where the compiler proves it understands itself.
+This section used to say "today the circle is open: 29 diagnostics, `FLANG_PARSE`,
+`FLANG_UNKNOWN_NAME` on `«Вызвать»`, `«Знач»`, `«Итог прогона»`". That was the
+seed before the `0ce948bfd` reprint, and it is gone.
 
 ## How to run it
 
@@ -102,7 +98,7 @@ seed survives the circle unnoticed: the circle compares an implementation with
 itself.
 
 What catches that kind of mistake in the tree are the frozen answer tables
-(`flang/test/fixtures/`, 52 entries): today's binary is run against them, and
+(`flang/test/fixtures/`, 55 entries on 11 September 2026 — `ls flang/test/fixtures | wc -l`): today's binary is run against them, and
 disagreeing with a recorded answer is red. The run stands in CI as the job
 "Подделки ядра отвергнуты" (`bootstrap/flang io
 flang/scripts/kernel-forgeries.flang`, `.github/workflows/binary.yml`). That
@@ -133,7 +129,7 @@ Two checks do it now, and they answer different questions.
 
 The expensive one re-emits — that is exactly why nobody called it. The cheap one
 does not emit at all: it compares the contents of the files in the compiler's
-closure (38 of them today), the 4 runtime files that go into the output verbatim,
+closure (41 on 11 September 2026, one line each in `scripts/otpechatok-semeni`), the 4 runtime files that go into the output verbatim,
 and the emission limits that end up in the emitted byte. You can recount them on
 the spot: `scripts/otpechatok-semeni` has one line per file. The fingerprint lives in
 `scripts/otpechatok-semeni` and is taken by the emission itself, not by a
@@ -149,11 +145,13 @@ that is precisely the question that had no answer.
 
 ## What the circle does not check
 
-**The compiler does not check its own sources.** `flang check` on
-`flang/self/bootstrap/compiler.flang` answers "не проверено — замечаний 29" with
-exit code 1: the same names it does not know that made emission refuse. The
-compiler built from the seed cannot today judge itself with the checks it applies
-to other programs.
+**The compiler does not check its own sources in reasonable time.** `flang check
+--быстро flang/self/bootstrap/compiler.flang` with the binary from seed `0ce948bfd`
+on 11 September 2026 did not reach an answer in 8 minutes (run ceiling 500 s): it
+was still at «Связать исходники», 19 billion steps, 6.6 GiB. The answer that used
+to stand here ("не проверено — замечаний 29", exit 1) was taken from the seed
+before the reprint. What the seed binary does not know is reported not by `check`
+but by `sh scripts/seed/chto-otstalo-ot-semeni.sh` — 3 files, 77 functions.
 
 **Rebuilding needs the tree, not the seed directory.** Emission reads the C
 runtime sources from disk (`flang/src/emit/c/`), and there are no copies of them

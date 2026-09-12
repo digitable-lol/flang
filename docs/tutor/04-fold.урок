@@ -1,0 +1,71 @@
+=номер=
+4
+=имя-ru=
+Список и свёртка
+=имя-en=
+A list and a fold
+=текст-ru=
+Список пишется в квадратных скобках: [2, 3, 5]. Пустой список так и зовётся —
+«пустой список». Тип списка чисел записывается «список числа».
+
+Обойти список ровно один раз — это «свёртка»:
+
+    свёртка числа начиная с 0 как акк и эл
+      акк плюс эл
+
+Читается так: идём по списку «числа», начинаем с 0, на каждом шаге у нас есть
+накопленное «акк» и очередной элемент «эл», а строка ниже говорит, чем станет
+накопленное. Свёртка заканчивается всегда: список конечен, а обход один.
+
+Изменить элемент списка нельзя — можно только построить новый список. Имя,
+связанное словом «пусть», связывается один раз и не меняется.
+
+ЗАДАНИЕ. Впишите ⟨1⟩ — тело функции «Сумма»: свёртка списка «числа», начиная
+с 0, шаг — накопленное плюс элемент. Шаг стоит на два пробела глубже слова
+«свёртка». На пустом списке ответ 0.
+=текст-en=
+A list is written in square brackets: [2, 3, 5]. The empty list is called
+"пустой список". The type of a list of numbers is written "список числа".
+
+Walking a list exactly once is a fold, "свёртка":
+
+    свёртка числа начиная с 0 как акк и эл
+      акк плюс эл
+
+Read it as: walk the list "числа", start from 0, at each step we hold the
+accumulated "акк" and the current element "эл", and the line below says what the
+accumulated value becomes. A fold always finishes: the list is finite and it is
+walked once.
+
+You cannot change an element of a list — you can only build a new list. A name
+bound by "пусть" (let) is bound once and does not change.
+
+YOUR TASK. Fill in ⟨1⟩ — the body of «Сумма» (sum): a fold over the list
+"числа", starting from 0, the step is the accumulated value plus the element.
+The step stands two spaces deeper than the word "свёртка". On the empty list the
+answer is 0.
+=шаблон=
+модуль «Урок»
+
+тотальная функция «Сумма»
+  принимает числа: список числа
+  возвращает число
+  ___
+=подсказки-ru=
+тело: свёртка числа начиная с 0 …, шаг строкой ниже
+=подсказки-en=
+the body: свёртка числа начиная с 0 …, the step on the next line
+=впиши=
+свёртка числа начиная с 0 как акк и эл
+  акк плюс эл
+.
+=хвост=
+тотальная функция «Проверка урока»
+  возвращает число
+  «Сумма» от [2, 3, 5]
+=ждём=
+10
+=примеров=
+0
+=отчёт=
+=печать=

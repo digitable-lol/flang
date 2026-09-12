@@ -39,7 +39,7 @@ draft: false
 **вызывающий**. Поэтому в напечатанном коде предусловие стоит **ноль байт**: к
 моменту вызова оно уже доказано, проверять нечего.
 
-Вот и то и другое на одной функции, `examples/rosetta/fibonacci.flang`:
+Вот и то и другое на одной функции, `docs/examples/rosetta/fibonacci.flang`:
 
 ```flang
 тотальная функция «Фибоначчи шагом»
@@ -61,7 +61,7 @@ draft: false
 ## Четыре ответа ядра, и путать их нельзя
 
 ```bash
-flang check examples/rosetta/fibonacci.flang --proof
+flang check docs/examples/rosetta/fibonacci.flang --proof
 ```
 
 ```

@@ -29,7 +29,9 @@ Highlighting exists for Vim 8/9, Neovim and VS Code; other editors have none.
 
 One limitation decides everything here: **while standard input is open the
 server sends no bytes at all**, and an editor never closes input. Replies come
-only after input is closed. The configuration below is correct and will be
+only after input is closed (re-checked on 11 September 2026 on 0.7.17: the same
+`initialize` with input held open for 6 seconds — 0 bytes in 3 seconds; with
+input closed — an immediate reply). The configuration below is correct and will be
 needed once the server answers on the fly; until then an editor gives you
 highlighting, and diagnostics come from `flang check` — the key binding is at
 the end of this page.
@@ -48,11 +50,11 @@ editors/
 rather than an intention.** `editors/vim/syntax/flang.vim` is <!-- СНЯТО 2026-09-08 строк editors/vim/syntax/flang.vim = 46 --> 46 lines,
 `editors/vscode/syntaxes/flang.tmLanguage.json` is <!-- СНЯТО 2026-09-08 строк editors/vscode/syntaxes/flang.tmLanguage.json = 60 --> 60 lines, and both are printed
 from the language's keyword table by programs written in flang itself
-(`scripts/vim-highlighting.flang`, `scripts/vscode-highlighting.flang`). A list of
+(`scripts/editors/vim-highlighting.flang`, `scripts/editors/vscode-highlighting.flang`). A list of
 words typed out separately is a second description of the language, and it
 diverges from the first on the very first day. Both are checked by a real editor
 started without a window and without a person: `flang io
-scripts/vim-highlight-check.flang`, `flang io scripts/lsp-check.flang`. The
+scripts/editors/vim-highlight-check.flang`, `flang io scripts/editors/lsp-check.flang`. The
 second check opens a file in `nvim --headless` and asks four questions: did the
 diagnostic reach the buffer with a place and a code, did go-to-definition land
 where the declaration stands, did hover show the signature — and does the

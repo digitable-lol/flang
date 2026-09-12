@@ -8,7 +8,7 @@ Every command here was run against this compiler; messages are quoted verbatim
 
 | Symptom | Cause | What to do |
 | --- | --- | --- |
-| `flang: двоичный компилятор не собран — его не собрали при установке`, exit code 3 | the package builds the compiler from C99 at install time, and the machine has no `cc` or no `make` | `sudo apt install build-essential` (Fedora — `sudo dnf install gcc make`, Alpine — `apk add build-base`, macOS — `xcode-select --install`), then `npm rebuild @digitable-lol/flang` |
+| There is no `flang` binary after installing | the compiler is built from four C99 files in `bootstrap/`, and the machine has no `cc` or no `make`. The message «двоичный компилятор не собран» that used to be printed at install time no longer exists in the tree: `package.json` has neither `postinstall` nor a `scripts` field at all (commit 2c40752d0) | `sudo apt install build-essential` (Fedora — `sudo dnf install gcc make`, Alpine — `apk add build-base`, macOS — `xcode-select --install`), then `make -C bootstrap` |
 | `make: command not found` when building from a clone | `make` is only there to compile four C files | build with a single `cc` call — the command is below |
 | `asdf install flang` refuses: the archive holds a different file name | the asdf plugin lives in a separate repository and lags behind the tree | `brew install digitable-lol/tap/flang`, or build from source |
 | The built `flang` is not found | `make -C bootstrap` puts it in `bootstrap/flang`, not on `PATH` | `sudo make -C bootstrap install`, or call `./bootstrap/flang` |
@@ -29,7 +29,7 @@ cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o flang \
 | `flang check` names a line and column that do not exist in your file | the trouble lives in an imported module, and the diagnostic carries no file name | check every imported module with its own command |
 | "замечаний 1" and not a word about postconditions: `--proof` prints nothing | the check stopped at the first trouble — it never reached the postconditions, and the claims were not judged at all | fix the trouble; while it stands, "proved" means nothing |
 | `FLANG_IMPORT_NOT_FOUND: не найден модуль «Имя»: ни рядом с файлом, ни выше по каталогам, ни в библиотеке компилятора` | the lookup by module name alone found no file | give the path outright: `использует «Имя» из "path/file.flang"` |
-| `flang emit` exited with code 3 and the files are written | the program declares processes, supervision or the categorical surface — the binary does not judge those | this is not a refusal to emit: judge such a program by its examples (`flang test`) |
+| `flang emit` exited with code 3 and the files are written | the program declares something the binary does not judge — a monad, for instance (a program with processes, or with morphisms and no category, is emitted with code 0 today; run of 11 September 2026, binary 0.7.17, commit 2c40752d0, on the examples of the «Language reference» page) | this is not a refusal to emit: judge such a program by its examples (`flang test`) |
 
 Trouble in an imported module looks like this — line 7 belongs to the
 neighbouring file, not to the one you checked:
@@ -55,7 +55,7 @@ flang check neighbour.flang
 To see that the message is exactly this one, force it with a tiny limit:
 
 ```bash
-flang run examples/rosetta/factorial.flang --function 'Факториал' --args '{"н":30}' --max-steps 3
+flang run docs/examples/rosetta/factorial.flang --function 'Факториал' --args '{"н":30}' --max-steps 3
 ```
 
 It prints `FLANG_RECURSION_LIMIT: функция «Факториал» исчерпала лимит шагов (3)
@@ -68,18 +68,23 @@ behaves differently depending on where you emitted it:
 
 | Target | What happens |
 | --- | --- |
-| `js`, `elixir` | the scheduler is emitted, processes run |
-| `go`, `rust`, `java` | emitting refuses outright, exit code 1, not a single file written |
-| `c`, `python`, `csharp` | files are written, but there is no scheduler beside them: the handler became an ordinary function that nobody calls |
+| `c`, `elixir`, `js`, `ts` | the scheduler is emitted (for `c` it is `flang_conc.c` next to the program), exit code 0 |
+| `cpp`, `csharp`, `go`, `java`, `python`, `rust` | emitting refuses outright, exit code 1, not a single file written |
+
+Taken on `docs/examples/service-on-processes/service.flang` (three processes, a
+supervisor, three runs), run of 11 September 2026, binary 0.7.17, commit 2c40752d0.
 
 The refusal for `go` reads verbatim:
 
 ```
 flang emit: печать отказала — у цели «go» нет планировщика конкурентности, а в программе
-объявлена конкурентность (процессов 2, надзоров 1, прогонов 3), первый — процесс «Работник».
+объявлена конкурентность (процессов 3, надзоров 1, прогонов 3), первый — процесс «Приёмная».
+Напечатать процессы в «go» нечем: обработчик стал бы обычной функцией, которую никто
+не зовёт, и программа собралась бы, делая не то, что написано. Цели с планировщиком: c, elixir, js
 ```
 
-What to do: emit a program with processes into `elixir` or `js`.
+What to do: emit a program with processes into `c`, `elixir`, `js` or `ts`
+(the refusal names three targets; `ts` is missing from it although it does emit — same run).
 
 ```bash
 flang emit your-file.flang --target elixir --out ./output

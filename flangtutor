@@ -4,20 +4,38 @@
 #
 # FLANGTUTOR — ПРОВОДНИК ПО ЯЗЫКУ: УРОКИ ПО ПОРЯДКУ, ОТВЕТ СУДИТ КОМПИЛЯТОР.
 #
-#   ./flangtutor                 начать или продолжить с того урока, где встали
-#   ./flangtutor --урок 3        начать с названного урока
-#   ./flangtutor --только 3      пройти ровно один урок и остановиться
-#   ./flangtutor --сначала       забыть пройденное и начать с первого
-#   ./flangtutor --список        перечислить уроки и не начинать
-#   ./flangtutor --язык en       говорить по-английски, не спрашивая настроек
-#   ./flangtutor --помощь
-#
-# Латиницей то же: --lesson --only --restart --list --lang --help.
-#
-# Коды: 0 — все уроки пройдены, или человек вышел сам, запомнив место;
-#       1 — уроки не пройдены (ответ так и не сошёлся, ввод кончился);
-#       2 — довод непонятен;
-#       3 — учить нечем: нет двоичного или нет уроков.
+#: flangtutor — проводник по языку flang: уроки по порядку, ответ судит компилятор.
+#:
+#:   ./flangtutor                 начать или продолжить с того урока, где встали
+#:   ./flangtutor --урок 3        начать с названного урока
+#:   ./flangtutor --только 3      пройти ровно один урок и остановиться
+#:   ./flangtutor --сначала       забыть пройденное и начать с первого
+#:   ./flangtutor --список        перечислить уроки (и какие пройдены), не начиная
+#:   ./flangtutor --язык en       говорить по-английски, не спрашивая настроек
+#:   ./flangtutor --помощь
+#:
+#: Латиницей то же: --lesson --only --restart --list --lang --help.
+#:
+#: За столом. Каждый урок — готовая программа с одним-двумя пропусками ⟨1⟩, ⟨2⟩.
+#:   Проводник спрашивает пропуски по очереди; после каждой строки говорит,
+#:   что понял. Пропуск в одну строку — одна строка. Пропуск в несколько
+#:   строк — конец ему кладёт пустая строка или точка, и это написано в
+#:   самом приглашении. Отступ пропуска проводник добавляет сам.
+#:   .ответ   показать заполненный ответ    .шаблон   показать шаблон снова
+#:   .бросить выйти, место запомнится
+#:   Имя пишется в кавычках: ёлочки «Удвоить» и прямые "Удвоить" — одинаково.
+#:   Как набирать ёлочки, если хочется именно их:
+#:     Linux    Compose < <  и  Compose > >   (или Ctrl+Shift+U, ab / bb, Enter)
+#:     macOS    Option+\  и  Option+Shift+\
+#:     Windows  Alt+0171  и  Alt+0187 на цифровой клавиатуре
+#:   Цвет выключают NO_COLOR, TERM=dumb и вывод не в терминал.
+#:   Место хранится в FLANG_TUTOR_STATE, иначе в XDG_STATE_HOME/flang/tutor,
+#:   иначе в ~/.local/state/flang/tutor; «нет»/«no»/«0» выключают запись.
+#:
+#: Коды: 0 — все уроки пройдены, или человек вышел сам, запомнив место;
+#:       1 — уроки не пройдены (ответ так и не сошёлся, ввод кончился);
+#:       2 — довод непонятен;
+#:       3 — учить нечем: нет двоичного или нет уроков.
 #
 # ── Почему отдельный файл, а не команда двоичного и не команда оболочки ─────
 # Три пути, и выбор сделан замером, а не удобством.
@@ -50,7 +68,25 @@
 # приписывается функция «Проверка урока» из самого урока, и дальше говорит
 # НАСТОЯЩИЙ компилятор: `flang check` — разбор, типы, завершаемость и
 # доказательства; `flang test` — прогон примеров; `flang run` — значение.
-# Урок, требующий доказанного обещания, спрашивает ещё и `flang check --proof`.
+# Урок, требующий доказанного обещания, спрашивает ещё и `flang check --proof`;
+# урок о печати в другой язык — ещё и `flang emit`.
+#
+# ── Почему пропуски в шаблоне, а не «наберите модуль целиком» ────────────────
+# Замер 11 сентября 2026 (сеанс владельца, урок 1): человек набрал модуль
+# целиком, приписал в него вызов «Удвоить» от 21 отдельной строкой — как в
+# примере урока — и до точки не услышал ничего; ответ упал разбором:
+# «неожиданное 'Удвоить'». Кавычки ни при чём: компилятор принимает имя и в
+# ёлочках, и в прямых кавычках, и даже без них (проверено `flang check`,
+# код 0 на всех трёх). Отсюда уклад:
+#   · урок даёт готовую программу с пропусками ⟨1⟩, ⟨2⟩ — впечатывается
+#     одно-два места, а не весь модуль;
+#   · после КАЖДОЙ строки — короткая реакция: какие слова языка, имена,
+#     числа в ней прочитаны; строка без единого слова языка в ответ не идёт;
+#   · пропуск в теле, куда впечатали вызов самой функции, — объяснение сразу:
+#     где вызову место (в «Проверке урока», её дописывает проводник);
+#   · имя в пропуске после «модуль», «функция», «тип» без кавычек берётся в
+#     ёлочки, и об этом говорится одной строкой.
+# Судит ответ по-прежнему только компилятор; проводник правит лишь форму имён.
 #
 # ИМЕНА ПЕРЕМЕННЫХ ЗДЕСЬ ЛАТИНИЦЕЙ, как в `ярлык` и `scripts/flangrc.sh`: ни
 # dash, ни bash не принимают кириллицу в именах переменных.
@@ -109,7 +145,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ "$REZHIM" = pomosh ]; then
-  sed -n '5,20p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n 's/^#: \{0,1\}//p' "$0"
   exit 0
 fi
 
@@ -130,14 +166,218 @@ case $YAZYK in
 esac
 
 # ── цвет: NO_COLOR действует самим наличием, TERM=dumb тоже ─────────────────
-ZHIRNYY='' TUSKLYY='' GOLYY=''
+# Четыре краски подсветки — слова языка, имена в ёлочках, числа, строки — плюс
+# жирный и тусклый для самого проводника. Всё это пусто без терминала.
+ZHIRNYY='' TUSKLYY='' GOLYY='' K_SLOVO='' K_IMYA='' K_CHISLO='' K_STROKA=''
 if [ -z "${NO_COLOR+есть}" ] && [ "${TERM:-dumb}" != dumb ] && [ -t 1 ]; then
   ZHIRNYY=$(printf '\033[1m'); TUSKLYY=$(printf '\033[2m'); GOLYY=$(printf '\033[0m')
+  K_SLOVO=$(printf '\033[1;34m'); K_IMYA=$(printf '\033[36m')
+  K_CHISLO=$(printf '\033[35m'); K_STROKA=$(printf '\033[33m')
 fi
 
 skazat() { printf '%s\n' "$*"; }
 ryadom() { # надпись на выбранном языке: русская, английская
   if [ "$YAZYK" = ru ]; then printf '%s' "$1"; else printf '%s' "$2"; fi
+}
+
+# ── слова языка: таблица лексера, снятая в строку ───────────────────────────
+# Это ВСЕ поверхности ключевых слов из `flang/self/lexer.flang` («Куски
+# таблицы»): русская, английская, эсперантская и китайская — 647 фраз, до
+# четырёх слов каждая. Список не рукописный, а снятый командой ниже, и проба
+# проводника (scripts/flangtutor-proba.sh) сверяет его с лексером заново:
+# разойдутся — проба красна.
+#
+#   sed -n '/^тотальная функция «Куски таблицы»/,/^  \]/p' flang/self/lexer.flang \
+#     | grep '^    "' | sed 's/^    "|//; s/|",\{0,1\}$//' | tr '|' '\n' | sed 's/:.*//'
+#
+# Здесь список нужен дважды: подсветке (каждая фраза красится словом языка) и
+# суду строки «похоже ли это на flang вообще».
+SLOVA_YAZYKA='
+|модуль|module|模块|экспортирует|exports|eksportas|导出|использует|uses|uzas|
+使用|категория|category|kategorio|类别|объект|структура|object|structure|objekto|
+strukturo|对象|结构|запись|record|rikordo|记录|тип|type|tipo|
+类型|вариант|variant|varianto|变体|это|вложен объект|вложена структура|nested object|nested structure|
+嵌套对象|嵌套结构|код символа|character code|kodo de signo|字符码|символ по коду|character by code|signo per kodo|按码字符|
+убывает|decreases|тотальная|total|totala|完全|функция|function|funkcio|函数|
+принимает|accepts|akceptas|接受|возвращает|returns|redonas|返回|пример|example|
+ekzemplo|示例|дано|given|donite|给定|ожидается|expected|atendata|期望|
+пусть|let|estu|令|если|if|se|如果|то|then|
+tiam|那么|иначе|else|alie|否则|разбор|match|kongruo|匹配|
+случай|case|kazo|情况|от|of|de|的|и|and|
+kaj|和|и притом|and also|kaj ankaŭ|并且|или|or|aŭ|或者|
+не|not|非|с|with|kun|带有|из|from|el|
+从|только|only|nur|仅|в|к|to|into|in|
+onto|al|到|по|by|per|按|у|at|ĉe|
+在|как|as|kiel|作为|где|where|kie|其中|начиная с|
+starting with|komencante per|起始于|отобразить|map|mapi|映射|отфильтровать|filter|filtri|
+过滤|свёртка|свертка|fold|faldo|折叠|длина|length|longo|长度|
+символ|char|signo|字符|разложить|decompose|malkomponi|分解|на символы|into characters|
+en signojn|为字符|подстрока|substring|subĉeno|子串|соединить|join|kunigi|连接|
+разделить|split|dividi|分割|содержит|contains|enhavas|包含|начинается с|begins with|
+komenciĝas per|开始于|к числу или беда|to number or failure|al nombro aŭ fiasko|转数字或失败|к числу|to number|al nombro|转数字|
+к строке|to text|al teksto|转文本|хеш256|hash256|哈希256|голова|head|kapo|
+头|хвост|tail|vosto|尾|элемент|item|ero|元素|голова и хвост|
+head and tail|kapo kaj vosto|头和尾|пусто|empty|malplena|空|пустой список|empty list|malplena listo|
+空列表|список из|list of|listo de|列表由|список|list|listo|列表|добавить|
+add|aldoni|添加|приписать|prepend|antaŭmeti|前置|любое|any|ajna|
+任意|плюс|plus|加|минус|minus|减|умножить на|times|multiplied by|
+fojoj|乘以|делить на|divided by|dividite per|除以|остаток от|modulo|resto de|取余|
+процентов|процента|процент|percent|percents|procentoj|procento|равен|равна|равно|
+равным|равной|равное|equals|equal to|egalas|等于|не равен|не равна|не равно|
+is not equal to|not equals|ne egalas|不等于|больше|is greater than|greater than|pli granda ol|大于|меньше|
+is less than|less than|pli malgranda ol|小于|не больше|is at most|at most|ne pli granda ol|不大于|не меньше|
+is at least|at least|ne pli malgranda ol|不小于|да|true|yes|vera|jes|真|
+нет|false|no|malvera|ne|假|ничто|null|nenio|无|
+число|числа|числом|числу|number|nombro|数字|строка|строки|строкой|
+строку|текстом|string|teksto|字符串|признак|признака|признаком|boolean|flag|
+bulea|布尔|деньги|деньгами|money|mono|金额|дата|даты|дату|
+датой|date|dato|日期|состояние|состоянием|state|stato|状态|является|
+is|estas|是|иногда является|may be|povas esti|可能是|утилита|utility|utilaĵo|
+工具|правило|rule|regulo|规则|свойство|property|propraĵo|属性|результат|
+result|rezulto|结果|начинает с|starts with|komencas per|始于|поле|поля|field|
+kampo|字段|морфизм|morphism|morfismo|态射|после|after|post|之后|
+цепочка|chain|ĉeno|链|сначала|first|unue|首先|затем|next|
+poste|然后|единица|identity|identeco|恒等|даёт|gives|donas|给出|
+закон|law|leĝo|定律|изоморфизм|isomorphism|izomorfio|同构|прямой морфизм|forward morphism|
+rekta morfismo|正向态射|обратный морфизм|inverse morphism|inversa morfismo|逆态射|вложение|embedding|嵌入|пересечение|
+intersection|komunaĵo|交集|моноид|monoid|monoido|幺半群|носитель|carrier|portanto|
+载体|операция|operation|operacio|运算|обратный элемент|inverse element|inversa elemento|逆元|монада|
+monad|monado|单子|возврат|return|redono|单位|соединение|flatten|platigo|
+压平|в монаде|in monad|en monado|在单子中|теорема|theorem|teoremo|定理|функтор|
+функтора|functor|funktoro|函子|бифунктор|bifunctor|bifunktoro|双函子|объекты|objects|
+objektoj|对象对|морфизмы|morphisms|morfismoj|态射对|утверждение|proposition|propozicio|命题|
+имеет|has|havas|具有|в данных|in data|en datumoj|在数据中|найти где|find where|
+trovi kie|查找其中|по морфизму|затем по морфизму|применить морфизм|затем применить морфизм|by morphism|then by morphism|apply morphism|then apply morphism|
+per morfismo|poste per morfismo|按态射|然后按态射|следовательно|получаем|therefore|sekve|因此|по закону|
+under law|laŭ leĝo|依定律|отображается в|отображаются в|maps to|map to|mapiĝas al|映射到|отображается в поле|
+maps to field|mapiĝas al kampo|映射到字段|отображается в морфизм|отображаются в морфизм|maps to morphism|map to morphism|mapiĝas al morfismo|映射到态射|требует|
+requires|обеспечивает|ensures|для всех|for all|таких что|such that|есть такой|there is|а именно|
+namely|statement|утверждаем|claim|индукция по|induction on|по свойству|by property|по примеру|by example|
+по предположению|by hypothesis|следовательно доказано|therefore proved|процесс|process|procezo|进程|обрабатывает|handles|
+traktas|处理|с запасом|with budget|kun buĝeto|带预算|с ящиком|with mailbox|kun leterkesto|带信箱|
+надзор|supervision|监督|стратегия|strategy|strategio|策略|порог отказов|failure threshold|sojlo de fiaskoj|
+失败阈值|прогон|run|rulo|运行|семя|seed|semo|种子|план|
+plan|plano|计划|примечание|note|noto|注|
+'
+SLOVA=$(printf '%s' "$SLOVA_YAZYKA" | tr -d '\n')
+
+# Слова, которых мало, чтобы счесть строку программой: союзы, предлоги и
+# частицы, которые есть в любой русской или английской фразе.
+LYOGKIE='|и|с|в|к|у|по|от|не|то|как|из|только|где|да|нет|это|после|затем|сначала|любое|ничто|a|an|of|to|at|by|as|in|into|onto|is|or|and|not|no|yes|true|false|first|next|null|any|'
+
+# ── подсветка и суд строки: один разборщик на три дела ──────────────────────
+# Разборщик на awk идёт по строке слева направо: имя в ёлочках, строка в
+# кавычках, число, слово. Слово сверяется с таблицей фразами до четырёх слов —
+# так же, как склеивает лексер. Ни `\b`, ни классов с кириллицей внутри: они
+# ломаются в awk, читающем байтами (mawk, awk на BSD), а этот файл едет и туда.
+#   rezhim=krasit  красить всё;   rezhim=kod  красить только строки с отступом
+#   в четыре пробела (код в тексте урока);   rezhim=sud  выйти нулём, если в
+#   строке есть хоть что-то от языка: ёлочки, кавычки, число, скобка или
+#   слово таблицы, кроме лёгких;   rezhim=chto  сказать одной строкой, что
+#   в ней прочитано — слова языка, имена, числа, строки.
+# shellcheck disable=SC2016
+RAZBOR_AWK='
+BEGIN {
+  n = split(slova, arr, "|")
+  for (i = 1; i <= n; i++) if (arr[i] != "") kw[arr[i]] = 1
+  n = split(lyogkie, arr, "|")
+  for (i = 1; i <= n; i++) if (arr[i] != "") lyog[arr[i]] = 1
+  yazyk = 0
+  m_slova = ""; m_imena = ""; m_chisla = ""; m_stroki = ""
+}
+function zapomnit(tok, kod) {
+  if (kod == "k") m_slova = m_slova (m_slova == "" ? "" : ", ") tok
+  if (kod == "n") m_imena = m_imena (m_imena == "" ? "" : ", ") tok
+  if (kod == "c") m_chisla = m_chisla (m_chisla == "" ? "" : ", ") tok
+  if (kod == "s") m_stroki = m_stroki (m_stroki == "" ? "" : ", ") tok
+}
+function kraska(tok, kod) {
+  zapomnit(tok, kod)
+  if (rezhim == "sud" || rezhim == "chto") return tok
+  if (kod == "k") return KS tok GOLO
+  if (kod == "n") return KI tok GOLO
+  if (kod == "s") return KT tok GOLO
+  if (kod == "c") return KC tok GOLO
+  return tok
+}
+{
+  s = $0; out = ""
+  if (rezhim == "kod" && substr(s, 1, 4) != "    ") { print s; next }
+  while (length(s) > 0) {
+    c = substr(s, 1, 1)
+    if (index(s, "«") == 1) {
+      j = index(s, "»"); if (j == 0) j = length(s)
+      out = out kraska(substr(s, 1, j), "n"); s = substr(s, j + 1); yazyk = 1; continue
+    }
+    if (c == "\"") {
+      j = index(substr(s, 2), "\""); if (j == 0) j = length(s); else j = j + 1
+      out = out kraska(substr(s, 1, j), "s"); s = substr(s, j + 1); yazyk = 1; continue
+    }
+    if (c ~ /[0-9]/) {
+      match(s, /^[0-9]+(\.[0-9]+)?/)
+      out = out kraska(substr(s, 1, RLENGTH), "c"); s = substr(s, RLENGTH + 1); yazyk = 1; continue
+    }
+    if (c ~ /[][()]/) yazyk = 1
+    if (c ~ /[ \t()\[\],:]/) { out = out c; s = substr(s, 2); continue }
+    if (match(s, /^[^ \t()\[\],:"]+/) == 0) { out = out c; s = substr(s, 2); continue }
+    w1 = substr(s, 1, RLENGTH); rest = substr(s, RLENGTH + 1)
+    best = 0; phrase = w1; plen = RLENGTH; r = rest
+    for (k = 1; k <= 4; k++) {
+      if (phrase in kw) { best = plen; bestph = phrase }
+      if (match(r, /^ +[^ \t()\[\],:"]+/) == 0) break
+      if (index(substr(r, RSTART, RLENGTH), "«") > 0) break
+      phrase = phrase substr(r, 1, RLENGTH); plen += RLENGTH; r = substr(r, RLENGTH + 1)
+    }
+    if (best > 0) {
+      if (!(bestph in lyog)) yazyk = 1
+      out = out kraska(substr(s, 1, best), "k"); s = substr(s, best + 1)
+    } else { out = out w1; s = rest }
+  }
+  if (rezhim != "sud" && rezhim != "chto") print out
+}
+END {
+  if (rezhim == "sud") exit (yazyk ? 0 : 1)
+  if (rezhim == "chto") {
+    itog = ""
+    if (m_slova != "") itog = itog (itog == "" ? "" : "; ") L_SLOVA " " m_slova
+    if (m_imena != "") itog = itog (itog == "" ? "" : "; ") L_IMENA " " m_imena
+    if (m_chisla != "") itog = itog (itog == "" ? "" : "; ") L_CHISLA " " m_chisla
+    if (m_stroki != "") itog = itog (itog == "" ? "" : "; ") L_STROKI " " m_stroki
+    print itog
+  }
+}
+'
+razobrat() { # режим → фильтр stdin → stdout
+  awk -v rezhim="$1" -v slova="$SLOVA" -v lyogkie="$LYOGKIE" \
+      -v KS="$K_SLOVO" -v KI="$K_IMYA" -v KC="$K_CHISLO" -v KT="$K_STROKA" -v GOLO="$GOLYY" \
+      -v L_SLOVA="$(ryadom 'слова языка:' 'language words:')" -v L_IMENA="$(ryadom 'имена:' 'names:')" \
+      -v L_CHISLA="$(ryadom 'числа:' 'numbers:')" -v L_STROKI="$(ryadom 'строки:' 'strings:')" \
+      "$RAZBOR_AWK"
+}
+chto_prochitano() { # строка → одной строкой, что в ней прочитано
+  printf '%s\n' "$1" | razobrat chto
+}
+podsvetit() { # код целиком
+  if [ -n "$K_SLOVO" ]; then razobrat krasit; else cat; fi
+}
+podsvetit_urok() { # текст урока: красятся только строки кода (отступ в четыре пробела)
+  if [ -n "$K_SLOVO" ]; then razobrat kod; else cat; fi
+}
+pohozhe_na_flang() { # строка → 0, если в ней есть хоть что-то от языка
+  printf '%s\n' "$1" | razobrat sud
+}
+
+# ── имя без кавычек в пропуске после «модуль», «функция», «тип» ─────────────
+# Компилятор принял бы и так, но в шаблоне имя стоит в кавычках везде, и
+# ответ показывается человеку целиком — пусть и его имя стоит как у всех.
+v_yolochki() { # строка → та же в ёлочках, если кавычек нет
+  case $1 in
+    «*|\"*|\'*) printf '%s\n' "$1" ;;
+    *) printf '«%s»\n' "$1" ;;
+  esac
+}
+zhdyot_imya() { # строка шаблона с пропуском → 0, если перед пропуском слово, за которым идёт имя
+  printf '%s\n' "$1" | grep -E -q '(^|[[:space:]])(модуль|функция|тип|объект|запись|теорема|пример|обеспечивает|требует|module|function|type|object|record|theorem|example|ensures|requires)[[:space:]]+___'
 }
 
 # ── уроки ───────────────────────────────────────────────────────────────────
@@ -151,22 +391,6 @@ razdel() { # файл, метка → строки раздела
 }
 urok_fajl() { # номер → путь
   printf '%s\n' "$SPISOK" | sed -n "$1p" | sed "s|^|$UROKI/|"
-}
-
-if [ "$REZHIM" = spisok ]; then
-  n=1
-  while [ "$n" -le "$VSEGO" ]; do
-    f=$(urok_fajl "$n")
-    printf '%s %s · %s\n' "$(ryadom урок lesson)" "$n" "$(razdel "$f" "имя-$YAZYK")"
-    n=$((n + 1))
-  done
-  exit 0
-fi
-
-[ -x "$BIN" ] || {
-  skazat "$(ryadom "нет двоичного $BIN — судить ответы нечем. Соберите: make -C bootstrap" \
-                   "no binary at $BIN — nothing to judge answers with. Build it: make -C bootstrap")" >&2
-  exit 3
 }
 
 # ── где помнится место: тот же уклад, что у истории оболочки ────────────────
@@ -194,6 +418,31 @@ zapisat_mesto() { # номер пройденного
   [ -n "$MESTO" ] || return 0
   mkdir -p "$(dirname "$MESTO")" 2>/dev/null || return 0
   printf '%s\n' "$1" > "$MESTO" 2>/dev/null || return 0
+}
+
+if [ "$REZHIM" = spisok ]; then
+  proydeno=$(prochitat_mesto)
+  n=1
+  while [ "$n" -le "$VSEGO" ]; do
+    f=$(urok_fajl "$n")
+    otmetka=
+    [ "$n" -le "$proydeno" ] && otmetka=" · $(ryadom 'пройден' 'done')"
+    printf '%s %s · %s%s\n' "$(ryadom урок lesson)" "$n" "$(razdel "$f" "имя-$YAZYK")" "$otmetka"
+    n=$((n + 1))
+  done
+  if [ "$proydeno" -ge "$VSEGO" ]; then
+    skazat "$(ryadom "пройдены все $VSEGO; заново: ./flangtutor --сначала" "all $VSEGO done; start over: ./flangtutor --restart")"
+  elif [ "$proydeno" -gt 0 ]; then
+    skazat "$(ryadom "пройдено $proydeno из $VSEGO; дальше урок $((proydeno + 1)): ./flangtutor" \
+                     "$proydeno of $VSEGO done; next is lesson $((proydeno + 1)): ./flangtutor")"
+  fi
+  exit 0
+fi
+
+[ -x "$BIN" ] || {
+  skazat "$(ryadom "нет двоичного $BIN — судить ответы нечем. Соберите: make -C bootstrap" \
+                   "no binary at $BIN — nothing to judge answers with. Build it: make -C bootstrap")" >&2
+  exit 3
 }
 
 [ "$REZHIM" = snachala ] && zapisat_mesto 0
@@ -260,7 +509,82 @@ sudit() { # файл урока, файл ответа
       return 1
     fi
   fi
+
+  # Урок о печати в другой язык: ответ обязан ещё и напечататься в названную
+  # цель. Судит `flang emit` — он сам проверяет программу перед печатью.
+  cel=$(razdel "$u" печать | head -1 | tr -d ' ')
+  if [ -n "$cel" ]; then
+    rm -rf "$RAB/pechat"
+    if ! LC_ALL=C.UTF-8 "$BIN" emit "$RAB/urok.flang" --target "$cel" --out "$RAB/pechat" > "$RAB/emit.out" 2>&1; then
+      skazat "$(ryadom "печать в «$cel» не удалась:" "printing to «$cel» failed:")"
+      sed "s|$RAB/urok.flang|$(ryadom 'ваш ответ' 'your answer')|g" "$RAB/emit.out"
+      return 1
+    fi
+    skazat "$(ryadom "напечатано в «$cel»: $(head -1 "$RAB/emit.out")" "printed to «$cel»: $(head -1 "$RAB/emit.out")")"
+  fi
   return 0
+}
+
+# ── шаблон урока и его пропуски ─────────────────────────────────────────────
+# Пропуск — `___` в шаблоне. Один на строке (после отступа) — пропуск в
+# несколько строк; внутри строки — пропуск в одну строку, `___` заменяется
+# набранным. Нумеруются по порядку появления. Ответ человека к пропуску N
+# лежит в $RAB/propusk.N; программа собирается из шаблона и этих файлов.
+# Отступ строки пропуска ДОБАВЛЯЕТСЯ к каждой набранной строке: человек
+# набирает блок так, как он выглядел бы с нулевого столбца, вложенное — на
+# два пробела глубже. Так копия из текста урока ложится без правки.
+shablon() { razdel "$1" шаблон; }
+propuskov() { # файл урока → сколько пропусков
+  shablon "$1" | grep -c '___'
+}
+vid_propuska() { # файл урока, номер → stroki | vstavka
+  shablon "$1" | grep '___' | sed -n "$2p" | grep -E -q '^[[:space:]]*___[[:space:]]*$' && echo stroki || echo vstavka
+}
+stroka_propuska() { # файл урока, номер → строка шаблона с этим пропуском
+  shablon "$1" | grep '___' | sed -n "$2p"
+}
+funkciya_propuska() { # файл урока, номер → имя функции, в теле которой стоит пропуск (если стоит)
+  shablon "$1" | awk -v n="$2" '
+    /функция[ \t]+(«[^»]*»|"[^"]*")/ { f = $0; sub(/.*функция[ \t]+/, "", f); sub(/[ \t].*$/, "", f); gsub(/["«»]/, "", f) }
+    /^[^ \t]/ && !/функция/ { f = "" }
+    /___/ { k++; if (k == n) { print f; exit } }'
+}
+pokazat_shablon() { # файл урока → шаблон на экран, пропуски пронумерованы
+  shablon "$1" | awk '{ while (index($0, "___") > 0) { k++; sub(/___/, "\001" k "\002") } ; print }' \
+    | sed 's/^/    /' | podsvetit | sed "s/$(printf '\001')/${ZHIRNYY}⟨/g; s/$(printf '\002')/⟩${GOLYY}/g"
+}
+sobrat() { # файл урока → программа из шаблона и заполненных пропусков, в stdout
+  shablon "$1" | awk -v rab="$RAB" '
+    /^[[:space:]]*___[[:space:]]*$/ {
+      k++; otstup = $0; sub(/___.*$/, "", otstup)
+      f = rab "/propusk." k
+      while ((getline s < f) > 0) {
+        if (s == "") print s; else print otstup s
+      }
+      close(f); next
+    }
+    /___/ {
+      k++; f = rab "/propusk." k; s = ""
+      if ((getline s < f) <= 0) s = ""
+      close(f); sub(/___/, s); print; next
+    }
+    { print }'
+}
+zapolnit_iz_uroka() { # файл урока → пропуски из раздела «впиши» (разбор урока)
+  u=$1
+  vsego=$(propuskov "$u")
+  razdel "$u" впиши > "$RAB/vpishi"
+  n=1; s=1
+  while [ "$n" -le "$vsego" ]; do
+    if [ "$(vid_propuska "$u" "$n")" = vstavka ]; then
+      sed -n "${s}p" "$RAB/vpishi" > "$RAB/propusk.$n"; s=$((s + 1))
+    else
+      awk -v s="$s" 'NR >= s { if ($0 == ".") { print NR > "/dev/stderr"; exit } print }' "$RAB/vpishi" \
+        > "$RAB/propusk.$n" 2> "$RAB/vpishi.konec"
+      s=$(($(cat "$RAB/vpishi.konec" 2>/dev/null || echo "$s") + 1))
+    fi
+    n=$((n + 1))
+  done
 }
 
 # ── работа ──────────────────────────────────────────────────────────────────
@@ -278,65 +602,127 @@ fi
 KONEC_NA=$VSEGO
 [ "$TOLKO" = да ] && KONEC_NA=$NACHAT
 
+tusklo() { skazat "${TUSKLYY}$*${GOLYY}"; }
+podskazka() { # файл урока, номер пропуска → подсказка на выбранном языке
+  razdel "$1" "подсказки-$YAZYK" | sed -n "$2p"
+}
+priglashenie() { # номер, подсказка, вид, первая ли строка
+  if [ "$3" = vstavka ]; then
+    printf '%s⟨%s⟩ %s%s » ' "$ZHIRNYY" "$1" "$2" "$GOLYY"
+  elif [ "$4" = да ]; then
+    printf '%s⟨%s⟩ %s%s %s(%s)%s\n  » ' "$ZHIRNYY" "$1" "$2" "$GOLYY" "$TUSKLYY" \
+      "$(ryadom 'строк может быть несколько; пустая строка или точка — конец' 'several lines are fine; an empty line or a dot ends it')" "$GOLYY"
+  else
+    printf '  » %s(%s)%s ' "$TUSKLYY" "$(ryadom 'пустая строка или точка — конец' 'empty line or dot ends it')" "$GOLYY"
+  fi
+}
+vyyti_ili_dalshe() { # команда из точки → 0, если это была команда
+  case $1 in
+    .ответ|.answer)
+      skazat ""; tusklo "$(ryadom 'разбор урока — заполненный ответ:' 'a worked answer — the template filled in:')"
+      zapolnit_iz_uroka "$U"; sobrat "$U" | sed 's/^/    /' | podsvetit; skazat ""
+      return 0 ;;
+    .шаблон|.template)
+      skazat ""; pokazat_shablon "$U"; skazat ""
+      return 0 ;;
+    .бросить|.quit|.выход|.exit)
+      skazat "$(ryadom "остановились на уроке $NOMER. Продолжить: ./flangtutor" \
+                       "stopped at lesson $NOMER. Continue with: ./flangtutor")"
+      exit 0 ;;
+  esac
+  return 1
+}
+vvod_konchilsya() {
+  skazat "$(ryadom "ввод кончился, а урок $NOMER не пройден." "input ended, and lesson $NOMER is not done.")" >&2
+  exit 1
+}
+
+# Реакция на одну набранную строку: 0 — строка принята, иначе нет.
+# Что понято, говорится словами разборщика; что не так — по трём приметам.
+reakciya() { # строка, функция пропуска
+  st=$1; fn=$2
+  if ! pohozhe_na_flang "$st"; then
+    tusklo "  $(ryadom "не понял: ни одного слова языка. Это не строка программы, в ответ она не идёт. Вопрос? .ответ покажет разбор урока." \
+                       "not understood: not a single word of the language. It is not a line of a program, so it is left out. A question? .answer shows a worked answer.")"
+    return 1
+  fi
+  if [ -n "$fn" ] && printf '%s\n' "$st" | grep -q "^[[:space:]]*[«\"']${fn}[»\"']"; then
+    tusklo "  $(ryadom "это вызов самой «$fn» внутри её тела — так функция звала бы сама себя без конца, а вторым телом быть не может. Вызов «$fn» делает «Проверка урока», и её проводник дописывает сам:" \
+                       "this calls «$fn» from inside its own body — the function would call itself forever, and a second body is not allowed. «Проверка урока» makes the call, and the tutor appends it itself:")"
+    razdel "$U" хвост | sed 's/^/      /' | podsvetit
+    tusklo "  $(ryadom "строка в ответ не пошла." "the line was left out.")"
+    return 1
+  fi
+  tusklo "  $(ryadom 'понял:' 'read:') $(chto_prochitano "$st")"
+  return 0
+}
+
 NOMER=$NACHAT
 while [ "$NOMER" -le "$KONEC_NA" ]; do
   U=$(urok_fajl "$NOMER")
+  PROPUSKOV=$(propuskov "$U")
   skazat ""
   skazat "${ZHIRNYY}$(ryadom "урок $NOMER из $VSEGO" "lesson $NOMER of $VSEGO") · $(razdel "$U" "имя-$YAZYK")${GOLYY}"
   skazat ""
-  razdel "$U" "текст-$YAZYK"
+  razdel "$U" "текст-$YAZYK" | podsvetit_urok
   skazat ""
-  skazat "${TUSKLYY}$(ryadom "Наберите ответ целиком, начиная со строки «модуль «Урок»». Конец ответа — строка из одной точки." \
-                              "Type the whole answer, starting with the line «модуль «Урок»». End it with a line holding a single dot.")${GOLYY}"
-  skazat "${TUSKLYY}$(ryadom ".ответ — показать разбор урока; .бросить — выйти, место запомнится." \
-                              ".answer — show a worked answer; .quit — leave, your place is kept.")${GOLYY}"
+  tusklo "$(ryadom "Шаблон ответа — впишите пропуски:" "The answer template — fill in the blanks:")"
+  pokazat_shablon "$U"
+  skazat ""
+  tusklo "$(ryadom ".ответ — заполненный разбор; .шаблон — шаблон снова; .бросить — выйти, место запомнится." \
+                   ".answer — a filled-in answer; .template — the template again; .quit — leave, your place is kept.")"
 
   SOSHLOS=нет
   while [ "$SOSHLOS" = нет ]; do
-    : > "$RAB/otvet.flang"
-    PUSTO=да
-    KONEC_VVODA=нет
-    printf '%s' '» '
-    # Конец ввода ловится ЗДЕСЬ, а не по коду цикла: у `while` код возврата —
-    # это код последней команды тела, и на кончившемся вводе он был бы нулём.
-    while IFS= read -r STROKA || { KONEC_VVODA=да; [ -n "$STROKA" ]; }; do
-      case $STROKA in
-        .|.готово|.done) break ;;
-        .ответ|.answer)
-          skazat ""
-          razdel "$U" ответ
-          skazat ""
-          : > "$RAB/otvet.flang"; PUSTO=да
-          printf '%s' '» '
-          continue ;;
-        .бросить|.quit|.выход|.exit)
-          skazat "$(ryadom "остановились на уроке $NOMER. Продолжить: ./flangtutor" \
-                           "stopped at lesson $NOMER. Continue with: ./flangtutor")"
-          exit 0 ;;
-      esac
-      printf '%s\n' "$STROKA" >> "$RAB/otvet.flang"
-      [ -n "$STROKA" ] && PUSTO=нет
-      printf '%s' '» '
+    N=1
+    while [ "$N" -le "$PROPUSKOV" ]; do
+      VID=$(vid_propuska "$U" "$N")
+      PODSKAZKA=$(podskazka "$U" "$N")
+      FN=$(funkciya_propuska "$U" "$N")
+      : > "$RAB/propusk.$N"
+      PERVAYA=да
+      GOTOV=нет
+      priglashenie "$N" "$PODSKAZKA" "$VID" "$PERVAYA"
+      while [ "$GOTOV" = нет ]; do
+        IFS= read -r STROKA || { [ -n "$STROKA" ] || vvod_konchilsya; }
+        if vyyti_ili_dalshe "$STROKA"; then priglashenie "$N" "$PODSKAZKA" "$VID" "$PERVAYA"; continue; fi
+        case $STROKA in
+          .|.готово|.done) STROKA= ;;
+        esac
+        if [ -z "$(printf '%s' "$STROKA" | tr -d '[:space:]')" ]; then
+          if [ -s "$RAB/propusk.$N" ]; then GOTOV=да
+          else tusklo "  $(ryadom 'пропуск пуст — впишите хоть строку.' 'the blank is empty — type at least one line.')"; priglashenie "$N" "$PODSKAZKA" "$VID" "$PERVAYA"
+          fi
+          continue
+        fi
+        if [ "$VID" = vstavka ] && zhdyot_imya "$(stroka_propuska "$U" "$N")"; then
+          NOVAYA=$(v_yolochki "$STROKA")
+          if [ "$NOVAYA" != "$STROKA" ]; then
+            tusklo "  $(ryadom "имя пишется в кавычках — принял как $NOVAYA (ёлочки «…» и прямые \"…\" для компилятора одно и то же)." \
+                               "a name goes in quotes — took it as $NOVAYA (« » and straight \" \" are the same to the compiler).")"
+            STROKA=$NOVAYA
+          fi
+        fi
+        if reakciya "$STROKA" "$FN"; then
+          printf '%s\n' "$STROKA" >> "$RAB/propusk.$N"
+          PERVAYA=нет
+          [ "$VID" = vstavka ] && GOTOV=да
+        fi
+        [ "$GOTOV" = нет ] && priglashenie "$N" "$PODSKAZKA" "$VID" "$PERVAYA"
+      done
+      N=$((N + 1))
     done
-    skazat ""
 
-    if [ "$PUSTO" = да ]; then
-      if [ "$KONEC_VVODA" = да ]; then
-        skazat "$(ryadom "ввод кончился, а урок $NOMER не пройден." "input ended, and lesson $NOMER is not done.")" >&2
-        exit 1
-      fi
-      skazat "$(ryadom "ответ пуст — наберите его и закончите строкой из одной точки." \
-                       "the answer is empty — type it and finish with a line holding a single dot.")"
-      continue
-    fi
+    sobrat "$U" > "$RAB/otvet.flang"
+    skazat ""
+    tusklo "$(ryadom "ваш ответ целиком, как его прочитал проводник:" "your whole answer, as the tutor read it:")"
+    sed 's/^/    /' "$RAB/otvet.flang" | podsvetit
+    skazat ""
 
     if sudit "$U" "$RAB/otvet.flang"; then
       SOSHLOS=да
-    elif [ "$KONEC_VVODA" = да ]; then
-      skazat "$(ryadom "ввод кончился, а урок $NOMER не пройден." "input ended, and lesson $NOMER is not done.")" >&2
-      exit 1
     else
-      skazat "$(ryadom "попробуйте ещё раз." "try again.")"
+      skazat "$(ryadom "попробуйте ещё раз — пропуски спрашиваются заново." "try again — the blanks are asked once more.")"
     fi
   done
 

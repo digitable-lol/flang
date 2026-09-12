@@ -37,10 +37,10 @@ its own number — **{{сторож.мест}} sites across {{сторож.фу�
 the total.
 
 > The numbers in the tables on this page were printed by the compiler on
-> **23 August 2026** and have not been reprinted since: the bootstrap seed has
-> fallen behind the sources by 44 files, among them `proof-kernel`, `proof`,
-> `obligations`, `totality` and `types` — the ones that decide what counts as
-> proved. Why that is, and how the gap is measured, is on
+> **23 August 2026** (commit `252606e8`) in a run over the whole corpus, and have
+> not been re-measured since. The bootstrap seed the compiler was built from that
+> day has since been reprinted (10–11 September 2026, commit `0ce948bfd`); the
+> expensive numbers have not been re-measured yet. How the gap is measured is on
 > [What is proved and what is not](what-is-proved.html).
 
 ## Three answers, not two
@@ -61,8 +61,9 @@ as in Coq and Isabelle: **write the proof by hand**. The word `теорема` w
 structured steps (`дано`, `утверждаем`, `затем … по свойству «…»`,
 `индукция по …`, `следовательно доказано`) is a surface in the spirit of Isar,
 and the kernel checks such a derivation step by step, searching for nothing.
-There are 241 such theorems in the language tree, 55 of them in the standard
-library. The difference from Coq and Lean is not that this option exists, but how
+There are 277 such theorems in the language tree, 55 of them in the standard
+library (`grep -rac '^\s*теорема ' flang --include='*.flang'`, 11 September
+2026, commit `d6e88d50b`). The difference from Coq and Lean is not that this option exists, but how
 rarely it is reached for: the verdict prints, as a separate number, how many
 claims were closed **without a single written line of proof**.
 
@@ -92,10 +93,19 @@ flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
 
 **What that command does not confirm**, and it is worth knowing: that every rule
 rejects its own forgery. That is the second, expensive end of the same guard (the
-plan «Подделки остаются недоказанными»), and today it is red — not because the
-kernel took a falsehood, but because nine rules have been written into the
-kernel's source and have not yet reached the built compiler: the bootstrap point
-has not been reprinted.
+plan «Подделки остаются недоказанными»), and today it is red (run on
+11 September 2026 with 0.7.17, exit code 1) — not because the kernel took a
+falsehood, but because on the forgery `poddelka-order-arithmetic.flang` the
+compiler answers with exit code 3 ("declared, not proved: 5"), while the plan
+expects a different code and counts the forgery as unchecked.
+
+What is confirmed by another instrument: the proof the compiler prints
+(`flang check --proof --записать`) is replayed by an independent C program —
+`flang/proof/чекер/сверщик.c`. `sh scripts/доказуемость.sh` on 11 September 2026
+with 0.7.17: PROVABLE, 625 obligations out of 651 replayed (96.01 %), 401
+forgeries rejected, 197 honest records accepted; 88 inference rules accepted by
+the Lean 4 kernel (release note for 0.7.17). More on
+[What is proved and what is not](what-is-proved.html).
 
 The price is honest: without excluded middle some classical statements cannot be
 proved. For a programming language that turned out to be a lucky coincidence — we
@@ -157,9 +167,10 @@ years, and no kernel repeals it.
 Whether the language is worth building depends on this answer, so the price is
 measured, not estimated.
 
-Twenty ordinary library functions — **every ninth of all
-{{библиотека.функций}}**, so that the convenient ones could not be picked — and
-each got both tests and a proof.
+Twenty ordinary library functions, picked by stepping through the list of
+declarations (out of {{библиотека.функций}}) so that the convenient ones could
+not be picked — and each got both tests and a proof. The numbers in the table
+come from the [proof-cost benchmark](../benchmark-proof-cost.html).
 
 | | tests | proof |
 |---|---:|---:|
@@ -177,8 +188,9 @@ by keeping a list of names:
 ./ярлык доказательства:20
 ```
 
-On today's tree it answers: something is proved for **14 functions of 20**,
-something substantive for **10**. By claim: 11 substantive, 6 weakened (proved
+On the tree of 11 September 2026 (0.7.17, commit `2c40752d0`) it answers:
+something is proved for **14 functions of 20**, something substantive for
+**10**. By claim: 11 substantive, 6 weakened (proved
 against a stub body too, so true of any function with that signature), 1 free
 (the body was copied into the postcondition), 2 not checked.
 

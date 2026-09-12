@@ -64,10 +64,10 @@ on:
   push:
     paths:
       - "packaging/**"
-      - "scripts/release-in-c.flang"
-      - "scripts/path-without-node.flang"
+      - "scripts/release/release-in-c.flang"
+      - "scripts/release/path-without-node.flang"
       - "scripts/raskrutka.sh"
-      - "scripts/version-guard.flang"
+      - "scripts/guards/version-guard.flang"
       - "bootstrap/**"
       - "flang/src/emit/**"
       - "package.json"
@@ -76,10 +76,10 @@ on:
   pull_request:
     paths:
       - "packaging/**"
-      - "scripts/release-in-c.flang"
-      - "scripts/path-without-node.flang"
+      - "scripts/release/release-in-c.flang"
+      - "scripts/release/path-without-node.flang"
       - "scripts/raskrutka.sh"
-      - "scripts/version-guard.flang"
+      - "scripts/guards/version-guard.flang"
       - "bootstrap/**"
       - "flang/src/emit/**"
       - "package.json"
@@ -219,11 +219,11 @@ jobs:
       # копии и ОБЯЗАН ответить провалом «подлог пойман». Ответил кодом 0 —
       # значит сравнение выпотрошено, и зелёный шаг выше ничего не значит.
       # Зовётся файлом, а не ярлыком `плагин:подлог`: прибор проб порчи
-      # (scripts/storozha-bez-podloga.sh) относит пробу к сторожу по файлу.
+      # (scripts/guards/storozha-bez-podloga.sh) относит пробу к сторожу по файлу.
       - name: Сторож плагина asdf умеет краснеть
         run: |
           set -u
-          if bootstrap/flang io scripts/asdf-plugin-guard.flang --plan 'Подлог'; then
+          if bootstrap/flang io scripts/guards/asdf-plugin-guard.flang --plan 'Подлог'; then
             echo "сторож плагина промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
@@ -243,12 +243,12 @@ jobs:
       # покраснел на подложенном. Подлог внутренний — план «Подлог» того же
       # файла вычёркивает проводник из прочитанного состава архива и ОБЯЗАН
       # ответить провалом «подлог пойман». Зовётся файлом, а не ярлыком:
-      # прибор проб порчи (scripts/storozha-bez-podloga.sh) относит пробу к
+      # прибор проб порчи (scripts/guards/storozha-bez-podloga.sh) относит пробу к
       # сторожу по файлу.
       - name: Сторож состава поставки умеет краснеть
         run: |
           set -u
-          if bootstrap/flang io scripts/postavka-guard.flang --plan 'Подлог'; then
+          if bootstrap/flang io scripts/guards/postavka-guard.flang --plan 'Подлог'; then
             echo "сторож состава поставки промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
@@ -365,14 +365,21 @@ jobs:
           # вопрос — «как поставленный двоичный себя зовёт» — и есть предмет
           # задачи 9959, где он дважды отвечал не так, и оба раза нашёл человек.
           # Формула объявляет `version` сама, есть с чем сверять.
-          otvet="$("$(brew --prefix)/bin/flang" --version)"
+          # ПЕРВАЯ СТРОКА, а не весь ответ. `--version` отвечает ДВУМЯ строками
+          # НАРОЧНО: вторая называет отпечаток оболочки. Это поставлено туда
+          # сознательно (flang/src/emit/c/flang_repl.c:274 и довод на 247/257):
+          # без неё две разные сборки отвечали одинаково, и отличить их было
+          # нечем. Формула сверяет ВХОЖДЕНИЕМ (assert_match) и потому зелена;
+          # здесь стояло точное равенство всей выдачи — и шаг был обречён.
+          # Смысл задачи 9959 сохранён: разойдись версия, первая строка покажет.
+          otvet="$("$(brew --prefix)/bin/flang" --version | head -1)"
           v_formule="$(sed -n 's/^  version "\([^"]*\)"$/\1/p' packaging/homebrew/flang.rb)"
           if [ -z "$v_formule" ]; then
             echo "::error::в packaging/homebrew/flang.rb не нашлось поля version — поправить надо ЭТОТ шаг"
             exit 1
           fi
           if [ "$otvet" != "flang $v_formule" ]; then
-            echo "::error::brew поставил двоичный, который отвечает «$otvet», а формула объявляет version $v_formule"
+            echo "::error::brew поставил двоичный, который отвечает «${otvet}», а формула объявляет version $v_formule"
             echo "::error::Формула и отгруженный архив разошлись — это беда задачи 9959, а не придирка."
             exit 1
           fi
@@ -423,7 +430,13 @@ jobs:
               beda=$((beda + 1))
             fi
           done
-          celey=$(find "$(brew --prefix)/share/flang" -mindepth 1 -maxdepth 1 -type d | wc -l)
+          # ПО ССЫЛКАМ ХОДИТЬ ОБЯЗАТЕЛЬНО (-L). Homebrew кладёт содержимое в Cellar,
+          # а в share/flang оставляет ССЫЛКИ. `find ... -type d` без -L их не видит и
+          # считает ноль — при том что цикл выше, спрашивающий каждую цель через
+          # `[ -d ... ]`, проходит: проверка каталога по ссылке ХОДИТ. Так и вышло
+          # 12 сентября 2026, когда шаг выполнился впервые: «легло каталогов 0, а
+          # печать обещает 10» при десяти зелёных целях и ни одной жалобы поимённо.
+          celey=$(find -L "$(brew --prefix)/share/flang" -mindepth 1 -maxdepth 1 -type d | wc -l)
           if [ "$celey" -ne "$n_celey" ]; then
             echo "::error::в share/flang легло каталогов целей: $celey, а печать обещает $n_celey"
             beda=$((beda + 1))

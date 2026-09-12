@@ -7,8 +7,15 @@ grid. The postcondition is written, it was checked on a finite set of values,
 and it is **not proved**.
 
 Below are seven ways of writing a claim. For each one a run tells us whether the
-kernel takes it. The numbers were measured on 23 August 2026 against the
-standard library; they are not estimates.
+kernel takes it. The numbers were measured on 23–27 August 2026 against the
+standard library with the binary of that time; they are not estimates, but they
+are not today's tree either. The bootstrap seed has since been reprinted (10–11
+September 2026, commit `0ce948bfd`), so everything below marked "arrives with
+the reprint" is now checkable on 0.7.17; of that, one place was
+re-checked (monotonicity of addition over `неотрицательное`: two claims, two
+proved, "by the declared argument types"), the rest was not. The Russian page
+carries three more forms and the measurements of 26–27 August that this
+translation does not.
 
 ## Read the verdict first
 
@@ -357,8 +364,8 @@ removed. Measured on another binary, without reprinting the seed:
 
 | file | before | after |
 |---|---|---|
-| `examples/driver/msi/msi.flang` | proven 86, declared 5 | proven 90 (2 by induction), declared 4 |
-| `examples/allocator/allocator.flang` | proven 79 (1 by induction), declared 3 | proven 82 (3 by induction), declared 1 |
+| `docs/examples/driver/msi/msi.flang` | proven 86, declared 5 | proven 90 (2 by induction), declared 4 |
+| `docs/examples/allocator/allocator.flang` | proven 79 (1 by induction), declared 3 | proven 82 (3 by induction), declared 1 |
 
 Across both programs `declared, not proven` went from 8 to 5, and all three that
 moved are about folds. The iteration needs its **own** step claim, without a
@@ -514,7 +521,7 @@ the measurements above is that there the scrutinee was the ARGUMENT ITSELF, here
 it is the result of a call; which of the two differences decides is not known."
 **The scrutinee has nothing to do with it, and that was settled by a run on
 26 August 2026** with the same binary. The probe is
-`examples/proof-probes/variant-with-fields.flang`: one module, one sum with
+`docs/examples/proof-probes/variant-with-fields.flang`: one module, one sum with
 fields, one thought written twenty-three ways, exactly one thing changed per pair.
 
 | what changes in the wording | verdict |
@@ -735,8 +742,8 @@ Measured, not assumed — do not spend time on these forms until new rules appea
   replaced by the term `О`. It reads emptiness from two sources and only those —
   an empty list written out in the text, and the assumption `(длина Л) равен 0`;
   neither `не больше 0` nor `пусто Л` triggers it. **The rule did not make it
-  into the printed seed and will arrive with the next reprint**
-  (`sh scripts/raskrutka.sh`); until then the verdict is the old one. A probe of
+  into the printed seed on the day of writing; the seed has since been reprinted (`0ce948bfd`), not re-checked on 0.7.17**
+. A probe of
   two claims in exactly this shape, run 26 August 2026 on
   `/srv/flang-rabota/w-predely/bootstrap/flang`:
   `утверждений 2: доказано 0, сетка 0, объявлено, не доказано 2`.
@@ -770,7 +777,8 @@ Measured, not assumed — do not spend time on these forms until new rules appea
   | `элемент 1 в (отбор над [а, б])` | untouched | untouched |
   | `элемент (1 плюс 1) в [а, б]` | untouched | **`б`** |
 
-  **None of this is in the printed seed** — it arrives with the reprint. And one
+  **None of this was in the printed seed on the day of writing;** the seed has
+  since been reprinted (`0ce948bfd`), the probe was not re-run on 0.7.17. And one
   caveat that saves a day: an index given by name over a written-out list is not
   taken and will not be — the rewrite does not see assumptions, and its bounds
   are computed from two known numbers. In `flang/stdlib` there are sixteen places
@@ -798,9 +806,11 @@ Measured, not assumed — do not spend time on these forms until new rules appea
   больше конечного литерала», «не больше терма», **«меньше терма»**,
   **«больше терма»**, «равно», «содержит», «не убывает», «начинается с».
 
-  **The printed seed does not carry the rule yet** — it arrives with the next
-  reprint. Until then a strict inequality over a term is only provable as a
-  closed goal.
+  **On the day of writing the printed seed did not carry the rule.** The seed
+  has since been reprinted (`0ce948bfd`); the kernel's refusal in the 0.7.17
+  source already names ten goal kinds (`flang/self/proof-kernel.flang`, see
+  [Refused by the kernel](proof-refused.html)); whether strict inequalities over
+  a term land on this binary was not re-measured.
 
   Two wordings that suggest themselves and are FALSE — measured by a run, not
   guessed:
@@ -913,13 +923,12 @@ hundred and thirty claims eats a billion steps and dies with
 `FLANG_RECURSION_LIMIT` without printing a proof report at all. That is not the file
 being broken — it is the limit, and it is raised with `--предел-шагов`.
 
-A caveat measured on 23 August: the flag is in the sources
-(`flang/self/cli.flang`), but **it may be missing from the built program** — the
-printed seed lags behind the sources until someone runs `sh scripts/raskrutka.sh`.
-If `flang check` answers "непонятный ключ", your binary is older than this page,
-and the limit is baked into it as a number (`FL_MAX_STEPS` in
-`bootstrap/flang_runtime.h`). The recipe for building a binary with a raised
-ceiling is in the header of `scripts/raskrutka.sh`.
+The caveat of 23 August was: the flag is in the sources, but it may be missing
+from the built program. On 0.7.17 (11 September 2026) `flang check
+--help` names `--предел-шагов N` (in Latin `--step-limit`) and
+`--предел-глубины N`. If your `flang check` answers "непонятный ключ", the
+binary is older than this page, and the limit is baked into it as a number
+(`FL_MAX_STEPS` in `bootstrap/flang_runtime.h`, today 1 400 000 000 000).
 
 And bear in mind that every claim you add makes the run more expensive: the cost
 of checking grows faster than the number of claims. Our own compiler is the

@@ -2,10 +2,10 @@
 
 One demonstration in two halves, and both are written entirely in flang.
 
-- **The service** — `examples/web/shortener/`: the input is the bytes the host
+- **The service** — `docs/examples/web/shortener/`: the input is the bytes the host
   read from the connection, the output is the bytes the host will send back.
   Between them there is not one line written in anything but flang.
-- **The client** — `web/shortener/`: the form, the submit, the list of links and
+- **The client** — `docs/examples/web/shortener-client/`: the form, the submit, the list of links and
   the redirect counter, in a browser tab. Not a harness and not another counter
   demo: a real service answers it.
 
@@ -13,35 +13,43 @@ One demonstration in two halves, and both are written entirely in flang.
 
 ```sh
 export LC_ALL=C.UTF-8
-bootstrap/flang check examples/web/shortener/service.flang --proof
-bootstrap/flang test  examples/web/shortener/server.flang
-bootstrap/flang io    examples/web/shortener/plan.flang --in-dir
+bootstrap/flang check docs/examples/web/shortener/service.flang --proof
+bootstrap/flang test  docs/examples/web/shortener/server.flang
+bootstrap/flang io    docs/examples/web/shortener/plan.flang --in-dir
 ```
 
 The client in a tab:
 
 ```sh
-sh web/sobrat.sh
-bootstrap/flang io web/stand.flang --max-orders 1000000
-# open http://127.0.0.1:8908/web/shortener/index.html
+sh docs/examples/web/build.sh
+bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000
+# open http://127.0.0.1:8908/docs/examples/web/shortener-client/index.html
 ```
 
 No Node, no npm, no `python3 -m http.server`: the binary compiler emits the
-module and a harness written in flang (`web/stand.flang`) serves the page.
+module and a harness written in flang (`docs/examples/web/stand.flang`) serves the page.
 
 ## The service
 
 ```
-store.flang                    155   storage: codes, addresses, redirect counter
-service.flang                  580   outcomes, theorems, routing, parsing and printing
-server.flang                   229   processes, supervision, three runs
-plan.flang                     133   the same handler over file I/O
-handler-without-budget.flang    53   EVIDENCE: does not compile, and that is the point
+store.flang                    128   storage: codes, addresses, redirect counter
+service.flang                  672   outcomes, theorems, routing, parsing and printing
+server.flang                   136   processes, supervision, three runs
+server-network.flang            28   the same processes over the network
+plan.flang                      74   the same handler over file I/O
+plan-network.flang             122   the same handler over a socket
+plan-durable.flang             272   the same handler with a write-ahead log
+handler-without-budget.flang    36   EVIDENCE: does not compile, and that is the point
                               ─────
-                              1 150   lines, all of them flang
+                              1 468   lines, all of them flang
 ```
 
-It rests on `flang/stdlib/http.flang` (1358 lines, 58 total functions).
+Line counts by `wc -l` on 11 September 2026 at commit 2c40752d0; comments were
+stripped from the examples on 6 September (commit 12080084), so the files are
+shorter than on the day the page was written.
+
+It rests on `flang/stdlib/http.flang` (1 361 lines, 64 total functions —
+`wc -l`, `grep -c '^тотальная функция'`, same commit).
 
 ### What it does
 
@@ -59,34 +67,34 @@ taken, 413 request body longer than 2048, 422 address is neither http nor https.
 
 ### What is proved and what is merely run
 
-`check --proof` on `service.flang`: **83 functions, 83 total, 0 ordinary, 0
-unaccounted. 7 claims: 5 proved, 2 by grid, 0 taken on faith, 0 rejected, 0
-axioms.**
+`bootstrap/flang check docs/examples/web/shortener/service.flang --proof`, run on
+11 September 2026 at commit 2c40752d0 (binary 0.7.17): **24 functions, 24 total,
+0 ordinary. 8 claims: 5 proved (4 of them by induction), 3 by grid, 0 declared
+and unproved, 0 rejected; 0 laws on faith. Exit code 0.**
 
 Proved (a statement about ALL inputs):
 
-1. `код ответа из объявленного набора` — by induction over "Outcome", base 10
-   cases;
-2. `пояснение кода непусто` — the same, 10 cases;
-3. `успех исхода и успех кода — одно и то же` — the same, 10 cases;
-4. `ссылок не бывает меньше нуля` — by reducing the goal against the body;
-5. `глубина неотрицательна` — by reduction.
+1. `код ответа из объявленного набора` («Код исхода»);
+2. `пояснение кода непусто` («Код исхода»);
+3. `успех исхода и успех кода — одно и то же` («Исход успешен»);
+4. `октетов от одного до четырёх` («Октетов в знаке»);
+5. `печать ответа начинается версией, кодом и пояснением` («Напечатать ответ
+   службы»).
 
 Checked by grid (NOT proved, and it is written here rather than hidden):
 
-6. `урезанное не длиннее предела` — grid of 3;
-7. `тело ответа не длиннее заявленного предела` — grid of 1.
+6. `урезанное не длиннее предела` («Урезать»);
+7. `тело ответа не длиннее заявленного предела` («Тело решения»);
+8. `в печати ответа длина тела названа в октетах` («Напечатать ответ службы»).
 
-Claims 6 and 7 run into `подстрока`: closing them would mean being able to prove
-things about a substring, and the kernel has no such rule. The label is honest —
-the word "proved" stands only where the statement covers all inputs.
+Claims 6–8 run into `подстрока` and `содержит`: closing them would mean being
+able to prove things about a substring and about containment, and the kernel has
+no such rules. The label is honest — the word "proved" stands only where the
+statement covers all inputs.
 
-**The importing file's ledger does not carry the three inductions**, and that is
-not a loss: `flang/self/link.flang` deliberately does not merge theorems of imported
-modules — a proof is closed where the theorem is written, and re-checking someone
-else's work in every importer would mean doing the same work as many times as
-there are imports. That is why in the ledger of `server.flang` the same three
-claims stand as "by grid".
+The ledger of `server.flang` in the same run: 7 functions (5 total, 2 ordinary),
+0 claims — theorems of an imported module are not carried into the importer's
+ledger; the proof is closed where the theorem is written.
 
 ### What the proof itself found
 
@@ -105,12 +113,16 @@ time. Hence the division the compiler considers right: **totality removes
 
 ### What it can do today and what it cannot
 
-It can (checked by the `plan.flang` run, sixteen requests): all ten outcomes,
+It can (the sixteen requests are `plan-network.flang`; `plan.flang` today runs
+one request over files: run of 11 September 2026 — two orders, answer 201, exit
+code 0): all ten outcomes,
 including four malicious inputs — a truncated request (silence, not a refusal),
 two body lengths (400), a megabyte header (431), a hundred and one headers (431),
 a megabyte body (413).
 
-**It works OVER THE NETWORK** — the `plan-network.flang` run, the same sixteen
+**It works OVER THE NETWORK** — the `plan-network.flang` run (captured on the day
+the page was written, 24 August 2026; not re-run today — it needs a live socket),
+the same sixteen
 requests but through a real socket on `127.0.0.1:39281`, one connection per
 request:
 
@@ -144,8 +156,8 @@ What it cannot do, stated with numbers:
 | what is missing | price |
 |---|---|
 | keep-alive: an accepted connection lives for one exchange | 1 order "close connection" + a branch in the plan; today `«Ответить в соединение»` writes the answer and closes the socket |
-| the PROCESS server (`server.flang`) over the network | 229 lines here and all of the scheduler of the JavaScript host: it is synchronous, and `«Принять соединение»` has to wait. The same barrier as `«Запросить»`, and it is named in `nodeHostSync` |
-| `Content-Length` in octets | 1 function "how many bytes in a UTF-8 string": `длина` counts characters, the specification counts octets, and on Cyrillic that is twice as many |
+| the PROCESS server (`server.flang`) over the network | 136 lines here and all of the scheduler of the JavaScript host: it is synchronous, and `«Принять соединение»` has to wait. The same barrier as `«Запросить»`, and it is named in `nodeHostSync` |
+| `Content-Length` in octets | closed for the RESPONSE: `service.flang` prints the body length through «Длина тела в октетах» and «Октетов в знаке» (postcondition «в печати ответа длина тела названа в октетах», by grid). Whether the service counts the INCOMING body length in octets is not checked here |
 | resuming the parse where it stopped | 75 reads instead of 16 over sixteen connections: "serve" parses what has accumulated FROM THE START, and two megabyte inputs account for nearly all the extra work |
 
 ### What the service lacks to be put into production
@@ -157,9 +169,9 @@ entirely" means it is the language's job and nobody has done it.
 
 | what | as it stands | price |
 |---|---|---|
-| **persistence** | **PRESENT** — `plan-durable.flang`: a write-ahead log, recovery at startup | 218 lines of plan |
+| **persistence** | **PRESENT** — `plan-durable.flang`: a write-ahead log, recovery at startup | 272 lines of plan |
 | **shutdown** | **beyond the host's border** — the plan ends when the host closes the port (`хозяин.закрыть()`), and that is the only legal ending | 0 |
-| **fault tolerance** | **half of it is there**: supervision over processes is in `server.flang` (7 mentions), but I/O plans have no supervision; the plan handles a host failure itself, with branches | 1 branch per order |
+| **fault tolerance** | **half of it is there**: supervision over processes is in `server.flang` (3 mentions of the word «надзор»), but I/O plans have no supervision; the plan handles a host failure itself, with branches | 1 branch per order |
 | **concurrent access** | **missing entirely, and it runs into the host**: `runPlan` is synchronous, an accepted connection lives for one exchange, the second client waits for the first | scheduler + `nodeHostSync` |
 | **observability** | **missing entirely**: no `/metrics`, no event log; the connection count exists only in the plan's result, and a live plan cannot be asked | 1 path + 2 state fields |
 | **configuration** | **missing entirely**: the port (`39283`) and the log name (`"служба.wal"`) are named in the program as a number and a string; the plan takes no arguments and the program does not see the environment | plan arguments or 1 order |
@@ -171,7 +183,7 @@ through files, the second through a socket). The service did not change by a
 single character; the plan did.
 
 ```sh
-bootstrap/flang io examples/web/shortener/plan-durable.flang --in-dir
+bootstrap/flang io docs/examples/web/shortener/plan-durable.flang --in-dir
 ```
 
 The harness that drove the three runs below, and the eleven checks beside it,
@@ -250,19 +262,19 @@ browser and the service, listed below.
 
 | lines | what | in what |
 |---:|---|---|
-| **488** | `client.flang` — the whole application | flang |
-| 106 | `index.html` — markup and 4 lines of startup | HTML |
+| **531** | `client.flang` — the whole application | flang |
+| 100 | `index.html` — markup and 4 lines of startup | HTML |
 | 342 | the run without a browser, removed with the JavaScript implementation | JavaScript |
 
-Of the 488 flang lines, **186** are examples (`пример`, `дано`, `ожидается`):
-38 % of the file are checks lying right next to what they check. **32** functions,
+Of the 531 flang lines, **191** are examples (`пример`, `дано`, `ожидается`):
+36 % of the file are checks lying right next to what they check. **32** functions,
 **32 of 32** total, **51** examples, **0** failed, **0 places** with runtime
 guards in the emitted code.
 
 Application logic in JavaScript — **zero lines**: not one decision about links,
 codes, redirects or what to show is taken there.
 
-**488 lines of `.flang` against 342 of `.mjs`, and that is only the run without a
+**531 lines of `.flang` against the 342 of `.mjs` there were, and that is only the run without a
 browser.** The harness and the in-browser run (391 lines between them) were
 deleted together with the second implementation they rested on.
 
@@ -277,7 +289,7 @@ a text. For it to carry a markup tree, the dictionary would need a fourth sum �
 recursive named type inside a built-in sum — whereas the fields of built-in sums
 are flat today (`string`, `number`, `any`). The dictionary exists in two copies at
 once (`flang/self/io.flang`) and is compared byte for byte, so
-the edit means work in both implementations and in eight emit targets.
+the edit means work in both implementations and in {{цели.поАнглийски}} emit targets.
 
 **Second: a second answer to the same question diverges from the first silently.**
 The browser host writes `textContent`, not `innerHTML`, and that is written not
@@ -327,7 +339,11 @@ without a network, because there is nothing to run, it is a computation.
 обещание несёт: композиция 32, структура 0, точный шаг 0, постоянный шаг 0, объявленная мера 0
 сторожей в рантайме: 0 мест
 законов на сетке: 0; на веру: 0
+утверждений 43: доказано 43, сетка 0, объявлено, не доказано 0
 ```
+
+(Run of `check --proof` on 11 September 2026 at commit 2c40752d0; the client has
+had no grid left since commit d227446e.)
 
 All 32 are "proved by composition": there is no recursion in any of them, the
 promise is assembled from the promises of those they call. Not one required a
@@ -385,7 +401,7 @@ there is no file in the tree, so there is nothing to go stale. By hand the same 
 done like this:
 
 ```
-bootstrap/flang emit web/shortener/client.flang \
+bootstrap/flang emit docs/examples/web/shortener-client/client.flang \
   --target js --no-cli --out <directory>
 ```
 
@@ -403,10 +419,11 @@ a service written before the language had a browser.
 3. **Cyrillic paths are needed as raw bytes, and the browser percent-encodes
    them.** `GET /ссылки` raw gives 200; `GET /%D1%81%D1%81...` gives **404**. The
    service has **3 Cyrillic paths out of 3**;
-4. **`Content-Length` is counted in CHARACTERS, not bytes.** The body `адрес=…`
+4. **`Content-Length` was counted in CHARACTERS, not bytes.** The body `адрес=…`
    begins with six Cyrillic characters — that is 6 characters and **11 bytes**.
-   The browser will set the length in bytes, the service will consider the request
-   incomplete and wait for more;
+   For the response this is closed: the body length is printed in octets
+   («Длина тела в октетах» in `service.flang`). Whether the service counts the
+   incoming body length in octets is not checked here;
 5. **one connection, one exchange**, and `Connection: close` is not sent.
 
 Plus a sixth, found by this very work and costing one failed redirect: the service
@@ -437,9 +454,10 @@ alongside:
 * **the silence** is fixed separately from the emission: a target must either emit
   the plan or refuse, naming the plan — there is no third outcome. That rule is
   written in `docs/ct/spec.md`, and as of 22 August 2026 the binary holds it:
-  `emit --target js` emits the declaration and answers 0, the other seven targets
-  refuse with `FLANG_PLAN_UNSUPPORTED` and code 1 without writing a file.
-  `scripts/plan-across-targets.flang` checks this.
+  `emit --target js` emits the declaration and answers 0, the other nine targets
+  refuse with `FLANG_PLAN_UNSUPPORTED` and code 1 without writing a file
+  (re-checked on 11 September 2026 for `python` and `go`).
+  `scripts/targets/plan-across-targets.flang` checks this.
 
 The host moved to `flang/src/emit/js/flang_host_browser.js` with zero imports;
 the browser host of the JavaScript implementation became a transitional line that substitutes the
@@ -463,8 +481,8 @@ those 95.
 the inverse of `код символа`, on all four surfaces of the language. Decoding in
 `http.flang` now reaches a character for **1 112 064 scalar values out of
 1 112 064** (halves of surrogate pairs are rejected with a refusal rather than
-combined: in four emit targets out of eight a string is UTF-8, and such a half is
-not written there at all).
+combined: in the emit targets where a string is stored as UTF-8 — C, Go, Rust — such a
+half is not written at all).
 
 **How the closure is confirmed.** The probe of the service's routes runs every
 route in two forms, as a raw path and as a browser-encoded one: it was **16 out of

@@ -122,7 +122,7 @@
 `flang/stdlib/numbers.flang` 5, `flang/proof/чекер/пробы/семьи/вывод/vyvod.flang` 4,
 `flang/proof/map/abilities.flang` 4, `flang/proof/map/refusal-boundaries.flang` 2,
 и по одной в `flang/proof/map/boundaries.flang`,
-`flang/proof/examples/corpus-natural-ceiling.flang`, `examples/measure/natural.flang`,
+`flang/proof/examples/corpus-natural-ceiling.flang`, `docs/examples/measure/natural.flang`,
 `docs/zamer-teorkat/class-string-to-string.flang`, `docs/examples/package/discount.flang`.
 `flang/proof/SPEC.md` называет его **25 раз**.
 

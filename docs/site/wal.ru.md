@@ -1,20 +1,20 @@
 # Журнал упреждающей записи
 
-`examples/wal/` — две программы на flang: разбор, печать и восстановление
+`docs/examples/wal/` — две программы на flang: разбор, печать и восстановление
 журнала упреждающей записи (write-ahead log) после обрыва, и план, который
 дописывает в журнал одну запись через поручения ввода-вывода. Обе целиком на
 flang; на диск ничего не пишут — пишет хозяин, исполняющий поручения плана.
 
 ## Что лежит в каталоге
 
-Файлов `.flang` два: <!-- СНЯТО 2026-09-08 файлов examples/wal/*.flang = 2 -->
+Файлов `.flang` два: <!-- СНЯТО 2026-09-08 файлов docs/examples/wal/*.flang = 2 -->
 
 | файл | что это | строк |
 |---|---|---:|
-| `examples/wal/write-ahead-log.flang` | модуль «Write ahead log»: формат записи, разбор журнала по одному знаку, печать, восстановление до последней целой записи, следующий номер | 579 <!-- СНЯТО 2026-09-08 строк examples/wal/write-ahead-log.flang = 579 --> |
-| `examples/wal/append-plan.flang` | модуль «Append plan»: план «Дописать в журнал» — прочитать файл, дописать запись, подтвердить номером. Использует первый модуль | 95 <!-- СНЯТО 2026-09-08 строк examples/wal/append-plan.flang = 95 --> |
+| `docs/examples/wal/write-ahead-log.flang` | модуль «Write ahead log»: формат записи, разбор журнала по одному знаку, печать, восстановление до последней целой записи, следующий номер | 579 <!-- СНЯТО 2026-09-08 строк docs/examples/wal/write-ahead-log.flang = 579 --> |
+| `docs/examples/wal/append-plan.flang` | модуль «Append plan»: план «Дописать в журнал» — прочитать файл, дописать запись, подтвердить номером. Использует первый модуль | 95 <!-- СНЯТО 2026-09-08 строк docs/examples/wal/append-plan.flang = 95 --> |
 
-Примеров в обоих файлах вместе 110 <!-- СНЯТО 2026-09-08 примеров-в examples/wal/*.flang = 110 -->;
+Примеров в обоих файлах вместе 110 <!-- СНЯТО 2026-09-08 примеров-в docs/examples/wal/*.flang = 110 -->;
 они объявлены внутри функций и прогоняются командой `bootstrap/flang test`.
 
 ## Формат записи
@@ -45,10 +45,10 @@ flang; на диск ничего не пишут — пишет хозяин, �
 ## Как запустить
 
 ```
-bootstrap/flang check examples/wal/write-ahead-log.flang --proof
-bootstrap/flang check examples/wal/append-plan.flang --proof
-bootstrap/flang test  examples/wal/write-ahead-log.flang
-bootstrap/flang test  examples/wal/append-plan.flang
+bootstrap/flang check docs/examples/wal/write-ahead-log.flang --proof
+bootstrap/flang check docs/examples/wal/append-plan.flang --proof
+bootstrap/flang test  docs/examples/wal/write-ahead-log.flang
+bootstrap/flang test  docs/examples/wal/append-plan.flang
 ```
 
 `check` печатает первой строкой число функций и число функций с доказанным
@@ -61,7 +61,7 @@ bootstrap/flang test  examples/wal/append-plan.flang
 возврата 1). Чтобы не писать в дерево, скопируйте оба файла в отдельный каталог:
 
 ```
-mkdir -p /tmp/wal && cp examples/wal/*.flang /tmp/wal/ && : > /tmp/wal/журнал.wal
+mkdir -p /tmp/wal && cp docs/examples/wal/*.flang /tmp/wal/ && : > /tmp/wal/журнал.wal
 bootstrap/flang io /tmp/wal/append-plan.flang
 ```
 
@@ -89,6 +89,12 @@ bootstrap/flang io /tmp/wal/append-plan.flang
 самой строкой (печать равна началу входа); правила такого вида у ядра нет.
 Что ядро берёт, а что нет, названо на странице [какие обещания ядро
 берёт](kak-dokazat.html).
+
+Кроме этих четырёх на сетке стоят ещё три мелких: «цифра не больше девяти»
+(«Цифра числом»), «печать не короче шести знаков» («Напечатать запись») и
+«разрез не теряет и не добавляет ни знака» («Разрез сходится») — прогон
+`check --proof` 11 сентября 2026 на коммите 2c40752d0: утверждений 17, доказано
+10, сетка 7.
 
 Что ядро доказало обо всех входах:
 

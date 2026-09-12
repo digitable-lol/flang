@@ -64,11 +64,11 @@ TypeScript не сделана. Ближайшее, что есть, — цел�
 * строка в `EMIT_TARGET_TABLE` (`flang/src/emit/c/flang_repl.c:7313`, при
   `EMIT_TARGET_COUNT` 8) **и перепечатка точки раскрутки —
   `bootstrap/compiler_flang.c`, 21 374 208 байт**;
-* зашитые списки восьми целей у сторожей: `scripts/occupied-names-guard.flang`
+* зашитые списки восьми целей у сторожей: `scripts/guards/occupied-names-guard.flang`
   (с постусловием «целей печати восемь … равен 8»),
-  `scripts/emit-promises-guard.flang`, `scripts/bad-octet-guard.sh`
-  (`VSE="c go rust python java csharp elixir js"`), `scripts/target-collisions.sh`,
-  `scripts/plan-across-targets.flang`, `scripts/emit-and-examples.flang`;
+  `scripts/guards/emit-promises-guard.flang`, `scripts/guards/bad-octet-guard.sh`
+  (`VSE="c go rust python java csharp elixir js"`), `scripts/targets/target-collisions.sh`,
+  `scripts/targets/plan-across-targets.flang`, `scripts/targets/emit-and-examples.flang`;
 * `packaging/flang.1:43`, `docs/site/numbers.json` (8 числовых и словесных форм,
   сверяются `./ярлык числа:проверка`), глава курса `docs/course/09-eight-targets.md`;
 * обещания: 114…402 `обеспечивает` на цель — и это **отдельная работа поверх

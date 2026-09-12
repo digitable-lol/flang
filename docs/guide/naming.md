@@ -167,7 +167,8 @@ entry that outlived its reason lies exactly as much as a missing one; the «Об
 
 ### What the guard does not look at
 
-`КАТАЛОГИ` lists four directories, and the tree holds **783** `.flang` files. A directory left off the
+`КАТАЛОГИ` lists four directories, and the tree holds **783** `.flang` files (measured 31 August 2026; on
+11 September `find . -name '*.flang' -not -path './bootstrap/*' | wc -l` gives 1389, coverage not re-measured). A directory left off the
 list does not go red — it simply is not checked, and the guard stays green precisely because it
 stopped looking. Same class as the note
 [«Переименование файла не краснеет, а тихо выключает проверку»](../zettel/renaming-a-file-silently-disables-the-guard.md).
@@ -177,9 +178,9 @@ are not an oversight:
 
 | Outside coverage | Count | Why |
 |---|---|---|
-| benchmark output (`benchmarks/model-authoring/out/`, `docs/benchmark*`) | 500 | it is the output of a run, not a source |
+| benchmark output (`docs/benchmark*`) | 500 | it is the output of a run, not a source |
 | test fixtures (`flang/test/fixtures/`) | 14 | their names are deliberately malformed; that is what makes them fixtures |
-| hand-written code outside the four directories (`flang/proof/examples`, `flang/conc/examples`, `examples/library-api`, `fspec`, `web/wasm`, `flang/проверки`) | **70** | worth covering, but their price has not been measured |
+| hand-written code outside the four directories (`flang/proof/examples`, `flang/conc/examples`, `docs/examples/library-api`, `fspec`, `docs/examples/web/wasm`, `flang/проверки`) | **70** | worth covering, but their price has not been measured |
 
 Those last 66 are a named coverage debt. Widening the coverage without re-measuring the price would
 mean landing a rule the corpus was never checked against. If the numbers move, the test goes red and
@@ -195,7 +196,7 @@ the change.
 - **One concept, one word across the tree.** If a list item is `элемент` in one module and `значение`
   in the next, searching the tree stops meaning anything.
 - **An example name is a sentence about what is being checked**, not "Case 3". It *is* the
-  documentation: examples are printed into the tests of all eight targets.
+  documentation: examples are printed into the tests of all ten targets.
 - **Do not transliterate.** `spisok` instead of `список` is the worse of both: neither a Russian word
   nor an English one. This is deliberately not a rule. The check "a Latin word that is not the
   transliteration of a Russian one" was written and measured, and on healthy code it produced **298
@@ -213,18 +214,20 @@ the change.
   Transliteration appears in names in exactly one place, and it is **not carelessness**: 31 functions
   in `flang/self/emit-js.flang` are named «Текст b_dlina JS», «Текст b_soedinit JS», «Текст b_kod_simvola JS»
   — after the identifier each one prints into JavaScript. That identifier is transliterated by
-  the printer itself (`flang/self/emit-js.flang` and the seven other printers), because
+  the printer itself (`flang/self/emit-js.flang` and the nine other printers), because
   JavaScript will not take Cyrillic in helper names, and the printing
   function's name repeats what is printed, word for word. Same argument as `сkind` under Р4 — except
   here it creates no lookalikes, and so it stands.
 - **File names carry no transliteration at all.** A Latin extension means an English-worded name:
   `lists.flang`, `higher-order.flang`, `name-guard.mjs`. This one is not guarded by a run yet, and
-  the remainder is measured: **11 names** in the tree are still transliterated —
+  the remainder is measured: **11 names** in the tree are still transliterated (measured 31 August
+  2026; the six tests in the table went with the JavaScript implementation on 20 August, so on
+  11 September it is 5) —
 
   | Name | What it is |
   |---|---|
-  | `flang/self/svoystva.flang`, `benchmarks/speed/memory.flang` | hand-written sources |
-  | `flang/test/zakon-*.test.mjs` (six of them) | hand-written tests |
+  | `flang/self/svoystva.flang`, `docs/benchmarks/speed/memory.flang` | hand-written sources |
+  | `flang/test/zakon-*.test.mjs` (six of them) | hand-written tests — no longer in the tree (removed 20 August 2026, `fe8e8a37`) |
   | `docs/HANDOVER.md`, `docs/ct/zakony.md`, `zakony-kak-ukazatel.md` | prose |
 
   `docs/rukovodstvo/` was the fourteenth and became `docs/guide/` on 18 August, together with 70
@@ -251,11 +254,13 @@ the change.
 ./ярлык имена:проверка                         # the guard
 node flang/scripts/name-guard.mjs --list       # the debt per file, by name
 node flang/scripts/name-guard.mjs --debt       # rewrite the debt after cleaning
-node --test flang/test/name-guard.test.mjs     # the guard's own check
+bootstrap/flang test scripts/guards/module-name-guard.flang   # the 34 examples of the R7 check (11 September 2026: 34 of 34)
 ```
 
-The guard is checked by forty-one assertions: eleven fakes, one per rule; a fake supplied as a whole
+The R1–R6 guard used to be checked by forty-one assertions (`flang/test/name-guard.test.mjs`) — that file
+went with the JavaScript implementation on 20 August 2026, and `name-guard.mjs` has no check of its own today.
+It was: eleven fakes, one per rule; a fake supplied as a whole
 file; a healthy file supplied the same way; twenty healthy names across all four surfaces; and the
 count of what failed to parse. It was also checked against the real tree: a fake dropped into
-`examples/` exits 1 and names three names; a healthy file in the same place exits 0. A guard
+`docs/examples/` exits 1 and names three names; a healthy file in the same place exits 0. A guard
 that cannot go red looks exactly like a guard that has nothing to report.

@@ -7,6 +7,7 @@
 команда: вторая
 карта: Чего в языке нет вовсе
 рядом: 0049, 6858
+нужность: 2 — git ls-files docs/site/*.mjs flang/conc/bench/*.mjs = 13 (в т.ч. build/surfaces-run/site-numbers/node-death-targets); pages.yml зовёт node 6 раз; коммитов после заведения b36d87f27 нет
 ---
 
 # 4412. Сборка сайта и стенд узла — на flang

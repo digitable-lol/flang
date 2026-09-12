@@ -7,7 +7,7 @@ generated/
 coverage/
 tmp/
 # Каталог сборки релиза: там напечатанный C и архивы, всё это создаётся
-# scripts/release-in-c.flang и в истории не нужно.
+# scripts/release/release-in-c.flang и в истории не нужно.
 output/
 
 # Временные каталоги проверок: их заводит `flang io` под своим прогоном и
@@ -61,9 +61,9 @@ erl_crash.dump
 # в истории не нужен — источник лежит в docs/.
 docs/site/out/
 
-# Производная сборки web/wasm/build.sh, а не исходник: четверть мегабайта
-# двоичного файла, который печатается из web/wasm/descent.flang за секунду.
-web/wasm/demo/*.wasm
+# Производная сборки docs/examples/web/wasm/build.sh, а не исходник: четверть мегабайта
+# двоичного файла, который печатается из docs/examples/web/wasm/descent.flang за секунду.
+docs/examples/web/wasm/demo/*.wasm
 
 # Копии дерева, которые заводит себе оснастка агента под параллельную работу.
 # Каждая — полный git worktree; в дереве исходников им места нет.
@@ -75,31 +75,31 @@ web/wasm/demo/*.wasm
 # bootstrap/*.c.
 dvoichnyy/
 
-# Временные файлы счёта двадцати (benchmarks/proof-cost/count-20.flang): тот
+# Временные файлы счёта двадцати (docs/benchmarks/proof-cost/count-20.flang): тот
 # же файл замера без примеров и он же с телом-заглушкой. Пишутся при каждом
 # прогоне и переписываются поверх; убрать их за собой план не может — поручения
 # «Удалить файл» в словаре ввода-вывода нет. Имена с точки и без «.flang»
 # намеренно: так их не подберёт ни один обход корпуса.
-benchmarks/proof-cost/.proba-golyy
-benchmarks/proof-cost/.proba-zaglushka
+docs/benchmarks/proof-cost/.proba-golyy
+docs/benchmarks/proof-cost/.proba-zaglushka
 
 # Напечатанные браузерные модули: производная от .flang рядом со страницей.
-# Печатает их `sh web/sobrat.sh`; в истории им делать нечего — исходник это
-# `web/app/hailstone.flang` и `web/shortener/client.flang`.
-web/app/*.js
-web/shortener/*.js
-web/*.png
+# Печатает их `sh docs/examples/web/build.sh`; в истории им делать нечего — исходник это
+# `docs/examples/web/browser-app/hailstone.flang` и `docs/examples/web/shortener-client/client.flang`.
+docs/examples/web/browser-app/*.js
+docs/examples/web/shortener-client/*.js
+docs/examples/web/*.png
 
 # Копия двоичного, которую пишет пример «Двоичный файл туда и обратно»
-# (examples/io/binary-file-round-trip.flang). Продукт прогона, а не
+# (docs/examples/io/binary-file-round-trip.flang). Продукт прогона, а не
 # исходник: убрать её за собой план не может — поручения «Удалить файл» в
 # словаре ввода-вывода нет.
-examples/io/.kopiya-dvoichnogo
+docs/examples/io/.kopiya-dvoichnogo
 
 # Каталог замера скорости и памяти: восемь сборок одной программы плюс эталон
-# на C, всё создаётся benchmarks/speed/assemble.sh. Имя с точки, потому
+# на C, всё создаётся docs/benchmarks/speed/assemble.sh. Имя с точки, потому
 # что оно названо числом в memory.flang — у плана доводов нет.
-benchmarks/speed/.sborka
+docs/benchmarks/speed/.sborka
 
 # Личные списки долей агентов: у каждого свой, в стволе бессмысленны и
 # конфликтуют при каждом своде.

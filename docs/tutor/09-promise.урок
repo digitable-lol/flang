@@ -1,0 +1,87 @@
+=номер=
+9
+=имя-ru=
+Обещание о результате
+=имя-en=
+A promise about the result
+=текст-ru=
+Кроме типов, о результате можно пообещать что-то ещё. Обещание пишется словом
+«обеспечивает», у него есть имя и само высказывание:
+
+    обеспечивает «счёт неотрицателен» результат не меньше 0
+
+Слово «результат» означает то, что функция отдаёт. Обещание стоит после
+«возвращает» и перед примерами и телом.
+
+Обещание не украшение: компилятор пробует его доказать и говорит, чем оно
+держится. Спросить можно так:
+
+    flang check файл.flang --proof
+
+В ответе три разных слова, и путать их нельзя. «Доказано» — верно про все
+входы, какие бывают. «Сетка N» — прогнали по N значениям автора и нарушений не
+нашли; это не доказательство. «Объявлено, не доказано» — обещание высказано,
+доказательства при нём нет, и оно будет проверяться при работе программы.
+
+Помогает выбор типа. «Число» — это машинное число, про него почти ничего не
+известно. «Нат» — это отрезок от нуля до 2⁵³−1, обе границы известны, поэтому
+про «нат» доказывается то, чего про «число» доказать нечем. Длина списка
+берётся словом «длина».
+
+ЗАДАНИЕ. Впишите ⟨1⟩ — обещание для функции «Сколько» с именем «счёт
+неотрицателен»: результат не меньше 0. Урок засчитается, когда компилятор
+ответит, что доказано ровно одно утверждение.
+=текст-en=
+Besides types, you can promise something else about the result. A promise is
+written with "обеспечивает" (ensures); it has a name and the statement itself:
+
+    обеспечивает «счёт неотрицателен» результат не меньше 0
+
+The word "результат" means what the function gives back. The promise stands
+after "возвращает" and before the examples and the body.
+
+A promise is not decoration: the compiler tries to prove it and says what
+carries it. Ask like this:
+
+    flang check файл.flang --proof
+
+The answer uses three different words, and they must not be confused. "Доказано"
+(proved) — true for every input there is. "Сетка N" (grid of N) — run over N
+values chosen by the author with no violation found; that is not a proof.
+"Объявлено, не доказано" (stated, not proved) — the promise was made, there is
+no proof for it, and it will be checked while the program runs.
+
+The choice of type helps. "Число" is a machine number, and almost nothing is
+known about it. "Нат" is the range from zero to 2⁵³−1, both bounds are known,
+so things can be proved about "нат" that cannot be proved about "число". The
+length of a list is taken with the word "длина".
+
+YOUR TASK. Fill in ⟨1⟩ — a promise for «Сколько» (how many) named «счёт
+неотрицателен»: результат не меньше 0. The lesson counts as passed once the
+compiler answers that exactly one statement is proved.
+=шаблон=
+модуль «Урок»
+
+тотальная функция «Сколько»
+  принимает числа: список числа
+  возвращает нат
+  ___
+  длина числа
+=подсказки-ru=
+обещание: обеспечивает «счёт неотрицателен» …
+=подсказки-en=
+the promise: обеспечивает «счёт неотрицателен» …
+=впиши=
+обеспечивает «счёт неотрицателен» результат не меньше 0
+.
+=хвост=
+тотальная функция «Проверка урока»
+  возвращает нат
+  «Сколько» от [1, 2, 3]
+=ждём=
+3
+=примеров=
+0
+=отчёт=
+утверждений 1: доказано 1
+=печать=

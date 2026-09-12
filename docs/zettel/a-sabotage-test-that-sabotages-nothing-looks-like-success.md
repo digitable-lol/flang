@@ -59,4 +59,4 @@
 
 * `scripts/latin-collision-guard.mjs` — сторож, на котором это поймано; он
   читает таблицы из исходника и проверяет себя примерами исходника.
-* `scripts/identical-declarations.sh` — образец кода 3 «смотреть нечем».
+* `scripts/targets/identical-declarations.sh` — образец кода 3 «смотреть нечем».

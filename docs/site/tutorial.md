@@ -325,11 +325,21 @@ must guarantee; to the kernel it is the fact the result is derived from:
 
 ```
 постусловие «двойная норма неотрицательна» функции «Двойная норма» —
-доказано: терм принят ядром, 1 шаг — утверждение обо ВСЕХ входах
+доказано: терм принят ядром, 1 шаг, основания: предусловие функции «Двойная
+норма» — утверждение обо ВСЕХ входах
 ```
 
 **Check that the proof cannot be faked.** Remove the `требует` line — the claim
-becomes false (on −1 the result is −2) — and the kernel refuses:
+becomes false (on −1 the result is −2) — and the kernel refuses twice. First it
+names the falsehood outright, with a counterexample — the type `число` also holds
+"not a number", which is neither above nor below zero:
+
+```
+FLANG_BOUND_ON_NAN в файле ch6.flang, строка 9, столбец 3: постусловие «двойная
+норма неотрицательна» функции «Двойная норма» ЛОЖНО, и контрпример назван: …
+```
+
+Then it refuses the theorem too, which has nothing to stand on:
 
 ```
 FLANG_PROOF_INDUCTION_STEP в файле ch6.flang, строка 15, столбец 3: шаг 1,
@@ -351,7 +361,8 @@ declared type, or by a precondition used as a fact.
 
 ## What the compiler says when you got it wrong
 
-Every message below was taken from a `flang check` run on a small program. A
+Every message below was taken from a `flang check` run on a small program
+(re-checked: run of 11 September 2026, binary 0.7.17, commit 2c40752d0). A
 diagnostic is a code, a file, a line, a column and a text; the exit code is 1.
 
 | code | when | what to do |

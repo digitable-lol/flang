@@ -16,8 +16,8 @@
 задача [3127](../../tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md) —
 поиск модулей выходит за пределы дерева;
 `docs/guide/surfaces.ru.md` — четыре поверхности записи.
-**Проверяется:** `sh scripts/flangrc-guard.sh` (код 0),
-`sh scripts/flangrc-guard.sh --подлог` (зелен на целом читателе, красен на
+**Проверяется:** `sh scripts/guards/flangrc-guard.sh` (код 0),
+`sh scripts/guards/flangrc-guard.sh --подлог` (зелен на целом читателе, красен на
 порченом), `bootstrap/flang check scripts/settings-file.flang --proof`.
 **Новые задачи:** [5413](../../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md),
 [8161](../../tasks/8161-messages-live-in-the-binary-so-a-new-language-costs-a-reprint.md),
@@ -142,8 +142,8 @@ $ bootstrap/flang check смесь.flang
 Якоря строгого круга — это фразы `"проверено — замечаний нет"`,
 `"постусловие «"`, `"доказано ПРИ УСЛОВИИ"`, `"объявлено, не доказано"`,
 `"утверждений "`, `"непонятный ключ"`, `"нарушено свойство «утверждение»"`.
-Живут они в `scripts/raskrutka.sh`, `scripts/new-binary-acceptance.sh`,
-`scripts/target-census.sh`, `scripts/seed-parses-sources-guard.sh`,
+Живут они в `scripts/raskrutka.sh`, `scripts/seed/new-binary-acceptance.sh`,
+`scripts/targets/target-census.sh`, `scripts/guards/seed-parses-sources-guard.sh`,
 `flang/scripts/proven-guard.flang`, `flang/scripts/word-guard.flang`,
 `flang/scripts/ledger-summary.flang`, `flang/scripts/emptiness-guard.flang` и ещё
 шести файлах.
@@ -349,7 +349,7 @@ zsh  -c 'FLANG_ЯЗЫК=ru'   → код 0
   напечатанном коде ноль;
 * `scripts/flangrc.sh` — сбор источников и ответ `ключ = значение`, режимы
   `--откуда` и `--места`;
-* `scripts/flangrc-guard.sh` — проверка обоих обещаний поиска, с пробой порчи;
+* `scripts/guards/flangrc-guard.sh` — проверка обоих обещаний поиска, с пробой порчи;
 * `.flangrc` в корне дерева — настройки самого проекта и живой пример;
 * `docs/guide/settings.ru.md` — страница для человека.
 

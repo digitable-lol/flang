@@ -98,13 +98,13 @@ Two decisions in the key are named together with their price:
 
 ## Instruments
 
-Everything lies in `benchmarks/кеш-приговоров/`:
+Everything lies in `docs/benchmarks/verdict-cache/`:
 
 ```sh
-sh benchmarks/кеш-приговоров/пробы.sh <binary> [<second binary>]
-sh benchmarks/кеш-приговоров/второе-ядро.sh [<where to build>]
-sh benchmarks/кеш-приговоров/три-печати.sh [<working directory>]
-python3 benchmarks/кеш-приговоров/наложить.py [<tree root>]
+sh docs/benchmarks/verdict-cache/пробы.sh <binary> [<second binary>]
+sh docs/benchmarks/verdict-cache/второе-ядро.sh [<where to build>]
+sh docs/benchmarks/verdict-cache/три-печати.sh [<working directory>]
+python3 docs/benchmarks/verdict-cache/наложить.py [<tree root>]
 ```
 
 - `пробы.sh` asks four questions and answers each with a number: does the
@@ -129,7 +129,7 @@ python3 benchmarks/кеш-приговоров/наложить.py [<tree root>]
 
 ## The neighbouring directory
 
-`benchmarks/кеш-доказанного/` is earlier work on the same phenomenon: the
+`benchmarks/кеш-доказанного/` (removed on 11 September 2026; last state: `git show b5fcb2ae4:benchmarks/кеш-доказанного/`) was earlier work on the same phenomenon: the
 instrument `прибор.c` computes the key and gives the probes something to refute
 it with, but stores nothing; its key is narrower (bodies of called functions
 are taken as the closure of the call graph). The cache that reads and writes a

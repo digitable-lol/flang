@@ -30,7 +30,7 @@
 # своей машине те же три команды гоняют так (они и есть всё тело шага):
 #
 #   make -C bootstrap -j4
-#   LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-in-c.flang --timeout 1800000
+#   LC_ALL=C.UTF-8 bootstrap/flang io scripts/release/release-in-c.flang --timeout 1800000
 #   tar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
 #       --mtime=@0 --mode=u=rwX,go=rX -C output/release-c -cf - $files | gzip -9n
 #
@@ -91,11 +91,11 @@ runs:
         # Скрипт не только печатает компилятор в C99, но и СОБИРАЕТ
         # напечатанное в окружении без Node в PATH и запускает собранное.
         # Битый архив дальше этого шага не уедет.
-        LC_ALL=C.UTF-8 bootstrap/flang io scripts/release-in-c.flang --timeout 1800000
+        LC_ALL=C.UTF-8 bootstrap/flang io scripts/release/release-in-c.flang --timeout 1800000
 
         version="$(sed -n 's/^  "version": "\([^"]*\)",$/\1/p' package.json)"
         if [ -z "$version" ]; then
-          echo "::error::версию не вычитать из package.json — вид файла изменился, а его печатает scripts/emit-package.flang" >&2
+          echo "::error::версию не вычитать из package.json — вид файла изменился, а его печатает scripts/release/emit-package.flang" >&2
           exit 1
         fi
 

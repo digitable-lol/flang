@@ -8,7 +8,7 @@
 [`flang_repl.c`](../../flang/src/emit/c/flang_repl.c) и
 [`flang_conc.c`](../../flang/src/emit/c/flang_conc.c);
 [ADR-0002](0002-outbound-connection.md), [ADR-0008](0008-layer-boundary.md);
-прогон службы `examples/web/shortener/plan-network.flang`.
+прогон службы `docs/examples/web/shortener/plan-network.flang`.
 
 ---
 
@@ -26,7 +26,7 @@
 
 ```
 $ PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- \
-    flang io examples/web/shortener/plan-network.flang --plan "Обслужить по сети" &
+    flang io docs/examples/web/shortener/plan-network.flang --plan "Обслужить по сети" &
 $ printf 'GET /здоровье HTTP/1.1\r\nHost: x\r\n\r\n' | nc 127.0.0.1 39281
 HTTP/1.1 200 OK
 Content-Type: text/plain; charset=utf-8
@@ -144,7 +144,7 @@ Content-Length: 5
 теория — ADR-0008 снял её прогоном:
 
 ```
-$ bootstrap/flang check examples/io/temp-directory.flang; echo $?
+$ bootstrap/flang check docs/examples/io/temp-directory.flang; echo $?
 FLANG_UNKNOWN_NAME … строка 89: неизвестный конструктор варианта «Завести временный каталог»
 … замечаний 14
 1
@@ -210,7 +210,7 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
 | `sha1.flang` | 546 |
 | **всего** | **6535** |
 
-и к ним примеры `examples/crypto/`: `x25519-vectors.flang` на официальных
+и к ним примеры `docs/examples/crypto/`: `x25519-vectors.flang` на официальных
 векторах RFC 7748, `aes-vectors.flang`, `certificate.flang`, `revocation.flang`,
 `ecdsa-signature.flang` и `tls-hello.flang` — разбор ПЕРВЫХ ДВУХ ЗАПИСЕЙ живого
 разговора TLS 1.3, снятых с провода двумя `openssl` в одном соединении.
@@ -245,7 +245,7 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
 Четыре прогона, все воспроизводимые:
 
 1. служба поднимается и отвечает —
-   `flang io examples/web/shortener/plan-network.flang --plan "Обслужить по сети"`,
+   `flang io docs/examples/web/shortener/plan-network.flang --plan "Обслужить по сети"`,
    затем `GET /здоровье` в порт 39281: `HTTP/1.1 200 OK`, тело `живой`;
 2. счёт словаря — поручений 20, откликов 17 по `flang/self/parser.flang`;
 3. полномочия принуждаются — тот же план с `--no-net` обязан дать
@@ -255,7 +255,7 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
 ## Что найдено попутно и сюда записано, потому что иначе потеряется
 
 Оба факта сняты прогоном, оба про **чужую** службу
-`examples/web/shortener/`, и оба здесь названы, а не починены.
+`docs/examples/web/shortener/`, и оба здесь названы, а не починены.
 
 **1. `Content-Length` считается знаками, а не октетами — и это видно клиенту.**
 Зазор назван в `plan-network.flang` словами; вот он числом. Ответ 404 несёт тело
@@ -283,4 +283,4 @@ GET /%D0%B7%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D1%8C%D0%B5    → HTTP/1.1 404 Not Fo
 «браузер прислал путь процентами — маршрут тот же», ожидающий `«Готово»` и тело
 `живой`. Живой путь и пример расходятся. Кириллический путь браузер кодирует
 всегда, значит **из браузера эта служба не работает**, а из `nc` работает.
-Разбор — за владельцем `examples/web/shortener/`; здесь это улика, а не правка.
+Разбор — за владельцем `docs/examples/web/shortener/`; здесь это улика, а не правка.

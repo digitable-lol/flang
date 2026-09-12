@@ -7,6 +7,7 @@
 команда: первая
 карта: Цена самосборки
 рядом: 1301, 1306, 1312
+нужность: 2 — .flang-storozh-* в .gitignore есть; переписи мест и сторожа неотслеживаемых времянок нет (grep 'ls-files --others' по scripts — 0); occupancy-check.flang:19 пишет proba-zanyatosti.flang в корень
 ---
 
 # 1315. Три случая за сутки, и все одной породы
@@ -19,7 +20,7 @@
 ## Случаи
 
 **1. `proba-stolknoveniy.flang`, 305 901 байт — ПОЧИНЕНО.**
-`scripts/target-collisions.sh:94` кладёт временный вход в
+`scripts/targets/target-collisions.sh:94` кладёт временный вход в
 `flang/self/bootstrap/` и убирает его `trap 'rm -rf "$TMP" "$ROOT/$PROBE"' EXIT`.
 Ячейка увидела, как файл появился в её клоне и через три минуты исчез, и он
 успел попасть в её коммит. Она правильно подняла тревогу вместо того, чтобы

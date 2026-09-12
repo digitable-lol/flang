@@ -2,7 +2,10 @@
 
 This page is about what the language does not have yet: what is being worked on,
 what is queued, and what has been ruled out. There are no dates here — no
-quarters, no months.
+quarters, no months. The order of the stages is taken from the tree's root
+`ROADMAP.md`, which the lead is rewriting into five stages; the decision behind
+each stage is recorded in `docs/adr/`, the tasks live in the tracker, and their
+numbers are given below.
 
 What the language already has is not read here:
 [Language reference](language.html), [Standard library reference](stdlib.html),
@@ -19,159 +22,102 @@ What the language already has is not read here:
 | Behaviour claims stated | {{утверждения.высказано}} |
 | Of them proved by the kernel — for all inputs | {{утверждения.доказано}} |
 
-The main limit of the language shows up right there, and it is also the main
-item of the plan: **termination is proved in bulk, behaviour is proved rarely**.
-The gap is widening rather than closing: claims are written faster than the
-kernel can prove them.
+The four numbers in the table were measured on 23 August 2026 (commit
+`252606e8`) by a compiler run over the whole corpus and have not been
+re-measured since; on the day of measurement the compiler was built from a seed
+that had fallen behind the sources. What was checked on the tree of
+11 September 2026 (0.7.17, commit `2c40752d0`):
 
-## In progress
+- the bootstrap seed was reprinted on 10–11 September (commit `0ce948bfd`);
+  `sh scripts/seed/chto-otstalo-ot-semeni.sh` names 3 files, 77 functions, still
+  behind;
+- `sh scripts/доказуемость.sh` answers **PROVABLE**: the independent checker
+  (`flang/proof/чекер/сверщик.c`) replayed 625 obligations of the compiler's own
+  proof out of 651 — 96.01 %; 401 forgeries rejected, 197 honest records
+  accepted;
+- there are ten emit targets: {{цели.список}}.
 
-**There will be no release until the seed is reprinted.** Of the whole list this
-item comes first, because it holds the others up. `bootstrap/` holds the compiler
-already printed to C99 and committed: one `make` turns it into a working binary,
-and nothing else is needed to build. The seed is required to match what today's
-sources print — and it does not:
+The main limit of the language shows in the table, and it is also the first
+stage of the plan: termination is proved in bulk, behaviour less often, and the
+proof covers only what stands at a function under the words `требует` and
+`обеспечивает`. Expressible today: inequalities over numbers, list lengths,
+ordering, one quantifier — "for all inputs of the function". Not expressible:
+"there exists", claims not attached to a function, state over time, effects,
+concurrency. Emitted code (C and the other targets) is not covered by the proof.
 
-```
-sh scripts/raskrutka.sh --bystro
-→ 45 discrepancies. The compiler was edited, the seed was not reprinted.   (exit 1)
-```
+## Five stages, and each holds the one after it
 
-While that holds, an edit to the compiler's sources does not reach the built
-program. A live example: emitting a process plan into C is written
-(`flang/self/emit-c.flang`), and the seed has not one line of it — `grep -c
-'flang_conc.c' bootstrap/compiler_flang.c` answers `0`, while the Elixir target
-is there. The reprint itself costs hours and hundreds of gigabytes of memory, and
-does not pass on the first try.
+**1. The set of obligations — up to 100 %.** Today the independent checker
+replays 625 obligations out of 651; the remaining 26 are taken on the kernel's
+word (16 premises and claims, 4 steps) or set aside as unreachable. Every open
+place is named in `docs/road-to-one-hundred-measured.md`, with the price of each.
+Task 6191 (the set up to the 95 % threshold) is done; the rest follows that map.
 
-**The kernel proves few ordinary functions.** The obstacle is not search speed
-but the strength of the rules themselves: there are three deciding rules, and
-they run out on the body shape of an ordinary function. How the kernel works —
-[Why and how](proofs.html).
+**2. A proved translation into C.** The printer (`flang/self/emit-c.flang`) is
+not proved today, and the emitted program is not covered by the proof: what is
+checked is what was written in flang, not what came out of `flang emit`. The
+decision — `docs/adr/0030-the-printer-proves-each-run-not-itself.md`: the
+printer proves each of its runs, not itself as a whole (how CompCert closes the
+gap below us is worked through there, §9). Tasks 1401 and 1402.
 
-**The compiler says a great deal about itself, and little about it is proved.**
-The compiler's own sources (`flang/self`, 57 files, 113,693 lines) carry 7214
-`обеспечивает` lines over 8664 function declarations (measured 29 August 2026).
-Writing a claim is not the same as proving it — only a minority of them is
-proved, and it runs into the same wall as the library. These files must be
-counted with `awk`, not `grep`: `link.flang` holds a single NUL byte inside a
-string literal, and one such byte is enough for `grep` to call the whole file
-binary and skip it silently — `grep -a` reads it.
+**3. Logic.** Of the owner's four requests one turned out to be a missing rule
+(subtraction under a precondition) and three to be other logics, for which the
+kernel has no mechanism: `docs/adr/0032-one-missing-rule-and-three-other-logics.md`.
+The same document has the price table and an honest section on what this does
+not give. Tasks 1403–1406.
 
-**An emitted program has no input boundary.** The installed `flang` does check
-arguments against declared types:
+**4. Quantifiers.** Today a claim has exactly one quantifier — "for all inputs of
+the function"; quantifiers over arbitrary types are a change to the kernel and
+the checking program, not an add-on:
+`docs/adr/0026-quantifiers-over-any-type-are-a-kernel-change.md` (accepted
+9 September 2026). Tasks 6202 and 6203.
 
-```
-flang run examples/measure/natural.flang --function «Факториал» --args '{"н":-3}'
-→ FLANG_TYPE: вызов функции «Факториал»: аргумент «н»: -3 вне неотрицательное      (exit 1)
-```
+**5. Traceability, response and refusals.** Certification is a process, not a
+property of the language:
+`docs/adr/0031-certification-is-a-process-not-a-property-of-the-language.md`.
+Of what it needs beyond the proof, traceability requirement → code → example →
+record exists as a guard since 11 September 2026
+(`scripts/guards/traceability-guard.flang`, task 1407): 409 postconditions, 322 with an
+example, 361 in a record, 244 proved; gaps 62 and 68, under a ratchet. Response
+bounds exist only as an analysis and are not printed into the proof record
+(`docs/adr/0033-termination-is-not-a-bound-on-steps.md`, tasks 1408 and 1409);
+behaviour on failure is described, not proved — an I/O failure arrives as data,
+hardware failure the language does not see
+(`docs/adr/0034-hardware-failure-is-described-not-proved.md`, task 1410). Space,
+medicine and aviation are not promised (ADR-0031, §5.4).
 
-A program emitted by `flang emit` does not: the caller answers for its input,
-and `flang emit` says so as it emits. It emits into all eight targets from the
-same binary — [how to embed flang](embedding.html).
+## What used to stand here
 
-**The English half of the site is incomplete.** The site's own pages are
-translated; the guide and the specifications are still Russian only.
-
-## Next, and each holds the one after it
-
-**1. There is no package manager.** The package and the lockfile themselves
-exist: `flang package` puts a library and everything it pulls into one file,
-`flang lock` records the dependencies themselves rather than references to them
-— [how it is done](packages.html). What is missing is everything above a
-package: a registry, search by name, version ranges, dependency resolution.
-Updating today means taking the new file and putting it where the old one was.
-
-**2. The library grew ahead of the package manager.** This page used to promise
-the opposite order — "while a library cannot be handed out by name and version,
-there is little point in growing it" — and the order came out otherwise. Today
-`flang/stdlib` holds **38 modules** and 1275 functions, 1271 of them with
-termination proved, and none of the gaps from the old list is left:
-
-- databases — **two** drivers: PostgreSQL over the wire (protocol 3.0, login
-  through `scram-sha-256`) and SQLite, which reads a file by walking its b-tree
-  (internal pages and cell overflow included), **builds one from nothing**
-  (`«Собрать базу»` hands back the whole file image, checked so far only by
-  reading its own output back through the same tree walk), and **writes a row
-  into an existing file** (`«База со строкой»`, checked against a real `sqlite3`
-  reading the result back — not self-checked only, this time);
-- networking — HTTP (parsing and printing request and response), a binary
-  protocol over TCP (`provod`), Redis over RESP2, TLS handshake parsing;
-- own cryptography — AES with CTR, GCM and CBC modes, X25519 key exchange,
-  SHA-1, SHA-256, HMAC, PBKDF2, DER parsing, X.509 certificate parsing and CRL
-  revocation-list parsing;
-- regular expressions — `automaton.flang`, 63 functions, every one with
-  termination proved. The engine never backtracks: a pattern is parsed into a
-  tree, and the automaton's state is the pattern itself, shortened by the
-  character just read (Brzozowski derivatives). The number of steps equals the
-  length of the input by construction.
-
-What is **not** done in that list: the secure connection itself is not run by
-our own cipher — `https` still goes out to the external `curl`, and revocation
-checking is not wired into it, even though there is now something to read a CRL
-with. Writing a row into an existing SQLite file only reaches a ready leaf's free
-middle, in row-number order, without growing the file: a page split, a row out
-of order, a payload that needs an overflow page, an edit, a delete — every one
-of those refuses rather than corrupts the file, and there is still no journal
-to make any of it safe against a reader who has the file open at the same time.
-A registry is needed more for this library, not less: there is now
-something worth handing out by name and version.
-
-**3. Application code is thin, but no longer a single item.** A link-shortener
-service (`examples/web/shortener`) — storage, routing, processes and
-supervision, with not one line between the incoming and outgoing bytes written
-in anything but flang; a backend example of seven files (`examples/library-api`);
-plans that talk to the databases (`examples/db`). The service also comes up on a
-real socket: the C process scheduler learned to wait on the network without
-stopping, and `curl` gets 200 on `/здоровье`, 201 on `POST`, 301 with `Location`
-and 204 on `DELETE`. That run carries a caveat, and naming it without the caveat
-would be dishonest: the C process-plan table was written by hand outside the
-tree, because there is nothing to emit it with — the committed seed holds not one
-line of that emission. The same run cannot be repeated from a clean tree today.
-And these are examples, not applications in service: no program among them is one
-somebody runs in production.
-
-**4. The auxiliary code is still JavaScript.** The tree holds 54 such files and
-25,527 lines (`git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1`, measured
-29 August 2026) — the site build, the guards, the benchmarks. Some of them are
-not held up by a shortage of hands: capabilities are absent from the language
-itself, and what exactly holds each file is worked out in
-`docs/javascript-inventory.md`, which sorts all 54 into four heaps. **The debt
-is 28 files and 13,507 lines**; the other 26 are not a debt at all — the runtime
-of the `js` emit target, output of the compiler itself, launchers that run
-before flang is on the machine, and the separate directory of test fixtures.
-
-One of the holes in that analysis has closed halfway, and the other half will
-never close. Regular expressions arrived in the language, but there are no
-lookaheads or lookbehinds in them and there never will be (see below) — and the
-guards are written with them: `claim-guard.mjs` has three, `count-guard.mjs`
-three, the JavaScript binary-rules guard two (that file was removed on 7 September
-2026: its flang rewrite `flang/scripts/binary-rules-guard.flang` reports the same seven
-findings and is what the shortcut runs now). Free of them are `name-guard.mjs` and
-`jargon-guard.mjs`: those two are portable with the new engine today, the other
-three are not, and what has to be rewritten in them is not the pattern but the
-approach.
+Until September 2026 the first item was "there will be no release until the seed
+is reprinted": `sh scripts/raskrutka.sh --bystro` named 45 divergences, and the
+seed held not a line of the C emission of the process plan. That is gone: the
+seed is reprinted (`0ce948bfd`), `grep -c 'flang_conc.c'
+bootstrap/compiler_flang.c` answers `2`, and release 0.7.17 went out on
+11 September 2026 (commit `144208489`). The items about a package manager,
+application code and auxiliary JavaScript files remain work, but are not part of
+the five-stage plan: the JavaScript implementation was removed on 20 August 2026
+(`fe8e8a37`), and the tree holds 52 auxiliary `.mjs`/`.js` files
+(`git ls-files '*.mjs' '*.js' | wc -l`, 11 September 2026).
 
 ## Ruled out
 
 **No closures.** Capturing an environment breaks the termination proof and
-direct emission into C, Go and Rust. First-class functions do **exist**: the
-compiler replaces a function-value with a tag and dispatches on tags. A closure
-and a first-class function are different things, and only the first is refused.
+direct emission into C, Go and Rust. First-class functions **do** exist: the
+compiler replaces a function value with a label and dispatches on labels. A
+closure and a first-class function are different things; only the first is
+refused.
 
 **No lookaheads or lookbehinds in regular expressions.** `(?=…)`, `(?<=…)` and
-backreferences `\1` all require going back and re-reading what has been read —
-exactly the backtracking the engine was written to refuse. A pattern using them
-does not fail silently: it is refused by name, the reason goes into the `беда`
-field, and a match against such a pattern answers "no". The price is named above:
-three tree guards stay in JavaScript until somebody rewrites them without
-lookarounds.
+back-references `\1` require going back and re-reading what was read — exactly
+the backtracking the engine (`flang/stdlib/automaton.flang`) was written to
+avoid. A pattern with them does not fail silently: the reason is put into the
+«беда» field.
 
 **No two versions of one library in one program.** When two dependencies pull
-one library at different versions, that is settled by raising a version, not by
-letting both live in the program side by side. The argument is worked out in
-[Modularity and packages](../modules.html).
+one library at different versions, that is solved by raising the version, not by
+having both side by side in the program. The reasoning is in
+[Modules and packages](../modules.html).
 
 **Not the full Unison model.** Storing code in a database instead of files means
-owning an editor, owning a host, and losing git. Half of it — content addressing
-— we take; the other half we do not.
+owning the editor, owning the host and losing git. Half of it — content
+addressing — is taken; the other half is not.

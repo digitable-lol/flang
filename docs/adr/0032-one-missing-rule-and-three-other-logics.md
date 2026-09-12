@@ -190,7 +190,7 @@ FLANG_PARSE: не разобрана конструкция: в процессе
 | `flang/self/obligations.flang` | 0 | 0 |
 | `flang/self/types.flang` | 0 | 0 |
 
-Прогон `flang check --proof --строго examples/io/temp-directory.flang` —
+Прогон `flang check --proof --строго docs/examples/io/temp-directory.flang` —
 «утверждений 0». Файл с планом на 10 функций не высказывает ни одного
 утверждения о самом плане, и приписать его нельзя: тот же отказ разбора, что у
 процесса («в плане ожидаются 'состояние', 'начинает с' или 'обрабатывает'»).

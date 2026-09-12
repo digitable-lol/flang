@@ -19,7 +19,10 @@
 | JavaScript | `flang/src/emit/js/flang_conc.js` (611 строк) | свой планировщик, один поток |
 
 Остальные пять целей из восьми (Go, Rust, Python, Java, C#) программу с
-процессами печатать **отказываются** — код `FLANG_CONC_UNSUPPORTED`.
+процессами печатать **отказываются** — код `FLANG_CONC_UNSUPPORTED`. (На день
+замера целей было восемь; на 11 сентября 2026 их десять — добавились `cpp` и
+`ts`; `ts` печатает план вместе с хозяином `flang_host_node.js`, как `js`, `cpp`
+отказывает, как `c` — см. `docs/site/troubleshooting.ru.md`.)
 
 Процессы заводятся на ходу: слово `породить` есть в модели и в цели C
 (`flang/src/emit/c/flang_conc.c:1390`), у целей JavaScript и Elixir его нет.

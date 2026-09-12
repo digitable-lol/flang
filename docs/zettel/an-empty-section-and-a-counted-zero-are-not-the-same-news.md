@@ -19,7 +19,7 @@
 
 **Чем подтверждено.** Замер на ветке `work/adr-pakety`. Программа из одной
 функции: `flang check --proof` печатал 26 строк, содержательных две. После
-правки — 14. `examples/web/shortener/service.flang` (83 функции):
+правки — 14. `examples/docs/examples/web/shortener-client/service.flang` (83 функции):
 135 → 123. `examples/cat/monoid-and-monad.flang` (4 закона): 40 → 31.
 Ни одной строки не потеряно: полный вид достаётся ключом `--словарь` и совпадает
 со старым выводом **байт в байт** на всех трёх (проверено `diff`).

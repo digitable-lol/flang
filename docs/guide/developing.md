@@ -10,41 +10,41 @@ A change to the compiler in `flang/self/` must reprint the bootstrap point in th
 `bootstrap/` starts building the previous compiler silently:
 
 ```bash
-sh scripts/raskrutka.sh           # reprint bootstrap/ (~11 min: the binary prints itself)
+sh scripts/raskrutka.sh           # reprint bootstrap/ (hours: 7 h 28 min on 11 September 2026, commit 0ce948bfd)
 sh scripts/raskrutka.sh --check   # compare against the sources byte for byte, exit 1 on drift
-sh scripts/raskrutka.sh --stroki  # 0.4 s: every C string literal in the runtime is closed
+sh scripts/raskrutka.sh --stroki  # 0.6 s (11 September 2026): every C string literal in the runtime is closed
 ```
 
 The binary compiler itself does the printing (`bootstrap/flang emit … --target c`); if the binary
 is missing, the script builds it from `bootstrap/` first.
 
-The check costs what the print costs — about eleven minutes, plus a `make` if the binary is not
-built. Call `--check` before merging a change under `flang/self/` or `flang/src/emit/c/`, not on
+The check re-emits and so costs what the print costs (7 h 28 min on the 11 September 2026 reprint),
+plus a `make` if the binary is not built. Call `--check` before merging a change under `flang/self/` or `flang/src/emit/c/`, not on
 every save.
 
 The commands the language answers to:
 
 ```bash
 # parse, type-check, prove totality
-flang check examples/leetcode/035-search-insert-position.flang --pretty
+flang check docs/examples/leetcode/035-search-insert-position.flang --pretty
 
 # run the examples declared inside the functions
-flang test examples/leetcode/035-search-insert-position.flang --pretty
+flang test docs/examples/leetcode/035-search-insert-position.flang --pretty
 
 # the same over a CORPUS: a directory or a glob instead of a file (binary only).
 # Every failing example and every file not taken is named; the passing ones are
 # a count. Exit code 0 — clean, 1 — something failed or a file was not taken,
 # 2 — bad invocation.
 flang test flang/stdlib/
-flang test 'examples/**/*.flang' --json
+flang test 'docs/examples/**/*.flang' --json
 
 # call a function: --args takes a FLAT object of scalars, a list cannot go there
-flang run examples/leetcode/035-search-insert-position.flang \
+flang run docs/examples/leetcode/035-search-insert-position.flang \
   --function "Место вставки" --args '{"цель":2}'
 # functions with a list argument are called by their own examples: flang test <file>
 
-# print it — targets: c | csharp | elixir | go | java | js | python | rust
-flang emit examples/leetcode/035-search-insert-position.flang \
+# print it — targets: c | cpp | csharp | elixir | go | java | js | python | rust | ts
+flang emit docs/examples/leetcode/035-search-insert-position.flang \
   --target python --out ./out-python
 ```
 

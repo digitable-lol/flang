@@ -2,7 +2,7 @@
 
 Корень выглядит проектом на Node из-за одного файла, и предложение «удалить
 `package.json`» напрашивается само. Оно опоздало: версия в нём **не живёт**.
-Источник — функция «Версия» в `scripts/emit-package.flang`, из неё файл
+Источник — функция «Версия» в `scripts/release/emit-package.flang`, из неё файл
 **печатается** целиком (`./ярлык пакет`), и сверка `пакет:проверка` требует
 совпадения знак в знак. Удалять предлагается не место хранения, а отпечаток.
 
@@ -13,16 +13,16 @@
 | --- | --- |
 | `.github/workflows/release.yml:143,187,222` | версию для сверки с двоичным, с тегом и для имени архива |
 | `.github/workflows/ci.yml:1437`, `install-path.yml:182` | подлог версии — им сторож ДОКАЗЫВАЕТ, что умеет краснеть |
-| `scripts/version-guard.flang:364` | эталон для `FLANG_VERSION` в `flang_repl.c` (в хуке перед пушем) |
-| `scripts/version-derivations-guard.sh:96` | то же дёшево, для хука |
-| `scripts/emit-package.flang:166` | печатает и сверяет знак в знак |
-| `scripts/bump-version.sh:81,139` | показывает и перепечатывает при подъёме версии |
-| `scripts/homebrew-formula-guard.flang:530` | версия, с которой сверяется формула |
+| `scripts/guards/version-guard.flang:364` | эталон для `FLANG_VERSION` в `flang_repl.c` (в хуке перед пушем) |
+| `scripts/guards/version-derivations-guard.sh:96` | то же дёшево, для хука |
+| `scripts/release/emit-package.flang:166` | печатает и сверяет знак в знак |
+| `scripts/release/bump-version.sh:81,139` | показывает и перепечатывает при подъёме версии |
+| `scripts/guards/homebrew-formula-guard.flang:530` | версия, с которой сверяется формула |
 | `docs/site/build.mjs:81`, `build.flang:1019` | лицензия и оба адреса в подвале сайта; без разбора сборка ОТКАЗЫВАЕТ |
 | `docs/site/site-numbers.mjs:184` | версия выпуска для чисел сайта |
-| `scripts/published-vs-tree.sh:285,567` | версия в разделе «Выпуск» |
+| `scripts/guards/published-vs-tree.sh:285,567` | версия в разделе «Выпуск» |
 | `flang/test/glob.mjs:5` | `engines.node` — на какой Node гоняются оставшиеся `.mjs` |
-| `scripts/changelog.flang`, `build-changelog.mjs` | `package.json` — **видимый** корень: правка в нём видна в журнале |
+| `scripts/site/changelog.flang`, `build-changelog.mjs` | `package.json` — **видимый** корень: правка в нём видна в журнале |
 
 Плюс пять упоминаний прозой в файлах, которые правит только перепечатка семени:
 `flang/self/cli.flang:34,1362`, `flang/self/repl/repl.flang:265`,
@@ -43,7 +43,7 @@
 (он сам отстал на месяцы — `published-vs-tree.sh` зовёт его устаревшим) и не в
 тег: дерево обязано знать версию ДО того, как тег появится, — именно этим
 `release.yml` сверяет тег с деревом. Правильный источник уже есть и уже
-единственный: функция «Версия» в `scripts/emit-package.flang`, читаемая той же
+единственный: функция «Версия» в `scripts/release/emit-package.flang`, читаемая той же
 однострочной выборкой, какой её читает `version-derivations-guard.sh`. Тогда
 порядок такой: сперва снять версию с `package.json` в трёх потоках, и лишь
 потом трогать сам файл — и остаётся отдельно решить, откуда сборка сайта возьмёт

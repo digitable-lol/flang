@@ -900,14 +900,14 @@
   принимает файл: строка
   возвращает список строки
   пример «Аккерман назван по формуле»
-    дано файл равно "examples/rosetta/ackermann-function-english.flang"
+    дано файл равно "docs/examples/rosetta/ackermann-function-english.flang"
     ожидается ["m", "n"]
   пример «Зеркало ключа канонического JSON»
     дано файл равно "flang/self/proofterm.flang"
     ожидается ["поле param"]
-  если файл равен "examples/rosetta/ackermann-function-english.flang"
+  если файл равен "docs/examples/rosetta/ackermann-function-english.flang"
     то ["m", "n"]
-    иначе если ["examples/rosetta/factorial-english.flang", "examples/rosetta/fibonacci-english.flang", "examples/rosetta/fizzbuzz-english.flang", "examples/rosetta/hundred-doors-english.flang", "examples/rosetta/primes-by-trial-division-english.flang", "examples/surfaces/factorial.eo.flang", "examples/surfaces/factorial.zh.flang"] содержит файл
+    иначе если ["docs/examples/rosetta/factorial-english.flang", "docs/examples/rosetta/fibonacci-english.flang", "docs/examples/rosetta/fizzbuzz-english.flang", "docs/examples/rosetta/hundred-doors-english.flang", "docs/examples/rosetta/primes-by-trial-division-english.flang", "docs/examples/surfaces/factorial.eo.flang", "docs/examples/surfaces/factorial.zh.flang"] содержит файл
       то ["n"]
       иначе если ["flang/self/proof-initial.flang", "flang/self/proofterm.flang"] содержит файл
         то ["поле param"]
@@ -1101,7 +1101,7 @@
   принимает путь: строка
   возвращает число
   пример «Примеры — четвёртый каталог»
-    дано путь равно "examples/a.flang"
+    дано путь равно "docs/examples/a.flang"
     ожидается 3
   если путь начинается с "flang/stdlib/"
     то 0
@@ -1115,8 +1115,8 @@
   принимает пути: список строки
   возвращает список строки
   пример «Каталоги по порядку, внутри — обходом»
-    дано пути равно ["examples/b.flang", "flang/self/a-b.flang", "flang/self/a/c.flang", "flang/stdlib/z.flang"]
-    ожидается ["flang/stdlib/z.flang", "flang/self/a/c.flang", "flang/self/a-b.flang", "examples/b.flang"]
+    дано пути равно ["docs/examples/b.flang", "flang/self/a-b.flang", "flang/self/a/c.flang", "flang/stdlib/z.flang"]
+    ожидается ["flang/stdlib/z.flang", "flang/self/a/c.flang", "flang/self/a-b.flang", "docs/examples/b.flang"]
   «Упорядочить ключевые» от (отобразить пути как путь → запись «Ключевая строка» с «ключ» равным (приписать («Номер каталога» от путь) к («Ключ пути» от путь)) и «строка» равным путь)
 
 тотальная функция «Род вне охвата»
@@ -1125,7 +1125,7 @@
   пример «Печать замеров»
     дано путь равно "docs/benchmark2/a.flang"
     ожидается "печать замеров"
-  если (путь начинается с "benchmarks/") или (путь начинается с "docs/benchmark")
+  если (путь начинается с "docs/benchmark")
     то "печать замеров"
     иначе если путь начинается с "flang/test/fixtures/"
       то "образцы тестов"
@@ -1171,8 +1171,8 @@
   принимает охват: список строки, все: список строки
   возвращает строка
   пример «Один файл вне охвата»
-    дано охват равно ["examples/a.flang"]
-    дано все равно ["examples/a.flang", "benchmarks/b.flang"]
+    дано охват равно ["docs/examples/a.flang"]
+    дано все равно ["docs/examples/a.flang", "docs/benchmarks/b.flang"]
     ожидается "1 файлов из 2 в дереве; вне охвата 1 — печать замеров 1"
   пусть вне равно отфильтровать все где путь → не (охват содержит путь)
   пусть роды равно свёртка вне начиная с пустой список как собрано и путь → «Учесть в роде» от собрано и путь
@@ -1183,7 +1183,7 @@
   принимает путь: строка
   возвращает признак
   пример «Четыре равноправных расширения»
-    дано путь равно "examples/сводка.фп"
+    дано путь равно "docs/examples/сводка.фп"
     ожидается да
   пример «Имя fp без точки — не программа»
     дано путь равно "fp"
@@ -1319,8 +1319,8 @@
 тотальная функция «Команда перечня»
   возвращает строка
   пример «Охват и всё дерево одним обходом файловой системы»
-    ожидается "cd ../.. && find -L flang/stdlib flang/core flang/self examples -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print && printf '%s\\n' '---' && find -L . \\( -name node_modules -o -name .git -o -name .claude \\) -prune -o -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print"
-  "cd ../.. && find -L flang/stdlib flang/core flang/self examples -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print && printf '%s\\n' '---' && find -L . \\( -name node_modules -o -name .git -o -name .claude \\) -prune -o -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print"
+    ожидается "cd ../.. && find -L flang/stdlib flang/core flang/self docs/examples -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print && printf '%s\\n' '---' && find -L . \\( -name node_modules -o -name .git -o -name .claude \\) -prune -o -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print"
+  "cd ../.. && find -L flang/stdlib flang/core flang/self docs/examples -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print && printf '%s\\n' '---' && find -L . \\( -name node_modules -o -name .git -o -name .claude \\) -prune -o -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print"
 
 тотальная функция «Команда разбора»
   принимает каталог: строка
@@ -1356,8 +1356,8 @@
   пример «Охват — до черты, всё дерево — после»
     дано каталог равно "/tmp/x"
     дано режим равно "проверка"
-    дано вывод равно "examples/a.flang\n---\n./examples/a.flang\n./benchmarks/b.flang\n"
-    ожидается запись «Работа» с «каталог» равным "/tmp/x" и «режим» равным "проверка" и «охват» равным ["examples/a.flang"] и «строка охвата» равным "1 файлов из 2 в дереве; вне охвата 1 — печать замеров 1" и «итоги» равным пустой список
+    дано вывод равно "docs/examples/a.flang\n---\n./docs/examples/a.flang\n./docs/benchmarks/b.flang\n"
+    ожидается запись «Работа» с «каталог» равным "/tmp/x" и «режим» равным "проверка" и «охват» равным ["docs/examples/a.flang"] и «строка охвата» равным "1 файлов из 2 в дереве; вне охвата 1 — печать замеров 1" и «итоги» равным пустой список
   пусть строки равно разделить вывод по "\n"
   пусть охват равно отфильтровать (разделить («До метки» от вывод и "\n---\n") по "\n") где путь → не (путь равен "")
   пусть все равно отобразить (отфильтровать (разделить («После метки» от вывод и "\n---\n") по "\n") где путь → не (путь равен "")) как путь → (если путь начинается с "./" то подстрока путь с 3 по (длина путь) иначе путь)

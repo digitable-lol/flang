@@ -5,7 +5,7 @@
 **Основание:** словарь эффектов [`flang/self/parser.flang`](../../flang/self/parser.flang),
 хозяин двоичного `flang/src/emit/c/flang_repl.c`, хозяин конкурентности
 `flang/src/emit/c/flang_conc.c`, рантайм `flang/src/emit/c/flang_runtime.c`, программа
-[`examples/io/binary-file-round-trip.flang`](../../examples/io/binary-file-round-trip.flang).
+[`docs/examples/io/binary-file-round-trip.flang`](../examples/io/binary-file-round-trip.flang).
 **Продолжает** [ADR-0004](0004-octets-in-the-effects-dictionary.md), который завёл октетную пару
 СОЕДИНЕНИЮ и честно записал в «цену»: «Октетной пары **нет у файлов**… Это та же дыра, тем же
 лекарством, но другой работой». Вот эта работа.
@@ -152,7 +152,7 @@ ADR-0004 (строкой октеты в этом языке невыразим�
   сотни мегабайт, он понадобится раньше всего остального.
 - **Хозяин вкладки от словаря ОТСТАЛ.** `flang/src/emit/js/flang_host_browser.js` разбирает
   поручения закрытым `switch`, и двух новых имён там нет. Сторож
-  `scripts/tab-host-guard.flang` это ВИДИТ и говорит — он для того и написан. Дописать
+  `scripts/guards/tab-host-guard.flang` это ВИДИТ и говорит — он для того и написан. Дописать
   туда две ветки значило бы писать на JavaScript, что этой работе запрещено прямо; долг назван, а
   не спрятан. У вкладки файлов нет вовсе, поэтому ветка была бы отказом.
 - **Цикл поручений в напечатанном на JavaScript** (`flang/src/emit/js/flang_io.js`) держит

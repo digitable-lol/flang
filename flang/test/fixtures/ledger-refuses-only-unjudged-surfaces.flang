@@ -21,7 +21,7 @@
 //
 // Файл лежит в `flang/test/fixtures/`, и это нарочно: фикстуры исключены из
 // корпуса и из описи доли (`flang/scripts/proof-ledger.mjs:166`,
-// `scripts/published-vs-tree.sh:182`), значит сторож не двигает ни одного
+// `scripts/guards/published-vs-tree.sh:182`), значит сторож не двигает ни одного
 // числа, которое меряет что-то другое. Обязательств (`обеспечивает`) в нём нет
 // по той же причине.
 модуль «Ledger refuses only unjudged surfaces»

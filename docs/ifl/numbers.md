@@ -127,7 +127,7 @@
 | флаги сборки C | `-std=c99 -Wall -Wextra -Werror -pedantic` | `flang/test/self-bootstrap.test.mjs:95` |
 | сломанных программ в сверке диагностик | 7 | `node -e` по списку `СЛОМАННЫЕ` в `flang/test/self-bootstrap.test.mjs:528` |
 | различных кодов диагностик, которые они дают | 6: `FLANG_TYPE`, `FLANG_UNKNOWN_NAME`, `FLANG_MATCH_NOT_EXHAUSTIVE`, `FLANG_MATCH_UNREACHABLE`, `FLANG_BUILTIN_ARGS`, `FLANG_NOT_TOTAL` | там же |
-| разбивка корпуса из 43 | 10 stdlib + 1 example + 26 leetcode + 4 core + 2 self | `ls flang/stdlib/*.flang examples/*.flang examples/leetcode/*.flang \| wc -l` |
+| разбивка корпуса из 43 | 10 stdlib + 1 example + 26 leetcode + 4 core + 2 self | `ls flang/stdlib/*.flang docs/examples/*.flang docs/examples/leetcode/*.flang \| wc -l` |
 | пределы памяти, которые ставит сам тест | 1 ГиБ на крупнейший исходник, 4 ГиБ на весь компилятор | `flang/test/self-bootstrap.test.mjs:1097,1111` |
 
 Числа 1 489 функций, 165 типов, 3,96 МБ C и 36 программ, которые стоят в
@@ -143,7 +143,7 @@ SPEC отдельным коммитом — к подаче оно отноше
 | объявлений `тотальная функция` | 1 708 | `grep -rh '^тотальная функция ' --include='*.flang' . \| wc -l` |
 | объявлений `функция` (обычных) | 577 | `grep -rh '^функция ' --include='*.flang' . \| wc -l` |
 | объявлений `убывает` (мера) | 2 | `grep -rh '^[[:space:]]*убывает ' --include='*.flang' . \| wc -l` |
-| где именно объявлена мера | `examples/measure/euclid.flang`, `examples/measure/binary-search.flang` | `grep -rln '^[[:space:]]*убывает ' --include='*.flang' .` |
+| где именно объявлена мера | `docs/examples/measure/euclid.flang`, `docs/examples/measure/binary-search.flang` | `grep -rln '^[[:space:]]*убывает ' --include='*.flang' .` |
 | тестов меры, ограниченности и завершаемости | 99, из них 0 падений | `node --test flang/test/measure.test.mjs flang/test/bounded.test.mjs flang/test/totality.test.mjs` |
 | время этих тестов | 237 мс | там же |
 | исполнителей, сверенных на одной мере | 9 (интерпретатор + 8 целей) | `bash docs/ifl/measure-across-targets.sh` |
@@ -182,7 +182,7 @@ SPEC отдельным коммитом — к подаче оно отноше
 
 - **три теста сейчас падают**, и «2763 зелёных» было бы неправдой:
   `flang/test/changelog.test.mjs:64` (каталог `flang/scripts` не внесён в список
-  `ВИДИМОСТЬ` в `scripts/build-changelog.mjs` — настоящий дефект ветки) и два в
+  `ВИДИМОСТЬ` в `scripts/site/build-changelog.mjs` — настоящий дефект ветки) и два в
   `flang/test/emit-elixir.test.mjs` (отрицательный ноль на OTP 25);
 - **чужими руками восемь тулчейнов не воспроизводятся через CI**:
   `.github/workflows/ci.yml` гоняет только `ubuntu-latest` × Node 20/22/24,

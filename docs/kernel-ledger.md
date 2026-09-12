@@ -10,14 +10,14 @@
 воспроизводится побайтово одной строкой**:
 
 ```sh
-KOMMIT=4a26cf05 sh scripts/build-ledger-binary.sh /путь/куда   # 66,64 с
+KOMMIT=4a26cf05 sh scripts/seed/build-ledger-binary.sh /путь/куда   # 66,64 с
 PREDEL_SHAGOV=400000000000 DVOICHNYY=/путь/куда/flang \
-  sh scripts/take-proof-ledger.sh flang/stdlib/aes.flang        # 399,17 с
+  sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang        # 399,17 с
 ```
 
 ## Часть 1. Двоичный: компилятор из семени, рантайм из дерева
 
-`scripts/build-ledger-binary.sh` кладёт в соседний дереву каталог семь файлов и
+`scripts/seed/build-ledger-binary.sh` кладёт в соседний дереву каталог семь файлов и
 зовёт `make`:
 
 | файл | откуда |
@@ -96,7 +96,7 @@ PREDEL_SHAGOV=400000000000 DVOICHNYY=/путь/куда/flang \
 
 ```sh
 PIK=1G PAMYAT=45G PREDEL_SHAGOV=400000000000 \
-  sh scripts/take-proof-ledger.sh flang/stdlib/aes.flang
+  sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang
 ```
 
 `PAMYAT` — адресное пространство (умолчание скрипта 45G), `PIK` — замеренный пик
@@ -108,7 +108,7 @@ PIK=1G PAMYAT=45G PREDEL_SHAGOV=400000000000 \
 
 `check` судит файл вместе со всем, что тот ввозит, и строка «итог:» относится к
 замыканию, а не к файлу: на ядре она завышает в 34,2 раза, на `proofterm` — в
-12,9. Долю САМОГО файла считает `scripts/proved-share-of-a-file.py` — по имени
+12,9. Долю САМОГО файла считает `scripts/ledgers/proved-share-of-a-file.py` — по имени
 функции, объявленной в файле, двумя независимыми счётами, которые обязаны
 сойтись. `take-proof-ledger.sh` зовёт его сам.
 
@@ -119,7 +119,7 @@ PIK=1G PAMYAT=45G PREDEL_SHAGOV=400000000000 \
 ### Двоичный описи воспроизведён ПОБАЙТОВО
 
 ```
-$ PIK=2G PAMYAT=6G <ворота> -- env KOMMIT=4a26cf05 sh scripts/build-ledger-binary.sh …
+$ PIK=2G PAMYAT=6G <ворота> -- env KOMMIT=4a26cf05 sh scripts/seed/build-ledger-binary.sh …
 семя и рантайм взяты из коммита 4a26cf05ee6c8f18190ecc3e429c926e193caa21
 рантайм flang_cli.c        дерево обгоняет семя на 6 строк
 рантайм flang_repl.c       дерево обгоняет семя на 1102 строк
@@ -150,12 +150,12 @@ $ cmp <собранное>/flang /srv/flang-rabota/m-kernel-ledger/build-kernel/
 
 ### Число сошлось знак в знак
 
-Опись — `scripts/proved-share-ledger.txt`, строка
+Опись — `scripts/ledgers/proved-share-ledger.txt`, строка
 `md5|написано|доказано|сетка|объявлено|без приговора|путь`.
 
 ```
 $ DVOICHNYY=…/flang PIK=1G PAMYAT=45G PREDEL_SHAGOV=400000000000 \
-    sh scripts/take-proof-ledger.sh flang/stdlib/aes.flang
+    sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang
 двоичный: …/flang (f32d89f599dd6b9f740f42a752dff1ff)
 ключи: --proof --json --предел-шагов 400000000000
 код 0 ZAMER 399.17 571176
@@ -187,7 +187,7 @@ flang/stdlib/aes.flang: написано 218 …; доказано 143, сетк
 ### Собранное по рабочей копии — третье число, и оно тоже проверено
 
 ```
-$ PIK=2G PAMYAT=6G <ворота> -- sh scripts/build-ledger-binary.sh
+$ PIK=2G PAMYAT=6G <ворота> -- sh scripts/seed/build-ledger-binary.sh
 рантайм flang_cli.c        дерево обгоняет семя на 0 строк
 рантайм flang_repl.c       дерево обгоняет семя на 0 строк
 рантайм flang_runtime.c    дерево обгоняет семя на 0 строк
@@ -207,12 +207,12 @@ md5:      4e32f9f76d8215c3b5df1b6abe0b6a68
 Им же сняты две ведомости, обе сошлись с описью:
 
 ```
-$ PIK=2G PAMYAT=16G sh scripts/take-proof-ledger.sh flang/proof/map/abilities.flang
+$ PIK=2G PAMYAT=16G sh scripts/ledgers/take-proof-ledger.sh flang/proof/map/abilities.flang
 код 0 ZAMER 1.41 44484
   доказано 27, сетка 0, объявлено 1 → два счёта сошлись: доказано 27 из 38 = 71,1 %
 опись: 4cff036ef9b62c189f00312cede89bac|38|27|0|1|10
 
-$ PIK=2G PAMYAT=16G sh scripts/take-proof-ledger.sh flang/proof/examples/corpus-alphabet.flang
+$ PIK=2G PAMYAT=16G sh scripts/ledgers/take-proof-ledger.sh flang/proof/examples/corpus-alphabet.flang
 код 0 ZAMER 0.89 21420
   два счёта сошлись: доказано 7 из 7 = 100,0 %
 опись: eba240cf6cb7ccae108943260e9892eb|7|7|0|0|0
@@ -224,11 +224,11 @@ $ PIK=2G PAMYAT=16G sh scripts/take-proof-ledger.sh flang/proof/examples/corpus-
 шаги, а в глубину вызовов:
 
 ```
-$ PIK=2G PAMYAT=45G sh scripts/take-proof-ledger.sh flang/stdlib/aes.flang
+$ PIK=2G PAMYAT=45G sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang
 код 1 ZAMER 25.38 402420
 FLANG_RECURSION_LIMIT: функция «Дальше после шага» превысила предел глубины вызовов (20000) на глубине 20001
 
-$ PIK=4G PAMYAT=45G PREDEL_GLUBINY=200000 sh scripts/take-proof-ledger.sh flang/stdlib/aes.flang
+$ PIK=4G PAMYAT=45G PREDEL_GLUBINY=200000 sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang
 код 1 ZAMER 13.30 578120
 FLANG_RECURSION_LIMIT: функция «Поле знач по ключу» превысила предел глубины вызовов (200000) на глубине 200001
 ```

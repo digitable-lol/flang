@@ -4,8 +4,11 @@
 на строку. Её запускает помощник, а не человек: запущенная руками, она молча
 ждёт строк — это не зависание.
 
-Всё на этой странице снято прогоном 24 августа 2026 на `flang {{выпуск.версия}}`. Рядом с
-каждым числом и каждой цитатой стоит команда, которая их даёт; ответы приведены
+Всё на этой странице снято прогоном 24 августа 2026; ответы службы —
+`initialize`, `tools/list`, три ошибки протокола, первая строка отчёта, отказ
+`FLANG_BOUND_ON_NAN` — перепроверены 11 сентября 2026 на 0.7.17 и
+совпадают дословно. Рядом с каждым числом и каждой цитатой стоит команда,
+которая их даёт; ответы приведены
 дословно — в том числе там, где служба ведёт себя не так, как ожидаешь.
 
 ## Проверить за полминуты
@@ -139,7 +142,7 @@ flang --mcp-mode: строка не разобрана как JSON, пропущ
 помощник, разбирающий ответ по пяти словам, на нём споткнётся.
 
 Последние строки отчёта считают исходы числом. Вот они с настоящего модуля —
-`examples/crypto/certificate.flang`, разбор сертификата X.509 на 121 функцию:
+`docs/examples/crypto/certificate.flang`, разбор сертификата X.509 на 121 функцию:
 
 ```
 итог:
@@ -316,7 +319,7 @@ flang --mcp-mode < zapros.jsonl | tail -1 | python3 -c \
 отчёт — проверяется сменой каталога перед запуском, больше ничем:
 
 ```bash
-cd examples/crypto && flang --mcp-mode < zapros.jsonl | tail -1
+cd docs/examples/crypto && flang --mcp-mode < zapros.jsonl | tail -1
 ```
 
 Лечится, стало быть, двумя способами: запускать службу с рабочим каталогом
@@ -329,12 +332,12 @@ cd examples/crypto && flang --mcp-mode < zapros.jsonl | tail -1
 | Что проверяем | Размер | Время |
 |---|---|---|
 | одна функция с обещанием и примером | 12 строк, 1 функция | 0,03 с |
-| `examples/leetcode/001-two-sum.flang` | 65 строк, 3 функции | 0,12 с |
-| `examples/crypto/certificate.flang` с ввозами | 121 функция, 5 файлов | 92 с |
+| `docs/examples/leetcode/001-two-sum.flang` | 56 строк, 3 функции | 0,13 с (11 сентября 2026, 0.7.17) |
+| `docs/examples/crypto/certificate.flang` с ввозами | 121 функция, 5 файлов | 92 с (24 августа); 114 с (11 сентября 2026, 0.7.17) |
 
 ```bash
-/usr/bin/time -f '%e с' flang check examples/leetcode/001-two-sum.flang
-/usr/bin/time -f '%e с' flang check examples/crypto/certificate.flang
+/usr/bin/time -f '%e с' flang check docs/examples/leetcode/001-two-sum.flang
+/usr/bin/time -f '%e с' flang check docs/examples/crypto/certificate.flang
 ```
 
 Тот же расчёт скриптом на Python — 0,01 с; из каждой строки таблицы 0,01 с

@@ -1,6 +1,6 @@
 # Распределитель памяти
 
-`examples/allocator/allocator.flang` — распределитель памяти, записанный чистой
+`docs/examples/allocator/allocator.flang` — распределитель памяти, записанный чистой
 функцией. Куча — данные: список свободных отрезков и общий размер. Запрос —
 значение: «Взять» столько-то или «Вернуть» адрес и длину. Распределитель —
 функция «Шаг кучи», которая возвращает новую кучу, адрес и признак «удалось»:
@@ -12,7 +12,7 @@
 ```
 
 Память функция не трогает — она отвечает, что теперь считать занятым. Приём тот
-же, что у драйвера UART `examples/driver/uart.flang` и у [драйвера
+же, что у драйвера UART `docs/examples/driver/uart.flang` и у [драйвера
 MSI](msi-driver.html).
 
 Программа отвечает на вопрос «выразим ли распределитель на flang и что о нём
@@ -21,7 +21,7 @@ MSI](msi-driver.html).
 
 ## Что лежит в файле
 
-Файл один, 416 строк <!-- СНЯТО 2026-09-08 файлов examples/allocator/*.flang = 1 --> <!-- СНЯТО 2026-09-08 строк examples/allocator/allocator.flang = 416 -->.
+Файл один, 416 строк <!-- СНЯТО 2026-09-08 файлов docs/examples/allocator/*.flang = 1 --> <!-- СНЯТО 2026-09-08 строк docs/examples/allocator/allocator.flang = 416 -->.
 
 Типы: «Отрезок» (начало, длина), «Куча» (свободные отрезки, всего), «Запрос»
 (варианты «Взять» и «Вернуть»), «Отклик кучи» (куча, адрес, удалось). Размер
@@ -46,8 +46,8 @@ MSI](msi-driver.html).
 ## Как запустить
 
 ```
-bootstrap/flang check examples/allocator/allocator.flang --proof
-bootstrap/flang test  examples/allocator/allocator.flang
+bootstrap/flang check docs/examples/allocator/allocator.flang --proof
+bootstrap/flang test  docs/examples/allocator/allocator.flang
 ```
 
 Отчёт `--proof` печатает вердикт по каждому постусловию и последней строкой —

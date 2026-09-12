@@ -81,14 +81,15 @@ promise but an inventory of what is already written:
 
 | what | where | functions | of them marked `тотальная` |
 | --- | --- | ---: | ---: |
-| HTTP parsing and printing | `flang/stdlib/http.flang` | 63 | 63 |
+| HTTP parsing and printing | `flang/stdlib/http.flang` | 64 | 64 |
 | the AES cipher | `flang/stdlib/aes.flang` | 105 | 105 |
 | talking to PostgreSQL | `flang/stdlib/postgres.flang` | 67 | 67 |
 | the SHA-256 hash | `flang/stdlib/sha256.flang` | 37 | 37 |
 | base64 | `flang/stdlib/base64.flang` | 19 | 19 |
 | scheduler decisions | `flang/conc/scheduler.flang` | 54 | 54 |
 
-The count is of function headers in the file. For the scheduler the compiler
+The count is of function headers in the file (`grep -c '^функция «\|^тотальная функция «'`,
+tree of 11 September 2026, release 0.7.17). For the scheduler the compiler
 says the same, counting the imported module as well:
 
 ```
@@ -124,7 +125,7 @@ An interrupt handler does terminate, and still cannot be written in flang as a
 whole — because the other half of its job is waiting and hardware. But the first
 half can be, and that is not a small thing.
 
-The tree carries this as a separate example, `examples/driver/uart.flang`. The
+The tree carries this as a separate example, `docs/examples/driver/uart.flang`. The
 driver there is a pure function: "state and event → new state and a list of
 register writes". It writes nothing; it **answers what to write**. The host does
 the writing, and its whole job is a six-line loop. The state machine, meanwhile,
@@ -157,7 +158,7 @@ Authority stays with the host rather than with the program: six prohibitions
 precisely because the host knows **what** it is being asked to do.
 
 **Second: printing to a target language plus a hand-written host.** The program
-is printed into C (or one of eight target languages), and the host is written by
+is printed into C (or one of the ten print targets), and the host is written by
 hand: it holds the loop, waits for events and calls the printed function. That
 is the example on this page.
 
@@ -168,11 +169,12 @@ looks like this:
 
 | what | where | lines |
 | --- | --- | ---: |
-| scheduler: loop, threads, network wait | `flang/src/emit/c/flang_conc.c` | 4638 |
-| decisions about processes, supervision, links | `flang/conc/*.flang` | 2956 |
+| scheduler: loop, threads, network wait | `flang/src/emit/c/flang_conc.c` | 4650 |
+| decisions about processes, supervision, links | `flang/conc/*.flang` | 3350 |
 
-The first file has six loops with no exit condition, the second has none — and
-not because they are forbidden. Without waiting such a loop has nothing to do,
+Line counts taken on 11 September 2026 (`wc -l`). The first file has six loops
+with no exit condition (`for (;;)`), the second has none — and not because they
+are forbidden. Without waiting such a loop has nothing to do,
 and there is nothing in the language to wait with.
 
 ## The door: one function, and types are checked before the call
@@ -205,13 +207,13 @@ by promises.
 
 ## An example that actually runs
 
-`examples/host-boundary/` is the whole junction, three files:
+`docs/examples/host-boundary/` is the whole junction, three files:
 
 | file | what it is |
 |---|---|
-| `examples/host-boundary/gatekeeper.flang` | the decision: who gets through, who is refused, with which code. Module «Gatekeeper» |
-| `examples/host-boundary/host.c` | the execution: the loop, input-output, mutable state |
-| `examples/host-boundary/run.sh` | print to C, build with the system `cc`, run |
+| `docs/examples/host-boundary/gatekeeper.flang` | the decision: who gets through, who is refused, with which code. Module «Gatekeeper» |
+| `docs/examples/host-boundary/host.c` | the execution: the loop, input-output, mutable state |
+| `docs/examples/host-boundary/run.sh` | print to C, build with the system `cc`, run |
 
 The decisions — parsing the request, checking rights, the budget and its
 refill, the state transition, the response codes — are all on this side of the
@@ -247,8 +249,8 @@ functions. It is in C because of one line inside it: `fgets` **waits**.
 The decision is checked with the usual commands:
 
 ```
-bootstrap/flang check examples/host-boundary/gatekeeper.flang --proof
-bootstrap/flang test  examples/host-boundary/gatekeeper.flang
+bootstrap/flang check docs/examples/host-boundary/gatekeeper.flang --proof
+bootstrap/flang test  docs/examples/host-boundary/gatekeeper.flang
 ```
 
 The `--proof` report says: all functions are total, each termination is proved
@@ -256,7 +258,9 @@ by composition; there are no assertions "declared, not proved"; some
 postconditions are proved for all inputs by reducing the goal to the function
 body, some are on the grid of examples — among them «ГЛАВНОЕ: из годных врат
 выходят годные» of «Шаг привратника»: an inequality over record fields is not
-taken by the kernel. How many of each is printed on the last line of the report.
+taken by the kernel. How many of each is printed on the last line of the report:
+on 0.7.17 (11 September 2026) — «утверждений 31: доказано 22, сетка 9,
+объявлено, не доказано 0», exit code 0; 15 examples, 15 passed.
 Proved postconditions are not printed into the generated code as checks — the
 printer says so on its first line («проверок при работе снято …»); an unproved
 promise would ride along as a check on every return.
@@ -273,12 +277,14 @@ run.sh:  cc … privratnik.c …
 ```
 
 The first step of the run (printing) and both commands above pass; the second
-step — the build — fails. The output below was recorded before the rename; to
-reproduce it, the names in `examples/host-boundary/host.c` and
-`examples/host-boundary/run.sh` have to be brought to the new ones.
+step — the build — fails (re-checked on 11 September 2026 on 0.7.17: `bash
+docs/examples/host-boundary/run.sh` → «privratnik.h: No such file or directory»,
+«сборка отказала, код 1»). The output below was recorded before the rename; to
+reproduce it, the names in `docs/examples/host-boundary/host.c` and
+`docs/examples/host-boundary/run.sh` have to be brought to the new ones.
 
 ```
-$ bash examples/host-boundary/run.sh
+$ bash docs/examples/host-boundary/run.sh
 …
 == 3. прогон: девять событий на стандартный ввод
 хозяин: врата открыты. ёмкость 3, уровень ключа 2, запас 0
@@ -308,7 +314,7 @@ goes on.
 Three details of the junction that are visible only in the sources:
 
 * printing is invoked with the flag `--no-cli`: the program has its own entry
-  point, in `examples/host-boundary/host.c`, and two `main` functions in one
+  point, in `docs/examples/host-boundary/host.c`, and two `main` functions in one
   build do not link;
 * the printed module's memory lives in an arena, and the host returns it on
   every iteration with one call to `fl_arena_reset` — everything flang built has
@@ -320,13 +326,13 @@ Three details of the junction that are visible only in the sources:
   on the boundary function; internal ones make do with promises.
 
 Next to it in the tree sits a second junction, made the first way — through the
-dictionary of orders: `examples/io/фильтр-пакетов.flang` parses an IPv4
+dictionary of orders: `docs/examples/io/фильтр-пакетов.flang` parses an IPv4
 datagram header together with the TCP destination port and decides whether to
-let it through. Eighteen functions, all total; the octets leave for the
+let it through. Seventeen functions, all total; the octets leave for the
 operating system and come back through `write` and `read`. The same line on
-other tasks: `examples/driver/` — on hardware (the [MSI
-driver](msi-driver.html)), `examples/web/orders-api.flang` — on a REST service,
-`examples/io/link-report.flang` — on input-output.
+other tasks: `docs/examples/driver/` — on hardware (the [MSI
+driver](msi-driver.html)), `docs/examples/web/orders-api.flang` — on a REST service,
+`docs/examples/io/link-report.flang` — on input-output.
 
 ## What this does not solve
 

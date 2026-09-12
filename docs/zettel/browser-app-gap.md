@@ -1,20 +1,20 @@
 # Фронтенд на flang: чего не хватает, числами
 
-Спрошено: «в дереве есть `web/wasm/` — демонстрация в браузере; посмотри, что
+Спрошено: «в дереве есть `docs/examples/web/wasm/` — демонстрация в браузере; посмотри, что
 там, и скажи числом, чего не хватает до настоящего приложения».
 
 **Первое число — ноль.** Каталога `web/` в ветке `work/real-service` нет вовсе:
 `git ls-tree -r HEAD | grep -c '^web/'` даёт **0**. Он снесён вместе со старым
-проектом (`fdfb0aa2`, 357 файлов, 180 755 строк). Живёт `web/wasm/` ровно на
+проектом (`fdfb0aa2`, 357 файлов, 180 755 строк). Живёт `docs/examples/web/wasm/` ровно на
 одной ветке — `prochee2/work/stdlib-json-time`, **5 файлов, 568 строк**:
 
 | строк | файл |
 |---|---|
-| 211 | `web/wasm/README.md` |
-| 187 | `web/wasm/demo/index.html` |
-| 73 | `web/wasm/build.sh` |
-| 63 | `web/wasm/probe.mjs` |
-| 34 | `web/wasm/descent.flang` |
+| 211 | `docs/examples/web/wasm/README.md` |
+| 187 | `docs/examples/web/wasm/demo/index.html` |
+| 73 | `docs/examples/web/wasm/build.sh` |
+| 63 | `docs/examples/web/wasm/probe.mjs` |
+| 34 | `docs/examples/web/wasm/descent.flang` |
 
 ## Что она делает и чего не делает
 
@@ -99,8 +99,8 @@ shortener/server.flang`), и обработчик экрана был бы ро�
 | отклик | `«Срок вышел»` | — |
 
 То есть цепочка «событие → обработчик → новое состояние → перерисовка» выразима
-уже сейчас, и написана дважды: `web/app/hailstone.flang` и
-`web/shortener/client.flang`.
+уже сейчас, и написана дважды: `docs/examples/web/browser-app/hailstone.flang` и
+`docs/examples/web/shortener-client/client.flang`.
 
 **Здесь же стояло: «Цена настоящего приложения, по пунктам», семь пунктов.**
 Закрыто **пять из семи** (поручения экрана, отклики экрана, хозяин браузера,

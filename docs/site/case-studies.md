@@ -1,7 +1,12 @@
 # A case taken apart: leetcode tasks, their solutions, and what is proved about them
 
-`examples/leetcode/` — 82 files, 7 709 lines, 301 functions and 806 executable
-examples (measured 29 August 2026). Not an example written for this page but code in the tree.
+`docs/examples/leetcode/` — 82 files, 6 205 lines, 301 functions and 806 executable
+examples (measured 11 September 2026 at commit `2c40752d0`: `wc -l`, `grep -c`
+over function and example headers; 0.7.14 removed the `//` comments from the
+examples, hence fewer lines than on 29 August). Not an example written for this
+page but code in the tree. The listings and reports below were taken from that
+same tree with binary 0.7.17; since 29 August (commit `03f0359ab`)
+the example modules carry English names.
 
 Below are five tasks: the statement, the whole solution, and what the compiler
 answers about **exactly what** is proved for it. That last part is the
@@ -55,11 +60,11 @@ it.
 return the index of the target (from zero) or −1 if it is not there. O(log n)
 required.
 
-**The whole solution** (`examples/leetcode/704-binary-search.flang`; the file's
+**The whole solution** (`docs/examples/leetcode/704-binary-search.flang`; the file's
 opening comment is omitted, it is retold below):
 
 ```flang
-модуль «Двоичный поиск»
+модуль «Binary search»
 
 тотальная функция «Поиск в диапазоне»
   принимает топливо: список числа, элементы: список числа, цель: число, низ: число, верх: число
@@ -109,7 +114,7 @@ opening comment is omitted, it is retold below):
 **What is proved:**
 
 ```
-flang check examples/leetcode/704-binary-search.flang --proof
+flang check docs/examples/leetcode/704-binary-search.flang --proof
 ```
 
 ```
@@ -117,10 +122,17 @@ flang check examples/leetcode/704-binary-search.flang --proof
   «Поиск в диапазоне»  доказано структурой: аргумент 1 («топливо») на каждом витке становится частью себя; цепочка частей конечного дерева обрывается сама, сторожа нет
   «Двоичный поиск»     доказано композицией: рекурсии нет, обещание сложено из обещаний тех, кого зовёт
 
+законы (сетка конечна, доказательством не является):
+  нет объявленных законов
+
+принято на веру:
+  ничего
+
 итог:
   функций 2: тотальных 2, обычных 0
   обещание несёт: композиция 1, структура 1, точный шаг 0, постоянный шаг 0, объявленная мера 0
   сторожей в рантайме: 0 мест
+  законов на сетке: 0 (значений в сетках 0); на веру: 0
 ```
 
 The limit of the analysis is visible here. Binary search narrows a pair of
@@ -139,10 +151,10 @@ by structure is free.
 
 **Statement.** Sort a list in ascending order in O(n log n).
 
-**The whole solution** (`examples/leetcode/148-sort-list.flang`):
+**The whole solution** (`docs/examples/leetcode/148-sort-list.flang`):
 
 ```flang
-модуль «Сортировка слиянием»
+модуль «Sort list»
 
 тотальная функция «Взять первые»
   принимает элементы: список числа, сколько: число
@@ -242,7 +254,7 @@ by structure is free.
 **What is proved:**
 
 ```
-flang check examples/leetcode/148-sort-list.flang --proof
+flang check docs/examples/leetcode/148-sort-list.flang --proof
 ```
 
 ```
@@ -252,9 +264,17 @@ flang check examples/leetcode/148-sort-list.flang --proof
   «Слить упорядоченные»  доказано объявленной мерой: убывает длина «первый» плюс длина «второй»; мера объявлена автором, сторож считает её на каждом витке — 2 места
   «Сортировка слиянием»  доказано объявленной мерой: убывает длина «элементы»; мера объявлена автором, сторож считает её на каждом витке — 2 места
 
+законы (сетка конечна, доказательством не является):
+  нет объявленных законов
+
+принято на веру:
+  ничего
+
 итог:
   функций 4: тотальных 4, обычных 0
   обещание несёт: композиция 0, структура 2, точный шаг 0, постоянный шаг 0, объявленная мера 2
+  сторожей в рантайме: 4 места
+  законов на сетке: 0 (значений в сетках 0); на веру: 0
 ```
 
 This is what showing a sort was worth. Half of a list is **not** a structural
@@ -278,14 +298,16 @@ in the built program where the measure is recomputed at run time. The two helper
 in the pits after rain: above each bar stands as much water as the smaller of
 the two highest bars to its left and right, minus the bar itself.
 
-**The whole solution** (`examples/leetcode/042-trapping-rain-water.flang`):
+**The whole solution** (`docs/examples/leetcode/042-trapping-rain-water.flang`):
 
 ```flang
-модуль «Дождевая вода»
+модуль «Trapping rain water»
 
 тотальная функция «Большее из двух»
   принимает первый: число, второй: число
   возвращает число
+  обеспечивает «большее — первое, когда первое не меньше второго» если первый не меньше второй то (результат равен первый) иначе да
+  обеспечивает «иначе большее — второе» если не (первый не меньше второй) то (результат равен второй) иначе да
   пример «Второй больше»
     дано первый равно 2
     дано второй равно 5
@@ -359,7 +381,7 @@ the two highest bars to its left and right, minus the bar itself.
 **What is proved:**
 
 ```
-flang check examples/leetcode/042-trapping-rain-water.flang --proof
+flang check docs/examples/leetcode/042-trapping-rain-water.flang --proof
 ```
 
 ```
@@ -368,9 +390,22 @@ flang check examples/leetcode/042-trapping-rain-water.flang --proof
   «Вода в диапазоне»  доказано объявленной мерой: убывает «право» минус «лево» плюс 1; мера объявлена автором, сторож считает её на каждом витке — 2 места
   «Дождевая вода»     доказано композицией: рекурсии нет, обещание сложено из обещаний тех, кого зовёт
 
+законы (сетка конечна, доказательством не является):
+  нет объявленных законов
+
+что высказано и чем это несётся:
+  постусловие «большее — первое, когда первое не меньше второго» функции «Большее из двух» — доказано сведением цели с телом функции: правило «разбор цели по условию», объявленные типы аргументов не понадобились — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
+  постусловие «иначе большее — второе» функции «Большее из двух» — доказано сведением цели с телом функции: правило «разбор случаев по внутреннему условию цели», объявленные типы аргументов не понадобились — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
+
+принято на веру:
+  ничего
+
 итог:
   функций 3: тотальных 3, обычных 0
   обещание несёт: композиция 2, структура 0, точный шаг 0, постоянный шаг 0, объявленная мера 1
+  сторожей в рантайме: 2 места
+  законов на сетке: 0 (значений в сетках 0); на веру: 0
+  утверждений 2: доказано 2 (из них без теоремы 2), сетка 0, объявлено, не доказано 0
 ```
 
 Two pointers moving toward each other: a technique with no descending list at
@@ -386,13 +421,15 @@ the signature.
 
 **Statement.** Convert a Roman numeral to a number.
 
-The only task in the catalogue that has not just proved termination but a
-**claim about the result** — two `обеспечивает` postconditions.
+A task that has not just proved termination but **claims about the result** —
+six `обеспечивает` postconditions on the digit-value function (two about bounds
+and four about the first letters of the table; this used to say "two", the four
+were added in commit `c549be91a`).
 
-**The whole solution** (`examples/leetcode/013-roman-to-integer.flang`):
+**The whole solution** (`docs/examples/leetcode/013-roman-to-integer.flang`):
 
 ```flang
-модуль «Римские числа»
+модуль «Roman to integer»
 
 объект «Разбор римского»
   сумма является числом
@@ -412,6 +449,10 @@ The only task in the catalogue that has not just proved termination but a
   возвращает число
   обеспечивает «значение цифры неотрицательно» результат не меньше 0
   обеспечивает «значение цифры не больше тысячи» результат не больше 1000
+  обеспечивает «I — это один» если буква равен "I" то (результат равен 1) иначе да
+  обеспечивает «V — это пять» если не (буква равен "I") то (если буква равен "V" то (результат равен 5) иначе да) иначе да
+  обеспечивает «X — это десять» если не (буква равен "I") то (если не (буква равен "V") то (если буква равен "X" то (результат равен 10) иначе да) иначе да) иначе да
+  обеспечивает «L — это пятьдесят» если не (буква равен "I") то (если не (буква равен "V") то (если не (буква равен "X") то (если буква равен "L" то (результат равен 50) иначе да) иначе да) иначе да) иначе да
   пример «Единица»
     дано буква равно "I"
     ожидается 1
@@ -478,7 +519,7 @@ The only task in the catalogue that has not just proved termination but a
 **What is proved:**
 
 ```
-flang check examples/leetcode/013-roman-to-integer.flang --proof
+flang check docs/examples/leetcode/013-roman-to-integer.flang --proof
 ```
 
 ```
@@ -488,18 +529,32 @@ flang check examples/leetcode/013-roman-to-integer.flang --proof
   «Символы»                    доказано композицией: рекурсии нет, обещание сложено из обещаний тех, кого зовёт
   «Римское в число»            доказано композицией: рекурсии нет, обещание сложено из обещаний тех, кого зовёт
 
+законы (сетка конечна, доказательством не является):
+  нет объявленных законов
+
 что высказано и чем это несётся:
   постусловие «значение цифры неотрицательно» функции «Значение цифры» — доказано сведением цели с телом функции: правило «неотрицательность по построению», объявленные типы аргументов не понадобились — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
   постусловие «значение цифры не больше тысячи» функции «Значение цифры» — доказано сведением цели с телом функции: правило «ограниченность точным потолком по построению», объявленные типы аргументов не понадобились — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
+  постусловие «I — это один» функции «Значение цифры» — доказано сведением цели с телом функции: правило «разбор цели по условию», объявленные типы аргументов не понадобились — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
+  постусловие «V — это пять» функции «Значение цифры» — доказано сведением цели с телом функции: правило «разбор цели по условию», объявленные типы аргументов не понадобились — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
+  постусловие «X — это десять» функции «Значение цифры» — доказано сведением цели с телом функции: правило «разбор цели по условию», объявленные типы аргументов не понадобились — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
+  постусловие «L — это пятьдесят» функции «Значение цифры» — доказано сведением цели с телом функции: правило «разбор цели по условию», объявленные типы аргументов не понадобились — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
+
+принято на веру:
+  ничего
 
 итог:
   функций 4: тотальных 4, обычных 0
   обещание несёт: композиция 4, структура 0, точный шаг 0, постоянный шаг 0, объявленная мера 0
+  сторожей в рантайме: 0 мест
+  законов на сетке: 0 (значений в сетках 0); на веру: 0
+  утверждений 6: доказано 6 (из них без теоремы 6), сетка 0, объявлено, не доказано 0
 ```
 
 The difference between "the examples passed" and "proved" is literally visible
-here. The digit-value function has three examples; it has two postconditions,
-and **neither is carried by the examples**. The first is closed by the rule
+here. The digit-value function has three examples; it has six postconditions,
+and **none is carried by the examples**. Of the two about bounds, the first is
+closed by the rule
 "non-negative by construction": eight branches of a choice end in eight
 literals, and all eight are at least zero. The second by the rule "bounded by an
 exact ceiling by construction": M is the highest sign in the table, and there is
@@ -518,10 +573,10 @@ falls into a cycle.
 This task is here because the proof **does not go through** on it, and the file
 says so outright.
 
-**The whole solution** (`examples/leetcode/202-happy-number.flang`):
+**The whole solution** (`docs/examples/leetcode/202-happy-number.flang`):
 
 ```flang
-модуль «Счастливое число»
+модуль «Happy number»
 
 тотальная функция «Сумма квадратов цифр»
   принимает н: число
@@ -559,6 +614,7 @@ says so outright.
 функция «Шаг счастья»
   принимает н: число, виденные: список числа
   возвращает признак
+  обеспечивает «единица — счастливое число» если н равен 1 то (результат равен да) иначе да
   пример «Единица счастлива сразу»
     дано н равно 1
     дано виденные равно пустой список
@@ -601,20 +657,21 @@ says so outright.
 **What is proved:**
 
 ```
-flang check examples/leetcode/202-happy-number.flang --proof
+flang check docs/examples/leetcode/202-happy-number.flang --proof
 ```
 
 ```
-чем несётся обещание «тотальная»:
-  «Сумма квадратов цифр»  доказано объявленной мерой: убывает «н»; мера объявлена автором, сторож считает её на каждом витке — 1 место
-  «Есть число»            доказано композицией: рекурсии нет, обещание сложено из обещаний тех, кого зовёт
-  «Шаг счастья»           обещания нет: функция обычная, о завершении не сказано ничего
-  «Счастливое»            обещания нет: функция обычная, о завершении не сказано ничего
-
-итог:
-  функций 4: тотальных 2, обычных 2
-  обещание несёт: композиция 1, структура 0, точный шаг 0, постоянный шаг 0, объявленная мера 1
+FLANG_PROPERTY: нарушено свойство «чужой заголовок не признаётся своим» функции «Это заголовок функции записи»
 ```
+
+That is what binary 0.7.17 answers on 11 September 2026: there is **no** proof
+report for this file — the `--proof` run stops on a violated postcondition of
+the compiler itself (`flang/self/zapis.flang`, «чужой заголовок не признаётся
+своим»), exit code 1. It is a compiler bug, not the file's: `flang check`
+without `--proof` passes the same file with exit code 0 and prints `без
+доказанного завершения: «Шаг счастья» «Счастливое»`. The 29 August measurement
+with the same flag did print the report: the two ordinary functions carried
+"no promise: the function is ordinary, nothing is said about termination".
 
 `«Шаг счастья»` and `«Счастливое»` are the only two functions in the whole
 catalogue written with the word `функция` rather than `тотальная функция`. They
@@ -633,7 +690,7 @@ no promise, and the report says "nothing has been said about termination".
 | | |
 | --- | --- |
 | files | 82 |
-| lines | 7 709 |
+| lines | 6 205 |
 | functions | 301 |
 | of those total | 299 |
 | ordinary | 2 |

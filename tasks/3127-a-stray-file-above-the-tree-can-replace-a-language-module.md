@@ -6,7 +6,8 @@
 ветка: r/module-isolation, r/volna-pechat
 команда: вторая
 карта: Что мешает больше всего
-рядом: 1315, 1722, 9895
+рядом: 1315, 9895
+нужность: 2 — в работе: FLANG_MODULE_ROOT в flang_repl.c:3318 и в bootstrap (585c77216), сторож 54eaa828f, --подлог проходит; но сторож красен «мест 6», затенение — только stderr (:3440), в хук/CI не позван
 ---
 
 # 3127. Поиск модулей поднимается выше дерева, и чужой файл может подменить модуль языка
@@ -22,11 +23,11 @@
 
 ```
 $ cd /srv/tmp/dokazuemyy/mod-iso
-$ env -u FLANG_MODULE_DIR LC_ALL=C.UTF-8 bootstrap/flang check scripts/releases.flang
+$ env -u FLANG_MODULE_DIR LC_ALL=C.UTF-8 bootstrap/flang check scripts/site/releases.flang
 flang: модуль «JSON» взят из /srv/tmp/json.baseline.flang; тот же модуль объявляют также: /srv/tmp/dokazuemyy/mod-iso/flang/stdlib/json.flang
 ...
 модуль «Выпуски»: функций 61, из них с доказанным завершением 61; типов 11; файлов вместе с импортами 2
-scripts/releases.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+scripts/site/releases.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 $ echo $?
 0
 ```
@@ -68,7 +69,7 @@ $ echo $?
 выходит за пределы репозитория.
 
 Замер на этом дереве (`/srv/tmp/dokazuemyy/mod-iso`, 8 сентября 2026,
-`sh scripts/module-origin-guard.sh`): **наружу выходит поиск у 35 каталогов из
+`sh scripts/guards/module-origin-guard.sh`): **наружу выходит поиск у 35 каталогов из
 129**, в которых есть `.flang`, — это корень, `scripts/`, `fspec/**`, `web/**`,
 `packaging/` и почти весь `examples/**`. Наружу попадают `/srv/tmp/dokazuemyy`
 (3 файла `.flang`) и `/srv/tmp` (170 файлов); на `/srv` подъём обрывается —
@@ -94,15 +95,15 @@ $ echo $?
 | «Запись доказательства» | `/srv/tmp/zp-do.flang` | `flang/self/zapis.flang` |
 | «Сверщик доказательств» | `/srv/tmp/sv-do.flang` | `flang/proof/сверщик.flang` |
 | «Подделки ядра» | `/srv/tmp/pod-head.flang`, `/srv/tmp/pod-mine.flang` | `flang/scripts/kernel-forgeries.flang` |
-| «Сторож умений ядра» | `/srv/tmp/dokazuemyy/ст-ум.flang` | `scripts/kernel-abilities-guard.flang` |
+| «Сторож умений ядра» | `/srv/tmp/dokazuemyy/ст-ум.flang` | `scripts/guards/kernel-abilities-guard.flang` |
 | «Спека 1: потолок скидки» | `/srv/tmp/spec-backup.flang` | `fspec/spec/01-discount-cap.flang` |
 | «Подделка примером под квантором» | `/srv/tmp/dyra.flang` | `flang/test/fixtures/poddelka-primer-pod-kvantorom.flang` |
 | «Длина списка», «Отрезок», «Градины», «Проба», «Ярлыки» | ещё 19 файлов | примеры и корпус |
 
 **Живых подмен сегодня пять**, и все пять — «JSON»:
 `fspec/clarifications.flang:3`, `fspec/guard.flang:3`,
-`scripts/releases.flang:2`, `scripts/releases-page.flang:3`,
-`scripts/releases-page-verify.flang:3`.
+`scripts/site/releases.flang:2`, `scripts/site/releases-page.flang:3`,
+`scripts/site/releases-page-verify.flang:3`.
 
 Остальные пятнадцать сегодня не срабатывают только потому, что ввозящие файлы
 лежат в `flang/self/**` и `flang/**`, откуда подъём обрывается сразу. Стоит
@@ -131,13 +132,13 @@ stderr, код возврата 0.
 
 | проверка | как позвана | ответ | сказала ли о подмене |
 |---|---|---|---|
-| сам компилятор | `bootstrap/flang check scripts/releases.flang` | **код 0**, «замечаний нет» | нет: строка ушла в stderr и в вердикт не входит |
+| сам компилятор | `bootstrap/flang check scripts/site/releases.flang` | **код 0**, «замечаний нет» | нет: строка ушла в stderr и в вердикт не входит |
 | `спеки:проверка` | `bootstrap/flang io fspec/guard.flang` | код 1, **79 бед** — и ни одна не об этом | нет, хотя чужой «JSON» приехал именно сюда |
 | `столкновения:проверка` | `node flang/scripts/link-collision-guard.mjs --дерево` | **код 0** | нет: обходит текст ДЕРЕВА, о предках не знает вовсе |
 | `sh .githooks/pre-push` | одиннадцать дешёвых сторожей | **код 0, все зелены** | нет |
 | `FLANG_DUPLICATE_NAME` | само связывание | не возникает | нет: это про два объявления в ОДНОЙ программе, а при затенении второго в программе нет вовсе |
 | `FLANG_IMPORT_AMBIGUOUS` | само связывание | не возникает | нет: спор считается внутри ОДНОГО места, а места здесь разные |
-| `имена-модулей:проверка` | `scripts/module-name-guard.flang` | красен по своему долгу | нет: судит имена модулей дерева, чужих файлов не видит |
+| `имена-модулей:проверка` | `scripts/guards/module-name-guard.flang` | красен по своему долгу | нет: судит имена модулей дерева, чужих файлов не видит |
 | `имена:проверка`, `перечни:проверка`, `октет:проверка`, `правила:проверка` | обходы дерева | своё | нет: ни один не выходит за корень |
 
 Общее у всех: **ни одна проверка дерева не смотрит НАРУЖУ дерева**, а компилятор,
@@ -145,7 +146,7 @@ stderr, код возврата 0.
 
 ## Что уже сделано этой задачей
 
-`scripts/module-origin-guard.sh` (ярлыки `изоляция:проверка`,
+`scripts/guards/module-origin-guard.sh` (ярлыки `изоляция:проверка`,
 `изоляция:подлог`) — сторож происхождения модулей:
 
 * пересчитывает правило поиска **сам**, обходом каталогов, и печатает для
@@ -170,7 +171,7 @@ stderr, код возврата 0.
 Сегодня на этой машине сторож **красен по делу**: пять ввозов «JSON». Поэтому в
 `.githooks/pre-push` он не взят — хук, красный по чужому файлу вне дерева,
 обойдут через `--no-verify`. Записан в обе ведомости с причиной
-(`scripts/storozha-bez-zova.json`, `scripts/storozha-bez-podloga.json`).
+(`scripts/ledgers/storozha-bez-zova.json`, `scripts/ledgers/storozha-bez-podloga.json`).
 
 ## Чего это стоило дереву
 
@@ -184,7 +185,7 @@ stderr, код возврата 0.
 дозволение и заведено: сторож на flang, лежащий в `scripts/`, разрешался бы тем
 же подъёмом вверх, который проверяет, то есть **его самого исполняло бы то, что
 он судит**. Но довод не-долга заводится разбором в трёх местах сразу (шапка
-файла, функция «Довод не-долга» в `scripts/tree-inventory.flang`, эта опись), и
+файла, функция «Довод не-долга» в `scripts/guards/tree-inventory.flang`, эта опись), и
 решение это не работника, а хозяина дерева. Пока файл честно числится долгом.
 
 ## Что осталось — и что из этого ждёт перепечатки
@@ -213,9 +214,9 @@ stderr, код возврата 0.
 
 ## Критерии закрытия
 
-1. `sh scripts/module-origin-guard.sh` — **код 0** на рабочей машине: ни одного
+1. `sh scripts/guards/module-origin-guard.sh` — **код 0** на рабочей машине: ни одного
    ввоза, разрешаемого файлом вне дерева. Сегодня код 1, мест 5.
-2. `sh scripts/module-origin-guard.sh --подлог` — **код 0** обеими сторонами
+2. `sh scripts/guards/module-origin-guard.sh --подлог` — **код 0** обеими сторонами
    (красен на подлоге, зелен без него). Сегодня выполнено.
 3. Двоичный, собранный из перепечатанного семени, при названном
    `FLANG_MODULE_ROOT` **не выходит выше названного корня**: проба на том же
@@ -223,7 +224,7 @@ stderr, код возврата 0.
 4. Затенение перестаёт быть только строкой в stderr: под ключом оно даёт
    ненулевой код.
 5. Сторож позван — хуком либо шагом CI, — и позван так, что его проба порчи
-   прогоняется, а не лежит; `sh scripts/storozha-bez-podloga.sh --check`
+   прогоняется, а не лежит; `sh scripts/guards/storozha-bez-podloga.sh --check`
    зелен и записи о нём в ведомостях больше нет.
 
 ## Предел подъёма внесён 8 сентября 2026 (ветка `r/volna-pechat`)
@@ -245,7 +246,7 @@ stderr, код возврата 0.
 ### Чем проверено
 
 Двоичный собран ВНЕ дерева приёмом из шапки
-`scripts/semya-rantayma-eto-istochnik.sh` (шапка 9 строк + источник, `make -j8`).
+`scripts/seed/semya-rantayma-eto-istochnik.sh` (шапка 9 строк + источник, `make -j8`).
 Игрушечное дерево той же породы, что у `--подлог`, но с двоичным ВНУТРИ него
 (иначе библиотека ищется не там): `дерево/flang/stdlib/lists.flang` даёт 2,
 `над/чужой-черновик.flang` — 99, ввозит `дерево/scripts/proba.flang`.
@@ -264,9 +265,9 @@ stderr, код возврата 0.
 
 | прогон | ответ |
 |---|---|
-| `flang ast scripts/releases.flang` без переменной | строка «модуль «JSON» взят из /srv/tmp/json.baseline.flang», дерево разбора **342 626** байт |
+| `flang ast scripts/site/releases.flang` без переменной | строка «модуль «JSON» взят из /srv/tmp/json.baseline.flang», дерево разбора **342 626** байт |
 | то же с `FLANG_MODULE_ROOT=<дерево>` | строк о затенении **0**, дерево разбора **398 194** байта |
-| `flang check scripts/releases.flang` с `FLANG_MODULE_ROOT=<дерево>` | строк о затенении 0, «замечаний нет», код 0 |
+| `flang check scripts/site/releases.flang` с `FLANG_MODULE_ROOT=<дерево>` | строк о затенении 0, «замечаний нет», код 0 |
 
 Разница в 55 568 байт разбора — это и есть мера подмены: без переменной
 проверялась ДРУГАЯ программа, и она проходила «замечаний нет» так же уверенно.
@@ -274,8 +275,8 @@ stderr, код возврата 0.
 ### Что по-прежнему не сделано
 
 * **Критерий 1** (сторож зелен на рабочей машине) — не выполнен и этой правкой не
-  выполняется: сегодня `sh scripts/module-origin-guard.sh` называет **6** мест
-  (пять «JSON» из задачи плюс `scripts/release-body.flang:3`, заведённый позже).
+  выполняется: сегодня `sh scripts/guards/module-origin-guard.sh` называет **6** мест
+  (пять «JSON» из задачи плюс `scripts/site/release-body.flang:3`, заведённый позже).
   Убрать чужие файлы из `/srv/tmp` — решение хозяина машины.
 * **Критерий 4** (затенение даёт ненулевой код под ключом) — не сделан: строка
   по-прежнему уходит в stderr и на код не влияет. С названным корнем случай

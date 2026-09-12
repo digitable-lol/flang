@@ -9,8 +9,8 @@
 # за неделю, и каждый диагностировали по нескольку раз и по-разному:
 #
 #   flang check flang/self/parser.flang    37,1 ГиБ (замер 30.08.2026)  sborka
-#   io scripts/name-splicing-guard.flang   31,6 ГиБ (замер 30.08.2026)  imena
-#   io scripts/link-guard.flang            15,0 ГиБ (замер 30.08.2026)  links
+#   io scripts/guards/name-splicing-guard.flang   31,6 ГиБ (замер 30.08.2026)  imena
+#   io scripts/guards/link-guard.flang            15,0 ГиБ (замер 30.08.2026)  links
 #
 # У раннера GitHub 15,61 ГиБ — число снято с самого раннера (`MemTotal`,
 # прогон 33316181246 от 30 августа 2026), а не взято с рекламной страницы; из
@@ -78,8 +78,8 @@
 #
 # Имена переменных здесь английские, а не переписанные с русского: кириллицу в
 # именах не принимают ни dash, ни bash, а транслита в этом дереве не заводят.
-# Доводы ключей кириллицей — как у `--подлог` в `scripts/overlong-string-guard.sh`
-# и `--проза` в `scripts/published-vs-tree.sh`.
+# Доводы ключей кириллицей — как у `--подлог` в `scripts/guards/overlong-string-guard.sh`
+# и `--проза` в `scripts/guards/published-vs-tree.sh`.
 
 set -eu
 

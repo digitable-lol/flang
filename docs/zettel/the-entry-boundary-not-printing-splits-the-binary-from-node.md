@@ -65,7 +65,7 @@ flang — `grep` по `flang/self/types.flang`, 0 вхождений.
 
 **Чем ограничено.** «Пропущено 2» у C — это `examples/surfaces/factorial.zh.flang`
 (двоичный отвечает кодом 1, Node — 0) и
-`examples/web/shortener/handler-without-budget.flang` (наоборот); байты там
+`examples/docs/examples/web/shortener-client/handler-without-budget.flang` (наоборот); байты там
 не сравнивались вовсе, причины не разбирались.
 **Отдельная беда, найденная тем же прогоном и к печати двоичного отношения не
 имеющая: у цели Elixir есть программа, на которой не сходится ОБЕ реализации.**

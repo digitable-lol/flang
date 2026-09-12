@@ -118,12 +118,12 @@
      "Битых ссылок в дереве 1947 → 18. Сторож научен отличать запись о прошлом (сделанная задача, датированный отчёт) от обещания о настоящем, и число пропущенного печатает в вердикте, а не прячет. Список исключений при этом не раздут, а сокращён: 373 строки → 171.",
      "Тело выпуска на GitHub печатается из `docs/release-notes.json`, а не из строки в конвейере. У 0.7.14 на 93 коммита приходилось 168 знаков тела. Выпуск без записанных заметок теперь отвергается.",
      "`.claude` и `AGENTS.md` переехали в `.ai/`, `README.ru.md` — в `docs/`. Корень отделяет язык от оснастки.",
-     "Версия больше не живёт в `package.json`: он печатается из `scripts/emit-package.flang`."
+     "Версия больше не живёт в `package.json`: он печатается из `scripts/release/emit-package.flang`."
     ],
     "сломалось": [
      "Доля с прежними выпусками несравнима второй раз подряд: 0.7.14 сменил числитель, 0.7.15 сужает знаменатель. Обе меры печатаются с разбивкой, и баланс знаменателя сверяется прибором.",
      "`flang package` не работает ни на одном входе с 29 августа: вызов с одним доводом при функции о двух. Найдено прогоном, починка — одна строка, доедет следующей перепечаткой семени (задача 3401).",
-     "Поиск модулей поднимается выше корня дерева, и файл-предок каталогом выше побивает библиотеку языка. Дыра названа и померена: 20 имён затеняемы, 5 затенений живых. Сторож `scripts/module-origin-guard.sh` её видит, починка в двоичном ждёт перепечатки (задача 3127).",
+     "Поиск модулей поднимается выше корня дерева, и файл-предок каталогом выше побивает библиотеку языка. Дыра названа и померена: 20 имён затеняемы, 5 затенений живых. Сторож `scripts/guards/module-origin-guard.sh` её видит, починка в двоичном ждёт перепечатки (задача 3127).",
      "Вердикт по-прежнему НЕ ДОКАЗУЕМ: три проверки из четырёх сошлись, доля 79,42 % при пороге 95 %."
     ]
    },
@@ -145,7 +145,7 @@
      "Broken links in the tree: 1947 → 18. The sentinel now tells a record of the past (a completed task, a dated report) from a promise about the present, and prints how many it skipped rather than hiding it. The exception list shrank rather than grew: 373 rows → 171.",
      "The GitHub release body is printed from `docs/release-notes.json` instead of a string in the pipeline. Version 0.7.14 had 168 characters of body for 93 commits. A release with no recorded notes is now refused.",
      "`.claude` and `AGENTS.md` moved to `.ai/`, `README.ru.md` to `docs/`.",
-     "The version no longer lives in `package.json`: that file is printed from `scripts/emit-package.flang`."
+     "The version no longer lives in `package.json`: that file is printed from `scripts/release/emit-package.flang`."
     ],
     "сломалось": [
      "The share is incomparable with earlier releases for the second time running: 0.7.14 changed the numerator, 0.7.15 narrows the denominator. Both measures print a breakdown, and the denominator balance is verified by an instrument.",
@@ -614,7 +614,7 @@
      "Поиск по кодам отказа в документации находит 13 кодов из 13 — было 0 из 13."
     ],
     "сломалось": [
-     "Ярлык `emit:check` убран: проверку печати делает `pechat:check` на самом языке, а `occupied:check` зовёт `scripts/occupied-names-guard.flang` вместо снятого скрипта на JavaScript.",
+     "Ярлык `emit:check` убран: проверку печати делает `pechat:check` на самом языке, а `occupied:check` зовёт `scripts/guards/occupied-names-guard.flang` вместо снятого скрипта на JavaScript.",
      "Общая половина драйвера PostgreSQL уехала в модуль «Провод». Программы, звавшие `«Знак байта»`, `«Четыре октета»`, `«Два октета»` и соседей прямо у «Разговора с базой», должны ввозить «Провод»."
     ]
    },
@@ -636,7 +636,7 @@
      "Searching the documentation by refusal code finds 13 codes out of 13 — it used to find 0 of 13."
     ],
     "сломалось": [
-     "The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/occupied-names-guard.flang` instead of the removed JavaScript script.",
+     "The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/guards/occupied-names-guard.flang` instead of the removed JavaScript script.",
      "The shared half of the PostgreSQL driver moved into the \"Wire\" module. Programs that called `«Знак байта»`, `«Четыре октета»`, `«Два октета»` and their neighbours directly from the database module must now import \"Wire\"."
     ]
    }
@@ -946,6 +946,46 @@
      "Module linking: `использует`, plus selective import with `только`.",
      "Self-application: the lexer, the parser, type checking, totality analysis and C emission — written in flang itself.",
      "The `emit` command: emission into a target language from the command line."
+    ]
+   }
+  },
+  "0.7.18": {
+   "ru": {
+    "заголовок": "Проверка стала строже, а дерево — понятнее",
+    "появилось": [
+     "Независимая проверка теперь повторяет 629 обязательств из 651 вместо 625 — это 96,62 %. Мест, где она верит компилятору на слово, стало 12 вместо 16. Прибавка получена повторением шагов, а не вычислением: разряд «закрыто вычислением» остался прежним, 6.",
+     "Учебник в терминале вырос с пяти уроков до двенадцати. Он больше не просит набрать программу целиком: даёт готовый текст с пропусками и спрашивает их по очереди, а после каждой строки говорит, что понял. Имя можно писать и ёлочками «Удвоить», и прямыми кавычками — компилятор принимает оба вида, и учебник больше не спорит об этом.",
+     "Проверка обязательств у свободного утверждения (того, что стоит не при функции) теперь доходит до машинного отчёта `flang check --proof --json`. Раньше такие утверждения выпадали из отчёта в трёх местах отбора, и их не видели ни опись доказанного, ни числа на сайте."
+    ],
+    "изменилось": [
+     "Примеры программ переехали из `examples/` в `docs/examples/`: 200 программ в 24 каталогах. Рабочие скрипты разложены по восьми папкам — у корня каталога `scripts/` осталось 13 файлов вместо 136. Замеры, которые давно не гонялись, сняты; живые переехали в `docs/benchmarks/` с английскими именами.",
+     "Браузерные образцы (`web/`) стали тем, чем они и были, — примерами: теперь они лежат в `docs/examples/web/`.",
+     "Файл `package.json` оставлен, но вычищен: из него сняты три поля, которых не читает ни один инструмент. Он нужен не для npm, а как единственное место, откуда выпуск, два сторожа, формула Homebrew и сборка сайта берут версию, лицензию и адреса.",
+     "Сторож имён поймал настоящее столкновение: тип «Документ» объявлен и в разборе JSON, и в языковом сервере, а зонд проверки сводил оба в одну программу. Починен не сторож, а причина — из зонда снят ввоз, которым он не пользовался."
+    ],
+    "сломалось": [
+     "Кванторы по элементам списка, вложенные кванторы, индукция по вашему собственному типу, утверждения не при функции и шаги доказательства, названные человеком, в этот выпуск НЕ вошли. Они сделаны и проверены, но доходят до собранного компилятора только перепечаткой семени — она идёт и займёт ещё несколько часов. Выйдут следующим выпуском.",
+     "Доказательство по-прежнему относится к `flang check` и не покрывает собранный код: никто не проверяет, что напечатанный C соответствует исходной программе. Тот же разрыв есть у Coq, Lean и Idris.",
+     "Опись примеров (`ведомость-примеров.txt`) держит прежние пути: обходчик, который её печатает, идёт два часа сорок минут и ни разу не дошёл до конца — ни у нас, ни в конвейере. Переписать её руками нельзя: сверка идёт построчным сличением, а порядок строк там — порядок обхода."
+    ]
+   },
+   "en": {
+    "заголовок": "The checker got stricter, and the tree got clearer",
+    "появилось": [
+     "The independent checker now replays 629 of 651 obligations instead of 625 — 96.62 %. Places where it takes the compiler's word dropped from 16 to 12. The gain came from replaying steps, not from computing: the «closed by computing» class stayed at 6.",
+     "The terminal tutorial grew from five lessons to twelve. It no longer asks you to type a whole program: it gives the text with gaps and asks for them one at a time, saying after each line what it understood. A name may be written with guillemets «Удвоить» or plain quotes — the compiler accepts both, and the tutorial no longer argues about it.",
+     "Obligations of a free statement (one that stands outside a function) now reach the machine report `flang check --proof --json`. They used to be filtered out in three places, so neither the proved-share ledger nor the site numbers could see them."
+    ],
+    "изменилось": [
+     "Example programs moved from `examples/` to `docs/examples/`: 200 programs in 24 directories. Working scripts are sorted into eight folders — the root of `scripts/` now holds 13 files instead of 136. Benchmarks that had not been run in a long time were removed; the live ones moved to `docs/benchmarks/` with English names.",
+     "Browser samples (`web/`) became what they always were — examples: they now live in `docs/examples/web/`.",
+     "`package.json` stays, but three fields no tool reads were removed. It is not there for npm: it is the single place from which the release, two guards, the Homebrew formula and the site build take the version, licence and URLs.",
+     "The name-collision guard caught a real one: the type «Документ» is declared both in the JSON reader and in the language server, and a probe pulled both into one program. The cause was fixed rather than the guard — the probe lost an import it never used."
+    ],
+    "сломалось": [
+     "Quantifiers over list elements, nested quantifiers, induction over your own declared type, statements outside functions, and proof steps named by a human did NOT make this release. They are written and checked, but they reach the built compiler only by reprinting the seed, which is still running. They will ship in the next release.",
+     "The proof still applies to `flang check` and does not cover the built binary: nothing verifies that the emitted C matches the source program. Coq, Lean and Idris have the same gap.",
+     "The example ledger (`ведомость-примеров.txt`) still holds the old paths: the walker that prints it runs for two hours forty minutes and has never finished — neither here nor in CI. It cannot be rewritten by hand: the check is a line-by-line diff, and the line order there is the walk order."
     ]
    }
   }

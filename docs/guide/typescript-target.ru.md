@@ -69,6 +69,10 @@ Node 23.6 и новее читает `.ts` сам, снимая типы; на N
 Генератор — `flang/self/emit-ts.flang` поверх `flang/self/emit-js.flang`
 (признак «типизировано» в общем генераторе), рантайм цели — `flang/src/emit/ts/`
 (один файл `tsconfig.json`; остальное — из `flang/src/emit/js/`), строка
-таблицы целей — `flang/src/emit/c/flang_repl.c`. Двоичный из семени печатает
-в `ts` после перепечатки семени (`scripts/raskrutka.sh`); до неё
-`flang emit --target ts` отвечает отказом с именем функции, которой в семени нет.
+таблицы целей — `flang/src/emit/c/flang_repl.c`. Семя перепечатано 11 сентября
+2026 (коммит `0ce948bfd`), и двоичный из него печатает в `ts`: в тот же день
+`./bootstrap/flang emit docs/examples/import-check.flang --target ts --out каталог`
+дал `import_check.ts`, `flang_runtime.js`, `flang_cli.js`, `tsconfig.json`, код 0.
+Справка `flang emit --help` при этом всё ещё говорит «во все восемь целей» и
+перечисляет девять без `ts` — текст вшит в `flang/src/emit/c/flang_repl.c`
+(задача 8596).

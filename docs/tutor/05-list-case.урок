@@ -1,0 +1,77 @@
+=номер=
+5
+=имя-ru=
+Разбор списка: пусто или голова и хвост
+=имя-en=
+Taking a list apart: empty, or head and tail
+=текст-ru=
+Список устроен просто: он либо пуст, либо у него есть первый элемент — голова —
+и остаток — хвост. Других случаев нет, и «разбор» называет оба:
+
+    разбор числа
+      случай пусто
+        то 0
+      случай голова и хвост
+        то 1 плюс («Считать» от хвост)
+
+Так пишется рекурсия по списку: функция зовёт себя на хвосте, хвост короче
+списка, и однажды останется пусто. Компилятор видит, что вызов идёт на части
+списка, и обещание «тотальная» принимает без лишних слов.
+
+Забыли один из двух случаев — компилятор откажет, а не промолчит.
+
+ЗАДАНИЕ. Функция «Произведение» перемножает все числа списка. Впишите ⟨1⟩ —
+ответ на пустом списке (единица, чтобы умножение ничего не портило) и ⟨2⟩ —
+ответ на голове и хвосте: голова умножить на произведение хвоста.
+=текст-en=
+A list is simple: it is either empty, or it has a first element — the head —
+and the rest — the tail. There are no other cases, and "разбор" (match) names
+both:
+
+    разбор числа
+      случай пусто
+        то 0
+      случай голова и хвост
+        то 1 плюс («Считать» от хвост)
+
+That is how recursion over a list is written: the function calls itself on the
+tail, the tail is shorter than the list, and one day only "пусто" (empty) is
+left. The compiler sees that the call goes to a part of the list and accepts
+the "тотальная" promise without further ado.
+
+Forget one of the two cases — the compiler refuses instead of staying quiet.
+
+YOUR TASK. «Произведение» (product) multiplies all numbers of a list. Fill in
+⟨1⟩ — the answer on the empty list (one, so that multiplication is not
+spoiled) and ⟨2⟩ — the answer on head and tail: the head times the product of
+the tail.
+=шаблон=
+модуль «Урок»
+
+тотальная функция «Произведение»
+  принимает числа: список числа
+  возвращает число
+  разбор числа
+    случай пусто
+      то ___
+    случай голова и хвост
+      то ___
+=подсказки-ru=
+на пустом списке
+на голове и хвосте: голова умножить на произведение хвоста
+=подсказки-en=
+on the empty list
+on head and tail: the head times the product of the tail
+=впиши=
+1
+голова умножить на («Произведение» от хвост)
+=хвост=
+тотальная функция «Проверка урока»
+  возвращает число
+  «Произведение» от [2, 3, 5]
+=ждём=
+30
+=примеров=
+0
+=отчёт=
+=печать=

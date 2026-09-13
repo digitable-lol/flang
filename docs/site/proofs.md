@@ -62,8 +62,8 @@ structured steps (`дано`, `утверждаем`, `затем … по св�
 `индукция по …`, `следовательно доказано`) is a surface in the spirit of Isar,
 and the kernel checks such a derivation step by step, searching for nothing.
 There are 284 such theorems in the language tree, 55 of them in the standard
-library (`grep -rac '^\s*теорема ' flang --include='*.flang'`, 11 September
-2026, commit `d6e88d50b`). The difference from Coq and Lean is not that this option exists, but how
+library (`grep -rac '^\s*теорема ' flang --include='*.flang'`, 13 September
+2026, commit `1218aa186`). The difference from Coq and Lean is not that this option exists, but how
 rarely it is reached for: the verdict prints, as a separate number, how many
 claims were closed **without a single written line of proof**.
 
@@ -101,10 +101,11 @@ expects a different code and counts the forgery as unchecked.
 
 What is confirmed by another instrument: the proof the compiler prints
 (`flang check --proof --записать`) is replayed by an independent C program —
-`flang/proof/чекер/сверщик.c`. `sh scripts/доказуемость.sh` on 11 September 2026
-with 0.7.17: PROVABLE, 625 obligations out of 651 replayed (96.01 %), 401
-forgeries rejected, 197 honest records accepted; 88 inference rules accepted by
-the Lean 4 kernel (release note for 0.7.17). More on
+`flang/proof/чекер/сверщик.c`. `sh scripts/доказуемость.sh` on 13 September 2026
+with 0.7.19: PROVABLE, 629 obligations out of 651 replayed (96.62 %), 453
+forgery probes rejected, 215 honest records accepted; 88 inference rules accepted by
+the Lean 4 kernel in the run of 11 September — the list has grown to 97 rules since,
+and Lean has not been run again. More on
 [What is proved and what is not](what-is-proved.html).
 
 The price is honest: without excluded middle some classical statements cannot be

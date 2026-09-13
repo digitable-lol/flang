@@ -61,9 +61,9 @@ $ flang/proof/чекер/сверщик заказ.flang заказ.запись
 An honest answer. On this function the kernel closed the goal «by declaration»
 — both arguments are declared non-negative — and the checker has no move for
 that yet: it neither confirms nor refutes, it names the place where it takes the
-kernel's word. 26 such places out of 651 remain in the compiler's own record set.
-Where the kernel recorded moves, the checker replays them: 625 obligations over
-88 records, and 401 deliberate forgeries rejected (`./ярлык чекер:проверка`).
+kernel's word. 22 such places out of 651 remain in the compiler's own record set.
+Where the kernel recorded moves, the checker replays them: 629 obligations over
+89 records, and 453 deliberate forgery probes rejected (`./ярлык чекер:проверка`).
 
 ## Expressible, and not
 
@@ -71,13 +71,22 @@ Nine proof words (`flang/self/lexer.flang:1220`). Expressible and proved today:
 inequalities and equalities over numbers; list lengths and order; a claim under
 a condition; induction over a declared sum, over `неотрицательное` and over a
 fold, when the theorem is written out; a precondition `требует`, checked by the
-caller and costing zero bytes in printed code; one quantifier — «for all inputs
-of this function» ([ADR-0026](adr/0026-quantifiers-over-any-type-are-a-kernel-change.md) §2.1).
+caller and costing zero bytes in printed code; the quantifier over a function's
+inputs ([ADR-0026](adr/0026-quantifiers-over-any-type-are-a-kernel-change.md) §2.1).
+
+Five more arrived with 0.7.19: induction over a type you declared yourself; a
+quantifier over the elements of a list written in the goal
+(`для всех п из результат: п больше 0`); nested quantifiers of any depth, and
+existence with the value written out (`есть такой м, а именно н, что …`); a
+statement standing outside a function (`утверждение «…»`), which now reaches
+`flang check --proof --json` and the proved-share report; and a proof step named
+by hand — the step names the inference rule and the premises it rests on, and the
+kernel checks the naming instead of searching.
 
 Not expressible — there is no place to write it:
 
-- **∃** — 0 occurrences of the sign or the word (ADR-0026 §2.3);
-- **a claim outside a function** — «for all lists …» on its own (ADR-0026 §2.1);
+- **∃ with no value named** — the kernel does not search for one and will not;
+  only the written-out value is expressible (ADR-0026 §11, item 15);
 - **state over time** — `обеспечивает` at a `процесс` is a parse refusal,
   `FLANG_PARSE` (ADR-0032 §3.1);
 - **effects** — the proving layers know nothing about `план`: 0 occurrences in
@@ -116,20 +125,28 @@ Not expressible — there is no place to write it:
 ## What «96 %» means
 
 ```
-sh scripts/доказуемость.sh          → ДОКАЗУЕМ                       (11 September 2026)
+sh scripts/доказуемость.sh          → ДОКАЗУЕМ                       (13 September 2026)
 sh flang/proof/доля-корпуса.sh --проигрыванием
-→ доля-проигрыванием = 625 / 651 = 96.01 %
-  на слово ядра: посылок и утверждений 16; шагов 4; снято калькулятором 6
+→ доля-проигрыванием = 629 / 651 = 96.62 %
+  на слово ядра: посылок и утверждений 12; шагов 4; снято калькулятором 6
 ```
 
-The share of places in the **compiler's own proof records** (88 records over
+The share of places in the **compiler's own proof records** (89 records over
 `flang/proof/map/`, `flang/proof/examples/` and the standard library) where the
 independent checker replayed the kernel's move. Not «96 % of programs are
 proved», not «96 % of claims in the tree», nothing about compiled code. The word
 ДОКАЗУЕМ is derived from four numbers: no computing step in the checker; share
-above the 95 % gate; 401 forgeries rejected and 197 honest records accepted; the
-probe set has not shrunk. The 88 inference rules were also judged by the Lean 4
-kernel, 85 lemmas ([`lean-checks-the-inference-rules.md`](lean-checks-the-inference-rules.md)).
+above the 95 % gate; 453 forgery probes rejected and 215 honest records accepted;
+the probe set has not shrunk. The inference rules were also judged by the Lean 4
+kernel — 88 rules against 85 lemmas in the run of 11 September; the list has
+grown to 97 rules since, and Lean has not been run again
+([`lean-checks-the-inference-rules.md`](lean-checks-the-inference-rules.md)).
+
+**Release 0.7.19 did not move that share.** It went 625 → 629 in 0.7.18; the seed
+reprint in 0.7.19 brought the kernel new abilities, not a higher share. What you
+have to trust grew with it: the deciding part of the kernel is 4796 lines, 4669
+before, because the quantifiers live there. The standing order to bring that
+number under 4000 is not done.
 
 ## How far from «right»
 
@@ -137,8 +154,8 @@ Five stages in [`ROADMAP.md`](../ROADMAP.md), no dates:
 
 | stage | today | when closed | decision, tasks |
 |---|---|---|---|
-| 1. To 100 % | 26 of 651 places on the kernel's word; the third run above is one | the checker answers ПРОВЕРЕНО, exit 0, on everything the kernel called proved | [`road-to-one-hundred-measured.md`](road-to-one-hundred-measured.md); 6191 done |
+| 1. To 100 % | 22 of 651 places on the kernel's word; the third run above is one | the checker answers ПРОВЕРЕНО, exit 0, on everything the kernel called proved | [`road-to-one-hundred-measured.md`](road-to-one-hundred-measured.md); 6191 done |
 | 2. Proved translation to C | printed C covered by nothing | `emit` comes with a translation protocol and a comparator's verdict; a swapped function in C is caught | ADR-0030; 1401, 1402 |
 | 3. Logic | subtraction under `требует` exits 3; nothing to say about processes, plans, effects | the second run exits 0 (1403); a place for claims about steps, plans, ownership (1404–1406, measurement first) | ADR-0032 |
-| 4. Quantifiers | one quantifier, over one function's inputs; induction carrier from a closed list of three | «для всех л: список числа» outside a function; carrier read from the type | ADR-0026; 6202, 6203 |
+| 4. Quantifiers | done in 0.7.19: a quantifier over list elements, nested quantifiers, existence with a written-out value, induction over your own type, a statement outside a function | a quantifier in `требует`; existence with no value named — decided against | ADR-0026; 6202, 6203, 6205, 6206, 5957, 9526 |
 | 5. Traceability, response, failure | the requirement → code → example → record chain is walked both ways by a guard, gaps 62 and 68 (1407 done on 11 September); a step bound exists as analysis only; failure is described, not proved | the gaps go to zero under a ratchet; the step bound is in the record and replayed (1408), seconds for a named machine with a spread (1409); failure behaviour on one page with a counter of swallowed «Сбой» (1410); seconds and hardware failure still unproved | ADR-0031, 0033, 0034; 1407–1410 |

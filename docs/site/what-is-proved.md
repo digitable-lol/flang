@@ -130,17 +130,22 @@ The word "proved" in the compiler's report need not be taken on trust.
 `flang check --proof --записать <file>` writes the proof itself to a file, and a
 separate C program — `flang/proof/чекер/сверщик.c`, which has never seen the
 compiler — takes the source and the record and replays every step anew. The run
-`sh scripts/доказуемость.sh` on 11 September 2026 with 0.7.17 (commit
-`2c40752d0`, about 13 seconds) answers **PROVABLE** and prints four checks as
-numbers: **625 obligations out of 651 replayed (96.01 %)**; forgery set 33 of 33;
-401 forgery probes, none accepted; 197 honest records, none rejected.
+`sh scripts/доказуемость.sh` on 13 September 2026 with 0.7.19 (commit
+`1218aa186`, about 13 seconds) answers **PROVABLE** and prints four checks as
+numbers: **629 obligations out of 651 replayed (96.62 %)**; forgery set 34 of 34;
+453 forgery probes, none accepted; 215 honest records, none rejected.
+
+The share did not grow with 0.7.19: it went 625 → 629 in 0.7.18, and the seed
+reprint gave the kernel new abilities rather than a higher share. Places where
+the checker takes the kernel's word are still 12 premises and 4 steps.
 
 Read the 96 % precisely: it is the share of places **in the compiler's own
 proof** (the corpus of records) where the independent checker replayed the step
 — not "96 % of programs are proved". The inference rules the checker uses have
 also been checked by a foreign judge: 88 rules were translated into Lean 4 lemmas
-and accepted by its kernel (release note for 0.7.17 in
-`docs/release-notes.json`; report in `docs/lean-checks-the-inference-rules.md`).
+and accepted by its kernel. That run is dated 11 September; the list has grown
+to 97 rules since, and Lean has not been run again — it is not installed on this
+machine (report in `docs/lean-checks-the-inference-rules.md`).
 
 ---
 

@@ -1495,3 +1495,5 @@ eb759bdefde04fe642cdbe8c4d606e9c|9|7|2|0|0|flang/stdlib/bignum.flang
 5a866d39241bdedd8b23b02616f15438|2|1|1|0|0|docs/examples/pythagoras/формула-евклида.flang
 48fabdcaa9d040986fe87d584786ff9b|1|0|0|0|1|flang/proof/чекер/пробы/семьи/план/vremennyy-katalog.flang
 58695c0261bca20c054c8f8e7fade6c3|1|0|0|0|1|flang/proof/чекер/пробы/семьи/план/порча/chuzhoye-poruchenie.flang
+16b27f88abc9217d9a019ffbdd329c4c|16|10|6|0|0|docs/examples/frameworks/react-ts-pure/core/storefront.flang
+350c6da0d131bdd24fac32731e171887|3|1|2|0|0|docs/examples/frameworks/react-ts-pure/scripts/markup-without-logic.flang

@@ -266,6 +266,7 @@
 // вынуты и вынуты С ДОВОДОМ: проза (`*.md`) и `docs/tasks/*` — там расширения
 // называют, а не отбирают по ним; `changelog.json` — история, а не отбор;
 // сам этот файл — в нём список и живёт; `docs/benchmark*` — напечатанное, а не исходники.
+// Журналов ДВА, и вынуты оба поимённо: путь без косой черты git читает от корня.
 // Туда же вынута ведомость `scripts/ledgers/link-guard-known-not-a-path.tsv` (216 строк,
 // заведена 31 августа): это ДАННЫЕ сторожа ссылок — список строк, которые
 // путями не являются, и расширения в ней НАЗЫВАЮТ, а не отбирают по ним. Порода
@@ -280,8 +281,8 @@
   обеспечивает «перепись идёт через ключ -c» результат содержит "-c"
   обеспечивает «перепись спрашивает у git, а не перечисляет руками» (элемент 2 в результат) содержит "git"
   пример «Места отбора спрашиваются у дерева одним заходом»
-    ожидается ["-c", "cd ../.. && git -c core.quotePath=false grep -l --untracked -E -e '(фп|фланг)([^[:alpha:]]|$)' -- ':!*.md' ':!docs/tasks/*' ':!changelog.json' ':!scripts/guards/file-extensions.flang' ':!docs/benchmark*' ':!scripts/ledgers/link-guard-known-not-a-path.tsv'"]
-  ["-c", "cd ../.. && git -c core.quotePath=false grep -l --untracked -E -e '(фп|фланг)([^[:alpha:]]|$)' -- ':!*.md' ':!docs/tasks/*' ':!changelog.json' ':!scripts/guards/file-extensions.flang' ':!docs/benchmark*' ':!scripts/ledgers/link-guard-known-not-a-path.tsv'"]
+    ожидается ["-c", "cd ../.. && git -c core.quotePath=false grep -l --untracked -E -e '(фп|фланг)([^[:alpha:]]|$)' -- ':!*.md' ':!docs/tasks/*' ':!changelog.json' ':!docs/site/changelog.json' ':!scripts/guards/file-extensions.flang' ':!docs/benchmark*' ':!scripts/ledgers/link-guard-known-not-a-path.tsv'"]
+  ["-c", "cd ../.. && git -c core.quotePath=false grep -l --untracked -E -e '(фп|фланг)([^[:alpha:]]|$)' -- ':!*.md' ':!docs/tasks/*' ':!changelog.json' ':!docs/site/changelog.json' ':!scripts/guards/file-extensions.flang' ':!docs/benchmark*' ':!scripts/ledgers/link-guard-known-not-a-path.tsv'"]
 
 тотальная функция «Строки»
   принимает текст: строка

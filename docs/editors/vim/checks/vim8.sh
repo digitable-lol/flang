@@ -11,7 +11,7 @@
 #   FLANG_VIM_LSP=~/vimlsp flang io scripts/editors/lsp-check.flang
 set -eu
 
-koren=$(cd "$(dirname "$0")/../../.." && pwd)
+koren=$(cd "$(dirname "$0")/../../../.." && pwd)
 gde=${FLANG_VIM_LSP:-}
 
 if [ -z "$gde" ] || [ ! -d "$gde/vim-lsp" ] || [ ! -d "$gde/async.vim" ]; then
@@ -24,13 +24,13 @@ fi
 # тихом режиме файл открыт раньше, чем зарегистрирован сервер.
 vim -Nu NONE -es \
   --cmd 'set nocompatible' \
-  --cmd "set rtp^=$gde/vim-lsp,$gde/async.vim,$koren/editors/vim" \
+  --cmd "set rtp^=$gde/vim-lsp,$gde/async.vim,$koren/docs/editors/vim" \
   --cmd 'filetype plugin on' \
   --cmd 'syntax on' \
   --cmd 'runtime! plugin/*.vim' \
   -c 'call lsp#enable()' \
   -c 'edit' \
-  -c "source $koren/editors/vim/checks/vimlsp.vim" \
+  -c "source $koren/docs/editors/vim/checks/vimlsp.vim" \
   -c 'call FlangVimLsp()' \
   -c 'qa!' \
-  "$koren/editors/vim/checks/probe-error.flang" 2>&1
+  "$koren/docs/editors/vim/checks/probe-error.flang" 2>&1

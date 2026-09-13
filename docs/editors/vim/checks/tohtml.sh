@@ -9,7 +9,7 @@
 # комментарий → Comment. Так их называет сам Vim, и подменить эти имена нечем.
 set -eu
 
-koren=$(cd "$(dirname "$0")/../../.." && pwd)
+koren=$(cd "$(dirname "$0")/../../../.." && pwd)
 kuda=$(mktemp -d)
 trap 'rm -rf "$kuda"' EXIT
 
@@ -19,7 +19,7 @@ pokazat() {
   out="$kuda/$(basename "$fayl").html"
   vim -Nu NONE -es \
     --cmd 'set nocompatible' \
-    --cmd "set rtp^=$koren/editors/vim" \
+    --cmd "set rtp^=$koren/docs/editors/vim" \
     --cmd 'filetype plugin on' \
     --cmd 'syntax on' \
     --cmd 'runtime! plugin/tohtml.vim' \

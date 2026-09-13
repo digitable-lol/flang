@@ -44,6 +44,8 @@ docs/benchmarks/proof-cost/probe-forgery.flang	3
 docs/benchmarks/speed/memory.flang	64
 docs/benchmarks/speed/programs/tasks.flang	84
 docs/course/check.flang	53
+docs/editors/vim/checks/probe-error.flang	6
+docs/editors/vim/checks/probe-transition.flang	2
 docs/examples/operations.flang	8
 docs/examples/package/discount.flang	19
 docs/examples/package/shop/shop.flang	14
@@ -57,8 +59,6 @@ docs/zamer-teorkat/class-string-to-string.flang	226
 docs/zamer-teorkat/iso-object-to-category.flang	13
 docs/zettel/ukazatel.flang	47
 docs/спецификации/слой-отказов.flang	66
-docs/editors/vim/checks/probe-error.flang	6
-docs/editors/vim/checks/probe-transition.flang	2
 flang/conc/examples/backpressure.flang	44
 flang/conc/examples/budget.flang	21
 flang/conc/examples/counter.flang	26

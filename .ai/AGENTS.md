@@ -227,7 +227,7 @@ INDIVISIBLE=yes PAMYAT=400G /srv/flang-rabota/vorota/flang-vorota -- sh scripts/
 прогон и пишет об этом в `/srv/work/storozh-pamyati.log`. Прогон, умерший без
 объяснения, — сначала загляните туда.
 
-Правила целиком — [`docs/gate-rules.md`](docs/gate-rules.md): сколько просить,
+Правила целиком — [`docs/gate-rules.md`](../docs/gate-rules.md): сколько просить,
 что значит каждый отказ, чего делать нельзя, и что делает сторож памяти машины.
 
 ## С чего начать: своё дерево и чужой двоичный

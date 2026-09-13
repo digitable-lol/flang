@@ -15,16 +15,16 @@
 
 | Вопрос | Где |
 | --- | --- |
-| как пишется каждая конструкция, с примерами | [`docs/site/language.ru.md`](docs/site/language.ru.md) |
-| все слова языка на четырёх поверхностях | [`docs/glossary.md`](docs/glossary.md) |
-| контракт языка: формы, семантика, AST | [`docs/flang/SPEC.md`](docs/flang/SPEC.md) |
-| каждая команда, ключ, код возврата | [`docs/site/cli.ru.md`](docs/site/cli.ru.md) |
-| каждый код отказа `FLANG_*` | [`docs/site/diagnostics.ru.md`](docs/site/diagnostics.ru.md) |
-| что доказано, а что посчитано | [`docs/site/what-is-proved.ru.md`](docs/site/what-is-proved.ru.md) |
-| ядро доказательств — контракт | [`docs/flang/proof/SPEC.md`](docs/flang/proof/SPEC.md) |
-| категорная поверхность | [`docs/ct/spec.md`](docs/ct/spec.md) |
-| процессы и надзор | [`docs/flang/conc/SPEC.md`](docs/flang/conc/SPEC.md) |
-| известные ограничения | [`docs/guide/limits.ru.md`](docs/guide/limits.ru.md) |
+| как пишется каждая конструкция, с примерами | [`docs/site/language.ru.md`](site/language.ru.md) |
+| все слова языка на четырёх поверхностях | [`docs/glossary.md`](glossary.md) |
+| контракт языка: формы, семантика, AST | [`docs/flang/SPEC.md`](flang/SPEC.md) |
+| каждая команда, ключ, код возврата | [`docs/site/cli.ru.md`](site/cli.ru.md) |
+| каждый код отказа `FLANG_*` | [`docs/site/diagnostics.ru.md`](site/diagnostics.ru.md) |
+| что доказано, а что посчитано | [`docs/site/what-is-proved.ru.md`](site/what-is-proved.ru.md) |
+| ядро доказательств — контракт | [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md) |
+| категорная поверхность | [`docs/ct/spec.md`](ct/spec.md) |
+| процессы и надзор | [`docs/flang/conc/SPEC.md`](flang/conc/SPEC.md) |
+| известные ограничения | [`docs/guide/limits.ru.md`](guide/limits.ru.md) |
 
 ---
 
@@ -109,7 +109,7 @@ $ echo $?
 ### 2.2. Полный список ключевых слов
 
 Снят с таблицы лексера целиком. В скобках — английское написание; эсперанто и
-китайское — в [словаре](docs/glossary.md). Через косую черту — равноправные
+китайское — в [словаре](glossary.md). Через косую черту — равноправные
 написания одного слова.
 
 **Модуль и объявления.** `модуль` (module), `экспортирует` (exports),
@@ -469,8 +469,8 @@ proved).
 считает сам (`flang/self/setoid.flang` и `flang/self/setoid-oracle.flang`).
 Законы категории с объявленным равенством двоичный считает на конечной сетке
 значений автора; это счёт, а не доказательство. Формы — в
-[`docs/site/language.ru.md`](docs/site/language.ru.md), контракты — в
-[`docs/ct/spec.md`](docs/ct/spec.md) и [`docs/flang/conc/SPEC.md`](docs/flang/conc/SPEC.md).
+[`docs/site/language.ru.md`](site/language.ru.md), контракты — в
+[`docs/ct/spec.md`](ct/spec.md) и [`docs/flang/conc/SPEC.md`](flang/conc/SPEC.md).
 
 <!-- проверка: код 2 -->
 ```flang
@@ -614,7 +614,7 @@ B`, `разделить X по Y`, `соединить X по Y` (список �
 | `требует «имя» У` | вызывающий | у каждого вызова внутри программы — обязательство, которое ядро сводит из известного вызывающему; на границе программы (`--args`, примеры, прогонщик) условие вычисляется | `FLANG_PRECONDITION_CALL` при проверке; `FLANG_PRECONDITION` при работе |
 | `обеспечивает «имя» У` | функция | ядро пробует доказать для всех входов; доказало — в напечатанном коде проверки нет; не доказало — условие проверяется на каждом возврате | `FLANG_PROPERTY` при работе; заведомо ложное из-за «не числа» — `FLANG_BOUND_ON_NAN` при проверке |
 | `пример` | автор | вычисляет при каждой проверке файла (`check`, `test`), сравнивает с `ожидается` | `FLANG_EXAMPLE`, код 1 |
-| `теорема` | автор доказательства | ядро проходит шаги; поиска нет, тактик нет | `FLANG_PROOF_*` (см. [справочник отказов](docs/site/diagnostics.ru.md)) |
+| `теорема` | автор доказательства | ядро проходит шаги; поиска нет, тактик нет | `FLANG_PROOF_*` (см. [справочник отказов](site/diagnostics.ru.md)) |
 | `закон` при морфизме, законы моноида и монады | автор | считаются на конечной сетке значений автора двоичным только для категории с объявленным равенством; остальное двоичный не судит | `FLANG_MONOID_*`, `FLANG_MONAD_*`, `FLANG_CATEGORY_*` — в контракте |
 
 Завершение доказывается **композицией** (рекурсии нет), **структурой** (`разбор`
@@ -720,7 +720,7 @@ B`, `разделить X по Y`, `соединить X по Y` (список �
 ## 7. Команды компилятора
 
 Снято с `flang --help` и `flang <команда> --help` двоичного `bootstrap/flang`.
-Полный справочник с примерами вывода — [`docs/site/cli.ru.md`](docs/site/cli.ru.md).
+Полный справочник с примерами вывода — [`docs/site/cli.ru.md`](site/cli.ru.md).
 
 | Команда | Что делает | Ключи |
 | --- | --- | --- |
@@ -945,8 +945,8 @@ $ flang io план.flang --no-write
 ## 11. Коды диагностик
 
 Отказ печатается строкой `КОД в файле <путь>, строка N, столбец M: текст`.
-Семейства (полный справочник — [`docs/site/diagnostics.ru.md`](docs/site/diagnostics.ru.md),
-контракт — [`docs/flang/SPEC.md`](docs/flang/SPEC.md) §7):
+Семейства (полный справочник — [`docs/site/diagnostics.ru.md`](site/diagnostics.ru.md),
+контракт — [`docs/flang/SPEC.md`](flang/SPEC.md) §7):
 
 | Семейство | Коды |
 | --- | --- |

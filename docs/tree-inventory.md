@@ -5,10 +5,10 @@
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
 JavaScript: файлов 108, строк 16024, потолок файлов 63» — «ДОЛГ ВЫРОС».
 Разбор и перевод — [задача
-4838](docs/tasks/4838-the-debt-outside-flang-crossed-its-ceiling.md), счёт по
-родам — [задача 9688](docs/tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
+4838](tasks/completed/4838-the-debt-outside-flang-crossed-its-ceiling.md), счёт по
+родам — [задача 9688](tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
 починка самого правила и первые закрытия — [задача
-7405](docs/tasks/7405-dolg-vne-flang-razobran-po-razryadam-i-pravilo-scheta-pochineno.md).
+7405](tasks/completed/7405-dolg-vne-flang-razobran-po-razryadam-i-pravilo-scheta-pochineno.md).
 
 ⚠ **11 сентября 2026** (коммит `2c40752d0`): `./ярлык опись:языки` → файлов вне
 flang 272, строк 905 528; «ДОЛГ ВНЕ JavaScript: файлов **119**, строк **20 558**,
@@ -271,7 +271,7 @@ Python 16, awk 1.
 Закрыто шесть файлов, и все шесть — одного рода: **записки отдельных прогонов,
 прибитые к чужим машинам.** Ни один не запускался из свежего клона, потому что
 первой же строкой делал `cd` на путь, которого в дереве нет. Разбор рода —
-[задача 9688](docs/tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
+[задача 9688](tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
 там же они названы поимённо.
 
 Пути ниже в дереве уже не лежат, поэтому названы в блоке, а не ссылками:
@@ -348,7 +348,7 @@ benchmarks/model-authoring/queue-fix-arm.sh         8  то же
 печати 30 августа (`docs/reprint-ledger.tsv`), — и рядом с ней пик по трём
 заходам 31 августа: 24,3 / 35,4 / 34,7 ГиБ. Замер 24 августа снят ДО починки
 арены рантайма и по памяти врёт в 7,3 раза
-([задача 1310](docs/tasks/1310-semya-sverka-zheleza.md)).
+([задача 1310](tasks/1310-semya-sverka-zheleza.md)).
 
 Дешёвая половина прогоняется и стоит секунды. `sh scripts/raskrutka.sh
 --bystro` на этом дереве 29 августа: **0,66 с, расхождений 45.** То есть семя

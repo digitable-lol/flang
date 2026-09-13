@@ -20,7 +20,7 @@ flang; дерево держит его уже напечатанным в C99, 
 входе; компилятор доказывает это сам — структурным убыванием или объявленной мерой — и отказывает
 файлу, когда доказать не может. `обеспечивает` задаёт постусловие; ядро доказательств замыкает его
 обо всех входах там, где умеет, и говорит словами, где не смогло. Полное определение языка —
-[`docs/flang/SPEC.md`](docs/flang/SPEC.md); справочник по конструкциям — на сайте:
+[`docs/flang/SPEC.md`](flang/SPEC.md); справочник по конструкциям — на сайте:
 [Справочник конструкций](https://digitable-lol.github.io/flang/language.html).
 
 ## Что доказано сегодня, а что нет
@@ -30,7 +30,7 @@ flang; дерево держит его уже напечатанным в C99, 
 или ничем. `--записать <файл>` выписывает запись доказательства, а независимый чекер читает её
 обратно: [`flang/proof/чекер/сверщик.c`](../flang/proof/чекер/сверщик.c) — программа на C, которая
 берёт исходник и запись и отвечает, сходятся ли они; ни одной строки компилятора в ней нет. Что
-ядру позволено заключать, а что нет — [`docs/flang/proof/SPEC.md`](docs/flang/proof/SPEC.md).
+ядру позволено заключать, а что нет — [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md).
 
 Мера этого чекера — доля обязательств доказательств в репозитории, которую он проигрывает
 независимо, а не берёт на слово у ядра:
@@ -323,9 +323,9 @@ export function mestoVstavki(elementy, cel) {
 | найти конструкцию | [Справочник конструкций](https://digitable-lol.github.io/flang/language.html) · [Справочник библиотеки](https://digitable-lol.github.io/flang/stdlib.html) · [Справочник отказов](https://digitable-lol.github.io/flang/diagnostics.html) |
 | понять доказательства | [Что доказано](https://digitable-lol.github.io/flang/what-is-proved.html) · [Какие обещания ядро берёт](https://digitable-lol.github.io/flang/kak-dokazat.html) · [Ядро отказало: чья это ошибка](https://digitable-lol.github.io/flang/proof-refused.html) |
 | запустить где-то | [Установка](https://digitable-lol.github.io/flang/install.html) · [Справочник команд](https://digitable-lol.github.io/flang/cli.html) · [Редактор](https://digitable-lol.github.io/flang/editor.html) · [Процессы, надзор, распределённость](https://digitable-lol.github.io/flang/processes.html) |
-| посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`docs/examples/`](../examples) |
-| прочесть контракты | [`docs/flang/SPEC.md`](docs/flang/SPEC.md) · [`docs/flang/self/SPEC.md`](docs/flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](docs/flang/proof/SPEC.md) · [`docs/flang/conc/SPEC.md`](docs/flang/conc/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
-| узнать, куда это идёт | [`docs/ROADMAP.md`](docs/ROADMAP.md) — пять этапов и что каждый меняет для разработчика · [`docs/what-provability-gives-today.ru.md`](what-provability-gives-today.ru.md) · [`docs/road-to-1-0.md`](road-to-1-0.md) |
+| посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`docs/examples/`](examples) |
+| прочесть контракты | [`docs/flang/SPEC.md`](flang/SPEC.md) · [`docs/flang/self/SPEC.md`](flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`docs/flang/conc/SPEC.md`](flang/conc/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
+| узнать, куда это идёт | [`docs/ROADMAP.md`](ROADMAP.md) — пять этапов и что каждый меняет для разработчика · [`docs/what-provability-gives-today.ru.md`](what-provability-gives-today.ru.md) · [`docs/road-to-1-0.md`](road-to-1-0.md) |
 
 Правило имён: файл без языкового суффикса — английский; суффикс `.ru.md` отмечает его русскую
 редакцию. Исключение — `README.md` и `SPEC.md` рядом с кодом: они держат эти имена на любом
@@ -359,12 +359,10 @@ docs/tasks/     открытая и закрытая работа дерева, 
 
 <!-- КАРТА-КОНЕЦ -->
 
-Внутри `flang/`: [`flang/self/`](flang/self) — компилятор, 65 файла на flang —
-<!-- СНЯТО 2026-09-12 файлов flang/self/*.flang = 65 -->
 Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 65 файла на flang —
 <!-- СНЯТО 2026-09-12 файлов flang/self/*.flang = 65 -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель; чем слои
-обязаны друг другу — [`docs/flang/self/SPEC.md`](docs/flang/self/SPEC.md). [`flang/stdlib/`](../flang/stdlib) —
+обязаны друг другу — [`docs/flang/self/SPEC.md`](flang/self/SPEC.md). [`flang/stdlib/`](../flang/stdlib) —
 стандартная библиотека: **50 модулей, 1730 функций и 3663 примера**, которые прогоняются при
 каждой проверке:
 <!-- СНЯТО 2026-09-10 файлов flang/stdlib/*.flang = 50 -->
@@ -401,7 +399,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 `.ai/AGENTS.md`, как и `.claude` — ссылка на `.ai/.claude`), `docs/DESCRIPTION.md`
 (развёрнутое описание языка) и `docs/ROADMAP.md` (замер, а не намерение) — оба символические ссылки
 в `docs/`, как и `tasks` — ссылка на `docs/tasks`; сами документы лежат в
-[`docs/DESCRIPTION.md`](docs/DESCRIPTION.md) и [`docs/ROADMAP.md`](docs/ROADMAP.md), а ссылки держат живыми
+[`docs/DESCRIPTION.md`](DESCRIPTION.md) и [`docs/ROADMAP.md`](ROADMAP.md), а ссылки держат живыми
 адреса, на которые уже ссылаются из других хранилищ, `CHANGELOG.md` ·
 `changelog.json` (печатаются из тегов и тем коммитов, руками не правятся), `package.json` (не пакет npm — npm ушёл из дерева в сентябре 2026; держится как
 единственное место, откуда берут версию, лицензию и два адреса: подвал сайта, работа
@@ -424,7 +422,7 @@ git config core.hooksPath .githooks      # хук перед пушем: деш�
 <!-- СНЯТО 2026-09-11 строк flang/проверки/ведомость.txt = 205 -->
 `flang/проверки/ведомость.txt` — по строке на проверку. Хук гоняет проверки, укладывающиеся в
 секунды, и называет, чего не гонял; долгие — дело CI (`.github/workflows/binary.yml`). Работа
-ведётся в [`docs/tasks/`](docs/tasks/README.md): один файл — одна задача, берётся и закрывается коммитом;
+ведётся в [`docs/tasks/`](tasks/README.md): один файл — одна задача, берётся и закрывается коммитом;
 `./ярлык задачник:доска` печатает доску. Правила дерева, которых из кода не видно, — что ломается
 молча, сколько стоит перепечатка, зачем нужна каждая проверка — в [`AGENTS.md`](../AGENTS.md); как
 собрать, прогнать проверки и прислать правку — [`CONTRIBUTING.md`](../CONTRIBUTING.md). Решения
@@ -444,7 +442,7 @@ git config core.hooksPath .githooks      # хук перед пушем: деш�
 [digitdisk](https://github.com/digitable-lol/digitdisk),
 [flang-ribbon](https://github.com/digitable-lol/flang-ribbon) и
 [flang-env](https://github.com/digitable-lol/flang-env). Что стоит между деревом и 1.0 — пять
-этапов [`docs/ROADMAP.md`](docs/ROADMAP.md), каждый привязан к решению в `docs/adr/` и к задачам в
+этапов [`docs/ROADMAP.md`](ROADMAP.md), каждый привязан к решению в `docs/adr/` и к задачам в
 `docs/tasks/`; прежний список с числами, снятый на 0.6.2, сохранён как
 [`docs/what-blocks-1-0.md`](what-blocks-1-0.md).
 

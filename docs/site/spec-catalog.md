@@ -5,7 +5,7 @@ a spec-as-a-program is. This one answers the next question: how specs add up to 
 catalogue that does not drift apart, and what keeps it honest.
 
 The catalogue lives in the tree under [`fspec/`](fspec). It is not the language
-specification — that one is [`docs/flang/SPEC.md`](docs/flang/SPEC.md). It is **a sample
+specification — that one is [`docs/flang/SPEC.md`](../flang/SPEC.md). It is **a sample
 package and a working stand at once**: forty-odd domain rules written as
 programs, the rule by which they are accepted, a guard program, a memory of what
 stood yesterday, a set of deliberately broken cases, and a set of programs that

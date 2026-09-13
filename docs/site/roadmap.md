@@ -41,15 +41,19 @@ The main limit of the language shows in the table, and it is also the first
 stage of the plan: termination is proved in bulk, behaviour less often, and the
 proof covers only what stands at a function under the words `требует` and
 `обеспечивает`. Expressible today: inequalities over numbers, list lengths,
-ordering, one quantifier — "for all inputs of the function". Not expressible:
-"there exists", claims not attached to a function, state over time, effects,
-concurrency. Emitted code (C and the other targets) is not covered by the proof.
+ordering, the quantifier over a function's inputs, a quantifier over the elements
+of a list and nested quantifiers, existence with the value written out,
+induction over a type you declared yourself, and a claim outside a function — the
+last five arrived in 0.7.19. Not expressible: existence with no value named,
+state over time, effects, concurrency. Emitted code (C and the other targets) is
+not covered by the proof.
 
 ## Five stages, and each holds the one after it
 
 **1. The set of obligations — up to 100 %.** Today the independent checker
-replays 625 obligations out of 651; the remaining 26 are taken on the kernel's
-word (16 premises and claims, 4 steps) or set aside as unreachable. Every open
+replays 629 obligations out of 651; the remaining 22 are taken on the kernel's
+word (12 premises and claims, 4 steps) or closed by computing (6). Release 0.7.19
+did not move that share. Every open
 place is named in `docs/road-to-one-hundred-measured.md`, with the price of each.
 Task 6191 (the set up to the 95 % threshold) is done; the rest follows that map.
 
@@ -66,11 +70,14 @@ kernel has no mechanism: `docs/adr/0032-one-missing-rule-and-three-other-logics.
 The same document has the price table and an honest section on what this does
 not give. Tasks 1403–1406.
 
-**4. Quantifiers.** Today a claim has exactly one quantifier — "for all inputs of
-the function"; quantifiers over arbitrary types are a change to the kernel and
-the checking program, not an add-on:
+**4. Quantifiers.** Most of this stage is done and shipped in 0.7.19: a
+quantifier over the elements of a list (`для всех п из результат: …`), nested
+quantifiers, existence with the value written out, induction over a type you
+declared yourself, and a claim outside a function. The kernel now has thirteen
+decision rules. What is left is a quantifier in `требует` and — decided against —
+searching for such a value:
 `docs/adr/0026-quantifiers-over-any-type-are-a-kernel-change.md` (accepted
-9 September 2026). Tasks 6202 and 6203.
+9 September 2026, §11). Tasks 6202, 6203, 6205, 6206, 5957, 9526.
 
 **5. Traceability, response and refusals.** Certification is a process, not a
 property of the language:

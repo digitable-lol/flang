@@ -11,9 +11,9 @@ is drawn in [`docs/overview.ru.md`](../../docs/overview.ru.md); the full lists a
 - *proven* (`доказано`) — statements about **all** inputs, established by the compiler: termination
   (`тотальная`), types and exhaustiveness of `разбор`, composition and chain wiring, the three
   functor laws — and `обеспечивает` postconditions the kernel derived from the declarations and the
-  body (88 inference rules; every proof is replayed by an independent C program,
-  `flang/proof/чекер/сверщик.c`, and `sh scripts/доказуемость.sh` on 11 September 2026 answers
-  «ДОКАЗУЕМ»: 625 obligations out of 651 replayed, 96.01 %);
+  body (97 inference rules; every proof is replayed by an independent C program,
+  `flang/proof/чекер/сверщик.c`, and `sh scripts/доказуемость.sh` on 13 September 2026 answers
+  «ДОКАЗУЕМ»: 629 obligations out of 651 replayed, 96.62 %);
 - *grid N* (`сетка N`) — computed on a **finite** set of the author's own values: utility
   properties, declared examples, concurrency runs, and the agreement between the interpreter and
   the ten backends. Nothing is known about the other inputs. **This is not a proof**;
@@ -23,11 +23,17 @@ The three words are not prose decoration: they are exactly what the proof report
 (`flang check --proof`) and the assistant service answer with, and this page does not use one for
 another.
 
-What the kernel takes today: inequalities over numbers, list lengths, order, one quantifier —
-"for all inputs of the function". What it does not: ∃, claims not attached to a function, state over
-time, effects, concurrency (ADR-0026, ADR-0032). The printed code — C and the other targets — is not
-covered by the proof: the printer is not proven (ADR-0030, tasks 1401/1402). No external solver is
-attached to the verification conditions.
+What the kernel takes today: inequalities over numbers, list lengths, order, the quantifier over a
+function's inputs, a quantifier over the elements of a list (`для всех п из результат: …`) and
+nested quantifiers, existence with the value WRITTEN OUT (`есть такой м, а именно н, что …`),
+induction over a type you declared yourself, and a claim that stands outside a function. All of
+that arrived in 0.7.19, and the kernel now has thirteen decision rules. What it does not take:
+existence with no value named — the kernel does not search and will not — and state over time,
+effects and concurrency: about those three the logic knows nothing, and there is no place in the
+language to write such a claim (ADR-0026, ADR-0032). The printed code — C and the other targets —
+is not covered by the proof: the printer is not proven (ADR-0030, tasks 1401/1402). No external
+solver is attached to the verification conditions. Software for medicine, aviation or space is not
+to be written in flang (ADR-0031).
 
 **The language.**
 

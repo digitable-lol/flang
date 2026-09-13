@@ -38,30 +38,62 @@ that it replays independently, rather than takes on the kernel's word:
 
 ```bash
 sh flang/proof/доля-корпуса.sh --проигрыванием
-# → доля-проигрыванием = 625 / 651 = 96.01 %      (11 September 2026, commit 2c40752d0, flang 0.7.17)
+# → доля-проигрыванием = 629 / 651 = 96.62 %      (13 September 2026, commit 1218aa186, flang 0.7.19)
 # → порог Г4 = 95 %; добрала ли доля порога: ДА
 sh scripts/доказуемость.sh          # → ДОКАЗУЕМ, exit 0
 ```
 
-Read the fraction as a fraction. The numerator, 625, is what the C checker established without
+Read the fraction as a fraction. The numerator, 629, is what the C checker established without
 asking the kernel: 397 obligations replayed from the recorded moves, 93 recomputed on the spot
 where the record says «по примеру» or «по свойству», 85 totality nodes walked again structurally
-and 50 type-fact derivations replayed rule by rule. The denominator, 651, is every obligation of
-the 88 records in the set minus the 16 that belong to the three records the checker rejected
-outright — deliberate forgeries, and a forgery is never supposed to be replayable. The 26 that are
-missing from the numerator are the honest cost: 16 premises and claims and 4 steps that the
+and 54 type-fact derivations replayed rule by rule. The denominator, 651, is every obligation of
+the 89 records in the set minus the 22 that belong to the four records the checker rejected
+outright — deliberate forgeries, and a forgery is never supposed to be replayable. The 22 that are
+missing from the numerator are the honest cost: 12 premises and claims and 4 steps that the
 checker takes on the kernel's word, and 6 closed by computing an identity rather than by
 replaying it. Where each of them sits and what closing it would take is
 [`docs/road-to-one-hundred-measured.md`](docs/road-to-one-hundred-measured.md).
 
+**This release did not move that share.** It went 625 → 629 in 0.7.18, and 0.7.19 left it where
+it was. The seed reprint of 0.7.19 gave the kernel new things to prove, not a higher share.
+
 The second command is the verdict in one word, and since release 0.7.17 (11 September 2026) it
 is **ДОКАЗУЕМ**, exit 0. It is printed from four checks, each with a number: the checker holds no
 step that proves by computing instead of replaying (measured by a trap of three ∀-goals, not by
-grepping a function name); the share is above the 95 % gate; the whole probe set passes — 401
-forgeries rejected, 197 honest records accepted; and the probe set has not shrunk against its
-ratchet. The 88 inference rules the kernel uses were also judged by a second, foreign judge — the
-Lean 4 kernel, 85 lemmas; the one rule Lean rejected was unsound and has been fixed
+grepping a function name); the share is above the 95 % gate; the whole probe set passes — 453
+forgery probes rejected, 215 honest records accepted; and the probe set has not shrunk against its
+ratchet. The inference rules the kernel uses were also judged by a second, foreign judge — the
+Lean 4 kernel; the one rule Lean rejected was unsound and has been fixed. That run is a dated one:
+it judged 88 rules against 85 lemmas on 11 September. The list of inference rules has grown since — 97 rules in
+`flang/proof/ПРАВИЛА-ВЫВОДА.tsv`, 105 lemmas written in `flang/proof/lean/Правила.lean` — and
+Lean has not been run again, because `lean` is not installed on this machine
 ([`docs/lean-checks-the-inference-rules.md`](docs/lean-checks-the-inference-rules.md)).
+
+## What a proof can say, as of 0.7.19
+
+The proof surface grew in this release, and these five things are new to the built compiler.
+
+- **A quantifier over the elements of a list**, written in the goal: `для всех п из результат: п
+  больше 0` — for every `п` in the result, `п` is greater than 0. The kernel proves it from the
+  shape of the list the body builds (a filter, a prepend, a branch, the empty list), not by
+  running it.
+- **Nested quantifiers.** The body after the colon is a goal again, so
+  `для всех х из результат: для всех м из результат: м больше 0` nests to any depth, and the value
+  that makes it true may be named inside: `есть такой м, а именно х, что …`.
+- **Induction over a type you declared yourself.** `индукция по н` over your own
+  `тип «Нат» вариант «Ноль» вариант «Следующий» …` is now a kernel rule; before, induction knew
+  only the built-in types.
+- **A statement that stands on its own**, with no function next to it:
+  `утверждение «длина пустого списка нулевая»` followed by `утверждаем …`. Such statements reach
+  `flang check --proof --json` and the proved-share report, which used to filter them out.
+- **A proof step named by the person writing it.** A step may name the inference rule it uses and the
+  premises it stands on — `затем а не больше 10 по закону «О10» из 1 и 2` — and the kernel checks
+  the naming instead of searching for a derivation itself.
+
+There are thirteen decision rules in the kernel now, twelve before
+(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 13), and 284 theorems in
+the language tree, 277 before (`grep -racE '^[[:space:]]*теорема ' flang --include='*.flang'`,
+summed with `awk`).
 
 What that number is not. 96 % is the share of places in the compiler's own proof records where
 the independent checker replayed the move — not «96 % of programs are proved», and not a
@@ -74,6 +106,18 @@ provability gives a developer today, shown by real runs, what it cannot express 
 from «right» — [`docs/what-provability-gives-today.md`](docs/what-provability-gives-today.md);
 the longer account is on the site — [What is proved and what is
 not](https://digitable-lol.github.io/flang/en/what-is-proved.html).
+
+Three more gaps, named because leaving them out would read as a promise. **The logic knows
+nothing about state over time, side effects or concurrency** — there is no place in the language
+to write such a claim at all. Work on the three has started and did not make this release.
+**The base you have to trust grew**: the deciding part of the kernel is 4796 lines, 4669 before,
+because the new quantifiers live there and there is nowhere else to put them; the standing order
+to bring that number under 4000 is not done. And **software for medicine, aviation or space is
+not to be written in flang** — those standards ask for tool qualification, proved response
+bounds and behaviour on hardware failure, and none of that exists here
+([ADR-0031](docs/adr/0031-certification-is-a-process-not-a-property-of-the-language.md),
+[ADR-0033](docs/adr/0033-termination-is-not-a-bound-on-steps.md),
+[ADR-0034](docs/adr/0034-hardware-failure-is-described-not-proved.md)).
 
 Two surfaces the binary does not judge at all: the categorical surface (monoids, monads, functors,
 declared properties) and processes with supervision. `flang check` names what it left unchecked
@@ -109,7 +153,7 @@ repositories are kept here as submodules — `packaging/homebrew-tap` and `packa
 and each is checked against the source in this tree before every release. Both install the release
 archive `flang-<version>-c.tar.gz` from GitHub Releases: printed C99 sources, a Makefile and the
 `flang.1` man page — and, since 0.7.17, `flangtutor` beside `flang`: a guided walk through the
-language in the spirit of `vimtutor`, five lessons, every answer checked by the real compiler. Details and what each path installs —
+language in the spirit of `vimtutor`, twelve lessons, every answer checked by the real compiler. Details and what each path installs —
 [Install](https://digitable-lol.github.io/flang/en/install.html).
 
 ## First program
@@ -159,11 +203,12 @@ language server among them: `check`, `test`, `run`, `emit`, `ast`, `tokens`, `fa
 `lock`, `package`, `new`, `repl` and `lsp`. It prints into 10 target languages.
 <!-- СНЯТО 2026-09-08 файлов flang/self/emit-*.flang = 10 -->
 
-One place where the authority is behind the binary it describes: the tenth target, `ts`, works —
-`flang emit … --target ts` exits 0 and writes four files — but `flang emit --help` still says
-«во все восемь целей» and lists nine, and the refusal for an unknown target still says «целей
-здесь ДЕВЯТЬ». That text is compiled into the binary and only a reprint of the seed can move it,
-so it is named here rather than papered over.
+The tenth target is named in the help at last. `flang --help` and the usage line of
+`flang emit --help` both list `c|cpp|go|rust|java|js|ts|elixir|python|csharp` — 0.7.19 carries the
+reprint that fixed it. Two texts in the same binary are still behind: the prose of
+`flang emit --help` says «во все восемь целей», and the refusal for an unknown target says «целей
+здесь ДЕВЯТЬ» and lists nine without `ts`. Both are compiled in and move only with the next
+reprint of the seed, so they are named here rather than papered over.
 
 | command | what it does |
 | --- | --- |
@@ -391,7 +436,8 @@ the 185 more programs in the other sets are single files, the LeetCode set among
 **The bootstrap point.** `bootstrap/` holds the compiler already printed to C99, which is why
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the
 result is compared with what is committed: `sh scripts/raskrutka.sh --check`. The inputs of the
-last print are recorded in `scripts/otpechatok-semeni`, one hashed line each — 48 lines. The
+last print are recorded in `scripts/otpechatok-semeni`, one hashed line each — 65 lines. <!-- СНЯТО 2026-09-13 строк scripts/otpechatok-semeni = 65 -->
+The
 seed lags the sources today, in three files and 77 functions: `sh scripts/seed/chto-otstalo-ot-semeni.sh`
 lists which files and functions are newer than the seed, and a reprint (`sh scripts/raskrutka.sh`, hours on one core)
 is how edits to `flang/self/` reach the binary. What the seed is and what guards it —

@@ -641,6 +641,7 @@ different ways, and the difference shows at once.
 | `for all p ensures «name» condition` | the same place, after `requires` | the function itself | the kernel at check time; if it fails, a check on every return |
 | `total` | before the word `function` | the compiler | at check time; see [Totality and measures](#totality-and-measures) |
 | `theorem «name»` | top level, next to the function | the author of the proof | the kernel at check time, step by step |
+| `утверждение «name»` | top level, with NO function | the author | the kernel at check time; reaches `--proof --json` |
 
 ### `requires` — a precondition
 
@@ -693,6 +694,47 @@ shown by `flang check --proof`.
 Edge: the name is not optional — `ensures` without a name does not parse. A
 theorem refers to the claim by that name, and so does `by property` from someone
 else's proof.
+
+### `для всех … из …:` — a quantifier over the elements of a list
+
+Speaking about every element of a list is done in the goal itself. A colon
+separates the body.
+
+```flang
+модуль «Все элементы после отбора»
+
+тотальная функция «Только положительные»
+  принимает элементы: список числа
+  возвращает список числа
+  обеспечивает «все положительны» для всех п из результат: п больше 0
+  пример «Смесь»
+    дано элементы равно [3, 0, 5]
+    ожидается [3, 5]
+  отфильтровать элементы где э → э больше 0
+```
+
+What it gives: the kernel proves such a goal from the SHAPE of the list the body
+builds, not by running it. Four shapes are taken: the empty list;
+`отфильтровать Л где х → У`, where `У` is the property being proved;
+`добавить Х к Л` and `приписать Х к Л`, where the property holds of `Х` and of
+`Л`; and `если У то А иначе Б`, where it holds in both branches. A list written
+out element by element, a `отобразить`, and a call to another function are not
+taken — there is no rule for them.
+
+The body after the colon is a goal again, so quantifiers nest:
+
+```flang
+  обеспечивает «каждый с каждым положителен» для всех х из результат: для всех м из результат: м больше 0
+```
+
+The value that makes it true may be named inside:
+`есть такой м, а именно х, что …`. The author writes that value — the kernel
+does not search for one and will not.
+
+Edge: the colon cuts the goal at the FIRST top level, and everything to the right
+of it goes into the body whole. The quantifier of a goal and the induction
+variable (`для всех н обеспечивает …`) are different things, and the kernel does
+not confuse them.
 
 ### `theorem`
 
@@ -759,8 +801,71 @@ theorem «through doubling the length is the same»
 ```
 
 Edge: a theorem is not always needed — write the postcondition first and see
-whether the kernel closes it on its own. Induction attaches **only** to `match`
-over a declared sum and to a descent along a number.
+whether the kernel closes it on its own. Induction attaches to a `match` over a
+declared sum — including a sum you declared yourself, see below — and to a
+descent along a number.
+
+### `утверждение` — a claim outside a function
+
+A claim may stand on its own, with no function beside it.
+
+```flang
+модуль «Свободные утверждения»
+
+утверждение «длина пустого списка нулевая»
+  утверждаем (длина пустой список) равен 0
+
+утверждение «ноль нейтрален при сложении»
+  для всех н: неотрицательное таких что н больше 0
+  утверждаем (н плюс 0) равен н
+```
+
+What it gives: the kernel judges such a claim exactly as it judges a
+postcondition, and it reaches the machine report `flang check --proof --json` and
+the proved-share report. The line `для всех имя: тип таких что условие`
+introduces the variables and the premise; that premise is not decoration —
+`неотрицательное` admits minus zero at run time, and without `н больше 0` the
+second claim is false.
+
+Edge: a claim may also be closed by a theorem of the same name, written next to
+it in the usual way.
+
+### Induction over a type you declared yourself
+
+`индукция по` is not limited to the built-in types: a sum you declared works the
+same way, because the principle is read off its declaration.
+
+```flang
+модуль «Своё натуральное»
+
+тип «Нат»
+  вариант «Ноль»
+  вариант «Следующий» содержит пред: «Нат»
+
+тотальная функция «К числу»
+  принимает н: «Нат»
+  возвращает число
+  разбор н
+    случай вариант «Ноль»
+      то 0
+    случай вариант «Следующий» с пред как п
+      то («К числу» от п) плюс 1
+
+утверждение «шаг растит счёт на один»
+  для всех н: «Нат»
+  утверждаем («К числу» от (вариант «Следующий» с пред равным н)) равно ((«К числу» от н) плюс 1)
+
+теорема «шаг растит счёт на один»
+  дано н: «Нат»
+  утверждаем («К числу» от (вариант «Следующий» с пред равным н)) равно ((«К числу» от н) плюс 1)
+  индукция по н
+    случай вариант «Следующий» с пред как п
+      то по предположению
+  следовательно доказано
+```
+
+The report says so in words: «доказано индукцией по «Нат»». No `убывает` is
+needed here: what goes down is a part of the value, not a number.
 
 ### Justifications for a step
 
@@ -830,6 +935,33 @@ isomorphism. An undeclared law is not accepted — otherwise the line
 ```
 закона «чего не бывает» в модуле нет: ни моноида, ни монады, ни изоморфизма с таким именем не объявлено — сослаться не на что
 ```
+
+### A step named by hand
+
+A step may name the rule of the inference list it uses and the premises it
+rests on. The kernel then checks the naming instead of searching for a derivation
+itself.
+
+```flang
+теорема «результат не больше десяти»
+  дано а: число
+  дано б: число
+  утверждаем результат не больше 10
+  затем а не больше б по закону «О1» из строки 5
+  затем б не больше 10 по закону «О1» из строки 6
+  затем а не больше 10 по закону «О10» из 1 и 2
+  по закону «Разв2» из 3 и строки 9
+  следовательно доказано
+```
+
+`из строки N` is a line of the source the fact comes from (a precondition, the
+body); `из K` and `из K L` are the numbers of earlier steps of the same theorem.
+The rule names come from the file `flang/proof/ПРАВИЛА-ВЫВОДА.tsv`.
+
+What it gives: such steps used to be anonymous, and the independent checker
+counted them as taken on the kernel's word. A named step it replays.
+
+Edge: the rule must be in that file; an invented name is a refusal.
 
 How much closes without a theorem, and by which rules: [Why and
 how](proofs.html) and [Kernel specification](../spec-proof.html) (in Russian).
@@ -1108,7 +1240,7 @@ the table are named here so that nobody has to hunt for them.
 | `plan` | input and output: declared by the same three lines as a process | [Categories and functors](../spec-cat.html), section "Эффекты и HTTP" |
 | `date`, `money` | heritage of the earlier surface: `date` behaves as `string`, `money` as `number` | [Glossary](../glossary.html) |
 | `has` — the line `given «Object» has «field» equal to value` | heritage of the earlier theorem form; next to the words of a proof it is rejected | below |
-| `utility`, `rule`, `nested object`, `proposition`, `in data`, `find where`, `by morphism` | heritage of the earlier surface: still parsed, but a program can no longer be built out of them | [Glossary](../glossary.html) |
+| `utility`, `rule`, `nested object`, `in data`, `find where`, `by morphism` | heritage of the earlier surface: still parsed, but a program can no longer be built out of them | [Glossary](../glossary.html) |
 
 The earlier theorem form does not blend with the present one: the line
 `given «Object» has «field»` next to `claim` is a refusal, not a mixture.

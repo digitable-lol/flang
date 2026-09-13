@@ -11,9 +11,9 @@ run: `flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом нол�
 answers with exit code 0. The proof itself is not taken on the compiler's word:
 `flang check --proof --записать` writes it to a file, and an independent C
 program (`flang/proof/чекер/сверщик.c`) replays every step anew. The run
-`sh scripts/доказуемость.sh` on 11 September 2026 with 0.7.17 (commit
-`2c40752d0`): **PROVABLE**, 625 obligations out of 651 replayed (96.01 %), 401
-forgeries rejected, 197 honest records accepted.
+`sh scripts/доказуемость.sh` on 13 September 2026 with 0.7.19 (commit
+`1218aa186`): **PROVABLE**, 629 obligations out of 651 replayed (96.62 %), 453
+forgery probes rejected, 215 honest records accepted.
 
 The language is self-hosted: the flang compiler is written in flang, prints
 itself, and prints to {{цели.словом}} more target languages. The standard
@@ -109,12 +109,12 @@ prints how many files have moved since that measurement.
 `индукция по …` and `следовательно доказано` — a structured proof in the spirit
 of Isabelle's Isar, not a script of tactics. There are **284** such theorems in
 the language tree, **55** of them in the standard library (measured on
-11 September 2026 at commit `d6e88d50b`;
+13 September 2026 at commit `1218aa186`;
 `grep -rac '^\s*теорема ' flang --include='*.flang'`, summed with `awk`; the `-a`
 is not optional — without it `flang/conc/link.flang` is skipped silently).
 
 The difference is **what is left for the hand to write**. The kernel closes a
-claim on its own, by twelve rules, and a written theorem is needed only for the
+claim on its own, by thirteen rules, and a written theorem is needed only for the
 remainder. The verdict line reports that as a separate number. Measured on
 `flang/stdlib/sha1.flang` (`flang check --proof`, 0.7.17, 11 September 2026,
 about four minutes): `утверждений 64: доказано 54 … из них без теоремы 45` — most

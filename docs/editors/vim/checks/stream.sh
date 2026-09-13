@@ -44,7 +44,7 @@ zamer() {
     "$imya" "$pri_otkrytom" "$posle_zakrytiya"
 }
 
-koren=$(cd "$(dirname "$0")/../../.." && pwd)
+koren=$(cd "$(dirname "$0")/../../../.." && pwd)
 
 if [ -x "$koren/bootstrap/flang" ]; then
   zamer 'двоичный flang lsp' "$koren/bootstrap/flang" lsp --stdio

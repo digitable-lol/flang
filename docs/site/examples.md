@@ -1,12 +1,12 @@
 # The catalogue of examples
 
-Every example program in flang lives in one directory — `docs/examples/`: <!-- СНЯТО 2026-09-13 файлов docs/examples/*.flang = 202 --> 202 files in
+Every example program in flang lives in one directory — `docs/examples/`: <!-- СНЯТО 2026-09-13 файлов docs/examples/*.flang = 204 --> 204 files in
 twenty-four sets and one full-size project. There is no second directory of examples
 in the repository: until 24 August 2026 a hundred and fifty programs stood a floor
 below, and they could not be found at a glance.
 
 The number is recounted by one command:
-`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-13 файлов docs/examples/*.flang = 202 --> 202 (measured 6 September 2026).
+`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-13 файлов docs/examples/*.flang = 204 --> 204 (measured 6 September 2026).
 
 ## The sets
 
@@ -20,7 +20,7 @@ The number is recounted by one command:
 | [`library-api/`](docs/examples/library-api) | 7 | the domain half of a library REST service: lending, catalogue, fines. The only set that shows a **project layout** in full |
 | [`db/`](docs/examples/db) | <!-- СНЯТО 2026-09-03 файлов docs/examples/db/*.flang = 6 --> 6 | talking to PostgreSQL (SCRAM included), to Redis, and reading an SQLite file |
 | [`service-on-processes/`](docs/examples/service-on-processes) | 4 | a service on processes rather than on a three-function example: the claim about an own alternative to OTP, checked at full size |
-| [`frameworks/`](docs/examples/frameworks) | <!-- СНЯТО 2026-09-08 файлов docs/examples/frameworks/*.flang = 4 --> 4 | a flang decision core under a JavaScript framework host: NestJS, React, Vue. The core is printed to JS and lies next to the host — see below |
+| [`frameworks/`](docs/examples/frameworks) | <!-- СНЯТО 2026-09-08 файлов docs/examples/frameworks/*.flang = 6 --> 6 | a flang decision core under a JavaScript framework host: NestJS, React, Vue. The core is printed to JS and lies next to the host — see below |
 | [`https/`](docs/examples/https) | 3 | TLS: the RFC 8448 records, the system trust store, a hello to a real host |
 | [`proof-probes/`](docs/examples/proof-probes) | 3 | probes of the proof core itself: the typed-AST door, a refused generic descent, a variant with fields |
 | [`driver/`](docs/examples/driver) | 2 | hardware drivers where every function must provably terminate: a UART and an MSI |

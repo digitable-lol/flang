@@ -55,8 +55,8 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 **Сдвинулось 10 сентября 2026: ещё три файла снесены** (задача 0049, ячейки 11,
 12, 14 — `flang/scripts/target-words.mjs`, `claim-guard.mjs`,
 `discriminating-search.mjs`; коммиты `09985c756`, `27e5ff559`, `d6139b409`).
-На 11 сентября (`2c40752d0`): `git ls-files '*.mjs' '*.js' | wc -l` → **51**,
-строк **28 121**. <!-- СНЯТО 2026-09-12 файлов *.js,*.mjs = 51 -->
+На 11 сентября (`2c40752d0`): `git ls-files '*.mjs' '*.js' | wc -l` → **53**,
+строк **29 702**. <!-- СНЯТО 2026-09-12 файлов *.js,*.mjs = 53 -->
 
 Двоичный, которым сняты все остальные числа этой описи, —
 `/srv/flang-rabota/w-predely/bootstrap/flang` (0.6.2), собран 23 августа 2026
@@ -65,13 +65,13 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 
 Эта опись считает ОДИН язык. Остальные шестнадцать — оболочка, C, C++, Python,
 HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
-считает [`tree-inventory.md`](tree-inventory.md) (10 сентября 2026: 241 файлов вне flang,
-<!-- СНЯТО 2026-09-13 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 241 -->
+считает [`tree-inventory.md`](tree-inventory.md) (10 сентября 2026: 244 файлов вне flang,
+<!-- СНЯТО 2026-09-13 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 244 -->
 долг вне JavaScript — **97 файлов, 18 427 строк при потолке 63**: храповик
 красен, разбор — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
-28 121 строк этой описи — нижняя оценка.
-<!-- СНЯТО 2026-09-12 строк-в *.js,*.mjs = 28121 -->
+29 702 строк этой описи — нижняя оценка.
+<!-- СНЯТО 2026-09-12 строк-в *.js,*.mjs = 29702 -->
 (29 августа здесь стояло 25 527: за два дня прибавилось 2 313 строк. Ещё 64
 строки прибавились 2 сентября: `scripts/latin-collision-guard.mjs` сравнивает
 теперь ПРОСЬБЫ печати, а не объявленные имена, и довод к этому записан там же.)

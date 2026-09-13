@@ -1,6 +1,7 @@
-# ветка-если
+# flang · checker probes: if-branch
 
-Описание переехало в `docs/`: [docs/flang/proof/чекер/пробы/семьи/ветка-если/README.md](../../../../../../docs/flang/proof/чекер/пробы/семьи/ветка-если/README.md).
-The description moved to [docs/flang/proof/чекер/пробы/семьи/ветка-если/README.md](../../../../../../docs/flang/proof/чекер/пробы/семьи/ветка-если/README.md).
+**[Documentation](https://digitable-lol.github.io/flang/en/what-is-proved.html)** ·
+**[Документация](https://digitable-lol.github.io/flang/what-is-proved.html)**
 
-Здесь лежат сами файлы; проза о них — в `docs/`.
+Certificate for a case-analysis node whose case body is a single parenthesised `если (У) то А иначе Б`; expected exit codes are in [ЧИТАТЬ.md](../../../../../../docs/flang/proof/чекер/ЧИТАТЬ.md), section «Набор проб».
+Сертификат на узел «разбором по случаям», где тело случая — целиком скобочное `если (У) то А иначе Б`; ожидаемые коды возврата — в [ЧИТАТЬ.md](../../../../../../docs/flang/proof/чекер/ЧИТАТЬ.md), раздел «Набор проб».

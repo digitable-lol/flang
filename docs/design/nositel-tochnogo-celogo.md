@@ -148,7 +148,7 @@ FL_NOTHING = 0, FL_NUMBER, FL_FLAG, FL_STRING, FL_LIST, FL_RECORD, FL_VARIANT
 
 ## 3. На чём в ядре доказательств стоит «число = double»
 
-`flang/self/proof-kernel.flang` — 9546 строк. <!-- СНЯТО 2026-09-13 строк flang/self/proof-kernel.flang = 9546 -->
+`flang/self/proof-kernel.flang` — 9552 строки. <!-- СНЯТО 2026-09-13 строк flang/self/proof-kernel.flang = 9552 -->
 Слово `IEEE` стоит там **35 раз**, `754` — **35 раз**. Это не украшение: каждое из этих
 мест — ДОВОД, на котором стоит посылка правила. Примеры дословно: «`Е не больше Е` в
 IEEE-754 НЕ теорема — на `не число` сравнение ложно»; «переставлять через скобки нельзя,

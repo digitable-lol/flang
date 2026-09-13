@@ -439,7 +439,8 @@ the 187 more programs in the other sets are single files, the LeetCode set among
 **The bootstrap point.** `bootstrap/` holds the compiler already printed to C99, which is why
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the
 result is compared with what is committed: `sh scripts/raskrutka.sh --check`. The inputs of the
-last print are recorded in `scripts/otpechatok-semeni`, one hashed line each — 48 lines. <!-- СНЯТО 2026-09-13 строк scripts/otpechatok-semeni = 65 -->
+last print are recorded in `scripts/otpechatok-semeni`, one hashed line each — 48 lines in the input half; with the second half, the seed body,
+the file is 65 lines. <!-- СНЯТО 2026-09-13 строк scripts/otpechatok-semeni = 65 -->
 The
 seed lags the sources today, in three files and 77 functions: `sh scripts/seed/chto-otstalo-ot-semeni.sh`
 lists which files and functions are newer than the seed, and a reprint (`sh scripts/raskrutka.sh`, hours on one core)

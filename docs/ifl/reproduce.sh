@@ -107,7 +107,7 @@ printf '    ввозят его файлов: %s\n' \
 printf '    утверждений над ним в flang/проверки: %s\n' \
   "$(grep -c 'Вердикт отказов» от' flang/проверки/process-failures.flang)"
 echo '    ⚠ два входа анализа — «Достижимые отказы» и «Отказы начального» —'
-echo '      не зовёт по-прежнему ничто (ROADMAP.md, строка 4е)'
+echo '      не зовёт по-прежнему ничто (docs/ROADMAP.md, строка 4е)'
 echo 'а этот код рантайм C выдаёт, и в множестве его нет:'
 grep -n 'FL_CODE_MEMORY' flang/src/emit/c/flang_runtime.h | head -1 | sed 's/^/  /'
 

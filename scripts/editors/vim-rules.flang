@@ -1,7 +1,7 @@
 модуль «Правила Vim»
   использует «Слова языка»
 
-// Текст файла правил подсветки для Vim и Neovim — `editors/vim/syntax/flang.vim`.
+// Текст файла правил подсветки для Vim и Neovim — `docs/editors/vim/syntax/flang.vim`.
 //
 // Здесь только ЧИСТЫЕ функции: строка получается из таблицы языка и ни во что
 // не записывается. Записывает её `vim-highlighting.flang`, а `vim-highlight-check.flang`

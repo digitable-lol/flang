@@ -13,8 +13,8 @@
 [ADR-0014](0014-proof-language.md) — что вообще считается доказательством;
 `docs/integer-closed-under-addition.md` — разбор от 2026-08, где длинная
 арифметика уже рассматривалась и была отклонена (раздел 6 отвечает ему прямо).
-**Новые задачи:** [6201](../../tasks/6201-tree-still-cites-the-removed-javascript-implementation.md),
-[6202](../../tasks/6202-the-ceiling-is-a-type-property-not-a-proved-obligation.md).
+**Новые задачи:** [6201](../tasks/6201-tree-still-cites-the-removed-javascript-implementation.md),
+[6202](../tasks/completed/6202-the-ceiling-is-a-type-property-not-a-proved-obligation.md).
 
 ---
 
@@ -79,7 +79,7 @@
 упоминаний `flang/src/*.mjs` и `flang/bin/*.mjs` с проверкой, что путь не
 существует). Самое дорогое ограничение языка досталось по недосмотру от давно
 снятой реализации — и это не единственное, что от неё осталось.
-Задача [6201](../../tasks/6201-tree-still-cites-the-removed-javascript-implementation.md).
+Задача [6201](../tasks/6201-tree-still-cites-the-removed-javascript-implementation.md).
 
 ## 3. Замер: на что потолок опирается сегодня
 
@@ -124,7 +124,7 @@
 и по одной в `flang/proof/map/boundaries.flang`,
 `flang/proof/examples/corpus-natural-ceiling.flang`, `docs/examples/measure/natural.flang`,
 `docs/zamer-teorkat/class-string-to-string.flang`, `docs/examples/package/discount.flang`.
-`flang/proof/SPEC.md` называет его **25 раз**.
+`docs/flang/proof/SPEC.md` называет его **25 раз**.
 
 ### 3.2. Что сломается, если потолок убрать: прогон, а не оценка
 
@@ -298,7 +298,7 @@
 | печать целей | `proof.flang` 4 045 + `proof-initial.flang` 2 713 | 3 места |
 | независимая проверяющая программа | 8 164 строки | 5 мест |
 | библиотека и примеры | 18 файлов | 20 оговорок, написанных рукой |
-| спецификация ядра | `flang/proof/SPEC.md` | 25 упоминаний |
+| спецификация ядра | `docs/flang/proof/SPEC.md` | 25 упоминаний |
 | записи доказательств | 86 записей | пересъёмка 5, где правило названо |
 | **доля проверенного, немедленно** | 567 / 651 | **495 / 646** до написания новых правил |
 

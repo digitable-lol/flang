@@ -3,7 +3,7 @@
 This page is about what the language does not have yet: what is being worked on,
 what is queued, and what has been ruled out. There are no dates here — no
 quarters, no months. The order of the stages is taken from the tree's root
-`ROADMAP.md`, which the lead is rewriting into five stages; the decision behind
+`docs/ROADMAP.md`, which the lead is rewriting into five stages; the decision behind
 each stage is recorded in `docs/adr/`, the tasks live in the tracker, and their
 numbers are given below.
 

@@ -16,7 +16,7 @@
 // живёт ВЕРСИЯ, и три её читателя, ни один из которых к npm отношения не имеет:
 // сборка сайта (`docs/site/site-numbers.mjs`), сторож формулы Homebrew
 // (`scripts/guards/homebrew-formula-guard.flang`) и работа выпуска `release.yml`.
-// Что именно снято и почему каждое — `tasks/8649-npm-leaves-the-tree.md`.
+// Что именно снято и почему каждое — `docs/tasks/8649-npm-leaves-the-tree.md`.
 //
 // Поле `"private": true` — замок: `npm publish` на таком файле отказывает сам,
 // не спрашивая ни токена, ни сети.

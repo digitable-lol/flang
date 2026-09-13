@@ -2,7 +2,7 @@
 
 **Основание:** [ADR-0022](../adr/0022-a-type-fact-travels-as-a-derivation.md) §3.10,
 ведомость `flang/proof/ПРАВИЛА-ВЫВОДА.tsv`, задача
-[6131](../../tasks/6131-sverschik-proigryvaet-blok-vyvoda.md).
+[6131](../tasks/6131-sverschik-proigryvaet-blok-vyvoda.md).
 **Состояние:** приём в `flang/proof/чекер/сверщик.c` написан и проверен на рукотворных
 записях; печать в ядре написана (задача 6132, `flang/self/zapis.flang`) и померена — §8;
 второй чекер `flang/proof/сверщик.flang` не тронут.

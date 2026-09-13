@@ -55,6 +55,6 @@ JavaScript побайтово: 8206 имён (двадцать форм, дес�
 
 **Чем подтверждено.** Прогон `flang/test/self-builtins.test.mjs`, 4,6 секунды,
 ветка `work/vstroennye`. Расхождение синонимов найдено не мной — оно записано в
-`flang/self/SPEC.md` работой от 17 августа 2026 и здесь только пересчитано.
+`docs/flang/self/SPEC.md` работой от 17 августа 2026 и здесь только пересчитано.
 
 Связано: [[minus-zero-is-a-class]], [[a-side-may-already-exist-check-before-writing]]

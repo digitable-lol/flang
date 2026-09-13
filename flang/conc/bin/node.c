@@ -612,7 +612,7 @@ static bool v_priznak(fl_value chto) {
 
 // ── провод: те же метки, что у остальных хозяев ─────────────────────────
 // Перевод, а не решение: правило «у каждого значения метка одной буквой» живёт
-// в flang/conc/DISTRIBUTED.md, и разойтись с ним нельзя.
+// в docs/flang/conc/DISTRIBUTED.md, и разойтись с ним нельзя.
 static void s_polya(stroka *kuda, const fl_field *polya, size_t skolko);
 
 static void s_znachenie(stroka *kuda, fl_value chto) {

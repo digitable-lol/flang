@@ -8,8 +8,8 @@
 все доводы этого решения остаются в силе, включая довод про место в компиляторе.
 **Дата:** 24 августа 2026
 **Основание:** оснастка отбора (19 файлов, перечислены в разделе «Цена, числом»),
-`editors/vim/ftdetect/flang.vim`, `editors/vim/lua/flang/init.lua`,
-`editors/linguist/languages-flang.yml`, страницы `docs/site/cli*.md`,
+`docs/editors/vim/ftdetect/flang.vim`, `docs/editors/vim/lua/flang/init.lua`,
+`docs/editors/linguist/languages-flang.yml`, страницы `docs/site/cli*.md`,
 `docs/site/editor*.md`, `packaging/flang.1`, `README*.md`.
 **Единственное место компилятора, решающее по расширению:**
 `flang/self/bootstrap/corpus.flang`, тотальная функция «Заканчивается расширением».
@@ -120,9 +120,9 @@ grep --include='*.фп'     нашёл все три
 | `for f in …/*.flang` | 4 выражения в 4 `.sh` | нет |
 | множество расширений `new Set([… ".flang" …])` | `claim-guard.mjs`, `count-guard.mjs` | **нет** |
 | `globSync("**/*.flang")` | `proof-ledger.mjs`, `word-occupancy.mjs` | **нет** |
-| `autocmd … *.flang` | `editors/vim/ftdetect/flang.vim` | нет |
-| `vim.filetype.add({ extension = { flang = … } })` | `editors/vim/lua/flang/init.lua` | **нет** |
-| `extensions:` записи linguist | `editors/linguist/languages-flang.yml` | нет |
+| `autocmd … *.flang` | `docs/editors/vim/ftdetect/flang.vim` | нет |
+| `vim.filetype.add({ extension = { flang = … } })` | `docs/editors/vim/lua/flang/init.lua` | **нет** |
+| `extensions:` записи linguist | `docs/editors/linguist/languages-flang.yml` | нет |
 
 Правок в C **не нужно ни одной**, и это измерено, а не выведено. Двоичный берёт файл
 по пути: на `проба.фп` и `proba.fp` командами `check`, `run`, `emit`, `ast`, `tokens`

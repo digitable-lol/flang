@@ -108,7 +108,7 @@ is not cosmetics but a condition of an honest translation; the same argument is
 recorded in `flang/test/fixtures/poddelka-order-arithmetic.flang`.
 
 **A side measurement that cost one run.** In the compiler sources and in
-`flang/SPEC.md` the same type is called `неотрицательное`; `нат` is the outdated
+`docs/flang/SPEC.md` the same type is called `неотрицательное`; `нат` is the outdated
 short spelling of the same name, accepted until 1.0. Before the seed reprint of
 3 September 2026 (v0.7.11) the printed binary did not know the long name:
 `flang check` on `strlists.flang` answered `FLANG_UNKNOWN_NAME … неизвестный тип

@@ -39,7 +39,7 @@
 
 | Поверхность | Вхождений |
 |---|---:|
-| спецификации (`flang/proof/SPEC.md` — 478, `conc` — 192, `flang/SPEC.md` — 60, `cat` — 18) | 748 |
+| спецификации (`docs/flang/proof/SPEC.md` — 478, `conc` — 192, `docs/flang/SPEC.md` — 60, `cat` — 18) | 748 |
 | прочие страницы `docs/` (`overview.ru.md` — 73, замеры, память, модульность) | 177 |
 | страницы сайта `docs/site/` | 141 |
 | руководство `docs/guide/` | 97 |

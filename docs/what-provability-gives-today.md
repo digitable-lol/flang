@@ -150,7 +150,7 @@ number under 4000 is not done.
 
 ## How far from «right»
 
-Five stages in [`ROADMAP.md`](../ROADMAP.md), no dates:
+Five stages in [`docs/ROADMAP.md`](ROADMAP.md), no dates:
 
 | stage | today | when closed | decision, tasks |
 |---|---|---|---|

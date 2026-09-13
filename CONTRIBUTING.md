@@ -208,7 +208,7 @@ npm either — it names the Node version the `.mjs` tooling that is left is run 
 On 12 September 2026 the three fields nobody read — `description`, `homepage`
 and `keywords` — were dropped (task 1745, the owner's first point). Searched
 before removing, not assumed: no workflow, guard, test or build ever looked at
-any of them; the long description of the language lives in `DESCRIPTION.md`.
+any of them; the long description of the language lives in `docs/DESCRIPTION.md`.
 
 The file is printed from `scripts/release/emit-package.flang` and never
 hand-edited: `./ярлык пакет` prints it, `./ярлык пакет:проверка` refuses if the
@@ -250,7 +250,7 @@ What this means when you write:
   debt is recorded by name in `flang/scripts/name-debt.json` and compared as a
   diff of lists, not of counts. New code goes red; the debt must shrink. Do not
   add to it, and do not rewrite it to make your change pass.
-- **Cost claims.** The one cost table is in `flang/SPEC.md`. Each cell is backed by
+- **Cost claims.** The one cost table is in `docs/flang/SPEC.md`. Each cell is backed by
   an exact snippet of the target's runtime in `scripts/guards/emit-promises-guard.flang`;
   change the runtime and the guard demands the table be revisited.
 - **Licence headers.** Every source file under `flang/` and `docs/examples/` with one
@@ -268,12 +268,12 @@ None of them may be "fixed" by loosening the guard. The tree is the measurer.
 
 ## What a change to the language must include
 
-- the corresponding section of `flang/SPEC.md`, updated in the same change;
+- the corresponding section of `docs/flang/SPEC.md`, updated in the same change;
 - a type-checker or totality test, whichever the change touches;
 - matching behaviour in the interpreter and in every emitter — the emitter tests
   compare a compiled binary against the interpreter, so a divergence is a failure,
   not a note;
-- a debt entry in `flang/core/SPEC.md` when a divergence from the frozen answer
+- a debt entry in `docs/flang/core/SPEC.md` when a divergence from the frozen answer
   table (`flang/test/fixtures/fts-oracle.json`) is left in deliberately.
 
 Do not add product-specific structures, filesystem access, or network access to

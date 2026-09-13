@@ -4,7 +4,7 @@
 **Дата:** 22 августа 2026
 **Основание:** рантаймы `flang/src/emit/c/flang_runtime.c`,
 `flang/src/emit/go/flang_runtime.go`, `flang/src/emit/elixir/flang_runtime.ex`;
-спецификация [`flang/SPEC.md`](../../flang/SPEC.md), раздел «У строки одна мера — знаки»;
+спецификация [`docs/flang/SPEC.md`](../flang/SPEC.md), раздел «У строки одна мера — знаки»;
 проверка `scripts/guards/one-string-measure-guard.sh` и программа `scripts/guards/string-measure.flang`.
 **Продолжает** коммит `c015f452` («У строки одна мера — знаки»), который свёл меры у
 трёх целей с UTF-16 и записал в спецификацию, что у остальных пяти сводить нечего.

@@ -16,10 +16,10 @@ on:
     paths:
       - 'docs/**'
       - 'CHANGELOG.md'
-      - 'flang/SPEC.md'
-      - 'flang/proof/SPEC.md'
+      - 'docs/flang/SPEC.md'
+      - 'docs/flang/proof/SPEC.md'
       - 'flang/cat/SPEC.md'
-      - 'flang/conc/SPEC.md'
+      - 'docs/flang/conc/SPEC.md'
       - 'scripts/site/build-changelog-page.mjs'
       - 'scripts/site/build-changelog.mjs'
       - 'scripts/site/build-changelog.flang'

@@ -12,7 +12,7 @@
 что РЕШАЕТ; [ADR-0007](0007-encryption-by-request-to-an-external-host.md) — там
 хранилище корней названо ценой пути «TLS на flang», но решения не принято;
 [ADR-0002](0002-outbound-connection.md) — исходящее соединение.
-**Задача:** [0048](../../tasks/0048-tls-is-assembled-end-to-end.md).
+**Задача:** [0048](../tasks/0048-tls-is-assembled-end-to-end.md).
 
 ---
 

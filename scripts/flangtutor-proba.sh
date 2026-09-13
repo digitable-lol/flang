@@ -121,9 +121,9 @@ fi
 # ── слова: список в проводнике = таблица лексера ────────────────────────────
 sed -n '/^тотальная функция «Куски таблицы»/,/^  \]/p' "$KOREN/flang/self/lexer.flang" \
   | grep '^    "' | sed 's/^    "|//; s/|",\{0,1\}$//' | tr '|' '\n' | sed 's/:.*//' | grep -v '^$' > "$RAB/slova.lexer"
-sed -n "/^SLOVA_YAZYKA='/,/^'/p" "$KOREN/flangtutor" | grep -v "'" | tr -d '\n' | tr '|' '\n' | grep -v '^$' > "$RAB/slova.tutor"
+sed -n "/^LANGUAGE_WORDS='/,/^'/p" "$KOREN/flangtutor" | grep -v "'" | tr -d '\n' | tr '|' '\n' | grep -v '^$' > "$RAB/slova.tutor"
 if ! cmp -s "$RAB/slova.lexer" "$RAB/slova.tutor"; then
-  echo "слова: список слов в flangtutor разошёлся с таблицей лексера (снимите заново командой из шапки списка):"
+  echo "слова: список слов в flangtutor разошёлся с таблицей лексера (снимите заново строками 122-123 этой пробы):"
   diff "$RAB/slova.lexer" "$RAB/slova.tutor" | head -10; BEDA=1
 else
   echo "  зелен  слова: $(wc -l < "$RAB/slova.tutor" | tr -d ' ') фраз лексера — те же в проводнике"

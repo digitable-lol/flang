@@ -339,12 +339,12 @@
       "зачем": "страница «WebAssembly через C»"
     },
     {
-      "маска": "flang/SPEC.md",
+      "маска": "docs/flang/SPEC.md",
       "вид": "проза",
       "зачем": "страница «Спецификация языка»"
     },
     {
-      "маска": "flang/proof/SPEC.md",
+      "маска": "docs/flang/proof/SPEC.md",
       "вид": "проза",
       "зачем": "страница «Спецификация ядра»"
     },
@@ -354,7 +354,7 @@
       "зачем": "страница «Категории и функторы»"
     },
     {
-      "маска": "flang/conc/SPEC.md",
+      "маска": "docs/flang/conc/SPEC.md",
       "вид": "проза",
       "зачем": "страница «Процессы и отказоустойчивость»"
     },
@@ -404,11 +404,11 @@
       "почему": "передача состояния между сессиями — внутренний текст"
     },
     {
-      "маска": "flang/core/SPEC.md",
+      "маска": "docs/flang/core/SPEC.md",
       "почему": "не собирается ни в одну страницу сайта"
     },
     {
-      "маска": "flang/self/SPEC.md",
+      "маска": "docs/flang/self/SPEC.md",
       "почему": "не собирается ни в одну страницу сайта"
     },
     {
@@ -501,8 +501,8 @@
     "docs/site/what-is-proved.ru.md": 10,
     "docs/surfaces.md": 2,
     "docs/wasm-via-c.md": 19,
-    "flang/conc/SPEC.md": 197,
-    "flang/proof/SPEC.md": 478,
+    "docs/flang/conc/SPEC.md": 196,
+    "docs/flang/proof/SPEC.md": 478,
     "flang/src/emit/c/flang_repl.c": 42,
     "fspec/README.md": 1
   }

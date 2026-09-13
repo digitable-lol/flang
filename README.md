@@ -21,7 +21,7 @@ Two words carry the promises. `тотальная` in front of a function claims
 every input; the compiler proves that itself, by structural descent or a declared measure, and
 refuses the file when it cannot. `обеспечивает` states a postcondition; the proof kernel closes
 it over all inputs where it can, and says in words when it could not. The full definition of the
-language is [`flang/SPEC.md`](flang/SPEC.md); the reference by construct is on the site —
+language is [`docs/flang/SPEC.md`](docs/flang/SPEC.md); the reference by construct is on the site —
 [Language](https://digitable-lol.github.io/flang/en/language.html).
 
 ## What is proved today, and what is not
@@ -31,7 +31,7 @@ prints, function by function, what carries each promise — a proof, a grid of t
 values, or nothing. `--записать <file>` writes the proof record out, and an independent checker
 reads it back: [`flang/proof/чекер/сверщик.c`](flang/proof/чекер/сверщик.c), a C program that
 takes the source and the record and answers whether they agree, with no line of the compiler in
-it. What the kernel may conclude and what it may not is [`flang/proof/SPEC.md`](flang/proof/SPEC.md).
+it. What the kernel may conclude and what it may not is [`docs/flang/proof/SPEC.md`](docs/flang/proof/SPEC.md).
 
 The measure of that checker is the share of proof obligations in the repository's record set
 that it replays independently, rather than takes on the kernel's word:
@@ -377,8 +377,8 @@ everything else under `docs/` is [`docs/README.md`](docs/README.md).
 | understand the proofs | [What is proved](https://digitable-lol.github.io/flang/en/what-is-proved.html) · [Which claims the kernel takes](https://digitable-lol.github.io/flang/en/kak-dokazat.html) · [The kernel refused: whose error](https://digitable-lol.github.io/flang/en/proof-refused.html) |
 | run it somewhere | [Install](https://digitable-lol.github.io/flang/en/install.html) · [Commands](https://digitable-lol.github.io/flang/en/cli.html) · [Editor](https://digitable-lol.github.io/flang/en/editor.html) · [Processes and supervision](https://digitable-lol.github.io/flang/en/processes.html) |
 | see real programs | [Examples](https://digitable-lol.github.io/flang/en/examples.html) — the sets under [`docs/examples/`](docs/examples) |
-| read the contracts | [`flang/SPEC.md`](flang/SPEC.md) · [`flang/self/SPEC.md`](flang/self/SPEC.md) · [`flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`flang/conc/SPEC.md`](flang/conc/SPEC.md) · [`docs/ct/spec.md`](docs/ct/spec.md) |
-| know where it is going | [`ROADMAP.md`](ROADMAP.md) — five stages, what each changes for a developer · [`docs/what-provability-gives-today.md`](docs/what-provability-gives-today.md) · [`docs/road-to-1-0.md`](docs/road-to-1-0.md) |
+| read the contracts | [`docs/flang/SPEC.md`](docs/flang/SPEC.md) · [`docs/flang/self/SPEC.md`](docs/flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](docs/flang/proof/SPEC.md) · [`docs/flang/conc/SPEC.md`](docs/flang/conc/SPEC.md) · [`docs/ct/spec.md`](docs/ct/spec.md) |
+| know where it is going | [`docs/ROADMAP.md`](docs/ROADMAP.md) — five stages, what each changes for a developer · [`docs/what-provability-gives-today.md`](docs/what-provability-gives-today.md) · [`docs/road-to-1-0.md`](docs/road-to-1-0.md) |
 
 Naming rule: a file with no language suffix is English; the suffix `.ru.md` marks its Russian
 edition. The exception is `README.md` and `SPEC.md` next to code, which keep those names in
@@ -386,26 +386,29 @@ whichever language they are written, because GitHub shows them as a directory's 
 
 ## How the repository is laid out
 
-There are 8 directories at the root. Everything that is the language lives under `flang/`;
+There are 6 directories at the root. Everything that is the language lives under `flang/`;
 outside it is what the language is not: the bootstrap point, packaging, examples, measurements,
-documentation and the task list. `sh scripts/guards/published-vs-tree.sh --карта` checks this map
+documentation and the task list. Prose lives in `docs/` and only there: the contracts of the
+language are `docs/flang/`, the editor support is `docs/editors/`, the work of the tree is
+`docs/tasks/`. `sh scripts/guards/published-vs-tree.sh --карта` checks this map
 against the tree on every push.
 
 <!-- КАРТА-НАЧАЛО: между этими метками каждая строка начинается с имени каталога корня;
      sh scripts/guards/published-vs-tree.sh --карта сличает состав с деревом. -->
 
 ```
-bootstrap/        the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
-flang/            the language: self/ (the compiler), core/, stdlib/, proof/, conc/, ct/, src/emit/ (target runtimes), scripts/, проверки/, test/, SPEC.md
-docs/examples/         200 flang programs in 24 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
-editors/          the language server, syntax for Vim and VS Code, a github-linguist submission
-packaging/        the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
-scripts/          guards of the tree, the reprint of the bootstrap point, the release archive, the changelog
-fspec/            business rules written as proved specifications, and the check that a new rule does not undo an old one
-docs/             documentation: the site sources, the guide, decisions (adr/), measurement reports, the knowledge base
-tasks/            the open and closed work of the tree, one file per task
-.github/          CI and release workflows
-.ai/              what an assistant working in this tree reads: AGENTS.md and .claude/skills; the root keeps `AGENTS.md` and `.claude` as symbolic links into it, and both are still found by their old names
+bootstrap/      the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
+flang/          the language: self/ (the compiler), core/, stdlib/, proof/, conc/, ct/, src/emit/ (target runtimes), scripts/, проверки/, test/ — code only; its contracts are in docs/flang/
+docs/examples/  200 flang programs in 24 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
+docs/editors/   the language server, syntax for Vim and VS Code, a github-linguist submission
+packaging/      the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
+scripts/        guards of the tree, the reprint of the bootstrap point, the release archive, the changelog
+fspec/          business rules written as proved specifications, and the check that a new rule does not undo an old one
+docs/           documentation: the site sources, the guide, decisions (adr/), measurement reports, the knowledge base, and flang/ — the contracts of the language, moved out of the code
+docs/flang/     the contracts of the language — one SPEC.md per layer, moved out of the code; next to the code only a pointer is left
+docs/tasks/     the open and closed work of the tree, one file per task
+.github/        CI and release workflows
+.ai/            what an assistant working in this tree reads: AGENTS.md and .claude/skills; the root keeps `AGENTS.md` and `.claude` as symbolic links into it, and both are still found by their old names
 ```
 
 <!-- КАРТА-КОНЕЦ -->
@@ -413,7 +416,7 @@ tasks/            the open and closed work of the tree, one file per task
 Inside `flang/`: [`flang/self/`](flang/self) is the compiler, 65 files of flang —
 <!-- СНЯТО 2026-09-12 файлов flang/self/*.flang = 65 -->
 lexer, parser, types, totality, proof kernel and one printer per target; what the layers owe each
-other is [`flang/self/SPEC.md`](flang/self/SPEC.md). [`flang/stdlib/`](flang/stdlib) is the
+other is [`docs/flang/self/SPEC.md`](docs/flang/self/SPEC.md). [`flang/stdlib/`](flang/stdlib) is the
 standard library — **51 modules, 1764 functions and 3745 examples** that run on every check:
 <!-- СНЯТО 2026-09-13 файлов flang/stdlib/*.flang = 51 -->
 <!-- СНЯТО 2026-09-13 примеров-в flang/stdlib/*.flang = 3745 -->
@@ -446,8 +449,11 @@ is how edits to `flang/self/` reach the binary. What the seed is and what guards
 The loose files in the root: `README.md` (this page; the Russian edition is a page of its own,
 [`docs/README.ru.md`](docs/README.ru.md)), `LICENSE` · `LICENSE-RU.md`,
 `CONTRIBUTING.md`, `AGENTS.md` (guidance for an agent working in the tree — a symbolic link to
-`.ai/AGENTS.md`, as `.claude` is a link to `.ai/.claude`), `DESCRIPTION.md` (a
-long-form description of the language, in Russian), `ROADMAP.md` (measured, not intended),
+`.ai/AGENTS.md`, as `.claude` is a link to `.ai/.claude`), `docs/DESCRIPTION.md` (a
+long-form description of the language, in Russian) and `docs/ROADMAP.md` (measured, not intended) —
+both symbolic links into `docs/`, as `tasks` is a link to `docs/tasks`; the documents themselves
+are [`docs/DESCRIPTION.md`](docs/DESCRIPTION.md) and [`docs/ROADMAP.md`](docs/ROADMAP.md),
+and the links keep the addresses other repositories already point at,
 `CHANGELOG.md` · `changelog.json` (printed from tags and commit subjects, never edited by hand),
 `package.json` (not an npm package — npm left the tree in September 2026; it is kept as the one place the version, the licence and the two addresses are read from: the site footer, the release workflow and the Homebrew formula guard. Printed by `./ярлык пакет`, never published) and
 `ярлык` · `ярлыки.flang` — the shortcuts of the tree and the `sh` entry point that runs them:
@@ -467,9 +473,9 @@ git config core.hooksPath .githooks      # the pre-push hook: the cheap guards, 
 The walk runs 211 checks written in flang and diffs the result against
 <!-- СНЯТО 2026-09-13 строк flang/проверки/ведомость.txt = 211 -->
 `flang/проверки/ведомость.txt`, one line per check. The hook runs the guards that finish in
-seconds and names what it did not run; the long ones are CI (`.github/workflows/binary.yml`). Work is tracked in [`tasks/`](tasks/README.md), one file per
+seconds and names what it did not run; the long ones are CI (`.github/workflows/binary.yml`). Work is tracked in [`docs/tasks/`](docs/tasks/README.md), one file per
 task, taken and closed by a commit — `./ярлык задачник:доска` prints the board. A task can also
-end without being done: `tasks/rejected/` holds the ones that were considered and turned down, so
+end without being done: `docs/tasks/rejected/` holds the ones that were considered and turned down, so
 the reason survives the decision. The rules of the
 tree that are not visible from the code — what breaks silently, the cost of a reprint, what a
 guard is for — are in [`AGENTS.md`](AGENTS.md); how to build, run the checks and send a change is
@@ -489,8 +495,8 @@ built with it — [flang-tui](https://github.com/digitable-lol/flang-tui),
 [digitdisk](https://github.com/digitable-lol/digitdisk),
 [flang-ribbon](https://github.com/digitable-lol/flang-ribbon) and
 [flang-env](https://github.com/digitable-lol/flang-env). What stands between the tree and 1.0 is
-the five stages of [`ROADMAP.md`](ROADMAP.md), each tied to a decision in `docs/adr/` and to
-tasks in `tasks/`; the older list with numbers, snapped at 0.6.2, is kept as
+the five stages of [`docs/ROADMAP.md`](docs/ROADMAP.md), each tied to a decision in `docs/adr/` and to
+tasks in `docs/tasks/`; the older list with numbers, snapped at 0.6.2, is kept as
 [`docs/what-blocks-1-0.md`](docs/what-blocks-1-0.md).
 
 ## License

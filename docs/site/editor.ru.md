@@ -38,7 +38,7 @@ flang lsp --stdio
 ## Что лежит в дереве языка
 
 ```
-editors/
+docs/editors/
   vim/         подсветка и языковой сервер для Vim 8/9 и Neovim
   vscode/      расширение VS Code: подсветка и языковой сервер
   flang-lsp/   указатель на эту страницу: сервер входит в компилятор, отдельного пакета нет
@@ -46,8 +46,8 @@ editors/
 ```
 
 **Подсветка не написана руками ни в одном редакторе, и это замер, а не
-намерение.** В `editors/vim/syntax/flang.vim` — <!-- СНЯТО 2026-09-08 строк editors/vim/syntax/flang.vim = 46 --> 46 строк, в
-`editors/vscode/syntaxes/flang.tmLanguage.json` — <!-- СНЯТО 2026-09-08 строк editors/vscode/syntaxes/flang.tmLanguage.json = 60 --> 60 строк, и обе печатаются из
+намерение.** В `docs/editors/vim/syntax/flang.vim` — <!-- СНЯТО 2026-09-08 строк docs/editors/vim/syntax/flang.vim = 46 --> 46 строк, в
+`docs/editors/vscode/syntaxes/flang.tmLanguage.json` — <!-- СНЯТО 2026-09-08 строк docs/editors/vscode/syntaxes/flang.tmLanguage.json = 60 --> 60 строк, и обе печатаются из
 таблицы ключевых слов языка программами на самом flang
 (`scripts/editors/vim-highlighting.flang`, `scripts/editors/vscode-highlighting.flang`). Список
 слов, набранный отдельно, — это второе описание языка, и оно расходится с первым
@@ -63,7 +63,7 @@ Vim и Neovim делят один каталог, но настраиваютс�
 протокола встроенный, Vim 8/9 берёт сторонний `vim-lsp`. Ищут сервер оба
 одинаково — одной функцией на VimScript, которую Lua зовёт через `vim.fn`.
 
-Расширение VS Code написано на JavaScript (`editors/vscode/extension.js`), и
+Расширение VS Code написано на JavaScript (`docs/editors/vscode/extension.js`), и
 ни одна его строка ничего не знает о языке: точка входа расширения VS Code —
 модуль, который редактор загружает в свой процесс Node, и другого способа
 подключиться у него нет. Файл только запускает сервер и передаёт ему слова
@@ -134,11 +134,11 @@ Content-Length: 311
 
 ## VS Code
 
-Расширение лежит в дереве языка — `editors/vscode/`. В Marketplace его нет:
+Расширение лежит в дереве языка — `docs/editors/vscode/`. В Marketplace его нет:
 собирается и ставится оно локально.
 
 ```bash
-cd editors/vscode
+cd docs/editors/vscode
 npm install
 npx vsce package
 code --install-extension flang-0.1.0.vsix
@@ -157,7 +157,7 @@ code --install-extension flang-0.1.0.vsix
 Если в `PATH` нет и её, поставьте в `flang.server.command` команду `flang` (или
 полный путь до неё), а в `flang.server.args` — `["lsp", "--stdio"]`.
 
-Подробнее — `editors/vscode/README.md`: как поставить прямо из дерева без
+Подробнее — `docs/editors/vscode/README.md`: как поставить прямо из дерева без
 сборки, как перепечатать подсветку и что понадобится, чтобы выложить
 расширение в Marketplace.
 
@@ -167,7 +167,7 @@ code --install-extension flang-0.1.0.vsix
 ## Vim 8/9
 
 Подсветка и настройки буфера ставятся штатным механизмом пакетов. Плагин живёт
-в подкаталоге `editors/vim` дерева языка, а подкаталог этот механизм не умеет —
+в подкаталоге `docs/editors/vim` дерева языка, а подкаталог этот механизм не умеет —
 поэтому на него кладётся ссылка:
 
 ```bash
@@ -185,7 +185,7 @@ syntax on
 ```
 
 У vim-plug подкаталог задаётся ключом:
-`Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }`.
+`Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }`.
 
 Проверить, что встало: откройте любой `.flang`, `.fp`, `.фп` или `.фланг` и спросите
 редактор.
@@ -208,7 +208,7 @@ syntax on
 ```vim
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
-Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }
+Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }
 ```
 
 Клиент выбран один и по одному доводу: он написан на чистом VimScript, работает
@@ -243,8 +243,8 @@ ln -s ~/.local/share/flang/editors/vim ~/.config/nvim/pack/flang/start/flang
 }
 ```
 
-У vim-plug и packer — `Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }`
-и `use { 'digitable-lol/flang', rtp = 'editors/vim' }`.
+У vim-plug и packer — `Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }`
+и `use { 'digitable-lol/flang', rtp = 'docs/editors/vim' }`.
 
 Настраивать сервер отдельно не нужно и не следует: плагин сам назначает тип
 файла всем четырём расширениям и сам поднимает сервер через встроенный `vim.lsp`.
@@ -308,14 +308,14 @@ vim.lsp.enable("flang")
 
 GitHub раскрашивает исходники и считает языки репозитория по файлу
 «languages.yml» проекта [github-linguist/linguist](https://github.com/github-linguist/linguist).
-Заготовка записи для flang лежит в `editors/linguist/languages-flang.yml`: тип,
+Заготовка записи для flang лежит в `docs/editors/linguist/languages-flang.yml`: тип,
 цвет, четыре расширения (первым `.flang` — у linguist порядок в списке есть
 порядок предпочтения), область «source.flang» — та же, что у грамматики
 расширения VS Code.
 
 Заявка не подана, и чего для неё нет — названо:
 
-- каталога образцов `editors/linguist/samples/` — linguist обучает определитель
+- каталога образцов `docs/editors/linguist/samples/` — linguist обучает определитель
   языка на настоящих файлах, а не на описании;
 - широкого использования: правила linguist требуют сотен репозиториев на
   расширение, а заявки на новые языки закрываются.

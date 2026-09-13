@@ -3,7 +3,7 @@
 **Основание:** [ADR-0025](../adr/0025-the-ceiling-leaves-the-type-and-becomes-an-obligation.md)
 §4–§5, [ADR-0022](../adr/0022-a-type-fact-travels-as-a-derivation.md) §3.10 (факт о типе
 едет выводом), ведомость `flang/proof/ПРАВИЛА-ВЫВОДА.tsv` (78 правил), задача
-[6202](../../tasks/6202-the-ceiling-is-a-type-property-not-a-proved-obligation.md).
+[6202](../tasks/completed/6202-the-ceiling-is-a-type-property-not-a-proved-obligation.md).
 **Состояние:** проект. Ни одна строка `flang/proof/чекер/сверщик.c`, `flang/self/**`,
 ведомости и записей не тронута; всё ниже — чтение, прогон и документ.
 **Замер:** 9 сентября 2026, копия dev `4d13d5a88` и голова `gh/dev` `ada951cc4` — все три

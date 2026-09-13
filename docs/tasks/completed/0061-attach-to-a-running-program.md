@@ -294,7 +294,7 @@ HTTP/1.1 200 OK … живой          код возврата nc: 0   (и до
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `91e04790` (2026-08-27) — «docs(tasks): 0061 сделана — к идущей программе подключаются сигналом, снимок вставляется в «flang run» и даёт тот же ответ, цена меньше разброса»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 6 коммитах ствола: `git log gh/dev --oneline --grep=0061`
 
 ## Чего эта задача НЕ сделала, и это названо, а не умолчано

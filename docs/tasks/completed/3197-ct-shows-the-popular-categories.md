@@ -12,8 +12,8 @@
 # 3197. flang/ct показывает популярные категории — Set, Vect, Grp, Pos и функтор Mon⇄Set
 
 Владелец: «одна из задач была про обновление `flang/ct` — показать примеры
-популярных категорий: Vect, Top и прочих». Задачи с таким текстом в `tasks/`,
-`tasks/completed/`, `ROADMAP.md`, `docs/zettel/`, `CHANGELOG.md` и в
+популярных категорий: Vect, Top и прочих». Задачи с таким текстом в `docs/tasks/`,
+`docs/tasks/completed/`, `docs/ROADMAP.md`, `docs/zettel/`, `CHANGELOG.md` и в
 `git log --all` нет (поиск по «Vect», «Top», «Tor», «векторн», «топологич»,
 «популярн», «катего»). Номер 4136 из коммитов `8142524b`/`acca80a3` — номер
 трекера, файла задачи под ним не заводили. Поэтому эта ячейка заводится заново.
@@ -82,7 +82,7 @@ README это называет.
   которая краснеет с кодом диагностики;
 - каждая функция несёт `пример`; `обеспечивает` — только при функции с
   примером (иначе обещание уезжает проверкой при работе);
-- новые `.flang` без комментариев; пояснения — в `flang/ct/README.md`;
+- новые `.flang` без комментариев; пояснения — в `docs/flang/ct/README.md`;
 - опись `scripts/proved-share-ledger.txt` пополнена строками новых файлов,
   `sh scripts/pol-dokazannogo-sverka.sh` зелёный; `sh .githooks/pre-push`
   — код 0.
@@ -96,7 +96,7 @@ README это называет.
 ## Чем закрыта
 
 - `606ff9cb` — эта спека до кода;
-- `fb802e63` — пять файлов `flang/ct/{set-mail-routing,vect-plane,grp-clock-shifts,pos-approval,mon-free-forgetful}.flang` и раздел «Популярные категории на настоящих задачах» в `flang/ct/README.md`;
+- `fb802e63` — пять файлов `flang/ct/{set-mail-routing,vect-plane,grp-clock-shifts,pos-approval,mon-free-forgetful}.flang` и раздел «Популярные категории на настоящих задачах» в `docs/flang/ct/README.md`;
 - `70381a91` — пять строк в `scripts/proved-share-ledger.txt` (написано 2+3+4+6+1, ведомости «×»: у программ с категорией она не печатается) и этот раздел;
 - `a21d9383` — четыре приметы «файлов *.flang» 1290 → 1295 (сторож чисел в прозе).
 

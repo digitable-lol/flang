@@ -85,5 +85,5 @@ numbers.flang      доказано 24 из  45
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `c38ed2e1` (2026-08-27) — «proof(stdlib): numbers 33 → 37 доказанных и json 45 → 47, а стены datetime и higher-order названы прогоном»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 3 коммитах ствола: `git log gh/dev --oneline --grep=4810`

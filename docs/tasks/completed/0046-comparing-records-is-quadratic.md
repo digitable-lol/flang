@@ -188,6 +188,6 @@ Failure to open any events for recording.
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `efd952f3` (2026-08-26) — «docs(tasks): 0046 сделана — квадрат был не в переборе полей, а в том, что fl_equal не сверял указатели»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 9 коммитах ствола: `git log gh/dev --oneline --grep=0046`
 

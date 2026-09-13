@@ -314,7 +314,7 @@ fn spisok(znachenie: &rt::Value) -> Vec<rt::Value> {
 
 /* ── провод: те же метки, что у остальных хозяев ───────────────────────────
    Перевод, а не решение: правило «у каждого значения метка одной буквой» живёт
-   в `flang/conc/DISTRIBUTED.md`, и разойтись с ним нельзя. */
+   в `docs/flang/conc/DISTRIBUTED.md`, и разойтись с ним нельзя. */
 fn zakodirovat(znachenie: &rt::Value) -> Json {
     match znachenie {
         rt::Value::Nothing => Json::Spisok(vec![Json::Stroka("н".into())]),

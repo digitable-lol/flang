@@ -133,7 +133,7 @@ kernel, 85 lemmas ([`lean-checks-the-inference-rules.md`](lean-checks-the-infere
 
 ## How far from «right»
 
-Five stages in [`ROADMAP.md`](../ROADMAP.md), no dates:
+Five stages in [`docs/ROADMAP.md`](docs/ROADMAP.md), no dates:
 
 | stage | today | when closed | decision, tasks |
 |---|---|---|---|

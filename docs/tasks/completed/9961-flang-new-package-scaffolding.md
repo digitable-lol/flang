@@ -29,7 +29,7 @@
 > было, от чего отсчитывали:
 >
 > ~~Подкоманды `flang new` в дереве нет вовсе (проверено:
-> `grep -n "new" flang/self/cli.flang`, `grep -rn "flang new" docs/ tasks/`
+> `grep -n "new" flang/self/cli.flang`, `grep -rn "flang new" docs/ docs/tasks/`
 > — пусто).~~
 
 ## Что должна делать команда
@@ -135,5 +135,5 @@ flang package проба.flang    → код 1, FLANG_TYPE: функция «П�
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `fb29de4d` (2026-09-06) — «feat(сторожа): перечень команд сверяется по пяти местам; man и оба README не знали «new»»
-- в `tasks/completed/` перенесена коммитом `fb29de4d` (2026-09-06) — «feat(сторожа): перечень команд сверяется по пяти местам; man и оба README не знали «new»»
+- в `docs/tasks/completed/` перенесена коммитом `fb29de4d` (2026-09-06) — «feat(сторожа): перечень команд сверяется по пяти местам; man и оба README не знали «new»»
 - номер задачи назван в 5 коммитах ствола: `git log gh/dev --oneline --grep=9961`

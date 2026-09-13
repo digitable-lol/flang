@@ -105,6 +105,6 @@ Worktree `/srv/tmp/dokazuemyy/kvantory`, ветка `r/kvantory` от `gh/dev` `
 
 Код и зонд — коммит этой ветки «proof(6205): узел «exists» доходит до типизатора и вычислителя»
 (`git log --oneline -- flang/self/bootstrap/zond-k7.flang`); записи семьи, README семьи, ADR-0026
-§11 «Исполнение» и эта задача — следующий коммит той же ветки (`git log -- tasks/completed/6205-*.md`).
+§11 «Исполнение» и эта задача — следующий коммит той же ветки (`git log -- docs/tasks/completed/6205-*.md`).
 Разбор, ядро, печать и сверщик — в стволе до задачи: `c0f5c5213`, `5634975ad`, `f914dea72`,
 `ff380a97d`, `f2472bde4`, `5f46157f2`, `796abf27c`.

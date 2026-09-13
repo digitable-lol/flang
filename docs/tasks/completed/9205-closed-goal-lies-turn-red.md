@@ -214,5 +214,5 @@ $ flang io flang/scripts/closed-length-guard.flang --max-steps 4000000000
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `608d8d1e` (2026-08-30) — «docs(tasks): 9205 сделана — восьмая замкнутая ложь стояла в компиляторе; 4046 заведена»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 3 коммитах ствола: `git log gh/dev --oneline --grep=9205`

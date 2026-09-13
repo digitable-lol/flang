@@ -197,7 +197,7 @@ bootstrap/flang check flang/self/proof-kernel.flang --предел-глубин�
 и с обоими файлами проб (`flang/proof/midpoint-verdicts.flang`,
 `flang/proof/midpoint-price.flang`) в приёмную НЕ отправлена и ждёт снятия
 заморозки; сюда, в ствол, едут только числа и задача. Имена веток названы в
-`tasks/1238-transitivity-between-two-inequalities.md`.
+`docs/tasks/1238-transitivity-between-two-inequalities.md`.
 
 Связано: [[the-expensive-length-place-and-the-unprovable-length-goals-are-not-the-same-place]],
 [[two-missing-bound-rules-not-one-and-both-are-false-on-ieee-numbers]],

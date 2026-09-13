@@ -58,7 +58,7 @@ flang check flang/self/bootstrap/compiler.flang   # FLANG_DUPLICATE_NAME
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `20cf4a3a` (2026-09-01) — «chore(задачник): передача работы 1 сентября, семь двойных номеров разведены»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 6 коммитах ствола: `git log gh/dev --oneline --grep=1300`
 
 ## Что уже сделано и где лежит

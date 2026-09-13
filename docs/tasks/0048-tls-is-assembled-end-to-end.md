@@ -61,10 +61,10 @@ flang io <программа> → запрос по https к настоящем�
 TLS 1.3, RFC 8446, и только он — на RFC 5246 во всей `flang/stdlib/` нет ни
 одной ссылки. Таблица «шаг рукопожатия — что в дереве — чего не хватает» на
 двадцать девять шагов клиента лежит в
-[`docs/zettel/tls-1-3-reaches-the-first-encrypted-record-and-thirteen-client-steps-are-not-started.md`](../docs/zettel/tls-1-3-reaches-the-first-encrypted-record-and-thirteen-client-steps-are-not-started.md):
+[`docs/zettel/tls-1-3-reaches-the-first-encrypted-record-and-thirteen-client-steps-are-not-started.md`](../zettel/tls-1-3-reaches-the-first-encrypted-record-and-thirteen-client-steps-are-not-started.md):
 готовы целиком 5, сделаны частью 11, не начаты 13.
 
-**Чему доверять — решено и записано.** [`docs/adr/0012-trust-roots.md`](../docs/adr/0012-trust-roots.md)
+**Чему доверять — решено и записано.** [`docs/adr/0012-trust-roots.md`](../adr/0012-trust-roots.md)
 (ADR-0012): корни доверия — довод программы, а не постоянная библиотеки;
 умолчание двоичного хозяина — системный список, названный строкой в программе;
 пустой связке не доверяют никому. Довод — замер: поручения
@@ -157,10 +157,10 @@ flang/stdlib/trust-store.flang: проверено — разбор, типы, �
    действия AES-128-GCM над записью в 37 октетов — **87,93 с**
    (`/usr/bin/time` на прогоне 3 выше). Записи в 3829 октетов это даёт больше
    часа, а рукопожатие столько не живёт: трубку кладёт сервер. Разбор —
-   [`docs/zettel/tls-one-encrypted-record-of-37-octets-costs-88-seconds-so-a-real-server-hangs-up-first.md`](../docs/zettel/tls-one-encrypted-record-of-37-octets-costs-88-seconds-so-a-real-server-hangs-up-first.md).
+   [`docs/zettel/tls-one-encrypted-record-of-37-octets-costs-88-seconds-so-a-real-server-hangs-up-first.md`](../zettel/tls-one-encrypted-record-of-37-octets-costs-88-seconds-so-a-real-server-hangs-up-first.md).
 
 Поимённый список того, что для этого надо дописать в ЧУЖИХ файлах, —
-[`docs/zettel/tls-six-things-the-client-needs-live-in-foreign-files-and-two-of-them-are-name-collisions.md`](../docs/zettel/tls-six-things-the-client-needs-live-in-foreign-files-and-two-of-them-are-name-collisions.md).
+[`docs/zettel/tls-six-things-the-client-needs-live-in-foreign-files-and-two-of-them-are-name-collisions.md`](../zettel/tls-six-things-the-client-needs-live-in-foreign-files-and-two-of-them-are-name-collisions.md).
 
 сперва проверить, не сделано ли уже, и если сделано — закрыть.
 

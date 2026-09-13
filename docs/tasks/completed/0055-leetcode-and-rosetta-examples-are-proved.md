@@ -110,7 +110,7 @@ PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- \
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `1346e7f9` (2026-08-26) — «docs(tasks): задачки и переводы закрыты — 15 обещаний было, 139 стало, 135 из 135 проверенных доказаны, сетки ноль»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 10 коммитах ствола: `git log gh/dev --oneline --grep=0055`
 
 ## Что НЕ взялось, и чем опровергнуто

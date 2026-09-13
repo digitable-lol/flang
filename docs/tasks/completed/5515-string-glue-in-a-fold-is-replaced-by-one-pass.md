@@ -211,6 +211,6 @@ git show 612a41f6^:…/wire.flang         строка 326 → свёртка з
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `eda0f451` (2026-08-27) — «perf(stdlib): 5515 закрыта — примеры 83/83 и вердикт 94/58/36/0 те же до и после, пик проверки −1,06 %»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 7 коммитах ствола: `git log gh/dev --oneline --grep=5515`
 

@@ -136,6 +136,6 @@ CHISLO=1 ZHDAT=2 …            | сторожа:проверка | пересн
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `d85d513d` (2026-08-26) — «feat(scripts): опись целей снимается сборщиком и отличает отказ ворот от вердикта — по двум признакам, а не по коду»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 1 коммитах ствола: `git log gh/dev --oneline --grep=0042`
 

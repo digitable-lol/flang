@@ -45,7 +45,7 @@ docs/benchmark2/** linguist-vendored
 # (нужны сотни репозиториев, у нас один). Пока не примут, 89 866 строк на flang
 # в языковой полосе НЕ ВИДНО ВОВСЕ - там показан только JavaScript, TypeScript
 # и C. Заготовка записи и список того, что нужно к подаче, лежат в
-# editors/linguist/languages-flang.yml.
+# docs/editors/linguist/languages-flang.yml.
 #
 # Строка `*.fts linguist-language=FTS` выше не работает и никогда не работала:
 # linguist-language умеет ссылаться только на языки, которые Linguist УЖЕ знает,

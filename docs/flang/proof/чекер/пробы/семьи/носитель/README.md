@@ -1,8 +1,8 @@
 # Семья «носитель»: носитель индукции читается с объявления типа
 
-Задача [6203](../../../../../../tasks/6203-the-carrier-of-induction-is-a-closed-list-of-three-in-two-places.md),
-основание — [ADR-0026](../../../../../../docs/adr/0026-quantifiers-over-any-type-are-a-kernel-change.md)
-§2.4 и §5 шаг 1; проект — [docs/design/6203-nositel-indukcii-iz-obyavleniya.md](../../../../../../docs/design/6203-nositel-indukcii-iz-obyavleniya.md)
+Задача [6203](../../../../../../tasks/completed/6203-the-carrier-of-induction-is-a-closed-list-of-three-in-two-places.md),
+основание — [ADR-0026](../../../../../../adr/0026-quantifiers-over-any-type-are-a-kernel-change.md)
+§2.4 и §5 шаг 1; проект — [docs/design/6203-nositel-indukcii-iz-obyavleniya.md](../../../../../../design/6203-nositel-indukcii-iz-obyavleniya.md)
 §3.4–§3.5, §6. Инкремент Ш0: только сверщик, без ядра и без семени.
 
 ## Что было
@@ -29,8 +29,8 @@
 |---|---|---:|---|
 | `imya-naturalnoe.{flang,запись}` | честная | 0 (было 3) | `if-over-a-segment` с заменой `неотрицательное` → `натуральное`: синоним имени отрезка |
 | `psevdonim-otrezok.{flang,запись}` | честная | 0 | `тип «Возраст» это неотрицательное` под `segment`; ядро напечатает такую запись только после Ш1 — сверщик читает уже сейчас |
-| `chislo-segment.flang` + `../../записи/корпус/poddelka-nositel-chislo-segment.запись` | подделка (набор, «лжёт-запись») | 1 (было 3) | `segment` над доводом `число` — П1 |
-| `psevdonim-ne-otrezok.flang` + `../../записи/корпус/poddelka-nositel-psevdonim-ne-otrezok.запись` | подделка (набор, «лжёт-запись») | 1 (было 3) | `segment` над `тип «Мера» это число` — З2 |
+| `chislo-segment.flang` + `../../../../../../../flang/proof/чекер/пробы/записи/корпус/poddelka-nositel-chislo-segment.запись` | подделка (набор, «лжёт-запись») | 1 (было 3) | `segment` над доводом `число` — П1 |
+| `psevdonim-ne-otrezok.flang` + `../../../../../../../flang/proof/чекер/пробы/записи/корпус/poddelka-nositel-psevdonim-ne-otrezok.запись` | подделка (набор, «лжёт-запись») | 1 (было 3) | `segment` над `тип «Мера» это число` — З2 |
 | `порча/chislo-segment-lozh-o-tipe.запись` (к `chislo-segment.flang`) | подделка | 1 | запись говорит `тип «неотрицательное»`, довод объявлен `число` — П1б |
 | порчей одной строки в `прогон.sh` | подделки | 1 | слово вне трёх (П2); `algebra` над отрезком |
 | `список-чисел.{flang,запись}` | честная | 0 | `для всех л обеспечивает …` при `л: список числа`, теорема `индукция по л`: печать семени `0ce948bfd` (11 сентября 2026) — `принцип … носитель algebra` + `объявление встроенный «список» варианты «пусто» 0 «голова и хвост» 1`; п.1 «как понять, что сделано» задачи 6203 |

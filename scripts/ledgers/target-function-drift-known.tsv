@@ -15,7 +15,7 @@
 #
 # flang/conc/node-benchmark.flang, девять целей: «c» печатает 155 функций,
 # восемь остальных — 150 ровно. Пять недостающих названы поимённо в задаче
-# tasks/6028-five-blind-guards-and-the-ninth-target.md: «Стратегии надзора»,
+# docs/tasks/6028-five-blind-guards-and-the-ninth-target.md: «Стратегии надзора»,
 # «Стратегия надзора известна», «Что трогает замена», «Почему отказано в
 # замене», «Сколько ждать объявления молчания». Все пять приехали ввозом
 # (supervisor.flang, hotswap-node.flang, link.flang) и никем не зовутся: в

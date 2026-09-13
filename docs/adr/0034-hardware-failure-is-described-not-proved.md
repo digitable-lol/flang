@@ -15,7 +15,7 @@
 свободное утверждение, порог; [ADR-0033](0033-termination-is-not-a-bound-on-steps.md) —
 соседняя строка той же таблицы, границы отклика; [ADR-0030](0030-the-printer-proves-each-run-not-itself.md) —
 собранный код доказательством не покрыт.
-**Новая задача:** [1410](../../tasks/1410-perechen-povedeniya-pri-otkaze-i-proglochennyy-sboy.md).
+**Новая задача:** [1410](../tasks/1410-perechen-povedeniya-pri-otkaze-i-proglochennyy-sboy.md).
 
 ---
 
@@ -123,7 +123,7 @@
   «let it crash» (`flang/self/failures.flang`, шапка). Коды:
   `FLANG_BUDGET_EXHAUSTED`, `FLANG_RECURSION_LIMIT`, `FLANG_BUILTIN_ARGS`,
   `FLANG_STOPPED`, `FLANG_MAILBOX_FULL`, `FLANG_MEASURE`, `FLANG_LINK_DOWN`,
-  `FLANG_PROCESS_ACCEPTS` (`flang/conc/SPEC.md`, «Множество отказов процесса»,
+  `FLANG_PROCESS_ACCEPTS` (`docs/flang/conc/SPEC.md`, «Множество отказов процесса»,
   пункты 1–8). **Счёт видов в двух местах расходится:** спецификация нумерует
   восемь, шапка `failures.flang:70` говорит «девять видов». Кто прав — не
   разбирал; расхождение само по себе — замер: описание уже устарело в одном из
@@ -200,7 +200,7 @@
 ## 5. Решение
 
 1. **Поведение при отказе описываем, а не доказываем** — пока порог §4 не
-   пройден. Задача [1410](../../tasks/1410-perechen-povedeniya-pri-otkaze-i-proglochennyy-sboy.md):
+   пройден. Задача [1410](../tasks/1410-perechen-povedeniya-pri-otkaze-i-proglochennyy-sboy.md):
    одна страница `docs/`, четыре слоя §2, у каждого пункта — место в коде,
    примета и слово, чем он держится.
 2. **Проглоченный сбой — считаем и печатаем.** Та же задача: проверка, которая

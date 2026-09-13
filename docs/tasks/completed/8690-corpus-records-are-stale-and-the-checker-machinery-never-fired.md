@@ -152,7 +152,7 @@ granica-nad-chislom-chestnaya     код 0            код 0
 `boundaries`, вердикт записи — всё или ничего). Плата за ноль слишком
 велика, поэтому правило откачено, а решение вынесено сюда.
 
-Код правила лежит рядом: `tasks/completed/8690-zerkalo-i-refleksivnost.patch` —
+Код правила лежит рядом: `docs/tasks/completed/8690-zerkalo-i-refleksivnost.patch` —
 накладывается на `flang/proof/чекер/сверщик.c` командой `git apply`. Взять
 его можно только вместе с решением по пробе Ч369-П1.
 
@@ -195,4 +195,4 @@ granica-nad-chislom-chestnaya     код 0            код 0
 - `9285413d`, `d9b04fa6` — сверщик: минимальный вариант свёртки для шага, подстрока и `chleny_spiska`;
 - `ef14bef8` — путь в шапке записи относительный.
 
-Код зеркала и рефлексивности сохранён патчем рядом: `tasks/completed/8690-zerkalo-i-refleksivnost.patch`.
+Код зеркала и рефлексивности сохранён патчем рядом: `docs/tasks/completed/8690-zerkalo-i-refleksivnost.patch`.

@@ -21,7 +21,7 @@ JavaScript: 48 файлов, 56 072 строки. Компилятор оста�
 
 ```
 вхождений 783 в 201 файле
-из них: docs/zettel 145, tasks/completed 32, docs 25, scripts 22,
+из них: docs/zettel 145, docs/tasks/completed 32, docs 25, scripts 22,
         tasks 13, flang/scripts 10, docs/adr 7, остальное — по мелочи
 ```
 
@@ -93,9 +93,9 @@ JavaScript: 48 файлов, 56 072 строки. Компилятор оста�
 
 | род | вхождений | файлов | что это |
 |---|---:|---:|---|
-| (а) летопись | 501 | 150 | `docs/zettel/`, `tasks/completed/`, `docs/adr/`, `docs/archive/`, журналы `CHANGELOG.md` и `docs/site/changelog.md` (печатаются из git), `docs/journal-carried-out-of-sources.md`, `docs/javascript-removal.md`, `docs/javascript-inventory.md`, `docs/javascript-checks-breakdown.tsv`, `docs/branches-2026-08-15.md`, снимки `flang/test/snimok` и `flang/test/zapis`, тексты с явным отрицанием (`docs/what-blocks-1-0.md`, `docs/course/09-eight-targets.md`, `.ai/AGENTS.md`) |
+| (а) летопись | 501 | 150 | `docs/zettel/`, `docs/tasks/completed/`, `docs/adr/`, `docs/archive/`, журналы `CHANGELOG.md` и `docs/site/changelog.md` (печатаются из git), `docs/journal-carried-out-of-sources.md`, `docs/javascript-removal.md`, `docs/javascript-inventory.md`, `docs/javascript-checks-breakdown.tsv`, `docs/branches-2026-08-15.md`, снимки `flang/test/snimok` и `flang/test/zapis`, тексты с явным отрицанием (`docs/what-blocks-1-0.md`, `docs/course/09-eight-targets.md`, `.ai/AGENTS.md`) |
 | (б) действующие доводы и указания | 145 | 40 | `docs/*.md` вне летописи, `docs/guide`, `docs/site/contributing*`, `docs/ifl/numbers.md`, `docs/спецификации`, комментарии в `docs/benchmark/*.flang`, `flang/proof/examples/*.flang`, `flang/proof/kernel.flang`, `flang/conc/*.md`, `fspec/policy.flang`, открытые задачи |
-| (в) скрипты и код | 204 | 73 | `scripts/`, `flang/scripts/`, `.github/`, `editors/`, `benchmarks/`, `packaging/`, `flang/test/`, `flang/проверки/`, исполняющие части `flang/src/emit/*` и их копии в `bootstrap/` и `examples/*/printed`, напечатанные `flang/conc/*.js`, `flang/self/` |
+| (в) скрипты и код | 204 | 73 | `scripts/`, `flang/scripts/`, `.github/`, `docs/editors/`, `benchmarks/`, `packaging/`, `flang/test/`, `flang/проверки/`, исполняющие части `flang/src/emit/*` и их копии в `bootstrap/` и `examples/*/printed`, напечатанные `flang/conc/*.js`, `flang/self/` |
 
 После захода: 852 вхождения в 260 файлах (а 501 / 150, б 148 / 38, в 203 / 72).
 Вхождений рода (б) не стало меньше — переписанный довод называет снятый путь
@@ -159,7 +159,7 @@ JavaScript: 48 файлов, 56 072 строки. Компилятор оста�
 
 **Комментарии в корпусе и спецификациях** переписаны на живые адреса
 (`docs/спецификации/*`, `docs/benchmark/05`, `11`, `13`, `docs/zamer-teorkat`,
-`flang/conc/DISTRIBUTED.md`, `flang/conc/examples/measure.flang`,
+`docs/flang/conc/DISTRIBUTED.md`, `flang/conc/examples/measure.flang`,
 `flang/proof/examples/*`, `flang/proof/kernel.flang`, проба Ч7104,
 `fspec/policy.flang`, `flang/проверки/встроенные-формы.flang`,
 `web/wasm/demo/index.html`). Два довода оказались **ложными сегодня**, и это
@@ -184,7 +184,7 @@ JavaScript: 48 файлов, 56 072 строки. Компилятор оста�
 - `benchmarks/model-authoring/msgstats.py` — читал `KEYWORDS` из снятого
   лексера по чужому абсолютному пути; читает «Куски таблицы»
   `flang/self/lexer.flang`, 187 русских фраз;
-- `editors/vim/autoload/flang.vim`, `README.md`, `checks/stream.sh` — ступень
+- `docs/editors/vim/autoload/flang.vim`, `README.md`, `checks/stream.sh` — ступень
   «`flang/bin/flang-lsp.mjs` в дереве» снята из поиска сервера и из текста
   подсказки; замер на Node печатается строкой «снят, замера нет»;
 - `scripts/guards/published-vs-tree.sh` — три несуществующих образца сняты из `case`.
@@ -217,7 +217,7 @@ JavaScript: 48 файлов, 56 072 строки. Компилятор оста�
 - `sh .githooks/pre-push` — **код 0**, все одиннадцать дешёвых сторожей
   зелены (28 с). По дороге: сторож чисел в прозе краснел на восьми приметах,
   сдвинутых этой же правкой (строки `*.sh`, `*.py`, `*.html`, `*.vim`,
-  `fspec/policy.flang`, `editors/vim`) — перемерены и датированы
+  `fspec/policy.flang`, `docs/editors/vim`) — перемерены и датированы
   2026-09-09; задачник краснел на 6191 без исполнителя в базовом коммите —
   взят cherry-pick `d1af7140c` из `gh/dev`, где это уже починено.
 - `bootstrap/flang io scripts/guards/link-guard.flang` — **код 0**: файлов 1343,

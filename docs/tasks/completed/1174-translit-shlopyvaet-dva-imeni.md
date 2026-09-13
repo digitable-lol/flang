@@ -60,7 +60,7 @@ flang emit: печать отказала — имена «Занято имен
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `5f179a95` (2026-09-01) — «fix(задачник): шапки целы — «задачник:проверка» с 52 замечаний до кода 0»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 6 коммитах ствола: `git log gh/dev --oneline --grep=1174`
 
 ## Что известно про сам прогон

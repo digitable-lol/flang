@@ -13,7 +13,7 @@
 # 3403. Соединить написанное: реестр, сеть, отпечаток и замок — в одну дорогу
 
 Первый шаг задачи-зонтика [9968](9968-package-create-install-share.md).
-Решение — [ADR-0021](../docs/adr/0021-packages-are-installed-over-the-network-and-locked-locally.md).
+Решение — [ADR-0021](../adr/0021-packages-are-installed-over-the-network-and-locked-locally.md).
 Полный замер — `/srv/tmp/dokazuemyy/ПЕРЕДАЧА/karta-paketov.md`.
 
 **Не начинать раньше 3401**: пока `flang package` не собирает пакетов, ставить

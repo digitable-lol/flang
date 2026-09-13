@@ -140,7 +140,7 @@ README.md и README.ru.md цитируют его ДОСЛОВНО как наи
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `8000817b` (2026-08-27) — «docs(tasks): 1227 сделана — 49 дописанных обещаний доказаны все, снято 60 проверок при работе»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 7 коммитах ствола: `git log gh/dev --oneline --grep=1227`
 
 

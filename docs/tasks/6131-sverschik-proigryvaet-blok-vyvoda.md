@@ -12,7 +12,7 @@
 
 # 6131. Приём «вывод»: сверщик проверяет дерево, не зная смысла правил
 
-Основание — [ADR-0022](../docs/adr/0022-a-type-fact-travels-as-a-derivation.md)
+Основание — [ADR-0022](../adr/0022-a-type-fact-travels-as-a-derivation.md)
 §3.10 (форма блока), §6.1 (цена), §6.3 (порядок).
 
 Делать ВТОРОЙ, после 6130 и строго ДО 6132: запись с блоком `вывод`, прочитанная
@@ -55,7 +55,7 @@
 ## Что сделано на 9 сентября 2026
 
 Ветка `r/blok-vyvoda`. Форма блока и границы приёма — в
-[docs/design/proof-object-blok-vyvoda.md](../docs/design/proof-object-blok-vyvoda.md).
+[docs/design/proof-object-blok-vyvoda.md](../design/proof-object-blok-vyvoda.md).
 
 * Приём `вывод` в `flang/proof/чекер/сверщик.c`: правила Т1, Н1–Н5, П1, П2, П3, П5,
   Разв2 и двенадцать запретов ведомости. Отдельной веткой, а не добавочной, — иначе

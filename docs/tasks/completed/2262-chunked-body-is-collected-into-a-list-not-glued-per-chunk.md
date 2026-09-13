@@ -165,5 +165,5 @@
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `5c501d8e` (2026-08-27) — «perf(stdlib): 2262 — разбор chunked-тела копит куски списком: на 800 чанках памяти в 2,49 раза меньше, а рост остановился (показатель 0,84 → 0,01)»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 4 коммитах ствола: `git log gh/dev --oneline --grep=2262`

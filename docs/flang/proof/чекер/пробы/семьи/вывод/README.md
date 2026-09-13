@@ -1,11 +1,11 @@
 # Семья «вывод»: факт о типе едет в записи выводом
 
 Задача [6131](../../../../../../tasks/6131-sverschik-proigryvaet-blok-vyvoda.md),
-основание — [ADR-0022](../../../../../../docs/adr/0022-a-type-fact-travels-as-a-derivation.md)
+основание — [ADR-0022](../../../../../../adr/0022-a-type-fact-travels-as-a-derivation.md)
 §3.10; форма блока и границы приёма расписаны в
-[docs/design/proof-object-blok-vyvoda.md](../../../../../../docs/design/proof-object-blok-vyvoda.md).
-Задача [6202](../../../../../../tasks/6202-the-ceiling-is-a-type-property-not-a-proved-obligation.md)
-(ADR-0025, проект [6202](../../../../../../docs/design/6202-potolok-kak-obyazatelstvo.md) §2.4–§2.5):
+[docs/design/proof-object-blok-vyvoda.md](../../../../../../design/proof-object-blok-vyvoda.md).
+Задача [6202](../../../../../../tasks/completed/6202-the-ceiling-is-a-type-property-not-a-proved-obligation.md)
+(ADR-0025, проект [6202](../../../../../../design/6202-potolok-kak-obyazatelstvo.md) §2.4–§2.5):
 потолок точного типа — обязательство на зовущем, и П3 получает посылку Пред1.
 
 ## Что здесь лежит

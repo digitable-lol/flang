@@ -144,6 +144,6 @@
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `97ad7733` (2026-08-27) — «docs(tasks): 1477 — обещание покупает кадр у вычислителя, а у печати доказанное снимается вместе с кадром»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 6 коммитах ствола: `git log gh/dev --oneline --grep=1477`
 

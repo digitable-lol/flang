@@ -55,7 +55,7 @@
    одного ввозящего.
 2. `flang/conc/bench/node-death-targets.mjs` — либо двойник на flang рядом с
    `*-across-targets.flang`, либо снос с доводом «ноль вызовов» и записью в
-   `flang/conc/RESILIENCE.md`, где он назван.
+   `docs/flang/conc/RESILIENCE.md`, где он назван.
 3. Каждый снятый файл — своим коммитом с доказательством; приметы «СНЯТО» в
    `docs/javascript-inventory.md` и `docs/tree-inventory.md` — переснять.
 

@@ -153,7 +153,7 @@ FLANG_TYPE, столбец 78: конструктор «Есть» требуе�
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `d1d52ba9` (2026-08-26) — «docs(tasks): 0024 сделана — оба замера верны, различает их не «вариант с полями», а вид цели и что стоит под «иначе»»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 3 коммитах ствола: `git log gh/dev --oneline --grep=0024`
 
 ## Заодно: три строки страницы, которые ствол уже опроверг

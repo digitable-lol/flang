@@ -241,8 +241,8 @@
 Что **перенесено**: сам сторож, заметка, ярлык и эта задача.
 
 **Номер сменился с 0055 на 3717**: пока ветка лежала, 0055 занял
-`tasks/0055-leetcode-and-rosetta-examples-are-proved.md`. Ссылка `рядом: 0055` и
-строка «Уклад взят у 0055» в `tasks/6530-the-course-catches-up-with-the-tree.md`
+`docs/tasks/0055-leetcode-and-rosetta-examples-are-proved.md`. Ссылка `рядом: 0055` и
+строка «Уклад взят у 0055» в `docs/tasks/6530-the-course-catches-up-with-the-tree.md`
 указывали в пустоту с того дня — переправлены на 3717.
 
 **Числа в теле этой задачи сняты 26 августа** на дереве того дня и с тех пор не

@@ -1057,7 +1057,7 @@ flang/self/interpret.flang:419  «Овеществить поля»  → спи�
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `576149cf` (2026-08-27) — «docs(tasks): 5732 — все квадраты к линейке НЕ сводятся: из двенадцати сверхлинейностей две не берутся ни свёрткой, ни словарём»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 30 коммитах ствола: `git log gh/dev --oneline --grep=5732`
 
 ## Пять поправок, и три из них — к самому себе

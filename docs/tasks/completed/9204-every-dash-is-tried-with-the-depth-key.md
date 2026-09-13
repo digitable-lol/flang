@@ -261,6 +261,6 @@ sh scripts/published-vs-tree.sh --доля                 # строка «бе
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `5a02fecf` (2026-08-30) — «proof(ведомость): ключ глубины не снял ни одного из 155 прочерков описи — 52 строки получили числа, 59 крест, причина у каждой кучи названа»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 1 коммитах ствола: `git log gh/dev --oneline --grep=9204`
 

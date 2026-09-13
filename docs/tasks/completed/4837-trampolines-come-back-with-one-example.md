@@ -146,7 +146,7 @@ flang test flang/self/lexer.flang     примеров 139, прошло 139, н
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `02722ae1` (2026-08-27) — «proof(self): пример у звена круга вернул батут — снято напечатанным C»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 12 коммитах ствола: `git log gh/dev --oneline --grep=4837`
 
 ## Предсказание, записанное ДО замера глубины

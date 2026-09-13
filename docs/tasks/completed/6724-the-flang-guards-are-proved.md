@@ -357,7 +357,7 @@ AGENTS.md («Недоказанное `обеспечивает` едет в н�
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `69c837e8` (2026-08-26) — «proof(flang/scripts): своя доля сторожей 179 → 339 доказанных, и ложное обещание о длине снято пересчётом»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 3 коммитах ствола: `git log gh/dev --oneline --grep=6724`
 
 ## Как понять, что сделано

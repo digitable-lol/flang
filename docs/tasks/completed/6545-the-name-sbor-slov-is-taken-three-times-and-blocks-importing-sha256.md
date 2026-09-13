@@ -129,5 +129,5 @@ bootstrap/flang check <файл ядра с «использует «SHA-256»»
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `0bd56f70` (2026-09-02) — «fix(задачник): пять пар задач связаны, три закрыты прогоном, две переписаны по живому предмету»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 5 коммитах ствола: `git log gh/dev --oneline --grep=6545`

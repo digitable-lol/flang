@@ -535,7 +535,7 @@ perepis() {
           flang/src/emit/*)         k="рантайм цели печати" ;;
           flang/conc/bin/node.*)    k="хозяин узла на цели" ;;
           docs/benchmarks/*|docs/examples/host-boundary/*) k="замеряемый материал" ;;
-          editors/*|packaging/homebrew/*|docs/site/poisk.js|docs/site/poisk-proverka.mjs|docs/examples/web/wasm/probe.mjs)
+          docs/editors/*|packaging/homebrew/*|docs/site/poisk.js|docs/site/poisk-proverka.mjs|docs/examples/web/wasm/probe.mjs)
                                     k="чужая среда" ;;
           *)                        k="ДОЛГ" ;;
         esac
@@ -679,7 +679,7 @@ proza() {
 
   # Подделок в каталоге — то же число называет сторож ядра.
   pod=$(find flang/test/fixtures -maxdepth 1 -name 'poddelka-*' | wc -l | tr -d ' ')
-  skazat "ROADMAP: подделок" "$(plosko ROADMAP.md | grep -oE 'wc -l. отвечает \*\*[0-9]+\*\*' | grep -oE '[0-9]+')" "$pod"
+  skazat "ROADMAP: подделок" "$(plosko docs/ROADMAP.md | grep -oE 'wc -l. отвечает \*\*[0-9]+\*\*' | grep -oE '[0-9]+')" "$pod"
 }
 
 # ── Напечатанные команды: работают ли они как напечатаны ─────────────────────
@@ -742,7 +742,7 @@ komandy() {
 # ЗАЧЕМ. Карта каталогов в README сверялась пробой `flang/test/readme-layout.test.mjs`.
 # Проба удалена вместе с реализацией на JavaScript, и с того дня карта держалась
 # рукой. Держалась плохо: 29 августа 2026 README на обоих языках говорил «у корня
-# 10 каталогов» при одиннадцати, а каталога `tasks/` в карте не было вовсе —
+# 10 каталогов» при одиннадцати, а каталога `docs/tasks/` в карте не было вовсе —
 # читатель, искавший открытую работу дерева, узнать о ней из README не мог.
 #
 # Здесь восстановлено ровно то, что делала проба, и без единой зависимости:

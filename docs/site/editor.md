@@ -39,7 +39,7 @@ the end of this page.
 ## What lies in the language tree
 
 ```
-editors/
+docs/editors/
   vim/         highlighting and the language server for Vim 8/9 and Neovim
   vscode/      the VS Code extension: highlighting and the language server
   flang-lsp/   a pointer to this page: the server ships inside the compiler, there is no separate package
@@ -47,8 +47,8 @@ editors/
 ```
 
 **Highlighting is hand-written in no editor at all, and that is a measurement
-rather than an intention.** `editors/vim/syntax/flang.vim` is <!-- СНЯТО 2026-09-08 строк editors/vim/syntax/flang.vim = 46 --> 46 lines,
-`editors/vscode/syntaxes/flang.tmLanguage.json` is <!-- СНЯТО 2026-09-08 строк editors/vscode/syntaxes/flang.tmLanguage.json = 60 --> 60 lines, and both are printed
+rather than an intention.** `docs/editors/vim/syntax/flang.vim` is <!-- СНЯТО 2026-09-08 строк docs/editors/vim/syntax/flang.vim = 46 --> 46 lines,
+`docs/editors/vscode/syntaxes/flang.tmLanguage.json` is <!-- СНЯТО 2026-09-08 строк docs/editors/vscode/syntaxes/flang.tmLanguage.json = 60 --> 60 lines, and both are printed
 from the language's keyword table by programs written in flang itself
 (`scripts/editors/vim-highlighting.flang`, `scripts/editors/vscode-highlighting.flang`). A list of
 words typed out separately is a second description of the language, and it
@@ -66,7 +66,7 @@ protocol client is built in, Vim 8/9 takes the third-party `vim-lsp`. Both look
 for the server the same way — through one VimScript function that Lua calls via
 `vim.fn`.
 
-The VS Code extension is written in JavaScript (`editors/vscode/extension.js`),
+The VS Code extension is written in JavaScript (`docs/editors/vscode/extension.js`),
 and not one of its lines knows anything about the language: the entry point of a
 VS Code extension is a module the editor loads into its own Node process, and it
 has no other way to connect. The file only starts the server and passes it the
@@ -140,11 +140,11 @@ reply comes at all — that is the limitation named above.
 
 ## VS Code
 
-The extension lives in the language tree — `editors/vscode/`. It is not in the
+The extension lives in the language tree — `docs/editors/vscode/`. It is not in the
 Marketplace: you build and install it locally.
 
 ```bash
-cd editors/vscode
+cd docs/editors/vscode
 npm install
 npx vsce package
 code --install-extension flang-0.1.0.vsix
@@ -164,7 +164,7 @@ as `flang lsp`. If that command is not on `PATH` either, put `flang` (or its
 full path) into `flang.server.command` and `["lsp", "--stdio"]` into
 `flang.server.args`.
 
-More in `editors/vscode/README.md`: how to install straight from the tree with
+More in `docs/editors/vscode/README.md`: how to install straight from the tree with
 no build, how to reprint the highlighting, and what it takes to publish the
 extension to the Marketplace.
 
@@ -174,7 +174,7 @@ start a third-party language server.
 ## Vim 8/9
 
 Highlighting and buffer settings install through the built-in package
-mechanism. The plugin lives in the `editors/vim` subdirectory of the language
+mechanism. The plugin lives in the `docs/editors/vim` subdirectory of the language
 tree, and that mechanism does not take subdirectories — so you point a symlink
 at it:
 
@@ -193,7 +193,7 @@ syntax on
 ```
 
 vim-plug takes the subdirectory as a key:
-`Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }`.
+`Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }`.
 
 To check that it took: open any `.flang`, `.fp`, `.фп` or `.фланг` file and ask the
 editor.
@@ -216,7 +216,7 @@ need to register the server in it by hand — the language plugin does that:
 ```vim
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
-Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }
+Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }
 ```
 
 One client was chosen, for one reason: it is written in pure VimScript, works
@@ -251,8 +251,8 @@ A plugin manager takes the subdirectory as a key:
 }
 ```
 
-vim-plug and packer: `Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }` and
-`use { 'digitable-lol/flang', rtp = 'editors/vim' }`.
+vim-plug and packer: `Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }` and
+`use { 'digitable-lol/flang', rtp = 'docs/editors/vim' }`.
 
 The server needs no separate setup, and should not get one: the plugin assigns
 the file type to all four extensions itself and starts the server through the
@@ -319,14 +319,14 @@ Go to definition is `M-.`, the signature is `M-x eldoc`, completion is
 
 GitHub colours sources and counts the languages of a repository by the
 «languages.yml» file of [github-linguist/linguist](https://github.com/github-linguist/linguist).
-The draft entry for flang lies in `editors/linguist/languages-flang.yml`: type,
+The draft entry for flang lies in `docs/editors/linguist/languages-flang.yml`: type,
 colour, the four extensions (`.flang` first — in linguist the order of the list
 is the order of preference), the scope «source.flang» — the same one the VS Code
 extension's grammar uses.
 
 The submission has not been filed, and what is missing for it is named:
 
-- the samples directory `editors/linguist/samples/` — linguist trains its
+- the samples directory `docs/editors/linguist/samples/` — linguist trains its
   language detector on real files, not on a description;
 - wide usage: linguist's rules require hundreds of repositories per extension,
   and submissions for new languages are closed.

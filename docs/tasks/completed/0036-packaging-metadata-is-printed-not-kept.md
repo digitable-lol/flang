@@ -210,6 +210,6 @@ package-lock.json:     "version": "0.6.3"
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `43f5741c` (2026-08-26) — «feat(scripts): package.json и package-lock.json печатаются пакетировщиком на flang, и напечатанное сошлось с прежним знак в знак»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 4 коммитах ствола: `git log gh/dev --oneline --grep=0036`
 

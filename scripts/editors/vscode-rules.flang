@@ -1,7 +1,7 @@
 модуль «Правила VS Code»
   использует «Слова языка»
 
-// Текст грамматики подсветки для VS Code — `editors/vscode/syntaxes/flang.tmLanguage.json`.
+// Текст грамматики подсветки для VS Code — `docs/editors/vscode/syntaxes/flang.tmLanguage.json`.
 //
 // Здесь только ЧИСТЫЕ функции: строка получается из таблицы языка и ни во что
 // не записывается. Записывает её `vscode-highlighting.flang`, а

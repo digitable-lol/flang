@@ -304,7 +304,7 @@ FLANG_RECURSION_LIMIT: функция «Есть вызов в полях» ис
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `1dbe95d8` (2026-08-26) — «fix(tasks): ведомость 6516 пересчитана из исходных отчётов — база 519 своих утверждений и 456 доказанных, а не 657 и 585»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 11 коммитах ствола: `git log gh/dev --oneline --grep=6516`
 
 ## Что не взялось, и каким прогоном опровергнуто

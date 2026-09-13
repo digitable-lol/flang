@@ -329,5 +329,5 @@ sh flang/proof/сверка-правил.sh      # красен и ДО прав
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `f55c06f9` (2026-08-27) — «docs(tasks): 2398 — корпус проверок языка описан, и подделки в нём это мера, а не долг»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 2 коммитах ствола: `git log gh/dev --oneline --grep=2398`

@@ -423,7 +423,7 @@ flang» и упираются в него.
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `fc2d24ae` (2026-08-31) — «chore(задачник): три задачи закрыты прогоном, две переставлены в отменённые, одна открыта заново, семь заведены»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 6 коммитах ствола: `git log gh/dev --oneline --grep=4102`
 
 ## Статус переставлен 31 августа 2026, ячейка Ч141

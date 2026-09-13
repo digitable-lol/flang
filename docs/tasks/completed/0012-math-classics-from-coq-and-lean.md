@@ -133,7 +133,7 @@ flang/stdlib/math-classics-lists.flang
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `aa0c7819` (2026-08-26) — «chore(tasks): 0012 сделана — 75 классических лемм, 104 утверждения, доказано 45, пустых обещаний ноль»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 10 коммитах ствола: `git log gh/dev --oneline --grep=0012`
 
 

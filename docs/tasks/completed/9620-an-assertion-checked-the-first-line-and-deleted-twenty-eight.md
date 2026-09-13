@@ -52,6 +52,6 @@
 задним числом восстановить нельзя, и здесь этого не выдумано: сказано ровно
 то, что видно стволу.
 
-- статус «сделана» поставлен коммитом `c9cd7ca4` (2026-09-08) — «задачник: 68 сделанных задач перенесены в tasks/completed с разделом «Чем закрыта»»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- статус «сделана» поставлен коммитом `c9cd7ca4` (2026-09-08) — «задачник: 68 сделанных задач перенесены в docs/tasks/completed с разделом «Чем закрыта»»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 3 коммитах ствола: `git log gh/dev --oneline --grep=9620`

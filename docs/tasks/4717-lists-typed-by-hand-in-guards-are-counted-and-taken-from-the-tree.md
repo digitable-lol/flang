@@ -15,7 +15,7 @@
 Проверка, перебирающая **список, набранный руками**, зеленеет и после того, как
 дерево изменилось: список не связан с деревом ничем, кроме памяти того, кто его
 писал. Класс описан заметкой
-[`docs/zettel/a-hand-written-list-outlives-the-tree.md`](../docs/zettel/a-hand-written-list-outlives-the-tree.md)
+[`docs/zettel/a-hand-written-list-outlives-the-tree.md`](../zettel/a-hand-written-list-outlives-the-tree.md)
 ещё 16 августа, с двумя случаями и правилом. Переписи по дереву у класса нет.
 
 Наряд ячейке Ч141 от 31 августа 2026 называл: «105 списков набраны руками, 57

@@ -11,7 +11,7 @@
 #   docs/tree-inventory.md   «seed-parses-sources-guard.sh | 83»      файл 195 строк
 #   docs/tree-inventory.md   «оболочка | 66 | 6 305»                  69 файлов, 9549 строк
 #   flang/cat/SPEC.md        «Восемнадцать поручений, набор закрыт»   поручений 22
-#   flang/self/SPEC.md       «двадцать вариантов»                     вариантов 45
+#   docs/flang/self/SPEC.md       «двадцать вариантов»                     вариантов 45
 #   flang/PLAN.md            «Поручение, пять вариантов»              вариантов 22
 #
 # Ни одно из этих мест не сторожил никто. Опись `docs/tree-inventory.md` при

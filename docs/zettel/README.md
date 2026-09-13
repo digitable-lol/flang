@@ -457,6 +457,7 @@
 - [Круг взаимной рекурсии по дереву разрезается записью-нагрузкой, слияние функций не обязательно](a-mutual-recursion-circle-over-a-tree-is-cut-by-a-payload-record.md)
 - [Именная граница длины переживает вычитание положительного, но не сложение](a-named-length-boundary-survives-subtraction-but-not-addition.md)
 - [Вложенный `если` В СКОБКАХ через строку не разбирается, без скобок — разбирается](a-nested-if-in-parentheses-across-a-line-does-not-parse.md)
+- [Поля записи через строку не переносятся, а список в квадратных скобках — переносится](a-record-literal-cannot-wrap-but-a-bracketed-list-can.md)
 - [Узел нельзя написать обычной программой на flang, и мешает этому одна строка проверки типов, а не «нет доступа к миру»](a-node-cannot-be-an-ordinary-program-because-of-the-literal-addressee.md)
 - [Поле «не минус ноль» на числовом типе закрыло два места, а не одиннадцать](a-not-minus-zero-field-closed-two-places-not-eleven.md)
 - [Функцию без аргументов нельзя позвать через ввоз, хотя местную — можно](a-nullary-function-cannot-be-called-through-an-import.md)

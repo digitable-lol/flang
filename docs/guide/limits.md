@@ -48,13 +48,15 @@ to be written in flang (ADR-0031).
   programs (`stdlib`, `examples`) do not use it.
 - Effects are described, not performed — and this works: `вариант «Прочитать файл» с путь
   равным …` builds a value, and whoever ran the plan executes it (`flang io`).
-  There are twenty orders and the set is closed: read and write a file as characters and
+  There are twenty-two orders and the set is closed: read and write a file as characters and
   separately as octets, delete a file, make a temporary directory, list a directory,
   make a network request, open and accept a connection, read and write a connection as characters
   and separately as octets, spawn a process and spawn a process with input, draw on the screen,
-  wait for an event, read the clock, draw a random number. The set is closed in the code, not just
+  wait for an event, read the clock, draw a random number, read an environment variable, read the
+  call's arguments. The set is closed in the code, not just
   in prose: it is one line in the function `«Варианты поручения»` (`flang/self/parser.flang`), and
-  its length — 20 — is held by an `обеспечивает`, so the compiler checks it. The file octet pair landed on
+  its length — 22 — is held by an `обеспечивает`, so the compiler checks it.
+  <!-- СНЯТО 2026-09-12 список flang/self/parser.flang:6615 = 22 --> The file octet pair landed on
   22 August 2026: before it a binary file went through the text pair SILENTLY — 4096 octets in,
   7 bytes out. The text pair now refuses invalid UTF-8 (`FLANG_IO_NOT_TEXT`), and the octet pair
   carries a binary byte for byte. There is no I/O monad, though, and the reason is

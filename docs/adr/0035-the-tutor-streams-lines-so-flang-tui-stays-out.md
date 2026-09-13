@@ -13,7 +13,7 @@
 flang 0.7.16, flang-tui `4117aea`, Linux.
 **Рядом:** [ADR-0024](0024-the-settings-file-and-the-language-of-output.md) —
 язык вывода берётся из настроек, проводник его слушает;
-задача [0049](../../tasks/0049-the-last-javascript-leaves-the-tree.md) —
+задача [0049](../tasks/0049-the-last-javascript-leaves-the-tree.md) —
 последний JavaScript уходит из дерева.
 **Проверяется:** `sh scripts/flangtutor-proba.sh <двоичный>` (семь проверок
 зелены, код 0) и сверка вывода старого и нового проводника на всех двенадцати

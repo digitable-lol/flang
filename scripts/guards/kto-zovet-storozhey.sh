@@ -79,15 +79,51 @@ except ImportError:
     sys.exit(3)
 
 # ── Имена ярлыков: только записи в позиции элемента списка ───────────────────
-YARLYK = re.compile(
-    r'^\[?\s*запись «Ярлык» с «имя» равным "([^"]+)" и «команда» равным "([^"]*)"')
+# Команда пишется ДВУМЯ формами: литералом "…" и списком кусков
+# (соединить ["…", "…"] по ""). Вторая появилась 13 сентября 2026, когда ярлыки
+# разложили по строкам, и построчный разбор на ней давал НОЛЬ ярлыков — а
+# значит, все записи ведомости числились протухшими. Читаем обе формы.
+TEKST_YARLYKOV = io.open("ярлыки.flang", encoding="utf-8").read()
+NACHALO_YARLYKA = re.compile(
+    r'^[ \t]*\[?[ \t]*запись «Ярлык» с «имя» равным "([^"]+)" и «команда» равным ',
+    re.M)
+KUSOK_STROKI = re.compile(r'"((?:[^"\\]|\\.)*)"')
+
+def komanda_yarlyka(hvost):
+    """Текст команды: литерал целиком либо склейка кусков списка."""
+    if hvost.startswith('"'):
+        sovpalo = KUSOK_STROKI.match(hvost)
+        return sovpalo.group(1) if sovpalo else ""
+    if hvost.lstrip().startswith("(соединить"):
+        nachalo = hvost.find("[")
+        if nachalo < 0:
+            return ""
+        glubina, mesto, v_stroke, ekran = 0, None, False, False
+        for i, znak in enumerate(hvost[nachalo:], nachalo):
+            if ekran:
+                ekran = False
+            elif znak == "\\" and v_stroke:
+                ekran = True
+            elif znak == '"':
+                v_stroke = not v_stroke
+            elif not v_stroke and znak == "[":
+                glubina += 1
+            elif not v_stroke and znak == "]":
+                glubina -= 1
+                if glubina == 0:
+                    mesto = i
+                    break
+        if mesto is None:
+            return ""
+        kuski = KUSOK_STROKI.findall(hvost[nachalo:mesto])
+        razdelitel = KUSOK_STROKI.search(hvost[mesto:mesto + 80])
+        return (razdelitel.group(1) if razdelitel else "").join(kuski)
+    return ""
+
 yarlyki, primerov = {}, 0
-for stroka in io.open("ярлыки.flang", encoding="utf-8"):
-    sovpalo = YARLYK.match(stroka.strip())
-    if sovpalo:
-        yarlyki[sovpalo.group(1)] = sovpalo.group(2)
-    elif "запись «Ярлык» с «имя» равным" in stroka:
-        primerov += 1  # внутри блока «пример» — не ярлык дерева
+for sovpalo in NACHALO_YARLYKA.finditer(TEKST_YARLYKOV):
+    yarlyki[sovpalo.group(1)] = komanda_yarlyka(TEKST_YARLYKOV[sovpalo.end():])
+primerov = TEKST_YARLYKOV.count("запись «Ярлык» с «имя» равным") - len(yarlyki)
 
 # ── Команды: только значения ключа run:, взятые разбором YAML ────────────────
 def komandy(uzel, kuda):

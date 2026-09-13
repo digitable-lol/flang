@@ -6,6 +6,7 @@
 #
 #   sh scripts/flangrc.sh                 все ключи: `ключ = значение`
 #   sh scripts/flangrc.sh язык            одно значение, одной строкой
+#   sh scripts/flangrc.sh версия          номер версии проекта, без разбора JSON
 #   sh scripts/flangrc.sh --откуда        то же и с источником каждого ключа
 #   sh scripts/flangrc.sh --места         какие места просмотрены (для проверки)
 #   sh scripts/flangrc.sh --файл          путь взятого файла проекта, или пусто
@@ -151,6 +152,14 @@ sreda_klyucha() {
     поверхность) printf '%s' "${FLANG_SURFACE:-}" ;;
     цвет) printf '%s' "${FLANG_COLOR:-}" ;;
     страница) printf '%s' "${FLANG_MANPAGE:-}" ;;
+    # ИМЯ НЕ «FLANG_VERSION», И ЭТО НЕ ПРИДИРКА. Так уже зовётся `#define` в
+    # flang/src/emit/c/flang_repl.c — версия САМОГО ДВОИЧНОГО. Ключ `версия`
+    # говорит про ПРОЕКТ, в котором лежит `.flangrc`, а это разные числа у
+    # всякого, кто поставил flang и пишет на нём своё. Одно имя на два числа
+    # развело бы их молча — ровно та беда, ради которой заведён сторож
+    # производных версии.
+    версия) printf '%s' "${FLANG_PROJECT_VERSION:-}" ;;
+    имя) printf '%s' "${FLANG_PROJECT_NAME:-}" ;;
     *) printf '' ;;
   esac
 }
@@ -216,7 +225,7 @@ if [ ! -x "$KOREN/bootstrap/flang" ]; then
   exit 3
 fi
 
-KLYUCHI="язык поверхность цвет страница"
+KLYUCHI="язык поверхность цвет страница версия имя"
 [ -n "$KLYUCH" ] && KLYUCHI=$KLYUCH
 
 for k in $KLYUCHI; do

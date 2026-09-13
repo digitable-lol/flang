@@ -25,6 +25,7 @@
 #
 # ── Что здесь СВЕРЯЕТСЯ с источником ────────────────────────────────────────
 #   package.json                    version
+#   .flangrc                        версия, имя
 #   flang/src/emit/c/flang_repl.c   #define FLANG_VERSION
 #   packaging/flang.1               .TH и обе расшифровки прогонов «flang X»
 #   packaging/homebrew/flang.rb     version, тег в url, имя архива в url
@@ -56,6 +57,10 @@ PODLOG=${1:-}
 #    LC_ALL иначе решает, что «Версия» это байты, а не буквы.
 V_SRC=$(grep -oE '^  "[0-9]+\.[0-9]+\.[0-9]+"$' "$ISTOCHNIK" | tr -d ' "' | head -1)
 
+# Имя пакета — тело функции «Имя пакета», единственная строка вида
+# «‹два пробела›"@…"». Тем же шаблоном и по той же причине, что и версия.
+N_SRC=$(grep -oE '^  "@[^"]+"$' "$ISTOCHNIK" | tr -d ' "' | head -1)
+
 if [ -z "$V_SRC" ]; then
   echo "СВЕРКА НЕ НАЧАТА: в $ISTOCHNIK не найдена версия (тело функции «Версия»)." >&2
   echo "Источник версии сломан — сверять производные не с чем." >&2
@@ -65,14 +70,21 @@ fi
 # ── подлог: развести версию на копии дерева и показать, что сторож краснеет ──
 if [ "$PODLOG" = "--подлог" ]; then
   KOP=${FLANG_TMP:-/srv/tmp}/verderiv-podlog.$$
-  rm -rf "$KOP"; mkdir -p "$KOP/scripts" "$KOP/flang/src/emit/c" "$KOP/packaging/homebrew" || exit 3
+  # РАСКЛАДКА КОПИИ ПОВТОРЯЕТ ДЕРЕВО, И ЭТО НЕ ПЕДАНТИЗМ. До 13 сентября 2026
+  # источник клали в `$KOP/scripts/`, а сам сторож звали из
+  # `$KOP/scripts/guards/` — каталога, которого копия не заводила вовсе.
+  # Проба отвечала «sh: cannot open …», то есть кодом 2, и объявляла подлог
+  # пойманным: ловилось отсутствие файла, а не разведённая версия. Проба,
+  # красная не по своему предмету, — холостая.
+  rm -rf "$KOP"; mkdir -p "$KOP/scripts/guards" "$KOP/scripts/release" "$KOP/flang/src/emit/c" "$KOP/packaging/homebrew" || exit 3
   trap 'rm -rf "$KOP"' EXIT INT TERM
-  cp "$ISTOCHNIK" "$KOP/scripts/" || exit 3
+  cp "$ISTOCHNIK" "$KOP/scripts/release/" || exit 3
   cp package.json "$KOP/" || exit 3
+  cp .flangrc "$KOP/" || exit 3
   cp flang/src/emit/c/flang_repl.c "$KOP/flang/src/emit/c/" || exit 3
   cp packaging/flang.1 "$KOP/packaging/" || exit 3
   cp packaging/homebrew/flang.rb "$KOP/packaging/homebrew/" || exit 3
-  cp "$0" "$KOP/scripts/" || exit 3
+  cp "$0" "$KOP/scripts/guards/" || exit 3
   # разводим ровно .TH страницы — источник не трогаем, значит производное разошлось
   sed -i 's/flang '"$V_SRC"'/flang 9.9.9/' "$KOP/packaging/flang.1"
   sh "$KOP/scripts/guards/version-derivations-guard.sh" >"$KOP/out" 2>&1
@@ -82,7 +94,20 @@ if [ "$PODLOG" = "--подлог" ]; then
     echo "Сторож, не краснеющий на разведённой версии, — выключенный сторож." >&2
     exit 1
   fi
-  echo "подлог пойман: развели .TH на 9.9.9 — сторож ответил код $kod. Вывод:"
+  # Кода «не ноль» мало: код 3 — это «сверка не начата», код 2 — оболочка не
+  # нашла файла. Требуется код 1 И беда, названная страницей man, — иначе
+  # проба показала бы лишь то, что копия развалилась.
+  if [ "$kod" != 1 ]; then
+    echo "ПРОБА ХОЛОСТА: сторож ответил кодом $kod, а не 1 — это не «поймал подлог», это «не смог посмотреть»." >&2
+    sed 's/^/  /' "$KOP/out" >&2
+    exit 1
+  fi
+  if ! grep -q 'packaging/flang.1' "$KOP/out"; then
+    echo "ПРОБА ХОЛОСТА: сторож покраснел не тем — про packaging/flang.1 в выводе нет ни слова." >&2
+    sed 's/^/  /' "$KOP/out" >&2
+    exit 1
+  fi
+  echo "подлог пойман: развели .TH на 9.9.9 — сторож ответил код $kod и назвал страницу man. Вывод:"
   sed 's/^/  /' "$KOP/out"
   exit 0
 fi
@@ -96,6 +121,21 @@ dobavit() { BEDY="${BEDY}  · $1
 V_PKG=$(sed -n 's/^  "version": "\([^"]*\)",$/\1/p' package.json)
 if [ "$V_PKG" != "$V_SRC" ]; then
   dobavit "package.json: version «${V_PKG:-не найдена}», а источник $ISTOCHNIK объявляет «$V_SRC» — package.json не перепечатан из источника"
+fi
+
+# .flangrc — версия и имя проекта. Файл настроек читают и человек, и
+# `sh scripts/flangrc.sh`, и разойтись с источником он не вправе ровно так же,
+# как package.json: `./ярлык версия <N>` разносит число и туда.
+V_RC=$(sed -n 's/^версия[[:space:]]*=[[:space:]]*//p' .flangrc | head -1)
+if [ "$V_RC" != "$V_SRC" ]; then
+  dobavit ".flangrc: версия «${V_RC:-не найдена}», а источник $ISTOCHNIK объявляет «$V_SRC» — файл настроек не догнал подъём"
+fi
+
+if [ -n "$N_SRC" ]; then
+  N_RC=$(sed -n 's/^имя[[:space:]]*=[[:space:]]*//p' .flangrc | head -1)
+  if [ "$N_RC" != "$N_SRC" ]; then
+    dobavit ".flangrc: имя «${N_RC:-не найдено}», а источник $ISTOCHNIK объявляет «$N_SRC»"
+  fi
 fi
 
 # flang_repl.c #define FLANG_VERSION
@@ -131,5 +171,5 @@ if [ -n "$BEDY" ]; then
   exit 1
 fi
 
-echo "сторож производных версии: источник $ISTOCHNIK объявляет $V_SRC — и package.json, flang_repl.c, .TH страницы man и три числа формулы Homebrew сошлись с ним. sha256 формулы, changelog и семя здесь не судятся (см. шапку)."
+echo "сторож производных версии: источник $ISTOCHNIK объявляет $V_SRC — и package.json, .flangrc, flang_repl.c, .TH страницы man и три числа формулы Homebrew сошлись с ним. sha256 формулы, changelog и семя здесь не судятся (см. шапку)."
 exit 0

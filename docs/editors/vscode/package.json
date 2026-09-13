@@ -20,7 +20,7 @@
     "url": "git+https://github.com/digitable-lol/flang.git",
     "directory": "docs/editors/vscode"
   },
-  "homepage": "https://github.com/digitable-lol/flang/tree/main/editors/vscode",
+  "homepage": "https://github.com/digitable-lol/flang/tree/main/docs/editors/vscode",
   "bugs": {
     "url": "https://github.com/digitable-lol/flang/issues"
   },

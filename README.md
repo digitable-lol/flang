@@ -352,17 +352,18 @@ against the tree on every push.
      sh scripts/guards/published-vs-tree.sh --карта сличает состав с деревом. -->
 
 ```
-bootstrap/        the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
-flang/            the language: self/ (the compiler), core/, stdlib/, proof/, conc/, ct/, src/emit/ (target runtimes), scripts/, проверки/, test/ — code only; its contracts are in docs/flang/
-docs/examples/         200 flang programs in 24 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
-docs/editors/          the language server, syntax for Vim and VS Code, a github-linguist submission
-packaging/        the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
-scripts/          guards of the tree, the reprint of the bootstrap point, the release archive, the changelog
-fspec/            business rules written as proved specifications, and the check that a new rule does not undo an old one
-docs/             documentation: the site sources, the guide, decisions (adr/), measurement reports, the knowledge base, and flang/ — the contracts of the language, moved out of the code
-docs/tasks/            the open and closed work of the tree, one file per task
-.github/          CI and release workflows
-.ai/              what an assistant working in this tree reads: AGENTS.md and .claude/skills; the root keeps `AGENTS.md` and `.claude` as symbolic links into it, and both are still found by their old names
+bootstrap/      the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
+flang/          the language: self/ (the compiler), core/, stdlib/, proof/, conc/, ct/, src/emit/ (target runtimes), scripts/, проверки/, test/ — code only; its contracts are in docs/flang/
+docs/examples/  200 flang programs in 24 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
+docs/editors/   the language server, syntax for Vim and VS Code, a github-linguist submission
+packaging/      the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
+scripts/        guards of the tree, the reprint of the bootstrap point, the release archive, the changelog
+fspec/          business rules written as proved specifications, and the check that a new rule does not undo an old one
+docs/           documentation: the site sources, the guide, decisions (adr/), measurement reports, the knowledge base, and flang/ — the contracts of the language, moved out of the code
+docs/flang/     the contracts of the language — one SPEC.md per layer, moved out of the code; next to the code only a pointer is left
+docs/tasks/     the open and closed work of the tree, one file per task
+.github/        CI and release workflows
+.ai/            what an assistant working in this tree reads: AGENTS.md and .claude/skills; the root keeps `AGENTS.md` and `.claude` as symbolic links into it, and both are still found by their old names
 ```
 
 <!-- КАРТА-КОНЕЦ -->

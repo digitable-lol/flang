@@ -4,7 +4,7 @@ contact_links:
     url: https://github.com/digitable-lol/flang/discussions
     about: Как это писать, почему так устроено — сюда, если это не дефект. / How to write something, why it works that way — here, if it is not a defect.
   - name: Спецификация / The specification
-    url: https://github.com/digitable-lol/flang/blob/main/flang/SPEC.md
+    url: https://github.com/digitable-lol/flang/blob/main/docs/flang/SPEC.md
     about: Что язык обещает — до того, как заводить задачу. / What the language promises — before opening an issue.
   - name: Что язык НЕ умеет / Known limits
     url: https://digitable-lol.github.io/flang/en/limits.html

@@ -11,6 +11,10 @@
 # ── Источник и производные ──────────────────────────────────────────────────
 # Источник один: функция «Версия» в scripts/release/emit-package.flang. Из неё:
 #   package.json                    version              — ПЕРЕПЕЧАТЫВАЕТСЯ отсюда
+#   .flangrc                        версия, имя          — файл настроек проекта:
+#       спросить версию оттуда можно без разбора JSON и без Node
+#       (`sh scripts/flangrc.sh версия`). Имя пакета не меняется подъёмом, но
+#       сверяется тем же сторожем, чтобы не разъехалось молча.
 #   flang/src/emit/c/flang_repl.c   #define FLANG_VERSION — генерируется здесь
 #   packaging/flang.1               .TH и обе расшифровки «flang X»
 #   packaging/homebrew/flang.rb     version, тег и имя архива в url
@@ -82,6 +86,7 @@ if [ -z "$NOVAYA" ]; then
   echo "  $REPL  $(sed -n 's/^#define FLANG_VERSION "\([^"]*\)".*/FLANG_VERSION \1/p' "$REPL")"
   echo "  $MAN               .TH $(grep -oE 'flang [0-9]+\.[0-9]+\.[0-9]+' "$MAN" | sort -u | tr '\n' ' ')"
   echo "  $FORMULA  $(sed -n 's/^  version "\([^"]*\)".*/version \1/p' "$FORMULA")"
+  echo "  .flangrc                      версия $(sed -n 's/^версия[[:space:]]*=[[:space:]]*//p' .flangrc | head -1), имя $(sed -n 's/^имя[[:space:]]*=[[:space:]]*//p' .flangrc | head -1)"
   if [ -f "$KRAN" ]; then
     echo "  $KRAN  $(sed -n 's/^  version "\([^"]*\)".*/version \1/p' "$KRAN")  (кран, сабмодуль $(git -C packaging/homebrew-tap rev-parse --short HEAD 2>/dev/null))"
   else
@@ -116,6 +121,11 @@ sed -i -E 's/^#define FLANG_VERSION "[0-9]+\.[0-9]+\.[0-9]+"$/#define FLANG_VERS
 
 # ── страница man: .TH и обе расшифровки «flang X.Y.Z» (FLANG заглавными не тронут) ─
 sed -i -E 's/flang [0-9]+\.[0-9]+\.[0-9]+/flang '"$NOVAYA"'/g' "$MAN"
+
+# ── файл настроек проекта: число разносится и туда ───────────────────────────
+# Правится ровно строка ключа, а не весь файл: `.flangrc` человек пишет руками,
+# и перепечатать его целиком значило бы стереть чужие примечания.
+sed -i -E 's/^версия[[:space:]]*=.*/версия = '"$NOVAYA"'/' .flangrc
 
 # ── формула Homebrew: version, тег и имя архива в url. sha256 НЕ трогаем ─────
 sed -i -E 's/^  version "[0-9]+\.[0-9]+\.[0-9]+"$/  version "'"$NOVAYA"'"/' "$FORMULA"

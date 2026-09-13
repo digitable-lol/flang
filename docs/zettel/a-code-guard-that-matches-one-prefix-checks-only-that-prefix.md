@@ -17,7 +17,7 @@
   `FTS_PROPERTY_UNATTAINABLE`, `FTS_NO_UTILITIES`, `FTS_NO_UTILITY_EXAMPLES`,
   `FTS_UNKNOWN_UTILITY`, `FTS_UTILITY_INPUT_FIELD`, `FTS_UTILITY_INPUT_TYPE`.
 
-Пять последних из восьми названы в `flang/core/SPEC.md` честно — как долг, «не
+Пять последних из восьми названы в `docs/flang/core/SPEC.md` честно — как долг, «не
 реализовано». А три первых стояли в `docs/overview.ru.md` и
 `docs/guide/project-layout.ru.md` **как работающее поведение**: целый раздел
 «Разбор суждений» с примером вывода, который сегодня не выдаёт ни одна команда.

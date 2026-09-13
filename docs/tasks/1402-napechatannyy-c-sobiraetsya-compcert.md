@@ -12,7 +12,7 @@
 
 # 1402. Напечатанный C под CompCert
 
-Решение: [ADR-0030](../docs/adr/0030-the-printer-proves-each-run-not-itself.md), §9.
+Решение: [ADR-0030](../adr/0030-the-printer-proves-each-run-not-itself.md), §9.
 
 ## Зачем
 

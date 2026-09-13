@@ -9,8 +9,8 @@
 
 **Основание:** [ADR-0026](../adr/0026-quantifiers-over-any-type-are-a-kernel-change.md)
 §2.4 и §5 шаг 1; задача
-[6203](../../tasks/6203-the-carrier-of-induction-is-a-closed-list-of-three-in-two-places.md).
-Рядом: [6202](../../tasks/6202-the-ceiling-is-a-type-property-not-a-proved-obligation.md)
+[6203](../tasks/completed/6203-the-carrier-of-induction-is-a-closed-list-of-three-in-two-places.md).
+Рядом: [6202](../tasks/completed/6202-the-ceiling-is-a-type-property-not-a-proved-obligation.md)
 (та же пара файлов `proofterm`/`сверщик.c`, см. §7).
 
 Автор: Marat Zimnurov.

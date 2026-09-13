@@ -11,7 +11,7 @@
 
 # 1407. Прослеживаемость в обе стороны
 
-Решение: [ADR-0031](../docs/adr/0031-certification-is-a-process-not-a-property-of-the-language.md).
+Решение: [ADR-0031](../adr/0031-certification-is-a-process-not-a-property-of-the-language.md).
 
 ## Зачем
 

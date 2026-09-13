@@ -83,8 +83,8 @@ dev       0.7.0      0.7.10         0.7.0    ← РАЗОШЛИСЬ
 docs/zettel/README.md                 +2
 flang/src/emit/c/flang_repl.c         +1 -1   ← та самая версия
 scripts/otpechatok-semeni            +31 -18
-tasks/8650-…md                       +62      новый
-tasks/9959-…md                       +48      новый
+docs/tasks/8650-…md                       +62      новый
+docs/tasks/9959-…md                       +48      новый
 5 файлов, +144 -19
 ```
 
@@ -155,8 +155,8 @@ git -c user.name="Marat Zimnurov" -c user.email="zimtir@mail.ru" merge --no-comm
 git checkout --ours bootstrap/flang_repl.c docs/tree-inventory.md package.json
 git add bootstrap/flang_repl.c docs/tree-inventory.md package.json
 # и ТЕМ ЖЕ коммитом — четыре строки в шапках приезжающих задач:
-#   tasks/8650-…md: статус «открыта» → «свободна»;  карта: → существующий раздел
-#   tasks/9959-…md: статус «закрыта» → «сделана»;   карта: → существующий раздел
+#   docs/tasks/8650-…md: статус «открыта» → «свободна»;  карта: → существующий раздел
+#   docs/tasks/9959-…md: статус «закрыта» → «сделана»;   карта: → существующий раздел
 git -c user.name="Marat Zimnurov" -c user.email="zimtir@mail.ru" commit
 ```
 
@@ -216,5 +216,5 @@ dev не теряет, чинит красный сторож версии и с
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `dafe6dbc` (2026-09-05) — «task(5275): цена слияния main в dev измерена — оно чинит красный сторож версии»
-- в `tasks/completed/` перенесена коммитом `8621059d` (2026-09-05) — «task(5379): 48 закрытых задач уехали в архив, все 36 «в работе» оказались протухшими»
+- в `docs/tasks/completed/` перенесена коммитом `8621059d` (2026-09-05) — «task(5379): 48 закрытых задач уехали в архив, все 36 «в работе» оказались протухшими»
 - номер задачи назван в 3 коммитах ствола: `git log gh/dev --oneline --grep=5275`

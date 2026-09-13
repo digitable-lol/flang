@@ -105,5 +105,5 @@ flang test  web/stand.flang                          примеров 258, ко�
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `22923c09` (2026-08-26) — «docs(tasks): 9740 сделана — 46 доказанных обещаний там, где их не было, и проверка спек красна не по нашей вине»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 6 коммитах ствола: `git log gh/dev --oneline --grep=9740`

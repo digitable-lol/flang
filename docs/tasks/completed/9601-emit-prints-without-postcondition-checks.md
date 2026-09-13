@@ -102,6 +102,6 @@ scripts/raskrutka.sh --bystro` на стволе называет **одинна
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `e9f0b953` (2026-09-02) — «feat(emit): ключ --no-postconditions печатает код без сторожей обещаний, а ворота остаются на месте»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 2 коммитах ствола: `git log gh/dev --oneline --grep=9601`
 

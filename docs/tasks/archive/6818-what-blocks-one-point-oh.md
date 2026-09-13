@@ -249,7 +249,7 @@ $ grep -ao 'FLANG_[A-Z_]*' flang/self/processes.flang | sort | uniq -c
 **Пересчёт 29 августа 2026: правила написаны, улика ими отвергается, но до
 собранного двоичного они доедут только перепечаткой — то есть за пунктом 1.**
 
-Три правила контракта слоя (`flang/conc/SPEC.md`, «Новые коды диагностик») лежат
+Три правила контракта слоя (`docs/flang/conc/SPEC.md`, «Новые коды диагностик») лежат
 теперь в `flang/self/processes.flang` (модуль «Проверка процессов», 463 строки) и
 ввезены в `compiler.flang`. Каждое проверено ДВУМЯ программами — нарушающей и
 соблюдающей; программы лежат в `flang/test/fixtures/processes/`.
@@ -452,7 +452,7 @@ $ python3 dolya-fajla.py flang/self/proof-kernel.flang <выход>.out
 заложница пункта 1.
 
 Задача **7790**. И третье число про то же самое разошлось с двумя первыми:
-`ROADMAP.md:641` называет 54 файла / 25 487 строк / «42 предстоит переписать»,
+`docs/ROADMAP.md:641` называет 54 файла / 25 487 строк / «42 предстоит переписать»,
 дерево даёт 25 527 строк, а `docs/javascript-inventory.md` — долг 28 файлов и
 13 467 строк. Задача **3258**.
 
@@ -517,9 +517,9 @@ $ python3 dolya-fajla.py flang/self/proof-kernel.flang <выход>.out
 и из 884 общих приговоров изменилось 0. Расширение покупает долг доказуемости —
 снятых сторожей и возвращённый цикл, — а не минуты.
 
-Разбор — [«Ход переписки заводит одно правило из шести»](../../docs/zettel/only-the-equality-rule-walks-and-it-is-one-obligation-in-eight.md).
+Разбор — [«Ход переписки заводит одно правило из шести»](../../zettel/only-the-equality-rule-walks-and-it-is-one-obligation-in-eight.md).
 
-Разбор — [«Квадрат сидит в ходе переписки»](../../docs/zettel/the-square-is-in-the-rewrite-walk-not-in-the-failed-attempt.md).
+Разбор — [«Квадрат сидит в ходе переписки»](../../zettel/the-square-is-in-the-rewrite-walk-not-in-the-failed-attempt.md).
 
 
 Снято 27 августа. Цена проверки от числа обещаний в области видимости:
@@ -608,7 +608,7 @@ $ python3 dolya-fajla.py flang/self/proof-kernel.flang <выход>.out
 ## Куда разошлась работа из этого списка
 
 29 августа список разобран на задачи, и раздавать надо по ним, а не по этому
-файлу. Оглавление всех открытых работ — [`docs/archive/open-work.md`](../../docs/archive/open-work.md).
+файлу. Оглавление всех открытых работ — [`docs/archive/open-work.md`](../../archive/open-work.md).
 
 | пункт списка | задачи |
 |---|---|

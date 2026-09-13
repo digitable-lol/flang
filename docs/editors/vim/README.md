@@ -4,7 +4,7 @@
 прогоном, а не на глаз.
 
 ```
-editors/vim/
+docs/editors/vim/
   syntax/flang.vim      правила подсветки — НАПЕЧАТАНЫ, не написаны
   ftdetect/flang.vim    .flang → тип файла flang
   ftplugin/flang.vim    отступ, комментарии, ёлочки парой
@@ -20,8 +20,8 @@ editors/vim/
 | Менеджер | Строка |
 | --- | --- |
 | **lazy.nvim** | см. ниже — подкаталога репозитория он не умеет |
-| **vim-plug** | `Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }` |
-| **packer.nvim** | `use { 'digitable-lol/flang', rtp = 'editors/vim' }` |
+| **vim-plug** | `Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }` |
+| **packer.nvim** | `use { 'digitable-lol/flang', rtp = 'docs/editors/vim' }` |
 | **руками** | `git clone https://github.com/digitable-lol/flang` и `set runtimepath^=/путь/к/flang/editors/vim` |
 
 Подкаталог нужен потому, что плагин живёт ВНУТРИ репозитория языка: отдельный
@@ -101,7 +101,7 @@ flang-lsp на Node:  при открытом вводе 334 байт, посл�
 ```vim
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
-Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }
+Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }
 ```
 
 Регистрация происходит сама. В Neovim `plugin/flang.vim` не работает вовсе —
@@ -117,7 +117,7 @@ Plug 'digitable-lol/flang', { 'rtp': 'editors/vim' }
 первым в тот день, когда в язык добавят слово, и никто не заметит.
 
 ```bash
-flang io scripts/editors/vim-highlighting.flang     # перепечатать editors/vim/syntax/flang.vim
+flang io scripts/editors/vim-highlighting.flang     # перепечатать docs/editors/vim/syntax/flang.vim
 ```
 
 Печатает `scripts/editors/vim-highlighting.flang` — программа на самом flang. Слова берёт

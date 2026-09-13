@@ -15,7 +15,7 @@
 Файл настроек, его разбор и старшинство источников написаны и прогнаны
 (`scripts/settings-file.flang`, `scripts/flangrc.sh`, `.flangrc` в корне,
 `docs/guide/settings.ru.md`, решение
-[ADR-0024](../docs/adr/0024-the-settings-file-and-the-language-of-output.md)).
+[ADR-0024](../adr/0024-the-settings-file-and-the-language-of-output.md)).
 Читает их сегодня только оснастка. **Сам `bootstrap/flang` о настройках не знает
 ничего.**
 

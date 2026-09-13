@@ -165,5 +165,5 @@ Worktree `/srv/tmp/dokazuemyy/kvantory`, ветка `r/kvantory` от `gh/dev` `
 
 И1 (сверщик) и И2 (ведомость) — `r/6202-6203-cheker` в `gh/dev` (`9a9df2e3f`…`fd56f8b4f`);
 И3 (ядро) `575edb31c`; семя `0ce948bfd`; записи `c887237ff`; ведомость/Lean и сверка на семени —
-коммит этой ветки (`r/kvantory`, см. `git log -- tasks/completed/6202-*.md`).
+коммит этой ветки (`r/kvantory`, см. `git log -- docs/tasks/completed/6202-*.md`).
 

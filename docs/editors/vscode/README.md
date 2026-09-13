@@ -6,13 +6,13 @@
 Syntax highlighting and a language-server client for flang files (`.flang`, `.fp`, `.фп`, `.фланг`). The English documentation is behind the first link above; the text below is in Russian.
 
 Подсветка и клиент языкового сервера для файлов `.flang`, `.fp`, `.фп` и
-`.фланг`. Расширение лежит в дереве языка (`editors/vscode/`), собирается и
+`.фланг`. Расширение лежит в дереве языка (`docs/editors/vscode/`), собирается и
 ставится локально; в Marketplace не выложено.
 
 ## Что внутри
 
 ```
-editors/vscode/
+docs/editors/vscode/
   package.json                    объявление расширения: язык, грамматика, настройки
   extension.js                    запуск языкового сервера
   language-configuration.json     комментарии, скобки, ёлочки парой
@@ -42,7 +42,7 @@ editors/vscode/
 Собрать пакет и поставить:
 
 ```bash
-cd editors/vscode
+cd docs/editors/vscode
 npm install
 npm run package                        # vsce package → flang-0.1.0.vsix
 code --install-extension flang-0.1.0.vsix
@@ -74,7 +74,7 @@ ln -s "$PWD/editors/vscode" ~/.vscode/extensions/flang
 `flang.server.args` — `["lsp", "--stdio"]`.
 
 Списка мест, где искать сервер, в расширении нет: такой список один и живёт в
-`editors/vim/autoload/flang.vim`; вторая копия расходилась бы с первой.
+`docs/editors/vim/autoload/flang.vim`; вторая копия расходилась бы с первой.
 
 ## Подсветка напечатана, а не написана
 
@@ -114,7 +114,7 @@ flang io scripts/editors/vscode-highlight-check.flang  # проверить, ч�
    и получить токен доступа в Azure DevOps. В `package.json` стоит
    `"publisher": "digitable-lol"`; если имя издателя выйдет другим, поправить
    эту строку.
-2. Выложить: `cd editors/vscode && npx vsce publish` (спросит токен).
+2. Выложить: `cd docs/editors/vscode && npx vsce publish` (спросит токен).
 
 `vsce` предупредит, что в каталоге нет файла лицензии: лицензия у языка одна и
 лежит в корне дерева (`LICENSE`, BSD-2-Clause); перед публикацией её можно

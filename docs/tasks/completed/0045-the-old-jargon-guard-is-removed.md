@@ -122,7 +122,7 @@ diff staryy.txt novyy.txt       → пусто
 | 2 | `.claude/skills/flang-zettel/SKILL.md:86` | `./ярлык жаргон:проверка` |
 | 3 | `.claude/skills/flang-code/SKILL.md:313` | проверка → ярлык; `--list`/`--write` названы как оставшиеся только у старого |
 | 4 | `docs/lessons-2026-08-23.md:49` | правило 23 августа оставлено правдой, приписан замер: 0,33 с против 255 с |
-| 5 | `ROADMAP.md:614` | «переносим» → «перенесён», с числами сверки |
+| 5 | `docs/ROADMAP.md:614` | «переносим» → «перенесён», с числами сверки |
 | 6 | `docs/why-javascript-remains.md:63` | назван переписанным; названо, чем заперт снос |
 | 7 | `docs/javascript-inventory.md` (4 строки) | опись догнала правду |
 | 8 | `flang/test/jargon-guard.test.mjs` | **НЕ переведено** — три запора выше |

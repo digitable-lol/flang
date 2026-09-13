@@ -142,10 +142,10 @@
    запись «Место» с «путь» равным "flang/проверки/обход.sh" и «нужно» равным "\"$dir\"/*.фланг; do" и «нельзя» равным "\"$dir\"/*.фп; do",
    запись «Место» с «путь» равным "scripts/targets/target-census.sh" и «нужно» равным "\"$katalog\"/*.фланг; do" и «нельзя» равным "\"$katalog\"/*.фп; do",
    запись «Место» с «путь» равным "docs/ifl/reproduce.sh" и «нужно» равным "--include='*.фланг'" и «нельзя» равным "'*.фп' \\)",
-   запись «Место» с «путь» равным "editors/vim/ftdetect/flang.vim" и «нужно» равным "*.flang,*.fp,*.фп,*.фланг setfiletype flang" и «нельзя» равным "*.фп setfiletype",
-   запись «Место» с «путь» равным "editors/vim/lua/flang/init.lua" и «нужно» равным "[\"фланг\"] = \"flang\" }" и «нельзя» равным "[\"фп\"] = \"flang\" }",
-   запись «Место» с «путь» равным "editors/linguist/languages-flang.yml" и «нужно» равным "- \".фланг\"" и «нельзя» равным "",
-   запись «Место» с «путь» равным "editors/vscode/package.json" и «нужно» равным "\".фланг\"" и «нельзя» равным "",
+   запись «Место» с «путь» равным "docs/editors/vim/ftdetect/flang.vim" и «нужно» равным "*.flang,*.fp,*.фп,*.фланг setfiletype flang" и «нельзя» равным "*.фп setfiletype",
+   запись «Место» с «путь» равным "docs/editors/vim/lua/flang/init.lua" и «нужно» равным "[\"фланг\"] = \"flang\" }" и «нельзя» равным "[\"фп\"] = \"flang\" }",
+   запись «Место» с «путь» равным "docs/editors/linguist/languages-flang.yml" и «нужно» равным "- \".фланг\"" и «нельзя» равным "",
+   запись «Место» с «путь» равным "docs/editors/vscode/package.json" и «нужно» равным "\".фланг\"" и «нельзя» равным "",
    запись «Место» с «путь» равным "packaging/flang.1" и «нужно» равным ".фланг" и «нельзя» равным "",
    запись «Место» с «путь» равным "scripts/guards/published-vs-tree.sh" и «нужно» равным "flang/stdlib/*.фланг" и «нельзя» равным "",
    запись «Место» с «путь» равным "docs/benchmarks/proof-cost/count-library.flang" и «нужно» равным "«Кончается на» от имя и \".фланг\"" и «нельзя» равным "",
@@ -263,13 +263,13 @@
 // ГДЕ ГРАНИЦА ПЕРЕПИСИ — ЭТО РЕШЕНИЕ, И ОНО ЗАПИСАНО ЗДЕСЬ, а не выведено.
 // Местом отбора считается файл дерева, в котором кириллическое расширение
 // стоит как расширение, то есть за `фп` или `фланг` идёт не буква. Из переписи
-// вынуты и вынуты С ДОВОДОМ: проза (`*.md`) и `tasks/*` — там расширения
+// вынуты и вынуты С ДОВОДОМ: проза (`*.md`) и `docs/tasks/*` — там расширения
 // называют, а не отбирают по ним; `changelog.json` — история, а не отбор;
 // сам этот файл — в нём список и живёт; `docs/benchmark*` — напечатанное, а не исходники.
 // Туда же вынута ведомость `scripts/ledgers/link-guard-known-not-a-path.tsv` (216 строк,
 // заведена 31 августа): это ДАННЫЕ сторожа ссылок — список строк, которые
 // путями не являются, и расширения в ней НАЗЫВАЮТ, а не отбирают по ним. Порода
-// та же, что у прозы и у `tasks/*`, и довод тот же.
+// та же, что у прозы и у `docs/tasks/*`, и довод тот же.
 //
 // Отбор «за расширением идёт не буква» нужен буквой: без него в перепись
 // попадали `docs/site/poisk.js` и `docs/site/poisk-proverka.mjs` — там стоит
@@ -280,8 +280,8 @@
   обеспечивает «перепись идёт через ключ -c» результат содержит "-c"
   обеспечивает «перепись спрашивает у git, а не перечисляет руками» (элемент 2 в результат) содержит "git"
   пример «Места отбора спрашиваются у дерева одним заходом»
-    ожидается ["-c", "cd ../.. && git -c core.quotePath=false grep -l --untracked -E -e '(фп|фланг)([^[:alpha:]]|$)' -- ':!*.md' ':!tasks/*' ':!changelog.json' ':!scripts/guards/file-extensions.flang' ':!docs/benchmark*' ':!scripts/ledgers/link-guard-known-not-a-path.tsv'"]
-  ["-c", "cd ../.. && git -c core.quotePath=false grep -l --untracked -E -e '(фп|фланг)([^[:alpha:]]|$)' -- ':!*.md' ':!tasks/*' ':!changelog.json' ':!scripts/guards/file-extensions.flang' ':!docs/benchmark*' ':!scripts/ledgers/link-guard-known-not-a-path.tsv'"]
+    ожидается ["-c", "cd ../.. && git -c core.quotePath=false grep -l --untracked -E -e '(фп|фланг)([^[:alpha:]]|$)' -- ':!*.md' ':!docs/tasks/*' ':!changelog.json' ':!scripts/guards/file-extensions.flang' ':!docs/benchmark*' ':!scripts/ledgers/link-guard-known-not-a-path.tsv'"]
+  ["-c", "cd ../.. && git -c core.quotePath=false grep -l --untracked -E -e '(фп|фланг)([^[:alpha:]]|$)' -- ':!*.md' ':!docs/tasks/*' ':!changelog.json' ':!scripts/guards/file-extensions.flang' ':!docs/benchmark*' ':!scripts/ledgers/link-guard-known-not-a-path.tsv'"]
 
 тотальная функция «Строки»
   принимает текст: строка

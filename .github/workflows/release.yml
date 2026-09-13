@@ -25,7 +25,7 @@
 # обязан быть файлом, который запустит `node`, — ради этого и жили обёртки
 # `packaging/flang-launch.mjs` и `flang/bin/flang-lsp.mjs`. Формула Homebrew
 # Windows не ставит, а релизный архив ниже — исходники C99 под `make`. Разбор:
-# `tasks/8649-npm-leaves-the-tree.md`.
+# `docs/tasks/8649-npm-leaves-the-tree.md`.
 #
 # ── ЧТО БЫЛО СЛОМАНО ЗДЕСЬ, И ЧИНИТСЯ ЭТОЙ ЖЕ ПРАВКОЙ ──────────────────────
 #

@@ -67,7 +67,7 @@ parsing, and no "who is allowed to borrow" condition. All of that lives in
 **What stays with the host, and why it is the host's.** I/O in the language is
 DESCRIBED but not performed: `вариант «Прочитать файл» с путь равным …` builds a
 value — an order — and the host carries it out
-([`flang/SPEC.md`](../../flang/SPEC.md), the "Ввод-вывод" section). There are
+([`docs/flang/SPEC.md`](../flang/SPEC.md), the "Ввод-вывод" section). There are
 twenty orders, the set is closed, and connections are in it —
 `«Принять соединение»`, `«Прочитать из соединения»`, `«Ответить в соединение»`.
 The boundary does not run along those; it runs along this section's own rule:
@@ -80,7 +80,7 @@ make them checkable.
 **What this paragraph NO LONGER says, which matters if you read it before.** It
 used to say "functions in flang are not first-class values" and "there is no I/O
 in the language at all". Both are out of date: a function IS a value now
-(defunctionalization after Reynolds, `flang/SPEC.md`, section 3), and I/O orders
+(defunctionalization after Reynolds, `docs/flang/SPEC.md`, section 3), and I/O orders
 are in the language and are carried out by `flang io`. The rule about the boundary
 survived both changes, because it rests on examples rather than on a list of what
 the language lacks.

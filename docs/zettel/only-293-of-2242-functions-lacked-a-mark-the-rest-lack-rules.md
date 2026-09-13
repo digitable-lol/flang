@@ -63,7 +63,7 @@
 красных воспроизведены на стволе тем же прогоном и теми же числами — ни один не
 заведён этой работой. Три красных, наоборот, стали зелёными: числа обзора языка,
 строка «Состояние» каждого из 22 разделов «Долгов» и размер свидетеля в шапке
-`flang/self/SPEC.md`.
+`docs/flang/self/SPEC.md`.
 
 Связано: [[dva-pravila-zavershaemosti-vmeste-dayut-574]],
 [[nat-removes-a-guard-only-when-the-caller-already-gives-a-natural]],

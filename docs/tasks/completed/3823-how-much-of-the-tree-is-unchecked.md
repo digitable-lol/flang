@@ -102,5 +102,5 @@
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `c05f94de` (2026-08-30) — «docs(задачник): 3823 закрыта — радиус стены назван числом, и три обещания круга в дереве говорят, что перепечатка его не сдвинет»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 2 коммитах ствола: `git log gh/dev --oneline --grep=3823`

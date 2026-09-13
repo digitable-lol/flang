@@ -240,7 +240,7 @@ $ /srv/flang-rabota/b-batut/bootstrap/flang check flang/conc/examples/counter.fl
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `3c8619d6` (2026-08-30) — «docs(задачник): 3714 — отказ ведомости считает несудимое, и цена названа числами»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 2 коммитах ствола: `git log gh/dev --oneline --grep=3714`
 
 ## Что от неё зависит

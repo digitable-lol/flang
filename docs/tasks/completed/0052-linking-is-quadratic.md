@@ -300,5 +300,5 @@ FLANG_MEMORY: недостаточно памяти        ← ядро, а не
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `168b6748` (2026-08-26) — «perf(link): слияние и второй проход не перебирают список по имени — на 800 функциях память связывания 13,0 → 5,6 ГиБ, вывод байт в байт»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 3 коммитах ствола: `git log gh/dev --oneline --grep=0052`

@@ -1,9 +1,9 @@
 # Семья «семейства отношений»: порядок, строгий порядок, соседние, вхождение, начало
 
 Задача [6131](../../../../../../tasks/6131-sverschik-proigryvaet-blok-vyvoda.md),
-ведомость правил — [`flang/proof/ПРАВИЛА-ВЫВОДА.tsv`](../../../../ПРАВИЛА-ВЫВОДА.tsv),
+ведомость правил — [`flang/proof/ПРАВИЛА-ВЫВОДА.tsv`](../../../../../../../flang/proof/ПРАВИЛА-ВЫВОДА.tsv),
 форма блока и границы приёма — в
-[docs/design/proof-object-blok-vyvoda.md](../../../../../../docs/design/proof-object-blok-vyvoda.md).
+[docs/design/proof-object-blok-vyvoda.md](../../../../../../design/proof-object-blok-vyvoda.md).
 
 ## Зачем
 

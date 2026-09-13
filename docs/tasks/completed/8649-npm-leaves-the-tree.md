@@ -163,10 +163,10 @@ Windows у дерева не было, и теперь нет никакого.
 
 Остатки названы, а не забыты:
 
-* **`docs/zettel/*`, `tasks/*`, `CHANGELOG.md`, `changelog.json`, `ROADMAP.md`,
+* **`docs/zettel/*`, `docs/tasks/*`, `CHANGELOG.md`, `changelog.json`, `docs/ROADMAP.md`,
   `docs/HANDOFF.md`, `docs/ci-inventory.md`** — записи о том, как было. Журнал
   не переписывают: он тем и ценен, что называет прошлое.
-* **`editors/vscode/`** — манифест расширения VS Code и его инструкции. Это
+* **`docs/editors/vscode/`** — манифест расширения VS Code и его инструкции. Это
   реестр расширений, а не npm-реестр пакетов; решение владельца его не касалось.
 * **`packaging/install-parity.flang`** — прибор сверки двух установок; в его
   шапке npm назван как случай, на котором он был снят.

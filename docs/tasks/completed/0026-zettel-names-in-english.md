@@ -63,7 +63,7 @@
 | `vedomost-dvoichnogo-byvaet-slabee…` | `docs/course/13-where-next.md` | `b/targets-cyrillic` |
 | `zakony-kak-ukazatel` | `docs/guide/naming.md`, `.ru.md` | `b/targets-cyrillic` |
 | `dva-pravila-zavershaemosti-vmeste-dayut-574` | `docs/site/what-is-proved.md`, `.ru.md` | `b/targets-cyrillic` |
-| `vyvod-na-vetke-ne-vyvod-o-dereve` | `flang/proof/SPEC.md` | `b/targets-cyrillic` |
+| `vyvod-na-vetke-ne-vyvod-o-dereve` | `docs/flang/proof/SPEC.md` | `b/targets-cyrillic` |
 | `keshirovat-dokazatelstvo-dorozhe-chem-dokazat`, `node-ushyol-s-puti-sborki`, `vypusk-ne-mog-sostoyatsya…` | `flang/scripts/code-guard.flang` | `b/targets-cyrillic` |
 | 11 остальных | 6 заметок из доли `b/targets-cyrillic` | `b/targets-cyrillic` |
 

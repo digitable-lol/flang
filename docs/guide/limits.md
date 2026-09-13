@@ -4,7 +4,7 @@
 
 Stated plainly, because a project with undrawn borders is not one you can rely on. The same line
 is drawn in [`docs/overview.ru.md`](../../docs/overview.ru.md); the full lists are in
-[`flang/SPEC.md`](../../flang/SPEC.md) §10 and the "Долги" sections of the contracts.
+[`docs/flang/SPEC.md`](../flang/SPEC.md) §10 and the "Долги" sections of the contracts.
 
 **Three words that are not confused here.** The distinctions matter and the words sound alike, so:
 
@@ -61,7 +61,7 @@ attached to the verification conditions.
   TWO targets out of ten: `js` and `ts` emit the declaration in full together with the host
   `flang_host_node.js` and exit 0, and the other eight refuse with `FLANG_PLAN_UNSUPPORTED`, name
   the plan and write no file (the refusal text is in `flang/self/bootstrap/compiler.flang`; run on
-  11 September 2026 on the «План записи» module from `DESCRIPTION.md` §9: `js`, `ts` — exit 0,
+  11 September 2026 on the «План записи» module from `docs/DESCRIPTION.md` §9: `js`, `ts` — exit 0,
   `c`, `cpp`, `go` — exit 1). Until 22 August 2026 (eight targets then) the other seven emitted the
   program with exit code 0 and silently dropped the declaration — the worst of the outcomes,
   because the module built and did not work. The breakdown is in
@@ -122,7 +122,7 @@ obligation refused by name when unmet, and at the program boundary (`--args`, ex
 computed because there is nothing to prove there. Its cost is named in bytes: a program with no
 `требует` at all emits byte for byte as before, and a program with one grows by exactly the door —
 334 bytes in Python, 349 in Java, 369 in Elixir, 387 in C#, 452 in Rust, 462 in Go, 477 in C and
-1 654 in JavaScript ([`flang/SPEC.md`](../../flang/SPEC.md), "Предусловия функции"). Natural transformations are specified in
+1 654 in JavaScript ([`docs/flang/SPEC.md`](../flang/SPEC.md), "Предусловия функции"). Natural transformations are specified in
 [`docs/ct/spec.md`](../../docs/ct/spec.md) and are not implemented. Category names in a functor declaration are a note for the reader, not a
 checked claim. A list — and anything recursive, I/O included — cannot be declared a monad today:
 the endofunctor map is printed in place, so the parameter must occupy a whole field
@@ -137,7 +137,7 @@ burning fifteen cores (measurements in
 [`docs/scheduler-benchmark.md`](../../docs/scheduler-benchmark.md)). FOUR targets emit processes —
 C, Elixir, JavaScript and TypeScript; the other six (C++, Go, Rust, Python, Java, C#) REFUSE to emit a program with
 `процесс` at all («у цели «…» нет планировщика конкурентности», exit 1, no files), rather than emitting half of it
-(run on 11 September 2026 on the «Счётчик» module from `DESCRIPTION.md` §10 across all ten targets). `породить` spawns
+(run on 11 September 2026 on the «Счётчик» module from `docs/DESCRIPTION.md` §10 across all ten targets). `породить` spawns
 instances of declared kinds at run time in the witness and in target C; the JavaScript and Elixir
 schedulers answer that action with a named error. The parent names the child, because a described
 action cannot return anything; a message addressee must still be a literal, so you can only speak

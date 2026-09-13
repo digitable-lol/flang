@@ -203,7 +203,7 @@ diff          СОВПАЛО ЗНАК В ЗНАК
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `e023bcd6` (2026-08-26) — «docs(tasks): 0033 — разложить на ядра нельзя, три препятствия названы файлом и строкой; цена спуска снята замером»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 6 коммитах ствола: `git log gh/dev --oneline --grep=0033`
 
 ## Что откладывается на «после перепечатки», и это названо, а не забыто

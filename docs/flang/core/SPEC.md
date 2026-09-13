@@ -136,7 +136,7 @@ flang строки — данные, а `flang/stdlib/strings.flang` уже да
 
 ## 3. Семантика вычислителя
 
-Обязана совпадать с `src/utility.ts` и с таблицей в `flang/SPEC.md`:
+Обязана совпадать с `src/utility.ts` и с таблицей в `docs/flang/SPEC.md`:
 
 | Вопрос | Решение |
 |---|---|

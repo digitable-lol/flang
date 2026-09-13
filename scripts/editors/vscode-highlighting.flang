@@ -1,7 +1,7 @@
 модуль «Подсветка VS Code»
   использует «Правила VS Code»
 
-// Печатает грамматику подсветки в `editors/vscode/syntaxes/flang.tmLanguage.json`.
+// Печатает грамматику подсветки в `docs/editors/vscode/syntaxes/flang.tmLanguage.json`.
 //
 // Весь текст грамматики считает `vscode-rules.flang` — чистыми функциями, из
 // таблицы ключевых слов языка. Здесь остался только план: куда положить и что
@@ -25,11 +25,11 @@
 // перепечатать грамматику можно из любого каталога, и в этом весь смысл.
 тотальная функция «Куда писать»
   возвращает строка
-  обеспечивает «грамматика ложится в каталог грамматик VS Code» результат содержит "editors/vscode/syntaxes"
+  обеспечивает «грамматика ложится в каталог грамматик VS Code» результат содержит "docs/editors/vscode/syntaxes"
   обеспечивает «грамматика ложится в файл tmLanguage» результат содержит ".tmLanguage.json"
   пример «Путь ведёт в каталог грамматик рядом с деревом»
-    ожидается "../../editors/vscode/syntaxes/flang.tmLanguage.json"
-  "../../editors/vscode/syntaxes/flang.tmLanguage.json"
+    ожидается "../../docs/editors/vscode/syntaxes/flang.tmLanguage.json"
+  "../../docs/editors/vscode/syntaxes/flang.tmLanguage.json"
 
 тотальная функция «После записи»
   принимает отклик: «Отклик»

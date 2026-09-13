@@ -320,7 +320,7 @@ sh scripts/published-vs-tree.sh --доля | grep -c 'без приговора'
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `68d6f5e5` (2026-08-30) — «proof(ведомость): 78 крестов описи разложены на три кучи — перепечатка открывает 6 обязательств из 229, а не слой процессов»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 2 коммитах ствола: `git log gh/dev --oneline --grep=5710`
 
 ## Что от неё зависит

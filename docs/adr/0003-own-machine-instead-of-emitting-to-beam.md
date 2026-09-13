@@ -3,11 +3,11 @@
 **Состояние:** принято владельцем, работа начата
 **Дата:** 19 августа 2026
 **Отменяет:** раздел «Свою BEAM писать не надо — надо в неё печатать» в
-[`flang/conc/SPEC.md`](../../flang/conc/SPEC.md), строка 769 — записан 6 августа 2026
+[`docs/flang/conc/SPEC.md`](../flang/conc/SPEC.md), строка 769 — записан 6 августа 2026
 (`5b54c997`, `2f110f4f`)
 **Основание:** модель процессов [`flang/self/conc.flang`](../../flang/self/conc.flang),
 планировщики `flang/src/emit/c/flang_conc.c` и `flang/src/emit/js/flang_conc.js`,
-раздел «Граница честности: что это против BEAM» в `flang/conc/SPEC.md`
+раздел «Граница честности: что это против BEAM» в `docs/flang/conc/SPEC.md`
 
 ---
 
@@ -92,10 +92,10 @@ BEAM про свой код не знает ни того, ни другого �
 
 ## Что делать с прозой
 
-Раздел 769 в `flang/conc/SPEC.md` **не стирается**. Он переписывается так, чтобы
+Раздел 769 в `docs/flang/conc/SPEC.md` **не стирается**. Он переписывается так, чтобы
 называть отменённое отменённым и ссылаться сюда: устаревшая запись про решение опаснее
 отсутствующей, и в этом дереве принято помечать снятое, а не убирать его. Три места,
 ссылающиеся на него (1185, 1414, 2694), приводятся в согласие с этим ADR.
 
 Связанное: `docs/zettel/scheduler-holds-a-million-processes.md`,
-`flang/conc/RESILIENCE.md`, `flang/conc/DISTRIBUTED.md`.
+`docs/flang/conc/RESILIENCE.md`, `docs/flang/conc/DISTRIBUTED.md`.

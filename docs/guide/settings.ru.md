@@ -39,10 +39,10 @@ flang читает файл настроек `.flangrc`. В нём выбира�
 **Что из этого работает сегодня.** Читать файл и разрешать его по старшинству
 умеет `sh scripts/flangrc.sh`. Сам компилятор настройки пока не читает и
 отвечает по-русски всегда — это задача
-[5413](../../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md).
+[5413](../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md).
 Языков вывода, кроме русского, пока нет ни одного: их 811 строк текста на язык,
 и место, куда их класть, заводит задача
-[8161](../../tasks/8161-messages-live-in-the-binary-so-a-new-language-costs-a-reprint.md).
+[8161](../tasks/8161-messages-live-in-the-binary-so-a-new-language-costs-a-reprint.md).
 
 ## Где файл ищется
 

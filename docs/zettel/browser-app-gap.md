@@ -34,7 +34,7 @@
 
 ## Чего нет в языке
 
-`grep` по `flang/src`, `flang/stdlib`, `flang/SPEC.md`, `docs/`: `DOM`,
+`grep` по `flang/src`, `flang/stdlib`, `docs/flang/SPEC.md`, `docs/`: `DOM`,
 `addEventListener`, `createElement`, `querySelector` — **0 совпадений**.
 «Событие», «кнопка», «перерисовка», «интерфейс пользователя» — **0**. Слово
 «экран» встречается около **25** раз и **все до одного** — про экранирование

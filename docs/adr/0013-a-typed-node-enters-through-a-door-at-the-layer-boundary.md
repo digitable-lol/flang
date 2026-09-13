@@ -3,9 +3,9 @@
 **Состояние:** ПРЕДЛОЖЕНИЕ, владельцем не рассмотрено
 **Дата:** 26 августа 2026
 **Основание:** задача
-[0028](../../tasks/0028-typed-ast-instead-of-generic-value.md) и отменённая из-за
-неё [0029](../../tasks/rejected/0029-typescript-target-buys-almost-nothing.md);
-`flang/self/SPEC.md` строки 1605, 1831, 1989, 2110;
+[0028](../tasks/0028-typed-ast-instead-of-generic-value.md) и отменённая из-за
+неё [0029](../tasks/rejected/0029-typescript-target-buys-almost-nothing.md);
+`docs/flang/self/SPEC.md` строки 1605, 1831, 1989, 2110;
 [`flang/core/json.flang`](../../flang/core/json.flang);
 заметки
 [разрез круга](../zettel/a-mutual-recursion-circle-over-a-tree-is-cut-by-a-payload-record.md)
@@ -128,7 +128,7 @@
 
 ## Форма настоящего узла снята прогоном, и она правит решение в трёх местах
 
-Проектировать сумму по `flang/SPEC.md`, раздел 5, нельзя: спека перечисляет
+Проектировать сумму по `docs/flang/SPEC.md`, раздел 5, нельзя: спека перечисляет
 виды, но не говорит, какие ключи бывают, а каких не бывает. Снято `flang ast`
 по семнадцати настоящим файлам дерева, больше 176 тысяч узлов; полностью — в
 `docs/zettel/typed-ast-the-real-tree-has-29-kinds-and-list-is-two-different-nodes.md`.

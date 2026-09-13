@@ -10,15 +10,15 @@
 **Чем подтверждено.** 20 августа 2026, дерево `github/main` `cb3b7a18`. Прогон
 `grep -rinE '(^|[^a-zA-Z])fts'` по `*.md` и `*.1` дал **464 вхождения в 66
 файлах**. Прощальные абзацы нашлись в восьми файлах: обе `README`,
-`editors/README.md`, `editors/linguist/README.md`,
+`docs/editors/README.md`, `docs/editors/linguist/README.md`,
 `examples/library-api/README.md`, обе `docs/guide/developing.*` и шапка
 `docs/guide/project-layout.ru.md`. Проверка каждого пути, который они и их
 разделы обещают, дала: `examples/utilities/discount.fts` — нет (на нём стояли
 ОБЕ редакции страницы «Зачем это нужно», целиком),
 `.github/workflows/fts-example.yml` — нет, `host/fts.mjs` — нет,
 `domain/*.fts` — нет, `*.context.json` — нет во всём дереве,
-`flang/test/compat.test.mjs` — нет, `editors/tree-sitter-fts`,
-`editors/vscode-fts`, `editors/chroma/fts.xml`, `editors/linguist/samples/` —
+`flang/test/compat.test.mjs` — нет, `docs/editors/tree-sitter-fts`,
+`docs/editors/vscode-fts`, `docs/editors/chroma/fts.xml`, `docs/editors/linguist/samples/` —
 нет ни одного, `src/lexer.mjs` и ещё четыре пути свидетеля — нет (потерян
 префикс `flang/`).
 

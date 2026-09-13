@@ -1,16 +1,16 @@
 # ADR-0020. Корень хранилища отделяет язык от оснастки: стенд уезжает в `tools/`, браузерные образцы — в `packaging/`
 
 **Состояние:** заменено словами владельца 11 сентября 2026 (задача
-[1745](../../tasks/1745-the-tree-is-reorganized-by-the-owners-words-of-11-september.md)):
+[1745](../tasks/1745-the-tree-is-reorganized-by-the-owners-words-of-11-september.md)):
 `web/` уехал в `docs/examples/web/`, а не в `packaging/`; `benchmarks/` — в `docs/`,
 а не в `tools/`. Замер корня и репетиция ниже остаются в силе как метод; адреса
 назначения — нет.
 **Дата:** 8 сентября 2026
-**Основание:** задача [8235](../../tasks/8235-the-repository-layout-says-what-the-project-is.md)
+**Основание:** задача [8235](../tasks/8235-the-repository-layout-says-what-the-project-is.md)
 (замечание владельца от 28 августа, «ок» на исполнение — 8 сентября); замер
 корня прогоном 8 сентября 2026 на стволе `f2945456` (ниже); репетиция переезда
 на копии дерева тем же днём.
-**Рядом:** задача [0037](../../tasks/0037-docs-live-in-one-folder.md)
+**Рядом:** задача [0037](../tasks/0037-docs-live-in-one-folder.md)
 о единой папке документации — тот же принцип «по корню видно, что где», на
 уровень выше. Прецеденты переезда: `acca80a3` и `8142524b` (`flang/cat` → `flang/ct`,
 проза → `docs/ct`, 54 файла правки на один каталог).
@@ -33,7 +33,7 @@
 
 Файлов — по `git ls-files`; «ссылок» — сколько файлов дерева называют путь
 (вне истории: без `CHANGELOG.md`, `changelog.json`, `docs/archive/`,
-`tasks/completed/`). Цена — сколько файлов пришлось бы править при переезде.
+`docs/tasks/completed/`). Цена — сколько файлов пришлось бы править при переезде.
 
 | Путь | Что это | Файлов | Ссылок | Цена переезда | Риск |
 | --- | --- | ---: | ---: | --- | --- |
@@ -46,13 +46,13 @@
 | `benchmarks/` | **оснастка: измерительный стенд** | 579 | 89 (workflows 1, оболочка 10, flang 12, js/json 8, md 50, tsv/txt 3, git 3) | ≈85 файлов; 4 скрипта считают корень как `../..`; 2 плана с `"../` | `.gitattributes` (`linguist-vendored`), `no-comments-debt.tsv`, `proved-share-ledger.txt` (строки «md5|…|путь»), `flang/test/glob.mjs`, `name-guard.mjs` |
 | `web/` | **оснастка: наружу** — wasm-сборка, приложение во вкладке, сокращатель | 14 | 51 (workflows 1, оболочка 4, flang 2, js 4, md 31, tsv 4, git 2) | ≈50 файлов; 3 скрипта считают корень от себя | `.gitignore` (5 строк), ведомости; сайт — только комментарии `sitemap.mjs`; **один комментарий во входе семени** `flang/src/emit/c/flang_runtime.h:465` |
 | `packaging/` | **оснастка: наружу** — Homebrew, asdf, `flang.1`, проверки установки; два сабмодуля | 10 (+2) | 64 | не переезжает; принимает `web/` | `.gitmodules`, `release.yml`, фильтр `paths:` в `install-path.yml` |
-| `editors/` | оснастка: LSP, Vim, VS Code, linguist | 29 | 38 | не переезжает в этой волне | `.gitattributes`; `scripts/vim-*`, `vscode-*` |
+| `docs/editors/` | оснастка: LSP, Vim, VS Code, linguist | 29 | 38 | не переезжает в этой волне | `.gitattributes`; `scripts/vim-*`, `vscode-*` |
 | `docs/` | документация (сайт, руководство, решения, заметки) | 931 | 427 | не переезжает (задача 0037 только что собрала её) | `pages.yml` строится по `docs/**` |
-| `tasks/` | задачник | 371 (107 открытых) | 53 | не переезжает | `task-numbers-guard.sh`, `flang/scripts/tasks.flang` |
+| `docs/tasks/` | задачник | 371 (107 открытых) | 53 | не переезжает | `task-numbers-guard.sh`, `flang/scripts/tasks.flang` |
 | `.githooks/`, `.github/`, `.claude/` | служебная оснастка | 1 / 13 / 4 | 8 / — / 15 | не переезжают | — |
 | `package.json` | описание пакета — уже **печатается** языком (`scripts/release/emit-package.flang`) | 1 | 65 | пункт 4 задачи; читают код: `release.yml` (версия для тега и архива, 4 места), `ci.yml:1437`, `install-path.yml:182`, `docs/site/build.flang:559` | версия выпуска |
 | `changelog.json` | машинный журнал изменений, 550 КБ | 1 | 21 | остаётся (`scripts/build-changelog*`) | — |
-| `README*`, `LICENSE*`, `AGENTS.md`, `CONTRIBUTING.md`, `DESCRIPTION.md`, `ROADMAP.md`, `CHANGELOG.md` | корневые документы | 9 | — | остаются; карта раскладки в `README.md:307–317` и `README.ru.md:303–313` правится с переездом | `published-vs-tree.sh` сверяет числа README |
+| `README*`, `LICENSE*`, `AGENTS.md`, `CONTRIBUTING.md`, `docs/DESCRIPTION.md`, `docs/ROADMAP.md`, `CHANGELOG.md` | корневые документы | 9 | — | остаются; карта раскладки в `README.md:307–317` и `README.ru.md:303–313` правится с переездом | `published-vs-tree.sh` сверяет числа README |
 
 Что видно по замеру:
 
@@ -74,8 +74,8 @@
 - `package.json` печатать при сборке пакета (отдельным шагом, после замера
   читателей — они названы в таблице).
 
-Корень после: `bootstrap/ flang/ docs/examples/ fspec/ · docs/ tasks/ · scripts/ tools/
-packaging/ editors/ · ярлык ярлыки.flang` и девять документов. Каталогов
+Корень после: `bootstrap/ flang/ docs/examples/ fspec/ · docs/ docs/tasks/ · scripts/ tools/
+packaging/ docs/editors/ · ярлык ярлыки.flang` и девять документов. Каталогов
 верхнего уровня 10 вместо 12. Имя `tools/` — английское, по правилу
 `AGENTS.md` («имена новых файлов — английские, не транслит»); кириллица в именах
 остаётся за кодом на flang и целями ярлыка.
@@ -83,8 +83,8 @@ packaging/ editors/ · ярлык ярлыки.flang` и девять докум
 ### Б. Вся оснастка одним каталогом
 
 То же, что А, плюс `scripts/` → `tools/` (переименование **в той же глубине**,
-чтобы 365 путей `"../` в планах не менялись), `editors/` → `tools/editors/`.
-Корень: `bootstrap/ flang/ docs/examples/ fspec/ docs/ tasks/ tools/ packaging/`.
+чтобы 365 путей `"../` в планах не менялись), `docs/editors/` → `tools/editors/`.
+Корень: `bootstrap/ flang/ docs/examples/ fspec/ docs/ docs/tasks/ tools/ packaging/`.
 
 Цена: ≈450 файлов правки и **перепечатка семени** — справка двоичного называет
 `scripts/raskrutka.sh` и `scripts/otpechatok-semeni`
@@ -93,10 +93,10 @@ packaging/ editors/ · ярлык ярлыки.flang` и девять докум
 приёмная отвергает всякую ветку с `bootstrap/**` — значит, только в составе
 перепечатки.
 
-### В. Всё, кроме языка, в один каталог, включая `docs/` и `tasks/`
+### В. Всё, кроме языка, в один каталог, включая `docs/` и `docs/tasks/`
 
 Отвергнуто: `docs/` только что собрана задачей 0037 и по ней строится сайт
-(`pages.yml`: `docs/**`); `tasks/` читают три сторожа и задачник. Выигрыш в
+(`pages.yml`: `docs/**`); `docs/tasks/` читают три сторожа и задачник. Выигрыш в
 корне — два имени, цена — ещё ≈480 файлов и переписанные адреса сайта.
 
 ## Решение
@@ -139,7 +139,7 @@ git mv web packaging/web
 Правило замены: `benchmarks/` → `tools/benchmarks/`, `web/` → `packaging/web/`,
 только на границе слова (не трогать `docs/examples/web/`, `docs/benchmark/`).
 **Не править**: `CHANGELOG.md`, `changelog.json`, `docs/archive/`,
-`tasks/completed/` (история), `bootstrap/**` (семя) и входы семени
+`docs/tasks/completed/` (история), `bootstrap/**` (семя) и входы семени
 `flang/src/emit/c/*`, `flang/self/**` (их правит только перепечатка).
 
 | Категория | Где | Что |

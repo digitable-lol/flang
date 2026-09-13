@@ -300,5 +300,5 @@ rust 3113, go 2637, cpp 322.
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `8f2d7251` (2026-09-02) — «fix(задачник): четыре числа, которые перестали быть фактами, заменены снятыми»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 6 коммитах ствола: `git log gh/dev --oneline --grep=1301`

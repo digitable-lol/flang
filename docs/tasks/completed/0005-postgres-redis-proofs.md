@@ -95,6 +95,6 @@
 проверены `git cat-file -e <sha>^{commit}`.
 
 - статус «сделана» поставлен коммитом `70c0ce27` (2026-08-25) — «chore(tasks): задача 0005 закрыта — postgres 65→81 и redis 30→43 доказанных, сетка не выросла»
-- в `tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to tasks/completed/»
+- в `docs/tasks/completed/` перенесена коммитом `84e97cbf` (2026-09-04) — «chore(tasks): archive 79 verified-complete tasks to docs/tasks/completed/»
 - номер задачи назван в 15 коммитах ствола: `git log gh/dev --oneline --grep=0005`
 

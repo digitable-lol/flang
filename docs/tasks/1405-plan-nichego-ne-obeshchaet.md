@@ -11,9 +11,9 @@
 
 # 1405. Эффекты есть, утверждений о них нет
 
-Решение: [ADR-0032](../docs/adr/0032-one-missing-rule-and-three-other-logics.md) §3.2.
+Решение: [ADR-0032](../adr/0032-one-missing-rule-and-three-other-logics.md) §3.2.
 
-**Порог: [ADR-0026](../docs/adr/0026-quantifiers-over-any-type-are-a-kernel-change.md) §11.3
+**Порог: [ADR-0026](../adr/0026-quantifiers-over-any-type-are-a-kernel-change.md) §11.3
 (свободное утверждение). До него задача не начинается.**
 
 ## Чем измерено

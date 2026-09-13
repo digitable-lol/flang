@@ -46,7 +46,7 @@
   `emit-*.flang` — их правят соседние наряды), `flang/stdlib`, `flang/conc`,
   `flang/proof/**`, `flang/test/fixtures`, `flang/scripts`, `examples`,
   `fspec`, `docs/**` (живые страницы: курс, руководство, сайт, примеры),
-  `ярлыки.flang`, `scripts`, `packaging`, `DESCRIPTION.md`, навыки
+  `ярлыки.flang`, `scripts`, `packaging`, `docs/DESCRIPTION.md`, навыки
   `.claude/skills/*`.
 - Перечни синонимов НЕ тронуты — иначе sed тихо снял бы синоним:
   `"|неотрицательное|нат|натуральное|nat|naturo|自然数|"` в `types.flang`,
@@ -91,9 +91,9 @@
   наряды), слепки `flang/test/zapis/witness-ledger.json`,
   `flang/test/snimok/proofterm-witness.json` (снимаются прибором).
 - Не трогает `bootstrap/*.c` (перепечатается семенем), `CHANGELOG.md`,
-  `changelog.json`, `docs/zettel/**`, `tasks/completed/**`, `benchmarks/**`,
+  `changelog.json`, `docs/zettel/**`, `docs/tasks/completed/**`, `benchmarks/**`,
   датированные отчёты в `docs/` — история.
-- Не трогает подсветку `editors/**`: имена типов там не ключевые слова
+- Не трогает подсветку `docs/editors/**`: имена типов там не ключевые слова
   (в грамматике нет ни `нат`, ни `целое`), грамматика печатается из
   таблицы лексера (`scripts/editors/vscode-rules.flang`).
 
@@ -163,7 +163,7 @@
   `corpus-nat-names`) — записи привязаны к sha256 исходника;
 * слепки `flang/test/zapis/witness-ledger.json` (116) и
   `flang/test/snimok/proofterm-witness.json` (47) — снимаются прибором;
-* `docs/zettel/**`, `tasks/**`, `benchmarks/**`, `CHANGELOG` — история;
+* `docs/zettel/**`, `docs/tasks/**`, `benchmarks/**`, `CHANGELOG` — история;
 * комментарии-примеры в `emit-{csharp,elixir,java,python,rust}.flang` («принимает
   н: нат») — проза внутри комментария; трогать её значит трогать долг
   комментариев, а он ходит под храповиком только вниз.

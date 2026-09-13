@@ -39,7 +39,7 @@ FLANG_VERSION`, а остальные места версии только на�
 **Лишь упоминает (трогать нельзя):** `changelog.json` (выпущенное, судит
 `журнал:проверка`), семя `bootstrap/flang_repl.c` (заслон 2573), `README*`,
 `docs/site/releases*`, замеры с датой в `.github/workflows/*` и `scripts/*`,
-`editors/vscode/package.json` (своя нумерация 0.1.0), `tasks/*`.
+`docs/editors/vscode/package.json` (своя нумерация 0.1.0), `docs/tasks/*`.
 
 ## Почему нельзя «читать `#define` из файла» и почему источник — `emit-package.flang`
 

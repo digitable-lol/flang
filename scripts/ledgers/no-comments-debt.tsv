@@ -57,8 +57,8 @@ docs/zamer-teorkat/class-string-to-string.flang	226
 docs/zamer-teorkat/iso-object-to-category.flang	13
 docs/zettel/ukazatel.flang	47
 docs/спецификации/слой-отказов.flang	66
-editors/vim/checks/probe-error.flang	6
-editors/vim/checks/probe-transition.flang	2
+docs/editors/vim/checks/probe-error.flang	6
+docs/editors/vim/checks/probe-transition.flang	2
 flang/conc/examples/backpressure.flang	44
 flang/conc/examples/budget.flang	21
 flang/conc/examples/counter.flang	26

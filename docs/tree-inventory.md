@@ -5,10 +5,10 @@
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
 JavaScript: файлов 108, строк 16024, потолок файлов 63» — «ДОЛГ ВЫРОС».
 Разбор и перевод — [задача
-4838](../tasks/4838-the-debt-outside-flang-crossed-its-ceiling.md), счёт по
-родам — [задача 9688](../tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
+4838](docs/tasks/4838-the-debt-outside-flang-crossed-its-ceiling.md), счёт по
+родам — [задача 9688](docs/tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
 починка самого правила и первые закрытия — [задача
-7405](../tasks/7405-dolg-vne-flang-razobran-po-razryadam-i-pravilo-scheta-pochineno.md).
+7405](docs/tasks/7405-dolg-vne-flang-razobran-po-razryadam-i-pravilo-scheta-pochineno.md).
 
 ⚠ **11 сентября 2026** (коммит `2c40752d0`): `./ярлык опись:языки` → файлов вне
 flang 272, строк 905 528; «ДОЛГ ВНЕ JavaScript: файлов **119**, строк **20 558**,
@@ -64,7 +64,7 @@ $ bootstrap/flang io scripts/guards/tree-inventory.flang --max-steps 50000000
 
 | счётчик | что считает |
 |---|---|
-| `ROADMAP.md`, раздел «Вне языка» | 54 файла на JavaScript, 25 487 строк |
+| `docs/ROADMAP.md`, раздел «Вне языка» | 54 файла на JavaScript, 25 487 строк |
 | [`docs/javascript-inventory.md`](javascript-inventory.md) | те же 54, разложенные по кучам |
 | числа сайта (`docs/site/site-numbers.mjs`) | те же файлы на JavaScript |
 
@@ -168,7 +168,7 @@ flang в C.
 | рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 29 | 48 032 <!-- СНЯТО 2026-09-06 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 29 --><!-- СНЯТО 2026-09-08 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 48032 --> |
 | замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/conc/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
 | проба рантайма C | `flang/проверки/oblast/*.c` и `flang/conc/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/targets/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
-| чужая среда: редактор | `editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 612 <!-- СНЯТО 2026-08-31 файлов editors/vim/*.vim,editors/vim/*.lua = 11 --><!-- СНЯТО 2026-09-09 строк-в editors/vim/*.vim,editors/vim/*.lua = 612 --> |
+| чужая среда: редактор | `docs/editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 612 <!-- СНЯТО 2026-08-31 файлов docs/editors/vim/*.vim,docs/editors/vim/*.lua = 11 --><!-- СНЯТО 2026-09-09 строк-в docs/editors/vim/*.vim,docs/editors/vim/*.lua = 612 --> |
 | код на стороне цели | `flang/conc/bin/node.{c,cs,ex,go,java,py,rs}` — семь хозяев узлов на семи языках, и `peer.py` — конец связи на цели python | 8 | 8 227 |
 | разметка и оформление | четыре `.html` и `docs/site/style.css` — цели HTML у языка нет и не заявлено | 5 | 1 785 |
 | чужая среда: установщик | `packaging/homebrew/flang.rb` и три файла `packaging/asdf/bin/` — homebrew понимает Ruby, asdf зовёт свои три раньше, чем flang в системе есть | 4 | 470 |
@@ -212,7 +212,7 @@ Python 16, awk 1.
 | `flang/proof` — прогон подделок, сверка правил и приборы привязки | 10 | 1 893 | ищет и возит свидетеля; сам приговор уже на flang |
 | `flang/scripts` — счётчики на Python | 3 | 1 398 | доля доказанного по файлам, сличение двух сводителей и одна линейка на flang и C |
 | `web` — печать браузерных приложений и проба в браузере | 3 | 376 | зовёт `clang`, `wasm-ld` и настоящий браузер |
-| `editors/vim/checks` — прогон подсветки | 3 | 136 | поднимает настоящий vim |
+| `docs/editors/vim/checks` — прогон подсветки | 3 | 136 | поднимает настоящий vim |
 | `docs/tools` — доля целей и охват правил у связывателя | 2 | 411 | переводимо |
 | `flang/проверки` — обходчики | 2 | 357 | ищут файлы и возят их в двоичный; ведомость уже на flang |
 | `docs/ifl` — воспроизведение чисел статьи | 2 | 262 | переводимо |
@@ -271,7 +271,7 @@ Python 16, awk 1.
 Закрыто шесть файлов, и все шесть — одного рода: **записки отдельных прогонов,
 прибитые к чужим машинам.** Ни один не запускался из свежего клона, потому что
 первой же строкой делал `cd` на путь, которого в дереве нет. Разбор рода —
-[задача 9688](../tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
+[задача 9688](docs/tasks/completed/9688-debt-outside-flang-is-103-and-the-ceiling-cannot-be-raised-honestly.md),
 там же они названы поимённо.
 
 Пути ниже в дереве уже не лежат, поэтому названы в блоке, а не ссылками:
@@ -348,7 +348,7 @@ benchmarks/model-authoring/queue-fix-arm.sh         8  то же
 печати 30 августа (`docs/reprint-ledger.tsv`), — и рядом с ней пик по трём
 заходам 31 августа: 24,3 / 35,4 / 34,7 ГиБ. Замер 24 августа снят ДО починки
 арены рантайма и по памяти врёт в 7,3 раза
-([задача 1310](../tasks/1310-semya-sverka-zheleza.md)).
+([задача 1310](docs/tasks/1310-semya-sverka-zheleza.md)).
 
 Дешёвая половина прогоняется и стоит секунды. `sh scripts/raskrutka.sh
 --bystro` на этом дереве 29 августа: **0,66 с, расхождений 45.** То есть семя
@@ -485,7 +485,7 @@ git скорость, цену и потери; долгом дерева он �
    ```
 
    Дерево берётся из текущего каталога: прежде программа лежала в дереве и
-   знала его собой, теперь не лежит. Каталог без `tasks/` она отвергает вслух,
+   знала его собой, теперь не лежит. Каталог без `docs/tasks/` она отвергает вслух,
    а не считает по нему молча. Отчёт остался в дереве —
    [`docs/resource-plan.md`](resource-plan.md), — и в его шапке напечатано, где
    искать программу.

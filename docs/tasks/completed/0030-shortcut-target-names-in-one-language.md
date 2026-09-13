@@ -101,7 +101,7 @@ grep -rn 'ярлык [a-z]' --include='*.md' --include='*.yml' .   # пусто
 Переименовано **79 целей из 82**; `сборка`, `тесты` и `ярлыки` уже были
 кириллицей и не тронуты. Правки вне `ярлыки.flang` — **в 85 файлах**: три работы
 CI (`ci.yml`, `install-path.yml`, `publish-npm.yml`), `CONTRIBUTING.md`,
-`README.md`, `README.ru.md`, `ROADMAP.md`, `docs/**` (в том числе опись CI на 82
+`README.md`, `README.ru.md`, `docs/ROADMAP.md`, `docs/**` (в том числе опись CI на 82
 строки), пять файлов задачника, сторожа на `.mjs` и `.flang`,
 `scripts/test-remote.sh` и сама оболочка `ярлык`. Имя файла `ярлык` не
 менялось.

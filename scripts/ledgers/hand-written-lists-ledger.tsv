@@ -29,7 +29,7 @@
 #
 #   Прежние имена, переезды и сабмодули: 29 записей путей. Снятые файлы
 #   JavaScript, каталоги docs/examples/cat и flang/cat, задачи, переехавшие в
-#   tasks/completed, входы примеров и содержимое невыкаченных сабмодулей
+#   docs/tasks/completed, входы примеров и содержимое невыкаченных сабмодулей
 #   packaging/asdf-plugin и packaging/homebrew-tap.
 #
 #   Остальные 7 записей целей — перечни, описывающие ПОДМНОЖЕСТВО (цели с
@@ -44,7 +44,7 @@
 # scripts/guards/emit-promises-guard.flang, scripts/guards/link-guard.flang).
 #
 # вид	файл	строка	довод, почему расхождение остаётся
-ЦЕЛИ	ROADMAP.md	1522	правдивое высказывание о ПОДМНОЖЕСТВЕ целей, а не заявка «вот они все»: речь о трёх целях с планировщиком и о пяти без него
+ЦЕЛИ	docs/ROADMAP.md	1522	правдивое высказывание о ПОДМНОЖЕСТВЕ целей, а не заявка «вот они все»: речь о трёх целях с планировщиком и о пяти без него
 ЦЕЛИ	docs/eight-targets-renames.tsv	2	ведомость переименований по семи целям; «c» заморожена, девятой цели у двоичного нет
 ЦЕЛИ	docs/javascript-checks-breakdown.tsv	518	исторический замер снятых проверок JavaScript; правится только вместе с датой замера
 ЦЕЛИ	docs/zettel/the-byte-check-subtracted-the-entry-boundary-and-went-green-for-nothing.md	35	правдивое высказывание о ПОДМНОЖЕСТВЕ целей, а не заявка «вот они все»: «у четырёх остальных целей»
@@ -95,7 +95,7 @@
 ЦЕЛИ	docs/site/troubleshooting.ru.md	70	русская половина той же разбивки; правится вместе с английской
 ЦЕЛИ	docs/zettel/pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.md	15	таблица замера в заметке; снята до девятой цели и правится только пересъёмкой замера
 ЦЕЛИ	docs/zettel/pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.md	29	вторая таблица того же замера; правится только пересъёмкой
-ЦЕЛИ	flang/proof/SPEC.md	154	замер равенства байтов по восьми целям; cpp в замер не входил
+ЦЕЛИ	docs/flang/proof/SPEC.md	154	замер равенства байтов по восьми целям; cpp в замер не входил
 ЦЕЛИ	flang/scripts/node-across-targets.flang	25	перечень целей, у которых есть хозяин узла; у цели python хозяина нет — перечень описывает то, что можно собрать
 ЦЕЛИ	flang/scripts/supervisor-across-targets.flang	23	тот же перечень целей с хозяином узла для надзора; у python хозяина нет
 ЦЕЛИ	flang/scripts/target-words.flang	34	оставлены все РАЗНЫЕ причины столкновения, а не все цели — сказано в шапке перечня
@@ -108,17 +108,17 @@
 ЦЕЛИ	scripts/guards/bad-octet-guard.sh	25	таблица «было» по восьми целям: исторический замер до починки октетов
 ЦЕЛИ	scripts/guards/emit-promises-guard.flang	217	улики по целям рантайма; у elixir и у cpp улик этого класса нет
 ЦЕЛИ	scripts/guards/module-name-guard.flang	294	перечень модулей flang/self, в котором нет emit-cpp.flang; настоящий долг перечня — правка меняет предмет сторожа и делается вместе с его прогоном
-ЦЕЛИ	tasks/completed/0025-roadmap-matches-the-tree.md	89	закрытая задача: запись о работе на день закрытия, правится только вместе с датой
-ЦЕЛИ	tasks/completed/4025-the-seed-stopped-dropping-processes-and-the-network.md	161	закрытая задача: таблица замера на день закрытия
-ЦЕЛИ	tasks/completed/8460-the-occupied-names-guard-was-blind-to-the-ninth-target.md	117	закрытая задача: «семь целей из девяти без присмотра» — высказывание о подмножестве на день закрытия
+ЦЕЛИ	docs/tasks/completed/0025-roadmap-matches-the-tree.md	89	закрытая задача: запись о работе на день закрытия, правится только вместе с датой
+ЦЕЛИ	docs/tasks/completed/4025-the-seed-stopped-dropping-processes-and-the-network.md	161	закрытая задача: таблица замера на день закрытия
+ЦЕЛИ	docs/tasks/completed/8460-the-occupied-names-guard-was-blind-to-the-ninth-target.md	117	закрытая задача: «семь целей из девяти без присмотра» — высказывание о подмножестве на день закрытия
 ПУТИ	docs/site/build.flang	71	входы ПРИМЕРОВ функции (docs/site/limits.ru.md → docs/site/limits.md), а не имена дерева: входы примера не протухают
 ПУТИ	docs/examples/frameworks/nestjs-orders/printed/flang_cli.js	533	прежняя реализация на JavaScript (flang/scripts/direct-run-guard.mjs), вынесенная из дерева; имя стоит в шапке НАПЕЧАТАННОГО файла и правится печатью, а не рукой
 ПУТИ	docs/examples/frameworks/react-invoice/printed/flang_cli.js	533	то же напечатанное лицо, вторая рамка; правится печатью, а не рукой
 ПУТИ	docs/examples/frameworks/vue-roman/printed/flang_cli.js	533	то же напечатанное лицо, третья рамка; правится печатью, а не рукой
 ПУТИ	flang/scripts/binary-rules-guard.flang	237	прежние имена на JavaScript (flang/bin/flang.mjs, flang/src/lsp.mjs, io.mjs, factcheck.mjs) в поле «почему» записей: имя стоит как история, а не как живой файл
-ПУТИ	flang/scripts/code-guard.flang	214	ожидаемые значения ПРИМЕРА: задачи 6805 и 0003 переехали в tasks/completed, а пример показывает прежний путь; правится вместе с примером
+ПУТИ	flang/scripts/code-guard.flang	214	ожидаемые значения ПРИМЕРА: задачи 6805 и 0003 переехали в docs/tasks/completed, а пример показывает прежний путь; правится вместе с примером
 ПУТИ	flang/scripts/code-guard.flang	229	второй пример того же вида; правится вместе с примером
-ПУТИ	flang/scripts/code-guard.flang	266	третий пример того же вида: задача 6805 переехала в tasks/completed
+ПУТИ	flang/scripts/code-guard.flang	266	третий пример того же вида: задача 6805 переехала в docs/tasks/completed
 ПУТИ	flang/scripts/count-guard.mjs	26	flang/cat/POLY.md — прежнее имя каталога до переезда в flang/ct; шапка называет его примером правила, а не живым файлом
 ПУТИ	flang/self/bootstrap/compiler.flang	1925	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
 ПУТИ	flang/self/bootstrap/compiler.flang	2702	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
@@ -136,7 +136,7 @@
 ПУТИ	scripts/site/changelog.flang	828	ожидаемые значения ПРИМЕРА о НЕИЗВЕСТНОМ корне (turbo/run.mjs, turbo/README.md): имена выдуманы нарочно, дерева они не описывают
 ПУТИ	scripts/site/changelog.flang	1202	вход ПРИМЕРА — строка вывода git с управляющими знаками; «u0003» приклеилось к имени разбором, а flang/src/lexer.mjs здесь прежнее имя из истории
 ПУТИ	scripts/targets/emit-law.flang	99	постоянный перечень программ, из которого печатается закон: шесть имён под docs/examples/cat не существуют — каталог переехал в flang/ct; настоящий долг, правка меняет предмет закона
-ПУТИ	scripts/release/emit-package.flang	17	задача 8649 переехала в tasks/completed; имя стоит в комментарии как ссылка на разбор, а не как живой файл
+ПУТИ	scripts/release/emit-package.flang	17	задача 8649 переехала в docs/tasks/completed; имя стоит в комментарии как ссылка на разбор, а не как живой файл
 ПУТИ	scripts/guards/homebrew-formula-guard.flang	484	содержимое сабмодуля packaging/homebrew-tap: в git ls-files лежит одно имя сабмодуля, а не Formula/flang.rb
 ПУТИ	scripts/release/release-in-c.flang	158	«куда» ПРИМЕРА — каталог, который складывает прогон выпуска (output/release-c/…); в дереве его нет по устройству
 ПУТИ	scripts/seed/two-prints-identical.sh	76	ложное срабатывание переписи: точка предложения приклеилась к имени (scripts/seed/print-progress.sh.), сам файл в дереве есть

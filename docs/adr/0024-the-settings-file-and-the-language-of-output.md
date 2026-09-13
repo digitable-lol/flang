@@ -13,15 +13,15 @@
 имени файла, прецедент «список один и он в языке»;
 [ADR-0021](0021-packages-are-installed-over-the-network-and-locked-locally.md) —
 прецедент «пишется программой в `scripts/`, язык не трогается»;
-задача [3127](../../tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md) —
+задача [3127](../tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md) —
 поиск модулей выходит за пределы дерева;
 `docs/guide/surfaces.ru.md` — четыре поверхности записи.
 **Проверяется:** `sh scripts/guards/flangrc-guard.sh` (код 0),
 `sh scripts/guards/flangrc-guard.sh --подлог` (зелен на целом читателе, красен на
 порченом), `bootstrap/flang check scripts/settings-file.flang --proof`.
-**Новые задачи:** [5413](../../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md),
-[8161](../../tasks/8161-messages-live-in-the-binary-so-a-new-language-costs-a-reprint.md),
-[7203](../../tasks/7203-guards-anchor-on-the-russian-prose-of-the-output.md).
+**Новые задачи:** [5413](../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md),
+[8161](../tasks/8161-messages-live-in-the-binary-so-a-new-language-costs-a-reprint.md),
+[7203](../tasks/7203-guards-anchor-on-the-russian-prose-of-the-output.md).
 
 ---
 
@@ -280,7 +280,7 @@ zsh  -c 'FLANG_ЯЗЫК=ru'   → код 0
 Это не осторожность, а сохранение уже существующего расслоения: свод
 доказательств по всему дереву читает латинские коды и потому переводу
 безразличен, а 14 проверок строгого круга и 5283 русских поля `says` — нет.
-Пока задача [7203](../../tasks/7203-guards-anchor-on-the-russian-prose-of-the-output.md)
+Пока задача [7203](../tasks/7203-guards-anchor-on-the-russian-prose-of-the-output.md)
 не закрыта, **оснастка дерева гоняется с `FLANG_LANG=ru`**, и это ставит она
 сама, а не человек.
 
@@ -315,7 +315,7 @@ zsh  -c 'FLANG_ЯЗЫК=ru'   → код 0
 довода:
 
 1. Второй словарь идентификаторов пришлось бы сопровождать, а он уже однажды
-   разошёлся: `flang/SPEC.md` и подсветка редакторов говорят «понятий 151,
+   разошёлся: `docs/flang/SPEC.md` и подсветка редакторов говорят «понятий 151,
    фраз 637», в дереве же 152 и 640 — слово `хеш256` добавили, а прозу не
    перепечатали.
 2. Непереведённая строка даёт русский текст, а не пустоту и не `???`. Файл
@@ -361,11 +361,11 @@ zsh  -c 'FLANG_ЯЗЫК=ru'   → код 0
 
 **Осталось, и каждое требует перепечатки семени** — три задачи:
 
-* [5413](../../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md) —
+* [5413](../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md) —
   сам двоичный читает `.flangrc` и ключ `--язык`/`--lang`;
-* [8161](../../tasks/8161-messages-live-in-the-binary-so-a-new-language-costs-a-reprint.md) —
+* [8161](../tasks/8161-messages-live-in-the-binary-so-a-new-language-costs-a-reprint.md) —
   сообщения переезжают в таблицу рядом с двоичным;
-* [7203](../../tasks/7203-guards-anchor-on-the-russian-prose-of-the-output.md) —
+* [7203](../tasks/7203-guards-anchor-on-the-russian-prose-of-the-output.md) —
   проверки перестают опираться на русскую прозу вывода.
 
 ## Что это решение НЕ говорит

@@ -11,7 +11,7 @@
 
 # 1403. Дну разности не хватает одного правила
 
-Решение: [ADR-0032](../../docs/adr/0032-one-missing-rule-and-three-other-logics.md) §2.
+Решение: [ADR-0032](../../adr/0032-one-missing-rule-and-three-other-logics.md) §2.
 
 ## Чем измерено
 

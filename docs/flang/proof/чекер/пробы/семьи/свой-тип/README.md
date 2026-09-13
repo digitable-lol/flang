@@ -1,8 +1,8 @@
 # Семья «свой тип»: индукция по ПОЛЬЗОВАТЕЛЬСКОЙ сумме в свободном утверждении
 
 Задача [9526](../../../../../../tasks/9526-own-sum-types-cannot-be-reasoned-about-by-induction-in-a-free-statement.md),
-основание — [ADR-0026](../../../../../../docs/adr/0026-quantifiers-over-any-type-are-a-kernel-change.md)
-§5 шаг 1 и §11 п. 3; правило `Инд1` в [ведомости](../../../../ПРАВИЛА-ВЫВОДА.tsv).
+основание — [ADR-0026](../../../../../../adr/0026-quantifiers-over-any-type-are-a-kernel-change.md)
+§5 шаг 1 и §11 п. 3; правило `Инд1` в [ведомости](../../../../../../../flang/proof/ПРАВИЛА-ВЫВОДА.tsv).
 
 ## Что здесь доказано
 

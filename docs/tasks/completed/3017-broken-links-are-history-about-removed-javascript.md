@@ -25,7 +25,7 @@
 
 ## Первое: девять «настоящих» ссылок — это СЕГОДНЯШНЯЯ поломка, а не старый долг
 
-Все девять ведут на `tasks/NNNN-…md`, а файлы уехали в `tasks/completed/`
+Все девять ведут на `docs/tasks/NNNN-…md`, а файлы уехали в `docs/tasks/completed/`
 переносом архива (задача 5379, сегодня). То есть работа, прибравшая
 задачник, сломала ссылки в документах — вторая волна той же беды, что уже
 ловили у списка исключений сторожа ссылок (41 запись, задача 7005).
@@ -44,10 +44,10 @@ docs/adr/0019-…  3      docs/zettel/a-tail-call-under-a-promise-…     1
 Проверено после правки: все двенадцать ведут в существующий файл.
 
 **ДЕВЯТАЯ ССЫЛКА НЕ ПОЧИНЕНА, И ЭТО НАЗВАНО НАРОЧНО.** Она в
-`tasks/completed/7471-examples-close-the-last-ten-algebra-files.md` и ведёт
+`docs/tasks/completed/7471-examples-close-the-last-ten-algebra-files.md` и ведёт
 на `../0053-examples-are-cheaper-than-proofs.md`; файл теперь лежит рядом,
 в том же каталоге, значит верный путь — `0053-examples-are-cheaper-than-proofs.md`.
-Каталог `tasks/**` работнику не принадлежал.
+Каталог `docs/tasks/**` работнику не принадлежал.
 
 ## Второе: два протухших исключения убраны
 
@@ -55,7 +55,7 @@ docs/adr/0019-…  3      docs/zettel/a-tail-call-under-a-promise-…     1
 
 ```
 docs/why-javascript-remains.md          build.flang        → docs/site/build.flang
-tasks/0049-the-last-javascript-…md      count-library.flang → benchmarks/proof-cost/count-library.flang
+docs/tasks/0049-the-last-javascript-…md      count-library.flang → benchmarks/proof-cost/count-library.flang
 ```
 
 Записей в `scripts/link-guard-known-not-a-path.tsv` было 216, стало 214.
@@ -71,9 +71,9 @@ tasks/0049-the-last-javascript-…md      count-library.flang → benchmarks/pro
 ```
 378  docs/journal-carried-out-of-sources.md
 225  docs/javascript-removal.md
-167  flang/self/SPEC.md
-163  flang/proof/SPEC.md
- 87  flang/conc/SPEC.md
+167  docs/flang/self/SPEC.md
+163  docs/flang/proof/SPEC.md
+ 87  docs/flang/conc/SPEC.md
 ```
 
 **Ход «переписать путь» невозможен.** Файлов нет и не будет. Замер по
@@ -123,7 +123,7 @@ tasks/0049-the-last-javascript-…md      count-library.flang → benchmarks/pro
 ## Не сделано
 
 * 2448 мест не тронуты — см. выше, это решение владельца;
-* девятая ссылка Markdown в `tasks/completed/7471-…` — вне выданных файлов;
+* девятая ссылка Markdown в `docs/tasks/completed/7471-…` — вне выданных файлов;
 * расхождение шапки сторожа с его же числом («470–500 подтверждённых
   историей» против 2457) не сведено — оно названо и в задаче 7005.
 
@@ -137,5 +137,5 @@ tasks/0049-the-last-javascript-…md      count-library.flang → benchmarks/pro
 то, что видно стволу.
 
 - статус «сделана» поставлен коммитом `c22f85c7` (2026-09-05) — «fix(ссылки): двенадцать ссылок сломал сегодняшний перенос архива — починены; долг разобран по родам»
-- в `tasks/completed/` перенесена коммитом `f336f424` (2026-09-06) — «chore(задачник): 66 сделанных задач переехали в completed, три мёртвых статуса поправлены»
+- в `docs/tasks/completed/` перенесена коммитом `f336f424` (2026-09-06) — «chore(задачник): 66 сделанных задач переехали в completed, три мёртвых статуса поправлены»
 - номер задачи назван в 5 коммитах ствола: `git log gh/dev --oneline --grep=3017`

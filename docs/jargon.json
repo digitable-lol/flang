@@ -501,7 +501,7 @@
     "docs/site/what-is-proved.ru.md": 10,
     "docs/surfaces.md": 2,
     "docs/wasm-via-c.md": 19,
-    "docs/flang/conc/SPEC.md": 197,
+    "docs/flang/conc/SPEC.md": 196,
     "docs/flang/proof/SPEC.md": 478,
     "flang/src/emit/c/flang_repl.c": 42,
     "fspec/README.md": 1

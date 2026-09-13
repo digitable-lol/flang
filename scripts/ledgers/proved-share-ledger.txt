@@ -1132,7 +1132,7 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|94|82|2|10|0|flang/self/proof-initial.flang
-e801b6f3712625187e803957115f8ba2|49|44|0|0|0|flang/self/proof-kernel.flang
+c8dbb7179b35f785da41f5990dd41238|59|44|0|0|0|flang/self/proof-kernel.flang
 6caf41ec0a767163f46212d635157227|337|268|26|41|0|flang/self/proof.flang
 c9e3ee258bfab2a0503a1214f8d1034f|179|46|1|91|0|flang/self/proofterm.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|×|×|×|0|flang/self/repl/repl.flang
@@ -1144,7 +1144,7 @@ a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 e6bd6e2dcbd72e44099aeb3d412d2167|279|231|11|37|0|flang/self/totality.flang
 6f5995562eb91e54ecbcd9bde4c4853e|408|119|4|265|0|flang/self/types.flang
-d061dcce73d965616552242fff51a218|212|98|57|3|0|flang/self/zapis.flang
+94902a6939c9331164c3fdd856ef2a93|216|98|57|3|0|flang/self/zapis.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang
@@ -1490,3 +1490,8 @@ cbbefa6d3f601f802164e4178c37c51c|1|×|×|×|0|flang/proof/чекер/пробы/
 // форма «затем … по закону «Имя» из N» появилась в исходниках, в семя не
 // напечатана, check --proof --json отвечает FLANG_PARSE на строке 15.
 ae5f395a5a682cf58723197aabf0a420|3|×|×|×|2|flang/proof/чекер/пробы/семьи/шаги-ведомости/шаги.flang
+eb759bdefde04fe642cdbe8c4d606e9c|9|7|2|0|0|flang/stdlib/bignum.flang
+26a9ac87434f57e7c2036d1db0dbef7b|4|4|0|0|0|docs/examples/pythagoras/квадрат-гипотенузы.flang
+5a866d39241bdedd8b23b02616f15438|2|1|1|0|0|docs/examples/pythagoras/формула-евклида.flang
+48fabdcaa9d040986fe87d584786ff9b|1|0|0|0|1|flang/proof/чекер/пробы/семьи/план/vremennyy-katalog.flang
+58695c0261bca20c054c8f8e7fade6c3|1|0|0|0|1|flang/proof/чекер/пробы/семьи/план/порча/chuzhoye-poruchenie.flang

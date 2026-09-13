@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 240 файлов вне flang, долг вне JavaScript — 97 при потолке 63
-<!-- СНЯТО 2026-09-11 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 240 -->
+# Опись дерева по языкам: 241 файлов вне flang, долг вне JavaScript — 97 при потолке 63
+<!-- СНЯТО 2026-09-13 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 241 -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ
@@ -78,8 +78,8 @@ $ bootstrap/flang io scripts/guards/tree-inventory.flang --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 97 | 23 660 | 86 | 15 492 <!-- СНЯТО 2026-09-12 долг файлов/строк оболочки = 86/15492, планом «Опись дерева по языкам» на стволе 24e6edb33 со слитой уборкой дерева (учебник прибавил 37 строк в scripts/flangtutor-proba.sh, хук — 5 строк в .githooks/pre-push; до них на 4e9a7a8c3 было 102/16682) (8 сентября было 98/15001: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-12 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 97 --><!-- СНЯТО 2026-09-12 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 23660 --> |
-| C | 30 | 833 004 | 0 | 0 <!-- СНЯТО 2026-09-12 файлов *.c,*.h = 30 --><!-- СНЯТО 2026-09-12 строк-в *.c,*.h = 833004 --> |
+| оболочка | 98 | 23 816 | 87 | 15 614 <!-- СНЯТО 2026-09-12 долг файлов/строк оболочки = 87/15614, планом «Опись дерева по языкам» на стволе 24e6edb33 со слитой уборкой дерева (учебник прибавил 37 строк в scripts/flangtutor-proba.sh, хук — 5 строк в .githooks/pre-push; до них на 4e9a7a8c3 было 102/16682) (8 сентября было 98/15001: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-13 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 98 --><!-- СНЯТО 2026-09-13 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 23816 --> |
+| C | 30 | 833 116 | 0 | 0 <!-- СНЯТО 2026-09-12 файлов *.c,*.h = 30 --><!-- СНЯТО 2026-09-13 строк-в *.c,*.h = 833116 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 16 | 6 029 | 10 | 2 880 <!-- СНЯТО 2026-09-11 файлов *.py = 16 --><!-- СНЯТО 2026-09-11 строк-в *.py = 6029 --> |
 | HTML | 6 | 1 251 | 0 | 0 <!-- СНЯТО 2026-09-06 файлов *.html = 6 --><!-- СНЯТО 2026-09-09 строк-в *.html = 1251 --> |

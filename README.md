@@ -399,7 +399,7 @@ against the tree on every push.
 ```
 bootstrap/      the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
 flang/          the language: self/ (the compiler), core/, stdlib/, proof/, conc/, ct/, src/emit/ (target runtimes), scripts/, проверки/, test/ — code only; its contracts are in docs/flang/
-docs/examples/  200 flang programs in 24 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
+docs/examples/  202 flang programs in 25 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
 docs/editors/   the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/      the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
 scripts/        guards of the tree, the reprint of the bootstrap point, the release archive, the changelog
@@ -431,7 +431,7 @@ JavaScript implementation, kept as fixtures.
 Two of the example sets are full-size projects — [`docs/examples/web/shortener`](docs/examples/web/shortener/README.md),
 a link shortener with nothing but flang between the request bytes and the response bytes, and
 [`docs/examples/library-api`](docs/examples/library-api/README.md), the domain half of a library service;
-the 185 more programs in the other sets are single files, the LeetCode set among them:
+the 187 more programs in the other sets are single files, the LeetCode set among them:
 82 solutions carrying 806 examples.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
 <!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->
@@ -439,7 +439,7 @@ the 185 more programs in the other sets are single files, the LeetCode set among
 **The bootstrap point.** `bootstrap/` holds the compiler already printed to C99, which is why
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the
 result is compared with what is committed: `sh scripts/raskrutka.sh --check`. The inputs of the
-last print are recorded in `scripts/otpechatok-semeni`, one hashed line each — 65 lines. <!-- СНЯТО 2026-09-13 строк scripts/otpechatok-semeni = 65 -->
+last print are recorded in `scripts/otpechatok-semeni`, one hashed line each — 48 lines. <!-- СНЯТО 2026-09-13 строк scripts/otpechatok-semeni = 65 -->
 The
 seed lags the sources today, in three files and 77 functions: `sh scripts/seed/chto-otstalo-ot-semeni.sh`
 lists which files and functions are newer than the seed, and a reprint (`sh scripts/raskrutka.sh`, hours on one core)

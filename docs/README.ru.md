@@ -389,7 +389,7 @@ export function mestoVstavki(elementy, cel) {
 ```
 bootstrap/      компилятор, напечатанный в C99, и его Makefile: «make -C bootstrap» собирает двоичный
 flang/          язык: self/ (компилятор), core/, stdlib/, proof/, conc/, ct/, src/emit/ (рантаймы целей), scripts/, проверки/, test/ — только код; его контракты лежат в docs/flang/
-docs/examples/  200 программ на flang в 24 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
+docs/examples/  202 программ на flang в 25 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
 docs/editors/   языковой сервер, подсветка для Vim и VS Code, заявка в github-linguist
 packaging/      формула Homebrew, плагин asdf, страница flang.1, проверки установки
 scripts/        проверки дерева, перепечатка точки раскрутки, релизный архив, журнал изменений
@@ -422,7 +422,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 Два набора примеров — полноразмерные проекты: [`docs/examples/web/shortener`](examples/web/shortener/README.md),
 сокращатель ссылок, где между байтами запроса и байтами ответа нет ничего, кроме flang, и
 [`docs/examples/library-api`](examples/library-api/README.md), предметная половина библиотечной службы;
-ещё 185 программ в остальных наборах — отдельные файлы, среди них набор LeetCode: 82 решения с
+ещё 187 программ в остальных наборах — отдельные файлы, среди них набор LeetCode: 82 решения с
 806 примерами.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
 <!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->
@@ -430,7 +430,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 **Точка раскрутки.** В `bootstrap/` лежит компилятор, уже напечатанный в C99, — поэтому один
 `make` даёт рабочий `flang`. Этот двоичный печатает исходники компилятора заново, и результат
 сверяется с закоммиченным: `sh scripts/raskrutka.sh --check`. Входы последней печати записаны в
-`scripts/otpechatok-semeni`, по хешированной строке на файл — 65 строк.
+`scripts/otpechatok-semeni`, по хешированной строке на файл — 48 строк.
 <!-- СНЯТО 2026-09-13 строк scripts/otpechatok-semeni = 65 --> Сегодня семя отстаёт от
 исходников — на три файла и 77 функций: `sh scripts/seed/chto-otstalo-ot-semeni.sh` перечисляет, какие
 файлы и функции новее

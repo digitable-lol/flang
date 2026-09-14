@@ -353,13 +353,18 @@ klass_nabora() { # имя файла записи
       if (ch[n] == b) { print $6; exit }
     }' "$NABOR_TSV"
 }
-proigrat_dolyu() { # каталог; печатает 23 поля: ЧИСЛ ЗНАМ ЗАПИСЕЙ ПОРУЧ ОТВЕРГ ХОДОВ НЕСУТ НСЛ НСШ СНЯТО ПРИМ СВОЙ ОБЪЯВ ЗНАМ-ОТВЕРГ УЗЛЫ БУЛЕВО НЕДОСТ НАБ-ЗАП НАБ-ЧИСЛ НАБ-ЗНАМ НАБ-ЛЗ НАБ-ЛЗ-ОТВ НАБ-ЛЗ-ПРИН0
+proigrat_dolyu() { # каталог; печатает 27 полей: ЧИСЛ ЗНАМ ЗАПИСЕЙ ПОРУЧ ОТВЕРГ ХОДОВ НЕСУТ НСЛ НСШ СНЯТО ПРИМ СВОЙ ОБЪЯВ ЗНАМ-ОТВЕРГ УЗЛЫ БУЛЕВО НЕДОСТ НАБ-ЗАП НАБ-ЧИСЛ НАБ-ЗНАМ НАБ-ЛЗ НАБ-ЛЗ-ОТВ НАБ-ЛЗ-ПРИН0 ВЫВОДЫ СНЯТ-ЧИСЛ СНЯТ-ЗНАМ СНЯТ-НЕДОСТ
   dir=$1
   files=$(find "$dir" -name '*.запись' | sort)
   [ -n "$files" ] || { echo "в «$dir» нет ни одной записи" >&2; return 2; }
   chisl=0; znam=0; zapisey=0; poruch=0; otverg=0; hod_v=0; nesut=0
   nsl_v=0; nsh_v=0; snyato_v=0; prim_v=0; svoy_v=0; obyav=0; znam_otv=0; uzly_v=0; bulevo_v=0; vyvody_v=0
   nedost=0; nab_zap=0; nab_chisl=0; nab_znam=0; nab_lz=0; nab_lz_otv=0; nab_lz_prin0=0
+  # ADR-0038 §3.3, задача 6438: снятия предусловий — ВТОРАЯ доля рядом с прежней.
+  # Знаменатель: блоки снятия записи плюс места вызова у записей прежнего вида
+  # (без единого блока — сверщик называет их числом «без блока»); числитель —
+  # блоки, переигранные заново. У отвергнутой записи блоки берутся по тексту.
+  sn_ch=0; sn_zn=0; sn_nedost=0
   for z in $files; do
     zapisey=$((zapisey+1))
     kl=$(klass_nabora "$(basename "$z")")
@@ -370,6 +375,7 @@ proigrat_dolyu() { # каталог; печатает 23 поля: ЧИСЛ ЗН
     # и сверяет. Через шапку ни одна запись не выпадает из знаменателя.
     utv_h=$(grep -a -m1 '^утверждений ' "$z" | sed 's/^утверждений //'); utv_h=${utv_h:-0}
     tot_h=$(grep -a -m1 '^тотальностей ' "$z" | sed 's/^тотальностей //'); tot_h=${tot_h:-0}
+    sn_h=$(grep -ac '^снятие «' "$z"); sn_h=${sn_h:-0}
     z_ob=$(grep -ac '^  по объявлению ' "$z" 2>/dev/null); obyav=$((obyav+${z_ob:-0}))
     decl=$(grep -a -m1 '^исходник ' "$z" | cut -d' ' -f2-)
     src=$root/$decl
@@ -386,8 +392,9 @@ proigrat_dolyu() { # каталог; печатает 23 поля: ЧИСЛ ЗН
       if [ "$kl" = "лжёт-запись" ]; then
         # НЕДОСТИЖИМО: чекер отверг запись целиком (замер) И манифест объявил её
         # классом «лжёт-запись» (объявление). Обязательства в знаменатель НЕ идут.
-        nedost=$((nedost+utv_h+tot_h))
+        nedost=$((nedost+utv_h+tot_h)); sn_nedost=$((sn_nedost+sn_h))
       else
+        sn_zn=$((sn_zn+sn_h))
         # Отвергнута, но манифестом не объявлена: место остаётся в знаменателе и
         # тянет долю вниз, а сличение ниже назовёт РАСХОЖДЕНИЕ.
         znam=$((znam+utv_h+tot_h))
@@ -425,6 +432,8 @@ proigrat_dolyu() { # каталог; печатает 23 поля: ЧИСЛ ЗН
     # 517 из 651 до и после).
     vyvody=$(printf '%s\n' "$v" | sed -n 's/.*Выводов факта о типе проиграно заново [0-9]* (снято со слова ядра мест \([0-9]*\)).*/\1/p'); vyvody=${vyvody:-0}
     snyato=$((snyato-vyvody))
+    snt=$(printf '%s\n' "$v" | sed -n 's/.*Снятий предусловий \([0-9]*\): проиграно заново \([0-9]*\), на слове ядра [0-9]*; мест вызова без блока снятия \([0-9]*\)\..*/\1 \2 \3/p')
+    set -- ${snt:-0 0 0}; sn_ch=$((sn_ch+$2)); sn_zn=$((sn_zn+$1+$3))
     prim=$(printf '%s\n' "$v" | sed -n 's/.*Шагов по примеру проверено по существу \([0-9]*\)\..*/\1/p'); prim=${prim:-0}
     svoy=$(printf '%s\n' "$v" | sed -n 's/.*Шагов по свойству проверено по существу \([0-9]*\)\..*/\1/p'); svoy=${svoy:-0}
     # `uzly` в знаменателе там же, где был (внутри прежнего `snyato`): знаменатель от
@@ -443,10 +452,11 @@ proigrat_dolyu() { # каталог; печатает 23 поля: ЧИСЛ ЗН
     prim_v=$((prim_v+prim)); svoy_v=$((svoy_v+svoy)); vyvody_v=$((vyvody_v+vyvody))
     [ "$sved" -gt 0 ] && nesut=$((nesut+1))
   done
-  printf '%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n' \
+  printf '%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n' \
     "$chisl" "$znam" "$zapisey" "$poruch" "$otverg" "$hod_v" "$nesut" \
     "$nsl_v" "$nsh_v" "$snyato_v" "$prim_v" "$svoy_v" "$obyav" "$znam_otv" "$uzly_v" "$bulevo_v" \
-    "$nedost" "$nab_zap" "$nab_chisl" "$nab_znam" "$nab_lz" "$nab_lz_otv" "$nab_lz_prin0" "$vyvody_v"
+    "$nedost" "$nab_zap" "$nab_chisl" "$nab_znam" "$nab_lz" "$nab_lz_otv" "$nab_lz_prin0" "$vyvody_v" \
+    "$sn_ch" "$sn_zn" "$sn_nedost"
 }
 
 if [ "$proigr" -eq 1 ]; then
@@ -509,7 +519,7 @@ if [ "$proigr" -eq 1 ]; then
   CHISL=$1; ZNAM=$2; ZAPISEY=$3; PORUCH=$4; OTVERG=$5; HODOV=$6; NESUT=$7
   NSL=$8; NSH=$9; shift 9; SNYATO=$1; PRIM=$2; SVOY=$3; OBYAV=$4; ZNAM_OTV=$5; UZLY=$6; BULEVO=$7
   NEDOST=$8; NAB_ZAP=$9; shift 9; NAB_CHISL=$1; NAB_ZNAM=$2; NAB_LZ=$3; NAB_LZ_OTV=$4; NAB_LZ_PRIN0=$5
-  VYVODY=$6
+  VYVODY=$6; SN_CH=$7; SN_ZN=$8; SN_NEDOST=$9
   POROG_G4=95
   # ЧИСЛИТЕЛЬ = независимо проверенное чекером: проиграно ходами/тотальностью (CHISL)
   # ПЛЮС проверено ПО СУЩЕСТВУ вычислением — шаги «по примеру»/«по свойству» (SUSCH).
@@ -552,6 +562,10 @@ if [ "$proigr" -eq 1 ]; then
   echo "  └ переигранные выводы факта о типе (по шагу на правило):                 $VYVODY"
   echo "ЗНАМЕНАТЕЛЬ — Σ обязательств корпуса за вычетом недостижимых:                          $ZNAM"
   echo "доля-проигрыванием = $CHISL_V / $ZNAM = ${dolya} %"
+  # ADR-0038 §3.3: вторая доля — с предусловиями — стоит РЯДОМ, пока две не
+  # сойдутся; порог Г4 держит прежнюю до пересъёмки записей печатью ядра.
+  dolya_sn=$(awk -v a="$((CHISL_V+SN_CH))" -v b="$((ZNAM+SN_ZN))" 'BEGIN{ if (b>0) printf "%.2f", 100*a/b; else printf "—" }')
+  echo "доля с предусловиями = $((CHISL_V+SN_CH)) / $((ZNAM+SN_ZN)) = ${dolya_sn} % (снятий в знаменателе $SN_ZN, переиграно $SN_CH, вынесено недостижимых $SN_NEDOST)"
   echo
   echo "-- из чего сложен знаменатель --"
   echo "проверено чекером (в числителе)                         $CHISL_V"

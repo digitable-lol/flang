@@ -368,7 +368,7 @@ export function mestoVstavki(elementy, cel) {
 | понять доказательства | [Что доказано](https://digitable-lol.github.io/flang/what-is-proved.html) · [Какие обещания ядро берёт](https://digitable-lol.github.io/flang/kak-dokazat.html) · [Ядро отказало: чья это ошибка](https://digitable-lol.github.io/flang/proof-refused.html) |
 | запустить где-то | [Установка](https://digitable-lol.github.io/flang/install.html) · [Справочник команд](https://digitable-lol.github.io/flang/cli.html) · [Редактор](https://digitable-lol.github.io/flang/editor.html) · [Процессы, надзор, распределённость](https://digitable-lol.github.io/flang/processes.html) |
 | посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`docs/examples/`](examples) |
-| прочесть контракты | [`docs/flang/SPEC.md`](flang/SPEC.md) · [`docs/flang/self/SPEC.md`](flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`docs/flang/conc/SPEC.md`](flang/conc/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
+| прочесть контракты | [`docs/flang/SPEC.md`](flang/SPEC.md) · [`docs/flang/self/SPEC.md`](flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`docs/flang/conc/SPEC.md`](flang/concurrency/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
 | узнать, куда это идёт | [`docs/ROADMAP.md`](ROADMAP.md) — пять этапов и что каждый меняет для разработчика · [`docs/what-provability-gives-today.ru.md`](what-provability-gives-today.ru.md) · [`docs/road-to-1-0.md`](road-to-1-0.md) |
 
 Правило имён: файл без языкового суффикса — английский; суффикс `.ru.md` отмечает его русскую
@@ -388,7 +388,7 @@ export function mestoVstavki(elementy, cel) {
 
 ```
 bootstrap/      компилятор, напечатанный в C99, и его Makefile: «make -C bootstrap» собирает двоичный
-flang/          язык: self/ (компилятор), core/, stdlib/, proof/, conc/, ct/, src/emit/ (рантаймы целей), scripts/, test/, bin/ (flangtutor) — только код; его контракты лежат в docs/flang/
+flang/          язык: self/ (компилятор), core/, stdlib/, proof/, concurrency/, ct/, src/emit/ (рантаймы целей), scripts/, test/, bin/ (flangtutor) — только код; его контракты лежат в docs/flang/
 docs/examples/  204 программ на flang в 25 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
 docs/editors/   языковой сервер, подсветка для Vim и VS Code, заявка в github-linguist
 packaging/      формула Homebrew, плагин asdf, страница flang.1, проверки установки

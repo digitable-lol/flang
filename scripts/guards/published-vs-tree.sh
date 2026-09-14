@@ -273,12 +273,12 @@ poschitat() { # каталог-корень -> строки «ключ<TAB>зн�
   printf 'провод.примеров\t%s\n'  "$(pr flang/stdlib/wire.flang)"
   printf 'план.строк\t%s\n'    "$(strok docs/examples/db/postgres-plan.flang)"
   printf 'план.примеров\t%s\n' "$(pr docs/examples/db/postgres-plan.flang)"
-  printf 'планировщик.строк\t%s\n'    "$(strok flang/conc/scheduler.flang)"
-  printf 'планировщик.функций\t%s\n'  "$(fn flang/conc/scheduler.flang)"
-  printf 'планировщик.примеров\t%s\n' "$(pr flang/conc/scheduler.flang)"
-  printf 'связь.строк\t%s\n'    "$(strok flang/conc/link.flang)"
-  printf 'связь.функций\t%s\n'  "$(fn flang/conc/link.flang)"
-  printf 'связь.примеров\t%s\n' "$(pr flang/conc/link.flang)"
+  printf 'планировщик.строк\t%s\n'    "$(strok flang/concurrency/scheduler.flang)"
+  printf 'планировщик.функций\t%s\n'  "$(fn flang/concurrency/scheduler.flang)"
+  printf 'планировщик.примеров\t%s\n' "$(pr flang/concurrency/scheduler.flang)"
+  printf 'связь.строк\t%s\n'    "$(strok flang/concurrency/link.flang)"
+  printf 'связь.функций\t%s\n'  "$(fn flang/concurrency/link.flang)"
+  printf 'связь.примеров\t%s\n' "$(pr flang/concurrency/link.flang)"
 
   printf 'цели.всего\t%s\n'     "$(find flang/src/emit -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')"
   printf 'цели.близнецов\t%s\n' "$(find flang/self -maxdepth 1 -name 'emit-*.flang' 2>/dev/null | wc -l | tr -d ' ')"
@@ -533,7 +533,7 @@ perepis() {
       else
         case "$f" in
           flang/src/emit/*)         k="рантайм цели печати" ;;
-          flang/conc/bin/node.*)    k="хозяин узла на цели" ;;
+          flang/concurrency/bin/node.*)    k="хозяин узла на цели" ;;
           docs/benchmarks/*|docs/examples/host-boundary/*) k="замеряемый материал" ;;
           docs/editors/*|packaging/homebrew/*|docs/site/poisk.js|docs/site/poisk-proverka.mjs|docs/examples/web/wasm/probe.mjs)
                                     k="чужая среда" ;;
@@ -641,7 +641,7 @@ proza() {
   skazat "README: функций"      "$(grep -oE '\*\*[0-9]+ modules, [0-9]+' README.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
 
   # Теоремы: всего в дереве и в библиотеке. Ключ -a обязателен — без него
-  # flang/conc/link.flang пропускается молча (это уже ловили).
+  # flang/concurrency/link.flang пропускается молча (это уже ловили).
   #
   # Проза читается ПЛОСКОЙ — переносы строк заменены пробелами. Иначе вопрос
   # зависит от того, где редактор перенёс строку: «из них 55 в\nстандартной»

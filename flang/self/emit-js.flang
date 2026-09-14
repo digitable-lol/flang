@@ -4414,7 +4414,7 @@
 //
 // До сих пор этот файл дописывала ОСНАСТКА, каждая в своём месте и своими
 // руками: `flang/scripts/node-across-targets.flang` (строка «рядом» у цели js),
-// `flang/conc/bench/hot-swap.sh`, `flang/conc/bench/node-death.sh` и
+// `flang/concurrency/bench/hot-swap.sh`, `flang/concurrency/bench/node-death.sh` и
 // `flang/test/uzel-osnastka.mjs`. Четыре копии одного знания о цели — и ни одна
 // не достаётся человеку, который просто напечатал программу и позвал `node`.
 //

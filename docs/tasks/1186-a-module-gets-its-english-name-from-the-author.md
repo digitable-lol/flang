@@ -109,7 +109,7 @@ IMENA=$(nm -a "$DVOICHNYY" 2>/dev/null | grep -o 'compiler_flang_[a-z_]*konkuren
 |---|---:|---|
 | печать замеров (`benchmarks/**`, `docs/benchmark*`) | 240 | это вывод прогона, а не исходник |
 | образцы и проверки (`flang/test`, `flang/proof`, `fspec/**`) | 219 | печатают редко, часть имён кривая нарочно |
-| проверки и планы (`scripts`, `flang/scripts`, `flang/conc`, `web`, `packaging`, `editors`) | 82 | их зовут через `flang io`, а не печатают в чужой язык |
+| проверки и планы (`scripts`, `flang/scripts`, `flang/concurrency`, `web`, `packaging`, `editors`) | 82 | их зовут через `flang io`, а не печатают в чужой язык |
 
 Каталог, не попавший в список, **не краснеет — он просто не проверяется**, и это
 тот же класс беды, что в заметке

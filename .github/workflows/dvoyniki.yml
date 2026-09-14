@@ -133,7 +133,7 @@ jobs:
   # исходниками на flang знак в знак. Свой прогон: код 1, 34,6 с, пик 329 МБ,
   # расхождений ТРИ, и все три — одна и та же строка шапки:
   #
-  #   flang/conc/link.js, scheduler.js, wire.js — строка 3
+  #   flang/concurrency/link.js, scheduler.js, wire.js — строка 3
   #   свежая печать: «Сгенерировано flang (бэкенд JavaScript, flang/self/emit-js.flang)»
   #   в дереве:      «Сгенерировано flang (бэкенд JavaScript, flang/src/emit/js.mjs)»
   #

@@ -23,7 +23,7 @@
 | что доказано, а что посчитано | [`docs/site/what-is-proved.ru.md`](site/what-is-proved.ru.md) |
 | ядро доказательств — контракт | [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md) |
 | категорная поверхность | [`docs/ct/spec.md`](ct/spec.md) |
-| процессы и надзор | [`docs/flang/conc/SPEC.md`](flang/conc/SPEC.md) |
+| процессы и надзор | [`docs/flang/conc/SPEC.md`](flang/concurrency/SPEC.md) |
 | известные ограничения | [`docs/guide/limits.ru.md`](guide/limits.ru.md) |
 
 ---
@@ -536,7 +536,7 @@ proved).
 Законы категории с объявленным равенством двоичный считает на конечной сетке
 значений автора; это счёт, а не доказательство. Формы — в
 [`docs/site/language.ru.md`](site/language.ru.md), контракты — в
-[`docs/ct/spec.md`](ct/spec.md) и [`docs/flang/conc/SPEC.md`](flang/conc/SPEC.md).
+[`docs/ct/spec.md`](ct/spec.md) и [`docs/flang/conc/SPEC.md`](flang/concurrency/SPEC.md).
 
 <!-- проверка: код 2 -->
 ```flang

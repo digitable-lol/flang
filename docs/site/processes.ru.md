@@ -113,15 +113,15 @@ flowchart TD
 
 ## Запустите проверку
 
-Весь цех лежит в дереве — `flang/conc/examples/supervision.flang`:
+Весь цех лежит в дереве — `flang/concurrency/examples/supervision.flang`:
 
 ```bash
-$ flang check flang/conc/examples/supervision.flang
+$ flang check flang/concurrency/examples/supervision.flang
 модуль «Цех и учёт»: функций 4, из них с доказанным завершением 4; типов 7
 объявления эти сверены НЕ ДО КОНЦА — processes, supervisors, runs: сверено, что
 имена сходятся, что у нетотального обработчика назван запас витков, что у отказа
 один судья, […]
-flang/conc/examples/supervision.flang: проверено НЕ ДО КОНЦА — разбор, типы,
+flang/concurrency/examples/supervision.flang: проверено НЕ ДО КОНЦА — разбор, типы,
 завершаемость, ядро и примеры прошли
 $ echo $?
 2
@@ -141,7 +141,7 @@ $ echo $?
 
 ```json
 {
-  "программа": "flang/conc/examples/distributed.flang",
+  "программа": "flang/concurrency/examples/distributed.flang",
   "узлы": {
     "счёт": { "слушать": "127.0.0.1:0", "процессы": ["Счётчик"],
               "звонить": { "учёт": "127.0.0.1:0" } },
@@ -159,7 +159,7 @@ $ echo $?
 | `c`, `elixir`, `js`, `ts` | печатаются вместе с планировщиком: процессы работают |
 | `cpp`, `csharp`, `go`, `java`, `python`, `rust` | печать отказывает кодом 1: «у цели нет планировщика конкурентности» — обработчик обычной функцией не печатается |
 
-(Прогон `flang emit flang/conc/examples/supervision.flang --target …` 11 сентября 2026, коммит 2c40752d0: `js`, `ts`, `elixir`, `c` — код 0; `python`, `csharp` — код 1; для `cpp`, `go`, `java`, `rust` тот же отказ записан в их печатниках `flang/self/emit-*.flang`.)
+(Прогон `flang emit flang/concurrency/examples/supervision.flang --target …` 11 сентября 2026, коммит 2c40752d0: `js`, `ts`, `elixir`, `c` — код 0; `python`, `csharp` — код 1; для `cpp`, `go`, `java`, `rust` тот же отказ записан в их печатниках `flang/self/emit-*.flang`.)
 
 Два ограничения держите в голове: адресат сообщения обязан быть
 именем-литералом, и живой узел двоичный компилятор сегодня не поднимает —

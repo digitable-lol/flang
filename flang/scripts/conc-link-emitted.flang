@@ -55,17 +55,17 @@
 // звать компилятор на старте значило бы ввозить его целиком.
 //
 // Третий — провод (`wire.flang`); он приехал туда, где раньше лежал
-// `flang/conc/distributed.mjs`, и лежит в дереве на тех же правах, что первые
+// `flang/concurrency/distributed.mjs`, и лежит в дереве на тех же правах, что первые
 // два. Список здесь и список в стороже `scripts/targets/conc-link-emit.flang` — про одни
 // и те же файлы, и правятся они вместе.
 тотальная функция «Модули узла»
   возвращает список «Модуль»
   пример «Печатаются трое»
-    ожидается [запись «Модуль» с «исходник» равным "flang/conc/link.flang" и «напечатанное» равным "flang/conc/link.js", запись «Модуль» с «исходник» равным "flang/conc/scheduler.flang" и «напечатанное» равным "flang/conc/scheduler.js", запись «Модуль» с «исходник» равным "flang/conc/wire.flang" и «напечатанное» равным "flang/conc/wire.js"]
+    ожидается [запись «Модуль» с «исходник» равным "flang/concurrency/link.flang" и «напечатанное» равным "flang/concurrency/link.js", запись «Модуль» с «исходник» равным "flang/concurrency/scheduler.flang" и «напечатанное» равным "flang/concurrency/scheduler.js", запись «Модуль» с «исходник» равным "flang/concurrency/wire.flang" и «напечатанное» равным "flang/concurrency/wire.js"]
   [
-    (запись «Модуль» с «исходник» равным "flang/conc/link.flang" и «напечатанное» равным "flang/conc/link.js"),
-    (запись «Модуль» с «исходник» равным "flang/conc/scheduler.flang" и «напечатанное» равным "flang/conc/scheduler.js"),
-    (запись «Модуль» с «исходник» равным "flang/conc/wire.flang" и «напечатанное» равным "flang/conc/wire.js")
+    (запись «Модуль» с «исходник» равным "flang/concurrency/link.flang" и «напечатанное» равным "flang/concurrency/link.js"),
+    (запись «Модуль» с «исходник» равным "flang/concurrency/scheduler.flang" и «напечатанное» равным "flang/concurrency/scheduler.js"),
+    (запись «Модуль» с «исходник» равным "flang/concurrency/wire.flang" и «напечатанное» равным "flang/concurrency/wire.js")
   ]
 
 // Лицензионная шапка дописывается ЗДЕСЬ, а не печатью. Печать её не ставит и
@@ -90,8 +90,8 @@
   принимает файл: строка
   возвращает строка
   пример «Путь считается от корня дерева»
-    дано файл равно "flang/conc/link.flang"
-    ожидается "../../flang/conc/link.flang"
+    дано файл равно "flang/concurrency/link.flang"
+    ожидается "../../flang/concurrency/link.flang"
   соединить ["../../", файл] по ""
 
 // Каталог печати — под шаблоном `out-*/` в .gitignore, поэтому в git status он
@@ -179,7 +179,7 @@
 тотальная функция «Начать»
   возвращает «Ход»
   пример «Первым делом сносится каталог печати»
-    ожидается вариант «Ждём уборку до» с очередь равным [запись «Модуль» с «исходник» равным "flang/conc/link.flang" и «напечатанное» равным "flang/conc/link.js", запись «Модуль» с «исходник» равным "flang/conc/scheduler.flang" и «напечатанное» равным "flang/conc/scheduler.js", запись «Модуль» с «исходник» равным "flang/conc/wire.flang" и «напечатанное» равным "flang/conc/wire.js"] и свод равным (запись «Свод» с «строки» равным пустой список и «разошлось» равным 0)
+    ожидается вариант «Ждём уборку до» с очередь равным [запись «Модуль» с «исходник» равным "flang/concurrency/link.flang" и «напечатанное» равным "flang/concurrency/link.js", запись «Модуль» с «исходник» равным "flang/concurrency/scheduler.flang" и «напечатанное» равным "flang/concurrency/scheduler.js", запись «Модуль» с «исходник» равным "flang/concurrency/wire.flang" и «напечатанное» равным "flang/concurrency/wire.js"] и свод равным (запись «Свод» с «строки» равным пустой список и «разошлось» равным 0)
   вариант «Ждём уборку до» с очередь равным («Модули узла») и свод равным («Начальный свод»)
 
 тотальная функция «Снести каталог»

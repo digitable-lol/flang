@@ -91,10 +91,10 @@ JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по им
 
 | в прежней описи | в дереве сегодня |
 |---|---|
-| `flang/conc/planirovshchik.js` | `flang/conc/scheduler.js` |
-| `flang/conc/svyaz.js` | `flang/conc/link.js` |
-| `flang/conc/zamer/gen.mjs` | `flang/conc/bench/gen.mjs` |
-| `flang/conc/zamer/smert-uzla-celi.mjs` | `flang/conc/bench/node-death-targets.mjs` |
+| `flang/concurrency/planirovshchik.js` | `flang/concurrency/scheduler.js` |
+| `flang/concurrency/svyaz.js` | `flang/concurrency/link.js` |
+| `flang/concurrency/zamer/gen.mjs` | `flang/concurrency/bench/gen.mjs` |
+| `flang/concurrency/zamer/smert-uzla-celi.mjs` | `flang/concurrency/bench/node-death-targets.mjs` |
 | `flang/scripts/dvoichnyy.mjs` | `flang/scripts/binary.mjs` |
 | `flang/scripts/storozh-slov.mjs` | `flang/scripts/word-guard.mjs` |
 | `flang/scripts/razlichitelnyy-poisk.mjs` | `flang/scripts/discriminating-search.mjs` |
@@ -106,8 +106,8 @@ JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по им
 
 **Второе: состав разошёлся ровно на три файла**, и 53 с 54 сходится так:
 
-* `flang/conc/distributed.mjs` (1062) — **удалён** коммитом `2836a28b`;
-* `flang/conc/wire.js` (1747) — в описи не назван вовсе, а он в дереве есть;
+* `flang/concurrency/distributed.mjs` (1062) — **удалён** коммитом `2836a28b`;
+* `flang/concurrency/wire.js` (1747) — в описи не назван вовсе, а он в дереве есть;
 * `docs/editors/vscode/extension.js` (46) — в описи не назван вовсе.
 
 Числа строк тоже подросли: `scheduler.js` с 1957 до 3372, `link.js` с 1046 до
@@ -146,9 +146,9 @@ JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по им
 
 ```
 $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xargs wc -l
-  3372 flang/conc/scheduler.js
-  1246 flang/conc/link.js
-  1747 flang/conc/wire.js
+  3372 flang/concurrency/scheduler.js
+  1246 flang/concurrency/link.js
+  1747 flang/concurrency/wire.js
   6365 total
 ```
 
@@ -173,7 +173,7 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 
 | файл | строк | чем это доказано |
 |---|---:|---|
-| `flang/conc/bin/node.js` | 719 | **хозяин узла на цели `js`** — восьмой из восьми: рядом лежат `node.c`, `node.cs`, `node.ex`, `node.go`, `node.java`, `node.py`, `node.rs`. Все восемь названы поимённо в `flang/scripts/node-across-targets.flang` (строка «js», хозяин `node.js`, запуск `node node.js`). Убрать его — вычеркнуть цель `js` из счёта работающих целей |
+| `flang/concurrency/bin/node.js` | 719 | **хозяин узла на цели `js`** — восьмой из восьми: рядом лежат `node.c`, `node.cs`, `node.ex`, `node.go`, `node.java`, `node.py`, `node.rs`. Все восемь названы поимённо в `flang/scripts/node-across-targets.flang` (строка «js», хозяин `node.js`, запуск `node node.js`). Убрать его — вычеркнуть цель `js` из счёта работающих целей |
 | `docs/site/poisk.js` | 355 | исполняется браузером читателя на статике; исполнителя JavaScript у flang нет |
 | `docs/benchmarks/speed/programs/tasks.mjs` | 181 | **это и есть замеряемая реализация на JavaScript**, соседка `tasks.flang`, `tasks.py` и `reference.c`. `docs/benchmarks/speed/work.mjs` зовёт её строкой `node: (з) => прогон("node", [.../tasks.mjs, …])` — это ряд «node» в таблице замера. Переписать на flang — стереть у замера столбец сравнения |
 | `docs/site/poisk-proverka.mjs` | 175 | поднимает браузерный `poisk.js` внутри себя через `node:vm` и проверяет **тот же файл**, который читает браузер. Двойник на flang проверял бы другой файл — это подмена сторожа, а не перенос |
@@ -182,7 +182,7 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 | `docs/editors/vscode/extension.js` | 46 | точка входа расширения VS Code: редактор грузит модуль в свой процесс Node, другого способа подключиться у него нет. Знания о языке в файле нет ни одного — оно всё в `flang lsp`, написанном на flang |
 
 Шесть из семи прежняя опись уже так и разобрала. Новое здесь одно, и оно
-крупное: **`flang/conc/bin/node.js` (719) стоял в долге**.
+крупное: **`flang/concurrency/bin/node.js` (719) стоял в долге**.
 
 Трёх файлов этой кучи в дереве больше нет: `packaging/postinstall.mjs` (144),
 `packaging/flang-launch.mjs` (55) и `flang/bin/flang-lsp.mjs` (46) удалены
@@ -203,7 +203,7 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 > **Отдельного каталога тестов нет и не будет.**
 
 `flang/test/` — ровно такой каталог. Двойника на flang у него быть не может: у
-языка примеры живут в теле модуля, а модули эти (`flang/conc/scheduler.flang`,
+языка примеры живут в теле модуля, а модули эти (`flang/concurrency/scheduler.flang`,
 `link.flang`) свои примеры уже несут. Значит эти девять уходят не переписыванием,
 а вместе с тем, кто их зовёт.
 
@@ -213,7 +213,7 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 | `planirovshchik-celi.test.mjs` | 327 | `node --test` |
 | `surface-pair.mjs` | 267 | `docs/site/surfaces-run.mjs` — то есть сайт, **вне прогона тестов вообще** |
 | `svyaz-celi.test.mjs` | 262 | `node --test` |
-| `uzel-osnastka.mjs` | 237 | `nadzor-uzla.test.mjs`, `flang/conc/bench/node-death-targets.mjs` |
+| `uzel-osnastka.mjs` | 237 | `nadzor-uzla.test.mjs`, `flang/concurrency/bench/node-death-targets.mjs` |
 | `nadzor-uzla.test.mjs` | 224 | `node --test` |
 | `tempdir.mjs` | 169 | три теста и `node-death-targets.mjs` |
 | `glob.mjs` | 99 | два теста, `uzel-osnastka.mjs` и три сторожа: `word-occupancy`, `proof-ledger`, `count-guard` |
@@ -237,7 +237,7 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 | `flang/scripts` — сторожа и оснастка | 11 | 6 654 | просмотры вперёд/назад в четырёх сторожах; `binary.mjs` — мост, умирает последним |
 | `docs/site` — узел сайта | 9 | 3 572 | дыра 2: точка раскрутки не знает «Удалить файл» и «Завести временный каталог» |
 | `scripts` — сборка и журнал | 3 | 2 186 | числилось за дырой 1 (`--check`, `--self-test`, `--write`); это РЕЖИМЫ, а режим кладётся на `--plan` — заново не проверено, файлы чужие |
-| `flang/conc` — оснастка узла | 3 | 657 | дыра 4 (убить процесс сигналом, читать вывод потомка на ходу) — она настоящая; `bin/wire.mjs` (159) вдобавок не зовёт никто |
+| `flang/concurrency` — оснастка узла | 3 | 657 | дыра 4 (убить процесс сигналом, читать вывод потомка на ходу) — она настоящая; `bin/wire.mjs` (159) вдобавок не зовёт никто |
 | `benchmarks` — замеры | 2 | 398 | **не дыра, а работа и сверка** — разобрано отдельным разделом ниже |
 
 Поимённо, по убыванию:
@@ -260,14 +260,14 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 | `flang/scripts/claim-guard.mjs` | 443 | сторож |
 | `docs/site/diagram.mjs` | 410 | сайт |
 | `docs/site/surfaces-run.mjs` | 365 | сайт |
-| `flang/conc/bench/gen.mjs` | 351 | узел |
+| `flang/concurrency/bench/gen.mjs` | 351 | узел |
 | `docs/site/podsvetka.mjs` | 333 | сайт |
 | `docs/site/markdown.mjs` | 311 | сайт |
 | `flang/scripts/word-occupancy.mjs` | 311 | сторож |
 | `flang/scripts/target-words.mjs` | 309 | сторож |
-| `flang/conc/bin/wire.mjs` | 159 | узел |
+| `flang/concurrency/bin/wire.mjs` | 159 | узел |
 | `docs/benchmarks/speed/work.mjs` | 158 | замер |
-| `flang/conc/bench/node-death-targets.mjs` | 147 | узел |
+| `flang/concurrency/bench/node-death-targets.mjs` | 147 | узел |
 | `docs/site/poisk.mjs` | 111 | сайт |
 | `docs/site/numbers.mjs` | 107 | сайт |
 
@@ -314,7 +314,7 @@ flang io: непонятный ключ «--нет-такого-ключа»
 
 Остаётся то, что обходами не берётся: довод, который меняется от запуска к
 запуску и не является режимом, — список слов в хвосте у `word-occupancy.mjs`,
-имя модуля у `count-library.mjs`. Насколько это держит `scripts` и `flang/conc`
+имя модуля у `count-library.mjs`. Насколько это держит `scripts` и `flang/concurrency`
 поимённо — не проверено этим заходом, файлы чужие; но записывать их в «ждут
 дыру 1» без проверки больше нельзя.
 
@@ -592,7 +592,7 @@ $ echo $?
    файла с красным примером молча, и двойник этого наследовать не должен.
    Полная сверка по всей библиотеке идёт часами; закладывать надо два прогона.
 3. **Доводы плану (дыра 1)** — отпирает 3 файла `scripts` и 3 файла
-   `flang/conc`. По строкам по-прежнему самый крупный рычаг.
+   `flang/concurrency`. По строкам по-прежнему самый крупный рычаг.
 4. **Перепечатать точку раскрутки (дыра 2)** — слова «Удалить файл» и «Завести
    временный каталог» в словаре уже есть; отпирает узел сайта, 9 файлов,
    3 572 строки. Она же уберёт времянки, которые планы сегодня оставляют за

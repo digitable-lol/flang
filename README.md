@@ -406,7 +406,7 @@ against the tree on every push.
 
 ```
 bootstrap/      the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
-flang/          the language: self/ (the compiler), core/, stdlib/, proof/, conc/, ct/, src/emit/ (target runtimes), scripts/, test/, bin/ (flangtutor) — code only; its contracts are in docs/flang/
+flang/          the language: self/ (the compiler), core/, stdlib/, proof/, concurrency/, ct/, src/emit/ (target runtimes), scripts/, test/, bin/ (flangtutor) — code only; its contracts are in docs/flang/
 docs/examples/  204 flang programs in 25 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
 docs/editors/   the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/      the Homebrew formula, the asdf plugin, the flang.1 man page, install checks

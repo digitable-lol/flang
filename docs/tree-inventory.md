@@ -166,10 +166,10 @@ flang в C.
 |---|---|---:|---:|
 | напечатано самим компилятором | `bootstrap/**` — шесть файлов на C, вывод печати | 6 | 788 044 <!-- СНЯТО 2026-08-31 файлов bootstrap/*.c,bootstrap/*.h = 6 --><!-- СНЯТО 2026-09-12 строк-в bootstrap/*.c,bootstrap/*.h = 788044 --> |
 | рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 29 | 48 142 <!-- СНЯТО 2026-09-06 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 29 --><!-- СНЯТО 2026-09-08 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 48142 --> |
-| замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/conc/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
-| проба рантайма C | `flang/test/oblast/*.c` и `flang/conc/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/targets/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
+| замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/concurrency/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
+| проба рантайма C | `flang/test/oblast/*.c` и `flang/concurrency/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/targets/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
 | чужая среда: редактор | `docs/editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 612 <!-- СНЯТО 2026-08-31 файлов docs/editors/vim/*.vim,docs/editors/vim/*.lua = 11 --><!-- СНЯТО 2026-09-09 строк-в docs/editors/vim/*.vim,docs/editors/vim/*.lua = 612 --> |
-| код на стороне цели | `flang/conc/bin/node.{c,cs,ex,go,java,py,rs}` — семь хозяев узлов на семи языках, и `peer.py` — конец связи на цели python | 8 | 8 227 |
+| код на стороне цели | `flang/concurrency/bin/node.{c,cs,ex,go,java,py,rs}` — семь хозяев узлов на семи языках, и `peer.py` — конец связи на цели python | 8 | 8 227 |
 | разметка и оформление | четыре `.html` и `docs/site/style.css` — цели HTML у языка нет и не заявлено | 5 | 1 785 |
 | чужая среда: установщик | `packaging/homebrew/flang.rb` и три файла `packaging/asdf/bin/` — homebrew понимает Ruby, asdf зовёт свои три раньше, чем flang в системе есть | 4 | 470 |
 | точка раскрутки и приёмка | `scripts/raskrutka.sh`, `scripts/bootstrap-c.sh`, `scripts/seed/new-binary-acceptance.sh`, `scripts/seed/build-ledger-binary.sh` — разобраны отдельно ниже | 4 | 4 080 |
@@ -208,7 +208,7 @@ Python 16, awk 1.
 |---|---:|---:|---|
 | `scripts` — сборка и сторожа | 33 | 6 551 | **главная часть долга; тринадцать самых крупных разобраны ниже** |
 | `benchmarks` — оснастка замеров | 27 | 2 808 | собирает сборки одной программы через `cc`, вшивает приборы в семя, гоняет чужие службы моделей; переводимо |
-| `flang/conc/bench` — оснастка замера узлов | 18 | 710 | гонит настоящие процессы на восьми целях и убивает их сигналами; переводимо, но польза мала |
+| `flang/concurrency/bench` — оснастка замера узлов | 18 | 710 | гонит настоящие процессы на восьми целях и убивает их сигналами; переводимо, но польза мала |
 | `flang/proof` — прогон подделок, сверка правил и приборы привязки | 10 | 1 893 | ищет и возит свидетеля; сам приговор уже на flang |
 | `flang/scripts` — счётчики на Python | 3 | 1 398 | доля доказанного по файлам, сличение двух сводителей и одна линейка на flang и C |
 | `web` — печать браузерных приложений и проба в браузере | 3 | 376 | зовёт `clang`, `wasm-ld` и настоящий браузер |

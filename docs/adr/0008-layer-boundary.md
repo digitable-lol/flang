@@ -5,7 +5,7 @@
 **Основание:** словарь поручений [`flang/self/parser.flang`](../../flang/self/parser.flang);
 хозяева `flang/src/emit/c/flang_repl.c`, `flang/src/emit/c/flang_conc.c`,
 `flang/src/emit/js/flang_host_browser.js`, `flang/src/emit/js/flang_io.js`;
-планировщик [`flang/conc/scheduler.flang`](../../flang/conc/scheduler.flang);
+планировщик [`flang/concurrency/scheduler.flang`](../../flang/concurrency/scheduler.flang);
 пример стыка [`docs/examples/io/фильтр-пакетов.flang`](../examples/io/фильтр-пакетов.flang).
 **Связано:** [ADR-0002](0002-outbound-connection.md) — исходящее соединение;
 [ADR-0004](0004-octets-in-the-effects-dictionary.md) и [ADR-0006](0006-octets-for-files.md) — октеты в словаре.
@@ -82,9 +82,9 @@ FLANG_RECURSION_LIMIT: функция «Крутить» исчерпала ли
 есть:
 
 ```
-$ bootstrap/flang check flang/conc/scheduler.flang; echo $?
+$ bootstrap/flang check flang/concurrency/scheduler.flang; echo $?
 модуль «Планировщик узла»: функций 47, из них с доказанным завершением 47; типов 10
-flang/conc/scheduler.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+flang/concurrency/scheduler.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 0
 ```
 
@@ -148,7 +148,7 @@ docs/examples/web/shortener/handler-without-budget.flang: проверено Н�
 | рукопожатие SCRAM | `flang/stdlib/scram.flang` | 20 | **20** |
 | перевод base64 | `flang/stdlib/base64.flang` | 19 | **19** |
 | кодировка UTF-8 | `flang/stdlib/utf8.flang` | 16 | **16** |
-| **решения планировщика** | `flang/conc/scheduler.flang` | 47 | **47** |
+| **решения планировщика** | `flang/concurrency/scheduler.flang` | 47 | **47** |
 
 Разбор пакетов, кодеки, состояния протоколов, проверка прав — и решения
 планировщика в том же ряду. Ни одной функции без доказанного завершения ни в

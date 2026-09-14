@@ -47,12 +47,12 @@
   соединить [
     "cd ../.. && d=\"$PWD/tmp/uzel-na-celyah/uzel-", (цель.«имя»), "\"",
     " && rm -rf \"$d\" && mkdir -p \"$d/cel/", (цель.«куда»), "\" \"$d/opora\"",
-    " && bootstrap/flang emit flang/conc/examples/distributed.flang --target js --out \"$d/prog\" >/dev/null 2>&1;",
+    " && bootstrap/flang emit flang/concurrency/examples/distributed.flang --target js --out \"$d/prog\" >/dev/null 2>&1;",
     " h=$(cat $(ls \"$d\"/prog/*.js | grep -v flang_cli) | sha256sum | cut -c1-64);",
-    " bootstrap/flang emit flang/conc/node-benchmark.flang --target ", (цель.«имя»), " --out \"$d/cel\" >&2;",
-    " bootstrap/flang emit flang/conc/node-benchmark.flang --target ", («Опора»), " --out \"$d/opora\" >&2;",
-    " cp flang/conc/bin/", (цель.«хозяин»), " \"$d/cel/", (цель.«куда»), "/\";",
-    " cp flang/conc/bin/node.py \"$d/opora/\";",
+    " bootstrap/flang emit flang/concurrency/node-benchmark.flang --target ", (цель.«имя»), " --out \"$d/cel\" >&2;",
+    " bootstrap/flang emit flang/concurrency/node-benchmark.flang --target ", («Опора»), " --out \"$d/opora\" >&2;",
+    " cp flang/concurrency/bin/", (цель.«хозяин»), " \"$d/cel/", (цель.«куда»), "/\";",
+    " cp flang/concurrency/bin/node.py \"$d/opora/\";",
     " ", (цель.«рядом»), ";",
     " printf '%s' '", («План процессов»), "' > \"$d/cel/plan.json\";",
     " printf '%s' '", («План процессов»), "' > \"$d/opora/plan.json\";",
@@ -139,10 +139,10 @@
   возвращает строка
   соединить [
     "cd ../..;",
-    " bootstrap/flang run flang/conc/node-benchmark.flang --function 'Начальный счёт' 2>/dev/null; echo '@@';",
-    " bootstrap/flang run flang/conc/examples/distributed.flang --function 'пустой счёт' 2>/dev/null; echo '@@';",
-    " bootstrap/flang run flang/conc/node-benchmark.flang --function 'Начальные записи' 2>/dev/null; echo '@@';",
-    " bootstrap/flang run flang/conc/examples/distributed.flang --function 'пустые записи' 2>/dev/null; echo '@@'"
+    " bootstrap/flang run flang/concurrency/node-benchmark.flang --function 'Начальный счёт' 2>/dev/null; echo '@@';",
+    " bootstrap/flang run flang/concurrency/examples/distributed.flang --function 'пустой счёт' 2>/dev/null; echo '@@';",
+    " bootstrap/flang run flang/concurrency/node-benchmark.flang --function 'Начальные записи' 2>/dev/null; echo '@@';",
+    " bootstrap/flang run flang/concurrency/examples/distributed.flang --function 'пустые записи' 2>/dev/null; echo '@@'"
   ] по ""
 
 тотальная функция «Значения состояний»

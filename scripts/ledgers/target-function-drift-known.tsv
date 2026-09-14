@@ -13,7 +13,7 @@
 #
 # ── Замер 6 сентября 2026, ветка r/8 от gh/dev (d8d2ef6b), двоичный 0.7.11 ──
 #
-# flang/conc/node-benchmark.flang, девять целей: «c» печатает 155 функций,
+# flang/concurrency/node-benchmark.flang, девять целей: «c» печатает 155 функций,
 # восемь остальных — 150 ровно. Пять недостающих названы поимённо в задаче
 # docs/tasks/6028-five-blind-guards-and-the-ninth-target.md: «Стратегии надзора»,
 # «Стратегия надзора известна», «Что трогает замена», «Почему отказано в
@@ -40,11 +40,11 @@
 # (flang/self/**). Здесь оно записано, чтобы РОСТ расхождения был виден.
 #
 # программа	цель	разница	причина
-../flang/conc/node-benchmark.flang	cpp	-5	цель «c» не отбрасывает недостижимое (compiler.flang:394-400), поэтому печатает на 5 ввезённых и никем не зовомых функций больше; cpp отбрасывает, как и все восемь
-../flang/conc/node-benchmark.flang	csharp	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/conc/node-benchmark.flang	elixir	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/conc/node-benchmark.flang	go	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/conc/node-benchmark.flang	java	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/conc/node-benchmark.flang	js	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/conc/node-benchmark.flang	python	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/conc/node-benchmark.flang	rust	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../flang/concurrency/node-benchmark.flang	cpp	-5	цель «c» не отбрасывает недостижимое (compiler.flang:394-400), поэтому печатает на 5 ввезённых и никем не зовомых функций больше; cpp отбрасывает, как и все восемь
+../flang/concurrency/node-benchmark.flang	csharp	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../flang/concurrency/node-benchmark.flang	elixir	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../flang/concurrency/node-benchmark.flang	go	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../flang/concurrency/node-benchmark.flang	java	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../flang/concurrency/node-benchmark.flang	js	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../flang/concurrency/node-benchmark.flang	python	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../flang/concurrency/node-benchmark.flang	rust	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели

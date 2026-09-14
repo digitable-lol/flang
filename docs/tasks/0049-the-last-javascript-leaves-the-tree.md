@@ -69,7 +69,7 @@ JavaScript, 25 487 строк**, и **долгом из них являются 
 
 | группа | файлов | строк | почему не уйдёт |
 |---|---|---|---|
-| **напечатано компилятором** | 3 | **6 365** | `flang/conc/{scheduler,wire,link}.js` несут в первой строке «Сгенерировано flang… Не редактировать руками». Это **вывод** языка, а не работа для него. Считать их долгом JavaScript — ошибка разряда: они и есть доказательство, что язык себя обслуживает |
+| **напечатано компилятором** | 3 | **6 365** | `flang/concurrency/{scheduler,wire,link}.js` несут в первой строке «Сгенерировано flang… Не редактировать руками». Это **вывод** языка, а не работа для него. Считать их долгом JavaScript — ошибка разряда: они и есть доказательство, что язык себя обслуживает |
 | **рантайм цели js** | 4 | 1 815 | `flang/src/emit/js/*.js` уезжают в вывод ДОСЛОВНО. Уйдут только вместе с целью js |
 
 Остаётся **47 файлов, 17 307 строк** — вот они целиком:
@@ -80,7 +80,7 @@ JavaScript, 25 487 строк**, и **долгом из них являются 
 | `docs/site` — узел сайта | 11 | 4 102 | заперт дырой 2: точка раскрутки не знает `неотрицательное`, и `flang/scripts/жаргон-образцы.flang` не проверяется ни одним двоичным зоны |
 | `scripts` — сборка, журнал, жаргон | 4 | 2 251 | `jargon-guard.mjs` 475 — задача 0045, заперта тремя запорами; `build-changelog*.mjs` 1 711 — журнал изменений |
 | `flang/test` — проверки | 9 | 1 991 | ввозят функции, а не зовут команды; `--test` от Node |
-| `flang/conc` — оснастка узла | 4 | 1 376 | `bin/node.js` 719 — полный узел на цели js |
+| `flang/concurrency` — оснастка узла | 4 | 1 376 | `bin/node.js` 719 — полный узел на цели js |
 | `benchmarks` — замеры | 3 | 579 | ничем; самое дешёвое, что есть |
 | прочее (упаковка, редактор, wasm, lsp) | 5 | 354 | крючок установки npm и `extension.js` — npm и VS Code, чужие точки входа |
 
@@ -122,12 +122,12 @@ JavaScript, 25 487 строк**, и **долгом из них являются 
 | каталог тестов, которого «нет и не будет» | 9 | 1 991 |
 | **ДОЛГ** | **28** | **13 467** |
 
-Семь файлов вывода языка — `flang/conc/{scheduler,wire,link}.js` (6 365 строк,
+Семь файлов вывода языка — `flang/concurrency/{scheduler,wire,link}.js` (6 365 строк,
 шапка «Сгенерировано flang… Не редактировать руками», проверено грепом по всем
 54) и `flang/src/emit/js/*.js` (1 815, уезжают в напечатанную программу
 дословно).
 
-**Крупнейшая правка сверх разнарядки: `flang/conc/bin/node.js` (719) — тоже не
+**Крупнейшая правка сверх разнарядки: `flang/concurrency/bin/node.js` (719) — тоже не
 долг.** Это хозяин узла на цели `js`, восьмой из восьми: рядом `node.c`,
 `node.cs`, `node.ex`, `node.go`, `node.java`, `node.py`, `node.rs`, и все восемь
 названы в `flang/scripts/node-across-targets.flang`. Убрать — вычеркнуть цель
@@ -259,7 +259,7 @@ $ echo $?
 `flang/test/*.mjs`. Разнарядка называла 30 файлов (4 + 11 + 15); прогон
 `git ls-files 'scripts/*.mjs' 'flang/scripts/*.mjs' 'flang/test/*.mjs' | wc -l`
 на дереве `6dff8a3a9` даёт **32** (6 + 11 + 15), строк — **12 118** (`wc -l`).
-Вне стека и не трогаются: `flang/src/emit/js/**`, `flang/conc/**`,
+Вне стека и не трогаются: `flang/src/emit/js/**`, `flang/concurrency/**`,
 `examples/frameworks/**`, `docs/site/**`, `web/wasm/**`, `benchmarks/**`.
 
 «Кто зовёт» снято грепом по дереву без `docs/zettel`, `docs/tasks/completed`,
@@ -312,7 +312,7 @@ $ echo $?
 | `uzel-osnastka.flang.mjs` | 38 | обёртка над `uzel-osnastka.flang` | **никто** | `uzel-osnastka.flang` (143) | УДАЛИТЬ: ноль вызовов | 1 |
 | `jargon-guard.test.mjs` | 349 | 14 проверок проверки жаргона: зелёная сегодня, образцы ловят/не ловят, три порчи страниц, два выдуманных исключения, страницы сайта под маской | `ci.yml:389` (работа `jargon`, только по тегу; помечена красной: 6 из 14), ярлык `тесты` | 3 из 14 уже примерами «Проба страницы» в `jargon-guard.flang`; 19 образцов «ловит/не ловит» — 102 примера в `жаргон-образцы.flang` | ПЕРЕНЕСТИ в `flang/test/жаргон.flang` (число проверок до/после — в ячейке); что не переносится без `docs/site/sitemap` на flang — назвать | 1 |
 | `glob.mjs` | 137 | обход по образцу | 3 теста узла, `uzel-osnastka.mjs`, `count-guard`, `proof-ledger`, `word-occupancy` | `glob.flang` (175) | УДАЛИТЬ после всех ввозящих | 3 |
-| `tempdir.mjs` | 169 | рабочий каталог проб | 3 теста узла, `uzel-osnastka.mjs`; **вне стека** `flang/conc/bench/node-death-targets.mjs` (его самого не зовёт никто) | `tempdir.flang` (130) | УДАЛИТЬ после ввозящих; `node-death-targets.mjs` — решение у координатора | 3 |
+| `tempdir.mjs` | 169 | рабочий каталог проб | 3 теста узла, `uzel-osnastka.mjs`; **вне стека** `flang/concurrency/bench/node-death-targets.mjs` (его самого не зовёт никто) | `tempdir.flang` (130) | УДАЛИТЬ после ввозящих; `node-death-targets.mjs` — решение у координатора | 3 |
 | `toolchain-guard.mjs` | 90 | есть ли тулчейн цели | 3 теста узла; **вне стека** `node-death-targets.mjs` | `toolchain-guard.flang` (171) | то же | 3 |
 | `uzel-osnastka.mjs` | 257 | сборка и подъём узла для проб | `nadzor-uzla.test.mjs`; **вне стека** `node-death-targets.mjs` | `uzel-osnastka.flang` (143, частью) | то же | 3 |
 | `surface-pair.mjs` | 267 | сверка поверхностей пары примеров | **только вне стека** `docs/site/surfaces-run.mjs` (ярлыки `поверхности:*`) | `surface-pair.flang` (654) | в стеке вызовов ноль, но снос ломает узел сайта — решение у координатора | 3 |
@@ -327,7 +327,7 @@ $ echo $?
 `site-numbers.mjs`), `proof-ledger.mjs` (`site-numbers.mjs`), `surface-pair.mjs`
 (`surfaces-run.mjs`). Снять их — сломать `node docs/site/build.mjs`, который
 зовёт `pages.yml`. Ещё три (`tempdir.mjs`, `toolchain-guard.mjs`,
-`uzel-osnastka.mjs`) ввозит `flang/conc/bench/node-death-targets.mjs`, которого
+`uzel-osnastka.mjs`) ввозит `flang/concurrency/bench/node-death-targets.mjs`, которого
 не зовёт никто. Пока решения нет, эти семь остаются, и «32 → 0» этим заходом
 недостижимо: потолок захода — **25 файлов**.
 
@@ -378,7 +378,7 @@ Node за 0,4 с: «правило видимости не знает путей
 **Остаток стека — 21 файл** (`git ls-files 'scripts/*.mjs' 'flang/scripts/*.mjs'
 'flang/test/*.mjs' | wc -l`): 11 в `flang/scripts/`, 8 в `flang/test/`, 2 в
 `scripts/`. У каждого в таблице выше стоит, кто его зовёт и чего не хватает
-двойнику; семь из них держат `docs/site/**` и `flang/conc/bench/**`, и решение
+двойнику; семь из них держат `docs/site/**` и `flang/concurrency/bench/**`, и решение
 по ним — у координатора, не у этого стека.
 
 ## Волна 2 — ветка `r/js-osnastka-volna-2` от `bc1ff161e` (10 сентября 2026)
@@ -441,7 +441,7 @@ sha256 `1311b4b4…`): `node flang/scripts/name-guard.mjs` — код 1, 601 с,
 | файлы | что держит | где работа |
 |---|---|---|
 | `nadzor-uzla.test.mjs`, `planirovshchik-celi.test.mjs`, `svyaz-celi.test.mjs` | двойники готовы и сверены (связь: 2184 вопроса как у теста, 19 962 сверки; планировщик: 10 004 вопроса, 90 036 сверок; надзор: 9 из 9 целей, те же сценарии; ломки красят оба), но оставляют рабочие каталоги в дереве, а `guards-start.flang` (CI на каждый пуш) и `tempdir-guard.flang` ждут файлов `*.test.mjs` | ветка `r/js-volna-2-N` (`cfcca607b`), незакоммичено `link-across-targets.flang`; поручение не закончено — обрыв лимитом |
-| `glob.mjs`, `tempdir.mjs`, `toolchain-guard.mjs`, `uzel-osnastka.mjs` | библиотеки трёх тестов узла и стенда `flang/conc/bench/node-death-targets.mjs` | уходят вместе с тестами; остаток — под `flang/conc/bench/lib/` (задача 4412) |
+| `glob.mjs`, `tempdir.mjs`, `toolchain-guard.mjs`, `uzel-osnastka.mjs` | библиотеки трёх тестов узла и стенда `flang/concurrency/bench/node-death-targets.mjs` | уходят вместе с тестами; остаток — под `flang/concurrency/bench/lib/` (задача 4412) |
 | `link-collision-guard.mjs` | двойник `link-collision-tree.flang` в ветке волны, сошёлся во всех режимах и под mawk (74 строки знак в знак), но план «Порча» берёт 18,3 ГиБ при 16 ГиБ у раннера `ubuntu-latest`; `binary.yml` и ярлыки пока на `.mjs` | ветка `r/js-volna-2-L`, поручено ужать память — не закончено |
 | `word-guard.mjs` | переключён; четыре его функции ввозит `proof-ledger.mjs` | — |
 | `proof-ledger.mjs` | двойника нет; прогон — часы; `docs/site/site-numbers.mjs` ввозит `ФАЙЛЫ`, `сводКорпуса` | не начато |

@@ -12,6 +12,14 @@ import «Приёмка»
 `Модель.lean`: ошибка чтения не ловится теоремой, её ловит сверка вердиктов
 в `прогон.sh`.
 
+Сумма автора (ADR-0042 §2, задача 6432): `вариант «В» с «п» равным Т и …` —
+выписанный конструктор, поле `С .«п»` (и `С.«п»`, как в теле) читается числом,
+разбор суммы `разбор С случай вариант «В» с п как х и … то Ф случай …` — формулой
+раньше всех разрезов: его ветви тянутся до следующего «случай». Имена полей и
+варианта хранятся без ёлочек — как их сличает сверщик (`как_слово`). Довод вызова,
+который весь — вызов с доводами, читается вызовом без сорта (`«Тело».«вызов»`):
+его итог встаёт на место параметра целиком, какого бы сорта ни было это место.
+
 Порядок разреза формулы (когда скобок нет, решает он): `если … то … иначе`,
 `или`, `и притом`, `не`, `для всех`, `есть такой`, `пусто`, `: кон|цел`,
 `помещается`, `не убывает`, сравнения, `содержит`, `начинается с`, вызов,
@@ -129,6 +137,24 @@ def «голо» (s : String) : String :=
   let t := s.«обр»
   if t.startsWith "«" && t.endsWith "»" then («безКраёв» t) else t
 
+/-- Поле `С .«п»` (либо `С.«п»`): кусок до ПОСЛЕДНЕГО «.«» и имя поля без ёлочек. -/
+def «проекция?» (s : String) : Option (String × String) :=
+  if !s.endsWith "»" then none else
+  match (s.splitOn ".«").reverse with
+  | «хв» :: «пред» :: «ещё» =>
+    let «поле» := «хв».«снК» 1
+    let «до» := «ужать» (".«".intercalate ((«пред» :: «ещё»).reverse))
+    if «поле» = "" || «поле».any (fun c => c = '«' || c = '»') || «до» = "" || !(«скобкиСошлись» «до») then none
+    else some («до», «поле»)
+  | _ => none
+
+/-- `вариант «В» …`: имя варианта без ёлочек и хвост после него. -/
+def «вариант?» (s : String) : Option (String × String) :=
+  if !s.startsWith "вариант «" then none else
+  match s.splitOn "»" with
+  | a :: «ост» => some (a.«сн» 9, ("»".intercalate «ост»).«обр»)
+  | [] => none
+
 /-! ## Формулы и термы -/
 
 mutual
@@ -160,6 +186,7 @@ partial def «число» (s0 : String) : Option «ТермЧ» :=
   else if s.startsWith "длина " then do pure (.«длина» (← «список» (s.«сн» 6)))
   else if s.startsWith "код символа " then do pure (.«кодСимвола» (← «текст» (s.«сн» 12)))
   else if let some (f, args) := «вызов?» s then do pure (.«вызов» f (← «доводы» args))
+  else if let some (c, p) := «проекция?» s then do pure (.«поле» (← «сумма» c) p)
   else if let some n := «литерал?» s then some (.«лит» n)
   else if «имя?» s then some (.«имя» s)
   else none
@@ -231,6 +258,12 @@ partial def «форм» (s0 : String) : Option «Форм» :=
   let s := «ужать» s0
   if s = "да" then some .«да»
   else if s = "нет" then some .«нет»
+  else if s.startsWith "разбор " then
+    match «разделитьСверху» s "случай" with
+    | «гол» :: «сл» =>
+      if «сл».isEmpty then none else do
+        pure (.«разборСм» (← «сумма» ((«ужать» «гол»).«сн» 7)) (← «случаи» «сл»))
+    | [] => none
   else if let some (u, a, b) := «выбор» s then
     do pure (.«еслиФ» (← «форм» u) (← «форм» a) (← «форм» b))
   else if let some (l, r) := «надвое» s "или" then do pure (.«или» (← «форм» l) (← «форм» r))
@@ -280,15 +313,60 @@ partial def «форм» (s0 : String) : Option «Форм» :=
   else if «имя?» s then some (.«имяФ» s)
   else none
 
-/-- Довод вызова: число, список, текст, признак — что прочтётся первым. -/
+/-- Довод вызова: выписанный конструктор — суммой; вызов с доводами — вызовом
+    без сорта; иначе число, список, текст, признак, сумма — что прочтётся первым. -/
 partial def «тело» (s : String) : Option «Тело» :=
-  match «число» s with
+  if («ужать» s).startsWith "вариант «" then (fun c => .«сумма» c) <$> «сумма» s
+  else match «число» s with
+  | some (.«вызов» f d) => if d matches .«нет» then some (.«число» (.«вызов» f d)) else some (.«вызов» f d)
   | some t => some (.«число» t)
   | none => match «список» s with
     | some l => some (.«список» l)
     | none => match «текст» s with
       | some t => some (.«текст» t)
-      | none => (fun u => .«признак» u) <$> «форм» s
+      | none => match «форм» s with
+        | some u => some (.«признак» u)
+        | none => (fun c => .«сумма» c) <$> «сумма» s
+
+/-- Терм-сумма: выписанный конструктор, вызов, имя. -/
+partial def «сумма» (s0 : String) : Option «ТермСм» :=
+  let s := «ужать» s0
+  match «вариант?» s with
+  | some (k, r) =>
+    if r = "" then some (.«вариант» k .«нет»)
+    else if r.startsWith "с " then do pure (.«вариант» k (← «поля» («разделитьСверху» (r.«сн» 2) "и")))
+    else none
+  | none =>
+    if let some (f, args) := «вызов?» s then do pure (.«вызовСм» f (← «доводы» args))
+    else if «имя?» s then some (.«имяСм» s)
+    else none
+
+/-- Поля конструктора: `«п» равным Т`. -/
+partial def «поля» : List String → Option «Поля»
+  | [] => some .«нет»
+  | x :: r => match «надвое» x "равным" with
+    | some (p, t) => do pure (.«ещё» («голо» p) (← «тело» t) (← «поля» r))
+    | none => none
+
+/-- Ветви разбора суммы: `вариант «В» с п как х и … то Ф`; разрез — по первому «то». -/
+partial def «случаи» : List String → Option «Случаи»
+  | [] => some .«нет»
+  | x :: r =>
+    match «разделитьСверху» («ужать» x) "то" with
+    | «обр» :: «т» :: «ещё» =>
+      match «вариант?» («ужать» «обр») with
+      | some (k, rr) =>
+        let bs? : Option (List (String × String)) :=
+          if rr = "" then some []
+          else if rr.startsWith "с " then
+            («разделитьСверху» (rr.«сн» 2) "и").mapM (fun b => (fun (p, y) => («голо» p, y)) <$> «надвое» b "как")
+          else none
+        do
+          let bs ← bs?
+          let u ← «форм» (" то ".intercalate («т» :: «ещё»))
+          pure (.«ещё» k bs u (← «случаи» r))
+      | none => none
+    | _ => none
 
 partial def «доводы» : List String → Option «Доводы»
   | [] => some .«нет»
@@ -442,11 +520,6 @@ def «шаг» (l : String) («вне» : Bool := false) : Except String «Ша�
   let «номер» ← match («слова»[1]?).bind String.toNat? with
     | some n => pure n | none => throw s!"строка «{l}»: номер шага не число"
   let «правило» := «слова».getD 2 ""
-  let «ф» ← match «форм» («терм» («вУголках» l)) with
-    | some f => pure f
-    | none =>
-      if «вне» || («имяПравила» «правило»).isNone then pure «непрочтено»
-      else throw s!"строка «{l}»: формула не читается"
   let «хвост» := (match (l.splitOn "⟩")[1]? with | some x => x.«обр» | none => "")
   let «осн» ← if «хвост» = "сам" then pure «Основание».«сам»
     else if «хвост».startsWith "строка " then
@@ -463,6 +536,11 @@ def «шаг» (l : String) («вне» : Bool := false) : Except String «Ша�
         | some n, some m, some k => pure (.«из3» n m k) | _, _, _ => throw s!"строка «{l}»: основание «из N M K»"
       | _ => throw s!"строка «{l}»: основание «из» разобрано быть не может"
     else throw s!"строка «{l}»: основание не названо"
+  let «ф» ← match «форм» («терм» («вУголках» l)) with
+    | some f => pure f
+    | none =>
+      if «вне» || «внеПриёмки» «правило» «осн» then pure «непрочтено»
+      else throw s!"строка «{l}»: формула не читается"
   pure ⟨«номер», «правило», «ф», «осн»⟩
 
 /-- Запись, разрезанная на утверждения: заголовок и обрезанные строки под ним. -/
@@ -532,7 +610,7 @@ def «утверждение» (h : String) (b : List String) («исходни�
     let («шаги», _) ← («выводСтроки».filter (fun l => !(l.startsWith "вывод цель") && l ≠ "вывод конец")).foldlM
       (fun (acc : List «Шаг» × Bool) l => do
         let «ш» ← «шаг» l acc.2
-        pure (acc.1 ++ [«ш»], acc.2 || («имяПравила» «ш».«правило»).isNone)) ([], false)
+        pure (acc.1 ++ [«ш»], acc.2 || «внеПриёмки» «ш».«правило» «ш».«основание»)) ([], false)
     pure (some ⟨«цель», «шаги»⟩)
   let «ф» ← match «функция» «исходник» «чья» with
     | some f => pure f

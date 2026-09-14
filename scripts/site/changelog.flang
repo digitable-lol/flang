@@ -1437,3 +1437,7 @@
     "  \"unreleased\": {\n    \"entries\": ", («Json массив записей» от 2 и (журнал.«невыпущенные»)), "\n  }\n",
     "}\n"
   ] по ""
+
+тотальная функция «Объявление ярлыка журнал:проверка»
+  возвращает строка
+  "bootstrap/flang test && bootstrap/flang test scripts/site/build-changelog.flang && bootstrap/flang io scripts/site/build-changelog.flang --plan 'Журнал не отстал' --max-steps 2000000000 — печатник проверен своими примерами (прежний --self-test), и журнал совпадает с историей"

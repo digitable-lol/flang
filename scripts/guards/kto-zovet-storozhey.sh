@@ -266,3 +266,4 @@ for imya in sorted(zakrytye):
           file=sys.stderr)
 sys.exit(1)
 PY
+# ярлык «зов:проверка» sh --check — сторожа, которых CI не зовёт, сходятся с ведомостью — в обе стороны

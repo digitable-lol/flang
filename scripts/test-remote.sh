@@ -146,3 +146,4 @@ else
   printf '    %sНАБОР НЕ ПРОЙДЕН%s (код %d)\n' "$RED" "$RST" "$STATUS"
 fi
 exit "$STATUS"
+# ярлык «тесты:по-ssh» bash — тот же набор на машине по ssh: FLANG_REMOTE=<алиас>

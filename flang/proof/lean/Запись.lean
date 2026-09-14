@@ -88,6 +88,15 @@ structure «Функция» where
   «тело» : Option (Nat × «Тело»)
 deriving Repr
 
+/-- Функция исходника с телом одной строкой — для развёртки вызова (Разв3): имя,
+    как его пишет вызов (в ёлочках), параметры по порядку, строка тела, тело. -/
+structure «Определение» where
+  «имя» : String
+  «параметры» : List String
+  «строка» : Nat
+  «тело» : «Тело»
+deriving Repr
+
 /-- `обязательство вход «Т» ⟨Ф⟩ строка N на зовущем` -/
 structure «Обязательство» where
   «имя» : String
@@ -107,6 +116,8 @@ structure «Утверждение» where
   «естьПосылкиИлиХоды» : Bool
   «обязательства» : List «Обязательство»
   «вывод» : Option «Вывод»
+  /-- функции исходника с телом одной строкой (Разв3) -/
+  «определения» : List «Определение»
 deriving Repr
 
 /-- Запись: исходник и утверждения. -/
@@ -149,20 +160,31 @@ def «Утверждение».«доводыСДном» (u : «Утвержд�
 def «результат-есть» (t : «Тело») : «Факт» «Мир» :=
   fun w => w.«имя» "результат" = «значение» t w
 
+/-- Параметры, связанные доводами по порядку (первый заслоняет прочие). -/
+def «связатьВсе» (w : «Мир») (ps : List String) (vs : List «Значение») : «Мир» :=
+  (ps.zip vs).foldr (fun q w' => «связать» w' q.1 q.2) w
+
+/-- Факт «функция равна своему телу» (Разв3): вызов с доводами числом параметров
+    есть тело, где параметры носят доводы. -/
+def «определение-есть» (d : «Определение») : «Факт» «Мир» :=
+  fun w => ∀ vs : List «Значение», vs.length = d.«параметры».length →
+    w.«функции» d.«имя» vs = «значение» d.«тело» («связатьВсе» w d.«параметры» vs)
+
 /-- Γ утверждения: допущения, дно объявленных доводов, обязательства входа,
-    результат равен телу. -/
+    результат равен телу, функции исходника равны своим телам. -/
 def «окружение» (u : «Утверждение») : List («Факт» «Мир») :=
   u.«допущения».map «Факт-из» ++
   u.«доводыСДном».map (fun x => «Факт-из» («≥0» (.«имя» x))) ++
   u.«обязательства».map (fun o => «Факт-из» o.«формула») ++
   (match u.«функция».«тело» with
    | some (_, t) => [«результат-есть» t]
-   | none => [])
+   | none => []) ++
+  u.«определения».map «определение-есть»
 
 theorem «допущение-в-окружении» (u : «Утверждение») (n : Nat) (f : «Форм»)
     (h : u.«допущение» n = some f) : «Факт-из» f ∈ «окружение» u := by
   simp only [«окружение»]
-  apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left
+  apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left
   unfold «Утверждение».«допущение» «Функция».«строка» at h
   simp only [«Утверждение».«допущения», List.mem_map, List.mem_filterMap]
   revert h
@@ -182,7 +204,7 @@ theorem «дно-в-окружении» (u : «Утверждение») (n : N
     (h : u.«довод» n x = some d) (hd : d.«сДном» = true) :
     «Факт-из» («≥0» (.«имя» x)) ∈ «окружение» u := by
   simp only [«окружение»]
-  apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_right
+  apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_right
   unfold «Утверждение».«довод» «Функция».«строка» at h
   simp only [«Утверждение».«доводыСДном», List.mem_map, List.mem_flatMap]
   revert h
@@ -207,11 +229,17 @@ theorem «дно-в-окружении» (u : «Утверждение») (n : N
 theorem «обязательство-в-окружении» (u : «Утверждение») (o : «Обязательство»)
     (h : o ∈ u.«обязательства») : «Факт-из» o.«формула» ∈ «окружение» u := by
   simp only [«окружение»]
-  apply List.mem_append_left; apply List.mem_append_right
+  apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_right
   exact List.mem_map.mpr ⟨o, h, rfl⟩
 
 theorem «результат-в-окружении» (u : «Утверждение») (n : Nat) (t : «Тело»)
     (h : u.«функция».«тело» = some (n, t)) : «результат-есть» t ∈ «окружение» u := by
   simp only [«окружение»]
-  apply List.mem_append_right
+  apply List.mem_append_left; apply List.mem_append_right
   rw [h]; simp
+
+theorem «определение-в-окружении» (u : «Утверждение») (d : «Определение»)
+    (h : d ∈ u.«определения») : «определение-есть» d ∈ «окружение» u := by
+  simp only [«окружение»]
+  apply List.mem_append_right
+  exact List.mem_map.mpr ⟨d, h, rfl⟩

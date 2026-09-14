@@ -37,6 +37,7 @@ import «Приёмка»
 | М2 | «М2-пустое-начало» | «мера2-значение», «собрать2-замена» здесь |
 | К↑ | «К↑» (проекция произведения) | «полеСтороны-значение», «собрать2-замена» здесь |
 | Разв1 (сумма) | «Разв1-сумма» (ветвь своего варианта) | «ветвь?-значение», «поляИмён-мир», «подстПар-значение» здесь |
+| Разв3 | «Разв3» (β-редукция) | своё тело — «подстановка» + факт «результат равен телу»; вызов — «замФ-верно», «развёрнут?-верно» + факт «функция равна телу» здесь |
 
 До задачи 3855 у строк Или1, Или2, И1, И2, Цел1, Цел2 лемм в `Правила.lean`
 не было: случаи Или/И закрывались здесь своими леммами о булевых связках, а
@@ -44,13 +45,14 @@ import «Приёмка»
 
 ## Подмножество — числом
 
-Теорема доказана для 70 правил приёмки (`«покрыто» = 70`, проверено
+Теорема доказана для 71 правила приёмки (`«покрыто» = 71`, проверено
 `decide`) из 78 приёмов `шаг_вывода`; из 15 именованных — для 15 (Разв1 — для
 разбора выписанного конструктора суммы, Разв1 по строке тела вне приёмки).
-Восемь непокрытых и почему — в шапке `Приёмка.lean`.
+Семь непокрытых и почему — в шапке `Приёмка.lean`.
 -/
 
 set_option linter.unusedVariables false
+set_option linter.unusedSimpArgs false
 
 open «Знач»
 
@@ -125,7 +127,7 @@ theorem «П2-равен-терм» (Γ : List («Факт» «Мир»)) (t : �
 theorem «допущение-любое-в-окружении» (u : «Утверждение») (f : «Форм») (h : f ∈ u.«допущения») :
     «Факт-из» f ∈ «окружение» u := by
   simp only [«окружение»]
-  apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left
+  apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left
   exact List.mem_map.mpr ⟨f, h, rfl⟩
 
 theorem «шагПо-в» {«преж» : List «Принятый»} {k : Nat} {p : «Принятый»}
@@ -485,6 +487,790 @@ theorem «подстПар-значение» (w : «Мир») : ∀ (b : «Фо
         have h1 := hall q' hq'
         have h2 : («свободныеТело» q.2).contains q'.1 = true := by simpa using hfree
         first | (rw [h1] at h2; cases h2) | simp_all)]
+
+/-! ## Разв3: развёртка вызова (ADR-0042 §2, задача 6432) -/
+
+theorem «попаданиеЧ» {H : «Тело» → «Тело» → Bool} {w : «Мир»}
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) {a b : «ТермЧ»}
+    (h : H (.«число» a) (.«число» b) = true) : «оценить» a w = «оценить» b w := by
+  have e := HH _ _ h
+  simp only [«значение»] at e
+  first | exact «Значение».«число».inj e | exact e
+theorem «попаданиеС» {H : «Тело» → «Тело» → Bool} {w : «Мир»}
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) {a b : «ТермС»}
+    (h : H (.«список» a) (.«список» b) = true) : «оценитьС» a w = «оценитьС» b w := by
+  have e := HH _ _ h
+  simp only [«значение»] at e
+  first | exact «Значение».«список».inj e | exact e
+theorem «попаданиеТ» {H : «Тело» → «Тело» → Bool} {w : «Мир»}
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) {a b : «ТермТ»}
+    (h : H (.«текст» a) (.«текст» b) = true) : «оценитьТ» a w = «оценитьТ» b w := by
+  have e := HH _ _ h
+  simp only [«значение»] at e
+  first | exact «Значение».«текст».inj e | exact e
+theorem «попаданиеФ» {H : «Тело» → «Тело» → Bool} {w : «Мир»}
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) {a b : «Форм»}
+    (h : H (.«признак» a) (.«признак» b) = true) : «оценитьФ» a w = «оценитьФ» b w := by
+  have e := HH _ _ h
+  simp only [«значение»] at e
+  first | exact «Значение».«признак».inj e | exact e
+theorem «попаданиеСм» {H : «Тело» → «Тело» → Bool} {w : «Мир»}
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) {a b : «ТермСм»}
+    (h : H (.«сумма» a) (.«сумма» b) = true) : «оценитьСм» a w = «оценитьСм» b w := by
+  have e := HH _ _ h
+  simp only [«значение»] at e
+  exact e
+
+mutual
+theorem «замЧ-верно» (H : «Тело» → «Тело» → Bool) (w : «Мир»)
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) :
+    ∀ (a b : «ТермЧ»), «замЧ» H a b = true → «оценить» a w = «оценить» b w
+  | .«лит» x1, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«имя» x1, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«плюс» x1 x2, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценить»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замЧ-верно» H w HH x2 y2 h2]
+  | .«минус» x1 x2, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценить»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замЧ-верно» H w HH x2 y2 h2]
+  | .«умножить» x1 x2, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценить»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замЧ-верно» H w HH x2 y2 h2]
+  | .«остаток» x1 x2, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценить»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замЧ-верно» H w HH x2 y2 h2]
+  | .«если» x1 x2 x3, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2 y3
+        obtain ⟨⟨h1, h2⟩, h3⟩ := hs
+        simp only [«оценить»]
+        rw [«замФ-верно» H w HH x1 y1 h1, «замЧ-верно» H w HH x2 y2 h2, «замЧ-верно» H w HH x3 y3 h3]
+  | .«длина» x1, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«оценить»]
+        rw [«замС-верно» H w HH x1 y1 h1]
+  | .«кодСимвола» x1, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«оценить»]
+        rw [«замТ-верно» H w HH x1 y1 h1]
+  | .«свёртка» x1 x2 x3 x4 x5, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«разбор» x1 x2 x3 x4 x5, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«вызов» x1 x2, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        subst h1
+        simp only [«оценить»]
+        rw [«замД-верно» H w HH x2 y2 h2]
+  | .«поле» x1 x2, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        subst h2
+        simp only [«оценить»]
+        rw [«замСм-верно» H w HH x1 y1 h1]
+theorem «замС-верно» (H : «Тело» → «Тело» → Bool) (w : «Мир»)
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) :
+    ∀ (a b : «ТермС»), «замС» H a b = true → «оценитьС» a w = «оценитьС» b w
+  | .«пустой», b, h => by
+      unfold «замС» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеС» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«имяС» x1, b, h => by
+      unfold «замС» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеС» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«выписан» x1, b, h => by
+      unfold «замС» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеС» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«оценитьС»]
+        rw [«замЧл-верно» H w HH x1 y1 h1]
+  | .«приписать» x1 x2, b, h => by
+      unfold «замС» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеС» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьС»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замС-верно» H w HH x2 y2 h2]
+  | .«добавить» x1 x2, b, h => by
+      unfold «замС» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеС» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьС»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замС-верно» H w HH x2 y2 h2]
+  | .«отбор» x1 x2 x3, b, h => by
+      unfold «замС» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеС» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«еслиС» x1 x2 x3, b, h => by
+      unfold «замС» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеС» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2 y3
+        obtain ⟨⟨h1, h2⟩, h3⟩ := hs
+        simp only [«оценитьС»]
+        rw [«замФ-верно» H w HH x1 y1 h1, «замС-верно» H w HH x2 y2 h2, «замС-верно» H w HH x3 y3 h3]
+  | .«свёрткаС» x1 x2 x3 x4 x5, b, h => by
+      unfold «замС» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеС» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«вызовС» x1 x2, b, h => by
+      unfold «замС» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеС» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        subst h1
+        simp only [«оценитьС»]
+        rw [«замД-верно» H w HH x2 y2 h2]
+theorem «замТ-верно» (H : «Тело» → «Тело» → Bool) (w : «Мир»)
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) :
+    ∀ (a b : «ТермТ»), «замТ» H a b = true → «оценитьТ» a w = «оценитьТ» b w
+  | .«литТ» x1, b, h => by
+      unfold «замТ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеТ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«имяТ» x1, b, h => by
+      unfold «замТ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеТ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«склейка» x1 x2, b, h => by
+      unfold «замТ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеТ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьТ»]
+        rw [«замТ-верно» H w HH x1 y1 h1, «замТ-верно» H w HH x2 y2 h2]
+  | .«еслиТ» x1 x2 x3, b, h => by
+      unfold «замТ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеТ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2 y3
+        obtain ⟨⟨h1, h2⟩, h3⟩ := hs
+        simp only [«оценитьТ»]
+        rw [«замФ-верно» H w HH x1 y1 h1, «замТ-верно» H w HH x2 y2 h2, «замТ-верно» H w HH x3 y3 h3]
+  | .«вызовТ» x1 x2, b, h => by
+      unfold «замТ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеТ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        subst h1
+        simp only [«оценитьТ»]
+        rw [«замД-верно» H w HH x2 y2 h2]
+theorem «замФ-верно» (H : «Тело» → «Тело» → Bool) (w : «Мир»)
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) :
+    ∀ (a b : «Форм»), «замФ» H a b = true → «оценитьФ» a w = «оценитьФ» b w
+  | .«да», b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«нет», b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«имяФ» x1, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«неБольше» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замЧ-верно» H w HH x2 y2 h2]
+  | .«неМеньше» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замЧ-верно» H w HH x2 y2 h2]
+  | .«меньше» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замЧ-верно» H w HH x2 y2 h2]
+  | .«больше» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замЧ-верно» H w HH x2 y2 h2]
+  | .«равен» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замЧ-верно» H w HH x2 y2 h2]
+  | .«равенС» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замС-верно» H w HH x1 y1 h1, «замС-верно» H w HH x2 y2 h2]
+  | .«равенТ» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замТ-верно» H w HH x1 y1 h1, «замТ-верно» H w HH x2 y2 h2]
+  | .«содержит» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замС-верно» H w HH x1 y1 h1, «замЧ-верно» H w HH x2 y2 h2]
+  | .«неУбывает» x1, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«оценитьФ»]
+        rw [«замС-верно» H w HH x1 y1 h1]
+  | .«пусто» x1, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«оценитьФ»]
+        rw [«замС-верно» H w HH x1 y1 h1]
+  | .«пустоТ» x1, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«оценитьФ»]
+        rw [«замТ-верно» H w HH x1 y1 h1]
+  | .«начинается» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замТ-верно» H w HH x1 y1 h1, «замТ-верно» H w HH x2 y2 h2]
+  | .«кон» x1, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«оценитьФ»]
+        rw [«замЧ-верно» H w HH x1 y1 h1]
+  | .«цел» x1, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«оценитьФ»]
+        rw [«замЧ-верно» H w HH x1 y1 h1]
+  | .«помещается» x1, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«оценитьФ»]
+        rw [«замЧ-верно» H w HH x1 y1 h1]
+  | .«всех» x1 x2 x3, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«есть» x1 x2 x3, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«и» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замФ-верно» H w HH x1 y1 h1, «замФ-верно» H w HH x2 y2 h2]
+  | .«или» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замФ-верно» H w HH x1 y1 h1, «замФ-верно» H w HH x2 y2 h2]
+  | .«не» x1, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«оценитьФ»]
+        rw [«замФ-верно» H w HH x1 y1 h1]
+  | .«еслиФ» x1 x2 x3, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2 y3
+        obtain ⟨⟨h1, h2⟩, h3⟩ := hs
+        simp only [«оценитьФ»]
+        rw [«замФ-верно» H w HH x1 y1 h1, «замФ-верно» H w HH x2 y2 h2, «замФ-верно» H w HH x3 y3 h3]
+  | .«вызовФ» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        subst h1
+        simp only [«оценитьФ»]
+        rw [«замД-верно» H w HH x2 y2 h2]
+  | .«разборСм» x1 x2, b, h => by
+      unfold «замФ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеФ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+theorem «замТело-верно» (H : «Тело» → «Тело» → Bool) (w : «Мир»)
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) :
+    ∀ (a b : «Тело»), «замТело» H a b = true → «значение» a w = «значение» b w
+  | .«число» x1, b, h => by
+      unfold «замТело» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact HH _ _ hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«значение»]
+        rw [«замЧ-верно» H w HH x1 y1 h1]
+  | .«список» x1, b, h => by
+      unfold «замТело» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact HH _ _ hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«значение»]
+        rw [«замС-верно» H w HH x1 y1 h1]
+  | .«текст» x1, b, h => by
+      unfold «замТело» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact HH _ _ hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«значение»]
+        rw [«замТ-верно» H w HH x1 y1 h1]
+  | .«признак» x1, b, h => by
+      unfold «замТело» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact HH _ _ hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«значение»]
+        rw [«замФ-верно» H w HH x1 y1 h1]
+  | .«сумма» x1, b, h => by
+      unfold «замТело» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact HH _ _ hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1
+        have h1 := hs
+        simp only [«значение»]
+        rw [«замСм-верно» H w HH x1 y1 h1]
+  | .«вызов» x1 x2, b, h => by
+      unfold «замТело» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact HH _ _ hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        subst h1
+        simp only [«значение»]
+        rw [«замД-верно» H w HH x2 y2 h2]
+theorem «замД-верно» (H : «Тело» → «Тело» → Bool) (w : «Мир»)
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) :
+    ∀ (a b : «Доводы»), «замД» H a b = true → «оценитьД» a w = «оценитьД» b w
+  | .«нет», b, h => by
+      unfold «замД» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with he | hs
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«ещё» x1 x2, b, h => by
+      unfold «замД» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with he | hs
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьД»]
+        rw [«замТело-верно» H w HH x1 y1 h1, «замД-верно» H w HH x2 y2 h2]
+theorem «замЧл-верно» (H : «Тело» → «Тело» → Bool) (w : «Мир»)
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) :
+    ∀ (a b : «Члены»), «замЧл» H a b = true → «оценитьЧл» a w = «оценитьЧл» b w
+  | .«нет», b, h => by
+      unfold «замЧл» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with he | hs
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«ещё» x1 x2, b, h => by
+      unfold «замЧл» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with he | hs
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        simp only [«оценитьЧл»]
+        rw [«замЧ-верно» H w HH x1 y1 h1, «замЧл-верно» H w HH x2 y2 h2]
+theorem «замСм-верно» (H : «Тело» → «Тело» → Bool) (w : «Мир»)
+    (HH : ∀ A B, H A B = true → «значение» A w = «значение» B w) :
+    ∀ (a b : «ТермСм»), «замСм» H a b = true → «оценитьСм» a w = «оценитьСм» b w
+  | .«вариант» x1 x2, b, h => by
+      unfold «замСм» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеСм» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«имяСм» x1, b, h => by
+      unfold «замСм» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеСм» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«вызовСм» x1 x2, b, h => by
+      unfold «замСм» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеСм» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+        rename_i y1 y2
+        obtain ⟨h1, h2⟩ := hs
+        subst h1
+        simp only [«оценитьСм»]
+        rw [«замД-верно» H w HH x2 y2 h2]
+end
+
+
+theorem «оценитьД-списком» (w : «Мир») :
+    ∀ (ds : «Доводы»), «оценитьД» ds w = («доводыСписком» ds).map (fun t => «значение» t w)
+  | .«нет» => rfl
+  | .«ещё» t r => by
+      simp only [«оценитьД», «доводыСписком», List.map_cons]
+      rw [«оценитьД-списком» w r]
+
+theorem «связатьВсе-пары» (w : «Мир») (g : «Тело» → «Значение») :
+    ∀ (ps : List String) (dl : List «Тело»),
+    «связатьВсе» w ps (dl.map g) = (ps.zip dl).foldr (fun q w' => «связать» w' q.1 (g q.2)) w
+  | [], _ => by simp [«связатьВсе»]
+  | _ :: _, [] => by simp [«связатьВсе»]
+  | x :: ps, t :: dl => by
+      have ih := «связатьВсе-пары» w g ps dl
+      simp only [«связатьВсе», List.map_cons, List.zip_cons_cons, List.foldr_cons] at ih ⊢
+      rw [ih]
+
+theorem «подстПарТ-значение» (w : «Мир») : ∀ (b : «Тело») (ps : List (String × «Тело»)), «цепьЧистаТ» b ps = true →
+    «значение» («подстПарТ» b ps) w = «значение» b (ps.foldr (fun q w' => «связать» w' q.1 («значение» q.2 w)) w)
+  | b, [], _ => rfl
+  | b, q :: r, h => by
+      simp only [«цепьЧистаТ», Bool.and_eq_true, Bool.not_eq_true', List.all_eq_true] at h
+      obtain ⟨⟨hz, hall⟩, hr⟩ := h
+      simp only [«подстПарТ», List.foldr_cons]
+      rw [«подстПарТ-значение» w _ r hr, «подстановкаТело» b q.1 q.2 _ («захват?-чисто» hz)]
+      simp only [«мир-с»]
+      rw [«значение-под-чужими» q.2 w (fun q' => «значение» q'.2 w) r (fun q' hq' hfree => by
+        have h1 := hall q' hq'
+        have h2 : («свободныеТело» q.2).contains q'.1 = true := by simpa using hfree
+        first | (rw [h1] at h2; cases h2) | simp_all)]
+
+/-- Вызов функции, равной своему телу, есть тело с доводами на местах параметров. -/
+theorem «развёртка?-значение» (d : «Определение») (w : «Мир») (hd : «определение-есть» d w)
+    {f : String} {ds : «Доводы»} {R : «Тело»} (h : «развёртка?» d f ds = some R) :
+    w.«функции» f («оценитьД» ds w) = «значение» R w := by
+  unfold «развёртка?» at h
+  split at h
+  · rename_i hc
+    obtain ⟨rfl, hlen, hch⟩ := hc
+    cases h
+    rw [«оценитьД-списком», hd ((«доводыСписком» ds).map (fun t => «значение» t w)) (by simp [hlen]),
+      «связатьВсе-пары», «подстПарТ-значение» w _ _ hch]
+  · cases h
+
+/-- Узел-вызов равен значением своему итогу, прочитанному сортом узла. -/
+theorem «вызовТела?-значение» {A : «Тело»} {f : String} {ds : «Доводы»} {R : «Тело»} {w : «Мир»}
+    (h : «вызовТела?» A = some (f, ds)) (hv : w.«функции» f («оценитьД» ds w) = «значение» R w) :
+    «значение» A w = «значение» («сортом» A R) w := by
+  unfold «вызовТела?» at h
+  split at h <;> (try cases h)
+  all_goals simp only [«сортом», «значение», «оценить», «оценитьС», «оценитьТ», «оценитьФ», «оценитьСм»]
+  · rw [«числом-верно», hv]
+  · rw [«списком-верно», hv]
+  · rw [«текстом-верно», hv]
+  · rw [«признаком-верно», hv]
+  · rw [«суммой-верно», hv]
+  · exact hv
+
+/-- Замена, которую велит «развёрнут?», сохраняет значение — при факте «функция
+    равна своему телу». -/
+theorem «развёрнут?-верно» (d : «Определение») (w : «Мир») (hd : «определение-есть» d w) :
+    ∀ A B, «развёрнут?» d A B = true → «значение» A w = «значение» B w := by
+  intro A B h
+  unfold «развёрнут?» at h
+  split at h
+  · rename_i f ds hA
+    split at h
+    · rename_i R hR
+      simp only [decide_eq_true_eq] at h
+      subst h
+      exact «вызовТела?-значение» hA («развёртка?-значение» d w hd hR)
+    · cases h
+  · cases h
 
 /-! ## Инвариант блока и случай на правило -/
 
@@ -906,6 +1692,28 @@ theorem «шаг-верен» (u : «Утверждение») («преж» : L
     simp only [«оценитьФ», «оценитьСм»]
     rw [«ветвь?-значение» k _ w cs bs b hv, «поляИмён-мир» k fs w bs ps hps]
     exact hb
+  | «Разв3-своё» n m q t ho hp h1 ht hz hp1 =>
+    simp only [«итог»]
+    have hq := hp1 ▸ hinv q («шагПо-в» h1)
+    intro w hw
+    have hr : «результат-есть» t w := hw _ (List.mem_append_right _ («результат-в-окружении» u m t ht))
+    have hv := hq w hw
+    simp only [«Факт-из»] at hv ⊢
+    rw [«подстановкаФ» _ _ _ _ («захват?-чисто» hz)] at hv
+    simp only [«мир-с»] at hv
+    unfold «результат-есть» at hr
+    rw [← hr, «связать-своё»] at hv
+    exact hv
+  | «Разв3-вызов» n m q d ho hp h1 hd hm hr =>
+    simp only [«итог»]
+    have hq := hinv q («шагПо-в» h1)
+    intro w hw
+    have hdef : «определение-есть» d w :=
+      hw _ (List.mem_append_right _ («определение-в-окружении» u d hd))
+    have heq := «замФ-верно» («развёрнут?» d) w («развёрнут?-верно» d w hdef) _ _ hr
+    have hv := hq w hw
+    simp only [«Факт-из»] at hv ⊢
+    rw [heq]; exact hv
 
 theorem «блок-верен» (u : «Утверждение») : ∀ («шаги» : List «Шаг») («преж» «итог» : List «Принятый»),
     «БлокПринят» u «шаги» «преж» «итог» → «Инв» u «преж» → «Инв» u «итог»
@@ -937,4 +1745,4 @@ theorem «состоятельность-разрешимо» (u : «Утвер�
   «состоятельность» u («принят?-верно» u h)
 
 /-- Число покрытых правил; сверщик именует 78 приёмов в `шаг_вывода`. -/
-theorem «покрыто-число» : «покрыто» = 70 := by decide
+theorem «покрыто-число» : «покрыто» = 71 := by decide

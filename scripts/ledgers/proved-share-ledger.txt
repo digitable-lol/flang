@@ -1076,6 +1076,7 @@ ed9c9b6a5de7aca5154692ab88afd44c|1|1|0|0|0|flang/scripts/link-collision-guard.fl
 17fa49007181f60a256b3bde9a0ed530|44|44|0|0|0|flang/scripts/memory-guard.flang
 2a69079431f766d92cfdab344330f844|7|7|0|0|0|flang/scripts/node-across-targets.flang
 75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/породить-атомы.flang
+8dae7cb8de0ffc3c6a2e3149a07aa437|15|12|3|0|0|flang/scripts/proof-ledger.flang
 f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.flang
 41ff43f2cca335b1ac94a00de37d57f4|6|6|0|0|0|flang/scripts/scheduler-across-targets.flang
 2886864b965d7a0ddedcc3a2c40826c1|2|2|0|0|0|flang/scripts/supervisor-across-targets.flang

@@ -242,6 +242,53 @@ theorem «шагСчёта-верно» {s : «ТермЧ»} {a e : String} (hae
       exact «Н6» _ _ _ («ветвьСчёта-верно» hae h.1 w acc v hacc) («ветвьСчёта-верно» hae h.2 w acc v hacc)
     · cases h
 
+theorem «положителенН8» (u : «Утверждение») (Γ : List («Факт» «Мир»)) (t : «ТермЧ»)
+    (hΓ : ∀ f ∈ «окружение» u, f ∈ Γ) (h : «литералН8» t = true ∨ «отрезокН8» u t = true) :
+    «Выводится» Γ (.«меньше» (.«лит» 0) t) ∧ «Выводится» Γ (.«кон» t) := by
+  rcases h with h | h
+  · cases t with
+    | «лит» z =>
+      simp only [«литералН8», decide_eq_true_eq] at h
+      exact ⟨«подъём0» (fun w => by
+          simp only [«Факт-из», «оценитьФ», «оценить»]; exact decide_eq_true h.1),
+        «подъём0» (fun w => by simp [«Факт-из», «оценитьФ», «оценить», «конечно»])⟩
+    | _ => simp [«литералН8»] at h
+  · simp only [«отрезокН8», Bool.and_eq_true, List.any_eq_true] at h
+    obtain ⟨⟨f1, hf1, h1⟩, ⟨f2, hf2, h2⟩⟩ := h
+    have m1 := hΓ _ («допущение-любое-в-окружении» u f1 hf1)
+    have m2 := hΓ _ («допущение-любое-в-окружении» u f2 hf2)
+    constructor
+    · split at h1
+      · rename_i t' k
+        simp only [decide_eq_true_eq] at h1
+        obtain ⟨rfl, hk⟩ := h1
+        exact «подъём1» (fun w hw => by
+          simp only [«Факт-из», «оценитьФ», «оценить»] at hw ⊢
+          exact «переходСтрого2» (show «неБольше» («кон» 0) («кон» k) = true from decide_eq_true hk) hw)
+          («Т1» _ _ m1)
+      · cases h1
+    · split at h2
+      · rename_i t' k
+        simp only [decide_eq_true_eq] at h2
+        subst h2
+        exact «подъём1» (fun w hw => («факт-кон» _ w).mpr («Кон1» _ k ((«факт-потолок» _ _ w).mp hw)))
+          («Т1» _ _ m2)
+      · cases h2
+
+theorem «второйН8-верно» {u : «Утверждение»} {x y v : «ТермЧ»} {b : Bool} (h : «второйН8» u x y = some (v, b)) :
+    (v = y ∧ («литералН8» x = true ∨ «отрезокН8» u x = true)) ∨
+    (v = x ∧ («литералН8» y = true ∨ «отрезокН8» u y = true)) := by
+  unfold «второйН8» at h
+  split at h
+  · cases h; exact Or.inr ⟨rfl, Or.inl ‹_›⟩
+  · split at h
+    · cases h; exact Or.inl ⟨rfl, Or.inl ‹_›⟩
+    · split at h
+      · cases h; exact Or.inl ⟨rfl, Or.inr ‹_›⟩
+      · split at h
+        · cases h; exact Or.inr ⟨rfl, Or.inr ‹_›⟩
+        · cases h
+
 /-! ## Инвариант блока и случай на правило -/
 
 /-- Каждый принятый шаг выводится из своих открытых гипотез и окружения. -/
@@ -578,6 +625,20 @@ theorem «шаг-верен» (u : «Утверждение») («преж» : L
   | «Н7» n q l n0 a e s ho hp h1 hf hae hs hp1 =>
     simp only [«итог»]
     rw [hf]; exact «Н7-терм» _ l n0 a e s (hp1 ▸ hinv q («шагПо-в» h1)) («шагСчёта-верно» hae hs)
+  | «Н8» n q x y v b ho hp h1 hf hv hp1 =>
+    simp only [«итог»]
+    rw [hf]
+    have hq := hp1 ▸ hinv q («шагПо-в» h1)
+    have hΓ : ∀ f ∈ «окружение» u, f ∈ «гип» q.«откр» ++ «окружение» u := fun f hf => List.mem_append_right _ hf
+    rcases «второйН8-верно» hv with ⟨rfl, hx⟩ | ⟨rfl, hy⟩
+    · obtain ⟨a1, a2⟩ := «положителенН8» u _ x hΓ hx
+      exact «Н8-терм» _ x v a1 a2 hq
+    · obtain ⟨a1, a2⟩ := «положителенН8» u _ y hΓ hy
+      have := «Н8-терм» _ y v a1 a2 hq
+      intro w hw
+      have := this w hw
+      simp only [«Факт-из», «оценитьФ», «оценить», «неМеньше»] at this ⊢
+      rw [«умножить-перест»]; exact this
 
 theorem «блок-верен» (u : «Утверждение») : ∀ («шаги» : List «Шаг») («преж» «итог» : List «Принятый»),
     «БлокПринят» u «шаги» «преж» «итог» → «Инв» u «преж» → «Инв» u «итог»
@@ -609,4 +670,4 @@ theorem «состоятельность-разрешимо» (u : «Утвер�
   «состоятельность» u («принят?-верно» u h)
 
 /-- Число покрытых правил; сверщик именует 70 приёмов в `шаг_вывода`. -/
-theorem «покрыто-число» : «покрыто» = 62 := by decide
+theorem «покрыто-число» : «покрыто» = 63 := by decide

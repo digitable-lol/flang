@@ -19,7 +19,7 @@
  *
  * ── Кто здесь свидетель и почему именно он ──────────────────────────────────
  *
- * Свидетель — `flang/concurrency/link.js`, напечатанный модуль цели JavaScript. Он
+ * Свидетель — печать `flang/concurrency/link.flang` в цель JavaScript, на лету. Он
  * выбран не потому, что удобен, а потому, что он РАБОТАЕТ: настоящий узел
  * (`flang/concurrency/distributed.mjs`) зовёт именно его, и по нему зелены 13 прогонов
  * `flang/concurrency/distributed.test.mjs`, где два узла говорят по настоящим сокетам,
@@ -40,10 +40,10 @@
  */
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
-import { readFileSync } from "node:fs"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import test from "node:test"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, pathToFileURL } from "node:url"
 
 import { позвать } from "../scripts/binary.mjs"
 import { globSync } from "./glob.mjs"
@@ -53,7 +53,14 @@ import { рабочийКаталог, средаСборки } from "./tempdir.
 const корень = fileURLToPath(new URL("../../", import.meta.url))
 const эталон = "flang/concurrency/link.flang"
 const рабочий = рабочийКаталог("svyaz-celi")
-const свидетель = await import("../concurrency/link.js")
+const печатьСвидетеля = join(рабочий, "svidetel")
+mkdirSync(печатьСвидетеля, { recursive: true })
+{
+  const итог = позвать(["emit", join(корень, "flang/concurrency/link.flang"), "--target", "js", "--out", печатьСвидетеля])
+  if (итог.код !== 0) throw new Error(`свидетель flang/concurrency/link.flang не напечатался в js: ${итог.ошибки}`)
+  writeFileSync(join(печатьСвидетеля, "package.json"), '{"type":"module"}\n')
+}
+const свидетель = await import(pathToFileURL(join(печатьСвидетеля, "svyaz_uzlov.js")).href)
 
 /* ─────────────────── значения прогонщика ─────────────────── */
 

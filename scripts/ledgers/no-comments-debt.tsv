@@ -228,7 +228,6 @@ flang/proof/чекер/пробы/семьи/половина-б/arithmetic.flan
 flang/proof/чекер/пробы/семьи/половина-б/dlina.flang	10
 flang/proof/чекер/пробы/семьи/половина-б/element.flang	30
 flang/scripts/closed-length-guard.flang	141
-flang/scripts/conc-link-emitted.flang	59
 flang/scripts/emptiness-guard.flang	171
 flang/scripts/guards-start.flang	100
 flang/scripts/jargon-guard.flang	166
@@ -517,7 +516,7 @@ scripts/site/releases-page-verify.flang	11
 scripts/site/releases-page.flang	15
 scripts/site/releases.flang	55
 scripts/site/surfaces-page.flang	44
-scripts/targets/conc-link-emit.flang	71
+scripts/targets/conc-link-emit.flang	55
 scripts/targets/emit-and-examples.flang	59
 scripts/targets/emit-law.flang	80
 scripts/targets/plan-across-targets.flang	101

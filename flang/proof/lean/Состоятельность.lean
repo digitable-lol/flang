@@ -164,6 +164,35 @@ theorem «посылкаО2-верно» {g : «ТермЧ»} {p : «Приня�
     exact Or.inr ((«факт-кон» _ w).mp hw)
   · cases h
 
+theorem «голова?-пусто» {x : «ТермС»} (h : «голова?» x = some none) : ∀ w, «оценитьС» x w = [] := by
+  intro w
+  cases x with
+  | «пустой» => simp [«оценитьС»]
+  | «выписан» d =>
+    cases d with
+    | «нет» => simp [«оценитьС», «оценитьЧл»]
+    | «ещё» _ _ => simp [«голова?»] at h
+  | _ => simp [«голова?»] at h
+
+theorem «голова?-голова» {x : «ТермС»} {h : «ТермЧ»} (hx : «голова?» x = some (some h)) :
+    ∀ w b t, «оценитьС» x w = b :: t → b = «оценить» h w := by
+  intro w b t hbt
+  cases x with
+  | «выписан» d =>
+    cases d with
+    | «нет» => simp [«голова?»] at hx
+    | «ещё» h' r =>
+      simp only [«голова?», Option.some.injEq] at hx
+      subst hx
+      simp only [«оценитьС», «оценитьЧл», List.cons.injEq] at hbt
+      exact hbt.1.symm
+  | «приписать» h' r =>
+    simp only [«голова?», Option.some.injEq] at hx
+    subst hx
+    simp only [«оценитьС», List.cons.injEq] at hbt
+    exact hbt.1.symm
+  | _ => simp [«голова?»] at hx
+
 /-! ## Инвариант блока и случай на правило -/
 
 /-- Каждый принятый шаг выводится из своих открытых гипотез и окружения. -/
@@ -470,6 +499,16 @@ theorem «шаг-верен» (u : «Утверждение») («преж» : L
   | «СС2» n l ho hp hf hd =>
     simp only [«итог», «гип», List.map_nil, List.nil_append]
     rw [hf]; exact «СС2-терм» _ l («допущение-в-окружении» u n _ hd)
+  | «СС3-пустой» n q g x ho hp h1 hf hx hp1 =>
+    simp only [«итог»]
+    rw [hf]; exact «СС3-пустой-терм» _ g x («голова?-пусто» hx) (hp1 ▸ hinv q («шагПо-в» h1))
+  | «СС3» n m p1 p2 g hh x ho hp h1 h2 hf hx hp1 hp2 =>
+    simp only [«итог»]
+    rw [hf]
+    have q2 := hinv p2 («шагПо-в» h2)
+    rw [«порядок?-факт» hp2] at q2
+    exact «СС3-терм» _ g hh x («голова?-голова» hx) («слева» _ _ (hp1 ▸ hinv p1 («шагПо-в» h1)))
+      («справа» _ _ q2)
 
 theorem «блок-верен» (u : «Утверждение») : ∀ («шаги» : List «Шаг») («преж» «итог» : List «Принятый»),
     «БлокПринят» u «шаги» «преж» «итог» → «Инв» u «преж» → «Инв» u «итог»
@@ -501,4 +540,4 @@ theorem «состоятельность-разрешимо» (u : «Утвер�
   «состоятельность» u («принят?-верно» u h)
 
 /-- Число покрытых правил; сверщик именует 70 приёмов в `шаг_вывода`. -/
-theorem «покрыто-число» : «покрыто» = 58 := by decide
+theorem «покрыто-число» : «покрыто» = 59 := by decide

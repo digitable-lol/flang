@@ -38,8 +38,8 @@ bootstrap/flang check docs/examples/rosetta/towers-of-hanoi.flang
 Три проверки идут на собранном двоичном и Node не требуют:
 
 ```bash
-sh flang/проверки/обход.sh
-sh flang/проверки/обход-примеров.sh
+sh flang/test/обход.sh
+sh flang/test/обход-примеров.sh
 sh scripts/raskrutka.sh --check
 ```
 

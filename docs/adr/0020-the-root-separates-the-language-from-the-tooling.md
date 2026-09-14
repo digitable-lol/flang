@@ -38,7 +38,7 @@
 | Путь | Что это | Файлов | Ссылок | Цена переезда | Риск |
 | --- | --- | ---: | ---: | --- | --- |
 | `bootstrap/` | **язык: семя** — компилятор, напечатанный в C | 8 | 481 | не переезжает (запрет задачи) | отпечаток семени, приёмная отвергает `bootstrap/**`, `release.yml` |
-| `flang/` | **язык**: `self/` компилятор, `core/`, `stdlib/`, `proof/`, `conc/`, `ct/`, `src/emit/` рантаймы, `test/`, `проверки/`; внутри — `flang/scripts/` (53 файла оснастки языка, 271 ссылка) | 955 | 647 (`self/`), 417 (`stdlib/`), 408 (`src/`) | не переезжает | 48 из 55 строк отпечатка — пути `flang/…`; двоичный ищет библиотеку по `<каталог двоичного>/../flang/stdlib` |
+| `flang/` | **язык**: `self/` компилятор, `core/`, `stdlib/`, `proof/`, `conc/`, `ct/`, `src/emit/` рантаймы, `test/`; внутри — `flang/scripts/` (53 файла оснастки языка, 271 ссылка) | 955 | 647 (`self/`), 417 (`stdlib/`), 408 (`src/`) | не переезжает | 48 из 55 строк отпечатка — пути `flang/…`; двоичный ищет библиотеку по `<каталог двоичного>/../flang/stdlib` |
 | `docs/examples/` | **язык: корпус** — 185 программ в 22 наборах | 242 | 303 | не переезжает | `published-vs-tree.sh` сверяет числа README; сайт берёт два файла из `docs/examples/rosetta/` |
 | `fspec/` | **язык: образец пакета** — `flang new` копирует его по пути `<каталог двоичного>/../fspec` (`flang_repl.c:16359`) | 77 | 60 | **переезд = правка входа семени = перепечатка**; не переезжает | семя |
 | `ярлык`, `ярлыки.flang` | вход оснастки: оболочка запуска и список целей | 2 | 55 | остаются в корне (`./ярлык тесты` в README, хук) | — |
@@ -145,10 +145,10 @@ git mv web packaging/web
 | Категория | Где | Что |
 | --- | --- | --- |
 | Workflows | `.github/workflows/binary.yml` | пути стенда в комментариях и шагах |
-| Хук и сторожа на оболочке | `scripts/guards/published-vs-tree.sh`, `seed-knows-type-words-guard.sh`, `flang/проверки/обход-примеров.sh` | образцы путей |
+| Хук и сторожа на оболочке | `scripts/guards/published-vs-tree.sh`, `seed-knows-type-words-guard.sh`, `flang/test/обход-примеров.sh` | образцы путей |
 | Планы на flang | `scripts/guards/tree-inventory.flang` (правило «замеряемый материал»), `file-extensions.flang`, `name-splicing-guard.flang`, `flang/scripts/code-guard.flang`, `memory-guard.flang`, `flang/test/glob.flang`, `flang/conc/bench/gen.flang` | строки-образцы и примеры |
 | JavaScript | `flang/test/glob.mjs` (`СЫРЬЁ_ЗАМЕРОВ`), `flang/scripts/name-guard.mjs`, `word-guard.mjs`, `link-collision-guard.mjs`, `scripts/site/build-changelog-page.mjs`, `docs/site/sitemap.mjs` (комментарии) | образцы и исключения |
-| Ведомости с путями | `scripts/ledgers/no-comments-debt.tsv`, `scripts/ledgers/proved-share-ledger.txt` (строки «md5|…|путь» — md5 не меняется, путь меняется), `scripts/ledgers/hand-written-lists-ledger.tsv`, `flang/проверки/ведомость-примеров.txt` | путь в строке |
+| Ведомости с путями | `scripts/ledgers/no-comments-debt.tsv`, `scripts/ledgers/proved-share-ledger.txt` (строки «md5|…|путь» — md5 не меняется, путь меняется), `scripts/ledgers/hand-written-lists-ledger.tsv`, `flang/test/ведомость-примеров.txt` | путь в строке |
 | Настройки git | `.gitignore` (5 строк `web/`, 4 строки `benchmarks/`), `.gitattributes` (`benchmarks/** linguist-vendored`) | образцы |
 | Документы | README-карта раскладки (`README.md:307–317`, `README.ru.md:303–313`), `AGENTS.md`, страницы сайта `docs/site/browser-app*`, `shortener*`, `embedding*`, руководство, заметки `docs/zettel/`, открытые задачи | пути в прозе и в обратных кавычках — их проверяет `scripts/guards/link-guard.flang` |
 | Переехавшие скрипты | `web/sobrat.sh`, `web/browser-probe.sh` (корень = `..` → `../..`), `web/wasm/build.sh`, `benchmarks/speed/assemble.sh`, `systems/measure.sh`, `without-libc/measure.sh`, `proof-cost/postcondition-pairs.sh` (`../..` → `../../..`) | глубина корня |

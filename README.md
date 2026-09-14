@@ -406,7 +406,7 @@ against the tree on every push.
 
 ```
 bootstrap/      the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
-flang/          the language: self/ (the compiler), core/, stdlib/, proof/, conc/, ct/, src/emit/ (target runtimes), scripts/, проверки/, test/ — code only; its contracts are in docs/flang/
+flang/          the language: self/ (the compiler), core/, stdlib/, proof/, conc/, ct/, src/emit/ (target runtimes), scripts/, test/ — code only; its contracts are in docs/flang/
 docs/examples/  204 flang programs in 25 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
 docs/editors/   the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/      the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
@@ -432,9 +432,9 @@ lists, strings, numbers, sets, maps, JSON, UTF-8, dates, and beyond them two dat
 (`postgres`, `sqlite`), networking (`http`, `tls`, `redis`), a cryptography set written in flang
 (`aes`, `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`) and a regular-expression engine.
 [`flang/src/emit/`](flang/src/emit) holds the runtime of each target, copied into printed code
-verbatim. [`flang/проверки/`](flang/проверки) holds the checks written in flang that the binary
-walks; [`flang/test/`](flang/test) is what is left of a test suite written against a deleted
-JavaScript implementation, kept as fixtures.
+verbatim. [`flang/test/`](flang/test) holds the checks written in flang that the binary
+walks, next to what is left of a test suite written against a deleted JavaScript
+implementation, kept as fixtures (the checks moved here from `flang/проверки` on 14 September 2026).
 
 Two of the example sets are full-size projects — [`docs/examples/web/shortener`](docs/examples/web/shortener/README.md),
 a link shortener with nothing but flang between the request bytes and the response bytes, and
@@ -474,14 +474,14 @@ Work happens in a clone; the only thing to build is the compiler.
 
 ```bash
 make -C bootstrap -j8                    # about a minute; gives bootstrap/flang
-sh flang/проверки/обход.sh               # the checks written in flang, seconds
+sh flang/test/обход.sh               # the checks written in flang, seconds
 ./bootstrap/flang test flang/stdlib/     # the library's examples
 git config core.hooksPath .githooks      # the pre-push hook: the cheap guards, before CI
 ```
 
 The walk runs 211 checks written in flang and diffs the result against
-<!-- СНЯТО 2026-09-13 строк flang/проверки/ведомость.txt = 211 -->
-`flang/проверки/ведомость.txt`, one line per check. The hook runs the guards that finish in
+<!-- СНЯТО 2026-09-13 строк flang/test/ведомость.txt = 211 -->
+`flang/test/ведомость.txt`, one line per check. The hook runs the guards that finish in
 seconds and names what it did not run; the long ones are CI (`.github/workflows/binary.yml`). Work is tracked in [`docs/tasks/`](docs/tasks/README.md), one file per
 task, taken and closed by a commit — `./ярлык задачник:доска` prints the board. A task can also
 end without being done: `docs/tasks/rejected/` holds the ones that were considered and turned down, so

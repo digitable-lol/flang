@@ -1143,7 +1143,7 @@ a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 0415f36439e19883e5516407500a09ec|19|12|2|5|0|flang/self/svoystva.flang
 bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 e6bd6e2dcbd72e44099aeb3d412d2167|279|231|11|37|0|flang/self/totality.flang
-6f5995562eb91e54ecbcd9bde4c4853e|408|119|4|265|0|flang/self/types.flang
+6f5995562eb91e54ecbcd9bde4c4853e|410|119|4|265|0|flang/self/types.flang
 94902a6939c9331164c3fdd856ef2a93|226|98|57|3|0|flang/self/zapis.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
@@ -1515,9 +1515,27 @@ eb759bdefde04fe642cdbe8c4d606e9c|9|7|2|0|0|flang/stdlib/bignum.flang
 // «Без приговора» у всех четырёх 2: два «требует», ни одного «закона».
 //
 // Там же пересчитано «написано» у flang/self/zapis.flang — по исходнику, тем
-// же счётом, что у сверки: 216 → 226 (97ca726c9 +3, d3783d6dc +4, 32c8cbd1e +1, 9f66098d3 +2). md5 и числитель строки
-// НЕ ТРОНУТЫ: они датируют прежний приговор.
+// же счётом, что у сверки: 216 → 226 (97ca726c9 +3, d3783d6dc +4,
+// 32c8cbd1e +1, 9f66098d3 +2). md5 и числитель строки НЕ ТРОНУТЫ: они
+// датируют прежний приговор.
 4d3277eacac3b8e3bb861a763b6e33df|7|×|×|×|2|flang/proof/examples/precondition-discharge-reads-proved-facts.flang
 cd49499f99d0cdd1aff500d5f36470c7|6|×|×|×|2|flang/proof/examples/forgery-precondition-discharge-reads-proved-facts.flang
 2fa436fe901a180b0aca849b19d5ffb2|2|×|×|×|2|flang/proof/чекер/пробы/семьи/precondition-discharge/three-feeds.flang
 c0f60e7d18e60bcc5e28616aa0537240|2|×|×|×|2|flang/proof/чекер/пробы/семьи/precondition-discharge/unpaid-callee.flang
+// ⚑ 14 сентября 2026, над main b1e01760a: восемь проб семьи «все элементы»
+// (задачи 3123, 4058; ADR-0026 §11, ADR-0037 §4.2–4.3) и строка types.flang.
+// Семь из восьми — крестом по той же причине, что восемь строк 12 сентября
+// выше: двоичный дерева (семя 0.7.19) отвечает FLANG_PARSE — формы квантора
+// в «требует», Э5 и Э6 есть в исходниках, в семя не напечатаны; крест
+// снимается перепечаткой. Восьмая, выписанные-литералы.flang, семенем
+// читается: код 0, доказано 1 из 1 (scripts/ledgers/take-proof-ledger.sh).
+// У flang/self/types.flang пересчитано только «написано»: 408 → 410
+// (d3783d6dc); md5 и числитель не тронуты.
+6f63d3a4fc10a5fd41e8c9613e3741a4|3|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/сквозная-вторым-порядком.flang
+10a52b2843bb7da5be22bcbcbb8d60e1|3|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/порча/ярлык-обещание-не-доказано.flang
+388656278b5f6adeaa4e6ab1a6ac6ad8|1|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/отображение.flang
+1775329c5bebcdff953d6fa3049425ab|1|1|0|0|0|flang/proof/чекер/пробы/семьи/все-элементы/выписанные-литералы.flang
+58ec642b0ea5212f1cdc862a5cbeb13b|1|×|×|×|3|flang/proof/чекер/пробы/семьи/все-элементы/по-требованию-квантор.flang
+6ceaa7f17e408388d4447d40753e7a04|1|×|×|×|2|flang/proof/чекер/пробы/семьи/все-элементы/вызов-с-выписанным.flang
+7e1c93a9588256efa0332d2af81e944f|1|×|×|×|2|flang/proof/чекер/пробы/семьи/все-элементы/вызов-с-приписанным.flang
+5e841c4bd0aeec4473b3e3cf4f595434|2|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/порча/ярлык-без-обещания.flang

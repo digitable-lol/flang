@@ -60,3 +60,4 @@ if [ "$status" -eq 0 ]; then
   echo "адрес:  http://127.0.0.1:8908/"
 fi
 exit "$status"
+# ярлык «браузер:собрать» sh — напечатать браузерные приложения из flang в JavaScript

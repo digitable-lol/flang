@@ -234,6 +234,7 @@
 - [Закоммиченный в `main` двоичный отстал от исходников того же коммита: им не разбирается `stdlib/lists.flang`](dvoichnyy-v-main-otstal-ot-svoih-ischodnikov.md)
 - [flang-близнец сторожа столкновений зеленел на трёх настоящих столкновениях](flang-bliznec-storozha-stolknoveniy-zelenel-na-treh-nastoyashchih-stolknoveniyah.md)
 - [`flang io` не может быть точкой входа для ярлыков: доводов он не принимает, вывод потомка копит до конца, а код возврата теряет](flang-io-cannot-be-the-entry-point-for-shortcuts.md)
+- [Пульс, чей `trap` на TERM не выходит, переживает веер и держит план `flang io` без конца: сирота с `ppid=1` держит вывод, а `--timeout` не срабатывает](a-heartbeat-whose-term-trap-does-not-exit-hangs-the-plan-forever.md)
 - [Самораскрутка меряется четырьмя кусками JavaScript, три закрыты](four-pieces-of-javascript.md)
 - [`git cherry` не видит содержимое, приехавшее в ветку слиянием, — «своего ноль» надо перепроверять сравнением деревьев](git-cherry-does-not-see-content-that-arrived-by-merge.md)
 - [`git ls-files | grep '\.flang$'` насчитал 390 файлов там, где их 826: git берёт пути с не-ASCII в кавычки](git-quotes-non-ascii-paths-and-a-count-loses-them.md)

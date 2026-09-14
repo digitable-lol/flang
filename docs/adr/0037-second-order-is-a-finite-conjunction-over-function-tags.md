@@ -23,7 +23,7 @@
 `docs/zettel/callee-postcondition-is-a-fact-only-after-it-is-proved.md` —
 восьмой ход, на котором держится §4.1.
 **Новые задачи:** [1261](../tasks/1261-a-call-precondition-is-not-discharged-by-a-proved-callee-postcondition.md),
-[3123](../tasks/3123-a-precondition-cannot-quantify-over-list-elements.md),
+[3123](../tasks/completed/3123-a-precondition-cannot-quantify-over-list-elements.md),
 [4058](../tasks/4058-a-listed-list-a-map-and-an-applied-tag-have-no-all-elements-rule.md),
 [7098](../tasks/7098-the-element-quantifier-is-not-printed-into-any-target.md).
 

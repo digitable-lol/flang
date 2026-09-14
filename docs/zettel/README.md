@@ -398,6 +398,7 @@
 - [Сравнения за постоянное время в этом языке не написать, и функции с таким именем заводить нельзя](constant-time-comparison-cannot-be-promised-by-this-language.md)
 - [Октетная пара поручений объявлена в словаре, но ни один хозяин её не исполняет](octet-orders-are-in-the-dictionary-but-no-host-executes-them.md)
 - [Свой генератор машинного кода — примерно месяц, и на доказуемость не влияет](our-own-machine-code-generator.md)
+- [Переносимость C99 рантайма мерилась одним семейством компиляторов: под CompCert её ломают четыре кириллических имени и три заголовка glibc, а не печатник](portable-c99-was-only-ever-checked-by-gnu-compilers.md)
 - [Песочницу в браузере держит POSIX-слой оболочки, а не размер компилятора](playground-blocked-by-repl-posix-not-by-size.md)
 - [WebAssembly получается через C даром: девятая цель печати не нужна](wasm-via-c-is-free.md)
 - [Что в популярных рассказах о доказуемых языках верно, а что ложно](what-the-popular-stories-get-wrong.md)

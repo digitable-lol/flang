@@ -1383,7 +1383,7 @@ static int replay_build(const node_t *n, const char *ctor, const char *variant) 
   snprintf(want, sizeof want, "fl_value %s[%lu];", arr, (unsigned long)count);
   if (!expect_line(n, part, 0, want)) return 0;
   for (k = 0; k < count; k += 1) {
-    char head[1200];
+    char head[sizeof arr + sizeof v + 64];
     value_of(child_at(n, k), v, sizeof v);
     snprintf(head, sizeof head, "%s[%lu] = %s; /* «", arr, (unsigned long)k, v);
     if (!part_line(part, k + 1, &got) || strncmp(got.text, head, strlen(head)) != 0) {
@@ -1396,7 +1396,7 @@ static int replay_build(const node_t *n, const char *ctor, const char *variant) 
   if (variant != NULL) snprintf(want, sizeof want, "FL_TRY(fl_variant_new(ctx, \"%s\", ", variant);
   else snprintf(want, sizeof want, "FL_TRY(%s(ctx, ", ctor);
   {
-    char tail[1200];
+    char tail[sizeof arr + sizeof temp + 64];
     size_t g = strlen(got.text), w;
     snprintf(tail, sizeof tail, ", %s, %lu, &%s, error));", arr, (unsigned long)count, temp);
     w = strlen(tail);

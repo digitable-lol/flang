@@ -200,6 +200,48 @@ theorem «не-или» (c q : «Форм») (w : «Мир») (h : «Факт-и
   · simp
   · simp [h hc]
 
+theorem «имя-накопителя» (w : «Мир») (a e : String) (acc v : «Знач») (hae : a ≠ e) :
+    «оценить» (.«имя» a) («обновить» («обновить» w a acc) e v) = acc := by
+  simp [«оценить», hae]
+
+theorem «имя-накопителя-знач» (w : «Мир») (a e : String) (acc v : «Знач») (hae : a ≠ e) :
+    «какЧисло» ((«обновить» («обновить» w a acc) e v).«имя» a) = acc := by
+  simp [hae]
+
+theorem «ветвьСчёта-верно» {s : «ТермЧ»} {a e : String} (hae : a ≠ e) (h : «ветвьСчёта» s a = true)
+    (w : «Мир») (acc v : «Знач») (hacc : «неотр» acc = true) :
+    «неотр» («оценить» s («обновить» («обновить» w a acc) e v)) = true := by
+  unfold «ветвьСчёта» at h
+  split at h
+  · rename_i x
+    have hx : x = a := by simpa using h
+    subst hx; rw [«имя-накопителя» w x e acc v hae]; exact hacc
+  · rename_i x k
+    simp only [Bool.and_eq_true, beq_iff_eq, decide_eq_true_eq] at h
+    obtain ⟨rfl, hk⟩ := h
+    simp only [«оценить», «имя-накопителя-знач» w x e acc v hae]
+    exact «Н5» _ _ _ hacc (by simp [«неотр»]; omega)
+  · rename_i k x
+    simp only [Bool.and_eq_true, beq_iff_eq, decide_eq_true_eq] at h
+    obtain ⟨rfl, hk⟩ := h
+    simp only [«оценить», «имя-накопителя-знач» w x e acc v hae]
+    exact «Н5» _ _ _ (by simp [«неотр»]; omega) hacc
+  · cases h
+
+theorem «шагСчёта-верно» {s : «ТермЧ»} {a e : String} (hae : a ≠ e) (h : «шагСчёта» s a = true) :
+    ∀ w acc v, «неотр» acc = true → «неотр» («оценить» s («обновить» («обновить» w a acc) e v)) = true := by
+  intro w acc v hacc
+  unfold «шагСчёта» at h
+  simp only [Bool.or_eq_true] at h
+  rcases h with h | h
+  · exact «ветвьСчёта-верно» hae h w acc v hacc
+  · split at h
+    · rename_i c b d
+      simp only [Bool.and_eq_true] at h
+      simp only [«оценить»]
+      exact «Н6» _ _ _ («ветвьСчёта-верно» hae h.1 w acc v hacc) («ветвьСчёта-верно» hae h.2 w acc v hacc)
+    · cases h
+
 /-! ## Инвариант блока и случай на правило -/
 
 /-- Каждый принятый шаг выводится из своих открытых гипотез и окружения. -/
@@ -533,6 +575,9 @@ theorem «шаг-верен» (u : «Утверждение») («преж» : L
     have h1 : «Судим» («Факт-из» (.«равен» (.«минус» t t) (.«лит» 0)) :: «окружение» u) («Факт-из» q) :=
       «одна-гипотеза» (fun p hp => (hotkr p hp).2) (hq ▸ hinv pm («шагПо-в» hm))
     exact «подъём1» (fun w => «не-или» _ _ w) («Р1» _ _ _ h1)
+  | «Н7» n q l n0 a e s ho hp h1 hf hae hs hp1 =>
+    simp only [«итог»]
+    rw [hf]; exact «Н7-терм» _ l n0 a e s (hp1 ▸ hinv q («шагПо-в» h1)) («шагСчёта-верно» hae hs)
 
 theorem «блок-верен» (u : «Утверждение») : ∀ («шаги» : List «Шаг») («преж» «итог» : List «Принятый»),
     «БлокПринят» u «шаги» «преж» «итог» → «Инв» u «преж» → «Инв» u «итог»
@@ -564,4 +609,4 @@ theorem «состоятельность-разрешимо» (u : «Утвер�
   «состоятельность» u («принят?-верно» u h)
 
 /-- Число покрытых правил; сверщик именует 70 приёмов в `шаг_вывода`. -/
-theorem «покрыто-число» : «покрыто» = 61 := by decide
+theorem «покрыто-число» : «покрыто» = 62 := by decide

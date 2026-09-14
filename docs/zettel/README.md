@@ -275,6 +275,7 @@
 
 - [Указатель поиска по 244 страницам весит 371 КиБ, если класть заголовки и первые 700 знаков, а не весь текст](a-client-side-index-holds-headings-not-full-text.md)
 - [Таблица описи дерева расходится при каждой правке файла оболочки, и ловить это дешевле до пуша](the-inventory-table-drifts-with-every-shell-line-so-the-hook-checks-it-before-push.md)
+- [Цель ярлыка, объявленная в самом скрипте, упирается не в язык, а в храповики дерева: в `.flang` — только терм, метку проверять прогоном, строки класть в конец файла](a-shortcut-declared-in-its-script-hits-the-tree-ratchets-not-the-language.md)
 - [Инструкция для посторонних, зовущая внутренний прогон, публикует чужую машину, а не удобство](a-convenience-script-in-contributing-publishes-your-machine.md)
 - [Прощальный абзац — «что здесь было и куда делось» — переживает то, о чём прощается, и держит мёртвые пути дольше всей остальной прозы](a-farewell-paragraph-outlives-what-it-says-goodbye-to.md)
 - [Копия упаковщика, живущая в чужом репозитории, расходится с деревом в обе стороны, и ни одна проверка этого дерева этого не видит](a-packaging-copy-in-another-repository-drifts-both-ways.md)

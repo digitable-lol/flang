@@ -145,6 +145,25 @@ theorem «строгий?-факт» {f : «Форм»} {e g : «ТермЧ»} (
   · rfl
   · funext w; simp [«Факт-из», «оценитьФ»]
 
+theorem «посылкаО2-верно» {g : «ТермЧ»} {p : «Принятый»} (h : «посылкаО2» g p = true) (w : «Мир»)
+    (hw : «Факт-из» p.«формула» w) : «неотр» («оценить» g w) = true ∨ «конечно» («оценить» g w) = true := by
+  unfold «посылкаО2» at h
+  split at h
+  · rename_i g' hf
+    have hg : g' = g := of_decide_eq_true h
+    subst hg; rw [hf] at hw
+    exact Or.inl ((«факт-неотр» _ w).mp hw)
+  · rename_i g' k hf
+    have hg : g' = g := of_decide_eq_true h
+    subst hg; rw [hf] at hw
+    exact Or.inr («Кон1» _ k ((«факт-потолок» _ _ w).mp hw))
+  · rename_i g' hf
+    simp only [Bool.and_eq_true, decide_eq_true_eq] at h
+    obtain ⟨hg, -⟩ := h
+    subst hg; rw [hf] at hw
+    exact Or.inr ((«факт-кон» _ w).mp hw)
+  · cases h
+
 /-! ## Инвариант блока и случай на правило -/
 
 /-- Каждый принятый шаг выводится из своих открытых гипотез и окружения. -/
@@ -359,6 +378,10 @@ theorem «шаг-верен» (u : «Утверждение») («преж» : L
     have q2 := hinv p2 («шагПо-в» h2)
     rw [«порядок?-факт» hp2, ← «зеркало»] at q2
     exact «П6-терм» _ t d k hd hk («справа» _ _ q2) («слева» _ _ q1)
+  | «О2» n q g ho hp h1 hf hp1 =>
+    simp only [«итог»]
+    rw [«порядок?-факт» hf]
+    exact «О2-терм» _ g _ («посылкаО2-верно» hp1) (hinv q («шагПо-в» h1))
 
 theorem «блок-верен» (u : «Утверждение») : ∀ («шаги» : List «Шаг») («преж» «итог» : List «Принятый»),
     «БлокПринят» u «шаги» «преж» «итог» → «Инв» u «преж» → «Инв» u «итог»
@@ -390,4 +413,4 @@ theorem «состоятельность-разрешимо» (u : «Утвер�
   «состоятельность» u («принят?-верно» u h)
 
 /-- Число покрытых правил; сверщик именует 70 приёмов в `шаг_вывода`. -/
-theorem «покрыто-число» : «покрыто» = 41 := by decide
+theorem «покрыто-число» : «покрыто» = 42 := by decide

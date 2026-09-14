@@ -376,6 +376,7 @@ static const char *const RULES[] = {
     "свёртка",
     "отобразить",
     "отфильтровать",
+    "все-элементы",
     "число-литерал",
     "число-арифметика",
     "число-распакованное",
@@ -1074,6 +1075,8 @@ static int check_anchor(const node_t *n) {
     if (!at_word(p, rest, ".")) goto wrong;
   } else if (strcmp(n->kind, "list") == 0) {
     if (!at_word(p, rest, "[") && !at_word(p, rest, "пустой")) goto wrong;
+  } else if (strcmp(n->kind, "forallIn") == 0) {
+    if (!at_word(p, rest, "для всех")) goto wrong;
   } else if (strcmp(n->kind, "if") == 0) {
     if (!at_word(p, rest, "если") && !at_word(p, rest, "или") && !at_word(p, rest, "и") && !at_word(p, rest, "не"))
       goto wrong;
@@ -1486,6 +1489,81 @@ static int replay_promise(const node_t *n, const char *word, const char *helper)
   return expect_line(n, part, 3, want) && expect_line(n, part, 5, "}") && part_lines(part) == 6;
 }
 
+/* Квантор по элементам «для всех э из Л: П» — правило «все-элементы». Ребёнок 0 —
+ * список Л, ребёнок 1 — «признак» тела с fl_cond. Переигрывается каждая строка:
+ * взятие списка, накопитель «да», цикл, который встаёт на первом «нет» (накопитель
+ * стоит в условии цикла), элемент по индексу, гашение неиспользованного элемента,
+ * присвоение признака тела накопителю; значение узла — fl_flag(накопителя). Имена
+ * списка, накопителя, индекса и элемента снимаются с первой строки своей части и
+ * обязаны быть разными именами C. Что тело читает элемент именно этим именем —
+ * на слове, как у правила «переменная». */
+static int replay_all_elements(const node_t *n) {
+  const item_t *head = find_part(n, "шапка"), *take = find_part(n, "взятие");
+  const item_t *quench = find_part(n, "гашение"), *end = find_part(n, "конец");
+  const node_t *body = child_at(n, 1);
+  char item[512], list[256], acc[256], index[256], elem[256], v[1024], want[4096];
+  line_t got;
+  size_t k;
+  if (!extra_word(n, "элемент", item, sizeof item) || child_count(n) != 2 || body == NULL ||
+      strcmp(body->rule, "признак") != 0 || !extra_word(body, "помощник", v, sizeof v) || strcmp(v, "fl_cond") != 0) {
+    rule_mismatch(n, "у «для всех» нет имени элемента или детей не два (список и признак тела с fl_cond)%s%s", "", "");
+    return 0;
+  }
+  if (head == NULL || !part_line(head, 0, &got) || strncmp(got.text, "fl_value ", 9) != 0) {
+    rule_mismatch(n, "шапка «для всех» не начинается объявлением списка%s%s", "", "");
+    return 0;
+  }
+  copy_field(list, sizeof list, got.text + 9, strcspn(got.text + 9, " "));
+  if (!replay_temp_decl(n, head, list)) return 0;
+  value_of(child_at(n, 0), v, sizeof v);
+  snprintf(want, sizeof want, "FL_TRY(fl_require_list(ctx, %s, \"свёртка\", &%s, error));", v, list);
+  if (!expect_line(n, head, 1, want)) return 0;
+  if (!part_line(head, 2, &got) || strncmp(got.text, "bool ", 5) != 0) {
+    rule_mismatch(n, "у «для всех» нет накопителя-признака%s%s", "", "");
+    return 0;
+  }
+  copy_field(acc, sizeof acc, got.text + 5, strcspn(got.text + 5, " "));
+  snprintf(want, sizeof want, "bool %s = true; /* для всех «%s» */", acc, item);
+  if (!expect_line(n, head, 2, want) || part_lines(head) != 3) return 0;
+  if (take == NULL || !part_line(take, 0, &got) || strncmp(got.text, "for (size_t ", 12) != 0) {
+    rule_mismatch(n, "у «для всех» нет цикла по списку%s%s", "", "");
+    return 0;
+  }
+  copy_field(index, sizeof index, got.text + 12, strcspn(got.text + 12, " "));
+  snprintf(want, sizeof want, "for (size_t %s = 0; %s && %s < %s.as.list.count; %s += 1) {", index, acc, index, list,
+           index);
+  if (!expect_line(n, take, 0, want)) return 0;
+  if (!part_line(take, 1, &got) || strncmp(got.text, "const fl_value ", 15) != 0) {
+    rule_mismatch(n, "у «для всех» нет взятия элемента%s%s", "", "");
+    return 0;
+  }
+  copy_field(elem, sizeof elem, got.text + 15, strcspn(got.text + 15, " "));
+  snprintf(want, sizeof want, "const fl_value %s = %s.as.list.items[%s]; /* «%s» */", elem, list, index, item);
+  if (!expect_line(n, take, 1, want) || part_lines(take) != 2) return 0;
+  if (!is_ident(list) || !is_ident(acc) || !is_ident(index) || !is_ident(elem) || strcmp(list, acc) == 0 ||
+      strcmp(list, index) == 0 || strcmp(list, elem) == 0 || strcmp(acc, index) == 0 || strcmp(acc, elem) == 0 ||
+      strcmp(index, elem) == 0) {
+    rule_mismatch(n, "имена цикла «для всех» не имена C или совпадают%s%s", "", "");
+    return 0;
+  }
+  if (quench != NULL) {
+    for (k = 0; k < part_lines(quench); k += 1) {
+      snprintf(want, sizeof want, "(void)%s;", elem);
+      if (!expect_line(n, quench, k, want)) return 0;
+    }
+  }
+  value_of(body, v, sizeof v);
+  snprintf(want, sizeof want, "%s = %s;", acc, v);
+  if (end == NULL || !expect_line(n, end, 0, want) || !expect_line(n, end, 1, "}") || part_lines(end) != 2) return 0;
+  value_of(n, v, sizeof v);
+  snprintf(want, sizeof want, "fl_flag(%s)", acc);
+  if (n->value == NULL || strcmp(v, want) != 0) {
+    rule_mismatch(n, "значение «для всех» «%s», а по правилу «%s»", v, want);
+    return 0;
+  }
+  return 1;
+}
+
 static void replay_node(const node_t *n) {
   int r = rule_index(n->rule), ok = -1;
   if (!n->is_block && !check_anchor(n)) return;
@@ -1514,6 +1592,7 @@ static void replay_node(const node_t *n) {
   else if (strcmp(n->rule, "форма") == 0) ok = replay_form(n);
   else if (strcmp(n->rule, "постусловие") == 0) ok = replay_promise(n, "обеспечивает", "fl_post");
   else if (strcmp(n->rule, "предусловие") == 0) ok = replay_promise(n, "требует", "fl_pre");
+  else if (strcmp(n->rule, "все-элементы") == 0) ok = replay_all_elements(n);
   if (ok < 0) unreplayed[r] += 1;
   else if (ok > 0) replayed[r] += 1;
   else if (!verdict_failed) rule_mismatch(n, "части не по форме правила%s%s", "", "");

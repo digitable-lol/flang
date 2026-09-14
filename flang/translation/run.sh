@@ -132,6 +132,29 @@ opyt "довод выпал (C и протокол заодно)" 1 "$ISH" "$RAB
 zamenit "$PR" 'граница входа' 'граница выхода' > "$RAB/15.protocol"
 opyt "подложный блок протокола" 1 "$ISH" "$SI" "$RAB/15.protocol" "блок не из закрытого списка"
 
+# ── квантор по элементам (правило «все-элементы», задача 7098) ──────────────
+VSE=$TUT/fixtures/all-elements
+VISH=$VSE/all-elements.flang
+VSI=$VSE/all_elements_at_the_boundary.c
+VPR=$VSE/all_elements_at_the_boundary.protocol
+
+opyt "честная пара с квантором по элементам: все узлы переиграны" 0 "$VISH" "$VSI" "$VPR" "СОШЛОСЬ"
+
+zamenit "$VPR" 'fl_t3 && fl_t4 < fl_t2' 'fl_t4 < fl_t2' > "$RAB/16.protocol"
+zamenit "$VSI" 'fl_t3 && fl_t4 < fl_t2' 'fl_t4 < fl_t2' > "$RAB/16.c"
+opyt "квантор без остановки на первом «нет» (C и протокол заодно)" 1 "$VISH" "$RAB/16.c" "$RAB/16.protocol" "по правилу ждали"
+
+zamenit "$VPR" 'bool fl_t3 = true; /* для всех «п» */' 'bool fl_t3 = false; /* для всех «п» */' > "$RAB/17.protocol"
+zamenit "$VSI" 'bool fl_t3 = true; /* для всех «п» */' 'bool fl_t3 = false; /* для всех «п» */' > "$RAB/17.c"
+opyt "квантор начат с «нет»: на пустом списке ложь (C и протокол заодно)" 1 "$VISH" "$RAB/17.c" "$RAB/17.protocol" "по правилу ждали"
+
+zamenit "$VPR" 'значение fl_flag(fl_t3)' 'значение fl_flag(true)' > "$RAB/18.protocol"
+zamenit "$VSI" 'fl_post(ctx, fl_flag(fl_t3),' 'fl_post(ctx, fl_flag(true),' > "$RAB/18.c"
+opyt "сторож обещания сверяет «да» вместо квантора (C и протокол заодно)" 1 "$VISH" "$RAB/18.c" "$RAB/18.protocol" "значение «для всех»"
+
+zamenit "$VPR" 'правило «все-элементы» элемент «п»' 'правило «свёртка» элемент «п»' > "$RAB/19.protocol"
+opyt "квантор назван свёрткой: правило без сличения не засчитано" 3 "$VISH" "$VSI" "$RAB/19.protocol" "правило «свёртка» не переиграно"
+
 echo
 if [ "$BEDA" = 0 ]; then
   echo "ИТОГ: опытов $VSEGO, все сошлись с ожиданием"

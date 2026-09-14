@@ -2985,11 +2985,13 @@ say "── семья «мера» (6432, ADR-0042 §2): длина приба�
 # ядра, снятая зондом; в корпус они лягут перепечаткой (5190).
 MRA=$SEM/мера
 SOF=flang/test/fixtures/poddelka-strict-order.flang
+SVF=flang/test/fixtures/poddelka-svyortka-shagom.flang
 ABF=flang/proof/map/abilities.flang
 opyt C "мера: poddelka-strict-order — Н4, Д6, Д3, С3, М1, Разв2 (честная, печать ядра)" 0 "$SOF" "$MRA/strict-order.запись"
 opyt C "мера: abilities У3 — Выч, М2, Разв2 (честная, печать ядра)" 0 "$ABF" "$MRA/abilities.запись"
-for z in strict-order abilities; do
-  case $z in strict-order) I=$SOF; zh=4;; *) I=$ABF; zh=18;; esac
+opyt C "мера: poddelka-svyortka-shagom — Выч, М2 с шагом-вызовом, Разв3 (честная, печать ядра)" 0 "$SVF" "$MRA/svyortka-shagom.запись"
+for z in strict-order abilities svyortka-shagom; do
+  case $z in strict-order) I=$SOF; zh=4;; svyortka-shagom) I=$SVF; zh=1;; *) I=$ABF; zh=18;; esac
   set +e; v=$("$C" "$I" "$MRA/$z.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
   [ "${v:-0}" = "$zh" ] || { say "ПРОВАЛ мера: $z — выводов проиграно ждали $zh, вышло ${v:-«числа нет»}"; BAD=$((BAD+1)); }
   chislo "мера: $z" 0 "$(naslovo "$I" "$MRA/$z.запись")"
@@ -3002,6 +3004,8 @@ podd_p "М2: шаг не растит накопитель" "мера не та 
   's/→ добавить эл к акк )/→ добавить эл к эл )/'
 podd_p "М2: начало не пусто" "мера не та или шаг свёртки растит не ровно на один" "$ABF" "$MRA/abilities.запись" \
   's/начиная с пустой список как акк и эл → добавить эл к акк/начиная с элементы как акк и эл → добавить эл к акк/'
+podd_p "М2: шаг-вызов без доказанного «плюс 1» (Удвоить)" "мера не та или шаг свёртки растит не ровно на один" "$SVF" "$MRA/svyortka-shagom.запись" \
+  's/→ «Дописать нуль» от акк )/→ «Удвоить» от акк )/'
 say "── семья «развёртка» (6432, ADR-0042 §2): вызов, поле выписанного конструктора, разбор суммы в цели ──"
 RZV=$SEM/развёртка
 EQF=flang/proof/map/equality.flang

@@ -540,6 +540,10 @@ static const char HELP_EMIT[] =
     "(у Go путь файла — это имя пакета).\n"
     "\n"
     "  --out каталог     записать все файлы в каталог\n"
+    "  --протокол файл   рядом с C напечатать протокол перевода (только у цели «c»,\n"
+    "                    ADR-0030): что во что перешло и по какому правилу; его\n"
+    "                    переигрывает flang/translation/matcher.c. Латиницей —\n"
+    "                    --protocol\n"
     "  --file имя        один файл на стандартный вывод\n"
     "  --cli | --no-cli  печатать ли прогонщик\n"
     "  --repl            напечатать ещё и человеческий вход (только цель «c»)\n"
@@ -10860,10 +10864,77 @@ static void emit_along(const emit_target *target, size_t taken, char *const *tex
   free(items);
 }
 
+/*
+ * ПРОТОКОЛ ПЕРЕВОДА (ADR-0030, задача 1401). С ключом «--протокол ФАЙЛ» печать
+ * зовётся не своей точкой входа из таблицы, а «Напечатать связанное с
+ * протоколом»: та же дорога и тот же C байт в байт, плюс файл
+ * «<модуль>.protocol» в ответе печати. Путь исходника и его sha256 подаются
+ * печати доводами — узнать их сама она не может. Файл протокола вынимается из
+ * ответа и кладётся туда, куда назвал ключ (`emit_take_protocol`), а не в
+ * «--out»: рядом с напечатанным он не собирается и не устанавливается.
+ *
+ * Двоичный, чьё семя ещё не перепечатано с этой правкой, такой точки входа не
+ * несёт — тогда печать отказывает словами, а не молчит.
+ */
+#define EMIT_PROTOCOL_ENTRY "Напечатать связанное с протоколом"
+#define EMIT_PROTOCOL_SUFFIX ".protocol"
+
+/*
+ * Вынуть файл протокола из ответа печати: записать его по названному пути и
+ * отдать список остальных файлов. Протокола в ответе нет — это отказ: ключ
+ * просил его, и молча напечатать без него значило бы соврать.
+ */
+static int emit_take_protocol(fl_value *files, const char *protocol) {
+  fl_value *rest = NULL;
+  fl_error error;
+  size_t index = 0;
+  size_t kept = 0;
+  bool found = false;
+  error.code = NULL;
+  error.message = NULL;
+  if (fl_list_alloc(&repl_ctx, files->as.list.count, &rest, &error) != FL_OK) {
+    repl_oom();
+  }
+  for (index = 0; index < files->as.list.count; index += 1) {
+    fl_value where = fl_nothing();
+    fl_value content = fl_nothing();
+    const char *body = NULL;
+    size_t body_bytes = 0;
+    char *name = NULL;
+    size_t name_len = 0;
+    size_t suffix_len = strlen(EMIT_PROTOCOL_SUFFIX);
+    if (!val_field(files->as.list.items[index], "путь", &where)) {
+      rest[kept++] = files->as.list.items[index];
+      continue;
+    }
+    name = val_copy(where);
+    name_len = strlen(name);
+    if (!found && name_len > suffix_len && strcmp(name + name_len - suffix_len, EMIT_PROTOCOL_SUFFIX) == 0
+        && val_field(files->as.list.items[index], "содержимое", &content) && val_text(content, &body, &body_bytes)) {
+      found = true;
+      if (!emit_write(protocol, body, body_bytes)) {
+        free(name);
+        return 1;
+      }
+      fprintf(stderr, "протокол перевода: %s, байт %lu\n", protocol, (unsigned long)body_bytes);
+    } else {
+      rest[kept++] = files->as.list.items[index];
+    }
+    free(name);
+  }
+  if (!found) {
+    fputs("flang emit: печать не вернула протокола перевода\n", stderr);
+    return 1;
+  }
+  *files = fl_list(rest, kept);
+  return 0;
+}
+
 static int emit_call(const emit_target *target, fl_value subject, bool fits, const fl_entry_table *table,
-                     const char *runtime, const emit_wish *wish, bool with_plans, fl_value *files) {
+                     const char *runtime, const emit_wish *wish, bool with_plans, fl_value *files,
+                     const char *protocol, const char *source_path, const char *source_sha) {
   fl_value values[EMIT_FIELD_MAX];
-  fl_value args[2];
+  fl_value args[4];
   fl_value result = fl_nothing();
   fl_value failure = fl_nothing();
   char *texts[EMIT_RUNTIME_MAX];
@@ -10932,8 +11003,20 @@ static int emit_call(const emit_target *target, fl_value subject, bool fits, con
   if (code == 0) {
     args[0] = subject;
     args[1] = repl_value_record(target->fields, values, target->field_count);
-    if (repl_call(target->entry, args, 2, &result) != FL_OK) {
+    args[2] = repl_value_say(source_path == NULL ? "" : source_path);
+    args[3] = repl_value_say(source_sha == NULL ? "" : source_sha);
+    if (protocol != NULL) {
+      if (repl_call(EMIT_PROTOCOL_ENTRY, args, 4, &result) != FL_OK) {
+        fputs("flang emit: этот двоичный протокола перевода не печатает — семя ещё не\n"
+              "перепечатано с правкой flang/self/emit-c.flang (ADR-0030, задача 1401).\n",
+              stderr);
+        code = 1;
+      }
+    } else if (repl_call(target->entry, args, 2, &result) != FL_OK) {
       code = 1;
+    }
+    if (code != 0) {
+      /* отказ уже назван */
     } else if (val_field(result, "ошибка", &failure) && !val_same(failure, "")) {
       char *say = val_copy(failure);
       fprintf(stderr, "flang emit: печать отказала — %s\n", say);
@@ -10966,6 +11049,9 @@ static int emit_file(int argc, char **argv, const char *self) {
   const char *out = NULL;
   const char *one = NULL;
   const char *given_runtime = NULL;
+  /* «--протокол ФАЙЛ» / «--protocol ФАЙЛ»: куда положить протокол перевода
+     (ADR-0030). Только у цели «c». */
+  const char *protocol = NULL;
   char buffer[4096];
   char *base = NULL;
   char *full = NULL;
@@ -11050,6 +11136,10 @@ static int emit_file(int argc, char **argv, const char *self) {
     } else if (strcmp(argv[argument], "--runtime") == 0 && argument + 1 < argc) {
       argument += 1;
       given_runtime = argv[argument];
+    } else if ((strcmp(argv[argument], "--протокол") == 0 || strcmp(argv[argument], "--protocol") == 0)
+               && argument + 1 < argc) {
+      argument += 1;
+      protocol = argv[argument];
     } else if (strcmp(argv[argument], "--max-steps") == 0 && argument + 1 < argc) {
       argument += 1;
       wish.steps = argv[argument];
@@ -11105,6 +11195,16 @@ static int emit_file(int argc, char **argv, const char *self) {
      вовсе, и промолчать об этом. */
   if (wish.shell && chosen != EMIT_TARGET_C) {
     fputs("flang emit: «--repl» есть только у цели «c»: человеческий вход написан на C\n", stderr);
+    return 2;
+  }
+  if (protocol != NULL && chosen != EMIT_TARGET_C) {
+    fputs("flang emit: «--протокол» есть только у цели «c»: протокол перевода печатает\n"
+          "пока один печатник — в C (ADR-0030)\n",
+          stderr);
+    return 2;
+  }
+  if (protocol != NULL && protocol[0] == '\0') {
+    fputs("flang emit: «--протокол» назван пустым именем файла — назовите, куда класть протокол\n", stderr);
     return 2;
   }
   if (out == NULL && one == NULL) {
@@ -11351,9 +11451,19 @@ static int emit_file(int argc, char **argv, const char *self) {
           zn_field_items(program, "plans", &plans, &plan_count);
           with_plans = plan_count > 0;
           fits = emit_entry_fits(program, table);
-          code = emit_call(&EMIT_TARGET_TABLE[chosen],
-                           EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, fits, table,
-                           runtime, &wish, with_plans, &files);
+          {
+            char source_sha[65];
+            sha256_ctx sha;
+            sha256_init(&sha);
+            sha256_add(&sha, text, bytes);
+            sha256_hex(&sha, source_sha);
+            code = emit_call(&EMIT_TARGET_TABLE[chosen],
+                             EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, fits, table,
+                             runtime, &wish, with_plans, &files, protocol, path, source_sha);
+          }
+          if (code == 0 && protocol != NULL) {
+            code = emit_take_protocol(&files, protocol);
+          }
         }
       }
     }

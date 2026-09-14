@@ -39,6 +39,7 @@ that it replays independently, rather than takes on the kernel's word:
 ```bash
 sh flang/proof/доля-корпуса.sh --проигрыванием
 # → доля-проигрыванием = 629 / 651 = 96.62 %      (13 September 2026, commit 1218aa186, flang 0.7.19)
+# → доля с предусловиями = 629 / 653 = 96.32 %    (14 September 2026, ADR-0038)
 # → порог Г4 = 95 %; добрала ли доля порога: ДА
 sh scripts/доказуемость.sh          # → ДОКАЗУЕМ, exit 0
 ```
@@ -56,6 +57,13 @@ replaying it. Where each of them sits and what closing it would take is
 
 **This release did not move that share.** It went 625 → 629 in 0.7.18, and 0.7.19 left it where
 it was. The seed reprint of 0.7.19 gave the kernel new things to prove, not a higher share.
+
+The second line counts preconditions too ([ADR-0038](docs/adr/0038-a-precondition-is-discharged-by-a-printed-derivation.md)).
+Every call of a function with `требует` is an obligation of the caller, and the kernel proves it;
+the next seed reprint prints that proof into the record, and the checker already replays it. Until
+then the two call sites of the record set (both in `flang/proof/examples/precondition.flang`) stand
+in the denominator unreplayed, which is why the second share is lower. The 95 % threshold stays on
+the first line until the record set is reprinted.
 
 The second command is the verdict in one word, and since release 0.7.17 (11 September 2026) it
 is **ДОКАЗУЕМ**, exit 0. It is printed from four checks, each with a number: the checker holds no

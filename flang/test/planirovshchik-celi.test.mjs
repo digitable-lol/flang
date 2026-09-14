@@ -29,8 +29,8 @@
  *
  * ── Кто здесь свидетель ─────────────────────────────────────────────────────
  *
- * `flang/concurrency/scheduler.js` — напечатанный модуль цели JavaScript, тот
- * самый, который зовёт настоящий узел. Оговорка та же, что у соседа: сверка
+ * Печать `flang/concurrency/scheduler.flang` в цель JavaScript, сделанная на
+ * лету: до 14 сентября 2026 она лежала в дереве `scheduler.js` (задача 1423). Оговорка та же, что у соседа: сверка
  * «напечатанное с напечатанным» доказывает ПЕРЕНОСИМОСТЬ, а не правильность.
  * Правильность держат прогоны по настоящим сокетам.
  *
@@ -44,10 +44,10 @@
  */
 import assert from "node:assert/strict"
 import { execFileSync, spawnSync } from "node:child_process"
-import { readFileSync } from "node:fs"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import test from "node:test"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, pathToFileURL } from "node:url"
 
 import { позвать } from "../scripts/binary.mjs"
 import { globSync } from "./glob.mjs"
@@ -57,7 +57,14 @@ import { рабочийКаталог, средаСборки } from "./tempdir.
 const корень = fileURLToPath(new URL("../../", import.meta.url))
 const эталон = "flang/concurrency/scheduler.flang"
 const рабочий = рабочийКаталог("planirovshchik-celi")
-const свидетель = await import("../concurrency/scheduler.js")
+const печатьСвидетеля = join(рабочий, "svidetel")
+mkdirSync(печатьСвидетеля, { recursive: true })
+{
+  const итог = позвать(["emit", join(корень, "flang/concurrency/scheduler.flang"), "--target", "js", "--out", печатьСвидетеля])
+  if (итог.код !== 0) throw new Error(`свидетель flang/concurrency/scheduler.flang не напечатался в js: ${итог.ошибки}`)
+  writeFileSync(join(печатьСвидетеля, "package.json"), '{"type":"module"}\n')
+}
+const свидетель = await import(pathToFileURL(join(печатьСвидетеля, "planirovschik_uzla.js")).href)
 
 /* ─────────────────── значения прогонщика ───────────────────
    Протокол ровно тот же, что у соседа (`svyaz-celi.test.mjs`), и это не

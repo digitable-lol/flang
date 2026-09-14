@@ -47,13 +47,14 @@ def «вердикт» (u : «Утверждение») : String × String :=
 def «одна» («метка» «исх» «зап» : String) : IO Unit := do
   let «исходник» := (← IO.FS.readFile «исх»).splitOn "\n"
   let «текст» ← IO.FS.readFile «зап»
+  let «опр» := «определения» «исходник» («строкиРазв3» «текст»)
   for (h, b) in «утвержденияТекстом» «текст» do
     if !(«проигрывается» b) then continue
     let «имя» := «вЁлочках» h 1
     let «теорема» := match b.find? (·.startsWith "теорема «") with
       | some l => «вЁлочках» l 1
       | none => ""
-    let (v, «почему») := match «утверждение» h b «исходник» with
+    let (v, «почему») := match «утверждение» h b «исходник» «опр» with
       | .ok u => «вердикт» u
       | .error e => ("НЕ ПРОЧЁЛ", e)
     IO.println s!"{«метка»}\t{«имя»}\t{«теорема»}\t{v}\t{«почему»}"

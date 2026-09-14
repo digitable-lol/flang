@@ -1505,6 +1505,20 @@ theorem «Ч6-терм» (Γ : List («Факт» «Мир»)) (t b q : «Тер
   «подъём2» (fun w ha hb => by
     simp only [«Факт-из», «оценитьФ»] at ha hb ⊢; exact «Ч6» _ _ _ ha hb) h1 h2
 
+theorem «Д5-терм» (Γ : List («Факт» «Мир»)) (l r : «ТермЧ») (a b : Int) (ha : 1 ≤ a) (hb : 1 ≤ b)
+    (hab : a * b ≤ «порог» - 1)
+    (h1 : «Выводится» Γ (.«неБольше» (.«лит» a) l)) (h2 : «Выводится» Γ (.«неБольше» (.«лит» b) r)) :
+    «Выводится» Γ (.«неБольше» (.«лит» (a * b)) (.«умножить» l r)) :=
+  «подъём2» (fun w hl hr => by
+    simp only [«Факт-из», «оценитьФ», «оценить»] at hl hr ⊢
+    have key := «Д5» w.«о» _ _ («кон» a) («кон» b) hl hr
+      (decide_eq_true (by omega : (0 : Int) < a)) (decide_eq_true (by omega : (0 : Int) < b)) rfl rfl
+    have hpos : 0 < a * b := Int.mul_pos (by omega) (by omega)
+    have e0 : «умножить» w.«о» («кон» a) («кон» b) = w.«о».«ф» (a * b) := rfl
+    have e : «умножить» w.«о» («кон» a) («кон» b) = «кон» (a * b) := by
+      rw [e0]; exact w.«о».«точно» _ (by unfold «порог» at *; omega) (by unfold «порог» at *; omega)
+    rw [e] at key; exact key) h1 h2
+
 /- Семейство Т -/
 
 theorem «Т1-терм» (Γ : List («Факт» «Мир»)) (f : «Форм») (h : «Факт-из» f ∈ Γ) :

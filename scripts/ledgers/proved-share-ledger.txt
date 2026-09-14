@@ -1144,7 +1144,7 @@ a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 e6bd6e2dcbd72e44099aeb3d412d2167|279|231|11|37|0|flang/self/totality.flang
 6f5995562eb91e54ecbcd9bde4c4853e|408|119|4|265|0|flang/self/types.flang
-94902a6939c9331164c3fdd856ef2a93|216|98|57|3|0|flang/self/zapis.flang
+94902a6939c9331164c3fdd856ef2a93|226|98|57|3|0|flang/self/zapis.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang
@@ -1498,3 +1498,26 @@ eb759bdefde04fe642cdbe8c4d606e9c|9|7|2|0|0|flang/stdlib/bignum.flang
 16b27f88abc9217d9a019ffbdd329c4c|16|10|6|0|0|docs/examples/frameworks/react-ts-pure/core/storefront.flang
 350c6da0d131bdd24fac32731e171887|3|1|2|0|0|docs/examples/frameworks/react-ts-pure/scripts/markup-without-logic.flang
 8f1a5b89dc9539393cd4a3e41437b243|1|0|1|0|0|flang/translation/fixtures/all-elements/all-elements.flang
+// ⚑ 14 сентября 2026: четыре строки КРЕСТОМ — семья «снятие предусловия»
+// (задачи 1261, 5332, 6438; ADR-0037 §4.1, ADR-0038 §3). Двоичный дерева
+// (семя 0.7.19) отвечает на все четыре кодом 1, FLANG_PRECONDITION_CALL, за
+// 0,7–3,0 с (scripts/ledgers/take-proof-ledger.sh) — ведомости нет ни у
+// одного файла. Причины две, и они разные:
+//   · две подделки — forgery-precondition-discharge-reads-proved-facts.flang и
+//     unpaid-callee.flang — отвергнуты ПО ЗАМЫСЛУ: шапка каждой ждёт именно
+//     FLANG_PRECONDITION_CALL. Крест у них навсегда;
+//   · две честные — precondition-discharge-reads-proved-facts.flang и
+//     three-feeds.flang — отвергнуты потому, что снятие предусловия
+//     доказанным обещанием вызванной (c12209f3c, flang/self/proofterm.flang)
+//     в семя ещё не напечатано; запись three-feeds снята зондом по исходникам
+//     (README семьи), а не двоичным. Крест снимается перепечаткой семени,
+//     после неё строки станут числами.
+// «Без приговора» у всех четырёх 2: два «требует», ни одного «закона».
+//
+// Там же пересчитано «написано» у flang/self/zapis.flang — по исходнику, тем
+// же счётом, что у сверки: 216 → 226 (97ca726c9 +3, d3783d6dc +4, 32c8cbd1e +1, 9f66098d3 +2). md5 и числитель строки
+// НЕ ТРОНУТЫ: они датируют прежний приговор.
+4d3277eacac3b8e3bb861a763b6e33df|7|×|×|×|2|flang/proof/examples/precondition-discharge-reads-proved-facts.flang
+cd49499f99d0cdd1aff500d5f36470c7|6|×|×|×|2|flang/proof/examples/forgery-precondition-discharge-reads-proved-facts.flang
+2fa436fe901a180b0aca849b19d5ffb2|2|×|×|×|2|flang/proof/чекер/пробы/семьи/precondition-discharge/three-feeds.flang
+c0f60e7d18e60bcc5e28616aa0537240|2|×|×|×|2|flang/proof/чекер/пробы/семьи/precondition-discharge/unpaid-callee.flang

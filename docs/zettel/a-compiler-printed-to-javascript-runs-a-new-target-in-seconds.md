@@ -57,4 +57,4 @@
   ядра не зовёт и печатает сторожей всем. Для проб это удобно — сторож виден
   всегда, — но сравнивать с двоичным надо, помня об этом.
 
-Связано: [[proven-postconditions-do-not-reach-the-printer]]
+Связано: [[a-proved-postcondition-no-longer-reaches-printed-code]]

@@ -5,13 +5,13 @@ usage() {
   cat <<'HELP'
 flangtutor — проводник по языку flang: уроки по порядку, ответ судит компилятор.
 
-  ./flangtutor                 начать или продолжить с того урока, где встали
-  ./flangtutor --урок 3        начать с названного урока
-  ./flangtutor --только 3      пройти ровно один урок и остановиться
-  ./flangtutor --сначала       забыть пройденное и начать с первого
-  ./flangtutor --список        перечислить уроки (и какие пройдены), не начиная
-  ./flangtutor --язык en       говорить по-английски, не спрашивая настроек
-  ./flangtutor --помощь
+  flangtutor                 начать или продолжить с того урока, где встали
+  flangtutor --урок 3        начать с названного урока
+  flangtutor --только 3      пройти ровно один урок и остановиться
+  flangtutor --сначала       забыть пройденное и начать с первого
+  flangtutor --список        перечислить уроки (и какие пройдены), не начиная
+  flangtutor --язык en       говорить по-английски, не спрашивая настроек
+  flangtutor --помощь
 
 Латиницей то же: --lesson --only --restart --list --lang --help.
 
@@ -43,19 +43,19 @@ set -u
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
 LESSONS=
-for k in "$ROOT/docs/tutor" "$ROOT/tutor" "$ROOT/../share/flang-tutor"; do
+for k in "$ROOT/../../docs/tutor" "$ROOT/tutor" "$ROOT/../share/flang-tutor"; do
   if [ -d "$k" ]; then LESSONS=$k; break; fi
 done
-[ -n "$LESSONS" ] || LESSONS=$ROOT/docs/tutor
+[ -n "$LESSONS" ] || LESSONS=$ROOT/../../docs/tutor
 
 BINARY=${FLANG:-}
 if [ -z "$BINARY" ]; then
-  for k in "$ROOT/bootstrap/flang" "$ROOT/flang"; do
+  for k in "$ROOT/../../bootstrap/flang" "$ROOT/flang"; do
     if [ -x "$k" ]; then BINARY=$k; break; fi
   done
 fi
 [ -n "$BINARY" ] || BINARY=$(command -v flang 2>/dev/null)
-[ -n "$BINARY" ] || BINARY=$ROOT/bootstrap/flang
+[ -n "$BINARY" ] || BINARY=$ROOT/../../bootstrap/flang
 
 MODE=run
 START=
@@ -320,10 +320,10 @@ if [ "$MODE" = list ]; then
     n=$((n + 1))
   done
   if [ "$done_count" -ge "$TOTAL" ]; then
-    say "$(phrase "пройдены все $TOTAL; заново: ./flangtutor --сначала" "all $TOTAL done; start over: ./flangtutor --restart")"
+    say "$(phrase "пройдены все $TOTAL; заново: flangtutor --сначала" "all $TOTAL done; start over: flangtutor --restart")"
   elif [ "$done_count" -gt 0 ]; then
-    say "$(phrase "пройдено $done_count из $TOTAL; дальше урок $((done_count + 1)): ./flangtutor" \
-                  "$done_count of $TOTAL done; next is lesson $((done_count + 1)): ./flangtutor")"
+    say "$(phrase "пройдено $done_count из $TOTAL; дальше урок $((done_count + 1)): flangtutor" \
+                  "$done_count of $TOTAL done; next is lesson $((done_count + 1)): flangtutor")"
   fi
   exit 0
 fi
@@ -343,8 +343,8 @@ case $START in
 esac
 [ "$START" -ge 1 ] || START=1
 if [ "$START" -gt "$TOTAL" ]; then
-  say "$(phrase "все $TOTAL уроков уже пройдены. Начать заново: ./flangtutor --сначала" \
-                "all $TOTAL lessons are already done. Start over: ./flangtutor --restart")"
+  say "$(phrase "все $TOTAL уроков уже пройдены. Начать заново: flangtutor --сначала" \
+                "all $TOTAL lessons are already done. Start over: flangtutor --restart")"
   exit 0
 fi
 
@@ -501,8 +501,8 @@ dot_command() {
       say ""; show_template "$LESSON"; say ""
       return 0 ;;
     .бросить|.quit|.выход|.exit)
-      say "$(phrase "остановились на уроке $NUMBER. Продолжить: ./flangtutor" \
-                    "stopped at lesson $NUMBER. Continue with: ./flangtutor")"
+      say "$(phrase "остановились на уроке $NUMBER. Продолжить: flangtutor" \
+                    "stopped at lesson $NUMBER. Continue with: flangtutor")"
       exit 0 ;;
   esac
   return 1
@@ -607,8 +607,8 @@ done
 
 say ""
 if [ "$LAST" -lt "$TOTAL" ]; then
-  say "$(phrase "дальше урок $((LAST + 1)) из $TOTAL: ./flangtutor" \
-                "next is lesson $((LAST + 1)) of $TOTAL: ./flangtutor")"
+  say "$(phrase "дальше урок $((LAST + 1)) из $TOTAL: flangtutor" \
+                "next is lesson $((LAST + 1)) of $TOTAL: flangtutor")"
   exit 0
 fi
 say "${BOLD}$(phrase "все $TOTAL уроков пройдены." "all $TOTAL lessons are done.")${PLAIN}"

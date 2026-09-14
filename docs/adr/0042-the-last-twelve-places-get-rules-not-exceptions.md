@@ -19,7 +19,7 @@
 [ADR-0026](0026-quantifiers-over-any-type-are-a-kernel-change.md) §11 «Порядок» —
 одна партия перепечатки.
 **Новые задачи:** [6432](../tasks/6432-measure-projection-and-declared-sums-close-five-kernel-word-places.md),
-[6812](../tasks/6812-a-contradictory-pair-of-assumptions-is-a-ledger-family.md),
+[6812](../tasks/completed/6812-a-contradictory-pair-of-assumptions-is-a-ledger-family.md),
 [3448](../tasks/3448-the-example-evaluator-of-the-checker-reads-nul-strings-and-filter.md),
 [1794](../tasks/1794-the-sources-goal-is-written-as-an-element-quantifier.md),
 [5190](../tasks/5190-the-seed-is-reprinted-once-for-the-proof-batch.md).

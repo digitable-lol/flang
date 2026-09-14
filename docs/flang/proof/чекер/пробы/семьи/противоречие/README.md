@@ -1,6 +1,6 @@
 # Семья «противоречие»: пара несовместимых допущений закрывается шагом Пр1
 
-Задача [6812](../../../../../../tasks/6812-a-contradictory-pair-of-assumptions-is-a-ledger-family.md),
+Задача [6812](../../../../../../tasks/completed/6812-a-contradictory-pair-of-assumptions-is-a-ledger-family.md),
 решение — [ADR-0042](../../../../../../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md) §2:
 список семейств ведомости открыт ровно на семейство **Пр**. Строка `Пр1` стоит в
 `flang/proof/ПРАВИЛА-ВЫВОДА.tsv`, лемма «Пр1» и встречный пример

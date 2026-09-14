@@ -57,4 +57,4 @@ RISC-V, PowerPC) не гонялись. Программы с `план` в C н
 «расхождение» оказывается разницей мест, а не компиляторов.
 
 Связано: [[wasm-via-c-is-free]], [[what-the-popular-stories-get-wrong]],
-[[the-printer-proves-each-run-not-itself]], [[a-second-compiler-family-belongs-in-ci]]
+решение [ADR-0030](../adr/0030-the-printer-proves-each-run-not-itself.md), задача [3467](../tasks/3467-compcert-becomes-a-selectable-compiler-for-printed-c.md) — второй компилятор C в проверке

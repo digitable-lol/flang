@@ -1090,10 +1090,10 @@ b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
 87efd53b3cad17320ce7282d24440d59|81|53|8|17|0|flang/self/cli.flang
 02ccce0235b40a701fd8baf4ed5c7bc7|13|9|0|4|0|flang/self/commutative.flang
 6962b417f4054916cefff7f1716b5d6c|203|124|23|56|0|flang/self/conc.flang
-05641fed3c8e2405969b58859d7b46bd|188|125|15|48|0|flang/self/defunc.flang
+05641fed3c8e2405969b58859d7b46bd|189|125|15|48|0|flang/self/defunc.flang
 8cf37894dbbccdff06a8ef8c0bb9395e|81|54|6|21|1|flang/self/distributed.flang
 ff586b33c1aa75e4b80d727672748361|20|10|0|10|0|flang/self/distributive.flang
-d328a6015287755e0bf7082b88afdd29|406|291|8|107|0|flang/self/emit-c.flang
+d328a6015287755e0bf7082b88afdd29|428|291|8|107|0|flang/self/emit-c.flang
 e6a1c5149ebb9e155fd5cd9c13fae314|7|4|0|3|0|flang/self/emit-cpp.flang
 29a749a897421f9f3b89dd7f1c372746|659|551|30|78|0|flang/self/emit-csharp.flang
 cc8efee04153882fa095db14dfa0548d|142|88|4|50|0|flang/self/emit-elixir.flang
@@ -1497,3 +1497,4 @@ eb759bdefde04fe642cdbe8c4d606e9c|9|7|2|0|0|flang/stdlib/bignum.flang
 58695c0261bca20c054c8f8e7fade6c3|1|0|0|0|1|flang/proof/чекер/пробы/семьи/план/порча/chuzhoye-poruchenie.flang
 16b27f88abc9217d9a019ffbdd329c4c|16|10|6|0|0|docs/examples/frameworks/react-ts-pure/core/storefront.flang
 350c6da0d131bdd24fac32731e171887|3|1|2|0|0|docs/examples/frameworks/react-ts-pure/scripts/markup-without-logic.flang
+8f1a5b89dc9539393cd4a3e41437b243|1|0|1|0|0|flang/translation/fixtures/all-elements/all-elements.flang

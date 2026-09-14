@@ -304,7 +304,7 @@ flang/test/fixtures/plany/10-shag-vtoroj-argument.flang	0 0 0
 flang/test/fixtures/plany/11-shag-vozvrat.flang	0 0 0
 flang/test/fixtures/plany/12-shag-spisok.flang	0 0 0
 flang/test/fixtures/plany/13-shag-dzhoker.flang	отказ
-flang/проверки/встроенные-формы.flang	2 2 0
+flang/test/встроенные-формы.flang	2 2 0
 fspec/experiments/contradiction-in-requirements.flang	0 0 0
 fspec/experiments/contradiction-one-function.flang	1 0 1
 fspec/experiments/contradiction-without-example.flang	0 0 0

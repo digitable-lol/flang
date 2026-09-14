@@ -51,8 +51,8 @@ flang emit docs/examples/leetcode/035-search-insert-position.flang \
 Checks:
 
 ```bash
-sh flang/проверки/обход.sh          # the walker's checks, run by the binary
-sh flang/проверки/обход-примеров.sh # every example in the tree
+sh flang/test/обход.sh          # the walker's checks, run by the binary
+sh flang/test/обход-примеров.sh # every example in the tree
 sh scripts/raskrutka.sh --check     # the seed against what the sources emit
 ./ярлык                             # every check in the tree, each with one line of explanation
 ./ярлык тесты                       # the whole set at once

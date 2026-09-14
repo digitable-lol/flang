@@ -71,9 +71,9 @@
 # Файлы, которые ввозят `proof-kernel.flang`/`proof-initial.flang`, стоят по
 # 5–10 минут каждый — они и вынесены за присмотр первыми.
 #
-#   sh flang/проверки/обход-self.sh              — сверить с ведомостью
-#   sh flang/проверки/обход-self.sh --write      — перезаписать ведомость
-#   sh flang/проверки/обход-self.sh --подлог     — проба порчи, обе стороны
+#   sh flang/test/обход-self.sh              — сверить с ведомостью
+#   sh flang/test/обход-self.sh --write      — перезаписать ведомость
+#   sh flang/test/обход-self.sh --подлог     — проба порчи, обе стороны
 #
 # ── Проба порчи ─────────────────────────────────────────────────────────────
 #
@@ -92,7 +92,7 @@ root=$(cd "$(dirname "$0")/../.." && pwd)
 # дереве, где сборка была до переименования, он лежит с прежним именем.
 tool=${FLANG_BIN:-"$root/bootstrap/flang"}
 [ -x "$tool" ] || tool="$root/bootstrap/flang_cli"
-ledger="$root/flang/проверки/ведомость-self.txt"
+ledger="$root/flang/test/ведомость-self.txt"
 
 if [ ! -x "$tool" ]; then
   echo "обходчик self: нет двоичного «$tool». Собрать: make -C bootstrap" >&2
@@ -229,7 +229,7 @@ fi
 
 if ! propalo=$(diff "$vved" "$derevo"); then
   echo "$propalo"
-  echo "обходчик self: СПИСОК ФАЙЛОВ РАЗОШЁЛСЯ — «<» пропал из дерева, «>» появился и ни в ведомости, ни под присмотром. Переснять: sh flang/проверки/обход-self.sh --write" >&2
+  echo "обходчик self: СПИСОК ФАЙЛОВ РАЗОШЁЛСЯ — «<» пропал из дерева, «>» появился и ни в ведомости, ни под присмотром. Переснять: sh flang/test/обход-self.sh --write" >&2
   exit 1
 fi
 

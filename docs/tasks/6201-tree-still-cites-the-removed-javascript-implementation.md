@@ -95,7 +95,7 @@ JavaScript: 48 файлов, 56 072 строки. Компилятор оста�
 |---|---:|---:|---|
 | (а) летопись | 501 | 150 | `docs/zettel/`, `docs/tasks/completed/`, `docs/adr/`, `docs/archive/`, журналы `CHANGELOG.md` и `docs/site/changelog.md` (печатаются из git), `docs/journal-carried-out-of-sources.md`, `docs/javascript-removal.md`, `docs/javascript-inventory.md`, `docs/javascript-checks-breakdown.tsv`, `docs/branches-2026-08-15.md`, снимки `flang/test/snimok` и `flang/test/zapis`, тексты с явным отрицанием (`docs/what-blocks-1-0.md`, `docs/course/09-eight-targets.md`, `.ai/AGENTS.md`) |
 | (б) действующие доводы и указания | 145 | 40 | `docs/*.md` вне летописи, `docs/guide`, `docs/site/contributing*`, `docs/ifl/numbers.md`, `docs/спецификации`, комментарии в `docs/benchmark/*.flang`, `flang/proof/examples/*.flang`, `flang/proof/kernel.flang`, `flang/conc/*.md`, `fspec/policy.flang`, открытые задачи |
-| (в) скрипты и код | 204 | 73 | `scripts/`, `flang/scripts/`, `.github/`, `docs/editors/`, `benchmarks/`, `packaging/`, `flang/test/`, `flang/проверки/`, исполняющие части `flang/src/emit/*` и их копии в `bootstrap/` и `examples/*/printed`, напечатанные `flang/conc/*.js`, `flang/self/` |
+| (в) скрипты и код | 204 | 73 | `scripts/`, `flang/scripts/`, `.github/`, `docs/editors/`, `benchmarks/`, `packaging/`, `flang/test/`, `flang/test/`, исполняющие части `flang/src/emit/*` и их копии в `bootstrap/` и `examples/*/printed`, напечатанные `flang/conc/*.js`, `flang/self/` |
 
 После захода: 852 вхождения в 260 файлах (а 501 / 150, б 148 / 38, в 203 / 72).
 Вхождений рода (б) не стало меньше — переписанный довод называет снятый путь
@@ -161,7 +161,7 @@ JavaScript: 48 файлов, 56 072 строки. Компилятор оста�
 (`docs/спецификации/*`, `docs/benchmark/05`, `11`, `13`, `docs/zamer-teorkat`,
 `docs/flang/conc/DISTRIBUTED.md`, `flang/conc/examples/measure.flang`,
 `flang/proof/examples/*`, `flang/proof/kernel.flang`, проба Ч7104,
-`fspec/policy.flang`, `flang/проверки/встроенные-формы.flang`,
+`fspec/policy.flang`, `flang/test/встроенные-формы.flang`,
 `web/wasm/demo/index.html`). Два довода оказались **ложными сегодня**, и это
 сказано на месте: `docs/benchmark/05-opposite.flang` («ядро тем же приёмом
 доказывает ложь» — дыра закрыта, `flang/self/proofterm.flang:666`) и

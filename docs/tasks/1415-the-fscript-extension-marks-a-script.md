@@ -226,7 +226,7 @@
 | 9 | `flang/scripts/claim-guard.flang` | список расширений, которые может назвать доля (75) | О | добавить |
 | 10 | `flang/scripts/count-guard.mjs` | `ИСХОДНИКИ` (158) и образец комментария по расширению (254) | О | оба места |
 | 11 | `flang/proof/подделки/прогон.sh` | `for f in …/examples/*.{flang,fp,фп,фланг}` (89) | О | **зона 1420** |
-| 12 | `flang/проверки/обход.sh` | `for file in "$dir"/*.…` (125) | О | после 1418 — уже по пути `flang/test/` |
+| 12 | `flang/test/обход.sh` | `for file in "$dir"/*.…` (125) | О | после 1418 — уже по пути `flang/test/` |
 | 13 | `scripts/targets/target-census.sh` | `for fajl in …` и срез имени (80, 82) | О | оба |
 | 14 | `docs/ifl/reproduce.sh` | `find -name` и четыре `--include` (72–80) | О | все пять строк |
 | 15 | `docs/editors/vim/ftdetect/flang.vim` | `autocmd … *.flang,*.fp,*.фп,*.фланг` (5) | Р | добавить `*.fscript` |
@@ -242,7 +242,7 @@
 | 25 | `flang/scripts/link-collision-tree.flang` | `find … -name` в команде (1375) | О | добавить |
 | 26 | `flang/scripts/name-guard.flang` | список из четырёх (1191) и две команды `find` (1322–1323) | О | три места |
 | 27 | `flang/scripts/word-occupancy.flang` | четыре «Кончается на» (738) | О | пятое |
-| 28 | `flang/проверки/владение-состоянием.sh` | `grep -rl '^процесс «' --include=…` (33) | О | пятый `--include`; после 1418 |
+| 28 | `flang/test/владение-состоянием.sh` | `grep -rl '^процесс «' --include=…` (33) | О | пятый `--include`; после 1418 |
 | 29 | `docs/site/changelog.json` | строка истории о том, что список один (11107) | Д | не правится |
 | 30 | `…/прогон-индукция/письма.запись` | запись доказательства называет исходник `письма.фп` (2) | Д | не правится: файл без плана |
 | 31 | `scripts/raskrutka.sh` (ждёт) | `find flang \( -name '*.flang' -o '*.fp' -o '*.фп' \)` (1088) — замыкание печати | О | правится той же работой, что перепечатывает семя |

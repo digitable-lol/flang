@@ -37,8 +37,8 @@ path. The language server is a subcommand of the binary: `flang lsp --stdio`.
 ## Run the checks
 
 ```bash
-sh flang/проверки/обход.sh
-sh flang/проверки/обход-примеров.sh
+sh flang/test/обход.sh
+sh flang/test/обход-примеров.sh
 sh scripts/raskrutka.sh --check
 ```
 

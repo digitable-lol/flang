@@ -19,6 +19,11 @@ import «Приёмка»
 двуместных знаков: их хвост тянется до конца. Записи ядра скобки
 расставляют, и порядок не спрашивается.
 
+Имя вызова хранится так, как написано: у объявленной функции — в ёлочках
+(`«Ф»`), у довода-функции — голым именем (`условие`). По ёлочкам приёмка отличает
+вызов функции программы от вызова довода — плоскость тела у Разв2 (задача 8836),
+как сверщик отличает их записью «» от ».
+
 Строй блока `вывод` (цель первой и одна, конец последним и один, шагов от 1 до
 64) читатель проверяет сам, как `проиграть_вывод`: приёмка получает уже
 разобранный блок и о строках не знает. Не прочлось утверждение — отказ только
@@ -154,7 +159,7 @@ partial def «число» (s0 : String) : Option «ТермЧ» :=
   else if let some (l, r) := «надвое» s "остаток от" then do pure (.«остаток» (← «число» l) (← «число» r))
   else if s.startsWith "длина " then do pure (.«длина» (← «список» (s.«сн» 6)))
   else if s.startsWith "код символа " then do pure (.«кодСимвола» (← «текст» (s.«сн» 12)))
-  else if let some (f, args) := «вызов?» s then do pure (.«вызов» («голо» f) (← «доводы» args))
+  else if let some (f, args) := «вызов?» s then do pure (.«вызов» f (← «доводы» args))
   else if let some n := «литерал?» s then some (.«лит» n)
   else if «имя?» s then some (.«имя» s)
   else none
@@ -185,7 +190,7 @@ partial def «список» (s0 : String) : Option «ТермС» :=
       | some (x, «у») => if «имя?» x then do pure (.«отбор» (← «список» «над») («ужать» x) (← «форм» «у»)) else none
       | none => none
     | none => none
-  else if let some (f, args) := «вызов?» s then do pure (.«вызовС» («голо» f) (← «доводы» args))
+  else if let some (f, args) := «вызов?» s then do pure (.«вызовС» f (← «доводы» args))
   else if «имя?» s then some (.«имяС» s)
   else none
 
@@ -198,7 +203,7 @@ partial def «текст» (s0 : String) : Option «ТермТ» :=
     match «разделитьСверху» s "с" with
     | [«л», «р»] => do pure (.«склейка» (← «текст» («словаПосле» («ужать» «л») 1)) (← «текст» «р»))
     | _ => none
-  else if let some (f, args) := «вызов?» s then do pure (.«вызовТ» («голо» f) (← «доводы» args))
+  else if let some (f, args) := «вызов?» s then do pure (.«вызовТ» f (← «доводы» args))
   else if «имя?» s then some (.«имяТ» s)
   else none
 
@@ -251,7 +256,7 @@ partial def «форм» (s0 : String) : Option «Форм» :=
       | _, _ => do pure (.«равенТ» (← «текст» l) (← «текст» r))
   else if let some (l, r) := «надвое» s "содержит" then do pure (.«содержит» (← «список» l) (← «число» r))
   else if let some (l, r) := «надвое» s "начинается с" then do pure (.«начинается» (← «текст» l) (← «текст» r))
-  else if let some (f, args) := «вызов?» s then do pure (.«вызовФ» («голо» f) (← «доводы» args))
+  else if let some (f, args) := «вызов?» s then do pure (.«вызовФ» f (← «доводы» args))
   else if «имя?» s then some (.«имяФ» s)
   else none
 

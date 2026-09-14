@@ -193,7 +193,7 @@ export function новаяЗапись(записи, подходит, срок)
  *  не должны. */
 export function напечатаннаяПрограмма(каталог) {
   const куда = join(каталог, "программа-js")
-  const печать = позвать(["emit", "flang/conc/examples/distributed.flang", "--target", "js", "--out", куда])
+  const печать = позвать(["emit", "flang/concurrency/examples/distributed.flang", "--target", "js", "--out", куда])
   /* КОД 3 ЗДЕСЬ ЗАКОНЕН, и это не послабление. Пример объявляет процессы, а их
      правил в двоичном нет вовсе: с 20 августа 2026 печать называет такой пробел
      поимённо и отдаёт 3 вместо 0 — файлы при этом напечатаны, а хэш
@@ -208,13 +208,13 @@ export function напечатаннаяПрограмма(каталог) {
 /** Напечатать узел в цель, положить рядом хозяина и собрать. */
 export function собратьУзел(каталог, цель, планы = { "plan.json": ПЛАН }) {
   const среда = средаСборки(каталог, { LC_ALL: "C.UTF-8", ...цель.среда })
-  const печать = позвать(["emit", "flang/conc/node-benchmark.flang", "--target", цель.имя, "--out", каталог])
+  const печать = позвать(["emit", "flang/concurrency/node-benchmark.flang", "--target", цель.имя, "--out", каталог])
   assert.equal(печать.код, 0, `печать узла в ${цель.имя} отказала:\n${печать.вывод}\n${печать.ошибки}`)
 
   const собрать = цель.собрать === null ? null : цель.собрать(каталог)
   const куда = собрать === null ? каталог : join(каталог, собрать[2] ?? ".")
   mkdirSync(куда, { recursive: true })
-  copyFileSync(join(корень, `flang/conc/bin/${цель.хозяин}`), join(куда, цель.хозяин))
+  copyFileSync(join(корень, `flang/concurrency/bin/${цель.хозяин}`), join(куда, цель.хозяин))
   for (const [имя, план] of Object.entries(планы)) writeFileSync(join(каталог, имя), JSON.stringify(план), "utf8")
   for (const [имя, что] of Object.entries(цель.рядом)) writeFileSync(join(каталог, имя), что, "utf8")
 

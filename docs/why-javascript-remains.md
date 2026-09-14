@@ -140,7 +140,7 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
 - `flang/src/emit/js/**` (4; на 11 сентября 5 — `flang_cli`, `flang_conc`,
   `flang_host_browser`, `flang_host_node`, `flang_io`) — рантайм цели печати «js», уезжает в напечатанную
   программу; языком не является.
-- `flang/conc/scheduler.js`, `link.js` — **напечатаны самим flang**, это
+- `flang/concurrency/scheduler.js`, `link.js` — **напечатаны самим flang**, это
   вывод компилятора, а не рукописный код.
 - `docs/site/poisk.js` — исполняется браузером читателя на статике.
 - `docs/site/poisk-proverka.mjs` — поднимает браузерный `poisk.js` внутри себя

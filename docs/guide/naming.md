@@ -180,7 +180,7 @@ are not an oversight:
 |---|---|---|
 | benchmark output (`docs/benchmark*`) | 500 | it is the output of a run, not a source |
 | test fixtures (`flang/test/fixtures/`) | 14 | their names are deliberately malformed; that is what makes them fixtures |
-| hand-written code outside the four directories (`flang/proof/examples`, `flang/conc/examples`, `docs/examples/library-api`, `fspec`, `docs/examples/web/wasm`, `flang/test`) | **70** | worth covering, but their price has not been measured |
+| hand-written code outside the four directories (`flang/proof/examples`, `flang/concurrency/examples`, `docs/examples/library-api`, `fspec`, `docs/examples/web/wasm`, `flang/test`) | **70** | worth covering, but their price has not been measured |
 
 Those last 66 are a named coverage debt. Widening the coverage without re-measuring the price would
 mean landing a rule the corpus was never checked against. If the numbers move, the test goes red and

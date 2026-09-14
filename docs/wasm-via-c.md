@@ -146,7 +146,7 @@ make -C каталог CC="clang --target=wasm32-wasi" LDLIBS="-lm"
 кооперативный и однопоточный по построению — то самое, что печать сообщает
 полем `«параллелизм»: «нет»`.
 
-Проверено, а не выведено из чтения: восемь примеров `flang/conc/examples`
+Проверено, а не выведено из чтения: восемь примеров `flang/concurrency/examples`
 (`counter`, `mailbox`, `supervision`, `escalate`, `backpressure`, `race`,
 `budget`, `measure`), 16 объявленных прогонов × 5 семян = **80 сверок журнала
 доставок, все побайтово**. Журналы не пустые: от 406 до 1344 байт.
@@ -172,7 +172,7 @@ make -C каталог CC="clang --target=wasm32-wasi" LDLIBS="-lm"
 подан не через трубу под `node:wasi` (§8) и стека хватает (§7).
 
 Проверено на `merge-sort`, `fibonacci`, `levenshtein-distance`, трёх задачах
-leetcode, `stdlib/strings`, `stdlib/hashmap`, `conc/examples/counter`,
+leetcode, `stdlib/strings`, `stdlib/hashmap`, `concurrency/examples/counter`,
 `self/lexer.flang` (117 272 символа) и `self/parser.flang` (362 348 символов).
 
 Одна оговорка: чтобы слинковать модуль, пришлось подставить затычку вместо

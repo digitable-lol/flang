@@ -43,8 +43,8 @@ SyntaxError: Cannot use import statement outside a module
 
 **Это знание уже было в дереве — четырьмя копиями.** Манифест дописывала
 оснастка, каждая своими руками: `flang/scripts/node-across-targets.flang`
-(строка «рядом» у цели js), `flang/conc/bench/hot-swap.sh`,
-`flang/conc/bench/node-death.sh`, `flang/test/uzel-osnastka.mjs`. Ни одна из
+(строка «рядом» у цели js), `flang/concurrency/bench/hot-swap.sh`,
+`flang/concurrency/bench/node-death.sh`, `flang/test/uzel-osnastka.mjs`. Ни одна из
 четырёх не достаётся человеку, который просто напечатал программу и позвал
 `node`.
 
@@ -63,18 +63,18 @@ SyntaxError: Cannot use import statement outside a module
 
 | файл | строк `import`/`export` | кто зовёт |
 | --- | --- | --- |
-| `flang/conc/scheduler.js` | 113 | `flang/test/planirovshchik-celi.test.mjs` |
-| `flang/conc/link.js` | 43 | `flang/test/svyaz-celi.test.mjs` |
-| `flang/conc/wire.js` | 54 | там же, через связь |
-| `flang/conc/bin/node.js` | 3 | хозяин узла цели js, восьмой из восьми |
+| `flang/concurrency/scheduler.js` | 113 | `flang/test/planirovshchik-celi.test.mjs` |
+| `flang/concurrency/link.js` | 43 | `flang/test/svyaz-celi.test.mjs` |
+| `flang/concurrency/wire.js` | 54 | там же, через связь |
+| `flang/concurrency/bin/node.js` | 3 | хозяин узла цели js, восьмой из восьми |
 | `docs/examples/frameworks/react-invoice/printed/*.js` | 17+5 | README примера |
 | `docs/examples/frameworks/vue-roman/printed/*.js` | 12+5 | README примера |
 
 Набор проверок — это `node --test flang/test/*.test.mjs`, и два теста из него
-ввозят `../conc/scheduler.js` и `../conc/link.js`. Без корневого манифеста на
+ввозят `../concurrency/scheduler.js` и `../concurrency/link.js`. Без корневого манифеста на
 Node 20 они не ввозятся вовсе. Лечится это не печатью манифеста, а манифестами
 по каталогам или переименованием в `.mjs` — и то и другое трогает
-`flang/conc/**` и `flang/test/**`.
+`flang/concurrency/**` и `flang/test/**`.
 
 **2. Читается не два поля, а пять.** Кроме `version` (17 мест) и `name` (8)
 читаются `license`, `repository.url` и `bugs.url`:
@@ -93,8 +93,8 @@ Node 20 они не ввозятся вовсе. Лечится это не пе
 ## Порядок, если владелец решит выбрасывать
 
 1. Перепечатать семя — без этого шага цель JS манифеста не кладёт.
-2. Перевести `flang/conc/*.js` и оба теста-свидетеля на `.mjs` либо положить
-   `flang/conc/package.json`; то же для двух примеров во `frameworks`.
+2. Перевести `flang/concurrency/*.js` и оба теста-свидетеля на `.mjs` либо положить
+   `flang/concurrency/package.json`; то же для двух примеров во `frameworks`.
 3. Решить, откуда сборка сайта возьмёт лицензию и два адреса, а
    `license-guard.flang` — опознаватель лицензии.
 4. Перевести читателей `version` на `.flangrc` (ключ уже есть) и снять

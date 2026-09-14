@@ -47,7 +47,7 @@ the infinite loop but **lying about termination**.
 
 **A scheduler has already been written in flang.** It was quoted for years as
 the example of what cannot be written. It sits in the tree —
-`flang/conc/scheduler.flang` — and every one of its functions has a proved
+`flang/concurrency/scheduler.flang` — and every one of its functions has a proved
 termination. "Being a scheduler" turned out to be a property not of the code but
 of whoever holds control: take waiting and calling a handler by name out of a
 scheduler, and what is left is decisions.
@@ -86,14 +86,14 @@ promise but an inventory of what is already written:
 | talking to PostgreSQL | `flang/stdlib/postgres.flang` | 67 | 67 |
 | the SHA-256 hash | `flang/stdlib/sha256.flang` | 37 | 37 |
 | base64 | `flang/stdlib/base64.flang` | 19 | 19 |
-| scheduler decisions | `flang/conc/scheduler.flang` | 54 | 54 |
+| scheduler decisions | `flang/concurrency/scheduler.flang` | 54 | 54 |
 
 The count is of function headers in the file (`grep -c '^функция «\|^тотальная функция «'`,
 tree of 11 September 2026, release 0.7.17). For the scheduler the compiler
 says the same, counting the imported module as well:
 
 ```
-$ flang check flang/conc/scheduler.flang; echo $?
+$ flang check flang/concurrency/scheduler.flang; echo $?
 модуль «Планировщик узла»: функций 73, из них с доказанным завершением 73; типов 17; файлов вместе с импортами 2
 0
 ```
@@ -170,7 +170,7 @@ looks like this:
 | what | where | lines |
 | --- | --- | ---: |
 | scheduler: loop, threads, network wait | `flang/src/emit/c/flang_conc.c` | 4650 |
-| decisions about processes, supervision, links | `flang/conc/*.flang` | 3350 |
+| decisions about processes, supervision, links | `flang/concurrency/*.flang` | 3350 |
 
 Line counts taken on 11 September 2026 (`wc -l`). The first file has six loops
 with no exit condition (`for (;;)`), the second has none — and not because they

@@ -111,7 +111,7 @@ of Isabelle's Isar, not a script of tactics. There are **284** such theorems in
 the language tree, **55** of them in the standard library (measured on
 13 September 2026 at commit `1218aa186`;
 `grep -rac '^\s*теорема ' flang --include='*.flang'`, summed with `awk`; the `-a`
-is not optional — without it `flang/conc/link.flang` is skipped silently).
+is not optional — without it `flang/concurrency/link.flang` is skipped silently).
 
 The difference is **what is left for the hand to write**. The kernel closes a
 claim on its own, by thirteen rules, and a written theorem is needed only for the

@@ -60,7 +60,7 @@ $F ast   <файл>                                        # дерево: пе�
 
 ## Разрез: доля доказанных по первому слову тела
 
-Область — `flang/self`, `flang/stdlib`, `flang/conc`, `flang/core`:
+Область — `flang/self`, `flang/stdlib`, `flang/concurrency`, `flang/core`:
 **80 файлов из 108, 7384 обязательства** из 13 341 написанных в дереве.
 
 | первое слово тела | всего | доказано | доля | сетка | объявлено | НЕ доказано |
@@ -241,7 +241,7 @@ FLANG_PROPERTY: нарушено свойство «ЛОЖНОЕ: при пол�
 * **28 файлов не учтены** — у них счёты не сошлись или ведомость не снялась;
   крупнейшие: `flang/self/conc.flang` (200 обязательств, объявлены процессы),
   `flang/stdlib/postgres.flang` (159, то же), `flang/self/cli.flang` (78),
-  `flang/self/distributed.flang` (82), `flang/conc/wire.flang` (41).
+  `flang/self/distributed.flang` (82), `flang/concurrency/wire.flang` (41).
 * **Связь — не причина**, и проба выше это показала на шести случаях.
 * **Прибор считает по разобранному дереву, а не по нормализованному.** Сверка:
   у 2876 обязательств, закрытых ходом по условию, прибор находит условие и до
@@ -252,15 +252,15 @@ FLANG_PROPERTY: нарушено свойство «ЛОЖНОЕ: при пол�
 
 ```sh
 F=/srv/flang-rabota/m-kernel-ledger/build-kernel/flang
-for f in flang/self/*.flang flang/stdlib/*.flang flang/conc/*.flang flang/core/*.flang; do
+for f in flang/self/*.flang flang/stdlib/*.flang flang/concurrency/*.flang flang/core/*.flang; do
   k=$(echo "$f" | tr '/' '_')
   $F ast   "$f" > дерево/$k.json                          # крупные — своим bootstrap/flang
   $F check "$f" --proof --предел-шагов 400000000000 > ведомость/$k.out
 done
 python3 docs/tools/binder-goal-share.py . дерево ведомость \
-  'flang/self/*.flang' 'flang/stdlib/*.flang' 'flang/conc/*.flang' 'flang/core/*.flang'
+  'flang/self/*.flang' 'flang/stdlib/*.flang' 'flang/concurrency/*.flang' 'flang/core/*.flang'
 python3 docs/tools/binder-rule-reach.py  . дерево ведомость \
-  'flang/self/*.flang' 'flang/stdlib/*.flang' 'flang/conc/*.flang' 'flang/core/*.flang'
+  'flang/self/*.flang' 'flang/stdlib/*.flang' 'flang/concurrency/*.flang' 'flang/core/*.flang'
 ```
 
 Прогоны — через ворота и не больше одного зараз: `VETVEY=6 PIK=1G PAMYAT=8G`.

@@ -91,7 +91,7 @@ $ echo $?
 | «Вычислитель flang» | `/srv/tmp/interp-prev-base.flang`, `/srv/tmp/interpret-slovar.flang` | `flang/self/interpret.flang` |
 | «Печать в C» | `/srv/tmp/emitc-b1ok.flang`, `/srv/tmp/emitc-backup-1482916.flang` | `flang/self/emit-c.flang` |
 | «Планировщик конкурентности» | `/srv/tmp/conc-slovar.flang` | `flang/self/conc.flang` |
-| «Планировщик узла» | `/srv/tmp/poddelka.flang`, `/srv/tmp/poddelka2.flang` | `flang/conc/scheduler.flang` |
+| «Планировщик узла» | `/srv/tmp/poddelka.flang`, `/srv/tmp/poddelka2.flang` | `flang/concurrency/scheduler.flang` |
 | «Запись доказательства» | `/srv/tmp/zp-do.flang` | `flang/self/zapis.flang` |
 | «Сверщик доказательств» | `/srv/tmp/sv-do.flang` | `flang/proof/сверщик.flang` |
 | «Подделки ядра» | `/srv/tmp/pod-head.flang`, `/srv/tmp/pod-mine.flang` | `flang/scripts/kernel-forgeries.flang` |

@@ -50,7 +50,7 @@ done
 
 PODLOGI="flang/test/fixtures/processes/13-handler-over-foreign-state-accepted-today.flang
 flang/test/fixtures/processes/14-handler-with-foreign-state-argument-accepted-today.flang
-flang/conc/examples/distributed-foreign-state-forged.flang"
+flang/concurrency/examples/distributed-foreign-state-forged.flang"
 printf '%s\n' "$PODLOGI" > "$work/подлоги.txt"
 
 set +e

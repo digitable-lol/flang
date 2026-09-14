@@ -9,7 +9,7 @@
 полноценный итог». **Это тот замер.**
 **Основание:** прогоны на ветке `u/vm-zamer` (база `ff8ad5d0`), компилятор
 `bootstrap/flang` 0.5.1; `flang/self/interpret.flang`, `flang/self/conc.flang`,
-`flang/self/hotswap.flang`, `flang/conc/scheduler.flang`,
+`flang/self/hotswap.flang`, `flang/concurrency/scheduler.flang`,
 `flang/self/emit-c.flang`
 
 ---
@@ -22,16 +22,16 @@ ADR-0003 считал по описи, которой больше нет. Оп�
 **1. Планировщика на C в печати НЕТ.** ADR-0003 числит «планировщик рабочий, с
 пулом потоков — `flang/src/emit/c/flang_conc.c`, 3 501 строка C» как половину
 готовой машины. Проверено прогоном: `./bootstrap/flang emit --target c` на трёх
-программах с процессами (`flang/conc/examples/counter.flang`,
-`flang/conc/node-benchmark.flang` и пробе на два процесса) печатает **шесть файлов, и
+программах с процессами (`flang/concurrency/examples/counter.flang`,
+`flang/concurrency/node-benchmark.flang` и пробе на два процесса) печатает **шесть файлов, и
 `flang_conc.c` среди них нет ни разу**. Печать рантайма перечислена поимённо в
 `flang/self/emit-c.flang:4141` — там только `flang_runtime.h` и
 `flang_runtime.c`. Файл на 3 508 строк остался от сборки на JavaScript; на него
 ссылаются только осиротевшие проверки.
 
-**Живой планировщик сегодня — `flang/conc/scheduler.flang`, 506 строк на
+**Живой планировщик сегодня — `flang/concurrency/scheduler.flang`, 506 строк на
 flang**, который печатается во все восемь целей как обычные функции (7 событий,
-6 велений), плюс `flang/conc/link.flang` 400 строк. Хозяин на каждой цели
+6 велений), плюс `flang/concurrency/link.flang` 400 строк. Хозяин на каждой цели
 исполняет веления. Это подтверждено прогоном `node flang/test/uzel-celi.test.mjs`:
 **8 целей из 8**, мира у хозяина от 12 строк (go, elixir) до 29 (c).
 
@@ -61,7 +61,7 @@ flang**, который печатается во все восемь целей
 **Связей и наблюдателей нет вовсе.** Надзор объявляется деревом со стратегиями и
 выражен в `scheduler.flang`, то есть печатается во все восемь целей вместе с
 ним. А вот `link`/`monitor` BEAM у нас нет: grep по `flang/self/conc.flang` и
-`flang/conc/scheduler.flang` на `наблюдател|monitor|связать` даёт **ноль**.
+`flang/concurrency/scheduler.flang` на `наблюдател|monitor|связать` даёт **ноль**.
 Действий у обработчика четыре рода (`отправить`, `породить`, `остановить`,
 `через`), и «связаться с процессом» среди них нет. Оговорка про восемь целей: я
 прогнал `flang/test/uzel-celi.test.mjs` — он даёт **полный узел на 8 из 8**;

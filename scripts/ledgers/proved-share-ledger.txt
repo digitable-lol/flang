@@ -240,8 +240,8 @@
 // (2 обязательства) НЕ СОШЛИСЬ, и по условию описи числа вместо крестов не
 // ставятся, пока не сойдутся. Обе половины названы в задаче 2040.
 //
-// Первые кресты — 18 файлов среза flang/conc/examples/** и
-// flang/conc/services/** — 70 обязательств. Снято 30 августа 2026 двоичным
+// Первые кресты — 18 файлов среза flang/concurrency/examples/** и
+// flang/concurrency/services/** — 70 обязательств. Снято 30 августа 2026 двоичным
 // f32d89f599dd6b9f740f42a752dff1ff («m-kernel-ledger/build-kernel», приём
 // задачи 6128), ключ «--предел-шагов 400000000000», ворота PAMYAT=45G. Ни один
 // из восемнадцати не упёрся ни в срок, ни в память: самый долгий отвечал 4,00 с
@@ -252,17 +252,17 @@
 //    supervisors, runs». Отказ вызывает САМО объявление «процесс»/«надзор»/
 //    «прогон» в файле, а не обязательства: все 68 постусловий написаны у
 //    обычных функций, и такие двоичный судит. Совпадение по срезу
-//    flang/core + flang/conc полное, 29 файлов из 29: где такое объявление
+//    flang/core + flang/concurrency полное, 29 файлов из 29: где такое объявление
 //    есть — отказ, где нет — ведомость. Считать эти законы умеет
 //    flang/self/setoid-oracle.flang, но в замыкание двоичного он не вшит.
 //
 // 2. Один файл, 2 обязательства —
-//    flang/conc/examples/node-reference-checked-on-receipt-forged.flang: это
+//    flang/concurrency/examples/node-reference-checked-on-receipt-forged.flang: это
 //    подделка, которая ОБЯЗАНА быть отвергнута по типам (FLANG_TYPE, код 1), а
 //    у программы с замечаниями ведомости не бывает. Ведомости у него не будет
 //    никогда, и это не долг.
 //
-// Десять строк того же среза (flang/core/*.flang, flang/conc/*.flang), снятых
+// Десять строк того же среза (flang/core/*.flang, flang/concurrency/*.flang), снятых
 // 29 августа двоичным 25605ce2…, пересняты 30 августа двоичным f32d89f5… и
 // сошлись знак в знак все десять: 215 доказанных из 280.
 //
@@ -392,7 +392,7 @@
 //     снят ради места у ворот.
 //
 // ДЕРЖИТСЯ НА ДРУГОМ — 48 файлов, 131 обязательство:
-//   • 17 файлов flang/conc/** (68) — код 2, «законы бинарник не считает —
+//   • 17 файлов flang/concurrency/** (68) — код 2, «законы бинарник не считает —
 //     processes, supervisors, runs». ПЕРЕПЕЧАТКА ЭТОГО НЕ СНИМАЕТ, и это
 //     измерено: перепечатанное семя УЖЕ несёт «Ключи судимых процессов»
 //     (klyuchi_sudimyh_processov в его compiler_flang.c; у ствольного его нет) —
@@ -438,7 +438,7 @@
 //   2. Крест flang/self/repl/repl.flang записан как «стена глубины», а это стена
 //      ШАГОВ (см. выше).
 //   3. Крест docs/examples/db/postgres-plan.flang записан одним пределом, а их два.
-//   4. Восемнадцать крестов flang/conc/** несли в поле «без приговора» знак «×»,
+//   4. Восемнадцать крестов flang/concurrency/** несли в поле «без приговора» знак «×»,
 //      а не число, вопреки записанному в 9204 «у всех восемнадцати было нулём».
 //      Сумма не поехала лишь потому, что сверка читает поле как ^[0-9]+$
 //      (scripts/guards/published-vs-tree.sh:343) и нечисло молча пропускает. Исправлено:
@@ -452,7 +452,7 @@
 // ────────── 30 августа 2026: 16 крестов сняты ПРАВКОЙ, задача 3714 ──────────
 //
 // Крестов было 80 на 234 обязательствах, стало 64 на 175. Шестнадцать строк
-// ниже несут приговор: пятнадцать flang/conc/** и flang/ct/modules/orders.
+// ниже несут приговор: пятнадцать flang/concurrency/** и flang/ct/modules/orders.
 //
 // ПОЧЕМУ ОТКРЫЛОСЬ. Отказ ведомости («Непосчитанное в бинарнике»,
 // flang/self/bootstrap/compiler.flang) спрашивал «Названия двух» — ВСЕ
@@ -499,7 +499,7 @@
 // снятые счётчиком раньше, этим НЕ пересняты и по-прежнему занижены.
 //
 // ЧЕГО ПРАВКА НЕ ОТКРЫЛА, и это надо читать вместе с числом 68 выше:
-//   • flang/conc/services/file-read.flang (5) и host-io-survey.flang (6)
+//   • flang/concurrency/services/file-read.flang (5) и host-io-survey.flang (6)
 //     двоичным 4e32f9f7 до отказа ведомости не доезжают вовсе: оба уходят
 //     кодом 1 и FLANG_MATCH_NOT_EXHAUSTIVE — и до правки, и после. Их держит
 //     беда в самих файлах. Ствольный 82f9ac40 на них печатает именно стену,
@@ -896,30 +896,30 @@ f198f629adf34e113e458f37f95b2ce4|1|1|0|0|0|docs/examples/web/marketplace/catalog
 19ee8d1ab33a1c5e5d7877c704c22b1a|1|0|1|0|0|docs/examples/web/shortener/plan-durable.flang
 38ea4e6c78ef0d7fb34ddb375b5975eb|8|1|4|3|0|docs/examples/web/shortener/service.flang
 6564f0a31b1cae56a4efddcb1601db34|1|1|0|0|0|docs/examples/web/shortener/store.flang
-a8a4bc5a69a3ca169dc935df04d2b9a7|4|4|0|0|0|flang/conc/examples/backpressure.flang
-ec1f624e7568f4537f7518b1b4c0d0fd|1|1|0|0|0|flang/conc/examples/budget.flang
-06ad4d0486befb5d8b1bf5b7a66e08dc|3|3|0|0|0|flang/conc/examples/counter.flang
-08aff10a8f36ba8071a0b5b9ec67e7f1|4|4|0|0|0|flang/conc/examples/distributed.flang
-942de0641ebe80e63db1d56eb0d5956b|1|1|0|0|0|flang/conc/examples/escalate.flang
-47710fb8ddff90712a70239bef22376b|3|3|0|0|0|flang/conc/examples/mailbox.flang
-0d1809abc948826d1096ad3a19f6921f|2|2|0|0|0|flang/conc/examples/measure.flang
-96d2864605ece9ea91fdf95adf6861ff|5|5|0|0|0|flang/conc/examples/node-name-of-a-foreign-kind.flang
-90b3896b3cf34bfb3644ac666527673f|2|×|×|×|0|flang/conc/examples/node-reference-checked-on-receipt-forged.flang
-2249c7792bfcf8351e0c1e48bf624f8c|6|6|0|0|0|flang/conc/examples/node-reference-checked-on-receipt.flang
-232dd2e55e3b5ee6d1da51d27283de18|5|5|0|0|0|flang/conc/examples/node-reply-by-reference.flang
-5d10c2fe3aa3b9f64df3f88354a2332d|3|3|0|0|0|flang/conc/examples/node-work-by-reference.flang
-599500edfe756ab82ebc2f92e6875ce9|8|8|0|0|0|flang/conc/examples/race.flang
-35a028d8ee3aa862503ce54ea3ddcdf3|6|6|0|0|0|flang/conc/examples/server.flang
-18b4a4d39c60207fcffe9efde64b3d43|3|3|0|0|0|flang/conc/examples/supervision.flang
-25106e2c43e43634e8a45877c72e2738|21|16|0|5|0|flang/conc/hotswap-node.flang
-48b521ac03a608a7ab6a860cd7dfc813|32|29|3|0|1|flang/conc/link.flang
-08e86506be1a1ba8ba2b61f3f6196894|9|9|0|0|0|flang/conc/node-benchmark.flang
-463e5998f7225d4a7b7988570c769a38|60|53|1|5|0|flang/conc/scheduler.flang
-4a0b1cee525ec066895024e465426e64|5|×|×|×|0|flang/conc/services/file-read.flang
-521a207c82805b8502b2b40e692448ae|6|×|×|×|0|flang/conc/services/host-io-survey.flang
-c21138380e993a1c284bbdc534e1488e|3|3|0|0|0|flang/conc/services/two-on-our-own-engine.flang
-d12bbb4087f2b3c81797a7dc34666e85|55|46|1|8|0|flang/conc/supervisor.flang
-c9ada194623f84cf972701a608568544|40|21|8|11|1|flang/conc/wire.flang
+a8a4bc5a69a3ca169dc935df04d2b9a7|4|4|0|0|0|flang/concurrency/examples/backpressure.flang
+ec1f624e7568f4537f7518b1b4c0d0fd|1|1|0|0|0|flang/concurrency/examples/budget.flang
+06ad4d0486befb5d8b1bf5b7a66e08dc|3|3|0|0|0|flang/concurrency/examples/counter.flang
+08aff10a8f36ba8071a0b5b9ec67e7f1|4|4|0|0|0|flang/concurrency/examples/distributed.flang
+942de0641ebe80e63db1d56eb0d5956b|1|1|0|0|0|flang/concurrency/examples/escalate.flang
+47710fb8ddff90712a70239bef22376b|3|3|0|0|0|flang/concurrency/examples/mailbox.flang
+0d1809abc948826d1096ad3a19f6921f|2|2|0|0|0|flang/concurrency/examples/measure.flang
+96d2864605ece9ea91fdf95adf6861ff|5|5|0|0|0|flang/concurrency/examples/node-name-of-a-foreign-kind.flang
+90b3896b3cf34bfb3644ac666527673f|2|×|×|×|0|flang/concurrency/examples/node-reference-checked-on-receipt-forged.flang
+2249c7792bfcf8351e0c1e48bf624f8c|6|6|0|0|0|flang/concurrency/examples/node-reference-checked-on-receipt.flang
+232dd2e55e3b5ee6d1da51d27283de18|5|5|0|0|0|flang/concurrency/examples/node-reply-by-reference.flang
+5d10c2fe3aa3b9f64df3f88354a2332d|3|3|0|0|0|flang/concurrency/examples/node-work-by-reference.flang
+599500edfe756ab82ebc2f92e6875ce9|8|8|0|0|0|flang/concurrency/examples/race.flang
+35a028d8ee3aa862503ce54ea3ddcdf3|6|6|0|0|0|flang/concurrency/examples/server.flang
+18b4a4d39c60207fcffe9efde64b3d43|3|3|0|0|0|flang/concurrency/examples/supervision.flang
+25106e2c43e43634e8a45877c72e2738|21|16|0|5|0|flang/concurrency/hotswap-node.flang
+48b521ac03a608a7ab6a860cd7dfc813|32|29|3|0|1|flang/concurrency/link.flang
+08e86506be1a1ba8ba2b61f3f6196894|9|9|0|0|0|flang/concurrency/node-benchmark.flang
+463e5998f7225d4a7b7988570c769a38|60|53|1|5|0|flang/concurrency/scheduler.flang
+4a0b1cee525ec066895024e465426e64|5|×|×|×|0|flang/concurrency/services/file-read.flang
+521a207c82805b8502b2b40e692448ae|6|×|×|×|0|flang/concurrency/services/host-io-survey.flang
+c21138380e993a1c284bbdc534e1488e|3|3|0|0|0|flang/concurrency/services/two-on-our-own-engine.flang
+d12bbb4087f2b3c81797a7dc34666e85|55|46|1|8|0|flang/concurrency/supervisor.flang
+c9ada194623f84cf972701a608568544|40|21|8|11|1|flang/concurrency/wire.flang
 97c9dc395bdfb30f152711d16fd006c6|1|1|0|0|0|flang/core/evaluate.flang
 281a35fe56b5cd518ee758e0b45d0afc|25|14|3|8|0|flang/core/json.flang
 38c0587f1b3803dcea6de78dab0c8b5d|4|4|0|0|0|flang/core/lexer.flang

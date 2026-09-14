@@ -254,7 +254,7 @@
 
 тотальная функция «Видимые корни»
   возвращает список строки
-  ["flang/src", "flang/stdlib", "flang/bin", "flang/core", "flang/self", "flang/conc", "flang/proof", "editors", "packaging", "examples", "package.json", "bootstrap", "src", "schema", "flang/cat", "flang/ct", "flang/examples"]
+  ["flang/src", "flang/stdlib", "flang/bin", "flang/core", "flang/self", "flang/concurrency", "flang/conc", "flang/proof", "editors", "packaging", "examples", "package.json", "bootstrap", "src", "schema", "flang/cat", "flang/ct", "flang/examples"]
 
 тотальная функция «Служебные корни»
   возвращает список строки

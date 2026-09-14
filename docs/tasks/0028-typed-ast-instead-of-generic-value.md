@@ -271,7 +271,7 @@ PAMYAT=60G /srv/flang-rabota/vorota/flang-vorota -- \
 **Три мины, снятые заранее.**
 
 1. **Имя `«Узел»` ЗАНЯТО** — в `flang/stdlib/automaton.flang`,
-   `flang/core/parser.flang` и `flang/conc/scheduler.flang`. Пример в шапке этой
+   `flang/core/parser.flang` и `flang/concurrency/scheduler.flang`. Пример в шапке этой
    задачи предлагает именно его; так назвать нельзя. `«Узел выражения»`
    свободно. `«Может быть узел»` занято `emit-c.flang` — и это хорошо, его
    надо ВВОЗИТЬ, а не объявлять заново.

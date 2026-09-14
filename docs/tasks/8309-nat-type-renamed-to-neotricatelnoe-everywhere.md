@@ -43,7 +43,7 @@
   `«поле»: нат`, `содержит х: нат`, `является нат`) переименованы скриптом
   по Юникод-границам слова (`python`, `(?<!\w)нат(?!\w)`; `git grep -w` на
   кириллице врёт) в `flang/self/**` (кроме `zapis.flang`, `cli.flang`,
-  `emit-*.flang` — их правят соседние наряды), `flang/stdlib`, `flang/conc`,
+  `emit-*.flang` — их правят соседние наряды), `flang/stdlib`, `flang/concurrency`,
   `flang/proof/**`, `flang/test/fixtures`, `flang/scripts`, `examples`,
   `fspec`, `docs/**` (живые страницы: курс, руководство, сайт, примеры),
   `ярлыки.flang`, `scripts`, `packaging`, `docs/DESCRIPTION.md`, навыки

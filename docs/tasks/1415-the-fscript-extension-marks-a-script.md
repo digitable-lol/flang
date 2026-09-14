@@ -180,7 +180,7 @@
 | `fspec/` | 4 | `guard`, `forgery`, `snapshot`, `clarifications` |
 | `docs/site/`, `docs/benchmarks/` | 3 + 3 | сборка сайта, замеры |
 | `packaging/` | 2 | `install-check`, `install-parity` |
-| по одному | 6 | `ярлыки.flang` (корень), `scripts/registry-tool.flang`, `flang/self/bootstrap/emit-from-source.flang`, `flang/conc/bench/gen.flang`, `docs/zettel/ukazatel.flang`, `docs/course/check.flang` |
+| по одному | 6 | `ярлыки.flang` (корень), `scripts/registry-tool.flang`, `flang/self/bootstrap/emit-from-source.flang`, `flang/concurrency/bench/gen.flang`, `docs/zettel/ukazatel.flang`, `docs/course/check.flang` |
 
 Кто зовёт их по имени: `ярлыки.flang` — **66** разных файлов (87 вызовов
 `flang io`); работы CI — **36** файлов; скрипты оболочки — **8**. Ссылок на пути

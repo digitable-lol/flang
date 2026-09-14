@@ -7,7 +7,7 @@
 команда: вторая
 карта: Чего в языке нет вовсе
 рядом: 0049, 6858
-нужность: 2 — git ls-files docs/site/*.mjs flang/conc/bench/*.mjs = 13 (в т.ч. build/surfaces-run/site-numbers/node-death-targets); pages.yml зовёт node 6 раз; коммитов после заведения b36d87f27 нет
+нужность: 2 — git ls-files docs/site/*.mjs flang/concurrency/bench/*.mjs = 13 (в т.ч. build/surfaces-run/site-numbers/node-death-targets); pages.yml зовёт node 6 раз; коммитов после заведения b36d87f27 нет
 ---
 
 # 4412. Сборка сайта и стенд узла — на flang
@@ -24,10 +24,10 @@
 | `docs/site/podsvetka.mjs` | `flang/scripts/binary.mjs` (`кодыРазбора`, `токеныИсходника`) | `docs/site/build.mjs` → `pages.yml`, ярлыки `сайт`, `сайт:проверка` |
 | `docs/site/surfaces-run.mjs` | `binary.mjs`, `flang/scripts/direct-run.mjs`, `flang/test/surface-pair.mjs` | ярлыки `поверхности:прогон`, `поверхности:проверка` |
 | `docs/site/site-numbers.mjs` | `direct-run.mjs`, `flang/scripts/proof-ledger.mjs` (`ФАЙЛЫ`, `сводКорпуса`) | ярлыки `числа`, `числа:проверка` |
-| `flang/conc/bench/node-death-targets.mjs` | `flang/test/{tempdir,toolchain-guard,uzel-osnastka}.mjs` | **никто** (ни ярлык, ни `.yml`, ни `.sh`) |
+| `flang/concurrency/bench/node-death-targets.mjs` | `flang/test/{tempdir,toolchain-guard,uzel-osnastka}.mjs` | **никто** (ни ярлык, ни `.yml`, ни `.sh`) |
 
 Решение координатора 9 сентября 2026: общие модули переезжают ПОД своих
-единственных потребителей (`docs/site/lib/`, `flang/conc/bench/lib/`) с
+единственных потребителей (`docs/site/lib/`, `flang/concurrency/bench/lib/`) с
 правкой ввозов, чтобы три каталога 0049 очистились; а снос самих
 потребителей — эта задача.
 
@@ -53,7 +53,7 @@
    уходит с `surfaces-run.mjs`, `proof-ledger.mjs` — с `site-numbers.mjs`,
    `binary.mjs` и `direct-run.mjs` — последними, когда не останется ни
    одного ввозящего.
-2. `flang/conc/bench/node-death-targets.mjs` — либо двойник на flang рядом с
+2. `flang/concurrency/bench/node-death-targets.mjs` — либо двойник на flang рядом с
    `*-across-targets.flang`, либо снос с доводом «ноль вызовов» и записью в
    `docs/flang/conc/RESILIENCE.md`, где он назван.
 3. Каждый снятый файл — своим коммитом с доказательством; приметы «СНЯТО» в
@@ -61,7 +61,7 @@
 
 ## Как понять, что сделано
 
-`git ls-files 'docs/site/*.mjs' 'flang/conc/bench/*.mjs' | wc -l` → 0 (кроме
+`git ls-files 'docs/site/*.mjs' 'flang/concurrency/bench/*.mjs' | wc -l` → 0 (кроме
 `docs/site/poisk-proverka.mjs`, если решение о нём не изменилось — он
 проверяет тот же `poisk.js`, что читает браузер); `pages.yml` без `node`;
 `./ярлык сайт:проверка` и `./ярлык поверхности:проверка` отвечают тем же

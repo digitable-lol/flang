@@ -60,7 +60,7 @@ otvet() { # номер урока → что набирается в пропу�
 vesti() { # файл входа, файл вывода, доводы… → код проводника
   vhod=$1; vyvod=$2; shift 2
   NO_COLOR= FLANG_TMP=${FLANG_TMP:-/srv/tmp} FLANG_TUTOR_STATE=нет \
-    FLANG=$BIN sh "$KOREN/flangtutor" "$@" < "$vhod" > "$vyvod" 2>&1
+    FLANG=$BIN sh "$KOREN/flang/bin/flangtutor" "$@" < "$vhod" > "$vyvod" 2>&1
 }
 
 # ── целиком ─────────────────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ fi
 # ── слова: список в проводнике = таблица лексера ────────────────────────────
 sed -n '/^тотальная функция «Куски таблицы»/,/^  \]/p' "$KOREN/flang/self/lexer.flang" \
   | grep '^    "' | sed 's/^    "|//; s/|",\{0,1\}$//' | tr '|' '\n' | sed 's/:.*//' | grep -v '^$' > "$RAB/slova.lexer"
-sed -n "/^LANGUAGE_WORDS='/,/^'/p" "$KOREN/flangtutor" | grep -v "'" | tr -d '\n' | tr '|' '\n' | grep -v '^$' > "$RAB/slova.tutor"
+sed -n "/^LANGUAGE_WORDS='/,/^'/p" "$KOREN/flang/bin/flangtutor" | grep -v "'" | tr -d '\n' | tr '|' '\n' | grep -v '^$' > "$RAB/slova.tutor"
 if ! cmp -s "$RAB/slova.lexer" "$RAB/slova.tutor"; then
   echo "слова: список слов в flangtutor разошёлся с таблицей лексера (снимите заново строками 122-123 этой пробы):"
   diff "$RAB/slova.lexer" "$RAB/slova.tutor" | head -10; BEDA=1
@@ -132,7 +132,7 @@ fi
 # ── место: оборвать и продолжить ────────────────────────────────────────────
 MESTO=$RAB/mesto
 otvet 1 > "$RAB/pervyy"
-NO_COLOR= FLANG_TUTOR_STATE=$MESTO FLANG=$BIN sh "$KOREN/flangtutor" --сначала \
+NO_COLOR= FLANG_TUTOR_STATE=$MESTO FLANG=$BIN sh "$KOREN/flang/bin/flangtutor" --сначала \
   < "$RAB/pervyy" > "$RAB/mesto.out1" 2>&1
 if [ ! -f "$MESTO" ] || [ "$(cat "$MESTO")" != 1 ]; then
   echo "место: после первого урока в $MESTO не записана единица"; BEDA=1
@@ -140,7 +140,7 @@ else
   : > "$RAB/ostalnye"
   n=2
   while [ "$n" -le "$VSEGO" ]; do otvet "$n" >> "$RAB/ostalnye"; n=$((n + 1)); done
-  NO_COLOR= FLANG_TUTOR_STATE=$MESTO FLANG=$BIN sh "$KOREN/flangtutor" \
+  NO_COLOR= FLANG_TUTOR_STATE=$MESTO FLANG=$BIN sh "$KOREN/flang/bin/flangtutor" \
     < "$RAB/ostalnye" > "$RAB/mesto.out2" 2>&1
   KOD=$?
   if [ "$KOD" != 0 ] || ! grep -q "урок 2 из $VSEGO" "$RAB/mesto.out2"; then
@@ -153,15 +153,15 @@ else
 fi
 
 # ── язык ────────────────────────────────────────────────────────────────────
-NO_COLOR= FLANG=$BIN sh "$KOREN/flangtutor" --список --язык en > "$RAB/en" 2>&1
-NO_COLOR= FLANG=$BIN sh "$KOREN/flangtutor" --список --язык ru > "$RAB/ru" 2>&1
+NO_COLOR= FLANG=$BIN sh "$KOREN/flang/bin/flangtutor" --список --язык en > "$RAB/en" 2>&1
+NO_COLOR= FLANG=$BIN sh "$KOREN/flang/bin/flangtutor" --список --язык ru > "$RAB/ru" 2>&1
 if ! grep -q '^lesson 1 · ' "$RAB/en"; then
   echo "язык: «--язык en» не дал английских имён уроков"; BEDA=1
 elif ! grep -q '^урок 1 · ' "$RAB/ru"; then
   echo "язык: «--язык ru» не дал русских имён уроков"; BEDA=1
 else
   otvet 1 > "$RAB/pervyy"
-  NO_COLOR= FLANG_TUTOR_STATE=нет FLANG=$BIN sh "$KOREN/flangtutor" --только 1 --язык eo \
+  NO_COLOR= FLANG_TUTOR_STATE=нет FLANG=$BIN sh "$KOREN/flang/bin/flangtutor" --только 1 --язык eo \
     < "$RAB/pervyy" > "$RAB/eo" 2>&1
   if ! grep -q 'no lessons in' "$RAB/eo"; then
     echo "язык: на код «eo» уроков нет, а проводник об этом не сказал"; BEDA=1
@@ -188,7 +188,7 @@ def pod_terminalom(no_color):
     otvet = open(os.path.join(rab, 'pervyy'), 'rb').read()
     pid, fd = pty.fork()
     if pid == 0:
-        os.execve('/bin/sh', ['/bin/sh', os.path.join(koren, 'flangtutor'), '--только', '1'], env)
+        os.execve('/bin/sh', ['/bin/sh', os.path.join(koren, 'flang', 'bin', 'flangtutor'), '--только', '1'], env)
     out = b''
     def slushat(sec):
         nonlocal out

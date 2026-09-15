@@ -161,6 +161,8 @@ export function средаСборки(каталог, добавки = {}) {
     TEMP: время,
     /* Go читает и его, и он старше TMPDIR. */
     GOTMPDIR: время,
+    /* Без -buildvcs=false go build штампует чужой git выше каталога (/tmp/.git на общей машине — код 128). */
+    GOFLAGS: [process.env.GOFLAGS, "-buildvcs=false"].filter(Boolean).join(" "),
     /* Узел MSBuild, выживший с прошлой сборки, несёт СТАРОЕ окружение и пишет
        мимо нашего TMPDIR — да ещё и живёт минутами после прогона. */
     MSBUILDDISABLENODEREUSE: "1",

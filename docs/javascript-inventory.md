@@ -56,7 +56,7 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 12, 14 — `flang/scripts/target-words.mjs`, `claim-guard.mjs`,
 `discriminating-search.mjs`; коммиты `09985c756`, `27e5ff559`, `d6139b409`).
 На 11 сентября (`2c40752d0`): `git ls-files '*.mjs' '*.js' | wc -l` → **53**,
-строк **29 715**. <!-- СНЯТО 2026-09-12 файлов *.js,*.mjs = 53 -->
+строк **29 715**. На 15 сентября 2026, после снятия напечатанного задачей 1423: **52**. <!-- СНЯТО 2026-09-15 файлов *.js,*.mjs = 52 -->
 
 Двоичный, которым сняты все остальные числа этой описи, —
 `/srv/flang-rabota/w-predely/bootstrap/flang` (0.6.2), собран 23 августа 2026
@@ -65,13 +65,13 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 
 Эта опись считает ОДИН язык. Остальные шестнадцать — оболочка, C, C++, Python,
 HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
-считает [`tree-inventory.md`](tree-inventory.md) (14 сентября 2026: 249 файлов вне flang,
-<!-- СНЯТО 2026-09-14 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 249 -->
+считает [`tree-inventory.md`](tree-inventory.md) (15 сентября 2026: 248 файлов вне flang,
+<!-- СНЯТО 2026-09-15 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 248 -->
 долг вне JavaScript — **97 файлов, 18 427 строк при потолке 63**: храповик
 красен, разбор — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
-29 725 строк этой описи — нижняя оценка.
-<!-- СНЯТО 2026-09-14 строк-в *.js,*.mjs = 29725 -->
+26 351 строк этой описи — нижняя оценка.
+<!-- СНЯТО 2026-09-15 строк-в *.js,*.mjs = 26351 -->
 (29 августа здесь стояло 25 527: за два дня прибавилось 2 313 строк. Ещё 64
 строки прибавились 2 сентября: `scripts/latin-collision-guard.mjs` сравнивает
 теперь ПРОСЬБЫ печати, а не объявленные имена, и довод к этому записан там же.)
@@ -140,16 +140,22 @@ JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по им
 его результат.** Требовать переписать их на flang — ошибка разряда: они уже и
 есть доказательство того, что язык себя обслуживает.
 
-**Напечатано компилятором — 3 файла, 6 365 строк.** Проверено грепом, а не на
-глаз: у всех трёх в шапке стоит строка «Сгенерировано flang (бэкенд JavaScript,
-`flang/src/emit/js.mjs`). Не редактировать руками», и она есть **только** у них:
+**Напечатано компилятором — 10 файлов, 8 934 строки.** Проверено грепом 15 сентября 2026, после сноса части таких файлов задачей 1423:
+строка «Сгенерировано flang» в шапке есть только у них:
 
 ```
 $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xargs wc -l
-  3372 flang/concurrency/scheduler.js
+   560 docs/examples/frameworks/nestjs-orders/printed/flang_cli.js
+  1437 docs/examples/frameworks/nestjs-orders/printed/orders_api.js
+   698 docs/examples/frameworks/react-invoice/printed/cart_service.js
+   560 docs/examples/frameworks/react-invoice/printed/flang_cli.js
+   560 docs/examples/frameworks/react-ts-pure/printed/flang_cli.js
+  1021 docs/examples/frameworks/react-ts-pure/printed/storefront.js
+   560 docs/examples/frameworks/vue-roman/printed/flang_cli.js
+   545 docs/examples/frameworks/vue-roman/printed/roman_numerals.js
   1246 flang/concurrency/link.js
   1747 flang/concurrency/wire.js
-  6365 total
+  8934 total
 ```
 
 **Рантайм цели `js` — 4 файла, 1 815 строк.** `flang/src/emit/js/*.js` уезжают в

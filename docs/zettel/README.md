@@ -76,6 +76,7 @@
 - [Условие цели ядро сличает с условием тела ЗНАК В ЗНАК — равносильная запись не считается](goal-condition-must-match-body-condition-sign-for-sign.md)
 - [Тело-«если» получило посылку индукции, и это дало по библиотеке ноль](if-bodies-get-induction-but-assertions-still-block.md)
 - [Индукция по строке закрыла ОДНО утверждение на весь корпус, а не сотню: за стеной стоит вторая](indukciya-po-stroke-zakryla-odno-utverzhdenie-a-ne-sotnyu.md)
+- [Спуск по строке в библиотеке пишут свёрткой по знакам, а не разбором — принцип строки к таким телам не цеплялся](string-descent-is-written-as-a-fold-over-characters.md)
 - [Свёртка в flang левая, поэтому индукцию по списку к ней прицепить нельзя — и это свойство свёртки, а не пробел ядра](left-fold-gives-no-list-induction.md)
 - [Библиотека доказана на 63 %: 2786 → 3630, и оба числа сняты прогоном, а не сложены из чужих отчётов](library-proof-ledger.md)
 - [Зеркало допущений закрыло пробу и не закрыло ни одного обещания библиотеки](mirroring-assumptions-costs-nothing-and-gave-nothing.md)

@@ -18,7 +18,7 @@ ADR-0039 §2; чтение `flang/self/proof-kernel.flang` того же ком�
 [ADR-0022](0022-a-type-fact-travels-as-a-derivation.md) — каждый шаг печатается и
 переигрывается; `docs/flang/proof/SPEC.md`, «Что дальше» п.4 и п.7.
 **Новые задачи:** [4722](../tasks/4722-the-simplifier-rewrites-by-proved-statements-with-fuel-and-prints-positions.md),
-[7359](../tasks/7359-strings-have-no-induction-principle.md),
+[7359](../tasks/completed/7359-strings-have-no-induction-principle.md),
 [1908](../tasks/1908-the-exact-integer-lands-in-lexer-types-evaluator-and-printers.md).
 
 ---

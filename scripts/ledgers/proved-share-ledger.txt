@@ -1131,7 +1131,7 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 54cfb1a8e907051aafea33efa6ac337d|782|446|22|261|0|flang/self/parser.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
-82baac47756df343c845cc40f740dfbe|94|82|2|10|0|flang/self/proof-initial.flang
+82baac47756df343c845cc40f740dfbe|95|82|2|10|0|flang/self/proof-initial.flang
 c8dbb7179b35f785da41f5990dd41238|59|44|0|0|0|flang/self/proof-kernel.flang
 6caf41ec0a767163f46212d635157227|337|268|26|41|0|flang/self/proof.flang
 c9e3ee258bfab2a0503a1214f8d1034f|179|46|1|91|0|flang/self/proofterm.flang
@@ -1144,7 +1144,7 @@ a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 e6bd6e2dcbd72e44099aeb3d412d2167|279|231|11|37|0|flang/self/totality.flang
 6f5995562eb91e54ecbcd9bde4c4853e|410|119|4|265|0|flang/self/types.flang
-94902a6939c9331164c3fdd856ef2a93|226|98|57|3|0|flang/self/zapis.flang
+94902a6939c9331164c3fdd856ef2a93|227|98|57|3|0|flang/self/zapis.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang
@@ -1541,3 +1541,17 @@ c5464b7a62dd0d77dcc62358257da3b4|1|×|×|×|0|flang/proof/чекер/пробы/
 6ceaa7f17e408388d4447d40753e7a04|1|×|×|×|2|flang/proof/чекер/пробы/семьи/все-элементы/вызов-с-выписанным.flang
 7e1c93a9588256efa0332d2af81e944f|1|×|×|×|2|flang/proof/чекер/пробы/семьи/все-элементы/вызов-с-приписанным.flang
 5e841c4bd0aeec4473b3e3cf4f595434|2|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/порча/ярлык-без-обещания.flang
+// ⚑ 15 сентября 2026, над main 05e1c8c4d: пять проб семьи «строка по знакам»
+// (задача 7359, Тожд3 и Инд4). Приговор — СЕМЕНИ (семя 0.7.19 правил Тожд3 и
+// Инд4 не знает): склейка разложения и последний знак у него — сетка, обе
+// подделки — «объявлено, не доказано» либо сетка. Печать ядра ветки (компилятор,
+// напечатанный в JavaScript) доказывает честные две и не доказывает подделки —
+// записи семьи; числитель здесь переснимет перепечатка. У flang/self/zapis.flang
+// и flang/self/proof-initial.flang пересчитано только «написано» (+1 и +1 —
+// «Форма склейки разложения записи», «Объявления знака»); md5 и числитель не
+// тронуты: они датируют прежний приговор.
+478768e5d8f92c9cf3a7c6a0d86b6a93|1|0|1|0|0|flang/proof/чекер/пробы/семьи/string-by-characters/join-of-decomposition.flang
+7f0f6f025aaf46b3be35689fa85c12cf|1|0|0|1|0|flang/proof/чекер/пробы/семьи/string-by-characters/join-with-separator-forgery.flang
+7af15790e16c23fe565ff25a67cc8ef6|2|1|1|0|0|flang/proof/чекер/пробы/семьи/string-by-characters/last-character.flang
+d75f0d62496543b49b91ab344638ebe3|2|1|1|0|0|flang/proof/чекер/пробы/семьи/string-by-characters/last-piece-forgery.flang
+94ff14d206cb176e23668a55d4d61e66|1|0|0|1|0|flang/proof/чекер/пробы/семьи/string-by-characters/other-string-forgery.flang

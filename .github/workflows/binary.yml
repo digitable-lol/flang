@@ -393,9 +393,9 @@ jobs:
       #
       # Счётчиков долга в дереве было три — раздел «Вне языка» в docs/ROADMAP.md,
       # docs/javascript-inventory.md и числа сайта, — и все три считали ОДИН
-      # язык: JavaScript. Оболочка (94 файлов, 23955 строк), HTML, CSS, пробы на
+      # язык: JavaScript. Оболочка (94 файлов, 23960 строк), HTML, CSS, пробы на
       # СНЯТО 2026-09-14 файлов *.sh = 94
-      # СНЯТО 2026-09-15 строк-в *.sh = 23955
+      # СНЯТО 2026-09-15 строк-в *.sh = 23960
       # C, Python, awk и Erlang не считались нигде и ни в одной проверке. Долг,
       # которого никто не считает, не убывает: его не видно ни в отчёте, ни в
       # ленте, и растёт он молча.
@@ -1072,6 +1072,44 @@ jobs:
         run: sh scripts/guards/published-vs-tree.sh --проза
       - name: Перепись того, что в дереве не на flang
         run: sh scripts/guards/published-vs-tree.sh --перепись
+
+      # ── КОММЕНТАРИЕВ В .flang НЕ ПРИБАВЛЯЕТСЯ ──────────────────────────────
+      #
+      # Храповик `scripts/guards/no-comments-guard.sh` сверяет число строк `//`
+      # в каждом отслеживаемом .flang с долгом `scripts/ledgers/no-comments-debt.tsv`.
+      # Его не звал ни один workflow, и к 15 сентября 2026 он был красен на
+      # чистом main — прибавка в 78 файлах, которую никто не видел. Строка
+      # долга, поднятая законно, несёт причину третьим столбцом. Двоичный
+      # сторожу не нужен, поэтому он здесь, в работе без сборки.
+      - name: Комментариев в .flang не прибавилось
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+        run: sh scripts/guards/no-comments-guard.sh
+      # Проба: строка комментария в конце первого отслеживаемого .flang. Сторож
+      # обязан дать код не 0 и назвать этот файл; файл возвращается и сличается.
+      - name: Сторож комментариев умеет краснеть
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+        run: |
+          fajl=$(git -c core.quotepath=false ls-files '*.flang' | head -n 1)
+          cp "$fajl" "$RUNNER_TEMP/fajl"
+          printf '// порча: комментарий, которого в дереве не было\n' >> "$fajl"
+          if cmp -s "$fajl" "$RUNNER_TEMP/fajl"; then
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: $fajl не изменился" >&2
+            exit 1
+          fi
+          if sh scripts/guards/no-comments-guard.sh > "$RUNNER_TEMP/storozh.out" 2>&1; then
+            cp "$RUNNER_TEMP/fajl" "$fajl"
+            echo "СТОРОЖ ПРОМОЛЧАЛ: прибавка в $fajl прошла" >&2
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/fajl" "$fajl"
+          if ! grep -F "  $fajl: было" "$RUNNER_TEMP/storozh.out"; then
+            echo "ПОКРАСНЕЛ НЕ НА ПОДЛОЖЕННОЙ СТРОКЕ:" >&2
+            tail -5 "$RUNNER_TEMP/storozh.out" >&2
+            exit 1
+          fi
+          cmp "$fajl" "$RUNNER_TEMP/fajl"
 
   imena:
     name: link-collisions

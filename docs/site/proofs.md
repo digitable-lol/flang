@@ -37,7 +37,7 @@ its own number — **{{сторож.мест}} sites across {{сторож.фу�
 the total.
 
 > The numbers in the tables on this page were printed by the compiler on
-> **23 August 2026** (commit `252606e8`) in a run over the whole corpus, and have
+> **23 August 2026** (commit `252606e8`) in a run over all the programs in the repository, and have
 > not been re-measured since. The bootstrap seed the compiler was built from that
 > day has since been reprinted (10–11 September 2026, commit `0ce948bfd`); the
 > expensive numbers have not been re-measured yet. How the gap is measured is on

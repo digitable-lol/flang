@@ -1,0 +1,69 @@
+# ВЕДОМОСТЬ КИРИЛЛИЧЕСКИХ ИМЁН ФАЙЛОВ ВНЕ flang/proof (scripts/guards/cyrillic-file-names-guard.sh).
+# Имена файлов в дереве — английскими словами, без транслита (задача 1419). Здесь — те,
+# что уже лежат; строка уходит вместе с переименованием файла. Сверка в обе стороны:
+# нового имени здесь нет — красно; строка пережила файл — тоже красно.
+# Снято 15 сентября 2026: git -c core.quotepath=false ls-files | grep -v '^flang/proof/'
+#   | grep -P '[А-Яа-яЁё][^/]*$' — 63 имени.
+docs/benchmarks/verdict-cache/второе-ядро.sh
+docs/benchmarks/verdict-cache/кеш.вставка
+docs/benchmarks/verdict-cache/наложить.py
+docs/benchmarks/verdict-cache/проба.flang
+docs/benchmarks/verdict-cache/пробы.sh
+docs/benchmarks/verdict-cache/три-печати.sh
+docs/examples/io/пакет.bin
+docs/examples/io/фильтр-пакетов.flang
+docs/examples/pythagoras/квадрат-гипотенузы.flang
+docs/examples/pythagoras/формула-евклида.flang
+docs/examples/применение/итог-заказа.flang
+docs/examples/применение/место-слева-вызов.flang
+docs/examples/применение/место-слева-по-ключу.flang
+docs/examples/применение/место-слева-с-отрезком.flang
+docs/examples/применение/место-слева.flang
+docs/examples/применение/скидка-на-вызове.flang
+docs/examples/применение/скидка.flang
+docs/flang/proof/чекер/ЧИТАТЬ.md
+docs/flang/proof/чекер/пробы/записи/ПОЧЕМУ-ЗДЕСЬ-ЕСТЬ-КОММЕНТАРИИ.md
+docs/tutor/01-function.урок
+docs/tutor/02-two-functions.урок
+docs/tutor/03-example.урок
+docs/tutor/04-fold.урок
+docs/tutor/05-list-case.урок
+docs/tutor/06-type.урок
+docs/tutor/07-record.урок
+docs/tutor/08-string.урок
+docs/tutor/09-promise.урок
+docs/tutor/10-require.урок
+docs/tutor/11-theorem.урок
+docs/tutor/12-run-emit.урок
+docs/zettel/ветка-если-разворачивается-в-обе-стороны-а-разбор-списка-нет.md
+docs/zettel/компилятор-принимает-имя-в-ёлочках-в-прямых-кавычках-и-без-кавычек-одинаково.md
+docs/zettel/обещание-с-условием-по-варианту-разворачивает-ветвь-разбора.md
+docs/zettel/оценка-витков-и-счётчик-шагов-рантайма-считают-разное-под-одним-словом.md
+docs/zettel/подделка-и-подделочная-запись-это-разные-вещи.md
+docs/zettel/постусловие-о-сбое-доказуемо-для-конкретного-отклика-и-не-пишется-для-всякого.md
+docs/спецификации/слой-отказов.flang
+docs/спецификации/чего-не-хватает-fts.md
+docs/спецификации/язык-доказательств.md
+flang/scripts/жаргон-образцы.flang
+flang/scripts/одна-линейка.py
+flang/scripts/породить-атомы.flang
+flang/scripts/сличить-двух-сводителей.py
+flang/stdlib/образцы.flang
+flang/test/fixtures/fts-naslediye/скидки-в-подписки.fts
+flang/test/fixtures/fts/tools/ftspec/examples/shop/memory/001-предел-скидки.fts
+flang/test/fixtures/fts/tools/ftspec/examples/stale/memory/002-решение-о-возвратах.fts
+flang/test/ведомость-self.txt
+flang/test/ведомость-примеров.txt
+flang/test/ведомость.txt
+flang/test/владение-состоянием.flang
+flang/test/владение-состоянием.sh
+flang/test/встроенные-формы.flang
+flang/test/жаргон.flang
+flang/test/обход-self.sh
+flang/test/обход-примеров.sh
+flang/test/обход.sh
+flang/test/прогонщик-корпуса.flang
+scripts/guards/сторож-дарвина.flang
+scripts/доказуемость.sh
+ярлык
+ярлыки.flang

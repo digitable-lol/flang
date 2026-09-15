@@ -61,6 +61,7 @@ echo
 NACHALO=$(date +%s)
 
 zapusk proza          sh scripts/guards/prose-numbers-guard.sh
+zapusk kirillica     sh scripts/guards/cyrillic-file-names-guard.sh --check
 zapusk semya          sh scripts/seed/semya-rantayma-eto-istochnik.sh
 # semya-osvezhit --check: годен ли быстрый пересев (задача 3388). Краснеет
 # только на подлоге происхождения — рантайм догнал источник (как после

@@ -100,7 +100,7 @@ flang/proof/examples/corpus-cforms.flang	62
 flang/proof/examples/corpus-cident.flang	27
 flang/proof/examples/corpus-depth.flang	29
 flang/proof/examples/corpus-endings.flang	39
-flang/proof/examples/corpus-factorial.flang	66
+flang/proof/examples/corpus-factorial.flang	73	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/examples/corpus-fullwidth.flang	25
 flang/proof/examples/corpus-hof.flang	80
 flang/proof/examples/corpus-json.flang	28
@@ -111,7 +111,7 @@ flang/proof/examples/corpus-lists.flang	138
 flang/proof/examples/corpus-marks.flang	34
 flang/proof/examples/corpus-namesigns.flang	20
 flang/proof/examples/corpus-nat-names.flang	31
-flang/proof/examples/corpus-natural-ceiling.flang	43
+flang/proof/examples/corpus-natural-ceiling.flang	45	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/examples/corpus-natural.flang	33
 flang/proof/examples/corpus-numtree.flang	48
 flang/proof/examples/corpus-ophelpers.flang	23
@@ -126,14 +126,18 @@ flang/proof/examples/forgery-binder-hides-the-condition.flang	28
 flang/proof/examples/forgery-if-without-descent-theorem.flang	10
 flang/proof/examples/forgery-if-without-descent.flang	38
 flang/proof/examples/forgery-modus-ponens-by-guard.flang	25
-flang/proof/examples/four-words.flang	99
+flang/proof/examples/forgery-precondition-discharge-reads-proved-facts.flang	18	под flang/proof — правка после перепечатки и 1420
+flang/proof/examples/forgery-subtraction-under-precondition.flang	17	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/examples/four-words.flang	100	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/examples/honest-modus-ponens-by-guard.flang	13
 flang/proof/examples/if-over-a-segment.flang	43
-flang/proof/examples/precondition.flang	91
-flang/proof/examples/segment.flang	73
+flang/proof/examples/precondition-discharge-reads-proved-facts.flang	23	под flang/proof — правка после перепечатки и 1420
+flang/proof/examples/precondition.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/examples/segment.flang	75	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/examples/stack.flang	91
+flang/proof/examples/subtraction-under-precondition.flang	21	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/examples/traffic-light.flang	28
-flang/proof/kernel.flang	133
+flang/proof/kernel.flang	136	под flang/proof — правка после перепечатки и 1420
 flang/proof/map/abilities.flang	85
 flang/proof/map/boundaries.flang	13
 flang/proof/map/equality.flang	10
@@ -197,7 +201,8 @@ flang/proof/чекер/пробы/программы/Ч71-p-primer-bez-ozhidaniy
 flang/proof/чекер/пробы/программы/Ч71-p-primer-lzhyot-o-znachenii.flang	28
 flang/proof/чекер/пробы/программы/Ч71-p-primer-vne-bloka.flang	28
 flang/proof/чекер/пробы/программы/Ч71-p-sluchay-s-tem-zhe-znacheniem.flang	28
-flang/proof/чекер/пробы/программы/Ч7104-nakrutka-po-predpolozheniyu.flang	122
+flang/proof/чекер/пробы/программы/Ч7104-nakrutka-neproveryaemaya.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/программы/Ч7104-nakrutka-po-predpolozheniyu.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-chestnaya.flang	15
 flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-lozh.flang	15
 flang/proof/чекер/пробы/программы/Ч76-1-telo-mimo-primera.flang	34
@@ -211,8 +216,14 @@ flang/proof/чекер/пробы/программы/Ч87-F1-cel-lozhna.flang	33
 flang/proof/чекер/пробы/программы/Ч87-F2-telo-mimo-primera.flang	33
 flang/proof/чекер/пробы/программы/Ч87-F3-dva-zvena-v-stroke.flang	33
 flang/proof/чекер/пробы/программы/Ч87-F4-zveno-zakommentirovano.flang	34
+flang/proof/чекер/пробы/семьи/algebra-domeny/golova.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/algebra-domeny/ohrana.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/algebra-domeny/порча/golova-lzhet.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/algebra-domeny/порча/ohrana-lzhet.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/чекер/пробы/семьи/granica/r2-setka-distributivnost.flang	7
 flang/proof/чекер/пробы/семьи/ne-lozhitsya/r6-dlina-skobki.flang	8
+flang/proof/чекер/пробы/семьи/precondition-discharge/three-feeds.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/precondition-discharge/unpaid-callee.flang	7	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/чекер/пробы/семьи/rec-step-bezdna.flang	5
 flang/proof/чекер/пробы/семьи/rec-step-rastyot.flang	4
 flang/proof/чекер/пробы/семьи/rec-step.flang	6
@@ -224,9 +235,39 @@ flang/proof/чекер/пробы/семьи/totalnost-samovyzov.flang	8
 flang/proof/чекер/пробы/семьи/totalnost.flang	8
 flang/proof/чекер/пробы/семьи/булева-цель/priznak.flang	5
 flang/proof/чекер/пробы/семьи/ветка-если/vysota.flang	7
+flang/proof/чекер/пробы/семьи/вывод/порча/boundaries-dva.flang	13	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/квантор/два-имени.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/квантор/имя-вне-списка.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/конструктор/kopiya.flang	6	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/носитель/imya-naturalnoe.flang	43	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/о9-начало-один.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/о9-счёт.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/о9-чужой-список.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/о9-шаг-два.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/охрана-другой-порог.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/охрана-ложный-вывод.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/охрана-то-же-условие.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/стр-начало-минус.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/стр-счёт-свёрткой.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/стр-умножить-на-н.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/стр-утроить.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/стр-шаг-минус.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/тело-не-неотрицательно.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/удвоить-литерал.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/удвоить-на-ноль.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/удвоить-сомножитель-минус.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/ч4-ветвь-другого-знака.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/ч4-общее-начало.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/ч4-правая-склейка.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/ч6-приставка.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/ч6-факт-без-вердикта.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/покрытие/ч6-чужая-приставка.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/чекер/пробы/семьи/половина-б/arithmetic.flang	10
 flang/proof/чекер/пробы/семьи/половина-б/dlina.flang	10
 flang/proof/чекер/пробы/семьи/половина-б/element.flang	30
+flang/proof/чекер/пробы/семьи/прогон/pisma-po-ocheredi.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/семейства/ostatok.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/чекер/пробы/семьи/семейства/порча/ostatok-ohrana-ne-dopushchenie.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/scripts/closed-length-guard.flang	141
 flang/scripts/emptiness-guard.flang	171
 flang/scripts/guards-start.flang	100
@@ -239,11 +280,13 @@ flang/scripts/proven-guard.flang	118
 flang/scripts/tasks.flang	12
 flang/scripts/tempdir-guard.flang	89
 flang/scripts/жаргон-образцы.flang	49
-flang/self/bootstrap/compiler.flang	1366
-flang/self/bootstrap/corpus.flang	157
+flang/self/bootstrap/compiler.flang	1371	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
+flang/self/bootstrap/corpus.flang	160	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
+flang/self/bootstrap/zond-2040.flang	4	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
+flang/self/bootstrap/zond-k7.flang	9	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/bounded.flang	249
-flang/self/builtins.flang	254
-flang/self/carriers.flang	94
+flang/self/builtins.flang	260	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
+flang/self/carriers.flang	148	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/cli.flang	162
 flang/self/commutative.flang	71
 flang/self/conc.flang	474
@@ -256,7 +299,7 @@ flang/self/emit-csharp.flang	336
 flang/self/emit-elixir.flang	375
 flang/self/emit-go.flang	224
 flang/self/emit-java.flang	346
-flang/self/emit-js.flang	336
+flang/self/emit-js.flang	359	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/emit-python.flang	317
 flang/self/emit-rust.flang	297
 flang/self/factcheck.flang	184
@@ -266,7 +309,7 @@ flang/self/functor.flang	189
 flang/self/grid.flang	109
 flang/self/hotswap.flang	189
 flang/self/idempotent.flang	95
-flang/self/interpret.flang	439
+flang/self/interpret.flang	450	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/io.flang	169
 flang/self/iso.flang	108
 flang/self/law-oracle.flang	70
@@ -278,18 +321,18 @@ flang/self/monad-expand.flang	209
 flang/self/monad.flang	146
 flang/self/monoid.flang	213
 flang/self/monotone.flang	89
-flang/self/obligations.flang	237
+flang/self/obligations.flang	366	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/obyazatelstva-i-yadro.flang	54
 flang/self/oracle.flang	100
 flang/self/otkazy-tipov.flang	8
 flang/self/otkazy-totalnosti.flang	16
-flang/self/parser.flang	1344
+flang/self/parser.flang	1349	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/partialorder.flang	117
 flang/self/processes.flang	195
 flang/self/proof-initial.flang	720
-flang/self/proof-kernel.flang	3655
-flang/self/proof.flang	546
-flang/self/proofterm.flang	1138
+flang/self/proof-kernel.flang	3747	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
+flang/self/proof.flang	556	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
+flang/self/proofterm.flang	1216	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/repl/repl.flang	252
 flang/self/setoid-oracle.flang	137
 flang/self/setoid.flang	279
@@ -298,8 +341,8 @@ flang/self/sets.flang	232
 flang/self/svoystva.flang	143
 flang/self/tags.flang	145
 flang/self/totality.flang	655
-flang/self/types.flang	1627
-flang/self/zapis.flang	351
+flang/self/types.flang	1641	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
+flang/self/zapis.flang	678	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/test/fixtures/binary-rules/bifunctor-object-missing.flang	2
 flang/test/fixtures/binary-rules/category-not-closed.flang	3
 flang/test/fixtures/binary-rules/embedding-not-injective.flang	3
@@ -401,6 +444,7 @@ flang/test/fixtures/razrez-kruga/sverka-pechati-literala.flang	6
 flang/test/fixtures/svyortka-prefiks-chestnaya.flang	27
 flang/test/http.flang	2
 flang/test/process-failures.flang	55
+flang/test/владение-состоянием.flang	2	шапка SPDX: правообладатель и лицензия, не объяснение
 flang/test/встроенные-формы.flang	76
 flang/test/жаргон.flang	2
 flang/test/прогонщик-корпуса.flang	37
@@ -493,11 +537,10 @@ scripts/guards/dictionary-guard.flang	61
 scripts/guards/file-extensions.flang	93
 scripts/guards/input-boundary.flang	42
 scripts/guards/license-guard.flang	39
-scripts/guards/link-guard.flang	8
 scripts/guards/module-name-guard.flang	114
 scripts/guards/name-collision-guard.flang	354
-scripts/guards/name-splicing-guard.flang	90
-scripts/guards/occupancy-check.flang	47
+scripts/guards/name-splicing-guard.flang	87
+scripts/guards/occupancy-check.flang	31
 scripts/guards/release-guard.flang	53
 scripts/guards/stale-pages-guard.flang	124
 scripts/guards/string-measure.flang	27

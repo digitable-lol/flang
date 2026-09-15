@@ -1355,7 +1355,7 @@ d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/guards/postavka-guard.flang
 1083cc30fab03e5f16e2060519b7c8c1|8|8|0|0|0|scripts/guards/release-guard.flang
 75df33ec0a0a8e68cdc8aea00c04beb9|29|25|2|0|0|scripts/release/release-in-c.flang
 6bec7ed819a851590422857589b315ec|10|7|3|0|0|scripts/seed/reprint-freshness.flang
-b9a2cee0f6c1a45a512bf2c1ad7a71cd|4|4|0|0|0|scripts/settings-file.flang
+0ff527da38ea58fab62de93ab38d178f|4|4|0|0|0|scripts/settings-file.flang
 6428b484fce59de690810ba7fcdce7f4|3|2|1|0|0|scripts/guards/stale-pages-guard.flang
 d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/guards/string-measure.flang
 b84d7c3b1bf00b6bfe83e62e063aea2d|21|21|0|0|0|scripts/site/surfaces-page.flang

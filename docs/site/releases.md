@@ -6,6 +6,141 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.19 — 13 September 2026
+
+**Quantifiers reached the built compiler**
+
+### What appeared
+
+- You can now say «for every element of this list», and the compiler will prove it. Previously a quantifier could bind only plain names, and there was no way to speak about list elements. Nested quantifiers work too: «for each element and for each other element».
+- Induction over your own declared type. Proving something about your own type by case analysis was impossible before — the rules knew only built-in types.
+- A statement can stand on its own rather than beside a function: «statement «the length of any list is non-negative»». Such statements now reach both the machine report and the proved-share ledger.
+- A proof step can be named in words: a theorem step names its rule and premises, and the kernel checks that the naming holds. Steps used to be anonymous.
+- The compiler emits TypeScript, and the help text finally says so. Emission worked before, but `flang --help` was silent about the tenth target: the seed lagged the sources by one line.
+
+### What changed
+
+- The kernel now has thirteen inference rules instead of twelve — one was added for existence with a witness. There are 284 theorems in the language tree.
+- Installation via Homebrew is now checked end to end. Five breakages were found and fixed: the help named nine emit targets while ten runtimes shipped; error messages crashed on their own under older Apple shells; the version check demanded a one-line answer that is deliberately two lines; the directory count did not follow symlinks, and Homebrew installs exactly symlinks.
+- The English releases page pointed to the journals one level above the site root — four links led nowhere.
+- Editing the task tracker no longer rebuilds the compiler in the cloud: two jobs used to run on every push regardless of content.
+
+### What broke
+
+- The independently replayed share did not grow: 629 obligations of 651, the same 96.62 %. Reprinting the seed brought new kernel abilities, not a larger share. Places where the checker takes the compiler's word remain 12 premises and 4 steps.
+- More must be trusted than yesterday: the deciding part of the kernel grew from 4669 lines to 4796. Quantifiers live there by construction and cannot be moved out. The work order to bring that number below 4000 remains unmet.
+- The logic still knows nothing about state over time, side effects or concurrency. Work on those three has started but did not make this release.
+- The proof applies to `flang check` and does not cover the built binary: nothing verifies that the emitted C matches the source program. Coq, Lean and Idris have the same gap.
+
+## 0.7.18 — 12 September 2026
+
+**The checker got stricter, and the tree got clearer**
+
+### What appeared
+
+- The independent checker now replays 629 of 651 obligations instead of 625 — 96.62 %. Places where it takes the compiler's word dropped from 16 to 12. The gain came from replaying steps, not from computing: the «closed by computing» class stayed at 6.
+- The terminal tutorial grew from five lessons to twelve. It no longer asks you to type a whole program: it gives the text with gaps and asks for them one at a time, saying after each line what it understood. A name may be written with guillemets «Удвоить» or plain quotes — the compiler accepts both, and the tutorial no longer argues about it.
+- Obligations of a free statement (one that stands outside a function) now reach the machine report `flang check --proof --json`. They used to be filtered out in three places, so neither the proved-share ledger nor the site numbers could see them.
+
+### What changed
+
+- Example programs moved from `examples/` to `docs/examples/`: 200 programs in 24 directories. Working scripts are sorted into eight folders — the root of `scripts/` now holds 13 files instead of 136. Benchmarks that had not been run in a long time were removed; the live ones moved to `docs/benchmarks/` with English names.
+- Browser samples (`web/`) became what they always were — examples: they now live in `docs/examples/web/`.
+- `package.json` stays, but three fields no tool reads were removed. It is not there for npm: it is the single place from which the release, two guards, the Homebrew formula and the site build take the version, licence and URLs.
+- The name-collision guard caught a real one: the type «Документ» is declared both in the JSON reader and in the language server, and a probe pulled both into one program. The cause was fixed rather than the guard — the probe lost an import it never used.
+
+### What broke
+
+- Quantifiers over list elements, nested quantifiers, induction over your own declared type, statements outside functions, and proof steps named by a human did NOT make this release. They are written and checked, but they reach the built compiler only by reprinting the seed, which is still running. They will ship in the next release.
+- The proof still applies to `flang check` and does not cover the built binary: nothing verifies that the emitted C matches the source program. Coq, Lean and Idris have the same gap.
+- The example ledger (`ведомость-примеров.txt`) still holds the old paths: the walker that prints it runs for two hours forty minutes and has never finished — neither here nor in CI. It cannot be rewritten by hand: the check is a line-by-line diff, and the line order there is the walk order.
+
+## 0.7.17 — 11 September 2026
+
+**The language passed its own provability check**
+
+### What appeared
+
+- `./ярлык доказуемость` answers PROVABLE for the first time. How it works: when the compiler checks a program, it writes down which claim was proved and by which steps. A separate C program, written without reference to the compiler, takes the source and that record and repeats every step itself. 625 of 651 obligations were repeated — 96 %.
+- The check «the checking program does not compute instead of repeating steps» no longer looks for a function name in the code. It runs a real source + record pair that contains goals provable only by rewriting; an honest checker must refuse them. 34 kinds of obligation sit under that check.
+- There are now 401 forged records. Each lies in its own way: a swapped function body, a reference to a prohibition instead of a rule, subtraction passed off as addition, a line number that misses the declaration. None was accepted. We do not claim the checker is correct — we show 401 attempts to fool it.
+- 88 inference rules were checked by a second, independent system — Lean 4. Our rule text sits verbatim next to each lemma so a human can compare by eye. Eight deliberately broken rules were all rejected.
+- `flangtutor`, a terminal tutorial in the spirit of `vimtutor`, is now part of the package. Five lessons; answers are judged by the real compiler. Installed alongside `flang` by Homebrew and asdf.
+- The record-freshness check now tells a deliberately corrupted record from one that merely lags the compiler, and refuses to measure with a stale binary.
+
+### What changed
+
+- Share of obligations repeated by the independent program: 79.88 % → 96.01 %. The gain came from repeating steps, not from computing: places closed by computation went down, 8 → 6.
+- Lean found a wrong rule of ours and it is fixed. The rule about adding the same value to both sides of an inequality required the addend to be «bounded», and that word also allowed bounded-above only — i.e. negative infinity. One word separated the working rule from the false one.
+- The type `нат` is now `неотрицательное` (non-negative). The old name stays a synonym until 1.0.
+- `flang package` works again. It had been broken on every input since 29 August: a two-argument function was called with one.
+
+### What broke
+
+- The proof applies to `flang check` and does NOT cover the built binary: nothing checks that the emitted C matches the source program. Coq, Lean and Idris have the same gap. How we intend to close it is in ADR-0030: check each run of the printer rather than the printer itself.
+- What the logic can and cannot prove was measured by running it. «The total is not less than the goods» over addition — proved. «A discount cannot make the price negative» over subtraction with a precondition — declared, not proved. The logic knows nothing about state over time, side effects or concurrency.
+- flang must not be used for medical, avionic or space software. Those require process certification: a trail from requirement to code and test, qualified tools, proved response-time bounds, behaviour under hardware failure. We have none of that, and percentages do not replace it. See ADR-0031.
+- The release archive is not byte-identical between a local build and the GitHub pipeline build, although it is assembled by a deliberately reproducible recipe.
+
+## 0.7.16 — 9 September 2026
+
+**The checker replays a derivation of a type fact; the road to the end is measured place by place**
+
+### What appeared
+
+- A DERIVATION REPLAY: the independent checker now replays a recorded derivation of a type fact step by step, rather than trusting a rule name. Each step's conclusion is written as a formula of the language and compared sign for sign; the block's goal is checked AGAINST THE SOURCE rather than taken from the record; every premise is checked on its merits (the line must be an argument declaration, an assumption, or the body of the function in question); names marked in the rule list as prohibitions are rejected. Decision ADR-0022: a type fact travels in the record as a DERIVATION, not as an axiom and not as a rule name.
+- Forgery probes went from 200 to 219: nineteen new ones catch a lie inside the derivation block — a foreign goal, a line number that misses the declaration, a missing premise, the wrong premise, reordered steps, an unfolding that is not the body, an unterminated derivation, a name outside the rule list, subtraction passed off as a sum, a reference to a prohibition instead of a rule. No forgery was accepted and no honest record rejected.
+- `flangtutor`, a guided tour of the language in the spirit of `vimtutor`: five lessons in increasing order, from module and function to postcondition and proof report. The learner's answer is judged by the REAL compiler — parsing, types, termination, examples — not by string comparison. Progress is remembered and an interrupted session resumes.
+- Ctrl+L in the shell clears the screen and puts the typed line back. The key worked before but no check held it in place; now both halves are checked.
+- `flang package` works again. It had been broken on every input since 29 August: the ledger was called with one argument against a two-argument function. Verified end to end: `flang new` creates a package, `flang package` builds it, the package imports.
+- `FLANG_MODULE_ROOT` stops module lookup from climbing above the named root. Until now lookup walked ABOVE the tree root and an ancestor file one directory up beat the language library — six live cases, caught by no check.
+- The type `нат` is now `неотрицательное` (non-negative). The abbreviation did not read; the old name stays a synonym until 1.0.
+
+### What changed
+
+- The share of the corpus verified by the independent checker: 517 / 651 = 79.42 % → 520 / 651 = 79.88 %. The gain comes from two new printers; the denominator did not move.
+- The Elixir target no longer emits a dead result line per postcondition — seventeen warnings in one file went to zero.
+- Internal project words are out of reader-facing pages: thirteen places rewritten in plain words. Two lines were kept — they quote the compiler's own output verbatim, and rewriting them would misreport what the reader will see.
+- Broken links in the tree: 1947 → 18. The check now tells a record of the past (a completed task, a dated report) from a promise about the present, and prints how many it skipped instead of hiding it.
+- The derivation rule list grew to 71 rows in two notations, logical and categorical, checked against the kernel code row by row.
+
+### What broke
+
+- The verdict is still NOT PROVABLE: three checks of four agree, the share is 79.88 % against a 95 % threshold.
+- The road to the end is measured place by place in `docs/road-to-one-hundred-measured.md`: NOT ONE place is unreachable, and the ceiling of engineering work is 643 / 651 = 98.77 %. The last eight places are not work but a decision about what the number promises.
+- Found during the release and not hidden: the release archive is not byte-identical between a local build and the pipeline build, although it is assembled by a deliberately reproducible recipe. The promise «build it yourself and compare» does not hold today.
+
+## 0.7.15 — 8 September 2026
+
+**The calculator is gone from the checker: the independent-verification gate is closed**
+
+### What appeared
+
+- GATE G7 IS CLOSED. The step that PROVED a claim by computing it, instead of replaying the recorded moves, is gone from the checker. Gone from both places: removing it from one, the work was immediately picked up by the second (the `половина_закрыта` door, `тождественны` at depth 6), while a grep-by-name check printed zero. The forgery sentinel has been separated from the prover and stays. Sign-for-sign identity and closed arithmetic are kept.
+- The gate's calculator check is NO LONGER A GREP BY NAME but a run against a live source+record pair. Two of its goals are provable only by rewriting the body through laws, and the record holds no moves at all, so an honest checker must leave them on the kernel's word and name them. The trap is TWO-SIDED: a third goal closes by sign-for-sign identity and must stay closed, otherwise a checker broken down to «I prove nothing» would pass too. Renaming a function can no longer evade the check.
+- `sh scripts/доказуемость.sh` now runs FOUR checks and prints all four with numbers, whatever the earlier ones answered. It used to short-circuit. A sentinel that does not run is not a sentinel.
+- A manifest of the forgery set, 31 rows, each class confirmed by reading the source header. A ratchet holds two numbers: how many forgeries are declared, and how many places of their honest halves are replayed. Check 4 goes red if the set weakens.
+- A ledger of derivation rules, 71 rows in TWO notations, logical and categorical, checked against the kernel code row by row. Notation agreement is verifiable, not declared: each premise is numbered and the categorical form must name its position. Four sentinels with eight forgery probes. Decision ADR-0022: a type fact travels in the record as a DERIVATION, not as a rule name and not as an axiom.
+- A settings file `.flangrc` and a choice of output language (ADR-0024). Key = value pairs, not JSON and not a program: the file is read before the language is ready to speak. Precedence: argument, environment, project file, home file, locale, default. The walk up stops at the first marker, so a distant file cannot override a near one.
+- The shell prints its own build fingerprint as the second line of `flang --version`. Borrowed from iex: Tab completion, `.clear`, history across runs, paste without flicker (measured on one paste: 90 redraws before, 10 after).
+- A tenth emit target, TypeScript. Both READMEs and the emit-promises sentinel count ten.
+
+### What changed
+
+- The share denominator is NARROWED by ADR-0023: places unreachable in principle are taken out — the obligations of a record the checker rejects whole. Removal requires TWO signals at once, a manifest declaration AND a measured rejection: on one signal alone, corrupting a record would raise the share. The share is 517 / 651 = 79.42 % against 517 / 665 = 77.74 % under the old measure. The numerator did not change by a single place, and the balance is printed and checked.
+- Comments removed from 58 flang files, 7429 lines fewer. Each file's code compared without comments byte for byte; `flang check` and `flang test --ledger` identical before and after.
+- Broken links in the tree: 1947 → 18. The sentinel now tells a record of the past (a completed task, a dated report) from a promise about the present, and prints how many it skipped rather than hiding it. The exception list shrank rather than grew: 373 rows → 171.
+- The GitHub release body is printed from `docs/release-notes.json` instead of a string in the pipeline. Version 0.7.14 had 168 characters of body for 93 commits. A release with no recorded notes is now refused.
+- `.claude` and `AGENTS.md` moved to `.ai/`, `README.ru.md` to `docs/`.
+- The version no longer lives in `package.json`: that file is printed from `scripts/release/emit-package.flang`.
+
+### What broke
+
+- The share is incomparable with earlier releases for the second time running: 0.7.14 changed the numerator, 0.7.15 narrows the denominator. Both measures print a breakdown, and the denominator balance is verified by an instrument.
+- `flang package` has been broken on every input since 29 August: a one-argument call against a two-argument function. Found by a run; the fix is one line and ships with the next seed reprint.
+- Module lookup walks above the tree root, and an ancestor file one directory up beats the language library. The hole is named and measured: 20 names shadowable, 5 live shadowings. A sentinel sees it; the fix in the binary awaits a reprint.
+- The verdict is still NOT PROVABLE: three checks of four agree, the share is 79.42 % against a 95 % threshold.
+
 ## 0.7.14 — 7 September 2026
 
 **The checker replays termination proofs itself**
@@ -40,7 +175,7 @@ The entries below are about the language, not about the work on it. What has lan
 - `хеш256` became a built-in word of the language: SHA-256 is computed by the runtime of each of the nine emit targets, not by a flang library. Commits `5c90d6f7`, `ee3b0121`.
 - The `js` target got a Node host — `flang/src/emit/js/flang_host_node.js`. A program with an input/output plan, printed to JavaScript, now actually runs: nine kinds of orders out of twenty-two, with a clear refusal for the rest. Commit `7e7007a2`.
 - A plan executor for the `python` target landed in the tree — `flang/src/emit/python/flang_io.py`. The `python` target still refuses to print a program WITH a plan (`FLANG_PLAN_UNSUPPORTED`): the executor is waiting for the emitter. Commit `e84e290b`.
-- Three examples under real frameworks — `docs/examples/frameworks/`: `nestjs-orders`, `react-invoice`, `vue-roman`. A proven core in flang is printed to JavaScript and runs under Nest, React and Vue; each example’s README states where the boundary lies: the decision is in flang, the socket and the rendering belong to the host framework. Commit `374e9aaa`.
+- Three examples under real frameworks — `examples/frameworks/`: `nestjs-orders`, `react-invoice`, `vue-roman`. A proven core in flang is printed to JavaScript and runs under Nest, React and Vue; each example’s README states where the boundary lies: the decision is in flang, the socket and the rendering belong to the host framework. Commit `374e9aaa`.
 - `./ярлык доказуемость` prints a single word — PROVABLE or NOT PROVABLE — from three numbers taken by a run, not from a judgement written into prose. Commit `7b03ee3a`.
 - `./ярлык версия X.Y.Z` raises the version number in one source and propagates it to the derived places — package.json, the `#define` in C, the man page, the Homebrew formula; a guard reddens if any of them falls behind. Commits `3071b76c`, `d676ec12`.
 

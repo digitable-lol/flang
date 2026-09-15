@@ -979,7 +979,7 @@ b678224e08744ad06f48800be3273433|8|6|2|0|0|flang/proof/map/equality.flang
 a37577148057ab7accad855b2de038fa|8|×|×|×|4|flang/proof/map/refusal-boundaries.flang
 02a94e2dc1676d36e49f5d4d65cc2326|8|×|×|×|7|flang/proof/map/refusal-order.flang
 fd14757b3d65032109615e6476777b8c|6|×|×|×|3|flang/proof/map/refusal-substantive.flang
-0cbd3b9813df2236e2e5e0838773108b|4|1|0|3|0|flang/proof/map/sources.flang
+e6eba95c2fc34792a55353938ad61921|4|3|0|1|0|flang/proof/map/sources.flang
 ce12c504e1fa4df42abe479c03e47f99|7|1|4|2|0|flang/proof/map/substantive.flang
 1024d86a96f92fcaa68336ce0a839c04|5|3|2|0|1|flang/proof/map/types.flang
 8d5e4bfacbb962f94da28620535e1f79|1|×|×|×|0|flang/proof/midpoint-verdicts.flang

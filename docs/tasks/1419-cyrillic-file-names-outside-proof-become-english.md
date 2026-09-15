@@ -84,3 +84,98 @@ find . -path ./.git -prune -o -type f -print | grep -P '[А-Яа-яЁё][^/]*$'
 > раздел «Грабли, на которые я наступил сегодня»: ведомость долей правится
 > столбцом пути, `git ls-files` не видит неотслеженное, примета и проза
 > правятся порознь, числа README сверяет отдельный прибор.
+
+## Перепись (Ш0), 15 сентября 2026, ветка `a/1419-cyrillic-names-outside-proof`
+
+Считано по ОТСЛЕЖИВАЕМЫМ файлам ветки, стоящей на 1423 (над `main` `7a9181334`,
+где 1418 уже влита: `flang/проверки` — теперь `flang/test`, `flang/conc` —
+`flang/concurrency`):
+
+    git -c core.quotepath=false ls-tree -r --name-only HEAD | grep -P '[А-Яа-яЁё][^/]*$'
+
+Всего **748**, из них под `flang/proof/**` — **685**, вне — **63**. Задача
+называла 708 = 647 + 61: она считала `find` по рабочей копии, куда попадают и
+неотслеживаемые файлы (например, собранный `flang/proof/чекер/сверщик`), —
+область другая, а не дерево. Имена под `flang/proof/**` — забота 1420.
+
+Предложенные имена — английскими словами, без транслита; записаны без кавычек,
+потому что сторож ссылок читает имя в кавычках как путь, а этих файлов ещё нет. **Имя даёт автор:
+ни один файл не переименован до ответа владельца.** «Ссылаются, файлов» — сколько
+отслеживаемых файлов называют базовое имя:
+
+    git grep -l -F <имя> -- . ':!docs/tasks/completed' ':!docs/tasks/rejected' \
+      ':!docs/zettel' ':!docs/archive' ':!CHANGELOG*' ':!changelog.json' \
+      ':!docs/site/changelog.*' ':!docs/tasks/1419-*' ':!<сам файл>'
+
+— без истории (те же четыре каталога, что пропускает сторож ссылок), журналов
+изменений, самой задачи и самого файла. Это верхняя оценка: поиск идёт
+подстрокой, и у общих имён (`проба.flang`, `ЧИТАТЬ.md`, `ярлык`, который сидит и
+в `ярлыки`, `ярлыков`) в счёт попадают чужие одноимённые файлы и слова.
+
+Требуют решения владельца прежде всего:
+
+* `ярлык` (263 файлов) и `ярлыки.flang` (68) — входная точка всех целей;
+* уроки `docs/tutor/*.урок` (12) — имя уже английское, кириллица только в
+  расширении, как у `.фланг`; предлагаю не трогать;
+* заметки `docs/zettel/*.md` (6) — переименование ломает указатель заметок и
+  сборку сайта (`AGENTS.md`, раздел «Слова»);
+* навык сдачи работы называет `ярлык` и `образцы.flang` выбором владельца «не
+  трогать» — это расходится с решением, на которое ссылается эта задача;
+* файлы в каталогах с кириллическим или транслитным именем (`применение/`,
+  `спецификации/`, `чекер/`, `fts-naslediye/`) — каталоги в 1419 не входят,
+  после переименования файлов останется кириллица в пути.
+
+| # | сейчас | предлагается | ссылаются, файлов | заметка |
+|---:|---|---|---:|---|
+| 1 | `docs/benchmarks/verdict-cache/второе-ядро.sh` | second-kernel.sh | 2 |  |
+| 2 | `docs/benchmarks/verdict-cache/кеш.вставка` | cache.insert | 3 | кириллица и в расширении |
+| 3 | `docs/benchmarks/verdict-cache/наложить.py` | apply-cache.py | 4 |  |
+| 4 | `docs/benchmarks/verdict-cache/проба.flang` | cache-probe.flang | 28 | модуль «Проба кеша» |
+| 5 | `docs/benchmarks/verdict-cache/пробы.sh` | probes.sh | 2 |  |
+| 6 | `docs/benchmarks/verdict-cache/три-печати.sh` | three-prints.sh | 2 |  |
+| 7 | `docs/examples/io/пакет.bin` | packet.bin | 1 |  |
+| 8 | `docs/examples/io/фильтр-пакетов.flang` | packet-filter.flang | 3 | модуль «Packet filter» |
+| 9 | `docs/examples/pythagoras/квадрат-гипотенузы.flang` | hypotenuse-square.flang | 2 |  |
+| 10 | `docs/examples/pythagoras/формула-евклида.flang` | euclid-formula.flang | 3 |  |
+| 11 | `docs/examples/применение/итог-заказа.flang` | order-total.flang | 2 | каталог «применение» кириллический — не 1419 |
+| 12 | `docs/examples/применение/место-слева-вызов.flang` | lvalue-with-call.flang | 2 | «место слева» = lvalue |
+| 13 | `docs/examples/применение/место-слева-по-ключу.flang` | lvalue-by-key.flang | 2 |  |
+| 14 | `docs/examples/применение/место-слева-с-отрезком.flang` | lvalue-with-slice.flang | 2 |  |
+| 15 | `docs/examples/применение/место-слева.flang` | lvalue.flang | 2 |  |
+| 16 | `docs/examples/применение/скидка-на-вызове.flang` | discount-on-call.flang | 2 |  |
+| 17 | `docs/examples/применение/скидка.flang` | discount.flang | 4 |  |
+| 18 | `docs/flang/proof/чекер/ЧИТАТЬ.md` | README.md | 18 | каталог «чекер» кириллический — не 1419 |
+| 19 | `docs/flang/proof/чекер/пробы/записи/ПОЧЕМУ-ЗДЕСЬ-ЕСТЬ-КОММЕНТАРИИ.md` | WHY-THERE-ARE-COMMENTS.md | 1 |  |
+| 20 | `docs/tutor/01-function.урок … 12-run-emit.урок (12 файлов)` | **не переименовывать** | — | имя английское, кириллица только в расширении «.урок» — тип файла, как «.фланг»; иначе «.lesson» и правка проводника, сторожа поставки, упаковок |
+| 21 | `docs/zettel/ветка-если-разворачивается-в-обе-стороны-а-разбор-списка-нет.md` | an-if-branch-unfolds-both-ways-a-list-case-does-not.md | 0 | заметки: указатель и сайт |
+| 22 | `docs/zettel/компилятор-принимает-имя-в-ёлочках-в-прямых-кавычках-и-без-кавычек-одинаково.md` | the-compiler-takes-a-name-in-guillemets-in-straight-quotes-or-bare-alike.md | 0 |  |
+| 23 | `docs/zettel/обещание-с-условием-по-варианту-разворачивает-ветвь-разбора.md` | a-promise-conditioned-on-a-variant-unfolds-a-case-branch.md | 0 |  |
+| 24 | `docs/zettel/оценка-витков-и-счётчик-шагов-рантайма-считают-разное-под-одним-словом.md` | the-step-estimate-and-the-runtime-step-counter-count-different-things-under-one-word.md | 0 |  |
+| 25 | `docs/zettel/подделка-и-подделочная-запись-это-разные-вещи.md` | a-forgery-and-a-forged-record-are-different-things.md | 0 |  |
+| 26 | `docs/zettel/постусловие-о-сбое-доказуемо-для-конкретного-отклика-и-не-пишется-для-всякого.md` | a-failure-postcondition-is-provable-for-a-specific-reply-not-for-any.md | 0 |  |
+| 27 | `docs/спецификации/слой-отказов.flang` | failure-layer.flang | 4 | каталог «спецификации» кириллический — не 1419 |
+| 28 | `docs/спецификации/чего-не-хватает-fts.md` | what-fts-lacks.md | 1 |  |
+| 29 | `docs/спецификации/язык-доказательств.md` | proof-language.md | 6 |  |
+| 30 | `flang/scripts/жаргон-образцы.flang` | jargon-samples.flang | 4 |  |
+| 31 | `flang/scripts/одна-линейка.py` | one-gauge.py | 4 | «мерка — одна линейка для flang и для C» |
+| 32 | `flang/scripts/породить-атомы.flang` | generate-atom-table.flang | 1 | модуль «Порождение таблицы атомов» |
+| 33 | `flang/scripts/сличить-двух-сводителей.py` | compare-two-mergers.py | 2 |  |
+| 34 | `flang/stdlib/образцы.flang` | samples.flang | 11 | модуль «Samples» |
+| 35 | `flang/test/fixtures/fts-naslediye/скидки-в-подписки.fts` | discounts-into-subscriptions.fts | 2 | образец; каталог — транслит, не 1419 |
+| 36 | `flang/test/fixtures/fts/tools/ftspec/examples/shop/memory/001-предел-скидки.fts` | 001-discount-limit.fts | 0 | образец |
+| 37 | `flang/test/fixtures/fts/tools/ftspec/examples/stale/memory/002-решение-о-возвратах.fts` | 002-refund-decision.fts | 0 | образец |
+| 38 | `flang/test/ведомость-self.txt` | self-ledger.txt | 2 |  |
+| 39 | `flang/test/ведомость-примеров.txt` | examples-ledger.txt | 8 |  |
+| 40 | `flang/test/ведомость.txt` | ledger.txt | 5 |  |
+| 41 | `flang/test/владение-состоянием.flang` | state-ownership.flang | 1 |  |
+| 42 | `flang/test/владение-состоянием.sh` | state-ownership.sh | 3 |  |
+| 43 | `flang/test/встроенные-формы.flang` | builtin-forms.flang | 11 |  |
+| 44 | `flang/test/жаргон.flang` | jargon.flang | 6 |  |
+| 45 | `flang/test/обход-self.sh` | walk-self.sh | 2 |  |
+| 46 | `flang/test/обход-примеров.sh` | walk-examples.sh | 14 |  |
+| 47 | `flang/test/обход.sh` | walk.sh | 20 | пример из самой задачи |
+| 48 | `flang/test/прогонщик-корпуса.flang` | corpus-runner.flang | 3 | близнец scripts/guards/corpus-runner.flang |
+| 49 | `scripts/guards/сторож-дарвина.flang` | darwin-guard.flang | 4 |  |
+| 50 | `scripts/доказуемость.sh` | provability.sh | 70 |  |
+| 51 | `ярлык` | run | 263 | входная точка всех целей: ./ярлык зовут хук, CI, задачи, README — самая дорогая правка |
+| 52 | `ярлыки.flang` | shortcuts.flang | 68 | модуль «Ярлыки» |

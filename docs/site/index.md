@@ -80,7 +80,7 @@ How much of that is proved: {{корпус.тотальных}} functions out of
 
 **The four numbers above were measured on 23 August 2026 (commit `252606e8`)
 and have not been re-measured since.** They are measured by the compiler in a
-run over the whole corpus (hours), and on the day of measurement it was built
+run over all the programs in the repository (hours), and on the day of measurement it was built
 from a seed that had fallen behind the sources. The seed has since been
 reprinted (10–11 September 2026, commit `0ce948bfd`; `sh
 scripts/seed/chto-otstalo-ot-semeni.sh` on 11 September names 3 files, 77 functions,

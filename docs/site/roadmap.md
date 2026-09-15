@@ -23,7 +23,7 @@ What the language already has is not read here:
 | Of them proved by the kernel — for all inputs | {{утверждения.доказано}} |
 
 The four numbers in the table were measured on 23 August 2026 (commit
-`252606e8`) by a compiler run over the whole corpus and have not been
+`252606e8`) by a compiler run over all the programs in the repository and have not been
 re-measured since; on the day of measurement the compiler was built from a seed
 that had fallen behind the sources. What was checked on the tree of
 11 September 2026 (0.7.17, commit `2c40752d0`):

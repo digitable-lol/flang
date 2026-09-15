@@ -437,6 +437,30 @@
     },
     {
       "файл": "flang/src/emit/c/flang_repl.c",
+      "слово": "корпус",
+      "внутри": "repl_call(\"Свести корпус\"",
+      "почему": "имя функции на flang (flang/self/bootstrap/corpus.flang:778), а не текст для читателя: переименовать его текстовым запретом нельзя, только перепечаткой"
+    },
+    {
+      "файл": "docs/glossary.md",
+      "слово": "свидетель",
+      "внутри": "свидетель существования",
+      "почему": "термин логики: «свидетель существования» — терм, предъявленный для «существует»; о второй реализации здесь речи нет"
+    },
+    {
+      "файл": "docs/site/what-is-proved.md",
+      "слово": "корпус",
+      "внутри": "{{корпус.",
+      "почему": "имя подстановки из numbers.json: в собранной странице на его месте число, слова «корпус» читатель не видит"
+    },
+    {
+      "файл": "docs/site/what-is-proved.ru.md",
+      "слово": "корпус",
+      "внутри": "{{корпус.",
+      "почему": "имя подстановки из numbers.json: в собранной странице на его месте число, слова «корпус» читатель не видит"
+    },
+    {
+      "файл": "flang/src/emit/c/flang_repl.c",
       "слово": "ведомость",
       "внутри": "repl_call(\"Ведомость исходников\"",
       "почему": "имя функции на flang (flang/self/bootstrap/compiler.flang), а не текст для читателя: переименовать его текстовым запретом нельзя"
@@ -472,6 +496,8 @@
     "docs/benchmark-proof-cost-2.md": 10,
     "docs/benchmark-proof-cost.md": 9,
     "docs/benchmark-speed.md": 27,
+    "docs/flang/conc/SPEC.md": 196,
+    "docs/flang/proof/SPEC.md": 478,
     "docs/guide/bootstrap-circle.md": 2,
     "docs/guide/bootstrap-circle.ru.md": 1,
     "docs/guide/limits.md": 11,
@@ -497,12 +523,10 @@
     "docs/site/shortener.md": 7,
     "docs/site/shortener.ru.md": 9,
     "docs/site/tutorial.ru.md": 1,
-    "docs/site/what-is-proved.md": 9,
-    "docs/site/what-is-proved.ru.md": 10,
+    "docs/site/what-is-proved.md": 4,
+    "docs/site/what-is-proved.ru.md": 5,
     "docs/surfaces.md": 2,
     "docs/wasm-via-c.md": 19,
-    "docs/flang/conc/SPEC.md": 196,
-    "docs/flang/proof/SPEC.md": 478,
     "flang/src/emit/c/flang_repl.c": 42,
     "fspec/README.md": 1
   }

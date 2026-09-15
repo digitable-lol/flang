@@ -132,7 +132,7 @@ flang test <файл.flang | каталог | маска> [--no-check] [--json] 
 | --- | --- |
 | `--no-check` | Do not check the program — look at how the examples behave while it is still being edited |
 | `--json` | A machine-readable summary on one line |
-| `--ledger` | A ledger: one line per file, so results can be compared with a diff. The former `--proof report` is not on `test` — "непонятный ключ", exit `2` |
+| `--ledger` | A proof report: one line per file, so results can be compared with a diff. The former `--proof report` is not on `test` — "непонятный ключ", exit `2` |
 | `--max-steps N` | The evaluator step limit |
 | `--max-depth N` | The depth limit |
 

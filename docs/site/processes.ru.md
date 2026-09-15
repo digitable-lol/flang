@@ -159,7 +159,7 @@ $ echo $?
 | `c`, `elixir`, `js`, `ts` | печатаются вместе с планировщиком: процессы работают |
 | `cpp`, `csharp`, `go`, `java`, `python`, `rust` | печать отказывает кодом 1: «у цели нет планировщика конкурентности» — обработчик обычной функцией не печатается |
 
-(Прогон `flang emit flang/concurrency/examples/supervision.flang --target …` 11 сентября 2026, коммит 2c40752d0: `js`, `ts`, `elixir`, `c` — код 0; `python`, `csharp` — код 1; для `cpp`, `go`, `java`, `rust` тот же отказ записан в их печатниках `flang/self/emit-*.flang`.)
+(Прогон `flang emit flang/concurrency/examples/supervision.flang --target …` 11 сентября 2026, коммит 2c40752d0: `js`, `ts`, `elixir`, `c` — код 0; `python`, `csharp` — код 1; для `cpp`, `go`, `java`, `rust` тот же отказ записан в их генераторах кода `flang/self/emit-*.flang`.)
 
 Два ограничения держите в голове: адресат сообщения обязан быть
 именем-литералом, и живой узел двоичный компилятор сегодня не поднимает —

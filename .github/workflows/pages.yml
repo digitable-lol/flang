@@ -6,6 +6,13 @@
 # Сборка ОТКАЗЫВАЕТ, если исходного файла нет, ссылка ведёт в никуда или
 # заметка не вписана в указатель базы знаний. Значит сломанный сайт до Pages
 # не доедет — он не соберётся.
+#
+# НА ЗАПРОСЕ СЛИЯНИЯ ИДЁТ ТА ЖЕ СБОРКА, НО БЕЗ ПУБЛИКАЦИИ. До 15 сентября 2026
+# работа ходила только на main, и сломанное узнавалось ПОСЛЕ слияния: 14
+# сентября битые вики-ссылки дважды доехали до ствола (#25 — чинил #27, #30 —
+# чинил #34). Теперь запрос слияния краснеет сам, а публикуют по-прежнему
+# только пуш в main и ручной запуск: шаги выкладки и работа `deploy` на
+# запросе слияния пропускаются.
 
 name: Сайт документации
 
@@ -41,14 +48,21 @@ on:
       # палитру, а правка таблицы стилей — то, что он судит.
       - 'docs/site/storozh-kontrasta.flang'
       - 'docs/site/style.css'
+  # На КАЖДОМ запросе слияния, без фильтра `paths`. Ссылки сайта ведут не
+  # только в docs/: переезд каталога исходников ломает их, не трогая ни одного
+  # документа (так было с переездами задачи 1418). А стоит проверка две минуты:
+  # двоичный с -O0 и две сборки сайта в памяти.
+  pull_request:
   # Позволяет опубликовать вручную, не дожидаясь правки документов.
   workflow_dispatch:
 
 # Один заход на публикацию за раз. Уже идущий не прерываем: недособранный
-# сайт хуже, чем сайт на минуту старее.
+# сайт хуже, чем сайт на минуту старее. Запросы слияния в эту очередь не
+# встают — у каждого своя группа, и новый пуш в ветку снимает прежний прогон:
+# он ничего не публикует, и ждать его незачем.
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.event.pull_request.number) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -126,17 +140,52 @@ jobs:
       - name: Проверить ссылки
         run: node docs/site/build.mjs --check
 
+      # ПРОБА: проверка ссылок обязана покраснеть на подложенной битой ссылке.
+      # Иначе зелёный шаг выше неотличим от выключенного. Портится одна
+      # заметка — вики-ссылка в никуда; требуется код не 0 И имя подложенной
+      # ссылки в выводе (покраснеть по чужой причине — не довод); заметка
+      # возвращается. Сравнивается только она: шаги перепечатки выше законно
+      # правят страницы журнала и выпусков, и `git diff` по всему дереву лгал бы.
+      - name: Проба — битая вики-ссылка в заметке обязана дать красное
+        run: |
+          zametka=$(ls docs/zettel/*.md | grep -v '/README\.md$' | head -n 1)
+          cp "$zametka" "$RUNNER_TEMP/zametka.md"
+          printf '\nСм. [[a-planted-link-that-leads-nowhere]].\n' >> "$zametka"
+          if cmp -s "$zametka" "$RUNNER_TEMP/zametka.md"; then
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: $zametka не изменилась" >&2
+            exit 1
+          fi
+          if node docs/site/build.mjs --check > "$RUNNER_TEMP/proba.out" 2>&1; then
+            cp "$RUNNER_TEMP/zametka.md" "$zametka"
+            echo "ПРОВЕРКА ПРОМОЛЧАЛА: битая ссылка в $zametka прошла" >&2
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/zametka.md" "$zametka"
+          if ! grep -F '[[a-planted-link-that-leads-nowhere]]' "$RUNNER_TEMP/proba.out"; then
+            echo "ПОКРАСНЕЛО НЕ НА ПОДЛОЖЕННОЙ ССЫЛКЕ:" >&2
+            tail -20 "$RUNNER_TEMP/proba.out" >&2
+            exit 1
+          fi
+          cmp "$zametka" "$RUNNER_TEMP/zametka.md"
+
+      # Выкладка — только с пуша в main и ручного запуска. На запросе слияния
+      # сайт уже собран и проверен шагами выше; писать его на диск и
+      # упаковывать для Pages незачем.
       - name: Собрать
+        if: github.event_name != 'pull_request'
         run: node docs/site/build.mjs
 
-      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+      - if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
 
-      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: docs/site/out
 
   opublikovat:
     name: deploy
+    if: github.event_name != 'pull_request'
     needs: sobrat
     runs-on: ubuntu-latest
     environment:

@@ -3074,6 +3074,7 @@ EQF=flang/proof/map/equality.flang
 TYF=flang/proof/map/types.flang
 opyt C "развёртка: equality Р1 — Выч, К↑, Разв3 ×3 (честная, печать ядра)" 0 "$EQF" "$RZV/equality.запись"
 opyt C "развёртка: types Т1 — Выч, Разв1 для суммы, Разв2 (честная, печать ядра)" 0 "$TYF" "$RZV/types.запись"
+opyt C "развёртка: круг через коробку допущением — Т1, К↑, Разв3 ×3 (честная, рукотворная: база Т1, и Lean судит К↑ и Разв3)" 0 "$RZV/box-round-trip-by-assumption.flang" "$RZV/box-round-trip-by-assumption.запись"
 for z in equality types; do
   case $z in equality) I=$EQF; zh=2;; *) I=$TYF; zh=1;; esac
   set +e; v=$("$C" "$I" "$RZV/$z.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e

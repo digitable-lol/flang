@@ -501,6 +501,55 @@ jobs:
             exit 1
           fi
 
+      # ── ОПИСЬ ДОКАЗАННОГО СВЕРЯЕТСЯ С ДЕРЕВОМ НА КАЖДОМ ПУШЕ ────────────────
+      #
+      # `scripts/guards/pol-dokazannogo-sverka.sh` сверяет знаменатель
+      # `scripts/ledgers/proved-share-ledger.txt` со счётом по исходнику: у
+      # каждого .flang с обязательствами есть строка, у каждой строки — файл, и
+      # «написано» сходится со счётом. До 15 сентября 2026 его звал только хук
+      # перед пушем, CI — никто: запрос слияния с новым файлом доказательств
+      # проходил зелёным, а хук краснел у следующего, кто пушил поверх main.
+      # Двоичный сверке не нужен — ей хватает git, grep, md5sum и awk; 12 с на
+      # машине разработки. FLANG_TMP задан потому, что умолчание /srv/tmp на
+      # раннере не создать.
+      - name: Опись доказанного сходится с деревом
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+        run: sh scripts/guards/pol-dokazannogo-sverka.sh
+      # Три порчи — по одной на каждую беду, которую сверка обязана назвать:
+      # «написано» первой строки +1, первая строка вынута, строка о файле,
+      # которого нет. Каждая сличается cmp (подлог собрался), требует кода не 0
+      # и своих слов в выводе; опись возвращается и сличается в конце.
+      - name: Сверка описи доказанного умеет краснеть
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+        run: |
+          opis=scripts/ledgers/proved-share-ledger.txt
+          cp "$opis" "$RUNNER_TEMP/opis"
+          porcha() {
+            slova=$1; shift
+            awk "$@" "$RUNNER_TEMP/opis" > "$opis"
+            if cmp -s "$opis" "$RUNNER_TEMP/opis"; then
+              echo "ПОДЛОГ НЕ СОБРАЛСЯ: опись не изменилась (порча «$slova»)" >&2
+              exit 1
+            fi
+            if sh scripts/guards/pol-dokazannogo-sverka.sh > "$RUNNER_TEMP/sverka.out" 2>&1; then
+              cp "$RUNNER_TEMP/opis" "$opis"
+              echo "СВЕРКА ПРОМОЛЧАЛА на порче «$slova»" >&2
+              exit 1
+            fi
+            cp "$RUNNER_TEMP/opis" "$opis"
+            if ! grep -F "$slova" "$RUNNER_TEMP/sverka.out"; then
+              echo "ПОКРАСНЕЛО НЕ ПО ПОРЧЕ «$slova»:" >&2
+              tail -5 "$RUNNER_TEMP/sverka.out" >&2
+              exit 1
+            fi
+          }
+          porcha '«НАПИСАНО» НЕ СХОДИТСЯ' -F'|' -v OFS='|' '!s && !/^\/\// && NF == 7 && $2 ~ /^[0-9]+$/ { $2 = $2 + 1; s = 1 } { print }'
+          porcha 'НЕТ СТРОКИ' -F'|' '!s && !/^\/\// && NF == 7 { s = 1; next } { print }'
+          porcha 'ЛИШНЯЯ СТРОКА' '{ print } END { print "00000000000000000000000000000000|1|×|×|×|0|docs/there-is-no-such-file.flang" }'
+          cmp "$opis" "$RUNNER_TEMP/opis"
+
       # ── ФАЙЛ, НАЗЫВАЮЩИЙ ВСЕ ПРОВЕРКИ, САМ НЕ ПРОВЕРЯЛСЯ НИЧЕМ ────────────
       #
       # `ярлыки.flang` — список из 97 записей «имя → команда», через который

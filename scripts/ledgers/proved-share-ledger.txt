@@ -1532,6 +1532,7 @@ c0f60e7d18e60bcc5e28616aa0537240|2|×|×|×|2|flang/proof/чекер/пробы/
 // У flang/self/types.flang пересчитано только «написано»: 408 → 410
 // (d3783d6dc); md5 и числитель не тронуты.
 6f63d3a4fc10a5fd41e8c9613e3741a4|3|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/сквозная-вторым-порядком.flang
+a2267849cba88f4472642092cd76bdd7|1|×|×|×|1|flang/proof/чекер/пробы/семьи/развёртка/box-round-trip-by-assumption.flang
 10a52b2843bb7da5be22bcbcbb8d60e1|3|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/порча/ярлык-обещание-не-доказано.flang
 f82d670fb5a0a21e37b3fa1c3a2e5ccf|1|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/порча/t2-captures-free-name.flang
 c5464b7a62dd0d77dcc62358257da3b4|1|×|×|×|0|flang/proof/чекер/пробы/семьи/все-элементы/порча/e2-captures-free-name.flang

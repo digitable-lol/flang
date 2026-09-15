@@ -1556,3 +1556,12 @@ c5464b7a62dd0d77dcc62358257da3b4|1|×|×|×|0|flang/proof/чекер/пробы/
 7af15790e16c23fe565ff25a67cc8ef6|2|1|1|0|0|flang/proof/чекер/пробы/семьи/string-by-characters/last-character.flang
 d75f0d62496543b49b91ab344638ebe3|2|1|1|0|0|flang/proof/чекер/пробы/семьи/string-by-characters/last-piece-forgery.flang
 94ff14d206cb176e23668a55d4d61e66|1|0|0|1|0|flang/proof/чекер/пробы/семьи/string-by-characters/other-string-forgery.flang
+// Задача 4722 завела семью `flang/proof/чекер/пробы/семьи/rewrite/`: законы склейки
+// строк формой и переписка по доказанному утверждению (Переп1). Записи рукотворные,
+// ведомости у проб нет — «×», как у соседних семей сверщика.
+2a5b9137ee51384722619a923ea7cf11|2|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/forged/or-rewrite.flang
+2f08da46d4a0c6cc7e8abfb7fce8c4b3|2|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/forged/negated-rewrite.flang
+83fb27659b7bca8f38ee147ae0265850|2|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/concat-false.flang
+c37fa0d9dd6c9edf1ed1d2813d6707d4|2|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/forged/restricted-rewrite.flang
+c7dc5e724587c5aa53e44f3bb2f0fe93|3|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/concat-laws.flang
+ee8fe59ad230bd50d4930636ef6451a7|4|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/rewrite-by-statement.flang

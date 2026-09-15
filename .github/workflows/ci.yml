@@ -1638,33 +1638,44 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y elixir
       - run: make -C bootstrap -j"$(nproc)"
 
-      # ПОДЛОГ: у сторожа отбирают вопросник. Проба эта не выдумана — она
-      # снята с настоящей беды. До 6 сентября 2026 сторож в этом самом случае
-      # возвращал КОД 0 и печатал «СВЯЗЬ РАБОТАЕТ ОДИНАКОВО НА 9 ЦЕЛЯХ ИЗ 9;
-      # вопросов сверено 212 на цель», хотя все девять целей вернули код 2 и
-      # пустой вывод: первая цель становилась эталоном без сравнения, а пустой
-      # вывод оставлял эталон пустым, и каждая следующая попадала в ту же
-      # ветку. Зелень сторожа не отличала работу от молчания.
+      # ПОДЛОГ: целям печати не дают тулчейнов. Проба снята с настоящей беды:
+      # до 6 сентября 2026 сторож возвращал КОД 0 и печатал «СВЯЗЬ РАБОТАЕТ
+      # ОДИНАКОВО НА 9 ЦЕЛЯХ ИЗ 9», хотя все девять целей вернули пустой вывод —
+      # зелень сторожа не отличала работу от молчания.
+      #
+      # Прежде проба отбирала вопросник `tmp/svyaz-na-celyah/voprosy.jsonl`. С
+      # 10 сентября 2026 (`0e2c4c134`) сторож работает в каталоге из `mktemp -d`
+      # и того файла не читает: проба портила то, чего никто не смотрит, сторож
+      # честно зеленел («9 целей из 9»), а шаг краснел словами «сторож
+      # промолчал». Теперь молчание целей настоящее: PATH собран из того же PATH
+      # без тулчейнов восьми целей, а узел — свидетель и цель js — остаётся.
+      # Краснота обязана быть ЕГО краснотой: «цель не ответила ничего».
       - name: сторож связи краснеет, когда цель промолчала
         run: |
           set -u
-          rm -rf tmp/svyaz-na-celyah
-          mkdir -p tmp/svyaz-na-celyah
-          # Каталог на месте, а вопросник подложен пустой и только для чтения —
-          # цели получат пустой вход и ответят пустотой.
-          : > tmp/svyaz-na-celyah/voprosy.jsonl
-          chmod a-w tmp/svyaz-na-celyah/voprosy.jsonl
-          # Каталог остаётся доступным нарочно: цели обязаны напечататься и
-          # собраться как обычно, и промолчать ИМЕННО от пустого вопросника, а
-          # не оттого, что им негде работать.
-          if bootstrap/flang io flang/scripts/link-across-targets.flang --timeout 300000; then
-            chmod u+w tmp/svyaz-na-celyah/voprosy.jsonl
-            rm -rf tmp/svyaz-na-celyah
-            echo "сторож промолчал на подлоге: вопросник отобран, а он зелен — проверять им нечего" >&2
+          podstavnoy="$RUNNER_TEMP/bez-tulcheynov"
+          rm -rf "$podstavnoy"; mkdir -p "$podstavnoy"
+          for katalog in $(printf '%s' "$PATH" | tr ':' ' '); do
+            [ -d "$katalog" ] || continue
+            for put in "$katalog"/*; do
+              [ -e "$put" ] || continue
+              imya=${put##*/}
+              case "$imya" in
+                make|gmake|cc|gcc|gcc-*|c++|g++|g++-*|clang|clang-*|clang++*|go|gofmt|cargo|rustc|rustup|java|javac|dotnet|elixir|elixirc|erl|erlc|iex|mix|python|python3|python3.*) continue ;;
+              esac
+              [ -e "$podstavnoy/$imya" ] || [ -L "$podstavnoy/$imya" ] || ln -s "$put" "$podstavnoy/$imya"
+            done
+          done
+          if PATH="$podstavnoy" bootstrap/flang io flang/scripts/link-across-targets.flang --timeout 300000 > "$RUNNER_TEMP/svyaz-podlog.out" 2>&1; then
+            echo "сторож промолчал на подлоге: тулчейнов у целей нет, а он зелен — проверять им нечего" >&2
             exit 1
           fi
-          chmod u+w tmp/svyaz-na-celyah/voprosy.jsonl
-          rm -rf tmp/svyaz-na-celyah
+          if ! grep -q 'цель не ответила ничего' "$RUNNER_TEMP/svyaz-podlog.out"; then
+            cat "$RUNNER_TEMP/svyaz-podlog.out" >&2
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: сторож покраснел не молчанием целей — его ответ выше" >&2
+            exit 1
+          fi
+          grep -o 'НА [0-9]* ЦЕЛЯХ ИЗ 9[^;]*' "$RUNNER_TEMP/svyaz-podlog.out" | head -1
 
       - name: связь работает одинаково на девяти целях печати
         run: bootstrap/flang io flang/scripts/link-across-targets.flang --timeout 300000

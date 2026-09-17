@@ -2015,11 +2015,15 @@ AB=flang/proof/map/abilities.flang
 EQ=flang/proof/map/equality.flang
 BN=flang/proof/map/boundaries.flang
 opyt C "группа А: СС1/СС3, О1/О6, В2/В3, П2 из «равно» (abilities)" 3 "$AB" "$RR/abilities.запись"
-opyt C "группа А: В2 (equality)" 3 "$EQ" "$RR/equality.запись"
+opyt C "группа А: В2 (equality)" 0 "$EQ" "$RR/equality.запись"
 opyt C "группа А и Д3: О2/О4 от дна длины, Д3 и С3 (boundaries)" 0 "$BN" "$RR/boundaries.запись"
 opyt C "Д3 и С3: отданное строго больше нуля (strict-order :95)" 3 "$SO" "$RR/strict-order-sum-floor.запись"
 # abilities 11 → 13 — партия перепечатки кванторов, запись — печать ядра байт в байт.
-for z in abilities:13 equality:1 boundaries:6 strict-order-sum-floor:3; do
+# equality 1 → 2 и исход пробы 3 → 0 — перепечатка 5190 (17 сентября 2026, семя из
+# 68ff03b34): ядро печатает в запись блок вывода из пяти шагов (Выч, К↑, Разв3 ×3),
+# которого раньше не печатало, и сверщик проигрывает его по существу вместо отказа.
+# Ожидания подняты по прогону и НЕ ослаблены: «не берусь» сменилось «проверено».
+for z in abilities:13 equality:2 boundaries:6 strict-order-sum-floor:3; do
   n=${z%%:*}; zh=${z#*:}
   case $n in abilities) I=$AB;; equality) I=$EQ;; boundaries) I=$BN;; *) I=$SO;; esac
   set +e; v=$("$C" "$I" "$RR/$n.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e

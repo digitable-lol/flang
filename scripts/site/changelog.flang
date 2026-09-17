@@ -252,9 +252,6 @@
       то символ по коду 1105
       иначе знак
 
-// «package.json» остаётся в видимых корнях РАДИ ИСТОРИИ: файл выброшен из дерева
-// 17 сентября 2026 (задача 3570), но коммиты до того его трогали, и без этого
-// корня они стали бы «незнакомыми» — а журнал печатается по всей истории.
 тотальная функция «Видимые корни»
   возвращает список строки
   ["flang/src", "flang/stdlib", "flang/bin", "flang/core", "flang/self", "flang/concurrency", "flang/conc", "flang/proof", "editors", "packaging", "examples", "package.json", "bootstrap", "src", "schema", "flang/cat", "flang/ct", "flang/examples"]

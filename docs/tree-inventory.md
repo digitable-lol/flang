@@ -78,7 +78,7 @@ $ bootstrap/flang io scripts/guards/tree-inventory.fscript --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 101 | 24 928 | 89 | 16 197 <!-- СНЯТО 2026-09-17 долг файлов/строк оболочки = 89/16197 (задача 1794: подделка тела К1 прибавила 7 строк в flang/proof/чекер/пробы/прогон.sh, вне долга) (ADR-0042, задачи 6432 и 6812: семейства Пр и М прибавили 2 строки в flang/proof/сверка-ведомости.sh; до них 87/15959) (на ветке a/1418-three-moves: обходчик проверок flang/test/обход.sh прибавил 7 строк, задача 1418; на стволе 87/15952), планом «Опись дерева по языкам» (задачи 5332 и 6438 прибавили 42 строки в flang/proof/чекер/пробы/прогон.sh и flang/proof/доля-корпуса.sh, из них долга 14; до них 87/15916) (пары «строка ↔ лемма» в flang/proof/lean/прогон.sh, задачи 3855 и 1130, прибавили 17 строк; до них 87/15899, снято 2026-09-14) (сверка вердиктов C ↔ Lean, задача 2907, прибавила 152 строки в flang/proof/lean/прогон.sh; до неё 87/15747, снято 2026-09-12) на стволе 24e6edb34 со слитой уборкой дерева (учебник прибавил 37 строк в scripts/flangtutor-proba.sh, хук — 5 строк в .githooks/pre-push; до них на 4e9a7a8c3 было 102/16682) (8 сентября было 98/15001: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-17 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 101 --><!-- СНЯТО 2026-09-17 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 24928 --> |
+| оболочка | 101 | 23 817 | 89 | 15 450 <!-- СНЯТО 2026-09-17 долг файлов/строк оболочки = 89/15450 (задача 1794: подделка тела К1 прибавила 7 строк в flang/proof/чекер/пробы/прогон.sh, вне долга) (ADR-0042, задачи 6432 и 6812: семейства Пр и М прибавили 2 строки в flang/proof/сверка-ведомости.sh; до них 87/15959) (на ветке a/1418-three-moves: обходчик проверок flang/test/обход.sh прибавил 7 строк, задача 1418; на стволе 87/15952), планом «Опись дерева по языкам» (задачи 5332 и 6438 прибавили 42 строки в flang/proof/чекер/пробы/прогон.sh и flang/proof/доля-корпуса.sh, из них долга 14; до них 87/15916) (пары «строка ↔ лемма» в flang/proof/lean/прогон.sh, задачи 3855 и 1130, прибавили 17 строк; до них 87/15899, снято 2026-09-14) (сверка вердиктов C ↔ Lean, задача 2907, прибавила 152 строки в flang/proof/lean/прогон.sh; до неё 87/15747, снято 2026-09-12) на стволе 24e6edb34 со слитой уборкой дерева (учебник прибавил 37 строк в scripts/flangtutor-proba.sh, хук — 5 строк в .githooks/pre-push; до них на 4e9a7a8c3 было 102/16682) (8 сентября было 98/15001: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-17 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 101 --><!-- СНЯТО 2026-09-17 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 23817 --> |
 | C | 34 | 856 386 | 0 | 0 <!-- СНЯТО 2026-09-14 файлов *.c,*.h = 34 --><!-- СНЯТО 2026-09-17 строк-в *.c,*.h = 856386 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 16 | 6 029 | 10 | 2 880 <!-- СНЯТО 2026-09-11 файлов *.py = 16 --><!-- СНЯТО 2026-09-11 строк-в *.py = 6029 --> |
@@ -237,18 +237,18 @@ Python 16, awk 1.
 
 | файл | строк | что делает |
 |---|---:|---|
-| `target-collisions.sh` | 337 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-08-31 строк scripts/targets/target-collisions.sh = 337 --> |
+| `target-collisions.sh` | 248 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-09-17 строк scripts/targets/target-collisions.sh = 248 --> |
 | `bad-octet-guard.sh` | 340 | сторож негодных октетов <!-- СНЯТО 2026-09-14 строк scripts/guards/bad-octet-guard.sh = 340 --> |
 | `seed-knows-type-words-guard.sh` | 311 | слова в позициях типа известны закоммиченному семени (стоит первой работой в `ci.yml`) <!-- СНЯТО 2026-09-14 строк scripts/guards/seed-knows-type-words-guard.sh = 311 --> |
 | `prose-numbers-guard.sh` | 416 | числа, набранные в прозе рукой, сходятся с деревом сегодня <!-- СНЯТО 2026-09-05 строк scripts/guards/prose-numbers-guard.sh = 416 --> |
 | `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |
-| `target-census.sh` | 215 | перепись целей <!-- СНЯТО 2026-09-17 строк scripts/targets/target-census.sh = 215 --> |
-| `seed-freshness.sh` | 197 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-08-31 строк scripts/seed/seed-freshness.sh = 197 --> |
+| `target-census.sh` | 164 | перепись целей <!-- СНЯТО 2026-09-17 строк scripts/targets/target-census.sh = 164 --> |
+| `seed-freshness.sh` | 115 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-09-17 строк scripts/seed/seed-freshness.sh = 115 --> |
 | `test-remote.sh` | 149 | прогон на чужой машине <!-- СНЯТО 2026-09-14 строк scripts/test-remote.sh = 149 --> |
 | `one-string-measure-guard.sh` | 119 | подаёт сырые октеты в `string-measure.flang` <!-- СНЯТО 2026-08-29 строк scripts/guards/one-string-measure-guard.sh = 119 --> |
-| `identical-declarations.sh` | 118 | что можно ввезти вместо переименования <!-- СНЯТО 2026-08-29 строк scripts/targets/identical-declarations.sh = 118 --> |
+| `identical-declarations.sh` | 82 | что можно ввезти вместо переименования <!-- СНЯТО 2026-09-17 строк scripts/targets/identical-declarations.sh = 82 --> |
 | `seed-parses-sources-guard.sh` | 220 | семя разбирает исходники, которые потом печатает <!-- СНЯТО 2026-08-31 строк scripts/guards/seed-parses-sources-guard.sh = 220 --> |
-| `targets-inventory.sh` | 79 | опись целей: имя, код, время, причина <!-- СНЯТО 2026-08-29 строк scripts/targets/targets-inventory.sh = 79 --> |
+| `targets-inventory.sh` | 50 | опись целей: имя, код, время, причина <!-- СНЯТО 2026-09-17 строк scripts/targets/targets-inventory.sh = 50 --> |
 | `names-in-c.awk` | 79 | «идентификатор C → русское объявление» из напечатанного заголовка <!-- СНЯТО 2026-08-29 строк scripts/targets/names-in-c.awk = 79 --> |
 
 Три из них — `seed-knows-type-words-guard.sh`, `seed-freshness.sh`,

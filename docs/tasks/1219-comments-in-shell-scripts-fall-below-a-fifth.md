@@ -42,7 +42,9 @@ git ls-files -z 'scripts/*.sh' 'scripts/**/*.sh' | sort -zu | xargs -0 awk '/^[[
 
 ## Часть Б — scripts/seed (6), scripts/targets (4), scripts/release (1), scripts/ledgers (1)
 
-Ветка `a/1219-shell-comments-b` над main `4ac13dc99`, 17 сентября 2026. Двенадцать
+Ветка `a/1219-shell-comments-b`, 17 сентября 2026: числа «до» сняты на main
+`4ac13dc99`, ветка перебазирована на `9d8d8f35e` — ни один из шестнадцати файлов
+стволом между этими точками не тронут, поэтому числа переснимать не пришлось. Двенадцать
 файлов — это все `.sh` четырёх каталогов, кроме четырёх скриптов `scripts/seed`,
 которые переименовывает задача T5 (`chto-otstalo-ot-semeni`, `pechat-povtorima`,
 `semya-osvezhit`, `semya-rantayma-eto-istochnik`); они правлены под старыми
@@ -68,3 +70,8 @@ for f in <12 файлов>; do cat "$f"; done | awk '/^[[:space:]]*#/{c++} {t++}
 оболочки 23 803 / долг 15 440, суммы 3 973 и 661) и примета `строк-в *.sh = 23161` в
 `.github/workflows/binary.yml`; в `scripts/ledgers/hand-written-lists-ledger.tsv`
 сдвинуты четыре номера строк и снята одна отжившая запись (`two-prints-identical.sh:76`).
+
+Шестнадцать новых заметок подняли число файлов `docs/zettel/*.md` с 678 до 694,
+поэтому примета в `docs/course/README.md:172` переснята вместе с числом в прозе:
+сторож чисел даёт «примет 216: сошлось 216, разошлось 0».
+

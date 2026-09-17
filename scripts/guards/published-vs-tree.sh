@@ -52,6 +52,10 @@ plohih=0
 trap 'rm -rf "$VREMENNO" "$VREMENNO".togda "$VREMENNO".togda-znacheniya "$VREMENNO".znacheniya 2>/dev/null || true' EXIT INT TERM
 
 znach() { grep -oE "\"$1\": *[0-9\"][^,}]*" "$2" | head -1 | sed 's/.*: *//; s/^"//; s/"$//'; }
+# Ключ .flangrc: «ключ = значение», последний одноимённый побеждает (как у
+# scripts/settings-file.flang). Версия проекта живёт здесь с 17 сентября 2026 —
+# package.json выброшен (задача 3570).
+flangrc_klyuch() { sed -n 's/^'"$1"'[[:space:]]*=[[:space:]]*//p' .flangrc | tail -1; }
 
 skazat() { # ключ опубликовано вдереве
   if [ "$2" = "$3" ]; then
@@ -282,7 +286,7 @@ poschitat() { # каталог-корень -> строки «ключ<TAB>зн�
 
   printf 'цели.всего\t%s\n'     "$(find flang/src/emit -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')"
   printf 'цели.близнецов\t%s\n' "$(find flang/self -maxdepth 1 -name 'emit-*.flang' 2>/dev/null | wc -l | tr -d ' ')"
-  printf 'выпуск.версия\t%s\n'  "$(znach version package.json)"
+  printf 'выпуск.версия\t%s\n'  "$(flangrc_klyuch версия)"
 
   o1=$(grep -oE 'FLANG_PROOF_[A-Z_]+' flang/self/obligations.flang 2>/dev/null | sort -u | wc -l | tr -d ' ')
   o2=$(grep -oE 'FLANG_PROOF_[A-Z_]+' flang/self/proofterm.flang 2>/dev/null | sort -u | wc -l | tr -d ' ')
@@ -564,8 +568,8 @@ perepis() {
 # клоне «тега нет» означало бы только то, что его не выгружали.
 vypusk() {
   echo "ВЫПУСК (объявленное деревом против выпущенного):"
-  v_paket=$(znach version package.json)
-  echo "  версия в package.json    $v_paket"
+  v_paket=$(flangrc_klyuch версия)
+  echo "  версия в .flangrc        $v_paket"
 
   if [ -z "$(git tag -l 'v[0-9]*' 2>/dev/null)" ]; then
     echo "  теги не выгружены — сверить нечем (git fetch --tags, в CI fetch-depth: 0)"

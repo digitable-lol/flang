@@ -10,11 +10,13 @@
 #
 # ── Источник и производные ──────────────────────────────────────────────────
 # Источник один: функция «Версия» в scripts/release/emit-package.flang. Из неё:
-#   package.json                    version              — ПЕРЕПЕЧАТЫВАЕТСЯ отсюда
-#   .flangrc                        версия, имя          — файл настроек проекта:
-#       спросить версию оттуда можно без разбора JSON и без Node
-#       (`sh scripts/flangrc.sh версия`). Имя пакета не меняется подъёмом, но
-#       сверяется тем же сторожем, чтобы не разъехалось молча.
+#   .flangrc                        версия, имя, лицензия, склад, беды — файл
+#       настроек проекта: спросить версию оттуда можно без разбора JSON и без
+#       Node (`sh scripts/flangrc.sh версия`), и так же — лицензию и оба адреса.
+#       Меняется подъёмом только версия, но переписываются все пять ключей из
+#       своих функций источника, чтобы ни один не разъехался молча. До
+#       17 сентября 2026 первым производным местом был `package.json`; файл
+#       выброшен (задача 3570), и его читатели читают `.flangrc`.
 #   flang/src/emit/c/flang_repl.c   #define FLANG_VERSION — генерируется здесь
 #   packaging/flang.1               .TH и обе расшифровки «flang X»
 #   packaging/homebrew/flang.rb     version, тег и имя архива в url
@@ -50,10 +52,24 @@ MAN=packaging/flang.1
 FORMULA=packaging/homebrew/flang.rb
 KRAN=packaging/homebrew-tap/Formula/flang.rb
 PLAGIN=packaging/asdf-plugin
-BINARY=bootstrap/flang
 
 tekushchaya() {
   grep -oE '^  "[0-9]+\.[0-9]+\.[0-9]+"$' "$ISTOCHNIK" | tr -d ' "' | head -1
+}
+
+# Тело функции источника: первая строка вида «‹два пробела›"…"» после её
+# заголовка. Пример в той же функции набран с бо́льшим отступом и словом
+# «ожидается», под шаблон не попадает. `LC_ALL=C` — чтобы grep -F сличал
+# заголовок по байтам и не спотыкался о кириллицу в чужой локали.
+telo_funkcii() { # имя функции без ёлочек
+  LC_ALL=C grep -A8 -F "функция «$1»" "$ISTOCHNIK" | grep -m1 -E '^  "[^"]*"$' | sed 's/^  "//; s/"$//'
+}
+
+# Ровно строка ключа в .flangrc, а не весь файл: его человек пишет руками, и
+# перепечатать целиком значило бы стереть чужие примечания. Разделитель `|`,
+# потому что адреса несут `/`.
+zapisat_klyuch() { # ключ, значение
+  sed -i -E 's|^'"$1"'[[:space:]]*=.*|'"$1"' = '"$2"'|' .flangrc
 }
 
 # Плагин asdf: версии в нём нет, сверяются сами файлы. Печатает одну строку
@@ -82,11 +98,10 @@ if [ -z "$NOVAYA" ]; then
   echo "текущая версия (источник $ISTOCHNIK): ${V:-не найдена}"
   echo
   echo "вытекает в:"
-  echo "  package.json                  $(sed -n 's/^  "version": "\([^"]*\)",$/version \1/p' package.json)"
   echo "  $REPL  $(sed -n 's/^#define FLANG_VERSION "\([^"]*\)".*/FLANG_VERSION \1/p' "$REPL")"
   echo "  $MAN               .TH $(grep -oE 'flang [0-9]+\.[0-9]+\.[0-9]+' "$MAN" | sort -u | tr '\n' ' ')"
   echo "  $FORMULA  $(sed -n 's/^  version "\([^"]*\)".*/version \1/p' "$FORMULA")"
-  echo "  .flangrc                      версия $(sed -n 's/^версия[[:space:]]*=[[:space:]]*//p' .flangrc | head -1), имя $(sed -n 's/^имя[[:space:]]*=[[:space:]]*//p' .flangrc | head -1)"
+  echo "  .flangrc                      версия $(sed -n 's/^версия[[:space:]]*=[[:space:]]*//p' .flangrc | head -1), имя $(sed -n 's/^имя[[:space:]]*=[[:space:]]*//p' .flangrc | head -1), лицензия $(sed -n 's/^лицензия[[:space:]]*=[[:space:]]*//p' .flangrc | head -1), склад $(sed -n 's/^склад[[:space:]]*=[[:space:]]*//p' .flangrc | head -1), беды $(sed -n 's/^беды[[:space:]]*=[[:space:]]*//p' .flangrc | head -1)"
   if [ -f "$KRAN" ]; then
     echo "  $KRAN  $(sed -n 's/^  version "\([^"]*\)".*/version \1/p' "$KRAN")  (кран, сабмодуль $(git -C packaging/homebrew-tap rev-parse --short HEAD 2>/dev/null))"
   else
@@ -122,10 +137,12 @@ sed -i -E 's/^#define FLANG_VERSION "[0-9]+\.[0-9]+\.[0-9]+"$/#define FLANG_VERS
 # ── страница man: .TH и обе расшифровки «flang X.Y.Z» (FLANG заглавными не тронут) ─
 sed -i -E 's/flang [0-9]+\.[0-9]+\.[0-9]+/flang '"$NOVAYA"'/g' "$MAN"
 
-# ── файл настроек проекта: число разносится и туда ───────────────────────────
-# Правится ровно строка ключа, а не весь файл: `.flangrc` человек пишет руками,
-# и перепечатать его целиком значило бы стереть чужие примечания.
-sed -i -E 's/^версия[[:space:]]*=.*/версия = '"$NOVAYA"'/' .flangrc
+# ── файл настроек проекта: все пять ключей из своих функций источника ────────
+zapisat_klyuch версия "$NOVAYA"
+zapisat_klyuch имя "$(telo_funkcii 'Имя пакета')"
+zapisat_klyuch лицензия "$(telo_funkcii 'Лицензия')"
+zapisat_klyuch склад "$(telo_funkcii 'Адрес склада')"
+zapisat_klyuch беды "$(telo_funkcii 'Адрес бед')"
 
 # ── формула Homebrew: version, тег и имя архива в url. sha256 НЕ трогаем ─────
 sed -i -E 's/^  version "[0-9]+\.[0-9]+\.[0-9]+"$/  version "'"$NOVAYA"'"/' "$FORMULA"
@@ -137,17 +154,6 @@ if [ -f "$KRAN" ]; then
   sed -i -E 's#/download/v[0-9]+\.[0-9]+\.[0-9]+/flang-[0-9]+\.[0-9]+\.[0-9]+-c\.tar\.gz#/download/v'"$NOVAYA"'/flang-'"$NOVAYA"'-c.tar.gz#' "$KRAN"
 else
   echo "кран $KRAN НЕ РАЗВЁРНУТ — не поднят. Разверните и повторите: git submodule update --init packaging/homebrew-tap" >&2
-fi
-
-# ── package.json: перепечатать из источника (знак-в-знак, как ждёт пакет:проверка) ─
-if [ -x "$BINARY" ]; then
-  "$BINARY" io "$ISTOCHNIK" --plan 'Напечатать пакет' >/dev/null 2>&1 \
-    && echo "package.json перепечатан из источника" \
-    || { echo "package.json перепечатать не удалось — запустите вручную: ./ярлык пакет" >&2; exit 3; }
-else
-  # двоичного нет: правим одно поле напрямую, а знак-в-знак допечатает ярлык пакет
-  sed -i -E 's/^  "version": "[0-9]+\.[0-9]+\.[0-9]+",$/  "version": "'"$NOVAYA"'",/' package.json
-  echo "package.json: version поправлена напрямую (нет $BINARY). Перепечатайте знак-в-знак: ./ярлык пакет"
 fi
 
 echo
@@ -170,4 +176,4 @@ else
   echo "Пока указатель не поднят, «плагин:проверка» и release.yml КРАСНЫ — это и есть защита от забытого плагина."
 fi
 exit 0
-# ярлык «версия» sh — поднять версию одной командой: число из источника scripts/release/emit-package.flang разносится в package.json, flang_repl.c, .TH страницы man и три числа формулы Homebrew; ./ярлык версия 0.7.13
+# ярлык «версия» sh — поднять версию одной командой: число из источника scripts/release/emit-package.flang разносится в .flangrc, flang_repl.c, .TH страницы man и три числа формулы Homebrew; ./ярлык версия 0.7.13

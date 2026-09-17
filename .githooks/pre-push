@@ -46,9 +46,9 @@ trap 'rm -rf "$RAB"' EXIT INT TERM
 
 # Проверки, которым НУЖЕН собранный двоичный. Без него `./ярлык` полез бы
 # собирать (5–6 минут) — этого хук не делает и говорит об этом вслух.
-S_DVOICHNYM="версия:проверка пакет:проверка лицензии:проверка задачник:проверка опись:сверка"
+S_DVOICHNYM="версия:проверка лицензии:проверка задачник:проверка опись:сверка"
 # Проверки, которым двоичный не нужен.
-BEZ_DVOICHNOGO="prose-numbers-guard.sh semya-rantayma-eto-istochnik.sh version-derivations-guard.sh semya-osvezhit.sh"
+BEZ_DVOICHNOGO="prose-numbers-guard.sh semya-rantayma-eto-istochnik.sh version-derivations-guard.sh semya-osvezhit.sh no-package-json-guard.sh"
 
 zapusk() { # имя, команда…
   imya=$1; shift
@@ -70,6 +70,9 @@ zapusk semya          sh scripts/seed/semya-rantayma-eto-istochnik.sh
 # работы (отстают и рантайм, и замыкание) — зелёное, это не его предмет.
 zapusk semyaosv       sh scripts/seed/semya-osvezhit.sh --check
 zapusk versii-vezde   sh scripts/guards/version-derivations-guard.sh
+# package.json выброшен 17 сентября 2026 (задача 3570); вернувшийся файл —
+# второе место версии и чужой «type» для каждого .js. Секунда, без двоичного.
+zapusk bez-paketa     sh scripts/guards/no-package-json-guard.sh --check
 zapusk zov            sh scripts/guards/kto-zovet-storozhey.sh --check
 zapusk podlog         sh scripts/guards/storozha-bez-podloga.sh --check
 zapusk opis           sh scripts/guards/pol-dokazannogo-sverka.sh
@@ -79,7 +82,6 @@ if [ ! -x bootstrap/flang ]; then
   DVOICHNYY=нет
 else
   zapusk versiya  ./ярлык версия:проверка
-  zapusk paket    ./ярлык пакет:проверка
   zapusk licenzii ./ярлык лицензии:проверка
   zapusk zadachnik ./ярлык задачник:проверка
   # Таблица docs/tree-inventory.md против того, что опись насчитала: гейт в
@@ -114,7 +116,7 @@ echo "  · тесты, набор проб чекера, потолок дове
 echo "  · сборку двоичного и всё, что её требует"
 echo "  · десять сторожей дороже 200 с и двенадцать, красных по долгу дерева"
 if [ "$DVOICHNYY" = нет ]; then
-  echo "  · версию, пакет, лицензии, задачник и сверку описи — НЕТ bootstrap/flang,"
+  echo "  · версию, лицензии, задачник и сверку описи — НЕТ bootstrap/flang,"
   echo "    а собирать его хук не станет (5–6 минут). Соберите: make -C bootstrap"
 fi
 

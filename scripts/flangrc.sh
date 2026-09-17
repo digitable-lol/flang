@@ -7,6 +7,8 @@
 #   sh scripts/flangrc.sh                 все ключи: `ключ = значение`
 #   sh scripts/flangrc.sh язык            одно значение, одной строкой
 #   sh scripts/flangrc.sh версия          номер версии проекта, без разбора JSON
+#   sh scripts/flangrc.sh лицензия        лицензия, адрес дерева (`склад`) и адрес
+#                                         бед (`беды`) — тем же путём
 #   sh scripts/flangrc.sh --откуда        то же и с источником каждого ключа
 #   sh scripts/flangrc.sh --места         какие места просмотрены (для проверки)
 #   sh scripts/flangrc.sh --файл          путь взятого файла проекта, или пусто
@@ -225,7 +227,7 @@ if [ ! -x "$KOREN/bootstrap/flang" ]; then
   exit 3
 fi
 
-KLYUCHI="язык поверхность цвет страница версия имя"
+KLYUCHI="язык поверхность цвет страница версия имя лицензия склад беды"
 [ -n "$KLYUCH" ] && KLYUCHI=$KLYUCH
 
 for k in $KLYUCHI; do

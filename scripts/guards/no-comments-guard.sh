@@ -103,8 +103,10 @@ if [ "$SNYAT" = 1 ]; then
     echo "Сначала уберите прибавку, потом снимайте долг." >&2
     exit 1
   fi
-  awk -F'\t' 'NR == FNR { if (NF > 2) p[$1] = $3; next } { print $0 (($1 in p) ? "\t" p[$1] : "") }' \
-    "$DOLG" "$TMP/nyne" > "$TMP/novyj" && cp "$TMP/novyj" "$DOLG" || { echo "НЕ ПРОВЕРЕНО: долг не переписан" >&2; exit 3; }
+  # Шапка «# ЧТО … ЗАЧЕМ … КТО ЧИТАЕТ …» (строки с «#», в счёт не идут) переживает переписку.
+  { LC_ALL=C grep '^#' "$DOLG" || true
+    awk -F'\t' 'NR == FNR { if (NF > 2) p[$1] = $3; next } { print $0 (($1 in p) ? "\t" p[$1] : "") }' \
+      "$DOLG" "$TMP/nyne"; } > "$TMP/novyj" && cp "$TMP/novyj" "$DOLG" || { echo "НЕ ПРОВЕРЕНО: долг не переписан" >&2; exit 3; }
   echo "долг переписан вниз: было $BYLO, стало $SEJCHAS (убрано $((BYLO - SEJCHAS)))"
   exit 0
 fi

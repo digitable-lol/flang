@@ -135,9 +135,11 @@ The share of places in the **compiler's own proof records** (89 records over
 `flang/proof/map/`, `flang/proof/examples/` and the standard library) where the
 independent checker replayed the kernel's move. Not «96 % of programs are
 proved», not «96 % of claims in the tree», nothing about compiled code. The word
-ДОКАЗУЕМ is derived from four numbers: no computing step in the checker; share
-above the 95 % gate; 453 forgery probes rejected and 215 honest records accepted;
-the probe set has not shrunk. The inference rules were also judged by the Lean 4
+is derived from four numbers: no computing step in the checker; share against
+the gate — 100 % since 17 September 2026 (the owner's word, task 3348), which is
+why the word today is an honest **НЕ ДОКАЗУЕМ**, exit 1, at 633 of 650 replayed;
+529 forgery probes rejected and 244 honest records accepted; the probe set has
+not shrunk. The inference rules were also judged by the Lean 4
 kernel — 88 rules against 85 lemmas in the run of 11 September; the list has
 grown to 97 rules since, and Lean has not been run again
 ([`lean-checks-the-inference-rules.md`](lean-checks-the-inference-rules.md)).

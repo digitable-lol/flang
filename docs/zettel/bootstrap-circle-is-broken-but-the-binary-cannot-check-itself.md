@@ -35,7 +35,7 @@
 15 641 371 байт. Про то, что печать читает исходники рантайма C с диска (пункт
 2), теперь сказано прямо там, где это важно: `flang/src/emit/c/` — это 20 673
 строки на C, и удалять их вместе с JavaScript нельзя. Подробности и числа —
-[[node-ushyol-s-puti-sborki]].
+[[node-left-the-build-path]].
 
 ## Что этому мешает на практике — три названные вещи
 
@@ -182,7 +182,7 @@ JSON, двоичный — человеческую прозу; у `run` дво�
 
 Связано: [[dropping-unreachable-code-in-flang-costs-180-times-more]],
 [[the-installed-binary-is-a-named-subset]],
-[[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]],
+[[the-binary-ledger-can-be-weaker-and-never-stronger]],
 [[javascript-stays-only-as-a-print-target]],
 [[four-pieces-of-javascript]], [[byte-for-byte-comparison]],
 [[printing-to-c-looks-for-runtime-sources-next-to-the-binary]]

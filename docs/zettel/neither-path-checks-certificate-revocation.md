@@ -41,4 +41,4 @@ curl --cert-status https://api.github.com/       → 91  No OCSP response receiv
 работой с новым источником правды, а не строкой в argv.
 
 Связано: [[tls-in-flang-is-blocked-by-a-missing-random-key-not-by-cost]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]]
+[[the-command-loop-belongs-to-the-host-not-the-language]]

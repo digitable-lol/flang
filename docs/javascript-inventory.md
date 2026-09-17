@@ -97,7 +97,7 @@ JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по им
 | `flang/concurrency/zamer/smert-uzla-celi.mjs` | `flang/concurrency/bench/node-death-targets.mjs` |
 | `flang/scripts/dvoichnyy.mjs` | `flang/scripts/binary.mjs` |
 | `flang/scripts/storozh-slov.mjs` | `flang/scripts/word-guard.mjs` |
-| `flang/scripts/razlichitelnyy-poisk.mjs` | `flang/scripts/discriminating-search.mjs` |
+| `flang/scripts/razlichitelnyy-search.mjs` | `flang/scripts/discriminating-search.mjs` |
 | `flang/scripts/slova-celey.mjs` | `flang/scripts/target-words.mjs` |
 | `benchmarks/zamer-skorosti/rabota.mjs` | `docs/benchmarks/speed/work.mjs` |
 | `benchmarks/zamer-tseny/schyot-biblioteki.mjs` | `benchmarks/proof-cost/count-library.mjs` |
@@ -178,9 +178,9 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 | файл | строк | чем это доказано |
 |---|---:|---|
 | `flang/concurrency/bin/node.js` | 719 | **хозяин узла на цели `js`** — восьмой из восьми: рядом лежат `node.c`, `node.cs`, `node.ex`, `node.go`, `node.java`, `node.py`, `node.rs`. Все восемь названы поимённо в `flang/scripts/node-across-targets.fscript` (строка «js», хозяин `node.js`, запуск `node node.js`). Убрать его — вычеркнуть цель `js` из счёта работающих целей |
-| `docs/site/poisk.js` | 355 | исполняется браузером читателя на статике; исполнителя JavaScript у flang нет |
+| `docs/site/search.js` | 355 | исполняется браузером читателя на статике; исполнителя JavaScript у flang нет |
 | `docs/benchmarks/speed/programs/tasks.mjs` | 181 | **это и есть замеряемая реализация на JavaScript**, соседка `tasks.flang`, `tasks.py` и `reference.c`. `docs/benchmarks/speed/work.mjs` зовёт её строкой `node: (з) => прогон("node", [.../tasks.mjs, …])` — это ряд «node» в таблице замера. Переписать на flang — стереть у замера столбец сравнения |
-| `docs/site/poisk-proverka.mjs` | 175 | поднимает браузерный `poisk.js` внутри себя через `node:vm` и проверяет **тот же файл**, который читает браузер. Двойник на flang проверял бы другой файл — это подмена сторожа, а не перенос |
+| `docs/site/search-check.mjs` | 175 | поднимает браузерный `search.js` внутри себя через `node:vm` и проверяет **тот же файл**, который читает браузер. Двойник на flang проверял бы другой файл — это подмена сторожа, а не перенос |
 | `scripts/wasm-run.mjs` | 65 | средой WASI служит сам Node (`node:wasi`, preview1). Модуль `wasm32-wasi` без такой среды не запускается вовсе |
 | `docs/examples/web/wasm/probe.mjs` | 63 | ведёт НАСТОЯЩИЙ браузер через Playwright и ловит падение вкладки |
 | `docs/editors/vscode/extension.js` | 46 | точка входа расширения VS Code: редактор грузит модуль в свой процесс Node, другого способа подключиться у него нет. Знания о языке в файле нет ни одного — оно всё в `flang lsp`, написанном на flang |
@@ -228,8 +228,8 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 узел сайта. Это не «файлы тестов», а неправильно положенные файлы, и умрут они
 вместе со сторожами.
 
-Имена четырёх из девяти — транслит (`nadzor-uzla`, `planirovshchik-celi`,
-`svyaz-celi`, `uzel-osnastka`); переименование `b3167200` их не тронуло.
+Имена четырёх из девяти — транслит (`node-supervision`, `target-scheduler`,
+`target-link`, `uzel-osnastka`); переименование `b3167200` их не тронуло.
 Переименовывать по своей воле нельзя — ломает указатель заметок и сборку сайта.
 
 ---
@@ -265,14 +265,14 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 | `docs/site/diagram.mjs` | 410 | сайт |
 | `docs/site/surfaces-run.mjs` | 365 | сайт |
 | `flang/concurrency/bench/gen.mjs` | 351 | узел |
-| `docs/site/podsvetka.mjs` | 333 | сайт |
+| `docs/site/highlighting.mjs` | 333 | сайт |
 | `docs/site/markdown.mjs` | 311 | сайт |
 | `flang/scripts/word-occupancy.mjs` | 311 | сторож |
 | `flang/scripts/target-words.mjs` | 309 | сторож |
 | `flang/concurrency/bin/wire.mjs` | 159 | узел |
 | `docs/benchmarks/speed/work.mjs` | 158 | замер |
 | `flang/concurrency/bench/node-death-targets.mjs` | 147 | узел |
-| `docs/site/poisk.mjs` | 111 | сайт |
+| `docs/site/search.mjs` | 111 | сайт |
 | `docs/site/numbers.mjs` | 107 | сайт |
 
 ---
@@ -423,7 +423,7 @@ bootstrap/flang io docs/benchmarks/speed/memory.flang
 Есть и цена, которую надо назвать: **«Удалить файл» двоичный не знает** (дыра 2),
 и времянки после плана остаются. `count-20.flang` с этим смирился и назвал их
 так, чтобы их не подобрал ни один обход корпуса; проверено прогоном — после
-работы в каталоге лежат `.proba-golyy` и `.proba-zaglushka`. Для библиотеки
+работы в каталоге лежат `.probe-bare` и `.probe-stub`. Для библиотеки
 времянка обязана лежать В `flang/stdlib`, иначе `использует «HMAC»` не
 разрешится, — и там она мозолит глаза сильнее.
 

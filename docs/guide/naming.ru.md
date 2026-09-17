@@ -396,7 +396,7 @@ flang emit: печать отказала — имя функции «乘积» �
   |---|---|
   | `flang/self/svoystva.flang`, `docs/benchmarks/speed/memory.flang` | рукописные исходники |
   | `flang/test/zakon-*.test.mjs` (шесть) | рукописные тесты — в дереве их больше нет (сняты 20 августа 2026, `fe8e8a37`) |
-  | `docs/HANDOVER.md`, `docs/ct/zakony.md`, `zakony-kak-ukazatel.md` | проза |
+  | `docs/HANDOVER.md`, `docs/ct/zakony.md`, `laws-as-a-pointer-not-a-conclusion.md` | проза |
 
   Каталог `docs/rukovodstvo/` был четырнадцатым и переименован в `docs/guide/` 18 августа — вместе с
   70 ссылками в 17 файлах. Цена оставшихся одиннадцати того же порядка: имя файла стоит в прозе, в

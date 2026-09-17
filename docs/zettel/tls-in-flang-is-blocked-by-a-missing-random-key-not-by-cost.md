@@ -52,5 +52,5 @@ AES и GHASH без битовых операций дороже на байт, 
 секрет, а у языка нет источника секретов.
 
 Связано: [[sha256-without-bit-operations-costs-925-thousand-steps-per-block]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]],
+[[the-command-loop-belongs-to-the-host-not-the-language]],
 [[neither-path-checks-certificate-revocation]]

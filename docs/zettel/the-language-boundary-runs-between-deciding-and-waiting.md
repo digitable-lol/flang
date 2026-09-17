@@ -45,5 +45,5 @@
 Решение и опись слоёв: [ADR-0008](../adr/0008-layer-boundary.md), пример стыка —
 `examples/io/фильтр-пакетов.flang`.
 
-Связано: [[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]],
+Связано: [[the-command-loop-belongs-to-the-host-not-the-language]],
 [[the-bootstrap-point-lags-the-order-dictionary]]

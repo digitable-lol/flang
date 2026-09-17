@@ -93,7 +93,7 @@
 соответственно.
 
 Связано: [[proved-claims-in-http-and-json-were-all-gratis]],
-[[bottleneck-moved-to-claim-shape]], [[chto-nelzya-napisat-v-obespechivaet]],
+[[bottleneck-moved-to-claim-shape]], [[four-things-a-postcondition-cannot-say]],
 [[claims-about-length-are-two-thirds-of-what-the-kernel-refuses]],
 [[round-trip-claims-are-unstatable-in-postconditions]],
 [[proven-is-not-correct]]

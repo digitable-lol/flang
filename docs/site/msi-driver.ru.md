@@ -92,7 +92,7 @@ bootstrap/flang test  docs/examples/driver/msi/msi.flang
 сколько утверждений доказано, сколько на сетке, сколько объявлено без
 доказательства. Этих чисел на странице нет: они меняются вместе с ядром.
 Замер на определённую дату, до и после правки свёртки, стоит в разделе о
-неравенствах на странице [какие обещания ядро берёт](kak-dokazat.html).
+неравенствах на странице [какие обещания ядро берёт](what-the-kernel-accepts.html).
 
 ## Что доказано и что нет
 
@@ -161,5 +161,5 @@ bootstrap/flang test  docs/examples/driver/msi/msi.flang
 * [Каталог примеров](examples.html)
 * [Где кончается flang и начинается хозяин](host-boundary.html)
 * [Что доказано, а что нет](what-is-proved.html)
-* [Какие обещания ядро берёт](kak-dokazat.html)
+* [Какие обещания ядро берёт](what-the-kernel-accepts.html)
 * [Распределитель памяти](allocator.html)

@@ -89,7 +89,7 @@ no proof of it for all inputs — the report says so in plain words. The kernel
 does not take these four because they relate the result of a fold over the
 whole input string to the string itself (the print equals a prefix of the
 input); the kernel has no rule of that shape. What the kernel takes and what it
-does not is named on [which promises the kernel takes](kak-dokazat.html).
+does not is named on [which promises the kernel takes](what-the-kernel-accepts.html).
 
 Besides these four, three small ones are on the grid too: «цифра не больше
 девяти» («Цифра числом»), «печать не короче шести знаков» («Напечатать запись»)
@@ -143,5 +143,5 @@ module and its examples.
 
 * [Catalogue of examples](examples.html)
 * [What is proved and what is not](what-is-proved.html)
-* [Which promises the kernel takes](kak-dokazat.html)
+* [Which promises the kernel takes](what-the-kernel-accepts.html)
 * [Where flang ends and the host begins](host-boundary.html)

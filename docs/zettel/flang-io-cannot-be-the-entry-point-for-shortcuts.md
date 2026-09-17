@@ -55,5 +55,5 @@
 и их снимет одно поле в отклике и один ключ.
 
 Связано: [[host-timeout-of-30-seconds-keeps-builds-out-of-flang-plans]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]],
-[[proverka-zovushchaya-kompilyator-perenositsya-na-flang-mehanicheski]]
+[[the-command-loop-belongs-to-the-host-not-the-language]],
+[[a-check-that-calls-the-compiler-ports-to-flang-mechanically]]

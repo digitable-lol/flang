@@ -9,9 +9,9 @@
 печать из `flang/self/**`. Бэкенд C увозит его в семя дословно и приписывает
 сверху шапку: `diff flang/src/emit/c/flang_repl.c bootstrap/flang_repl.c` —
 ровно девять строк, все в шапке (заслон
-`scripts/seed/semya-rantayma-eto-istochnik.sh`, задача 4088). Отсюда следствие,
+`scripts/seed/seed-runtime-is-source.sh`, задача 4088). Отсюда следствие,
 которое стоит помнить: правка оболочки доезжает до двоичного **быстрым
-пересевом** `sh scripts/seed/semya-osvezhit.sh` (задача 3388), а не
+пересевом** `sh scripts/seed/seed-refresh.sh` (задача 3388), а не
 перепечаткой в четыре с половиной часа. Пересев 8 сентября занял 71 с, потому
 что объекты семени были свежи и пересобрался один `flang_repl.o`.
 `flang/self/repl/repl.flang` — другая оболочка, побайтовый двойник Node-версии;
@@ -39,7 +39,7 @@ termios, escape-последовательностей, редактора ст�
 с трёх согласных источников: `courses.digitable.life/css/digitable.tokens.css`,
 dotfiles владельца (`.alacritty.toml`, `.vim/colors/digitable.vim` — там же
 индексы xterm-256) и переменные `EZA_COLORS`/`FZF_DEFAULT_OPTS` рабочей машины.
-Проба `scripts/repl-proba.sh` держит оба конца: под трубой с
+Проба `scripts/repl-probe.sh` держит оба конца: под трубой с
 `COLORTERM=truecolor` вывод побайтно прежний и без единого ESC; под pty
 (python3 `pty`, без expect) Home/End/Backspace/↑/⌥b/Ctrl-←/Ctrl-U делают то,
 что обещаны, а `NO_COLOR=` снимает цвет.

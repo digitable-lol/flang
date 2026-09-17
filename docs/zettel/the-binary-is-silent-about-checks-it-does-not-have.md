@@ -2,7 +2,7 @@
 
 Про разрыв между двумя реализациями уже записано, что **ведомость** двоичного
 бывает слабее ведомости на Node и никогда не сильнее
-([[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]]). Это верно, но
+([[the-binary-ledger-can-be-weaker-and-never-stronger]]). Это верно, но
 описывает не весь разрыв и описывает более мягкую его половину.
 
 **Вторая половина: целой проверки в двоичном может не быть вовсе.** Тогда он не
@@ -120,6 +120,6 @@ categories, morphisms. … Ответ «замечаний нет» здесь �
 `u/spec-cat` от `github/main` (`702a3602`). Размеры — `wc -l`.
 
 Связано: [[a-path-in-backticks-is-checked-against-nothing]],
-[[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]],
+[[the-binary-ledger-can-be-weaker-and-never-stronger]],
 [[cli-help-diverges-between-the-two-implementations]],
 [[checks-that-stopped-comparing]], [[the-installed-path-was-never-walked-end-to-end]]

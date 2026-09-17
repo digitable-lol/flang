@@ -53,7 +53,7 @@
 доказуемость: на сегодняшнем напечатанном компиляторе обе записи — и
 дизъюнкция, и двойник `если … то … иначе да` — остаются сеткой. Правило про
 конечность лежит в исходнике ядра и войдёт в двоичный после перепечатки семени
-(см. `docs/site/kak-dokazat.ru.md`, раздел «3-тер»).
+(см. `docs/site/what-the-kernel-accepts.ru.md`, раздел «3-тер»).
 
 Связано: [[a-grid-passed-length-claim-can-still-be-false-on-surrogates]],
 [[minus-zero-is-a-class]], [[proven-is-not-correct]]

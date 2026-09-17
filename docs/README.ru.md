@@ -230,7 +230,7 @@ dotfiles владельца); ответ — белым, код отказа —
 `TERM=dumb` тоже, `COLORTERM=truecolor` даёт истинный цвет, `TERM` с `256` — палитру. ⌘-стрелки до
 оболочки не доходят — их перехватывает приложение терминала; в Terminal.app и iTerm2 для ⌥-слов
 нужен Option как Esc+. Под трубой (`flang repl < сценарий`) ничего этого нет: тот же `fgets`, вывод
-байт в байт прежний и без единого ESC — это держит `scripts/repl-proba.sh`.
+байт в байт прежний и без единого ESC — это держит `scripts/repl-probe.sh`.
 
 Tab дополняет: имя сессии в ёлочках (`«Втр` → `«Втрое»`), ключевое слово языка, команду с точки; в
 начале строки — по-прежнему отступ в два пробела. Вставка многострочного объявления принимается как
@@ -369,7 +369,7 @@ export function mestoVstavki(elementy, cel) {
 | --- | --- |
 | написать первый файл | [Первая программа](https://digitable-lol.github.io/flang/getting-started.html) · [Учебник](https://digitable-lol.github.io/flang/tutorial.html) |
 | найти конструкцию | [Справочник конструкций](https://digitable-lol.github.io/flang/language.html) · [Справочник библиотеки](https://digitable-lol.github.io/flang/stdlib.html) · [Справочник отказов](https://digitable-lol.github.io/flang/diagnostics.html) |
-| понять доказательства | [Что доказано](https://digitable-lol.github.io/flang/what-is-proved.html) · [Какие обещания ядро берёт](https://digitable-lol.github.io/flang/kak-dokazat.html) · [Ядро отказало: чья это ошибка](https://digitable-lol.github.io/flang/proof-refused.html) |
+| понять доказательства | [Что доказано](https://digitable-lol.github.io/flang/what-is-proved.html) · [Какие обещания ядро берёт](https://digitable-lol.github.io/flang/what-the-kernel-accepts.html) · [Ядро отказало: чья это ошибка](https://digitable-lol.github.io/flang/proof-refused.html) |
 | запустить где-то | [Установка](https://digitable-lol.github.io/flang/install.html) · [Справочник команд](https://digitable-lol.github.io/flang/cli.html) · [Редактор](https://digitable-lol.github.io/flang/editor.html) · [Процессы, надзор, распределённость](https://digitable-lol.github.io/flang/processes.html) |
 | посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`docs/examples/`](examples) |
 | прочесть контракты | [`docs/flang/SPEC.md`](flang/SPEC.md) · [`docs/flang/self/SPEC.md`](flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`docs/flang/conc/SPEC.md`](flang/concurrency/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
@@ -437,7 +437,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 `scripts/otpechatok-semeni`, по хешированной строке на файл — 48 строк во входной половине; вместе со второй
 половиной, телом семени, в файле 65 строк.
 <!-- СНЯТО 2026-09-13 строк scripts/otpechatok-semeni = 65 --> Сегодня семя отстаёт от
-исходников — на три файла и 77 функций: `sh scripts/seed/chto-otstalo-ot-semeni.sh` перечисляет, какие
+исходников — на три файла и 77 функций: `sh scripts/seed/what-lags-the-seed.sh` перечисляет, какие
 файлы и функции новее
 семени, а перепечатка (`sh scripts/raskrutka.sh`, часы на одном ядре) — единственный путь, которым
 правки `flang/self/` доезжают до двоичного. Что такое семя и что его держит —

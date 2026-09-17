@@ -102,7 +102,7 @@ tree —
 [`flang/proof/examples/precondition.flang`](flang/proof/examples/precondition.flang).
 A spec that runs into incompleteness is a request for a new kernel rule, not a
 reason to weaken acceptance with a threshold. Which forms the kernel takes today
-is laid out on [Which promises the kernel takes](kak-dokazat.html).
+is laid out on [Which promises the kernel takes](what-the-kernel-accepts.html).
 
 ## What counts as a real claim
 
@@ -365,9 +365,9 @@ the kernel decides by what it presented.
 - [Specs: a proved business rule](fspec.html) — what it is all for, on a
   worked-through example.
 - [What is proved and what is not](what-is-proved.html) — numbers over the tree.
-- [Which promises the kernel takes](kak-dokazat.html) — which wording the kernel
+- [Which promises the kernel takes](what-the-kernel-accepts.html) — which wording the kernel
   will take and which it will defer.
 - [The kernel refused: whose mistake is it](proof-refused.html) — the kernel's
   refusal codes.
-- [A service for an AI assistant](dlya-ii.html) — how an unproved promise turns
+- [A service for an AI assistant](ai-assistant.html) — how an unproved promise turns
   into a question for the author of the requirement.

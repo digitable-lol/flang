@@ -93,4 +93,4 @@
 
 Связано: [[code-cannot-be-derived-from-its-hash]], [[proven-is-not-correct]],
 [[zero-axioms]], [[unstatable-costs-more-than-unprovable]], [[unison-measured]],
-[[zakony-kak-ukazatel]]
+[[laws-as-a-pointer-not-a-conclusion]]

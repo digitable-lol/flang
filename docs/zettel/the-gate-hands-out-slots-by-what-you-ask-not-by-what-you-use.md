@@ -108,4 +108,4 @@ flang/self/bootstrap/compiler.flang  | код 1 | FLANG_MEMORY: недостат
 `ps -eo pid,ppid,args | awk '$2==1 && /flang-vorota/'`. Убивать надо группу
 процессов, а не скрипт.
 
-Связано: [[veer-osnastki-schitaetsya-po-yadram-a-konchaetsya-pamyat]]
+Связано: [[the-harness-fan-is-sized-by-cores-but-memory-runs-out-first]]

@@ -492,8 +492,8 @@ jobs:
       #
       # ⚠ ЭТОТ КЛЮЧ СЕГОДНЯ НЕ ВКЛЮЧАЕТ НИЧЕГО. Проверка, ради которой он поставлен,
       # снята 20 августа 2026 коммитом `105943cd`; сегодня это не стережёт ничто. В `flang/test/` осталось четыре
-      # файла `*.test.mjs` (`jargon-guard`, `nadzor-uzla`, `planirovshchik-celi`,
-      # `svyaz-celi`), и ни один из них тулчейнов не спрашивает. Ключ оставлен, чтобы
+      # файла `*.test.mjs` (`jargon-guard`, `node-supervision`, `target-scheduler`,
+      # `target-link`), и ни один из них тулчейнов не спрашивает. Ключ оставлен, чтобы
       # не менять поведение вслепую, но числа за ним больше нет.
       #
       # Требовать один только `c` стало возможно после починки узкого гейта: до неё ЛЮБОЕ
@@ -1150,7 +1150,7 @@ jobs:
   # ⚠ КРАСНА СЕГОДНЯ, и это надо знать тому, кто поставит следующую метку:
   # 8 замечаний. Шесть — версия 0.6.2, набранная руками вместо подстановки
   # `{{выпуск.версия}}` (`docs/site/contributing.md:25`, `contributing.ru.md:24`,
-  # `dlya-ii.md:8,32`, `dlya-ii.ru.md:7,30`). Два — свои же дети: `числа:проверка`
+  # `ai-assistant.md:8,32`, `ai-assistant.ru.md:7,30`). Два — свои же дети: `числа:проверка`
   # не уложилась в срок, `выпуски:страница:проверка` кончилась
   # FLANG_RECURSION_LIMIT на 10 млн шагов. Оба — ровно те две починки, которые
   # Ч77 называет «правкой на минуты в ярлыки.flang»: свой `--timeout` и
@@ -1176,7 +1176,7 @@ jobs:
   # ── СТОРОЖА, КОТОРЫХ НИКТО НЕ ЗВАЛ ──────────────────────────────────────────
   #
   # Перепись снимается ПРИБОРОМ, а не рукой: `./ярлык зов:проверка`
-  # (scripts/guards/kto-zovet-storozhey.sh, четверть секунды). Числа здесь нарочно НЕ
+  # (scripts/guards/who-calls-the-guards.sh, четверть секунды). Числа здесь нарочно НЕ
   # повторены — они уже протухали: рука насчитала «сторожей 56, зовёт 29», а
   # прибор даёт другое, потому что рука считала записи из блоков `пример` за
   # ярлыки и принимала путь в фильтре `paths:` за вызов (задача 7298).
@@ -1350,7 +1350,7 @@ jobs:
             echo "ПОДЛОГ НЕ СОБРАЛСЯ: якорь в $podlog уже не тот — поправить подлог, сторож ни при чём" >&2
             exit 1
           fi
-          if sh scripts/guards/kto-zovet-storozhey.sh --check; then
+          if sh scripts/guards/who-calls-the-guards.sh --check; then
             mv "$podlog.do" "$podlog"
             echo "сверка промолчала на новом незваном — проверять ею нечего" >&2
             exit 1
@@ -1359,19 +1359,19 @@ jobs:
       - name: сверка краснеет на закрытом долге
         run: |
           set -u
-          podlog=scripts/ledgers/storozha-bez-zova.json
+          podlog=scripts/ledgers/uncalled-guards.json
           cp "$podlog" "$podlog.do"
           # Второе направление: сторож, которого УЖЕ зовут, но он всё ещё
           # числится в ведомости. Берём любого званого и вписываем его туда.
           python3 - <<'PY'
           import io, json
-          p = 'scripts/ledgers/storozha-bez-zova.json'
+          p = 'scripts/ledgers/uncalled-guards.json'
           d = json.load(io.open(p, encoding='utf-8'))
           d['длина:проверка'] = 'ПОДЛОГ CI: этого зовут, запись обязана стать неправдой'
           io.open(p, 'w', encoding='utf-8').write(
               json.dumps(d, ensure_ascii=False, indent=2) + '\n')
           PY
-          if sh scripts/guards/kto-zovet-storozhey.sh --check; then
+          if sh scripts/guards/who-calls-the-guards.sh --check; then
             mv "$podlog.do" "$podlog"
             echo "сверка промолчала на закрытом долге — половина проверки мертва" >&2
             exit 1
@@ -1480,7 +1480,7 @@ jobs:
             ln -sf "$put" "$podstavnoy/$programma"
           done
           # Вызов стоит В УСЛОВИИ `if`, и это не вкусовщина: перепись проб
-          # (scripts/guards/storozha-bez-podloga.sh) засчитывает пробу только такой
+          # (scripts/guards/guards-without-forgery-probe.sh) засчитывает пробу только такой
           # форме. Записанный как `otvet=$(…) && { … }`, тот же шаг работает,
           # но прибор его не видит, и сторож числится беспробным.
           if otvet=$(PATH="$podstavnoy" ./ярлык путь:проверка 2>&1); then
@@ -1608,7 +1608,7 @@ jobs:
   # Elixir ставится здесь же: он один из девяти, кого нет в образе, а молчание
   # цели у этого сторожа теперь красное — без установки работа была бы красна
   # всегда, то есть выключена.
-  svyaz-celi:
+  target-link:
     name: link-across-targets
     runs-on: ubuntu-latest
     timeout-minutes: 20

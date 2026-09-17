@@ -30,7 +30,7 @@
 (`flang emit --target js`, 56 с) — и это тот же исходник, напечатанный тем же
 компилятором, а не вторая реализация.
 
-Связано: [[keshirovat-dokazatelstvo-dorozhe-chem-dokazat]]
+Связано: [[caching-a-proof-costs-more-than-proving-it]]
 
 **Замер по цепочке ввоза, снятый на этой работе** (ветка `u/hmac`):
 

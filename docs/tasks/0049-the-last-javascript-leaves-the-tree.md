@@ -277,7 +277,7 @@ $ echo $?
 
 | файл | строк | что делает | кто зовёт (живое) | двойник на flang | решение и довод | ярус |
 |---|---:|---|---|---|---|---:|
-| `binary.mjs` | 848 | мост к двоичному для Node: запуск, разборы, ведомости, веера | ввозят 10 файлов стека (`target-words`, `word-guard`, `word-occupancy`, `name-guard`, `proof-ledger`, `claim-guard`, `flang-bridge`, `uzel-osnastka`, `planirovshchik-celi.test`, `svyaz-celi.test`) и **вне стека** `docs/site/{surfaces-run,podsvetka}.mjs` (сайт: `pages.yml` зовёт `node docs/site/build.mjs`, тот ввозит `podsvetka.mjs`) | `binary.fscript` (497) — библиотека на flang, в Node не ввозится | ПЕРЕНЕСТИ: умирает последним, когда умрут все ввозящие; два ввоза из `docs/site` запирают снос — **решение у координатора** (перенести файл в `docs/site/` или снести вместе с узлом сайта) | 3 |
+| `binary.mjs` | 848 | мост к двоичному для Node: запуск, разборы, ведомости, веера | ввозят 10 файлов стека (`target-words`, `word-guard`, `word-occupancy`, `name-guard`, `proof-ledger`, `claim-guard`, `flang-bridge`, `uzel-osnastka`, `planirovshchik-celi.test`, `svyaz-celi.test`) и **вне стека** `docs/site/{surfaces-run,podsvetka}.mjs` (сайт: `pages.yml` зовёт `node docs/site/build.mjs`, тот ввозит `highlighting.mjs`) | `binary.fscript` (497) — библиотека на flang, в Node не ввозится | ПЕРЕНЕСТИ: умирает последним, когда умрут все ввозящие; два ввоза из `docs/site` запирают снос — **решение у координатора** (перенести файл в `docs/site/` или снести вместе с узлом сайта) | 3 |
 | `claim-guard.mjs` | 444 | утверждения прозы «в дереве нет X» сверяются с деревом | ярлык `утверждения:проверка` | нет | ПЕРЕНЕСТИ: 12 регулярок с просмотрами → деление по литералу, как в `jargon-guard.fscript`; сегодня красен по делу (3 утверждения устарели, замер 8 сентября) | 2 |
 | `count-guard.mjs` | 979 | числа прозы сверяются с деревом: потолок, ведомость, таблицы, `--fix`, `--дерево` | ярлык `подсчёты:проверка`; `word-guard.mjs` ввозит `ВЕДОМОСТЬ` | `count-guard.fscript` (885) — 1 правило из 10, 8 мин (замер 8 сентября) | ПЕРЕНЕСТИ: дописать 9 правил; примета «СНЯТО 2026-09-09 файлов *.flang = 1313» переезжает в двойник | 3 |
 | `direct-run.mjs` | 55 | «запущен напрямую или ввезён?» и раскодирование `file://` | ввозят 8 файлов стека и **вне стека** `docs/site/{surfaces-run,site-numbers}.mjs` | `direct-run.flang` (145) — чистая часть | УДАЛИТЬ после всех ввозящих: у flang вопроса «ввезён ли я» нет; `docs/site` запирает — решение у координатора | 3 |
@@ -323,7 +323,7 @@ $ echo $?
 ### Что заперто чужими каталогами и требует решения координатора
 
 Четыре файла стека ввозит узел сайта `docs/site/**` (вне стека): `binary.mjs`
-(из `podsvetka.mjs` и `surfaces-run.mjs`), `direct-run.mjs` (`surfaces-run.mjs`,
+(из `highlighting.mjs` и `surfaces-run.mjs`), `direct-run.mjs` (`surfaces-run.mjs`,
 `site-numbers.mjs`), `proof-ledger.mjs` (`site-numbers.mjs`), `surface-pair.mjs`
 (`surfaces-run.mjs`). Снять их — сломать `node docs/site/build.mjs`, который
 зовёт `pages.yml`. Ещё три (`tempdir.mjs`, `toolchain-guard.mjs`,

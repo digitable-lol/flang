@@ -42,7 +42,7 @@ $ node flang/scripts/link-collision-guard.mjs flang/self/bootstrap/compiler.flan
 `scripts/guards/name-collision-guard.fscript`, 1723 строки, ярлык
 `столкновения:пересчёт` (`ярлыки.flang:80`). Замер 23 августа, ствол `c6cb34b7`,
 оба прогона на ОДНОМ дереве подряд
-(`docs/zettel/flang-bliznec-storozha-stolknoveniy-zelenel-na-treh-nastoyashchih-stolknoveniyah.md`):
+(`docs/zettel/the-flang-twin-of-the-collision-guard-stayed-green-on-three-real-collisions.md`):
 
 | | вход, файлов | видимых объявлений | нашёл | время | пик | код |
 |---|---:|---:|---:|---:|---:|---:|

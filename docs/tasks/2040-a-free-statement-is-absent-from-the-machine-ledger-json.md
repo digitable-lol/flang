@@ -81,4 +81,4 @@
 После перепечатки: `bootstrap/flang check --proof --json` на `нат.flang` даёт
 `claims` с двумя приговорами и `totals.claims.total = 2`; прибор доли, починенный
 по хвосту 2, считает их своими; кресты в описи заменяются числами прогоном;
-`sh scripts/pol-dokazannogo-sverka.sh` на этих файлах не краснеет.
+`sh scripts/guards/proved-share-vs-tree.sh` на этих файлах не краснеет.

@@ -188,7 +188,7 @@ sh scripts/flangrc.sh язык
 ## Как убедиться, что уроки проходятся
 
 ```sh
-sh scripts/flangtutor-proba.sh
+sh scripts/tutor-probe.sh
 ```
 
 Проба гоняет проводника целиком верными ответами, потом каждый урок отдельно,

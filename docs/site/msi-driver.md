@@ -95,7 +95,7 @@ line, how many assertions are proved, how many are on the grid and how many are
 declared without a proof. Those numbers are not on this page: they change
 together with the kernel. A measurement on a given date, before and after the
 fold rewrite, is in the section on inequalities of [which promises the kernel
-takes](kak-dokazat.html).
+takes](what-the-kernel-accepts.html).
 
 ## What is proved and what is not
 
@@ -164,5 +164,5 @@ for the sake of the formulation, not for its proving power.
 * [Catalogue of examples](examples.html)
 * [Where flang ends and the host begins](host-boundary.html)
 * [What is proved and what is not](what-is-proved.html)
-* [Which promises the kernel takes](kak-dokazat.html)
+* [Which promises the kernel takes](what-the-kernel-accepts.html)
 * [Memory allocator](allocator.html)

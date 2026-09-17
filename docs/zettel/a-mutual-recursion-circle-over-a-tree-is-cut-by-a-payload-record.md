@@ -27,14 +27,14 @@
 **Чем подтверждено.** Ветка `vypusk/razrez-kruga` от `github/main` = `97e7318f`,
 двоичный собран из закоммиченной точки раскрутки.
 
-Восемь улик в `flang/test/fixtures/razrez-kruga/`: `krug-cherez-nagruzku.flang`
+Восемь улик в `flang/test/fixtures/razrez-kruga/`: `circle-through-payload.flang`
 (круг из четырёх функций по типизированному дереву — 4 из 4 доказаны),
-`krug-so-svyortkoy.flang` (3 из 3), `prodolzhenie-cherez-vlozhennuyu-nagruzku.flang`
+`circle-with-a-fold.flang` (3 из 3), `continuation-through-a-nested-payload.flang`
 (3 из 3), и четыре подделки, каждая из которых обязана быть отвергнута и отвергнута:
 узел передан целиком, шаг свёртки вынесен отдельной функцией, проверка пустого
 списка вынесена отдельной функцией, продолжение получило тот же довод вместо
 вложенной нагрузки. Восьмая улика — дифференциальный драйвер
-`sverka-pechati-literala.flang`: 21 форма литерала и 10 форм узла выражения при
+`literal-print-comparison.flang`: 21 форма литерала и 10 форм узла выражения при
 двух отступах, 16 103 байта, старое и новое дерево совпадают побайтово.
 
 На настоящем коде: `flang/self/emit-c.flang`, семья печати литералов вынута из
@@ -79,4 +79,4 @@
 
 Связано: типизация дерева разбора сама по себе закрывает 29 функций из 704,
 [[structural-size-becomes-total-when-you-descend-into-the-pattern-field]],
-[[dva-pravila-zavershaemosti-vmeste-dayut-574]]
+[[two-termination-rules-together-give-574]]

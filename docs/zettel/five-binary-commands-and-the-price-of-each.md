@@ -150,7 +150,7 @@ compiler_flang_variant_est_funkciya`. Признак, по которому эт
 двенадцатью поручениями — около 900, цикл поручений и разбор ключей — около 250,
 печать вердикта и отказа — около 120. Разложение и четыре места, где C
 расходится с Node, если не думать, — в отдельной заметке
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]].
+[[the-command-loop-belongs-to-the-host-not-the-language]].
 
 Здесь же поправка к тому, ЧЕГО не хватало. Выше сказано «сторона на flang есть
 (`flang/self/io.flang`, 594 строки)», и это верно про ПРОВЕРКУ планов и неверно
@@ -209,4 +209,4 @@ sha256 плюс сборка записи. Своего C по порядку в
 Связано: [[javascript-stays-only-as-a-print-target]],
 [[a-module-address-is-the-sha256-of-its-source]],
 [[a-removed-obstacle-is-not-the-price-of-a-command]],
-[[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]]
+[[the-binary-ledger-can-be-weaker-and-never-stronger]]

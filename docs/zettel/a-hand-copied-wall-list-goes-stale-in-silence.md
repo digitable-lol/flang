@@ -90,7 +90,7 @@
 сложнее — но для «стены нет» короткой пробы достаточно: она предъявляет
 доказательство, а не его отсутствие.
 
-Связано: [[chto-nelzya-napisat-v-obespechivaet]],
+Связано: [[four-things-a-postcondition-cannot-say]],
 [[the-postcondition-loop-is-untied-by-a-program-transform-not-a-runtime-flag]],
 [[a-proved-postcondition-no-longer-reaches-printed-code]],
 [[equality-on-a-type-parameter-is-banned-only-in-bodies]],

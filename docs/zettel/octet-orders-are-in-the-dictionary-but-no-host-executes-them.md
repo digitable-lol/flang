@@ -69,7 +69,7 @@ SCRAM. Проверено прогоном: `flang io examples/db/postgres-plan.
 Неверен вывод «исполнителя нет» — он был верен до слияния `u/oktety`.
 
 Связано: [[a-connection-pipe-carries-text-not-octets]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]],
+[[the-command-loop-belongs-to-the-host-not-the-language]],
 [[an-octet-pipe-turns-frame-counting-from-utf8-width-into-element-count]]
 
 **Поправка, 21 августа 2026.** Заголовок и вся заметка выше устарели: хозяин

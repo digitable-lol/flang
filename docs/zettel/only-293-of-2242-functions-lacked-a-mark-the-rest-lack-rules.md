@@ -65,6 +65,6 @@
 строка «Состояние» каждого из 22 разделов «Долгов» и размер свидетеля в шапке
 `docs/flang/self/SPEC.md`.
 
-Связано: [[dva-pravila-zavershaemosti-vmeste-dayut-574]],
+Связано: [[two-termination-rules-together-give-574]],
 [[nat-removes-a-guard-only-when-the-caller-already-gives-a-natural]],
 [[structural-size-becomes-total-when-you-descend-into-the-pattern-field]]

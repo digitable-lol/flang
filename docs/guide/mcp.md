@@ -7,7 +7,7 @@ The cheapest way to make the language useful to people who do not know it. Not
 
 This page is about why the service is built the way it is. What it answers to
 each message — verbatim, with the command that produces each answer — is on
-["The service for an AI assistant"](../site/dlya-ii.md); the two pages divide the
+["The service for an AI assistant"](../site/ai-assistant.md); the two pages divide the
 work rather than repeat each other.
 
 ## How to wire it up

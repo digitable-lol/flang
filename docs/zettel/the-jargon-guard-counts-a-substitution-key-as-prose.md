@@ -34,4 +34,4 @@ grep -rl '{{корпус\.' docs/site/*.md docs/guide/*.md docs/*.md | wc -l →
 для непереписанной прозы, а тут переписывать нечего.
 
 Связано: [[search-never-found-a-refusal-code]],
-[[chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy]]
+[[site-numbers-go-stale-with-the-dictionary-and-one-command-cures-both]]

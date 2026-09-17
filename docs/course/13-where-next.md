@@ -66,7 +66,7 @@ draft: false
 | 08 | `three-number-types`, `floating-point-bits-are-exact`, `exact-decimals-are-free`, `double-has-no-laws` |
 | 09 | `byte-for-byte-comparison`, `what-is-deferred`, `wasm-via-c-is-free` |
 | 10 | `category-theory-transports-truth`, `module-links-need-a-named-data-translation` |
-| 11 | `vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee`, `cli-help-diverges-between-the-two-implementations` |
+| 11 | `the-binary-ledger-can-be-weaker-and-never-stronger`, `cli-help-diverges-between-the-two-implementations` |
 
 Три заметки о **методе** стоит прочитать любому, кто работает с числами, — они
 не про flang:

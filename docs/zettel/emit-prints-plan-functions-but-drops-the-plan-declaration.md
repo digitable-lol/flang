@@ -92,4 +92,4 @@
 модуль БЕЗ исполнителя плана и без хозяина — то есть сравнивала с тем, что ещё
 не умело работать.
 
-Связано: [[browser-app-gap]], [[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]]
+Связано: [[browser-app-gap]], [[the-command-loop-belongs-to-the-host-not-the-language]]

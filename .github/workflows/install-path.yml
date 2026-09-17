@@ -221,7 +221,7 @@ jobs:
       # копии и ОБЯЗАН ответить провалом «подлог пойман». Ответил кодом 0 —
       # значит сравнение выпотрошено, и зелёный шаг выше ничего не значит.
       # Зовётся файлом, а не ярлыком `плагин:подлог`: прибор проб порчи
-      # (scripts/guards/storozha-bez-podloga.sh) относит пробу к сторожу по файлу.
+      # (scripts/guards/guards-without-forgery-probe.sh) относит пробу к сторожу по файлу.
       - name: Сторож плагина asdf умеет краснеть
         run: |
           set -u
@@ -245,12 +245,12 @@ jobs:
       # покраснел на подложенном. Подлог внутренний — план «Подлог» того же
       # файла вычёркивает проводник из прочитанного состава архива и ОБЯЗАН
       # ответить провалом «подлог пойман». Зовётся файлом, а не ярлыком:
-      # прибор проб порчи (scripts/guards/storozha-bez-podloga.sh) относит пробу к
+      # прибор проб порчи (scripts/guards/guards-without-forgery-probe.sh) относит пробу к
       # сторожу по файлу.
       - name: Сторож состава поставки умеет краснеть
         run: |
           set -u
-          if bootstrap/flang io scripts/guards/postavka-guard.flang --plan 'Подлог'; then
+          if bootstrap/flang io scripts/guards/delivery-guard.flang --plan 'Подлог'; then
             echo "сторож состава поставки промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
@@ -337,7 +337,7 @@ jobs:
       # Нынешний Homebrew отвечает на это отказом: «Homebrew requires formulae
       # to be in a tap, rejecting: ./output/tap/flang.rb» (прогон 34263934131
       # от 8 сентября 2026). Поэтому формула кладётся в ЛОКАЛЬНЫЙ кран, заведённый
-      # тут же. Имя крана `flang/proba` — нарочно НЕ `digitable-lol/tap`:
+      # тут же. Имя крана `flang/probe` — нарочно НЕ `digitable-lol/tap`:
       # настоящий кран трогать нельзя, его сверяет отдельный сторож.
       - name: Формула на свежий архив
         run: |
@@ -347,16 +347,16 @@ jobs:
           # случалась, в workflow публикации, и стоила шага с кодом 127.
           archive="$PWD/$ARHIV"
           digest="$(shasum -a 256 "$archive" | cut -d' ' -f1)"
-          brew tap-new flang/proba
-          kran="$(brew --repository flang/proba)"
+          brew tap-new flang/probe
+          kran="$(brew --repository flang/probe)"
           mkdir -p "$kran/Formula"
           sed -e "s|^  url .*|  url \"file://${archive}\"|" \
               -e "s|^  sha256 .*|  sha256 \"${digest}\"|" \
               packaging/homebrew/flang.rb > "$kran/Formula/flang.rb"
-          brew install --build-from-source --verbose flang/proba/flang
+          brew install --build-from-source --verbose flang/probe/flang
 
       - name: Блок test do формулы
-        run: brew test flang/proba/flang
+        run: brew test flang/probe/flang
 
       - name: Поставленное brew умеет печатать в C
         run: |

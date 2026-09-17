@@ -45,4 +45,4 @@
 Связано: [[a-decision-about-the-world-is-portable-even-when-the-world-is-not]],
 [[a-message-payload-travels-as-a-ticket-not-as-a-value]],
 [[a-node-cannot-be-an-ordinary-program-because-of-the-literal-addressee]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]]
+[[the-command-loop-belongs-to-the-host-not-the-language]]

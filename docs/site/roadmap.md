@@ -29,7 +29,7 @@ that had fallen behind the sources. What was checked on the tree of
 11 September 2026 (0.7.17, commit `2c40752d0`):
 
 - the bootstrap seed was reprinted on 10–11 September (commit `0ce948bfd`);
-  `sh scripts/seed/chto-otstalo-ot-semeni.sh` names 3 files, 77 functions, still
+  `sh scripts/seed/what-lags-the-seed.sh` names 3 files, 77 functions, still
   behind;
 - `sh scripts/доказуемость.sh` answers **PROVABLE**: the independent checker
   (`flang/proof/чекер/сверщик.c`) replayed 625 obligations of the compiler's own

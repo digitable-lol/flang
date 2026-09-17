@@ -9,7 +9,7 @@
 сходимости доказывать не нужно.
 
 **Чем подтверждено.** Формула контраста WCAG 2.1 переносилась из
-`docs/site/kontrast.mjs` в `docs/site/storozh-kontrasta.flang` (ветка `u/port4`).
+`docs/site/kontrast.mjs` в `docs/site/contrast-guard.flang` (ветка `u/port4`).
 Совпадение с `Math.pow` — до последнего разряда двойной точности, тремя
 примерами в самом файле:
 

@@ -83,7 +83,7 @@ and have not been re-measured since.** They are measured by the compiler in a
 run over all the programs in the repository (hours), and on the day of measurement it was built
 from a seed that had fallen behind the sources. The seed has since been
 reprinted (10–11 September 2026, commit `0ce948bfd`; `sh
-scripts/seed/chto-otstalo-ot-semeni.sh` on 11 September names 3 files, 77 functions,
+scripts/seed/what-lags-the-seed.sh` on 11 September names 3 files, 77 functions,
 still behind), and the expensive numbers have not been re-measured yet — when
 they are, the date above changes.
 
@@ -121,7 +121,7 @@ about four minutes): `утверждений 64: доказано 54 … из н
 of what is proved is closed without a single written line. Coq and Lean have no such number:
 there every claim gets either a term or a tactic written for it. Which promises
 the kernel takes on its own is worked through form by form on
-[which promises the kernel takes](kak-dokazat.html).
+[which promises the kernel takes](what-the-kernel-accepts.html).
 
 The second difference is real and not in our favour: a program is more often
 *extracted* out of Coq and Lean into another language than used to run a

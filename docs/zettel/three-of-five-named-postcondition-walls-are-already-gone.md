@@ -1,7 +1,7 @@
 # Три из пяти названных стен постусловия на нынешнем двоичном уже сняты: сумма сравнивается, `разбор` разбирается, поле варианта читается точкой
 
 Заметки [[a-declared-sum-cannot-be-spoken-about-in-a-postcondition]] и
-[[chto-nelzya-napisat-v-obespechivaet]] называли границы, из-за которых целые
+[[four-things-a-postcondition-cannot-say]] называли границы, из-за которых целые
 классы функций считались немыми. На двоичном из `bootstrap/` (дерево `702a3602`)
 три из них не воспроизводятся:
 
@@ -42,6 +42,6 @@
 `bootstrap/flang`, а не про историю правок ядра.
 
 Связано: [[a-declared-sum-cannot-be-spoken-about-in-a-postcondition]],
-[[chto-nelzya-napisat-v-obespechivaet]],
+[[four-things-a-postcondition-cannot-say]],
 [[postcondition-runs-on-nested-calls-so-some-functions-cannot-be-stated-about]],
-[[darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy]]
+[[a-free-statement-is-exposed-by-replacing-the-body-with-a-stub]]

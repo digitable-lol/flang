@@ -12,7 +12,7 @@
 
 # 7359. Спуск по строке — через список знаков, а не через тип знака
 
-Решение: [ADR-0040](../adr/0040-a-simplifier-rewrites-by-proved-equalities-and-prints-every-step.md) §2.5;
+Решение: [ADR-0040](../../adr/0040-a-simplifier-rewrites-by-proved-equalities-and-prints-every-step.md) §2.5;
 основание — `docs/flang/proof/SPEC.md`, «Что дальше» п.7.
 
 ## Чем измерено

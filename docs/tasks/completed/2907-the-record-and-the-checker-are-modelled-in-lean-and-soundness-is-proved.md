@@ -12,7 +12,7 @@
 
 # 2907. Терм, запись и приёмка — данные Lean; «принят — значит верно» — теорема
 
-Решение: [ADR-0041](../adr/0041-the-checker-is-proved-sound-against-a-mechanised-semantics.md).
+Решение: [ADR-0041](../../adr/0041-the-checker-is-proved-sound-against-a-mechanised-semantics.md).
 Пишется в НОВЫХ файлах `flang/proof/lean/`; `Модель.lean` и `Правила.lean` не
 правятся (их правит партия Э).
 

@@ -12,7 +12,7 @@
 
 # 7098. Квантор по элементам живёт в ядре и вычислителе, а печать его не знает
 
-Основание: [ADR-0037](../adr/0037-second-order-is-a-finite-conjunction-over-function-tags.md) §6;
+Основание: [ADR-0037](../../adr/0037-second-order-is-a-finite-conjunction-over-function-tags.md) §6;
 дыра — от ADR-0026 §11 п.14, где печать не называлась.
 
 ## Чем измерено

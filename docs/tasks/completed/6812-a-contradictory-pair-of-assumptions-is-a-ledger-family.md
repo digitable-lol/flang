@@ -12,7 +12,7 @@
 
 # 6812. Семейство Пр
 
-Решение: [ADR-0042](../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md) §2.
+Решение: [ADR-0042](../../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md) §2.
 
 Места: `abilities` У23, `poddelka-protivorechie` «что угодно из несовместимой пары».
 Шаг записи вида «Пр1 ⟨цель⟩ строка N строка M»: из `а меньше б` и `б не больше а` в

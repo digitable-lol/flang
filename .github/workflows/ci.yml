@@ -258,6 +258,29 @@ jobs:
           fi
       - name: кириллических имён файлов вне flang/proof не прибавилось
         run: sh scripts/guards/cyrillic-file-names-guard.sh --check
+  # ТРАНСЛИТА В ИМЕНАХ ФАЙЛОВ НЕ ПРИБАВЛЯЕТСЯ (задача 1428).
+  #
+  # Имя файла — либо русское, либо английское; транслит — брак. Кириллицу судит
+  # сосед выше; здесь каждое слово латинского имени в scripts/, flang/test/,
+  # flang/scripts/, docs/site/, docs/zettel/ и .github/ сверяется с закрытым
+  # списком scripts/ledgers/file-name-words.txt, а уже лежащий транслит — с
+  # ведомостью scripts/ledgers/translit-file-names-debt.txt, где у каждого
+  # имени причина. Двоичный не нужен — смотрится `git ls-files`, секунды.
+  translit:
+    name: translit-file-names
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Выпуск не опирается на кеш приговоров
+        uses: ./.github/actions/release-without-cache
+      - name: сторож транслита краснеет на подмешанном имени
+        run: |
+          if sh scripts/guards/translit-file-names-guard.sh --подлог; then
+            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: транслита в латинских именах файлов не прибавилось
+        run: sh scripts/guards/translit-file-names-guard.sh --check
   # ФАЙЛ НАСТРОЕК ЧИТАЕТСЯ ТОЛЬКО ИЗ ДЕРЕВА И ИЗ ДОМА.
   #
   # Поиск МОДУЛЕЙ этого не держит: он поднимается вверх, пока в предке лежит

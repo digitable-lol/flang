@@ -1,0 +1,101 @@
+# ВЕДОМОСТЬ ТРАНСЛИТНЫХ ИМЁН ФАЙЛОВ (scripts/guards/translit-file-names-guard.sh).
+# Имя файла — либо русское, либо английское; транслит — брак (задача 1428). Здесь — те
+# латинские имена стека инструментов, чьи слова не из закрытого списка
+# scripts/ledgers/file-name-words.txt, и у каждой группы — причина, почему имя ещё
+# лежит. Строка уходит вместе с переименованием файла. Сверка в обе стороны:
+# нового имени здесь нет — красно; строка пережила файл или долг — тоже красно.
+# Снято 17 сентября 2026 на main 4ac13dc99: транслитных имён в области 150,
+# переименовано 83, здесь 67.
+#
+# Собирают двоичный и печать семени; печать идёт — переименовывать только с ведома
+# overagent'а (задача 1428, часть 1).
+scripts/otpechatok-semeni
+scripts/raskrutka.sh
+#
+# Имя файла — ключ записи доказательства стека K: flang/proof/подделки/НАБОР.tsv,
+# flang/proof/чекер/пробы/записи/корпус/<имя>.запись, прогон.sh. Переименовывать
+# вместе с записями (стек K).
+flang/test/fixtures/element-po-nomeru-chestnaya.flang
+flang/test/fixtures/granica-nad-chislom-chestnaya.flang
+flang/test/fixtures/krug-tuda-i-obratno.flang
+flang/test/fixtures/nachalo-po-postroeniyu-chestnaya.flang
+flang/test/fixtures/ohrana-daet-fakt.flang
+flang/test/fixtures/poddelka-builtin-emptiness-fact.flang
+flang/test/fixtures/poddelka-dlina.flang
+flang/test/fixtures/poddelka-dno-proizvedeniya.flang
+flang/test/fixtures/poddelka-element-po-nomeru.flang
+flang/test/fixtures/poddelka-granica-nad-ne-chislom.flang
+flang/test/fixtures/poddelka-indukciya-po-stroke.flang
+flang/test/fixtures/poddelka-integrality-from-fact.flang
+flang/test/fixtures/poddelka-istinnaya-vetv.flang
+flang/test/fixtures/poddelka-konyunkciya.flang
+flang/test/fixtures/poddelka-krug-pri-rabote.flang
+flang/test/fixtures/poddelka-lozhnaya-polovina.flang
+flang/test/fixtures/poddelka-mera-dliny-stroki.flang
+flang/test/fixtures/poddelka-nachalo-po-postroeniyu.flang
+flang/test/fixtures/poddelka-ogovorka-o-konechnosti.flang
+flang/test/fixtures/poddelka-order-arithmetic.flang
+flang/test/fixtures/poddelka-porjadok-sosednih.flang
+flang/test/fixtures/poddelka-primer-pod-kvantorom.flang
+flang/test/fixtures/poddelka-promezhutochnyy-fakt.flang
+flang/test/fixtures/poddelka-protivorechie.flang
+flang/test/fixtures/poddelka-ravenstvo-v-tele-ne-dokazyvaet.flang
+flang/test/fixtures/poddelka-ravenstvo-v-tele.flang
+flang/test/fixtures/poddelka-razbor-sluchaev.flang
+flang/test/fixtures/poddelka-razbor-spiska.flang
+flang/test/fixtures/poddelka-razbor-vnutrennim.flang
+flang/test/fixtures/poddelka-razdvoenie-diz.flang
+flang/test/fixtures/poddelka-razvyazka-postusloviy.flang
+flang/test/fixtures/poddelka-refleksivnost.flang
+flang/test/fixtures/poddelka-slova-celey.flang
+flang/test/fixtures/poddelka-slovo-o-dokazannosti.flang
+flang/test/fixtures/poddelka-snyatie-storozha.flang
+flang/test/fixtures/poddelka-sortirovka-ne-ubyvaet.flang
+flang/test/fixtures/poddelka-strict-order.flang
+flang/test/fixtures/poddelka-svyortka-nad-pustym.flang
+flang/test/fixtures/poddelka-svyortka-prefiks.flang
+flang/test/fixtures/poddelka-svyortka-shagom.flang
+flang/test/fixtures/poddelka-vhozhdenie.flang
+flang/test/fixtures/svyortka-prefiks-chestnaya.flang
+#
+# Пути — ключи снимков flang/test/fixtures/record-oracle.json, record-grid.json и
+# flang/test/snimok/proofterm-witness.json (правятся только пересъёмкой); упомянуты в
+# flang/self/bootstrap/compiler.flang.
+flang/test/fixtures/plany/00-tselyj.flang
+flang/test/fixtures/plany/01-dvazhdy.flang
+flang/test/fixtures/plany/02-slovar-zanyat.flang
+flang/test/fixtures/plany/03-sostoyanie-neizvestno.flang
+flang/test/fixtures/plany/04-nachalo-neizvestno.flang
+flang/test/fixtures/plany/05-nachalo-s-argumentom.flang
+flang/test/fixtures/plany/06-nachalo-ne-tot-tip.flang
+flang/test/fixtures/plany/07-shag-neizvesten.flang
+flang/test/fixtures/plany/08-shag-odin-argument.flang
+flang/test/fixtures/plany/09-shag-pervyj-argument.flang
+flang/test/fixtures/plany/10-shag-vtoroj-argument.flang
+flang/test/fixtures/plany/11-shag-vozvrat.flang
+flang/test/fixtures/plany/12-shag-spisok.flang
+flang/test/fixtures/plany/13-shag-dzhoker.flang
+#
+# Оснастка узла: её ввозит flang/concurrency/bench/node-death-targets.mjs и называет
+# flang/self/emit-js.flang — оба вне стека инструментов.
+flang/test/uzel-osnastka.flang
+flang/test/uzel-osnastka.mjs
+#
+# Имя правила орфографии «жи-ши» — собственное имя примера, перевода не имеет.
+flang/test/fixtures/fts/examples/real-world/zhi-shi.fts
+#
+# Файл workflow на GitHub — сущность с ручным выключением: переименование заводит
+# новый, включённый workflow. Переименовывать только вместе с выключением на GitHub.
+.github/workflows/dvoyniki.yml
+#
+# Три пробы-двойника узла на Node: названы в docs/flang/conc/RESILIENCE.md и
+# flang/concurrency/bin/peer.py — вне стека инструментов; переименовывать втроём и
+# вместе с этими упоминаниями.
+flang/test/nadzor-uzla.test.mjs
+flang/test/planirovshchik-celi.test.mjs
+flang/test/svyaz-celi.test.mjs
+#
+# Заметки, на которые ссылаются flang/self/proof-kernel.flang (комментарий у чтения
+# пустоты) и docs/flang/proof/SPEC.md — стек K; переименовывать вместе с ними.
+docs/zettel/emptiness-guards-are-written-with-pusto-but-the-kernel-reads-only-the-measure.md
+docs/zettel/vyvod-na-vetke-ne-vyvod-o-dereve.md

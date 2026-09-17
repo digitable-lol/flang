@@ -1327,10 +1327,9 @@ e478585ce80d5ce042ca3d7066de63e1|21|15|6|0|0|scripts/targets/conc-link-emit.flan
 ce97ff0ab2094dce6783702de4290b85|34|32|0|2|0|scripts/targets/emit-and-examples.flang
 5e4578f4c48ff79aa6669de59fecb019|14|14|0|0|0|scripts/site/emit-dictionary.flang
 5f0d2e189fb05b4383ad353ab7f23fa7|48|42|3|3|0|scripts/targets/emit-law.flang
-6e853bc74ce6a194834bd7cedcfc79e6|3|11|0|0|0|scripts/release/emit-package.flang
 35bc4b6ceba5235a93625a25ded7023f|12|12|0|0|0|scripts/guards/emit-promises-guard.flang
 866bb0d2a5dcddc8a0a98cd0318d45a9|13|12|1|0|0|scripts/guards/file-extensions.flang
-d59dd44ec88f4735e5b5dd785acc0ca4|63|49|11|3|0|scripts/guards/homebrew-formula-guard.flang
+baa3170dc90958c56352eb9b3f49ab9b|62|49|10|3|0|scripts/guards/homebrew-formula-guard.flang
 b00f9a812077e3b8497c15864acff995|10|7|3|0|0|scripts/guards/io-dictionary-copies-guard.flang
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/guards/input-boundary.flang
 a07232cd8b9e683bc530843d7f95d821|2|0|2|0|0|scripts/guards/jargon-guard.flang
@@ -1363,7 +1362,7 @@ d25c2b3399f45c84d4b13bf0ec83ba1a|5|3|2|0|0|scripts/guards/tab-host-guard.flang
 0df69d55cfac1868ab36c20db5019da2|2|2|0|0|0|scripts/guards/target-function-drift.flang
 68dc1ca8f2d8213dfacf881c0a77ac16|42|20|22|0|0|scripts/guards/traceability-guard.flang
 0eb8181532ae602de4c212cbde33749e|32|19|5|1|0|scripts/guards/tree-inventory.flang
-4ef7caa339a68142838bb9c143d45221|24|8|8|8|0|scripts/guards/version-guard.flang
+19037f1b3d31fce728a4bd55fa1a4835|23|8|7|8|0|scripts/guards/version-guard.flang
 53f94937b541c4d0ce9569351f7f23ec|11|11|0|0|0|scripts/editors/vim-highlight-check.flang
 e3e12eb0215c5a68744c935ef6ee0619|9|9|0|0|0|scripts/editors/vim-highlighting.flang
 804182bd08fb527a43934b823e6d3de1|16|16|0|0|0|scripts/editors/vim-rules.flang

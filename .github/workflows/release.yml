@@ -112,7 +112,7 @@ jobs:
       - name: Собрать точку раскрутки
         run: make -C bootstrap -j"$(nproc)"
 
-      - name: Собранный двоичный называет ту же версию, что package.json
+      - name: Собранный двоичный называет ту же версию, что .flangrc
         # ЗАЧЕМ ОТДЕЛЬНО ОТ «версия:проверка» (install-path.yml:138). Тот сторож
         # (scripts/guards/version-guard.flang) читает ИСХОДНИК —
         # flang/src/emit/c/flang_repl.c. А выпуск собирается из СЕМЕНИ (шаг
@@ -140,9 +140,12 @@ jobs:
         # читается.
         run: |
           set -eu
-          package_version="$(sed -n 's/^  "version": "\([^"]*\)",$/\1/p' package.json)"
+          # Версия — ключ «версия» в .flangrc через scripts/flangrc.sh (двоичный
+          # собран шагом выше). package.json выброшен 17 сентября 2026 (задача
+          # 3570); ключ разносит ./ярлык версия из scripts/release/emit-package.flang.
+          package_version="$(sh scripts/flangrc.sh версия)"
           if [ -z "$package_version" ]; then
-            echo "::error::версию не вычитать из package.json — вид файла изменился, а его печатает scripts/release/emit-package.flang"
+            echo "::error::версию не вычитать из .flangrc — ключа «версия» нет или scripts/flangrc.sh не ответил; разносит его ./ярлык версия из scripts/release/emit-package.flang"
             exit 1
           fi
           # `head -1` — не украшение. С 8 сентября 2026 оболочка печатает ВТОРУЮ
@@ -176,13 +179,13 @@ jobs:
             exit 1
           fi
           if [ "$binary_version" != "$package_version" ]; then
-            echo "::error::собранный двоичный зовёт себя «${binary_version}», а package.json объявляет «${package_version}»"
+            echo "::error::собранный двоичный зовёт себя «${binary_version}», а .flangrc объявляет «${package_version}»"
             echo "::error::Выпуск собирается из СЕМЕНИ (bootstrap/), и версию в нём поднимает ПЕРЕПЕЧАТКА,"
             echo "::error::а не правка flang/src/emit/c/flang_repl.c — её видит только «версия:проверка»."
             echo "::error::Так вышли 9959 («двоичный называл себя версией на два релиза позади») и 9983."
             exit 1
           fi
-          echo "двоичный и package.json сошлись: $binary_version"
+          echo "двоичный и .flangrc сошлись: $binary_version"
 
       - name: Проверить, что тег совпадает с версией пакета
         if: startsWith(github.ref, 'refs/tags/v')
@@ -191,20 +194,21 @@ jobs:
         # присваивание, а как команду — и шаг падал с кодом 127 «command not
         # found», не назвав ни одной причины.
         #
-        # Версия читается `sed`-ом, а не `node -p require("./package.json")`:
-        # путь выпуска не обязан звать Node ради одной строки, а вид файла
-        # закреплён — `package.json` печатается из `scripts/release/emit-package.flang`
-        # знак в знак, и отступ в два пробела там часть договора.
+        # Версия читается `sh scripts/flangrc.sh версия`, а не
+        # `node -p require("./package.json")`: путь выпуска не обязан звать Node
+        # ради одной строки, а самого package.json в дереве нет с 17 сентября
+        # 2026 (задача 3570) — ключ «версия» в .flangrc разносит `./ярлык версия`
+        # из `scripts/release/emit-package.flang`.
         run: |
           set -eu
           tag_version="${GITHUB_REF_NAME#v}"
-          package_version="$(sed -n 's/^  "version": "\([^"]*\)",$/\1/p' package.json)"
+          package_version="$(sh scripts/flangrc.sh версия)"
           if [ -z "$package_version" ]; then
-            echo "::error::версию не вычитать из package.json — вид файла изменился, а его печатает scripts/release/emit-package.flang"
+            echo "::error::версию не вычитать из .flangrc — ключа «версия» нет или scripts/flangrc.sh не ответил; разносит его ./ярлык версия из scripts/release/emit-package.flang"
             exit 1
           fi
           if [ "$tag_version" != "$package_version" ]; then
-            echo "::error::тег $GITHUB_REF_NAME обещает версию $tag_version, а package.json говорит $package_version"
+            echo "::error::тег $GITHUB_REF_NAME обещает версию $tag_version, а .flangrc говорит $package_version"
             exit 1
           fi
           echo "версия $package_version подтверждена тегом"
@@ -230,8 +234,8 @@ jobs:
       # ЭТО ЖЕ И СТОРОЖ. Плана два исхода: заметка есть — тело и имя лежат в
       # `output/`; заметки нет — план отвечает `FLANG_VYPUSK_NET_ZAMETKI` и
       # кодом 1, и выпуск останавливается ЗДЕСЬ, до сборки архива и до выкладки.
-      # Версию план берёт из `package.json`, а шаг выше уже доказал, что она
-      # совпадает с тегом.
+      # Версию план берёт из `.flangrc` (ключ «версия»), а шаг выше уже доказал,
+      # что она совпадает с тегом.
       #
       # ШАГ ИДЁТ БЕЗ `if:` — на ручном прогоне с ветки он сам себе проба, как и
       # весь этот файл по замыслу шапки: тело собирается и на сухом прогоне,
@@ -256,22 +260,32 @@ jobs:
       # Проба подставляет версию, заметки о которой в json заведомо нет, и
       # требует от плана ОТКАЗА. Прошёл план — красный здесь, а не молчание.
       #
-      # `package.json` возвращается на место в ОБОИХ исходах, и возврат
+      # `.flangrc` возвращается на место в ОБОИХ исходах, и возврат
       # проверяется `git diff --exit-code`: проба, оставившая дерево правленым,
-      # испортила бы все шаги ниже, и знать об этом надо здесь.
+      # испортила бы все шаги ниже, и знать об этом надо здесь. «Подлог не
+      # собрался» ловится отдельно: строка ключа «версия» обязана измениться,
+      # иначе шаг покраснел бы с чужой причиной.
       - name: Проба — версия без заметки обязана краснеть
         run: |
           set -eu
-          sed -i 's/^  "version": ".*",$/  "version": "0.0.0",/' package.json
+          podlog=.flangrc
+          cp "$podlog" "$podlog.do"
+          sed -i 's/^версия[[:space:]]*=.*/версия = 0.0.0/' "$podlog"
+          if cmp -s "$podlog.do" "$podlog"; then
+            rm -f "$podlog.do"; git checkout -- "$podlog"
+            echo "::error::ПОДЛОГ НЕ СОБРАЛСЯ: ключа версия в $podlog уже нет — поправить подлог, сторож ни при чём"
+            exit 1
+          fi
+          rm -f "$podlog.do"
           if LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.flang --max-steps 40000000 >/dev/null 2>&1; then
-            git checkout -- package.json
+            git checkout -- "$podlog"
             echo "::error::проба не сработала: тело собралось для версии 0.0.0, о которой заметки нет."
             echo "::error::Значит шаг «Тело релиза собрано из заметок» пропустит выпуск без заметки — сторожа нет."
             exit 1
           fi
-          git checkout -- package.json
-          git diff --exit-code -- package.json
-          echo "проба сработала: на версии без заметки план отвечает отказом, package.json возвращён"
+          git checkout -- "$podlog"
+          git diff --exit-code -- "$podlog"
+          echo "проба сработала: на версии без заметки план отвечает отказом, .flangrc возвращён"
 
       # Тело шага переехало в составное действие целиком, вместе с доводами:
       # скрипт не только печатает компилятор в C99, но и СОБИРАЕТ напечатанное

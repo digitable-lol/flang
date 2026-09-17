@@ -70,7 +70,8 @@ on:
       - "scripts/guards/version-guard.flang"
       - "bootstrap/**"
       - "flang/src/emit/**"
-      - "package.json"
+      - ".flangrc"
+      - "scripts/release/emit-package.flang"
       - ".github/workflows/install-path.yml"
     tags: ["v*"]
   pull_request:
@@ -82,7 +83,8 @@ on:
       - "scripts/guards/version-guard.flang"
       - "bootstrap/**"
       - "flang/src/emit/**"
-      - "package.json"
+      - ".flangrc"
+      - "scripts/release/emit-package.flang"
       - ".github/workflows/install-path.yml"
   # Раз в сутки — потому что ломает путь установки не только своя правка.
   # `asdf global` удалили в ЧУЖОМ инструменте, и наше дерево в тот день не
@@ -254,8 +256,8 @@ jobs:
           fi
 
       # Сторожу верят только после того, как он покраснел на подложенном.
-      # Порча — поле «version» в package.json; сторож обязан назвать ОБЕ строки
-      # и оба места. Правка не привязана к номеру строки (задача 6612: подлог,
+      # Порча — ключ «версия» в .flangrc (package.json выброшен 17 сентября 2026,
+      # задача 3570); сторож обязан назвать ОБЕ строки и оба места. Правка не привязана к номеру строки (задача 6612: подлог,
       # прибитый к числу, молча перестаёт собираться), но «подлог не собрался»
       # ловится отдельно и по имени — иначе шаг покраснел бы с неверной причиной.
       #
@@ -266,12 +268,12 @@ jobs:
       - name: Сторож версии умеет краснеть
         run: |
           set -u
-          podlog=package.json
+          podlog=.flangrc
           cp "$podlog" "$podlog.do"
-          sed 's/"version": "[^"]*"/"version": "0.0.0-podlog"/' "$podlog.do" > "$podlog"
+          sed 's/^версия[[:space:]]*=.*/версия = 0.0.0-podlog/' "$podlog.do" > "$podlog"
           if cmp -s "$podlog.do" "$podlog"; then
             rm -f "$podlog.do"; git checkout -- "$podlog"
-            echo "ПОДЛОГ НЕ СОБРАЛСЯ: поля version в $podlog уже нет — поправить подлог, сторож ни при чём" >&2
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: ключа версия в $podlog уже нет — поправить подлог, сторож ни при чём" >&2
             exit 1
           fi
           rm -f "$podlog.do"
@@ -281,7 +283,7 @@ jobs:
             exit 1
           fi
           git checkout -- "$podlog"
-      - name: FLANG_VERSION совпадает с package.json
+      - name: FLANG_VERSION совпадает с версией в .flangrc
         run: ./ярлык версия:проверка
 
   # ── НАСТОЯЩИЙ brew, а не воспроизведение ───────────────────────────────────

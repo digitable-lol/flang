@@ -104,7 +104,7 @@ if not os.path.exists(VHOD):
 
 # Граф импортов ПО ИМЕНАМ МОДУЛЕЙ. Путей в строках `использует` нет вовсе.
 po_imeni, rebra = {}, {}
-for put in sorted(glob.glob(os.path.join(koren, 'flang/**/*.flang'), recursive=True)):
+for put in sorted(glob.glob(os.path.join(koren, 'flang/**/*.flang'), recursive=True) + glob.glob(os.path.join(koren, 'flang/**/*.fscript'), recursive=True)):
     tekst = open(put, encoding='utf-8', errors='replace').read()
     m = imya_modulya.search(tekst)
     if not m:

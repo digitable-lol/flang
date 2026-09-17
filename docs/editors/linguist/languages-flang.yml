@@ -36,6 +36,7 @@ flang:
   - ".fp"
   - ".фп"
   - ".фланг"
+  - ".fscript"
   tm_scope: source.flang
   ace_mode: text
   # language_id назначает Linguist — не заполнять

@@ -1092,7 +1092,7 @@ def main():
         return 2
     narechie = a.narechie
     if narechie is None:
-        narechie = "flang" if a.puti[0].endswith(".flang") else "c"
+        narechie = "flang" if a.puti[0].endswith((".flang", ".fscript")) else "c"
     s, rab, yadro, dost, diag = poschitat(a.puti, narechie, zovushchiy=a.zovushchiy,
                                           blochnye=not a.staraya_merka)
     if a.json:

@@ -128,7 +128,7 @@ if [ -x bootstrap/flang ]; then
     | sed 's|--target ||' | tr '|' '\n' | LC_ALL=C.UTF-8 /usr/bin/grep -a -v '^$' | sort > "$TMP/цели-семени"
 fi
 git -c core.quotepath=false ls-files \
-  | LC_ALL=C.UTF-8 /usr/bin/grep -a -E '\.(flang|mjs|sh|js|py|awk|json|yml|yaml|md|tsv)$' > "$TMP/все-числящиеся"
+  | LC_ALL=C.UTF-8 /usr/bin/grep -a -E '\.(flang|fscript|mjs|sh|js|py|awk|json|yml|yaml|md|tsv)$' > "$TMP/все-числящиеся"
 # ── Числится в git ≠ лежит на диске ─────────────────────────────────────────
 # Пути ниже уезжают в gawk ДОВОДАМИ (`$(cat "$TMP/файлы")`), а gawk на
 # несуществующем файле не краснеет, а ПАДАЕТ: «gawk: fatal … cannot open file»,
@@ -148,7 +148,7 @@ done < "$TMP/все-числящиеся"
 # Семья ПУТЕЙ идёт только по коду. В прозе имя исчезнувшего файла часто и есть
 # предмет речи («flang/src/lexer.mjs больше нет»), и красить это — врать; в коде
 # путь, которого в дереве нет, — всегда изъян.
-LC_ALL=C.UTF-8 /usr/bin/grep -a -E '\.(flang|mjs|sh|js|py|awk)$' "$TMP/файлы" > "$TMP/код"
+LC_ALL=C.UTF-8 /usr/bin/grep -a -E '\.(flang|fscript|mjs|sh|js|py|awk)$' "$TMP/файлы" > "$TMP/код"
 
 # ── Перечни целей печати ────────────────────────────────────────────────────
 gawk -v targets_file="$TMP/цели" -v seed_file="$TMP/цели-семени" '
@@ -255,7 +255,7 @@ gawk -v inventory="$TMP/оглавление" '
         if (pre ~ /[$%{]$/) continue                       # подстановка оболочки
         if (c ~ /^[A-Z][A-Z0-9_]*\//) continue             # $ПЕРЕМЕННАЯ/путь
         if (c ~ /\*/) continue                             # маска, а не имя
-        if (c !~ /\.(flang|mjs|md|sh|c|h|json|tsv|txt|py|fts|yml|yaml|js|awk|ex|java|cs|vim|html|hex|toml|lock)$/ &&
+        if (c !~ /\.(flang|fscript|mjs|md|sh|c|h|json|tsv|txt|py|fts|yml|yaml|js|awk|ex|java|cs|vim|html|hex|toml|lock)$/ &&
             c !~ /^(flang|docs|scripts|tasks|fspec|examples|benchmarks|bootstrap|packaging|editors|web)\//) continue
         base = c; sub(/^.*\//, "", base)
         if (base ~ /^[a-zA-Z0-9]\./) continue              # a.md — выдуманный пример пробы

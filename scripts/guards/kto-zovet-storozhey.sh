@@ -159,7 +159,7 @@ for fajl in sorted(glob.glob(".github/workflows/*.yml")):
 
 # ── Два пути зова ───────────────────────────────────────────────────────────
 ZOV_PO_IMENI = re.compile(r"\./ярлык\s+([^\s;&|`\"')]+)")
-PUT = re.compile(r"[\w./-]+\.(?:flang|mjs|sh|js)")
+PUT = re.compile(r"[\w./-]+\.(?:flang|fscript|mjs|sh|js)")
 
 po_imeni, gde = {}, {}
 for fajl, stroka in stroki_komand:

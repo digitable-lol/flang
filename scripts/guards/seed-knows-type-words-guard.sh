@@ -262,7 +262,7 @@ KONEC_PODLOGA
 elif [ "$#" -gt 0 ]; then
   printf '%s\n' "$@" > "$SPISOK"
 else
-  find "$KOREN" -name '*.flang' -not -path '*/.git/*' | LC_ALL=C sort > "$SPISOK"
+  find "$KOREN" \( -name '*.flang' -o -name '*.fscript' \) -not -path '*/.git/*' | LC_ALL=C sort > "$SPISOK"
 fi
 
 FAJLOV=$(wc -l < "$SPISOK" | tr -d ' ')

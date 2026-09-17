@@ -246,7 +246,7 @@ poschitat() { # каталог-корень -> строки «ключ<TAB>зн�
   ( cd "$1" || exit 1
 
   lf=0; lstrok=0; lfn=0
-  for f in flang/stdlib/*.flang flang/stdlib/*.fp flang/stdlib/*.фп flang/stdlib/*.фланг; do
+  for f in flang/stdlib/*.flang flang/stdlib/*.fp flang/stdlib/*.фп flang/stdlib/*.фланг flang/stdlib/*.fscript; do
     [ -f "$f" ] || continue
     lf=$((lf + 1)); lstrok=$((lstrok + $(strok "$f"))); lfn=$((lfn + $(fn "$f")))
   done
@@ -256,7 +256,7 @@ poschitat() { # каталог-корень -> строки «ключ<TAB>зн�
 
   # Корпус — тот же набор, что у flang/scripts/proof-ledger.mjs (ФАЙЛЫ).
   kf=0; kstrok=0
-  for f in $(find flang -type f \( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \) \
+  for f in $(find flang -type f \( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' -o -name '*.fscript' \) \
              | grep -v '^flang/test/fixtures/' | grep -v '^flang/self/bootstrap/compiler\.flang$' | sort); do
     kf=$((kf + 1)); kstrok=$((kstrok + $(strok "$f")))
   done
@@ -375,7 +375,7 @@ dolya_dokazannogo() {
   # правилом scripts/ledgers/proved-share-of-a-file.py, иначе знаменатель сверки и
   # знаменатель ведомости расходятся молча.
   OBYAZ='^[[:space:]]*(для всех .*)?(обеспечивает|требует|закон)[[:space:]]'
-  znam=$(git -c core.quotePath=false ls-files -z '*.flang' \
+  znam=$(git -c core.quotePath=false ls-files -z '*.flang' '*.fscript' \
          | xargs -0 grep -hacE "$OBYAZ" \
          | awk '{s += $1} END {print s + 0}')
   skazat "написано обязательств" "$zapisano_znam" "$znam"
@@ -405,13 +405,13 @@ dolya_dokazannogo() {
   # него нет вовсе, и ведомость говорит это вслух («сетка конечна,
   # доказательством не является»). Нужен НОВЫЙ род вердикта, а не оракул.
   PODDELKI='flang/test/fixtures/binary-rules'
-  treb=$(git -c core.quotePath=false ls-files -z '*.flang' \
+  treb=$(git -c core.quotePath=false ls-files -z '*.flang' '*.fscript' \
          | xargs -0 grep -hacE '^[[:space:]]*(для всех .*)?требует[[:space:]]' \
          | awk '{s += $1} END {print s + 0}')
   zak_pod=$(git -c core.quotePath=false ls-files -z "$PODDELKI/*.flang" \
          | xargs -0 grep -hacE '^[[:space:]]*(для всех .*)?закон[[:space:]]' \
          | awk '{s += $1} END {print s + 0}')
-  zak_vse=$(git -c core.quotePath=false ls-files -z '*.flang' \
+  zak_vse=$(git -c core.quotePath=false ls-files -z '*.flang' '*.fscript' \
          | xargs -0 grep -hacE '^[[:space:]]*(для всех .*)?закон[[:space:]]' \
          | awk '{s += $1} END {print s + 0}')
   nikogda=$((treb + zak_pod))
@@ -434,7 +434,7 @@ dolya_dokazannogo() {
   # которым он снят. Ведомость хранит на файл md5, число написанных
   # обязательств И приговор — поэтому устаревание меряется числом, а вклад
   # сдвинувшегося файла можно вычесть поимённо.
-  git -c core.quotePath=false ls-files '*.flang' | while IFS= read -r f; do
+  git -c core.quotePath=false ls-files '*.flang' '*.fscript' | while IFS= read -r f; do
     n=$(grep -acE "$OBYAZ" "$f" || true)
     [ "${n:-0}" -gt 0 ] || continue
     printf '%s|%s|%s\n' "$(md5sum "$f" | cut -d' ' -f1)" "$n" "$f"
@@ -550,7 +550,7 @@ perepis() {
                END {for (k in s) printf "  %-24s файлов %4d  строк %7d\n", k, c[k], s[k];
                     printf "  %-24s файлов %4d  строк %7d\n", "ВСЕГО НЕ НА FLANG", vc, vs}' \
   | sort
-  git -c core.quotePath=false ls-files -z '*.flang' | xargs -0 wc -l | tail -1 \
+  git -c core.quotePath=false ls-files -z '*.flang' '*.fscript' | xargs -0 wc -l | tail -1 \
   | awk '{printf "  %-24s               строк %7d\n", "НА FLANG", $1}'
 }
 

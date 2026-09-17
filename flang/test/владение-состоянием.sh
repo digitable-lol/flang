@@ -30,7 +30,7 @@ tool=${FLANG_BIN:-"$root/bootstrap/flang"}
 command -v python3 >/dev/null 2>&1 || { echo "нет python3 — сличать разбор нечем" >&2; exit 2; }
 
 cd "$root"
-files=$(grep -rl '^процесс «' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' . | sed 's|^\./||' | sort)
+files=$(grep -rl '^процесс «' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' --include='*.fscript' . | sed 's|^\./||' | sort)
 
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT INT TERM

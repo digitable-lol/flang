@@ -443,7 +443,7 @@ export function долгиЯдра(проза, долги) {
 export function незарегистрированныеПодделки(корень, свои, долг) {
   const каталог = join(корень, "flang/test/fixtures")
   /* Четыре равноправных расширения программы: `.flang`, `.fp`, `.фп`, `.фланг` (ADR-0016). */
-  const лежит = readdirSync(каталог).filter((и) => и.startsWith("poddelka-") && /\.(flang|fp|фп|фланг)$/u.test(и)).sort()
+  const лежит = readdirSync(каталог).filter((и) => и.startsWith("poddelka-") && /\.(flang|fp|фп|фланг|fscript)$/u.test(и)).sort()
   /* Каталог подделок в дереве ОДИН: `kernel-forgeries.flang`, он зовётся ярлыком
      `подделки:проверка`. Двойник на JavaScript снят 23 августа 2026 (`fe870a05`),
      и этот сторож восемь часов падал на его чтении: файла нет — падает весь

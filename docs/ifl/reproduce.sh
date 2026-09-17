@@ -69,15 +69,15 @@ printf 'исходники компилятора на flang, байт     %s\n'
 # Расширений у программы четыре и они равноправны: `.flang`, `.fp`, `.фп`,
 # `.фланг` (ADR-0016). Число по одному из них было бы меньше дерева.
 printf 'файлов программы в репозитории           %s\n' \
-  "$(find . \( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \) -not -path './node_modules/*' | wc -l)"
+  "$(find . \( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' -o -name '*.fscript' \) -not -path './node_modules/*' | wc -l)"
 printf 'объявлений «тотальная функция»           %s\n' \
-  "$(grep -rh '^тотальная функция ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' . | wc -l)"
+  "$(grep -rh '^тотальная функция ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' --include='*.fscript' . | wc -l)"
 printf 'объявлений «функция» (обычных)           %s\n' \
-  "$(grep -rh '^функция ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' . | wc -l)"
+  "$(grep -rh '^функция ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' --include='*.fscript' . | wc -l)"
 printf 'объявлений «убывает» (мера)              %s\n' \
-  "$(grep -rh '^[[:space:]]*убывает ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' . | wc -l)"
+  "$(grep -rh '^[[:space:]]*убывает ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' --include='*.fscript' . | wc -l)"
 echo 'где именно объявлена мера:'
-grep -rln '^[[:space:]]*убывает ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' . | sed 's/^/  /'
+grep -rln '^[[:space:]]*убывает ' --include='*.flang' --include='*.fp' --include='*.фп' --include='*.фланг' --include='*.fscript' . | sed 's/^/  /'
 
 head_of "2. Связанный компилятор, печать в C, корпус побайтовой сверки"
 net_sredstva 'связанный компилятор, печать в C, корпус побайтовой сверки' \

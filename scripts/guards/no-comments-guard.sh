@@ -61,10 +61,10 @@ trap 'rm -rf "$TMP"' EXIT INT TERM
 
 # Считаем по ОТСЛЕЖИВАЕМЫМ файлам: неотслеживаемое — черновики, и долг по ним
 # скакал бы туда-сюда.
-( cd "$ROOT" && /usr/bin/git -c core.quotepath=false ls-files '*.flang' ) > "$TMP/spisok" 2>/dev/null
+( cd "$ROOT" && /usr/bin/git -c core.quotepath=false ls-files '*.flang' '*.fscript' ) > "$TMP/spisok" 2>/dev/null
 FAJLOV=$(wc -l < "$TMP/spisok" | tr -d ' ')
 [ "${FAJLOV:-0}" -gt 0 ] || {
-  echo "НЕ ПРОВЕРЕНО: отслеживаемых .flang не нашлось — считать нечего" >&2
+  echo "НЕ ПРОВЕРЕНО: отслеживаемых .flang и .fscript не нашлось — считать нечего" >&2
   echo "Это НЕ «комментариев нет»: пустой список и порядок неотличимы, если молчать." >&2
   exit 3; }
 

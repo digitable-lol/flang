@@ -357,7 +357,7 @@ elixir 168 591, js 73 873. Без них двоичный не напечата�
 | `scripts/targets/names-in-c.awk` | «идентификатор C → русское объявление» из печати | 79 |
 | `scripts/targets/identical-declarations.sh` | что можно ввезти вместо переименования | 83 |
 | `scripts/targets/variant-probe.flang` | улика на третьего судью | 64 |
-| `docs/eight-targets-renames.tsv` | карта, 1057 переименований | 1058 |
+| `docs/eight-targets-renames.tsv` | карта, 1057 переименований | 1059 |
 
 **Ни одной строки на JavaScript.** Судят собственные слои языка — связывание
 `self/link.flang`, печать `self/emit-c.flang`, проверка типов

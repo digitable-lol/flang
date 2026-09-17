@@ -22,9 +22,9 @@
 библиотека доказательств о программах, а не mathlib;
 `docs/integer-closed-under-addition.md` — замер августа 2026, где длинная
 арифметика уже рассматривалась и была отклонена (§10 отвечает ему).
-**Новые задачи:** [1411](../../tasks/1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md),
-[1412](../../tasks/1412-pravila-kolca-tolko-dlya-tochnogo-celogo.md),
-[1413](../../tasks/1413-dlinnye-celye-v-desyati-celyah-pechati.md).
+**Новые задачи:** [1411](../tasks/1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md),
+[1412](../tasks/1412-pravila-kolca-tolko-dlya-tochnogo-celogo.md),
+[1413](../tasks/1413-dlinnye-celye-v-desyati-celyah-pechati.md).
 
 ---
 

@@ -15,7 +15,7 @@
 
 Остаток задачи 6190: девять мест, где переигрыш узла упирался в вызов чужой
 функции с выписанным конструктором на месте разбираемого довода. Разбор мест
-поимённо — [`docs/road-to-one-hundred-measured.md`](../road-to-one-hundred-measured.md).
+поимённо — [`docs/road-to-one-hundred-measured.md`](../../road-to-one-hundred-measured.md).
 
 ## Что сделано
 

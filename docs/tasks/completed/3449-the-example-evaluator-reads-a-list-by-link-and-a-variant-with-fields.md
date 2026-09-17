@@ -12,9 +12,9 @@
 
 # 3449. Третье и четвёртое умения вычислителя примера
 
-Решение: [ADR-0042](../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md) §2 —
+Решение: [ADR-0042](../../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md) §2 —
 правило, а не вынос из знаменателя. Предшественница — задача
-[3448](3448-the-example-evaluator-of-the-checker-reads-nul-strings-and-filter.md):
+[3448](../3448-the-example-evaluator-of-the-checker-reads-nul-strings-and-filter.md):
 она научила вычислитель нулевому знаку и отбору и назвала стену, в которую
 упёрся `corpus-cforms`, — «в счёте встретился разбор списка по звену».
 

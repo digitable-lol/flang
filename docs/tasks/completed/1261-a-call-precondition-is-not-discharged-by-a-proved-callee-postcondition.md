@@ -12,7 +12,7 @@
 
 # 1261. Снятие предусловия не знает того, что знает доказательство постусловия
 
-Решение: [ADR-0037](../adr/0037-second-order-is-a-finite-conjunction-over-function-tags.md) §4.1.
+Решение: [ADR-0037](../../adr/0037-second-order-is-a-finite-conjunction-over-function-tags.md) §4.1.
 
 ## Чем измерено
 

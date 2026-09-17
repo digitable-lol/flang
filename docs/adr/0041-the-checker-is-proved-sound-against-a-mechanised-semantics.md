@@ -19,7 +19,7 @@
 Lean и как; [ADR-0031](0031-certification-is-a-process-not-a-property-of-the-language.md)
 — квалификация инструмента; [ADR-0030](0030-the-printer-proves-each-run-not-itself.md) — доказанный перевод, соседняя
 дыра, которую этот документ не закрывает; задачи 1311, 1313, 4102.
-**Новые задачи:** [2907](../tasks/2907-the-record-and-the-checker-are-modelled-in-lean-and-soundness-is-proved.md).
+**Новые задачи:** [2907](../tasks/completed/2907-the-record-and-the-checker-are-modelled-in-lean-and-soundness-is-proved.md).
 
 ---
 

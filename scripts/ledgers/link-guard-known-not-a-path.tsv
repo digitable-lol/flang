@@ -128,7 +128,6 @@ docs/site/embedding.ru.md	src/factorial.rs	пример на чужом язык
 docs/site/embedding.ru.md	src/lib.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	src/main.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	src/runtime.rs	пример на чужом языке (embedding/rosetta), не файл проекта
-docs/site/examples.md	core/storefront.flang	план: пример react-ts-pure живёт на ветке r/react-ts-pure и в ствол не влит; страница уехала вперёд дерева
 docs/site/examples.md	ЗАМЕР.md	план: пример react-ts-pure живёт на ветке r/react-ts-pure и в ствол не влит; страница уехала вперёд дерева
 docs/site/getting-started.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/getting-started.ru.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
@@ -246,3 +245,12 @@ docs/tasks/0311-linter-stolknoveniy-imyon.md	scripts/type-collision-guard.flang	
 docs/tasks/1745-the-tree-is-reorganized-by-the-owners-words-of-11-september.md	sobrat.sh	история: та же строка описи и говорит, что 11 сентября 2026 файл переименован в build.sh; транслитное имя оставлено, чтобы опись сходилась с git log
 docs/tasks/1423-node-leaves-the-concurrency-directory.md	flang/scripts/conc-link-emitted.flang	история: освежитель снят 14 сентября 2026 задачей 1423 (Ш1) — он печатал модули узла рядом с исходником и воскрешал бы снятые файлы; упоминания — замер «кто зовёт» 13 сентября и запись Ш0, сделанные до сноса
 docs/tasks/1423-node-leaves-the-concurrency-directory.md	flang/src/emit/js.mjs	цитата: строка шапки «Сгенерировано flang (бэкенд JavaScript, flang/src/emit/js.mjs)» у файлов, напечатанных прежним печатником; такого файла в дереве нет с переезда печати на flang/self/emit-js.flang, а сами напечатанные файлы сняты этой задачей
+docs/design/nositel-tochnogo-celogo.md	n-stroka.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
+docs/design/nositel-tochnogo-celogo.md	n-zapis.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
+docs/design/nositel-tochnogo-celogo.md	n-ravenstvo.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
+docs/examples/frameworks/react-ts-pure/README.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
+docs/tasks/1416-the-shortcut-list-is-computed-from-the-scripts.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	obhod.sh	иллюстративное имя в разборе задачи/заметки, не файл (пример транслита-брака при переименовании)
+docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk.sh	иллюстративное имя в разборе задачи/заметки, не файл (предлагаемое английское имя в примере)
+docs/tasks/1423-node-leaves-the-concurrency-directory.md	.test.mjs	обозначение расширения/суффикса-конвенции, не имя файла
+docs/tasks/6752-a-law-of-the-category-surface-is-a-statement-about-the-carrier.md	probe-777.flang	иллюстративное имя пробы в тексте, не файл

@@ -16,7 +16,7 @@ set -u
 D=${1:-/srv/flang-rabota/u-semya5}
 DVOICHNYY="$D/bootstrap/flang"
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-PROBA=$ROOT/scripts/seed/new-binary-acceptance-probe.flang
+PROBE=$ROOT/scripts/seed/new-binary-acceptance-probe.flang
 BED=0
 
 TMPD=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" new-binary-acceptance.XXXXXX)

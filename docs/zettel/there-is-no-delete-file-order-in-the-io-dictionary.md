@@ -23,8 +23,8 @@
 **Чем подтверждено.** Ветка `u/schyot`, 20 августа 2026. Словарь —
 `flang/self/parser.flang`, список вариантов «Поручение»; хозяин на C —
 `bootstrap/flang_repl.c`, `io_perform`: тринадцать ветвей, удаления среди них
-нет. Прогон меры оставляет `docs/benchmarks/proof-cost/.proba-golyy` и
-`.proba-zaglushka`; `git status` после прогона чист, `tempdir-guard` говорит
+нет. Прогон меры оставляет `docs/benchmarks/proof-cost/.probe-bare` и
+`.probe-stub`; `git status` после прогона чист, `tempdir-guard` говорит
 «чисто: прогон убрал за собой всё».
 
 **Чем ограничено.** Про двоичного хозяина. Что умеет хозяин на Node, здесь не

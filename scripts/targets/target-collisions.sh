@@ -35,7 +35,7 @@ if [ ! -x "$FL" ]; then
 fi
 
 TMP="$(mktemp -d -p "${TMPDIR:-/srv/tmp}")"
-PROBE="flang/self/bootstrap/proba-stolknoveniy.flang"
+PROBE="flang/self/bootstrap/collision-probe.flang"
 trap 'rm -rf "$TMP" "$ROOT/$PROBE"' EXIT
 
 ENTRY=flang/self/bootstrap/compiler.flang

@@ -52,7 +52,7 @@ import { рабочийКаталог, средаСборки } from "./tempdir.
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
 const эталон = "flang/concurrency/link.flang"
-const рабочий = рабочийКаталог("svyaz-celi")
+const рабочий = рабочийКаталог("target-link")
 const печатьСвидетеля = join(рабочий, "svidetel")
 mkdirSync(печатьСвидетеля, { recursive: true })
 {

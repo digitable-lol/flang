@@ -765,7 +765,7 @@
     дано путь равно "flang/self/bootstrap/compiler.flang"
     ожидается нет
   пример «Скрытый файл не наш»
-    дано путь равно "flang/stdlib/.flang-proba-7.flang"
+    дано путь равно "flang/stdlib/.flang-probe-7.flang"
     ожидается нет
   пример «Библиотека наша»
     дано путь равно "flang/stdlib/logic.flang"

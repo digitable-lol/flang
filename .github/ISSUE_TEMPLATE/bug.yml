@@ -25,7 +25,7 @@ body:
       description: Дословно, вместе с кодом возврата. / Verbatim, with the exit code.
       render: shell
       placeholder: |
-        $ flang check proba.flang
+        $ flang check probe.flang
         {"valid":true,...}
         $ echo $?
         0

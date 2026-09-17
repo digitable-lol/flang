@@ -139,7 +139,7 @@ perepis() { # файлы…
 # Программа заводится здесь, а не лежит в дереве файлом: длина её постоянной
 # обязана быть привязана к ПРЕДЕЛУ, а не к числу, переписанному руками. Предел
 # сменится — проба сменится вместе с ним.
-proba_pechatyu() { # каталог для работы → 0 режет, 1 не режет, 2 смотреть нечем
+print_probe() { # каталог для работы → 0 режет, 1 не режет, 2 смотреть нечем
   rab=$1
   [ -x "$FLANG" ] || return 2
   command -v "$CC" >/dev/null 2>&1 || return 2
@@ -160,10 +160,10 @@ proba_pechatyu() { # каталог для работы → 0 режет, 1 не
     printf '%s\n' 'тотальная функция «Длинная постоянная»'
     printf '%s\n' '  возвращает строка'
     printf '  "%s"\n' "$dlinnaya"
-  } > "$rab/proba.flang" || return 2
+  } > "$rab/probe.flang" || return 2
 
   rm -rf "$rab/vyvod"
-  if ! "$FLANG" emit "$rab/proba.flang" --target c --out "$rab/vyvod" > "$rab/pechat.log" 2>&1; then
+  if ! "$FLANG" emit "$rab/probe.flang" --target c --out "$rab/vyvod" > "$rab/pechat.log" 2>&1; then
     echo "     печать отказалась печатать пробу:" >&2
     sed 's/^/     /' "$rab/pechat.log" >&2
     return 2
@@ -255,7 +255,7 @@ BEDY=0
 NECHEM=0
 
 # 1. Умеет ли печать резать.
-proba_pechatyu "$RAB"
+print_probe "$RAB"
 REZHET=$?
 case $REZHET in
   0) echo "1. печать РЕЖЕТ    напечатанное собралось своим же Makefile" ;;

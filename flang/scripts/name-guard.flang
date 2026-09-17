@@ -1188,7 +1188,7 @@
   пример «Имя fp без точки — не программа»
     дано путь равно "fp"
     ожидается нет
-  ((длина (разделить путь по ".")) больше 1) и притом (["flang", "fp", "фп", "фланг"] содержит («Последний кусок» от путь и "."))
+  ((длина (разделить путь по ".")) больше 1) и притом (["flang", "fp", "фп", "фланг", "fscript"] содержит («Последний кусок» от путь и "."))
 
 объект «Чтение JSON»
   «в строке»: признак
@@ -1319,8 +1319,8 @@
 тотальная функция «Команда перечня»
   возвращает строка
   пример «Охват и всё дерево одним обходом файловой системы»
-    ожидается "cd ../.. && find -L flang/stdlib flang/core flang/self docs/examples -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print && printf '%s\\n' '---' && find -L . \\( -name node_modules -o -name .git -o -name .claude \\) -prune -o -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print"
-  "cd ../.. && find -L flang/stdlib flang/core flang/self docs/examples -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print && printf '%s\\n' '---' && find -L . \\( -name node_modules -o -name .git -o -name .claude \\) -prune -o -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print"
+    ожидается "cd ../.. && find -L flang/stdlib flang/core flang/self docs/examples -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' -o -name '*.fscript' \\) -print && printf '%s\\n' '---' && find -L . \\( -name node_modules -o -name .git -o -name .claude \\) -prune -o -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' -o -name '*.fscript' \\) -print"
+  "cd ../.. && find -L flang/stdlib flang/core flang/self docs/examples -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' -o -name '*.fscript' \\) -print && printf '%s\\n' '---' && find -L . \\( -name node_modules -o -name .git -o -name .claude \\) -prune -o -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' -o -name '*.fscript' \\) -print"
 
 тотальная функция «Команда разбора»
   принимает каталог: строка

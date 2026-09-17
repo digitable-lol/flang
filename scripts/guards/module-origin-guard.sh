@@ -189,7 +189,7 @@ def v_dereve(put):
 fajly = []
 for osnova, katalogi, imena in os.walk(sud):
     katalogi[:] = [k for k in katalogi if k != ".git"]
-    fajly += [os.path.join(osnova, i) for i in imena if i.endswith(".flang")]
+    fajly += [os.path.join(osnova, i) for i in imena if i.endswith((".flang", ".fscript"))]
 fajly.sort()
 
 vvozov_po_imeni = vvozov_s_putem = 0

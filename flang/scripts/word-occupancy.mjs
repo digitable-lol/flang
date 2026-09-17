@@ -75,7 +75,7 @@ const корень = fileURLToPath(new URL("../..", import.meta.url))
  */
 /* Четыре равноправных расширения программы: `.flang`, `.fp`, `.фп`, `.фланг`
    (ADR-0016); образец у `globSync` этого дерева один, потому их четыре. */
-export const ФАЙЛЫ = ["**/*.flang", "**/*.fp", "**/*.фп", "**/*.фланг"]
+export const ФАЙЛЫ = ["**/*.flang", "**/*.fp", "**/*.фп", "**/*.фланг", "**/*.fscript"]
   .flatMap((образец) => globSync(образец, { cwd: корень }))
   .filter((путь) => путь !== "flang/self/bootstrap/compiler.flang")
   .filter((путь) => !путь.startsWith("node_modules/"))

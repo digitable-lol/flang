@@ -851,8 +851,8 @@
   возвращает список строки
   обеспечивает «длина постоянного списка — Команда корпуса» (длина результат) равен 2
   пример «И пути, и ввозы, и заголовки спрашиваются у git одним заходом, а не читаются по файлу»
-    ожидается ["-c", "cd ../.. && git -c core.quotePath=false ls-files --cached --others --exclude-standard -- '*.flang' | while IFS= read -r f; do u=$(grep -cE '^  (использует|uses) ' \"$f\"); m=$(grep -m1 -E '^(модуль|module) ' \"$f\"); printf '%s\t%s\t%s\n' \"$f\" \"$u\" \"$m\"; done"]
-  ["-c", "cd ../.. && git -c core.quotePath=false ls-files --cached --others --exclude-standard -- '*.flang' | while IFS= read -r f; do u=$(grep -cE '^  (использует|uses) ' \"$f\"); m=$(grep -m1 -E '^(модуль|module) ' \"$f\"); printf '%s\t%s\t%s\n' \"$f\" \"$u\" \"$m\"; done"]
+    ожидается ["-c", "cd ../.. && git -c core.quotePath=false ls-files --cached --others --exclude-standard -- '*.flang' '*.fscript' | while IFS= read -r f; do u=$(grep -cE '^  (использует|uses) ' \"$f\"); m=$(grep -m1 -E '^(модуль|module) ' \"$f\"); printf '%s\t%s\t%s\n' \"$f\" \"$u\" \"$m\"; done"]
+  ["-c", "cd ../.. && git -c core.quotePath=false ls-files --cached --others --exclude-standard -- '*.flang' '*.fscript' | while IFS= read -r f; do u=$(grep -cE '^  (использует|uses) ' \"$f\"); m=$(grep -m1 -E '^(модуль|module) ' \"$f\"); printf '%s\t%s\t%s\n' \"$f\" \"$u\" \"$m\"; done"]
 
 тотальная функция «Строки корпуса»
   принимает вывод: строка

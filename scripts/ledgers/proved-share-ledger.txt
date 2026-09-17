@@ -1328,7 +1328,7 @@ ce97ff0ab2094dce6783702de4290b85|34|32|0|2|0|scripts/targets/emit-and-examples.f
 5e4578f4c48ff79aa6669de59fecb019|14|14|0|0|0|scripts/site/emit-dictionary.flang
 5f0d2e189fb05b4383ad353ab7f23fa7|48|42|3|3|0|scripts/targets/emit-law.flang
 35bc4b6ceba5235a93625a25ded7023f|12|12|0|0|0|scripts/guards/emit-promises-guard.flang
-866bb0d2a5dcddc8a0a98cd0318d45a9|13|12|1|0|0|scripts/guards/file-extensions.flang
+866bb0d2a5dcddc8a0a98cd0318d45a9|17|12|1|0|0|scripts/guards/file-extensions.flang
 baa3170dc90958c56352eb9b3f49ab9b|62|49|10|3|0|scripts/guards/homebrew-formula-guard.flang
 b00f9a812077e3b8497c15864acff995|10|7|3|0|0|scripts/guards/io-dictionary-copies-guard.flang
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/guards/input-boundary.flang
@@ -1361,7 +1361,7 @@ b84d7c3b1bf00b6bfe83e62e063aea2d|21|21|0|0|0|scripts/site/surfaces-page.flang
 d25c2b3399f45c84d4b13bf0ec83ba1a|5|3|2|0|0|scripts/guards/tab-host-guard.flang
 0df69d55cfac1868ab36c20db5019da2|2|2|0|0|0|scripts/guards/target-function-drift.flang
 68dc1ca8f2d8213dfacf881c0a77ac16|42|20|22|0|0|scripts/guards/traceability-guard.flang
-0eb8181532ae602de4c212cbde33749e|32|19|5|1|0|scripts/guards/tree-inventory.flang
+0eb8181532ae602de4c212cbde33749e|33|19|5|1|0|scripts/guards/tree-inventory.flang
 19037f1b3d31fce728a4bd55fa1a4835|23|8|7|8|0|scripts/guards/version-guard.flang
 53f94937b541c4d0ce9569351f7f23ec|11|11|0|0|0|scripts/editors/vim-highlight-check.flang
 e3e12eb0215c5a68744c935ef6ee0619|9|9|0|0|0|scripts/editors/vim-highlighting.flang

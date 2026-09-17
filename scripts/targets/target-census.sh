@@ -75,11 +75,12 @@ if [ ! -x ./bootstrap/flang ]; then
   exit 2
 fi
 
-# Четыре равноправных расширения программы: `.flang`, `.fp`, `.фп`, `.фланг` (ADR-0016).
+# Четыре равноправных расширения программы: `.flang`, `.fp`, `.фп`, `.фланг` (ADR-0016)
+# и расширение скрипта `.fscript` (ADR-0043) — для обхода это тот же файл языка.
 # Несовпавший образец оболочка оставляет собой — потому проверка на файл.
-for fajl in "$katalog"/*.flang "$katalog"/*.fp "$katalog"/*.фп "$katalog"/*.фланг; do
+for fajl in "$katalog"/*.flang "$katalog"/*.fp "$katalog"/*.фп "$katalog"/*.фланг "$katalog"/*.fscript; do
   [ -e "$fajl" ] || continue
-  imya=$(basename "$fajl"); imya=${imya%.flang}; imya=${imya%.fp}; imya=${imya%.фп}; imya=${imya%.фланг}
+  imya=$(basename "$fajl"); imya=${imya%.flang}; imya=${imya%.fp}; imya=${imya%.фп}; imya=${imya%.фланг}; imya=${imya%.fscript}
   ./scripts/memory-limit.sh -- ./bootstrap/flang ast "$fajl" > "$rab/ast-$imya.json" 2>"$rab/ast-$imya.err"
   ./scripts/memory-limit.sh -- ./bootstrap/flang check "$fajl" --proof > "$rab/led-$imya.txt" 2>&1
 done

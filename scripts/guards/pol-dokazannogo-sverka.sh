@@ -52,7 +52,7 @@ trap 'rm -rf "$RAB"' EXIT INT TERM
 # core.quotepath=false ОБЯЗАТЕЛЕН: без него git отдаёт кириллические пути в
 # кавычках с восьмеричными кодами, и прибор молча пропускает 508 файлов из 955.
 # Именно на этом первая редакция считала знаменатель по одним латинским именам.
-git -c core.quotepath=false ls-files '*.flang' | while IFS= read -r f; do
+git -c core.quotepath=false ls-files '*.flang' '*.fscript' | while IFS= read -r f; do
   [ -f "$f" ] || continue
   # grep -c при нуле совпадений печатает 0 И ВЫХОДИТ КОДОМ 1. Поэтому «|| echo 0»
   # дописывал бы второй ноль и портил счёт; берём вывод как есть.

@@ -88,7 +88,7 @@ def main(корень, отчёты):
         if '/.git' in где:
             continue
         for имя_файла in файлы:
-            if not имя_файла.endswith('.flang'):
+            if not имя_файла.endswith(('.flang', '.fscript')):
                 continue
             путь = os.path.relpath(os.path.join(где, имя_файла), корень)
             свои[путь], написано[путь] = разобрать_исходник(os.path.join(корень, путь))

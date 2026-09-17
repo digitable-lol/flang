@@ -110,8 +110,8 @@
 тотальная функция «Команда корпуса»
   возвращает список строки
   пример «Один заход к git»
-    ожидается ["-c", "cd ../.. && exec git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/*.flang'"]
-  ["-c", "cd ../.. && exec git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/*.flang'"]
+    ожидается ["-c", "cd ../.. && exec git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/*.flang' 'flang/*.fscript'"]
+  ["-c", "cd ../.. && exec git -c core.quotePath=false ls-files --cached --others --exclude-standard -- 'flang/*.flang' 'flang/*.fscript'"]
 
 // ФИКСТУРЫ ИСКЛЮЧЕНЫ, И ЭТО НЕ ПОСЛАБЛЕНИЕ: `flang/test/fixtures/` — корпус
 // НАРОЧНО сломанных объявлений `план`, свести их ведомостью нельзя по
@@ -130,7 +130,7 @@
   пример «Библиотека наша»
     дано путь равно "flang/stdlib/logic.flang"
     ожидается да
-  (путь содержит ".flang") и притом (не (путь начинается с "flang/test/fixtures/")) и притом (не (путь равен "flang/self/bootstrap/compiler.flang"))
+  ((путь содержит ".flang") или (путь содержит ".fscript")) и притом (не (путь начинается с "flang/test/fixtures/")) и притом (не (путь равен "flang/self/bootstrap/compiler.flang"))
 
 тотальная функция «Корпус»
   принимает вывод: строка

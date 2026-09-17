@@ -321,11 +321,11 @@
   соединить [
     "cd ", («Корень дерева»), " && ",
     "lf=0; lstrok=0; lfn=0; ",
-    "for f in flang/stdlib/*.flang flang/stdlib/*.fp flang/stdlib/*.фп flang/stdlib/*.фланг; do ",
+    "for f in flang/stdlib/*.flang flang/stdlib/*.fp flang/stdlib/*.фп flang/stdlib/*.фланг flang/stdlib/*.fscript; do ",
     "[ -f \"$f\" ] || continue; lf=$((lf+1)); lstrok=$((lstrok + $(awk 'END{print NR}' \"$f\"))); ",
     "lfn=$((lfn + $(grep -cE '^[[:space:]]*(тотальная функция|функция)[[:space:]]' \"$f\"))); done; ",
     "kf=0; kstrok=0; ",
-    "for f in $(find flang -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) ",
+    "for f in $(find flang -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' -o -name '*.fscript' \\) ",
     "| grep -v '^flang/test/fixtures/' | grep -v '^flang/self/bootstrap/compiler\\.flang$'); do ",
     "kf=$((kf+1)); kstrok=$((kstrok + $(awk 'END{print NR}' \"$f\"))); done; ",
     "printf 'библиотека.файлов\\t%s\\n' \"$lf\"; ",

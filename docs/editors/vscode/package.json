@@ -39,7 +39,8 @@
           ".flang",
           ".fp",
           ".фп",
-          ".фланг"
+          ".фланг",
+          ".fscript"
         ],
         "configuration": "./language-configuration.json"
       }

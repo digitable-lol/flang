@@ -48,9 +48,10 @@ function M.setup(opts)
   -- повторено для Neovim, потому что vim.filetype.add срабатывает раньше и
   -- дешевле, чем автокоманда.
   --
-  -- Расширений четыре и они равноправны (ADR-0016). `["фп"]`, а не `фп = …`:
+  -- Расширений программы четыре и они равноправны (ADR-0016); пятое, `fscript`, —
+  -- скрипт, файл языка с планом (ADR-0043): подсвечивается так же. `["фп"]`, а не `фп = …`:
   -- имена в Lua берут только ASCII, и запись через точку тут не собирается.
-  vim.filetype.add({ extension = { flang = "flang", fp = "flang", ["фп"] = "flang", ["фланг"] = "flang" } })
+  vim.filetype.add({ extension = { flang = "flang", fp = "flang", ["фп"] = "flang", ["фланг"] = "flang", fscript = "flang" } })
 
   if opts.lsp == false then
     return

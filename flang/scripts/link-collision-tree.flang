@@ -1372,7 +1372,7 @@
 
 тотальная функция «Сценарий потока»
   возвращает строка
-  соединить ["cd ../.. && find -L . \\( -name .git -o -name node_modules \\) -prune -o -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' \\) -print | sed 's|^\\./||' | tr '/' '\\001' | LC_ALL=C sort | tr '\\001' '/' | LC_ALL=C awk -v re=\"$3\" '", («Программа отбора строк»), "' | sed -n \"$1,$2p;$2q\""] по ""
+  соединить ["cd ../.. && find -L . \\( -name .git -o -name node_modules \\) -prune -o -type f \\( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' -o -name '*.fscript' \\) -print | sed 's|^\\./||' | tr '/' '\\001' | LC_ALL=C sort | tr '\\001' '/' | LC_ALL=C awk -v re=\"$3\" '", («Программа отбора строк»), "' | sed -n \"$1,$2p;$2q\""] по ""
 
 тотальная функция «Сценарий добавки»
   возвращает строка

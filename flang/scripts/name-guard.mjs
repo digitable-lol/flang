@@ -290,7 +290,7 @@ function обход(каталог, найдено = []) {
     const путь = join(каталог, запись)
     if (statSync(путь).isDirectory()) обход(путь, найдено)
     /* Четыре равноправных расширения программы: `.flang`, `.fp`, `.фп`, `.фланг` (ADR-0016). */
-    else if (/\.(flang|fp|фп|фланг)$/u.test(путь)) найдено.push(путь)
+    else if (/\.(flang|fp|фп|фланг|fscript)$/u.test(путь)) найдено.push(путь)
   }
   return найдено
 }
@@ -420,7 +420,7 @@ export function охват(корень = КОРЕНЬ, каталоги = КА�
       if (запись === "node_modules" || запись === ".git" || запись === ".claude") continue
       const путь = join(каталог, запись)
       if (statSync(путь).isDirectory()) обходДерева(путь)
-      else if (/\.(flang|fp|фп|фланг)$/u.test(путь)) все.push(relative(корень, путь))
+      else if (/\.(flang|fp|фп|фланг|fscript)$/u.test(путь)) все.push(relative(корень, путь))
     }
   }
   обходДерева(корень)

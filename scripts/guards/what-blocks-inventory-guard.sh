@@ -76,7 +76,7 @@ while IFS='	' read -r lno row; do
   # Внутри одной пары обратных кавычек может стоять целая команда
   # («sh scripts/raskrutka.sh --imena»): рвём её на words и разбираем каждое.
   words=$(printf '%s' "$item" | LC_ALL=C.UTF-8 /usr/bin/grep -a -o '`[^`]*`' | tr -d '`' | tr ' ' '\n')
-  paths=$(printf '%s\n' "$words" | LC_ALL=C.UTF-8 /usr/bin/grep -a -E '/|\.(md|flang|tsv|sh|mjs|c|h|json|txt)$' \
+  paths=$(printf '%s\n' "$words" | LC_ALL=C.UTF-8 /usr/bin/grep -a -E '/|\.(md|flang|fscript|tsv|sh|mjs|c|h|json|txt)$' \
           | LC_ALL=C.UTF-8 /usr/bin/grep -a -v -- '^--' || true)
   keys=$(printf '%s\n' "$words" | LC_ALL=C.UTF-8 /usr/bin/grep -a -E '^--' || true)
 

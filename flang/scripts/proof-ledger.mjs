@@ -162,7 +162,7 @@ export const proofLedger = (путь) => ведомость(путь)
    `.фланг` (ADR-0016). Выборка идёт четырьмя образцами: `globSync` этого дерева
    берёт ОДИН образец строкой, фигурных скобок не понимает (сказано в его шапке),
    и склеивать их в один нечем. */
-export const ФАЙЛЫ = ["flang/**/*.flang", "flang/**/*.fp", "flang/**/*.фп", "flang/**/*.фланг"]
+export const ФАЙЛЫ = ["flang/**/*.flang", "flang/**/*.fp", "flang/**/*.фп", "flang/**/*.фланг", "flang/**/*.fscript"]
   .flatMap((образец) => globSync(образец, { cwd: корень }))
   .filter((путь) => !путь.startsWith("flang/test/fixtures/"))
   .filter((путь) => путь !== "flang/self/bootstrap/compiler.flang")

@@ -48,9 +48,9 @@
 ЦЕЛИ	docs/eight-targets-renames.tsv	3	ведомость переименований по семи целям; «c» заморожена, девятой цели у двоичного нет
 ЦЕЛИ	docs/zettel/the-byte-check-subtracted-the-entry-boundary-and-went-green-for-nothing.md	35	правдивое высказывание о ПОДМНОЖЕСТВЕ целей, а не заявка «вот они все»: «у четырёх остальных целей»
 ЦЕЛИ	flang/self/bootstrap/compiler.flang	324	замер 30 августа по целям, печатающим конкурентность; «js» и девятая цель в замер не входили
-ЦЕЛИ	scripts/targets/identical-declarations.sh	102	«c» — база сличения и в перечень сличаемых не входит нарочно; девятой цели нет у двоичного
-ЦЕЛИ	scripts/targets/target-collisions.sh	104	«c» — база сличения; девятой цели нет у двоичного
-ЦЕЛИ	scripts/targets/target-collisions.sh	286	«c» — база сличения; девятой цели нет у двоичного
+ЦЕЛИ	scripts/targets/identical-declarations.sh	66	«c» — база сличения и в перечень сличаемых не входит нарочно; девятой цели нет у двоичного
+ЦЕЛИ	scripts/targets/target-collisions.sh	48	«c» — база сличения; девятой цели нет у двоичного
+ЦЕЛИ	scripts/targets/target-collisions.sh	200	«c» — база сличения; девятой цели нет у двоичного
 ЦЕЛИ	scripts/test-remote.sh	64	перечень тулчейнов машины; «js» тулчейна не имеет, девятая цель делит тулчейн с «c»
 ПУТИ	docs/ifl/reproduce.sh	17	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
 ПУТИ	docs/ifl/reproduce.sh	84	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
@@ -128,7 +128,7 @@
 ПУТИ	scripts/site/build-changelog.mjs	106	исторический корень flang/conc: каталог переименован в flang/concurrency 14 сентября 2026 (задача 1418), но коммиты, которые его трогали, в истории остались, и незнакомый корень останавливает печать журнала — перечень обязан помнить путь, которого в дереве уже нет
 ПУТИ	scripts/site/build-changelog.mjs	134	исторический корень docs/examples/cat, снятый переездом в flang/ct; перечень корней обязан помнить путь, которого в дереве уже нет
 ПУТИ	scripts/site/build-changelog.mjs	217	прямо названы ПРЕЖНИЕ места (flang/cat, flang/examples): перечень корней помнит историю нарочно
-ПУТИ	scripts/release/bump-version.sh	144	ложное срабатывание переписи: точка предложения приклеилась к имени (bootstrap/flang_repl.c.), сам файл в дереве есть
+ПУТИ	scripts/release/bump-version.sh	126	ложное срабатывание переписи: точка предложения приклеилась к имени (bootstrap/flang_repl.c.), сам файл в дереве есть
 ПУТИ	scripts/site/changelog.flang	257	исторические корни flang/conc (до 14 сентября 2026, задача 1418), flang/cat и flang/examples: перечень видимых корней помнит прежние места нарочно (flang/bin с 14 сентября 2026 снова в дереве — там проводник flangtutor)
 ПУТИ	scripts/site/changelog.flang	261	исторический корень flang/cat, снятый переездом в flang/ct; перечень служебных корней обязан его помнить
 ПУТИ	scripts/site/changelog.flang	271	входы ПРИМЕРОВ функции на прежних именах (flang/src/lexer.mjs, docs/adr/0006.md); входы примера не протухают

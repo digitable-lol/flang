@@ -55,7 +55,8 @@ replays 629 obligations out of 651; the remaining 22 are taken on the kernel's
 word (12 premises and claims, 4 steps) or closed by computing (6). Release 0.7.19
 did not move that share. Every open
 place is named in `docs/road-to-one-hundred-measured.md`, with the price of each.
-Task 6191 (the set up to the 95 % threshold) is done; the rest follows that map.
+Task 6191 (the record set up to the former threshold) is done; since 17 September 2026 the
+threshold is 100 % (task 3348), and the rest follows that map.
 
 **2. A proved translation into C.** The printer (`flang/self/emit-c.flang`) is
 not proved today, and the emitted program is not covered by the proof: what is

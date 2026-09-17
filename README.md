@@ -40,8 +40,8 @@ that it replays independently, rather than takes on the kernel's word:
 sh flang/proof/доля-корпуса.sh --проигрыванием
 # → доля-проигрыванием = 629 / 651 = 96.62 %      (13 September 2026, commit 1218aa186, flang 0.7.19)
 # → доля с предусловиями = 629 / 653 = 96.32 %    (14 September 2026, ADR-0038)
-# → порог Г4 = 95 %; добрала ли доля порога: ДА
-sh scripts/доказуемость.sh          # → ДОКАЗУЕМ, exit 0
+sh scripts/доказуемость.sh          # → НЕ ДОКАЗУЕМ, exit 1                      (17 September 2026, threshold 100 %)
+# → проверка 2 — доля проигрыванием не ниже 100 %? НЕТ (97.38 %: 633 из 650; недостижимых мест вынесено 22)
 ```
 
 Read the fraction as a fraction. The numerator, 629, is what the C checker established without
@@ -62,15 +62,19 @@ The second line counts preconditions too ([ADR-0038](docs/adr/0038-a-preconditio
 Every call of a function with `требует` is an obligation of the caller, and the kernel proves it;
 the next seed reprint prints that proof into the record, and the checker already replays it. Until
 then the two call sites of the record set (both in `flang/proof/examples/precondition.flang`) stand
-in the denominator unreplayed, which is why the second share is lower. The 95 % threshold stays on
-the first line until the record set is reprinted.
+in the denominator unreplayed, which is why the second share is lower. The 100 % threshold is
+applied to the first line until the record set is reprinted.
 
-The second command is the verdict in one word, and since release 0.7.17 (11 September 2026) it
-is **ДОКАЗУЕМ**, exit 0. It is printed from four checks, each with a number: the checker holds no
-step that proves by computing instead of replaying (measured by a trap of three ∀-goals, not by
-grepping a function name); the share is above the 95 % gate; the whole probe set passes — 453
-forgery probes rejected, 215 honest records accepted; and the probe set has not shrunk against its
-ratchet. The inference rules the kernel uses were also judged by a second, foreign judge — the
+The second command is the verdict in one word. Since 17 September 2026 the gate on the share is
+100 % — the owner's word (task 3348), raised from the former, lower gate that the share cleared
+with room to spare — and the verdict is honestly **НЕ ДОКАЗУЕМ**, exit 1: 633 obligations of 650
+replayed, 17 still taken on the kernel's word or closed by computing, each named with its price in
+[`docs/road-to-one-hundred-measured.md`](docs/road-to-one-hundred-measured.md). What flipped the
+word was the gate, not the share. It is printed from four checks, each with a number: the checker
+holds no step that proves by computing instead of replaying (measured by a trap of three ∀-goals,
+not by grepping a function name); the share is 97.38 %, below the 100 % gate; the whole probe set
+passes — 529 forgery probes rejected, 244 honest records accepted; and the probe set has not shrunk
+against its ratchet. The inference rules the kernel uses were also judged by a second, foreign judge — the
 Lean 4 kernel; the one rule Lean rejected was unsound and has been fixed. That run is a dated one:
 it judged 88 rules against 85 lemmas on 11 September. The list of inference rules has grown since — 97 rules in
 `flang/proof/ПРАВИЛА-ВЫВОДА.tsv`, 105 lemmas written in `flang/proof/lean/Правила.lean` — and

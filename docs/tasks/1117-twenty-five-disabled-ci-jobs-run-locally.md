@@ -1,0 +1,35 @@
+---
+номер: 1117
+заголовок: Работы выключенных ci.yml и «Двойников на целях» прогнаны локально — таблица «зелена / красна / не запускается» с причиной
+статус: в работе
+исполнитель: a
+ветка: a/1117-twenty-five-disabled-ci-jobs-run-locally
+команда: вторая
+карта: Что мешает больше всего
+рядом: 1425, 8651
+нужность: 1 — два workflow выключены руками (gh workflow list: CI и «Двойники» disabled_manually); что в них красно, не знает никто — включать нельзя вслепую
+---
+
+# 1117. Таблица работ выключенных workflow
+
+## Чем измерено
+
+Дерево `main` `cbfaf3899`, 17 сентября 2026; `gh workflow list --repo digitable-lol/flang --all`:
+активны 7 (Сайт документации, Сборка на macOS, Двоичный, Путь установки, Перепечатка,
+Выпуск, Проба ветки); выключены руками 2 — `CI` (ci.yml) и «Двойники на целях» (dvoyniki.yml).
+
+Работ в `ci.yml` — 23 (`grep -E '^  [a-z][a-z0-9_-]+:$'`: semya, proza, kirillica, nastroyki,
+zadachnik, postoyannye, stolknoveniya, zhargon, test, licensing, links, pechat, korpus,
+progon, granica, oblast, pravila-spisok, pravila, klyuchi, stale-pages, neznanye-storozha,
+svyaz-celi, seed-verdicts); из них 5 живут только меткой или ручным запуском
+(stolknoveniya, test, pravila, stale-pages — `if: github.ref_type == 'tag' || workflow_dispatch`).
+Работ в `dvoyniki.yml` — 4 (planirovshchik, nadzor, uzel, pechat-svyazi). Итого 27.
+Прежний лид считал 21 из 25 зелёными, 4 чинились — таблицы не оставил.
+
+## Как поймём, что сделано
+
+- В этой задаче — таблица по всем 27 работам: имя, что зовёт (строка `run:`), исход
+  локального прогона «зелена / красна / не запускается», код, время, причина красноты
+  или незапуска (чего нет на машине — например elixir), и что нужно, чтобы включить;
+- у каждой строки — команда, которой прогнано, и дерево/двоичный;
+- включать workflow — только overagent; здесь ничего не включается.

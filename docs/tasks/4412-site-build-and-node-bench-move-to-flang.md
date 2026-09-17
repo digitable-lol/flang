@@ -21,7 +21,7 @@
 
 | потребитель | что ввозит из трёх каталогов | кто зовёт потребителя |
 |---|---|---|
-| `docs/site/podsvetka.mjs` | `flang/scripts/binary.mjs` (`кодыРазбора`, `токеныИсходника`) | `docs/site/build.mjs` → `pages.yml`, ярлыки `сайт`, `сайт:проверка` |
+| `docs/site/highlighting.mjs` | `flang/scripts/binary.mjs` (`кодыРазбора`, `токеныИсходника`) | `docs/site/build.mjs` → `pages.yml`, ярлыки `сайт`, `сайт:проверка` |
 | `docs/site/surfaces-run.mjs` | `binary.mjs`, `flang/scripts/direct-run.mjs`, `flang/test/surface-pair.mjs` | ярлыки `поверхности:прогон`, `поверхности:проверка` |
 | `docs/site/site-numbers.mjs` | `direct-run.mjs`, `flang/scripts/proof-ledger.mjs` (`ФАЙЛЫ`, `сводКорпуса`) | ярлыки `числа`, `числа:проверка` |
 | `flang/concurrency/bench/node-death-targets.mjs` | `flang/test/{tempdir,toolchain-guard,uzel-osnastka}.mjs` | **никто** (ни ярлык, ни `.yml`, ни `.sh`) |
@@ -34,8 +34,8 @@
 ## Что уже есть на flang
 
 Двойники узла сайта лежат рядом с оригиналами: `docs/site/build.flang`,
-`sitemap.flang`, `site-numbers.flang`, `diagram.flang`, `podsvetka.flang`,
-`markdown.flang`, `poisk.flang`, `numbers.flang`, `storozh-kontrasta.flang`
+`sitemap.flang`, `site-numbers.flang`, `diagram.flang`, `highlighting.flang`,
+`markdown.flang`, `search.flang`, `numbers.flang`, `contrast-guard.flang`
 (последний уже зовётся `pages.yml`). Ни один ярлык и ни один workflow на
 двойники сборки не переключён: `pages.yml` зовёт `node docs/site/build.mjs`
 дважды (`--check` и сборка), ярлыки `сайт*`, `поверхности:*`, `числа*` — Node.
@@ -62,7 +62,7 @@
 ## Как понять, что сделано
 
 `git ls-files 'docs/site/*.mjs' 'flang/concurrency/bench/*.mjs' | wc -l` → 0 (кроме
-`docs/site/poisk-proverka.mjs`, если решение о нём не изменилось — он
-проверяет тот же `poisk.js`, что читает браузер); `pages.yml` без `node`;
+`docs/site/search-check.mjs`, если решение о нём не изменилось — он
+проверяет тот же `search.js`, что читает браузер); `pages.yml` без `node`;
 `./ярлык сайт:проверка` и `./ярлык поверхности:проверка` отвечают тем же
 кодом, что до сноса.

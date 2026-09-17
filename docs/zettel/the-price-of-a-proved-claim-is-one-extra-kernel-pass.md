@@ -134,4 +134,4 @@
 
 Связано: [[a-proved-postcondition-no-longer-reaches-printed-code]], [[proven-is-not-correct]],
 [[a-postcondition-runs-on-every-call-so-a-walk-inside-it-changes-the-cost-order]],
-[[keshirovat-dokazatelstvo-dorozhe-chem-dokazat]]
+[[caching-a-proof-costs-more-than-proving-it]]

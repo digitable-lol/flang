@@ -275,11 +275,11 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - name: Прибор краснеет на подложенном расхождении
-        run: sh scripts/seed/pechat-povtorima.sh --подлог
+        run: sh scripts/seed/print-is-repeatable.sh --подлог
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: Две печати входа побольше совпадают побайтово
-        run: sh scripts/seed/pechat-povtorima.sh --вход flang/self/emit-c.flang
+        run: sh scripts/seed/print-is-repeatable.sh --вход flang/self/emit-c.flang
         env:
           FLANG_TMP: ${{ runner.temp }}
 

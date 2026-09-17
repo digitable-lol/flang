@@ -82,4 +82,4 @@ npm**: после перехода `flang emit --out` требует, чтобы
 Связано: [[cli-help-diverges-between-the-two-implementations]],
 [[the-cli-reference-check-missed-a-forgotten-command]],
 [[the-installed-binary-is-a-named-subset]],
-[[vypusk-ne-mog-sostoyatsya-nabor-treboval-arhiv-kotorogo-nikto-ne-sobiral]]
+[[the-release-was-closed-on-itself-the-suite-needed-an-archive-nobody-built]]

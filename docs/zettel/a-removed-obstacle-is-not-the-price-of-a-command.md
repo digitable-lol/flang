@@ -66,4 +66,4 @@ JSON в двоичном компиляторе брать было решено
 
 Связано: [[five-binary-commands-and-the-price-of-each]],
 [[a-module-address-is-the-sha256-of-its-source]],
-[[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]]
+[[the-binary-ledger-can-be-weaker-and-never-stronger]]

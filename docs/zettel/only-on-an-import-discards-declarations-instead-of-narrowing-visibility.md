@@ -59,5 +59,5 @@ FLANG_UNKNOWN_NAME, строка 632, столбец 130: неизвестная
 и список имён надо расширять на всё, что зовут утверждения, то есть на
 транзитивное замыкание, которого автор списка не видит.
 
-Связано: [[storozh-stolknoveniy-ne-znal-o-variantah-summy]],
+Связано: [[the-collision-guard-did-not-know-sum-variants]],
 [[a-category-surface-costs-forty-unwritten-rules-not-a-bigger-closure]]

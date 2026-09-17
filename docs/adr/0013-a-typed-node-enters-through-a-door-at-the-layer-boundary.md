@@ -306,7 +306,7 @@ PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- \
 
 # что типизация НЕ чинит — уже лежит в дереве и по-прежнему отвергается
 PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- \
-  flang check flang/test/fixtures/razrez-kruga/poddelka-uzel-celikom.flang
+  flang check flang/test/fixtures/razrez-kruga/forgery-whole-node.flang
 ```
 
 Отказ подделки назван поимённо и читается без толкования:

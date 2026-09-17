@@ -41,4 +41,4 @@ JavaScript. Поэтому имена `categories`/`morphisms`/`transformations`
 Связано: [[a-category-surface-costs-forty-unwritten-rules-not-a-bigger-closure]],
 [[a-trimmed-build-must-say-what-it-did-not-check]],
 [[only-on-an-import-discards-declarations-instead-of-narrowing-visibility]],
-[[storozh-stolknoveniy-ne-znal-o-variantah-summy]]
+[[the-collision-guard-did-not-know-sum-variants]]

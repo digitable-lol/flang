@@ -66,4 +66,4 @@ JavaScript и подаёт внутрь слоя. Правка общего сл
 
 Связано: [[pulling-a-module-into-the-self-hosted-compiler-pays-for-meetings-not-size]],
 [[byte-for-byte-comparison]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]]
+[[the-command-loop-belongs-to-the-host-not-the-language]]

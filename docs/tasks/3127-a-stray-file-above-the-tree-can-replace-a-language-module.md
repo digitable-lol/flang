@@ -171,7 +171,7 @@ stderr, код возврата 0.
 Сегодня на этой машине сторож **красен по делу**: пять ввозов «JSON». Поэтому в
 `.githooks/pre-push` он не взят — хук, красный по чужому файлу вне дерева,
 обойдут через `--no-verify`. Записан в обе ведомости с причиной
-(`scripts/ledgers/storozha-bez-zova.json`, `scripts/ledgers/storozha-bez-podloga.json`).
+(`scripts/ledgers/uncalled-guards.json`, `scripts/ledgers/guards-without-forgery-probe.json`).
 
 ## Чего это стоило дереву
 
@@ -224,7 +224,7 @@ stderr, код возврата 0.
 4. Затенение перестаёт быть только строкой в stderr: под ключом оно даёт
    ненулевой код.
 5. Сторож позван — хуком либо шагом CI, — и позван так, что его проба порчи
-   прогоняется, а не лежит; `sh scripts/guards/storozha-bez-podloga.sh --check`
+   прогоняется, а не лежит; `sh scripts/guards/guards-without-forgery-probe.sh --check`
    зелен и записи о нём в ведомостях больше нет.
 
 ## Предел подъёма внесён 8 сентября 2026 (ветка `r/volna-pechat`)
@@ -246,7 +246,7 @@ stderr, код возврата 0.
 ### Чем проверено
 
 Двоичный собран ВНЕ дерева приёмом из шапки
-`scripts/seed/semya-rantayma-eto-istochnik.sh` (шапка 9 строк + источник, `make -j8`).
+`scripts/seed/seed-runtime-is-source.sh` (шапка 9 строк + источник, `make -j8`).
 Игрушечное дерево той же породы, что у `--подлог`, но с двоичным ВНУТРИ него
 (иначе библиотека ищется не там): `дерево/flang/stdlib/lists.flang` даёт 2,
 `над/чужой-черновик.flang` — 99, ввозит `дерево/scripts/proba.flang`.

@@ -197,7 +197,7 @@ export const РАЗДЕЛЫ = [
          описаны со стороны ядра, а не со стороны того, кто пишет обещание.
          Семь форм, и про каждую сказано прогоном, берётся она или нет; числа
          сняты 23 августа 2026 на стандартной библиотеке. */
-      { адрес: 'kak-dokazat.html', имя: 'Какие обещания ядро берёт', из: 'docs/site/kak-dokazat.ru.md' },
+      { адрес: 'what-the-kernel-accepts.html', имя: 'Какие обещания ядро берёт', из: 'docs/site/what-the-kernel-accepts.ru.md' },
       /* СТОИТ ЧЕТВЁРТЫМ, сразу за «какими обещаниями ядро берёт». Та страница
          говорит про формы записи вообще; эта — единственная, где те же правила
          приложены к чужой мерке: сорок пять классических лемм, выписанных
@@ -206,12 +206,12 @@ export const РАЗДЕЛЫ = [
          первый вопрос — «а моё-то возьмётся», и отвечать на него было нечем.
          Числа в ней сняты прогоном, и недоказанным названа причина: шесть
          причин на двадцать девять лемм. */
-      { адрес: 'matematika.html', имя: 'Классика Coq и Lean: что берёт ядро', из: 'docs/site/matematika.ru.md' },
+      { адрес: 'mathematics.html', имя: 'Классика Coq и Lean: что берёт ядро', из: 'docs/site/mathematics.ru.md' },
       { адрес: 'proofs.html', имя: 'Зачем и как', из: 'docs/site/proofs.ru.md' },
       /* Страница про службу для помощника стоит в «Доказательствах», а не в
          «Начале»: она не про то, как начать, а про то, что отвечает
          `flang --mcp-mode` и как это прописать помощнику. */
-      { адрес: 'dlya-ii.html', имя: 'Служба для ИИ-помощника', из: 'docs/site/dlya-ii.ru.md' },
+      { адрес: 'ai-assistant.html', имя: 'Служба для ИИ-помощника', из: 'docs/site/ai-assistant.ru.md' },
       { адрес: 'case-studies.html', имя: 'Разбор: 82 задачи с leetcode', из: 'docs/site/case-studies.ru.md' },
     ],
   },
@@ -406,6 +406,10 @@ export const ПЕРЕЕЗДЫ = {
   // выпуска 0.5.1, и разработчику он не нужен. Адрес был опубликован —
   // значит, по нему остаётся строка, уводящая на «Установку».
   'install-evidence.html': 'install.html',
+  // 17 сентября 2026: имена без транслита (задача 1428, часть 2).
+  'kak-dokazat.html': 'what-the-kernel-accepts.html',
+  'matematika.html': 'mathematics.html',
+  'dlya-ii.html': 'ai-assistant.html',
 };
 
 /**
@@ -543,4 +547,32 @@ export const ПЕРЕЕЗДЫ_ЗАМЕТОК = {
   "znanie-z3-orakul-a-ne-sudya.html": "knowledge-z3-as-oracle-not-judge.html",
   "znanie-zamknutuyu-tsel-nado-schitat.html": "knowledge-closed-goals-must-be-computed.html",
   "znanie-zamorozhennyy-etalon.html": "knowledge-a-frozen-reference-changes-the-check.html",
+  // 17 сентября 2026: имена без транслита (задача 1428, часть 2).
+  "knowledge-chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy.html": "knowledge-site-numbers-go-stale-with-the-dictionary-and-one-command-cures-both.html",
+  "knowledge-chto-nelzya-napisat-v-obespechivaet.html": "knowledge-four-things-a-postcondition-cannot-say.html",
+  "knowledge-cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku.html": "knowledge-the-command-loop-belongs-to-the-host-not-the-language.html",
+  "knowledge-darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy.html": "knowledge-a-free-statement-is-exposed-by-replacing-the-body-with-a-stub.html",
+  "knowledge-dizyunkciya-v-dopushchenii-razbiraetsya-sluchayami-a-ne-rasshchepliaetsya.html": "knowledge-a-disjunction-in-a-hypothesis-is-split-by-cases-not-torn-apart.html",
+  "knowledge-dva-pravila-zavershaemosti-vmeste-dayut-574.html": "knowledge-two-termination-rules-together-give-574.html",
+  "knowledge-dve-mery-stroki-delyat-vstroennye-formy.html": "knowledge-two-string-measures-divided-the-builtin-forms.html",
+  "knowledge-dvoichnyy-v-main-otstal-ot-svoih-ischodnikov.html": "knowledge-the-binary-in-main-lagged-its-own-sources.html",
+  "knowledge-flang-bliznec-storozha-stolknoveniy-zelenel-na-treh-nastoyashchih-stolknoveniyah.html": "knowledge-the-flang-twin-of-the-collision-guard-stayed-green-on-three-real-collisions.html",
+  "knowledge-indukciya-po-stroke-zakryla-odno-utverzhdenie-a-ne-sotnyu.html": "knowledge-string-induction-closed-one-statement-not-a-hundred.html",
+  "knowledge-instrument-yazyka-pishetsya-na-yazyke-krome-effektov.html": "knowledge-the-corpus-runner-is-written-in-flang-except-for-effects.html",
+  "knowledge-izmeritel-chisla-umiraet-ran-she-chem-chislo-v-proze.html": "knowledge-the-measurer-dies-before-the-number-in-prose.html",
+  "knowledge-keshirovat-dokazatelstvo-dorozhe-chem-dokazat.html": "knowledge-caching-a-proof-costs-more-than-proving-it.html",
+  "knowledge-nezagruzhennaya-proba-v-otchyote-neotlichima-ot-otsutstvuyushchey.html": "knowledge-a-test-file-that-failed-to-load-looks-absent-in-the-report.html",
+  "knowledge-node-ushyol-s-puti-sborki.html": "knowledge-node-left-the-build-path.html",
+  "knowledge-pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.html": "knowledge-plan-printing-is-promised-inside-out-and-nothing-verifies-it.html",
+  "knowledge-pokazat-otvechaet-sboem-a-ne-ronyaet-progon.html": "knowledge-show-answers-with-a-refusal-and-does-not-crash-the-run.html",
+  "knowledge-posle-udaleniya-vtoroy-realizacii-nabor-prob-otdayot-nol.html": "knowledge-after-the-second-implementation-is-deleted-the-test-suite-returns-zero.html",
+  "knowledge-proverka-zovushchaya-kompilyator-perenositsya-na-flang-mehanicheski.html": "knowledge-a-check-that-calls-the-compiler-ports-to-flang-mechanically.html",
+  "knowledge-razbor-tseli-mimo-chislitelya.html": "knowledge-goal-case-split-closes-sites-but-misses-the-numerator.html",
+  "knowledge-refleksivnost-i-cel-vybor-vmeste-dayut-nol.html": "knowledge-reflexivity-and-goal-choice-together-give-zero.html",
+  "knowledge-storozh-stolknoveniy-ne-znal-o-variantah-summy.html": "knowledge-the-collision-guard-did-not-know-sum-variants.html",
+  "knowledge-tri-fakta-o-dline-dali-tri-utverzhdeniya.html": "knowledge-three-length-facts-gave-three-statements.html",
+  "knowledge-vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee.html": "knowledge-the-binary-ledger-can-be-weaker-and-never-stronger.html",
+  "knowledge-veer-osnastki-schitaetsya-po-yadram-a-konchaetsya-pamyat.html": "knowledge-the-harness-fan-is-sized-by-cores-but-memory-runs-out-first.html",
+  "knowledge-vypusk-ne-mog-sostoyatsya-nabor-treboval-arhiv-kotorogo-nikto-ne-sobiral.html": "knowledge-the-release-was-closed-on-itself-the-suite-needed-an-archive-nobody-built.html",
+  "knowledge-zakony-kak-ukazatel.html": "knowledge-laws-as-a-pointer-not-a-conclusion.html",
 };

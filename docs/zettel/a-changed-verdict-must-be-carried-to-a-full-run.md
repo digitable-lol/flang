@@ -33,4 +33,4 @@ FLANG_PROPERTY: нарушено свойство «…»
 её задача быть ЛОЖНОЙ, и один контрпример это решает окончательно.
 
 Связано: [[the-core-proved-a-falsehood]], [[checks-that-stopped-comparing]],
-[[refleksivnost-i-cel-vybor-vmeste-dayut-nol]]
+[[reflexivity-and-goal-choice-together-give-zero]]

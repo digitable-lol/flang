@@ -54,7 +54,7 @@ bootstrap/flang test  docs/examples/allocator/allocator.flang
 сколько утверждений доказано, сколько на сетке, сколько объявлено без
 доказательства. На этой странице этих чисел нет: они меняются вместе с ядром.
 Замер на определённую дату, до и после правки свёртки, стоит в разделе о
-неравенствах на странице [какие обещания ядро берёт](kak-dokazat.html).
+неравенствах на странице [какие обещания ядро берёт](what-the-kernel-accepts.html).
 
 ## Что доказано и что нет
 
@@ -120,5 +120,5 @@ bootstrap/flang test  docs/examples/allocator/allocator.flang
 
 * [Каталог примеров](examples.html)
 * [Что доказано, а что нет](what-is-proved.html)
-* [Какие обещания ядро берёт](kak-dokazat.html)
+* [Какие обещания ядро берёт](what-the-kernel-accepts.html)
 * [Драйвер MSI на flang](msi-driver.html)

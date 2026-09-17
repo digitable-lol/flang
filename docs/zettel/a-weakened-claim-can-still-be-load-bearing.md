@@ -26,5 +26,5 @@
 Счёт содержательности отвечает на вопрос «что это утверждение говорит о функции»,
 а не «нужно ли оно в файле».
 
-Связано: [[darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy]],
+Связано: [[a-free-statement-is-exposed-by-replacing-the-body-with-a-stub]],
 [[nat-counter-in-a-record-is-unwritable]]

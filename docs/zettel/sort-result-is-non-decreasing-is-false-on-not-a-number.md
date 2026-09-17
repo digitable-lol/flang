@@ -36,4 +36,4 @@
 собой — сторожить `элемент 1 в пусто` не приходится.
 
 Связано: [[proven-is-not-correct]], [[reading-if-conditions-closed-zero-goals]],
-[[chto-nelzya-napisat-v-obespechivaet]]
+[[four-things-a-postcondition-cannot-say]]

@@ -108,7 +108,7 @@ LC_ALL=C.UTF-8 node $W/schyot.mjs <модуль>.flang     # по одному �
 связывает результат со входом ДРУГОЙ дорогой, и сводить его не к чему.
 
 Что ставить взамен, названо в
-[[darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy]]: равенство вместо
+[[a-free-statement-is-exposed-by-replacing-the-body-with-a-stub]]: равенство вместо
 границы («удалено ровно столько, сколько было вхождений»), сверка двух
 реализаций одного смысла, условие вместо оговорки в прозе, место вместо
 наличия.
@@ -147,5 +147,5 @@ LC_ALL=C.UTF-8 node $W/schyot.mjs <модуль>.flang     # по одному �
   — это всё, что сказано; смысла функции такое утверждение может не исчерпывать.
 
 Связано: [[proved-claims-in-http-and-json-were-all-gratis]],
-[[darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy]],
+[[a-free-statement-is-exposed-by-replacing-the-body-with-a-stub]],
 [[a-shape-only-postcondition-survives-a-stub-and-says-nothing]].

@@ -59,7 +59,7 @@
    исходник назван хоть одной записью проб, сторож краснеет со словами «тронут
    исходник пробы — прогони набор проб и пересобери запись руками».
 2. Поставить его в `.githooks/pre-push` рядом с `podlog`/`opis` и вписать в
-   `scripts/guards/kto-zovet-storozhey.sh` (иначе сторож тихо мертвеет — см. docs/tasks/README.md).
+   `scripts/guards/who-calls-the-guards.sh` (иначе сторож тихо мертвеет — см. docs/tasks/README.md).
 3. В `docs/HANDOFF.md` — одну строку правилом выше.
 
 ## Найдено

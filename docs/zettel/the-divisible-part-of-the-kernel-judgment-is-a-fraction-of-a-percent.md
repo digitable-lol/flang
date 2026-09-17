@@ -89,4 +89,4 @@
 
 Связано: [[obligations-fan-out-is-blocked-by-the-printer-not-the-kernel]],
 [[obligations-list-built-by-descent-costs-a-square]],
-[[veer-osnastki-schitaetsya-po-yadram-a-konchaetsya-pamyat]]
+[[the-harness-fan-is-sized-by-cores-but-memory-runs-out-first]]

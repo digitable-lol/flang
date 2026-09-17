@@ -1,7 +1,7 @@
 # Три точные меры длины у строки дали восемь утверждений — вчетверо больше, чем сам принцип индукции
 
 Соседняя заметка
-[[indukciya-po-stroke-zakryla-odno-utverzhdenie-a-ne-sotnyu]] кончалась списком
+[[string-induction-closed-one-statement-not-a-hundred]] кончалась списком
 из трёх недостач, названных дословно, и первая половина этого списка закрыта.
 Прибавка измерена на том же корпусе тем же способом:
 
@@ -29,7 +29,7 @@
 ```
 
 **Читать это стало можно только после того, как мера у строки стала одна.**
-Пока их было две ([[dve-mery-stroki-delyat-vstroennye-formy]]), первое правило
+Пока их было две ([[two-string-measures-divided-the-builtin-forms]]), первое правило
 было ЛОЖНЫМ: `соединить` считал единицы UTF-16, `длина` — знаки, и склейка двух
 одиноких половин суррогатной пары давала один знак вместо двух. Сегодня склейка
 проверяет единственный опасный стык — последняя единица левой части и первая
@@ -120,8 +120,8 @@ FLANG_PROPERTY: нарушено свойство «кусок длиной в �
 списочная, а снятые восемь — в строковых модулях. То есть работа цену при работе
 не подняла ни на одну проверку, а восемь убрала.
 
-Связано: [[indukciya-po-stroke-zakryla-odno-utverzhdenie-a-ne-sotnyu]],
-[[dve-mery-stroki-delyat-vstroennye-formy]],
+Связано: [[string-induction-closed-one-statement-not-a-hundred]],
+[[two-string-measures-divided-the-builtin-forms]],
 [[claims-about-length-are-two-thirds-of-what-the-kernel-refuses]],
 [[a-grid-passed-length-claim-can-still-be-false-on-surrogates]],
 [[a-proved-postcondition-no-longer-reaches-printed-code]]

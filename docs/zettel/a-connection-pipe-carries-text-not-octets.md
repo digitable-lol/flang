@@ -81,5 +81,5 @@ UTF-8 (`сокет.setEncoding("utf8")` в `flang/src/host/node.mjs`). Окте�
 котором это работает.
 
 Связано: [[a-dictionary-field-named-like-a-keyword-cannot-be-read]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]],
+[[the-command-loop-belongs-to-the-host-not-the-language]],
 [[an-unframeable-stream-is-drained-by-the-phase-finalizer-not-the-parser]]

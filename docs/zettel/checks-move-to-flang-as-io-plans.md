@@ -50,14 +50,14 @@ git -C ../.. grep -h -I -e FLANG_ -- . ':!*.md' …  1938 строк, 775 КБ
 
 **Позднее измерение отменяет предыдущий абзац наполовину.** На двоичном 0.5.1
 `«Показать»` приходит откликом `«Сбой»` с кодом `FLANG_IO_NO_SCREEN`, и прогон
-после него продолжается — см. [[pokazat-otvechaet-sboem-a-ne-ronyaet-progon]].
+после него продолжается — см. [[show-answers-with-a-refusal-and-does-not-crash-the-run]].
 Сказать человеку слово до конца работы по-прежнему нечем, но попытка перестала
 быть смертельной.
 
 **Что оказалось НЕ нехваткой.** Ни одной новой команды двоичному не
 понадобилось: `check --proof --json`, `check` и `io` покрыли все три переноса.
 Разбор ответа — по меткам ключей, как в `fspec/guard.flang`, и по той же
-причине (см. [[proverka-zovushchaya-kompilyator-perenositsya-na-flang-mehanicheski]]:
+причине (см. [[a-check-that-calls-the-compiler-ports-to-flang-mechanically]]:
 у `flang/stdlib/json.flang` нет доступа к полю по имени, а три его собственных
 утверждения имеют вердикт `grid`). Прогонщик (`{"fn":…}` на вход) при этом
 открывает только функции самого компилятора — `«Разобрать json»` через него не
@@ -83,6 +83,6 @@ git -C ../.. grep -h -I -e FLANG_ -- . ':!*.md' …  1938 строк, 775 КБ
   имеет тип `число`, и объявить счётчик натуральным нельзя без потери типа на
   первом же шаге.
 
-Связано: [[proverka-zovushchaya-kompilyator-perenositsya-na-flang-mehanicheski]],
-[[instrument-yazyka-pishetsya-na-yazyke-krome-effektov]],
+Связано: [[a-check-that-calls-the-compiler-ports-to-flang-mechanically]],
+[[the-corpus-runner-is-written-in-flang-except-for-effects]],
 [[an-exit-code-cannot-come-from-a-named-failure]]

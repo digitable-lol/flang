@@ -247,7 +247,7 @@ presence, so does `TERM=dumb`; `COLORTERM=truecolor` gives true colour, a `TERM`
 the palette. ⌘-arrows never reach the shell — the terminal application takes them; in Terminal.app
 and iTerm2 word moves need Option sent as Esc+. Under a pipe (`flang repl < script`) none of this
 exists: the same `fgets`, the output byte for byte as before and without a single ESC — held by
-`scripts/repl-proba.sh`.
+`scripts/repl-probe.sh`.
 
 Tab completes: a session name in guillemets (`«Втр` → `«Втрое»`), a keyword of the language, a dot
 command; at the start of a line it still indents by two spaces. Pasting a multi-line declaration is
@@ -386,7 +386,7 @@ everything else under `docs/` is [`docs/README.md`](docs/README.md).
 | --- | --- |
 | write the first file | [Your first program](https://digitable-lol.github.io/flang/en/getting-started.html) · [Tutorial](https://digitable-lol.github.io/flang/en/tutorial.html) |
 | look a construct up | [Language](https://digitable-lol.github.io/flang/en/language.html) · [Standard library](https://digitable-lol.github.io/flang/en/stdlib.html) · [Diagnostics](https://digitable-lol.github.io/flang/en/diagnostics.html) |
-| understand the proofs | [What is proved](https://digitable-lol.github.io/flang/en/what-is-proved.html) · [Which claims the kernel takes](https://digitable-lol.github.io/flang/en/kak-dokazat.html) · [The kernel refused: whose error](https://digitable-lol.github.io/flang/en/proof-refused.html) |
+| understand the proofs | [What is proved](https://digitable-lol.github.io/flang/en/what-is-proved.html) · [Which claims the kernel takes](https://digitable-lol.github.io/flang/en/what-the-kernel-accepts.html) · [The kernel refused: whose error](https://digitable-lol.github.io/flang/en/proof-refused.html) |
 | run it somewhere | [Install](https://digitable-lol.github.io/flang/en/install.html) · [Commands](https://digitable-lol.github.io/flang/en/cli.html) · [Editor](https://digitable-lol.github.io/flang/en/editor.html) · [Processes and supervision](https://digitable-lol.github.io/flang/en/processes.html) |
 | see real programs | [Examples](https://digitable-lol.github.io/flang/en/examples.html) — the sets under [`docs/examples/`](docs/examples) |
 | read the contracts | [`docs/flang/SPEC.md`](docs/flang/SPEC.md) · [`docs/flang/self/SPEC.md`](docs/flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](docs/flang/proof/SPEC.md) · [`docs/flang/conc/SPEC.md`](docs/flang/conc/SPEC.md) · [`docs/ct/spec.md`](docs/ct/spec.md) |
@@ -454,7 +454,7 @@ result is compared with what is committed: `sh scripts/raskrutka.sh --check`. Th
 last print are recorded in `scripts/otpechatok-semeni`, one hashed line each — 48 lines in the input half; with the second half, the seed body,
 the file is 65 lines. <!-- СНЯТО 2026-09-13 строк scripts/otpechatok-semeni = 65 -->
 The
-seed lags the sources today, in three files and 77 functions: `sh scripts/seed/chto-otstalo-ot-semeni.sh`
+seed lags the sources today, in three files and 77 functions: `sh scripts/seed/what-lags-the-seed.sh`
 lists which files and functions are newer than the seed, and a reprint (`sh scripts/raskrutka.sh`, hours on one core)
 is how edits to `flang/self/` reach the binary. What the seed is and what guards it —
 [`bootstrap/README.md`](bootstrap/README.md) and [the bootstrap circle](docs/guide/bootstrap-circle.md).

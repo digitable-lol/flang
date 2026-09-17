@@ -74,5 +74,5 @@ FLANG_PROCESS — действие «отправить»: адресат обя
 рантайме ничего из этого не нужно вовсе, и именно поэтому узел живёт там.
 
 Связано: [[a-decision-about-the-world-is-portable-even-when-the-world-is-not]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]],
+[[the-command-loop-belongs-to-the-host-not-the-language]],
 [[distribution-splits-into-world-and-wire]]

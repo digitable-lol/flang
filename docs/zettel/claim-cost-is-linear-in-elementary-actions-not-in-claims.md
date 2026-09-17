@@ -82,4 +82,4 @@
 Связано: [[a-postcondition-runs-on-every-call-so-a-walk-inside-it-changes-the-cost-order]],
 [[induction-cost-is-a-switch-not-a-counter]],
 [[a-baseline-taken-by-branch-name-is-not-a-baseline]],
-[[darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy]]
+[[a-free-statement-is-exposed-by-replacing-the-body-with-a-stub]]

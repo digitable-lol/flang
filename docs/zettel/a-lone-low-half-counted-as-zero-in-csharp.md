@@ -1,6 +1,6 @@
 # Свести меры к одной мало: у C# «длина» и «разложить на символы» расходились на ОДИНОКОЙ половине пары ещё сутки после сведения
 
-Сведение мер ([[dve-mery-stroki-delyat-vstroennye-formy]]) сказало: у строки
+Сведение мер ([[two-string-measures-divided-the-builtin-forms]]) сказало: у строки
 одна мера — знаки, и все восемь целей печати считают ею. Замер 21 августа 2026
 показал, что у одной цели из восьми это было неправдой, и неправдой ВНУТРИ одной
 цели: две формы, обе объявленные считающими знаки, отвечали о том же тексте
@@ -111,7 +111,7 @@
 Вывод для того, кто возьмёт эту тему следующим: **писать два недостающих закона
 заново не надо — надо слить `u/stroka-indukciya` в ствол.**
 
-Связано: [[dve-mery-stroki-delyat-vstroennye-formy]],
+Связано: [[two-string-measures-divided-the-builtin-forms]],
 [[string-reversal-keeps-length-is-false-on-a-lone-surrogate]],
 [[a-grid-passed-length-claim-can-still-be-false-on-surrogates]],
 [[a-lone-surrogate-literal-breaks-self-application]]

@@ -64,7 +64,7 @@ Python объявил потерю через 605 мс при сроке 600, т
 
 Связано: [[distribution-splits-into-world-and-wire]],
 [[a-node-cannot-be-an-ordinary-program-because-of-the-literal-addressee]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]]
+[[the-command-loop-belongs-to-the-host-not-the-language]]
 
 ---
 

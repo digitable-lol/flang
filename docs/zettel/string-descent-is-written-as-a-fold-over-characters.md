@@ -30,5 +30,5 @@
 прибором: здесь довод был снят раньше, чем задача заведена, и работа оказалась про
 форму тела, а не про принцип.
 
-Связано: [[indukciya-po-stroke-zakryla-odno-utverzhdenie-a-ne-sotnyu]],
-[[tri-fakta-o-dline-dali-tri-utverzhdeniya]], [[bottleneck-moved-to-body-shape]]
+Связано: [[string-induction-closed-one-statement-not-a-hundred]],
+[[three-length-facts-gave-three-statements]], [[bottleneck-moved-to-body-shape]]

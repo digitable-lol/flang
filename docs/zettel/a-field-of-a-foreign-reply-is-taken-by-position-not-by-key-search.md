@@ -54,6 +54,6 @@
 JSON, где порядок ключей не обещан, счёт скобок годится, а отсчёт «после
 параметров идёт возврат» — нет.
 
-Связано: [[proverka-zovushchaya-kompilyator-perenositsya-na-flang-mehanicheski]],
+Связано: [[a-check-that-calls-the-compiler-ports-to-flang-mechanically]],
 [[checks-move-to-flang-as-io-plans]], [[tautologies-close-for-free]],
 [[there-is-no-delete-file-order-in-the-io-dictionary]]

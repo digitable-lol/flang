@@ -12,12 +12,12 @@ stdout. Прогон, где программа сдалась сама («Пр�
 не тем, чем должен.
 
 **Чем подтверждено.** Ветка `u/port4`, сборка сайта зовёт
-`docs/site/storozh-kontrasta.flang`. Первая редакция читала `прогон.stdout`; при
+`docs/site/contrast-guard.flang`. Первая редакция читала `прогон.stdout`; при
 порче таблицы стилей сборка напечатала «план отказал, а бед не назвал» и вывалила
 весь JSON одной строкой вместо двух названных бед. Разделение потоков:
 
-    flang io docs/site/storozh-kontrasta.flang 2>/dev/null   → пусто
-    flang io docs/site/storozh-kontrasta.flang 2>&1 1>/dev/null → {"error":…}
+    flang io docs/site/contrast-guard.flang 2>/dev/null   → пусто
+    flang io docs/site/contrast-guard.flang 2>&1 1>/dev/null → {"error":…}
 
 После правки (`прогон.stderr || прогон.stdout`) порча поднимает счёт бед сборки
 с 13 до 15 и называет обе поимённо.

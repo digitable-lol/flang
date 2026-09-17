@@ -18,7 +18,7 @@
 
 **Почему это не заметили двое суток.** Потому что заметить было нечем. Из 78
 файлов ярлыком гонялись пятеро: `ярлыки.flang`, `flang/proof/map/abilities.flang`,
-`docs/site/storozh-kontrasta.flang`, `scripts/guards/license-guard.flang` и каталог
+`docs/site/contrast-guard.flang`, `scripts/guards/license-guard.flang` и каталог
 `fspec/spec/**`. Остальные семьдесят три не проверяет сегодня НИЧТО — ровно как
 `examples/driver/uart.flang`, до которого откат тоже не дошёл и который пролежал
 сломанным двое суток.

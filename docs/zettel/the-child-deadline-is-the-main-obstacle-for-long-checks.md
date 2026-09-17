@@ -29,4 +29,4 @@
 потомку в ввод, из-за этого не проверяема ничем.
 
 Связано: [[checks-move-to-flang-as-io-plans]],
-[[pokazat-otvechaet-sboem-a-ne-ronyaet-progon]]
+[[show-answers-with-a-refusal-and-does-not-crash-the-run]]

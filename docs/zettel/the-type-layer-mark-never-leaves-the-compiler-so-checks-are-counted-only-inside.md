@@ -41,6 +41,6 @@
 принципе, а не «пока не написано». Инструмент, которому нужен такой ответ, обязан
 спрашивать компилятор, а не разбирать дерево заново.
 
-Связано: [[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]],
+Связано: [[the-binary-ledger-can-be-weaker-and-never-stronger]],
 [[a-number-with-no-key-drifts-from-its-own-report]],
 [[an-unlinked-module-collects-names-that-are-already-taken]]

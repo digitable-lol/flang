@@ -20,7 +20,7 @@ flang check <file> --proof --json
 >
 > On the day of measurement the compiler was built from a seed that had fallen
 > behind the sources; the seed has since been reprinted (10–11 September 2026,
-> commit `0ce948bfd`; `sh scripts/seed/chto-otstalo-ot-semeni.sh` on 11 September
+> commit `0ce948bfd`; `sh scripts/seed/what-lags-the-seed.sh` on 11 September
 > names 3 files, 77 functions, still behind). The expensive numbers have not been
 > re-measured yet; the same `published-vs-tree.sh --числа` prints how many
 > `.flang` files have moved since `252606e8`.
@@ -416,7 +416,7 @@ What is actually reachable:
 These figures were taken from a run over the programs in the repository, but
 there is no command in the tree to reproduce them today, and no note recording
 that run either. The neighbouring note
-[[dva-pravila-zavershaemosti-vmeste-dayut-574]] gives **54**
+[[two-termination-rules-together-give-574]] gives **54**
 for size-change graphs, not 47 — the number was taken twice and disagreed. Trust
 the order of magnitude and the conclusion "not 574 but a few dozen", not the
 digits themselves.

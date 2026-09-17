@@ -78,4 +78,4 @@
 
 Связано: [[the-binary-is-silent-about-checks-it-does-not-have]],
 [[checks-that-stopped-comparing]],
-[[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]]
+[[the-binary-ledger-can-be-weaker-and-never-stronger]]

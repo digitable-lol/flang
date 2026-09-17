@@ -180,7 +180,7 @@
 | `fspec/` | 4 | `guard`, `forgery`, `snapshot`, `clarifications` |
 | `docs/site/`, `docs/benchmarks/` | 3 + 3 | сборка сайта, замеры |
 | `packaging/` | 2 | `install-check`, `install-parity` |
-| по одному | 6 | `ярлыки.flang` (корень), `scripts/registry-tool.fscript`, `flang/self/bootstrap/emit-from-source.flang`, `flang/concurrency/bench/gen.flang`, `docs/zettel/ukazatel.flang`, `docs/course/check.flang` |
+| по одному | 6 | `ярлыки.flang` (корень), `scripts/registry-tool.fscript`, `flang/self/bootstrap/emit-from-source.flang`, `flang/concurrency/bench/gen.flang`, `docs/zettel/zettel-index.flang`, `docs/course/check.flang` |
 
 Кто зовёт их по имени: `ярлыки.flang` — **66** разных файлов (87 вызовов
 `flang io`); работы CI — **36** файлов; скрипты оболочки — **8**. Ссылок на пути
@@ -203,7 +203,7 @@
   Решить: либо `.fscript` ввозится наравне с `.flang`, либо план из библиотеки
   выносится в свой файл — до Ш2.
 * `ярлыки.flang` в корне: на него ссылаются 46 файлов, включая `ярлык`
-  (`TABLE=ярлыки.flang`), `kto-zovet-storozhey.sh:86`, `storozha-bez-podloga.sh:111`.
+  (`TABLE=ярлыки.flang`), `who-calls-the-guards.sh:86`, `guards-without-forgery-probe.sh:111`.
 * `flang/self/bootstrap/emit-from-source.flang` — единственный под `flang/self`;
   в замыкание печати (`scripts/otpechatok-semeni`) не входит (0 вхождений),
   перепечатки не требует.

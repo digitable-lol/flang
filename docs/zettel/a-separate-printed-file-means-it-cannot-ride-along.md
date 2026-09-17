@@ -118,4 +118,4 @@ JavaScript, который поднимается в процесс на обы�
 файлов 20 во всех трёх замерах.
 
 Связано: [[emit-prints-plan-functions-but-drops-the-plan-declaration]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]]
+[[the-command-loop-belongs-to-the-host-not-the-language]]

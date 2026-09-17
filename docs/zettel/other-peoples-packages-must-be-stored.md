@@ -30,7 +30,7 @@
 жалко.
 
 **Что от замысла остаётся живым.** Не «не хранить», а **не искать по имени**:
-законы как указатель поверх хранилища ([[zakony-kak-ukazatel]]) — это тот же
+законы как указатель поверх хранилища ([[laws-as-a-pointer-not-a-conclusion]]) — это тот же
 замысел, но с выполнимой постановкой. Он не отменяет хранилище, он делает его
 пригодным для поиска.
 
@@ -88,7 +88,7 @@
   восемь печатников (14 287 строк).
 
 Связано: [[hash-inside-names-outside]], [[code-cannot-be-derived-from-its-hash]],
-[[a-signature-does-not-determine-a-function]], [[zakony-kak-ukazatel]],
+[[a-signature-does-not-determine-a-function]], [[laws-as-a-pointer-not-a-conclusion]],
 [[synthesis-from-a-spec-hits-75-tree-nodes]], [[derivation-works-where-the-domain-was-narrowed-on-purpose]],
 [[a-ratchet-instead-of-derivation]],
 [[unison-measured]], [[unison-pull-brings-all-the-code-not-references]],

@@ -631,7 +631,7 @@ fbc28603198c58cdfceb8448a8735719|2|0|2|0|2|docs/examples/применение/м
 d4ae0219a73f513c49ded21b2a4ea7a9|0|0|0|0|1|docs/examples/применение/скидка-на-вызове.flang
 bdfed2d3f41e6eb7bee5d707cde1cba5|1|1|0|0|0|docs/site/build.flang
 b57a57345cf23de663529ed06d1b1d58|4|0|1|0|0|docs/site/numbers.flang
-8f96129010142d48352032b9d1a52f5c|1|0|1|0|0|docs/site/podsvetka.flang
+8f96129010142d48352032b9d1a52f5c|1|0|1|0|0|docs/site/highlighting.flang
 f4d48585e82e235a1f8d25bd19d21afa|6|6|0|0|0|docs/site/sitemap.flang
 e94014e3cb5e300e46424a7f8072899b|1|×|×|×|0|docs/zamer-teorkat/class-string-to-string.flang
 8327a820ef3553039861636d5ed5cc06|90|79|7|4|0|docs/examples/allocator/allocator.flang
@@ -1336,7 +1336,7 @@ a07232cd8b9e683bc530843d7f95d821|2|0|2|0|0|scripts/guards/jargon-guard.fscript
 ea1518a801b7e78ee25788b065921aff|23|11|2|3|0|scripts/guards/kernel-abilities-guard.fscript
 986fad97002d55a23e04a3dca541f8a5|1|1|0|0|0|scripts/editors/language-words.flang
 5ab01492f40c7c4a19b89433856c1786|6|6|0|0|0|scripts/guards/license-guard.fscript
-3aacb84b2e4c0a5ce961a5aff8676834|14|14|0|0|0|scripts/targets/lico-celi-cpp.flang
+3aacb84b2e4c0a5ce961a5aff8676834|14|14|0|0|0|scripts/targets/cpp-target-face.flang
 4513584f34eca442e744d2b05863e98a|85|34|44|0|0|scripts/guards/link-guard.fscript
 764ea6a077d30318d14a8a0f3da8aea8|23|23|0|0|0|scripts/editors/lsp-check.fscript
 3eea8a647996e57cc3e492c8f4e4763e|15|13|2|0|0|scripts/guards/manpage-guard.fscript
@@ -1348,7 +1348,7 @@ fa5067d21a8ef524d58b5b8117c253b4|4|0|0|4|0|scripts/seed/new-binary-acceptance-pr
 7feca661ed8e0a679823c1b6f0a431fe|24|24|0|0|0|scripts/guards/occupied-names-guard.fscript
 9da7ac83e58dcd6ede242456ab630ee4|14|14|0|0|0|scripts/release/path-without-node.fscript
 8d77245282ed034860ef3855371b30a0|26|26|0|0|0|scripts/targets/plan-across-targets.fscript
-d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/guards/postavka-guard.flang
+d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/guards/delivery-guard.flang
 9c2d3aecbfe7786b9701fb51fd4b1147|33|30|0|0|0|scripts/targets/region-in-c-target.fscript
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.fscript
 1083cc30fab03e5f16e2060519b7c8c1|8|8|0|0|0|scripts/guards/release-guard.fscript

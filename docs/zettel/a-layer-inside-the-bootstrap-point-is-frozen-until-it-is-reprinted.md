@@ -96,7 +96,7 @@ FLANG_PARSE, строка 2801, столбец 98: … неожиданное '�
 перестанет её двигать; тогда замер надо переснять.
 
 Связано: [[byte-for-byte-comparison]], [[switching-a-layer-does-not-always-lower-the-ceiling]],
-[[vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee]],
+[[the-binary-ledger-can-be-weaker-and-never-stronger]],
 [[bootstrap-circle-is-broken-but-the-binary-cannot-check-itself]]
 
 **Дополнение от 14 сентября: печать слоя, снятая зондом, в набор записей не

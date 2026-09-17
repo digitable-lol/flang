@@ -91,16 +91,16 @@
 ЦЕЛИ	docs/site/embedding.ru.md	60	русская половина той же таблицы; правится вместе с английской
 ЦЕЛИ	docs/site/troubleshooting.md	71	разбивка целей по поведению планировщика на три группы; cpp не отнесён ни к одной — настоящий долг документации
 ЦЕЛИ	docs/site/troubleshooting.ru.md	70	русская половина той же разбивки; правится вместе с английской
-ЦЕЛИ	docs/zettel/pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.md	15	таблица замера в заметке; снята до девятой цели и правится только пересъёмкой замера
-ЦЕЛИ	docs/zettel/pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.md	29	вторая таблица того же замера; правится только пересъёмкой
+ЦЕЛИ	docs/zettel/plan-printing-is-promised-inside-out-and-nothing-verifies-it.md	15	таблица замера в заметке; снята до девятой цели и правится только пересъёмкой замера
+ЦЕЛИ	docs/zettel/plan-printing-is-promised-inside-out-and-nothing-verifies-it.md	29	вторая таблица того же замера; правится только пересъёмкой
 ЦЕЛИ	docs/flang/proof/SPEC.md	154	замер равенства байтов по восьми целям; cpp в замер не входил
 ЦЕЛИ	flang/scripts/node-across-targets.fscript	25	перечень целей, у которых есть хозяин узла; у цели python хозяина нет — перечень описывает то, что можно собрать
 ЦЕЛИ	flang/scripts/supervisor-across-targets.fscript	23	тот же перечень целей с хозяином узла для надзора; у python хозяина нет
 ЦЕЛИ	flang/scripts/target-words.fscript	34	оставлены все РАЗНЫЕ причины столкновения, а не все цели — сказано в шапке перечня
 ЦЕЛИ	flang/src/emit/js/flang_host_node.js	13	перечень целей, которые план НЕ печатают; `c` в нём не назван — высказывание о подмножестве в шапке замера
-ЦЕЛИ	flang/test/fixtures/zapis-oracula.json	218	снимок записи доказательства: перечень модулей flang/self, снятый до emit-cpp.flang; правится только пересъёмкой снимка
-ЦЕЛИ	flang/test/fixtures/zapis-setki.json	211	снимок записи доказательства, снятый до emit-cpp.flang; правится только пересъёмкой
-ЦЕЛИ	flang/test/fixtures/zapis-setki.json	519	второй перечень модулей в том же снимке; правится только пересъёмкой
+ЦЕЛИ	flang/test/fixtures/record-oracle.json	218	снимок записи доказательства: перечень модулей flang/self, снятый до emit-cpp.flang; правится только пересъёмкой снимка
+ЦЕЛИ	flang/test/fixtures/record-grid.json	211	снимок записи доказательства, снятый до emit-cpp.flang; правится только пересъёмкой
+ЦЕЛИ	flang/test/fixtures/record-grid.json	519	второй перечень модулей в том же снимке; правится только пересъёмкой
 ЦЕЛИ	flang/test/snimok/proofterm-witness.json	211	снимок свидетеля доказательства, снятый до emit-cpp.flang; правится только пересъёмкой
 ЦЕЛИ	flang/test/toolchain-guard.mjs	24	шапка называет идентификаторы целей по flang/src/targets.mjs — файлу, которого в дереве уже нет; долг шапки
 ЦЕЛИ	scripts/guards/bad-octet-guard.sh	25	таблица «было» по восьми целям: исторический замер до починки октетов

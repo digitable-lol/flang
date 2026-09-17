@@ -59,5 +59,5 @@
 внутри охвата даёт 0 → 1 → 0.
 
 Рядом: [[a-gate-refusal-looks-like-a-verdict]],
-[[nezagruzhennaya-proba-v-otchyote-neotlichima-ot-otsutstvuyushchey]],
+[[a-test-file-that-failed-to-load-looks-absent-in-the-report]],
 [[the-binary-host-cuts-content-at-the-first-zero-octet]].

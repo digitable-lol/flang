@@ -26,7 +26,7 @@
 // СЧИТАЮТСЯ ТОЛЬКО ФАЙЛЫ `*.test.mjs`, и с 22 августа это сказано числом прямо
 // в ответе. Раньше ответ звучал «сторожей в дереве 15», и читалось это как «все
 // проверки дерева». Неправда: проверок на flang (`scripts/storozh-*.flang`,
-// `flang/scripts/*.flang`, `fspec/guard.flang`, `docs/site/storozh-kontrasta.flang`)
+// `flang/scripts/*.flang`, `fspec/guard.flang`, `docs/site/contrast-guard.flang`)
 // в дереве больше, чем файлов `*.test.mjs`, и сюда они не попадают ни одна.
 //
 // Проверено подлогом, а не рассуждением: к `scripts/guards/homebrew-formula-guard.fscript`

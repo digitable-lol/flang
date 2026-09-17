@@ -122,4 +122,4 @@ echo '{"fn":"Печать в CSharp от исходников","args":[…]}' | 
 
 Связано: [[one-target-suffix-for-every-declaration-beats-separating-collisions-one-by-one]],
 [[five-binary-commands-and-the-price-of-each]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]]
+[[the-command-loop-belongs-to-the-host-not-the-language]]

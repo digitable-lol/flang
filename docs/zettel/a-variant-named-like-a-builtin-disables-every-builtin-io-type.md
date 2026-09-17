@@ -43,4 +43,4 @@ FLANG_UNKNOWN_NAME, строка 78, столбец 1: неизвестный т
 столкновения с `«Поручение»` и `«Продолжение»`, не проверялось.
 
 Связано: [[a-dictionary-field-named-like-a-keyword-cannot-be-read]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]]
+[[the-command-loop-belongs-to-the-host-not-the-language]]

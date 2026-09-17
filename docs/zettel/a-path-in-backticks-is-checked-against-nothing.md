@@ -32,6 +32,6 @@
 следующей реализацией, а путь — только адрес нынешней. Поэтому в переписанном
 контракте пути сняты, а коды оставлены все до одного.
 
-Связано: [[posle-udaleniya-vtoroy-realizacii-nabor-prob-otdayot-nol]],
+Связано: [[after-the-second-implementation-is-deleted-the-test-suite-returns-zero]],
 [[the-binary-is-silent-about-checks-it-does-not-have]],
 [[a-check-moved-to-the-binary-drops-out-of-ci-silently]]

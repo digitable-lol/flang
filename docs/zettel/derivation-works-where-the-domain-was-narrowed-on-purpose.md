@@ -71,12 +71,12 @@ Narcissus описание формата. Сегодня компилятор �
 - **Цены вывода для нашего случая нет.** Что стоит вывести функцию перевода по
   словарю — не оценено ни строкой, ни часом. Это заявка на работу, а не план.
 - **Спрос не измерен.** Функторов в дереве **четыре**, все в `examples/`
-  ([[zakony-kak-ukazatel]]). Выводить пока нечего.
+  ([[laws-as-a-pointer-not-a-conclusion]]). Выводить пока нечего.
 - **Квадрат — опровержение, а не доказательство.** Он сходится на конечной сетке
   из примеров автора; выведенная функция была бы проверена, но не доказана —
   тот же предел, что и у всей категорной проверки.
 
 Связано: [[synthesis-from-a-spec-hits-75-tree-nodes]], [[a-ratchet-instead-of-derivation]],
 [[module-links-need-a-named-data-translation]], [[the-dictionary-between-specs-was-mute]],
-[[zakony-kak-ukazatel]], [[category-theory-transports-truth]],
+[[laws-as-a-pointer-not-a-conclusion]], [[category-theory-transports-truth]],
 [[a-signature-does-not-determine-a-function]]

@@ -154,4 +154,4 @@ FLANG_TYPE: сравнивать на равенство значения-фун
 
 Связано: [[equality-on-a-type-parameter-is-banned-only-in-bodies]],
 [[three-of-five-named-postcondition-walls-are-already-gone]],
-[[chto-nelzya-napisat-v-obespechivaet]]
+[[four-things-a-postcondition-cannot-say]]

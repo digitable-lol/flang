@@ -27,10 +27,10 @@ import { join, dirname, basename, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { разобрать, экранировать } from './markdown.mjs';
-import { почемуНеКрасили } from './podsvetka.mjs';
+import { почемуНеКрасили } from './highlighting.mjs';
 import { подставить, прочитатьЧисла } from './numbers.mjs';
-import { собратьУказатель, печатьУказателя } from './poisk.mjs';
-import { проверитьПоиск, проверитьОкно, ЖДЁМ } from './poisk-proverka.mjs';
+import { собратьУказатель, печатьУказателя } from './search.mjs';
+import { проверитьПоиск, проверитьОкно, ЖДЁМ } from './search-check.mjs';
 import { РАЗДЕЛЫ, БАЗА_ЗНАНИЙ, ПРИМЕРЫ_НА_ГЛАВНОЙ, ПЕРЕЕЗДЫ, ПЕРЕЕЗДЫ_ЗАМЕТОК } from './sitemap.mjs';
 
 const КОРЕНЬ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -383,7 +383,7 @@ for (const с of страницы) {
 
 // ── Разбор ──────────────────────────────────────────────────────────────────
 // Заодно складывается счёт подсветки: блоки flang красит СБОРКА настоящим
-// лексером языка (docs/site/podsvetka.mjs). Блок, который не удалось
+// лексером языка (docs/site/highlighting.mjs). Блок, который не удалось
 // разметить, сборку не роняет — он остаётся серым, но молча пропасть не
 // может: число таких печатается рядом с числом страниц.
 //
@@ -439,7 +439,7 @@ if (ПОДСВЕТКА.сверено !== ПОДСВЕТКА.всего) {
 
 // ── Контраст подсветки ──────────────────────────────────────────────────────
 // Цвета подсветки взяты из фирменной палитры Digitable, и проверяются они не
-// глазом, а формулой WCAG. Замер написан НА ЯЗЫКЕ — `docs/site/storozh-kontrasta.flang`
+// глазом, а формулой WCAG. Замер написан НА ЯЗЫКЕ — `docs/site/contrast-guard.flang`
 // читает ту же таблицу стилей, что поедет на сайт, и требует 4.5:1 в каждой из
 // трёх тем. Довод, почему без этого замера палитру трогать нельзя, записан в
 // шапке того файла.
@@ -463,7 +463,7 @@ if (!existsSync(ДВОИЧНЫЙ)) {
       'Соберите — make -C bootstrap — или назовите свой в FLANG_BINARY',
   );
 } else {
-  const прогон = spawnSync(ДВОИЧНЫЙ, ['io', 'docs/site/storozh-kontrasta.flang'], {
+  const прогон = spawnSync(ДВОИЧНЫЙ, ['io', 'docs/site/contrast-guard.flang'], {
     cwd: КОРЕНЬ,
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
@@ -684,7 +684,7 @@ for (const с of страницы) {
 // Сторож не по исходнику, а по тому, что увидит читатель: каждый href и src
 // на странице либо внешний, либо ведёт на страницу или файл сборки. Считается
 // от каталога страницы, как считает браузер.
-const файлыСборки = new Set([...адресаСтраниц, 'style.css', 'poisk.js']);
+const файлыСборки = new Set([...адресаСтраниц, 'style.css', 'search.js']);
 for (const с of страницы) {
   for (const м of с.html.matchAll(/\b(?:href|src)="([^"]*)"/gu)) {
     const адрес = м[1];
@@ -1003,7 +1003,7 @@ function страницаЦеликом(с) {
   });
 })();
 </script>
-<script src="${корень}poisk.js" defer></script>
+<script src="${корень}search.js" defer></script>
 </body>
 </html>
 `;
@@ -1054,16 +1054,21 @@ for (const с of страницы) {
   writeFileSync(файл, страницаЦеликом(с));
 }
 copyFileSync(join(КОРЕНЬ, 'docs', 'site', 'style.css'), join(ВЫХОД, 'style.css'));
-copyFileSync(join(КОРЕНЬ, 'docs', 'site', 'poisk.js'), join(ВЫХОД, 'poisk.js'));
+copyFileSync(join(КОРЕНЬ, 'docs', 'site', 'search.js'), join(ВЫХОД, 'search.js'));
 
 // Указатель поиска кладётся ОДНИМ файлом в корень сайта: страница из `en/`
 // берёт его через `../`, и второй копии нет.
-writeFileSync(join(ВЫХОД, 'poisk-ukazatel.js'), текстУказателя);
+writeFileSync(join(ВЫХОД, 'search-index.js'), текстУказателя);
 
 // Переезд — одна строка: и мгновенное перенаправление, и ссылка руками на
 // случай, если <meta refresh> выключен.
 for (const [старый, новый] of Object.entries(переезды)) {
-  writeFileSync(join(ВЫХОД, старый), `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Страница переехала · flang</title><link rel="canonical" href="${новый}"><meta http-equiv="refresh" content="0; url=${новый}"></head><body><p>Страница переехала: <a href="${новый}">${новый}</a></p></body></html>\n`);
+  const страница = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Страница переехала · flang</title><link rel="canonical" href="${новый}"><meta http-equiv="refresh" content="0; url=${новый}"></head><body><p>Страница переехала: <a href="${новый}">${новый}</a></p></body></html>\n`;
+  writeFileSync(join(ВЫХОД, старый), страница);
+  // Английская пара переезжает вместе с русской: `en/<старый>` ведёт на
+  // `en/<новый>`, если такая страница есть. Адрес в странице относительный,
+  // поэтому из `en/` он и остаётся в `en/`.
+  if (адресаСтраниц.has(`en/${новый}`)) writeFileSync(join(ВЫХОД, 'en', старый), страница);
 }
 
 console.log(

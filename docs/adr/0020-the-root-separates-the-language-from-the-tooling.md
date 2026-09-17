@@ -184,7 +184,7 @@ node docs/site/build.mjs --check               # сайт собирается, 
 - `flang/src/emit/c/flang_runtime.h:465` — комментарий «Замер (Chrome 151,
   `web/wasm/`, …)». Файл дословно копируется в `bootstrap/flang_runtime.h` при
   печати; править его вне печати значит увеличить отставание семени от источника
-  на строку (сторож `semya-rantayma-eto-istochnik.sh` это терпит, но
+  на строку (сторож `seed-runtime-is-source.sh` это терпит, но
   `--после-печати` — нет). **Оставить как есть до следующей перепечатки**, там
   поправить вместе с остальным.
 - Волна 2 (`scripts/` → `tools/`): строки справки в `flang/self/cli.flang:200`
@@ -222,12 +222,12 @@ plan-8235-layout.md): клон ветки, готовый двоичный то�
 | --- | :---: | :---: | --- |
 | `sh .githooks/pre-push` | 0 | 0 | переезд хук не красит |
 | `scripts/guards/prose-numbers-guard.sh` | 0 | 0 | ни одна примета `СНЯТО` не называет `benchmarks/` или `web/` |
-| `scripts/guards/pol-dokazannogo-sverka.sh` | 0 | 0 | пути ведомости правятся заменой заодно |
-| `scripts/seed/semya-rantayma-eto-istochnik.sh` | 0 | 0 | семя не тронуто |
+| `scripts/guards/proved-share-vs-tree.sh` | 0 | 0 | пути ведомости правятся заменой заодно |
+| `scripts/seed/seed-runtime-is-source.sh` | 0 | 0 | семя не тронуто |
 | `sh scripts/raskrutka.sh --telo` | 0 | 0 | тело семени цело |
 | `sh scripts/raskrutka.sh --bystro` | 1 | 1 | **красен и до, и после по своей причине** («отпечаток снят с правленого дерева» — состояние ствола), переезд его не меняет |
-| `scripts/guards/kto-zovet-storozhey.sh --check` | 0 | 0 | — |
-| `scripts/guards/storozha-bez-podloga.sh --check` | 0 | 0 | — |
+| `scripts/guards/who-calls-the-guards.sh --check` | 0 | 0 | — |
+| `scripts/guards/guards-without-forgery-probe.sh --check` | 0 | 0 | — |
 | `node docs/site/build.mjs --check` | 0 | 0 | сайт собирается, ссылки страниц целы |
 | `scripts/guards/link-guard.fscript` | 1 | 1 | число битых **не изменилось**: 2163 из 15703 в обоих прогонах — переезд не порвал ни одной ссылки; дерево красно по старому долгу (упоминания `.mjs`, которых давно нет) |
 | `scripts/guards/file-extensions.fscript` | 0 | 0 | — |

@@ -95,5 +95,5 @@ Narcissus, отказ MoSSKit на переходе от списка к сло�
 
 Связано: [[a-signature-does-not-determine-a-function]],
 [[code-cannot-be-derived-from-its-hash]], [[a-ratchet-instead-of-derivation]],
-[[derivation-works-where-the-domain-was-narrowed-on-purpose]], [[zakony-kak-ukazatel]],
+[[derivation-works-where-the-domain-was-narrowed-on-purpose]], [[laws-as-a-pointer-not-a-conclusion]],
 [[the-bottleneck-is-rule-strength]]

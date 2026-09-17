@@ -56,5 +56,5 @@
 `Value.equal` в Java), то есть ограничивает только типизатор.
 
 Связано: [[typed-process-reference-is-already-expressible]],
-[[chto-nelzya-napisat-v-obespechivaet]],
+[[four-things-a-postcondition-cannot-say]],
 [[round-trip-claims-are-unstatable-in-postconditions]]

@@ -92,4 +92,4 @@
 
 Связано: [[if-branches-unfold-both-ways-but-list-match-does-not]],
 [[three-of-five-named-postcondition-walls-are-already-gone]],
-[[darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy]]
+[[a-free-statement-is-exposed-by-replacing-the-body-with-a-stub]]

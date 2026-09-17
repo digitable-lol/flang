@@ -73,7 +73,7 @@ to be written in flang (ADR-0031).
   `c`, `cpp`, `go` — exit 1). Until 22 August 2026 (eight targets then) the other seven emitted the
   program with exit code 0 and silently dropped the declaration — the worst of the outcomes,
   because the module built and did not work. The breakdown is in
-  `docs/zettel/pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.md`.
+  `docs/zettel/plan-printing-is-promised-inside-out-and-nothing-verifies-it.md`.
 - An array is read by index in constant time (`элемент N в СПИСОК`, seven targets out of eight), and
   a dictionary comes in three kinds: a list of pairs with linear lookup (`dictionary.flang`), a
   search tree whose priority is the hash of the key, O(log n) (`tree.flang`), and a trie over the

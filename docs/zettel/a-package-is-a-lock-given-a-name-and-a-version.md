@@ -54,4 +54,4 @@
 «package»».
 
 Связано: [[other-peoples-packages-must-be-stored]], [[content-addressing]],
-[[keshirovat-dokazatelstvo-dorozhe-chem-dokazat]], [[names-not-hashes]]
+[[caching-a-proof-costs-more-than-proving-it]], [[names-not-hashes]]

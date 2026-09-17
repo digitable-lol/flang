@@ -46,7 +46,7 @@ on:
       - 'flang/scripts/binary.mjs'
       # Замер контраста подсветки: правка сторожа меняет то, чем сборка судит
       # палитру, а правка таблицы стилей — то, что он судит.
-      - 'docs/site/storozh-kontrasta.flang'
+      - 'docs/site/contrast-guard.flang'
       - 'docs/site/style.css'
   # На КАЖДОМ запросе слияния, без фильтра `paths`. Ссылки сайта ведут не
   # только в docs/: переезд каталога исходников ломает их, не трогая ни одного
@@ -87,8 +87,8 @@ jobs:
 
       # ДВОИЧНЫЙ САЙТУ ОБЯЗАТЕЛЕН, и с 20 августа 2026 это уже не «желательно».
       # Он делает две вещи: красит блоки кода настоящим лексером языка
-      # (docs/site/podsvetka.mjs) и МЕРЯЕТ КОНТРАСТ подсветки —
-      # docs/site/storozh-kontrasta.flang, план ввода-вывода, который сборка
+      # (docs/site/highlighting.mjs) и МЕРЯЕТ КОНТРАСТ подсветки —
+      # docs/site/contrast-guard.flang, план ввода-вывода, который сборка
       # зовёт прогоном. Без него палитра уехала бы на сайт непроверенной, а это
       # ровно та беда, ради которой замер и заведён; поэтому отсутствие
       # двоичного сборка теперь называет бедой и отказывает, а не молчит.
@@ -155,15 +155,15 @@ jobs:
             echo "ПОДЛОГ НЕ СОБРАЛСЯ: $zametka не изменилась" >&2
             exit 1
           fi
-          if node docs/site/build.mjs --check > "$RUNNER_TEMP/proba.out" 2>&1; then
+          if node docs/site/build.mjs --check > "$RUNNER_TEMP/probe.out" 2>&1; then
             cp "$RUNNER_TEMP/zametka.md" "$zametka"
             echo "ПРОВЕРКА ПРОМОЛЧАЛА: битая ссылка в $zametka прошла" >&2
             exit 1
           fi
           cp "$RUNNER_TEMP/zametka.md" "$zametka"
-          if ! grep -F '[[a-planted-link-that-leads-nowhere]]' "$RUNNER_TEMP/proba.out"; then
+          if ! grep -F '[[a-planted-link-that-leads-nowhere]]' "$RUNNER_TEMP/probe.out"; then
             echo "ПОКРАСНЕЛО НЕ НА ПОДЛОЖЕННОЙ ССЫЛКЕ:" >&2
-            tail -20 "$RUNNER_TEMP/proba.out" >&2
+            tail -20 "$RUNNER_TEMP/probe.out" >&2
             exit 1
           fi
           cmp "$zametka" "$RUNNER_TEMP/zametka.md"

@@ -83,4 +83,4 @@ FLANG_IO_NET: у хозяина на C нет способа ждать сеть
 имени; по адресу она не платится.
 
 Связано: [[octet-orders-are-in-the-dictionary-but-no-host-executes-them]],
-[[cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku]]
+[[the-command-loop-belongs-to-the-host-not-the-language]]

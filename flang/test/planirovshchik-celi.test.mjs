@@ -56,7 +56,7 @@ import { рабочийКаталог, средаСборки } from "./tempdir.
 
 const корень = fileURLToPath(new URL("../../", import.meta.url))
 const эталон = "flang/concurrency/scheduler.flang"
-const рабочий = рабочийКаталог("planirovshchik-celi")
+const рабочий = рабочийКаталог("target-scheduler")
 const печатьСвидетеля = join(рабочий, "svidetel")
 mkdirSync(печатьСвидетеля, { recursive: true })
 {

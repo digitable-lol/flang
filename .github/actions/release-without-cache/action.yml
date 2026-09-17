@@ -221,21 +221,21 @@ runs:
             exit 2
           fi
           mkdir -p "$rab/chisto" "$rab/gryazno"
-          printf 'name: proba\non:\n  push:\njobs:\n  a:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo raz\n' \
-            > "$rab/chisto/proba.yml"
-          cp "$rab/chisto/proba.yml" "$rab/gryazno/proba.yml"
-          printf '    env:\n      %s: kesh/prigovory.bin\n' "$PEREMENNAYA" >> "$rab/gryazno/proba.yml"
+          printf 'name: probe\non:\n  push:\njobs:\n  a:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo raz\n' \
+            > "$rab/chisto/probe.yml"
+          cp "$rab/chisto/probe.yml" "$rab/gryazno/probe.yml"
+          printf '    env:\n      %s: kesh/prigovory.bin\n' "$PEREMENNAYA" >> "$rab/gryazno/probe.yml"
           # В ОБЕ кладётся имя в комментарии И имя в прозе без присваивания:
           # разметка обязана пропустить и то и другое, иначе она краснела бы на
           # собственную прозу в шапках работ.
           for d in chisto gryazno; do
             printf '# упоминание в комментарии: %s — это не задание переменной\n' \
-              "$PEREMENNAYA" >> "$rab/$d/proba.yml"
+              "$PEREMENNAYA" >> "$rab/$d/probe.yml"
             printf '      - run: echo "печатаем начисто, без %s"\n' \
-              "$PEREMENNAYA" >> "$rab/$d/proba.yml"
+              "$PEREMENNAYA" >> "$rab/$d/probe.yml"
           done
 
-          proba() {
+          probe() {
             imya=$1
             zhdyom=$2
             shift 2
@@ -251,32 +251,32 @@ runs:
 
           # `-u` идёт ПЕРВЫМ доводом env: после присваиваний он читался бы как
           # имя команды, и проба «переменной нет» гоняла бы не сторожа.
-          proba 'выпуск + переменная задана' 1 \
+          probe 'выпуск + переменная задана' 1 \
             env -u GITHUB_STEP_SUMMARY MODE=env \
-                GITHUB_REF=refs/tags/v0.0.0-proba GITHUB_REF_TYPE=tag \
+                GITHUB_REF=refs/tags/v0.0.0-probe GITHUB_REF_TYPE=tag \
                 "$PEREMENNAYA=/net/takogo/kesha" bash "$0"
-          proba 'выпуск + переменной нет' 0 \
+          probe 'выпуск + переменной нет' 0 \
             env -u GITHUB_STEP_SUMMARY -u "$PEREMENNAYA" MODE=env \
-                GITHUB_REF=refs/tags/v0.0.0-proba GITHUB_REF_TYPE=tag bash "$0"
-          proba 'выпуск + переменная задана пустым' 0 \
+                GITHUB_REF=refs/tags/v0.0.0-probe GITHUB_REF_TYPE=tag bash "$0"
+          probe 'выпуск + переменная задана пустым' 0 \
             env -u GITHUB_STEP_SUMMARY MODE=env \
-                GITHUB_REF=refs/tags/v0.0.0-proba GITHUB_REF_TYPE=tag \
+                GITHUB_REF=refs/tags/v0.0.0-probe GITHUB_REF_TYPE=tag \
                 "$PEREMENNAYA=" bash "$0"
-          proba 'не выпуск + переменная задана' 0 \
+          probe 'не выпуск + переменная задана' 0 \
             env -u GITHUB_STEP_SUMMARY MODE=env \
                 GITHUB_REF=refs/heads/dev GITHUB_REF_TYPE=branch \
                 "$PEREMENNAYA=/net/takogo/kesha" bash "$0"
-          proba 'режим release на ветке + переменная' 1 \
+          probe 'режим release на ветке + переменная' 1 \
             env -u GITHUB_STEP_SUMMARY MODE=release \
                 GITHUB_REF=refs/heads/dev GITHUB_REF_TYPE=branch \
                 "$PEREMENNAYA=/net/takogo/kesha" bash "$0"
-          proba 'разметка: работа задаёт переменную' 1 \
+          probe 'разметка: работа задаёт переменную' 1 \
             env -u GITHUB_STEP_SUMMARY MODE=workflows \
                 "KATALOG_RABOT=$rab/gryazno" bash "$0"
-          proba 'разметка: имя без присваивания — не в счёт' 0 \
+          probe 'разметка: имя без присваивания — не в счёт' 0 \
             env -u GITHUB_STEP_SUMMARY MODE=workflows \
                 "KATALOG_RABOT=$rab/chisto" bash "$0"
-          proba 'неизвестный режим — смотреть нечем' 2 \
+          probe 'неизвестный режим — смотреть нечем' 2 \
             env -u GITHUB_STEP_SUMMARY MODE=chush bash "$0"
 
           rm -rf "$rab"

@@ -254,3 +254,5 @@ docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	obhod.sh	и�
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk.sh	иллюстративное имя в разборе задачи/заметки, не файл (предлагаемое английское имя в примере)
 docs/tasks/1423-node-leaves-the-concurrency-directory.md	.test.mjs	обозначение расширения/суффикса-конвенции, не имя файла
 docs/tasks/6752-a-law-of-the-category-surface-is-a-statement-about-the-carrier.md	probe-777.flang	иллюстративное имя пробы в тексте, не файл
+docs/tasks/5503-nine-tsv-files-carry-a-header.md	docs/javascript-checks-breakdown.tsv	история: ведомость снесена этой же задачей 17 сентября 2026, довод сноса называет её по имени; последнее состояние — в git на 9d8d8f35e
+docs/tasks/5503-nine-tsv-files-carry-a-header.md	.test.mjs	обозначение расширения/суффикса-конвенции, не имя файла

@@ -73,6 +73,7 @@ as
 ascii
 asdf
 ask
+asked
 asking
 asks
 assertions
@@ -85,6 +86,7 @@ async
 at
 attached
 attempt
+author
 auto
 avoid
 away
@@ -113,6 +115,7 @@ behind
 belongs
 below
 benchmark
+beside
 between
 beyond
 bidi
@@ -129,6 +132,7 @@ birth
 bit
 bits
 blamed
+blames
 blind
 block
 blocked
@@ -200,8 +204,10 @@ caught
 ceiling
 cell
 census
+censuses
 certificate
 certificates
+cgroup
 chain
 change
 changed
@@ -213,6 +219,7 @@ characters
 cheap
 cheapens
 cheaper
+cheaply
 check
 checked
 checker
@@ -265,6 +272,7 @@ computation
 computed
 conc
 concat
+concatenation
 conclusion
 condition
 conditions
@@ -328,6 +336,7 @@ dangling
 darwin
 data
 database
+dated
 dead
 deadline
 deadlock
@@ -351,6 +360,7 @@ deletes
 deletion
 deliberate
 delivery
+denominator
 depend
 dependency
 depth
@@ -439,6 +449,7 @@ end
 ends
 english
 entry
+environments
 equal
 equality
 equals
@@ -461,9 +472,11 @@ executor
 exist
 exists
 exit
+exits
 expected
 expensive
 explains
+explanation
 explicit
 exposed
 express
@@ -484,6 +497,7 @@ falsehood
 family
 fan
 farewell
+fast
 feature
 fee
 fgets
@@ -603,6 +617,7 @@ hash
 hashes
 have
 having
+header
 headings
 headroom
 heartbeat
@@ -635,6 +650,7 @@ hundred
 hypothesis
 idempotency
 identical
+identically
 identity
 ieee
 if
@@ -665,11 +681,13 @@ installs
 instantiated
 instead
 instrument
+instruments
 integer
 integrality
 intermediate
 interpreter
 into
+invalid
 invariant
 inventory
 invisible
@@ -710,7 +728,9 @@ knows
 lack
 lacked
 lacks
+lag
 lagged
+lagging
 lags
 lambda
 landmine
@@ -776,6 +796,7 @@ lock
 locks
 log
 logic
+logs
 lone
 long
 longer
@@ -813,6 +834,7 @@ marks
 match
 matches
 matching
+material
 math
 mathematics
 may
@@ -836,6 +858,7 @@ merges
 merging
 message
 meta
+mid
 midpoint
 million
 minus
@@ -873,6 +896,7 @@ narrower
 narrowing
 nat
 natural
+necessary
 need
 needed
 needing
@@ -882,6 +906,7 @@ nested
 network
 never
 new
+newer
 newly
 news
 newton
@@ -895,6 +920,7 @@ nodes
 non
 none
 nonzero
+normal
 normalization
 not
 note
@@ -972,6 +998,7 @@ parents
 parse
 parser
 parses
+parsing
 part
 partial
 pass
@@ -1049,6 +1076,7 @@ produces
 product
 program
 progress
+project
 projection
 projects
 promise
@@ -1067,6 +1095,7 @@ proven
 prover
 proves
 proving
+pty
 published
 publishes
 pull
@@ -1084,7 +1113,9 @@ quadratic
 quadratically
 quantifier
 query
+questions
 quiescence
+quote
 quotes
 raises
 raising
@@ -1168,7 +1199,9 @@ reprints
 repro
 reproducible
 request
+reseed
 reserved
+resets
 resolving
 rest
 restores
@@ -1202,6 +1235,7 @@ row
 ru
 rule
 rules
+rumour
 run
 runner
 running
@@ -1279,6 +1313,7 @@ six
 sixths
 size
 sized
+skip
 skips
 sleep
 slots
@@ -1286,6 +1321,7 @@ slower
 small
 smaller
 smashes
+snapshot
 so
 socket
 socrates
@@ -1299,6 +1335,7 @@ spec
 specific
 specs
 speeds
+spelling
 spellings
 spends
 splicing
@@ -1306,11 +1343,14 @@ split
 splits
 splitting
 spoken
+spread
 square
 stack
+stage
 stages
 stale
 stall
+stamp
 standard
 standards
 start
@@ -1388,6 +1428,7 @@ swap
 switch
 switches
 switching
+symbol
 symbolic
 symmetric
 sync
@@ -1411,6 +1452,7 @@ tautologies
 tcp
 tears
 tell
+tells
 tempdir
 ten
 tenths
@@ -1442,6 +1484,7 @@ thousand
 three
 threshold
 through
+tick
 ticket
 ticks
 tied
@@ -1455,6 +1498,7 @@ to
 today
 together
 token
+told
 too
 tool
 toolchain
@@ -1557,6 +1601,7 @@ waits
 wal
 walk
 walked
+walking
 walks
 wall
 walls
@@ -1606,4 +1651,5 @@ you
 your
 z3
 zero
+zeros
 zettel

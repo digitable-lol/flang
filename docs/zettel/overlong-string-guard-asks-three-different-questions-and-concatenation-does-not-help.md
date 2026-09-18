@@ -52,4 +52,4 @@ C99 (5.2.4.1) обязывает выдержать 4095, считая посл�
 `--подлог` подкладывает длинный литерал, короткий и примечание с кавычками.
 
 Связано: [[the-seed-cannot-be-patched-by-hand-it-will-not-link]],
-[[bootstrap-reprint-limits-are-one-record-shared-with-raskrutka-and-checked]]
+[[bootstrap-reprint-limits-are-one-record-shared-with-the-print-script-and-checked]]

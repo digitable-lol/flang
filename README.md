@@ -497,8 +497,8 @@ knowledge base of measured facts and rejected paths is [`docs/zettel/`](docs/zet
 
 Prose in this tree is held to the tree by runs, not by memory: a number written by hand carries a
 note saying how it was measured (`scripts/guards/prose-numbers-guard.sh`), a path in a link must exist
-(`scripts/guards/link-guard.flang`), and a word of internal jargon on a page for an outside reader is
-refused (`flang/scripts/jargon-guard.flang`). This page is one of the pages those checks read.
+(`scripts/guards/link-guard.fscript`), and a word of internal jargon on a page for an outside reader is
+refused (`flang/scripts/jargon-guard.fscript`). This page is one of the pages those checks read.
 
 ## Status
 

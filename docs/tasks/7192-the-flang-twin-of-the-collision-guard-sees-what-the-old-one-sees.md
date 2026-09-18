@@ -7,7 +7,7 @@
 команда: вторая
 карта: Как перепроверить всё это самому
 рядом: 0016, 4929, 6724, 8026
-нужность: 2 — name-collision-guard.flang менялся только рефакторингами (c5784168b, 7be69abc5, 3523895f2); ярлык столкновения:проверка зовёт node; node сегодня видит 1245 файлов / 97980 объявлений
+нужность: 2 — name-collision-guard.fscript менялся только рефакторингами (c5784168b, 7be69abc5, 3523895f2); ярлык столкновения:проверка зовёт node; node сегодня видит 1245 файлов / 97980 объявлений
 ---
 
 # 7192. Близнец сторожа столкновений слеп, и слепота измерена
@@ -39,7 +39,7 @@ $ node flang/scripts/link-collision-guard.mjs flang/self/bootstrap/compiler.flan
 
 ## Настоящая слепота — у близнеца на flang, и она измерена
 
-`scripts/guards/name-collision-guard.flang`, 1723 строки, ярлык
+`scripts/guards/name-collision-guard.fscript`, 1723 строки, ярлык
 `столкновения:пересчёт` (`ярлыки.flang:80`). Замер 23 августа, ствол `c6cb34b7`,
 оба прогона на ОДНОМ дереве подряд
 (`docs/zettel/flang-bliznec-storozha-stolknoveniy-zelenel-na-treh-nastoyashchih-stolknoveniyah.md`):
@@ -47,7 +47,7 @@ $ node flang/scripts/link-collision-guard.mjs flang/self/bootstrap/compiler.flan
 | | вход, файлов | видимых объявлений | нашёл | время | пик | код |
 |---|---:|---:|---:|---:|---:|---:|
 | `link-collision-guard.mjs --дерево` | 762 | 57 516 | **3** | 2,4 с | — | **1** |
-| `name-collision-guard.flang` | 38 | **7 873** | **0** | 152,6 с | 16,7 ГиБ | **0** |
+| `name-collision-guard.fscript` | 38 | **7 873** | **0** | 152,6 с | 16,7 ГиБ | **0** |
 
 Три столкновения настоящие и названы поимённо: `«Положить»`
 (`stdlib/dictionary.flang:168` и `stdlib/redis.flang:174`), `«Это отказ»` и
@@ -99,7 +99,7 @@ $ python3 -c "print(open('flang/self/link.flang','rb').read().count(b'\x00'))"
 
 ```sh
 node flang/scripts/link-collision-guard.mjs --дерево
-bootstrap/flang io scripts/guards/name-collision-guard.flang
+bootstrap/flang io scripts/guards/name-collision-guard.fscript
 ```
 
 дают **одинаковое число видимых объявлений и одинаковое число столкновений**.

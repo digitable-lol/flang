@@ -104,7 +104,7 @@ flowchart TD
 правило — теорема:
 
 ```
-flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
+flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль'
 → аксиом ноль, нарушений 0   (код 0)
 ```
 

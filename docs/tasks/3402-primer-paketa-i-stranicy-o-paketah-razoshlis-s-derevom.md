@@ -49,7 +49,7 @@ FLANG_PACKAGE: в flang.package пакет назван «Скидка»,
 
 И `docs/road-to-1-0.md:142` («чего нет: почти всего — установки, **разрешения
 версий**, замыкания зависимостей») — разрешение версий в дереве есть и прогнано:
-`flang io scripts/registry-tool.flang --plan 'Разрешить'` отвечает
+`flang io scripts/registry-tool.fscript --plan 'Разрешить'` отвечает
 «запрос «Множество строк: не ниже 1.1» разрешён: пакетов 3» с транзитивными
 `Списки 1.4.2` и `Логика 1.2.0`.
 
@@ -60,9 +60,9 @@ FLANG_PACKAGE: в flang.package пакет назван «Скидка»,
 2. Снять со страницы `docs/site/packages.ru.md` три неверных утверждения; там,
    где написано «схема 1», поставить снятое прогоном.
 3. Поправить пункт 6 `docs/road-to-1-0.md`: назвать, что уже есть
-   (`flang/stdlib/registry.flang` 617 строк, `scripts/registry-tool.flang` 473,
+   (`flang/stdlib/registry.flang` 617 строк, `scripts/registry-tool.fscript` 473,
    четыре плана прогнаны), и оставить в «чего нет» только установку и раздачу.
-4. Заодно снять устаревший комментарий `scripts/release/asdf-version-list.flang:40-41`
+4. Заодно снять устаревший комментарий `scripts/release/asdf-version-list.fscript:40-41`
    («у хозяина нет шифрования, на https он отвечает FLANG_IO_NO_TLS») — с
    ADR-0007 https работает через внешний `curl`.
 

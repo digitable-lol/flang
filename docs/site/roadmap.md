@@ -85,7 +85,7 @@ property of the language:
 `docs/adr/0031-certification-is-a-process-not-a-property-of-the-language.md`.
 Of what it needs beyond the proof, traceability requirement → code → example →
 record exists as a guard since 11 September 2026
-(`scripts/guards/traceability-guard.flang`, task 1407): 409 postconditions, 322 with an
+(`scripts/guards/traceability-guard.fscript`, task 1407): 409 postconditions, 322 with an
 example, 361 in a record, 244 proved; gaps 62 and 68, under a ratchet. Response
 bounds exist only as an analysis and are not printed into the proof record
 (`docs/adr/0033-termination-is-not-a-bound-on-steps.md`, tasks 1408 and 1409);

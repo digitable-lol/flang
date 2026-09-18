@@ -81,7 +81,7 @@ flang-lsp на Node:  при открытом вводе 334 байт, посл�
 висящим. Взять его всё равно можно — `let g:flang_dvoichnyy_lsp = 1`, — но по
 умолчанию он не берётся: молчащий сервер неотличим от сломанного.
 
-Когда двоичный научится отвечать на лету, `scripts/editors/lsp-check.flang` скажет
+Когда двоичный научится отвечать на лету, `scripts/editors/lsp-check.fscript` скажет
 об этом строкой, и порядок поиска можно будет переставить. Тогда Node для
 редактора станет не нужен вовсе.
 
@@ -117,10 +117,10 @@ Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }
 первым в тот день, когда в язык добавят слово, и никто не заметит.
 
 ```bash
-flang io scripts/editors/vim-highlighting.flang     # перепечатать docs/editors/vim/syntax/flang.vim
+flang io scripts/editors/vim-highlighting.fscript     # перепечатать docs/editors/vim/syntax/flang.vim
 ```
 
-Печатает `scripts/editors/vim-highlighting.flang` — программа на самом flang. Слова берёт
+Печатает `scripts/editors/vim-highlighting.fscript` — программа на самом flang. Слова берёт
 из `«Куски таблицы»` (`flang/self/lexer.flang`) — той самой таблицы, которой
 язык читает свои файлы. Сегодня в ней **149 понятий и 629 фраз**.
 
@@ -130,8 +130,8 @@ flang io scripts/editors/vim-highlighting.flang     # перепечатать d
 | --- | --- |
 | `scripts/editors/language-words.flang` | таблица языка → список фраз |
 | `scripts/editors/vim-rules.flang` | список фраз → текст файла правил (чистые функции) |
-| `scripts/editors/vim-highlighting.flang` | план: записать этот текст в дерево |
-| `scripts/editors/vim-highlight-check.flang` | план: сверить дерево с этим текстом и спросить редакторы |
+| `scripts/editors/vim-highlighting.fscript` | план: записать этот текст в дерево |
+| `scripts/editors/vim-highlight-check.fscript` | план: сверить дерево с этим текстом и спросить редакторы |
 
 Текст правил считается ОДНИМ местом, поэтому «перепечатать забыли» не может
 пройти незамеченным: проверка читает файл из дерева и сравнивает его с тем, что
@@ -173,11 +173,11 @@ flang io scripts/editors/vim-highlighting.flang     # перепечатать d
 не хватает (и там сказано, где именно).
 
 ```bash
-flang io scripts/editors/vim-highlight-check.flang     # подсветка
-flang io scripts/editors/lsp-check.flang     # языковой сервер
+flang io scripts/editors/vim-highlight-check.fscript     # подсветка
+flang io scripts/editors/lsp-check.fscript     # языковой сервер
 ```
 
-`vim-highlight-check.flang` печатает файл со всеми 629 фразами таблицы, открывает его
+`vim-highlight-check.fscript` печатает файл со всеми 629 фразами таблицы, открывает его
 настоящим Vim и настоящим Neovim и требует, чтобы **каждая** покрасилась
 ключевым словом целиком. Потом переводит четыре файла дерева в HTML командой
 `:TOhtml` и считает раскрашенное по видам.
@@ -189,7 +189,7 @@ flang io scripts/editors/lsp-check.flang     # языковой сервер
 перечислением, а не набором `syn keyword`; и именно поэтому у каждой фразы
 спрашивают редактор.
 
-`lsp-check.flang` меряет, отвечает ли сервер при открытом вводе, потом
+`lsp-check.fscript` меряет, отвечает ли сервер при открытом вводе, потом
 открывает в Neovim заведомо неверный файл и ждёт диагностику, потом верный — и
 проверяет переход к объявлению и наведение. Vim 8/9 через vim-lsp проверяется
 тем же прогоном, если рядом положен сам vim-lsp:
@@ -197,7 +197,7 @@ flang io scripts/editors/lsp-check.flang     # языковой сервер
 ```bash
 git clone --depth 1 https://github.com/prabirshrestha/vim-lsp.git   ~/vimlsp/vim-lsp
 git clone --depth 1 https://github.com/prabirshrestha/async.vim.git ~/vimlsp/async.vim
-FLANG_VIM_LSP=~/vimlsp flang io scripts/editors/lsp-check.flang
+FLANG_VIM_LSP=~/vimlsp flang io scripts/editors/lsp-check.fscript
 ```
 
 Нет переменной — проверка Vim 8/9 честно говорит «ПРОПУЩЕНА» и не красит прогон

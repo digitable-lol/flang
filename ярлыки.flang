@@ -15,10 +15,10 @@
      "bootstrap/flang io ярлыки.flang --plan Целость"] по "") и «зачем» равным (соединить [
      "проверить, что каждый ярлык указывает на существующий файл"] по ""),
    запись «Ярлык» с «имя» равным "лицензии:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/license-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/license-guard.fscript"] по "") и «зачем» равным (соединить [
      "SPDX-метка у каждого файла, который уезжает в пакет"] по ""),
    запись «Ярлык» с «имя» равным "утверждения:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/claim-guard.flang --plan ",
+     "bootstrap/flang io flang/scripts/claim-guard.fscript --plan ",
      "'Утверждения о недостаче сверены с лексером' --max-steps 2000000000 ",
      "--max-orders 100000"] по "") и «зачем» равным (соединить [
      "«в языке нет такой формы» — спрошено у настоящего лексера"] по ""),
@@ -26,25 +26,25 @@
      "node flang/scripts/count-guard.mjs"] по "") и «зачем» равным (соединить [
      "каждое «N строк такого-то файла» пересчитано по дереву"] по ""),
    запись «Ярлык» с «имя» равным "коды:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/code-guard.flang --max-steps ",
+     "bootstrap/flang io flang/scripts/code-guard.fscript --max-steps ",
      "200000000"] по "") и «зачем» равным (соединить [
      "каждый FLANG_* из прозы существует в исходниках"] по ""),
    запись «Ярлык» с «имя» равным "коды:подлог" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/code-forgery.flang --timeout 600000"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io flang/scripts/code-forgery.fscript --timeout 600000"] по "") и «зачем» равным (соединить [
      "сторож кодов краснеет на подложенном коде и молчит, когда его убрали"] по ""),
    запись «Ярлык» с «имя» равным "кириллица:проверка" и «команда» равным (соединить [
      "sh scripts/guards/cyrillic-file-names-guard.sh --check"] по "") и «зачем» равным (соединить [
      "кириллических имён файлов вне flang/proof не прибавилось"] по ""),
    запись «Ярлык» с «имя» равным "печать:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/emit-promises-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/emit-promises-guard.fscript"] по "") и «зачем» равным (соединить [
      "числа прозы о печати перемерены прогоном девяти целей"] по ""),
    запись «Ярлык» с «имя» равным "расхождение:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/target-function-drift.flang --plan ",
+     "bootstrap/flang io scripts/guards/target-function-drift.fscript --plan ",
      "'Расхождение целей стережётся'"] по "") и «зачем» равным (соединить [
      "одна программа в девяти целях даёт одинаковое число функций — или ",
      "названный долг"] по ""),
    запись «Ярлык» с «имя» равным "расхождение:подлог" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/target-function-drift.flang --plan ",
+     "bootstrap/flang io scripts/guards/target-function-drift.fscript --plan ",
      "'Подлог краснит сторожа расхождения'"] по "") и «зачем» равным (соединить [
      "сторож расхождения краснеет на программе с бо́льшим разбросом и ",
      "молчит, когда его нет"] по ""),
@@ -66,7 +66,7 @@
      "'Подлог' --timeout 300000"] по "") и «зачем» равным (соединить [
      "сторож лица зряч: подложенное включение переворачивает обе его меры"] по ""),
    запись «Ярлык» с «имя» равным "умения:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/kernel-abilities-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/kernel-abilities-guard.fscript"] по "") и «зачем» равным (соединить [
      "описание правил не беднее самих правил: 28 умений ядра названы в ",
      "SPEC.md и подтверждены уликами"] по ""),
    запись «Ярлык» с «имя» равным "умения:улики" и «команда» равным (соединить [
@@ -74,13 +74,13 @@
      "все 28 умений доказаны прогоном, а не перечислены: сетка здесь ",
      "означает, что умение ушло из ядра"] по ""),
    запись «Ярлык» с «имя» равным "закон:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/targets/emit-law.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/targets/emit-law.fscript"] по "") и «зачем» равным (соединить [
      "печать не печатает того, что проверка того же двоичного отвергает"] по ""),
    запись «Ярлык» с «имя» равным "имена:проверка" и «команда» равным (соединить [
      "node flang/scripts/name-guard.mjs"] по "") и «зачем» равным (соединить [
      "правила именования по разобранному дереву всех программ"] по ""),
    запись «Ярлык» с «имя» равным "имена-модулей:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/module-name-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/module-name-guard.fscript"] по "") и «зачем» равным (соединить [
      "у модуля есть английское имя: иначе напечатанный файл будет назван ",
      "транслитом"] по ""),
    запись «Ярлык» с «имя» равным "изоляция:проверка" и «команда» равным (соединить [
@@ -95,63 +95,63 @@
      "зеленеет, когда его убрали — обе стороны прогоном, на игрушечном ",
      "дереве во временном каталоге"] по ""),
    запись «Ярлык» с «имя» равным "жаргон:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/jargon-guard.flang --plan ",
+     "bootstrap/flang io flang/scripts/jargon-guard.fscript --plan ",
      "'Внутреннее слово не стоит в тексте для читателя' --max-steps ",
      "4000000000"] по "") и «зачем» равным (соединить [
      "внутреннее слово не стоит в тексте для читателя со стороны"] по ""),
    запись «Ярлык» с «имя» равным "жаргон:список" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/jargon-guard.flang --plan 'Каждое ",
+     "bootstrap/flang io flang/scripts/jargon-guard.fscript --plan 'Каждое ",
      "место названо' --max-steps 4000000000"] по "") и «зачем» равным (соединить [
      "то же самое, но каждое найденное место названо поимённо, с номером ",
      "строки"] по ""),
    запись «Ярлык» с «имя» равным "жаргон:долг" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/jargon-guard.flang --plan 'Долг ",
+     "bootstrap/flang io flang/scripts/jargon-guard.fscript --plan 'Долг ",
      "переписан' --max-steps 4000000000"] по "") и «зачем» равным (соединить [
      "вписать в docs/jargon.json нынешние числа: упавший долг опускается ",
      "только так"] по ""),
    запись «Ярлык» с «имя» равным "память:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/memory-guard.flang --max-steps ",
+     "bootstrap/flang io flang/scripts/memory-guard.fscript --max-steps ",
      "80000000"] по "") и «зачем» равным (соединить [
      "каждое число пиковой памяти из прозы перемерено прогоном"] по ""),
    запись «Ярлык» с «имя» равным "правила:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/binary-rules-guard.flang --timeout ",
+     "bootstrap/flang io flang/scripts/binary-rules-guard.fscript --timeout ",
      "600000"] по "") и «зачем» равным (соединить [
      "обе реализации судят программу по одному набору правил"] по ""),
    запись «Ярлык» с «имя» равным "ключи:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/cli-keys-guard.flang --max-steps ",
+     "bootstrap/flang io flang/scripts/cli-keys-guard.fscript --max-steps ",
      "200000000 --timeout 600000"] по "") и «зачем» равным (соединить [
      "наборы ключей командной строки у двух реализаций сошлись: ",
      "разошедшийся ключ назван поимённо"] по ""),
    запись «Ярлык» с «имя» равным "узел:цели" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/node-across-targets.flang --timeout ",
+     "bootstrap/flang io flang/scripts/node-across-targets.fscript --timeout ",
      "1800000"] по "") и «зачем» равным (соединить [
      "полный узел на целях печати: рукопожатие сошлось у обоих концов, ",
      "письмо и ответ поменяли состояния процессов"] по ""),
    запись «Ярлык» с «имя» равным "времянки:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/tempdir-guard.flang --plan ",
+     "bootstrap/flang io flang/scripts/tempdir-guard.fscript --plan ",
      "'Временных каталогов не осталось' --timeout 1800000 --max-steps ",
      "4000000000"] по "") и «зачем» равным (соединить [
      "прогон, оставляющий за собой временные каталоги, обязан назвать их ",
      "числом"] по ""),
    запись «Ярлык» с «имя» равным "занятые:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/occupied-names-guard.flang --max-steps 100000000"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/occupied-names-guard.fscript --max-steps 100000000"] по "") и «зачем» равным (соединить [
      "сколько модулей столкнулось бы с именами, занятыми целью печати"] по ""),
    запись «Ярлык» с «имя» равным "слова:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/target-words.flang --max-steps ",
+     "bootstrap/flang io flang/scripts/target-words.fscript --max-steps ",
      "2000000000 --timeout 600000"] по "") и «зачем» равным (соединить [
      "напечатанное собирается, когда имена в модели совпали с занятыми ",
      "словами цели"] по ""),
    запись «Ярлык» с «имя» равным "расширения:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/file-extensions.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/file-extensions.fscript"] по "") и «зачем» равным (соединить [
      "список расширений имени файла один, и каждое место отбора называет ",
      "его целиком"] по ""),
    запись «Ярлык» с «имя» равным "подделки:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/kernel-forgeries.flang --plan ",
+     "bootstrap/flang io flang/scripts/kernel-forgeries.fscript --plan ",
      "'Подделки остаются недоказанными'"] по "") и «зачем» равным (соединить [
      "программа, пытающаяся доказать ложь, обязана быть отвергнута; списки ",
      "сверены с каталогом в обе стороны"] по ""),
    запись «Ярлык» с «имя» равным "аксиомы:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/kernel-forgeries.flang --plan ",
+     "bootstrap/flang io flang/scripts/kernel-forgeries.fscript --plan ",
      "'Аксиом ноль'"] по "") и «зачем» равным (соединить [
      "слова «аксиома» в исходнике ядра нет вне названных доводов, и список ",
      "подделок сходится с каталогом — читает текст, компилятор не зовёт"] по ""),
@@ -231,13 +231,13 @@
      "числитель обязан упасть — иначе прибор держал бы долю на снятых ходах ",
      "и мерил бы вердикт, а не игру"] по ""),
    запись «Ярлык» с «имя» равным "срок:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/child-timeout.flang --timeout 120000"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/child-timeout.fscript --timeout 120000"] по "") и «зачем» равным (соединить [
      "срок потомка назван ключом и работает в обе стороны"] по ""),
    запись «Ярлык» с «имя» равным "связь:печать" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/targets/conc-link-emit.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/targets/conc-link-emit.fscript"] по "") и «зачем» равным (соединить [
      "узел зовёт у напечатанного только объявленное и исполняет каждое веление исходника"] по ""),
    запись «Ярлык» с «имя» равным "выпуск:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/release-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/release-guard.fscript"] по "") и «зачем» равным (соединить [
      "обещанный деревом выпуск существует на GitHub и ставится"] по ""),
    запись «Ярлык» с «имя» равным "двоичный:приёмка" и «команда» равным (соединить [
      "sh scripts/seed/new-binary-acceptance.sh"] по "") и «зачем» равным (соединить [
@@ -274,21 +274,21 @@
      "сторож слов семени краснеет на выдуманном типе: ключ у сторожа был, а ",
      "ярлыка не было — и поломку никто не гонял"] по ""),
    запись «Ярлык» с «имя» равным "столкновения:пересчёт" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/name-collision-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/name-collision-guard.fscript"] по "") и «зачем» равным (соединить [
      "те же столкновения, посчитанные на flang: всё дерево, 160 входов и ",
      "784 файла; тридцать минут против пяти секунд у .mjs, потому ярлык ",
      "столкновения:проверка пока не на нём"] по ""),
    запись «Ярлык» с «имя» равным "сращивание:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/name-splicing-guard.flang ",
+     "bootstrap/flang io scripts/guards/name-splicing-guard.fscript ",
      "--max-orders 2000"] по "") и «зачем» равным (соединить [
      "поломки от слияния: одно имя объявлено дважды, званый не объявлен ",
      "нигде"] по ""),
    запись «Ярлык» с «имя» равным "поиск:различающий" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/discriminating-search.flang --plan ",
+     "bootstrap/flang io flang/scripts/discriminating-search.fscript --plan ",
      "'Различительный поиск' --max-steps 2000000000 --max-orders 100000"] по "") и «зачем» равным (соединить [
      "порождённые утверждения: где ядро сказало «доказано», а прогон нарушил"] по ""),
    запись «Ярлык» с «имя» равным "сколько-верим" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/kernel-lines-to-trust.flang --plan ",
+     "bootstrap/flang io flang/scripts/kernel-lines-to-trust.fscript --plan ",
      "'Потолок не пробит' --max-steps 2000000000"] по "") и «зачем» равным (соединить [
      "скольким строкам ядра доказательств приходится верить; потолок ползёт ",
      "только вниз"] по ""),
@@ -299,21 +299,21 @@
      "bootstrap/flang io fspec/forgery.flang --timeout 600000"] по "") и «зачем» равным (соединить [
      "проверка спек ловит подложенные спеки и молчит там, где обязана"] по ""),
    запись «Ярлык» с «имя» равным "доказательства:ведомость" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/proof-ledger.flang --plan 'Свод корпуса' ",
+     "bootstrap/flang io flang/scripts/proof-ledger.fscript --plan 'Свод корпуса' ",
      "--timeout 3600000 --max-steps 400000000000 --max-orders 100000"] по "") и «зачем» равным (соединить [
      "отчёт о доказательствах по всем программам дерева"] по ""),
    запись «Ярлык» с «имя» равным "доказательства:свод" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/ledger-summary.flang --plan 'Свод' ",
+     "bootstrap/flang io flang/scripts/ledger-summary.fscript --plan 'Свод' ",
      "--timeout 900000"] по "") и «зачем» равным (соединить [
      "тот же свод на flang: корпус спрашивается у git, числа снимаются с ",
      "блока «итог» ведомости двоичного"] по ""),
    запись «Ярлык» с «имя» равным "слово:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/word-guard.flang --plan 'Сторож ",
+     "bootstrap/flang io flang/scripts/word-guard.fscript --plan 'Сторож ",
      "слов' --max-steps 2000000000"] по "") и «зачем» равным (соединить [
      "сильное слово не сказано про слабое основание: вердикт, число, проза ",
      "и пустота сходятся"] по ""),
    запись «Ярлык» с «имя» равным "слово:подлог" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/word-guard.flang --plan 'Подлог ",
+     "bootstrap/flang io flang/scripts/word-guard.fscript --plan 'Подлог ",
      "слов' --max-steps 2000000000"] по "") и «зачем» равным (соединить [
      "сторож слов краснеет на каждой из шести порч и молчит, когда чисто"] по ""),
    запись «Ярлык» с «имя» равным "доказательства:пустота" и «команда» равным (соединить [
@@ -323,32 +323,32 @@
      "sh scripts/guards/kto-zovet-storozhey.sh --check"] по "") и «зачем» равным (соединить [
      "сторожа, которых CI не зовёт, сходятся с ведомостью — в обе стороны"] по ""),
    запись «Ярлык» с «имя» равным "длина:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/closed-length-guard.flang ",
+     "bootstrap/flang io flang/scripts/closed-length-guard.fscript ",
      "--max-steps 4000000000"] по "") и «зачем» равным (соединить [
      "ложь о длине постоянной краснеет сама: у замкнутой цели «не доказано» ",
      "значит «ложно»"] по ""),
    запись «Ярлык» с «имя» равным "пустота:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/emptiness-guard.flang --plan ",
+     "bootstrap/flang io flang/scripts/emptiness-guard.fscript --plan ",
      "'Пустоты в доказанном нет' --timeout 900000 --max-steps 2000000000"] по "") и «зачем» равным (соединить [
      "куча каждого доказанного утверждения библиотеки сошлась с ведомостью: ",
      "пустое не считается знанием"] по ""),
    запись «Ярлык» с «имя» равным "пустота:перепись" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/emptiness-guard.flang --plan ",
+     "bootstrap/flang io flang/scripts/emptiness-guard.fscript --plan ",
      "'Перепись куч' --timeout 900000"] по "") и «зачем» равным (соединить [
      "печатает кучу каждого доказанного утверждения — из неё и набирается ",
      "ведомость"] по ""),
    запись «Ярлык» с «имя» равным "пустота:порча" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/emptiness-guard.flang --plan 'Порча' ",
+     "bootstrap/flang io flang/scripts/emptiness-guard.fscript --plan 'Порча' ",
      "--timeout 900000"] по "") и «зачем» равным (соединить [
      "сторож пустоты краснеет на возвращённом пустом утверждении и называет ",
      "его"] по ""),
    запись «Ярлык» с «имя» равным "доказанное:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/proven-guard.flang --plan ",
+     "bootstrap/flang io flang/scripts/proven-guard.fscript --plan ",
      "'Доказанного не убыло' --timeout 900000"] по "") и «зачем» равным (соединить [
      "число доказанных утверждений библиотеки не убыло против записанного ",
      "пола"] по ""),
    запись «Ярлык» с «имя» равным "доказанное:порча" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/proven-guard.flang --plan 'Порча' ",
+     "bootstrap/flang io flang/scripts/proven-guard.fscript --plan 'Порча' ",
      "--timeout 900000"] по "") и «зачем» равным (соединить [
      "сторож доказанного краснеет на приписанной теореме, которая тихо ",
      "отняла два доказательства"] по ""),
@@ -360,39 +360,39 @@
      "сколько написанных программ сломало бы новое ключевое слово; ",
      "принимает доводы"] по ""),
    запись «Ярлык» с «имя» равным "слово:занятость:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/occupancy-check.flang --timeout ",
+     "bootstrap/flang io scripts/guards/occupancy-check.fscript --timeout ",
      "600000"] по "") и «зачем» равным (соединить [
      "замер занятости ловит голое слово, узнаёт занятое и молчит на ",
      "безопасном"] по ""),
    запись «Ярлык» с «имя» равным "ссылки:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/link-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/link-guard.fscript"] по "") и «зачем» равным (соединить [
      "каждая ссылка Markdown, ведущая на файл дерева"] по ""),
    запись «Ярлык» с «имя» равным "задачник:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/tasks.flang --plan 'Задачник цел' ",
+     "bootstrap/flang io flang/scripts/tasks.fscript --plan 'Задачник цел' ",
      "--max-steps 200000000"] по "") и «зачем» равным (соединить [
      "задачник цел: номер не занят дважды, все восемь полей названы, ",
      "«рядом» ведёт на существующую задачу"] по ""),
    запись «Ярлык» с «имя» равным "опись:языки" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/tree-inventory.flang --plan 'Опись ",
+     "bootstrap/flang io scripts/guards/tree-inventory.fscript --plan 'Опись ",
      "дерева по языкам' --max-steps 50000000"] по "") и «зачем» равным (соединить [
      "сколько в дереве написано не на flang: все языки разом, с доводом у ",
      "каждого не-долга"] по ""),
    запись «Ярлык» с «имя» равным "опись:сверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/tree-inventory.flang --plan 'Опись ",
+     "bootstrap/flang io scripts/guards/tree-inventory.fscript --plan 'Опись ",
      "сходится с документом' --max-steps 50000000"] по "") и «зачем» равным (соединить [
      "таблица в docs/tree-inventory.md сходится с тем, что опись насчитала: ",
      "столбцы долга не стережёт больше никто"] по ""),
    запись «Ярлык» с «имя» равным "решения:номера" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/adr-numbers-guard.flang --plan ",
+     "bootstrap/flang io scripts/guards/adr-numbers-guard.fscript --plan ",
      "'Номера решений'"] по "") и «зачем» равным (соединить [
      "номер решения занят ровно одним решением"] по ""),
    запись «Ярлык» с «имя» равным "решения:подлог" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/adr-numbers-guard.flang --plan ",
+     "bootstrap/flang io scripts/guards/adr-numbers-guard.fscript --plan ",
      "'Подлог'"] по "") и «зачем» равным (соединить [
      "сторож номеров решений краснеет на задвоенном ADR-9999: план подлога ",
      "был, а ярлыка не было"] по ""),
    запись «Ярлык» с «имя» равным "прослеживаемость:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/traceability-guard.flang --plan ",
+     "bootstrap/flang io scripts/guards/traceability-guard.fscript --plan ",
      "'Разрывы' --max-steps 4000000000"] по "") и «зачем» равным (соединить [
      "цепочка требование → код → пример → запись доказательства проходится ",
      "по всему набору (flang/proof/examples, flang/test/fixtures, ",
@@ -402,21 +402,21 @@
      "нет, или число разрывов разошлось с ",
      "scripts/ledgers/traceability-debt.tsv"] по ""),
    запись «Ярлык» с «имя» равным "прослеживаемость:подлог" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/traceability-guard.flang --plan ",
+     "bootstrap/flang io scripts/guards/traceability-guard.fscript --plan ",
      "'Подлог' --max-steps 4000000000"] по "") и «зачем» равным (соединить [
      "проверка прослеживаемости краснеет, когда из ",
      "flang/proof/map/abilities.flang спрятано постусловие «У1 сумма ",
      "читается в обратном порядке», а запись abilities.запись его ",
      "по-прежнему называет"] по ""),
    запись «Ярлык» с «имя» равным "прослеживаемость:требование" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/traceability-guard.flang --plan 'От ",
+     "bootstrap/flang io scripts/guards/traceability-guard.fscript --plan 'От ",
      "требования' --max-steps 4000000000"] по "") и «зачем» равным (соединить [
      "от требования к коду и проверке: имя постусловия задаётся переменной ",
      "среды FLANG_TRACE, в ответ — файл и строка, функция, примеры и запись ",
      "доказательства с вердиктом; краснеет, если у требования нет ни ",
      "примера, ни доказанной записи"] по ""),
    запись «Ярлык» с «имя» равным "прослеживаемость:строка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/traceability-guard.flang --plan 'От ",
+     "bootstrap/flang io scripts/guards/traceability-guard.fscript --plan 'От ",
      "строки' --max-steps 4000000000"] по "") и «зачем» равным (соединить [
      "от строки кода к требованию, которое её оправдывает: ",
      "FLANG_TRACE=путь:строка, в ответ — функция, в которой лежит строка, и ",
@@ -448,12 +448,12 @@
      "каталоги и на отказе без довода, а зеленеет на законном отказе — пять ",
      "сторон прогоном, во временной копии каталога"] по ""),
    запись «Ярлык» с «имя» равным "задачник:доска" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/tasks.flang --plan 'Доска' ",
+     "bootstrap/flang io flang/scripts/tasks.fscript --plan 'Доска' ",
      "--max-steps 200000000"] по "") и «зачем» равным (соединить [
      "кто над чем работает, что свободно, что закрыто и как это ложится на ",
      "дорожную карту"] по ""),
    запись «Ярлык» с «имя» равным "задачник:номер" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/tasks.flang --plan 'Номер' ",
+     "bootstrap/flang io flang/scripts/tasks.fscript --plan 'Номер' ",
      "--max-steps 200000000"] по "") и «зачем» равным (соединить [
      "номер новой задачи считается от её английского имени, а не выбирается ",
      "взглядом на каталог"] по ""),
@@ -463,21 +463,21 @@
      "указатель базы знаний печатается из самих заметок: состав из ",
      "каталога, заголовки из первой строки"] по ""),
    запись «Ярлык» с «имя» равным "путь:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/release/path-without-node.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/release/path-without-node.fscript"] по "") и «зачем» равным (соединить [
      "PATH без Node собирается, а где не собрать — сказано вслух"] по ""),
    запись «Ярлык» с «имя» равным "словарь:полнота" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/dictionary-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/dictionary-guard.fscript"] по "") и «зачем» равным (соединить [
      "страница словаря покрывает таблицу слов языка целиком"] по ""),
    запись «Ярлык» с «имя» равным "вкладка:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/tab-host-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/tab-host-guard.fscript"] по "") и «зачем» равным (соединить [
      "хозяин вкладки отвечает на каждое поручение словаря языка"] по ""),
    запись «Ярлык» с «имя» равным "копии-словаря:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/io-dictionary-copies-guard.flang ",
+     "bootstrap/flang io scripts/guards/io-dictionary-copies-guard.fscript ",
      "--plan 'Копии словаря сходятся с первоисточником'"] по "") и «зачем» равным (соединить [
      "имена поручений и откликов в трёх выписанных руками копиях сходятся ",
      "со словарём языка"] по ""),
    запись «Ярлык» с «имя» равным "копии-словаря:подлог" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/io-dictionary-copies-guard.flang ",
+     "bootstrap/flang io scripts/guards/io-dictionary-copies-guard.fscript ",
      "--plan 'Подлог копий словаря'"] по "") и «зачем» равным (соединить [
      "сторож копий словаря краснеет, когда имя из копии убрано"] по ""),
    запись «Ярлык» с «имя» равным "браузер:собрать" и «команда» равным (соединить [
@@ -490,28 +490,28 @@
      "sh docs/examples/web/browser-probe.sh"] по "") и «зачем» равным (соединить [
      "прогнать приложение в настоящем браузере: нажатия, часы, снимок"] по ""),
    запись «Ярлык» с «имя» равным "справка:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/manpage-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/manpage-guard.fscript"] по "") и «зачем» равным (соединить [
      "man flang набирается, называет те же команды и те же коды бед"] по ""),
    запись «Ярлык» с «имя» равным "команды:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/cli-commands-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/cli-commands-guard.fscript"] по "") и «зачем» равным (соединить [
      "man-страница и оба README называют КАЖДУЮ команду из справки ",
      "двоичного, и число команд словами сходится: эталон снимается разбором ",
      "справки, а не вписан руками"] по ""),
    запись «Ярлык» с «имя» равным "дарвин:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/сторож-дарвина.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/сторож-дарвина.fscript"] по "") и «зачем» равным (соединить [
      "сборка на Darwin: _DARWIN_C_SOURCE на месте, и вызовы, зависящие от ",
      "уровня видимости заголовков, тоже"] по ""),
    запись «Ярлык» с «имя» равным "формула:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/homebrew-formula-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/homebrew-formula-guard.fscript"] по "") и «зачем» равным (соединить [
      "формула Homebrew: одна версия на три места и sha256, сверенный с ",
      "архивом"] по ""),
    запись «Ярлык» с «имя» равным "плагин:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/asdf-plugin-guard.flang --plan ",
+     "bootstrap/flang io scripts/guards/asdf-plugin-guard.fscript --plan ",
      "'Плагин asdf не отстал от дерева'"] по "") и «зачем» равным (соединить [
      "плагин asdf: сабмодуль packaging/asdf-plugin совпадает с ",
      "packaging/asdf знак в знак, скрипты исполняемы, лишних файлов нет"] по ""),
    запись «Ярлык» с «имя» равным "плагин:подлог" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/asdf-plugin-guard.flang --plan ",
+     "bootstrap/flang io scripts/guards/asdf-plugin-guard.fscript --plan ",
      "'Подлог'"] по "") и «зачем» равным (соединить [
      "сторож плагина asdf краснеет на подменённом bin/install копии — иначе ",
      "он сломан"] по ""),
@@ -522,7 +522,7 @@
      "едет в архиве и ставится формулой, либо назван с причиной остаться в ",
      "дереве"] по ""),
    запись «Ярлык» с «имя» равным "версия:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/version-guard.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/guards/version-guard.fscript"] по "") и «зачем» равным (соединить [
      "FLANG_VERSION в flang_repl.c совпадает с версией в .flangrc — не отстаёт ",
      "молча, как дважды случалось (задача 9983)"] по ""),
    запись «Ярлык» с «имя» равным "версия" и «команда» равным (соединить [
@@ -546,11 +546,11 @@
      "bootstrap/flang io docs/site/storozh-kontrasta.flang"] по "") и «зачем» равным (соединить [
      "цвета подсветки читаемы: 4.5:1 по формуле WCAG в каждой из трёх тем"] по ""),
    запись «Ярлык» с «имя» равным "словарь" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/site/emit-dictionary.flang --plan ",
+     "bootstrap/flang io scripts/site/emit-dictionary.fscript --plan ",
      "'Напечатать словарь'"] по "") и «зачем» равным (соединить [
      "напечатать docs/glossary.md из таблицы поверхностей"] по ""),
    запись «Ярлык» с «имя» равным "словарь:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/site/emit-dictionary.flang --plan 'Словарь ",
+     "bootstrap/flang io scripts/site/emit-dictionary.fscript --plan 'Словарь ",
      "сходится'"] по "") и «зачем» равным (соединить [
      "словарь страницы не разошёлся с таблицей поверхностей"] по ""),
    запись «Ярлык» с «имя» равным "поверхности:прогон" и «команда» равным (соединить [
@@ -560,7 +560,7 @@
      "node docs/site/surfaces-run.mjs --check"] по "") и «зачем» равным (соединить [
      "страница поверхностей сверена с прогоном"] по ""),
    запись «Ярлык» с «имя» равным "поверхности:подлог" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/site/surfaces-page.flang --timeout 300000"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io scripts/site/surfaces-page.fscript --timeout 300000"] по "") и «зачем» равным (соединить [
      "сторож страницы поверхностей краснеет на подменённом числе и на ",
      "снятом понятии"] по ""),
    запись «Ярлык» с «имя» равным "числа" и «команда» равным (соединить [
@@ -570,7 +570,7 @@
      "node docs/site/site-numbers.mjs --check"] по "") и «зачем» равным (соединить [
      "число на сайте не уехало от дерева"] по ""),
    запись «Ярлык» с «имя» равным "страницы:отстали" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/guards/stale-pages-guard.flang --plan ",
+     "bootstrap/flang io scripts/guards/stale-pages-guard.fscript --plan ",
      "'Страницы не отстали' --timeout 900000"] по "") и «зачем» равным (соединить [
      "одним списком: какая страница отстала от дерева и чем это снято"] по ""),
    запись «Ярлык» с «имя» равным "опубликованное:сверка" и «команда» равным (соединить [
@@ -578,13 +578,13 @@
      "разошлось ли опубликованное с деревом: дешёвые числа сайта, доля ",
      "доказанного и перепись не-flang — за секунды и без двоичного"] по ""),
    запись «Ярлык» с «имя» равным "журнал" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/site/build-changelog.flang --plan ",
+     "bootstrap/flang io scripts/site/build-changelog.fscript --plan ",
      "'Напечатать журнал изменений' --max-steps 2000000000"] по "") и «зачем» равным (соединить [
      "напечатать CHANGELOG.md и changelog.json из истории"] по ""),
    запись «Ярлык» с «имя» равным "журнал:проверка" и «команда» равным (соединить [
      "bootstrap/flang test scripts/site/changelog.flang && bootstrap/flang ",
-     "test scripts/site/build-changelog.flang && bootstrap/flang io ",
-     "scripts/site/build-changelog.flang --plan 'Журнал не отстал' ",
+     "test scripts/site/build-changelog.fscript && bootstrap/flang io ",
+     "scripts/site/build-changelog.fscript --plan 'Журнал не отстал' ",
      "--max-steps 2000000000"] по "") и «зачем» равным (соединить [
      "печатник проверен своими примерами (прежний --self-test), и журнал ",
      "совпадает с историей"] по ""),
@@ -595,11 +595,11 @@
      "node scripts/site/build-changelog-page.mjs --check"] по "") и «зачем» равным (соединить [
      "страница вливаний сверена с историей"] по ""),
    запись «Ярлык» с «имя» равным "выпуски:страница" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/site/releases-page.flang --max-steps ",
+     "bootstrap/flang io scripts/site/releases-page.fscript --max-steps ",
      "40000000"] по "") и «зачем» равным (соединить [
      "напечатать страницу выпусков"] по ""),
    запись «Ярлык» с «имя» равным "выпуски:страница:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/site/releases-page-verify.flang ",
+     "bootstrap/flang io scripts/site/releases-page-verify.fscript ",
      "--max-steps 40000000"] по "") и «зачем» равным (соединить [
      "страница выпусков сверена с тегами"] по ""),
    запись «Ярлык» с «имя» равным "раскрутка" и «команда» равным (соединить [
@@ -609,7 +609,7 @@
      "sh scripts/raskrutka.sh --check"] по "") и «зачем» равным (соединить [
      "сверить закоммиченную точку раскрутки с печатью, байт в байт"] по ""),
    запись «Ярлык» с «имя» равным "точка:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io scripts/seed/bootstrap-point-by-binary.flang ",
+     "bootstrap/flang io scripts/seed/bootstrap-point-by-binary.fscript ",
      "--timeout 2400000"] по "") и «зачем» равным (соединить [
      "точку раскрутки печатает сам двоичный, и печатает то, что лежит в ",
      "дереве"] по ""),
@@ -617,7 +617,7 @@
      "sh scripts/raskrutka.sh --stroki"] по "") и «зачем» равным (соединить [
      "быстрая проверка: все строковые литералы рантайма закрыты"] по ""),
    запись «Ярлык» с «имя» равным "сторожа:проверка" и «команда» равным (соединить [
-     "bootstrap/flang io flang/scripts/guards-start.flang"] по "") и «зачем» равным (соединить [
+     "bootstrap/flang io flang/scripts/guards-start.fscript"] по "") и «зачем» равным (соединить [
      "каждый файл проверок дерева ЗАВОДИТСЯ; не завёлся — назван поимённо и ",
      "дословно"] по ""),
    запись «Ярлык» с «имя» равным "перечни:перепись" и «команда» равным (соединить [

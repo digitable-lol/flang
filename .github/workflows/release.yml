@@ -78,7 +78,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           # Вся история и все теги: журнал изменений печатается из них
-          # (scripts/site/build-changelog.flang, ярлык `журнал`), и сверка сверяет
+          # (scripts/site/build-changelog.fscript, ярлык `журнал`), и сверка сверяет
           # записанный файл с историей. В клоне из одной ревизии эта сверка сравнивает пустоту с
           # пустотой и молчит.
           fetch-depth: 0
@@ -114,7 +114,7 @@ jobs:
 
       - name: Собранный двоичный называет ту же версию, что .flangrc
         # ЗАЧЕМ ОТДЕЛЬНО ОТ «версия:проверка» (install-path.yml:138). Тот сторож
-        # (scripts/guards/version-guard.flang) читает ИСХОДНИК —
+        # (scripts/guards/version-guard.fscript) читает ИСХОДНИК —
         # flang/src/emit/c/flang_repl.c. А выпуск собирается из СЕМЕНИ (шаг
         # выше, make -C bootstrap), и между перепечатками эти два файла
         # расходятся ЗАКОННО. Значит зелёный «версия:проверка» ничего не
@@ -226,7 +226,7 @@ jobs:
       #
       # Заметка о выпуске в дереве уже есть и уже сверяется: из
       # `docs/release-notes.json` печатается страница «Выпуски», и
-      # `scripts/site/releases-page-verify.flang` краснеет на теге без заметки.
+      # `scripts/site/releases-page-verify.fscript` краснеет на теге без заметки.
       # Здесь тот же файл становится телом релиза — обеими половинами, русской
       # и английской, — чтобы опубликованное и страница сайта не могли
       # разойтись: у них один источник.
@@ -249,7 +249,7 @@ jobs:
         run: |
           set -eu
           mkdir -p output
-          LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.flang --max-steps 40000000
+          LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.fscript --max-steps 40000000
           echo "имя релиза: $(cat output/release-title.txt)"
           echo "знаков в теле: $(wc -c < output/release-body.md)"
 
@@ -277,7 +277,7 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.flang --max-steps 40000000 >/dev/null 2>&1; then
+          if LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.fscript --max-steps 40000000 >/dev/null 2>&1; then
             git checkout -- "$podlog"
             echo "::error::проба не сработала: тело собралось для версии 0.0.0, о которой заметки нет."
             echo "::error::Значит шаг «Тело релиза собрано из заметок» пропустит выпуск без заметки — сторожа нет."
@@ -301,7 +301,7 @@ jobs:
       #
       # Список файлов выше берётся ВЫЧИТАНИЕМ (`ls | grep -Ev`), и это верно: он
       # не отстаёт при переименовании. Но у вычитания есть обратная сторона —
-      # оно молча пропускает и ПРОПАЖУ. Перестань `scripts/release/release-in-c.flang`
+      # оно молча пропускает и ПРОПАЖУ. Перестань `scripts/release/release-in-c.fscript`
       # класть каталог `runtime`, и архив уедет без рантаймов, хеш сойдётся,
       # формула поставится, а `flang emit --target js` откажет у каждого
       # поставившего. Ровно это и была задача 7261, найденная владельцем живьём
@@ -329,7 +329,7 @@ jobs:
               beda=$((beda + 1))
             fi
           done
-          # Файлов рантайма 32 на девять целей; число сторожит scripts/release/release-in-c.flang
+          # Файлов рантайма 32 на девять целей; число сторожит scripts/release/release-in-c.fscript
           # своим примером, здесь же проверяется, что они доехали до архива.
           fajlov="$(printf '%s\n' "$sostav" | grep -c '^runtime/[^/]*/[^/]' || true)"
           echo "файлов рантайма в архиве: $fajlov"
@@ -364,7 +364,7 @@ jobs:
         # (version, url, sha256) обязаны совпасть с формулой дерева ДО выкладки.
         # Расхождение — красное; сабмодуль, указывающий на непушенный коммит
         # крана, checkout выше не развернёт вовсе — тоже красное. Ту же сверку
-        # без сети держит «формула:проверка» (scripts/guards/homebrew-formula-guard.flang).
+        # без сети держит «формула:проверка» (scripts/guards/homebrew-formula-guard.fscript).
         run: |
           set -eu
           kran=packaging/homebrew-tap/Formula/flang.rb
@@ -396,7 +396,7 @@ jobs:
         # плагина сверяются с деревом побайтово ДО выкладки, три скрипта — на
         # бит исполнимости. Расхождение — красное; неразвёрнутый сабмодуль —
         # тоже. Ту же сверку без сети держит «плагин:проверка»
-        # (scripts/guards/asdf-plugin-guard.flang).
+        # (scripts/guards/asdf-plugin-guard.fscript).
         run: |
           set -eu
           plagin=packaging/asdf-plugin

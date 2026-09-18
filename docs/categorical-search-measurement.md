@@ -8,7 +8,7 @@
 > («Имена свойств», постусловие «имён свойств ровно пять»); довод «объявление,
 > которое нечем проверить, хуже отсутствующего» — там же, `:301`. Диагностики
 > `FLANG_PROPERTY_UNKNOWN` эталон на flang не порождает — её знает только
-> двоичный (`flang/scripts/binary-rules-guard.flang:222`).
+> двоичный (`flang/scripts/binary-rules-guard.fscript:222`).
 
 Ветка `work/categorical-search`. Замер, а не реализация.
 

@@ -7,7 +7,7 @@
 **Дата:** 17 сентября 2026
 **Дополняет:** [ADR-0016](0016-three-file-extensions.md) — расширения у файла языка;
 [ADR-0018](0018-file-extensions-are-one-list.md) — список расширений один и живёт в
-`scripts/guards/file-extensions.flang`. Оба остаются в силе целиком.
+`scripts/guards/file-extensions.fscript`. Оба остаются в силе целиком.
 **Основание:** задача 1415, замер 13 сентября 2026 (двоичный 0.7.19, дерево `51c2625e`);
 замер 17 сентября 2026 на `main` `cbfaf3899` (ниже).
 **Проверяется:** `./ярлык расширения:проверка`.
@@ -45,23 +45,23 @@
 | файлов `scripts/**/*.flang` с планом | 59 | `grep -l '^план «' $(git ls-files 'scripts/**/*.flang')` |
 | файлов `scripts/**/*.flang` без плана | 10 | то же с `-L` (плюс один с кириллическим именем) |
 | файлов `flang/scripts/*.flang` с планом | 32 | то же |
-| мест отбора в `file-extensions.flang` | 31 | постусловие «мест отбора тридцать одно» |
-| мест, ждущих своей работы | 2 | `scripts/raskrutka.sh`, `scripts/editors/vscode-highlight-check.flang` |
+| мест отбора в `file-extensions.fscript` | 31 | постусловие «мест отбора тридцать одно» |
+| мест, ждущих своей работы | 2 | `scripts/raskrutka.sh`, `scripts/editors/vscode-highlight-check.fscript` |
 
 По дереву целиком (1415, 13 сентября): файлов с планом **169 из 972** (17,4 %), все 169
 несут и функции; ссылок на их пути — **1242 строки** в дереве без `docs/tasks/`;
 `ярлыки.flang` зовёт 66 разных файлов (87 вызовов `flang io`), работы CI — 36 файлов,
 скрипты оболочки — 8. Девять файлов — и библиотека, и скрипт разом (их модуль ввозят
-другие: `flang/scripts/binary.flang`, `jargon-guard.flang`, `link-collision-guard.flang`,
-`word-occupancy.flang`, `scripts/guards/name-collision-guard.flang`, `fspec/guard.flang`,
-`scripts/release/path-without-node.flang`, `docs/examples/web/shortener/plan-network.flang`).
+другие: `flang/scripts/binary.fscript`, `jargon-guard.fscript`, `link-collision-guard.fscript`,
+`word-occupancy.fscript`, `scripts/guards/name-collision-guard.fscript`, `fspec/guard.flang`,
+`scripts/release/path-without-node.fscript`, `docs/examples/web/shortener/plan-network.flang`).
 
 ## Решение
 
 1. **`.fscript` — расширение файла языка, в котором есть план.** Программы и библиотеки
    остаются `.flang` (и `.fp`, `.фп`, `.фланг` — ADR-0016, ADR-0018).
 2. **Список расширений скрипта — второй закрытый список в том же файле.** В
-   `scripts/guards/file-extensions.flang` заводится тотальная функция «Расширения скрипта»
+   `scripts/guards/file-extensions.fscript` заводится тотальная функция «Расширения скрипта»
    = `[".fscript"]`; «Имя файла языка» спрашивает оба списка. Сводить два списка в один
    нельзя: «файл языка?» и «скрипт?» — разные вопросы, и ровно такое смешение чинила
    задача [0062](../tasks/0062-the-file-extensions-are-one-list.md). Каждое место отбора,

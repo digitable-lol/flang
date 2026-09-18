@@ -36,7 +36,7 @@ const ГНЕЗДО = mkdtempSync(join(КОРЕНЬ, ".flang-razlichitelnyy-"))
 в чужие доли.
 
 **Сторож времянок этого не ловит по устройству.**
-`flang/scripts/tempdir-guard.flang:22–41` — он считает только
+`flang/scripts/tempdir-guard.fscript:22–41` — он считает только
 `<TMPDIR>/flang-run-<pid>-*` и то, что появилось прямо в `TMPDIR`. Корень дерева
 он не смотрит ни одной мерой. Вдобавок он и не бежит — соседняя задача о трёх
 ярлыках, которые не заводятся вовсе.
@@ -50,7 +50,7 @@ const ГНЕЗДО = mkdtempSync(join(КОРЕНЬ, ".flang-razlichitelnyy-"))
 | `.flang-razlichitelnyy-*` | `flang/scripts/discriminating-search.mjs:254` |
 | `.flang-slova-*` | `flang/scripts/target-words.mjs:155`, `:179`, `:270`, `:288` |
 | `.flang-storozh-*` | `flang/scripts/binary.mjs` |
-| `proba-zanyatosti.flang` | `scripts/occupancy-check.flang:193–198` |
+| `proba-zanyatosti.flang` | `scripts/occupancy-check.fscript:193–198` |
 
 Из четырёх в `.gitignore` назван **один**.
 
@@ -60,7 +60,7 @@ const ГНЕЗДО = mkdtempSync(join(КОРЕНЬ, ".flang-razlichitelnyy-"))
 2. Свести четыре образца к одному месту: либо все под один префикс, названный в
    `.gitignore` одной маской, либо — лучше — все в `TMPDIR`, где их уже умеет
    считать сторож времянок.
-3. Научить `tempdir-guard.flang` смотреть корень дерева, а не только `TMPDIR`:
+3. Научить `tempdir-guard.fscript` смотреть корень дерева, а не только `TMPDIR`:
    сегодня он по построению слеп ровно к тому месту, куда пишут четверо.
 
 ## Как понять, что сделано

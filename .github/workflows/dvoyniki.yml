@@ -81,7 +81,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y elixir
       - run: make -C bootstrap -j"$(nproc)"
       - name: Планировщик решает одинаково на девяти целях печати
-        run: bootstrap/flang io flang/scripts/scheduler-across-targets.flang --timeout 300000
+        run: bootstrap/flang io flang/scripts/scheduler-across-targets.fscript --timeout 300000
 
   # ── НАДЗОР: три исхода на цель поверх одной сборки, девять целей ──────────
   #
@@ -97,7 +97,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y elixir
       - run: make -C bootstrap -j"$(nproc)"
       - name: Надзор поднимает упавший процесс на девяти целях печати
-        run: bootstrap/flang io flang/scripts/supervisor-across-targets.flang --timeout 300000
+        run: bootstrap/flang io flang/scripts/supervisor-across-targets.fscript --timeout 300000
 
   # ── ПОЛНЫЙ УЗЕЛ: КРАСЕН ПО ДЕЛУ, И ГЛУШИТЬ ЕГО ЗДЕСЬ НЕЧЕМ ────────────────
   #
@@ -125,11 +125,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y elixir
       - run: make -C bootstrap -j"$(nproc)"
       - name: Полный узел на каждой цели, у которой есть хозяин
-        run: bootstrap/flang io flang/scripts/node-across-targets.flang --timeout 1800000
+        run: bootstrap/flang io flang/scripts/node-across-targets.fscript --timeout 1800000
 
   # ── ПЕЧАТЬ СВЯЗИ: узел зовёт у напечатанного только объявленное ───────────
   #
-  # `scripts/targets/conc-link-emit.flang` держит два обязательства: каждое имя,
+  # `scripts/targets/conc-link-emit.fscript` держит два обязательства: каждое имя,
   # которое хозяин узла на цели js (`flang/concurrency/bin/node.js`) зовёт у
   # напечатанного `node-benchmark.flang`, там объявлено; каждое веление,
   # объявленное `flang/concurrency/link.flang`, узел умеет исполнить.
@@ -150,4 +150,4 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - name: Узел зовёт у напечатанного только объявленное и исполняет каждое веление
-        run: bootstrap/flang io scripts/targets/conc-link-emit.flang
+        run: bootstrap/flang io scripts/targets/conc-link-emit.fscript

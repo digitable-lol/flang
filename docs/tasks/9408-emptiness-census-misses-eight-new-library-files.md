@@ -26,7 +26,7 @@ SEMYA_OTSTALO_ZNAYU=1 ./ярлык пустота:проверка
 Все восемь заведены 9–10 сентября 2026 (`git log --diff-filter=A -- flang/stdlib/<имя>.flang`:
 dns cc6527180, number-format d16416948, protobuf 595aea44a, stats ab05c9768,
 cli eae241bd7, toml 735043361, uuid e389bc6de, websocket 760717ff0). В
-`flang/stdlib/` сегодня 50 файлов; списки сторожа — `flang/scripts/emptiness-guard.flang`:
+`flang/stdlib/` сегодня 50 файлов; списки сторожа — `flang/scripts/emptiness-guard.fscript`:
 «Наши файлы» (стр. 590) и «Отложенные» (стр. 595).
 
 Задача 9283 внесла 16 файлов (92c2d5756) и закрыта; это не её остаток, а тот же

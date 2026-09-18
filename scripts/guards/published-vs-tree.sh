@@ -698,10 +698,10 @@ proza() {
 # кавычек оболочки разбивает имя на два довода. Обе половины проверены прогоном:
 #
 #   flang io ярлыки.flang --plan «Целость»          FLANG_UNKNOWN_PLAN, код 3
-#   flang io …kernel-forgeries.flang --plan «Аксиом ноль»
+#   flang io …kernel-forgeries.fscript --plan «Аксиом ноль»
 #                                       «непонятный ключ «ноль»»», код 2
 #   flang io ярлыки.flang --plan Целость            код 0
-#   flang io …kernel-forgeries.flang --plan 'Аксиом ноль'   код 0
+#   flang io …kernel-forgeries.fscript --plan 'Аксиом ноль'   код 0
 #
 # ЧТО СПРАШИВАЕТСЯ. Только строки вида `flang io … --plan «…»`, то есть команды,
 # а не проза о ключе: «единственный отбор — `--plan «Имя»`» — рассказ об

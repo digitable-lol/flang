@@ -7,7 +7,7 @@
 команда: вторая
 карта: Известный дефект: проверка подделок красная, а «аксиом ноль» зелёная
 рядом: 0002, 0003, 4102, 5519, 6128
-нужность: 1 — сторож красен: bootstrap/flang io kernel-forgeries.flang сегодня «нарушений: 20» (FLANG_PODDELKA_VZYATA, 42 с), подделок 36≥35; ci-inventory: подделки:проверка код 1
+нужность: 1 — сторож красен: bootstrap/flang io kernel-forgeries.fscript сегодня «нарушений: 20» (FLANG_PODDELKA_VZYATA, 42 с), подделок 36≥35; ci-inventory: подделки:проверка код 1
 ---
 
 # 1943. «Ноль аксиом» сказано в трёх местах, а сторож красный
@@ -29,7 +29,7 @@
 25 августа двоичным, собранным из семени этого дерева:
 
 ```
-./bootstrap/flang io flang/scripts/kernel-forgeries.flang --timeout 900000
+./bootstrap/flang io flang/scripts/kernel-forgeries.fscript --timeout 900000
 → нарушений: 40                                                        (код 1)
 ```
 
@@ -41,7 +41,7 @@
 этого же дерева (`make -C bootstrap -j24`, 65 с):
 
 ```
-./bootstrap/flang io flang/scripts/kernel-forgeries.flang \
+./bootstrap/flang io flang/scripts/kernel-forgeries.fscript \
   --plan 'Подделки остаются недоказанными'
 → нарушений: 40                                                        (код 1)
 ```
@@ -119,7 +119,7 @@
 ```sh
 make -C bootstrap -j8
 VETVEY=2 PAMYAT=16G /srv/flang-rabota/vorota/flang-vorota -- \
-  ./bootstrap/flang io flang/scripts/kernel-forgeries.flang
+  ./bootstrap/flang io flang/scripts/kernel-forgeries.fscript
 ```
 
 отвечает `нарушений: 0` и **кодом 0**. Каталог подделок при этом не убыл:

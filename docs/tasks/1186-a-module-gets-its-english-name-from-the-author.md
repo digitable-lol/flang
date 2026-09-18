@@ -7,7 +7,7 @@
 команда: вторая
 карта: Куда идём
 рядом: 0026, 0030, 0043, 4025
-нужность: 2 — охвата в отчёте module-name-guard.flang:405 нет; долг 4 → 63
+нужность: 2 — охвата в отчёте module-name-guard.fscript:405 нет; долг 4 → 63
 ---
 
 # 1186. Транслит в напечатанном коде лечится английским именем модуля
@@ -79,7 +79,7 @@ IMENA=$(nm -a "$DVOICHNYY" 2>/dev/null | grep -o 'compiler_flang_[a-z_]*konkuren
 
 * правило **Р7** — `docs/guide/naming.ru.md:75`, «у модуля есть английское имя.
   Это правило про НАПЕЧАТАННОЕ, а не про наше дерево» (коммит `e4216cb9`);
-* сторож — `scripts/guards/module-name-guard.flang`, **409 строк**, ярлыком
+* сторож — `scripts/guards/module-name-guard.fscript`, **409 строк**, ярлыком
   `имена-модулей:проверка` (`ярлыки.flang:60`). Строка отчёта:
   `имена модулей: шапок 237, без английского имени 4, из них в долге 4, новых 0,
   надгробий 0`;
@@ -98,7 +98,7 @@ IMENA=$(nm -a "$DVOICHNYY" 2>/dev/null | grep -o 'compiler_flang_[a-z_]*konkuren
 ## Что осталось открытым — и это измерено
 
 **Сторож смотрит три каталога из многих.** Р7 глядит `flang/stdlib`,
-`flang/core` и `examples` — те же, что `scripts/guards/occupied-names-guard.flang`.
+`flang/core` и `examples` — те же, что `scripts/guards/occupied-names-guard.fscript`.
 Остаток назван числом, а не словом «остальное» (`docs/guide/naming.ru.md:182`,
 замер 29 августа по всем 849 файлам `.flang` вне `bootstrap/`; ещё 299 файлов
 шапки модуля не имеют вовсе):

@@ -412,11 +412,11 @@ $ echo $?
 доезжает только первое:
 
 ```bash
-$ flang io flang/scripts/kernel-forgeries.flang --plan «Аксиом ноль»
+$ flang io flang/scripts/kernel-forgeries.fscript --plan «Аксиом ноль»
 flang io: непонятный ключ «ноль»»
 $ echo $?
 2
-$ flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
+$ flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль'
 {"plan":"Аксиом ноль","result":"… аксиом ноль, нарушений 0", …
 $ echo $?
 0

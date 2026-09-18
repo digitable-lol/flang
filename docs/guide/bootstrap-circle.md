@@ -101,7 +101,7 @@ What catches that kind of mistake in the tree are the frozen answer tables
 (`flang/test/fixtures/`, 55 entries on 11 September 2026 — `ls flang/test/fixtures | wc -l`): today's binary is run against them, and
 disagreeing with a recorded answer is red. The run stands in CI as the job
 "Подделки ядра отвергнуты" (`bootstrap/flang io
-flang/scripts/kernel-forgeries.flang`, `.github/workflows/binary.yml`). That
+flang/scripts/kernel-forgeries.fscript`, `.github/workflows/binary.yml`). That
 catches a **regression** — "yesterday it answered this, today it answers that" —
 and nothing beyond. There is one
 implementation of the language, and no independent reading of the same rules to

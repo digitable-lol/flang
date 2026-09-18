@@ -106,9 +106,9 @@ flang io план.flang -- один два
 изменилось — стена стоит там же:
 
 ```
-$ bootstrap/flang io scripts/registry-tool.flang --n=5
+$ bootstrap/flang io scripts/registry-tool.fscript --n=5
 flang io: непонятный ключ «--n=5»
-$ bootstrap/flang io scripts/registry-tool.flang --plan 'Найти' -- Списки
+$ bootstrap/flang io scripts/registry-tool.fscript --plan 'Найти' -- Списки
 flang io: непонятный ключ «--»
 ```
 
@@ -119,7 +119,7 @@ flang io: непонятный ключ «--»
 
 **Цена, которую это уже стоит, названа поимённо в трёх местах дерева:**
 
-* `scripts/registry-tool.flang`, шапка — «ЧТО делать выбирается ПЛАНОМ, поэтому
+* `scripts/registry-tool.fscript`, шапка — «ЧТО делать выбирается ПЛАНОМ, поэтому
   планов четыре, а не один с подкомандой; НАД ЧЕМ делать берётся из ФАЙЛА
   ЗАПРОСА с заранее известным именем, потому что передать искомое имя вызовом
   нечем». Там же названо, что это «ровно та работа по языку, которая идёт

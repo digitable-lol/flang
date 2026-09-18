@@ -43,9 +43,9 @@ done | sort -rn
 ```
 
 **71 файл** держит три и более путей литералами; в голове списка —
-`flang/scripts/kernel-forgeries.flang` (202), `fspec/guard.flang` (94),
-`scripts/guards/link-guard.flang` (66), `scripts/guards/module-name-guard.flang` (64),
-`scripts/guards/name-collision-guard.flang` (52). Это не 105 и не 57: моя мерка считает
+`flang/scripts/kernel-forgeries.fscript` (202), `fspec/guard.flang` (94),
+`scripts/guards/link-guard.fscript` (66), `scripts/guards/module-name-guard.fscript` (64),
+`scripts/guards/name-collision-guard.fscript` (52). Это не 105 и не 57: моя мерка считает
 файлы, а не списки, и не спрашивает, разошлись ли они. Она годится ровно на
 одно — показать, что предмет большой и он есть.
 
@@ -74,7 +74,7 @@ done | sort -rn
 
 ## Чем ограничено
 
-Разошедшийся перечень чинится не всегда правкой перечня: `flang/scripts/guards-start.flang`
+Разошедшийся перечень чинится не всегда правкой перечня: `flang/scripts/guards-start.fscript`
 отбирает только `*.test.mjs`, и шесть обещанных файлов из задачи 5090 в дереве
 отсутствуют — там сначала надо решить, что чинить, файл или отбор.
 

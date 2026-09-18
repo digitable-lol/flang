@@ -20,7 +20,7 @@
 Прогоны 13 сентября 2026, двоичный `bootstrap/flang` 0.7.19, дерево `dev`
 `fcd4a9554`.
 
-**Список расширений в дереве ОДИН** — `scripts/guards/file-extensions.flang`
+**Список расширений в дереве ОДИН** — `scripts/guards/file-extensions.fscript`
 (432 строки). Он держит закрытые перечни:
 
 | перечень | сколько | где |
@@ -57,7 +57,7 @@
 
 У `flang io` нет доводов командной строки: единственный отбор — `--plan 'Имя'`,
 а «над чем работать» передают файлом запроса с заранее известным именем
-(`scripts/registry-tool.flang`, шапка: «чтобы поискать другое имя, файл запроса
+(`scripts/registry-tool.fscript`, шапка: «чтобы поискать другое имя, файл запроса
 надо переписать»). Пока это так, файл с расширением `.fscript` НЕ является
 скриптом ни в каком смысле, кроме написанного на нём слова: его нельзя позвать
 с доводами и нельзя сделать исполняемым с пользой.
@@ -102,7 +102,7 @@
 Дерево `main` `51c2625e`, двоичный `bootstrap/flang` 0.7.19, собранный из семени
 этого же коммита. **Ш0 не взят:** 4143 (шаги 2–3) и 1414 лежат в `docs/tasks/`
 свободными, и прогон это подтверждает —
-`bootstrap/flang io scripts/registry-tool.flang --plan 'Найти' -- Списки` →
+`bootstrap/flang io scripts/registry-tool.fscript --plan 'Найти' -- Списки` →
 «непонятный ключ «--»», код 2; `… --n=5` → код 2. Поэтому здесь сделан только
 Ш1, письменно; ни одно из мест отбора не тронуто, ни один файл не переименован.
 
@@ -125,7 +125,7 @@
 
 | вопрос | ответ прибора (0.7.19, `51c2625e`) |
 |---|---|
-| как зовут | `flang io файл [--plan Имя]`. Без `--plan` при одном плане — исполняется: `flang io flang/test/fixtures/plany/00-tselyj.flang` → `{"plan":"Работа","result":1,…}`, код 0. При нескольких — код 3, `FLANG_UNKNOWN_PLAN` «планов несколько («Выписать имена», …) — назовите нужный» (`flang/scripts/name-guard.flang`, 4 плана). При нуле — код 3, «в программе нет ни одного плана: исполнять нечего» (`flang/stdlib/lists.flang`) |
+| как зовут | `flang io файл [--plan Имя]`. Без `--plan` при одном плане — исполняется: `flang io flang/test/fixtures/plany/00-tselyj.flang` → `{"plan":"Работа","result":1,…}`, код 0. При нескольких — код 3, `FLANG_UNKNOWN_PLAN` «планов несколько («Выписать имена», …) — назовите нужный» (`flang/scripts/name-guard.fscript`, 4 плана). При нуле — код 3, «в программе нет ни одного плана: исполнять нечего» (`flang/stdlib/lists.flang`) |
 | что может скрипт и не может программа | встретиться с миром. У функции есть только аргументы и результат (`flang/self/link.flang:17–19`); файл без плана `flang io` не исполняет — код 3. Программу зовут `flang run --function --args`, `flang check`, `flang test` |
 | чего не может скрипт сегодня | принять доводы вызова (код 2 на `--` и на `--n=5`); напечатать строку на экран (`FLANG_IO_NO_SCREEN`); вынести код возврата потомка наружу («Провал» — всегда 1); исполниться через `#!` — лексер отвергает первую же строку: `FLANG_LEX … строка 1, столбец 1: недопустимый символ '#'`, код 1 и у `check`, и у `io`. Ровно эти четыре нехватки перечислены в шапке `ярлык` как причина, по которой ярлыки — на оболочке |
 | читается ли расширение | у передней двери — нет: `check` и `io` на копии `script.fscript` отвечают кодом 0 и работают. У обхода — да: каталог с `plain.flang` и `script.fscript` (одно содержимое) → `flang test` «файлов 1, взято 1, отказано 0» — второй файл **пропущен молча**, это та самая беда ADR-0018 |
@@ -155,7 +155,7 @@
 Что расширение обязано значить для **обхода**, независимо от (б): `.fscript` —
 файл языка. Его функции доказываются, примеры гоняются, имена и слова сверяются
 так же, как у `.flang`, — все 169 скриптов дерева несут функции. Значит в
-`scripts/guards/file-extensions.flang` заводится **второй закрытый список**
+`scripts/guards/file-extensions.fscript` заводится **второй закрытый список**
 «Расширения скрипта» = `[".fscript"]`, а «Имя файла языка» спрашивает оба;
 сводить их в один список нельзя — это разные вопросы, и ровно такое смешение
 чинила 0062. У передней двери по-прежнему берётся что дают (ADR-0018, п. 2):
@@ -167,7 +167,7 @@
 Перепись: `git -c core.quotePath=false grep -l -E '^план «' -- '*.flang'` —
 **169 файлов из 972** (17,4 %); все 169 несут и функции, «голого» скрипта без
 функций нет ни одного. Планов больше одного — в 10 файлах (до 8 в
-`flang/scripts/word-guard.flang`).
+`flang/scripts/word-guard.fscript`).
 
 | где | файлов | примечание |
 |---|---:|---|
@@ -180,23 +180,23 @@
 | `fspec/` | 4 | `guard`, `forgery`, `snapshot`, `clarifications` |
 | `docs/site/`, `docs/benchmarks/` | 3 + 3 | сборка сайта, замеры |
 | `packaging/` | 2 | `install-check`, `install-parity` |
-| по одному | 6 | `ярлыки.flang` (корень), `scripts/registry-tool.flang`, `flang/self/bootstrap/emit-from-source.flang`, `flang/concurrency/bench/gen.flang`, `docs/zettel/ukazatel.flang`, `docs/course/check.flang` |
+| по одному | 6 | `ярлыки.flang` (корень), `scripts/registry-tool.fscript`, `flang/self/bootstrap/emit-from-source.flang`, `flang/concurrency/bench/gen.flang`, `docs/zettel/ukazatel.flang`, `docs/course/check.flang` |
 
 Кто зовёт их по имени: `ярлыки.flang` — **66** разных файлов (87 вызовов
 `flang io`); работы CI — **36** файлов; скрипты оболочки — **8**. Ссылок на пути
 этих 169 файлов по дереву (без `docs/tasks/` и без самого файла) — **1242
 строки**, названы 162 из 169; чаще всего — `ярлыки.flang` (46 файлов),
-`flang/scripts/kernel-forgeries.flang` (40), `fspec/guard.flang` (23),
+`flang/scripts/kernel-forgeries.fscript` (40), `fspec/guard.flang` (23),
 `flang/proof/сверщик.flang` (23).
 
 Особые случаи, каждый — своя правка:
 
 * **9 файлов — и библиотека, и скрипт разом:** их модуль ввозят другие
-  (`использует «…»`) — `flang/scripts/binary.flang`, `jargon-guard.flang` (оба —
+  (`использует «…»`) — `flang/scripts/binary.fscript`, `jargon-guard.fscript` (оба —
   в `flang/scripts/` и в `scripts/guards/`, один модуль «Сторож жаргона»),
-  `link-collision-guard.flang`, `word-occupancy.flang`,
-  `scripts/guards/name-collision-guard.flang`, `fspec/guard.flang`,
-  `scripts/release/path-without-node.flang`,
+  `link-collision-guard.fscript`, `word-occupancy.fscript`,
+  `scripts/guards/name-collision-guard.fscript`, `fspec/guard.flang`,
+  `scripts/release/path-without-node.fscript`,
   `docs/examples/web/shortener/plan-network.flang`. 7 ввозов вида `из "путь"`
   указывают на 6 из них — эти пути правятся вместе с именем; ввоз по имени
   модуля идёт по списку исходников, а не по расширению (`link.flang:20`).
@@ -217,13 +217,13 @@
 |---|---|---|---|---|
 | 1 | `flang/scripts/link-collision-guard.mjs` | `/\.(flang\|fp\|фп\|фланг)$/u`, три выражения (358, 547, 599) | О | добавить `fscript` во все три |
 | 2 | `flang/self/bootstrap/corpus.flang` | обход `flang test`, список из четырёх (245) | О | добавить — и это **семя**: без перепечатки `flang test` продолжит пропускать `.fscript` молча |
-| 3 | `flang/scripts/binary-rules-guard.flang` | четыре «Кончается на» (834) | О | пятое слагаемое |
+| 3 | `flang/scripts/binary-rules-guard.fscript` | четыре «Кончается на» (834) | О | пятое слагаемое |
 | 4 | `flang/scripts/name-guard.mjs` | то же выражение дважды (293, 423) | О | оба |
 | 5 | `flang/scripts/word-guard.mjs` | файлы `poddelka-*` по четырём расширениям (446) | О | добавить |
 | 6 | `docs/site/site-numbers.mjs` | выражение (100) | О | добавить; уходит с 4412 |
 | 7 | `flang/scripts/proof-ledger.mjs` | `ФАЙЛЫ` — четыре образца `flang/**/*.…` (165) | О | пятый образец; файл переписывает 1422 — правку слить с ней |
 | 8 | `flang/scripts/word-occupancy.mjs` | `ФАЙЛЫ` — `**/*.…` (78) | О | пятый образец |
-| 9 | `flang/scripts/claim-guard.flang` | список расширений, которые может назвать доля (75) | О | добавить |
+| 9 | `flang/scripts/claim-guard.fscript` | список расширений, которые может назвать доля (75) | О | добавить |
 | 10 | `flang/scripts/count-guard.mjs` | `ИСХОДНИКИ` (158) и образец комментария по расширению (254) | О | оба места |
 | 11 | `flang/proof/подделки/прогон.sh` | `for f in …/examples/*.{flang,fp,фп,фланг}` (89) | О | **зона 1420** |
 | 12 | `flang/test/обход.sh` | `for file in "$dir"/*.…` (125) | О | после 1418 — уже по пути `flang/test/` |
@@ -237,16 +237,16 @@
 | 20 | `scripts/guards/published-vs-tree.sh` | `for f in flang/stdlib/*.…` и `find` (245, 255) | О | оба |
 | 21 | `docs/benchmarks/proof-cost/count-library.flang` | четыре «Кончается на» и текст отказа (873, 1107, 1110) | О | три места |
 | 22 | `docs/site/site-numbers.flang` | строки `for f in …` и `find` в команде (323, 327) | О | оба |
-| 23 | `flang/scripts/word-guard.flang` | `poddelka-*` по четырём (1419) | О | добавить |
-| 24 | `flang/scripts/count-guard.flang` | «Расширение врезки ли»: `.sh` или `.flang` (733) — стиль комментария | О | добавить `.fscript` |
-| 25 | `flang/scripts/link-collision-tree.flang` | `find … -name` в команде (1375) | О | добавить |
-| 26 | `flang/scripts/name-guard.flang` | список из четырёх (1191) и две команды `find` (1322–1323) | О | три места |
-| 27 | `flang/scripts/word-occupancy.flang` | четыре «Кончается на» (738) | О | пятое |
+| 23 | `flang/scripts/word-guard.fscript` | `poddelka-*` по четырём (1419) | О | добавить |
+| 24 | `flang/scripts/count-guard.fscript` | «Расширение врезки ли»: `.sh` или `.flang` (733) — стиль комментария | О | добавить `.fscript` |
+| 25 | `flang/scripts/link-collision-tree.fscript` | `find … -name` в команде (1375) | О | добавить |
+| 26 | `flang/scripts/name-guard.fscript` | список из четырёх (1191) и две команды `find` (1322–1323) | О | три места |
+| 27 | `flang/scripts/word-occupancy.fscript` | четыре «Кончается на» (738) | О | пятое |
 | 28 | `flang/test/владение-состоянием.sh` | `grep -rl '^процесс «' --include=…` (33) | О | пятый `--include`; после 1418 |
 | 29 | `docs/site/changelog.json` | строка истории о том, что список один (11107) | Д | не правится |
 | 30 | `…/прогон-индукция/письма.запись` | запись доказательства называет исходник `письма.фп` (2) | Д | не правится: файл без плана |
 | 31 | `scripts/raskrutka.sh` (ждёт) | `find flang \( -name '*.flang' -o '*.fp' -o '*.фп' \)` (1088) — замыкание печати | О | правится той же работой, что перепечатывает семя |
-| 32 | `scripts/editors/vscode-highlight-check.flang` (ждёт) | «Три расширения» (43–48) — чужая доказанная проверка, 6516 | Р | вместе с обещанием «расширений ровно три» |
+| 32 | `scripts/editors/vscode-highlight-check.fscript` (ждёт) | «Три расширения» (43–48) — чужая доказанная проверка, 6516 | Р | вместе с обещанием «расширений ровно три» |
 
 Итог: **О — 24, Р — 6, Д — 2.** Ни одно из 32 не отбирает «только программы»
 или «только скрипты»: все 24 обходчика считают функции, имена и обещания, а у
@@ -267,7 +267,7 @@
 ### Что дальше
 
 Ш0 остаётся порогом: 4143, шаг 3 (доводы), и ответ 1414. После них — Ш2 и Ш3 по
-этому разделу: список правится в одном месте (`file-extensions.flang`, второй
+этому разделу: список правится в одном месте (`file-extensions.fscript`, второй
 закрытый список), по одному месту на коммит, `./ярлык расширения:проверка`
 зелен после каждого, а сторожа получают отрицательный контроль — копию скрипта
 под `.fscript` в каталоге обхода, которую обходчик обязан взять. Законный исход

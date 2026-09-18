@@ -9,8 +9,8 @@
 # за неделю, и каждый диагностировали по нескольку раз и по-разному:
 #
 #   flang check flang/self/parser.flang    37,1 ГиБ (замер 30.08.2026)  sborka
-#   io scripts/guards/name-splicing-guard.flang   31,6 ГиБ (замер 30.08.2026)  imena
-#   io scripts/guards/link-guard.flang            15,0 ГиБ (замер 30.08.2026)  links
+#   io scripts/guards/name-splicing-guard.fscript   31,6 ГиБ (замер 30.08.2026)  imena
+#   io scripts/guards/link-guard.fscript            15,0 ГиБ (замер 30.08.2026)  links
 #
 # У раннера GitHub 15,61 ГиБ — число снято с самого раннера (`MemTotal`,
 # прогон 33316181246 от 30 августа 2026), а не взято с рекламной страницы; из
@@ -64,7 +64,7 @@
 #   число, по которому работу снимают.
 # * `/usr/bin/time -f %M` тут не годится вовсе: снятый прогон не доживает до
 #   печати, а в части песочниц `getrusage` отдаёт ноль — см. шапку
-#   `flang/scripts/memory-guard.flang`, где ноль годами проходил за замер.
+#   `flang/scripts/memory-guard.fscript`, где ноль годами проходил за замер.
 #
 # ── Как звать ───────────────────────────────────────────────────────────────
 #   sh scripts/memory-headroom.sh --следить                    в начале работы
@@ -98,7 +98,7 @@ gib() { awk -v k="$1" 'BEGIN { printf "%.2f", k / 1048576 }'; }
 # Мерка есть не везде (у macOS нет /proc вовсе). Нет её — говорим словами и
 # уходим с кодом 0: отсутствие мерки не беда дерева, а свойство машины, и
 # красить ею работу нельзя. Тот же довод записан в шапке
-# `flang/scripts/memory-guard.flang`, где ноль от getrusage годами шёл за замер.
+# `flang/scripts/memory-guard.fscript`, где ноль от getrusage годами шёл за замер.
 have_meter() { [ -r /proc/meminfo ]; }
 
 free_kb() {

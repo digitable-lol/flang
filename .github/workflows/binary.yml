@@ -428,7 +428,7 @@ jobs:
       # кладёт `fl_charge`, он не трогает вовсе. Проверено двумя двоичными на
       # одном входе: семя (заряд не считает) и прибор со счётом заряда ведут
       # себя одинаково на каждом пределе — 100 000, 150 000, 180 000, 200 000
-      # на scripts/guards/module-name-guard.flang.
+      # на scripts/guards/module-name-guard.fscript.
       #
       # Второй счётчик — потолок самого двоичного (`#define FL_MAX_STEPS`) —
       # под заряд ПОПАДАЕТ, и его запас здесь тоже снят ведомостью: шагов всего
@@ -438,7 +438,7 @@ jobs:
       #
       # ⚠ НАЙДЕНО 3 сентября 2026 (ячейка Ч370, «CI не должен жечь часы на
       # пуш»): ШАГ СЕГОДНЯ КРАСНЫЙ, И ЭТО НЕ НОВАЯ ПОЛОМКА — потолок долга вне
-      # JavaScript записан в самом сторожа (scripts/guards/tree-inventory.flang,
+      # JavaScript записан в самом сторожа (scripts/guards/tree-inventory.fscript,
       # функция «Потолок долга») числом 63, а живых файлов долга сейчас 90:
       # ДОЛГ ВЫРОС: файлов 90 при потолке 63 (разбор — 27 файлов сверх
       # потолка, поимённо в выводе шага; docs/benchmarks/, docs/tools/,
@@ -476,14 +476,14 @@ jobs:
       # объяснением, часть, может быть, удалить как мёртвый груз.
       - name: Опись дерева по языкам (долг не вырос)
         continue-on-error: true
-        run: ./bootstrap/flang io scripts/guards/tree-inventory.flang --plan 'Опись дерева по языкам' --max-steps 50000000
+        run: ./bootstrap/flang io scripts/guards/tree-inventory.fscript --plan 'Опись дерева по языкам' --max-steps 50000000
       # Столбцы долга в docs/tree-inventory.md не стерёг никто: сторож чисел
       # прозы считает по образцу пути, а долг определяет правило из
       # четырнадцати ветвей (задача 2599). Сверять таблицу обязана опись —
       # она эти столбцы уже считает. Проверено пробой: подкрученное число
       # долга сторож прозы пропускал кодом 0, эта сверка краснеет (2600).
       - name: Таблица описи сходится с тем, что опись насчитала
-        run: ./bootstrap/flang io scripts/guards/tree-inventory.flang --plan 'Опись сходится с документом' --max-steps 50000000
+        run: ./bootstrap/flang io scripts/guards/tree-inventory.fscript --plan 'Опись сходится с документом' --max-steps 50000000
       # Шаг выше без этого — обещание проверки: сверка могла бы отвечать
       # «сходится» на любой таблице, и сказать об этом было бы некому. План
       # «Подлог» приписывает первому языку лишний файл В ПАМЯТИ (файл дерева не
@@ -496,7 +496,7 @@ jobs:
       # возвращающая пустой список на любом входе, даёт этому шагу код 0.
       - name: Сверка описи умеет краснеть
         run: |
-          if ./bootstrap/flang io scripts/guards/tree-inventory.flang --plan 'Подлог' --max-steps 50000000; then
+          if ./bootstrap/flang io scripts/guards/tree-inventory.fscript --plan 'Подлог' --max-steps 50000000; then
             echo "сверка промолчала на подложенной строке — проверять ею нечего" >&2
             exit 1
           fi
@@ -579,10 +579,10 @@ jobs:
       # на пяти входах соответственно. Стоят здесь, а не отдельными работами:
       # двоичный уже собран, и обе вместе отвечают за три секунды.
       - name: Номера решений заняты по одному
-        run: ./bootstrap/flang io scripts/guards/adr-numbers-guard.flang --plan 'Номера решений'
+        run: ./bootstrap/flang io scripts/guards/adr-numbers-guard.fscript --plan 'Номера решений'
       - name: Сторож номеров решений умеет краснеть
         run: |
-          if ./bootstrap/flang io scripts/guards/adr-numbers-guard.flang --plan 'Подлог'; then
+          if ./bootstrap/flang io scripts/guards/adr-numbers-guard.fscript --plan 'Подлог'; then
             echo "сторож промолчал на подложенной двойне — проверять им нечего" >&2
             exit 1
           fi
@@ -594,17 +594,17 @@ jobs:
       # дорог не разбор, а сводка по всем 409 постусловиям). Подлог прячет
       # постусловие из flang/proof/map/abilities.flang в памяти, не на диске.
       - name: Цепочка требование → код → пример → запись сходится с записанным долгом
-        run: LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/guards/traceability-guard.flang --plan 'Разрывы' --max-steps 4000000000
+        run: LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/guards/traceability-guard.fscript --plan 'Разрывы' --max-steps 4000000000
       - name: Сторож прослеживаемости умеет краснеть
         run: |
-          if LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/guards/traceability-guard.flang --plan 'Подлог' --max-steps 4000000000; then
+          if LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/guards/traceability-guard.fscript --plan 'Подлог' --max-steps 4000000000; then
             echo "сторож промолчал на спрятанном постусловии — проверять им нечего" >&2
             exit 1
           fi
       - name: От требования к коду и проверке
-        run: LC_ALL=C.UTF-8 FLANG_TRACE='У1 сумма читается в обратном порядке' ./bootstrap/flang io scripts/guards/traceability-guard.flang --plan 'От требования' --max-steps 4000000000
+        run: LC_ALL=C.UTF-8 FLANG_TRACE='У1 сумма читается в обратном порядке' ./bootstrap/flang io scripts/guards/traceability-guard.fscript --plan 'От требования' --max-steps 4000000000
       - name: От строки кода к требованию
-        run: LC_ALL=C.UTF-8 FLANG_TRACE='flang/proof/map/abilities.flang:34' ./bootstrap/flang io scripts/guards/traceability-guard.flang --plan 'От строки' --max-steps 4000000000
+        run: LC_ALL=C.UTF-8 FLANG_TRACE='flang/proof/map/abilities.flang:34' ./bootstrap/flang io scripts/guards/traceability-guard.fscript --plan 'От строки' --max-steps 4000000000
 
       # ── Шесть сторожей, найденных «не запускается нигде» (Ч77, 31 авг 2026) ──
       #
@@ -615,11 +615,11 @@ jobs:
       # именно сторож покраснел, а не «что-то в пачке». Отдельными работами
       # не заводим: раннер и checkout стоят на порядок дороже самих проверок.
       - name: Расширения имени файла сведены к одному списку
-        run: ./bootstrap/flang io scripts/guards/file-extensions.flang
+        run: ./bootstrap/flang io scripts/guards/file-extensions.fscript
       - name: Страница словаря покрывает таблицу слов языка целиком
-        run: ./bootstrap/flang io scripts/guards/dictionary-guard.flang
+        run: ./bootstrap/flang io scripts/guards/dictionary-guard.fscript
       - name: Справочная страница (man) отвечает исходнику
-        run: ./bootstrap/flang io scripts/guards/manpage-guard.flang
+        run: ./bootstrap/flang io scripts/guards/manpage-guard.fscript
       # Порча — переписанное обещание в docs/README.ru.md. Сторож держит фразу
       # дословно и обязан сказать «обещание пропало», а не промолчать. 6612.
       # Подлог ПЕРЕВЁРНУТ против первой редакции пробы: 5 сентября проза стала
@@ -640,16 +640,16 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./bootstrap/flang io scripts/guards/emit-promises-guard.flang; then
+          if ./bootstrap/flang io scripts/guards/emit-promises-guard.fscript; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Числа прозы о печати сходятся с прогоном
-        run: ./bootstrap/flang io scripts/guards/emit-promises-guard.flang
+        run: ./bootstrap/flang io scripts/guards/emit-promises-guard.fscript
       - name: Сильное слово о доказанности не сказано про слабое основание
-        run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/word-guard.flang --plan 'Сторож слов' --max-steps 2000000000
+        run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/word-guard.fscript --plan 'Сторож слов' --max-steps 2000000000
       - name: Все 28 умений ядра доказаны прогоном, а не перечислены
         run: ./bootstrap/flang check --proof flang/proof/map/abilities.flang
 
@@ -1130,7 +1130,7 @@ jobs:
       # проверил, а список проверяемых (`ведомость-примеров.txt`) короче дерева.
       #
       # ЗДЕСЬ ЭТОТ ШАГ СТОЯЛ И НЕ ПРОХОДИЛ НИ РАЗУ. Проверка переписана на flang
-      # (`scripts/guards/name-splicing-guard.flang`, коммит `fd9edd54` от 22 августа
+      # (`scripts/guards/name-splicing-guard.fscript`, коммит `fd9edd54` от 22 августа
       # 2026), `flang/scripts/srashchivanie.mjs` при этом снят. В шапку была
       # записана цена «3 мин 44 с, пик памяти 24 ГиБ» на 571 файле — и на этом
       # дело стало: у раннера GitHub 16 ГиБ. Не «медленно», а НЕ ВЛЕЗАЕТ, ровно
@@ -1239,7 +1239,7 @@ jobs:
       # шагов всего 2 694 257 690, витков 71 582 071. Нынешнее семя упирается в
       # свой миллиард витками на 7,2 %; следующее считает шаги при потолке
       # 300 млрд — 0,9 %.
-      - run: ./bootstrap/flang io flang/scripts/kernel-lines-to-trust.flang --plan 'Потолок не пробит' --max-steps 2000000000
+      - run: ./bootstrap/flang io flang/scripts/kernel-lines-to-trust.fscript --plan 'Потолок не пробит' --max-steps 2000000000
 
       # ЗДЕСЬ СТОЯЛ ШАГ НА ФАЙЛ, КОТОРОГО НЕТ, и он был красным на стволе:
       #
@@ -1255,7 +1255,7 @@ jobs:
       # Само-проверка сторожа никуда не делась и лежит там, где сторож: подлог
       # (`тотальная функция «Куски таблицы»` из `flang/self/lexer.flang`,
       # подложенная в `flang/self/monad-expand.flang`) описан прогоном в шапке
-      # `scripts/guards/name-collision-guard.flang`. Шаг выше — `node
+      # `scripts/guards/name-collision-guard.fscript`. Шаг выше — `node
       # flang/scripts/link-collision-guard.mjs --дерево` — считает то же самое
       # второй реализацией и остаётся.
 
@@ -1348,7 +1348,7 @@ jobs:
             echo "::warning::двоичный из кеша не запускается — собираю заново"
             make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
           fi
-      - run: ./bootstrap/flang io scripts/guards/name-splicing-guard.flang --max-orders 2000
+      - run: ./bootstrap/flang io scripts/guards/name-splicing-guard.fscript --max-orders 2000
       - name: Сколько памяти оставалось
         if: always()
         run: sh scripts/memory-headroom.sh --отчёт --итог "${{ job.status }}"
@@ -1378,7 +1378,7 @@ jobs:
   # (`scripts/storozh-*.flang`, `flang/scripts/*.flang`, `fspec/guard.flang`)
   # сюда не попадают: «заводится ли» спрашивается прогоном `node --test`, а
   # программу на flang заводит `flang io`. Подлогом проверено 22 августа: к
-  # `scripts/guards/homebrew-formula-guard.flang` дописана строка, после которой файл не
+  # `scripts/guards/homebrew-formula-guard.fscript` дописана строка, после которой файл не
   # разбирается, — работа осталась зелёной. Само число теперь называет свой род
   # («файлов проверок «*.test.mjs» в дереве 15»), чтобы 15 не читалось как «все».
   # ── НЕЗАВИСИМЫЙ ЧЕКЕР ЗАПИСИ: ОТДЕЛЬНАЯ РАБОТА, И ЭТО ГЛАВНОЕ В НЕЙ ───────
@@ -1546,7 +1546,7 @@ jobs:
             make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
           fi
       - name: Каждый файл проверок «*.test.mjs» ЗАВОДИТСЯ
-        run: bootstrap/flang io flang/scripts/guards-start.flang
+        run: bootstrap/flang io flang/scripts/guards-start.fscript
       # Записи корпуса доказательств могут отстать от печати ядра — та же
       # порода, что у семени: расхождение объявляют «числом», а не отказом,
       # и никто не краснеет. Прибор `--вложенность` печатает записи заново
@@ -1596,11 +1596,11 @@ jobs:
       # ⚠ «14 секунд» здесь стояло раньше и устарело МОЛЧА — а сам шаг был
       # красным неизвестно сколько (найдено ячейкой Ч370, 3 сентября 2026,
       # СI не должен жечь часы на пуш). Дело не в шагах плана (это чинит
-      # `--max-steps` внутри code-forgery.flang — снято отдельно, разбор там
-      # же): «Спросить сторожа» зовёт `code-guard.flang` ПОДПРОЦЕССОМ, а у
+      # `--max-steps` внутри code-forgery.fscript — снято отдельно, разбор там
+      # же): «Спросить сторожа» зовёт `code-guard.fscript` ПОДПРОЦЕССОМ, а у
       # `flang io` есть свой, не связанный с `--max-steps` срок на КАЖДОГО
       # потомка — 30 000 мс по умолчанию, назван и объяснён в
-      # `scripts/guards/child-timeout.flang`. Сторож кодов на нынешнем дереве идёт
+      # `scripts/guards/child-timeout.fscript`. Сторож кодов на нынешнем дереве идёт
       # ~32-33 с (замер трижды, устойчиво), то есть неизбежно упирается в
       # чужой срок и гибнет сигналом SIG9 — не находка про сторож, а про сам
       # срок. `--timeout` ЗДЕСЬ, на внешнем вызове, — это и есть тот рычаг:
@@ -1609,7 +1609,7 @@ jobs:
       # потомка; сторож зовётся дважды (чистый суд и суд подлога), весь шаг
       # уложился в 67,3 с (замер локально, `time`).
       - name: Сторож кодов умеет краснеть и умеет молчать
-        run: bootstrap/flang io flang/scripts/code-forgery.flang --timeout 120000
+        run: bootstrap/flang io flang/scripts/code-forgery.fscript --timeout 120000
 
       # ── А ТЕПЕРЬ САМ СУД, а не только проба над ним ───────────────────────
       #
@@ -1683,7 +1683,7 @@ jobs:
       # каждая из пяти порч обязана быть поймана. Зелёный без показанной порчи
       # ничего не значит.
       - name: Сторож слов о доказанности краснеет на подмене и молчит, когда чисто
-        run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/word-guard.flang --plan 'Подлог слов' --max-steps 2000000000
+        run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/word-guard.fscript --plan 'Подлог слов' --max-steps 2000000000
 
       # ── ПОДДЕЛКИ ЯДРА: ни одного шага CI у них не было НИ РАЗУ ─────────────
       #
@@ -1708,7 +1708,7 @@ jobs:
       # текст ядра и от семени не зависит. Без имени плана двоичный отвечает
       # FLANG_UNKNOWN_PLAN и кодом 3.
       - name: Подделки ядра отвергнуты (проверка на flang)
-        run: bootstrap/flang io flang/scripts/kernel-forgeries.flang --plan 'Подделки остаются недоказанными'
+        run: bootstrap/flang io flang/scripts/kernel-forgeries.fscript --plan 'Подделки остаются недоказанными'
 
       # ── ТРИ ПРОГРАММЫ ЛЖИ Ч40: вердикт живого компилятора пришпилен ────────
       #
@@ -1721,7 +1721,7 @@ jobs:
       # программы/вердикт-лжи.sh` держит для каждой из трёх точный ожидаемый
       # код возврата `flang check --proof` И причину словами (смена причины при
       # том же коде — тоже расхождение), сверен с каталогом в обе стороны, тем
-      # же способом, что и `kernel-forgeries.flang` — только предмет другой.
+      # же способом, что и `kernel-forgeries.fscript` — только предмет другой.
       #
       # Место здесь, а не в работе `chekker`: та собирает C-чекер БЕЗ
       # компилятора flang нарочно (см. её же комментарий выше), а этому шагу
@@ -1802,4 +1802,4 @@ jobs:
       # глубокой сверки, и её место там же, где полный обход корпуса, — на теге
       # и на руке.
       - name: Различительный поиск (ядро против вычислителя)
-        run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/discriminating-search.flang --plan 'Различительный поиск' --max-steps 2000000000 --max-orders 100000
+        run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/discriminating-search.fscript --plan 'Различительный поиск' --max-steps 2000000000 --max-orders 100000

@@ -382,8 +382,8 @@ chore build ci`. Заголовок уезжает в журнал измене�
 вписать себя в шапку ОТДЕЛЬНЫМ коммитом до начала. Правила — `docs/tasks/README.md`.
 
 ```sh
-bootstrap/flang io flang/scripts/tasks.flang --plan 'Доска'
-bootstrap/flang io flang/scripts/tasks.flang --plan 'Задачник цел'
+bootstrap/flang io flang/scripts/tasks.fscript --plan 'Доска'
+bootstrap/flang io flang/scripts/tasks.fscript --plan 'Задачник цел'
 ```
 
 ## Слова
@@ -391,7 +391,7 @@ bootstrap/flang io flang/scripts/tasks.flang --plan 'Задачник цел'
 **Жаргон — внутрь, не наружу.** В `docs/zettel/`, комментариях и заданиях слова
 вроде `эталон`, `сторож`, `корпус` уместны. На страницах сайта, в README, в
 `man flang`, в справке и отказах компилятора — нет. Сторожит
-`./ярлык жаргон:проверка` — это `flang/scripts/jargon-guard.flang`, на flang;
+`./ярлык жаргон:проверка` — это `flang/scripts/jargon-guard.fscript`, на flang;
 список слов — в `docs/jargon.json`. Рядом два ярлыка того же файла:
 `жаргон:список` называет каждое место поимённо, `жаргон:долг` вписывает в
 `docs/jargon.json` нынешние числа.
@@ -567,7 +567,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 С 7 сентября 2026 кран — **сабмодуль `packaging/homebrew-tap`**
 (`.gitmodules`), и забыть его нельзя: три числа его формулы (version, url,
 sha256) обязаны совпасть с `packaging/homebrew/flang.rb`. Это сверяют без
-сети `формула:проверка` (`scripts/guards/homebrew-formula-guard.flang`, зовётся в
+сети `формула:проверка` (`scripts/guards/homebrew-formula-guard.fscript`, зовётся в
 `install-path.yml`) и шаг «Кран не отстал от дерева» в `release.yml` —
 ДО выкладки архива; `release.yml` и `install-path.yml` берут дерево с
 `submodules: true`. Расхождение и неразвёрнутый сабмодуль — красное.
@@ -577,16 +577,16 @@ update --init`, иначе `формула:проверка` и `плагин:п
 
 С 8 сентября 2026 плагин asdf — **сабмодуль `packaging/asdf-plugin`**
 (тот же `.gitmodules`). Источник — `packaging/asdf/` в дереве: его гоняет
-`asdf-version-list.flang`, его считает опись, его правят. Четыре файла
+`asdf-version-list.fscript`, его считает опись, его правят. Четыре файла
 плагина (`README.md`, `bin/download`, `bin/install`, `bin/list-all`)
 обязаны совпасть с копией в сабмодуле знак в знак, три скрипта — быть
 исполняемыми, лишних файлов сверх `LICENSE` — не быть. Сверяют без сети
-`плагин:проверка` (`scripts/guards/asdf-plugin-guard.flang`, зовётся в
+`плагин:проверка` (`scripts/guards/asdf-plugin-guard.fscript`, зовётся в
 `install-path.yml` вместе с пробой порчи `плагин:подлог`) и шаг «Плагин
 asdf не отстал от дерева» в `release.yml` — ДО выкладки архива. Числа
 версии в плагине нет (`bin/list-all` спрашивает выпуски у GitHub), поэтому
 `./ярлык версия` его не правит, а только сверяет и печатает шаги.
-`asdf-plugin-published.flang` (с сетью, никем не зовётся) сверх того сверяет
+`asdf-plugin-published.fscript` (с сетью, никем не зовётся) сверх того сверяет
 `packaging/asdf/` с тем, что `asdf-flang` отдаёт на `main`.
 
 **Порядок выпуска с краном** (кран правится ТОЛЬКО через сабмодуль, коммит и
@@ -624,7 +624,7 @@ push в кране — руками владельца, автоматики н�
 
 **Тело релиза на GitHub пишется НЕ руками.** С 8 сентября 2026 шаг «Тело
 релиза собрано из заметок» (`release.yml`) зовёт
-`bootstrap/flang io scripts/site/release-body.flang --max-steps 40000000`: план
+`bootstrap/flang io scripts/site/release-body.fscript --max-steps 40000000`: план
 берёт версию из `package.json`, заметку — из `docs/release-notes.json`, и
 кладёт в `output/` тело (обе половины, `ru` и `en`, плюс ссылки на страницу
 выпусков и на архив) и имя вида `flang X.Y.Z — заголовок`. Их и подаёт

@@ -64,10 +64,10 @@ on:
   push:
     paths:
       - "packaging/**"
-      - "scripts/release/release-in-c.flang"
-      - "scripts/release/path-without-node.flang"
+      - "scripts/release/release-in-c.fscript"
+      - "scripts/release/path-without-node.fscript"
       - "scripts/raskrutka.sh"
-      - "scripts/guards/version-guard.flang"
+      - "scripts/guards/version-guard.fscript"
       - "bootstrap/**"
       - "flang/src/emit/**"
       - ".flangrc"
@@ -77,10 +77,10 @@ on:
   pull_request:
     paths:
       - "packaging/**"
-      - "scripts/release/release-in-c.flang"
-      - "scripts/release/path-without-node.flang"
+      - "scripts/release/release-in-c.fscript"
+      - "scripts/release/path-without-node.fscript"
       - "scripts/raskrutka.sh"
-      - "scripts/guards/version-guard.flang"
+      - "scripts/guards/version-guard.fscript"
       - "bootstrap/**"
       - "flang/src/emit/**"
       - ".flangrc"
@@ -225,7 +225,7 @@ jobs:
       - name: Сторож плагина asdf умеет краснеть
         run: |
           set -u
-          if bootstrap/flang io scripts/guards/asdf-plugin-guard.flang --plan 'Подлог'; then
+          if bootstrap/flang io scripts/guards/asdf-plugin-guard.fscript --plan 'Подлог'; then
             echo "сторож плагина промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi

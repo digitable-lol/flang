@@ -38,7 +38,7 @@ flang 0.7.16, flang-tui `4117aea`, Linux.
 одна цель:
 
 ```console
-$ flang emit scripts/guards/license-guard.flang --target c --out /tmp/x
+$ flang emit scripts/guards/license-guard.fscript --target c --out /tmp/x
 flang emit: печать отказала — FLANG_PLAN_UNSUPPORTED: цель «c» не умеет печатать
 объявление «план». … Сегодня объявление «план» печатает одна цель — «js»;
 исполнить его умеет ещё «flang io».

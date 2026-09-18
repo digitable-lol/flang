@@ -51,7 +51,7 @@
 
 Перечень внутри каждого правила длиннее любой таблицы в этом файле на 28 умений:
 `flang/proof/УМЕНИЯ.tsv`, улики — `flang/proof/map/abilities.flang`, сторож —
-`bootstrap/flang io scripts/guards/kernel-abilities-guard.flang`.
+`bootstrap/flang io scripts/guards/kernel-abilities-guard.fscript`.
 
 Сверх правил есть четыре хода, вида цели не меняющих: разбор цели по условию
 (`если`), цель-выбор с истинной ветвью, вычисление замкнутой цели и индукция
@@ -613,7 +613,7 @@ bootstrap/flang check flang/proof/map/<файл>.flang --proof
 |---|---:|---|
 | `boundaries.flang`, `equality.flang`, `forms.flang`, `order.flang`, `types.flang`, `substantive.flang` | 0 | вердикт ведомости по каждому виду цели |
 | `sources.flang` | 3 | то же; одно утверждение в нём — «объявлено, не доказано» (клетка карты), поэтому код не нулевой |
-| `abilities.flang` | 0 | по функции на каждое умение ядра из `flang/proof/УМЕНИЯ.tsv`; все <!-- СНЯТО 2026-09-08 строк flang/proof/УМЕНИЯ.tsv = 28 --> 28 обязаны быть «доказано», расхождение ловит `bootstrap/flang io scripts/guards/kernel-abilities-guard.flang` |
+| `abilities.flang` | 0 | по функции на каждое умение ядра из `flang/proof/УМЕНИЯ.tsv`; все <!-- СНЯТО 2026-09-08 строк flang/proof/УМЕНИЯ.tsv = 28 --> 28 обязаны быть «доказано», расхождение ловит `bootstrap/flang io scripts/guards/kernel-abilities-guard.fscript` |
 | `refusal-boundaries.flang`, `refusal-order.flang`, `refusal-substantive.flang` | 1 | дословный текст отказа ядра на теоремах, которые ядро отвергает |
 
 Нулевой код у `refusal-*.flang` означал бы, что ядро приняло ложь либо цель

@@ -125,7 +125,7 @@ Homebrew с тем, что собрал сам конвейер выпуска; 
 
 **Что уже есть.** Сторож столкновений имён вида 1 (`scripts/type-collision-guard.flang` — снят 11 сентября 2026 как незваный: ни ярлык, ни CI его не звали; последнее состояние `git show f3370540b:scripts/type-collision-guard.flang`;
 9 известных, 0 новых; прежний `type-collision-guard.mjs` снят 9 сентября 2026 —
-его не звал никто) и вида 2 (`scripts/guards/latin-collision-guard.flang`, читает
+его не звал никто) и вида 2 (`scripts/guards/latin-collision-guard.fscript`, читает
 таблицы транслитерации из `emit-c.flang` каждый прогон, а не копирует; прежний
 `latin-collision-guard.mjs` снят тем же днём).
 

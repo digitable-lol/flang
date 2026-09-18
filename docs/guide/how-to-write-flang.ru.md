@@ -40,7 +40,7 @@
 вовсе. Значит комментарий не является **термом**: его нельзя проверить, на него
 нельзя сослаться, и он расходится с кодом молча — код правят, приписка остаётся.
 
-Прибавку комментариев не пускает храповик `scripts/guards/no-comments-guard.sh`: долг
+Прибавку комментариев не пускает храповик `scripts/guards/no-comments-guard.fscript`: долг
 записан пофайлово (`scripts/ledgers/no-comments-debt.tsv`) и может только убывать.
 
 Куда девается то, что раньше писали комментарием:
@@ -227,7 +227,7 @@ flang/bin/flang.mjs` с обязательным `LC_ALL=C.UTF-8` — реали
 ## Признак, что работа готова
 
 - `flang check` на файле — код 0;
-- новых комментариев не прибавилось (`sh scripts/guards/no-comments-guard.sh`);
+- новых комментариев не прибавилось (`bootstrap/flang io scripts/guards/no-comments-guard.fscript --plan Проверка`);
 - имена проходят `flang/scripts/name-guard.mjs`;
 - рукописных перечней не завёл (`sh scripts/guards/hand-written-lists.sh --check`);
 - инварианты стоят термами (`обеспечивает`/`пример`), а замеры и доводы — в

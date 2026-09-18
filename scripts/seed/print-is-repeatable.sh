@@ -110,7 +110,7 @@ NABIVKA_2=$(awk 'BEGIN { s = ""; while (length(s) < 4000) s = s "щ"; print s }'
 # ── ПОДЛОГ: краснеет ли прибор, когда есть на что ───────────────────────────
 if [ "$PODLOG" = da ]; then
   bedy=0
-  pechat "$RAB/proba" UTC "$RAB/t0" "$NABIVKA_1" "$RAB/proba.log"
+  pechat "$RAB/probe" UTC "$RAB/t0" "$NABIVKA_1" "$RAB/probe.log"
   kod=$?
   if [ "$kod" -ne 0 ]; then
     beda "НЕ ПРОВЕРЕНО: печать пробы отказала (код $kod)"

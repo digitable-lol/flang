@@ -107,7 +107,7 @@ prints how many files have moved since that measurement.
 **Not in who writes the proof.** You can write one by hand here too: the word
 `теорема` with the steps `дано`, `утверждаем`, `затем … по свойству «…»`,
 `индукция по …` and `следовательно доказано` — a structured proof in the spirit
-of Isabelle's Isar, not a script of tactics. There are **284** such theorems in
+of Isabelle's Isar, not a script of tactics. There are **285** such theorems in
 the language tree, **55** of them in the standard library (measured on
 13 September 2026 at commit `1218aa186`;
 `grep -rac '^\s*теорема ' flang --include='*.flang'`, summed with `awk`; the `-a`

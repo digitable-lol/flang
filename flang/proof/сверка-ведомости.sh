@@ -507,8 +507,21 @@ podlogi() {
     env VEDOMOST="$D/1.tsv" OTPECHATOK="$OTPECHATOK" FLANG=/несуществующий sh "$SAM" --сторож С-1
 
   # 2. С-1: опора съехала на строку.
+  #
+  # Номер строки БЕРЁТСЯ ИЗ ВЕДОМОСТИ, а не вписан сюда: вписанный устаревает
+  # при первой же правке ядра, и тогда подлог собирается вхолостую — sed не
+  # находит образца, файл остаётся честным, проверка честно отвечает 0, а проба
+  # читается как «сторож не поймал». Ровно так и вышло 18 сентября 2026 после
+  # правки proof-kernel.flang (задача 7563): 108 опор съехали, и вместе с ними
+  # впечатанное сюда «2309».
   cp "$VEDOMOST" "$D/2.tsv"
-  sed -i 's/proof-kernel\.flang:2309 «Литерал неотрицателен»/proof-kernel.flang:2310 «Литерал неотрицателен»/' "$D/2.tsv"
+  opora_stroka=$(awk -F'\t' '$1 !~ /^#/ && $11 ~ /^proof-kernel\.flang:[0-9]+ «/ { print $11; exit }' "$VEDOMOST")
+  opora_nomer=$(printf '%s' "$opora_stroka" | sed -n 's/^proof-kernel\.flang:\([0-9]\{1,\}\) .*$/\1/p')
+  opora_imya=$(printf '%s' "$opora_stroka" | sed -n 's/^proof-kernel\.flang:[0-9]\{1,\} «\([^»]*\)».*$/\1/p')
+  [ -n "$opora_nomer" ] && [ -n "$opora_imya" ] || {
+    say "ПРОВАЛ   подлог 2 не собрался: в ведомости не нашлось опоры вида «proof-kernel.flang:N «Имя»»"; BEDA=1; }
+  sed -i "s|proof-kernel\.flang:$opora_nomer «$opora_imya»|proof-kernel.flang:$((opora_nomer + 1)) «$opora_imya»|" "$D/2.tsv"
+  cmp -s "$VEDOMOST" "$D/2.tsv" && { say "ПРОВАЛ   подлог 2 не собрался: опора в копии ведомости не сдвинулась"; BEDA=1; }
   proba 2 "опора правила указывает не на ту строку ядра" \
     env VEDOMOST="$D/2.tsv" OTPECHATOK="$OTPECHATOK" FLANG=/несуществующий sh "$SAM" --сторож С-1
 

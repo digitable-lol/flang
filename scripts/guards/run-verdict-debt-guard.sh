@@ -31,8 +31,10 @@ set -u
 
 KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 VEDOMOST=$KOREN/flang/scripts/run-verdict-debt.tsv
+BEZYMYANNYE=$KOREN/flang/scripts/run-verdict-targets-not-named.tsv
 
 [ -f "$VEDOMOST" ] || { echo "нет ведомости $VEDOMOST" >&2; exit 3; }
+[ -f "$BEZYMYANNYE" ] || { echo "нет ведомости $BEZYMYANNYE" >&2; exit 3; }
 command -v python3 > /dev/null 2>&1 || { echo "нет python3 — сверять нечем" >&2; exit 3; }
 
 case "${1:-}" in
@@ -41,10 +43,20 @@ case "${1:-}" in
   *) echo "непонятный довод «$1»" >&2; exit 2 ;;
 esac
 
-python3 - "$KOREN" "$VEDOMOST" <<'PY'
+python3 - "$KOREN" "$VEDOMOST" "$BEZYMYANNYE" <<'PY'
 import io, os, re, sys
 
-koren, vedomost = sys.argv[1], sys.argv[2]
+koren, vedomost, bezymyannye_put = sys.argv[1], sys.argv[2], sys.argv[3]
+
+# Места, где цель — переменная: файл → (нужен ли ключ, довод).
+bezymyannye = {}
+for stroka in io.open(bezymyannye_put, encoding='utf-8'):
+    if stroka.startswith('#') or not stroka.strip():
+        continue
+    pole = stroka.rstrip('\n').split('\t')
+    if pole[0] == 'файл' or len(pole) < 3:
+        continue
+    bezymyannye[pole[0]] = (pole[1].strip() == 'да', pole[2])
 
 dolg = set()
 for stroka in io.open(vedomost, encoding='utf-8'):
@@ -64,10 +76,22 @@ for koren_kat in ('.github/workflows', '.github/actions', 'scripts', 'flang'):
                 mesta.append(os.path.relpath(os.path.join(kat, imya), koren))
 
 SKLEYKA = re.compile(r'",\s*\n\s*"')
-VYZOV = re.compile(r'flang\s+(run|io)\s+("?)([^\s"\']+\.(?:flang|fscript))')
+VYZOV = re.compile(r'flang"?\s+(run|io)\s+("?)([^\s"\']+\.(?:flang|fscript))')
+# Цель, которой НЕТ ИМЕНИ: «$file», «${путь}», «$1». Такое место сторож по имени
+# узнать не может — значит правило для него другое и названо вслух: не можешь
+# назвать цель, назови согласие. 18 сентября 2026 ровно такое место — обходчик
+# проверок flang/test/обход.sh:140, `"$tool" run "$file"` — прошло мимо первой
+# редакции этого сторожа и покраснело уже в CI: недоказанные проверки дерева
+# перестали запускаться, а сторож отвечал «согласие названо ровно там, где нужно».
+# Двоичный тоже зовут через переменную: «"$tool" run», «"$FLANG" io». Оба конца
+# вызова — и двоичный, и цель — бывают безымянными, и оба ловятся здесь.
+DVOICHNYY = r'(?:flang"?|"?\$\{?[A-Za-z_][A-Za-z0-9_]*\}?"?)'
+VYZOV_PEREMENNAYA = re.compile(DVOICHNYY + r'\s+(?:run|io)\s+"?\$')
 
 zhaloby = []
 zvano = {}
+bezymyannyh = 0
+vidno = set()
 for put in sorted(set(mesta)):
     polnyy = os.path.join(koren, put)
     if not os.path.isfile(polnyy):
@@ -82,11 +106,26 @@ for put in sorted(set(mesta)):
         golo = stroka.lstrip()
         if golo.startswith('#') or golo.startswith('//'):
             continue
+        # Строки примеров («дано …», «ожидается …») — не вызовы, а данные: там
+        # стоит ЖДАННОЕ значение, и ключ в нём означал бы другое ожидание, а не
+        # другое согласие.
+        if golo.startswith('дано ') or golo.startswith('ожидается '):
+            continue
         for sovpadenie in VYZOV.finditer(stroka):
             cel = sovpadenie.group(3)
             hvost = stroka[sovpadenie.end():]
             soglasie = '--на-веру' in hvost or '--trust' in hvost
             zvano.setdefault(cel, []).append((put, soglasie))
+        # Переменная в позиции цели красна только тогда, когда имени цели на
+        # строке НЕТ ВОВСЕ: «$KOREN/scripts/settings-file.flang» — имя, просто с
+        # приставкой, и такое место разбирается выше по имени.
+        if VYZOV_PEREMENNAYA.search(stroka) and not VYZOV.search(stroka):
+            bezymyannyh += 1
+            vidno.add(put)
+            if put not in bezymyannye:
+                zhaloby.append('ЦЕЛЬ БЕЗ ИМЕНИ И БЕЗ ЗАПИСИ: %s зовёт run/io на переменной — вписать в flang/scripts/run-verdict-targets-not-named.tsv с доводом' % put)
+            elif bezymyannye[put][0] and not ('--на-веру' in stroka or '--trust' in stroka):
+                zhaloby.append('ЗАПИСЬ ТРЕБУЕТ КЛЮЧА, А ЕГО НЕТ: %s — «%s»' % (put, bezymyannye[put][1][:80]))
 
 for cel in sorted(zvano):
     for put, soglasie in zvano[cel]:
@@ -100,6 +139,9 @@ nezvano = sorted(c for c in dolg if c not in zvano)
 print('СОГЛАСИЕ ПРИ ЗАПУСКЕ (ADR-0045, задача 3811)')
 print('  записей в ведомости:  %d' % len(dolg))
 print('  целей найдено в дереве: %d, вызовов: %d' % (len(zvano), sum(len(v) for v in zvano.values())))
+print('  вызовов на переменной (имени цели нет): %d в %d файлах, записано %d' % (bezymyannyh, len(vidno), len(bezymyannye)))
+for lishniy in sorted(set(bezymyannye) - vidno):
+    zhaloby.append('ЗАПИСЬ ОСТАЛАСЬ, А МЕСТА НЕТ: %s больше не зовёт run/io на переменной — убрать из run-verdict-targets-not-named.tsv' % lishniy)
 print('  записей, которых в дереве не зовут: %d%s'
       % (len(nezvano), (' (' + ', '.join(nezvano) + ')') if nezvano else ''))
 if zhaloby:

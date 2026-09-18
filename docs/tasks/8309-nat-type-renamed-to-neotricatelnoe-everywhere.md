@@ -52,7 +52,7 @@
   `"|неотрицательное|нат|натуральное|nat|naturo|自然数|"` в `types.flang`,
   `proof-kernel.flang`, `totality.flang`, `io.flang`, `emit-js.flang`,
   `corpus-nat-names.flang`; сторожа `word-guard.{mjs,flang}`,
-  `emptiness-guard.flang`, `seed-knows-type-words-guard.sh`; тест-строки
+  `emptiness-guard.fscript`, `seed-knows-type-words-guard.sh`; тест-строки
   `totality.flang` (`"|нат|"`, `"|целое|нат|"`), `малый-сводитель.flang`,
   `fspec/guard.flang` (проверяют именно слово).
 - Сверщик `flang/proof/чекер/сверщик.c` принимает ОБА имени в доводе

@@ -2,9 +2,9 @@
   "information_for_contributors": [
     "ЭТОТ ФАЙЛ НАПЕЧАТАН, А НЕ НАПИСАН. Правка руками пропадёт при следующей перепечатке, и заметить пропажу будет некому.",
     "откуда слова:  «Куски таблицы» в flang/self/lexer.flang — та самая таблица, которой язык читает свои файлы",
-    "чем напечатан: scripts/editors/vscode-highlighting.flang",
-    "перепечатать:  flang io scripts/editors/vscode-highlighting.flang",
-    "сверить:       flang io scripts/editors/vscode-highlight-check.flang",
+    "чем напечатан: scripts/editors/vscode-highlighting.fscript",
+    "перепечатать:  flang io scripts/editors/vscode-highlighting.fscript",
+    "сверить:       flang io scripts/editors/vscode-highlight-check.fscript",
     "Понятий 155, фраз 647.",
     "Красятся все четыре поверхности записи сразу — русская, английская, эсперанто и китайская, — потому что так делает сам лексер: ключевым слово у него становится по плоской таблице, где поверхности лежат вперемешку.",
     "Видов ровно пять, и каждый отвечает виду токена лексера: ключевое слово, имя в ёлочках, строка, число, комментарий. Шестого нет."

@@ -44,7 +44,7 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 `type-collision-guard.mjs` (двойник `scripts/type-collision-guard.flang` — тот снят 11 сентября 2026 как незваный — на том же
 дереве даёт тот же приговор: 9 известных, 0 новых). Ещё три ушли с
 переключением CI на двойники: `latin-collision-guard.mjs` (`ci.yml` и
-`reprint.yml` зовут `scripts/guards/latin-collision-guard.flang`, оба красны на
+`reprint.yml` зовут `scripts/guards/latin-collision-guard.fscript`, оба красны на
 подложенной паре имён), `jargon-guard.mjs` и его пробы
 `flang/test/jargon-guard.test.mjs` (11 из 14 проб перенесены в
 `flang/test/жаргон.flang`, работа `jargon` зовёт `flang test`). Файлов
@@ -177,7 +177,7 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 
 | файл | строк | чем это доказано |
 |---|---:|---|
-| `flang/concurrency/bin/node.js` | 719 | **хозяин узла на цели `js`** — восьмой из восьми: рядом лежат `node.c`, `node.cs`, `node.ex`, `node.go`, `node.java`, `node.py`, `node.rs`. Все восемь названы поимённо в `flang/scripts/node-across-targets.flang` (строка «js», хозяин `node.js`, запуск `node node.js`). Убрать его — вычеркнуть цель `js` из счёта работающих целей |
+| `flang/concurrency/bin/node.js` | 719 | **хозяин узла на цели `js`** — восьмой из восьми: рядом лежат `node.c`, `node.cs`, `node.ex`, `node.go`, `node.java`, `node.py`, `node.rs`. Все восемь названы поимённо в `flang/scripts/node-across-targets.fscript` (строка «js», хозяин `node.js`, запуск `node node.js`). Убрать его — вычеркнуть цель `js` из счёта работающих целей |
 | `docs/site/poisk.js` | 355 | исполняется браузером читателя на статике; исполнителя JavaScript у flang нет |
 | `docs/benchmarks/speed/programs/tasks.mjs` | 181 | **это и есть замеряемая реализация на JavaScript**, соседка `tasks.flang`, `tasks.py` и `reference.c`. `docs/benchmarks/speed/work.mjs` зовёт её строкой `node: (з) => прогон("node", [.../tasks.mjs, …])` — это ряд «node» в таблице замера. Переписать на flang — стереть у замера столбец сравнения |
 | `docs/site/poisk-proverka.mjs` | 175 | поднимает браузерный `poisk.js` внутри себя через `node:vm` и проверяет **тот же файл**, который читает браузер. Двойник на flang проверял бы другой файл — это подмена сторожа, а не перенос |
@@ -194,7 +194,7 @@ $ grep -l 'Сгенерировано flang' $(git ls-files '*.mjs' '*.js') | xa
 доводу: их запускал не мы, а npm. Довод ушёл вместе с ним. Он не долг по той же
 причине, по какой не долг `flang/src/emit/js/**`: это код НА СТОРОНЕ ЦЕЛИ, а не
 оснастка вокруг языка. Восемь хозяев пишутся на восьми языках намеренно — затем
-и заведён `node-across-targets.flang`, чтобы сверять их между собой.
+и заведён `node-across-targets.fscript`, чтобы сверять их между собой.
 
 ---
 

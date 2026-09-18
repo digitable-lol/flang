@@ -14,7 +14,7 @@
 # знала 52 расхождения, прибор называл 97. Снято 18 записей и вписано 63.
 #
 #   СНЯТЫЕ 18 были мертвы ещё ДО этой правки — проверено прогоном переписи на
-#   нетронутой копии ствола: там их 19, и девятнадцатая (scripts/guards/link-guard.flang
+#   нетронутой копии ствола: там их 19, и девятнадцатая (scripts/guards/link-guard.fscript
 #   строка 694) ожила ровно потому, что перечень в этом файле переехал на её
 #   номер после снятия комментариев. Ведомость, пережившая дерево, — та же
 #   болезнь, ради которой ведомость заведена.
@@ -41,7 +41,7 @@
 # 8 сентября из 58 файлов сняты комментарии (долг «в .flang не пишут
 # комментариев»), и 13 расхождений уехали вверх на 20-110 строк, а три
 # исчезли вовсе — они стояли в самих комментариях (docs/site/site-numbers.flang,
-# scripts/guards/emit-promises-guard.flang, scripts/guards/link-guard.flang).
+# scripts/guards/emit-promises-guard.fscript, scripts/guards/link-guard.fscript).
 #
 # вид	файл	строка	довод, почему расхождение остаётся
 ЦЕЛИ	docs/ROADMAP.md	1522	правдивое высказывание о ПОДМНОЖЕСТВЕ целей, а не заявка «вот они все»: речь о трёх целях с планировщиком и о пяти без него
@@ -62,17 +62,17 @@
 ПУТИ	flang/proof/examples/precondition.flang	135	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
 ПУТИ	flang/proof/чекер/пробы/программы/lozh-stolknovenie.flang	6	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
 ПУТИ	flang/scripts/count-guard.mjs	180	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
-ПУТИ	flang/scripts/guards-start.flang	28	ложное срабатывание переписи: имя складывается прогоном или это обрубок строки, а не имя дерева (обрубок «scripts/storozh-» — приставка отбора)
+ПУТИ	flang/scripts/guards-start.fscript	28	ложное срабатывание переписи: имя складывается прогоном или это обрубок строки, а не имя дерева (обрубок «scripts/storozh-» — приставка отбора)
 ПУТИ	flang/scripts/link-collision-guard.mjs	509	выдуманные входы пробы, а не имена дерева: перечень подделок не протухает
-ПУТИ	flang/scripts/tempdir-guard.flang	367	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
+ПУТИ	flang/scripts/tempdir-guard.fscript	367	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
 ПУТИ	flang/self/bootstrap/compiler.flang	51	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
 ПУТИ	flang/self/bootstrap/compiler.flang	496	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
 ПУТИ	flang/test/svyaz-celi.test.mjs	22	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
 ПУТИ	flang/test/прогонщик-корпуса.flang	97	выдуманные входы пробы, а не имена дерева: перечень подделок не протухает (входы пробы масок)
 ПУТИ	scripts/site/build-changelog-page.mjs	37	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
-ПУТИ	scripts/site/emit-dictionary.flang	10	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
-ПУТИ	scripts/guards/link-guard.flang	694	выдуманные входы пробы, а не имена дерева: перечень подделок не протухает
-ПУТИ	scripts/release/path-without-node.flang	11	прежняя реализация на JavaScript, снятая коммитами c1cd565c и 865c21aa; шапка правлена, чтобы не говорить о снятых файлах в настоящем времени
+ПУТИ	scripts/site/emit-dictionary.fscript	10	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
+ПУТИ	scripts/guards/link-guard.fscript	694	выдуманные входы пробы, а не имена дерева: перечень подделок не протухает
+ПУТИ	scripts/release/path-without-node.fscript	11	прежняя реализация на JavaScript, снятая коммитами c1cd565c и 865c21aa; шапка правлена, чтобы не говорить о снятых файлах в настоящем времени
 ПУТИ	scripts/guards/published-vs-tree.sh	535	ложное срабатывание переписи: имя складывается прогоном или это обрубок строки, а не имя дерева (обрубок «flang/concurrency/bin/node.» — приставка, к которой дописывается расширение цели)
 ПУТИ	docs/examples/web/wasm/probe.mjs	13	ложное срабатывание переписи: имя складывается прогоном или это обрубок строки, а не имя дерева (node_modules ставится прогоном, в дереве его нет по устройству)
 ЦЕЛИ	.github/workflows/ci.yml	600	историческая проза о СЕМИ целях, не собиравшихся до 5 сентября 2026: высказывание о подмножестве, а не заявка «вот они все»
@@ -94,9 +94,9 @@
 ЦЕЛИ	docs/zettel/pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.md	15	таблица замера в заметке; снята до девятой цели и правится только пересъёмкой замера
 ЦЕЛИ	docs/zettel/pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.md	29	вторая таблица того же замера; правится только пересъёмкой
 ЦЕЛИ	docs/flang/proof/SPEC.md	154	замер равенства байтов по восьми целям; cpp в замер не входил
-ЦЕЛИ	flang/scripts/node-across-targets.flang	25	перечень целей, у которых есть хозяин узла; у цели python хозяина нет — перечень описывает то, что можно собрать
-ЦЕЛИ	flang/scripts/supervisor-across-targets.flang	23	тот же перечень целей с хозяином узла для надзора; у python хозяина нет
-ЦЕЛИ	flang/scripts/target-words.flang	34	оставлены все РАЗНЫЕ причины столкновения, а не все цели — сказано в шапке перечня
+ЦЕЛИ	flang/scripts/node-across-targets.fscript	25	перечень целей, у которых есть хозяин узла; у цели python хозяина нет — перечень описывает то, что можно собрать
+ЦЕЛИ	flang/scripts/supervisor-across-targets.fscript	23	тот же перечень целей с хозяином узла для надзора; у python хозяина нет
+ЦЕЛИ	flang/scripts/target-words.fscript	34	оставлены все РАЗНЫЕ причины столкновения, а не все цели — сказано в шапке перечня
 ЦЕЛИ	flang/src/emit/js/flang_host_node.js	13	перечень целей, которые план НЕ печатают; `c` в нём не назван — высказывание о подмножестве в шапке замера
 ЦЕЛИ	flang/test/fixtures/zapis-oracula.json	218	снимок записи доказательства: перечень модулей flang/self, снятый до emit-cpp.flang; правится только пересъёмкой снимка
 ЦЕЛИ	flang/test/fixtures/zapis-setki.json	211	снимок записи доказательства, снятый до emit-cpp.flang; правится только пересъёмкой
@@ -104,8 +104,8 @@
 ЦЕЛИ	flang/test/snimok/proofterm-witness.json	211	снимок свидетеля доказательства, снятый до emit-cpp.flang; правится только пересъёмкой
 ЦЕЛИ	flang/test/toolchain-guard.mjs	24	шапка называет идентификаторы целей по flang/src/targets.mjs — файлу, которого в дереве уже нет; долг шапки
 ЦЕЛИ	scripts/guards/bad-octet-guard.sh	25	таблица «было» по восьми целям: исторический замер до починки октетов
-ЦЕЛИ	scripts/guards/emit-promises-guard.flang	217	улики по целям рантайма; у elixir и у cpp улик этого класса нет
-ЦЕЛИ	scripts/guards/module-name-guard.flang	294	перечень модулей flang/self, в котором нет emit-cpp.flang; настоящий долг перечня — правка меняет предмет сторожа и делается вместе с его прогоном
+ЦЕЛИ	scripts/guards/emit-promises-guard.fscript	217	улики по целям рантайма; у elixir и у cpp улик этого класса нет
+ЦЕЛИ	scripts/guards/module-name-guard.fscript	294	перечень модулей flang/self, в котором нет emit-cpp.flang; настоящий долг перечня — правка меняет предмет сторожа и делается вместе с его прогоном
 ЦЕЛИ	docs/tasks/completed/0025-roadmap-matches-the-tree.md	89	закрытая задача: запись о работе на день закрытия, правится только вместе с датой
 ЦЕЛИ	docs/tasks/completed/4025-the-seed-stopped-dropping-processes-and-the-network.md	161	закрытая задача: таблица замера на день закрытия
 ЦЕЛИ	docs/tasks/completed/8460-the-occupied-names-guard-was-blind-to-the-ninth-target.md	117	закрытая задача: «семь целей из девяти без присмотра» — высказывание о подмножестве на день закрытия
@@ -113,18 +113,18 @@
 ПУТИ	docs/examples/frameworks/nestjs-orders/printed/flang_cli.js	533	прежняя реализация на JavaScript (flang/scripts/direct-run-guard.mjs), вынесенная из дерева; имя стоит в шапке НАПЕЧАТАННОГО файла и правится печатью, а не рукой
 ПУТИ	docs/examples/frameworks/react-invoice/printed/flang_cli.js	533	то же напечатанное лицо, вторая рамка; правится печатью, а не рукой
 ПУТИ	docs/examples/frameworks/vue-roman/printed/flang_cli.js	533	то же напечатанное лицо, третья рамка; правится печатью, а не рукой
-ПУТИ	flang/scripts/binary-rules-guard.flang	237	прежние имена на JavaScript (flang/bin/flang.mjs, flang/src/lsp.mjs, io.mjs, factcheck.mjs) в поле «почему» записей: имя стоит как история, а не как живой файл
-ПУТИ	flang/scripts/code-guard.flang	214	ожидаемые значения ПРИМЕРА: задачи 6805 и 0003 переехали в docs/tasks/completed, а пример показывает прежний путь; правится вместе с примером
-ПУТИ	flang/scripts/code-guard.flang	229	второй пример того же вида; правится вместе с примером
-ПУТИ	flang/scripts/code-guard.flang	266	третий пример того же вида: задача 6805 переехала в docs/tasks/completed
+ПУТИ	flang/scripts/binary-rules-guard.fscript	237	прежние имена на JavaScript (flang/bin/flang.mjs, flang/src/lsp.mjs, io.mjs, factcheck.mjs) в поле «почему» записей: имя стоит как история, а не как живой файл
+ПУТИ	flang/scripts/code-guard.fscript	214	ожидаемые значения ПРИМЕРА: задачи 6805 и 0003 переехали в docs/tasks/completed, а пример показывает прежний путь; правится вместе с примером
+ПУТИ	flang/scripts/code-guard.fscript	229	второй пример того же вида; правится вместе с примером
+ПУТИ	flang/scripts/code-guard.fscript	266	третий пример того же вида: задача 6805 переехала в docs/tasks/completed
 ПУТИ	flang/scripts/count-guard.mjs	26	flang/cat/POLY.md — прежнее имя каталога до переезда в flang/ct; шапка называет его примером правила, а не живым файлом
 ПУТИ	flang/self/bootstrap/compiler.flang	1925	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
 ПУТИ	flang/self/bootstrap/compiler.flang	2702	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
 ПУТИ	flang/self/proof-initial.flang	1821	ложное срабатывание переписи: имя складывается прогоном или это обрубок строки, а не имя дерева (относительное имя внутри строки разбора)
 ПУТИ	flang/src/emit/js/flang_cli.js	529	образец, с которым сверяются копии в напечатанных рамках; называет снятый flang/scripts/direct-run-guard.mjs как историю
-ПУТИ	scripts/guards/asdf-plugin-guard.flang	361	содержимое сабмодуля packaging/asdf-plugin: в git ls-files лежит одно имя сабмодуля, а не его файлы, и перепись их не видит, пока сабмодуль не выкачен
-ПУТИ	scripts/guards/asdf-plugin-guard.flang	372	тот же сабмодуль, перечень ожидаемых файлов плагина
-ПУТИ	scripts/guards/asdf-plugin-guard.flang	388	тот же сабмодуль, перечень исполняемых файлов плагина
+ПУТИ	scripts/guards/asdf-plugin-guard.fscript	361	содержимое сабмодуля packaging/asdf-plugin: в git ls-files лежит одно имя сабмодуля, а не его файлы, и перепись их не видит, пока сабмодуль не выкачен
+ПУТИ	scripts/guards/asdf-plugin-guard.fscript	372	тот же сабмодуль, перечень ожидаемых файлов плагина
+ПУТИ	scripts/guards/asdf-plugin-guard.fscript	388	тот же сабмодуль, перечень исполняемых файлов плагина
 ПУТИ	scripts/site/build-changelog.mjs	106	исторический корень flang/conc: каталог переименован в flang/concurrency 14 сентября 2026 (задача 1418), но коммиты, которые его трогали, в истории остались, и незнакомый корень останавливает печать журнала — перечень обязан помнить путь, которого в дереве уже нет
 ПУТИ	scripts/site/build-changelog.mjs	134	исторический корень docs/examples/cat, снятый переездом в flang/ct; перечень корней обязан помнить путь, которого в дереве уже нет
 ПУТИ	scripts/site/build-changelog.mjs	217	прямо названы ПРЕЖНИЕ места (flang/cat, flang/examples): перечень корней помнит историю нарочно
@@ -134,8 +134,8 @@
 ПУТИ	scripts/site/changelog.flang	271	входы ПРИМЕРОВ функции на прежних именах (flang/src/lexer.mjs, docs/adr/0006.md); входы примера не протухают
 ПУТИ	scripts/site/changelog.flang	828	ожидаемые значения ПРИМЕРА о НЕИЗВЕСТНОМ корне (turbo/run.mjs, turbo/README.md): имена выдуманы нарочно, дерева они не описывают
 ПУТИ	scripts/site/changelog.flang	1202	вход ПРИМЕРА — строка вывода git с управляющими знаками; «u0003» приклеилось к имени разбором, а flang/src/lexer.mjs здесь прежнее имя из истории
-ПУТИ	scripts/targets/emit-law.flang	99	постоянный перечень программ, из которого печатается закон: шесть имён под docs/examples/cat не существуют — каталог переехал в flang/ct; настоящий долг, правка меняет предмет закона
+ПУТИ	scripts/targets/emit-law.fscript	99	постоянный перечень программ, из которого печатается закон: шесть имён под docs/examples/cat не существуют — каталог переехал в flang/ct; настоящий долг, правка меняет предмет закона
 ПУТИ	scripts/release/emit-package.flang	17	задача 8649 переехала в docs/tasks/completed; имя стоит в комментарии как ссылка на разбор, а не как живой файл
-ПУТИ	scripts/guards/homebrew-formula-guard.flang	484	содержимое сабмодуля packaging/homebrew-tap: в git ls-files лежит одно имя сабмодуля, а не Formula/flang.rb
-ПУТИ	scripts/release/release-in-c.flang	158	«куда» ПРИМЕРА — каталог, который складывает прогон выпуска (output/release-c/…); в дереве его нет по устройству
+ПУТИ	scripts/guards/homebrew-formula-guard.fscript	484	содержимое сабмодуля packaging/homebrew-tap: в git ls-files лежит одно имя сабмодуля, а не Formula/flang.rb
+ПУТИ	scripts/release/release-in-c.fscript	158	«куда» ПРИМЕРА — каталог, который складывает прогон выпуска (output/release-c/…); в дереве его нет по устройству
 ПУТИ	scripts/seed/two-prints-identical.sh	76	ложное срабатывание переписи: точка предложения приклеилась к имени (scripts/seed/print-progress.sh.), сам файл в дереве есть

@@ -46,7 +46,7 @@ docs/спецификации/чего-не-хватает-fts.md
 docs/спецификации/язык-доказательств.md
 flang/scripts/жаргон-образцы.flang
 flang/scripts/одна-линейка.py
-flang/scripts/породить-атомы.flang
+flang/scripts/породить-атомы.fscript
 flang/scripts/сличить-двух-сводителей.py
 flang/stdlib/образцы.flang
 flang/test/fixtures/fts-naslediye/скидки-в-подписки.fts
@@ -63,7 +63,7 @@ flang/test/обход-self.sh
 flang/test/обход-примеров.sh
 flang/test/обход.sh
 flang/test/прогонщик-корпуса.flang
-scripts/guards/сторож-дарвина.flang
+scripts/guards/сторож-дарвина.fscript
 scripts/доказуемость.sh
 ярлык
 ярлыки.flang

@@ -37,8 +37,8 @@
 ### Кто их зовёт
 
 `flang/test/planirovshchik-celi.test.mjs`, `flang/test/svyaz-celi.test.mjs`,
-`flang/scripts/conc-link-emitted.flang`, `scheduler-across-targets.flang`,
-`link-across-targets.flang`, `scripts/targets/conc-link-emit.flang`,
+`flang/scripts/conc-link-emitted.flang`, `scheduler-across-targets.fscript`,
+`link-across-targets.fscript`, `scripts/targets/conc-link-emit.fscript`,
 `flang/conc/bench/hot-swap.sh`, `.github/workflows/dvoyniki.yml`,
 плюс слово: `flang/conc/RESILIENCE.md`, `docs/javascript-inventory.md`,
 `docs/why-javascript-remains.md`, три заметки `docs/zettel/**`.
@@ -133,8 +133,8 @@ flang/concurrency/<модуль>.flang --target js` (link 2 с, scheduler 10 с,
 дереве ⊂ 114 в свежей печати — ни одно имя из дерева не пропало.
 
 **Поведение сходится знак в знак.** Свидетелю задавались вопросы самих сторожей
-(функция «Текст вопросов» в `link-across-targets.flang` и
-`scheduler-across-targets.flang`); «как в стороже» — закоммиченный `.js` с
+(функция «Текст вопросов» в `link-across-targets.fscript` и
+`scheduler-across-targets.fscript`); «как в стороже» — закоммиченный `.js` с
 дописанным блоком `$PROGRAM`, против свежей печати как есть:
 
 | свидетель | вопросов | ответы | байт |
@@ -150,9 +150,9 @@ flang/concurrency/<модуль>.flang --target js` (link 2 с, scheduler 10 с,
 вопросы сторожа не задевают. Это слабость набора вопросов, не сверки.
 
 **Кто держит три файла** (ввозы и копии по всему дереву): свидетели в
-`link-across-targets.flang` и `scheduler-across-targets.flang` (копией), два
+`link-across-targets.fscript` и `scheduler-across-targets.fscript` (копией), два
 теста `flang/test/*-celi.test.mjs` (ввозом), сверщики печати
-`scripts/targets/conc-link-emit.flang` (обязательство 1 — «напечатанное в дереве
+`scripts/targets/conc-link-emit.fscript` (обязательство 1 — «напечатанное в дереве
 совпадает со свежей печатью») и `flang/scripts/conc-link-emitted.flang`
 (перепечатывает рядом с исходником). Рантайм цели `js` и сам компилятор их не
 ввозят; `bin/node.js` ввозит только `./uzel_zamera.js` — печать
@@ -165,8 +165,8 @@ flang/concurrency/<модуль>.flang --target js` (link 2 с, scheduler 10 с,
 ствола (ствол правил его в тот же день, старый давал ложное «НЕ ДОКАЗУЕМ»).
 Два коммита:
 
-* **`031900faf` — свидетели.** `flang/scripts/link-across-targets.flang` и
-  `scheduler-across-targets.flang` берут свидетелем то, что сами только что
+* **`031900faf` — свидетели.** `flang/scripts/link-across-targets.fscript` и
+  `scheduler-across-targets.fscript` берут свидетелем то, что сами только что
   напечатали (`svyaz_uzlov.js`, `planirovschik_uzla.js`), а не копию
   закоммиченного `.js`; блок `$PROGRAM` не дописывается — у свежей печати он
   есть. `flang/test/svyaz-celi.test.mjs` и `planirovshchik-celi.test.mjs`
@@ -177,7 +177,7 @@ flang/concurrency/<модуль>.flang --target js` (link 2 с, scheduler 10 с,
   опись:сверка` покраснела на строке JavaScript. Таблица `docs/tree-inventory.md`
   и две приметы «строк-в `*.js,*.mjs`» пересняты прибором: 29 711 → 29 725.
 * **`30c7ead5a` — сверщик печати и освежитель.**
-  `scripts/targets/conc-link-emit.flang` держит два обязательства из трёх:
+  `scripts/targets/conc-link-emit.fscript` держит два обязательства из трёх:
   узел зовёт у напечатанного только объявленное и исполняет каждое веление
   исходника. Первое — «напечатанное в дереве совпадает со свежей печатью» —
   снято вместе с «Шапкой», «Сверкой», «Шагом сверки», «Где разошлось» и
@@ -225,7 +225,7 @@ flang/concurrency/<модуль>.flang --target js` (link 2 с, scheduler 10 с,
 ссылками, и завёл на `scheduler.js` шесть исключений сторожа ссылок. Прогон
 назвал все шесть устаревшими: сторож судит путь в кавычках, только если его
 расширение — одно из шестнадцати «Известных расширений улик»
-(`scripts/guards/link-guard.flang`), и `js` среди них нет. Исключения убраны
+(`scripts/guards/link-guard.fscript`), и `js` среди них нет. Исключения убраны
 из того же коммита; устаревших исключений в дереве снова одно, как до задачи.
 
 ## Ш2 — `bin/node.js` НЕ снят, и задача поэтому остаётся в работе
@@ -238,11 +238,11 @@ flang/concurrency/<модуль>.flang --target js` (link 2 с, scheduler 10 с,
 
 * `flang/concurrency/bench/hot-swap.sh` — копирует его в рабочий каталог;
   ключ `--заменить-позже` есть только у него;
-* `flang/scripts/node-across-targets.flang` и `supervisor-across-targets.flang` —
+* `flang/scripts/node-across-targets.fscript` и `supervisor-across-targets.fscript` —
   цель `js` с «хозяином» `node.js`, путь `flang/concurrency/bin/` + хозяин;
 * `flang/concurrency/bench/node-death.sh` — `cp …/bin/$HOZ`;
 * `flang/test/uzel-osnastka.mjs` — `copyFileSync(…/bin/${цель.хозяин})`;
-* `scripts/targets/conc-link-emit.flang` — оба оставшихся обязательства
+* `scripts/targets/conc-link-emit.fscript` — оба оставшихся обязательства
   сверщика печати и есть «что узел зовёт у напечатанного».
 
 Хозяин цели `js` по природе написан на JavaScript, как `node.py`, `node.go` и
@@ -302,8 +302,8 @@ flang/concurrency/<модуль>.flang --target js` (link 2 с, scheduler 10 с,
 | `hand-written-lists.sh --check` | новых 59, мёртвых записей 29 | новых 59, мёртвых записей 29 | новых 59, мёртвых записей 29 | новых 59, мёртвых записей 29 | новых 59, мёртвых записей 29 | новых 59, мёртвых записей 29 |
 | `./ярлык длина:проверка` | 405 / 284 | 405 / 284 | 402 / 281 | 402 / 281 | 402 / 281 | 402 / 281 |
 | `./ярлык связь:печать` | код 1: расхождений 3 | код 1: расхождений 3 | код 0: расхождений 0 | код 0: расхождений 0 | код 0: расхождений 0 | код 0: расхождений 0 |
-| `link-across-targets.flang` | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 |
-| `scheduler-across-targets.flang` | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 |
+| `link-across-targets.fscript` | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 |
+| `scheduler-across-targets.fscript` | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 |
 | `planirovshchik-celi.test.mjs` | 8 из 8 | 8 из 8 | 8 из 8 | 8 из 8 | 8 из 8 | 8 из 8 |
 | `svyaz-celi.test.mjs` | 8 из 8 | 8 из 8 | 8 из 8 | 8 из 8 | 8 из 8 | 8 из 8 |
 
@@ -374,8 +374,8 @@ flang/concurrency/<модуль>.flang --target js` (link 2 с, scheduler 10 с,
 | `hand-written-lists.sh --check` | новых 59, мёртвых записей 29 | новых 59, мёртвых записей 29 |
 | `./ярлык длина:проверка` | 405 / 284 | 402 / 281 |
 | `./ярлык связь:печать` | код 1: расхождений 3 | код 0: расхождений 0 |
-| `link-across-targets.flang` | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 |
-| `scheduler-across-targets.flang` | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 |
+| `link-across-targets.fscript` | 9 из 9 целей, сверок 19962, расхождений 0 | 9 из 9 целей, сверок 19962, расхождений 0 |
+| `scheduler-across-targets.fscript` | 9 из 9 целей, сверок 90036, расхождений 0 | 9 из 9 целей, сверок 90036, расхождений 0 |
 | `planirovshchik-celi.test.mjs` | 8 из 8 | 8 из 8 |
 | `svyaz-celi.test.mjs` | 8 из 8 | 8 из 8 |
 

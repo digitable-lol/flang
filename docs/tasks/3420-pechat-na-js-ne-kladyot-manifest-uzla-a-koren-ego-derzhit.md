@@ -42,7 +42,7 @@ SyntaxError: Cannot use import statement outside a module
 дерева обещают `>=20`, и CI гоняет набор на 20, 22 и 24.
 
 **Это знание уже было в дереве — четырьмя копиями.** Манифест дописывала
-оснастка, каждая своими руками: `flang/scripts/node-across-targets.flang`
+оснастка, каждая своими руками: `flang/scripts/node-across-targets.fscript`
 (строка «рядом» у цели js), `flang/concurrency/bench/hot-swap.sh`,
 `flang/concurrency/bench/node-death.sh`, `flang/test/uzel-osnastka.mjs`. Ни одна из
 четырёх не достаётся человеку, который просто напечатал программу и позвал
@@ -78,7 +78,7 @@ Node 20 они не ввозятся вовсе. Лечится это не пе
 
 **2. Читается не два поля, а пять.** Кроме `version` (17 мест) и `name` (8)
 читаются `license`, `repository.url` и `bugs.url`:
-`scripts/guards/license-guard.flang` судит по `license` шапку SPDX каждого
+`scripts/guards/license-guard.fscript` судит по `license` шапку SPDX каждого
 публикуемого файла, а `docs/site/build.mjs` и `docs/site/build.flang`
 ОТКАЗЫВАЮТ, если не нашли адресов и лицензии, — подвал сайта собирается из них.
 `node docs/site/build.mjs --check` сегодня зелен ровно потому, что файл есть.
@@ -96,7 +96,7 @@ Node 20 они не ввозятся вовсе. Лечится это не пе
 2. Перевести `flang/concurrency/*.js` и оба теста-свидетеля на `.mjs` либо положить
    `flang/concurrency/package.json`; то же для двух примеров во `frameworks`.
 3. Решить, откуда сборка сайта возьмёт лицензию и два адреса, а
-   `license-guard.flang` — опознаватель лицензии.
+   `license-guard.fscript` — опознаватель лицензии.
 4. Перевести читателей `version` на `.flangrc` (ключ уже есть) и снять
    `scripts/release/emit-package.flang` вместе с ярлыками `пакет`,
    `пакет:проверка` и двумя подлогами в `ci.yml` и `install-path.yml`.

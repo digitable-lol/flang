@@ -7,7 +7,7 @@
 команда: вторая
 карта: Что мешает больше всего
 рядом: 0001, 0016, 0049
-нужность: 2 — ни одного из 6 файлов нет (test.mjs в дереве 3); ссылки стоят в name-guard.mjs:151 и tempdir-guard.flang:367–368 (uzel-celi); claim/binary-rules переехали на .flang без ссылок
+нужность: 2 — ни одного из 6 файлов нет (test.mjs в дереве 3); ссылки стоят в name-guard.mjs:151 и tempdir-guard.fscript:367–368 (uzel-celi); claim/binary-rules переехали на .flang без ссылок
 ---
 
 # 5090. Шесть обещанных самопроверок в дереве отсутствуют
@@ -35,9 +35,9 @@ flang/test/uzel-celi.test.mjs
 | `подсчёты:проверка` | `flang/scripts/count-guard.mjs:15` — теперь называет `manpage.test.mjs`, которого тоже нет |
 | `имена:проверка` | `flang/scripts/name-guard.mjs:151` — `name-guard.test.mjs` |
 | `правила:проверка` | `flang/scripts/binary-rules-guard.mjs:116` и `:133` (сразу на два); строка 73 честно говорит «обоих файлов в дереве НЕТ» |
-| `времянки:проверка` | `flang/scripts/tempdir-guard.flang:367–368` — `uzel-celi.test.mjs` |
+| `времянки:проверка` | `flang/scripts/tempdir-guard.fscript:367–368` — `uzel-celi.test.mjs` |
 
-**Последний не поминает, а ЗАПУСКАЕТ.** `flang/scripts/tempdir-guard.flang:367`:
+**Последний не поминает, а ЗАПУСКАЕТ.** `flang/scripts/tempdir-guard.fscript:367`:
 
 ```
 ["node", "--test", "--test-timeout=1800000", "flang/test/uzel-celi.test.mjs", …]
@@ -62,7 +62,7 @@ flang/test/uzel-celi.test.mjs
    (`docs/tasks/README.md`);
 2. **снять ссылку** — тогда сторож перестаёт обещать то, чего нет.
 
-Запуск в `tempdir-guard.flang:367` — случай особый: там выбора нет, файл либо
+Запуск в `tempdir-guard.fscript:367` — случай особый: там выбора нет, файл либо
 появляется, либо убирается из списка, иначе `времянки:проверка` после починки упадёт по
 второму разу.
 

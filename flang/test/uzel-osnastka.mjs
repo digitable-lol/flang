@@ -126,8 +126,8 @@ export const ЦЕЛИ = [
        только компилятором C++ и с явным `-x c++`, потому что расширение файла
        осталось `.c`. Заголовок модуля и имя цели приходят ключами: у печати в
        cpp модуль зовётся `uzel_zamera.hpp`, а не `.h`. Ровно так же эту цель
-       описывают flang-двойники (`flang/scripts/node-across-targets.flang`,
-       `flang/scripts/supervisor-across-targets.flang`) — описание цели у JS и
+       описывают flang-двойники (`flang/scripts/node-across-targets.fscript`,
+       `flang/scripts/supervisor-across-targets.fscript`) — описание цели у JS и
        у flang обязано быть одно. */
     рядом: {
       "node.mk":

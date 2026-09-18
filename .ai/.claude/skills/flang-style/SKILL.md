@@ -66,7 +66,7 @@ description: Как писать flang, чтобы он проходил про�
    ```
 
 10. **Расширение файла — любое из четырёх равноправных:** `.flang`, `.fp`, `.фп`,
-    `.фланг` (головное `.flang`). Канон — `scripts/guards/file-extensions.flang`, решения
+    `.фланг` (головное `.flang`). Канон — `scripts/guards/file-extensions.fscript`, решения
     ADR-0016/0018. Смыкается с правилом 9: **русское имя → `.фп`/`.фланг`,
     английское имя → `.flang`/`.fp`**.
 
@@ -87,7 +87,7 @@ bootstrap/flang check файл.flang --proof --pretty
 - `flang/scripts/name-guard.mjs` — имена в порядке;
 - `sh scripts/guards/hand-written-lists.sh --check` — рукописных перечней не завёл;
 - `flang check` на файле — код 0, и `check`/`test` не расходятся
-  (`scripts/guards/check-before-run.flang`).
+  (`scripts/guards/check-before-run.fscript`).
 
 ## Признак готовности
 

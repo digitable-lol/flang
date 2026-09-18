@@ -47,7 +47,7 @@
 | `scripts/seed/semya-rantayma-eto-istochnik.sh` | `scripts/seed/seed-runtime-is-source.sh` | 5 |
 | `scripts/repl-proba.sh` | `scripts/repl-probe.sh` | 5 |
 | `scripts/flangtutor-proba.sh` | `scripts/tutor-probe.sh` | 5 |
-| `scripts/guards/сторож-дарвина.flang` | `scripts/guards/darwin-guard.flang` | 4 |
+| `scripts/guards/сторож-дарвина.fscript` | `scripts/guards/darwin-guard.flang` | 4 |
 | `scripts/seed/semya-osvezhit.sh` | `scripts/seed/seed-refresh.sh` | 4 |
 | `scripts/seed/pechat-povtorima.sh` | `scripts/seed/print-is-repeatable.sh` | 3 |
 
@@ -62,7 +62,7 @@
   · `.github/workflows/*.yml` — 35 строк;
   · `ХРАПОВИК` — 3 (все у `доказуемость.sh`);
   · `ярлыки.flang` — 9;
-  · реестры сторожей — запись «Ждущее» про `raskrutka.sh` в `file-extensions.flang`
+  · реестры сторожей — запись «Ждущее» про `raskrutka.sh` в `file-extensions.fscript`
     и упоминания в шапках четырёх сторожей;
   · приметы «СНЯТО» — НОЛЬ (проверено).
 

@@ -33,9 +33,9 @@
 `if (io_order_is(order, "Перечислить каталог"))`.
 
 **Им пользуются:** 37 файлов `.flang` зовут это поручение (90 вхождений по
-`.flang` и `.c` вместе). Среди них — `flang/scripts/tasks.flang`,
-`flang/scripts/claim-guard.flang`, `flang/scripts/kernel-forgeries.flang`,
-`flang/scripts/emptiness-guard.flang`, `docs/site/build.flang`,
+`.flang` и `.c` вместе). Среди них — `flang/scripts/tasks.fscript`,
+`flang/scripts/claim-guard.fscript`, `flang/scripts/kernel-forgeries.fscript`,
+`flang/scripts/emptiness-guard.fscript`, `docs/site/build.flang`,
 `flang/test/toolchain-guard.flang`.
 
 **Рекурсии у поручения нет — и это решение, а не пропуск.**

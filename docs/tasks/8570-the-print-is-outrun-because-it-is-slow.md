@@ -333,7 +333,7 @@ grep -c "Функции под термом" bootstrap/compiler_flang.c
 шедший 30 августа с 13:43, её НЕ несёт: он прочитал исходники до вливания.
 
 **Цена, которую надо назвать заранее.** `proof-kernel.flang` — файл ядра решений.
-Сторож `flang/scripts/kernel-lines-to-trust.flang` — отметка 4620, снятая
+Сторож `flang/scripts/kernel-lines-to-trust.fscript` — отметка 4620, снятая
 30 августа. ФАКТ ПО ПРАВКЕ: строк ядра решений стало 4628 (+8), отметка поднята
 до 4628 замером в той же ветке, довод записан в
 `flang/scripts/kernel-lines-to-trust-ceiling.json`, сторож отвечает кодом 0.

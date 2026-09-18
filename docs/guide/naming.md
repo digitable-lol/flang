@@ -163,7 +163,7 @@ The hole was closed on trunk (`57a193bb`, `7f95df5d`), and `ПОТЕРИ` is now
 parse whole. The fallback stays — it is the insurance against the next such hole — but the list is
 compared **in both directions**: a new loss goes red, and so does the tombstone of a removed one. An
 entry that outlived its reason lies exactly as much as a missing one; the «Объявлено, не сделано» list in
-`flang/scripts/code-guard.flang` is kept by the same rule.
+`flang/scripts/code-guard.fscript` is kept by the same rule.
 
 ### What the guard does not look at
 
@@ -254,7 +254,7 @@ the change.
 ./ярлык имена:проверка                         # the guard
 node flang/scripts/name-guard.mjs --list       # the debt per file, by name
 node flang/scripts/name-guard.mjs --debt       # rewrite the debt after cleaning
-bootstrap/flang test scripts/guards/module-name-guard.flang   # the 34 examples of the R7 check (11 September 2026: 34 of 34)
+bootstrap/flang test scripts/guards/module-name-guard.fscript   # the 34 examples of the R7 check (11 September 2026: 34 of 34)
 ```
 
 The R1–R6 guard used to be checked by forty-one assertions (`flang/test/name-guard.test.mjs`) — that file

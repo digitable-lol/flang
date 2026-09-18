@@ -7,7 +7,7 @@
 > живёт в `flang/self/proofterm.flang:1039–1189` («Свести по свойству») и
 > независимо в `flang/proof/чекер/сверщик.c:1271`; пустота аксиом — инвариант
 > `flang/self/proof-kernel.flang:8437`, сторож
-> `flang/scripts/kernel-forgeries.flang`; тест `flang/test/proof-forms.test.mjs`,
+> `flang/scripts/kernel-forgeries.fscript`; тест `flang/test/proof-forms.test.mjs`,
 > названный в разделе 3, в дереве отсутствует.
 
 Замер цены доказательства (`docs/benchmark-proof-cost-2.md`, 16 августа) назвал узкое

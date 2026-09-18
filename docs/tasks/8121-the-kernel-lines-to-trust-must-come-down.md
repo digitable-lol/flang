@@ -19,7 +19,7 @@
 7 имён. Снято на стволе `f1f7bc6e`, сторожем из этой же ветки:
 
 ```sh
-bootstrap/flang io flang/scripts/kernel-lines-to-trust.flang \
+bootstrap/flang io flang/scripts/kernel-lines-to-trust.fscript \
   --plan 'Потолок не пробит' --max-steps 2000000000
 ```
 
@@ -70,7 +70,7 @@ bootstrap/flang io flang/scripts/kernel-lines-to-trust.flang \
 ## Как понять, что сделано
 
 ```sh
-bootstrap/flang io flang/scripts/kernel-lines-to-trust.flang \
+bootstrap/flang io flang/scripts/kernel-lines-to-trust.fscript \
   --plan 'Потолок не пробит' --max-steps 2000000000
 ```
 

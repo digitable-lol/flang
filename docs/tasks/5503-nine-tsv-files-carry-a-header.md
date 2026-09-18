@@ -20,13 +20,13 @@
 |---|---:|---|
 | docs/eight-targets-renames.tsv | 1058 | никто (только запись в hand-written-lists-ledger.tsv) |
 | docs/javascript-checks-breakdown.tsv | 893 | никто (только запись в hand-written-lists-ledger.tsv) |
-| docs/reprint-ledger.tsv | 12 | reprint.yml, raskrutka.sh, seed/reprint-freshness.flang, seed/seed-freshness.sh |
+| docs/reprint-ledger.tsv | 12 | reprint.yml, raskrutka.sh, seed/reprint-freshness.fscript, seed/seed-freshness.sh |
 | flang/translation/PRINT-RULES.tsv | 72 | flang/translation/matcher.c, run.sh |
 | scripts/ledgers/hand-written-lists-ledger.tsv | 142 | scripts/guards/hand-written-lists.sh, flang/proof/ПРАВИЛА-ВЫВОДА.tsv |
-| scripts/ledgers/link-guard-known-not-a-path.tsv | 248 | ci.yml, guards/file-extensions.flang, guards/link-guard.flang |
+| scripts/ledgers/link-guard-known-not-a-path.tsv | 248 | ci.yml, guards/file-extensions.fscript, guards/link-guard.fscript |
 | scripts/ledgers/no-comments-debt.tsv | 567 | guards/no-comments-guard.sh |
-| scripts/ledgers/target-function-drift-known.tsv | 50 | guards/target-function-drift.flang, ledgers/storozha-bez-*.json |
-| scripts/ledgers/traceability-debt.tsv | 2 | binary.yml, guards/traceability-guard.flang, ярлыки.flang |
+| scripts/ledgers/target-function-drift-known.tsv | 50 | guards/target-function-drift.fscript, ledgers/storozha-bez-*.json |
+| scripts/ledgers/traceability-debt.tsv | 2 | binary.yml, guards/traceability-guard.fscript, ярлыки.flang |
 
 У четырёх (javascript-checks-breakdown, PRINT-RULES, hand-written-lists-ledger,
 target-function-drift-known) первая строка — `#`-примечание, но не по форме

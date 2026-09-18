@@ -5,8 +5,8 @@
 "
 "   откуда слова:  «Куски таблицы» в flang/self/lexer.flang — та самая
 "                  таблица, которой язык читает свои файлы
-"   чем напечатан: scripts/editors/vim-highlighting.flang
-"   перепечатать:  flang io scripts/editors/vim-highlighting.flang
+"   чем напечатан: scripts/editors/vim-highlighting.fscript
+"   перепечатать:  flang io scripts/editors/vim-highlighting.fscript
 "
 " Понятий 155, фраз 647.
 " Красятся все четыре поверхности записи сразу — русская, английская,

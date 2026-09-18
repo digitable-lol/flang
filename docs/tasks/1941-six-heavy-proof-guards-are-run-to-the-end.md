@@ -24,10 +24,10 @@
 |---:|---|---|
 | 43 | `спеки:подлог` | `bootstrap/flang io fspec/forgery.flang --timeout 600000` |
 | 44 | `доказательства:ведомость` | `node flang/scripts/proof-ledger.mjs` |
-| 45 | `доказательства:свод` | `bootstrap/flang io flang/scripts/ledger-summary.flang --plan 'Свод' --timeout 900000` |
+| 45 | `доказательства:свод` | `bootstrap/flang io flang/scripts/ledger-summary.fscript --plan 'Свод' --timeout 900000` |
 | 48 | `доказательства:пустота` | `node flang/scripts/proof-ledger.mjs --pustota` |
-| 51 | `пустота:порча` | `bootstrap/flang io flang/scripts/emptiness-guard.flang --plan 'Порча' --timeout 900000` |
-| 53 | `доказанное:порча` | `bootstrap/flang io flang/scripts/proven-guard.flang --plan 'Порча' --timeout 900000` |
+| 51 | `пустота:порча` | `bootstrap/flang io flang/scripts/emptiness-guard.fscript --plan 'Порча' --timeout 900000` |
+| 53 | `доказанное:порча` | `bootstrap/flang io flang/scripts/proven-guard.fscript --plan 'Порча' --timeout 900000` |
 
 **Причина, по которой их не досмотрели, названа и не выдумана.** Разбор
 сторожей (`/srv/flang-rabota/m-guard-audit-1-66/tasks/1389-every-guard-is-shown-to-redden-on-a-deliberate-break.md`,

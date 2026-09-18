@@ -160,8 +160,8 @@ every run, so the duplicate cannot drift in silence.
 | `./ярлык тесты:по-ssh` | the same suite on a host of your choosing, over ssh |
 | `./ярлык раскрутка` · `./ярлык раскрутка:проверка` · `./ярлык строки:проверка` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
 | `./ярлык утверждения:проверка` · `./ярлык подсчёты:проверка` · `./ярлык коды:проверка` · `./ярлык печать:проверка` · `./ярлык имена:проверка` | the five prose guards below |
-| `./ярлык лицензии:проверка` | SPDX marking of every code file under `flang/` and `docs/examples/` (not `bootstrap/` — see below); **CI runs the file directly** (`bootstrap/flang io scripts/guards/license-guard.flang`), not through the shortcut |
-| `./ярлык ссылки:проверка` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/guards/link-guard.flang`) |
+| `./ярлык лицензии:проверка` | SPDX marking of every code file under `flang/` and `docs/examples/` (not `bootstrap/` — see below); **CI runs the file directly** (`bootstrap/flang io scripts/guards/license-guard.fscript`), not through the shortcut |
+| `./ярлык ссылки:проверка` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/guards/link-guard.fscript`) |
 | `./ярлык сайт` · `./ярлык сайт:проверка` | build the documentation site and check its links; **Pages runs the file directly** |
 | `./ярлык числа` · `./ярлык числа:проверка` | reprint the site pages' own numbers from the measurer, and check them against it |
 | `./ярлык словарь` · `./ярлык словарь:проверка` | print `docs/glossary.md` from the surface table, and check it is fresh |
@@ -238,7 +238,7 @@ What this means when you write:
 - **Diagnostic codes.** A `FLANG_*` in prose must exist in a non-test source file.
   If it is a promise rather than a fact, mark it *объявлено, не сделано* in the
   prose and add an entry with a reason to the «Объявлено, не сделано» list in
-  `flang/scripts/code-guard.flang`. That list goes red in both directions: once the
+  `flang/scripts/code-guard.fscript`. That list goes red in both directions: once the
   code exists, the entry must go.
 - **Names.** A parameter, a `пусть` binding or a fold item may not be one letter,
   may not be shorter than three letters (two characters on the Chinese surface),
@@ -251,7 +251,7 @@ What this means when you write:
   diff of lists, not of counts. New code goes red; the debt must shrink. Do not
   add to it, and do not rewrite it to make your change pass.
 - **Cost claims.** The one cost table is in `docs/flang/SPEC.md`. Each cell is backed by
-  an exact snippet of the target's runtime in `scripts/guards/emit-promises-guard.flang`;
+  an exact snippet of the target's runtime in `scripts/guards/emit-promises-guard.fscript`;
   change the runtime and the guard demands the table be revisited.
 - **Licence headers.** Every source file under `flang/` and `docs/examples/` with one
   of thirteen code extensions carries an SPDX header — 75 files as of 29 August

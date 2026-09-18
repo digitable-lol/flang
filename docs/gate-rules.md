@@ -703,7 +703,7 @@ ulimit -v 40 ГиБ   → ok
   3641603  node flang/scripts/proof-ledger.mjs
   3641655  xargs -0 -n 2 -P 2 sh -c "…/flang" check "$1" --proof --json
   3647969  …/flang check …/сверщик.flang
-  3648819  …/flang check …/binary.flang --proof
+  3648819  …/flang check …/binary.fscript --proof
 ```
 
 Веер развернулся ровно на два — столько, сколько взято мест: ворота положили

@@ -69,11 +69,11 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
 
 Пять сторожей переносимы уже сегодня: ярлыки зовут их без ключей, выход 0/1,
 поручений хватает — claim-guard на JavaScript (442; снесён 10 сентября 2026 —
-двойник `flang/scripts/claim-guard.flang` даёт тот же вывод знак в знак), `count-guard.mjs` (611),
+двойник `flang/scripts/claim-guard.fscript` даёт тот же вывод знак в знак), `count-guard.mjs` (611),
 `name-guard.mjs` (529), binary-rules-guard на JavaScript (778; снесён 7 сентября 2026 —
-двойник `flang/scripts/binary-rules-guard.flang` даёт те же семь находок), `jargon-guard.mjs` (475).
+двойник `flang/scripts/binary-rules-guard.fscript` даёт те же семь находок), `jargon-guard.mjs` (475).
 
-Из пяти **один уже переписан**: `jargon-guard.mjs` → `flang/scripts/jargon-guard.flang`
+Из пяти **один уже переписан**: `jargon-guard.mjs` → `flang/scripts/jargon-guard.fscript`
 (1967 строк, 129 функций, у всех завершение доказано — `flang check --proof`
 отвечает кодом 0 за 12,35 с). Сошлись все три режима, а не один; сверка
 пересдана 27 августа 2026 после переделки разбора:
@@ -113,7 +113,7 @@ FLANG_UNKNOWN_NAME … строка 89: неизвестный конструк�
 Цена не в строках. В одном claim-guard на JavaScript было двенадцать регулярных
 выражений с `(?<=…)`, `\p{L}` и `matchAll`. Регулярных выражений в flang нет
 вовсе, значит каждое переписывается разборщиком вручную. Замер 10 сентября
-2026: двойник `flang/scripts/claim-guard.flang` — 1806 строк и 136 функций
+2026: двойник `flang/scripts/claim-guard.fscript` — 1806 строк и 136 функций
 вместо 444, прогон 485 с вместо 1,26 с.
 
 Короткий путь — позвать чужой движок регулярных выражений через общее поручение

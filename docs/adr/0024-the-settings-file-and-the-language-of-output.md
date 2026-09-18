@@ -144,8 +144,8 @@ $ bootstrap/flang check смесь.flang
 `"утверждений "`, `"непонятный ключ"`, `"нарушено свойство «утверждение»"`.
 Живут они в `scripts/raskrutka.sh`, `scripts/seed/new-binary-acceptance.sh`,
 `scripts/targets/target-census.sh`, `scripts/guards/seed-parses-sources-guard.sh`,
-`flang/scripts/proven-guard.flang`, `flang/scripts/word-guard.flang`,
-`flang/scripts/ledger-summary.flang`, `flang/scripts/emptiness-guard.flang` и ещё
+`flang/scripts/proven-guard.fscript`, `flang/scripts/word-guard.fscript`,
+`flang/scripts/ledger-summary.fscript`, `flang/scripts/emptiness-guard.fscript` и ещё
 шести файлах.
 
 Записи доказательств расслоены, и это удача:

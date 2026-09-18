@@ -41,7 +41,7 @@
       "ведомость снялась": 17,
       "двоичный отказался": 9,
       "доказано у снявшихся": 343,
-      "какие отказали": "flang/scripts/binary.flang; flang/self/bootstrap/compiler.flang, conc.flang, emit-c.flang, emit-js.flang, io.flang, parser.flang, proof-kernel.flang; flang/stdlib/datetime.flang — предел глубины вызовов 20 000, предел шагов и срок 90 с. Им поставлен прочерк, а не ноль."
+      "какие отказали": "flang/scripts/binary.fscript; flang/self/bootstrap/compiler.flang, conc.flang, emit-c.flang, emit-js.flang, io.flang, parser.flang, proof-kernel.flang; flang/stdlib/datetime.flang — предел глубины вызовов 20 000, предел шагов и срок 90 с. Им поставлен прочерк, а не ноль."
     },
     "завышение сложением — перемерено на этих же файлах": "У 17 переснятых файлов приговоров СВОИХ 361, ввезённых 64: сложение строк «итог:» дало бы 425 вместо 361 — завышение в 1,2 раза. Это сторожа и мелкая оснастка, они ввозят мало; по всему дереву завышение измерено в 2,47 раза, а на flang/self/proof-kernel.flang — в 34,2 (замер 29 августа 2026). Направление подтверждено прогоном, величина взята из описи."
   },

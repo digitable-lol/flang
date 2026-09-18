@@ -36,8 +36,8 @@
 | `flang/self/totality.flang:2450–2451` | тот же перечень + 15 тестовых строк с `"\|нат\|"` |
 | `flang/self/io.flang:406` | список числовых имён |
 | `flang/self/emit-js.flang:2807` | список числовых имён |
-| `flang/scripts/word-guard.flang:478`, `word-guard.mjs:202` | таблица типов с дном |
-| `flang/scripts/emptiness-guard.flang:410,411,421` | список пород с нулём |
+| `flang/scripts/word-guard.fscript:478`, `word-guard.mjs:202` | таблица типов с дном |
+| `flang/scripts/emptiness-guard.fscript:410,411,421` | список пород с нулём |
 | `flang/proof/чекер/сверщик.c` | `dovod_tipa`, `nat_dovod` — узнаёт оба имени с `60b3e2d9` |
 | `flang/proof/examples/corpus-nat-names.flang` | корпус «шесть написаний» |
 

@@ -46,7 +46,7 @@ docs/what-blocks-1-0.md
 ```
 
 Четыре места, складывающие итоги, вердикт уже знают — их дописали 25 августа
-(`proof-ledger.mjs`, `word-guard.mjs`, `ledger-summary.flang`,
+(`proof-ledger.mjs`, `word-guard.mjs`, `ledger-summary.fscript`,
 `site-numbers.mjs`). Пятого искать не надо, но проверить, что графа доехала до
 страниц, — надо.
 

@@ -94,16 +94,16 @@ $ echo $?
 | «Планировщик узла» | `/srv/tmp/poddelka.flang`, `/srv/tmp/poddelka2.flang` | `flang/concurrency/scheduler.flang` |
 | «Запись доказательства» | `/srv/tmp/zp-do.flang` | `flang/self/zapis.flang` |
 | «Сверщик доказательств» | `/srv/tmp/sv-do.flang` | `flang/proof/сверщик.flang` |
-| «Подделки ядра» | `/srv/tmp/pod-head.flang`, `/srv/tmp/pod-mine.flang` | `flang/scripts/kernel-forgeries.flang` |
-| «Сторож умений ядра» | `/srv/tmp/dokazuemyy/ст-ум.flang` | `scripts/guards/kernel-abilities-guard.flang` |
+| «Подделки ядра» | `/srv/tmp/pod-head.flang`, `/srv/tmp/pod-mine.flang` | `flang/scripts/kernel-forgeries.fscript` |
+| «Сторож умений ядра» | `/srv/tmp/dokazuemyy/ст-ум.flang` | `scripts/guards/kernel-abilities-guard.fscript` |
 | «Спека 1: потолок скидки» | `/srv/tmp/spec-backup.flang` | `fspec/spec/01-discount-cap.flang` |
 | «Подделка примером под квантором» | `/srv/tmp/dyra.flang` | `flang/test/fixtures/poddelka-primer-pod-kvantorom.flang` |
 | «Длина списка», «Отрезок», «Градины», «Проба», «Ярлыки» | ещё 19 файлов | примеры и корпус |
 
 **Живых подмен сегодня пять**, и все пять — «JSON»:
 `fspec/clarifications.flang:3`, `fspec/guard.flang:3`,
-`scripts/site/releases.flang:2`, `scripts/site/releases-page.flang:3`,
-`scripts/site/releases-page-verify.flang:3`.
+`scripts/site/releases.flang:2`, `scripts/site/releases-page.fscript:3`,
+`scripts/site/releases-page-verify.fscript:3`.
 
 Остальные пятнадцать сегодня не срабатывают только потому, что ввозящие файлы
 лежат в `flang/self/**` и `flang/**`, откуда подъём обрывается сразу. Стоит
@@ -138,7 +138,7 @@ stderr, код возврата 0.
 | `sh .githooks/pre-push` | одиннадцать дешёвых сторожей | **код 0, все зелены** | нет |
 | `FLANG_DUPLICATE_NAME` | само связывание | не возникает | нет: это про два объявления в ОДНОЙ программе, а при затенении второго в программе нет вовсе |
 | `FLANG_IMPORT_AMBIGUOUS` | само связывание | не возникает | нет: спор считается внутри ОДНОГО места, а места здесь разные |
-| `имена-модулей:проверка` | `scripts/guards/module-name-guard.flang` | красен по своему долгу | нет: судит имена модулей дерева, чужих файлов не видит |
+| `имена-модулей:проверка` | `scripts/guards/module-name-guard.fscript` | красен по своему долгу | нет: судит имена модулей дерева, чужих файлов не видит |
 | `имена:проверка`, `перечни:проверка`, `октет:проверка`, `правила:проверка` | обходы дерева | своё | нет: ни один не выходит за корень |
 
 Общее у всех: **ни одна проверка дерева не смотрит НАРУЖУ дерева**, а компилятор,
@@ -185,7 +185,7 @@ stderr, код возврата 0.
 дозволение и заведено: сторож на flang, лежащий в `scripts/`, разрешался бы тем
 же подъёмом вверх, который проверяет, то есть **его самого исполняло бы то, что
 он судит**. Но довод не-долга заводится разбором в трёх местах сразу (шапка
-файла, функция «Довод не-долга» в `scripts/guards/tree-inventory.flang`, эта опись), и
+файла, функция «Довод не-долга» в `scripts/guards/tree-inventory.fscript`, эта опись), и
 решение это не работника, а хозяина дерева. Пока файл честно числится долгом.
 
 ## Что осталось — и что из этого ждёт перепечатки
@@ -276,7 +276,7 @@ stderr, код возврата 0.
 
 * **Критерий 1** (сторож зелен на рабочей машине) — не выполнен и этой правкой не
   выполняется: сегодня `sh scripts/guards/module-origin-guard.sh` называет **6** мест
-  (пять «JSON» из задачи плюс `scripts/site/release-body.flang:3`, заведённый позже).
+  (пять «JSON» из задачи плюс `scripts/site/release-body.fscript:3`, заведённый позже).
   Убрать чужие файлы из `/srv/tmp` — решение хозяина машины.
 * **Критерий 4** (затенение даёт ненулевой код под ключом) — не сделан: строка
   по-прежнему уходит в stderr и на код не влияет. С названным корнем случай

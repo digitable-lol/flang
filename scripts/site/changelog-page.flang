@@ -64,13 +64,13 @@
   принимает путь: строка
   возвращает признак
   пример «программа глубоко во вложенном каталоге тоже считается»
-    дано путь равно "flang/scripts/word-guard.flang"
+    дано путь равно "flang/scripts/word-guard.fscript"
     ожидается да
   пример «не .flang»
     дано путь равно "flang/scripts/word-guard.mjs"
     ожидается нет
   пример «вне flang/ не считается»
-    дано путь равно "scripts/site/build-changelog.flang"
+    дано путь равно "scripts/site/build-changelog.fscript"
     ожидается нет
   (путь начинается с "flang/") и притом («Заканчивается на» от путь и ".flang") и притом ((длина путь) больше ((длина "flang/") плюс (длина ".flang")))
 
@@ -1374,7 +1374,7 @@
 
 тотальная функция «Команда печати страницы»
   возвращает строка
-  "bootstrap/flang io scripts/site/build-changelog-page.flang --plan 'Напечатать журнал вливаний' --max-steps 2000000000"
+  "bootstrap/flang io scripts/site/build-changelog-page.fscript --plan 'Напечатать журнал вливаний' --max-steps 2000000000"
 
 тотальная функция «Образцы сводки блоба»
   возвращает список строки

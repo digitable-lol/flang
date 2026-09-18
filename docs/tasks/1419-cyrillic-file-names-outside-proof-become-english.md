@@ -158,7 +158,7 @@ find . -path ./.git -prune -o -type f -print | grep -P '[А-Яа-яЁё][^/]*$'
 | 29 | `docs/спецификации/язык-доказательств.md` | proof-language.md | 6 |  |
 | 30 | `flang/scripts/жаргон-образцы.flang` | jargon-samples.flang | 4 |  |
 | 31 | `flang/scripts/одна-линейка.py` | one-gauge.py | 4 | «мерка — одна линейка для flang и для C» |
-| 32 | `flang/scripts/породить-атомы.flang` | generate-atom-table.flang | 1 | модуль «Порождение таблицы атомов» |
+| 32 | `flang/scripts/породить-атомы.fscript` | generate-atom-table.flang | 1 | модуль «Порождение таблицы атомов» |
 | 33 | `flang/scripts/сличить-двух-сводителей.py` | compare-two-mergers.py | 2 |  |
 | 34 | `flang/stdlib/образцы.flang` | samples.flang | 11 | модуль «Samples» |
 | 35 | `flang/test/fixtures/fts-naslediye/скидки-в-подписки.fts` | discounts-into-subscriptions.fts | 2 | образец; каталог — транслит, не 1419 |
@@ -174,8 +174,8 @@ find . -path ./.git -prune -o -type f -print | grep -P '[А-Яа-яЁё][^/]*$'
 | 45 | `flang/test/обход-self.sh` | walk-self.sh | 2 |  |
 | 46 | `flang/test/обход-примеров.sh` | walk-examples.sh | 14 |  |
 | 47 | `flang/test/обход.sh` | walk.sh | 20 | пример из самой задачи |
-| 48 | `flang/test/прогонщик-корпуса.flang` | corpus-runner.flang | 3 | близнец scripts/guards/corpus-runner.flang |
-| 49 | `scripts/guards/сторож-дарвина.flang` | darwin-guard.flang | 4 |  |
+| 48 | `flang/test/прогонщик-корпуса.flang` | corpus-runner.fscript | 3 | близнец scripts/guards/corpus-runner.fscript |
+| 49 | `scripts/guards/сторож-дарвина.fscript` | darwin-guard.flang | 4 |  |
 | 50 | `scripts/доказуемость.sh` | provability.sh | 70 |  |
 | 51 | `ярлык` | run | 263 | входная точка всех целей: ./ярлык зовут хук, CI, задачи, README — самая дорогая правка |
 | 52 | `ярлыки.flang` | shortcuts.flang | 68 | модуль «Ярлыки» |

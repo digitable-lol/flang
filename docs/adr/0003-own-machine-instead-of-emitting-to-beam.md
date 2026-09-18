@@ -3,7 +3,7 @@
 **Состояние:** принято владельцем, работа начата
 **Дата:** 19 августа 2026
 **Отменяет:** раздел «Свою BEAM писать не надо — надо в неё печатать» в
-[`docs/flang/conc/SPEC.md`](../flang/concurrency/SPEC.md), строка 769 — записан 6 августа 2026
+[`docs/flang/conc/SPEC.md`](../flang/conc/SPEC.md), строка 769 — записан 6 августа 2026
 (`5b54c997`, `2f110f4f`)
 **Основание:** модель процессов [`flang/self/conc.flang`](../../flang/self/conc.flang),
 планировщики `flang/src/emit/c/flang_conc.c` и `flang/src/emit/js/flang_conc.js`,

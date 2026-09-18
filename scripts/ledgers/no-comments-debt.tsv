@@ -60,31 +60,6 @@ docs/zamer-teorkat/class-string-to-string.flang	226
 docs/zamer-teorkat/iso-object-to-category.flang	13
 docs/zettel/zettel-index.flang	47
 docs/спецификации/слой-отказов.flang	66
-flang/concurrency/examples/backpressure.flang	44
-flang/concurrency/examples/budget.flang	21
-flang/concurrency/examples/counter.flang	26
-flang/concurrency/examples/distributed.flang	50
-flang/concurrency/examples/escalate.flang	28
-flang/concurrency/examples/mailbox.flang	22
-flang/concurrency/examples/measure.flang	50
-flang/concurrency/examples/node-name-of-a-foreign-kind.flang	32
-flang/concurrency/examples/node-reference-checked-on-receipt-forged.flang	33
-flang/concurrency/examples/node-reference-checked-on-receipt.flang	84
-flang/concurrency/examples/node-reply-by-reference.flang	45
-flang/concurrency/examples/node-work-by-reference-forged.flang	40
-flang/concurrency/examples/node-work-by-reference.flang	78
-flang/concurrency/examples/race.flang	35
-flang/concurrency/examples/server.flang	62
-flang/concurrency/examples/supervision.flang	37
-flang/concurrency/hotswap-node.flang	120
-flang/concurrency/link.flang	151
-flang/concurrency/node-benchmark.flang	66
-flang/concurrency/scheduler.flang	238
-flang/concurrency/services/file-read.flang	108
-flang/concurrency/services/host-io-survey.flang	20
-flang/concurrency/services/two-on-our-own-engine.flang	15
-flang/concurrency/supervisor.flang	113
-flang/concurrency/wire.flang	175
 flang/core/evaluate.flang	85
 flang/core/json.flang	84
 flang/core/lexer.flang	124
@@ -269,18 +244,6 @@ flang/proof/чекер/пробы/семьи/половина-б/element.flang	3
 flang/proof/чекер/пробы/семьи/прогон/pisma-po-ocheredi.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/чекер/пробы/семьи/семейства/ostatok.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/чекер/пробы/семьи/семейства/порча/ostatok-ohrana-ne-dopushchenie.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/scripts/closed-length-guard.fscript	141
-flang/scripts/emptiness-guard.fscript	171
-flang/scripts/guards-start.fscript	100
-flang/scripts/jargon-guard.fscript	166
-flang/scripts/kernel-forgeries.fscript	481
-flang/scripts/kernel-lines-to-trust.fscript	295
-flang/scripts/ledger-summary.fscript	68
-flang/scripts/memory-guard.fscript	115
-flang/scripts/proven-guard.fscript	118
-flang/scripts/tasks.fscript	12
-flang/scripts/tempdir-guard.fscript	89
-flang/scripts/жаргон-образцы.flang	49
 flang/self/bootstrap/compiler.flang	1371	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/bootstrap/corpus.flang	160	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/bootstrap/zond-2040.flang	4	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
@@ -288,7 +251,7 @@ flang/self/bootstrap/zond-k7.flang	9	flang/self не правится до ко�
 flang/self/bounded.flang	249
 flang/self/builtins.flang	260	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/carriers.flang	148	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/cli.flang	162
+flang/self/cli.flang	161
 flang/self/commutative.flang	71
 flang/self/conc.flang	474
 flang/self/defunc.flang	366
@@ -330,8 +293,8 @@ flang/self/otkazy-totalnosti.flang	16
 flang/self/parser.flang	1349	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/partialorder.flang	117
 flang/self/processes.flang	195
-flang/self/proof-initial.flang	720
-flang/self/proof-kernel.flang	3747	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
+flang/self/proof-initial.flang	718
+flang/self/proof-kernel.flang	3739	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/proof.flang	556	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/proofterm.flang	1216	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/repl/repl.flang	252
@@ -449,78 +412,6 @@ flang/test/владение-состоянием.flang	2	шапка SPDX: пра
 flang/test/встроенные-формы.flang	76
 flang/test/жаргон.flang	2
 flang/test/прогонщик-корпуса.flang	37
-fspec/clarifications.flang	103
-fspec/experience/01-discount-coarse.flang	7
-fspec/experience/02-discount-exact.flang	17
-fspec/experience/03-discount-false.flang	14
-fspec/experiments/conflict-cap-heir.flang	11
-fspec/experiments/conflict-cap-legacy.flang	5
-fspec/experiments/conflict-rights-heir.flang	8
-fspec/experiments/conflict-rights-legacy.flang	4
-fspec/experiments/contradiction-delivery-window.flang	11
-fspec/experiments/contradiction-in-requirements.flang	3
-fspec/experiments/contradiction-money-rounding.flang	7
-fspec/experiments/contradiction-one-function.flang	3
-fspec/experiments/contradiction-return-defect.flang	8
-fspec/experiments/contradiction-tax-theorem.flang	10
-fspec/experiments/contradiction-weight-requirements.flang	11
-fspec/experiments/contradiction-without-example.flang	1
-fspec/experiments/false-claim-negative-zero.flang	11
-fspec/experiments/false-claim-not-a-number.flang	31
-fspec/experiments/false-claim-strict-discount.flang	15
-fspec/experiments/replacement-cap-45.flang	9
-fspec/experiments/silent-drop-heir.flang	16
-fspec/experiments/silent-drop-legacy.flang	5
-fspec/experiments/spec-legacy.flang	2
-fspec/experiments/spec-new-feature.flang	3
-fspec/experiments/superseded-cap-30.flang	16
-fspec/experiments/theorem-on-false.flang	1
-fspec/forgery.flang	48
-fspec/guard.flang	319
-fspec/policy.flang	104
-fspec/snapshot.flang	18
-fspec/spec/01-discount-cap.flang	5
-fspec/spec/02-promo.flang	4
-fspec/spec/03-urgency-markup.flang	24
-fspec/spec/04-discount-tiers.flang	21
-fspec/spec/05-promo-exclusivity.flang	12
-fspec/spec/06-delivery-zones.flang	12
-fspec/spec/07-delivery-route.flang	11
-fspec/spec/08-delivery-lead-time.flang	10
-fspec/spec/09-delivery-refusal.flang	12
-fspec/spec/10-subscription-states.flang	6
-fspec/spec/11-subscription-actions.flang	14
-fspec/spec/12-subscription-grace.flang	10
-fspec/spec/13-subscription-refund.flang	18
-fspec/spec/14-tax-rates.flang	14
-fspec/spec/15-tax-exemptions.flang	11
-fspec/spec/16-tax-registration.flang	17
-fspec/spec/17-stock-reserve.flang	17
-fspec/spec/18-stock-partial-shipment.flang	14
-fspec/spec/19-stock-receipt.flang	24
-fspec/spec/20-access-roles.flang	12
-fspec/spec/21-access-inheritance.flang	20
-fspec/spec/22-access-revocation.flang	20
-fspec/spec/23-money-minor-units.flang	27
-fspec/spec/24-money-payment.flang	15
-fspec/spec/25-money-currencies.flang	10
-fspec/spec/26-order-invoice.flang	17
-fspec/spec/27-order-audit.flang	16
-fspec/spec/28-return-reasons.flang	12
-fspec/spec/29-return-window.flang	13
-fspec/spec/30-return-eligibility.flang	17
-fspec/spec/31-loyalty-tiers.flang	19
-fspec/spec/32-loyalty-accrual.flang	14
-fspec/spec/33-loyalty-redemption.flang	27
-fspec/spec/34-warranty-term.flang	12
-fspec/spec/35-warranty-scope.flang	14
-fspec/spec/36-installment-schedule.flang	14
-fspec/spec/37-booking-slots.flang	14
-fspec/spec/38-booking-rules.flang	12
-fspec/spec/39-booking-cancellation.flang	18
-fspec/spec/40-age-restriction.flang	15
-fspec/spec/41-consent-scope.flang	14
-fspec/spec/42-data-retention.flang	15
 scripts/editors/language-words.flang	57
 scripts/editors/lsp-check.fscript	20
 scripts/editors/vim-highlight-check.fscript	34
@@ -535,7 +426,7 @@ scripts/guards/check-before-run.fscript	63
 scripts/guards/child-timeout.fscript	44
 scripts/guards/corpus-runner.fscript	71
 scripts/guards/dictionary-guard.fscript	61
-scripts/guards/file-extensions.fscript	93
+scripts/guards/file-extensions.fscript	91
 scripts/guards/input-boundary.fscript	42
 scripts/guards/license-guard.fscript	39
 scripts/guards/module-name-guard.fscript	114
@@ -550,7 +441,7 @@ scripts/guards/сторож-дарвина.fscript	33
 scripts/registry-tool.fscript	62
 scripts/release/asdf-plugin-published.fscript	33
 scripts/release/asdf-version-list.fscript	47
-scripts/release/emit-package.flang	38
+scripts/release/emit-package.flang	27
 scripts/release/path-without-node.fscript	63
 scripts/seed/bootstrap-point-by-binary.fscript	45
 scripts/seed/new-binary-acceptance-probe.flang	17

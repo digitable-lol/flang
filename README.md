@@ -464,11 +464,11 @@ The loose files in the root: `README.md` (this page; the Russian edition is a pa
 `CONTRIBUTING.md`, `AGENTS.md` (guidance for an agent working in the tree — a symbolic link to
 `.ai/AGENTS.md`, as `.claude` is a link to `.ai/.claude`), `docs/DESCRIPTION.md` (a
 long-form description of the language, in Russian) and `docs/ROADMAP.md` (measured, not intended) —
-both symbolic links into `docs/`, as `tasks` is a link to `docs/tasks`; the documents themselves
+both symbolic links into `docs/`; the documents themselves
 are [`docs/DESCRIPTION.md`](docs/DESCRIPTION.md) and [`docs/ROADMAP.md`](docs/ROADMAP.md),
 and the links keep the addresses other repositories already point at,
 `CHANGELOG.md` · `changelog.json` (printed from tags and commit subjects, never edited by hand),
-`package.json` (not an npm package — npm left the tree in September 2026; it is kept as the one place the version, the licence and the two addresses are read from: the site footer, the release workflow and the Homebrew formula guard. Printed by `./ярлык пакет`, never published) and
+`.flangrc` (the settings file, and the one place the version, the licence and the two addresses are read from: the site footer, the release workflow and the Homebrew formula guard. `package.json` left the tree in September 2026; what every key means is [the settings page](docs/guide/settings.ru.md)) and
 `ярлык` · `ярлыки.flang` — the shortcuts of the tree and the `sh` entry point that runs them:
 `./ярлык задачник:доска`, `./ярлык спеки:проверка`.
 
@@ -491,7 +491,7 @@ task, taken and closed by a commit — `./ярлык задачник:доска
 end without being done: `docs/tasks/rejected/` holds the ones that were considered and turned down, so
 the reason survives the decision. The rules of the
 tree that are not visible from the code — what breaks silently, the cost of a reprint, what a
-guard is for — are in [`AGENTS.md`](AGENTS.md); how to build, run the checks and send a change is
+guard is for — are in [`AGENTS.md`](.ai/AGENTS.md); how to build, run the checks and send a change is
 [`CONTRIBUTING.md`](CONTRIBUTING.md). Decisions are recorded in [`docs/adr/`](docs/adr); the
 knowledge base of measured facts and rejected paths is [`docs/zettel/`](docs/zettel/README.md).
 

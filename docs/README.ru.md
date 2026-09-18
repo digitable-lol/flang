@@ -372,7 +372,7 @@ export function mestoVstavki(elementy, cel) {
 | понять доказательства | [Что доказано](https://digitable-lol.github.io/flang/what-is-proved.html) · [Какие обещания ядро берёт](https://digitable-lol.github.io/flang/what-the-kernel-accepts.html) · [Ядро отказало: чья это ошибка](https://digitable-lol.github.io/flang/proof-refused.html) |
 | запустить где-то | [Установка](https://digitable-lol.github.io/flang/install.html) · [Справочник команд](https://digitable-lol.github.io/flang/cli.html) · [Редактор](https://digitable-lol.github.io/flang/editor.html) · [Процессы, надзор, распределённость](https://digitable-lol.github.io/flang/processes.html) |
 | посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`docs/examples/`](examples) |
-| прочесть контракты | [`docs/flang/SPEC.md`](flang/SPEC.md) · [`docs/flang/self/SPEC.md`](flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`docs/flang/conc/SPEC.md`](flang/concurrency/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
+| прочесть контракты | [`docs/flang/SPEC.md`](flang/SPEC.md) · [`docs/flang/self/SPEC.md`](flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`docs/flang/conc/SPEC.md`](flang/conc/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
 | узнать, куда это идёт | [`docs/ROADMAP.md`](ROADMAP.md) — пять этапов и что каждый меняет для разработчика · [`docs/what-provability-gives-today.ru.md`](what-provability-gives-today.ru.md) · [`docs/road-to-1-0.md`](road-to-1-0.md) |
 
 Правило имён: файл без языкового суффикса — английский; суффикс `.ru.md` отмечает его русскую
@@ -448,12 +448,12 @@ docs/tasks/     открытая и закрытая работа дерева, 
 `CONTRIBUTING.md`, `AGENTS.md` (указания агенту, работающему в дереве — символическая ссылка на
 `.ai/AGENTS.md`, как и `.claude` — ссылка на `.ai/.claude`), `docs/DESCRIPTION.md`
 (развёрнутое описание языка) и `docs/ROADMAP.md` (замер, а не намерение) — оба символические ссылки
-в `docs/`, как и `tasks` — ссылка на `docs/tasks`; сами документы лежат в
+в `docs/`; сами документы лежат в
 [`docs/DESCRIPTION.md`](DESCRIPTION.md) и [`docs/ROADMAP.md`](ROADMAP.md), а ссылки держат живыми
 адреса, на которые уже ссылаются из других хранилищ, `CHANGELOG.md` ·
-`changelog.json` (печатаются из тегов и тем коммитов, руками не правятся), `package.json` (не пакет npm — npm ушёл из дерева в сентябре 2026; держится как
-единственное место, откуда берут версию, лицензию и два адреса: подвал сайта, работа
-выпуска и проверка формулы Homebrew. Печатается `./ярлык пакет`, никуда не публикуется) и `ярлык` · `ярлыки.flang` —
+`changelog.json` (печатаются из тегов и тем коммитов, руками не правятся), `.flangrc` (файл настроек и единственное место,
+откуда берут версию, лицензию и два адреса: подвал сайта, работа выпуска и
+проверка формулы Homebrew. `package.json` ушёл из дерева в сентябре 2026; что означает каждый ключ — [страница настроек](guide/settings.ru.md)) и `ярлык` · `ярлыки.flang` —
 ярлыки дерева и точка входа на `sh`, которая их запускает: `./ярлык задачник:доска`,
 `./ярлык спеки:проверка`.
 
@@ -474,7 +474,7 @@ git config core.hooksPath .githooks      # хук перед пушем: деш�
 секунды, и называет, чего не гонял; долгие — дело CI (`.github/workflows/binary.yml`). Работа
 ведётся в [`docs/tasks/`](tasks/README.md): один файл — одна задача, берётся и закрывается коммитом;
 `./ярлык задачник:доска` печатает доску. Правила дерева, которых из кода не видно, — что ломается
-молча, сколько стоит перепечатка, зачем нужна каждая проверка — в [`AGENTS.md`](../AGENTS.md); как
+молча, сколько стоит перепечатка, зачем нужна каждая проверка — в [`AGENTS.md`](../.ai/AGENTS.md); как
 собрать, прогнать проверки и прислать правку — [`CONTRIBUTING.md`](../CONTRIBUTING.md). Решения
 записаны в [`docs/adr/`](adr); база знаний — измеренные факты и отвергнутые пути — в
 [`docs/zettel/`](zettel/README.md).

@@ -5,3 +5,6 @@
 
 Domain rules written as proved programs, plus the guard that keeps a new rule from undoing an old one.
 Правила предметной области, записанные доказанными программами, и сторож, не дающий новому правилу отменить старое.
+
+The clarifier (`fspec/clarifications.flang`) — how a failed proof becomes a question to the author of the requirement: [`docs/fspec/clarifications.md`](../docs/fspec/clarifications.md).
+Мастер уточнений (`fspec/clarifications.flang`) — как неудача доказательства становится вопросом к автору требования: [`docs/fspec/clarifications.md`](../docs/fspec/clarifications.md).

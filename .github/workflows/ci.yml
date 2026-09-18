@@ -1711,7 +1711,7 @@ jobs:
       - name: сторож доказанного краснеет на завышенном поле
         run: |
           set -u
-          podlog=flang/scripts/proven-ledger.txt
+          podlog=scripts/ledgers/proven-ledger.txt
           # Поднять число в ведомости — значит объявить, что дерево ПОТЕРЯЛО
           # доказанное. Сторож обязан назвать файл и оба числа.
           cp "$podlog" "$podlog.do"

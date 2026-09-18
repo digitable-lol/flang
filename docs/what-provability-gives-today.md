@@ -161,3 +161,57 @@ Five stages in [`docs/ROADMAP.md`](ROADMAP.md), no dates:
 | 3. Logic | subtraction under `требует` exits 3; nothing to say about processes, plans, effects | the second run exits 0 (1403); a place for claims about steps, plans, ownership (1404–1406, measurement first) | ADR-0032 |
 | 4. Quantifiers | done in 0.7.19: a quantifier over list elements, nested quantifiers, existence with a written-out value, induction over your own type, a statement outside a function | a quantifier in `требует`; existence with no value named — decided against | ADR-0026; 6202, 6203, 6205, 6206, 5957, 9526 |
 | 5. Traceability, response, failure | the requirement → code → example → record chain is walked both ways by a guard, gaps 62 and 68 (1407 done on 11 September); a step bound exists as analysis only; failure is described, not proved | the gaps go to zero under a ratchet; the step bound is in the record and replayed (1408), seconds for a named machine with a spread (1409); failure behaviour on one page with a counter of swallowed «Сбой» (1410); seconds and hardware failure still unproved | ADR-0031, 0033, 0034; 1407–1410 |
+
+## What a proof can say, as of 0.7.19
+
+The proof surface grew in this release, and these five things are new to the built compiler.
+
+- **A quantifier over the elements of a list**, written in the goal: `для всех п из результат: п
+  больше 0` — for every `п` in the result, `п` is greater than 0. The kernel proves it from the
+  shape of the list the body builds (a filter, a prepend, a branch, the empty list), not by
+  running it.
+- **Nested quantifiers.** The body after the colon is a goal again, so
+  `для всех х из результат: для всех м из результат: м больше 0` nests to any depth, and the value
+  that makes it true may be named inside: `есть такой м, а именно х, что …`.
+- **Induction over a type you declared yourself.** `индукция по н` over your own
+  `тип «Нат» вариант «Ноль» вариант «Следующий» …` is now a kernel rule; before, induction knew
+  only the built-in types.
+- **A statement that stands on its own**, with no function next to it:
+  `утверждение «длина пустого списка нулевая»` followed by `утверждаем …`. Such statements reach
+  `flang check --proof --json` and the proved-share report, which used to filter them out.
+- **A proof step named by the person writing it.** A step may name the inference rule it uses and the
+  premises it stands on — `затем а не больше 10 по закону «О10» из 1 и 2` — and the kernel checks
+  the naming instead of searching for a derivation itself.
+
+There are thirteen decision rules in the kernel now, twelve before
+(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 13), and 284 theorems in
+the language tree, 277 before (`grep -racE '^[[:space:]]*теорема ' flang --include='*.flang'`,
+summed with `awk`).
+
+What that number is not. 96 % is the share of places in the compiler's own proof records where
+the independent checker replayed the move — not «96 % of programs are proved», and not a
+statement about compiled code. `flang check` proves postconditions of the source; what
+`flang emit` prints into C, or into any of the other nine targets, is covered by no proof today:
+the printer is not proved, and the same gap exists in Coq, Lean and Idris (CompCert closes only
+C → machine). How that gap is to be closed is decided in
+[ADR-0030](docs/adr/0030-the-printer-proves-each-run-not-itself.md) (tasks 1401, 1402). What
+provability gives a developer today, shown by real runs, what it cannot express and how far it is
+from «right» — [`docs/what-provability-gives-today.md`](docs/what-provability-gives-today.md);
+the longer account is on the site — [What is proved and what is
+not](https://digitable-lol.github.io/flang/en/what-is-proved.html).
+
+Three more gaps, named because leaving them out would read as a promise. **The logic knows
+nothing about state over time, side effects or concurrency** — there is no place in the language
+to write such a claim at all. Work on the three has started and did not make this release.
+**The base you have to trust grew**: the deciding part of the kernel is 4796 lines, 4669 before,
+because the new quantifiers live there and there is nowhere else to put them; the standing order
+to bring that number under 4000 is not done. And **software for medicine, aviation or space is
+not to be written in flang** — those standards ask for tool qualification, proved response
+bounds and behaviour on hardware failure, and none of that exists here
+([ADR-0031](docs/adr/0031-certification-is-a-process-not-a-property-of-the-language.md),
+[ADR-0033](docs/adr/0033-termination-is-not-a-bound-on-steps.md),
+[ADR-0034](docs/adr/0034-hardware-failure-is-described-not-proved.md)).
+
+Two surfaces the binary does not judge at all: the categorical surface (monoids, monads, functors,
+declared properties) and processes with supervision. `flang check` names what it left unchecked
+and exits with code 2 rather than pass such a program in silence.

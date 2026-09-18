@@ -16,7 +16,7 @@
         ],
         "сломалось": [
           "Доказательство по-прежнему относится к исходнику, а не к напечатанному коду: что `flang emit --target c` напечатал именно проверенную программу, не проверяет никто. Тот же разрыв у Coq, Lean и Idris.",
-          "Сверщик — сам доверенный код: 7 603 строки на C, размер под храповиком, правила сверены Lean, но доказан он не был.",
+          "Сверщик — сам доверенный код: 7531 строка кода на C при потолке храповика 7603, правила сверены Lean, но доказан он не был.",
           "О состоянии во времени, побочных эффектах и параллелизме правил всё ещё нет: мест, которым они нужны, 414, и первые три шага только расписаны.",
           "100 % — это доля мест в собственном доказательстве компилятора, а не «все программы доказаны». Вердикт о вашей программе даёт `flang check --proof` и сверщик рядом с ней."
         ]
@@ -35,7 +35,7 @@
         ],
         "сломалось": [
           "The proof still covers the source, not the printed program: nothing checks that `flang emit --target c` printed the program that was verified. Coq, Lean and Idris have the same gap.",
-          "The checker is itself trusted code: 7 603 lines of C, its size under a ratchet, its rules cross-checked by Lean, but not itself proved.",
+          "The checker is itself trusted code: 7 531 lines of C code against a ratchet ceiling of 7 603, its rules cross-checked by Lean, but not itself proved.",
           "Time, side effects and processes still have no rules: 414 places in the tree need them, and only the first three steps are written down.",
           "100 % is the share of places in the compiler's own proof, not «all programs are proved». The verdict about your program comes from `flang check --proof` and the checker beside it."
         ]

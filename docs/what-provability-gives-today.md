@@ -149,7 +149,7 @@ still in 0.7.19, and the seed reprint of 0.7.20 closed the rest: 633 → 650 of 
 measured on 18 September 2026 with the checker rebuilt from its own source. Nothing
 is left on the kernel's word — the breakdown prints zero premises, zero steps and
 zero places closed by computing. What you have to trust did not shrink with it: the
-deciding part of the kernel is 4796 lines, 4669 before, because the quantifiers live
+deciding part of the kernel is 5068 lines, 4669 in August, because the quantifiers live
 there. The standing order to bring that number under 4000 is not done.
 
 ## How far from «right»
@@ -205,7 +205,7 @@ not](https://digitable-lol.github.io/flang/en/what-is-proved.html).
 Three more gaps, named because leaving them out would read as a promise. **The logic knows
 nothing about state over time, side effects or concurrency** — there is no place in the language
 to write such a claim at all. Work on the three has started and did not make this release.
-**The base you have to trust grew**: the deciding part of the kernel is 4796 lines, 4669 before,
+**The base you have to trust grew**: the deciding part of the kernel is 5068 lines, 4669 in August,
 because the new quantifiers live there and there is nowhere else to put them; the standing order
 to bring that number under 4000 is not done. And **software for medicine, aviation or space is
 not to be written in flang** — those standards ask for tool qualification, proved response

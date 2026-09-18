@@ -436,11 +436,11 @@ flang/test/fixtures/processes/12-spawn-of-undeclared-kind-fixed.flang	2
 flang/test/fixtures/processes/12-spawn-of-undeclared-kind.flang	3
 flang/test/fixtures/razrez-kruga/circle-through-payload.flang	3
 flang/test/fixtures/razrez-kruga/circle-with-a-fold.flang	2
+flang/test/fixtures/razrez-kruga/continuation-through-a-nested-payload.flang	4
 flang/test/fixtures/razrez-kruga/forgery-continuation-with-the-same-argument.flang	2
 flang/test/fixtures/razrez-kruga/forgery-empty-list-separately.flang	4
 flang/test/fixtures/razrez-kruga/forgery-fold-step.flang	2
 flang/test/fixtures/razrez-kruga/forgery-whole-node.flang	3
-flang/test/fixtures/razrez-kruga/continuation-through-a-nested-payload.flang	4
 flang/test/fixtures/razrez-kruga/literal-print-comparison.flang	6
 flang/test/fixtures/svyortka-prefiks-chestnaya.flang	27
 flang/test/http.flang	2

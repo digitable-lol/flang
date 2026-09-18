@@ -58,7 +58,7 @@ target-function-drift-known) первая строка — `#`-примечан�
 |---|---|---|---|
 | docs/eight-targets-renames.tsv | никто из приборов; человек — по ссылке из `docs/eight-targets-collision-map.md`; перепись перечней лишь считает в ней имена целей | строка без имён целей | перечни 1 / 1 (новых 59, мёртвых 29 — те же; строка перечня 2 → 3) |
 | docs/reprint-ledger.tsv | `scripts/seed/reprint-freshness.flang`; `reprint.yml`, `raskrutka.sh`, `seed-freshness.sh` только называют файл | «Поле» за краем строки без табуляции даёт «» | reprint-freshness 1 / 1 (тот же текст: сверка 2026-09-08 устарела); seed-freshness 3 / 3 (тот же текст) |
-| flang/translation/PRINT-RULES.tsv | `flang/translation/run.sh` (`перевод:проверка`); `matcher.c` держит список литералом | `awk '!/^#/ && $1 != "имя"'` | 0 / 0 (41 правило, 21 опыт — тот же текст) |
+| flang/translation/PRINT-RULES.tsv | `flang/translation/run.sh` (`перевод:проверка`); `matcher.c` держит список литералом | `awk '!/^#/ && $1 != "имя"'` | 0 / 0 (41 правило, 23 опыта — тот же текст) |
 | scripts/ledgers/hand-written-lists-ledger.tsv | `scripts/guards/hand-written-lists.sh --check` (`перечни:проверка`) | `grep -v '^#'` | 1 / 1 (новых 59, мёртвых 29) |
 | scripts/ledgers/link-guard-known-not-a-path.tsv | `scripts/guards/link-guard.flang` (`ссылки:проверка`); `file-extensions.flang` вынимает файл из переписи | первая строка отброшена как заголовок | ссылки 1 / 1 (битых 36 из 7051, список тот же, устаревших исключений 1); расширения 0 / 0 (тот же текст) |
 | scripts/ledgers/no-comments-debt.tsv | `scripts/guards/no-comments-guard.sh` | `join`/`awk` по табуляции: строка без неё даёт 0 | 0 / 0 (строк 39624 в 567 файлах) |

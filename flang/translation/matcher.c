@@ -560,6 +560,321 @@ static void match_text(const char *c_text, size_t c_len) {
   }
 }
 
+/* ── имена напечатанного C: своя область видимости и свой счёт временных ──────
+ *
+ * Имена временных сличитель брал из протокола как данность, и этого мало:
+ * переименуй временную в C и в протоколе ЗАОДНО — текст сойдётся байт в байт,
+ * а смысл напечатанной программы изменится. Две разные временные, схлопнувшиеся
+ * в одно имя, дают одно из двух, и оба — беда:
+ *   накрытие         внутренняя объявлена во ВЛОЖЕННОЙ области. Такой C
+ *                    собирается флагами самого печатника (-Wshadow не входит ни
+ *                    в -Wall, ни в -Wextra), а значение внешней теряется;
+ *   переопределение  обе в ОДНОЙ области — такой C не собирается вовсе.
+ * Свободное имя (fl_t3 → fl_zzz) смысла не меняет и принимается.
+ *
+ * Поэтому здесь свой учёт, а не чтение протокола: области видимости считаются
+ * по фигурным скобкам СОБРАННОГО текста (он к этому мигу уже сошёлся с файлом C
+ * байт в байт), каждое объявленное имя заносится в свою область, и объявление
+ * имени, уже живого в этой или объемлющей области, — отказ с названным местом
+ * обоих. Сверх того — свой счёт временных: fl_tN печатник выдаёт ОДНИМ
+ * счётчиком на модуль, а счётчик не выдаёт номер дважды; поэтому одно и то же
+ * fl_tN, объявленное в модуле два раза, — отказ, даже если области не
+ * пересеклись и накрытия нет. Проверяется ПОВТОР, а не возрастание: порядок
+ * объявлений в тексте не равен порядку выдачи. Замерено на корпусе: «запись» и
+ * «свёртка» берут временную под итог РАНЬШЕ временной под массив, а печатают
+ * строку массива ВЫШЕ («fl_value fl_t3[2];» стоит над «fl_value fl_t2 =
+ * fl_nothing();»), и требование возрастания отвергло бы честную печать.
+ *
+ * Чего здесь НЕ проверяется и почему: имена самих функций модуля. Они живут в
+ * заголовке рядом, и объявление в .c — второе по счёту, а не первое.
+ */
+
+#define SCOPES_MAX 64
+#define DECLS_MAX 8192
+
+typedef struct {
+  char name[256];
+  size_t scope;
+  unsigned long line;
+} decl_t;
+
+static decl_t decls[DECLS_MAX];
+static size_t decl_count = 0;
+static size_t scope_top = 0;          /* 0 — область файла */
+static size_t scope_over = 0;         /* областей не поместилось: чтобы «}» не съехали */
+static int scope_header[SCOPES_MAX];  /* область заголовка for: снимается вместе с телом */
+static long temps[DECLS_MAX];         /* номера fl_tN, уже выданные счётчиком в этом модуле */
+static size_t temp_count = 0;
+
+static int ident_start(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'; }
+static int ident_body(char c) { return ident_start(c) || (c >= '0' && c <= '9'); }
+
+/* «fl_t<N>» → N; всё прочее — 0 (номера с нуля печатник не выдаёт). */
+static long temp_number(const char *name) {
+  size_t i = strlen("fl_t");
+  long n = 0;
+  if (strncmp(name, "fl_t", i) != 0 || !(name[i] >= '0' && name[i] <= '9')) return 0;
+  for (; name[i] >= '0' && name[i] <= '9'; i += 1) n = n * 10 + (name[i] - '0');
+  return name[i] == '\0' ? n : 0;
+}
+
+/* Живое имя — любое занесённое: снятые области из списка уже вычеркнуты.
+ * Ищем с конца, чтобы найти самое внутреннее объявление. */
+static const decl_t *live_name(const char *name) {
+  size_t i = decl_count;
+  while (i > 0) {
+    i -= 1;
+    if (strcmp(decls[i].name, name) == 0) return &decls[i];
+  }
+  return NULL;
+}
+
+static void scope_push(int header) {
+  if (scope_top + 1 >= SCOPES_MAX) {
+    scope_over += 1;
+    return;
+  }
+  scope_top += 1;
+  scope_header[scope_top] = header;
+}
+
+static void scope_pop(void) {
+  if (scope_over > 0) {
+    scope_over -= 1;
+    return;
+  }
+  while (decl_count > 0 && decls[decl_count - 1].scope == scope_top) decl_count -= 1;
+  if (scope_top == 0) return;
+  scope_top -= 1;
+  if (scope_top > 0 && scope_header[scope_top]) {
+    while (decl_count > 0 && decls[decl_count - 1].scope == scope_top) decl_count -= 1;
+    scope_header[scope_top] = 0;
+    scope_top -= 1;
+  }
+}
+
+static void declare(const char *name, const node_t *owner, unsigned long line) {
+  const decl_t *old = live_name(name);
+  char where[64], who[512];
+  long n;
+  snprintf(where, sizeof where, "напечатанный C, строка %lu", line);
+  describe(owner, who, sizeof who);
+  if (old != NULL) {
+    if (old->scope == scope_top) {
+      mismatch(where, "имя «%s» заводится второй раз в ТОЙ ЖЕ области — переопределение, первое на строке %lu; такой C не соберётся — %s",
+               name, old->line, who);
+    } else {
+      mismatch(where, "имя «%s» накрывает живое имя, заведённое в объемлющей области на строке %lu; внешнее значение теряется — %s",
+               name, old->line, who);
+    }
+    return;
+  }
+  n = temp_number(name);
+  if (n != 0) {
+    size_t k;
+    for (k = 0; k < temp_count; k += 1) {
+      if (temps[k] != n) continue;
+      mismatch(where, "временная «%s» выдана в модуле второй раз, а счётчик печатника один и номера не повторяет — %s",
+               name, who);
+      return;
+    }
+    if (temp_count < DECLS_MAX) temps[temp_count++] = n;
+  }
+  if (decl_count < DECLS_MAX) {
+    copy_field(decls[decl_count].name, sizeof decls[decl_count].name, name, strlen(name));
+    decls[decl_count].scope = scope_top;
+    decls[decl_count].line = line;
+    decl_count += 1;
+  }
+}
+
+/* Ключевые слова C, с которых объявление начаться не может: без них «return
+ * FL_OK;» читалось бы как объявление «FL_OK». */
+static int c_keyword(const char *s, size_t len) {
+  static const char *const kw[] = {"if",     "else",  "for",      "while",  "do",    "switch", "case",
+                                   "default", "return", "break", "continue", "goto", "sizeof", "typedef"};
+  size_t i;
+  for (i = 0; i < sizeof kw / sizeof kw[0]; i += 1) {
+    if (strlen(kw[i]) == len && memcmp(s, kw[i], len) == 0) return 1;
+  }
+  return 0;
+}
+
+/* Объявление в начале строки C: «[static ][const ]<тип> [*]<имя>», и сразу за
+ * именем « = », «;», «[» или «(». Одно слово перед знаком — это присвоение или
+ * вызов, а не объявление. Ответ: 0 — не объявление, 1 — имя, 2 — заголовок
+ * «for (тип имя = …» (имя живёт в области тела цикла), 3 — определение функции,
+ * и тогда *paren — где открылся список параметров. */
+static int declared_name(const char *s, char *out, size_t cap, size_t *paren) {
+  size_t i = 0, start = 0, len = 0, words = 0;
+  while (s[i] == ' ') i += 1;
+  if (strncmp(s + i, "for (", strlen("for (")) == 0) {
+    size_t j = i + strlen("for (");
+    while (s[j] == ' ') j += 1;
+    if (!ident_start(s[j])) return 0;
+    while (ident_body(s[j])) j += 1;
+    while (s[j] == ' ') j += 1;
+    if (!ident_start(s[j])) return 0;
+    start = j;
+    while (ident_body(s[j])) j += 1;
+    if (!(s[j] == ' ' && s[j + 1] == '=')) return 0;
+    copy_field(out, cap, s + start, (size_t)(j - start));
+    return 2;
+  }
+  for (;;) {
+    int done = 0, func = 0;
+    while (s[i] == ' ') i += 1;
+    while (s[i] == '*') i += 1;
+    if (!ident_start(s[i])) return 0;
+    start = i;
+    while (ident_body(s[i])) i += 1;
+    len = (size_t)(i - start);
+    if (words == 0 && c_keyword(s + start, len)) return 0;
+    words += 1;
+    if (s[i] == '(') done = func = 1;
+    else if (s[i] == ';' || s[i] == '[') done = 1;
+    else if (s[i] == ' ' && s[i + 1] == '=' && s[i + 2] == ' ') done = 1;
+    else if (s[i] != ' ') return 0;
+    if (done) {
+      if (words < 2) return 0;
+      copy_field(out, cap, s + start, len);
+      *paren = i;
+      return func ? 3 : 1;
+    }
+  }
+}
+
+/* Имена параметров из собранного списка «(тип имя, тип *имя, …)»: у каждого
+ * довода берётся последнее слово. «void» — не имя. */
+static void declare_params(const char *s, size_t len, const node_t *owner, unsigned long line) {
+  char last[256];
+  size_t i;
+  int depth = 0;
+  last[0] = '\0';
+  for (i = 0; i < len; i += 1) {
+    char c = s[i];
+    if (c == '(') {
+      depth += 1;
+    } else if (c == ')') {
+      depth -= 1;
+      if (depth <= 0) break;
+    } else if (c == ',' && depth == 1) {
+      if (last[0] != '\0' && strcmp(last, "void") != 0) declare(last, owner, line);
+      last[0] = '\0';
+    } else if (ident_start(c)) {
+      size_t j = i;
+      while (j < len && ident_body(s[j])) j += 1;
+      copy_field(last, sizeof last, s + i, (size_t)(j - i));
+      i = j - 1;
+    }
+  }
+  if (last[0] != '\0' && strcmp(last, "void") != 0) declare(last, owner, line);
+}
+
+/* Состояние обхода строк: тянется между строками, потому что и комментарий, и
+ * список параметров у двери занимают не одну строку. */
+static int nm_comment = 0;    /* внутри блочного комментария */
+static int nm_in_params = 0;  /* внутри списка параметров функции */
+static int nm_paren = 0;
+static char nm_params[8192];
+static size_t nm_params_len = 0;
+static int nm_ready = 0;      /* параметры собраны и ждут ближайшей «{» */
+static const node_t *nm_owner = NULL;
+static unsigned long nm_line = 0;
+
+static void names_line(const char *s, const node_t *owner, unsigned long lineno) {
+  size_t i, from = (size_t)-1;
+  char name[256];
+  if (!nm_comment && !nm_in_params) {
+    size_t at = 0;
+    int kind = declared_name(s, name, sizeof name, &at);
+    if (kind == 1) {
+      declare(name, owner, lineno);
+    } else if (kind == 2) {
+      scope_push(1);
+      declare(name, owner, lineno);
+    } else if (kind == 3 && scope_top == 0) {
+      from = at;
+      nm_paren = 0;
+      nm_params_len = 0;
+      nm_owner = owner;
+      nm_line = lineno;
+    }
+  }
+  for (i = 0; s[i] != '\0'; i += 1) {
+    char c = s[i];
+    if (nm_comment) {
+      if (c == '*' && s[i + 1] == '/') {
+        nm_comment = 0;
+        i += 1;
+      }
+      continue;
+    }
+    if (c == '/' && s[i + 1] == '*') {
+      nm_comment = 1;
+      i += 1;
+      continue;
+    }
+    if (c == '/' && s[i + 1] == '/') break;
+    if (!nm_in_params && (c == '"' || c == '\'')) {
+      i += 1;
+      while (s[i] != '\0' && s[i] != c) i += s[i] == '\\' && s[i + 1] != '\0' ? 2 : 1;
+      if (s[i] == '\0') break;
+      continue;
+    }
+    if (i == from) nm_in_params = 1;
+    if (nm_in_params) {
+      if (nm_params_len + 1 < sizeof nm_params) nm_params[nm_params_len++] = c;
+      if (c == '(') {
+        nm_paren += 1;
+      } else if (c == ')') {
+        nm_paren -= 1;
+        if (nm_paren == 0) {
+          nm_in_params = 0;
+          nm_ready = 1;
+        }
+      }
+      continue;
+    }
+    if (c == '{') {
+      scope_push(0);
+      if (nm_ready) {
+        declare_params(nm_params, nm_params_len, nm_owner, nm_line);
+        nm_ready = 0;
+      }
+    } else if (c == '}') {
+      scope_pop();
+    }
+  }
+}
+
+/* Собранный текст — построчно, с узлом-хозяином каждой строки. */
+static void check_names(void) {
+  static char line[8192];
+  size_t i, k, li = 0;
+  unsigned long lineno = 1;
+  const node_t *owner = NULL;
+  for (i = 0; i < piece_count; i += 1) {
+    const piece_t *p = &pieces[i];
+    for (k = 0; k < p->len; k += 1) {
+      char c = p->text[k];
+      if (li == 0) owner = p->owner;
+      if (c == '\n') {
+        line[li] = '\0';
+        names_line(line, owner, lineno);
+        lineno += 1;
+        li = 0;
+      } else if (li + 1 < sizeof line) {
+        line[li++] = c;
+      }
+    }
+  }
+  if (li > 0) {
+    line[li] = '\0';
+    names_line(line, owner, lineno);
+  }
+}
+
 /* ── исходник: строки и знаки ─────────────────────────────────────────────── */
 
 static const char *source_text = NULL;
@@ -1564,9 +1879,53 @@ static int replay_all_elements(const node_t *n) {
   return 1;
 }
 
+/* ── порядок детей: по местам исходника, а не по порядку протокола ────────────
+ *
+ * Значение узла правило считает по значениям детей В ПОРЯДКЕ ПРОТОКОЛА. Пока
+ * этот порядок ничем не привязан к исходнику, довольно переставить в протоколе
+ * два блока детей — и «н не больше 0» печатается как «0 не больше н»: значение
+ * сойдётся, текст сойдётся, а программа стала другой. Поэтому дети обязаны
+ * идти по НЕУБЫВАНИЮ места исходника (строка, потом столбец).
+ *
+ * Не строгое возрастание, а неубывание: обёртка («положить», «признак») берёт
+ * место того, что она обёртывает, и два ребёнка честно стоят на одном месте.
+ *
+ * Два исключения, оба — не поблажка правилу, а замер того, где места нет:
+ *   · дети БЕЗ МЕСТА (нули) в порядок не входят — их место неизвестно, и
+ *     сличитель не сличает их нигде;
+ *   · ребёнок, стоящий РОВНО НА МЕСТЕ САМОГО УЗЛА, в порядок не входит: его
+ *     туда поставил не пишущий, а разбор. Замерено печатью «если (н больше 0) и
+ *     притом (м больше 0)»: связка «и»/«или»/«не» сводится к «если», и ветвь
+ *     -литерал, которой в исходнике нет, встаёт на саму связку — то есть на
+ *     место узла «если», между двумя писаными ветвями. То же у порождённого
+ *     дефункционализацией вызова «применить N»: его первый довод —
+ *     значение-функция, стоящая там же, где сам вызов. Требуй здесь порядка —
+ *     сличитель отвергал бы честную печать (проверено прогоном: три функции со
+ *     связками, две отвергались).
+ */
+static void check_child_order(const node_t *n) {
+  size_t k, count = child_count(n);
+  const node_t *prev = NULL;
+  for (k = 0; k < count; k += 1) {
+    const node_t *c = child_at(n, k);
+    if (c == NULL || (c->line == 0 && c->column == 0)) continue;
+    if (c->line == n->line && c->column == n->column) continue;
+    if (prev != NULL && (c->line < prev->line || (c->line == prev->line && c->column < prev->column))) {
+      char who[512], seen[256];
+      describe(n, who, sizeof who);
+      snprintf(seen, sizeof seen, "ребёнок %lu на строке %ld столбце %ld, а предыдущий — на строке %ld столбце %ld",
+               (unsigned long)k, c->line, c->column, prev->line, prev->column);
+      mismatch(who, "дети стоят не в порядке мест исходника: %s%s", seen, "");
+      return;
+    }
+    prev = c;
+  }
+}
+
 static void replay_node(const node_t *n) {
   int r = rule_index(n->rule), ok = -1;
   if (!n->is_block && !check_anchor(n)) return;
+  if (!n->is_block) check_child_order(n);
   if (strcmp(n->rule, "вызов") == 0) ok = replay_call(n);
   else if (strcmp(n->rule, "поле") == 0) ok = replay_field(n);
   else if (strcmp(n->rule, "пусть") == 0) ok = replay_let(n);
@@ -1694,6 +2053,7 @@ int main(int argc, char **argv) {
   if (refused) return 1;
   lay_out_file(&pr);
   match_text(c_text, c_len);
+  if (!verdict_failed) check_names();
   check_completeness(&pr);
   if (verdict_failed) return 1;
   for (i = 0; i < RULE_COUNT; i += 1) {

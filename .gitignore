@@ -120,3 +120,14 @@ schet2/
 flang/proof/чекер/сверщик
 flang/proof/чекер/сверщик-san
 flang/self/bootstrap/collision-probe.flang
+
+# Настройка одного прогона мастера уточнений: две строки — путь к компилятору и
+# путь к требованию, которое уточняют. Её пишет сам человек перед прогоном
+# (`printf '%s\n%s\n' ../bootstrap/flang spec/01-discount-cap.flang >
+# fspec/clarifications.txt`), у каждого прогона она своя, и в истории ей делать
+# нечего. Закоммиченная копия пролежала до 18 сентября 2026 и врала: в ней
+# стоял путь `opyt/01-discount-coarse.flang`, а каталог переименован в
+# `experience/` — прогон по ней упал бы на «нет такого файла».
+# Соседние `fspec/settings.txt` и `fspec/snapshot.txt` сюда НЕ попадают: их
+# читает `fspec/guard.flang` на каждой проверке каталога, и без них она не идёт.
+fspec/clarifications.txt

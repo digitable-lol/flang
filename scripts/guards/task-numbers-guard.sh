@@ -171,7 +171,7 @@ KONEC_SPISKA
 
 # ── Обычный ход ─────────────────────────────────────────────────────────────
 if [ "$podlog" = нет ]; then
-  sudit "$ROOT/tasks"
+  sudit "$ROOT/docs/tasks"
   exit $?
 fi
 
@@ -182,7 +182,7 @@ fi
 # запишет его как находку.
 TMP=$(mktemp -d "${FLANG_TMP:-${TMPDIR:-/tmp}}/nomera-zadach.XXXXXX")
 trap 'rm -rf "$TMP"' EXIT
-cp -R "$ROOT/tasks" "$TMP/tasks"
+cp -R "$ROOT/docs/tasks" "$TMP/tasks"
 
 echo '── сторона первая: подлог заведён, ждём код 1 ──'
 obrazec=$(ls -1 "$TMP/tasks" | grep -E '^[0-9]{4}-.*\.md$' | head -1)

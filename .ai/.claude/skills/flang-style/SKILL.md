@@ -14,7 +14,7 @@ description: Как писать flang, чтобы он проходил про�
 
 1. **Комментариев в `.flang` не пишешь.** Лексер их выбрасывает — комментарий не
    терм, его не проверить, он тихо устареет. Объясняй **именем, типами,
-   `обеспечивает` и `пример`ом**. Прибавку не пустит `scripts/guards/no-comments-guard.sh`
+   `обеспечивает` и `пример`ом**. Прибавку не пустит `scripts/guards/no-comments-guard.fscript`
    (храповик по `scripts/ledgers/no-comments-debt.tsv`, крутится только вниз).
 
 2. **Нужна пометка в коде — делай её термом, а не `//`.** Канон терм-заметки:
@@ -83,7 +83,8 @@ bootstrap/flang check файл.flang --proof --pretty
 
 Сторожа, которых нельзя оставить красными:
 
-- `sh scripts/guards/no-comments-guard.sh` — комментариев не прибавилось;
+- `bootstrap/flang io scripts/guards/no-comments-guard.fscript --plan Проверка` —
+  комментариев не прибавилось;
 - `flang/scripts/name-guard.mjs` — имена в порядке;
 - `sh scripts/guards/hand-written-lists.sh --check` — рукописных перечней не завёл;
 - `flang check` на файле — код 0, и `check`/`test` не расходятся

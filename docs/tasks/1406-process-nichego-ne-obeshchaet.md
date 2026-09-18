@@ -219,12 +219,12 @@ processes, supervisors, runs: сверено, что имена сходятся
 процессов 0 из 89. Постусловий `обеспечивает` в `flang/concurrency` — 287 (было 216), все
 по-прежнему о функциях-шагах.
 
-Поимённо: `flang/concurrency/examples/distributed.flang:58` «Счётчик» → «Счёт» → «шаг
+Поимённо: `flang/concurrency/examples/distributed.flang:26` «Счётчик» → «Счёт» → «шаг
 счёта» и `:64` «Учётчик» → «Записи» → «шаг учёта» (честная Ш2);
 `distributed-foreign-state-forged.flang:31` — подлог, сегодня код 2;
 `docs/examples/service-on-processes/service.flang:36`, `:42`, `:48` — три процесса, три
 состояния; `docs/examples/web/shortener/server.flang:32`, `:38`, `:44`;
-`flang/concurrency/examples/backpressure.flang:37` «Насос» и `:45` «Сток» — оба со
+`flang/concurrency/examples/backpressure.flang:14` «Насос» и `:45` «Сток» — оба со
 состоянием типа «Счёт»: правило Вл1 — о типе довода, не об экземпляре (ADR-0044 §8).
 
 **Цена Ш1 по ADR-0044 §4.2:** `zapis.flang` ≈ 20 (аналог «Строка объявления записи» — 16,

@@ -520,13 +520,18 @@ static const char HELP_TEST[] =
 
 static const char HELP_RUN[] =
     "flang run <файл.flang> --function «Имя» [--args '{\"н\":10}'] [--max-steps N]\n"
-    "                       [--max-depth N]\n"
+    "                       [--max-depth N] [--на-веру]\n"
     "\n"
     "Вычисляет ОДНУ функцию и печатает значение. Считает сам flang — ни Node, ни\n"
     "«cc» для этого не нужны.\n"
     "\n"
     "Аргументы сверяются объявленным типам ДО вычисления: «Факториал» от −3\n"
     "отвергается FLANG_TYPE, а не считается.\n"
+    "\n"
+    "ПЕРЕД ВЫЧИСЛЕНИЕМ СЧИТАЕТСЯ ВЕРДИКТ и одной строкой уходит в поток ошибок:\n"
+    "«доказано: утверждений N» либо «не доказано: …». Судится ЗАМЫКАНИЕ — всё,\n"
+    "что связано, а не один файл. Недоказанная программа не считается вовсе:\n"
+    "код 3. Запустить её всё же — ключ «--на-веру» (ADR-0045).\n"
     "\n"
     "  --function «Имя»   что вычислять\n"
     "  --args '{…}'       аргументы: ПЛОСКИЙ объект скаляров, вроде '{\"н\":10}'.\n"
@@ -535,7 +540,9 @@ static const char HELP_RUN[] =
     "  --max-steps N      предел шагов вычислителя\n"
     "  --max-depth N      предел глубины ВЫЧИСЛЯЕМОЙ программы. Предел самого\n"
     "                     бинарника — другой счётчик и другой ключ:\n"
-    "                     «--предел-глубины N»";
+    "                     «--предел-глубины N»\n"
+    "  --на-веру          считать недоказанную: вердикт не считается вовсе, и об\n"
+    "                     этом говорится своей строкой. Латиницей — «--trust»";
 
 static const char HELP_EMIT[] =
     "flang emit <файл.flang> --target " EMIT_TARGETS_WORDS "\n"
@@ -730,6 +737,7 @@ static const char HELP_TOKENS[] =
 
 static const char HELP_IO[] =
     "flang io <файл.flang> [--plan «Имя»] [--max-orders N] [--seed N] [--in-dir] [--pretty]\n"
+    "                      [--на-веру]\n"
     "\n"
     "Исполняет ПЛАН — единственное место языка, где программа встречается с миром.\n"
     "Встречается не сама: каждый шаг возвращает ОПИСАНИЕ действия, а делает его\n"
@@ -742,6 +750,8 @@ static const char HELP_IO[] =
     "  --in-dir        запретить пути за пределы каталога входного файла\n"
     "  --max-steps N   предел шагов вычисления на один виток\n"
     "  --pretty        JSON с отступами\n"
+    "  --на-веру       исполнить недоказанный план: вердикт не считается вовсе, и\n"
+    "                  об этом говорится своей строкой. Латиницей — «--trust»\n"
     "\n"
     "Полномочия сужаются по одному: --no-read, --no-write, --no-net, --no-clock,\n"
     "--no-random, --no-spawn. Умолчание — «можно всё»: запуск программы этой\n"
@@ -752,7 +762,9 @@ static const char HELP_IO[] =
     "сломался инструмент ЛИБО программа сказала «Не проверено», то есть смотреть\n"
     "ей было нечем. Первое и второе различает не код отказа, а то, КТО принял\n"
     "решение; второе и третье — то, ЧТО решено: «нашёл беду» против «не смог\n"
-    "посмотреть».\n"
+    "посмотреть». Тройкой же отвечает и ОТКАЗ ЗАПУСКА недоказанного плана: перед\n"
+    "работой считается вердикт о замыкании и одной строкой уходит в поток ошибок\n"
+    "(ADR-0045); «--на-веру» его пропускает.\n"
     "\n"
     "Чего у двоичного хозяина нет: экрана («Показать», «Ждать событие» отвечают\n"
     "FLANG_IO_NO_SCREEN) и СВОЕГО шифрования. Нехватка названа отказом, а не\n"
@@ -9673,13 +9685,51 @@ static const char *run_bare_name(const char *name, size_t *bytes) {
   return name;
 }
 
+/*
+ * ВЕРДИКТ ЗАПУСКА ОТ ЯДРА — ЧЕЛОВЕКУ (ADR-0045, задачи 8222 и 6427).
+ *
+ * Обе новые точки входа отдают запись с четырьмя полями: «строка» — что сказать
+ * человеку, «код» — чем ответить, «запущено» — считалось ли вообще, и поле с
+ * самим исходом («прогон» у `run`, «поиск» у `io`). Здесь делается то, что у
+ * обеих одинаково.
+ *
+ * Строка идёт в ПОТОК ОШИБОК: стандартный вывод несёт результат прогона, и
+ * мешать их нельзя — иначе `flang run м.flang > ответ` клал бы вердикт в файл
+ * ответа. Решение принято ДО вычисления («Запуск по вердикту» судит первым), а
+ * напечатано, когда вычисление вернулось: у `run` считает та же точка входа,
+ * внутри которой строка и родилась. У `io` строка выходит раньше работы плана —
+ * план идёт в `io_loop` уже после этого возврата.
+ *
+ * Код отказа берётся ПОСЧИТАННЫЙ, а не назначенный здесь тройкой: «Код
+ * недоказанного» держит тройку постусловием, и хозяин обязан донести число
+ * ядра. Разойдись они — и правда была бы у двоих сразу.
+ */
+static bool verdict_say(fl_value out, const char *name, fl_value *inner, int *code) {
+  fl_value field = fl_nothing();
+  const char *say = NULL;
+  size_t say_bytes = 0;
+  if (val_field(out, "строка", &field) && val_text(field, &say, &say_bytes) && say_bytes > 0) {
+    fprintf(stderr, "%.*s\n", (int)say_bytes, say);
+  }
+  if (val_field(out, "запущено", &field) && field.tag == FL_FLAG && field.as.flag) {
+    if (val_field(out, name, inner)) {
+      return true;
+    }
+    fputs("flang: вердикт запуска не принёс исхода\n", stderr);
+    *code = 1;
+    return false;
+  }
+  *code = val_field(out, "код", &field) && field.tag == FL_NUMBER ? (int)field.as.number : 3;
+  return false;
+}
+
 static int run_file(int argc, char **argv) {
   repl_strings paths;
   repl_strings texts;
   repl_strings queue;
   fl_value sources = fl_nothing();
   fl_value result = fl_nothing();
-  fl_value args[6];
+  fl_value args[7];
   fl_value bound = fl_nothing();
   fl_value field = fl_nothing();
   char buffer[4096];
@@ -9688,6 +9738,7 @@ static int run_file(int argc, char **argv) {
   const char *given = NULL;
   const char *steps = "40000000";
   const char *depth = "20000";
+  bool trust = false;
   char *base = NULL;
   char *full = NULL;
   char *text = NULL;
@@ -9708,6 +9759,8 @@ static int run_file(int argc, char **argv) {
     } else if (strcmp(argv[index], "--max-depth") == 0 && index + 1 < argc) {
       index += 1;
       depth = argv[index];
+    } else if (strcmp(argv[index], "--на-веру") == 0 || strcmp(argv[index], "--trust") == 0) {
+      trust = true;
     } else if (argv[index][0] != '-' && path == NULL) {
       path = argv[index];
     } else {
@@ -9792,8 +9845,11 @@ static int run_file(int argc, char **argv) {
     args[3] = bound;
     args[4] = fl_number(strtod(steps, NULL));
     args[5] = fl_number(strtod(depth, NULL));
-    if (repl_call("Прогон исходников", args, 6, &result) != FL_OK) {
+    args[6] = fl_flag(trust);
+    if (repl_call("Запуск исходников", args, 7, &result) != FL_OK) {
       code = 1;
+    } else if (!verdict_say(result, "прогон", &result, &code)) {
+      /* Недоказанная программа без согласия: строка сказана, код — ядра. */
     } else if (val_field(result, "удалось", &field) && field.tag == FL_FLAG && field.as.flag) {
       if (val_field(result, "значение", &field)) {
         run_print(field);
@@ -15204,6 +15260,7 @@ static int io_file(int argc, char **argv) {
   double max_steps = 10000000;
   double max_depth = 10000;
   bool pretty = false;
+  bool trust = false;
   char buffer[4096];
   char *base = NULL;
   char *full = NULL;
@@ -15270,6 +15327,8 @@ static int io_file(int argc, char **argv) {
     } else if (strcmp(argv[index], "--max-depth") == 0 && index + 1 < argc) {
       index += 1;
       max_depth = strtod(argv[index], NULL);
+    } else if (strcmp(argv[index], "--на-веру") == 0 || strcmp(argv[index], "--trust") == 0) {
+      trust = true;
     } else if (argv[index][0] != '-' && path == NULL) {
       path = argv[index];
     } else {
@@ -15327,9 +15386,12 @@ static int io_file(int argc, char **argv) {
     fl_watch_repeat_set(repeat);
   }
 
-  if (repl_call("План исходников", args, 3, &found) != FL_OK) {
+  args[3] = fl_flag(trust);
+  if (repl_call("Поиск плана исходников", args, 4, &found) != FL_OK) {
     fputs("flang io: связывание не отработало\n", stderr);
     code = 3;
+  } else if (!verdict_say(found, "поиск", &found, &code)) {
+    /* Недоказанный план без согласия: строка сказана, код — ядра. */
   } else if (val_field(found, "диагностики", &bads) && bads.tag == FL_LIST && bads.as.list.count > 0) {
     repl_bads list;
     size_t item = 0;

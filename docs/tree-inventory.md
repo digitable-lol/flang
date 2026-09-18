@@ -78,7 +78,7 @@ $ bootstrap/flang io scripts/guards/tree-inventory.fscript --max-steps 50000000
 
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
-| оболочка | 101 | 24 927 | 89 | 16 196 <!-- СНЯТО 2026-09-17 долг файлов/строк оболочки = 89/16196 (задача 1794: подделка тела К1 прибавила 7 строк в flang/proof/чекер/пробы/прогон.sh, вне долга) (ADR-0042, задачи 6432 и 6812: семейства Пр и М прибавили 2 строки в flang/proof/сверка-ведомости.sh; до них 87/15959) (на ветке a/1418-three-moves: обходчик проверок flang/test/обход.sh прибавил 7 строк, задача 1418; на стволе 87/15952), планом «Опись дерева по языкам» (задачи 5332 и 6438 прибавили 42 строки в flang/proof/чекер/пробы/прогон.sh и flang/proof/доля-корпуса.sh, из них долга 14; до них 87/15916) (пары «строка ↔ лемма» в flang/proof/lean/прогон.sh, задачи 3855 и 1130, прибавили 17 строк; до них 87/15899, снято 2026-09-14) (сверка вердиктов C ↔ Lean, задача 2907, прибавила 152 строки в flang/proof/lean/прогон.sh; до неё 87/15747, снято 2026-09-12) на стволе 24e6edb34 со слитой уборкой дерева (учебник прибавил 37 строк в scripts/flangtutor-proba.sh, хук — 5 строк в .githooks/pre-push; до них на 4e9a7a8c3 было 102/16682) (8 сентября было 98/15001: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-17 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 101 --><!-- СНЯТО 2026-09-17 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 24927 --> |
+| оболочка | 101 | 24 928 | 89 | 16 197 <!-- СНЯТО 2026-09-17 долг файлов/строк оболочки = 89/16197 (задача 1794: подделка тела К1 прибавила 7 строк в flang/proof/чекер/пробы/прогон.sh, вне долга) (ADR-0042, задачи 6432 и 6812: семейства Пр и М прибавили 2 строки в flang/proof/сверка-ведомости.sh; до них 87/15959) (на ветке a/1418-three-moves: обходчик проверок flang/test/обход.sh прибавил 7 строк, задача 1418; на стволе 87/15952), планом «Опись дерева по языкам» (задачи 5332 и 6438 прибавили 42 строки в flang/proof/чекер/пробы/прогон.sh и flang/proof/доля-корпуса.sh, из них долга 14; до них 87/15916) (пары «строка ↔ лемма» в flang/proof/lean/прогон.sh, задачи 3855 и 1130, прибавили 17 строк; до них 87/15899, снято 2026-09-14) (сверка вердиктов C ↔ Lean, задача 2907, прибавила 152 строки в flang/proof/lean/прогон.sh; до неё 87/15747, снято 2026-09-12) на стволе 24e6edb34 со слитой уборкой дерева (учебник прибавил 37 строк в scripts/flangtutor-proba.sh, хук — 5 строк в .githooks/pre-push; до них на 4e9a7a8c3 было 102/16682) (8 сентября было 98/15001: задача 3127 завела scripts/module-origin-guard.sh, 277 строк) --><!-- СНЯТО 2026-09-17 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 101 --><!-- СНЯТО 2026-09-17 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 24928 --> |
 | C | 34 | 856 386 | 0 | 0 <!-- СНЯТО 2026-09-14 файлов *.c,*.h = 34 --><!-- СНЯТО 2026-09-17 строк-в *.c,*.h = 856386 --> |
 | C++ | 1 | 404 | 0 | 0 <!-- СНЯТО 2026-09-05 файлов *.cpp,*.cc,*.hpp,*.hh = 1 --><!-- СНЯТО 2026-09-05 строк-в *.cpp,*.cc,*.hpp,*.hh = 404 --> |
 | Python | 16 | 6 029 | 10 | 2 880 <!-- СНЯТО 2026-09-11 файлов *.py = 16 --><!-- СНЯТО 2026-09-11 строк-в *.py = 6029 --> |
@@ -86,14 +86,14 @@ $ bootstrap/flang io scripts/guards/tree-inventory.fscript --max-steps 50000000
 | CSS | 1 | 559 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.css = 1 --><!-- СНЯТО 2026-08-31 строк-в *.css = 559 --> |
 | awk | 1 | 79 | 1 | 79 <!-- СНЯТО 2026-08-31 файлов *.awk = 1 --><!-- СНЯТО 2026-08-31 строк-в *.awk = 79 --> |
 | Erlang | 1 | 69 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.erl = 1 --><!-- СНЯТО 2026-08-31 строк-в *.erl = 69 --> |
-| JavaScript | 50 | 23 387 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-15 файлов *.js,*.mjs = 50 --><!-- СНЯТО 2026-09-17 строк-в *.js,*.mjs = 23387 --> ||
+| JavaScript | 50 | 23 388 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-09-15 файлов *.js,*.mjs = 50 --><!-- СНЯТО 2026-09-17 строк-в *.js,*.mjs = 23388 --> ||
 | Java | 7 | 3 941 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.java = 7 --><!-- СНЯТО 2026-09-06 строк-в *.java = 3941 --> |
 | C# | 7 | 4 472 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.cs = 7 --><!-- СНЯТО 2026-09-06 строк-в *.cs = 4472 --> |
 | Elixir | 4 | 4 634 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.ex,*.exs = 4 --><!-- СНЯТО 2026-09-06 строк-в *.ex,*.exs = 4634 --> |
 | Go | 3 | 2 880 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.go = 3 --><!-- СНЯТО 2026-09-06 строк-в *.go = 2880 --> |
 | Rust | 3 | 3 961 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.rs = 3 --><!-- СНЯТО 2026-09-06 строк-в *.rs = 3961 --> |
-| Lua | 3 | 224 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.lua = 3 --><!-- СНЯТО 2026-08-31 строк-в *.lua = 224 --> |
-| Vimscript | 8 | 388 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.vim = 8 --><!-- СНЯТО 2026-09-09 строк-в *.vim = 388 --> |
+| Lua | 3 | 225 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.lua = 3 --><!-- СНЯТО 2026-09-17 строк-в *.lua = 225 --> |
+| Vimscript | 8 | 389 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.vim = 8 --><!-- СНЯТО 2026-09-17 строк-в *.vim = 389 --> |
 | Ruby | 1 | 113 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.rb = 1 --><!-- СНЯТО 2026-09-10 строк-в *.rb = 113 --> |
 
 
@@ -168,7 +168,7 @@ flang в C.
 | рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 29 | 48 142 <!-- СНЯТО 2026-09-06 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 29 --><!-- СНЯТО 2026-09-08 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 48142 --> |
 | замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/concurrency/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
 | проба рантайма C | `flang/test/oblast/*.c` и `flang/concurrency/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/targets/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
-| чужая среда: редактор | `docs/editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 612 <!-- СНЯТО 2026-08-31 файлов docs/editors/vim/*.vim,docs/editors/vim/*.lua = 11 --><!-- СНЯТО 2026-09-09 строк-в docs/editors/vim/*.vim,docs/editors/vim/*.lua = 612 --> |
+| чужая среда: редактор | `docs/editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 614 <!-- СНЯТО 2026-08-31 файлов docs/editors/vim/*.vim,docs/editors/vim/*.lua = 11 --><!-- СНЯТО 2026-09-17 строк-в docs/editors/vim/*.vim,docs/editors/vim/*.lua = 614 --> |
 | код на стороне цели | `flang/concurrency/bin/node.{c,cs,ex,go,java,py,rs}` — семь хозяев узлов на семи языках, и `peer.py` — конец связи на цели python | 8 | 8 227 |
 | разметка и оформление | четыре `.html` и `docs/site/style.css` — цели HTML у языка нет и не заявлено | 5 | 1 785 |
 | чужая среда: установщик | `packaging/homebrew/flang.rb` и три файла `packaging/asdf/bin/` — homebrew понимает Ruby, asdf зовёт свои три раньше, чем flang в системе есть | 4 | 470 |
@@ -242,7 +242,7 @@ Python 16, awk 1.
 | `seed-knows-type-words-guard.sh` | 311 | слова в позициях типа известны закоммиченному семени (стоит первой работой в `ci.yml`) <!-- СНЯТО 2026-09-14 строк scripts/guards/seed-knows-type-words-guard.sh = 311 --> |
 | `prose-numbers-guard.sh` | 416 | числа, набранные в прозе рукой, сходятся с деревом сегодня <!-- СНЯТО 2026-09-05 строк scripts/guards/prose-numbers-guard.sh = 416 --> |
 | `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |
-| `target-census.sh` | 214 | перепись целей <!-- СНЯТО 2026-08-29 строк scripts/targets/target-census.sh = 214 --> |
+| `target-census.sh` | 215 | перепись целей <!-- СНЯТО 2026-09-17 строк scripts/targets/target-census.sh = 215 --> |
 | `seed-freshness.sh` | 197 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-08-31 строк scripts/seed/seed-freshness.sh = 197 --> |
 | `test-remote.sh` | 149 | прогон на чужой машине <!-- СНЯТО 2026-09-14 строк scripts/test-remote.sh = 149 --> |
 | `one-string-measure-guard.sh` | 119 | подаёт сырые октеты в `string-measure.flang` <!-- СНЯТО 2026-08-29 строк scripts/guards/one-string-measure-guard.sh = 119 --> |

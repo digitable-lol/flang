@@ -49,10 +49,10 @@ flang emit docs/examples/leetcode/035-search-insert-position.flang --target js -
 ```
 
 Eight backends emit the module, a runtime, a JSON-in/JSON-out driver, a build file and — where
-the target has one — a package manifest (`go.mod`, `Cargo.toml`, `flang.csproj`); the JavaScript
-backend emits a single self-contained module plus the same driver next to it (`flang_cli.js`,
-dropped by `--no-cli`), and the module itself stays one self-contained file that runs in Node and
-in the browser. The two without a `Makefile` are those last two: `js`, and `ts`, which prints the
+the target has one — a package manifest (`go.mod`, `Cargo.toml`, `flang.csproj`, `package.json`);
+the JavaScript backend emits three files: a single self-contained module, the same driver next to
+it (`flang_cli.js`, dropped by `--no-cli`) and that manifest. Even so,
+the module itself stays one self-contained file that runs in Node and in the browser. The two without a `Makefile` are those last two: `js`, and `ts`, which prints the
 module as one `.ts` file beside the JavaScript runtime, the same driver and a `tsconfig.json` —
 `tsc -p .` is its build step. Two of the ten are shown here, only the second function of each,
 pasted from the run above and not edited:

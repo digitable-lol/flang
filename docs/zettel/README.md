@@ -761,6 +761,28 @@
 
 ## Ещё не разобранное
 
+- [Заголовок «ВЗЯТО N ИЗ M» рядом с таблицей, из которой он вычисляется, лжёт при первой же смене ряда](a-hand-typed-score-next-to-its-table-drifts-silently.md)
+- [Предел памяти на прогон — контрольная группа за воротами, и после падения он объясняет, а не пишет «Killed»](a-memory-limit-per-run-is-a-cgroup-behind-a-gate-with-an-explanation.md)
+- [Число, полученное прибором вне хранилища, — не замер, а слух: 61 % работы ячеек жил только во временном каталоге](a-number-taken-outside-the-repository-is-a-rumour-not-a-measurement.md)
+- [Разошедшееся опубликованное число либо устарело, либо было неверным — различает их только пересчёт по дереву коммита съёмки](a-published-number-is-stale-or-wrong-and-only-a-recount-at-the-snapshot-tells-which.md)
+- [Прогон на чужой машине превращает отсутствующий тулчейн из пропуска в провал — иначе половина целей не проверена ни разу](a-remote-run-turns-a-missing-toolchain-into-a-failure-not-a-skip.md)
+- [На негодном октете прогонщик обязан отказать одинаково на всех целях — а было пять разных поведений, и отказом не было ни одно](a-runner-must-refuse-a-bad-octet-identically-across-nine-targets.md)
+- [Пределы печати точки раскрутки — одна запись на оба пути, и совпадение проверяется, а не обещается](bootstrap-reprint-limits-are-one-record-shared-with-raskrutka-and-checked.md)
+- [Кириллица в именах файлов вне flang/proof не прибавляется — храповик по ведомости, а не запрет](cyrillic-file-names-are-a-ledger-ratchet-outside-flang-proof.md)
+- [Переписи сторожей берут имена только из позиции элемента списка, а вызовы — только из ключа run: подстрочный поиск лгал в обе стороны](guard-censuses-read-shortcuts-from-list-position-and-calls-from-run-keys.md)
+- [Перепись перечней, набранных руками, не держит списка мест — иначе стала бы сто шестым перечнем; без двоичного она лжёт](hand-written-lists-census-keeps-no-list-of-places-and-needs-the-binary.md)
+- [На негодном UTF-8 формы над строкой расходятся на две меры — октеты и знаки, — и всякое утверждение, сшитое из них, ложно](invalid-utf8-splits-string-forms-into-two-measures.md)
+- [Откуда приедет модуль, сторож пересчитывает обходом каталогов, а не спрашивает у двоичного, — чтобы видеть подмену, когда подменён сам](module-origin-is-recomputed-by-walking-directories-not-asked-of-the-binary.md)
+- [Сторож длинной постоянной задаёт три разных вопроса, и разрезать литерал на соседние — не лечит: предел C99 считается после склейки](overlong-string-guard-asks-three-different-questions-and-concatenation-does-not-help.md)
+- [У сторожа чисел в прозе пять приборов и закрытый список, а цитату от приметы отличает он сам, а не пишущий](prose-numbers-guard-has-five-closed-instruments-and-tells-a-quote-from-a-mark.md)
+- [Вердикт «доказуем» снимается ловушкой, а не grep-ом по имени, и все четыре проверки гоняются всегда](provability-verdict-measures-by-a-trap-and-runs-all-four-checks-always.md)
+- [У ведомости доказанного знаменатель сверяется точно, а числитель только датируется — и первая редакция сверки врала сама](proved-share-ledger-denominator-is-exact-and-numerator-is-only-dated.md)
+- [Снятие работы по памяти неотличимо от отказа по существу, пока запас раннера не назван числом](runner-memory-headroom-is-named-as-a-number-on-every-run.md)
+- [Дисциплину семени стерегут два сторожа — по словам и по разбору, — и второй под своим пределом слеп, о чём честно говорит](seed-discipline-is-guarded-twice-by-words-and-by-parsing.md)
+- [Поиск файла настроек обрывается на корне проекта, потому что поиск модулей этого не делал — и однажды взял чужой черновик](settings-file-search-stops-at-the-project-root-because-module-search-did-not.md)
+- [Пробу оболочки нельзя снять с одного конца: труба обязана остаться голой байт в байт, а клавиши видны только псевдотерминалу](shell-probe-judges-the-pipe-and-the-pty-separately.md)
+- [Номер задачи проверяется без двоичного и сразу по четырём каталогам — двойник спрятался в закрытых](task-numbers-are-checked-without-the-binary-across-four-directories.md)
+- [Все производные места версии сверяются с одним источником дёшево — так, чтобы стоять в хуке перед пушем](version-derivations-are-checked-cheaply-against-one-source.md)
 
 ## Как добавлять
 

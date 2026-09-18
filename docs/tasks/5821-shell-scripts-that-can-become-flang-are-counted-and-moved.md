@@ -255,3 +255,47 @@
 
 Не трогает `scripts/raskrutka.sh`, `scripts/otpechatok-semeni`, `bootstrap/**`, `flang/self/**`,
 `flang/proof/**`. Расширение перенесённого файла — по решению задачи 1415.
+
+
+## Доводы из шапок двух переведённых сторожей (сняты 18 сентября 2026)
+
+Переводя сторожа с оболочки на flang, шапку в код не переносят: в `.flang` и
+`.fscript` комментариев не пишут. Ниже — 29 строк, стоявших комментариями в
+`scripts/guards/no-comments-guard.fscript` и
+`scripts/guards/what-blocks-inventory-guard.fscript`:
+
+```
+  SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+  SPDX-License-Identifier: BSD-2-Clause
+  
+  Комментариев в .flang не прибавляется — храповик по файлу долга
+  scripts/ledgers/no-comments-debt.tsv (файл<TAB>число[<TAB>причина]); число
+  поднимают только рукой и только с причиной, «Снять» умеет лишь уменьшать.
+  
+  bootstrap/flang io scripts/guards/no-comments-guard.fscript --plan Проверка   не прибавилось ли
+  bootstrap/flang io scripts/guards/no-comments-guard.fscript --plan Снять      переписать долг ПОСЛЕ чистки
+  bootstrap/flang io scripts/guards/no-comments-guard.fscript --plan Подлог     сторож краснеет на подлоге долга
+  
+  Коды: 0 — не прибавилось (или долг переписан вниз); 1 — прибавилось, файлы
+  названы с числами; 3 — не проверено: файла долга нет либо .flang в дереве не найдено.
+  Почему храповик, а не запрет, и где его граница — docs/guide/how-to-write-flang.ru.md.
+  SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+  SPDX-License-Identifier: BSD-2-Clause
+  
+  Столбец «в стволе» таблицы «Где что лежит» (docs/what-blocks-1-0.md) не пишется
+  руками: он сверяется с деревом, и расхождение красит. Из первого столбца ряда
+  берутся имена в обратных кавычках — пути дерева и ключи командной строки:
+  ряд без пути обязан говорить «не файл»; все пути в стволе (и ключи в файлах) —
+  «есть»; ни одного — «нет»; часть — ряд смешанный, его надо разделить.
+  
+  bootstrap/flang io scripts/guards/what-blocks-inventory-guard.fscript --plan Проверка   сверить, код 1 при расхождении
+  bootstrap/flang io scripts/guards/what-blocks-inventory-guard.fscript --plan Печать     напечатать столбец по дереву
+  bootstrap/flang io scripts/guards/what-blocks-inventory-guard.fscript --plan Подлог     сторож краснеет на выдуманном приборе
+  
+  Почему столбец отняли у руки — docs/what-blocks-1-0.md и
+  docs/zettel/a-hand-written-list-outlives-the-tree.md.
+```
+
+Сторож комментариев теперь считает и `.fscript`, и переписывает ведомость,
+сохраняя её шапку «ЧТО / ЗАЧЕМ / КТО ЧИТАЕТ» — обе способности перенесены из
+sh-двойника, который на стволе успел их получить (задачи 1415 и 5503).

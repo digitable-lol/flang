@@ -1,20 +1,5 @@
 модуль «No comments guard»
 
-// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-// SPDX-License-Identifier: BSD-2-Clause
-//
-// Комментариев в .flang не прибавляется — храповик по файлу долга
-// scripts/ledgers/no-comments-debt.tsv (файл<TAB>число[<TAB>причина]); число
-// поднимают только рукой и только с причиной, «Снять» умеет лишь уменьшать.
-//
-//   bootstrap/flang io scripts/guards/no-comments-guard.fscript --plan Проверка   не прибавилось ли
-//   bootstrap/flang io scripts/guards/no-comments-guard.fscript --plan Снять      переписать долг ПОСЛЕ чистки
-//   bootstrap/flang io scripts/guards/no-comments-guard.fscript --plan Подлог     сторож краснеет на подлоге долга
-//
-// Коды: 0 — не прибавилось (или долг переписан вниз); 1 — прибавилось, файлы
-// названы с числами; 3 — не проверено: файла долга нет либо .flang в дереве не найдено.
-// Почему храповик, а не запрет, и где его граница — docs/guide/how-to-write-flang.ru.md.
-
 объект «Счёт»
   «путь»: строка
   «строк»: число

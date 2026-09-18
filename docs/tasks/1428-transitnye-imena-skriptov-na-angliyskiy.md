@@ -196,3 +196,17 @@
 | `scripts/seed/chto-otstalo-ot-semeni.sh` | `scripts/seed/what-lags-the-seed.sh` |
 | `scripts/targets/lico-celi-cpp.flang` | `scripts/targets/cpp-target-face.flang` |
 | `scripts/flangtutor-proba.sh` | `scripts/tutor-probe.sh` |
+
+## Два имени, которые держит семя, а не осторожность (18 сентября 2026)
+
+`scripts/otpechatok-semeni` и `scripts/raskrutka.sh` остались в ведомости долга, и
+причина у них теперь названа прогоном, а не «идёт печать». Путь
+«scripts/otpechatok-semeni» набран СТРОКОЙ ВНУТРИ СЕМЕНИ: `bootstrap/flang_repl.c:616`
+и его исходник `flang/src/emit/c/flang_repl.c:607`. Семя руками не правят — только
+печатью. Переименуй файл сегодня — и дерево станет называть путь, которого нет,
+причём первым это сделает сам двоичный в своей справке.
+
+Поэтому оба имени едут переименованием ВМЕСТЕ с партией семени №2: правка исходников
+и ведомостей, затем перепечатка (~10 часов), и только после неё строка внутри
+двоичного называет новое имя. Предлагаемые имена прежние: `scripts/seed-fingerprint`
+и `scripts/bootstrap-reprint.sh`.

@@ -144,11 +144,13 @@ kernel — 88 rules against 85 lemmas in the run of 11 September; the list has
 grown to 97 rules since, and Lean has not been run again
 ([`lean-checks-the-inference-rules.md`](lean-checks-the-inference-rules.md)).
 
-**Release 0.7.19 did not move that share.** It went 625 → 629 in 0.7.18; the seed
-reprint in 0.7.19 brought the kernel new abilities, not a higher share. What you
-have to trust grew with it: the deciding part of the kernel is 4796 lines, 4669
-before, because the quantifiers live there. The standing order to bring that
-number under 4000 is not done.
+**Release 0.7.20 took that share to all of it.** It went 625 → 629 in 0.7.18, stood
+still in 0.7.19, and the seed reprint of 0.7.20 closed the rest: 633 → 650 of 650,
+measured on 18 September 2026 with the checker rebuilt from its own source. Nothing
+is left on the kernel's word — the breakdown prints zero premises, zero steps and
+zero places closed by computing. What you have to trust did not shrink with it: the
+deciding part of the kernel is 4796 lines, 4669 before, because the quantifiers live
+there. The standing order to bring that number under 4000 is not done.
 
 ## How far from «right»
 

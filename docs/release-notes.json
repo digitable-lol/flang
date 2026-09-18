@@ -1,6 +1,46 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.20": {
+      "ru": {
+        "заголовок": "Компилятор доказан сам себе целиком: 650 мест из 650 переиграны независимой программой",
+        "появилось": [
+          "Впервые вердикт `sh scripts/доказуемость.sh` говорит ДОКАЗУЕМ при пороге 100 %: каждое из 650 обязательств в записях собственного доказательства компилятора независимая программа на C переиграла сама, не приняв от компилятора ни одного шага на слово. Раньше часть мест она брала на веру, и порог был ниже.",
+          "Снятие предусловия (`требует`) на месте вызова теперь печатается в запись и переигрывается: вторая доля, которая считает и предусловия, тоже 652 из 652.",
+          "Перепечатка семени привезла в собранный компилятор правки ядра: предусловие вызова не снимается объявленным типом довода; в `требует` можно писать квантор по элементам списка; у выписанного списка, `отобразить` и применённого ярлыка появились права; ядро печатает в запись обоснование, которое раньше выбрасывало."
+        ],
+        "изменилось": [
+          "Порог доказуемости поднят с 95 % до 100 % — слово владельца. До перепечатки вердикт при этом пороге честно печатал НЕ ДОКАЗУЕМ.",
+          "`package.json` выброшен из дерева: настройки проекта читаются из `.flangrc`, а сторож не даёт файлу вернуться.",
+          "Правила вывода снова сверены чужим ядром — Lean 4.34.0: строк ведомости 109, лемма есть у 107, на 1488 проигранных выводах сверщик и Lean разошлись 0 раз."
+        ],
+        "сломалось": [
+          "Доказательство по-прежнему относится к исходнику, а не к напечатанному коду: что `flang emit --target c` напечатал именно проверенную программу, не проверяет никто. Тот же разрыв у Coq, Lean и Idris.",
+          "Сверщик — сам доверенный код: 7 603 строки на C, размер под храповиком, правила сверены Lean, но доказан он не был.",
+          "О состоянии во времени, побочных эффектах и параллелизме правил всё ещё нет: мест, которым они нужны, 414, и первые три шага только расписаны.",
+          "100 % — это доля мест в собственном доказательстве компилятора, а не «все программы доказаны». Вердикт о вашей программе даёт `flang check --proof` и сверщик рядом с ней."
+        ]
+      },
+      "en": {
+        "заголовок": "The compiler's own proof is fully replayed: 650 places of 650",
+        "появилось": [
+          "For the first time `sh scripts/доказуемость.sh` prints ДОКАЗУЕМ against a 100 % gate: every one of the 650 obligations in the compiler's own proof records was replayed by an independent C program, with nothing taken on the compiler's word. Before this some places were accepted on trust and the gate stood lower.",
+          "Discharging a precondition (`требует`) at a call site is now printed into the record and replayed as well: the second share, the one that counts preconditions, is 652 of 652.",
+          "The seed reprint carried kernel fixes into the built compiler: a call's precondition is no longer discharged by the declared type of its argument; `требует` accepts a quantifier over list elements; a written-out list, `отобразить` and an applied function label gained the rights they lacked; the kernel now prints the justification it used to compute and drop."
+        ],
+        "изменилось": [
+          "The provability gate was raised from 95 % to 100 % — the owner's word. Until the reprint the verdict at that gate honestly printed НЕ ДОКАЗУЕМ.",
+          "`package.json` is gone from the tree: project settings are read from `.flangrc`, and a guard keeps the file from coming back.",
+          "The inference rules were judged again by a foreign kernel — Lean 4.34.0: 109 rule rows, 107 of them with a lemma, and on 1 488 replayed derivations the checker and Lean disagreed 0 times."
+        ],
+        "сломалось": [
+          "The proof still covers the source, not the printed program: nothing checks that `flang emit --target c` printed the program that was verified. Coq, Lean and Idris have the same gap.",
+          "The checker is itself trusted code: 7 603 lines of C, its size under a ratchet, its rules cross-checked by Lean, but not itself proved.",
+          "Time, side effects and processes still have no rules: 414 places in the tree need them, and only the first three steps are written down.",
+          "100 % is the share of places in the compiler's own proof, not «all programs are proved». The verdict about your program comes from `flang check --proof` and the checker beside it."
+        ]
+      }
+    },
     "0.7.19": {
       "ru": {
         "заголовок": "Кванторы дошли до собранного компилятора",

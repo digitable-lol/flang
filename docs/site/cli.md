@@ -70,8 +70,10 @@ The codes are the same across commands, and so is their meaning.
 | `3` | Done, but not everything was checked; what was not is named |
 | `4` | Part of the checks did not run at all (`check --быстро`), or everything is proved but leans on a grid (`check --proof --строго`) |
 
-Code `3` happens with `emit`, with `io` and with `check --proof` ("declared, not
-proved"). Tell `1` and `3` apart in build scripts: `1` means the work was not
+Code `3` happens with `emit`, with `io`, with `check --proof` ("declared, not
+proved") — and, since 0.7.21, with `run` and `io` on an **unproved program**: the
+verdict is computed, it names what is not proved, and nothing is evaluated
+(ADR-0045). Tell `1` and `3` apart in build scripts: `1` means the work was not
 done, `3` means it was done but cannot be vouched for in full.
 
 ## check
@@ -162,7 +164,7 @@ neither Node nor a C compiler is needed.
 
 ```bash
 flang run <файл.flang> --function «Имя» [--args '{"н":10}'] [--max-steps N]
-                       [--max-depth N]
+                       [--max-depth N] [--на-веру]
 ```
 
 | Key | What it does |
@@ -171,12 +173,21 @@ flang run <файл.flang> --function «Имя» [--args '{"н":10}'] [--max-ste
 | `--args '{…}'` | Arguments: a flat object of scalars. A list or a nested object is not accepted here |
 | `--max-steps N` | The evaluator step limit |
 | `--max-depth N` | The depth limit |
+| `--на-веру` (`--trust`) | Evaluate an unproved program: the verdict is not computed at all, and a line says so |
 
 Arguments are checked against the declared types before evaluation: «Факториал»
 of −3 is rejected with `FLANG_TYPE` rather than computed.
 
+Before evaluation the **proof verdict** is computed and one line goes to the
+error stream: `доказано: утверждений N` — or `не доказано: …` and then nothing is
+evaluated, exit code **3**. The verdict is about the whole closure, not one file:
+what runs is everything that is linked. `--на-веру` skips the verdict entirely
+(it is not computed, so it costs nothing) and says so with its own line. See
+[ADR-0045](https://github.com/digitable-lol/flang/blob/main/docs/adr/0045-run-and-io-print-the-verdict-and-refuse-an-unproved-program.md).
+
 ```bash
 $ flang run привет.flang --function «Удвоить» --args '{"н":21}'
+доказано: утверждений 1
 42
 ```
 
@@ -386,7 +397,7 @@ are checked with ordinary examples — no files, no network.
 
 ```bash
 flang io <файл.flang> [--plan 'Имя'] [--max-orders N] [--seed N] [--in-dir]
-                      [--max-steps N] [--timeout N] [--pretty]
+                      [--max-steps N] [--timeout N] [--pretty] [--на-веру]
 ```
 
 | Key | What it does |
@@ -398,6 +409,11 @@ flang io <файл.flang> [--plan 'Имя'] [--max-orders N] [--seed N] [--in-di
 | `--seed N` | The randomness seed: the run becomes repeatable |
 | `--in-dir` | Forbid paths outside the directory of the input file |
 | `--pretty` | JSON with indentation |
+| `--на-веру` (`--trust`) | Run an unproved plan: the verdict is not computed at all, and a line says so |
+
+Like `run`, `io` computes the **proof verdict** of the closure before the plan
+starts and puts one line into the error stream; an unproved plan is not run at
+all, exit code `3` (ADR-0045).
 
 **A plan name is written WITHOUT guillemets, and a space inside it is closed by
 shell quotes.** Guillemets are how the language writes names in source, but the
@@ -453,8 +469,8 @@ the number of orders and the number of steps.
 
 The exit codes are a contract: `0` — the plan ran to the end; `1` — the program
 gave up itself («Провал»), that is, it found trouble and named it; `2` — a bad
-call; `3` — the tool broke, or the program said «Не проверено», that is, it had
-nothing to look with. What tells the first two apart is not the error code but
+call; `3` — the tool broke, the program said «Не проверено», that is, it had
+nothing to look with, or the plan is not proved and there was no `--на-веру`. What tells the first two apart is not the error code but
 who made the decision; the second and the third — what was decided: "found
 trouble" against "could not look".
 

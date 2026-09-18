@@ -767,7 +767,7 @@
 - [Разошедшееся опубликованное число либо устарело, либо было неверным — различает их только пересчёт по дереву коммита съёмки](a-published-number-is-stale-or-wrong-and-only-a-recount-at-the-snapshot-tells-which.md)
 - [Прогон на чужой машине превращает отсутствующий тулчейн из пропуска в провал — иначе половина целей не проверена ни разу](a-remote-run-turns-a-missing-toolchain-into-a-failure-not-a-skip.md)
 - [На негодном октете прогонщик обязан отказать одинаково на всех целях — а было пять разных поведений, и отказом не было ни одно](a-runner-must-refuse-a-bad-octet-identically-across-nine-targets.md)
-- [Пределы печати точки раскрутки — одна запись на оба пути, и совпадение проверяется, а не обещается](bootstrap-reprint-limits-are-one-record-shared-with-raskrutka-and-checked.md)
+- [Пределы печати точки раскрутки — одна запись на оба пути, и совпадение проверяется, а не обещается](bootstrap-reprint-limits-are-one-record-shared-with-the-print-script-and-checked.md)
 - [Кириллица в именах файлов вне flang/proof не прибавляется — храповик по ведомости, а не запрет](cyrillic-file-names-are-a-ledger-ratchet-outside-flang-proof.md)
 - [Переписи сторожей берут имена только из позиции элемента списка, а вызовы — только из ключа run: подстрочный поиск лгал в обе стороны](guard-censuses-read-shortcuts-from-list-position-and-calls-from-run-keys.md)
 - [Перепись перечней, набранных руками, не держит списка мест — иначе стала бы сто шестым перечнем; без двоичного она лжёт](hand-written-lists-census-keeps-no-list-of-places-and-needs-the-binary.md)

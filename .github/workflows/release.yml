@@ -249,7 +249,7 @@ jobs:
         run: |
           set -eu
           mkdir -p output
-          LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.fscript --max-steps 80000000
+          LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.fscript --на-веру --max-steps 80000000
           echo "имя релиза: $(cat output/release-title.txt)"
           echo "знаков в теле: $(wc -c < output/release-body.md)"
 
@@ -277,7 +277,7 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.fscript --max-steps 80000000 >/dev/null 2>&1; then
+          if LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.fscript --на-веру --max-steps 80000000 >/dev/null 2>&1; then
             git checkout -- "$podlog"
             echo "::error::проба не сработала: тело собралось для версии 0.0.0, о которой заметки нет."
             echo "::error::Значит шаг «Тело релиза собрано из заметок» пропустит выпуск без заметки — сторожа нет."

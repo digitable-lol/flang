@@ -150,4 +150,4 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - name: Узел зовёт у напечатанного только объявленное и исполняет каждое веление
-        run: bootstrap/flang io scripts/targets/conc-link-emit.fscript
+        run: bootstrap/flang io scripts/targets/conc-link-emit.fscript --на-веру

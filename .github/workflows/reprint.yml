@@ -78,7 +78,7 @@ jobs:
       - name: Свежесть побайтовой сверки
         id: svezhest
         continue-on-error: true
-        run: ./bootstrap/flang io scripts/seed/reprint-freshness.fscript 2>&1 | tee /tmp/svezhest.txt
+        run: ./bootstrap/flang io scripts/seed/reprint-freshness.fscript --на-веру 2>&1 | tee /tmp/svezhest.txt
 
       - name: Сказать вслух, на чём сверку считать
         if: always()
@@ -243,7 +243,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - name: имена замыкания компилятора не схлопываются после «Змейки»
-        run: bootstrap/flang io scripts/guards/latin-collision-guard.fscript --max-steps 2000000000
+        run: bootstrap/flang io scripts/guards/latin-collision-guard.fscript --на-веру --max-steps 2000000000
 
   # ── Дёшево и по расписанию: та же повторимость, но на входе побольше ──────
   #

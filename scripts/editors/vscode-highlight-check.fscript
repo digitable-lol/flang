@@ -87,7 +87,7 @@
   возвращает «Продолжение»
   если содержимое равен «Файл грамматики»
     то вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным «Где объявление») и потом равным (вариант «Объявление прочитано»)
-    иначе вариант «Провал» с код равным "FLANG_VSCODE_USTARELA" и сообщение равным "docs/editors/vscode/syntaxes/flang.tmLanguage.json отстал от таблицы языка: перепечатайте — flang io scripts/editors/vscode-highlighting.fscript"
+    иначе вариант «Провал» с код равным "FLANG_VSCODE_USTARELA" и сообщение равным "docs/editors/vscode/syntaxes/flang.tmLanguage.json отстал от таблицы языка: перепечатайте — flang io scripts/editors/vscode-highlighting.fscript --на-веру"
 
 тотальная функция «После чтения грамматики»
   принимает отклик: «Отклик»

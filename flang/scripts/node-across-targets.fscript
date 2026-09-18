@@ -139,9 +139,9 @@
   возвращает строка
   соединить [
     "cd ../..;",
-    " bootstrap/flang run flang/concurrency/node-benchmark.flang --function 'Начальный счёт' 2>/dev/null; echo '@@';",
+    " bootstrap/flang run flang/concurrency/node-benchmark.flang --на-веру --function 'Начальный счёт' 2>/dev/null; echo '@@';",
     " bootstrap/flang run flang/concurrency/examples/distributed.flang --function 'пустой счёт' 2>/dev/null; echo '@@';",
-    " bootstrap/flang run flang/concurrency/node-benchmark.flang --function 'Начальные записи' 2>/dev/null; echo '@@';",
+    " bootstrap/flang run flang/concurrency/node-benchmark.flang --на-веру --function 'Начальные записи' 2>/dev/null; echo '@@';",
     " bootstrap/flang run flang/concurrency/examples/distributed.flang --function 'пустые записи' 2>/dev/null; echo '@@'"
   ] по ""
 

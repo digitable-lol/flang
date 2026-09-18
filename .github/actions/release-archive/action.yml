@@ -91,7 +91,7 @@ runs:
         # Скрипт не только печатает компилятор в C99, но и СОБИРАЕТ
         # напечатанное в окружении без Node в PATH и запускает собранное.
         # Битый архив дальше этого шага не уедет.
-        LC_ALL=C.UTF-8 bootstrap/flang io scripts/release/release-in-c.fscript --timeout 1800000
+        LC_ALL=C.UTF-8 bootstrap/flang io scripts/release/release-in-c.fscript --на-веру --timeout 1800000
 
         # Версия — ключ `версия` в .flangrc, спрошенный через scripts/flangrc.sh
         # (двоичный к этому шагу уже собран). package.json выброшен 17 сентября

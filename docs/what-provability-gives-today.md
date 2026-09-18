@@ -61,9 +61,11 @@ $ flang/proof/чекер/сверщик заказ.flang заказ.запись
 An honest answer. On this function the kernel closed the goal «by declaration»
 — both arguments are declared non-negative — and the checker has no move for
 that yet: it neither confirms nor refutes, it names the place where it takes the
-kernel's word. 22 such places out of 651 remain in the compiler's own record set.
-Where the kernel recorded moves, the checker replays them: 629 obligations over
-89 records, and 453 deliberate forgery probes rejected (`./ярлык чекер:проверка`).
+kernel's word. Since 18 September 2026 no such place is left in the compiler's
+own record set: the checker replays all 650 obligations, and 529 deliberate
+forgery probes are rejected (`./ярлык чекер:проверка`). A program with a
+**user-declared type** is another matter — there the checker still takes the
+kernel's word, and that is written down as task 2748.
 
 ## Expressible, and not
 
@@ -122,23 +124,23 @@ Not expressible — there is no place to write it:
   ([ADR-0034](adr/0034-hardware-failure-is-described-not-proved.md)).
   We do not promise it.
 
-## What «96 %» means
+## What «100 %» means
 
 ```
-sh scripts/доказуемость.sh          → ДОКАЗУЕМ                       (13 September 2026)
+sh scripts/доказуемость.sh          → ДОКАЗУЕМ                       (18 September 2026)
 sh flang/proof/доля-корпуса.sh --проигрыванием
-→ доля-проигрыванием = 629 / 651 = 96.62 %
-  на слово ядра: посылок и утверждений 12; шагов 4; снято калькулятором 6
+→ доля-проигрыванием = 650 / 650 = 100.00 %
+  на слово ядра: посылок и утверждений 0; шагов 0; снято калькулятором 0
 ```
 
-The share of places in the **compiler's own proof records** (89 records over
+The share of places in the **compiler's own proof records** (records over
 `flang/proof/map/`, `flang/proof/examples/` and the standard library) where the
-independent checker replayed the kernel's move. Not «96 % of programs are
-proved», not «96 % of claims in the tree», nothing about compiled code. The word
-is derived from four numbers: no computing step in the checker; share against
-the gate — 100 % since 17 September 2026 (the owner's word, task 3348), which is
-why the word today is an honest **НЕ ДОКАЗУЕМ**, exit 1, at 633 of 650 replayed;
-529 forgery probes rejected and 244 honest records accepted; the probe set has
+independent checker replayed the kernel's move. Not «all programs are proved»,
+not «all claims in the tree», nothing about compiled code. The word is derived
+from four numbers: no computing step in the checker; share against the gate —
+100 % since 17 September 2026 (the owner's word, task 3348), and taken on
+18 September: 650 of 650, with not a single place left on the kernel's word;
+529 forgery probes rejected and the honest records accepted; the probe set has
 not shrunk. The inference rules were also judged by the Lean 4
 kernel — 88 rules against 85 lemmas in the run of 11 September; the list has
 grown to 97 rules since, and Lean has not been run again

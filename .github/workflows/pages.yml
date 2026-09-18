@@ -133,7 +133,7 @@ jobs:
       # исчерпала лимит шагов (10000000)». Замерено здесь же: с ключом план
       # доходит до конца и печатает «Напечатано: выпусков 14».
       - name: Перепечатать страницу выпусков
-        run: LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/releases-page.fscript --max-steps 40000000
+        run: LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/releases-page.fscript --max-steps 80000000
 
       # Отдельным шагом до сборки: если ссылки битые, видно сразу и по имени,
       # а не среди вывода сборки.

@@ -101,11 +101,12 @@ expects a different code and counts the forgery as unchecked.
 
 What is confirmed by another instrument: the proof the compiler prints
 (`flang check --proof --записать`) is replayed by an independent C program —
-`flang/proof/чекер/сверщик.c`. `sh scripts/доказуемость.sh` on 13 September 2026
-with 0.7.19: PROVABLE, 629 obligations out of 651 replayed (96.62 %), 453
-forgery probes rejected, 215 honest records accepted; 88 inference rules accepted by
-the Lean 4 kernel in the run of 11 September — the list has grown to 97 rules since,
-and Lean has not been run again. More on
+`flang/proof/чекер/сверщик.c`. `sh scripts/доказуемость.sh` on 19 September 2026
+on trunk (commit `a5609e322`): PROVABLE, 650 obligations out of 650 replayed
+(100.00 %), 533 forgery probes rejected, 245 honest records accepted; all 109
+inference rules accepted by the Lean 4 kernel, 0 verdict divergences. The hundred
+per cent is the share of places in the compiler's **own** proof records and says
+nothing about the emitted code. More on
 [What is proved and what is not](what-is-proved.html).
 
 The price is honest: without excluded middle some classical statements cannot be

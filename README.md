@@ -38,39 +38,48 @@ that it replays independently, rather than takes on the kernel's word:
 
 ```bash
 sh flang/proof/доля-корпуса.sh --проигрыванием
-# → доля-проигрыванием = 650 / 650 = 100.00 %     (19 September 2026, commit a5609e322, flang 0.7.20)
-# → доля с предусловиями = 652 / 652 = 100.00 %   (ADR-0038)
-sh scripts/доказуемость.sh          # → ДОКАЗУЕМ, exit 0
-# → проверка 2 — доля проигрыванием не ниже 100 %? ДА (100.00 %: 650 из 650; недостижимых мест вынесено 27)
+# → доля-проигрыванием = 629 / 651 = 96.62 %      (13 September 2026, commit 1218aa186, flang 0.7.19)
+# → доля с предусловиями = 629 / 653 = 96.32 %    (14 September 2026, ADR-0038)
+sh scripts/доказуемость.sh          # → НЕ ДОКАЗУЕМ, exit 1                      (17 September 2026, threshold 100 %)
+# → проверка 2 — доля проигрыванием не ниже 100 %? НЕТ (97.38 %: 633 из 650; недостижимых мест вынесено 22)
 ```
 
-Read the fraction as a fraction. The numerator, 650, is what the C checker established without
-asking the kernel: 397 obligations replayed from the recorded moves, 97 recomputed on the spot
+Read the fraction as a fraction. The numerator, 629, is what the C checker established without
+asking the kernel: 397 obligations replayed from the recorded moves, 93 recomputed on the spot
 where the record says «по примеру» or «по свойству», 85 totality nodes walked again structurally
-and 71 type-fact derivations replayed rule by rule. The denominator, 650, is all 677 obligations of
-the record set minus the 27 that belong to records the checker rejected outright — deliberate
-forgeries, and a forgery is never supposed to be replayable. Nothing is missing from the numerator:
-there is **no** place left where the checker takes the kernel's word or closes an obligation by
-computing an identity instead of replaying it. There used to be 22 such places — 12 premises and
-claims, 4 steps, and 6 identities. Where each of them sat and what closing it took is
+and 54 type-fact derivations replayed rule by rule. The denominator, 651, is every obligation of
+the 89 records in the set minus the 22 that belong to the four records the checker rejected
+outright — deliberate forgeries, and a forgery is never supposed to be replayable. The 22 that are
+missing from the numerator are the honest cost: 12 premises and claims and 4 steps that the
+checker takes on the kernel's word, and 6 closed by computing an identity rather than by
+replaying it. Where each of them sits and what closing it would take is
 [`docs/road-to-one-hundred-measured.md`](docs/road-to-one-hundred-measured.md).
 
-The second line counts preconditions too ([ADR-0038](docs/adr/0038-a-precondition-is-discharged-by-a-printed-derivation.md)):
-every call of a function with `требует` is an obligation of the caller, the kernel proves it, and
-the checker replays it — both call sites of the record set included.
+**This release did not move that share.** It went 625 → 629 in 0.7.18, and 0.7.19 left it where
+it was. The seed reprint of 0.7.19 gave the kernel new things to prove, not a higher share.
 
-The second command is the verdict in one word, and it is printed from four checks, each with a
-number: the checker holds no step that proves by computing instead of replaying (measured by a trap
-of three ∀-goals, not by grepping a function name); the share is 100.00 %, at the gate; the whole
-probe set passes — 533 forgery probes rejected, 245 honest records accepted; and the probe set has
-not shrunk against its ratchet. The 100 % gate is the owner's word (task 3348), set on 17 September
-2026 and reached on 18 September: 633 → 650 of 650.
+The second line counts preconditions too ([ADR-0038](docs/adr/0038-a-precondition-is-discharged-by-a-printed-derivation.md)).
+Every call of a function with `требует` is an obligation of the caller, and the kernel proves it;
+the next seed reprint prints that proof into the record, and the checker already replays it. Until
+then the two call sites of the record set (both in `flang/proof/examples/precondition.flang`) stand
+in the denominator unreplayed, which is why the second share is lower. The 100 % threshold is
+applied to the first line until the record set is reprinted.
 
-The inference rules the kernel uses were also judged by a second, foreign judge — the Lean 4
-kernel: all 109 rules are translated into lemmas and accepted, 0 verdict divergences, 52 traps and
-all 52 rejected, and no `sorry`, `axiom` or `native_decide` anywhere (run at commit `a5609e322`).
-The long report ([`docs/lean-checks-the-inference-rules.md`](docs/lean-checks-the-inference-rules.md))
-lags behind: its numbers were taken on 11 September.
+The second command is the verdict in one word. Since 17 September 2026 the gate on the share is
+100 % — the owner's word (task 3348), raised from the former, lower gate that the share cleared
+with room to spare — and the verdict is honestly **НЕ ДОКАЗУЕМ**, exit 1: 633 obligations of 650
+replayed, 17 still taken on the kernel's word or closed by computing, each named with its price in
+[`docs/road-to-one-hundred-measured.md`](docs/road-to-one-hundred-measured.md). What flipped the
+word was the gate, not the share. It is printed from four checks, each with a number: the checker
+holds no step that proves by computing instead of replaying (measured by a trap of three ∀-goals,
+not by grepping a function name); the share is 97.38 %, below the 100 % gate; the whole probe set
+passes — 529 forgery probes rejected, 244 honest records accepted; and the probe set has not shrunk
+against its ratchet. The inference rules the kernel uses were also judged by a second, foreign judge — the
+Lean 4 kernel; the one rule Lean rejected was unsound and has been fixed. That run is a dated one:
+it judged 88 rules against 85 lemmas on 11 September. The list of inference rules has grown since — 97 rules in
+`flang/proof/ПРАВИЛА-ВЫВОДА.tsv`, 105 lemmas written in `flang/proof/lean/Правила.lean` — and
+Lean has not been run again, because `lean` is not installed on this machine
+([`docs/lean-checks-the-inference-rules.md`](docs/lean-checks-the-inference-rules.md)).
 
 ## What a proof can say, as of 0.7.19
 

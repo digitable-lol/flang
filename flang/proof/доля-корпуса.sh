@@ -1656,7 +1656,9 @@ samoproverka() {
 PECHAT_RASHODITSYA_ZAKONNO="poddelka-nositel-chislo-segment.запись
 poddelka-nositel-psevdonim-ne-otrezok.запись
 poddelka-raznost-bez-poryadka.запись
-poddelka-svyortka-nad-pustym.запись"
+poddelka-svyortka-nad-pustym.запись
+poddelka-razv2-sebya.запись
+poddelka-razv3-raznost.запись"
 
 # ── ОТСТАЛО ЛИ САМО ЯДРО ОТ СЕМЕНИ (замер 11 сентября 2026) ────────
 # Прибор судит записи печатью bootstrap/flang и молча верит, что двоичный

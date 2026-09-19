@@ -15,7 +15,7 @@ The number is recounted by one command:
 | [`leetcode/`](docs/examples/leetcode) | 82 | solutions to LeetCode problems; every file is self-contained on purpose — why, is said in [`index.json`](docs/examples/leetcode/index.json). The account of this set is [82 problems](case-studies.html) |
 | [`rosetta/`](docs/examples/rosetta) | 28 | the canonical Rosetta Code tasks, each on the Russian and on the English surface of the language. The account of the set is [Rosetta Code](rosetta.html) |
 | [`web/`](docs/examples/web) | 13 | HTTP: an orders service, the [URL shortener](shortener.html) and a marketplace API of three services — catalogue, cart, orders |
-| [`io/`](docs/examples/io) | <!-- СНЯТО 2026-09-11 файлов docs/examples/io/*.flang = 9 --> 9 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet |
+| [`io/`](docs/examples/io) | <!-- СНЯТО 2026-09-19 файлов docs/examples/io/*.flang = 10 --> 10 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet, a progress bar on the terminal |
 | [`crypto/`](docs/examples/crypto) | 8 | AES, ECDSA, X25519, X.509, a revocation list, a TLS hello — on real test vectors that lie next to them |
 | [`library-api/`](docs/examples/library-api) | 7 | the domain half of a library REST service: lending, catalogue, fines. The only set that shows a **project layout** in full |
 | [`db/`](docs/examples/db) | <!-- СНЯТО 2026-09-03 файлов docs/examples/db/*.flang = 6 --> 6 | talking to PostgreSQL (SCRAM included), to Redis, and reading an SQLite file |

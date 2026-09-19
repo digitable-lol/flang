@@ -100,9 +100,15 @@ about three minutes:
 ```
 
 All 650 obligations the kernel wrote into the certificate were replayed by the
-checker itself; 533 forged proofs were rejected, 245 honest ones accepted. What
-this does **not** mean is spelled out on [what is proved and what is
-not](what-is-proved.html).
+checker itself; 533 forged proofs were rejected, 245 honest ones accepted.
+
+**This is not "100 % of programs are proved".** The hundred per cent is the
+share of places in the compiler's **own** proof records, and it says nothing
+about the emitted code. There are four coverages in all, and the other three are
+lower: inference rules formalised in Lean, an open list of known soundness
+violations, and the translation check for C. `sh scripts/four-coverages.sh`
+prints all four side by side with a date and a commit; what each one is *not* is
+spelled out on [what is proved and what is not](what-is-proved.html).
 
 Across the tree: {{корпус.тотальных}} functions out of {{корпус.функций}}
 terminate provably, and of {{утверждения.высказано}} behaviour claims the kernel

@@ -315,6 +315,7 @@ counted
 counter
 counting
 counts
+coverages
 covered
 covers
 cpp
@@ -1092,6 +1093,7 @@ provability
 provable
 proved
 proven
+provenance
 prover
 proves
 proving

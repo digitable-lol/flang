@@ -551,6 +551,9 @@ if [ "$proigr" -eq 1 ]; then
     HRAP_P=$(awk '/^подделок /{print $2; exit}' "$HRAP_F"); HRAP_P=${HRAP_P:-—}
     HRAP_CH=$(awk '/^числитель /{print $2; exit}' "$HRAP_F"); HRAP_CH=${HRAP_CH:-—}
   fi
+  # Провенанс печатается ПЕРЕД числами: доля, снятая на правленом дереве или
+  # отставшим двоичным, — другое число, и по одному проценту этого не видно.
+  sh "$root/scripts/report-provenance.sh" || true
   echo "═══ ДОЛЯ-ПРОИГРЫВАНИЕМ по корпусу ═══"
   echo "каталог записей   $korpus_pr"
   echo "записей в наборе  $ZAPISEY (чекер поручился $PORUCH, отверг либо не позвал $OTVERG)"

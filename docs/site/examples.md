@@ -1,12 +1,12 @@
 # The catalogue of examples
 
-Every example program in flang lives in one directory — `docs/examples/`: <!-- СНЯТО 2026-09-13 файлов docs/examples/*.flang = 204 --> 204 files in
+Every example program in flang lives in one directory — `docs/examples/`: <!-- СНЯТО 2026-09-17 файлов docs/examples/*.flang = 205 --> 205 files in
 twenty-four sets and one full-size project. There is no second directory of examples
 in the repository: until 24 August 2026 a hundred and fifty programs stood a floor
 below, and they could not be found at a glance.
 
 The number is recounted by one command:
-`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-13 файлов docs/examples/*.flang = 204 --> 204 (measured 6 September 2026).
+`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-09-17 файлов docs/examples/*.flang = 205 --> 205 (measured 6 September 2026).
 
 ## The sets
 

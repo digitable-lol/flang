@@ -180,6 +180,22 @@ zakaz.flang: не проверено — замечаний 1
 exit 1
 ```
 
+```mermaid Who discharges the precondition
+sequenceDiagram
+  participant C as Calling function
+  participant K as Compiler
+  participant Y as Kernel
+  C->>K: «Цена со скидкой» от цена и скидка
+  K->>Y: discharge «скидка не больше цены»
+  alt there is something to discharge it with
+    Y-->>K: proved
+    K-->>C: file emitted,<br>no check in the code
+  else nothing to discharge it with
+    Y-->>K: not proved
+    K-->>C: FLANG_PRECONDITION_CALL,<br>no file emitted
+  end
+```
+
 The difference from `assert` in Python or Java: an assert fires at a user's
 machine, six months after release, on an input nobody expected. Here the call is
 settled **in the compiler**, and it is the caller's job to discharge the

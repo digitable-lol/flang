@@ -555,8 +555,23 @@ $ echo $?
 1
 ```
 
-What the binary host does not have: a screen («Показать», «Ждать событие» answer
-`FLANG_IO_NO_SCREEN`) and encryption of its own. The `https` scheme of the
+The binary host does have a screen, and it is the controlling terminal
+(`/dev/tty`). It has exactly one place, named «экран»; any other name is
+`FLANG_IO_PLACE`. «Показать» writes the text as a whole frame (clear, then text)
+into the terminal, not into stdout — stdout carries the plan's verdict. On the
+first «Показать» the host switches to the terminal's alternate screen and hides
+the cursor, and restores both when the run ends — successfully, by refusal, or
+by Ctrl-C. «Ждать событие» puts the terminal into character-at-a-time mode and
+waits no longer than «срок» milliseconds (0 or no deadline — forever): a key
+gives «Случилось» with «откуда» equal to «клавиатура», otherwise «Срок вышел».
+Key names: ввод, пробел, таб, возврат, выход, вверх, вниз, влево, вправо;
+anything else arrives as the character itself. Ctrl-C still kills the program
+while waiting — the host does not clear ISIG. With no terminal (output piped or
+redirected, CI, nohup) both orders answer `FLANG_IO_NO_SCREEN`, as they always
+did; the `--no-screen` flag takes the screen away on purpose, and then the answer
+is `FLANG_IO_DENIED`.
+
+What the binary host does not have: encryption of its own. The `https` scheme of the
 «Запросить» order works, but an external `curl` performs it: without it the
 refusal is `FLANG_IO_NO_TLS`; `--no-spawn` forbids `https` too, with
 `FLANG_IO_DENIED`. Certificate revocation is not checked, neither by OCSP nor by

@@ -23,7 +23,7 @@ flowchart TD
   B --> E[obligations: requires, ensures]
   E --> F{proof kernel}
   F -->|proved| G[no check is emitted into the compiled code]
-  F -->|not proved| H[guard: a check at run time]
+  F -->|not proved| H[a check at run time]
   F --> I[certificate: the whole derivation, written out]
   I --> J[checker — a separate C program]
   J --> K[verdict: replayed, or forgery]
@@ -69,9 +69,10 @@ $ flang check --proof spusk.flang
   сторожа нет
 ```
 
-The last two words — *сторожа нет*, "no guard" — are the point. A guard is a
-check the compiler writes into the compiled program when the proof did not
-close. Here it is not needed, so it will not be in the code.
+The last two words of that report are the point. When a proof does not close,
+the compiler writes a check into the compiled program that catches the
+difference at run time. Here there is nothing to catch: walking a finite tree
+ends by itself, so no check goes into the code.
 
 ### Descending on a number: the type decides whether a check remains
 

@@ -490,6 +490,33 @@ body {
   text-anchor: middle;
 }
 
+/* Диаграмма последовательности. Своих цветов нет ни одного: шапка участника —
+   тот же `.node`, стрелка — тот же `.edge`, подпись на ней — тот же
+   `.edge-label`. Здесь только то, чего у flowchart нет вовсе: линия жизни,
+   заметка, рамка `loop`/`alt`/`opt` и простое (незакрашенное) остриё. */
+.shema .life { fill: none; stroke: var(--rule); stroke-width: 1.25; stroke-dasharray: 4 5; }
+.shema .arrowhead-line { fill: none; stroke: var(--faint); stroke-width: 1.4; }
+/* Подпись петли «сам себе» стоит справа от неё, а не по центру. */
+.shema .edge-label.sleva { text-anchor: start; }
+
+.shema .note { fill: var(--accent-bg); stroke: var(--rule); stroke-width: 1.25; }
+.shema .note-text {
+  fill: var(--ink); font-family: var(--sans); font-size: 11.5px;
+  text-anchor: middle;
+}
+
+.shema .frame { fill: none; stroke: var(--rule); stroke-width: 1.25; }
+.shema .frame-split { fill: none; stroke: var(--rule); stroke-width: 1; stroke-dasharray: 4 4; }
+.shema .frame-tag { fill: var(--sidebar); stroke: var(--rule); stroke-width: 1; }
+.shema .frame-tag-text {
+  fill: var(--muted); font-family: var(--sans); font-size: 10.5px;
+  font-weight: 700; text-anchor: middle;
+}
+.shema .frame-label {
+  fill: var(--faint); font-family: var(--sans); font-size: 11.5px;
+  text-anchor: start;
+}
+
 /* ── Оглавление справа ─────────────────────────────────────────────── */
 
 .toc {

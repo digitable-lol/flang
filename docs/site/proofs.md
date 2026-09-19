@@ -147,6 +147,25 @@ Proof **search** stands apart, and how it is built matters: it **believes
 nothing**. It only proposes, and the kernel re-checks everything. That is why
 search can be as brazen as you like — a model, even — without costing rigour.
 
+```mermaid How flang check talks to the kernel
+sequenceDiagram
+  participant C as flang check
+  participant S as Search
+  participant K as Kernel
+  C->>K: goal and assumptions
+  loop until the goal is closed
+    K->>S: what closes it?
+    S-->>K: try this rule
+    K->>K: re-check the step<br>from scratch
+  end
+  alt step verified
+    K-->>C: proved for ALL inputs
+  else rules ran out
+    K-->>C: stated, not proved
+  end
+  Note over S,K: search only proposes,<br>the kernel checks it itself
+```
+
 The same reasoning explains why we **do not wire in an external solver as the
 judge**. Trusting one means handing correctness to two hundred thousand lines of
 somebody else's code. As a hint-giver it is useful. As a source of truth it is

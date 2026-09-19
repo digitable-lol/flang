@@ -739,7 +739,7 @@ static const char HELP_TOKENS[] =
 
 static const char HELP_IO[] =
     "flang io <файл.flang> [--plan «Имя»] [--max-orders N] [--seed N] [--in-dir] [--pretty]\n"
-    "                      [--на-веру]\n"
+    "                      [--на-веру] [-- довод…]\n"
     "\n"
     "Исполняет ПЛАН — единственное место языка, где программа встречается с миром.\n"
     "Встречается не сама: каждый шаг возвращает ОПИСАНИЕ действия, а делает его\n"
@@ -754,10 +754,23 @@ static const char HELP_IO[] =
     "  --pretty        JSON с отступами\n"
     "  --на-веру       исполнить недоказанный план: вердикт не считается вовсе, и\n"
     "                  об этом говорится своей строкой. Латиницей — «--trust»\n"
+    "  --              ГРАНИЦА: всё, что стоит после этого отдельного довода, —\n"
+    "                  доводы ПЛАНА, а не ключи команды. Их отдаёт поручение\n"
+    "                  «Прочитать доводы» списком строк, в том же порядке и без\n"
+    "                  разбора. Ключи самого «flang io» в этот список не попадают\n"
+    "                  никогда, имени программы и имени файла плана в нём нет.\n"
+    "                  Нет «--» в строке — список пуст\n"
     "\n"
     "Полномочия сужаются по одному: --no-read, --no-write, --no-net, --no-clock,\n"
-    "--no-random, --no-spawn. Умолчание — «можно всё»: запуск программы этой\n"
-    "командой и есть согласие на её действия.\n"
+    "--no-random, --no-spawn, --no-env, --no-args. Умолчание — «можно всё»: запуск\n"
+    "программы этой командой и есть согласие на её действия.\n";
+
+/*
+ * Вторая половина справки `io` — не разделение по смыслу, а то же требование
+ * C99, что у `check` и у `emit`: строковый литерал не длиннее 4095 байт, а
+ * кириллица съедает по два байта на букву. Печатаются обе подряд.
+ */
+static const char HELP_IO_2[] =
     "\n"
     "КОДЫ ВОЗВРАТА — контракт. 0 — план дошёл до конца; 1 — ПРОГРАММА СДАЛАСЬ\n"
     "САМА («Провал»), то есть нашла беду и назвала её; 2 — кривой вызов; 3 —\n"
@@ -767,6 +780,12 @@ static const char HELP_IO[] =
     "посмотреть». Тройкой же отвечает и ОТКАЗ ЗАПУСКА недоказанного плана: перед\n"
     "работой считается вердикт о замыкании и одной строкой уходит в поток ошибок\n"
     "(ADR-0045); «--на-веру» его пропускает.\n"
+    "\n"
+    "Среду и доводы хозяин читает сам: «Прочитать переменную среды» отдаёт РОВНО\n"
+    "названную переменную («Значение среды»), а незаданную — отдельным откликом\n"
+    "«Переменной среды нет», а не пустой строкой; пустое имя — отказ FLANG_IO_ENV.\n"
+    "Среды целиком не отдаётся: вместе с ней уехали бы ключи и пароли, которых\n"
+    "план не спрашивал. Запрет — --no-env и --no-args, отказом FLANG_IO_DENIED.\n"
     "\n"
     "Чего у двоичного хозяина нет: экрана («Показать», «Ждать событие» отвечают\n"
     "FLANG_IO_NO_SCREEN) и СВОЕГО шифрования. Нехватка названа отказом, а не\n"
@@ -969,7 +988,7 @@ static void human_help(const char *topic) {
   } else if (strcmp(topic, "facts") == 0) {
     printf("%s\n", HELP_FACTS);
   } else if (strcmp(topic, "io") == 0) {
-    printf("%s\n", HELP_IO);
+    printf("%s%s\n", HELP_IO, HELP_IO_2);
   } else if (strcmp(topic, "lock") == 0) {
     printf("%s\n", HELP_LOCK);
   } else if (strcmp(topic, "package") == 0) {
@@ -13423,11 +13442,17 @@ typedef struct {
   bool clock;
   bool random;
   bool spawn;
+  bool env;
+  bool args;
   bool in_dir;
   bool seeded;
   unsigned long seed_state;
   long timeout_ms;
   char *root;
+  /* Доводы ПЛАНА, а не двоичного. Память здесь чужая — это сам argv, который
+     живёт дольше хозяина, — и потому не освобождается ни здесь, ни в io_close. */
+  char **plan_args;
+  size_t plan_arg_count;
   io_listen listens[IO_MAX_PORTS];
   size_t listen_count;
   io_link links[IO_MAX_LINKS];
@@ -14771,6 +14796,56 @@ static fl_value io_perform(io_host *host, fl_value order) {
     return io_variant("Выпало", fields, 1);
   }
 
+  if (io_order_is(order, "Прочитать переменную среды")) {
+    char *wanted = io_order_text(order, "имя");
+    const char *value = NULL;
+    if (!host->env) {
+      free(wanted);
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено читать среду");
+    }
+    if (wanted == NULL || wanted[0] == '\0') {
+      free(wanted);
+      return io_fail("FLANG_IO_ENV", "поручению нужно непустое имя переменной");
+    }
+    /* Переменную просят ПО ИМЕНИ, и отдаётся ровно она. Хозяин, отдающий среду
+       целиком, отдал бы вместе с ней ключи и пароли, которых план не
+       спрашивал. «Не задана» — ОТДЕЛЬНЫЙ отклик, а не пустая строка: это разные
+       вещи, и обе выразимы. */
+    value = getenv(wanted);
+    free(wanted);
+    if (value == NULL) {
+      return io_variant("Переменной среды нет", NULL, 0);
+    }
+    {
+      fl_value fields[1];
+      fields[0] = io_pair("значение", io_say(value));
+      return io_variant("Значение среды", fields, 1);
+    }
+  }
+
+  if (io_order_is(order, "Прочитать доводы")) {
+    if (!host->args) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено читать доводы");
+    }
+    /* Имени программы и имени файла плана в списке нет: план знает, каким файлом
+       он запущен, и первый довод — первый, а не нулевой. Пустой список —
+       обычный исход (позвали без «--»), а не беда, и потому второго отклика
+       вроде «доводов нет» не заведено. */
+    {
+      fl_value *values = host->plan_arg_count == 0
+                             ? NULL
+                             : (fl_value *)repl_alloc(host->plan_arg_count * sizeof(fl_value));
+      fl_value fields[1];
+      size_t index = 0;
+      for (index = 0; index < host->plan_arg_count; index += 1) {
+        values[index] = io_say(host->plan_args[index]);
+      }
+      fields[0] = io_pair("доводы", io_list(values, host->plan_arg_count));
+      free(values);
+      return io_variant("Доводы", fields, 1);
+    }
+  }
+
   if (io_order_is(order, "Запросить")) {
     char *method = io_order_text(order, "способ");
     char *address = io_order_text(order, "адрес");
@@ -15344,6 +15419,8 @@ static int io_file(int argc, char **argv) {
   host.clock = true;
   host.random = true;
   host.spawn = true;
+  host.env = true;
+  host.args = true;
   host.timeout_ms = 30000;
   host.next_link = 1;
 
@@ -15364,6 +15441,10 @@ static int io_file(int argc, char **argv) {
       host.random = false;
     } else if (strcmp(argv[index], "--no-spawn") == 0) {
       host.spawn = false;
+    } else if (strcmp(argv[index], "--no-env") == 0) {
+      host.env = false;
+    } else if (strcmp(argv[index], "--no-args") == 0) {
+      host.args = false;
     } else if (strcmp(argv[index], "--plan") == 0 && index + 1 < argc) {
       index += 1;
       plan_name = argv[index];
@@ -15397,6 +15478,15 @@ static int io_file(int argc, char **argv) {
       max_depth = strtod(argv[index], NULL);
     } else if (strcmp(argv[index], "--на-веру") == 0 || strcmp(argv[index], "--trust") == 0) {
       trust = true;
+    } else if (strcmp(argv[index], "--") == 0) {
+      /* ГРАНИЦА ДВУХ КОМАНДНЫХ СТРОК. Слева ключи самого «flang io», справа —
+         доводы ПЛАНА, и различить их иначе нечем: «--no-net» бывает и ключом
+         хозяина, и словом, которого план ждёт себе. Всё, что стоит после «--»,
+         уходит плану как есть и ключом не разбирается никогда; нет «--» в
+         строке — доводов у плана нет вовсе. */
+      host.plan_args = argv + index + 1;
+      host.plan_arg_count = (size_t)(argc - index - 1);
+      break;
     } else if (argv[index][0] != '-' && path == NULL) {
       path = argv[index];
     } else {

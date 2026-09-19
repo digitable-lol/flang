@@ -9,6 +9,16 @@ The short answer:
 > **flang is written for what DECIDES. What WAITS — and what holds control
 > between two decisions — belongs to the host.**
 
+```mermaid Two layers and the door between them
+flowchart TD
+  OS([operating system]) --> H[host, in C:<br>loop, waiting, sockets, files, screen]
+  H -->|response: what happened| P{flang program:<br>decisions and state}
+  P -->|order: a description of an action| H
+  P --> N[new state<br>and the next order]
+  N --> P
+  class P glavnoe
+```
+
 "Host" here means a program in another language that takes events from the world
 and carries out the answer — usually C. The decision that draws this line is
 written down in full in `docs/adr/0008-layer-boundary.md`, together with the runs that

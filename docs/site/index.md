@@ -1,26 +1,43 @@
-# flang — a language whose compiler proves your program cannot hang
+# flang — a language whose compiler proves properties of your program
 
-**flang is a pure functional language with strict static typing, where proof is
-mandatory and happens before the program runs.** Values are immutable; a program
-has no side effects — input and output come back as data, and the host performs
-them. The word `total` in front of a function is a promise that it terminates on
-every input, and **the compiler** proves it, not a person. The word `ensures` is
-a promise about the result, and the kernel closes it over **every input**, not
-over the written examples. The kernel has zero axioms, and that is checked by a
-run: `flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль'`
-answers with exit code 0. The proof itself is not taken on the compiler's word:
-`flang check --proof --записать` writes it to a file, and an independent C
-program (`flang/proof/чекер/сверщик.c`) replays every step anew. The run
-`sh scripts/доказуемость.sh` on 13 September 2026 with 0.7.19 (commit
-`1218aa186`): **PROVABLE**, 629 obligations out of 651 replayed (96.62 %), 453
-forgery probes rejected, 215 honest records accepted.
+flang is a pure functional language with strict static typing. Values are
+immutable, there are no loops, and a program has no side effects: input and
+output come back as data, and the host performs them.
 
-The language is self-hosted: the flang compiler is written in flang, prints
-itself, and prints to {{цели.словом}} more target languages. The standard
-library, the scheduler, supervision, and the link between nodes are written in
-flang too — its own process layer in place of OTP/BEAM. It is written in words
-rather than symbols, and every keyword exists in both a Russian and an English
-spelling.
+One thing sets it apart: **promises about the program are checked by the
+compiler, not by tests.** `total` in front of a function promises it terminates
+on every input. `requires` is a condition the *caller* must discharge.
+`ensures` is a claim about the result, closed over **all** inputs. If it cannot
+be proved, the file is not emitted and the exit code is 1.
+
+The proof is not taken on the compiler's word either: `flang check --proof
+--записать` writes the whole derivation to a file, and a **separate C program**
+(`flang/proof/чекер/сверщик.c`, the trusted base) replays every step from
+scratch. The kernel has zero axioms, and that too is a run:
+`flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль'` answers
+with exit code 0.
+
+```mermaid Who checks whom
+flowchart LR
+  R([developer]) --> S[source .flang]
+  S --> K[flang compiler<br>written in flang]
+  K --> T[types and termination]
+  K --> Y{proof kernel}
+  Y --> C[certificate:<br>the whole derivation]
+  C --> V[C checker:<br>replays every step]
+  V --> W[verdict]
+  K --> P[emission into 10 target languages]
+  class Y glavnoe
+  class W vyvod
+```
+
+The language is self-hosted: the flang compiler is written in flang and prints
+itself. The standard library, the process scheduler, supervision and the link
+between nodes are written in flang too — its own layer in place of OTP/BEAM. It
+is written in words rather than symbols, and every keyword exists in both a
+Russian and an English spelling.
+
+## Five minutes
 
 Put this in `hello.flang`:
 
@@ -33,9 +50,6 @@ total function «Double»
   n plus n
 ```
 
-Check it and run it — this is what the compiler prints (its report is in Russian
-today):
-
 ```bash
 $ flang check hello.flang
 модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
@@ -45,8 +59,9 @@ $ flang run hello.flang --function Double --args '{"n": 21}'
 42
 ```
 
-Exit code 0. When termination cannot be proved: exit code 1, a diagnostic with a
-name, a line and a column, and no file is emitted.
+(The compiler's own report is in Russian today.) What a refusal looks like, what
+carries each promise, and what disappears from the compiled code once a promise
+is proved: [how a proof actually works](how-proofs-work.html).
 
 ## Install
 
@@ -64,68 +79,67 @@ are on the [Install](install.html) page.
 
 | What exists | Where the border is |
 | --- | --- |
-| **A termination proof**: `total` in front of a function is checked by the compiler, not by a reviewer | the language has no loops and no mutable variables; if it cannot prove, it refuses the file |
-| **Claims about behaviour**: `ensures` is a promise about the result that the kernel proves for all inputs, not for the examples | the kernel does not accept every claim; how many it did accept is one line below |
-| **Emitting into {{цели.поАнглийски}} target languages**: {{цели.список}} | sockets, clocks and the process table are not emitted |
-| **[Processes and supervision](processes.html)**: processes, supervision, back pressure, a scheduler written in flang itself | the `процесс` and `надзор` declarations are not judged by the binary compiler |
-| **[PostgreSQL](database.html) and SQLite**: the PostgreSQL protocol is built and parsed, an SQLite database file is read, built from nothing, and written a row into | PostgreSQL takes `trust` and cleartext password only; SQLite writes only into a ready file's own free space, no page split, no journal |
-| **HTTP**: requests and responses parsed and printed, headers, codes, addresses, percent encoding | there is no socket: the host carries the bytes, the language only computes them |
-| **Cryptography of our own**: SHA-256, HMAC, AES-128 in CTR and GCM, X25519, reading an X.509 certificate | TLS is not built: https is done by an external curl |
+| **Termination**: `total` is checked by the compiler, not by a reviewer | the language has no loops and no mutable variables; if it cannot prove, it refuses the file |
+| **Contracts**: `requires` is discharged at the call site, `ensures` is closed over all inputs | the kernel does not accept every shape; which ones it does is [listed](what-the-kernel-accepts.html) |
+| **Emission into {{цели.поАнглийски}} target languages**: {{цели.список}} | sockets, clocks and the process table are not emitted |
+| **[Processes and supervision](processes.html)**: scheduler, supervision and back pressure, all written in flang itself | the `процесс` and `надзор` declarations are not judged by the binary compiler |
+| **[PostgreSQL](database.html) and SQLite**: the PostgreSQL protocol is built and parsed, an SQLite file is read, built from nothing, and written a row into | PostgreSQL takes `trust` and cleartext password only; SQLite writes only into a ready file's own free space, no page split, no journal |
+| **HTTP**: requests and responses parsed and printed, headers, codes, addresses, percent encoding | there is no socket: the host carries the bytes |
+| **Cryptography of our own**: SHA-256, HMAC, AES-128 in CTR and GCM, X25519, reading an X.509 certificate | TLS is not built: `https` is done by an external `curl` |
 
-How much of that is proved: {{корпус.тотальных}} functions out of
-{{корпус.функций}} in the language tree terminate provably, and of
-{{утверждения.высказано}} behaviour claims the kernel has closed
-{{утверждения.доказано}} — the line is drawn explicitly on
-[What is proved and what is not](what-is-proved.html).
+## What backs that up
 
-**The four numbers above were measured on 23 August 2026 (commit `252606e8`)
-and have not been re-measured since.** They are measured by the compiler in a
-run over all the programs in the repository (hours), and on the day of measurement it was built
-from a seed that had fallen behind the sources. The seed has since been
-reprinted (10–11 September 2026, commit `0ce948bfd`; `sh
-scripts/seed/what-lags-the-seed.sh` on 11 September names 3 files, 77 functions,
-still behind), and the expensive numbers have not been re-measured yet — when
-they are, the date above changes.
+`sh scripts/доказуемость.sh` on trunk, 19 September 2026 (commit `a5609e322`),
+about three minutes:
 
-The cheap numbers on this page — how many files, lines, functions and examples
-the tree holds — are recomputed without the compiler in nine seconds and are
-checked on every push (`sh scripts/guards/published-vs-tree.sh --числа`). The gap
-between the two halves is measured as a number, not as a word: the same command
-prints how many files have moved since that measurement.
+```
+ДОКАЗУЕМ                                                      (PROVABLE)
+проверка 2 — доля проигрыванием не ниже 100 %? ДА (100.00 %: 650 из 650)
+проверка 3 — набор проб пройден? ДА (проб на подлог 533, принято кодом 0 — 0;
+                                     честных 245, отвергнуто 0)
+```
 
-## Next
+All 650 obligations the kernel wrote into the certificate were replayed by the
+checker itself; 533 forged proofs were rejected, 245 honest ones accepted. What
+this does **not** mean is spelled out on [what is proved and what is
+not](what-is-proved.html).
 
-- [Your first program](getting-started.html) — the same five minutes in full,
-  down to emitting the program into C.
-- [Language reference](language.html) — how every form of the language is
-  written: the form, an example, what it gives and where its border is.
-- [Operations](operations.html) — what to write when you need a library function
-  that already exists: a sum without duplicates, parsing a string, time.
+Across the tree: {{корпус.тотальных}} functions out of {{корпус.функций}}
+terminate provably, and of {{утверждения.высказано}} behaviour claims the kernel
+has closed {{утверждения.доказано}}. Those four were measured on 23 August 2026
+(commit `252606e8`) by a run of the compiler over the whole tree — it takes hours
+and has not been re-measured since; the cheap numbers on this page (files, lines,
+functions) are recomputed in nine seconds and checked on every push
+(`sh scripts/guards/published-vs-tree.sh --числа`).
 
 ## How this differs from Coq and Lean
 
-**Not in who writes the proof.** You can write one by hand here too: the word
-`теорема` with the steps `дано`, `утверждаем`, `затем … по свойству «…»`,
-`индукция по …` and `следовательно доказано` — a structured proof in the spirit
-of Isabelle's Isar, not a script of tactics. There are **285** such theorems in
-the language tree, **55** of them in the standard library (measured on
-13 September 2026 at commit `1218aa186`;
-`grep -rac '^\s*теорема ' flang --include='*.flang'`, summed with `awk`; the `-a`
-is not optional — without it `flang/concurrency/link.flang` is skipped silently).
+**Not in who writes the proof.** You can write one by hand here too: `теорема`
+with the steps `дано`, `утверждаем`, `затем … по свойству «…»`, `индукция по …`
+and `следовательно доказано` — a structured proof in the spirit of Isabelle's
+Isar, not a script of tactics. There are **285** such theorems in the tree, **55**
+of them in the standard library (`grep -rac '^\s*теорема ' flang
+--include='*.flang'`, summed with `awk`, 19 September 2026).
 
-The difference is **what is left for the hand to write**. The kernel closes a
-claim on its own, by thirteen rules, and a written theorem is needed only for the
-remainder. The verdict line reports that as a separate number. Measured on
-`flang/stdlib/sha1.flang` (`flang check --proof`, 0.7.17, 11 September 2026,
-about four minutes): `утверждений 64: доказано 54 … из них без теоремы 45` — most
-of what is proved is closed without a single written line. Coq and Lean have no such number:
-there every claim gets either a term or a tactic written for it. Which promises
-the kernel takes on its own is worked through form by form on
-[which promises the kernel takes](what-the-kernel-accepts.html).
+The difference is **what is left for the hand to write.** The kernel closes a
+claim on its own, and a written theorem is only needed for the remainder. The
+report gives that as its own number: for `flang/stdlib/lists.flang`, "утверждений
+66: доказано 42 … из них без теоремы 37" — 66 claims, 42 proved, 37 of them with
+no theorem written. Coq and Lean have no such number: there every claim gets
+either a term or a tactic.
 
-The second difference is real and not in our favour: a program is more often
-*extracted* out of Coq and Lean into another language than used to run a
-service — but thirty years there have accumulated tens of thousands of ready
-lemmas, while the library of proved statements here is only being built up. The
-kernel does not take every claim, and what it does not take is named explicitly:
-[why proofs, and how they work](proofs.html).
+The second difference is not in our favour: thirty years have accumulated tens of
+thousands of ready lemmas there, while the library of proved statements here is
+only being built up, and a program is more often *extracted* out of Coq and Lean
+into another language than used to run a service.
+
+## Next
+
+- [How a proof actually works](how-proofs-work.html) — termination,
+  preconditions and postconditions, on code and on captured output.
+- [Your first program](getting-started.html) — the same five minutes in full,
+  down to emitting the program into C.
+- [Language reference](language.html) — how every form of the language is
+  written.
+- [Operations](operations.html) — what to call when you need a library function
+  that already exists.

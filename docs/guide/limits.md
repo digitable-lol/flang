@@ -11,9 +11,9 @@ is drawn in [`docs/overview.ru.md`](../../docs/overview.ru.md); the full lists a
 - *proven* (`доказано`) — statements about **all** inputs, established by the compiler: termination
   (`тотальная`), types and exhaustiveness of `разбор`, composition and chain wiring, the three
   functor laws — and `обеспечивает` postconditions the kernel derived from the declarations and the
-  body (97 inference rules; every proof is replayed by an independent C program,
-  `flang/proof/чекер/сверщик.c`, and `sh scripts/доказуемость.sh` on 13 September 2026 answers
-  «ДОКАЗУЕМ»: 629 obligations out of 651 replayed, 96.62 %);
+  body (109 inference rules; every proof is replayed by an independent C program,
+  `flang/proof/чекер/сверщик.c`, and `sh scripts/доказуемость.sh` on 19 September 2026 answers
+  «ДОКАЗУЕМ»: 650 obligations out of 650 replayed, 100.00 %);
 - *grid N* (`сетка N`) — computed on a **finite** set of the author's own values: utility
   properties, declared examples, concurrency runs, and the agreement between the interpreter and
   the ten backends. Nothing is known about the other inputs. **This is not a proof**;

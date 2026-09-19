@@ -130,22 +130,26 @@ The word "proved" in the compiler's report need not be taken on trust.
 `flang check --proof --записать <file>` writes the proof itself to a file, and a
 separate C program — `flang/proof/чекер/сверщик.c`, which has never seen the
 compiler — takes the source and the record and replays every step anew. The run
-`sh scripts/доказуемость.sh` on 13 September 2026 with 0.7.19 (commit
-`1218aa186`, about 13 seconds) answers **PROVABLE** and prints four checks as
-numbers: **629 obligations out of 651 replayed (96.62 %)**; forgery set 34 of 34;
-453 forgery probes, none accepted; 215 honest records, none rejected.
+`sh scripts/доказуемость.sh` on 19 September 2026 on trunk (commit
+`a5609e322`, about three minutes) answers **PROVABLE** and prints four checks as
+numbers: **650 obligations out of 650 replayed (100.00 %)**, with 27 unreachable
+places carved out; forgery set 36 of 36; 533 forgery probes, none accepted with
+exit code 0; 245 honest records, none rejected.
 
-The share did not grow with 0.7.19: it went 625 → 629 in 0.7.18, and the seed
-reprint gave the kernel new abilities rather than a higher share. Places where
-the checker takes the kernel's word are still 12 premises and 4 steps.
+The share reached 100 % on 18 September 2026 (task 3348): 633 → 650 of 650. There
+is no longer a single place where the checker takes the kernel's word; there used
+to be 12 premises and 4 steps.
 
-Read the 96 % precisely: it is the share of places **in the compiler's own
-proof** (the corpus of records) where the independent checker replayed the step
-— not "96 % of programs are proved". The inference rules the checker uses have
-also been checked by a foreign judge: 88 rules were translated into Lean 4 lemmas
-and accepted by its kernel. That run is dated 11 September; the list has grown
-to 97 rules since, and Lean has not been run again — it is not installed on this
-machine (report in `docs/lean-checks-the-inference-rules.md`).
+Read the 100 % precisely: it is the share of places **in the compiler's own
+proof** (the corpus of records) where the independent checker replayed the step —
+not "all programs are proved". The inference rules the checker uses have also
+been checked by a foreign judge: all 109 rules are translated into Lean 4 lemmas
+and accepted by its kernel — the run at commit `a5609e322`: 0 verdict
+divergences, 52 traps and all 52 rejected, no `sorry`, `axiom` or
+`native_decide`, and `#print axioms` on the consistency theorem gives exactly the
+three standard ones. The long report
+(`docs/lean-checks-the-inference-rules.md`) lags behind: its numbers were taken
+on 11 September.
 
 ---
 

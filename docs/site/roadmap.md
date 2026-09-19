@@ -32,9 +32,9 @@ that had fallen behind the sources. What was checked on the tree of
   `sh scripts/seed/what-lags-the-seed.sh` names 3 files, 77 functions, still
   behind;
 - `sh scripts/доказуемость.sh` answers **PROVABLE**: the independent checker
-  (`flang/proof/чекер/сверщик.c`) replayed 625 obligations of the compiler's own
-  proof out of 651 — 96.01 %; 401 forgeries rejected, 197 honest records
-  accepted;
+  (`flang/proof/чекер/сверщик.c`) replayed 650 obligations of the compiler's own
+  proof out of 650 — 100.00 %; 533 forgeries rejected, 245 honest records
+  accepted (19 September 2026, commit `a5609e322`);
 - there are ten emit targets: {{цели.список}}.
 
 The main limit of the language shows in the table, and it is also the first
@@ -50,13 +50,13 @@ not covered by the proof.
 
 ## Five stages, and each holds the one after it
 
-**1. The set of obligations — up to 100 %.** Today the independent checker
-replays 629 obligations out of 651; the remaining 22 are taken on the kernel's
-word (12 premises and claims, 4 steps) or closed by computing (6). Release 0.7.19
-did not move that share. Every open
-place is named in `docs/road-to-one-hundred-measured.md`, with the price of each.
-Task 6191 (the record set up to the former threshold) is done; since 17 September 2026 the
-threshold is 100 % (task 3348), and the rest follows that map.
+**1. The set of obligations — up to 100 %. CLOSED on 18 September 2026.** The
+independent checker replays 650 obligations out of 650; not one place is taken on
+the kernel's word any more (there used to be 12 premises and claims and 4 steps,
+with a further 6 closed by computing). The 100 % threshold was set on
+17 September (task 3348) and reached a day later (task 6191). The places that are
+now gone are named one by one in `docs/road-to-one-hundred-measured.md`, with the
+price of each.
 
 **2. A proved translation into C.** The printer (`flang/self/emit-c.flang`) is
 not proved today, and the emitted program is not covered by the proof: what is

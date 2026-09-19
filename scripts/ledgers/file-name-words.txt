@@ -5,7 +5,7 @@
 # сюда не вписывают — файл переименовывают. Собран 17 сентября 2026 из всех латинских
 # имён области (scripts/, flang/test/, flang/scripts/, docs/site/, docs/zettel/, .github/)
 # после переименования, минус ведомость scripts/ledgers/translit-file-names-debt.txt:
-# слов 1601. Имена собственные и сокращения (asdf, coq, der, lto, md5, ru, z3) — тоже слова.
+# слов 1650 (19 сентября 2026 добавлены bar, controlling, screen). Имена собственные и сокращения (asdf, coq, der, lto, md5, ru, z3) — тоже слова.
 a
 abilities
 about
@@ -98,6 +98,7 @@ backticks
 bad
 ban
 banned
+bar
 bare
 barely
 base
@@ -293,6 +294,7 @@ contract
 contrast
 contributing
 control
+controlling
 controls
 convenience
 convention
@@ -1257,6 +1259,7 @@ scan
 schedule
 scheduler
 score
+screen
 script
 scrutinee
 search

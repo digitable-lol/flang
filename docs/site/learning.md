@@ -96,6 +96,9 @@ This is the middle of the language, and it is worth the longest stop.
 
 - [What is proved and what is not](what-is-proved.html) — the border is drawn
   explicitly;
+- [How a proof actually works](how-proofs-work.html) — the mechanics on code:
+  what carries termination, where a precondition is discharged, what leaves the
+  compiled code once a postcondition is proved;
 - [Why and how](proofs.html) — the rules of the kernel, each readable in full;
 - [The kernel refused: whose mistake is it](proof-refused.html) — every kernel
   refusal by name: which are fixed in the theorem and which hit a limit of the

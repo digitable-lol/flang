@@ -1596,3 +1596,6 @@ a61d4c792b44f01ec6e715f6420f1bbb|1|0|0|1|0|flang/proof/пробы-строгог
 b84a0d9b2c597e85945650941c5bb1c9|1|0|1|0|0|flang/proof/пробы-строгого/программы/сетка-без-доказательства.flang
 b3354987e51cf0bddcae03cb92ec49e6|2|0|1|1|0|flang/proof/пробы-строгого/программы/старшинство.flang
 ff1f78446cbbec240bb14f7676bd91d0|1|1|0|0|0|flang/proof/пробы-строгого/программы/честная.flang
+8c27388a17ff86d5bb9e415d3dd3d5dd|1|1|0|1|1|flang/proof/чекер/пробы/программы/audit-2844/razv3-raznost.flang
+86e0e447b270b761bff6ae33fe3ffd12|1|1|0|1|0|flang/proof/чекер/пробы/программы/audit-2844/razv2-sebya.flang
+eb5b390d34c90eb95ad3b4382c2a3a1f|1|0|0|0|1|flang/proof/чекер/пробы/программы/audit-2844/razv3-kontrol-chestnaya.flang

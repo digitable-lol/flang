@@ -753,8 +753,8 @@ static const char HELP_IO[] =
     "                  Нет «--» в строке — список пуст\n"
     "\n"
     "Полномочия сужаются по одному: --no-read, --no-write, --no-net, --no-clock,\n"
-    "--no-random, --no-spawn, --no-env, --no-args. Умолчание — «можно всё»: запуск\n"
-    "программы этой командой и есть согласие на её действия.\n";
+    "--no-random, --no-spawn, --no-env, --no-args, --no-screen. Умолчание —\n"
+    "«можно всё»: запуск программы этой командой и есть согласие на её действия.\n";
 
 /*
  * Вторая половина справки `io` — не разделение по смыслу, а то же требование
@@ -770,7 +770,15 @@ static const char HELP_IO_2[] =
     "решение; второе и третье — то, ЧТО решено: «нашёл беду» против «не смог\n"
     "посмотреть». Тройкой же отвечает и ОТКАЗ ЗАПУСКА недоказанного плана: перед\n"
     "работой считается вердикт о замыкании и одной строкой уходит в поток ошибок\n"
-    "(ADR-0045); «--на-веру» его пропускает.\n"
+    "(ADR-0045); «--на-веру» его пропускает.\n";
+
+/*
+ * Третья часть справки `io`. Разрез не по смыслу, а по пределу C99 (5.2.4.1):
+ * строковая постоянная не длиннее 4095 октетов ПОСЛЕ СКЛЕЙКИ соседних, а
+ * сборка идёт с -pedantic -Werror. Абзацы про среду и про экран не влезли ни в
+ * первую часть, ни во вторую. Печатаются все три подряд, встык.
+ */
+static const char HELP_IO_3[] =
     "\n"
     "Среду и доводы хозяин читает сам: «Прочитать переменную среды» отдаёт РОВНО\n"
     "названную переменную («Значение среды»), а незаданную — отдельным откликом\n"
@@ -778,8 +786,23 @@ static const char HELP_IO_2[] =
     "Среды целиком не отдаётся: вместе с ней уехали бы ключи и пароли, которых\n"
     "план не спрашивал. Запрет — --no-env и --no-args, отказом FLANG_IO_DENIED.\n"
     "\n"
-    "Чего у двоичного хозяина нет: экрана («Показать», «Ждать событие» отвечают\n"
-    "FLANG_IO_NO_SCREEN) и СВОЕГО шифрования. Нехватка названа отказом, а не\n"
+    "ЭКРАН ДВОИЧНОГО — УПРАВЛЯЮЩИЙ ТЕРМИНАЛ (/dev/tty), и место у него ОДНО, оно\n"
+    "зовётся «экран»; всякое другое имя — отказ FLANG_IO_PLACE. «Показать» кладёт\n"
+    "«текст» целым кадром: очистка, потом текст. Пишется кадр в терминал, а НЕ в\n"
+    "stdout — там вердикт плана, и смешивать их нельзя. На первом «Показать»\n"
+    "хозяин уходит на запасной экран терминала и прячет курсор, а при завершении\n"
+    "прогона — удачном ли, по отказу ли — возвращает как было.\n"
+    "\n"
+    "«Ждать событие» переводит терминал в посимвольный режим и ждёт нажатия не\n"
+    "дольше «срока» миллисекунд; срок 0 или неназванный — без предела. Пришла\n"
+    "клавиша — «Случилось» с «откуда» равным «клавиатура»; вышел срок — «Срок\n"
+    "вышел». Имена клавиш: ввод, пробел, таб, возврат, выход, вверх, вниз, влево,\n"
+    "вправо; прочее приходит самим знаком. CTRL-C ПРОДОЛЖАЕТ УБИВАТЬ ПРОГРАММУ и\n"
+    "в ожидании тоже: выход человеку программа не отнимает.\n"
+    "\n"
+    "Терминала нет — вывод уведён в трубу или в файл, CI, nohup — и оба поручения\n"
+    "отвечают FLANG_IO_NO_SCREEN, ровно как отвечали всегда. Чего у двоичного\n"
+    "хозяина нет по-прежнему — СВОЕГО шифрования. Нехватка названа отказом, а не\n"
     "молчанием.\n"
     "\n"
     "«https» У ПОРУЧЕНИЯ «Запросить» РАБОТАЕТ, но исполняет его не двоичный, а\n"
@@ -979,7 +1002,7 @@ static void human_help(const char *topic) {
   } else if (strcmp(topic, "facts") == 0) {
     printf("%s\n", HELP_FACTS);
   } else if (strcmp(topic, "io") == 0) {
-    printf("%s%s\n", HELP_IO, HELP_IO_2);
+    printf("%s%s%s\n", HELP_IO, HELP_IO_2, HELP_IO_3);
   } else if (strcmp(topic, "lock") == 0) {
     printf("%s\n", HELP_LOCK);
   } else if (strcmp(topic, "package") == 0) {
@@ -13435,6 +13458,7 @@ typedef struct {
   bool spawn;
   bool env;
   bool args;
+  bool screen;
   bool in_dir;
   bool seeded;
   unsigned long seed_state;
@@ -13631,6 +13655,230 @@ static double io_random(io_host *host) {
   t ^= (t + (((t ^ (t >> 7)) * (t | 61UL)) & 0xffffffffUL)) & 0xffffffffUL;
   t &= 0xffffffffUL;
   return (double)((t ^ (t >> 14)) & 0xffffffffUL) / 4294967296.0;
+}
+
+/* ── экран: управляющий терминал ─────────────────────────────────────────── */
+
+/*
+ * ЭКРАН ДВОИЧНОГО ХОЗЯИНА — УПРАВЛЯЮЩИЙ ТЕРМИНАЛ, и открывается он «/dev/tty»,
+ * а не stdout: в stdout эта команда кладёт вердикт плана JSON-ом, и кадр,
+ * подмешанный к вердикту, испортил бы оба разом — читателю и разборщику.
+ *
+ * Состояние терминала лежит в статиках, а не в `io_host`, потому что возвращать
+ * его обязан `atexit`, а тому доводов не передать. Терминал у процесса один,
+ * хозяин тоже один — второму состоянию взяться неоткуда.
+ */
+static int io_screen_fd = -1;
+static bool io_screen_alt = false;
+static bool io_screen_raw = false;
+static struct termios io_screen_saved;
+
+static void io_screen_write(const char *bytes, size_t count) {
+  size_t at = 0;
+  while (at < count) {
+    const ssize_t got = write(io_screen_fd, bytes + at, count - at);
+    if (got > 0) {
+      at += (size_t)got;
+      continue;
+    }
+    if (got < 0 && errno == EINTR) {
+      continue;
+    }
+    return;
+  }
+}
+
+static void io_screen_say(const char *text) { io_screen_write(text, strlen(text)); }
+
+/*
+ * Возврат терминала как было. Висит на `atexit`, а не в конце удачной ветки:
+ * терминал, оставшийся без курсора и на запасном экране после чужого отказа, —
+ * это наша поломка на машине читателя, и случается она ровно там, где кончился
+ * тот путь, по которому уборку забыли поставить.
+ */
+static void io_screen_restore(void) {
+  if (io_screen_fd < 0) {
+    return;
+  }
+  if (io_screen_raw) {
+    tcsetattr(io_screen_fd, TCSANOW, &io_screen_saved);
+    io_screen_raw = false;
+  }
+  if (io_screen_alt) {
+    io_screen_say("\033[?1049l\033[?25h");
+    io_screen_alt = false;
+  }
+}
+
+/*
+ * Ctrl-C обязан убивать программу — ISIG для того и не снят. Но убитый сигналом
+ * процесс не проходит через `atexit`, и терминал остался бы на запасном экране
+ * и без курсора: замерено 19 сентября 2026 — код 130 и ни одного байта возврата
+ * в потоке. Обработчик поэтому делает ровно две вещи: возвращает терминал и
+ * умирает тем же сигналом, вернув ему поведение по умолчанию. Смерть не
+ * отменяется — отменяется мусор после неё. Ставится он ТОЛЬКО когда экран
+ * открыт: прогон без экрана остаётся ровно таким, каким был.
+ */
+static void io_screen_signal(int number) {
+  io_screen_restore();
+  signal(number, SIG_DFL);
+  raise(number);
+}
+
+/*
+ * Есть ли экран. Условий ДВА, и второе не придирка: «/dev/tty» открывается и
+ * тогда, когда вывод команды уведён в трубу или в файл, — управляющий терминал
+ * от этого никуда не девается. Но труба, файл, CI и `nohup` — это прогон, где
+ * кадру появиться негде и где ответ обязан остаться прежним отказом: иначе
+ * чужая проверка, вчера получавшая FLANG_IO_NO_SCREEN, сегодня начнёт молча
+ * рисовать кадры в терминал человека, который её запустил.
+ */
+static bool io_screen_open(void) {
+  if (io_screen_fd >= 0) {
+    return true;
+  }
+  if (isatty(1) != 1) {
+    return false;
+  }
+  io_screen_fd = open("/dev/tty", O_RDWR);
+  if (io_screen_fd < 0) {
+    return false;
+  }
+  atexit(io_screen_restore);
+  signal(SIGINT, io_screen_signal);
+  signal(SIGTERM, io_screen_signal);
+  signal(SIGHUP, io_screen_signal);
+  return true;
+}
+
+static fl_value io_screen_none(fl_value order) {
+  char buffer[256];
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  io_order_name(order, &utf8, &bytes);
+  snprintf(buffer, sizeof(buffer),
+           "у двоичного хозяина нет экрана: терминала нет (вывод не в терминал), поручение «%.*s» исполнить нечем",
+           (int)bytes, utf8);
+  return io_fail("FLANG_IO_NO_SCREEN", buffer);
+}
+
+/*
+ * Посимвольный режим: сняты ICANON (набранное перестаёт копиться до Enter) и
+ * ECHO (нажатое перестаёт печататься поверх кадра). ISIG НЕ СНЯТ НАРОЧНО —
+ * Ctrl-C обязан убивать программу и в ожидании тоже. Это не лень: выход из
+ * программы человеку не отдаёт никто, кроме неё самой, и отнимать его ради
+ * того, чтобы план увидел ещё одну клавишу, — не наше дело.
+ *
+ * Режим ставится ОДИН раз на прогон и снимается уборкой. Возвращать ECHO между
+ * витками «показать → ждать» значило бы сыпать в кадр эхом всё, что человек
+ * успел нажать, пока план считал.
+ */
+static bool io_screen_listen(void) {
+  struct termios raw;
+  if (io_screen_raw) {
+    return true;
+  }
+  if (tcgetattr(io_screen_fd, &io_screen_saved) != 0) {
+    return false;
+  }
+  raw = io_screen_saved;
+  raw.c_lflag &= (tcflag_t)~(ICANON | ECHO);
+  raw.c_cc[VMIN] = 1;
+  raw.c_cc[VTIME] = 0;
+  if (tcsetattr(io_screen_fd, TCSANOW, &raw) != 0) {
+    return false;
+  }
+  io_screen_raw = true;
+  return true;
+}
+
+static int io_screen_byte(int wait_ms) {
+  struct pollfd waiting;
+  unsigned char byte = 0;
+  waiting.fd = io_screen_fd;
+  waiting.events = POLLIN;
+  waiting.revents = 0;
+  if (poll(&waiting, 1, wait_ms) <= 0) {
+    return -1;
+  }
+  if (read(io_screen_fd, &byte, 1) != 1) {
+    return -1;
+  }
+  return (int)byte;
+}
+
+static fl_value io_screen_happened(const char *named, const char *utf8, size_t bytes) {
+  fl_value fields[2];
+  fields[0] = io_pair("откуда", io_say("клавиатура"));
+  fields[1] = io_pair("значение", named != NULL ? io_say(named) : io_text(utf8, bytes));
+  return io_variant("Случилось", fields, 2);
+}
+
+/*
+ * ИМЕНА КЛАВИШ — ЗАКРЫТЫЙ СПИСОК: ввод, пробел, таб, возврат, выход и четыре
+ * стрелки. Всё прочее приходит самим знаком, и знак дочитывается КОДОВОЙ
+ * ТОЧКОЙ, а не октетом: русская буква — два октета, и по октету за виток она
+ * приехала бы к плану половинками, ни одна из которых не строка языка.
+ */
+static fl_value io_screen_key(void) {
+  char point[4];
+  size_t length = 0;
+  size_t need = 1;
+  const int first = io_screen_byte(0);
+  if (first < 0) {
+    /* poll обещал байт, а байта нет: терминал закрылся, и клавиш больше не
+       будет вовсе, — либо тот же терминал читает кто-то ещё. «Срок вышел» здесь
+       был бы приглашением ждать снова, то есть вертеть план впустую на
+       закрытом терминале; отказ такого приглашения не делает. */
+    return io_fail("FLANG_IO_NO_SCREEN",
+                   "клавиша обещана терминалом, но не пришла: терминал закрылся или его читает кто-то ещё");
+  }
+  if (first == 0x1b) {
+    /* Esc сам по себе и начало стрелки различаются только паузой: за стрелкой
+       хвост приходит тем же пакетом, а одинокий Esc не приносит ничего. 60 мс —
+       тот же срок, каким различает их построчный редактор этой же оболочки. */
+    const int second = io_screen_byte(60);
+    if (second == '[' || second == 'O') {
+      int final = io_screen_byte(60);
+      /* Параметры CSI дочитываются до конечного знака: иначе хвост
+         последовательности приехал бы к плану следующей «клавишей». */
+      while (final >= 0x20 && final <= 0x3f) {
+        final = io_screen_byte(60);
+      }
+      switch (final) {
+        case 'A': return io_screen_happened("вверх", NULL, 0);
+        case 'B': return io_screen_happened("вниз", NULL, 0);
+        case 'C': return io_screen_happened("вправо", NULL, 0);
+        case 'D': return io_screen_happened("влево", NULL, 0);
+        default: break;
+      }
+    }
+    return io_screen_happened("выход", NULL, 0);
+  }
+  if (first == '\r' || first == '\n') {
+    return io_screen_happened("ввод", NULL, 0);
+  }
+  if (first == ' ') {
+    return io_screen_happened("пробел", NULL, 0);
+  }
+  if (first == '\t') {
+    return io_screen_happened("таб", NULL, 0);
+  }
+  if (first == 0x7f || first == 0x08) {
+    return io_screen_happened("возврат", NULL, 0);
+  }
+  point[0] = (char)first;
+  length = 1;
+  need = (first & 0xE0) == 0xC0 ? 2 : (first & 0xF0) == 0xE0 ? 3 : (first & 0xF8) == 0xF0 ? 4 : 1;
+  while (length < need) {
+    const int next = io_screen_byte(60);
+    if (next < 0) {
+      break;
+    }
+    point[length] = (char)next;
+    length += 1;
+  }
+  return io_screen_happened(NULL, point, length);
 }
 
 /* ── связи ───────────────────────────────────────────────────────────────── */
@@ -15106,20 +15354,81 @@ static fl_value io_perform(io_host *host, fl_value order) {
     }
   }
 
-  /*
-   * Экрана у двоичного нет, и сказано это ИМЕНОВАННЫМ отказом, а не «не знаю
-   * такого поручения». Разница не педантизм: первое значит «хозяин отстал от
-   * словаря языка и его надо чинить», второе — «программа просит невозможного
-   * здесь и может попросить другого».
-   */
-  if (io_order_is(order, "Показать") || io_order_is(order, "Ждать событие")) {
-    char buffer[256];
+  if (io_order_is(order, "Показать")) {
+    fl_value field = fl_nothing();
     const char *utf8 = NULL;
     size_t bytes = 0;
-    io_order_name(order, &utf8, &bytes);
-    snprintf(buffer, sizeof(buffer), "у двоичного хозяина нет экрана: поручение «%.*s» исполнить нечем", (int)bytes,
-             utf8);
-    return io_fail("FLANG_IO_NO_SCREEN", buffer);
+    if (!host->screen) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено писать на экран");
+    }
+    /* Терминал спрашивается ДО имени места, и порядок этот значащий. Планы,
+       писанные под хозяина вкладки, зовут места своими именами («stdout»,
+       «строка состояния»); в трубе и в CI такой план обязан получить прежний
+       FLANG_IO_NO_SCREEN, а не новый FLANG_IO_PLACE — иначе правка меняет ответ
+       там, где экрана не было и не будет. */
+    if (!io_screen_open()) {
+      return io_screen_none(order);
+    }
+    if (!io_order_field(order, "место", &field) || !zn_text(field, &utf8, &bytes) || bytes == 0) {
+      return io_fail("FLANG_IO_PLACE", "поручению «Показать» нужно непустое имя места");
+    }
+    if (bytes != strlen("экран") || memcmp(utf8, "экран", bytes) != 0) {
+      char buffer[512];
+      /* «Такого места нет» — ЗНАЧЕНИЕ, а не исключение: то же решение, что у
+         хозяина вкладки. Разметку терминала хозяин не выбирает, и программа
+         сама решит, чинить ей имя или сдаваться. */
+      snprintf(buffer, sizeof(buffer), "на терминале нет места «%.*s»: место у терминала одно и зовётся «экран»",
+               (int)bytes, utf8);
+      return io_fail("FLANG_IO_PLACE", buffer);
+    }
+    if (!io_screen_alt) {
+      /* Запасной экран терминала: работа человека, бывшая на экране до прогона,
+         остаётся целой и возвращается на место уборкой. */
+      io_screen_say("\033[?1049h\033[?25l");
+      io_screen_alt = true;
+    }
+    io_screen_say("\033[H\033[2J");
+    if (io_order_field(order, "текст", &field) && zn_text(field, &utf8, &bytes)) {
+      io_screen_write(utf8, bytes);
+    }
+    return io_variant("Показано", NULL, 0);
+  }
+
+  if (io_order_is(order, "Ждать событие")) {
+    double number = 0;
+    int wait_ms = -1;
+    if (!host->screen) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено слушать клавиатуру");
+    }
+    if (!io_screen_open()) {
+      return io_screen_none(order);
+    }
+    if (!io_screen_listen()) {
+      return io_fail_errno("FLANG_IO_NO_SCREEN", "терминал не переводится в посимвольный режим");
+    }
+    /* Срок 0 и срок неназванный — одно и то же: ждать без предела. Отрицательный
+       тоже: «раньше чем сейчас» сроком не бывает. */
+    if (io_order_number(order, "срок", &number) && number > 0) {
+      wait_ms = number > 2147483647.0 ? 2147483647 : (int)number;
+    }
+    for (;;) {
+      struct pollfd waiting;
+      int ready = 0;
+      waiting.fd = io_screen_fd;
+      waiting.events = POLLIN;
+      waiting.revents = 0;
+      ready = poll(&waiting, 1, wait_ms);
+      if (ready < 0 && errno == EINTR) {
+        continue;
+      }
+      if (ready < 0) {
+        return io_fail_errno("FLANG_IO_NO_SCREEN", "ожидание клавиши не удалось");
+      }
+      if (ready == 0) {
+        return io_variant("Срок вышел", NULL, 0);
+      }
+      return io_screen_key();
+    }
   }
 
   {
@@ -15412,6 +15721,7 @@ static int io_file(int argc, char **argv) {
   host.spawn = true;
   host.env = true;
   host.args = true;
+  host.screen = true;
   host.timeout_ms = 30000;
   host.next_link = 1;
 
@@ -15436,6 +15746,8 @@ static int io_file(int argc, char **argv) {
       host.env = false;
     } else if (strcmp(argv[index], "--no-args") == 0) {
       host.args = false;
+    } else if (strcmp(argv[index], "--no-screen") == 0) {
+      host.screen = false;
     } else if (strcmp(argv[index], "--plan") == 0 && index + 1 < argc) {
       index += 1;
       plan_name = argv[index];

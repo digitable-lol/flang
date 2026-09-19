@@ -68,7 +68,7 @@ The codes are the same across commands, and so is their meaning.
 | `1` | The program did not pass — or, for `facts` and `io`, said "no" itself |
 | `2` | Bad call: wrong key, wrong value, no such file |
 | `3` | Done, but not everything was checked; what was not is named |
-| `4` | Part of the checks did not run at all (`check --быстро`), or everything is proved but leans on a grid (`check --proof --строго`) |
+| `4` | Part of the checks did not run at all (`check --быстро`) — and that is its only meaning |
 
 Code `3` happens with `emit`, with `io`, with `check --proof` ("declared, not
 proved") — and, since 0.7.21, with `run` and `io` on an **unproved program**: the
@@ -90,7 +90,7 @@ flang check <файл.flang> [--proof [--json] [--строго] [--записа�
 | --- | --- |
 | `--proof` | A report: what carries the promise "total" for each function, and what carries each claim. "Declared, not proved" exits with `3` |
 | `--json` | Only together with `--proof`: the same report in machine form |
-| `--строго` | Only together with `--proof`: exit `4` even when everything is proved but part of it leans on the author's grid of values or on an unproved premise. In Latin — `--strict` |
+| `--строго` | Only together with `--proof`: the four outcomes get separate codes — `0` only when every claim is proved, `1` a counterexample, `3` could not prove (leans on the author's grid, on an unproved premise, or "declared, not proved"), `2` not supported. Details below. In Latin — `--strict` |
 | `--записать <файл>` | Only together with `--proof`: write the proof itself into a file. The key is also spelled in Latin — `--record` |
 | `--быстро` | Only linking, types, exhaustiveness and termination; the proof kernel, the laws and the examples do not run, and this is said out loud. Exit `4`. Refused next to `--proof`. In Latin — `--fast` |
 | `--предел-шагов N` | Raise the checker's step limit for this one run. The default is compiled in at build time and catches non-termination; running out stays legible — `FLANG_RECURSION_LIMIT` with a number. Needed on the largest files: a `--proof --json` proof report for a module with a thousand claims does not fit the default. In Latin — `--step-limit`. There is no `--max-steps` on `check`: it answers "непонятный ключ", exit `2` |
@@ -99,8 +99,53 @@ flang check <файл.flang> [--proof [--json] [--строго] [--записа�
 Codes: `0` — nothing to report; `1` — the program did not pass; `2` — the program
 contains declarations that the `flang` binary does not judge at all (the category
 surface, processes, supervision), and it names the gap instead of staying silent;
-`3` — with `--proof`: a claim is declared and has no proof; `4` — with `--быстро`
-or `--строго`, see the table.
+`3` — with `--proof`: a claim is declared and has no proof, or (with `--строго`)
+not everything was proved; `4` — with `--быстро`, see the table.
+
+### `--строго`: four outcomes, and which one wins
+
+By default exit `0` covers TWO different outcomes: "proved" and "nothing was
+proved, but no contradiction was found either". The words are honest — `ПРОВЕРЕНО
+С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ`, `сетка N` — but a build script reads `$?`, not
+words. `--строго` gives the four outcomes separate codes and names each one.
+
+| Outcome | Code | When |
+| --- | --- | --- |
+| `ДОКАЗАНО` (proved) | `0` | EVERY claim has the verdict "proved": no grid, no conditional, no "declared, not proved", nothing refused, no law taken on faith |
+| `ОПРОВЕРГНУТО` (disproved) | `1` | a counterexample was found: "violated" ≥ 1 |
+| `НЕ УДАЛОСЬ ДОКАЗАТЬ` (could not prove) | `3` | no contradiction, but not everything is proved; what is not is named by number and by name |
+| `НЕ ПОДДЕРЖИВАЕТСЯ` (not supported) | `2` | the program declares something the binary does not judge at all, and the gap is named |
+
+The key introduces no new numbers: ADR-0010 §2 promises four codes, and all four
+already carry these meanings. Exit `4` stays with `--быстро` and means exactly
+one thing — "part of the checks did not run".
+
+**Which outcome wins.** A program that has both a grid and a "declared, not
+proved" answers `3`, not `4`, and the word names the GAP, not the lean: a named
+contradiction outranks a named gap, and a named gap outranks a named lean. The
+probe is `flang/proof/пробы-строгого/программы/старшинство.flang`.
+
+**A grid is not a proof.** Running the author's values does not check the claim
+over all inputs, and the report says so in its own words — "Это не
+доказательство". Measured 19 September 2026: a program promising "результат не
+больше 100" with the body `н плюс н` and two `пример` lines got `0` from
+`flang check`, from `flang check --proof` and from the independent checker alike,
+while `flang run --на-веру` at `н = 100` printed `FLANG_PROPERTY: нарушено
+свойство`. The zero was bought by the example: the same file without `пример`
+exited `3`. Under `--строго` both exit `3`.
+
+**What the key does not close.** It fixes ONE instrument of two. The independent
+checker (`flang/proof/чекер/сверщик.c`) still answers `ПРОВЕРЕНО ВПУСТУЮ` with
+exit `0` on a record where nothing counts as proved; it has no `--строго` of its
+own yet, and until it does the chain is not strict end to end. The compiler's
+default is untouched to the sign: without the key a grid stays a zero and is
+named in a line.
+
+The key is only meaningful next to `--proof`: `flang check <файл> --строго`
+without it exits `2`.
+
+Probes for all four outcomes and for the default are in
+`flang/proof/пробы-строгого/` (`sh flang/proof/пробы-строгого/прогон.sh`).
 
 ```bash
 $ flang check привет.flang

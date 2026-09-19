@@ -352,7 +352,7 @@ In 0.7.17 the report counts only the functions and claims of the file itself; th
 claims of the imported library are not in its summary. The words «с опорой, и
 опора не судилась» ("with support, and the support was not judged") in the last
 line mean exactly this: both claims leaned on the grid of examples, and the exit
-code is still 0 — ask more strictly with `--строго`, and the code becomes 4.
+code is still 0 — ask more strictly with `--строго`, and the code becomes 3.
 Writing a postcondition is easy; getting a proof under it is separate work, and
 the compiler does not pretend that work is done. What it
 costs and when it succeeds is on [Why and how](proofs.html).

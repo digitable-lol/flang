@@ -72,6 +72,12 @@ zapusk versii-vezde   sh scripts/guards/version-derivations-guard.sh
 zapusk zov            sh scripts/guards/who-calls-the-guards.sh --check
 zapusk podlog         sh scripts/guards/guards-without-forgery-probe.sh --check
 zapusk opis           sh scripts/guards/proved-share-vs-tree.sh
+# Форма записи, на которой стояла беда 8455: `А или Б и притом В` без внешних
+# скобок читается `А или (Б и притом В)` — первая ветка отвечает за всё
+# выражение, а разбор и типы на это не краснеют. 0,3 с, без двоичного; дорогая
+# половина того же сторожа (прогон `--proof` по библиотеке) — по расписанию,
+# .github/workflows/stdlib-proof.yml.
+zapusk skobki         sh scripts/guards/stdlib-proof-guard.sh --скобки
 
 DVOICHNYY=да
 if [ ! -x bootstrap/flang ]; then

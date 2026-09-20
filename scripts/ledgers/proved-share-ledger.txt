@@ -1601,3 +1601,4 @@ ff1f78446cbbec240bb14f7676bd91d0|1|1|0|0|0|flang/proof/пробы-строгог
 eb5b390d34c90eb95ad3b4382c2a3a1f|1|0|0|0|1|flang/proof/чекер/пробы/программы/audit-2844/razv3-kontrol-chestnaya.flang
 b1b137536d045c4fdd205ece597d4acf|1|0|1|0|0|flang/proof/пробы-поручений/программы/доводы.fscript
 99f0a0d7135e7b2b5eb7f88096d487bb|4|3|1|0|0|flang/proof/пробы-поручений/прогон.fscript
+1f4a2a844b39793dc79f661223b3dc08|1|0|1|0|0|docs/examples/io/progress-bar-on-screen.flang

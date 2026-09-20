@@ -220,6 +220,7 @@ characters
 cheap
 cheapens
 cheaper
+cheapest
 cheaply
 check
 checked
@@ -366,6 +367,7 @@ delivery
 denominator
 depend
 dependency
+dependent
 depth
 der
 derivation
@@ -519,6 +521,7 @@ fires
 first
 fits
 five
+fix
 fixed
 fixes
 flag
@@ -640,6 +643,7 @@ holds
 hole
 holes
 homebrew
+honest
 hook
 host
 hosted
@@ -1021,6 +1025,7 @@ peoples
 per
 percent
 permission
+permuting
 persons
 phase
 phrase
@@ -1140,6 +1145,7 @@ readme
 reads
 real
 reason
+rebased
 rebuilds
 rechecked
 recomputed
@@ -1154,6 +1160,7 @@ recursive
 red
 reduces
 reduction
+refactor
 reference
 references
 referrers
@@ -1227,6 +1234,7 @@ rewrite
 rewriter
 rewrites
 rewriting
+rewritten
 ride
 right
 roadmap
@@ -1601,6 +1609,7 @@ vim
 visibility
 vs
 vscode
+waited
 waiting
 waits
 wal

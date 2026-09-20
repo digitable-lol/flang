@@ -1257,6 +1257,7 @@ da7fad16a84c755f2638b38faa0a9c94|20|19|1|0|0|flang/scripts/code-forgery.fscript
 cd50b4ec140445992c5b5051918b76b0|1|1|0|0|0|flang/scripts/direct-run.flang
 4660f4078dbb69ef66df64263cb80208|48|48|0|0|0|flang/scripts/emptiness-guard.fscript
 dd5c6fa5aeaa9edc65474e5cf9df01fe|21|21|0|0|0|flang/scripts/guards-start.fscript
+540f341358b194e39f9fe1eba88bced0|2|0|2|0|0|flang/scripts/jargon-guard.fscript
 b5d5de206e3e2e080e221df607a92c9b|73|69|4|0|0|flang/scripts/kernel-forgeries.fscript
 73bf5c6a64f0209a9cc4e03fa73f1c90|40|38|0|0|0|flang/scripts/kernel-lines-to-trust.fscript
 948a418a6ae7751f23fbe4f17496eb17|19|19|0|0|0|flang/scripts/ledger-summary.fscript
@@ -1529,7 +1530,7 @@ d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/guards/delivery-guard.flang
 baa3170dc90958c56352eb9b3f49ab9b|62|49|10|3|0|scripts/guards/homebrew-formula-guard.fscript
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/guards/input-boundary.fscript
 b00f9a812077e3b8497c15864acff995|10|7|3|0|0|scripts/guards/io-dictionary-copies-guard.fscript
-a32ba68426b624b3d647bc83a93e5534|4|0|4|0|0|scripts/guards/jargon-guard.fscript
+a07232cd8b9e683bc530843d7f95d821|2|0|2|0|0|scripts/guards/jargon-guard.fscript
 ea1518a801b7e78ee25788b065921aff|23|11|2|3|0|scripts/guards/kernel-abilities-guard.fscript
 5ab01492f40c7c4a19b89433856c1786|6|6|0|0|0|scripts/guards/license-guard.fscript
 4513584f34eca442e744d2b05863e98a|85|34|44|0|0|scripts/guards/link-guard.fscript

@@ -355,6 +355,7 @@
 - [Сторона на flang может уже существовать под чужим именем — проверять до того, как писать](a-side-may-already-exist-check-before-writing.md)
 - [Прибор свежести, которому подсунули старый двоичный, объявляет отставшими ровно те записи, которые свежее всего](a-stale-kernel-binary-turns-a-freshness-check-into-a-liar.md)
 - [Пример зеленеет на варианте, которого разбор не производит никогда, — и это класс](an-example-can-green-on-a-variant-the-parser-never-produces.md)
+- [Дизъюнкция без внешних скобок отвечает за всё тело, и ни разбор, ни типы на это не краснеют](a-disjunction-without-outer-parentheses-answers-for-the-whole-body.md)
 - [Жирный вокруг встроенного кода не собирался на сайте ни разу, и это было видно только глазом](bold-around-inline-code-never-rendered.md)
 - [Байтовый поиск и знаковый счёт — это две меры на всякой строке, которая не является правильным UTF-8](byte-search-and-character-count-are-two-measures-on-every-ill-formed-string.md)
 - [Печать в C ломается на параметре, чьё имя транслитерируется в ключевое слово C — но только у рекурсивной функции](c-backend-emits-a-c-keyword-as-a-parameter-name.md)

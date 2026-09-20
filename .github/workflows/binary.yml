@@ -1,4 +1,4 @@
-name: Binary
+name: Двоичный
 
 # ПОЧЕМУ ЭТА РАБОТА ЗАВЕДЕНА И ПОЧЕМУ ОНА РАЗБИТА НАДВОЕ.
 #
@@ -86,7 +86,7 @@ name: Binary
 # уже лежал в дереве, его никто не звал, и это стоило двадцати часов машины.
 # Теперь его принуждает составное действие `.github/actions/release-without-cache`
 # (почему не файл в `scripts/` — разобрано в его шапке), и шаг
-# «Check verdict cache» стоит ПЕРВЫМ после выкладки —
+# «Выпуск не опирается на кеш приговоров» стоит ПЕРВЫМ после выкладки —
 # в каждой из одиннадцати работ этого файла.
 #
 # ПОЧЕМУ В КАЖДОЙ РАБОТЕ, А НЕ В ОДНОЙ. Работы независимы: у каждой свой раннер
@@ -164,7 +164,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Check verdict cache
+      - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
 
       # ── СКОЛЬКО ПАМЯТИ ОСТАВАЛОСЬ, НАЗЫВАЕТСЯ ЧИСЛОМ НА КАЖДОМ ПРОГОНЕ ────
@@ -183,7 +183,7 @@ jobs:
       #
       # Он ничего не ограничивает и никого не снимает — только смотрит и
       # называет. Доводы, чего он НЕ ловит, — в шапке самого сторожа.
-      - name: Watch memory
+      - name: Следить за памятью раннера
         run: sh scripts/memory-headroom.sh --следить
         env:
           FLANG_TMP: ${{ runner.temp }}
@@ -221,7 +221,7 @@ jobs:
       # не нужен и предмет которых честен. Убрать continue-on-error может
       # тот, кто закроет 9611 (чинит советы прибора и/или делает
       # перепечатку) — не тот, кто просто перезапустит --otpechatok.
-      - name: Check bootstrap body
+      - name: Тело точки раскрутки отвечает отпечатку
         continue-on-error: true
         run: sh scripts/raskrutka.sh --telo
 
@@ -241,7 +241,7 @@ jobs:
       # два прогона каждого). LTO тут и быстрее, и легче по памяти; экономия на
       # пуше не в смене флагов, а в том, что на неизменном `bootstrap/**` сборки
       # нет вовсе.
-      - name: Restore binary cache
+      - name: Двоичный из кеша, если входы сборки не менялись
         id: kesh-dvoichnogo
         uses: actions/cache@v4
         with:
@@ -251,7 +251,7 @@ jobs:
           key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
       # Время сборки называется числом в логе, а не «быстро». Подорожает —
       # будет видно в логе, а не выяснится жалобой.
-      - name: Build bootstrap
+      - name: Собрать точку раскрутки
         if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
         run: |
           set -eu
@@ -265,7 +265,7 @@ jobs:
           echo "сборка двоичного: $(( $(date +%s) - started )) с"
       # Кеш мог отдать негодное: файл есть, а не запускается. Проверяем и
       # собираем честно, если так. Молчаливого «ну и ладно» здесь нет.
-      - name: Verify cached binary
+      - name: Взятый из кеша двоичный работает, иначе собрать заново
         if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
         run: |
           set -u
@@ -279,10 +279,10 @@ jobs:
       # сверки: сторож, который нигде не запускается, тихо ломается и годами
       # зеленеет. Второй шаг подкладывает ему программу с заведомо чужим именем
       # и требует отказа; без него первый шаг ничего не доказывает.
-      - name: Check binary origin
-        run: sh scripts/seed/binary-origin.sh --чем "работа «Binary»"
+      - name: Двоичный собран из семени этого дерева
+        run: sh scripts/seed/binary-origin.sh --чем "работа «Двоичный»"
 
-      - name: Probe binary origin
+      - name: Сторож происхождения умеет краснеть
         run: sh scripts/seed/binary-origin.sh --подлог
 
       # Собралось — ещё не значит работает. Проверяется то, что человек наберёт
@@ -321,7 +321,7 @@ jobs:
       # Тяжёлую самопроверку сюда не вернуть ничем, кроме раннера с большой
       # памятью. Её место — там же, где побайтовая сверка семени: за переменной
       # репозитория `BOLSHAYA_PAMYAT` в `reprint.yml`.
-      - name: Check binary CLI
+      - name: Двоичный отвечает человеку
         run: |
           set -eu
           ./bootstrap/flang --version
@@ -333,7 +333,7 @@ jobs:
       # разом, отдаёт ноль проверок и ноль отказов, то есть выглядит чистым.
       # Проверено снятием правки: убранная строка ведомости даёт код 1 и
       # печатает, какая именно пропала.
-      - name: Run flang tests
+      - name: Проверки на flang (сверка ведомости)
         run: sh flang/test/обход.sh
 
       # Примеры двух каталогов, которые СХОДЯТСЯ ЦЕЛИКОМ и потому годятся в
@@ -377,7 +377,7 @@ jobs:
       # Перепечатка семени его не касается: `steps` уходит в `args[3]`, то есть
       # в предел вычисляемой программы, а не в счётчик рантайма, куда кладёт
       # `fl_charge`. Та же валюта, что у «--max-steps» у «io», — см. ниже.
-      - name: Run kernel examples
+      - name: Примеры ядра
         run: ./bootstrap/flang test flang/core/
 
       # ⚠ УШЛО НА ТЕГ (задача 6890): поломка примера в `flang/stdlib/**`
@@ -385,7 +385,7 @@ jobs:
       # теге и ручном запуске. Это решение, а не молчаливая дыра: 44 минуты на
       # каждый пуш и есть та утечка, ради которой задача заведена. На пуше язык
       # держат обходчик (180 проверок), ядро (184 примера) и сторожа выше.
-      - name: Run stdlib examples
+      - name: Примеры stdlib (десятки минут — только на теге)
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         run: ./bootstrap/flang test flang/stdlib/
 
@@ -474,7 +474,7 @@ jobs:
       # красит работу. Убрать `continue-on-error` может тот, кто разберёт
       # список: часть файлов перенести под flang, часть — в потолок с
       # объяснением, часть, может быть, удалить как мёртвый груз.
-      - name: Check tree inventory
+      - name: Опись дерева по языкам (долг не вырос)
         continue-on-error: true
         run: ./bootstrap/flang io scripts/guards/tree-inventory.fscript --на-веру --plan 'Опись дерева по языкам' --max-steps 50000000
       # Столбцы долга в docs/tree-inventory.md не стерёг никто: сторож чисел
@@ -482,7 +482,7 @@ jobs:
       # четырнадцати ветвей (задача 2599). Сверять таблицу обязана опись —
       # она эти столбцы уже считает. Проверено пробой: подкрученное число
       # долга сторож прозы пропускал кодом 0, эта сверка краснеет (2600).
-      - name: Check inventory table
+      - name: Таблица описи сходится с тем, что опись насчитала
         run: ./bootstrap/flang io scripts/guards/tree-inventory.fscript --на-веру --plan 'Опись сходится с документом' --max-steps 50000000
       # Шаг выше без этого — обещание проверки: сверка могла бы отвечать
       # «сходится» на любой таблице, и сказать об этом было бы некому. План
@@ -494,7 +494,7 @@ jobs:
       # шаг, и все три план называет своим словом.
       # Прогнано на выпотрошенной копии сверки (задача 6612): «Беда поля»,
       # возвращающая пустой список на любом входе, даёт этому шагу код 0.
-      - name: Probe inventory table
+      - name: Сверка описи умеет краснеть
         run: |
           if ./bootstrap/flang io scripts/guards/tree-inventory.fscript --на-веру --plan 'Подлог' --max-steps 50000000; then
             echo "сверка промолчала на подложенной строке — проверять ею нечего" >&2
@@ -512,7 +512,7 @@ jobs:
       # Двоичный сверке не нужен — ей хватает git, grep, md5sum и awk; 12 с на
       # машине разработки. FLANG_TMP задан потому, что умолчание /srv/tmp на
       # раннере не создать.
-      - name: Check proved share
+      - name: Опись доказанного сходится с деревом
         env:
           FLANG_TMP: ${{ runner.temp }}
         run: sh scripts/guards/proved-share-vs-tree.sh
@@ -520,7 +520,7 @@ jobs:
       # «написано» первой строки +1, первая строка вынута, строка о файле,
       # которого нет. Каждая сличается cmp (подлог собрался), требует кода не 0
       # и своих слов в выводе; опись возвращается и сличается в конце.
-      - name: Probe proved share
+      - name: Сверка описи доказанного умеет краснеть
         env:
           FLANG_TMP: ${{ runner.temp }}
         run: |
@@ -568,7 +568,7 @@ jobs:
       # Здесь это ловится: 3,9 с на проверку и 5,8 с на план «Целость», который
       # вдобавок ходит по дереву и проверяет, что каждый ярлык указывает на
       # существующий файл.
-      - name: Check shortcuts
+      - name: Ярлыки целы и сосчитаны
         run: |
           set -eu
           ./bootstrap/flang check ярлыки.flang
@@ -578,9 +578,9 @@ jobs:
       # flang 29 августа 2026 и сверенные с прежними словом в слово на шести и
       # на пяти входах соответственно. Стоят здесь, а не отдельными работами:
       # двоичный уже собран, и обе вместе отвечают за три секунды.
-      - name: Check ADR numbers
+      - name: Номера решений заняты по одному
         run: ./bootstrap/flang io scripts/guards/adr-numbers-guard.fscript --на-веру --plan 'Номера решений'
-      - name: Probe ADR numbers
+      - name: Сторож номеров решений умеет краснеть
         run: |
           if ./bootstrap/flang io scripts/guards/adr-numbers-guard.fscript --на-веру --plan 'Подлог'; then
             echo "сторож промолчал на подложенной двойне — проверять им нечего" >&2
@@ -593,17 +593,17 @@ jobs:
       # Четыре шага одного файла, ~90 с каждый на sbx (11 с у двух направлений:
       # дорог не разбор, а сводка по всем 409 постусловиям). Подлог прячет
       # постусловие из flang/proof/map/abilities.flang в памяти, не на диске.
-      - name: Check traceability
+      - name: Цепочка требование → код → пример → запись сходится с записанным долгом
         run: LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/guards/traceability-guard.fscript --на-веру --plan 'Разрывы' --max-steps 4000000000
-      - name: Probe traceability
+      - name: Сторож прослеживаемости умеет краснеть
         run: |
           if LC_ALL=C.UTF-8 ./bootstrap/flang io scripts/guards/traceability-guard.fscript --на-веру --plan 'Подлог' --max-steps 4000000000; then
             echo "сторож промолчал на спрятанном постусловии — проверять им нечего" >&2
             exit 1
           fi
-      - name: Trace requirement
+      - name: От требования к коду и проверке
         run: LC_ALL=C.UTF-8 FLANG_TRACE='У1 сумма читается в обратном порядке' ./bootstrap/flang io scripts/guards/traceability-guard.fscript --на-веру --plan 'От требования' --max-steps 4000000000
-      - name: Trace source line
+      - name: От строки кода к требованию
         run: LC_ALL=C.UTF-8 FLANG_TRACE='flang/proof/map/abilities.flang:34' ./bootstrap/flang io scripts/guards/traceability-guard.fscript --на-веру --plan 'От строки' --max-steps 4000000000
 
       # ── Шесть сторожей, найденных «не запускается нигде» (Ч77, 31 авг 2026) ──
@@ -614,11 +614,11 @@ jobs:
       # собран, цена шага близка к нулю, а падение обязано называть, КАКОЙ
       # именно сторож покраснел, а не «что-то в пачке». Отдельными работами
       # не заводим: раннер и checkout стоят на порядок дороже самих проверок.
-      - name: Check file extensions
+      - name: Расширения имени файла сведены к одному списку
         run: ./bootstrap/flang io scripts/guards/file-extensions.fscript --на-веру
-      - name: Check dictionary page
+      - name: Страница словаря покрывает таблицу слов языка целиком
         run: ./bootstrap/flang io scripts/guards/dictionary-guard.fscript --на-веру
-      - name: Check man page
+      - name: Справочная страница (man) отвечает исходнику
         run: ./bootstrap/flang io scripts/guards/manpage-guard.fscript --на-веру
       # Порча — переписанное обещание в docs/README.ru.md. Сторож держит фразу
       # дословно и обязан сказать «обещание пропало», а не промолчать. 6612.
@@ -628,7 +628,7 @@ jobs:
       # проза говорит «из десяти»; порча теперь — «из девяти». Проба краснела
       # «ПОДЛОГ НЕ СОБРАЛСЯ» на dev c8103f06d, пока фраза в ней отставала. `sed` без `-i` по той же причине, по какой его убрали из
       # пробы версии: на macOS ключ BSD-шный и работа падала бы.
-      - name: Probe emit promises
+      - name: Сторож обещаний о печати умеет краснеть
         run: |
           set -u
           podlog=docs/guide/emit-walkthrough.ru.md
@@ -646,16 +646,16 @@ jobs:
             exit 1
           fi
           git checkout -- "$podlog"
-      - name: Check emit promises
+      - name: Числа прозы о печати сходятся с прогоном
         run: ./bootstrap/flang io scripts/guards/emit-promises-guard.fscript
-      - name: Check proof wording
+      - name: Сильное слово о доказанности не сказано про слабое основание
         run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/word-guard.fscript --на-веру --plan 'Сторож слов' --max-steps 2000000000
-      - name: Check kernel abilities
+      - name: Все 28 умений ядра доказаны прогоном, а не перечислены
         run: ./bootstrap/flang check --proof flang/proof/map/abilities.flang
 
       # Последним шагом и ВСЕГДА: без него наблюдатель выше — это запись,
       # которую никто не читает.
-      - name: Report memory
+      - name: Сколько памяти оставалось
         if: always()
         run: sh scripts/memory-headroom.sh --отчёт --итог "${{ job.status }}"
         env:
@@ -663,12 +663,11 @@ jobs:
 
   # ── ПРИМЕРЫ САМОГО КОМПИЛЯТОРА: их не гонял НИКТО ─────────────────────────
   #
-  # Шаги «Run kernel examples» и «Run stdlib examples» выше зовут `flang test`
-  # на двух
+  # Шаги «Примеры ядра» и «Примеры stdlib» выше зовут `flang test` на двух
   # каталогах, и `flang/self/` среди них нет. Каталог при этом не пустой: 67
-  # файл и 5164 примеров, объявленных внутри функций.
+  # файл и 5166 примеров, объявленных внутри функций.
   # СНЯТО 2026-09-17 файлов flang/self/*.flang = 67
-  # СНЯТО 2026-09-17 примеров-в flang/self/*.flang = 5164
+  # СНЯТО 2026-09-20 примеров-в flang/self/*.flang = 5166
   #
   # Единственная работа, которая до них добралась бы, — `korpus` ниже
   # (`flang test . --ledger` внутри `обход-примеров.sh`). Она закрыта условием
@@ -749,16 +748,16 @@ jobs:
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Check verdict cache
+      - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       # Тот же наблюдатель, что в `sborka`, и по той же причине: обход берёт
       # до 6,7 ГиБ, и обрыв по памяти обязан быть назван памятью, а не «exit
       # code 143».
-      - name: Watch memory
+      - name: Следить за памятью раннера
         run: sh scripts/memory-headroom.sh --следить
         env:
           FLANG_TMP: ${{ runner.temp }}
-      - name: Restore binary cache
+      - name: Двоичный из кеша, если входы сборки не менялись
         id: kesh-dvoichnogo
         uses: actions/cache@v4
         with:
@@ -766,10 +765,10 @@ jobs:
             bootstrap/flang
             bootstrap/libcompiler_flang.a
           key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
-      - name: Build bootstrap
+      - name: Собрать точку раскрутки
         if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
         run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
-      - name: Verify cached binary
+      - name: Взятый из кеша двоичный работает, иначе собрать заново
         if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
         run: |
           set -u
@@ -785,13 +784,13 @@ jobs:
       # находку), проверяет `cmp`-ом, что порча легла, и требует от обходчика
       # кода 1 И ИМЕНИ сломанного примера в отказе — красный код без имени
       # чинить нечем. Потом та же копия без порчи, и от неё требуется код 0.
-      - name: Probe self examples
+      - name: Сторож примеров self умеет краснеть и умеет молчать
         run: sh flang/test/обход-self.sh --подлог
         env:
           FLANG_TMP: ${{ runner.temp }}
-      - name: Run self examples
+      - name: Примеры flang/self (сверка ведомости)
         run: sh flang/test/обход-self.sh
-      - name: Report memory
+      - name: Сколько памяти оставалось
         if: always()
         run: sh scripts/memory-headroom.sh --отчёт --итог "${{ job.status }}"
         env:
@@ -863,7 +862,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
-      - name: Check verdict cache
+      - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       # ПОЧЕМУ ВРЕМЕННЫЙ КАТАЛОГ НАЗЫВАЕТСЯ ЗДЕСЬ, А НЕ БЕРЁТСЯ ПО УМОЛЧАНИЮ.
       #
@@ -887,7 +886,7 @@ jobs:
       # /srv/tmp.
       # ⚠ КРАСНА СЕГОДНЯ, У ЭТОЙ РАБОТЫ ЭТО ЕДИНСТВЕННЫЙ ШАГ ПО СУЩЕСТВУ, И
       # ПЕРЕСЪЁМКОЙ ОТПЕЧАТКА ЭТО НЕ ЧИНИТСЯ. Тот же случай, что у
-      # «Check bootstrap body» в работе `build` — один
+      # «Тело точки раскрутки отвечает отпечатку» в работе `build` — один
       # разбор на оба места:
       # docs/zettel/re-taking-a-fingerprint-turns-red-green-without-reprinting.md,
       # docs/tasks/9611 (открыта). Коротко: `--otpechatok` штампует отпечаток С
@@ -898,7 +897,7 @@ jobs:
       # не про CI-квоту одного пуша. `continue-on-error` тем же доводом,
       # что у `links` в ci.yml: красно по существу, видно в ленте, не
       # держит остальной прогон. Снять может только тот, кто закроет 9611.
-      - name: Check seed inputs
+      - name: Входы печати те же, что при перепечатке семени
         continue-on-error: true
         run: sh scripts/raskrutka.sh --bystro
         env:
@@ -967,12 +966,12 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Check verdict cache
+      - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       # Тот же кеш и тот же ключ, что у соседних работ этого файла: на пуше,
       # не тронувшем `bootstrap/**`, сборка не идёт вовсе, и работа стоит
       # ровно три печати.
-      - name: Restore binary cache
+      - name: Двоичный из кеша, если входы сборки не менялись
         id: kesh-dvoichnogo
         uses: actions/cache@v4
         with:
@@ -980,10 +979,10 @@ jobs:
             bootstrap/flang
             bootstrap/libcompiler_flang.a
           key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
-      - name: Build bootstrap
+      - name: Собрать точку раскрутки
         if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
         run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
-      - name: Verify cached binary
+      - name: Взятый из кеша двоичный работает, иначе собрать заново
         if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
         run: |
           set -u
@@ -996,11 +995,11 @@ jobs:
       # за одни сутки 5 сентября 2026 эта порода поймана четырежды, и ни разу
       # прибором). Проба подкладывает сверщику изменённый байт и пропавший
       # файл и требует красноты, а от дословной копии — молчания.
-      - name: Probe print determinism
+      - name: Прибор краснеет на подложенном расхождении
         run: sh scripts/seed/print-is-repeatable.sh --подлог
         env:
           FLANG_TMP: ${{ runner.temp }}
-      - name: Check print determinism
+      - name: Две печати одного входа в разных средах совпадают побайтово
         run: sh scripts/seed/print-is-repeatable.sh
         env:
           FLANG_TMP: ${{ runner.temp }}
@@ -1048,20 +1047,20 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
-      - name: Check verdict cache
+      - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
-      - name: Check site numbers
+      - name: Дешёвые числа сайта пересчитаны по исходникам
         run: sh scripts/guards/published-vs-tree.sh --числа
-      - name: Check released version
+      - name: Объявленная версия выпущена, и невыпущенное названо числом
         run: sh scripts/guards/published-vs-tree.sh --выпуск
-      - name: Check README map
+      - name: Карта раскладки в README отвечает корню дерева
         run: sh scripts/guards/published-vs-tree.sh --карта
       # Напечатанная команда — такое же утверждение о дереве, как число, и
       # обязана проверяться так же. 29 августа 2026 команда, подтверждающая
       # «аксиом ноль», стояла на ГЛАВНОЙ странице сайта в форме, которая
       # отвечает «непонятный ключ «ноль»»» и кодом 2: имя плана написано в
       # ёлочках и без кавычек оболочки. Таких мест в дереве нашлось тридцать пять.
-      - name: Check documented commands
+      - name: Напечатанные команды работают как напечатаны
         run: sh scripts/guards/published-vs-tree.sh --команды
       # Числа, набранные в прозе РУКОЙ, — README, шапки страниц, ROADMAP. Их не
       # держала подстановка `{{ключ}}`, и не сторожило ничто: 29 августа 2026
@@ -1069,9 +1068,9 @@ jobs:
       # 37 файлов при 42 строках, а «три решающих правила» стояли на той же
       # странице, где двенадцать. Здесь спрашиваются только те из них, что
       # считаются без двоичного.
-      - name: Check prose numbers
+      - name: Числа прозы отвечают дереву
         run: sh scripts/guards/published-vs-tree.sh --проза
-      - name: Check non-flang files
+      - name: Перепись того, что в дереве не на flang
         run: sh scripts/guards/published-vs-tree.sh --перепись
 
   imena:
@@ -1080,13 +1079,13 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Check verdict cache
+      - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
 
       # Наблюдатель за памятью — по тому же доводу, что и в `sborka`: эту
       # работу снимали сигналом каждый прогон, и в журнале это выглядело
       # обрывом, а не отказом. Устройство и оговорки — в шапке сторожа.
-      - name: Watch memory
+      - name: Следить за памятью раннера
         run: sh scripts/memory-headroom.sh --следить
         env:
           FLANG_TMP: ${{ runner.temp }}
@@ -1175,7 +1174,7 @@ jobs:
       # sha256 двоичного после двух независимых сборок совпал знак в знак.
       # Работа `chekker` ниже кеша НЕ берёт и двоичного не собирает вовсе —
       # там ответ тем же двоичным, о котором спрашивают, ничего не стоит.
-      - name: Restore binary cache
+      - name: Двоичный из кеша, если входы сборки не менялись
         id: kesh-dvoichnogo
         uses: actions/cache@v4
         with:
@@ -1183,12 +1182,12 @@ jobs:
             bootstrap/flang
             bootstrap/libcompiler_flang.a
           key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
-      - name: Build bootstrap
+      - name: Собрать двоичный (потолку строк ядра он нужен)
         if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
         run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
       # Кеш мог отдать негодное: файл есть, а не запускается. Проверяем и
       # собираем честно, если так. Молчаливого «ну и ладно» здесь нет.
-      - name: Verify cached binary
+      - name: Взятый из кеша двоичный работает, иначе собрать заново
         if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
         run: |
           set -u
@@ -1202,7 +1201,7 @@ jobs:
       # ленте её не видно. Поэтому состояние называется тут, в работе, которая
       # идёт всегда, и называется в СВОДКЕ прогона — её видно, не открывая
       # логов.
-      - name: Note splicing job
+      - name: Сказать вслух, где считаются поломки от слияния
         if: always()
         run: |
           if [ "${BOLSHAYA_PAMYAT:-}" = "da" ]; then
@@ -1261,7 +1260,7 @@ jobs:
       # второй реализацией и остаётся.
 
       # Последним шагом и ВСЕГДА — по тому же доводу, что и в `sborka`.
-      - name: Report memory
+      - name: Сколько памяти оставалось
         if: always()
         run: sh scripts/memory-headroom.sh --отчёт --итог "${{ job.status }}"
         env:
@@ -1308,9 +1307,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Check verdict cache
+      - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
-      - name: Watch memory
+      - name: Следить за памятью раннера
         run: sh scripts/memory-headroom.sh --следить
         env:
           FLANG_TMP: ${{ runner.temp }}
@@ -1328,7 +1327,7 @@ jobs:
       # sha256 двоичного после двух независимых сборок совпал знак в знак.
       # Работа `chekker` ниже кеша НЕ берёт и двоичного не собирает вовсе —
       # там ответ тем же двоичным, о котором спрашивают, ничего не стоит.
-      - name: Restore binary cache
+      - name: Двоичный из кеша, если входы сборки не менялись
         id: kesh-dvoichnogo
         uses: actions/cache@v4
         with:
@@ -1336,12 +1335,12 @@ jobs:
             bootstrap/flang
             bootstrap/libcompiler_flang.a
           key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
-      - name: Build bootstrap
+      - name: Собрать двоичный (проверке на flang он нужен)
         if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
         run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
       # Кеш мог отдать негодное: файл есть, а не запускается. Проверяем и
       # собираем честно, если так. Молчаливого «ну и ладно» здесь нет.
-      - name: Verify cached binary
+      - name: Взятый из кеша двоичный работает, иначе собрать заново
         if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
         run: |
           set -u
@@ -1350,7 +1349,7 @@ jobs:
             make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
           fi
       - run: ./bootstrap/flang io scripts/guards/name-splicing-guard.fscript --на-веру --max-orders 2000
-      - name: Report memory
+      - name: Сколько памяти оставалось
         if: always()
         run: sh scripts/memory-headroom.sh --отчёт --итог "${{ job.status }}"
         env:
@@ -1410,7 +1409,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Check verdict cache
+      - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       - name: Build proof checker
         run: make -C flang/proof/checker
@@ -1439,7 +1438,7 @@ jobs:
       # Ноль значит «подделка отвергнута И честная запись зелена»; без
       # контроля подлог, отвергнутый по посторонней причине, читался бы как
       # работа охраны.
-      - name: Probe corpus ledger
+      - name: Подлог ведомости — сторож обязан покраснеть
         run: |
           if ! sh flang/proof/corpus-share.sh --подлог; then
             echo "сторож ведомости промолчал на подлоге — проверять им нечего" >&2
@@ -1474,9 +1473,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Check verdict cache
+      - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
-      - name: Probe translation matcher
+      - name: Сличитель краснеет на испорченной честной паре
         run: |
           set -u
           podlog=flang/translation/fixtures/traffic-light/svetofor.c
@@ -1499,7 +1498,7 @@ jobs:
             echo "прогон покраснел, но не на испорченной паре — краснота не по делу" >&2
             exit 1
           fi
-      - name: Check C translation
+      - name: Протокол перевода в C переигрывается сличителем
         run: sh flang/translation/run.sh
 
   storozha:
@@ -1509,7 +1508,7 @@ jobs:
     steps:
       # Полная история не нужна: сторож спрашивает `git ls-files`, а не журнал.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Check verdict cache
+      - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       # ── ДВОИЧНЫЙ БЕРЁТСЯ ГОТОВЫМ, ЕСЛИ ВХОДЫ СБОРКИ ТЕ ЖЕ ──────────────────
       #
@@ -1525,7 +1524,7 @@ jobs:
       # sha256 двоичного после двух независимых сборок совпал знак в знак.
       # Работа `chekker` ниже кеша НЕ берёт и двоичного не собирает вовсе —
       # там ответ тем же двоичным, о котором спрашивают, ничего не стоит.
-      - name: Restore binary cache
+      - name: Двоичный из кеша, если входы сборки не менялись
         id: kesh-dvoichnogo
         uses: actions/cache@v4
         with:
@@ -1533,12 +1532,12 @@ jobs:
             bootstrap/flang
             bootstrap/libcompiler_flang.a
           key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
-      - name: Build bootstrap
+      - name: Собрать точку раскрутки
         if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
         run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
       # Кеш мог отдать негодное: файл есть, а не запускается. Проверяем и
       # собираем честно, если так. Молчаливого «ну и ладно» здесь нет.
-      - name: Verify cached binary
+      - name: Взятый из кеша двоичный работает, иначе собрать заново
         if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
         run: |
           set -u
@@ -1546,7 +1545,7 @@ jobs:
             echo "::warning::двоичный из кеша не запускается — собираю заново"
             make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
           fi
-      - name: Check guards start
+      - name: Каждый файл проверок «*.test.mjs» ЗАВОДИТСЯ
         run: bootstrap/flang io flang/scripts/guards-start.fscript --на-веру
       # Записи корпуса доказательств могут отстать от печати ядра — та же
       # порода, что у семени: расхождение объявляют «числом», а не отказом,
@@ -1609,7 +1608,7 @@ jobs:
       # 120000 мс — почти четырёхкратный запас к измеренным 32-33 с на одного
       # потомка; сторож зовётся дважды (чистый суд и суд подлога), весь шаг
       # уложился в 67,3 с (замер локально, `time`).
-      - name: Probe code guard
+      - name: Сторож кодов умеет краснеть и умеет молчать
         run: bootstrap/flang io flang/scripts/code-forgery.fscript --на-веру --timeout 120000
 
       # ── А ТЕПЕРЬ САМ СУД, а не только проба над ним ───────────────────────
@@ -1632,7 +1631,7 @@ jobs:
       # (замер 5 сентября 2026, `/usr/bin/time`). Почти всё — два `git grep`
       # по дереву и разбор их вывода. Двоичный здесь уже собран шагами выше,
       # второй раз за него платить не приходится.
-      - name: Check prose codes
+      - name: Каждый код из прозы существует в исходниках
         run: ./ярлык коды:проверка
 
       # ── Сторож выпуска без кеша: тот же довод, что у соседей выше ─────────
@@ -1646,7 +1645,7 @@ jobs:
       #
       # Работа ходит на КАЖДЫЙ пуш, поэтому испорченный сторож обнаружится
       # задолго до метки, а не в тот единственный прогон, когда он нужен.
-      - name: Probe cache guard
+      - name: Сторож выпуска без кеша умеет краснеть и умеет молчать
         uses: ./.github/actions/release-without-cache
         with:
           mode: self-test
@@ -1660,7 +1659,7 @@ jobs:
       #
       # Стоит на КАЖДОМ пуше, а не на метке: находка нужна на запросе слияния,
       # а не в тот единственный прогон по метке, когда чинить уже поздно.
-      - name: Check workflow cache
+      - name: Ни одна работа CI не задаёт кеш приговоров
         uses: ./.github/actions/release-without-cache
         with:
           mode: workflows
@@ -1683,7 +1682,7 @@ jobs:
       # Обе половины спрашиваются одной командой: чистое обязано молчать, и
       # каждая из пяти порч обязана быть поймана. Зелёный без показанной порчи
       # ничего не значит.
-      - name: Probe proof wording
+      - name: Сторож слов о доказанности краснеет на подмене и молчит, когда чисто
         run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/word-guard.fscript --на-веру --plan 'Подлог слов' --max-steps 2000000000
 
       # ── ПОДДЕЛКИ ЯДРА: ни одного шага CI у них не было НИ РАЗУ ─────────────
@@ -1708,7 +1707,7 @@ jobs:
       # «Подделки остаются недоказанными» и дешёвый «Аксиом ноль», который читает
       # текст ядра и от семени не зависит. Без имени плана двоичный отвечает
       # FLANG_UNKNOWN_PLAN и кодом 3.
-      - name: Check kernel forgeries
+      - name: Подделки ядра отвергнуты (проверка на flang)
         run: bootstrap/flang io flang/scripts/kernel-forgeries.fscript --на-веру --plan 'Подделки остаются недоказанными'
 
       # ── ТРИ ПРОГРАММЫ ЛЖИ Ч40: вердикт живого компилятора пришпилен ────────
@@ -1776,7 +1775,7 @@ jobs:
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Check verdict cache
+      - name: Выпуск не опирается на кеш приговоров
         uses: ./.github/actions/release-without-cache
       # ── ДВОИЧНЫЙ БЕРЁТСЯ ГОТОВЫМ, ЕСЛИ ВХОДЫ СБОРКИ ТЕ ЖЕ ──────────────────
       #
@@ -1792,7 +1791,7 @@ jobs:
       # sha256 двоичного после двух независимых сборок совпал знак в знак.
       # Работа `chekker` ниже кеша НЕ берёт и двоичного не собирает вовсе —
       # там ответ тем же двоичным, о котором спрашивают, ничего не стоит.
-      - name: Restore binary cache
+      - name: Двоичный из кеша, если входы сборки не менялись
         id: kesh-dvoichnogo
         uses: actions/cache@v4
         with:
@@ -1800,12 +1799,12 @@ jobs:
             bootstrap/flang
             bootstrap/libcompiler_flang.a
           key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
-      - name: Build bootstrap
+      - name: Собрать точку раскрутки
         if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
         run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
       # Кеш мог отдать негодное: файл есть, а не запускается. Проверяем и
       # собираем честно, если так. Молчаливого «ну и ладно» здесь нет.
-      - name: Verify cached binary
+      - name: Взятый из кеша двоичный работает, иначе собрать заново
         if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
         run: |
           set -u
@@ -1822,7 +1821,7 @@ jobs:
       # провалы (выходы замера авторства писала модель). Ведомость строже
       # порога — она держит точное число прошедших и число СВОИХ примеров у
       # КАЖДОГО файла, и потеря файлом своих примеров краснеет диффом.
-      - name: Run corpus examples
+      - name: Примеры корпуса (сверка ведомости)
         run: sh flang/test/обход-примеров.sh
 
       # ── РАЗЛИЧИТЕЛЬНЫЙ ПОИСК: ядро против вычислителя ─────────────────────
@@ -1837,5 +1836,5 @@ jobs:
       # 16–17 мин на машине разработки (замер 10 сентября 2026). Это цена
       # глубокой сверки, и её место там же, где полный обход корпуса, — на теге
       # и на руке.
-      - name: Run discriminating search
+      - name: Различительный поиск (ядро против вычислителя)
         run: LC_ALL=C.UTF-8 ./bootstrap/flang io flang/scripts/discriminating-search.fscript --plan 'Различительный поиск' --max-steps 2000000000 --max-orders 100000

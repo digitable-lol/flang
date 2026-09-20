@@ -5,33 +5,39 @@
 # ПРОБЫ СИЛЛОГИЗМА (ADR-0046, задача 5309).
 #
 #   sh flang/proof/пробы-силлогизма/прогон.sh            двоичным: замер «до»
-#   sh flang/proof/пробы-силлогизма/прогон.sh --зондом   толкованием исходников
-#   RABOTA=<каталог> sh flang/proof/пробы-силлогизма/прогон.sh --по-записям
-#       сверить уже снятые записи зонда заново, не считая их второй раз.
+#   sh flang/proof/пробы-силлогизма/прогон.sh --печатью  компилятором, напечатанным
+#                                                        в JavaScript: замер «после»
+#   PECHAT=<каталог> sh … --печатью    взять уже напечатанный компилятор оттуда,
+#                                      а не печатать заново (печать — 13 минут)
 #
 # Код 0 — сошлось всё; 1 — хоть одна проба разошлась, и она названа строкой;
-# 2 — не смог измерить (нет двоичного, нет таблицы).
+# 2 — не смог измерить (нет двоичного, нет таблицы, нет node).
 #
 # ── ДВА ПУТИ, И ПОЧЕМУ ИХ ДВА ───────────────────────────────────────────────
 # Слово поверхности `следует` живёт в печатаемой части семени
-# (`flang/self/lexer.flang`, `flang/self/parser.flang`). Правка там доезжает до
+# (`flang/self/lexer.flang`, `flang/self/parser.flang`), и там же живёт починка
+# распаковки `таких что` (`flang/self/proofterm.flang`). Правка там доезжает до
 # `bootstrap/flang` только полной перепечаткой (`scripts/raskrutka.sh`, около
-# 11 часов). До неё двоичный этого слова не знает и отвечает отказом разбора — и
-# первый путь ЖДЁТ ИМЕННО ЭТОГО: столбец «слово двоичного» в ОЖИДАНИЕ.tsv
-# заполнен отказом, а не вердиктом. Зелёный двоичный здесь означал бы, что
-# замер снят не с той сборки.
+# 11 часов). До неё двоичный слова не знает и починки не несёт — и первый путь
+# ЖДЁТ ИМЕННО ЭТОГО: столбец «слово двоичного» в ОЖИДАНИЕ.tsv заполнен отказом,
+# а не вердиктом. Зелёный двоичный там означал бы, что замер снят не с той
+# сборки.
 #
-# Второй путь толкует исходники компилятора зондом `flang/self/bootstrap/
-# zond-k7.flang` тем же двоичным: он отдаёт ведомость `check --proof` словами,
-# посчитанную ИСПРАВЛЕННЫМ компилятором. Это замер «после» без перепечатки.
-# ЦЕНА, СНЯТАЯ 19–20 сентября 2026 на машине `dev`: три программы разом НЕ
-# ДОСЧИТАЛИСЬ ЗА ОДИННАДЦАТЬ ЧАСОВ и были сняты сигналом 15, пик 24,7 ГиБ. То
-# есть этот путь сегодня дороже самой перепечатки, ради обхода которой он и
-# заведён, и запускать его имеет смысл только поштучно и на свободной машине
-# (PARALLEL=N; умолчание 2). Запись каждого прогона остаётся в каталоге $RABOTA
-# — её можно пересверить `--по-записям`, не считая второй раз. Дешёвая половина
-# — только разбор — считается зондом `zond-5309.flang` за две минуты и 1 ГиБ,
-# и именно ею снято сличение деревьев в ADR-0046.
+# Второй путь ПЕЧАТАЕТ ИСПРАВЛЕННЫЙ КОМПИЛЯТОР В JAVASCRIPT и спрашивает уже
+# его. Это замер «после» без перепечатки, и цена снята 20 сентября 2026 на
+# машине `dev`: печать — 12 мин 50 с и 12,9 ГиБ один раз, 14,8 МБ JS; дальше
+# каждая проба — СЕКУНДЫ. Способ и обе его ямы описаны заметкой
+# docs/zettel/a-compiler-printed-to-javascript-runs-a-new-target-in-seconds.md.
+#
+# ── ПОЧЕМУ НЕ ЗОНДОМ, КАК У `пробы-запуска` ────────────────────────────────
+# Пробовали, и это замер, а не мнение. Зонд ведомости
+# (`flang/self/bootstrap/zond-k7.flang`, «Ведомость исходников», толкование
+# исходников нынешним двоичным) на этих же программах НЕ ДОСЧИТАЛСЯ ЗА
+# ОДИННАДЦАТЬ ЧАСОВ и был снят сигналом 15, пик 24,7 ГиБ — три программы разом,
+# 19–20 сентября 2026. То есть путь дороже самой перепечатки, ради обхода
+# которой он заведён. Дешёвая его половина жива: разбор без доказательств
+# (`zond-5309.flang`, «Печать разбора исходника») — две минуты и 1 ГиБ, и
+# именно ею снято сличение деревьев в ADR-0046.
 #
 # Имена переменных латиницей: ни dash, ни bash не принимают кириллицу в именах.
 set -u
@@ -39,16 +45,11 @@ set -u
 KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 FLANG=${FLANG:-$KOREN/bootstrap/flang}
 PROBY=$KOREN/flang/proof/пробы-силлогизма
-ZOND=$KOREN/flang/self/bootstrap/zond-k7.flang
 TABLICA=$PROBY/ОЖИДАНИЕ.tsv
-PARALLEL=${PARALLEL:-2}
-RABOTA=${RABOTA:-$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" proby-sillogizma.XXXXXX)}
 export LC_ALL=C.UTF-8
 
-ZONDOM=0
-PO_ZAPISYAM=0
-[ "${1:-}" = "--зондом" ] && ZONDOM=1
-[ "${1:-}" = "--по-записям" ] && { ZONDOM=1; PO_ZAPISYAM=1; }
+PECHATYU=0
+[ "${1:-}" = "--печатью" ] && PECHATYU=1
 [ -x "$FLANG" ] || { echo "нет двоичного: $FLANG" >&2; exit 2; }
 [ -f "$TABLICA" ] || { echo "нет таблицы: $TABLICA" >&2; exit 2; }
 
@@ -58,47 +59,63 @@ proba_binary() { # программа → печатает вывод одной
   printf '%s' "$out" | tr '\n' ' '
 }
 
-# Одна проба зондом: довод — JSON с путём и текстом программы.
-proba_zond() { # программа → файл записи
-  f=$PROBY/программы/$1; zap=$RABOTA/$1.зонд.txt
-  [ "$PO_ZAPISYAM" = "1" ] && { echo "$zap"; return; }
-  args=$(python3 -c '
+# Одна проба напечатанным компилятором. `следует` он знает, поэтому программа
+# едет как есть; ответ — JSON, из него берутся слова ведомости либо первая беда.
+proba_pechatyu() { # программа → печатает ответ одной строкой
+  f=$PROBY/программы/$1
+  python3 -c '
 import json,sys
 p,f=sys.argv[1],sys.argv[2]
-print(json.dumps({"путь": p, "текст": open(f, encoding="utf-8").read()}, ensure_ascii=False))' "$1" "$f")
-  { /usr/bin/time -f 'зонд: %es, пик %M КБ, код %x' \
-      "$FLANG" run "$ZOND" --function "«Проверка зонда К7»" --max-steps 2000000000 --args "$args"; } > "$zap" 2>&1
-  echo "$zap"
+ish={"r":[["путь",{"s":p}],["текст",{"s":open(f,encoding="utf-8").read()}]]}
+print(json.dumps({"fn":"Ведомость исходников","args":[{"l":[ish]},{"s":p}],
+                  "depth":"100000","steps":"2000000000"},ensure_ascii=False))' "$1" "$f" \
+  | node "$PECHAT/flang_cli.js" "$PECHAT/compiler_flang.js" 2>&1 \
+  | python3 -c '
+import json,sys
+syr=sys.stdin.read()
+try: d=json.loads(syr)
+except Exception: print(syr.replace("\n"," ")[:400]); raise SystemExit
+if not d.get("ok"):
+    print("ОТКАЗ ПРОГОНЩИКА "+str(d.get("code"))+": "+str(d.get("message"))[:300]); raise SystemExit
+polya=dict(d["value"]["r"])
+if polya["годно"]:
+    print(polya["словами"]["s"].replace("\n"," "))
+else:
+    bedy=polya.get("диагностики",{}).get("l",[])
+    kuski=[]
+    for b in bedy:
+        q=dict(b["r"]); kuski.append(q["код"]["s"]+": "+q["сообщение"]["s"])
+    print(" | ".join(kuski) if kuski else "не годно, препятствие")'
 }
 
 BAD=0
 VSEGO=0
 say() { printf '%s\n' "$*"; }
 
-say "таблица: $TABLICA"
-say "путь: $([ "$ZONDOM" = "1" ] && echo 'зондом (толкование исходников)' || echo 'двоичным (замер «до»)')"
-[ "$ZONDOM" = "1" ] && say "работа: $RABOTA"
-say ""
-
-# Зондом — очередями по PARALLEL: каждый прогон берёт около 18 ГиБ.
-if [ "$ZONDOM" = "1" ] && [ "$PO_ZAPISYAM" = "0" ]; then
-  SCHET=0
-  while IFS="	" read -r prog slovo_bin slovo_zond; do
-    case "$prog" in \#*|programma|программа|"") continue ;; esac
-    : "$slovo_bin" "$slovo_zond"
-    proba_zond "$prog" > /dev/null &
-    SCHET=$((SCHET + 1))
-    [ "$((SCHET % PARALLEL))" -eq 0 ] && wait
-  done < "$TABLICA"
-  wait
+if [ "$PECHATYU" = "1" ]; then
+  command -v node > /dev/null 2>&1 || { echo "нет node — путь «--печатью» без него не считается" >&2; exit 2; }
+  command -v python3 > /dev/null 2>&1 || { echo "нет python3" >&2; exit 2; }
+  if [ -z "${PECHAT:-}" ]; then
+    PECHAT=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" pechat-sillogizma.XXXXXX)
+    say "печатаю компилятор в JavaScript (около 13 минут, 13 ГиБ): $PECHAT"
+    "$FLANG" emit "$KOREN/flang/self/bootstrap/compiler.flang" --target js --no-check \
+      --max-steps 200000000 --out "$PECHAT" > "$PECHAT/печать.log" 2>&1 \
+      || { echo "печать не удалась, см. $PECHAT/печать.log" >&2; exit 2; }
+  fi
+  export PECHAT
+  [ -f "$PECHAT/compiler_flang.js" ] || { echo "в $PECHAT нет compiler_flang.js" >&2; exit 2; }
 fi
 
-while IFS="	" read -r prog slovo_bin slovo_zond; do
+say "таблица: $TABLICA"
+say "путь: $([ "$PECHATYU" = "1" ] && echo "печатью ($PECHAT)" || echo 'двоичным (замер «до»)')"
+say ""
+
+while IFS="	" read -r prog slovo_bin slovo_posle; do
   case "$prog" in \#*|programma|программа|"") continue ;; esac
   VSEGO=$((VSEGO + 1))
-  if [ "$ZONDOM" = "1" ]; then
-    zhdyom=$slovo_zond
-    vyvod=$(tr '\n' ' ' < "$(proba_zond "$prog")")
+  if [ "$PECHATYU" = "1" ]; then
+    zhdyom=$slovo_posle
+    vyvod=$(proba_pechatyu "$prog")
   else
     zhdyom=$slovo_bin
     vyvod=$(proba_binary "$prog")

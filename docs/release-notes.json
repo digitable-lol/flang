@@ -1077,41 +1077,35 @@
     },
     "0.7.21": {
       "ru": {
-        "заголовок": "Недоказанное не запускается молча, а у хозяина появились среда и экран",
+        "заголовок": "Недоказанный код больше не запускается по умолчанию",
+        "сломалось": [
+          "**`flang run` и `flang io` выходят кодом 3, если обещание функции не доказано.** Раньше такая программа запускалась и отвечала кодом 0.\n\n```\n$ flang run price.flang --function 'Скидка' --args '{\"цена\": 100, \"скидка\": 150}'\nне доказано: утверждений 1: доказано 0, сетка 1 — запуск только по явному согласию: --trust\nкод 3\n```\n\n**Миграция:** добавьте `--trust` — вердикт не будет считаться вовсе.\n\nЗатронуты сценарии, звавшие `flang run` или `flang io` на программах, где `обеспечивает` закрыто только примерами. Проверить заранее: `flang check --proof <файл>` — итог «доказано 0, сетка N» значит, что программа попадёт под новое правило."
+        ],
         "появилось": [
-          "Запуск недоказанной программы теперь требует явного согласия. `flang run` и `flang io` считают вердикт перед работой и отвечают кодом 3, если обещание закрыто только примерами: ложное постусловие, прикрытое сеткой значений, больше не даёт нуля. Пропустить проверку можно ключом `--на-веру`, и об этом говорится отдельной строкой.",
-          "Двоичный хозяин читает переменные среды и доводы вызова. Поручения «Прочитать переменную среды» и «Прочитать доводы» были в словаре языка, но отвечали `FLANG_IO_UNKNOWN` — теперь исполняются. Отдаётся ровно названная переменная, незаданная приходит отдельным откликом «Переменной среды нет», а не пустой строкой. Доводы плана — всё, что стоит после отдельного довода `--`. Запреты: `--no-env`, `--no-args`.",
-          "У двоичного хозяина появился экран — управляющий терминал. «Показать» кладёт кадр на терминал (запасной экран, курсор спрятан, при завершении всё возвращается как было), «Ждать событие» ждёт клавишу не дольше заданного срока. Место у терминала одно и зовётся «экран». Терминала нет — вывод в трубу, в файл, CI — и оба поручения отвечают прежним `FLANG_IO_NO_SCREEN`. Ctrl-C продолжает убивать программу: выход у человека не отнимается. Запрет — `--no-screen`.",
-          "Четыре покрытия печатаются порознь, и у каждого своя строка «чего это не значит»: собственные записи доказательства, формализация правил в Lean, известные нарушения состоятельности, сверка перевода в C. Прибор — `sh scripts/four-coverages.sh`; рядом с каждым числом стоит дата и коммит."
+          "**Переменные окружения и доводы командной строки в планах.** Поручения были в словаре языка, а рантайм отвечал на них `FLANG_IO_UNKNOWN`.\n\n```flang\nвариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным \"HOME\")\n```\n\nОтвет — `«Значение среды»` с полем `значение`, либо `«Переменной среды нет»` отдельным вариантом, а не пустой строкой. Доводы плана — всё, что стоит после `--`:\n\n```\n$ flang io script.fscript -- build --verbose\n```\n\nЗапретить: `--no-env`, `--no-args`.",
+          "**Вывод на терминал.** `«Показать»` кладёт кадр, `«Ждать событие»` ждёт клавишу:\n\n```flang\nвариант «Сделать» с поручение равным (вариант «Показать» с место равным \"экран\" и текст равным кадр)\nвариант «Сделать» с поручение равным (вариант «Ждать событие» с срок равным 5000)\n```\n\nКлавиша приходит как `«Случилось»` с полями `откуда` и `значение`; по сроку — `«Срок вышел»`. Имена клавиш: `ввод`, `пробел`, `таб`, `возврат`, `выход`, `вверх`, `вниз`, `влево`, `вправо`; печатный знак приходит собой.\n\nРабочий пример — `docs/examples/io/progress-bar-on-screen.flang`. Кадр идёт на `/dev/tty`, а не в stdout: там итог плана в JSON. Нет терминала (труба, файл, CI) — ответ прежний, `FLANG_IO_NO_SCREEN`. Ctrl-C по-прежнему убивает программу. Запретить: `--no-screen`.",
+          "**`sh scripts/four-coverages.sh`** печатает четыре покрытия порознь, у каждого своя строка «чего это не значит», и рядом с числом стоят дата и коммит."
         ],
         "изменилось": [
-          "Независимый сверщик перестал принимать ложное доказательство: подстановка доводов идёт разом, подстановка тела спрашивает захват имени. Две дыры, которых не ловили ни 529 мутационных проб, ни четыре проверки дерева.",
-          "Он же перестал звать честную запись ложью: «не взялся» отделено от «поймал», реестр доказанных не зависит от порядка печати блоков.",
-          "Доля собственных записей доказательства, которую сверщик переигрывает независимо, дошла до 100 %: 650 из 650. Мест, где он верил ядру на слово, не осталось ни одного — прежде их было 12 посылок и 4 шага.",
-          "Сверщик перебран: 11 619 строк → 9780, комментариев вдвое меньше, функций 353 → 410. Развилка вывода была 1371 строку — стала 157 и тридцать отдельных правил. Ответы на всех 537 записях дерева остались побайтово прежними.",
-          "Приёмка Lean догнала сверщика: одновременная подстановка доказана, а не предположена; расхождений вердиктов 0, все 109 правил переведены в леммы, ловушек 52 и все 52 отвергнуты."
-        ],
-        "сломалось": [
-          "`flang run` и `flang io` на недоказанной программе больше не отвечают кодом 0. Если ваш сценарий полагался на прежнее поведение — добавьте `--на-веру`, и вердикт не будет считаться вовсе."
+          "**Независимый сверщик перестал принимать ложное доказательство.** Две дыры: подстановка доводов шла последовательно вместо одновременной, подстановка тела не спрашивала захват имени. Ни 529 мутационных проб, ни четыре проверки дерева их не ловили.",
+          "**Он же перестал отвергать честные записи** — вердикт зависел от порядка, в котором напечатаны блоки.",
+          "**Доля мест, которые сверщик переигрывает независимо, — 650 из 650.** Мест, где он верил ядру на слово, не осталось; прежде их было 12 посылок и 4 шага."
         ]
       },
       "en": {
-        "заголовок": "Unproved code no longer runs silently, and the host gained environment and a screen",
+        "заголовок": "Unproved code no longer runs by default",
+        "сломалось": [
+          "**`flang run` and `flang io` exit with code 3 when a function's promise is not proved.** Such a program used to run and exit 0.\n\n```\n$ flang run price.flang --function 'Скидка' --args '{\"цена\": 100, \"скидка\": 150}'\nне доказано: утверждений 1: доказано 0, сетка 1 — запуск только по явному согласию: --trust\nexit 3\n```\n\n**Migration:** add `--trust` and the verdict is not computed at all.\n\nAffected: scripts calling `flang run` or `flang io` on programs where `обеспечивает` is backed by examples only. Check in advance with `flang check --proof <file>` — a summary reading «доказано 0, сетка N» means the program falls under the new rule."
+        ],
         "появилось": [
-          "Running an unproved program now takes explicit consent. `flang run` and `flang io` compute the verdict before the work and answer with exit code 3 when a promise is backed only by examples: a false postcondition covered by a grid of values no longer yields zero. `--на-веру` skips the check, and says so on its own line.",
-          "The binary host reads environment variables and call arguments. The orders «Прочитать переменную среды» and «Прочитать доводы» were in the language's vocabulary but answered `FLANG_IO_UNKNOWN`; they are executed now. Exactly the named variable is returned; an unset one comes back as its own response, not as an empty string. A plan's arguments are whatever follows a bare `--`. Denials: `--no-env`, `--no-args`.",
-          "The binary host gained a screen — the controlling terminal. «Показать» puts a frame on the terminal (alternate screen, cursor hidden, everything restored on exit), «Ждать событие» waits for a key no longer than a given deadline. The terminal has exactly one place, named «экран». With no terminal — output to a pipe, to a file, in CI — both orders answer the same `FLANG_IO_NO_SCREEN` as before. Ctrl-C still kills the program: the human keeps the way out. Denial: `--no-screen`.",
-          "Four coverages are printed separately, each with its own line saying what it is not: the compiler's own proof records, formalisation of the rules in Lean, known soundness violations, and the translation check for C. The instrument is `sh scripts/four-coverages.sh`; every number carries a date and a commit."
+          "**Environment variables and command-line arguments in plans.** The orders were in the language's vocabulary, but the runtime answered `FLANG_IO_UNKNOWN`.\n\n```flang\nвариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным \"HOME\")\n```\n\nThe reply is `«Значение среды»` with field `значение`, or `«Переменной среды нет»` as its own variant — not an empty string. A plan's arguments are whatever follows `--`:\n\n```\n$ flang io script.fscript -- build --verbose\n```\n\nDeny with `--no-env`, `--no-args`.",
+          "**Terminal output.** `«Показать»` draws a frame, `«Ждать событие»` waits for a key:\n\n```flang\nвариант «Сделать» с поручение равным (вариант «Показать» с место равным \"экран\" и текст равным кадр)\nвариант «Сделать» с поручение равным (вариант «Ждать событие» с срок равным 5000)\n```\n\nA key arrives as `«Случилось»` with fields `откуда` and `значение`; a timeout as `«Срок вышел»`. Key names: `ввод`, `пробел`, `таб`, `возврат`, `выход`, `вверх`, `вниз`, `влево`, `вправо`; a printable character arrives as itself.\n\nWorking example: `docs/examples/io/progress-bar-on-screen.flang`. The frame goes to `/dev/tty`, not stdout — stdout carries the plan's JSON result. With no terminal (pipe, file, CI) the answer is the same `FLANG_IO_NO_SCREEN` as before. Ctrl-C still kills the program. Deny with `--no-screen`.",
+          "**`sh scripts/four-coverages.sh`** prints four coverages separately, each with its own line saying what it is not, and every number carries a date and a commit."
         ],
         "изменилось": [
-          "The independent checker no longer accepts a false proof: arguments are substituted simultaneously, and body substitution asks about name capture. Two holes that neither 529 mutation probes nor four tree gates had caught.",
-          "The same checker no longer calls an honest record a lie: «did not take it up» is separated from «caught it», and the registry of proved statements no longer depends on the order the blocks were printed in.",
-          "The share of the compiler's own proof records that the checker replays independently reached 100 %: 650 of 650. Not one place is taken on the kernel's word any more — there used to be 12 premises and 4 steps.",
-          "The checker was refactored: 11,619 lines → 9,780, half the comments, 353 → 410 functions. The inference dispatch was 1,371 lines; it is now 157 plus thirty separate rules. Its answers on all 537 records in the tree stayed byte-identical.",
-          "The Lean acceptance caught up with the checker: simultaneous substitution is proved rather than assumed; 0 verdict divergences, all 109 rules translated into lemmas, 52 traps and all 52 rejected."
-        ],
-        "сломалось": [
-          "`flang run` and `flang io` no longer answer with exit code 0 on an unproved program. If your script relied on the old behaviour, add `--на-веру` and the verdict will not be computed at all."
+          "**The independent checker no longer accepts a false proof.** Two holes: arguments were substituted sequentially rather than simultaneously, and body substitution did not check for name capture. Neither 529 mutation probes nor four tree gates had caught them.",
+          "**The same checker no longer rejects honest records** — the verdict depended on the order the blocks were printed in.",
+          "**The share of places the checker replays independently is 650 of 650.** Not one place is taken on the kernel's word any more; there used to be 12 premises and 4 steps."
         ]
       }
     }

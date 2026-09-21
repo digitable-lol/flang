@@ -253,6 +253,8 @@ docs/tasks/1416-the-shortcut-list-is-computed-from-the-scripts.md	.ru.md	обо�
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	obhod.sh	иллюстративное имя в разборе задачи/заметки, не файл (пример транслита-брака при переименовании)
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk.sh	иллюстративное имя в разборе задачи/заметки, не файл (предлагаемое английское имя в примере)
 docs/tasks/1423-node-leaves-the-concurrency-directory.md	.test.mjs	обозначение расширения/суффикса-конвенции, не имя файла
+docs/tasks/1431-the-jargon-guard-lives-in-two-places.md	scripts/jargon-guard.mjs	история: разбор задачи 1431 называет сторожа на JavaScript, снятого 9 сентября 2026 задачей 0049 (превзойдён scripts/guards/jargon-guard.fscript); имя оставлено, потому что им объясняется, откуда взялись две копии
+docs/tasks/1434-a-quote-character-is-part-of-a-path.md	ЗАМЕР.md	план: разбор задачи 1434 называет имя, которым файл НАЗЫВАЛСЯ БЫ, будь перенос удачным. Настоящий замер лежит в истории (6ae8e8b4b, examples/frameworks/react-ts-pure/ЗАМЕР.md, 128 строк) и в ствол не влит — та же причина, что у записи docs/site/examples.md выше
 docs/tasks/6752-a-law-of-the-category-surface-is-a-statement-about-the-carrier.md	probe-777.flang	иллюстративное имя пробы в тексте, не файл
 docs/tasks/5503-nine-tsv-files-carry-a-header.md	docs/javascript-checks-breakdown.tsv	история: ведомость снесена этой же задачей 17 сентября 2026, довод сноса называет её по имени; последнее состояние — в git на 9d8d8f35e
 docs/tasks/5503-nine-tsv-files-carry-a-header.md	.test.mjs	обозначение расширения/суффикса-конвенции, не имя файла

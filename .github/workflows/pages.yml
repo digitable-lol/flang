@@ -146,7 +146,7 @@ jobs:
       # ссылки в выводе (покраснеть по чужой причине — не довод); заметка
       # возвращается. Сравнивается только она: шаги перепечатки выше законно
       # правят страницы журнала и выпусков, и `git diff` по всему дереву лгал бы.
-      - name: Probe broken wiki link
+      - name: Probe wiki link
         run: |
           zametka=$(ls docs/zettel/*.md | grep -v '/README\.md$' | head -n 1)
           cp "$zametka" "$RUNNER_TEMP/zametka.md"

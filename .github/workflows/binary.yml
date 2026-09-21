@@ -280,7 +280,7 @@ jobs:
       # зеленеет. Второй шаг подкладывает ему программу с заведомо чужим именем
       # и требует отказа; без него первый шаг ничего не доказывает.
       - name: Check binary origin
-        run: sh scripts/seed/binary-origin.sh --чем "работа «Двоичный»"
+        run: sh scripts/seed/binary-origin.sh --чем "работа «Binary»"
 
       - name: Probe binary origin
         run: sh scripts/seed/binary-origin.sh --подлог

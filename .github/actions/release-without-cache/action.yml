@@ -200,7 +200,7 @@ runs:
           fi
           printf 'разметка чиста: %s не задаётся ни одной работой и ни одним действием (%s)\n' \
             "$PEREMENNAYA" "$KATALOG_RABOT"
-          svodka "## ✓ Ни одна работа CI не задаёт кеш приговоров"
+          svodka "## ✓ Check workflow cache"
           exit 0
         fi
 
@@ -287,7 +287,7 @@ runs:
             exit 1
           fi
           printf 'сторож выпуска без кеша умеет краснеть и умеет молчать: 8 проб из 8\n'
-          svodka "## ✓ Сторож выпуска без кеша умеет краснеть и умеет молчать (8 проб)"
+          svodka "## ✓ Probe cache guard (8 проб)"
           exit 0
         fi
 

@@ -513,7 +513,7 @@ static const char HELP_TEST[] =
 
 static const char HELP_RUN[] =
     "flang run <файл.flang> --function «Имя» [--args '{\"н\":10}'] [--max-steps N]\n"
-    "                       [--max-depth N] [--на-веру]\n"
+    "                       [--max-depth N] [--trust] [--unproven refuse|warn|allow]\n"
     "\n"
     "Вычисляет ОДНУ функцию и печатает значение. Считает сам flang — ни Node, ни\n"
     "«cc» для этого не нужны.\n"
@@ -524,7 +524,8 @@ static const char HELP_RUN[] =
     "ПЕРЕД ВЫЧИСЛЕНИЕМ СЧИТАЕТСЯ ВЕРДИКТ и одной строкой уходит в поток ошибок:\n"
     "«доказано: утверждений N» либо «не доказано: …». Судится ЗАМЫКАНИЕ — всё,\n"
     "что связано, а не один файл. Недоказанная программа не считается вовсе:\n"
-    "код 3. Запустить её всё же — ключ «--на-веру» (ADR-0045).\n"
+    "код 3 (ADR-0045). Запустить её всё же — «--trust» на один прогон либо ключ\n"
+    "«недоказанное» в «.flangrc» — раз и навсегда.\n"
     "\n"
     "  --function «Имя»   что вычислять\n"
     "  --args '{…}'       аргументы: ПЛОСКИЙ объект скаляров, вроде '{\"н\":10}'.\n"
@@ -534,8 +535,19 @@ static const char HELP_RUN[] =
     "  --max-depth N      предел глубины ВЫЧИСЛЯЕМОЙ программы. Предел самого\n"
     "                     бинарника — другой счётчик и другой ключ:\n"
     "                     «--предел-глубины N»\n"
-    "  --на-веру          считать недоказанную: вердикт не считается вовсе, и об\n"
-    "                     этом говорится своей строкой. Латиницей — «--trust»";
+    "  --trust            считать недоказанную: вердикт не считается вовсе, и об\n"
+    "                     этом говорится своей строкой. Кириллицей — «--на-веру»\n"
+    "  --unproven СЛОВО   что делать с недоказанной, все три исхода сразу:\n"
+    "                     refuse — не запускать (умолчание), warn — сказать и\n"
+    "                     запустить, allow — запустить, вердикта не считая (то же,\n"
+    "                     что «--trust»). Кириллицей — «--недоказанное отказ |\n"
+    "                     предупреждение | разрешение»\n"
+    "\n"
+    "ТО ЖЕ РАЗ И НАВСЕГДА — ключ «недоказанное» в «.flangrc»\n"
+    "(docs/guide/settings.ru.md): «недоказанное = предупреждение». Старшинство:\n"
+    "ключ команды старше переменной среды FLANG_UNPROVEN, та старше «.flangrc», а\n"
+    "он — умолчания «отказ». Значения, которого нет, файл молча не проглатывает:\n"
+    "отказ словами и код 2.";
 
 static const char HELP_EMIT[] =
     "flang emit <файл.flang> --target " EMIT_TARGETS_WORDS "\n"
@@ -730,7 +742,7 @@ static const char HELP_TOKENS[] =
 
 static const char HELP_IO[] =
     "flang io <файл.flang> [--plan «Имя»] [--max-orders N] [--seed N] [--in-dir] [--pretty]\n"
-    "                      [--на-веру] [-- довод…]\n"
+    "                      [--trust] [--unproven refuse|warn|allow] [-- довод…]\n"
     "\n"
     "Исполняет ПЛАН — единственное место языка, где программа встречается с миром.\n"
     "Встречается не сама: каждый шаг возвращает ОПИСАНИЕ действия, а делает его\n"
@@ -743,8 +755,13 @@ static const char HELP_IO[] =
     "  --in-dir        запретить пути за пределы каталога входного файла\n"
     "  --max-steps N   предел шагов вычисления на один виток\n"
     "  --pretty        JSON с отступами\n"
-    "  --на-веру       исполнить недоказанный план: вердикт не считается вовсе, и\n"
-    "                  об этом говорится своей строкой. Латиницей — «--trust»\n"
+    "  --trust         исполнить недоказанный план: вердикт не считается вовсе, и\n"
+    "                  об этом говорится своей строкой. Кириллицей — «--на-веру»\n"
+    "  --unproven СЛОВО  что делать с недоказанным: refuse — не исполнять\n"
+    "                  (умолчание), warn — сказать и исполнить, allow — то же, что\n"
+    "                  «--trust». Кириллицей — «--недоказанное отказ |\n"
+    "                  предупреждение | разрешение». Раз и навсегда — тот же ключ\n"
+    "                  «недоказанное» в «.flangrc» (docs/guide/settings.ru.md)\n"
     "  --              ГРАНИЦА: всё, что стоит после этого отдельного довода, —\n"
     "                  доводы ПЛАНА, а не ключи команды. Их отдаёт поручение\n"
     "                  «Прочитать доводы» списком строк, в том же порядке и без\n"
@@ -770,7 +787,9 @@ static const char HELP_IO_2[] =
     "решение; второе и третье — то, ЧТО решено: «нашёл беду» против «не смог\n"
     "посмотреть». Тройкой же отвечает и ОТКАЗ ЗАПУСКА недоказанного плана: перед\n"
     "работой считается вердикт о замыкании и одной строкой уходит в поток ошибок\n"
-    "(ADR-0045); «--на-веру» его пропускает.\n";
+    "(ADR-0045); «--trust» («--на-веру») его пропускает, «--unproven warn»\n"
+    "предупреждает и работает, а сказать это раз и навсегда можно ключом\n"
+    "«недоказанное» в «.flangrc». Негодное значение там — код 2, а не тишина.\n";
 
 /*
  * Третья часть справки `io`. Разрез не по смыслу, а по пределу C99 (5.2.4.1):
@@ -9786,6 +9805,314 @@ static const char *run_bare_name(const char *name, size_t *bytes) {
   return name;
 }
 
+/* ──────────── как быть с недоказанным: ключ команды и файл настроек ──────── */
+
+/*
+ * ТРИ ИСХОДА ВМЕСТО ДВУХ, И ЗАЧЕМ ФАЙЛ (ADR-0045; docs/guide/settings.ru.md).
+ *
+ * С 0.7.21 недоказанная программа не считается вовсе: код 3, а пропустить
+ * проверку можно ключом «--на-веру» (латиницей «--trust»). Ключ решает ОДИН
+ * прогон, и человеку, который правит свою программу весь день, приходится
+ * набирать его каждый раз. Отсюда ключ файла настроек «недоказанное»: сказано
+ * один раз — дальше не думаешь.
+ *
+ * ИСХОДОВ ТРИ, А НЕ ДВА, потому что чаще всего просят не «не проверяй», а
+ * «скажи и работай»:
+ *
+ *   отказ (refuse)         не запускать — умолчание, поведение 0.7.21 в знак;
+ *   предупреждение (warn)  вердикт посчитать, сказать и всё равно запустить;
+ *   разрешение (allow)     вердикта не считать вовсе — то же, что «--на-веру».
+ *
+ * СТАРШИНСТВО то же, что у прочих ключей файла (docs/guide/settings.ru.md):
+ * ключ командной строки → переменная среды FLANG_UNPROVEN → .flangrc проекта →
+ * .flangrc дома → умолчание «отказ». Локаль здесь не голос: это не про язык.
+ *
+ * ЗНАЧЕНИЕ, КОТОРОГО НЕТ, — ОТКАЗ ВСЛУХ, и это НАРОЧНО против общего правила
+ * файла («незнакомый ключ и негодное значение пропускаются молча»). Правило то
+ * писано для языка и цвета: не понял — говори по-русски, потеряно ничего.
+ * Здесь же молчание значит «ворота остались закрыты», и человек, написавший
+ * «недоказанное = разрешено» вместо «разрешение», узнал бы об этом кодом 3 на
+ * чужой машине посреди сборки.
+ *
+ * ПИСЬМО ОТВЕТА — ПИСЬМО ВОПРОСА. Набравший «--trust» получает в строке
+ * «--trust», набравший «--на-веру» — «--на-веру». Ответ, который нельзя
+ * повторить, не переключив раскладку, ответом не является.
+ */
+
+#define UNPROVEN_KEY "недоказанное"
+#define UNPROVEN_ENV "FLANG_UNPROVEN"
+
+typedef enum {
+  UNPROVEN_REFUSE = 0,
+  UNPROVEN_WARN,
+  UNPROVEN_ALLOW
+} unproven_mode;
+
+typedef struct {
+  unproven_mode mode;
+  bool given; /* сказано ключом, средой или файлом — не умолчание */
+  bool latin; /* человек говорил латиницей: тем же письмом и отвечаем */
+  char whence[5120]; /* «по ключу --trust», «по настройке … (путь)» — прямо в строку */
+} unproven_choice;
+
+static void unproven_start(unproven_choice *how) {
+  how->mode = UNPROVEN_REFUSE;
+  how->given = false;
+  how->latin = false;
+  how->whence[0] = '\0';
+}
+
+/* Шесть слов на три исхода: русское и латинское на каждый. Письмо значения
+   запоминается: по нему потом выбирается, каким писать ключ в ответе. */
+static bool unproven_word(const char *value, unproven_mode *mode, bool *latin) {
+  if (strcmp(value, "отказ") == 0) { *mode = UNPROVEN_REFUSE; *latin = false; return true; }
+  if (strcmp(value, "refuse") == 0) { *mode = UNPROVEN_REFUSE; *latin = true; return true; }
+  if (strcmp(value, "предупреждение") == 0) { *mode = UNPROVEN_WARN; *latin = false; return true; }
+  if (strcmp(value, "warn") == 0) { *mode = UNPROVEN_WARN; *latin = true; return true; }
+  if (strcmp(value, "разрешение") == 0) { *mode = UNPROVEN_ALLOW; *latin = false; return true; }
+  if (strcmp(value, "allow") == 0) { *mode = UNPROVEN_ALLOW; *latin = true; return true; }
+  return false;
+}
+
+static void unproven_bad(const char *value, const char *whence) {
+  fprintf(stderr,
+          "flang: «%s» — такого значения у «%s» нет (%s).\n"
+          "Годны три: отказ (refuse) — не запускать; предупреждение (warn) — сказать и\n"
+          "запустить; разрешение (allow) — запустить, вердикта не считая.\n",
+          value, UNPROVEN_KEY, whence);
+}
+
+/*
+ * ОДИН КЛЮЧ ИЗ `.flangrc`, а не весь файл. Правила разбора те же, что у
+ * scripts/flangrc.sh и scripts/settings-file.flang: «ключ = значение», пробелы
+ * вокруг знака равенства не в счёт, строка с «#» — примечание, одноимённый
+ * ключ назван дважды — побеждает последний.
+ *
+ * Разбор написан ЗДЕСЬ, а не позван у scripts/flangrc.sh, по одной причине:
+ * поставленный двоичный живёт без дерева. `flang` из /usr/local/bin никаких
+ * наших сценариев рядом с собой не имеет и настройки обязан прочесть сам.
+ */
+static bool flangrc_key(const char *path, const char *key, char *out, size_t room) {
+  size_t bytes = 0;
+  char *text = repl_read_file(path, &bytes);
+  const size_t key_bytes = strlen(key);
+  size_t at = 0;
+  bool found = false;
+  if (text == NULL) {
+    return false;
+  }
+  while (at < bytes) {
+    size_t end = at;
+    size_t left = at;
+    size_t right = 0;
+    size_t eq = 0;
+    bool has_eq = false;
+    while (end < bytes && text[end] != '\n') {
+      end += 1;
+    }
+    while (left < end && (text[left] == ' ' || text[left] == '\t')) {
+      left += 1;
+    }
+    right = end;
+    while (right > left &&
+           (text[right - 1] == ' ' || text[right - 1] == '\t' || text[right - 1] == '\r')) {
+      right -= 1;
+    }
+    for (eq = left; eq < right; eq += 1) {
+      if (text[eq] == '=') {
+        has_eq = true;
+        break;
+      }
+    }
+    if (has_eq && left < right && text[left] != '#') {
+      size_t kend = eq;
+      size_t from = eq + 1;
+      while (kend > left && (text[kend - 1] == ' ' || text[kend - 1] == '\t')) {
+        kend -= 1;
+      }
+      while (from < right && (text[from] == ' ' || text[from] == '\t')) {
+        from += 1;
+      }
+      if (kend - left == key_bytes && memcmp(text + left, key, key_bytes) == 0) {
+        size_t take = right - from;
+        if (take > room - 1) {
+          take = room - 1;
+        }
+        memcpy(out, text + from, take);
+        out[take] = '\0';
+        found = true; /* последний побеждает — потому и не выходим */
+      }
+    }
+    at = end + 1;
+  }
+  free(text);
+  return found;
+}
+
+/*
+ * БЛИЖАЙШИЙ `.flangrc` ПРОЕКТА. Подъём от рабочего каталога вверх, и обрывают
+ * его четыре вещи, каждая на себе: сам `.flangrc` (ближайший и есть
+ * настоящий), корневая примета `.git` или `flang.package`, дом человека и
+ * корень файловой системы. Правило слово в слово то же, что у
+ * scripts/flangrc.sh: файл-то один, и разойтись им нельзя.
+ */
+static bool flangrc_project(char *out, size_t room) {
+  char dir[4096];
+  char probe[4352];
+  const char *home = getenv("HOME");
+  if (getcwd(dir, sizeof(dir)) == NULL) {
+    return false;
+  }
+  for (;;) {
+    char *slash = NULL;
+    snprintf(probe, sizeof(probe), "%s/.flangrc", dir);
+    if (repl_exists(probe)) {
+      snprintf(out, room, "%s", probe);
+      return true;
+    }
+    snprintf(probe, sizeof(probe), "%s/.git", dir);
+    if (repl_exists(probe)) {
+      return false;
+    }
+    snprintf(probe, sizeof(probe), "%s/flang.package", dir);
+    if (repl_exists(probe)) {
+      return false;
+    }
+    if (home != NULL && home[0] != '\0' && strcmp(dir, home) == 0) {
+      return false;
+    }
+    slash = strrchr(dir, '/');
+    if (slash == NULL) {
+      return false;
+    }
+    if (slash == dir) {
+      if (dir[1] == '\0') {
+        return false; /* корень уже смотрели — выше некуда */
+      }
+      dir[1] = '\0';
+      continue;
+    }
+    *slash = '\0';
+  }
+}
+
+/*
+ * Решение о недоказанном. Ключ командной строки уже разобран (how->given), и
+ * тогда спрашивать больше некого — он старше всех. Ключа нет — спрашиваются
+ * среда, файл проекта и файл дома, в этом порядке.
+ *
+ * Возвращает false, когда сказанное разобрать не удалось: беда названа
+ * словами, и звать точку входа нельзя — «не понял» не равно «умолчание».
+ */
+static bool unproven_decide(unproven_choice *how) {
+  const char *env = getenv(UNPROVEN_ENV);
+  char path[4352];
+  char value[256];
+  const char *home = NULL;
+  bool taken = false;
+  if (how->given) {
+    return true;
+  }
+  if (env != NULL && env[0] != '\0') {
+    bool spelled = false;
+    if (!unproven_word(env, &how->mode, &spelled)) {
+      unproven_bad(env, "переменная среды " UNPROVEN_ENV);
+      return false;
+    }
+    how->given = true;
+    how->latin = true; /* имя переменной среды латиницей всегда */
+    snprintf(how->whence, sizeof(how->whence), "по переменной среды %s=%s", UNPROVEN_ENV, env);
+    return true;
+  }
+  if (flangrc_project(path, sizeof(path))) {
+    taken = flangrc_key(path, UNPROVEN_KEY, value, sizeof(value));
+  }
+  if (!taken) {
+    home = getenv("HOME");
+    if (home != NULL && home[0] != '\0') {
+      snprintf(path, sizeof(path), "%s/.flangrc", home);
+      taken = flangrc_key(path, UNPROVEN_KEY, value, sizeof(value));
+    }
+  }
+  if (taken) {
+    if (!unproven_word(value, &how->mode, &how->latin)) {
+      unproven_bad(value, path);
+      return false;
+    }
+    how->given = true;
+    snprintf(how->whence, sizeof(how->whence), "по настройке «%s = %s» (%s)",
+             UNPROVEN_KEY, value, path);
+  }
+  return true;
+}
+
+/* Поискалка подстроки в куске без нуля на конце: строка вердикта приезжает
+   указателем и длиной, а C-строкой не является. */
+static const char *text_find(const char *hay, size_t bytes, const char *needle) {
+  const size_t need = strlen(needle);
+  size_t at = 0;
+  if (need == 0 || need > bytes) {
+    return NULL;
+  }
+  for (at = 0; at + need <= bytes; at += 1) {
+    if (memcmp(hay + at, needle, need) == 0) {
+      return hay + at;
+    }
+  }
+  return NULL;
+}
+
+/*
+ * ХВОСТ СТРОКИ ВЕРДИКТА, который хозяин переписывает. Собирает строку «Строка
+ * вердикта» (flang/self/bootstrap/compiler.flang), и ключ в ней назван
+ * ОДИН, кириллицей: замыкание ни о каком другом письме не знает и знать не
+ * может — до него правка доезжает только перепечаткой в 11 часов. Поэтому имя
+ * ключа подставляет хозяин: он один видел, ЧТО человек набрал.
+ */
+static const char VERDICT_TAIL[] = " — запуск только по явному согласию: ";
+
+/*
+ * СТРОКА ВЕРДИКТА — ЧЕЛОВЕКУ, И ТЕМ ЖЕ ПИСЬМОМ, КАКИМ ОН СПРОСИЛ.
+ *
+ * Три случая, и во всех трёх слова вердикта (сколько утверждений, сколько
+ * доказано) — от ядра как есть; хозяин трогает только хвост, называющий, чем
+ * это разрешено или чем разрешить:
+ *
+ *   запущено по согласию   строка ядра («Строка на веру») названа бы
+ *                          «--на-веру» при любом вопросе, поэтому она
+ *                          заменяется целиком: ключ или настройка — свои;
+ *   запущено по вердикту   доказано, и говорить не о чем — строка ядра как есть;
+ *   отказано               хвост «запуск только по явному согласию: …» несёт
+ *                          тот ключ, которым человек уже говорил; не говорил
+ *                          ничем — «--на-веру», как в 0.7.21, знак в знак.
+ */
+static void verdict_print(const char *say, size_t bytes, bool ran, const unproven_choice *how) {
+  const char *cut = NULL;
+  size_t head = bytes;
+  if (ran) {
+    if (how->mode == UNPROVEN_ALLOW) {
+      fprintf(stderr, "на веру: доказанность не считалась — запуск %s\n", how->whence);
+      return;
+    }
+    fprintf(stderr, "%.*s\n", (int)bytes, say);
+    return;
+  }
+  cut = text_find(say, bytes, VERDICT_TAIL);
+  if (cut == NULL) {
+    /* Строка не той формы, которую мы умеем переписывать: несём как есть.
+       Своей догадкой подменять вердикт ядра нельзя. */
+    fprintf(stderr, "%.*s\n", (int)bytes, say);
+    return;
+  }
+  head = (size_t)(cut - say);
+  if (how->mode == UNPROVEN_WARN) {
+    fprintf(stderr, "%.*s — запуск %s\n", (int)head, say, how->whence);
+    return;
+  }
+  fprintf(stderr, "%.*s%s%s\n", (int)head, say, VERDICT_TAIL,
+          how->latin ? "--trust" : "--на-веру");
+}
+
 /*
  * ВЕРДИКТ ЗАПУСКА ОТ ЯДРА — ЧЕЛОВЕКУ (ADR-0045, задачи 8222 и 6427).
  *
@@ -9804,15 +10131,21 @@ static const char *run_bare_name(const char *name, size_t *bytes) {
  * Код отказа берётся ПОСЧИТАННЫЙ, а не назначенный здесь тройкой: «Код
  * недоказанного» держит тройку постусловием, и хозяин обязан донести число
  * ядра. Разойдись они — и правда была бы у двоих сразу.
+ *
+ * «Молча» — это второй заход предупреждения: строку он повторил бы слово в
+ * слово, а вердикт при этом уже сказан первым.
  */
-static bool verdict_say(fl_value out, const char *name, fl_value *inner, int *code) {
+static bool verdict_take(fl_value out, const char *name, fl_value *inner, int *code,
+                         const unproven_choice *how, bool silent) {
   fl_value field = fl_nothing();
   const char *say = NULL;
   size_t say_bytes = 0;
-  if (val_field(out, "строка", &field) && val_text(field, &say, &say_bytes) && say_bytes > 0) {
-    fprintf(stderr, "%.*s\n", (int)say_bytes, say);
+  bool ran = val_field(out, "запущено", &field) && field.tag == FL_FLAG && field.as.flag;
+  if (!silent && val_field(out, "строка", &field) && val_text(field, &say, &say_bytes) &&
+      say_bytes > 0) {
+    verdict_print(say, say_bytes, ran, how);
   }
-  if (val_field(out, "запущено", &field) && field.tag == FL_FLAG && field.as.flag) {
+  if (ran) {
     if (val_field(out, name, inner)) {
       return true;
     }
@@ -9822,6 +10155,51 @@ static bool verdict_say(fl_value out, const char *name, fl_value *inner, int *co
   }
   *code = val_field(out, "код", &field) && field.tag == FL_NUMBER ? (int)field.as.number : 3;
   return false;
+}
+
+/*
+ * ВОРОТА: позвать точку входа, а при настройке «предупреждение» — позвать её
+ * второй раз.
+ *
+ * ДВА ВЫЗОВА, И ИНАЧЕ НЕ ВЫХОДИТ. Замыкание знает ровно два состояния: считать
+ * вердикт (и отказать недоказанной) либо не считать его вовсе. Третьего —
+ * «посчитать, сказать и всё равно работать» — у него нет, а завести его там
+ * значит перепечатать семя (11 часов). Поэтому первый вызов считает вердикт и
+ * отказывает, а второй, уже по согласию, делает работу. Двойной работы это не
+ * стоит: ОТКАЗАВШИЙ вызов не выполнил ни шага программы — «Отказ запуска»
+ * отдаёт «запущено» равным нет, не позвав вычислитель.
+ *
+ * `trust_at` — место признака «на веру» в доводах: у `run` шестое, у `io`
+ * третье. Довод один и тот же, а точки входа разные.
+ */
+static bool verdict_gate(const char *entry, fl_value *args, size_t count, size_t trust_at,
+                         const char *name, fl_value *inner, int *code,
+                         const unproven_choice *how, int fail_code, const char *fail_say) {
+  fl_value out = fl_nothing();
+  args[trust_at] = fl_flag(how->mode == UNPROVEN_ALLOW);
+  if (repl_call(entry, args, count, &out) != FL_OK) {
+    if (fail_say != NULL) {
+      fputs(fail_say, stderr);
+    }
+    *code = fail_code;
+    return false;
+  }
+  if (verdict_take(out, name, inner, code, how, false)) {
+    return true;
+  }
+  if (how->mode != UNPROVEN_WARN || *code != 3) {
+    return false;
+  }
+  args[trust_at] = fl_flag(true);
+  if (repl_call(entry, args, count, &out) != FL_OK) {
+    if (fail_say != NULL) {
+      fputs(fail_say, stderr);
+    }
+    *code = fail_code;
+    return false;
+  }
+  *code = 0;
+  return verdict_take(out, name, inner, code, how, true);
 }
 
 static int run_file(int argc, char **argv) {
@@ -9839,7 +10217,7 @@ static int run_file(int argc, char **argv) {
   const char *given = NULL;
   const char *steps = "40000000";
   const char *depth = "20000";
-  bool trust = false;
+  unproven_choice how;
   char *base = NULL;
   char *full = NULL;
   char *text = NULL;
@@ -9847,6 +10225,7 @@ static int run_file(int argc, char **argv) {
   int index = 0;
   int code = 0;
 
+  unproven_start(&how);
   for (index = 2; index < argc; index += 1) {
     if (strcmp(argv[index], "--function") == 0 && index + 1 < argc) {
       index += 1;
@@ -9861,7 +10240,30 @@ static int run_file(int argc, char **argv) {
       index += 1;
       depth = argv[index];
     } else if (strcmp(argv[index], "--на-веру") == 0 || strcmp(argv[index], "--trust") == 0) {
-      trust = true;
+      how.mode = UNPROVEN_ALLOW;
+      how.given = true;
+      how.latin = strcmp(argv[index], "--trust") == 0;
+      snprintf(how.whence, sizeof(how.whence), "по ключу %s", argv[index]);
+    } else if (strcmp(argv[index], "--недоказанное") == 0 ||
+               strcmp(argv[index], "--unproven") == 0) {
+      bool spelled = false;
+      if (index + 1 >= argc) {
+        fprintf(stderr,
+                "flang run: «%s» требует значения: отказ (refuse), предупреждение (warn) "
+                "или разрешение (allow)\n",
+                argv[index]);
+        return 2;
+      }
+      if (!unproven_word(argv[index + 1], &how.mode, &spelled)) {
+        unproven_bad(argv[index + 1], argv[index]);
+        return 2;
+      }
+      how.given = true;
+      /* Письмо ответа выбирает КЛЮЧ, а не значение: переписывать человек будет
+         ключ, и вернуть его надо тем письмом, каким он набран. */
+      how.latin = strcmp(argv[index], "--unproven") == 0;
+      snprintf(how.whence, sizeof(how.whence), "по ключу %s %s", argv[index], argv[index + 1]);
+      index += 1;
     } else if (argv[index][0] != '-' && path == NULL) {
       path = argv[index];
     } else {
@@ -9875,6 +10277,9 @@ static int run_file(int argc, char **argv) {
   }
   if (name == NULL) {
     fputs("flang run требует «--function «Имя»»: какую из функций считать, программа сама не решает\n", stderr);
+    return 2;
+  }
+  if (!unproven_decide(&how)) {
     return 2;
   }
 
@@ -9946,10 +10351,7 @@ static int run_file(int argc, char **argv) {
     args[3] = bound;
     args[4] = fl_number(strtod(steps, NULL));
     args[5] = fl_number(strtod(depth, NULL));
-    args[6] = fl_flag(trust);
-    if (repl_call("Запуск исходников", args, 7, &result) != FL_OK) {
-      code = 1;
-    } else if (!verdict_say(result, "прогон", &result, &code)) {
+    if (!verdict_gate("Запуск исходников", args, 7, 6, "прогон", &result, &code, &how, 1, NULL)) {
       /* Недоказанная программа без согласия: строка сказана, код — ядра. */
     } else if (val_field(result, "удалось", &field) && field.tag == FL_FLAG && field.as.flag) {
       if (val_field(result, "значение", &field)) {
@@ -15703,7 +16105,7 @@ static int io_file(int argc, char **argv) {
   double max_steps = 10000000;
   double max_depth = 10000;
   bool pretty = false;
-  bool trust = false;
+  unproven_choice how;
   char buffer[4096];
   char *base = NULL;
   char *full = NULL;
@@ -15725,6 +16127,7 @@ static int io_file(int argc, char **argv) {
   host.timeout_ms = 30000;
   host.next_link = 1;
 
+  unproven_start(&how);
   for (index = 2; index < argc; index += 1) {
     if (strcmp(argv[index], "--pretty") == 0) {
       pretty = true;
@@ -15780,7 +16183,28 @@ static int io_file(int argc, char **argv) {
       index += 1;
       max_depth = strtod(argv[index], NULL);
     } else if (strcmp(argv[index], "--на-веру") == 0 || strcmp(argv[index], "--trust") == 0) {
-      trust = true;
+      how.mode = UNPROVEN_ALLOW;
+      how.given = true;
+      how.latin = strcmp(argv[index], "--trust") == 0;
+      snprintf(how.whence, sizeof(how.whence), "по ключу %s", argv[index]);
+    } else if (strcmp(argv[index], "--недоказанное") == 0 ||
+               strcmp(argv[index], "--unproven") == 0) {
+      bool spelled = false;
+      if (index + 1 >= argc) {
+        fprintf(stderr,
+                "flang io: «%s» требует значения: отказ (refuse), предупреждение (warn) "
+                "или разрешение (allow)\n",
+                argv[index]);
+        return 2;
+      }
+      if (!unproven_word(argv[index + 1], &how.mode, &spelled)) {
+        unproven_bad(argv[index + 1], argv[index]);
+        return 2;
+      }
+      how.given = true;
+      how.latin = strcmp(argv[index], "--unproven") == 0;
+      snprintf(how.whence, sizeof(how.whence), "по ключу %s %s", argv[index], argv[index + 1]);
+      index += 1;
     } else if (strcmp(argv[index], "--") == 0) {
       /* ГРАНИЦА ДВУХ КОМАНДНЫХ СТРОК. Слева ключи самого «flang io», справа —
          доводы ПЛАНА, и различить их иначе нечем: «--no-net» бывает и ключом
@@ -15799,6 +16223,9 @@ static int io_file(int argc, char **argv) {
   }
   if (path == NULL) {
     fputs("flang io: не назван файл. Пример: flang io план.flang\n", stderr);
+    return 2;
+  }
+  if (!unproven_decide(&how)) {
     return 2;
   }
 
@@ -15847,11 +16274,8 @@ static int io_file(int argc, char **argv) {
     fl_watch_repeat_set(repeat);
   }
 
-  args[3] = fl_flag(trust);
-  if (repl_call("Поиск плана исходников", args, 4, &found) != FL_OK) {
-    fputs("flang io: связывание не отработало\n", stderr);
-    code = 3;
-  } else if (!verdict_say(found, "поиск", &found, &code)) {
+  if (!verdict_gate("Поиск плана исходников", args, 4, 3, "поиск", &found, &code, &how, 3,
+                    "flang io: связывание не отработало\n")) {
     /* Недоказанный план без согласия: строка сказана, код — ядра. */
   } else if (val_field(found, "диагностики", &bads) && bads.tag == FL_LIST && bads.as.list.count > 0) {
     repl_bads list;

@@ -568,7 +568,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 (`.gitmodules`), и забыть его нельзя: три числа его формулы (version, url,
 sha256) обязаны совпасть с `packaging/homebrew/flang.rb`. Это сверяют без
 сети `формула:проверка` (`scripts/guards/homebrew-formula-guard.fscript`, зовётся в
-`install-path.yml`) и шаг «Кран не отстал от дерева» в `release.yml` —
+`install-path.yml`) и шаг «Check Homebrew tap» в `release.yml` —
 ДО выкладки архива; `release.yml` и `install-path.yml` берут дерево с
 `submodules: true`. Расхождение и неразвёрнутый сабмодуль — красное.
 `выпуск:проверка` (с сетью) сверх того спрашивает у GitHub, что кран на

@@ -29,7 +29,7 @@
 #
 # ── ЧТО БЫЛО СЛОМАНО ЗДЕСЬ, И ЧИНИТСЯ ЭТОЙ ЖЕ ПРАВКОЙ ──────────────────────
 #
-# Шаг «Собрать релизный архив C» зовёт `bootstrap/flang`, а собирать его в этом
+# Шаг «Build release archive» зовёт `bootstrap/flang`, а собирать его в этом
 # файле было НЕКОМУ: `bootstrap/flang` — продукт сборки и в дереве не лежит
 # (`.gitignore`), `npm ci` клал двоичный в `dvoichnyy/`, а не в `bootstrap/`, и
 # единственное место, которое собирало семя само, — `./ярлык` — звалось шагом
@@ -54,7 +54,7 @@
 # выкладки. Сторож зовётся с `mode: release`, а не решает по среде: этот файл
 # НИЧЕМ, кроме выпуска, не бывает.
 
-name: Выпуск — релизный архив C на GitHub
+name: Release
 
 on:
   push:
@@ -95,7 +95,7 @@ jobs:
           # отстал от дерева» читает его формулу. Без развёрнутого сабмодуля
           # читать нечего, а «нечего читать» здесь — красное, не зелёное.
           submodules: true
-      - name: Выпуск не опирается на кеш приговоров
+      - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
         with:
           mode: release
@@ -109,10 +109,10 @@ jobs:
           node-version: "20"
 
       # Семя собирается ЗДЕСЬ, до всего остального: им печатается архив.
-      - name: Собрать точку раскрутки
+      - name: Build bootstrap
         run: make -C bootstrap -j"$(nproc)"
 
-      - name: Собранный двоичный называет ту же версию, что .flangrc
+      - name: Check binary version
         # ЗАЧЕМ ОТДЕЛЬНО ОТ «версия:проверка» (install-path.yml:138). Тот сторож
         # (scripts/guards/version-guard.fscript) читает ИСХОДНИК —
         # flang/src/emit/c/flang_repl.c. А выпуск собирается из СЕМЕНИ (шаг
@@ -187,7 +187,7 @@ jobs:
           fi
           echo "двоичный и .flangrc сошлись: $binary_version"
 
-      - name: Проверить, что тег совпадает с версией пакета
+      - name: Check tag version
         if: startsWith(github.ref, 'refs/tags/v')
         # Имена переменных латиницей. В именах оболочка допускает только
         # [A-Za-z_][A-Za-z0-9_]*, поэтому «тег=…» она разбирает не как
@@ -215,7 +215,7 @@ jobs:
 
       # ТЕЛО РЕЛИЗА БЕРЁТСЯ ИЗ ЗАМЕТОК, А НЕ ПИШЕТСЯ РУКОЙ В ЭТОМ ФАЙЛЕ.
       #
-      # До 8 сентября 2026 шаг «Приложить архив к релизу» звал `gh release
+      # До 8 сентября 2026 шаг «Upload release archive» звал `gh release
       # create` с `--title "$GITHUB_REF_NAME"` и одной вшитой строкой в
       # `--notes`. Что из этого выходило, видно числом: у релизов v0.7.10 и
       # v0.7.14 — тех двух, что создал сам работник, — тело 168 знаков, одно и
@@ -245,7 +245,7 @@ jobs:
       # печати страницы выпусков (`ярлыки.flang`, «выпуски:страница»): у `flang
       # io` умолчание предела 10 000 000 шагов, и разбор `docs/release-notes.json`
       # в него не влезает.
-      - name: Тело релиза собрано из заметок
+      - name: Build release body
         run: |
           set -eu
           mkdir -p output
@@ -265,7 +265,7 @@ jobs:
       # испортила бы все шаги ниже, и знать об этом надо здесь. «Подлог не
       # собрался» ловится отдельно: строка ключа «версия» обязана измениться,
       # иначе шаг покраснел бы с чужой причиной.
-      - name: Проба — версия без заметки обязана краснеть
+      - name: Probe release body
         run: |
           set -eu
           podlog=.flangrc
@@ -294,7 +294,7 @@ jobs:
       # ЗДЕСЬ и в КОПИИ (`install-path.yml`, работа `brew`), копия разошлась с
       # подлинником молча, и работа `brew` была красна с 0.7.9. Путь архива
       # действие кладёт в `$ARHIV` — им пользуются три шага ниже.
-      - name: Собрать релизный архив C
+      - name: Build release archive
         uses: ./.github/actions/release-archive
 
       # ЧТО В АРХИВЕ ЛЕЖИТ, ПРОВЕРЯЕТСЯ ЗДЕСЬ, А НЕ У ПОСТАВИВШЕГО.
@@ -310,7 +310,7 @@ jobs:
       # Цели спрашиваются у двоичного, а не выписываются здесь: он называет их
       # сам (`EMIT_TARGETS_WORDS` в flang_repl.c). Отбор по ASCII — чтобы не
       # зависеть от локали работника.
-      - name: В архиве лежат рантаймы всех целей, какие печатает двоичный
+      - name: Check archive runtimes
         run: |
           set -eu
           celi="$(bootstrap/flang --help | grep -- '--target' | tr ' ' '\n' | grep '|' | tr '|' ' ')"
@@ -339,7 +339,7 @@ jobs:
           fi
           [ "$beda" -eq 0 ] || exit 1
 
-      - name: Сверить хеш архива с формулой Homebrew
+      - name: Check archive hash
         # Формула несёт sha256 архива, и brew сверяет его сам: разойдись он —
         # `brew install` встанет на скачивании, у ВСЕХ и сразу. Проверять это
         # надо здесь, до того как архив уедет в релиз, а не по жалобам.
@@ -355,7 +355,7 @@ jobs:
           fi
           echo "хеш архива совпал с формулой: $sobran"
 
-      - name: Кран не отстал от дерева
+      - name: Check Homebrew tap
         # `brew install digitable-lol/tap/flang` ставит НЕ packaging/homebrew/flang.rb,
         # а Formula/flang.rb из репозитория-крана digitable-lol/homebrew-tap. Кран
         # правится руками, и шесть выпусков подряд (0.7.4–0.7.10) ушли без него:
@@ -388,7 +388,7 @@ jobs:
           fi
           echo "кран совпал с деревом по version, url и sha256: $(git -C packaging/homebrew-tap rev-parse --short HEAD)"
 
-      - name: Плагин asdf не отстал от дерева
+      - name: Check asdf plugin
         # `asdf plugin add flang` клонирует digitable-lol/asdf-flang — сабмодуль
         # packaging/asdf-plugin, — а не packaging/asdf. Копия отставала молча:
         # опубликованный bin/install искал flang_cli, когда сборка уже клала
@@ -423,7 +423,7 @@ jobs:
           fi
           echo "плагин asdf совпал с деревом по четырём файлам: $(git -C "$plagin" rev-parse --short HEAD)"
 
-      - name: Приложить архив к релизу
+      - name: Upload release archive
         # `gh release create` на уже существующем релизе отвечает ошибкой —
         # поэтому сначала спрашиваем.
         #
@@ -448,7 +448,7 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" "$ARHIV" --clobber
           gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name'
 
-      - name: Прогнать весь набор проверок
+      - name: Run all checks
         # Был `npm test` — это ровно `./ярлык тесты`, то есть
         # `node --test flang/test/*.test.mjs`. npm не делал здесь ничего, кроме
         # подстановки строки из `package.json`.

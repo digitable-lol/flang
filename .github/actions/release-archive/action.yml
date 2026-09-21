@@ -108,7 +108,7 @@ runs:
         if command -v gtar >/dev/null 2>&1; then TAR=gtar; fi
         if ! "$TAR" --version 2>/dev/null | head -1 | grep -q 'GNU tar'; then
           echo "::error::$TAR — не GNU tar: ключей --sort/--mtime у него нет, и архив вышел бы с другими байтами и другим sha256" >&2
-          echo "::error::На macOS: brew install gnu-tar (шаг «GNU tar на macOS»)." >&2
+          echo "::error::На macOS: brew install gnu-tar (шаг «Install GNU tar»)." >&2
           exit 1
         fi
 

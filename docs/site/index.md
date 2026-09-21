@@ -123,7 +123,7 @@ functions) are recomputed in nine seconds and checked on every push
 **Not in who writes the proof.** You can write one by hand here too: `теорема`
 with the steps `дано`, `утверждаем`, `затем … по свойству «…»`, `индукция по …`
 and `следовательно доказано` — a structured proof in the spirit of Isabelle's
-Isar, not a script of tactics. There are **285** such theorems in the tree, **55**
+Isar, not a script of tactics. There are **287** such theorems in the tree, **55**
 of them in the standard library (`grep -rac '^\s*теорема ' flang
 --include='*.flang'`, summed with `awk`, 19 September 2026).
 

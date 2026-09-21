@@ -1,4 +1,4 @@
-name: Перепечатка
+name: Reprint
 
 # ГЛАВНОЕ СВОЙСТВО САМОСБОРКИ НЕ ПРОВЕРЯЕТСЯ НИЧЕМ, И ВОТ ПОЧЕМУ.
 #
@@ -75,12 +75,12 @@ jobs:
           fetch-depth: 0
       - run: make -C bootstrap -j"$(nproc)"
 
-      - name: Свежесть побайтовой сверки
+      - name: Check reprint freshness
         id: svezhest
         continue-on-error: true
         run: ./bootstrap/flang io scripts/seed/reprint-freshness.fscript --на-веру 2>&1 | tee /tmp/svezhest.txt
 
-      - name: Сказать вслух, на чём сверку считать
+      - name: Note reprint basis
         if: always()
         env:
           MASHINA: ${{ vars.BOLSHAYA_PAMYAT }}
@@ -157,7 +157,7 @@ jobs:
             echo "::warning title=Две печати одного дерева никто не сверял::работа «Две печати одного дерева совпадают побайтово» не запускалась — нет машины; вопрос гейта Г6 этим прогоном НЕ ЗАДАН, и это не «сошлось»"
           fi
 
-      - name: Приговор
+      - name: Report verdict
         if: always()
         env:
           MASHINA: ${{ vars.BOLSHAYA_PAMYAT }}
@@ -199,11 +199,11 @@ jobs:
       # нельзя — печатью правит эмиттер, зашитый в двоичный, а не тот, что
       # лежит в дереве.
       - run: make -C bootstrap -j"$(nproc)"
-      - name: сторож краснеет на подложенной длинной постоянной
+      - name: Probe long strings
         run: sh scripts/guards/overlong-string-guard.sh --подлог
         env:
           FLANG_TMP: ${{ runner.temp }}
-      - name: длинных строковых постоянных нет ни в семени, ни во входах печати
+      - name: Check long strings
         run: sh scripts/guards/overlong-string-guard.sh
         env:
           FLANG_TMP: ${{ runner.temp }}
@@ -242,7 +242,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
-      - name: имена замыкания компилятора не схлопываются после «Змейки»
+      - name: Check name collisions
         run: bootstrap/flang io scripts/guards/latin-collision-guard.fscript --на-веру --max-steps 2000000000
 
   # ── Дёшево и по расписанию: та же повторимость, но на входе побольше ──────
@@ -274,11 +274,11 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
-      - name: Прибор краснеет на подложенном расхождении
+      - name: Probe print determinism
         run: sh scripts/seed/print-is-repeatable.sh --подлог
         env:
           FLANG_TMP: ${{ runner.temp }}
-      - name: Две печати входа побольше совпадают побайтово
+      - name: Check print determinism
         run: sh scripts/seed/print-is-repeatable.sh --вход flang/self/emit-c.flang
         env:
           FLANG_TMP: ${{ runner.temp }}
@@ -320,7 +320,7 @@ jobs:
       # Отказ, оставленный как был, останавливал бы заход, который дошёл бы.
       # Поэтому FLANG теперь НЕОБЯЗАТЕЛЕН: он назван — печатает он, не назван —
       # печатает семя, и об этом говорится вслух, а не молчанием.
-      - name: Чем печатаем
+      - name: Note binary used
         run: |
           if [ -n "${FLANG:-}" ]; then
             echo "печатает двоичный из FLANG: $FLANG"
@@ -333,7 +333,7 @@ jobs:
           fi
         env:
           FLANG: ${{ vars.FLANG_VYSOKIY }}
-      - name: Побайтовая сверка семени с печатью
+      - name: Check seed reprint
         run: sh scripts/raskrutka.sh --check
         env:
           FLANG: ${{ vars.FLANG_VYSOKIY }}
@@ -341,7 +341,7 @@ jobs:
       # Итог заносится в ведомость руками, одной строкой: дата, «сверка», итог,
       # секунды, пик, байты, потолок, откуда. Иначе следующий не узнает, что
       # сверка была, и `svezhest` останется красной при сделанной работе.
-      - name: Напомнить о ведомости
+      - name: Remind about ledger
         if: always()
         run: |
           echo "Занесите итог строкой в docs/reprint-ledger.tsv — без этого"
@@ -420,7 +420,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
 
-      - name: Развести два дерева по разным каталогам
+      - name: Prepare two trees
         env:
           BAZA: ${{ runner.temp }}/dve-pechati
         run: |
@@ -453,7 +453,7 @@ jobs:
           echo "KOMMIT_PARY=$k1" >> "$GITHUB_ENV"
           echo "коммит пары: $k1"
 
-      - name: Печать первая
+      - name: First print
         id: pechat1
         continue-on-error: true
         env:
@@ -491,7 +491,7 @@ jobs:
           tail -40 "$ZH"
           exit "$kod"
 
-      - name: Печать вторая
+      - name: Second print
         id: pechat2
         continue-on-error: true
         env:
@@ -523,7 +523,7 @@ jobs:
           tail -40 "$ZH"
           exit "$kod"
 
-      - name: Сверить две печати побайтово
+      - name: Compare two prints
         id: sverka
         continue-on-error: true
         env:
@@ -558,7 +558,7 @@ jobs:
       # значит, что про свойство не сказано ничего. Проверка, красящая оба
       # одинаково, врёт в обе стороны: то поднимает тревогу на пустом месте, то
       # прячет находку среди поломок машины.
-      - name: Приговор
+      - name: Report verdict
         if: always()
         env:
           BAZA: ${{ runner.temp }}/dve-pechati

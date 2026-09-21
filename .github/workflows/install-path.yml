@@ -1,4 +1,4 @@
-name: Путь установки
+name: Install path
 
 # ПОЧЕМУ ОТДЕЛЬНОЙ РАБОТОЙ, И ПОЧЕМУ НА ДВУХ ПЛАТФОРМАХ.
 #
@@ -42,7 +42,7 @@ name: Путь установки
 # уже лежал в дереве, его никто не звал, и это стоило двадцати часов машины.
 # Теперь его принуждает составное действие `.github/actions/release-without-cache`
 # (почему не файл в `scripts/` — разобрано в его шапке), и шаг
-# «Выпуск не опирается на кеш приговоров» стоит ПЕРВЫМ после выкладки —
+# «Check verdict cache» стоит ПЕРВЫМ после выкладки —
 # в обеих работах этого файла.
 #
 # ПОЧЕМУ В КАЖДОЙ РАБОТЕ, А НЕ В ОДНОЙ. Работы независимы: у каждой свой раннер
@@ -114,7 +114,7 @@ jobs:
           # packaging/asdf с сабмодулем плагина packaging/asdf-plugin. Не
           # развёрнут любой из двух — свой сторож красен.
           submodules: true
-      - name: Выпуск не опирается на кеш приговоров
+      - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       # `cache: npm` и `npm ci` сняты вместе с `package-lock.json`. Двоичный
       # они здесь и не давали: `postinstall` клал его в `dvoichnyy/`, а всё
@@ -127,7 +127,7 @@ jobs:
       # ни `--mtime`, и архив вышел бы с другими байтами и другим sha256, чем
       # тот, что сверяет brew. Формула это оговаривает словами; проверка сама
       # ищет `gtar`, но найти его она может, только если он поставлен.
-      - name: GNU tar на macOS
+      - name: Install GNU tar
         if: runner.os == 'macOS'
         run: brew install gnu-tar
 
@@ -136,7 +136,7 @@ jobs:
       # в дереве уже нет, и потому НЕ ПРОХОДИЛ ни одного из четырёх путей —
       # красным был не путь установки, а сам прогон. Статическую его половину
       # держат сторожа на flang; настоящую установку держит работа brew ниже.
-      - name: Сборка на Darwin не сломана молча
+      - name: Check Darwin build
         run: ./ярлык дарвин:проверка
 
       # ── АРХИВ, ЗА КОТОРЫМ ХОДИТ BREW ──────────────────────────────────────
@@ -170,7 +170,7 @@ jobs:
       # собирается тем же составным действием, каким его собирает `release.yml`
       # (сборка идёт около шести минут). Проверка не пропускается ни в одном из
       # двух случаев: в обоих у сторожа на руках настоящий архив.
-      - name: Архив выпуска — тот, за которым ходит brew
+      - name: Check formula URL
         id: arhiv_vypuska
         run: |
           set -u
@@ -197,11 +197,11 @@ jobs:
             echo "Собираю архив сам, тем же действием, что и release.yml."
           fi
 
-      - name: Собрать архив, пока выпуск не выложен
+      - name: Build release archive
         if: steps.arhiv_vypuska.outputs.vzyat != 'da'
         uses: ./.github/actions/release-archive
 
-      - name: Формула Homebrew сходится сама с собой
+      - name: Check Homebrew formula
         run: ./ярлык формула:проверка
 
       # `asdf plugin add flang` клонирует НЕ packaging/asdf, а отдельный
@@ -213,7 +213,7 @@ jobs:
       # выхода сборки, а опубликованный искал flang_cli — и `asdf install`
       # падал последним шагом (docs/zettel/a-packaging-copy-in-another-
       # repository-drifts-both-ways.md).
-      - name: Плагин asdf не отстал от дерева
+      - name: Check asdf plugin
         run: ./ярлык плагин:проверка
 
       # Сторожу верят после того, как он покраснел на подложенном. Подлог здесь
@@ -222,7 +222,7 @@ jobs:
       # значит сравнение выпотрошено, и зелёный шаг выше ничего не значит.
       # Зовётся файлом, а не ярлыком `плагин:подлог`: прибор проб порчи
       # (scripts/guards/guards-without-forgery-probe.sh) относит пробу к сторожу по файлу.
-      - name: Сторож плагина asdf умеет краснеть
+      - name: Probe asdf plugin
         run: |
           set -u
           if bootstrap/flang io scripts/guards/asdf-plugin-guard.fscript --plan 'Подлог'; then
@@ -238,7 +238,7 @@ jobs:
       # Список исполняемых файлов корня и flang/bin берётся у `find`, а не выписан: новый
       # файл обязан либо поехать в поставку, либо быть назван с причиной
       # остаться в дереве.
-      - name: Состав поставки сходится с деревом
+      - name: Check delivery contents
         run: ./ярлык поставка:проверка
 
       # И тот же порядок, что у плагина: сторожу верят после того, как он
@@ -247,7 +247,7 @@ jobs:
       # ответить провалом «подлог пойман». Зовётся файлом, а не ярлыком:
       # прибор проб порчи (scripts/guards/guards-without-forgery-probe.sh) относит пробу к
       # сторожу по файлу.
-      - name: Сторож состава поставки умеет краснеть
+      - name: Probe delivery contents
         run: |
           set -u
           if bootstrap/flang io scripts/guards/delivery-guard.flang --plan 'Подлог'; then
@@ -265,7 +265,7 @@ jobs:
       # macos-latest, а `sed -i` там — BSD sed, который требует после `-i`
       # обязательный довод-расширение и на форме GNU падает. Копия всё равно
       # снимается ради проверки «подлог собрался», так что лишнего шага нет.
-      - name: Сторож версии умеет краснеть
+      - name: Probe version guard
         run: |
           set -u
           podlog=.flangrc
@@ -283,7 +283,7 @@ jobs:
             exit 1
           fi
           git checkout -- "$podlog"
-      - name: FLANG_VERSION совпадает с версией в .flangrc
+      - name: Check version
         run: ./ярлык версия:проверка
 
   # ── НАСТОЯЩИЙ brew, а не воспроизведение ───────────────────────────────────
@@ -303,7 +303,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Выпуск не опирается на кеш приговоров
+      - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       # `cache: npm` и `npm ci` сняты вместе с `package-lock.json`. Двоичный
       # они здесь и не давали: `postinstall` клал его в `dvoichnyy/`, а всё
@@ -328,7 +328,7 @@ jobs:
       # directory`, работа красна с 0.7.9 (прогон 34012604580). Теперь команда
       # одна на три работы: `.github/actions/release-archive`, и разойтись ей
       # не с чем. Путь собранного архива действие кладёт в `$ARHIV`.
-      - name: Собрать архив тем же действием, что и release.yml
+      - name: Build release archive
         uses: ./.github/actions/release-archive
 
       # ФОРМУЛУ ИЗ ФАЙЛА BREW БОЛЬШЕ НЕ СТАВИТ, И ЭТО ЗАМЕРЕНО.
@@ -339,7 +339,7 @@ jobs:
       # от 8 сентября 2026). Поэтому формула кладётся в ЛОКАЛЬНЫЙ кран, заведённый
       # тут же. Имя крана `flang/probe` — нарочно НЕ `digitable-lol/tap`:
       # настоящий кран трогать нельзя, его сверяет отдельный сторож.
-      - name: Формула на свежий архив
+      - name: Update formula
         run: |
           set -eu
           # Имена переменных латиницей: оболочка берёт в имена только ASCII, и
@@ -355,10 +355,10 @@ jobs:
               packaging/homebrew/flang.rb > "$kran/Formula/flang.rb"
           brew install --build-from-source --verbose flang/probe/flang
 
-      - name: Блок test do формулы
+      - name: Run brew test
         run: brew test flang/probe/flang
 
-      - name: Поставленное brew умеет печатать в C
+      - name: Check C emit
         run: |
           set -eu
           printf '%s\n' 'модуль «Проба»' '' 'тотальная функция «Два»' '  возвращает число' '  2' > проба.flang
@@ -401,7 +401,7 @@ jobs:
       # называет цели сам (`EMIT_TARGETS_WORDS` в flang_repl.c) и печатает их в
       # справке; отбор идёт по ASCII (`--target` и палка), чтобы не зависеть от
       # локали работника.
-      - name: Поставленное brew умеет печатать во все цели, какие называет само
+      - name: Check all targets
         run: |
           set -eu
           printf '%s\n' 'модуль «Проба»' '' 'тотальная функция «Два»' '  возвращает число' '  2' > проба.flang

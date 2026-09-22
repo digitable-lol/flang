@@ -1904,7 +1904,7 @@ proba_podloga() {
 YADRO_OTVERGAET_ZAKONNO="flang/proof/forgeries/circle.flang
 flang/proof/checker/tests/records/3314-conditional-by-branches/lozhnoe-otricanie.flang
 flang/proof/checker/tests/records/9991-starts-with/lozhnoe-nachalo.flang
-flang/proof/checker/tests/records/Ч369/П3-пусть-связывает-чужое-имя.flang
+flang/proof/checker/tests/records/goal-split-by-condition/П3-пусть-связывает-чужое-имя.flang
 flang/proof/checker/tests/programs/lozh-stolknovenie.flang
 flang/proof/checker/tests/programs/Ч392-примечание-вместо-постусловия.flang
 flang/proof/checker/tests/programs/Ч407-promezhutochnyy-shag-primechaniem.flang

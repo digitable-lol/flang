@@ -182,7 +182,7 @@ BODY=flang/proof/examples/body-forms.flang
 DELIM=flang/proof/forgeries/by-division.flang
 
 say "── поля записи (Ч19): 30 подделок → 1, 2 честные → 3 ──"
-for f in "$ZAP"/Ч19/*.запись; do
+for f in "$ZAP"/record-fields/*.запись; do
   b=$(basename "$f")
   case "$b" in дерево-*) I=$TREE;; *) I=$NAT;; esac
   case "$b" in *честная*) opyt C "честная $b" 3 "$I" "$f";;
@@ -192,10 +192,10 @@ done
 say "── доказательство лжи (Ч40): 4 записи, ни одна не вправе получить код 0 ──"
 # Ч40 замерила: свёртка ядра тут столкнута, ловить нечем — это третий исход,
 # а не отказ. Код 0 не вправе получить ни одна из четырёх.
-opyt P "ложь-1-вердикт"        3 "$PROG/lozh-raznost-chistaya.flang" "$ZAP/Ч40/lozh-1-verdikt.запись"
-opyt P "ложь-2-переадресована" 1 "$PROG/lozh-raznost-chistaya.flang" "$ZAP/Ч40/lozh-2-pereadresovana.запись"
-opyt P "ложь-4-теорема"        1 "$PROG/lozh-derevo.flang"           "$ZAP/Ч40/lozh-4-teorema.запись"
-opyt P "ложь-8-столкновение"   1 "$PROG/lozh-stolknovenie.flang"     "$ZAP/Ч40/lozh-8-chestnaya-zapis-natural.запись"
+opyt P "ложь-1-вердикт"        3 "$PROG/lozh-raznost-chistaya.flang" "$ZAP/proof-of-a-lie/lozh-1-verdikt.запись"
+opyt P "ложь-2-переадресована" 1 "$PROG/lozh-raznost-chistaya.flang" "$ZAP/proof-of-a-lie/lozh-2-pereadresovana.запись"
+opyt P "ложь-4-теорема"        1 "$PROG/lozh-derevo.flang"           "$ZAP/proof-of-a-lie/lozh-4-teorema.запись"
+opyt P "ложь-8-столкновение"   1 "$PROG/lozh-stolknovenie.flang"     "$ZAP/proof-of-a-lie/lozh-8-chestnaya-zapis-natural.запись"
 
 say "── сведение по шагам: 2 честные → 3, 14 подделок → 1 ──"
 SZ=flang/proof/forgeries/stack.запись
@@ -245,9 +245,9 @@ say "── привязка к программе (Ч48/Ч55): путь — п�
 # оставалось одно место на слово ядра. Правило его закрыло, и запись стала 0.
 # Проба про ПРИВЯЗКУ, а не про долю: класс C считает отказом только код 1,
 # так что «принимается» подтверждается кодом 0 ровно так же, как кодом 3.
-opyt C "О4 чужой путь + отпечаток256 → принимается"        0 "$NAT" "$ZAP/Ч48/V-chestnaya.запись"
-opyt P "О5 та же запись против ДРУГОЙ программы → отказ"   1 "$PROG/lozh-stolknovenie.flang" "$ZAP/Ч48/V-chestnaya.запись"
-opyt P "О5б отпечаток честного при ложной программе → отказ" 1 "$PROG/lozh-stolknovenie.flang" "$ZAP/Ч48/B-s-256.запись"
+opyt C "О4 чужой путь + отпечаток256 → принимается"        0 "$NAT" "$ZAP/program-binding/V-chestnaya.запись"
+opyt P "О5 та же запись против ДРУГОЙ программы → отказ"   1 "$PROG/lozh-stolknovenie.flang" "$ZAP/program-binding/V-chestnaya.запись"
+opyt P "О5б отпечаток честного при ложной программе → отказ" 1 "$PROG/lozh-stolknovenie.flang" "$ZAP/program-binding/B-s-256.запись"
 # О6 — контроль: БЕЗ отпечатка256 чужой путь обязан отвергаться по-прежнему.
 # Путь подделывается здесь же: в дереве все записи лежат с путями дерева.
 sed -e '2s|^исходник |исходник /чужой/клон/|' -e '/^отпечаток256 /d' "$ZAP/corpus/corpus-natural.запись" > "$RABOTA/чужой-путь"
@@ -255,17 +255,17 @@ cmp -s "$ZAP/corpus/corpus-natural.запись" "$RABOTA/чужой-путь" &
 opyt P "О6 без отпечатка256 чужой путь → отказ" 1 "$NAT" "$RABOTA/чужой-путь"
 # О6б: подмена, которую свёртка ядра не ловит. Это не отказ и не приёмка —
 # это ровно третий исход, и причина обязана быть НАЗВАНА, а не подразумеваться.
-opyt P "О6б подмена без отпечатка256 → 3, причина названа" 3 "$PROG/lozh-stolknovenie.flang" "$ZAP/Ч48/A-bez-256.запись"
-"$C" "$PROG/lozh-stolknovenie.flang" "$ZAP/Ч48/A-bez-256.запись" 2>/dev/null \
+opyt P "О6б подмена без отпечатка256 → 3, причина названа" 3 "$PROG/lozh-stolknovenie.flang" "$ZAP/program-binding/A-bez-256.запись"
+"$C" "$PROG/lozh-stolknovenie.flang" "$ZAP/program-binding/A-bez-256.запись" 2>/dev/null \
   | grep -q "привязка к программе не криптографическая" \
   || { say "ПРОВАЛ О6б: чекер о привязке смолчал"; BAD=$((BAD+1)); }
 # Отпечаток, поданный доводом, — такая же криптопривязка, как строка шапки.
-H_NAT=$("$C" "$NAT" "$ZAP/Ч48/otn-put.запись" 2>/dev/null | sed -n 's/.*sha256 исходника \([0-9a-f]*\).*/\1/p')
+H_NAT=$("$C" "$NAT" "$ZAP/program-binding/otn-put.запись" 2>/dev/null | sed -n 's/.*sha256 исходника \([0-9a-f]*\).*/\1/p')
 # Тот же сдвиг 3 → 0 и по той же причине. Само утверждение пробы — что путь
 # понижен до приметы — проверяется строкой ниже, на ДРУГОЙ записи (otn-put),
 # и от кода здесь не зависит.
-opyt C "отпечаток доводом: путь понижен до приметы" 0 "$NAT" "$ZAP/Ч48/V-chestnaya.запись" "$H_NAT"
-"$C" "$NAT" "$ZAP/Ч48/otn-put.запись" "$H_NAT" 2>/dev/null \
+opyt C "отпечаток доводом: путь понижен до приметы" 0 "$NAT" "$ZAP/program-binding/V-chestnaya.запись" "$H_NAT"
+"$C" "$NAT" "$ZAP/program-binding/otn-put.запись" "$H_NAT" 2>/dev/null \
   | grep -q "Привязка к программе: SHA-256 сошёлся" \
   || { say "ПРОВАЛ довод не засчитан криптопривязкой"; BAD=$((BAD+1)); }
 # Запись, у которой на слово ядра не взято НИЧЕГО, с отпечатком получает 0:
@@ -276,9 +276,9 @@ opyt C "запись без взятого на слово + отпечаток 
 opyt P "она же с ЧУЖИМ отпечатком → отказ" 1 "$BR" "$ZAP/corpus/corpus-brackets.запись" 0000000000000000000000000000000000000000000000000000000000000000
 
 say "── ключи: список закрыт, неизвестный ключ не толкуется ──"
-set +e; "$C" --мягко "$NAT" "$ZAP/Ч48/otn-put.запись" >/dev/null 2>&1; k=$?; set -e
+set +e; "$C" --мягко "$NAT" "$ZAP/program-binding/otn-put.запись" >/dev/null 2>&1; k=$?; set -e
 [ "$k" -eq 2 ] || { say "ПРОВАЛ неизвестный ключ обязан давать код 2, вышло $k"; BAD=$((BAD+1)); }
-set +e; "$C" --старый-код-не-приёмка "$NAT" "$ZAP/Ч48/otn-put.запись" >/dev/null 2>"$RABOTA/старый.err"; k=$?; set -e
+set +e; "$C" --старый-код-не-приёмка "$NAT" "$ZAP/program-binding/otn-put.запись" >/dev/null 2>"$RABOTA/старый.err"; k=$?; set -e
 [ "$k" -eq 0 ] || { say "ПРОВАЛ старый ключ обязан давать 0, вышло $k"; BAD=$((BAD+1)); }
 grep -q "ПРИЁМКОЙ НЕ ЯВЛЯЕТСЯ" "$RABOTA/старый.err" || { say "ПРОВАЛ старый ключ смолчал"; BAD=$((BAD+1)); }
 
@@ -397,35 +397,35 @@ say "  Ч56 — терм при номере строки и «закрыть т
 # в ожидание сегодняшний размер долга — тот же изъян, что у проб Ч375.
 # 0 с ячейки 5 покрытия (10 сентября 2026): шаг «по предположению» прямой
 # теоремы «удвоенное неотрицательно» (тело «н плюс н») переигран по построению.
-opyt C "Ч56 честная: развёртка несёт И номер, И тело" 0 "$PRE" "$ZAP/Ч56/precondition-dereva.запись"
-opyt P "Ч56 тело записи не то, что в строке исходника" 1 "$PRE" "$ZAP/Ч56/lozh-telo-ne-to.запись"
-opyt P "Ч56 номер строки лжёт при верном теле"        1 "$PRE" "$ZAP/Ч56/lozh-s-nomerom.запись"
+opyt C "Ч56 честная: развёртка несёт И номер, И тело" 0 "$PRE" "$ZAP/term-at-line-number/precondition-dereva.запись"
+opyt P "Ч56 тело записи не то, что в строке исходника" 1 "$PRE" "$ZAP/term-at-line-number/lozh-telo-ne-to.запись"
+opyt P "Ч56 номер строки лжёт при верном теле"        1 "$PRE" "$ZAP/term-at-line-number/lozh-s-nomerom.запись"
 
 say "  Ч71 — шаг автора «по примеру» привязан к примеру"
-opyt C "Ч71 честная: все привязки сошлись" 0 "$TL" "$ZAP/Ч71/честная.запись"
-opyt P "Ч71 привязка зовёт чужой пример"        1 "$TL" "$ZAP/Ч71/p-chuzhoy-primer.запись"
-opyt P "Ч71 привязка указывает на «дано»"       1 "$TL" "$ZAP/Ч71/p-ukazal-na-dano.запись"
-opyt P "Ч71 привязка указывает на примечание"   1 "$TL" "$ZAP/Ч71/p-ukazal-na-primechanie.запись"
-opyt P "Ч71 привязка за концом файла"           1 "$TL" "$ZAP/Ч71/p-za-koncom-fajla.запись"
-opyt P "Ч71 зелёный шаг подменён красным"       1 "$TL" "$ZAP/Ч71/p-zelyonyy-na-krasnyy.запись"
-opyt P "Ч71 шаг без привязки вовсе"             1 "$TL" "$ZAP/Ч71/lozh-bez-privyazki.запись"
-opyt P "Ч71 пример о чужом варианте"            1 "$PROG/Ч71-lozh-chuzhoy-variant.flang" "$ZAP/Ч71/lozh-chuzhoy-variant.запись"
+opyt C "Ч71 честная: все привязки сошлись" 0 "$TL" "$ZAP/example-binding/честная.запись"
+opyt P "Ч71 привязка зовёт чужой пример"        1 "$TL" "$ZAP/example-binding/p-chuzhoy-primer.запись"
+opyt P "Ч71 привязка указывает на «дано»"       1 "$TL" "$ZAP/example-binding/p-ukazal-na-dano.запись"
+opyt P "Ч71 привязка указывает на примечание"   1 "$TL" "$ZAP/example-binding/p-ukazal-na-primechanie.запись"
+opyt P "Ч71 привязка за концом файла"           1 "$TL" "$ZAP/example-binding/p-za-koncom-fajla.запись"
+opyt P "Ч71 зелёный шаг подменён красным"       1 "$TL" "$ZAP/example-binding/p-zelyonyy-na-krasnyy.запись"
+opyt P "Ч71 шаг без привязки вовсе"             1 "$TL" "$ZAP/example-binding/lozh-bez-privyazki.запись"
+opyt P "Ч71 пример о чужом варианте"            1 "$PROG/Ч71-lozh-chuzhoy-variant.flang" "$ZAP/example-binding/lozh-chuzhoy-variant.запись"
 # Снявшие привязку обязаны получить 3 и НИКОГДА 0: «проверено» не даётся за то,
 # что чекер перестал что-то проверять.
-opyt P "Ч71 привязка снята — третий исход, не приёмка"     3 "$TL" "$ZAP/Ч71/p-privyazka-snyata.запись"
-opyt P "Ч71 все привязки сняты — третий исход"             3 "$TL" "$ZAP/Ч71/p-vse-privyazki-snyaty.запись"
-opyt P "Ч71 номер привязки ноль — третий исход"            3 "$TL" "$ZAP/Ч71/p-nomer-nol.запись"
+opyt P "Ч71 привязка снята — третий исход, не приёмка"     3 "$TL" "$ZAP/example-binding/p-privyazka-snyata.запись"
+opyt P "Ч71 все привязки сняты — третий исход"             3 "$TL" "$ZAP/example-binding/p-vse-privyazki-snyaty.запись"
+opyt P "Ч71 номер привязки ноль — третий исход"            3 "$TL" "$ZAP/example-binding/p-nomer-nol.запись"
 # Пять проб ниже добавлены изъятием: у сверщика шесть отдельных проверок
 # «по примеру» (см. врезку «ЯЧЕЙКА Ч71» в checker.c), а из одиннадцати проб
 # выше по существу, поодиночке, была накрыта только проверка 1 — 2, 3 и 5
 # не стерегла ни одна, а 4 и 6 стерегла только ПАРА `lozh-chuzhoy-variant`
 # (порознь каждая маскируется другой). Каждая проба ниже красная РОВНО от
 # своей проверки — проверено изъятием этой проверки из checker.c и обратно.
-opyt P "Ч71 пример настоящий, но вне блока функции (проверка 2)"      1 "$PROG/Ч71-p-primer-vne-bloka.flang" "$ZAP/Ч71/p-primer-vne-bloka.запись"
-opyt P "Ч71 у примера нет «ожидается» (проверка 3)"                  3 "$PROG/Ч71-p-primer-bez-ozhidaniya.flang" "$ZAP/Ч71/p-primer-bez-ozhidaniya.запись"
-opyt P "Ч71 пример о своём случае, но не о том значении (проверка 4)" 1 "$PROG/Ч71-p-sluchay-s-tem-zhe-znacheniem.flang" "$ZAP/Ч71/p-sluchay-s-tem-zhe-znacheniem.запись"
-opyt P "Ч71 значение верное, а цели не удовлетворяет (проверка 5)"    1 "$PROG/Ч71-p-cel-ne-derzhitsya.flang" "$ZAP/Ч71/p-cel-ne-derzhitsya.запись"
-opyt P "Ч71 пример лжёт о значении, ветвь тела честная (проверка 6)"  1 "$PROG/Ч71-p-primer-lzhyot-o-znachenii.flang" "$ZAP/Ч71/p-primer-lzhyot-o-znachenii.запись"
+opyt P "Ч71 пример настоящий, но вне блока функции (проверка 2)"      1 "$PROG/Ч71-p-primer-vne-bloka.flang" "$ZAP/example-binding/p-primer-vne-bloka.запись"
+opyt P "Ч71 у примера нет «ожидается» (проверка 3)"                  3 "$PROG/Ч71-p-primer-bez-ozhidaniya.flang" "$ZAP/example-binding/p-primer-bez-ozhidaniya.запись"
+opyt P "Ч71 пример о своём случае, но не о том значении (проверка 4)" 1 "$PROG/Ч71-p-sluchay-s-tem-zhe-znacheniem.flang" "$ZAP/example-binding/p-sluchay-s-tem-zhe-znacheniem.запись"
+opyt P "Ч71 значение верное, а цели не удовлетворяет (проверка 5)"    1 "$PROG/Ч71-p-cel-ne-derzhitsya.flang" "$ZAP/example-binding/p-cel-ne-derzhitsya.запись"
+opyt P "Ч71 пример лжёт о значении, ветвь тела честная (проверка 6)"  1 "$PROG/Ч71-p-primer-lzhyot-o-znachenii.flang" "$ZAP/example-binding/p-primer-lzhyot-o-znachenii.запись"
 
 say "  3455 — шаг автора «по свойству» привязан к постусловию по всему модулю"
 # До этой задачи `по свойству «имя»» не проверялось вовсе: сверщик сверял
@@ -444,32 +444,32 @@ opyt P "3455 привязка снята — третий исход, не пр�
 opyt P "3455 номер привязки ноль — третий исход"        3 "$HMPG" "$ZAP/3455/p-nomer-nol.запись"
 
 say "  Ч76 — шаг автора вне случая, подстановка тела в терм"
-opyt C "Ч76 честная: цель замкнута телом и держится" 0 "$CID" "$ZAP/Ч76/честная.запись"
-opyt P "Ч76 тело мимо примера"          1 "$PROG/Ч76-1-telo-mimo-primera.flang"    "$ZAP/Ч76/1-telo-mimo-primera.запись"
-opyt P "Ч76 цель на теле не держится"   1 "$PROG/Ч76-2-cel-lozhna.flang"           "$ZAP/Ч76/2-cel-lozhna.запись"
-opyt P "Ч76 метки совпали"              1 "$PROG/Ч76-3-metki-sovpali.flang"        "$ZAP/Ч76/3-metki-sovpali.запись"
-opyt P "Ч76 длина на один больше"       1 "$PROG/Ч76-5-dlina-na-odin-bolshe.flang" "$ZAP/Ч76/5-dlina-na-odin-bolshe.запись"
-opyt P "Ч76 цифры подменены"            1 "$PROG/Ч76-6-cifry-podmeneny.flang"      "$ZAP/Ч76/6-cifry-podmeneny.запись"
-opyt P "Ч76 пример у чужой функции"     1 "$CID" "$ZAP/Ч76/7-chuzhaya-funkciya.запись"
-opyt P "Ч76 пример чужой функции"       1 "$CID" "$ZAP/Ч76/8-primer-chuzhoy-funkcii.запись"
+opyt C "Ч76 честная: цель замкнута телом и держится" 0 "$CID" "$ZAP/step-outside-case/честная.запись"
+opyt P "Ч76 тело мимо примера"          1 "$PROG/Ч76-1-telo-mimo-primera.flang"    "$ZAP/step-outside-case/1-telo-mimo-primera.запись"
+opyt P "Ч76 цель на теле не держится"   1 "$PROG/Ч76-2-cel-lozhna.flang"           "$ZAP/step-outside-case/2-cel-lozhna.запись"
+opyt P "Ч76 метки совпали"              1 "$PROG/Ч76-3-metki-sovpali.flang"        "$ZAP/step-outside-case/3-metki-sovpali.запись"
+opyt P "Ч76 длина на один больше"       1 "$PROG/Ч76-5-dlina-na-odin-bolshe.flang" "$ZAP/step-outside-case/5-dlina-na-odin-bolshe.запись"
+opyt P "Ч76 цифры подменены"            1 "$PROG/Ч76-6-cifry-podmeneny.flang"      "$ZAP/step-outside-case/6-cifry-podmeneny.запись"
+opyt P "Ч76 пример у чужой функции"     1 "$CID" "$ZAP/step-outside-case/7-chuzhaya-funkciya.запись"
+opyt P "Ч76 пример чужой функции"       1 "$CID" "$ZAP/step-outside-case/8-primer-chuzhoy-funkcii.запись"
 # «Не берусь» — не «сошлось»: причина названа строкой «НЕ ВЗЯЛСЯ», исход третий.
-opyt P "Ч76 отношение незнакомо — не берусь"  3 "$PROG/Ч76-4-otnoshenie-neznakomo.flang" "$ZAP/Ч76/4-otnoshenie-neznakomo.запись"
-opyt P "Ч76 тело не один литерал — не берусь" 3 "$PROG/Ч76-9-telo-ne-odin-literal.flang" "$ZAP/Ч76/9-telo-ne-odin-literal.запись"
+opyt P "Ч76 отношение незнакомо — не берусь"  3 "$PROG/Ч76-4-otnoshenie-neznakomo.flang" "$ZAP/step-outside-case/4-otnoshenie-neznakomo.запись"
+opyt P "Ч76 тело не один литерал — не берусь" 3 "$PROG/Ч76-9-telo-ne-odin-literal.flang" "$ZAP/step-outside-case/9-telo-ne-odin-literal.запись"
 
 say "  Ч87 — списочное тело: оглавление печати ПЕРЕЧИТЫВАЕТСЯ"
 # Ждали 3 до задачи 1573: у `corpus-case` оставался один шаг «по примеру» на слове
 # ядра — цель звала «В верхний регистр» от поля звена, а вычислитель вызова не брал.
 # С развёрткой тела он его берёт, и запись проверена целиком: ждём 0.
-opyt C "Ч87 честная: вершина линии печати" 0 "$CASE" "$ZAP/Ч87/честная.запись"
-opyt P "Ч87 цель на списке не держится" 1 "$PROG/Ч87-F1-cel-lozhna.flang"           "$ZAP/Ч87/F1-cel-lozhna.запись"
-opyt P "Ч87 тело мимо примера"          1 "$PROG/Ч87-F2-telo-mimo-primera.flang"    "$ZAP/Ч87/F2-telo-mimo-primera.запись"
-opyt P "Ч87 два звена в одной строке"   1 "$PROG/Ч87-F3-dva-zvena-v-stroke.flang"   "$ZAP/Ч87/F3-dva-zvena-v-stroke.запись"
-opyt P "Ч87 звено закомментировано"     1 "$PROG/Ч87-F4-zveno-zakommentirovano.flang" "$ZAP/Ч87/F4-zveno-zakommentirovano.запись"
-opyt P "Ч87 оглавление зовёт чужую таблицу" 1 "$CASE" "$ZAP/Ч87/F5-chuzhaya-tablica.запись"
-opyt P "Ч87 граница таблицы сдвинута"       1 "$CASE" "$ZAP/Ч87/F6-granica-sdvinuta.запись"
-opyt P "Ч87 число звеньев соврано"          1 "$CASE" "$ZAP/Ч87/F7-zvenev-sovrano.запись"
-opyt P "Ч87 число таблиц соврано"           1 "$CASE" "$ZAP/Ч87/F8-tablic-sovrano.запись"
-opyt P "Ч87 оглавление снято — третий исход, не приёмка" 3 "$CASE" "$ZAP/Ч87/F9-oglavlenie-snyato.запись"
+opyt C "Ч87 честная: вершина линии печати" 0 "$CASE" "$ZAP/list-body-by-contents/честная.запись"
+opyt P "Ч87 цель на списке не держится" 1 "$PROG/Ч87-F1-cel-lozhna.flang"           "$ZAP/list-body-by-contents/F1-cel-lozhna.запись"
+opyt P "Ч87 тело мимо примера"          1 "$PROG/Ч87-F2-telo-mimo-primera.flang"    "$ZAP/list-body-by-contents/F2-telo-mimo-primera.запись"
+opyt P "Ч87 два звена в одной строке"   1 "$PROG/Ч87-F3-dva-zvena-v-stroke.flang"   "$ZAP/list-body-by-contents/F3-dva-zvena-v-stroke.запись"
+opyt P "Ч87 звено закомментировано"     1 "$PROG/Ч87-F4-zveno-zakommentirovano.flang" "$ZAP/list-body-by-contents/F4-zveno-zakommentirovano.запись"
+opyt P "Ч87 оглавление зовёт чужую таблицу" 1 "$CASE" "$ZAP/list-body-by-contents/F5-chuzhaya-tablica.запись"
+opyt P "Ч87 граница таблицы сдвинута"       1 "$CASE" "$ZAP/list-body-by-contents/F6-granica-sdvinuta.запись"
+opyt P "Ч87 число звеньев соврано"          1 "$CASE" "$ZAP/list-body-by-contents/F7-zvenev-sovrano.запись"
+opyt P "Ч87 число таблиц соврано"           1 "$CASE" "$ZAP/list-body-by-contents/F8-tablic-sovrano.запись"
+opyt P "Ч87 оглавление снято — третий исход, не приёмка" 3 "$CASE" "$ZAP/list-body-by-contents/F9-oglavlenie-snyato.запись"
 
 # ── МУТАНТЫ ПРИЁМОВ, ПРОИГРЫВАЮЩИХ УЗЕЛ ВЕРДИКТА (Ч363, Ч365) ──
 #
@@ -494,30 +494,30 @@ mut() { # каталог, имя пробы, ожидаемый код, клас
 
 say ""
 say "── Ч363: приём «разбором по случаям», 1 надзорный + 6 мутантов ──"
-mut Ч363 00-нетронутый          0 C
-mut Ч363 01-дно-лжёт            1 P
-mut Ч363 02-спуска-нет          3 P
-mut Ч363 03-слагаемое-минус     3 P
-mut Ч363 04-форма-незнакома     3 P
-mut Ч363 05-ветви-переставлены  3 P
-mut Ч363 06-чужое-слагаемое     3 P
+mut case-split-segment 00-нетронутый          0 C
+mut case-split-segment 01-дно-лжёт            1 P
+mut case-split-segment 02-спуска-нет          3 P
+mut case-split-segment 03-слагаемое-минус     3 P
+mut case-split-segment 04-форма-незнакома     3 P
+mut case-split-segment 05-ветви-переставлены  3 P
+mut case-split-segment 06-чужое-слагаемое     3 P
 
 say ""
 say "── Ч131-algebra: тот же узел, носитель algebra, 1 надзорный + 3 мутанта ──"
-mut Ч131-algebra 00-нетронутый       0 C
-mut Ч131-algebra 01-vetv-lzhet       3 P
-mut Ч131-algebra 02-variant-podmenen 1 P
-mut Ч131-algebra 03-pokrytie-nepolno 1 P
+mut case-split-algebra 00-нетронутый       0 C
+mut case-split-algebra 01-vetv-lzhet       3 P
+mut case-split-algebra 02-variant-podmenen 1 P
+mut case-split-algebra 03-pokrytie-nepolno 1 P
 
 say ""
 say "── Ч365: приём «тождество после переписки», 10 мутантов ──"
-mut Ч365 П1-цель-не-равенство            3 P
-mut Ч365 П2-тело-мимо-цели               3 P
-mut Ч365 П3-ассоциативность-вместо-двери 3 P
-mut Ч365 П4-перестановка-через-узел      3 P
-mut Ч365 П5-тело-не-одной-строкой        3 P
-mut Ч365 П6-закон-вне-закрытого-списка   3 P
-mut Ч365 П7-замкнутая-ложь-без-требует   1 P
+mut identity-after-rewrite П1-цель-не-равенство            3 P
+mut identity-after-rewrite П2-тело-мимо-цели               3 P
+mut identity-after-rewrite П3-ассоциативность-вместо-двери 3 P
+mut identity-after-rewrite П4-перестановка-через-узел      3 P
+mut identity-after-rewrite П5-тело-не-одной-строкой        3 P
+mut identity-after-rewrite П6-закон-вне-закрытого-списка   3 P
+mut identity-after-rewrite П7-замкнутая-ложь-без-требует   1 P
 # П8 ПРОШЁЛ ТРИ СОСТОЯНИЯ, и это стоит держать в одном месте.
 # (1) БЫЛ порчей (ждали 3): «Знак в знак» несёт «требует «невозможное» а
 #     меньше б» и «требует «обратно» б не больше а» — сам автор пробы назвал
@@ -536,9 +536,9 @@ mut Ч365 П7-замкнутая-ложь-без-требует   1 P
 #     допущениями (это проверено диагностическим прогоном), а за три ∀-цели
 #     чекер больше не ручается. Класс остался C: честную запись нельзя
 #     ОТВЕРГНУТЬ (код 1), а код 3 отвержением не является.
-mut Ч365 П8-та-же-ложь-под-допущением    3 C
-mut Ч365 П9-номер-вне-границ-списка      3 P
-mut Ч365 П10-э2-даёт-чужой-элемент       3 P
+mut identity-after-rewrite П8-та-же-ложь-под-допущением    3 C
+mut identity-after-rewrite П9-номер-вне-границ-списка      3 P
+mut identity-after-rewrite П10-э2-даёт-чужой-элемент       3 P
 
 say ""
 say "── Ч375: термин РЯДОМ с номером сверяется с исходником, а не заменяет его (9612) ──"
@@ -546,7 +546,7 @@ say "── Ч375: термин РЯДОМ с номером сверяется 
 # ставится РЯДОМ с существующим «строка N» (Ч19-приёмом sed по неизменной
 # строке), поэтому проба честно показывает НОВОЕ поведение третьей ветки, а не
 # выдуманный формат. Имена латиницей: см. шапку файла.
-D375=$ZAP/Ч375
+D375=$ZAP/term-beside-line-number
 FAKT=flang/proof/examples/corpus-factorial.flang
 # Ч7104: у четырёх ЧЕСТНЫХ проб ниже ожидание 3 → 0. Пробы стерегут третью
 # ветку Ч375 и о долге ничего не говорят; тройку они ждали лишь потому, что
@@ -573,15 +573,15 @@ say "── Ч369: приём «разбор цели по условию», 1 �
 # правит РОВНО ОДНУ строку, и проверено, что после правки на слове ядра
 # остаётся ровно ОДНО утверждение (у надзорного — ноль): порча ломает одну
 # посылку, а не сразу несколько.
-mut Ч369 00-нетронутый                 0 C
-mut Ч369 П1-порядок-вместо-равенства   3 P
-mut Ч369 П2-охрана-цели-мимо-тела      3 P
-mut Ч369 П3-пусть-связывает-чужое-имя  3 P
-mut Ч369 П4-связыватель-остался        3 P
-mut Ч369 П5-закон-вне-закрытого-списка 3 P
-mut Ч369 П6-мера-подменена             3 P
-mut Ч369 П7-предел-ветвления           3 P
-mut Ч369 П8-место-замены-чужое         3 P
+mut goal-split-by-condition 00-нетронутый                 0 C
+mut goal-split-by-condition П1-порядок-вместо-равенства   3 P
+mut goal-split-by-condition П2-охрана-цели-мимо-тела      3 P
+mut goal-split-by-condition П3-пусть-связывает-чужое-имя  3 P
+mut goal-split-by-condition П4-связыватель-остался        3 P
+mut goal-split-by-condition П5-закон-вне-закрытого-списка 3 P
+mut goal-split-by-condition П6-мера-подменена             3 P
+mut goal-split-by-condition П7-предел-ветвления           3 P
+mut goal-split-by-condition П8-место-замены-чужое         3 P
 
 say ""
 say "── Ч392: строка исходника читается КАК ЕЁ ЧИТАЕТ ЯЗЫК, не строкой в лоб (9964) ──"
@@ -597,7 +597,7 @@ say "── Ч392: строка исходника читается КАК ЕЁ 
 # что доказанное расходится с обещанным.
 opyt P "Ч392 примечание вместо постусловия (9964)" 1 \
   "$PROG/Ч392-примечание-вместо-постусловия.flang" \
-  "$ZAP/Ч392/примечание-вместо-постусловия.запись"
+  "$ZAP/note-instead-of-postcondition/примечание-вместо-постусловия.запись"
 
 # Ч392 сама починила восемь мест, но пробой доказала только два (постусловие).
 # Оставшиеся шесть чинила по доводу «между двух меток» — а он верен только для
@@ -610,7 +610,7 @@ opyt P "Ч392 примечание вместо постусловия (9964)" 1
 # исходнике (оно там и не может быть, обоснование лежит только в примечании).
 opyt P "Ч407 промежуточный шаг, обоснование в примечании (9964/Г2)" 1 \
   "$PROG/Ч407-promezhutochnyy-shag-primechaniem.flang" \
-  "$ZAP/Ч407/promezhutochnyy-shag-primechaniem.запись"
+  "$ZAP/justification-in-a-note/promezhutochnyy-shag-primechaniem.запись"
 
 # ЛЕЖАЛА В ДЕРЕВЕ И НЕ ЗВАЛАСЬ (задача 9518 назвала это прямо, файл был занят).
 # Сторожит, что правило «цель следует из объявленного о доводах» (9999, пришло
@@ -1204,11 +1204,11 @@ say "── свои пробы (работник 7104): мера значени
 # и вид «длину знаю, строки не отдаю» больше не заводится: подделка ниже теперь
 # ОТВЕРГНУТА значением (код 1), а не отложена (3), честная пара — ПРОВЕРЕНА (0).
 opyt P "Ч7104 нулевой знак: разные строки одной длины НЕ равны" 1 \
-  "$PROG/Ч7104-nulevoy-znak-lozh.flang" "$ZAP/Ч7104/nulevoy-znak-lozh.запись"
+  "$PROG/Ч7104-nulevoy-znak-lozh.flang" "$ZAP/measure-not-value/nulevoy-znak-lozh.запись"
 # Честная пара к ней: та же форма цели, но обе стороны — один литерал. Заслон
 # отвечает «не берусь» и здесь, и это НЕ отказ записи: третий исход, не первый.
 opyt C "Ч7104 нулевой знак: честная пара не отвергнута" 0 \
-  "$PROG/Ч7104-nulevoy-znak-chestnaya.flang" "$ZAP/Ч7104/nulevoy-znak-chestnaya.запись"
+  "$PROG/Ч7104-nulevoy-znak-chestnaya.flang" "$ZAP/measure-not-value/nulevoy-znak-chestnaya.запись"
 
 # ── РЕЦЕПТ НАКРУТКИ ДОЛИ Г4: пять строк вместо доказательства ────────────────
 # Копия `four-words.flang` с дописанной теоремой при утверждении «утроенное
@@ -1228,9 +1228,9 @@ opyt C "Ч7104 нулевой знак: честная пара не отвер�
 # при теле «н умножить на н», которого грамматика не берёт: шаг обязан остаться
 # на слове ядра (копия сверщика, у которой проверка тела всегда «да», даёт 0).
 opyt C "Ч7104 накрутка: шаг «по предположению» при теле «н умножить на 3» проверен по построению" 0 \
-  "$PROG/Ч7104-nakrutka-po-predpolozheniyu.flang" "$ZAP/Ч7104/nakrutka-po-predpolozheniyu.запись"
+  "$PROG/Ч7104-nakrutka-po-predpolozheniyu.flang" "$ZAP/measure-not-value/nakrutka-po-predpolozheniyu.запись"
 opyt P "Ч7104 накрутка: теорема из одного «по предположению» при непроверяемом теле не даёт кода 0" 3 \
-  "$PROG/Ч7104-nakrutka-neproveryaemaya.flang" "$ZAP/Ч7104/nakrutka-neproveryaemaya.запись"
+  "$PROG/Ч7104-nakrutka-neproveryaemaya.flang" "$ZAP/measure-not-value/nakrutka-neproveryaemaya.запись"
 
 say ""
 say "── ложные ходы больше не снимают долг там, где ходы никто не проигрывает ──"

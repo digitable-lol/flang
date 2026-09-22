@@ -1,8 +1,8 @@
 запись доказательства 1
-исходник flang/proof/checker/tests/records/Ч369/П6-мера-подменена.flang
+исходник flang/proof/checker/tests/records/goal-split-by-condition/00-нетронутый.flang
 строк 45
-знаков 1670
-отпечаток 73743308 431244625
+знаков 1660
+отпечаток 850823546 829526257
 ядро 2
 утверждений 7
 

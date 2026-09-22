@@ -115,7 +115,7 @@
 | `flang/conc/examples/node-reference-checked-on-receipt-forged.flang` | 2 | `FLANG_TYPE` |
 | `flang/proof/examples/forgery-if-without-descent-theorem.flang` | 1 | `FLANG_PROOF_INDUCTION_DESCENT` |
 | `flang/proof/examples/forgery-modus-ponens-by-guard.flang` | 6 | `FLANG_PROOF_STEP` |
-| `flang/proof/подделки/круг.flang` | 1 | `FLANG_PROOF_STEP` |
+| `flang/proof/forgeries/circle.flang` | 1 | `FLANG_PROOF_STEP` |
 | `flang/test/fixtures/binary-rules/equality-not-symmetric.flang` | 1 | код 2, категорная стена |
 | `flang/test/fixtures/binary-rules/iso-mismatch.flang` | 3 | код 2, категорная стена |
 | `flang/test/fixtures/poddelka-granica-nad-ne-chislom.flang` | 7 | `FLANG_BOUND_ON_NAN` |

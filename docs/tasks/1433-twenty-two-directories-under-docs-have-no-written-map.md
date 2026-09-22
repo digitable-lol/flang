@@ -22,7 +22,7 @@
 | отслеживаемых файлов в `docs/` | **1952** (53 % дерева) |
 | каталогов внутри | **135** |
 | подкаталогов верхнего уровня | **22** |
-| из них без `README.md` и без `ЧИТАТЬ.md` | **15** |
+| из них без `README.md` и без `README.md` | **15** |
 | подкаталогов, названных в карте раскладки `README.md` | **4** |
 | глубина | 8 |
 
@@ -30,7 +30,7 @@
 
 ```sh
 git -c core.quotepath=false ls-files -- docs | wc -l
-for d in docs/*/; do [ -f "$d/README.md" ] || [ -f "$d/ЧИТАТЬ.md" ] || echo "$d"; done
+for d in docs/*/; do [ -f "$d/README.md" ] || [ -f "$d/README.md" ] || echo "$d"; done
 ```
 
 Без `README`: `adr/`, `archive/`, `benchmark/`, `benchmark2/`, `benchmarks/`, `ct/`,

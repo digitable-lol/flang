@@ -93,7 +93,7 @@ $ echo $?
 | «Планировщик конкурентности» | `/srv/tmp/conc-slovar.flang` | `flang/self/conc.flang` |
 | «Планировщик узла» | `/srv/tmp/poddelka.flang`, `/srv/tmp/poddelka2.flang` | `flang/concurrency/scheduler.flang` |
 | «Запись доказательства» | `/srv/tmp/zp-do.flang` | `flang/self/zapis.flang` |
-| «Сверщик доказательств» | `/srv/tmp/sv-do.flang` | `flang/proof/сверщик.flang` |
+| «Сверщик доказательств» | `/srv/tmp/sv-do.flang` | `flang/proof/checker.flang` |
 | «Подделки ядра» | `/srv/tmp/pod-head.flang`, `/srv/tmp/pod-mine.flang` | `flang/scripts/kernel-forgeries.fscript` |
 | «Сторож умений ядра» | `/srv/tmp/dokazuemyy/ст-ум.flang` | `scripts/guards/kernel-abilities-guard.fscript` |
 | «Спека 1: потолок скидки» | `/srv/tmp/spec-backup.flang` | `fspec/spec/01-discount-cap.flang` |

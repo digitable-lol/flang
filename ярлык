@@ -150,9 +150,9 @@ if [ "$name" = "сборка" ]; then
   proverit_telo
   $BUILD -j"$(cores)" "$@"
   # Отпечаток семени при двоичном — пишет тот, кто собрал (см. .gitignore и
-  # flang/proof/доля-корпуса.sh --вложенность): по нему свежесть ядра судится
+  # flang/proof/corpus-share.sh --вложенность): по нему свежесть ядра судится
   # содержимым, а не временем файлов.
-  exec sh "$ROOT/flang/proof/доля-корпуса.sh" --отпечаток
+  exec sh "$ROOT/flang/proof/corpus-share.sh" --отпечаток
 fi
 
 if [ -z "$name" ]; then

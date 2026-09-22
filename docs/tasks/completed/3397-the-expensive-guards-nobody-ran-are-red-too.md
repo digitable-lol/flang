@@ -137,7 +137,7 @@ FLANG_RECURSION_LIMIT
 **2. `запись:проверка` пишет во временный каталог ВНЕ своего клона.** В выводе:
 
 ```
-flang/proof/подделки/прогон.sh: 59: cannot create
+flang/proof/forgeries/run.sh: 59: cannot create
   /srv/tmp/poddelki.mbSGUD/подменённый: Directory nonexistent
 ```
 

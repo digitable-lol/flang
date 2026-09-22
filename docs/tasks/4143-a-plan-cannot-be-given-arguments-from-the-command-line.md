@@ -15,7 +15,7 @@
 > **Сделано 19 сентября 2026.** Двоичный хозяин отдаёт плану всё, что стоит в
 > командной строке после отдельного довода `--`: поручение «Прочитать доводы»
 > отвечает вариантом «Доводы» со списком строк. Пробы —
-> `flang/proof/пробы-поручений/прогон.fscript`, 8 проб, код 0.
+> `flang/proof/probes/orders/run.fscript`, 8 проб, код 0.
 
 
 ## Чем измерено
@@ -157,16 +157,16 @@ flang io: непонятный ключ «--»
 Снято прогоном двоичного из этого дерева (0.7.20):
 
 ```
-$ bootstrap/flang io flang/proof/пробы-поручений/программы/доводы.fscript --на-веру -- раз два три
+$ bootstrap/flang io flang/proof/probes/orders/programs/доводы.fscript --на-веру -- раз два три
 {"plan":"Доводы вызова","result":"доводов 3: раз|два|три","orders":1,…}      код 0
-$ bootstrap/flang io flang/proof/пробы-поручений/программы/доводы.fscript --на-веру
+$ bootstrap/flang io flang/proof/probes/orders/programs/доводы.fscript --на-веру
 {"plan":"Доводы вызова","result":"доводов 0: ","orders":1,…}                 код 0
 ```
 
-### Постоянные пробы: `flang/proof/пробы-поручений/`
+### Постоянные пробы: `flang/proof/probes/orders/`
 
 ```sh
-bootstrap/flang io flang/proof/пробы-поручений/прогон.fscript --на-веру
+bootstrap/flang io flang/proof/probes/orders/run.fscript --на-веру
 ```
 
 Код 0 — сошлись все восемь проб; 1 — хоть одна разошлась (названа строкой

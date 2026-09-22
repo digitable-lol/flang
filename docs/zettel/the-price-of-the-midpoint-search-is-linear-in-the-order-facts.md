@@ -24,7 +24,7 @@
 ## Что было сегодня — ведомость приёмки
 
 ```
-$ bootstrap/flang check flang/proof/подделки/переходность.flang --proof
+$ bootstrap/flang check flang/proof/forgeries/transitivity.flang --proof
 утверждений 10: доказано 5 (из них без теоремы 5), сетка 5, объявлено, не доказано 0
 код 0, время 0,36 с, пик занятой 18 840 кБ
 ```
@@ -174,7 +174,7 @@ bootstrap/flang check flang/self/proof-kernel.flang --предел-глубин�
 тел 462 кандидатов — 158, и это счёт по записи, а не по прогону
 (см. [[the-expensive-length-place-and-the-unprovable-length-goals-are-not-the-same-place]]).
 
-В приёмке `flang/proof/подделки/переходность.flang` перейти обязаны ДВА
+В приёмке `flang/proof/forgeries/transitivity.flang` перейти обязаны ДВА
 утверждения из десяти: Ч1 и Ч2 («сетка» → «доказано»), при том что К1, К2, Ч3
 остаются доказанными, а Д1…Д3 — недоказанными. Прогон по исходникам это на
 целях и показывает; ведомость это подтвердит после перепечатки.
@@ -190,7 +190,7 @@ bootstrap/flang check flang/self/proof-kernel.flang --предел-глубин�
 (`«Есть порядок через середину»`, `«Замыкание середин»`, `«Величина полного
 порядка»`, `«Предел середин»`). Пробы — `flang/proof/midpoint-verdicts.flang` и
 `flang/proof/midpoint-price.flang`. Приёмка —
-`flang/proof/подделки/переходность.flang`. Задача 1238.
+`flang/proof/forgeries/transitivity.flang`. Задача 1238.
 
 **Где лежит сам ход и его пробы.** Правило трогает `flang/self/**`, а на этот
 файл 30 августа наложена восьмичасовая заморозка слияний. Поэтому ветка с ядром

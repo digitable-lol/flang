@@ -175,7 +175,7 @@
 //
 // Ещё две строки сведены с готовых выходов второго захода
 // /srv/tmp/m-raise-proved-share/obhod2 (код 0, двоичный f32d89f5…, приём 6128):
-// flang/proof/сверщик.flang — 209 доказанных из 209, docs/examples/web/stand.flang — 19 из 25.
+// flang/proof/checker.flang — 209 доказанных из 209, docs/examples/web/stand.flang — 19 из 25.
 // md5 исходников сверен, оба совпали; перегонять их заново было не нужно.
 //
 // Два семени судят ПО-РАЗНОМУ, и это видно на числах. Из 33 файлов, где
@@ -202,7 +202,7 @@
 //
 // ────────── ⚑ 12 сентября 2026: третий случай креста — ведомость есть, приговора нет ──
 //
-// Задача 9526 завела семью `flang/proof/чекер/пробы/семьи/свой-тип/`: своя
+// Задача 9526 завела семью `flang/proof/checker/tests/families/own-type/`: своя
 // сумма «Нат» и два СВОБОДНЫХ утверждения, оба доказаны индукцией, запись их
 // несёт, сверщик её принимает кодом 0. Строки описи этим файлам поставить
 // НЕЧЕМ, и причина новая — ни «не мерено», ни «двоичный ведомости не напечатал»:
@@ -371,7 +371,7 @@
 //
 // НИКОГДА — 28 файлов, 92 обязательства. Файл написан затем, чтобы быть
 // отвергнутым; у программы с замечанием ведомости не бывает. 25 подделок
-// (probe-forgery, forgery-*, подделки/круг, poddelka-*, binary-rules/*,
+// (probe-forgery, forgery-*, forgeries/круг, poddelka-*, binary-rules/*,
 // node-reference-checked-on-receipt-forged, fspec/experiments/*,
 // fspec/experience/03-discount-false) и 3 КАРТЫ ОТКАЗОВ flang/proof/map/* —
 // мерные приборы, чья шапка говорит «ЭТОТ ФАЙЛ ОБЯЗАН УХОДИТЬ КОДОМ 1». Клетки
@@ -544,7 +544,7 @@
 //     FL_STACK_MAX перепечаткой.
 //  2. Замечание В САМОМ ФАЙЛЕ: у программы с замечаниями ведомости не бывает.
 //     Так отвечают семь файлов карты отказов и подделок (flang/proof/map/**,
-//     flang/proof/подделки/круг.flang, docs/examples/forgery-*, honest-modus-ponens-
+//     flang/proof/forgeries/circle.flang, docs/examples/forgery-*, honest-modus-ponens-
 //     by-guard) — они и обязаны отвечать так, это их назначение, — и
 //     flang/proof/midpoint-verdicts.flang, где отказ настоящий:
 //     `FLANG_NOT_TOTAL: тотальная функция «Вердикт цепочки» вызывает обычную
@@ -564,7 +564,7 @@
 //
 // Шесть файлов среза обязательств не имеют вовсе и в опись не идут по правилу
 // «только файлы, в которых написано хоть одно обязательство»: flang/proof/
-// kernel.flang, flang/proof/сверка-правил.flang, flang/proof/midpoint-price.flang,
+// kernel.flang, flang/proof/rules-match.flang, flang/proof/midpoint-price.flang,
 // flang/self/link.flang, flang/self/bootstrap/corpus.flang и оба файла
 // flang/test/**. Слова «обеспечивает»/«требует» в них стоят только в
 // комментариях, а счётчик читает их с начала строки.
@@ -621,7 +621,7 @@
 // и flang/self/proof-initial.flang пересчитано только «написано» (+1 и +1 —
 // «Форма склейки разложения записи», «Объявления знака»); md5 и числитель не
 // тронуты: они датируют прежний приговор.
-// Задача 4722 завела семью `flang/proof/чекер/пробы/семьи/rewrite/`: законы склейки
+// Задача 4722 завела семью `flang/proof/checker/tests/families/rewrite/`: законы склейки
 // строк формой и переписка по доказанному утверждению (Переп1). Записи рукотворные,
 // ведомости у проб нет — «×», как у соседних семей сверщика.
 5d96729211a2a87a7448b3b6cab6f04c|1|×|×|×|0|docs/benchmark/01-link-key.flang
@@ -1044,211 +1044,211 @@ e6eba95c2fc34792a55353938ad61921|4|3|0|1|0|flang/proof/map/sources.flang
 ce12c504e1fa4df42abe479c03e47f99|7|1|4|2|0|flang/proof/map/substantive.flang
 1024d86a96f92fcaa68336ce0a839c04|5|3|2|0|1|flang/proof/map/types.flang
 8d5e4bfacbb962f94da28620535e1f79|1|×|×|×|0|flang/proof/midpoint-verdicts.flang
-5700462cd82330248c2967137b7b66ee|52|52|0|0|0|flang/proof/малый-сводитель.flang
-806cdb557cd3e282124d2c22145566c7|1|0|0|1|0|flang/proof/подделки/делением.flang
-f46e0a43c8c85be08701f1d981c834d2|1|1|0|0|0|flang/proof/подделки/дно-с-полем.flang
-fdd2edb52bc8f68942221aea61c2353f|1|×|×|×|0|flang/proof/подделки/круг.flang
-a247e7b6269b93c8b0a925847ae32661|10|5|5|0|0|flang/proof/подделки/переходность.flang
-eaa43d3e6390cad900eaa98f820c690a|1|1|0|0|0|flang/proof/подделки/сведённое-дно.flang
-d8e5db73b712061822e97ebcf293d80d|6|1|0|5|0|flang/proof/подделки/счёт-частей-ложь.flang
-b2903e91664b5ec7f9469097da23142a|4|0|0|4|0|flang/proof/подделки/счёт-частей-правда.flang
-444138d6a539c4d35fc2576ac21819c9|1|1|0|0|0|flang/proof/подделки/тождеством.flang
-2a387eef98cebccfe97c1d3de5570f91|211|211|0|0|0|flang/proof/сверщик.flang
-c38a30141877ddbd9a200019d1365c03|2|×|×|×|0|flang/proof/чекер/пробы/записи/3314-uslovnoe-po-vetvyam/lozhnoe-otricanie.flang
-50c29f91a530c7cc1c629aab3e815f38|1|1|0|0|0|flang/proof/чекер/пробы/записи/8615-teorema-ne-ronyaet/otschyot-s-teoremoy.flang
-84f3595a86b46d5cb711ec6ad01dc2a3|1|×|×|×|0|flang/proof/чекер/пробы/записи/8615-teorema-ne-ronyaet/spusk-ne-ubyvaet.flang
-0e0945ed1d1e2ee722474f82f4b43967|8|×|×|×|0|flang/proof/чекер/пробы/записи/9951-zakony/granicy-zakonov.flang
-c19848300ddcb333212eee6d1c32019b|5|3|0|2|0|flang/proof/чекер/пробы/записи/9951-zakony/zakony-pod-ohranoy.flang
-8ae7b112b5833b3d39d2a8074fc54bd6|2|×|×|×|0|flang/proof/чекер/пробы/записи/9991-nachinaetsya-s/lozhnoe-nachalo.flang
-f5015f489c18a8ee9a1ef58a8e4aced0|2|×|×|×|0|flang/proof/чекер/пробы/записи/9991-rezultat-raven/storozh-razvyortki.flang
-f8006e65a3d5a0edea7e0c7f5cf0406b|1|0|0|1|0|flang/proof/чекер/пробы/записи/v1-g2/tip-za-primechaniem.flang
-5c5a31528ff52dddef31191447ba5480|1|1|0|0|0|flang/proof/чекер/пробы/записи/v1-g2/вариант-за-примечанием.flang
-ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/чекер/пробы/записи/Ч131-algebra/00-нетронутый.flang
-a650eaf9749ba464ed39e21eef233356|1|×|×|×|0|flang/proof/чекер/пробы/записи/Ч131-algebra/01-vetv-lzhet.flang
-ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/чекер/пробы/записи/Ч131-algebra/02-variant-podmenen.flang
-ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/чекер/пробы/записи/Ч131-algebra/03-pokrytie-nepolno.flang
-e0618f75ae00c1886ce5d01616ef1f9e|3|3|0|0|0|flang/proof/чекер/пробы/записи/Ч363/00-нетронутый.flang
-6287757de691e288eece8d707339894f|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/01-дно-лжёт.flang
-2d779464e0b18989a037101662b45475|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/02-спуска-нет.flang
-a780ee8bad61921195bfb03bd1b7443a|3|2|1|0|0|flang/proof/чекер/пробы/записи/Ч363/03-слагаемое-минус.flang
-e353842a769bc334be6e6081d8de97a8|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/04-форма-незнакома.flang
-a06de170c4b109cf55452393035b60a6|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/05-ветви-переставлены.flang
-c6c1ddf3bf2e80dc6081f95f669e65ad|3|×|×|×|0|flang/proof/чекер/пробы/записи/Ч363/06-чужое-слагаемое.flang
-e11cdc88cebb9cd7f4edaac05e121625|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П1-цель-не-равенство.flang
-d1b6ac193af2751100c7e5abff4c77f8|7|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П10-э2-даёт-чужой-элемент.flang
-9688bbe83a8c016bb5d747271cc81314|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П2-тело-мимо-цели.flang
-3b5353d1b26a9eba213ed67428815232|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П3-ассоциативность-вместо-двери.flang
-8ce82620ed766456c4785b91876b8436|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П4-перестановка-через-узел.flang
-a1328af8ebee6f09517815a437880213|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П5-тело-не-одной-строкой.flang
-dcabd7acec84d465b16352fce05756f9|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П6-закон-вне-закрытого-списка.flang
-55810337afe558ce6e02412323d786ef|4|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П7-замкнутая-ложь-без-требует.flang
-70f82180dd187b49a866710525c68e8d|4|×|×|×|2|flang/proof/чекер/пробы/записи/Ч365/П8-та-же-ложь-под-допущением.flang
-f47b94334d03e26b9dd2e9f09eab458d|7|×|×|×|0|flang/proof/чекер/пробы/записи/Ч365/П9-номер-вне-границ-списка.flang
-7c3f8006b226e28f81a2b84f88b4cef5|7|7|0|0|0|flang/proof/чекер/пробы/записи/Ч369/00-нетронутый.flang
-b6de7a0ea3f445278209e5e224de2f61|7|7|0|0|0|flang/proof/чекер/пробы/записи/Ч369/П1-порядок-вместо-равенства.flang
-c0fbe1c8a41bc2c46d3b398f7d579bf6|7|6|0|1|0|flang/proof/чекер/пробы/записи/Ч369/П2-охрана-цели-мимо-тела.flang
-71ae216461bf9a7635b350c47ea4d88d|7|×|×|×|0|flang/proof/чекер/пробы/записи/Ч369/П3-пусть-связывает-чужое-имя.flang
-544304f8e20b73a8e1dd946bafc90a18|7|6|0|1|0|flang/proof/чекер/пробы/записи/Ч369/П4-связыватель-остался.flang
-eed1a66d5c7ea84bdb2144799440d769|7|7|0|0|0|flang/proof/чекер/пробы/записи/Ч369/П5-закон-вне-закрытого-списка.flang
-2bf87a0d06c17fe9a97d92ea448fde60|7|6|0|1|0|flang/proof/чекер/пробы/записи/Ч369/П6-мера-подменена.flang
-79d960c8096b8b10d2323681e1cd3be3|7|7|0|0|0|flang/proof/чекер/пробы/записи/Ч369/П7-предел-ветвления.flang
-b9576655e54624f65755b791725a8e3b|7|6|0|1|0|flang/proof/чекер/пробы/записи/Ч369/П8-место-замены-чужое.flang
-0a3c2acf2ad7fff068ff3b8386bac4ab|1|0|0|1|0|flang/proof/чекер/пробы/записи/типы-доводов/vychitanie-ne-sohranyaet.flang
-f21adab22639a55dcc9bea8976078b1f|1|1|0|0|0|flang/proof/чекер/пробы/программы/1573-schyotnoe-telo.flang
-255807096f2fc49a5eb2c5a13c1db26d|2|2|0|0|0|flang/proof/чекер/пробы/программы/1573-vychislitel.flang
-38d4cafb2a945b2f2a3886a2a3ce008d|1|×|×|×|0|flang/proof/чекер/пробы/программы/lozh-derevo.flang
-abb2cd80fd5f454cc49f17edc35ed7f8|1|0|1|0|0|flang/proof/чекер/пробы/программы/lozh-raznost-chistaya.flang
-e099498a5c59b03063c2bd9f7aa671b9|1|×|×|×|0|flang/proof/чекер/пробы/программы/lozh-stolknovenie.flang
-ee0c51702104603e1fe93aa0afc8344c|4|×|×|×|0|flang/proof/чекер/пробы/программы/Ч392-примечание-вместо-постусловия.flang
-1044061302a1b418d56d31d8ca6164e9|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч407-promezhutochnyy-shag-primechaniem.flang
-075abc76c004dadbbd648fb2b12b4a0b|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-lozh-chuzhoy-variant.flang
-6b7f63947440f5887f85fe1a01812324|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-cel-ne-derzhitsya.flang
-d5ed36bbd1852f0fd00ad240d2b598b1|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-primer-bez-ozhidaniya.flang
-df0cd86a8d925671e35b6433f926e44d|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-primer-lzhyot-o-znachenii.flang
-ec04945faa16af3ff50fc5fa72b59f51|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-primer-vne-bloka.flang
-1d8909699ec44c70ea17756360e29285|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч71-p-sluchay-s-tem-zhe-znacheniem.flang
-91009603bba720c2187145617a5a9db1|3|×|×|×|2|flang/proof/чекер/пробы/программы/Ч7104-nakrutka-neproveryaemaya.flang
-a8a1e131d2f35f0071f646f2e9f5581c|3|×|×|×|2|flang/proof/чекер/пробы/программы/Ч7104-nakrutka-po-predpolozheniyu.flang
-905c250bd3dd21a26df72a2039b2f731|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-chestnaya.flang
-b3e74b9533e258c8364f00d8f5d31657|1|×|×|×|0|flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-lozh.flang
-b4899a1b34a557f3f253fff3b14cc5d4|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-1-telo-mimo-primera.flang
-80db07cfb0fc39f33a997f020dc3300a|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-2-cel-lozhna.flang
-258c349c62bc086448d6e179518a038d|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-3-metki-sovpali.flang
-d47bdadcfadc5c7bc8383b56b5ab2e3c|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-4-otnoshenie-neznakomo.flang
-979bffd211a73728ac90f9c869ecbe9f|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-5-dlina-na-odin-bolshe.flang
-43fd3c1ba5872af3ec8c57159d658d18|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-6-cifry-podmeneny.flang
-7b2082fc6e67243d89865472b4e26bed|3|×|×|×|0|flang/proof/чекер/пробы/программы/Ч76-9-telo-ne-odin-literal.flang
-ad5f06b92cd90957a21ab20c11445c9b|2|×|×|×|0|flang/proof/чекер/пробы/программы/Ч87-F1-cel-lozhna.flang
-0f1b5ffadf64511eb50fb79dd50da166|2|×|×|×|0|flang/proof/чекер/пробы/программы/Ч87-F2-telo-mimo-primera.flang
-fc0678159995bc7ac6a3b9efa4e845fe|2|×|×|×|0|flang/proof/чекер/пробы/программы/Ч87-F3-dva-zvena-v-stroke.flang
-7d9dcdd44cc21307265cf2829adfdb06|2|×|×|×|0|flang/proof/чекер/пробы/программы/Ч87-F4-zveno-zakommentirovano.flang
-35cc8c0fe7082e6c9a4c7ad3dce28580|1|×|×|×|0|flang/proof/чекер/пробы/семьи/algebra-domeny/golova.flang
-13faa2dc2519be91c8b4a48906393168|1|×|×|×|0|flang/proof/чекер/пробы/семьи/algebra-domeny/ohrana.flang
-64ef202b0aee11ecd672a3e823986eb7|1|×|×|×|0|flang/proof/чекер/пробы/семьи/algebra-domeny/порча/golova-lzhet.flang
-79794bebd6d1c503cd52f3a31864ca48|1|×|×|×|0|flang/proof/чекер/пробы/семьи/algebra-domeny/порча/ohrana-lzhet.flang
-e598a78d4912e73586a817fb75964a7b|1|×|×|×|0|flang/proof/чекер/пробы/семьи/granica/r2-setka-distributivnost.flang
-645abd7267f1cb3fb6d8386a09b9d59b|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ne-lozhitsya/r6-dlina-skobki.flang
-2fa436fe901a180b0aca849b19d5ffb2|2|×|×|×|2|flang/proof/чекер/пробы/семьи/precondition-discharge/three-feeds.flang
-c0f60e7d18e60bcc5e28616aa0537240|2|×|×|×|2|flang/proof/чекер/пробы/семьи/precondition-discharge/unpaid-callee.flang
-8b8626f261982ab23a457da5a66d8bec|11|×|×|×|0|flang/proof/чекер/пробы/семьи/razbor-celi/razbor.flang
-e2e368b9b053bcde70aa3de7278278ba|11|×|×|×|0|flang/proof/чекер/пробы/семьи/razbor-celi/порча/lozh.flang
-260fd32a05ef7c136979c1f2cfdb4551|7|×|×|×|0|flang/proof/чекер/пробы/семьи/refleksiv.flang
-83fb27659b7bca8f38ee147ae0265850|2|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/concat-false.flang
-c7dc5e724587c5aa53e44f3bb2f0fe93|3|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/concat-laws.flang
-2f08da46d4a0c6cc7e8abfb7fce8c4b3|2|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/forged/negated-rewrite.flang
-2a5b9137ee51384722619a923ea7cf11|2|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/forged/or-rewrite.flang
-c37fa0d9dd6c9edf1ed1d2813d6707d4|2|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/forged/restricted-rewrite.flang
-ee8fe59ad230bd50d4930636ef6451a7|4|×|×|×|0|flang/proof/чекер/пробы/семьи/rewrite/rewrite-by-statement.flang
-3b07a690daa31ca5a1256ecfe69b6874|3|×|×|×|0|flang/proof/чекер/пробы/семьи/sosedi.flang
-478768e5d8f92c9cf3a7c6a0d86b6a93|1|0|1|0|0|flang/proof/чекер/пробы/семьи/string-by-characters/join-of-decomposition.flang
-7f0f6f025aaf46b3be35689fa85c12cf|1|0|0|1|0|flang/proof/чекер/пробы/семьи/string-by-characters/join-with-separator-forgery.flang
-7af15790e16c23fe565ff25a67cc8ef6|2|1|1|0|0|flang/proof/чекер/пробы/семьи/string-by-characters/last-character.flang
-d75f0d62496543b49b91ab344638ebe3|2|1|1|0|0|flang/proof/чекер/пробы/семьи/string-by-characters/last-piece-forgery.flang
-94ff14d206cb176e23668a55d4d61e66|1|0|0|1|0|flang/proof/чекер/пробы/семьи/string-by-characters/other-string-forgery.flang
-79bc318d1d20d5fa77d0c813e63823e7|1|×|×|×|0|flang/proof/чекер/пробы/семьи/булева-цель/priznak.flang
-8358c893c799244b885734453a1140c9|1|×|×|×|0|flang/proof/чекер/пробы/семьи/булева-цель/порча/lozh.flang
-180287e8ecf6eff1432960ed998b8ec8|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ветка-если/vysota.flang
-dcdf98a5c22b7eac4510ef6d47df7db2|1|×|×|×|1|flang/proof/чекер/пробы/семьи/вложенный-квантор/каждый-есть-в-исходных.flang
-1bbcfccfab94346174f722d0ce22ab6a|1|×|×|×|1|flang/proof/чекер/пробы/семьи/вложенный-квантор/каждый-с-каждым.flang
-470696935cd27193b14a7ebe288068f5|1|×|×|×|0|flang/proof/чекер/пробы/семьи/все-элементы/выбор-ветвей.flang
-6ceaa7f17e408388d4447d40753e7a04|1|×|×|×|2|flang/proof/чекер/пробы/семьи/все-элементы/вызов-с-выписанным.flang
-7e1c93a9588256efa0332d2af81e944f|1|×|×|×|2|flang/proof/чекер/пробы/семьи/все-элементы/вызов-с-приписанным.flang
-1775329c5bebcdff953d6fa3049425ab|1|1|0|0|0|flang/proof/чекер/пробы/семьи/все-элементы/выписанные-литералы.flang
-788e3fbe1a07f962e7180e64fea18f9a|1|×|×|×|0|flang/proof/чекер/пробы/семьи/все-элементы/единица-и-положительные.flang
-1915c3d6e90512f502a20d5bc245741a|1|×|×|×|0|flang/proof/чекер/пробы/семьи/все-элементы/отбор-положительных.flang
-388656278b5f6adeaa4e6ab1a6ac6ad8|1|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/отображение.flang
-e38549edddece72770b5d9e3a4f8abc6|1|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/первое-по-требованию.flang
-58ec642b0ea5212f1cdc862a5cbeb13b|1|×|×|×|3|flang/proof/чекер/пробы/семьи/все-элементы/по-требованию-квантор.flang
-c5464b7a62dd0d77dcc62358257da3b4|1|×|×|×|0|flang/proof/чекер/пробы/семьи/все-элементы/порча/e2-captures-free-name.flang
-f82d670fb5a0a21e37b3fa1c3a2e5ccf|1|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/порча/t2-captures-free-name.flang
-5e841c4bd0aeec4473b3e3cf4f595434|2|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/порча/ярлык-без-обещания.flang
-10a52b2843bb7da5be22bcbcbb8d60e1|3|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/порча/ярлык-обещание-не-доказано.flang
-cbbefa6d3f601f802164e4178c37c51c|1|×|×|×|0|flang/proof/чекер/пробы/семьи/все-элементы/рекурсией.flang
-6f63d3a4fc10a5fd41e8c9613e3741a4|3|×|×|×|1|flang/proof/чекер/пробы/семьи/все-элементы/сквозная-вторым-порядком.flang
-f4ca3cc1769d29c64f62c8001be9a896|1|×|×|×|0|flang/proof/чекер/пробы/семьи/все-элементы/чужой-предикат.flang
-7185d1fd09a3e3cfbe6693541cc98b9a|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/pred-zov-nechem.flang
-1431332ebdea0ff5ef1bcd7841c05e0a|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/pred-zov.flang
-621e15b4f215a10766a324050f935ca6|8|×|×|×|3|flang/proof/чекер/пробы/семьи/вывод/vyvod.flang
-63443a4700e9f3773bfa9fb285ec95aa|11|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/порча/boundaries-dva.flang
-8b9ca14b85ff37109091e2027cacbe7d|4|×|×|×|2|flang/proof/чекер/пробы/семьи/вывод/порча/fold-and-product-lies.flang
-cd07ab2421d95d2443e3483e887332a3|4|×|×|×|3|flang/proof/чекер/пробы/семьи/вывод/порча/integrality-by-type-lies.flang
-fe977e02d41354787a912070768d3079|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/порча/integrality-fractional-example.flang
-5f52d3d676ec123ad7024da8abb11211|1|×|×|×|0|flang/proof/чекер/пробы/семьи/вывод/порча/pred-zov-vyshe.flang
-104536571beef7384dcca670f38bae4a|3|×|×|×|5|flang/proof/чекер/пробы/семьи/квантор/два-имени.flang
-47a5846c7b8ea082dc87afe8efbe0590|3|×|×|×|5|flang/proof/чекер/пробы/семьи/квантор/имя-вне-списка.flang
-1577bc0054020aa3d225a44a047e84f5|1|×|×|×|0|flang/proof/чекер/пробы/семьи/конструктор/kopiya.flang
-a255093f2d4bb66a4bc0e41a09027ec8|1|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/chislo-segment.flang
-16d8ee803746576b1ea37331f9706731|3|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/imya-naturalnoe.flang
-ebeaf18162d971206534e00af3a63ee8|1|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/psevdonim-ne-otrezok.flang
-5d8f64a5690e59d340d774fae83f3842|1|×|×|×|0|flang/proof/чекер/пробы/семьи/носитель/psevdonim-otrezok.flang
-c895d96922efd9cd69238c4e9fd31b2d|1|1|0|0|0|flang/proof/чекер/пробы/семьи/носитель/список-чисел.flang
-f156b44ebb9d062276fb048d8d558551|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ограничение/к2б-прямая-теорема-гипотеза.flang
-43516f88b43387599d936a2979af66d1|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ограничение/к2бк-теорема-таких-что.flang
-bc17b199769f3c2a966e71d18ebcee89|1|×|×|×|0|flang/proof/чекер/пробы/семьи/ограничение/ф09-ограниченный.flang
-48fabdcaa9d040986fe87d584786ff9b|1|0|0|0|1|flang/proof/чекер/пробы/семьи/план/vremennyy-katalog.flang
-58695c0261bca20c054c8f8e7fade6c3|1|0|0|0|1|flang/proof/чекер/пробы/семьи/план/порча/chuzhoye-poruchenie.flang
-eaabe25feb0b757450265ea179b3316a|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/о9-начало-один.flang
-0ee25761bb60a1e76e81540809c4a794|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/о9-счёт.flang
-e7fa504862be222fef1625779920da41|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/о9-чужой-список.flang
-b9834cb375178096f907d6c2bdf7285c|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/о9-шаг-два.flang
-8801471210cb06da9bd81d348d68ab14|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/охрана-другой-порог.flang
-12d215120f6b52cffd8713bc41215488|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/охрана-ложный-вывод.flang
-903313021206e0b2628c86e3a223125d|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/охрана-то-же-условие.flang
-3abd89e0d14cae032455e265971afa78|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/стр-начало-минус.flang
-bab10b7e5a50f5fbeff446871736896c|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/стр-счёт-свёрткой.flang
-87f2fd2bada15881a74d23d42acf9934|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/стр-умножить-на-н.flang
-aa828cc06b45d5ef098f3cf0027f67ae|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/стр-утроить.flang
-f881e9ae52335ee3b8421aa23e697510|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/стр-шаг-минус.flang
-adaa6ab31e8515078c5baf8fdba4e5ba|3|×|×|×|5|flang/proof/чекер/пробы/семьи/покрытие/тело-не-неотрицательно.flang
-e441be5272f082f83f53d9c4dd45a6f4|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/удвоить-литерал.flang
-61f2598e92d6a73e3effe09213f745d2|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/удвоить-на-ноль.flang
-e279ab8172f5180d9708b8b3b0cc6c1f|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/удвоить-сомножитель-минус.flang
-ff7999a8adfed5edfe4fc2ee5412c0e9|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/ч4-ветвь-другого-знака.flang
-b8609ac0708eaa9321702d992aa8d81c|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/ч4-общее-начало.flang
-8bcdab0fca6d5a6269d80c49190b21ce|1|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/ч4-правая-склейка.flang
-019eadd11c5dea202dce4ff63aea3e77|2|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/ч6-приставка.flang
-019eadd11c5dea202dce4ff63aea3e77|2|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/ч6-факт-без-вердикта.flang
-7983bad2a3a29c3af9a218f0a745b85e|2|×|×|×|1|flang/proof/чекер/пробы/семьи/покрытие/ч6-чужая-приставка.flang
-a556bd715aef70740ddb3d166813a1b0|1|×|×|×|0|flang/proof/чекер/пробы/семьи/половина-б/arithmetic.flang
-e318225cca6f90010bcc808ed89f4e32|5|×|×|×|0|flang/proof/чекер/пробы/семьи/половина-б/dlina.flang
-5dce6b43b1039d2b51ef3aeb22a14933|7|×|×|×|0|flang/proof/чекер/пробы/семьи/половина-б/element.flang
-b53a9c3d03c1150a6c34fb70170662f3|3|2|0|0|0|flang/proof/чекер/пробы/семьи/прогон/pisma-po-ocheredi.flang
-a2267849cba88f4472642092cd76bdd7|1|×|×|×|1|flang/proof/чекер/пробы/семьи/развёртка/box-round-trip-by-assumption.flang
-fe1c85c8bcff3ec8d97f6f817fa23f67|2|×|×|×|0|flang/proof/чекер/пробы/семьи/свой-тип/нат.flang
-7872cceb7f330d8be0a2d279eb89fb30|3|×|×|×|0|flang/proof/чекер/пробы/семьи/свой-тип/порча/ложь-без-теоремы.flang
-989189ff5dceb9b13877e056c94f95d0|4|4|0|0|4|flang/proof/чекер/пробы/семьи/семейства/ostatok.flang
-df4debf8a4b83e23d253c78cbc2c765a|25|×|×|×|16|flang/proof/чекер/пробы/семьи/семейства/semeystva.flang
-f2cd752c1cec39d322b5544173ee96eb|1|×|×|×|1|flang/proof/чекер/пробы/семьи/семейства/порча/o5-beskonechnaya-pribavka.flang
-fffe44a49d50d2c3e150fb21d1c6c468|1|×|×|×|1|flang/proof/чекер/пробы/семьи/семейства/порча/ostatok-ohrana-ne-dopushchenie.flang
-23aa4769959a3fb0dd742c7069ef5aed|1|×|×|×|0|flang/proof/чекер/пробы/семьи/семейства/порча/sosedi-bez-dopushcheniya.flang
-37c434ce21a4d10295988be6acd720a3|1|×|×|×|1|flang/proof/чекер/пробы/семьи/семейства/порча/strogiy-iz-nestrogogo.flang
-5a4b5d63affc5a4466b39e35dfe16867|1|×|×|×|0|flang/proof/чекер/пробы/семьи/семейства/порча/vhozhdenie-drugogo-chlena.flang
-363238b2a10e5217893cdb927cae8d59|1|×|×|×|0|flang/proof/чекер/пробы/семьи/существование/ф10б-существование-выражением.flang
-d10f7559f19e2c79a1249fad2fc746bd|1|×|×|×|0|flang/proof/чекер/пробы/семьи/существование/ф10к-существование-со-свидетелем.flang
-85adaff534a8513b549a67bd01ebd688|2|×|×|×|0|flang/proof/чекер/пробы/семьи/существование/факт-с-чужим-свидетелем.flang
-b0ffe96d43bf0ec50c6c3307dac16ca4|2|×|×|×|0|flang/proof/чекер/пробы/семьи/существование/факт-со-свидетелем.flang
-5460e552bbc5bd88daed192c67144b5d|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/длина-пустого-списка.flang
-e7979c2cdfeb659a5d1a5f9187302b0f|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/имя-вне-вызова.flang
-2fc82224bb0f2c846202d7aaa94d5ba4|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/к3c-б-база-сведением.flang
-1ac70136616031972343d66a76e5fdec|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/к3c-в-утверждение-без-теоремы.flang
-592a82e9f2c5e3b171565995fdefbdd0|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/к3c-применение-утверждения.flang
-f5a8ef6df0c4f1421f459afe0984d24d|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/к3c-ход-подстановкой.flang
-32ff64fc4a3742a55946b475e40c2f09|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/несколько-связываний.flang
-8418e04883bbeda5e54d2fcf71aee2c4|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/ноль-нейтрален.flang
-3f5794f41973794bbd0c22ef05054d39|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/порча/к3c-ложный-вывод.flang
-52fb5af1ca75e4aaac7de39d99d35647|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/порча/к3c-пример-другой-довод-ожидание-случая.flang
-4e01f62ca115a0154c971ec7dab629b5|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/порча/к3c-пример-другой-довод.flang
-3600a221a17f086fcead91a20413746e|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/порча/к3c-тип-не-тот.flang
-6364cd4b39b55966314908c75988bf37|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/порча/ноль-без-посылки.flang
-e18d79716b7e9d989ea2d6fdf38b6c14|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/порча/ноль-плюс-один.flang
-da4b77e73c558c72c9dec94fa8a7725c|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/порча/ф05к-свёртка-не-по-доводу.flang
-fa3fb9a5955db0b82f480047ad83bf04|2|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/силлогизм-постусловием.flang
-6878457c28ff1862039bad5cf01c3b61|3|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/силлогизм-сократ.flang
-d20313c4998d7f800bc92a83f2c83771|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/сложение-перестановочно.flang
-91994d0f41d91dbe7eb634f17c2be0f7|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/теорема-о-другом.flang
-edd199f400faf9219e5fb5d0bfd937fe|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/утверждение-с-ограничением.flang
-d6d765704cb9d7b4e987687d663ebef5|1|×|×|×|0|flang/proof/чекер/пробы/семьи/утверждение/ф05к-утверждение.flang
-ae5f395a5a682cf58723197aabf0a420|3|×|×|×|2|flang/proof/чекер/пробы/семьи/шаги-ведомости/шаги.flang
+5700462cd82330248c2967137b7b66ee|52|52|0|0|0|flang/proof/small-reducer.flang
+806cdb557cd3e282124d2c22145566c7|1|0|0|1|0|flang/proof/forgeries/by-division.flang
+f46e0a43c8c85be08701f1d981c834d2|1|1|0|0|0|flang/proof/forgeries/base-with-field.flang
+fdd2edb52bc8f68942221aea61c2353f|1|×|×|×|0|flang/proof/forgeries/circle.flang
+a247e7b6269b93c8b0a925847ae32661|10|5|5|0|0|flang/proof/forgeries/transitivity.flang
+eaa43d3e6390cad900eaa98f820c690a|1|1|0|0|0|flang/proof/forgeries/reduced-base.flang
+d8e5db73b712061822e97ebcf293d80d|6|1|0|5|0|flang/proof/forgeries/part-count-false.flang
+b2903e91664b5ec7f9469097da23142a|4|0|0|4|0|flang/proof/forgeries/part-count-true.flang
+444138d6a539c4d35fc2576ac21819c9|1|1|0|0|0|flang/proof/forgeries/by-identity.flang
+2a387eef98cebccfe97c1d3de5570f91|211|211|0|0|0|flang/proof/checker.flang
+c38a30141877ddbd9a200019d1365c03|2|×|×|×|0|flang/proof/checker/tests/records/3314-conditional-by-branches/lozhnoe-otricanie.flang
+50c29f91a530c7cc1c629aab3e815f38|1|1|0|0|0|flang/proof/checker/tests/records/8615-theorem-keeps/otschyot-s-teoremoy.flang
+84f3595a86b46d5cb711ec6ad01dc2a3|1|×|×|×|0|flang/proof/checker/tests/records/8615-theorem-keeps/spusk-ne-ubyvaet.flang
+0e0945ed1d1e2ee722474f82f4b43967|8|×|×|×|0|flang/proof/checker/tests/records/9951-laws/granicy-zakonov.flang
+c19848300ddcb333212eee6d1c32019b|5|3|0|2|0|flang/proof/checker/tests/records/9951-laws/zakony-pod-ohranoy.flang
+8ae7b112b5833b3d39d2a8074fc54bd6|2|×|×|×|0|flang/proof/checker/tests/records/9991-starts-with/lozhnoe-nachalo.flang
+f5015f489c18a8ee9a1ef58a8e4aced0|2|×|×|×|0|flang/proof/checker/tests/records/9991-result-equals/storozh-razvyortki.flang
+f8006e65a3d5a0edea7e0c7f5cf0406b|1|0|0|1|0|flang/proof/checker/tests/records/v1-g2/tip-za-primechaniem.flang
+5c5a31528ff52dddef31191447ba5480|1|1|0|0|0|flang/proof/checker/tests/records/v1-g2/вариант-за-примечанием.flang
+ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/checker/tests/records/Ч131-algebra/00-нетронутый.flang
+a650eaf9749ba464ed39e21eef233356|1|×|×|×|0|flang/proof/checker/tests/records/Ч131-algebra/01-vetv-lzhet.flang
+ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/checker/tests/records/Ч131-algebra/02-variant-podmenen.flang
+ae9c27c9e1f6504e8bd51edbbdd38f7c|1|1|0|0|0|flang/proof/checker/tests/records/Ч131-algebra/03-pokrytie-nepolno.flang
+e0618f75ae00c1886ce5d01616ef1f9e|3|3|0|0|0|flang/proof/checker/tests/records/Ч363/00-нетронутый.flang
+6287757de691e288eece8d707339894f|3|×|×|×|0|flang/proof/checker/tests/records/Ч363/01-дно-лжёт.flang
+2d779464e0b18989a037101662b45475|3|×|×|×|0|flang/proof/checker/tests/records/Ч363/02-спуска-нет.flang
+a780ee8bad61921195bfb03bd1b7443a|3|2|1|0|0|flang/proof/checker/tests/records/Ч363/03-слагаемое-минус.flang
+e353842a769bc334be6e6081d8de97a8|3|×|×|×|0|flang/proof/checker/tests/records/Ч363/04-форма-незнакома.flang
+a06de170c4b109cf55452393035b60a6|3|×|×|×|0|flang/proof/checker/tests/records/Ч363/05-ветви-переставлены.flang
+c6c1ddf3bf2e80dc6081f95f669e65ad|3|×|×|×|0|flang/proof/checker/tests/records/Ч363/06-чужое-слагаемое.flang
+e11cdc88cebb9cd7f4edaac05e121625|4|×|×|×|0|flang/proof/checker/tests/records/Ч365/П1-цель-не-равенство.flang
+d1b6ac193af2751100c7e5abff4c77f8|7|×|×|×|0|flang/proof/checker/tests/records/Ч365/П10-э2-даёт-чужой-элемент.flang
+9688bbe83a8c016bb5d747271cc81314|4|×|×|×|0|flang/proof/checker/tests/records/Ч365/П2-тело-мимо-цели.flang
+3b5353d1b26a9eba213ed67428815232|4|×|×|×|0|flang/proof/checker/tests/records/Ч365/П3-ассоциативность-вместо-двери.flang
+8ce82620ed766456c4785b91876b8436|4|×|×|×|0|flang/proof/checker/tests/records/Ч365/П4-перестановка-через-узел.flang
+a1328af8ebee6f09517815a437880213|4|×|×|×|0|flang/proof/checker/tests/records/Ч365/П5-тело-не-одной-строкой.flang
+dcabd7acec84d465b16352fce05756f9|4|×|×|×|0|flang/proof/checker/tests/records/Ч365/П6-закон-вне-закрытого-списка.flang
+55810337afe558ce6e02412323d786ef|4|×|×|×|0|flang/proof/checker/tests/records/Ч365/П7-замкнутая-ложь-без-требует.flang
+70f82180dd187b49a866710525c68e8d|4|×|×|×|2|flang/proof/checker/tests/records/Ч365/П8-та-же-ложь-под-допущением.flang
+f47b94334d03e26b9dd2e9f09eab458d|7|×|×|×|0|flang/proof/checker/tests/records/Ч365/П9-номер-вне-границ-списка.flang
+7c3f8006b226e28f81a2b84f88b4cef5|7|7|0|0|0|flang/proof/checker/tests/records/Ч369/00-нетронутый.flang
+b6de7a0ea3f445278209e5e224de2f61|7|7|0|0|0|flang/proof/checker/tests/records/Ч369/П1-порядок-вместо-равенства.flang
+c0fbe1c8a41bc2c46d3b398f7d579bf6|7|6|0|1|0|flang/proof/checker/tests/records/Ч369/П2-охрана-цели-мимо-тела.flang
+71ae216461bf9a7635b350c47ea4d88d|7|×|×|×|0|flang/proof/checker/tests/records/Ч369/П3-пусть-связывает-чужое-имя.flang
+544304f8e20b73a8e1dd946bafc90a18|7|6|0|1|0|flang/proof/checker/tests/records/Ч369/П4-связыватель-остался.flang
+eed1a66d5c7ea84bdb2144799440d769|7|7|0|0|0|flang/proof/checker/tests/records/Ч369/П5-закон-вне-закрытого-списка.flang
+2bf87a0d06c17fe9a97d92ea448fde60|7|6|0|1|0|flang/proof/checker/tests/records/Ч369/П6-мера-подменена.flang
+79d960c8096b8b10d2323681e1cd3be3|7|7|0|0|0|flang/proof/checker/tests/records/Ч369/П7-предел-ветвления.flang
+b9576655e54624f65755b791725a8e3b|7|6|0|1|0|flang/proof/checker/tests/records/Ч369/П8-место-замены-чужое.flang
+0a3c2acf2ad7fff068ff3b8386bac4ab|1|0|0|1|0|flang/proof/checker/tests/records/reason-types/vychitanie-ne-sohranyaet.flang
+f21adab22639a55dcc9bea8976078b1f|1|1|0|0|0|flang/proof/checker/tests/programs/1573-schyotnoe-telo.flang
+255807096f2fc49a5eb2c5a13c1db26d|2|2|0|0|0|flang/proof/checker/tests/programs/1573-vychislitel.flang
+38d4cafb2a945b2f2a3886a2a3ce008d|1|×|×|×|0|flang/proof/checker/tests/programs/lozh-derevo.flang
+abb2cd80fd5f454cc49f17edc35ed7f8|1|0|1|0|0|flang/proof/checker/tests/programs/lozh-raznost-chistaya.flang
+e099498a5c59b03063c2bd9f7aa671b9|1|×|×|×|0|flang/proof/checker/tests/programs/lozh-stolknovenie.flang
+ee0c51702104603e1fe93aa0afc8344c|4|×|×|×|0|flang/proof/checker/tests/programs/Ч392-примечание-вместо-постусловия.flang
+1044061302a1b418d56d31d8ca6164e9|1|×|×|×|0|flang/proof/checker/tests/programs/Ч407-promezhutochnyy-shag-primechaniem.flang
+075abc76c004dadbbd648fb2b12b4a0b|1|×|×|×|0|flang/proof/checker/tests/programs/Ч71-lozh-chuzhoy-variant.flang
+6b7f63947440f5887f85fe1a01812324|1|×|×|×|0|flang/proof/checker/tests/programs/Ч71-p-cel-ne-derzhitsya.flang
+d5ed36bbd1852f0fd00ad240d2b598b1|1|×|×|×|0|flang/proof/checker/tests/programs/Ч71-p-primer-bez-ozhidaniya.flang
+df0cd86a8d925671e35b6433f926e44d|1|×|×|×|0|flang/proof/checker/tests/programs/Ч71-p-primer-lzhyot-o-znachenii.flang
+ec04945faa16af3ff50fc5fa72b59f51|1|×|×|×|0|flang/proof/checker/tests/programs/Ч71-p-primer-vne-bloka.flang
+1d8909699ec44c70ea17756360e29285|1|×|×|×|0|flang/proof/checker/tests/programs/Ч71-p-sluchay-s-tem-zhe-znacheniem.flang
+91009603bba720c2187145617a5a9db1|3|×|×|×|2|flang/proof/checker/tests/programs/Ч7104-nakrutka-neproveryaemaya.flang
+a8a1e131d2f35f0071f646f2e9f5581c|3|×|×|×|2|flang/proof/checker/tests/programs/Ч7104-nakrutka-po-predpolozheniyu.flang
+905c250bd3dd21a26df72a2039b2f731|1|×|×|×|0|flang/proof/checker/tests/programs/Ч7104-nulevoy-znak-chestnaya.flang
+b3e74b9533e258c8364f00d8f5d31657|1|×|×|×|0|flang/proof/checker/tests/programs/Ч7104-nulevoy-znak-lozh.flang
+b4899a1b34a557f3f253fff3b14cc5d4|3|×|×|×|0|flang/proof/checker/tests/programs/Ч76-1-telo-mimo-primera.flang
+80db07cfb0fc39f33a997f020dc3300a|3|×|×|×|0|flang/proof/checker/tests/programs/Ч76-2-cel-lozhna.flang
+258c349c62bc086448d6e179518a038d|3|×|×|×|0|flang/proof/checker/tests/programs/Ч76-3-metki-sovpali.flang
+d47bdadcfadc5c7bc8383b56b5ab2e3c|3|×|×|×|0|flang/proof/checker/tests/programs/Ч76-4-otnoshenie-neznakomo.flang
+979bffd211a73728ac90f9c869ecbe9f|3|×|×|×|0|flang/proof/checker/tests/programs/Ч76-5-dlina-na-odin-bolshe.flang
+43fd3c1ba5872af3ec8c57159d658d18|3|×|×|×|0|flang/proof/checker/tests/programs/Ч76-6-cifry-podmeneny.flang
+7b2082fc6e67243d89865472b4e26bed|3|×|×|×|0|flang/proof/checker/tests/programs/Ч76-9-telo-ne-odin-literal.flang
+ad5f06b92cd90957a21ab20c11445c9b|2|×|×|×|0|flang/proof/checker/tests/programs/Ч87-F1-cel-lozhna.flang
+0f1b5ffadf64511eb50fb79dd50da166|2|×|×|×|0|flang/proof/checker/tests/programs/Ч87-F2-telo-mimo-primera.flang
+fc0678159995bc7ac6a3b9efa4e845fe|2|×|×|×|0|flang/proof/checker/tests/programs/Ч87-F3-dva-zvena-v-stroke.flang
+7d9dcdd44cc21307265cf2829adfdb06|2|×|×|×|0|flang/proof/checker/tests/programs/Ч87-F4-zveno-zakommentirovano.flang
+35cc8c0fe7082e6c9a4c7ad3dce28580|1|×|×|×|0|flang/proof/checker/tests/families/algebra-domains/golova.flang
+13faa2dc2519be91c8b4a48906393168|1|×|×|×|0|flang/proof/checker/tests/families/algebra-domains/ohrana.flang
+64ef202b0aee11ecd672a3e823986eb7|1|×|×|×|0|flang/proof/checker/tests/families/algebra-domains/corrupt/golova-lzhet.flang
+79794bebd6d1c503cd52f3a31864ca48|1|×|×|×|0|flang/proof/checker/tests/families/algebra-domains/corrupt/ohrana-lzhet.flang
+e598a78d4912e73586a817fb75964a7b|1|×|×|×|0|flang/proof/checker/tests/families/boundary/r2-setka-distributivnost.flang
+645abd7267f1cb3fb6d8386a09b9d59b|1|×|×|×|0|flang/proof/checker/tests/families/not-applicable/r6-dlina-skobki.flang
+2fa436fe901a180b0aca849b19d5ffb2|2|×|×|×|2|flang/proof/checker/tests/families/precondition-discharge/three-feeds.flang
+c0f60e7d18e60bcc5e28616aa0537240|2|×|×|×|2|flang/proof/checker/tests/families/precondition-discharge/unpaid-callee.flang
+8b8626f261982ab23a457da5a66d8bec|11|×|×|×|0|flang/proof/checker/tests/families/goal-breakdown/razbor.flang
+e2e368b9b053bcde70aa3de7278278ba|11|×|×|×|0|flang/proof/checker/tests/families/goal-breakdown/corrupt/lozh.flang
+260fd32a05ef7c136979c1f2cfdb4551|7|×|×|×|0|flang/proof/checker/tests/families/refleksiv.flang
+83fb27659b7bca8f38ee147ae0265850|2|×|×|×|0|flang/proof/checker/tests/families/rewrite/concat-false.flang
+c7dc5e724587c5aa53e44f3bb2f0fe93|3|×|×|×|0|flang/proof/checker/tests/families/rewrite/concat-laws.flang
+2f08da46d4a0c6cc7e8abfb7fce8c4b3|2|×|×|×|0|flang/proof/checker/tests/families/rewrite/forged/negated-rewrite.flang
+2a5b9137ee51384722619a923ea7cf11|2|×|×|×|0|flang/proof/checker/tests/families/rewrite/forged/or-rewrite.flang
+c37fa0d9dd6c9edf1ed1d2813d6707d4|2|×|×|×|0|flang/proof/checker/tests/families/rewrite/forged/restricted-rewrite.flang
+ee8fe59ad230bd50d4930636ef6451a7|4|×|×|×|0|flang/proof/checker/tests/families/rewrite/rewrite-by-statement.flang
+3b07a690daa31ca5a1256ecfe69b6874|3|×|×|×|0|flang/proof/checker/tests/families/sosedi.flang
+478768e5d8f92c9cf3a7c6a0d86b6a93|1|0|1|0|0|flang/proof/checker/tests/families/string-by-characters/join-of-decomposition.flang
+7f0f6f025aaf46b3be35689fa85c12cf|1|0|0|1|0|flang/proof/checker/tests/families/string-by-characters/join-with-separator-forgery.flang
+7af15790e16c23fe565ff25a67cc8ef6|2|1|1|0|0|flang/proof/checker/tests/families/string-by-characters/last-character.flang
+d75f0d62496543b49b91ab344638ebe3|2|1|1|0|0|flang/proof/checker/tests/families/string-by-characters/last-piece-forgery.flang
+94ff14d206cb176e23668a55d4d61e66|1|0|0|1|0|flang/proof/checker/tests/families/string-by-characters/other-string-forgery.flang
+79bc318d1d20d5fa77d0c813e63823e7|1|×|×|×|0|flang/proof/checker/tests/families/boolean-goal/priznak.flang
+8358c893c799244b885734453a1140c9|1|×|×|×|0|flang/proof/checker/tests/families/boolean-goal/corrupt/lozh.flang
+180287e8ecf6eff1432960ed998b8ec8|1|×|×|×|0|flang/proof/checker/tests/families/if-branch/vysota.flang
+dcdf98a5c22b7eac4510ef6d47df7db2|1|×|×|×|1|flang/proof/checker/tests/families/nested-quantifier/каждый-есть-в-исходных.flang
+1bbcfccfab94346174f722d0ce22ab6a|1|×|×|×|1|flang/proof/checker/tests/families/nested-quantifier/каждый-с-каждым.flang
+470696935cd27193b14a7ebe288068f5|1|×|×|×|0|flang/proof/checker/tests/families/all-elements/выбор-ветвей.flang
+6ceaa7f17e408388d4447d40753e7a04|1|×|×|×|2|flang/proof/checker/tests/families/all-elements/вызов-с-выписанным.flang
+7e1c93a9588256efa0332d2af81e944f|1|×|×|×|2|flang/proof/checker/tests/families/all-elements/вызов-с-приписанным.flang
+1775329c5bebcdff953d6fa3049425ab|1|1|0|0|0|flang/proof/checker/tests/families/all-elements/выписанные-литералы.flang
+788e3fbe1a07f962e7180e64fea18f9a|1|×|×|×|0|flang/proof/checker/tests/families/all-elements/единица-и-положительные.flang
+1915c3d6e90512f502a20d5bc245741a|1|×|×|×|0|flang/proof/checker/tests/families/all-elements/отбор-положительных.flang
+388656278b5f6adeaa4e6ab1a6ac6ad8|1|×|×|×|1|flang/proof/checker/tests/families/all-elements/отображение.flang
+e38549edddece72770b5d9e3a4f8abc6|1|×|×|×|1|flang/proof/checker/tests/families/all-elements/первое-по-требованию.flang
+58ec642b0ea5212f1cdc862a5cbeb13b|1|×|×|×|3|flang/proof/checker/tests/families/all-elements/по-требованию-квантор.flang
+c5464b7a62dd0d77dcc62358257da3b4|1|×|×|×|0|flang/proof/checker/tests/families/all-elements/corrupt/e2-captures-free-name.flang
+f82d670fb5a0a21e37b3fa1c3a2e5ccf|1|×|×|×|1|flang/proof/checker/tests/families/all-elements/corrupt/t2-captures-free-name.flang
+5e841c4bd0aeec4473b3e3cf4f595434|2|×|×|×|1|flang/proof/checker/tests/families/all-elements/corrupt/ярлык-без-обещания.flang
+10a52b2843bb7da5be22bcbcbb8d60e1|3|×|×|×|1|flang/proof/checker/tests/families/all-elements/corrupt/ярлык-обещание-не-доказано.flang
+cbbefa6d3f601f802164e4178c37c51c|1|×|×|×|0|flang/proof/checker/tests/families/all-elements/рекурсией.flang
+6f63d3a4fc10a5fd41e8c9613e3741a4|3|×|×|×|1|flang/proof/checker/tests/families/all-elements/сквозная-вторым-порядком.flang
+f4ca3cc1769d29c64f62c8001be9a896|1|×|×|×|0|flang/proof/checker/tests/families/all-elements/чужой-предикат.flang
+7185d1fd09a3e3cfbe6693541cc98b9a|1|×|×|×|0|flang/proof/checker/tests/families/inference/pred-zov-nechem.flang
+1431332ebdea0ff5ef1bcd7841c05e0a|1|×|×|×|0|flang/proof/checker/tests/families/inference/pred-zov.flang
+621e15b4f215a10766a324050f935ca6|8|×|×|×|3|flang/proof/checker/tests/families/inference/vyvod.flang
+63443a4700e9f3773bfa9fb285ec95aa|11|×|×|×|0|flang/proof/checker/tests/families/inference/corrupt/boundaries-dva.flang
+8b9ca14b85ff37109091e2027cacbe7d|4|×|×|×|2|flang/proof/checker/tests/families/inference/corrupt/fold-and-product-lies.flang
+cd07ab2421d95d2443e3483e887332a3|4|×|×|×|3|flang/proof/checker/tests/families/inference/corrupt/integrality-by-type-lies.flang
+fe977e02d41354787a912070768d3079|1|×|×|×|0|flang/proof/checker/tests/families/inference/corrupt/integrality-fractional-example.flang
+5f52d3d676ec123ad7024da8abb11211|1|×|×|×|0|flang/proof/checker/tests/families/inference/corrupt/pred-zov-vyshe.flang
+104536571beef7384dcca670f38bae4a|3|×|×|×|5|flang/proof/checker/tests/families/quantifier/два-имени.flang
+47a5846c7b8ea082dc87afe8efbe0590|3|×|×|×|5|flang/proof/checker/tests/families/quantifier/имя-вне-списка.flang
+1577bc0054020aa3d225a44a047e84f5|1|×|×|×|0|flang/proof/checker/tests/families/constructor/kopiya.flang
+a255093f2d4bb66a4bc0e41a09027ec8|1|×|×|×|0|flang/proof/checker/tests/families/carrier/chislo-segment.flang
+16d8ee803746576b1ea37331f9706731|3|×|×|×|0|flang/proof/checker/tests/families/carrier/imya-naturalnoe.flang
+ebeaf18162d971206534e00af3a63ee8|1|×|×|×|0|flang/proof/checker/tests/families/carrier/psevdonim-ne-otrezok.flang
+5d8f64a5690e59d340d774fae83f3842|1|×|×|×|0|flang/proof/checker/tests/families/carrier/psevdonim-otrezok.flang
+c895d96922efd9cd69238c4e9fd31b2d|1|1|0|0|0|flang/proof/checker/tests/families/carrier/список-чисел.flang
+f156b44ebb9d062276fb048d8d558551|1|×|×|×|0|flang/proof/checker/tests/families/restriction/к2б-прямая-теорема-гипотеза.flang
+43516f88b43387599d936a2979af66d1|1|×|×|×|0|flang/proof/checker/tests/families/restriction/к2бк-теорема-таких-что.flang
+bc17b199769f3c2a966e71d18ebcee89|1|×|×|×|0|flang/proof/checker/tests/families/restriction/ф09-ограниченный.flang
+48fabdcaa9d040986fe87d584786ff9b|1|0|0|0|1|flang/proof/checker/tests/families/plan/vremennyy-katalog.flang
+58695c0261bca20c054c8f8e7fade6c3|1|0|0|0|1|flang/proof/checker/tests/families/plan/corrupt/chuzhoye-poruchenie.flang
+eaabe25feb0b757450265ea179b3316a|1|×|×|×|1|flang/proof/checker/tests/families/coverage/о9-начало-один.flang
+0ee25761bb60a1e76e81540809c4a794|1|×|×|×|1|flang/proof/checker/tests/families/coverage/о9-счёт.flang
+e7fa504862be222fef1625779920da41|1|×|×|×|1|flang/proof/checker/tests/families/coverage/о9-чужой-список.flang
+b9834cb375178096f907d6c2bdf7285c|1|×|×|×|1|flang/proof/checker/tests/families/coverage/о9-шаг-два.flang
+8801471210cb06da9bd81d348d68ab14|1|×|×|×|1|flang/proof/checker/tests/families/coverage/охрана-другой-порог.flang
+12d215120f6b52cffd8713bc41215488|1|×|×|×|1|flang/proof/checker/tests/families/coverage/охрана-ложный-вывод.flang
+903313021206e0b2628c86e3a223125d|1|×|×|×|1|flang/proof/checker/tests/families/coverage/охрана-то-же-условие.flang
+3abd89e0d14cae032455e265971afa78|1|×|×|×|1|flang/proof/checker/tests/families/coverage/стр-начало-минус.flang
+bab10b7e5a50f5fbeff446871736896c|1|×|×|×|1|flang/proof/checker/tests/families/coverage/стр-счёт-свёрткой.flang
+87f2fd2bada15881a74d23d42acf9934|1|×|×|×|1|flang/proof/checker/tests/families/coverage/стр-умножить-на-н.flang
+aa828cc06b45d5ef098f3cf0027f67ae|1|×|×|×|1|flang/proof/checker/tests/families/coverage/стр-утроить.flang
+f881e9ae52335ee3b8421aa23e697510|1|×|×|×|1|flang/proof/checker/tests/families/coverage/стр-шаг-минус.flang
+adaa6ab31e8515078c5baf8fdba4e5ba|3|×|×|×|5|flang/proof/checker/tests/families/coverage/тело-не-неотрицательно.flang
+e441be5272f082f83f53d9c4dd45a6f4|1|×|×|×|1|flang/proof/checker/tests/families/coverage/удвоить-литерал.flang
+61f2598e92d6a73e3effe09213f745d2|1|×|×|×|1|flang/proof/checker/tests/families/coverage/удвоить-на-ноль.flang
+e279ab8172f5180d9708b8b3b0cc6c1f|1|×|×|×|1|flang/proof/checker/tests/families/coverage/удвоить-сомножитель-минус.flang
+ff7999a8adfed5edfe4fc2ee5412c0e9|1|×|×|×|1|flang/proof/checker/tests/families/coverage/ч4-ветвь-другого-знака.flang
+b8609ac0708eaa9321702d992aa8d81c|1|×|×|×|1|flang/proof/checker/tests/families/coverage/ч4-общее-начало.flang
+8bcdab0fca6d5a6269d80c49190b21ce|1|×|×|×|1|flang/proof/checker/tests/families/coverage/ч4-правая-склейка.flang
+019eadd11c5dea202dce4ff63aea3e77|2|×|×|×|1|flang/proof/checker/tests/families/coverage/ч6-приставка.flang
+019eadd11c5dea202dce4ff63aea3e77|2|×|×|×|1|flang/proof/checker/tests/families/coverage/ч6-факт-без-вердикта.flang
+7983bad2a3a29c3af9a218f0a745b85e|2|×|×|×|1|flang/proof/checker/tests/families/coverage/ч6-чужая-приставка.flang
+a556bd715aef70740ddb3d166813a1b0|1|×|×|×|0|flang/proof/checker/tests/families/half-b/arithmetic.flang
+e318225cca6f90010bcc808ed89f4e32|5|×|×|×|0|flang/proof/checker/tests/families/half-b/dlina.flang
+5dce6b43b1039d2b51ef3aeb22a14933|7|×|×|×|0|flang/proof/checker/tests/families/half-b/element.flang
+b53a9c3d03c1150a6c34fb70170662f3|3|2|0|0|0|flang/proof/checker/tests/families/run/pisma-po-ocheredi.flang
+a2267849cba88f4472642092cd76bdd7|1|×|×|×|1|flang/proof/checker/tests/families/unfolding/box-round-trip-by-assumption.flang
+fe1c85c8bcff3ec8d97f6f817fa23f67|2|×|×|×|0|flang/proof/checker/tests/families/own-type/нат.flang
+7872cceb7f330d8be0a2d279eb89fb30|3|×|×|×|0|flang/proof/checker/tests/families/own-type/corrupt/ложь-без-теоремы.flang
+989189ff5dceb9b13877e056c94f95d0|4|4|0|0|4|flang/proof/checker/tests/families/type-families/ostatok.flang
+df4debf8a4b83e23d253c78cbc2c765a|25|×|×|×|16|flang/proof/checker/tests/families/type-families/semeystva.flang
+f2cd752c1cec39d322b5544173ee96eb|1|×|×|×|1|flang/proof/checker/tests/families/type-families/corrupt/o5-beskonechnaya-pribavka.flang
+fffe44a49d50d2c3e150fb21d1c6c468|1|×|×|×|1|flang/proof/checker/tests/families/type-families/corrupt/ostatok-ohrana-ne-dopushchenie.flang
+23aa4769959a3fb0dd742c7069ef5aed|1|×|×|×|0|flang/proof/checker/tests/families/type-families/corrupt/sosedi-bez-dopushcheniya.flang
+37c434ce21a4d10295988be6acd720a3|1|×|×|×|1|flang/proof/checker/tests/families/type-families/corrupt/strogiy-iz-nestrogogo.flang
+5a4b5d63affc5a4466b39e35dfe16867|1|×|×|×|0|flang/proof/checker/tests/families/type-families/corrupt/vhozhdenie-drugogo-chlena.flang
+363238b2a10e5217893cdb927cae8d59|1|×|×|×|0|flang/proof/checker/tests/families/existence/ф10б-существование-выражением.flang
+d10f7559f19e2c79a1249fad2fc746bd|1|×|×|×|0|flang/proof/checker/tests/families/existence/ф10к-существование-со-свидетелем.flang
+85adaff534a8513b549a67bd01ebd688|2|×|×|×|0|flang/proof/checker/tests/families/existence/факт-с-чужим-свидетелем.flang
+b0ffe96d43bf0ec50c6c3307dac16ca4|2|×|×|×|0|flang/proof/checker/tests/families/existence/факт-со-свидетелем.flang
+5460e552bbc5bd88daed192c67144b5d|1|×|×|×|0|flang/proof/checker/tests/families/statement/длина-пустого-списка.flang
+e7979c2cdfeb659a5d1a5f9187302b0f|1|×|×|×|0|flang/proof/checker/tests/families/statement/имя-вне-вызова.flang
+2fc82224bb0f2c846202d7aaa94d5ba4|2|×|×|×|0|flang/proof/checker/tests/families/statement/к3c-б-база-сведением.flang
+1ac70136616031972343d66a76e5fdec|2|×|×|×|0|flang/proof/checker/tests/families/statement/к3c-в-утверждение-без-теоремы.flang
+592a82e9f2c5e3b171565995fdefbdd0|2|×|×|×|0|flang/proof/checker/tests/families/statement/к3c-применение-утверждения.flang
+f5a8ef6df0c4f1421f459afe0984d24d|2|×|×|×|0|flang/proof/checker/tests/families/statement/к3c-ход-подстановкой.flang
+32ff64fc4a3742a55946b475e40c2f09|1|×|×|×|0|flang/proof/checker/tests/families/statement/несколько-связываний.flang
+8418e04883bbeda5e54d2fcf71aee2c4|1|×|×|×|0|flang/proof/checker/tests/families/statement/ноль-нейтрален.flang
+3f5794f41973794bbd0c22ef05054d39|2|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/к3c-ложный-вывод.flang
+52fb5af1ca75e4aaac7de39d99d35647|2|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/к3c-пример-другой-довод-ожидание-случая.flang
+4e01f62ca115a0154c971ec7dab629b5|2|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/к3c-пример-другой-довод.flang
+3600a221a17f086fcead91a20413746e|2|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/к3c-тип-не-тот.flang
+6364cd4b39b55966314908c75988bf37|1|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/ноль-без-посылки.flang
+e18d79716b7e9d989ea2d6fdf38b6c14|1|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/ноль-плюс-один.flang
+da4b77e73c558c72c9dec94fa8a7725c|1|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/ф05к-свёртка-не-по-доводу.flang
+fa3fb9a5955db0b82f480047ad83bf04|2|×|×|×|0|flang/proof/checker/tests/families/statement/силлогизм-постусловием.flang
+6878457c28ff1862039bad5cf01c3b61|3|×|×|×|0|flang/proof/checker/tests/families/statement/силлогизм-сократ.flang
+d20313c4998d7f800bc92a83f2c83771|1|×|×|×|0|flang/proof/checker/tests/families/statement/сложение-перестановочно.flang
+91994d0f41d91dbe7eb634f17c2be0f7|1|×|×|×|0|flang/proof/checker/tests/families/statement/теорема-о-другом.flang
+edd199f400faf9219e5fb5d0bfd937fe|1|×|×|×|0|flang/proof/checker/tests/families/statement/утверждение-с-ограничением.flang
+d6d765704cb9d7b4e987687d663ebef5|1|×|×|×|0|flang/proof/checker/tests/families/statement/ф05к-утверждение.flang
+ae5f395a5a682cf58723197aabf0a420|3|×|×|×|2|flang/proof/checker/tests/families/ledger-steps/шаги.flang
 ea1158594f0caa46237101fc3a6b2ddf|1|0|1|0|0|flang/scripts/binary.fscript
 47700ac76c714a188e2e9ea3e0bcfa95|2|0|2|0|0|flang/scripts/claim-guard.fscript
 44d471d298687c75ab7111710b28ca0f|1|1|0|0|0|flang/scripts/closed-length-guard.fscript
@@ -1566,50 +1566,50 @@ ce97ff0ab2094dce6783702de4290b85|34|32|0|2|0|scripts/targets/emit-and-examples.f
 8d77245282ed034860ef3855371b30a0|26|26|0|0|0|scripts/targets/plan-across-targets.fscript
 9c2d3aecbfe7786b9701fb51fd4b1147|33|30|0|0|0|scripts/targets/region-in-c-target.fscript
 85322a38f7e60b8a3e786fb994be27b6|17|14|3|0|0|ярлыки.flang
-198cf373ae6cb9c1db86d1b84a527ace|1|0|0|0|0|flang/proof/пробы-запуска/программы/индукция.flang
-392e890f8ca71328df2c329278bbe474|1|1|0|1|0|flang/proof/пробы-запуска/программы/план-на-веру.flang
-a20022c07cab82df4b2458855c51460a|1|1|0|1|1|flang/proof/чекер/пробы/программы/7563/t2-dva-svyazyvatelya.flang
-812a0be19eb6fe79471d12edf0c989b0|1|×|×|×|0|flang/proof/чекер/пробы/программы/7563/ind1-ten-chasti.flang
-e0b5e29082b88b29f49c7350aeb322e4|1|1|0|1|1|flang/proof/чекер/пробы/программы/7563/t2-svyortka.flang
-cd22bd8f046657586bb428df14a682fc|1|×|×|×|0|flang/proof/пробы-запуска/программы/ложь.flang
-a61d4c792b44f01ec6e715f6420f1bbb|1|1|0|1|0|flang/proof/пробы-запуска/программы/на-веру.flang
-05589a5a8e56cfda58866a8793a0f8e7|1|0|0|0|0|flang/proof/пробы-запуска/программы/тождество.flang
-fb999d4f56226d8066a41fc59ef0f980|1|1|0|1|1|flang/proof/чекер/пробы/программы/7563/t2-te-zhe.flang
-af7fda1d841676c09ef8c20595636892|1|1|0|1|0|flang/proof/чекер/пробы/программы/7563/e2-bolshe-m.flang
-78fc7ff66f8d0ce7cf01aeca72a15dcd|1|0|0|0|0|flang/proof/пробы-запуска/программы/типом.flang
-6b7b74e3228c955e2c79774467939741|1|1|0|1|0|flang/proof/чекер/пробы/программы/7563/razv2-ten-otbora.flang
-b84a0d9b2c597e85945650941c5bb1c9|1|0|1|0|0|flang/proof/пробы-запуска/программы/сетка.flang
-1e489b4612bc356f4c6a28b0b7bfaa4b|1|1|0|1|0|flang/proof/чекер/пробы/программы/7563/tozhd.flang
-66a842f08485d3ff08202a087187e3b5|1|0|0|0|0|flang/proof/пробы-запуска/программы/план-доказан.flang
-4704717d9ed5ce08f447c0e69f5c6b5f|1|1|0|1|0|flang/proof/чекер/пробы/программы/7563/razv1-konstruktor.flang
+198cf373ae6cb9c1db86d1b84a527ace|1|0|0|0|0|flang/proof/probes/run/programs/индукция.flang
+392e890f8ca71328df2c329278bbe474|1|1|0|1|0|flang/proof/probes/run/programs/план-на-веру.flang
+a20022c07cab82df4b2458855c51460a|1|1|0|1|1|flang/proof/checker/tests/programs/7563/t2-dva-svyazyvatelya.flang
+812a0be19eb6fe79471d12edf0c989b0|1|×|×|×|0|flang/proof/checker/tests/programs/7563/ind1-ten-chasti.flang
+e0b5e29082b88b29f49c7350aeb322e4|1|1|0|1|1|flang/proof/checker/tests/programs/7563/t2-svyortka.flang
+cd22bd8f046657586bb428df14a682fc|1|×|×|×|0|flang/proof/probes/run/programs/ложь.flang
+a61d4c792b44f01ec6e715f6420f1bbb|1|1|0|1|0|flang/proof/probes/run/programs/на-веру.flang
+05589a5a8e56cfda58866a8793a0f8e7|1|0|0|0|0|flang/proof/probes/run/programs/тождество.flang
+fb999d4f56226d8066a41fc59ef0f980|1|1|0|1|1|flang/proof/checker/tests/programs/7563/t2-te-zhe.flang
+af7fda1d841676c09ef8c20595636892|1|1|0|1|0|flang/proof/checker/tests/programs/7563/e2-bolshe-m.flang
+78fc7ff66f8d0ce7cf01aeca72a15dcd|1|0|0|0|0|flang/proof/probes/run/programs/типом.flang
+6b7b74e3228c955e2c79774467939741|1|1|0|1|0|flang/proof/checker/tests/programs/7563/razv2-ten-otbora.flang
+b84a0d9b2c597e85945650941c5bb1c9|1|0|1|0|0|flang/proof/probes/run/programs/сетка.flang
+1e489b4612bc356f4c6a28b0b7bfaa4b|1|1|0|1|0|flang/proof/checker/tests/programs/7563/tozhd.flang
+66a842f08485d3ff08202a087187e3b5|1|0|0|0|0|flang/proof/probes/run/programs/план-доказан.flang
+4704717d9ed5ce08f447c0e69f5c6b5f|1|1|0|1|0|flang/proof/checker/tests/programs/7563/razv1-konstruktor.flang
 // ── Набор проб строгого режима (задача 5502), снято 19 сентября 2026 ──────
-// Семь программ каталога `flang/proof/пробы-строгого/программы/`; восьмая
+// Семь программ каталога `flang/proof/probes/strict/programs/`; восьмая
 // (`несудимое.flang`) обязательств не несёт и в опись не входит по общему
 // правилу шапки. Приговор снят `flang check --proof --json` этого же дерева;
 // у `опровергнуто.flang` его нет вовсе (пример ломает постусловие, ведомость
-// не печатается) — там прочерк «×», как у `пробы-запуска/программы/ложь.flang`
+// не печатается) — там прочерк «×», как у `probes/run/программы/ложь.flang`
 // по той же причине. Программы заведены нарочно недоказанными: они вход для
 // проб, а не образцы корпуса, и долю доказанного они опускают честно.
-2dd1cad82168e1e6f4990302a606a2b8|1|0|1|0|0|flang/proof/пробы-строгого/программы/лож-постусловие.flang
-1cd88a5f705edc8e59ce741e969525ea|1|0|0|1|0|flang/proof/пробы-строгого/программы/лож-постусловие-без-примеров.flang
-a61d4c792b44f01ec6e715f6420f1bbb|1|0|0|1|0|flang/proof/пробы-строгого/программы/объявлено-не-доказано.flang
-5d727dfc4dc546fef883fda568c3dbb2|1|×|×|×|0|flang/proof/пробы-строгого/программы/опровергнуто.flang
-b84a0d9b2c597e85945650941c5bb1c9|1|0|1|0|0|flang/proof/пробы-строгого/программы/сетка-без-доказательства.flang
-b3354987e51cf0bddcae03cb92ec49e6|2|0|1|1|0|flang/proof/пробы-строгого/программы/старшинство.flang
-ff1f78446cbbec240bb14f7676bd91d0|1|1|0|0|0|flang/proof/пробы-строгого/программы/честная.flang
+2dd1cad82168e1e6f4990302a606a2b8|1|0|1|0|0|flang/proof/probes/strict/programs/лож-постусловие.flang
+1cd88a5f705edc8e59ce741e969525ea|1|0|0|1|0|flang/proof/probes/strict/programs/лож-постусловие-без-примеров.flang
+a61d4c792b44f01ec6e715f6420f1bbb|1|0|0|1|0|flang/proof/probes/strict/programs/объявлено-не-доказано.flang
+5d727dfc4dc546fef883fda568c3dbb2|1|×|×|×|0|flang/proof/probes/strict/programs/опровергнуто.flang
+b84a0d9b2c597e85945650941c5bb1c9|1|0|1|0|0|flang/proof/probes/strict/programs/сетка-без-доказательства.flang
+b3354987e51cf0bddcae03cb92ec49e6|2|0|1|1|0|flang/proof/probes/strict/programs/старшинство.flang
+ff1f78446cbbec240bb14f7676bd91d0|1|1|0|0|0|flang/proof/probes/strict/programs/честная.flang
 // ── Набор проб ворот недоказанного (ADR-0045), снято 21 сентября 2026 ─────
-// Три программы каталога `flang/proof/пробы-недоказанного/программы/`; вход
+// Три программы каталога `flang/proof/probes/unproven/programs/`; вход
 // для проб, а не образцы корпуса. Приговор снят `flang check --proof --json`
 // этого же дерева (поле `claims[].verdict`): «proved» у доказанной, «grid» у
 // той, чьё обещание закрыто одними примерами, «declared» у плана, где нет и
 // примеров. Три исхода взяты нарочно по одному: ворота судят ИМЕННО эту
 // разницу, и пробе нужен вход каждого рода.
-aa65f3785b0c62edf336a36297e30b38|1|1|0|0|0|flang/proof/пробы-недоказанного/программы/доказанная.flang
-651429e810a6816700648e623fdf3850|1|0|1|0|0|flang/proof/пробы-недоказанного/программы/недоказанная.flang
-567af5e5ea9a21bfc1ae9cd90ff7b11b|1|0|0|1|0|flang/proof/пробы-недоказанного/программы/план-недоказан.flang
-8c27388a17ff86d5bb9e415d3dd3d5dd|1|1|0|1|1|flang/proof/чекер/пробы/программы/audit-2844/razv3-raznost.flang
-86e0e447b270b761bff6ae33fe3ffd12|1|1|0|1|0|flang/proof/чекер/пробы/программы/audit-2844/razv2-sebya.flang
-eb5b390d34c90eb95ad3b4382c2a3a1f|1|0|0|0|1|flang/proof/чекер/пробы/программы/audit-2844/razv3-kontrol-chestnaya.flang
-b1b137536d045c4fdd205ece597d4acf|1|0|1|0|0|flang/proof/пробы-поручений/программы/доводы.fscript
-99f0a0d7135e7b2b5eb7f88096d487bb|4|3|1|0|0|flang/proof/пробы-поручений/прогон.fscript
+aa65f3785b0c62edf336a36297e30b38|1|1|0|0|0|flang/proof/probes/unproven/programs/доказанная.flang
+651429e810a6816700648e623fdf3850|1|0|1|0|0|flang/proof/probes/unproven/programs/недоказанная.flang
+567af5e5ea9a21bfc1ae9cd90ff7b11b|1|0|0|1|0|flang/proof/probes/unproven/programs/план-недоказан.flang
+8c27388a17ff86d5bb9e415d3dd3d5dd|1|1|0|1|1|flang/proof/checker/tests/programs/audit-2844/razv3-raznost.flang
+86e0e447b270b761bff6ae33fe3ffd12|1|1|0|1|0|flang/proof/checker/tests/programs/audit-2844/razv2-sebya.flang
+eb5b390d34c90eb95ad3b4382c2a3a1f|1|0|0|0|1|flang/proof/checker/tests/programs/audit-2844/razv3-kontrol-chestnaya.flang
+b1b137536d045c4fdd205ece597d4acf|1|0|1|0|0|flang/proof/probes/orders/programs/доводы.fscript
+99f0a0d7135e7b2b5eb7f88096d487bb|4|3|1|0|0|flang/proof/probes/orders/run.fscript
 1f4a2a844b39793dc79f661223b3dc08|1|0|1|0|0|docs/examples/io/progress-bar-on-screen.flang

@@ -32,7 +32,7 @@ that had fallen behind the sources. What was checked on the tree of
   `sh scripts/seed/what-lags-the-seed.sh` names 3 files, 77 functions, still
   behind;
 - `sh scripts/доказуемость.sh` answers **PROVABLE**: the independent checker
-  (`flang/proof/чекер/сверщик.c`) replayed 650 obligations of the compiler's own
+  (`flang/proof/checker/checker.c`) replayed 650 obligations of the compiler's own
   proof out of 650 — 100.00 %; 533 forgeries rejected, 245 honest records
   accepted (19 September 2026, commit `a5609e322`);
 - there are ten emit targets: {{цели.список}}.

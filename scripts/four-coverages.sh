@@ -44,7 +44,7 @@ sh "$KOREN/scripts/report-provenance.sh" || true
 # ── 1. ПОКРЫТИЕ КОРПУСА ─────────────────────────────────────────────────────
 # Числитель и знаменатель берутся у линейки прогоном, а не переписываются сюда.
 echo "1. ПОКРЫТИЕ СОБСТВЕННЫХ ЗАПИСЕЙ ДОКАЗАТЕЛЬСТВА — доля их мест, переигранных независимым проверяющим"
-LIN=$(sh flang/proof/доля-корпуса.sh --проигрыванием 2>&1)
+LIN=$(sh flang/proof/corpus-share.sh --проигрыванием 2>&1)
 DOLYA=$(printf '%s\n' "$LIN" | sed -n 's/^доля-проигрыванием = \([0-9]*\) \/ \([0-9]*\) = \([0-9.]*\) %.*/\1 из \2 = \3 %/p')
 ZAPISEY=$(printf '%s\n' "$LIN" | sed -n 's/^записей в наборе  *\([0-9][0-9]*\).*/\1/p')
 PORUCH=$(printf '%s\n' "$LIN" | sed -n 's/^записей в наборе.*чекер поручился \([0-9][0-9]*\),.*/\1/p')
@@ -58,7 +58,7 @@ else
 fi
 # «ПРОВЕРЕНО ВПУСТУЮ»: код 0 при нуле доказанного. Число снимается тем же
 # прибором, что и доля, но другим его разрезом, — поэтому отдельным прогоном.
-PUSTO=$(sh flang/proof/доля-корпуса.sh --набор корпус 2>/dev/null \
+PUSTO=$(sh flang/proof/corpus-share.sh --набор корпус 2>/dev/null \
         | sed -n 's/^ *из них ВПУСТУЮ[^	]*	\([0-9][0-9]*\).*/\1/p' | head -1)
 echo "   из них ВПУСТУЮ (код 0, доказанным не числится ничего) ${PUSTO:-?}"
 echo "   ЧЕГО НЕ ЗНАЧИТ: ни одной строки о ваших программах и ни одной о собранном двоичном."
@@ -66,12 +66,12 @@ echo
 
 # ── 2. ПОКРЫТИЕ ФОРМАЛИЗАЦИИ ────────────────────────────────────────────────
 # Пары «строка ведомости ↔ лемма» считаются тем же правилом, что в
-# flang/proof/lean/прогон.sh (шаг 4): имя правила, имя с приставкой через дефис,
+# flang/proof/lean/run.sh (шаг 4): имя правила, имя с приставкой через дефис,
 # у запрета — встречный пример «-запрет». Lean для этого не нужен: считается
 # текст, а не доказательство. Блоки «вне приёмки» — нужен, и об этом сказано.
 echo "2. ПОКРЫТИЕ ФОРМАЛИЗАЦИИ — сколько правил вывода судит второй, чужой судья (Lean 4)"
-VED=flang/proof/ПРАВИЛА-ВЫВОДА.tsv
-cat flang/proof/lean/Правила.lean flang/proof/lean/Терм.lean > "$TMP/леммы.lean" 2>/dev/null
+VED=flang/proof/tables/inference-rules.tsv
+cat flang/proof/lean/Rules.lean flang/proof/lean/Term.lean > "$TMP/леммы.lean" 2>/dev/null
 if [ ! -s "$TMP/леммы.lean" ] || [ ! -f "$VED" ]; then
   echo "   НЕ СНЯТО: нет ведомости правил либо файлов Lean"; NE_SNYATO=1
 else
@@ -91,20 +91,20 @@ else
       printf "   имеют лемму в Lean           %d из %d%s\n", e, s, (net != "" ? " — без леммы: " net : "")
     }' "$TMP/леммы.lean" "$VED"
 
-  # Приёмка Lean — закрытый список «правила» в Приёмка.lean. Правило вне него
+  # Приёмка Lean — закрытый список «правила» в Acceptance.lean. Правило вне него
   # Lean не судит: блок записи с таким шагом уходит «вне приёмки» целиком.
   awk '/^def «правила» : List/{f=1} f{buf = buf $0} f && /\]$/{print buf; exit}' \
-    flang/proof/lean/Приёмка.lean | grep -o '\.«[^»]*»' | sed 's/\.«//; s/»//' \
+    flang/proof/lean/Acceptance.lean | grep -o '\.«[^»]*»' | sed 's/\.«//; s/»//' \
     | LC_ALL=C sort -u > "$TMP/приёмка"
   awk -F'\t' 'NF > 11 && $1 !~ /^#/ && $1 !~ /✗/ {print $1}' "$VED" | LC_ALL=C sort -u > "$TMP/вывода"
   V_PRIEM=$(wc -l < "$TMP/приёмка" | tr -d ' ')
   V_VYVODA=$(wc -l < "$TMP/вывода" | tr -d ' ')
   VNE=$(LC_ALL=C comm -23 "$TMP/вывода" "$TMP/приёмка")
   V_VNE=$(printf '%s\n' "$VNE" | sed '/^$/d' | wc -l | tr -d ' ')
-  echo "   в приёмке Lean (Приёмка.lean) $V_PRIEM правил из $V_VYVODA правил вывода"
+  echo "   в приёмке Lean (Acceptance.lean) $V_PRIEM правил из $V_VYVODA правил вывода"
   echo "   ВНЕ приёмки Lean              $V_VNE: $(printf '%s\n' "$VNE" | sed '/^$/d' | tr '\n' ' ')"
   echo "   блоков записи, ушедших «вне приёмки», — НЕ СНЯТО ЗДЕСЬ: нужен прогон Lean"
-  echo "                                 (sh flang/proof/lean/прогон.sh, Lean по flang/proof/lean/lean-toolchain)"
+  echo "                                 (sh flang/proof/lean/run.sh, Lean по flang/proof/lean/lean-toolchain)"
   command -v "${LEAN:-lean}" >/dev/null 2>&1 || NE_SNYATO=1
 fi
 echo "   ЧЕГО НЕ ЗНАЧИТ: лемма на правило — не проверка ваших программ этим правилом."
@@ -112,7 +112,7 @@ echo
 
 # ── 3. ИЗВЕСТНЫЕ НАРУШЕНИЯ СОСТОЯТЕЛЬНОСТИ ──────────────────────────────────
 echo "3. ИЗВЕСТНЫЕ НАРУШЕНИЯ СОСТОЯТЕЛЬНОСТИ — открыто, поимённо"
-NAR=flang/proof/НАРУШЕНИЯ-СОСТОЯТЕЛЬНОСТИ.tsv
+NAR=flang/proof/tables/consistency-violations.tsv
 if [ ! -f "$NAR" ]; then
   echo "   НЕ СНЯТО: нет $NAR"; NE_SNYATO=1
 else

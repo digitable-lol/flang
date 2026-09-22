@@ -42,9 +42,9 @@ name: Provability
 #
 # ── Что нужно прибору (шапка scripts/доказуемость.sh) ───────────────────────
 # Дерево под учётом git (линейка берёт ведомость из `git archive HEAD`, глубины
-# 1 довольно); исходник сверщика flang/proof/чекер/сверщик.c — скрипт соберёт
+# 1 довольно); исходник сверщика flang/proof/checker/checker.c — скрипт соберёт
 # его сам, если двоичного нет, но здесь он собирается заранее тем же Makefile,
-# что и в пробах; линейке flang/proof/доля-корпуса.sh нужен bootstrap/flang.
+# что и в пробах; линейке flang/proof/corpus-share.sh нужен bootstrap/flang.
 
 on:
   schedule:
@@ -64,7 +64,7 @@ jobs:
       - name: Build bootstrap
         run: make -C bootstrap -j"$(nproc)"
       - name: Build proof checker
-        run: make -C flang/proof/чекер
+        run: make -C flang/proof/checker
 
       # ── ФИНАЛЬНЫЙ ДВОИЧНЫЙ, А НЕ ТОЛЬКО ИСХОДНИКИ ────────────────────────
       # Отпечаток кладётся СРАЗУ после сборки тем, кто собрал: без него
@@ -72,7 +72,7 @@ jobs:
       # в обе стороны (кеш отдаёт двоичный со старым временем, checkout кладёт
       # семя свежим).
       - name: Record seed fingerprint
-        run: sh flang/proof/доля-корпуса.sh --отпечаток
+        run: sh flang/proof/corpus-share.sh --отпечаток
 
       # `--вложенность` — единственная проверка этого дерева, где предмет суда
       # есть САМ СОБРАННЫЙ ДВОИЧНЫЙ: каждая запись корпуса печатается заново
@@ -81,7 +81,7 @@ jobs:
       # Без этого шага вердикт ниже говорил бы о записях, напечатанных когда-то,
       # а не о двоичном, который выйдет в выпуск.
       - name: Check corpus records
-        run: sh flang/proof/доля-корпуса.sh --вложенность
+        run: sh flang/proof/corpus-share.sh --вложенность
 
       # Сторож, которого нельзя покрасить, неотличим от выключенного. Двоичный
       # уносится в RUNNER_TEMP и возвращается при ЛЮБОМ исходе: иначе неудача
@@ -90,7 +90,7 @@ jobs:
         run: |
           set +e
           mv bootstrap/flang "$RUNNER_TEMP/flang.отложен"
-          sh flang/proof/доля-корпуса.sh --вложенность > "$RUNNER_TEMP/без-двоичного.log" 2>&1
+          sh flang/proof/corpus-share.sh --вложенность > "$RUNNER_TEMP/без-двоичного.log" 2>&1
           kod=$?
           mv "$RUNNER_TEMP/flang.отложен" bootstrap/flang
           cat "$RUNNER_TEMP/без-двоичного.log"

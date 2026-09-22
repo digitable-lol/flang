@@ -22,8 +22,8 @@
 scripts/otpechatok-semeni
 scripts/raskrutka.sh
 #
-# Имя файла — ключ записи доказательства стека K: flang/proof/подделки/НАБОР.tsv,
-# flang/proof/чекер/пробы/записи/корпус/<имя>.запись, прогон.sh. Переименовывать
+# Имя файла — ключ записи доказательства стека K: flang/proof/forgeries/manifest.tsv,
+# flang/proof/checker/tests/records/corpus/<имя>.запись, run.sh. Переименовывать
 # вместе с записями (стек K).
 flang/test/fixtures/element-po-nomeru-chestnaya.flang
 flang/test/fixtures/granica-nad-chislom-chestnaya.flang

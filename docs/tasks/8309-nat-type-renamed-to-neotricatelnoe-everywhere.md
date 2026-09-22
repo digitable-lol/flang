@@ -53,9 +53,9 @@
   `proof-kernel.flang`, `totality.flang`, `io.flang`, `emit-js.flang`,
   `corpus-nat-names.flang`; сторожа `word-guard.{mjs,flang}`,
   `emptiness-guard.fscript`, `seed-knows-type-words-guard.sh`; тест-строки
-  `totality.flang` (`"|нат|"`, `"|целое|нат|"`), `малый-сводитель.flang`,
+  `totality.flang` (`"|нат|"`, `"|целое|нат|"`), `small-reducer.flang`,
   `fspec/guard.flang` (проверяют именно слово).
-- Сверщик `flang/proof/чекер/сверщик.c` принимает ОБА имени в доводе
+- Сверщик `flang/proof/checker/checker.c` принимает ОБА имени в доводе
   индукции и типе результата (до этого на «неотрицательное» проба
   `Ч363/00-нетронутый` падала с ПРОВЕРЕНО в НЕ ПРОВЕРЕНО).
 - Записи доказательств (`*.запись`), привязанные к sha256 исходника,
@@ -72,7 +72,7 @@
   уже отстала от печати; семьи 9986, 9616), пробы чекера
   `v1-g2/tip-za-primechaniem`, `типы-доводов/vychitanie-ne-sohranyaet`,
   `программы/lozh-raznost-chistaya`, `программы/lozh-stolknovenie`,
-  `семьи/razbor-celi/*`, `семьи/rec-step*`, `семьи/refleksiv`; записи Ч363
+  `families/goal-breakdown/*`, `семьи/rec-step*`, `семьи/refleksiv`; записи Ч363
   (старый формат без `отпечаток256`, знаков в них уже не от исходника).
   `docs/examples/package/discount.flang` оставлен на `нат`: пакет
   `shop/discount.flang-package` несёт его дословно и печать `печать`, а
@@ -109,8 +109,8 @@
   C К ИМЕНИ ТИПА ЧУВСТВИТЕЛЬНА — имя стоит в doc-комментариях
   `@param x — «имя»: «нат»`. Различий вне doc-комментариев нет ни одного
   (hashmap и tree — байт в байт: вхождений «нат» в них не было).
-- `make -s -C flang/proof/чекер && sh flang/proof/чекер/пробы/прогон.sh` — те же
-  числа, что до; `sh flang/proof/доля-корпуса.sh --набор корпус --проигрыванием`
+- `make -s -C flang/proof/checker && sh flang/proof/checker/tests/run.sh` — те же
+  числа, что до; `sh flang/proof/corpus-share.sh --набор корпус --проигрыванием`
   — доля не упала.
 - `sh scripts/guards/seed-knows-type-words-guard.sh` → «чужих семени 0».
 
@@ -138,7 +138,7 @@
 | `flang/self/emit-c.flang` | `flang check` до и после | вывод **байт в байт** одинаков, код 0 |
 | `flang/self/zapis.flang` | `flang ast` до и после | расхождений ровно **два**, оба — `"name":"нат"` → `"name":"неотрицательное"`; всё до, между и после совпало знак в знак (длина +24 знака = 2 × 12). `flang check` этого файла не уложился в 3,5 минуты (0 % от 1,4·10¹² шагов, 1,0 ГиБ) и был снят — сверка идёт по разбору |
 | дерево | `sh scripts/guards/seed-knows-type-words-guard.sh` | «файлов 1307, слов в позициях типа 50234, словарь семени 853, **чужих семени 0**» |
-| чекер | `SVERSCHIK=… sh flang/proof/чекер/пробы/прогон.sh` | «сошлось всё»: подделок 200 — отвергнуто 151, третий исход 49, принято кодом 0 — 0; честных 136 — отвергнуто 0 |
+| чекер | `SVERSCHIK=… sh flang/proof/checker/tests/run.sh` | «сошлось всё»: подделок 200 — отвергнуто 151, третий исход 49, принято кодом 0 — 0; честных 136 — отвергнуто 0 |
 
 ### Почему пример пакета не тронут
 

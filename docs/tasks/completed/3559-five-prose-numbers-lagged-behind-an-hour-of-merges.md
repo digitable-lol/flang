@@ -32,9 +32,9 @@ docs/tree-inventory.md:44          файлов *.py: в примете 21, сн
 За сутки прибавились четверо, все по делу:
 
 ```
-flang/proof/привязка/кругооборот.py         прибор кругооборота Г5 (9751)
-flang/proof/привязка/привязка-по-файлу.py   прибор привязки Г5
-flang/proof/привязка/привязка.py            прибор привязки Г5
+flang/proof/binding/cycle.py         прибор кругооборота Г5 (9751)
+flang/proof/binding/binding-by-file.py   прибор привязки Г5
+flang/proof/binding/binding.py            прибор привязки Г5
 flang/scripts/одна-линейка.py               мерка Г3 (1887)
 ```
 

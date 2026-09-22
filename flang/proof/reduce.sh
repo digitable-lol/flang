@@ -1,0 +1,70 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# Позвать МАЛОГО сводителя на один исходник.
+#
+#   sh flang/proof/reduce.sh <исходник.flang>
+#
+# Печатает по строке на утверждение: функция, имя, ответ, довод — через
+# табуляцию. Ответов три: «доказано», «не доказано», «не берусь».
+#
+# Оболочка только возит: у `flang io` нет способа принять довод, поэтому путь
+# приезжает файлом «наряд», а сам сводитель копируется рядом с ним — он не
+# ввозит ни одного модуля именно затем, чтобы ездить одним файлом.
+#
+# ── ЗАПАСА ПО ШАГАМ ЗДЕСЬ С ИЗБЫТКОМ, И ОН НАЗВАН ЧИСЛОМ ────────────────────
+# Замер 29 августа 2026 на `flang/proof/examples/stack.flang`, прибором, который
+# считает и виток, и заряд: прогон дошёл до конца, потратив 338 302 508 шагов
+# двоичного (15 539 652 витка и 322 762 856 заряда). Зашитые ниже два миллиарда
+# — это бюджет ВЫЧИСЛИТЕЛЯ, другая мерка, и в него прогон уложился тоже.
+#
+# Перепечатка семени этому месту не грозит. Потолок самого двоичного она
+# поднимает с миллиарда до 1 400 000 000 000 (число берётся из
+# `scripts/raskrutka.sh`), а тратится здесь 338 миллионов шагов — это 0,024 %
+# потолка, запас 4138 раз. Мерить заново незачем.
+#
+# Здесь стояло «до трёхсот миллиардов», «0,11 % потолка» и «запас 887 раз» —
+# числа от потолка, которого в дереве больше нет. Теперь их сверяет прогон:
+# `./ярлык подсчёты:проверка` читает эту врезку и берёт потолок из
+# `scripts/raskrutka.sh`.
+set -eu
+
+KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+[ "$#" -eq 1 ] || { echo "звать: sh flang/proof/reduce.sh <исходник.flang>" >&2; exit 2; }
+[ -f "$1" ] || { echo "исходника нет: $1" >&2; exit 2; }
+
+polnyy() { (CDPATH= cd -- "$(dirname -- "$1")" && printf '%s/%s\n' "$(pwd)" "$(basename -- "$1")"); }
+
+FLANG=${FLANG:-$KOREN/bootstrap/flang}
+[ -x "$FLANG" ] || { echo "двоичного нет: $FLANG" >&2; exit 2; }
+
+RABOTA=${SVOD_RABOTA:-}
+UBRAT=0
+if [ -z "$RABOTA" ]; then
+  RABOTA=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" svod.XXXXXX)
+  UBRAT=1
+  trap 'rm -rf "$RABOTA"' EXIT INT TERM
+fi
+
+cp "$KOREN/flang/proof/small-reducer.flang" "$RABOTA/small-reducer.flang"
+polnyy "$1" > "$RABOTA/наряд"
+
+VYVOD=$(LC_ALL=C.UTF-8 "$FLANG" io "$RABOTA/small-reducer.flang" --max-steps 2000000000 --max-depth 40000 2>&1) && KOD=0 || KOD=$?
+
+# Разбирать JSON руками через sed нельзя: в ответе стоят экранированные
+# кавычки и переводы строк. Разбор отдан python — оснастка вправе быть на нём,
+# решение всё равно принимает программа на flang.
+printf '%s' "$VYVOD" | python3 -c '
+import json, sys
+t = sys.stdin.read()
+try:
+    d = json.loads(t)
+except Exception:
+    sys.stderr.write(t + "\n"); sys.exit(3)
+if "result" in d:
+    print(d["result"])
+else:
+    sys.stderr.write(t + "\n"); sys.exit(4)
+'
+exit "$KOD"

@@ -121,7 +121,7 @@ exits with code 2 rather than pass such a program in silence.
 `flang check <file> --proof` prints, function by function, what carries each promise — a proof, a
 grid of the author's own values, or nothing. `--записать <file>` writes the proof record out, and
 an **independent proof checker** reads it back:
-[`flang/proof/чекер/сверщик.c`](flang/proof/чекер/сверщик.c), a C program that takes the source and
+[`flang/proof/checker/checker.c`](flang/proof/checker/checker.c), a C program that takes the source and
 the record and answers whether they agree, with no line of the compiler in it.
 
 There is no single number that says "the language is proved", and this page does not print one.
@@ -140,7 +140,7 @@ binary 0.7.20):
 | --- | --- | --- |
 | **Own proof records** — places in the compiler's *own* proof records replayed independently | 650 / 650 = 100 % of the obligations in 91 records; 27 places excluded (records rejected outright as deliberate forgeries); 16 records get exit 0 with nothing proved in them at all | not "100 % of programs are proved", not a statement about your code, and not a statement about the built binary |
 | **Formalization** — inference rules judged by a second, foreign judge (the Lean 4 kernel) | 109 of 109 rows of the inference-rule list have a lemma; the Lean acceptance relation covers 76 of the 97 inference rules — 21 are outside it (Выч, Р2, Р3, Р5, Р6, Инд1–Инд4 and others) | a lemma about a rule is not a check of your program that uses the rule; how many record blocks fall outside the acceptance relation needs a Lean run, and `lean` is not installed here |
-| **Known soundness violations** — where two independent checks disagree, or where success does not mean what it reads as | 2 open (the third was closed on 19 September 2026), listed by name in [`flang/proof/НАРУШЕНИЯ-СОСТОЯТЕЛЬНОСТИ.tsv`](flang/proof/НАРУШЕНИЯ-СОСТОЯТЕЛЬНОСТИ.tsv) | the list is open — it does not claim there are no others |
+| **Known soundness violations** — where two independent checks disagree, or where success does not mean what it reads as | 2 open (the third was closed on 19 September 2026), listed by name in [`flang/proof/tables/consistency-violations.tsv`](flang/proof/tables/consistency-violations.tsv) | the list is open — it does not claim there are no others |
 | **Translation** — the printer's per-run proof replayed against the printed C | 23 experiments pass; of 41 print rules, 24 are checked against the source text and 10 are not replayed at all | the matcher judges *one run* of the printer, not the printer itself |
 
 The full page, with what each coverage does and does not license you to say, is
@@ -152,7 +152,7 @@ coverage and the probe set — not about the language. Measured on 19 September 
 command prints ДОКАЗУЕМ and exits 0 **even with `bootstrap/flang` removed from the tree**, because
 none of its four checks calls the built binary. The check that does judge the final binary —
 reprinting every proof record with it and comparing the bytes — is
-`sh flang/proof/доля-корпуса.sh --вложенность`, and it now runs in
+`sh flang/proof/corpus-share.sh --вложенность`, and it now runs in
 [`.github/workflows/provability.yml`](.github/workflows/provability.yml) beside the verdict.
 
 ## What is not covered

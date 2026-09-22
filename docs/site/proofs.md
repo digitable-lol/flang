@@ -101,7 +101,7 @@ expects a different code and counts the forgery as unchecked.
 
 What is confirmed by another instrument: the proof the compiler prints
 (`flang check --proof --записать`) is replayed by an independent C program —
-`flang/proof/чекер/сверщик.c`. `sh scripts/доказуемость.sh` on 19 September 2026
+`flang/proof/checker/checker.c`. `sh scripts/доказуемость.sh` on 19 September 2026
 on trunk (commit `a5609e322`): PROVABLE, 650 obligations out of 650 replayed
 (100.00 %), 533 forgery probes rejected, 245 honest records accepted; all 109
 inference rules accepted by the Lean 4 kernel, 0 verdict divergences. The hundred

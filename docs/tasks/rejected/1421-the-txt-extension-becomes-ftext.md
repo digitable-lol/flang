@@ -27,8 +27,8 @@
 | `scripts/ledgers/proved-share-ledger.txt` | `docs/kernel-ledger.md`, `docs/binder-goal-share.md`, `docs/adr/0020-*.md`, заметки `docs/zettel/**` |
 | `flang/проверки/ведомость.txt` | `README.md`, `flang/проверки/обход.sh`, `docs/README.ru.md`, `.github/workflows/binary.yml` |
 | `flang/проверки/ведомость-self.txt`, `ведомость-примеров.txt` | обходчики того же каталога |
-| `flang/proof/чекер/ХРАПОВИК.txt` | `flang/proof/доля-корпуса.sh`, `сверка-ведомости.sh`, `подделки/НАБОР.tsv`, README проб |
-| `flang/proof/подделки/ХРАПОВИК.txt`, `flang/proof/чекер/пробы/ловушка/ХРАПОВИК.txt` | тот же набор |
+| `flang/proof/checker/ratchet.txt` | `flang/proof/corpus-share.sh`, `tables-guard.sh`, `forgeries/manifest.tsv`, README проб |
+| `flang/proof/forgeries/ratchet.txt`, `flang/proof/checker/tests/trap/ratchet.txt` | тот же набор |
 
 ⚠ Три из них лежат под `flang/proof/**` — та же опасная зона, что в 1420.
 
@@ -105,7 +105,7 @@
 (`git grep -l -F '<имя>' -- . ':!docs/tasks/*' | wc -l`): `proven-ledger.txt` — 4
 файла, `emptiness-ledger.txt` — 3, `proved-share-ledger.txt` — 11,
 `ведомость.txt` — 5, `ведомость-self.txt` — 2, `ведомость-примеров.txt` — 9,
-`ХРАПОВИК.txt` — 19, `snapshot.txt` — 6, `clarifications.txt` — 2,
+`ratchet.txt` — 19, `snapshot.txt` — 6, `clarifications.txt` — 2,
 `settings.txt` — 9. Итого около семидесяти файлов-читателей, которые пришлось бы
 править ради буквы в имени, — и ни один прибор после этого не стал бы отбирать
 иначе, потому что ни один не отбирает и сейчас.

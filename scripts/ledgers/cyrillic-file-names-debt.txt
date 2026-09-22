@@ -21,8 +21,6 @@ docs/examples/применение/место-слева-с-отрезком.fla
 docs/examples/применение/место-слева.flang
 docs/examples/применение/скидка-на-вызове.flang
 docs/examples/применение/скидка.flang
-docs/flang/proof/чекер/ЧИТАТЬ.md
-docs/flang/proof/чекер/пробы/записи/ПОЧЕМУ-ЗДЕСЬ-ЕСТЬ-КОММЕНТАРИИ.md
 docs/tutor/01-function.урок
 docs/tutor/02-two-functions.урок
 docs/tutor/03-example.урок

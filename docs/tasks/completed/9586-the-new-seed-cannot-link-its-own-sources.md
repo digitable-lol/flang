@@ -110,7 +110,7 @@ flang emit flang/self/bootstrap/compiler.flang --target c … --max-steps 140000
 
 **Побочно:** шесть мест дерева всё ещё называют прежний потолок 300 млрд или
 прежние 4 млрд (`docs/reprint-cost.md:80–87`, `ярлыки.flang:47–49`,
-`flang/proof/сверить.sh:82`, `flang/proof/сличить.sh:23`,
+`flang/proof/check.sh:82`, `flang/proof/reduce.sh:23`,
 `flang/self/conc.flang:119`, `flang/stdlib/datetime.flang:62`,
 `docs/site/kak-dokazat.ru.md:1348`). Это заведено отдельной задачей — сюда оно
 не относится: задача была про число в `raskrutka.sh`, а не про прозу о нём.

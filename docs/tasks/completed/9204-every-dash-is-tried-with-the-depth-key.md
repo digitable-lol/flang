@@ -146,7 +146,7 @@ $ ./bootstrap/flang --help | grep -c 'предел-глубины'
 **У 24 файлов ведомости не будет никогда, и это не долг**: одиннадцать
 `fspec/experiments/*` (`contradiction-*`, `false-claim-*`, `theorem-on-false`),
 `fspec/experience/03-discount-false`, восемь `flang/test/fixtures/**`
-(`poddelka-*`, `binary-rules/*`), три `flang/proof/**` (`подделки/круг`,
+(`poddelka-*`, `binary-rules/*`), три `flang/proof/**` (`forgeries/круг`,
 `examples/forgery-*`) и `benchmarks/proof-cost/probe-forgery` — они написаны
 затем, чтобы быть отвергнутыми.
 
@@ -195,7 +195,7 @@ FLANG_RECURSION_LIMIT: функция «Прогон» превысила пре
 * **59 строк получили `×`** с причиной, названной выше;
 * **2 строки сведены с готовых выходов** второго захода
   `/srv/tmp/m-raise-proved-share/obhod2` (код 0, двоичный `f32d89f5…`, приём
-  6128) по сверке md5 исходника: `flang/proof/сверщик.flang` **209 из 209** и
+  6128) по сверке md5 исходника: `flang/proof/checker.flang` **209 из 209** и
   `web/stand.flang` **19 из 25**. Перегонять их заново было не нужно;
 * один остался прочерком (`examples/db/postgres-scram-plan.flang`, срок).
 

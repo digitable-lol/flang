@@ -427,7 +427,7 @@ python3 flang/scripts/per-file-proof-share.py . отчёты/
 теоремы — единицы процентов.
 
 **Часть дерева нарочно неверна.** Подделки и «дословные отказы» —
-`flang/test/fixtures/**`, `flang/proof/map/refusal-*`, `flang/proof/подделки/**`,
+`flang/test/fixtures/**`, `flang/proof/map/refusal-*`, `flang/proof/forgeries/**`,
 `fspec/experiments/**` — написаны так, чтобы проверка их ОТВЕРГЛА; их
 обязательства недоказуемы по замыслу. Они названы отдельной строкой, а не
 свалены в «не доказано».

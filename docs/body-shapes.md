@@ -5,7 +5,7 @@
 
 > **Сверка с живым деревом, 9 сентября 2026 (задача 6201).** Сличение по вызову
 > живёт в `flang/self/proofterm.flang:1039–1189` («Свести по свойству») и
-> независимо в `flang/proof/чекер/сверщик.c:1271`; пустота аксиом — инвариант
+> независимо в `flang/proof/checker/checker.c:1271`; пустота аксиом — инвариант
 > `flang/self/proof-kernel.flang:8437`, сторож
 > `flang/scripts/kernel-forgeries.fscript`; тест `flang/test/proof-forms.test.mjs`,
 > названный в разделе 3, в дереве отсутствует.

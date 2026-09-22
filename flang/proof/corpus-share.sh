@@ -17,7 +17,7 @@
 # Звать:
 #   sh flang/proof/corpus-share.sh --набор корпус     # 86 готовых записей
 #   sh flang/proof/corpus-share.sh --набор примеры    # 43, печатает ядром
-#   sh flang/proof/corpus-share.sh --набор КАТАЛОГ    # любой каталог с *.запись
+#   sh flang/proof/corpus-share.sh --набор КАТАЛОГ    # любой каталог с *.record
 #   sh flang/proof/corpus-share.sh --оба              # корпус и примеры рядом
 #   sh flang/proof/corpus-share.sh --вложенность      # вложен ли меньший набор в больший
 #   sh flang/proof/corpus-share.sh --отпечаток        # после make: записать отпечаток семени при двоичном
@@ -66,7 +66,7 @@
 #
 # Теперь дело называет дерево. Ведомость строится ИЗ КОММИТА
 # (`git archive` + `sha256sum`, ни одна запись при этом не читается) и держит
-# отпечаток каждого `*.flang` и `*.запись` дерева. На каждую запись линейка:
+# отпечаток каждого `*.flang` и `*.record` дерева. На каждую запись линейка:
 #   1. ищет названный ею путь В ВЕДОМОСТИ — нет там, значит дела нет: Р5;
 #   2. сличает файл рабочего дерева с отпечатком коммита — разошлись: Р5;
 #   3. подаёт чекеру третьим доводом отпечаток ИЗ ВЕДОМОСТИ;
@@ -272,7 +272,7 @@ trap 'rm -rf "$tmp"' 0 2 3 15
 #   · «Узлов «тождество…» / «разбор цели…» проиграно заново …» — ДРУГОЙ путь:
 #     Ð¿ÐµÑÐµÐ¿Ð¸ÑÐºÐ¾Ð¹/ÑÐ°Ð·Ð±Ð¾ÑÐ¾Ð¼_ÑÐµÐ»Ð¸ СЧИТАЮТ цель, ходов в записи нет. Место снято
 #     ВЫЧИСЛЕНИЕМ, не игрой — в числитель НЕ идёт.
-# Пример: abilities.запись — «сведений проиграно заново 0», но «тождество…
+# Пример: abilities.record — «сведений проиграно заново 0», но «тождество…
 # проиграно заново 6»: шесть мест сняты калькулятором, ни одного честной игрой.
 # Числитель — s.ÑÐ²ÐµÐ´ÐµÐ½Ð¸Ð¹ («реально проиграно заново»: сведения ПЛЮС тотальность)
 # ПЛЮС узлы тотальности U ПЛЮС шаги «по примеру»/«по свойству», проверенные по
@@ -355,7 +355,7 @@ klass_nabora() { # имя файла записи
 }
 proigrat_dolyu() { # каталог; печатает 27 полей: ЧИСЛ ЗНАМ ЗАПИСЕЙ ПОРУЧ ОТВЕРГ ХОДОВ НЕСУТ НСЛ НСШ СНЯТО ПРИМ СВОЙ ОБЪЯВ ЗНАМ-ОТВЕРГ УЗЛЫ БУЛЕВО НЕДОСТ НАБ-ЗАП НАБ-ЧИСЛ НАБ-ЗНАМ НАБ-ЛЗ НАБ-ЛЗ-ОТВ НАБ-ЛЗ-ПРИН0 ВЫВОДЫ СНЯТ-ЧИСЛ СНЯТ-ЗНАМ СНЯТ-НЕДОСТ
   dir=$1
-  files=$(find "$dir" -name '*.запись' | sort)
+  files=$(find "$dir" -name '*.record' | sort)
   [ -n "$files" ] || { echo "в «$dir» нет ни одной записи" >&2; return 2; }
   chisl=0; znam=0; zapisey=0; poruch=0; otverg=0; hod_v=0; nesut=0
   nsl_v=0; nsh_v=0; snyato_v=0; prim_v=0; svoy_v=0; obyav=0; znam_otv=0; uzly_v=0; bulevo_v=0; vyvody_v=0
@@ -479,19 +479,19 @@ if [ "$proigr" -eq 1 ]; then
     # у неё нечего. Поэтому носитель выбирается прогоном: берётся первая запись,
     # у которой снятие ходов действительно роняет `ÑÐ²ÐµÐ´ÐµÐ½Ð¸Ð¹`.
     nositel=""
-    for z in $(find "$korpus_pr" -name '*.запись' | sort); do
+    for z in $(find "$korpus_pr" -name '*.record' | sort); do
       decl=$(grep -a -m1 '^исходник ' "$z" | cut -d' ' -f2-)
       [ -f "$root/$decl" ] || continue
       sv=$("$checker" "$root/$decl" "$z" 2>&1 | sed -n 's/.*сведений проиграно заново \([0-9]*\) (ходов.*/\1/p'); sv=${sv:-0}
       [ "$sv" -gt 0 ] || continue
-      mut=$tmp/носитель-проба.запись; grep -av '^    ход ' "$z" > "$mut"
+      mut=$tmp/носитель-проба.record; grep -av '^    ход ' "$z" > "$mut"
       sv2=$("$checker" "$root/$decl" "$mut" 2>&1 | sed -n 's/.*сведений проиграно заново \([0-9]*\) (ходов.*/\1/p'); sv2=${sv2:-0}
       [ "$sv2" -lt "$sv" ] && { nositel=$z; break; }
     done
     [ -n "$nositel" ] || { echo "проба не построена: в корпусе нет записи, чей числитель держится на ходах" >&2; exit 2; }
     d1=$tmp/честно; d2=$tmp/подделка; mkdir -p "$d1" "$d2"
-    cp "$nositel" "$d1/carrier.запись"
-    grep -av '^    ход ' "$nositel" > "$d2/carrier.запись"
+    cp "$nositel" "$d1/carrier.record"
+    grep -av '^    ход ' "$nositel" > "$d2/carrier.record"
     # Числитель пробы — ТОТ ЖЕ, что у линейки ниже: ходы/тотальность ПЛЮС узлы
     # (15-е поле). Иначе проба мерила бы не ту дробь, что печатается.
     set -- $(proigrat_dolyu "$d1"); ch1=$(($1+${15})); zn1=$2
@@ -628,7 +628,7 @@ fi
 #
 # Через `git archive | tar`, а не `git ls-tree` + `git cat-file` на файл:
 # замер на этом дереве — 0,28 с против 3,6 с, и `ls-tree --name-only` вдобавок
-# ЭКРАНИРУЕТ кириллические пути кавычками, отчего отбор по `*.запись` терял их
+# ЭКРАНИРУЕТ кириллические пути кавычками, отчего отбор по `*.record` терял их
 # молча (745 файлов вместо 1256).
 ved=$tmp/ведомость.tsv
 sdelat_vedomost() {
@@ -641,7 +641,7 @@ sdelat_vedomost() {
     echo "готовую ведомость можно подать ключом --ведомость ФАЙЛ" >&2
     return 2; }
   d=$tmp/дерево; mkdir -p "$d" || return 2
-  git -C "$root" archive "$kommit" -- '*.flang' '*.запись' 2>/dev/null | tar -x -C "$d" || {
+  git -C "$root" archive "$kommit" -- '*.flang' '*.record' 2>/dev/null | tar -x -C "$d" || {
     echo "ведомость не построена: git archive «$kommit» не отдал дерево" >&2; return 2; }
   ( cd "$d" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum ) \
     | sed 's|  \./|\t|' > "$ved" || return 2
@@ -799,22 +799,22 @@ porody() {
 # список — это способ увести любую запись из-под счёта одной строкой.
 # Охрана двусторонняя: запись из списка, у которой доказанное появилось, тоже
 # роняет прогон — значит список протух и его надо перечитать, а не подпереть.
-PUSTO_V_CHISLITELE_ZAKONNO="corpus-brackets.запись
-forgery-binder-hides-the-condition.запись
-forgery-if-without-descent.запись
-krug-tuda-i-obratno.запись
-poddelka-element-po-nomeru.запись
-poddelka-istinnaya-vetv.запись
-poddelka-krug-pri-rabote.запись
-poddelka-lozhnaya-polovina.запись
-poddelka-mera-dliny-stroki.запись
-poddelka-porjadok-sosednih.запись
-poddelka-ravenstvo-v-tele-ne-dokazyvaet.запись
-poddelka-razdvoenie-diz.запись
-poddelka-refleksivnost.запись
-poddelka-slova-celey.запись
-poddelka-sortirovka-ne-ubyvaet.запись
-poddelka-vhozhdenie.запись"
+PUSTO_V_CHISLITELE_ZAKONNO="corpus-brackets.record
+forgery-binder-hides-the-condition.record
+forgery-if-without-descent.record
+krug-tuda-i-obratno.record
+poddelka-element-po-nomeru.record
+poddelka-istinnaya-vetv.record
+poddelka-krug-pri-rabote.record
+poddelka-lozhnaya-polovina.record
+poddelka-mera-dliny-stroki.record
+poddelka-porjadok-sosednih.record
+poddelka-ravenstvo-v-tele-ne-dokazyvaet.record
+poddelka-razdvoenie-diz.record
+poddelka-refleksivnost.record
+poddelka-slova-celey.record
+poddelka-sortirovka-ne-ubyvaet.record
+poddelka-vhozhdenie.record"
 
 # ── один набор: померить и напечатать ───────────────────────────────────────
 izmerit() {
@@ -824,7 +824,7 @@ izmerit() {
   # там судил бы не то. Тогда число печатается, а прогон не роняется, и это
   # сказано вслух: молчаливый пропуск читался бы как «пустых нет».
   spisok=${4:-0}
-  files=$(find "$dir" -name '*.запись' | sort)
+  files=$(find "$dir" -name '*.record' | sort)
   [ -n "$files" ] || { echo "в «$dir» нет ни одной записи" >&2; return 2; }
 
   tab=$tmp/tab.tsv; : > "$tab"
@@ -1201,8 +1201,8 @@ proba_snyatogo_verdikta() {
   rab=$tmp/снятый-вердикт
   ish_n=flang/proof/examples/corpus-natural.flang
   ish_t=flang/proof/map/types.flang
-  zap_n=$root/flang/proof/checker/tests/records/corpus/corpus-natural.запись
-  zap_t=$root/flang/proof/checker/tests/records/corpus/types.запись
+  zap_n=$root/flang/proof/checker/tests/records/corpus/corpus-natural.record
+  zap_t=$root/flang/proof/checker/tests/records/corpus/types.record
   for f in "$root/$ish_n" "$root/$ish_t" "$zap_n" "$zap_t"; do
     [ -f "$f" ] || { echo "ПОДЛОГ НЕ СОБРАЛСЯ: нет «$f» — поправить пробу, линейка ни при чём" >&2; return 1; }
   done
@@ -1215,8 +1215,8 @@ proba_snyatogo_verdikta() {
     cp "$root/$ish_n" "$rab/$d/$ish_n" || return 1
     cp "$root/$ish_t" "$rab/$d/$ish_t" || return 1
   done
-  cp "$zap_n" "$rab/ч/$korp/corpus-natural.запись" || return 1
-  cp "$zap_t" "$rab/ч/$korp/types.запись" || return 1
+  cp "$zap_n" "$rab/ч/$korp/corpus-natural.record" || return 1
+  cp "$zap_t" "$rab/ч/$korp/types.record" || return 1
 
   # А: вердикт снят ВМЕСТЕ со следами разбора — примета молчит, и поймать
   #    подделку может только пустой числитель.
@@ -1232,16 +1232,16 @@ proba_snyatogo_verdikta() {
     awk '{ if ($0 ~ /^[ \t]*вердикт доказано[ \t]*$/) { print "  вердикт нет вердикта"; next }
            print }' "$1" > "$2"
   }
-  snyat_vsyo   "$zap_n" "$rab/А/$korp/corpus-natural.запись" || return 1
-  cp "$zap_t" "$rab/А/$korp/types.запись" || return 1
-  cp "$zap_n" "$rab/Б/$korp/corpus-natural.запись" || return 1
-  snyat_verdikt "$zap_t" "$rab/Б/$korp/types.запись" || return 1
-  if cmp -s "$zap_n" "$rab/А/$korp/corpus-natural.запись" || cmp -s "$zap_t" "$rab/Б/$korp/types.запись"; then
+  snyat_vsyo   "$zap_n" "$rab/А/$korp/corpus-natural.record" || return 1
+  cp "$zap_t" "$rab/А/$korp/types.record" || return 1
+  cp "$zap_n" "$rab/Б/$korp/corpus-natural.record" || return 1
+  snyat_verdikt "$zap_t" "$rab/Б/$korp/types.record" || return 1
+  if cmp -s "$zap_n" "$rab/А/$korp/corpus-natural.record" || cmp -s "$zap_t" "$rab/Б/$korp/types.record"; then
     echo "ПОДЛОГ НЕ СОБРАЛСЯ: строки «вердикт доказано» в записях корпуса больше нет — поправить пробу, линейка ни при чём" >&2
     return 1; fi
 
   vedom_kat() {
-    ( cd "$1" && find . -type f \( -name '*.flang' -o -name '*.запись' \) -print0 \
+    ( cd "$1" && find . -type f \( -name '*.flang' -o -name '*.record' \) -print0 \
       | LC_ALL=C sort -z | xargs -0 sha256sum ) | sed 's|  \./|\t|' > "$2"
   }
   bad=0
@@ -1278,8 +1278,8 @@ proba_snyatogo_verdikta() {
   mkdir -p "$rab/Д/$korp" "$rab/Д/flang/proof/examples" "$rab/Д/flang/proof/map" "$rab/Д/flang/proof/checker" || return 1
   cp "$checker" "$rab/Д/flang/proof/checker/сверщик" || return 1
   cp "$root/$ish_n" "$rab/Д/$ish_n" && cp "$root/$ish_t" "$rab/Д/$ish_t" || return 1
-  cp "$zap_n" "$rab/Д/$korp/corpus-natural.запись" || return 1
-  snyat_chast "$zap_t" "$rab/Д/$korp/types.запись" || return 1
+  cp "$zap_n" "$rab/Д/$korp/corpus-natural.record" || return 1
+  snyat_chast "$zap_t" "$rab/Д/$korp/types.record" || return 1
   vedom_kat "$rab/Д" "$rab/Д.tsv" || return 1
   sh "$self" --корень "$rab/Д" --ведомость "$rab/Д.tsv" --набор корпус >"$rab/Д.out" 2>&1; k=$?
   if [ "$k" -eq 0 ]; then
@@ -1311,9 +1311,9 @@ proba_snyatogo_verdikta() {
 proba_pustogo_chislitelya() {
   rab=$tmp/пустой-числитель
   korp=flang/proof/checker/tests/records/corpus
-  zap_ch=$root/$korp/corpus-alphabet.запись
-  zap_n=$root/$korp/corpus-natural.запись
-  zap_p=$root/$korp/poddelka-refleksivnost.запись
+  zap_ch=$root/$korp/corpus-alphabet.record
+  zap_n=$root/$korp/corpus-natural.record
+  zap_p=$root/$korp/poddelka-refleksivnost.record
   for f in "$zap_ch" "$zap_n" "$zap_p"; do
     [ -f "$f" ] || { echo "ПРОБА НЕ СОБРАЛАСЬ: нет «$f»" >&2; return 1; }
   done
@@ -1329,8 +1329,8 @@ proba_pustogo_chislitelya() {
     cp "$root/$ish_n" "$rab/$d/$ish_n" || return 1
     cp "$root/$ish_p" "$rab/$d/$ish_p" || return 1
   done
-  cp "$zap_ch" "$rab/ч/$korp/corpus-alphabet.запись" || return 1
-  cp "$zap_p"  "$rab/з/$korp/poddelka-refleksivnost.запись" || return 1
+  cp "$zap_ch" "$rab/ч/$korp/corpus-alphabet.record" || return 1
+  cp "$zap_p"  "$rab/з/$korp/poddelka-refleksivnost.record" || return 1
   # ПОДЛОГ ДЕЛАЕТСЯ ТАК, ЧТОБЫ КРАСНЕЛ РОВНО ОДИН СТОРОЖ — ТОТ, КОТОРЫЙ
   # СТОРОЖИТ ПУСТОТУ. Снять у записи слово «доказано» и оставить следы разбора
   # мало: тогда краснеет ПРИМЕТА снятого вердикта, и проба зеленела бы даже
@@ -1342,12 +1342,12 @@ proba_pustogo_chislitelya() {
   # и её изъятие дало бы код 1 «НЕ СОШЛОСЬ» по постороннему поводу.
   awk '{ if ($0 ~ /^[ \t]*вердикт доказано[ \t]*$/) { print "  вердикт нет вердикта"; next }
          if ($0 ~ /^[ \t]*правило «/ || $0 ~ /^[ \t]*по объявлению / || $0 ~ /^[ \t]*следовательно доказано/) next
-         print }' "$zap_n" > "$rab/п/$korp/corpus-natural.запись" || return 1
-  if cmp -s "$zap_n" "$rab/п/$korp/corpus-natural.запись"; then
-    echo "ПРОБА НЕ СОБРАЛАСЬ: в «corpus-natural.запись» больше нет «вердикт доказано»" >&2; return 1; fi
+         print }' "$zap_n" > "$rab/п/$korp/corpus-natural.record" || return 1
+  if cmp -s "$zap_n" "$rab/п/$korp/corpus-natural.record"; then
+    echo "ПРОБА НЕ СОБРАЛАСЬ: в «corpus-natural.record» больше нет «вердикт доказано»" >&2; return 1; fi
 
   vedom_p() {
-    ( cd "$1" && find . -type f \( -name '*.flang' -o -name '*.запись' \) -print0 \
+    ( cd "$1" && find . -type f \( -name '*.flang' -o -name '*.record' \) -print0 \
       | LC_ALL=C sort -z | xargs -0 sha256sum ) | sed 's|  \./|\t|' > "$2"
   }
   # Инвариант читается ПО РАЗБОРУ, тем же TSV, каким линейка отвечает всем:
@@ -1396,7 +1396,7 @@ proba_pechati_yadra() {
   [ -x "$yadro" ] || { echo "нет двоичного ядра $yadro" >&2; return 2; }
   rab=$tmp/печать-ядра
   ish=flang/proof/map/types.flang
-  zap=$root/flang/proof/checker/tests/records/corpus/types.запись
+  zap=$root/flang/proof/checker/tests/records/corpus/types.record
   korp=flang/proof/checker/tests/records/corpus
   [ -f "$root/$ish" ] && [ -f "$zap" ] \
     || { echo "ПОДЛОГ НЕ СОБРАЛСЯ: нет «$ish» или его записи — поправить пробу, линейка ни при чём" >&2; return 1; }
@@ -1407,16 +1407,16 @@ proba_pechati_yadra() {
     cp "$root/$ish" "$rab/$d/$ish" || return 1
     ln -sf "$yadro" "$rab/$d/bootstrap/flang" || return 1
   done
-  cp "$zap" "$rab/ч/$korp/types.запись" || return 1
+  cp "$zap" "$rab/ч/$korp/types.record" || return 1
   awk 'BEGIN{ srezano=0 }
        { if (srezano < 2 && $0 ~ /^[ \t]*вердикт доказано[ \t]*$/) { print "  вердикт нет вердикта"; srezano++; next }
          if (srezano > 0 && srezano <= 2 && ($0 ~ /^[ \t]*правило «/ || $0 ~ /^[ \t]*по объявлению /)) next
-         print }' "$zap" > "$rab/п/$korp/types.запись" || return 1
-  if cmp -s "$zap" "$rab/п/$korp/types.запись"; then
-    echo "ПОДЛОГ НЕ СОБРАЛСЯ: в «types.запись» больше нет «вердикт доказано» — поправить пробу" >&2
+         print }' "$zap" > "$rab/п/$korp/types.record" || return 1
+  if cmp -s "$zap" "$rab/п/$korp/types.record"; then
+    echo "ПОДЛОГ НЕ СОБРАЛСЯ: в «types.record» больше нет «вердикт доказано» — поправить пробу" >&2
     return 1; fi
   vedom_k() {
-    ( cd "$1" && find . -type f \( -name '*.flang' -o -name '*.запись' \) -print0 \
+    ( cd "$1" && find . -type f \( -name '*.flang' -o -name '*.record' \) -print0 \
       | LC_ALL=C sort -z | xargs -0 sha256sum ) | sed 's|  \./|\t|' > "$2"
   }
   vedom_k "$rab/ч" "$rab/ч.tsv" || return 1
@@ -1449,19 +1449,19 @@ samoproverka() {
   # зелёным, хуже отсутствующего: на него ссылаются.
   beda_sam=0
   # П1. Породы не слепы: на записи с местами на слово счёт обязан быть не ноль.
-  set -- $(porody "$corp/abilities.запись")
+  set -- $(porody "$corp/abilities.record")
   if [ $(($1+$2+$3)) -gt 0 ]
   then echo "П1 счёт пород не слеп	ЦЕЛА (П1=$1 П2=$2 П3=$3)"
   else echo "П1 счёт пород не слеп	ПРОВАЛ"; beda_sam=1; fi
   # П2. Изъятие роняет счёт: убрали строки «теоремы нет» — П1 обязан упасть.
-  was=$(porody "$corp/abilities.запись" | cut -d' ' -f1)
-  sed '/^[ \t]*теоремы нет[ \t]*$/d' "$corp/abilities.запись" > "$tmp/без-теоремы.запись"
-  now=$(porody "$tmp/без-теоремы.запись" | cut -d' ' -f1)
+  was=$(porody "$corp/abilities.record" | cut -d' ' -f1)
+  sed '/^[ \t]*теоремы нет[ \t]*$/d' "$corp/abilities.record" > "$tmp/без-теоремы.record"
+  now=$(porody "$tmp/без-теоремы.record" | cut -d' ' -f1)
   if [ "$now" -lt "$was" ]
   then echo "П2 изъятие роняет счёт	ЦЕЛА ($was → $now)"
   else echo "П2 изъятие роняет счёт	ПРОВАЛ ($was → $now)"; beda_sam=1; fi
   # П3. Отпечаток доводом — привязка, а не «ладно»: чужой даёт код 1.
-  z=$corp/corpus-factorial.запись
+  z=$corp/corpus-factorial.record
   s=$root/$(grep -a -m1 '^исходник ' "$z" | cut -d' ' -f2-)
   "$checker" "$s" "$z" 0000000000000000000000000000000000000000000000000000000000000000 >/dev/null 2>&1
   k=$?
@@ -1480,12 +1480,12 @@ samoproverka() {
   #     КАЖДУЮ запись набора и сличает коды с прогоном «третьим доводом»
   #     запись за записью. Разошлись хоть на одной — ответ про Р1 недействителен.
   corp2=$corp; raz=0; n5=0
-  for z5 in "$corp2"/*.запись; do
+  for z5 in "$corp2"/*.record; do
     s5=$root/$(grep -a -m1 '^исходник ' "$z5" | cut -d' ' -f2)
     [ -f "$s5" ] || continue
     h5=$(sha256sum "$s5" | cut -d' ' -f1)
-    awk -v h="отпечаток256 $h5" 'BEGIN{d=0} {print} /^утверждений /{ if(!d){print h; d=1} }' "$z5" > "$tmp/с-256.запись"
-    "$checker" "$s5" "$tmp/с-256.запись" >/dev/null 2>&1; k1=$?
+    awk -v h="отпечаток256 $h5" 'BEGIN{d=0} {print} /^утверждений /{ if(!d){print h; d=1} }' "$z5" > "$tmp/с-256.record"
+    "$checker" "$s5" "$tmp/с-256.record" >/dev/null 2>&1; k1=$?
     "$checker" "$s5" "$z5" "$h5"          >/dev/null 2>&1; k2=$?
     n5=$((n5+1)); [ "$k1" -eq "$k2" ] || raz=$((raz+1))
   done
@@ -1503,7 +1503,7 @@ samoproverka() {
   #     зелёной, а столбец снова поедет. Теперь проба сперва требует, чтобы
   #     настоящий вердикт настоящей записи БЫЛ многострочным (перестал —
   #     сторожить нечего, и это провал, а не тишина), и только потом сплющивает.
-  z6=$corp/types.запись
+  z6=$corp/types.record
   s6i=$root/$(grep -a -m1 '^исходник ' "$z6" | cut -d' ' -f2-)
   v6=$("$checker" "$s6i" "$z6" 2>&1)
   strok6=$(printf '%s\n' "$v6" | wc -l)
@@ -1528,7 +1528,7 @@ samoproverka() {
   #     независимым разбором тех же слагаемых и обязана быть БОЛЬШЕ каждого из
   #     них по отдельности. Так проба краснеет и на «взяли последнее», и на
   #     «взяли первое», и на «взяли наибольшее», не завися ни от одного числа.
-  z7=$corp/abilities.запись
+  z7=$corp/abilities.record
   s7i=$root/$(grep -a -m1 '^исходник ' "$z7" | cut -d' ' -f2-)
   v7=$("$checker" "$s7i" "$z7" 2>&1)
   n7=$(printf '%s\n' "$v7" | summa_po_metke 'снято со слова ядра мест')
@@ -1585,7 +1585,7 @@ samoproverka() {
     echo "П14 тождество сверено там, где слагаемые не нули	ПРОВАЛ (нет каталога 3455)"; beda_sam=1
   else
     sv14=0
-    for z14 in "$kat14"/*.запись; do
+    for z14 in "$kat14"/*.record; do
       [ -f "$z14" ] || continue
       s14=$root/$(grep -a -m1 '^исходник ' "$z14" | cut -d' ' -f2-)
       [ -f "$s14" ] || continue
@@ -1656,12 +1656,12 @@ samoproverka() {
 # соседних. Ложь цела и померена: сверщик отвергает запись кодом 1 («НЕ СОШЛОСЬ:
 # утверждение «свёртка по выписанному пустому есть основание»»), а набор проб не
 # жалуется — «подделок 529, принято кодом 0 — 0».
-PECHAT_RASHODITSYA_ZAKONNO="poddelka-nositel-chislo-segment.запись
-poddelka-nositel-psevdonim-ne-otrezok.запись
-poddelka-raznost-bez-poryadka.запись
-poddelka-svyortka-nad-pustym.запись
-poddelka-razv2-sebya.запись
-poddelka-razv3-raznost.запись"
+PECHAT_RASHODITSYA_ZAKONNO="poddelka-nositel-chislo-segment.record
+poddelka-nositel-psevdonim-ne-otrezok.record
+poddelka-raznost-bez-poryadka.record
+poddelka-svyortka-nad-pustym.record
+poddelka-razv2-sebya.record
+poddelka-razv3-raznost.record"
 
 # ── ОТСТАЛО ЛИ САМО ЯДРО ОТ СЕМЕНИ (замер 11 сентября 2026) ────────
 # Прибор судит записи печатью bootstrap/flang и молча верит, что двоичный
@@ -1776,15 +1776,15 @@ vlozhennost() {
   out=$tmp/свежие; mkdir -p "$out"
   printf '%s\n' "$PECHAT_RASHODITSYA_ZAKONNO" > "$tmp/расхождение-законно.txt"
   vsego=0; sovpalo=0; razoshlos=0; otkaz=0; net=0; zakonno=0; usnulo=0; spisok=""
-  for z in "$corp"/*.запись; do
-    vsego=$((vsego+1)); b=$(basename "$z" .запись)
+  for z in "$corp"/*.record; do
+    vsego=$((vsego+1)); b=$(basename "$z" .record)
     d=$(grep -a -m1 '^исходник ' "$z" | cut -d' ' -f2)
     if [ ! -f "$root/$d" ]; then net=$((net+1)); spisok="$spisok ИСХОДНИКА-НЕТ:$b"; continue; fi
-    ( cd "$root" && "$yadro" check --proof --записать "$out/$b.запись" "$d" ) >/dev/null 2>&1
-    if [ ! -s "$out/$b.запись" ]; then otkaz=$((otkaz+1)); spisok="$spisok ПЕЧАТЬ-ОТКАЗАЛА:$b"; continue; fi
-    sed '2s#.*#исходник —#' "$out/$b.запись" > "$tmp/a"
+    ( cd "$root" && "$yadro" check --proof --записать "$out/$b.record" "$d" ) >/dev/null 2>&1
+    if [ ! -s "$out/$b.record" ]; then otkaz=$((otkaz+1)); spisok="$spisok ПЕЧАТЬ-ОТКАЗАЛА:$b"; continue; fi
+    sed '2s#.*#исходник —#' "$out/$b.record" > "$tmp/a"
     sed '2s#.*#исходник —#' "$z"            > "$tmp/b"
-    if /usr/bin/grep -aqxF "$b.запись" "$tmp/расхождение-законно.txt"; then
+    if /usr/bin/grep -aqxF "$b.record" "$tmp/расхождение-законно.txt"; then
       if cmp -s "$tmp/a" "$tmp/b"; then
         usnulo=$((usnulo+1)); spisok="$spisok ОГОВОРКА-ПРОСНУЛАСЬ:$b"
       else
@@ -1805,7 +1805,7 @@ vlozhennost() {
   [ -n "$spisok" ] && printf 'поимённо:%s\n' "$spisok"
   echo ""
   echo "-- откуда исходники записей корпуса --"
-  for z in "$corp"/*.запись; do grep -a -m1 '^исходник ' "$z"; done \
+  for z in "$corp"/*.record; do grep -a -m1 '^исходник ' "$z"; done \
     | awk '{ sub(/\/[^\/]*$/,"",$2); a[$2]++ } END{ for (k in a) printf "%s\t%d\n", k, a[k] }' | sort -k2 -rn
   [ $((razoshlos+otkaz+net+usnulo)) -eq 0 ] || return 1
   return 0
@@ -1837,7 +1837,7 @@ vlozhennost() {
 proba_podloga() {
   rab=$tmp/подлог
   ish=flang/proof/examples/corpus-natural.flang
-  zap=$root/flang/proof/checker/tests/records/corpus/corpus-natural.запись
+  zap=$root/flang/proof/checker/tests/records/corpus/corpus-natural.record
   [ -f "$root/$ish" ] && [ -f "$zap" ] \
     || { echo "ПОДЛОГ НЕ СОБРАЛСЯ: нет «$ish» или его записи — поправить пробу, линейка ни при чём" >&2; return 1; }
 
@@ -1853,8 +1853,8 @@ proba_podloga() {
   # Нетронутая копия честного исходника, лежащая ВНЕ коммита: подделыватель
   # показывает чекеру именно её, а лгать оставляет файлу дерева.
   cp "$root/$ish" "$rab/дерево/свои/наглая.flang" || return 1
-  cp "$zap" "$rab/честные/corpus-natural.запись" || return 1
-  sed 's|^исходник .*|исходник свои/наглая.flang|' "$zap" > "$rab/подмена/corpus-natural.запись"
+  cp "$zap" "$rab/честные/corpus-natural.record" || return 1
+  sed 's|^исходник .*|исходник свои/наглая.flang|' "$zap" > "$rab/подмена/corpus-natural.record"
 
   razr() { awk -F'\t' -v r="$2" 'NR>1 && $16==r {n++} END{print n+0}' "$1"; }
   bad=0
@@ -1916,7 +1916,7 @@ prigovor_yadra() {
   printf '%s\n' "$YADRO_OTVERGAET_ZAKONNO" > "$tmp/оговорки.txt"
   # Дела берутся ИЗ ВЕДОМОСТИ: список записей задаёт коммит, а не каталог на
   # диске. Путь исходника из записи — по-прежнему только ключ поиска.
-  awk -F'\t' '$2 ~ /\.запись$/ {print $2}' "$ved" > "$tmp/записи-дерева.txt"
+  awk -F'\t' '$2 ~ /\.record$/ {print $2}' "$ved" > "$tmp/записи-дерева.txt"
   : > "$tmp/дела-ядра.txt"
   while IFS= read -r zrel; do
     [ -f "$root/$zrel" ] || continue
@@ -2028,7 +2028,7 @@ podlog_yadra() {
   [ -x "$yadro" ] || { echo "нет двоичного ядра $yadro — собрать: make -C bootstrap" >&2; return 2; }
   rab=$tmp/подлог-ядра
   ish=flang/proof/examples/corpus-natural.flang
-  zap=$root/flang/proof/checker/tests/records/corpus/corpus-natural.запись
+  zap=$root/flang/proof/checker/tests/records/corpus/corpus-natural.record
   [ -f "$root/$ish" ] && [ -f "$zap" ] \
     || { echo "ПОДЛОГ НЕ СОБРАЛСЯ: нет «$ish» или его записи — поправить пробу, линейка ни при чём" >&2; return 1; }
 
@@ -2038,7 +2038,7 @@ podlog_yadra() {
     ln -sf "$yadro" "$rab/$d/bootstrap/flang" || return 1
   done
   cp "$root/$ish" "$rab/ч/$ish" || return 1
-  cp "$zap" "$rab/ч/records/проба.запись" || return 1
+  cp "$zap" "$rab/ч/records/проба.record" || return 1
 
   # Ложь дописывается В КОНЕЦ: номера строк честной части не съезжают, и чекеру
   # нечего заметить. Постусловие ложно по IEEE-754 — «не число» живёт в типе
@@ -2082,10 +2082,10 @@ podlog_yadra() {
                       print "  вид composition"; print "  зовёт примитив «плюс»"
                       print "  самовызова нет"; print "  конец тотальности"
                       print; next }
-                    { print }' "$zap" > "$rab/г/records/проба.запись"
+                    { print }' "$zap" > "$rab/г/records/проба.record"
 
   vedom() { # каталог → ведомость того же вида, что строит git archive
-    ( cd "$1" && find . -type f \( -name '*.flang' -o -name '*.запись' \) -print0 \
+    ( cd "$1" && find . -type f \( -name '*.flang' -o -name '*.record' \) -print0 \
       | LC_ALL=C sort -z | xargs -0 sha256sum ) | sed 's|  \./|\t|' > "$2"
   }
   vedom "$rab/ч" "$rab/ч.tsv" || return 1
@@ -2133,9 +2133,9 @@ pechat_primerov() {
   n=0; otkaz=0; kto=""
   for s in "$root"/flang/proof/examples/*.flang; do
     b=$(basename "$s" .flang)
-    ( cd "$root" && "$yadro" check --proof --записать "$out/$b.запись" "flang/proof/examples/$b.flang" ) >/dev/null 2>&1
-    if [ -s "$out/$b.запись" ]; then n=$((n+1))
-    else otkaz=$((otkaz+1)); kto="$kto $b"; rm -f "$out/$b.запись"; fi
+    ( cd "$root" && "$yadro" check --proof --записать "$out/$b.record" "flang/proof/examples/$b.flang" ) >/dev/null 2>&1
+    if [ -s "$out/$b.record" ]; then n=$((n+1))
+    else otkaz=$((otkaz+1)); kto="$kto $b"; rm -f "$out/$b.record"; fi
   done
   { echo "примеров подано	$(ls "$root"/flang/proof/examples/*.flang | wc -l)"
     echo "записей напечатано	$n"

@@ -9738,7 +9738,7 @@ static int добавить_пару(Сп *набор_исх, Сп *набор_�
 }
 
 static int добавить_каталог(Сп *набор_исх, Сп *набор_зап, const char *кат) {
-  DIR *dir = opendir(кат); struct dirent *e; const char *suf = ".запись"; size_t ls = strlen(suf);
+  DIR *dir = opendir(кат); struct dirent *e; const char *suf = ".record"; size_t ls = strlen(suf);
   if (!dir) { fprintf(stderr, "каталог набора не открыт: %s\n", кат); return 2; }
   while ((e = readdir(dir)) != NULL) {
     size_t ln = strlen(e->d_name);

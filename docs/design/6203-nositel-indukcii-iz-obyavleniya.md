@@ -190,7 +190,7 @@ ADR-0026 §2.4 называет три функции ядра и одно ме�
 
 Записи собраны руками поверх **честной** шапки (строк/знаков/оба отпечатка/
 `отпечаток256` сняты ядром с того же исходника), подменён только блок
-утверждения — по форме `if-over-a-segment.запись`.
+утверждения — по форме `if-over-a-segment.record`.
 
 | проба | исходник | что в записи | код | первая строка ответа |
 | --- | --- | --- | --- | --- |
@@ -556,10 +556,10 @@ HACKS/заметки волны.
 | файл | класс | ждём | что стережёт |
 | --- | --- | ---: | --- |
 | `chislo-segment.{flang,запись}` | подделка | 1 | `segment` без отрезка в объявлении (П1) |
-| `number-segment-lie-about-the-type.запись` | подделка | 1 | ложь о типе в строке `принцип` (П1б) |
+| `number-segment-lie-about-the-type.record` | подделка | 1 | ложь о типе в строке `принцип` (П1б) |
 | `psevdonim-ne-otrezok.{flang,запись}` | подделка | 1 | `тип «Т» это число` под `segment` |
-| `nositel-vne-spiska.запись` | подделка | 1 | слово вне вывода из объявления (П2) |
-| `zapis-dva-varianta.запись` (Ш2) | подделка | 1 | `объявление запись` с двумя посылками |
+| `nositel-vne-spiska.record` | подделка | 1 | слово вне вывода из объявления (П2) |
+| `zapis-dva-varianta.record` (Ш2) | подделка | 1 | `объявление запись` с двумя посылками |
 | `imya-naturalnoe.{flang,запись}` | честная | 0 | синоним имени отрезка (сегодня 3) |
 | `psevdonim-otrezok.{flang,запись}` (после Ш1) | честная | 0 | псевдоним отрезка (П3) |
 | `obekt-odna-posylka.{flang,запись}` (после Ш1) | честная | 0 | запись как сумма с одним конструктором |
@@ -651,16 +651,16 @@ HACKS/заметки волны.
 Команды:
 
 ```sh
-LC_ALL=C.UTF-8 bootstrap/flang check <файл> --proof --записать <файл>.запись
+LC_ALL=C.UTF-8 bootstrap/flang check <файл> --proof --записать <файл>.record
 ./сверщик <исходник> <запись>; echo $?
 for f in flang/proof/examples/*.flang flang/test/fixtures/*.flang flang/proof/map/*.flang; do
   LC_ALL=C.UTF-8 bootstrap/flang check "$f" --proof; done 2>&1 | grep -c FLANG_PROOF_INDUCTION_TYPE   # 0
-grep -h '^ *принцип тип ' flang/proof/checker/tests/records/corpus/*.запись | sed -n 's/.*носитель \([a-z]*\).*/\1/p' | sort | uniq -c
+grep -h '^ *принцип тип ' flang/proof/checker/tests/records/corpus/*.record | sed -n 's/.*носитель \([a-z]*\).*/\1/p' | sort | uniq -c
 sh scripts/доказуемость.sh
 ```
 
 Подделки П1/П1б/П2/П3: шапка (9 строк) — из честной записи ядра для того же
-исходника, блок утверждения — по форме `if-over-a-segment.запись` с
+исходника, блок утверждения — по форме `if-over-a-segment.record` с
 подменёнными `тип`/`носитель`.
 
 Записи корпуса со строкой `принцип` (26): `abilities`, `binder-wall-map`,

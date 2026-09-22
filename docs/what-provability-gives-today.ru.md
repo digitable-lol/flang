@@ -84,8 +84,8 @@ $ flang check --proof скидка.flang
 нет ни строки компилятора, — читает исходник и запись и переигрывает ходы:
 
 ```
-$ flang check --proof заказ.flang --записать заказ.запись      # код 0
-$ make -C flang/proof/checker && flang/proof/checker/сверщик заказ.flang заказ.запись
+$ flang check --proof заказ.flang --записать заказ.record      # код 0
+$ make -C flang/proof/checker && flang/proof/checker/сверщик заказ.flang заказ.record
 НЕ ВЗЯЛСЯ (строк причин 1; мест на слово ядра 1): утверждение «итог не меньше
 стоимости товаров»: значение «по объявлению да» — сверщик не повторяет изъятие
 объявленного типа, место на слове ядра
@@ -225,8 +225,8 @@ sh flang/proof/corpus-share.sh --проигрыванием
 make -C bootstrap -j8
 ./bootstrap/flang check --proof заказ.flang                      # код 0
 ./bootstrap/flang check --proof скидка.flang                     # код 3
-./bootstrap/flang check --proof заказ.flang --записать заказ.запись
-make -C flang/proof/checker && flang/proof/checker/сверщик заказ.flang заказ.запись   # код 3, место названо
+./bootstrap/flang check --proof заказ.flang --записать заказ.record
+make -C flang/proof/checker && flang/proof/checker/сверщик заказ.flang заказ.record   # код 3, место названо
 sh scripts/доказуемость.sh                                       # ДОКАЗУЕМ
 ```
 

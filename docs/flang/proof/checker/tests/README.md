@@ -127,7 +127,7 @@
 
 * **`records/corpus/` не переименован.** Имена его записей зеркалят имена
   исходников (`flang/test/fixtures/poddelka-dlina.flang` ↔
-  `corpus/poddelka-dlina.запись`), а исходники лежат ВНЕ `flang/proof` и под эту
+  `corpus/poddelka-dlina.record`), а исходники лежат ВНЕ `flang/proof` и под эту
   задачу не попадают. Транслит там остаётся до переименования самих фикстур —
   это долг задачи 1428, названный, а не забытый.
 * **`run-induction/letters.фп`** держит кириллическое расширение нарочно: это
@@ -135,5 +135,5 @@
   `scripts/guards/file-extensions.fscript` (задача 1415).
 * **Комментарии внутри `*.flang` под `flang/proof`** и внутри `flang/self`
   называют старые имена. Их правка отвергает привязанную запись кодом 1
-  (измерено на `abilities.запись`), а правка `flang/self` требует перепечатки
+  (измерено на `abilities.record`), а правка `flang/self` требует перепечатки
   семени. Долг назван в [ADR-0046](../../../../adr/0046-the-proof-directory-is-named-in-english.md).

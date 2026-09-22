@@ -45,9 +45,9 @@
 `corpus-alphabet.flang` (6 функций, все — композиция):
 
 ```
-flang check corpus-alphabet.flang --proof --записать alpha.запись
+flang check corpus-alphabet.flang --proof --записать alpha.record
   → итог: обещание несёт: композиция 6 …
-  → alpha.запись: 7 блоков «утверждение», вид postcondition, и БОЛЬШЕ НИЧЕГО
+  → alpha.record: 7 блоков «утверждение», вид postcondition, и БОЛЬШЕ НИЧЕГО
 ```
 
 Сертификата тотальности в записи НЕТ ВОВСЕ — ни у одной из 6 композиций. `zapis.flang`
@@ -130,7 +130,7 @@ flang check corpus-alphabet.flang --proof --записать alpha.запись
 
 ## 2. Что делает `сверщик` при проигрывании — независимая перепроверка
 
-Чекер получает `сверщик <исходник> <тотальность.запись>` и держит строки исходника сам
+Чекер получает `сверщик <исходник> <тотальность.record>` и держит строки исходника сам
 (`s.stroki`, как для развёртки). Проигрывание блока `тотальность «F»` — четыре независимые
 проверки, ни одна не верит записи на слово:
 
@@ -384,6 +384,6 @@ for f in flang/proof/examples/*.flang; do
   $BIN check "$f" --proof 2>/dev/null | grep -oP 'композиция \K[0-9]+' | head -1
 done | paste -sd+ | bc
 # 2. Сертификата тотальности в записи сегодня НЕТ: секции «тотальность «» не найти
-$BIN check flang/proof/examples/corpus-alphabet.flang --proof --записать /tmp/a.запись
-grep -c 'тотальность «' /tmp/a.запись    # 0 сегодня
+$BIN check flang/proof/examples/corpus-alphabet.flang --proof --записать /tmp/a.record
+grep -c 'тотальность «' /tmp/a.record    # 0 сегодня
 ```

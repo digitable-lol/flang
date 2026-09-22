@@ -50,8 +50,8 @@ The third run is the independent check. The kernel writes its proof record;
 reads the source and the record and replays the moves:
 
 ```
-$ flang check --proof заказ.flang --записать заказ.запись            # exit 0
-$ flang/proof/checker/сверщик заказ.flang заказ.запись
+$ flang check --proof заказ.flang --записать заказ.record            # exit 0
+$ flang/proof/checker/сверщик заказ.flang заказ.record
 НЕ ВЗЯЛСЯ … значение «по объявлению да» — сверщик не повторяет изъятие
 объявленного типа, место на слове ядра
 НЕ ПРОВЕРЕНО — запись не противоречит исходнику, но доказательством это не

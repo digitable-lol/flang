@@ -33,7 +33,7 @@
 | «по предположению» в честном корпусе всего | **~24 места** (по разным правилам: тождество, неотрицательность, порядок и др.) |
 | «по предположению» ИМЕННО в паре с «разбор цели по условию» (шаг теоремы, посылка которого несёт это правило) | **1 место** — `ohrana-daet-fakt.flang` (тест-образец) — это и есть «~1 место» задания |
 | гейт принципа нужен ЛИ | ЧАСТЬЮ ДА: для 3 мест «принцип без теоремы» — нужен новый КОД-ПУТЬ (не просто снять `!есть_принцип`); для 1 места «по предположению» (теорема ЕСТЬ) — гейта не нужно, `сверить_теорему` зовёт `проиграть_блок` УЖЕ безусловно; там не хватает ПРИМИТИВА, а не гейта |
-| рукотворных сертификатов проиграно КОД 0 | **3** (`оснастка/proba-razbor.запись`, патч `order.flang` П2, патч `forms.flang` Ф12) |
+| рукотворных сертификатов проиграно КОД 0 | **3** (`оснастка/proba-razbor.record`, патч `order.flang` П2, патч `forms.flang` Ф12) |
 | ложных ходов отвергнуто / честных отвергнуто | **4 / 0** (3 на рукотворном сертификате Р1 + 1 на реальном узле `ohrana-daet-fakt`); ОТДЕЛЬНО — 1 ложный ход на `binder-wall-map`, который НЕ отвергнут вовсе (инертный сторож, см. §5.1) |
 
 **Неудобный вывод сразу.** Задание оценивало «разбор цели по условию» в ~5
@@ -61,7 +61,7 @@
 
 ### 1.2. Перепись мест — 21, не 42/5
 
-Счёт по всем `*.запись` корпуса, исключая `poddelka-*`/`forgery-*` (те
+Счёт по всем `*.record` корпуса, исключая `poddelka-*`/`forgery-*` (те
 проверяют КАЛЬКУЛЯТОРНЫЙ путь, не сертификат — см. §6):
 
 ```bash
@@ -69,9 +69,9 @@ export LC_ALL=C.UTF-8
 for f in binder-hides-the-condition binder-wall-map body-forms corpus-hof forms \
          honest-modus-ponens-by-guard ohrana-daet-fakt order substantive; do
   echo -n "$f: "; /usr/bin/grep -a -c 'разбор цели по условию' \
-    flang/proof/checker/tests/records/corpus/$f.запись 2>/dev/null \
+    flang/proof/checker/tests/records/corpus/$f.record 2>/dev/null \
     || /usr/bin/grep -a -c 'разбор цели по условию' \
-    flang/proof/checker/tests/records/corpus/$f.запись
+    flang/proof/checker/tests/records/corpus/$f.record
 done   # 2 6 1 3 5 2 2 1 2 = 24 строк
 ```
 
@@ -144,7 +144,7 @@ done   # 2 6 1 3 5 2 2 1 2 = 24 строк
 цели с телом функции: правило «разбор цели по условию» … теоремы при нём нет и
 не нужно».
 
-Рукотворная запись `оснастка/proba-razbor.запись` (шапку посчитал
+Рукотворная запись `оснастка/proba-razbor.record` (шапку посчитал
 `оснастка/shapka.py`, см. §7):
 
 ```
@@ -167,7 +167,7 @@ done   # 2 6 1 3 5 2 2 1 2 = 24 строк
 Прогон (`$?` — хвостом, без трубы):
 
 ```
-$ сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.запись
+$ сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.record
 ПРОВЕРЕНО — запись сошлась с исходником, и всё доказанное проиграно заново:
 утверждений 1 … сведений проиграно заново 1 (ходов проверено 7) …
 $ echo $?
@@ -182,9 +182,9 @@ $ echo $?
 
 | подделка | правка | ответ чекера | КОД |
 |---|---|---|---|
-| `подделка/podmena-tela.запись` | тело развёртки `⟨… иначе 0⟩` → `⟨… иначе 999⟩` | «запись несёт тело ⟨… иначе 999⟩, а в строке 11 исходника написано «… иначе 0»» | 1 |
-| `подделка/lozhnoe-uslovie.запись` | `деление ⟨порог больше 0⟩` → `⟨порог больше 5⟩` | «деление: «порог больше 5» не стоит в цели условием» | 1 |
-| `подделка/nevernoe-zakrytie.запись` | `закрыть истиной` → `закрыть тождеством` | «закрыть тождеством: у цели «да» стороны равенства разные» | 1 |
+| `подделка/podmena-tela.record` | тело развёртки `⟨… иначе 0⟩` → `⟨… иначе 999⟩` | «запись несёт тело ⟨… иначе 999⟩, а в строке 11 исходника написано «… иначе 0»» | 1 |
+| `подделка/lozhnoe-uslovie.record` | `деление ⟨порог больше 0⟩` → `⟨порог больше 5⟩` | «деление: «порог больше 5» не стоит в цели условием» | 1 |
+| `подделка/nevernoe-zakrytie.record` | `закрыть истиной` → `закрыть тождеством` | «закрыть тождеством: у цели «да» стороны равенства разные» | 1 |
 
 Честная запись — КОД 0; три подделки — КОД 1 каждая, и каждая называет СВОЮ
 строку (двойная привязка работает так же, как в §9 `proof-object.md`).
@@ -194,7 +194,7 @@ $ echo $?
 
 Чтобы не полагаться на один синтетический пример, тот же приём применён
 руками к двум РЕАЛЬНЫМ местам корпуса (без правки `checker.c`/`zapis.flang`,
-только дописанная копия `.запись` в `оснастка/`):
+только дописанная копия `.record` в `оснастка/`):
 
 - **`order.flang`, П2 «длина пары ровно два»** (`(длина результат) равен 2`,
   цели-«если» в постусловии НЕТ вовсе — оно в теле). Сертификат: `развернуть` →
@@ -277,7 +277,7 @@ $ echo $?
 `( да )`, а не `да`, что не совпадает буквально ни с `"да"`, ни с `"нет"`:
 
 ```
-$ сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f5.запись
+$ сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f5.record
 НЕ СОШЛОСЬ: … выбор: условие «( да )» не вычислено до литерала — ветвь брать не из чего …
 ```
 
@@ -309,7 +309,7 @@ $ сверщик flang/proof/map/forms.flang оснастка/находки/for
 ```
 
 ```
-$ сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f1.запись
+$ сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f1.record
 НЕ СОШЛОСЬ: … закрыть тождеством: у цели «...» стороны равенства разные …
 ```
 
@@ -319,7 +319,7 @@ $ сверщик flang/proof/map/forms.flang оснастка/находки/for
 `проиграть_блок`). Столь же тупиково для Ф8 (`содержит` на литеральном списке):
 
 ```
-$ сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f8.запись
+$ сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f8.record
 НЕ СОШЛОСЬ: … закрыть истиной: цель «["да", "нет"] содержит ( "да" )» не литерал «да» …
 ```
 
@@ -341,7 +341,7 @@ $ сверщик flang/proof/map/forms.flang оснастка/находки/for
 
 ### 5.1. Р4 — постусловие с принципом БЕЗ теоремы: инертно ПОЛНОСТЬЮ
 
-Взял честный `binder-wall-map.flang`/`.запись` как есть (КОД 3, «НЕ ПРОВЕРЕНО»,
+Взял честный `binder-wall-map.flang`/`.record` как есть (КОД 3, «НЕ ПРОВЕРЕНО»,
 2 посылки «на слово ядра» под утверждением «разбор: при положительном пороге
 ноль или один»). Дописал под честную посылку «пусто» ЗАВЕДОМО ЛОЖНЫЙ ход:
 
@@ -356,7 +356,7 @@ $ сверщик flang/proof/map/forms.flang оснастка/находки/for
 `да» буквально, это заведомая ложь). Прогон:
 
 ```
-$ сверщик flang/proof/examples/binder-wall-map.flang оснастка/подделка/binder-wall-map-lozhniy-hod.запись
+$ сверщик flang/proof/examples/binder-wall-map.flang оснастка/подделка/binder-wall-map-lozhniy-hod.record
 НЕ ВЗЯЛСЯ … посылка «пусто» сведена правилом «разбор цели по условию» и ни
 одного хода не записано — место на слове ядра; …
 КОД=3
@@ -382,7 +382,7 @@ $ сверщик flang/proof/examples/binder-wall-map.flang оснастка/п�
 
 ### 5.2. Р5 — «по предположению» под ЯВНОЙ теоремой: гейта не нужно, дорога уже есть
 
-Взял `ohrana-daet-fakt.flang`/`.запись` (тест-образец, единственное честное
+Взял `ohrana-daet-fakt.flang`/`.record` (тест-образец, единственное честное
 место, где шаг теоремы обоснован «по предположению», а посылка ШАГА несёт
 правило «разбор цели по условию»). Контроль без правки — КОД 3, «НЕ
 ПРОВЕРЕНО», и явным текстом: «теорема «у хорошего дерева левое хорошо»: шаг «по
@@ -393,7 +393,7 @@ $ сверщик flang/proof/examples/binder-wall-map.flang оснастка/п�
 истиной`:
 
 ```
-$ сверщик flang/test/fixtures/ohrana-daet-fakt.flang оснастка/подделка/ohrana-daet-fakt-lozhniy-hod.запись
+$ сверщик flang/test/fixtures/ohrana-daet-fakt.flang оснастка/подделка/ohrana-daet-fakt-lozhniy-hod.record
 НЕ СОШЛОСЬ: … закрыть истиной: цель «если ( «Хорошее» от (...) ) то ( «Левое
 хорошее» от (...) ) иначе да» не литерал «да»; …
 КОД=1
@@ -443,20 +443,20 @@ $ сверщик flang/test/fixtures/ohrana-daet-fakt.flang оснастка/п�
 оснастка/
   shapka.py                         — считает «строк/знаков/отпечаток/отпечаток256» (образец r4106)
   proba-razbor.flang                — рукотворный модуль семьи Р1
-  proba-razbor.запись                — рукотворный сертификат (КОД 0, §2.2)
-  order-proba-p2.запись              — патч реального места order.flang П2, КОД 0 (§2.4)
-  forms-proba-f12.запись             — патч реального места forms.flang Ф12, КОД 0 (§2.4)
+  proba-razbor.record                — рукотворный сертификат (КОД 0, §2.2)
+  order-proba-p2.record              — патч реального места order.flang П2, КОД 0 (§2.4)
+  forms-proba-f12.record             — патч реального места forms.flang Ф12, КОД 0 (§2.4)
   подделка/                          — деликатные правки ЧЕСТНОГО хода (проверяют, что сторож не инертен)
-    podmena-tela.запись              — КОД 1 (§2.3)
-    lozhnoe-uslovie.запись           — КОД 1 (§2.3)
-    nevernoe-zakrytie.запись         — КОД 1 (§2.3)
-    binder-wall-map-lozhniy-hod.запись — ложный ход, КОД 3 БЕЗ ИЗМЕНЕНИЙ — инертность §5.1
-    ohrana-daet-fakt-lozhniy-hod.запись — ложный ход, КОД 1 — гейт работает §5.2
+    podmena-tela.record              — КОД 1 (§2.3)
+    lozhnoe-uslovie.record           — КОД 1 (§2.3)
+    nevernoe-zakrytie.record         — КОД 1 (§2.3)
+    binder-wall-map-lozhniy-hod.record — ложный ход, КОД 3 БЕЗ ИЗМЕНЕНИЙ — инертность §5.1
+    ohrana-daet-fakt-lozhniy-hod.record — ложный ход, КОД 1 — гейт работает §5.2
   находки/                          — попытки сертификата на местах, где механизм упирается в гап
-    forms-proba-f5.запись            — КОД 1, находка §4.1 (скобки топят «выбор»)
-    forms-proba-f1.запись            — КОД 1, находка §4.2 (нет закрытия конъюнкции)
-    forms-proba-f8.запись            — КОД 1, находка §4.2 (нет закрытия «содержит»)
-    corpus-hof-chetnoe.запись        — КОД 1, находка §4.1 (двойные скобки)
+    forms-proba-f5.record            — КОД 1, находка §4.1 (скобки топят «выбор»)
+    forms-proba-f1.record            — КОД 1, находка §4.2 (нет закрытия конъюнкции)
+    forms-proba-f8.record            — КОД 1, находка §4.2 (нет закрытия «содержит»)
+    corpus-hof-chetnoe.record        — КОД 1, находка §4.1 (двойные скобки)
 ```
 
 Прогон каждого:
@@ -464,18 +464,18 @@ $ сверщик flang/test/fixtures/ohrana-daet-fakt.flang оснастка/п�
 ```bash
 export LC_ALL=C.UTF-8
 cd /srv/tmp/dokazuemyy/r4115
-flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.запись; echo $?
-flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/подделка/podmena-tela.запись; echo $?
-flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/подделка/lozhnoe-uslovie.запись; echo $?
-flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/подделка/nevernoe-zakrytie.запись; echo $?
-flang/proof/checker/сверщик flang/proof/map/order.flang оснастка/order-proba-p2.запись; echo $?
-flang/proof/checker/сверщик flang/proof/map/forms.flang оснастка/forms-proba-f12.запись; echo $?
-flang/proof/checker/сверщик flang/proof/examples/binder-wall-map.flang оснастка/подделка/binder-wall-map-lozhniy-hod.запись; echo $?
-flang/proof/checker/сверщик flang/test/fixtures/ohrana-daet-fakt.flang оснастка/подделка/ohrana-daet-fakt-lozhniy-hod.запись; echo $?
-flang/proof/checker/сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f5.запись; echo $?
-flang/proof/checker/сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f1.запись; echo $?
-flang/proof/checker/сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f8.запись; echo $?
-flang/proof/checker/сверщик flang/proof/examples/corpus-hof.flang оснастка/находки/corpus-hof-chetnoe.запись; echo $?
+flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.record; echo $?
+flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/подделка/podmena-tela.record; echo $?
+flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/подделка/lozhnoe-uslovie.record; echo $?
+flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/подделка/nevernoe-zakrytie.record; echo $?
+flang/proof/checker/сверщик flang/proof/map/order.flang оснастка/order-proba-p2.record; echo $?
+flang/proof/checker/сверщик flang/proof/map/forms.flang оснастка/forms-proba-f12.record; echo $?
+flang/proof/checker/сверщик flang/proof/examples/binder-wall-map.flang оснастка/подделка/binder-wall-map-lozhniy-hod.record; echo $?
+flang/proof/checker/сверщик flang/test/fixtures/ohrana-daet-fakt.flang оснастка/подделка/ohrana-daet-fakt-lozhniy-hod.record; echo $?
+flang/proof/checker/сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f5.record; echo $?
+flang/proof/checker/сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f1.record; echo $?
+flang/proof/checker/сверщик flang/proof/map/forms.flang оснастка/находки/forms-proba-f8.record; echo $?
+flang/proof/checker/сверщик flang/proof/examples/corpus-hof.flang оснастка/находки/corpus-hof-chetnoe.record; echo $?
 ```
 
 ---
@@ -485,7 +485,7 @@ flang/proof/checker/сверщик flang/proof/examples/corpus-hof.flang осн�
 | файл | что там | ключевые строки |
 |---|---|---|
 | `flang/proof/checker/checker.c` | чекер | `ход_развёртки` 813, `ход_выбора` 914, `ход_деления` 930, `ход_закрытия` 950, `проиграть_блок` 1063, счётчики `razbor*`/Ч7104 1092-1103, `сверить_объявление` 2683, `разбором_цели` 4270, `сверить_теорему` 4780, `без_теоремы` 4882, гейт 4102 `4907`, `PRAVILA[]` 1127 |
-| `flang/proof/checker/tests/records/corpus/*.запись` | 9 честных записей с правилом | 21 обязательство, §1.2 |
+| `flang/proof/checker/tests/records/corpus/*.record` | 9 честных записей с правилом | 21 обязательство, §1.2 |
 | `flang/proof/examples/binder-hides-the-condition.flang` | Р1 | скобок вокруг условия нет |
 | `flang/proof/examples/binder-wall-map.flang` | Р1 (3) + Р4 (2 посылки) | комментарий файла — карта уже прогнана автором задачи |
 | `flang/proof/examples/honest-modus-ponens-by-guard.flang` | Р1 (2) | — |
@@ -502,7 +502,7 @@ flang/proof/checker/сверщик flang/proof/examples/corpus-hof.flang осн�
 ```bash
 export LC_ALL=C.UTF-8
 flang/proof/checker/сверщик flang/proof/examples/binder-wall-map.flang \
-  flang/proof/checker/tests/records/corpus/binder-wall-map.запись   # КОД 3, 4 места на слово ядра
+  flang/proof/checker/tests/records/corpus/binder-wall-map.record   # КОД 3, 4 места на слово ядра
 flang/proof/checker/сверщик flang/test/fixtures/ohrana-daet-fakt.flang \
-  flang/proof/checker/tests/records/corpus/ohrana-daet-fakt.запись   # КОД 3, «по предположению» на слово ядра
+  flang/proof/checker/tests/records/corpus/ohrana-daet-fakt.record   # КОД 3, «по предположению» на слово ядра
 ```

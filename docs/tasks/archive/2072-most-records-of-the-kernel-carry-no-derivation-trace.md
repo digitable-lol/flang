@@ -36,7 +36,7 @@
 ```sh
 d=flang/proof/checker/tests/records/corpus
 ls $d | wc -l                                          # 86
-/usr/bin/grep -a -l 'ход ' $d/*.запись | wc -l          # 9
+/usr/bin/grep -a -l 'ход ' $d/*.record | wc -l          # 9
 ```
 
 **86 записей, ходы есть у 9, не несут ни одной строки хода 77.** Всего строк

@@ -234,8 +234,8 @@ ADR-0041 §2.1); прозой форма блока описана в
 | поля записи: одна правка в поле (Ч19) | 30 подделок + 2 честные | `tests/records/record-fields` |
 | доказательство лжи (Ч40) | 4 подделки | `tests/records/proof-of-a-lie` + `tests/programs` |
 | сведение по шагам | 14 подделок + 2 честные | правятся здесь же из `flang/proof/forgeries` |
-| запись, снятая ядром | 4 подделки + 1 честная | `tests/records/kernel/kernel.запись` |
-| доказательство настоящей программы | 4 подделки + 1 честная | `tests/records/kernel/body-forms.запись` |
+| запись, снятая ядром | 4 подделки + 1 честная | `tests/records/kernel/kernel.record` |
+| доказательство настоящей программы | 4 подделки + 1 честная | `tests/records/kernel/body-forms.record` |
 | привязка к программе (Ч48) | 5 подделок + 3 честные | `tests/records/program-binding` |
 | корпус ядра | 86 честных | `tests/records/corpus` |
 | терм при номере строки (Ч56) | 2 подделки + 1 честная | `tests/records/term-at-line-number` |

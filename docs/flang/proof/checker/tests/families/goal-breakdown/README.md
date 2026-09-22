@@ -12,11 +12,11 @@
 
     make -s -C flang/proof/checker
     ./flang/proof/checker/сверщик flang/proof/checker/tests/families/goal-breakdown/breakdown.flang \
-        flang/proof/checker/tests/families/goal-breakdown/breakdown.запись
+        flang/proof/checker/tests/families/goal-breakdown/breakdown.record
 
 ## Честная запись → КОД 0 проигрыванием
 
-`breakdown.flang` / `breakdown.запись` — 11 функций, 11 постусловий, по одному на вид.
+`breakdown.flang` / `breakdown.record` — 11 функций, 11 постусловий, по одному на вид.
 Прогон: КОД 0, «сведений проиграно заново 11 (ходов проверено 57)», «Узлов
 «разбор цели по условию» проиграно заново 0» — калькулятор не зван ни разу.
 
@@ -36,7 +36,7 @@
 
 ## Подделки → КОД 1, каждая названа
 
-- `corrupt/lie.flang` / `corrupt/lie.запись` — те же 11 функций с ЛОЖНЫМИ
+- `corrupt/lie.flang` / `corrupt/lie.record` — те же 11 функций с ЛОЖНЫМИ
   постусловиями под теми же цепочками: остаток `равен 1` под охраной `равен 0`;
   `не меньше 1` под законом меры; `е умножить на д` под законом квадрата;
   склейка «начинается правым куском»; `"аб" начинается с "б"`; `начинается с "а"`

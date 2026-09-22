@@ -229,8 +229,8 @@ while IFS='	' read -r d n t; do
   i=$(awk -F'\t' -v d="$d" '$1 == d { print $2 }' "$RAB/список")
   z=$(awk -F'\t' -v d="$d" '$1 == d { print $3 }' "$RAB/список")
   awk -v n="$n" '/^утверждение «/ { v = (index($0, "утверждение «" n "»") == 1) }
-    v && /^ *вывод 1 / && !g { sub(/вывод 1 [^ ]+ /, "вывод 1 Н✗ "); g = 1 } { print }' "$z" > "$RAB/corrupt.запись"
-  "$RAB/сверщик" "$i" "$RAB/corrupt.запись" 2>&1 \
+    v && /^ *вывод 1 / && !g { sub(/вывод 1 [^ ]+ /, "вывод 1 Н✗ "); g = 1 } { print }' "$z" > "$RAB/corrupt.record"
+  "$RAB/сверщик" "$i" "$RAB/corrupt.record" 2>&1 \
     | grep -qF -e "утверждение «$n», вывод:" -e "утверждение «$t», вывод:" && KP=$((KP+1))
 done < "$RAB/контроль.tsv"
 if [ "$KV" -eq 0 ]; then

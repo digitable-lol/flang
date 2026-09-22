@@ -29,9 +29,9 @@
 |---|---|---:|---|
 | `imya-naturalnoe.{flang,запись}` | честная | 0 (было 3) | `if-over-a-segment` с заменой `неотрицательное` → `натуральное`: синоним имени отрезка |
 | `psevdonim-otrezok.{flang,запись}` | честная | 0 | `тип «Возраст» это неотрицательное` под `segment`; ядро напечатает такую запись только после Ш1 — сверщик читает уже сейчас |
-| `number-segment.flang` + `../../../../../../../flang/proof/checker/tests/records/corpus/poddelka-nositel-chislo-segment.запись` | подделка (набор, «лжёт-запись») | 1 (было 3) | `segment` над доводом `число` — П1 |
-| `alias-not-a-segment.flang` + `../../../../../../../flang/proof/checker/tests/records/corpus/poddelka-nositel-psevdonim-ne-otrezok.запись` | подделка (набор, «лжёт-запись») | 1 (было 3) | `segment` над `тип «Мера» это число` — З2 |
-| `corrupt/number-segment-lie-about-the-type.запись` (к `number-segment.flang`) | подделка | 1 | запись говорит `тип «неотрицательное»`, довод объявлен `число` — П1б |
+| `number-segment.flang` + `../../../../../../../flang/proof/checker/tests/records/corpus/poddelka-nositel-chislo-segment.record` | подделка (набор, «лжёт-запись») | 1 (было 3) | `segment` над доводом `число` — П1 |
+| `alias-not-a-segment.flang` + `../../../../../../../flang/proof/checker/tests/records/corpus/poddelka-nositel-psevdonim-ne-otrezok.record` | подделка (набор, «лжёт-запись») | 1 (было 3) | `segment` над `тип «Мера» это число` — З2 |
+| `corrupt/number-segment-lie-about-the-type.record` (к `number-segment.flang`) | подделка | 1 | запись говорит `тип «неотрицательное»`, довод объявлен `число` — П1б |
 | порчей одной строки в `run.sh` | подделки | 1 | слово вне трёх (П2); `algebra` над отрезком |
 | `список-чисел.{flang,запись}` | честная | 0 | `для всех л обеспечивает …` при `л: список числа`, теорема `индукция по л`: печать семени `0ce948bfd` (11 сентября 2026) — `принцип … носитель algebra` + `объявление встроенный «список» варианты «пусто» 0 «голова и хвост» 1`; п.1 «как понять, что сделано» задачи 6203 |
 

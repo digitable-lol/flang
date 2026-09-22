@@ -37,7 +37,7 @@
 
 - `flang check … --proof --записать` кладёт в запись утверждения вида
   `postcondition` и блоки `тотальность`; блока о снятии предусловия в формате
-  записи нет (`flang/proof/checker/tests/families/all-elements/*.запись` — образец);
+  записи нет (`flang/proof/checker/tests/families/all-elements/*.record` — образец);
 - в JSON ведомости ключа о снятии по местам нет (`discharge` на верхнем
   уровне — `null`);
 - линейка доли строится только из постусловий: `flang/self/proof.flang`

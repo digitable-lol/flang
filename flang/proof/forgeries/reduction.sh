@@ -30,10 +30,10 @@
 # ядро не выписывает вовсе — `соседи`, `деление`, `выбор`. Снять их значило бы
 # перестать проверять три хода из семи. Ходы `замена` и `закрыть тождеством`
 # ядро теперь выписывает само: на `examples/stack.flang` свежая запись ядра
-# совпадает со `стопка.запись` во всём, кроме порядка двух развёрток, которые
+# совпадает со `стопка.record` во всём, кроме порядка двух развёрток, которые
 # переставимы — каждая берёт свой подтерм.
 #
-# ОТСЮДА ХРУПКОСТЬ, названная заранее: `стопка.запись` привязана отпечатком к
+# ОТСЮДА ХРУПКОСТЬ, названная заранее: `стопка.record` привязана отпечатком к
 # `flang/proof/examples/stack.flang`. Правка того файла ломает эту запись, и
 # ломает ГРОМКО — отпечаток не сойдётся, прогон покраснеет. Чинится так: снять
 # свежую запись двоичным (`flang check … --proof --записать`) и перенести в неё
@@ -45,11 +45,11 @@ set -eu
 KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 SVERIT=$KOREN/flang/proof/check.sh
 STOPKA=$KOREN/flang/proof/examples/stack.flang
-STOPKA_Z=$KOREN/flang/proof/forgeries/stack.запись
+STOPKA_Z=$KOREN/flang/proof/forgeries/stack.record
 DELEN=$KOREN/flang/proof/forgeries/by-division.flang
-DELEN_Z=$KOREN/flang/proof/forgeries/by-division.запись
+DELEN_Z=$KOREN/flang/proof/forgeries/by-division.record
 TOZH=$KOREN/flang/proof/forgeries/by-identity.flang
-TOZH_Z=$KOREN/flang/proof/forgeries/by-identity.запись
+TOZH_Z=$KOREN/flang/proof/forgeries/by-identity.record
 
 RABOTA=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" svedenie.XXXXXX)
 trap 'rm -rf "$RABOTA"' EXIT INT TERM
@@ -102,7 +102,7 @@ say ""
 say "── круг целиком: ядро записало ходы, сверщик их проиграл ──"
 FLANG=${FLANG:-$KOREN/bootstrap/flang}
 [ -x "$FLANG" ] || { echo "двоичного нет: $FLANG" >&2; exit 2; }
-YADRO=$RABOTA/kernel.запись
+YADRO=$RABOTA/kernel.record
 "$FLANG" check "$STOPKA" --proof --записать "$YADRO" > /dev/null
 HODOV=$(grep -c "^ *ход " "$YADRO" || true)
 say "ядро выписало строк «ход»: $HODOV"

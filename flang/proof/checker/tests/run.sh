@@ -182,7 +182,7 @@ BODY=flang/proof/examples/body-forms.flang
 DELIM=flang/proof/forgeries/by-division.flang
 
 say "── поля записи (Ч19): 30 подделок → 1, 2 честные → 3 ──"
-for f in "$ZAP"/record-fields/*.запись; do
+for f in "$ZAP"/record-fields/*.record; do
   b=$(basename "$f")
   case "$b" in tree-*) I=$TREE;; *) I=$NAT;; esac
   case "$b" in *honest*) opyt C "честная $b" 3 "$I" "$f";;
@@ -192,14 +192,14 @@ done
 say "── доказательство лжи (Ч40): 4 записи, ни одна не вправе получить код 0 ──"
 # Ч40 замерила: свёртка ядра тут столкнута, ловить нечем — это третий исход,
 # а не отказ. Код 0 не вправе получить ни одна из четырёх.
-opyt P "ложь-1-вердикт"        3 "$PROG/lie-difference-pure.flang" "$ZAP/proof-of-a-lie/lie-1-verdict.запись"
-opyt P "ложь-2-переадресована" 1 "$PROG/lie-difference-pure.flang" "$ZAP/proof-of-a-lie/lie-2-readdressed.запись"
-opyt P "ложь-4-теорема"        1 "$PROG/lie-tree.flang"           "$ZAP/proof-of-a-lie/lie-4-theorem.запись"
-opyt P "ложь-8-столкновение"   1 "$PROG/lie-collision.flang"     "$ZAP/proof-of-a-lie/lie-8-honest-record-natural.запись"
+opyt P "ложь-1-вердикт"        3 "$PROG/lie-difference-pure.flang" "$ZAP/proof-of-a-lie/lie-1-verdict.record"
+opyt P "ложь-2-переадресована" 1 "$PROG/lie-difference-pure.flang" "$ZAP/proof-of-a-lie/lie-2-readdressed.record"
+opyt P "ложь-4-теорема"        1 "$PROG/lie-tree.flang"           "$ZAP/proof-of-a-lie/lie-4-theorem.record"
+opyt P "ложь-8-столкновение"   1 "$PROG/lie-collision.flang"     "$ZAP/proof-of-a-lie/lie-8-honest-record-natural.record"
 
 say "── сведение по шагам: 2 честные → 3, 14 подделок → 1 ──"
-SZ=flang/proof/forgeries/stack.запись
-DZ=flang/proof/forgeries/by-division.запись
+SZ=flang/proof/forgeries/stack.record
+DZ=flang/proof/forgeries/by-division.record
 opyt C "честная: стопка, семь ходов" 3 "$STACK" "$SZ"
 opyt C "честная: деление и выбор"    3 "$DELIM" "$DZ"
 podd "подмена-переписки" "$STACK" "$SZ" 's/ход 4 замена по дано 1/ход 4 замена по дано 2/'
@@ -220,7 +220,7 @@ podd "допущение-о-нерекурсивной-части" "$STACK" "$SZ
 podd "обрыв-ход-конец" "$STACK" "$SZ" '0,/^    ход конец$/s///'
 
 say "── запись, снятая ядром: 1 честная → 3, 4 порчи → 1 ──"
-Y=$ZAP/kernel/kernel.запись
+Y=$ZAP/kernel/kernel.record
 opyt C "честная: запись снята ядром" 3 "$STACK" "$Y"
 podd "порча-закон-подменён" "$STACK" "$Y" '0,/закон «литерал неотрицателен»/s//закон «сумма неотрицательных»/'
 podd "порча-развёртка-с-чужой-строки" "$STACK" "$Y" 's/ строка 56$/ строка 58/'
@@ -231,54 +231,54 @@ say "── доказательство настоящей программы: 
 # С партии перепечатки кванторов (семя 25baa912) честная — 0, а не 3: ядро печатает
 # доказательство ходами (развернуть, деление, выбор, «Закон признака»), сверщик
 # переигрывает их все. Запись — печать ядра байт в байт.
-BZ=$ZAP/kernel/body-forms.запись
+BZ=$ZAP/kernel/body-forms.record
 opyt C "честная: доказательство body-forms" 0 "$BODY" "$BZ"
 podd "подменённый-шаг" "$BODY" "$BZ" '0,/^\( *\)шаг \(.*\) по предположению$/s//\1шаг \2 по свойству «высота неотрицательна»/'
 opyt P "верная запись подложена к другому исходнику" 1 flang/proof/examples/corpus-factorial.flang "$BZ"
 NOM=$(grep -n '^ *шаг ' "$BZ" | tail -1 | cut -d: -f1)
 sed "${NOM}d" "$BZ" > "$RABOTA/обрубленная"
 opyt P "обрубленное доказательство" 1 "$BODY" "$RABOTA/обрубленная"
-opyt P "шаг обосновывает сам себя (круг)" 1 flang/proof/forgeries/circle.flang flang/proof/forgeries/circle.запись
+opyt P "шаг обосновывает сам себя (круг)" 1 flang/proof/forgeries/circle.flang flang/proof/forgeries/circle.record
 
 say "── привязка к программе (Ч48/Ч55): путь — примета только при сошедшемся хеше ──"
 # Ждали 3 до правила «цель следует из объявленного о доводах»: у этой записи
 # оставалось одно место на слово ядра. Правило его закрыло, и запись стала 0.
 # Проба про ПРИВЯЗКУ, а не про долю: класс C считает отказом только код 1,
 # так что «принимается» подтверждается кодом 0 ровно так же, как кодом 3.
-opyt C "О4 чужой путь + отпечаток256 → принимается"        0 "$NAT" "$ZAP/program-binding/v-honest.запись"
-opyt P "О5 та же запись против ДРУГОЙ программы → отказ"   1 "$PROG/lie-collision.flang" "$ZAP/program-binding/v-honest.запись"
-opyt P "О5б отпечаток честного при ложной программе → отказ" 1 "$PROG/lie-collision.flang" "$ZAP/program-binding/b-with-256.запись"
+opyt C "О4 чужой путь + отпечаток256 → принимается"        0 "$NAT" "$ZAP/program-binding/v-honest.record"
+opyt P "О5 та же запись против ДРУГОЙ программы → отказ"   1 "$PROG/lie-collision.flang" "$ZAP/program-binding/v-honest.record"
+opyt P "О5б отпечаток честного при ложной программе → отказ" 1 "$PROG/lie-collision.flang" "$ZAP/program-binding/b-with-256.record"
 # О6 — контроль: БЕЗ отпечатка256 чужой путь обязан отвергаться по-прежнему.
 # Путь подделывается здесь же: в дереве все записи лежат с путями дерева.
-sed -e '2s|^исходник |исходник /чужой/клон/|' -e '/^отпечаток256 /d' "$ZAP/corpus/corpus-natural.запись" > "$RABOTA/чужой-путь"
-cmp -s "$ZAP/corpus/corpus-natural.запись" "$RABOTA/чужой-путь" && { say "ПОДДЕЛКА НЕ СОБРАЛАСЬ: О6"; BAD=$((BAD+1)); }
+sed -e '2s|^исходник |исходник /чужой/клон/|' -e '/^отпечаток256 /d' "$ZAP/corpus/corpus-natural.record" > "$RABOTA/чужой-путь"
+cmp -s "$ZAP/corpus/corpus-natural.record" "$RABOTA/чужой-путь" && { say "ПОДДЕЛКА НЕ СОБРАЛАСЬ: О6"; BAD=$((BAD+1)); }
 opyt P "О6 без отпечатка256 чужой путь → отказ" 1 "$NAT" "$RABOTA/чужой-путь"
 # О6б: подмена, которую свёртка ядра не ловит. Это не отказ и не приёмка —
 # это ровно третий исход, и причина обязана быть НАЗВАНА, а не подразумеваться.
-opyt P "О6б подмена без отпечатка256 → 3, причина названа" 3 "$PROG/lie-collision.flang" "$ZAP/program-binding/a-without-256.запись"
-"$C" "$PROG/lie-collision.flang" "$ZAP/program-binding/a-without-256.запись" 2>/dev/null \
+opyt P "О6б подмена без отпечатка256 → 3, причина названа" 3 "$PROG/lie-collision.flang" "$ZAP/program-binding/a-without-256.record"
+"$C" "$PROG/lie-collision.flang" "$ZAP/program-binding/a-without-256.record" 2>/dev/null \
   | grep -q "привязка к программе не криптографическая" \
   || { say "ПРОВАЛ О6б: чекер о привязке смолчал"; BAD=$((BAD+1)); }
 # Отпечаток, поданный доводом, — такая же криптопривязка, как строка шапки.
-H_NAT=$("$C" "$NAT" "$ZAP/program-binding/relative-path.запись" 2>/dev/null | sed -n 's/.*sha256 исходника \([0-9a-f]*\).*/\1/p')
+H_NAT=$("$C" "$NAT" "$ZAP/program-binding/relative-path.record" 2>/dev/null | sed -n 's/.*sha256 исходника \([0-9a-f]*\).*/\1/p')
 # Тот же сдвиг 3 → 0 и по той же причине. Само утверждение пробы — что путь
 # понижен до приметы — проверяется строкой ниже, на ДРУГОЙ записи (otn-put),
 # и от кода здесь не зависит.
-opyt C "отпечаток доводом: путь понижен до приметы" 0 "$NAT" "$ZAP/program-binding/v-honest.запись" "$H_NAT"
-"$C" "$NAT" "$ZAP/program-binding/relative-path.запись" "$H_NAT" 2>/dev/null \
+opyt C "отпечаток доводом: путь понижен до приметы" 0 "$NAT" "$ZAP/program-binding/v-honest.record" "$H_NAT"
+"$C" "$NAT" "$ZAP/program-binding/relative-path.record" "$H_NAT" 2>/dev/null \
   | grep -q "Привязка к программе: SHA-256 сошёлся" \
   || { say "ПРОВАЛ довод не засчитан криптопривязкой"; BAD=$((BAD+1)); }
 # Запись, у которой на слово ядра не взято НИЧЕГО, с отпечатком получает 0:
 # значит третий исход — именно про недостающую привязку, а не «всё подряд».
 BR=flang/proof/examples/corpus-brackets.flang
-H_BR=$("$C" "$BR" "$ZAP/corpus/corpus-brackets.запись" 2>/dev/null | sed -n 's/.*sha256 исходника \([0-9a-f]*\).*/\1/p')
-opyt C "запись без взятого на слово + отпечаток → ПРОВЕРЕНО" 0 "$BR" "$ZAP/corpus/corpus-brackets.запись" "$H_BR"
-opyt P "она же с ЧУЖИМ отпечатком → отказ" 1 "$BR" "$ZAP/corpus/corpus-brackets.запись" 0000000000000000000000000000000000000000000000000000000000000000
+H_BR=$("$C" "$BR" "$ZAP/corpus/corpus-brackets.record" 2>/dev/null | sed -n 's/.*sha256 исходника \([0-9a-f]*\).*/\1/p')
+opyt C "запись без взятого на слово + отпечаток → ПРОВЕРЕНО" 0 "$BR" "$ZAP/corpus/corpus-brackets.record" "$H_BR"
+opyt P "она же с ЧУЖИМ отпечатком → отказ" 1 "$BR" "$ZAP/corpus/corpus-brackets.record" 0000000000000000000000000000000000000000000000000000000000000000
 
 say "── ключи: список закрыт, неизвестный ключ не толкуется ──"
-set +e; "$C" --мягко "$NAT" "$ZAP/program-binding/relative-path.запись" >/dev/null 2>&1; k=$?; set -e
+set +e; "$C" --мягко "$NAT" "$ZAP/program-binding/relative-path.record" >/dev/null 2>&1; k=$?; set -e
 [ "$k" -eq 2 ] || { say "ПРОВАЛ неизвестный ключ обязан давать код 2, вышло $k"; BAD=$((BAD+1)); }
-set +e; "$C" --старый-код-не-приёмка "$NAT" "$ZAP/program-binding/relative-path.запись" >/dev/null 2>"$RABOTA/старый.err"; k=$?; set -e
+set +e; "$C" --старый-код-не-приёмка "$NAT" "$ZAP/program-binding/relative-path.record" >/dev/null 2>"$RABOTA/старый.err"; k=$?; set -e
 [ "$k" -eq 0 ] || { say "ПРОВАЛ старый ключ обязан давать 0, вышло $k"; BAD=$((BAD+1)); }
 grep -q "ПРИЁМКОЙ НЕ ЯВЛЯЕТСЯ" "$RABOTA/старый.err" || { say "ПРОВАЛ старый ключ смолчал"; BAD=$((BAD+1)); }
 
@@ -301,7 +301,7 @@ say "── корпус: 86 настоящих записей ядра, ни о
 #                       файла перестала доказываться.
 # Записи вне манифеста — честные записи ядра: им нельзя быть отвергнутыми.
 KORP0=0; KORP3=0; NAB_POYMANO=0; NAB_LZ=0; NAB_LZ_OTV=0; NAB_LZ_PRIN0=0
-for z in "$ZAP"/corpus/*.запись; do
+for z in "$ZAP"/corpus/*.record; do
   I=$(sed -n '2p' "$z"); I=${I#исходник }
   b=$(basename "$z")
   k=$(kod "$I" "$z"); schet "$k"
@@ -397,35 +397,35 @@ say "  Ч56 — терм при номере строки и «закрыть т
 # в ожидание сегодняшний размер долга — тот же изъян, что у проб Ч375.
 # 0 с ячейки 5 покрытия (10 сентября 2026): шаг «по предположению» прямой
 # теоремы «удвоенное неотрицательно» (тело «н плюс н») переигран по построению.
-opyt C "Ч56 честная: развёртка несёт И номер, И тело" 0 "$PRE" "$ZAP/term-at-line-number/precondition-of-the-tree.запись"
-opyt P "Ч56 тело записи не то, что в строке исходника" 1 "$PRE" "$ZAP/term-at-line-number/lie-wrong-body.запись"
-opyt P "Ч56 номер строки лжёт при верном теле"        1 "$PRE" "$ZAP/term-at-line-number/lie-with-the-line-number.запись"
+opyt C "Ч56 честная: развёртка несёт И номер, И тело" 0 "$PRE" "$ZAP/term-at-line-number/precondition-of-the-tree.record"
+opyt P "Ч56 тело записи не то, что в строке исходника" 1 "$PRE" "$ZAP/term-at-line-number/lie-wrong-body.record"
+opyt P "Ч56 номер строки лжёт при верном теле"        1 "$PRE" "$ZAP/term-at-line-number/lie-with-the-line-number.record"
 
 say "  Ч71 — шаг автора «по примеру» привязан к примеру"
-opyt C "Ч71 честная: все привязки сошлись" 0 "$TL" "$ZAP/example-binding/honest.запись"
-opyt P "Ч71 привязка зовёт чужой пример"        1 "$TL" "$ZAP/example-binding/p-foreign-example.запись"
-opyt P "Ч71 привязка указывает на «дано»"       1 "$TL" "$ZAP/example-binding/p-points-at-a-given.запись"
-opyt P "Ч71 привязка указывает на примечание"   1 "$TL" "$ZAP/example-binding/p-points-at-a-note.запись"
-opyt P "Ч71 привязка за концом файла"           1 "$TL" "$ZAP/example-binding/p-past-the-end-of-file.запись"
-opyt P "Ч71 зелёный шаг подменён красным"       1 "$TL" "$ZAP/example-binding/p-green-swapped-for-red.запись"
-opyt P "Ч71 шаг без привязки вовсе"             1 "$TL" "$ZAP/example-binding/lie-without-a-binding.запись"
-opyt P "Ч71 пример о чужом варианте"            1 "$PROG/example-binding-lie-foreign-variant.flang" "$ZAP/example-binding/lie-foreign-variant.запись"
+opyt C "Ч71 честная: все привязки сошлись" 0 "$TL" "$ZAP/example-binding/honest.record"
+opyt P "Ч71 привязка зовёт чужой пример"        1 "$TL" "$ZAP/example-binding/p-foreign-example.record"
+opyt P "Ч71 привязка указывает на «дано»"       1 "$TL" "$ZAP/example-binding/p-points-at-a-given.record"
+opyt P "Ч71 привязка указывает на примечание"   1 "$TL" "$ZAP/example-binding/p-points-at-a-note.record"
+opyt P "Ч71 привязка за концом файла"           1 "$TL" "$ZAP/example-binding/p-past-the-end-of-file.record"
+opyt P "Ч71 зелёный шаг подменён красным"       1 "$TL" "$ZAP/example-binding/p-green-swapped-for-red.record"
+opyt P "Ч71 шаг без привязки вовсе"             1 "$TL" "$ZAP/example-binding/lie-without-a-binding.record"
+opyt P "Ч71 пример о чужом варианте"            1 "$PROG/example-binding-lie-foreign-variant.flang" "$ZAP/example-binding/lie-foreign-variant.record"
 # Снявшие привязку обязаны получить 3 и НИКОГДА 0: «проверено» не даётся за то,
 # что чекер перестал что-то проверять.
-opyt P "Ч71 привязка снята — третий исход, не приёмка"     3 "$TL" "$ZAP/example-binding/p-binding-removed.запись"
-opyt P "Ч71 все привязки сняты — третий исход"             3 "$TL" "$ZAP/example-binding/p-all-bindings-removed.запись"
-opyt P "Ч71 номер привязки ноль — третий исход"            3 "$TL" "$ZAP/example-binding/p-index-zero.запись"
+opyt P "Ч71 привязка снята — третий исход, не приёмка"     3 "$TL" "$ZAP/example-binding/p-binding-removed.record"
+opyt P "Ч71 все привязки сняты — третий исход"             3 "$TL" "$ZAP/example-binding/p-all-bindings-removed.record"
+opyt P "Ч71 номер привязки ноль — третий исход"            3 "$TL" "$ZAP/example-binding/p-index-zero.record"
 # Пять проб ниже добавлены изъятием: у сверщика шесть отдельных проверок
 # «по примеру» (см. врезку «ЯЧЕЙКА Ч71» в checker.c), а из одиннадцати проб
 # выше по существу, поодиночке, была накрыта только проверка 1 — 2, 3 и 5
 # не стерегла ни одна, а 4 и 6 стерегла только ПАРА `lozh-chuzhoy-variant`
 # (порознь каждая маскируется другой). Каждая проба ниже красная РОВНО от
 # своей проверки — проверено изъятием этой проверки из checker.c и обратно.
-opyt P "Ч71 пример настоящий, но вне блока функции (проверка 2)"      1 "$PROG/example-binding-p-example-outside-the-block.flang" "$ZAP/example-binding/p-example-outside-the-block.запись"
-opyt P "Ч71 у примера нет «ожидается» (проверка 3)"                  3 "$PROG/example-binding-p-example-without-expectation.flang" "$ZAP/example-binding/p-example-without-expectation.запись"
-opyt P "Ч71 пример о своём случае, но не о том значении (проверка 4)" 1 "$PROG/example-binding-p-case-with-the-same-value.flang" "$ZAP/example-binding/p-case-with-the-same-value.запись"
-opyt P "Ч71 значение верное, а цели не удовлетворяет (проверка 5)"    1 "$PROG/example-binding-p-goal-does-not-hold.flang" "$ZAP/example-binding/p-goal-does-not-hold.запись"
-opyt P "Ч71 пример лжёт о значении, ветвь тела честная (проверка 6)"  1 "$PROG/example-binding-p-example-lies-about-the-value.flang" "$ZAP/example-binding/p-example-lies-about-the-value.запись"
+opyt P "Ч71 пример настоящий, но вне блока функции (проверка 2)"      1 "$PROG/example-binding-p-example-outside-the-block.flang" "$ZAP/example-binding/p-example-outside-the-block.record"
+opyt P "Ч71 у примера нет «ожидается» (проверка 3)"                  3 "$PROG/example-binding-p-example-without-expectation.flang" "$ZAP/example-binding/p-example-without-expectation.record"
+opyt P "Ч71 пример о своём случае, но не о том значении (проверка 4)" 1 "$PROG/example-binding-p-case-with-the-same-value.flang" "$ZAP/example-binding/p-case-with-the-same-value.record"
+opyt P "Ч71 значение верное, а цели не удовлетворяет (проверка 5)"    1 "$PROG/example-binding-p-goal-does-not-hold.flang" "$ZAP/example-binding/p-goal-does-not-hold.record"
+opyt P "Ч71 пример лжёт о значении, ветвь тела честная (проверка 6)"  1 "$PROG/example-binding-p-example-lies-about-the-value.flang" "$ZAP/example-binding/p-example-lies-about-the-value.record"
 
 say "  3455 — шаг автора «по свойству» привязан к постусловию по всему модулю"
 # До этой задачи `по свойству «имя»» не проверялось вовсе: сверщик сверял
@@ -434,42 +434,42 @@ say "  3455 — шаг автора «по свойству» привязан �
 # строка N» (N — где ВПЕРВЫЕ ПО ВСЕМУ ФАЙЛУ объявлено постусловие с этим
 # именем, тем же правилом, каким ищет само правило «по свойству»), и сверщик
 # читает исходник заново, а не верит записи на слово.
-opyt C "3455 честная: обе привязки указывают на первое объявление" 0 "$HMPG" "$ZAP/3455/honest.запись"
-opyt P "3455 номер привязки подменён на строку без такого «обеспечивает»"   1 "$HMPG" "$ZAP/3455/p-index-swapped.запись"
-opyt P "3455 привязка указывает на чужое (но существующее) свойство"        1 "$HMPG" "$ZAP/3455/p-foreign-property.запись"
-opyt P "3455 привязка за концом файла"                                      1 "$HMPG" "$ZAP/3455/p-past-the-end-of-file.запись"
+opyt C "3455 честная: обе привязки указывают на первое объявление" 0 "$HMPG" "$ZAP/3455/honest.record"
+opyt P "3455 номер привязки подменён на строку без такого «обеспечивает»"   1 "$HMPG" "$ZAP/3455/p-index-swapped.record"
+opyt P "3455 привязка указывает на чужое (но существующее) свойство"        1 "$HMPG" "$ZAP/3455/p-foreign-property.record"
+opyt P "3455 привязка за концом файла"                                      1 "$HMPG" "$ZAP/3455/p-past-the-end-of-file.record"
 # Снявшие привязку обязаны получить 3 и НИКОГДА 0 — «проверено» не даётся за
 # то, что чекер перестал что-то проверять (тот же довод, что у Ч71 выше).
-opyt P "3455 привязка снята — третий исход, не приёмка" 3 "$HMPG" "$ZAP/3455/p-binding-removed.запись"
-opyt P "3455 номер привязки ноль — третий исход"        3 "$HMPG" "$ZAP/3455/p-index-zero.запись"
+opyt P "3455 привязка снята — третий исход, не приёмка" 3 "$HMPG" "$ZAP/3455/p-binding-removed.record"
+opyt P "3455 номер привязки ноль — третий исход"        3 "$HMPG" "$ZAP/3455/p-index-zero.record"
 
 say "  Ч76 — шаг автора вне случая, подстановка тела в терм"
-opyt C "Ч76 честная: цель замкнута телом и держится" 0 "$CID" "$ZAP/step-outside-case/honest.запись"
-opyt P "Ч76 тело мимо примера"          1 "$PROG/step-outside-case-1-body-misses-the-example.flang"    "$ZAP/step-outside-case/1-body-misses-the-example.запись"
-opyt P "Ч76 цель на теле не держится"   1 "$PROG/step-outside-case-2-goal-is-false.flang"           "$ZAP/step-outside-case/2-goal-is-false.запись"
-opyt P "Ч76 метки совпали"              1 "$PROG/step-outside-case-3-marks-coincided.flang"        "$ZAP/step-outside-case/3-marks-coincided.запись"
-opyt P "Ч76 длина на один больше"       1 "$PROG/step-outside-case-5-length-greater-by-one.flang" "$ZAP/step-outside-case/5-length-greater-by-one.запись"
-opyt P "Ч76 цифры подменены"            1 "$PROG/step-outside-case-6-digits-swapped.flang"      "$ZAP/step-outside-case/6-digits-swapped.запись"
-opyt P "Ч76 пример у чужой функции"     1 "$CID" "$ZAP/step-outside-case/7-foreign-function.запись"
-opyt P "Ч76 пример чужой функции"       1 "$CID" "$ZAP/step-outside-case/8-example-of-a-foreign-function.запись"
+opyt C "Ч76 честная: цель замкнута телом и держится" 0 "$CID" "$ZAP/step-outside-case/honest.record"
+opyt P "Ч76 тело мимо примера"          1 "$PROG/step-outside-case-1-body-misses-the-example.flang"    "$ZAP/step-outside-case/1-body-misses-the-example.record"
+opyt P "Ч76 цель на теле не держится"   1 "$PROG/step-outside-case-2-goal-is-false.flang"           "$ZAP/step-outside-case/2-goal-is-false.record"
+opyt P "Ч76 метки совпали"              1 "$PROG/step-outside-case-3-marks-coincided.flang"        "$ZAP/step-outside-case/3-marks-coincided.record"
+opyt P "Ч76 длина на один больше"       1 "$PROG/step-outside-case-5-length-greater-by-one.flang" "$ZAP/step-outside-case/5-length-greater-by-one.record"
+opyt P "Ч76 цифры подменены"            1 "$PROG/step-outside-case-6-digits-swapped.flang"      "$ZAP/step-outside-case/6-digits-swapped.record"
+opyt P "Ч76 пример у чужой функции"     1 "$CID" "$ZAP/step-outside-case/7-foreign-function.record"
+opyt P "Ч76 пример чужой функции"       1 "$CID" "$ZAP/step-outside-case/8-example-of-a-foreign-function.record"
 # «Не берусь» — не «сошлось»: причина названа строкой «НЕ ВЗЯЛСЯ», исход третий.
-opyt P "Ч76 отношение незнакомо — не берусь"  3 "$PROG/step-outside-case-4-relation-unknown.flang" "$ZAP/step-outside-case/4-relation-unknown.запись"
-opyt P "Ч76 тело не один литерал — не берусь" 3 "$PROG/step-outside-case-9-body-not-one-literal.flang" "$ZAP/step-outside-case/9-body-not-one-literal.запись"
+opyt P "Ч76 отношение незнакомо — не берусь"  3 "$PROG/step-outside-case-4-relation-unknown.flang" "$ZAP/step-outside-case/4-relation-unknown.record"
+opyt P "Ч76 тело не один литерал — не берусь" 3 "$PROG/step-outside-case-9-body-not-one-literal.flang" "$ZAP/step-outside-case/9-body-not-one-literal.record"
 
 say "  Ч87 — списочное тело: оглавление печати ПЕРЕЧИТЫВАЕТСЯ"
 # Ждали 3 до задачи 1573: у `corpus-case` оставался один шаг «по примеру» на слове
 # ядра — цель звала «В верхний регистр» от поля звена, а вычислитель вызова не брал.
 # С развёрткой тела он его берёт, и запись проверена целиком: ждём 0.
-opyt C "Ч87 честная: вершина линии печати" 0 "$CASE" "$ZAP/list-body-by-contents/honest.запись"
-opyt P "Ч87 цель на списке не держится" 1 "$PROG/list-body-f1-goal-is-false.flang"           "$ZAP/list-body-by-contents/f1-goal-is-false.запись"
-opyt P "Ч87 тело мимо примера"          1 "$PROG/list-body-f2-body-misses-the-example.flang"    "$ZAP/list-body-by-contents/f2-body-misses-the-example.запись"
-opyt P "Ч87 два звена в одной строке"   1 "$PROG/list-body-f3-two-links-on-one-line.flang"   "$ZAP/list-body-by-contents/f3-two-links-on-one-line.запись"
-opyt P "Ч87 звено закомментировано"     1 "$PROG/list-body-f4-link-commented-out.flang" "$ZAP/list-body-by-contents/f4-link-commented-out.запись"
-opyt P "Ч87 оглавление зовёт чужую таблицу" 1 "$CASE" "$ZAP/list-body-by-contents/f5-foreign-table.запись"
-opyt P "Ч87 граница таблицы сдвинута"       1 "$CASE" "$ZAP/list-body-by-contents/f6-boundary-shifted.запись"
-opyt P "Ч87 число звеньев соврано"          1 "$CASE" "$ZAP/list-body-by-contents/f7-link-count-lied-about.запись"
-opyt P "Ч87 число таблиц соврано"           1 "$CASE" "$ZAP/list-body-by-contents/f8-table-count-lied-about.запись"
-opyt P "Ч87 оглавление снято — третий исход, не приёмка" 3 "$CASE" "$ZAP/list-body-by-contents/f9-contents-removed.запись"
+opyt C "Ч87 честная: вершина линии печати" 0 "$CASE" "$ZAP/list-body-by-contents/honest.record"
+opyt P "Ч87 цель на списке не держится" 1 "$PROG/list-body-f1-goal-is-false.flang"           "$ZAP/list-body-by-contents/f1-goal-is-false.record"
+opyt P "Ч87 тело мимо примера"          1 "$PROG/list-body-f2-body-misses-the-example.flang"    "$ZAP/list-body-by-contents/f2-body-misses-the-example.record"
+opyt P "Ч87 два звена в одной строке"   1 "$PROG/list-body-f3-two-links-on-one-line.flang"   "$ZAP/list-body-by-contents/f3-two-links-on-one-line.record"
+opyt P "Ч87 звено закомментировано"     1 "$PROG/list-body-f4-link-commented-out.flang" "$ZAP/list-body-by-contents/f4-link-commented-out.record"
+opyt P "Ч87 оглавление зовёт чужую таблицу" 1 "$CASE" "$ZAP/list-body-by-contents/f5-foreign-table.record"
+opyt P "Ч87 граница таблицы сдвинута"       1 "$CASE" "$ZAP/list-body-by-contents/f6-boundary-shifted.record"
+opyt P "Ч87 число звеньев соврано"          1 "$CASE" "$ZAP/list-body-by-contents/f7-link-count-lied-about.record"
+opyt P "Ч87 число таблиц соврано"           1 "$CASE" "$ZAP/list-body-by-contents/f8-table-count-lied-about.record"
+opyt P "Ч87 оглавление снято — третий исход, не приёмка" 3 "$CASE" "$ZAP/list-body-by-contents/f9-contents-removed.record"
 
 # ── МУТАНТЫ ПРИЁМОВ, ПРОИГРЫВАЮЩИХ УЗЕЛ ВЕРДИКТА (Ч363, Ч365) ──
 #
@@ -489,7 +489,7 @@ opyt_otp() { # класс, имя, ожидаемый код, исходник, 
   opyt "$1" "$2" "$3" "$4" "$5" "$(otp "$4")"
 }
 mut() { # каталог, имя пробы, ожидаемый код, класс
-  d=$ZAP/$1; opyt_otp "$4" "$1 $2" "$3" "$d/$2.flang" "$d/$2.запись"
+  d=$ZAP/$1; opyt_otp "$4" "$1 $2" "$3" "$d/$2.flang" "$d/$2.record"
 }
 
 say ""
@@ -556,16 +556,16 @@ FAKT=flang/proof/examples/corpus-factorial.flang
 # ожидаемый ответ — тот самый сторож, что стережёт снимок, а не свойство.
 grep -q 'ни произведение строго положительного' "$CHEK/checker.c" || {
   say "ПРОВАЛ Ч375: ожидания правлены под приём 7107, а приёма в сверщике нет"; BAD=$((BAD+1)); }
-opyt C "Ч375 00 нетронутый: запись как была"                          0 "$FAKT" "$D375/00-untouched.запись"
-opyt C "Ч375 01 термин и номер согласны — остаётся зелёным, как было" 0 "$FAKT" "$D375/01-term-and-line-agree.запись"
-opyt P "Ч375 02 термин цели против строки под номером"                1 "$FAKT" "$D375/02-goal-term-against-the-line.запись"
-opyt P "Ч375 03 термин шага против строки под номером"                1 "$FAKT" "$D375/03-step-term-against-the-line.запись"
-opyt C "Ч375 04 термин цели без номера, согласен с обещанным"         0 "$FAKT" "$D375/04-goal-term-without-line-agrees.запись"
-opyt P "Ч375 05 термин цели без номера — против обещанного"           1 "$FAKT" "$D375/05-goal-term-without-line-against-the-promise.запись"
-opyt C "Ч375 06 термин шага без номера, согласен с обоснованием"      0 "$FAKT" "$D375/06-step-term-without-line-agrees.запись"
-opyt P "Ч375 07 термин шага без номера — против обоснования"          1 "$FAKT" "$D375/07-step-term-without-line-against-the-justification.запись"
-opyt C "Ч375 08 термин «по примеру» несёт своё имя в ёлочках"         0 "$TL" "$D375/08-term-by-example-with-a-name-inside.запись"
-opyt P "Ч375 09 термин с ЛОЖНЫМ именем внутри — расхождение поймано"  1 "$TL" "$D375/09-term-with-a-false-name-inside.запись"
+opyt C "Ч375 00 нетронутый: запись как была"                          0 "$FAKT" "$D375/00-untouched.record"
+opyt C "Ч375 01 термин и номер согласны — остаётся зелёным, как было" 0 "$FAKT" "$D375/01-term-and-line-agree.record"
+opyt P "Ч375 02 термин цели против строки под номером"                1 "$FAKT" "$D375/02-goal-term-against-the-line.record"
+opyt P "Ч375 03 термин шага против строки под номером"                1 "$FAKT" "$D375/03-step-term-against-the-line.record"
+opyt C "Ч375 04 термин цели без номера, согласен с обещанным"         0 "$FAKT" "$D375/04-goal-term-without-line-agrees.record"
+opyt P "Ч375 05 термин цели без номера — против обещанного"           1 "$FAKT" "$D375/05-goal-term-without-line-against-the-promise.record"
+opyt C "Ч375 06 термин шага без номера, согласен с обоснованием"      0 "$FAKT" "$D375/06-step-term-without-line-agrees.record"
+opyt P "Ч375 07 термин шага без номера — против обоснования"          1 "$FAKT" "$D375/07-step-term-without-line-against-the-justification.record"
+opyt C "Ч375 08 термин «по примеру» несёт своё имя в ёлочках"         0 "$TL" "$D375/08-term-by-example-with-a-name-inside.record"
+opyt P "Ч375 09 термин с ЛОЖНЫМ именем внутри — расхождение поймано"  1 "$TL" "$D375/09-term-with-a-false-name-inside.record"
 
 say ""
 say "── Ч369: приём «разбор цели по условию», 1 надзорный + 8 мутантов ──"
@@ -597,7 +597,7 @@ say "── Ч392: строка исходника читается КАК ЕЁ 
 # что доказанное расходится с обещанным.
 opyt P "Ч392 примечание вместо постусловия (9964)" 1 \
   "$PROG/note-instead-of-postcondition.flang" \
-  "$ZAP/note-instead-of-postcondition/note-instead-of-postcondition.запись"
+  "$ZAP/note-instead-of-postcondition/note-instead-of-postcondition.record"
 
 # Ч392 сама починила восемь мест, но пробой доказала только два (постусловие).
 # Оставшиеся шесть чинила по доводу «между двух меток» — а он верен только для
@@ -610,7 +610,7 @@ opyt P "Ч392 примечание вместо постусловия (9964)" 1
 # исходнике (оно там и не может быть, обоснование лежит только в примечании).
 opyt P "Ч407 промежуточный шаг, обоснование в примечании (9964/Г2)" 1 \
   "$PROG/intermediate-step-by-note.flang" \
-  "$ZAP/justification-in-a-note/intermediate-step-by-note.запись"
+  "$ZAP/justification-in-a-note/intermediate-step-by-note.record"
 
 # ЛЕЖАЛА В ДЕРЕВЕ И НЕ ЗВАЛАСЬ (задача 9518 назвала это прямо, файл был занят).
 # Сторожит, что правило «цель следует из объявленного о доводах» (9999, пришло
@@ -620,7 +620,7 @@ opyt P "Ч407 промежуточный шаг, обоснование в пр�
 # Прочти сверщик спрятанное «нат» — выдал бы сертификат лжи (при втором −3
 # сумма равна −1). Ждём 3: цель не закрыта, кода 0 подделка не получает.
 opyt P "9518 тип довода спрятан за примечанием (правило 9999)" 3 \
-  "$ZAP/v1-g2/type-behind-a-note.flang" "$ZAP/v1-g2/type-behind-a-note.запись"
+  "$ZAP/v1-g2/type-behind-a-note.flang" "$ZAP/v1-g2/type-behind-a-note.record"
 
 say "── 9986: посылка algebra-carrier названа вариантом, которого в исходнике нет ──"
 # Задача 9986 нашла ЛОЖНЫЙ ОТКАЗ: на свежей печати чекер не видит случай «Дно»
@@ -633,8 +633,8 @@ say "── 9986: посылка algebra-carrier названа варианто
 # (имя посылки при носителе algebra обязано совпасть с вариантом) и «посылки не
 # покрывают варианты» (набор вариантов читается из ИСХОДНИКА). Если завтра
 # отвалится хоть один, вторая проба это покажет.
-opyt P "9986 посылка base зовёт вариант не из исходника" 1 "$BODY" "$ZAP/9986/variant-not-from-the-source-base.запись"
-opyt P "9986 посылка step зовёт вариант не из исходника" 1 "$BODY" "$ZAP/9986/variant-not-from-the-source-step.запись"
+opyt P "9986 посылка base зовёт вариант не из исходника" 1 "$BODY" "$ZAP/9986/variant-not-from-the-source-base.record"
+opyt P "9986 посылка step зовёт вариант не из исходника" 1 "$BODY" "$ZAP/9986/variant-not-from-the-source-step.record"
 
 # ВЕРДИКТ ПО ОБЪЯВЛЕНИЮ: две строки, которых семя ещё не печатает.
 # Печать заведена (`flang/self/zapis.flang`, «Строки объявленного правила»,
@@ -643,10 +643,10 @@ opyt P "9986 посылка step зовёт вариант не из исход�
 # вслух («строка не узнана»), и покраснели бы честные записи всюду, где ядро
 # закрыло цель объявлением. Пробы стоят с ОБЕИХ сторон: честная запись с этими
 # строками обязана приниматься, а третье значение «по объявлению» — нет.
-# Записи собраны из корпусной `abilities.запись` дописыванием двух строк.
-ABIL=$(grep -a -m1 '^исходник ' "$ZAP/9986/by-declaration-honest.запись" | sed 's/^исходник //')
-opyt C "9986 вердикт по объявлению: строки узнаны"        3 "$ABIL" "$ZAP/9986/by-declaration-honest.запись"
-opyt P "9986 «по объявлению» третьим значением"           1 "$ABIL" "$ZAP/9986/by-declaration-third-value.запись"
+# Записи собраны из корпусной `abilities.record` дописыванием двух строк.
+ABIL=$(grep -a -m1 '^исходник ' "$ZAP/9986/by-declaration-honest.record" | sed 's/^исходник //')
+opyt C "9986 вердикт по объявлению: строки узнаны"        3 "$ABIL" "$ZAP/9986/by-declaration-honest.record"
+opyt P "9986 «по объявлению» третьим значением"           1 "$ABIL" "$ZAP/9986/by-declaration-third-value.record"
 
 say "── 3314: отрицание закрывает ложь? обязано не закрывать ──"
 # Седьмой способ `половина_закрыта` закрывает `не Х`, когда замкнутый счёт дал
@@ -664,7 +664,7 @@ say "── 3314: отрицание закрывает ложь? обязано
 # свободным `н`, счёт молчит — и правило обязано остаться при «не берусь».
 # Ждём код 3: запись привязана к исходнику честно, но доказательством не
 # является, и оба места остаются на слове ядра.
-opyt P "3314 отрицание не закрывает ложь" 3 "$ZAP/3314-conditional-by-branches/false-negation.flang" "$ZAP/3314-conditional-by-branches/false-negation.запись"
+opyt P "3314 отрицание не закрывает ложь" 3 "$ZAP/3314-conditional-by-branches/false-negation.flang" "$ZAP/3314-conditional-by-branches/false-negation.record"
 
 say "── 3314: снятая оговорка даёт конечность ТОГО ЖЕ терма, не любого ──"
 # Четыре границы правила оговорки описаны в шапке
@@ -683,7 +683,7 @@ say "── 3314: снятая оговорка даёт конечность Т
 # Ждём код 3: чекер обязан оставить это место незакрытым. Негодное правило
 # («оговорка где-то тут написана») даёт на этой записи код 0 — сертификат на
 # лжи; проверено подменой правила, «разобрано, но не закрылось» 1 → 0.
-opyt P "3314 оговорка не о том терме" 3 "flang/test/fixtures/poddelka-ogovorka-o-konechnosti.flang" "$ZAP/3314-proviso/proviso-about-the-wrong-term.запись"
+opyt P "3314 оговорка не о том терме" 3 "flang/test/fixtures/poddelka-ogovorka-o-konechnosti.flang" "$ZAP/3314-proviso/proviso-about-the-wrong-term.record"
 
 say "── 9998: начало по построению — не правый кусок, не чужая буква ──"
 # Правило (задача 9998) лежало в дереве СОБРАННЫМ, но run.sh его не звал —
@@ -691,7 +691,7 @@ say "── 9998: начало по построению — не правый �
 # ОБЯЗАНЫ остаться незакрытыми: правило видит только левый кусок склейки и
 # только у него, а не у произвольной переменной строки.
 opyt P "9998 склейка объявлена начинающейся правым куском" 3 \
-  "$ZAP/9991-starts-with/false-prefix.flang" "$ZAP/9991-starts-with/false-prefix.запись"
+  "$ZAP/9991-starts-with/false-prefix.flang" "$ZAP/9991-starts-with/false-prefix.record"
 
 say "── 3314: голова склейки — значением, а не только тождеством ──"
 # Вторая дверь правила 9998 брала лишь ТОЖДЕСТВО головы и иглы (Л = П
@@ -713,7 +713,7 @@ say "── 3314: голова склейки — значением, а не т
 # подменой правила.
 opyt P "3314 значение головы не путается с длиной иглы" 3 \
   "flang/test/fixtures/poddelka-nachalo-po-postroeniyu.flang" \
-  "$ZAP/3314-base-by-construction/part-count-swapped.запись"
+  "$ZAP/3314-base-by-construction/part-count-swapped.record"
 
 say "── 3314: невыполнимая посылка — из противоречия следует что угодно ──"
 # Граница дословно из шапки `poddelka-protivorechie.flang`: первое сравнение
@@ -734,30 +734,30 @@ say "── 3314: невыполнимая посылка — из против�
 # «требует», даёт на обеих пробах код 0; проверено подменой на себе.
 opyt P "3314 совместимые строгие допущения не дают что угодно" 3 \
   "flang/test/fixtures/poddelka-protivorechie.flang" \
-  "$ZAP/3314-unsatisfiable-premise/compatible-strict-swapped.запись"
+  "$ZAP/3314-unsatisfiable-premise/compatible-strict-swapped.record"
 opyt P "3314 две нестрогие в разные стороны совместимы" 3 \
   "flang/test/fixtures/poddelka-protivorechie.flang" \
-  "$ZAP/3314-unsatisfiable-premise/two-non-strict-swapped.запись"
+  "$ZAP/3314-unsatisfiable-premise/two-non-strict-swapped.record"
 
 say "── 9616: вердикт по объявлению читается, а не только узнаётся ──"
 # Строк «правило «…»» и «по объявлению да|нет» в сегодняшних записях НЕТ: печать
 # для них написана (zapis.flang:1355, Ч414), но в семени её ещё нет. Поэтому все
-# четыре записи ниже — настоящая abilities.запись с ДОПИСАННЫМИ РУКАМИ строками,
+# четыре записи ниже — настоящая abilities.record с ДОПИСАННЫМИ РУКАМИ строками,
 # ровно теми, какие принесёт первая же перепечатка (правило и byType сняты
 # прогоном ядра с того же файла: «тождество после переписки допущением», нет).
 #
 # Первая — контроль: честные строки не должны менять вердикт записи. Настоящая
-# abilities.запись даёт 3, и с дописанными строками обязана давать 3.
-opyt C "9616 честные строки вердикт не меняют" 3 flang/proof/map/abilities.flang "$ZAP/9616-by-declaration/honest.запись"
+# abilities.record даёт 3, и с дописанными строками обязана давать 3.
+opyt C "9616 честные строки вердикт не меняют" 3 flang/proof/map/abilities.flang "$ZAP/9616-by-declaration/honest.record"
 # Остальные три — подделки строения, каждой ядро не печатало:
 #  · имя правила вне закрытого списка PRAVILA. Негодное правило («имя не
 #    сверять») даёт на этой записи код 3 вместо 1 — проверено подменой;
 #  · строки идут парой, печать иначе не умеет;
 #  · у маршрута по объявлению не бывает посылок: замер по 72 узлам
 #    `by=declaration` пяти файлов корпуса — cases пусты 72 из 72.
-opyt P "9616 правило выдумано" 1 flang/proof/map/abilities.flang "$ZAP/9616-by-declaration/invented-rule.запись"
-opyt P "9616 строка без пары" 1 flang/proof/map/abilities.flang "$ZAP/9616-by-declaration/without-a-pair.запись"
-opyt P "9616 по объявлению рядом с посылкой" 1 flang/proof/map/abilities.flang "$ZAP/9616-by-declaration/with-a-premise.запись"
+opyt P "9616 правило выдумано" 1 flang/proof/map/abilities.flang "$ZAP/9616-by-declaration/invented-rule.record"
+opyt P "9616 строка без пары" 1 flang/proof/map/abilities.flang "$ZAP/9616-by-declaration/without-a-pair.record"
+opyt P "9616 по объявлению рядом с посылкой" 1 flang/proof/map/abilities.flang "$ZAP/9616-by-declaration/with-a-premise.record"
 
 say "── 9616-Б: значение «по объявлению да|нет» — вывод изъятия, которое сверщик"
 say "    не переигрывает, а МЕСТО не молчит (Ч27) — но платит РОВНО ОДИН раз ──"
@@ -779,33 +779,33 @@ say "    не переигрывает, а МЕСТО не молчит (Ч27) �
 #     Место уже снято чужим приёмом; строки «по объявлению» не вправе
 #     прибавить второе. Число обязано быть тем же, диагностики — не быть.
 #
-# Все записи собраны sed-правкой without-a-declaration-at-all.запись/honest.запись,
+# Все записи собраны sed-правкой without-a-declaration-at-all.record/honest.record,
 # и cmp это подтвердил при сборке (без diff'а порча не считается легшей).
 ABIL9616=flang/proof/map/abilities.flang
-bez=$(naslovo "$ABIL9616" "$ZAP/9616-by-declaration/without-a-declaration-at-all.запись")
-opyt C "9616-Б без объявления вовсе — запись остаётся честной" 3 "$ABIL9616" "$ZAP/9616-by-declaration/without-a-declaration-at-all.запись"
+bez=$(naslovo "$ABIL9616" "$ZAP/9616-by-declaration/without-a-declaration-at-all.record")
+opyt C "9616-Б без объявления вовсе — запись остаётся честной" 3 "$ABIL9616" "$ZAP/9616-by-declaration/without-a-declaration-at-all.record"
 
 # НЕ ПРОИГРАНО: значение прибавлено на У3 — число то же, причина названа.
-net3=$(naslovo "$ABIL9616" "$ZAP/9616-by-declaration/not-replayed-no.запись")
-opyt C "9616-Б У3 не проиграно, значение «нет»" 3 "$ABIL9616" "$ZAP/9616-by-declaration/not-replayed-no.запись"
+net3=$(naslovo "$ABIL9616" "$ZAP/9616-by-declaration/not-replayed-no.record")
+opyt C "9616-Б У3 не проиграно, значение «нет»" 3 "$ABIL9616" "$ZAP/9616-by-declaration/not-replayed-no.record"
 chislo "9616-Б непроигранное место числится тем же счётом" "$bez" "$net3"
-da3=$(naslovo "$ABIL9616" "$ZAP/9616-by-declaration/not-replayed-yes.запись")
-opyt C "9616-Б У3 не проиграно, значение «да»" 3 "$ABIL9616" "$ZAP/9616-by-declaration/not-replayed-yes.запись"
+da3=$(naslovo "$ABIL9616" "$ZAP/9616-by-declaration/not-replayed-yes.record")
+opyt C "9616-Б У3 не проиграно, значение «да»" 3 "$ABIL9616" "$ZAP/9616-by-declaration/not-replayed-yes.record"
 chislo "9616-Б непроигранному «да» и «нет» — одна цена" "$net3" "$da3"
-if "$C" "$ABIL9616" "$ZAP/9616-by-declaration/not-replayed-no.запись" 2>&1 \
+if "$C" "$ABIL9616" "$ZAP/9616-by-declaration/not-replayed-no.record" 2>&1 \
      | /usr/bin/grep -q 'У3 свёртка растит длину.*по объявлению'
 then say "9616-Б непроигранное место названо поимённо — ЦЕЛА"
 else say "ПРОВАЛ 9616-Б непроигранное место не названо — Ч27 снова молчит"; BAD=$((BAD+1)); fi
 
 # ПРОИГРАНО: значение прибавлено на У1, которую снимает перепиской — число
 # то же, что и без строк, и причины в НЕ ВЗЯЛСЯ быть не должно.
-net1=$(naslovo "$ABIL9616" "$ZAP/9616-by-declaration/honest.запись")
-opyt C "9616-Б У1 проиграно (перепиской), значение «нет»" 3 "$ABIL9616" "$ZAP/9616-by-declaration/honest.запись"
+net1=$(naslovo "$ABIL9616" "$ZAP/9616-by-declaration/honest.record")
+opyt C "9616-Б У1 проиграно (перепиской), значение «нет»" 3 "$ABIL9616" "$ZAP/9616-by-declaration/honest.record"
 chislo "9616-Б проигранное место второй раз не платит" "$bez" "$net1"
-da1=$(naslovo "$ABIL9616" "$ZAP/9616-by-declaration/value-yes.запись")
-opyt C "9616-Б У1 проиграно (перепиской), значение «да»" 3 "$ABIL9616" "$ZAP/9616-by-declaration/value-yes.запись"
+da1=$(naslovo "$ABIL9616" "$ZAP/9616-by-declaration/value-yes.record")
+opyt C "9616-Б У1 проиграно (перепиской), значение «да»" 3 "$ABIL9616" "$ZAP/9616-by-declaration/value-yes.record"
 chislo "9616-Б проигранному «да» и «нет» — тоже одна цена" "$net1" "$da1"
-if "$C" "$ABIL9616" "$ZAP/9616-by-declaration/honest.запись" 2>&1 | /usr/bin/grep -q 'по объявлению'
+if "$C" "$ABIL9616" "$ZAP/9616-by-declaration/honest.record" 2>&1 | /usr/bin/grep -q 'по объявлению'
 then say "ПРОВАЛ 9616-Б проигранное место всё равно названо — второй счёт вернулся"; BAD=$((BAD+1))
 else say "9616-Б проигранное место молчит по праву (снято чужим приёмом) — ЦЕЛА"; fi
 
@@ -822,13 +822,13 @@ say "── 6382: индукция по имени ТИПА, а не по дов
 #
 # ПОСЛЕ ПОЧИНКИ довод берётся ДО двоеточия, и все восемь дают 1. Потому проба
 # идёт в обычный набор, а не в ведомость долга: она снова различима по коду.
-opyt P "6382 индукция по имени типа" 1 flang/proof/map/substantive.flang "$ZAP/6382-reason/type-name-instead-of-the-argument.запись"
+opyt P "6382 индукция по имени типа" 1 flang/proof/map/substantive.flang "$ZAP/6382-reason/type-name-instead-of-the-argument.record"
 
 say "── 9984: граница дыры — имя утверждения подделать нельзя ──"
 # Подделыватель, придумавший утверждение целиком, ловится: имя сверяется со
 # строкой исходника. Это ВТОРАЯ половина пробы 9984 — та, что уже работает.
 # Первая половина (сам вердикт) закрыта задачей 2718 и стоит пробой ниже.
-opyt P "9984 имя утверждения выдумано" 1 flang/proof/map/substantive.flang "$ZAP/9984/name-does-not-match.запись"
+opyt P "9984 имя утверждения выдумано" 1 flang/proof/map/substantive.flang "$ZAP/9984/name-does-not-match.record"
 
 say "── 9984, ПЕРВАЯ ПОЛОВИНА: «закрыта reduction» сверяется с исходником (задача 2718) ──"
 # Подделка берёт честное утверждение С1 (ядро вынесло «нет вердикта» — квантор
@@ -844,14 +844,14 @@ say "── 9984, ПЕРВАЯ ПОЛОВИНА: «закрыта reduction» с
 # ПОСЛЕ ПОЧИНКИ посылка обязана указать ВЕТВЬ, которую ядро сводило: случай на
 # свой вариант в теле функции исходника. У «Единиц» тело — `отобразить`, случая
 # нет ни одного, сводить было нечего, и обе посылки выдуманы. Код 1.
-opyt P "9984 подделанный reduction-вердикт" 1 flang/proof/map/substantive.flang "$ZAP/9984/c1-false-reduction.запись"
+opyt P "9984 подделанный reduction-вердикт" 1 flang/proof/map/substantive.flang "$ZAP/9984/c1-false-reduction.record"
 # Ждали 3, стало 0: узел «С5 сохранение» теперь переигрывается целиком, и долга
 # у честной записи не осталось вовсе. Число здесь не подогнано — оно и было
 # снимком долга; смысл пробы держит пара: подделка строкой выше обязана
 # получить 1, честная запись — не быть отвергнутой.
-opyt C "9984 честная substantive на том же исходнике" 0 flang/proof/map/substantive.flang "$ZAP/corpus/substantive.запись"
+opyt C "9984 честная substantive на том же исходнике" 0 flang/proof/map/substantive.flang "$ZAP/corpus/substantive.record"
 # Та же подделка, дополненная пустыми блоками ходов, — ловится тем же доводом.
-opyt P "9984 тот же вердикт с пустыми ходами" 1 flang/proof/map/substantive.flang "$ZAP/v1-g2/9984-moves-hide-the-debt.запись"
+opyt P "9984 тот же вердикт с пустыми ходами" 1 flang/proof/map/substantive.flang "$ZAP/v1-g2/9984-moves-hide-the-debt.record"
 
 say "── 9984, ВТОРАЯ ПОЛОВИНА: пустой «ход конец» не снимает посылку с долга (задача 2718) ──"
 # ЭТА ПРОБА СУДИТ ЧИСЛОМ, А НЕ КОДОМ, и иначе не может. Подделка здесь ничего не
@@ -878,7 +878,7 @@ say "── 9984, ВТОРАЯ ПОЛОВИНА: пустой «ход коне�
 # доработана руками. Ждём от неё 3, а не 1: исходнику она не противоречит, и
 # кричать «НЕ СОШЛОСЬ» тут было бы ложной тревогой. Кодом эта проба не
 # краснеет ни на старом чекере, ни на новом — сторожит её строка ниже.
-opyt P "9984 честная запись с дописанными пустыми ходами" 3 flang/proof/map/substantive.flang "$ZAP/9984/empty-move-among-honest-ones.запись"
+opyt P "9984 честная запись с дописанными пустыми ходами" 3 flang/proof/map/substantive.flang "$ZAP/9984/empty-move-among-honest-ones.record"
 # ЧИСЛА ПЕРЕСЧИТАНЫ: 4 У ПОДДЕЛКИ, 3 У ЧЕСТНОЙ (задача 6190). Прежде стояло
 # 7 и 6. Уменьшились они ОДИНАКОВО и по одной причине: узел «разбором по
 # случаям» у «М3 мера: длина сохранилась» теперь переигрывается — тождественная
@@ -902,8 +902,8 @@ opyt P "9984 честная запись с дописанными пустым�
 # место, которое подделка прячет пустым «ход конец». Равенство или обратный
 # разрыв — провал.
 na_slovo_bolshe "9984 у подделки долга больше, чем у честной" \
-  "flang/proof/map/substantive.flang $ZAP/9984/empty-move-among-honest-ones.запись" \
-  "flang/proof/map/substantive.flang $ZAP/corpus/substantive.запись"
+  "flang/proof/map/substantive.flang $ZAP/9984/empty-move-among-honest-ones.record" \
+  "flang/proof/map/substantive.flang $ZAP/corpus/substantive.record"
 
 say "── 9984: вид посылки не свободен — база и шаг не меняются местами ──"
 # Обе пробы — записи, у которых база объявлена шагом, а шаг базой. Ложь о
@@ -915,8 +915,8 @@ say "── 9984: вид посылки не свободен — база и ш
 #   · segment/fold — по словарю ядра: имена «дно»/«спуск» пишет само ядро;
 #   · algebra      — по объявлению типа: рекурсивен ли вариант в исходнике.
 # Отвалится один — вторая проба останется красной и покажет, какой именно.
-opyt P "9984 segment: база и шаг переставлены" 1 flang/proof/examples/if-over-a-segment.flang "$ZAP/corrupt/if-over-a-segment-kind-inverted.запись"
-opyt P "9984 algebra: база и шаг переставлены" 1 flang/proof/examples/corpus-tree.flang "$ZAP/corrupt/corpus-tree-kind-inverted.запись"
+opyt P "9984 segment: база и шаг переставлены" 1 flang/proof/examples/if-over-a-segment.flang "$ZAP/corrupt/if-over-a-segment-kind-inverted.record"
+opyt P "9984 algebra: база и шаг переставлены" 1 flang/proof/examples/corpus-tree.flang "$ZAP/corrupt/corpus-tree-kind-inverted.record"
 
 # ТА ЖЕ ЛОЖЬ, СПРЯТАННАЯ ЗА ПРИМЕЧАНИЕМ (задача 2044). Проверка выше берёт вид
 # посылки из ОБЪЯВЛЕНИЯ ТИПА: рекурсивен ли вариант. Читала она строку сырой,
@@ -928,9 +928,9 @@ opyt P "9984 algebra: база и шаг переставлены" 1 flang/proof
 # «по примеру» строку примера, у развёртки — значение, и сверщик переигрывает оба
 # (запись — печать ядра байт в байт).
 opyt P "2044 algebra: вариант рекурсивен только в примечании" 1 \
-  "$ZAP/v1-g2/variant-behind-a-note.flang" "$ZAP/v1-g2/variant-behind-a-note.запись"
+  "$ZAP/v1-g2/variant-behind-a-note.flang" "$ZAP/v1-g2/variant-behind-a-note.record"
 opyt C "2044 честная запись на том же исходнике с примечанием" 0 \
-  "$ZAP/v1-g2/variant-behind-a-note.flang" "$ZAP/v1-g2/variant-behind-a-note-honest.запись"
+  "$ZAP/v1-g2/variant-behind-a-note.flang" "$ZAP/v1-g2/variant-behind-a-note-honest.record"
 
 say ""
 say "── 9999: тип довода несёт границу ДОВОДА, а не любого выражения над ним ──"
@@ -944,7 +944,7 @@ say "── 9999: тип довода несёт границу ДОВОДА, а
 # нет; постусловие оно не доказывает и не опровергает. Между ложным
 # постусловием и зелёной ведомостью стоит РОВНО это правило чекера.
 TD=$ZAP/reason-types
-opyt P "9999 вычитание не сохраняет неотрицательность" 3 "$TD/subtraction-does-not-keep.flang" "$TD/subtraction-does-not-keep.запись"
+opyt P "9999 вычитание не сохраняет неотрицательность" 3 "$TD/subtraction-does-not-keep.flang" "$TD/subtraction-does-not-keep.record"
 
 say ""
 say "── 8615: написанная теорема не роняет долю ──"
@@ -959,12 +959,12 @@ say "── 8615: написанная теорема не роняет долю
 # Первая проба — честная: теорема настоящая, спуск в теле правда убывает.
 # Сверщиком ДО правила она давала 3, теперь 0; на этом и держится проба.
 TT=$ZAP/8615-theorem-keeps
-opyt C "8615 теорема настоящая — доля не падает" 0 "$TT/countdown-with-theorem.flang" "$TT/countdown-with-theorem.запись"
+opyt C "8615 теорема настоящая — доля не падает" 0 "$TT/countdown-with-theorem.flang" "$TT/countdown-with-theorem.record"
 # Вторая — порча: тот же исходник, но спуск НЕ убывает («н плюс 1»). Правило
 # законно ровно потому, что проиграть_узел читает ТЕЛО ФУНКЦИИ и сверяет спуск
 # сам, а не верит записи. Ядро этот исходник тоже отвергает (код 1), так что
 # записи для него не существует — подкладываем честную.
-opyt P "8615 спуск не убывает — запись подложена" 1 "$TT/descent-does-not-decrease.flang" "$TT/countdown-with-theorem.запись"
+opyt P "8615 спуск не убывает — запись подложена" 1 "$TT/descent-does-not-decrease.flang" "$TT/countdown-with-theorem.record"
 
 say ""
 say "── ИЗВЕСТНЫЕ ДЫРЫ: ведомость долга, а не провалы ──"
@@ -1026,7 +1026,7 @@ dolg_na_slovo() { # имя, ожидаемое сегодня «на слово 
 # Различить их можно только проиграв сведение на каждой ветви — работа другого
 # размера, и она не сделана. Число сегодня: счёт доказанного 4 вместо честных 3.
 dolg "ветвь на месте, а цель ядру не по зубам" 4 "2718" \
-  flang/proof/map/substantive.flang "$ZAP/2718/branch-exists-but-goal-not-reducible.запись"
+  flang/proof/map/substantive.flang "$ZAP/2718/branch-exists-but-goal-not-reducible.record"
 say "  (честная запись на том же исходнике даёт 3 — разница и есть остаток)"
 
 # ОСТАТОК ЗАДАЧИ 6341 — ТА ЖЕ ДЫРА, НО В ФОРМЕ, КОТОРУЮ НЕ РАЗДЕЛИТЬ СЛОВАРЁМ.
@@ -1062,7 +1062,7 @@ say "  (честная запись на том же исходнике даёт
 # вызовом своей функции (предположение индукции), одно с вызовом чужой.
 # Число сегодня: счёт доказанного 4 вместо честных 3.
 dolg "цель та же знак в знак, а ветвь лжёт" 4 "6341" \
-  flang/test/fixtures/poddelka-dlina.flang "$ZAP/6341/same-goal-but-the-branch-lies.запись"
+  flang/test/fixtures/poddelka-dlina.flang "$ZAP/6341/same-goal-but-the-branch-lies.record"
 say "  (честная запись на том же исходнике даёт 3 — разница и есть остаток)"
 
 # ТРЕТЬЯ ДЫРА ТОЙ ЖЕ ПОРОДЫ (7113). Ход под посылкой снимает её со слова ядра
@@ -1073,10 +1073,10 @@ say "  (честная запись на том же исходнике даёт
 # при том же коде 3. Под теоремой та же подделка даёт код 1 — проверено на
 # `корпус/corpus-tree-height`. Продолжение первой половины 2718: там сняли с
 # долга пустой `ход конец`, здесь снимает НЕПРОИГРАННЫЙ ход.
-chest_7113=$(naslovo flang/test/fixtures/poddelka-dlina.flang "$ZAP/corpus/poddelka-dlina.запись")
-n_7113=$(naslovo flang/test/fixtures/poddelka-dlina.flang "$ZAP/7113/moves-without-theorem-hide-the-debt.запись")
+chest_7113=$(naslovo flang/test/fixtures/poddelka-dlina.flang "$ZAP/corpus/poddelka-dlina.record")
+n_7113=$(naslovo flang/test/fixtures/poddelka-dlina.flang "$ZAP/7113/moves-without-theorem-hide-the-debt.record")
 opyt P "7113 ходы без теоремы не прячут долг" 3 \
-  flang/test/fixtures/poddelka-dlina.flang "$ZAP/7113/moves-without-theorem-hide-the-debt.запись"
+  flang/test/fixtures/poddelka-dlina.flang "$ZAP/7113/moves-without-theorem-hide-the-debt.record"
 if [ -n "$n_7113" ] && [ -n "$chest_7113" ] && [ "$n_7113" -ge "$chest_7113" ]; then
   say "  7113 ходы без теоремы — ЦЕЛА (долг подделки $n_7113 не ниже честного $chest_7113)"
 else
@@ -1129,7 +1129,7 @@ shagov_na_slovo_5044() { # исходник, запись → «на слово 
 poddelka_ishodnika_5044() { # имя, исходник, запись, sed-правка-исходника
   imya=$1; ish=$2; zap=$3; pravka=$4
   n=$(printf '%s' "$imya" | tr -c 'a-zA-Z0-9' '-')
-  FAYL_ISH_5044=$RABOTA/$n.flang; FAYL_ZAP_5044=$RABOTA/$n.запись
+  FAYL_ISH_5044=$RABOTA/$n.flang; FAYL_ZAP_5044=$RABOTA/$n.record
   sed "$pravka" "$ish" > "$FAYL_ISH_5044"
   if cmp -s "$ish" "$FAYL_ISH_5044"; then
     say "ПОРЧА НЕ СОБРАЛАСЬ: $imya"; BAD=$((BAD+1)); FAYL_ISH_5044=""; return 0
@@ -1148,7 +1148,7 @@ poddelka_ishodnika_5044() { # имя, исходник, запись, sed-пра
 # …», которой там больше нет, — а значит этот шаг обязан остаться «на слове
 # ядра», а не тихо зачесться проверенным по примеру.
 CARRIER=flang/proof/examples/corpus-carrier.flang
-CARZ=$ZAP/corpus/corpus-carrier.запись
+CARZ=$ZAP/corpus/corpus-carrier.record
 bylo_5044=$(shagov_na_slovo_5044 "$CARRIER" "$CARZ")
 poddelka_ishodnika_5044 "R6b-imya-v-dano-drugoe-chem-dovod" "$CARRIER" "$CARZ" \
   '0,/^    дано «носитель» равно вариант «Композицией»$/s//    дано «странник» равно вариант «Композицией»/'
@@ -1168,7 +1168,7 @@ fi
 # расхождение тела и примера, а не тихо принять чужой список тем же числом
 # звеньев. «&» → «%» — один знак на один знак, «знаков» не сдвигается.
 SIGNS=flang/proof/examples/corpus-signs.flang
-SIGNZ=$ZAP/corpus/corpus-signs.запись
+SIGNZ=$ZAP/corpus/corpus-signs.record
 poddelka_ishodnika_5044 "V2-spisok-v-stroku-zveno-podmeneno" "$SIGNS" "$SIGNZ" '63s/&/%/'
 if [ -n "$FAYL_ISH_5044" ]; then
   opyt P "V2 список в одну строку: звено подменено" 1 "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
@@ -1204,11 +1204,11 @@ say "── свои пробы (работник 7104): мера значени
 # и вид «длину знаю, строки не отдаю» больше не заводится: подделка ниже теперь
 # ОТВЕРГНУТА значением (код 1), а не отложена (3), честная пара — ПРОВЕРЕНА (0).
 opyt P "Ч7104 нулевой знак: разные строки одной длины НЕ равны" 1 \
-  "$PROG/measure-not-value-zero-character-lie.flang" "$ZAP/measure-not-value/zero-character-lie.запись"
+  "$PROG/measure-not-value-zero-character-lie.flang" "$ZAP/measure-not-value/zero-character-lie.record"
 # Честная пара к ней: та же форма цели, но обе стороны — один литерал. Заслон
 # отвечает «не берусь» и здесь, и это НЕ отказ записи: третий исход, не первый.
 opyt C "Ч7104 нулевой знак: честная пара не отвергнута" 0 \
-  "$PROG/measure-not-value-zero-character-honest.flang" "$ZAP/measure-not-value/zero-character-honest.запись"
+  "$PROG/measure-not-value-zero-character-honest.flang" "$ZAP/measure-not-value/zero-character-honest.record"
 
 # ── РЕЦЕПТ НАКРУТКИ ДОЛИ Г4: пять строк вместо доказательства ────────────────
 # Копия `four-words.flang` с дописанной теоремой при утверждении «утроенное
@@ -1228,9 +1228,9 @@ opyt C "Ч7104 нулевой знак: честная пара не отвер�
 # при теле «н умножить на н», которого грамматика не берёт: шаг обязан остаться
 # на слове ядра (копия сверщика, у которой проверка тела всегда «да», даёт 0).
 opyt C "Ч7104 накрутка: шаг «по предположению» при теле «н умножить на 3» проверен по построению" 0 \
-  "$PROG/measure-not-value-inflation-by-assumption.flang" "$ZAP/measure-not-value/inflation-by-assumption.запись"
+  "$PROG/measure-not-value-inflation-by-assumption.flang" "$ZAP/measure-not-value/inflation-by-assumption.record"
 opyt P "Ч7104 накрутка: теорема из одного «по предположению» при непроверяемом теле не даёт кода 0" 3 \
-  "$PROG/measure-not-value-inflation-unverifiable.flang" "$ZAP/measure-not-value/inflation-unverifiable.запись"
+  "$PROG/measure-not-value-inflation-unverifiable.flang" "$ZAP/measure-not-value/inflation-unverifiable.record"
 
 say ""
 say "── ложные ходы больше не снимают долг там, где ходы никто не проигрывает ──"
@@ -1241,10 +1241,10 @@ say "── ложные ходы больше не снимают долг та
 # Проба смотрит ЧИСЛО, а не код (находка 9992: код у обеих записей один и тот
 # же — третий исход): подделка обязана стоять в долге НЕ НИЖЕ честной.
 SUBST=flang/proof/map/substantive.flang
-chest_7111=$(naslovo "$SUBST" "$ZAP/corpus/substantive.запись")
+chest_7111=$(naslovo "$SUBST" "$ZAP/corpus/substantive.record")
 for lozh_7111 in 2718-with-false-moves 2718-all-premises-false-moves; do
-  n_7111=$(naslovo "$SUBST" "$ZAP/7111/$lozh_7111.запись")
-  opyt P "7111 $lozh_7111" 3 "$SUBST" "$ZAP/7111/$lozh_7111.запись"
+  n_7111=$(naslovo "$SUBST" "$ZAP/7111/$lozh_7111.record")
+  opyt P "7111 $lozh_7111" 3 "$SUBST" "$ZAP/7111/$lozh_7111.record"
   if [ -n "$n_7111" ] && [ -n "$chest_7111" ] && [ "$n_7111" -ge "$chest_7111" ]; then
     say "  7111 $lozh_7111 — ЦЕЛА (долг подделки $n_7111 не ниже честного $chest_7111)"
   else
@@ -1256,7 +1256,7 @@ done
 # каждое место названо. Асимметрия и есть доказательство, что дыра была именно
 # на дороге без теоремы, а не в самом счёте ходов.
 opyt P "7111 ложные ходы ПОД теоремой — ловятся по существу" 1 \
-  flang/proof/examples/corpus-depth.flang "$ZAP/7111/corpus-depth-false-moves.запись"
+  flang/proof/examples/corpus-depth.flang "$ZAP/7111/corpus-depth-false-moves.record"
 
 say ""
 say "── свои пробы (задача 1573): что вычислитель считает САМ ──"
@@ -1274,9 +1274,9 @@ say "── свои пробы (задача 1573): что вычислител
 # проверка: у неё исходник согласован сам с собой (тело равно «ожидается»), лжёт
 # только ЦЕЛЬ, и поймать её можно ровно счётом.
 NOV=$PROG/1573-evaluator.flang
-NOVZ=$ZAP/1573/1573-evaluator.запись
+NOVZ=$ZAP/1573/1573-evaluator.record
 SCH=$PROG/1573-counting-body.flang
-SCHZ=$ZAP/1573/1573-counting-body.запись
+SCHZ=$ZAP/1573/1573-counting-body.record
 # ЧЕСТНЫЕ. Первая — три шага «по примеру» по существу (два тегом варианта, один
 # развёрткой вызова), долга не остаётся вовсе: 0. Вторая — счётное тело; прежде
 # код 3, потому что шаг свёртки сверщик не проигрывал. С задачи 6190 проигрывает:
@@ -1307,13 +1307,13 @@ poddelka_ishodnika_5044 "1573-schyotnoe-telo" "$SCH" "$SCHZ" '10s/начиная
 # Здесь стоят настоящие записи корпуса, а не пробный материал: рост вычислителя
 # затевался ради них, и мерить его надо на них.
 opyt C "1573 корпус: corpus-signs (вызов «Это знак» из свёртки)" 0 \
-  flang/proof/examples/corpus-signs.flang "$ZAP/corpus/corpus-signs.запись"
+  flang/proof/examples/corpus-signs.flang "$ZAP/corpus/corpus-signs.record"
 opyt C "1573 корпус: corpus-case (склейка и разрез строк)" 0 \
-  flang/proof/examples/corpus-case.flang "$ZAP/corpus/corpus-case.запись"
+  flang/proof/examples/corpus-case.flang "$ZAP/corpus/corpus-case.record"
 opyt C "1573 корпус: corpus-tables (вызов о двух доводах)" 0 \
-  flang/proof/examples/corpus-tables.flang "$ZAP/corpus/corpus-tables.запись"
+  flang/proof/examples/corpus-tables.flang "$ZAP/corpus/corpus-tables.record"
 opyt C "1573 корпус: corpus-bytes (тело — литерал с нулевым знаком)" 0 \
-  flang/proof/examples/corpus-bytes.flang "$ZAP/corpus/corpus-bytes.запись"
+  flang/proof/examples/corpus-bytes.flang "$ZAP/corpus/corpus-bytes.record"
 # Ячейка 4 покрытия не взята (решение overagent'а, 10 сентября 2026): цели-свёртки
 # corpus-bytes и corpus-cforms остаются на слове ядра, но отказ обязан НАЗВАТЬ
 # причину — строку с нулевым знаком и отбор списка («второй вычислитель»).
@@ -1327,11 +1327,11 @@ prichina3() { # имя, подстрока причины, довод... — к�
 }
 # 3448: строка с нулевым знаком считается — у corpus-bytes шагов на слове ядра ноль.
 opyt C "3448: corpus-bytes — строка с нулевым знаком считается целиком" 0 \
-  flang/proof/examples/corpus-bytes.flang "$ZAP/corpus/corpus-bytes.запись"
-chislo "3448: corpus-bytes — шагов на слове ядра" 0 "$("$C" flang/proof/examples/corpus-bytes.flang "$ZAP/corpus/corpus-bytes.запись" 2>&1 | sed -n 's/.*посылок и утверждений [0-9]*, шагов \([0-9]*\)\..*/\1/p')"
+  flang/proof/examples/corpus-bytes.flang "$ZAP/corpus/corpus-bytes.record"
+chislo "3448: corpus-bytes — шагов на слове ядра" 0 "$("$C" flang/proof/examples/corpus-bytes.flang "$ZAP/corpus/corpus-bytes.record" 2>&1 | sed -n 's/.*посылок и утверждений [0-9]*, шагов \([0-9]*\)\..*/\1/p')"
 # 3449: за отбором стояли разбор списка по звену и вариант с полями — вычислитель
 # считает и их, и corpus-cforms проверен целиком: шагов на слове ядра ноль.
-CF=flang/proof/examples/corpus-cforms.flang; CFZ=$ZAP/corpus/corpus-cforms.запись
+CF=flang/proof/examples/corpus-cforms.flang; CFZ=$ZAP/corpus/corpus-cforms.record
 opyt C "3449: corpus-cforms — разбор списка по звену и вариант с полями считаются" 0 "$CF" "$CFZ"
 chislo "3449: corpus-cforms — шагов на слове ядра" 0 "$("$C" "$CF" "$CFZ" 2>&1 | sed -n 's/.*посылок и утверждений [0-9]*, шагов \([0-9]*\)\..*/\1/p')"
 # Честная проба ничего не стоит без согласованной подделки: исходник испорчен, шапка
@@ -1354,34 +1354,34 @@ poddelka_ishodnika_5044 "3449-sinonim-mimo" "$CF" "$CFZ" \
 # запись обязана пройти целиком, а испорченный исходник — нет. Разрыв между
 # ними держит подделка ниже, а не число в этой строке.
 opyt C "1573 корпус: stack (тег варианта значением примера)" 0 \
-  flang/proof/examples/stack.flang "$ZAP/corpus/stack.запись"
+  flang/proof/examples/stack.flang "$ZAP/corpus/stack.record"
 # Прежде здесь стоял снимок долга (ждали 3): довод индукции был связан в цели, и
 # сверщик брал место со слова ядра. Перепечатка семени партии №2 (12 сентября
 # 2026) научила ядро печатать этот ход — запись проигрывается целиком.
 opyt C "1573 корпус: corpus-hof (довод индукции связан в цели)" 0 \
-  flang/proof/examples/corpus-hof.flang "$ZAP/corpus/corpus-hof.запись"
+  flang/proof/examples/corpus-hof.flang "$ZAP/corpus/corpus-hof.record"
 # Прежде 3, с задачи 6190 — 0: все три утверждения этой записи стоят на свёртке,
 # и все три теперь переигрываются половина за половиной.
 opyt C "1573 корпус: svyortka-prefiks-chestnaya (счётное тело)" 0 \
-  flang/test/fixtures/svyortka-prefiks-chestnaya.flang "$ZAP/corpus/svyortka-prefiks-chestnaya.запись"
+  flang/test/fixtures/svyortka-prefiks-chestnaya.flang "$ZAP/corpus/svyortka-prefiks-chestnaya.record"
 # Подделка к corpus-case: одна строка таблицы поднятия ведёт не туда. Цепочка
 # «В верхний регистр» → «Применить замены» → «Заменить всё» → соединить/разделить
 # считается целиком, и подмена на её конце обращает цель в ложь. Прежний: 3.
 poddelka_ishodnika_5044 "1573-case-tablica-vedyot-ne-tuda" \
-  flang/proof/examples/corpus-case.flang "$ZAP/corpus/corpus-case.запись" '92s/равным "Z"/равным "Y"/'
+  flang/proof/examples/corpus-case.flang "$ZAP/corpus/corpus-case.record" '92s/равным "Z"/равным "Y"/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "1573 подделка: цепочка замен ведёт не туда" 1 "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Подделка к corpus-tables: английская таблица начинает указывать на слово,
 # которого в русской нет (тело и «ожидается» правятся вместе). Двухдоводный
 # вызов «Перевод слова» отдаёт пустую строку, и «больше 0» ложно. Прежний: 3.
 poddelka_ishodnika_5044 "1573-tables-cepochka-rvyotsya" \
-  flang/proof/examples/corpus-tables.flang "$ZAP/corpus/corpus-tables.запись" \
+  flang/proof/examples/corpus-tables.flang "$ZAP/corpus/corpus-tables.record" \
   '81s/\["признаком"\]/["признаковым"]/;87s/\["признаком"\]/["признаковым"]/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "1573 подделка: цепочка двух таблиц рвётся" 1 "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Подделка к corpus-bytes: у тела-литерала с нулевым знаком и у «ожидается»
 # отнят один знак. Строку такого литерала сверщик не держит, а ДЛИНУ знает —
 # 127 против объявленных 128, и цель ложна. Прежний сверщик: 3.
 poddelka_ishodnika_5044 "1573-bytes-znakom-menshe" \
-  flang/proof/examples/corpus-bytes.flang "$ZAP/corpus/corpus-bytes.запись" '101s/\\u007f//;102s/\\u007f//'
+  flang/proof/examples/corpus-bytes.flang "$ZAP/corpus/corpus-bytes.record" '101s/\\u007f//;102s/\\u007f//'
 [ -n "$FAYL_ISH_5044" ] && opyt P "1573 подделка: в однобайтовых знаком меньше" 1 "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 
 say "── семья тотальности-композиции [Ш3]: сертификат «доказано композицией» ──"
@@ -1392,25 +1392,25 @@ say "── семья тотальности-композиции [Ш3]: сер
 # ацикличной секции — теперь ЧЕСТНАЯ (см. ниже), не подделка.
 SEM=$CHEK/tests/families
 opyt C "тотальность честная: две композиции, «Сложить» РАНЬШЕ «Удвоить»" 0 \
-  "$SEM/totality.flang" "$SEM/totality.запись"
+  "$SEM/totality.flang" "$SEM/totality.record"
 # (а) самовызов дописан в тело: исходник «Удвоить» зовёт саму себя (flang его
 # отвергает вовсе), а запись ЛЖЁТ «самовызова нет». Перепроверка (б) перечитывает
 # тело из ПРОГРАММЫ и находит «Удвоить» от в строке 20 — КОД 1.
 opyt P "тотальность подделка (а): самовызов в теле, запись молчит" 1 \
-  "$SEM/totality-self-call.flang" "$SEM/totality-self-call.запись"
+  "$SEM/totality-self-call.flang" "$SEM/totality-self-call.record"
 # Блоки переставлены: «Удвоить» (зовущий) напечатан РАНЬШЕ «Сложить» (зовомого).
 # Граф «F зовёт G» ацикличен, только порядок обратный. ПЕРЕИГРЫШ НЕЗАВИСИМ ОТ
 # ПОРЯДКА (два прохода + топосортировка вместо реестра «раньше»): такая запись
 # ЧЕСТНА и обязана пройти — КОД 0. Прежде здесь ждали 1 (порядковый реестр), и это
 # был ложный отказ честной печати, дающей блоки в порядке ОБЪЯВЛЕНИЯ.
 opyt C "тотальность честная: блоки в обратном порядке, граф ацикличен" 0 \
-  "$SEM/totality.flang" "$SEM/totality-reordered.запись"
+  "$SEM/totality.flang" "$SEM/totality-reordered.record"
 # Ещё две дешёвые подделки правкой одной строки записи — сторож новых проверок
 # (г-примитив и а-привязка) не инертен: имя вне закрытого списка примитивов и
 # ложный номер строки объявления обязаны краснеть.
-podd "тотальность примитив выдуман" "$SEM/totality.flang" "$SEM/totality.запись" \
+podd "тотальность примитив выдуман" "$SEM/totality.flang" "$SEM/totality.record" \
   's/зовёт примитив «плюс»/зовёт примитив «удумка»/'
-podd "тотальность привязка к строке лжёт" "$SEM/totality.flang" "$SEM/totality.запись" \
+podd "тотальность привязка к строке лжёт" "$SEM/totality.flang" "$SEM/totality.record" \
   's/тотальность «Сложить» строка 12/тотальность «Сложить» строка 13/'
 
 say "── семья тотальности-РЕКУРСИИ [Ш3+]: structure / step ──"
@@ -1428,24 +1428,24 @@ say "── семья тотальности-РЕКУРСИИ [Ш3+]: structure
 # и ловится ПО СУЩЕСТВУ (сообщение называет, чем именно).
 # ── ЗОЛОТЫЕ ЧЕСТНЫЕ: код 0 проигрыванием ──
 opyt C "рекурсия честная structure: «Длина» убывает частью значения" 0 \
-  "$SEM/recursion-structure.flang" "$SEM/recursion-structure.запись"
+  "$SEM/recursion-structure.flang" "$SEM/recursion-structure.record"
 opyt C "рекурсия честная step: «Отсчёт» убывает точным шагом по «нат»" 0 \
-  "$SEM/recursion-step.flang" "$SEM/recursion-step.запись"
+  "$SEM/recursion-step.flang" "$SEM/recursion-step.record"
 # ── ПОДДЕЛКИ-ФИКСТУРЫ (нетотальные исходники — двоичный их не примет, потому записи
 #    рукотворны; каждая ОБЯЗАНА дать код 1): мандат §9 «мера не убывает» и «дно не
 #    фундировано» + инверсия (б). ──
 opyt P "рекурсия подделка step: мера НЕ убывает (после ≥ до)" 1 \
-  "$SEM/recursion-step-grows.flang" "$SEM/recursion-step-grows.запись"
+  "$SEM/recursion-step-grows.flang" "$SEM/recursion-step-grows.record"
 opyt P "рекурсия подделка step: дно НЕ фундировано (тип аргумента не отрезок)" 1 \
-  "$SEM/recursion-step-abyss.flang" "$SEM/recursion-step-abyss.запись"
+  "$SEM/recursion-step-abyss.flang" "$SEM/recursion-step-abyss.record"
 opyt P "рекурсия подделка structure: вид structure, а самовызова в теле нет" 1 \
-  "$SEM/recursion-structure-no-self-call.flang" "$SEM/recursion-structure-no-self-call.запись"
+  "$SEM/recursion-structure-no-self-call.flang" "$SEM/recursion-structure-no-self-call.record"
 # ── ДЕШЁВЫЕ ПОДДЕЛКИ правкой одной строки записи — сторож новых проверок не инертен: ──
-podd "рекурсия structure: часть названа полем ЧУЖОГО типа (круг)" "$SEM/recursion-structure.flang" "$SEM/recursion-structure.запись" \
+podd "рекурсия structure: часть названа полем ЧУЖОГО типа (круг)" "$SEM/recursion-structure.flang" "$SEM/recursion-structure.record" \
   's/поле «дальше»/поле «первое»/'
-podd "рекурсия step: привязка к строке объявления лжёт" "$SEM/recursion-step.flang" "$SEM/recursion-step.запись" \
+podd "рекурсия step: привязка к строке объявления лжёт" "$SEM/recursion-step.flang" "$SEM/recursion-step.record" \
   's/тотальность «Отсчёт» строка 10/тотальность «Отсчёт» строка 11/'
-podd "рекурсия step: самовызов в записи есть, а в теле нет (виток к чужой строке)" "$SEM/recursion-step.flang" "$SEM/recursion-step.запись" \
+podd "рекурсия step: самовызов в записи есть, а в теле нет (виток к чужой строке)" "$SEM/recursion-step.flang" "$SEM/recursion-step.record" \
   's/виток строка 15 «Отсчёт» от (н минус 1)/виток строка 14 «Отсчёт» от (н минус 1)/'
 
 say "── межмодульная линковка [Ш3+]: доверие набору ТОЛЬКО по проигранному носителю ──"
@@ -1458,16 +1458,16 @@ say "── межмодульная линковка [Ш3+]: доверие н�
 # записи-зависимости и их исходнички — дешевле породить, чем хранить.
 MEZH=$RABOTA/межмодуль; mkdir -p "$MEZH"
 CT=flang/proof/examples/corpus-tables.flang
-CTZ=$ZAP/corpus/corpus-tables.запись
+CTZ=$ZAP/corpus/corpus-tables.record
 # «Перевод слова» зовёт «Слово имён списка», а та несёт свой блок В ТОЙ ЖЕ записи.
 # Изымаем блок носителя (стр.42-46, тотальностей 5→4) — модель того, что G живёт в
 # ДРУГОМ модуле и её блока в записи F нет. Это и есть PoC §5.1.
-sed '42,46d' "$CTZ" | sed 's/^тотальностей 5$/тотальностей 4/' > "$MEZH/перевод-без-носителя.запись"
-cmp -s "$CTZ" "$MEZH/перевод-без-носителя.запись" && { say "ПОДДЕЛКА НЕ СОБРАЛАСЬ: изъятие носителя"; BAD=$((BAD+1)); }
-BEZ=$MEZH/перевод-без-носителя.запись
+sed '42,46d' "$CTZ" | sed 's/^тотальностей 5$/тотальностей 4/' > "$MEZH/перевод-без-носителя.record"
+cmp -s "$CTZ" "$MEZH/перевод-без-носителя.record" && { say "ПОДДЕЛКА НЕ СОБРАЛАСЬ: изъятие носителя"; BAD=$((BAD+1)); }
+BEZ=$MEZH/перевод-без-носителя.record
 # честный носитель G: «Слово имён списка» из corpus-tables.flang стр.47 (зовёт лишь
 # примитив «соединить»). Пред-проход проигрывает его против corpus-tables.flang.
-cat > "$MEZH/dep-slovo.запись" <<'ZZ'
+cat > "$MEZH/dep-slovo.record" <<'ZZ'
 запись доказательства 1
 исходник flang/proof/examples/corpus-tables.flang
 тотальностей 1
@@ -1487,7 +1487,7 @@ cat > "$MEZH/rekursiya.flang" <<'ZZ'
   возвращает строка
   «Слово имён списка» от «тексты»
 ZZ
-cat > "$MEZH/dep-rekursiya.запись" <<ZZ
+cat > "$MEZH/dep-rekursiya.record" <<ZZ
 запись доказательства 1
 исходник $MEZH/rekursiya.flang
 тотальностей 1
@@ -1498,7 +1498,7 @@ cat > "$MEZH/dep-rekursiya.запись" <<ZZ
 конец записи
 ZZ
 # П3: манифест-как-аксиома — голое имя без тела блока (не проигран).
-cat > "$MEZH/dep-manifest.запись" <<'ZZ'
+cat > "$MEZH/dep-manifest.record" <<'ZZ'
 запись доказательства 1
 исходник flang/proof/examples/corpus-tables.flang
 тотальностей 1
@@ -1514,7 +1514,7 @@ cat > "$MEZH/tezka.flang" <<'ZZ'
   возвращает число
   н плюс н
 ZZ
-cat > "$MEZH/dep-tezka.запись" <<ZZ
+cat > "$MEZH/dep-tezka.record" <<ZZ
 запись доказательства 1
 исходник $MEZH/tezka.flang
 тотальностей 1
@@ -1535,24 +1535,24 @@ opyt P "П1 носителя нет в наборе → код 1" 1 "$CT" "$BEZ"
 # сам (вызов «Перевод слова» разворачивается телом). Контроль механизма тот же:
 # честный носитель ПРИНИМАЕТСЯ (без него П2/П3 были бы неотличимы от «набор молчит»).
 opyt C "П1 носитель в наборе → код 0 (порог восстановлен проигранным блоком)" 0 \
-  --зависимость "$CT" "$MEZH/dep-slovo.запись" "$CT" "$BEZ"
+  --зависимость "$CT" "$MEZH/dep-slovo.record" "$CT" "$BEZ"
 # П2 «лживый блок»: набор объявляет «Слово имён списка» тотальной, но её ИСХОДНИК
 # зовёт саму себя. Пред-проход §2(б) краснеет → в реестр НЕ входит → зовущий код 1.
 # Набор не может отмыть ложную тотальность.
 opyt P "П2 лживый блок самовызова в наборе → код 1" 1 \
-  --зависимость "$MEZH/rekursiya.flang" "$MEZH/dep-rekursiya.запись" "$CT" "$BEZ"
+  --зависимость "$MEZH/rekursiya.flang" "$MEZH/dep-rekursiya.record" "$CT" "$BEZ"
 # П3 «манифест как аксиома»: запись НАЗЫВАЕТ «Слово имён списка» тотальной, но
 # проигранного блока не несёт (голое имя без тела) → в реестр не входит → код 1.
 # Единственный сторож того, что путь (2) не выродился в голое доверие.
 opyt P "П3 манифест без проигранного блока → код 1" 1 \
-  --зависимость "$CT" "$MEZH/dep-manifest.запись" "$CT" "$BEZ"
+  --зависимость "$CT" "$MEZH/dep-manifest.record" "$CT" "$BEZ"
 # П4 «отмывание тёзкой»: в наборе ДВА разных «Слово имён списка» — честный (стр.47
 # corpus-tables) и одноимённый самозванец из другого исходника (сам по себе валиден).
 # Без сторожа (г) нашла бы честного тёзку и пропустила самозванца. Сторож коллизии
 # имён → код 1: имя не различает, кому верить.
 opyt P "П4 два разных «Слово имён списка» в наборе → код 1 (сторож коллизии)" 1 \
-  --зависимость "$CT" "$MEZH/dep-slovo.запись" \
-  --зависимость "$MEZH/tezka.flang" "$MEZH/dep-tezka.запись" \
+  --зависимость "$CT" "$MEZH/dep-slovo.record" \
+  --зависимость "$MEZH/tezka.flang" "$MEZH/dep-tezka.record" \
   "$CT" "$BEZ"
 
 say "── семья «разбор по случаям»: ветвь-случай — скобочное «если (У) то … иначе …» ──"
@@ -1566,14 +1566,14 @@ say "── семья «разбор по случаям»: ветвь-случ
 # «разбором по случаям» проиграно заново > 0), подделка разбора → 1 по существу.
 VE=$SEM/if-branch
 opyt C "разбор-ветка-если честная: «Высота» дерева, ветвь-случай = если(У)то" 0 \
-  "$VE/height.flang" "$VE/height.запись"
+  "$VE/height.flang" "$VE/height.record"
 # Разбор сломан правкой одной строки записи — сторож покрытия не инертен:
 # (а) посылка ветви-случая «Узел» названа ЧУЖИМ вариантом «Лист» — разбор больше не
 #     покрывает объявленную сумму, и «вид step» лжёт о варианте без поля своего типа.
-podd "разбор-ветка-если: посылка «Узел» названа вариантом «Лист»" "$VE/height.flang" "$VE/height.запись" \
+podd "разбор-ветка-если: посылка «Узел» названа вариантом «Лист»" "$VE/height.flang" "$VE/height.record" \
   's/посылка «Узел» вид step вариант «Узел»/посылка «Узел» вид step вариант «Лист»/'
 # (б) посылка ветви-случая «Узел» выброшена вовсе — принцип покрывает 1 вариант из 2.
-podd "разбор-ветка-если: посылка «Узел» выброшена (покрытие неполно)" "$VE/height.flang" "$VE/height.запись" \
+podd "разбор-ветка-если: посылка «Узел» выброшена (покрытие неполно)" "$VE/height.flang" "$VE/height.record" \
   '/посылка «Узел» вид step вариант «Узел»/d'
 
 say "── семья «разбор по случаям»: БУЛЕВА цель случая (не «результат не меньше 0») ──"
@@ -1586,11 +1586,11 @@ say "── семья «разбор по случаям»: БУЛЕВА цел
 # разбора → 1 по существу. Замыкание СОУНДНО — ложную цель не закроет (не примет).
 BC=$SEM/boolean-goal
 opyt C "разбор-булева честная: «Всегда истинно», цель «результат» да/или/не" 0 \
-  "$BC/flag.flang" "$BC/flag.запись"
+  "$BC/flag.flang" "$BC/flag.record"
 # Разбор сломан правкой одной строки записи — сторож покрытия не инертен:
-podd "разбор-булева: посылка «Три» названа вариантом «Раз»" "$BC/flag.flang" "$BC/flag.запись" \
+podd "разбор-булева: посылка «Три» названа вариантом «Раз»" "$BC/flag.flang" "$BC/flag.record" \
   's/посылка «Три» вид base вариант «Три»/посылка «Три» вид base вариант «Раз»/'
-podd "разбор-булева: посылка «Три» выброшена (покрытие неполно)" "$BC/flag.flang" "$BC/flag.запись" \
+podd "разбор-булева: посылка «Три» выброшена (покрытие неполно)" "$BC/flag.flang" "$BC/flag.record" \
   '/посылка «Три» вид base вариант «Три»/d'
 # ЛОЖЬ ПОД ЦЕЛЬ (сторож самого замыкания, а не покрытия): исходник, где случай
 # «Правый» возвращает `нет` под целью `результат`, и рукотворная запись, ЛЖУЩАЯ
@@ -1598,14 +1598,14 @@ podd "разбор-булева: посылка «Три» выброшена (�
 # потому запись рукотворна, шапка её ЧЕСТНА (снята двоичным на отвергнутом проходе).
 # Замыкание обязано НЕ закрыть `нет` → узел не проигран, КОД 3 (класс P: не код 0).
 opyt P "разбор-булева ЛОЖЬ: ветвь «нет» под целью «результат» не замыкается" 3 \
-  "$BC/corrupt/lie.flang" "$BC/corrupt/lie.запись"
+  "$BC/corrupt/lie.flang" "$BC/corrupt/lie.record"
 # ВАКУУМНЫЙ УСПЕХ (задача 6127; дыра §6 п.1 проверки узлов). Правила ВСЕХ посылок
 # стёрты и строка «сведение» снята: узлу algebra нечего читать — ни одного случая.
 # Прежний сверщик отвечал КОД 0 и «снято со слова ядра мест 4», не проверив ничего;
 # теперь узел ВНЕ ПРИЁМА, четыре места на слове ядра, КОД 3 (класс P: не код 0).
 sed -e 's/ правило «вычисление замкнутой цели»$/ правило «»/' \
-    -e '/^  сведение «вычисление замкнутой цели»$/d' "$BC/flag.запись" > "$RABOTA/вакуум"
-cmp -s "$BC/flag.запись" "$RABOTA/вакуум" && { say "ПОДДЕЛКА НЕ СОБРАЛАСЬ: вакуум"; BAD=$((BAD+1)); }
+    -e '/^  сведение «вычисление замкнутой цели»$/d' "$BC/flag.record" > "$RABOTA/вакуум"
+cmp -s "$BC/flag.record" "$RABOTA/вакуум" && { say "ПОДДЕЛКА НЕ СОБРАЛАСЬ: вакуум"; BAD=$((BAD+1)); }
 opyt P "разбор-булева ВАКУУМ: все правила пусты — узел не проигран, мест не снято" 3 \
   "$BC/flag.flang" "$RABOTA/вакуум"
 
@@ -1633,50 +1633,50 @@ say "── семья «переигрыш узла» (задача 6190): по
 # poddelka-dlina — домен тождества у разбора по случаям.
 UZ_ISH=flang/proof/examples/body-forms.flang
 opyt C "6190 честная: body-forms (носитель fold проигран целиком)" 0 \
-  "$UZ_ISH" "$ZAP/corpus/body-forms.запись"
+  "$UZ_ISH" "$ZAP/corpus/body-forms.record"
 opyt C "6190 честная: sources (потолок и порядок правилами ядра)" 0 \
-  flang/proof/map/sources.flang "$ZAP/corpus/sources.запись"
+  flang/proof/map/sources.flang "$ZAP/corpus/sources.record"
 opyt C "6190 честная: poddelka-dlina (тождество под разбором)" 0 \
-  flang/test/fixtures/poddelka-dlina.flang "$ZAP/corpus/poddelka-dlina.запись"
-poddelka_ishodnika_5044 "6190-fold-nachalo-otricatelno" "$UZ_ISH" "$ZAP/corpus/body-forms.запись" \
+  flang/test/fixtures/poddelka-dlina.flang "$ZAP/corpus/poddelka-dlina.record"
+poddelka_ishodnika_5044 "6190-fold-nachalo-otricatelno" "$UZ_ISH" "$ZAP/corpus/body-forms.record" \
   's/свёртка элементы начиная с 0 как акк и эл → акк плюс 1/свёртка элементы начиная с (0 минус 1) как акк и эл → акк плюс 1/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6190 fold: начало свёртки отрицательно — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
-poddelka_ishodnika_5044 "6190-fold-vitok-ubyvaet" "$UZ_ISH" "$ZAP/corpus/body-forms.запись" \
+poddelka_ishodnika_5044 "6190-fold-vitok-ubyvaet" "$UZ_ISH" "$ZAP/corpus/body-forms.record" \
   's/свёртка элементы начиная с 0 как акк и эл → акк плюс 1/свёртка элементы начиная с 0 как акк и эл → акк минус 1/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6190 fold: виток свёртки убывает — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Тождество ПОД СВЁРТКОЙ: виток растит счёт на два, а пройденный кусок — на один.
 SV_ISH=flang/test/fixtures/svyortka-prefiks-chestnaya.flang
-poddelka_ishodnika_5044 "6190-svyortka-vitok-na-dva" "$SV_ISH" "$ZAP/corpus/svyortka-prefiks-chestnaya.запись" \
+poddelka_ishodnika_5044 "6190-svyortka-vitok-na-dva" "$SV_ISH" "$ZAP/corpus/svyortka-prefiks-chestnaya.record" \
   's/свёртка ряд начиная с 0 как сколько и э → сколько плюс 1/свёртка ряд начиная с 0 как сколько и э → сколько плюс 2/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6190 тождество-свёртка: виток растит на два — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Тождество ПОД РАЗБОРОМ: ветвь звена удваивает голову, и мера перестаёт совпадать.
 poddelka_ishodnika_5044 "6190-tozhdestvo-vetv-udvaivaet" flang/proof/map/substantive.flang \
-  "$ZAP/corpus/substantive.запись" 's/^      то добавить г к х$/      то добавить г к (добавить г к х)/'
+  "$ZAP/corpus/substantive.record" 's/^      то добавить г к х$/      то добавить г к (добавить г к х)/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6190 тождество-разбор: ветвь удваивает голову — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Потолок: ветвь звена отдаёт ВЕСЬ текст вместо головы, и «не больше 1» ложно.
 poddelka_ishodnika_5044 "6190-potolok-vetv-otdayot-vsyo" flang/proof/map/sources.flang \
-  "$ZAP/corpus/sources.запись" 's/^      то г$/      то текст/'
+  "$ZAP/corpus/sources.record" 's/^      то г$/      то текст/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6190 потолок: ветвь отдаёт весь текст — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Квантор К1 (задача 1794): тело «Модули» отдаёт [0 минус 1] вместо пустого
 # списка. Запись по-прежнему выводит цель правилом Э1 о пустом списке, а шаг
 # Разв2 обязан прочесть тело из исходника и разойтись с ним — код 1 с причиной.
 poddelka_ishodnika_5044 "1794-k1-telo-s-otricatelnym" flang/proof/map/sources.flang \
-  "$ZAP/corpus/sources.запись" 's/^  пустой список$/  [0 минус 1]/'
+  "$ZAP/corpus/sources.record" 's/^  пустой список$/  [0 минус 1]/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "1794 квантор К1: тело отдаёт отрицательный элемент — Разв2 расходится с Э1" 1 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Порядок: найденная позиция считается с двойки, и «не больше длины» ложно.
 poddelka_ishodnika_5044 "6190-poryadok-poziciya-s-dvoyki" flang/proof/examples/corpus-hof.flang \
-  "$ZAP/corpus/corpus-hof.запись" 's/^      если условие от голова$/      если условие от голова/;s/^        то 1$/        то 2/'
+  "$ZAP/corpus/corpus-hof.record" 's/^      если условие от голова$/      если условие от голова/;s/^        то 1$/        то 2/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6190 порядок: позиция считается с двойки — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Многострочная ветвь: в глубине ветви «иначе» счёт убывает, и неотрицательность ложна.
 poddelka_ishodnika_5044 "6190-mnogostrochnaya-vetv-ubyvaet" flang/proof/examples/corpus-hof.flang \
-  "$ZAP/corpus/corpus-hof.запись" 's/иначе дальше плюс 1$/иначе дальше минус 1/'
+  "$ZAP/corpus/corpus-hof.record" 's/иначе дальше плюс 1$/иначе дальше минус 1/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6190 многострочная ветвь: в глубине счёт убывает — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Правило Н2: допущение функции больше не даёт дна, а база узла на него опирается.
@@ -1687,7 +1687,7 @@ poddelka_ishodnika_5044 "6190-mnogostrochnaya-vetv-ubyvaet" flang/proof/examples
 # собственный отказ правила Н2 виден числом на честной записи (до задачи 6190
 # у precondition было два места на слове ядра, после — ни одного).
 poddelka_ishodnika_5044 "6190-trebuet-ne-dayot-dna" flang/proof/examples/precondition.flang \
-  "$ZAP/corpus/precondition.запись" 's/  требует «дно неотрицательно» дно не меньше 0/  требует «дно неотрицательно» дно не равен 0.0/'
+  "$ZAP/corpus/precondition.record" 's/  требует «дно неотрицательно» дно не меньше 0/  требует «дно неотрицательно» дно не равен 0.0/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6190 Н2: допущение функции не даёт дна — не принято" 1 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 
@@ -1703,36 +1703,36 @@ say "── семья «развёртка по конструктору» (з�
 # меряется. Была бы в записи цепочка ходов, подлог ловил бы старый сторож, и
 # новый приём не был бы измерен ничем.
 KN=$SEM/constructor
-opyt C "6191 честная: узел закрыт развёрткой по конструктору" 0 "$KN/copy.flang" "$KN/copy.запись"
+opyt C "6191 честная: узел закрыт развёрткой по конструктору" 0 "$KN/copy.flang" "$KN/copy.record"
 # ЧЕМ ЗДЕСЬ ЛГУТ. Не записью — исходником: тело ветви правится так, что
 # утверждение на нём становится ложным, а отпечаток записи пересчитывается.
 # Приём законен ровно потому, что читает тело из исходника; на испорченном теле
 # он обязан отказаться. Код 3 здесь верен: место возвращается на слово ядра, а
 # не выдаётся за проигранное. Слабостью был бы ноль.
-poddelka_ishodnika_5044 "6191-kopiya-nadstraivaet-zveno" "$KN/copy.flang" "$KN/copy.запись" \
+poddelka_ishodnika_5044 "6191-kopiya-nadstraivaet-zveno" "$KN/copy.flang" "$KN/copy.record" \
   's/^      то вариант «Звено» с голова равным г и хвост равным («Копия» от х)$/      то вариант «Звено» с голова равным г и хвост равным (вариант «Звено» с голова равным г и хвост равным («Копия» от х))/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6191 конструктор: копия надстраивает звено — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Поле «хвост» конструктора заполнено ГОЛОВОЙ: связывание идёт по ИМЕНАМ полей,
 # и подставленное обязано разойтись с правой стороной.
-poddelka_ishodnika_5044 "6191-hvost-zapolnen-golovoy" "$KN/copy.flang" "$KN/copy.запись" \
+poddelka_ishodnika_5044 "6191-hvost-zapolnen-golovoy" "$KN/copy.flang" "$KN/copy.record" \
   's/^      то вариант «Звено» с голова равным г и хвост равным («Копия» от х)$/      то вариант «Звено» с голова равным г и хвост равным г/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6191 конструктор: хвост заполнен головой — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Копия звена теряет хвост: высота копии единица, высота оригинала растёт с хвостом.
-poddelka_ishodnika_5044 "6191-kopiya-teryaet-hvost" "$KN/copy.flang" "$KN/copy.запись" \
+poddelka_ishodnika_5044 "6191-kopiya-teryaet-hvost" "$KN/copy.flang" "$KN/copy.record" \
   's/^      то вариант «Звено» с голова равным г и хвост равным («Копия» от х)$/      то вариант «Звено» с голова равным г и хвост равным (вариант «Пусто»)/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6191 конструктор: копия теряет хвост — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Копия звена теряет голову: конструктора на месте разбираемого больше нет вовсе,
 # и разворачивать нечего — высоты расходятся на единицу.
-poddelka_ishodnika_5044 "6191-kopiya-teryaet-golovu" "$KN/copy.flang" "$KN/copy.запись" \
+poddelka_ishodnika_5044 "6191-kopiya-teryaet-golovu" "$KN/copy.flang" "$KN/copy.record" \
   's/^      то вариант «Звено» с голова равным г и хвост равным («Копия» от х)$/      то («Копия» от х)/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6191 конструктор: копия теряет голову — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Имена образца в самой «Копии» переставлены: голова связана именем хвоста и
 # наоборот. Связывание идёт по именам полей, и подмена обязана быть видна.
-poddelka_ishodnika_5044 "6191-imena-obrazca-perestavleny" "$KN/copy.flang" "$KN/copy.запись" \
+poddelka_ishodnika_5044 "6191-imena-obrazca-perestavleny" "$KN/copy.flang" "$KN/copy.record" \
   '30s/^    случай вариант «Звено» с голова как г и хвост как х$/    случай вариант «Звено» с голова как х и хвост как г/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6191 конструктор: имена образца переставлены — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
@@ -1742,12 +1742,12 @@ poddelka_ishodnika_5044 "6191-imena-obrazca-perestavleny" "$KN/copy.flang" "$KN/
 # и порчу ловит только чтение исходника. Ветвь «то» теряет вставляемое
 # значение — длина перестаёт расти на единицу.
 poddelka_ishodnika_5044 "6191-vetv-teryaet-vstavlyaemoe" flang/proof/map/substantive.flang \
-  "$ZAP/corpus/substantive.запись" '62s/^        то приписать значение к элементы$/        то элементы/'
+  "$ZAP/corpus/substantive.record" '62s/^        то приписать значение к элементы$/        то элементы/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6191 выбор внутри терма: ветвь теряет вставляемое — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Вторая ветвь того же выбора теряет голову — та же цель ложна с другой стороны.
 poddelka_ishodnika_5044 "6191-vetv-teryaet-golovu" flang/proof/map/substantive.flang \
-  "$ZAP/corpus/substantive.запись" \
+  "$ZAP/corpus/substantive.record" \
   's/^        иначе приписать г к («Вставить в упорядоченный» от значение и х)$/        иначе («Вставить в упорядоченный» от значение и х)/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6191 выбор внутри терма: ветвь теряет голову — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
@@ -1755,21 +1755,21 @@ poddelka_ishodnika_5044 "6191-vetv-teryaet-golovu" flang/proof/map/substantive.f
 # охрана оказывается конъюнкцией, среди частей которой стоит Ц знак в знак.
 # Ходов у записи нет, и порчу ловит только чтение исходника.
 poddelka_ishodnika_5044 "6191-ohrana-teryaet-konyunkt" flang/test/fixtures/ohrana-daet-fakt.flang \
-  "$ZAP/corpus/ohrana-daet-fakt.запись" \
+  "$ZAP/corpus/ohrana-daet-fakt.record" \
   's/^      то (зн не меньше 0) и притом («Хорошее» от л) и притом («Хорошее» от п)$/      то (зн не меньше 0) и притом («Хорошее» от п)/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6191 охрана: конъюнкта о левом больше нет — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # Ветвь обещает не то, что стоит в охране: «зн не меньше 1» конъюнктом не является,
 # и при нулевом значении утверждение ложно.
 poddelka_ishodnika_5044 "6191-vetv-obeshchaet-ne-to" flang/test/fixtures/ohrana-daet-fakt.flang \
-  "$ZAP/corpus/ohrana-daet-fakt.запись" 's/^      то «Хорошее» от л$/      то зн не меньше 1/'
+  "$ZAP/corpus/ohrana-daet-fakt.record" 's/^      то «Хорошее» от л$/      то зн не меньше 1/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6191 охрана: ветвь обещает не конъюнкт — узел не проигран" 3 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 # ТА ЖЕ СЕМЬЯ НА КОРПУСЕ. У stack ходы в записи есть, и порчу исходника ловит
 # старый сторож раньше узла (код 1). Проба всё равно на месте: она держит
 # границу «кодом 0 такое не принимается» с запасом.
 poddelka_ishodnika_5044 "6191-stack-nadstraivaet-zveno" flang/proof/examples/stack.flang \
-  "$ZAP/corpus/stack.запись" \
+  "$ZAP/corpus/stack.record" \
   's/^      то вариант «Звено» с голова равным г и хвост равным («Копия» от х)$/      то вариант «Звено» с голова равным г и хвост равным (вариант «Звено» с голова равным г и хвост равным («Копия» от х))/'
 [ -n "$FAYL_ISH_5044" ] && opyt P "6191 stack: копия надстраивает звено — не принято" 1 \
   "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
@@ -1784,25 +1784,25 @@ say "── семья «разбор цели» (задача 6127): семь �
 # 11, калькулятор не зван: «разбор цели» проиграно заново 0); ложь под каждый вид →
 # 1 по существу, каждое утверждение названо своей причиной.
 RC=$SEM/goal-breakdown
-opyt C "разбор-цели честная: 11 мест, семь видов ходов" 0 "$RC/breakdown.flang" "$RC/breakdown.запись"
+opyt C "разбор-цели честная: 11 мест, семь видов ходов" 0 "$RC/breakdown.flang" "$RC/breakdown.record"
 opyt P "разбор-цели ЛОЖЬ: 11 ложных постусловий под теми же цепочками" 1 \
-  "$RC/corrupt/lie.flang" "$RC/corrupt/lie.запись"
+  "$RC/corrupt/lie.flang" "$RC/corrupt/lie.record"
 # Порча ОДНОЙ строки честной записи — каждый новый вид хода не инертен:
-podd "разбор-цели: деление по подтерму, а не по условию (Б2*)" "$RC/breakdown.flang" "$RC/breakdown.запись" \
+podd "разбор-цели: деление по подтерму, а не по условию (Б2*)" "$RC/breakdown.flang" "$RC/breakdown.record" \
   's/деление ⟨( х остаток от 2 ) равен 0⟩/деление ⟨х остаток от 2⟩/'
-podd "разбор-цели: закон вне закрытого списка" "$RC/breakdown.flang" "$RC/breakdown.запись" \
+podd "разбор-цели: закон вне закрытого списка" "$RC/breakdown.flang" "$RC/breakdown.record" \
   '0,/закон «мера неотрицательна»/s//закон «мера любая»/'
-podd "разбор-цели: у связки «или» названа не та половина" "$RC/breakdown.flang" "$RC/breakdown.запись" \
+podd "разбор-цели: у связки «или» названа не та половина" "$RC/breakdown.flang" "$RC/breakdown.record" \
   '0,/связка ⟨или⟩ левая/s//связка ⟨или⟩ правая/'
-podd "разбор-цели: «подставить пусть» указывает на строку не-пусть" "$RC/breakdown.flang" "$RC/breakdown.запись" \
+podd "разбор-цели: «подставить пусть» указывает на строку не-пусть" "$RC/breakdown.flang" "$RC/breakdown.record" \
   's/подставить пусть строка 67/подставить пусть строка 66/'
-podd "разбор-цели: «Закон признака» с подложной правой стороной" "$RC/breakdown.flang" "$RC/breakdown.запись" \
+podd "разбор-цели: «Закон признака» с подложной правой стороной" "$RC/breakdown.flang" "$RC/breakdown.record" \
   '0,/⟨не да⟩ = ⟨нет⟩/s//⟨не да⟩ = ⟨да⟩/'
-podd "разбор-цели: вхождение в список — левая сторона не из цели" "$RC/breakdown.flang" "$RC/breakdown.запись" \
+podd "разбор-цели: вхождение в список — левая сторона не из цели" "$RC/breakdown.flang" "$RC/breakdown.record" \
   's/содержит "да"⟩ = ⟨да⟩/содержит "ага"⟩ = ⟨да⟩/'
-podd "разбор-цели: «квадрат под оговоркой» назван там, где цель не квадрат" "$RC/breakdown.flang" "$RC/breakdown.запись" \
+podd "разбор-цели: «квадрат под оговоркой» назван там, где цель не квадрат" "$RC/breakdown.flang" "$RC/breakdown.record" \
   '0,/закон «мера неотрицательна»/s//закон «квадрат под оговоркой»/'
-podd "разбор-цели: «начало склейки» назван над пустой приставкой" "$RC/breakdown.flang" "$RC/breakdown.запись" \
+podd "разбор-цели: «начало склейки» назван над пустой приставкой" "$RC/breakdown.flang" "$RC/breakdown.record" \
   's/закон «пустая приставка»/закон «начало склейки»/'
 
 say ""
@@ -1820,81 +1820,81 @@ say "── семья «вывод» (задача 6131): факт о типе 
 # незнакомая. Мерило честной: код 0, все восемь мест сняты со слова ядра
 # («выводов факта о типе проиграно заново 8»), долг ноль.
 VV=$SEM/inference
-opyt C "вывод честная: восемь мест, десять правил ведомости" 0 "$VV/inference.flang" "$VV/inference.запись"
+opyt C "вывод честная: восемь мест, десять правил ведомости" 0 "$VV/inference.flang" "$VV/inference.record"
 # ГЛАВНАЯ ПРОБА ЗАДАЧИ. Та же подделка `vychitanie-ne-sohranyaet`, что стоит выше
 # именной пробой, но с ДОПИСАННЫМ блоком вывода: теперь её отвергает проверка
 # вывода и называет причину, а не имя файла. Два вида лжи порознь: назвать
 # запретом (вычитания в семействе неотрицательности нет и не будет) и назвать
 # сложением то, что стоит вычитанием.
 TDV=$ZAP/reason-types/subtraction-does-not-keep.flang
-opyt P "вывод: вычитание названо запретом Н✗" 1 "$TDV" "$VV/corrupt/subtraction-by-prohibition.запись"
-opyt P "вывод: вычитание выдано за сумму" 1 "$TDV" "$VV/corrupt/subtraction-disguised-as-a-sum.запись"
+opyt P "вывод: вычитание названо запретом Н✗" 1 "$TDV" "$VV/corrupt/subtraction-by-prohibition.record"
+opyt P "вывод: вычитание выдано за сумму" 1 "$TDV" "$VV/corrupt/subtraction-disguised-as-a-sum.record"
 # Порча ОДНОЙ строки честной записи — на каждый вид отказа своя проба. Ни один
 # из этих отказов не молчит: у каждого своя названная причина.
-podd "вывод: цель блока не та, что в исходнике" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: цель блока не та, что в исходнике" "$VV/inference.flang" "$VV/inference.record" \
   '0,/вывод цель ⟨результат не меньше 0⟩/s//вывод цель ⟨результат не меньше 1⟩/'
-podd "вывод: номер строки указывает не на объявление довода" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: номер строки указывает не на объявление довода" "$VV/inference.flang" "$VV/inference.record" \
   's/⟨первое не меньше 0⟩ строка 4/⟨первое не меньше 0⟩ строка 5/'
-podd "вывод: посылка пропущена" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: посылка пропущена" "$VV/inference.flang" "$VV/inference.record" \
   '/вывод 2 Н3 ⟨второе не меньше 0⟩ строка 4/d'
-podd "вывод: названа не та посылка" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: названа не та посылка" "$VV/inference.flang" "$VV/inference.record" \
   's/⟨( первое плюс второе ) не меньше 0⟩ из 1 2/⟨( первое плюс второе ) не меньше 0⟩ из 1 1/'
-podd "вывод: шаг переставлен" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: шаг переставлен" "$VV/inference.flang" "$VV/inference.record" \
   's/вывод 2 Н3 ⟨второе/вывод 3 Н3 ⟨второе/'
-podd "вывод: допущение подменено объявлением" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: допущение подменено объявлением" "$VV/inference.flang" "$VV/inference.record" \
   's/⟨з не меньше 0⟩ строка 23/⟨з не меньше 0⟩ строка 22/'
-podd "вывод: цель-допущение указывает туда, где допущения нет" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: цель-допущение указывает туда, где допущения нет" "$VV/inference.flang" "$VV/inference.record" \
   's/⟨а не больше б⟩ строка 30/⟨а не больше б⟩ строка 29/'
-podd "вывод: развёртка указывает не на тело функции" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: развёртка указывает не на тело функции" "$VV/inference.flang" "$VV/inference.record" \
   's/из 3 строка 7/из 3 строка 6/'
-podd "вывод: вывод оборван, до цели не доведён" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: вывод оборван, до цели не доведён" "$VV/inference.flang" "$VV/inference.record" \
   '/вывод 4 Разв2 ⟨результат не меньше 0⟩ из 3 строка 7/d'
-podd "вывод: лист выдан за опору на строку" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: лист выдан за опору на строку" "$VV/inference.flang" "$VV/inference.record" \
   's/⟨0 не меньше 0⟩ сам/⟨0 не меньше 0⟩ строка 13/'
-podd "вывод: имени правила в ведомости нет" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: имени правила в ведомости нет" "$VV/inference.flang" "$VV/inference.record" \
   's/вывод 3 Н5 /вывод 3 Н9 /'
 # Прежде эта проба ставила на место Т1 имя `О1`: семейства порядка в приёме не
 # было вовсе, и любое имя оттуда отвергалось. Теперь О1 написан и цель-допущение
 # «а не больше б» берёт по существу — запись стала ЧЕСТНОЙ, и подделкой быть
 # перестала. Проба переставлена на `О9` (свёртка под длиной): семья есть, а
 # правила в приёме нет, и отказ по-прежнему назван.
-podd "вывод: имя семьи есть, а правила в приёме нет" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: имя семьи есть, а правила в приёме нет" "$VV/inference.flang" "$VV/inference.record" \
   's/вывод 1 Т1 /вывод 1 О9 /'
 # Правило написано, а цель ему не той формы: О1 заключает порядок, и над
 # неотрицательностью ему делать нечего.
-podd "вывод: порядок назван над целью-неотрицательностью" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: порядок назван над целью-неотрицательностью" "$VV/inference.flang" "$VV/inference.record" \
   's/вывод 1 Н1 ⟨0 не меньше 0⟩ сам/вывод 1 О1 ⟨0 не меньше 0⟩ строка 10/'
-podd "вывод: вместо потолка подана неотрицательность" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: вместо потолка подана неотрицательность" "$VV/inference.flang" "$VV/inference.record" \
   's/⟨верх не больше 9007199254740991⟩ строка 43/⟨верх не меньше 0⟩ строка 43/'
-podd "вывод: объявленный тип назван над литералом" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: объявленный тип назван над литералом" "$VV/inference.flang" "$VV/inference.record" \
   's/вывод 1 Н1 ⟨0 не меньше 0⟩ сам/вывод 1 Н3 ⟨0 не меньше 0⟩ строка 10/'
-podd "вывод: литерал выше названного потолка" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: литерал выше названного потолка" "$VV/inference.flang" "$VV/inference.record" \
   's/⟨100 не больше 9007199254740991⟩/⟨9007199254740992 не больше 9007199254740991⟩/'
-podd "вывод: блок не закрыт" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: блок не закрыт" "$VV/inference.flang" "$VV/inference.record" \
   '/вывод конец/d'
-podd "вывод: основание не из трёх названных" "$VV/inference.flang" "$VV/inference.запись" \
+podd "вывод: основание не из трёх названных" "$VV/inference.flang" "$VV/inference.record" \
   's/⟨0 не меньше 0⟩ сам/⟨0 не меньше 0⟩ потому что/'
 # ── 6202 (ADR-0025): потолок — обязательство зовущего, а не свойство типа ──
-# ПОДДЕЛКА ЗАДАЧИ 6202. Ровно та запись, какой честная `inference.запись` была до
+# ПОДДЕЛКА ЗАДАЧИ 6202. Ровно та запись, какой честная `inference.record` была до
 # И1: П3 с основанием «строка N» — граница, которую «даёт» тип, без посылки.
 # На сверщике gh/dev 2a97c8204 она проходила кодом 0 (снято 9 сентября 2026);
 # теперь П3 берёт посылку — шаг Пред1 «⟨ИМЯ помещается⟩ строка N», — а за неё
 # отвечает строка `обязательство вход «ИМЯ» … на зовущем` под тем же
 # утверждением, и сверщик переигрывает её закрытие по вызовам в том же файле.
-opyt P "6202: П3 без посылки — объявление типа посылкой не является" 1 "$VV/inference.flang" "$VV/corrupt/p3-without-premise.запись"
-podd "6202: Пред1 над доводом типа «число»" "$VV/inference.flang" "$VV/inference.запись" \
+opyt P "6202: П3 без посылки — объявление типа посылкой не является" 1 "$VV/inference.flang" "$VV/corrupt/p3-without-premise.record"
+podd "6202: Пред1 над доводом типа «число»" "$VV/inference.flang" "$VV/inference.record" \
   's/вывод 1 П1 ⟨100 не больше 9007199254740991⟩ сам/вывод 1 Пред1 ⟨х помещается⟩ строка 49/'
-podd "6202: Пред1 без строки обязательства входа" "$VV/inference.flang" "$VV/inference.запись" \
+podd "6202: Пред1 без строки обязательства входа" "$VV/inference.flang" "$VV/inference.record" \
   '/обязательство вход «ц»/d'
-podd "6202: строка обязательства с чужим именем" "$VV/inference.flang" "$VV/inference.запись" \
+podd "6202: строка обязательства с чужим именем" "$VV/inference.flang" "$VV/inference.record" \
   's/обязательство вход «ц» ⟨ц не больше 9007199254740991⟩/обязательство вход «х» ⟨х не больше 9007199254740991⟩/'
-podd "6202: строка обязательства указывает на чужую строку" "$VV/inference.flang" "$VV/inference.запись" \
+podd "6202: строка обязательства указывает на чужую строку" "$VV/inference.flang" "$VV/inference.record" \
   's/строка 36 на зовущем/строка 37 на зовущем/'
-podd "6202: обязательство заключает не потолок представления" "$VV/inference.flang" "$VV/inference.запись" \
+podd "6202: обязательство заключает не потолок представления" "$VV/inference.flang" "$VV/inference.record" \
   's/⟨ц не больше 9007199254740991⟩ строка 36 на зовущем/⟨ц не больше 100⟩ строка 36 на зовущем/'
-podd "6202: П3 из шага Н3, а не Пред1" "$VV/inference.flang" "$VV/inference.запись" \
+podd "6202: П3 из шага Н3, а не Пред1" "$VV/inference.flang" "$VV/inference.record" \
   's/вывод 1 Пред1 ⟨ц помещается⟩ строка 36/вывод 1 Н3 ⟨ц не меньше 0⟩ строка 36/'
-podd "6202: П3 о чужом имени при верной посылке" "$VV/inference.flang" "$VV/inference.запись" \
+podd "6202: П3 о чужом имени при верной посылке" "$VV/inference.flang" "$VV/inference.record" \
   's/вывод 2 П3 ⟨ц не больше 9007199254740991⟩ из 1/вывод 2 П3 ⟨х не больше 9007199254740991⟩ из 1/'
 # ЗАКРЫТИЕ ОБЯЗАТЕЛЬСТВА ЗОВУЩИМ — по вызовам в том же файле и по «дано»
 # примера. Честная (литералы, точный довод зовущей, «дано» литералом) — 0.
@@ -1902,10 +1902,10 @@ podd "6202: П3 о чужом имени при верной посылке" "$V
 # файл не типизирует вовсе (FLANG_TYPE), а сверщик обязан поймать его сам, не
 # веря ядру. Довод-выражение «длина т» (типизируется как нат — замер ядром) —
 # закрыть нечем, и это ТРЕТИЙ исход с названной причиной, а не отказ.
-opyt C "6202: обязательство закрыто зовущими и примером" 0 "$VV/repr-call.flang" "$VV/repr-call.запись"
-opyt P "6202: вызов подставляет литерал выше К_предст" 1 "$VV/corrupt/repr-call-above.flang" "$VV/corrupt/repr-call-above.запись"
-opyt C "6202: зовущий подаёт выражение — закрыть нечем, третий исход" 3 "$VV/repr-call-nothing-to-close-with.flang" "$VV/repr-call-nothing-to-close-with.запись"
-"$C" "$VV/repr-call-nothing-to-close-with.flang" "$VV/repr-call-nothing-to-close-with.запись" 2>/dev/null \
+opyt C "6202: обязательство закрыто зовущими и примером" 0 "$VV/repr-call.flang" "$VV/repr-call.record"
+opyt P "6202: вызов подставляет литерал выше К_предст" 1 "$VV/corrupt/repr-call-above.flang" "$VV/corrupt/repr-call-above.record"
+opyt C "6202: зовущий подаёт выражение — закрыть нечем, третий исход" 3 "$VV/repr-call-nothing-to-close-with.flang" "$VV/repr-call-nothing-to-close-with.record"
+"$C" "$VV/repr-call-nothing-to-close-with.flang" "$VV/repr-call-nothing-to-close-with.record" 2>/dev/null \
   | grep -q "сверщик закрыть не смог" \
   || { say "ПРОВАЛ 6202: о незакрытом обязательстве сверщик смолчал"; BAD=$((BAD+1)); }
 
@@ -1925,56 +1925,56 @@ SO=flang/test/fixtures/poddelka-strict-order.flang
 BU=flang/test/fixtures/poddelka-builtin-emptiness-fact.flang
 RS=flang/test/fixtures/poddelka-razbor-sluchaev.flang
 HF=flang/proof/examples/corpus-hof.flang
-opyt C "Р: охрана ГипО → С4 из шага → Разв2 → Р1" 3 "$SO" "$RR/strict-order.запись"
+opyt C "Р: охрана ГипО → С4 из шага → Разв2 → Р1" 3 "$SO" "$RR/strict-order.record"
 # builtin-emptiness с партии перепечатки — 0, а не 3: ядро печатает вывод ГипО → Р5
 # → Р1 и для двух целей, что прежде стояли на слове ядра.
-opyt C "Р: ГипО → Р5 (ветвь пусто) / Р6 (начало свёртки) → Р1" 0 "$BU" "$RR/builtin-emptiness.запись"
-opyt C "Р: ГипД ×2 → П2 из шага / Или1, Или2 → Р4 → Разв2" 0 "$RS" "$RR/case-breakdown.запись"
+opyt C "Р: ГипО → Р5 (ветвь пусто) / Р6 (начало свёртки) → Р1" 0 "$BU" "$RR/builtin-emptiness.record"
+opyt C "Р: ГипД ×2 → П2 из шага / Или1, Или2 → Р4 → Разв2" 0 "$RS" "$RR/case-breakdown.record"
 # Снимок долга уплачен перепечаткой партии №2: ядро печатает блок вывода у этой
 # записи (+4 строки), и сверщик проигрывает её целиком — ждали 3, стало 0.
-opyt C "Р: Выч ×2 → Р3 сличением половин → Разв2" 0 "$HF" "$RR/corpus-hof.запись"
+opyt C "Р: Выч ×2 → Р3 сличением половин → Разв2" 0 "$HF" "$RR/corpus-hof.record"
 # Е-1 без печати С/О: запись рукотворная (копия корпусной с блоком у :35) — ГипО
 # охраны «( х минус х ) равен 0» → Кон3 «х : кон» → О2 → Разв2 → Р1.
 OA=flang/test/fixtures/poddelka-order-arithmetic.flang
-opyt C "Р: ГипО → Кон3 (конечность из охраны) → О2 → Разв2 → Р1" 3 "$OA" "$RR/order-arithmetic.запись"
+opyt C "Р: ГипО → Кон3 (конечность из охраны) → О2 → Разв2 → Р1" 3 "$OA" "$RR/order-arithmetic.record"
 # Числа выводов подняты партией перепечатки кванторов (семя 25baa912): ядро печатает
 # выводы там, где прежде стояло слово ядра — strict-order 1 → 3, builtin-emptiness
 # 2 → 4, corpus-hof 1 → 4. Все три записи — печать ядра байт в байт.
 # Партия №2 (12 сентября 2026): corpus-hof 4 → 5 — печать ядра дала ещё один вывод.
 for z in strict-order builtin-emptiness case-breakdown corpus-hof order-arithmetic; do
   case $z in strict-order) I=$SO; zh=3;; builtin-emptiness) I=$BU; zh=4;; case-breakdown) I=$RS; zh=2;; order-arithmetic) I=$OA; zh=1;; *) I=$HF; zh=5;; esac
-  set +e; v=$("$C" "$I" "$RR/$z.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
+  set +e; v=$("$C" "$I" "$RR/$z.record" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
   [ "${v:-0}" = "$zh" ] || { say "ПРОВАЛ Р: $z — выводов проиграно ждали $zh, вышло ${v:-«числа нет»}"; BAD=$((BAD+1)); }
 done
-podd "Р1: переставленные стороны охраны (ловит С4 из шага)" "$SO" "$RR/strict-order.запись" \
+podd "Р1: переставленные стороны охраны (ловит С4 из шага)" "$SO" "$RR/strict-order.record" \
   's/ГипО ⟨н больше 1⟩ сам/ГипО ⟨1 больше н⟩ сам/'
-podd "Р1: ветвь «иначе» не литерал «да»" "$SO" "$RR/strict-order.запись" \
+podd "Р1: ветвь «иначе» не литерал «да»" "$SO" "$RR/strict-order.record" \
   's/иначе да⟩ из 1 3/иначе нет⟩ из 1 3/'
-podd "Р1: только знак переставлен — гипотеза не охрана цели" "$SO" "$RR/strict-order.запись" \
+podd "Р1: только знак переставлен — гипотеза не охрана цели" "$SO" "$RR/strict-order.record" \
   's/ГипО ⟨н больше 1⟩ сам/ГипО ⟨1 меньше н⟩ сам/'
-podd "Р: гипотеза не снята — цель выведена прямо из ГипД, минуя Р4" "$RS" "$RR/case-breakdown.запись" \
+podd "Р: гипотеза не снята — цель выведена прямо из ГипД, минуя Р4" "$RS" "$RR/case-breakdown.record" \
   's/Разв2 ⟨результат не больше 10⟩ из 4 строка 42/Разв2 ⟨результат не больше 10⟩ из 1 строка 42/'
-podd "Р4: случай опирается на обе половины дизъюнкции" "$RS" "$RR/case-breakdown.запись" \
+podd "Р4: случай опирается на обе половины дизъюнкции" "$RS" "$RR/case-breakdown.record" \
   's/вывод 4 Или1 ⟨( н не больше 0 ) или ( н не меньше 0 )⟩ из 3/вывод 4 О10 ⟨0 не больше 0⟩ из 1 3/; s/вывод 5 Р4 ⟨( н не больше 0 ) или ( н не меньше 0 )⟩ из 2 4/вывод 5 Р4 ⟨0 не больше 0⟩ из 4 4/'
-podd "Р4: оба случая — одна половина («из 1 1»)" "$RS" "$RR/case-breakdown.запись" \
+podd "Р4: оба случая — одна половина («из 1 1»)" "$RS" "$RR/case-breakdown.record" \
   's/Р4 ⟨н не больше 10⟩ из 1 3/Р4 ⟨н не больше 10⟩ из 1 1/'
-podd "ГипД: формула не половина дизъюнкции строки" "$RS" "$RR/case-breakdown.запись" \
+podd "ГипД: формула не половина дизъюнкции строки" "$RS" "$RR/case-breakdown.record" \
   's/ГипД ⟨н не больше 3⟩ строка 34/ГипД ⟨н не больше 5⟩ строка 34/'
-podd "Р5: факт пустоты о другом списке" "$BU" "$RR/builtin-emptiness.запись" \
+podd "Р5: факт пустоты о другом списке" "$BU" "$RR/builtin-emptiness.record" \
   '0,/ГипО ⟨пусто элементы⟩ сам/s//ГипО ⟨пусто хвост⟩ сам/'
-podd "Р5: строка не «разбор Л»" "$BU" "$RR/builtin-emptiness.запись" \
+podd "Р5: строка не «разбор Л»" "$BU" "$RR/builtin-emptiness.record" \
   's/из 1 строка 158/из 1 строка 159/'
-podd "Р6: начало свёртки другое" "$BU" "$RR/builtin-emptiness.запись" \
+podd "Р6: начало свёртки другое" "$BU" "$RR/builtin-emptiness.record" \
   's/Р6 ⟨результат равен основа⟩ из 1 строка 203/Р6 ⟨результат равен 0⟩ из 1 строка 203/'
-podd "Выч: половина с именем не закрывается" "$HF" "$RR/corpus-hof.запись" \
+podd "Выч: половина с именем не закрывается" "$HF" "$RR/corpus-hof.record" \
   's/вывод 1 Выч ⟨( не да ) или да⟩ сам/вывод 1 Выч ⟨( не да ) или ( ( х остаток от 3 ) равен 0 )⟩ сам/'
-podd "Или1: посылка — правая половина" "$RS" "$RR/case-breakdown.запись" \
+podd "Или1: посылка — правая половина" "$RS" "$RR/case-breakdown.record" \
   's/Или1 ⟨( н не больше 0 ) или ( н не меньше 0 )⟩ из 3/Или1 ⟨( н не больше 0 ) или ( н не меньше 0 )⟩ из 1/'
-podd "Р3: тело подставлено без скобок — условие восстанавливается не то" "$HF" "$RR/corpus-hof.запись" \
+podd "Р3: тело подставлено без скобок — условие восстанавливается не то" "$HF" "$RR/corpus-hof.record" \
   's/вывод 3 Р3 ⟨( не ( ( х остаток от 2 ) равен 0 ) ) или/вывод 3 Р3 ⟨( не ( х остаток от 2 ) равен 0 ) или/'
-podd "Кон3: разность не «Т минус Т» — конечность не следует" "$OA" "$RR/order-arithmetic.запись" \
+podd "Кон3: разность не «Т минус Т» — конечность не следует" "$OA" "$RR/order-arithmetic.record" \
   's/вывод 1 ГипО ⟨( х минус х ) равен 0⟩ сам/вывод 1 ГипО ⟨( х минус 1 ) равен 0⟩ сам/'
-podd "Кон3: конечность заключена о другом терме" "$OA" "$RR/order-arithmetic.запись" \
+podd "Кон3: конечность заключена о другом терме" "$OA" "$RR/order-arithmetic.record" \
   's/вывод 2 Кон3 ⟨х : кон⟩ из 1/вывод 2 Кон3 ⟨у : кон⟩ из 1/'
 # Е-5 (ADR-0029): арифметика под охраной — И1/И2 (расщепление конъюнкции), Цел1
 # (целость из факта остатка), Н10/П6 (остаток целого), Д5/Д6 (дно произведения
@@ -1983,36 +1983,36 @@ podd "Кон3: конечность заключена о другом терм�
 # собираются так: вердикт «нет вердикта» объявлен доказанным и подложен блок.
 IF=flang/test/fixtures/poddelka-integrality-from-fact.flang
 DN=flang/test/fixtures/poddelka-dno-proizvedeniya.flang
-opyt C "Е-5: целость из факта остатка → Н10/П6 (четыре записи охраны)" 0 "$IF" "$RR/integrality-from-fact.запись"
-opyt C "Е-5: дно произведения Д5 (Д6 у литерала, дно в двух записях)" 0 "$DN" "$RR/product-bottom.запись"
+opyt C "Е-5: целость из факта остатка → Н10/П6 (четыре записи охраны)" 0 "$IF" "$RR/integrality-from-fact.record"
+opyt C "Е-5: дно произведения Д5 (Д6 у литерала, дно в двух записях)" 0 "$DN" "$RR/product-bottom.record"
 for z in integrality-from-fact product-bottom; do
   case $z in integrality-from-fact) I=$IF;; *) I=$DN;; esac
-  set +e; v=$("$C" "$I" "$RR/$z.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
+  set +e; v=$("$C" "$I" "$RR/$z.record" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
   [ "${v:-0}" = 4 ] || { say "ПРОВАЛ Е-5: $z — выводов проиграно ждали 4, вышло ${v:-«числа нет»}"; BAD=$((BAD+1)); }
 done
-podd "Е-5, Д5: потолок выдан за дно («основание не больше ( 0 минус 1 )»)" "$DN" "$RR/product-bottom.запись" \
+podd "Е-5, Д5: потолок выдан за дно («основание не больше ( 0 минус 1 )»)" "$DN" "$RR/product-bottom.record" \
   '/^утверждение «потолок сходит за дно»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «разбор цели по условию»\n  по объявлению нет\n    вывод цель ⟨если ( ( основание не больше ( 0 минус 1 ) ) и притом ( 1 не больше второе ) ) то ( 1 не больше результат ) иначе да⟩\n    вывод 1 ГипО ⟨( основание не больше ( 0 минус 1 ) ) и притом ( 1 не больше второе )⟩ сам\n    вывод 2 И1 ⟨основание не больше ( 0 минус 1 )⟩ из 1\n    вывод 3 И2 ⟨1 не больше второе⟩ из 1\n    вывод 4 Д5 ⟨1 не больше ( основание умножить на второе )⟩ из 2 3\n    вывод 5 Разв2 ⟨1 не больше результат⟩ из 4 строка 64\n    вывод 6 Р1 ⟨если ( ( основание не больше ( 0 минус 1 ) ) и притом ( 1 не больше второе ) ) то ( 1 не больше результат ) иначе да⟩ из 1 5\n    вывод конец/}'
-podd "Е-5, Д5: нулевое дно («0 не больше основание»): 0 умножить на +∞ — не-число" "$DN" "$RR/product-bottom.запись" \
+podd "Е-5, Д5: нулевое дно («0 не больше основание»): 0 умножить на +∞ — не-число" "$DN" "$RR/product-bottom.record" \
   '/^утверждение «нулевого дна хватает произведению»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «разбор цели по условию»\n  по объявлению нет\n    вывод цель ⟨если ( ( 0 не больше основание ) и притом ( 0 не больше второе ) ) то ( 0 не больше результат ) иначе да⟩\n    вывод 1 ГипО ⟨( 0 не больше основание ) и притом ( 0 не больше второе )⟩ сам\n    вывод 2 И1 ⟨0 не больше основание⟩ из 1\n    вывод 3 И2 ⟨0 не больше второе⟩ из 1\n    вывод 4 Д5 ⟨0 не больше ( основание умножить на второе )⟩ из 2 3\n    вывод 5 Разв2 ⟨0 не больше результат⟩ из 4 строка 54\n    вывод 6 Р1 ⟨если ( ( 0 не больше основание ) и притом ( 0 не больше второе ) ) то ( 0 не больше результат ) иначе да⟩ из 1 5\n    вывод конец/}'
-podd "Е-5, Д5: дно одного сомножителя — второго дна нет" "$DN" "$RR/product-bottom.запись" \
+podd "Е-5, Д5: дно одного сомножителя — второго дна нет" "$DN" "$RR/product-bottom.record" \
   '/^утверждение «дно одного множителя даёт дно произведению»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «разбор цели по условию»\n  по объявлению нет\n    вывод цель ⟨если ( 1 не больше основание ) то ( 1 не больше результат ) иначе да⟩\n    вывод 1 ГипО ⟨1 не больше основание⟩ сам\n    вывод 2 Д5 ⟨1 не больше ( основание умножить на второе )⟩ из 1 1\n    вывод 3 Разв2 ⟨1 не больше результат⟩ из 2 строка 44\n    вывод 4 Р1 ⟨если ( 1 не больше основание ) то ( 1 не больше результат ) иначе да⟩ из 1 3\n    вывод конец/}'
-podd "Е-5, Д5: написанное дно не равно произведению дон (5 при донах 2 и 3)" "$DN" "$RR/product-bottom.запись" \
+podd "Е-5, Д5: написанное дно не равно произведению дон (5 при донах 2 и 3)" "$DN" "$RR/product-bottom.record" \
   's/вывод 4 Д5 ⟨6 не больше ( основание умножить на второе )⟩ из 2 3/вывод 4 Д5 ⟨5 не больше ( основание умножить на второе )⟩ из 2 3/'
-podd "Е-5, Д6: дно литерала — другое число" "$DN" "$RR/product-bottom.запись" \
+podd "Е-5, Д6: дно литерала — другое число" "$DN" "$RR/product-bottom.record" \
   's/вывод 2 Д6 ⟨5 не больше 5⟩ сам/вывод 2 Д6 ⟨5 не больше 6⟩ сам/'
-podd "Е-5, Цел1: целость из остатка от 0.5, а не от 1" "$IF" "$RR/integrality-from-fact.запись" \
+podd "Е-5, Цел1: целость из остатка от 0.5, а не от 1" "$IF" "$RR/integrality-from-fact.record" \
   '/^утверждение «остаток при стороже по половине меньше делителя»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «разбор цели по условию»\n  по объявлению нет\n    вывод цель ⟨если ( ( ( ( н остаток от 0.5 ) плюс 0 ) равен 0 ) и притом ( н не меньше 0 ) ) то результат не больше 4 иначе да⟩\n    вывод 1 ГипО ⟨( ( ( н остаток от 0.5 ) плюс 0 ) равен 0 ) и притом ( н не меньше 0 )⟩ сам\n    вывод 2 И1 ⟨( ( н остаток от 0.5 ) плюс 0 ) равен 0⟩ из 1\n    вывод 3 И2 ⟨н не меньше 0⟩ из 1\n    вывод 4 Цел1 ⟨н : цел⟩ из 2\n    вывод 5 П6 ⟨( н остаток от 5 ) не больше 4⟩ из 4 3\n    вывод 6 Разв2 ⟨результат не больше 4⟩ из 5 строка 41\n    вывод 7 Р1 ⟨если ( ( ( ( н остаток от 0.5 ) плюс 0 ) равен 0 ) и притом ( н не меньше 0 ) ) то результат не больше 4 иначе да⟩ из 1 6\n    вывод конец/}'
-podd "Е-5, П6: целость названа о чужом имени (м), остаток — о н" "$IF" "$RR/integrality-from-fact.запись" \
+podd "Е-5, П6: целость названа о чужом имени (м), остаток — о н" "$IF" "$RR/integrality-from-fact.record" \
   '/^утверждение «чужая целость годится остатку»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «разбор цели по условию»\n  по объявлению нет\n    вывод цель ⟨если ( ( ( ( м остаток от 1 ) плюс 0 ) равен 0 ) и притом ( н не меньше 0 ) ) то результат не больше 4 иначе да⟩\n    вывод 1 ГипО ⟨( ( ( м остаток от 1 ) плюс 0 ) равен 0 ) и притом ( н не меньше 0 )⟩ сам\n    вывод 2 И1 ⟨( ( м остаток от 1 ) плюс 0 ) равен 0⟩ из 1\n    вывод 3 И2 ⟨н не меньше 0⟩ из 1\n    вывод 4 Цел1 ⟨м : цел⟩ из 2\n    вывод 5 П6 ⟨( н остаток от 5 ) не больше 4⟩ из 4 3\n    вывод 6 Разв2 ⟨результат не больше 4⟩ из 5 строка 54\n    вывод 7 Р1 ⟨если ( ( ( ( м остаток от 1 ) плюс 0 ) равен 0 ) и притом ( н не меньше 0 ) ) то результат не больше 4 иначе да⟩ из 1 6\n    вывод конец/}'
-podd "Е-5, Цел1: посылка — не факт целости, а дно" "$IF" "$RR/integrality-from-fact.запись" \
+podd "Е-5, Цел1: посылка — не факт целости, а дно" "$IF" "$RR/integrality-from-fact.record" \
   's/вывод 4 Цел1 ⟨н : цел⟩ из 2/вывод 4 Цел1 ⟨н : цел⟩ из 3/'
-podd "Е-5, Цел1: целость заключена о другом терме" "$IF" "$RR/integrality-from-fact.запись" \
+podd "Е-5, Цел1: целость заключена о другом терме" "$IF" "$RR/integrality-from-fact.record" \
   's/вывод 4 Цел1 ⟨н : цел⟩ из 2/вывод 4 Цел1 ⟨м : цел⟩ из 2/'
-podd "Е-5, Н10: посылки «н не меньше 0» нет" "$IF" "$RR/integrality-from-fact.запись" \
+podd "Е-5, Н10: посылки «н не меньше 0» нет" "$IF" "$RR/integrality-from-fact.record" \
   's/Н10 ⟨( н остаток от 5 ) не меньше 0⟩ из 4 3/Н10 ⟨( н остаток от 5 ) не меньше 0⟩ из 4 2/'
-podd "Е-5, П6: делитель 5, а потолок 3 ниже 4" "$IF" "$RR/integrality-from-fact.запись" \
+podd "Е-5, П6: делитель 5, а потолок 3 ниже 4" "$IF" "$RR/integrality-from-fact.record" \
   's/П6 ⟨( н остаток от 5 ) не больше 4⟩ из 4 3/П6 ⟨( н остаток от 5 ) не больше 3⟩ из 4 3/'
-podd "Е-5, И1: взята правая половина конъюнкции" "$IF" "$RR/integrality-from-fact.запись" \
+podd "Е-5, И1: взята правая половина конъюнкции" "$IF" "$RR/integrality-from-fact.record" \
   's/вывод 2 И1 ⟨( ( н остаток от 1 ) плюс 0 ) равен 0⟩ из 1/вывод 2 И1 ⟨н не меньше 0⟩ из 1/'
 # Замер E-m1, шаг 1 (группа А): одиннадцать мест отношений, чей приём уже был, —
 # записи abilities, equality, boundaries с рукотворными блоками (эталоны стека E).
@@ -2021,10 +2021,10 @@ podd "Е-5, И1: взята правая половина конъюнкции" 
 AB=flang/proof/map/abilities.flang
 EQ=flang/proof/map/equality.flang
 BN=flang/proof/map/boundaries.flang
-opyt C "группа А: СС1/СС3, О1/О6, В2/В3, П2 из «равно» (abilities)" 3 "$AB" "$RR/abilities.запись"
-opyt C "группа А: В2 (equality)" 0 "$EQ" "$RR/equality.запись"
-opyt C "группа А и Д3: О2/О4 от дна длины, Д3 и С3 (boundaries)" 0 "$BN" "$RR/boundaries.запись"
-opyt C "Д3 и С3: отданное строго больше нуля (strict-order :95)" 3 "$SO" "$RR/strict-order-sum-floor.запись"
+opyt C "группа А: СС1/СС3, О1/О6, В2/В3, П2 из «равно» (abilities)" 3 "$AB" "$RR/abilities.record"
+opyt C "группа А: В2 (equality)" 0 "$EQ" "$RR/equality.record"
+opyt C "группа А и Д3: О2/О4 от дна длины, Д3 и С3 (boundaries)" 0 "$BN" "$RR/boundaries.record"
+opyt C "Д3 и С3: отданное строго больше нуля (strict-order :95)" 3 "$SO" "$RR/strict-order-sum-floor.record"
 # abilities 11 → 13 — партия перепечатки кванторов, запись — печать ядра байт в байт.
 # equality 1 → 2 и исход пробы 3 → 0 — перепечатка 5190 (17 сентября 2026, семя из
 # 68ff03b34): ядро печатает в запись блок вывода из пяти шагов (Выч, К↑, Разв3 ×3),
@@ -2033,7 +2033,7 @@ opyt C "Д3 и С3: отданное строго больше нуля (strict-
 for z in abilities:13 equality:2 boundaries:6 strict-order-sum-floor:3; do
   n=${z%%:*}; zh=${z#*:}
   case $n in abilities) I=$AB;; equality) I=$EQ;; boundaries) I=$BN;; *) I=$SO;; esac
-  set +e; v=$("$C" "$I" "$RR/$n.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
+  set +e; v=$("$C" "$I" "$RR/$n.record" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
   [ "${v:-0}" = "$zh" ] || { say "ПРОВАЛ E-m1: $n — выводов проиграно ждали $zh, вышло ${v:-«числа нет»}"; BAD=$((BAD+1)); }
 done
 # Согласованная подделка суммы (собрал Lead-A): исходник обещает «2 не больше
@@ -2041,14 +2041,14 @@ done
 # суммы в Д3 эта запись прошла бы кодом 0; следующая за ней подделка — довесок:
 # её, кроме суммы, ловит и Разв2 на следующем шаге.
 opyt P "Д3: написанное дно 2 при донах 1 и 0 — ложна только сумма (цель и Разв2 согласованы)" 1 \
-  "$VV/corrupt/boundaries-two.flang" "$VV/corrupt/boundaries-two.запись"
-podd "Д3 (довесок): дно 2 при донах 1 и 0 — ловится и Разв2, не только суммой" "$BN" "$RR/boundaries.запись" \
+  "$VV/corrupt/boundaries-two.flang" "$VV/corrupt/boundaries-two.record"
+podd "Д3 (довесок): дно 2 при донах 1 и 0 — ловится и Разв2, не только суммой" "$BN" "$RR/boundaries.record" \
   's/вывод 3 Д3 ⟨1 не больше ( 1 плюс ( длина элементы ) )⟩ из 1 2/вывод 3 Д3 ⟨2 не больше ( 1 плюс ( длина элементы ) )⟩ из 1 2/'
-podd "Д3: отрицательное дно — не литерал" "$BN" "$RR/boundaries.запись" \
+podd "Д3: отрицательное дно — не литерал" "$BN" "$RR/boundaries.record" \
   's/вывод 3 Д3 ⟨( 1 плюс ( длина элементы ) ) не меньше 1⟩ из 1 2/вывод 3 Д3 ⟨( 1 плюс ( длина элементы ) ) не меньше ( 0 минус 1 )⟩ из 1 2/'
-podd "Д3: дно не того слагаемого (посылки переставлены)" "$BN" "$RR/boundaries.запись" \
+podd "Д3: дно не того слагаемого (посылки переставлены)" "$BN" "$RR/boundaries.record" \
   's/вывод 3 Д3 ⟨1 не больше ( 1 плюс ( длина элементы ) )⟩ из 1 2/вывод 3 Д3 ⟨1 не больше ( 1 плюс ( длина элементы ) )⟩ из 2 1/'
-podd "Д3: потолок выдан за дно («е не больше 2⁵³−1»)" "$AB" "$RR/abilities.запись" \
+podd "Д3: потолок выдан за дно («е не больше 2⁵³−1»)" "$AB" "$RR/abilities.record" \
   '/^утверждение «У15 квадрат конечного неотрицателен»/,/^конец утверждения/{s/^  по объявлению нет$/  по объявлению нет\n    вывод цель ⟨результат не меньше 0⟩\n    вывод 1 Т1 ⟨е не больше 9007199254740991⟩ строка 199\n    вывод 2 Д3 ⟨0 не больше ( е плюс е )⟩ из 1 1\n    вывод 3 Разв2 ⟨результат не меньше 0⟩ из 2 строка 204\n    вывод конец/}'
 # Н7 и Н8 (строки таблицы, покрытие без новых правил): счёт свёрткой не меньше нуля
 # (binder-wall-map, corpus-hof, corpus-lists) и произведение на положительный литерал
@@ -2060,26 +2060,26 @@ BW=flang/proof/examples/binder-wall-map.flang
 CL=flang/proof/examples/corpus-lists.flang
 FW=flang/proof/examples/four-words.flang
 LZ=$VV/corrupt/fold-and-product-lies.flang
-opyt C "Н7: счёт свёрткой под выбором (binder-wall-map)" 0 "$BW" "$RR/binder-wall-map.запись"
-opyt C "Н7: счёт по условию под «для всех» (corpus-hof)" 3 "$HF" "$RR/corpus-hof-n7.запись"
-opyt C "Н7: счёт вхождений под «для всех» (corpus-lists)" 0 "$CL" "$RR/corpus-lists.запись"
+opyt C "Н7: счёт свёрткой под выбором (binder-wall-map)" 0 "$BW" "$RR/binder-wall-map.record"
+opyt C "Н7: счёт по условию под «для всех» (corpus-hof)" 3 "$HF" "$RR/corpus-hof-n7.record"
+opyt C "Н7: счёт вхождений под «для всех» (corpus-lists)" 0 "$CL" "$RR/corpus-lists.record"
 # До замера запаса №1 здесь ждали 3: шаг «по предположению» теоремы «удвоенное»
 # стоял на слове ядра (произведения в `неотрицательно_algebra` не было). Теперь
 # шаг проигран той же грамматикой (Н2 + Н8), и запись проиграна целиком.
-opyt C "Н8: произведение на положительный литерал (four-words)" 0 "$FW" "$RR/four-words.запись"
+opyt C "Н8: произведение на положительный литерал (four-words)" 0 "$FW" "$RR/four-words.record"
 for z in binder-wall-map:1 corpus-hof-n7:4 corpus-lists:1 four-words:1; do
   n=${z%%:*}; zh=${z#*:}
   case $n in binder-wall-map) I=$BW;; corpus-hof-n7) I=$HF;; corpus-lists) I=$CL;; *) I=$FW;; esac
-  set +e; v=$("$C" "$I" "$RR/$n.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
+  set +e; v=$("$C" "$I" "$RR/$n.record" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
   [ "${v:-0}" = "$zh" ] || { say "ПРОВАЛ Н7/Н8: $n — выводов проиграно ждали $zh, вышло ${v:-«числа нет»}"; BAD=$((BAD+1)); }
 done
-podd "Н7: шаг свёртки «итог минус 1» — знак не держится" "$LZ" "$VV/corrupt/fold-and-product-lies.запись" \
+podd "Н7: шаг свёртки «итог минус 1» — знак не держится" "$LZ" "$VV/corrupt/fold-and-product-lies.record" \
   '/^утверждение «счёт вниз неотрицателен»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «неотрицательность по построению»\n  по объявлению нет\n    вывод цель ⟨результат не меньше 0⟩\n    вывод 1 Н1 ⟨0 не меньше 0⟩ сам\n    вывод 2 Н7 ⟨( свёртка элементы начиная с 0 как итог и элемент → итог минус 1 ) не меньше 0⟩ из 1\n    вывод 3 Разв2 ⟨результат не меньше 0⟩ из 2 строка 7\n    вывод конец/}'
-podd "Н7: начало «0 минус 1» при посылке о нуле" "$LZ" "$VV/corrupt/fold-and-product-lies.запись" \
+podd "Н7: начало «0 минус 1» при посылке о нуле" "$LZ" "$VV/corrupt/fold-and-product-lies.record" \
   '/^утверждение «счёт от минус единицы неотрицателен»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «неотрицательность по построению»\n  по объявлению нет\n    вывод цель ⟨результат не меньше 0⟩\n    вывод 1 Н1 ⟨0 не меньше 0⟩ сам\n    вывод 2 Н7 ⟨( свёртка элементы начиная с ( 0 минус 1 ) как итог и элемент → итог плюс 1 ) не меньше 0⟩ из 1\n    вывод 3 Разв2 ⟨результат не меньше 0⟩ из 2 строка 13\n    вывод конец/}'
-podd "Н8: сомножитель «0 минус 3» — не положительный литерал" "$LZ" "$VV/corrupt/fold-and-product-lies.запись" \
+podd "Н8: сомножитель «0 минус 3» — не положительный литерал" "$LZ" "$VV/corrupt/fold-and-product-lies.record" \
   '/^утверждение «умноженное на минус три неотрицательно»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «неотрицательность по построению»\n  по объявлению нет\n    вывод цель ⟨результат не меньше 0⟩\n    вывод 1 Н2 ⟨н не меньше 0⟩ строка 18\n    вывод 2 Н8 ⟨( н умножить на ( 0 минус 3 ) ) не меньше 0⟩ из 1\n    вывод 3 Разв2 ⟨результат не меньше 0⟩ из 2 строка 20\n    вывод конец/}'
-podd "Н8: дно названо у другого сомножителя (м, а не н)" "$LZ" "$VV/corrupt/fold-and-product-lies.запись" \
+podd "Н8: дно названо у другого сомножителя (м, а не н)" "$LZ" "$VV/corrupt/fold-and-product-lies.record" \
   '/^утверждение «утроенное н неотрицательно»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «неотрицательность по построению»\n  по объявлению нет\n    вывод цель ⟨результат не меньше 0⟩\n    вывод 1 Н2 ⟨м не меньше 0⟩ строка 25\n    вывод 2 Н8 ⟨( н умножить на 3 ) не меньше 0⟩ из 1\n    вывод 3 Разв2 ⟨результат не меньше 0⟩ из 2 строка 27\n    вывод конец/}'
 # ── Цел2 (ADR-0029, вторая поправка §4): целость довода точного типа — обязательство
 # зовущего, а не свойство типа. Лист «Цел2 ⟨Т : цел⟩ строка N» законен только при строке
@@ -2091,9 +2091,9 @@ podd "Н8: дно названо у другого сомножителя (м, �
 # проверки типа в обоих местах — 3 и 4 кодом 0 (3 — ложь: «6.5 остаток от 7» больше шести);
 # без проверки дроби — 5 кодом 3; Пред1 без сличения формулы — 6 кодом 0. Исходник пятой
 # язык не типизирует (FLANG_TYPE «2.5 не целое»), сверщик ловит её сам, как pred-zov-vyshe.
-TT=$VV/corrupt/integrality-by-type-lies.flang; TZ=$VV/corrupt/integrality-by-type-lies.запись
-opyt C "Цел2: У13/У14 — целость довода «нат» обязательством зовущего (abilities)" 3 "$AB" "$RR/abilities-goal2.запись"
-chislo "Цел2: abilities — на слове ядра" 4 "$(naslovo "$AB" "$RR/abilities-goal2.запись")"
+TT=$VV/corrupt/integrality-by-type-lies.flang; TZ=$VV/corrupt/integrality-by-type-lies.record
+opyt C "Цел2: У13/У14 — целость довода «нат» обязательством зовущего (abilities)" 3 "$AB" "$RR/abilities-goal2.record"
+chislo "Цел2: abilities — на слове ядра" 4 "$(naslovo "$AB" "$RR/abilities-goal2.record")"
 opyt C "Цел2: Н10 и П6 от обязательства, закрытого литералом, доводом зовущей и примером" 0 "$TT" "$TZ"
 podd "Цел2: целость без строки обязательства" "$TT" "$TZ" '/⟨н : цел⟩ строка 4 на зовущем/d'
 podd "Цел2: обязательство о другом доводе (м, а целость о н)" "$TT" "$TZ" \
@@ -2102,8 +2102,8 @@ podd "Цел2: довод типа «число» — «6.5 остаток от 
   '/^утверждение «остаток числа не больше шести»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «ограниченность точным потолком по построению»\n  по объявлению да\n  обязательство вход «н» ⟨н : цел⟩ строка 19 на зовущем\n    вывод цель ⟨результат не больше 6⟩\n    вывод 1 Цел2 ⟨н : цел⟩ строка 19\n    вывод 2 Т1 ⟨н не меньше 0⟩ строка 20\n    вывод 3 П6 ⟨( н остаток от 7 ) не больше 6⟩ из 1 2\n    вывод 4 Разв2 ⟨результат не больше 6⟩ из 3 строка 23\n    вывод конец/}'
 podd "Цел2: строка N — не «принимает»" "$TT" "$TZ" 's/⟨н : цел⟩ строка 4/⟨н : цел⟩ строка 5/g'
 prichina "Цел2: пример даёт дробное «дано»" "дробное значение «6.5»" \
-  "$VV/corrupt/integrality-fractional-example.flang" "$VV/corrupt/integrality-fractional-example.запись"
-podd "Пред1: опора на строку целости вместо строки потолка" "$VV/repr-call.flang" "$VV/repr-call.запись" \
+  "$VV/corrupt/integrality-fractional-example.flang" "$VV/corrupt/integrality-fractional-example.record"
+podd "Пред1: опора на строку целости вместо строки потолка" "$VV/repr-call.flang" "$VV/repr-call.record" \
   's/обязательство вход «первое» ⟨первое не больше 9007199254740991⟩ строка 4/обязательство вход «первое» ⟨первое : цел⟩ строка 4/'
 
 say ""
@@ -2119,21 +2119,21 @@ say "── семья «носитель» (задача 6203, ADR-0026 Ш0): �
 # «число») живут записями в корпусе под манифестом набора (класс «лжёт-запись»):
 # корпусный цикл выше их уже мерил.
 NS=$SEM/carrier
-opyt C "носитель: имя «натуральное» — честная, прежде код 3" 0 "$NS/name-natural.flang" "$NS/name-natural.запись"
+opyt C "носитель: имя «натуральное» — честная, прежде код 3" 0 "$NS/name-natural.flang" "$NS/name-natural.record"
 # Псевдоним к отрезку: ядро печатает такую запись только после 6203-Ш1, сверщик
 # читает объявление по цепочке уже сейчас — «сверщик раньше ядра».
-opyt C "носитель: псевдоним «Возраст» к отрезку — честная" 0 "$NS/alias-segment.flang" "$NS/alias-segment.запись"
+opyt C "носитель: псевдоним «Возраст» к отрезку — честная" 0 "$NS/alias-segment.flang" "$NS/alias-segment.record"
 opyt P "носитель: ложь о типе — запись говорит «неотрицательное», довод объявлен числом (П1б)" 1 \
-  "$NS/number-segment.flang" "$NS/corrupt/number-segment-lie-about-the-type.запись"
-podd "носитель: слово вне трёх (П2)" "$NS/name-natural.flang" "$NS/name-natural.запись" \
+  "$NS/number-segment.flang" "$NS/corrupt/number-segment-lie-about-the-type.record"
+podd "носитель: слово вне трёх (П2)" "$NS/name-natural.flang" "$NS/name-natural.record" \
   's/носитель segment/носитель record/'
-podd "носитель: «algebra» над отрезком — из объявления не следует" "$NS/name-natural.flang" "$NS/name-natural.запись" \
+podd "носитель: «algebra» над отрезком — из объявления не следует" "$NS/name-natural.flang" "$NS/name-natural.record" \
   's/носитель segment/носитель algebra/'
 # Две подделки набора — прямо, чтобы причина была видна здесь же, а не только
 # кодом в корпусном цикле.
-opyt P "носитель: «segment» над «число» (П1, набор)" 1 "$NS/number-segment.flang" "$ZAP/corpus/poddelka-nositel-chislo-segment.запись"
-opyt P "носитель: «segment» над псевдонимом к «число» (З2, набор)" 1 "$NS/alias-not-a-segment.flang" "$ZAP/corpus/poddelka-nositel-psevdonim-ne-otrezok.запись"
-"$C" "$NS/number-segment.flang" "$ZAP/corpus/poddelka-nositel-chislo-segment.запись" 2>/dev/null \
+opyt P "носитель: «segment» над «число» (П1, набор)" 1 "$NS/number-segment.flang" "$ZAP/corpus/poddelka-nositel-chislo-segment.record"
+opyt P "носитель: «segment» над псевдонимом к «число» (З2, набор)" 1 "$NS/alias-not-a-segment.flang" "$ZAP/corpus/poddelka-nositel-psevdonim-ne-otrezok.record"
+"$C" "$NS/number-segment.flang" "$ZAP/corpus/poddelka-nositel-chislo-segment.record" 2>/dev/null \
   | grep -q "принципа индукции по нему нет" \
   || { say "ПРОВАЛ носитель: об отсутствии принципа у «число» сверщик смолчал"; BAD=$((BAD+1)); }
 
@@ -2149,26 +2149,26 @@ say "── семья «объявление» (задача 6203, ADR-0026 Ш2
 # вписана в записи семьи «носитель» по грамматике эталона (синонима отрезка и
 # псевдонима среди эталонов нет). Подробно — README семьи.
 OB=$SEM/declaration; OP=$OB/corrupt
-opyt C "объявление: сумма «Стопка» под algebra и встроенный список под fold (эталон B)" 0 "$BODY" "$OB/body-forms.запись"
-opyt C "объявление: встроенный список под algebra (эталон B)" 0 flang/proof/examples/corpus-length.flang "$OB/corpus-length.запись"
-opyt C "объявление: встроенный отрезок, дно и потолок (эталон B)" 0 flang/proof/examples/segment.flang "$OB/segment.запись"
-opyt C "объявление: синоним отрезка «натуральное» (рукотворная)" 0 "$NS/name-natural.flang" "$OB/name-natural.запись"
-opyt C "объявление: псевдоним «Возраст» к отрезку (рукотворная)" 0 "$NS/alias-segment.flang" "$OB/alias-segment.запись"
-opyt C "носитель: «для всех л» при «л: список числа» — принцип с объявления встроенного списка (печать семени 0ce948bfd, 6203 «как понять» п.1)" 0 "$NS/list-of-numbers.flang" "$NS/list-of-numbers.запись"
-prichina "объявление: чужое имя варианта" "«Пласт» вместо «Слой»" "$BODY" "$OP/p01-foreign-variant-name.запись"
-prichina "объявление: лишний вариант" "лишнее «Крышка» 0" "$BODY" "$OP/p02-extra-variant.запись"
-prichina "объявление: недостаёт варианта" "недостаёт «Слой» 1" "$BODY" "$OP/p03-missing-variant.запись"
-prichina "объявление: чужое число рекурсивных частей" "после «Слой»: «2» вместо «1»" "$BODY" "$OP/p04-foreign-arity.запись"
-prichina "объявление: чужая строка объявления" "«137» вместо «136»" "$BODY" "$OP/p05-foreign-declaration-line.запись"
-prichina "объявление: запись вместо суммы" "«запись» вместо «сумма»" "$BODY" "$OP/p06-foreign-kind-record-instead-of-sum.запись"
-prichina "объявление: носитель segment при сумме" "такой носитель из него не следует" "$BODY" "$OP/p07-segment-carrier-for-a-sum.запись"
-prichina "объявление: две строки под одним принципом" "стоит не сразу под строкой «принцип»" "$BODY" "$OP/p08-two-declaration-lines.запись"
-prichina "объявление: другое дно" "после «дно»: «1» вместо «0»" flang/proof/examples/segment.flang "$OP/p09-other-bottom.запись"
-prichina "объявление: другой потолок" "после «потолок»: «9007199254740990»" flang/proof/examples/segment.flang "$OP/p10-other-ceiling.запись"
-prichina "объявление: сумма у типа без объявления в программе" "«сумма» вместо «встроенный»" flang/proof/examples/corpus-length.flang "$OP/p11-line-for-a-type-without-declaration.запись"
-prichina "объявление: чужая сумма под свёрткой по списку" "«сумма» вместо «встроенный»" "$BODY" "$OP/p12-sum-under-a-fold-over-a-list.запись"
-prichina "объявление: псевдоним с чужой строкой" "после «строка»: «4» вместо «3»" "$NS/alias-segment.flang" "$OP/p13-alias-foreign-line.запись"
-prichina "объявление: псевдоним пропущен" "«встроенный» вместо «псевдоним»" "$NS/alias-segment.flang" "$OP/p14-alias-missing.запись"
+opyt C "объявление: сумма «Стопка» под algebra и встроенный список под fold (эталон B)" 0 "$BODY" "$OB/body-forms.record"
+opyt C "объявление: встроенный список под algebra (эталон B)" 0 flang/proof/examples/corpus-length.flang "$OB/corpus-length.record"
+opyt C "объявление: встроенный отрезок, дно и потолок (эталон B)" 0 flang/proof/examples/segment.flang "$OB/segment.record"
+opyt C "объявление: синоним отрезка «натуральное» (рукотворная)" 0 "$NS/name-natural.flang" "$OB/name-natural.record"
+opyt C "объявление: псевдоним «Возраст» к отрезку (рукотворная)" 0 "$NS/alias-segment.flang" "$OB/alias-segment.record"
+opyt C "носитель: «для всех л» при «л: список числа» — принцип с объявления встроенного списка (печать семени 0ce948bfd, 6203 «как понять» п.1)" 0 "$NS/list-of-numbers.flang" "$NS/list-of-numbers.record"
+prichina "объявление: чужое имя варианта" "«Пласт» вместо «Слой»" "$BODY" "$OP/p01-foreign-variant-name.record"
+prichina "объявление: лишний вариант" "лишнее «Крышка» 0" "$BODY" "$OP/p02-extra-variant.record"
+prichina "объявление: недостаёт варианта" "недостаёт «Слой» 1" "$BODY" "$OP/p03-missing-variant.record"
+prichina "объявление: чужое число рекурсивных частей" "после «Слой»: «2» вместо «1»" "$BODY" "$OP/p04-foreign-arity.record"
+prichina "объявление: чужая строка объявления" "«137» вместо «136»" "$BODY" "$OP/p05-foreign-declaration-line.record"
+prichina "объявление: запись вместо суммы" "«запись» вместо «сумма»" "$BODY" "$OP/p06-foreign-kind-record-instead-of-sum.record"
+prichina "объявление: носитель segment при сумме" "такой носитель из него не следует" "$BODY" "$OP/p07-segment-carrier-for-a-sum.record"
+prichina "объявление: две строки под одним принципом" "стоит не сразу под строкой «принцип»" "$BODY" "$OP/p08-two-declaration-lines.record"
+prichina "объявление: другое дно" "после «дно»: «1» вместо «0»" flang/proof/examples/segment.flang "$OP/p09-other-bottom.record"
+prichina "объявление: другой потолок" "после «потолок»: «9007199254740990»" flang/proof/examples/segment.flang "$OP/p10-other-ceiling.record"
+prichina "объявление: сумма у типа без объявления в программе" "«сумма» вместо «встроенный»" flang/proof/examples/corpus-length.flang "$OP/p11-line-for-a-type-without-declaration.record"
+prichina "объявление: чужая сумма под свёрткой по списку" "«сумма» вместо «встроенный»" "$BODY" "$OP/p12-sum-under-a-fold-over-a-list.record"
+prichina "объявление: псевдоним с чужой строкой" "после «строка»: «4» вместо «3»" "$NS/alias-segment.flang" "$OP/p13-alias-foreign-line.record"
+prichina "объявление: псевдоним пропущен" "«встроенный» вместо «псевдоним»" "$NS/alias-segment.flang" "$OP/p14-alias-missing.record"
 
 say ""
 say "── семья «квантор» (ADR-0026 К2/К6): имена за «для всех» — списком ──"
@@ -2183,16 +2183,16 @@ say "── семья «квантор» (ADR-0026 К2/К6): имена за «
 # же код с тем же выводом (шаг «по предположению» другого утверждения).
 KV=$SEM/quantifier; KP=$KV/corrupt
 # С ячейки 5 покрытия и тот наследный шаг «по предположению» переигран: 0.
-opyt C "квантор: два имени, индукция по второму — прежде ложный отказ (З3)" 0 "$KV/two-names.flang" "$KV/two-names.запись"
-opyt C "квантор: одно имя со строкой — вывод как без строки" 0 flang/proof/examples/corpus-length.flang "$KV/one-name.запись"
-prichina "квантор: пропущено имя" "«стопка» вместо «дно»" "$KV/two-names.flang" "$KP/p1-name-missing.запись"
-prichina "квантор: лишнее имя" "«хвост» вместо «строка»" "$KV/two-names.flang" "$KP/p2-extra-name.запись"
-prichina "квантор: другой порядок имён" "«стопка» вместо «дно»" "$KV/two-names.flang" "$KP/p3-other-order.запись"
-prichina "квантор: строки нет при двух именах — никогда не 0" "а строки «для всех» в записи нет" "$KV/two-names.flang" "$KP/p4-no-line-for-two-names.запись"
-prichina "квантор: чужая строка постусловия" "«69» вместо «68»" "$KV/two-names.flang" "$KP/p5-foreign-line.запись"
-prichina "квантор: строка не сразу после «вид postcondition»" "стоит не сразу под строкой «вид postcondition»" "$KV/two-names.flang" "$KP/p6-line-in-the-wrong-place.запись"
-prichina "квантор: индукция по имени вне списка" "принцип ведёт индукцию по «стопка», а постусловие исходника — по «дно»" "$KV/name-outside-the-list.flang" "$KP/p7-induction-on-a-name-outside-the-list.запись"
-prichina "квантор: строка при постусловии без квантора" "а постусловие исходника квантора не называет" flang/proof/examples/binder-wall-map.flang "$KP/p8-line-without-quantifier.запись"
+opyt C "квантор: два имени, индукция по второму — прежде ложный отказ (З3)" 0 "$KV/two-names.flang" "$KV/two-names.record"
+opyt C "квантор: одно имя со строкой — вывод как без строки" 0 flang/proof/examples/corpus-length.flang "$KV/one-name.record"
+prichina "квантор: пропущено имя" "«стопка» вместо «дно»" "$KV/two-names.flang" "$KP/p1-name-missing.record"
+prichina "квантор: лишнее имя" "«хвост» вместо «строка»" "$KV/two-names.flang" "$KP/p2-extra-name.record"
+prichina "квантор: другой порядок имён" "«стопка» вместо «дно»" "$KV/two-names.flang" "$KP/p3-other-order.record"
+prichina "квантор: строки нет при двух именах — никогда не 0" "а строки «для всех» в записи нет" "$KV/two-names.flang" "$KP/p4-no-line-for-two-names.record"
+prichina "квантор: чужая строка постусловия" "«69» вместо «68»" "$KV/two-names.flang" "$KP/p5-foreign-line.record"
+prichina "квантор: строка не сразу после «вид postcondition»" "стоит не сразу под строкой «вид postcondition»" "$KV/two-names.flang" "$KP/p6-line-in-the-wrong-place.record"
+prichina "квантор: индукция по имени вне списка" "принцип ведёт индукцию по «стопка», а постусловие исходника — по «дно»" "$KV/name-outside-the-list.flang" "$KP/p7-induction-on-a-name-outside-the-list.record"
+prichina "квантор: строка при постусловии без квантора" "а постусловие исходника квантора не называет" flang/proof/examples/binder-wall-map.flang "$KP/p8-line-without-quantifier.record"
 
 say ""
 say "── строгий режим строк кванторов и объявления (включён партией перепечатки) ──"
@@ -2204,9 +2204,9 @@ say "── строгий режим строк кванторов и объя�
 # нельзя.
 grep -q '^#define СТРОКИ_КВАНТОРОВ_ОБЯЗАТЕЛЬНЫ 1$' "$CHEK/checker.c" || {
   say "ПРОВАЛ строгий режим: в checker.c не стоит «#define СТРОКИ_КВАНТОРОВ_ОБЯЗАТЕЛЬНЫ 1»"; BAD=$((BAD+1)); }
-opyt C "строгий: запись со строками «объявление» и «для всех»" 0 flang/proof/examples/corpus-length.flang "$KV/strict-honest.запись"
-prichina "строгий: нет строки «для всех» при одном имени" "а строки «для всех» в записи нет" flang/proof/examples/corpus-length.flang "$KV/strict-without-line.запись"
-prichina "строгий: нет строки «объявление» под принципом" "под принципом нет строки «объявление»" flang/proof/examples/corpus-length.flang "$KV/strict-without-declaration.запись"
+opyt C "строгий: запись со строками «объявление» и «для всех»" 0 flang/proof/examples/corpus-length.flang "$KV/strict-honest.record"
+prichina "строгий: нет строки «для всех» при одном имени" "а строки «для всех» в записи нет" flang/proof/examples/corpus-length.flang "$KV/strict-without-line.record"
+prichina "строгий: нет строки «объявление» под принципом" "под принципом нет строки «объявление»" flang/proof/examples/corpus-length.flang "$KV/strict-without-declaration.record"
 
 say ""
 say "── семья «ограничение» (ADR-0026 К5): «таких что» и допущения теоремы ──"
@@ -2225,16 +2225,16 @@ OG=$SEM/restriction; OGP=$OG/corrupt
 # сверяет с примерами («вердикт нет вердикта») — не откат, а прежний пробел
 # (замер A, ПЕРЕДАЧА/stack-A/partiya/откаты-ядра.md). Перепечатка убрала бы то,
 # что здесь стережётся. Потому НЕ перепечатывать.
-opyt C "ограничение: постусловие «таких что», строки есть (честная)" 3 "$OG/f09-restricted.flang" "$OG/f09-restricted.запись"
-opyt C "ограничение: теорема «дано н: … таких что …», шаг по допущению 1 (честная)" 3 "$OG/k2bk-theorem-such-that.flang" "$OG/k2bk-theorem-such-that.запись"
-opyt C "ограничение: теорема с гипотезой «дано н больше 0» (честная)" 3 "$OG/k2b-direct-theorem-hypothesis.flang" "$OG/k2b-direct-theorem-hypothesis.запись"
-prichina "ограничение: потеряно — запись З10 матрицы (прежде код 3)" "ограничение потеряно" "$OG/f09-restricted.flang" "$OGP/z10-restriction-lost.запись"
-prichina "ограничение: другое" "«1⟩» вместо «0⟩»" "$OG/f09-restricted.flang" "$OGP/other-restriction.запись"
-prichina "ограничение: не под «для всех»" "стоит не сразу под строкой «для всех»" "$OG/f09-restricted.flang" "$OGP/restriction-not-under-the-quantifier.запись"
-prichina "ограничение: шаг закрыт допущением, которого нет" "закрыт допущением 2, а допущений в записи 1" "$OG/k2bk-theorem-such-that.flang" "$OGP/assumption-outside-the-list.запись"
-prichina "ограничение: допущение теоремы потеряно" "дано 15, допущение 15" "$OG/k2bk-theorem-such-that.flang" "$OGP/assumption-lost.запись"
-prichina "ограничение: другое допущение" "допущение 1 — в записи ⟨н больше 1⟩" "$OG/k2bk-theorem-such-that.flang" "$OGP/other-assumption.запись"
-prichina "ограничение: гипотеза «дано н больше 0» без строки допущения" "допущение 16" "$OG/k2b-direct-theorem-hypothesis.flang" "$OGP/hypothesis-without-assumption-line.запись"
+opyt C "ограничение: постусловие «таких что», строки есть (честная)" 3 "$OG/f09-restricted.flang" "$OG/f09-restricted.record"
+opyt C "ограничение: теорема «дано н: … таких что …», шаг по допущению 1 (честная)" 3 "$OG/k2bk-theorem-such-that.flang" "$OG/k2bk-theorem-such-that.record"
+opyt C "ограничение: теорема с гипотезой «дано н больше 0» (честная)" 3 "$OG/k2b-direct-theorem-hypothesis.flang" "$OG/k2b-direct-theorem-hypothesis.record"
+prichina "ограничение: потеряно — запись З10 матрицы (прежде код 3)" "ограничение потеряно" "$OG/f09-restricted.flang" "$OGP/z10-restriction-lost.record"
+prichina "ограничение: другое" "«1⟩» вместо «0⟩»" "$OG/f09-restricted.flang" "$OGP/other-restriction.record"
+prichina "ограничение: не под «для всех»" "стоит не сразу под строкой «для всех»" "$OG/f09-restricted.flang" "$OGP/restriction-not-under-the-quantifier.record"
+prichina "ограничение: шаг закрыт допущением, которого нет" "закрыт допущением 2, а допущений в записи 1" "$OG/k2bk-theorem-such-that.flang" "$OGP/assumption-outside-the-list.record"
+prichina "ограничение: допущение теоремы потеряно" "дано 15, допущение 15" "$OG/k2bk-theorem-such-that.flang" "$OGP/assumption-lost.record"
+prichina "ограничение: другое допущение" "допущение 1 — в записи ⟨н больше 1⟩" "$OG/k2bk-theorem-such-that.flang" "$OGP/other-assumption.record"
+prichina "ограничение: гипотеза «дано н больше 0» без строки допущения" "допущение 16" "$OG/k2b-direct-theorem-hypothesis.flang" "$OGP/hypothesis-without-assumption-line.record"
 
 say ""
 say "── семья «утверждение» (ADR-0026 К3a): утверждение без функции ──"
@@ -2250,8 +2250,8 @@ UT=$SEM/statement; UTP=$UT/corrupt
 # функции, которую цель зовёт на связанном имени («Счёт» от л ≡ постусловие
 # «Счёт» при довод := л); честные дают 0. Не сводится (имя стоит и вне вызова,
 # несколько связываний в строке) — место на слове ядра, 3, никогда 0.
-opyt C "утверждение: связывание и теорема по индукции (честная, проиграна целиком — К3b)" 0 "$UT/f05k-statement.flang" "$UT/f05k-statement.запись"
-opyt C "утверждение: связывание с «таких что» (честная, проиграна целиком — К3b)" 0 "$UT/statement-with-restriction.flang" "$UT/statement-with-restriction.запись"
+opyt C "утверждение: связывание и теорема по индукции (честная, проиграна целиком — К3b)" 0 "$UT/f05k-statement.flang" "$UT/f05k-statement.record"
+opyt C "утверждение: связывание с «таких что» (честная, проиграна целиком — К3b)" 0 "$UT/statement-with-restriction.flang" "$UT/statement-with-restriction.record"
 # 5144: несколько связываний в одной строке ЧИТАЮТСЯ — по строке записи на каждое (форма
 # та же, что печатает ядро). Прежний отказ «форма записи для них контрактом не названа»
 # снят, и проба стережёт именно это: строки причин его больше не несут. Код у этой
@@ -2259,37 +2259,37 @@ opyt C "утверждение: связывание с «таких что» (�
 # «неотрицательность по построению» без единого хода, а шаг «по предположению» сверщик по
 # существу не проигрывает; замер 11 сентября 2026. Место на слове ядра держит проба
 # «сложение-перестановочно» (два связывания, ход «соседи») — она даёт 0.
-opyt C "утверждение: несколько связываний в одной строке — читаются, узел на слове ядра (5144)" 3 "$UT/several-bindings.flang" "$UT/several-bindings.запись"
-"$C" "$UT/several-bindings.flang" "$UT/several-bindings.запись" 2>/dev/null \
+opyt C "утверждение: несколько связываний в одной строке — читаются, узел на слове ядра (5144)" 3 "$UT/several-bindings.flang" "$UT/several-bindings.record"
+"$C" "$UT/several-bindings.flang" "$UT/several-bindings.record" 2>/dev/null \
   | grep -q "несколько связываний в одной строке «для всех»" \
   && { say "ПРОВАЛ утверждение: несколько связываний — прежний отказ «формы записи нет» не снят"; BAD=$((BAD+1)); }
 # 5144: чистая арифметическая цель без функции — ходы под «вид statement» печатает ядро
 # (толкованием, семя правку не несёт): соседи при двух связываниях, нейтральный ноль
 # при посылке «таких что н больше 0» (Тожд2), вычисление замкнутой цели без «для всех».
-opyt C "утверждение: два связывания, ход «соседи» — (а плюс б) равен (б плюс а)" 0 "$UT/addition-is-commutative.flang" "$UT/addition-is-commutative.запись"
-opyt C "утверждение: нейтральный ноль при «таких что н больше 0» (Тожд2)" 0 "$UT/zero-is-neutral.flang" "$UT/zero-is-neutral.запись"
-opyt C "утверждение без связываний: замкнутая цель считается (Выч)" 0 "$UT/length-of-the-empty-list.flang" "$UT/length-of-the-empty-list.запись"
+opyt C "утверждение: два связывания, ход «соседи» — (а плюс б) равен (б плюс а)" 0 "$UT/addition-is-commutative.flang" "$UT/addition-is-commutative.record"
+opyt C "утверждение: нейтральный ноль при «таких что н больше 0» (Тожд2)" 0 "$UT/zero-is-neutral.flang" "$UT/zero-is-neutral.record"
+opyt C "утверждение без связываний: замкнутая цель считается (Выч)" 0 "$UT/length-of-the-empty-list.flang" "$UT/length-of-the-empty-list.record"
 # Подделки 5144. Ложь «(н плюс 1) равен н» ядро не доказывает (нет вердикта); запись с
 # чужим ходом сверщик роняет: терма «н плюс 0» в цели нет. Без посылки «таких что» ход
 # нейтрального нуля — отказ с причиной (на минус нуле тождество ложно). Подмена типа
 # связывания и запись без ходов — прежние сторожа: тип знак в знак; без ходов — на слове.
-prichina "5144: ложь «(н плюс 1) равен н» под честной записью" "в цели «( н плюс 1 ) равен н» нет терма «н плюс 0»" "$UTP/zero-plus-one.flang" "$UTP/zero-plus-one.запись"
-prichina "5144: посылка «таких что» пропущена — нейтральный ноль на минус нуле ложен" "посылки «н больше К» (К не меньше 0) среди «таких что» утверждения нет" "$UTP/zero-without-premise.flang" "$UTP/zero-without-premise.запись"
-prichina "5144: подмена типа второго связывания" "«⟨строка⟩» вместо «⟨число⟩»" "$UT/addition-is-commutative.flang" "$UTP/addition-type-swapped.запись"
-prichina "5144: имя связывания подменено" "«в»" "$UT/addition-is-commutative.flang" "$UTP/addition-name-swapped.запись"
-prichina "5144: замкнутая цель — ход вычисления несёт чужое значение" "терм посчитан = 0, а запись несёт ⟨1⟩" "$UT/length-of-the-empty-list.flang" "$UTP/length-other-value.запись"
-opyt P "5144: запись без ходов — цель на слове ядра, никогда не 0 (цель ловушки «не бери»)" 3 "$UT/addition-is-commutative.flang" "$UTP/addition-without-moves.запись"
-opyt P "утверждение: связанное имя и вне вызова — сведения нет, никогда не 0" 3 "$UT/name-outside-the-call.flang" "$UT/name-outside-the-call.запись"
-prichina "утверждение: принцип над чужим типом (связывание — список)" "принцип назван над типом «строка», а довод «л» объявлен типом «список»" "$UT/f05k-statement.flang" "$UTP/principle-of-a-foreign-type.запись"
-prichina "утверждение: заголовок не на своей строке" "строка 9 исходника не «утверждение «" "$UT/f05k-statement.flang" "$UTP/header-on-the-wrong-line.запись"
-prichina "утверждение: другой тип связывания" "«строки⟩» вместо «числа⟩»" "$UT/f05k-statement.flang" "$UTP/other-binding-type.запись"
-prichina "утверждение: другое имя связывания" "«м» вместо «л»" "$UT/f05k-statement.flang" "$UTP/other-binding-name.запись"
-prichina "утверждение: строки связывания нет — никогда не 0" "строки «для всех» в записи нет" "$UT/f05k-statement.flang" "$UTP/binding-lost.запись"
-prichina "утверждение: лишняя строка связывания" "связываний в исходнике 1, а строк «для всех» в записи 2" "$UT/f05k-statement.flang" "$UTP/extra-binding-line.запись"
-prichina "утверждение: записано видом постусловия" "а не «вид statement»" "$UT/f05k-statement.flang" "$UTP/kind-not-statement.запись"
-prichina "утверждение: теорема доказывает другое" "а утверждение обещает" "$UT/theorem-about-another.flang" "$UTP/theorem-about-another.запись"
-prichina "утверждение: ограничение связывания потеряно" "строки «таких что» в записи нет" "$UT/statement-with-restriction.flang" "$UTP/binding-restriction-lost.запись"
-prichina "утверждение: записано постусловием функции (матрица, З5)" "в исходнике постусловий 0, а в записи утверждений 1" "$UT/f05-free-theorem.flang" "$UTP/z5-statement-written-as-a-postcondition.запись"
+prichina "5144: ложь «(н плюс 1) равен н» под честной записью" "в цели «( н плюс 1 ) равен н» нет терма «н плюс 0»" "$UTP/zero-plus-one.flang" "$UTP/zero-plus-one.record"
+prichina "5144: посылка «таких что» пропущена — нейтральный ноль на минус нуле ложен" "посылки «н больше К» (К не меньше 0) среди «таких что» утверждения нет" "$UTP/zero-without-premise.flang" "$UTP/zero-without-premise.record"
+prichina "5144: подмена типа второго связывания" "«⟨строка⟩» вместо «⟨число⟩»" "$UT/addition-is-commutative.flang" "$UTP/addition-type-swapped.record"
+prichina "5144: имя связывания подменено" "«в»" "$UT/addition-is-commutative.flang" "$UTP/addition-name-swapped.record"
+prichina "5144: замкнутая цель — ход вычисления несёт чужое значение" "терм посчитан = 0, а запись несёт ⟨1⟩" "$UT/length-of-the-empty-list.flang" "$UTP/length-other-value.record"
+opyt P "5144: запись без ходов — цель на слове ядра, никогда не 0 (цель ловушки «не бери»)" 3 "$UT/addition-is-commutative.flang" "$UTP/addition-without-moves.record"
+opyt P "утверждение: связанное имя и вне вызова — сведения нет, никогда не 0" 3 "$UT/name-outside-the-call.flang" "$UT/name-outside-the-call.record"
+prichina "утверждение: принцип над чужим типом (связывание — список)" "принцип назван над типом «строка», а довод «л» объявлен типом «список»" "$UT/f05k-statement.flang" "$UTP/principle-of-a-foreign-type.record"
+prichina "утверждение: заголовок не на своей строке" "строка 9 исходника не «утверждение «" "$UT/f05k-statement.flang" "$UTP/header-on-the-wrong-line.record"
+prichina "утверждение: другой тип связывания" "«строки⟩» вместо «числа⟩»" "$UT/f05k-statement.flang" "$UTP/other-binding-type.record"
+prichina "утверждение: другое имя связывания" "«м» вместо «л»" "$UT/f05k-statement.flang" "$UTP/other-binding-name.record"
+prichina "утверждение: строки связывания нет — никогда не 0" "строки «для всех» в записи нет" "$UT/f05k-statement.flang" "$UTP/binding-lost.record"
+prichina "утверждение: лишняя строка связывания" "связываний в исходнике 1, а строк «для всех» в записи 2" "$UT/f05k-statement.flang" "$UTP/extra-binding-line.record"
+prichina "утверждение: записано видом постусловия" "а не «вид statement»" "$UT/f05k-statement.flang" "$UTP/kind-not-statement.record"
+prichina "утверждение: теорема доказывает другое" "а утверждение обещает" "$UT/theorem-about-another.flang" "$UTP/theorem-about-another.record"
+prichina "утверждение: ограничение связывания потеряно" "строки «таких что» в записи нет" "$UT/statement-with-restriction.flang" "$UTP/binding-restriction-lost.record"
+prichina "утверждение: записано постусловием функции (матрица, З5)" "в исходнике постусловий 0, а в записи утверждений 1" "$UT/f05-free-theorem.flang" "$UTP/z5-statement-written-as-a-postcondition.record"
 # К3c (ADR-0026 §11 п.13): утверждение применяется шагом `по свойству «И»`. Путь
 # шага: привязка к заголовку утверждения, утверждение проверено раньше (реестр),
 # его цель после подстановки доводов того же типа совпала с целью шага, где
@@ -2300,15 +2300,15 @@ prichina "утверждение: записано постусловием фу
 # без сличения цели / без сверки типа принимают их кодом 0); чужая подстановка — 1
 # (копия без сверки имён принимает её кодом 0); утверждение на слове ядра — шаг
 # остаётся на слове (копия без реестра снимает его, и причина пропадает).
-opyt C "К3c: шаг «по свойству» утверждения (эталон B, путь шага)" 0 "$UT/k3c-applying-the-statement.flang" "$UT/k3c-applying-the-statement.запись"
-opyt C "К3c: ход «факт по свойству … подстановка» (путь хода)" 0 "$UT/k3c-move-by-substitution.flang" "$UT/k3c-move-by-substitution.запись"
-opyt P "К3c: тело «… минус 1» — вывод ложен, никогда не 0" 3 "$UTP/k3c-false-conclusion.flang" "$UTP/k3c-false-conclusion.запись"
-opyt P "К3c: довод «список строки» при связывании «список числа» — никогда не 0" 3 "$UTP/k3c-wrong-type.flang" "$UTP/k3c-wrong-type.запись"
-prichina3 "К3c: утверждение на слове ядра — шаг им не снимается" "утверждение, но оно не проверено по существу раньше этой теоремы" "$UT/k3c-applying-the-statement.flang" "$UTP/k3c-statement-on-trust.запись"
-prichina "К3c: привязка не к заголовку утверждения" "привязано к строке 16, а заголовок утверждения" "$UT/k3c-applying-the-statement.flang" "$UTP/k3c-binding-not-to-the-header.запись"
-prichina "К3c: чужая подстановка" "чужая подстановка — на месте связанного «л» стоит «м»" "$UT/k3c-move-by-substitution.flang" "$UTP/k3c-foreign-substitution.запись"
-prichina "К3c: строка M хода — не заголовок утверждения" "не заголовок «утверждение «длина любого списка неотрицательна»»" "$UT/k3c-move-by-substitution.flang" "$UTP/k3c-line-not-a-header.запись"
-prichina "К3c: «вызов» при утверждении" "не несёт «обеспечивает «длина любого списка неотрицательна»" "$UT/k3c-move-by-substitution.flang" "$UTP/k3c-call-for-a-statement.запись"
+opyt C "К3c: шаг «по свойству» утверждения (эталон B, путь шага)" 0 "$UT/k3c-applying-the-statement.flang" "$UT/k3c-applying-the-statement.record"
+opyt C "К3c: ход «факт по свойству … подстановка» (путь хода)" 0 "$UT/k3c-move-by-substitution.flang" "$UT/k3c-move-by-substitution.record"
+opyt P "К3c: тело «… минус 1» — вывод ложен, никогда не 0" 3 "$UTP/k3c-false-conclusion.flang" "$UTP/k3c-false-conclusion.record"
+opyt P "К3c: довод «список строки» при связывании «список числа» — никогда не 0" 3 "$UTP/k3c-wrong-type.flang" "$UTP/k3c-wrong-type.record"
+prichina3 "К3c: утверждение на слове ядра — шаг им не снимается" "утверждение, но оно не проверено по существу раньше этой теоремы" "$UT/k3c-applying-the-statement.flang" "$UTP/k3c-statement-on-trust.record"
+prichina "К3c: привязка не к заголовку утверждения" "привязано к строке 16, а заголовок утверждения" "$UT/k3c-applying-the-statement.flang" "$UTP/k3c-binding-not-to-the-header.record"
+prichina "К3c: чужая подстановка" "чужая подстановка — на месте связанного «л» стоит «м»" "$UT/k3c-move-by-substitution.flang" "$UTP/k3c-foreign-substitution.record"
+prichina "К3c: строка M хода — не заголовок утверждения" "не заголовок «утверждение «длина любого списка неотрицательна»»" "$UT/k3c-move-by-substitution.flang" "$UTP/k3c-line-not-a-header.record"
+prichina "К3c: «вызов» при утверждении" "не несёт «обеспечивает «длина любого списка неотрицательна»" "$UT/k3c-move-by-substitution.flang" "$UTP/k3c-call-for-a-statement.record"
 # К3c, ШАГ «по примеру» В СВОБОДНОМ УТВЕРЖДЕНИИ (замер 11.09.2026, вопрос из
 # ПЕРЕДАЧА/stack-A/partiya/откаты-ядра.md). Ядро такой шаг отвергает («свободное
 # утверждение функции не принадлежит»), эталон B и сверщик принимают. Две двери,
@@ -2318,9 +2318,9 @@ prichina "К3c: «вызов» при утверждении" "не несёт �
 # а без сверки довода третья подделка (довод [5], «ожидается 0» — как ветвь тела
 # на «пусто») проходит КОДОМ 0: эта проверка — единственная, что её держит. Вторая
 # подделка («ожидается 1») без неё ловится сличением «ожидается» с ветвью тела.
-prichina "К3c: «по примеру» — пример чужой функции («Длина хвоста», строка 33)" "а блок функции «Длина» — строки 3…14: пример чужой" "$UT/k3c-applying-the-statement.flang" "$UTP/k3c-example-of-a-foreign-function.запись"
-prichina "К3c: «по примеру» — пример своей функции о другом доводе ([5] при случае «пусто»)" "случай разбирает «пусто», а пример «пусто» задаёт «л» как «[5]» — это о другом значении" "$UTP/k3c-example-other-argument.flang" "$UTP/k3c-example-other-argument.запись"
-prichina "К3c: «по примеру» — другой довод, «ожидается» как ветвь тела на случае (без сверки довода — 0)" "случай разбирает «пусто», а пример «пусто» задаёт «л» как «[5]» — это о другом значении" "$UTP/k3c-example-other-argument-case-expectation.flang" "$UTP/k3c-example-other-argument-case-expectation.запись"
+prichina "К3c: «по примеру» — пример чужой функции («Длина хвоста», строка 33)" "а блок функции «Длина» — строки 3…14: пример чужой" "$UT/k3c-applying-the-statement.flang" "$UTP/k3c-example-of-a-foreign-function.record"
+prichina "К3c: «по примеру» — пример своей функции о другом доводе ([5] при случае «пусто»)" "случай разбирает «пусто», а пример «пусто» задаёт «л» как «[5]» — это о другом значении" "$UTP/k3c-example-other-argument.flang" "$UTP/k3c-example-other-argument.record"
+prichina "К3c: «по примеру» — другой довод, «ожидается» как ветвь тела на случае (без сверки довода — 0)" "случай разбирает «пусто», а пример «пусто» задаёт «л» как «[5]» — это о другом значении" "$UTP/k3c-example-other-argument-case-expectation.flang" "$UTP/k3c-example-other-argument-case-expectation.record"
 # НАХОДКА B (печать партии, 10 сентября 2026): ядро печатает ф05к носителем algebra —
 # индукцией по связанному «л» с посылками «пусто»/«голова и хвост», а тело «Счёт» —
 # свёртка, ветвей разбора в нём нет. Сведение базы «пусто» у свёртки по доводу
@@ -2329,8 +2329,8 @@ prichina "К3c: «по примеру» — другой довод, «ожид�
 # сверщик не проигрывает (случаев у свёртки нет). Запись — печать партии B байт в
 # байт (vyb-a964), кроме строки «исходник». Подделка: свёртка не по доводу, а по
 # выписанному списку — сводить базу нечем, 1 (копия, берущая любую свёртку, даёт 3).
-prichina3 "находка B: ф05к, печать партии — свёртка по доводу, 3 с причиной, не 1" "случай варианта «пусто» не найден в теле функции «Счёт»" "$UT/f05k-statement.flang" "$UT/f05k-batch-print.запись"
-prichina "находка B: свёртка не по доводу — базу «пусто» сводить нечем" "а случая на вариант «пусто» в функции «Счёт» исходника нет" "$UTP/f05k-fold-not-by-the-argument.flang" "$UTP/f05k-fold-not-by-the-argument.запись"
+prichina3 "находка B: ф05к, печать партии — свёртка по доводу, 3 с причиной, не 1" "случай варианта «пусто» не найден в теле функции «Счёт»" "$UT/f05k-statement.flang" "$UT/f05k-batch-print.record"
+prichina "находка B: свёртка не по доводу — базу «пусто» сводить нечем" "а случая на вариант «пусто» в функции «Счёт» исходника нет" "$UTP/f05k-fold-not-by-the-argument.flang" "$UTP/f05k-fold-not-by-the-argument.record"
 # К3c В ПЕЧАТИ ПАРТИИ (выборка B vyb-3b40, 10 сентября 2026). к3c-б: ядро печатает ходы
 # под теоремой постусловия — «факт по свойству … подстановка «л» ⟨элементы⟩»; блок
 # утверждения стоял ПОСЛЕ использующего постусловия, и реестр честно отказывал («не
@@ -2340,10 +2340,10 @@ prichina "находка B: свёртка не по доводу — базу �
 # (код 1). Теперь — 3 с причиной, никогда 0 и никогда 1: структура сверяется как у
 # доказанного (подделка с чужой привязкой — 1), место на слове ядра даже там, где
 # утверждение доказано (копия без этого даёт на «условно при доказанном» 0).
-opyt C "К3c в печати партии: к3c-б — факт у утверждения ходом под теоремой, блоки по строке" 0 "$UT/k3cb-base-by-reduction.flang" "$UT/k3cb-base-by-reduction.запись"
-prichina3 "К3c в печати партии: к3c-в — «доказано при условии», 3 с причиной, не 1" "вердикт «доказано при условии» — доказательство опирается на утверждение, доказанное лишь при условии" "$UT/k3cv-statement-without-theorem.flang" "$UT/k3cv-statement-without-theorem.запись"
-prichina "К3c в печати партии: «доказано при условии» при чужой привязке — 1" "привязано к строке 16, а заголовок утверждения" "$UT/k3cv-statement-without-theorem.flang" "$UTP/k3cv-binding-not-to-the-header.запись"
-opyt P "К3c в печати партии: «доказано при условии» при доказанном утверждении — никогда не 0" 3 "$UT/k3cb-base-by-reduction.flang" "$UTP/k3cv-conditional-when-proved.запись"
+opyt C "К3c в печати партии: к3c-б — факт у утверждения ходом под теоремой, блоки по строке" 0 "$UT/k3cb-base-by-reduction.flang" "$UT/k3cb-base-by-reduction.record"
+prichina3 "К3c в печати партии: к3c-в — «доказано при условии», 3 с причиной, не 1" "вердикт «доказано при условии» — доказательство опирается на утверждение, доказанное лишь при условии" "$UT/k3cv-statement-without-theorem.flang" "$UT/k3cv-statement-without-theorem.record"
+prichina "К3c в печати партии: «доказано при условии» при чужой привязке — 1" "привязано к строке 16, а заголовок утверждения" "$UT/k3cv-statement-without-theorem.flang" "$UTP/k3cv-binding-not-to-the-header.record"
+opyt P "К3c в печати партии: «доказано при условии» при доказанном утверждении — никогда не 0" 3 "$UT/k3cb-base-by-reduction.flang" "$UTP/k3cv-conditional-when-proved.record"
 # 4416: ДВЕ ЧЕСТНЫЕ ЗАПИСИ, КОТОРЫЕ СВЕРЩИК ЗВАЛ ЛОЖЬЮ (код 1). Обе об одном:
 # реестр доказанного наполнялся ПО ПОРЯДКУ ПЕЧАТИ блоков, а ход «факт по свойству»,
 # не найдя в нём имени, кричал «круг или обратный порядок» — беду вместо «не взялся».
@@ -2358,9 +2358,9 @@ opyt P "К3c в печати партии: «доказано при услов�
 #   копия с порядковым реестром даёт 1.
 prichina3 "4416: силлогизм (5309) — утверждение на слове ядра, место, а не ложь" \
   "факт по свойству «все люди смертны»: утверждение, но оно не проверено по существу" \
-  "$UT/syllogism-socrates.flang" "$UT/syllogism-socrates.запись"
+  "$UT/syllogism-socrates.flang" "$UT/syllogism-socrates.record"
 opyt C "4416: к3c-ход-подстановкой, блоки переставлены — порядок печати вердикта не решает" 0 \
-  "$UT/k3c-move-by-substitution.flang" "$UT/k3c-move-by-substitution-swap.запись"
+  "$UT/k3c-move-by-substitution.flang" "$UT/k3c-move-by-substitution-swap.record"
 # 4416, ВЫРОЖДЕННЫЙ МОДУС-ПОНЕНС: факт, совпавший с целью ЗНАК В ЗНАК, цель закрывает.
 # Цель-ПРИЗНАК («Смертен» от сократ) не режется ни равенством, ни неравенством порядка,
 # и прежде честный ход «закрыть по свойству» получал «модус-поненс им цель не замыкает»
@@ -2370,10 +2370,10 @@ opyt C "4416: к3c-ход-подстановкой, блоки перестав�
 # ровно в эту проверку: факт о ДРУГОМ доводе («Смертен» от платон) цели не равен —
 # и код 1 остаётся. Копия сверщика без этой правки роняет честную (проверено).
 opyt C "4416: вырожденный модус-поненс — факт знак в знак с целью-признаком закрывает" 0 \
-  "$UT/syllogism-by-postcondition.flang" "$UT/syllogism-by-postcondition.запись"
+  "$UT/syllogism-by-postcondition.flang" "$UT/syllogism-by-postcondition.record"
 podd_p "4416: вырожденный модус-поненс — факт о другом доводе цель не закрывает" \
   "факт ««Смертен» от платон» — ни равенство, ни неравенство порядка" \
-  "$UT/syllogism-by-postcondition.flang" "$UT/syllogism-by-postcondition.запись" \
+  "$UT/syllogism-by-postcondition.flang" "$UT/syllogism-by-postcondition.record" \
   's/вызов ⟨«Смертен» от сократ⟩/вызов ⟨«Смертен» от платон⟩/'
 
 say ""
@@ -2387,30 +2387,30 @@ say "── семья «rewrite» (задача 4722, ADR-0040): склейка
 # Записи РУКОТВОРНЫЕ: ядро этих ходов ещё не печатает (4722 п.3–4, правка
 # flang/self доедет перепечаткой); шапки посчитаны по файлу.
 RW=$SEM/rewrite; RWF=$RW/forged
-opyt C "склейка: три закона моноида формой (Скл1–Скл3)" 0 "$RW/concat-laws.flang" "$RW/concat-laws.запись"
-opyt C "Переп1: четыре части — две переписки по «склейка ассоциативна», подстановки не тождественные" 0 "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.запись"
-podd_p "склейка: правая ассоциативности пересобрана с перестановкой" "правая пересобрана как" "$RW/concat-laws.flang" "$RW/concat-laws.запись" \
+opyt C "склейка: три закона моноида формой (Скл1–Скл3)" 0 "$RW/concat-laws.flang" "$RW/concat-laws.record"
+opyt C "Переп1: четыре части — две переписки по «склейка ассоциативна», подстановки не тождественные" 0 "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.record"
+podd_p "склейка: правая ассоциативности пересобрана с перестановкой" "правая пересобрана как" "$RW/concat-laws.flang" "$RW/concat-laws.record" \
   's|⟨соединить а с ( соединить б с ц )⟩ законом|⟨соединить а с ( соединить ц с б )⟩ законом|'
-prichina "склейка: закон «Склейка перестановочна» не из списка" "закон «Склейка перестановочна» не из списка" "$RW/concat-false.flang" "$RWF/commutative-law.запись"
-prichina "склейка: «Пустая склейка справа» у непустой строки" "не той формы, какой закон требует" "$RW/concat-false.flang" "$RWF/nonempty-unit.запись"
-prichina "Переп1: утверждение не доказано раньше" "не доказано РАНЬШЕ" "$RW/rewrite-by-statement.flang" "$RWF/unproven-statement.запись"
-podd_p "Переп1: инстанция записи не та, что даёт подстановка" "а инстанция утверждения" "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.запись" \
+prichina "склейка: закон «Склейка перестановочна» не из списка" "закон «Склейка перестановочна» не из списка" "$RW/concat-false.flang" "$RWF/commutative-law.record"
+prichina "склейка: «Пустая склейка справа» у непустой строки" "не той формы, какой закон требует" "$RW/concat-false.flang" "$RWF/nonempty-unit.record"
+prichina "Переп1: утверждение не доказано раньше" "не доказано РАНЬШЕ" "$RW/rewrite-by-statement.flang" "$RWF/unproven-statement.record"
+podd_p "Переп1: инстанция записи не та, что даёт подстановка" "а инстанция утверждения" "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.record" \
   's|«б» ⟨гамма⟩ «ц» ⟨дельта⟩|«б» ⟨дельта⟩ «ц» ⟨дельта⟩|'
-podd_p "Переп1: ориентация перевёрнута — справа налево" "а инстанция утверждения" "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.запись" \
+podd_p "Переп1: ориентация перевёрнута — справа налево" "а инстанция утверждения" "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.record" \
   's|^    ход 3 переписать по свойству «склейка ассоциативна» строка 3 ⟨\(.*\)⟩ = ⟨\(.*\)⟩ подстановка|    ход 3 переписать по свойству «склейка ассоциативна» строка 3 ⟨\2⟩ = ⟨\1⟩ подстановка|'
-podd_p "Переп1: подстановка захватила бы имя" "захватила бы имя «б»" "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.запись" \
+podd_p "Переп1: подстановка захватила бы имя" "захватила бы имя «б»" "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.record" \
   's|подстановка «а» ⟨альфа⟩ «б» ⟨бета⟩|подстановка «а» ⟨б⟩ «б» ⟨а⟩|'
-podd_p "Переп1: левой стороны инстанции в цели нет" "нет терма «соединить ( соединить бета с альфа ) с гамма»" "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.запись" \
+podd_p "Переп1: левой стороны инстанции в цели нет" "нет терма «соединить ( соединить бета с альфа ) с гамма»" "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.record" \
   '/^утверждение «четыре части справа»/,/^конец утверждения/s|^    ход 2 .*|    ход 2 переписать по свойству «склейка ассоциативна» строка 3 ⟨соединить ( соединить бета с альфа ) с гамма⟩ = ⟨соединить бета с ( соединить альфа с гамма )⟩ подстановка «а» ⟨бета⟩ «б» ⟨альфа⟩ «ц» ⟨гамма⟩|'
-podd_p "Переп1: утверждение переписывает само себя" "это круг" "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.запись" \
+podd_p "Переп1: утверждение переписывает само себя" "это круг" "$RW/rewrite-by-statement.flang" "$RW/rewrite-by-statement.record" \
   '0,/^    ход 1 переписать формой.*/s||    ход 1 переписать по свойству «склейка ассоциативна» строка 3 ⟨соединить ( соединить а с б ) с ц⟩ = ⟨соединить а с ( соединить б с ц )⟩ подстановка «а» ⟨а⟩ «б» ⟨б⟩ «ц» ⟨ц⟩|'
-prichina "Переп1: у утверждения «таких что» — правилом не берётся" "правилом оно не берётся" "$RWF/restricted-rewrite.flang" "$RWF/restricted-rewrite.запись"
-prichina "Переп1: цель утверждения — связка, а не голое равенство" "не голое равенство" "$RWF/or-rewrite.flang" "$RWF/or-rewrite.запись"
+prichina "Переп1: у утверждения «таких что» — правилом не берётся" "правилом оно не берётся" "$RWF/restricted-rewrite.flang" "$RWF/restricted-rewrite.record"
+prichina "Переп1: цель утверждения — связка, а не голое равенство" "не голое равенство" "$RWF/or-rewrite.flang" "$RWF/or-rewrite.record"
 # Подлог через «не равен»: утверждение «(длина "аб") не равен 3» доказано счётом, а
 # разрез по слову прочёл бы его равенством «( длина "аб" ) не» = «3» — и ложное
 # «длина "аб" не больше 1» переписалось бы в «3 больше 1». Копия сверщика без
 # проверки хвоста « не» принимает эту запись КОДОМ 0.
-prichina "Переп1: «не равен» прочитан равенством — ложное обещание закрылось бы счётом" "не голое равенство" "$RWF/negated-rewrite.flang" "$RWF/negated-rewrite.запись"
+prichina "Переп1: «не равен» прочитан равенством — ложное обещание закрылось бы счётом" "не голое равенство" "$RWF/negated-rewrite.flang" "$RWF/negated-rewrite.record"
 
 say ""
 say "── семья «свой тип» (задача 9526, правило Инд1): индукция по СВОЕЙ сумме ──"
@@ -2427,20 +2427,20 @@ ST=$SEM/own-type; STP=$ST/corrupt
 # Честная: два утверждения о своём «Нат» — одно о функции одного довода, второе
 # о функции ДВУХ доводов («Сложить» от а и (вариант «Ноль»)). Сверщик dev даёт 3
 # («мест на слово ядра 6», причина названа), с Инд1 — 0.
-opyt C "свой тип: два утверждения о своём «Нат», оба индукцией (честная, проиграны целиком)" 0 "$ST/natural.flang" "$ST/natural.запись"
+opyt C "свой тип: два утверждения о своём «Нат», оба индукцией (честная, проиграны целиком)" 0 "$ST/natural.flang" "$ST/natural.record"
 # ФАЛЬСИФИКАТОР ПРАВИЛА. Утверждение ЛОЖНО («плюс 2» вместо «плюс 1»), теоремы у
 # него нет, ядро вердикта не дало — а запись говорит «доказано» и несёт принцип с
 # посылками. Ловит это ТОЛЬКО Инд1: сверщик dev на этой паре даёт 3, новый — 1,
 # и называет ложь числами («1» против «2»). Это сторож ложной переписки (3781).
-prichina "свой тип: ложное утверждение выдано за доказанное — обе стороны посчитаны и РАЗНЫЕ" "обе стороны равенства замкнуты и посчитаны, и это РАЗНЫЕ значения" "$STP/lie-without-theorem.flang" "$STP/lie-passed-off-as-proved.запись"
+prichina "свой тип: ложное утверждение выдано за доказанное — обе стороны посчитаны и РАЗНЫЕ" "обе стороны равенства замкнуты и посчитаны, и это РАЗНЫЕ значения" "$STP/lie-without-theorem.flang" "$STP/lie-passed-off-as-proved.record"
 # Четыре порчи самого узла. Их ловит и сверщик dev (покрытие принципа и сверка
 # посылок с объявлением стоят с задачи 6203, Ш0/Ш2) — здесь они держат то, что
 # новый узел эти проверки НЕ обошёл: место, где запись расходится с объявлением,
 # обязано оставаться кодом 1, а не уходить в приём нового правила.
-prichina "свой тип: база пропущена — посылок меньше, чем вариантов у типа" "у типа «Нат» вариантов 2, а посылок 1" "$ST/natural.flang" "$STP/base-missing.запись"
-prichina "свой тип: шаг записан не по тому конструктору" "объявлена «вид step», а вариант «Ноль» типа «Нат»" "$ST/natural.flang" "$STP/step-wrong-constructor.запись"
-prichina "свой тип: принцип назван над ЧУЖИМ типом" "принцип назван над типом «Стопка», а довод «н» объявлен типом «Нат»" "$ST/natural.flang" "$STP/foreign-type.запись"
-prichina "свой тип: рекурсивный вариант записан базой" "объявлена «вид base», а вариант «Следующий» типа «Нат»" "$ST/natural.flang" "$STP/step-written-as-a-base.запись"
+prichina "свой тип: база пропущена — посылок меньше, чем вариантов у типа" "у типа «Нат» вариантов 2, а посылок 1" "$ST/natural.flang" "$STP/base-missing.record"
+prichina "свой тип: шаг записан не по тому конструктору" "объявлена «вид step», а вариант «Ноль» типа «Нат»" "$ST/natural.flang" "$STP/step-wrong-constructor.record"
+prichina "свой тип: принцип назван над ЧУЖИМ типом" "принцип назван над типом «Стопка», а довод «н» объявлен типом «Нат»" "$ST/natural.flang" "$STP/foreign-type.record"
+prichina "свой тип: рекурсивный вариант записан базой" "объявлена «вид base», а вариант «Следующий» типа «Нат»" "$ST/natural.flang" "$STP/step-written-as-a-base.record"
 
 say ""
 say "── семья «покрытие» (ячейка 5 замера E-m1): прямая теорема «по предположению» ──"
@@ -2452,7 +2452,7 @@ say "── семья «покрытие» (ячейка 5 замера E-m1): 
 # (при н = 0 даёт −1) — шаг обязан остаться на слове ядра, никогда 0; копия
 # сверщика, у которой проверка тела всегда «да», принимает её кодом 0.
 PK=$SEM/coverage
-opyt P "покрытие: «по предположению» при теле «н минус 1» — не по построению, никогда не 0" 3 "$PK/body-not-nonnegative.flang" "$PK/body-not-nonnegative.запись"
+opyt P "покрытие: «по предположению» при теле «н минус 1» — не по построению, никогда не 0" 3 "$PK/body-not-nonnegative.flang" "$PK/body-not-nonnegative.record"
 # Узел binder-wall-map (покрытие): цель-охрана «если У то Ц иначе да», а в Ц —
 # выбор с ТЕМ ЖЕ условием У. Под охраной он есть «да» (Р1 + ГипО, Р3), и замкнутую
 # Ц закрывает Выч (`половина_закрыта`), без нового правила. Честная — функция
@@ -2460,28 +2460,28 @@ opyt P "покрытие: «по предположению» при теле «
 # никогда 0: «ложный вывод» (ветвь даёт 2 — обещание ложно; копия сверщика без
 # замыкания принимает её кодом 0) и «другой порог» (внутреннее условие «порог
 # больше 1» — не охрана: при пороге 0,5 выходит 5).
-opyt C "покрытие: узел охраны — выбор с тем же условием, Выч замыкает" 0 "$PK/guard-same-condition.flang" "$PK/guard-same-condition.запись"
-opyt P "покрытие: узел охраны — ветвь даёт 2, обещание ложно, никогда не 0" 3 "$PK/guard-false-conclusion.flang" "$PK/guard-false-conclusion.запись"
-opyt P "покрытие: узел охраны — внутреннее условие «порог больше 1» не охрана, никогда не 0" 3 "$PK/guard-other-threshold.flang" "$PK/guard-other-threshold.запись"
+opyt C "покрытие: узел охраны — выбор с тем же условием, Выч замыкает" 0 "$PK/guard-same-condition.flang" "$PK/guard-same-condition.record"
+opyt P "покрытие: узел охраны — ветвь даёт 2, обещание ложно, никогда не 0" 3 "$PK/guard-false-conclusion.flang" "$PK/guard-false-conclusion.record"
+opyt P "покрытие: узел охраны — внутреннее условие «порог больше 1» не охрана, никогда не 0" 3 "$PK/guard-other-threshold.flang" "$PK/guard-other-threshold.record"
 # Замер запаса №1 (four-words «удвоенное»): `неотрицательно_algebra` берёт
 # произведение на выписанное число в (0, 2⁵³−1] (Н8, второй способ), другой
 # сомножитель — той же грамматикой. Честная — «Удвоить» с теоремой из four-words
 # байт в байт, 3 → 0. Подделки, никогда не 0: «на ноль» (при н = +∞ выходит не
 # число — копия, берущая и ноль, принимает её кодом 0) и «сомножитель минус»
 # (при н = 0 выходит −10 — копия, не проверяющая другой сомножитель, принимает).
-opyt C "покрытие: произведение на положительный литерал (Удвоить)" 0 "$PK/double-literal.flang" "$PK/double-literal.запись"
-opyt P "покрытие: «н умножить на 0» — ноль сомножителем, никогда не 0" 3 "$PK/double-by-zero.flang" "$PK/double-by-zero.запись"
-opyt P "покрытие: «(н минус 5) умножить на 2» — другой сомножитель не неотрицателен, никогда не 0" 3 "$PK/double-factor-minus.flang" "$PK/double-factor-minus.запись"
+opyt C "покрытие: произведение на положительный литерал (Удвоить)" 0 "$PK/double-literal.flang" "$PK/double-literal.record"
+opyt P "покрытие: «н умножить на 0» — ноль сомножителем, никогда не 0" 3 "$PK/double-by-zero.flang" "$PK/double-by-zero.record"
+opyt P "покрытие: «(н минус 5) умножить на 2» — другой сомножитель не неотрицателен, никогда не 0" 3 "$PK/double-factor-minus.flang" "$PK/double-factor-minus.record"
 # Замер запаса №6 — правило О9 по телу функции, без печати ядра: цель «результат не
 # больше (длина Л)», тело «свёртка Л начиная с 0 как А и Э → Ш», шаг прибавляет к А не
 # больше единицы (`свёртка_не_длиннее`). Честная — 3 → 0; корпус corpus-hof — одно место
 # снято. Подделки, никогда не 0, у каждой своя копия сверщика, дающая 0: шаг «плюс 2»
 # (копия без предела единицы), начало 1 (копия без проверки нуля), свёртка по другому
 # списку, чем под «длина» (копия без сличения списков).
-opyt C "покрытие: О9 — счёт свёрткой не длиннее списка" 0 "$PK/o9-count.flang" "$PK/o9-count.запись"
-opyt P "покрытие: О9 — шаг «акк плюс 2», никогда не 0" 3 "$PK/o9-step-two.flang" "$PK/o9-step-two.запись"
-opyt P "покрытие: О9 — начало 1, на пустом списке 1 больше 0, никогда не 0" 3 "$PK/o9-fold-start-one.flang" "$PK/o9-fold-start-one.запись"
-opyt P "покрытие: О9 — свёртка по другому списку, чем под «длина», никогда не 0" 3 "$PK/o9-foreign-list.flang" "$PK/o9-foreign-list.запись"
+opyt C "покрытие: О9 — счёт свёрткой не длиннее списка" 0 "$PK/o9-count.flang" "$PK/o9-count.record"
+opyt P "покрытие: О9 — шаг «акк плюс 2», никогда не 0" 3 "$PK/o9-step-two.flang" "$PK/o9-step-two.record"
+opyt P "покрытие: О9 — начало 1, на пустом списке 1 больше 0, никогда не 0" 3 "$PK/o9-fold-start-one.flang" "$PK/o9-fold-start-one.record"
+opyt P "покрытие: О9 — свёртка по другому списку, чем под «длина», никогда не 0" 3 "$PK/o9-foreign-list.flang" "$PK/o9-foreign-list.record"
 # Замер запаса №7 — правило Ч6 по телу функции, без печати ядра: цель «результат
 # начинается с П», тело — один вызов «F» от имён, у F нет «требует», её постусловие
 # «результат начинается с Б» проверено раньше (реестр), и Б начинается с П сличением
@@ -2490,9 +2490,9 @@ opyt P "покрытие: О9 — свёртка по другому списк�
 # снято. Подделки, никогда не 0, у каждой своя копия сверщика, дающая 0: цель
 # «начинается с "аг"» (копия без сличения приставок) и вызванная без вердикта —
 # её факта в реестре нет (копия без реестра).
-opyt C "покрытие: Ч6 — начало от проверенного обещания вызванной" 0 "$PK/ch6-prefix.flang" "$PK/ch6-prefix.запись"
-opyt P "покрытие: Ч6 — цель «начинается с аг», а вызванная обещает «абв», никогда не 0" 3 "$PK/ch6-foreign-prefix.flang" "$PK/ch6-foreign-prefix.запись"
-opyt P "покрытие: Ч6 — обещание вызванной без вердикта, факта в реестре нет, никогда не 0" 3 "$PK/ch6-fact-without-verdict.flang" "$PK/ch6-fact-without-verdict.запись"
+opyt C "покрытие: Ч6 — начало от проверенного обещания вызванной" 0 "$PK/ch6-prefix.flang" "$PK/ch6-prefix.record"
+opyt P "покрытие: Ч6 — цель «начинается с аг», а вызванная обещает «абв», никогда не 0" 3 "$PK/ch6-foreign-prefix.flang" "$PK/ch6-foreign-prefix.record"
+opyt P "покрытие: Ч6 — обещание вызванной без вердикта, факта в реестре нет, никогда не 0" 3 "$PK/ch6-fact-without-verdict.flang" "$PK/ch6-fact-without-verdict.record"
 # Замер запаса №8 — правила Ч1, Ч3, Ч4 по телу функции, без печати ядра: цель
 # «результат начинается с П» (П — литерал), тело без вызовов (`плоское_тело`,
 # многострочное «если» склеено) начинается с П по построению: сам П или литерал с
@@ -2502,9 +2502,9 @@ opyt P "покрытие: Ч6 — обещание вызванной без в�
 # Подделки, никогда не 0, у каждой своя копия сверщика, дающая 0: ветвь «иначе» с
 # другого знака (копия, смотрящая только первую ветвь) и склейка «соединить хвост с
 # "а"» (копия, читающая правый кусок).
-opyt C "покрытие: Ч4 — обе ветви выбора начинаются общим знаком" 0 "$PK/ch4-common-prefix.flang" "$PK/ch4-common-prefix.запись"
-opyt P "покрытие: Ч4 — ветвь «иначе» начинается с «б», никогда не 0" 3 "$PK/ch4-branch-of-another-character.flang" "$PK/ch4-branch-of-another-character.запись"
-opyt P "покрытие: Ч3 — «соединить хвост с а»: начало даёт левый кусок, никогда не 0" 3 "$PK/ch4-right-concatenation.flang" "$PK/ch4-right-concatenation.запись"
+opyt C "покрытие: Ч4 — обе ветви выбора начинаются общим знаком" 0 "$PK/ch4-common-prefix.flang" "$PK/ch4-common-prefix.record"
+opyt P "покрытие: Ч4 — ветвь «иначе» начинается с «б», никогда не 0" 3 "$PK/ch4-branch-of-another-character.flang" "$PK/ch4-branch-of-another-character.record"
+opyt P "покрытие: Ч3 — «соединить хвост с а»: начало даёт левый кусок, никогда не 0" 3 "$PK/ch4-right-concatenation.flang" "$PK/ch4-right-concatenation.record"
 # Страховка №2–5: цель «результат не меньше 0» без теоремы и без блока вывода — тело
 # неотрицательно по построению той же грамматикой, что у узла algebra и прямой теоремы:
 # Н2 из «требует», Н8 (произведение на литерал) и свёртка по Н7 (начало неотрицательно,
@@ -2512,11 +2512,11 @@ opyt P "покрытие: Ч3 — «соединить хвост с а»: на�
 # блока вывода, даже если печать их потеряет. Честные — «Порог под свёрткой» и
 # «Утроить» из корпуса байт в байт, 3 → 0. Подделки, никогда не 0: шаг «акк минус 1»,
 # начало «0 минус 1», «н умножить на н» (без литерала — грамматика не берёт).
-opyt C "покрытие: страховка — свёртка-счёт неотрицательна (Порог под свёрткой)" 0 "$PK/safety-count-by-fold.flang" "$PK/safety-count-by-fold.запись"
-opyt C "покрытие: страховка — произведение на литерал (Утроить)" 0 "$PK/safety-triple.flang" "$PK/safety-triple.запись"
-opyt P "покрытие: страховка — шаг свёртки «акк минус 1», никогда не 0" 3 "$PK/safety-step-minus.flang" "$PK/safety-step-minus.запись"
-opyt P "покрытие: страховка — начало свёртки «0 минус 1», никогда не 0" 3 "$PK/safety-fold-start-minus.flang" "$PK/safety-fold-start-minus.запись"
-opyt P "покрытие: страховка — «н умножить на н» без литерала, никогда не 0" 3 "$PK/safety-multiply-by-n.flang" "$PK/safety-multiply-by-n.запись"
+opyt C "покрытие: страховка — свёртка-счёт неотрицательна (Порог под свёрткой)" 0 "$PK/safety-count-by-fold.flang" "$PK/safety-count-by-fold.record"
+opyt C "покрытие: страховка — произведение на литерал (Утроить)" 0 "$PK/safety-triple.flang" "$PK/safety-triple.record"
+opyt P "покрытие: страховка — шаг свёртки «акк минус 1», никогда не 0" 3 "$PK/safety-step-minus.flang" "$PK/safety-step-minus.record"
+opyt P "покрытие: страховка — начало свёртки «0 минус 1», никогда не 0" 3 "$PK/safety-fold-start-minus.flang" "$PK/safety-fold-start-minus.record"
+opyt P "покрытие: страховка — «н умножить на н» без литерала, никогда не 0" 3 "$PK/safety-multiply-by-n.flang" "$PK/safety-multiply-by-n.record"
 
 say ""
 say "── семья «существование» (ADR-0026 К7): «есть такой м, а именно Т, что У» ──"
@@ -2527,26 +2527,26 @@ say "── семья «существование» (ADR-0026 К7): «есть
 # запись здесь проиграна целиком, код 0. Строк нет при существовании — код 1
 # всегда. Исходник `ф10к` — вход стека B, запись РУКОТВОРНАЯ (README семьи).
 SU=$SEM/existence; SUP=$SU/corrupt
-opyt C "существование: свидетель, подстановка и ходы по подставленной цели (честная, проиграна целиком)" 0 "$SU/f10k-existence-with-a-witness.flang" "$SU/f10k-existence-with-a-witness.запись"
-prichina "существование: чужой свидетель (м = 1)" "строка записи «свидетель «м» ⟨1⟩ строка 6»" "$SU/f10k-existence-with-a-witness.flang" "$SUP/foreign-witness.запись"
-prichina "существование: чужое имя связанной" "строка записи «свидетель «к» ⟨н⟩ строка 6»" "$SU/f10k-existence-with-a-witness.flang" "$SUP/foreign-name.запись"
-prichina "существование: чужая строка" "строка записи «свидетель «м» ⟨н⟩ строка 7»" "$SU/f10k-existence-with-a-witness.flang" "$SUP/foreign-line.запись"
-prichina "существование: подстановка записи не та" "после подстановки в записи ⟨результат равен ( н плюс 1 )⟩" "$SU/f10k-existence-with-a-witness.flang" "$SUP/foreign-substitution.запись"
-prichina "существование: строк свидетеля нет — никогда не 0" "а строк «свидетель» и «после подстановки» в записи нет" "$SU/f10k-existence-with-a-witness.flang" "$SUP/no-witness-lines.запись"
-prichina "существование: свидетель при цели без «есть такой»" "в записи свидетель, а цель исходника не «есть такой" "$SU/f10b-existence-by-expression.flang" "$SUP/witness-for-a-goal-without-existence.запись"
-prichina "существование: «существует … такое что» — не форма языка (матрица, З7)" "нет терма" "$SU/f10b-existence-by-expression.flang" "$SUP/z7-exists-such-that.запись"
+opyt C "существование: свидетель, подстановка и ходы по подставленной цели (честная, проиграна целиком)" 0 "$SU/f10k-existence-with-a-witness.flang" "$SU/f10k-existence-with-a-witness.record"
+prichina "существование: чужой свидетель (м = 1)" "строка записи «свидетель «м» ⟨1⟩ строка 6»" "$SU/f10k-existence-with-a-witness.flang" "$SUP/foreign-witness.record"
+prichina "существование: чужое имя связанной" "строка записи «свидетель «к» ⟨н⟩ строка 6»" "$SU/f10k-existence-with-a-witness.flang" "$SUP/foreign-name.record"
+prichina "существование: чужая строка" "строка записи «свидетель «м» ⟨н⟩ строка 7»" "$SU/f10k-existence-with-a-witness.flang" "$SUP/foreign-line.record"
+prichina "существование: подстановка записи не та" "после подстановки в записи ⟨результат равен ( н плюс 1 )⟩" "$SU/f10k-existence-with-a-witness.flang" "$SUP/foreign-substitution.record"
+prichina "существование: строк свидетеля нет — никогда не 0" "а строк «свидетель» и «после подстановки» в записи нет" "$SU/f10k-existence-with-a-witness.flang" "$SUP/no-witness-lines.record"
+prichina "существование: свидетель при цели без «есть такой»" "в записи свидетель, а цель исходника не «есть такой" "$SU/f10b-existence-by-expression.flang" "$SUP/witness-for-a-goal-without-existence.record"
+prichina "существование: «существует … такое что» — не форма языка (матрица, З7)" "нет терма" "$SU/f10b-existence-by-expression.flang" "$SUP/z7-exists-such-that.record"
 # ∃ КАК ФАКТ (ход «факт по свойству»): постусловие со свидетелем, взятое фактом у
 # вызова, — это У[м:=Т] с ТЕМ свидетелем, что написан в исходнике, инстанцированное
 # по вызову. Честная: «Шесть» = «Удвоить» от 3 закрывает «результат равен (3 плюс 3)»
 # фактом «( «Удвоить» от 3 ) равен ( 3 плюс 3 )» — код 0. Подделка: та же запись,
 # но цель просит другой терм на месте свидетеля — «(2 плюс 4)»; факт со свидетелем
 # «н» её не закрывает, другого свидетеля сверщик не подбирает — код 1.
-opyt C "существование: ∃ взято фактом «по свойству» — У[м:=Т] по вызову закрывает цель (честная, проиграна целиком)" 0 "$SU/fact-with-a-witness.flang" "$SU/fact-with-a-witness.запись"
+opyt C "существование: ∃ взято фактом «по свойству» — У[м:=Т] по вызову закрывает цель (честная, проиграна целиком)" 0 "$SU/fact-with-a-witness.flang" "$SU/fact-with-a-witness.record"
 # Та же программа ПЕЧАТЬЮ ЯДРА (толкованием flang/self, задача 6205): ядро закрывает
 # «Шесть» сведением до числа и хода «факт по свойству» не выпускает, поэтому путь
 # «∃ фактом» стережёт рукотворная запись выше, а эта — сверяет печать со сверщиком.
-opyt C "существование: печать ядра (толкованием) той же программы — свидетель и подстановка напечатаны, сверщик проиграл" 0 "$SU/fact-with-a-witness.flang" "$SU/fact-with-a-witness.kernel-print.запись"
-prichina "существование: ∃ фактом, цель просит другой терм на месте свидетеля" "не закрывает" "$SU/fact-with-a-foreign-witness.flang" "$SUP/fact-with-a-foreign-witness.запись"
+opyt C "существование: печать ядра (толкованием) той же программы — свидетель и подстановка напечатаны, сверщик проиграл" 0 "$SU/fact-with-a-witness.flang" "$SU/fact-with-a-witness.kernel-print.record"
+prichina "существование: ∃ фактом, цель просит другой терм на месте свидетеля" "не закрывает" "$SU/fact-with-a-foreign-witness.flang" "$SUP/fact-with-a-foreign-witness.record"
 
 say ""
 say "── семья «algebra-domeny» (К11+): узел algebra с доменами «не больше» и «охрана» ──"
@@ -2562,17 +2562,17 @@ say "── семья «algebra-domeny» (К11+): узел algebra с доме�
 # тело случая подменено, шапка переснята ядром; сверщик обязан не проиграть
 # узел и назвать случай — третий исход, не приёмка.
 AD=$SEM/algebra-domains
-opyt C "algebra «не больше»: длина головы строки — честная" 0 "$AD/head.flang" "$AD/head.запись"
-opyt C "algebra охрана: часть хорошего дерева хороша — честная" 0 "$AD/guard.flang" "$AD/guard.запись"
-opyt P "algebra «не больше»: голова удвоена — узел не проигран, третий исход" 3 "$AD/corrupt/head-lies.flang" "$AD/corrupt/head-lies.запись"
-opyt P "algebra охрана: обещано отрицание конъюнкта — узел не проигран, третий исход" 3 "$AD/corrupt/guard-lies.flang" "$AD/corrupt/guard-lies.запись"
-"$C" "$AD/corrupt/head-lies.flang" "$AD/corrupt/head-lies.запись" 2>/dev/null \
+opyt C "algebra «не больше»: длина головы строки — честная" 0 "$AD/head.flang" "$AD/head.record"
+opyt C "algebra охрана: часть хорошего дерева хороша — честная" 0 "$AD/guard.flang" "$AD/guard.record"
+opyt P "algebra «не больше»: голова удвоена — узел не проигран, третий исход" 3 "$AD/corrupt/head-lies.flang" "$AD/corrupt/head-lies.record"
+opyt P "algebra охрана: обещано отрицание конъюнкта — узел не проигран, третий исход" 3 "$AD/corrupt/guard-lies.flang" "$AD/corrupt/guard-lies.record"
+"$C" "$AD/corrupt/head-lies.flang" "$AD/corrupt/head-lies.record" 2>/dev/null \
   | grep -q 'случай «голова и хвост»: «2» не больше «1»' \
   || { say "ПРОВАЛ algebra «не больше»: о случае «голова и хвост» сверщик смолчал"; BAD=$((BAD+1)); }
-"$C" "$AD/corrupt/guard-lies.flang" "$AD/corrupt/guard-lies.запись" 2>/dev/null \
+"$C" "$AD/corrupt/guard-lies.flang" "$AD/corrupt/guard-lies.record" 2>/dev/null \
   | grep -q 'среди конъюнктов охраны' \
   || { say "ПРОВАЛ algebra охрана: о конъюнктах охраны сверщик смолчал"; BAD=$((BAD+1)); }
-podd "algebra «не больше»: посылки не покрывают варианты" "$AD/head.flang" "$AD/head.запись" \
+podd "algebra «не больше»: посылки не покрывают варианты" "$AD/head.flang" "$AD/head.record" \
   '/посылка «пусто»/d'
 
 say ""
@@ -2590,16 +2590,16 @@ say "── семья «семейства отношений»: порядок
 # Мерило честной: код 0, все двадцать пять мест сняты со слова ядра, долг ноль.
 SO=$SEM/type-families
 opyt C "семейства честная: двадцать пять мест, пять семейств отношений" 0 \
-  "$SO/families.flang" "$SO/families.запись"
+  "$SO/families.flang" "$SO/families.record"
 # ТРИ ПОДЛОГА ИСХОДНИКОМ, а не записью: тело либо допущение правится так, что
 # утверждение на нём ЛОЖНО, и отпечаток пересчитывается честно. Ловит их не
 # ведомость отпечатков, а сам приём — чтением строки исходника.
 opyt P "семейства: строгий порядок выведен из нестрогого допущения" 1 \
-  "$SO/corrupt/strict-from-non-strict.flang" "$SO/corrupt/strict-from-non-strict.запись"
+  "$SO/corrupt/strict-from-non-strict.flang" "$SO/corrupt/strict-from-non-strict.record"
 opyt P "семейства: вхождение названо о члене, которого не клали" 1 \
-  "$SO/corrupt/membership-of-another-member.flang" "$SO/corrupt/membership-of-another-member.запись"
+  "$SO/corrupt/membership-of-another-member.flang" "$SO/corrupt/membership-of-another-member.record"
 opyt P "семейства: соседи упорядочены без допущения о голове" 1 \
-  "$SO/corrupt/neighbours-without-the-assumption.flang" "$SO/corrupt/neighbours-without-the-assumption.запись"
+  "$SO/corrupt/neighbours-without-the-assumption.flang" "$SO/corrupt/neighbours-without-the-assumption.record"
 # ЧЕТВЁРТЫЙ ПОДЛОГ ИСХОДНИКОМ — ровно та дыра, которую нашло ядро Lean 4
 # (задача 6134). Правило О5 двигает обе стороны общей прибавкой, и до починки
 # ни ведомость, ни этот приём не спрашивали у прибавки быть ЧИСЛОМ: хватало
@@ -2610,55 +2610,55 @@ opyt P "семейства: соседи упорядочены без допу�
 # пару кодом 0 — прогон опыта помечен, чтобы отказ читался как отказ ИМЕННО
 # по конечности прибавки, а не по разошедшемуся отпечатку.
 opyt P "семейства: О5 применён к прибавке, которая может быть бесконечной" 1 \
-  "$SO/corrupt/o5-endless-addition.flang" "$SO/corrupt/o5-endless-addition.запись"
+  "$SO/corrupt/o5-endless-addition.flang" "$SO/corrupt/o5-endless-addition.record"
 # Порча ОДНОЙ строки честной записи — на каждое семейство и на каждый вид отказа.
-podd "семейства: О1 указывает на строку, где допущения нет" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: О1 указывает на строку, где допущения нет" "$SO/families.flang" "$SO/families.record" \
   's/⟨е не больше г⟩ строка 5/⟨е не больше г⟩ строка 4/'
-podd "семейства: О2 назван над разными термами" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: О2 назван над разными термами" "$SO/families.flang" "$SO/families.record" \
   's/вывод 2 О2 ⟨( длина элементы ) не больше ( длина элементы )⟩/вывод 2 О2 ⟨( длина элементы ) не больше ( длина хвост )⟩/'
-podd "семейства: О4 берёт литерал выше дна" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: О4 берёт литерал выше дна" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 Д1 ⟨г не меньше 3⟩ строка 18/вывод 1 Д1 ⟨г не меньше 1⟩ строка 18/'
-podd "семейства: О5 двигает только одну сторону" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: О5 двигает только одну сторону" "$SO/families.flang" "$SO/families.record" \
   's/⟨( е плюс 7 ) не больше ( г плюс 7 )⟩ из 1/⟨( е плюс 7 ) не больше ( г плюс 8 )⟩ из 1/'
-podd "семейства: О6 прибавляет к границе не литерал" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: О6 прибавляет к границе не литерал" "$SO/families.flang" "$SO/families.record" \
   's/⟨е не больше ( 5 плюс г )⟩ из 1/⟨е не больше ( ш плюс г )⟩ из 1/'
-podd "семейства: О3 закрывает выбор одной ветвью" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: О3 закрывает выбор одной ветвью" "$SO/families.flang" "$SO/families.record" \
   's/⟨( если у то е иначе д ) не больше г⟩ из 1 2/⟨( если у то е иначе д ) не больше г⟩ из 1 1/'
-podd "семейства: О10 сцепляет звенья мимо середины" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: О10 сцепляет звенья мимо середины" "$SO/families.flang" "$SO/families.record" \
   's/вывод 2 О1 ⟨м не больше г⟩ строка 48/вывод 2 О1 ⟨е не больше г⟩ строка 47/'
-podd "семейства: Д4 заявляет дно ниже не имеющей его ветви" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: Д4 заявляет дно ниже не имеющей его ветви" "$SO/families.flang" "$SO/families.record" \
   's/вывод 2 Д6 ⟨7 не меньше 7⟩ сам/вывод 2 Д6 ⟨2 не меньше 2⟩ сам/'
-podd "семейства: Д6 берёт два разных числа" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: Д6 берёт два разных числа" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 Д6 ⟨5 не меньше 5⟩ сам/вывод 1 Д6 ⟨5 не меньше 4⟩ сам/'
-podd "семейства: С1 подменяет строгое допущение нестрогим" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: С1 подменяет строгое допущение нестрогим" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 С1 ⟨а меньше б⟩ строка 61/вывод 1 С1 ⟨а не больше б⟩ строка 61/'
-podd "семейства: С3 берёт литерал вровень с дном" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: С3 берёт литерал вровень с дном" "$SO/families.flang" "$SO/families.record" \
   's/вывод 2 С3 ⟨3 меньше б⟩ из 1/вывод 2 С3 ⟨5 меньше б⟩ из 1/'
-podd "семейства: С4 берёт литерал выше строгого дна" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: С4 берёт литерал выше строгого дна" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 С4 ⟨б больше 0⟩ строка 75/вывод 1 С4 ⟨б больше 9⟩ строка 75/'
-podd "семейства: строгий порядок над одним и тем же термом" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: строгий порядок над одним и тем же термом" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 С1 ⟨а меньше б⟩ строка 61/вывод 1 С1 ⟨б меньше б⟩ строка 61/'
-podd "семейства: СС1 берёт список из двух членов" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: СС1 берёт список из двух членов" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 СС1 ⟨\[н\] не убывает⟩ сам/вывод 1 СС1 ⟨[н, м] не убывает⟩ сам/'
-podd "семейства: СС3 сравнивает голову не с приписанным" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: СС3 сравнивает голову не с приписанным" "$SO/families.flang" "$SO/families.record" \
   's/вывод 2 О1 ⟨первый не больше второй⟩ строка 101/вывод 2 О1 ⟨второй не больше первый⟩ строка 101/'
-podd "семейства: СС4 закрывает выбор одной ветвью дважды" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: СС4 закрывает выбор одной ветвью дважды" "$SO/families.flang" "$SO/families.record" \
   's/⟨( если у то \[а\] иначе \[б\] ) не убывает⟩ из 1 2/⟨( если у то [а] иначе [б] ) не убывает⟩ из 1 1/'
-podd "семейства: В1 называет член, которого в списке нет" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: В1 называет член, которого в списке нет" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 В1 ⟨( \[а, б\] ) содержит а⟩ сам/вывод 1 В1 ⟨( [а, б] ) содержит в⟩ сам/'
-podd "семейства: В3 опирается на вхождение в другой список" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: В3 опирается на вхождение в другой список" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 В2 ⟨( добавить первое к элементы ) содержит первое⟩ сам/вывод 1 В2 ⟨( добавить первое к хвост ) содержит первое⟩ сам/'
-podd "семейства: Ч1 берёт разные стороны" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: Ч1 берёт разные стороны" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 Ч1 ⟨текст начинается с текст⟩ сам/вывод 1 Ч1 ⟨текст начинается с хвост⟩ сам/'
-podd "семейства: Ч2 берёт непустую приставку" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: Ч2 берёт непустую приставку" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 Ч2 ⟨текст начинается с ""⟩ сам/вывод 1 Ч2 ⟨текст начинается с "а"⟩ сам/'
-podd "семейства: Ч3 читает правый кусок склейки" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: Ч3 читает правый кусок склейки" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 Ч1 ⟨начало начинается с начало⟩ сам/вывод 1 Ч1 ⟨конец начинается с конец⟩ сам/'
-podd "семейства: Ч6 сцепляет приставки мимо середины" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: Ч6 сцепляет приставки мимо середины" "$SO/families.flang" "$SO/families.record" \
   's/вывод 2 Т1 ⟨"абв" начинается с "аб"⟩ строка 163/вывод 2 Т1 ⟨"абг" начинается с "аб"⟩ строка 163/'
-podd "семейства: Ч5 назван там, где точный текст надо сосчитать" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: Ч5 назван там, где точный текст надо сосчитать" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 Ч1 ⟨текст начинается с текст⟩ сам/вывод 1 Ч5 ⟨текст начинается с текст⟩ сам/'
-podd "семейства: запрет порядка назван правилом" "$SO/families.flang" "$SO/families.запись" \
+podd "семейства: запрет порядка назван правилом" "$SO/families.flang" "$SO/families.record" \
   's/вывод 1 О1 ⟨е не больше г⟩ строка 5/вывод 1 О✗ ⟨е не больше г⟩ строка 5/'
 
 
@@ -2675,21 +2675,21 @@ say ""
 say "── семья «разность»: Н12, разность под записанным порядком (1403) ──"
 RZ=$SEM/difference
 RZI=flang/proof/examples/subtraction-under-precondition.flang
-opyt C "разность честная: два места — прямой порядок и зеркало" 0 "$RZI" "$RZ/honest.запись"
-chislo "разность честная — на слове ядра ноль" 0 "$(naslovo "$RZI" "$RZ/honest.запись")"
+opyt C "разность честная: два места — прямой порядок и зеркало" 0 "$RZI" "$RZ/honest.record"
+chislo "разность честная — на слове ядра ноль" 0 "$(naslovo "$RZI" "$RZ/honest.record")"
 prichina "разность: дно спрошено у уменьшаемого, а не у вычитаемого" "нужно «скидка не меньше 0»" \
-  "$RZI" "$RZ/corrupt/bottom-of-the-wrong-term.запись"
-podd "разность: потолок вычитаемого пропущен — Н12 опёрся на представимость" "$RZI" "$RZ/honest.запись" \
+  "$RZI" "$RZ/corrupt/bottom-of-the-wrong-term.record"
+podd "разность: потолок вычитаемого пропущен — Н12 опёрся на представимость" "$RZI" "$RZ/honest.record" \
   's/из 1 3$/из 1 2/'
-podd "разность: стороны переставлены — «скидка минус цена» под тем же порядком" "$RZI" "$RZ/honest.запись" \
+podd "разность: стороны переставлены — «скидка минус цена» под тем же порядком" "$RZI" "$RZ/honest.record" \
   's/⟨( цена минус скидка ) не меньше 0⟩ из 1 3/⟨( скидка минус цена ) не меньше 0⟩ из 1 3/'
-podd "разность: Н12 назван с одной посылкой" "$RZI" "$RZ/honest.запись" \
+podd "разность: Н12 назван с одной посылкой" "$RZI" "$RZ/honest.record" \
   's/Н12 ⟨( цена минус скидка ) не меньше 0⟩ из 1 3/Н12 ⟨( цена минус скидка ) не меньше 0⟩ из 1/'
-podd "разность: обязательство входа снято — Пред1 без зовущего" "$RZI" "$RZ/honest.запись" \
+podd "разность: обязательство входа снято — Пред1 без зовущего" "$RZI" "$RZ/honest.record" \
   '/обязательство вход «скидка»/d'
-podd "разность: запрет Н✗ назван вместо правила" "$RZI" "$RZ/honest.запись" \
+podd "разность: запрет Н✗ назван вместо правила" "$RZI" "$RZ/honest.record" \
   's/вывод 4 Н12 /вывод 4 Н✗ /'
-podd "разность: вывод не доведён до цели — развёртка снята" "$RZI" "$RZ/honest.запись" \
+podd "разность: вывод не доведён до цели — развёртка снята" "$RZI" "$RZ/honest.record" \
   '/вывод 5 Разв2 ⟨результат не меньше 0⟩ из 4 строка 36/d'
 
 # ── семья «прогон» (ADR-0032 §3.1, задача 1404, Ш0): утверждение о последовательности шагов ──
@@ -2705,19 +2705,19 @@ say ""
 say "── семья «прогон»: утверждение о последовательности шагов, Ш0 (1404) ──"
 PG=$SEM/run
 PGI=$PG/letters-in-turn.flang
-opyt C "прогон: запись ядра без строки «прогон» — на слове ядра, как всякое утверждение без функции" 3 "$PGI" "$PG/letters-in-turn.запись"
-opyt C "прогон честная со строкой «прогон»: прочитана, сверена, на слове ядра" 3 "$PGI" "$PG/with-a-run.запись"
-set +e; pg_vyvod=$("$C" "$PGI" "$PG/with-a-run.запись" 2>&1); set -e
+opyt C "прогон: запись ядра без строки «прогон» — на слове ядра, как всякое утверждение без функции" 3 "$PGI" "$PG/letters-in-turn.record"
+opyt C "прогон честная со строкой «прогон»: прочитана, сверена, на слове ядра" 3 "$PGI" "$PG/with-a-run.record"
+set +e; pg_vyvod=$("$C" "$PGI" "$PG/with-a-run.record" 2>&1); set -e
 case "$pg_vyvod" in *"не узнана"*) say "ПРОВАЛ прогон честная — строка «прогон» не узнана"; BAD=$((BAD+1));; esac
 prichina "прогон: шаг назван чужой — свёртка его не зовёт" "свёртка не зовёт шаг «Ящик»" \
-  "$PGI" "$PG/corrupt/foreign-step.запись"
+  "$PGI" "$PG/corrupt/foreign-step.record"
 prichina "прогон: прогоном назван шаг — тело не свёртка" "тело функции не свёртка" \
-  "$PGI" "$PG/corrupt/not-a-fold.запись"
+  "$PGI" "$PG/corrupt/not-a-fold.record"
 prichina "прогон: строка не та — там не объявление функции" "не объявление функции «Все в ящик»" \
-  "$PGI" "$PG/corrupt/wrong-line.запись"
+  "$PGI" "$PG/corrupt/wrong-line.record"
 prichina "прогон: цель утверждения прогон не зовёт" "цель утверждения его не зовёт" \
-  "$PGI" "$PG/corrupt/goal-does-not-call.запись"
-podd "прогон: строка «прогон» не под связыванием, а под «вид postcondition»" "$PGI" "$PG/with-a-run.запись" \
+  "$PGI" "$PG/corrupt/goal-does-not-call.record"
+podd "прогон: строка «прогон» не под связыванием, а под «вид postcondition»" "$PGI" "$PG/with-a-run.record" \
   '/прогон «Все в ящик»/d; s/^  вид postcondition$/  вид postcondition\n  прогон «Все в ящик» шаг «В ящик» строка 24/'
 
 # ── семья «план» (ADR-0032 §3.2, задача 1405, Ш0): план ничего не обещает ──
@@ -2736,23 +2736,23 @@ say ""
 say "── семья «план»: план ничего не обещает, правило Пл1, Ш0 (1405) ──"
 PL=$SEM/plan
 PLI=$PL/temporary-directory.flang
-opyt C "план честная: разрешено три, выдано восемь — секция прочитана и сверена" 0 "$PLI" "$PL/with-a-plan.запись"
-set +e; pl_vyvod=$("$C" "$PLI" "$PL/with-a-plan.запись" 2>&1); set -e
+opyt C "план честная: разрешено три, выдано восемь — секция прочитана и сверена" 0 "$PLI" "$PL/with-a-plan.record"
+set +e; pl_vyvod=$("$C" "$PLI" "$PL/with-a-plan.record" 2>&1); set -e
 case "$pl_vyvod" in *"не узнана"*) say "ПРОВАЛ план честная — строка секции плана не узнана"; BAD=$((BAD+1));; esac
 # ПОДДЕЛКА ИСХОДНИКОМ — приёмочная проба спецификации 1405: обработчик выдаёт
 # «Запустить процесс», а список его не разрешает.
 prichina "план: обработчик выдаёт неразрешённое «Запустить процесс» (подделка исходником)" "выдаёт «Запустить процесс»" \
-  "$PL/corrupt/foreign-order.flang" "$PL/corrupt/foreign-order.запись"
+  "$PL/corrupt/foreign-order.flang" "$PL/corrupt/foreign-order.record"
 prichina "план: разрешённое снято, а выдача осталась" "выдаёт «Удалить файл»" \
-  "$PLI" "$PL/corrupt/not-permitted.запись"
+  "$PLI" "$PL/corrupt/not-permitted.record"
 prichina "план: поручение о функции, которой план не зовёт" "которой план не зовёт" \
-  "$PLI" "$PL/corrupt/foreign-function.запись"
+  "$PLI" "$PL/corrupt/foreign-function.record"
 prichina "план: порядок строк — «разрешено» уехало под «поручение»" "стоит не сразу под строкой «план»" \
-  "$PLI" "$PL/corrupt/line-order.запись"
+  "$PLI" "$PL/corrupt/line-order.record"
 prichina "план: запись молчит о выданном поручении" "запись молчит о выданном" \
-  "$PLI" "$PL/corrupt/default.запись"
+  "$PLI" "$PL/corrupt/default.record"
 prichina "план: поручение приписано чужой функции" "исходника стоит в функции «После записи»" \
-  "$PLI" "$PL/corrupt/foreign-owner.запись"
+  "$PLI" "$PL/corrupt/foreign-owner.record"
 
 say ""
 say "── семья «остаток-26»: Кон1, Н9, О8, второй способ Н8 и второй способ СС4 ──"
@@ -2764,28 +2764,28 @@ say "── семья «остаток-26»: Кон1, Н9, О8, второй с
 # семя ещё не перепечатано, и запись потому рукотворная ровно в этой части.
 # Мерило честной: код 0, все четыре места сняты со слова ядра.
 opyt C "остаток-26 честная: Кон1+Н9, Н8 вторым способом, О8, СС4 противоречием" 0 \
-  "$SO/remainder.flang" "$SO/remainder.запись"
+  "$SO/remainder.flang" "$SO/remainder.record"
 # ПОДДЕЛКА ИСХОДНИКОМ: охрана выбора — «второй не больше первый», а допущение
 # функции говорит обратное. Ветвь «иначе» ДОСТИЖИМА (при строгом «первый меньше
 # второго») и отдаёт убывающую пару: постусловие на таком теле ложно, и ядро
 # вердикта ему не даёт вовсе. Запись объявляет «доказано» и зовёт СС4
 # противоречием там, где противоречия нет.
 opyt P "остаток-26: СС4 противоречием при охране, которой нет в допущениях" 1 \
-  "$SO/corrupt/remainder-guard-not-an-assumption.flang" "$SO/corrupt/remainder-guard-not-an-assumption.запись"
+  "$SO/corrupt/remainder-guard-not-an-assumption.flang" "$SO/corrupt/remainder-guard-not-an-assumption.record"
 # Порча ОДНОЙ строки честной записи — на каждое из пяти правил.
-podd "остаток-26: Кон1 указывает на строку, где допущения о конечности нет" "$SO/remainder.flang" "$SO/remainder.запись" \
+podd "остаток-26: Кон1 указывает на строку, где допущения о конечности нет" "$SO/remainder.flang" "$SO/remainder.record" \
   's/вывод 1 Кон1 ⟨е : кон⟩ строка 9/вывод 1 Кон1 ⟨е : кон⟩ строка 8/'
-podd "остаток-26: Н9 стоит на посылке не из семейства Кон" "$SO/remainder.flang" "$SO/remainder.запись" \
+podd "остаток-26: Н9 стоит на посылке не из семейства Кон" "$SO/remainder.flang" "$SO/remainder.record" \
   's/вывод 1 Кон1 ⟨е : кон⟩ строка 9/вывод 1 Т1 ⟨е не больше 9007199254740991⟩ строка 9/'
-podd "остаток-26: Н9 берёт разные сомножители" "$SO/remainder.flang" "$SO/remainder.запись" \
+podd "остаток-26: Н9 берёт разные сомножители" "$SO/remainder.flang" "$SO/remainder.record" \
   's/вывод 2 Н9 ⟨( е умножить на е ) не меньше 0⟩/вывод 2 Н9 ⟨( е умножить на 2 ) не меньше 0⟩/'
-podd "остаток-26: Н8 вторым способом при дне ДРУГОГО сомножителя" "$SO/remainder.flang" "$SO/remainder.запись" \
+podd "остаток-26: Н8 вторым способом при дне ДРУГОГО сомножителя" "$SO/remainder.flang" "$SO/remainder.record" \
   's/вывод 1 Н3 ⟨б не меньше 0⟩ строка 14/вывод 1 Н3 ⟨а не меньше 0⟩ строка 14/'
-podd "остаток-26: О8 назван не над отбором" "$SO/remainder.flang" "$SO/remainder.запись" \
+podd "остаток-26: О8 назван не над отбором" "$SO/remainder.flang" "$SO/remainder.record" \
   's/вывод 1 О8 ⟨( длина ( отфильтровать элементы/вывод 1 О8 ⟨( длина ( отобразить элементы/'
-podd "остаток-26: СС4 противоречием указывает на строку без допущения" "$SO/remainder.flang" "$SO/remainder.запись" \
+podd "остаток-26: СС4 противоречием указывает на строку без допущения" "$SO/remainder.flang" "$SO/remainder.record" \
   's/не убывает⟩ из 3 строка 30/не убывает⟩ из 3 строка 29/'
-podd "остаток-26: СС3 сравнивает голову не с приписанным" "$SO/remainder.flang" "$SO/remainder.запись" \
+podd "остаток-26: СС3 сравнивает голову не с приписанным" "$SO/remainder.flang" "$SO/remainder.record" \
   's/вывод 2 О1 ⟨первый не больше второй⟩ строка 30/вывод 2 О1 ⟨второй не больше первый⟩ строка 30/'
 
 say ""
@@ -2812,66 +2812,66 @@ say "── семья «все элементы» (ADR-0026 §11 п.14, зад�
 # и их записи сходятся с исходником — код 0, доказанным ложное не числится.
 SZ=$SEM/string-by-characters
 opyt C "строка по знакам: склейка разложения — Тожд3 (честная, печать ядра)" 0 \
-  "$SZ/join-of-decomposition.flang" "$SZ/join-of-decomposition.запись"
+  "$SZ/join-of-decomposition.flang" "$SZ/join-of-decomposition.record"
 opyt C "строка по знакам: длина последнего знака — Инд4 доказан ядром, узел fold вне приёма" 3 \
-  "$SZ/last-character.flang" "$SZ/last-character.запись"
+  "$SZ/last-character.flang" "$SZ/last-character.record"
 opyt C "строка по знакам: подделка «склейка через дефис — исходное» ядром не доказана" 0 \
-  "$SZ/join-with-separator-forgery.flang" "$SZ/join-with-separator-forgery.запись"
+  "$SZ/join-with-separator-forgery.flang" "$SZ/join-with-separator-forgery.record"
 opyt C "строка по знакам: подделка «последний кусок разбиения — один знак» стоит сеткой" 0 \
-  "$SZ/last-piece-forgery.flang" "$SZ/last-piece-forgery.запись"
+  "$SZ/last-piece-forgery.flang" "$SZ/last-piece-forgery.record"
 opyt C "строка по знакам: подделка «свёртка по знакам другой строки» ядром не доказана" 0 \
-  "$SZ/other-string-forgery.flang" "$SZ/other-string-forgery.запись"
+  "$SZ/other-string-forgery.flang" "$SZ/other-string-forgery.record"
 podd_p "строка по знакам: ход склейки разложения со связкой «-» в записи" "нет терма" \
-  "$SZ/join-of-decomposition.flang" "$SZ/join-of-decomposition.запись" 's/по ""⟩ = ⟨текст⟩/по "-"⟩ = ⟨текст⟩/'
-poddelka_ishodnika_5044 "7359-sklejka-so-svyazkoj" "$SZ/join-of-decomposition.flang" "$SZ/join-of-decomposition.запись" \
+  "$SZ/join-of-decomposition.flang" "$SZ/join-of-decomposition.record" 's/по ""⟩ = ⟨текст⟩/по "-"⟩ = ⟨текст⟩/'
+poddelka_ishodnika_5044 "7359-sklejka-so-svyazkoj" "$SZ/join-of-decomposition.flang" "$SZ/join-of-decomposition.record" \
   's/(соединить результат по "") равен текст/(соединить результат по "-") равен текст/'
 if [ -n "$FAYL_ISH_5044" ]; then
   prichina "строка по знакам: цель со связкой «-», запись честной программы" "нет терма" \
     "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
-  sed 's/по ""⟩ = ⟨текст⟩/по "-"⟩ = ⟨текст⟩/' "$FAYL_ZAP_5044" > "$RABOTA/7359-zakon-so-svyazkoj.запись"
+  sed 's/по ""⟩ = ⟨текст⟩/по "-"⟩ = ⟨текст⟩/' "$FAYL_ZAP_5044" > "$RABOTA/7359-zakon-so-svyazkoj.record"
   prichina "строка по знакам: закон склейки разложения на склейке со связкой (ловушка 60 у сверщика)" "не той формы, какой закон требует" \
-    "$FAYL_ISH_5044" "$RABOTA/7359-zakon-so-svyazkoj.запись"
+    "$FAYL_ISH_5044" "$RABOTA/7359-zakon-so-svyazkoj.record"
 fi
 VE=$SEM/all-elements; VEP=$VE/corrupt
 opyt C "все элементы: отбор своим условием — Э2 (честная, печать ядра)" 0 \
-  "$VE/filter-of-positives.flang" "$VE/filter-of-positives.запись"
+  "$VE/filter-of-positives.flang" "$VE/filter-of-positives.record"
 opyt C "все элементы: приписка литерала к отбору — Э2, Выч, Э3 (честная)" 0 \
-  "$VE/one-and-positives.flang" "$VE/one-and-positives.запись"
+  "$VE/one-and-positives.flang" "$VE/one-and-positives.record"
 opyt C "все элементы: добавление довода при предусловии — Э2, Т1, Э3 (честная)" 0 \
-  "$VE/first-on-demand.flang" "$VE/first-on-demand.запись"
+  "$VE/first-on-demand.flang" "$VE/first-on-demand.record"
 # ТРЕТИЙ ИСХОД И ЗДЕСЬ ЧЕСТЕН: цель доказана ИНДУКЦИЕЙ по списку (база «пусто»
 # закрыта правилом «все элементы по построению», шаг «голова и хвост» — разбором
 # цели по условию), а посылок индукционного пути ядро ходами не печатает, и
 # сверщик их не переигрывает — как у всякой индукции сегодня. Место названо и
 # остаётся на слове ядра; закроется оно печатью посылок (задача 6132).
 opyt C "все элементы: рекурсией по списку — доказано индукцией, посылки на слове ядра" 3 \
-  "$VE/by-recursion.flang" "$VE/by-recursion.запись"
+  "$VE/by-recursion.flang" "$VE/by-recursion.record"
 # ТРЕТИЙ ИСХОД, И ОН ЧЕСТНЫЙ. Ядро доказало обе ветви (правило «все элементы по
 # построению», Э4), но блока «вывод» в записи нет: печать берёт тело функции
 # ОДНОЙ строкой, а здесь тело писано в три («если … то … иначе …»). Место
 # остаётся на слове ядра — это названная дыра печати, а не провал приёма.
 opyt C "все элементы: обе ветви выбора — доказано ядром, блок вывода не напечатан" 3 \
-  "$VE/branch-choice.flang" "$VE/branch-choice.запись"
+  "$VE/branch-choice.flang" "$VE/branch-choice.record"
 # Порчи ОДНОЙ строки честной записи — на каждый вид отказа семейства Э.
 prichina "все элементы: Э2 с чужим свойством (ловушка 11)" "Э2 — условие отбора" \
-  "$VE/filter-of-positives.flang" "$VEP/foreign-predicate.запись"
+  "$VE/filter-of-positives.flang" "$VEP/foreign-predicate.record"
 prichina "все элементы: Э2 назван не над отбором" "Э2 берёт отбор" \
-  "$VE/filter-of-positives.flang" "$VEP/not-a-filter.запись"
+  "$VE/filter-of-positives.flang" "$VEP/not-a-filter.record"
 prichina "все элементы: Э1 назван не на пустом списке" "Э1 берёт пустой список" \
-  "$VE/filter-of-positives.flang" "$VEP/e1-not-empty.запись"
+  "$VE/filter-of-positives.flang" "$VEP/e1-not-empty.record"
 prichina "все элементы: у Э3 подменён хвост" "Э3 — шаг 1 заключает" \
-  "$VE/one-and-positives.flang" "$VEP/tail-swapped.запись"
+  "$VE/one-and-positives.flang" "$VEP/tail-swapped.record"
 prichina "все элементы: посылка Э3 о хвосте указывает на шаг счёта" "Э3 — шаг 2 заключает" \
-  "$VE/one-and-positives.flang" "$VEP/tail-wrong-step.запись"
+  "$VE/one-and-positives.flang" "$VEP/tail-wrong-step.record"
 prichina "все элементы: Т1 указывает на строку без допущения" "не есть допущение" \
-  "$VE/first-on-demand.flang" "$VEP/no-assumption.запись"
+  "$VE/first-on-demand.flang" "$VEP/no-assumption.record"
 # ПОДДЕЛКА ИСХОДНИКОМ: та же запись подсунута к программе, у которой отбор идёт
 # по ЧУЖОМУ свойству («не меньше 0» при цели «больше 0»). Саму такую программу
 # вычислитель не пропускает вовсе — постусловие-квантор считается на примере и
 # выходит ложным (FLANG_PROPERTY, снято зондом), — а запись от честной сестры
 # сверщик отвергает привязкой к программе.
 prichina "все элементы: запись честной программы подсунута к чужому свойству" "запись не от этой программы" \
-  "$VE/foreign-predicate.flang" "$VE/filter-of-positives.запись"
+  "$VE/foreign-predicate.flang" "$VE/filter-of-positives.record"
 # КВАНТОР В `требует` (ADR-0037 §4.2, задача 3123). Предусловие
 # `для всех э из Л: П` приезжает в ядро допущением как есть; цель `для всех п из
 # Л: П` закрывается правилом допущения — Т2, потому что имя элемента другое.
@@ -2879,18 +2879,18 @@ prichina "все элементы: запись честной программ�
 # `все_элементы_вывода`: список тот же, свойство совпадает после подстановки
 # имени. Обе записи — печать ядра толкованием (зонд zond-k7).
 opyt C "квантор в требует: цель-тождество закрыта Т2 со строки требует и Разв2 (честная, печать ядра)" 0 \
-  "$VE/on-demand-quantifier.flang" "$VE/on-demand-quantifier.запись"
+  "$VE/on-demand-quantifier.flang" "$VE/on-demand-quantifier.record"
 # Место вызова `«Ф» от (приписать н к пустой список)` при собственном
 # `требует н больше 0` вызывающей снято ядром по построению (Э3 с Т1 о «н», Э1):
 # программа проходит проверку, запись печатается и переигрывается.
 opyt C "квантор в требует: место вызова с приписанным доводом снято по построению (честная, печать ядра)" 0 \
-  "$VE/call-with-an-appended-list.flang" "$VE/call-with-an-appended-list.запись"
+  "$VE/call-with-an-appended-list.flang" "$VE/call-with-an-appended-list.record"
 prichina "квантор в требует: Т2 указывает на предусловие о ДРУГОМ списке" "о списке «другие», а заключено о списке «элементы»" \
-  "$VE/on-demand-quantifier.flang" "$VEP/t2-other-list.запись"
+  "$VE/on-demand-quantifier.flang" "$VEP/t2-other-list.record"
 prichina "квантор в требует: Т1 указывает на строку требует без квантора" "Т1 — допущение строки 6 есть" \
-  "$VE/on-demand-quantifier.flang" "$VEP/t1-without-quantifier.запись"
+  "$VE/on-demand-quantifier.flang" "$VEP/t1-without-quantifier.record"
 prichina "квантор в требует: Т2 указывает на строку требует без квантора" "не есть допущение-квантор" \
-  "$VE/on-demand-quantifier.flang" "$VEP/t2-without-quantifier.запись"
+  "$VE/on-demand-quantifier.flang" "$VEP/t2-without-quantifier.record"
 # ПЕРЕИМЕНОВАНИЕ С ЗАХВАТОМ (найдено сверкой с моделью Lean, 15 сентября 2026):
 # имя цели стоит свободным в свойстве, и Т2 и Э2 до починки принимали ложную цель
 # кодом 0 — «для всех м из результат: м больше м» при «требует … для всех э из
@@ -2898,30 +2898,30 @@ prichina "квантор в требует: Т2 указывает на стро
 # цель ложна: пример исходника считает постусловие и находит нарушение. Записи
 # рукописные — ядро 0.7.19 Т2-форму не разбирает, а Э2-форму «доказывает» само.
 prichina "квантор в требует: Т2 переименовывает в имя, свободное в свойстве" "переименование его захватило бы" \
-  "$VEP/t2-captures-free-name.flang" "$VEP/t2-captures-free-name.запись"
+  "$VEP/t2-captures-free-name.flang" "$VEP/t2-captures-free-name.record"
 prichina "все элементы: Э2 подставляет имя цели, свободное в условии отбора" "подстановка «м» вместо «э» заперта" \
-  "$VEP/e2-captures-free-name.flang" "$VEP/e2-captures-free-name.запись"
+  "$VEP/e2-captures-free-name.flang" "$VEP/e2-captures-free-name.record"
 # ЭЛЕМЕНТЫ ВЫПИСАННОГО СПИСКА И ОТОБРАЖЕНИЯ (ADR-0037 §4.3, задача 4058). Э5 —
 # выписанный список `[Х₁, …, Хн]`: свойство о первом члене посылкой ⟨1⟩ (счётом
 # либо целью), квантор над хвостом посылкой ⟨2⟩; хвост из ничего — «[]», база Э1.
 # Э6 — отображение: свойство образа Ф есть свойство прообраза под предикатом
 # П[э:=Ф]. Обе записи — печать ядра толкованием (зонд zond-k7).
 opyt C "выписанный список литералов — Э1, Выч, Э5 по хвосту (честная, печать ядра)" 0 \
-  "$VE/listed-literals.flang" "$VE/listed-literals.запись"
+  "$VE/listed-literals.flang" "$VE/listed-literals.record"
 opyt C "отображение с предикатом о образе — Т2 о прообразе и Э6 (честная, печать ядра)" 0 \
-  "$VE/map.flang" "$VE/map.запись"
+  "$VE/map.flang" "$VE/map.record"
 # Место вызова `«Ф» от [н]` при собственном `требует н больше 0` вызывающей снято
 # по построению: Э5 (свойство о голове — Т1 из фактов вызывающей) и Э1 о «[]».
 opyt C "место вызова с выписанным списком снято по построению (честная, печать ядра)" 0 \
-  "$VE/call-with-a-listed-list.flang" "$VE/call-with-a-listed-list.запись"
+  "$VE/call-with-a-listed-list.flang" "$VE/call-with-a-listed-list.record"
 prichina "Э5 с подменённым первым членом" "Э5 — шаг 4 заключает" \
-  "$VE/listed-literals.flang" "$VEP/e5-member-swapped.запись"
+  "$VE/listed-literals.flang" "$VEP/e5-member-swapped.record"
 prichina "Э5 назван не над выписанным списком" "Э5 берёт выписанный список" \
-  "$VE/listed-literals.flang" "$VEP/e5-not-listed.запись"
+  "$VE/listed-literals.flang" "$VEP/e5-not-listed.record"
 prichina "Э6 с предикатом не о Ф" "Э6 — шаг 1 заключает" \
-  "$VE/map.flang" "$VEP/e6-foreign-predicate.запись"
+  "$VE/map.flang" "$VEP/e6-foreign-predicate.record"
 prichina "Э6 назван не над отображением" "Э6 берёт отображение" \
-  "$VE/map.flang" "$VEP/e6-not-a-map.запись"
+  "$VE/map.flang" "$VEP/e6-not-a-map.record"
 # СКВОЗНАЯ ПРОГРАММА ADR-0037 §3 (второй порядок над ярлыками функций). Место
 # вызова «Две» `«Применить все к единице» от [функция «Удвоить», функция «Квадрат»]`
 # снимает предусловие `для всех ф из функции: (ф от 1) не меньше 0` так: Э5
@@ -2934,16 +2934,16 @@ prichina "Э6 назван не над отображением" "Э6 берёт
 # объявленному типу, а изъятие объявленного типа сверщик не повторяет и после
 # PR #21 (остаток 9616). Место снимут — здесь станет 0 и 0, прогон скажет сам.
 opyt C "сквозная §3: утверждений 3, доказано 3, место «Две» снято (честная, печать ядра)" 3 \
-  "$VE/through-second-order.flang" "$VE/through-second-order.запись"
+  "$VE/through-second-order.flang" "$VE/through-second-order.record"
 chislo "сквозная §3: на слове ядра только «квадрат неотрицателен» по объявлению (9616)" 1 \
-  "$(naslovo "$VE/through-second-order.flang" "$VE/through-second-order.запись")"
+  "$(naslovo "$VE/through-second-order.flang" "$VE/through-second-order.record")"
 # Те же программы с ярлыком функции без обещания и с обещанием, которое ядро не
 # доказало: место «Две» — FLANG_PRECONDITION_CALL (зонд), ведомости нет; чужая
 # запись к ним — код 1.
 prichina "ярлык без обещания: место «Две» не снято, чужая запись" "запись не от этой программы" \
-  "$VEP/shortcut-without-promise.flang" "$VE/through-second-order.запись"
+  "$VEP/shortcut-without-promise.flang" "$VE/through-second-order.record"
 prichina "обещание ярлыка не доказано: место «Две» не снято, чужая запись" "запись не от этой программы" \
-  "$VEP/shortcut-promise-not-proved.flang" "$VE/through-second-order.запись"
+  "$VEP/shortcut-promise-not-proved.flang" "$VE/through-second-order.record"
 
 say ""
 say "── семья «вложенный квантор» (ADR-0026 §11 п.15, задача 5957): ∀∀ и ∀∃ ──"
@@ -2955,40 +2955,40 @@ say "── семья «вложенный квантор» (ADR-0026 §11 п.1
 # номерами посылок, и сверщик проигрывает их тем же приёмом Э.
 VK=$SEM/nested-quantifier; VKP=$VK/corrupt
 opyt C "вложенный ∀∀: квантор под квантором — Э1, Э1, Т1, Э3, Э3 (честная, печать ядра)" 0 \
-  "$VK/each-with-each.flang" "$VK/each-with-each.запись"
+  "$VK/each-with-each.flang" "$VK/each-with-each.record"
 # ТРЕТИЙ ИСХОД, И ОН ЧЕСТЕН: ядро цель ДОКАЗАЛО (правило «все элементы по
 # построению», внутри — ход Св1), а блок «вывод» не напечатан. Причина названа в
 # ADR-0026 §11 п.15: подстановка записи ищет имя по пробельным краям, а в форме
 # «есть такой м, а именно х, что У» имя элемента стоит словом «х,» — с запятой.
 # Место остаётся на слове ядра, пока подстановка не выучит запятую.
 opyt C "вложенный ∀∃: существование под квантором — доказано ядром, блок не напечатан" 3 \
-  "$VK/each-is-in-the-originals.flang" "$VK/each-is-in-the-originals.запись"
+  "$VK/each-is-in-the-originals.flang" "$VK/each-is-in-the-originals.record"
 # Порчи ОДНОЙ строки честной записи — на каждый шов вложения.
 prichina "вложенный ∀∀: у внутреннего квантора чужое свойство" "м не меньше 0», а нужно" \
-  "$VK/each-with-each.flang" "$VKP/foreign-inner-property.запись"
+  "$VK/each-with-each.flang" "$VKP/foreign-inner-property.record"
 prichina "вложенный ∀∀: базы внутреннего квантора нет" "шаг пропущен или переставлен" \
-  "$VK/each-with-each.flang" "$VKP/no-inner-base.запись"
+  "$VK/each-with-each.flang" "$VKP/no-inner-base.record"
 prichina "вложенный ∀∀: посылки внутреннего Э3 переставлены" "а нужно свойство о прибавленном" \
-  "$VK/each-with-each.flang" "$VKP/premises-swapped.запись"
+  "$VK/each-with-each.flang" "$VKP/premises-swapped.record"
 prichina "вложенный ∀∀: у внешнего Э3 подменён хвост" "а нужно «для всех х из элементы" \
-  "$VK/each-with-each.flang" "$VKP/outer-tail-swapped.запись"
+  "$VK/each-with-each.flang" "$VKP/outer-tail-swapped.record"
 prichina "вложенный ∀∀: Т1 указывает на строку без допущения" "Т1 — строка 4 не есть допущение" \
-  "$VK/each-with-each.flang" "$VKP/assumption-wrong-line.запись"
+  "$VK/each-with-each.flang" "$VKP/assumption-wrong-line.record"
 
 say ""
 say ""
 say "── семья «шаги ведомости» (3464): шаг называет правило и посылки, ядро проверяет ──"
 SHV=$CHEK/tests/families/ledger-steps
-opyt CH "шаги ведомости: честная запись" 0 "$SHV/steps.flang" "$SHV/steps.запись"
-podd "шаги ведомости: чужая посылка" "$SHV/steps.flang" "$SHV/steps.запись" \
+opyt CH "шаги ведомости: честная запись" 0 "$SHV/steps.flang" "$SHV/steps.record"
+podd "шаги ведомости: чужая посылка" "$SHV/steps.flang" "$SHV/steps.record" \
   's/вывод 3 О10 ⟨а не больше 10⟩ из 1 2/вывод 3 О10 ⟨а не больше 10⟩ из 1 1/'
-podd "шаги ведомости: пропущенный шаг" "$SHV/steps.flang" "$SHV/steps.запись" \
+podd "шаги ведомости: пропущенный шаг" "$SHV/steps.flang" "$SHV/steps.record" \
   '/вывод 2 О1 ⟨б не больше 10⟩ строка 6/d'
-podd "шаги ведомости: правило не по форме" "$SHV/steps.flang" "$SHV/steps.запись" \
+podd "шаги ведомости: правило не по форме" "$SHV/steps.flang" "$SHV/steps.record" \
   's/вывод 3 О10 /вывод 3 Н5 /'
-podd "шаги ведомости: посылка Н3 мимо объявления довода" "$SHV/steps.flang" "$SHV/steps.запись" \
+podd "шаги ведомости: посылка Н3 мимо объявления довода" "$SHV/steps.flang" "$SHV/steps.record" \
   's/вывод 1 Н3 ⟨первое не меньше 0⟩ строка 22/вывод 1 Н3 ⟨первое не меньше 0⟩ строка 23/'
-podd "шаги ведомости: лист Н1 выдан за опору на строку" "$SHV/steps.flang" "$SHV/steps.запись" \
+podd "шаги ведомости: лист Н1 выдан за опору на строку" "$SHV/steps.flang" "$SHV/steps.record" \
   's/вывод 1 Н1 ⟨0 не меньше 0⟩ сам/вывод 1 Н1 ⟨0 не меньше 0⟩ строка 41/'
 
 say "── семья «по-объявлению» (9616): места «по объявлению» переигрываются печатью ядра ──"
@@ -3017,53 +3017,53 @@ NAF=flang/test/fixtures/nachalo-po-postroeniyu-chestnaya.flang
 RSF=flang/test/fixtures/poddelka-razbor-spiska.flang
 RVF=flang/test/fixtures/poddelka-razbor-vnutrennim.flang
 OMF=flang/proof/map/order.flang
-opyt C "по-объявлению: оговорка о конечности и прибавка-имя у О6 и О5 (честная, печать ядра)" 0 "$OAF" "$PO/order-arithmetic.запись"
-opyt C "по-объявлению: оговорка и прибавка неотрицательного довода — Кон3 → О2 → Н3, Пред1, П3 → О6 → Разв2 → Кон2 (честная, печать ядра)" 0 "$OMF" "$PO/order.запись"
-opyt C "по-объявлению: точный текст начинается точной приставкой — Ч5 → Разв2 (честная, печать ядра)" 0 "$NAF" "$PO/prefix.запись"
-opyt C "по-объявлению: разбор выписанного списка — Выч → Разв1, три места (честная, печать ядра)" 0 "$RSF" "$PO/list-breakdown.запись"
-opyt C "по-объявлению: тело в несколько строк — развернуть, два деления, выборы (честная, печать ядра)" 0 "$RVF" "$PO/breakdown-by-inner-condition.запись"
+opyt C "по-объявлению: оговорка о конечности и прибавка-имя у О6 и О5 (честная, печать ядра)" 0 "$OAF" "$PO/order-arithmetic.record"
+opyt C "по-объявлению: оговорка и прибавка неотрицательного довода — Кон3 → О2 → Н3, Пред1, П3 → О6 → Разв2 → Кон2 (честная, печать ядра)" 0 "$OMF" "$PO/order.record"
+opyt C "по-объявлению: точный текст начинается точной приставкой — Ч5 → Разв2 (честная, печать ядра)" 0 "$NAF" "$PO/prefix.record"
+opyt C "по-объявлению: разбор выписанного списка — Выч → Разв1, три места (честная, печать ядра)" 0 "$RSF" "$PO/list-breakdown.record"
+opyt C "по-объявлению: тело в несколько строк — развернуть, два деления, выборы (честная, печать ядра)" 0 "$RVF" "$PO/breakdown-by-inner-condition.record"
 # Место снято именно этим блоком, а не соседним приёмом: число выводов и число
 # мест на слове ядра — снятые прогоном, не кодом (находка 9992).
 for z in order-arithmetic prefix list-breakdown breakdown-by-inner-condition order; do
   case $z in order-arithmetic) I=$OAF; zh=5; ns=0;; prefix) I=$NAF; zh=1; ns=0;; order) I=$OMF; zh=1; ns=0;;
     list-breakdown) I=$RSF; zh=6; ns=0;; *) I=$RVF; zh=0; ns=0;; esac
-  set +e; v=$("$C" "$I" "$PO/$z.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
+  set +e; v=$("$C" "$I" "$PO/$z.record" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
   [ "${v:-0}" = "$zh" ] || { say "ПРОВАЛ по-объявлению: $z — выводов проиграно ждали $zh, вышло ${v:-«числа нет»}"; BAD=$((BAD+1)); }
-  chislo "по-объявлению: $z" "$ns" "$(naslovo "$I" "$PO/$z.запись")"
+  chislo "по-объявлению: $z" "$ns" "$(naslovo "$I" "$PO/$z.record")"
 done
-set +e; v=$("$C" "$RVF" "$PO/breakdown-by-inner-condition.запись" 2>&1 | sed -n 's/.*(ходов проверено \([0-9]*\)).*/\1/p'); set -e
+set +e; v=$("$C" "$RVF" "$PO/breakdown-by-inner-condition.record" 2>&1 | sed -n 's/.*(ходов проверено \([0-9]*\)).*/\1/p'); set -e
 [ "${v:-0}" = 23 ] || { say "ПРОВАЛ по-объявлению: razbor-vnutrennim — ходов проверено ждали 23, вышло ${v:-«числа нет»}"; BAD=$((BAD+1)); }
 # Порча ОДНОЙ строки честной записи — на каждый вид отказа своя названная причина.
-prichina "Кон2: гипотеза об оговорке другого терма" "Кон3 — шаг 1 заключает" "$OAF" "$PO/corrupt/finite2-another-term.запись"
-podd_p "Кон2: снятие указывает не на вывод сути, а на порядок терма с собой" "под оговоркой выведено «х не больше х» (шаг 3)" "$OAF" "$PO/order-arithmetic.запись" \
+prichina "Кон2: гипотеза об оговорке другого терма" "Кон3 — шаг 1 заключает" "$OAF" "$PO/corrupt/finite2-another-term.record"
+podd_p "Кон2: снятие указывает не на вывод сути, а на порядок терма с собой" "под оговоркой выведено «х не больше х» (шаг 3)" "$OAF" "$PO/order-arithmetic.record" \
   's/или ( х не больше результат )⟩ из 1 4/или ( х не больше результат )⟩ из 1 3/'
-podd_p "Кон2: первое основание — не гипотеза" "шаг 2 не гипотеза оговорки" "$OAF" "$PO/order-arithmetic.запись" \
+podd_p "Кон2: первое основание — не гипотеза" "шаг 2 не гипотеза оговорки" "$OAF" "$PO/order-arithmetic.record" \
   's/или ( х не больше результат )⟩ из 1 4/или ( х не больше результат )⟩ из 2 4/'
-podd_p "Ч5: собранный текст не начинается приставкой" "собранный текст «*1» не начинается с «*2»" "$NAF" "$PO/prefix.запись" \
+podd_p "Ч5: собранный текст не начинается приставкой" "собранный текст «*1» не начинается с «*2»" "$NAF" "$PO/prefix.record" \
   's/длина \[первый, второй\] ) ) ) начинается с "\*2"⟩ сам/длина [первый] ) ) ) начинается с "*2"⟩ сам/'
-podd_p "Ч5: слева не точный текст, а имена" "Ч5 берёт слева ТОЧНЫЙ текст" "$NAF" "$PO/prefix.запись" \
+podd_p "Ч5: слева не точный текст, а имена" "Ч5 берёт слева ТОЧНЫЙ текст" "$NAF" "$PO/prefix.record" \
   's/вывод 1 Ч5 ⟨( соединить "\*" с ( к строке ( длина \[первый, второй\] ) ) ) начинается с "\*2"⟩ сам/вывод 1 Ч5 ⟨( соединить первый с второй ) начинается с "*2"⟩ сам/'
-podd_p "Разв1: строка не разбора" "строка 139 не есть строка «разбор Л»" "$RSF" "$PO/list-breakdown.запись" \
+podd_p "Разв1: строка не разбора" "строка 139 не есть строка «разбор Л»" "$RSF" "$PO/list-breakdown.record" \
   's/из 1 строка 140/из 1 строка 139/'
-podd_p "Разв1: хвост выписанного подменён головой" "а шаг 1 заключает «( длина [5] ) равен 1»" "$RSF" "$PO/list-breakdown.запись" \
+podd_p "Разв1: хвост выписанного подменён головой" "а шаг 1 заключает «( длина [5] ) равен 1»" "$RSF" "$PO/list-breakdown.record" \
   's/Выч ⟨( длина \[основа\] ) равен 1⟩ сам/Выч ⟨( длина [5] ) равен 1⟩ сам/'
-podd_p "Разв1: ветвь звена выдана за ветвь пусто (строка чужого разбора)" "строки 140 в функции «Звено берёт ветвь звена» нет" "$RSF" "$PO/list-breakdown.запись" \
+podd_p "Разв1: ветвь звена выдана за ветвь пусто (строка чужого разбора)" "строки 140 в функции «Звено берёт ветвь звена» нет" "$RSF" "$PO/list-breakdown.record" \
   '0,/из 1 строка 156/s//из 1 строка 140/'
-podd_p "многострочное тело: записанный терм не сходится со строками исходника" "развёртка «Ограничить»: запись несёт тело" "$RVF" "$PO/breakdown-by-inner-condition.запись" \
+podd_p "многострочное тело: записанный терм не сходится со строками исходника" "развёртка «Ограничить»: запись несёт тело" "$RVF" "$PO/breakdown-by-inner-condition.record" \
   's/строка 45 ⟨если число меньше снизу то снизу иначе/строка 45 ⟨если число меньше снизу то сверху иначе/'
-podd_p "многострочное тело: второе деление по чужому условию" "«число больше снизу» не стоит в цели условием" "$RVF" "$PO/breakdown-by-inner-condition.запись" \
+podd_p "многострочное тело: второе деление по чужому условию" "«число больше снизу» не стоит в цели условием" "$RVF" "$PO/breakdown-by-inner-condition.record" \
   's/ход 8 деление ⟨число больше сверху⟩/ход 8 деление ⟨число больше снизу⟩/'
-podd_p "О6: потолок прибавки-имени указывает на её дно" "О6 — прибавка не целый литерал и не имя в отрезке шагов M и K" "$OAF" "$PO/order-arithmetic.запись" \
+podd_p "О6: потолок прибавки-имени указывает на её дно" "О6 — прибавка не целый литерал и не имя в отрезке шагов M и K" "$OAF" "$PO/order-arithmetic.record" \
   's/О6 ⟨а не больше ( а плюс б )⟩ из 2 3 5/О6 ⟨а не больше ( а плюс б )⟩ из 2 3 3/'
-podd_p "О6: дно прибавки-имени указывает на порядок" "О6 — прибавка не целый литерал и не имя в отрезке шагов M и K" "$OAF" "$PO/order-arithmetic.запись" \
+podd_p "О6: дно прибавки-имени указывает на порядок" "О6 — прибавка не целый литерал и не имя в отрезке шагов M и K" "$OAF" "$PO/order-arithmetic.record" \
   's/О6 ⟨б не больше ( а плюс б )⟩ из 2 3 5/О6 ⟨б не больше ( а плюс б )⟩ из 2 2 5/'
-podd_p "О6: потолок прибавки взят из шага впереди" "основание «из 7» указывает не на прежний шаг этого блока" "$OAF" "$PO/order-arithmetic.запись" \
+podd_p "О6: потолок прибавки взят из шага впереди" "основание «из 7» указывает не на прежний шаг этого блока" "$OAF" "$PO/order-arithmetic.record" \
   's/О6 ⟨а не больше ( а плюс б )⟩ из 2 3 5/О6 ⟨а не больше ( а плюс б )⟩ из 2 3 7/'
-podd_p "О5: потолок общей прибавки указывает на её представимость" "у «общее плюс о» и «общее плюс п» нет либо шаг 1 заключает не «о не больше п»" "$OAF" "$PO/order-arithmetic.запись" \
+podd_p "О5: потолок общей прибавки указывает на её представимость" "у «общее плюс о» и «общее плюс п» нет либо шаг 1 заключает не «о не больше п»" "$OAF" "$PO/order-arithmetic.record" \
   's/О5 ⟨( общее плюс о ) не больше ( общее плюс п )⟩ из 1 2 4/О5 ⟨( общее плюс о ) не больше ( общее плюс п )⟩ из 1 2 3/'
-podd_p "О5: порядок взят не из гипотезы, а из дна" "шаг 2 заключает не «общее не меньше 0»" "$OAF" "$PO/order-arithmetic.запись" \
+podd_p "О5: порядок взят не из гипотезы, а из дна" "шаг 2 заключает не «общее не меньше 0»" "$OAF" "$PO/order-arithmetic.record" \
   's/О5 ⟨( общее плюс о ) не больше ( общее плюс п )⟩ из 1 2 4/О5 ⟨( общее плюс о ) не больше ( общее плюс п )⟩ из 2 2 4/'
-podd_p "О6 под оговоркой: дно прибавки указывает на порядок" "О6 — прибавка не целый литерал и не имя в отрезке шагов M и K" "$OMF" "$PO/order.запись" \
+podd_p "О6 под оговоркой: дно прибавки указывает на порядок" "О6 — прибавка не целый литерал и не имя в отрезке шагов M и K" "$OMF" "$PO/order.record" \
   's/О6 ⟨н не больше ( н плюс добавка )⟩ из 3 4 6/О6 ⟨н не больше ( н плюс добавка )⟩ из 3 3 6/'
 
 say "── семья «снятие предусловия» (5332, 6438, ADR-0038): место вызова, цель и вывод ──"
@@ -3074,23 +3074,23 @@ say "── семья «снятие предусловия» (5332, 6438, ADR-
 # рукотворная (ядро такой программе записи не печатает).
 PD=$CHEK/tests/families/precondition-discharge
 opyt C "снятие: три подачи довода — Н1, Т1, факт по свойству (честная, печать ядра)" 0 \
-  "$PD/three-feeds.flang" "$PD/three-feeds.запись"
-podd "снятие: посылка Т1 подменена требованием вызванной" "$PD/three-feeds.flang" "$PD/three-feeds.запись" \
+  "$PD/three-feeds.flang" "$PD/three-feeds.record"
+podd "снятие: посылка Т1 подменена требованием вызванной" "$PD/three-feeds.flang" "$PD/three-feeds.record" \
   's/вывод 1 Т1 ⟨х не меньше 0⟩ строка 42/вывод 1 Т1 ⟨х не меньше 0⟩ строка 17/'
-podd "снятие: заключение Н1 подменено" "$PD/three-feeds.flang" "$PD/three-feeds.запись" \
+podd "снятие: заключение Н1 подменено" "$PD/three-feeds.flang" "$PD/three-feeds.record" \
   's/вывод 1 Н1 ⟨1 не меньше 0⟩ сам/вывод 1 Н1 ⟨2 не меньше 0⟩ сам/'
-podd "снятие: чужое место — строка вызова другой функции" "$PD/three-feeds.flang" "$PD/three-feeds.запись" \
+podd "снятие: чужое место — строка вызова другой функции" "$PD/three-feeds.flang" "$PD/three-feeds.record" \
   's/зовёт «Корень из неотрицательного» строка 37 /зовёт «Корень из неотрицательного» строка 46 /'
-podd "снятие: блок места выброшен — запись молчит о вызове" "$PD/three-feeds.flang" "$PD/three-feeds.запись" \
+podd "снятие: блок места выброшен — запись молчит о вызове" "$PD/three-feeds.flang" "$PD/three-feeds.record" \
   '/^снятие «довод неотрицателен» функции «Корень из единицы»/,/^конец снятия/d'
 opyt P "снятие: обещание вызванной при неоплаченном «требует» (рукотворная)" 1 \
-  "$PD/unpaid-callee.flang" "$PD/unpaid-callee.запись"
+  "$PD/unpaid-callee.flang" "$PD/unpaid-callee.record"
 # Копия печати ядра дерева для программы корпуса: в корпусе — печать семени без
 # блоков снятия (сменится перепечаткой, задача 5190), здесь — та же программа
 # после этой работы: рекурсивный вызов снят своим `требует` (Т1), вызов из
 # «Высоты» — литералом (Н1).
 opyt C "снятие: precondition.flang печатью ядра дерева — Т1 и Н1" 0 \
-  flang/proof/examples/precondition.flang "$PD/precondition-examples.запись"
+  flang/proof/examples/precondition.flang "$PD/precondition-examples.record"
 
 
 say "── семья «противоречие» (6812, ADR-0042 §2): пара несовместимых допущений — шаг Пр1 ──"
@@ -3100,23 +3100,23 @@ say "── семья «противоречие» (6812, ADR-0042 §2): пар
 # ядра, снятая зондом; в корпус они лягут перепечаткой (5190).
 PRT=$SEM/contradiction
 PRTF=flang/test/fixtures/poddelka-protivorechie.flang
-opyt C "противоречие: poddelka-protivorechie — Т1, Т1, Пр1 (честная, печать ядра)" 0 "$PRTF" "$PRT/contradiction.запись"
-set +e; v=$("$C" "$PRTF" "$PRT/contradiction.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
+opyt C "противоречие: poddelka-protivorechie — Т1, Т1, Пр1 (честная, печать ядра)" 0 "$PRTF" "$PRT/contradiction.record"
+set +e; v=$("$C" "$PRTF" "$PRT/contradiction.record" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
 [ "${v:-0}" = 1 ] || { say "ПРОВАЛ противоречие: выводов проиграно ждали 1, вышло ${v:-«числа нет»}"; BAD=$((BAD+1)); }
-chislo "противоречие: poddelka-protivorechie" 0 "$(naslovo "$PRTF" "$PRT/contradiction.запись")"
+chislo "противоречие: poddelka-protivorechie" 0 "$(naslovo "$PRTF" "$PRT/contradiction.record")"
 # abilities У23 — та же печать в записи abilities (она лежит в семье «мера», там и У3).
-opyt C "противоречие: abilities У23 — Т1, Т1, Пр1 (честная, печать ядра)" 0 flang/proof/map/abilities.flang "$SEM/measure/abilities.запись"
-podd_p "Пр1 в abilities: пара переставлена" "не пара «А меньше Б», «Б не больше А»" flang/proof/map/abilities.flang "$SEM/measure/abilities.запись" \
+opyt C "противоречие: abilities У23 — Т1, Т1, Пр1 (честная, печать ядра)" 0 flang/proof/map/abilities.flang "$SEM/measure/abilities.record"
+podd_p "Пр1 в abilities: пара переставлена" "не пара «А меньше Б», «Б не больше А»" flang/proof/map/abilities.flang "$SEM/measure/abilities.record" \
   's/Пр1 ⟨результат не меньше 0⟩ из 1 2/Пр1 ⟨результат не меньше 0⟩ из 2 1/'
-podd_p "Пр1: посылки переставлены — первая нестрогая" "не пара «А меньше Б», «Б не больше А»" "$PRTF" "$PRT/contradiction.запись" \
+podd_p "Пр1: посылки переставлены — первая нестрогая" "не пара «А меньше Б», «Б не больше А»" "$PRTF" "$PRT/contradiction.record" \
   's/Пр1 ⟨1 равен 2⟩ из 1 2/Пр1 ⟨1 равен 2⟩ из 2 1/'
-podd_p "Пр1: обе посылки — одна и та же строгая" "не пара «А меньше Б», «Б не больше А»" "$PRTF" "$PRT/contradiction.запись" \
+podd_p "Пр1: обе посылки — одна и та же строгая" "не пара «А меньше Б», «Б не больше А»" "$PRTF" "$PRT/contradiction.record" \
   's/Пр1 ⟨1 равен 2⟩ из 1 2/Пр1 ⟨1 равен 2⟩ из 1 1/'
-podd_p "Пр1: основание — строка, а не пара шагов" "основание обязано быть «из N M»" "$PRTF" "$PRT/contradiction.запись" \
+podd_p "Пр1: основание — строка, а не пара шагов" "основание обязано быть «из N M»" "$PRTF" "$PRT/contradiction.record" \
   's/Пр1 ⟨1 равен 2⟩ из 1 2/Пр1 ⟨1 равен 2⟩ строка 52/'
-podd_p "Пр1: вывод дописан к совместной строгой паре «Врёт противоречием»" "не пара «А меньше Б», «Б не больше А»" "$PRTF" "$PRT/contradiction.запись" \
+podd_p "Пр1: вывод дописан к совместной строгой паре «Врёт противоречием»" "не пара «А меньше Б», «Б не больше А»" "$PRTF" "$PRT/contradiction.record" \
   '/^утверждение «что угодно из совместимых строгих»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «несовместимые допущения»\n  по объявлению нет\n    вывод цель ⟨1 равен 2⟩\n    вывод 1 Т1 ⟨первое меньше второе⟩ строка 28\n    вывод 2 Т1 ⟨первое меньше ( второе плюс 1 )⟩ строка 29\n    вывод 3 Пр1 ⟨1 равен 2⟩ из 1 2\n    вывод конец/}'
-podd_p "Пр1: вывод дописан к двум нестрогим «Врёт двумя нестрогими»" "не пара «А меньше Б», «Б не больше А»" "$PRTF" "$PRT/contradiction.запись" \
+podd_p "Пр1: вывод дописан к двум нестрогим «Врёт двумя нестрогими»" "не пара «А меньше Б», «Б не больше А»" "$PRTF" "$PRT/contradiction.record" \
   '/^утверждение «что угодно из двух нестрогих»/,/^конец утверждения/{s/^  вердикт нет вердикта$/  вердикт доказано/;s/^  теоремы нет$/  теоремы нет\n  правило «несовместимые допущения»\n  по объявлению нет\n    вывод цель ⟨1 равен 2⟩\n    вывод 1 Т1 ⟨первое не больше второе⟩ строка 39\n    вывод 2 Т1 ⟨второе не больше первое⟩ строка 40\n    вывод 3 Пр1 ⟨1 равен 2⟩ из 1 2\n    вывод конец/}'
 say "── семья «мера» (6432, ADR-0042 §2): длина прибавленного списка и свёртки — шаги М1, М2 ──"
 # Ядро доказывает меру по построению давно (правило 4), а три места корпуса стояли на
@@ -3127,53 +3127,53 @@ MRA=$SEM/measure
 SOF=flang/test/fixtures/poddelka-strict-order.flang
 SVF=flang/test/fixtures/poddelka-svyortka-shagom.flang
 ABF=flang/proof/map/abilities.flang
-opyt C "мера: poddelka-strict-order — Н4, Д6, Д3, С3, М1, Разв2 (честная, печать ядра)" 0 "$SOF" "$MRA/strict-order.запись"
-opyt C "мера: abilities У3 — Выч, М2, Разв2 (честная, печать ядра)" 0 "$ABF" "$MRA/abilities.запись"
-opyt C "мера: poddelka-svyortka-shagom — Выч, М2 с шагом-вызовом, Разв3 (честная, печать ядра)" 0 "$SVF" "$MRA/fold-by-step.запись"
+opyt C "мера: poddelka-strict-order — Н4, Д6, Д3, С3, М1, Разв2 (честная, печать ядра)" 0 "$SOF" "$MRA/strict-order.record"
+opyt C "мера: abilities У3 — Выч, М2, Разв2 (честная, печать ядра)" 0 "$ABF" "$MRA/abilities.record"
+opyt C "мера: poddelka-svyortka-shagom — Выч, М2 с шагом-вызовом, Разв3 (честная, печать ядра)" 0 "$SVF" "$MRA/fold-by-step.record"
 for z in strict-order abilities fold-by-step; do
   case $z in strict-order) I=$SOF; zh=4;; fold-by-step) I=$SVF; zh=1;; *) I=$ABF; zh=18;; esac
-  set +e; v=$("$C" "$I" "$MRA/$z.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
+  set +e; v=$("$C" "$I" "$MRA/$z.record" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
   [ "${v:-0}" = "$zh" ] || { say "ПРОВАЛ мера: $z — выводов проиграно ждали $zh, вышло ${v:-«числа нет»}"; BAD=$((BAD+1)); }
-  chislo "мера: $z" 0 "$(naslovo "$I" "$MRA/$z.запись")"
+  chislo "мера: $z" 0 "$(naslovo "$I" "$MRA/$z.record")"
 done
-podd_p "М1: мера чужого списка" "М1 — у «длина ( добавить 0 к хвост )» мера не та" "$SOF" "$MRA/strict-order.запись" \
+podd_p "М1: мера чужого списка" "М1 — у «длина ( добавить 0 к хвост )» мера не та" "$SOF" "$MRA/strict-order.record" \
   's/М1 ⟨( длина ( добавить 0 к элементы ) ) больше 0⟩ из 4/М1 ⟨( длина ( добавить 0 к хвост ) ) больше 0⟩ из 4/'
-podd_p "М1: посылка другого отношения" "не посылка шага 3 с одной стороной, переписанной мерой" "$SOF" "$MRA/strict-order.запись" \
+podd_p "М1: посылка другого отношения" "не посылка шага 3 с одной стороной, переписанной мерой" "$SOF" "$MRA/strict-order.record" \
   's/М1 ⟨( длина ( добавить 0 к элементы ) ) больше 0⟩ из 4/М1 ⟨( длина ( добавить 0 к элементы ) ) больше 0⟩ из 3/'
-podd_p "М2: шаг не растит накопитель" "мера не та или шаг свёртки растит не ровно на один" "$ABF" "$MRA/abilities.запись" \
+podd_p "М2: шаг не растит накопитель" "мера не та или шаг свёртки растит не ровно на один" "$ABF" "$MRA/abilities.record" \
   's/→ добавить эл к акк )/→ добавить эл к эл )/'
-podd_p "М2: начало не пусто" "мера не та или шаг свёртки растит не ровно на один" "$ABF" "$MRA/abilities.запись" \
+podd_p "М2: начало не пусто" "мера не та или шаг свёртки растит не ровно на один" "$ABF" "$MRA/abilities.record" \
   's/начиная с пустой список как акк и эл → добавить эл к акк/начиная с элементы как акк и эл → добавить эл к акк/'
-podd_p "М2: шаг-вызов без доказанного «плюс 1» (Удвоить)" "мера не та или шаг свёртки растит не ровно на один" "$SVF" "$MRA/fold-by-step.запись" \
+podd_p "М2: шаг-вызов без доказанного «плюс 1» (Удвоить)" "мера не та или шаг свёртки растит не ровно на один" "$SVF" "$MRA/fold-by-step.record" \
   's/→ «Дописать нуль» от акк )/→ «Удвоить» от акк )/'
 say "── семья «развёртка» (6432, ADR-0042 §2): вызов, поле выписанного конструктора, разбор суммы в цели ──"
 RZV=$SEM/unfolding
 EQF=flang/proof/map/equality.flang
 TYF=flang/proof/map/types.flang
-opyt C "развёртка: equality Р1 — Выч, К↑, Разв3 ×3 (честная, печать ядра)" 0 "$EQF" "$RZV/equality.запись"
-opyt C "развёртка: types Т1 — Выч, Разв1 для суммы, Разв2 (честная, печать ядра)" 0 "$TYF" "$RZV/types.запись"
-opyt C "развёртка: круг через коробку допущением — Т1, К↑, Разв3 ×3 (честная, рукотворная: база Т1, и Lean судит К↑ и Разв3)" 0 "$RZV/box-round-trip-by-assumption.flang" "$RZV/box-round-trip-by-assumption.запись"
+opyt C "развёртка: equality Р1 — Выч, К↑, Разв3 ×3 (честная, печать ядра)" 0 "$EQF" "$RZV/equality.record"
+opyt C "развёртка: types Т1 — Выч, Разв1 для суммы, Разв2 (честная, печать ядра)" 0 "$TYF" "$RZV/types.record"
+opyt C "развёртка: круг через коробку допущением — Т1, К↑, Разв3 ×3 (честная, рукотворная: база Т1, и Lean судит К↑ и Разв3)" 0 "$RZV/box-round-trip-by-assumption.flang" "$RZV/box-round-trip-by-assumption.record"
 for z in equality types; do
   case $z in equality) I=$EQF; zh=2;; *) I=$TYF; zh=1;; esac
-  set +e; v=$("$C" "$I" "$RZV/$z.запись" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
+  set +e; v=$("$C" "$I" "$RZV/$z.record" 2>&1 | sed -n 's/.*Выводов факта о типе проиграно заново \([0-9]*\) .*/\1/p'); set -e
   [ "${v:-0}" = "$zh" ] || { say "ПРОВАЛ развёртка: $z — выводов проиграно ждали $zh, вышло ${v:-«числа нет»}"; BAD=$((BAD+1)); }
-  chislo "развёртка: $z" 0 "$(naslovo "$I" "$RZV/$z.запись")"
+  chislo "развёртка: $z" 0 "$(naslovo "$I" "$RZV/$z.record")"
 done
-podd_p "К↑: поле равно другому" "К↑ — поле «внутри» конструктора равно «7», а стоит «н»" "$EQF" "$RZV/equality.запись" \
+podd_p "К↑: поле равно другому" "К↑ — поле «внутри» конструктора равно «7», а стоит «н»" "$EQF" "$RZV/equality.record" \
   's/вывод 2 К↑ ⟨( вариант «Коробка» с «внутри» равным н )/вывод 2 К↑ ⟨( вариант «Коробка» с «внутри» равным 7 )/'
-podd_p "К↑: поле неизвестного значения" "не выписанный конструктор с полем «внутри»" "$EQF" "$RZV/equality.запись" \
+podd_p "К↑: поле неизвестного значения" "не выписанный конструктор с полем «внутри»" "$EQF" "$RZV/equality.record" \
   's/вывод 2 К↑ ⟨( вариант «Коробка» с «внутри» равным н ) .«внутри» равен н⟩/вывод 2 К↑ ⟨( «Положить в коробку» от н ) .«внутри» равен н⟩/'
-podd_p "Разв3: довод не на месте параметра" "ни один вызов «Положить в коробку»" "$EQF" "$RZV/equality.запись" \
+podd_p "Разв3: довод не на месте параметра" "ни один вызов «Положить в коробку»" "$EQF" "$RZV/equality.record" \
   's/вывод 3 Разв3 ⟨( «Положить в коробку» от н )/вывод 3 Разв3 ⟨( «Положить в коробку» от 7 )/'
-podd_p "Разв3: строка не тело вызванной" "строка 20 не есть тело функции «Положить в коробку» одной строкой" "$EQF" "$RZV/equality.запись" \
+podd_p "Разв3: строка не тело вызванной" "строка 20 не есть тело функции «Положить в коробку» одной строкой" "$EQF" "$RZV/equality.record" \
   's/из 2 строка 21/из 2 строка 20/'
-podd_p "Разв3: своё тело не даёт посылки" "тело на месте «результат» не даёт посылки" "$EQF" "$RZV/equality.запись" \
+podd_p "Разв3: своё тело не даёт посылки" "тело на месте «результат» не даёт посылки" "$EQF" "$RZV/equality.record" \
   's/вывод 5 Разв3 ⟨результат равен н⟩ из 4 строка/вывод 5 Разв3 ⟨результат равен н⟩ из 3 строка/'
-podd_p "Разв1: ветвь чужого варианта" "Разв1 — ветвь «Провал» даёт «нет»" "$TYF" "$RZV/types.запись" \
+podd_p "Разв1: ветвь чужого варианта" "Разв1 — ветвь «Провал» даёт «нет»" "$TYF" "$RZV/types.record" \
   's/вывод 2 Разв1 ⟨разбор ( вариант «Успех» с «значение» равным н )/вывод 2 Разв1 ⟨разбор ( вариант «Провал» с «беда» равным н )/'
-podd_p "Разв1: поле подменено" "Разв1 — ветвь «Успех» даёт «7 равен н»" "$TYF" "$RZV/types.запись" \
+podd_p "Разв1: поле подменено" "Разв1 — ветвь «Успех» даёт «7 равен н»" "$TYF" "$RZV/types.record" \
   's/вывод 2 Разв1 ⟨разбор ( вариант «Успех» с «значение» равным н )/вывод 2 Разв1 ⟨разбор ( вариант «Успех» с «значение» равным 7 )/'
-podd_p "Разв1: разбирается не выписанный конструктор" "Разв1 «из N» берёт разбор выписанного конструктора" "$TYF" "$RZV/types.запись" \
+podd_p "Разв1: разбирается не выписанный конструктор" "Разв1 «из N» берёт разбор выписанного конструктора" "$TYF" "$RZV/types.record" \
   's/вывод 2 Разв1 ⟨разбор ( вариант «Успех» с «значение» равным н )/вывод 2 Разв1 ⟨разбор результат/'
 say "── захват при развёртке (аудит 2844): Разв2 под связывателем цели, Разв3 доводами по одному ──"
 # Две ложные записи и честная к ним же — все три об одном месте. Разв2 ставил
@@ -3188,11 +3188,11 @@ say "── захват при развёртке (аудит 2844): Разв2 
 # и она тут сторож ложной тревоги, а не украшение.
 A2844=$PROG/audit-2844
 prichina "2844 Разв2: тело под связывателем цели" "подстановка захватила бы имя" \
-  "$A2844/unfold2-itself.flang" "$ZAP/corpus/poddelka-razv2-sebya.запись"
+  "$A2844/unfold2-itself.flang" "$ZAP/corpus/poddelka-razv2-sebya.record"
 prichina "2844 Разв3: доводы по одному дают «а минус а»" "не развёртывается в посылку шага 1 «( а минус а ) равен 0»" \
-  "$A2844/unfold3-difference.flang" "$ZAP/corpus/poddelka-razv3-raznost.запись"
+  "$A2844/unfold3-difference.flang" "$ZAP/corpus/poddelka-razv3-raznost.record"
 opyt C "2844 опора: честная развёртка «Разность» от б и а под требованием «( б минус а ) равен 0»" 0 \
-  "$A2844/unfold3-control-honest.flang" "$ZAP/audit-2844/unfold3-control-honest.запись"
+  "$A2844/unfold3-control-honest.flang" "$ZAP/audit-2844/unfold3-control-honest.record"
 say "── ИСХОДЫ ПО ВСЕМ ПРОБАМ (их три, а не два) ──"
 say "  ПРОВЕРЕНО    (код 0): $N0"
 say "  НЕ ПРОВЕРЕНО (код 3): $N3"

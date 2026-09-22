@@ -84,7 +84,7 @@ FLANG_TRACE='У1 сумма читается в обратном порядке'
 требование «У1 сумма читается в обратном порядке»
   код:     flang/proof/map/abilities.flang:29, функция «Сумма наоборот»
   примеры: «два и три»
-  запись:  flang/proof/checker/tests/records/corpus/abilities.запись — вердикт доказано
+  запись:  flang/proof/checker/tests/records/corpus/abilities.record — вердикт доказано
 
 FLANG_TRACE='flang/proof/map/abilities.flang:34' ./ярлык прослеживаемость:строка
 строка flang/proof/map/abilities.flang:34 лежит в функции «Сумма наоборот» (объявлена в строке 26)

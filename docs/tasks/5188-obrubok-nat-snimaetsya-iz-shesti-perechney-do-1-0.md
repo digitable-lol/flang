@@ -38,7 +38,7 @@
 | `flang/self/emit-js.flang:2807` | список числовых имён |
 | `flang/scripts/word-guard.fscript:478`, `word-guard.mjs:202` | таблица типов с дном |
 | `flang/scripts/emptiness-guard.fscript:410,411,421` | список пород с нулём |
-| `flang/proof/чекер/сверщик.c` | `dovod_tipa`, `nat_dovod` — узнаёт оба имени с `60b3e2d9` |
+| `flang/proof/checker/checker.c` | `dovod_tipa`, `nat_dovod` — узнаёт оба имени с `60b3e2d9` |
 | `flang/proof/examples/corpus-nat-names.flang` | корпус «шесть написаний» |
 
 ## Чего снятие потребует, кроме удаления слова

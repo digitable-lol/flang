@@ -33,7 +33,7 @@ flowchart TD
 ```
 
 The proof kernel is part of the compiler. The checker
-(`flang/proof/чекер/сверщик.c`) is a **separate program** that does not take the
+(`flang/proof/checker/checker.c`) is a **separate program** that does not take the
 compiler's word for anything: it reads the certificate and replays every
 inference step from scratch. That separation is why "proved" here means more
 than "the compiler said so".

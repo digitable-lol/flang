@@ -956,7 +956,7 @@ itself.
 
 `из строки N` is a line of the source the fact comes from (a precondition, the
 body); `из K` and `из K L` are the numbers of earlier steps of the same theorem.
-The rule names come from the file `flang/proof/ПРАВИЛА-ВЫВОДА.tsv`.
+The rule names come from the file `flang/proof/tables/inference-rules.tsv`.
 
 What it gives: such steps used to be anonymous, and the independent checker
 counted them as taken on the kernel's word. A named step it replays.

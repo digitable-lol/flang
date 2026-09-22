@@ -753,10 +753,10 @@
 
 тотальная функция «Каталоги набора»
   возвращает список строки
-  обеспечивает «записи перечисляются первыми, чтобы названные ими исходники успели в очередь» (элемент 1 в результат) равен "flang/proof/чекер/пробы/записи/корпус"
+  обеспечивает «записи перечисляются первыми, чтобы названные ими исходники успели в очередь» (элемент 1 в результат) равен "flang/proof/checker/tests/records/corpus"
   пример «Четыре каталога»
-    ожидается ["flang/proof/чекер/пробы/записи/корпус", "flang/proof/examples", "flang/test/fixtures", "flang/proof/map"]
-  ["flang/proof/чекер/пробы/записи/корпус", "flang/proof/examples", "flang/test/fixtures", "flang/proof/map"]
+    ожидается ["flang/proof/checker/tests/records/corpus", "flang/proof/examples", "flang/test/fixtures", "flang/proof/map"]
+  ["flang/proof/checker/tests/records/corpus", "flang/proof/examples", "flang/test/fixtures", "flang/proof/map"]
 
 тотальная функция «Файлы каталога»
   принимает каталог: строка, имена: список строки
@@ -788,19 +788,19 @@
   обеспечивает «первым делом читается файл долга» результат равен (вариант «Ждём каталог» с режим равным режим и каталог равным (элемент 1 в («Каталоги набора»)) и каталоги равным ["flang/proof/examples", "flang/test/fixtures", "flang/proof/map"] и файлы равным [(«Файл долга»)])
   пример «Перепись начинается с каталога записей»
     дано режим равно вариант «Перепись»
-    ожидается вариант «Ждём каталог» с режим равным (вариант «Перепись») и каталог равным "flang/proof/чекер/пробы/записи/корпус" и каталоги равным ["flang/proof/examples", "flang/test/fixtures", "flang/proof/map"] и файлы равным ["scripts/ledgers/traceability-debt.tsv"]
+    ожидается вариант «Ждём каталог» с режим равным (вариант «Перепись») и каталог равным "flang/proof/checker/tests/records/corpus" и каталоги равным ["flang/proof/examples", "flang/test/fixtures", "flang/proof/map"] и файлы равным ["scripts/ledgers/traceability-debt.tsv"]
   вариант «Ждём каталог» с режим равным режим и каталог равным (элемент 1 в («Каталоги набора»)) и каталоги равным ["flang/proof/examples", "flang/test/fixtures", "flang/proof/map"] и файлы равным [(«Файл долга»)]
 
 тотальная функция «Начать»
   возвращает «Ход»
   пример «Перепись»
-    ожидается вариант «Ждём каталог» с режим равным (вариант «Перепись») и каталог равным "flang/proof/чекер/пробы/записи/корпус" и каталоги равным ["flang/proof/examples", "flang/test/fixtures", "flang/proof/map"] и файлы равным ["scripts/ledgers/traceability-debt.tsv"]
+    ожидается вариант «Ждём каталог» с режим равным (вариант «Перепись») и каталог равным "flang/proof/checker/tests/records/corpus" и каталоги равным ["flang/proof/examples", "flang/test/fixtures", "flang/proof/map"] и файлы равным ["scripts/ledgers/traceability-debt.tsv"]
   «К каталогам» от (вариант «Перепись»)
 
 тотальная функция «Начать подлог»
   возвращает «Ход»
   пример «Подлог»
-    ожидается вариант «Ждём каталог» с режим равным (вариант «Подлог») и каталог равным "flang/proof/чекер/пробы/записи/корпус" и каталоги равным ["flang/proof/examples", "flang/test/fixtures", "flang/proof/map"] и файлы равным ["scripts/ledgers/traceability-debt.tsv"]
+    ожидается вариант «Ждём каталог» с режим равным (вариант «Подлог») и каталог равным "flang/proof/checker/tests/records/corpus" и каталоги равным ["flang/proof/examples", "flang/test/fixtures", "flang/proof/map"] и файлы равным ["scripts/ledgers/traceability-debt.tsv"]
   «К каталогам» от (вариант «Подлог»)
 
 тотальная функция «Начать от требования»
@@ -868,8 +868,8 @@
   пример «Исходник вне набора дописывается в очередь»
     дано очередь равно ["flang/proof/map/abilities.flang"]
     дано набор равно запись «Набор» с «исходники» равным (пустой список) и «записей» равным 0 и «функции» равным (пустой список) и «требования» равным (пустой список) и «примеры» равным (пустой список) и «свидетельства» равным (пустой список) и «долг требований» равным -1 и «долг кода» равным -1
-    дано исходник равно "flang/proof/чекер/пробы/семьи/носитель/chislo-segment.flang"
-    ожидается ["flang/proof/map/abilities.flang", "flang/proof/чекер/пробы/семьи/носитель/chislo-segment.flang"]
+    дано исходник равно "flang/proof/checker/tests/families/carrier/chislo-segment.flang"
+    ожидается ["flang/proof/map/abilities.flang", "flang/proof/checker/tests/families/carrier/chislo-segment.flang"]
   пример «Исходник из очереди второй раз не читается»
     дано очередь равно ["flang/proof/map/abilities.flang"]
     дано набор равно запись «Набор» с «исходники» равным (пустой список) и «записей» равным 0 и «функции» равным (пустой список) и «требования» равным (пустой список) и «примеры» равным (пустой список) и «свидетельства» равным (пустой список) и «долг требований» равным -1 и «долг кода» равным -1

@@ -123,7 +123,7 @@ one thing — "part of the checks did not run".
 **Which outcome wins.** A program that has both a grid and a "declared, not
 proved" answers `3`, not `4`, and the word names the GAP, not the lean: a named
 contradiction outranks a named gap, and a named gap outranks a named lean. The
-probe is `flang/proof/пробы-строгого/программы/старшинство.flang`.
+probe is `flang/proof/probes/strict/programs/старшинство.flang`.
 
 **A grid is not a proof.** Running the author's values does not check the claim
 over all inputs, and the report says so in its own words — "Это не
@@ -135,7 +135,7 @@ while `flang run --на-веру` at `н = 100` printed `FLANG_PROPERTY: нар�
 exited `3`. Under `--строго` both exit `3`.
 
 **What the key does not close.** It fixes ONE instrument of two. The independent
-checker (`flang/proof/чекер/сверщик.c`) still answers `ПРОВЕРЕНО ВПУСТУЮ` with
+checker (`flang/proof/checker/checker.c`) still answers `ПРОВЕРЕНО ВПУСТУЮ` with
 exit `0` on a record where nothing counts as proved; it has no `--строго` of its
 own yet, and until it does the chain is not strict end to end. The compiler's
 default is untouched to the sign: without the key a grid stays a zero and is
@@ -145,7 +145,7 @@ The key is only meaningful next to `--proof`: `flang check <файл> --стро
 without it exits `2`.
 
 Probes for all four outcomes and for the default are in
-`flang/proof/пробы-строгого/` (`sh flang/proof/пробы-строгого/прогон.sh`).
+`flang/proof/probes/strict/` (`sh flang/proof/probes/strict/run.sh`).
 
 ```bash
 $ flang check привет.flang

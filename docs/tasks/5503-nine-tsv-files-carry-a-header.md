@@ -22,7 +22,7 @@
 | docs/javascript-checks-breakdown.tsv | 893 | никто (только запись в hand-written-lists-ledger.tsv) |
 | docs/reprint-ledger.tsv | 12 | reprint.yml, raskrutka.sh, seed/reprint-freshness.fscript, seed/seed-freshness.sh |
 | flang/translation/PRINT-RULES.tsv | 72 | flang/translation/matcher.c, run.sh |
-| scripts/ledgers/hand-written-lists-ledger.tsv | 142 | scripts/guards/hand-written-lists.sh, flang/proof/ПРАВИЛА-ВЫВОДА.tsv |
+| scripts/ledgers/hand-written-lists-ledger.tsv | 142 | scripts/guards/hand-written-lists.sh, flang/proof/tables/inference-rules.tsv |
 | scripts/ledgers/link-guard-known-not-a-path.tsv | 248 | ci.yml, guards/file-extensions.fscript, guards/link-guard.fscript |
 | scripts/ledgers/no-comments-debt.tsv | 567 | guards/no-comments-guard.fscript |
 | scripts/ledgers/target-function-drift-known.tsv | 50 | guards/target-function-drift.fscript, ledgers/storozha-bez-*.json |

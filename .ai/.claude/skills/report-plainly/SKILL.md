@@ -57,7 +57,7 @@ description: Как отчитываться о работе над flang чел
 
 | писать | не писать |
 |---|---|
-| independent proof checker (`flang/proof/чекер/сверщик.c`) | сверщик |
+| independent proof checker (`flang/proof/checker/checker.c`) | сверщик |
 | coverage: доля обязательств, проверенных независимо от компилятора | доля корпуса |
 | proof certificate — JSON, который печатает `check --proof` | ведомость |
 | ratchet: верхняя граница, двигается только вниз | храповик |

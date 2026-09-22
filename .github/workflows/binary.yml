@@ -393,9 +393,9 @@ jobs:
       #
       # Счётчиков долга в дереве было три — раздел «Вне языка» в docs/ROADMAP.md,
       # docs/javascript-inventory.md и числа сайта, — и все три считали ОДИН
-      # язык: JavaScript. Оболочка (101 файлов, 23971 строк), HTML, CSS, пробы на
+      # язык: JavaScript. Оболочка (101 файлов, 23976 строк), HTML, CSS, пробы на
       # СНЯТО 2026-09-17 файлов *.sh = 101
-      # СНЯТО 2026-09-17 строк-в *.sh = 23971
+      # СНЯТО 2026-09-22 строк-в *.sh = 23976 (ADR-0046: записанный в шапках двух сторожей имён довод, почему flang/proof пока не судится, прибавил 5 строк; до него 23971, снято 2026-09-17)
       # C, Python, awk и Erlang не считались нигде и ни в одной проверке. Долг,
       # которого никто не считает, не убывает: его не видно ни в отчёте, ни в
       # ленте, и растёт он молча.
@@ -1413,9 +1413,9 @@ jobs:
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       - name: Build proof checker
-        run: make -C flang/proof/чекер
+        run: make -C flang/proof/checker
       - name: Run checker probes
-        run: sh flang/proof/чекер/пробы/прогон.sh
+        run: sh flang/proof/checker/tests/run.sh
         env:
           FLANG_TMP: ${{ runner.temp }}
       # ── ДЕЛО ЧЕКЕРУ НАЗЫВАЕТ ДЕРЕВО, А НЕ ЗАПИСЬ (задача 4820) ────────────
@@ -1441,12 +1441,12 @@ jobs:
       # работа охраны.
       - name: Probe corpus ledger
         run: |
-          if ! sh flang/proof/доля-корпуса.sh --подлог; then
+          if ! sh flang/proof/corpus-share.sh --подлог; then
             echo "сторож ведомости промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
       - name: Check corpus ledger
-        run: sh flang/proof/доля-корпуса.sh --набор корпус
+        run: sh flang/proof/corpus-share.sh --набор корпус
 
   # ── СЛИЧИТЕЛЬ ПЕРЕВОДА: ПРОТОКОЛ ПЕЧАТНИКА ПЕРЕИГРЫВАЕТСЯ НА C ──────────────
   #
@@ -1555,7 +1555,7 @@ jobs:
       # Что НЕ ловит: отставание самого двоичного (для него — раскрутка
       # --bystro --strogo). Место здесь, не в pre-push: 46 с > бюджета хука.
       # Прибор ниже отказывает кодом 2 «нет чекера», если сверщик не собран
-      # (flang/proof/доля-корпуса.sh:211) — и с 6 сентября (0cc9b98a) шаг был
+      # (flang/proof/corpus-share.sh:211) — и с 6 сентября (0cc9b98a) шаг был
       # красен именно этим, а не отставанием записей: чекер здесь собирала только
       # работа `proof-checker`. Секунда компиляции одного файла на C.
       #
@@ -1577,13 +1577,13 @@ jobs:
       # и прибор его для них не требует; шаг сборки чекера при коммите ae42220a2
       # отсюда выпал, и `--вложенность` осталась бы без него — возвращён.
       - name: Record seed fingerprint
-        run: sh flang/proof/доля-корпуса.sh --отпечаток
+        run: sh flang/proof/corpus-share.sh --отпечаток
       - name: Probe seed fingerprint
-        run: sh flang/proof/доля-корпуса.sh --подлог-отпечатка
+        run: sh flang/proof/corpus-share.sh --подлог-отпечатка
       - name: Build proof checker
-        run: make -C flang/proof/чекер
+        run: make -C flang/proof/checker
       - name: Check corpus records
-        run: sh flang/proof/доля-корпуса.sh --вложенность
+        run: sh flang/proof/corpus-share.sh --вложенность
 
       # Предмет тут другой — сторож кодов, — но работа та же по той же причине,
       # по которой `imena` не стала шагом в `sborka`: сборка двоичного стоит
@@ -1713,13 +1713,13 @@ jobs:
 
       # ── ТРИ ПРОГРАММЫ ЛЖИ Ч40: вердикт живого компилятора пришпилен ────────
       #
-      # `flang/proof/чекер/пробы/программы/lozh-*.flang` — не корпус, а вход
-      # для проб независимого чекера (`flang/proof/чекер/пробы/записи/Ч40/`):
+      # `flang/proof/checker/tests/programs/lozh-*.flang` — не корпус, а вход
+      # для проб независимого чекера (`flang/proof/checker/tests/records/Ч40/`):
       # программы, которые нарочно лгут в постусловии. `flang check` тоже их
       # видит, и без списка два красных исхода читались бы как поломка дерева,
       # а не как предмет пробы — кто-нибудь однажды «починил» бы файл, и проба
-      # перестала бы проверять то, ради чего заведена. `flang/proof/чекер/пробы/
-      # программы/вердикт-лжи.sh` держит для каждой из трёх точный ожидаемый
+      # перестала бы проверять то, ради чего заведена. `flang/proof/checker/tests/
+      # programs/вердикт-лжи.sh` держит для каждой из трёх точный ожидаемый
       # код возврата `flang check --proof` И причину словами (смена причины при
       # том же коде — тоже расхождение), сверен с каталогом в обе стороны, тем
       # же способом, что и `kernel-forgeries.fscript` — только предмет другой.
@@ -1729,7 +1729,7 @@ jobs:
       # компилятор нужен по устройству — он спрашивает мнение О НЁМ САМОМ.
       # Двоичный уже собран этой работой; лишней сборки нет.
       - name: Check lying programs
-        run: sh flang/proof/чекер/пробы/программы/вердикт-лжи.sh
+        run: sh flang/proof/checker/tests/programs/вердикт-лжи.sh
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 
@@ -1754,7 +1754,7 @@ jobs:
       # самом. Двоичный уже собран этой работой; лишней сборки нет. Замер: 20
       # проб, около 2 секунд на всё.
       - name: Check strict mode
-        run: sh flang/proof/пробы-строгого/прогон.sh
+        run: sh flang/proof/probes/strict/run.sh
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
           FLANG_TMP: ${{ runner.temp }}
@@ -1763,7 +1763,7 @@ jobs:
       # переменной среды и .flangrc, — и старшинство между ними названо. Проба
       # гоняет все три и каждую пару, иначе «ключ бьёт файл» осталось бы словами.
       - name: Check unproven gate
-        run: sh flang/proof/пробы-недоказанного/прогон.sh
+        run: sh flang/proof/probes/unproven/run.sh
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
           FLANG_TMP: ${{ runner.temp }}

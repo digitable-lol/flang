@@ -66,7 +66,7 @@ else
   SHA_SEMENI="—"; KOMMIT_PECHATI="—"; VHOD_PECHATI="—"
 fi
 
-# Тот же расчёт, что у flang/proof/доля-корпуса.sh:otpechatok_semeni и у ключа
+# Тот же расчёт, что у flang/proof/corpus-share.sh:otpechatok_semeni и у ключа
 # кеша CI: имена под LC_ALL=C sort, чтобы отпечаток не зависел от машины.
 VHODY_SBORKI=$( ( cd bootstrap 2>/dev/null && /bin/ls *.c *.h Makefile 2>/dev/null \
   | LC_ALL=C sort | xargs cat ) 2>/dev/null | sha256sum 2>/dev/null | cut -d' ' -f1 )
@@ -85,7 +85,7 @@ if [ -x bootstrap/flang ]; then
       SVEZHEST="ОТСТАЛ ОТ СЕМЕНИ: собран не из нынешних bootstrap/*.c — пересобрать: make -C bootstrap"
     fi
   else
-    SVEZHEST="отпечатка при этом двоичном нет — свежесть НЕ ПРОВЕРЕНА (записать: sh flang/proof/доля-корпуса.sh --отпечаток)"
+    SVEZHEST="отпечатка при этом двоичном нет — свежесть НЕ ПРОВЕРЕНА (записать: sh flang/proof/corpus-share.sh --отпечаток)"
   fi
   DVOICHNYY="$VERSIYA (bootstrap/flang), sha256 $(korotko "$SHA_DVOICH"), $SVEZHEST"
 else
@@ -93,11 +93,11 @@ else
 fi
 
 # ── сверщик и версия семантики ──────────────────────────────────────────────
-SVERSCHIK_C=flang/proof/чекер/сверщик.c
+SVERSCHIK_C=flang/proof/checker/checker.c
 if [ -f "$SVERSCHIK_C" ]; then SHA_SVER=$(sha "$SVERSCHIK_C"); else SHA_SVER="—"; fi
 
-VED=flang/proof/ПРАВИЛА-ВЫВОДА.tsv
-OTP_VED=flang/proof/ПРАВИЛА-ВЫВОДА.отпечаток
+VED=flang/proof/tables/inference-rules.tsv
+OTP_VED=flang/proof/tables/inference-rules.digest
 if [ -f "$VED" ] && [ -f "$OTP_VED" ]; then
   SHA_VED=$(sha "$VED")
   ZAPISANO_VED=$(head -1 "$OTP_VED" | tr -d ' \t\r\n')

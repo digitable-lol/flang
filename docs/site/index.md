@@ -12,7 +12,7 @@ be proved, the file is not emitted and the exit code is 1.
 
 The proof is not taken on the compiler's word either: `flang check --proof
 --записать` writes the whole derivation to a file, and a **separate C program**
-(`flang/proof/чекер/сверщик.c`, the trusted base) replays every step from
+(`flang/proof/checker/checker.c`, the trusted base) replays every step from
 scratch. The kernel has zero axioms, and that too is a run:
 `flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль'` answers
 with exit code 0.

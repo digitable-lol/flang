@@ -128,7 +128,7 @@ them, in the hardware — but not in a separate list of exemptions.
 
 The word "proved" in the compiler's report need not be taken on trust.
 `flang check --proof --записать <file>` writes the proof itself to a file, and a
-separate C program — `flang/proof/чекер/сверщик.c`, which has never seen the
+separate C program — `flang/proof/checker/checker.c`, which has never seen the
 compiler — takes the source and the record and replays every step anew. The run
 `sh scripts/доказуемость.sh` on 19 September 2026 on trunk (commit
 `a5609e322`, about three minutes) answers **PROVABLE** and prints four checks as

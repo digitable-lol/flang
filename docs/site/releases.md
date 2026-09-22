@@ -149,7 +149,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 - A totality certificate for COMPOSITION. The binary prints into the proof record the evidence «this function terminates because it has no recursion — only calls to already-terminating functions», and the independent checker replays that evidence (`сверить_тотальность`) instead of trusting the name of the rule. The replay does not depend on the order of blocks in the record: two passes plus cycle detection. The seed was reprinted and 82 corpus records were printed anew. Commits `ff1dc5b7`, `cbac34ce`, `7cd56073`, `fba02c9a`.
 - A totality certificate for RECURSION, kinds `structure` and `step`: termination by descent along a variant of an inductive type, and by a decreasing measure bounded below by zero. The binary prints the node with the full witness — decreasing argument, floor, turns, self-call — and the checker replays it. Honestly: on the current corpus the share gains about nothing, because the corpus proves termination of recursion over the built-in list by a type law rather than by these certificates; the ability landed as groundwork. Commits `4bfbd217`, `5d73d391`, `d1bbbf94`.
-- A share-by-replay instrument: `sh flang/proof/доля-корпуса.sh --проигрыванием`. The numerator counts obligations the checker really replayed; the denominator counts ALL obligations of the corpus, including those taken on the kernel’s word and those of rejected records. No record drops out of the denominator. Commits `00a56ba5`, `682006f5`.
+- A share-by-replay instrument: `sh flang/proof/corpus-share.sh --проигрыванием`. The numerator counts obligations the checker really replayed; the denominator counts ALL obligations of the corpus, including those taken on the kernel’s word and those of rejected records. No record drops out of the denominator. Commits `00a56ba5`, `682006f5`.
 - Cross-module linking of the totality certificate (`--набор`, `--зависимость`): trust in a set of records is granted only through a replayed carrier. On the current corpus there are zero such sites — this landed as groundwork, not out of need. Commit `4743a313`.
 
 ### What changed
@@ -189,7 +189,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### What broke
 
-- The language is NOT formally provable, and that is a machine verdict rather than an opinion: `git grep -c перепиской flang/proof/чекер/сверщик.c` gives 10, not 0, and `./ярлык доказуемость` answers NOT PROVABLE. Two of the criterion’s seven gates are taken.
+- The language is NOT formally provable, and that is a machine verdict rather than an opinion: `git grep -c перепиской flang/proof/checker/checker.c` gives 10, not 0, and `./ярлык доказуемость` answers NOT PROVABLE. Two of the criterion’s seven gates are taken.
 - A narrow subclass of sites is not migrated: the «by declaration» route — 146 of 159 «proved» sites — prints only the name of the rule, with no chain of moves, so the replayer has nothing to replay.
 - Paying for `требует` in the new technique is partial: a callee’s precondition counts as discharged only if it syntactically matched one of the caller’s own `требует`. Discharge by computation or by an `если` guard is not read by this wave — such sites are honestly rejected with code 1 rather than wrongly accepted.
 

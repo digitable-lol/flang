@@ -127,123 +127,123 @@ flang/proof/map/substantive.flang	11
 flang/proof/map/types.flang	10
 flang/proof/midpoint-price.flang	57
 flang/proof/midpoint-verdicts.flang	67
-flang/proof/малый-сводитель.flang	197
-flang/proof/подделки/делением.flang	14
-flang/proof/подделки/дно-с-полем.flang	12
-flang/proof/подделки/круг.flang	10
-flang/proof/подделки/переходность.flang	64
-flang/proof/подделки/сведённое-дно.flang	12
-flang/proof/подделки/счёт-частей-ложь.flang	44
-flang/proof/подделки/счёт-частей-правда.flang	18
-flang/proof/подделки/тождеством.flang	16
-flang/proof/сверка-правил.flang	72
-flang/proof/чекер/пробы/записи/3314-uslovnoe-po-vetvyam/lozhnoe-otricanie.flang	13
-flang/proof/чекер/пробы/записи/8615-teorema-ne-ronyaet/otschyot-s-teoremoy.flang	9
-flang/proof/чекер/пробы/записи/8615-teorema-ne-ronyaet/spusk-ne-ubyvaet.flang	9
-flang/proof/чекер/пробы/записи/9951-zakony/granicy-zakonov.flang	26
-flang/proof/чекер/пробы/записи/9991-nachinaetsya-s/lozhnoe-nachalo.flang	11
-flang/proof/чекер/пробы/записи/9991-rezultat-raven/storozh-razvyortki.flang	14
-flang/proof/чекер/пробы/записи/v1-g2/tip-za-primechaniem.flang	12
-flang/proof/чекер/пробы/записи/v1-g2/вариант-за-примечанием.flang	21
-flang/proof/чекер/пробы/записи/Ч131-algebra/00-нетронутый.flang	29
-flang/proof/чекер/пробы/записи/Ч131-algebra/01-vetv-lzhet.flang	29
-flang/proof/чекер/пробы/записи/Ч131-algebra/02-variant-podmenen.flang	29
-flang/proof/чекер/пробы/записи/Ч131-algebra/03-pokrytie-nepolno.flang	29
-flang/proof/чекер/пробы/записи/Ч363/00-нетронутый.flang	43
-flang/proof/чекер/пробы/записи/Ч363/01-дно-лжёт.flang	43
-flang/proof/чекер/пробы/записи/Ч363/02-спуска-нет.flang	43
-flang/proof/чекер/пробы/записи/Ч363/03-слагаемое-минус.flang	43
-flang/proof/чекер/пробы/записи/Ч363/04-форма-незнакома.flang	43
-flang/proof/чекер/пробы/записи/Ч363/05-ветви-переставлены.flang	43
-flang/proof/чекер/пробы/записи/Ч363/06-чужое-слагаемое.flang	43
-flang/proof/чекер/пробы/записи/Ч365/П1-цель-не-равенство.flang	8
-flang/proof/чекер/пробы/записи/Ч365/П10-э2-даёт-чужой-элемент.flang	34
-flang/proof/чекер/пробы/записи/Ч365/П2-тело-мимо-цели.flang	8
-flang/proof/чекер/пробы/записи/Ч365/П3-ассоциативность-вместо-двери.flang	8
-flang/proof/чекер/пробы/записи/Ч365/П4-перестановка-через-узел.flang	8
-flang/proof/чекер/пробы/записи/Ч365/П5-тело-не-одной-строкой.flang	8
-flang/proof/чекер/пробы/записи/Ч365/П6-закон-вне-закрытого-списка.flang	8
-flang/proof/чекер/пробы/записи/Ч365/П7-замкнутая-ложь-без-требует.flang	8
-flang/proof/чекер/пробы/записи/Ч365/П8-та-же-ложь-под-допущением.flang	8
-flang/proof/чекер/пробы/записи/Ч365/П9-номер-вне-границ-списка.flang	34
-flang/proof/чекер/пробы/записи/типы-доводов/vychitanie-ne-sohranyaet.flang	15
-flang/proof/чекер/пробы/программы/lozh-derevo.flang	21
-flang/proof/чекер/пробы/программы/lozh-raznost-chistaya.flang	4
-flang/proof/чекер/пробы/программы/lozh-stolknovenie.flang	33
-flang/proof/чекер/пробы/программы/Ч392-примечание-вместо-постусловия.flang	91
-flang/proof/чекер/пробы/программы/Ч71-lozh-chuzhoy-variant.flang	28
-flang/proof/чекер/пробы/программы/Ч71-p-cel-ne-derzhitsya.flang	28
-flang/proof/чекер/пробы/программы/Ч71-p-primer-bez-ozhidaniya.flang	28
-flang/proof/чекер/пробы/программы/Ч71-p-primer-lzhyot-o-znachenii.flang	28
-flang/proof/чекер/пробы/программы/Ч71-p-primer-vne-bloka.flang	28
-flang/proof/чекер/пробы/программы/Ч71-p-sluchay-s-tem-zhe-znacheniem.flang	28
-flang/proof/чекер/пробы/программы/Ч7104-nakrutka-neproveryaemaya.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/программы/Ч7104-nakrutka-po-predpolozheniyu.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-chestnaya.flang	15
-flang/proof/чекер/пробы/программы/Ч7104-nulevoy-znak-lozh.flang	15
-flang/proof/чекер/пробы/программы/Ч76-1-telo-mimo-primera.flang	34
-flang/proof/чекер/пробы/программы/Ч76-2-cel-lozhna.flang	34
-flang/proof/чекер/пробы/программы/Ч76-3-metki-sovpali.flang	34
-flang/proof/чекер/пробы/программы/Ч76-4-otnoshenie-neznakomo.flang	34
-flang/proof/чекер/пробы/программы/Ч76-5-dlina-na-odin-bolshe.flang	27
-flang/proof/чекер/пробы/программы/Ч76-6-cifry-podmeneny.flang	27
-flang/proof/чекер/пробы/программы/Ч76-9-telo-ne-odin-literal.flang	34
-flang/proof/чекер/пробы/программы/Ч87-F1-cel-lozhna.flang	33
-flang/proof/чекер/пробы/программы/Ч87-F2-telo-mimo-primera.flang	33
-flang/proof/чекер/пробы/программы/Ч87-F3-dva-zvena-v-stroke.flang	33
-flang/proof/чекер/пробы/программы/Ч87-F4-zveno-zakommentirovano.flang	34
-flang/proof/чекер/пробы/семьи/algebra-domeny/golova.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/algebra-domeny/ohrana.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/algebra-domeny/порча/golova-lzhet.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/algebra-domeny/порча/ohrana-lzhet.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/granica/r2-setka-distributivnost.flang	7
-flang/proof/чекер/пробы/семьи/ne-lozhitsya/r6-dlina-skobki.flang	8
-flang/proof/чекер/пробы/семьи/precondition-discharge/three-feeds.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/precondition-discharge/unpaid-callee.flang	7	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/rec-step-bezdna.flang	5
-flang/proof/чекер/пробы/семьи/rec-step-rastyot.flang	4
-flang/proof/чекер/пробы/семьи/rec-step.flang	6
-flang/proof/чекер/пробы/семьи/rec-struct-net-samo.flang	4
-flang/proof/чекер/пробы/семьи/rec-structure.flang	8
-flang/proof/чекер/пробы/семьи/refleksiv.flang	12
-flang/proof/чекер/пробы/семьи/sosedi.flang	8
-flang/proof/чекер/пробы/семьи/totalnost-samovyzov.flang	8
-flang/proof/чекер/пробы/семьи/totalnost.flang	8
-flang/proof/чекер/пробы/семьи/булева-цель/priznak.flang	5
-flang/proof/чекер/пробы/семьи/ветка-если/vysota.flang	7
-flang/proof/чекер/пробы/семьи/вывод/порча/boundaries-dva.flang	13	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/квантор/два-имени.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/квантор/имя-вне-списка.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/конструктор/kopiya.flang	6	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/носитель/imya-naturalnoe.flang	43	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/о9-начало-один.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/о9-счёт.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/о9-чужой-список.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/о9-шаг-два.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/охрана-другой-порог.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/охрана-ложный-вывод.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/охрана-то-же-условие.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/стр-начало-минус.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/стр-счёт-свёрткой.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/стр-умножить-на-н.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/стр-утроить.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/стр-шаг-минус.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/тело-не-неотрицательно.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/удвоить-литерал.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/удвоить-на-ноль.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/удвоить-сомножитель-минус.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/ч4-ветвь-другого-знака.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/ч4-общее-начало.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/ч4-правая-склейка.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/ч6-приставка.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/ч6-факт-без-вердикта.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/покрытие/ч6-чужая-приставка.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/половина-б/arithmetic.flang	10
-flang/proof/чекер/пробы/семьи/половина-б/dlina.flang	10
-flang/proof/чекер/пробы/семьи/половина-б/element.flang	30
-flang/proof/чекер/пробы/семьи/прогон/pisma-po-ocheredi.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/семейства/ostatok.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/чекер/пробы/семьи/семейства/порча/ostatok-ohrana-ne-dopushchenie.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/small-reducer.flang	197
+flang/proof/forgeries/by-division.flang	14
+flang/proof/forgeries/base-with-field.flang	12
+flang/proof/forgeries/circle.flang	10
+flang/proof/forgeries/transitivity.flang	64
+flang/proof/forgeries/reduced-base.flang	12
+flang/proof/forgeries/part-count-false.flang	44
+flang/proof/forgeries/part-count-true.flang	18
+flang/proof/forgeries/by-identity.flang	16
+flang/proof/rules-match.flang	72
+flang/proof/checker/tests/records/3314-conditional-by-branches/lozhnoe-otricanie.flang	13
+flang/proof/checker/tests/records/8615-theorem-keeps/otschyot-s-teoremoy.flang	9
+flang/proof/checker/tests/records/8615-theorem-keeps/spusk-ne-ubyvaet.flang	9
+flang/proof/checker/tests/records/9951-laws/granicy-zakonov.flang	26
+flang/proof/checker/tests/records/9991-starts-with/lozhnoe-nachalo.flang	11
+flang/proof/checker/tests/records/9991-result-equals/storozh-razvyortki.flang	14
+flang/proof/checker/tests/records/v1-g2/tip-za-primechaniem.flang	12
+flang/proof/checker/tests/records/v1-g2/вариант-за-примечанием.flang	21
+flang/proof/checker/tests/records/Ч131-algebra/00-нетронутый.flang	29
+flang/proof/checker/tests/records/Ч131-algebra/01-vetv-lzhet.flang	29
+flang/proof/checker/tests/records/Ч131-algebra/02-variant-podmenen.flang	29
+flang/proof/checker/tests/records/Ч131-algebra/03-pokrytie-nepolno.flang	29
+flang/proof/checker/tests/records/Ч363/00-нетронутый.flang	43
+flang/proof/checker/tests/records/Ч363/01-дно-лжёт.flang	43
+flang/proof/checker/tests/records/Ч363/02-спуска-нет.flang	43
+flang/proof/checker/tests/records/Ч363/03-слагаемое-минус.flang	43
+flang/proof/checker/tests/records/Ч363/04-форма-незнакома.flang	43
+flang/proof/checker/tests/records/Ч363/05-ветви-переставлены.flang	43
+flang/proof/checker/tests/records/Ч363/06-чужое-слагаемое.flang	43
+flang/proof/checker/tests/records/Ч365/П1-цель-не-равенство.flang	8
+flang/proof/checker/tests/records/Ч365/П10-э2-даёт-чужой-элемент.flang	34
+flang/proof/checker/tests/records/Ч365/П2-тело-мимо-цели.flang	8
+flang/proof/checker/tests/records/Ч365/П3-ассоциативность-вместо-двери.flang	8
+flang/proof/checker/tests/records/Ч365/П4-перестановка-через-узел.flang	8
+flang/proof/checker/tests/records/Ч365/П5-тело-не-одной-строкой.flang	8
+flang/proof/checker/tests/records/Ч365/П6-закон-вне-закрытого-списка.flang	8
+flang/proof/checker/tests/records/Ч365/П7-замкнутая-ложь-без-требует.flang	8
+flang/proof/checker/tests/records/Ч365/П8-та-же-ложь-под-допущением.flang	8
+flang/proof/checker/tests/records/Ч365/П9-номер-вне-границ-списка.flang	34
+flang/proof/checker/tests/records/reason-types/vychitanie-ne-sohranyaet.flang	15
+flang/proof/checker/tests/programs/lozh-derevo.flang	21
+flang/proof/checker/tests/programs/lozh-raznost-chistaya.flang	4
+flang/proof/checker/tests/programs/lozh-stolknovenie.flang	33
+flang/proof/checker/tests/programs/Ч392-примечание-вместо-постусловия.flang	91
+flang/proof/checker/tests/programs/Ч71-lozh-chuzhoy-variant.flang	28
+flang/proof/checker/tests/programs/Ч71-p-cel-ne-derzhitsya.flang	28
+flang/proof/checker/tests/programs/Ч71-p-primer-bez-ozhidaniya.flang	28
+flang/proof/checker/tests/programs/Ч71-p-primer-lzhyot-o-znachenii.flang	28
+flang/proof/checker/tests/programs/Ч71-p-primer-vne-bloka.flang	28
+flang/proof/checker/tests/programs/Ч71-p-sluchay-s-tem-zhe-znacheniem.flang	28
+flang/proof/checker/tests/programs/Ч7104-nakrutka-neproveryaemaya.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/programs/Ч7104-nakrutka-po-predpolozheniyu.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/programs/Ч7104-nulevoy-znak-chestnaya.flang	15
+flang/proof/checker/tests/programs/Ч7104-nulevoy-znak-lozh.flang	15
+flang/proof/checker/tests/programs/Ч76-1-telo-mimo-primera.flang	34
+flang/proof/checker/tests/programs/Ч76-2-cel-lozhna.flang	34
+flang/proof/checker/tests/programs/Ч76-3-metki-sovpali.flang	34
+flang/proof/checker/tests/programs/Ч76-4-otnoshenie-neznakomo.flang	34
+flang/proof/checker/tests/programs/Ч76-5-dlina-na-odin-bolshe.flang	27
+flang/proof/checker/tests/programs/Ч76-6-cifry-podmeneny.flang	27
+flang/proof/checker/tests/programs/Ч76-9-telo-ne-odin-literal.flang	34
+flang/proof/checker/tests/programs/Ч87-F1-cel-lozhna.flang	33
+flang/proof/checker/tests/programs/Ч87-F2-telo-mimo-primera.flang	33
+flang/proof/checker/tests/programs/Ч87-F3-dva-zvena-v-stroke.flang	33
+flang/proof/checker/tests/programs/Ч87-F4-zveno-zakommentirovano.flang	34
+flang/proof/checker/tests/families/algebra-domains/golova.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/algebra-domains/ohrana.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/algebra-domains/corrupt/golova-lzhet.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/algebra-domains/corrupt/ohrana-lzhet.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/boundary/r2-setka-distributivnost.flang	7
+flang/proof/checker/tests/families/not-applicable/r6-dlina-skobki.flang	8
+flang/proof/checker/tests/families/precondition-discharge/three-feeds.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/precondition-discharge/unpaid-callee.flang	7	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/rec-step-bezdna.flang	5
+flang/proof/checker/tests/families/rec-step-rastyot.flang	4
+flang/proof/checker/tests/families/rec-step.flang	6
+flang/proof/checker/tests/families/rec-struct-net-samo.flang	4
+flang/proof/checker/tests/families/rec-structure.flang	8
+flang/proof/checker/tests/families/refleksiv.flang	12
+flang/proof/checker/tests/families/sosedi.flang	8
+flang/proof/checker/tests/families/totalnost-samovyzov.flang	8
+flang/proof/checker/tests/families/totalnost.flang	8
+flang/proof/checker/tests/families/boolean-goal/priznak.flang	5
+flang/proof/checker/tests/families/if-branch/vysota.flang	7
+flang/proof/checker/tests/families/inference/corrupt/boundaries-dva.flang	13	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/quantifier/два-имени.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/quantifier/имя-вне-списка.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/constructor/kopiya.flang	6	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/carrier/imya-naturalnoe.flang	43	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/о9-начало-один.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/о9-счёт.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/о9-чужой-список.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/о9-шаг-два.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/охрана-другой-порог.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/охрана-ложный-вывод.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/охрана-то-же-условие.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/стр-начало-минус.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/стр-счёт-свёрткой.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/стр-умножить-на-н.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/стр-утроить.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/стр-шаг-минус.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/тело-не-неотрицательно.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/удвоить-литерал.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/удвоить-на-ноль.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/удвоить-сомножитель-минус.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ч4-ветвь-другого-знака.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ч4-общее-начало.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ч4-правая-склейка.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ч6-приставка.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ч6-факт-без-вердикта.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ч6-чужая-приставка.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/half-b/arithmetic.flang	10
+flang/proof/checker/tests/families/half-b/dlina.flang	10
+flang/proof/checker/tests/families/half-b/element.flang	30
+flang/proof/checker/tests/families/run/pisma-po-ocheredi.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/type-families/ostatok.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/type-families/corrupt/ostatok-ohrana-ne-dopushchenie.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/self/bootstrap/compiler.flang	1371	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/bootstrap/corpus.flang	160	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/bootstrap/zond-2040.flang	4	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё

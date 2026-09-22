@@ -15,7 +15,7 @@
 > ссылки на `flang/src/*.mjs` ниже — про тот день. Что держится: приём
 > `$VIEWS`/`$view` переехал в `flang/self/emit-js.flang:2034`; `поСвойству` —
 > `flang/self/proofterm.flang:1189` и независимо сверщик
-> `flang/proof/чекер/сверщик.c:1271`; запрет заводить аксиомы стережёт
+> `flang/proof/checker/checker.c:1271`; запрет заводить аксиомы стережёт
 > `flang/scripts/kernel-forgeries.fscript` (списка `АКСИОМЫ` в дереве нет —
 > проверяется довод рядом со словом «аксиома»). У моста `bridge.mjs`/`self.mjs`
 > двойника нет. Команда `grep -rn prepend flang/src flang/self` написана на

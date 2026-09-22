@@ -46,12 +46,12 @@ is what happens to the unproved: it does not pretend. Exit 3, the words
 condition on every return.
 
 The third run is the independent check. The kernel writes its proof record;
-`flang/proof/чекер/сверщик.c`, a C program with no line of the compiler in it,
+`flang/proof/checker/checker.c`, a C program with no line of the compiler in it,
 reads the source and the record and replays the moves:
 
 ```
 $ flang check --proof заказ.flang --записать заказ.запись            # exit 0
-$ flang/proof/чекер/сверщик заказ.flang заказ.запись
+$ flang/proof/checker/сверщик заказ.flang заказ.запись
 НЕ ВЗЯЛСЯ … значение «по объявлению да» — сверщик не повторяет изъятие
 объявленного типа, место на слове ядра
 НЕ ПРОВЕРЕНО — запись не противоречит исходнику, но доказательством это не
@@ -128,7 +128,7 @@ Not expressible — there is no place to write it:
 
 ```
 sh scripts/доказуемость.sh          → ДОКАЗУЕМ                       (18 September 2026)
-sh flang/proof/доля-корпуса.sh --проигрыванием
+sh flang/proof/corpus-share.sh --проигрыванием
 → доля-проигрыванием = 650 / 650 = 100.00 %
   на слово ядра: посылок и утверждений 0; шагов 0; снято калькулятором 0
 ```

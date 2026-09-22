@@ -52,9 +52,9 @@ scripts/storozha-bez-podloga.sh         у кого показана проба 
 scripts/pol-dokazannogo-sverka.sh       сверка описи доказанного (1574)
 scripts/semya-rantayma-eto-istochnik.sh семя рантайма = источник (4088)
 scripts/chto-otstalo-ot-semeni.sh       отставание семени
-flang/proof/привязка/привязка.py        прибор Г5
-flang/proof/привязка/привязка-по-файлу.py
-flang/proof/привязка/кругооборот.py     второй прибор Г5 (9751)
+flang/proof/binding/binding.py        прибор Г5
+flang/proof/binding/binding-by-file.py
+flang/proof/binding/cycle.py     второй прибор Г5 (9751)
 ```
 
 Каждый заведён по делу и на оболочке — то есть каждый добавил долга. Это не
@@ -85,7 +85,7 @@ flang/proof/привязка/кругооборот.py     второй приб
 `benchmarks/` и `docs/editors/` уже исключены для НЕ-`.sh` («замеряемый
 материал», «чужая среда»), а `.sh` там долгом остаётся — намеренно.
 Исключены целиком `bootstrap/`, `flang/src/emit/`, `flang/conc/bin/`,
-`packaging/`, `flang/proof/чекер/`, разметка. Всё это записано доводами в
+`packaging/`, `flang/proof/checker/`, разметка. Всё это записано доводами в
 самом файле.
 
 ## Проба порчи — сторож видит новый долг

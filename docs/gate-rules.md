@@ -702,7 +702,7 @@ ulimit -v 40 ГиБ   → ok
   место 2: занято — 3641571 60G node flang/scripts/proof-ledger.mjs
   3641603  node flang/scripts/proof-ledger.mjs
   3641655  xargs -0 -n 2 -P 2 sh -c "…/flang" check "$1" --proof --json
-  3647969  …/flang check …/сверщик.flang
+  3647969  …/flang check …/checker.flang
   3648819  …/flang check …/binary.fscript --proof
 ```
 

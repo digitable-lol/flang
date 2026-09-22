@@ -69,14 +69,14 @@ sh scripts/guards/no-package-json-guard.sh --check         # код 0
 ### Что видно по каждому
 
 * **`docs/` (1952 файла, 22 подкаталога).** Самый большой и самый разнородный. 15 из 22
-  подкаталогов не имеют ни `README.md`, ни `ЧИТАТЬ.md`. Карта раскладки в `README.md`
+  подкаталогов не имеют ни `README.md`, ни `README.md`. Карта раскладки в `README.md`
   (её стережёт `published-vs-tree.sh --карта`, код 0) описывает **корень** дерева и
   называет из 22 подкаталогов `docs/` четыре: `examples/`, `editors/`, `adr/`, `tasks/`.
   Про `benchmark/`, `benchmark2/`, `benchmarks/`, `ct/`, `ifl/`, `design/`,
   `zamer-teorkat/`, `спецификации/`, `guide/`, `zettel/`, `site/`, `course/`, `tutor/`,
   `archive/`, `releases/`, `tools/`, `flang/`, `fspec/` карта молчит, и сторож туда не
   смотрит — он сверяет только корень.
-* **`flang/` (1447 файлов, глубина 11).** Самая глубокая ветка — `flang/proof/чекер/пробы/…`,
+* **`flang/` (1447 файлов, глубина 11).** Самая глубокая ветка — `flang/proof/checker/tests/…`,
   это задача 6421: под `proof/` лежит 931 файл, из них 740 с кириллическим именем. Вне
   `proof/` остаётся 516 файлов и в них 19 кириллических имён — `flang/test/ведомость*.txt`,
   `обход*.sh`, `владение-состоянием.*`, `жаргон.flang`, четыре файла в `flang/scripts/`,
@@ -166,7 +166,7 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 Где они лежат: `docs/` 141, `flang/` 89, `fspec/` 4. Примеры —
 `docs/design/proof-object-po-obyavleniyu-trace.md`,
 `docs/tasks/1409-otsenka-vitkov-chislovaya-rekursiya-edinicy-sekundy.md`,
-`flang/proof/чекер/пробы/семьи/totalnost.flang`, `flang/self/otkazy-totalnosti.flang`,
+`flang/proof/checker/tests/families/totalnost.flang`, `flang/self/otkazy-totalnosti.flang`,
 `flang/translation/fixtures/…/poddelka_usloviya_bez_spuska.protocol`.
 
 Для сравнения — как выглядит **записанное** исключение: `no-package-json-guard.sh` смотрит
@@ -198,13 +198,13 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 | `scripts/` | 2 |
 
 Самые смешанные: `flang/test` (11 кириллических против 16 латинских),
-`flang/proof/чекер/пробы/семьи` (10 / 10),
-`flang/proof/чекер/пробы/программы` (24 / 5), `flang/proof/lean` (8 / 3),
+`flang/proof/checker/tests/families` (10 / 10),
+`flang/proof/checker/tests/programs` (24 / 5), `flang/proof/lean` (8 / 3),
 `flang/scripts` (4 / 51), `docs/zettel` (6 / 715).
 
 Схем на самом деле **три**, а не две, и третья — самая неудобная:
 
-1. русская кириллицей — `Запись.lean`, `ОЖИДАНИЕ.tsv`, `прогон.sh`;
+1. русская кириллицей — `Record.lean`, `expected.tsv`, `run.sh`;
 2. английская латиницей — `RecordReader.lean`, `binary-origin.sh`;
 3. **русская латиницей (транслит)** — `totalnost.flang`, `otkazy-totalnosti.flang`,
    `lozh-raznost-chistaya.flang`. Она не читается ни русским, ни английским глазом.
@@ -230,15 +230,15 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 
 | имя | сколько | где |
 |---|---:|---|
-| `ОЖИДАНИЕ.tsv` | 3 | `flang/proof/пробы-запуска/`, `пробы-строгого/`, `пробы-экрана/` |
-| `ХРАПОВИК.txt` | 3 | `flang/proof/подделки/`, `чекер/`, `чекер/пробы/ловушка/` |
-| `прогон.sh` | 5 | `lean/`, `подделки/`, `пробы-запуска/`, `пробы-строгого/`, `чекер/пробы/` |
-| `честная.запись` | 4 | `чекер/пробы/записи/{3455,Ч71,Ч76,Ч87}/` |
+| `expected.tsv` | 3 | `flang/proof/probes/run/`, `probes/strict/`, `probes/screen/` |
+| `ratchet.txt` | 3 | `flang/proof/forgeries/`, `checker/`, `checker/tests/trap/` |
+| `run.sh` | 5 | `lean/`, `forgeries/`, `probes/run/`, `probes/strict/`, `checker/tests/` |
+| `честная.запись` | 4 | `checker/tests/records/{3455,Ч71,Ч76,Ч87}/` |
 | `00-нетронутый.запись` | 4 | `записи/{Ч131-algebra,Ч363,Ч369,Ч375}/` |
-| `abilities.запись` | 3 | `записи/корпус/`, `семьи/вывод/р/`, `семьи/мера/` |
+| `abilities.запись` | 3 | `records/corpus/`, `families/inference/golden/`, `families/measure/` |
 
 Все они — под `flang/proof`, то есть внутри задачи 6421 (пункт 4 её плана прямо про три
-`ОЖИДАНИЕ.tsv`). **Вне `flang/proof` неразличимых по имени файлов я не нашёл** — это
+`expected.tsv`). **Вне `flang/proof` неразличимых по имени файлов я не нашёл** — это
 отрицательный результат, и он такой же ответ, как положительный.
 
 ### Один настоящий дубль — и он вне `proof`

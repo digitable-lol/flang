@@ -1050,7 +1050,7 @@ jobs:
   # втрое, занимает 22 раннера и границу всё равно не берёт.
   #
   # РАЗРЕЗАНА ПО ПОЛОВИНАМ, И СПОР С АВТОРОМ СКРИПТА РЕШЁН, А НЕ ОБОЙДЁН (Ч99,
-  # 31 августа 2026). Шапка `flang/proof/сверка-правил.sh` говорила «одна
+  # 31 августа 2026). Шапка `flang/proof/rules-match.sh` говорила «одна
   # половина без другой ничего не значит». Довод верен про СЛОВО «сошлось», а
   # не про прогон: первая половина, напечатав своё «сошлось всё», обещала бы
   # живой прогон, которого не было. Поэтому ключ `--только-первая` печатает
@@ -1081,7 +1081,7 @@ jobs:
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
-      - run: sh flang/proof/сверка-правил.sh --только-первая
+      - run: sh flang/proof/rules-match.sh --только-первая
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -1097,7 +1097,7 @@ jobs:
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
-      - run: sh flang/proof/сверка-правил.sh
+      - run: sh flang/proof/rules-match.sh
         env:
           FLANG_TMP: ${{ runner.temp }}
 

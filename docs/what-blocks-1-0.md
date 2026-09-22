@@ -42,7 +42,7 @@ bootstrap/flang io scripts/guards/what-blocks-inventory-guard.fscript --plan П�
 | `docs/reprint-cost.md`, `docs/reprint-ledger.tsv` | есть | — |
 | `docs/kernel-axioms-list.md`, `flang/scripts/kernel-axioms.flang` | нет | клон `B4-spisok/stvol` |
 | `sh scripts/raskrutka.sh --imena` | есть | коммит `4d0dcb7b` |
-| `flang/proof/чекер/` (чекер на C) | есть | коммит `e8380e2d` |
+| `flang/proof/checker/` (чекер на C) | есть | коммит `e8380e2d` |
 | починка checker'а `+48 LOC` (2.5) | не файл | заплата `Ч126-vernut-g2/vernut-g2.diff` |
 | печать derivation trace `+194 LOC` (2.6) | не файл | черновики Ч70, Ч91, Ч71 |
 
@@ -53,7 +53,7 @@ bootstrap/flang io scripts/guards/what-blocks-inventory-guard.fscript --plan П�
 
 **Почему столбец отняли у руки (Ч158, 1 сентября 2026).** Эта таблица лгала в
 минуту собственного коммита. Ряды про `scripts/raskrutka.sh --imena` и про
-`flang/proof/чекер/` стояли со словом «нет», а оба прибора легли в ствол за 7 и
+`flang/proof/checker/` стояли со словом «нет», а оба прибора легли в ствол за 7 и
 за 11 минут ДО неё:
 
 ```sh
@@ -62,7 +62,7 @@ git -c core.quotepath=false log -1 --format='%ad' --date=iso 4d0dcb7b  # 2026-08
 git -c core.quotepath=false log -1 --format='%ad' --date=iso 86494646  # 2026-08-31 20:15:36  сама таблица
 git -c core.quotepath=false show 86494646:docs/what-blocks-1-0.md | sed -n '27,28p'
 #   → | `sh scripts/raskrutka.sh --imena` | нет | `Ч59-imena/stvol`, коммит `907c27af` |
-#   → | `flang/proof/чекер/` (чекер на C) | нет | `Ч63-chekker-v-derevo/clon` |
+#   → | `flang/proof/checker/` (чекер на C) | нет | `Ч63-chekker-v-derevo/clon` |
 ```
 
 Никто не ошибся в замере: замер был снят раньше, чем написан ряд, а между
@@ -75,10 +75,10 @@ git -c core.quotepath=false show 86494646:docs/what-blocks-1-0.md | sed -n '27,2
 
 ```sh
 git -c core.quotepath=false log --oneline 03fb4060..main | wc -l          # → 17
-git -c core.quotepath=false ls-tree -r --name-only main -- 'flang/proof/чекер' | wc -l   # → 137
-git -c core.quotepath=false log --oneline --diff-filter=A -- 'flang/proof/чекер/Makefile'
+git -c core.quotepath=false ls-tree -r --name-only main -- 'flang/proof/checker' | wc -l   # → 137
+git -c core.quotepath=false log --oneline --diff-filter=A -- 'flang/proof/checker/Makefile'
 #   → e8380e2d feat(чекер): независимый чекер на C, его пробы и рецепт сборки лежат в дереве
-wc -l flang/proof/чекер/сверщик.c                                          # → 1566
+wc -l flang/proof/checker/checker.c                                          # → 1566
 LC_ALL=C.UTF-8 /usr/bin/grep -a -c -- '--imena' scripts/raskrutka.sh       # → 11
 ```
 
@@ -682,8 +682,8 @@ checker'а, TCB раздела 6 не задет). На ней: все пять 
 31 августа, на линии в 1566 строк):
 
 ```sh
-sed -n '1351p;1358p' flang/proof/чекер/сверщик.c   # оба счётчика полноты — те же
-LC_ALL=C.UTF-8 /usr/bin/grep -a -c 'блок_функции' flang/proof/чекер/сверщик.c   # → 0, код 1
+sed -n '1351p;1358p' flang/proof/checker/checker.c   # оба счётчика полноты — те же
+LC_ALL=C.UTF-8 /usr/bin/grep -a -c 'блок_функции' flang/proof/checker/checker.c   # → 0, код 1
 ```
 
 То есть два изъяна из пяти в стволе были, а поиска блока функции ствольная
@@ -823,7 +823,7 @@ LC_ALL=C.UTF-8 /usr/bin/grep -a -n '^объект «Сбор слов»\|^тип
 Ч86, Ч87, Ч91, — среди которых линия печати ходов вывода Ч56 → Ч71 → Ч87. Часть
 из них уже в стволе: `841c3f38` (печать ходов, `zapis.flang` +481 строка),
 `89baa02f` + `fa017ef2` + `5c7a9196` (половина независимого проверяльщика,
-`flang/proof/чекер/сверщик.c` 1566 → 2412 строк).
+`flang/proof/checker/checker.c` 1566 → 2412 строк).
 
 Названное здесь же следом столкновение «Связка постусловия» в стволе тоже
 снято: имя объявлено только в `flang/self/proofterm.flang:1409`, в
@@ -1078,7 +1078,7 @@ flang) поднят и отвечает `curl` — 200 на `/здоровье`,
 `flang/proof/examples`, 58 `flang/self` верхнего уровня, 193 `examples`).
 
 ```sh
-LC_ALL=C.UTF-8 python3 flang/proof/привязка/кругооборот.py
+LC_ALL=C.UTF-8 python3 flang/proof/binding/cycle.py
 ```
 
 | | сколько | собрано байт в байт | было 31 августа |
@@ -1104,7 +1104,7 @@ LC_ALL=C.UTF-8 python3 flang/proof/привязка/кругооборот.py
 каждым прогоном.
 
 **Мешают ровно три вещи, и все три показаны порчей, а не рассуждением** (разбор —
-`python3 flang/proof/привязка/кругооборот.py --причины`): строчный
+`python3 flang/proof/binding/cycle.py --причины`): строчный
 комментарий не выдаётся вовсе — 30 310 строк; блочный — 213; форма экранирования
 забывается (`"\u0400"` и сам знак неразличимы) — 492; широкая пунктуация теряет
 поверхностный вид — 10; ещё 3 строки — вина самого собирателя (столбцы в UTF-16
@@ -1248,7 +1248,7 @@ LC_ALL=C.UTF-8 python3 flang/proof/привязка/кругооборот.py
 перестаёт.
 
 ```sh
-make -C flang/proof/чекер && sh flang/proof/чекер/пробы/прогон.sh
+make -C flang/proof/checker && sh flang/proof/checker/tests/run.sh
 ```
 
 Итог прогона — два числа, и одно без другого не значит ничего, потому что
@@ -1264,10 +1264,10 @@ make -C flang/proof/чекер && sh flang/proof/чекер/пробы/прог�
 на то, что она вообще применилась: правка, не нашедшая своей строки, сравнивала
 бы запись саму с собой и зеленела бы всегда. Полторы секунды, компилятор flang
 не нужен. Написан Ч29, правлен Ч55, перенесён в дерево Ч63 — и **31 августа
-сдан в ствол**: коммит `e8380e2d`, `flang/proof/чекер/сверщик.c`, 1566 строк.
+сдан в ствол**: коммит `e8380e2d`, `flang/proof/checker/checker.c`, 1566 строк.
 
 ```sh
-git -c core.quotepath=false ls-tree -r --name-only main -- 'flang/proof/чекер' | wc -l   # → 137
+git -c core.quotepath=false ls-tree -r --name-only main -- 'flang/proof/checker' | wc -l   # → 137
 ```
 
 **Но два эти числа — 61 и 95 — вечером 31 августа получили две оговорки, и без

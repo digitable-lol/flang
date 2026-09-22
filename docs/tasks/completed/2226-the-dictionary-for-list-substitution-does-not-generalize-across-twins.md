@@ -61,8 +61,8 @@
 | `имена` | `flang/scripts/name-guard.mjs` | одиночка, **node** |
 | `закон` | `scripts/emit-law.flang` | одиночка, flang |
 | `память` | `flang/scripts/memory-guard.flang` | одиночка, flang |
-| `запись` | `flang/proof/подделки/прогон.sh` | оболочка |
-| `сведение` | `flang/proof/подделки/сведение.sh` | оболочка |
+| `запись` | `flang/proof/forgeries/run.sh` | оболочка |
+| `сведение` | `flang/proof/forgeries/reduction.sh` | оболочка |
 | `длина` | `flang/scripts/closed-length-guard.flang` | одиночка, flang |
 | `точка` | `scripts/bootstrap-point-by-binary.flang` | одиночка, flang |
 

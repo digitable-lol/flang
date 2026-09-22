@@ -229,7 +229,7 @@ docs/design/fmath-first-ten-statements.md	ПЕРЕДАЧА/stack-B/kontrakt-kvan
 docs/design/fmath-first-ten-statements.md	ПЕРЕДАЧА/otkrytye-84.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
 docs/design/fmath-first-ten-statements.md	ПЕРЕДАЧА/adr-0026-matrix.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
 docs/design/vedro-e-semeystvo-r.md	ПЕРЕДАЧА/stack-E/zamer.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/flang/proof/чекер/пробы/семьи/покрытие/README.md	ПЕРЕДАЧА/stack-E/zamer-put-619.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
+docs/flang/proof/checker/tests/families/coverage/README.md	ПЕРЕДАЧА/stack-E/zamer-put-619.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
 docs/tasks/1000-editing-a-source-a-record-cites-must-reissue-the-record.md	scripts/zapis-dognala-istochnik.sh	файл, который задача велит написать; в дереве его ещё нет
 docs/benchmark-speed.md	kompilyaciya.mjs	история: замер называет свои скрипты на JavaScript, снятые 11 сентября 2026 вместе с остальным JavaScript; рядом в той же строке это сказано прямо
 docs/benchmark-speed.md	faz.mjs	история: замер называет свои скрипты на JavaScript, снятые 11 сентября 2026 вместе с остальным JavaScript; рядом в той же строке это сказано прямо

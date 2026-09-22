@@ -131,7 +131,7 @@
 - `bootstrap/flang check flang/test/владение-состоянием.flang` — то же (36 с);
 - `bootstrap/flang check flang/self/conc.flang` — то же (116 с), файл не менялся;
 - `sh scripts/доказуемость.sh` — **ДОКАЗУЕМ** (до правки и после);
-- `sh flang/proof/чекер/пробы/прогон.sh` — **сошлось всё**;
+- `sh flang/proof/checker/tests/run.sh` — **сошлось всё**;
 - `sh flang/test/обход.sh` — чисто, проверок 211 (было 205, прибыло 6 моих).
 
 Сторож `scripts/guards/no-comments-guard.sh` был красным ДО этой работы (67 файлов);

@@ -55,7 +55,7 @@
 
 **Правило отсюда:** прежде чем звать сторож в свежем клоне — положить
 двоичный и убедиться, что он виден. Переменная у сторожей не одна:
-`name-guard.mjs` читает `FLANG_BINARY`, `flang/proof/подделки/сведение.sh` —
+`name-guard.mjs` читает `FLANG_BINARY`, `flang/proof/forgeries/reduction.sh` —
 `FLANG` (`FLANG=${FLANG:-$KOREN/bootstrap/flang}`, строка 103).
 
 ## Почему медленны те, кто медленны

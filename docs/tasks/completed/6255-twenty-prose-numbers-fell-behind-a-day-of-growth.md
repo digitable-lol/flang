@@ -30,7 +30,7 @@
            storozha-bez-podloga, pol-dokazannogo-sverka, semya-rantayma-eto-
            istochnik, vedomost-soglasna-s-check, chto-otstalo-ot-semeni,
            print-launch и три в benchmarks/кеш-приговоров
-*.py         18 →   21   привязка.py, привязка-по-файлу.py, кругооборот.py
+*.py         18 →   21   binding.py, binding-by-file.py, cycle.py
            (приборы Г5, внесены задачами 7855 и 9751)
 *.rb        237 →  271   один файл: packaging/homebrew/flang.rb, вырос с
            работой выпуска

@@ -101,14 +101,14 @@
 место с именем, местом и выводом». Прогон 22 сентября 2026, ствол `d0763e8b6`:
 
 ```
-flang/proof/чекер/сверщик пробы/семьи/precondition-discharge/three-feeds.flang \
-                          пробы/семьи/precondition-discharge/three-feeds.запись
+flang/proof/checker/сверщик tests/families/precondition-discharge/three-feeds.flang \
+                          tests/families/precondition-discharge/three-feeds.запись
   → ПРОВЕРЕНО — … СНЯТИЙ ПРЕДУСЛОВИЙ 3: ПРОИГРАНО ЗАНОВО 3, на слове ядра 0;
     МЕСТ ВЫЗОВА БЕЗ БЛОКА СНЯТИЯ 0.  Привязка к программе: SHA-256 сошёлся   код 0
 
-sh flang/proof/чекер/пробы/прогон.sh   → сошлось всё; подделка `unpaid-callee` отвергается
+sh flang/proof/checker/tests/run.sh   → сошлось всё; подделка `unpaid-callee` отвергается
 sh scripts/доказуемость.sh             → ДОКАЗУЕМ, 4 проверки из 4
 ```
 
 Блока снятия в записи «не существовало вовсе» на день замера — сегодня он есть и
-переигрывается. Семья проб — `flang/proof/чекер/пробы/семьи/precondition-discharge/`.
+переигрывается. Семья проб — `flang/proof/checker/tests/families/precondition-discharge/`.

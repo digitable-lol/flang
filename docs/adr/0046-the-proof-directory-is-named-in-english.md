@@ -41,9 +41,9 @@
 Три схемы лежат в одном дереве и иногда в одном пути:
 
 ```
-flang/proof/checker/tests/families/algebra-domeny/порча/…
+flang/proof/checker/tests/families/algebra-domains/corrupt/…
                     ↑англ.  ↑англ.  ↑англ+транслит   ↑кириллица
-flang/proof/lean/RecordReader.lean   flang/proof/lean/Запись.lean
+flang/proof/lean/RecordReader.lean   flang/proof/lean/Record.lean
 ```
 
 Транслит здесь не мелочь: `lozh`, `lzhet`, `ohrana`, `zov`, `totalnost`, `psevdonim`,
@@ -70,7 +70,7 @@ flang/proof/lean/RecordReader.lean   flang/proof/lean/Запись.lean
 а те переименовывает задача 1428.
 
 **3. Довод прежнего исключения снят по существу, а не отменён росчерком.** Он звучал так:
-имя файла — ключ записи доказательства (`НАБОР.tsv`, `tests/records/corpus/<имя>.record`),
+имя файла — ключ записи доказательства (`manifest.tsv`, `tests/records/corpus/<имя>.record`),
 и переименование рвёт ключ. Это верно, и поэтому переименование идёт **парой**: файл и
 строка манифеста двигаются одним изменением, а `sh flang/proof/checker/tests/run.sh`
 показывает «сошлось всё» после каждой порции. Ключ не запрещает переименование — он

@@ -230,6 +230,6 @@
 Приём задачи — «`git grep -l raskrutka.sh` находит только историю». Прогон 22 сентября
 2026 на стволе `d0763e8b6`: файл `scripts/raskrutka.sh` в дереве, зовущих файлов **225**,
 среди них живые — `.github/workflows/{binary,ci,install-path,reprint}.yml`,
-`flang/proof/{доля-корпуса,сверить,сличить}.sh`, `flang/proof/чекер/Makefile`,
+`flang/proof/{доля-корпуса,сверить,сличить}.sh`, `flang/proof/checker/Makefile`,
 `bootstrap/flang_repl.c`. Не сделана; ветка `a/1428-translit-file-names-to-english` на
 сервере не живёт.

@@ -131,18 +131,18 @@
 ## Чем кончилось
 
 Приём задачи прогнан 22 сентября 2026, ствол `d0763e8b6`, двоичный 0.7.21, сверщик из
-`make -C flang/proof/чекер`, Lean 4.34.0:
+`make -C flang/proof/checker`, Lean 4.34.0:
 
 ```
-flang check flang/proof/чекер/пробы/семьи/вложенный-квантор/каждый-есть-в-исходных.flang --proof
+flang check flang/proof/checker/tests/families/nested-quantifier/каждый-есть-в-исходных.flang --proof
   → ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 1: доказано 1        код 0
-flang check .../вложенный-квантор/каждый-с-каждым.flang --proof
+flang check .../nested-quantifier/каждый-с-каждым.flang --proof
   → ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 1: доказано 1        код 0
 
-sh flang/proof/чекер/пробы/прогон.sh        → сошлось всё (подделок 534, принято 0;
+sh flang/proof/checker/tests/run.sh        → сошлось всё (подделок 534, принято 0;
                                                честных 248, отвергнуто 0)
-sh flang/proof/lean/прогон.sh               → сошлось всё, расхождений 0
-sh flang/proof/сверка-ведомости.sh          → код 0
+sh flang/proof/lean/run.sh               → сошлось всё, расхождений 0
+sh flang/proof/tables-guard.sh          → код 0
 sh scripts/доказуемость.sh                  → ДОКАЗУЕМ, доля 650 / 650 = 100,00 %
 ```
 

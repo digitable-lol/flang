@@ -132,4 +132,4 @@ bootstrap/flang io scripts/guards/link-guard.fscript --на-веру
 в мёртвой ветке; в стволе от неё нет ничего.
 
 Две ссылки в `flang/proof/**`, переданные стеку K, в стволе сегодня **целы**:
-`семьи/план/README.md` и `семьи/прогон-индукция/README.md` разрешаются обе.
+`families/plan/README.md` и `families/run-induction/README.md` разрешаются обе.

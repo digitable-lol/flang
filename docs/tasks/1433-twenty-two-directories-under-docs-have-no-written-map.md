@@ -127,7 +127,7 @@ $ for f in $(ls docs/benchmark/); do cmp -s "docs/benchmark/$f" "docs/benchmark2
 Приём задачи прогнан 22 сентября 2026 на стволе `d0763e8b6`. Сошлось не всё:
 
 ```
-for d in docs/*/; do [ -f "$d/README.md" ] || [ -f "$d/ЧИТАТЬ.md" ] || echo "$d"; done
+for d in docs/*/; do [ -f "$d/README.md" ] || [ -f "$d/README.md" ] || echo "$d"; done
   → 7 каталогов (было 15): adr/ archive/ flang/ fspec/ guide/ releases/ site/
     — из них пять названы в «Чего НЕ делать» как те, где README заводить не надо;
       остаются docs/flang/ и docs/fspec/

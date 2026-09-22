@@ -76,7 +76,7 @@ $ ./ярлык
 sh scripts/guards/run-verdict-debt-guard.sh    → РАЗОШЛОСЬ: жалоб 8      код 1
   записей в ведомости 50; целей в дереве 89, вызовов 166;
   записей, которых в дереве не зовут, 0
-  ✘ 8 × «СОГЛАСИЕ ЛИШНЕЕ: flang/proof/пробы-поручений/прогон.fscript зовёт
+  ✘ 8 × «СОГЛАСИЕ ЛИШНЕЕ: flang/proof/probes/orders/run.fscript зовёт
         …/программы/{доводы,пустое-имя,среда}.fscript с --на-веру,
         а тот вердикт ПРОХОДИТ — ключ убрать»
 ```
@@ -91,7 +91,7 @@ sh scripts/guards/run-verdict-debt-guard.sh    → РАЗОШЛОСЬ: жало�
 (`run-verdict-debt-guard.sh`, строка 135: `if cel not in dolg and soglasie`). Прогоном же:
 
 ```
-bootstrap/flang io flang/proof/пробы-поручений/программы/доводы.fscript
+bootstrap/flang io flang/proof/probes/orders/programs/доводы.fscript
   → не доказано: утверждений 1: доказано 0, сетка 1, на веру 0 —
     запуск только по явному согласию: --на-веру
 ```

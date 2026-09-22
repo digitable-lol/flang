@@ -160,14 +160,14 @@ Worktree `/srv/tmp/dokazuemyy/kvantor-spiska`, ветка `r/kvantor-spiska` о�
 Приём задачи прогнан 22 сентября 2026, ствол `d0763e8b6`:
 
 ```
-flang check flang/proof/чекер/пробы/семьи/все-элементы/выбор-ветвей.flang --proof
+flang check flang/proof/checker/tests/families/all-elements/выбор-ветвей.flang --proof
   → ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 1: доказано 1        код 0
-flang check .../все-элементы/вызов-с-выписанным.flang --proof
+flang check .../all-elements/вызов-с-выписанным.flang --proof
   → ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 1: доказано 1        код 0
 
-sh flang/proof/чекер/пробы/прогон.sh   → сошлось всё
-sh flang/proof/lean/прогон.sh          → сошлось всё; лемм 169, искажений 52, отвергнуто 52
-sh flang/proof/сверка-ведомости.sh     → код 0
+sh flang/proof/checker/tests/run.sh   → сошлось всё
+sh flang/proof/lean/run.sh          → сошлось всё; лемм 169, искажений 52, отвергнуто 52
+sh flang/proof/tables-guard.sh     → код 0
 sh scripts/доказуемость.sh             → ДОКАЗУЕМ, доля 650 / 650 = 100,00 %,
                                           «снято калькулятором» 0
 ```

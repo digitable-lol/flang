@@ -205,9 +205,9 @@ bootstrap/flang io flang/proof/probes/orders/run.fscript --на-веру
 доводов отдаёт пустой список». Прогон 22 сентября 2026 на стволе `d0763e8b6`:
 
 ```
-bootstrap/flang io flang/proof/пробы-поручений/программы/доводы.fscript --на-веру -- один два
+bootstrap/flang io flang/proof/probes/orders/programs/доводы.fscript --на-веру -- один два
   → "result":"доводов 2: один|два"
-bootstrap/flang io flang/proof/пробы-поручений/программы/доводы.fscript --на-веру
+bootstrap/flang io flang/proof/probes/orders/programs/доводы.fscript --на-веру
   → "result":"доводов 0: "
 ```
 

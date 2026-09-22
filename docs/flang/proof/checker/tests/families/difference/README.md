@@ -17,9 +17,9 @@
 
 | файл | класс | код | что стережёт |
 |---|---|---:|---|
-| `../../../../../../../flang/proof/examples/subtraction-under-precondition.flang` + `honest.запись` | честная | 0 | два места: прямой порядок и зеркало; оба проиграны, на слове ядра ноль |
-| `../../../../../../../flang/proof/examples/forgery-subtraction-under-precondition.flang` + `../../../../../../../flang/proof/checker/tests/records/corpus/poddelka-raznost-bez-poryadka.запись` | подделка (набор, «лжёт-запись») | 1 | тот же вывод у трёх функций без нужного допущения: о другой паре, перевёрнутый, никакого |
-| `corrupt/bottom-of-the-wrong-term.запись` | подделка | 1 | дно спрошено у уменьшаемого, а не у вычитаемого — причина названа |
+| `../../../../../../../flang/proof/examples/subtraction-under-precondition.flang` + `honest.record` | честная | 0 | два места: прямой порядок и зеркало; оба проиграны, на слове ядра ноль |
+| `../../../../../../../flang/proof/examples/forgery-subtraction-under-precondition.flang` + `../../../../../../../flang/proof/checker/tests/records/corpus/poddelka-raznost-bez-poryadka.record` | подделка (набор, «лжёт-запись») | 1 | тот же вывод у трёх функций без нужного допущения: о другой паре, перевёрнутый, никакого |
+| `corrupt/bottom-of-the-wrong-term.record` | подделка | 1 | дно спрошено у уменьшаемого, а не у вычитаемого — причина названа |
 | порчей одной строки в `run.sh` | подделки | 1 | потолок пропущен (Н12 опёрся на Пред1); стороны переставлены; одна посылка; обязательство входа снято; запрет Н✗ вместо правила; вывод не доведён до цели |
 
 Записи РУКОТВОРНЫЕ: правки ядра (`flang/self/proof-kernel.flang`,

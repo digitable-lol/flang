@@ -63,7 +63,7 @@
 
 ## 2. Где стоят все места правила (а) — «разбор цели по условию»
 
-Прогон (полный `корпус/*.запись`, честные записи, без `poddelka-*`):
+Прогон (полный `корпус/*.record`, честные записи, без `poddelka-*`):
 
 ```bash
 export LC_ALL=C.UTF-8
@@ -148,7 +148,7 @@ export LC_ALL=C.UTF-8
 Прогон:
 ```bash
 export LC_ALL=C.UTF-8
-./flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.запись
+./flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.record
 echo $?
 ```
 ```
@@ -200,13 +200,13 @@ if (есть_ходы && !есть_принцип) {                            
 этой семьи мест, и `проиграть_блок` не позовётся, СКОЛЬКО БЫ ходов ни было
 дописано под посылкой.
 
-Проверено прогоном, не домыслом. Взял настоящую запись `binder-wall-map.запись`
+Проверено прогоном, не домыслом. Взял настоящую запись `binder-wall-map.record`
 и вручную дописал ПОД обеими посылками («пусто», «голова и хвост») блок
 `ход цель / ход 1 соседи ⟨а плюс б⟩ / ход конец` (заведомо валидный ФОРМАТ,
 неважно какой ход — важно, увидит ли его чекер вообще):
 
 ```bash
-./flang/proof/checker/сверщик flang/proof/examples/binder-wall-map.flang оснастка/bwm-diag.запись
+./flang/proof/checker/сверщик flang/proof/examples/binder-wall-map.flang оснастка/bwm-diag.record
 ```
 ```
 НЕ ВЗЯЛСЯ (…): утверждение «разбор: при положительном пороге ноль или один»:
@@ -242,7 +242,7 @@ if (есть_ходы && !есть_принцип) {                            
 от (…) ) иначе да» нет терма «а плюс б» … код=1
 ```
 То есть `проиграть_блок` ЗДЕСЬ вызывается для посылок под теоремой уже сегодня
-(и это согласуется с тем, что в `stack.запись` посылки под письменной теоремой
+(и это согласуется с тем, что в `stack.record` посылки под письменной теоремой
 «Копия равна оригиналу» УЖЕ проигрываются ходами, §2 `proof-object-migration.md`).
 Так что для маршрута «письменная теорема» гейта-блокировки нет — но есть ДРУГОЕ
 препятствие, найденное этим же прогоном.
@@ -337,29 +337,29 @@ cd /srv/tmp/dokazuemyy/r4116
 export LC_ALL=C.UTF-8
 
 # 1. baseline: показать, что правило и путь ядра — те, что описаны в §2
-./bootstrap/flang check оснастка/proba-razbor.flang --proof --записать оснастка/proba-razbor.запись
-./flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.запись   # код 0, но 0 ходов, "на слово" фактически нет (Ч369 закрыл)
+./bootstrap/flang check оснастка/proba-razbor.flang --proof --записать оснастка/proba-razbor.record
+./flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.record   # код 0, но 0 ходов, "на слово" фактически нет (Ч369 закрыл)
 
-# 2. рукотворный сертификат §3.1 — правкой оснастка/proba-razbor.запись, добавлены ход-строки
-./flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.запись   # код 0, ходов проверено 8
+# 2. рукотворный сертификат §3.1 — правкой оснастка/proba-razbor.record, добавлены ход-строки
+./flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.record   # код 0, ходов проверено 8
 
 # 3. подделка на сертификат — искажено тело развёртки
-./flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/porcha-razbor.запись  # код 1, названа строка 7
+./flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/porcha-razbor.record  # код 1, названа строка 7
 
-# 4. диагностика гейта §3.2 — правкой копии binder-wall-map.запись, добавлены заведомо
+# 4. диагностика гейта §3.2 — правкой копии binder-wall-map.record, добавлены заведомо
 #    неверные "ход 1 соседи ⟨а плюс б⟩" под ОБЕИМИ посылками "Порог под разбором"
-./flang/proof/checker/сверщик flang/proof/examples/binder-wall-map.flang оснастка/bwm-diag.запись  # код 3, "ни одного хода не записано" — ходы не увидены
+./flang/proof/checker/сверщик flang/proof/examples/binder-wall-map.flang оснастка/bwm-diag.record  # код 3, "ни одного хода не записано" — ходы не увидены
 
-# 5. диагностика §3.3 — правкой копии ohrana-daet-fakt.запись: сперва настоящий
+# 5. диагностика §3.3 — правкой копии ohrana-daet-fakt.record: сперва настоящий
 #    "развернуть", затем заведомо неверный "соседи", чтобы получить от чекера
 #    дословный текст цели после развёртки
-./flang/proof/checker/сверщик flang/test/fixtures/ohrana-daet-fakt.flang оснастка/odf-diag.запись  # код 1, цель напечатана дословно
+./flang/proof/checker/сверщик flang/test/fixtures/ohrana-daet-fakt.flang оснастка/odf-diag.record  # код 1, цель напечатана дословно
 ```
 
 Файлы оснастки (все untracked, `git status` дерева корпуса чист):
-`оснастка/proba-razbor.flang`, `оснастка/proba-razbor.запись`,
-`оснастка/porcha-razbor.запись`, `оснастка/bwm-diag.запись`,
-`оснастка/odf-diag.запись`.
+`оснастка/proba-razbor.flang`, `оснастка/proba-razbor.record`,
+`оснастка/porcha-razbor.record`, `оснастка/bwm-diag.record`,
+`оснастка/odf-diag.record`.
 
 `$?` во всех прогонах — хвостом (`echo код=$?`), без канала, как требует
 методика.
@@ -384,7 +384,7 @@ export LC_ALL=C.UTF-8
 ```bash
 export LC_ALL=C.UTF-8
 make -s -C flang/proof/checker                          # сверщик собирается тем же Makefile, без правок
-./flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.запись   # код 0
+./flang/proof/checker/сверщик оснастка/proba-razbor.flang оснастка/proba-razbor.record   # код 0
 ./flang/proof/checker/сверщик flang/proof/examples/binder-wall-map.flang \
-  flang/proof/checker/tests/records/corpus/binder-wall-map.запись                         # код 3, без правок оснастки
+  flang/proof/checker/tests/records/corpus/binder-wall-map.record                         # код 3, без правок оснастки
 ```

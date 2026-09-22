@@ -76,7 +76,7 @@
 Прогон до правки (`LEAN=… sh flang/proof/lean/run.sh`, код 1):
 
 ```
-  РАСХОЖДЕНИЕ: checker/tests/records/audit-2844/unfold3-control-honest.запись
+  РАСХОЖДЕНИЕ: checker/tests/records/audit-2844/unfold3-control-honest.record
     «разность обмена — ноль» — сверщик принял, Lean ОТВЕРГ (шаг 2 Разв3)
   расхождений: 1
 ```

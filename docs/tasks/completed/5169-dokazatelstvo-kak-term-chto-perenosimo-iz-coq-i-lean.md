@@ -56,7 +56,7 @@
 ## 2. Как устроено у нас — и почему довод ДРУГОЙ
 
 У нас доказательство — **текст протокола**. Смотреть можно прямо в записи
-(`flang/proof/checker/tests/records/corpus/substantive.запись`):
+(`flang/proof/checker/tests/records/corpus/substantive.record`):
 
 ```
 утверждение «С1 квантор: все элементы результата неотрицательны» ... строка 40

@@ -50,14 +50,14 @@
 
 ```
 запись                    без теоремы   из них можно   выигрываема
-abilities.запись                   28              2   нет
-boundaries.запись                   8              0   нет
-equality.запись                     6              0   нет
-forms.запись                        9              0   нет
-order.запись                        2              0   нет
-sources.запись                      3              2   нет
-substantive.запись                  3              2   нет
-types.запись                        3              0   нет
+abilities.record                   28              2   нет
+boundaries.record                   8              0   нет
+equality.record                     6              0   нет
+forms.record                        9              0   нет
+order.record                        2              0   нет
+sources.record                      3              2   нет
+substantive.record                  3              2   нет
+types.record                        3              0   нет
 ```
 
 Ни одной. Проверено не рассуждением, а работой: теорема к `С5` написана,

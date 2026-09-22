@@ -207,7 +207,7 @@ Lean (`VerdictCheck.lean`, приёмка с PR #42): на Разв3 — ОТВ�
   э
 ```
 
-`flang/proof/checker/tests/families/unfolding/corrupt/razv2-captures-bound-name.запись`:
+`flang/proof/checker/tests/families/unfolding/corrupt/razv2-captures-bound-name.record`:
 
 ```
 запись доказательства 1
@@ -262,7 +262,7 @@ Lean (`VerdictCheck.lean`, приёмка с PR #42): на Разв3 — ОТВ�
   «Разность» от б и а
 ```
 
-`flang/proof/checker/tests/families/unfolding/corrupt/razv3-sequential-arguments.запись`:
+`flang/proof/checker/tests/families/unfolding/corrupt/razv3-sequential-arguments.record`:
 
 ```
 запись доказательства 1

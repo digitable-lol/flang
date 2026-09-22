@@ -49,10 +49,10 @@
 Это ведомость, идущая в stdout. В ЗАПИСЬ (`--записать`) из этого не попадает НИЧЕГО
 проверяемого. Снято прогоном:
 
-- `corpus-factorial.запись` (26 строк) несёт только `вид postcondition` + блок теоремы
+- `corpus-factorial.record` (26 строк) несёт только `вид postcondition` + блок теоремы
   индукции; блока `тотальность «Факториал»` НЕТ, строки `тотальностей N` в шапке НЕТ.
-- `corpus-numtree.запись` — то же: структурная «Высота» блока не получает.
-- `corpus-tree-height.запись`: `тотальностей 1`, и это блок `тотальность «Глубже» строка 60 /
+- `corpus-numtree.record` — то же: структурная «Высота» блока не получает.
+- `corpus-tree-height.record`: `тотальностей 1`, и это блок `тотальность «Глубже» строка 60 /
   вид composition` — **композиция**; структурная «Глубина дерева» блока не имеет.
 
 Итог: у структурно/шагово-рекурсивной функции носителя завершения в записи нет вовсе — он
@@ -282,12 +282,12 @@ F→F законно и погашено свидетелем убывания �
 ## 6. Реприпт: ДА (в отличие от межмодуля)
 
 Показано прогоном на РЕАЛЬНОМ сверщике без правки серийного кода. Взята честная
-`corpus-tree-height.запись` (код 0), в блоке `тотальность «Глубже»` подменён `вид composition`
+`corpus-tree-height.record` (код 0), в блоке `тотальность «Глубже»` подменён `вид composition`
 → `вид structure` — модель того, что печать положила бы рекурсивный блок, которого сверщик
 ещё не читает:
 
 ```
-$ сверщик corpus-tree-height.flang mutant-structure.запись ; echo $?
+$ сверщик corpus-tree-height.flang mutant-structure.record ; echo $?
 НЕ СОШЛОСЬ: строка записи 33 не узнана: «вид structure» — чекер не принимает того, чего не
 читает; тотальность «Глубже»: заявлен вид не composition — это другая семья, здесь
 отвергается вслух
@@ -412,10 +412,10 @@ SV=/srv/tmp/dokazuemyy/vliv-korpus/flang/proof/checker/сверщик
 E=/srv/tmp/dokazuemyy/vliv-korpus/flang/proof/examples
 # 1. Носитель рекурсии в ведомости, но НЕ в записи:
 $BIN check $E/corpus-numtree.flang --proof | grep -E 'доказано структурой'
-$BIN check $E/corpus-numtree.flang --proof --записать /tmp/n.запись
-grep -c 'тотальность «Высота»' /tmp/n.запись        # 0 сегодня
+$BIN check $E/corpus-numtree.flang --proof --записать /tmp/n.record
+grep -c 'тотальность «Высота»' /tmp/n.record        # 0 сегодня
 # 2. Сверщик отвергает вид не composition вслух:
-$BIN check $E/corpus-tree-height.flang --proof --записать /tmp/t.запись
-sed 's/  вид composition/  вид structure/' /tmp/t.запись > /tmp/m.запись
-$SV $E/corpus-tree-height.flang /tmp/m.запись ; echo $?   # код 1, «вид structure … отвергается вслух»
+$BIN check $E/corpus-tree-height.flang --proof --записать /tmp/t.record
+sed 's/  вид composition/  вид structure/' /tmp/t.record > /tmp/m.record
+$SV $E/corpus-tree-height.flang /tmp/m.record ; echo $?   # код 1, «вид structure … отвергается вслух»
 ```

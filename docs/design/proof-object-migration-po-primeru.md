@@ -84,7 +84,7 @@
 закрыты автором `по примеру`:
 
 ```
-$ сверщик flang/proof/examples/traffic-light.flang …/traffic-light.запись
+$ сверщик flang/proof/examples/traffic-light.flang …/traffic-light.record
 ПРОВЕРЕНО … сведений проиграно заново 3 (ходов проверено 2) … Шагов по примеру
 проверено по существу 3 …                                              КОД=0
 ```
@@ -141,7 +141,7 @@ $ сверщик flang/proof/examples/traffic-light.flang …/traffic-light.за
 Счёт снят так (`$?` без трубы):
 ```bash
 export LC_ALL=C.UTF-8
-for f in flang/proof/checker/tests/records/corpus/*.запись; do
+for f in flang/proof/checker/tests/records/corpus/*.record; do
   case $(basename "$f") in poddelka-*|forgery-*) continue;; esac
   src=$(grep -a -m1 '^исходник ' "$f" | sed 's/^исходник //')
   сверщик "$src" "$f" 2>&1 | grep -aoE 'шаг «по примеру» не проверен по существу — [^;]+'
@@ -282,7 +282,7 @@ done | wc -l          # 14
 | `flang/proof/checker/checker.c` | чекер | `по примеру` Ч71 — `сверить_шаг_примером` 2338; `сверить_шаг_вне_случая` 2271; метка `МЕТКА_ПРИМЕРА` 1312; `сверить_шаги` 2507; `проиграть_блок` и ходы (влиты 4102/4107) |
 | `flang/self/proofterm.flang` | сборка шага, «заключение строит ядро» | 914 |
 | `flang/self/compiler.flang` | «Прогоны для ядра»: примеры считаются только при наличии теоремы | 971 |
-| `flang/proof/checker/tests/records/corpus/*.запись` | 32 честных записи с «по примеру» | 93 шага, 14 не взялись |
+| `flang/proof/checker/tests/records/corpus/*.record` | 32 честных записи с «по примеру» | 93 шага, 14 не взялись |
 | `docs/design/proof-object.md` | общий объект; P8 `вычислить`; §4 замкнутый счёт остаётся примитивом | §2.2, §4, §8 |
 | `docs/design/proof-object-migration.md` | образец (правило «тождество») | семьи, ходы, учёт Г3 |
 
@@ -291,9 +291,9 @@ done | wc -l          # 14
 export LC_ALL=C.UTF-8
 make -s -C flang/proof/checker
 сверщик flang/proof/examples/traffic-light.flang \
-  flang/proof/checker/tests/records/corpus/traffic-light.запись   # ПРОВЕРЕНО, КОД 0, 3 сведения ходами
+  flang/proof/checker/tests/records/corpus/traffic-light.record   # ПРОВЕРЕНО, КОД 0, 3 сведения ходами
 сверщик flang/proof/examples/stack.flang \
-  flang/proof/checker/tests/records/corpus/stack.запись           # КОД 3: 1 «по примеру» не взялся (вариант), посылки проиграны
+  flang/proof/checker/tests/records/corpus/stack.record           # КОД 3: 1 «по примеру» не взялся (вариант), посылки проиграны
 ```
 Рукотворный сертификат семьи «нульарные базы» — `оснастка/проба-по-примеру.{flang,запись}`
 (untracked): КОД 0; подделки в `оснастка/порча/` — КОД 1.

@@ -195,7 +195,7 @@ flang run … --function 'Разность пары лжёт' --args '{"перв
 ```
 
 Обе (`run.sh:143` и `:159`) сверяют `corpus-natural.flang` с
-`records/program-binding/v-honest.запись`. Ждали 3 потому, что у `corpus-natural` было
+`records/program-binding/v-honest.record`. Ждали 3 потому, что у `corpus-natural` было
 одно незакрытое место; правило его закрывает, и запись честно доходит до 0.
 
 Ни одно из двух утверждений проб от этого не пострадало — они про привязку к

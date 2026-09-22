@@ -212,7 +212,7 @@
    запись «Место» с «путь» равным "flang/scripts/word-occupancy.fscript" и «нужно» равным "(«Кончается на» от имя и \".фланг\") или («Кончается на» от имя и \".fscript\")" и «нельзя» равным "",
    запись «Место» с «путь» равным "flang/test/владение-состоянием.sh" и «нужно» равным "--include='*.фланг' --include='*.fscript'" и «нельзя» равным "--include='*.фланг' .",
    запись «Место» с «путь» равным "docs/site/changelog.json" и «нужно» равным ".фп" и «нельзя» равным "\"*.flang\"]",
-   запись «Место» с «путь» равным "flang/proof/checker/tests/families/run-induction/letters.запись" и «нужно» равным ".фп" и «нельзя» равным "\"*.flang\"]",
+   запись «Место» с «путь» равным "flang/proof/checker/tests/families/run-induction/letters.record" и «нужно» равным ".фп" и «нельзя» равным "\"*.flang\"]",
    запись «Место» с «путь» равным "scripts/guards/tree-inventory.fscript" и «нужно» равным "«Кончается на» от путь и \".fscript\"" и «нельзя» равным "",
    запись «Место» с «путь» равным "scripts/guards/link-guard.fscript" и «нужно» равным "\"flang\", \"fscript\", \"md\"" и «нельзя» равным "\"flang\", \"md\"",
    запись «Место» с «путь» равным "scripts/guards/name-collision-guard.fscript" и «нужно» равным "'*.flang' '*.fscript' | while" и «нельзя» равным "'*.flang' | while",

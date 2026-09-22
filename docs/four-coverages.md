@@ -26,7 +26,7 @@ sh scripts/four-coverages.sh
 проверяющий на C ([`flang/proof/checker/checker.c`](../flang/proof/checker/checker.c)) переиграл сам,
 а не принял на слово у ядра. Записи лежат готовыми в
 `flang/proof/checker/tests/records/corpus/` — по одной на программу-образец, всего 91.
-<!-- СНЯТО 2026-09-19 файлов flang/proof/checker/tests/records/corpus/*.запись = 91 -->
+<!-- СНЯТО 2026-09-19 файлов flang/proof/checker/tests/records/corpus/*.record = 91 -->
 Снимается: `sh flang/proof/corpus-share.sh --проигрыванием`.
 
 **Что это даёт сказать.** Что у этого набора записей слово «доказано» в отчёте компилятора не

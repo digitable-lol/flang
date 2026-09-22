@@ -18,8 +18,8 @@
 исходника.
 
 ```
-bootstrap/flang check flang/stdlib/optional.flang --proof --записать opt.запись   → код 0
-flang/proof/checker/сверщик flang/stdlib/optional.flang opt.запись                  → НЕ СОШЛОСЬ
+bootstrap/flang check flang/stdlib/optional.flang --proof --записать opt.record   → код 0
+flang/proof/checker/сверщик flang/stdlib/optional.flang opt.record                  → НЕ СОШЛОСЬ
   теорема «у непустой опции значение есть», посылка «Нет»: закрыта сведением,
   а случая на вариант «Нет» в записи нет
 ```

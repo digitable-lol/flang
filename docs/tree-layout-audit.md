@@ -213,7 +213,7 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 расширения): `Ч71-lozh-chuzhoy-variant`, `Ч7104-nulevoy-znak-chestnaya`,
 `ведомость-self`, `вид-не-statement`. Каталог с таким именем один — `Ч131-algebra`.
 
-Кириллических расширений в дереве пять: `.запись` (540 файлов), `.урок` (12), `.фп` (1),
+Кириллических расширений в дереве пять: `.record` (540 файлов), `.урок` (12), `.фп` (1),
 `.отпечаток` (1), `.вставка` (1). Первые три — законный род файла (`.фп` прямо в списке
 `file-extensions.fscript`, `.урок` разобран в задаче 1419 и оставлен нарочно). Последние
 два — разовые, по одному файлу на расширение.
@@ -233,9 +233,9 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 | `expected.tsv` | 3 | `flang/proof/probes/run/`, `probes/strict/`, `probes/screen/` |
 | `ratchet.txt` | 3 | `flang/proof/forgeries/`, `checker/`, `checker/tests/trap/` |
 | `run.sh` | 5 | `lean/`, `forgeries/`, `probes/run/`, `probes/strict/`, `checker/tests/` |
-| `honest.запись` | 4 | `checker/tests/records/{3455,Ч71,Ч76,Ч87}/` |
-| `00-untouched.запись` | 4 | `записи/{Ч131-algebra,Ч363,Ч369,Ч375}/` |
-| `abilities.запись` | 3 | `records/corpus/`, `families/inference/golden/`, `families/measure/` |
+| `honest.record` | 4 | `checker/tests/records/{3455,Ч71,Ч76,Ч87}/` |
+| `00-untouched.record` | 4 | `записи/{Ч131-algebra,Ч363,Ч369,Ч375}/` |
+| `abilities.record` | 3 | `records/corpus/`, `families/inference/golden/`, `families/measure/` |
 
 Все они — под `flang/proof`, то есть внутри задачи 6421 (пункт 4 её плана прямо про три
 `expected.tsv`). **Вне `flang/proof` неразличимых по имени файлов я не нашёл** — это

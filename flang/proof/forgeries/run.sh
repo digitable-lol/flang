@@ -22,7 +22,7 @@ SVERIT=$KOREN/flang/proof/check.sh
 CHESTNYY=$KOREN/flang/proof/examples/body-forms.flang
 CHUZHOY=$KOREN/flang/proof/examples/corpus-factorial.flang
 KRUG=$KOREN/flang/proof/forgeries/circle.flang
-KRUG_ZAPIS=$KOREN/flang/proof/forgeries/circle.запись
+KRUG_ZAPIS=$KOREN/flang/proof/forgeries/circle.record
 
 [ -x "$FLANG" ] || { echo "двоичного нет: $FLANG" >&2; exit 2; }
 

@@ -109,3 +109,50 @@ flang/test/svyaz-celi.test.mjs
 # пустоты) и docs/flang/proof/SPEC.md — стек K; переименовывать вместе с ними.
 docs/zettel/emptiness-guards-are-written-with-pusto-but-the-kernel-reads-only-the-measure.md
 docs/zettel/vyvod-na-vetke-ne-vyvod-o-dereve.md
+#
+# ЗАПИСИ КОРПУСА ЧЕКЕРА — 40 имён (ADR-0046, задача 6421, 22 сентября 2026).
+# flang/proof вошёл в область сторожа, и эти имена стали видны. Переименованы они
+# НЕ БУДУТ раньше своих исходников: имя записи ЗЕРКАЛИТ имя файла, с которого она
+# снята, — flang/test/fixtures/poddelka-*.flang и соседи. Разойдись имена, пара
+# «исходник ↔ запись» перестала бы читаться глазами, а прогон корпуса сверяет их
+# именно так. Строки уходят вместе с переименованием исходников (задача 1428).
+flang/proof/checker/tests/records/corpus/element-po-nomeru-chestnaya.record
+flang/proof/checker/tests/records/corpus/granica-nad-chislom-chestnaya.record
+flang/proof/checker/tests/records/corpus/krug-tuda-i-obratno.record
+flang/proof/checker/tests/records/corpus/nachalo-po-postroeniyu-chestnaya.record
+flang/proof/checker/tests/records/corpus/ohrana-daet-fakt.record
+flang/proof/checker/tests/records/corpus/poddelka-builtin-emptiness-fact.record
+flang/proof/checker/tests/records/corpus/poddelka-dlina.record
+flang/proof/checker/tests/records/corpus/poddelka-dno-proizvedeniya.record
+flang/proof/checker/tests/records/corpus/poddelka-element-po-nomeru.record
+flang/proof/checker/tests/records/corpus/poddelka-integrality-from-fact.record
+flang/proof/checker/tests/records/corpus/poddelka-istinnaya-vetv.record
+flang/proof/checker/tests/records/corpus/poddelka-konyunkciya.record
+flang/proof/checker/tests/records/corpus/poddelka-krug-pri-rabote.record
+flang/proof/checker/tests/records/corpus/poddelka-lozhnaya-polovina.record
+flang/proof/checker/tests/records/corpus/poddelka-mera-dliny-stroki.record
+flang/proof/checker/tests/records/corpus/poddelka-nachalo-po-postroeniyu.record
+flang/proof/checker/tests/records/corpus/poddelka-nositel-chislo-segment.record
+flang/proof/checker/tests/records/corpus/poddelka-nositel-psevdonim-ne-otrezok.record
+flang/proof/checker/tests/records/corpus/poddelka-ogovorka-o-konechnosti.record
+flang/proof/checker/tests/records/corpus/poddelka-order-arithmetic.record
+flang/proof/checker/tests/records/corpus/poddelka-porjadok-sosednih.record
+flang/proof/checker/tests/records/corpus/poddelka-protivorechie.record
+flang/proof/checker/tests/records/corpus/poddelka-ravenstvo-v-tele-ne-dokazyvaet.record
+flang/proof/checker/tests/records/corpus/poddelka-razbor-sluchaev.record
+flang/proof/checker/tests/records/corpus/poddelka-razbor-spiska.record
+flang/proof/checker/tests/records/corpus/poddelka-razbor-vnutrennim.record
+flang/proof/checker/tests/records/corpus/poddelka-razdvoenie-diz.record
+flang/proof/checker/tests/records/corpus/poddelka-raznost-bez-poryadka.record
+flang/proof/checker/tests/records/corpus/poddelka-razv2-sebya.record
+flang/proof/checker/tests/records/corpus/poddelka-razv3-raznost.record
+flang/proof/checker/tests/records/corpus/poddelka-refleksivnost.record
+flang/proof/checker/tests/records/corpus/poddelka-slova-celey.record
+flang/proof/checker/tests/records/corpus/poddelka-slovo-o-dokazannosti.record
+flang/proof/checker/tests/records/corpus/poddelka-snyatie-storozha.record
+flang/proof/checker/tests/records/corpus/poddelka-sortirovka-ne-ubyvaet.record
+flang/proof/checker/tests/records/corpus/poddelka-strict-order.record
+flang/proof/checker/tests/records/corpus/poddelka-svyortka-nad-pustym.record
+flang/proof/checker/tests/records/corpus/poddelka-svyortka-shagom.record
+flang/proof/checker/tests/records/corpus/poddelka-vhozhdenie.record
+flang/proof/checker/tests/records/corpus/svyortka-prefiks-chestnaya.record

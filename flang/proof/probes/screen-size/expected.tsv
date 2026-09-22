@@ -25,9 +25,9 @@
 # Строки с `--no-screen` стерегут порядок проверок: полномочие спрашивается
 # ДО терминала, поэтому и в трубе, и в терминале ответ один — FLANG_IO_DENIED.
 программа	среда	ширина	высота	ключ	код	слово
-размер.flang	терминал	80	24	-	0	экран измерен: ширина 80, высота 24
-размер.flang	терминал	132	50	-	0	экран измерен: ширина 132, высота 50
-размер.flang	терминал	0	0	-	1	FLANG_IO_NO_SCREEN
-размер.flang	труба	-	-	-	1	FLANG_IO_NO_SCREEN
-размер.flang	терминал	80	24	--no-screen	1	FLANG_IO_DENIED
-размер.flang	труба	-	-	--no-screen	1	FLANG_IO_DENIED
+size.flang	терминал	80	24	-	0	экран измерен: ширина 80, высота 24
+size.flang	терминал	132	50	-	0	экран измерен: ширина 132, высота 50
+size.flang	терминал	0	0	-	1	FLANG_IO_NO_SCREEN
+size.flang	труба	-	-	-	1	FLANG_IO_NO_SCREEN
+size.flang	терминал	80	24	--no-screen	1	FLANG_IO_DENIED
+size.flang	труба	-	-	--no-screen	1	FLANG_IO_DENIED

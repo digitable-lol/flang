@@ -1,4 +1,4 @@
-name: Ведомость по библиотеке
+name: Stdlib proof
 
 # ОТЧЁТ О ДОКАЗАТЕЛЬСТВАХ НЕ СНИМАЛСЯ С ДВУХ МОДУЛЕЙ БИБЛИОТЕКИ, И ЭТОГО НЕ
 # ВИДЕЛ НИКТО ПОЛТОРА МЕСЯЦА.
@@ -85,7 +85,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
-      - name: сторож краснеет на подложенной дизъюнкции без скобок
+      - name: Probe brackets guard
         run: |
           set -u
           if sh scripts/guards/stdlib-proof-guard.sh --подлог-скобки; then
@@ -94,7 +94,7 @@ jobs:
           fi
         env:
           FLANG_TMP: ${{ runner.temp }}
-      - name: сторож краснеет на подложенном модуле с необеспеченным обещанием
+      - name: Probe promise guard
         run: |
           set -u
           if sh scripts/guards/stdlib-proof-guard.sh --подлог; then
@@ -103,7 +103,7 @@ jobs:
           fi
         env:
           FLANG_TMP: ${{ runner.temp }}
-      - name: ведомость доказательств снимается с каждого модуля библиотеки
+      - name: Check stdlib proof ledger
         run: |
           set +e
           export LC_ALL=C.UTF-8

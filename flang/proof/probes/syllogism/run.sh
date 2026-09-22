@@ -4,8 +4,8 @@
 #
 # ПРОБЫ СИЛЛОГИЗМА (ADR-0047, задача 5309).
 #
-#   sh flang/proof/пробы-силлогизма/прогон.sh            двоичным: замер «до»
-#   sh flang/proof/пробы-силлогизма/прогон.sh --печатью  компилятором, напечатанным
+#   sh flang/proof/probes/syllogism/run.sh            двоичным: замер «до»
+#   sh flang/proof/probes/syllogism/run.sh --печатью  компилятором, напечатанным
 #                                                        в JavaScript: замер «после»
 #   PECHAT=<каталог> sh … --печатью    взять уже напечатанный компилятор оттуда,
 #                                      а не печатать заново (печать — 13 минут)
@@ -19,7 +19,7 @@
 # распаковки `таких что` (`flang/self/proofterm.flang`). Правка там доезжает до
 # `bootstrap/flang` только полной перепечаткой (`scripts/raskrutka.sh`, около
 # 11 часов). До неё двоичный слова не знает и починки не несёт — и первый путь
-# ЖДЁТ ИМЕННО ЭТОГО: столбец «слово двоичного» в ОЖИДАНИЕ.tsv заполнен отказом,
+# ЖДЁТ ИМЕННО ЭТОГО: столбец «слово двоичного» в expected.tsv заполнен отказом,
 # а не вердиктом. Зелёный двоичный там означал бы, что замер снят не с той
 # сборки.
 #
@@ -42,10 +42,10 @@
 # Имена переменных латиницей: ни dash, ни bash не принимают кириллицу в именах.
 set -u
 
-KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
+KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/../../../.." && pwd)
 FLANG=${FLANG:-$KOREN/bootstrap/flang}
-PROBY=$KOREN/flang/proof/пробы-силлогизма
-TABLICA=$PROBY/ОЖИДАНИЕ.tsv
+PROBY=$KOREN/flang/proof/probes/syllogism
+TABLICA=$PROBY/expected.tsv
 export LC_ALL=C.UTF-8
 
 PECHATYU=0

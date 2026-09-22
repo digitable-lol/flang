@@ -140,7 +140,7 @@
 | путь | файлов ссылается | из них живых | строк | в `flang/proof/**` |
 |---|---:|---:|---:|---:|
 | `flangtutor` | 32 | 27 | — | 0 |
-| `flang/conc` | 202 | 115 | — | 1 (комментарий в `checker/tests/families/run/pisma-po-ocheredi.flang:4`; до 1420 не правится) |
+| `flang/conc` | 202 | 115 | — | 1 (комментарий в `checker/tests/families/run/letters-in-turn.flang:4`; до 1420 не правится) |
 | `flang/проверки` | 68 | 55 | 182 (+17 внутри каталога) | 0 |
 
 Файлов в `flang/проверки` — 26 (в том числе каталог `oblast/` с пробами на C);
@@ -319,7 +319,7 @@ npm»), а теперь каталог снова есть. Запись убр�
 
 **Нарочно не тронуто:** `docs/flang/conc/` (контракты слоя; указатели
 `flang/concurrency/*.md` ведут туда тем же относительным путём);
-`flang/proof/checker/tests/families/run/pisma-po-ocheredi.flang:4` (комментарий,
+`flang/proof/checker/tests/families/run/letters-in-turn.flang:4` (комментарий,
 ждёт 1420); `bootstrap/flang_repl.c`, `bootstrap/flang_runtime.h` (комментарии,
 до перепечатки); снимки `flang/test/fixtures/zapis-*.json`,
 `flang/test/snimok/proofterm-witness.json`; история.

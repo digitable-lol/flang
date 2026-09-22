@@ -113,7 +113,7 @@ markdown-ссылках и в `Makefile` — и ни одна из этих сс
 комментария отвергает честную запись кодом 1 (измерено: `abilities.запись`). Поэтому
 в пяти файлах (`map/abilities.flang`, `midpoint-price.flang`,
 `forgeries/transitivity.flang`, `examples/forgery-subtraction-under-precondition.flang`,
-`checker/tests/records/v1-g2/tip-za-primechaniem.flang`) комментарии до сих пор называют
+`checker/tests/records/v1-g2/type-behind-a-note.flang`) комментарии до сих пор называют
 старые пути. Они правятся вместе с пересъёмкой записей — порция 2.
 
 После каждой порции, кодом 0, без исключений:

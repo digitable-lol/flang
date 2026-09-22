@@ -38,8 +38,8 @@
 * `flang/proof/forgeries/manifest.tsv` и `flang/proof/checker/ratchet.txt` называют
   пути проб строками;
 * сами записи проб несут пути в теле —
-  `flang/proof/checker/tests/records/note-instead-of-postcondition/примечание-вместо-постусловия.запись`,
-  `…/Ч369/П7-предел-ветвления.запись`, `…/families/existence/corrupt/чужое-имя.запись`
+  `flang/proof/checker/tests/records/note-instead-of-postcondition/note-instead-of-postcondition.запись`,
+  `…/Ч369/p7-branching-limit.запись`, `…/families/existence/corrupt/foreign-name.запись`
   и десятки соседей;
 * `flang/proof/corpus-share.sh`, `flang/proof/tables-guard.sh` и
   `flang/proof/checker/tests/run.sh` обходят эти пути;

@@ -1,0 +1,47 @@
+метка	правка	исход	файл
+дерево	честная	честная	flang/proof/checker/tests/records/record-fields/tree-00-honest.запись
+дерево	число-строк-исходника	подделка	flang/proof/checker/tests/records/record-fields/tree-1-source-line-count.запись
+дерево	число-знаков-исходника	подделка	flang/proof/checker/tests/records/record-fields/tree-2-source-character-count.запись
+дерево	отпечаток-исходника	подделка	flang/proof/checker/tests/records/record-fields/tree-3-source-digest.запись
+дерево	путь-исходника	подделка	flang/proof/checker/tests/records/record-fields/tree-4-source-path.запись
+дерево	число-утверждений	подделка	flang/proof/checker/tests/records/record-fields/tree-5-statement-count.запись
+дерево	имя-утверждения	подделка	flang/proof/checker/tests/records/record-fields/tree-6-statement-name.запись
+дерево	имя-функции	подделка	flang/proof/checker/tests/records/record-fields/tree-7-function-name.запись
+дерево	место-утверждения	подделка	flang/proof/checker/tests/records/record-fields/tree-8-statement-place.запись
+дерево	имя-теоремы	подделка	flang/proof/checker/tests/records/record-fields/tree-9-theorem-name.запись
+дерево	место-теоремы	подделка	flang/proof/checker/tests/records/record-fields/tree-10-theorem-place.запись
+дерево	место-цели	подделка	flang/proof/checker/tests/records/record-fields/tree-11-goal-place.запись
+дерево	имя-данного	подделка	flang/proof/checker/tests/records/record-fields/tree-12-given-name.запись
+дерево	переменная-индукции	подделка	flang/proof/checker/tests/records/record-fields/tree-13-induction-variable.запись
+дерево	обоснование-шага	подделка	flang/proof/checker/tests/records/record-fields/tree-14-step-justification.запись
+дерево	шаг-выброшен	подделка	flang/proof/checker/tests/records/record-fields/tree-15-step-dropped.запись
+дерево	число-шагов-случая	подделка	flang/proof/checker/tests/records/record-fields/tree-16-case-step-count.запись
+дерево	число-шагов-посылки	подделка	flang/proof/checker/tests/records/record-fields/tree-17-premise-step-count.запись
+дерево	вариант-посылки	подделка	flang/proof/checker/tests/records/record-fields/tree-18-premise-variant.запись
+дерево	закон-хода	подделка	flang/proof/checker/tests/records/record-fields/tree-19-move-law.запись
+дерево	место-развёртки	подделка	flang/proof/checker/tests/records/record-fields/tree-20-unfolding-place.запись
+дерево	имя-сведения	подделка	flang/proof/checker/tests/records/record-fields/tree-21-reduction-name.запись
+дерево	тип-принципа	подделка	flang/proof/checker/tests/records/record-fields/tree-22-principle-type.запись
+натурал	честная	честная	flang/proof/checker/tests/records/record-fields/natural-00-honest.запись
+натурал	число-строк-исходника	подделка	flang/proof/checker/tests/records/record-fields/natural-1-source-line-count.запись
+натурал	число-знаков-исходника	подделка	flang/proof/checker/tests/records/record-fields/natural-2-source-character-count.запись
+натурал	отпечаток-исходника	подделка	flang/proof/checker/tests/records/record-fields/natural-3-source-digest.запись
+натурал	путь-исходника	подделка	flang/proof/checker/tests/records/record-fields/natural-4-source-path.запись
+натурал	число-утверждений	подделка	flang/proof/checker/tests/records/record-fields/natural-5-statement-count.запись
+натурал	имя-утверждения	подделка	flang/proof/checker/tests/records/record-fields/natural-6-statement-name.запись
+натурал	имя-функции	подделка	flang/proof/checker/tests/records/record-fields/natural-7-function-name.запись
+натурал	место-утверждения	подделка	flang/proof/checker/tests/records/record-fields/natural-8-statement-place.запись
+натурал	имя-теоремы	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	место-теоремы	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	место-цели	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	имя-данного	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	переменная-индукции	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	обоснование-шага	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	шаг-выброшен	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	число-шагов-случая	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	число-шагов-посылки	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	вариант-посылки	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	закон-хода	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	место-развёртки	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	имя-сведения	не применилась	flang/proof/checker/tests/records/record-fields/—
+натурал	тип-принципа	не применилась	flang/proof/checker/tests/records/record-fields/—

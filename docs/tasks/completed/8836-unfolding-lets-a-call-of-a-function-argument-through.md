@@ -23,7 +23,7 @@
     сверщик принял, Lean ОТВЕРГ (шаг 2 Разв2)
 
 и все в утверждении «отбор по условию не удлиняет» (записи
-`checker/tests/families/inference/golden/corpus-hof.запись`, `families/type-families/ostatok.запись`
+`checker/tests/families/inference/golden/corpus-hof.запись`, `families/type-families/remainder.запись`
 и их порождения в наборе подделок). Блок:
 
     вывод 1 О8 ⟨( длина ( отфильтровать элементы где эл → условие от эл ) ) не больше ( длина элементы )⟩ сам

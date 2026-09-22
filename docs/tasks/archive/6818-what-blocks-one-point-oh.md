@@ -304,10 +304,10 @@ $ grep -ao 'FLANG_[A-Z_]*' flang/self/processes.flang | sort | uniq -c
 владельца от 29 августа; я его не переснимал.
 
 **Второе, и это снято прогоном: ведомость ядра снята, 44 обязательства из 44,
-100 %.** Замеры — `/srv/tmp/m-kernel/yadro/`, 29 августа:
+100 %.** Замеры — `/srv/tmp/m-kernel/kernel/`, 29 августа:
 
 ```
-$ cat /srv/tmp/m-kernel/yadro/flang_self_proof-kernel.flang.kod
+$ cat /srv/tmp/m-kernel/kernel/flang_self_proof-kernel.flang.kod
 код 0 ZAMER 3138.35 10116324          # 52 мин 18 с, пик 9,65 ГиБ
 
 $ python3 dolya-fajla.py flang/self/proof-kernel.flang <выход>.out

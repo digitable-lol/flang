@@ -157,9 +157,9 @@ flang io: непонятный ключ «--»
 Снято прогоном двоичного из этого дерева (0.7.20):
 
 ```
-$ bootstrap/flang io flang/proof/probes/orders/programs/доводы.fscript --на-веру -- раз два три
+$ bootstrap/flang io flang/proof/probes/orders/programs/arguments.fscript --на-веру -- раз два три
 {"plan":"Доводы вызова","result":"доводов 3: раз|два|три","orders":1,…}      код 0
-$ bootstrap/flang io flang/proof/probes/orders/programs/доводы.fscript --на-веру
+$ bootstrap/flang io flang/proof/probes/orders/programs/arguments.fscript --на-веру
 {"plan":"Доводы вызова","result":"доводов 0: ","orders":1,…}                 код 0
 ```
 

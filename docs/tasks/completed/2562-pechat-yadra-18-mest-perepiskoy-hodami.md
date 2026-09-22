@@ -15,7 +15,7 @@
 
 Карта калькулятора (`/srv/tmp/dokazuemyy/ПЕРЕДАЧА/karta-kalkulyatora.md`, §0 п. 3–4, §2 Б1/Б1+): переигрыватель
 в сверщике для всех 18 мест `perepiskoy` **уже готов** — golden-сертификаты
-`tests/families/{sosedi,refleksiv,половина-б/dlina,element,arithmetic}` проигрываются кодом 0.
+`tests/families/{sosedi,refleksiv,половина-б/length,element,arithmetic}` проигрываются кодом 0.
 Отстаёт **печать ядра** (`flang/self/zapis.flang`, семьи С1–С5, строки 1596–1990):
 
 - **Б1, 11 мест** (У1, У2, У4–У7 в `abilities`; Р3, Р4, Р6, Р7 в `equality`; Э1 в

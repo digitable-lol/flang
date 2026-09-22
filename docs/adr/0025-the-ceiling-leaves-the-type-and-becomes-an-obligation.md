@@ -119,7 +119,7 @@
 **Библиотека, примеры и спецификация**: 18 файлов `.flang` вне `flang/self`
 называют число; **20 из них — оговорки, написанные рукой прямо в договоре
 функции** (`требует`/`обеспечивает`/`утверждаем`), в девяти файлах:
-`flang/stdlib/numbers.flang` 5, `flang/proof/checker/tests/families/inference/vyvod.flang` 4,
+`flang/stdlib/numbers.flang` 5, `flang/proof/checker/tests/families/inference/inference.flang` 4,
 `flang/proof/map/abilities.flang` 4, `flang/proof/map/refusal-boundaries.flang` 2,
 и по одной в `flang/proof/map/boundaries.flang`,
 `flang/proof/examples/corpus-natural-ceiling.flang`, `docs/examples/measure/natural.flang`,

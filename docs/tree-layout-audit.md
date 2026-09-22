@@ -166,7 +166,7 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 Где они лежат: `docs/` 141, `flang/` 89, `fspec/` 4. Примеры —
 `docs/design/proof-object-po-obyavleniyu-trace.md`,
 `docs/tasks/1409-otsenka-vitkov-chislovaya-rekursiya-edinicy-sekundy.md`,
-`flang/proof/checker/tests/families/totalnost.flang`, `flang/self/otkazy-totalnosti.flang`,
+`flang/proof/checker/tests/families/totality.flang`, `flang/self/otkazy-totalnosti.flang`,
 `flang/translation/fixtures/…/poddelka_usloviya_bez_spuska.protocol`.
 
 Для сравнения — как выглядит **записанное** исключение: `no-package-json-guard.sh` смотрит
@@ -206,8 +206,8 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 
 1. русская кириллицей — `Record.lean`, `expected.tsv`, `run.sh`;
 2. английская латиницей — `RecordReader.lean`, `binary-origin.sh`;
-3. **русская латиницей (транслит)** — `totalnost.flang`, `otkazy-totalnosti.flang`,
-   `lozh-raznost-chistaya.flang`. Она не читается ни русским, ни английским глазом.
+3. **русская латиницей (транслит)** — `totality.flang`, `otkazy-totalnosti.flang`,
+   `lie-difference-pure.flang`. Она не читается ни русским, ни английским глазом.
 
 Кроме того **52 имени файла мешают письменности внутри одной основы** (не считая
 расширения): `Ч71-lozh-chuzhoy-variant`, `Ч7104-nulevoy-znak-chestnaya`,
@@ -233,8 +233,8 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 | `expected.tsv` | 3 | `flang/proof/probes/run/`, `probes/strict/`, `probes/screen/` |
 | `ratchet.txt` | 3 | `flang/proof/forgeries/`, `checker/`, `checker/tests/trap/` |
 | `run.sh` | 5 | `lean/`, `forgeries/`, `probes/run/`, `probes/strict/`, `checker/tests/` |
-| `честная.запись` | 4 | `checker/tests/records/{3455,Ч71,Ч76,Ч87}/` |
-| `00-нетронутый.запись` | 4 | `записи/{Ч131-algebra,Ч363,Ч369,Ч375}/` |
+| `honest.запись` | 4 | `checker/tests/records/{3455,Ч71,Ч76,Ч87}/` |
+| `00-untouched.запись` | 4 | `записи/{Ч131-algebra,Ч363,Ч369,Ч375}/` |
 | `abilities.запись` | 3 | `records/corpus/`, `families/inference/golden/`, `families/measure/` |
 
 Все они — под `flang/proof`, то есть внутри задачи 6421 (пункт 4 её плана прямо про три

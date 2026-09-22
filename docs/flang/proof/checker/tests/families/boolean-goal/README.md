@@ -22,7 +22,7 @@
 
 ## Верный сертификат → КОД 0
 
-- `priznak.flang` / `priznak.запись` — «Всегда истинно» над типом «Сигнал» из трёх
+- `flag.flang` / `flag.запись` — «Всегда истинно» над типом «Сигнал» из трёх
   вариантов, постусловие `результат`. Тела случаев — `да`, `(нет или да)`,
   `(не нет)` — все сводятся к `да` тремя РАЗНЫМИ законами замыкания (литерал,
   связка `или`, отрицание `не`). Запись снята двоичным `flang 0.7.13`, привязка
@@ -37,7 +37,7 @@
 
 ## Ложь под самой целью → КОД 3 (сторож замыкания, `порча/`)
 
-- `corrupt/lozh.flang` / `corrupt/lozh.запись` — исходник, где случай «Правый»
+- `corrupt/lie.flang` / `corrupt/lie.запись` — исходник, где случай «Правый»
   возвращает `нет` под целью `результат`, и РУКОТВОРНАЯ запись, лгущая «вердикт
   доказано» тем же узлом algebra. Двоичный такую не запишет (цель нарушена), потому
   запись собрана руками; шапка её ЧЕСТНА (снята двоичным на отвергнутом проходе,
@@ -49,5 +49,5 @@
 Гонять напрямую:
 
     make -s -C flang/proof/checker
-    ./flang/proof/checker/сверщик flang/proof/checker/tests/families/boolean-goal/priznak.flang \
-                                flang/proof/checker/tests/families/boolean-goal/priznak.запись
+    ./flang/proof/checker/сверщик flang/proof/checker/tests/families/boolean-goal/flag.flang \
+                                flang/proof/checker/tests/families/boolean-goal/flag.запись

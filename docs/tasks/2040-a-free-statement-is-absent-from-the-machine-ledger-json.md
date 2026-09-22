@@ -14,7 +14,7 @@
 Задача [9526](9526-own-sum-types-cannot-be-reasoned-about-by-induction-in-a-free-statement.md)
 завела свободные утверждения о своих типах-суммах. Ядро их доказывает и печатает
 в текстовую запись, а в машинную ведомость (`check --proof --json`) не клало
-вовсе: у `families/own-type/нат.flang` не было ни `claims`, ни `obligations`, и
+вовсе: у `families/own-type/natural.flang` не было ни `claims`, ни `obligations`, и
 `totals.claims.total` равнялся 0 при двух доказанных утверждениях.
 
 ## Замер 12 сентября 2026: мест отсева ТРИ, а не одно
@@ -50,7 +50,7 @@
 
 | файл | до правки | после правки |
 |---|---|---|
-| `families/own-type/нат.flang` | ключей `claims`/`obligations` нет; `totals.claims.total` 0 | `claims` 2, `obligations` 2, total 2, proved 2, **induction 2**, оба вердикта `proved-induction` |
+| `families/own-type/natural.flang` | ключей `claims`/`obligations` нет; `totals.claims.total` 0 | `claims` 2, `obligations` 2, total 2, proved 2, **induction 2**, оба вердикта `proved-induction` |
 | `flang/proof/examples/corpus-hof.flang` (эталон «фильтр не стал шире») | claims 15, obligations 24, proved 15, induction 2, declaration 13 | **те же 15 / 24 / 15 / 2 / 13, знак в знак** |
 
 Быстрая проверка обоих правленых файлов — код 4 и **0** диагностик `FLANG_*`,
@@ -66,7 +66,7 @@
    перепечатки, а не рукой.
 2. **Прибор доли считает утверждение ЧУЖИМ.** `proved-share-of-a-file.py`
    относит приговор к файлу по полю `of` (у утверждения оно пусто), а «написано»
-   считает по строкам `обеспечивает`. На `нат.flang`: «написано 0 … своих 0,
+   считает по строкам `обеспечивает`. На `natural.flang`: «написано 0 … своих 0,
    ввезённых 2». Счёт прибора и счёт описи (2 обязательства) НЕ СОШЛИСЬ — потому
    числа вместо крестов не ставятся. Правка питонная, перепечатки не требует.
 3. **Вид в строке приговора — «постусловие» и у утверждения.** «Строка
@@ -78,7 +78,7 @@
 
 ## Как поймём, что закрыто
 
-После перепечатки: `bootstrap/flang check --proof --json` на `нат.flang` даёт
+После перепечатки: `bootstrap/flang check --proof --json` на `natural.flang` даёт
 `claims` с двумя приговорами и `totals.claims.total = 2`; прибор доли, починенный
 по хвосту 2, считает их своими; кресты в описи заменяются числами прогоном;
 `sh scripts/guards/proved-share-vs-tree.sh` на этих файлах не краснеет.

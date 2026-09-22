@@ -97,7 +97,7 @@ while IFS="$(printf '\t')" read -r prog put kl kod slovo; do
     set -- $(proba_binary "$prog" "$put" "$kl" | { IFS="$(printf '\t')" read -r a b; printf '%s\n' "$a"; printf '%s\n' "$b"; })
     k=$1; shift; out=$*
   fi
-  # ложь.flang с ключом запускается и на 0.7.19 честно даёт FLANG_PROPERTY на NaN? Нет:
+  # lie.flang с ключом запускается и на 0.7.19 честно даёт FLANG_PROPERTY на NaN? Нет:
   # «Квадрат» от 7 даёт 49, постусловие верно на этом входе — вычисление удаётся.
   if [ "$k" = "$kod" ] && printf '%s' "$out" | grep -q -a -F -- "$slovo"; then
     printf '✓ %-22s %-3s ключ=%s код %s, есть «%s»\n' "$prog" "$put" "$kl" "$k" "$slovo"

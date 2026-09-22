@@ -123,7 +123,7 @@ one thing — "part of the checks did not run".
 **Which outcome wins.** A program that has both a grid and a "declared, not
 proved" answers `3`, not `4`, and the word names the GAP, not the lean: a named
 contradiction outranks a named gap, and a named gap outranks a named lean. The
-probe is `flang/proof/probes/strict/programs/старшинство.flang`.
+probe is `flang/proof/probes/strict/programs/precedence.flang`.
 
 **A grid is not a proof.** Running the author's values does not check the claim
 over all inputs, and the report says so in its own words — "Это не

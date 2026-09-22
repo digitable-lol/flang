@@ -114,7 +114,7 @@ $ flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
 списка — код 1.
 
 Под утверждением стоит либо цепочка ходов, либо пометка. Вот честная цепочка (`flang/proof/checker/
-tests/records/Ч71/p-nomer-nol.запись`):
+tests/records/example-binding/p-nomer-nol.запись`):
 
 ```
   посылка «Красный» вид base вариант «Красный» вердикт доказано закрыта term шагов 1 правило «»

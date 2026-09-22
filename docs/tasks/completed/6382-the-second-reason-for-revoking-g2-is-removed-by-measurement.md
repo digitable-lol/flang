@@ -217,7 +217,7 @@ bootstrap`, семя байт в байт то же, что в `peredacha` — �
 
 ### Проба и её проверка на себе
 
-`tests/records/6382-reason/imya-tipa-vmesto-dovoda.запись` — `substantive` с
+`tests/records/6382-reason/type-name-instead-of-the-argument.запись` — `substantive` с
 `по «список»` при объявлении `принимает элементы: список числа`. Вписана в
 `run.sh` СРАЗУ (за сутки трижды находили пробы, лежащие в дереве незваными).
 

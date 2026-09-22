@@ -43,7 +43,7 @@
 
 Правило читает строку так же, как её читает язык. Порода Ч119 через него
 не проходит. Файлы опыта:
-`flang/proof/checker/tests/records/v1-g2/tip-za-primechaniem.{flang,запись}`
+`flang/proof/checker/tests/records/v1-g2/type-behind-a-note.{flang,запись}`
 (ядро на этом файле молчит — код 0, «замечаний нет», — а прогон на
 `{"первое":2,"второе":-3}` даёт код 1: постусловие ложно).
 
@@ -72,7 +72,7 @@ char *nazvano = dvoetochie ? kopiya(dovody.e[k], (size_t)(dvoetochie - dovody.e[
 
 ```
 честная substantive.запись            код 3, числятся доказанными 3, на слово ядра 6
-подделка c1-lozhnyy-reduction.запись  код 3, числятся доказанными 4, на слово ядра 9
+подделка c1-false-reduction.запись  код 3, числятся доказанными 4, на слово ядра 9
 ```
 
 Подделка меняет `вердикт нет вердикта` → `вердикт доказано` и дописывает
@@ -97,7 +97,7 @@ char *nazvano = dvoetochie ? kopiya(dovody.e[k], (size_t)(dvoetochie - dovody.e[
 долг, только если у неё названо правило И нет `ход конец`. Пустой блок ходов
 снимает её с учёта, а закрытой она остаётся.
 
-Файл опыта: `flang/proof/checker/tests/records/v1-g2/9984-hody-pryachut-dolg.запись`.
+Файл опыта: `flang/proof/checker/tests/records/v1-g2/9984-moves-hide-the-debt.запись`.
 
 ### Но до кода 0 приём НЕ доводит — граница найдена и названа
 

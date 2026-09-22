@@ -114,7 +114,7 @@ $ flang io flang/scripts/kernel-forgeries.flang --plan 'Аксиом ноль'
 списка — код 1.
 
 Под утверждением стоит либо цепочка ходов, либо пометка. Вот честная цепочка (`flang/proof/checker/
-tests/records/example-binding/p-nomer-nol.запись`):
+tests/records/example-binding/p-index-zero.запись`):
 
 ```
   посылка «Красный» вид base вариант «Красный» вердикт доказано закрыта term шагов 1 правило «»
@@ -128,7 +128,7 @@ tests/records/example-binding/p-nomer-nol.запись`):
 применяет названный закон к цели, и место идёт в числитель. Смысла законов он
 при этом не знает — знает только форму цели, которую закон берёт.
 
-А вот место с фактом о типе (`tests/records/reason-types/vychitanie-ne-sohranyaet.запись`,
+А вот место с фактом о типе (`tests/records/reason-types/subtraction-does-not-keep.запись`,
 целиком):
 
 ```

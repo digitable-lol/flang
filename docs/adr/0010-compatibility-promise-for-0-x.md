@@ -336,9 +336,9 @@ grep -rhoE 'FLANG_[A-Z_]+' flang/ bootstrap/*.c | sort -u | wc -l   # → 239
 
 | Команда | Код | Что вышло |
 |---|---|---|
-| `flang check ложь.flang` | `1` | `FLANG_BOUND_ON_NAN`: постусловие ЛОЖНО, назван контрпример |
-| `flang emit ложь.flang --target c --out …` | `1` | печать отменена, ни одного файла |
-| `flang emit ложь.flang --target c --out … --no-check` | `0` | напечатано 6 файлов |
+| `flang check lie.flang` | `1` | `FLANG_BOUND_ON_NAN`: постусловие ЛОЖНО, назван контрпример |
+| `flang emit lie.flang --target c --out …` | `1` | печать отменена, ни одного файла |
+| `flang emit lie.flang --target c --out … --no-check` | `0` | напечатано 6 файлов |
 
 Программа, которую `check` отвергает, с ключом печатается — это ровно то, что
 прежнее обещание запрещало. Но ложное постусловие из вывода **не исчезло**: оно

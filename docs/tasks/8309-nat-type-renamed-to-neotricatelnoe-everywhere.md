@@ -57,7 +57,7 @@
   `fspec/guard.flang` (проверяют именно слово).
 - Сверщик `flang/proof/checker/checker.c` принимает ОБА имени в доводе
   индукции и типе результата (до этого на «неотрицательное» проба
-  `Ч363/00-нетронутый` падала с ПРОВЕРЕНО в НЕ ПРОВЕРЕНО).
+  `Ч363/00-untouched` падала с ПРОВЕРЕНО в НЕ ПРОВЕРЕНО).
 - Записи доказательств (`*.запись`), привязанные к sha256 исходника,
   перепечатаны тем же двоичным 0.7.14, которым были сняты (проверено:
   перепечатка нетронутого исходника даёт запись байт в байт); разошлись
@@ -70,9 +70,9 @@
   рукой и не воспроизводятся двоичным 0.7.14: `flang/proof/examples/corpus-natural.flang`
   (записи Ч19, Ч40, Ч48), `flang/proof/map/abilities.flang` (запись корпуса
   уже отстала от печати; семьи 9986, 9616), пробы чекера
-  `v1-g2/tip-za-primechaniem`, `типы-доводов/vychitanie-ne-sohranyaet`,
-  `программы/lozh-raznost-chistaya`, `программы/lozh-stolknovenie`,
-  `families/goal-breakdown/*`, `семьи/rec-step*`, `семьи/refleksiv`; записи Ч363
+  `v1-g2/type-behind-a-note`, `типы-доводов/subtraction-does-not-keep`,
+  `программы/lie-difference-pure`, `программы/lie-collision`,
+  `families/goal-breakdown/*`, `семьи/recursion-step*`, `семьи/reflexive`; записи Ч363
   (старый формат без `отпечаток256`, знаков в них уже не от исходника).
   `docs/examples/package/discount.flang` оставлен на `нат`: пакет
   `shop/discount.flang-package` несёт его дословно и печать `печать`, а

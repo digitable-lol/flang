@@ -1902,13 +1902,13 @@ proba_podloga() {
 # 30 из них лежат вне коммита (ведомость молчит, и это разряд Р5 линейки), 108
 # судимы ядром — код 0 у 101, код 1 у семи. Все семь названы ниже.
 YADRO_OTVERGAET_ZAKONNO="flang/proof/forgeries/circle.flang
-flang/proof/checker/tests/records/3314-conditional-by-branches/lozhnoe-otricanie.flang
-flang/proof/checker/tests/records/9991-starts-with/lozhnoe-nachalo.flang
-flang/proof/checker/tests/records/goal-split-by-condition/П3-пусть-связывает-чужое-имя.flang
-flang/proof/checker/tests/programs/lozh-stolknovenie.flang
-flang/proof/checker/tests/programs/Ч392-примечание-вместо-постусловия.flang
-flang/proof/checker/tests/programs/Ч407-promezhutochnyy-shag-primechaniem.flang
-flang/proof/checker/tests/programs/Ч7104-nulevoy-znak-lozh.flang"
+flang/proof/checker/tests/records/3314-conditional-by-branches/false-negation.flang
+flang/proof/checker/tests/records/9991-starts-with/false-prefix.flang
+flang/proof/checker/tests/records/goal-split-by-condition/p3-let-binds-a-foreign-name.flang
+flang/proof/checker/tests/programs/lie-collision.flang
+flang/proof/checker/tests/programs/note-instead-of-postcondition.flang
+flang/proof/checker/tests/programs/intermediate-step-by-note.flang
+flang/proof/checker/tests/programs/measure-not-value-zero-character-lie.flang"
 
 prigovor_yadra() {
   yadro=$root/bootstrap/flang

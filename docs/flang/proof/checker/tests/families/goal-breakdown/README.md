@@ -11,12 +11,12 @@
 Вплетены в `run.sh` (семья «разбор цели»); гонять и напрямую:
 
     make -s -C flang/proof/checker
-    ./flang/proof/checker/сверщик flang/proof/checker/tests/families/goal-breakdown/razbor.flang \
-        flang/proof/checker/tests/families/goal-breakdown/razbor.запись
+    ./flang/proof/checker/сверщик flang/proof/checker/tests/families/goal-breakdown/breakdown.flang \
+        flang/proof/checker/tests/families/goal-breakdown/breakdown.запись
 
 ## Честная запись → КОД 0 проигрыванием
 
-`razbor.flang` / `razbor.запись` — 11 функций, 11 постусловий, по одному на вид.
+`breakdown.flang` / `breakdown.запись` — 11 функций, 11 постусловий, по одному на вид.
 Прогон: КОД 0, «сведений проиграно заново 11 (ходов проверено 57)», «Узлов
 «разбор цели по условию» проиграно заново 0» — калькулятор не зван ни разу.
 
@@ -36,7 +36,7 @@
 
 ## Подделки → КОД 1, каждая названа
 
-- `corrupt/lozh.flang` / `corrupt/lozh.запись` — те же 11 функций с ЛОЖНЫМИ
+- `corrupt/lie.flang` / `corrupt/lie.запись` — те же 11 функций с ЛОЖНЫМИ
   постусловиями под теми же цепочками: остаток `равен 1` под охраной `равен 0`;
   `не меньше 1` под законом меры; `е умножить на д` под законом квадрата;
   склейка «начинается правым куском»; `"аб" начинается с "б"`; `начинается с "а"`

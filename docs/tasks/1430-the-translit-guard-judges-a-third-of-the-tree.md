@@ -57,7 +57,7 @@ git -c core.quotepath=false ls-files -- scripts flang/test flang/scripts docs/si
 Где: `docs/` 141, `flang/` 89, `fspec/` 4. Примеры —
 `docs/design/proof-object-po-obyavleniyu-trace.md`,
 `docs/tasks/1409-otsenka-vitkov-chislovaya-rekursiya-edinicy-sekundy.md`,
-`flang/self/otkazy-totalnosti.flang`, `flang/proof/checker/tests/families/totalnost.flang`.
+`flang/self/otkazy-totalnosti.flang`, `flang/proof/checker/tests/families/totality.flang`.
 
 **Проба скелетов** — как отделён транслит от английского слова, просто не внесённого в
 список: латинское слово и каждое русское слово от четырёх букв из всех 3673 текстовых

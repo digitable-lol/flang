@@ -82,7 +82,7 @@
 алгебраическое (`не_больше_правилами`, мера `длина …` либо выписанное число),
 и чтение записи вывода (целый литерал, ровно как у О6). Пробой на подлог
 служит пара
-`flang/proof/checker/tests/families/type-families/corrupt/o5-beskonechnaya-pribavka.*`:
+`flang/proof/checker/tests/families/type-families/corrupt/o5-endless-addition.*`:
 у неё прибавка — голое имя типа «число», постусловие на нём ложно, и прежний
 сверщик принимал её кодом 0, а починенный отвергает кодом 1.
 

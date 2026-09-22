@@ -820,7 +820,7 @@
 
 Ещё 1 правка языка снаружи не меняет.
 
-**Merge remote-tracking branch 'gh/dev' into r/semeystva**
+**Merge remote-tracking branch 'gh/dev' into r/families**
 
 `962ee36af` · ветка `gh/dev` · коммитов 7
 
@@ -6055,7 +6055,7 @@
 
 Ещё 2 правки языка снаружи не меняют.
 
-**Слияние ветки b/yadro в main**
+**Слияние ветки b/kernel в main**
 
 `f6c4322a0` · коммитов 2
 
@@ -6788,7 +6788,7 @@
 
 - Три пары тел ядра были дословными копиями друг друга: слиты, вердикты те же (`72b2ce176`)
 
-**Слияние ветки b/dno-proizvedeniya в main**
+**Слияние ветки b/product-bottom в main**
 
 `5a3acd86c` · коммитов 3
 

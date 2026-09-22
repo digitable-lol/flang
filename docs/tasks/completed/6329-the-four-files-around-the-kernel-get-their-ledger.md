@@ -143,7 +143,7 @@ stdlib` и `…/flang/core` (`repl_library_places`, `flang/src/emit/c/flang_repl
 * `/srv/tmp/b-okrestnost-yadra/ved/` — первый заход, умерший на ввозе;
 * `/srv/tmp/b-okrestnost-yadra/prichiny-106.txt` — 106 причин поимённо;
 * прежние: `/srv/tmp/m-kernel-split/pofajlno/`, `/srv/tmp/m-raise-proved-share/ved/`,
-  `/srv/tmp/m-okrestnost/ved/`, `/srv/tmp/m-kernel/yadro/`.
+  `/srv/tmp/m-okrestnost/ved/`, `/srv/tmp/m-kernel/kernel/`.
 
 ## Как понять, что сделано
 

@@ -17,10 +17,10 @@
 
 ## Чем измерено
 
-Прогон 29 августа 2026, замеры лежат в `/srv/tmp/m-kernel/yadro/`:
+Прогон 29 августа 2026, замеры лежат в `/srv/tmp/m-kernel/kernel/`:
 
 ```
-$ cat /srv/tmp/m-kernel/yadro/flang_self_proof-kernel.flang.kod
+$ cat /srv/tmp/m-kernel/kernel/flang_self_proof-kernel.flang.kod
 код 0 ZAMER 3138.35 10116324
 ```
 
@@ -60,7 +60,7 @@ $ cat /srv/tmp/m-kernel/yadro/flang_self_proof-kernel.flang.kod
 ```
 
 Четыреста миллиардов против вшитых четырёх. Строки хода это подтверждают
-(`/srv/tmp/m-kernel/yadro/flang_self_proof-kernel.flang.err`):
+(`/srv/tmp/m-kernel/kernel/flang_self_proof-kernel.flang.err`):
 
 ```
 шагов 70 566 741 085 из 400 000 000 000 (17 %), идёт «Ведомость исходников», 2,8 ГиБ

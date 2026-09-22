@@ -174,7 +174,7 @@ ogovorka-o-konechnosti 1, nachalo-po-postroeniyu 1), значит честных
 
 ## Сторож для будущего правила — источник положен в дерево
 
-`flang/proof/checker/tests/records/9991-result-equals/storozh-razvyortki.flang`
+`flang/proof/checker/tests/records/9991-result-equals/unfolding-guard.flang`
 держит те же две формы там, где развёртка закрывать НЕ ВПРАВЕ:
 
 * «Круг со сдвигом» — круг нерекурсивный и развёртка заканчивается, но

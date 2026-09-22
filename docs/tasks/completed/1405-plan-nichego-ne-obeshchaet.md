@@ -11,9 +11,9 @@
 
 # 1405. Эффекты есть, утверждений о них нет
 
-Решение: [ADR-0032](../adr/0032-one-missing-rule-and-three-other-logics.md) §3.2.
+Решение: [ADR-0032](../../adr/0032-one-missing-rule-and-three-other-logics.md) §3.2.
 
-**Порог: [ADR-0026](../adr/0026-quantifiers-over-any-type-are-a-kernel-change.md) §11.3
+**Порог: [ADR-0026](../../adr/0026-quantifiers-over-any-type-are-a-kernel-change.md) §11.3
 (свободное утверждение). До него задача не начинается.**
 
 ## Чем измерено
@@ -199,7 +199,7 @@
 ## ⚑ 17 сентября 2026: замер (задача 3560)
 
 Ветка `a/3560-logic-in-time-count` над `main` `a43ab4d25`, двоичный `bootstrap/flang` 0.7.19,
-1001 файл под учётом git; числа, прибор и места поимённо — [ADR-0044](../adr/0044-time-effects-and-processes-are-counted-before-they-get-rules.md) §2–3.
+1001 файл под учётом git; числа, прибор и места поимённо — [ADR-0044](../../adr/0044-time-effects-and-processes-are-counted-before-they-get-rules.md) §2–3.
 
 **Планов** `план «` — **229** (без `flang/self` 228): `scripts/**` 81, `flang/scripts` 64,
 `docs/examples` 40, `flang/test` 22, `flang/proof` 5, `flang/concurrency` 1, прочее 15.

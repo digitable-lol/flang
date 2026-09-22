@@ -11,7 +11,7 @@
 
 # 2040. Утверждение доказано, а в машинной ведомости его нет
 
-Задача [9526](9526-own-sum-types-cannot-be-reasoned-about-by-induction-in-a-free-statement.md)
+Задача [9526](completed/9526-own-sum-types-cannot-be-reasoned-about-by-induction-in-a-free-statement.md)
 завела свободные утверждения о своих типах-суммах. Ядро их доказывает и печатает
 в текстовую запись, а в машинную ведомость (`check --proof --json`) не клало
 вовсе: у `families/own-type/natural.flang` не было ни `claims`, ни `obligations`, и

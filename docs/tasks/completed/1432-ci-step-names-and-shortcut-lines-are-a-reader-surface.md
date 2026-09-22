@@ -15,7 +15,7 @@
 ## Чем измерено
 
 21 сентября 2026, ветка `a/derevo-revizia` от `gh/main`. Раздел 6 ревизии
-[docs/tree-layout-audit.md](../tree-layout-audit.md).
+[docs/tree-layout-audit.md](../../tree-layout-audit.md).
 
 Сторож сегодня **зелёный**, и задача не про его поломку:
 

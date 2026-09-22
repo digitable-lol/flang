@@ -12,7 +12,7 @@
 
 # 6432. М1, М2, Разв3, К↑, Разв1 для суммы
 
-Решение: [ADR-0042](../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md) §2.
+Решение: [ADR-0042](../../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md) §2.
 
 ## Места
 

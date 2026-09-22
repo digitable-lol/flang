@@ -13,7 +13,7 @@
 
 Решение: [ADR-0036](../adr/0036-an-exact-integer-is-a-new-kind-of-value-not-a-new-name.md) §6.
 
-**Порог: [1411](1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md).**
+**Порог: [1411](completed/1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md).**
 
 ## Чем измерено
 

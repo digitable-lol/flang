@@ -12,7 +12,7 @@
 
 # 5332. Ядро снимает предусловие и не печатает, чем
 
-Решение: [ADR-0038](../adr/0038-a-precondition-is-discharged-by-a-printed-derivation.md) §3.1.
+Решение: [ADR-0038](../../adr/0038-a-precondition-is-discharged-by-a-printed-derivation.md) §3.1.
 Начинается **после задачи 1261** — тот же файл, те же факты снятия.
 
 ## Чем измерено

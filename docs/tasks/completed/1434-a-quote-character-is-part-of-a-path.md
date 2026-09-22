@@ -15,7 +15,7 @@
 ## Чем измерено
 
 21 сентября 2026, ветка `a/derevo-revizia` от `gh/main`. Раздел 5 ревизии
-[docs/tree-layout-audit.md](../tree-layout-audit.md).
+[docs/tree-layout-audit.md](../../tree-layout-audit.md).
 
 ```sh
 $ git -c core.quotepath=false ls-files | grep '^"'

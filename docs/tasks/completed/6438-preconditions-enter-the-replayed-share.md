@@ -12,7 +12,7 @@
 
 # 6438. Снятие переигрывается и считается
 
-Решение: [ADR-0038](../adr/0038-a-precondition-is-discharged-by-a-printed-derivation.md) §3.2–3.3.
+Решение: [ADR-0038](../../adr/0038-a-precondition-is-discharged-by-a-printed-derivation.md) §3.2–3.3.
 Ш0 — до печати корпуса задачей 5332 (условие партии ADR-0026 §11).
 
 ## Чем измерено

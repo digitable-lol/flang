@@ -11,9 +11,9 @@
 
 # 1406. Процессы есть, утверждений о них нет
 
-Решение: [ADR-0032](../adr/0032-one-missing-rule-and-three-other-logics.md) §3.3.
+Решение: [ADR-0032](../../adr/0032-one-missing-rule-and-three-other-logics.md) §3.3.
 
-**Порог: [ADR-0026](../adr/0026-quantifiers-over-any-type-are-a-kernel-change.md) §11.3
+**Порог: [ADR-0026](../../adr/0026-quantifiers-over-any-type-are-a-kernel-change.md) §11.3
 (свободное утверждение). До него задача не начинается. Это самая дорогая из
 четырёх работ — берись последней.**
 
@@ -61,7 +61,7 @@
 - Не начинать с логики разделения. Шаг 2 может закрыть настоящий риск за долю
   цены, и не выяснив этого, браться нельзя.
 - Не путать с живучестью: «упавший процесс будет перезапущен» уже разобрано и
-  закрыто [ADR-0017](../adr/0017-liveness-without-temporal-logic.md) без
+  закрыто [ADR-0017](../../adr/0017-liveness-without-temporal-logic.md) без
   новых слов языка.
 
 ## Как поймём, что сделано
@@ -207,7 +207,7 @@ processes, supervisors, runs: сверено, что имена сходятся
 ## ⚑ 17 сентября 2026: замер (задача 3560)
 
 Ветка `a/3560-logic-in-time-count` над `main` `a43ab4d25`, двоичный `bootstrap/flang` 0.7.19,
-1001 файл под учётом git; числа, прибор и места поимённо — [ADR-0044](../adr/0044-time-effects-and-processes-are-counted-before-they-get-rules.md) §2–3.
+1001 файл под учётом git; числа, прибор и места поимённо — [ADR-0044](../../adr/0044-time-effects-and-processes-are-counted-before-they-get-rules.md) §2–3.
 
 **Процессов** `процесс «` — **94** (`flang/concurrency` 45, `flang/test` 41, `docs/examples`
 8); разбор `flang ast` даёт те же 94 (`sh flang/test/владение-состоянием.sh`: файлов 44,

@@ -12,7 +12,7 @@
 
 # 1401. Сличитель перевода в C
 
-Решение: [ADR-0030](../adr/0030-the-printer-proves-each-run-not-itself.md),
+Решение: [ADR-0030](../../adr/0030-the-printer-proves-each-run-not-itself.md),
 состояние «предложено».
 
 ## Дыра

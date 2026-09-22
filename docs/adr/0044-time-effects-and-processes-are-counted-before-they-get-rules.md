@@ -17,9 +17,9 @@
 есть строка ведомости, лемма Lean, приём сверщика и случай приёмки; [ADR-0042](0042-the-last-twelve-places-get-rules-not-exceptions.md)
 §3 — образец строки бюджета «потолок — на съеденное, ни строкой больше».
 **Задачи:** [3560](../tasks/3560-count-the-places-that-need-rules-about-time-effects-and-processes.md)
-(замер), [1404](../tasks/1404-utverzhdenie-o-posledovatelnosti-shagov.md) Ш2,
-[1406](../tasks/1406-process-nichego-ne-obeshchaet.md) Ш1,
-[1405](../tasks/1405-plan-nichego-ne-obeshchaet.md) Ш1.
+(замер), [1404](../tasks/completed/1404-utverzhdenie-o-posledovatelnosti-shagov.md) Ш2,
+[1406](../tasks/completed/1406-process-nichego-ne-obeshchaet.md) Ш1,
+[1405](../tasks/completed/1405-plan-nichego-ne-obeshchaet.md) Ш1.
 
 ---
 

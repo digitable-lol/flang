@@ -1,6 +1,6 @@
 # Семья «развёртка»: вызов, поле выписанного конструктора, разбор суммы в цели
 
-Задача [6432](../../../../../../tasks/6432-measure-projection-and-declared-sums-close-five-kernel-word-places.md),
+Задача [6432](../../../../../../tasks/completed/6432-measure-projection-and-declared-sums-close-five-kernel-word-places.md),
 решение — [ADR-0042](../../../../../../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md) §2.
 Строки `Разв3`, `К↑` и расширенная `Разв1` — в `flang/proof/tables/inference-rules.tsv`;
 леммы «Разв3», «К↑», «Разв1-сумма» — в `Rules.lean`; ловушки 20–22 — в

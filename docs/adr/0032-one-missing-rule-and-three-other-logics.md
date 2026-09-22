@@ -20,9 +20,9 @@
 [ADR-0022](0022-a-type-fact-travels-as-a-derivation.md) — правила вывода одним
 источником.
 **Новые задачи:** [1403](../tasks/completed/1403-vychitanie-pod-predusloviem.md),
-[1404](../tasks/1404-utverzhdenie-o-posledovatelnosti-shagov.md),
-[1405](../tasks/1405-plan-nichego-ne-obeshchaet.md),
-[1406](../tasks/1406-process-nichego-ne-obeshchaet.md).
+[1404](../tasks/completed/1404-utverzhdenie-o-posledovatelnosti-shagov.md),
+[1405](../tasks/completed/1405-plan-nichego-ne-obeshchaet.md),
+[1406](../tasks/completed/1406-process-nichego-ne-obeshchaet.md).
 
 ---
 
@@ -250,9 +250,9 @@ logic) — не правило и не слово, а другой вид утв
    перепечатки ADR-0026 §11; проверяющая программа читает новую запись раньше,
    чем ядро начинает её печатать, — условие той партии неизменно.
 2. **Три остальные вещи не сваливаем в одну работу и не начинаем до порога.**
-   Задачи [1404](../tasks/1404-utverzhdenie-o-posledovatelnosti-shagov.md),
-   [1405](../tasks/1405-plan-nichego-ne-obeshchaet.md),
-   [1406](../tasks/1406-process-nichego-ne-obeshchaet.md) — по одной на вещь,
+   Задачи [1404](../tasks/completed/1404-utverzhdenie-o-posledovatelnosti-shagov.md),
+   [1405](../tasks/completed/1405-plan-nichego-ne-obeshchaet.md),
+   [1406](../tasks/completed/1406-process-nichego-ne-obeshchaet.md) — по одной на вещь,
    все три помечены порогом ADR-0026 §11.3. Первый шаг каждой — замер, а не код.
 3. **Временная логика остаётся отвергнутой** (ADR-0017). Ни `всегда`, ни
    `когда-нибудь`, ни `пока не` в язык не вводятся.

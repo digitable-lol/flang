@@ -19,8 +19,8 @@
 никогда» — решение, которое этот документ ОТМЕНЯЕТ с доводом;
 `docs/zettel/callee-postcondition-is-a-fact-only-after-it-is-proved.md` — почему
 неоплаченное `требует` гасит обещание вызванной.
-**Новые задачи:** [5332](../tasks/5332-the-discharge-of-a-precondition-is-printed-as-a-derivation.md),
-[6438](../tasks/6438-preconditions-enter-the-replayed-share.md).
+**Новые задачи:** [5332](../tasks/completed/5332-the-discharge-of-a-precondition-is-printed-as-a-derivation.md),
+[6438](../tasks/completed/6438-preconditions-enter-the-replayed-share.md).
 
 ---
 

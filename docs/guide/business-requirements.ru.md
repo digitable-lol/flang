@@ -247,7 +247,7 @@ $ sh scripts/доказуемость.sh
 
 Решение по этому разрыву — [ADR-0030](../adr/0030-the-printer-proves-each-run-not-itself.md),
 состояние «предложено»; работа — задача
-[1401](../tasks/1401-slichitel-perevoda-v-c.md), не начата. Тот же разрыв
+[1401](../tasks/completed/1401-slichitel-perevoda-v-c.md), не начата. Тот же разрыв
 есть у Coq, Lean и Idris; закрыли его CompCert и CakeML, каждый годами работы
 команды.
 

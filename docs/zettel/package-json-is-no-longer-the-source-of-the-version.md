@@ -16,7 +16,7 @@
 | `scripts/guards/version-guard.flang:364` | эталон для `FLANG_VERSION` в `flang_repl.c` (в хуке перед пушем) |
 | `scripts/guards/version-derivations-guard.sh:96` | то же дёшево, для хука |
 | `scripts/release/emit-package.flang:166` | печатает и сверяет знак в знак |
-| `scripts/release/bump-version.sh:81,139` | показывает и перепечатывает при подъёме версии |
+| `scripts/release/bump-version.fscript` | показывает и перепечатывает при подъёме версии |
 | `scripts/guards/homebrew-formula-guard.flang:530` | версия, с которой сверяется формула |
 | `docs/site/build.mjs:81`, `build.flang:1019` | лицензия и оба адреса в подвале сайта; без разбора сборка ОТКАЗЫВАЕТ |
 | `docs/site/site-numbers.mjs:184` | версия выпуска для чисел сайта |

@@ -93,7 +93,7 @@
 ровно одно.
 
 **Чем подтверждено.** Ветка `u/stroka-indukciya`, основание `fd3721e3`, двоичный
-перепечатан из исходников трижды (`sh scripts/raskrutka.sh` + `make -C bootstrap
+перепечатан из исходников трижды (`sh scripts/bootstrap-reprint.sh` + `make -C bootstrap
 -j8`). Вердикт брался у `bootstrap/flang check … --proof`, не у пробника.
 Сравнение двух двоичных по `flang/stdlib/*.flang` и `examples/*/*.flang`:
 различие ровно в двух файлах, и оба — один модуль `wal`, постусловие «хвост не

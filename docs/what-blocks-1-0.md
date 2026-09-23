@@ -41,7 +41,7 @@ bootstrap/flang io scripts/guards/what-blocks-inventory-guard.fscript --plan П�
 |---|---|---|
 | `docs/reprint-cost.md`, `docs/reprint-ledger.tsv` | есть | — |
 | `docs/kernel-axioms-list.md`, `flang/scripts/kernel-axioms.flang` | нет | клон `B4-spisok/stvol` |
-| `sh scripts/raskrutka.sh --imena` | есть | коммит `4d0dcb7b` |
+| `sh scripts/bootstrap-reprint.sh --imena` | есть | коммит `4d0dcb7b` |
 | `flang/proof/checker/` (чекер на C) | есть | коммит `e8380e2d` |
 | починка checker'а `+48 LOC` (2.5) | не файл | заплата `Ч126-vernut-g2/vernut-g2.diff` |
 | печать derivation trace `+194 LOC` (2.6) | не файл | черновики Ч70, Ч91, Ч71 |
@@ -52,7 +52,7 @@ bootstrap/flang io scripts/guards/what-blocks-inventory-guard.fscript --plan П�
 про это нельзя.
 
 **Почему столбец отняли у руки (Ч158, 1 сентября 2026).** Эта таблица лгала в
-минуту собственного коммита. Ряды про `scripts/raskrutka.sh --imena` и про
+минуту собственного коммита. Ряды про `scripts/bootstrap-reprint.sh --imena` и про
 `flang/proof/checker/` стояли со словом «нет», а оба прибора легли в ствол за 7 и
 за 11 минут ДО неё:
 
@@ -61,7 +61,7 @@ git -c core.quotepath=false log -1 --format='%ad' --date=iso e8380e2d  # 2026-08
 git -c core.quotepath=false log -1 --format='%ad' --date=iso 4d0dcb7b  # 2026-08-31 20:08:21  --imena
 git -c core.quotepath=false log -1 --format='%ad' --date=iso 86494646  # 2026-08-31 20:15:36  сама таблица
 git -c core.quotepath=false show 86494646:docs/what-blocks-1-0.md | sed -n '27,28p'
-#   → | `sh scripts/raskrutka.sh --imena` | нет | `Ч59-imena/stvol`, коммит `907c27af` |
+#   → | `sh scripts/bootstrap-reprint.sh --imena` | нет | `Ч59-imena/stvol`, коммит `907c27af` |
 #   → | `flang/proof/checker/` (чекер на C) | нет | `Ч63-chekker-v-derevo/clon` |
 ```
 
@@ -79,7 +79,7 @@ git -c core.quotepath=false ls-tree -r --name-only main -- 'flang/proof/checker'
 git -c core.quotepath=false log --oneline --diff-filter=A -- 'flang/proof/checker/Makefile'
 #   → e8380e2d feat(чекер): независимый чекер на C, его пробы и рецепт сборки лежат в дереве
 wc -l flang/proof/checker/checker.c                                          # → 1566
-LC_ALL=C.UTF-8 /usr/bin/grep -a -c -- '--imena' scripts/raskrutka.sh       # → 11
+LC_ALL=C.UTF-8 /usr/bin/grep -a -c -- '--imena' scripts/bootstrap-reprint.sh       # → 11
 ```
 
 Те же 17 коммитов открыты как PR №4 (`digitable-lol/flang`, ветка
@@ -172,7 +172,7 @@ Node. Всё, что старая редакция мерила по JS-исхо
 
 1. **Напечатанное семя отстаёт от исходников на 29 функций ядра решений.**
    Компилятор в дереве и его исходники — разные программы, и расхождение
-   названо поимённо: `sh scripts/raskrutka.sh --imena` (ячейка Ч59, 0,35 с).
+   названо поимённо: `sh scripts/bootstrap-reprint.sh --imena` (ячейка Ч59, 0,35 с).
    Тот же список побайтово совпал с независимым счётом ячейки Ч54, снятым
    другим приёмом. **Причина — не оплошность, а гонка:** печать идёт 8,5 часа,
    входы печати трогают с медианой в десять минут, значит семя не МОЖЕТ быть
@@ -230,7 +230,7 @@ sh scripts/seed/seed-freshness.sh
 ОТКАЗЫВАЮСЬ СУДИТЬ О ДОКАЗАТЕЛЬСТВАХ
 
 семя отстало от исходников на 38 файлов, ведомость показывает состояние,
-которого нет; перепечатайте `sh scripts/raskrutka.sh`
+которого нет; перепечатайте `sh scripts/bootstrap-reprint.sh`
 ```
 
 **Что это значит на деле.** Правка компилятора попадает в исходники и не
@@ -272,7 +272,7 @@ grep -c 'предел-шагов' bootstrap/*.c          # → 9   (было 0)
 против блок-комментариев ` * Функция flang «Имя».` в `bootstrap/compiler_flang.c`.
 
 ```sh
-sh scripts/raskrutka.sh --imena        # 0,35 с, 8 МиБ
+sh scripts/bootstrap-reprint.sh --imena        # 0,35 с, 8 МиБ
 ```
 
 Три исхода, а не два: сошлось / ОТСТАЛО (в исходниках есть, в семени нет) /
@@ -335,7 +335,7 @@ FLANG_BINARY_UNKNOWN_OK=1 sh scripts/seed/seed-freshness.sh   # → код 0, м
 ```sh
 git -c core.quotepath=false log -1 --format='%h %aI' c143a3c9   # → 2026-08-30T17:32:28Z
 git -c core.quotepath=false log -1 --format='%h %aI' c15f669f   # → 2026-08-30T22:18:53Z
-LC_ALL=C.UTF-8 /usr/bin/grep -a -n 'коммит' scripts/otpechatok-semeni | head -1
+LC_ALL=C.UTF-8 /usr/bin/grep -a -n 'коммит' scripts/seed-fingerprint | head -1
 #   → коммит 1eb168da…                       (дерево 30 авг 12:30:03Z)
 git -c core.quotepath=false merge-base --is-ancestor c143a3c9 1eb168da; echo $?   # → 1
 ```
@@ -1163,7 +1163,7 @@ LC_ALL=C.UTF-8 python3 flang/proof/binding/cycle.py
 | # | что | состояние, числом |
 |---|---|---|
 | **1б** | **найти, кто убивает заход сигналом** | два журнала с `Exit status: 143` при свободной машине, пределы не исчерпаны; причины нет |
-| 1а | сверять ИМЕНА ядра, а не родство коммитов | `sh scripts/raskrutka.sh --imena` — 0,35 с, называет 29 отставших имён поимённо; **с вечера 31 авг в стволе**, коммит `4d0dcb7b` |
+| 1а | сверять ИМЕНА ядра, а не родство коммитов | `sh scripts/bootstrap-reprint.sh --imena` — 0,35 с, называет 29 отставших имён поимённо; **с вечера 31 авг в стволе**, коммит `4d0dcb7b` |
 | 1в | окно печати: не трогать `flang/self/**`, пока идёт заход | не сделано, числа нет |
 
 **1б идёт впереди 1а и 1в, и это единственная перестановка, которую наши
@@ -1199,7 +1199,7 @@ LC_ALL=C.UTF-8 python3 flang/proof/binding/cycle.py
 чтобы напечатать сегодняшнее дерево ещё раз.
 
 **И половина работы пункта 1 сделана без нас.** Сверка имён (1а) с вечера
-31 августа в стволе — коммит `4d0dcb7b`, `sh scripts/raskrutka.sh --imena`;
+31 августа в стволе — коммит `4d0dcb7b`, `sh scripts/bootstrap-reprint.sh --imena`;
 остаются 1б (кто убивает заход) и 1в (окно печати).
 
 ---

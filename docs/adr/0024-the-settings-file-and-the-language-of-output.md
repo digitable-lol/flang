@@ -142,7 +142,7 @@ $ bootstrap/flang check смесь.flang
 Якоря строгого круга — это фразы `"проверено — замечаний нет"`,
 `"постусловие «"`, `"доказано ПРИ УСЛОВИИ"`, `"объявлено, не доказано"`,
 `"утверждений "`, `"непонятный ключ"`, `"нарушено свойство «утверждение»"`.
-Живут они в `scripts/raskrutka.sh`, `scripts/seed/new-binary-acceptance.sh`,
+Живут они в `scripts/bootstrap-reprint.sh`, `scripts/seed/new-binary-acceptance.sh`,
 `scripts/targets/target-census.sh`, `scripts/guards/seed-parses-sources-guard.sh`,
 `flang/scripts/proven-guard.fscript`, `flang/scripts/word-guard.fscript`,
 `flang/scripts/ledger-summary.fscript`, `flang/scripts/emptiness-guard.fscript` и ещё

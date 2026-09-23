@@ -390,7 +390,7 @@ sh scripts/seed-freshness.sh
 **Код 1**: `семя отстало от исходников на 5 файлов` —
 `flang/self/bootstrap/compiler.flang`, `emit-js.flang`, `io.flang` (вошёл в
 замыкание после перепечатки), `parser.flang`, `proof-initial.flang`.
-`sh scripts/raskrutka.sh --bystro` — то же, «расхождений 5», код 1.
+`sh scripts/bootstrap-reprint.sh --bystro` — то же, «расхождений 5», код 1.
 
 Причина не в том, что после перепечатки что-то легло:
 `git log 52996005..HEAD -- flang/self/` **пуст**. Отставание осталось от самой
@@ -509,7 +509,7 @@ grep -an 'compiler_flang_progon\b\|compiler_flang_vitok\b\|compiler_flang_dalshe
 1. вернуть батут трём звеньям цикла машины приёмом задачи **4837** — дописать
    `пример`, тела и `обеспечивает` не трогать — и проверить печатью
    `flang emit --target c`, а не перепечаткой;
-2. поднять `MAX_DEPTH` у следующего захода (`scripts/raskrutka.sh` зовёт
+2. поднять `MAX_DEPTH` у следующего захода (`scripts/bootstrap-reprint.sh` зовёт
    `emit --max-depth`) — лечит след, а не причину;
 3. доказать или снять обещания, из-за которых распались 35 батутных групп.
 

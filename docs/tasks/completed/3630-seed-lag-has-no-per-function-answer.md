@@ -30,7 +30,7 @@
 на дереве `569dfa91`:
 
 ```
-sh scripts/raskrutka.sh --bystro     → код 1
+sh scripts/bootstrap-reprint.sh --bystro     → код 1
 sh scripts/seed-freshness.sh         → код 3   («сверить не удалось», не «прошло»)
 sh scripts/binary-origin.sh          → код 3
 ./ярлык доказанное:проверка          → код 3, сборка НЕ НАЧАТА
@@ -63,7 +63,7 @@ sh scripts/binary-origin.sh          → код 3
 ## Размер беды, числом
 
 Замер на `569dfa91`, семя напечатано из коммита `1eb168da` (**30 августа**, шесть
-суток назад). Из 46 входов печати, записанных в `scripts/otpechatok-semeni`,
+суток назад). Из 46 входов печати, записанных в `scripts/seed-fingerprint`,
 **разошлись 42**, сошлись 4.
 
 По функциям (имена в ёлочках, а не гребом фразы):

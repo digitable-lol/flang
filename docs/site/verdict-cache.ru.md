@@ -32,7 +32,7 @@
 ```sh
 FLANG_KESH_PRIGOVOROV=/путь/к/кешу.json flang check программа.flang
 FLANG_KESH_PRIGOVOROV=/путь/к/кешу.json flang emit программа.flang --target c
-FLANG_KESH_PRIGOVOROV=/путь/к/кешу.json sh scripts/raskrutka.sh
+FLANG_KESH_PRIGOVOROV=/путь/к/кешу.json sh scripts/bootstrap-reprint.sh
 ```
 
 Переменная не задана — кеш выключен, и ядро идёт прежней дорогой. Двоичный не
@@ -108,7 +108,7 @@ python3 docs/benchmarks/verdict-cache/наложить.py [<корень дер�
 - `второе-ядро.sh` собирает из `bootstrap/` второй двоичный, у которого в
   напечатанном семени переписано одно правило ядра («Предел ветвления»);
   дерево исходников при этом не меняется.
-- `три-печати.sh` перепечатывает компилятор `scripts/raskrutka.sh` трижды —
+- `три-печати.sh` перепечатывает компилятор `scripts/bootstrap-reprint.sh` трижды —
   без кеша, с холодным, с горячим — и сверяет семя после каждой печати с
   печатью без кеша. Это часы работы.
 - `наложить.py` накладывает механизм на дерево без него (правит

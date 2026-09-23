@@ -20,7 +20,7 @@
 |---|---:|---|
 | docs/eight-targets-renames.tsv | 1058 | никто (только запись в hand-written-lists-ledger.tsv) |
 | docs/javascript-checks-breakdown.tsv | 893 | никто (только запись в hand-written-lists-ledger.tsv) |
-| docs/reprint-ledger.tsv | 12 | reprint.yml, raskrutka.sh, seed/reprint-freshness.fscript, seed/seed-freshness.sh |
+| docs/reprint-ledger.tsv | 12 | reprint.yml, bootstrap-reprint.sh, seed/reprint-freshness.fscript, seed/seed-freshness.sh |
 | flang/translation/PRINT-RULES.tsv | 72 | flang/translation/matcher.c, run.sh |
 | scripts/ledgers/hand-written-lists-ledger.tsv | 142 | scripts/guards/hand-written-lists.sh, flang/proof/tables/inference-rules.tsv |
 | scripts/ledgers/link-guard-known-not-a-path.tsv | 248 | ci.yml, guards/file-extensions.fscript, guards/link-guard.fscript |
@@ -37,9 +37,9 @@ target-function-drift-known) первая строка — `#`-примечан�
 - 9 из 9: либо первая строка `# ЧТО … ЗАЧЕМ … КТО ЧИТАЕТ …` и читающий сторож
   ссылается на файл в своей шапке, либо файл снесён с доводом здесь;
 - каждый читатель после правки зелен тем же кодом, что до (число: код до/после у каждого);
-- `docs/reprint-ledger.tsv` читает `scripts/raskrutka.sh` — шапку ставить так, чтобы его
+- `docs/reprint-ledger.tsv` читает `scripts/bootstrap-reprint.sh` — шапку ставить так, чтобы его
   разбор не сломался (проверить `sh scripts/seed/seed-freshness.sh` до/после); сам
-  `raskrutka.sh` не править.
+  `bootstrap-reprint.sh` не править.
 
 ## Сделано (17 сентября 2026, ветка `a/5503-nine-tsv-files-carry-a-header`)
 
@@ -57,7 +57,7 @@ target-function-drift-known) первая строка — `#`-примечан�
 | файл | кто читает (код) | как пропускает шапку | код до / после |
 |---|---|---|---|
 | docs/eight-targets-renames.tsv | никто из приборов; человек — по ссылке из `docs/eight-targets-collision-map.md`; перепись перечней лишь считает в ней имена целей | строка без имён целей | перечни 1 / 1 (новых 59, мёртвых 29 — те же; строка перечня 2 → 3) |
-| docs/reprint-ledger.tsv | `scripts/seed/reprint-freshness.fscript`; `reprint.yml`, `raskrutka.sh`, `seed-freshness.sh` только называют файл | «Поле» за краем строки без табуляции даёт «» | reprint-freshness 1 / 1 (тот же текст: сверка 2026-09-08 устарела); seed-freshness 3 / 3 (тот же текст) |
+| docs/reprint-ledger.tsv | `scripts/seed/reprint-freshness.fscript`; `reprint.yml`, `bootstrap-reprint.sh`, `seed-freshness.sh` только называют файл | «Поле» за краем строки без табуляции даёт «» | reprint-freshness 1 / 1 (тот же текст: сверка 2026-09-08 устарела); seed-freshness 3 / 3 (тот же текст) |
 | flang/translation/PRINT-RULES.tsv | `flang/translation/run.sh` (`перевод:проверка`); `matcher.c` держит список литералом | `awk '!/^#/ && $1 != "имя"'` | 0 / 0 (41 правило, 21 опыт — тот же текст) |
 | scripts/ledgers/hand-written-lists-ledger.tsv | `scripts/guards/hand-written-lists.sh --check` (`перечни:проверка`) | `grep -v '^#'` | 1 / 1 (новых 59, мёртвых 29) |
 | scripts/ledgers/link-guard-known-not-a-path.tsv | `scripts/guards/link-guard.fscript` (`ссылки:проверка`); `file-extensions.fscript` вынимает файл из переписи | первая строка отброшена как заголовок | ссылки 1 / 1 (битых 36 из 7051, список тот же, устаревших исключений 1); расширения 0 / 0 (тот же текст) |

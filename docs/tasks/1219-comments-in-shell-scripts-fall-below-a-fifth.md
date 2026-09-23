@@ -37,7 +37,7 @@ git ls-files -z 'scripts/*.sh' 'scripts/**/*.sh' | sort -zu | xargs -0 awk '/^[[
 
 ## Чего задача НЕ делает
 
-Не трогает `scripts/raskrutka.sh`, `scripts/otpechatok-semeni`. Не меняет поведение
+Не трогает `scripts/bootstrap-reprint.sh`, `scripts/seed-fingerprint`. Не меняет поведение
 скриптов: только комментарии.
 
 ## Часть Б — scripts/seed (6), scripts/targets (4), scripts/release (1), scripts/ledgers (1)

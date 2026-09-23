@@ -95,7 +95,7 @@ Worktree `/srv/tmp/dokazuemyy/kvantory`, ветка `r/kvantory` от `gh/dev` `
 вывода нет (типизация — не правило ядра), `tables/inference-rules.tsv` не тронут.
 
 Чего не доехало: семя (`bootstrap/flang`, `compiler_flang.c`) — правка `flang/self/**` едет только
-перепечаткой (`sh scripts/raskrutka.sh`, часы); до неё `flang check` на программах с «есть такой»
+перепечаткой (`sh scripts/bootstrap-reprint.sh`, часы); до неё `flang check` на программах с «есть такой»
 отвечает `FLANG_TYPE`, а `semya-osvezhit.sh` красен по этой причине. Печатники целей (`emit-*`)
 узла `exists` не знают — по границам задачи. Расхождение К3c из разбора 6203
 (`к3c-применение-утверждения`, `к3c-ход-подстановкой` — `FLANG_PROOF_STEP` при ожидании 0) здесь

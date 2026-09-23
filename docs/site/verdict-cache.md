@@ -35,7 +35,7 @@ The cache file is JSON: entries are laid out in buckets («Номер корзи
 ```sh
 FLANG_KESH_PRIGOVOROV=/path/to/cache.json flang check program.flang
 FLANG_KESH_PRIGOVOROV=/path/to/cache.json flang emit program.flang --target c
-FLANG_KESH_PRIGOVOROV=/path/to/cache.json sh scripts/raskrutka.sh
+FLANG_KESH_PRIGOVOROV=/path/to/cache.json sh scripts/bootstrap-reprint.sh
 ```
 
 Variable not set — the cache is off, and the kernel takes its former road. The
@@ -117,7 +117,7 @@ python3 docs/benchmarks/verdict-cache/наложить.py [<tree root>]
 - `второе-ядро.sh` builds from `bootstrap/` a second binary whose printed seed
   has one kernel rule rewritten («Предел ветвления»); the source tree is not
   changed.
-- `три-печати.sh` reprints the compiler with `scripts/raskrutka.sh` three
+- `три-печати.sh` reprints the compiler with `scripts/bootstrap-reprint.sh` three
   times — without the cache, with a cold one, with a hot one — and compares
   the seed after each printing with the printing without the cache. This takes
   hours.

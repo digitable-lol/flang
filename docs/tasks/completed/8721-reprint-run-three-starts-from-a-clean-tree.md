@@ -83,7 +83,7 @@ sh scripts/seed-freshness.sh          # честный ответ о свеже�
 **Семя копии на минуту начала совпадало со стволом:**
 
 ```
-$ git diff --quiet f9e67fa6 52996005^ -- bootstrap scripts/otpechatok-semeni; echo $?
+$ git diff --quiet f9e67fa6 52996005^ -- bootstrap scripts/seed-fingerprint; echo $?
 0
 ```
 
@@ -101,12 +101,12 @@ $ git diff --quiet f9e67fa6 52996005^ -- bootstrap scripts/otpechatok-semeni; ec
 Раздел «Как понять, что сделано» требовал, чтобы «ветка захода проходила
 приёмную (`git push … без отказа`)». **Это требование невыполнимо.** Крючок
 `/srv/flang-priyom.git/hooks/pre-receive` (шаг 2) отвергает всякий коммит,
-тронувший `bootstrap[^/]*/` или `scripts/otpechatok-semeni`, — исключения для
+тронувший `bootstrap[^/]*/` или `scripts/seed-fingerprint`, — исключения для
 перепечатки в нём нет. Прогон на самом коммите перепечатки:
 
 ```
 $ git diff-tree --no-commit-id --name-only -r 52996005 |
-    grep -Eq '^(bootstrap[^/]*/|scripts/otpechatok-semeni$)'; echo $?
+    grep -Eq '^(bootstrap[^/]*/|scripts/seed-fingerprint$)'; echo $?
 0
 ```
 
@@ -125,7 +125,7 @@ db12d317 HEAD@{2026-08-30 09:32:37 +0000}: reset: moving to origin/main
 ## Что осталось после закрытия
 
 **Правленое семя держат 10 рабочих копий из 600** — снято обходом 30 августа
-(`git diff --quiet HEAD -- bootstrap scripts/otpechatok-semeni` по каждой):
+(`git diff --quiet HEAD -- bootstrap scripts/seed-fingerprint` по каждой):
 `b-zaslon`, `m-reprint-2`, `m-reprint-4`, `u-bez-js2`, `u-konyunkciya2`,
 `u-perepechatka`, `u-perepechatka-bystro`, `u-semya3`, `u-zerkalo-porcha`,
 `u-zerkalo-stvol`. Из них `m-reprint-4` — не правка руками, а вывод дошедшего

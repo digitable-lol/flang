@@ -76,7 +76,7 @@ TypeScript — это JavaScript плюс типы, и генератор это
 
 ## Что доедет до двоичного только перепечаткой
 
-`bootstrap/flang emit --target ts` заработает после `scripts/raskrutka.sh`
+`bootstrap/flang emit --target ts` заработает после `scripts/bootstrap-reprint.sh`
 (~4,7 ч, только с «го» владельца): строка таблицы в `flang_repl.c` уже есть и
 собирается, а функции «Напечатать связанное в TS» в семени нет — до перепечатки
 двоичный отвечает отказом с именем функции. Поэтому в `ci.yml`,

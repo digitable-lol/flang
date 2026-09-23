@@ -18,7 +18,7 @@
 
 ```
 СБОРКА НЕ НАЧАТА: тело точки раскрутки не сходится с отпечатком.
-В ОТПЕЧАТКЕ НЕТ ТЕЛА СЕМЕНИ: scripts/otpechatok-semeni
+В ОТПЕЧАТКЕ НЕТ ТЕЛА СЕМЕНИ: scripts/seed-fingerprint
 ```
 
 Обходили это, копируя двоичный из чужого каталога — то есть судили дерево
@@ -73,7 +73,7 @@ compiler_flang.h  d29bbe6bb3e3fcac / a28d14e9e32751a9
 ```sh
 git worktree add --detach <кат> 22d54485      # входы — ВРЕМЁН ПЕЧАТИ
 cp bootstrap/* <кат>/bootstrap/               # тело — НЫНЕШНЕЕ, оно и есть итог
-sh <кат>/scripts/raskrutka.sh --otpechatok
+sh <кат>/scripts/bootstrap-reprint.sh --otpechatok
 ```
 
 Так законно, потому что `commit_of_tree` выводит коммит по ВХОДАМ печати, а
@@ -103,7 +103,7 @@ sh <кат>/scripts/raskrutka.sh --otpechatok
 
 ## Заслон в приборе, чтобы это не повторилось
 
-`raskrutka.sh`, режим `stamp`. Отказ `--bystro` советует позвать
+`bootstrap-reprint.sh`, режим `stamp`. Отказ `--bystro` советует позвать
 `--otpechatok`, совет выполняют не думая — так дерево и получило отпечаток
 с ложным коммитом. Различать честный случай от лжи дёшево:
 
@@ -130,8 +130,8 @@ sh <кат>/scripts/raskrutka.sh --otpechatok
 до починки   ./ярлык задачник:проверка   код 3, «СБОРКА НЕ НАЧАТА»
 после        ./ярлык задачник:проверка   код 0, сборка пошла, двоичный
              21 983 032 байта, «flang 0.7.0»
-             sh scripts/raskrutka.sh --bystro   код 0
-             sh scripts/raskrutka.sh --telo     код 0
+             sh scripts/bootstrap-reprint.sh --bystro   код 0
+             sh scripts/bootstrap-reprint.sh --telo     код 0
 ```
 
 Шаг CI `Тело точки раскрутки отвечает отпечатку` (`binary.yml:186`) стоял

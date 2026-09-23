@@ -39,7 +39,7 @@ sverit_semya() { # <метка>
 snyat_etalon
 skazat "═══ печать БЕЗ кеша (знаменатель, тот же двоичный) ═══"
 NACHALO=$(date +%s)
-timeout 7200 sh "$ROOT/scripts/raskrutka.sh" > "$RAB/печать-без-кеша.out" 2> "$RAB/печать-без-кеша.err"
+timeout 7200 sh "$ROOT/scripts/bootstrap-reprint.sh" > "$RAB/печать-без-кеша.out" 2> "$RAB/печать-без-кеша.err"
 KOD=$?
 BEZ=$(($(date +%s) - NACHALO))
 skazat "  без кеша: код=$KOD секунд=$BEZ"
@@ -48,7 +48,7 @@ sverit_semya "без кеша"
 skazat "═══ печать с ХОЛОДНЫМ кешем ═══"
 rm -f "$RAB/кеш-печати.json"
 NACHALO=$(date +%s)
-FLANG_KESH_PRIGOVOROV=$RAB/кеш-печати.json timeout 7200 sh "$ROOT/scripts/raskrutka.sh" \
+FLANG_KESH_PRIGOVOROV=$RAB/кеш-печати.json timeout 7200 sh "$ROOT/scripts/bootstrap-reprint.sh" \
   > "$RAB/печать-холодная.out" 2> "$RAB/печать-холодная.err"
 KOD=$?
 HOLODNAYA=$(($(date +%s) - NACHALO))
@@ -57,7 +57,7 @@ sverit_semya "холодная"
 
 skazat "═══ печать с ГОРЯЧИМ кешем ═══"
 NACHALO=$(date +%s)
-FLANG_KESH_PRIGOVOROV=$RAB/кеш-печати.json timeout 7200 sh "$ROOT/scripts/raskrutka.sh" \
+FLANG_KESH_PRIGOVOROV=$RAB/кеш-печати.json timeout 7200 sh "$ROOT/scripts/bootstrap-reprint.sh" \
   > "$RAB/печать-горячая.out" 2> "$RAB/печать-горячая.err"
 KOD=$?
 GORYACHAYA=$(($(date +%s) - NACHALO))

@@ -392,7 +392,6 @@ static const char FLANG_HELP[] =
     "  flang --help                       эта справка\n"
     "  flang --version                    версия\n"
     "  flang --machine [<файл>]           постоянная этой машины: витков в секунду\n"
-    "                                     (кириллицей: --машина)\n"
     "  flang <команда> --help             все ключи команды\n"
     "\n"
     "  --depth-limit N                    предел глубины вызовов САМОГО бинарника\n"

@@ -9,6 +9,8 @@
 #   sh scripts/flangrc.sh версия          номер версии проекта, без разбора JSON
 #   sh scripts/flangrc.sh лицензия        лицензия, адрес дерева (`склад`) и адрес
 #                                         бед (`беды`) — тем же путём
+#   sh scripts/flangrc.sh недоказанное    что будет с недоказанной программой:
+#                                         отказ | предупреждение | разрешение
 #   sh scripts/flangrc.sh --откуда        то же и с источником каждого ключа
 #   sh scripts/flangrc.sh --места         какие места просмотрены (для проверки)
 #   sh scripts/flangrc.sh --файл          путь взятого файла проекта, или пусто
@@ -167,6 +169,15 @@ sreda_klyucha() {
     # производных версии.
     версия) printf '%s' "${FLANG_PROJECT_VERSION:-}" ;;
     имя) printf '%s' "${FLANG_PROJECT_NAME:-}" ;;
+    # ЕДИНСТВЕННЫЙ КЛЮЧ, КОТОРЫЙ ЧИТАЕТ САМ ДВОИЧНЫЙ, и читает своим разбором
+    # (`flangrc_project` и `flangrc_key` в flang/src/emit/c/flang_repl.c):
+    # поставленный `flang` из /usr/local/bin живёт без дерева, и звать наши
+    # сценарии ему неоткуда. Сценарий его всё равно печатает, и это не дубль
+    # работы, а ЕДИНСТВЕННЫЙ способ посмотреть, что вышло. Замер 23 сентября
+    # 2026: до этой правки `sh scripts/flangrc.sh недоказанное` отвечал пустой
+    # строкой и кодом 0 — тишиной, неотличимой от «ключ есть, значение пустое»,
+    # а ворота недоказанного он как раз и открывает.
+    недоказанное) printf '%s' "${FLANG_UNPROVEN:-}" ;;
     *) printf '' ;;
   esac
 }
@@ -232,8 +243,41 @@ if [ ! -x "$KOREN/bootstrap/flang" ]; then
   exit 3
 fi
 
-KLYUCHI="язык поверхность цвет страница версия имя лицензия склад беды"
+KLYUCHI="язык поверхность цвет страница версия имя лицензия склад беды недоказанное"
 [ -n "$KLYUCH" ] && KLYUCHI=$KLYUCH
+
+# ── негодное слово «недоказанного» — отказ вслух, а не тишина ───────────────
+# ОБЩЕЕ ПРАВИЛО ФАЙЛА («негодное значение пропускается молча») здесь не
+# действует, и это не вкус сценария, а поведение двоичного, замеренное
+# 23 сентября 2026 на 0.7.21:
+#
+#   .flangrc: недоказанное = разрешено   →  flang run  код 2 и три строки словами
+#
+# Сценарий, ответивший бы на это «отказ», сказал бы правду о своём разборе и
+# ложь о том, что случится: у двоичного ворота не закрыты, у него ОТКАЗ ВЫЗОВА.
+# Судит по-прежнему язык — «Слово недоказанного» в scripts/settings-file.flang;
+# сценарий только показывает, ЧЬЁ слово судили.
+slovo_nedokazannogo() { # сырое значение
+  args=$(ZN="$1" python3 -c 'import json,os; print(json.dumps({"значение":os.environ["ZN"]},ensure_ascii=False))')
+  "$KOREN/bootstrap/flang" run "$KOREN/scripts/settings-file.flang" \
+    --function "«Слово недоказанного»" --args "$args" 2>/dev/null | sed 's/^"//; s/"$//'
+}
+
+case " $KLYUCHI " in *" недоказанное "*)
+  SYROE=$(sreda_klyucha недоказанное); GDE_SYROE="переменная среды FLANG_UNPROVEN"
+  if [ -z "$SYROE" ] && [ -n "$GDE_PROEKT" ]; then
+    SYROE=$(znachenie_v "$PROEKT" недоказанное); GDE_SYROE=$GDE_PROEKT
+  fi
+  if [ -z "$SYROE" ] && [ -n "$GDE_DOM" ]; then
+    SYROE=$(znachenie_v "$DOMASHNIY" недоказанное); GDE_SYROE=$GDE_DOM
+  fi
+  if [ -n "$SYROE" ] && [ -z "$(slovo_nedokazannogo "$SYROE")" ]; then
+    printf 'flangrc: «%s» — такого значения у «недоказанное» нет (%s).\n' "$SYROE" "$GDE_SYROE" >&2
+    printf 'Годны три: отказ (refuse) — не запускать; предупреждение (warn) — сказать и\n' >&2
+    printf 'запустить; разрешение (allow) — запустить, вердикта не считая.\n' >&2
+    exit 2
+  fi
+;; esac
 
 for k in $KLYUCHI; do
   z=$(sprosit "$k" "")

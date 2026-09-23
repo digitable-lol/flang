@@ -250,14 +250,15 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
+      - run: make -C bootstrap -j"$(nproc)"
       - name: Probe cyrillic names
         run: |
-          if sh scripts/guards/cyrillic-file-names-guard.sh --подлог; then
+          if bootstrap/flang io scripts/guards/cyrillic-file-names-guard.fscript --plan Подлог; then
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
       - name: Check cyrillic names
-        run: sh scripts/guards/cyrillic-file-names-guard.sh --check
+        run: bootstrap/flang io scripts/guards/cyrillic-file-names-guard.fscript --plan Проверка
   # ТРАНСЛИТА В ИМЕНАХ ФАЙЛОВ НЕ ПРИБАВЛЯЕТСЯ (задача 1428).
   #
   # Имя файла — либо русское, либо английское; транслит — брак. Кириллицу судит
@@ -273,14 +274,15 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
+      - run: make -C bootstrap -j"$(nproc)"
       - name: Probe translit names
         run: |
-          if sh scripts/guards/translit-file-names-guard.sh --подлог; then
+          if bootstrap/flang io scripts/guards/translit-file-names-guard.fscript --plan Подлог; then
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
       - name: Check translit names
-        run: sh scripts/guards/translit-file-names-guard.sh --check
+        run: bootstrap/flang io scripts/guards/translit-file-names-guard.fscript --plan Проверка
   # ФАЙЛ НАСТРОЕК ЧИТАЕТСЯ ТОЛЬКО ИЗ ДЕРЕВА И ИЗ ДОМА.
   #
   # Поиск МОДУЛЕЙ этого не держит: он поднимается вверх, пока в предке лежит
@@ -1532,12 +1534,12 @@ jobs:
       - name: Probe package.json guard
         run: |
           set -u
-          if sh scripts/guards/no-package-json-guard.sh --подлог; then
+          if bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Подлог; then
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
       - name: Check no package.json
-        run: sh scripts/guards/no-package-json-guard.sh --check
+        run: bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Проверка
 
       - name: Probe contrast guard
         run: |

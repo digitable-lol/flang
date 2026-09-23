@@ -1519,6 +1519,7 @@ ef40ff2896acbf39dafc13d9db8c1ef9|15|14|0|0|0|scripts/guards/check-before-run.fsc
 c0e37ea32cceee7ea280fb07ffd8433d|4|3|1|0|0|scripts/guards/child-timeout.fscript
 0073c9e32ae573edaa5eb5bd6f1e521b|5|4|1|0|0|scripts/guards/cli-commands-guard.fscript
 539d8b46495e537c0c3258e76c3547e7|67|67|0|0|0|scripts/guards/corpus-runner.fscript
+e18baea9c15082521f1073fb2997b62f|7|7|0|0|0|scripts/guards/cyrillic-file-names-guard.fscript
 d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/guards/delivery-guard.flang
 9a1d779542ab08a5a1416bbdc99c0563|10|10|0|0|0|scripts/guards/dictionary-guard.fscript
 35bc4b6ceba5235a93625a25ded7023f|12|12|0|0|0|scripts/guards/emit-promises-guard.fscript
@@ -1535,6 +1536,7 @@ f8e01fecff7e47ed055e836a42195ee0|15|15|0|0|0|scripts/guards/module-name-guard.fs
 a63d8465a17432a9e21c55efe890d510|27|26|0|1|0|scripts/guards/name-collision-guard.fscript
 b227c0ad335b884661247019d31270e6|22|22|0|0|0|scripts/guards/name-splicing-guard.fscript
 062933c2a5372a048b5f68d1baf6ee1c|11|5|6|0|0|scripts/guards/no-comments-guard.fscript
+323f8525a0746bf647873edd7ba3eaf7|9|9|0|0|0|scripts/guards/no-package-json-guard.fscript
 76e306cbb502d04abaef8d8b0807eb8d|7|7|0|0|0|scripts/guards/occupancy-check.fscript
 7feca661ed8e0a679823c1b6f0a431fe|24|24|0|0|0|scripts/guards/occupied-names-guard.fscript
 1083cc30fab03e5f16e2060519b7c8c1|8|8|0|0|0|scripts/guards/release-guard.fscript
@@ -1543,6 +1545,7 @@ d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/guards/string-measure.flang
 d25c2b3399f45c84d4b13bf0ec83ba1a|5|3|2|0|0|scripts/guards/tab-host-guard.fscript
 0df69d55cfac1868ab36c20db5019da2|2|2|0|0|0|scripts/guards/target-function-drift.fscript
 68dc1ca8f2d8213dfacf881c0a77ac16|42|20|22|0|0|scripts/guards/traceability-guard.fscript
+32abb506d7825a5a941106acc8419d59|11|11|0|0|0|scripts/guards/translit-file-names-guard.fscript
 0eb8181532ae602de4c212cbde33749e|33|19|5|1|0|scripts/guards/tree-inventory.fscript
 19037f1b3d31fce728a4bd55fa1a4835|23|8|7|8|0|scripts/guards/version-guard.fscript
 b5801f9b34173f51e2b0b0216ba311f4|7|7|0|0|0|scripts/guards/what-blocks-inventory-guard.fscript

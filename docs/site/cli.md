@@ -88,8 +88,10 @@ flang check <файл.flang> [--proof [--json] [--строго] [--записа�
 
 The synopsis above is what binary 0.7.17 prints in its own `--help`, verbatim.
 Every key in it is a pair, and the table below names the Latin half first,
-because that is the half we lead with. Both halves are accepted today; the
-binary's own help will lead with Latin after the next seed reprint.
+because that is the half we lead with. Both halves are accepted today. The
+binary's own help still leads with the Cyrillic half — its text is hand-written
+C in `flang/src/emit/c/flang_repl.c`, and turning it round is the open half of
+task 2213.
 
 | Key | What it does |
 | --- | --- |

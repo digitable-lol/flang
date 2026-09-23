@@ -45,15 +45,17 @@ echo
 
 # ── 1. сборка по порядку импорта ────────────────────────────────────────────
 LEAN_PATH="$RAB"; export LEAN_PATH
-for f in Модель Правила Терм Запись Приёмка Состоятельность RecordReader VerdictCheck; do
-  if ! (cd "$KAT" && "$LEAN" -o "$RAB/$f.olean" "$f.lean") > "$RAB/$f.out" 2>&1; then
+for p in Model:Модель Rules:Правила Term:Терм Record:Запись Acceptance:Приёмка \
+         Consistency:Состоятельность RecordReader:RecordReader VerdictCheck:VerdictCheck; do
+  f=${p%%:*}; m=${p##*:}
+  if ! (cd "$KAT" && "$LEAN" -o "$RAB/$m.olean" "$f.lean") > "$RAB/$f.out" 2>&1; then
     echo "${KRAS}$f.lean НЕ СОБРАЛСЯ:${SBROS}"; cat "$RAB/$f.out"; exit 1
   fi
   if [ -s "$RAB/$f.out" ]; then
     echo "${KRAS}$f.lean собрался, но Lean не молчит:${SBROS}"; cat "$RAB/$f.out"; PLOHO=1
   fi
 done
-echo "сборка — Модель, Правила, Терм, Запись, Приёмка, Состоятельность, RecordReader, VerdictCheck: без сообщений"
+echo "сборка — Model, Rules, Term, Record, Acceptance, Consistency, RecordReader, VerdictCheck: без сообщений"
 
 # ── 2. аксиомы теоремы ──────────────────────────────────────────────────────
 printf 'import «Состоятельность»\n#print axioms «состоятельность»\n' > "$RAB/аксиомы.lean"

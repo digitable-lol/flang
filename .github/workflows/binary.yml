@@ -223,7 +223,7 @@ jobs:
       # перепечатку) — не тот, кто просто перезапустит --otpechatok.
       - name: Check bootstrap body
         continue-on-error: true
-        run: sh scripts/raskrutka.sh --telo
+        run: sh scripts/bootstrap-reprint.sh --telo
 
       # ── ДВОИЧНЫЙ БЕРЁТСЯ ГОТОВЫМ, ЕСЛИ ВХОДЫ СБОРКИ ТЕ ЖЕ (задача 6890) ─────
       #
@@ -434,7 +434,7 @@ jobs:
       # под заряд ПОПАДАЕТ, и его запас здесь тоже снят ведомостью: шагов всего
       # 401 973 650, витков 47 580 720. Нынешнее семя считает витки и упирается
       # в свой миллиард на 4,8 %; следующее будет считать шаги, но и потолок у
-      # него 300 млрд (MAX_STEPS в scripts/raskrutka.sh) — это 0,13 %.
+      # него 300 млрд (MAX_STEPS в scripts/bootstrap-reprint.sh) — это 0,13 %.
       #
       # ⚠ НАЙДЕНО 3 сентября 2026 (ячейка Ч370, «CI не должен жечь часы на
       # пуш»): ШАГ СЕГОДНЯ КРАСНЫЙ, И ЭТО НЕ НОВАЯ ПОЛОМКА — потолок долга вне
@@ -820,7 +820,7 @@ jobs:
   # семя собирается, ни один сторож не звал сверку. Так потерялись оговорка о
   # конечности, принцип индукции по строке и правило конъюнкции.
   #
-  # Сверка `sh scripts/raskrutka.sh --check` существовала всё это время и ловила
+  # Сверка `sh scripts/bootstrap-reprint.sh --check` существовала всё это время и ловила
   # беду за один прогон. Её не звал никто, и причина уважительная: она ПЕЧАТАЕТ
   # ЗАНОВО — 19 мин 58 с и 25,1 ГиБ пика, замерено 22 августа на 256 ядрах; на
   # раннере дольше. На каждый пуш столько не
@@ -900,7 +900,7 @@ jobs:
       # держит остальной прогон. Снять может только тот, кто закроет 9611.
       - name: Check seed inputs
         continue-on-error: true
-        run: sh scripts/raskrutka.sh --bystro
+        run: sh scripts/bootstrap-reprint.sh --bystro
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -929,9 +929,9 @@ jobs:
   #   sh scripts/seed/print-is-repeatable.sh            24,4 с   (две печати по 12,2 с)
   #   sh scripts/seed/print-is-repeatable.sh --подлог   12,3 с   (одна печать)
   # Для сравнения, тем же прогоном и тем же двоичным:
-  #   sh scripts/raskrutka.sh --telo             0,15 с
-  #   sh scripts/raskrutka.sh --bystro           1,50 с
-  #   sh scripts/raskrutka.sh --check           ~4,6 ч
+  #   sh scripts/bootstrap-reprint.sh --telo             0,15 с
+  #   sh scripts/bootstrap-reprint.sh --bystro           1,50 с
+  #   sh scripts/bootstrap-reprint.sh --check           ~4,6 ч
   #   пара печатей (dve-pechati)                ~9,2 ч
   #
   # ЧТО ЭТА РАБОТА ДОКАЗЫВАЕТ: печать этого двоичного — чистая функция от
@@ -948,7 +948,7 @@ jobs:
   # полная пара печатей одного дерева — остаётся за `dve-pechati` и остаётся
   # не взятым.
   #
-  # ПОЧЕМУ НЕ `sh scripts/raskrutka.sh --telo`, который стоит 0,15 с и уже
+  # ПОЧЕМУ НЕ `sh scripts/bootstrap-reprint.sh --telo`, который стоит 0,15 с и уже
   # зовётся двумя работами выше. Он сверяет `bootstrap/**` с отпечатком,
   # снятым ТОЙ ЖЕ печатью, которая это `bootstrap/**` и положила: снимок
   # сходится со снимком. ПОКАЗАНО ПРОГОНОМ 6 сентября 2026, а не выведено из

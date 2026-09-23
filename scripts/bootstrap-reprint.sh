@@ -32,32 +32,32 @@
 # остался там, где он от оболочки не зависит, — в пояснениях и в выводе.
 #
 # ── Как звать ────────────────────────────────────────────────────────────────
-#   sh scripts/raskrutka.sh              перепечатать bootstrap/ из исходников
-#   sh scripts/raskrutka.sh --check      сверить закоммиченное с печатью
-#   sh scripts/raskrutka.sh --stroki     только быстрая проверка строк рантайма
-#   sh scripts/raskrutka.sh --bystro     сверить, отвечает ли отпечаток тому
+#   sh scripts/bootstrap-reprint.sh              перепечатать bootstrap/ из исходников
+#   sh scripts/bootstrap-reprint.sh --check      сверить закоммиченное с печатью
+#   sh scripts/bootstrap-reprint.sh --stroki     только быстрая проверка строк рантайма
+#   sh scripts/bootstrap-reprint.sh --bystro     сверить, отвечает ли отпечаток тому
 #                                        коммиту, из которого семя объявлено
 #                                        напечатанным, и предок ли он HEAD (секунды).
 #                                        Вход печати, правленый после перепечатки,
 #                                        — КОД 1: правка в двоичном не работает
-#   sh scripts/raskrutka.sh --bystro --strogo
+#   sh scripts/bootstrap-reprint.sh --bystro --strogo
 #                                        то же плюс сверка ИМЁН ядра (--imena) —
 #                                        для замороженного дерева перед выпуском
-#   sh scripts/raskrutka.sh --bystro --terpimo
+#   sh scripts/bootstrap-reprint.sh --bystro --terpimo
 #                                        прежнее поведение: отставание печатается
 #                                        числом, код 0. Каждый такой вызов виден
 #                                        в дереве поимённо
-#   sh scripts/raskrutka.sh --telo       сверить ТОЛЬКО тело семени (bootstrap/**)
+#   sh scripts/bootstrap-reprint.sh --telo       сверить ТОЛЬКО тело семени (bootstrap/**)
 #                                        с отпечатком: 0,2 с, git не нужен
-#   sh scripts/raskrutka.sh --imena      сверить ИМЕНА ядра решений в исходниках
+#   sh scripts/bootstrap-reprint.sh --imena      сверить ИМЕНА ядра решений в исходниках
 #                                        с именами в напечатанном компиляторе:
 #                                        0,3 с, git нужен только второй стороне
-#   sh scripts/raskrutka.sh --тела       сверить ТЕЛА функций ядра решений с
+#   sh scripts/bootstrap-reprint.sh --тела       сверить ТЕЛА функций ядра решений с
 #                                        напечатанным видом — те же ли имена
 #                                        тело реально зовёт по обе стороны:
 #                                        ~0,9 с, git не нужен
-#   sh scripts/raskrutka.sh --otpechatok снять отпечаток входов заново
-#   sh scripts/raskrutka.sh --build <каталог>
+#   sh scripts/bootstrap-reprint.sh --otpechatok снять отпечаток входов заново
+#   sh scripts/bootstrap-reprint.sh --build <каталог>
 #                                        собрать напечатанное семя из каталога
 #                                        и спросить собранный двоичный (минуты)
 #
@@ -215,7 +215,7 @@ SECOND_PRINT=scripts/bootstrap-c.sh
 #   2. в копии flang_runtime.h поправить строку «#define FL_MAX_STEPS» на новое
 #      число (в напечатанном заголовке она БЕЗУСЛОВНАЯ, и -D её не перебьёт);
 #   3. make в этом каталоге — получится двоичный с поднятым потолком;
-#   4. FLANG=<путь к нему> sh scripts/raskrutka.sh — он напечатает новую точку
+#   4. FLANG=<путь к нему> sh scripts/bootstrap-reprint.sh — он напечатает новую точку
 #      раскрутки уже с новым числом внутри, и дальше она себя держит сама.
 #
 # ЦЕНА ПРОПУЩЕННЫХ ШАГОВ 1–3 названа делом. 23 сентября 2026 печать перезапустили
@@ -233,7 +233,7 @@ SECOND_PRINT=scripts/bootstrap-c.sh
 # девятнадцатью минутами. Лечится строкой:
 #
 #   FLANG=<путь> FLANG_MODULE_DIR=<дерево>/flang/stdlib:<дерево>/flang/core \
-#     sh scripts/raskrutka.sh
+#     sh scripts/bootstrap-reprint.sh
 # ── 23 АВГУСТА 2026: 1 000 000 000 → 4 000 000 000, И СНОВА ПО ЗАМЕРУ ───────
 #
 # Предел кончился не у печати компилятора, а у ВЕДОМОСТИ БИБЛИОТЕКИ. Файл
@@ -559,7 +559,7 @@ MAX_DEPTH=20000
 # как машина занята на ночь, а не после.
 if [ "$MAX_STEPS" -lt "$MEASURED_COST" ]; then
   printf '%s\n' "MAX_STEPS=$MAX_STEPS ниже измеренной цены шага $MEASURED_COST —" >&2
-  printf '%s\n' "семя с таким потолком не сможет перепечатать дерево. Правьте scripts/raskrutka.sh." >&2
+  printf '%s\n' "семя с таким потолком не сможет перепечатать дерево. Правьте scripts/bootstrap-reprint.sh." >&2
   exit 2
 fi
 
@@ -665,7 +665,7 @@ NOT_SEED="README.md flang flang.exe flang_cli flang_cli.exe libcompiler_flang.a 
 # молча: строку тела придётся править вместе с семенем, а это уже не
 # забывчивость и не 103 байта в чужом файле, это правка файла с надписью
 # «руками не править» в приёмной, которую читают глазами.
-SEED_STAMP=scripts/otpechatok-semeni
+SEED_STAMP=scripts/seed-fingerprint
 
 say() { printf '%s\n' "$*"; }
 err() { printf '%s\n' "$*" >&2; }
@@ -2634,7 +2634,7 @@ stamp_now() {
     [ -f "$SROOT/$RUNTIME/$name" ] && RT="$RT $RUNTIME/$name"
   done
   printf '# Отпечаток входов печати точки раскрутки. Руками не править:\n'
-  printf '# снимается печатью (sh scripts/raskrutka.sh), сверяется --bystro.\n'
+  printf '# снимается печатью (sh scripts/bootstrap-reprint.sh), сверяется --bystro.\n'
   printf 'предел-шагов %s\n' "$MAX_STEPS"
   printf 'предел-глубины %s\n' "$MAX_DEPTH"
   printf 'вход %s\n' "$INPUT"
@@ -2675,7 +2675,7 @@ case "${1:-}" in
     [ -d "$SEED_DIR" ] || { err "--build: каталога нет: $SEED_DIR"; exit 2; }
     ;;
   "") ;;
-  *) err "неизвестный довод: $1"; err "звать: sh scripts/raskrutka.sh [--check|--stroki|--bystro [--strogo|--terpimo]|--telo|--imena|--тела|--otpechatok|--build <каталог>|--замкнутость <каталог>]"; exit 2 ;;
+  *) err "неизвестный довод: $1"; err "звать: sh scripts/bootstrap-reprint.sh [--check|--stroki|--bystro [--strogo|--terpimo]|--telo|--imena|--тела|--otpechatok|--build <каталог>|--замкнутость <каталог>]"; exit 2 ;;
 esac
 
 # --strogo к --bystro: спросить вдобавок про ИМЕНА ядра (`--imena`). Отставание
@@ -2691,7 +2691,7 @@ if [ "$mode" = fast ]; then
     --terpimo) TERPIMO=yes ;;
     "") ;;
     *) err "неизвестный довод при --bystro: $2"
-       err "звать: sh scripts/raskrutka.sh --bystro [--strogo|--terpimo]"; exit 2 ;;
+       err "звать: sh scripts/bootstrap-reprint.sh --bystro [--strogo|--terpimo]"; exit 2 ;;
   esac
 fi
 
@@ -2734,10 +2734,10 @@ if [ "$mode" = telo ]; then
     err "  git log -1 \$(git log -1 --format=%H -- $DIR)   # чем пришло семя и откуда печаталось"
     err "  git worktree add --detach <кат> <коммит-источник>"
     err "  cp $DIR/* <кат>/$DIR/"
-    err "  sh <кат>/scripts/raskrutka.sh --otpechatok"
+    err "  sh <кат>/scripts/bootstrap-reprint.sh --otpechatok"
     err ""
     err "Если перепечатка только что прошла ЗДЕСЬ и семя правлено в рабочем дереве —"
-    err "тогда «sh scripts/raskrutka.sh --otpechatok» и правда то, что нужно."
+    err "тогда «sh scripts/bootstrap-reprint.sh --otpechatok» и правда то, что нужно."
     err "Разбор породы: docs/zettel/re-taking-a-fingerprint-turns-red-green-without-reprinting.md"
     exit 1
   fi
@@ -2888,7 +2888,7 @@ if [ "$mode" = imena ]; then
     err "Это НЕ то же самое, что отставание входов печати, и не глушится ключом"
     err "обхода: отставание говорит «файл изменён», а это — какие ИМЕННО правила"
     err "двоичному неизвестны. Лечится ровно одним: перепечатать семя из дерева,"
-    err "в котором эти имена есть — sh scripts/raskrutka.sh"
+    err "в котором эти имена есть — sh scripts/bootstrap-reprint.sh"
     exit 1
   fi
   if [ -n "$LISHNEE" ]; then
@@ -2900,7 +2900,7 @@ if [ "$mode" = imena ]; then
     err ""
     err "Двоичный судит по правилу, которого в дереве уже не прочесть. Либо имя"
     err "переименовали, не перепечатав семя, либо правило сняли, а двоичный об"
-    err "этом не знает. Перепечатать: sh scripts/raskrutka.sh"
+    err "этом не знает. Перепечатать: sh scripts/bootstrap-reprint.sh"
     exit 1
   fi
 
@@ -3181,7 +3181,7 @@ if [ "$mode" = stamp ]; then
         err "Затем, в отдельном worktree на коммите-источнике:"
         err "  git worktree add --detach <кат> <коммит-источник>"
         err "  cp $DIR/* <кат>/$DIR/      # тело берётся НЫНЕШНЕЕ, оно и есть итог печати"
-        err "  sh <кат>/scripts/raskrutka.sh --otpechatok"
+        err "  sh <кат>/scripts/bootstrap-reprint.sh --otpechatok"
         err ""
         err "Разбор породы: docs/zettel/re-taking-a-fingerprint-turns-red-green-without-reprinting.md"
         exit 1
@@ -3210,11 +3210,11 @@ fi
 if [ "$mode" = fast ]; then
   if [ ! -f "$ROOT/$SEED_STAMP" ]; then
     err "отпечатка входов печати нет: $SEED_STAMP"
-    err "Снять: sh scripts/raskrutka.sh --otpechatok (после того, как семя перепечатано)"
+    err "Снять: sh scripts/bootstrap-reprint.sh --otpechatok (после того, как семя перепечатано)"
     exit 1
   fi
 
-  SDIR=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" otpechatok.XXXXXX) || {
+  SDIR=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" seed-fingerprint.XXXXXX) || {
     err "ПРОВЕРИТЬ НЕ УДАЛОСЬ: не создался каталог в ${FLANG_TMP:-/srv/tmp}"; exit 5; }
   trap 'rm -rf "$SDIR"' EXIT INT TERM
 
@@ -3230,7 +3230,7 @@ if [ "$mode" = fast ]; then
     err "а входы печати трогают раз в десять минут по медиане (замер 31 августа"
     err "2026, приёмная, первый родитель, 27–30 августа, 70 касаний)."
     err "Снять заново на том коммите, из которого семя печаталось:"
-    err "  git worktree add <кат> <коммит> && sh <кат>/scripts/raskrutka.sh --otpechatok"
+    err "  git worktree add <кат> <коммит> && sh <кат>/scripts/bootstrap-reprint.sh --otpechatok"
     exit 1
   fi
 
@@ -3343,7 +3343,7 @@ if [ "$mode" = fast ]; then
     err ""
     err "Он снят прибором старше 31 августа 2026: тот покрывал входы печати и не"
     err "покрывал её выход, и правка в $DIR/ проходила мимо него молча."
-    err "Снять заново: sh scripts/raskrutka.sh --otpechatok"
+    err "Снять заново: sh scripts/bootstrap-reprint.sh --otpechatok"
     exit 1
   fi
   if ! LC_ALL=C cmp -s "$SDIR/telo.otp" "$SDIR/telo.nyne"; then
@@ -3355,7 +3355,7 @@ if [ "$mode" = fast ]; then
     err "Значит либо $DIR/ правлен руками, либо перепечатка прошла без отпечатка."
     err "И то и другое значит: соберётся не то, что записано здесь."
     err ""
-    err "Если перепечатка была честной — снять отпечаток: sh scripts/raskrutka.sh --otpechatok"
+    err "Если перепечатка была честной — снять отпечаток: sh scripts/bootstrap-reprint.sh --otpechatok"
     exit 1
   fi
 
@@ -3409,7 +3409,7 @@ if [ "$mode" = fast ]; then
   err "(21–22 августа 2026, трижды за сутки) и шаг «по свойству» (задача 3455:"
   err "правка легла в flang/self/zapis.flang и на корпусе не работает ни разу)."
   err ""
-  err "Чинится ровно одним — перепечаткой: sh scripts/raskrutka.sh"
+  err "Чинится ровно одним — перепечаткой: sh scripts/bootstrap-reprint.sh"
   err "Цена последнего дошедшего захода — 8 ч 34 мин (docs/reprint-ledger.tsv)."
   err "Пока перепечатки нет, честный ответ прибора — красный, а не число."
   err "Кому нужно прежнее поведение (отставание числом, код 0) — --terpimo."
@@ -3435,7 +3435,7 @@ BINARY=$(pick_binary)
 # 29–30 августа, — 7 ч 50 мин 45 с и 27,7 ГиБ пика по пульсу печати; лестница
 # замеров — docs/reprint-cost.md), терять её на ребуте нельзя. Каталог задаётся
 # FLANG_TMP, по умолчанию /srv/tmp.
-TMP=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" raskrutka.XXXXXX)
+TMP=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" bootstrap-reprint.XXXXXX)
 # Каталог убирается за собой, но НЕ при отказе: шесть часов работы нельзя
 # выбрасывать вместе с приговором. При отказе он остаётся и называется — семя
 # захода 29 августа спасли ровно так, руками, и руками же это делать не надо.
@@ -3526,7 +3526,7 @@ if [ "$mode" = verify ]; then
   fi
   err ""
   err "точка раскрутки $DIR/ разошлась с исходниками — расхождений $BAD."
-  err "Перепечатайте её в том же коммите, что и правку компилятора: sh scripts/raskrutka.sh"
+  err "Перепечатайте её в том же коммите, что и правку компилятора: sh scripts/bootstrap-reprint.sh"
   exit 1
 fi
 
@@ -3552,7 +3552,7 @@ if [ "$verdict" -ne 0 ]; then
   else
     err "ПРОВЕРИТЬ НЕ УДАЛОСЬ. Про само семя это не говорит ничего: оно, возможно,"
     err "годное, и потому не выброшено. Починив машину, спросите его отдельно:"
-    err "  sh scripts/raskrutka.sh --build $TMP"
+    err "  sh scripts/bootstrap-reprint.sh --build $TMP"
   fi
   exit "$verdict"
 fi

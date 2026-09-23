@@ -47,7 +47,7 @@ make -C bootstrap -j8       # 62 секунды, 1.05 ГиБ — собрать 
 в 1,46 и 1,62 раза. Память — наибольший суммарный RSS цепочки `cc/cc1/lto1/ld`,
 опрос каждые 0,15 с; GNU `time -v` на том же прогоне даёт 1,04 ГиБ.*
 
-**Перепечатка семени** (`sh scripts/raskrutka.sh`) — другая операция: нынешний
+**Перепечатка семени** (`sh scripts/bootstrap-reprint.sh`) — другая операция: нынешний
 двоичный печатает нынешние исходники заново. Последний дошедший заход,
 30 августа 2026: **8 ч 34 мин 02 с**; предыдущий, 29–30 августа, —
 **7 ч 50 мин 45 с и 27,7 ГиБ пика** (пульс печати, `/srv/tmp/reprint-4/hod.out`).
@@ -71,7 +71,7 @@ make -C bootstrap -j8       # 62 секунды, 1.05 ГиБ — собрать 
 
 ### 1. Машинный вывод руками не правят
 
-`bootstrap/**` и `scripts/otpechatok-semeni` печатаются перепечаткой. Приёмная
+`bootstrap/**` и `scripts/seed-fingerprint` печатаются перепечаткой. Приёмная
 отвергает коммит, который их трогает, и это не придирка: git сливает их без
 единого знака конфликта и разъезжает ствол молча.
 
@@ -216,7 +216,7 @@ PIK=13G PAMYAT=60G /srv/flang-rabota/vorota/flang-vorota -- <команда>
 **Работу, которую нельзя снять на середине, объявляйте неделимой:**
 
 ```sh
-INDIVISIBLE=yes PAMYAT=400G /srv/flang-rabota/vorota/flang-vorota -- sh scripts/raskrutka.sh
+INDIVISIBLE=yes PAMYAT=400G /srv/flang-rabota/vorota/flang-vorota -- sh scripts/bootstrap-reprint.sh
 ```
 
 Тогда очередь не снимет её вместе с собой, получив TERM, — а без этого ключа
@@ -437,7 +437,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 
 | стек | пишет | НЕ пишет |
 |---|---|---|
-| **А — печать и семя** | `scripts/raskrutka.sh`, `scripts/seed/print-progress.fscript`, `scripts/seed/two-prints-identical.sh`, `bootstrap/**`, `.github/workflows/reprint.yml`, `docs/reprint-*.md` | всё `flang/**` |
+| **А — печать и семя** | `scripts/bootstrap-reprint.sh`, `scripts/seed/print-progress.fscript`, `scripts/seed/two-prints-identical.sh`, `bootstrap/**`, `.github/workflows/reprint.yml`, `docs/reprint-*.md` | всё `flang/**` |
 | **Б — язык и доказательства** | `flang/**`, `.claude/skills/**`, `docs/zettel/**` | всё, что в стеке А |
 
 **Спорные файлы — у каждого ОДИН хозяин, записано здесь:**

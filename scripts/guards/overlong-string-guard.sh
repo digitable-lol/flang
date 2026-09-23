@@ -48,7 +48,7 @@
 #    руками, оба берутся у предмета.
 #
 # 2. ЧТО ПОЕДЕТ В СЕМЯ. Входы печати названы не догадкой, а файлом
-#    `scripts/otpechatok-semeni`, который печать снимает сама. Литерал длиннее
+#    `scripts/seed-fingerprint`, который печать снимает сама. Литерал длиннее
 #    предела в любом из них — это будущее семя, которое не соберётся.
 #
 # 3. ЦЕЛО ЛИ СЕМЯ СЕЙЧАС. Спрашивается у компилятора, а не переписанным
@@ -266,7 +266,7 @@ case $REZHET in
 esac
 
 # 2. Что поедет в семя.
-OTPECHATOK=$KOREN/scripts/otpechatok-semeni
+OTPECHATOK=$KOREN/scripts/seed-fingerprint
 VHODY=
 if [ -r "$OTPECHATOK" ]; then
   VHODY=$(awk '$2 ~ /\.flang$/ { print $2 }' "$OTPECHATOK" | sed "s|^|$KOREN/|")

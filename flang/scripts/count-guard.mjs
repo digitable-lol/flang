@@ -32,7 +32,7 @@
  *      утверждений, из них M доказаны ядром…». Измеритель —
  *      `flang/scripts/proof-ledger.mjs`, тот же, что у свода корпуса.
  *   4. ПОТОЛОК ШАГОВ и соседние настройки перепечатки: `MAX_STEPS`,
- *      `MEASURED_COST`, `MAX_DEPTH` из `scripts/raskrutka.sh` и
+ *      `MEASURED_COST`, `MAX_DEPTH` из `scripts/bootstrap-reprint.sh` и
  *      `#define FL_MAX_STEPS` из `bootstrap/flang_runtime.h`. Пишут их и
  *      цифрами, и словами («триста миллиардов»), и не только в `.md`, а во
  *      ВРЕЗКАХ скриптов — поэтому сторож с 30 августа 2026 читает ещё и
@@ -457,7 +457,7 @@ function поПути(объект, путь) {
  *
  * Потолок шагов живёт в ДВУХ местах, и оба — файлы, а не мнения:
  *
- *   • `scripts/raskrutka.sh` — `MAX_STEPS`, `MEASURED_COST`, `MAX_DEPTH`:
+ *   • `scripts/bootstrap-reprint.sh` — `MAX_STEPS`, `MEASURED_COST`, `MAX_DEPTH`:
  *     настройка ПЕРЕПЕЧАТКИ, то есть потолок СЛЕДУЮЩЕГО семени;
  *   • `bootstrap/flang_runtime.h` — `#define FL_MAX_STEPS` и `FL_MAX_DEPTH`:
  *     потолок НЫНЕШНЕГО семени, вшитый в собранный двоичный.
@@ -485,7 +485,7 @@ export function пределыДерева(корень = КОРЕНЬ) {
     const м = текст.match(образец)
     return м === null ? null : Number(м[1])
   }
-  const раскрутка = прочесть("scripts/raskrutka.sh")
+  const раскрутка = прочесть("scripts/bootstrap-reprint.sh")
   const семя = прочесть("bootstrap/flang_runtime.h")
   return {
     MAX_STEPS: одно(раскрутка, /^MAX_STEPS=(\d+)$/mu),
@@ -579,9 +579,9 @@ export function разобратьСумму(текст) {
  */
 export const ПОТОЛОК = [
   {
-    образец: new RegExp(`потолок[^.;!?\\n]{0,90}?${СЛЕВА}из${СПРАВА}[^.;!?\\n]{0,30}?raskrutka\\.sh[»\`]?[\\s—:(-]+(${СУММА_ИСТ})`, "iu"),
+    образец: new RegExp(`потолок[^.;!?\\n]{0,90}?${СЛЕВА}из${СПРАВА}[^.;!?\\n]{0,30}?bootstrap-reprint\\.sh[»\`]?[\\s—:(-]+(${СУММА_ИСТ})`, "iu"),
     поле: "MAX_STEPS",
-    что: "потолок шагов из scripts/raskrutka.sh",
+    что: "потолок шагов из scripts/bootstrap-reprint.sh",
   },
   {
     образец: new RegExp(`потолок[^.;!?\\n]{0,60}?${СЛЕВА}в\\s+(${СУММА_ИСТ})\\s+шагов`, "iu"),
@@ -604,15 +604,15 @@ export const ПОТОЛОК = [
     что: "умолчание потолка у двоичного",
   },
   {
-    образец: new RegExp(`[Чч]исло\\s+[«\`]?(${СУММА_ИСТ})[»\`]?\\s+из\\s+[«\`]?scripts/raskrutka\\.sh`, "u"),
+    образец: new RegExp(`[Чч]исло\\s+[«\`]?(${СУММА_ИСТ})[»\`]?\\s+из\\s+[«\`]?scripts/bootstrap-reprint\\.sh`, "u"),
     поле: "MAX_STEPS",
-    что: "потолок шагов из scripts/raskrutka.sh",
+    что: "потолок шагов из scripts/bootstrap-reprint.sh",
   },
-  /* Ключи печати, названные ПАРОЙ и приписанные `raskrutka.sh`. Пара здесь не
+  /* Ключи печати, названные ПАРОЙ и приписанные `bootstrap-reprint.sh`. Пара здесь не
      украшение: `--max-steps` в одиночку стоит в полусотне строк ярлыков и
      значит там ДРУГОЙ предел — бюджет вычислителя, а не потолок семени. */
   {
-    образец: new RegExp(`--max-steps\\s+(${СУММА_ИСТ})\\s*--max-depth[^.;!?\\n]{0,90}?raskrutka\\.sh`, "u"),
+    образец: new RegExp(`--max-steps\\s+(${СУММА_ИСТ})\\s*--max-depth[^.;!?\\n]{0,90}?bootstrap-reprint\\.sh`, "u"),
     поле: "MAX_STEPS",
     что: "потолок шагов, которым печатается семя",
   },
@@ -645,7 +645,7 @@ export const ПРИСВОЕНИЯ = [
  * `НЕ_ЧИНИТЬ` ниже). Сторож, требующий от них сегодняшнего числа, требовал бы
  * соврать про работу, которой не делали.
  *
- * `scripts/raskrutka.sh` и `bootstrap/**` — сам измеритель: сверять источник с
+ * `scripts/bootstrap-reprint.sh` и `bootstrap/**` — сам измеритель: сверять источник с
  * собой незачем. `scripts/bootstrap-c.sh` при этом СВЕРЯЕТСЯ: он держит копию
  * тех же трёх чисел, и 23 августа 2026 эта копия уже разъезжалась с первой.
  */
@@ -657,7 +657,7 @@ export const ПРИСВОЕНИЯ = [
  */
 const ПРОШЛОЕ_ПОТОЛКА = [/в файле больше нет/iu, /прежни[еймх]/iu, /прежний|прежнее|прежняя/iu]
 
-const НЕ_ПРО_ПОТОЛОК = [/^tasks\//u, /^docs\/zettel\//u, /^scripts\/raskrutka\.sh$/u]
+const НЕ_ПРО_ПОТОЛОК = [/^tasks\//u, /^docs\/zettel\//u, /^scripts\/bootstrap-reprint\.sh$/u]
 
 /**
  * Куски файла, в которых ищется утверждение о потолке.

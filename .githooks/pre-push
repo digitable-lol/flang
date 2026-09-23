@@ -48,7 +48,7 @@ trap 'rm -rf "$RAB"' EXIT INT TERM
 # собирать (5–6 минут) — этого хук не делает и говорит об этом вслух.
 S_DVOICHNYM="версия:проверка лицензии:проверка задачник:проверка опись:сверка"
 # Проверки, которым двоичный не нужен.
-BEZ_DVOICHNOGO="prose-numbers-guard.sh cyrillic-file-names-guard.sh translit-file-names-guard.sh seed-runtime-is-source.sh version-derivations-guard.sh seed-refresh.sh no-package-json-guard.sh"
+BEZ_DVOICHNOGO="prose-numbers-guard.sh seed-runtime-is-source.sh version-derivations-guard.sh seed-refresh.sh"
 
 zapusk() { # имя, команда…
   imya=$1; shift
@@ -61,8 +61,6 @@ echo
 NACHALO=$(date +%s)
 
 zapusk proza          sh scripts/guards/prose-numbers-guard.sh
-zapusk kirillica     sh scripts/guards/cyrillic-file-names-guard.sh --check
-zapusk translit      sh scripts/guards/translit-file-names-guard.sh --check
 zapusk semya          sh scripts/seed/seed-runtime-is-source.sh
 # semya-osvezhit --check: годен ли быстрый пересев (задача 3388). Краснеет
 # только на подлоге происхождения — рантайм догнал источник (как после
@@ -71,9 +69,6 @@ zapusk semya          sh scripts/seed/seed-runtime-is-source.sh
 # работы (отстают и рантайм, и замыкание) — зелёное, это не его предмет.
 zapusk semyaosv       sh scripts/seed/seed-refresh.sh --check
 zapusk versii-vezde   sh scripts/guards/version-derivations-guard.sh
-# package.json выброшен 17 сентября 2026 (задача 3570); вернувшийся файл —
-# второе место версии и чужой «type» для каждого .js. Секунда, без двоичного.
-zapusk bez-paketa     sh scripts/guards/no-package-json-guard.sh --check
 zapusk zov            sh scripts/guards/who-calls-the-guards.sh --check
 zapusk podlog         sh scripts/guards/guards-without-forgery-probe.sh --check
 zapusk opis           sh scripts/guards/proved-share-vs-tree.sh
@@ -82,6 +77,14 @@ DVOICHNYY=да
 if [ ! -x bootstrap/flang ]; then
   DVOICHNYY=нет
 else
+  # Кириллица, транслит и отсутствие package.json переехали с оболочки на flang
+  # (задача 5821): сторож — план `.fscript`, и без двоичного его не позвать.
+  # На дереве без bootstrap/flang они не идут, и об этом сказано ниже вслух.
+  # package.json выброшен 17 сентября 2026 (задача 3570); вернувшийся файл —
+  # второе место версии и чужой «type» для каждого .js.
+  zapusk kirillica  bootstrap/flang io scripts/guards/cyrillic-file-names-guard.fscript --plan Проверка
+  zapusk translit   bootstrap/flang io scripts/guards/translit-file-names-guard.fscript --plan Проверка
+  zapusk bez-paketa bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Проверка
   zapusk versiya  ./ярлык версия:проверка
   zapusk licenzii ./ярлык лицензии:проверка
   zapusk zadachnik ./ярлык задачник:проверка
@@ -117,7 +120,8 @@ echo "  · тесты, набор проб чекера, потолок дове
 echo "  · сборку двоичного и всё, что её требует"
 echo "  · десять сторожей дороже 200 с и двенадцать, красных по долгу дерева"
 if [ "$DVOICHNYY" = нет ]; then
-  echo "  · версию, лицензии, задачник и сверку описи — НЕТ bootstrap/flang,"
+  echo "  · кириллицу и транслит в именах, отсутствие package.json,"
+  echo "    версию, лицензии, задачник и сверку описи — НЕТ bootstrap/flang,"
   echo "    а собирать его хук не станет (5–6 минут). Соберите: make -C bootstrap"
 fi
 

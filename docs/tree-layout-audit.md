@@ -353,7 +353,7 @@ UTF-8, оставшаяся текстом.
 | «а не перечислены» | `.github/workflows/binary.yml:653`, `ярлыки.flang:85` |
 | «обязана дать красное» | `.github/workflows/pages.yml:149` |
 | «не сломана молча» | `.github/workflows/install-path.yml:139`, `scripts/guards/сторож-дарвина.fscript:162` |
-| «это и есть защита от» | `scripts/release/bump-version.sh:133` и `:142`, `docs/zettel/the-version-is-written-once-…md:27` |
+| «это и есть защита от» | `scripts/release/bump-version.fscript:739` и `:747`, `docs/zettel/the-version-is-written-once-…md:27` |
 
 Полный список имён шагов CI, которые доказывают исправность прибора вместо того, чтобы
 назвать прогон, — **29 из 244**:

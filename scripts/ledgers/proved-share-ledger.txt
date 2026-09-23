@@ -1504,6 +1504,7 @@ d5c13131139cbbb4d9cffbbb4f9f1cdc|2|2|0|0|0|fspec/spec/38-booking-rules.flang
 74e5d9b9bb87ede2cbd6b8db0fdda88e|2|2|0|0|0|fspec/spec/42-data-retention.flang
 ea0c808c837ad28c1ad06045e2c03504|58|55|3|0|0|packaging/install-check.flang
 a69c24d54cb5ba2dc5e5f1ac2b5475e5|23|23|0|0|0|packaging/install-parity.flang
+e0822c51ca487deb59d8925c20396e93|7|7|0|0|0|scripts/cell-work-preserved.fscript
 986fad97002d55a23e04a3dca541f8a5|1|1|0|0|0|scripts/editors/language-words.flang
 764ea6a077d30318d14a8a0f3da8aea8|23|23|0|0|0|scripts/editors/lsp-check.fscript
 53f94937b541c4d0ce9569351f7f23ec|11|11|0|0|0|scripts/editors/vim-highlight-check.fscript
@@ -1519,6 +1520,7 @@ ef40ff2896acbf39dafc13d9db8c1ef9|15|14|0|0|0|scripts/guards/check-before-run.fsc
 c0e37ea32cceee7ea280fb07ffd8433d|4|3|1|0|0|scripts/guards/child-timeout.fscript
 0073c9e32ae573edaa5eb5bd6f1e521b|5|4|1|0|0|scripts/guards/cli-commands-guard.fscript
 539d8b46495e537c0c3258e76c3547e7|67|67|0|0|0|scripts/guards/corpus-runner.fscript
+0f7f8e1b2b5df23c8ad882e0bf7485e2|27|27|0|0|0|scripts/guards/criterion-score-guard.fscript
 e18baea9c15082521f1073fb2997b62f|7|7|0|0|0|scripts/guards/cyrillic-file-names-guard.fscript
 d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/guards/delivery-guard.flang
 9a1d779542ab08a5a1416bbdc99c0563|10|10|0|0|0|scripts/guards/dictionary-guard.fscript
@@ -1553,10 +1555,12 @@ a781034b78cf3d516bd825fa2dfd3b93|10|8|2|0|0|scripts/guards/сторож-дарв
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.fscript
 cb83af3366e1aedcf2980e68974f26bc|21|20|1|0|0|scripts/release/asdf-plugin-published.fscript
 1ada44f6de654f4caad9cc2ebd440616|10|10|0|0|0|scripts/release/asdf-version-list.fscript
+a98d9e712b2f955014f8cbb920a0249c|36|36|0|0|0|scripts/release/bump-version.fscript
 9da7ac83e58dcd6ede242456ab630ee4|14|14|0|0|0|scripts/release/path-without-node.fscript
 75df33ec0a0a8e68cdc8aea00c04beb9|29|25|2|0|0|scripts/release/release-in-c.fscript
 d35764bb36d532c1d8b36cf43e5604e2|7|7|0|0|0|scripts/seed/bootstrap-point-by-binary.fscript
 fa5067d21a8ef524d58b5b8117c253b4|4|0|0|4|0|scripts/seed/new-binary-acceptance-probe.flang
+8c533af5ebe420fe7a9b8a1a9ef35ccf|9|9|0|0|0|scripts/seed/print-progress.fscript
 6bec7ed819a851590422857589b315ec|10|7|3|0|0|scripts/seed/reprint-freshness.fscript
 0ff527da38ea58fab62de93ab38d178f|4|4|0|0|0|scripts/settings-file.flang
 43e86020b1b1785b15113241ecf0c0ee|1|1|0|0|0|scripts/site/changelog-page.flang

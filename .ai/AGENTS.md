@@ -437,7 +437,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 
 | стек | пишет | НЕ пишет |
 |---|---|---|
-| **А — печать и семя** | `scripts/raskrutka.sh`, `scripts/seed/print-progress.sh`, `scripts/seed/two-prints-identical.sh`, `bootstrap/**`, `.github/workflows/reprint.yml`, `docs/reprint-*.md` | всё `flang/**` |
+| **А — печать и семя** | `scripts/raskrutka.sh`, `scripts/seed/print-progress.fscript`, `scripts/seed/two-prints-identical.sh`, `bootstrap/**`, `.github/workflows/reprint.yml`, `docs/reprint-*.md` | всё `flang/**` |
 | **Б — язык и доказательства** | `flang/**`, `.claude/skills/**`, `docs/zettel/**` | всё, что в стеке А |
 
 **Спорные файлы — у каждого ОДИН хозяин, записано здесь:**
@@ -475,7 +475,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
    `MEASURED_COST` в `raskrutka.sh`. У всякой снятой постоянной рядом пишется
    дата и коммит, и её переснимает первый же дошедший прогон.
 8. **Сделано, но невидимо.** 61 % работы ячеек жил только во временном
-   каталоге. Забирается прибором `scripts/cell-work-preserved.sh`, а не памятью.
+   каталоге. Забирается прибором `scripts/cell-work-preserved.fscript`, а не памятью.
 9. **Слепая замена чисел.** Правка «77 → 78» по всему файлу переименовала ячейку
    Ч77 в Ч78. Правится строка приметы и три над ней, остальное читается глазами.
 10. **Многочасовой прогон дочерью ячейки.** Ячейки умирают пачками на пределе

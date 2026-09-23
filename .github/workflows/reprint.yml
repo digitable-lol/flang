@@ -472,7 +472,7 @@ jobs:
           #
           # `2>&1` ОБЯЗАТЕЛЬНО, а не для порядка: отметки хода печать пишет в
           # stderr (flang/src/emit/c/flang_repl.c:1557). Без него в журнале не
-          # будет ни одной отметки, и `scripts/seed/print-progress.sh` над ним
+          # будет ни одной отметки, и `scripts/seed/print-progress.fscript` над ним
           # сказать ничего не сможет.
           timeout 39600 sh scripts/raskrutka.sh > "$ZH" 2>&1
           kod=$?

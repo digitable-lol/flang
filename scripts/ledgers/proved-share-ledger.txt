@@ -1562,7 +1562,7 @@ d35764bb36d532c1d8b36cf43e5604e2|7|7|0|0|0|scripts/seed/bootstrap-point-by-binar
 fa5067d21a8ef524d58b5b8117c253b4|4|0|0|4|0|scripts/seed/new-binary-acceptance-probe.flang
 8c533af5ebe420fe7a9b8a1a9ef35ccf|9|9|0|0|0|scripts/seed/print-progress.fscript
 6bec7ed819a851590422857589b315ec|10|7|3|0|0|scripts/seed/reprint-freshness.fscript
-0ff527da38ea58fab62de93ab38d178f|4|4|0|0|0|scripts/settings-file.flang
+b58c672ebe0d85ef520f75bda3a378fb|5|5|0|0|0|scripts/settings-file.flang
 43e86020b1b1785b15113241ecf0c0ee|1|1|0|0|0|scripts/site/changelog-page.flang
 5e4578f4c48ff79aa6669de59fecb019|14|14|0|0|0|scripts/site/emit-dictionary.fscript
 b84d7c3b1bf00b6bfe83e62e063aea2d|21|21|0|0|0|scripts/site/surfaces-page.fscript

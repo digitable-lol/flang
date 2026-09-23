@@ -31,7 +31,7 @@ on:
       - 'docs/flang/SPEC.md'
       - 'docs/flang/proof/SPEC.md'
       - 'flang/cat/SPEC.md'
-      - 'docs/flang/conc/SPEC.md'
+      - 'docs/flang/concurrency/SPEC.md'
       - 'scripts/site/build-changelog-page.mjs'
       - 'scripts/site/build-changelog.mjs'
       - 'scripts/site/build-changelog.fscript'

@@ -77,7 +77,7 @@
 - `build-macos.yml` — намеренно на каждом пуше (ловит баг видимости `mkdtemp`
   на Darwin), дёшево, есть zettel.
 - `install-path.yml` — отфильтрован по путям, не на каждом пуше.
-- `release.yml` — только тег. `reprint.yml`/`dvoyniki.yml` — расписание, Г6.
+- `release.yml` — только тег. `reprint.yml`/`target-twins.yml` — расписание, Г6.
 
 ## Чем закрыта
 

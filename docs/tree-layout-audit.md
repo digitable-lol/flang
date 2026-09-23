@@ -92,7 +92,7 @@ sh scripts/guards/no-package-json-guard.sh --check         # код 0
   замечание: `experience/` и `experiments/` — соседи, чьи имена различаются двумя
   буквами, а лежат в них разные вещи (`experience/` — примеры скидок по шагам,
   `experiments/` — пробы на столкновение правил). Кириллицы нет.
-* **`.github/` (15 файлов).** Один транслит в имени — `workflows/dvoyniki.yml`, он в
+* **`.github/` (15 файлов).** Один транслит в имени — `workflows/target-twins.yml`, он в
   ведомости долга. Раскладка обычная для GitHub, вопросов нет.
 * **`packaging/`, `bootstrap/`, `.ai/`, `.githooks/`.** Мелкие, ровные, имена говорящие.
   **Беспорядка нет.** В `packaging/` соседствуют `asdf/`+`asdf-plugin/` и

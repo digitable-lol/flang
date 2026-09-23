@@ -3,7 +3,7 @@ name: Reprint
 # ГЛАВНОЕ СВОЙСТВО САМОСБОРКИ НЕ ПРОВЕРЯЕТСЯ НИЧЕМ, И ВОТ ПОЧЕМУ.
 #
 # «Напечатанное совпадает с закоммиченным байт в байт» умеет проверять ровно
-# одна команда — `sh scripts/raskrutka.sh --check`, и она ПЕЧАТАЕТ ЗАНОВО.
+# одна команда — `sh scripts/bootstrap-reprint.sh --check`, и она ПЕЧАТАЕТ ЗАНОВО.
 #
 # ── ПАМЯТЬ БОЛЬШЕ НЕ ПРИЧИНА, И ЭТО ЗАМЕР, А НЕ МНЕНИЕ ──────────────────────
 # До 1 сентября 2026 здесь стояло «258,9 ГиБ, в шестнадцать раз больше раннера,
@@ -235,7 +235,7 @@ jobs:
   # называют `oboyti_zanyatoe_celyu_c`. Двойник смотрит все `.flang` четырёх
   # каталогов (108 файлов), а не замыкание `compiler.flang` (44), и ведомость
   # `latin-collision-guard-known.tsv` не читает (записей в ней было 0; ведомость снята 11 сентября 2026). Node здесь
-  # больше не нужен; в `scripts/raskrutka.sh` его нет намеренно.
+  # больше не нужен; в `scripts/bootstrap-reprint.sh` его нет намеренно.
   stolknoveniya:
     name: id-collisions
     runs-on: ubuntu-latest
@@ -314,7 +314,7 @@ jobs:
       # напечатанного 22 августа. В сегодняшнем семени стоит
       # `#define FL_MAX_STEPS 1400000000000` (bootstrap/flang_runtime.h:11), то
       # есть втрое больше измеренной цены шага 456 857 834 234
-      # (scripts/raskrutka.sh, `MEASURED_COST`). Заход 31 августа 2026 шёл
+      # (scripts/bootstrap-reprint.sh, `MEASURED_COST`). Заход 31 августа 2026 шёл
       # СТОКОВЫМ `bootstrap/flang` и дошёл.
       #
       # Отказ, оставленный как был, останавливал бы заход, который дошёл бы.
@@ -329,12 +329,12 @@ jobs:
             echo "Его потолок шагов:"
             grep '#define FL_MAX_STEPS' bootstrap/flang_runtime.h
             echo "Измеренная цена самого дорогого шага печати — 456 857 834 234"
-            echo "(scripts/raskrutka.sh, MEASURED_COST). Потолок обязан быть не ниже."
+            echo "(scripts/bootstrap-reprint.sh, MEASURED_COST). Потолок обязан быть не ниже."
           fi
         env:
           FLANG: ${{ vars.FLANG_VYSOKIY }}
       - name: Check seed reprint
-        run: sh scripts/raskrutka.sh --check
+        run: sh scripts/bootstrap-reprint.sh --check
         env:
           FLANG: ${{ vars.FLANG_VYSOKIY }}
           FLANG_TMP: ${{ runner.temp }}
@@ -373,7 +373,7 @@ jobs:
   #
   # Но этой строки НЕ ПИШЕТ НИКТО. Замер 2 сентября 2026:
   # `/usr/bin/grep -arl 'ПЕЧАТЬ КОД' /srv/tmp /srv/work` — 21 попадание, и все
-  # до одного суть копии самих приборов в разных клонах. Ни `raskrutka.sh`, ни
+  # до одного суть копии самих приборов в разных клонах. Ни `bootstrap-reprint.sh`, ни
   # рантайм, ни один журнал печати на машине её не пишут. Значит без этой
   # работы прибор физически не может вернуть ничего, кроме 3 «НЕ ПРОВЕРЕНО»:
   # сторож, стерегущий выдуманную строку.
@@ -474,7 +474,7 @@ jobs:
           # stderr (flang/src/emit/c/flang_repl.c:1557). Без него в журнале не
           # будет ни одной отметки, и `scripts/seed/print-progress.fscript` над ним
           # сказать ничего не сможет.
-          timeout 39600 sh scripts/raskrutka.sh > "$ZH" 2>&1
+          timeout 39600 sh scripts/bootstrap-reprint.sh > "$ZH" 2>&1
           kod=$?
           # Строку пишем САМИ и настоящим кодом — её не пишет никто (см. выше).
           printf 'ПЕЧАТЬ КОД=%s\n' "$kod" >> "$ZH"
@@ -507,7 +507,7 @@ jobs:
           fi
           # `2>&1` — по тому же доводу, что у первой печати: отметки хода идут
           # в stderr (flang/src/emit/c/flang_repl.c:1557).
-          timeout 39600 sh scripts/raskrutka.sh > "$ZH" 2>&1
+          timeout 39600 sh scripts/bootstrap-reprint.sh > "$ZH" 2>&1
           kod=$?
           printf 'ПЕЧАТЬ КОД=%s\n' "$kod" >> "$ZH"
           if [ "$kod" -eq 124 ]; then

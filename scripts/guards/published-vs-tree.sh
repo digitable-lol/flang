@@ -30,7 +30,7 @@
 #   sh scripts/guards/published-vs-tree.sh --команды только напечатанные команды
 #   sh scripts/guards/published-vs-tree.sh --проза   только числа прозы (README и страницы)
 #
-# ИМЕНА ЗДЕСЬ ЛАТИНИЦЕЙ, как в scripts/raskrutka.sh и в `ярлык`: ни dash, ни
+# ИМЕНА ЗДЕСЬ ЛАТИНИЦЕЙ, как в scripts/bootstrap-reprint.sh и в `ярлык`: ни dash, ни
 # bash не принимают кириллицу в именах переменных.
 
 set -eu
@@ -677,7 +677,7 @@ proza() {
   # семени ──»: без `exit` на этой метке awk считал бы хеши из обеих половин
   # разом, а README всегда говорило только о первой — числа разошлись бы даже
   # на дереве, где всё остальное верно, и находка выглядела бы как чужая беда.
-  otp=$(awk '/^# ── тело семени ──$/{exit} NF==2 && $1 ~ /^[0-9a-f]{64}$/' scripts/otpechatok-semeni | wc -l | tr -d ' ')
+  otp=$(awk '/^# ── тело семени ──$/{exit} NF==2 && $1 ~ /^[0-9a-f]{64}$/' scripts/seed-fingerprint | wc -l | tr -d ' ')
   skazat "README.ru: строк отпечатка" "$(grep -oE 'хешированной строке на файл — [0-9]+ строк' docs/README.ru.md | grep -oE '[0-9]+')" "$otp"
   skazat "README: строк отпечатка"    "$(grep -oE 'one hashed line each — [0-9]+ lines' README.md | grep -oE '[0-9]+')" "$otp"
 

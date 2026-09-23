@@ -4,7 +4,7 @@
 #
 # Отказ судить о доказательствах, пока семя отстало от исходников или двоичный
 # не собирается из семени. Порядок: двоичный (binary-origin.sh) → тело семени
-# (raskrutka.sh --telo, ключа обхода нет) → ключ обхода → входы печати (--bystro).
+# (bootstrap-reprint.sh --telo, ключа обхода нет) → ключ обхода → входы печати (--bystro).
 #
 # Как звать:
 #   sh scripts/seed/seed-freshness.sh                     только ответить
@@ -20,7 +20,7 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 BYPASS=SEMYA_OTSTALO_ZNAYU
-FAST="sh scripts/raskrutka.sh --bystro"
+FAST="sh scripts/bootstrap-reprint.sh --bystro"
 
 err() { printf '%s\n' "$*" >&2; }
 
@@ -52,7 +52,7 @@ if [ -f "$ORIGIN" ]; then
 fi
 
 # ── Тело семени: спрашивается ДО ключа обхода, и ключом не глушится ─────────
-TELO="sh scripts/raskrutka.sh --telo"
+TELO="sh scripts/bootstrap-reprint.sh --telo"
 rc=0
 telo_out=$(cd "$ROOT" && $TELO 2>&1) || rc=$?
 if [ "$rc" != 0 ]; then
@@ -96,7 +96,7 @@ fi
 err "ОТКАЗЫВАЮСЬ СУДИТЬ О ДОКАЗАТЕЛЬСТВАХ: $what"
 err ""
 err "семя отстало от исходников на $n $(fajlov "$n"), ведомость показывает состояние,"
-err "которого нет; перепечатайте \`sh scripts/raskrutka.sh\`"
+err "которого нет; перепечатайте \`sh scripts/bootstrap-reprint.sh\`"
 err ""
 err "Двоичный собран из семени и знает СТАРЫЕ правила. Его зелёный ответ — про"
 err "дерево, которого в этой копии нет: правка есть в исходнике и отсутствует в"

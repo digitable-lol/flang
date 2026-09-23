@@ -52,7 +52,7 @@
 #
 # Пределы можно задать и переменными среды: FLANG_PREDEL, FLANG_ZAPAS.
 #
-# ИМЕНА ЗДЕСЬ ЛАТИНИЦЕЙ, как в scripts/raskrutka.sh и в `ярлык`: ни dash, ни
+# ИМЕНА ЗДЕСЬ ЛАТИНИЦЕЙ, как в scripts/bootstrap-reprint.sh и в `ярлык`: ни dash, ни
 # bash не принимают кириллицу в именах переменных.
 
 set -eu

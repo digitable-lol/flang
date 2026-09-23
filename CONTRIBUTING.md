@@ -39,7 +39,7 @@ path. The language server is a subcommand of the binary: `flang lsp --stdio`.
 ```bash
 sh flang/test/обход.sh
 sh flang/test/обход-примеров.sh
-sh scripts/raskrutka.sh --check
+sh scripts/bootstrap-reprint.sh --check
 ```
 
 These three run on the binary and need no Node. The JavaScript suite —
@@ -106,9 +106,9 @@ expected to have gone through it.
 A change to `flang/self/` must reprint the bootstrap point in the same commit:
 
 ```bash
-sh scripts/raskrutka.sh           # reprint bootstrap/ (~11 min: the binary prints itself)
-sh scripts/raskrutka.sh --check   # compare it against the sources, exit 1 on drift
-sh scripts/raskrutka.sh --stroki  # 0.4 s: every C string literal in the runtime is closed
+sh scripts/bootstrap-reprint.sh           # reprint bootstrap/ (~11 min: the binary prints itself)
+sh scripts/bootstrap-reprint.sh --check   # compare it against the sources, exit 1 on drift
+sh scripts/bootstrap-reprint.sh --stroki  # 0.4 s: every C string literal in the runtime is closed
 ```
 
 `bootstrap/` is an artifact, never edited by hand. Reprinting is done by the
@@ -148,7 +148,7 @@ hidden.** Reading `ярлыки.flang` needs the binary, and the binary is what 
 first shortcut builds. Exactly one line resolves it: `make -C bootstrap` is
 known to the shell script itself, before it ever calls the binary. On a fresh
 clone any shortcut therefore works — the script builds the binary first and says
-so, the way `scripts/raskrutka.sh` already does (38 s measured on a cold tree).
+so, the way `scripts/bootstrap-reprint.sh` already does (38 s measured on a cold tree).
 The same line also stands in `ярлыки.flang`, and the script compares the two on
 every run, so the duplicate cannot drift in silence.
 

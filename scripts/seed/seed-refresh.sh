@@ -23,8 +23,8 @@ set -u
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 cd "$ROOT" || exit 3
 
-STAMP=scripts/otpechatok-semeni
-RASKRUTKA=scripts/raskrutka.sh
+STAMP=scripts/seed-fingerprint
+PEREPECHATKA=scripts/bootstrap-reprint.sh
 RUNTIME=flang/src/emit/c
 TELO_METKA='# ── тело семени ──'
 # Копируемый рантайм: тот же список, что судит заслон 2573.
@@ -58,16 +58,16 @@ hash_of() { ( cd "$ROOT" && $HASH "$1" 2>/dev/null | cut -d' ' -f1 ); }
 zamykanie_svezhee() {
   BEDA=0
 
-  # Пределы: из отпечатка против нынешнего raskrutka.sh.
+  # Пределы: из отпечатка против нынешнего bootstrap-reprint.sh.
   for klyuch in предел-шагов предел-глубины; do
     OTP=$(LC_ALL=C.UTF-8 awk -v k="$klyuch" '$1==k{print $2; exit}' "$ROOT/$STAMP")
     case "$klyuch" in
       предел-шагов)   PEREM=MAX_STEPS ;;
       предел-глубины) PEREM=MAX_DEPTH ;;
     esac
-    NYNE=$(LC_ALL=C.UTF-8 awk -F= -v p="$PEREM" '$1==p{print $2; exit}' "$ROOT/$RASKRUTKA")
+    NYNE=$(LC_ALL=C.UTF-8 awk -F= -v p="$PEREM" '$1==p{print $2; exit}' "$ROOT/$PEREPECHATKA")
     if [ "$OTP" != "$NYNE" ]; then
-      err "  • $klyuch: в отпечатке $OTP, в $RASKRUTKA $NYNE"
+      err "  • $klyuch: в отпечатке $OTP, в $PEREPECHATKA $NYNE"
       BEDA=$((BEDA+1))
     fi
   done
@@ -131,14 +131,14 @@ if [ "$REZHIM" = check ]; then
     err "compiler_flang.c печатается из flang/self/**, и быстрый путь его не"
     err "трогает. Раз замыкание другое — печатаемая часть устарела, и семя"
     err "собрано не из того, чем оно объявлено. Нужна полная перепечатка:"
-    err "  sh scripts/raskrutka.sh"
+    err "  sh scripts/bootstrap-reprint.sh"
     exit 1
   fi
   say "flang/self или пределы ушли вперёд семени — обычное отставание середины работы."
   say "$RAZN"
   say ""
   say "Это НЕ беда: рантайм тоже отстаёт, семя честно старое. Догонится полной"
-  say "перепечаткой перед выпуском (sh scripts/raskrutka.sh); быстрый пересев здесь"
+  say "перепечаткой перед выпуском (sh scripts/bootstrap-reprint.sh); быстрый пересев здесь"
   say "не годится — он трогает только копируемые файлы, а разошлось замыкание."
   exit 0
 fi
@@ -151,7 +151,7 @@ if ! zamykanie_svezhee; then
   err "ОТКАЗ: замыкание компилятора или пределы тронуты относительно отпечатка."
   err "compiler_flang.c печатается из flang/self/** — быстрый пересев его не даёт."
   err "Нужна полная перепечатка (те самые ~4,5 часа):"
-  err "  sh scripts/raskrutka.sh"
+  err "  sh scripts/bootstrap-reprint.sh"
   exit 1
 fi
 say "  замыкание и пределы совпали с отпечатком — печатаемую часть оставляем как есть"
@@ -170,7 +170,7 @@ for b in $RANTAYM; do
   if [ -z "$N" ]; then
     err "ПРИЁМ БОЛЬШЕ НЕ ЗАКОНЕН: первой строки источника $b в семени нет вовсе."
     err "Печать копирует рантайм уже не дословно — быстрым путём не пересеять."
-    err "Нужна полная перепечатка: sh scripts/raskrutka.sh"
+    err "Нужна полная перепечатка: sh scripts/bootstrap-reprint.sh"
     exit 1
   fi
   NOVOE=$(mktemp "${FLANG_TMP:-/srv/tmp}/semya-$b.XXXXXX") || { err "нет времянки"; exit 3; }
@@ -191,8 +191,8 @@ if [ "$IZMENENO" = 0 ]; then
   say "проверяю заслоны на всякий случай."
 else
   say ""
-  say "снимаю отпечаток тем же прибором, что и печать: sh $RASKRUTKA --otpechatok"
-  if ! sh "$ROOT/$RASKRUTKA" --otpechatok; then
+  say "снимаю отпечаток тем же прибором, что и печать: sh $PEREPECHATKA --otpechatok"
+  if ! sh "$ROOT/$PEREPECHATKA" --otpechatok; then
     err "снять отпечаток не удалось — семя оставлено обновлённым, но отпечаток старый"
     exit 3
   fi
@@ -208,10 +208,10 @@ fi
 say ""
 say "сверяю заслоны семени:"
 OK=0
-if sh "$ROOT/$RASKRUTKA" --telo >/dev/null 2>&1; then
-  say "  зелен  raskrutka.sh --telo (тело семени сходится с отпечатком)"
+if sh "$ROOT/$PEREPECHATKA" --telo >/dev/null 2>&1; then
+  say "  зелен  bootstrap-reprint.sh --telo (тело семени сходится с отпечатком)"
 else
-  say "  КРАСЕН raskrutka.sh --telo"; OK=1
+  say "  КРАСЕН bootstrap-reprint.sh --telo"; OK=1
 fi
 if sh "$ROOT/scripts/seed/seed-runtime-is-source.sh" --после-печати >/dev/null 2>&1; then
   say "  зелен  seed-runtime-is-source.sh --после-печати (семя = источник)"

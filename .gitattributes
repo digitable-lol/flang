@@ -24,8 +24,8 @@ flang/test/fixtures/** linguist-generated=true
 # программе. Трижды за сутки 21–22 августа 2026.
 #
 # Сверяют теперь двое, и они отвечают на РАЗНЫЕ вопросы:
-#   sh scripts/raskrutka.sh --check    побайтово; печатает заново: 20 мин, 25 ГиБ;
-#   sh scripts/raskrutka.sh --bystro   те ли входы у печати; полсекунды, ходит
+#   sh scripts/bootstrap-reprint.sh --check    побайтово; печатает заново: 20 мин, 25 ГиБ;
+#   sh scripts/bootstrap-reprint.sh --bystro   те ли входы у печати; полсекунды, ходит
 #                                      на каждый пуш работой «semya» в
 #                                      .github/workflows/binary.yml.
 bootstrap/** -diff -merge linguist-generated

@@ -19,7 +19,7 @@ set -u
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 RUNTIME=flang/src/emit/c
-OTPECHATOK=scripts/otpechatok-semeni
+OTPECHATOK=scripts/seed-fingerprint
 VHOD_PO_UMOLCHANIYU=flang/self/lexer.flang
 
 skazhi() { printf '%s\n' "$*"; }

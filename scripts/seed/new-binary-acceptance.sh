@@ -48,7 +48,7 @@ progon() {
 say "ЧЕМ КОНЧИЛАСЬ ПЕЧАТЬ"
 tail -5 /srv/work/semya5.log 2>/dev/null || echo "  журнала печати нет"
 
-if pgrep -f 'scripts/raskrutka\.sh' >/dev/null 2>&1; then
+if pgrep -f 'scripts/bootstrap-reprint\.sh' >/dev/null 2>&1; then
   printf '\n  ⚠ ПЕРЕПЕЧАТКА ЕЩЁ ИДЁТ — строки выше это шапка захода, а не его итог.\n'
 fi
 
@@ -142,7 +142,7 @@ fi
 
 say "ИТОГ"
 if [ "$BED" -eq 0 ]; then
-  echo "  все приметы сошлись. Дальше: sh scripts/raskrutka.sh --bystro —"
+  echo "  все приметы сошлись. Дальше: sh scripts/bootstrap-reprint.sh --bystro —"
   echo "  сверить, что семя больше не отстаёт (было 41 расхождение)."
   echo "  ⛔ Приёмная коммиты с bootstrap/** из веток ОТВЕРГАЕТ: семя кладётся"
   echo "  в ствол не через неё. Спросить владельца приёмной, как именно."

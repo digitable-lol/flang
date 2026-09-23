@@ -82,7 +82,7 @@ runs:
 
         # Точка раскрутки собирается ТОЛЬКО если двоичного нет: `make` здесь
         # ни при чём — работа, собравшая его шагом выше, второй раз не платит.
-        # Ровно так же ведёт себя `./ярлык` и `scripts/raskrutka.sh`.
+        # Ровно так же ведёт себя `./ярлык` и `scripts/bootstrap-reprint.sh`.
         if [ ! -x bootstrap/flang ]; then
           echo "двоичного bootstrap/flang нет — собираю из точки раскрутки: make -C bootstrap"
           make -C bootstrap -j"$(getconf _NPROCESSORS_ONLN)"

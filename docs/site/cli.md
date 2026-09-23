@@ -30,7 +30,7 @@ Common to all of them: `flang --help`, `flang --version`, `flang <command> --hel
 `flang --машина [<файл>]` prints the machine constant (turns per second);
 `flang --mcp-mode` is the service for an AI assistant over standard streams
 (`flang --mcp-mode --help` shows how to register it). The key
-`--предел-глубины N` (in Latin `--depth-limit`) is accepted with any command and
+`--depth-limit N` (in Cyrillic `--предел-глубины`) is accepted with any command and
 raises the call-depth limit of the binary itself for this run.
 
 ## The input file: four extensions
@@ -86,28 +86,33 @@ flang check <файл.flang> [--proof [--json] [--строго] [--записа�
                           [--быстро] [--предел-шагов N] [--предел-глубины N]
 ```
 
+The synopsis above is what binary 0.7.17 prints in its own `--help`, verbatim.
+Every key in it is a pair, and the table below names the Latin half first,
+because that is the half we lead with. Both halves are accepted today; the
+binary's own help will lead with Latin after the next seed reprint.
+
 | Key | What it does |
 | --- | --- |
 | `--proof` | A report: what carries the promise "total" for each function, and what carries each claim. "Declared, not proved" exits with `3` |
 | `--json` | Only together with `--proof`: the same report in machine form |
-| `--строго` | Only together with `--proof`: the four outcomes get separate codes — `0` only when every claim is proved, `1` a counterexample, `3` could not prove (leans on the author's grid, on an unproved premise, or "declared, not proved"), `2` not supported. Details below. In Latin — `--strict` |
-| `--записать <файл>` | Only together with `--proof`: write the proof itself into a file. The key is also spelled in Latin — `--record` |
-| `--быстро` | Only linking, types, exhaustiveness and termination; the proof kernel, the laws and the examples do not run, and this is said out loud. Exit `4`. Refused next to `--proof`. In Latin — `--fast` |
-| `--предел-шагов N` | Raise the checker's step limit for this one run. The default is compiled in at build time and catches non-termination; running out stays legible — `FLANG_RECURSION_LIMIT` with a number. Needed on the largest files: a `--proof --json` proof report for a module with a thousand claims does not fit the default. In Latin — `--step-limit`. There is no `--max-steps` on `check`: it answers "непонятный ключ", exit `2` |
-| `--предел-глубины N` | Raise the call-depth limit of the binary itself for this run (shared by all commands). Not to be confused with `--max-depth` on `emit`: that one puts a number into the printed program. In Latin — `--depth-limit` |
+| `--strict` (`--строго`) | Only together with `--proof`: the four outcomes get separate codes — `0` only when every claim is proved, `1` a counterexample, `3` could not prove (leans on the author's grid, on an unproved premise, or "declared, not proved"), `2` not supported. Details below |
+| `--record <файл>` (`--записать`) | Only together with `--proof`: write the proof itself into a file |
+| `--fast` (`--быстро`) | Only linking, types, exhaustiveness and termination; the proof kernel, the laws and the examples do not run, and this is said out loud. Exit `4`. Refused next to `--proof` |
+| `--step-limit N` (`--предел-шагов`) | Raise the checker's step limit for this one run. The default is compiled in at build time and catches non-termination; running out stays legible — `FLANG_RECURSION_LIMIT` with a number. Needed on the largest files: a `--proof --json` proof report for a module with a thousand claims does not fit the default. There is no `--max-steps` on `check`: it answers "непонятный ключ", exit `2` |
+| `--depth-limit N` (`--предел-глубины`) | Raise the call-depth limit of the binary itself for this run (shared by all commands). Not to be confused with `--max-depth` on `emit`: that one puts a number into the printed program |
 
 Codes: `0` — nothing to report; `1` — the program did not pass; `2` — the program
 contains declarations that the `flang` binary does not judge at all (the category
 surface, processes, supervision), and it names the gap instead of staying silent;
-`3` — with `--proof`: a claim is declared and has no proof, or (with `--строго`)
-not everything was proved; `4` — with `--быстро`, see the table.
+`3` — with `--proof`: a claim is declared and has no proof, or (with `--strict`)
+not everything was proved; `4` — with `--fast`, see the table.
 
-### `--строго`: four outcomes, and which one wins
+### `--strict`: four outcomes, and which one wins
 
 By default exit `0` covers TWO different outcomes: "proved" and "nothing was
 proved, but no contradiction was found either". The words are honest — `ПРОВЕРЕНО
 С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ`, `сетка N` — but a build script reads `$?`, not
-words. `--строго` gives the four outcomes separate codes and names each one.
+words. `--strict` gives the four outcomes separate codes and names each one.
 
 | Outcome | Code | When |
 | --- | --- | --- |
@@ -117,7 +122,7 @@ words. `--строго` gives the four outcomes separate codes and names each on
 | `НЕ ПОДДЕРЖИВАЕТСЯ` (not supported) | `2` | the program declares something the binary does not judge at all, and the gap is named |
 
 The key introduces no new numbers: ADR-0010 §2 promises four codes, and all four
-already carry these meanings. Exit `4` stays with `--быстро` and means exactly
+already carry these meanings. Exit `4` stays with `--fast` and means exactly
 one thing — "part of the checks did not run".
 
 **Which outcome wins.** A program that has both a grid and a "declared, not
@@ -132,11 +137,11 @@ over all inputs, and the report says so in its own words — "Это не
 `flang check`, from `flang check --proof` and from the independent checker alike,
 while `flang run --на-веру` at `н = 100` printed `FLANG_PROPERTY: нарушено
 свойство`. The zero was bought by the example: the same file without `пример`
-exited `3`. Under `--строго` both exit `3`.
+exited `3`. Under `--strict` both exit `3`.
 
 **What the key does not close.** It fixes ONE instrument of two. The independent
 checker (`flang/proof/checker/checker.c`) still answers `ПРОВЕРЕНО ВПУСТУЮ` with
-exit `0` on a record where nothing counts as proved; it has no `--строго` of its
+exit `0` on a record where nothing counts as proved; it has no `--strict` of its
 own yet, and until it does the chain is not strict end to end. The compiler's
 default is untouched to the sign: without the key a grid stays a zero and is
 named in a line.

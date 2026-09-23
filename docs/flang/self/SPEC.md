@@ -135,7 +135,7 @@ JavaScript снята 20 августа 2026 (коммит `fe8e8a37`), и св�
 
 ```sh
 make -C bootstrap                    # ярлык: ./ярлык сборка
-sh scripts/raskrutka.sh --check      # ярлык: ./ярлык раскрутка:проверка
+sh scripts/bootstrap-reprint.sh --check      # ярлык: ./ярлык раскрутка:проверка
 ```
 
 Проверка печатает файлы заново и сравнивает с закоммиченными; расхождение
@@ -146,9 +146,9 @@ sh scripts/raskrutka.sh --check      # ярлык: ./ярлык раскрутк
 (`scripts/bootstrap-point-by-binary.flang`).
 
 Пределы печати (`MAX_STEPS`, `MAX_DEPTH`) записаны один раз — в
-`scripts/raskrutka.sh` — и попадают в напечатанный байт (`FL_MAX_DEPTH` в
+`scripts/bootstrap-reprint.sh` — и попадают в напечатанный байт (`FL_MAX_DEPTH` в
 `bootstrap/flang_runtime.h`), то есть участвуют в совпадении. Печать с другими
-пределами разойдётся. Довод по величине пределов — в шапке `scripts/raskrutka.sh`;
+пределами разойдётся. Довод по величине пределов — в шапке `scripts/bootstrap-reprint.sh`;
 устройство круга для читателя — `docs/guide/bootstrap-circle.ru.md`.
 
 В CI сверку выполняет `.github/workflows/reprint.yml`.
@@ -157,8 +157,8 @@ sh scripts/raskrutka.sh --check      # ярлык: ./ярлык раскрутк
 
 1. Правка любого файла, входящего в замыкание печати `bootstrap/compiler.flang`
    (файлы `flang/self/`, `flang/core/json.flang` и модули `flang/stdlib/`, которые они используют).
-2. `sh scripts/raskrutka.sh` тем же коммитом — перепечатать `bootstrap/`.
-3. `sh scripts/raskrutka.sh --check` отвечает 0.
+2. `sh scripts/bootstrap-reprint.sh` тем же коммитом — перепечатать `bootstrap/`.
+3. `sh scripts/bootstrap-reprint.sh --check` отвечает 0.
 
 Править `bootstrap/` руками нельзя: правка потеряется при первой перепечатке, а
 до того валит сверку. Разбор решения «обновлять каждым коммитом, а не при

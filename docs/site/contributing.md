@@ -41,7 +41,7 @@ Three checks run on the built binary and need no Node:
 ```bash
 sh flang/test/обход.sh
 sh flang/test/обход-примеров.sh
-sh scripts/raskrutka.sh --check
+sh scripts/bootstrap-reprint.sh --check
 ```
 
 The first walks the tree with the compiler, the second runs the examples of

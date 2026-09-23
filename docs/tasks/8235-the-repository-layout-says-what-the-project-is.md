@@ -75,7 +75,7 @@ editors       29
 мутнее.
 
 Практическая сторона, снятая счётом: путь `bootstrap/` поминается в **488**
-файлах оснастки, лежит в отпечатке входов печати (`scripts/otpechatok-semeni`) и
+файлах оснастки, лежит в отпечатке входов печати (`scripts/seed-fingerprint`) и
 участвует в сверке «компилятор напечатал компилятор, они совпали байт в байт».
 Приёмная отвергает всякую ветку, трогающую `bootstrap/**`, — переименование это
 тоже трогание.
@@ -94,7 +94,7 @@ editors       29
 
 ```sh
 ls                      # в корне видно язык, а не стенд и не сборку
-sh scripts/raskrutka.sh --bystro   # отпечаток входов цел
+sh scripts/bootstrap-reprint.sh --bystro   # отпечаток входов цел
 ./ярлык тесты                      # ссылки не порваны
 ```
 
@@ -115,7 +115,7 @@ sh scripts/raskrutka.sh --bystro   # отпечаток входов цел
   файлов. `package.json` — отдельным шагом после: его версию читает `release.yml`.
 - **Волна 2** (отложена, не отвергнута): `scripts/` → `tools/` той же глубины.
   Стоит ≈450 файлов и **перепечатку семени** — справка двоичного называет
-  `scripts/raskrutka.sh` и `scripts/otpechatok-semeni` во входах печати
+  `scripts/bootstrap-reprint.sh` и `scripts/seed-fingerprint` во входах печати
   (`flang/self/cli.flang:200`, `flang_repl.c`). Делать при следующей перепечатке.
 - **Не переезжают**: `bootstrap/` (запрет выше), `fspec/` — двоичный берёт
   образец пакета по пути `<каталог двоичного>/../../fspec`, переезд = перепечатка;
@@ -142,11 +142,11 @@ sh scripts/raskrutka.sh --bystro   # отпечаток входов цел
 - размер: **115 файлов с правкой ссылок**, 686 изменённых файлов вместе с
   переехавшими, остаточных упоминаний старых путей — 0;
 - **ни один сторож не покраснел от переезда**: хук, `prose-numbers-guard`,
-  `pol-dokazannogo-sverka`, `semya-rantayma-eto-istochnik`, `raskrutka --telo`,
+  `pol-dokazannogo-sverka`, `semya-rantayma-eto-istochnik`, `bootstrap-reprint --telo`,
   сборка сайта `docs/site/build.mjs --check` и `make -C bootstrap` — зелены и до,
   и после; `link-guard` даёт одно и то же число битых ссылок (2163 из 15703),
   то есть переезд не порвал ни одной;
-- `raskrutka.sh --bystro`, `hand-written-lists`, `link-guard` красны и ДО
+- `bootstrap-reprint.sh --bystro`, `hand-written-lists`, `link-guard` красны и ДО
   переезда — по своим причинам, к раскладке отношения не имеющим;
 - **нашлись две вещи, которые надо чинить тем же коммитом**:
   1. правило счёта долга (`scripts/guards/tree-inventory.fscript:231`) освобождает всё,

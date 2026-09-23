@@ -82,9 +82,9 @@ flang check flang/stdlib/hashmap.flang --proof
 
 ## Что делать дальше
 
-`sh scripts/raskrutka.sh --bystro` — сверить, что семя больше не отстаёт
+`sh scripts/bootstrap-reprint.sh --bystro` — сверить, что семя больше не отстаёт
 (было 41 расхождение). Затем закоммитить `bootstrap/` и
-`scripts/otpechatok-semeni` **вместе**, одним коммитом.
+`scripts/seed-fingerprint` **вместе**, одним коммитом.
 
 ⛔ Приёмная коммиты с `bootstrap/**` из веток ОТВЕРГАЕТ. Семя кладётся в ствол
 не через неё — спросить владельца приёмной, как именно.
@@ -132,7 +132,7 @@ flang check flang/stdlib/hashmap.flang --proof
 `proof-kernel.flang` не проверить вообще ничем.
 
 Приёмка написана на оболочке, а не на flang, по доводу из шапки
-`scripts/raskrutka.sh`: судья не должен зависеть от подсудимого.
+`scripts/bootstrap-reprint.sh`: судья не должен зависеть от подсудимого.
 
 Прогон вхолостую 26 августа, при живой перепечатке: отвечает
 «двоичного нет … Приёмку звать после того, как перепечатка дошла», код 1.

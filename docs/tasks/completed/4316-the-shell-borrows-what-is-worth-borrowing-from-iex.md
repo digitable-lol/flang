@@ -97,6 +97,6 @@
 
 Коммит `17ca1087` на ветке `r/repl-tui`: `flang/src/emit/c/flang_repl.c` (дополнение,
 `poll` перед перерисовкой, история файлом, `.очистить`, раздел «Эта сборка»),
-`bootstrap/flang_repl.c` и `scripts/otpechatok-semeni` быстрым пересевом,
+`bootstrap/flang_repl.c` и `scripts/seed-fingerprint` быстрым пересевом,
 `scripts/repl-proba.sh` (четыре новых сверки под pty), README (ru/en),
 `packaging/flang.1`, справка `.помощь`.

@@ -86,7 +86,7 @@ with the host». Разбора клавиш, termios, редактора стр
 
 Коммит `394b2607` на ветке `r/repl-tui`: `flang/src/emit/c/flang_repl.c` (+795 строк:
 цвет, подсветка, редактор, история), `bootstrap/flang_repl.c` и
-`scripts/otpechatok-semeni` быстрым пересевом, `scripts/repl-proba.sh`, README
+`scripts/seed-fingerprint` быстрым пересевом, `scripts/repl-proba.sh`, README
 (ru/en), `packaging/flang.1`, заметка `docs/zettel/the-shell-read-the-line-with-fgets-and-the-terminal-printed-the-arrow.md`,
 приметы описи. Проверено: `sh scripts/repl-proba.sh` → 0 на `bootstrap/flang`;
 `sh .githooks/pre-push` → 0; `semya-rantayma-eto-istochnik.sh --после-печати` → 0.

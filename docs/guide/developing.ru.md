@@ -10,9 +10,9 @@
 `bootstrap/` начнёт собирать прошлый компилятор молча:
 
 ```bash
-sh scripts/raskrutka.sh           # перепечатать bootstrap/ (часы: 11 сентября 2026 — 7 ч 28 мин, коммит 0ce948bfd)
-sh scripts/raskrutka.sh --check   # сверить с исходниками побайтово, код 1 при расхождении
-sh scripts/raskrutka.sh --stroki  # 0,6 с (11 сентября 2026): все строковые литералы рантайма C закрыты
+sh scripts/bootstrap-reprint.sh           # перепечатать bootstrap/ (часы: 11 сентября 2026 — 7 ч 28 мин, коммит 0ce948bfd)
+sh scripts/bootstrap-reprint.sh --check   # сверить с исходниками побайтово, код 1 при расхождении
+sh scripts/bootstrap-reprint.sh --stroki  # 0,6 с (11 сентября 2026): все строковые литералы рантайма C закрыты
 ```
 
 Печатает эти байты сам двоичный компилятор (`bootstrap/flang emit … --target c`); если двоичного
@@ -52,7 +52,7 @@ flang emit docs/examples/leetcode/035-search-insert-position.flang \
 ```bash
 sh flang/test/обход.sh          # проверки обходчика двоичным
 sh flang/test/обход-примеров.sh # все примеры дерева
-sh scripts/raskrutka.sh --check     # семя против того, что печатают исходники
+sh scripts/bootstrap-reprint.sh --check     # семя против того, что печатают исходники
 ./ярлык                             # список всех проверок дерева с пояснением к каждой
 ./ярлык тесты                       # весь набор разом
 ```

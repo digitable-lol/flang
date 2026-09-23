@@ -26,7 +26,7 @@
     cd <чистая копия gh/dev>
     make -C bootstrap -j8                                   # 1 мин 51 с
     env -u FLANG_MODULE_DIR LC_ALL=C.UTF-8 FLANG_TMP=<кат-вне-дерева> \
-        /usr/bin/time -v sh scripts/raskrutka.sh --check
+        /usr/bin/time -v sh scripts/bootstrap-reprint.sh --check
 
 Это та же команда, что стоит в работе `sverka` файла `.github/workflows/reprint.yml`.
 `FLANG_VYSOKIY` не задан — печатало стоковое семя `bootstrap/flang`.
@@ -80,8 +80,8 @@
 5–12 ч, раннер исполняет код веток репо) описаны в
 `ПЕРЕДАЧА/g6-zapusk.md` — это решение владельца, не исполнителя.
 
-Отдельно: `sh scripts/raskrutka.sh --bystro` на `gh/dev` КРАСЕН — «отпечаток
-снят с правленого дерева», в `scripts/otpechatok-semeni` стоит
+Отдельно: `sh scripts/bootstrap-reprint.sh --bystro` на `gh/dev` КРАСЕН — «отпечаток
+снят с правленого дерева», в `scripts/seed-fingerprint` стоит
 `коммит дерево-правлено`, то есть из какого коммита печаталось семя, по
 отпечатку узнать нельзя. Полной сверке это не мешало (`--check` отпечаток не
 читает), и она этот пробел закрыла по существу: провенанс не восстановлен, но
@@ -164,7 +164,7 @@ resident set size`, то есть память, а не диск. После т�
 `scripts/seed/reprint-freshness.fscript` (обе строки; `flang check` — 13 функций из 13),
 `docs/gate-rules.md` (`PAMYAT=400G` → `80G`), `AGENTS.md`, `docs/ROADMAP.md` (заведён
 раздел «Цена самосборки»), `docs/kernel-ledger.md`, `docs/tree-inventory.md`,
-`docs/guide/naming.ru.md`, `docs/ifl/reproduce.sh`, `scripts/raskrutka.sh` и
+`docs/guide/naming.ru.md`, `docs/ifl/reproduce.sh`, `scripts/bootstrap-reprint.sh` и
 восемь заметок `docs/zettel/**`.
 
 * `.github/workflows/reprint.yml` — три места с числом 24 августа заменены

@@ -242,7 +242,7 @@ VETVEY=4 PAMYAT=60G flang-vorota -- node flang/scripts/proof-ledger.mjs
 очереди не было — и 29 августа это стоило двух заходов по часу.
 
 ```sh
-INDIVISIBLE=yes PAMYAT=400G flang-vorota -- sh scripts/raskrutka.sh
+INDIVISIBLE=yes PAMYAT=400G flang-vorota -- sh scripts/bootstrap-reprint.sh
 ```
 
 Что меняется: по TERM, INT, HUP, QUIT и по своему выходу ворота **не снимают
@@ -260,9 +260,9 @@ INDIVISIBLE=yes PAMYAT=400G flang-vorota -- sh scripts/raskrutka.sh
 `--schet` такой прогон помечает, а `--snyat` по нему **отказывает**:
 
 ```
-  место 1: занято (НЕДЕЛИМЫЙ) — 464383 8G … sh scripts/raskrutka.sh
+  место 1: занято (НЕДЕЛИМЫЙ) — 464383 8G … sh scripts/bootstrap-reprint.sh
 $ flang-vorota --snyat 1
-ворота: место 1 держит НЕДЕЛИМЫЙ прогон — sh scripts/raskrutka.sh
+ворота: место 1 держит НЕДЕЛИМЫЙ прогон — sh scripts/bootstrap-reprint.sh
 ворота: снятый на середине, он не оставит ничего. Если всё же надо —
         flang-vorota --snyat 1 --anyway
 ```

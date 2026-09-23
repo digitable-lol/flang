@@ -31,7 +31,7 @@
 `"доказано ПРИ УСЛОВИИ"`, `"объявлено, не доказано"`, `"утверждений "`,
 `"непонятный ключ"`, `"нарушено свойство «утверждение»"`.
 
-Файлы строгого круга: `scripts/raskrutka.sh`, `scripts/seed/new-binary-acceptance.sh`,
+Файлы строгого круга: `scripts/bootstrap-reprint.sh`, `scripts/seed/new-binary-acceptance.sh`,
 `scripts/targets/target-census.sh`, `scripts/guards/seed-parses-sources-guard.sh`,
 `scripts/доказуемость.sh`, `flang/scripts/proven-guard.fscript`,
 `flang/scripts/word-guard.fscript`, `flang/scripts/word-guard.mjs`,

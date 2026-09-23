@@ -35,12 +35,12 @@
    брать `/srv/flang-priyom.git` — она на 2 сентября, отстаёт на 1397 коммитов).
 2. Проверить чистоту семени в копии — это не `git status`:
 
-       git diff --quiet HEAD -- bootstrap scripts/otpechatok-semeni
+       git diff --quiet HEAD -- bootstrap scripts/seed-fingerprint
 
    Код 0 — можно печатать; код 1 — семя правлено руками, заход бессмыслен.
 3. В эту копию до конца печати НИКОМУ не писать.
-4. `sh scripts/raskrutka.sh` — 8 ч 34 мин одного ядра (`docs/reprint-ledger.tsv`).
-5. После: `sh scripts/raskrutka.sh --bystro` обязан дать 0 расхождений, а
+4. `sh scripts/bootstrap-reprint.sh` — 8 ч 34 мин одного ядра (`docs/reprint-ledger.tsv`).
+5. После: `sh scripts/bootstrap-reprint.sh --bystro` обязан дать 0 расхождений, а
    отпечаток — назвать настоящий коммит, а не «дерево-правлено».
 6. Перевыпустить разошедшиеся записи доказательств, снять долю, и только потом
    вливать.

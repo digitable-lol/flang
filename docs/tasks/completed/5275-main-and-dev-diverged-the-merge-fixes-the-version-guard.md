@@ -82,7 +82,7 @@ dev       0.7.0      0.7.10         0.7.0    ← РАЗОШЛИСЬ
 ```
 docs/zettel/README.md                 +2
 flang/src/emit/c/flang_repl.c         +1 -1   ← та самая версия
-scripts/otpechatok-semeni            +31 -18
+scripts/seed-fingerprint            +31 -18
 docs/tasks/8650-…md                       +62      новый
 docs/tasks/9959-…md                       +48      новый
 5 файлов, +144 -19
@@ -122,7 +122,7 @@ docs/tasks/9959-…md                       +48      новый
 
 ## Отдельная ловушка: отпечаток семени
 
-`scripts/otpechatok-semeni` приезжает с main без конфликта, а семя остаётся
+`scripts/seed-fingerprint` приезжает с main без конфликта, а семя остаётся
 от dev. У отпечатка main есть раздел `# ── тело семени ──`, которого у dev нет
 вовсе, и он хеширует `bootstrap/*`:
 

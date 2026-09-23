@@ -8,7 +8,7 @@ FLANG_PARSE в файле flang/stdlib/lists.flang, строка 666, столб
 у 'если' нет ветки 'то'
 ```
 
-Двоичный, напечатанный из исходников ТОГО ЖЕ коммита (`sh scripts/raskrutka.sh`
+Двоичный, напечатанный из исходников ТОГО ЖЕ коммита (`sh scripts/bootstrap-reprint.sh`
 плюс `make -C bootstrap`), тот же файл разбирает без замечаний. Значит
 закоммиченное семя — не то, что печатают текущие исходники, и точка раскрутки с
 деревом разъехалась.
@@ -30,12 +30,12 @@ FLANG_PARSE в файле flang/stdlib/lists.flang, строка 666, столб
 прирост.
 
 **Чем подтверждено.** Ветка `u/length`. Двоичный из `git show HEAD:bootstrap/*` +
-`make` — отказ на `lists.flang`; двоичный из `raskrutka.sh` на том же дереве —
+`make` — отказ на `lists.flang`; двоичный из `bootstrap-reprint.sh` на том же дереве —
 проходит. Обе ведомости сняты одним и тем же `proof-ledger.mjs`.
 
 **Чем ограничено.** Причина расхождения не искалась: неизвестно, отстало ли семя
 на одну правку разбора языка или на несколько, и когда именно.
-`sh scripts/raskrutka.sh --check` на чистом `main` не прогонялся.
+`sh scripts/bootstrap-reprint.sh --check` на чистом `main` не прогонялся.
 
 Связано: [[three-length-facts-gave-three-statements]],
 [[debt-closed-on-an-unmerged-branch]]

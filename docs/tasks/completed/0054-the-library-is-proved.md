@@ -186,7 +186,7 @@ PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- \
 **Ключ `--предел-шагов` ЗАДАЁТ предел, а не поднимает.** Первый заход ведомости
 шёл с `--предел-шагов 400000000`, взятым «с запасом» из головы. Вшитое
 умолчание двоичного — **1 000 000 000** (`bootstrap/flang_runtime.h:11`), а
-`MAX_STEPS=4000000000` в `scripts/raskrutka.sh` — настройка ПЕРЕПЕЧАТКИ, не
+`MAX_STEPS=4000000000` в `scripts/bootstrap-reprint.sh` — настройка ПЕРЕПЕЧАТКИ, не
 двоичного. Названные 400 000 000 оказались ниже умолчания в два с половиной
 раза, и `kdf`, `scram`, `json` ответили FLANG_RECURSION_LIMIT там, где без ключа
 прошли бы. Разбор — `docs/zettel/library-step-limit-key-sets-not-raises.md`.

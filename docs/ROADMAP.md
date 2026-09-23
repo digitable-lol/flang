@@ -391,7 +391,7 @@ sh scripts/four-coverages.sh                        (19 сентября 2026, m
 ## Цена самосборки
 
 Самосборка — напечатанное компилятором совпадает с закоммиченным байт в байт
-(`sh scripts/raskrutka.sh --check`).
+(`sh scripts/bootstrap-reprint.sh --check`).
 
 | ось | сегодня | чем снято |
 |---|---|---|
@@ -525,7 +525,7 @@ make -C flang/proof/checker && flang/proof/checker/сверщик ФАЙЛ З   
 SEMYA_OTSTALO_ZNAYU=1 ../ярлык подделки:проверка          ядро не берёт ложь (сегодня красная, см. выше)
 ../ярлык аксиомы:проверка                                 аксиом ноль
 sh scripts/seed/what-lags-the-seed.sh                    что отстало от семени
-sh scripts/raskrutka.sh --check                          самосборка (часы)
+sh scripts/bootstrap-reprint.sh --check                          самосборка (часы)
 ```
 
 Отчёт по одному большому файлу берёт минуты и гигабайты — снимайте по одному

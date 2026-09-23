@@ -407,7 +407,7 @@ licenzii, opis, paket, podlog, proza, semya, versiya, zadachnik, zov.
 
 ## Ступень Б прошла, и компилятор от неё ПОХУДЕЛ
 
-`sh scripts/raskrutka.sh` на финальном дереве: `EXIT=0`, «напечатанное собрано и
+`sh scripts/bootstrap-reprint.sh` на финальном дереве: `EXIT=0`, «напечатанное собрано и
 спрошено ДО того, как легло в bootstrap/ — семя годное». Замер собранным
 двоичным (тем самым, что лежит теперь в `bootstrap/`), два круга, минимум:
 
@@ -443,7 +443,7 @@ licenzii, opis, paket, podlog, proza, semya, versiya, zadachnik, zov.
 который отпечаток называл, оказался не тот. Пересъёмка здесь чинит имя, а не
 красит красное зелёным (порода описана в
 `docs/zettel/re-taking-a-fingerprint-turns-red-green-without-reprinting.md`);
-проверено обратной стороной: `raskrutka.sh --bystro` после неё говорит
+проверено обратной стороной: `bootstrap-reprint.sh --bystro` после неё говорит
 «отставание входов печати 0 файлов». Правильнее было не трогать входы печати,
 пока идёт перепечатка, — так в следующий раз и надо.
 

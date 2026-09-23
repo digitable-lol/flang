@@ -14,7 +14,7 @@
 о единой папке документации — тот же принцип «по корню видно, что где», на
 уровень выше. Прецеденты переезда: `acca80a3` и `8142524b` (`flang/cat` → `flang/ct`,
 проза → `docs/ct`, 54 файла правки на один каталог).
-**Проверяется:** после переезда — `sh scripts/raskrutka.sh --bystro` (отпечаток
+**Проверяется:** после переезда — `sh scripts/bootstrap-reprint.sh --bystro` (отпечаток
 цел), `./ярлык тесты` (ссылки не порваны), `sh .githooks/pre-push`, сборка сайта
 `node docs/site/build.mjs --check`, `bootstrap/flang io scripts/guards/link-guard.fscript`.
 
@@ -42,7 +42,7 @@
 | `docs/examples/` | **язык: корпус** — 185 программ в 22 наборах | 242 | 303 | не переезжает | `published-vs-tree.sh` сверяет числа README; сайт берёт два файла из `docs/examples/rosetta/` |
 | `fspec/` | **язык: образец пакета** — `flang new` копирует его по пути `<каталог двоичного>/../fspec` (`flang_repl.c:16359`) | 77 | 60 | **переезд = правка входа семени = перепечатка**; не переезжает | семя |
 | `ярлык`, `ярлыки.flang` | вход оснастки: оболочка запуска и список целей | 2 | 55 | остаются в корне (`./ярлык тесты` в README, хук) | — |
-| `scripts/` | **оснастка**: сторожа, перепечатка семени, релиз, журнал | 141 | 453 (workflows 9, оболочка 53, flang 86, js/json 23, md 255, tsv 9) | ≈450 файлов; плюс 365 путей `"../` в 56 планах, если меняется глубина; плюс строки справки двоичного `scripts/raskrutka.sh`, `scripts/otpechatok-semeni` в `flang/self/cli.flang` и `flang/src/emit/c/flang_repl.c` — **входы семени** | перепечатка обязательна; хук, все восемь workflows |
+| `scripts/` | **оснастка**: сторожа, перепечатка семени, релиз, журнал | 141 | 453 (workflows 9, оболочка 53, flang 86, js/json 23, md 255, tsv 9) | ≈450 файлов; плюс 365 путей `"../` в 56 планах, если меняется глубина; плюс строки справки двоичного `scripts/bootstrap-reprint.sh`, `scripts/seed-fingerprint` в `flang/self/cli.flang` и `flang/src/emit/c/flang_repl.c` — **входы семени** | перепечатка обязательна; хук, все восемь workflows |
 | `benchmarks/` | **оснастка: измерительный стенд** | 579 | 89 (workflows 1, оболочка 10, flang 12, js/json 8, md 50, tsv/txt 3, git 3) | ≈85 файлов; 4 скрипта считают корень как `../..`; 2 плана с `"../` | `.gitattributes` (`linguist-vendored`), `no-comments-debt.tsv`, `proved-share-ledger.txt` (строки «md5|…|путь»), `flang/test/glob.mjs`, `name-guard.mjs` |
 | `web/` | **оснастка: наружу** — wasm-сборка, приложение во вкладке, сокращатель | 14 | 51 (workflows 1, оболочка 4, flang 2, js 4, md 31, tsv 4, git 2) | ≈50 файлов; 3 скрипта считают корень от себя | `.gitignore` (5 строк), ведомости; сайт — только комментарии `sitemap.mjs`; **один комментарий во входе семени** `flang/src/emit/c/flang_runtime.h:465` |
 | `packaging/` | **оснастка: наружу** — Homebrew, asdf, `flang.1`, проверки установки; два сабмодуля | 10 (+2) | 64 | не переезжает; принимает `web/` | `.gitmodules`, `release.yml`, фильтр `paths:` в `install-path.yml` |
@@ -87,7 +87,7 @@ packaging/ docs/editors/ · ярлык ярлыки.flang` и девять до�
 Корень: `bootstrap/ flang/ docs/examples/ fspec/ docs/ docs/tasks/ tools/ packaging/`.
 
 Цена: ≈450 файлов правки и **перепечатка семени** — справка двоичного называет
-`scripts/raskrutka.sh` и `scripts/otpechatok-semeni`
+`scripts/bootstrap-reprint.sh` и `scripts/seed-fingerprint`
 (`flang/self/cli.flang:200`, `flang_repl.c:418, 578, 1953`), а это входы печати.
 Отпечаток при этом не меняется (в нём только `flang/…` и `bootstrap/…`), но
 приёмная отвергает всякую ветку с `bootstrap/**` — значит, только в составе
@@ -120,7 +120,7 @@ packaging/ docs/editors/ · ярлык ярлыки.flang` и девять до�
 
 ### Шаг 0. Условия старта
 
-- батч-перепечатка завершена, `sh scripts/raskrutka.sh --bystro` зелен на стволе;
+- батч-перепечатка завершена, `sh scripts/bootstrap-reprint.sh --bystro` зелен на стволе;
 - рабочие ветки влиты или их владельцы предупреждены (переезд даёт конфликт по
   переименованию в каждой ветке, трогающей `benchmarks/` или `web/`);
 - ветка одна, тихий час, без параллельной работы в `benchmarks/`, `web/`,
@@ -168,7 +168,7 @@ git mv web packaging/web
 
 ```sh
 sh .githooks/pre-push                          # дешёвые сторожа
-sh scripts/raskrutka.sh --bystro               # отпечаток цел (переезд его не трогает)
+sh scripts/bootstrap-reprint.sh --bystro               # отпечаток цел (переезд его не трогает)
 bootstrap/flang io scripts/guards/link-guard.fscript    # ни одной битой ссылки в прозе
 node docs/site/build.mjs --check               # сайт собирается, ссылки целы
 ./ярлык опись:языки                            # опись дерева пересчитана
@@ -190,7 +190,7 @@ node docs/site/build.mjs --check               # сайт собирается, 
 - Волна 2 (`scripts/` → `tools/`): строки справки в `flang/self/cli.flang:200`
   и `flang/src/emit/c/flang_repl.c:418, 578, 1953` — вход печати и тело семени.
   Только в составе перепечатки.
-- Отпечаток `scripts/otpechatok-semeni` волна 1 не трогает: в нём только пути
+- Отпечаток `scripts/seed-fingerprint` волна 1 не трогает: в нём только пути
   `flang/…` и `bootstrap/…`.
 
 ## Что ломает опубликованное
@@ -224,8 +224,8 @@ plan-8235-layout.md): клон ветки, готовый двоичный то�
 | `scripts/guards/prose-numbers-guard.sh` | 0 | 0 | ни одна примета `СНЯТО` не называет `benchmarks/` или `web/` |
 | `scripts/guards/proved-share-vs-tree.sh` | 0 | 0 | пути ведомости правятся заменой заодно |
 | `scripts/seed/seed-runtime-is-source.sh` | 0 | 0 | семя не тронуто |
-| `sh scripts/raskrutka.sh --telo` | 0 | 0 | тело семени цело |
-| `sh scripts/raskrutka.sh --bystro` | 1 | 1 | **красен и до, и после по своей причине** («отпечаток снят с правленого дерева» — состояние ствола), переезд его не меняет |
+| `sh scripts/bootstrap-reprint.sh --telo` | 0 | 0 | тело семени цело |
+| `sh scripts/bootstrap-reprint.sh --bystro` | 1 | 1 | **красен и до, и после по своей причине** («отпечаток снят с правленого дерева» — состояние ствола), переезд его не меняет |
 | `scripts/guards/who-calls-the-guards.sh --check` | 0 | 0 | — |
 | `scripts/guards/guards-without-forgery-probe.sh --check` | 0 | 0 | — |
 | `node docs/site/build.mjs --check` | 0 | 0 | сайт собирается, ссылки страниц целы |

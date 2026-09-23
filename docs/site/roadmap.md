@@ -97,7 +97,7 @@ medicine and aviation are not promised (ADR-0031, §5.4).
 ## What used to stand here
 
 Until September 2026 the first item was "there will be no release until the seed
-is reprinted": `sh scripts/raskrutka.sh --bystro` named 45 divergences, and the
+is reprinted": `sh scripts/bootstrap-reprint.sh --bystro` named 45 divergences, and the
 seed held not a line of the C emission of the process plan. That is gone: the
 seed is reprinted (`0ce948bfd`), `grep -c 'flang_conc.c'
 bootstrap/compiler_flang.c` answers `2`, and release 0.7.17 went out on

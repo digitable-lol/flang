@@ -24,7 +24,7 @@
 - Задача 1428, часть 1: язык умеет процессы, доводы, среду, временные каталоги
   (23 поручения, `flang/self/parser.flang` ~6595); 73 скрипта на flang зовут `git`,
   `make`, `sh`. Принципиальных исключений там названо три: `scripts/bootstrap-c.sh`,
-  `scripts/raskrutka.sh`, `scripts/seed/seed-refresh.sh` — они собирают сам двоичный.
+  `scripts/bootstrap-reprint.sh`, `scripts/seed/seed-refresh.sh` — они собирают сам двоичный.
 - Чего у `flang io` нет (задача 1415, Ш1): доводов вызова, печати на экран
   (FLANG_IO_NO_SCREEN), кода возврата потомка (`ярлык`, шапка). Скрипт, которому это
   нужно, остаётся оболочкой, пока это так.
@@ -85,7 +85,7 @@
 
 | # | файл | строк | вердикт | почему | кто зовёт (по коду и CI; упоминания в прозе не считаны) |
 |---:|---|---:|---|---|---|
-| 1 | `scripts/bootstrap-c.sh` | 206 | остаётся | собирает двоичный (cc, вторая печать) | scripts/raskrutka.sh, scripts/seed/build-ledger-binary.sh |
+| 1 | `scripts/bootstrap-c.sh` | 206 | остаётся | собирает двоичный (cc, вторая печать) | scripts/bootstrap-reprint.sh, scripts/seed/build-ledger-binary.sh |
 | 2 | `scripts/cell-work-preserved.sh` | 97 | остаётся | нужна среда: FLANG_CELLS — «Прочитать переменную среды» хозяин не знает (прогон №2); на этой машине код 3 (клонов ячеек нет) | никто (0) |
 | 3 | `scripts/flangrc.sh` | 241 | остаётся | нужны доводы (ключ, --от DIR, --дом DIR) и среда HOME — записано в шапке | ярлыки.flang, flangrc-guard.sh, version-derivations-guard.sh, bump-version.sh, flang/bin/flangtutor |
 | 4 | `scripts/flangtutor-proba.sh` | 241 | остаётся | зона 1428 (переименование в tutor-probe.sh) | никто (0) |
@@ -111,7 +111,7 @@
 | 24 | `scripts/ledgers/take-proof-ledger.sh` | 106 | остаётся | нужен довод ФАЙЛ; среда DVOICHNYY/PAMYAT/PIK; зовёт python3-счёт доли | никто (0; proved-share-ledger.txt упоминает) |
 | 25 | `scripts/memory-headroom.sh` | 252 | остаётся | доводы (--следить, --отчёт --итог) и фоновый процесс на всю работу CI | binary.yml |
 | 26 | `scripts/memory-limit.sh` | 259 | остаётся | доводы (-- команда), пробрасывает код возврата (137) наружу | postcondition-pairs.sh, target-census.sh |
-| 27 | `scripts/raskrutka.sh` | 3513 | остаётся | собирает двоичный (точка раскрутки); вне задачи | ярлык, хук, все работы CI (54 файла) |
+| 27 | `scripts/bootstrap-reprint.sh` | 3513 | остаётся | собирает двоичный (точка раскрутки); вне задачи | ярлык, хук, все работы CI (54 файла) |
 | 28 | `scripts/release/bump-version.sh` | 173 | остаётся | нужен довод — новая версия | ярлыки.flang (версия) |
 | 29 | `scripts/repl-proba.sh` | 303 | остаётся | зона 1428; проба REPL через терминал (экран) | никто (0; flang_repl.c упоминает) |
 | 30 | `scripts/seed/binary-origin.sh` | 549 | остаётся | судит двоичный: сверка происхождения и пересборка (cc); доводы -- команда | binary.yml, seed-freshness.sh |
@@ -120,7 +120,7 @@
 | 33 | `scripts/seed/new-binary-acceptance.sh` | 232 | остаётся | приёмка нового двоичного (судит двоичный); довод путь к дереву | ярлыки.flang, binary-origin.sh |
 | 34 | `scripts/seed/pechat-povtorima.sh` | 314 | остаётся | зона 1428; судит печать (две печати) | binary.yml, reprint.yml |
 | 35 | `scripts/seed/print-progress.sh` | 158 | остаётся | идёт во время печати семени, до двоичного (reprint.yml) | reprint.yml, two-prints-identical.sh |
-| 36 | `scripts/seed/seed-freshness.sh` | 197 | остаётся | судит семя (свежесть) — зовётся из `ярлык` до всякого плана; доводы --chto, -- команда | ярлык, raskrutka.sh, binary-origin.sh, published-vs-tree.sh |
+| 36 | `scripts/seed/seed-freshness.sh` | 197 | остаётся | судит семя (свежесть) — зовётся из `ярлык` до всякого плана; доводы --chto, -- команда | ярлык, bootstrap-reprint.sh, binary-origin.sh, published-vs-tree.sh |
 | 37 | `scripts/seed/semya-osvezhit.sh` | 273 | остаётся | собирает двоичный (пересев); хук до сборки; зона 1428 | .githooks/pre-push, ярлыки.flang |
 | 38 | `scripts/seed/semya-rantayma-eto-istochnik.sh` | 108 | остаётся | зовётся до сборки (хук); зона 1428 | .githooks/pre-push, semya-osvezhit.sh |
 | 39 | `scripts/seed/two-prints-identical.sh` | 226 | остаётся | судит печать; доводы — два каталога | binary.yml, reprint.yml, pechat-povtorima.sh |
@@ -253,7 +253,7 @@
 
 ## Чего задача НЕ делает
 
-Не трогает `scripts/raskrutka.sh`, `scripts/otpechatok-semeni`, `bootstrap/**`, `flang/self/**`,
+Не трогает `scripts/bootstrap-reprint.sh`, `scripts/seed-fingerprint`, `bootstrap/**`, `flang/self/**`,
 `flang/proof/**`. Расширение перенесённого файла — по решению задачи 1415.
 
 

@@ -40,7 +40,7 @@ bootstrap/flang check docs/examples/rosetta/towers-of-hanoi.flang
 ```bash
 sh flang/test/обход.sh
 sh flang/test/обход-примеров.sh
-sh scripts/raskrutka.sh --check
+sh scripts/bootstrap-reprint.sh --check
 ```
 
 Первая обходит дерево компилятором, вторая прогоняет примеры всех программ

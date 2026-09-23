@@ -72,7 +72,7 @@
 `poddelka-lozhnaya-polovina.flang` и `poddelka-razdvoenie-diz.flang`, обе ложны
 вычислением и обе остались недоказанными; `node flang/scripts/poddelki-yadra.mjs`
 — 10 файлов, аксиом ноль, нарушений 0. `flang test flang/stdlib` — 1219 из 1219.
-`sh scripts/raskrutka.sh --check` — совпадает с печатью, 7 файлов,
+`sh scripts/bootstrap-reprint.sh --check` — совпадает с печатью, 7 файлов,
 24 489 999 байт.
 
 Связано: [[the-type-holds-no-invariant-so-obvious-claims-about-a-search-tree-are-false]],

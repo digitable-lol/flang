@@ -87,7 +87,7 @@ flang test  web/stand.flang                          примеров 258, ко�
 ## Что осталось незакрытым
 
 `./ярлык спеки:проверка` красна и чинится только перепечаткой семени
-(`sh scripts/raskrutka.sh`) — своей волей эту правку здесь делать нельзя.
+(`sh scripts/bootstrap-reprint.sh`) — своей волей эту правку здесь делать нельзя.
 
 `fspec/guard.flang` (80 функций), `clarifications.flang` (37) и
 `snapshot.flang` (10) обещаний не получили: `check --proof` на них до отчёта не

@@ -26,7 +26,7 @@
 
 **Чем ограничено.** Прогоны идут через ворота, как велит AGENTS.md («не
 больше двух разом»), и ворота же — источник кода 75. Имена латиницей, как в
-`scripts/raskrutka.sh`: ни dash, ни bash не принимают кириллицу в именах.
+`scripts/bootstrap-reprint.sh`: ни dash, ни bash не принимают кириллицу в именах.
 
 Связано: [[a-gate-refusal-looks-like-a-verdict]],
 [[an-acceptance-sign-without-material-must-say-not-taken-not-passed]]

@@ -894,8 +894,8 @@ flang/proof/corpus-share.sh --вложенность`: она перепечат
 диспетчером по конечному списку, поэтому замыкания целевому языку не нужны.
 Параметры типов при печати стираются.
 
-Компилятор печатает и сам себя: `sh scripts/raskrutka.sh` перепечатывает
-`flang/self/*.flang` в `bootstrap/`, а `sh scripts/raskrutka.sh --check`
+Компилятор печатает и сам себя: `sh scripts/bootstrap-reprint.sh` перепечатывает
+`flang/self/*.flang` в `bootstrap/`, а `sh scripts/bootstrap-reprint.sh --check`
 сравнивает перепечатку с закоммиченной. Двоичный из `bootstrap/` собирается
 командой `make -C bootstrap` — нужны только `cc` и `make`.
 

@@ -1,6 +1,6 @@
 # Заход перепечатки пускается из чистой копии ствола
 
-Перепечатка семени (`sh scripts/raskrutka.sh`) стоит часы и сотни гигабайт, и
+Перепечатка семени (`sh scripts/bootstrap-reprint.sh`) стоит часы и сотни гигабайт, и
 она одна на машине. Заход, пущенный не из той копии, пропадает целиком: печать
 дойдёт до конца, а положить её будет некуда. Здесь записан порядок захода —
 откуда берётся копия, какой командой проверяется её чистота и что делать, если
@@ -18,13 +18,13 @@ git fetch /srv/flang-priyom.git main && git checkout -B main FETCH_HEAD
 ```
 
 Готовая копия соседа не годится не из-за беспорядка, а по одному месту:
-`bootstrap/**` и `scripts/otpechatok-semeni` печатаются перепечаткой, и если в
+`bootstrap/**` и `scripts/seed-fingerprint` печатаются перепечаткой, и если в
 копии их кто-то правил руками, печать пойдёт от правленого входа.
 
 ## 2. Чистота проверяется одной командой, и это не `git status`
 
 ```sh
-git diff --quiet HEAD -- bootstrap scripts/otpechatok-semeni
+git diff --quiet HEAD -- bootstrap scripts/seed-fingerprint
 ```
 
 Код `0` — семя такое же, как в стволе; код `1` — правлено руками. Прогон
@@ -32,8 +32,8 @@ git diff --quiet HEAD -- bootstrap scripts/otpechatok-semeni
 
 ```
 $ PIK=1G PAMYAT=2G /srv/flang-rabota/vorota/flang-vorota -- sh -c '
-    git diff --quiet HEAD -- bootstrap scripts/otpechatok-semeni; echo "чистота своей копии, код: $?"
-    git -C /srv/flang-rabota/m-reprint-2 diff --quiet HEAD -- bootstrap scripts/otpechatok-semeni; echo "чистота m-reprint-2, код: $?"'
+    git diff --quiet HEAD -- bootstrap scripts/seed-fingerprint; echo "чистота своей копии, код: $?"
+    git -C /srv/flang-rabota/m-reprint-2 diff --quiet HEAD -- bootstrap scripts/seed-fingerprint; echo "чистота m-reprint-2, код: $?"'
 чистота своей копии, код: 0
 чистота m-reprint-2, код: 1
 ```
@@ -43,9 +43,9 @@ $ PIK=1G PAMYAT=2G /srv/flang-rabota/vorota/flang-vorota -- sh -c '
 
 ```
 $ PIK=1G PAMYAT=2G /srv/flang-rabota/vorota/flang-vorota -- sh -c '
-    git -C /srv/flang-rabota/m-reprint-2 status --short -- bootstrap/ scripts/otpechatok-semeni
+    git -C /srv/flang-rabota/m-reprint-2 status --short -- bootstrap/ scripts/seed-fingerprint
     echo "git status на ГРЯЗНОЙ копии, код: $?"
-    git status --short -- bootstrap/ scripts/otpechatok-semeni
+    git status --short -- bootstrap/ scripts/seed-fingerprint
     echo "git status на ЧИСТОЙ копии, код: $?"'
  M bootstrap/flang_runtime.c
  M bootstrap/flang_runtime.h
@@ -68,7 +68,7 @@ git status на ЧИСТОЙ копии, код: 0
 называет ровно те же файлы, что и правка руками. Различает их не команда, а
 минута: до печати код должен быть `0`, после печати `1` — это и есть результат.
 
-Отсюда порядок: снять код возврата **до** запуска `raskrutka.sh` и записать его
+Отсюда порядок: снять код возврата **до** запуска `bootstrap-reprint.sh` и записать его
 рядом с журналом захода. Иначе после захода уже нечем сказать, чистым ли он
 начинался.
 
@@ -83,9 +83,9 @@ $ PIK=1G PAMYAT=2G /srv/flang-rabota/vorota/flang-vorota -- sh -c '
       [ -e "$d/.git" ] || continue
       if ! git -C "$d" rev-parse --git-dir >/dev/null 2>&1; then bitykh=$((bitykh+1)); continue; fi
       zhivyh=$((zhivyh+1))
-      if ! git -C "$d" diff --quiet HEAD -- bootstrap scripts/otpechatok-semeni 2>/dev/null; then
+      if ! git -C "$d" diff --quiet HEAD -- bootstrap scripts/seed-fingerprint 2>/dev/null; then
         gryaznyh=$((gryaznyh+1))
-        printf "%-42s %s\n" "${d%/}" "$(git -C "$d" diff --name-only HEAD -- bootstrap scripts/otpechatok-semeni | wc -l) файлов"
+        printf "%-42s %s\n" "${d%/}" "$(git -C "$d" diff --name-only HEAD -- bootstrap scripts/seed-fingerprint | wc -l) файлов"
       fi
     done
     printf "\nкопий живых: %s, битых: %s, с правленым семенем: %s\n" "$zhivyh" "$bitykh" "$gryaznyh"
@@ -130,12 +130,12 @@ $ PIK=1G PAMYAT=2G /srv/flang-rabota/vorota/flang-vorota -- sh -c '
 
 Приёмная отвергает всякий коммит, тронувший машинный вывод, — без исключения
 для перепечатки. Правило живёт в `/srv/flang-priyom.git/hooks/pre-receive`,
-шаг 2, и ловит `bootstrap[^/]*/` и `scripts/otpechatok-semeni`. Прогон на самом
+шаг 2, и ловит `bootstrap[^/]*/` и `scripts/seed-fingerprint`. Прогон на самом
 коммите перепечатки:
 
 ```
 $ git diff-tree --no-commit-id --name-only -r 52996005 |
-    grep -Eq '^(bootstrap[^/]*/|scripts/otpechatok-semeni$)'; echo $?
+    grep -Eq '^(bootstrap[^/]*/|scripts/seed-fingerprint$)'; echo $?
 0
 ```
 
@@ -168,7 +168,7 @@ db12d317 HEAD@{2026-08-30 09:32:37 +0000}: reset: moving to origin/main
 (`git reflog`: `clone: from /srv/priyom/stvol`), голова — `f9e67fa6`.
 
 ```
-$ git diff --quiet f9e67fa6 52996005^ -- bootstrap scripts/otpechatok-semeni; echo $?
+$ git diff --quiet f9e67fa6 52996005^ -- bootstrap scripts/seed-fingerprint; echo $?
 0
 ```
 
@@ -179,7 +179,7 @@ $ git diff --quiet f9e67fa6 52996005^ -- bootstrap scripts/otpechatok-semeni; ec
 $ sovpalo=0; vsego=0
 $ for f in bootstrap/compiler_flang.c bootstrap/compiler_flang.h bootstrap/flang_cli.c \
            bootstrap/flang_repl.c bootstrap/flang_runtime.c bootstrap/flang_runtime.h \
-           scripts/otpechatok-semeni; do
+           scripts/seed-fingerprint; do
     vsego=$((vsego+1))
     a=$(git rev-parse 52996005:$f)
     b=$(git -C /srv/flang-rabota/m-reprint-4 hash-object -- $f)
@@ -195,6 +195,6 @@ $ for f in bootstrap/compiler_flang.c bootstrap/compiler_flang.h bootstrap/flang
 
 Она не про цену перепечатки — цена в [`reprint-cost.md`](reprint-cost.md) и в
 [`reprint-ledger.tsv`](reprint-ledger.tsv). Не про свежесть семени — это
-`scripts/seed/seed-freshness.sh` и `sh scripts/raskrutka.sh --bystro`, и они отвечают
+`scripts/seed/seed-freshness.sh` и `sh scripts/bootstrap-reprint.sh --bystro`, и они отвечают
 на другой вопрос: «те ли входы у печати», а не «чиста ли копия, из которой
 печатают».

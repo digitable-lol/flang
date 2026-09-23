@@ -79,8 +79,8 @@ ls $d | wc -l                                          # 86
 ## Как понять, что сделано
 
 ```sh
-sh scripts/bootstrap-reprint.sh                       # ходы доезжают до двоичного
-bootstrap/flang check flang/proof/stack.flang --proof   # запись снимается заново
+sh scripts/bootstrap-reprint.sh                        # ходы доезжают до двоичного
+bootstrap/flang check flang/proof/stack.flang --proof  # запись снимается заново
 sh flang/proof/checker/tests/run.sh
 ```
 

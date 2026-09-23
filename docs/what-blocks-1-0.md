@@ -78,8 +78,8 @@ git -c core.quotepath=false log --oneline 03fb4060..main | wc -l          # → 
 git -c core.quotepath=false ls-tree -r --name-only main -- 'flang/proof/checker' | wc -l   # → 137
 git -c core.quotepath=false log --oneline --diff-filter=A -- 'flang/proof/checker/Makefile'
 #   → e8380e2d feat(чекер): независимый чекер на C, его пробы и рецепт сборки лежат в дереве
-wc -l flang/proof/checker/checker.c                                          # → 1566
-LC_ALL=C.UTF-8 /usr/bin/grep -a -c -- '--imena' scripts/bootstrap-reprint.sh       # → 11
+wc -l flang/proof/checker/checker.c                                           # → 1566
+LC_ALL=C.UTF-8 /usr/bin/grep -a -c -- '--imena' scripts/bootstrap-reprint.sh  # → 11
 ```
 
 Те же 17 коммитов открыты как PR №4 (`digitable-lol/flang`, ветка

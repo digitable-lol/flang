@@ -167,11 +167,11 @@ git mv web packaging/web
 ### Шаг 4. Проверка
 
 ```sh
-sh .githooks/pre-push                          # дешёвые сторожа
-sh scripts/bootstrap-reprint.sh --bystro               # отпечаток цел (переезд его не трогает)
-bootstrap/flang io scripts/guards/link-guard.fscript    # ни одной битой ссылки в прозе
-node docs/site/build.mjs --check               # сайт собирается, ссылки целы
-./ярлык опись:языки                            # опись дерева пересчитана
+sh .githooks/pre-push                                 # дешёвые сторожа
+sh scripts/bootstrap-reprint.sh --bystro              # отпечаток цел (переезд его не трогает)
+bootstrap/flang io scripts/guards/link-guard.fscript  # ни одной битой ссылки в прозе
+node docs/site/build.mjs --check                      # сайт собирается, ссылки целы
+./ярлык опись:языки                                   # опись дерева пересчитана
 ./ярлык тесты
 ```
 

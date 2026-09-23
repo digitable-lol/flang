@@ -16,14 +16,14 @@
 
 Дерево `main` `cbfaf3899`, 17 сентября 2026; `gh workflow list --repo digitable-lol/flang --all`:
 активны 7 (Сайт документации, Сборка на macOS, Двоичный, Путь установки, Перепечатка,
-Выпуск, Проба ветки); выключены руками 2 — `CI` (ci.yml) и «Двойники на целях» (dvoyniki.yml).
+Выпуск, Проба ветки); выключены руками 2 — `CI` (ci.yml) и «Двойники на целях» (target-twins.yml).
 
 Работ в `ci.yml` — 23 (`grep -E '^  [a-z][a-z0-9_-]+:$'`: semya, proza, kirillica, nastroyki,
 zadachnik, postoyannye, stolknoveniya, zhargon, test, licensing, links, pechat, korpus,
 progon, granica, oblast, pravila-spisok, pravila, klyuchi, stale-pages, neznanye-storozha,
 svyaz-celi, seed-verdicts); из них 5 живут только меткой или ручным запуском
 (stolknoveniya, test, pravila, stale-pages — `if: github.ref_type == 'tag' || workflow_dispatch`).
-Работ в `dvoyniki.yml` — 4 (planirovshchik, nadzor, uzel, pechat-svyazi). Итого 27.
+Работ в `target-twins.yml` — 4 (planirovshchik, nadzor, uzel, pechat-svyazi). Итого 27.
 Прежний лид считал 21 из 25 зелёными, 4 чинились — таблицы не оставил.
 
 ## Как поймём, что сделано

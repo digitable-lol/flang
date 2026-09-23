@@ -135,9 +135,9 @@ sudit() {
   bed=0
 
   # Двойники по номеру — где бы обе задачи ни лежали.
-  dvoyniki=$(printf '%s\n' "$spisok" | cut -f1 | sort | uniq -d)
-  if [ -n "$dvoyniki" ]; then
-    for n in $dvoyniki; do
+  target-twins=$(printf '%s\n' "$spisok" | cut -f1 | sort | uniq -d)
+  if [ -n "$target-twins" ]; then
+    for n in $target-twins; do
       printf 'НОМЕР %s ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:\n' "$n" >&2
       printf '%s\n' "$spisok" | grep "^$n	" | cut -f2 | sed 's|^|  · |' >&2
     done

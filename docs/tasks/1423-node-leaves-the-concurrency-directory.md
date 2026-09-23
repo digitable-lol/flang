@@ -39,7 +39,7 @@
 `flang/test/planirovshchik-celi.test.mjs`, `flang/test/svyaz-celi.test.mjs`,
 `flang/scripts/conc-link-emitted.flang`, `scheduler-across-targets.fscript`,
 `link-across-targets.fscript`, `scripts/targets/conc-link-emit.fscript`,
-`flang/conc/bench/hot-swap.sh`, `.github/workflows/dvoyniki.yml`,
+`flang/conc/bench/hot-swap.sh`, `.github/workflows/target-twins.yml`,
 плюс слово: `flang/conc/RESILIENCE.md`, `docs/javascript-inventory.md`,
 `docs/why-javascript-remains.md`, три заметки `docs/zettel/**`.
 
@@ -81,7 +81,7 @@ JavaScript в каталоге, который описывает собстве
 - **Ш0 — сверка двойников знак в знак.** Для `scheduler`, `wire`, `link`
   прогнать оба воплощения на всём дереве и сличить вывод и код возврата.
   Расхождение — находка, а не повод править двойник задним числом.
-- **Ш1 — переключить зовущих:** `.github/workflows/dvoyniki.yml`, два
+- **Ш1 — переключить зовущих:** `.github/workflows/target-twins.yml`, два
   `.test.mjs` в `flang/test`, `flang/conc/bench/hot-swap.sh`.
 - **Ш2 — `bin/node.js`** (735 строк, двойника нет): либо двойник, либо снос с
   доводом «ноль вызовов», как решено для `node-death-targets.mjs` в 4412.
@@ -93,7 +93,7 @@ JavaScript в каталоге, который описывает собстве
 ## Как поймём, что сделано
 
 `find flang/conc -name '*.js' | wc -l` — **0**; `./ярлык тесты` отвечает тем же
-кодом, что до сноса; `dvoyniki.yml` зелен; в `docs/javascript-inventory.md`
+кодом, что до сноса; `target-twins.yml` зелен; в `docs/javascript-inventory.md`
 число пересчитано прогоном.
 
 ## Чего задача НЕ делает
@@ -116,7 +116,7 @@ flang/concurrency/<модуль>.flang --target js` (link 2 с, scheduler 10 с,
 5 с, код 0 у всех).
 
 **Текстом закоммиченное со свежей печатью НЕ сходится** — и это не одна строка
-шапки, как записано в `.github/workflows/dvoyniki.yml`:
+шапки, как записано в `.github/workflows/target-twins.yml`:
 
 | модуль | строк в дереве | строк в свежей | строк `diff` |
 |---|---:|---:|---:|
@@ -190,7 +190,7 @@ flang/concurrency/<модуль>.flang --target js` (link 2 с, scheduler 10 с,
   связь:печать») и запись в `ярлыки.flang` названы одинаково — «узел зовёт у
   напечатанного только объявленное и исполняет каждое веление исходника»:
   сборщик 1416 будет их сличать. Комментарий и имя шага у задания
-  `pechat-svyazi` в `dvoyniki.yml` переписаны.
+  `pechat-svyazi` в `target-twins.yml` переписаны.
   Освежитель `flang/scripts/conc-link-emitted.flang` снят: он печатал модули
   рядом с исходником и воскрешал бы снятые файлы; зовущих у него не было, его
   строки в описи доказанного и в долге комментариев убраны, а его упоминания в этой

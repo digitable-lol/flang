@@ -42,7 +42,7 @@
 
 Стенд узла `node-death-targets.mjs` (147 строк) двойника не имеет; его дело —
 смерть узла на девяти целях — частью покрывают `flang/scripts/*-across-targets.flang`
-(`dvoyniki.yml`).
+(`target-twins.yml`).
 
 ## Что сделать
 

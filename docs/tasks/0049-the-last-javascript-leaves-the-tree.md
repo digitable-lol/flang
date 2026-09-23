@@ -316,8 +316,8 @@ $ echo $?
 | `toolchain-guard.mjs` | 90 | есть ли тулчейн цели | 3 теста узла; **вне стека** `node-death-targets.mjs` | `toolchain-guard.flang` (171) | то же | 3 |
 | `uzel-osnastka.mjs` | 257 | сборка и подъём узла для проб | `nadzor-uzla.test.mjs`; **вне стека** `node-death-targets.mjs` | `uzel-osnastka.flang` (143, частью) | то же | 3 |
 | `surface-pair.mjs` | 267 | сверка поверхностей пары примеров | **только вне стека** `docs/site/surfaces-run.mjs` (ярлыки `поверхности:*`) | `surface-pair.flang` (654) | в стеке вызовов ноль, но снос ломает узел сайта — решение у координатора | 3 |
-| `nadzor-uzla.test.mjs` | 225 | надзор поднимает упавший процесс на девяти целях, три исхода | ярлык `тесты` (`ci.yml:464`); `tempdir-guard.fscript:367` называет команду | `supervisor-across-targets.fscript` (440) — `dvoyniki.yml` | ПЕРЕНЕСТИ: двойники шире по целям (9 против 8) и уже по случаям — 3 492 из 97 504 у трёх проб вместе (`dvoyniki.yml`, замер 6 сентября); довести до тех же случаев, потом снимать | 3 |
-| `planirovshchik-celi.test.mjs` | 327 | планировщик узла на восьми целях, 67 744 сверки | ярлык `тесты` | `scheduler-across-targets.fscript` (306) — `dvoyniki.yml` | то же | 3 |
+| `nadzor-uzla.test.mjs` | 225 | надзор поднимает упавший процесс на девяти целях, три исхода | ярлык `тесты` (`ci.yml:464`); `tempdir-guard.fscript:367` называет команду | `supervisor-across-targets.fscript` (440) — `target-twins.yml` | ПЕРЕНЕСТИ: двойники шире по целям (9 против 8) и уже по случаям — 3 492 из 97 504 у трёх проб вместе (`target-twins.yml`, замер 6 сентября); довести до тех же случаев, потом снимать | 3 |
+| `planirovshchik-celi.test.mjs` | 327 | планировщик узла на восьми целях, 67 744 сверки | ярлык `тесты` | `scheduler-across-targets.fscript` (306) — `target-twins.yml` | то же | 3 |
 | `svyaz-celi.test.mjs` | 262 | машина связи на восьми целях, 17 472 сверки | ярлык `тесты` | `link-across-targets.fscript` (278) — `ci.yml:1645` | то же | 3 |
 
 ### Что заперто чужими каталогами и требует решения координатора

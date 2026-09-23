@@ -190,7 +190,7 @@
 | 103 | `flang/concurrency/bench/threshold.sh` | 78 | остаётся | доводы; python3 | никто (0) |
 | 104 | `flang/concurrency/bench/twin.sh` | 67 | остаётся | доводы; python3 | никто (0) |
 | 105 | `flang/concurrency/bench/valgrind.sh` | 10 | остаётся | доводы ($1 каталог, $2 пробегов); valgrind | никто (0) |
-| 106 | `flang/concurrency/bin/node.js` | 735 | не долг по описи | код на стороне цели: хозяин узла пишется на языке цели | .github/workflows/dvoyniki.yml, bootstrap/flang_repl.c, docs/release-notes.json … (13) |
+| 106 | `flang/concurrency/bin/node.js` | 735 | не долг по описи | код на стороне цели: хозяин узла пишется на языке цели | .github/workflows/target-twins.yml, bootstrap/flang_repl.c, docs/release-notes.json … (13) |
 | 107 | `flang/concurrency/bin/node.py` | 603 | не долг по описи | код на стороне цели: хозяин узла пишется на языке цели | flang/concurrency/bench/node-death.sh, flang/concurrency/bin/node.ex, flang/concurrency/bin/node.js … (8) |
 | 108 | `flang/concurrency/bin/peer.py` | 245 | не долг по описи | код на стороне цели: хозяин узла пишется на языке цели | flang/concurrency/bin/node.py |
 | 109 | `flang/concurrency/bin/wire.mjs` | 159 | JavaScript — считается отдельно (docs/javascript-inventory.md) | провод между узлами (сторона цели js) | никто (0) |

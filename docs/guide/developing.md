@@ -53,9 +53,9 @@ Checks:
 ```bash
 sh flang/test/обход.sh          # the walker's checks, run by the binary
 sh flang/test/обход-примеров.sh # every example in the tree
-sh scripts/bootstrap-reprint.sh --check     # the seed against what the sources emit
-./ярлык                             # every check in the tree, each with one line of explanation
-./ярлык тесты                       # the whole set at once
+sh scripts/bootstrap-reprint.sh --check  # the seed against what the sources emit
+./ярлык                                  # every check in the tree, each with one line of explanation
+./ярлык тесты                            # the whole set at once
 ```
 
 A single check is called by its name from that list: `./ярлык спеки:проверка`, `./ярлык ссылки:проверка`,

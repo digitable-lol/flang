@@ -53,8 +53,8 @@ flowchart LR
 ## Как это прогнать
 
 ```bash
-make -C bootstrap -j8        # собрать компилятор из семени
-sh scripts/bootstrap-reprint.sh --check   # сверить семя с тем, что печатают исходники
+make -C bootstrap -j8                    # собрать компилятор из семени
+sh scripts/bootstrap-reprint.sh --check  # сверить семя с тем, что печатают исходники
 ```
 
 Вторая команда печатает семь файлов заново и сравнивает их с закоммиченными.

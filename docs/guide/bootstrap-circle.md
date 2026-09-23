@@ -53,8 +53,8 @@ seed before the `0ce948bfd` reprint, and it is gone.
 ## How to run it
 
 ```bash
-make -C bootstrap -j8             # build the compiler from the seed
-sh scripts/bootstrap-reprint.sh --check   # compare the seed with what the sources emit
+make -C bootstrap -j8                    # build the compiler from the seed
+sh scripts/bootstrap-reprint.sh --check  # compare the seed with what the sources emit
 ```
 
 The second command re-emits seven files and compares them with the committed

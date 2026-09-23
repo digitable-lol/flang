@@ -115,7 +115,7 @@ Haskell. flang целится в одно: язык, на котором и до
 **Решение** (ADR-0030): не доказывать печатник целиком, а проверять каждый его
 запуск — печатник печатает протокол перевода, вторая независимая программа его
 переигрывает, к ней заводится свой набор подделок, начиная с одной цели — C.
-Задачи [1401](tasks/1401-slichitel-perevoda-v-c.md) (сличитель) и
+Задачи [1401](tasks/completed/1401-slichitel-perevoda-v-c.md) (сличитель) и
 [1402](tasks/completed/1402-napechatannyy-c-sobiraetsya-compcert.md) (собирается ли
 напечатанный C под CompCert — тогда второе место доверия, компилятор C,
 закрывается чужой теоремой). Замер 1402 от 14 сентября 2026: собирается — 253 из 255
@@ -147,9 +147,9 @@ Haskell. flang целится в одно: язык, на котором и до
 [1403](tasks/completed/1403-vychitanie-pod-predusloviem.md): около 6 строк ядра, 16 строк
 сверщика, строка таблицы правил, лемма Lean, проба на подлог; едет партией
 перепечатки семени. Три остальные — задачи
-[1404](tasks/1404-utverzhdenie-o-posledovatelnosti-shagov.md),
-[1405](tasks/1405-plan-nichego-ne-obeshchaet.md),
-[1406](tasks/1406-process-nichego-ne-obeshchaet.md) — начинаются замером, а не
+[1404](tasks/completed/1404-utverzhdenie-o-posledovatelnosti-shagov.md),
+[1405](tasks/completed/1405-plan-nichego-ne-obeshchaet.md),
+[1406](tasks/completed/1406-process-nichego-ne-obeshchaet.md) — начинаются замером, а не
 кодом, и стоят за порогом этапа 4. Временная логика (`всегда`, `когда-нибудь`)
 остаётся отвергнутой (ADR-0017).
 

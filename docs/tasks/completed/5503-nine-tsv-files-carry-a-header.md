@@ -1,7 +1,7 @@
 ---
 номер: 5503
 заголовок: У девяти tsv первая строка отвечает «что, зачем, кто читает» — нечитаемые снесены
-статус: в работе (сделано в ветке a/5503-nine-tsv-files-carry-a-header, ждёт вливания)
+статус: сделана
 исполнитель: a
 ветка: a/5503-nine-tsv-files-carry-a-header
 команда: вторая
@@ -100,3 +100,23 @@ target-function-drift-known) первая строка — `#`-примечан�
   таблицы называет его и число строк) и читается человеком по ссылке; оставлен,
   шапка называет читателем человека.
 
+## Чем кончилось
+
+Приём задачи — «9 из 9: либо первая строка `# ЧТО … ЗАЧЕМ … КТО ЧИТАЕТ …` и читающий
+сторож ссылается на файл в своей шапке, либо файл снесён с доводом здесь».
+
+Сверено 22 сентября 2026 на стволе `d0763e8b6`, файл за файлом:
+
+| файл | сегодня |
+|---|---|
+| docs/eight-targets-renames.tsv | шапка `# ЧТО … ЗАЧЕМ … КТО ЧИТАЕТ …` |
+| docs/javascript-checks-breakdown.tsv | **снесён**, довод — в разделе «Довод сноса» этой задачи |
+| docs/reprint-ledger.tsv | шапка есть |
+| flang/translation/PRINT-RULES.tsv | шапка есть |
+| scripts/ledgers/hand-written-lists-ledger.tsv | шапка есть |
+| scripts/ledgers/link-guard-known-not-a-path.tsv | шапка есть |
+| scripts/ledgers/no-comments-debt.tsv | шапка есть |
+| scripts/ledgers/target-function-drift-known.tsv | шапка есть |
+| scripts/ledgers/traceability-debt.tsv | шапка есть (строка 5, под строками «ПОДНЯТО») |
+
+Девять из девяти закрыты. `sh .githooks/pre-push` — зелен.

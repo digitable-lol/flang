@@ -1,6 +1,6 @@
 # Семья «вложенный квантор»: ∀∀ и ∀∃ (правило Св1)
 
-Задача [5957](../../../../../../tasks/5957-nested-quantifiers-over-elements-are-not-sayable.md),
+Задача [5957](../../../../../../tasks/completed/5957-nested-quantifiers-over-elements-are-not-sayable.md),
 основание — [ADR-0026](../../../../../../adr/0026-quantifiers-over-any-type-are-a-kernel-change.md)
 §11 п.15. Строка ведомости `Св1`, лемма «Св1» и встречный пример
 «Св1-без-посылки-ложно» в `flang/proof/lean/Rules.lean`, искажение 12 в

@@ -1,9 +1,9 @@
 ---
 номер: 6480
 заголовок: Битые ссылки на стволе починены прибором — сторож ссылок зелен в чистой копии
-статус: в работе — 33 из 33 доступных ссылок и исключение починены (d51cde45c), 2 ссылки в flang/proof переданы стеку K
-исполнитель: a
-ветка: a/6480-broken-links-in-docs-are-repaired-by-instrument
+статус: свободна (33 из 35 ссылок починены в ветке a/6480-…, но она в ствол не влита; на 22 сентября 2026 прогон в стволе — код 1, битых 5 из 6939)
+исполнитель: —
+ветка: —
 команда: вторая
 карта: Что мешает больше всего
 рядом: 0037, 3017, 5414, 7005
@@ -58,13 +58,13 @@
 |---|---|---|---|---|---|
 | 1 | `ROADMAP.md` (симлинк на `docs/ROADMAP.md`) | 210 | `tasks/1407-proslezhivaemost-trebovanie-kod-test.md` | `tasks/completed/1407-proslezhivaemost-trebovanie-kod-test.md` | задача 1407 сделана и лежит в `docs/tasks/completed/`; путь считается от `docs/` (третий способ чтения сторожа), как у соседних ссылок файла; симлинк восстановлен как симлинк |
 | 2 | `docs/ROADMAP.md` | 210 | то же | то же | это и есть файл за симлинком — одна правка закрывает обе беды |
-| 3 | `docs/adr/0036-an-exact-integer-is-a-new-kind-of-value-not-a-new-name.md` | 25 | `../../tasks/1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md` | `../tasks/1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md` | `tasks/` переехал под `docs/` (задача 0037): из `docs/adr` до `docs/tasks` — один шаг вверх |
+| 3 | `docs/adr/0036-an-exact-integer-is-a-new-kind-of-value-not-a-new-name.md` | 25 | `../../tasks/completed/1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md` | `../tasks/completed/1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md` | `tasks/` переехал под `docs/` (задача 0037): из `docs/adr` до `docs/tasks` — один шаг вверх |
 | 4 | `docs/adr/0036-an-exact-integer-is-a-new-kind-of-value-not-a-new-name.md` | 26 | `../../tasks/1412-pravila-kolca-tolko-dlya-tochnogo-celogo.md` | `../tasks/1412-pravila-kolca-tolko-dlya-tochnogo-celogo.md` | то же |
 | 5 | `docs/adr/0036-an-exact-integer-is-a-new-kind-of-value-not-a-new-name.md` | 27 | `../../tasks/1413-dlinnye-celye-v-desyati-celyah-pechati.md` | `../tasks/1413-dlinnye-celye-v-desyati-celyah-pechati.md` | то же |
 | 6 | `docs/adr/0037-second-order-is-a-finite-conjunction-over-function-tags.md` | 25 | `../tasks/1261-a-call-precondition-is-not-discharged-by-a-proved-callee-postcondition.md` | `../tasks/completed/1261-a-call-precondition-is-not-discharged-by-a-proved-callee-postcondition.md` | задача 1261 сделана, переехала в `completed/` |
 | 7 | `docs/adr/0037-second-order-is-a-finite-conjunction-over-function-tags.md` | 28 | `../tasks/7098-the-element-quantifier-is-not-printed-into-any-target.md` | `../tasks/completed/7098-the-element-quantifier-is-not-printed-into-any-target.md` | задача 7098 сделана, переехала в `completed/` |
 | 8 | `docs/adr/0041-the-checker-is-proved-sound-against-a-mechanised-semantics.md` | 22 | `../tasks/2907-the-record-and-the-checker-are-modelled-in-lean-and-soundness-is-proved.md` | `../tasks/completed/2907-the-record-and-the-checker-are-modelled-in-lean-and-soundness-is-proved.md` | задача 2907 сделана, переехала в `completed/` |
-| 9 | `docs/design/nositel-tochnogo-celogo.md` | 5 | `../../tasks/1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md` | `../tasks/1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md` | как строки 3–5: `tasks/` под `docs/` |
+| 9 | `docs/design/nositel-tochnogo-celogo.md` | 5 | `../../tasks/completed/1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md` | `../tasks/completed/1411-nositel-tochnogo-celogo-eto-novyy-vid-znacheniya.md` | как строки 3–5: `tasks/` под `docs/` |
 | 10 | `docs/design/nositel-tochnogo-celogo.md` | 16 | ../adr/0035-an-exact-integer-is-a-new-kind-of-value-not-a-new-name.md | `../adr/0036-an-exact-integer-is-a-new-kind-of-value-not-a-new-name.md` | решение «точное целое» предлагалось как ADR-0035 (84d872429) и перенумеровано в 0036 (0035 — «наставник печатает строки»); текст «ADR-0035» в десяти местах файла не тронут — стек K |
 | 11 | `docs/design/nositel-tochnogo-celogo.md` | 222 | n-stroka.flang | ведомость | проба в рабочем каталоге ячейки ($S), не файл дерева — довод «внешний» |
 | 12 | `docs/design/nositel-tochnogo-celogo.md` | 240 | n-zapis.flang | ведомость | то же |
@@ -88,8 +88,8 @@
 | 30 | `docs/tasks/completed/6812-a-contradictory-pair-of-assumptions-is-a-ledger-family.md` | 15 | `../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md` | `../../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md` | как 23 |
 | 31 | `docs/tasks/completed/7098-the-element-quantifier-is-not-printed-into-any-target.md` | 15 | `../adr/0037-second-order-is-a-finite-conjunction-over-function-tags.md` | `../../adr/0037-second-order-is-a-finite-conjunction-over-function-tags.md` | как 23 |
 | 32 | `docs/tasks/completed/7359-strings-have-no-induction-principle.md` | 15 | `../adr/0040-a-simplifier-rewrites-by-proved-equalities-and-prints-every-step.md` | `../../adr/0040-a-simplifier-rewrites-by-proved-equalities-and-prints-every-step.md` | как 23 |
-| 33 | `flang/proof/checker/tests/families/plan/README.md` | 3 | `../../../../../../tasks/1405-plan-nichego-ne-obeshchaet.md` | НЕ ПРАВЛЕНО | `flang/proof/**` — стек K; нужно `../../../../../../docs/tasks/1405-plan-nichego-ne-obeshchaet.md` (передано лиду) |
-| 34 | `flang/proof/checker/tests/families/run-induction/README.md` | 3 | `../../../../../../tasks/1404-utverzhdenie-o-posledovatelnosti-shagov.md` | НЕ ПРАВЛЕНО | то же; нужно `../../../../../../docs/tasks/1404-utverzhdenie-o-posledovatelnosti-shagov.md` |
+| 33 | `flang/proof/checker/tests/families/plan/README.md` | 3 | `../../../../../../tasks/1405-plan-nichego-ne-obeshchaet.md` | `../../../../../../docs/tasks/completed/1405-plan-nichego-ne-obeshchaet.md` | правлено позже, коммитом d350b7eea: задача переехала в `completed/`, и путь сведён вместе с переездом |
+| 34 | `flang/proof/checker/tests/families/run-induction/README.md` | 3 | `../../../../../../tasks/1404-utverzhdenie-o-posledovatelnosti-shagov.md` | `../../../../../../docs/tasks/completed/1404-utverzhdenie-o-posledovatelnosti-shagov.md` | то же |
 | 35 | `scripts/ledgers/link-guard-known-not-a-path.tsv` | 131 | `docs/site/examples.md` → core/storefront.flang («план: пример живёт на ветке») | строка снята | цель ожила: `docs/examples/frameworks/react-ts-pure/core/storefront.flang` в дереве; сторож сам сказал «исключение больше не срабатывает» |
 
 Ведомость: снята 1 строка, добавлено 9 (строки 11–17, 20, 22; пары 18–19 покрыты теми же
@@ -102,3 +102,34 @@
 | `./ярлык ссылки:проверка` | код 1, битых 33 из 7009, устаревших исключений 1 | снимается прогоном на этом коммите (см. следующий коммит) |
 | `sh scripts/guards/prose-numbers-guard.sh` | — | код 0: примет 216, сошлось 216, разошлось 0, негодных 0 |
 | `./ярлык опись:сверка` | — | код 0 |
+
+## Чем кончилось
+
+Приём задачи — «`./ярлык ссылки:проверка` в чистой копии — код 0; устаревших исключений
+в ведомости `link-guard-known-not-a-path.tsv` — 0». Прогон 22 сентября 2026 на стволе
+`d0763e8b6` + этой ветке (двоичный `bootstrap/flang` 0.7.21, `-O0`, 24 мин):
+
+```
+bootstrap/flang io scripts/guards/link-guard.fscript --на-веру
+  сторож ссылок ОТКАЗЫВАЕТ, БИТЫХ 5 ИЗ 6939, УСТАРЕВШИХ ИСКЛЮЧЕНИЙ 0,
+  в цитатах пропущено 327, в записях о прошлом 2534                   код 1
+```
+
+Вторая половина приёма закрыта — устаревших исключений 0. Первая нет: битых 5.
+Все пять — иллюстративные имена в телах двух задач, а не адреса:
+
+| файл | имя |
+|---|---|
+| `docs/tasks/1415-the-fscript-extension-marks-a-script.md` | `script.fscript` (дважды), `plain.flang`, `TABLE=ярлыки.flang` |
+| `docs/tasks/3560-count-the-places-…-processes.md` | `ПЕРЕДАЧА/отчёты/3560-zamer.py` — путь ВНЕ дерева |
+
+Лечатся они тем же способом, что и десять таких же в этой задаче: строкой в
+`scripts/ledgers/link-guard-known-not-a-path.tsv` с доводом.
+
+**Важно для следующего: ветка `a/6480-…` в ствол НЕ ВЛИТА.** Коммит `d51cde45c`, на
+который ссылается прежний статус, не предок `main` (`git merge-base --is-ancestor`
+говорит «нет»). Таблица из 35 строк в этой задаче — работа сделанная, но лежащая
+в мёртвой ветке; в стволе от неё нет ничего.
+
+Две ссылки в `flang/proof/**`, переданные стеку K, в стволе сегодня **целы**:
+`families/plan/README.md` и `families/run-induction/README.md` разрешаются обе.

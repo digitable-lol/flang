@@ -1,6 +1,6 @@
 # Семья «мера»: длина прибавленного списка и свёртки, растущей на один
 
-Задача [6432](../../../../../../tasks/6432-measure-projection-and-declared-sums-close-five-kernel-word-places.md),
+Задача [6432](../../../../../../tasks/completed/6432-measure-projection-and-declared-sums-close-five-kernel-word-places.md),
 решение — [ADR-0042](../../../../../../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md) §2:
 семейство **М** ведомости. Строки `М1` и `М2` — в `flang/proof/tables/inference-rules.tsv`,
 леммы «М1», «М2», «М2-пустое-начало» — в `flang/proof/lean/Rules.lean`, ловушки

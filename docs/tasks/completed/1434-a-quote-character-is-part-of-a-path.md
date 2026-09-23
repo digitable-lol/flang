@@ -1,7 +1,7 @@
 ---
 номер: 1434
 заголовок: Кавычка и октальные escape-последовательности попали в имена — три пустых каталога и пустой файл «\320\227…md"» под docs/examples/frameworks/react-ts-pure
-статус: в работе
+статус: сделана
 исполнитель: a
 ветка: a/1430-1434
 команда: любая
@@ -15,7 +15,7 @@
 ## Чем измерено
 
 21 сентября 2026, ветка `a/derevo-revizia` от `gh/main`. Раздел 5 ревизии
-[docs/tree-layout-audit.md](../tree-layout-audit.md).
+[docs/tree-layout-audit.md](../../tree-layout-audit.md).
 
 ```sh
 $ git -c core.quotepath=false ls-files | grep '^"'
@@ -97,3 +97,15 @@ bfb4f0278 Пример react-ts-pure перенесён из ветки на н�
 * `git ls-files | wc -l` → **3679** (было 3680);
 * `sh scripts/guards/link-guard.fscript` — битых путей нет;
 * `sh .githooks/pre-push` — код 0.
+
+## Чем кончилось
+
+Приём задачи, прогнан 22 сентября 2026 на стволе `d0763e8b6` (двоичный `bootstrap/flang` 0.7.21, `make -C bootstrap CFLAGS='-std=c99 -O0'`):
+
+```
+git -c core.quotepath=false ls-files | grep -c '^"'   → 0   (было 1)
+ls docs/examples/frameworks/react-ts-pure/       → каталога «"examples» нет
+```
+
+Число `git ls-files | wc -l` сегодня 3692, а не 3679: дерево с тех пор выросло по другим
+задачам. Предмет задачи — единственный путь, который git печатал в кавычках, — снят.

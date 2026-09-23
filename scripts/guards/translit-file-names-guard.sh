@@ -86,8 +86,8 @@ cd "$KOREN" || exit 2
 SLOVA=scripts/ledgers/file-name-words.txt
 VEDOMOST=scripts/ledgers/translit-file-names-debt.txt
 # Шесть путей области; довод — раздел «ПОЧЕМУ ОБЛАСТЬ ИМЕННО ТАКАЯ» в шапке.
-# Отслеживаемых файлов в области — 1251; что за областью, сосчитано там же.
-# СНЯТО 2026-09-21 файлов scripts,flang/test,flang/scripts,docs/site,docs/zettel,.github = 1251
+# Отслеживаемых файлов в области — 1252; что за областью, сосчитано там же.
+# СНЯТО 2026-09-17 файлов scripts,flang/test,flang/scripts,docs/site,docs/zettel,.github = 1252
 OBLAST="scripts flang/test flang/scripts flang/proof docs/site docs/zettel .github"
 REZHIM=${1:---check}
 RAB=${FLANG_TMP:-/srv/tmp}/translit-names.$$

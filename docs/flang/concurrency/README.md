@@ -1,12 +1,12 @@
 # flang · concurrency — модель процессов
 
-Код — в `flang/concurrency/`; остальная проза о нём — в `docs/flang/conc/`.
+Код — в `flang/concurrency/`; остальная проза о нём — здесь же, рядом.
 
 | что описано | где |
 |---|---|
-| надзор, ящик, запас витков, горячая замена | [`docs/flang/conc/RESILIENCE.md`](../conc/RESILIENCE.md) |
-| узлы, связь, размещение | [`docs/flang/conc/DISTRIBUTED.md`](../conc/DISTRIBUTED.md) |
-| сам язык процессов: `процесс`, `надзор`, поручения | [`docs/flang/conc/SPEC.md`](../conc/SPEC.md) |
+| надзор, ящик, запас витков, горячая замена | [`docs/flang/concurrency/RESILIENCE.md`](RESILIENCE.md) |
+| узлы, связь, размещение | [`docs/flang/concurrency/DISTRIBUTED.md`](DISTRIBUTED.md) |
+| сам язык процессов: `процесс`, `надзор`, поручения | [`docs/flang/concurrency/SPEC.md`](SPEC.md) |
 
 ## Что в каталоге
 

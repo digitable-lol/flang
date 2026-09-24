@@ -241,7 +241,7 @@ everything else under `docs/` is [`docs/README.md`](docs/README.md).
 | understand the proofs | [Four coverages](docs/four-coverages.md) · [What is proved](https://digitable-lol.github.io/flang/en/what-is-proved.html) · [Which claims the kernel takes](https://digitable-lol.github.io/flang/en/what-the-kernel-accepts.html) · [The kernel refused: whose error](https://digitable-lol.github.io/flang/en/proof-refused.html) |
 | run it somewhere | [Install](https://digitable-lol.github.io/flang/en/install.html) · [Commands](https://digitable-lol.github.io/flang/en/cli.html) · [Editor](https://digitable-lol.github.io/flang/en/editor.html) · [Processes and supervision](https://digitable-lol.github.io/flang/en/processes.html) |
 | see real programs | [Examples](https://digitable-lol.github.io/flang/en/examples.html) — the sets under [`docs/examples/`](docs/examples) |
-| read the contracts | [`docs/flang/SPEC.md`](docs/flang/SPEC.md) · [`docs/flang/self/SPEC.md`](docs/flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](docs/flang/proof/SPEC.md) · [`docs/flang/conc/SPEC.md`](docs/flang/conc/SPEC.md) · [`docs/ct/spec.md`](docs/ct/spec.md) |
+| read the contracts | [`docs/flang/SPEC.md`](docs/flang/SPEC.md) · [`docs/flang/self/SPEC.md`](docs/flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](docs/flang/proof/SPEC.md) · [`docs/flang/concurrency/SPEC.md`](docs/flang/concurrency/SPEC.md) · [`docs/ct/spec.md`](docs/ct/spec.md) |
 | know where it is going | [`docs/ROADMAP.md`](docs/ROADMAP.md) — five stages, what each changes for a developer · [`docs/what-provability-gives-today.md`](docs/what-provability-gives-today.md) · [`docs/road-to-1-0.md`](docs/road-to-1-0.md) |
 
 Naming rule: a file with no language suffix is English; the suffix `.ru.md` marks its Russian

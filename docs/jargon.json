@@ -354,7 +354,7 @@
       "зачем": "страница «Категории и функторы»"
     },
     {
-      "маска": "docs/flang/conc/SPEC.md",
+      "маска": "docs/flang/concurrency/SPEC.md",
       "вид": "проза",
       "зачем": "страница «Процессы и отказоустойчивость»"
     },
@@ -507,7 +507,7 @@
     "docs/benchmark-proof-cost-2.md": 10,
     "docs/benchmark-proof-cost.md": 9,
     "docs/benchmark-speed.md": 27,
-    "docs/flang/conc/SPEC.md": 196,
+    "docs/flang/concurrency/SPEC.md": 196,
     "docs/flang/proof/SPEC.md": 478,
     "docs/guide/bootstrap-circle.md": 2,
     "docs/guide/bootstrap-circle.ru.md": 1,

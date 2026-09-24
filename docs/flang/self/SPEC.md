@@ -87,7 +87,7 @@ JavaScript снята 20 августа 2026 (коммит `fe8e8a37`), и св�
 | `failures.flang` | «Множество отказов процесса» |
 | `distributed.flang` | «Узел flang» |
 
-Контракт этого слоя — `docs/flang/conc/SPEC.md`.
+Контракт этого слоя — `docs/flang/concurrency/SPEC.md`.
 
 ### Законы и категории
 

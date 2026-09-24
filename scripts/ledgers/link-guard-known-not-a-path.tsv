@@ -146,7 +146,7 @@ docs/editors/vscode/README.md	.vscode/tasks.json	локальный: редак�
 docs/examples/rosetta/WIKI.en.md	flang-outreach/rosetta-как-выложить.md	внешний: материалы flang-outreach, не файл этого дерева
 docs/flang/SPEC.md	json.py	учебный/иллюстративный пример на C или Python, не файл проекта
 docs/flang/SPEC.md	факты.json	иллюстративный пример входа в SPEC.md, не файл
-docs/flang/conc/DISTRIBUTED.md	flang/src/conc.mjs	явное отрицание в тексте: рядом сказано, что файл снят 20 августа 2026 (fe8e8a37)
+docs/flang/concurrency/DISTRIBUTED.md	flang/src/conc.mjs	явное отрицание в тексте: рядом сказано, что файл снят 20 августа 2026 (fe8e8a37)
 docs/flang/core/SPEC.md	natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 docs/flang/core/SPEC.md	src/natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 docs/flang/core/SPEC.md	src/parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева

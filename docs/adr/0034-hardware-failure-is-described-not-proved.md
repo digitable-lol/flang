@@ -123,7 +123,7 @@
   «let it crash» (`flang/self/failures.flang`, шапка). Коды:
   `FLANG_BUDGET_EXHAUSTED`, `FLANG_RECURSION_LIMIT`, `FLANG_BUILTIN_ARGS`,
   `FLANG_STOPPED`, `FLANG_MAILBOX_FULL`, `FLANG_MEASURE`, `FLANG_LINK_DOWN`,
-  `FLANG_PROCESS_ACCEPTS` (`docs/flang/conc/SPEC.md`, «Множество отказов процесса»,
+  `FLANG_PROCESS_ACCEPTS` (`docs/flang/concurrency/SPEC.md`, «Множество отказов процесса»,
   пункты 1–8). **Счёт видов в двух местах расходится:** спецификация нумерует
   восемь, шапка `failures.flang:70` говорит «девять видов». Кто прав — не
   разбирал; расхождение само по себе — замер: описание уже устарело в одном из

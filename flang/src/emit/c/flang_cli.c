@@ -1214,6 +1214,62 @@ static int cli_depth_key(int *argc, char **argv, size_t *depth) {
   return 0;
 }
 
+/*
+ * Снимает `--предел-шагов N` (латиницей `--step-limit N`) — БЛИЗНЕЦ ключа
+ * глубины, и живёт он здесь по той же причине: предел прогона нужен КАЖДОЙ
+ * команде, а не одной.
+ *
+ * До 24 сентября 2026 ключ разбирала только `check`, у себя. Следствие было
+ * не косметическое: поднять предел прогона ПЕЧАТИ было нечем, и единственным
+ * способом оставалось скопировать исходники каталога bootstrap, поправить в
+ * копии `#define FL_MAX_STEPS` рукой, собрать `make` и звать печать через
+ * FLANG=.
+ * Три шага из четырёх — редактор и компилятор C, то есть выход из языка
+ * (задача 9902). Здесь ключ снимается до команды, и печать слушает его так же,
+ * как `check`.
+ *
+ * Разбор строгий — только цифры, ноль не годится: `ctx->max_steps == 0` в
+ * рантайме выключает счёт совсем, а ключ этот про «поднять осознанно», а не
+ * про «снять». Тот же `cli_whole`, что у глубины, и та же строгость, что была
+ * у `human_steps` в разборе `check`: эталон на flang (flang/self/cli.flang)
+ * «1e3» не принимает, и свидетель обязан отказывать там же.
+ *
+ * Умолчание рантайма ставится ЗДЕСЬ, в main, то есть раньше, чем заводится
+ * контекст проверяющего (`fl_ctx_init(&repl_ctx, …)` внутри run_main), а тот
+ * берёт свой предел из `fl_max_steps_default()`. Поэтому `check` ведёт себя
+ * ровно как прежде, хотя своей ветки разбора у него больше нет.
+ *
+ * Даёт 0 — разобрано; 2 — ключ назван, а число при нём негодное.
+ */
+static int cli_steps_key(int *argc, char **argv, size_t *steps) {
+  int read = 1;
+  int write = 1;
+  int count = *argc;
+  while (read < count) {
+    const char *word = argv[read];
+    if (strcmp(word, "--предел-шагов") == 0 || strcmp(word, "--step-limit") == 0) {
+      if (read + 1 >= count) {
+        fputs("flang --предел-шагов: не названо число шагов\n", stderr);
+        return 2;
+      }
+      if (!cli_whole(argv[read + 1], steps)) {
+        fprintf(stderr,
+                "flang --предел-шагов: «%s» — не целое число шагов больше нуля\n",
+                argv[read + 1]);
+        return 2;
+      }
+      read += 2;
+      continue;
+    }
+    argv[write] = argv[read];
+    write += 1;
+    read += 1;
+  }
+  argv[write] = NULL;
+  *argc = write;
+  return 0;
+}
+
 typedef struct cli_run {
   int argc;
   char **argv;
@@ -1228,12 +1284,20 @@ static void cli_body(void *raw) {
 int main(int argc, char **argv) {
   cli_run run;
   size_t depth = 0;
+  size_t steps = 0;
   int bad = cli_depth_key(&argc, argv, &depth);
   if (bad != 0) {
     return bad;
   }
   if (depth != 0) {
     fl_max_depth_default_set(depth);
+  }
+  bad = cli_steps_key(&argc, argv, &steps);
+  if (bad != 0) {
+    return bad;
+  }
+  if (steps != 0) {
+    fl_max_steps_default_set(steps);
   }
   run.argc = argc;
   run.argv = argv;

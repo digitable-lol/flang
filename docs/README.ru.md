@@ -239,7 +239,7 @@ fl_status search_insert_position_mesto_vstavki(fl_ctx *ctx, fl_value elementy, f
 | понять доказательства | [Четыре покрытия](four-coverages.md) · [Что доказано](https://digitable-lol.github.io/flang/what-is-proved.html) · [Какие обещания ядро берёт](https://digitable-lol.github.io/flang/what-the-kernel-accepts.html) · [Ядро отказало: чья это ошибка](https://digitable-lol.github.io/flang/proof-refused.html) |
 | запустить где-то | [Установка](https://digitable-lol.github.io/flang/install.html) · [Справочник команд](https://digitable-lol.github.io/flang/cli.html) · [Редактор](https://digitable-lol.github.io/flang/editor.html) · [Процессы, надзор, распределённость](https://digitable-lol.github.io/flang/processes.html) |
 | посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`docs/examples/`](examples) |
-| прочесть контракты | [`docs/flang/SPEC.md`](flang/SPEC.md) · [`docs/flang/self/SPEC.md`](flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`docs/flang/conc/SPEC.md`](flang/conc/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
+| прочесть контракты | [`docs/flang/SPEC.md`](flang/SPEC.md) · [`docs/flang/self/SPEC.md`](flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`docs/flang/concurrency/SPEC.md`](flang/concurrency/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
 | узнать, куда это идёт | [`docs/ROADMAP.md`](ROADMAP.md) — пять этапов и что каждый меняет для разработчика · [`docs/what-provability-gives-today.ru.md`](what-provability-gives-today.ru.md) · [`docs/road-to-1-0.md`](road-to-1-0.md) |
 
 Правило имён: файл без языкового суффикса — английский; суффикс `.ru.md` отмечает его русскую

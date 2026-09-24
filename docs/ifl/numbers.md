@@ -66,7 +66,7 @@
 > 2. **«Конкурентность печатают 2 цели из 8».** Три: `c`, `elixir`, **`js`**.
 > 3. **«Остальные шесть выбрасывают процессы молча, код возврата 0».** Пять, и
 >    **не молча**: go, rust, python, java, csharp выходят с кодом **1** и
->    диагностикой `FLANG_CONC_UNSUPPORTED`. `docs/flang/conc/SPEC.md:12-16` датирует
+>    диагностикой `FLANG_CONC_UNSUPPORTED`. `docs/flang/concurrency/SPEC.md:12-16` датирует
 >    перемену 12 августа.
 > 4. **«Рантайм C не содержит ни `pthread`, ни `setrlimit`, ни `RLIMIT_STACK`».**
 >    `flang/src/emit/c/flang_conc.c:47` подключает `<pthread.h>`, использует
@@ -162,7 +162,7 @@ SPEC отдельным коммитом — к подаче оно отноше
 | замкнутое множество отказов — пять видов | было `node -e 'import("./flang/src/failures.mjs")…'`. 9 сентября 2026: «Коды отказа», `flang/self/failures.flang:192`, постусловие «кодов отказа ровно **одиннадцать**» |
 | `FLANG_MEMORY` рантайм C выдаёт, а в множестве его нет | `grep -n FL_CODE_MEMORY flang/src/emit/c/flang_runtime.h` (строка 228) плюс проверка вхождения в множество — раздел 4 скрипта |
 | в C сторож глубины — счётчик кадров на стеке главного потока; семь остальных целей заводят поток с большим стеком | `grep -n 'pthread\|setrlimit\|RLIMIT_STACK' flang/src/emit/c/*.c` (пусто) против `flang/src/emit/rust/flang_cli.rs:34-51`, `flang/src/emit/java/Flang.java:50,72`, `flang/src/emit/csharp/Flang.cs:53,64`, `flang/src/emit/python/flang_runtime.py:439,456-479` |
-| рабочего параллельного режима на потоках ОС нет | `docs/flang/conc/SPEC.md:12-15`, `docs/flang/conc/SPEC.md:1549-1552`, `docs/flang/conc/RESILIENCE.md:940-972`; `grep -rn pthread flang/src/emit/c/` пусто |
+| рабочего параллельного режима на потоках ОС нет | `docs/flang/concurrency/SPEC.md:12-15`, `docs/flang/concurrency/SPEC.md:1549-1552`, `docs/flang/concurrency/RESILIENCE.md:940-972`; `grep -rn pthread flang/src/emit/c/` пусто |
 | самоприменённый двоичный файл не умеет вычислять — только проверять и печатать C | `README.md:114-126` |
 
 ## Набор тестов целиком

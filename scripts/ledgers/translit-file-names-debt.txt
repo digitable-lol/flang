@@ -97,7 +97,7 @@ flang/test/fixtures/fts/examples/real-world/zhi-shi.fts
 # Файл workflow на GitHub — сущность с ручным выключением: переименование заводит
 # новый, включённый workflow. Переименовывать только вместе с выключением на GitHub.
 #
-# Три пробы-двойника узла на Node: названы в docs/flang/conc/RESILIENCE.md и
+# Три пробы-двойника узла на Node: названы в docs/flang/concurrency/RESILIENCE.md и
 # flang/concurrency/bin/peer.py — вне стека инструментов; переименовывать втроём и
 # вместе с этими упоминаниями.
 flang/test/nadzor-uzla.test.mjs

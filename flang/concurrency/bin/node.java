@@ -314,7 +314,7 @@ final class HozyainUzla {
 
   /* ── провод: те же метки, что у остальных хозяев ─────────────────────────
      Перевод, а не решение: правило «у каждого значения метка одной буквой»
-     живёт в docs/flang/conc/DISTRIBUTED.md, и разойтись с ним нельзя. */
+     живёт в docs/flang/concurrency/DISTRIBUTED.md, и разойтись с ним нельзя. */
   private static String zakodirovat(Value znachenie) {
     switch (znachenie.tag) {
       case Value.TAG_NOTHING:

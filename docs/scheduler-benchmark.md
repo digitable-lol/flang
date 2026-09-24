@@ -8,8 +8,8 @@
 
 ## Что мерили
 
-Модель конкурентности лежит в `docs/flang/conc/SPEC.md` (210 КБ),
-`docs/flang/conc/RESILIENCE.md`, `docs/flang/conc/DISTRIBUTED.md`. Есть свидетельский
+Модель конкурентности лежит в `docs/flang/concurrency/SPEC.md` (210 КБ),
+`docs/flang/concurrency/RESILIENCE.md`, `docs/flang/concurrency/DISTRIBUTED.md`. Есть свидетельский
 планировщик на JavaScript и три напечатанных:
 
 | Цель | Файл | Что это |

@@ -159,7 +159,7 @@ JavaScript: 48 файлов, 56 072 строки. Компилятор оста�
 
 **Комментарии в корпусе и спецификациях** переписаны на живые адреса
 (`docs/спецификации/*`, `docs/benchmark/05`, `11`, `13`, `docs/zamer-teorkat`,
-`docs/flang/conc/DISTRIBUTED.md`, `flang/concurrency/examples/measure.flang`,
+`docs/flang/concurrency/DISTRIBUTED.md`, `flang/concurrency/examples/measure.flang`,
 `flang/proof/examples/*`, `flang/proof/kernel.flang`, проба Ч7104,
 `fspec/policy.flang`, `flang/test/встроенные-формы.flang`,
 `web/wasm/demo/index.html`). Два довода оказались **ложными сегодня**, и это

@@ -26,7 +26,7 @@
 
 Два записанных препятствия оказались ложными, оба сняты прогоном: шапка
 `flang/conc/supervisor.flang` обещает 126 замечаний у `flang/self/conc.flang` — их
-ноль; `docs/flang/conc/RESILIENCE.md` ссылается на `flang/src/hotswap.mjs`, которого не
+ноль; `docs/flang/concurrency/RESILIENCE.md` ссылается на `flang/src/hotswap.mjs`, которого не
 существует. Обе записи надо поправить — это два коротких побочных дела внутри
 этой задачи.
 
@@ -120,7 +120,7 @@ csharp, elixir, python и js и решают там одинаково.
   (прогон с пределом 2 мин снят по таймауту, код 143), а `scheduler.flang` рядом
   проверяется за 1,9 с;
 * `flang/src/hotswap.mjs` в дереве нет (`ls` → «No such file or directory»): в
-  `flang/src` остался один `emit`. Ссылки в `docs/flang/conc/RESILIENCE.md` поправлены,
+  `flang/src` остался один `emit`. Ссылки в `docs/flang/concurrency/RESILIENCE.md` поправлены,
   туда же дописан шаг **Е2** — «веление замены доезжает до живого узла».
 
 ## Третий адрес: `«замены»` в `flang/self/conc.flang`

@@ -8,6 +8,16 @@ The source of this page is the program itself: `flang --help` and
 --version`) on 11 September 2026: every key and every output shown below was run
 on it.
 
+**Re-checked in part on 24 September 2026 against binary 0.7.21.** Of the 21
+examples on this page, 5 name real files of this tree and can be re-run; they
+were, and 3 of the 5 had drifted — two `io` runs now exit `3` instead of `0`
+(an unproved plan is refused by default, ADR-0045) and the shortcut count in the
+`Целость` output moved from 102 to 147. All three are corrected below, together
+with the `io` usage line, its key table and its permission list. The remaining
+16 examples are written against a fictional `привет.flang` that this tree does
+not contain: they cannot be re-run at all and still rest on the 11 September
+check. Task 7731 is about closing that.
+
 ## Cheat sheet
 
 | Command | What it does | Typical call |
@@ -431,6 +441,7 @@ flang facts <файл.flang> --claims '["…"]' [--facts факты.json] [--ste
 | `--facts файл` | Facts as a JSON object. Without the key there are no facts |
 | `--steps N` | The evaluation step limit. 10000 by default |
 | `--pretty` | JSON with indentation |
+| `--` | The boundary: everything after this single argument is an argument OF THE PLAN, not a key of the command. The order `Прочитать доводы` hands them back as a list of strings, in order and unparsed |
 
 Codes: `0` — confirmed; `1` — **refuted**, not "broke": the verdict still goes to
 standard output, and the code is there so a build fails on it; `2` — the call was
@@ -463,7 +474,7 @@ are checked with ordinary examples — no files, no network.
 ```bash
 flang io <файл.flang> [--plan 'Имя'] [--max-orders N] [--seed N] [--in-dir]
                       [--max-steps N] [--timeout N] [--pretty] [--trust]
-                      [--unproven refuse|warn|allow]
+                      [--unproven refuse|warn|allow] [-- довод…]
 ```
 
 | Key | What it does |
@@ -487,10 +498,14 @@ shell quotes.** Guillemets are how the language writes names in source, but the
 `--plan` key takes the name exactly as given, guillemets included:
 
 ```bash
-$ flang io ярлыки.flang --plan «Целость»
+$ flang io ярлыки.flang --plan «Целость» --trust
+на веру: доказанность не считалась — запуск по ключу --trust
 {"error":"не найден план ««Целость»»", … "code":"FLANG_UNKNOWN_PLAN" …}
-$ flang io ярлыки.flang --plan Целость
-{"plan":"Целость","result":"ярлыков 102; …
+$ echo $?
+3
+$ flang io ярлыки.flang --plan Целость --trust
+на веру: доказанность не считалась — запуск по ключу --trust
+{"plan":"Целость","result":"ярлыков 147; …
 $ echo $?
 0
 ```
@@ -503,8 +518,9 @@ $ flang io flang/scripts/kernel-forgeries.fscript --plan «Аксиом ноль
 flang io: непонятный ключ «ноль»»
 $ echo $?
 2
-$ flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль'
-{"plan":"Аксиом ноль","result":"… аксиом ноль, нарушений 0", …
+$ flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль' --trust
+на веру: доказанность не считалась — запуск по ключу --trust
+{"plan":"Аксиом ноль","result":"подделки отвергнуты: 36 файлов каталога … аксиом ноль, нарушений 0", …
 $ echo $?
 0
 ```
@@ -514,8 +530,8 @@ about this: there the guillemets mark the slot where a name goes, not part of th
 name. In 0.7.17 the help still says so; the working form is recorded here.
 
 Permissions are narrowed one at a time: `--no-read`, `--no-write`, `--no-net`,
-`--no-clock`, `--no-random`, `--no-spawn`. The default is "everything is
-allowed": running a program with this command is your consent to what it does.
+`--no-clock`, `--no-random`, `--no-spawn`, `--no-env`, `--no-args`,
+`--no-screen`. The default is "everything is allowed": running a program with this command is your consent to what it does.
 
 `io` has no `--args` key. Arguments are not passed to a plan: a plan starts from
 its own "начинает с" function, not from call arguments.
@@ -530,7 +546,7 @@ $ echo $?
 There **is** a wait time, and it is `--timeout N`, in milliseconds, 30000 by
 default. This page said the opposite until 29 August 2026 and showed a refusal
 that the binary does not print; the key is accepted, checks its value
-(`--timeout 0` and `--timeout abc` are refused with exit 2), and sixteen of this
+(`--timeout 0` and `--timeout abc` are refused with exit 2), and twenty-three of this
 tree's own shortcuts pass it (`ярлыки.flang`). Beyond it the run is bounded by
 the number of orders and the number of steps.
 

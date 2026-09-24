@@ -1426,4 +1426,4 @@
 
 тотальная функция «Объявление ярлыка журнал:проверка»
   возвращает строка
-  "bootstrap/flang test && bootstrap/flang test scripts/site/build-changelog.fscript && bootstrap/flang io scripts/site/build-changelog.fscript --plan 'Журнал не отстал' --max-steps 2000000000 — печатник проверен своими примерами (прежний --self-test), и журнал совпадает с историей"
+  "bootstrap/flang test && bootstrap/flang test scripts/site/build-changelog.fscript && bootstrap/flang io scripts/site/build-changelog.fscript --plan 'Журнал не отстал' --max-steps 2000000000 — генератор кода проверен своими примерами (прежний --self-test), и журнал совпадает с историей"

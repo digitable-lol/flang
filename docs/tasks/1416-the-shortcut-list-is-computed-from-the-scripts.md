@@ -465,7 +465,7 @@ scripts/guards/hand-written-lists.sh --check` — «новых 59, мёртвы�
 | `транслит:проверка`, `транслит:подлог` | `scripts/guards/translit-file-names-guard.fscript` |
 | `кириллица:проверка` | `scripts/guards/cyrillic-file-names-guard.fscript` |
 | `без-пакета:проверка` | `scripts/guards/no-package-json-guard.fscript` |
-| `раскрутка`, `раскрутка:проверка`, `семя:быстро`, `строки:проверка` | `scripts/raskrutka.sh` |
+| `раскрутка`, `раскрутка:проверка`, `семя:быстро`, `строки:проверка` | `scripts/bootstrap-reprint.sh` |
 | `семя:освежить`, `семя:можно-быстро` | `scripts/seed/seed-refresh.sh` |
 | `двоичный:приёмка` | `scripts/seed/new-binary-acceptance.sh` |
 | `точка:проверка` | `scripts/seed/bootstrap-point-by-binary.fscript` |
@@ -490,7 +490,7 @@ scripts/guards/hand-written-lists.sh --check` — «новых 59, мёртвы�
 * **`сборка`** — `make -C bootstrap`. Исполнителей сборщик знает ровно шесть
   (`bootstrap/flang io|test|check`, `node`, `bash`, `sh`), `make` среди них нет.
   Файл же — `bootstrap/Makefile`, напечатанный компилятором и сверяемый байт
-  в байт (`sh scripts/raskrutka.sh --check`): дописанная руками строка валит
+  в байт (`sh scripts/bootstrap-reprint.sh --check`): дописанная руками строка валит
   сверку и исчезает при первой перепечатке. Тот же довод стоит в шапке `ярлык`
   про цель раскрутки.
 * **`умения:улики`** — `bootstrap/flang check --proof flang/proof/map/abilities.flang`.

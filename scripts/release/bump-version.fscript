@@ -1186,4 +1186,4 @@
 
 тотальная функция «Объявление ярлыка версия»
   возвращает строка
-  "bootstrap/flang io -- <ЧИСЛО> — поднять версию одной командой: число из источника scripts/release/emit-package.flang разносится в .flangrc, flang_repl.c, .TH страницы man и три числа формулы Homebrew; ./ярлык версия 0.7.13"
+  "bootstrap/flang io -- — поднять версию одной командой: число из источника scripts/release/emit-package.flang разносится в .flangrc, flang_repl.c, .TH страницы man и три числа формулы Homebrew; ./ярлык версия 0.7.13"

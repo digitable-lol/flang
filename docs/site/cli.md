@@ -14,7 +14,7 @@ were, and 3 of the 5 had drifted — two `io` runs now exit `3` instead of `0`
 (an unproved plan is refused by default, ADR-0045) and the shortcut count in the
 `Целость` output moved from 102 to 147. All three are corrected below, together
 with the `io` usage line, its key table and its permission list. The remaining
-16 examples are written against a fictional `привет.flang` that this tree does
+16 examples are written against a fictional привет.flang that this tree does
 not contain: they cannot be re-run at all and still rest on the 11 September
 check. Task 7731 is about closing that.
 

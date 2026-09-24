@@ -22,7 +22,7 @@
 `flang/self/cli.flang` — ЭТАЛОН: по нему `flang/scripts/cli-keys-guard.fscript`
 судит двоичный, но в семя он не печатается и справки не даёт:
 
-    awk '/^[0-9a-f]{64}  /{print $2}' scripts/otpechatok-semeni | grep -c cli.flang  → 0
+    awk '/^[0-9a-f]{64}  /{print $2}' scripts/seed-fingerprint | grep -c cli.flang  → 0
     grep -c 'cli_flang' bootstrap/compiler_flang.c                                  → 0
 
 Цена правки поэтому НЕ 21 час печати: `flang/src/emit/c/*` — копируемая часть

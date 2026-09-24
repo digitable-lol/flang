@@ -200,7 +200,7 @@ done
 
 | файл | строк |
 |---|---:|
-| `scripts/raskrutka.sh` | 3513 |
+| `scripts/bootstrap-reprint.sh` | 3513 |
 | `scripts/seed/seed-refresh.sh` | 228 |
 | `scripts/guards/seed-parses-sources-guard.sh` | 220 |
 | `scripts/bootstrap-c.sh` | 206 |

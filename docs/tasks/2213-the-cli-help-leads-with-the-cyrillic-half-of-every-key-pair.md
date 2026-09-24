@@ -123,7 +123,7 @@ bootstrap/flang check flang/self/cli.flang
 узнает новые ключи из нового семени». Проверено — это не так, и вот чем.
 
 ```sh
-awk '/^[0-9a-f]{64}  /{print $2}' scripts/otpechatok-semeni | grep -c cli.flang
+awk '/^[0-9a-f]{64}  /{print $2}' scripts/seed-fingerprint | grep -c cli.flang
 #   0    — cli.flang нет среди 55 входов отпечатка печати
 grep -c 'cli_flang' bootstrap/compiler_flang.c
 #   0    — ни одного имени из cli.flang в напечатанном семени (671 161 строка)

@@ -2,7 +2,7 @@
 
 Набор проб сверщика (`flang/proof/checker/tests/`) с 22 сентября 2026 назван
 по-английски — [ADR-0046](../../../../adr/0046-the-proof-directory-is-named-in-english.md),
-задача [6421](../../../../tasks/6421-the-proof-directory-needs-a-layout-and-a-naming-rule.md),
+задача [6421](../../../../tasks/completed/6421-the-proof-directory-needs-a-layout-and-a-naming-rule.md),
 порция 2. Проза внутри файлов, язык самого flang и сообщения сверщика остались
 русскими: судится ИМЯ ФАЙЛА, а не текст.
 

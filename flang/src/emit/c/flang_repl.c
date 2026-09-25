@@ -10076,6 +10076,21 @@ static const char *text_find(const char *hay, size_t bytes, const char *needle) 
 static const char VERDICT_TAIL[] = " — запуск только по явному согласию: ";
 
 /*
+ * ЧТО СКАЗАЛ ВЕРДИКТ — строка ядра как есть, байтами арены. Печатью занят
+ * `verdict_print`; эта запись нужна ради другого: по ней хозяин видит, что
+ * отказ пришёл С ЗАМЕЧАНИЯМИ ПРОВЕРКИ, и тогда НЕ зовёт ведомость — на такой
+ * программе она не печатается по построению («Ведомость исходников» отдаёт
+ * «годно» равным нет, едва диагностики непусты), и второй проход был бы
+ * потрачен на то, чтобы узнать это заново. Замер 25 сентября 2026: на
+ * `numbers.flang` со сломанным примером тот проход стоил 2,64 с и не приносил
+ * ни одного имени.
+ */
+typedef struct {
+  const char *say;
+  size_t bytes;
+} verdict_said;
+
+/*
  * СТРОКА ВЕРДИКТА — ЧЕЛОВЕКУ, И ТЕМ ЖЕ ПИСЬМОМ, КАКИМ ОН СПРОСИЛ.
  *
  * Три случая, и во всех трёх слова вердикта (сколько утверждений, сколько
@@ -10140,14 +10155,19 @@ static void verdict_print(const char *say, size_t bytes, bool ran, const unprove
  * слово, а вердикт при этом уже сказан первым.
  */
 static bool verdict_take(fl_value out, const char *name, fl_value *inner, int *code,
-                         const unproven_choice *how, bool silent) {
+                         const unproven_choice *how, bool silent, verdict_said *said) {
   fl_value field = fl_nothing();
   const char *say = NULL;
   size_t say_bytes = 0;
   bool ran = val_field(out, "запущено", &field) && field.tag == FL_FLAG && field.as.flag;
-  if (!silent && val_field(out, "строка", &field) && val_text(field, &say, &say_bytes) &&
-      say_bytes > 0) {
-    verdict_print(say, say_bytes, ran, how);
+  if (val_field(out, "строка", &field) && val_text(field, &say, &say_bytes) && say_bytes > 0) {
+    if (said != NULL) {
+      said->say = say;
+      said->bytes = say_bytes;
+    }
+    if (!silent) {
+      verdict_print(say, say_bytes, ran, how);
+    }
   }
   if (ran) {
     if (val_field(out, name, inner)) {
@@ -10178,7 +10198,8 @@ static bool verdict_take(fl_value out, const char *name, fl_value *inner, int *c
  */
 static bool verdict_gate(const char *entry, fl_value *args, size_t count, size_t trust_at,
                          const char *name, fl_value *inner, int *code,
-                         const unproven_choice *how, int fail_code, const char *fail_say) {
+                         const unproven_choice *how, int fail_code, const char *fail_say,
+                         verdict_said *said) {
   fl_value out = fl_nothing();
   args[trust_at] = fl_flag(how->mode == UNPROVEN_ALLOW);
   if (repl_call(entry, args, count, &out) != FL_OK) {
@@ -10188,7 +10209,7 @@ static bool verdict_gate(const char *entry, fl_value *args, size_t count, size_t
     *code = fail_code;
     return false;
   }
-  if (verdict_take(out, name, inner, code, how, false)) {
+  if (verdict_take(out, name, inner, code, how, false, said)) {
     return true;
   }
   if (how->mode != UNPROVEN_WARN || *code != 3) {
@@ -10203,7 +10224,442 @@ static bool verdict_gate(const char *entry, fl_value *args, size_t count, size_t
     return false;
   }
   *code = 0;
-  return verdict_take(out, name, inner, code, how, true);
+  return verdict_take(out, name, inner, code, how, true, said);
+}
+
+/* ═════════ ОТКАЗ, КОТОРЫЙ НАЗЫВАЕТ НЕДОКАЗАННОЕ ПОИМЁННО (задача 1410) ══════ */
+
+/*
+ * ДО ЭТОЙ ПРАВКИ ОТКАЗ ЗАПУСКА ГОВОРИЛ ТОЛЬКО ЧИСЛА.
+ *
+ * Замер 25 сентября 2026, этот двоичный, `flang/stdlib/numbers.flang`:
+ *
+ *   flang run … --function «Чётное»
+ *     не доказано: утверждений 58: доказано 39, сетка 19, на веру 0
+ *     — запуск только по явному согласию: --на-веру
+ *
+ * Из 19 утверждений «на сетке» строка отказа называет 0: ни одного имени, ни
+ * одной причины, ни слова о том, что дописать. Те же 19 ведомость
+ * (`flang check … --proof`) называет ВСЕ 19 и у всех 19 пишет причину. То есть
+ * знание у двоичного было, а до человека не доходило — ему доставался счёт, по
+ * которому нечего делать.
+ *
+ * ПОЧЕМУ ВТОРЫМ ВЫЗОВОМ, А НЕ ПОЛЕМ ОТВЕТА. «Итог запуска»
+ * (`flang/self/bootstrap/compiler.flang`) несёт четыре поля — «строка», «код»,
+ * «запущено», «прогон»; построчной ведомости в нём нет, а завести её там значит
+ * поменять объект внутри замыкания, то есть ждать перепечатки. Поэтому хозяин,
+ * получив отказ, спрашивает ведомость отдельно — «Ведомость исходников», ту же
+ * самую, что печатает `check --proof`. Двух правд это не заводит: числа в
+ * строке отказа по-прежнему ядра, здесь печатаются только имена и причины,
+ * посчитанные тем же ядром.
+ *
+ * ЦЕНА НАЗВАНА, ПОТОМУ ЧТО ОНА ЕСТЬ: ведомость — второй проход доказательства.
+ * Замер 25 сентября 2026 на этой машине (`cc -O2 -flto`): `numbers.flang` —
+ * запуск 2,30 с, ведомость 6,21 с; `lists.flang` — 5,17 с и 12,87 с. Платится
+ * она ТОЛЬКО на отказе: доказанная программа второго прохода не видит, её
+ * никто не спрашивает.
+ *
+ * СПИСОК СНИМАЕТСЯ С МАШИННОГО ВИДА ВЕДОМОСТИ, А НЕ СО СЛОВ, и это тот же
+ * довод, по которому с него снимается приговор в `proof_file`: слова ведомости
+ * писаны человеку и меняются от редакции к редакции, а поля JSON названы
+ * объектами «Строка утверждения» и «Строка закона ведомости» в
+ * `flang/self/proof.flang` и меняются вместе с ними.
+ *
+ * ПРИЧИНУ НЕСЁТ ПОЛЕ «says» ВЕДОМОСТИ, а не своя выдумка хозяина: тогда человек,
+ * пришедший из отказа в `check --proof`, читает там ТУ ЖЕ строку, а не вторую
+ * версию той же новости. Своё у хозяина ровно одно — строка «чтобы закрыть»:
+ * ведомость говорит, чем утверждение держится, и не говорит, что дописать.
+ */
+
+/* Конец строки JSON: `at` смотрит на открывающую кавычку, ответ — за
+   закрывающей. Обратная косая уводит следующий байт из счёта. */
+static size_t json_string_end(const char *text, size_t at, size_t to) {
+  at += 1;
+  while (at < to) {
+    if (text[at] == '\\') {
+      at += 2;
+      continue;
+    }
+    if (text[at] == '"') {
+      return at + 1;
+    }
+    at += 1;
+  }
+  return to;
+}
+
+/* Конец значения: строка, объект, список или скаляр. Вложенность считается со
+   строками, иначе скобка внутри имени закрыла бы чужой объект. */
+static size_t json_value_end(const char *text, size_t at, size_t to) {
+  size_t depth = 0;
+  if (at < to && text[at] == '"') {
+    return json_string_end(text, at, to);
+  }
+  if (at < to && (text[at] == '{' || text[at] == '[')) {
+    while (at < to) {
+      if (text[at] == '"') {
+        at = json_string_end(text, at, to);
+        continue;
+      }
+      if (text[at] == '{' || text[at] == '[') {
+        depth += 1;
+      } else if (text[at] == '}' || text[at] == ']') {
+        depth -= 1;
+        if (depth == 0) {
+          return at + 1;
+        }
+      }
+      at += 1;
+    }
+    return to;
+  }
+  while (at < to && text[at] != ',' && text[at] != '}' && text[at] != ']') {
+    at += 1;
+  }
+  return at;
+}
+
+/*
+ * ПРЯМОЕ ПОЛЕ ОБЪЕКТА: «"ключ":значение» на ПЕРВОМ уровне отрезка [from, to).
+ * Вложенные объекты перепрыгиваются целиком, и это не придирка: у утверждения,
+ * доказанного индукцией, внутри поля «induction» лежат свои «rule» и «cases», и
+ * поиск по всему отрезку принёс бы чужое слово.
+ */
+static bool json_field_at(const char *text, size_t from, size_t to, const char *key,
+                          size_t *value_from, size_t *value_to) {
+  const size_t klen = strlen(key);
+  size_t at = from;
+  while (at < to) {
+    size_t key_from = 0;
+    size_t key_to = 0;
+    bool same = false;
+    if (text[at] != '"') {
+      at += 1;
+      continue;
+    }
+    key_from = at + 1;
+    at = json_string_end(text, at, to);
+    if (at >= to) {
+      return false;
+    }
+    key_to = at - 1;
+    while (at < to && (text[at] == ' ' || text[at] == '\t' || text[at] == '\n')) {
+      at += 1;
+    }
+    if (at >= to || text[at] != ':') {
+      continue;
+    }
+    at += 1;
+    while (at < to && (text[at] == ' ' || text[at] == '\t' || text[at] == '\n')) {
+      at += 1;
+    }
+    same = key_to > key_from && (size_t)(key_to - key_from) == klen &&
+           memcmp(text + key_from, key, klen) == 0;
+    *value_from = at;
+    at = json_value_end(text, at, to);
+    if (same) {
+      *value_to = at;
+      return true;
+    }
+  }
+  return false;
+}
+
+/* Строка прямого поля, без кавычек. Пустышка («null») строкой не считается:
+   «имени нет» и «имя пустое» — разные новости. */
+static bool json_text_at(const char *text, size_t from, size_t to, const char *key,
+                         const char **out, size_t *bytes) {
+  size_t value_from = 0;
+  size_t value_to = 0;
+  if (!json_field_at(text, from, to, key, &value_from, &value_to)) {
+    return false;
+  }
+  if (value_to < value_from + 2 || text[value_from] != '"' || text[value_to - 1] != '"') {
+    return false;
+  }
+  *out = text + value_from + 1;
+  *bytes = (size_t)(value_to - value_from) - 2;
+  return true;
+}
+
+/* Список «"имя":[…]» целиком: открывающая скобка — часть образца, и это она
+   отличает список утверждений («"claims":[…]») от их итога («"claims":{…}»). */
+static bool json_array_at(const char *text, size_t bytes, const char *key, size_t *start,
+                          size_t *stop) {
+  const size_t klen = strlen(key);
+  size_t at = 0;
+  for (at = 0; at + klen + 4 <= bytes; at += 1) {
+    if (text[at] != '"' || memcmp(text + at + 1, key, klen) != 0 || text[at + 1 + klen] != '"' ||
+        text[at + 2 + klen] != ':' || text[at + 3 + klen] != '[') {
+      continue;
+    }
+    *start = at + 4 + klen;
+    *stop = json_value_end(text, at + 3 + klen, bytes);
+    if (*stop <= *start) {
+      return false;
+    }
+    *stop -= 1;
+    return true;
+  }
+  return false;
+}
+
+/* Следующий объект списка: внутренности между его скобками. */
+static bool json_object_next(const char *text, size_t *at, size_t to, size_t *start,
+                             size_t *stop) {
+  while (*at < to && text[*at] != '{') {
+    *at += 1;
+  }
+  if (*at >= to) {
+    return false;
+  }
+  *start = *at + 1;
+  *at = json_value_end(text, *at, to);
+  if (*at <= *start) {
+    return false;
+  }
+  *stop = *at - 1;
+  return true;
+}
+
+/* Печать строки ведомости в поток ошибок: JSON-побеги разворачиваются, иначе
+   имя с кавычкой приезжало бы человеку с косой чертой. */
+static void json_say(const char *text, size_t bytes) {
+  size_t at = 0;
+  for (at = 0; at < bytes; at += 1) {
+    if (text[at] != '\\' || at + 1 >= bytes) {
+      fputc(text[at], stderr);
+      continue;
+    }
+    at += 1;
+    if (text[at] == 'n') {
+      fputc('\n', stderr);
+    } else if (text[at] == 't') {
+      fputc('\t', stderr);
+    } else if (text[at] == 'r') {
+      /* Возврата каретки в вердикте не нужно: строка своя у каждого пункта. */
+    } else if (text[at] == 'u') {
+      fputs("\\u", stderr);
+    } else {
+      fputc(text[at], stderr);
+    }
+  }
+}
+
+/*
+ * ВЕРДИКТЫ, КОТОРЫЕ НЕ «ДОКАЗАНО», И ЧТО ЗАКРЫВАЕТ КАЖДЫЙ.
+ *
+ * Слова — те же, что у ведомости, и это не украшение: человек, прочитав отказ,
+ * пойдёт в `check --proof`, и разойдись слова — он искал бы там то, чего в
+ * ведомости не написано. Список закрыт по «Строке утверждения» и «Строке закона
+ * ведомости» в `flang/self/proof.flang`; вердикт не из списка несётся как есть,
+ * латиницей, а не подменяется догадкой.
+ *
+ * Строка «чтобы закрыть» — ЕДИНСТВЕННОЕ, что здесь сказано своими словами, и
+ * сказана она по прогонам этого дерева, а не по вкусу. «Сетка» закрывается
+ * двумя разными движениями, и оба видны в `flang/stdlib`: соседние утверждения
+ * «Абсолютного значения» — «…когда число неотрицательно» доказано правилом
+ * «разбор цели по условию», а «…когда число неположительно» на сетке, и разница
+ * между ними ровно одна: первое условие совпадает с ветвью тела, второе нет.
+ * Второй путь — теорема: `flang/stdlib/dictionary.flang:224`. Она же
+ * показывает, чего теорема НЕ даёт: шаг «по свойству», опирающийся на
+ * недоказанное, даёт «доказано при условии», а не «доказано».
+ */
+typedef struct {
+  const char *tag;
+  const char *word;
+  const char *close;
+} unproven_kind;
+
+static const unproven_kind UNPROVEN_KINDS[] = {
+    {"grid", "сетка",
+     "написать при утверждении «теорема … утверждаем … следовательно доказано» либо переписать его "
+     "условие так, чтобы оно совпало с ветвью тела, — тогда цель сводит правило «разбор цели по "
+     "условию»"},
+    {"declared", "объявлено, не доказано",
+     "доказательства при утверждении нет вовсе — ни теоремы, ни примеров: написать теорему"},
+    {"proved-conditional", "доказано при условии",
+     "доказать ту посылку, которую шаг «по свойству» засчитал фактом: пока она недоказана, "
+     "утверждение стоит ровно настолько же"},
+    {"refused", "отвергнуто ядром",
+     "цель не свелась к названным фактам: менять формулировку утверждения или тело функции"},
+    {"violated", "НАРУШЕНО",
+     "найден контрпример: неправо либо тело, либо само утверждение — сперва решить, что из двух"},
+    {"assumed", "на веру",
+     "за утверждением не стоит ни одной пробы: посчитать его хоть примерами, доказать — теоремой"},
+};
+
+#define UNPROVEN_KIND_COUNT (sizeof(UNPROVEN_KINDS) / sizeof(UNPROVEN_KINDS[0]))
+
+static bool unproven_same(const char *text, size_t bytes, const char *word) {
+  return bytes == strlen(word) && memcmp(text, word, bytes) == 0;
+}
+
+/* Доказанное — ровно два слова: «proved» и «proved-induction». «Доказано при
+   условии» в их число НЕ входит, и ровно так же его не считает ядро: в строке
+   отказа оно попадает в «на веру» («Вердикт по итогам»). */
+static bool unproven_proved(const char *text, size_t bytes) {
+  return unproven_same(text, bytes, "proved") || unproven_same(text, bytes, "proved-induction");
+}
+
+/*
+ * ОДИН ПУНКТ СПИСКА. Ответ — напечатан ли он; `kind` — место вердикта в закрытом
+ * списке либо его размер, если слово незнакомое.
+ *
+ * Причина берётся полем «says» ведомости, и своего слова рядом с ней НЕ
+ * ставится: «says» уже начинается вердиктом («сетка 2 значения…», «объявлено,
+ * не доказано: …», «НАРУШЕНО на примере…»), и приписать своё значило бы сказать
+ * одно и то же дважды. Слово хозяина выходит только там, где «says» нет.
+ */
+static bool unproven_item(const char *json, size_t from, size_t to, size_t number, size_t *kind) {
+  const char *verdict = NULL;
+  const char *text = NULL;
+  size_t verdict_bytes = 0;
+  size_t bytes = 0;
+  size_t index = 0;
+  if (!json_text_at(json, from, to, "verdict", &verdict, &verdict_bytes) ||
+      unproven_proved(verdict, verdict_bytes)) {
+    return false;
+  }
+  for (index = 0; index < UNPROVEN_KIND_COUNT; index += 1) {
+    if (unproven_same(verdict, verdict_bytes, UNPROVEN_KINDS[index].tag)) {
+      break;
+    }
+  }
+  *kind = index;
+  fprintf(stderr, "  %lu. ", (unsigned long)number);
+  if (json_text_at(json, from, to, "kind", &text, &bytes)) {
+    json_say(text, bytes);
+    fputc(' ', stderr);
+  }
+  if (json_text_at(json, from, to, "name", &text, &bytes)) {
+    fputs("«", stderr);
+    json_say(text, bytes);
+    fputs("»", stderr);
+  }
+  if (json_text_at(json, from, to, "of", &text, &bytes)) {
+    fputs(" функции «", stderr);
+    json_say(text, bytes);
+    fputs("»", stderr);
+  }
+  fputs(" — ", stderr);
+  if (json_text_at(json, from, to, "says", &text, &bytes)) {
+    json_say(text, bytes);
+  } else if (index < UNPROVEN_KIND_COUNT) {
+    fputs(UNPROVEN_KINDS[index].word, stderr);
+  } else {
+    fprintf(stderr, "вердикт отчёта «%.*s», слова у хозяина для него нет", (int)verdict_bytes,
+            verdict);
+  }
+  fputc('\n', stderr);
+  return true;
+}
+
+/* Перебор одного списка ведомости. Ответ — сколько пунктов напечатано. */
+static size_t unproven_list(const char *json, size_t bytes, const char *key, bool *seen,
+                            size_t *number) {
+  size_t from = 0;
+  size_t to = 0;
+  size_t at = 0;
+  size_t shown = 0;
+  if (!json_array_at(json, bytes, key, &from, &to)) {
+    return 0;
+  }
+  at = from;
+  for (;;) {
+    size_t start = 0;
+    size_t stop = 0;
+    size_t kind = UNPROVEN_KIND_COUNT;
+    if (!json_object_next(json, &at, to, &start, &stop)) {
+      break;
+    }
+    if (!unproven_item(json, start, stop, *number + 1, &kind)) {
+      continue;
+    }
+    *number += 1;
+    shown += 1;
+    if (kind < UNPROVEN_KIND_COUNT) {
+      seen[kind] = true;
+    }
+  }
+  return shown;
+}
+
+/*
+ * ПОИМЁННЫЙ ОТКАЗ ЦЕЛИКОМ. Зовётся ТОЛЬКО с отказа по недоказанности (код 3):
+ * на доказанной программе ведомость никто не спрашивает, и второго прохода она
+ * не стоит.
+ *
+ * Отказ ведомости печатается отдельной строкой, а не молчанием: ведомость не
+ * печатается у программы с замечаниями и у программы, чьих поверхностей
+ * двоичный не судит вовсе, — и тогда человеку надо знать, что список НЕ СНЯТ, а
+ * не думать, что называть было нечего.
+ */
+static void unproven_detail(fl_value sources, const char *full, const verdict_said *said) {
+  bool seen[UNPROVEN_KIND_COUNT];
+  fl_value args[2];
+  fl_value result = fl_nothing();
+  fl_value field = fl_nothing();
+  const char *json = NULL;
+  size_t bytes = 0;
+  size_t number = 0;
+  size_t shown = 0;
+  size_t index = 0;
+  memset(seen, 0, sizeof(seen));
+  /*
+   * ЗАМЕЧАНИЯ ПРОВЕРКИ БЬЮТ ВЕДОМОСТЬ, и сказать об этом надо ими же, а не
+   * ведомостью. Хвост «; замечаний проверки » собирает «Хвост замечаний»
+   * (`flang/self/bootstrap/compiler.flang`), и первое замечание в строке отказа
+   * УЖЕ названо кодом и сообщением — то есть человеку сказано, что делать, и
+   * список утверждений тут ни при чём: пока программа не проверена, доказывать
+   * в ней нечего. Не нашли хвоста — зовём ведомость, как звали бы всегда: догадка
+   * хозяина о форме строки ничего не решает, она только берёт лишнюю работу.
+   */
+  if (said != NULL && said->say != NULL &&
+      text_find(said->say, said->bytes, "; замечаний проверки ") != NULL) {
+    fprintf(stderr,
+            "поимённо назвать нечего: программа не проверена — сперва замечания выше, отчёт о "
+            "доказательствах на непроверенной программе не печатается\n");
+    return;
+  }
+  args[0] = sources;
+  args[1] = repl_value_say(full);
+  if (repl_call("Ведомость исходников", args, 2, &result) != FL_OK) {
+    fprintf(stderr,
+            "поимённо назвать нечем: отчёт о доказательствах не построился — спросить «flang check %s --proof»\n",
+            full);
+    return;
+  }
+  if (!(val_field(result, "годно", &field) && field.tag == FL_FLAG && field.as.flag) ||
+      !(val_field(result, "в JSON", &field) && val_text(field, &json, &bytes)) || bytes == 0) {
+    fprintf(stderr,
+            "поимённо назвать нечем: на этой программе отчёт о доказательствах не печатается "
+            "(замечания или поверхности, которых двоичный не судит) — спросить «flang check %s "
+            "--proof»\n",
+            full);
+    return;
+  }
+  fputs("недоказанное — поимённо, словами отчёта о доказательствах:\n", stderr);
+  shown = unproven_list(json, bytes, "claims", seen, &number);
+  shown += unproven_list(json, bytes, "laws", seen, &number);
+  shown += unproven_list(json, bytes, "assumed", seen, &number);
+  if (shown == 0) {
+    fprintf(stderr,
+            "  ни одного пункта: утверждения доказаны все, и отказ идёт не от них — смотреть "
+            "«flang check %s --proof»\n",
+            full);
+    return;
+  }
+  for (index = 0; index < UNPROVEN_KIND_COUNT; index += 1) {
+    if (seen[index]) {
+      fprintf(stderr, "«%s» закрывается так: %s\n", UNPROVEN_KINDS[index].word,
+              UNPROVEN_KINDS[index].close);
+    }
+  }
+  fprintf(stderr,
+          "отчёт о доказательствах целиком, с правилами и у доказанных тоже: flang check %s "
+          "--proof\n",
+          full);
 }
 
 static int run_file(int argc, char **argv) {
@@ -10222,6 +10678,7 @@ static int run_file(int argc, char **argv) {
   const char *steps = "40000000";
   const char *depth = "20000";
   unproven_choice how;
+  verdict_said said;
   char *base = NULL;
   char *full = NULL;
   char *text = NULL;
@@ -10229,6 +10686,8 @@ static int run_file(int argc, char **argv) {
   int index = 0;
   int code = 0;
 
+  said.say = NULL;
+  said.bytes = 0;
   unproven_start(&how);
   for (index = 2; index < argc; index += 1) {
     if (strcmp(argv[index], "--function") == 0 && index + 1 < argc) {
@@ -10355,8 +10814,21 @@ static int run_file(int argc, char **argv) {
     args[3] = bound;
     args[4] = fl_number(strtod(steps, NULL));
     args[5] = fl_number(strtod(depth, NULL));
-    if (!verdict_gate("Запуск исходников", args, 7, 6, "прогон", &result, &code, &how, 1, NULL)) {
-      /* Недоказанная программа без согласия: строка сказана, код — ядра. */
+    if (!verdict_gate("Запуск исходников", args, 7, 6, "прогон", &result, &code, &how, 1, NULL,
+                      &said)) {
+      /*
+       * Недоказанная программа без согласия: строка сказана, код — ядра. А
+       * дальше идёт то, чего в строке нет и не было: ИМЕНА недоказанных
+       * утверждений и причина у каждого (`unproven_detail` выше).
+       *
+       * Под кодом 3, и только под ним: третий код значит «недоказано» и ничего
+       * другого («Код недоказанного» держит тройку постусловием). Прочие отказы
+       * запуска — не разобранный файл, ненайденное имя — объясняются своим
+       * словом, и ведомость к ним не относится.
+       */
+      if (code == 3) {
+        unproven_detail(sources, full, &said);
+      }
     } else if (val_field(result, "удалось", &field) && field.tag == FL_FLAG && field.as.flag) {
       if (val_field(result, "значение", &field)) {
         run_print(field);
@@ -16318,7 +16790,7 @@ static int io_file(int argc, char **argv) {
   }
 
   if (!verdict_gate("Поиск плана исходников", args, 4, 3, "поиск", &found, &code, &how, 3,
-                    "flang io: связывание не отработало\n")) {
+                    "flang io: связывание не отработало\n", NULL)) {
     /* Недоказанный план без согласия: строка сказана, код — ядра. */
   } else if (val_field(found, "диагностики", &bads) && bads.tag == FL_LIST && bads.as.list.count > 0) {
     repl_bads list;

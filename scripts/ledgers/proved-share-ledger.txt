@@ -1257,7 +1257,6 @@ da7fad16a84c755f2638b38faa0a9c94|20|19|1|0|0|flang/scripts/code-forgery.fscript
 cd50b4ec140445992c5b5051918b76b0|1|1|0|0|0|flang/scripts/direct-run.flang
 4660f4078dbb69ef66df64263cb80208|48|48|0|0|0|flang/scripts/emptiness-guard.fscript
 dd5c6fa5aeaa9edc65474e5cf9df01fe|21|21|0|0|0|flang/scripts/guards-start.fscript
-540f341358b194e39f9fe1eba88bced0|2|0|2|0|0|flang/scripts/jargon-guard.fscript
 b5d5de206e3e2e080e221df607a92c9b|73|69|4|0|0|flang/scripts/kernel-forgeries.fscript
 73bf5c6a64f0209a9cc4e03fa73f1c90|40|38|0|0|0|flang/scripts/kernel-lines-to-trust.fscript
 948a418a6ae7751f23fbe4f17496eb17|19|19|0|0|0|flang/scripts/ledger-summary.fscript
@@ -1286,7 +1285,7 @@ b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
 05641fed3c8e2405969b58859d7b46bd|189|125|15|48|0|flang/self/defunc.flang
 8cf37894dbbccdff06a8ef8c0bb9395e|81|54|6|21|1|flang/self/distributed.flang
 ff586b33c1aa75e4b80d727672748361|20|10|0|10|0|flang/self/distributive.flang
-d328a6015287755e0bf7082b88afdd29|428|291|8|107|0|flang/self/emit-c.flang
+d328a6015287755e0bf7082b88afdd29|426|291|8|107|0|flang/self/emit-c.flang
 e6a1c5149ebb9e155fd5cd9c13fae314|7|4|0|3|0|flang/self/emit-cpp.flang
 29a749a897421f9f3b89dd7f1c372746|659|551|30|78|0|flang/self/emit-csharp.flang
 cc8efee04153882fa095db14dfa0548d|142|88|4|50|0|flang/self/emit-elixir.flang
@@ -1530,7 +1529,7 @@ d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/guards/delivery-guard.flang
 baa3170dc90958c56352eb9b3f49ab9b|62|49|10|3|0|scripts/guards/homebrew-formula-guard.fscript
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/guards/input-boundary.fscript
 b00f9a812077e3b8497c15864acff995|10|7|3|0|0|scripts/guards/io-dictionary-copies-guard.fscript
-a07232cd8b9e683bc530843d7f95d821|2|0|2|0|0|scripts/guards/jargon-guard.fscript
+a07232cd8b9e683bc530843d7f95d821|4|0|2|0|0|scripts/guards/jargon-guard.fscript
 ea1518a801b7e78ee25788b065921aff|23|11|2|3|0|scripts/guards/kernel-abilities-guard.fscript
 5ab01492f40c7c4a19b89433856c1786|6|6|0|0|0|scripts/guards/license-guard.fscript
 4513584f34eca442e744d2b05863e98a|85|34|44|0|0|scripts/guards/link-guard.fscript
@@ -1621,3 +1620,10 @@ eb5b390d34c90eb95ad3b4382c2a3a1f|1|0|0|0|1|flang/proof/checker/tests/programs/au
 b1b137536d045c4fdd205ece597d4acf|1|0|1|0|0|flang/proof/probes/orders/programs/arguments.fscript
 99f0a0d7135e7b2b5eb7f88096d487bb|4|3|1|0|0|flang/proof/probes/orders/run.fscript
 1f4a2a844b39793dc79f661223b3dc08|1|0|1|0|0|docs/examples/io/progress-bar-on-screen.flang
+227913e61eb3388807d0420cd8ec4fd3|5|5|0|0|0|flang/proof/probes/syllogism/programs/chain.flang
+9ee2cd59eeca8e29bd5985c51b49e252|3|3|0|0|0|flang/proof/probes/syllogism/programs/honest.flang
+f014ea5d0ab0f4dfd9c22246d68a76a5|2|0|0|1|0|flang/proof/probes/syllogism/programs/conditional.flang
+b40f8e953e5954b87f3a290155165ed3|2|2|0|0|0|fspec/spec/43-syllogism-overdue-subscription.flang
+5c4fb90e3d653d76589c2d9addb120d2|4|0|0|0|0|flang/proof/probes/syllogism/programs/forgery.flang
+ddc780082978fc3298ad54ab7e9bd7f6|2|0|0|0|0|flang/proof/probes/syllogism/programs/removal.flang
+22773aaaf2d984fcd3e2b295b7095726|2|2|0|0|0|flang/proof/probes/syllogism/programs/removal-strict.flang

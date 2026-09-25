@@ -115,7 +115,7 @@ lean-toolchain  run.sh
 «изменения сделал чтобы про латиницу все были и понятно все было? вижу мусор все
 еще и нейминг говнище». Вопрос имён закрыт первым из трёх вариантов: каталог
 переводится на английские имена, как весь остальной репозиторий. Записано
-[ADR-0046](../adr/0046-the-proof-directory-is-named-in-english.md).
+[ADR-0046](../../adr/0046-the-proof-directory-is-named-in-english.md).
 
 **Поправка к замеру.** Первая редакция задачи считала только кириллицу. Пересчёт
 22 сентября на `main` `5a6f2698e` показал, что схем не две, а три: из 191
@@ -249,7 +249,7 @@ flang/proof/  SPEC.md  kernel.flang  checker.flang  small-reducer.flang
 
 Сделано тремя порциями и влито в ствол 22–23 сентября 2026: порция 1 —
 `bc962bb38` (PR 107), порция 2 — `1e83b7419` (PR 108), порция 3 — `101dc6bfd`
-(PR 109). Решение — [ADR-0046](../adr/0046-the-proof-directory-is-named-in-english.md).
+(PR 109). Решение — [ADR-0046](../../adr/0046-the-proof-directory-is-named-in-english.md).
 
 Счёт по `git ls-files flang/proof` на стволе `101dc6bfd`:
 

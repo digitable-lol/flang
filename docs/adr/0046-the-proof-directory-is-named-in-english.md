@@ -2,11 +2,11 @@
 
 **Состояние:** решение владельца (22 сентября 2026: «изменения сделал чтобы про латиницу
 все были и понятно все было? вижу мусор все еще и нейминг говнище»), записано 22 сентября;
-выполняется задачей [6421](../tasks/6421-the-proof-directory-needs-a-layout-and-a-naming-rule.md).
+выполняется задачей [6421](../tasks/completed/6421-the-proof-directory-needs-a-layout-and-a-naming-rule.md).
 **Дата:** 22 сентября 2026
 **Отменяет исключение:** `flang/proof/**` выходит из-под исключения сторожей имён
 (`scripts/guards/cyrillic-file-names-guard.sh`, `scripts/guards/translit-file-names-guard.sh`);
-[ADR-0023](0023-a-forgery-is-declared-not-guessed.md) остаётся в силе целиком — имя файла
+[ADR-0023](0023-forgeries-live-in-a-set-not-in-the-metric-corpus.md) остаётся в силе целиком — имя файла
 по-прежнему ничего не решает, решает манифест.
 **Основание:** задача 6421, замер 22 сентября 2026 на `main` `5a6f2698e` (ниже).
 **Проверяется:** `sh scripts/guards/cyrillic-file-names-guard.sh --check`,

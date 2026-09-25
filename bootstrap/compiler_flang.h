@@ -11689,9 +11689,10 @@ fl_status compiler_flang_stroka_zakona(fl_ctx *ctx, fl_value sborka, fl_value r,
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param r — «р»: «Разборщик»
+ * @param sledstvie — «следствие»
  * @return значение: «Шаг»
  */
-fl_status compiler_flang_razobrat_teoremu(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+fl_status compiler_flang_razobrat_teoremu(fl_ctx *ctx, fl_value r, fl_value sledstvie, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «С теоремой».
@@ -15915,31 +15916,6 @@ fl_status compiler_flang_tablica_shagov(fl_ctx *ctx, fl_value ciklicheskie, fl_v
  * @return значение: «Общее»
  */
 fl_status compiler_flang_sobrat_obschee(fl_ctx *ctx, fl_value programma, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Однобайтовые».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @return значение: строка
- */
-fl_status compiler_flang_odnobaytovye(fl_ctx *ctx, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Двухбайтовые».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @return значение: список: строка
- */
-fl_status compiler_flang_dvuhbaytovye(fl_ctx *ctx, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Двухбайтовый».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param znak — «знак»: строка
- * @return значение
- */
-fl_status compiler_flang_dvuhbaytovyy(fl_ctx *ctx, fl_value znak, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Байтов у символа».
@@ -94247,6 +94223,24 @@ fl_status compiler_flang_pechat_massiva_bez_proverok(fl_ctx *ctx, fl_value chast
 fl_status compiler_flang_polya_uzla_v_monade_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Узел ничто в монаде без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_nichto_v_monade_bez_proverok(fl_ctx *ctx, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Взять поле в монаде без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_vzyat_pole_v_monade_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Строка скаляра в монаде без проверок».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -94263,6 +94257,25 @@ fl_status compiler_flang_stroka_skalyara_v_monade_bez_proverok(fl_ctx *ctx, fl_v
  * @return значение: строка
  */
 fl_status compiler_flang_stroka_uzla_v_monade_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Строка поля в монаде без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param klyuch — «ключ»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_polya_v_monade_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вид узла в монаде без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_vid_uzla_v_monade_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Элементы узла в монаде без проверок».
@@ -94308,6 +94321,223 @@ fl_status compiler_flang_eto_spisok_v_monade_bez_proverok(fl_ctx *ctx, fl_value 
  * @return значение
  */
 fl_status compiler_flang_eto_zapis_v_monade_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Упоминает параметр без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_upominaet_parametr_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Упоминает в элементах без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_upominaet_v_elementah_bez_proverok(fl_ctx *ctx, fl_value elementy, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Упоминает в полях без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_upominaet_v_polyah_bez_proverok(fl_ctx *ctx, fl_value polya, fl_value imya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Это ребёнок типа без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_eto_rebyonok_tipa_bez_proverok(fl_ctx *ctx, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть блок без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_est_blok_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть блок в списке без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_est_blok_v_spiske_bez_proverok(fl_ctx *ctx, fl_value elementy, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть блок в полях без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @return значение
+ */
+fl_status compiler_flang_est_blok_v_polyah_bez_proverok(fl_ctx *ctx, fl_value polya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ключ пропущен блоком без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param klyuch — «ключ»: строка
+ * @return значение
+ */
+fl_status compiler_flang_klyuch_propuschen_blokom_bez_proverok(fl_ctx *ctx, fl_value klyuch, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать имя без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param sobrano — «собрано»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_dopisat_imya_bez_proverok(fl_ctx *ctx, fl_value imya, fl_value sobrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена внутри без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param sobrano — «собрано»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_vnutri_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value sobrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имя переменной без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param sobrano — «собрано»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imya_peremennoy_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value sobrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена в списке без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param sobrano — «собрано»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_v_spiske_bez_proverok(fl_ctx *ctx, fl_value elementy, fl_value sobrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена в полях без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param sobrano — «собрано»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_v_polyah_bez_proverok(fl_ctx *ctx, fl_value polya, fl_value sobrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена поля без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param pole — «поле»: «Поле значения»
+ * @param sobrano — «собрано»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_polya_bez_proverok(fl_ctx *ctx, fl_value pole, fl_value sobrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Имена образца без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obrazec — «образец»: «Значение»
+ * @param sobrano — «собрано»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_obrazca_bez_proverok(fl_ctx *ctx, fl_value obrazec, fl_value sobrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Блоки узла без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param sobrano — «собрано»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_bloki_uzla_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value sobrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Блоки списка без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param sobrano — «собрано»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_bloki_spiska_bez_proverok(fl_ctx *ctx, fl_value elementy, fl_value sobrano, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Блоки полей без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param polya — «поля»: список: «Поле значения»
+ * @param sobrano — «собрано»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_bloki_poley_bez_proverok(fl_ctx *ctx, fl_value polya, fl_value sobrano, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Узел строки без проверок».
@@ -99657,9 +99887,10 @@ fl_status compiler_flang_stroka_zakona_bez_proverok(fl_ctx *ctx, fl_value sborka
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param r — «р»: «Разборщик»
+ * @param sledstvie — «следствие»
  * @return значение: «Шаг»
  */
-fl_status compiler_flang_razobrat_teoremu_bez_proverok(fl_ctx *ctx, fl_value r, fl_value *result, fl_error *error);
+fl_status compiler_flang_razobrat_teoremu_bez_proverok(fl_ctx *ctx, fl_value r, fl_value sledstvie, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «С теоремой без проверок».
@@ -101191,31 +101422,6 @@ fl_status compiler_flang_metka_ili_nol_bez_proverok(fl_ctx *ctx, fl_value metki,
  * @return значение: «Значение»
  */
 fl_status compiler_flang_telo_pust_bez_proverok(fl_ctx *ctx, fl_value uzel, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Однобайтовые без проверок».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @return значение: строка
- */
-fl_status compiler_flang_odnobaytovye_bez_proverok(fl_ctx *ctx, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Двухбайтовые без проверок».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @return значение: список: строка
- */
-fl_status compiler_flang_dvuhbaytovye_bez_proverok(fl_ctx *ctx, fl_value *result, fl_error *error);
-
-/*
- * Функция flang «Двухбайтовый без проверок».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param znak — «знак»: строка
- * @return значение
- */
-fl_status compiler_flang_dvuhbaytovyy_bez_proverok(fl_ctx *ctx, fl_value znak, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Байтов у символа без проверок».

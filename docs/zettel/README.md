@@ -785,6 +785,9 @@
 - [Пробу оболочки нельзя снять с одного конца: труба обязана остаться голой байт в байт, а клавиши видны только псевдотерминалу](shell-probe-judges-the-pipe-and-the-pty-separately.md)
 - [Номер задачи проверяется без двоичного и сразу по четырём каталогам — двойник спрятался в закрытых](task-numbers-are-checked-without-the-binary-across-four-directories.md)
 - [Все производные места версии сверяются с одним источником дёшево — так, чтобы стоять в хуке перед пушем](version-derivations-are-checked-cheaply-against-one-source.md)
+- [Починка, пролежавшая через разрез файла на мелкие функции, переписывается заново — и выходит дешевле патча](a-fix-that-waited-through-a-refactor-is-rewritten-not-rebased.md)
+- [Перестановка двух блоков честной записи — самая дешёвая проба на вердикт, зависящий от порядка](permuting-two-blocks-of-an-honest-record-is-the-cheapest-test-for-an-order-dependent-verdict.md)
+- [Экран двоичного хозяина — управляющий терминал, и трубу он экраном не считает](the-binary-hosts-screen-is-the-controlling-terminal.md)
 
 ## Как добавлять
 

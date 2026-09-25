@@ -8,7 +8,7 @@
    #ifndef, поэтому он собирается и без этого блока. */
 #define FL_INDEX_BASE 1
 #define FL_MAX_DEPTH 20000
-#define FL_MAX_STEPS 1400000000000
+#define FL_MAX_STEPS 4000000000000
 #define FL_MAX_TAIL_ARGS 11
 #define FL_MAX_ARGS 15
 

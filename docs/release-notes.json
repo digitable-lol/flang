@@ -1,6 +1,40 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.22": {
+      "ru": {
+        "заголовок": "Перепечатка семени дошла впервые за неделю, и цена самосборки наконец измерена",
+        "появилось": [
+          "Цена самосборки известна числом, а не оценкой снизу. Заход 23–25 сентября дошёл за 35 часов 45 минут: вершина цепи суда — 2 412 102 536 357 шагов, печать связанного — ещё 361 771 472 547. Прежняя запись `MEASURED_COST` была нижней оценкой по ОБОРВАВШЕМУСЯ заходу и занижала цену на 42 %; сторож сравнивает потолок именно с ней и пропустил бы потолок, которого заведомо не хватит.",
+          "Силлогизм `следует` вошёл в язык — двадцать третье слово словаря, 156-е понятие таблицы: вывод утверждения из посылок, названных выше.",
+          "Имена печати семени стали английскими: `scripts/raskrutka.sh` → `scripts/bootstrap-reprint.sh`, `scripts/otpechatok-semeni` → `scripts/seed-fingerprint`, 606 ссылок по дереву."
+        ],
+        "изменилось": [
+          "Предел шагов прогона стал ключом САМОГО двоичного — `--предел-шагов N` (`--step-limit N`), годным при любой команде, печать включая, и стоящим где угодно в строке. Раньше его разбирала только `check`, и поднять предел ПЕЧАТИ было нечем: приходилось копировать исходники семени, править `#define FL_MAX_STEPS` в редакторе, собирать `make` и звать печать через `FLANG=`. Три шага из четырёх — вне языка."
+        ],
+        "сломалось": [
+          "Код символа вне BMP больше не врёт. Оболочка отдавала 240 — ведущий октет UTF-8 — на любом знаке вне базовой плоскости, а `flang run` на том же выражении давал верное число. Прогон после перепечатки: 𝒜 → 119964, 👍 → 128077, ﷽ → 65021, одинаково в обоих (задача #103, сообщил MyWWWChat).",
+          "Гейт доказуемости в CI ожил после семи суток ложной красноты: в работе не была задана `FLANG_TMP`, набор проб падал на создании времянки в первую секунду и печатал «проб на подлог 0» при храповике 533. Теперь 534 при 533.",
+          "Четыре проверки, переставшие проверять, снова проверяют: независимый сверщик не пускали на порог (23 «провала» правил вывода были одним отказом), маска прогонщика корпуса осталась от переименованного файла, ключ `--no-screen` не был записан в ведомость долга, и 14 битых ссылок в документации."
+        ]
+      },
+      "en": {
+        "заголовок": "The seed reprint completed for the first time in a week, and the cost of self-hosting is finally measured",
+        "появилось": [
+          "The cost of self-hosting is now a number, not a lower bound. The 23–25 September run finished in 35 hours 45 minutes: the judging chain peaked at 2,412,102,536,357 steps, printing the linked program took another 361,771,472,547. The previous `MEASURED_COST` was a lower bound taken from an ABORTED run and understated the cost by 42 %.",
+          "The syllogism `следует` (`follows`) entered the language — the 23rd dictionary word, the 156th concept of the table.",
+          "The seed-print scripts got English names: `scripts/raskrutka.sh` → `scripts/bootstrap-reprint.sh`, `scripts/otpechatok-semeni` → `scripts/seed-fingerprint`, 606 references across the tree."
+        ],
+        "изменилось": [
+          "The step limit of a run became a key of the BINARY itself — `--step-limit N` — usable with any command, printing included, and placed anywhere on the line. Previously only `check` parsed it, so raising the limit of a PRINT required copying the seed sources, editing `#define FL_MAX_STEPS` by hand, running `make` and invoking the print through `FLANG=`."
+        ],
+        "сломалось": [
+          "A character code outside the BMP no longer lies. The shell returned 240 — the leading UTF-8 octet — for any character outside the basic plane, while `flang run` on the same expression returned the right number. After the reprint: 𝒜 → 119964, 👍 → 128077, ﷽ → 65021, the same in both (issue #103, reported by MyWWWChat).",
+          "The provability gate in CI came back after seven days of false red: `FLANG_TMP` was not set in the job, the probe suite died on creating its temporary directory in the first second and printed «0 forgery probes» against a ratchet of 533. It is now 534 against 533.",
+          "Four checks that had stopped checking check again."
+        ]
+      }
+    },
     "0.7.20": {
       "ru": {
         "заголовок": "Компилятор доказан сам себе целиком: 650 мест из 650 переиграны независимой программой",

@@ -1,5 +1,5 @@
 # Отпечаток входов печати точки раскрутки. Руками не править:
-# снимается печатью (sh scripts/raskrutka.sh), сверяется --bystro.
+# снимается печатью (sh scripts/bootstrap-reprint.sh), сверяется --bystro.
 предел-шагов 4000000000000
 предел-глубины 20000
 вход flang/self/bootstrap/compiler.flang

@@ -10,7 +10,7 @@
           "Имена печати семени стали английскими: `scripts/raskrutka.sh` → `scripts/bootstrap-reprint.sh`, `scripts/otpechatok-semeni` → `scripts/seed-fingerprint`, 606 ссылок по дереву."
         ],
         "изменилось": [
-          "Предел шагов прогона стал ключом САМОГО двоичного — `--предел-шагов N` (`--step-limit N`), годным при любой команде, печать включая, и стоящим где угодно в строке. Раньше его разбирала только `check`, и поднять предел ПЕЧАТИ было нечем: приходилось копировать исходники семени, править `#define FL_MAX_STEPS` в редакторе, собирать `make` и звать печать через `FLANG=`. Три шага из четырёх — вне языка."
+          "ПОПРАВКА К ЭТОЙ ЗАПИСКЕ. Здесь стояло, что предел шагов стал ключом самого двоичного — `--предел-шагов N` (`--step-limit N`), годным при любой команде. Это неправда: в 0.7.22 такого ключа нет. Снято прогоном на двоичном этого дерева: `flang --предел-шагов 100000000 emit …` отвечает «неизвестная команда «--предел-шагов»» и кодом 2, то же по-английски; разбирает ключ по-прежнему только `check` (`flang check --help`, строка `--step-limit N`). Работа сделана в ветке, которая к выпуску влита не была, а запись попала в заметки ошибочно. Поднять предел ПЕЧАТИ в 0.7.22 можно только вручную: скопировать исходники семени, править `#define FL_MAX_STEPS`, собрать `make` и звать печать через `FLANG=`."
         ],
         "сломалось": [
           "Код символа вне BMP больше не врёт. Оболочка отдавала 240 — ведущий октет UTF-8 — на любом знаке вне базовой плоскости, а `flang run` на том же выражении давал верное число. Прогон после перепечатки: 𝒜 → 119964, 👍 → 128077, ﷽ → 65021, одинаково в обоих (задача #103, сообщил MyWWWChat).",
@@ -26,7 +26,7 @@
           "The seed-print scripts got English names: `scripts/raskrutka.sh` → `scripts/bootstrap-reprint.sh`, `scripts/otpechatok-semeni` → `scripts/seed-fingerprint`, 606 references across the tree."
         ],
         "изменилось": [
-          "The step limit of a run became a key of the BINARY itself — `--step-limit N` — usable with any command, printing included, and placed anywhere on the line. Previously only `check` parsed it, so raising the limit of a PRINT required copying the seed sources, editing `#define FL_MAX_STEPS` by hand, running `make` and invoking the print through `FLANG=`."
+          "CORRECTION TO THIS NOTE. This entry said the step limit had become a key of the binary itself — `--step-limit N` (`--предел-шагов N`) — usable with any command. That is false: 0.7.22 has no such key. Taken by a run on a binary of this tree: `flang --step-limit 100000000 emit …` answers «неизвестная команда «--step-limit»» with exit code 2; only `check` parses the key (`flang check --help`, line `--step-limit N`). The work was done on a branch that was not merged before the release, and the entry went into the notes by mistake. Raising the limit of a PRINT in 0.7.22 is still manual: copy the seed sources, edit `#define FL_MAX_STEPS`, run `make`, invoke the print through `FLANG=`."
         ],
         "сломалось": [
           "A character code outside the BMP no longer lies. The shell returned 240 — the leading UTF-8 octet — for any character outside the basic plane, while `flang run` on the same expression returned the right number. After the reprint: 𝒜 → 119964, 👍 → 128077, ﷽ → 65021, the same in both (issue #103, reported by MyWWWChat).",

@@ -1,8 +1,8 @@
 #!/bin/sh
 # SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
 # SPDX-License-Identifier: BSD-2-Clause
-# Опись целей: имя, код, время, причина — таблица markdown как docs/ci-inventory.md (288 строк,
-# СНЯТО 2026-08-31 строк docs/ci-inventory.md = 288 Снятая
+# Опись целей: имя, код, время, причина — таблица markdown как docs/ci-inventory.md (294 строк,
+# СНЯТО 2026-09-26 строк docs/ci-inventory.md = 294 (задача 4413: строка про снятый ярлык доказательства:пустота; до неё 288, снято 2026-08-31) Снятая
 # руками, та опись не повторяется). Код 75 вместе со строкой отказа ворот = «переснять», не вердикт.
 # Звать: sh scripts/targets/targets-inventory.sh [имя …]   все цели из ярлыки.flang или названные;
 #   VOROTA, PAMYAT (45G), VYVOD (/srv/tmp/opis-celey) — ворота, память, сырой вывод. Код 0.

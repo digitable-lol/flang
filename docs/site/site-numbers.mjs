@@ -38,7 +38,7 @@
  * могут.
  *
  * ── Чем меряется ────────────────────────────────────────────────────────────
- * Корпус — `flang/scripts/proof-ledger.mjs`, тот же измеритель, что у
+ * Корпус — `flang/scripts/proof-ledger.fscript`, тот же измеритель, что у
  * `count-guard`. Считать корпус на ходу нельзя: ад-хок счёт трижды за сутки
  * соврал, один раз вдвое, потому что связывание импортов приписывало функции
  * модуля каждому импортёру. Цели печати — по каталогу `flang/src/emit/`,
@@ -50,7 +50,7 @@ import { readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { запущенНапрямую } from "../../flang/scripts/direct-run.mjs"
 
-import { ФАЙЛЫ, сводКорпуса } from "../../flang/scripts/proof-ledger.mjs"
+import { ФАЙЛЫ, сводКорпуса } from "../../flang/scripts/binary.mjs"
 import { ФОРМАТ, ПУТЬ_ЧИСЕЛ, прочитатьЧисла } from "./numbers.mjs"
 import { покрытие } from "./surfaces-run.mjs"
 
@@ -109,7 +109,7 @@ export function библиотека() {
 /**
  * Корпус на flang: те же файлы, по которым считаны функции.
  *
- * Набор берётся у `proof-ledger`, а не собственным обходом дерева: два набора
+ * Набор берётся у `binary.mjs`, а не собственным обходом дерева: два набора
  * разъезжаются молча, и тогда «столько-то функций в столько-то файлах» говорит
  * про два разных дерева.
  */

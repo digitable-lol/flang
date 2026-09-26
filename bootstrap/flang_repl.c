@@ -8923,6 +8923,111 @@ static void proof_head_relative(repl_buf *out, const char *utf8, size_t bytes,
   free(otnositelno);
 }
 
+/*
+ * ═══ ШАГИ ДОКАЗАТЕЛЬСТВА В ВЕДОМОСТИ: У КАЖДОГО НАЗВАНО ПРАВИЛО И ОСНОВАНИЯ ═══
+ *
+ * Задача 3464. Ведомость до этой правки говорила о доказательстве, несомом
+ * теоремой, ОДНОЙ строкой — «доказано: терм принят ядром, 4 шага». Правило,
+ * которым шаг получен, и посылки, из которых он выведен, в неё не доезжали
+ * вовсе, хотя человек их НАПИСАЛ САМ: `по закону «О10» из 1 и 2`. Читающий
+ * ведомость видел число шагов и обязан был верить ядру на слово — ровно то, от
+ * чего язык заводился.
+ *
+ * ОТКУДА БЕРУТСЯ СТРОКИ. Не из нового счёта, а из ЗАПИСИ ДОКАЗАТЕЛЬСТВА — поля
+ * «запись», которое тот же слой на flang («Запись доказательства») отдаёт в том
+ * же ответе, что и слова ведомости. Запись уже несёт у каждого шага правило и
+ * основания: `шаг 3 строка 17 промежуточный по закону «О10» из 1 и 2` и
+ * `вывод 3 О10 ⟨а не больше 10⟩ из 1 2`, а у утверждения без теоремы — строку
+ * `правило «цель есть допущение»`. Здесь строки только ОТБИРАЮТСЯ и
+ * переставляются под шапку своего утверждения: ни одного слова и ни одного
+ * числа этот файл не сочиняет, и двух наборов чисел не появляется — тот же
+ * довод, по которому приговор снимается с машинного вида, а не со слов.
+ *
+ * ПОЧЕМУ НЕ ПРАВКОЙ СЛОЯ НА FLANG. Слова ведомости собирает
+ * `flang/self/proof.flang` («Чем сведена цель», «Утверждение термом»), а
+ * строки шагов — `flang/self/zapis.flang`. Оба файла в печатаемой части семени:
+ * правка там доезжает до двоичного только полной перепечаткой. Долг назван в
+ * `docs/tasks/3464-…md`: имя правила ведомости ПОШАГОВО живёт внутри ядра
+ * (`Итог шага`.«правило», `proofterm.flang`), а в вердикт уезжает одним полем
+ * «последнее сработавшее правило», и до слов ведомости не доходит ни в каком
+ * виде. Пока перепечатки нет, ведомость читает то же, что читает сверщик.
+ *
+ * РАЗБОР ЗАПИСИ ПО ПЕРВОЙ КОЛОНКЕ, как и всё прочее в этом файле: блок
+ * утверждения открывает строка `утверждение …` без отступа, закрывает любая
+ * следующая строка без отступа. Внутри берутся строки, называющие правило или
+ * основание: `правило «…»`, `шаг N …`, `вывод …` (кроме `вывод конец`, который
+ * ничего не называет), `сведение «…»`, а под индукцией — `случай …` и
+ * `посылка …`. Шапка печатается только у блока, где такая строка нашлась:
+ * пустая шапка читалась бы как «шагов нет», а это не одно и то же с «шаги
+ * есть, но о них нечего сказать».
+ *
+ * `случай …` БЕРЁТСЯ РЯДОМ СО ШАГАМИ НЕ ДЛЯ ПОЛНОТЫ. Внутри индукции нумерация
+ * шагов идёт от единицы В КАЖДОМ случае, и без строки случая раздел печатал бы
+ * два разных шага под одним номером — снято на
+ * `flang/proof/probes/run/programs/induction.flang`: «шаг 1 … по примеру
+ * «пусто»» и «шаг 1 … по предположению» стояли подряд.
+ */
+static bool proof_line_is(const char *line, size_t length, const char *marker) {
+  size_t marker_bytes = strlen(marker);
+  return length >= marker_bytes && memcmp(line, marker, marker_bytes) == 0;
+}
+
+static void proof_say_steps(const char *record, size_t bytes) {
+  const char *header = NULL;
+  size_t header_bytes = 0;
+  size_t at = 0;
+  bool inside = false;
+  bool header_said = false;
+  bool found = false;
+  fputs("\nчем получен каждый шаг (правило и основания — строками записи доказательства):\n", stdout);
+  while (at < bytes) {
+    const char *line = record + at;
+    size_t end = at;
+    size_t length = 0;
+    size_t indent = 0;
+    while (end < bytes && record[end] != '\n') {
+      end += 1;
+    }
+    length = end - at;
+    at = end < bytes ? end + 1 : bytes;
+    if (length == 0) {
+      continue;
+    }
+    if (line[0] != ' ') {
+      inside = proof_line_is(line, length, "утверждение ");
+      header = line;
+      header_bytes = length;
+      header_said = false;
+      continue;
+    }
+    if (!inside) {
+      continue;
+    }
+    while (indent < length && line[indent] == ' ') {
+      indent += 1;
+    }
+    line += indent;
+    length -= indent;
+    if (!proof_line_is(line, length, "правило «") && !proof_line_is(line, length, "шаг ") &&
+        !proof_line_is(line, length, "вывод ") && !proof_line_is(line, length, "случай ") &&
+        !proof_line_is(line, length, "посылка ") && !proof_line_is(line, length, "сведение «")) {
+      continue;
+    }
+    if (proof_line_is(line, length, "вывод конец")) {
+      continue;
+    }
+    if (!header_said) {
+      printf("  %.*s\n", (int)header_bytes, header);
+      header_said = true;
+    }
+    printf("    %.*s\n", (int)length, line);
+    found = true;
+  }
+  if (!found) {
+    fputs("  ничего: ни одно утверждение не назвало ни правила, ни шага\n", stdout);
+  }
+}
+
 static int proof_file(const char *path, bool json, const char *record, bool strict) {
   repl_strings paths;
   repl_strings texts;
@@ -9122,6 +9227,13 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
       if (json) {
         fputc('\n', stdout);
       }
+    }
+    /* РАЗДЕЛ ШАГОВ — ТОЛЬКО ЧЕЛОВЕКУ. Рядом с `--json` его нет по тому же
+       доводу, по которому приговор уходит в поток ошибок: русские слова посреди
+       JSON сломали бы разбор. Машине то же самое доступно полями
+       `obligations[].proof.steps` и `discharge.rule`. */
+    if (!json && val_field(result, "запись", &field) && val_text(field, &utf8, &bytes)) {
+      proof_say_steps(utf8, bytes);
     }
     fflush(stdout);
     /* ПРИГОВОР СНИМАЕТСЯ С МАШИННОГО ВИДА ВЕДОМОСТИ, а не со слов: слова

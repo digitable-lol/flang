@@ -1191,6 +1191,8 @@ eaabe25feb0b757450265ea179b3316a|1|×|×|×|1|flang/proof/checker/tests/families
 0ee25761bb60a1e76e81540809c4a794|1|×|×|×|1|flang/proof/checker/tests/families/coverage/o9-count.flang
 e7fa504862be222fef1625779920da41|1|×|×|×|1|flang/proof/checker/tests/families/coverage/o9-foreign-list.flang
 b9834cb375178096f907d6c2bdf7285c|1|×|×|×|1|flang/proof/checker/tests/families/coverage/o9-step-two.flang
+149d256d7598866ab77ae4a4ed607f79|1|×|×|×|1|flang/proof/checker/tests/families/coverage/n6-choice.flang
+ce636bea2a84185d506383d191789c58|1|×|×|×|1|flang/proof/checker/tests/families/coverage/o9-derivation.flang
 8801471210cb06da9bd81d348d68ab14|1|×|×|×|1|flang/proof/checker/tests/families/coverage/guard-other-threshold.flang
 12d215120f6b52cffd8713bc41215488|1|×|×|×|1|flang/proof/checker/tests/families/coverage/guard-false-conclusion.flang
 903313021206e0b2628c86e3a223125d|1|×|×|×|1|flang/proof/checker/tests/families/coverage/guard-same-condition.flang

@@ -398,6 +398,12 @@ static const char FLANG_HELP[] =
     "                                     на этот прогон; годится при любой команде\n"
     "                                     и поднимает заодно стек. Кириллицей:\n"
     "                                     --предел-глубины\n"
+    "  --step-limit N                     предел ШАГОВ самого бинарника на этот\n"
+    "                                     прогон; годится при любой команде, печать\n"
+    "                                     включая. НЕ путать с «--max-steps N» у\n"
+    "                                     «emit»: тот впечатывается в вывод и своему\n"
+    "                                     прогону не говорит ничего. Кириллицей:\n"
+    "                                     --предел-шагов\n"
     "\n";
 
 /*
@@ -450,7 +456,8 @@ static const char HELP_CHECK[] =
     "                     строками, которые читает и человек, и сверщик\n"
     "                     (flang/proof/checker.flang). Ключ пишется и кириллицей:\n"
     "                     --записать\n"
-    "  --step-limit N     поднять предел шагов ПРОВЕРЯЮЩЕГО на этот прогон.\n"
+    "  --step-limit N     ключ САМОГО бинарника (стоит где угодно в строке) —\n"
+    "                     поднять предел шагов ПРОВЕРЯЮЩЕГО на этот прогон.\n"
     "                     Умолчание вшито при сборке (scripts/bootstrap-reprint.sh) и\n"
     "                     ловит зацикливание; ключ поднимает его осознанно и\n"
     "                     только там, где сказано. Исчерпание остаётся внятным:\n"
@@ -579,6 +586,8 @@ static const char HELP_EMIT[] =
     "  --repl            напечатать ещё и человеческий вход (только цель «c»)\n"
     "  --runtime каталог где лежат исходники рантайма цели\n"
     "  --max-steps N     предел шагов, ВПЕЧАТЫВАЕМЫЙ в напечатанную программу\n"
+    "                    («#define FL_MAX_STEPS»). Своему прогону печати он не\n"
+    "                    говорит ничего — для него «--step-limit N»\n"
     "  --max-depth N     предел глубины, ВПЕЧАТЫВАЕМЫЙ в напечатанную программу\n"
     "                    («#define FL_MAX_DEPTH»). Своему прогону печати он не\n"
     "                    говорит ничего — для него «--depth-limit N»\n"
@@ -8101,16 +8110,36 @@ static void repl_close_session(repl_session *session) {
  * программой оказался не компилятор, честнее сказать это первой же строкой, чем
  * делать вид, что всё работает: «Разбор исходника» взять всё равно неоткуда.
  */
+/*
+ * «КТО Я» НЕ ПЛАТИТ ИЗ БЮДЖЕТА ПРОГОНА. Вопрос стоит фиксированно — разбор
+ * пустой строки, — и человек его не заказывал: он заказал `emit` или `check`.
+ * Пока предел брался только из сборки, это было неразличимо. С ключом
+ * `--предел-шагов` (задача 9902) стало различимо и вышло ложью: при пределе 1
+ * разбор пустой строки не укладывался, вызов возвращал не FL_OK, и бинарник
+ * отвечал «эта программа — не компилятор flang» — то есть врал о себе там,
+ * где вопрос как раз о нём. Опыт 24 сентября 2026: `emit <проба> …
+ * --предел-шагов 1` печатал именно это.
+ *
+ * Поэтому на время вопроса предел поднимается до вшитого при сборке и тут же
+ * возвращается назад. Бюджет, названный человеком, тратится только на работу,
+ * которую человек заказал.
+ */
 static bool repl_is_compiler(void) {
   fl_value arguments[2];
   fl_value result = fl_nothing();
   fl_error error;
+  size_t told = fl_max_steps_default();
+  bool answer = false;
+  fl_max_steps_default_set(FL_MAX_STEPS);
   repl_cycle();
   arguments[0] = repl_value_say("");
   arguments[1] = repl_value_list(NULL, 0);
   error.code = NULL;
   error.message = NULL;
-  return FL_PROGRAM_CALL(&repl_ctx, "Разбор исходника", arguments, 2, &result, &error) == FL_OK;
+  answer = FL_PROGRAM_CALL(&repl_ctx, "Разбор исходника", arguments, 2, &result, &error) == FL_OK;
+  fl_max_steps_default_set(told);
+  repl_ctx.max_steps = told;
+  return answer;
 }
 
 /* ═══════════════════════════ flang check <файл> ═══════════════════════════ */
@@ -13039,39 +13068,6 @@ static int repl_loop(int argc, char **argv, const char *self) {
  * `check` и так печатает человеку, и молча принять ключ, который ничего не
  * меняет, значило бы пообещать работу и её не сделать.
  */
-/*
- * `--предел-шагов N` — ЕДИНСТВЕННЫЙ разбор числа предела, и он строгий.
- *
- * Строгий потому, что эталон на flang (`flang/self/cli.flang`) числа ключей
- * читает своим разбором, а он «1e3» не принимает вовсе. `strtod` здесь дал бы
- * 1000 там, где эталон отказывает, — и свидетель разошёлся бы с эталоном молча,
- * на ключе, который поднимает защиту от зависания. Поэтому только цифры.
- *
- * Ноль не принимается: `ctx->max_steps == 0` в рантайме выключает счёт совсем,
- * а этот ключ — про «поднять предел осознанно», а не про «снять его».
- */
-static bool human_steps(const char *text, size_t *out) {
-  size_t value = 0;
-  size_t at = 0;
-  if (text == NULL || text[0] == 0) {
-    return false;
-  }
-  for (at = 0; text[at] != 0; at += 1) {
-    if (text[at] < '0' || text[at] > '9') {
-      return false;
-    }
-    if (value > ((size_t)-1 - (size_t)(text[at] - '0')) / 10) {
-      return false;
-    }
-    value = value * 10 + (size_t)(text[at] - '0');
-  }
-  if (value == 0) {
-    return false;
-  }
-  *out = value;
-  return true;
-}
-
 static int check_command(int argc, char **argv) {
   const char *path = NULL;
   const char *record = NULL;
@@ -13089,23 +13085,6 @@ static int check_command(int argc, char **argv) {
       strict = true;
     } else if (strcmp(argv[index], "--быстро") == 0 || strcmp(argv[index], "--fast") == 0) {
       fast = true;
-    } else if (strcmp(argv[index], "--предел-шагов") == 0 || strcmp(argv[index], "--step-limit") == 0) {
-      size_t steps = 0;
-      index += 1;
-      if (index >= argc) {
-        fputs("flang check --предел-шагов: не названо число шагов\n", stderr);
-        return 2;
-      }
-      if (!human_steps(argv[index], &steps)) {
-        fprintf(stderr,
-                "flang check --предел-шагов: «%s» — не целое число шагов больше нуля\n",
-                argv[index]);
-        return 2;
-      }
-      /* Ложится в умолчание рантайма, а не в текущий контекст: контекст
-         заводится заново на каждый вызов компилятора (`repl_cycle`). */
-      fl_max_steps_default_set(steps);
-      repl_ctx.max_steps = steps;
     } else if (strcmp(argv[index], "--записать") == 0 || strcmp(argv[index], "--record") == 0) {
       index += 1;
       if (index >= argc) {
@@ -18440,7 +18419,7 @@ static int package_file(int argc, char **argv) {
  * складываются заново под названное имя. Ту же проверку — «Имя пакета
  * допустимо» — самостоятельно доказывает `flang/self/cli.flang`; здесь она
  * продублирована ровно так же, как строгий разбор `--предел-шагов` у
- * `human_steps`.
+ * `cli_whole` в `flang/src/emit/c/flang_cli.c`.
  */
 #define NEW_MANIFEST "flang.package"
 #define NEW_TEMPLATE_ENV "FLANG_FSPEC_TEMPLATE_DIR"

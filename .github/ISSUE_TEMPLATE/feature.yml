@@ -1,0 +1,58 @@
+name: Feature request / Просьба о возможности
+description: Something the language or the tools cannot do yet.
+title: "<what is missing, in one sentence>"
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in English or Russian; both are read. Пишите на английском или русском — читаются оба.
+
+        Check the list of known limits first: https://digitable-lol.github.io/flang/en/limits.html
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority / Приоритет
+      options:
+        - "P1 — I cannot do my work without it"
+        - "P2 — I can work around it, at a cost"
+        - "P3 — it would be nice"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Чего не хватает
+      description: What you are trying to do and where it stops. Show the command and its output.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour / Что просите
+      description: What the command should accept and answer. An example of the input and the output is worth more than a description.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance / Когда сделано
+      description: The run that will show the feature works. One command and the answer it must give.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and workaround / Иные пути и обходной путь
+      description: What else you considered, and how you get by today.
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Version / Версия
+      description: Output of `flang --version`.
+      placeholder: flang 0.7.22
+    validations:
+      required: true

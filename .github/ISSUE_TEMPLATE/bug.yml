@@ -1,32 +1,56 @@
-name: Дефект языка / Language defect
-description: Программа принята, а не должна была; ответ не тот; напечатанный код разошёлся с интерпретатором
-labels: []
+name: Bug report / Сообщение о дефекте
+description: The compiler accepted what it should reject, gave a wrong answer or a wrong exit code, or the emitted code disagrees with the checker.
+title: "<what is wrong, in one sentence>"
+labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Пишите на русском или английском — читаются оба.
-        Write in Russian or English; both are read.
+        Write in English or Russian; both are read. Пишите на английском или русском — читаются оба.
 
-        Уязвимость сюда не пишите — см. `.github/SECURITY.md`.
         Do not report a vulnerability here — see `.github/SECURITY.md`.
+
+        This project follows a zero-bug policy: every report is either fixed or closed with a stated reason. See `docs/zero-bug-policy.md`.
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority / Приоритет
+      description: How much it hurts. The maintainers may change it and will say why.
+      options:
+        - "P0 — the verdict lies: a false statement is proved, a certificate is accepted for another program, or nobody can build"
+        - "P1 — wrong answer or wrong exit code, and there is no workaround"
+        - "P2 — wrong behaviour, but a workaround exists; a misleading message"
+        - "P3 — cosmetic: wording, layout, a typo"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / Шаги воспроизведения
+      description: Numbered steps from a clean state. Paste the smallest `.flang` that shows it as text, not as a link.
+      placeholder: |
+        1. Save the program below as probe.flang
+        2. Run: flang check probe.flang --proof
+        3. Look at the exit code: echo $?
+    validations:
+      required: true
   - type: textarea
     id: program
     attributes:
-      label: Программа / The program
-      description: Наименьший `.flang`, на котором это видно. Вставьте текстом, а не ссылкой. / The smallest `.flang` that shows it. Paste it, do not link it.
+      label: Program / Программа
+      description: The smallest program that shows the defect.
       render: text
     validations:
       required: true
   - type: textarea
-    id: command
+    id: actual
     attributes:
-      label: Команда и её вывод / The command and its output
-      description: Дословно, вместе с кодом возврата. / Verbatim, with the exit code.
+      label: Actual behaviour / Что происходит
+      description: The command and its output, verbatim, with the exit code.
       render: shell
       placeholder: |
-        $ flang check probe.flang
-        {"valid":true,...}
+        $ flang check probe.flang --proof
+        ...
         $ echo $?
         0
     validations:
@@ -34,25 +58,40 @@ body:
   - type: textarea
     id: expected
     attributes:
-      label: Чего ждали / What you expected
-      description: И почему — какое место спецификации или какой пример это обещает. / And why — which part of the spec or which example promises it.
+      label: Expected behaviour / Что должно быть
+      description: What you expected and why — which part of the specification, the help text or the documentation promises it.
     validations:
       required: true
   - type: input
     id: version
     attributes:
-      label: Версия / Version
-      description: Вывод `bootstrap/flang_cli --version`, либо коммит дерева. / Output of `bootstrap/flang_cli --version`, or the tree's commit.
+      label: Version / Версия
+      description: Output of `flang --version`, or the commit of the tree.
+      placeholder: flang 0.7.22
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment / Среда
+      description: Operating system, architecture, and how flang was installed.
+      placeholder: Linux x86-64, Homebrew
     validations:
       required: true
   - type: dropdown
-    id: implementation
+    id: regression
     attributes:
-      label: Какая реализация / Which implementation
+      label: Regression / Работало ли раньше
       options:
-        - Интерпретатор на Node / the Node reference implementation
-        - Самоприменённый двоичный файл (bootstrap) / the self-hosted binary
-        - Напечатанный код одной из восьми целей / emitted code, one of the eight targets
-        - Не знаю / not sure
+        - "It worked in an earlier version (name it below)"
+        - "It never worked"
+        - "Not sure"
     validations:
       required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround / Обходной путь
+      description: How you get by today, if at all. Name the earlier version here if this is a regression.
+    validations:
+      required: false

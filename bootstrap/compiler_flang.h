@@ -2125,9 +2125,9 @@ fl_status compiler_flang_sozdat_itog_shaga(fl_ctx *ctx, fl_value prinyato, fl_va
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_obstanovka_terma(fl_ctx *ctx, fl_value programma, fl_value obyazatelstvo, fl_value posylka, fl_value mesto, fl_value progony, fl_value fakty, fl_value *out, fl_error *error);
 
-/* Запись FTS «Ход цепочки»: «сила», «правило», «известно», «отказы», «номер», «закрыто», «факты», «по допущениям». */
+/* Запись FTS «Ход цепочки»: «сила», «правило», «известно», «отказы», «номер», «закрыто», «факты», «по допущениям», «правила шагов». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_hod_cepochki(fl_ctx *ctx, fl_value sila, fl_value pravilo, fl_value izvestno, fl_value otkazy, fl_value nomer, fl_value zakryto, fl_value fakty, fl_value po_dopuscheniyam, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_hod_cepochki(fl_ctx *ctx, fl_value sila, fl_value pravilo, fl_value izvestno, fl_value otkazy, fl_value nomer, fl_value zakryto, fl_value fakty, fl_value po_dopuscheniyam, fl_value pravila_shagov, fl_value *out, fl_error *error);
 
 /* Запись FTS «Сведение допущением»: «сведение», «номер». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -2137,9 +2137,9 @@ fl_status compiler_flang_sozdat_svedenie_dopuscheniem(fl_ctx *ctx, fl_value sved
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_slichenie_s_obrazcom(fl_ctx *ctx, fl_value soshlos, fl_value pary, fl_value *out, fl_error *error);
 
-/* Запись FTS «Итог цепочки»: «сила», «отказы», «шагов», «правило», «случаи», «индукция», «источники», «по допущениям». */
+/* Запись FTS «Итог цепочки»: «сила», «отказы», «шагов», «правило», «случаи», «индукция», «источники», «по допущениям», «правила шагов». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
-fl_status compiler_flang_sozdat_itog_cepochki(fl_ctx *ctx, fl_value sila, fl_value otkazy, fl_value shagov, fl_value pravilo, fl_value sluchai, fl_value indukciya, fl_value istochniki, fl_value po_dopuscheniyam, fl_value *out, fl_error *error);
+fl_status compiler_flang_sozdat_itog_cepochki(fl_ctx *ctx, fl_value sila, fl_value otkazy, fl_value shagov, fl_value pravilo, fl_value sluchai, fl_value indukciya, fl_value istochniki, fl_value po_dopuscheniyam, fl_value pravila_shagov, fl_value *out, fl_error *error);
 
 /* Запись FTS «Порядок ведомости»: «есть», «левое», «правое». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -73926,6 +73926,15 @@ fl_status compiler_flang_stroki_dopuscheniy_teoremy_zapisi(fl_ctx *ctx, fl_value
 fl_status compiler_flang_dopuschenie_shaga_zapisi(fl_ctx *ctx, fl_value shag, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Правило шага записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param shag — «шаг»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_pravilo_shaga_zapisi(fl_ctx *ctx, fl_value shag, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Строки свидетеля записи».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -73964,6 +73973,36 @@ fl_status compiler_flang_pole_s_dopuscheniyami_zapisi(fl_ctx *ctx, fl_value pole
  * @return значение: «Значение»
  */
 fl_status compiler_flang_teorema_s_dopuscheniyami_zapisi(fl_ctx *ctx, fl_value teorema, fl_value po_dopuscheniyam, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг с правилом записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param shag — «шаг»: «Значение»
+ * @param pravila_shagov — «правила шагов»: список: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_shag_s_pravilom_zapisi(fl_ctx *ctx, fl_value shag, fl_value pravila_shagov, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Поле с правилами записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pole — «поле»: «Поле значения»
+ * @param pravila_shagov — «правила шагов»: список: «Значение»
+ * @return значение: «Поле значения»
+ */
+fl_status compiler_flang_pole_s_pravilami_zapisi(fl_ctx *ctx, fl_value pole, fl_value pravila_shagov, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Теорема с правилами записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param teorema — «теорема»: «Значение»
+ * @param pravila_shagov — «правила шагов»: список: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_teorema_s_pravilami_zapisi(fl_ctx *ctx, fl_value teorema, fl_value pravila_shagov, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Применение утверждения записи».
@@ -76215,6 +76254,16 @@ fl_status compiler_flang_shagnut_po_cepochke(fl_ctx *ctx, fl_value shag, fl_valu
 fl_status compiler_flang_shag_po_dopuscheniyu(fl_ctx *ctx, fl_value shag, fl_value nomer, fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Правило шага».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param shag — «шаг»: «Значение»
+ * @param pravilo — «правило»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_pravilo_shaga(fl_ctx *ctx, fl_value shag, fl_value pravilo, fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Номер шага по месту».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -76244,6 +76293,16 @@ fl_status compiler_flang_nomer_posle_golovy(fl_ctx *ctx, fl_value nomer_v_hvoste
  * @return значение: список: «Значение»
  */
 fl_status compiler_flang_shagi_po_dopuscheniyam(fl_ctx *ctx, fl_value shagi, fl_value po_dopuscheniyam, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Правила шагов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param shagi — «шаги»: список: «Значение»
+ * @param pravila_shagov — «правила шагов»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_pravila_shagov(fl_ctx *ctx, fl_value shagi, fl_value pravila_shagov, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Факт выписанного».
@@ -79966,6 +80025,15 @@ fl_status compiler_flang_osnovaniya_yadra(fl_ctx *ctx, fl_value sbros, fl_value 
  * @return значение: строка
  */
 fl_status compiler_flang_hvost_osnovaniy_vedomosti(fl_ctx *ctx, fl_value osnovaniya, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Хвост правила ведомости».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pravilo — «правило»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_hvost_pravila_vedomosti(fl_ctx *ctx, fl_value pravilo, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Типом ли сведено».

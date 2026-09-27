@@ -1,0 +1,2 @@
+#!/bin/sh
+exec bootstrap/flang io .githooks/commit-msg.fscript --plan "Commit message" -- "$(realpath "$1")"

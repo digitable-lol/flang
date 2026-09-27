@@ -295,6 +295,7 @@ command
 commands
 commented
 comments
+commit
 common
 commutative
 compared
@@ -977,6 +978,7 @@ merged
 merges
 merging
 message
+messages
 meta
 mid
 midpoint

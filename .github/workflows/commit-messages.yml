@@ -1,0 +1,37 @@
+name: Commit messages
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: commit-messages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: commit-messages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - name: Restore binary cache
+        id: binary
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-commit-messages
+      - name: Build bootstrap
+        if: steps.binary.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j4
+      - name: Check commit messages
+        run: bootstrap/flang io .githooks/commit-msg.fscript --plan "Commit range" -- "origin/${{ github.base_ref }}..${{ github.event.pull_request.head.sha }}"
+        env:
+          LC_ALL: C.UTF-8
+          FLANG_TMP: ${{ runner.temp }}

@@ -1779,7 +1779,7 @@ jobs:
       # названному долгу. Печать прошла 25 сентября 2026 (выпуск 0.7.22); замер
       # 26 сентября на дереве `gh/dev` `d5e203b89`: сошлось 6 проб из 6, код 0.
       - name: Check screen size
-        run: cd flang/proof/probes/screen-size && ../../../../bootstrap/flang io run.fscript --на-веру
+        run: cd flang/proof/probes/screen-size && ../../../../bootstrap/flang io run.fscript
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
           FLANG_TMP: ${{ runner.temp }}

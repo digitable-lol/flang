@@ -1,0 +1,7 @@
+модуль «Nullary consumer»
+  использует «Nullary dependency» из "totality-nullary-dependency.flang"
+
+тотальная функция «Громко»
+  принимает текст: строка
+  возвращает строка
+  соединить [(«Приветствие»), текст] по ""

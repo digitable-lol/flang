@@ -7,7 +7,7 @@
 команда: любая
 карта: Чего в языке нет вовсе
 рядом: 9969, 9970
-нужность: 3 — Сделано cecd27aa3/8947349ca/ae9603983 (46 uses по SHA, гейт self-hosted); остаток: actions/cache@v4 плавает (binary.yml:239,685,899); pull_request_target 0, github.event в run 0, self-test есть
+нужность: 3 — 27 сентября 2026: плавает только actions/cache@v4 — binary.yml:246, 763, 977, 1180, 1333, 1530, 1816; pull_request_target 0; github.event в теле run 0; самопроверка заслона release-without-cache не прогонялась
 ---
 
 # 9971 — защищены ли мы от хакинга и грязного хоста

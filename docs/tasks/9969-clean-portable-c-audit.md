@@ -7,7 +7,7 @@
 команда: любая
 карта: Чего в языке нет вовсе
 рядом: 9970, 9971
-нужность: 3 — Сделан лишь п.5 частично: 638a08539 (_DARWIN_C_SOURCE в runtime.c/conc.c); UBSan/второй компилятор/статанализ в git log нет; 985c8e41f — заведение; tcc/clang/gcc/cppcheck/clang-tidy есть в /usr/bin
+нужность: 3 — 27 сентября 2026: `clang -std=c99 -Wall -Wextra -Werror -pedantic` на bootstrap/flang_runtime.c и flang_repl.c — код 0, чисто; UBSan/ASan-прогона корпуса, cppcheck, clang-tidy в дереве и CI нет (fsanitize в .github и scripts 0)
 ---
 
 # 9969 — аудит: чистый ли у нас C

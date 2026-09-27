@@ -202,3 +202,23 @@ sh .githooks/pre-push               14 из 14 зелены, 39 с
 - `flang/scripts/code-guard.fscript` и `scripts/guards/link-guard.fscript` правлены
   по ведомостям, но не прогнаны: link-guard стоит 4 мин 39 с и 1,23 ГиБ (замер в
   `.github/workflows/ci.yml:594`), машина под печатью семени. В CI оба идут.
+
+## Чем закрыта
+
+Статус «сделана» стоял с 24 сентября 2026, а файл лежал вне `completed/`.
+Приёмка переснята 27 сентября 2026 на `dev` `7b3a73873` при разборе задачника:
+
+```
+$ node docs/site/build.mjs --check
+страниц 828 (из них заметок 720, английских 45), переездов 133, битых ссылок 0      код 0
+$ ls -d docs/flang/conc docs/flang/concurrency
+ls: cannot access 'docs/flang/conc': No such file or directory
+docs/flang/concurrency
+$ git grep -o 'flang/conc/' | wc -l
+293
+```
+
+Зеркала `docs/flang/conc` больше нет, битых ссылок ноль. Вхождений пути кода
+`flang/conc/` 293 против 292 на день закрытия: это пласт путей кода и
+свидетельств из раздела «Что осталось», а не новое зеркало. Он предмет
+отдельной работы, а не этой задачи.

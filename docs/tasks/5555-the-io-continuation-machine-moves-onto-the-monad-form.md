@@ -7,7 +7,7 @@
 команда: первая
 карта: —
 рядом: 0028
-нужность: 3 — форма «в монаде» есть (examples/monad/order-total.flang, flang/self/monad*.flang), но в examples/io/*.flang ни одного «в монаде» — план на неё не переехал; коммитов о переезде нет
+нужность: 3 — 27 сентября 2026: в docs/examples/io/*.flang (11 файлов) «в монаде» не встречается; форма есть только в docs/examples/monad/order-total.flang и flang/self/monad*.flang — план не переехал
 ---
 
 # 5555. План ввода-вывода пишется формой «в монаде»

@@ -7,7 +7,7 @@
 команда: любая
 карта: Что мешает больше всего
 рядом: —
-нужность: 3 — журнал на месте: proofterm.flang:3215 (src/proofterm.mjs), types.flang:6632 (builtins.mjs), литералы «свидетеля» в emit-elixir:4468/go:2414/python:5201/csharp:5081, 4 имени примеров
+нужность: 3 — 27 сентября 2026: журнал на месте — proofterm.flang:3537 (`src/proofterm.mjs`), types.flang:6672 (`builtins.mjs`), литералы «свидетеля» emit-elixir:4470, emit-go:2416, emit-python:5203, emit-csharp:5083, четыре имени примеров (svoystva.flang:80, 120, 313; types.flang:3419); всё в flang/self/** — ждёт конца печати семени
 ---
 
 # 5406. Журнал, до которого чистка комментариев не дотянулась

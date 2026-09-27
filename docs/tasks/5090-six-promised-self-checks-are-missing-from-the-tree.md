@@ -7,7 +7,7 @@
 команда: вторая
 карта: Что мешает больше всего
 рядом: 0001, 0016, 0049
-нужность: 2 — ни одного из 6 файлов нет (test.mjs в дереве 3); ссылки стоят в name-guard.mjs:151 и tempdir-guard.fscript:367–368 (uzel-celi); claim/binary-rules переехали на .flang без ссылок
+нужность: 2 — 27 сентября 2026: `git ls-files '*.test.mjs'` — 3 файла, ни одного из шести; flang/scripts/tempdir-guard.fscript:279 по-прежнему запускает отсутствующий flang/test/uzel-celi.test.mjs, name-guard.mjs:151 обещает name-guard.test.mjs, count-guard.mjs:15 — manpage.test.mjs
 ---
 
 # 5090. Шесть обещанных самопроверок в дереве отсутствуют

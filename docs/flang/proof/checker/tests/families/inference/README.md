@@ -1,6 +1,6 @@
 # Семья «вывод»: факт о типе едет в записи выводом
 
-Задача [6131](../../../../../../tasks/6131-sverschik-proigryvaet-blok-vyvoda.md),
+Задача [6131](../../../../../../tasks/6131-the-checker-replays-the-derivation-block.md),
 основание — [ADR-0022](../../../../../../adr/0022-a-type-fact-travels-as-a-derivation.md)
 §3.10; форма блока и границы приёма расписаны в
 [docs/design/proof-object-blok-vyvoda.md](../../../../../../design/proof-object-blok-vyvoda.md).

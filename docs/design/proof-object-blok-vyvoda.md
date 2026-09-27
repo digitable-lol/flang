@@ -2,7 +2,7 @@
 
 **Основание:** [ADR-0022](../adr/0022-a-type-fact-travels-as-a-derivation.md) §3.10,
 ведомость `flang/proof/tables/inference-rules.tsv`, задача
-[6131](../tasks/6131-sverschik-proigryvaet-blok-vyvoda.md).
+[6131](../tasks/6131-the-checker-replays-the-derivation-block.md).
 **Состояние:** приём в `flang/proof/checker/checker.c` написан и проверен на рукотворных
 записях; печать в ядре написана (задача 6132, `flang/self/zapis.flang`) и померена — §8;
 второй чекер `flang/proof/checker.flang` не тронут.

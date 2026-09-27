@@ -1,0 +1,128 @@
+модуль «Io timeout probes»
+
+объект «Probe»
+  «purpose»: строка
+  «command»: строка
+  «expected»: строка
+
+тотальная функция «Child»
+  принимает shell: строка
+  возвращает строка
+  пример «the child runs one shell command under a one-second host deadline»
+    дано shell равно "sleep 3"
+    ожидается "bootstrap/flang io flang/proof/probes/io-timeout/programs/child.fscript --timeout 1000 -- 'sleep 3'"
+  соединить ["bootstrap/flang io flang/proof/probes/io-timeout/programs/child.fscript --timeout 1000 -- '", shell, "'"] по ""
+
+тотальная функция «Probes»
+  возвращает список «Probe»
+  обеспечивает «there are exactly three probes» (длина результат) равен 3
+  [запись «Probe» с «purpose» равным "a child silent past the host deadline is answered with a failure, not a kill" и «command» равным («Child» от "sleep 3") и «expected» равным "\"result\":\"failed FLANG_IO_TIMEOUT: программа «sh» молчала дольше 1000 мс",
+   запись «Probe» с «purpose» равным "a child killed from outside is still answered as killed" и «command» равным («Child» от "kill -9 $$") и «expected» равным "\"result\":\"killed SIG9\"",
+   запись «Probe» с «purpose» равным "the deadline counts silence, not run time" и «command» равным («Child» от "for i in 1 2 3 4 5; do echo $i; sleep 0.4; done") и «expected» равным "\"result\":\"exited 0\""]
+
+тотальная функция «Matched»
+  принимает probe: «Probe», code: число, output: строка
+  возвращает признак
+  обеспечивает «matched only when the exit code is zero and the expected words are there» результат равен ((code равен 0) и притом (output содержит (probe.«expected»)))
+  пример «zero exit and expected words match»
+    дано probe равно запись «Probe» с «purpose» равным "" и «command» равным "" и «expected» равным "killed SIG9"
+    дано code равно 0
+    дано output равно "{\"result\":\"killed SIG9\"}"
+    ожидается да
+  пример «other words do not match»
+    дано probe равно запись «Probe» с «purpose» равным "" и «command» равным "" и «expected» равным "killed SIG9"
+    дано code равно 0
+    дано output равно "{\"result\":\"exited 0\"}"
+    ожидается нет
+  (code равен 0) и притом (output содержит (probe.«expected»))
+
+тотальная функция «Complaints»
+  принимает probe: «Probe», code: число, output: строка
+  возвращает список строки
+  пример «a match gives no complaint»
+    дано probe равно запись «Probe» с «purpose» равным "kill" и «command» равным "c" и «expected» равным "killed SIG9"
+    дано code равно 0
+    дано output равно "killed SIG9"
+    ожидается пустой список
+  пример «a mismatch names the purpose, the expectation and the answer»
+    дано probe равно запись «Probe» с «purpose» равным "kill" и «command» равным "c" и «expected» равным "killed SIG9"
+    дано code равно 0
+    дано output равно "exited 0"
+    ожидается ["kill: expected exit 0 and «killed SIG9», got exit 0 and «exited 0» from c"]
+  отфильтровать [(соединить [(probe.«purpose»), ": expected exit 0 and «", (probe.«expected»), "», got exit ", (к строке code), " and «", output, "» from ", (probe.«command»)] по "")] где complaint → не («Matched» от probe и code и output)
+
+тотальная функция «Merge»
+  принимает earlier: список строки, later: список строки
+  возвращает список строки
+  пример «two complaint lists become one»
+    дано earlier равно ["a"]
+    дано later равно ["b"]
+    ожидается ["a", "b"]
+  свёртка later начиная с earlier как merged и complaint → (добавить complaint к merged)
+
+тотальная функция «Outcome»
+  принимает complaints: список строки, done: число
+  возвращает «Продолжение»
+  пример «all probes matched and the plan reaches the end»
+    дано complaints равно пустой список
+    дано done равно 3
+    ожидается вариант «Конец работы» с значение равным "io timeout probes: matched 3 of 3"
+  разбор complaints
+    случай пусто
+      то вариант «Конец работы» с значение равным (соединить ["io timeout probes: matched ", (к строке done), " of ", (к строке done)] по "")
+    случай голова и хвост
+      то вариант «Провал» с код равным "FLANG_IO_TIMEOUT_PROBES" и сообщение равным (соединить (приписать (соединить ["io timeout probes DIVERGED: ", (к строке (длина complaints)), " of ", (к строке done)] по "") к complaints) по "\n  · ")
+
+тип «Stage»
+  вариант «Start»
+  вариант «Awaiting probe» содержит probe: «Probe», remaining: список «Probe», complaints: список строки, done: число
+
+тотальная функция «Begin»
+  возвращает «Stage»
+  пример «the plan starts with the first probe»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Walk»
+  принимает queue: список «Probe», complaints: список строки, done: число
+  возвращает «Продолжение»
+  разбор queue
+    случай пусто
+      то «Outcome» от complaints и done
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", (соединить ["cd ../../../.. && exec ", (голова.«command»)] по "")]) и потом равным (вариант «Awaiting probe» с probe равным голова и remaining равным хвост и complaints равным complaints и done равным done)
+
+тотальная функция «Nothing to look with»
+  принимает reason: строка
+  возвращает «Продолжение»
+  пример «a probe that could not run is not a verdict on the host»
+    дано reason равно "sh did not start"
+    ожидается вариант «Не проверено» с код равным "FLANG_IO_TIMEOUT_PROBES_CANNOT_LOOK" и сообщение равным "sh did not start"
+  вариант «Не проверено» с код равным "FLANG_IO_TIMEOUT_PROBES_CANNOT_LOOK" и сообщение равным reason
+
+тотальная функция «After probe»
+  принимает probe: «Probe», remaining: список «Probe», complaints: список строки, done: число, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Walk» от remaining и («Merge» от complaints и («Complaints» от probe и code и (соединить [output, errors] по ""))) и (done плюс 1)
+    случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
+      то «Nothing to look with» от (соединить ["probe «", (probe.«purpose»), "» was killed by ", signal] по "")
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Nothing to look with» от (соединить ["probe «", (probe.«purpose»), "» did not run (", code, "): ", message] по "")
+    случай любое
+      то «Nothing to look with» от (соединить ["expected a process answer on probe «", (probe.«purpose»), "»"] по "")
+
+тотальная функция «Next»
+  принимает stage: «Stage», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Start»
+      то «Walk» от («Probes») и пустой список и 0
+    случай вариант «Awaiting probe» с probe как probe и remaining как remaining и complaints как complaints и done как done
+      то «After probe» от probe и remaining и complaints и done и reply
+
+план «Io timeout probes»
+  состояние «Stage»
+  начинает с «Begin»
+  обрабатывает «Next»

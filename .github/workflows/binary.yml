@@ -1787,6 +1787,9 @@ jobs:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
           FLANG_TMP: ${{ runner.temp }}
 
+      - name: Check io timeout answers
+        run: cd flang/proof/probes/io-timeout && ../../../../bootstrap/flang io run.fscript
+
   # ── Дорогая половина: только тег и ручной запуск ──────────────────────────
   korpus:
     name: corpus-examples

@@ -1,0 +1,69 @@
+модуль «Io timeout child»
+
+тип «Stage»
+  вариант «Start»
+  вариант «Awaiting arguments»
+  вариант «Awaiting process»
+
+тотальная функция «Begin»
+  возвращает «Stage»
+  пример «the child first asks for its arguments»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Command»
+  принимает arguments: список строки
+  возвращает строка
+  пример «the first argument is the shell command»
+    дано arguments равно ["sleep 3", "unused"]
+    ожидается "sleep 3"
+  пример «no arguments give an empty command»
+    дано arguments равно пустой список
+    ожидается ""
+  разбор arguments
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Report»
+  принимает reply: «Отклик»
+  возвращает строка
+  пример «a host failure is reported with its code and message»
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_TIMEOUT" и сообщение равным "silent"
+    ожидается "failed FLANG_IO_TIMEOUT: silent"
+  пример «a killed process is reported with its signal»
+    дано reply равно вариант «Процесс убит» с сигнал равным "SIG9" и вывод равным "" и ошибки равным ""
+    ожидается "killed SIG9"
+  пример «a finished process is reported with its exit code»
+    дано reply равно вариант «Процесс завершён» с код равным 0 и вывод равным "1" и ошибки равным ""
+    ожидается "exited 0"
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то соединить ["exited ", (к строке code)] по ""
+    случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
+      то соединить ["killed ", signal] по ""
+    случай вариант «Сбой» с код как code и сообщение как message
+      то соединить ["failed ", code, ": ", message] по ""
+    случай любое
+      то "unexpected reply"
+
+тотальная функция «Next»
+  принимает stage: «Stage», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Start»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting arguments»)
+    случай вариант «Awaiting arguments»
+      то разбор reply
+        случай вариант «Доводы» с доводы как arguments
+          то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", («Command» от arguments)]) и потом равным (вариант «Awaiting process»)
+        случай любое
+          то вариант «Не проверено» с код равным "FLANG_IO_TIMEOUT_CHILD_NO_ARGUMENTS" и сообщение равным (соединить ["arguments were not read: ", («Report» от reply)] по "")
+    случай вариант «Awaiting process»
+      то вариант «Конец работы» с значение равным («Report» от reply)
+
+план «Io timeout child»
+  состояние «Stage»
+  начинает с «Begin»
+  обрабатывает «Next»

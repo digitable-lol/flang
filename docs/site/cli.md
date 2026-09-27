@@ -499,7 +499,7 @@ flang io <файл.flang> [--plan 'Имя'] [--max-orders N] [--seed N] [--in-di
 | `--plan 'Имя'` | Which plan to run, when there is more than one |
 | `--max-orders N` | The limit of orders per run. 10000 by default |
 | `--max-steps N` | The evaluation step limit for one turn |
-| `--timeout N` | The wait time for one order, in milliseconds. 30000 by default |
+| `--timeout N` | How long a process started by «Запустить процесс» may stay silent, in milliseconds, counted from its last byte on stdout or stderr, not from its start. 30000 by default. Past it the host kills the process and answers «Сбой» with `FLANG_IO_TIMEOUT` |
 | `--seed N` | The randomness seed: the run becomes repeatable |
 | `--in-dir` | Forbid paths outside the directory of the input file |
 | `--pretty` | JSON with indentation |

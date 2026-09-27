@@ -757,7 +757,7 @@ static const char HELP_TOKENS[] =
 
 static const char HELP_IO[] =
     "flang io <файл.flang> [--plan «Имя»] [--max-orders N] [--seed N] [--in-dir] [--pretty]\n"
-    "                      [--trust] [--unproven refuse|warn|allow] [-- довод…]\n"
+    "                      [--timeout МС] [--trust] [--unproven refuse|warn|allow] [-- довод…]\n"
     "\n"
     "Исполняет ПЛАН — единственное место языка, где программа встречается с миром.\n"
     "Встречается не сама: каждый шаг возвращает ОПИСАНИЕ действия, а делает его\n"
@@ -769,6 +769,10 @@ static const char HELP_IO[] =
     "  --seed N        семя случайности: прогон становится повторимым\n"
     "  --in-dir        запретить пути за пределы каталога входного файла\n"
     "  --max-steps N   предел шагов вычисления на один виток\n"
+    "  --timeout МС    срок ТИШИНЫ процесса из «Запустить процесс», миллисекундами\n"
+    "                  (по умолчанию 30000): отсчёт от последнего байта в stdout\n"
+    "                  или stderr, а не от запуска. Молчит дольше — хозяин убивает\n"
+    "                  его и отвечает «Сбой» с кодом FLANG_IO_TIMEOUT\n"
     "  --pretty        JSON с отступами\n"
     "  --trust         исполнить недоказанный план: вердикт не считается вовсе, и\n"
     "                  об этом говорится своей строкой. Кириллицей — «--на-веру»\n"
@@ -15010,6 +15014,7 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
   repl_buf err;
   int status = 0;
   bool too_much = false;
+  bool silent_too_long = false;
   if (pipe(out_pipe) != 0) {
     return io_fail_errno("FLANG_IO_SPAWN", "труба вывода не заведена");
   }
@@ -15060,6 +15065,7 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
       int top = -1;
       int index = 0;
       struct timeval wait;
+      int ready = 0;
       FD_ZERO(&set);
       for (index = 0; index < 2; index += 1) {
         if (alive[index]) {
@@ -15069,7 +15075,12 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
       }
       wait.tv_sec = host->timeout_ms / 1000;
       wait.tv_usec = (host->timeout_ms % 1000) * 1000;
-      if (select(top + 1, &set, NULL, NULL, &wait) <= 0) {
+      ready = select(top + 1, &set, NULL, NULL, &wait);
+      if (ready < 0 && errno == EINTR) {
+        continue;
+      }
+      if (ready <= 0) {
+        silent_too_long = ready == 0;
         kill(child, SIGKILL);
         break;
       }
@@ -15102,6 +15113,13 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
     buf_free(&out);
     buf_free(&err);
     return io_fail("FLANG_IO_SPAWN", buffer);
+  }
+  if (silent_too_long) {
+    char buffer[256];
+    snprintf(buffer, sizeof(buffer), "программа «%s» молчала дольше %ld мс и оборвана хозяином (--timeout)", program, host->timeout_ms);
+    buf_free(&out);
+    buf_free(&err);
+    return io_fail("FLANG_IO_TIMEOUT", buffer);
   }
   {
     fl_value fields[3];

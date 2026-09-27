@@ -16,7 +16,7 @@
 
 тотальная функция «Checks»
   возвращает список «Check»
-  обеспечивает «there are exactly sixteen checks» (длина результат) равен 16
+  обеспечивает «there are exactly seventeen checks» (длина результат) равен 17
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "sh scripts/guards/prose-numbers-guard.sh",
    запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "sh scripts/seed/seed-runtime-is-source.sh",
    запись «Check» с «name» равным "seed-refresh" и «command» равным "sh scripts/seed/seed-refresh.sh --check",
@@ -28,6 +28,7 @@
    запись «Check» с «name» равным "cyrillic-file-names-guard" и «command» равным "bootstrap/flang io scripts/guards/cyrillic-file-names-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "translit-file-names-guard" и «command» равным "bootstrap/flang io scripts/guards/translit-file-names-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "no-package-json-guard" и «command» равным "bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Проверка",
+   запись «Check» с «name» равным "run-verdict-debt-guard" и «command» равным "bootstrap/flang io scripts/guards/run-verdict-debt-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "shortcut-collector" и «command» равным "bootstrap/flang io scripts/shortcut-collector.fscript --plan Сбор --max-orders 20000 --на-веру",
    запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка",
    запись «Check» с «name» равным "licenses" и «command» равным "./ярлык лицензии:проверка",
@@ -302,7 +303,7 @@
 тотальная функция «Leftovers»
   принимает directory: строка
   возвращает список строки
-  обеспечивает «one file for every check and the directory itself» (длина результат) равен 17
+  обеспечивает «one file for every check and the directory itself» (длина результат) равен 18
   добавить directory к (отобразить («Checks») как check → («Output path» от directory и check))
 
 тотальная функция «Remove files»

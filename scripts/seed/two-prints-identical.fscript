@@ -1,5 +1,5 @@
 модуль «Two prints identical»
-  использует «Lists» только «Взять первые», «Приписать в начало», «Соединить списки»
+  использует «Lists» только «Соединить списки»
   использует «Rules» из "../rules.fscript"
   использует «Inquiry» из "../inquiry.fscript"
   использует «Reading» из "../reading.fscript"
@@ -115,7 +115,8 @@
     дано path равно "/print.log"
     ожидается "/"
   пусть parts равно (разделить path по "/")
-  пусть above равно (соединить («Взять первые» от parts и ((длина parts) минус 1)) по "/")
+  пусть cut равно (((длина path) минус (длина («Last of» от parts))) минус 1)
+  пусть above равно (если cut меньше 1 то "" иначе (подстрока path с 1 по cut))
   «Chosen» от [(«When» от ((длина parts) равен 1) и "."),
     («When» от (пусто above) и "/")] и above
 
@@ -332,18 +333,86 @@
   принимает answers: список «Answer»
   возвращает список «Question»
   если «Is ready» от answers
-    то приписать («Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/two-prints-identical."] по "")) к (отобразить («Sides») как side → «Run» от («Names question» от side) и "env" и ["LC_ALL=C", "ls", "-A", (соединить [(«Tree» от side и answers), "/flang/src/emit/c"] по "")])
+    то приписать («Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/two-prints-identical."] по "")) к («Соединить списки» от (отобразить («Sides») как side → «Run» от («Names question» от side) и "env" и ["LC_ALL=C", "ls", "-A", (соединить [(«Tree» от side и answers), "/flang/src/emit/c"] по "")]) и (отобразить («Sides») как side → «Read» от («Fingerprint question» от side) и (соединить [(«Tree» от side и answers), "/scripts/seed-fingerprint"] по "")))
     иначе пустой список
+
+тотальная функция «Fingerprint question»
+  принимает side: строка
+  возвращает строка
+  соединить ["fingerprint ", side] по ""
+
+тотальная функция «Body mark»
+  возвращает строка
+  "# ── тело семени ──\n"
+
+тотальная функция «Printed name»
+  принимает line: строка
+  возвращает строка
+  пример «A body line names a printed file»
+    дано line равно "ae75865bd84f  bootstrap/compiler_flang.c"
+    ожидается "compiler_flang.c"
+  пример «A comment names nothing»
+    дано line равно "# То, что печать положила в bootstrap/"
+    ожидается ""
+  «After» от "bootstrap/" и («Word» от 2 и line)
+
+тотальная функция «Body names»
+  принимает fingerprint: строка
+  возвращает список строки
+  пример «Only the body after the mark is read»
+    дано fingerprint равно "11  flang/self/lexer.flang\n# ── тело семени ──\n# comment\n22  bootstrap/Makefile\n33  bootstrap/compiler_flang.c\n"
+    ожидается ["Makefile", "compiler_flang.c"]
+  пример «A fingerprint without a body names nothing»
+    дано fingerprint равно "11  flang/self/lexer.flang\n"
+    ожидается пустой список
+  пусть parts равно (разделить fingerprint по («Body mark»))
+  отфильтровать (отобразить («Lines» от (свёртка («Without first part» от parts) начиная с "" как body и part → part)) как line → «Printed name» от line) где name → не (пусто name)
+
+тотальная функция «Without first part»
+  принимает parts: список строки
+  возвращает список строки
+  пример «The text before the mark is dropped»
+    дано parts равно ["head", "body"]
+    ожидается ["body"]
+  разбор parts
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Union»
+  принимает leading: список строки, joining: список строки
+  возвращает список строки
+  пример «Names of the second list join the first once»
+    дано leading равно ["flang_cli.c", "flang_repl.c"]
+    дано joining равно ["Makefile", "flang_cli.c"]
+    ожидается ["flang_cli.c", "flang_repl.c", "Makefile"]
+  свёртка joining начиная с leading как kept и name → если kept содержит name то kept иначе (добавить name к kept)
+
+тотальная функция «Side names»
+  принимает side: строка, answers: список «Answer»
+  возвращает список строки
+  «Union» от («Lines» от («Output of» от («Names question» от side) и answers)) и («Body names» от («Output of» от («Fingerprint question» от side) и answers))
+
+тотальная функция «Side listing»
+  принимает side: строка, answers: список «Answer»
+  возвращает строка
+  соединить («Side names» от side и answers) по "\n"
+
+тотальная функция «Unfingerprinted»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Sides») где side → («Answered» от («Fingerprint question» от side) и answers) и притом (пусто («Body names» от («Output of» от («Fingerprint question» от side) и answers)))
 
 тотальная функция «Names»
   принимает answers: список «Answer»
   возвращает список строки
-  «Lines» от («Output of» от («Names question» от "first") и answers)
+  «Side names» от "first" и answers
 
 тотальная функция «Names agree»
   принимает answers: список «Answer»
   возвращает признак
-  («Output of» от («Names question» от "first") и answers) равен («Output of» от («Names question» от "second") и answers)
+  («Side listing» от "first" и answers) равен («Side listing» от "second" и answers)
 
 тотальная функция «Printed»
   принимает side: строка, name: строка, answers: список «Answer»
@@ -359,8 +428,8 @@
   принимает answers: список «Answer»
   возвращает список «Question»
   «Chosen» от [(«When» от (не («Is ready» от answers)) и (пустой список)),
-    («When» от («Names agree» от answers) и (отобразить («Names» от answers) как name → «Run» от (соединить ["printed ", name] по "") и "test" и ["-f", («Printed» от "first" и name и answers)]))] и [(«Write» от "list first" и («List file» от "first" и answers) и («Output of» от («Names question» от "first") и answers)),
-    («Write» от "list second" и («List file» от "second" и answers) и («Output of» от («Names question» от "second") и answers)),
+    («When» от («Names agree» от answers) и (отобразить («Names» от answers) как name → «Run» от (соединить ["printed ", name] по "") и "test" и ["-f", («Printed» от "first" и name и answers)]))] и [(«Write» от "list first" и («List file» от "first" и answers) и («Side listing» от "first" и answers)),
+    («Write» от "list second" и («List file» от "second" и answers) и («Side listing» от "second" и answers)),
     («Run» от "names difference" и "env" и ["LC_ALL=C", "diff", («List file» от "first" и answers), («List file» от "second" и answers)])]
 
 тотальная функция «Regular names»
@@ -435,6 +504,19 @@
       "дерева и прибор, зовущийся сам, а не руками."]
     иначе пустой список
 
+тотальная функция «With names»
+  принимает told: список строки, names: список строки
+  возвращает список строки
+  пример «The compared files are named right after the count»
+    дано told равно ["печати совпали побайтово: файлов 2, байт 10", "  первая:  /p/1/tree"]
+    дано names равно ["Makefile", "compiler_flang.c"]
+    ожидается ["печати совпали побайтово: файлов 2, байт 10", "  сверены: Makefile, compiler_flang.c", "  первая:  /p/1/tree"]
+  разбор told
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то приписать голова к (приписать (соединить ["  сверены: ", (соединить names по ", ")] по "") к хвост)
+
 тотальная функция «Differing»
   принимает outcome: «Outcome»
   возвращает список строки
@@ -447,7 +529,7 @@
   принимает answers: список «Answer»
   возвращает «Продолжение»
   «Chosen» от [(«When» от (не («Names agree» от answers)) и (вариант «Провал» с код равным "FLANG_PRINTS_DIFFER" и сообщение равным (соединить (приписать "РАЗОШЛИСЬ: наборы файлов в bootstrap/ не совпадают" к (отобразить («Lines» от («Output of» от "names difference" и answers)) как line → соединить ["  ", line] по "")) по "\n"))),
-    («When» от ((«Compared» от answers).«same») и (вариант «Конец работы» с значение равным (соединить («Identical» от («Compared» от answers) и (отобразить («Sides») как side → «Given tree» от side и answers) и (отобразить («Sides») как side → «Finding of» от side и answers)) по "\n")))] и (вариант «Провал» с код равным "FLANG_PRINTS_DIFFER" и сообщение равным (соединить («Differing» от («Compared» от answers)) по "\n"))
+    («When» от ((«Compared» от answers).«same») и (вариант «Конец работы» с значение равным (соединить («With names» от («Identical» от («Compared» от answers) и (отобразить («Sides») как side → «Given tree» от side и answers) и (отобразить («Sides») как side → «Finding of» от side и answers)) и («Regular names» от answers)) по "\n")))] и (вариант «Провал» с код равным "FLANG_PRINTS_DIFFER" и сообщение равным (соединить («Differing» от («Compared» от answers)) по "\n"))
 
 тотальная функция «Refusal»
   принимает answers: список «Answer»
@@ -456,6 +538,7 @@
     («When» от ((длина («Not directories» от answers)) больше 0) и ([(соединить ["не каталог: ", («First line» от (соединить («Not directories» от answers) по "\n"))] по "")])),
     («When» от («Share a journal» от answers) и ([(соединить ["НЕ ПРОВЕРЕНО: обеим печатям достался ОДИН журнал — ", ((«Finding of» от "first" и answers).«journal»)] по ""), "  Значит про одну из них не известно ничего. Назовите журналы прямо:", (соединить ["  FLANG_PRINT_LOG_1=<журнал первой> FLANG_PRINT_LOG_2=<журнал второй> bootstrap/flang io scripts/seed/two-prints-identical.fscript -- ", («Given tree» от "first" и answers), " ", («Given tree» от "second" и answers)] по "")])),
     («When» от ((длина («Troubles» от answers)) больше 0) и ([(соединить (приписать "НЕ ПРОВЕРЕНО: печать ещё не кончилась или кончилась не успехом:" к (отобразить («Troubles» от answers) как trouble → соединить ["  ", trouble] по "")) по "\n"), "Это НЕ «разошлись». Повторить, когда обе печати кончатся."])),
+    («When» от ((длина («Unfingerprinted» от answers)) больше 0) и ([(соединить ["НЕ ПРОВЕРЕНО: в отпечатке печати нет тела семени — какие файлы напечатаны, не узнать: ", (соединить (отобразить («Unfingerprinted» от answers) как side → соединить [(«Tree» от side и answers), "/scripts/seed-fingerprint"] по "") по ", ")] по "")])),
     («When» от (пусто («Work» от answers)) и ([(соединить ["ПРОВЕРИТЬ НЕ УДАЛОСЬ: не создался каталог в ", («Setting of» от "temporary" и "/srv/tmp" и answers)] по "")]))] и (пустой список)
 
 тотальная функция «Verdict»
@@ -491,3 +574,111 @@
   состояние «Inquiry»
   начинает с «Begin»
   обрабатывает «Next»
+
+объект «Trial»
+  «name»: строка
+  «code»: число
+  «marks»: список строки
+  «words»: строка
+
+тотальная функция «Trials»
+  возвращает список «Trial»
+  [запись «Trial» с «name» равным "identical" и «code» равным 0 и «marks» равным ["сверены: flang_cli.c, flang_repl.c, flang_runtime.c, flang_runtime.h, Makefile, compiler_flang.c, compiler_flang.h"] и «words» равным "два одинаковых дерева — совпали, и сверены напечатанные файлы",
+   запись «Trial» с «name» равным "changed byte" и «code» равным 1 и «marks» равным ["РАЗОШЁЛСЯ: bootstrap/compiler_flang.c"] и «words» равным "байт в compiler_flang.c второй печати — разошлись, файл назван",
+   запись «Trial» с «name» равным "missing makefile" и «code» равным 1 и «marks» равным ["РАЗОШЁЛСЯ: bootstrap/Makefile"] и «words» равным "у второй печати нет Makefile — разошлись, файл назван"]
+
+тотальная функция «Sandbox»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Made of» от "sandbox" и answers
+
+тотальная функция «Twin trees script»
+  возвращает строка
+  "mkdir -p \"$0/first/tree/bootstrap\" \"$0/first/tree/flang/src/emit\" \"$0/first/tree/scripts\" && cp bootstrap/Makefile bootstrap/*.c bootstrap/*.h \"$0/first/tree/bootstrap/\" && cp -R flang/src/emit/c \"$0/first/tree/flang/src/emit/c\" && cp scripts/seed-fingerprint \"$0/first/tree/scripts/\" && printf 'ПЕЧАТЬ КОД=0\\n' > \"$0/first/print.log\" && cp -R \"$0/first\" \"$0/second\""
+
+тотальная функция «Comparison of twins»
+  принимает name: строка, sandbox: строка
+  возвращает «Question»
+  «Run from» от name и "../.." и "bootstrap/flang" и ["io", "scripts/seed/two-prints-identical.fscript", "--plan", "Check", "--timeout", "600000", "--", (соединить [sandbox, "/first/tree"] по ""), (соединить [sandbox, "/second/tree"] по "")]
+
+тотальная функция «Spoiling»
+  принимает name: строка, script: строка, sandbox: строка
+  возвращает «Question»
+  «Run» от name и "sh" и ["-c", script, sandbox]
+
+тотальная функция «Forgery steps»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть sandbox равно («Sandbox» от answers)
+  если пусто sandbox
+    то пустой список
+    иначе [(«Run from» от "twins" и "../.." и "sh" и ["-c", («Twin trees script»), sandbox]),
+      («Comparison of twins» от "identical" и sandbox),
+      («Spoiling» от "spoil byte" и "printf x >> \"$0/second/tree/bootstrap/compiler_flang.c\"" и sandbox),
+      («Comparison of twins» от "changed byte" и sandbox),
+      («Spoiling» от "drop makefile" и "cp \"$0/first/tree/bootstrap/compiler_flang.c\" \"$0/second/tree/bootstrap/\" && rm \"$0/second/tree/bootstrap/Makefile\"" и sandbox),
+      («Comparison of twins» от "missing makefile" и sandbox),
+      («Run» от "sandbox cleanup" и "rm" и ["-rf", sandbox])]
+
+тотальная функция «Forgery stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  если stages равен 1
+    то [(«Temporary directory» от "sandbox" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/two-prints-forgery."] по ""))]
+    иначе «Forgery steps» от answers
+
+тотальная функция «Trial trouble»
+  принимает trial: «Trial», code: число, said: строка
+  возвращает список строки
+  пример «A trial that answered as expected has no trouble»
+    дано trial равно запись «Trial» с «name» равным "changed byte" и «code» равным 1 и «marks» равным ["РАЗОШЁЛСЯ: bootstrap/compiler_flang.c"] и «words» равным "байт"
+    дано code равно 1
+    дано said равно "РАЗОШЁЛСЯ: bootstrap/compiler_flang.c"
+    ожидается пустой список
+  пример «A blind comparison is named with its code»
+    дано trial равно запись «Trial» с «name» равным "changed byte" и «code» равным 1 и «marks» равным ["РАЗОШЁЛСЯ: bootstrap/compiler_flang.c"] и «words» равным "байт"
+    дано code равно 0
+    дано said равно "печати совпали"
+    ожидается ["байт: ждали код 1 и «РАЗОШЁЛСЯ: bootstrap/compiler_flang.c», получили код 0"]
+  если (code равен (trial.«code»)) и притом ((длина (отфильтровать (trial.«marks») где mark → не (said содержит mark))) равен 0)
+    то пустой список
+    иначе [(соединить [(trial.«words»), ": ждали код ", (к строке (trial.«code»)), " и «", (соединить (trial.«marks») по "», «"), "», получили код ", (к строке code)] по "")]
+
+тотальная функция «Forgery troubles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от (отобразить («Trials») как trial → «Trial trouble» от trial и («Exit code of» от (trial.«name») и answers) и (соединить [(«Output of» от (trial.«name») и answers), («Errors of» от (trial.«name») и answers)] по "\n"))
+
+тотальная функция «Forgery verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  разбор («Forgery troubles» от answers)
+    случай пусто
+      то вариант «Конец работы» с значение равным (соединить (приписать "подлог пойман: сверка двух печатей видит напечатанные файлы" к (отобразить («Trials») как trial → соединить ["  · ", (trial.«words»)] по "")) по "\n")
+    случай голова и хвост
+      то вариант «Провал» с код равным "FLANG_PRINTS_FORGERY_MISSED" и сообщение равным (соединить (приписать "ПОДЛОГ НЕ ПОЙМАН — сверка двух печатей слепа:" к (приписать голова к хвост)) по "\n  · ")
+
+тотальная функция «Proceed with forgery»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Forgery verdict» от answers
+        иначе «Proceed with forgery» от («Forgery stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin forgery»
+  возвращает «Inquiry»
+  «Begin with» от 2
+
+тотальная функция «Next forgery step»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed with forgery» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Begin forgery»
+  обрабатывает «Next forgery step»

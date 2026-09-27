@@ -1,4 +1,5 @@
 # How a proof actually works
+<!-- замер: версия 0.7.22 · дерево 1043ff82a · сверено 2026-09-27 -->
 
 The flang compiler discharges three promises before it will build a file:
 
@@ -10,8 +11,10 @@ The flang compiler discharges three promises before it will build a file:
 
 Below is how each of the three is discharged, what stays in the compiled code,
 and what disappears from it. Every output block was captured from actual runs of
-`flang 0.7.20` (built from trunk, 19 September 2026); the command sits next to
-the output, and any block reproduces in under a minute.
+`flang {{выпуск.версия}}`; the command sits next to the output, and any block
+reproduces in under a minute. Which tree and which day is stated in this page's
+measurement declaration — the line a guard reads and markdown does not show — so
+that the blocks going stale is a red check rather than a silence.
 
 ## Who checks what
 
@@ -145,9 +148,11 @@ decrease forever.
 
 ```
 $ flang check rastyot.flang; echo "exit $?"
-FLANG_NOT_TOTAL … строка 8, столбец 11: тотальная функция «До нуля»:
-рекурсивный вызов «До нуля» не убывает — аргумент 1 («н» add 1) увеличивает
-параметр «н». Передавайте часть аргумента …
+модуль «Растёт»: функций 1, из них с доказанным завершением 0; типов 0
+без доказанного завершения: «До нуля»
+FLANG_NOT_TOTAL в файле rastyot.flang, строка 8, столбец 11: тотальная функция
+«До нуля»: рекурсивный вызов «До нуля» не убывает — аргумент 1 («н» add 1)
+увеличивает параметр «н». Передавайте часть аргумента …
 rastyot.flang: не проверено — замечаний 1
 exit 1
 ```
@@ -174,8 +179,14 @@ Now a call with an argument that plainly violates it:
 
 ```
 $ flang check zakaz.flang; echo "exit $?"
-FLANG_PRECONDITION_CALL … строка 16, столбец 3: вызов «Цена со скидкой» в
-функции «Счёт» не снимает предусловие «скидка не больше цены»
+модуль «Заказ»: функций 2, из них с доказанным завершением 2; типов 0
+FLANG_PRECONDITION_CALL в файле zakaz.flang, строка 11, столбец 3: вызов «Цена
+со скидкой» в функции «Счёт» не снимает предусловие «скидка не больше цены»:
+ограниченность точным потолком по построению не проходит: выражение случая
+собрано не только из ограниченного сверху. … вызывающему здесь известно:
+собственных «требует» — 0, объявленных типов у параметров — 0, доказанных
+обещаний вызванных в доводе — 0; условие ветвления фактом ядру не является
+(граница названа в шапке файла)
 zakaz.flang: не проверено — замечаний 1
 exit 1
 ```
@@ -238,8 +249,9 @@ The promise is **false** — a discount can exceed the price. The kernel says so
 
 ```
 $ flang check --proof skidka.flang
-  постусловие «в минус не уходим» … — сетка 1 значение (примеры функции):
-  … Это не доказательство — теоремы при утверждении нет
+  постусловие «в минус не уходим» функции «Цена со скидкой» — сетка 1 значение
+  (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано
+  только их число. Это не доказательство — теоремы при утверждении нет
   утверждений 1: доказано 0, сетка 1, объявлено, не доказано 0
 ```
 
@@ -249,6 +261,15 @@ Since 0.7.21 running that takes explicit consent:
 $ flang run skidka.flang --function 'Цена со скидкой' --args '{"цена": 100, "скидка": 150}'
 не доказано: утверждений 1: доказано 0, сетка 1, на веру 0 — запуск только по
 явному согласию: --на-веру
+недоказанное — поимённо, словами отчёта о доказательствах:
+  1. постусловие «в минус не уходим» функции «Цена со скидкой» — сетка 1 значение
+  (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано
+  только их число. Это не доказательство — теоремы при утверждении нет
+«сетка» закрывается так: написать при утверждении «теорема … утверждаем …
+следовательно доказано» либо переписать его условие так, чтобы оно совпало с
+ветвью тела, — тогда цель сводит правило «разбор цели по условию»
+отчёт о доказательствах целиком, с правилами и у доказанных тоже: flang check
+…/skidka.flang --proof
 exit 3
 ```
 

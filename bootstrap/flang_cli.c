@@ -1280,6 +1280,74 @@ static int cli_steps_key(int *argc, char **argv, size_t *steps) {
   return 0;
 }
 
+static int cli_bytes(const char *text, size_t *out) {
+  static const char *const units[] = {"K", "К", "M", "М", "G", "Г", "T", "Т"};
+  size_t value = 0;
+  size_t at = 0;
+  size_t scale = 1;
+  size_t index = 0;
+  if (text == NULL || text[0] < '0' || text[0] > '9') {
+    return 0;
+  }
+  for (at = 0; text[at] >= '0' && text[at] <= '9'; at += 1) {
+    if (value > ((size_t)-1 - (size_t)(text[at] - '0')) / 10) {
+      return 0;
+    }
+    value = value * 10 + (size_t)(text[at] - '0');
+  }
+  if (text[at] != 0) {
+    size_t power = 0;
+    while (index < sizeof(units) / sizeof(units[0]) && strcmp(text + at, units[index]) != 0) {
+      index += 1;
+    }
+    if (index == sizeof(units) / sizeof(units[0])) {
+      return 0;
+    }
+    for (power = 0; power <= index / 2; power += 1) {
+      if (scale > ((size_t)-1) / 1024) {
+        return 0;
+      }
+      scale *= 1024;
+    }
+  }
+  if (value > ((size_t)-1) / scale) {
+    return 0;
+  }
+  *out = value * scale;
+  return 1;
+}
+
+static int cli_memory_key(int *argc, char **argv, size_t *bytes, int *given) {
+  int read = 1;
+  int write = 1;
+  int count = *argc;
+  while (read < count) {
+    const char *word = argv[read];
+    if (strcmp(word, "--предел-памяти") == 0 || strcmp(word, "--memory-limit") == 0) {
+      if (read + 1 >= count) {
+        fputs("flang --предел-памяти: не названо число байт\n", stderr);
+        return 2;
+      }
+      if (!cli_bytes(argv[read + 1], bytes)) {
+        fprintf(stderr,
+                "flang --предел-памяти: «%s» — не целое число байт; можно с буквой K, M, G или T "
+                "(К, М, Г, Т), 0 — без предела\n",
+                argv[read + 1]);
+        return 2;
+      }
+      *given = 1;
+      read += 2;
+      continue;
+    }
+    argv[write] = argv[read];
+    write += 1;
+    read += 1;
+  }
+  argv[write] = NULL;
+  *argc = write;
+  return 0;
+}
+
 typedef struct cli_run {
   int argc;
   char **argv;
@@ -1295,6 +1363,8 @@ int main(int argc, char **argv) {
   cli_run run;
   size_t depth = 0;
   size_t steps = 0;
+  size_t memory = 0;
+  int memory_given = 0;
   int bad = cli_depth_key(&argc, argv, &depth);
   if (bad != 0) {
     return bad;
@@ -1308,6 +1378,13 @@ int main(int argc, char **argv) {
   }
   if (steps != 0) {
     fl_max_steps_default_set(steps);
+  }
+  bad = cli_memory_key(&argc, argv, &memory, &memory_given);
+  if (bad != 0) {
+    return bad;
+  }
+  if (memory_given) {
+    fl_memory_limit_set(memory);
   }
   run.argc = argc;
   run.argv = argv;

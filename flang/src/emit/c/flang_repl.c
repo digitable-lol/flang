@@ -395,6 +395,13 @@ static const char FLANG_HELP[] =
     "                                     «emit»: тот впечатывается в вывод и своему\n"
     "                                     прогону не говорит ничего. Кириллицей:\n"
     "                                     --предел-шагов\n"
+    "  --memory-limit N                   предел ПАМЯТИ самого бинарника на этот\n"
+    "                                     прогон, байтами или с буквой K, M, G, T;\n"
+    "                                     0 — без предела. У check, test и run по\n"
+    "                                     умолчанию три четверти памяти машины. На\n"
+    "                                     пределе — остановка кодом 5 с именем\n"
+    "                                     функции и числом шагов. Кириллицей:\n"
+    "                                     --предел-памяти\n"
     "\n";
 
 /*
@@ -465,6 +472,9 @@ static const char HELP_CHECK[] =
  * байт, а кириллица съедает по два байта на букву. Печатаются обе подряд.
  */
 static const char HELP_CHECK_2[] =
+    "  --memory-limit N   предел памяти прогона (умолчание — три четверти памяти\n"
+    "                     машины); на пределе — код 5 с именем функции и числом\n"
+    "                     шагов. Кириллицей: --предел-памяти\n"
     "\n"
     "ПУСТАЯ ВЕДОМОСТЬ ПОД «--strict» — НЕ УСПЕХ. Ноль под ключом требует хотя бы\n"
     "одного обязательства: у программы без единого утверждения и закона прибор не\n"
@@ -517,6 +527,9 @@ static const char HELP_TEST[] =
     "  --ledger        ведомость: по строке на файл, для сверки диффом\n"
     "  --max-steps N   предел шагов вычислителя\n"
     "  --max-depth N   предел глубины\n"
+    "  --memory-limit N  предел памяти прогона (умолчание — три четверти памяти\n"
+    "                  машины); на пределе — код 5 с именем функции и числом шагов.\n"
+    "                  Кириллицей: --предел-памяти\n"
     "\n"
     "У не сошедшегося примера называются ОБЕ стороны: ожидалось и получено.\n"
     "Длинное значение обрезается на 200 знаках, и длина полного сказана числом.\n"
@@ -548,6 +561,9 @@ static const char HELP_RUN[] =
     "  --max-depth N      предел глубины ВЫЧИСЛЯЕМОЙ программы. Предел самого\n"
     "                     бинарника — другой счётчик и другой ключ:\n"
     "                     «--depth-limit N»\n"
+    "  --memory-limit N   предел памяти прогона (умолчание — три четверти памяти\n"
+    "                     машины); на пределе — код 5 с именем функции и числом\n"
+    "                     шагов. Кириллицей: --предел-памяти\n"
     "  --trust            считать недоказанную: вердикт не считается вовсе, и об\n"
     "                     этом говорится своей строкой. Кириллицей — «--на-веру»\n"
     "  --unproven СЛОВО   что делать с недоказанной, все три исхода сразу:\n"
@@ -20214,6 +20230,52 @@ int fl_human_bare(void) {
  * Арена одна на весь вход и заводится здесь: и проверка файла, и оболочка зовут
  * компилятор, и делить владение памятью между ними было бы нечем.
  */
+static bool human_memory_by_default = false;
+
+static void human_memory_default(const char *command) {
+  if (fl_memory_limit_told()) {
+    return;
+  }
+  if (strcmp(command, "check") != 0 && strcmp(command, "test") != 0 && strcmp(command, "run") != 0) {
+    return;
+  }
+  fl_memory_limit_set(fl_memory_physical() / 4 * 3);
+  human_memory_by_default = true;
+}
+
+static void human_memory_said(const char *command) {
+  const fl_memory_stop *stop = fl_memory_stopped();
+  char line[1024];
+  size_t at = 0;
+  at = fl_say_text(line, sizeof(line), at, "FLANG_MEMORY: прогон остановлен на пределе памяти ");
+  at = fl_say_size(line, sizeof(line), at, (unsigned long)stop->limit);
+  at = fl_say_text(line, sizeof(line), at, ": занято ");
+  at = fl_say_size(line, sizeof(line), at, (unsigned long)stop->held);
+  at = fl_say_text(line, sizeof(line), at, ", просили ещё ");
+  at = fl_say_number(line, sizeof(line), at, (unsigned long)stop->asked);
+  at = fl_say_text(line, sizeof(line), at, " байт\n");
+  if (stop->guest_known) {
+    at = fl_say_text(line, sizeof(line), at, "  считалась функция «");
+    at = fl_say_text(line, sizeof(line), at, stop->guest);
+    at = fl_say_text(line, sizeof(line), at, "», шагов программы ");
+    at = fl_say_number(line, sizeof(line), at, (unsigned long)stop->guest_steps);
+    at = fl_say_text(line, sizeof(line), at, "\n");
+  }
+  at = fl_say_text(line, sizeof(line), at, "  компилятор был в «");
+  at = fl_say_text(line, sizeof(line), at, stop->function == NULL ? "?" : stop->function);
+  at = fl_say_text(line, sizeof(line), at, "», его шагов ");
+  at = fl_say_number(line, sizeof(line), at, (unsigned long)stop->steps);
+  at = fl_say_text(line, sizeof(line), at, "\n");
+  fwrite(line, 1, at, stderr);
+  if (human_memory_by_default) {
+    fputs("Предел по умолчанию у check, test и run — три четверти памяти машины.\n", stderr);
+  }
+  fprintf(stderr,
+          "Поднять или снять на один прогон: flang %s <файл> --предел-памяти 40G (латиницей\n"
+          "--memory-limit; буквы K, M, G, T; 0 — без предела). Код возврата 5.\n",
+          command);
+}
+
 int fl_human_main(int argc, char **argv, const char *self) {
   const char *command = argc > 1 ? argv[1] : "";
   /* Откуда запущен бинарник — запоминается здесь и только здесь: библиотеку,
@@ -20263,10 +20325,13 @@ int fl_human_main(int argc, char **argv, const char *self) {
        человеку, а человеку без доводов нужна оболочка. */
     code = repl_loop(0, argv, self);
   } else if (strcmp(command, "check") == 0) {
+    human_memory_default(command);
     code = check_command(argc, argv);
   } else if (strcmp(command, "test") == 0) {
+    human_memory_default(command);
     code = test_file(argc, argv);
   } else if (strcmp(command, "run") == 0) {
+    human_memory_default(command);
     code = run_file(argc, argv);
   } else if (strcmp(command, "emit") == 0) {
     code = emit_file(argc, argv, self);
@@ -20304,6 +20369,10 @@ int fl_human_main(int argc, char **argv, const char *self) {
       fprintf(stderr, "flang: неизвестная команда «%s». «flang --help» — что умеет бинарник.\n", command);
     }
     code = 2;
+  }
+  if (fl_memory_stopped()->reached) {
+    human_memory_said(command);
+    code = 5;
   }
   fl_arena_release(&repl_arena);
   return code;

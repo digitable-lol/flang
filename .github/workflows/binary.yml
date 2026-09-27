@@ -1783,6 +1783,11 @@ jobs:
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
           FLANG_TMP: ${{ runner.temp }}
+      - name: Check memory limit
+        run: cd flang/proof/probes/memory-limit && ../../../../bootstrap/flang io run.fscript --на-веру
+        env:
+          FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
+          FLANG_TMP: ${{ runner.temp }}
 
       - name: Check io timeout answers
         run: cd flang/proof/probes/io-timeout && ../../../../bootstrap/flang io run.fscript

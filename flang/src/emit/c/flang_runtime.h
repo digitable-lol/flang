@@ -505,6 +505,26 @@ void fl_max_steps_default_set(size_t steps);
 size_t fl_max_depth_default(void);
 void fl_max_depth_default_set(size_t depth);
 
+typedef struct fl_memory_stop {
+  bool reached;
+  size_t limit;
+  size_t held;
+  size_t asked;
+  const char *function;
+  size_t steps;
+  size_t depth;
+  bool guest_known;
+  char guest[256];
+  double guest_steps;
+} fl_memory_stop;
+
+void fl_memory_limit_set(size_t bytes);
+size_t fl_memory_limit(void);
+bool fl_memory_limit_told(void);
+size_t fl_memory_held(void);
+size_t fl_memory_physical(void);
+const fl_memory_stop *fl_memory_stopped(void);
+
 /** Сколько стека просить под предел глубины `max_depth` (с учётом границ). */
 size_t fl_stack_wanted(size_t max_depth);
 

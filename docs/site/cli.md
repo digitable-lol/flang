@@ -79,6 +79,7 @@ The codes are the same across commands, and so is their meaning.
 | `2` | Bad call: wrong key, wrong value, no such file |
 | `3` | Done, but not everything was checked; what was not is named |
 | `4` | Part of the checks did not run at all (`check --быстро`) — and that is its only meaning |
+| `5` | The run stopped at the memory limit (`--memory-limit`); the function being evaluated and the step count are named |
 
 Code `3` happens with `emit`, with `io`, with `check --proof` ("declared, not
 proved") — and, since 0.7.21, with `run` and `io` on an **unproved program**: the
@@ -112,6 +113,7 @@ task 2213.
 | `--fast` (`--быстро`) | Only linking, types, exhaustiveness and termination; the proof kernel, the laws and the examples do not run, and this is said out loud. Exit `4`. Refused next to `--proof` |
 | `--step-limit N` (`--предел-шагов`) | Raise the checker's step limit for this one run. The default is compiled in at build time and catches non-termination; running out stays legible — `FLANG_RECURSION_LIMIT` with a number. Needed on the largest files: a `--proof --json` proof report for a module with a thousand claims does not fit the default. There is no `--max-steps` on `check`: it answers "непонятный ключ", exit `2` |
 | `--depth-limit N` (`--предел-глубины`) | Raise the call-depth limit of the binary itself for this run (shared by all commands). Not to be confused with `--max-depth` on `emit`: that one puts a number into the printed program |
+| `--memory-limit N` (`--предел-памяти`) | Memory limit of the run: bytes, or a number with K, M, G, T; `0` means no limit. `check`, `test` and `run` default to three quarters of the machine's memory. At the limit the run stops with exit `5`, naming the function being evaluated and the step count, instead of growing until the machine runs out of memory |
 
 Codes: `0` — nothing to report; `1` — the program did not pass; `2` — the program
 contains declarations that the `flang` binary does not judge at all (the category

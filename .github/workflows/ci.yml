@@ -1780,3 +1780,23 @@ jobs:
         run: ./ярлык умения:проверка
         env:
           FLANG_TMP: ${{ runner.temp }}
+  uncalled:
+    name: checks-nobody-calls
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - run: make -C bootstrap -j"$(nproc)"
+      - name: Probe uncalled check
+        run: |
+          if bootstrap/flang io scripts/guards/checks-nobody-calls.fscript --plan Подлог --max-steps 4000000000; then
+            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Check nobody-calls
+        run: bootstrap/flang io scripts/guards/checks-nobody-calls.fscript --plan Проверка --max-steps 4000000000
+        env:
+          FLANG_TMP: ${{ runner.temp }}

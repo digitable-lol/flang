@@ -13,9 +13,9 @@
 # 1435. Н6 и О9 — в приёме блока «вывод» независимой проверяющей программы
 
 Проектная записка задачи 1400
-([docs/design/fmath-first-ten-statements.md](../design/fmath-first-ten-statements.md),
+([docs/design/fmath-first-ten-statements.md](../../design/fmath-first-ten-statements.md),
 снято 10 сентября 2026 на `gh/dev` `c96a7f2bd`) назвала пять правил, которые стоят в
-[ведомости правил вывода](../../flang/proof/tables/inference-rules.tsv), а приёма в
+[ведомости правил вывода](../../../flang/proof/tables/inference-rules.tsv), а приёма в
 `flang/proof/checker/checker.c` не имеют: **Н6, Н7, П6, О8, О9**. Ядро ими пользуется,
 второй судья их не знает — и такой шаг оставался доказанным только на слово самого
 компилятора.

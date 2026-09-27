@@ -23,6 +23,8 @@ false-postcondition-without-examples.flang	--proof	3	НЕ ПРОВЕРЕНО
 false-postcondition-without-examples.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
 honest.flang	--proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
 honest.flang	--proof --строго	0	ДОКАЗАНО
+no-obligations.flang	--proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
+no-obligations.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ПРОВЕРЕНО ВПУСТУЮ, ОБЯЗАТЕЛЬСТВ НЕТ ВОВСЕ
 grid-without-proof.flang	--proof	0	ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ
 grid-without-proof.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ
 declared-not-proved.flang	--proof	3	НЕ ПРОВЕРЕНО
@@ -37,3 +39,4 @@ honest.flang	--строго	2	осмыслен только рядом с «--pr
 honest.flang	--быстро	4	часть проверок НЕ ЗАПУСКАЛАСЬ — код возврата 4, а не 0
 honest.flang	—	0	проверено — разбор, типы, завершаемость, ядро и примеры
 false-postcondition.flang	—	0	проверено — разбор, типы, завершаемость, ядро и примеры
+no-obligations.flang	—	0	проверено — разбор, типы, завершаемость, ядро и примеры

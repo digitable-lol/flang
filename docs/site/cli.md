@@ -107,7 +107,7 @@ task 2213.
 | --- | --- |
 | `--proof` | A report: what carries the promise "total" for each function, and what carries each claim. "Declared, not proved" exits with `3` |
 | `--json` | Only together with `--proof`: the same report in machine form |
-| `--strict` (`--строго`) | Only together with `--proof`: the four outcomes get separate codes — `0` only when every claim is proved, `1` a counterexample, `3` could not prove (leans on the author's grid, on an unproved premise, or "declared, not proved"), `2` not supported. Details below |
+| `--strict` (`--строго`) | Only together with `--proof`: the four outcomes get separate codes — `0` only when there is at least one claim and every claim is proved, `1` a counterexample, `3` could not prove (leans on the author's grid, on an unproved premise, "declared, not proved", or there are no obligations at all), `2` not supported. Details below |
 | `--record <файл>` (`--записать`) | Only together with `--proof`: write the proof itself into a file |
 | `--fast` (`--быстро`) | Only linking, types, exhaustiveness and termination; the proof kernel, the laws and the examples do not run, and this is said out loud. Exit `4`. Refused next to `--proof` |
 | `--step-limit N` (`--предел-шагов`) | Raise the checker's step limit for this one run. The default is compiled in at build time and catches non-termination; running out stays legible — `FLANG_RECURSION_LIMIT` with a number. Needed on the largest files: a `--proof --json` proof report for a module with a thousand claims does not fit the default. There is no `--max-steps` on `check`: it answers "непонятный ключ", exit `2` |
@@ -128,10 +128,17 @@ words. `--strict` gives the four outcomes separate codes and names each one.
 
 | Outcome | Code | When |
 | --- | --- | --- |
-| `ДОКАЗАНО` (proved) | `0` | EVERY claim has the verdict "proved": no grid, no conditional, no "declared, not proved", nothing refused, no law taken on faith |
+| `ДОКАЗАНО` (proved) | `0` | there is AT LEAST ONE claim and EVERY claim has the verdict "proved": no grid, no conditional, no "declared, not proved", nothing refused, no law taken on faith |
 | `ОПРОВЕРГНУТО` (disproved) | `1` | a counterexample was found: "violated" ≥ 1 |
 | `НЕ УДАЛОСЬ ДОКАЗАТЬ` (could not prove) | `3` | no contradiction, but not everything is proved; what is not is named by number and by name |
 | `НЕ ПОДДЕРЖИВАЕТСЯ` (not supported) | `2` | the program declares something the binary does not judge at all, and the gap is named |
+
+The third outcome has three reasons, and they are told apart by the WORD under a
+single code: `ОПОРА НЕ СУДИЛАСЬ` (a grid, "conditional", a law on a grid),
+`ОБЪЯВЛЕНО, НЕ ДОКАЗАНО` ("declared, not proved", refused, a law on faith) and
+`ПРОВЕРЕНО ВПУСТУЮ` (no obligations at all). The word "впустую" is the one the
+independent checker uses for a record where nothing counts as proved: both
+instruments say the same thing in the same word.
 
 The key introduces no new numbers: ADR-0010 §2 promises four codes, and all four
 already carry these meanings. Exit `4` stays with `--fast` and means exactly
@@ -150,6 +157,16 @@ over all inputs, and the report says so in its own words — "Это не
 while `flang run --на-веру` at `н = 100` printed `FLANG_PROPERTY: нарушено
 свойство`. The zero was bought by the example: the same file without `пример`
 exited `3`. Under `--strict` both exit `3`.
+
+**An empty ledger under the key is not a success.** A program with no claim and no
+law used to get `ДОКАЗАНО … утверждений 0 … код возврата 0` under `--strict` —
+word for word and sign for sign what an honestly proved program gets (measured 27
+September 2026 with the binary from this tree; the probe is
+`flang/proof/probes/strict/programs/no-obligations.flang`). So a zero under the
+key now also requires AT LEAST ONE obligation: "nought proved out of nought" is
+silence, not a proof, and exit `0` on it would mean "we found nothing". It is now
+`ПРОВЕРЕНО ВПУСТУЮ` and exit `3`. The default is untouched: without the key such
+a program still exits `0` with "ПРОВЕРЕНО САМОСТОЯТЕЛЬНО".
 
 **What the key does not close.** It fixes ONE instrument of two. The independent
 checker (`flang/proof/checker/checker.c`) still answers `ПРОВЕРЕНО ВПУСТУЮ` with

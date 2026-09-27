@@ -1,7 +1,7 @@
 # Поиск файла настроек обрывается на корне проекта, потому что поиск модулей этого не делал — и однажды взял чужой черновик
 
-Файл `.flangrc` читают `scripts/flangrc.sh` (оболочка собирает источники,
-`scripts/settings-file.flang` решает) и стережёт `scripts/guards/flangrc-guard.sh`.
+Файл `.flangrc` читают `scripts/flangrc.fscript` (оболочка собирает источники,
+`scripts/settings-file.flang` решает) и стережёт `scripts/guards/flangrc-guard.fscript`.
 Оба устроены вокруг одного решения: подъём вверх по каталогам обязан иметь
 названную границу.
 

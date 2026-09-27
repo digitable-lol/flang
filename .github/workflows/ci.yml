@@ -290,15 +290,6 @@ jobs:
   # чужого черновика выше корня репозитория, ответив кодом 0 (задача 3127).
   # Настройки задевают больше модуля: подменённый `.flangrc` меняет язык,
   # которым программа отвечает человеку, и в диффе такой подмены не видно.
-  #
-  # Двоичный этой работе НЕ НУЖЕН: пути судятся одним обходом каталогов, и
-  # ставить сюда сборку на 5–6 минут ради этого нечестно. Значения проверка
-  # смотрит только там, где двоичный уже есть, и вслух говорит, когда его нет.
-  #
-  # Подлог гоняется ПЕРЕД сверкой — по тому же доводу, что и у соседей выше:
-  # проверка, разучившаяся краснеть, в ленте не отличима от чистого дерева.
-  # Он требует не просто красноты, а красноты ПО ДЕЛУ: в выводе порченого
-  # читателя обязаны стоять слова «ВНЕ дерева».
   nastroyki:
     name: flangrc-places
     runs-on: ubuntu-latest
@@ -306,14 +297,15 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
+      - run: make -C bootstrap -j"$(nproc)"
       - name: Probe flangrc places
         run: |
-          if ! sh scripts/guards/flangrc-guard.sh --подлог; then
+          if ! bootstrap/flang io scripts/guards/flangrc-guard.fscript --plan Forgery; then
             echo "проба порчи не сошлась — проверять этим нечего" >&2
             exit 1
           fi
       - name: Check flangrc places
-        run: sh scripts/guards/flangrc-guard.sh
+        run: bootstrap/flang io scripts/guards/flangrc-guard.fscript --plan Check
 
   # ЗАДАЧНИК СВЕРЯЕТСЯ АВТОМАТИКОЙ, А НЕ ПО ПАМЯТИ.
   #

@@ -1,0 +1,411 @@
+модуль «Settings places guard»
+  использует «Settings reader» из "../flangrc.fscript"
+
+тип «Expectation»
+  вариант «Answer equals» содержит word: строка
+  вариант «Places inside» содержит root: строка
+  вариант «Places outside» содержит root: строка, foreign: строка
+
+объект «Probe»
+  «purpose»: строка
+  «arguments»: список строки
+  «expects»: «Expectation»
+
+объект «Walk»
+  «temporary»: строка
+  «forgery»: признак
+  «probe»: «Probe»
+  «remaining»: список «Probe»
+  «troubles»: список строки
+  «done»: число
+
+тип «Guard stage»
+  вариант «Guard started» содержит forgery: признак
+  вариант «Awaiting plan directory» содержит forgery: признак
+  вариант «Awaiting temporary root» содержит forgery: признак, root: строка
+  вариант «Awaiting toy trees» содержит forgery: признак, root: строка, temporary: строка
+  вариант «Awaiting names» содержит forgery: признак, root: строка, temporary: строка
+  вариант «Awaiting world» содержит walk: «Walk», reader: «Stage»
+  вариант «Awaiting substitute» содержит walk: «Walk», reader: «Stage», substitute: «Отклик»
+  вариант «Awaiting removal» содержит forgery: признак, troubles: список строки, done: число
+
+тотальная функция «Temporary pattern»
+  возвращает строка
+  пример «the temporary root is made outside the tree»
+    ожидается "/tmp/settings-places-guard-"
+  "/tmp/settings-places-guard-"
+
+тотальная функция «Root of plan directory»
+  принимает output: строка
+  возвращает строка
+  пример «the root of the tree is two steps above the plan directory»
+    дано output равно "/srv/tree/scripts/guards\n"
+    ожидается "/srv/tree"
+  пример «no plan directory means no root»
+    дано output равно ""
+    ожидается ""
+  пусть ancestors равно «Ancestors» от (голова (разделить output по "\n"))
+  если (длина ancestors) меньше 3
+    то ""
+    иначе элемент 3 в ancestors
+
+тотальная функция «Toy trees»
+  принимает temporary: строка
+  возвращает список строки
+  пример «three toy trees under one foreign file»
+    дано temporary равно "/tmp/t"
+    ожидается ["-c", "mkdir -p \"$0/above/tree/deep/more\" \"$0/above/tree/.git\" \"$0/above/bare/deep\" \"$0/above/bare/.git\" \"$0/above/open/deep/more\" \"$0/home\" && printf 'language = klingon\\n' > \"$0/above/.flangrc\" && printf 'language = zh\\n' > \"$0/above/tree/.flangrc\" && printf 'language = eo\\n' > \"$0/above/tree/deep/.flangrc\"", "/tmp/t"]
+  ["-c", "mkdir -p \"$0/above/tree/deep/more\" \"$0/above/tree/.git\" \"$0/above/bare/deep\" \"$0/above/bare/.git\" \"$0/above/open/deep/more\" \"$0/home\" && printf 'language = klingon\\n' > \"$0/above/.flangrc\" && printf 'language = zh\\n' > \"$0/above/tree/.flangrc\" && printf 'language = eo\\n' > \"$0/above/tree/deep/.flangrc\"", temporary]
+
+тотальная функция «Reader arguments»
+  принимает word: строка, start: строка, temporary: строка
+  возвращает список строки
+  пример «the reader is called from a named directory with the home in the temporary root»
+    дано word равно "--file"
+    дано start равно "/tmp/t/above/tree"
+    дано temporary равно "/tmp/t"
+    ожидается ["--file", "--from", "/tmp/t/above/tree", "--home", "/tmp/t/home"]
+  [word, "--from", start, "--home", («Inside» от temporary и "home")]
+
+тотальная функция «Toy probes»
+  принимает temporary: строка
+  возвращает список «Probe»
+  обеспечивает «there are exactly five toy probes» (длина результат) равен 5
+  пусть tree равно «Inside» от temporary и "above/tree"
+  пусть bare равно «Inside» от temporary и "above/bare"
+  [запись «Probe» с «purpose» равным "из двух файлов взят ближний к началу поиска" и «arguments» равным («Reader arguments» от "--file" и («Inside» от tree и "deep/more") и temporary) и «expects» равным (вариант «Answer equals» с word равным («Inside» от tree и "deep/.flangrc")),
+   запись «Probe» с «purpose» равным "значение приезжает из ближнего файла" и «arguments» равным («Reader arguments» от "language" и («Inside» от tree и "deep/more") и temporary) и «expects» равным (вариант «Answer equals» с word равным "eo"),
+   запись «Probe» с «purpose» равным "с ближним файлом места не выходят из дерева" и «arguments» равным («Reader arguments» от "--places" и («Inside» от tree и "deep/more") и temporary) и «expects» равным (вариант «Places inside» с root равным tree),
+   запись «Probe» с «purpose» равным "чужой файл выше корня не взят" и «arguments» равным («Reader arguments» от "--file" и («Inside» от bare и "deep") и temporary) и «expects» равным (вариант «Answer equals» с word равным ""),
+   запись «Probe» с «purpose» равным "без своего файла места не выходят из дерева" и «arguments» равным («Reader arguments» от "--places" и («Inside» от bare и "deep") и temporary) и «expects» равным (вариант «Places inside» с root равным bare)]
+
+тотальная функция «Tree probes»
+  принимает root: строка, names: список строки, temporary: строка
+  возвращает список «Probe»
+  обеспечивает «there is one start more than names in the root» (длина результат) равен ((длина names) плюс 1)
+  пример «the root and every name of the first level»
+    дано root равно "/srv/tree"
+    дано names равно ["docs"]
+    дано temporary равно "/tmp/t"
+    ожидается [запись «Probe» с «purpose» равным "места не выходят из дерева, начало /srv/tree" и «arguments» равным ["--places", "--from", "/srv/tree", "--home", "/tmp/t/home"] и «expects» равным (вариант «Places inside» с root равным "/srv/tree"), запись «Probe» с «purpose» равным "места не выходят из дерева, начало /srv/tree/docs" и «arguments» равным ["--places", "--from", "/srv/tree/docs", "--home", "/tmp/t/home"] и «expects» равным (вариант «Places inside» с root равным "/srv/tree")]
+  отобразить (приписать root к (отобразить names как name → («Inside» от root и name))) как start → (запись «Probe» с «purpose» равным (соединить ["места не выходят из дерева, начало ", start] по "") и «arguments» равным («Reader arguments» от "--places" и start и temporary) и «expects» равным (вариант «Places inside» с root равным root))
+
+тотальная функция «Forgery probes»
+  принимает temporary: строка
+  возвращает список «Probe»
+  обеспечивает «there is exactly one forgery probe» (длина результат) равен 1
+  пусть open равно «Inside» от temporary и "above/open"
+  [запись «Probe» с «purpose» равным "у дерева вынута примета корня, и подъём обязан выйти к чужому файлу" и «arguments» равным («Reader arguments» от "--places" и («Inside» от open и "deep/more") и temporary) и «expects» равным (вариант «Places outside» с root равным open и foreign равным («Inside» от temporary и "above"))]
+
+тотальная функция «Is inside»
+  принимает place: строка, root: строка
+  возвращает признак
+  пример «the root itself is inside»
+    дано place равно "/srv/tree"
+    дано root равно "/srv/tree"
+    ожидается да
+  пример «a directory under the root is inside»
+    дано place равно "/srv/tree/docs"
+    дано root равно "/srv/tree"
+    ожидается да
+  пример «a directory above the root is outside»
+    дано place равно "/srv"
+    дано root равно "/srv/tree"
+    ожидается нет
+  пример «a neighbour that shares the beginning of the name is outside»
+    дано place равно "/srv/tree-old"
+    дано root равно "/srv/tree"
+    ожидается нет
+  (place равен root) или (place начинается с (соединить [root, "/"] по ""))
+
+тотальная функция «Outside places»
+  принимает answer: строка, root: строка
+  возвращает список строки
+  пример «a place above the root is named»
+    дано answer равно "/srv/tree/docs\n/srv/tree\n/srv\nостановка: настройки найдены: /srv/.flangrc"
+    дано root равно "/srv/tree"
+    ожидается ["/srv"]
+  пример «the stop line and the home line are not places of the climb»
+    дано answer равно "/srv/tree\nостановка: корень проекта, выше не смотрим: /srv/tree\nдом: /home/a/.flangrc"
+    дано root равно "/srv/tree"
+    ожидается пустой список
+  отфильтровать (разделить answer по "\n") где place → (place начинается с "/") и притом не («Is inside» от place и root)
+
+тотальная функция «Trouble with answer»
+  принимает probe: «Probe», answer: строка
+  возвращает строка
+  пример «places inside the tree give no trouble»
+    дано probe равно запись «Probe» с «purpose» равным "места" и «arguments» равным пустой список и «expects» равным (вариант «Places inside» с root равным "/srv/tree")
+    дано answer равно "/srv/tree\nостановка: корень проекта, выше не смотрим: /srv/tree"
+    ожидается ""
+  пример «a place outside the tree is named by its path»
+    дано probe равно запись «Probe» с «purpose» равным "места" и «arguments» равным пустой список и «expects» равным (вариант «Places inside» с root равным "/srv/tree")
+    дано answer равно "/srv/tree\n/srv\nостановка: настройки найдены: /srv/.flangrc"
+    ожидается "места: просмотрено место вне дерева /srv/tree — /srv"
+  пример «the forgery is caught when the foreign place itself is named»
+    дано probe равно запись «Probe» с «purpose» равным "подлог" и «arguments» равным пустой список и «expects» равным (вариант «Places outside» с root равным "/tmp/t/above/open" и foreign равным "/tmp/t/above")
+    дано answer равно "/tmp/t/above/open\n/tmp/t/above\nостановка: настройки найдены: /tmp/t/above/.flangrc"
+    ожидается ""
+  пример «the forgery is not caught when the climb stayed inside the tree»
+    дано probe равно запись «Probe» с «purpose» равным "подлог" и «arguments» равным пустой список и «expects» равным (вариант «Places outside» с root равным "/tmp/t/above/open" и foreign равным "/tmp/t/above")
+    дано answer равно "/tmp/t/above/open\nостановка: корень проекта, выше не смотрим: /tmp/t/above/open"
+    ожидается "подлог: места вне дерева /tmp/t/above/open не названо, а ждали /tmp/t/above — проверка не различает подъём выше корня"
+  разбор (probe.«expects»)
+    случай вариант «Places inside» с root как root
+      то разбор («Outside places» от answer и root)
+        случай пусто
+          то ""
+        случай голова и хвост
+          то соединить [(probe.«purpose»), ": просмотрено место вне дерева ", root, " — ", (соединить (приписать голова к хвост) по ", ")] по ""
+    случай вариант «Places outside» с root как root и foreign как foreign
+      то если («Outside places» от answer и root) содержит foreign
+        то ""
+        иначе соединить [(probe.«purpose»), ": места вне дерева ", root, " не названо, а ждали ", foreign, " — проверка не различает подъём выше корня"] по ""
+    случай вариант «Answer equals» с word как word
+      то если answer равен word
+        то ""
+        иначе соединить [(probe.«purpose»), ": ждали «", word, "», получено «", answer, "»"] по ""
+
+тотальная функция «Trouble with probe»
+  принимает probe: «Probe», outcome: «Продолжение»
+  возвращает строка
+  пример «the answer of the reader is judged by the expectation of the probe»
+    дано probe равно запись «Probe» с «purpose» равным "ближний файл" и «arguments» равным пустой список и «expects» равным (вариант «Answer equals» с word равным "eo")
+    дано outcome равно вариант «Конец работы» с значение равным "zh"
+    ожидается "ближний файл: ждали «eo», получено «zh»"
+  пример «a first level name that is not a directory is not a start»
+    дано probe равно запись «Probe» с «purpose» равным "места" и «arguments» равным пустой список и «expects» равным (вариант «Places inside» с root равным "/srv/tree")
+    дано outcome равно вариант «Не проверено» с код равным "FLANG_SETTINGS_NO_DIRECTORY" и сообщение равным "нет каталога «/srv/tree/README.md»"
+    ожидается ""
+  пример «a refusal of the reader is a trouble named in its own words»
+    дано probe равно запись «Probe» с «purpose» равным "места" и «arguments» равным пустой список и «expects» равным (вариант «Places inside» с root равным "/srv/tree")
+    дано outcome равно вариант «Не проверено» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали перечень каталога"
+    ожидается "места: читатель отказал (FLANG_IO_ORDER): ждали перечень каталога"
+  разбор outcome
+    случай вариант «Конец работы» с значение как answer
+      то «Trouble with answer» от probe и answer
+    случай вариант «Провал» с код как code и сообщение как message
+      то соединить [(probe.«purpose»), ": читатель отказал (", code, "): ", message] по ""
+    случай вариант «Не проверено» с код как code и сообщение как message
+      то если code равен "FLANG_SETTINGS_NO_DIRECTORY"
+        то ""
+        иначе соединить [(probe.«purpose»), ": читатель отказал (", code, "): ", message] по ""
+    случай любое
+      то соединить [(probe.«purpose»), ": читатель не дошёл до ответа"] по ""
+
+тотальная функция «Cannot check»
+  принимает reason: строка
+  возвращает «Продолжение»
+  пример «being unable to check is not a verdict on the reader»
+    дано reason равно "времянка не заведена"
+    ожидается вариант «Не проверено» с код равным "FLANG_SETTINGS_GUARD_CANNOT_LOOK" и сообщение равным "времянка не заведена"
+  вариант «Не проверено» с код равным "FLANG_SETTINGS_GUARD_CANNOT_LOOK" и сообщение равным reason
+
+тотальная функция «Verdict»
+  принимает forgery: признак, troubles: список строки, done: число
+  возвращает «Продолжение»
+  пример «a check without troubles is green»
+    дано forgery равно нет
+    дано troubles равно пустой список
+    дано done равно 9
+    ожидается вариант «Конец работы» с значение равным "настройки читаются только из дерева и из дома, ближний файл побеждает: проб 9, разошлось 0"
+  пример «a check names every trouble»
+    дано forgery равно нет
+    дано troubles равно ["места: просмотрено место вне дерева /srv/tree — /srv"]
+    дано done равно 9
+    ожидается вариант «Провал» с код равным "FLANG_SETTINGS_PLACES" и сообщение равным "места настроек: проб 9, разошлось 1\n  · места: просмотрено место вне дерева /srv/tree — /srv"
+  пример «the forgery probe holds when the check named the foreign place»
+    дано forgery равно да
+    дано troubles равно пустой список
+    дано done равно 1
+    ожидается вариант «Конец работы» с значение равным "проба сошлась: у дерева без приметы корня проверка назвала место вне дерева"
+  пример «the forgery probe failed and the check cannot be trusted»
+    дано forgery равно да
+    дано troubles равно ["подлог: не названо"]
+    дано done равно 1
+    ожидается вариант «Провал» с код равным "FLANG_SETTINGS_PLACES_PROBE" и сообщение равным "проба не сошлась\n  · подлог: не названо"
+  разбор troubles
+    случай пусто
+      то если forgery
+        то вариант «Конец работы» с значение равным "проба сошлась: у дерева без приметы корня проверка назвала место вне дерева"
+        иначе вариант «Конец работы» с значение равным (соединить ["настройки читаются только из дерева и из дома, ближний файл побеждает: проб ", (к строке done), ", разошлось 0"] по "")
+    случай голова и хвост
+      то если forgery
+        то вариант «Провал» с код равным "FLANG_SETTINGS_PLACES_PROBE" и сообщение равным (соединить (приписать "проба не сошлась" к troubles) по "\n  · ")
+        иначе вариант «Провал» с код равным "FLANG_SETTINGS_PLACES" и сообщение равным (соединить (приписать (соединить ["места настроек: проб ", (к строке done), ", разошлось ", (к строке (длина troubles))] по "") к troubles) по "\n  · ")
+
+тотальная функция «Substitute»
+  принимает walk: «Walk», step: «Продолжение»
+  возвращает «Продолжение»
+  пример «the probe and not the call of the guard names the arguments of the reader»
+    дано walk равно запись «Walk» с «temporary» равным "/tmp/t" и «forgery» равным нет и «probe» равным (запись «Probe» с «purpose» равным "ближний файл" и «arguments» равным ["--file"] и «expects» равным (вариант «Answer equals» с word равным "")) и «remaining» равным пустой список и «troubles» равным пустой список и «done» равным 0
+    дано step равно вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting arguments»)
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting substitute» с walk равным (запись «Walk» с «temporary» равным "/tmp/t" и «forgery» равным нет и «probe» равным (запись «Probe» с «purpose» равным "ближний файл" и «arguments» равным ["--file"] и «expects» равным (вариант «Answer equals» с word равным "")) и «remaining» равным пустой список и «troubles» равным пустой список и «done» равным 0) и reader равным (вариант «Awaiting arguments») и substitute равным (вариант «Доводы» с доводы равным ["--file"]))
+  разбор step
+    случай вариант «Сделать» с поручение как order и потом как reader
+      то разбор order
+        случай вариант «Прочитать доводы»
+          то вариант «Сделать» с поручение равным order и потом равным (вариант «Awaiting substitute» с walk равным walk и reader равным reader и substitute равным (вариант «Доводы» с доводы равным ((walk.«probe»).«arguments»)))
+        случай вариант «Прочитать переменную среды» с имя как name
+          то вариант «Сделать» с поручение равным order и потом равным (вариант «Awaiting substitute» с walk равным walk и reader равным reader и substitute равным (вариант «Переменной среды нет»))
+        случай любое
+          то вариант «Сделать» с поручение равным order и потом равным (вариант «Awaiting world» с walk равным walk и reader равным reader)
+    случай любое
+      то «Cannot check» от "читатель ответил, не сделав ни одного поручения"
+
+тотальная функция «Walk probes»
+  принимает temporary: строка, forgery: признак, queue: список «Probe», troubles: список строки, done: число
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Substitute» от (запись «Walk» с «temporary» равным temporary и «forgery» равным forgery и «probe» равным голова и «remaining» равным хвост и «troubles» равным troubles и «done» равным done) и («Next» от («Begin») и (вариант «Пока ничего»))
+    случай пусто
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "/bin/rm" и аргументы равным ["-rf", "--", temporary]) и потом равным (вариант «Awaiting removal» с forgery равным forgery и troubles равным troubles и done равным done)
+
+тотальная функция «Drive reader»
+  принимает walk: «Walk», step: «Продолжение»
+  возвращает «Продолжение»
+  разбор step
+    случай вариант «Сделать» с поручение как order и потом как reader
+      то «Substitute» от walk и step
+    случай любое
+      то пусть trouble равно «Trouble with probe» от (walk.«probe») и step
+      «Walk probes» от (walk.«temporary») и (walk.«forgery») и (walk.«remaining») и (если trouble равен "" то (walk.«troubles») иначе (добавить trouble к (walk.«troubles»))) и ((walk.«done») плюс 1)
+
+тотальная функция «After plan directory»
+  принимает forgery: признак, response: «Отклик»
+  возвращает «Продолжение»
+  пример «the plan directory is named and the temporary root is made»
+    дано forgery равно нет
+    дано response равно вариант «Процесс завершён» с код равным 0 и вывод равным "/srv/tree/scripts/guards\n" и ошибки равным ""
+    ожидается вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным "/tmp/settings-places-guard-") и потом равным (вариант «Awaiting temporary root» с forgery равным нет и root равным "/srv/tree")
+  разбор response
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если («Root of plan directory» от output) равен ""
+        то «Cannot check» от "каталог плана не назван — корня дерева не узнать"
+        иначе вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным («Temporary pattern»)) и потом равным (вариант «Awaiting temporary root» с forgery равным forgery и root равным («Root of plan directory» от output))
+    случай любое
+      то «Cannot check» от "ждали каталог, в котором лежит план"
+
+тотальная функция «After temporary root»
+  принимает forgery: признак, root: строка, response: «Отклик»
+  возвращает «Продолжение»
+  пример «no temporary root means nowhere to check»
+    дано forgery равно нет
+    дано root равно "/srv/tree"
+    дано response равно вариант «Сбой» с код равным "FLANG_IO_TEMPDIR" и сообщение равным "места нет"
+    ожидается вариант «Не проверено» с код равным "FLANG_SETTINGS_GUARD_CANNOT_LOOK" и сообщение равным "времянка не заведена (FLANG_IO_TEMPDIR): места нет"
+  разбор response
+    случай вариант «Заведено» с путь как temporary
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "/bin/sh" и аргументы равным («Toy trees» от temporary)) и потом равным (вариант «Awaiting toy trees» с forgery равным forgery и root равным root и temporary равным temporary)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Cannot check» от (соединить ["времянка не заведена (", code, "): ", message] по "")
+    случай любое
+      то «Cannot check» от "ждали путь времянки"
+
+тотальная функция «Choose probes»
+  принимает forgery: признак, root: строка, temporary: строка
+  возвращает «Продолжение»
+  если forgery
+    то «Walk probes» от temporary и да и («Forgery probes» от temporary) и пустой список и 0
+    иначе вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным root) и потом равным (вариант «Awaiting names» с forgery равным forgery и root равным root и temporary равным temporary)
+
+тотальная функция «After toy trees»
+  принимает forgery: признак, root: строка, temporary: строка, response: «Отклик»
+  возвращает «Продолжение»
+  пример «no toy trees means nothing to check on»
+    дано forgery равно нет
+    дано root равно "/srv/tree"
+    дано temporary равно "/tmp/t"
+    дано response равно вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "mkdir: нет прав"
+    ожидается вариант «Не проверено» с код равным "FLANG_SETTINGS_GUARD_CANNOT_LOOK" и сообщение равным "игрушечные деревья не построены: mkdir: нет прав"
+  пример «the forgery probe does not need the real tree»
+    дано forgery равно да
+    дано root равно "/srv/tree"
+    дано temporary равно "/tmp/t"
+    дано response равно вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting substitute» с walk равным (запись «Walk» с «temporary» равным "/tmp/t" и «forgery» равным да и «probe» равным (запись «Probe» с «purpose» равным "у дерева вынута примета корня, и подъём обязан выйти к чужому файлу" и «arguments» равным ["--places", "--from", "/tmp/t/above/open/deep/more", "--home", "/tmp/t/home"] и «expects» равным (вариант «Places outside» с root равным "/tmp/t/above/open" и foreign равным "/tmp/t/above")) и «remaining» равным пустой список и «troubles» равным пустой список и «done» равным 0) и reader равным (вариант «Awaiting arguments») и substitute равным (вариант «Доводы» с доводы равным ["--places", "--from", "/tmp/t/above/open/deep/more", "--home", "/tmp/t/home"]))
+  разбор response
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если code равен 0
+        то «Choose probes» от forgery и root и temporary
+        иначе «Cannot check» от (соединить ["игрушечные деревья не построены: ", errors] по "")
+    случай любое
+      то «Cannot check» от "ждали ответ о постройке игрушечных деревьев"
+
+тотальная функция «After names»
+  принимает root: строка, temporary: строка, response: «Отклик»
+  возвращает «Продолжение»
+  пример «the root is not listed and the starts cannot be named»
+    дано root равно "/srv/tree"
+    дано temporary равно "/tmp/t"
+    дано response равно вариант «Сбой» с код равным "FLANG_IO_LIST" и сообщение равным "каталог не открыт"
+    ожидается вариант «Не проверено» с код равным "FLANG_SETTINGS_GUARD_CANNOT_LOOK" и сообщение равным "корень дерева не перечислен (FLANG_IO_LIST): каталог не открыт"
+  разбор response
+    случай вариант «Перечислено» с имена как names
+      то «Walk probes» от temporary и нет и («Joined probes» от («Toy probes» от temporary) и («Tree probes» от root и names и temporary)) и пустой список и 0
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Cannot check» от (соединить ["корень дерева не перечислен (", code, "): ", message] по "")
+    случай любое
+      то «Cannot check» от "ждали перечень корня дерева"
+
+тотальная функция «Joined probes»
+  принимает start: список «Probe», finish: список «Probe»
+  возвращает список «Probe»
+  обеспечивает «no probe is lost» (длина результат) равен ((длина start) плюс (длина finish))
+  свёртка finish начиная с start как gathered и probe → (добавить probe к gathered)
+
+тотальная функция «Guard next»
+  принимает stage: «Guard stage», response: «Отклик»
+  возвращает «Продолжение»
+  пример «the plan directory is asked first»
+    дано stage равно вариант «Guard started» с forgery равным нет
+    дано response равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "/bin/pwd" и аргументы равным пустой список) и потом равным (вариант «Awaiting plan directory» с forgery равным нет)
+  разбор stage
+    случай вариант «Guard started» с forgery как forgery
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "/bin/pwd" и аргументы равным (пустой список)) и потом равным (вариант «Awaiting plan directory» с forgery равным forgery)
+    случай вариант «Awaiting plan directory» с forgery как forgery
+      то «After plan directory» от forgery и response
+    случай вариант «Awaiting temporary root» с forgery как forgery и root как root
+      то «After temporary root» от forgery и root и response
+    случай вариант «Awaiting toy trees» с forgery как forgery и root как root и temporary как temporary
+      то «After toy trees» от forgery и root и temporary и response
+    случай вариант «Awaiting names» с forgery как forgery и root как root и temporary как temporary
+      то «After names» от root и temporary и response
+    случай вариант «Awaiting world» с walk как walk и reader как reader
+      то «Drive reader» от walk и («Next» от reader и response)
+    случай вариант «Awaiting substitute» с walk как walk и reader как reader и substitute как substitute
+      то «Drive reader» от walk и («Next» от reader и substitute)
+    случай вариант «Awaiting removal» с forgery как forgery и troubles как troubles и done как done
+      то «Verdict» от forgery и troubles и done
+
+тотальная функция «Begin check»
+  возвращает «Guard stage»
+  пример «the check judges an honest tree»
+    ожидается вариант «Guard started» с forgery равным нет
+  вариант «Guard started» с forgery равным нет
+
+тотальная функция «Begin forgery»
+  возвращает «Guard stage»
+  пример «the forgery probe judges a tree without the root mark»
+    ожидается вариант «Guard started» с forgery равным да
+  вариант «Guard started» с forgery равным да
+
+план «Check»
+  состояние «Guard stage»
+  начинает с «Begin check»
+  обрабатывает «Guard next»
+
+план «Forgery»
+  состояние «Guard stage»
+  начинает с «Begin forgery»
+  обрабатывает «Guard next»
+
+тотальная функция «Объявление ярлыка настройки:проверка»
+  возвращает строка
+  "bootstrap/flang io --plan Check — файл настроек читается только из дерева и из дома, и ближний .flangrc не перекрывается дальним; поиск модулей ровно этого не держит (задача 3127)"
+
+тотальная функция «Объявление ярлыка настройки:подлог»
+  возвращает строка
+  "bootstrap/flang io --plan Forgery — проверка мест настроек называет место вне дерева, когда у дерева вынута примета корня и подъём выходит к чужому файлу"

@@ -79,8 +79,9 @@ if [ "$MODE" = help ]; then
   exit 0
 fi
 
-if [ -z "$OUTPUT_LANG" ] && [ -x "$BINARY" ] && [ -f "$ROOT/scripts/flangrc.sh" ]; then
-  OUTPUT_LANG=$(sh "$ROOT/scripts/flangrc.sh" язык 2>/dev/null)
+if [ -z "$OUTPUT_LANG" ] && [ -x "$BINARY" ] && [ -f "$ROOT/../../scripts/flangrc.fscript" ]; then
+  OUTPUT_LANG=$("$BINARY" io "$ROOT/../../scripts/flangrc.fscript" -- language 2>/dev/null |
+    sed -n 's/^{"plan":"Settings","result":"\([a-z]*\).*/\1/p')
 fi
 [ -n "$OUTPUT_LANG" ] || OUTPUT_LANG=ru
 NO_LESSONS_IN=

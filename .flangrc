@@ -1,13 +1,12 @@
-# Что означает каждый ключ, где ищется файл и что старше чего — docs/guide/settings.ru.md
-язык = ru
-поверхность = ru
-цвет = авто
-страница = ru
+language = ru
+surface = ru
+color = auto
+page = ru
 
-версия = 0.7.22
-имя = @digitable-lol/flang
-лицензия = BSD-2-Clause
-склад = https://github.com/digitable-lol/flang
-беды = https://github.com/digitable-lol/flang/issues
+version = 0.7.22
+name = @digitable-lol/flang
+license = BSD-2-Clause
+repository = https://github.com/digitable-lol/flang
+issues = https://github.com/digitable-lol/flang/issues
 
-недоказанное = отказ
+unproven = refuse

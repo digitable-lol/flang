@@ -25,7 +25,7 @@
 #   ./ярлык версия <НОВОЕ ЧИСЛО>
 #
 # ── Что здесь СВЕРЯЕТСЯ с источником ────────────────────────────────────────
-#   .flangrc                        версия, имя, лицензия, склад, беды
+#   .flangrc                        version, name, license, repository, issues
 #   flang/src/emit/c/flang_repl.c   #define FLANG_VERSION
 #   packaging/flang.1               .TH и обе расшифровки прогонов «flang X»
 #   packaging/homebrew/flang.rb     version, тег в url, имя архива в url
@@ -125,23 +125,23 @@ dobavit() { BEDY="${BEDY}  · $1
 "; }
 
 # .flangrc — версия, имя, лицензия и оба адреса проекта. Файл настроек читают
-# и человек, и `sh scripts/flangrc.sh`, и все бывшие читатели package.json —
+# и человек, и `scripts/flangrc.fscript`, и все бывшие читатели package.json —
 # сборка сайта, сторожа формулы, страницы man, лицензий, выпуска, тело релиза;
 # разойтись с источником он не вправе: `./ярлык версия <N>` разносит туда все
 # пять ключей.
-V_RC=$(sed -n 's/^версия[[:space:]]*=[[:space:]]*//p' .flangrc | head -1)
+V_RC=$(sed -n 's/^version[[:space:]]*=[[:space:]]*//p' .flangrc | head -1)
 if [ "$V_RC" != "$V_SRC" ]; then
-  dobavit ".flangrc: версия «${V_RC:-не найдена}», а источник $ISTOCHNIK объявляет «$V_SRC» — файл настроек не догнал подъём"
+  dobavit ".flangrc: version «${V_RC:-не найдена}», а источник $ISTOCHNIK объявляет «$V_SRC» — файл настроек не догнал подъём"
 fi
 
 if [ -n "$N_SRC" ]; then
-  N_RC=$(sed -n 's/^имя[[:space:]]*=[[:space:]]*//p' .flangrc | head -1)
+  N_RC=$(sed -n 's/^name[[:space:]]*=[[:space:]]*//p' .flangrc | head -1)
   if [ "$N_RC" != "$N_SRC" ]; then
-    dobavit ".flangrc: имя «${N_RC:-не найдено}», а источник $ISTOCHNIK объявляет «$N_SRC»"
+    dobavit ".flangrc: name «${N_RC:-не найдено}», а источник $ISTOCHNIK объявляет «$N_SRC»"
   fi
 fi
 
-# лицензия, склад, беды — из функций «Лицензия», «Адрес склада», «Адрес бед».
+# license, repository, issues — из функций «Лицензия», «Адрес репозитория», «Адрес задач».
 # Пустое тело у источника — сверять нечем, и это названо, а не проглочено.
 sverit_klyuch() { # ключ .flangrc, имя функции источника
   ozhidaem=$(telo_funkcii "$2")
@@ -154,9 +154,9 @@ sverit_klyuch() { # ключ .flangrc, имя функции источника
     dobavit ".flangrc: $1 «${est:-не найдено}», а источник $ISTOCHNIK объявляет «$ozhidaem»"
   fi
 }
-sverit_klyuch лицензия 'Лицензия'
-sverit_klyuch склад 'Адрес склада'
-sverit_klyuch беды 'Адрес бед'
+sverit_klyuch license 'Лицензия'
+sverit_klyuch repository 'Адрес репозитория'
+sverit_klyuch issues 'Адрес задач'
 
 # flang_repl.c #define FLANG_VERSION
 V_REPL=$(sed -n 's/^#define FLANG_VERSION "\([^"]*\)".*/\1/p' flang/src/emit/c/flang_repl.c)

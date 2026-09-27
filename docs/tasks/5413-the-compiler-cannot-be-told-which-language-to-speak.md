@@ -13,7 +13,7 @@
 # 5413. Двоичный не читает `.flangrc` и не знает ключа языка
 
 Файл настроек, его разбор и старшинство источников написаны и прогнаны
-(`scripts/settings-file.flang`, `scripts/flangrc.sh`, `.flangrc` в корне,
+(`scripts/settings-file.flang`, `scripts/flangrc.fscript`, `.flangrc` в корне,
 `docs/guide/settings.ru.md`, решение
 [ADR-0024](../adr/0024-the-settings-file-and-the-language-of-output.md)).
 Читает их сегодня только оснастка. **Сам `bootstrap/flang` о настройках не знает
@@ -39,7 +39,7 @@ $ grep -oE '"--[^"]{2,40}"' bootstrap/flang_repl.c | grep -ci 'lang\|язык'
 2. **Чтение `.flangrc`** в самом двоичном, по правилу из ADR-0024: подъём от
    рабочего каталога, обрыв на первой примете (`.flangrc`, `.git`,
    `flang.package`), потом `$HOME/.flangrc`. Правило уже пересчитано в
-   `scripts/flangrc.sh` и проверено `scripts/guards/flangrc-guard.sh` — расходиться
+   `scripts/flangrc.fscript` и проверено `scripts/guards/flangrc-guard.fscript` — расходиться
    этим двум записям нельзя, и за этим должна следить проверка.
 3. **Переменные среды** `FLANG_LANG`, `FLANG_SURFACE`, `FLANG_COLOR`,
    `FLANG_MANPAGE` — латиницей, потому что `bash` и `dash` кириллическое имя
@@ -61,7 +61,7 @@ $ grep -oE '"--[^"]{2,40}"' bootstrap/flang_repl.c | grep -ci 'lang\|язык'
 * `flang --язык en --help` печатает не то же, что `flang --help`, — после того
   как задача 8161 даст откуда брать перевод; до неё — печатает то же и говорит
   об этом одной строкой, а не молчит;
-* `.flangrc` с `язык = eo` меняет ответ `flang --version` в части прозы;
+* `.flangrc` с `language = eo` меняет ответ `flang --version` в части прозы;
 * чужой `.flangrc` выше корня проекта НЕ действует — то же, что проверяет
-  `sh scripts/guards/flangrc-guard.sh --подлог`;
+  `bootstrap/flang io scripts/guards/flangrc-guard.fscript --plan Forgery`;
 * `flang --json` и коды `FLANG_*` от ключа языка не зависят ни в одном прогоне.

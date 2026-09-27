@@ -180,7 +180,7 @@ export function отказыЯдра() {
 }
 
 /**
- * Версия выпуска — из `.flangrc` (ключ `версия`), а не из памяти. До 17 сентября
+ * Версия выпуска — из `.flangrc` (ключ `version`), а не из памяти. До 17 сентября
  * 2026 читалась из package.json; файл выброшен (задача 3570), а ключ в `.flangrc`
  * разносит `./ярлык версия` из scripts/release/emit-package.flang. Последний
  * одноимённый ключ побеждает — как у scripts/settings-file.flang.
@@ -188,7 +188,7 @@ export function отказыЯдра() {
 export function версияВыпуска() {
   let версия = ""
   for (const строка of прочесть(".flangrc").split("\n")) {
-    const м = /^\s*версия\s*=\s*(.*?)\s*$/u.exec(строка)
+    const м = /^\s*version\s*=\s*(.*?)\s*$/u.exec(строка)
     if (м) версия = м[1]
   }
   return версия

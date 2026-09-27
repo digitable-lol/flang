@@ -286,7 +286,7 @@ poschitat() { # каталог-корень -> строки «ключ<TAB>зн�
 
   printf 'цели.всего\t%s\n'     "$(find flang/src/emit -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')"
   printf 'цели.близнецов\t%s\n' "$(find flang/self -maxdepth 1 -name 'emit-*.flang' 2>/dev/null | wc -l | tr -d ' ')"
-  printf 'выпуск.версия\t%s\n'  "$(flangrc_klyuch версия)"
+  printf 'выпуск.версия\t%s\n'  "$(flangrc_klyuch version)"
 
   o1=$(grep -oE 'FLANG_PROOF_[A-Z_]+' flang/self/obligations.flang 2>/dev/null | sort -u | wc -l | tr -d ' ')
   o2=$(grep -oE 'FLANG_PROOF_[A-Z_]+' flang/self/proofterm.flang 2>/dev/null | sort -u | wc -l | tr -d ' ')
@@ -568,7 +568,7 @@ perepis() {
 # клоне «тега нет» означало бы только то, что его не выгружали.
 vypusk() {
   echo "ВЫПУСК (объявленное деревом против выпущенного):"
-  v_paket=$(flangrc_klyuch версия)
+  v_paket=$(flangrc_klyuch version)
   echo "  версия в .flangrc        $v_paket"
 
   if [ -z "$(git tag -l 'v[0-9]*' 2>/dev/null)" ]; then

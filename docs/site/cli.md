@@ -266,12 +266,12 @@ skips the verdict entirely (it is not computed, so it costs nothing) and says so
 with its own line; `--unproven warn` computes the verdict, says it and runs anyway. See
 [ADR-0045](https://github.com/digitable-lol/flang/blob/main/docs/adr/0045-run-and-io-print-the-verdict-and-refuse-an-unproved-program.md).
 
-**To say this once and for all, use the `недоказанное` key of `.flangrc`**
+**To say this once and for all, use the `unproven` key of `.flangrc`**
 (the settings guide is Russian only for now:
 [docs/guide/settings.ru.md](https://github.com/digitable-lol/flang/blob/main/docs/guide/settings.ru.md#что-делать-с-недоказанным)):
-`недоказанное = предупреждение` — or, in Latin letters, `недоказанное = warn`.
+`unproven = warn` — or, in Latin letters, `unproven = warn`.
 Precedence: a command-line key beats the `FLANG_UNPROVEN` environment variable,
-which beats `.flangrc`, which beats the default `отказ` (refuse). The line
+which beats `.flangrc`, which beats the default `refuse`. The line
 printed back names whatever allowed the run, **in the script the person used**:
 `--trust` is answered with `--trust`, a setting with the setting and the path of
 the file. A value that is not one of the three is exit code `2` and words, not
@@ -504,7 +504,7 @@ flang io <файл.flang> [--plan 'Имя'] [--max-orders N] [--seed N] [--in-di
 | `--in-dir` | Forbid paths outside the directory of the input file |
 | `--pretty` | JSON with indentation |
 | `--trust` (`--на-веру`) | Run an unproved plan: the verdict is not computed at all, and a line says so |
-| `--unproven WORD` (`--недоказанное`) | What to do with an unproved plan: `refuse` (the default), `warn`, `allow`. Once and for all — the `недоказанное` key of `.flangrc` |
+| `--unproven WORD` (`--недоказанное`) | What to do with an unproved plan: `refuse` (the default), `warn`, `allow`. Once and for all — the `unproven` key of `.flangrc` |
 
 Like `run`, `io` computes the **proof verdict** of the closure before the plan
 starts and puts one line into the error stream; an unproved plan is not run at
@@ -570,7 +570,7 @@ the number of orders and the number of steps.
 The exit codes are a contract: `0` — the plan ran to the end; `1` — the program
 gave up itself («Провал»), that is, it found trouble and named it; `2` — a bad
 call; `3` — the tool broke, the program said «Не проверено», that is, it had
-nothing to look with, or the plan is not proved and there was neither `--trust` nor a `недоказанное` setting. What tells the first two apart is not the error code but
+nothing to look with, or the plan is not proved and there was neither `--trust` nor a `unproven` setting. What tells the first two apart is not the error code but
 who made the decision; the second and the third — what was decided: "found
 trouble" against "could not look".
 

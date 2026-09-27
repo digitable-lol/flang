@@ -1,0 +1,1073 @@
+модуль «Settings reader»
+  использует «Настройки» из "settings-file.flang" только «Пара», «Значение ключа», «Пара из строки», «Обрезать края»
+
+объект «Rule»
+  «holds»: признак
+  «gives»: строка
+
+тип «Answer kind»
+  вариант «Values»
+  вариант «Sources»
+  вариант «Places»
+  вариант «File»
+
+объект «Choice»
+  «option»: строка
+  «kind»: «Answer kind»
+
+объект «Request»
+  «key»: строка
+  «kind»: «Answer kind»
+  «start»: строка
+  «home»: строка
+
+объект «Search»
+  «places»: список строки
+  «stop»: строка
+  «file»: строка
+
+объект «Files»
+  «project path»: строка
+  «project»: строка
+  «home path»: строка
+  «home»: строка
+
+объект «Neighbours»
+  «previous»: строка
+  «pairs»: список «Пара»
+
+тип «Stage»
+  вариант «Start»
+  вариант «Awaiting arguments»
+  вариант «Awaiting variable» содержит request: «Request», name: строка, remaining: список строки, environment: список «Пара»
+  вариант «Awaiting listing» содержит request: «Request», environment: список «Пара», directory: строка, above: список строки, places: список строки
+  вариант «Awaiting project file» содержит request: «Request», environment: список «Пара», search: «Search»
+  вариант «Awaiting home file» содержит request: «Request», environment: список «Пара», search: «Search», project: строка
+
+тотальная функция «First rule»
+  принимает rules: список «Rule», otherwise: строка
+  возвращает строка
+  пример «the first rule that holds gives the answer»
+    дано rules равно [запись «Rule» с «holds» равным нет и «gives» равным "a", запись «Rule» с «holds» равным да и «gives» равным "b", запись «Rule» с «holds» равным да и «gives» равным "c"]
+    дано otherwise равно "z"
+    ожидается "b"
+  пример «no rule holds and the fallback answers»
+    дано rules равно [запись «Rule» с «holds» равным нет и «gives» равным "a"]
+    дано otherwise равно "z"
+    ожидается "z"
+  (свёртка rules начиная с (запись «Rule» с «holds» равным нет и «gives» равным otherwise) как found и candidate → (если (found.«holds») или не (candidate.«holds») то found иначе candidate)).«gives»
+
+тотальная функция «First non-empty»
+  принимает sources: список строки
+  возвращает строка
+  пример «the first source decides»
+    дано sources равно ["en", "ru"]
+    ожидается "en"
+  пример «empty sources are skipped»
+    дано sources равно ["", "", "zh"]
+    ожидается "zh"
+  пример «no sources give nothing»
+    дано sources равно пустой список
+    ожидается ""
+  свёртка sources начиная с "" как chosen и source → (если chosen равен "" то source иначе chosen)
+
+тотальная функция «Joined»
+  принимает head: список строки, tail: список строки
+  возвращает список строки
+  пример «the second list follows the first»
+    дано head равно ["a"]
+    дано tail равно ["b", "c"]
+    ожидается ["a", "b", "c"]
+  свёртка tail начиная с head как gathered и line → (добавить line к gathered)
+
+тотальная функция «By key»
+  принимает pairs: список «Пара», key: строка
+  возвращает строка
+  пример «the value is found by its key»
+    дано pairs равно [запись «Пара» с «ключ» равным "HOME" и «значение» равным "/home/a"]
+    дано key равно "HOME"
+    ожидается "/home/a"
+  пример «a missing key gives nothing»
+    дано pairs равно [запись «Пара» с «ключ» равным "HOME" и «значение» равным "/home/a"]
+    дано key равно "PWD"
+    ожидается ""
+  свёртка pairs начиная с "" как found и pair → (если (pair.«ключ») равен key то (pair.«значение») иначе found)
+
+тотальная функция «By value»
+  принимает pairs: список «Пара», value: строка
+  возвращает строка
+  пример «the key is found by its value»
+    дано pairs равно [запись «Пара» с «ключ» равным "issues" и «значение» равным "беды"]
+    дано value равно "беды"
+    ожидается "issues"
+  пример «a missing value gives nothing»
+    дано pairs равно [запись «Пара» с «ключ» равным "issues" и «значение» равным "беды"]
+    дано value равно "склад"
+    ожидается ""
+  свёртка pairs начиная с "" как found и pair → (если (pair.«значение») равен value то (pair.«ключ») иначе found)
+
+тотальная функция «Keys»
+  возвращает список строки
+  обеспечивает «there are exactly ten keys» (длина результат) равен 10
+  ["language", "surface", "color", "page", "version", "name", "license", "repository", "issues", "unproven"]
+
+тотальная функция «Project keys»
+  возвращает список строки
+  обеспечивает «five keys describe the project» (длина результат) равен 5
+  ["version", "name", "license", "repository", "issues"]
+
+тотальная функция «Language keys»
+  возвращает список строки
+  обеспечивает «three keys take a language code» (длина результат) равен 3
+  ["language", "surface", "page"]
+
+тотальная функция «Language codes»
+  возвращает список строки
+  обеспечивает «there are exactly four language codes» (длина результат) равен 4
+  ["ru", "en", "eo", "zh"]
+
+тотальная функция «Colour words»
+  возвращает список строки
+  обеспечивает «colour takes three words» (длина результат) равен 3
+  ["always", "never", "auto"]
+
+тотальная функция «Unproven words»
+  возвращает список строки
+  обеспечивает «unproven takes three words» (длина результат) равен 3
+  ["refuse", "warn", "allow"]
+
+тотальная функция «Legacy keys»
+  возвращает список «Пара»
+  обеспечивает «every key has a legacy name» (длина результат) равен 10
+  [запись «Пара» с «ключ» равным "language" и «значение» равным "язык",
+   запись «Пара» с «ключ» равным "surface" и «значение» равным "поверхность",
+   запись «Пара» с «ключ» равным "color" и «значение» равным "цвет",
+   запись «Пара» с «ключ» равным "page" и «значение» равным "страница",
+   запись «Пара» с «ключ» равным "version" и «значение» равным "версия",
+   запись «Пара» с «ключ» равным "name" и «значение» равным "имя",
+   запись «Пара» с «ключ» равным "license" и «значение» равным "лицензия",
+   запись «Пара» с «ключ» равным "repository" и «значение» равным "склад",
+   запись «Пара» с «ключ» равным "issues" и «значение» равным "беды",
+   запись «Пара» с «ключ» равным "unproven" и «значение» равным "недоказанное"]
+
+тотальная функция «Legacy words»
+  возвращает список «Пара»
+  обеспечивает «six words have a legacy spelling» (длина результат) равен 6
+  [запись «Пара» с «ключ» равным "always" и «значение» равным "да",
+   запись «Пара» с «ключ» равным "never" и «значение» равным "нет",
+   запись «Пара» с «ключ» равным "auto" и «значение» равным "авто",
+   запись «Пара» с «ключ» равным "refuse" и «значение» равным "отказ",
+   запись «Пара» с «ключ» равным "warn" и «значение» равным "предупреждение",
+   запись «Пара» с «ключ» равным "allow" и «значение» равным "разрешение"]
+
+тотальная функция «Variables of keys»
+  возвращает список «Пара»
+  обеспечивает «seven keys have an environment variable» (длина результат) равен 7
+  [запись «Пара» с «ключ» равным "language" и «значение» равным "FLANG_LANG",
+   запись «Пара» с «ключ» равным "surface" и «значение» равным "FLANG_SURFACE",
+   запись «Пара» с «ключ» равным "color" и «значение» равным "FLANG_COLOR",
+   запись «Пара» с «ключ» равным "page" и «значение» равным "FLANG_MANPAGE",
+   запись «Пара» с «ключ» равным "version" и «значение» равным "FLANG_PROJECT_VERSION",
+   запись «Пара» с «ключ» равным "name" и «значение» равным "FLANG_PROJECT_NAME",
+   запись «Пара» с «ключ» равным "unproven" и «значение» равным "FLANG_UNPROVEN"]
+
+тотальная функция «Variable names»
+  возвращает список строки
+  обеспечивает «twelve variables are asked and no more» (длина результат) равен 12
+  ["PWD", "HOME", "LC_ALL", "LC_MESSAGES", "LANG", "FLANG_LANG", "FLANG_SURFACE", "FLANG_COLOR", "FLANG_MANPAGE", "FLANG_PROJECT_VERSION", "FLANG_PROJECT_NAME", "FLANG_UNPROVEN"]
+
+тотальная функция «Directory options»
+  возвращает список строки
+  обеспечивает «two options name a directory» (длина результат) равен 2
+  ["--from", "--home"]
+
+тотальная функция «Usage»
+  возвращает строка
+  "звать: bootstrap/flang io scripts/flangrc.fscript [-- [ключ настроек] [--sources | --places | --file] [--from КАТАЛОГ] [--home КАТАЛОГ]]"
+
+тотальная функция «Current key»
+  принимает name: строка
+  возвращает строка
+  пример «a legacy name is translated»
+    дано name равно "склад"
+    ожидается "repository"
+  пример «a current name stays itself»
+    дано name равно "issues"
+    ожидается "issues"
+  пример «an unknown name is not a key»
+    дано name равно "чепуха"
+    ожидается ""
+  если («Keys») содержит name
+    то name
+    иначе «By value» от («Legacy keys») и name
+
+тотальная функция «Current word»
+  принимает key: строка, value: строка
+  возвращает строка
+  пример «a legacy colour word is translated»
+    дано key равно "color"
+    дано value равно "авто"
+    ожидается "auto"
+  пример «a legacy unproven word is translated»
+    дано key равно "unproven"
+    дано value равно "отказ"
+    ожидается "refuse"
+  пример «a current word stays itself»
+    дано key равно "unproven"
+    дано value равно "warn"
+    ожидается "warn"
+  пример «a key without words keeps its value»
+    дано key равно "name"
+    дано value равно "да"
+    ожидается "да"
+  «First non-empty» от [(если ["color", "unproven"] содержит key то («By value» от («Legacy words») и value) иначе ""), value]
+
+тотальная функция «Value of key»
+  принимает text: строка, key: строка
+  возвращает строка
+  пример «a current line is read as it stands»
+    дано text равно "language = eo\n"
+    дано key равно "language"
+    ожидается "eo"
+  пример «a file older than 0.7.23 is read by the legacy name»
+    дано text равно "склад = https://example.org/tree\n"
+    дано key равно "repository"
+    ожидается "https://example.org/tree"
+  пример «a legacy word arrives as the current one»
+    дано text равно "недоказанное = разрешение\n"
+    дано key равно "unproven"
+    ожидается "allow"
+  пример «the current name beats the legacy one»
+    дано text равно "версия = 0.7.21\nversion = 0.7.22\n"
+    дано key равно "version"
+    ожидается "0.7.22"
+  «Current word» от key и («First non-empty» от [(«Значение ключа» от text и key), («Значение ключа» от text и («By key» от («Legacy keys») и key))])
+
+тотальная функция «Advice on line»
+  принимает text: строка, line: строка
+  возвращает строка
+  пример «a legacy key is read and its replacement is named»
+    дано text равно "беды = https://example.org/issues\n"
+    дано line равно "беды = https://example.org/issues"
+    ожидается "запись «беды = https://example.org/issues» устарела и пока читается — замените её на «issues = https://example.org/issues»"
+  пример «a legacy word under a current key is named too»
+    дано text равно "color = авто\n"
+    дано line равно "color = авто"
+    ожидается "запись «color = авто» устарела и пока читается — замените её на «color = auto»"
+  пример «a legacy line next to the current one is not read and that is said»
+    дано text равно "версия = 0.7.21\nversion = 0.7.22\n"
+    дано line равно "версия = 0.7.21"
+    ожидается "запись «версия = 0.7.21» не читается — в файле есть «version = 0.7.22»; старую строку удалите"
+  пример «a current line needs no advice»
+    дано text равно "version = 0.7.22\n"
+    дано line равно "version = 0.7.22"
+    ожидается ""
+  пример «an unknown key needs no advice»
+    дано text равно "чепуха = что угодно\n"
+    дано line равно "чепуха = что угодно"
+    ожидается ""
+  пусть pair равно «Пара из строки» от line
+  пусть key равно «Current key» от (pair.«ключ»)
+  пусть word равно «Current word» от key и (pair.«значение»)
+  пусть standing равно «Значение ключа» от text и key
+  пусть legacy равно не ((pair.«ключ») равен key)
+  пусть was равно соединить ["запись «", (pair.«ключ»), " = ", (pair.«значение»), "»"] по ""
+  «First rule» от [
+    (запись «Rule» с «holds» равным (key равен "") и «gives» равным ""),
+    (запись «Rule» с «holds» равным (legacy и притом не (standing равен "")) и «gives» равным (соединить [was, " не читается — в файле есть «", key, " = ", standing, "»; старую строку удалите"] по "")),
+    (запись «Rule» с «holds» равным (legacy или не (word равен (pair.«значение»))) и «gives» равным (соединить [was, " устарела и пока читается — замените её на «", key, " = ", word, "»"] по ""))] и ""
+
+тотальная функция «Advice on file»
+  принимает text: строка, key: строка
+  возвращает список строки
+  пример «whoever asks for one key hears about that key only»
+    дано text равно "язык = ru\nверсия = 0.7.22\n"
+    дано key равно "version"
+    ожидается ["запись «версия = 0.7.22» устарела и пока читается — замените её на «version = 0.7.22»"]
+  пример «no key is named and the whole file is advised»
+    дано text равно "язык = ru\nцвет = авто\n"
+    дано key равно ""
+    ожидается ["запись «язык = ru» устарела и пока читается — замените её на «language = ru»", "запись «цвет = авто» устарела и пока читается — замените её на «color = auto»"]
+  пример «a current file gets no advice»
+    дано text равно "language = ru\ncolor = auto\n"
+    дано key равно ""
+    ожидается пустой список
+  отфильтровать (отобразить (отфильтровать (разделить text по "\n") где line → (key равен "") или ((«Current key» от ((«Пара из строки» от line).«ключ»)) равен key)) как line → («Advice on line» от text и line)) где advice → не (advice равен "")
+
+тотальная функция «Language of locale»
+  принимает locale: строка
+  возвращает строка
+  пример «a Russian locale»
+    дано locale равно "ru_RU.UTF-8"
+    ожидается "ru"
+  пример «the C locale is not a language»
+    дано locale равно "C.UTF-8"
+    ожидается ""
+  пример «an empty locale»
+    дано locale равно ""
+    ожидается ""
+  пример «a locale of an unknown language»
+    дано locale равно "de_DE.UTF-8"
+    ожидается ""
+  пусть prefix равно (если (длина locale) меньше 2 то "" иначе (подстрока locale с 1 по 2))
+  если («Language codes») содержит prefix то prefix иначе ""
+
+тотальная функция «Valid»
+  принимает key: строка, value: строка
+  возвращает строка
+  пример «a valid language code»
+    дано key равно "language"
+    дано value равно "eo"
+    ожидается "eo"
+  пример «an invalid language code is dropped»
+    дано key равно "language"
+    дано value равно "klingon"
+    ожидается ""
+  пример «a legacy colour word arrives as the current one»
+    дано key равно "color"
+    дано value равно "нет"
+    ожидается "never"
+  пример «an invalid colour word is dropped»
+    дано key равно "color"
+    дано value равно "sometimes"
+    ожидается ""
+  пример «an unknown key is dropped with its value»
+    дано key равно "nonsense"
+    дано value равно "anything"
+    ожидается ""
+  пример «a version number passes as it stands»
+    дано key равно "version"
+    дано value равно "0.7.19"
+    ожидается "0.7.19"
+  пример «an invalid unproven word is dropped»
+    дано key равно "unproven"
+    дано value равно "allowed"
+    ожидается ""
+  пример «a language code is not an unproven word»
+    дано key равно "unproven"
+    дано value равно "ru"
+    ожидается ""
+  пусть word равно «Current word» от key и value
+  «First rule» от [
+    (запись «Rule» с «holds» равным ((key равен "color") и притом ((«Colour words») содержит word)) и «gives» равным word),
+    (запись «Rule» с «holds» равным ((key равен "unproven") и притом ((«Unproven words») содержит word)) и «gives» равным word),
+    (запись «Rule» с «holds» равным ((«Project keys») содержит key) и «gives» равным word),
+    (запись «Rule» с «holds» равным (((«Language keys») содержит key) и притом ((«Language codes») содержит word)) и «gives» равным word)] и ""
+
+тотальная функция «Default»
+  принимает key: строка
+  возвращает строка
+  пример «the language defaults to Russian»
+    дано key равно "language"
+    ожидается "ru"
+  пример «the colour decides by itself»
+    дано key равно "color"
+    ожидается "auto"
+  пример «an unproved program is not run by default»
+    дано key равно "unproven"
+    ожидается "refuse"
+  пример «a project key has no default»
+    дано key равно "version"
+    ожидается ""
+  «First rule» от [
+    (запись «Rule» с «holds» равным (key равен "color") и «gives» равным "auto"),
+    (запись «Rule» с «holds» равным (key равен "unproven") и «gives» равным "refuse"),
+    (запись «Rule» с «holds» равным ((«Language keys») содержит key) и «gives» равным "ru")] и ""
+
+тотальная функция «Locale»
+  принимает environment: список «Пара»
+  возвращает строка
+  пример «LC_ALL is asked first»
+    дано environment равно [запись «Пара» с «ключ» равным "LC_ALL" и «значение» равным "en_US.UTF-8", запись «Пара» с «ключ» равным "LANG" и «значение» равным "ru_RU.UTF-8"]
+    ожидается "en_US.UTF-8"
+  пример «LANG is asked last»
+    дано environment равно [запись «Пара» с «ключ» равным "LANG" и «значение» равным "ru_RU.UTF-8"]
+    ожидается "ru_RU.UTF-8"
+  «First non-empty» от [(«By key» от environment и "LC_ALL"), («By key» от environment и "LC_MESSAGES"), («By key» от environment и "LANG")]
+
+тотальная функция «Vote of locale»
+  принимает key: строка, environment: список «Пара»
+  возвращает строка
+  пример «the locale votes for the language»
+    дано key равно "language"
+    дано environment равно [запись «Пара» с «ключ» равным "LANG" и «значение» равным "en_US.UTF-8"]
+    ожидается "en"
+  пример «the locale does not vote for the colour»
+    дано key равно "color"
+    дано environment равно [запись «Пара» с «ключ» равным "LANG" и «значение» равным "en_US.UTF-8"]
+    ожидается ""
+  пример «the locale does not vote for the surface»
+    дано key равно "surface"
+    дано environment равно [запись «Пара» с «ключ» равным "LANG" и «значение» равным "en_US.UTF-8"]
+    ожидается ""
+  если ["language", "page"] содержит key то («Language of locale» от («Locale» от environment)) иначе ""
+
+тотальная функция «Variable of key»
+  принимает environment: список «Пара», key: строка
+  возвращает строка
+  пример «the project version has a variable of its own»
+    дано environment равно [запись «Пара» с «ключ» равным "FLANG_PROJECT_VERSION" и «значение» равным "1.2.3"]
+    дано key равно "version"
+    ожидается "1.2.3"
+  пример «the licence has no variable»
+    дано environment равно [запись «Пара» с «ключ» равным "FLANG_PROJECT_VERSION" и «значение» равным "1.2.3"]
+    дано key равно "license"
+    ожидается ""
+  «By key» от environment и («By key» от («Variables of keys») и key)
+
+тотальная функция «Chosen»
+  принимает key: строка, environment: список «Пара», files: «Files»
+  возвращает строка
+  пример «the project file decides when the environment is silent»
+    дано key равно "language"
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "language = en\n" и «home path» равным "/h/.flangrc" и «home» равным "language = zh\n"
+    ожидается "en"
+  пример «the environment beats the project file»
+    дано key равно "language"
+    дано environment равно [запись «Пара» с «ключ» равным "FLANG_LANG" и «значение» равным "zh"]
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "language = en\n" и «home path» равным "" и «home» равным ""
+    ожидается "zh"
+  пример «the home file beats the locale»
+    дано key равно "language"
+    дано environment равно [запись «Пара» с «ключ» равным "LANG" и «значение» равным "en_US.UTF-8"]
+    дано files равно запись «Files» с «project path» равным "" и «project» равным "" и «home path» равным "/h/.flangrc" и «home» равным "language = zh\n"
+    ожидается "zh"
+  пример «an invalid value is not taken and the default decides»
+    дано key равно "language"
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "language = klingon\n" и «home path» равным "" и «home» равным ""
+    ожидается "ru"
+  пример «a project file older than 0.7.23 decides as before»
+    дано key равно "unproven"
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "недоказанное = предупреждение\n" и «home path» равным "" и «home» равным ""
+    ожидается "warn"
+  «First non-empty» от [(«Valid» от key и («Variable of key» от environment и key)), («Valid» от key и («Value of key» от (files.«project») и key)), («Valid» от key и («Value of key» от (files.«home») и key)), («Vote of locale» от key и environment), («Default» от key)]
+
+тотальная функция «Source»
+  принимает key: строка, environment: список «Пара», files: «Files»
+  возвращает строка
+  пример «a value from the project file is named by the path»
+    дано key равно "language"
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "language = en\n" и «home path» равным "" и «home» равным ""
+    ожидается "/p/.flangrc"
+  пример «a value from the environment is named by the variable»
+    дано key равно "language"
+    дано environment равно [запись «Пара» с «ключ» равным "FLANG_LANG" и «значение» равным "zh"]
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "language = en\n" и «home path» равным "" и «home» равным ""
+    ожидается "переменная среды FLANG_LANG"
+  пример «a value from the locale is named by the locale»
+    дано key равно "language"
+    дано environment равно [запись «Пара» с «ключ» равным "LANG" и «значение» равным "en_US.UTF-8"]
+    дано files равно запись «Files» с «project path» равным "" и «project» равным "" и «home path» равным "" и «home» равным ""
+    ожидается "локаль en_US.UTF-8"
+  пример «nobody spoke and the default is named»
+    дано key равно "color"
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "" и «project» равным "" и «home path» равным "" и «home» равным ""
+    ожидается "умолчание"
+  пример «no value at all comes from nowhere»
+    дано key равно "version"
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "" и «project» равным "" и «home path» равным "" и «home» равным ""
+    ожидается "ниоткуда"
+  пусть chosen равно «Chosen» от key и environment и files
+  «First rule» от [
+    (запись «Rule» с «holds» равным (chosen равен "") и «gives» равным "ниоткуда"),
+    (запись «Rule» с «holds» равным ((«Valid» от key и («Variable of key» от environment и key)) равен chosen) и «gives» равным (соединить ["переменная среды ", («By key» от («Variables of keys») и key)] по "")),
+    (запись «Rule» с «holds» равным ((«Valid» от key и («Value of key» от (files.«project») и key)) равен chosen) и «gives» равным (files.«project path»)),
+    (запись «Rule» с «holds» равным ((«Valid» от key и («Value of key» от (files.«home») и key)) равен chosen) и «gives» равным (files.«home path»)),
+    (запись «Rule» с «holds» равным ((«Vote of locale» от key и environment) равен chosen) и «gives» равным (соединить ["локаль ", («Locale» от environment)] по ""))] и "умолчание"
+
+тотальная функция «Value after»
+  принимает arguments: список строки, option: строка
+  возвращает строка
+  пример «the directory stands right after its option»
+    дано arguments равно ["version", "--from", "/a/b"]
+    дано option равно "--from"
+    ожидается "/a/b"
+  пример «a missing option gives nothing»
+    дано arguments равно ["version"]
+    дано option равно "--from"
+    ожидается ""
+  «By key» от («With neighbours» от arguments) и option
+
+тотальная функция «With neighbours»
+  принимает arguments: список строки
+  возвращает список «Пара»
+  пример «every argument travels with the one before it»
+    дано arguments равно ["--from", "/a"]
+    ожидается [запись «Пара» с «ключ» равным "" и «значение» равным "--from", запись «Пара» с «ключ» равным "--from" и «значение» равным "/a"]
+  (свёртка arguments начиная с (запись «Neighbours» с «previous» равным "" и «pairs» равным пустой список) как walk и argument → (запись «Neighbours» с «previous» равным argument и «pairs» равным (добавить (запись «Пара» с «ключ» равным (walk.«previous») и «значение» равным argument) к (walk.«pairs»)))).«pairs»
+
+тотальная функция «Free arguments»
+  принимает arguments: список строки
+  возвращает список строки
+  пример «options and their directories are not free»
+    дано arguments равно ["--from", "/a", "version", "--sources"]
+    ожидается ["version"]
+  пример «no arguments leave nothing free»
+    дано arguments равно пустой список
+    ожидается пустой список
+  отобразить (отфильтровать («With neighbours» от arguments) где pair → (не ((pair.«значение») начинается с "--")) и притом не ((«Directory options») содержит (pair.«ключ»))) как pair → (pair.«значение»)
+
+тотальная функция «Unknown options»
+  принимает arguments: список строки
+  возвращает список строки
+  пример «an unknown option is named»
+    дано arguments равно ["--откуда", "--sources"]
+    ожидается ["--откуда"]
+  пример «known options are not unknown»
+    дано arguments равно ["--from", "/a", "--places"]
+    ожидается пустой список
+  отфильтровать arguments где argument → (argument начинается с "--") и притом (не ((«Directory options») содержит argument)) и притом не ((отобразить («Kinds of options») как choice → (choice.«option»)) содержит argument)
+
+тотальная функция «Kind of answer»
+  принимает arguments: список строки
+  возвращает «Answer kind»
+  пример «without an option the values are printed»
+    дано arguments равно ["version"]
+    ожидается вариант «Values»
+  пример «the option of places chooses places»
+    дано arguments равно ["--places"]
+    ожидается вариант «Places»
+  свёртка («Kinds of options») начиная с (вариант «Values») как chosen и choice → (если arguments содержит (choice.«option») то (choice.«kind») иначе chosen)
+
+тотальная функция «Kinds of options»
+  возвращает список «Choice»
+  обеспечивает «three options choose the kind of answer» (длина результат) равен 3
+  [запись «Choice» с «option» равным "--sources" и «kind» равным (вариант «Sources»),
+   запись «Choice» с «option» равным "--file" и «kind» равным (вариант «File»),
+   запись «Choice» с «option» равным "--places" и «kind» равным (вариант «Places»)]
+
+тотальная функция «Request of arguments»
+  принимает arguments: список строки
+  возвращает «Request»
+  пример «one key from a named directory»
+    дано arguments равно ["version", "--from", "/a/b", "--home", "/h"]
+    ожидается запись «Request» с «key» равным "version" и «kind» равным (вариант «Values») и «start» равным "/a/b" и «home» равным "/h"
+  пример «no arguments ask for every key from the working directory»
+    дано arguments равно пустой список
+    ожидается запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+  запись «Request» с «key» равным («First non-empty» от («Free arguments» от arguments)) и «kind» равным («Kind of answer» от arguments) и «start» равным («Value after» от arguments и "--from") и «home» равным («Value after» от arguments и "--home")
+
+тотальная функция «Trouble with arguments»
+  принимает arguments: список строки
+  возвращает строка
+  пример «valid arguments give no trouble»
+    дано arguments равно ["version", "--sources"]
+    ожидается ""
+  пример «a legacy key name is accepted»
+    дано arguments равно ["версия"]
+    ожидается ""
+  пример «an unknown option is named with the usage line»
+    дано arguments равно ["--откуда"]
+    ожидается "непонятный ключ «--откуда»; звать: bootstrap/flang io scripts/flangrc.fscript [-- [ключ настроек] [--sources | --places | --file] [--from КАТАЛОГ] [--home КАТАЛОГ]]"
+  пример «an unknown settings key is named with the known ones»
+    дано arguments равно ["nonsense"]
+    ожидается "ключа настроек «nonsense» нет; ключи: language, surface, color, page, version, name, license, repository, issues, unproven"
+  пусть key равно «First non-empty» от («Free arguments» от arguments)
+  «First rule» от [
+    (запись «Rule» с «holds» равным (не (пусто («Unknown options» от arguments))) и «gives» равным (соединить ["непонятный ключ «", («First non-empty» от («Unknown options» от arguments)), "»; ", («Usage»)] по "")),
+    (запись «Rule» с «holds» равным ((не (key равен "")) и притом ((«Current key» от key) равен "")) и «gives» равным (соединить ["ключа настроек «", key, "» нет; ключи: ", (соединить («Keys») по ", ")] по ""))] и ""
+
+тотальная функция «Inside»
+  принимает directory: строка, name: строка
+  возвращает строка
+  пример «a name inside a directory»
+    дано directory равно "/a/b"
+    дано name равно ".flangrc"
+    ожидается "/a/b/.flangrc"
+  пример «a name inside the root does not double the slash»
+    дано directory равно "/"
+    дано name равно ".flangrc"
+    ожидается "/.flangrc"
+  если directory равен "/" то (соединить ["/", name] по "") иначе (соединить [directory, "/", name] по "")
+
+тотальная функция «Ancestors»
+  принимает path: строка
+  возвращает список строки
+  пример «from the directory up to the root, the nearest first»
+    дано path равно "/a/b/c"
+    ожидается ["/a/b/c", "/a/b", "/a", "/"]
+  пример «the root is its own only ancestor»
+    дано path равно "/"
+    ожидается ["/"]
+  пример «a trailing slash does not count»
+    дано path равно "/a/b/"
+    ожидается ["/a/b", "/a", "/"]
+  свёртка (отфильтровать (разделить path по "/") где piece → не (piece равен "")) начиная с ["/"] как found и piece → (приписать («Inside» от (голова found) и piece) к found)
+
+тотальная функция «From working directory»
+  принимает path: строка, working: строка
+  возвращает строка
+  пример «a path from the root stays itself»
+    дано path равно "/a/b"
+    дано working равно "/w"
+    ожидается "/a/b"
+  пример «a path without the root is counted from the working directory»
+    дано path равно "src"
+    дано working равно "/w"
+    ожидается "/w/src"
+  пример «no path means the working directory»
+    дано path равно ""
+    дано working равно "/w"
+    ожидается "/w"
+  «First rule» от [
+    (запись «Rule» с «holds» равным (path равен "") и «gives» равным working),
+    (запись «Rule» с «holds» равным (path начинается с "/") и «gives» равным path)] и («Inside» от working и path)
+
+тотальная функция «Stop reason»
+  принимает directory: строка, names: список строки, home: строка
+  возвращает строка
+  пример «the settings stop the climb first»
+    дано directory равно "/a"
+    дано names равно [".flangrc", ".git"]
+    дано home равно "/h"
+    ожидается "настройки найдены: /a/.flangrc"
+  пример «the root of a repository stops the climb»
+    дано directory равно "/a"
+    дано names равно [".git", "src"]
+    дано home равно "/h"
+    ожидается "корень проекта, выше не смотрим: /a"
+  пример «the root of a package stops the climb»
+    дано directory равно "/a"
+    дано names равно ["flang.package"]
+    дано home равно "/h"
+    ожидается "корень проекта, выше не смотрим: /a"
+  пример «there is no climb above the root of the file system»
+    дано directory равно "/"
+    дано names равно ["srv"]
+    дано home равно "/h"
+    ожидается "корень файловой системы, выше некуда: /"
+  пример «there is no climb above the home»
+    дано directory равно "/h"
+    дано names равно ["work"]
+    дано home равно "/h"
+    ожидается "дом человека, выше не смотрим: /h"
+  пример «a directory without marks lets the climb go on»
+    дано directory равно "/a/b"
+    дано names равно ["src"]
+    дано home равно "/h"
+    ожидается ""
+  «First rule» от [
+    (запись «Rule» с «holds» равным (names содержит ".flangrc") и «gives» равным (соединить ["настройки найдены: ", («Inside» от directory и ".flangrc")] по "")),
+    (запись «Rule» с «holds» равным ((names содержит ".git") или (names содержит "flang.package")) и «gives» равным (соединить ["корень проекта, выше не смотрим: ", directory] по "")),
+    (запись «Rule» с «holds» равным (directory равен "/") и «gives» равным (соединить ["корень файловой системы, выше некуда: ", directory] по "")),
+    (запись «Rule» с «holds» равным ((не (home равен "")) и притом (directory равен home)) и «gives» равным (соединить ["дом человека, выше не смотрим: ", directory] по ""))] и ""
+
+тотальная функция «Home of request»
+  принимает request: «Request», environment: список «Пара»
+  возвращает строка
+  пример «a named home beats the variable»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным "/named"
+    дано environment равно [запись «Пара» с «ключ» равным "HOME" и «значение» равным "/home/a"]
+    ожидается "/named"
+  пример «no home is named and the variable answers»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    дано environment равно [запись «Пара» с «ключ» равным "HOME" и «значение» равным "/home/a"]
+    ожидается "/home/a"
+  «First non-empty» от [(request.«home»), («By key» от environment и "HOME")]
+
+тотальная функция «Keys of request»
+  принимает request: «Request»
+  возвращает список строки
+  пример «a named key is the only one»
+    дано request равно запись «Request» с «key» равным "version" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    ожидается ["version"]
+  пример «a legacy name in the request is translated»
+    дано request равно запись «Request» с «key» равным "беды" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    ожидается ["issues"]
+  пример «no key means all ten»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    ожидается ["language", "surface", "color", "page", "version", "name", "license", "repository", "issues", "unproven"]
+  если (request.«key») равен "" то («Keys») иначе [«Current key» от (request.«key»)]
+
+тотальная функция «Line of key»
+  принимает key: строка, request: «Request», environment: список «Пара», files: «Files»
+  возвращает строка
+  пример «one asked key answers with the bare value»
+    дано key равно "language"
+    дано request равно запись «Request» с «key» равным "language" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "language = en\n" и «home path» равным "" и «home» равным ""
+    ожидается "en"
+  пример «every key answers with a pair»
+    дано key равно "language"
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "language = en\n" и «home path» равным "" и «home» равным ""
+    ожидается "language = en"
+  пример «sources are named after the pair»
+    дано key равно "language"
+    дано request равно запись «Request» с «key» равным "language" и «kind» равным (вариант «Sources») и «start» равным "" и «home» равным ""
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "language = en\n" и «home path» равным "" и «home» равным ""
+    ожидается "language = en   (/p/.flangrc)"
+  пусть chosen равно «Chosen» от key и environment и files
+  разбор (request.«kind»)
+    случай вариант «Sources»
+      то соединить [key, " = ", chosen, "   (", («Source» от key и environment и files), ")"] по ""
+    случай любое
+      то если (request.«key») равен "" то (соединить [key, " = ", chosen] по "") иначе chosen
+
+тотальная функция «Advice on request»
+  принимает key: строка
+  возвращает список строки
+  пример «a legacy name in the request is accepted and its replacement is named»
+    дано key равно "версия"
+    ожидается ["ключ «версия» устарел и пока принимается — спрашивайте «version»"]
+  пример «a current name needs no advice»
+    дано key равно "version"
+    ожидается пустой список
+  если (key равен "") или (key равен («Current key» от key))
+    то пустой список
+    иначе [соединить ["ключ «", key, "» устарел и пока принимается — спрашивайте «", («Current key» от key), "»"] по ""]
+
+тотальная функция «Advice on files»
+  принимает files: «Files», key: строка
+  возвращает список строки
+  пример «the advice names the file that holds the legacy line»
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "версия = 0.7.22\n" и «home path» равным "/h/.flangrc" и «home» равным "цвет = авто\n"
+    дано key равно ""
+    ожидается ["/p/.flangrc: запись «версия = 0.7.22» устарела и пока читается — замените её на «version = 0.7.22»", "/h/.flangrc: запись «цвет = авто» устарела и пока читается — замените её на «color = auto»"]
+  «Joined» от (отобразить («Advice on file» от (files.«project») и key) как advice → (соединить [(files.«project path»), ": ", advice] по "")) и (отобразить («Advice on file» от (files.«home») и key) как advice → (соединить [(files.«home path»), ": ", advice] по ""))
+
+тотальная функция «Lines of values»
+  принимает request: «Request», environment: список «Пара», files: «Files»
+  возвращает список строки
+  пример «a value from a legacy file goes first and the advice follows»
+    дано request равно запись «Request» с «key» равным "version" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "версия = 0.7.22\n" и «home path» равным "" и «home» равным ""
+    ожидается ["0.7.22", "/p/.flangrc: запись «версия = 0.7.22» устарела и пока читается — замените её на «version = 0.7.22»"]
+  пример «without files every key answers with its default»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "" и «project» равным "" и «home path» равным "" и «home» равным ""
+    ожидается ["language = ru", "surface = ru", "color = auto", "page = ru", "version = ", "name = ", "license = ", "repository = ", "issues = ", "unproven = refuse"]
+  «Joined» от («Joined» от (отобразить («Keys of request» от request) как key → («Line of key» от key и request и environment и files)) и («Advice on request» от (request.«key»))) и («Advice on files» от files и («Current key» от (request.«key»)))
+
+тотальная функция «Lines of places»
+  принимает search: «Search», files: «Files»
+  возвращает список строки
+  пример «places, the stop reason and the home when the home file exists»
+    дано search равно запись «Search» с «places» равным ["/p/src", "/p"] и «stop» равным "настройки найдены: /p/.flangrc" и «file» равным "/p/.flangrc"
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "" и «home path» равным "/h/.flangrc" и «home» равным "color = auto\n"
+    ожидается ["/p/src", "/p", "остановка: настройки найдены: /p/.flangrc", "дом: /h/.flangrc"]
+  пример «no home file and the home is not named»
+    дано search равно запись «Search» с «places» равным ["/p"] и «stop» равным "корень проекта, выше не смотрим: /p" и «file» равным ""
+    дано files равно запись «Files» с «project path» равным "" и «project» равным "" и «home path» равным "" и «home» равным ""
+    ожидается ["/p", "остановка: корень проекта, выше не смотрим: /p"]
+  «Joined» от (добавить (соединить ["остановка: ", (search.«stop»)] по "") к (search.«places»)) и (если (files.«home path») равен "" то пустой список иначе [соединить ["дом: ", (files.«home path»)] по ""])
+
+тотальная функция «Raw unproven»
+  принимает environment: список «Пара», files: «Files»
+  возвращает «Пара»
+  пример «the word from the project file travels with the path»
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "unproven = allowed\n" и «home path» равным "" и «home» равным ""
+    ожидается запись «Пара» с «ключ» равным "/p/.flangrc" и «значение» равным "allowed"
+  пример «the word from the environment beats the file»
+    дано environment равно [запись «Пара» с «ключ» равным "FLANG_UNPROVEN" и «значение» равным "warn"]
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "unproven = allowed\n" и «home path» равным "" и «home» равным ""
+    ожидается запись «Пара» с «ключ» равным "переменная среды FLANG_UNPROVEN" и «значение» равным "warn"
+  пример «nobody said a word»
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "" и «project» равным "" и «home path» равным "" и «home» равным ""
+    ожидается запись «Пара» с «ключ» равным "" и «значение» равным ""
+  свёртка [(запись «Пара» с «ключ» равным "переменная среды FLANG_UNPROVEN" и «значение» равным («By key» от environment и "FLANG_UNPROVEN")), (запись «Пара» с «ключ» равным (files.«project path») и «значение» равным («Value of key» от (files.«project») и "unproven")), (запись «Пара» с «ключ» равным (files.«home path») и «значение» равным («Value of key» от (files.«home») и "unproven"))] начиная с (запись «Пара» с «ключ» равным "" и «значение» равным "") как found и said → (если ((found.«значение») равен "") и притом не ((said.«значение») равен "") то said иначе found)
+
+тотальная функция «Trouble with unproven»
+  принимает keys: список строки, environment: список «Пара», files: «Files»
+  возвращает строка
+  пример «an invalid word is named with its source»
+    дано keys равно ["unproven"]
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "unproven = allowed\n" и «home path» равным "" и «home» равным ""
+    ожидается "«allowed» — такого значения у «unproven» нет (/p/.flangrc).\nГодны три: refuse — не запускать; warn — сказать и запустить;\nallow — запустить, вердикта не считая."
+  пример «a valid word gives no trouble»
+    дано keys равно ["unproven"]
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "unproven = warn\n" и «home path» равным "" и «home» равным ""
+    ожидается ""
+  пример «an invalid word does not matter when unproven was not asked»
+    дано keys равно ["version"]
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "unproven = allowed\n" и «home path» равным "" и «home» равным ""
+    ожидается ""
+  пусть raw равно «Raw unproven» от environment и files
+  если (keys содержит "unproven") и притом (не ((raw.«значение») равен "")) и притом ((«Valid» от "unproven" и (raw.«значение»)) равен "")
+    то соединить ["«", (raw.«значение»), "» — такого значения у «unproven» нет (", (raw.«ключ»), ").\nГодны три: refuse — не запускать; warn — сказать и запустить;\nallow — запустить, вердикта не считая."] по ""
+    иначе ""
+
+тотальная функция «Cannot look»
+  принимает code: строка, reason: строка
+  возвращает «Продолжение»
+  пример «being unable to look is not a verdict on the settings»
+    дано code равно "FLANG_IO_ORDER"
+    дано reason равно "ждали доводы вызова"
+    ожидается вариант «Не проверено» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали доводы вызова"
+  вариант «Не проверено» с код равным code и сообщение равным reason
+
+тотальная функция «Values or trouble»
+  принимает request: «Request», environment: список «Пара», files: «Files»
+  возвращает «Продолжение»
+  пример «an invalid unproven word is a failure and not silence»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    дано environment равно пустой список
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "unproven = allowed\n" и «home path» равным "" и «home» равным ""
+    ожидается вариант «Провал» с код равным "FLANG_SETTINGS_UNPROVEN_WORD" и сообщение равным "«allowed» — такого значения у «unproven» нет (/p/.flangrc).\nГодны три: refuse — не запускать; warn — сказать и запустить;\nallow — запустить, вердикта не считая."
+  пусть trouble равно «Trouble with unproven» от («Keys of request» от request) и environment и files
+  если trouble равен ""
+    то вариант «Конец работы» с значение равным (соединить («Lines of values» от request и environment и files) по "\n")
+    иначе вариант «Провал» с код равным "FLANG_SETTINGS_UNPROVEN_WORD" и сообщение равным trouble
+
+тотальная функция «Answer»
+  принимает request: «Request», environment: список «Пара», search: «Search», files: «Files»
+  возвращает «Продолжение»
+  пример «places are printed line by line»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Places») и «start» равным "" и «home» равным ""
+    дано environment равно пустой список
+    дано search равно запись «Search» с «places» равным ["/p"] и «stop» равным "корень проекта, выше не смотрим: /p" и «file» равным ""
+    дано files равно запись «Files» с «project path» равным "" и «project» равным "" и «home path» равным "" и «home» равным ""
+    ожидается вариант «Конец работы» с значение равным "/p\nостановка: корень проекта, выше не смотрим: /p"
+  пример «the project file is printed as a path»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «File») и «start» равным "" и «home» равным ""
+    дано environment равно пустой список
+    дано search равно запись «Search» с «places» равным ["/p"] и «stop» равным "настройки найдены: /p/.flangrc" и «file» равным "/p/.flangrc"
+    дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "" и «home path» равным "" и «home» равным ""
+    ожидается вариант «Конец работы» с значение равным "/p/.flangrc"
+  разбор (request.«kind»)
+    случай вариант «Places»
+      то вариант «Конец работы» с значение равным (соединить («Lines of places» от search и files) по "\n")
+    случай вариант «File»
+      то вариант «Конец работы» с значение равным (search.«file»)
+    случай любое
+      то «Values or trouble» от request и environment и files
+
+тотальная функция «Ask home»
+  принимает request: «Request», environment: список «Пара», search: «Search», project: строка
+  возвращает «Продолжение»
+  пример «there is no home and the answer is given without it»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «File») и «start» равным "/p" и «home» равным ""
+    дано environment равно пустой список
+    дано search равно запись «Search» с «places» равным ["/p"] и «stop» равным "корень проекта, выше не смотрим: /p" и «file» равным ""
+    дано project равно ""
+    ожидается вариант «Конец работы» с значение равным ""
+  пусть home равно «Home of request» от request и environment
+  если home равен ""
+    то «Answer» от request и environment и search и (запись «Files» с «project path» равным (search.«file») и «project» равным project и «home path» равным "" и «home» равным "")
+    иначе вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным («Inside» от home и ".flangrc")) и потом равным (вариант «Awaiting home file» с request равным request и environment равным environment и search равным search и project равным project)
+
+тотальная функция «Look at»
+  принимает request: «Request», environment: список «Пара», queue: список строки, places: список строки
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным голова) и потом равным (вариант «Awaiting listing» с request равным request и environment равным environment и directory равным голова и above равным хвост и places равным places)
+    случай пусто
+      то «Ask home» от request и environment и (запись «Search» с «places» равным places и «stop» равным "предков не осталось" и «file» равным "") и ""
+
+тотальная функция «Decide on directory»
+  принимает request: «Request», environment: список «Пара», directory: строка, above: список строки, places: список строки, names: список строки
+  возвращает «Продолжение»
+  пример «found settings are read»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "/p" и «home» равным "/h"
+    дано environment равно пустой список
+    дано directory равно "/p"
+    дано above равно ["/"]
+    дано places равно пустой список
+    дано names равно [".flangrc", ".git"]
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "/p/.flangrc") и потом равным (вариант «Awaiting project file» с request равным (запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "/p" и «home» равным "/h") и environment равным пустой список и search равным (запись «Search» с «places» равным ["/p"] и «stop» равным "настройки найдены: /p/.flangrc" и «file» равным "/p/.flangrc"))
+  пример «a directory without marks lets the climb go on»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "/p/src" и «home» равным "/h"
+    дано environment равно пустой список
+    дано directory равно "/p/src"
+    дано above равно ["/p", "/"]
+    дано places равно пустой список
+    дано names равно ["main.flang"]
+    ожидается вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным "/p") и потом равным (вариант «Awaiting listing» с request равным (запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "/p/src" и «home» равным "/h") и environment равным пустой список и directory равным "/p" и above равным ["/"] и places равным ["/p/src"])
+  пример «the root of a project without settings has no project file and the home is asked»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "/p" и «home» равным "/h"
+    дано environment равно пустой список
+    дано directory равно "/p"
+    дано above равно ["/"]
+    дано places равно пустой список
+    дано names равно [".git"]
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "/h/.flangrc") и потом равным (вариант «Awaiting home file» с request равным (запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "/p" и «home» равным "/h") и environment равным пустой список и search равным (запись «Search» с «places» равным ["/p"] и «stop» равным "корень проекта, выше не смотрим: /p" и «file» равным "") и project равным "")
+  пусть stop равно «Stop reason» от directory и names и («Home of request» от request и environment)
+  пусть seen равно добавить directory к places
+  если stop равен ""
+    то «Look at» от request и environment и above и seen
+    иначе «Stop climb» от request и environment и (запись «Search» с «places» равным seen и «stop» равным stop и «file» равным (если names содержит ".flangrc" то («Inside» от directory и ".flangrc") иначе ""))
+
+тотальная функция «Stop climb»
+  принимает request: «Request», environment: список «Пара», search: «Search»
+  возвращает «Продолжение»
+  если (search.«file») равен ""
+    то «Ask home» от request и environment и search и ""
+    иначе вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным (search.«file»)) и потом равным (вариант «Awaiting project file» с request равным request и environment равным environment и search равным search)
+
+тотальная функция «Start climb»
+  принимает request: «Request», environment: список «Пара»
+  возвращает «Продолжение»
+  пример «the climb starts from the named directory»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "/p/src" и «home» равным "/h"
+    дано environment равно пустой список
+    ожидается вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным "/p/src") и потом равным (вариант «Awaiting listing» с request равным (запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "/p/src" и «home» равным "/h") и environment равным пустой список и directory равным "/p/src" и above равным ["/p", "/"] и places равным пустой список)
+  пример «the working directory is unknown and there is nowhere to look from»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    дано environment равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_SETTINGS_NO_DIRECTORY" и сообщение равным "рабочий каталог не назван: переменной среды PWD нет, ключа --from нет"
+  пусть start равно «From working directory» от (request.«start») и («By key» от environment и "PWD")
+  если start равен ""
+    то «Cannot look» от "FLANG_SETTINGS_NO_DIRECTORY" и "рабочий каталог не назван: переменной среды PWD нет, ключа --from нет"
+    иначе «Look at» от request и environment и («Ancestors» от start) и пустой список
+
+тотальная функция «Ask variable»
+  принимает request: «Request», remaining: список строки, environment: список «Пара»
+  возвращает «Продолжение»
+  пример «variables are asked one by one»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    дано remaining равно ["HOME", "LANG"]
+    дано environment равно пустой список
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "HOME") и потом равным (вариант «Awaiting variable» с request равным (запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным "") и name равным "HOME" и remaining равным ["LANG"] и environment равным пустой список)
+  разбор remaining
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным голова) и потом равным (вариант «Awaiting variable» с request равным request и name равным голова и remaining равным хвост и environment равным environment)
+    случай пусто
+      то «Start climb» от request и environment
+
+тотальная функция «After arguments»
+  принимает response: «Отклик»
+  возвращает «Продолжение»
+  пример «an unknown option and the look does not start»
+    дано response равно вариант «Доводы» с доводы равным ["--откуда"]
+    ожидается вариант «Не проверено» с код равным "FLANG_SETTINGS_CALL" и сообщение равным "непонятный ключ «--откуда»; звать: bootstrap/flang io scripts/flangrc.fscript [-- [ключ настроек] [--sources | --places | --file] [--from КАТАЛОГ] [--home КАТАЛОГ]]"
+  пример «valid arguments and the environment is asked»
+    дано response равно вариант «Доводы» с доводы равным ["version"]
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "PWD") и потом равным (вариант «Awaiting variable» с request равным (запись «Request» с «key» равным "version" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным "") и name равным "PWD" и remaining равным ["HOME", "LC_ALL", "LC_MESSAGES", "LANG", "FLANG_LANG", "FLANG_SURFACE", "FLANG_COLOR", "FLANG_MANPAGE", "FLANG_PROJECT_VERSION", "FLANG_PROJECT_NAME", "FLANG_UNPROVEN"] и environment равным пустой список)
+  разбор response
+    случай вариант «Доводы» с доводы как arguments
+      то если («Trouble with arguments» от arguments) равен ""
+        то «Ask variable» от («Request of arguments» от arguments) и («Variable names») и пустой список
+        иначе «Cannot look» от "FLANG_SETTINGS_CALL" и («Trouble with arguments» от arguments)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Cannot look» от code и (соединить ["доводов не прочитать: ", message] по "")
+    случай любое
+      то «Cannot look» от "FLANG_IO_ORDER" и "ждали доводы вызова"
+
+тотальная функция «After variable»
+  принимает request: «Request», name: строка, remaining: список строки, environment: список «Пара», response: «Отклик»
+  возвращает «Продолжение»
+  пример «an unset variable is written down empty and the next one is asked»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
+    дано name равно "HOME"
+    дано remaining равно ["LANG"]
+    дано environment равно пустой список
+    дано response равно вариант «Переменной среды нет»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "LANG") и потом равным (вариант «Awaiting variable» с request равным (запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным "") и name равным "LANG" и remaining равным пустой список и environment равным [запись «Пара» с «ключ» равным "HOME" и «значение» равным ""])
+  разбор response
+    случай вариант «Значение среды» с значение как value
+      то «Ask variable» от request и remaining и (добавить (запись «Пара» с «ключ» равным name и «значение» равным value) к environment)
+    случай вариант «Переменной среды нет»
+      то «Ask variable» от request и remaining и (добавить (запись «Пара» с «ключ» равным name и «значение» равным "") к environment)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Cannot look» от code и (соединить ["переменной среды ", name, " не прочитать: ", message] по "")
+    случай любое
+      то «Cannot look» от "FLANG_IO_ORDER" и "ждали значение переменной среды"
+
+тотальная функция «After listing»
+  принимает request: «Request», environment: список «Пара», directory: строка, above: список строки, places: список строки, response: «Отклик»
+  возвращает «Продолжение»
+  пример «the starting directory does not exist and there is nowhere to look from»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "/nowhere" и «home» равным "/h"
+    дано environment равно пустой список
+    дано directory равно "/nowhere"
+    дано above равно ["/"]
+    дано places равно пустой список
+    дано response равно вариант «Сбой» с код равным "FLANG_IO_LIST" и сообщение равным "каталог не открыт"
+    ожидается вариант «Не проверено» с код равным "FLANG_SETTINGS_NO_DIRECTORY" и сообщение равным "нет каталога «/nowhere»"
+  разбор response
+    случай вариант «Перечислено» с имена как names
+      то «Decide on directory» от request и environment и directory и above и places и names
+    случай вариант «Сбой» с код как code и сообщение как message
+      то если пусто places
+        то «Cannot look» от "FLANG_SETTINGS_NO_DIRECTORY" и (соединить ["нет каталога «", directory, "»"] по "")
+        иначе «Decide on directory» от request и environment и directory и above и places и пустой список
+    случай любое
+      то «Cannot look» от "FLANG_IO_ORDER" и "ждали перечень каталога"
+
+тотальная функция «After project file»
+  принимает request: «Request», environment: список «Пара», search: «Search», response: «Отклик»
+  возвращает «Продолжение»
+  пример «the project file is not read and that is said»
+    дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "/p" и «home» равным "/h"
+    дано environment равно пустой список
+    дано search равно запись «Search» с «places» равным ["/p"] и «stop» равным "настройки найдены: /p/.flangrc" и «file» равным "/p/.flangrc"
+    дано response равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "прав нет"
+    ожидается вариант «Не проверено» с код равным "FLANG_IO_READ" и сообщение равным "/p/.flangrc не прочитан: прав нет"
+  разбор response
+    случай вариант «Прочитано» с содержимое как text
+      то «Ask home» от request и environment и search и text
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Cannot look» от code и (соединить [(search.«file»), " не прочитан: ", message] по "")
+    случай любое
+      то «Cannot look» от "FLANG_IO_ORDER" и "ждали текст файла проекта"
+
+тотальная функция «After home file»
+  принимает request: «Request», environment: список «Пара», search: «Search», project: строка, response: «Отклик»
+  возвращает «Продолжение»
+  пример «there is no home file and the project file answers»
+    дано request равно запись «Request» с «key» равным "version" и «kind» равным (вариант «Values») и «start» равным "/p" и «home» равным "/h"
+    дано environment равно пустой список
+    дано search равно запись «Search» с «places» равным ["/p"] и «stop» равным "настройки найдены: /p/.flangrc" и «file» равным "/p/.flangrc"
+    дано project равно "version = 0.7.22\n"
+    дано response равно вариант «Сбой» с код равным "FLANG_IO_NOT_FOUND" и сообщение равным "нет файла"
+    ожидается вариант «Конец работы» с значение равным "0.7.22"
+  разбор response
+    случай вариант «Прочитано» с содержимое как text
+      то «Answer» от request и environment и search и (запись «Files» с «project path» равным (search.«file») и «project» равным project и «home path» равным («Inside» от («Home of request» от request и environment) и ".flangrc") и «home» равным text)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Answer» от request и environment и search и (запись «Files» с «project path» равным (search.«file») и «project» равным project и «home path» равным "" и «home» равным "")
+    случай любое
+      то «Cannot look» от "FLANG_IO_ORDER" и "ждали текст файла дома"
+
+тотальная функция «Begin»
+  возвращает «Stage»
+  пример «the plan begins at the start»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Next»
+  принимает stage: «Stage», response: «Отклик»
+  возвращает «Продолжение»
+  пример «the arguments are asked first»
+    дано stage равно вариант «Start»
+    дано response равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting arguments»)
+  разбор stage
+    случай вариант «Start»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting arguments»)
+    случай вариант «Awaiting arguments»
+      то «After arguments» от response
+    случай вариант «Awaiting variable» с request как request и name как name и remaining как remaining и environment как environment
+      то «After variable» от request и name и remaining и environment и response
+    случай вариант «Awaiting listing» с request как request и environment как environment и directory как directory и above как above и places как places
+      то «After listing» от request и environment и directory и above и places и response
+    случай вариант «Awaiting project file» с request как request и environment как environment и search как search
+      то «After project file» от request и environment и search и response
+    случай вариант «Awaiting home file» с request как request и environment как environment и search как search и project как project
+      то «After home file» от request и environment и search и project и response
+
+план «Settings»
+  состояние «Stage»
+  начинает с «Begin»
+  обрабатывает «Next»
+
+тотальная функция «Объявление ярлыка настройки»
+  возвращает строка
+  "bootstrap/flang io -- --sources — что выбрано в .flangrc и откуда взято: ключ, значение и источник каждого — довод, среда, файл проекта, файл дома, локаль или умолчание"

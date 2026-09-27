@@ -64,6 +64,113 @@ flang/core/evaluate.flang	85
 flang/core/json.flang	84
 flang/core/lexer.flang	124
 flang/core/parser.flang	248
+flang/proof/checker/tests/families/algebra-domains/corrupt/guard-lies.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/algebra-domains/corrupt/head-lies.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/algebra-domains/guard.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/algebra-domains/head.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/boolean-goal/flag.flang	5
+flang/proof/checker/tests/families/boundary/r2-grid-distributivity.flang	7
+flang/proof/checker/tests/families/carrier/name-natural.flang	43	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/constructor/copy.flang	6	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/body-not-nonnegative.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ch4-branch-of-another-character.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ch4-common-prefix.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ch4-right-concatenation.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ch6-fact-without-verdict.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ch6-foreign-prefix.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/ch6-prefix.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/double-by-zero.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/double-factor-minus.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/double-literal.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/guard-false-conclusion.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/guard-other-threshold.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/guard-same-condition.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/o9-count.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/o9-fold-start-one.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/o9-foreign-list.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/o9-step-two.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/safety-count-by-fold.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/safety-fold-start-minus.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/safety-multiply-by-n.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/safety-step-minus.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/coverage/safety-triple.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/half-b/arithmetic.flang	10
+flang/proof/checker/tests/families/half-b/element.flang	30
+flang/proof/checker/tests/families/half-b/length.flang	10
+flang/proof/checker/tests/families/if-branch/height.flang	7
+flang/proof/checker/tests/families/inference/corrupt/boundaries-two.flang	13	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/neighbours.flang	8
+flang/proof/checker/tests/families/not-applicable/r6-length-brackets.flang	8
+flang/proof/checker/tests/families/precondition-discharge/three-feeds.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/precondition-discharge/unpaid-callee.flang	7	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/quantifier/name-outside-the-list.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/quantifier/two-names.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/recursion-step-abyss.flang	5
+flang/proof/checker/tests/families/recursion-step-grows.flang	4
+flang/proof/checker/tests/families/recursion-step.flang	6
+flang/proof/checker/tests/families/recursion-structure-no-self-call.flang	4
+flang/proof/checker/tests/families/recursion-structure.flang	8
+flang/proof/checker/tests/families/reflexive.flang	12
+flang/proof/checker/tests/families/run/letters-in-turn.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/totality-self-call.flang	8
+flang/proof/checker/tests/families/totality.flang	8
+flang/proof/checker/tests/families/type-families/corrupt/remainder-guard-not-an-assumption.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/families/type-families/remainder.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/programs/example-binding-lie-foreign-variant.flang	28
+flang/proof/checker/tests/programs/example-binding-p-case-with-the-same-value.flang	28
+flang/proof/checker/tests/programs/example-binding-p-example-lies-about-the-value.flang	28
+flang/proof/checker/tests/programs/example-binding-p-example-outside-the-block.flang	28
+flang/proof/checker/tests/programs/example-binding-p-example-without-expectation.flang	28
+flang/proof/checker/tests/programs/example-binding-p-goal-does-not-hold.flang	28
+flang/proof/checker/tests/programs/lie-collision.flang	33
+flang/proof/checker/tests/programs/lie-difference-pure.flang	4
+flang/proof/checker/tests/programs/lie-tree.flang	21
+flang/proof/checker/tests/programs/list-body-f1-goal-is-false.flang	33
+flang/proof/checker/tests/programs/list-body-f2-body-misses-the-example.flang	33
+flang/proof/checker/tests/programs/list-body-f3-two-links-on-one-line.flang	33
+flang/proof/checker/tests/programs/list-body-f4-link-commented-out.flang	34
+flang/proof/checker/tests/programs/measure-not-value-inflation-by-assumption.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/programs/measure-not-value-inflation-unverifiable.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/checker/tests/programs/measure-not-value-zero-character-honest.flang	15
+flang/proof/checker/tests/programs/measure-not-value-zero-character-lie.flang	15
+flang/proof/checker/tests/programs/note-instead-of-postcondition.flang	91
+flang/proof/checker/tests/programs/step-outside-case-1-body-misses-the-example.flang	34
+flang/proof/checker/tests/programs/step-outside-case-2-goal-is-false.flang	34
+flang/proof/checker/tests/programs/step-outside-case-3-marks-coincided.flang	34
+flang/proof/checker/tests/programs/step-outside-case-4-relation-unknown.flang	34
+flang/proof/checker/tests/programs/step-outside-case-5-length-greater-by-one.flang	27
+flang/proof/checker/tests/programs/step-outside-case-6-digits-swapped.flang	27
+flang/proof/checker/tests/programs/step-outside-case-9-body-not-one-literal.flang	34
+flang/proof/checker/tests/records/3314-conditional-by-branches/false-negation.flang	13
+flang/proof/checker/tests/records/8615-theorem-keeps/countdown-with-theorem.flang	9
+flang/proof/checker/tests/records/8615-theorem-keeps/descent-does-not-decrease.flang	9
+flang/proof/checker/tests/records/9951-laws/law-boundaries.flang	26
+flang/proof/checker/tests/records/9991-result-equals/unfolding-guard.flang	14
+flang/proof/checker/tests/records/9991-starts-with/false-prefix.flang	11
+flang/proof/checker/tests/records/case-split-algebra/00-untouched.flang	29
+flang/proof/checker/tests/records/case-split-algebra/01-branch-lies.flang	29
+flang/proof/checker/tests/records/case-split-algebra/02-variant-swapped.flang	29
+flang/proof/checker/tests/records/case-split-algebra/03-coverage-incomplete.flang	29
+flang/proof/checker/tests/records/case-split-segment/00-untouched.flang	43
+flang/proof/checker/tests/records/case-split-segment/01-bottom-lies.flang	43
+flang/proof/checker/tests/records/case-split-segment/02-no-descent.flang	43
+flang/proof/checker/tests/records/case-split-segment/03-summand-minus.flang	43
+flang/proof/checker/tests/records/case-split-segment/04-form-unknown.flang	43
+flang/proof/checker/tests/records/case-split-segment/05-branches-swapped.flang	43
+flang/proof/checker/tests/records/case-split-segment/06-foreign-summand.flang	43
+flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.flang	8
+flang/proof/checker/tests/records/identity-after-rewrite/p10-e2-yields-a-foreign-element.flang	34
+flang/proof/checker/tests/records/identity-after-rewrite/p2-body-misses-the-goal.flang	8
+flang/proof/checker/tests/records/identity-after-rewrite/p3-associativity-instead-of-the-door.flang	8
+flang/proof/checker/tests/records/identity-after-rewrite/p4-swap-through-the-node.flang	8
+flang/proof/checker/tests/records/identity-after-rewrite/p5-body-not-on-one-line.flang	8
+flang/proof/checker/tests/records/identity-after-rewrite/p6-law-outside-the-closed-list.flang	8
+flang/proof/checker/tests/records/identity-after-rewrite/p7-closed-lie-without-requires.flang	8
+flang/proof/checker/tests/records/identity-after-rewrite/p8-the-same-lie-under-an-assumption.flang	8
+flang/proof/checker/tests/records/identity-after-rewrite/p9-index-outside-the-list-bounds.flang	34
+flang/proof/checker/tests/records/reason-types/subtraction-does-not-keep.flang	15
+flang/proof/checker/tests/records/v1-g2/type-behind-a-note.flang	12
+flang/proof/checker/tests/records/v1-g2/variant-behind-a-note.flang	21
 flang/proof/examples/binder-hides-the-condition.flang	18
 flang/proof/examples/binder-wall-map.flang	33
 flang/proof/examples/body-forms.flang	91
@@ -113,6 +220,14 @@ flang/proof/examples/segment.flang	75	запись пришпилена к ба�
 flang/proof/examples/stack.flang	91
 flang/proof/examples/subtraction-under-precondition.flang	21	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
 flang/proof/examples/traffic-light.flang	28
+flang/proof/forgeries/base-with-field.flang	12
+flang/proof/forgeries/by-division.flang	14
+flang/proof/forgeries/by-identity.flang	16
+flang/proof/forgeries/circle.flang	10
+flang/proof/forgeries/part-count-false.flang	44
+flang/proof/forgeries/part-count-true.flang	18
+flang/proof/forgeries/reduced-base.flang	12
+flang/proof/forgeries/transitivity.flang	64
 flang/proof/kernel.flang	136	под flang/proof — правка после перепечатки и 1420
 flang/proof/map/abilities.flang	85
 flang/proof/map/boundaries.flang	13
@@ -127,123 +242,8 @@ flang/proof/map/substantive.flang	11
 flang/proof/map/types.flang	10
 flang/proof/midpoint-price.flang	57
 flang/proof/midpoint-verdicts.flang	67
-flang/proof/small-reducer.flang	197
-flang/proof/forgeries/by-division.flang	14
-flang/proof/forgeries/base-with-field.flang	12
-flang/proof/forgeries/circle.flang	10
-flang/proof/forgeries/transitivity.flang	64
-flang/proof/forgeries/reduced-base.flang	12
-flang/proof/forgeries/part-count-false.flang	44
-flang/proof/forgeries/part-count-true.flang	18
-flang/proof/forgeries/by-identity.flang	16
 flang/proof/rules-match.flang	72
-flang/proof/checker/tests/records/3314-conditional-by-branches/false-negation.flang	13
-flang/proof/checker/tests/records/8615-theorem-keeps/countdown-with-theorem.flang	9
-flang/proof/checker/tests/records/8615-theorem-keeps/descent-does-not-decrease.flang	9
-flang/proof/checker/tests/records/9951-laws/law-boundaries.flang	26
-flang/proof/checker/tests/records/9991-starts-with/false-prefix.flang	11
-flang/proof/checker/tests/records/9991-result-equals/unfolding-guard.flang	14
-flang/proof/checker/tests/records/v1-g2/type-behind-a-note.flang	12
-flang/proof/checker/tests/records/v1-g2/variant-behind-a-note.flang	21
-flang/proof/checker/tests/records/case-split-algebra/00-untouched.flang	29
-flang/proof/checker/tests/records/case-split-algebra/01-branch-lies.flang	29
-flang/proof/checker/tests/records/case-split-algebra/02-variant-swapped.flang	29
-flang/proof/checker/tests/records/case-split-algebra/03-coverage-incomplete.flang	29
-flang/proof/checker/tests/records/case-split-segment/00-untouched.flang	43
-flang/proof/checker/tests/records/case-split-segment/01-bottom-lies.flang	43
-flang/proof/checker/tests/records/case-split-segment/02-no-descent.flang	43
-flang/proof/checker/tests/records/case-split-segment/03-summand-minus.flang	43
-flang/proof/checker/tests/records/case-split-segment/04-form-unknown.flang	43
-flang/proof/checker/tests/records/case-split-segment/05-branches-swapped.flang	43
-flang/proof/checker/tests/records/case-split-segment/06-foreign-summand.flang	43
-flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p10-e2-yields-a-foreign-element.flang	34
-flang/proof/checker/tests/records/identity-after-rewrite/p2-body-misses-the-goal.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p3-associativity-instead-of-the-door.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p4-swap-through-the-node.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p5-body-not-on-one-line.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p6-law-outside-the-closed-list.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p7-closed-lie-without-requires.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p8-the-same-lie-under-an-assumption.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p9-index-outside-the-list-bounds.flang	34
-flang/proof/checker/tests/records/reason-types/subtraction-does-not-keep.flang	15
-flang/proof/checker/tests/programs/lie-tree.flang	21
-flang/proof/checker/tests/programs/lie-difference-pure.flang	4
-flang/proof/checker/tests/programs/lie-collision.flang	33
-flang/proof/checker/tests/programs/note-instead-of-postcondition.flang	91
-flang/proof/checker/tests/programs/example-binding-lie-foreign-variant.flang	28
-flang/proof/checker/tests/programs/example-binding-p-goal-does-not-hold.flang	28
-flang/proof/checker/tests/programs/example-binding-p-example-without-expectation.flang	28
-flang/proof/checker/tests/programs/example-binding-p-example-lies-about-the-value.flang	28
-flang/proof/checker/tests/programs/example-binding-p-example-outside-the-block.flang	28
-flang/proof/checker/tests/programs/example-binding-p-case-with-the-same-value.flang	28
-flang/proof/checker/tests/programs/measure-not-value-inflation-unverifiable.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/programs/measure-not-value-inflation-by-assumption.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/programs/measure-not-value-zero-character-honest.flang	15
-flang/proof/checker/tests/programs/measure-not-value-zero-character-lie.flang	15
-flang/proof/checker/tests/programs/step-outside-case-1-body-misses-the-example.flang	34
-flang/proof/checker/tests/programs/step-outside-case-2-goal-is-false.flang	34
-flang/proof/checker/tests/programs/step-outside-case-3-marks-coincided.flang	34
-flang/proof/checker/tests/programs/step-outside-case-4-relation-unknown.flang	34
-flang/proof/checker/tests/programs/step-outside-case-5-length-greater-by-one.flang	27
-flang/proof/checker/tests/programs/step-outside-case-6-digits-swapped.flang	27
-flang/proof/checker/tests/programs/step-outside-case-9-body-not-one-literal.flang	34
-flang/proof/checker/tests/programs/list-body-f1-goal-is-false.flang	33
-flang/proof/checker/tests/programs/list-body-f2-body-misses-the-example.flang	33
-flang/proof/checker/tests/programs/list-body-f3-two-links-on-one-line.flang	33
-flang/proof/checker/tests/programs/list-body-f4-link-commented-out.flang	34
-flang/proof/checker/tests/families/algebra-domains/head.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/algebra-domains/guard.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/algebra-domains/corrupt/head-lies.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/algebra-domains/corrupt/guard-lies.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/boundary/r2-grid-distributivity.flang	7
-flang/proof/checker/tests/families/not-applicable/r6-length-brackets.flang	8
-flang/proof/checker/tests/families/precondition-discharge/three-feeds.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/precondition-discharge/unpaid-callee.flang	7	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/recursion-step-abyss.flang	5
-flang/proof/checker/tests/families/recursion-step-grows.flang	4
-flang/proof/checker/tests/families/recursion-step.flang	6
-flang/proof/checker/tests/families/recursion-structure-no-self-call.flang	4
-flang/proof/checker/tests/families/recursion-structure.flang	8
-flang/proof/checker/tests/families/reflexive.flang	12
-flang/proof/checker/tests/families/neighbours.flang	8
-flang/proof/checker/tests/families/totality-self-call.flang	8
-flang/proof/checker/tests/families/totality.flang	8
-flang/proof/checker/tests/families/boolean-goal/flag.flang	5
-flang/proof/checker/tests/families/if-branch/height.flang	7
-flang/proof/checker/tests/families/inference/corrupt/boundaries-two.flang	13	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/quantifier/two-names.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/quantifier/name-outside-the-list.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/constructor/copy.flang	6	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/carrier/name-natural.flang	43	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/o9-fold-start-one.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/o9-count.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/o9-foreign-list.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/o9-step-two.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/guard-other-threshold.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/guard-false-conclusion.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/guard-same-condition.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/safety-fold-start-minus.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/safety-count-by-fold.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/safety-multiply-by-n.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/safety-triple.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/safety-step-minus.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/body-not-nonnegative.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/double-literal.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/double-by-zero.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/double-factor-minus.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch4-branch-of-another-character.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch4-common-prefix.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch4-right-concatenation.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch6-prefix.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch6-fact-without-verdict.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch6-foreign-prefix.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/half-b/arithmetic.flang	10
-flang/proof/checker/tests/families/half-b/length.flang	10
-flang/proof/checker/tests/families/half-b/element.flang	30
-flang/proof/checker/tests/families/run/letters-in-turn.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/type-families/remainder.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/type-families/corrupt/remainder-guard-not-an-assumption.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
+flang/proof/small-reducer.flang	197
 flang/self/bootstrap/compiler.flang	1371	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/bootstrap/corpus.flang	160	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/bootstrap/zond-2040.flang	4	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
@@ -257,7 +257,7 @@ flang/self/conc.flang	474
 flang/self/defunc.flang	366
 flang/self/distributed.flang	189
 flang/self/distributive.flang	72
-flang/self/emit-c.flang	592
+flang/self/emit-c.flang	586
 flang/self/emit-cpp.flang	105
 flang/self/emit-csharp.flang	336
 flang/self/emit-elixir.flang	375
@@ -441,7 +441,6 @@ scripts/guards/сторож-дарвина.fscript	33
 scripts/registry-tool.fscript	62
 scripts/release/asdf-plugin-published.fscript	33
 scripts/release/asdf-version-list.fscript	47
-scripts/release/emit-package.flang	27
 scripts/release/path-without-node.fscript	63
 scripts/seed/bootstrap-point-by-binary.fscript	45
 scripts/seed/new-binary-acceptance-probe.flang	17

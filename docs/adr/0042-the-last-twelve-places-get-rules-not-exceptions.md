@@ -20,7 +20,7 @@
 одна партия перепечатки.
 **Новые задачи:** [6432](../tasks/completed/6432-measure-projection-and-declared-sums-close-five-kernel-word-places.md),
 [6812](../tasks/completed/6812-a-contradictory-pair-of-assumptions-is-a-ledger-family.md),
-[3448](../tasks/3448-the-example-evaluator-of-the-checker-reads-nul-strings-and-filter.md),
+[3448](../tasks/completed/3448-the-example-evaluator-of-the-checker-reads-nul-strings-and-filter.md),
 [1794](../tasks/completed/1794-the-sources-goal-is-written-as-an-element-quantifier.md),
 [5190](../tasks/completed/5190-the-seed-is-reprinted-once-for-the-proof-batch.md).
 

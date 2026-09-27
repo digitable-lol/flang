@@ -12,7 +12,7 @@
 
 # 3448. Два умения вычислителя примера
 
-Решение: [ADR-0042](../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md) §2.
+Решение: [ADR-0042](../../adr/0042-the-last-twelve-places-get-rules-not-exceptions.md) §2.
 
 Места: `corpus-bytes` — 1 шаг «по примеру» (строка с нулевым знаком);
 `corpus-cforms` — 3 шага (`отфильтровать`). В сверщике строки значений примера —

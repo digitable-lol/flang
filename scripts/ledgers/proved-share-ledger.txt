@@ -1627,6 +1627,7 @@ aa65f3785b0c62edf336a36297e30b38|1|1|0|0|0|flang/proof/probes/unproven/programs/
 eb5b390d34c90eb95ad3b4382c2a3a1f|1|0|0|0|1|flang/proof/checker/tests/programs/audit-2844/unfold3-control-honest.flang
 b1b137536d045c4fdd205ece597d4acf|1|0|1|0|0|flang/proof/probes/orders/programs/arguments.fscript
 a9553eaffc7cba5c190df9e076ef0b9c|2|2|0|0|0|flang/proof/probes/io-timeout/run.fscript
+5750e56d208d017c3ef036fe93fce6f7|3|3|0|0|0|flang/proof/probes/non-negative-field/run.fscript
 1f4a2a844b39793dc79f661223b3dc08|1|0|1|0|0|docs/examples/io/progress-bar-on-screen.flang
 227913e61eb3388807d0420cd8ec4fd3|5|5|0|0|0|flang/proof/probes/syllogism/programs/chain.flang
 9ee2cd59eeca8e29bd5985c51b49e252|3|3|0|0|0|flang/proof/probes/syllogism/programs/honest.flang

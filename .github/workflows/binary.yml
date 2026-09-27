@@ -1790,6 +1790,12 @@ jobs:
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 
+      - name: Check non-negative field
+        run: bootstrap/flang io flang/proof/probes/non-negative-field/run.fscript
+        env:
+          LC_ALL: C.UTF-8
+          FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
+
   # ── Дорогая половина: только тег и ручной запуск ──────────────────────────
   korpus:
     name: corpus-examples

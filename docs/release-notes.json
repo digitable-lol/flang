@@ -3,35 +3,29 @@
   "выпуски": {
     "0.7.22": {
       "ru": {
-        "заголовок": "Перепечатка семени дошла впервые за неделю, и цена самосборки наконец измерена",
+        "заголовок": "Силлогизм `следует` и верный код символа вне базовой плоскости",
         "появилось": [
-          "Цена самосборки известна числом, а не оценкой снизу. Заход 23–25 сентября дошёл за 35 часов 45 минут: вершина цепи суда — 2 412 102 536 357 шагов, печать связанного — ещё 361 771 472 547. Прежняя запись `MEASURED_COST` была нижней оценкой по ОБОРВАВШЕМУСЯ заходу и занижала цену на 42 %; сторож сравнивает потолок именно с ней и пропустил бы потолок, которого заведомо не хватит.",
-          "Силлогизм `следует` вошёл в язык — двадцать третье слово словаря, 156-е понятие таблицы: вывод утверждения из посылок, названных выше.",
-          "Имена печати семени стали английскими: `scripts/raskrutka.sh` → `scripts/bootstrap-reprint.sh`, `scripts/otpechatok-semeni` → `scripts/seed-fingerprint`, 606 ссылок по дереву."
+          "**`следует` — вывод утверждения из посылок, названных выше.** Заключение записывается отдельным блоком и ссылается на доказанное утверждение словом `по свойству`.\n\n```flang\nутверждение «все люди смертны»\n  для всех кто: «Человек»\n  утверждаем («Смертен» от кто)\n\nследует «Сократ смертен»\n  дано сократ: «Человек»\n  утверждаем («Смертен» от сократ)\n  по свойству «все люди смертны»\n```\n\n```\n$ flang check socrates.flang --proof\nутверждение «Сократ смертен» — доказано: терм принят ядром, 1 шаг, основания: утверждение «все люди смертны» — утверждение обо ВСЕХ входах\n```\n\nБез строки `по свойству` заключение не доказывается:\n\n```\nFLANG_PROOF_STEP: теорема «Сократ смертен»: ни одного шага        код 1\n```"
         ],
         "изменилось": [
-          "ПОПРАВКА К ЭТОЙ ЗАПИСКЕ. Здесь стояло, что предел шагов стал ключом самого двоичного — `--предел-шагов N` (`--step-limit N`), годным при любой команде. Это неправда: в 0.7.22 такого ключа нет. Снято прогоном на двоичном этого дерева: `flang --предел-шагов 100000000 emit …` отвечает «неизвестная команда «--предел-шагов»» и кодом 2, то же по-английски; разбирает ключ по-прежнему только `check` (`flang check --help`, строка `--step-limit N`). Работа сделана в ветке, которая к выпуску влита не была, а запись попала в заметки ошибочно. Поднять предел ПЕЧАТИ в 0.7.22 можно только вручную: скопировать исходники семени, править `#define FL_MAX_STEPS`, собрать `make` и звать печать через `FLANG=`."
+          "**`код символа` в оболочке: знаки вне базовой плоскости.** `flang repl` отдавал 240 — первый октет UTF-8 — на любом таком знаке; `flang run` на том же выражении отвечал верно. Теперь ответ один.\n\n```\n$ flang repl\n» код символа \"𝒜\"\n119964\n» код символа \"👍\"\n128077\n```\n\nЗаявка #103.",
+          "**Ключа `--step-limit` у самого двоичного нет.** Ранняя редакция этих заметок обещала, что ключ годится при любой команде. В 0.7.22 его разбирает только `flang check`.\n\n```\n$ flang --step-limit 100000000 emit файл.flang --target c\nflang: неизвестная команда «--step-limit»              код 2\n```"
         ],
         "сломалось": [
-          "Код символа вне BMP больше не врёт. Оболочка отдавала 240 — ведущий октет UTF-8 — на любом знаке вне базовой плоскости, а `flang run` на том же выражении давал верное число. Прогон после перепечатки: 𝒜 → 119964, 👍 → 128077, ﷽ → 65021, одинаково в обоих (задача #103, сообщил MyWWWChat).",
-          "Гейт доказуемости в CI ожил после семи суток ложной красноты: в работе не была задана `FLANG_TMP`, набор проб падал на создании времянки в первую секунду и печатал «проб на подлог 0» при храповике 533. Теперь 534 при 533.",
-          "Четыре проверки, переставшие проверять, снова проверяют: независимый сверщик не пускали на порог (23 «провала» правил вывода были одним отказом), маска прогонщика корпуса осталась от переименованного файла, ключ `--no-screen` не был записан в ведомость долга, и 14 битых ссылок в документации."
+          "**Скрипты печати семени переименованы.** Касается тех, кто пересобирает компилятор из исходников.\n\n| было | стало |\n|---|---|\n| `scripts/raskrutka.sh` | `scripts/bootstrap-reprint.sh` |\n| `scripts/otpechatok-semeni` | `scripts/seed-fingerprint` |\n\n**Миграция:** замените имена в своих скриптах и в настройке CI."
         ]
       },
       "en": {
-        "заголовок": "The seed reprint completed for the first time in a week, and the cost of self-hosting is finally measured",
+        "заголовок": "The `следует` syllogism and correct code points outside the BMP",
         "появилось": [
-          "The cost of self-hosting is now a number, not a lower bound. The 23–25 September run finished in 35 hours 45 minutes: the judging chain peaked at 2,412,102,536,357 steps, printing the linked program took another 361,771,472,547. The previous `MEASURED_COST` was a lower bound taken from an ABORTED run and understated the cost by 42 %.",
-          "The syllogism `следует` (`follows`) entered the language — the 23rd dictionary word, the 156th concept of the table.",
-          "The seed-print scripts got English names: `scripts/raskrutka.sh` → `scripts/bootstrap-reprint.sh`, `scripts/otpechatok-semeni` → `scripts/seed-fingerprint`, 606 references across the tree."
+          "**`следует` (follows) — derive a statement from premises named above it.** The conclusion is a separate block that cites a proved statement with `по свойству`.\n\n```flang\nутверждение «все люди смертны»\n  для всех кто: «Человек»\n  утверждаем («Смертен» от кто)\n\nследует «Сократ смертен»\n  дано сократ: «Человек»\n  утверждаем («Смертен» от сократ)\n  по свойству «все люди смертны»\n```\n\n```\n$ flang check socrates.flang --proof\nутверждение «Сократ смертен» — доказано: терм принят ядром, 1 шаг, основания: утверждение «все люди смертны» — утверждение обо ВСЕХ входах\n```\n\nWithout the `по свойству` line the conclusion is not proved:\n\n```\nFLANG_PROOF_STEP: теорема «Сократ смертен»: ни одного шага        exit 1\n```"
         ],
         "изменилось": [
-          "CORRECTION TO THIS NOTE. This entry said the step limit had become a key of the binary itself — `--step-limit N` (`--предел-шагов N`) — usable with any command. That is false: 0.7.22 has no such key. Taken by a run on a binary of this tree: `flang --step-limit 100000000 emit …` answers «неизвестная команда «--step-limit»» with exit code 2; only `check` parses the key (`flang check --help`, line `--step-limit N`). The work was done on a branch that was not merged before the release, and the entry went into the notes by mistake. Raising the limit of a PRINT in 0.7.22 is still manual: copy the seed sources, edit `#define FL_MAX_STEPS`, run `make`, invoke the print through `FLANG=`."
+          "**`код символа` (character code) in the shell: characters outside the BMP.** `flang repl` returned 240 — the first UTF-8 octet — for any such character, while `flang run` answered correctly. Both now agree.\n\n```\n$ flang repl\n» код символа \"𝒜\"\n119964\n» код символа \"👍\"\n128077\n```\n\nIssue #103.",
+          "**The binary itself has no `--step-limit` key.** An earlier edition of these notes said the key works with any command. In 0.7.22 only `flang check` parses it.\n\n```\n$ flang --step-limit 100000000 emit file.flang --target c\nflang: неизвестная команда «--step-limit»              exit 2\n```"
         ],
         "сломалось": [
-          "A character code outside the BMP no longer lies. The shell returned 240 — the leading UTF-8 octet — for any character outside the basic plane, while `flang run` on the same expression returned the right number. After the reprint: 𝒜 → 119964, 👍 → 128077, ﷽ → 65021, the same in both (issue #103, reported by MyWWWChat).",
-          "The provability gate in CI came back after seven days of false red: `FLANG_TMP` was not set in the job, the probe suite died on creating its temporary directory in the first second and printed «0 forgery probes» against a ratchet of 533. It is now 534 against 533.",
-          "Four checks that had stopped checking check again."
+          "**The seed print scripts are renamed.** This affects those who rebuild the compiler from source.\n\n| was | now |\n|---|---|\n| `scripts/raskrutka.sh` | `scripts/bootstrap-reprint.sh` |\n| `scripts/otpechatok-semeni` | `scripts/seed-fingerprint` |\n\n**Migration:** replace the names in your scripts and in your CI setup."
         ]
       }
     },

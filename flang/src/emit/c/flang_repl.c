@@ -3134,10 +3134,9 @@ static fl_value repl_source_value(const char *path, const char *text, size_t byt
  * МЕСТА, В ПОРЯДКЕ ПРОСМОТРА:
  *
  *   1. каталог самого файла, который пишет `использует`;
- *   2. каждый каталог ВЫШЕ него — пока в каталоге лежит хоть один `.flang`.
- *      Каталог без единого файла на flang — это уже не программа, а то, что
- *      вокруг неё, и подъём там кончается. Условие дешёвое и не зависит от
- *      того, откуда запущен компилятор;
+ *   2. каждый каталог ВЫШЕ него — пока в каталоге лежит хоть один `.flang` и
+ *      пока каталог лежит внутри дерева ввозящего файла (`repl_tree_root`;
+ *      docs/tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md);
  *   3. каталоги из FLANG_MODULE_DIR (через двоеточие) — этим местом приедет
  *      склад менеджера пакетов, когда он появится;
  *   4. библиотека, поставленная с компилятором: `<каталог двоичного>/../flang/
@@ -3154,7 +3153,8 @@ static fl_value repl_source_value(const char *path, const char *text, size_t byt
  *
  * Найдено два файла с одним именем — берутся ОБА, и об этом говорит связывание
  * (FLANG_IMPORT_AMBIGUOUS), назвав оба пути. Молчаливый выбор первого зависел
- * бы от порядка `readdir`, а он не назван нигде.
+ * бы от порядка `readdir`, а он не назван нигде. Это верно и для двух файлов в
+ * РАЗНЫХ местах: перекрытый едет связыванию вместе с победителем.
  */
 
 /** Каталог, из которого запущен бинарник: нужен, чтобы найти его библиотеку. */
@@ -3428,10 +3428,16 @@ static void repl_library_places(repl_strings *places) {
  * настройки, читается в том же месте и тем же способом, и не заводит ни нового
  * слова языка, ни новой строки в справке, ни записи в долге ключей.
  *
- * НЕ НАЗВАН — ВЕДЁТ СЕБЯ КАК ПРЕЖДЕ. Названный несуществующий каталог берётся
- * как написан: `realpath` от него отказывает, и тогда предел не отменяется, а
- * просто не совпадёт ни с одним каталогом — поиск остановится сразу, а не
- * молча вернётся к подъёму до корня файловой системы.
+ * НЕ НАЗВАН — ПРЕДЕЛ БЕРЁТСЯ САМ: подъём обрывается на корне дерева, найденном
+ * приметой (`repl_tree_root` ниже). Переменная НАЗЫВАЕТ другой предел: она
+ * нужна там, где приметы нет или корень не тот (`flang lsp` ходит по чужим
+ * каталогам), и `FLANG_MODULE_ROOT=/` поднимает предел до корня файловой
+ * системы.
+ *
+ * Названный несуществующий каталог берётся как написан: `realpath` от него
+ * отказывает, и тогда предел не отменяется, а просто не совпадёт ни с одним
+ * каталогом — поиск остановится сразу, а не молча вернётся к подъёму до корня
+ * файловой системы.
  */
 static char *repl_module_root(void) {
   const char *named = getenv("FLANG_MODULE_ROOT");
@@ -3462,11 +3468,57 @@ static bool repl_within_root(const char *root, const char *dir) {
   return inside;
 }
 
+static bool repl_root_here(const char *dir) {
+  static const char *const MARKS[3] = {".flangrc", ".git", "flang.package"};
+  size_t index = 0;
+  for (index = 0; index < 3; index += 1) {
+    char *probe = repl_join(dir, MARKS[index]);
+    const bool here = repl_exists(probe);
+    free(probe);
+    if (here) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static char *repl_tree_root(const char *dir) {
+  char *walk = realpath(dir[0] == '\0' ? "." : dir, NULL);
+  const char *home = getenv("HOME");
+  if (walk == NULL) {
+    return NULL;
+  }
+  for (;;) {
+    char *up = NULL;
+    if (repl_root_here(walk)) {
+      return walk;
+    }
+    if (strcmp(walk, "/") == 0) {
+      break;
+    }
+    if (home != NULL && home[0] != '\0' && strcmp(walk, home) == 0) {
+      break;
+    }
+    up = repl_dirname(walk);
+    if (strcmp(up, walk) == 0) {
+      free(up);
+      break;
+    }
+    free(walk);
+    walk = up;
+  }
+  free(walk);
+  return NULL;
+}
+
 /** Все места для файла `importer`, в порядке просмотра. */
 static void repl_places_of(const char *importer, repl_strings *places) {
   char *directory = repl_dirname(importer);
   char *walk = repl_say(directory);
   char *root = repl_module_root();
+  if (root == NULL) {
+    root = repl_tree_root(directory);
+  }
   for (;;) {
     char *up = NULL;
     if (!strings_has(places, walk, strlen(walk))) {
@@ -3517,8 +3569,8 @@ static bool repl_shadow_started = false;
  * библиотеке.
  *
  * Поэтому: взятый файл называется, перекрытые перечисляются. Строка идёт в
- * stderr, печатается один раз на имя модуля и на код возврата НЕ ВЛИЯЕТ —
- * это не отказ, а имя файла, которого не хватало.
+ * stderr и печатается один раз на имя модуля. Судит же не она: перекрытые файлы
+ * едут связыванию вместе с победителем, и оно отвечает FLANG_IMPORT_AMBIGUOUS.
  */
 static void repl_find_module(const char *importer, const char *name, repl_strings *found) {
   repl_strings places;
@@ -3561,6 +3613,11 @@ static void repl_find_module(const char *importer, const char *name, repl_string
       fprintf(stderr, "%s%s", index == 0 ? "; тот же модуль объявляют также: " : ", ", shadowed.items[index]);
     }
     fprintf(stderr, "\n");
+  }
+  if (have) {
+    for (index = 0; index < shadowed.count; index += 1) {
+      strings_say(found, shadowed.items[index]);
+    }
   }
   strings_free(&shadowed);
   strings_free(&places);

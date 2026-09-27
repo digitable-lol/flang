@@ -788,6 +788,7 @@ invalid
 invariant
 invented
 inventory
+inverse
 inverted
 invisible
 invoice
@@ -1413,6 +1414,7 @@ rewriting
 rewritten
 ride
 right
+ring
 roadmap
 rollback
 rolled

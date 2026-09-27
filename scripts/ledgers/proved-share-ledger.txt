@@ -1250,6 +1250,8 @@ d20313c4998d7f800bc92a83f2c83771|1|×|×|×|0|flang/proof/checker/tests/families
 91994d0f41d91dbe7eb634f17c2be0f7|1|×|×|×|0|flang/proof/checker/tests/families/statement/theorem-about-another.flang
 edd199f400faf9219e5fb5d0bfd937fe|1|×|×|×|0|flang/proof/checker/tests/families/statement/statement-with-restriction.flang
 d6d765704cb9d7b4e987687d663ebef5|1|×|×|×|0|flang/proof/checker/tests/families/statement/f05k-statement.flang
+cd38f9047f7402a4d063b18a08a71807|3|×|×|×|0|flang/proof/checker/tests/families/statement/ring-laws-provable.flang
+8c5c75c3c5302651cf027620cfa37337|3|×|×|×|0|flang/proof/checker/tests/families/statement/ring-laws-banned.flang
 ae5f395a5a682cf58723197aabf0a420|3|×|×|×|2|flang/proof/checker/tests/families/ledger-steps/steps.flang
 ea1158594f0caa46237101fc3a6b2ddf|1|0|1|0|0|flang/scripts/binary.fscript
 47700ac76c714a188e2e9ea3e0bcfa95|2|0|2|0|0|flang/scripts/claim-guard.fscript

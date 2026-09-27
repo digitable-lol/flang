@@ -1566,7 +1566,7 @@ cb83af3366e1aedcf2980e68974f26bc|21|20|1|0|0|scripts/release/asdf-plugin-publish
 a98d9e712b2f955014f8cbb920a0249c|36|36|0|0|0|scripts/release/bump-version.fscript
 9da7ac83e58dcd6ede242456ab630ee4|14|14|0|0|0|scripts/release/path-without-node.fscript
 75df33ec0a0a8e68cdc8aea00c04beb9|29|25|2|0|0|scripts/release/release-in-c.fscript
-d35764bb36d532c1d8b36cf43e5604e2|7|7|0|0|0|scripts/seed/bootstrap-point-by-binary.fscript
+55039b46f2e76c84ceab33604185618c|8|7|1|0|0|scripts/seed/bootstrap-point-by-binary.fscript
 fa5067d21a8ef524d58b5b8117c253b4|4|0|0|4|0|scripts/seed/new-binary-acceptance-probe.flang
 8c533af5ebe420fe7a9b8a1a9ef35ccf|9|9|0|0|0|scripts/seed/print-progress.fscript
 6bec7ed819a851590422857589b315ec|10|7|3|0|0|scripts/seed/reprint-freshness.fscript

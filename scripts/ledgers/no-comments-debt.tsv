@@ -442,7 +442,6 @@ scripts/registry-tool.fscript	62
 scripts/release/asdf-plugin-published.fscript	33
 scripts/release/asdf-version-list.fscript	47
 scripts/release/path-without-node.fscript	63
-scripts/seed/bootstrap-point-by-binary.fscript	45
 scripts/seed/new-binary-acceptance-probe.flang	17
 scripts/seed/reprint-freshness.fscript	38
 scripts/site/emit-dictionary.fscript	63

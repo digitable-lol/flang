@@ -263,7 +263,7 @@ find flang/scripts -name '*.mjs' | wc -l      → 8    (приём ждёт 7)
 
 ## Дописано из задачи 4413 (27 сентября 2026)
 
-Задача [4413](rejected/4413-proof-ledger-summary-has-no-fan-out-or-narrowing.md)
+Задача [4413](4413-proof-ledger-summary-has-no-fan-out-or-narrowing.md)
 отклонена как дубль этой. Из неё сюда переходит то, чего здесь не было:
 
 * в дереве лежит ВТОРОЙ двойник того же свода — `flang/scripts/ledger-summary.fscript`

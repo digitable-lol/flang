@@ -547,6 +547,38 @@ jobs:
           porcha 'ЛИШНЯЯ СТРОКА' '{ print } END { print "00000000000000000000000000000000|1|×|×|×|0|docs/there-is-no-such-file.flang" }'
           cmp "$opis" "$RUNNER_TEMP/opis"
 
+      - name: Check records follow their sources
+        run: ./bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Проверка
+      - name: Probe records follow their sources on a swapped source
+        run: |
+          set -eu
+          program=flang/proof/examples/corpus-natural.flang
+          cp "$program" "$RUNNER_TEMP/program"
+          cp flang/proof/checker/tests/programs/lie-collision.flang "$program"
+          if cmp -s "$program" "$RUNNER_TEMP/program"; then
+            echo "the swap did not change the source" >&2
+            exit 1
+          fi
+          if ./bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Проверка > "$RUNNER_TEMP/verdict" 2>&1; then
+            cp "$RUNNER_TEMP/program" "$program"
+            echo "the guard stayed green on a swapped source" >&2
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/program" "$program"
+          if ! grep -F 'natural-00-honest.record' "$RUNNER_TEMP/verdict"; then
+            echo "the guard went red for another reason:" >&2
+            tail -5 "$RUNNER_TEMP/verdict" >&2
+            exit 1
+          fi
+          cmp "$program" "$RUNNER_TEMP/program"
+      - name: Probe records follow their sources from inside
+        run: |
+          if ./bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Подлог > "$RUNNER_TEMP/forgery" 2>&1; then
+            cat "$RUNNER_TEMP/forgery" >&2
+            exit 1
+          fi
+          grep -F 'подлог пойман' "$RUNNER_TEMP/forgery"
+
       # ── ФАЙЛ, НАЗЫВАЮЩИЙ ВСЕ ПРОВЕРКИ, САМ НЕ ПРОВЕРЯЛСЯ НИЧЕМ ────────────
       #
       # `ярлыки.flang` — список записей «имя → команда», через который

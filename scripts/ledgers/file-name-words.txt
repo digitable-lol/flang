@@ -424,6 +424,7 @@ derivations
 derived
 descend
 descent
+detached
 determine
 diagnostics
 diagram
@@ -437,6 +438,7 @@ difference
 different
 differently
 digest
+digests
 digits
 direct
 directories

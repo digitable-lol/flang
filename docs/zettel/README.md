@@ -339,6 +339,7 @@
 - [Новую цель печати можно прогнать до перепечатки семени: компилятор, напечатанный в JavaScript, отвечает за секунды там, где интерпретатор идёт десять минут](a-compiler-printed-to-javascript-runs-a-new-target-in-seconds.md)
 - [Поправка, написанная под деление с усечением, применённая к делению вниз, срабатывает дважды — и календарь до нашей эры уезжает на год](a-correction-written-for-truncation-fires-twice-under-floor-division.md)
 - [Нарочная подделка и отставшая запись выглядят для побайтового сличения одинаково, и потому сторож без поимённого списка красен всегда](a-deliberate-forgery-and-a-stale-record-look-identical-to-a-byte-comparison.md)
+- [Запись доказательства без SHA-256 в шапке принимает другую программу той же меры — и сходится](a-proof-record-without-sha256-accepts-another-program-of-the-same-measure.md)
 - [Ведущий нулевой октет DER делал отозванный сертификат неотозванным: 1 серийный номер из 7 разошёлся с openssl](a-der-leading-zero-turns-a-revoked-certificate-into-an-unrevoked-one.md)
 - [Словарь встроенных форм лежал в девяти местах, и три копии уже разошлись](a-dictionary-copied-into-nine-places-drifts-silently.md)
 - [Поле встроенного словаря, названное ключевым словом, ставится и не читается — и проверять это надо ДО того, как имя выбрано](a-dictionary-field-named-like-a-keyword-cannot-be-read.md)

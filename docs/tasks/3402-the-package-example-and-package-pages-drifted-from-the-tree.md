@@ -7,7 +7,7 @@
 команда: вторая
 карта: Что уже есть
 рядом: 3401, 3403, 9968, 1186
-нужность: 2 — discount.flang:1 «Discount» vs flang.package «Скидка»: flang package 0.7.17 → код 1 FLANG_PACKAGE; packages.ru.md:14,107,268 («неизвестная команда», «схема 1», «нет package/lock») стоят; asdf:40 стоит
+нужность: 2 — прогон 27 сентября 2026: flang package docs/examples/package/discount.flang — код 1, FLANG_PACKAGE «Скидка» против «Discount»; docs/road-to-1-0.md:160 всё ещё «нет разрешения версий»; комментарий asdf-version-list.fscript:40 про FLANG_IO_NO_TLS стоит
 ---
 
 # 3402. Пример, который нельзя пересобрать, и три неверных утверждения на страницах

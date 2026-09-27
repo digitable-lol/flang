@@ -168,7 +168,7 @@ docs/tasks/archive/1722-the-discriminating-search-writes-a-temp-dir-into-the-tre
 docs/tasks/1734-element-n-counts-the-number-not-the-list.md	flang/src/bounded.mjs	явное отрицание в тексте: «файла в дереве больше нет»
 docs/tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md	над/чужой-черновик.flang	иллюстративное имя пробы в тексте (каталог «над» вне дерева), не файл
 docs/tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md	дерево/scripts/proba.flang	иллюстративное имя пробы в тексте (каталог «дерево» — копия), не файл
-docs/tasks/3403-postanovshchik-paketov-manifest-set-zamok.md	scripts/paket.flang	план: файл, который эта задача велит завести
+docs/tasks/3403-package-installer-manifest-network-lock.md	scripts/paket.flang	план: файл, который эта задача велит завести
 docs/tasks/completed/4271-pechatnik-elixir-pechataet-myortvuyu-stroku-rezultata.md	zond-elx.flang	внешний: обёртка вне дерева (в тексте так и сказано), не файл этого дерева
 docs/tasks/completed/4271-pechatnik-elixir-pechataet-myortvuyu-stroku-rezultata.md	svyaz_uzlov.ex	внешний: файл, напечатанный пробой вне дерева, не файл этого дерева
 docs/tasks/6127-goal-split-places-are-replayed-by-local-moves.md	ПЕРЕДАЧА/karta-kalkulyatora.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева

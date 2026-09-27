@@ -7,7 +7,7 @@
 команда: первая
 карта: Чего в языке нет вовсе
 рядом: 1402, 3467, 0311, 9969
-нужность: 2 — две программы дерева (`rosetta/hundred-doors.flang`, `rosetta/hundred-doors-english.flang`) не собираются ни cc, ни ccomp; замер 1402
+нужность: 2 — прогон 27 сентября 2026, двоичный 0.7.22: emit hundred-doors.flang --target c — код 0, make — код 2, «100_doors.h:7:9: error: macro names must be identifiers»; правка в flang/self/emit-c.flang ждёт конца печати семени
 ---
 
 # 3984. Имя модуля с ведущей цифрой даёт некомпилируемый C

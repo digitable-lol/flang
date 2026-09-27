@@ -1629,3 +1629,4 @@ b40f8e953e5954b87f3a290155165ed3|2|2|0|0|0|fspec/spec/43-syllogism-overdue-subsc
 5c4fb90e3d653d76589c2d9addb120d2|4|0|0|0|0|flang/proof/probes/syllogism/programs/forgery.flang
 ddc780082978fc3298ad54ab7e9bd7f6|2|0|0|0|0|flang/proof/probes/syllogism/programs/removal.flang
 22773aaaf2d984fcd3e2b295b7095726|2|2|0|0|0|flang/proof/probes/syllogism/programs/removal-strict.flang
+acd0ec088b46f7ffe1ebdd953517b414|4|4|0|0|0|.githooks/pre-push.fscript

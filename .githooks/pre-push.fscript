@@ -1,0 +1,391 @@
+модуль «Pre push»
+
+объект «Check»
+  «name»: строка
+  «command»: строка
+
+тип «Stage»
+  вариант «Start»
+  вариант «Awaiting temporary root»
+  вариант «Awaiting directory»
+  вариант «Awaiting start time» содержит directory: строка
+  вариант «Awaiting launch» содержит directory: строка, started: число
+  вариант «Awaiting finish time» содержит directory: строка, started: число, answers: список строки
+  вариант «Awaiting output» содержит check: «Check», remaining: список «Check», details: список строки, directory: строка, summary: строка
+  вариант «Awaiting removal» содержит remaining: список строки, report: строка, red: число
+
+тотальная функция «Checks»
+  возвращает список «Check»
+  обеспечивает «there are exactly sixteen checks» (длина результат) равен 16
+  [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "sh scripts/guards/prose-numbers-guard.sh",
+   запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "sh scripts/seed/seed-runtime-is-source.sh",
+   запись «Check» с «name» равным "seed-refresh" и «command» равным "sh scripts/seed/seed-refresh.sh --check",
+   запись «Check» с «name» равным "version-derivations-guard" и «command» равным "sh scripts/guards/version-derivations-guard.sh",
+   запись «Check» с «name» равным "who-calls-the-guards" и «command» равным "sh scripts/guards/who-calls-the-guards.sh --check",
+   запись «Check» с «name» равным "guards-without-forgery-probe" и «command» равным "sh scripts/guards/guards-without-forgery-probe.sh --check",
+   запись «Check» с «name» равным "proved-share-vs-tree" и «command» равным "sh scripts/guards/proved-share-vs-tree.sh",
+   запись «Check» с «name» равным "stdlib-proof-guard" и «command» равным "sh scripts/guards/stdlib-proof-guard.sh --скобки",
+   запись «Check» с «name» равным "cyrillic-file-names-guard" и «command» равным "bootstrap/flang io scripts/guards/cyrillic-file-names-guard.fscript --plan Проверка",
+   запись «Check» с «name» равным "translit-file-names-guard" и «command» равным "bootstrap/flang io scripts/guards/translit-file-names-guard.fscript --plan Проверка",
+   запись «Check» с «name» равным "no-package-json-guard" и «command» равным "bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Проверка",
+   запись «Check» с «name» равным "shortcut-collector" и «command» равным "bootstrap/flang io scripts/shortcut-collector.fscript --plan Сбор --max-orders 20000 --на-веру",
+   запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка",
+   запись «Check» с «name» равным "licenses" и «command» равным "./ярлык лицензии:проверка",
+   запись «Check» с «name» равным "task-ledger" и «command» равным "./ярлык задачник:проверка",
+   запись «Check» с «name» равным "tree-inventory" и «command» равным "./ярлык опись:сверка"]
+
+тотальная функция «Output path»
+  принимает directory: строка, check: «Check»
+  возвращает строка
+  пример «the file is named after the check»
+    дано directory равно "/srv/tmp/pre-push-a"
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
+    ожидается "/srv/tmp/pre-push-a/version.out"
+  соединить [directory, "/", (check.«name»), ".out"] по ""
+
+тотальная функция «Job»
+  принимает directory: строка, check: «Check»
+  возвращает строка
+  пример «a job keeps its output in a file and prints its name with the exit code»
+    дано directory равно "/srv/tmp/pre-push-a"
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
+    ожидается "( ./ярлык версия:проверка >\"/srv/tmp/pre-push-a/version.out\" 2>&1; echo \"version $?\" ) &"
+  соединить ["( ", (check.«command»), " >\"", («Output path» от directory и check), "\" 2>&1; echo \"", (check.«name»), " $?\" ) &"] по ""
+
+тотальная функция «Launch line»
+  принимает directory: строка, checks: список «Check»
+  возвращает строка
+  пример «all jobs start at once from the root of the tree and the line waits for every one of them»
+    дано directory равно "/srv/tmp/pre-push-a"
+    дано checks равно [запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка", запись «Check» с «name» равным "licenses" и «command» равным "./ярлык лицензии:проверка"]
+    ожидается "cd .. && { ( ./ярлык версия:проверка >\"/srv/tmp/pre-push-a/version.out\" 2>&1; echo \"version $?\" ) & ( ./ярлык лицензии:проверка >\"/srv/tmp/pre-push-a/licenses.out\" 2>&1; echo \"licenses $?\" ) & wait; }"
+  соединить ["cd .. && { ", (соединить (отобразить checks как check → («Job» от directory и check)) по " "), " wait; }"] по ""
+
+тотальная функция «Exit code»
+  принимает name: строка, answers: список строки
+  возвращает строка
+  пример «the code stands after the name of the check»
+    дано name равно "version"
+    дано answers равно ["version-derivations-guard 0", "version 1"]
+    ожидается "1"
+  пример «a check that did not answer has no code»
+    дано name равно "version"
+    дано answers равно ["licenses 0"]
+    ожидается ""
+  свёртка answers начиная с "" как found и answer → (если (answer начинается с (соединить [name, " "] по "")) то (элемент 2 в (разделить answer по " ")) иначе found)
+
+тотальная функция «Red checks»
+  принимает checks: список «Check», answers: список строки
+  возвращает список «Check»
+  обеспечивает «red checks are some of the checks» (длина результат) не больше (длина checks)
+  пример «a check is red when its code is not zero and when it kept silent»
+    дано checks равно [запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка", запись «Check» с «name» равным "licenses" и «command» равным "./ярлык лицензии:проверка", запись «Check» с «name» равным "task-ledger" и «command» равным "./ярлык задачник:проверка"]
+    дано answers равно ["licenses 0", "version 1"]
+    ожидается [запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка", запись «Check» с «name» равным "task-ledger" и «command» равным "./ярлык задачник:проверка"]
+  отфильтровать checks где check → не ((«Exit code» от (check.«name») и answers) равен "0")
+
+тотальная функция «Summary line»
+  принимает check: «Check», answers: список строки
+  возвращает строка
+  пример «zero is green»
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
+    дано answers равно ["version 0"]
+    ожидается "  зелен   version"
+  пример «any other code is red and the code is named»
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
+    дано answers равно ["version 3"]
+    ожидается "  КРАСЕН  version (код 3)"
+  пример «silence is red too»
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
+    дано answers равно пустой список
+    ожидается "  КРАСЕН  version (ответа нет)"
+  пусть code равно («Exit code» от (check.«name») и answers)
+  если code равен "0"
+    то соединить ["  зелен   ", (check.«name»)] по ""
+    иначе если code равен ""
+      то соединить ["  КРАСЕН  ", (check.«name»), " (ответа нет)"] по ""
+      иначе соединить ["  КРАСЕН  ", (check.«name»), " (код ", code, ")"] по ""
+
+тотальная функция «Seconds»
+  принимает started: число, finished: число
+  возвращает число
+  пример «milliseconds become whole seconds»
+    дано started равно 1000
+    дано finished равно 48840
+    ожидается 47
+  пусть elapsed равно ((finished минус started) делить на 1000)
+  elapsed минус (elapsed остаток от 1)
+
+тотальная функция «Unchecked»
+  возвращает список строки
+  обеспечивает «what is left to the pipeline takes six lines» (длина результат) равен 6
+  ["ЧЕГО ХУК НЕ ПРОВЕРИЛ (это делает CI):",
+   "  · тесты, набор проб чекера, потолок доверия Г3 — минуты каждый",
+   "  · сборку двоичного и всё, что её требует",
+   "  · десять сторожей дороже 200 с и двенадцать, красных по долгу дерева",
+   "  · целость перечня ярлыков (план «Целость», 23 с) — вторая половина",
+   "    ./ярлык ярлыки; первая половина, «Сбор», здесь есть"]
+
+тотальная функция «Summary»
+  принимает answers: список строки, seconds: число
+  возвращает строка
+  соединить ["хук перед пушем: дешёвые сторожа, долгие оставлены CI", "", (соединить (отобразить («Checks») как check → («Summary line» от check и answers)) по "\n"), "", (соединить ["проверено за ", (к строке seconds), " с"] по ""), "", (соединить («Unchecked») по "\n")] по "\n"
+
+тотальная функция «Without first»
+  принимает lines: список строки
+  возвращает список строки
+  пример «the oldest line leaves»
+    дано lines равно ["первая", "вторая"]
+    ожидается ["вторая"]
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Keep twenty»
+  принимает kept: список строки, line: строка
+  возвращает список строки
+  пример «a short window grows»
+    дано kept равно ["первая"]
+    дано line равно "вторая"
+    ожидается ["первая", "вторая"]
+  если (длина kept) меньше 20
+    то добавить line к kept
+    иначе добавить line к («Without first» от kept)
+
+тотальная функция «Last lines»
+  принимает text: строка
+  возвращает строка
+  пример «a short output is kept whole»
+    дано text равно "первая\n\nвторая\n"
+    ожидается "первая\nвторая"
+  пример «a long output keeps its last twenty lines»
+    дано text равно "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n"
+    ожидается "3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22"
+  пусть lines равно (отфильтровать (разделить text по "\n") где line → не (line равен ""))
+  соединить (свёртка lines начиная с (пустой список) как kept и line → («Keep twenty» от kept и line)) по "\n"
+
+тотальная функция «Detail»
+  принимает check: «Check», output: строка
+  возвращает строка
+  пример «the output of a red check goes under its name»
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
+    дано output равно "версия разошлась\n"
+    ожидается "───── version ─────\nверсия разошлась\n"
+  соединить ["───── ", (check.«name»), " ─────\n", («Last lines» от output), "\n"] по ""
+
+тотальная функция «Report»
+  принимает summary: строка, details: список строки
+  возвращает строка
+  пример «a green tree may be pushed»
+    дано summary равно "  зелен   version"
+    дано details равно пустой список
+    ожидается "  зелен   version\n\nвсё дешёвое зелено — можно пушить"
+  пример «a red tree is stopped and the trouble is shown»
+    дано summary равно "  КРАСЕН  version (код 1)"
+    дано details равно ["───── version ─────\nверсия разошлась\n"]
+    ожидается "  КРАСЕН  version (код 1)\n\nПУШ ОСТАНОВЛЕН: красных проверок 1. Разбор — в выводе ниже.\n\n───── version ─────\nверсия разошлась\n\nОбойти можно: git push --no-verify (когда это законно — docs/tasks/1219-comments-in-shell-scripts-fall-below-a-fifth.md)"
+  если (длина details) равен 0
+    то соединить [summary, "", "всё дешёвое зелено — можно пушить"] по "\n"
+    иначе соединить [summary, "", (соединить ["ПУШ ОСТАНОВЛЕН: красных проверок ", (к строке (длина details)), ". Разбор — в выводе ниже."] по ""), "", (соединить details по "\n"), "Обойти можно: git push --no-verify (когда это законно — docs/tasks/1219-comments-in-shell-scripts-fall-below-a-fifth.md)"] по "\n"
+
+тотальная функция «Verdict»
+  принимает report: строка, red: число
+  возвращает «Продолжение»
+  пример «no red checks — the push may go»
+    дано report равно "отчёт"
+    дано red равно 0
+    ожидается вариант «Конец работы» с значение равным "отчёт"
+  пример «a red check stops the push»
+    дано report равно "отчёт"
+    дано red равно 2
+    ожидается вариант «Провал» с код равным "FLANG_PRE_PUSH_RED" и сообщение равным "отчёт"
+  если red равен 0
+    то вариант «Конец работы» с значение равным report
+    иначе вариант «Провал» с код равным "FLANG_PRE_PUSH_RED" и сообщение равным report
+
+тотальная функция «Cannot look»
+  принимает what: строка, answer: «Отклик»
+  возвращает «Продолжение»
+  пример «a failure of the host is not a verdict about the tree»
+    дано what равно "временный каталог не заведён"
+    дано answer равно вариант «Сбой» с код равным "FLANG_IO_TEMP" и сообщение равным "нет такого каталога"
+    ожидается вариант «Не проверено» с код равным "FLANG_PRE_PUSH_BLIND" и сообщение равным "временный каталог не заведён (FLANG_IO_TEMP): нет такого каталога"
+  пример «an unexpected answer is named as such»
+    дано what равно "время не узнано"
+    дано answer равно вариант «Пока ничего»
+    ожидается вариант «Не проверено» с код равным "FLANG_PRE_PUSH_BLIND" и сообщение равным "время не узнано: хозяин ответил не тем, о чём его просили"
+  разбор answer
+    случай вариант «Сбой» с код как code и сообщение как message
+      то вариант «Не проверено» с код равным "FLANG_PRE_PUSH_BLIND" и сообщение равным (соединить [what, " (", code, "): ", message] по "")
+    случай любое
+      то вариант «Не проверено» с код равным "FLANG_PRE_PUSH_BLIND" и сообщение равным (соединить [what, ": хозяин ответил не тем, о чём его просили"] по "")
+
+тотальная функция «Order»
+  принимает order: «Поручение», stage: «Stage»
+  возвращает «Продолжение»
+  вариант «Сделать» с поручение равным order и потом равным stage
+
+тотальная функция «Make directory»
+  принимает root: строка
+  возвращает «Продолжение»
+  пример «the directory is made outside the tree»
+    дано root равно "/srv/tmp"
+    ожидается вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/pre-push-") и потом равным (вариант «Awaiting directory»)
+  «Order» от (вариант «Завести временный каталог» с образец равным (соединить [root, "/pre-push-"] по "")) и (вариант «Awaiting directory»)
+
+тотальная функция «After temporary root»
+  принимает answer: «Отклик»
+  возвращает «Продолжение»
+  пример «the named place is taken»
+    дано answer равно вариант «Значение среды» с значение равным "/var/tmp"
+    ожидается вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным "/var/tmp/pre-push-") и потом равным (вариант «Awaiting directory»)
+  пример «without the variable the place is the one the whole tree uses»
+    дано answer равно вариант «Переменной среды нет»
+    ожидается вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/pre-push-") и потом равным (вариант «Awaiting directory»)
+  разбор answer
+    случай вариант «Значение среды» с значение как root
+      то «Make directory» от root
+    случай вариант «Переменной среды нет»
+      то «Make directory» от "/srv/tmp"
+    случай любое
+      то «Cannot look» от "переменная FLANG_TMP не прочитана" и answer
+
+тотальная функция «After directory»
+  принимает answer: «Отклик»
+  возвращает «Продолжение»
+  пример «with the directory made the clock is asked before the checks start»
+    дано answer равно вариант «Заведено» с путь равным "/srv/tmp/pre-push-a"
+    ожидается вариант «Сделать» с поручение равным (вариант «Текущее время») и потом равным (вариант «Awaiting start time» с directory равным "/srv/tmp/pre-push-a")
+  разбор answer
+    случай вариант «Заведено» с путь как directory
+      то «Order» от (вариант «Текущее время») и (вариант «Awaiting start time» с directory равным directory)
+    случай любое
+      то «Cannot look» от "временный каталог не заведён, назовите годное место переменной FLANG_TMP" и answer
+
+тотальная функция «After start time»
+  принимает directory: строка, answer: «Отклик»
+  возвращает «Продолжение»
+  разбор answer
+    случай вариант «Отметка времени» с миллисекунды как started
+      то «Order» от (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", («Launch line» от directory и («Checks»))]) и (вариант «Awaiting launch» с directory равным directory и started равным started)
+    случай любое
+      то «Cannot look» от "время начала не узнано" и answer
+
+тотальная функция «Ask finish time»
+  принимает directory: строка, started: число, output: строка
+  возвращает «Продолжение»
+  пример «every printed line is the answer of one check»
+    дано directory равно "/srv/tmp/pre-push-a"
+    дано started равно 1000
+    дано output равно "version 0\nlicenses 1\n"
+    ожидается вариант «Сделать» с поручение равным (вариант «Текущее время») и потом равным (вариант «Awaiting finish time» с directory равным "/srv/tmp/pre-push-a" и started равным 1000 и answers равным ["version 0", "licenses 1", ""])
+  «Order» от (вариант «Текущее время») и (вариант «Awaiting finish time» с directory равным directory и started равным started и answers равным (разделить output по "\n"))
+
+тотальная функция «After launch»
+  принимает directory: строка, started: число, answer: «Отклик»
+  возвращает «Продолжение»
+  пример «checks cut short by the limit of the host still report those that answered»
+    дано directory равно "/srv/tmp/pre-push-a"
+    дано started равно 1000
+    дано answer равно вариант «Процесс убит» с сигнал равным "SIG9" и вывод равным "version 0\n" и ошибки равным ""
+    ожидается вариант «Сделать» с поручение равным (вариант «Текущее время») и потом равным (вариант «Awaiting finish time» с directory равным "/srv/tmp/pre-push-a" и started равным 1000 и answers равным ["version 0", ""])
+  разбор answer
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Ask finish time» от directory и started и output
+    случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
+      то «Ask finish time» от directory и started и output
+    случай любое
+      то «Cannot look» от "проверки не запущены" и answer
+
+тотальная функция «Leftovers»
+  принимает directory: строка
+  возвращает список строки
+  обеспечивает «one file for every check and the directory itself» (длина результат) равен 17
+  добавить directory к (отобразить («Checks») как check → («Output path» от directory и check))
+
+тотальная функция «Remove files»
+  принимает remaining: список строки, report: строка, red: число
+  возвращает «Продолжение»
+  пример «with nothing left to remove the report becomes the verdict»
+    дано remaining равно пустой список
+    дано report равно "отчёт"
+    дано red равно 1
+    ожидается вариант «Провал» с код равным "FLANG_PRE_PUSH_RED" и сообщение равным "отчёт"
+  разбор remaining
+    случай пусто
+      то «Verdict» от report и red
+    случай голова и хвост
+      то «Order» от (вариант «Удалить файл» с путь равным голова) и (вариант «Awaiting removal» с remaining равным хвост и report равным report и red равным red)
+
+тотальная функция «Read outputs»
+  принимает remaining: список «Check», details: список строки, directory: строка, summary: строка
+  возвращает «Продолжение»
+  разбор remaining
+    случай пусто
+      то «Remove files» от («Leftovers» от directory) и («Report» от summary и details) и (длина details)
+    случай голова и хвост
+      то «Order» от (вариант «Прочитать файл» с путь равным («Output path» от directory и голова)) и (вариант «Awaiting output» с check равным голова и remaining равным хвост и details равным details и directory равным directory и summary равным summary)
+
+тотальная функция «After finish time»
+  принимает directory: строка, started: число, answers: список строки, answer: «Отклик»
+  возвращает «Продолжение»
+  разбор answer
+    случай вариант «Отметка времени» с миллисекунды как finished
+      то «Read outputs» от («Red checks» от («Checks») и answers) и (пустой список) и directory и («Summary» от answers и («Seconds» от started и finished))
+    случай любое
+      то «Cannot look» от "время конца не узнано" и answer
+
+тотальная функция «Output text»
+  принимает answer: «Отклик»
+  возвращает строка
+  пример «the output is what the check printed»
+    дано answer равно вариант «Прочитано» с содержимое равным "версия разошлась\n"
+    ожидается "версия разошлась\n"
+  пример «an unreadable output is named and the check stays red»
+    дано answer равно вариант «Сбой» с код равным "FLANG_IO_NOT_TEXT" и сообщение равным "не текст"
+    ожидается "вывод не прочитан (FLANG_IO_NOT_TEXT): не текст"
+  разбор answer
+    случай вариант «Прочитано» с содержимое как output
+      то output
+    случай вариант «Сбой» с код как code и сообщение как message
+      то соединить ["вывод не прочитан (", code, "): ", message] по ""
+    случай любое
+      то "вывод не прочитан"
+
+тотальная функция «Begin»
+  возвращает «Stage»
+  пример «the plan starts at the start»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Next»
+  принимает stage: «Stage», answer: «Отклик»
+  возвращает «Продолжение»
+  пример «the first question is where temporary files may live»
+    дано stage равно вариант «Start»
+    дано answer равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и потом равным (вариант «Awaiting temporary root»)
+  разбор stage
+    случай вариант «Start»
+      то «Order» от (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и (вариант «Awaiting temporary root»)
+    случай вариант «Awaiting temporary root»
+      то «After temporary root» от answer
+    случай вариант «Awaiting directory»
+      то «After directory» от answer
+    случай вариант «Awaiting start time» с directory как directory
+      то «After start time» от directory и answer
+    случай вариант «Awaiting launch» с directory как directory и started как started
+      то «After launch» от directory и started и answer
+    случай вариант «Awaiting finish time» с directory как directory и started как started и answers как answers
+      то «After finish time» от directory и started и answers и answer
+    случай вариант «Awaiting output» с check как check и remaining как remaining и details как details и directory как directory и summary как summary
+      то «Read outputs» от remaining и (добавить («Detail» от check и («Output text» от answer)) к details) и directory и summary
+    случай вариант «Awaiting removal» с remaining как remaining и report как report и red как red
+      то «Remove files» от remaining и report и red
+
+план «Pre push»
+  состояние «Stage»
+  начинает с «Begin»
+  обрабатывает «Next»

@@ -1,0 +1,18 @@
+{
+  "decisionKernelLines": 5137,
+  "kernelFilesCode": 9211,
+  "seedSourcesCode": 64871,
+  "seedSourcesFiles": 44,
+  "parsingCode": 6612,
+  "evaluatorCode": 2317,
+  "emitCCode": 3535,
+  "typeCheckCode": 5099,
+  "runtimeCode": 19532,
+  "runtimeFiles": 4,
+  "printedCCode": 597631,
+  "printedCFiles": 6,
+  "checkerCode": 7602,
+  "inferenceRules": 109,
+  "totalSources": 84403,
+  "totalPrinted": 597631
+}

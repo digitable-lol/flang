@@ -467,7 +467,7 @@ scripts/guards/hand-written-lists.sh --check` — «новых 59, мёртвы�
 | `без-пакета:проверка` | `scripts/guards/no-package-json-guard.fscript` |
 | `раскрутка`, `раскрутка:проверка`, `семя:быстро`, `строки:проверка` | `scripts/bootstrap-reprint.sh` |
 | `семя:освежить`, `семя:можно-быстро` | `scripts/seed/seed-refresh.sh` |
-| `двоичный:приёмка` | `scripts/seed/new-binary-acceptance.sh` |
+| `двоичный:приёмка` | `scripts/seed/new-binary-acceptance.fscript` |
 | `точка:проверка` | `scripts/seed/bootstrap-point-by-binary.fscript` |
 | `доказательства:ведомость` | `flang/scripts/proof-ledger.fscript` |
 | `доказательства:пустота` | `flang/scripts/proof-ledger.mjs` |

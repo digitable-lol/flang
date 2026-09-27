@@ -48,9 +48,15 @@ cd "$KOREN"
 # Провенанс — первой строкой вывода. Набор проб судит ПРОВЕРЯЮЩЕГО, и числа
 # «подделок 533, принято кодом 0 — 0» ничего не стоят без sha256 того самого
 # сверщика, на котором они сняты (пункт 11 внешнего аудита). Печать не мешает
-# разбору: и scripts/доказуемость.sh, и flang/proof/lean/run.sh читают этот
+# разбору: и scripts/provability.fscript, и flang/proof/lean/run.sh читают этот
 # вывод по якорям «подделок N:» и «честных N:», а не по номеру строки.
-sh "$KOREN/scripts/report-provenance.sh" || true
+provenance=$("$KOREN/bootstrap/flang" io "$KOREN/scripts/report-provenance.fscript" --plan Report 2>/dev/null \
+  | sed -n 's/^{"plan":"Report","result":"\(.*\)","orders":[0-9]*,"log":.*$/\1/p')
+if [ -n "$provenance" ]; then
+  printf '%b\n\n' "$provenance"
+else
+  printf '%s\n%s\n\n' "── чем и на чём снято ──" "шапка не снята: план scripts/report-provenance.fscript исполнить нечем — нет bootstrap/flang"
+fi
 
 BAD=0
 

@@ -6,7 +6,7 @@
 # рядом кладутся <имя>.json (ведомость), .err, .time (часы, пик памяти), .kod.
 #
 # Звать: sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang [каталог выходов]
-#   DVOICHNYY — двоичный (умолчание <дерево>-ledger-binary/flang от build-ledger-binary.sh);
+#   DVOICHNYY — двоичный (умолчание <дерево>-ledger-binary/flang от build-ledger-binary.fscript);
 #   VYHOD — каталог выходов; PAMYAT (45G), PIK — ворота: адресное пространство и
 #   ЗАМЕРЕННЫЙ пик; PREDEL_SHAGOV, PREDEL_GLUBINY — ключи --предел-…, по умолчанию
 #   не ставятся и ЗАДАЮТ предел, а не поднимают его (сверяется со вшитым в шапке).
@@ -24,7 +24,7 @@ test -f "$koren/$fajl" || test -f "$fajl" || { echo "нет файла $fajl" >&
 
 dvoichnyy=${DVOICHNYY:-$koren-ledger-binary/flang}
 test -x "$dvoichnyy" || {
-  echo "нет двоичного $dvoichnyy — соберите: sh scripts/seed/build-ledger-binary.sh" >&2
+  echo "нет двоичного $dvoichnyy — соберите: bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 --" >&2
   exit 2
 }
 

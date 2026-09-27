@@ -7,7 +7,7 @@
 > **Сверка 11 сентября 2026** (коммит `2c40752d0`, выпуск 0.7.17): семя, об
 > отставании которого говорит оговорка ниже, перепечатано 10–11 сентября
 > (`0ce948bfd`); правил вывода в ядре 88, лемм Lean к ним 85
-> (`docs/lean-checks-the-inference-rules.md`); `sh scripts/доказуемость.sh` →
+> (`docs/lean-checks-the-inference-rules.md`); `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` →
 > ДОКАЗУЕМ, 625 / 651 = 96,01 %. Перечень ниже — состояние 23–30 августа; что
 > из нехваток закрыто, а что нет, перепроверялось не построчно: живой остаток
 > — `docs/road-to-one-hundred-measured.md` и ADR-0032.

@@ -96,7 +96,7 @@ lean-toolchain  run.sh
 
 * после каждой порции — `sh .githooks/pre-push` код 0 и `node docs/site/build.mjs --check`
   (битые ссылки на переименованные файлы ловятся именно там);
-* `sh scripts/доказуемость.sh` — ДОКАЗУЕМ, четыре проверки из четырёх;
+* `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — ДОКАЗУЕМ, четыре проверки из четырёх;
 * `sh flang/proof/checker/tests/run.sh` — «сошлось всё»;
 * ссылки из работ CI (`.github/workflows/*.yml`) и из `ярлыки.flang` проверяются
   отдельно: они не markdown, и сторож ссылок их не читает.
@@ -207,7 +207,7 @@ flang/proof/  SPEC.md  kernel.flang  checker.flang  small-reducer.flang
 
 **Приём порции**, кодом 0 и числами, совпавшими с теми, что были до неё:
 `run.sh` — подделок 534, отвергнуто 448, третий исход 86, честных 248 принято
-248 отвергнуто 0; `доказуемость.sh` — ДОКАЗУЕМ, 4 из 4, доля 650/650;
+248 отвергнуто 0; `provability.fscript` — ДОКАЗУЕМ, 4 из 4, доля 650/650;
 `tables-guard.sh` — шесть сторожей зелены; пробы `run`/`strict`/`unproven` —
 13/20/22 (сверено со значащими строками `expected.tsv`: 14/21/23 = заголовок +
 проба); `pre-push` — 14 из 14; `site build --check` — битых ссылок 0.
@@ -271,7 +271,7 @@ flang/proof/  SPEC.md  kernel.flang  checker.flang  small-reducer.flang
 ```
 flang/proof/checker/tests/run.sh   сошлось всё; подделок 534, отвергнуто 448,
                                    третий исход 86; честных 248, отвергнуто 0
-scripts/доказуемость.sh            ДОКАЗУЕМ, 4 из 4; доля 650 / 650
+scripts/provability.fscript            ДОКАЗУЕМ, 4 из 4; доля 650 / 650
 probes/{run,strict,unproven}       сошлось всё: проб 13, 20, 22
 tables-guard.sh                    109 строк ведомости, шесть сторожей зелены
 cyrillic-file-names-guard.sh       кириллица в именах: 62, все в ведомости; --подлог код 1

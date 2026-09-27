@@ -182,12 +182,16 @@ fi
 # ядра доказательств лежит в исходнике и в собранной программе не работает, а
 # ведомость печатает зелёное про дерево, которого нет. Список ярлыков, чей ответ
 # от семени зависит, лежит в ярлыки.flang («Ярлыки о доказательствах»); отказ и
-# ключ обхода — в scripts/seed/seed-freshness.sh.
+# ключ обхода — в scripts/seed/seed-freshness.fscript.
 #
 # Спрашивается КАЖДЫЙ ярлык, а не только помеченный: обещание функции заодно
 # проверяет, что все имена в списке — настоящие ярлыки этого дерева.
 if [ "$(ask '«Судит о доказательствах»' --args "{\"ярлык\":\"$name\"}")" = "true" ]; then
-  sh "$ROOT/scripts/seed/seed-freshness.sh" --chto "ярлык «$name» ($command_line)" || exit $?
+  freshness=$("$BINARY" io scripts/seed/seed-freshness.fscript --plan Check --timeout 300000 -- --what "ярлык «$name» ($command_line)" 2>&1) && freshness_code=0 || freshness_code=$?
+  if [ "$freshness_code" != 0 ]; then
+    printf '%b\n' "$(printf '%s\n' "$freshness" | sed -n 's/^{"error":"\(.*\)","diagnostics":.*$/\1/p')" >&2
+    exit "$freshness_code"
+  fi
 fi
 
 # Доводы после имени ярлыка уезжают команде. У ярлыка из НЕСКОЛЬКИХ команд через

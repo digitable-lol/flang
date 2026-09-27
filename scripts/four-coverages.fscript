@@ -1,0 +1,359 @@
+модуль «Four coverages»
+  использует «Rules» из "rules.fscript"
+  использует «Inquiry» из "inquiry.fscript"
+  использует «Reading» из "reading.fscript"
+  использует «Report provenance» из "report-provenance.fscript"
+  использует «Lists» только «Соединить списки»
+
+тотальная функция «Tree»
+  возвращает строка
+  ".."
+
+тотальная функция «Rules table»
+  возвращает строка
+  "flang/proof/tables/inference-rules.tsv"
+
+тотальная функция «Violations table»
+  возвращает строка
+  "flang/proof/tables/consistency-violations.tsv"
+
+тотальная функция «Print rules»
+  возвращает строка
+  "flang/translation/PRINT-RULES.tsv"
+
+тотальная функция «Translation suite»
+  возвращает строка
+  "flang/translation/run.sh"
+
+тотальная функция «Measurements»
+  возвращает список «Question»
+  «Соединить списки» от («Provenance questions» от («Tree»)) и [(«Run from» от "share" и («Tree») и "sh" и ["flang/proof/corpus-share.sh", "--проигрыванием"]),
+   («Run from» от "corpus" и («Tree») и "sh" и ["flang/proof/corpus-share.sh", "--набор", "корпус"]),
+   («Run from» от "lemmas" и («Tree») и "grep" и ["-h", "-a", "^theorem «", "flang/proof/lean/Rules.lean", "flang/proof/lean/Term.lean"]),
+   («Run from» от "accepted" и («Tree») и "sed" и ["-n", "/^def «правила» : List/,/\\]$/p", "flang/proof/lean/Acceptance.lean"]),
+   («Read from» от "rules" и («Tree») и («Rules table»)),
+   («Read from» от "violations" и («Tree») и («Violations table»)),
+   («Read from» от "print rules" и («Tree») и («Print rules»)),
+   («Read from» от "translation suite" и («Tree») и («Translation suite»)),
+   («Run from» от "translation" и («Tree») и "sh" и [(«Translation suite»)])]
+
+тотальная функция «Quoted»
+  принимает text: строка
+  возвращает список строки
+  пример «Names stand between the angle quotes»
+    дано text равно "[.«Т1», .«Кон1»]"
+    ожидается ["Т1", "Кон1"]
+  пример «A text without quotes has no names»
+    дано text равно "theorem"
+    ожидается пустой список
+  отобразить (отфильтровать (разделить text по "«") где part → part содержит "»") как part → «First line» от (соединить (разделить part по "»") по "\n")
+
+тотальная функция «Lemmas»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отобразить («Lines» от («Output of» от "lemmas" и answers)) как line → «First line» от (соединить («Quoted» от line) по "\n")
+
+тотальная функция «Rows»
+  принимает least: число, text: строка
+  возвращает список список строки
+  пример «Comments and short rows are not rows»
+    дано least равно 2
+    дано text равно "# имя\tузел\nТ1\tтождество\nодин\n"
+    ожидается [["Т1", "тождество"]]
+  отфильтровать (отобразить (отфильтровать («Lines» от text) где line → не (line начинается с "#")) как line → разделить line по "\t") где cells → (длина cells) не меньше least
+
+тотальная функция «Cell»
+  принимает position: число, cells: список строки
+  возвращает строка
+  пример «The second cell of two»
+    дано position равно 2
+    дано cells равно ["Т1", "тождество"]
+    ожидается "тождество"
+  пример «A cell past the end is empty»
+    дано position равно 3
+    дано cells равно ["Т1", "тождество"]
+    ожидается ""
+  если (position меньше 1) или (position больше (длина cells))
+    то ""
+    иначе элемент position в cells
+
+тотальная функция «Rules»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отобразить («Rows» от 12 и («Output of» от "rules" и answers)) как cells → «Cell» от 1 и cells
+
+тотальная функция «Ban lemma»
+  принимает title: строка
+  возвращает строка
+  пример «A triple ban»
+    дано title равно "Н1✗✗✗"
+    ожидается "Н1-запрет3"
+  пример «A double ban»
+    дано title равно "Н1✗✗"
+    ожидается "Н1-запрет2"
+  пример «A single ban»
+    дано title равно "Н1✗"
+    ожидается "Н1-запрет"
+  пусть parts равно (разделить title по "✗")
+  соединить [(«First line» от (соединить parts по "\n")), («Chosen» от [(«When» от ((длина parts) равен 4) и "-запрет3"), («When» от ((длина parts) равен 3) и "-запрет2")] и "-запрет")] по ""
+
+тотальная функция «Without first»
+  принимает parts: список строки
+  возвращает список строки
+  пример «The rest after the first part»
+    дано parts равно ["Н1", "", ""]
+    ожидается ["", ""]
+  разбор parts
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Has lemma»
+  принимает title: строка, lemmas: список строки
+  возвращает признак
+  пример «A title has a lemma of its own name»
+    дано title равно "Т1"
+    дано lemmas равно ["Т1", "Кон1-слева"]
+    ожидается да
+  пример «A title has a lemma that continues its name with a dash»
+    дано title равно "Кон1"
+    дано lemmas равно ["Т1", "Кон1-слева"]
+    ожидается да
+  пример «A ban has a lemma of the ban»
+    дано title равно "Н1✗"
+    дано lemmas равно ["Н1-запрет"]
+    ожидается да
+  пример «A title without a lemma»
+    дано title равно "Кон"
+    дано lemmas равно ["Т1", "Кон1-слева"]
+    ожидается нет
+  если title содержит "✗"
+    то (длина (отфильтровать lemmas где lemma → lemma равен («Ban lemma» от title))) больше 0
+    иначе (длина (отфильтровать lemmas где lemma → (lemma равен title) или (lemma начинается с (соединить [title, "-"] по "")))) больше 0
+
+тотальная функция «Formalization lines»
+  принимает rules: список строки, lemmas: список строки
+  возвращает список строки
+  пример «Every title is counted and the bare one is named»
+    дано rules равно ["Т1", "Н1✗", "Кон"]
+    дано lemmas равно ["Т1", "Н1-запрет"]
+    ожидается ["   строк перечня правил         3 (из них запретов 1 — ими не выводится ничего)", "   имеют лемму в Lean           2 из 3 — без леммы: Кон"]
+  пусть bare равно (отфильтровать rules где title → не («Has lemma» от title и lemmas))
+  [(соединить ["   строк перечня правил         ", (к строке (длина rules)), " (из них запретов ", (к строке (длина (отфильтровать rules где title → title содержит "✗"))), " — ими не выводится ничего)"] по ""),
+   (соединить ["   имеют лемму в Lean           ", (к строке ((длина rules) минус (длина bare))), " из ", (к строке (длина rules)), (если (длина bare) больше 0 то (соединить [" — без леммы: ", (соединить bare по ", ")] по "") иначе "")] по "")]
+
+тотальная функция «Distinct»
+  принимает names: список строки
+  возвращает список строки
+  пример «A repeated name is kept once»
+    дано names равно ["Т1", "Кон1", "Т1"]
+    ожидается ["Т1", "Кон1"]
+  свёртка names начиная с (пустой список) как kept и name → если (длина (отфильтровать kept где known → known равен name)) больше 0 то kept иначе (добавить name к kept)
+
+тотальная функция «Accepted»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Distinct» от (отобразить (отфильтровать («Without first» от (разделить («Output of» от "accepted" и answers) по ".«")) где part → part содержит "»") как part → «First line» от (соединить (разделить part по "»") по "\n"))
+
+тотальная функция «Inference rules»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Distinct» от (отфильтровать («Rules» от answers) где title → не (title содержит "✗"))
+
+тотальная функция «Outside»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть accepted равно («Accepted» от answers)
+  отфильтровать («Inference rules» от answers) где title → (длина (отфильтровать accepted где known → known равен title)) равен 0
+
+тотальная функция «Sorting»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "outside" и "sh" и (приписать "-c" к (приписать "printf '%s\\n' \"$@\" | LC_ALL=C sort -u" к (приписать "sh" к («Outside» от answers)))))]
+
+тотальная функция «Said by»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
+  «Соединить списки» от («Lines» от («Output of» от name и answers)) и («Lines» от («Errors of» от name и answers))
+
+тотальная функция «Share words»
+  принимает line: строка
+  возвращает строка
+  пример «The share is retold with its parts»
+    дано line равно "доля-проигрыванием = 650 / 650 = 100.00 % (порог 95)"
+    ожидается "650 из 650 = 100.00 %"
+  пример «A line of another shape gives nothing»
+    дано line равно "доля-проигрыванием = много"
+    ожидается ""
+  если ((«Digits» от («Word» от 3 и line)) и притом («Digits» от («Word» от 5 и line))) и притом ((«Word» от 8 и line) равен "%")
+    то соединить [(«Word» от 3 и line), " из ", («Word» от 5 и line), " = ", («Word» от 7 и line), " %"] по ""
+    иначе ""
+
+тотальная функция «Idle»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть line равно («First line» от (соединить (отфильтровать («Lines» от («Output of» от "corpus" и answers)) где line → (соединить («Words» от line) по " ") начинается с "из них ВПУСТУЮ") по "\n"))
+  «Leading digits» от («Cell» от 2 и (разделить line по "\t"))
+
+тотальная функция «Share lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть said равно («Said by» от "share" и answers)
+  пусть share равно («Share words» от («Beginning with» от "доля-проигрыванием = " и said))
+  пусть records равно («Beginning with» от "записей в наборе " и said)
+  если пусто share
+    то ["   НЕ СНЯТО: линейка доли не дала числа"]
+    иначе [(соединить ["   переиграно независимо        ", share] по ""),
+      (соединить ["   записей в наборе             ", («Or unknown» от («Leading digits» от («Word» от 4 и records))), " (проверяющий поручился за ", («Or unknown» от («Number after» от "чекер поручился " и records)), ")"] по ""),
+      (соединить ["   мест вынесено из знаменателя ", (к строке («Count» от («Leading digits» от («Word» от 3 и («Beginning with» от "исключено мест " и said))))), " — записи, отвергнутые ЦЕЛИКОМ как заведомо ложные"] по "")]
+
+тотальная функция «Share section»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от [["1. ПОКРЫТИЕ СОБСТВЕННЫХ ЗАПИСЕЙ ДОКАЗАТЕЛЬСТВА — доля их мест, переигранных независимым проверяющим"],
+    («Share lines» от answers),
+    [(соединить ["   из них ВПУСТУЮ (код 0, доказанным не числится ничего) ", («Or unknown» от («Idle» от answers))] по ""),
+     "   ЧЕГО НЕ ЗНАЧИТ: ни одной строки о ваших программах и ни одной о собранном двоичном.",
+     ""]]
+
+тотальная функция «Formalization is readable»
+  принимает answers: список «Answer»
+  возвращает признак
+  ((длина («Lemmas» от answers)) больше 0) и притом ((«Exit code of» от "rules" и answers) равен 0)
+
+тотальная функция «Acceptance lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть outside равно («Lines» от («Output of» от "outside" и answers))
+  [(соединить ["   в приёмке Lean (Acceptance.lean) ", (к строке (длина («Accepted» от answers))), " правил из ", (к строке (длина («Inference rules» от answers))), " правил вывода"] по ""),
+   (соединить ["   ВНЕ приёмки Lean              ", (к строке (длина outside)), ": ", (соединить (отобразить outside как title → соединить [title, " "] по "") по "")] по ""),
+   "   блоков записи, ушедших «вне приёмки», — НЕ СНЯТО ЗДЕСЬ: нужен прогон Lean",
+   "                                 (sh flang/proof/lean/run.sh, Lean по flang/proof/lean/lean-toolchain)"]
+
+тотальная функция «Formalization section»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от [["2. ПОКРЫТИЕ ФОРМАЛИЗАЦИИ — сколько правил вывода судит второй, чужой судья (Lean 4)"],
+    (если «Formalization is readable» от answers то («Соединить списки» от («Formalization lines» от («Rules» от answers) и («Lemmas» от answers)) и («Acceptance lines» от answers)) иначе ["   НЕ СНЯТО: нет ведомости правил либо файлов Lean"]),
+    ["   ЧЕГО НЕ ЗНАЧИТ: лемма на правило — не проверка ваших программ этим правилом.", ""]]
+
+тотальная функция «Violation lines»
+  принимает cells: список строки
+  возвращает список строки
+  пример «An open violation is told in three lines»
+    дано cells равно ["ключ-1", "что случилось", "где лежит", "чем снять", "16", "—", "открыто"]
+    ожидается ["   · ключ-1 — что случилось", "       где: где лежит", "       число: 16; чем снять: чем снять; задача: —"]
+  пример «A closed violation is not told»
+    дано cells равно ["ключ-1", "что случилось", "где лежит", "чем снять", "16", "—", "закрыто"]
+    ожидается пустой список
+  если («Cell» от 7 и cells) равен "открыто"
+    то [(соединить ["   · ", («Cell» от 1 и cells), " — ", («Cell» от 2 и cells)] по ""),
+      (соединить ["       где: ", («Cell» от 3 и cells)] по ""),
+      (соединить ["       число: ", («Cell» от 5 и cells), "; чем снять: ", («Cell» от 4 и cells), "; задача: ", («Cell» от 6 и cells)] по "")]
+    иначе пустой список
+
+тотальная функция «Violations»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  отфильтровать («Rows» от 7 и («Output of» от "violations" и answers)) где cells → не ((«Cell» от 1 и cells) равен "ключ")
+
+тотальная функция «Violations section»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть told равно («Gathered words» от (отобразить («Violations» от answers) как cells → «Violation lines» от cells))
+  «Gathered words» от [["3. ИЗВЕСТНЫЕ НАРУШЕНИЯ СОСТОЯТЕЛЬНОСТИ — открыто, поимённо"],
+    (если («Exit code of» от "violations" и answers) равен 0 то («Соединить списки» от told и [(соединить ["   открытых нарушений: ", (к строке ((длина told) делить на 3)), " (ведомость ", («Violations table»), ")"] по "")]) иначе [(соединить ["   НЕ СНЯТО: нет ", («Violations table»)] по "")]),
+    ["   ЧЕГО НЕ ЗНАЧИТ: список открытый — «других нет» он не утверждает.", ""]]
+
+тотальная функция «Print rows»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  отфильтровать («Rows» от 1 и («Output of» от "print rules" и answers)) где cells → не ((«Cell» от 1 и cells) равен "имя")
+
+тотальная функция «Translation result»
+  принимает answers: список «Answer»
+  возвращает строка
+  «After» от "ИТОГ: " и («Beginning with» от "ИТОГ: " и («Said by» от "translation" и answers))
+
+тотальная функция «Translation is readable»
+  принимает answers: список «Answer»
+  возвращает признак
+  ((«Exit code of» от "print rules" и answers) равен 0) и притом ((«Exit code of» от "translation suite" и answers) равен 0)
+
+тотальная функция «Translation lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть rows равно («Print rows» от answers)
+  пусть total равно (к строке (длина rows))
+  [(соединить ["   опытов в run.sh              ", (к строке (длина (отфильтровать («Lines» от («Output of» от "translation suite" и answers)) где line → line начинается с "opyt ")))] по ""),
+   (соединить ["   правил печати в списке       ", total] по ""),
+   (соединить ["   сверяются с ИСХОДНИКОМ       ", (к строке (длина (отфильтровать rows где cells → не ((«Cell» от 5 и cells) равен "—")))), " из ", total, " (у остальных якоря в исходнике нет: сверка идёт C против протокола)"] по ""),
+   (соединить ["   не переигрываются вовсе      ", (к строке (длина (отфильтровать rows где cells → («Cell» от 6 и cells) начинается с "НЕ переигрывается"))), " из ", total, " (сличается только текст в составе файла)"] по ""),
+   (соединить ["   прогон сличителя             ", (если пусто («Translation result» от answers) то "НЕ СНЯТ" иначе («Translation result» от answers))] по "")]
+
+тотальная функция «Translation section»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от [["4. ПОКРЫТИЕ ТРАНСЛЯЦИИ — сверка перевода flang → C по протоколу печати (flang/translation)"],
+    (если «Translation is readable» от answers то («Translation lines» от answers) иначе [(соединить ["   НЕ СНЯТО: нет ", («Print rules»), " либо ", («Translation suite»)] по "")]),
+    ["   ЧЕГО НЕ ЗНАЧИТ: сличитель судит ОДИН запуск печати, а не генератор кода целиком.", ""]]
+
+тотальная функция «Lean is present»
+  принимает answers: список «Answer»
+  возвращает признак
+  не ((«Exit code of» от "lean version" и answers) равен 127)
+
+тотальная функция «All measured»
+  принимает answers: список «Answer»
+  возвращает признак
+  ((((длина («Share lines» от answers)) больше 1) и притом ((«Formalization is readable» от answers) и притом («Lean is present» от answers))) и притом ((«Exit code of» от "violations" и answers) равен 0)) и притом ((«Translation is readable» от answers) и притом (не (пусто («Translation result» от answers))))
+
+тотальная функция «Coverages»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить («Gathered words» от [[(«Provenance» от answers), ""],
+    («Share section» от answers),
+    («Formalization section» от answers),
+    («Violations section» от answers),
+    («Translation section» от answers),
+    [(если «All measured» от answers то "все четыре покрытия сняты" иначе "СНЯТЫ НЕ ВСЕ ЧЕТЫРЕ — что и почему, названо выше строкой «НЕ СНЯТО»")]]) по "\n"
+
+тотальная функция «Outcome»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  если «All measured» от answers
+    то вариант «Конец работы» с значение равным («Coverages» от answers)
+    иначе вариант «Не проверено» с код равным "FLANG_COVERAGES_NOT_ALL_MEASURED" и сообщение равным («Coverages» от answers)
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  если stages равен 1
+    то «Measurements»
+    иначе «Соединить списки» от («Lean question» от answers) и («Sorting» от answers)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Outcome» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 2
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Measure»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

@@ -127,7 +127,7 @@ Not expressible — there is no place to write it:
 ## What «100 %» means
 
 ```
-sh scripts/доказуемость.sh          → ДОКАЗУЕМ                       (18 September 2026)
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000          → ДОКАЗУЕМ                       (18 September 2026)
 sh flang/proof/corpus-share.sh --проигрыванием
 → доля-проигрыванием = 650 / 650 = 100.00 %
   на слово ядра: посылок и утверждений 0; шагов 0; снято калькулятором 0

@@ -108,7 +108,7 @@ bootstrap/flang io flang/scripts/kernel-lines-to-trust.fscript \
 бы таким же у прежнего плана. Судить всё равно — как велит сам отказ:
 
 ```sh
-SEMYA_OTSTALO_ZNAYU=1 ./ярлык сколько-верим     # код 0
+FLANG_SEED_LAG_KNOWN=1 ./ярлык сколько-верим     # код 0
 ```
 
 Прямой вызов прибора (тот, что зовёт CI) обёртки не касается и работает без

@@ -468,7 +468,7 @@ NaN, бесконечности и минус нуля у нового типа 
    `Rules.lean`.
 5. `sh flang/proof/corpus-share.sh --проигрыванием` не ниже прежнего: старые
    записи не сломаны.
-6. `sh scripts/доказуемость.sh` печатает ДОКАЗУЕМ.
+6. `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` печатает ДОКАЗУЕМ.
 7. Строка бюджета этого решения стоит в `flang/proof/checker/ratchet.txt`, и
    потолок 7188 не пробит.
 

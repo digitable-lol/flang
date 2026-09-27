@@ -24,7 +24,7 @@
    понятная структура папок». Имена файлов не меняются — только каталоги.
 
 Каждый пункт — отдельные коммиты с числами до → после. После каждого:
-`sh .githooks/pre-push` зелен, `sh scripts/доказуемость.sh` → ДОКАЗУЕМ,
+`sh .githooks/pre-push` зелен, `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` → ДОКАЗУЕМ,
 опись доказанного сходится (`proved-share-vs-tree.sh` 0), сайт собирается
 (`node docs/site/build.mjs --check`) без битых ссылок.
 

@@ -91,7 +91,7 @@ flang check flang/stdlib/hashmap.flang --proof
 
 ## Чем закрыта
 
-`scripts/new-binary-acceptance.sh` — приёмка из **шести** примет, и ярлык
+`scripts/new-binary-acceptance.fscript` — приёмка из **шести** примет, и ярлык
 `двоичный:приёмка`. Код 0 — все сошлись; 1 — хоть одна нет, и каждая названа
 своим значком.
 

@@ -7,7 +7,7 @@
 Все числа снимает один прибор:
 
 ```bash
-sh scripts/four-coverages.sh
+bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000
 ```
 
 Он печатает дату, коммит дерева и чистоту рабочей копии, отпечаток семени, версию и sha256

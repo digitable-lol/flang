@@ -378,7 +378,7 @@ sh scripts/guards/run-verdict-debt-guard.sh
 ### Прогоны на дереве этой ветки
 
 ```
-sh scripts/доказуемость.sh                      ДОКАЗУЕМ                    код 0
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000                      ДОКАЗУЕМ                    код 0
 sh scripts/guards/prose-numbers-guard.sh        все 231 примет сошлись      код 0
 ./ярлык задачник:проверка                                                   код 0
 sh scripts/guards/run-verdict-debt-guard.sh     СОШЛОСЬ                     код 0

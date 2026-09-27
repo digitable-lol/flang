@@ -190,7 +190,7 @@ $ sh .githooks/pre-push
 
 Если правка в этом месте всё же понадобится, её цена названа точно:
 `flang/src/emit/c/flang_repl.c` — **копируемая** часть семени
-(`scripts/seed/seed-runtime-is-source.sh`: семя рантайма = шапка + источник),
+(`scripts/seed/seed-runtime-is-source.fscript`: семя рантайма = шапка + источник),
 поэтому доставка — **быстрый пересев, минуты**, а не 21 час печати. Печать
 21 час стоит только `bootstrap/compiler_flang.c`, печатаемый из `flang/self`,
 и к ключам `.flangrc` он отношения не имеет.

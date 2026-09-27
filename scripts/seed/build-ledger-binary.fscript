@@ -1,0 +1,323 @@
+модуль «Build ledger binary»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Outcome»
+  «code»: число
+  «words»: строка
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Printed files»
+  возвращает список строки
+  ["compiler_flang.c", "compiler_flang.h", "Makefile"]
+
+тотальная функция «Runtime files»
+  возвращает список строки
+  ["flang_cli.c", "flang_repl.c", "flang_runtime.c", "flang_runtime.h"]
+
+тотальная функция «Root path»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "root path" и answers)
+
+тотальная функция «Target»
+  принимает answers: список «Answer»
+  возвращает строка
+  разбор («Given of» от "arguments" и answers)
+    случай пусто
+      то соединить [(«Root path» от answers), "-ledger-binary"] по ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Commit»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "commit" и "" и answers
+
+тотальная функция «Full commit»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "full commit" и answers)
+
+тотальная функция «Seed directory»
+  принимает answers: список «Answer»
+  возвращает строка
+  если пусто («Commit» от answers)
+    то соединить [(«Root path» от answers), "/bootstrap"] по ""
+    иначе соединить [(«Target» от answers), "/.from-commit/bootstrap"] по ""
+
+тотальная функция «Runtime directory»
+  принимает answers: список «Answer»
+  возвращает строка
+  если пусто («Commit» от answers)
+    то соединить [(«Root path» от answers), "/flang/src/emit/c"] по ""
+    иначе соединить [(«Target» от answers), "/.from-commit/emit-c"] по ""
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"),
+   («Environment» от "jobs" и "J"),
+   («Environment» от "commit" и "FLANG_SEED_COMMIT"),
+   («Environment» от "compiler" и "CC"),
+   («Run from» от "root path" и («Root») и "pwd" и пустой список)]
+
+тотальная функция «Resolve»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если пусто («Commit» от answers)
+    то пустой список
+    иначе [(«Run from» от "full commit" и («Root») и "git" и ["rev-parse", "--verify", (соединить [(«Commit» от answers), "^{commit}"] по "")])]
+
+тотальная функция «Show»
+  принимает source: строка, directory: строка, file: строка, answers: список «Answer»
+  возвращает «Question»
+  «Run from» от (соединить ["show ", directory, "/", file] по "") и («Root») и "sh" и ["-c", "git show \"$0\" > \"$1\"", (соединить [(«Full commit» от answers), ":", source, "/", file] по ""), (соединить [directory, "/", file] по "")]
+
+тотальная функция «Fetch»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если пусто («Commit» от answers)
+    то пустой список
+    иначе «Gathered» от [[(«Run» от "directories" и "mkdir" и ["-p", («Seed directory» от answers), («Runtime directory» от answers)])],
+      (отобразить («Соединить списки» от («Printed files») и («Runtime files»)) как file → «Show» от "bootstrap" и («Seed directory» от answers) и file и answers),
+      (отобразить («Runtime files») как file → «Show» от "flang/src/emit/c" и («Runtime directory» от answers) и file и answers)]
+
+тотальная функция «Needed files»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Соединить списки» от (отобразить («Соединить списки» от («Printed files») и («Runtime files»)) как file → соединить [(«Seed directory» от answers), "/", file] по "") и (отобразить («Runtime files») как file → соединить [(«Runtime directory» от answers), "/", file] по "")
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  отобразить («Needed files» от answers) как path → «Run» от (соединить ["present ", path] по "") и "test" и ["-f", path]
+
+тотальная функция «Headers»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от [[(«Run» от "target" и "mkdir" и ["-p", («Target» от answers)]),
+      («Run» от "printed" и "cp" и («Соединить списки» от (приписать "-p" к (отобразить («Printed files») как file → соединить [(«Seed directory» от answers), "/", file] по "")) и [(«Target» от answers)]))],
+    (отобразить («Runtime files») как file → «Run» от (соединить ["header ", file] по "") и "grep" и ["-n", "-m1", "^/\\* SPDX-FileCopyrightText", (соединить [(«Seed directory» от answers), "/", file] по "")])]
+
+тотальная функция «Header length»
+  принимает file: строка, answers: список «Answer»
+  возвращает число
+  («Count» от («Leading digits» от («Output of» от (соединить ["header ", file] по "") и answers))) минус 1
+
+тотальная функция «Assemble»
+  принимает file: строка, answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от (соединить ["assemble ", file] по "") и "sh" и ["-c", "{ head -n \"$0\" \"$1\"; cat \"$2\"; } > \"$3\"", (к строке («Header length» от file и answers)), (соединить [(«Seed directory» от answers), "/", file] по ""), (соединить [(«Runtime directory» от answers), "/", file] по ""), (соединить [(«Target» от answers), "/", file] по "")]),
+   («Run» от (соединить ["ahead ", file] по "") и "sh" и ["-c", "diff \"$0\" \"$1\" | grep -c \"^[<>]\"", (соединить [(«Seed directory» от answers), "/", file] по ""), (соединить [(«Target» от answers), "/", file] по "")])]
+
+тотальная функция «Assembly»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от (отобразить («Runtime files») как file → «Assemble» от file и answers)
+
+тотальная функция «Jobs»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "jobs" и "8" и answers
+
+тотальная функция «Build»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "build" и "make" и ["-C", («Target» от answers), (соединить ["-j", («Jobs» от answers)] по ""), (соединить ["CC=", («Setting of» от "compiler" и "cc" и answers)] по "")])]
+
+тотальная функция «Built»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить [(«Target» от answers), "/flang"] по ""
+
+тотальная функция «Measure»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "size" и "wc" и ["-c", («Built» от answers)]),
+   («Run» от "sum" и "md5sum" и [(«Built» от answers)]),
+   («Run» от "version" и («Built» от answers) и ["--version"]),
+   («Run» от "library" и "test" и ["-d", (соединить [(«Target» от answers), "/../flang/stdlib"] по "")])]
+
+тотальная функция «Failed»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  не ((«Exit code of» от name и answers) равен 0)
+
+тотальная функция «Not built»
+  принимает words: список строки
+  возвращает список «Outcome»
+  разбор words
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то [запись «Outcome» с «code» равным 3 и «words» равным голова]
+
+тотальная функция «Commit troubles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  если (пусто («Commit» от answers)) или (не («Failed» от "full commit" и answers))
+    то пустой список
+    иначе [(соединить ["коммита ", («Commit» от answers), " в дереве нет"] по "")]
+
+тотальная функция «Fetch troubles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  если пусто («Commit» от answers)
+    то пустой список
+    иначе отобразить (отфильтровать («Needed files» от answers) где path → «Failed» от (соединить ["show ", path] по "") и answers) как path → соединить ["в коммите ", («Full commit» от answers), " нет файла для ", path] по ""
+
+тотальная функция «Presence troubles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отобразить (отфильтровать («Needed files» от answers) где path → «Failed» от (соединить ["present ", path] по "") и answers) как path → соединить ["нет ", path, " — дерево не то"] по ""
+
+тотальная функция «Header troubles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отобразить (отфильтровать («Runtime files») где file → («Header length» от file и answers) меньше 0) как file → соединить ["в ", («Seed directory» от answers), "/", file, " нет строки SPDX — границы шапки не найти"] по ""
+
+тотальная функция «Build outcomes»
+  принимает answers: список «Answer»
+  возвращает список «Outcome»
+  если «Failed» от "build" и answers
+    то [запись «Outcome» с «code» равным 1 и «words» равным (соединить [(соединить («Progress» от answers) по "\n"), («Output of» от "build" и answers), («Errors of» от "build" и answers), (соединить ["сборка в ", («Target» от answers), " не прошла: make ответил кодом ", (к строке («Exit code of» от "build" и answers))] по "")] по "\n")]
+    иначе пустой список
+
+тотальная функция «Settled»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Outcome»
+  «Chosen» от [(«When» от (stages равен 6) и («Not built» от («Commit troubles» от answers))),
+    («When» от (stages равен 5) и («Not built» от («Fetch troubles» от answers))),
+    («When» от (stages равен 4) и («Not built» от («Presence troubles» от answers))),
+    («When» от (stages равен 3) и («Not built» от («Header troubles» от answers))),
+    («When» от (stages равен 1) и («Build outcomes» от answers))] и (пустой список)
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (stages равен 7) и («Setup»)),
+    («When» от (stages равен 6) и («Resolve» от answers)),
+    («When» от (stages равен 5) и («Fetch» от answers)),
+    («When» от (stages равен 4) и («Presence» от answers)),
+    («When» от (stages равен 3) и («Headers» от answers)),
+    («When» от (stages равен 2) и («Assembly» от answers)),
+    («When» от (stages равен 1) и («Build» от answers))] и («Measure» от answers)
+
+тотальная функция «Padded»
+  принимает name: строка, width: число
+  возвращает строка
+  пример «A short name is padded with spaces»
+    дано name равно "flang_cli.c"
+    дано width равно 18
+    ожидается "flang_cli.c       "
+  пример «A long name stays itself»
+    дано name равно "flang_runtime_header.h"
+    дано width равно 18
+    ожидается "flang_runtime_header.h"
+  если (длина name) не меньше width
+    то name
+    иначе соединить [name, (подстрока "                  " с 1 по (width минус (длина name)))] по ""
+
+тотальная функция «Ahead»
+  принимает file: строка, answers: список «Answer»
+  возвращает число
+  «Count» от («First line» от («Output of» от (соединить ["ahead ", file] по "") и answers))
+
+тотальная функция «Progress»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от [(если пусто («Commit» от answers) то пустой список иначе [(соединить ["семя и рантайм взяты из коммита ", («Full commit» от answers)] по "")]),
+    (отобразить («Runtime files») как file → соединить ["рантайм ", («Padded» от file и 18), " дерево обгоняет семя на ", (к строке («Ahead» от file и answers)), " строк"] по ""),
+    (если (длина (отфильтровать («Runtime files») где file → («Ahead» от file и answers) больше 0)) равен 0 то ["рантайм дерева и рантайм семени СОВПАЛИ: этот двоичный будет равен bootstrap/flang"] иначе пустой список)]
+
+тотальная функция «Library warning»
+  принимает answers: список «Answer»
+  возвращает список строки
+  если не («Failed» от "library" и answers)
+    то пустой список
+    иначе ["",
+      "ВНИМАНИЕ: этот двоичный НЕ ВИДИТ библиотеку дерева.",
+      (соединить ["  он ищет её в ", («Target» от answers), "/../flang/stdlib — а её там нет"] по ""),
+      "  собранным так двоичным ведомость снимать НЕЛЬЗЯ: он ответит",
+      "  «FLANG_NOT_TOTAL: … вызывает неизвестную функцию …» на здоровом файле,",
+      "  и отказ будет выглядеть долгом автора, а не бедой раскладки.",
+      "",
+      "  Как снимать ведомость: положите двоичный ВНУТРЬ дерева и зовите оттуда",
+      (соединить ["    mkdir -p ", («Root path» от answers), "/build-ledger"] по ""),
+      (соединить ["    cp -p ", («Target» от answers), "/flang ", («Target» от answers), "/flang_runtime.h ", («Root path» от answers), "/build-ledger/"] по ""),
+      (соединить ["    ", («Root path» от answers), "/build-ledger/flang check <файл> --proof --json"] по ""),
+      "  Каталог build-ledger — временный: уберите его перед коммитом, иначе",
+      "  сторож раскладки покажет лишний каталог в корне."]
+
+тотальная функция «Spoken»
+  принимает text: строка
+  возвращает список строки
+  пример «The last line end is not a line of its own»
+    дано text равно "cc -c a.c\n\ncc -o flang\n"
+    ожидается ["cc -c a.c", "", "cc -o flang"]
+  пример «No text, no lines»
+    дано text равно ""
+    ожидается пустой список
+  если пусто text
+    то пустой список
+    иначе разделить (если «Ends with» от text и "\n" то (подстрока text с 1 по ((длина text) минус 1)) иначе text) по "\n"
+
+тотальная функция «Report»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить («Gathered words» от [(«Progress» от answers),
+    («Spoken» от («Output of» от "build" и answers)),
+    («Spoken» от («Errors of» от "build" и answers)),
+    ["",
+      (соединить ["двоичный: ", («Built» от answers)] по ""),
+      (соединить ["размер:   ", («Word» от 1 и («Output of» от "size" и answers)), " байт"] по ""),
+      (соединить ["md5:      ", («Word» от 1 и («Output of» от "sum" и answers))] по "")],
+    («Spoken» от («Output of» от "version" и answers)),
+    («Library warning» от answers)]) по "\n"
+
+тотальная функция «Ending»
+  принимает outcome: «Outcome»
+  возвращает «Продолжение»
+  пример «Code one is a build that did not pass»
+    дано outcome равно запись «Outcome» с «code» равным 1 и «words» равным "сборка не прошла"
+    ожидается вариант «Провал» с код равным "FLANG_LEDGER_BINARY_NOT_BUILT" и сообщение равным "сборка не прошла"
+  пример «Any other code means there was nothing to build from»
+    дано outcome равно запись «Outcome» с «code» равным 3 и «words» равным "дерево не то"
+    ожидается вариант «Не проверено» с код равным "FLANG_LEDGER_BINARY_NO_SOURCE" и сообщение равным "дерево не то"
+  если (outcome.«code») равен 1
+    то вариант «Провал» с код равным "FLANG_LEDGER_BINARY_NOT_BUILT" и сообщение равным (outcome.«words»)
+    иначе вариант «Не проверено» с код равным "FLANG_LEDGER_BINARY_NO_SOURCE" и сообщение равным (outcome.«words»)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то разбор («Settled» от stages и answers)
+        случай голова и хвост
+          то «Ending» от (голова)
+        случай пусто
+          то если stages не больше 0
+            то вариант «Конец работы» с значение равным («Report» от answers)
+            иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 8
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Build»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

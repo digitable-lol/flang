@@ -238,7 +238,7 @@ sh scripts/published-vs-tree.sh --доля
 
 ### Что осталось красным и почему это не недоделка
 
-`sh scripts/seed-freshness.sh` отвечает отказом: семя отстало от исходников на
+`sh scripts/seed-freshness.fscript` отвечает отказом: семя отстало от исходников на
 5 файлов (`flang/self/bootstrap/compiler.flang`, `emit-js.flang`, `io.flang`,
 `parser.flang`, `proof-initial.flang`). Пока семя не перепечатано, раздел
 `--доля` красен по построению, и **код 0 недостижим никаким пушем** — это работа

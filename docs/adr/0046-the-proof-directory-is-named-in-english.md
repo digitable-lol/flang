@@ -10,7 +10,7 @@
 по-прежнему ничего не решает, решает манифест.
 **Основание:** задача 6421, замер 22 сентября 2026 на `main` `5a6f2698e` (ниже).
 **Проверяется:** `sh scripts/guards/cyrillic-file-names-guard.sh --check`,
-`sh scripts/guards/translit-file-names-guard.sh --check`, `sh scripts/доказуемость.sh`,
+`sh scripts/guards/translit-file-names-guard.sh --check`, `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000`,
 `sh flang/proof/checker/tests/run.sh`.
 
 ---
@@ -141,7 +141,7 @@ markdown-ссылках и в `Makefile` — и ни одна из этих сс
 
 ```
 make -C bootstrap -j4 && sh flang/proof/checker/tests/run.sh   # «сошлось всё»
-sh scripts/доказуемость.sh                                     # ДОКАЗУЕМ, 4 из 4
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000                                     # ДОКАЗУЕМ, 4 из 4
 sh .githooks/pre-push
 node docs/site/build.mjs --check
 ```

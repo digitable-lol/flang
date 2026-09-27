@@ -3,9 +3,9 @@ name: Provability
 # ВЕРДИКТ «ДОКАЗУЕМ / НЕ ДОКАЗУЕМ» СНИМАЕТСЯ ПРИБОРОМ ПО РАСПИСАНИЮ, А НЕ
 # ВПИСЫВАЕТСЯ РУКОЙ.
 #
-# Работа зовёт `sh scripts/доказуемость.sh`: четыре проверки, у каждой число,
+# Работа зовёт `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000`: четыре проверки, у каждой число,
 # слово выводится из чисел (шапка скрипта). Код возврата несёт вердикт:
-# 0 — ДОКАЗУЕМ, 1 — НЕ ДОКАЗУЕМ, 2 — не смог измерить. Работа отвечает тем же
+# 0 — ДОКАЗУЕМ, 1 — НЕ ДОКАЗУЕМ, 3 — не смог измерить. Работа отвечает тем же
 # кодом, поэтому её цвет — это вердикт, а не «прошла ли сборка».
 #
 # ── Когда работа красна, и почему это законно ───────────────────────────────
@@ -18,7 +18,7 @@ name: Provability
 # рукой или опустить порог, чтобы работа позеленела, — подлог.
 #
 # ── ЧТО ЭТА РАБОТА МЕРИТ, А ЧЕГО НЕ МЕРИТ (пункт 11 внешнего аудита) ────────
-# Замер 19 сентября 2026 на дереве 404c4ec0a: `sh scripts/доказуемость.sh`
+# Замер 19 сентября 2026 на дереве 404c4ec0a: `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000`
 # печатает ДОКАЗУЕМ и отвечает кодом 0 ДАЖЕ ТОГДА, когда `bootstrap/flang` из
 # дерева убран. Все четыре его проверки читают записи корпуса, манифест
 # подделок и сверщика — и ни одна не зовёт собранный двоичный. Шаг
@@ -40,7 +40,7 @@ name: Provability
 # расписаний: reprint.yml — воскресенье 02:00 UTC, target-twins.yml — понедельник
 # 04:00 UTC, install-path.yml — ежедневно 04:17 UTC.
 #
-# ── Что нужно прибору (шапка scripts/доказуемость.sh) ───────────────────────
+# ── Что нужно прибору (шапка scripts/provability.fscript) ───────────────────────
 # Дерево под учётом git (линейка берёт ведомость из `git archive HEAD`, глубины
 # 1 довольно); исходник сверщика flang/proof/checker/checker.c — скрипт соберёт
 # его сам, если двоичного нет, но здесь он собирается заранее тем же Makefile,
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     # FLANG_TMP НА ВСЮ РАБОТУ, а не по шагам. Прогон набора проб чекера
-    # (flang/proof/checker/tests/run.sh, его зовёт scripts/доказуемость.sh)
+    # (flang/proof/checker/tests/run.sh, его зовёт scripts/provability.fscript)
     # берёт времянку как `mktemp -d -p "${FLANG_TMP:-/srv/tmp}"`. На раннере
     # каталога /srv/tmp нет, mktemp падает, и при `set -eu` прогон кончается
     # НЕМЕДЛЕННО кодом 1, не напечатав ни одной строки итога. Вердикт читает
@@ -123,16 +123,19 @@ jobs:
           echo "проба сошлась: без двоичного шаг отвечает кодом $kod"
 
       # Четыре покрытия публикуются ПОРОЗНЬ — доля корпуса, формализация,
-      # известные нарушения состоятельности, трансляция. Код 2 значит «Lean на
+      # известные нарушения состоятельности, трансляция. Код 3 значит «Lean на
       # раннере нет, блоки вне приёмки здесь не сняты» и работу не роняет:
       # прибор МЕРИТ, а не судит.
       - name: Measure four coverages
         run: |
           set +e
           export LC_ALL=C.UTF-8
-          log="$RUNNER_TEMP/покрытия.log"
-          sh scripts/four-coverages.sh > "$log" 2>&1
+          raw="$RUNNER_TEMP/coverages.raw"
+          log="$RUNNER_TEMP/coverages.log"
+          bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000 > "$raw" 2>&1
           kod=$?
+          grep '^{' "$raw" | jq -r '.result // .error' > "$log"
+          [ -s "$log" ] || cp "$raw" "$log"
           cat "$log"
           {
             echo "## Четыре покрытия — порознь (код $kod)"
@@ -141,15 +144,18 @@ jobs:
             cat "$log"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          [ "$kod" -le 2 ] || exit 1
+          [ "$kod" -eq 0 ] || [ "$kod" -eq 3 ] || exit 1
 
       - name: Report verdict
         run: |
           set +e
           export LC_ALL=C.UTF-8
-          log="$RUNNER_TEMP/доказуемость.log"
-          sh scripts/доказуемость.sh > "$log" 2>&1
+          raw="$RUNNER_TEMP/provability.raw"
+          log="$RUNNER_TEMP/provability.log"
+          bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000 > "$raw" 2>&1
           kod=$?
+          grep '^{' "$raw" | jq -r '.result // .error' > "$log"
+          [ -s "$log" ] || cp "$raw" "$log"
           cat "$log"
           {
             echo "## Доказуемость — вердикт прибора, код $kod"

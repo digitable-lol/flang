@@ -116,7 +116,7 @@
 git -c core.quotepath=false ls-files | grep -P '[А-Яа-яЁё][^/]*$' | grep -c '^flang/proof/'   → 1
 flang io scripts/guards/cyrillic-file-names-guard.fscript --plan Проверка --на-веру
                           → «кириллица в именах файлов: 62, все в ведомости — новых нет», код 0
-sh scripts/доказуемость.sh   → ДОКАЗУЕМ, доля 100.00 % (650 из 650), код 0
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000   → ДОКАЗУЕМ, доля 100.00 % (650 из 650), код 0
 ```
 
 Оставшийся один файл — `flang/proof/checker/tests/families/run-induction/letters.фп`:

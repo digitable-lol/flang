@@ -181,7 +181,7 @@ $ make -C flang/proof/checker && flang/proof/checker/сверщик заказ.f
 ## Что значит «100 %»
 
 ```
-sh scripts/доказуемость.sh          → ДОКАЗУЕМ                       (18 сентября 2026, ≈13 с)
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000          → ДОКАЗУЕМ                       (18 сентября 2026, ≈13 с)
 sh flang/proof/corpus-share.sh --проигрыванием
 → доля-проигрыванием = 650 / 650 = 100.00 %
   на слово ядра: посылок и утверждений 0; шагов 0; снято калькулятором 0
@@ -227,7 +227,7 @@ make -C bootstrap -j8
 ./bootstrap/flang check --proof скидка.flang                     # код 3
 ./bootstrap/flang check --proof заказ.flang --записать заказ.record
 make -C flang/proof/checker && flang/proof/checker/сверщик заказ.flang заказ.record   # код 3, место названо
-sh scripts/доказуемость.sh                                       # ДОКАЗУЕМ
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000                                       # ДОКАЗУЕМ
 ```
 
 Тексты двух функций — выше, целиком; сохраните их как `заказ.flang` и

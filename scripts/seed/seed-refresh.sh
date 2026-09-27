@@ -213,10 +213,10 @@ if sh "$ROOT/$PEREPECHATKA" --telo >/dev/null 2>&1; then
 else
   say "  КРАСЕН bootstrap-reprint.sh --telo"; OK=1
 fi
-if sh "$ROOT/scripts/seed/seed-runtime-is-source.sh" --после-печати >/dev/null 2>&1; then
-  say "  зелен  seed-runtime-is-source.sh --после-печати (семя = источник)"
+if sh "$ROOT/scripts/seed/seed-runtime-is-source.fscript" --после-печати >/dev/null 2>&1; then
+  say "  зелен  seed-runtime-is-source.fscript --после-печати (семя = источник)"
 else
-  say "  КРАСЕН seed-runtime-is-source.sh --после-печати"; OK=1
+  say "  КРАСЕН seed-runtime-is-source.fscript --после-печати"; OK=1
 fi
 say ""
 say "версия собранного двоичного: $(./bootstrap/flang --version 2>&1 | head -1)"

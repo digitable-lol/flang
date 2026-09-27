@@ -130,7 +130,7 @@
 - `bootstrap/flang check flang/self/processes.flang` — «проверено … замечаний нет» (17 с);
 - `bootstrap/flang check flang/test/владение-состоянием.flang` — то же (36 с);
 - `bootstrap/flang check flang/self/conc.flang` — то же (116 с), файл не менялся;
-- `sh scripts/доказуемость.sh` — **ДОКАЗУЕМ** (до правки и после);
+- `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — **ДОКАЗУЕМ** (до правки и после);
 - `sh flang/proof/checker/tests/run.sh` — **сошлось всё**;
 - `sh flang/test/обход.sh` — чисто, проверок 211 (было 205, прибыло 6 моих).
 

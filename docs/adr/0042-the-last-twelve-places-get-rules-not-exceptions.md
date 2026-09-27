@@ -98,7 +98,7 @@
 
 1. После перепечатки `sh flang/proof/corpus-share.sh --проигрыванием` — **650 / 650**
    (651 → 650: задача 1794 сняла функцию «Все неотрицательны»);
-   `sh scripts/доказуемость.sh` — ДОКАЗУЕМ.
+   `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — ДОКАЗУЕМ.
 2. `sh flang/proof/checker/tests/run.sh` — «сошлось всё»; на каждое новое правило —
    порча записи с кодом 1; ловушка «калькулятор снят» зелена.
 3. `sh flang/proof/lean/run.sh` — леммы приняты, ловушки отвергнуты, сверка

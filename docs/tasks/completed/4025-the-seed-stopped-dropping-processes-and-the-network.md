@@ -89,7 +89,7 @@ compiler_flang_pechat_konkurentnosti_c: 0
 
 Оба файла связки на месте: `scripts/conc-link-emit.flang` (389 строк) и
 `flang/scripts/conc-link-emitted.flang` (331 строка, `модуль «Печать связи»`).
-Примета 1 приёмки жива — `scripts/new-binary-acceptance.sh:106–112`, проверяет
+Примета 1 приёмки жива — `scripts/new-binary-acceptance.fscript:106–112`, проверяет
 ровно `grep -q '_c$'`.
 
 Правки задача не требует — требует перепечатки (0003).
@@ -108,7 +108,7 @@ grep -ac fl_conc_process bootstrap/compiler_flang.c                        # н�
 
 Задача 0041 (слой конкурентности, до которого никто не может дотянуться), 1853,
 5855. И примета 1 приёмки нового двоичного
-(`scripts/new-binary-acceptance.sh:110`) проверяет именно это.
+(`scripts/new-binary-acceptance.fscript:110`) проверяет именно это.
 
 ## Переснято 30 августа 2026 на стволе `747fe6ee`: половина задачи закрыта перепечаткой
 

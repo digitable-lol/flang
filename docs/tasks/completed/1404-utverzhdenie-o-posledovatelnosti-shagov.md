@@ -208,7 +208,7 @@ FLANG_PARSE: не разобрана конструкция: в процессе
 | `sh flang/proof/tables-guard.sh` | сошлось всё, 97 строк | **сошлось всё, 99 строк**, шесть сторожей зелены |
 | `LEAN=… sh flang/proof/lean/run.sh` | строк 97, лемм 105 | **строк 99, лемм 110**, ловушка 14/14, сошлось всё |
 | `sh flang/proof/checker/tests/run.sh` | сошлось всё | **сошлось всё** (167/135/366; подделок 453 — принято 0, честных 215 — отвергнуто 0) |
-| `sh scripts/доказуемость.sh` | ДОКАЗУЕМ | **ДОКАЗУЕМ** (доля 96.62 %) |
+| `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` | ДОКАЗУЕМ | **ДОКАЗУЕМ** (доля 96.62 %) |
 | `flang check flang/self/zapis.flang` | замечаний нет | **замечаний нет** |
 | `flang check flang/self/proof-kernel.flang` | замечаний нет | **замечаний нет** |
 

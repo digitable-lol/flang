@@ -777,6 +777,7 @@ injective
 inline
 inner
 input
+inquiry
 inside
 install
 installed

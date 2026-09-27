@@ -49,8 +49,8 @@
 Код 0 — проверено и сошлось, 1 — проверено и разошлось, 3 — проверить нечем.
 Так уже отвечает `flang io` на `вариант «Не проверено»`
 (`flang/src/emit/c/flang_repl.c`, «ЧЕТВЁРТЫЙ ИСХОД»), так же отвечают вердикт
-доказанности и планы семени (`scripts/seed/print-is-repeatable.sh`,
-`scripts/seed/two-prints-identical.sh`).
+доказанности и планы семени (`scripts/seed/print-is-repeatable.fscript`,
+`scripts/seed/two-prints-identical.fscript`).
 
 ## Обходной путь
 

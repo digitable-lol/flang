@@ -20,7 +20,7 @@ flang check <file> --proof --json
 >
 > On the day of measurement the compiler was built from a seed that had fallen
 > behind the sources; the seed has since been reprinted (10–11 September 2026,
-> commit `0ce948bfd`; `sh scripts/seed/what-lags-the-seed.sh` on 11 September
+> commit `0ce948bfd`; `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` on 11 September
 > names 3 files, 77 functions, still behind). The expensive numbers have not been
 > re-measured yet; the same `published-vs-tree.sh --числа` prints how many
 > `.flang` files have moved since `252606e8`.
@@ -130,7 +130,7 @@ The word "proved" in the compiler's report need not be taken on trust.
 `flang check --proof --записать <file>` writes the proof itself to a file, and a
 separate C program — `flang/proof/checker/checker.c`, which has never seen the
 compiler — takes the source and the record and replays every step anew. The run
-`sh scripts/доказуемость.sh` on 19 September 2026 on trunk (commit
+`bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` on 19 September 2026 on trunk (commit
 `a5609e322`, about three minutes) answers **PROVABLE** and prints four checks as
 numbers: **650 obligations out of 650 replayed (100.00 %)**, with 27 unreachable
 places carved out; forgery set 36 of 36; 533 forgery probes, none accepted with

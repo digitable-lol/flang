@@ -123,7 +123,7 @@ jobs:
             if [ "${MASHINA:-}" = "da" ]; then
               echo "Работа **«Две печати одного дерева совпадают побайтово» запускалась этим"
               echo "прогоном** — её приговор стоит отдельной строкой в этой же ленте, вместе"
-              echo "с кодом прибора \`scripts/seed/two-prints-identical.sh\`."
+              echo "с кодом прибора \`scripts/seed/two-prints-identical.fscript\`."
               echo
               echo "Если её строки в ленте всё же нет, значит её не пустила работа"
               echo "«Постоянные под пределом C99», которую она ждёт. Тогда вопрос гейта Г6"
@@ -136,7 +136,7 @@ jobs:
               echo "Её отсутствие не значит «печать воспроизводима». Оно значит, что вопрос"
               echo "гейта Г6 на ПОЛНОМ замыкании компилятора — даёт ли одно дерево при двух"
               echo "заходах побайтово одно и то же — **никем не задан**. Прибор"
-              echo "\`scripts/seed/two-prints-identical.sh\` в дереве лежит, но пока эта работа не"
+              echo "\`scripts/seed/two-prints-identical.fscript\` в дереве лежит, но пока эта работа не"
               echo "идёт, он зовётся только руками, а Г6 требует дословно «проверяется"
               echo "автоматически, а не разово руками»: разовая сверка руками гейта не берёт,"
               echo "даже когда сошлась."
@@ -275,11 +275,11 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
       - name: Probe print determinism
-        run: sh scripts/seed/print-is-repeatable.sh --подлог
+        run: bootstrap/flang io scripts/seed/print-is-repeatable.fscript --plan Forgery --timeout 600000
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: Check print determinism
-        run: sh scripts/seed/print-is-repeatable.sh --вход flang/self/emit-c.flang
+        run: bootstrap/flang io scripts/seed/print-is-repeatable.fscript --plan Check --timeout 1800000 -- flang/self/emit-c.flang
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -360,13 +360,13 @@ jobs:
   # ПОЧЕМУ РАБОТОЙ В CI, А НЕ ПРОГОНОМ РУКАМИ. Г6 требует дословно
   # «проверяется автоматически, а не разово руками». Разовая сверка руками,
   # даже сошедшаяся, гейт не берёт: её нельзя повторить и никто не знает, что
-  # именно сверяли. Прибор `scripts/seed/two-prints-identical.sh` лежал в дереве с
+  # именно сверяли. Прибор `scripts/seed/two-prints-identical.fscript` лежал в дереве с
   # 1 сентября 2026 и звался только руками — то есть гейта не брал.
   #
   # ── ЗАЧЕМ РАБОТА САМА ПИШЕТ «ПЕЧАТЬ КОД=» ───────────────────────────────
   #
   # Прибор считает печать законченной ТОЛЬКО по строке `ПЕЧАТЬ КОД=<код>` в
-  # журнале рядом с деревом (two-prints-identical.sh, `gotova()`), и это
+  # журнале рядом с деревом (two-prints-identical.fscript, `gotova()`), и это
   # правильно: спрашивать «есть ли файл bootstrap/**» нельзя — эти файлы лежат
   # в дереве закоммиченными и до всякой печати, и прибор ответил бы «готово»
   # там, где печать не начиналась.
@@ -393,14 +393,14 @@ jobs:
   #
   # Прибор это чинит у себя (два журнала рядом — код 3; один журнал на две
   # печати — код 3; гадать он больше не берётся), а работа чинит у себя: она
-  # НАЗЫВАЕТ журналы через `ZHURNAL_1=` и `ZHURNAL_2=`. Раскладка по разным
+  # НАЗЫВАЕТ журналы через `FLANG_PRINT_LOG_1=` и `FLANG_PRINT_LOG_2=`. Раскладка по разным
   # родительским каталогам оставлена, но она теперь запасная: договор — это
   # названный журнал, а не удачное расположение папок. Раскладку легко
   # нечаянно сломать правкой, и она молчит; названный журнал сломать молча
   # нельзя — прибор скажет «названный журнал не файл».
   #
-  #   <база>/pervaya/derevo/   и  <база>/pervaya/pechat.log   → ZHURNAL_1
-  #   <база>/vtoraya/derevo/   и  <база>/vtoraya/pechat.log   → ZHURNAL_2
+  #   <база>/pervaya/derevo/   и  <база>/pervaya/pechat.log   → FLANG_PRINT_LOG_1
+  #   <база>/vtoraya/derevo/   и  <база>/vtoraya/pechat.log   → FLANG_PRINT_LOG_2
   dve-pechati:
     name: reprint-reproducibility
     needs: postoyannye
@@ -533,7 +533,7 @@ jobs:
           set -u
           VYVOD="$BAZA/prigovor.txt"
           # Те же два пути, что писали шаги печати. Названы здесь ещё раз и
-          # переданы прибору как ZHURNAL_1/ZHURNAL_2: пусть он берёт ИМЕННО их,
+          # переданы прибору как FLANG_PRINT_LOG_1/FLANG_PRINT_LOG_2: пусть он берёт ИМЕННО их,
           # а не то, что подвернулось рядом с деревом.
           ZH1="$BAZA/pervaya/pechat.log"
           ZH2="$BAZA/vtoraya/pechat.log"
@@ -545,8 +545,10 @@ jobs:
           echo "журнал второй печати:  $ZH2"
           # Опять В ФАЙЛ и `kod=$?` СЛЕДУЮЩЕЙ СТРОКОЙ. Прибор различает 0/1/2/3,
           # и весь смысл работы в том, чтобы этот код дошёл до приговора целым.
-          ZHURNAL_1="$ZH1" ZHURNAL_2="$ZH2" timeout 1800 sh scripts/seed/two-prints-identical.sh "$BAZA/pervaya/derevo" "$BAZA/vtoraya/derevo" > "$VYVOD" 2>&1
+          FLANG_PRINT_LOG_1="$ZH1" FLANG_PRINT_LOG_2="$ZH2" timeout 1800 bootstrap/flang io scripts/seed/two-prints-identical.fscript --plan Check --timeout 1800000 -- "$BAZA/pervaya/derevo" "$BAZA/vtoraya/derevo" > "$VYVOD.raw" 2>&1
           kod=$?
+          grep '^{' "$VYVOD.raw" | jq -r '.result // .error' > "$VYVOD"
+          [ -s "$VYVOD" ] || cp "$VYVOD.raw" "$VYVOD"
           cat "$VYVOD"
           echo "DVE_PECHATI_KOD=$kod" >> "$GITHUB_ENV"
           exit "$kod"
@@ -588,7 +590,7 @@ jobs:
           skazat "воспроизводимость печати, а про разницу деревьев."
           skazat ""
           skazat "Код первой печати: \`$kod1\`. Код второй печати: \`$kod2\`."
-          skazat "Код прибора \`scripts/seed/two-prints-identical.sh\`: \`$kod\`."
+          skazat "Код прибора \`scripts/seed/two-prints-identical.fscript\`: \`$kod\`."
           skazat ""
           skazat '```'
           if [ -f "$BAZA/prigovor.txt" ]; then

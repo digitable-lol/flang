@@ -1,0 +1,374 @@
+модуль «New binary acceptance»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Sign»
+  «lines»: список строки
+  «troubles»: число
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Print log»
+  возвращает строка
+  "/srv/work/semya5.log"
+
+тотальная функция «Tree»
+  принимает answers: список «Answer»
+  возвращает строка
+  разбор («Given of» от "arguments" и answers)
+    случай пусто
+      то "/srv/flang-rabota/u-semya5"
+    случай голова и хвост
+      то голова
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить [(«Tree» от answers), "/bootstrap/flang"] по ""
+
+тотальная функция «Root path»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "root path" и answers)
+
+тотальная функция «Gate»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "gate" и "/srv/flang-rabota/vorota/flang-vorota" и answers
+
+тотальная функция «Merged»
+  принимает name: строка, arguments: список строки
+  возвращает «Question»
+  пример «Both streams of the child go into one»
+    дано name равно "version"
+    дано arguments равно ["/tree/bootstrap/flang", "--version"]
+    ожидается запись «Question» с «name» равным "version" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "exec \"$@\" 2>&1", "sh", "/tree/bootstrap/flang", "--version"])
+  «Run» от name и "sh" и (приписать "-c" к (приписать "exec \"$@\" 2>&1" к (приписать "sh" к arguments)))
+
+тотальная функция «Through gate»
+  принимает name: строка, memory: строка, arguments: список строки, answers: список «Answer»
+  возвращает «Question»
+  «Merged» от name и («Соединить списки» от ["env", (соединить ["PAMYAT=", memory] по ""), "timeout", "900", («Gate» от answers), "--", («Binary» от answers), "check"] и arguments)
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"),
+   («Environment» от "gate" и "FLANG_GATE"),
+   («Run from» от "root path" и («Root») и "pwd" и пустой список)]
+
+тотальная функция «Print end»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "log end" и "tail" и ["-5", («Print log»)]),
+   («Run» от "reprint runs" и "pgrep" и ["-f", "scripts/bootstrap-reprint\\.sh"]),
+   («Run» от "binary runs" и "test" и ["-x", («Binary» от answers)])]
+
+тотальная функция «Samples»
+  принимает answers: список «Answer»
+  возвращает список строки
+  [(соединить [(«Tree» от answers), "/flang/self/interpret.flang"] по ""), (соединить [(«Root path» от answers), "/flang/self/interpret.flang"] по "")]
+
+тотальная функция «Signs»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Соединить списки» от [(«Merged» от "version" и [(«Binary» от answers), "--version"]),
+    («Run» от "names" и "sh" и ["-c", "nm -a \"$0\" 2>/dev/null | grep -o \"compiler_flang_[a-z_]*konkurentnost[a-z_]*\" | sort -u", («Binary» от answers)]),
+    («Run» от "condition" и "grep" и ["-c", "ПРИ УСЛОВИИ", (соединить [(«Tree» от answers), "/bootstrap/compiler_flang.c"] по "")]),
+    («Run» от "progress line" и "sh" и ["-c", "strings \"$0\" 2>/dev/null | grep -c \"шагов .* из .*, идёт\"", («Binary» от answers)]),
+    («Through gate» от "kernel rules" и "45G" и [(соединить [(«Root path» от answers), "/scripts/seed/new-binary-acceptance-probe.flang"] по ""), "--proof"] и answers)] и (отобразить («Samples» от answers) как sample → «Run» от (соединить ["sample ", sample] по "") и "grep" и ["-c", "Узел хеша» от", sample])
+
+тотальная функция «Sample»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от (соединить (отфильтровать («Samples» от answers) где sample → («Count» от («First line» от («Output of» от (соединить ["sample ", sample] по "") и answers))) больше 0) по "\n")
+
+тотальная функция «Live runs»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Соединить списки» от (если пусто («Sample» от answers) то пустой список иначе [(«Through gate» от "fresh types" и "60G" и [(«Sample» от answers)] и answers)]) и [(«Through gate» от "live file" и "45G" и [(соединить [(«Tree» от answers), "/flang/stdlib/hashmap.flang"] по ""), "--proof"] и answers)]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (stages равен 3) и («Setup»)),
+    («When» от (stages равен 2) и («Print end» от answers)),
+    («When» от (stages равен 1) и («Signs» от answers))] и («Live runs» от answers)
+
+тотальная функция «Raw lines»
+  принимает text: строка
+  возвращает список строки
+  пример «The last line end is not a line of its own»
+    дано text равно "one\n\ntwo\n"
+    ожидается ["one", "", "two"]
+  пример «No text, no lines»
+    дано text равно ""
+    ожидается пустой список
+  если пусто text
+    то пустой список
+    иначе разделить (если «Ends with» от text и "\n" то (подстрока text с 1 по ((длина text) минус 1)) иначе text) по "\n"
+
+тотальная функция «Without leading»
+  принимает lines: список строки, amount: число
+  возвращает список строки
+  пример «Without the first of three»
+    дано lines равно ["one", "two", "three"]
+    дано amount равно 1
+    ожидается ["two", "three"]
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если amount не больше 0
+        то lines
+        иначе «Without leading» от хвост и (amount минус 1)
+
+тотальная функция «Last lines»
+  принимает lines: список строки, amount: число
+  возвращает список строки
+  пример «Two last of three»
+    дано lines равно ["one", "two", "three"]
+    дано amount равно 2
+    ожидается ["two", "three"]
+  «Without leading» от lines и ((длина lines) минус amount)
+
+тотальная функция «Indented»
+  принимает lines: список строки
+  возвращает список строки
+  пример «Four spaces before every line»
+    дано lines равно ["one", ""]
+    ожидается ["    one", "    "]
+  отобразить lines как line → соединить ["    ", line] по ""
+
+тотальная функция «Good»
+  принимает lines: список строки, words: строка
+  возвращает «Sign»
+  запись «Sign» с «lines» равным (добавить (соединить ["  ✓ ", words] по "") к lines) и «troubles» равным 0
+
+тотальная функция «Bad»
+  принимает lines: список строки, words: строка
+  возвращает «Sign»
+  запись «Sign» с «lines» равным (добавить (соединить ["  ✗ ", words] по "") к lines) и «troubles» равным 1
+
+тотальная функция «Heading»
+  принимает words: строка
+  возвращает список строки
+  пример «A heading follows an empty line»
+    дано words равно "ИТОГ"
+    ожидается ["", "=== ИТОГ"]
+  ["", (соединить ["=== ", words] по "")]
+
+тотальная функция «Print end lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от [(«Heading» от "ЧЕМ КОНЧИЛАСЬ ПЕЧАТЬ"),
+    (если («Exit code of» от "log end" и answers) равен 0 то («Raw lines» от («Output of» от "log end" и answers)) иначе ["  журнала печати нет"]),
+    (если («Exit code of» от "reprint runs" и answers) равен 0 то ["", "  ⚠ ПЕРЕПЕЧАТКА ЕЩЁ ИДЁТ — строки выше это шапка захода, а не его итог."] иначе пустой список)]
+
+тотальная функция «Nothing to accept»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить («Соединить списки» от («Print end lines» от answers) и ["",
+    (соединить ["ПРИЁМКА НЕ СОСТОЯЛАСЬ: двоичного нет — ", («Binary» от answers)] по ""),
+    "Ни одна примета не снята; это не «НЕ ПРИНЯТ», это «принимать нечего».",
+    "Приёмку звать после того, как перепечатка дошла И СЕМЯ СОБРАНО:",
+    (соединить ["  make -C ", («Tree» от answers), "/bootstrap -j8      (минута, 1,05 ГиБ)"] по "")]) по "\n"
+
+тотальная функция «Gate troubles»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
+  пусть code равно («Exit code of» от name и answers)
+  «Chosen» от [(«When» от (code равен 75) и (приписать "ворота не дали места (код 75) — ОТКАЗ ВОРОТ, а не приговор двоичному; повторить примету" к («Indented» от («Raw lines» от («Output of» от name и answers))))),
+    («When» от (code равен 124) и (["прогон не уложился в 900 с — примета НЕ СНЯТА, судить по ней нельзя"])),
+    («When» от ((code равен 127) или (code равен 126)) и ([(соединить ["ворот нет (", («Gate» от answers), ") — примета НЕ СНЯТА, судить по ней нельзя"] по "")]))] и (пустой список)
+
+тотальная функция «Refused by gate»
+  принимает lines: список строки, troubles: список строки
+  возвращает «Sign»
+  разбор troubles
+    случай пусто
+      то запись «Sign» с «lines» равным lines и «troubles» равным 0
+    случай голова и хвост
+      то запись «Sign» с «lines» равным («Соединить списки» от (добавить (соединить ["  ✗ ", голова] по "") к lines) и хвост) и «troubles» равным 1
+
+тотальная функция «Names sign»
+  принимает answers: список «Answer»
+  возвращает «Sign»
+  пусть names равно («Lines» от («Output of» от "names" и answers))
+  пусть lines равно («Соединить списки» от («Heading» от "ПРИМЕТА 1 — печать конкурентности в C") и (если (длина names) равен 0 то ["    "] иначе («Indented» от names)))
+  если (длина (отфильтровать names где name → «Ends with» от name и "_c")) больше 0
+    то «Good» от lines и "имя с «_c» есть"
+    иначе «Bad» от lines и "имени с «_c» НЕТ (было так же)"
+
+тотальная функция «Counted»
+  принимает name: строка, missing: строка, answers: список «Answer»
+  возвращает строка
+  пусть counted равно («First line» от («Output of» от name и answers))
+  если пусто counted то missing иначе counted
+
+тотальная функция «Condition sign»
+  принимает answers: список «Answer»
+  возвращает «Sign»
+  пусть lines равно («Соединить списки» от («Heading» от "ПРИМЕТА 2 — вердикт «доказано ПРИ УСЛОВИИ»") и [(соединить ["    вхождений: ", («Counted» от "condition" и "нет файла" и answers), "   (было 0)"] по "")])
+  если («Count» от («Counted» от "condition" и "0" и answers)) больше 0
+    то «Good» от lines и "вердикт появился"
+    иначе «Bad» от lines и "вердикта НЕТ — все числа дерева остаются верхней оценкой"
+
+тотальная функция «Progress sign»
+  принимает answers: список «Answer»
+  возвращает «Sign»
+  пусть lines равно («Соединить списки» от («Heading» от "ПРИМЕТА 3 — строка хода") и [(соединить ["    вхождений: ", («Counted» от "progress line" и "0" и answers), "   (было 0)"] по "")])
+  если («Count» от («Counted» от "progress line" и "0" и answers)) больше 0
+    то «Good» от lines и "девятичасовая работа перестала быть слепой"
+    иначе «Bad» от lines и "строки хода НЕТ"
+
+тотальная функция «Last matching»
+  принимает lines: список строки
+  возвращает строка
+  пример «The last of the lines that count claims»
+    дано lines равно ["  утверждений 2: доказано 1", "прочее", "утверждений 4: доказано 3, сетка 0"]
+    ожидается "утверждений 4: доказано 3, сетка 0"
+  пример «No such line»
+    дано lines равно ["прочее"]
+    ожидается ""
+  свёртка lines начиная с "" как last и line → если («Word» от 1 и line) равен "утверждений" то line иначе last
+
+тотальная функция «Proved»
+  принимает total: строка
+  возвращает строка
+  пример «The number of proved claims»
+    дано total равно "  утверждений 4: доказано 3, сетка 0, объявлено, не доказано 1"
+    ожидается "3"
+  пример «A total of another shape»
+    дано total равно "утверждений нет"
+    ожидается ""
+  если (((«Word» от 1 и total) равен "утверждений") и притом ((«Word» от 3 и total) равен "доказано")) и притом ((«Word» от 2 и total) равен (соединить [(«Leading digits» от («Word» от 2 и total)), ":"] по ""))
+    то «Leading digits» от («Word» от 4 и total)
+    иначе ""
+
+тотальная функция «Rules judged»
+  принимает lines: список строки, proved: строка
+  возвращает «Sign»
+  пример «All four rules arrived»
+    дано lines равно пустой список
+    дано proved равно "4"
+    ожидается запись «Sign» с «lines» равным ["  ✓ все четыре правила ядра доехали"] и «troubles» равным 0
+  пример «No rule arrived»
+    дано lines равно пустой список
+    дано proved равно "0"
+    ожидается запись «Sign» с «lines» равным ["  ✗ ни одно правило не заработало — семя не догнало исходники"] и «troubles» равным 1
+  пример «No total at all»
+    дано lines равно пустой список
+    дано proved равно ""
+    ожидается запись «Sign» с «lines» равным ["  ✗ проба не дала итога вовсе"] и «troubles» равным 1
+  «Chosen» от [(«When» от (пусто proved) и («Bad» от lines и "проба не дала итога вовсе")),
+    («When» от (proved равен "0") и («Bad» от lines и "ни одно правило не заработало — семя не догнало исходники")),
+    («When» от (proved равен "4") и («Good» от lines и "все четыре правила ядра доехали"))] и («Good» от lines и (соединить ["правил ядра доехало ", proved, " из 4 — часть, как проба и допускает; какие именно, смотреть в ведомости"] по ""))
+
+тотальная функция «Rules sign»
+  принимает answers: список «Answer»
+  возвращает «Sign»
+  пусть heading равно («Heading» от "ПРИМЕТА 4 — правила ядра работают (прогон, а не таблица имён)")
+  пусть total равно («Last matching» от («Raw lines» от («Output of» от "kernel rules" и answers)))
+  если (длина («Gate troubles» от "kernel rules" и answers)) больше 0
+    то «Refused by gate» от heading и («Gate troubles» от "kernel rules" и answers)
+    иначе «Rules judged» от («Соединить списки» от heading и [(соединить ["    ", (если пусто total то "(итога нет)" иначе total)] по ""), "    было: утверждений 4: доказано 0, сетка 0, объявлено, не доказано 4"]) и («Proved» от total)
+
+тотальная функция «Types judged»
+  принимает lines: список строки, said: список строки
+  возвращает «Sign»
+  пусть answer равно («First line» от (соединить (отфильтровать said где line → (line содержит "FLANG_TYPE_ARGS") или (line содержит "замечаний нет")) по "\n"))
+  пусть shown равно (добавить (соединить ["    ", (если пусто answer то "(ответа нет)" иначе answer)] по "") к lines)
+  «Chosen» от [(«When» от (answer содержит "FLANG_TYPE_ARGS") и («Bad» от shown и "параметрические типы по-прежнему не понимает")),
+    («When» от (answer содержит "замечаний нет") и («Good» от shown и "читает"))] и (запись «Sign» с «lines» равным («Соединить списки» от (добавить "  ✗ ответ не распознан — смотреть руками, вывод целиком выше" к shown) и («Indented» от («Last lines» от said и 3))) и «troubles» равным 1)
+
+тотальная функция «Types sign»
+  принимает answers: список «Answer»
+  возвращает «Sign»
+  пусть heading равно («Heading» от "ПРИМЕТА 5 — двоичный читает исходники со свежими типами")
+  пусть sample равно («Sample» от answers)
+  пусть shown равно (добавить (соединить ["    образец: ", sample, " (", («First line» от («Output of» от (соединить ["sample ", sample] по "") и answers)), " вхождений параметрического типа)"] по "") к heading)
+  «Chosen» от [(«When» от (пусто sample) и («Bad» от heading и "проверить НЕЧЕМ: параметрического типа нет ни в дереве перепечатки, ни в дереве приёмки — примета не снята")),
+    («When» от ((длина («Gate troubles» от "fresh types" и answers)) больше 0) и («Refused by gate» от shown и («Gate troubles» от "fresh types" и answers)))] и («Types judged» от shown и («Raw lines» от («Output of» от "fresh types" и answers)))
+
+тотальная функция «Live judged»
+  принимает lines: список строки, said: список строки
+  возвращает «Sign»
+  пусть answer равно (соединить said по "\n")
+  пусть shown равно («Соединить списки» от lines и («Indented» от said))
+  «Chosen» от [(«When» от ((answer содержит "FLANG_PROPERTY") или (answer содержит "FLANG_INTERNAL")) и («Bad» от shown и "падает — принимать НЕЛЬЗЯ")),
+    («When» от (answer содержит "утверждений") и («Good» от shown и "считает"))] и («Bad» от shown и "ответ не распознан")
+
+тотальная функция «Live sign»
+  принимает answers: список «Answer»
+  возвращает «Sign»
+  пусть heading равно («Heading» от "ПРИМЕТА 6 — не сломан на живом файле")
+  если (длина («Gate troubles» от "live file" и answers)) больше 0
+    то «Refused by gate» от heading и («Gate troubles» от "live file" и answers)
+    иначе «Live judged» от heading и («Last lines» от («Raw lines» от («Output of» от "live file" и answers)) и 2)
+
+тотальная функция «All signs»
+  принимает answers: список «Answer»
+  возвращает список «Sign»
+  [(«Names sign» от answers), («Condition sign» от answers), («Progress sign» от answers), («Rules sign» от answers), («Types sign» от answers), («Live sign» от answers)]
+
+тотальная функция «Total»
+  принимает troubles: число
+  возвращает список строки
+  пример «No troubles: the binary is accepted»
+    дано troubles равно 0
+    ожидается ["", "=== ИТОГ", "  все приметы сошлись. Дальше: sh scripts/bootstrap-reprint.sh --bystro —", "  сверить, что семя больше не отстаёт (было 41 расхождение).", "  ⛔ Приёмная коммиты с bootstrap/** из веток ОТВЕРГАЕТ: семя кладётся", "  в ствол не через неё. Спросить владельца приёмной, как именно."]
+  пример «Two troubles: the binary is not accepted»
+    дано troubles равно 2
+    ожидается ["", "=== ИТОГ", "  примет не сошлось: 2. Двоичный НЕ ПРИНЯТ."]
+  если troubles равен 0
+    то «Соединить списки» от («Heading» от "ИТОГ") и ["  все приметы сошлись. Дальше: sh scripts/bootstrap-reprint.sh --bystro —", "  сверить, что семя больше не отстаёт (было 41 расхождение).", "  ⛔ Приёмная коммиты с bootstrap/** из веток ОТВЕРГАЕТ: семя кладётся", "  в ствол не через неё. Спросить владельца приёмной, как именно."]
+    иначе «Соединить списки» от («Heading» от "ИТОГ") и [(соединить ["  примет не сошлось: ", (к строке troubles), ". Двоичный НЕ ПРИНЯТ."] по "")]
+
+тотальная функция «Verdict»
+  принимает signs: список «Sign», answers: список «Answer»
+  возвращает «Продолжение»
+  пусть troubles равно (свёртка signs начиная с 0 как counted и sign → counted плюс (sign.«troubles»))
+  пусть words равно (соединить («Gathered words» от [(«Print end lines» от answers), ["", (соединить ["двоичный: ", («Binary» от answers)] по ""), («First line» от («Output of» от "version" и answers))], («Gathered words» от (отобразить signs как sign → sign.«lines»)), («Total» от troubles)]) по "\n")
+  если troubles равен 0
+    то вариант «Конец работы» с значение равным words
+    иначе вариант «Провал» с код равным "FLANG_NEW_BINARY_NOT_ACCEPTED" и сообщение равным words
+
+тотальная функция «Absence»
+  принимает stages: число, answers: список «Answer»
+  возвращает список строки
+  если (stages равен 2) и притом (не ((«Exit code of» от "binary runs" и answers) равен 0))
+    то [(«Nothing to accept» от answers)]
+    иначе пустой список
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то разбор («Absence» от stages и answers)
+        случай голова и хвост
+          то вариант «Не проверено» с код равным "FLANG_NEW_BINARY_ABSENT" и сообщение равным голова
+        случай пусто
+          то если stages не больше 0
+            то «Verdict» от («All signs» от answers) и answers
+            иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 4
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Accept»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

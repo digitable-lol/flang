@@ -176,7 +176,7 @@ find . -path ./.git -prune -o -type f -print | grep -P '[А-Яа-яЁё][^/]*$'
 | 47 | `flang/test/обход.sh` | walk.sh | 20 | пример из самой задачи |
 | 48 | `flang/test/прогонщик-корпуса.flang` | corpus-runner.fscript | 3 | близнец scripts/guards/corpus-runner.fscript |
 | 49 | `scripts/guards/сторож-дарвина.fscript` | darwin-guard.flang | 4 |  |
-| 50 | `scripts/доказуемость.sh` | provability.sh | 70 |  |
+| 50 | `scripts/provability.fscript` | provability.sh | 70 |  |
 | 51 | `ярлык` | run | 263 | входная точка всех целей: ./ярлык зовут хук, CI, задачи, README — самая дорогая правка |
 | 52 | `ярлыки.flang` | shortcuts.flang | 68 | модуль «Ярлыки» |
 

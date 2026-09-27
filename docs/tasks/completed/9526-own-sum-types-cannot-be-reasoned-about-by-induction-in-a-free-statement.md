@@ -94,7 +94,7 @@
 - пять подделок семьи — код 1 каждая, причина названа; ни одна не принята кодом 0;
 - `sh flang/proof/tables-guard.sh` зелен с новой строкой и новым семейством;
 - Lean принимает лемму `«Инд1»` и отвергает ловушку 11;
-- `sh scripts/доказуемость.sh` — ДОКАЗУЕМ, доля не ниже 625/651.
+- `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — ДОКАЗУЕМ, доля не ниже 625/651.
 
 ## Чем кончилось
 
@@ -116,5 +116,5 @@ flang/proof/checker/сверщик tests/families/own-type/нат.flang tests/fa
 sh flang/proof/checker/tests/run.sh   → сошлось всё; подделок 534, ПРИНЯТО кодом 0 — 0
 sh flang/proof/tables-guard.sh     → код 0
 sh flang/proof/lean/run.sh          → сошлось всё; искажений 52, отвергнуто 52
-sh scripts/доказуемость.sh             → ДОКАЗУЕМ, доля 650 / 650 = 100,00 %
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000             → ДОКАЗУЕМ, доля 650 / 650 = 100,00 %
 ```

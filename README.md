@@ -128,7 +128,7 @@ There is no single number that says "the language is proved", and this page does
 Four different coverages are measured separately, by one instrument:
 
 ```bash
-sh scripts/four-coverages.sh
+bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000
 ```
 
 It prints the date, the commit of the tree, the seed fingerprint, the version and sha256 of the
@@ -146,7 +146,7 @@ binary 0.7.20):
 The full page, with what each coverage does and does not license you to say, is
 [`docs/four-coverages.md`](docs/four-coverages.md).
 
-`sh scripts/доказуемость.sh` reduces the first coverage and three guards on the checker to one
+`bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` reduces the first coverage and three guards on the checker to one
 word, **ДОКАЗУЕМ** or **НЕ ДОКАЗУЕМ**, against a 100 % gate. That word is about the first
 coverage and the probe set — not about the language. Measured on 19 September 2026: the same
 command prints ДОКАЗУЕМ and exits 0 **even with `bootstrap/flang` removed from the tree**, because
@@ -303,7 +303,7 @@ result is compared with what is committed: `sh scripts/bootstrap-reprint.sh --ch
 last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 48 lines in the
 input half; with the second half, the seed body, the file is 65 lines.
 <!-- СНЯТО 2026-09-13 строк scripts/seed-fingerprint = 65 -->
-The seed lags the sources: `sh scripts/seed/what-lags-the-seed.sh` lists which files and functions
+The seed lags the sources: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` lists which files and functions
 are newer than the seed, and a reprint (`sh scripts/bootstrap-reprint.sh`, hours on one core) is how edits
 to `flang/self/` reach the binary. **An edit to the sources is not in the binary until that
 reprint** — which is why the checks above distinguish source from binary.

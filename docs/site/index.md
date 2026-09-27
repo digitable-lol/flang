@@ -89,7 +89,7 @@ are on the [Install](install.html) page.
 
 ## What backs that up
 
-`sh scripts/доказуемость.sh` on trunk, 19 September 2026 (commit `a5609e322`),
+`bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` on trunk, 19 September 2026 (commit `a5609e322`),
 about three minutes:
 
 ```
@@ -106,7 +106,7 @@ checker itself; 533 forged proofs were rejected, 245 honest ones accepted.
 share of places in the compiler's **own** proof records, and it says nothing
 about the emitted code. There are four coverages in all, and the other three are
 lower: inference rules formalised in Lean, an open list of known soundness
-violations, and the translation check for C. `sh scripts/four-coverages.sh`
+violations, and the translation check for C. `bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000`
 prints all four side by side with a date and a commit; what each one is *not* is
 spelled out on [what is proved and what is not](what-is-proved.html).
 

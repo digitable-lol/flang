@@ -95,7 +95,7 @@
 
 ### Ш4 — вердикт берёт числа прогоном
 
-В `scripts/доказуемость.sh`:
+В `scripts/provability.fscript`:
 
 * проверка 2 перестаёт быть `DOLYA_PROIGRYVANIEM=0`, вписанным руками, и берёт
   число из `corpus-share.sh --набор корпус --проигрыванием`; `POROG=95` не
@@ -105,7 +105,7 @@
 * заводится проверка 4: число строк манифеста и числитель набора не ниже
   «ratchet.txt».
 
-*Приёмка:* `sh scripts/доказуемость.sh` печатает **НЕ ДОКАЗУЕМ** (проверка 1
+*Приёмка:* `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` печатает **НЕ ДОКАЗУЕМ** (проверка 1
 красна: `перепиской(` в чекере), называет числами все четыре проверки, код 1.
 
 ### Ш5 — старые правила снять
@@ -123,7 +123,7 @@
 sh flang/proof/corpus-share.sh --набор корпус --проигрыванием   # доля + строка набора
 sh flang/proof/corpus-share.sh --самопроверка                   # код 0
 sh flang/proof/checker/tests/run.sh                            # код 0, «сошлось всё»
-sh scripts/доказуемость.sh                                      # четыре проверки числами
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000                                      # четыре проверки числами
 sh .githooks/pre-push                                           # код 0
 ```
 

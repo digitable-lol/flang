@@ -56,7 +56,7 @@ git fetch /srv/flang-priyom.git main && git checkout -B main FETCH_HEAD
 
 ```sh
 git status --short -- bootstrap/     # пусто
-sh scripts/seed-freshness.sh          # честный ответ о свежести семени
+sh scripts/seed-freshness.fscript          # честный ответ о свежести семени
 ```
 
 Заход пущен из дерева, в котором `git status -- bootstrap/` молчит, и ветка

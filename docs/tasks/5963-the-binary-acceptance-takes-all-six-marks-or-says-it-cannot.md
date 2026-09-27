@@ -7,7 +7,7 @@
 команда: вторая
 карта: Цена доказательства
 рядом: 0003, 0043, 4025
-нужность: 2 — 27 сентября 2026: `sh scripts/seed/new-binary-acceptance.sh /nonexistent/tree` — код 2, снаружи разведено; внутри один счётчик BED (`bad()` строка 26, «проверить НЕЧЕМ» строка 116 кладёт туда же), итог «примет не сошлось: $BED» и exit 1 (строки 151–152)
+нужность: 2 — 27 сентября 2026: `bootstrap/flang io scripts/seed/new-binary-acceptance.fscript --plan Accept --timeout 3600000 -- /nonexistent/tree` — код 2, снаружи разведено; внутри один счётчик BED (`bad()` строка 26, «проверить НЕЧЕМ» строка 116 кладёт туда же), итог «примет не сошлось: $BED» и exit 1 (строки 151–152)
 ---
 
 # 5963. Приёмка двоичного не снимает ни одной приметы из шести
@@ -16,8 +16,8 @@
 
 Снято 30 августа 2026 на стволе `f9e67fa6`.
 
-Ярлык `двоичный:приёмка` → `sh scripts/seed/new-binary-acceptance.sh`.
-**Примет ровно шесть**, `scripts/seed/new-binary-acceptance.sh`, строки 106, 114/118,
+Ярлык `двоичный:приёмка` → `bootstrap/flang io scripts/seed/new-binary-acceptance.fscript --plan Accept --timeout 3600000 --`.
+**Примет ровно шесть**, `scripts/seed/new-binary-acceptance.fscript`, строки 106, 114/118,
 126/127, 136/138, 161/178, 203/206:
 
 1. печать конкурентности в C;
@@ -60,9 +60,9 @@
 ## Как понять, что сделано
 
 ```sh
-sh scripts/seed/new-binary-acceptance.sh /несуществующее/дерево   # код «нечем проверять», НЕ 1
-sh scripts/seed/new-binary-acceptance.sh <дерево с целым двоичным> # код 0, шесть примет сняты
-sh scripts/seed/new-binary-acceptance.sh <дерево с порченым>       # код 1, названа примета
+bootstrap/flang io scripts/seed/new-binary-acceptance.fscript --plan Accept --timeout 3600000 -- /несуществующее/дерево   # код «нечем проверять», НЕ 1
+bootstrap/flang io scripts/seed/new-binary-acceptance.fscript --plan Accept --timeout 3600000 -- <дерево с целым двоичным> # код 0, шесть примет сняты
+bootstrap/flang io scripts/seed/new-binary-acceptance.fscript --plan Accept --timeout 3600000 -- <дерево с порченым>       # код 1, названа примета
 ```
 
 Три разных ответа на три разных случая. Сегодня все три дают один и тот же
@@ -77,7 +77,7 @@ sh scripts/seed/new-binary-acceptance.sh <дерево с порченым>     
 
 ## Замер 1 сентября 2026: половина сделана, беда наряда цела
 
-**Снаружи разведено.** `sh scripts/seed/new-binary-acceptance.sh /несуществующее/дерево`
+**Снаружи разведено.** `bootstrap/flang io scripts/seed/new-binary-acceptance.fscript --plan Accept --timeout 3600000 -- /несуществующее/дерево`
 отвечает **кодом 2**, а не 1 (коммиты `0786a2a9`, поверх — `b932319c`).
 
 **Утверждение наряда «ни одна из шести сегодня не снимается» больше не верно:**
@@ -90,7 +90,7 @@ sh scripts/seed/new-binary-acceptance.sh <дерево с порченым>     
     ИТОГ: примет не сошлось: 4. Двоичный НЕ ПРИНЯТ.
 
 **ЧЕГО НЕТ, и это ровно то, ради чего задача заведена: ВНУТРИ прогона разведения
-нет.** Функция `bad()` (`scripts/seed/new-binary-acceptance.sh:52`) одинаково
+нет.** Функция `bad()` (`scripts/seed/new-binary-acceptance.fscript:52`) одинаково
 прибавляет к одному счётчику `BED` и «примета не снята», и «падает — принимать
 НЕЛЬЗЯ», и «отказ ворот». Итог у всех трёх один — «примет не сошлось: N.
 Двоичный НЕ ПРИНЯТ». В прогоне выше из четырёх «не сошлось» настоящий провал
@@ -102,6 +102,6 @@ sh scripts/seed/new-binary-acceptance.sh <дерево с порченым>     
 НЕ подтверждено.
 
 Перепроверено 8 сентября 2026: файл не менялся с `b932319c`; `sh
-scripts/seed/new-binary-acceptance.sh /несуществующее` — код 2; `bad()` (строка 52)
+scripts/seed/new-binary-acceptance.fscript /несуществующее` — код 2; `bad()` (строка 52)
 один на все исходы, итог «примет не сошлось: $BED» и `exit 1`. Остаётся пункт 1
 раздела «Что сделать».

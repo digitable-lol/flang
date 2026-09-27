@@ -1,0 +1,331 @@
+модуль «Inquiry»
+  использует «Lists» только «Соединить списки»
+
+объект «Question»
+  «name»: строка
+  «order»: «Поручение»
+
+объект «Answer»
+  «name»: строка
+  «reply»: «Отклик»
+
+объект «Inquiry»
+  «asked»: строка
+  «queue»: список «Question»
+  «stages»: число
+  «answers»: список «Answer»
+
+тотальная функция «Begin with»
+  принимает stages: число
+  возвращает «Inquiry»
+  пример «Nothing is asked and nothing is known at the start»
+    дано stages равно 2
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 2 и «answers» равным пустой список
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным stages и «answers» равным пустой список
+
+тотальная функция «Run»
+  принимает name: строка, program: строка, arguments: список строки
+  возвращает «Question»
+  пример «A process question carries the program and its arguments»
+    дано name равно "head"
+    дано program равно "git"
+    дано arguments равно ["rev-parse", "HEAD"]
+    ожидается запись «Question» с «name» равным "head" и «order» равным (вариант «Запустить процесс» с программа равным "git" и аргументы равным ["rev-parse", "HEAD"])
+  запись «Question» с «name» равным name и «order» равным (вариант «Запустить процесс» с программа равным program и аргументы равным arguments)
+
+тотальная функция «Run from»
+  принимает name: строка, directory: строка, program: строка, arguments: список строки
+  возвращает «Question»
+  пример «The shell only changes the directory and gives way to the program»
+    дано name равно "head"
+    дано directory равно ".."
+    дано program равно "git"
+    дано arguments равно ["rev-parse", "HEAD"]
+    ожидается запись «Question» с «name» равным "head" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "..", "git", "rev-parse", "HEAD"])
+  «Run» от name и "sh" и (приписать "-c" к (приписать "cd \"$0\" && exec \"$@\"" к (приписать directory к (приписать program к arguments))))
+
+тотальная функция «Read from»
+  принимает name: строка, directory: строка, path: строка
+  возвращает «Question»
+  пример «A path from the root is read through the root»
+    дано name равно "ledger"
+    дано directory равно ".."
+    дано path равно "docs/ledger.tsv"
+    ожидается запись «Question» с «name» равным "ledger" и «order» равным (вариант «Прочитать файл» с путь равным "../docs/ledger.tsv")
+  пример «An absolute path is read as it is»
+    дано name равно "ledger"
+    дано directory равно ".."
+    дано path равно "/srv/ledger.tsv"
+    ожидается запись «Question» с «name» равным "ledger" и «order» равным (вариант «Прочитать файл» с путь равным "/srv/ledger.tsv")
+  если path начинается с "/"
+    то «Read» от name и path
+    иначе «Read» от name и (соединить [directory, "/", path] по "")
+
+тотальная функция «Read»
+  принимает name: строка, path: строка
+  возвращает «Question»
+  пример «A file question carries the path»
+    дано name равно "ledger"
+    дано path равно "../docs/ledger.tsv"
+    ожидается запись «Question» с «name» равным "ledger" и «order» равным (вариант «Прочитать файл» с путь равным "../docs/ledger.tsv")
+  запись «Question» с «name» равным name и «order» равным (вариант «Прочитать файл» с путь равным path)
+
+тотальная функция «Environment»
+  принимает name: строка, variable: строка
+  возвращает «Question»
+  пример «An environment question carries the variable name»
+    дано name равно "lean"
+    дано variable равно "LEAN"
+    ожидается запись «Question» с «name» равным "lean" и «order» равным (вариант «Прочитать переменную среды» с имя равным "LEAN")
+  запись «Question» с «name» равным name и «order» равным (вариант «Прочитать переменную среды» с имя равным variable)
+
+тотальная функция «Arguments»
+  принимает name: строка
+  возвращает «Question»
+  пример «An arguments question carries nothing but its name»
+    дано name равно "arguments"
+    ожидается запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»)
+  запись «Question» с «name» равным name и «order» равным (вариант «Прочитать доводы»)
+
+тотальная функция «Heard»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает список «Answer»
+  пример «The first turn brings no answer»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 1 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается пустой список
+  пример «A reply is filed under the name of its question»
+    дано inquiry равно запись «Inquiry» с «asked» равным "day" и «queue» равным пустой список и «stages» равным 0 и «answers» равным пустой список
+    дано reply равно вариант «Процесс завершён» с код равным 0 и вывод равным "2026-09-27\n" и ошибки равным ""
+    ожидается [запись «Answer» с «name» равным "day" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "2026-09-27\n" и ошибки равным "")]
+  если пусто (inquiry.«asked»)
+    то inquiry.«answers»
+    иначе добавить (запись «Answer» с «name» равным (inquiry.«asked») и «reply» равным reply) к (inquiry.«answers»)
+
+тотальная функция «Answered»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  пример «An unknown name has no answer»
+    дано name равно "day"
+    дано answers равно пустой список
+    ожидается нет
+  (длина (отфильтровать answers где answer → (answer.«name») равен name)) больше 0
+
+тотальная функция «Gathered»
+  принимает parts: список список «Question»
+  возвращает список «Question»
+  пример «Parts follow one another in their order»
+    дано parts равно [[запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»)], пустой список, [запись «Question» с «name» равным "ledger" и «order» равным (вариант «Прочитать файл» с путь равным "ledger.tsv")]]
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»), запись «Question» с «name» равным "ledger" и «order» равным (вариант «Прочитать файл» с путь равным "ledger.tsv")]
+  свёртка parts начиная с (пустой список) как gathered и part → «Соединить списки» от gathered и part
+
+тотальная функция «Ask»
+  принимает question: «Question», queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «The order goes out and the rest of the queue waits»
+    дано question равно запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»)
+    дано queue равно пустой список
+    дано stages равно 1
+    дано answers равно пустой список
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (запись «Inquiry» с «asked» равным "arguments" и «queue» равным пустой список и «stages» равным 1 и «answers» равным пустой список)
+  вариант «Сделать» с поручение равным (question.«order») и потом равным (запись «Inquiry» с «asked» равным (question.«name») и «queue» равным queue и «stages» равным stages и «answers» равным answers)
+
+тотальная функция «Reply to»
+  принимает name: строка, answers: список «Answer»
+  возвращает «Отклик»
+  пример «An unknown name is answered with nothing»
+    дано name равно "day"
+    дано answers равно пустой список
+    ожидается вариант «Пока ничего»
+  свёртка answers начиная с (вариант «Пока ничего») как found и answer → если (answer.«name») равен name то (answer.«reply») иначе found
+
+тотальная функция «Output»
+  принимает reply: «Отклик»
+  возвращает строка
+  пример «A finished process gives its output»
+    дано reply равно вариант «Процесс завершён» с код равным 0 и вывод равным "text\n" и ошибки равным ""
+    ожидается "text\n"
+  пример «A read file gives its content»
+    дано reply равно вариант «Прочитано» с содержимое равным "content"
+    ожидается "content"
+  пример «A failure gives nothing»
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_NOT_FOUND" и сообщение равным "no file"
+    ожидается ""
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то output
+    случай вариант «Прочитано» с содержимое как content
+      то content
+    случай любое
+      то ""
+
+тотальная функция «Errors»
+  принимает reply: «Отклик»
+  возвращает строка
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то errors
+    случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
+      то errors
+    случай вариант «Сбой» с код как code и сообщение как message
+      то message
+    случай любое
+      то ""
+
+тотальная функция «Exit code»
+  принимает reply: «Отклик»
+  возвращает число
+  пример «A finished process gives its code»
+    дано reply равно вариант «Процесс завершён» с код равным 7 и вывод равным "" и ошибки равным ""
+    ожидается 7
+  пример «A read file counts as success»
+    дано reply равно вариант «Прочитано» с содержимое равным "content"
+    ожидается 0
+  пример «Anything else counts as not started»
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_NOT_FOUND" и сообщение равным "no file"
+    ожидается 127
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то code
+    случай вариант «Прочитано» с содержимое как content
+      то 0
+    случай любое
+      то 127
+
+тотальная функция «Output of»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  «Output» от («Reply to» от name и answers)
+
+тотальная функция «Errors of»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  «Errors» от («Reply to» от name и answers)
+
+тотальная функция «Exit code of»
+  принимает name: строка, answers: список «Answer»
+  возвращает число
+  «Exit code» от («Reply to» от name и answers)
+
+тотальная функция «Setting»
+  принимает reply: «Отклик», fallback: строка
+  возвращает строка
+  пример «A set variable gives its value»
+    дано reply равно вариант «Значение среды» с значение равным "lean4"
+    дано fallback равно "lean"
+    ожидается "lean4"
+  пример «An empty variable falls back»
+    дано reply равно вариант «Значение среды» с значение равным ""
+    дано fallback равно "lean"
+    ожидается "lean"
+  пример «An unset variable falls back»
+    дано reply равно вариант «Переменной среды нет»
+    дано fallback равно "lean"
+    ожидается "lean"
+  разбор reply
+    случай вариант «Значение среды» с значение как value
+      то если пусто value то fallback иначе value
+    случай любое
+      то fallback
+
+тотальная функция «Setting of»
+  принимает name: строка, fallback: строка, answers: список «Answer»
+  возвращает строка
+  «Setting» от («Reply to» от name и answers) и fallback
+
+тотальная функция «Given»
+  принимает reply: «Отклик»
+  возвращает список строки
+  пример «Arguments come as they were given»
+    дано reply равно вариант «Доводы» с доводы равным ["--forgery"]
+    ожидается ["--forgery"]
+  пример «No reply means no arguments»
+    дано reply равно вариант «Пока ничего»
+    ожидается пустой список
+  разбор reply
+    случай вариант «Доводы» с доводы как passed
+      то passed
+    случай любое
+      то пустой список
+
+тотальная функция «Given of»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
+  «Given» от («Reply to» от name и answers)
+
+тотальная функция «Write»
+  принимает name: строка, path: строка, content: строка
+  возвращает «Question»
+  пример «A write question carries the path and the content»
+    дано name равно "record"
+    дано path равно "/srv/tmp/memory.tsv"
+    дано content равно "1\t2\n"
+    ожидается запись «Question» с «name» равным "record" и «order» равным (вариант «Записать файл» с путь равным "/srv/tmp/memory.tsv" и содержимое равным "1\t2\n")
+  запись «Question» с «name» равным name и «order» равным (вариант «Записать файл» с путь равным path и содержимое равным content)
+
+тотальная функция «Remove»
+  принимает name: строка, path: строка
+  возвращает «Question»
+  пример «A remove question carries the path»
+    дано name равно "cleanup"
+    дано path равно "/srv/tmp/work"
+    ожидается запись «Question» с «name» равным "cleanup" и «order» равным (вариант «Удалить файл» с путь равным "/srv/tmp/work")
+  запись «Question» с «name» равным name и «order» равным (вариант «Удалить файл» с путь равным path)
+
+тотальная функция «List»
+  принимает name: строка, path: строка
+  возвращает «Question»
+  пример «A list question carries the directory»
+    дано name равно "printed"
+    дано path равно "../bootstrap"
+    ожидается запись «Question» с «name» равным "printed" и «order» равным (вариант «Перечислить каталог» с путь равным "../bootstrap")
+  запись «Question» с «name» равным name и «order» равным (вариант «Перечислить каталог» с путь равным path)
+
+тотальная функция «Temporary directory»
+  принимает name: строка, pattern: строка
+  возвращает «Question»
+  пример «A temporary directory question carries the pattern»
+    дано name равно "work"
+    дано pattern равно "provability"
+    ожидается запись «Question» с «name» равным "work" и «order» равным (вариант «Завести временный каталог» с образец равным "provability")
+  запись «Question» с «name» равным name и «order» равным (вариант «Завести временный каталог» с образец равным pattern)
+
+тотальная функция «Made»
+  принимает reply: «Отклик»
+  возвращает строка
+  пример «A made directory gives its path»
+    дано reply равно вариант «Заведено» с путь равным "/tmp/work-1"
+    ожидается "/tmp/work-1"
+  пример «Anything else gives no path»
+    дано reply равно вариант «Пока ничего»
+    ожидается ""
+  разбор reply
+    случай вариант «Заведено» с путь как path
+      то path
+    случай любое
+      то ""
+
+тотальная функция «Made of»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  «Made» от («Reply to» от name и answers)
+
+тотальная функция «Listed»
+  принимает reply: «Отклик»
+  возвращает список строки
+  пример «A listed directory gives its names»
+    дано reply равно вариант «Перечислено» с имена равным ["a.c", "b.h"]
+    ожидается ["a.c", "b.h"]
+  пример «Anything else gives no names»
+    дано reply равно вариант «Пока ничего»
+    ожидается пустой список
+  разбор reply
+    случай вариант «Перечислено» с имена как names
+      то names
+    случай любое
+      то пустой список
+
+тотальная функция «Listed of»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
+  «Listed» от («Reply to» от name и answers)

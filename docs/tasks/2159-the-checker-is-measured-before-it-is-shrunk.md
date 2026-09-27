@@ -7,7 +7,7 @@
 команда: любая
 карта: Что мешает больше всего
 рядом: 8121, 9790, 1183, 1307, 1311
-нужность: 1 — 27 сентября 2026: строк кода в checker.c 7602 при потолке 7603, приёмка ждёт меньше 7531 (`sh flang/proof/tables-guard.sh --строки-кода`); `sh scripts/доказуемость.sh` — ДОКАЗУЕМ, 650 из 650, код 0
+нужность: 1 — 27 сентября 2026: строк кода в checker.c 7602 при потолке 7603, приёмка ждёт меньше 7531 (`sh flang/proof/tables-guard.sh --строки-кода`); `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — ДОКАЗУЕМ, 650 из 650, код 0
 ---
 
 # 2159. Сверщик измерен прежде, чем его сокращать
@@ -72,18 +72,18 @@
 ## Как поймём, что сделано
 
 `--строки-кода` меньше, чем 7531; `flang/proof/checker/tests/run.sh` — «сошлось
-всё»; `sh scripts/доказуемость.sh` — ДОКАЗУЕМ; храповик не поднят.
+всё»; `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — ДОКАЗУЕМ; храповик не поднят.
 
 ## Чем кончилось
 
 Приём задачи — «`--строки-кода` меньше, чем 7531; `flang/proof/checker/tests/run.sh` —
-«сошлось всё»; `sh scripts/доказуемость.sh` — ДОКАЗУЕМ; храповик не поднят».
+«сошлось всё»; `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — ДОКАЗУЕМ; храповик не поднят».
 Прогон 22 сентября 2026 на стволе `d0763e8b6`:
 
 ```
 sh flang/proof/tables-guard.sh --строки-кода   → 7593   (приём ждёт < 7531)
 sh flang/proof/checker/tests/run.sh               → сошлось всё
-sh scripts/доказуемость.sh                         → ДОКАЗУЕМ, 4 из 4
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000                         → ДОКАЗУЕМ, 4 из 4
 ```
 
 Ш1 своё сделал (7531 → 7433), но за десять дней работы над сверщиком файл вырос обратно

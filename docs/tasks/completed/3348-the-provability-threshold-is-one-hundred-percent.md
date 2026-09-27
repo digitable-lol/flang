@@ -18,13 +18,13 @@
 
 Дерево `main` `cbfaf3899`, 17 сентября 2026.
 
-`scripts/доказуемость.sh`: `POROG=95` (строка 131); комментарии строк 97–107 объясняют
+`scripts/provability.fscript`: `POROG=95` (строка 131); комментарии строк 97–107 объясняют
 95 %. Вердикт при 95 % — «ДОКАЗУЕМ» (`README.md:44`). Доля проигрыванием на
 `main` — 633 из 650 (`sh /srv/tmp/dokazuemyy/ПЕРЕДАЧА/proverka-dereva.sh`, 17.09);
 при пороге 100 % вердикт станет «НЕ ДОКАЗУЕМ … 633 из 650» — это честно, а не поломка.
 
 Скрипт зовёт только `ярлыки.flang` (`./ярлык доказуемость`); в `.github/workflows/*.yml`
-и `.githooks/pre-push` его нет (`git grep доказуемость.sh -- .github .githooks` — 0 строк).
+и `.githooks/pre-push` его нет (`git grep provability.fscript -- .github .githooks` — 0 строк).
 Прогон стоит около 3 минут (ПЕРЕДАЧА, 17.09) — на каждый пуш не ставить.
 
 Упоминаний «95 %» как порога вне `flang/proof` и `flang/self`:
@@ -35,12 +35,12 @@ docs/benchmark-speed.md:364 (99,95 % пика — не порог).
 
 ## Как поймём, что сделано
 
-- `sh scripts/доказуемость.sh` на `main` печатает «НЕ ДОКАЗУЕМ» и
+- `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` на `main` печатает «НЕ ДОКАЗУЕМ» и
   «проверка 2 — доля проигрыванием не ниже 100 %? НЕТ (…: 633 из 650 …)»;
 - упоминаний «95 %» как ПОРОГА в README.md, docs/README.ru.md, docs/DESCRIPTION.md,
   docs/ROADMAP.md, docs/site/** и в шапке скрипта — 0; ADR и docs/design — история, не правятся;
 - работа `.github/workflows/provability.yml` («Доказуемость», `workflow_dispatch` +
-  `schedule`) существует, зовёт `sh scripts/доказуемость.sh`, красна на «НЕ ДОКАЗУЕМ»
+  `schedule`) существует, зовёт `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000`, красна на «НЕ ДОКАЗУЕМ»
   честно — то есть форма работы верна, а её цвет сегодня красный по замеру;
 - `sh scripts/guards/prose-numbers-guard.sh` — 216 из 216.
 

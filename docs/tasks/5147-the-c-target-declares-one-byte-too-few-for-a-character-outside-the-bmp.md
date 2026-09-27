@@ -103,7 +103,7 @@ printf 'код символа "👍"\n.выход\n' | flang repl       128077
 ```
 
 Плюс общий приём партии: `sh flang/proof/checker/tests/run.sh` — «сошлось
-всё», `sh scripts/доказуемость.sh` — ДОКАЗУЕМ 4 из 4.
+всё», `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — ДОКАЗУЕМ 4 из 4.
 
 ## Чего эта задача НЕ закрывает
 

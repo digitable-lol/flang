@@ -109,7 +109,7 @@ env PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- …
 ## Чем закрыта
 
 Коммит `f680fc19`, ветка `b/6128-priyom-vedomosti`, 30 августа 2026, ствол
-`747fe6ee`. В дереве: `scripts/build-ledger-binary.sh` (двоичный),
+`747fe6ee`. В дереве: `scripts/build-ledger-binary.fscript` (двоичный),
 `scripts/take-proof-ledger.sh` (ведомость одного файла и доля самого файла),
 `docs/kernel-ledger.md` (страница с приёмом, ловушками и границами).
 `flang/self/**` и `bootstrap/**` не тронуты.
@@ -117,7 +117,7 @@ env PAMYAT=45G /srv/flang-rabota/vorota/flang-vorota -- …
 **Приём проверен прогоном, а не чтением.** Двоичный
 `f32d89f599dd6b9f740f42a752dff1ff` — тот самый, которым снята ведомость ядра и
 которым 7205 снимает срезы сегодня, — воспроизведён ПОБАЙТОВО одной строкой
-`KOMMIT=4a26cf05 sh scripts/build-ledger-binary.sh` (66,64 с, пик 1 087 412 КиБ,
+`KOMMIT=4a26cf05 sh scripts/build-ledger-binary.fscript` (66,64 с, пик 1 087 412 КиБ,
 `cmp` с чужой копией — код 0). Все семь его файлов взяты из одного коммита
 `4a26cf05`; догадка о двух коммитах опровергнута замером (`614858cd` даёт
 14 046 520 байт вместо 14 065 960). Этим воспроизведённым двоичным снята

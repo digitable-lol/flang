@@ -86,7 +86,7 @@ sh scripts/guards/no-package-json-guard.sh --check         # код 0
 * **`scripts/` (150 файлов, 9 подкаталогов, глубина 3).** Самый аккуратный крупный
   каталог: подкаталоги названы по роду (`guards/`, `ledgers/`, `release/`, `seed/`,
   `site/`, `targets/`, `editors/`, `registry-example/`), кириллических имён два
-  (`доказуемость.sh` и `guards/сторож-дарвина.fscript`), оба в ведомости долга с
+  (`provability.fscript` и `guards/сторож-дарвина.fscript`), оба в ведомости долга с
   причиной. **Беспорядка здесь нет.**
 * **`fspec/` (75 файлов, 3 подкаталога, глубина 3).** Мелкая ровная раскладка. Одно
   замечание: `experience/` и `experiments/` — соседи, чьи имена различаются двумя
@@ -205,7 +205,7 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 Схем на самом деле **три**, а не две, и третья — самая неудобная:
 
 1. русская кириллицей — `Record.lean`, `expected.tsv`, `run.sh`;
-2. английская латиницей — `RecordReader.lean`, `binary-origin.sh`;
+2. английская латиницей — `RecordReader.lean`, `binary-origin.fscript`;
 3. **русская латиницей (транслит)** — `totality.flang`, `otkazy-totalnosti.flang`,
    `lie-difference-pure.flang`. Она не читается ни русским, ни английским глазом.
 

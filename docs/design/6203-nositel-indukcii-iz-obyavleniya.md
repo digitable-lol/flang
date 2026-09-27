@@ -224,7 +224,7 @@ ADR-0026 §2.4 называет три функции ядра и одно ме�
 ### 2.5. Гейт «как есть» на этом двоичном
 
 ```
-$ sh scripts/доказуемость.sh
+$ bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000
 проверка 1 — калькулятор снят? ДА (ловушка: обе ∀-цели на слове ядра, тождество знак в знак цело)
 проверка 2 — доля проигрыванием не ниже 95 %? НЕТ (87.10 %: 567 из 651; недостижимых мест вынесено 14)
 проверка 3 — набор проб пройден? ДА (набор подделок 31 из 31; проб на подлог 237, принято кодом 0 — 0; честных 141, отвергнуто 0)
@@ -465,7 +465,7 @@ ADR-0026 (свободные утверждения) или с первым пс
 
 Каждый инкремент — отдельная ветка от `gh/dev`, свой коммит, свой гейт. Гейт
 общий: `sh flang/proof/checker/tests/run.sh` печатает «сошлось всё»;
-`sh scripts/доказуемость.sh` — проверки 1, 3, 4 «ДА» и 567/651 не ниже;
+`bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — проверки 1, 3, 4 «ДА» и 567/651 не ниже;
 `sh flang/proof/tables-guard.sh` и `rules-match.sh` — код 0.
 
 ### Ш0 — только сверщик, без ядра и без семени (можно начинать сразу)
@@ -602,7 +602,7 @@ HACKS/заметки волны.
    функциях), Ш1 — в **тот же батч перепечатки**, что 6202, Ш2 — после. Тогда
    печать одна.
 
-Общий гейт после слияния: `run.sh` «сошлось всё», `доказуемость.sh` 1/3/4
+Общий гейт после слияния: `run.sh` «сошлось всё», `provability.fscript` 1/3/4
 «ДА», доля ≥ 567/651, `tables-guard.sh` код 0 (с С-5 — уже зелёным).
 
 ---
@@ -656,7 +656,7 @@ LC_ALL=C.UTF-8 bootstrap/flang check <файл> --proof --записать <фа
 for f in flang/proof/examples/*.flang flang/test/fixtures/*.flang flang/proof/map/*.flang; do
   LC_ALL=C.UTF-8 bootstrap/flang check "$f" --proof; done 2>&1 | grep -c FLANG_PROOF_INDUCTION_TYPE   # 0
 grep -h '^ *принцип тип ' flang/proof/checker/tests/records/corpus/*.record | sed -n 's/.*носитель \([a-z]*\).*/\1/p' | sort | uniq -c
-sh scripts/доказуемость.sh
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000
 ```
 
 Подделки П1/П1б/П2/П3: шапка (9 строк) — из честной записи ядра для того же

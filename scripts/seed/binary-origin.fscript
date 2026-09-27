@@ -1,0 +1,738 @@
+модуль «Binary origin»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Outcome»
+  «code»: число
+  «words»: строка
+
+объект «Trimming»
+  «kept»: строка
+  «pending»: строка
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Seed files»
+  возвращает список строки
+  ["bootstrap/compiler_flang.c", "bootstrap/compiler_flang.h", "bootstrap/flang_cli.c", "bootstrap/flang_repl.c", "bootstrap/flang_runtime.c", "bootstrap/flang_runtime.h"]
+
+тотальная функция «Linker names»
+  возвращает список строки
+  ["_DYNAMIC", "_GLOBAL_OFFSET_TABLE_", "_IO_stdin_used", "__FRAME_END__", "__TMC_END__", "__abi_tag", "__do_global_dtors_aux", "__do_global_dtors_aux_fini_array_entry", "__dso_handle", "__frame_dummy_init_array_entry", "_fini", "_init", "_start", "completed", "deregister_tm_clones", "frame_dummy", "register_tm_clones"]
+
+тотальная функция «Exact command»
+  возвращает строка
+  "bootstrap/flang io scripts/seed/binary-origin.fscript --plan Exact --timeout 900000"
+
+тотальная функция «Strippable»
+  принимает part: строка
+  возвращает признак
+  пример «A mark of the optimizer is stripped»
+    дано part равно "lto_priv"
+    ожидается да
+  пример «A number is stripped»
+    дано part равно "12"
+    ожидается да
+  пример «A part of the name itself is kept»
+    дано part равно "table"
+    ожидается нет
+  (["lto_priv", "isra", "constprop", "part", "cold", "localalias"] содержит part) или («Digits» от part)
+
+тотальная функция «Trimmed»
+  принимает trimming: «Trimming», part: строка
+  возвращает «Trimming»
+  если «Strippable» от part
+    то запись «Trimming» с «kept» равным (trimming.«kept») и «pending» равным (соединить [(trimming.«pending»), ".", part] по "")
+    иначе запись «Trimming» с «kept» равным (соединить [(trimming.«kept»), (trimming.«pending»), ".", part] по "") и «pending» равным ""
+
+тотальная функция «Without version»
+  принимает symbol: строка
+  возвращает строка
+  пример «A version after the at sign is dropped»
+    дано symbol равно "memcpy@GLIBC_2.14"
+    ожидается "memcpy"
+  разбор (разделить symbol по "@")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Base name»
+  принимает symbol: строка
+  возвращает строка
+  пример «The marks of the optimizer are dropped from the end»
+    дано symbol равно "compiler_flang_print.lto_priv.0"
+    ожидается "compiler_flang_print"
+  пример «A mark in the middle stays»
+    дано symbol равно "table.cold.names.7"
+    ожидается "table.cold.names"
+  пример «A plain name stays itself»
+    дано symbol равно "main"
+    ожидается "main"
+  разбор (разделить («Without version» от symbol) по ".")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то (свёртка хвост начиная с (запись «Trimming» с «kept» равным голова и «pending» равным "") как trimming и part → «Trimmed» от trimming и part).«kept»
+
+тотальная функция «After kind»
+  принимает line: строка
+  возвращает строка
+  пример «The rest of the row after the kind of a function»
+    дано line равно "    12: 0000000000401000    42 FUNC    LOCAL  DEFAULT   14 main"
+    ожидается "   LOCAL  DEFAULT   14 main"
+  пример «The rest of the row after the kind of an object»
+    дано line равно "    13: 0000000000601000     8 OBJECT  GLOBAL DEFAULT   25 table"
+    ожидается " GLOBAL DEFAULT   25 table"
+  пример «A section gives nothing»
+    дано line равно "     1: 0000000000000000     0 SECTION LOCAL  DEFAULT    1 .interp"
+    ожидается ""
+  пусть routine равно (разделить line по " FUNC ")
+  пусть storage равно (разделить line по " OBJECT ")
+  «Chosen» от [(«When» от ((длина routine) равен 2) и (свёртка routine начиная с "" как kept и part → part)),
+    («When» от ((длина storage) равен 2) и (свёртка storage начиная с "" как kept и part → part))] и ""
+
+тотальная функция «Defined name»
+  принимает line: строка
+  возвращает строка
+  пример «A defined function gives its base name»
+    дано line равно "    12: 0000000000401000    42 FUNC    LOCAL  DEFAULT   14 main.cold"
+    ожидается "main"
+  пример «An undefined function gives nothing»
+    дано line равно "     3: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND bind@GLIBC_2.2.5 (3)"
+    ожидается ""
+  пример «A row without a name gives nothing»
+    дано line равно "     3: 0000000000000000     0 FUNC    GLOBAL DEFAULT   14"
+    ожидается ""
+  пусть words равно («Words» от («After kind» от line))
+  если ((длина words) меньше 4) или ((элемент 3 в words) равен "UND")
+    то ""
+    иначе «Base name» от (элемент 4 в words)
+
+тотальная функция «Binary names»
+  принимает symbols: строка
+  возвращает список строки
+  пример «Only the full table of names is read»
+    дано symbols равно "\nSymbol table '.dynsym' contains 1 entries:\n     1: 0000000000000000     0 FUNC    GLOBAL DEFAULT   14 dynamic\n\nSymbol table '.symtab' contains 2 entries:\n     1: 0000000000401000    42 FUNC    LOCAL  DEFAULT   14 main.cold\n     2: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND puts\n"
+    ожидается ["main"]
+  пусть tables равно (отфильтровать (разделить symbols по "Symbol table '") где table → («First line» от table) содержит ".symtab")
+  отфильтровать (отобразить (разделить (соединить tables по "\n") по "\n") как line → «Defined name» от line) где name → не (пусто name)
+
+тотальная функция «Begin in mode»
+  принимает mode: строка, stages: число
+  возвращает «Inquiry»
+  пример «The mode is the first thing known»
+    дано mode равно "exact"
+    дано stages равно 8
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 8 и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Прочитано» с содержимое равным "exact")]
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным stages и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Прочитано» с содержимое равным mode)]
+
+тотальная функция «Mode»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Output of» от "mode" и answers
+
+тотальная функция «Argument trouble»
+  принимает passed: список строки
+  возвращает строка
+  пример «No arguments are fine»
+    дано passed равно пустой список
+    ожидается ""
+  пример «The asker is named after its key»
+    дано passed равно ["--what", "работа «Binary»"]
+    ожидается ""
+  пример «A key without the asker is a trouble»
+    дано passed равно ["--what"]
+    ожидается "--what без имени"
+  пример «Any other key is a trouble»
+    дано passed равно ["--exact"]
+    ожидается "неизвестный довод: --exact"
+  разбор passed
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «Chosen» от [(«When» от (не (голова равен "--what")) и (соединить ["неизвестный довод: ", голова] по "")),
+        («When» от ((длина хвост) равен 1) и "")] и "--what без имени"
+
+тотальная функция «Asker»
+  принимает passed: список строки
+  возвращает строка
+  пример «Without arguments the asker is this check itself»
+    дано passed равно пустой список
+    ожидается "эта проверка"
+  пример «The asker is named after its key»
+    дано passed равно ["--what", "работа «Binary»"]
+    ожидается "работа «Binary»"
+  если (длина passed) равен 2 то элемент 2 в passed иначе "эта проверка"
+
+тотальная функция «Asker of»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Asker» от («Given of» от "arguments" и answers)
+
+тотальная функция «Root path»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "root path" и answers)
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "binary" и («Setting of» от "binary fallback" и (соединить [(«Root path» от answers), "/bootstrap/flang"] по "") и answers) и answers
+
+тотальная функция «Compiler»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "compiler" и "cc" и answers
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Made of» от "work" и answers
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"),
+   («Environment» от "binary" и "FLANG_BINARY"),
+   («Environment» от "binary fallback" и "FLANG_BIN"),
+   («Environment» от "bypass" и "FLANG_BINARY_UNKNOWN_OK"),
+   («Environment» от "no memory" и "FLANG_BINARY_ORIGIN_NO_MEMORY"),
+   («Environment» от "compiler" и "CC"),
+   («Environment» от "temporary" и "TMPDIR"),
+   («Run from» от "root path" и («Root») и "pwd" и пустой список)]
+
+тотальная функция «Tools»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если («Mode» от answers) равен "check"
+    то [(«Run» от "readelf" и "readelf" и ["--version"]), («Run» от "compiler version" и («Compiler» от answers) и ["--version"])]
+    иначе [(«Run» от "make" и "make" и ["--version"]), («Run» от "compiler version" и («Compiler» от answers) и ["--version"])]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от [[(«Run» от "binary is a file" и "test" и ["-f", («Binary» от answers)]), («Run» от "binary runs" и "test" и ["-x", («Binary» от answers)])],
+    (отобразить («Seed files») как file → «Run from» от (соединить ["seed ", file] по "") и («Root») и "test" и ["-f", file]),
+    («Tools» от answers)]
+
+тотальная функция «Fingerprints»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "binary sum" и "md5sum" и [(«Binary» от answers)]),
+   («Run» от "binary size" и "wc" и ["-c", («Binary» от answers)]),
+   («Run from» от "seed sum" и («Root») и "sh" и (приписать "-c" к (приписать "cat \"$@\" | md5sum" к (приписать "sh" к («Seed files»))))),
+   («Run» от "plan sum" и "md5sum" и ["binary-origin.fscript"]),
+   («Run from» от "git directory" и («Root») и "git" и ["rev-parse", "--git-dir"])]
+
+тотальная функция «Remembers»
+  принимает answers: список «Answer»
+  возвращает признак
+  (пусто («Setting of» от "no memory" и "" и answers)) и притом ((«Exit code of» от "git directory" и answers) равен 0)
+
+тотальная функция «Memory path»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть directory равно («First line» от («Output of» от "git directory" и answers))
+  если directory начинается с "/"
+    то соединить [directory, "/binary-origin.checked"] по ""
+    иначе соединить [(«Root path» от answers), "/", directory, "/binary-origin.checked"] по ""
+
+тотальная функция «Memory»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если «Remembers» от answers
+    то [(«Read» от "memory" и («Memory path» от answers))]
+    иначе пустой список
+
+тотальная функция «Mode word»
+  принимает answers: список «Answer»
+  возвращает строка
+  если («Mode» от answers) равен "exact" то "побайтово" иначе "поименно"
+
+тотальная функция «Sum»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  «Word» от 1 и («First line» от («Output of» от name и answers))
+
+тотальная функция «Compiler name»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "compiler version" и answers)
+
+тотальная функция «Stamp»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить [(«Mode word» от answers), («Sum» от "binary sum" и answers), («Sum» от "seed sum" и answers), («Sum» от "plan sum" и answers), («Compiler name» от answers)] по " "
+
+тотальная функция «Remembered»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Remembers» от answers) и притом ((«Lines» от («Output of» от "memory" и answers)) содержит («Stamp» от answers))
+
+тотальная функция «Work pattern»
+  принимает answers: список «Answer»
+  возвращает строка
+  если («Mode» от answers) равен "forgery"
+    то соединить [(«Setting of» от "temporary" и "/tmp" и answers), "/binary-origin-forgery."] по ""
+    иначе соединить [(«Setting of» от "temporary" и "/tmp" и answers), "/binary-origin."] по ""
+
+тотальная функция «Survey»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если («Mode» от answers) равен "exact"
+    то [(«Run from» от "copy" и («Root») и "cp" и («Соединить списки» от (приписать "bootstrap/Makefile" к («Seed files»)) и [(«Work» от answers)])),
+        («Run» от "cores" и "getconf" и ["_NPROCESSORS_ONLN"])]
+    иначе [(«Run» от "sections" и "readelf" и ["-SW", («Binary» от answers)]),
+        («Run» от "table" и "sh" и ["-c", "readelf -sW \"$0\" > \"$1\" 2>/dev/null", («Binary» от answers), (соединить [(«Work» от answers), "/symbols"] по "")]),
+        («Read» от "symbols" и (соединить [(«Work» от answers), "/symbols"] по ""))]
+
+тотальная функция «Foreign names command»
+  возвращает строка
+  "grep -h -o \"[A-Za-z_][A-Za-z0-9_]*\" \"$@\" | sort -u - \"$0/linker-names\" > \"$0/known-names\" && sort -u \"$0/binary-names\" | comm -23 - \"$0/known-names\""
+
+тотальная функция «Cores»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть counted равно («First line» от («Output of» от "cores" и answers))
+  если «Digits» от counted то counted иначе "4"
+
+тотальная функция «Comparison»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть work равно («Work» от answers)
+  если («Mode» от answers) равен "exact"
+    то [(«Run» от "build" и "make" и ["-C", work, (соединить ["-j", («Cores» от answers)] по "")]),
+        («Run» от "compare" и "cmp" и ["-s", (соединить [work, "/flang"] по ""), («Binary» от answers)]),
+        («Run» от "built sum" и "md5sum" и [(соединить [work, "/flang"] по "")]),
+        («Run» от "built size" и "wc" и ["-c", (соединить [work, "/flang"] по "")])]
+    иначе [(«Write» от "binary names" и (соединить [work, "/binary-names"] по "") и (соединить (добавить "" к («Binary names» от («Output of» от "symbols" и answers))) по "\n")),
+        («Write» от "linker names" и (соединить [work, "/linker-names"] по "") и (соединить (добавить "" к («Linker names»)) по "\n")),
+        («Run from» от "foreign" и («Root») и "env" и (приписать "LC_ALL=C" к (приписать "sh" к (приписать "-c" к (приписать («Foreign names command») к (приписать work к («Seed files»)))))))]
+
+тотальная функция «Bypass»
+  возвращает строка
+  "FLANG_BINARY_UNKNOWN_OK"
+
+тотальная функция «Cannot check»
+  принимает reason: строка, answers: список «Answer»
+  возвращает «Outcome»
+  запись «Outcome» с «code» равным 3 и «words» равным (соединить [(соединить ["СВЕРИТЬ ДВОИЧНЫЙ НЕ УДАЛОСЬ — судить о доказательствах нельзя: ", («Asker of» от answers)] по ""), "", reason, "", "Пропуск не есть пройденная проверка: судить всё равно —", (соединить ["  ", («Bypass»), "=1 <та же команда>"] по "")] по "\n")
+
+тотальная функция «Failed»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  не ((«Exit code of» от name и answers) равен 0)
+
+тотальная функция «Absent»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  («Exit code of» от name и answers) равен 127
+
+тотальная функция «Steps»
+  принимает mode: строка
+  возвращает список строки
+  если mode равен "forgery"
+    то ["setup", "presence", "work", "forging", "cleanup"]
+    иначе ["setup", "presence", "fingerprints", "memory", "work", "survey", "comparison", "cleanup"]
+
+тотальная функция «Step»
+  принимает stages: число, mode: строка
+  возвращает строка
+  пример «The first step of a check is the setup»
+    дано stages равно 7
+    дано mode равно "check"
+    ожидается "setup"
+  пример «The last step of a forgery is the cleanup»
+    дано stages равно 0
+    дано mode равно "forgery"
+    ожидается "cleanup"
+  пример «Before the first step there is none»
+    дано stages равно 8
+    дано mode равно "check"
+    ожидается ""
+  пусть steps равно («Steps» от mode)
+  если (stages меньше 0) или (stages не меньше (длина steps))
+    то ""
+    иначе элемент ((длина steps) минус stages) в steps
+
+тотальная функция «Setup outcomes»
+  принимает answers: список «Answer»
+  возвращает список «Outcome»
+  пусть trouble равно («Argument trouble» от («Given of» от "arguments" и answers))
+  «Chosen» от [(«When» от (не (пусто trouble)) и ([запись «Outcome» с «code» равным 3 и «words» равным trouble])),
+    («When» от ((пусто («Setting of» от "bypass" и "" и answers)) или ((«Mode» от answers) равен "forgery")) и (пустой список))] и ([запись «Outcome» с «code» равным 0 и «words» равным (соединить [(«Bypass»), ": судим двоичным без сверки с семенем по прямому указанию.\nДвоичный: ", («Binary» от answers)] по "")])
+
+тотальная функция «Missing seed files»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Seed files») где file → «Failed» от (соединить ["seed ", file] по "") и answers
+
+тотальная функция «Missing tools»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть compiler равно («Compiler» от answers)
+  «Chosen» от [(«When» от ((«Mode» от answers) равен "forgery") и ((если «Absent» от "compiler version" и answers то [(соединить ["нет ", compiler, " — подложить нечего"] по "")] иначе пустой список))),
+    («When» от ((«Mode» от answers) равен "exact") и («Соединить списки» от (если «Absent» от "make" и answers то ["нет make — пересобрать нечем"] иначе пустой список) и (если «Absent» от "compiler version" и answers то [(соединить ["нет ", compiler, " — пересобрать нечем"] по "")] иначе пустой список)))] и ((если «Absent» от "readelf" и answers то [(соединить ["нет readelf — имена из двоичного взять нечем.\nТочная сверка readelf не требует: ", («Exact command»)] по "")] иначе пустой список))
+
+тотальная функция «Presence troubles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от [(если «Failed» от "binary is a file" и answers то [(соединить ["двоичного нет вовсе: ", («Binary» от answers), "\nСоберите его: make -C bootstrap"] по "")] иначе пустой список),
+    (если «Failed» от "binary runs" и answers то [(соединить ["двоичный есть, но не запускается: ", («Binary» от answers)] по "")] иначе пустой список),
+    (отобразить («Missing seed files» от answers) как file → соединить ["в дереве нет файла семени ", file, " — сверять не с чем"] по ""),
+    («Missing tools» от answers)]
+
+тотальная функция «First trouble»
+  принимает troubles: список строки, answers: список «Answer»
+  возвращает список «Outcome»
+  разбор troubles
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то [(«Cannot check» от голова и answers)]
+
+тотальная функция «Fingerprint troubles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  если «Absent» от "binary sum" и answers
+    то ["нет md5sum — отпечаток снять нечем"]
+    иначе пустой список
+
+тотальная функция «Memory outcomes»
+  принимает answers: список «Answer»
+  возвращает список «Outcome»
+  если «Remembered» от answers
+    то [запись «Outcome» с «code» равным 0 и «words» равным (соединить ["двоичный сверен с семенем ", («Mode word» от answers), ": такая сверка уже сходилась — ", («Memory path» от answers)] по "")]
+    иначе пустой список
+
+тотальная функция «Settled»
+  принимает step: строка, answers: список «Answer»
+  возвращает список «Outcome»
+  «Chosen» от [(«When» от (step равен "setup") и («Setup outcomes» от answers)),
+    («When» от (step равен "presence") и («First trouble» от («Presence troubles» от answers) и answers)),
+    («When» от (step равен "fingerprints") и («First trouble» от («Fingerprint troubles» от answers) и answers)),
+    («When» от (step равен "memory") и («Memory outcomes» от answers))] и (пустой список)
+
+тотальная функция «Forged source»
+  возвращает строка
+  "int flang_binary_origin_forged_name(void) { return 0; }\nint main(void) { return flang_binary_origin_forged_name(); }\n"
+
+тотальная функция «Judge»
+  принимает name: строка, judged: строка, answers: список «Answer»
+  возвращает «Question»
+  «Run» от name и "env" и ["FLANG_BINARY_UNKNOWN_OK=", "FLANG_BINARY_ORIGIN_NO_MEMORY=1", "FLANG_BINARY=", (соединить ["FLANG_BIN=", judged] по ""), (соединить [(«Root path» от answers), "/bootstrap/flang"] по ""), "io", "binary-origin.fscript", "--plan", "Check"]
+
+тотальная функция «Forging»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть work равно («Work» от answers)
+  [(«Write» от "forged source" и (соединить [work, "/forged.c"] по "") и («Forged source»)),
+   («Run» от "forge" и («Compiler» от answers) и ["-o", (соединить [work, "/forged"] по ""), (соединить [work, "/forged.c"] по "")]),
+   («Judge» от "forged run" и (соединить [work, "/forged"] по "") и answers),
+   («Run» от "strip version" и "strip" и ["--version"]),
+   («Run» от "copy binary" и "cp" и [(«Binary» от answers), (соединить [work, "/stripped"] по "")]),
+   («Run» от "strip" и "strip" и [(соединить [work, "/stripped"] по "")]),
+   («Judge» от "stripped run" и (соединить [work, "/stripped"] по "") и answers)]
+
+тотальная функция «Survived lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть mine равно («Sum» от "plan sum" и answers)
+  отфильтровать («Lines» от («Output of» от "memory" и answers)) где line → ((«Word» от 4 и line) равен mine) и притом (не (line равен («Stamp» от answers)))
+
+тотальная функция «Remember»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если («Remembers» от answers) и притом ((«Verdict of» от answers).«code» равен 0)
+    то [(«Write» от "remember" и («Memory path» от answers) и (соединить (добавить "" к (добавить («Stamp» от answers) к («Survived lines» от answers))) по "\n"))]
+    иначе пустой список
+
+тотальная функция «Cleanup»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  приписать («Run» от "cleanup" и "rm" и ["-rf", («Work» от answers)]) к (если («Mode» от answers) равен "forgery" то пустой список иначе («Remember» от answers))
+
+тотальная функция «Stage»
+  принимает step: строка, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (step равен "setup") и («Setup»)),
+    («When» от (step равен "presence") и («Presence» от answers)),
+    («When» от (step равен "fingerprints") и («Fingerprints» от answers)),
+    («When» от (step равен "memory") и («Memory» от answers)),
+    («When» от (step равен "work") и ([(«Temporary directory» от "work" и («Work pattern» от answers))])),
+    («When» от (step равен "survey") и («Survey» от answers)),
+    («When» от (step равен "comparison") и («Comparison» от answers)),
+    («When» от (step равен "forging") и («Forging» от answers)),
+    («When» от (step равен "cleanup") и («Cleanup» от answers))] и (пустой список)
+
+тотальная функция «Written»
+  принимает reply: «Отклик»
+  возвращает число
+  пример «A written file tells how much was written»
+    дано reply равно вариант «Записано» с сколько равным 12
+    ожидается 12
+  пример «Anything else wrote nothing»
+    дано reply равно вариант «Пока ничего»
+    ожидается 0
+  разбор reply
+    случай вариант «Записано» с сколько как amount
+      то amount
+    случай любое
+      то 0
+
+тотальная функция «Has name table»
+  принимает sections: строка
+  возвращает признак
+  пример «The table of names is among the sections»
+    дано sections равно "  [28] .comment PROGBITS\n  [29] .symtab           SYMTAB          0000000000000000 168f040\n"
+    ожидается да
+  пример «A stripped binary has none»
+    дано sections равно "  [28] .comment PROGBITS\n  [29] .shstrtab STRTAB\n"
+    ожидается нет
+  (длина (отфильтровать («Lines» от sections) где line → («Words» от line) содержит ".symtab")) больше 0
+
+тотальная функция «Leading»
+  принимает lines: список строки, amount: число
+  возвращает список строки
+  пример «Two of three»
+    дано lines равно ["one", "two", "three"]
+    дано amount равно 2
+    ожидается ["one", "two"]
+  пример «More than there is»
+    дано lines равно ["one"]
+    дано amount равно 2
+    ожидается ["one"]
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если amount не больше 0
+        то пустой список
+        иначе приписать голова к («Leading» от хвост и (amount минус 1))
+
+тотальная функция «Without leading»
+  принимает lines: список строки, amount: число
+  возвращает список строки
+  пример «Without the first of three»
+    дано lines равно ["one", "two", "three"]
+    дано amount равно 1
+    ожидается ["two", "three"]
+  пример «Nothing to drop»
+    дано lines равно ["one"]
+    дано amount равно 0
+    ожидается ["one"]
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если amount не больше 0
+        то lines
+        иначе «Without leading» от хвост и (amount минус 1)
+
+тотальная функция «Shown names»
+  принимает names: список строки
+  возвращает список строки
+  пример «A short list is shown whole»
+    дано names равно ["forged"]
+    ожидается ["  • forged"]
+  «Соединить списки» от (отобразить («Leading» от names и 12) как name → соединить ["  • ", name] по "") и (если (длина names) больше 12 то [(соединить ["  …и ещё ", (к строке ((длина names) минус 12))] по "")] иначе пустой список)
+
+тотальная функция «Two causes»
+  возвращает список строки
+  ["",
+   "Двоичный собран не из этого семени. Причин ровно две, и обе чинятся:",
+   "",
+   "  1. Двоичный СВЕЖЕЕ семени: собран из правки, которой в bootstrap/ нет.",
+   "     Ровно так 23 августа 2026 в двадцати рабочих копиях оказался",
+   "     компилятор из двух невлитых веток — и шесть суток судил язык с",
+   "     доказательствами. Чинится: закоммитить то, из чего он собран, или",
+   "     пересобрать из дерева.",
+   "  2. Двоичный ОТСТАЛ: семя перепечатали, а его не пересобрали.",
+   "     Чинится:  make -C bootstrap",
+   "",
+   "Какая из двух — видно по именам выше: имя из вашей же правки значит",
+   "первое, десятки незнакомых имён семени — второе.",
+   "",
+   (соединить ["Побайтовая сверка (около 65 с): ", («Exact command»)] по ""),
+   (соединить ["Судить всё равно, зная это: ", («Bypass»), "=1 <та же команда>"] по "")]
+
+тотальная функция «Foreign code»
+  принимает names: список строки, answers: список «Answer»
+  возвращает «Outcome»
+  запись «Outcome» с «code» равным 1 и «words» равным (соединить («Gathered words» от [[(соединить ["ОТКАЗЫВАЮСЬ СУДИТЬ: в двоичном есть код, которого нет в семени: ", («Asker of» от answers)] по ""),
+      "",
+      (соединить ["  двоичный: ", («Binary» от answers)] по ""),
+      (соединить ["  отпечаток: ", («Sum» от "binary sum" и answers), ", ", («Sum» от "binary size" и answers), " байт"] по ""),
+      "",
+      (соединить ["Имён, которых нет ни в bootstrap/*.c, ни в bootstrap/*.h: ", (к строке (длина names))] по "")],
+    («Shown names» от names),
+    («Two causes»)]) по "\n")
+
+тотальная функция «Names verdict»
+  принимает answers: список «Answer»
+  возвращает «Outcome»
+  «Chosen» от [(«When» от (пусто («Work» от answers)) и («Cannot check» от "не завёлся временный каталог" и answers)),
+    («When» от (не («Has name table» от («Output of» от "sections" и answers))) и («Cannot check» от (соединить ["у двоичного снята таблица имён (.symtab) — сверять по именам нечего.\nПустота не есть совпадение. Побайтовая сверка это переживёт:\n  ", («Exact command»)] по "") и answers)),
+    («When» от ((«Written» от («Reply to» от "binary names" и answers)) не больше 1) и («Cannot check» от (соединить ["в таблице имён двоичного нет ни одного\nопределённого имени — читать нечего. Побайтовая сверка это переживёт:\n  ", («Exact command»)] по "") и answers)),
+    («When» от («Failed» от "foreign" и answers) и («Cannot check» от (соединить ["сличить имена двоичного с именами семени не удалось: ", («Errors of» от "foreign" и answers)] по "") и answers)),
+    («When» от ((длина («Lines» от («Output of» от "foreign" и answers))) равен 0) и (запись «Outcome» с «code» равным 0 и «words» равным "двоичный сверен с семенем поименно: чужих имён нет"))] и («Foreign code» от («Lines» от («Output of» от "foreign" и answers)) и answers)
+
+тотальная функция «Last lines»
+  принимает text: строка, amount: число
+  возвращает список строки
+  пример «The end of a long text»
+    дано text равно "one\ntwo\nthree\n"
+    дано amount равно 2
+    ожидается ["two", "three"]
+  пример «A short text is taken whole»
+    дано text равно "one\n"
+    дано amount равно 2
+    ожидается ["one"]
+  «Without leading» от («Lines» от text) и ((длина («Lines» от text)) минус amount)
+
+тотальная функция «Not built from seed»
+  принимает answers: список «Answer»
+  возвращает «Outcome»
+  запись «Outcome» с «code» равным 1 и «words» равным (соединить [(соединить ["ОТКАЗЫВАЮСЬ СУДИТЬ: двоичный не собирается из семени этого дерева: ", («Asker of» от answers)] по ""),
+    "",
+    (соединить ["  двоичный в дереве: ", («Sum» от "binary sum" и answers), "  ", («Sum» от "binary size" и answers), " байт"] по ""),
+    (соединить ["  сборка из семени:  ", («Sum» от "built sum" и answers), "  ", («Sum» от "built size" и answers), " байт"] по ""),
+    (соединить ["  собрано: ", («Compiler» от answers), " — ", («Compiler name» от answers)] по ""),
+    "",
+    "Это тот же случай, что 23 августа 2026: в двадцати рабочих копиях лежал",
+    "двоичный, собранный из невлитых веток. Отличий не было видно ни в номере",
+    "версии, ни в печатных строках — только в коде.",
+    "",
+    "Чинится одним из двух:",
+    "  * пересобрать двоичный из дерева:  make -C bootstrap",
+    "  * или закоммитить то, из чего он на самом деле собран.",
+    "",
+    (соединить ["Судить всё равно, зная это: ", («Bypass»), "=1 <та же команда>"] по "")] по "\n")
+
+тотальная функция «Exact verdict»
+  принимает answers: список «Answer»
+  возвращает «Outcome»
+  «Chosen» от [(«When» от (пусто («Work» от answers)) и («Cannot check» от "не завёлся временный каталог" и answers)),
+    («When» от («Failed» от "copy" и answers) и («Cannot check» от "нет bootstrap/Makefile" и answers)),
+    («When» от («Failed» от "build" и answers) и («Cannot check» от (соединить («Соединить списки» от (приписать "сборка из семени не прошла — вот её конец:" к («Last lines» от (соединить [(«Output of» от "build" и answers), («Errors of» от "build" и answers)] по "\n") и 20)) и ["", "собрать компилятор из bootstrap/ этого дерева не удалось"]) по "\n") и answers)),
+    («When» от ((«Exit code of» от "compare" и answers) равен 0) и (запись «Outcome» с «code» равным 0 и «words» равным "двоичный сверен с семенем побайтово: сборка из семени совпала с двоичным"))] и («Not built from seed» от answers)
+
+тотальная функция «Without log»
+  принимает answer: строка
+  возвращает строка
+  пример «The answer of a plan is kept and its log is dropped»
+    дано answer равно "{\"plan\":\"Check\",\"result\":\"сверено\",\"orders\":31,\"log\":[]}"
+    ожидается "{\"plan\":\"Check\",\"result\":\"сверено\""
+  пример «An empty answer stays empty»
+    дано answer равно ""
+    ожидается ""
+  разбор (разделить answer по ",\"orders\":")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Said»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  соединить [(«Without log» от («Output of» от name и answers)), («Errors of» от name и answers)] по "\n"
+
+тотальная функция «Blind»
+  принимает words: строка, name: строка, answers: список «Answer»
+  возвращает «Outcome»
+  запись «Outcome» с «code» равным 1 и «words» равным (соединить [words, "\n", («Said» от name и answers)] по "")
+
+тотальная функция «Forgery verdict»
+  принимает answers: список «Answer»
+  возвращает «Outcome»
+  «Chosen» от [(«When» от (пусто («Work» от answers)) и («Cannot check» от "не завёлся временный каталог" и answers)),
+    («When» от («Failed» от "forge" и answers) и («Cannot check» от "подложную программу не удалось собрать" и answers)),
+    («When» от (не ((«Exit code of» от "forged run" и answers) равен 1)) и («Blind» от (соединить ["СТОРОЖ СЛЕП: на подложенной программе он ответил кодом ", (к строке («Exit code of» от "forged run" и answers)), " вместо 1."] по "") и "forged run" и answers)),
+    («When» от (не ((«Said» от "forged run" и answers) содержит "flang_binary_origin_forged_name")) и («Blind» от "СТОРОЖ ОТКАЗАЛ, но не назвал подложное имя — отказ не по делу:" и "forged run" и answers))] и («Emptiness verdict» от answers)
+
+тотальная функция «Emptiness verdict»
+  принимает answers: список «Answer»
+  возвращает «Outcome»
+  «Chosen» от [(«When» от («Absent» от "strip version" и answers) и (запись «Outcome» с «code» равным 3 и «words» равным "подлог именем: сторож покраснел и назвал имя — видит.\nЧАСТЬ САМОПРОВЕРКИ НЕ СНЯТА: нет strip, подлог снятой таблицей имён не сделан.\nПропуск не есть пройденная проверка.")),
+    («When» от ((«Failed» от "copy binary" и answers) или («Failed» от "strip" и answers)) и («Cannot check» от "снять таблицу имён с копии двоичного не удалось" и answers)),
+    («When» от (не ((«Exit code of» от "stripped run" и answers) равен 3)) и («Blind» от (соединить ["СТОРОЖ СЛЕП: на двоичном со снятой таблицей имён он ответил кодом ", (к строке («Exit code of» от "stripped run" и answers)), " вместо 3."] по "") и "stripped run" и answers))] и (запись «Outcome» с «code» равным 0 и «words» равным "подлог именем: сторож покраснел и назвал имя — видит.\nподлог пустотой: сторож отказал кодом 3, а не зазеленел, — видит.")
+
+тотальная функция «Verdict of»
+  принимает answers: список «Answer»
+  возвращает «Outcome»
+  «Chosen» от [(«When» от ((«Mode» от answers) равен "forgery") и («Forgery verdict» от answers)),
+    («When» от ((«Mode» от answers) равен "exact") и («Exact verdict» от answers))] и («Names verdict» от answers)
+
+тотальная функция «Failure code»
+  принимает mode: строка
+  возвращает строка
+  если mode равен "forgery" то "FLANG_GUARD_IS_BLIND" иначе "FLANG_BINARY_NOT_FROM_SEED"
+
+тотальная функция «Ending»
+  принимает outcome: «Outcome», mode: строка
+  возвращает «Продолжение»
+  пример «Code zero ends the work»
+    дано outcome равно запись «Outcome» с «code» равным 0 и «words» равным "сверено"
+    дано mode равно "check"
+    ожидается вариант «Конец работы» с значение равным "сверено"
+  пример «Code one is a failure found by the plan»
+    дано outcome равно запись «Outcome» с «code» равным 1 и «words» равным "чужой код"
+    дано mode равно "check"
+    ожидается вариант «Провал» с код равным "FLANG_BINARY_NOT_FROM_SEED" и сообщение равным "чужой код"
+  пример «Any other code means there was nothing to look with»
+    дано outcome равно запись «Outcome» с «code» равным 3 и «words» равным "нет readelf"
+    дано mode равно "check"
+    ожидается вариант «Не проверено» с код равным "FLANG_BINARY_NOT_CHECKED" и сообщение равным "нет readelf"
+  «Chosen» от [(«When» от ((outcome.«code») равен 0) и (вариант «Конец работы» с значение равным (outcome.«words»))),
+    («When» от ((outcome.«code») равен 1) и (вариант «Провал» с код равным («Failure code» от mode) и сообщение равным (outcome.«words»)))] и (вариант «Не проверено» с код равным "FLANG_BINARY_NOT_CHECKED" и сообщение равным (outcome.«words»))
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то разбор («Settled» от («Step» от stages и («Mode» от answers)) и answers)
+        случай голова и хвост
+          то «Ending» от (голова) и («Mode» от answers)
+        случай пусто
+          то если stages не больше 0
+            то «Ending» от («Verdict of» от answers) и («Mode» от answers)
+            иначе «Proceed» от («Stage» от («Step» от (stages минус 1) и («Mode» от answers)) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin check»
+  возвращает «Inquiry»
+  «Begin in mode» от "check" и 8
+
+тотальная функция «Begin exact»
+  возвращает «Inquiry»
+  «Begin in mode» от "exact" и 8
+
+тотальная функция «Begin forgery»
+  возвращает «Inquiry»
+  «Begin in mode» от "forgery" и 5
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Exact»
+  состояние «Inquiry»
+  начинает с «Begin exact»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Begin forgery»
+  обрабатывает «Next»

@@ -147,7 +147,7 @@ overagent'а; строка в `flang/proof/checker/ratchet.txt` («9337»).
 * `sh flang/proof/checker/tests/run.sh` — «сошлось всё»: подделок 551, принято
   кодом 0 — 0; честных 253, отвергнуто 0; дыр в долге 3. Прежний сверщик на том же
   наборе — «провалов: 6».
-* `sh scripts/доказуемость.sh` — ДОКАЗУЕМ, 650 из 650; проб на подлог 551 при
+* `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — ДОКАЗУЕМ, 650 из 650; проб на подлог 551 при
   храповике 551.
 * `LEAN=~/.elan/bin/lean sh flang/proof/lean/run.sh` (Lean 4.34.0) — «сошлось
   всё», сверка вердиктов C ↔ Lean: расхождений 0. Парного правила Lean правка не

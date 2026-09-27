@@ -31,8 +31,8 @@
 
 ```
 sh scripts/bootstrap-reprint.sh --bystro     → код 1
-sh scripts/seed-freshness.sh         → код 3   («сверить не удалось», не «прошло»)
-sh scripts/binary-origin.sh          → код 3
+sh scripts/seed-freshness.fscript         → код 3   («сверить не удалось», не «прошло»)
+sh scripts/binary-origin.fscript          → код 3
 ./ярлык доказанное:проверка          → код 3, сборка НЕ НАЧАТА
 ```
 

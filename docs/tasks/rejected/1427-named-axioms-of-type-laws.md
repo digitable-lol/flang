@@ -78,7 +78,7 @@
 ```
 grep -c 'AKSIOMY' flang/proof/checker/checker.c     → 0
 git ls-files | grep -c -i porog5                    → 0
-sh scripts/доказуемость.sh   → ДОКАЗУЕМ, код 0: доля 100.00 % (650 из 650),
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000   → ДОКАЗУЕМ, код 0: доля 100.00 % (650 из 650),
                                подделок 543, принято кодом 0 — 0
 flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль' --на-веру
                              → «аксиом ноль, нарушений 0», код 0

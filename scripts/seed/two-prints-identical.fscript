@@ -1,0 +1,493 @@
+модуль «Two prints identical»
+  использует «Lists» только «Взять первые», «Приписать в начало», «Соединить списки»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+
+объект «Finding»
+  «journal»: строка
+  «mark»: строка
+  «trouble»: строка
+
+объект «Outcome»
+  «same»: признак
+  «files»: число
+  «bytes»: число
+  «lines»: список строки
+
+тотальная функция «Usage»
+  возвращает строка
+  "звать: bootstrap/flang io scripts/seed/two-prints-identical.fscript -- <каталог-1> <каталог-2>"
+
+тотальная функция «Sides»
+  возвращает список строки
+  ["first", "second"]
+
+тотальная функция «Given tree»
+  принимает side: строка, answers: список «Answer»
+  возвращает строка
+  пусть trees равно («Given of» от "arguments" и answers)
+  если (длина trees) равен 2
+    то элемент (если side равен "first" то 1 иначе 2) в trees
+    иначе ""
+
+тотальная функция «Absolute»
+  принимает path: строка, answers: список «Answer»
+  возвращает строка
+  если path начинается с "/"
+    то path
+    иначе соединить [(«Setting of» от "caller" и "." и answers), "/", path] по ""
+
+тотальная функция «Tree»
+  принимает side: строка, answers: список «Answer»
+  возвращает строка
+  «Absolute» от («Given tree» от side и answers) и answers
+
+тотальная функция «Named journal»
+  принимает side: строка, answers: список «Answer»
+  возвращает строка
+  «Setting of» от (соединить ["named ", side] по "") и "" и answers
+
+тотальная функция «Is a journal name»
+  принимает name: строка
+  возвращает признак
+  пример «A visible name with the log ending»
+    дано name равно "print.log"
+    ожидается да
+  пример «A hidden name is not taken»
+    дано name равно ".print.log"
+    ожидается нет
+  пример «Another ending is not taken»
+    дано name равно "print.txt"
+    ожидается нет
+  («Ends with» от name и ".log") и притом (не (name начинается с "."))
+
+тотальная функция «Beside»
+  принимает side: строка, answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Lines» от («Output of» от (соединить ["beside ", side] по "") и answers)) где name → «Is a journal name» от name
+
+тотальная функция «Regular question»
+  принимает side: строка, name: строка
+  возвращает строка
+  соединить ["journal file ", side, " ", name] по ""
+
+тотальная функция «Journals»
+  принимает side: строка, answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Beside» от side и answers) где name → («Exit code of» от («Regular question» от side и name) и answers) равен 0
+
+тотальная функция «Raw journal»
+  принимает side: строка, name: строка, answers: список «Answer»
+  возвращает строка
+  соединить [(«Given tree» от side и answers), "/../", name] по ""
+
+тотальная функция «Last of»
+  принимает values: список строки
+  возвращает строка
+  пример «The last of three»
+    дано values равно ["one", "two", "three"]
+    ожидается "three"
+  пример «Nothing has no last»
+    дано values равно пустой список
+    ожидается ""
+  свёртка values начиная с "" как last и value → value
+
+тотальная функция «Candidate»
+  принимает side: строка, answers: список «Answer»
+  возвращает строка
+  пусть named равно («Named journal» от side и answers)
+  пусть journals равно («Journals» от side и answers)
+  «Chosen» от [(«When» от ((не (пусто named)) и притом ((«Exit code of» от (соединить ["named file ", side] по "") и answers) равен 0)) и named),
+    («When» от (не (пусто named)) и ""),
+    («When» от ((длина journals) равен 1) и («Raw journal» от side и («Last of» от journals) и answers))] и ""
+
+тотальная функция «Directory of»
+  принимает path: строка
+  возвращает строка
+  пример «Everything before the last slash»
+    дано path равно "/srv/tmp/print/../print.log"
+    ожидается "/srv/tmp/print/.."
+  пример «A bare name lies in the current directory»
+    дано path равно "print.log"
+    ожидается "."
+  пример «A file of the root lies in the root»
+    дано path равно "/print.log"
+    ожидается "/"
+  пусть parts равно (разделить path по "/")
+  пусть above равно (соединить («Взять первые» от parts и ((длина parts) минус 1)) по "/")
+  «Chosen» от [(«When» от ((длина parts) равен 1) и "."),
+    («When» от (пусто above) и "/")] и above
+
+тотальная функция «Located»
+  принимает side: строка, answers: список «Answer»
+  возвращает строка
+  пусть candidate равно («Candidate» от side и answers)
+  пусть place равно («First line» от («Output of» от (соединить ["place ", side] по "") и answers))
+  если (пусто candidate) или (пусто place)
+    то candidate
+    иначе соединить [place, "/", («Last of» от (разделить candidate по "/"))] по ""
+
+тотальная функция «Numbers after»
+  принимает mark: строка, line: строка
+  возвращает список строки
+  пример «Every number that follows the mark»
+    дано mark равно "код="
+    дано line равно "КОНЕЦ код=1 потом код=0 и код=нет"
+    ожидается ["1", "0"]
+  пример «A line without the mark has no numbers»
+    дано mark равно "код="
+    дано line равно "КОНЕЦ"
+    ожидается пустой список
+  разбор (разделить line по mark)
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то отфильтровать (отобразить хвост как part → «Leading digits» от part) где digits → не (пусто digits)
+
+тотальная функция «Print codes»
+  принимает lines: список строки
+  возвращает список строки
+  «Gathered words» от (отобразить lines как line → «Numbers after» от "ПЕЧАТЬ КОД=" и line)
+
+тотальная функция «End lines»
+  принимает lines: список строки
+  возвращает список строки
+  отфильтровать lines где line → line начинается с "КОНЕЦ"
+
+тотальная функция «End codes»
+  принимает lines: список строки
+  возвращает список строки
+  «Gathered words» от (отобразить («End lines» от lines) как line → «Numbers after» от "код=" и line)
+
+тотальная функция «Without leading blanks»
+  принимает text: строка
+  возвращает строка
+  пример «Spaces and tabs before the value are dropped»
+    дано text равно " \t 143"
+    ожидается "143"
+  пример «Blanks inside the value are kept»
+    дано text равно " 143 killed"
+    ожидается "143 killed"
+  свёртка (разложить text на символы) начиная с "" как kept и sign → если (пусто kept) и притом ((sign равен " ") или (sign равен "\t")) то "" иначе (соединить [kept, sign] по "")
+
+тотальная функция «Exit status»
+  принимает lines: список строки
+  возвращает строка
+  пример «The status of the last line that names it»
+    дано lines равно ["Exit status: 0", "\tExit status:   143"]
+    ожидается "143"
+  пример «No line names the status»
+    дано lines равно ["КОНЕЦ код=0"]
+    ожидается ""
+  «Without leading blanks» от («Last of» от (разделить («Last of» от (отфильтровать lines где line → line содержит "Exit status:")) по "Exit status:"))
+
+тотальная функция «Success»
+  принимает journal: строка, mark: строка, code: строка
+  возвращает «Finding»
+  «Chosen» от [(«When» от (пусто code) и (запись «Finding» с «journal» равным journal и «mark» равным mark и «trouble» равным (соединить ["конец назван строкой «", mark, "», а кода в ней нет: ", journal] по ""))),
+    («When» от (code равен "0") и (запись «Finding» с «journal» равным journal и «mark» равным mark и «trouble» равным ""))] и (запись «Finding» с «journal» равным journal и «mark» равным mark и «trouble» равным (соединить ["печать кончилась НЕ УСПЕХОМ (код ", code, ", по «", mark, "»): ", journal] по ""))
+
+тотальная функция «End finding»
+  принимает journal: строка, lines: список строки
+  возвращает «Finding»
+  пусть code равно («Last of» от («End codes» от lines))
+  пусть status равно («Exit status» от lines)
+  «Chosen» от [(«When» от (пусто code) и (запись «Finding» с «journal» равным journal и «mark» равным "КОНЕЦ … код=" и «trouble» равным (соединить ["строка «КОНЕЦ» есть, а кода в ней нет: ", journal] по ""))),
+    («When» от ((не (пусто status)) и притом (не (status равен code))) и (запись «Finding» с «journal» равным journal и «mark» равным "КОНЕЦ … код=" и «trouble» равным (соединить ["журнал сам себе противоречит: «КОНЕЦ … код=", code, "» против «Exit status: ", status, "» — ", journal, "\n    Так соврал /srv/tmp/relizy/perepechatka-zahod1-ubita.log: код=0 на убитом\n    прогоне. Пусть допишет «ПЕЧАТЬ КОД=<код>» тот, кто печать пустил."] по "")))] и («Success» от journal и "КОНЕЦ … код=" и code)
+
+тотальная функция «Read finding»
+  принимает journal: строка, lines: список строки
+  возвращает «Finding»
+  пример «A print that named its code zero is ready»
+    дано journal равно "/srv/tmp/first.log"
+    дано lines равно ["ПЕЧАТЬ КОД=7", "ПЕЧАТЬ КОД=0"]
+    ожидается запись «Finding» с «journal» равным "/srv/tmp/first.log" и «mark» равным "ПЕЧАТЬ КОД=" и «trouble» равным ""
+  пример «A print that ended with another code is not»
+    дано journal равно "/srv/tmp/first.log"
+    дано lines равно ["ПЕЧАТЬ КОД=7"]
+    ожидается запись «Finding» с «journal» равным "/srv/tmp/first.log" и «mark» равным "ПЕЧАТЬ КОД=" и «trouble» равным "печать кончилась НЕ УСПЕХОМ (код 7, по «ПЕЧАТЬ КОД=»): /srv/tmp/first.log"
+  пример «An end line is believed only while the exit status agrees»
+    дано journal равно "/srv/tmp/first.log"
+    дано lines равно ["КОНЕЦ печати код=0", "Exit status: 143"]
+    ожидается запись «Finding» с «journal» равным "/srv/tmp/first.log" и «mark» равным "КОНЕЦ … код=" и «trouble» равным "журнал сам себе противоречит: «КОНЕЦ … код=0» против «Exit status: 143» — /srv/tmp/first.log\n    Так соврал /srv/tmp/relizy/perepechatka-zahod1-ubita.log: код=0 на убитом\n    прогоне. Пусть допишет «ПЕЧАТЬ КОД=<код>» тот, кто печать пустил."
+  пример «A journal without an end is not ready»
+    дано journal равно "/srv/tmp/first.log"
+    дано lines равно пустой список
+    ожидается запись «Finding» с «journal» равным "/srv/tmp/first.log" и «mark» равным "" и «trouble» равным "конца печати в журнале НЕТ: /srv/tmp/first.log\n    ни «ПЕЧАТЬ КОД=<код>» (дописать обязан тот, кто пустил печать: для CI —\n    работа .github/workflows/reprint.yml, для ручного прогона — оболочка\n    запуска), ни «КОНЕЦ … код=<код>». Печать либо идёт, либо её оборвали,\n    не закрыв журнал. Это НЕ «печати разошлись»."
+  «Chosen» от [(«When» от ((длина («Print codes» от lines)) больше 0) и («Success» от journal и "ПЕЧАТЬ КОД=" и («Last of» от («Print codes» от lines)))),
+    («When» от ((длина («End lines» от lines)) больше 0) и («End finding» от journal и lines))] и (запись «Finding» с «journal» равным journal и «mark» равным "" и «trouble» равным (соединить ["конца печати в журнале НЕТ: ", journal, "\n    ни «ПЕЧАТЬ КОД=<код>» (дописать обязан тот, кто пустил печать: для CI —\n    работа .github/workflows/reprint.yml, для ручного прогона — оболочка\n    запуска), ни «КОНЕЦ … код=<код>». Печать либо идёт, либо её оборвали,\n    не закрыв журнал. Это НЕ «печати разошлись»."] по ""))
+
+тотальная функция «Many journals»
+  принимает tree: строка, journals: список строки
+  возвращает строка
+  пример «Every journal is named and none is chosen»
+    дано tree равно "/p/tree"
+    дано journals равно ["/p/tree/../a.log", "/p/tree/../b.log"]
+    ожидается "рядом с /p/tree журналов 2, и какой из них ЭТОЙ печати — неизвестно:\n      /p/tree/../a.log\n      /p/tree/../b.log\n    Брать самый свежий нельзя: так прибор уже прочёл отказ печати как успех\n    (замер А1 2 сентября 2026, docs/zettel/two-logs-beside-a-print-tree-mean-unknown-not-take-the-newer.md).\n    Назовите журналы прямо — FLANG_PRINT_LOG_1=… FLANG_PRINT_LOG_2=… — или дайте\n    каждой печати свой родительский каталог."
+  соединить [(соединить ["рядом с ", tree, " журналов ", (к строке (длина journals)), ", и какой из них ЭТОЙ печати — неизвестно:"] по ""), (соединить (отобразить journals как journal → соединить ["      ", journal] по "") по "\n"), "    Брать самый свежий нельзя: так прибор уже прочёл отказ печати как успех", "    (замер А1 2 сентября 2026, docs/zettel/two-logs-beside-a-print-tree-mean-unknown-not-take-the-newer.md).", "    Назовите журналы прямо — FLANG_PRINT_LOG_1=… FLANG_PRINT_LOG_2=… — или дайте", "    каждой печати свой родительский каталог."] по "\n"
+
+тотальная функция «Unfound»
+  принимает side: строка, answers: список «Answer»
+  возвращает «Finding»
+  пусть tree равно («Given tree» от side и answers)
+  пусть journals равно (отобразить («Journals» от side и answers) как name → «Raw journal» от side и name и answers)
+  «Chosen» от [(«When» от (не (пусто («Named journal» от side и answers))) и (запись «Finding» с «journal» равным "" и «mark» равным "" и «trouble» равным (соединить ["названный журнал не файл: ", («Named journal» от side и answers)] по ""))),
+    («When» от ((длина journals) равен 0) и (запись «Finding» с «journal» равным "" и «mark» равным "" и «trouble» равным (соединить ["журнала печати рядом с ", tree, " нет (ждём ", tree, "/../*.log)"] по "")))] и (запись «Finding» с «journal» равным («Last of» от journals) и «mark» равным "" и «trouble» равным («Many journals» от tree и journals))
+
+тотальная функция «Finding of»
+  принимает side: строка, answers: список «Answer»
+  возвращает «Finding»
+  если пусто («Candidate» от side и answers)
+    то «Unfound» от side и answers
+    иначе «Read finding» от («Located» от side и answers) и («Lines» от («Output of» от (соединить ["marks ", side] по "") и answers))
+
+тотальная функция «Troubles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать (отобразить («Sides») как side → («Finding of» от side и answers).«trouble») где trouble → не (пусто trouble)
+
+тотальная функция «Share a journal»
+  принимает answers: список «Answer»
+  возвращает признак
+  пусть journal равно ((«Finding of» от "first" и answers).«journal»)
+  (не (пусто journal)) и притом (journal равен ((«Finding of» от "second" и answers).«journal»))
+
+тотальная функция «Wrong call»
+  принимает answers: список «Answer»
+  возвращает признак
+  не ((длина («Given of» от "arguments" и answers)) равен 2)
+
+тотальная функция «Not directories»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отобразить (отфильтровать («Sides») где side → не ((«Exit code of» от (соединить ["directory ", side] по "") и answers) равен 0)) как side → «Given tree» от side и answers
+
+тотальная функция «Is called well»
+  принимает answers: список «Answer»
+  возвращает признак
+  (не («Wrong call» от answers)) и притом ((длина («Not directories» от answers)) равен 0)
+
+тотальная функция «Is ready»
+  принимает answers: список «Answer»
+  возвращает признак
+  ((«Is called well» от answers) и притом ((длина («Troubles» от answers)) равен 0)) и притом (не («Share a journal» от answers))
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "named first" и "FLANG_PRINT_LOG_1"), («Environment» от "named second" и "FLANG_PRINT_LOG_2"), («Environment» от "temporary" и "FLANG_TMP"), («Environment» от "caller" и "PWD")]
+
+тотальная функция «Directories»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если «Wrong call» от answers
+    то пустой список
+    иначе отобразить («Sides») как side → «Run» от (соединить ["directory ", side] по "") и "test" и ["-d", («Tree» от side и answers)]
+
+тотальная функция «Lookup»
+  принимает side: строка, answers: список «Answer»
+  возвращает «Question»
+  если пусто («Named journal» от side и answers)
+    то «Run» от (соединить ["beside ", side] по "") и "env" и ["LC_ALL=C", "ls", "-A", (соединить [(«Tree» от side и answers), "/.."] по "")]
+    иначе «Run» от (соединить ["named file ", side] по "") и "test" и ["-f", («Absolute» от («Named journal» от side и answers) и answers)]
+
+тотальная функция «Lookups»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если «Is called well» от answers
+    то отобразить («Sides») как side → «Lookup» от side и answers
+    иначе пустой список
+
+тотальная функция «Regular tests»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от (отобразить («Sides») как side → отобразить («Beside» от side и answers) как name → «Run» от («Regular question» от side и name) и "test" и ["-f", (соединить [(«Tree» от side и answers), "/../", name] по "")])
+
+тотальная функция «Found sides»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Sides») где side → не (пусто («Candidate» от side и answers))
+
+тотальная функция «Places»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  отобразить («Found sides» от answers) как side → «Run from» от (соединить ["place ", side] по "") и («Directory of» от («Absolute» от («Candidate» от side и answers) и answers)) и "pwd" и ["-P"]
+
+тотальная функция «Marks»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  отобразить («Found sides» от answers) как side → «Run» от (соединить ["marks ", side] по "") и "env" и ["LC_ALL=C.UTF-8", "grep", "-a", "-e", "ПЕЧАТЬ КОД=[0-9]", "-e", "^КОНЕЦ", "-e", "Exit status:", («Absolute» от («Located» от side и answers) и answers)]
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Made of» от "work" и answers
+
+тотальная функция «Names question»
+  принимает side: строка
+  возвращает строка
+  соединить ["names ", side] по ""
+
+тотальная функция «Listings»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если «Is ready» от answers
+    то приписать («Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/two-prints-identical."] по "")) к (отобразить («Sides») как side → «Run» от («Names question» от side) и "env" и ["LC_ALL=C", "ls", "-A", (соединить [(«Tree» от side и answers), "/flang/src/emit/c"] по "")])
+    иначе пустой список
+
+тотальная функция «Names»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Lines» от («Output of» от («Names question» от "first") и answers)
+
+тотальная функция «Names agree»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Output of» от («Names question» от "first") и answers) равен («Output of» от («Names question» от "second") и answers)
+
+тотальная функция «Printed»
+  принимает side: строка, name: строка, answers: список «Answer»
+  возвращает строка
+  соединить [(«Tree» от side и answers), "/bootstrap/", name] по ""
+
+тотальная функция «List file»
+  принимает side: строка, answers: список «Answer»
+  возвращает строка
+  соединить [(«Work» от answers), "/names-", side] по ""
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (не («Is ready» от answers)) и (пустой список)),
+    («When» от («Names agree» от answers) и (отобразить («Names» от answers) как name → «Run» от (соединить ["printed ", name] по "") и "test" и ["-f", («Printed» от "first" и name и answers)]))] и [(«Write» от "list first" и («List file» от "first" и answers) и («Output of» от («Names question» от "first") и answers)),
+    («Write» от "list second" и («List file» от "second" и answers) и («Output of» от («Names question» от "second") и answers)),
+    («Run» от "names difference" и "env" и ["LC_ALL=C", "diff", («List file» от "first" и answers), («List file» от "second" и answers)])]
+
+тотальная функция «Regular names»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Names» от answers) где name → («Answered» от (соединить ["printed ", name] по "") и answers) и притом ((«Exit code of» от (соединить ["printed ", name] по "") и answers) равен 0)
+
+тотальная функция «Comparisons»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть names равно («Regular names» от answers)
+  если (длина names) равен 0
+    то пустой список
+    иначе приписать («Run from» от "sizes" и (соединить [(«Tree» от "first" и answers), "/bootstrap"] по "") и "wc" и (приписать "-c" к (приписать "--" к names))) к (отобразить names как name → «Run» от (соединить ["bytes ", name] по "") и "env" и ["LC_ALL=C", "cmp", («Printed» от "first" и name и answers), («Printed» от "second" и name и answers)])
+
+тотальная функция «Cleanup»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Run» от "cleanup" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  если (stages меньше 0) или (stages больше 9)
+    то пустой список
+    иначе элемент (10 минус stages) в [(«Setup»), («Directories» от answers), («Lookups» от answers), («Regular tests» от answers), («Places» от answers), («Marks» от answers), («Listings» от answers), («Presence» от answers), («Comparisons» от answers), («Cleanup» от answers)]
+
+тотальная функция «Size»
+  принимает name: строка, sizes: список строки
+  возвращает число
+  пример «The size stands before the name»
+    дано name равно "flang_cli.c"
+    дано sizes равно ["  120 flang_repl.c", " 3454 flang_cli.c", " 3574 total"]
+    ожидается 3454
+  пример «A name without a line has no size»
+    дано name равно "absent.c"
+    дано sizes равно [" 3454 flang_cli.c"]
+    ожидается 0
+  «Count» от («Word» от 1 и («First line» от (соединить (отфильтровать sizes где line → («Word» от 2 и line) равен name) по "\n")))
+
+тотальная функция «Difference lines»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
+  пусть said равно («Reply to» от (соединить ["bytes ", name] по "") и answers)
+  если («Exit code» от said) равен 0
+    то пустой список
+    иначе [(соединить ["РАЗОШЁЛСЯ: bootstrap/", name] по ""), (соединить ["  ", («First line» от (соединить [(«Output» от said), («Errors» от said)] по "\n"))] по "")]
+
+тотальная функция «Compared»
+  принимает answers: список «Answer»
+  возвращает «Outcome»
+  пусть names равно («Regular names» от answers)
+  пусть sizes равно («Lines» от («Output of» от "sizes" и answers))
+  пусть lines равно («Gathered words» от (отобразить names как name → «Difference lines» от name и answers))
+  запись «Outcome» с «same» равным ((длина lines) равен 0) и «files» равным (длина names) и «bytes» равным (свёртка names начиная с 0 как sum и name → sum плюс («Size» от name и sizes)) и «lines» равным lines
+
+тотальная функция «Identical»
+  принимает outcome: «Outcome», trees: список строки, findings: список «Finding»
+  возвращает список строки
+  пример «Equal prints are named with their journals»
+    дано outcome равно запись «Outcome» с «same» равным да и «files» равным 4 и «bytes» равным 1229825 и «lines» равным пустой список
+    дано trees равно ["/p/1/tree", "/p/2/tree"]
+    дано findings равно [запись «Finding» с «journal» равным "/p/1/print.log" и «mark» равным "ПЕЧАТЬ КОД=" и «trouble» равным "", запись «Finding» с «journal» равным "/p/2/print.log" и «mark» равным "ПЕЧАТЬ КОД=" и «trouble» равным ""]
+    ожидается ["печати совпали побайтово: файлов 4, байт 1229825", "  первая:  /p/1/tree   (журнал /p/1/print.log, конец по «ПЕЧАТЬ КОД=»)", "  вторая:  /p/2/tree   (журнал /p/2/print.log, конец по «ПЕЧАТЬ КОД=»)", "Г6 на ЭТОЙ паре взят. На гейт целиком этого мало: нужна пара из ОДНОГО", "дерева и прибор, зовущийся сам, а не руками."]
+  если ((длина trees) равен 2) и притом ((длина findings) равен 2)
+    то [(соединить ["печати совпали побайтово: файлов ", (к строке (outcome.«files»)), ", байт ", (к строке (outcome.«bytes»))] по ""),
+      (соединить ["  первая:  ", (элемент 1 в trees), "   (журнал ", ((элемент 1 в findings).«journal»), ", конец по «", ((элемент 1 в findings).«mark»), "»)"] по ""),
+      (соединить ["  вторая:  ", (элемент 2 в trees), "   (журнал ", ((элемент 2 в findings).«journal»), ", конец по «", ((элемент 2 в findings).«mark»), "»)"] по ""),
+      "Г6 на ЭТОЙ паре взят. На гейт целиком этого мало: нужна пара из ОДНОГО",
+      "дерева и прибор, зовущийся сам, а не руками."]
+    иначе пустой список
+
+тотальная функция «Differing»
+  принимает outcome: «Outcome»
+  возвращает список строки
+  пример «Differing files are counted after they are named»
+    дано outcome равно запись «Outcome» с «same» равным нет и «files» равным 4 и «bytes» равным 10 и «lines» равным ["РАЗОШЁЛСЯ: bootstrap/flang_cli.c", "  a b differ: byte 1, line 1"]
+    ожидается ["РАЗОШЁЛСЯ: bootstrap/flang_cli.c", "  a b differ: byte 1, line 1", "", "ПЕЧАТИ РАЗОШЛИСЬ: файлов сверено 4, разошлось 1.", "Значит печать НЕ воспроизводима, и Г6 на этой паре не взят."]
+  «Соединить списки» от (outcome.«lines») и ["", (соединить ["ПЕЧАТИ РАЗОШЛИСЬ: файлов сверено ", (к строке (outcome.«files»)), ", разошлось ", (к строке ((длина (outcome.«lines»)) делить на 2)), "."] по ""), "Значит печать НЕ воспроизводима, и Г6 на этой паре не взят."]
+
+тотальная функция «Judgement»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  «Chosen» от [(«When» от (не («Names agree» от answers)) и (вариант «Провал» с код равным "FLANG_PRINTS_DIFFER" и сообщение равным (соединить (приписать "РАЗОШЛИСЬ: наборы файлов в bootstrap/ не совпадают" к (отобразить («Lines» от («Output of» от "names difference" и answers)) как line → соединить ["  ", line] по "")) по "\n"))),
+    («When» от ((«Compared» от answers).«same») и (вариант «Конец работы» с значение равным (соединить («Identical» от («Compared» от answers) и (отобразить («Sides») как side → «Given tree» от side и answers) и (отобразить («Sides») как side → «Finding of» от side и answers)) по "\n")))] и (вариант «Провал» с код равным "FLANG_PRINTS_DIFFER" и сообщение равным (соединить («Differing» от («Compared» от answers)) по "\n"))
+
+тотальная функция «Refusal»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Chosen» от [(«When» от («Wrong call» от answers) и ([(«Usage»)])),
+    («When» от ((длина («Not directories» от answers)) больше 0) и ([(соединить ["не каталог: ", («First line» от (соединить («Not directories» от answers) по "\n"))] по "")])),
+    («When» от («Share a journal» от answers) и ([(соединить ["НЕ ПРОВЕРЕНО: обеим печатям достался ОДИН журнал — ", ((«Finding of» от "first" и answers).«journal»)] по ""), "  Значит про одну из них не известно ничего. Назовите журналы прямо:", (соединить ["  FLANG_PRINT_LOG_1=<журнал первой> FLANG_PRINT_LOG_2=<журнал второй> bootstrap/flang io scripts/seed/two-prints-identical.fscript -- ", («Given tree» от "first" и answers), " ", («Given tree» от "second" и answers)] по "")])),
+    («When» от ((длина («Troubles» от answers)) больше 0) и ([(соединить (приписать "НЕ ПРОВЕРЕНО: печать ещё не кончилась или кончилась не успехом:" к (отобразить («Troubles» от answers) как trouble → соединить ["  ", trouble] по "")) по "\n"), "Это НЕ «разошлись». Повторить, когда обе печати кончатся."])),
+    («When» от (пусто («Work» от answers)) и ([(соединить ["ПРОВЕРИТЬ НЕ УДАЛОСЬ: не создался каталог в ", («Setting of» от "temporary" и "/srv/tmp" и answers)] по "")]))] и (пустой список)
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  разбор («Refusal» от answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_PRINTS_NOT_COMPARED" и сообщение равным (соединить (приписать голова к хвост) по "\n")
+    случай пусто
+      то «Judgement» от answers
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 10
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

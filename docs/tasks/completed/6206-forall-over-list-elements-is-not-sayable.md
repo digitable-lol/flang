@@ -93,7 +93,7 @@ ensures "all positive" for all p from result: p greater than 0
 - зонд над правленым `flang/self`: честная программа с `для всех п из результат: …` —
   «доказано», правило «все элементы по построению», запись с блоком `вывод` Э-шагов;
 - сверщик: честная запись — код 0, «проиграно выводом»; порчи — код 1 с названной причиной;
-- `sh flang/proof/checker/tests/run.sh` — «сошлось всё»; `sh scripts/доказуемость.sh` —
+- `sh flang/proof/checker/tests/run.sh` — «сошлось всё»; `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` —
   ДОКАЗУЕМ, доля не ниже 625/651, «снято калькулятором» не выше 6;
 - `LEAN=… sh flang/proof/lean/run.sh` — «сошлось всё», лемм 85 → 89, искажений 10 → 11;
 - `sh flang/proof/tables-guard.sh` — шесть сторожей зелены, С-6 в потолке.
@@ -141,7 +141,7 @@ Worktree `/srv/tmp/dokazuemyy/kvantor-spiska`, ветка `r/kvantor-spiska` о�
 
 | | до | после |
 |---|---|---|
-| `доказуемость.sh` | ДОКАЗУЕМ | ДОКАЗУЕМ |
+| `provability.fscript` | ДОКАЗУЕМ | ДОКАЗУЕМ |
 | доля проигрыванием | 625 из 651 (96,01 %) | 625 из 651 (96,01 %) — пробы вне корпуса |
 | видов ловушки | 34 | 35 (строка «вывод по семейству Э»; храповик поднят с доводом) |
 | проб на подлог | 425 | 437 (храповик поднят) |
@@ -168,7 +168,7 @@ flang check .../all-elements/вызов-с-выписанным.flang --proof
 sh flang/proof/checker/tests/run.sh   → сошлось всё
 sh flang/proof/lean/run.sh          → сошлось всё; лемм 169, искажений 52, отвергнуто 52
 sh flang/proof/tables-guard.sh     → код 0
-sh scripts/доказуемость.sh             → ДОКАЗУЕМ, доля 650 / 650 = 100,00 %,
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000             → ДОКАЗУЕМ, доля 650 / 650 = 100,00 %,
                                           «снято калькулятором» 0
 ```
 

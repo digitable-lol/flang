@@ -280,10 +280,10 @@ jobs:
       # зеленеет. Второй шаг подкладывает ему программу с заведомо чужим именем
       # и требует отказа; без него первый шаг ничего не доказывает.
       - name: Check binary origin
-        run: sh scripts/seed/binary-origin.sh --чем "работа «Binary»"
+        run: bootstrap/flang io scripts/seed/binary-origin.fscript --plan Check --timeout 300000 -- --what "работа «Binary»"
 
       - name: Probe binary origin
-        run: sh scripts/seed/binary-origin.sh --подлог
+        run: bootstrap/flang io scripts/seed/binary-origin.fscript --plan Forgery --timeout 300000
 
       # Собралось — ещё не значит работает. Проверяется то, что человек наберёт
       # первым, и настоящий файл дерева, а не выдуманный.
@@ -940,7 +940,7 @@ jobs:
   #
   # ПЕРВАЯ ПОЛОВИНА ДОКАЗАНА 6 сентября 2026: пара печатей с дерева `d3b121b5`
   # (клоны одного коммита), 16 404 с и 16 929 с, обе кодом 0;
-  # `scripts/seed/two-prints-identical.sh` — код 0, «печати совпали побайтово:
+  # `scripts/seed/two-prints-identical.fscript` — код 0, «печати совпали побайтово:
   # файлов 4, байт 1 229 825». ВТОРАЯ осталась открытой: сверку позвала рука.
   #
   # ТОЙ ЖЕ ПАРОЙ ВТОРУЮ ПОЛОВИНУ НЕ ЗАКРЫТЬ. 2 x 4,6 ч машины на пуш не ставят.
@@ -955,8 +955,8 @@ jobs:
   # процессов), и сверка байт в байт.
   #
   # ЦЕНА, ЗАМЕР 6 сентября 2026 на машине отряда, `bootstrap/flang` 0.7.11:
-  #   sh scripts/seed/print-is-repeatable.sh            24,4 с   (две печати по 12,2 с)
-  #   sh scripts/seed/print-is-repeatable.sh --подлог   12,3 с   (одна печать)
+  #   bootstrap/flang io scripts/seed/print-is-repeatable.fscript --plan Check --timeout 600000            24,4 с   (две печати по 12,2 с)
+  #   bootstrap/flang io scripts/seed/print-is-repeatable.fscript --plan Forgery --timeout 600000   12,3 с   (одна печать)
   # Для сравнения, тем же прогоном и тем же двоичным:
   #   sh scripts/bootstrap-reprint.sh --telo             0,15 с
   #   sh scripts/bootstrap-reprint.sh --bystro           1,50 с
@@ -1026,11 +1026,11 @@ jobs:
       # прибором). Проба подкладывает сверщику изменённый байт и пропавший
       # файл и требует красноты, а от дословной копии — молчания.
       - name: Probe print determinism
-        run: sh scripts/seed/print-is-repeatable.sh --подлог
+        run: bootstrap/flang io scripts/seed/print-is-repeatable.fscript --plan Forgery --timeout 600000
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: Check print determinism
-        run: sh scripts/seed/print-is-repeatable.sh
+        run: bootstrap/flang io scripts/seed/print-is-repeatable.fscript --plan Check --timeout 600000
         env:
           FLANG_TMP: ${{ runner.temp }}
 

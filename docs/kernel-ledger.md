@@ -10,14 +10,14 @@
 воспроизводится побайтово одной строкой**:
 
 ```sh
-KOMMIT=4a26cf05 sh scripts/seed/build-ledger-binary.sh /путь/куда   # 66,64 с
+KOMMIT=4a26cf05 bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 -- /путь/куда   # 66,64 с
 PREDEL_SHAGOV=400000000000 DVOICHNYY=/путь/куда/flang \
   sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang        # 399,17 с
 ```
 
 ## Часть 1. Двоичный: компилятор из семени, рантайм из дерева
 
-`scripts/seed/build-ledger-binary.sh` кладёт в соседний дереву каталог семь файлов и
+`scripts/seed/build-ledger-binary.fscript` кладёт в соседний дереву каталог семь файлов и
 зовёт `make`:
 
 | файл | откуда |
@@ -119,7 +119,7 @@ PIK=1G PAMYAT=45G PREDEL_SHAGOV=400000000000 \
 ### Двоичный описи воспроизведён ПОБАЙТОВО
 
 ```
-$ PIK=2G PAMYAT=6G <ворота> -- env KOMMIT=4a26cf05 sh scripts/seed/build-ledger-binary.sh …
+$ PIK=2G PAMYAT=6G <ворота> -- env KOMMIT=4a26cf05 bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 -- …
 семя и рантайм взяты из коммита 4a26cf05ee6c8f18190ecc3e429c926e193caa21
 рантайм flang_cli.c        дерево обгоняет семя на 6 строк
 рантайм flang_repl.c       дерево обгоняет семя на 1102 строк
@@ -187,7 +187,7 @@ flang/stdlib/aes.flang: написано 218 …; доказано 143, сетк
 ### Собранное по рабочей копии — третье число, и оно тоже проверено
 
 ```
-$ PIK=2G PAMYAT=6G <ворота> -- sh scripts/seed/build-ledger-binary.sh
+$ PIK=2G PAMYAT=6G <ворота> -- bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 --
 рантайм flang_cli.c        дерево обгоняет семя на 0 строк
 рантайм flang_repl.c       дерево обгоняет семя на 0 строк
 рантайм flang_runtime.c    дерево обгоняет семя на 0 строк

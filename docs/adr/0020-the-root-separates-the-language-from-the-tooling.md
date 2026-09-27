@@ -184,7 +184,7 @@ node docs/site/build.mjs --check                      # сайт собирае�
 - `flang/src/emit/c/flang_runtime.h:465` — комментарий «Замер (Chrome 151,
   `web/wasm/`, …)». Файл дословно копируется в `bootstrap/flang_runtime.h` при
   печати; править его вне печати значит увеличить отставание семени от источника
-  на строку (сторож `seed-runtime-is-source.sh` это терпит, но
+  на строку (сторож `seed-runtime-is-source.fscript` это терпит, но
   `--после-печати` — нет). **Оставить как есть до следующей перепечатки**, там
   поправить вместе с остальным.
 - Волна 2 (`scripts/` → `tools/`): строки справки в `flang/self/cli.flang:200`
@@ -223,7 +223,7 @@ plan-8235-layout.md): клон ветки, готовый двоичный то�
 | `sh .githooks/pre-push` | 0 | 0 | переезд хук не красит |
 | `scripts/guards/prose-numbers-guard.sh` | 0 | 0 | ни одна примета `СНЯТО` не называет `benchmarks/` или `web/` |
 | `scripts/guards/proved-share-vs-tree.sh` | 0 | 0 | пути ведомости правятся заменой заодно |
-| `scripts/seed/seed-runtime-is-source.sh` | 0 | 0 | семя не тронуто |
+| `scripts/seed/seed-runtime-is-source.fscript` | 0 | 0 | семя не тронуто |
 | `sh scripts/bootstrap-reprint.sh --telo` | 0 | 0 | тело семени цело |
 | `sh scripts/bootstrap-reprint.sh --bystro` | 1 | 1 | **красен и до, и после по своей причине** («отпечаток снят с правленого дерева» — состояние ствола), переезд его не меняет |
 | `scripts/guards/who-calls-the-guards.sh --check` | 0 | 0 | — |

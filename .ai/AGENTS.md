@@ -286,7 +286,7 @@ git fetch /srv/flang-priyom.git main && git checkout -B main FETCH_HEAD
   копии, где сошлись ДВЕ невлитые ветки: ключ `--предел-шагов` (`dd5fe0fd`) и
   быстрое сравнение имён `fl_name_same` (`b7f3bd5e`). Сплошной перебор 5418
   коммитов такого дерева не нашёл; ловит это теперь
-  `sh scripts/seed/binary-origin.sh` — по именам функций в двоичном, а не по размеру.
+  `bootstrap/flang io scripts/seed/binary-origin.fscript --plan Check --timeout 300000` — по именам функций в двоичном, а не по размеру.
   Ближайший коммит с тем же семенем, `58596087`, даёт 14 068 168 байт
   (`090ef472`) — на 80 байт меньше: `.rodata` совпадает байт в байт, расходятся
   `.text` (384) и `.eh_frame` (2880). Значит не воспроизводится ДЕРЕВО, а не
@@ -437,7 +437,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 
 | стек | пишет | НЕ пишет |
 |---|---|---|
-| **А — печать и семя** | `scripts/bootstrap-reprint.sh`, `scripts/seed/print-progress.fscript`, `scripts/seed/two-prints-identical.sh`, `bootstrap/**`, `.github/workflows/reprint.yml`, `docs/reprint-*.md` | всё `flang/**` |
+| **А — печать и семя** | `scripts/bootstrap-reprint.sh`, `scripts/seed/print-progress.fscript`, `scripts/seed/two-prints-identical.fscript`, `bootstrap/**`, `.github/workflows/reprint.yml`, `docs/reprint-*.md` | всё `flang/**` |
 | **Б — язык и доказательства** | `flang/**`, `.claude/skills/**`, `docs/zettel/**` | всё, что в стеке А |
 
 **Спорные файлы — у каждого ОДИН хозяин, записано здесь:**

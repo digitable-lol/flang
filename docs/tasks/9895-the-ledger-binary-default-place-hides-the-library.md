@@ -7,12 +7,12 @@
 команда: вторая
 карта: Сколько доказано на самом деле
 рядом: 0002, 6128, 7205
-нужность: 2 — 27 сентября 2026: `sh scripts/seed/build-ledger-binary.sh` без довода (умолчание <дерево>-ledger-binary) код 0 и предупреждение; этим двоичным `check scripts/guards/tab-host-guard.fscript --proof --json` → FLANG_NOT_TOTAL «…неизвестную функцию «Печать значения»», код 1
+нужность: 2 — 27 сентября 2026: `bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 --` без довода (умолчание <дерево>-ledger-binary) код 0 и предупреждение; этим двоичным `check scripts/guards/tab-host-guard.fscript --proof --json` → FLANG_NOT_TOTAL «…неизвестную функцию «Печать значения»», код 1
 ---
 
 # Умолчание сборщика двоичного прячет библиотеку, и отказ выглядит долгом автора
 
-`scripts/seed/build-ledger-binary.sh` по умолчанию кладёт двоичный в
+`scripts/seed/build-ledger-binary.fscript` по умолчанию кладёт двоичный в
 `<дерево>-ledger-binary` — РЯДОМ с деревом. Для сборки это верно: артефакты в
 дереве исходников не держат. **Для того, ради чего скрипт написан — снять
 ведомость, — это неверно**, и ошибка не видна глазами.

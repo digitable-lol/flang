@@ -69,7 +69,7 @@ for f in <12 файлов>; do cat "$f"; done | awk '/^[[:space:]]*#/{c++} {t++}
 Пересняты числа строк в `docs/tree-inventory.md` (пять примет «строк <файл>», строка
 оболочки 23 803 / долг 15 440, суммы 3 973 и 661) и примета `строк-в *.sh = 23161` в
 `.github/workflows/binary.yml`; в `scripts/ledgers/hand-written-lists-ledger.tsv`
-сдвинуты четыре номера строк и снята одна отжившая запись (`two-prints-identical.sh:76`).
+сдвинуты четыре номера строк и снята одна отжившая запись (`two-prints-identical.fscript:76`).
 
 Шестнадцать новых заметок подняли число файлов `docs/zettel/*.md` с 678 до 694,
 поэтому примета в `docs/course/README.md:172` переснята вместе с числом в прозе:
@@ -126,7 +126,7 @@ make -C bootstrap
 | `./ярлык сколько-верим` (потолок Г3) | минуты, нужен `--max-steps 2e9` |
 | сборка `bootstrap/flang` | 2 минуты на этой машине, 5–6 на раннере |
 | десять проверок дороже 200 с | перечень — `scripts/guards/who-calls-the-guards.sh` |
-| `scripts/seed/what-lags-the-seed.sh` | краснеть не умеет, это отчёт, а не проверка |
+| `scripts/seed/what-lags-the-seed.fscript` | краснеть не умеет, это отчёт, а не проверка |
 | план «Целость» из `./ярлык ярлыки` | 23 с; её предмет зелен с 15 сентября |
 
 ### Когда обход `git push --no-verify` законен
@@ -145,7 +145,7 @@ make -C bootstrap
 | № | имя в отчёте | прежнее имя | вызов | на чём написана |
 |---:|---|---|---|---|
 | 1 | `prose-numbers-guard` | proza | `sh scripts/guards/prose-numbers-guard.sh` | оболочка |
-| 2 | `seed-runtime-is-source` | semya | `sh scripts/seed/seed-runtime-is-source.sh` | оболочка |
+| 2 | `seed-runtime-is-source` | semya | `bootstrap/flang io scripts/seed/seed-runtime-is-source.fscript --plan Check` | оболочка |
 | 3 | `seed-refresh` | semyaosv | `sh scripts/seed/seed-refresh.sh --check` | оболочка |
 | 4 | `version-derivations-guard` | versii-vezde | `sh scripts/guards/version-derivations-guard.sh` | оболочка |
 | 5 | `who-calls-the-guards` | zov | `sh scripts/guards/who-calls-the-guards.sh --check` | оболочка |

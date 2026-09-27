@@ -82,7 +82,7 @@
 - `sh flang/proof/checker/tests/run.sh` — «сошлось всё»;
 - `LEAN=… sh flang/proof/lean/run.sh` — «сошлось всё», искажений 12;
 - `sh flang/proof/tables-guard.sh` — шесть сторожей зелены;
-- `sh scripts/доказуемость.sh` — ДОКАЗУЕМ, доля не ниже 625/651.
+- `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — ДОКАЗУЕМ, доля не ниже 625/651.
 
 ## Ход работы
 
@@ -143,7 +143,7 @@ sh flang/proof/checker/tests/run.sh        → сошлось всё (подде
                                                честных 248, отвергнуто 0)
 sh flang/proof/lean/run.sh               → сошлось всё, расхождений 0
 sh flang/proof/tables-guard.sh          → код 0
-sh scripts/доказуемость.sh                  → ДОКАЗУЕМ, доля 650 / 650 = 100,00 %
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000                  → ДОКАЗУЕМ, доля 650 / 650 = 100,00 %
 ```
 
 Обе честные программы семьи «вложенный-квантор» доказываются, порчи семьи (они в наборе

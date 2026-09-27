@@ -1,0 +1,574 @@
+модуль «What lags the seed»
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Source»
+  «path»: строка
+  «declared»: число
+  «missing»: список строки
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Seed»
+  возвращает строка
+  "bootstrap/compiler_flang.c"
+
+тотальная функция «Entry»
+  возвращает строка
+  "flang/self/bootstrap/compiler.flang"
+
+тотальная функция «Declaration»
+  возвращает строка
+  "^(тотальная |частичная )?функция «[^»]+»"
+
+тотальная функция «Link»
+  возвращает строка
+  "^модуль[[:space:]]+«[^»]+»|^[[:space:]]*использует[[:space:]]+«[^»]+»"
+
+тотальная функция «Chosen file»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть named равно («First line» от (соединить («Given of» от "arguments" и answers) по "\n"))
+  «Inside the tree» от named и («First line» от («Output of» от "root" и answers))
+
+тотальная функция «Inside the tree»
+  принимает path: строка, root: строка
+  возвращает строка
+  пример «A path under the root is named from the root»
+    дано path равно "/srv/tree/flang/self/parser.flang"
+    дано root равно "/srv/tree"
+    ожидается "flang/self/parser.flang"
+  пример «A path from the root stays as it is»
+    дано path равно "flang/self/parser.flang"
+    дано root равно "/srv/tree"
+    ожидается "flang/self/parser.flang"
+  пусть prefix равно (соединить [root, "/"] по "")
+  если path начинается с prefix то («After» от prefix и path) иначе path
+
+тотальная функция «Shell»
+  принимает name: строка, script: строка, arguments: список строки
+  возвращает «Question»
+  «Run from» от name и («Root») и "env" и (приписать "LC_ALL=C.UTF-8" к (приписать "sh" к (приписать "-c" к (приписать script к (приписать "sh" к arguments)))))
+
+тотальная функция «Names file»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить [(«Made of» от "work" и answers), "/seed-names"] по ""
+
+тотальная функция «Totals question»
+  принимает chosen: строка
+  возвращает «Question»
+  если пусто chosen
+    то «Shell» от "totals" и "grep -H -c -E \"$1\" flang/self/*.flang" и [(«Declaration»)]
+    иначе «Shell» от "totals" и "grep -H -c -E \"$1\" \"$2\"" и [(«Declaration»), chosen]
+
+тотальная функция «Missing question»
+  принимает chosen: строка, names: строка
+  возвращает «Question»
+  если пусто chosen
+    то «Shell» от "missing" и "grep -H -o -E \"$1\" flang/self/*.flang | grep -v -F -f \"$2\"" и [(«Declaration»), names]
+    иначе «Shell» от "missing" и "grep -H -o -E \"$1\" \"$3\" | grep -v -F -f \"$2\"" и [(«Declaration»), names, chosen]
+
+тотальная функция «Opening»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"),
+   («Environment» от "temporary" и "FLANG_TMP"),
+   («Run from» от "root" и («Root») и "pwd" и пустой список),
+   («Run from» от "seed present" и («Root») и "test" и ["-f", («Seed»)]),
+   («Run from» от "entry present" и («Root») и "test" и ["-f", («Entry»)])]
+
+тотальная функция «Preparation»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть work равно («Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/what-lags-the-seed."] по ""))
+  если пусто («Chosen file» от answers)
+    то [work]
+    иначе [(«Run from» от "chosen present" и («Root») и "test" и ["-f", («Chosen file» от answers)]), work]
+
+тотальная функция «Gathering»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Shell» от "names" и "grep -a -o -P \"$1\" \"$2\" | LC_ALL=C sort -u > \"$3\"" и ["«[^»]{1,120}»", («Seed»), («Names file» от answers)]),
+   («Totals question» от («Chosen file» от answers)),
+   («Missing question» от («Chosen file» от answers) и («Names file» от answers)),
+   («Shell» от "graph" и "grep -r -H -o -E \"$1\" --include='*.flang' --include='*.fscript' flang | LC_ALL=C sort -s -t: -k1,1" и [(«Link»)]),
+   («Remove» от "names removed" и («Names file» от answers)),
+   («Remove» от "work removed" и («Made of» от "work" и answers))]
+
+тотальная функция «Piece»
+  принимает position: число, pieces: список строки
+  возвращает строка
+  пример «The second of three pieces»
+    дано position равно 2
+    дано pieces равно ["a", "b", "c"]
+    ожидается "b"
+  пример «A position past the end gives nothing»
+    дано position равно 4
+    дано pieces равно ["a", "b", "c"]
+    ожидается ""
+  если (position меньше 1) или (position больше (длина pieces))
+    то ""
+    иначе элемент position в pieces
+
+тотальная функция «Quoted»
+  принимает line: строка
+  возвращает строка
+  пример «The name stands between the angle quotes»
+    дано line равно "flang/self/cli.flang:тотальная функция «Ключ: имя»"
+    ожидается "Ключ: имя"
+  пример «A line without quotes names nothing»
+    дано line равно "flang/self/cli.flang:12"
+    ожидается ""
+  «Piece» от 1 и (разделить («Piece» от 2 и (разделить line по "«")) по "»")
+
+тотальная функция «Path of»
+  принимает line: строка
+  возвращает строка
+  пример «The path stands before the first colon»
+    дано line равно "flang/self/cli.flang:тотальная функция «Ключ: имя»"
+    ожидается "flang/self/cli.flang"
+  «Piece» от 1 и (разделить line по ":")
+
+тотальная функция «Total of»
+  принимает line: строка
+  возвращает число
+  пример «The total stands after the path»
+    дано line равно "flang/self/cli.flang:83"
+    ожидается 83
+  «Count» от («Piece» от 2 и (разделить line по ":"))
+
+тотальная функция «Framed»
+  принимает lines: список строки
+  возвращает строка
+  пример «Every line stands between two line ends»
+    дано lines равно ["a", "b"]
+    ожидается "\na\nb\n"
+  соединить ["\n", (соединить lines по "\n"), "\n"] по ""
+
+тотальная функция «Until line end»
+  принимает text: строка
+  возвращает строка
+  пример «The text before the first line end»
+    дано text равно "модуль «A»\nb.flang:модуль «B»\n"
+    ожидается "модуль «A»"
+  «Piece» от 1 и (разделить text по "\n")
+
+тотальная функция «Tails»
+  принимает prefix: строка, framed: строка
+  возвращает список строки
+  пример «The rests of the lines that begin with the prefix»
+    дано prefix равно "a.flang:"
+    дано framed равно "\na.flang:one\nb.flang:two\na.flang:three\n"
+    ожидается ["one", "three"]
+  пример «No line begins with the prefix»
+    дано prefix равно "c.flang:"
+    дано framed равно "\na.flang:one\n"
+    ожидается пустой список
+  разбор (разделить framed по (соединить ["\n", prefix] по ""))
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то отобразить хвост как piece → «Until line end» от piece
+
+тотальная функция «Source of»
+  принимает line: строка, missing: строка
+  возвращает «Source»
+  пример «A source takes its own missing names only»
+    дано line равно "flang/self/cli.flang:83"
+    дано missing равно "\nflang/self/cli.flang:тотальная функция «Ключ»\nflang/self/conc.flang:функция «Узел»\n"
+    ожидается запись «Source» с «path» равным "flang/self/cli.flang" и «declared» равным 83 и «missing» равным ["Ключ"]
+  запись «Source» с «path» равным («Path of» от line) и «declared» равным («Total of» от line) и «missing» равным (отобразить («Tails» от (соединить [(«Path of» от line), ":"] по "") и missing) как named → «Quoted» от named)
+
+тотальная функция «Sources»
+  принимает answers: список «Answer»
+  возвращает список «Source»
+  пусть missing равно («Framed» от («Lines» от («Output of» от "missing" и answers)))
+  отфильтровать (отобразить («Lines» от («Output of» от "totals" и answers)) как line → «Source of» от line и missing) где source → (source.«declared») больше 0
+
+тотальная функция «Is a title»
+  принимает line: строка
+  возвращает признак
+  пример «A module line gives the title»
+    дано line равно "flang/self/cli.flang:модуль «CLI»"
+    ожидается да
+  пример «A uses line does not»
+    дано line равно "flang/self/cli.flang:  использует «Lists»"
+    ожидается нет
+  («Piece» от 2 и (разделить line по ":")) начинается с "модуль"
+
+тотальная функция «Last path»
+  принимает lines: список строки
+  возвращает строка
+  пример «The path of the last line»
+    дано lines равно ["a.flang:«A»", "b.flang:«B»"]
+    ожидается "b.flang"
+  пример «No lines, no path»
+    дано lines равно пустой список
+    ожидается ""
+  если (длина lines) равен 0 то "" иначе «Path of» от (элемент (длина lines) в lines)
+
+тотальная функция «Titles»
+  принимает graph: список строки
+  возвращает строка
+  пример «Only the first title of a file is kept, and spaces before the name do not matter»
+    дано graph равно ["a.flang:модуль   «A»", "a.flang:  использует «B»", "a.flang:модуль «Other»", "b.flang:модуль «B»"]
+    ожидается "\na.flang:«A»\nb.flang:«B»\n"
+  «Framed» от (свёртка (отфильтровать graph где line → «Is a title» от line) начиная с (пустой список) как kept и line → если («Last path» от kept) равен («Path of» от line) то kept иначе добавить (соединить [(«Path of» от line), ":«", («Quoted» от line), "»"] по "") к kept)
+
+тотальная функция «Links»
+  принимает graph: список строки
+  возвращает строка
+  «Framed» от (отфильтровать graph где line → не («Is a title» от line))
+
+тотальная функция «Without repeats»
+  принимает names: список строки
+  возвращает список строки
+  пример «A name is kept once, in the order it came»
+    дано names равно ["b", "a", "b"]
+    ожидается ["b", "a"]
+  свёртка names начиная с (пустой список) как kept и name → если kept содержит name то kept иначе добавить name к kept
+
+тотальная функция «Home of»
+  принимает title: строка, titles: строка
+  возвращает список строки
+  пример «The first file with the title is its home»
+    дано title равно "A"
+    дано titles равно "\na.flang:«A»\nb.flang:«A»\n"
+    ожидается ["a.flang"]
+  пример «A title nobody declares has no home»
+    дано title равно "B"
+    дано titles равно "\na.flang:«A»\n"
+    ожидается пустой список
+  пусть pieces равно (разделить titles по (соединить [":«", title, "»\n"] по ""))
+  пусть before равно (разделить («Piece» от 1 и pieces) по "\n")
+  если (длина pieces) меньше 2 то пустой список иначе [(«Piece» от (длина before) и before)]
+
+тотальная функция «Homes of»
+  принимает used: список строки, titles: строка
+  возвращает список строки
+  «Without repeats» от («Gathered words» от (отобразить used как title → «Home of» от title и titles))
+
+тотальная функция «Uses of»
+  принимает path: строка, titles: строка, links: строка
+  возвращает список строки
+  если titles содержит (соединить ["\n", path, ":«"] по "")
+    то отобразить («Tails» от (соединить [path, ":"] по "") и links) как named → «Quoted» от named
+    иначе пустой список
+
+тотальная функция «Used by»
+  принимает paths: список строки, titles: строка, links: строка
+  возвращает список строки
+  пример «Uses of a file without a title do not count»
+    дано paths равно ["a.flang", "c.flang"]
+    дано titles равно "\na.flang:«A»\n"
+    дано links равно "\na.flang:  использует «B»\nc.flang:  использует «D»\n"
+    ожидается ["B"]
+  «Without repeats» от («Gathered words» от (отобразить paths как path → «Uses of» от path и titles и links))
+
+тотальная функция «Closure»
+  принимает frontier: список строки, reached: список строки, titles: строка, links: строка, rounds: число
+  возвращает список строки
+  если rounds не больше 0
+    то reached
+    иначе разбор frontier
+      случай пусто
+        то reached
+      случай голова и хвост
+        то «Closure» от (отфильтровать («Homes of» от («Used by» от frontier и titles и links) и titles) где path → не (reached содержит path)) и («Without repeats» от («Соединить списки» от reached и («Homes of» от («Used by» от frontier и titles и links) и titles))) и titles и links и (rounds минус 1)
+
+тотальная функция «Reached»
+  принимает graph: список строки
+  возвращает список строки
+  пример «The closure follows the uses from the entry»
+    дано graph равно ["flang/self/bootstrap/compiler.flang:модуль «Compiler»", "flang/self/bootstrap/compiler.flang:  использует «Lexer»", "flang/self/lexer.flang:модуль «Lexer»", "flang/self/sets.flang:модуль «Sets»"]
+    ожидается ["flang/self/bootstrap/compiler.flang", "flang/self/lexer.flang"]
+  «Closure» от [(«Entry»)] и [(«Entry»)] и («Titles» от graph) и («Links» от graph) и (длина graph)
+
+тотальная функция «Unresolved»
+  принимает reached: список строки, graph: список строки
+  возвращает список строки
+  пример «A used title without a home is unresolved»
+    дано reached равно ["a.flang"]
+    дано graph равно ["a.flang:модуль «A»", "a.flang:  использует «B»"]
+    ожидается ["B"]
+  пусть titles равно («Titles» от graph)
+  отфильтровать («Used by» от reached и titles и («Links» от graph)) где title → (длина («Home of» от title и titles)) равен 0
+
+тотальная функция «Graph»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Lines» от («Output of» от "graph" и answers)
+
+тотальная функция «Sorting»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть graph равно («Graph» от answers)
+  разбор («Unresolved» от («Reached» от graph) и graph)
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то [(«Run» от "unresolved" и "sh" и (приписать "-c" к (приписать "printf '%s\\n' \"$@\" | LC_ALL=C sort" к (приписать "sh" к (приписать голова к хвост)))))]
+
+тотальная функция «Base name»
+  принимает path: строка
+  возвращает строка
+  пример «The last part of the path»
+    дано path равно "flang/self/cli.flang"
+    ожидается "cli.flang"
+  свёртка (разделить path по "/") начиная с "" как last и part → part
+
+тотальная функция «Spaces»
+  принимает count: число
+  возвращает строка
+  пример «Three spaces»
+    дано count равно 3
+    ожидается "   "
+  пример «No spaces for a negative count»
+    дано count равно -2
+    ожидается ""
+  если count не больше 0
+    то ""
+    иначе соединить [" ", («Spaces» от (count минус 1))] по ""
+
+тотальная функция «Padded»
+  принимает text: строка, width: число
+  возвращает строка
+  пример «A short text is padded on the right»
+    дано text равно "cli.flang"
+    дано width равно 12
+    ожидается "cli.flang   "
+  соединить [text, («Spaces» от (width минус (длина text)))] по ""
+
+тотальная функция «Aligned»
+  принимает count: число, width: число
+  возвращает строка
+  пример «A number is padded on the left»
+    дано count равно 33
+    дано width равно 4
+    ожидается "  33"
+  соединить [(«Spaces» от (width минус (длина (к строке count)))), (к строке count)] по ""
+
+тотальная функция «Cut»
+  принимает text: строка, width: число
+  возвращает строка
+  пример «A long text is cut»
+    дано text равно "Предел сетки"
+    дано width равно 6
+    ожидается "Предел"
+  пример «A short text stays»
+    дано text равно "Предел"
+    дано width равно 52
+    ожидается "Предел"
+  если (длина text) больше width то (подстрока text с 1 по width) иначе text
+
+тотальная функция «First two»
+  принимает names: список строки
+  возвращает строка
+  пример «Two names of three»
+    дано names равно ["a", "b", "c"]
+    ожидается "a, b"
+  пример «The only name»
+    дано names равно ["a"]
+    ожидается "a"
+  разбор names
+    случай пусто
+      то ""
+    случай голова и хвост
+      то разбор хвост
+        случай пусто
+          то голова
+        случай голова и хвост
+          то соединить [(элемент 1 в names), ", ", голова] по ""
+
+тотальная функция «Placed»
+  принимает sorted: список «Source», source: «Source»
+  возвращает список «Source»
+  «Соединить списки» от (добавить source к (отфильтровать sorted где other → (длина (other.«missing»)) не меньше (длина (source.«missing»)))) и (отфильтровать sorted где other → (длина (other.«missing»)) меньше (длина (source.«missing»)))
+
+тотальная функция «Largest first»
+  принимает sources: список «Source»
+  возвращает список «Source»
+  пример «Sources follow by the number of missing names, equal ones keep their order»
+    дано sources равно [запись «Source» с «path» равным "a" и «declared» равным 3 и «missing» равным ["x"], запись «Source» с «path» равным "b" и «declared» равным 3 и «missing» равным ["x", "y"], запись «Source» с «path» равным "c" и «declared» равным 3 и «missing» равным ["z"]]
+    ожидается [запись «Source» с «path» равным "b" и «declared» равным 3 и «missing» равным ["x", "y"], запись «Source» с «path» равным "a" и «declared» равным 3 и «missing» равным ["x"], запись «Source» с «path» равным "c" и «declared» равным 3 и «missing» равным ["z"]]
+  свёртка sources начиная с (пустой список) как sorted и source → «Placed» от sorted и source
+
+тотальная функция «Missing in all»
+  принимает sources: список «Source»
+  возвращает число
+  свёртка sources начиная с 0 как sum и source → sum плюс (длина (source.«missing»))
+
+тотальная функция «Lagging line»
+  принимает source: «Source»
+  возвращает строка
+  пример «A lagging source is shown in columns»
+    дано source равно запись «Source» с «path» равным "flang/self/functor.flang" и «declared» равным 60 и «missing» равным ["Предел сетки функтора", "Запас глубины функтора", "Третье"]
+    ожидается "  functor.flang                   3 из   60   Предел сетки функтора, Запас глубины функтора"
+  соединить ["  ", («Padded» от («Base name» от (source.«path»)) и 28), " ", («Aligned» от (длина (source.«missing»)) и 4), " из ", («Aligned» от (source.«declared») и 4), "   ", («Cut» от («First two» от (source.«missing»)) и 52)] по ""
+
+тотальная функция «Is reached»
+  принимает source: «Source», reached: список строки
+  возвращает признак
+  reached содержит (source.«path»)
+
+тотальная функция «Lagging»
+  принимает sources: список «Source», reached: список строки
+  возвращает список «Source»
+  отфильтровать sources где source → ((длина (source.«missing»)) больше 0) и притом («Is reached» от source и reached)
+
+тотальная функция «Outside»
+  принимает sources: список «Source», reached: список строки
+  возвращает список «Source»
+  отфильтровать sources где source → ((длина (source.«missing»)) больше 0) и притом (не («Is reached» от source и reached))
+
+тотальная функция «Whole»
+  принимает sources: список «Source»
+  возвращает число
+  длина (отфильтровать sources где source → (длина (source.«missing»)) равен 0)
+
+тотальная функция «Lagging part»
+  принимает lagging: список «Source»
+  возвращает список строки
+  пример «No lagging source is said in a line»
+    дано lagging равно пустой список
+    ожидается ["НАСТОЯЩЕЕ ОТСТАВАНИЕ — файл в замыкании, часть функций новее семени:", "  нет ни одного — семя догнало исходник"]
+  если (длина lagging) равен 0
+    то ["НАСТОЯЩЕЕ ОТСТАВАНИЕ — файл в замыкании, часть функций новее семени:", "  нет ни одного — семя догнало исходник"]
+    иначе приписать "НАСТОЯЩЕЕ ОТСТАВАНИЕ — файл в замыкании, часть функций новее семени:" к (добавить (соединить ["  ИТОГО: файлов ", (к строке (длина lagging)), ", функций ", (к строке («Missing in all» от lagging))] по "") к (отобразить («Largest first» от lagging) как source → «Lagging line» от source))
+
+тотальная функция «Leading»
+  принимает count: число, names: список строки
+  возвращает список строки
+  обеспечивает «taking the leading names does not add names» (длина результат) не больше (длина names)
+  пример «Four of five»
+    дано count равно 4
+    дано names равно ["a", "b", "c", "d", "e"]
+    ожидается ["a", "b", "c", "d"]
+  пример «All of two»
+    дано count равно 4
+    дано names равно ["a", "b"]
+    ожидается ["a", "b"]
+  свёртка names начиная с (пустой список) как kept и name → если (длина kept) меньше count то (добавить name к kept) иначе kept
+
+тотальная функция «Unresolved part»
+  принимает count: число, sorted: список строки
+  возвращает список строки
+  пример «Resolved names are not mentioned»
+    дано count равно 0
+    дано sorted равно пустой список
+    ожидается пустой список
+  пример «Unresolved names are counted and the first four are named»
+    дано count равно 5
+    дано sorted равно ["a", "b", "c", "d", "e"]
+    ожидается ["  ⚑ имён модулей не разрешено: 5 (a, b, c, d) — замыкание НЕПОЛНО"]
+  если count равен 0
+    то пустой список
+    иначе [(соединить ["  ⚑ имён модулей не разрешено: ", (к строке count), " (", (соединить («Leading» от 4 и sorted) по ", "), ") — замыкание НЕПОЛНО"] по "")]
+
+тотальная функция «Whole report»
+  принимает sources: список «Source», reached: список строки, unresolved: число, sorted: список строки
+  возвращает строка
+  пусть outside равно («Outside» от sources и reached)
+  соединить («Gathered words» от [["ОТСТАВАНИЕ СЕМЕНИ ОТ ИСХОДНИКА, поимённо по функциям", ""],
+    («Lagging part» от («Lagging» от sources и reached)),
+    ["", "ВНЕ ЗАМЫКАНИЯ (не достижим из входа печати) — НЕ отставание:", (соединить ["  файлов ", (к строке (длина outside)), ", функций ", (к строке («Missing in all» от outside))] по "")],
+    («Unresolved part» от unresolved и sorted),
+    ["", (соединить ["файлов, сошедшихся полностью: ", (к строке («Whole» от sources))] по ""), "", "Свежесть семени как ДА/НЕТ — не здесь: scripts/seed/seed-freshness.fscript"]]) по "\n"
+
+тотальная функция «Named lines»
+  принимает source: «Source»
+  возвращает список строки
+  приписать (соединить [(«Base name» от (source.«path»)), ": нет в семени ", (к строке (длина (source.«missing»))), " из ", (к строке (source.«declared»))] по "") к (отобразить (source.«missing») как name → соединить ["  • ", name] по "")
+
+тотальная функция «Outside line»
+  принимает source: «Source»
+  возвращает строка
+  соединить [(«Base name» от (source.«path»)), ": нет в семени ", (к строке (длина (source.«missing»))), " из ", (к строке (source.«declared»)), " — файл вне замыкания компилятора"] по ""
+
+тотальная функция «One report»
+  принимает sources: список «Source», reached: список строки
+  возвращает строка
+  пример «A source with every function in the seed is in place»
+    дано sources равно [запись «Source» с «path» равным "flang/self/lexer.flang" и «declared» равным 12 и «missing» равным пустой список]
+    дано reached равно ["flang/self/lexer.flang"]
+    ожидается "всё на месте: сошлись все функции"
+  пример «A lagging source names its functions»
+    дано sources равно [запись «Source» с «path» равным "flang/self/functor.flang" и «declared» равным 60 и «missing» равным ["Предел"]]
+    дано reached равно ["flang/self/functor.flang"]
+    ожидается "functor.flang: нет в семени 1 из 60\n  • Предел"
+  пример «A source outside the closure is said to be outside»
+    дано sources равно [запись «Source» с «path» равным "flang/self/sets.flang" и «declared» равным 90 и «missing» равным ["Узел"]]
+    дано reached равно пустой список
+    ожидается "sets.flang: нет в семени 1 из 90 — файл вне замыкания компилятора"
+  пусть said равно («Соединить списки» от («Gathered words» от (отобразить («Lagging» от sources и reached) как source → «Named lines» от source)) и (отобразить («Outside» от sources и reached) как source → «Outside line» от source))
+  если (длина said) равен 0 то "всё на месте: сошлись все функции" иначе соединить said по "\n"
+
+тотальная функция «Report text»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть reached равно («Reached» от («Graph» от answers))
+  если пусто («Chosen file» от answers)
+    то «Whole report» от («Sources» от answers) и reached и (длина («Lines» от («Output of» от "unresolved" и answers))) и («Lines» от («Output of» от "unresolved" и answers))
+    иначе «One report» от («Sources» от answers) и reached
+
+тотальная функция «Gathering trouble»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от (отобразить ["names", "graph"] как name → если («Exit code of» от name и answers) равен 0 то пустой список иначе [(соединить ["сбор «", name, "» ответил кодом ", (к строке («Exit code of» от name и answers)), ": ", («Errors of» от name и answers)] по "")])
+
+тотальная функция «Finish»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  разбор («Gathering trouble» от answers)
+    случай пусто
+      то вариант «Конец работы» с значение равным («Report text» от answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_SEED_LAG_NOT_MEASURED" и сообщение равным (соединить (приписать голова к хвост) по "\n")
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от [(если (asked равен "seed present") и притом (не ((«Exit code of» от asked и answers) равен 0)) то [(соединить ["семени нет: ", («Seed»)] по "")] иначе пустой список),
+    (если (asked равен "entry present") и притом (не ((«Exit code of» от asked и answers) равен 0)) то [(соединить ["входа печати нет: ", («Entry»), " — замыкание не построить"] по "")] иначе пустой список),
+    (если (asked равен "chosen present") и притом (не ((«Exit code of» от asked и answers) равен 0)) то [(соединить ["файла нет: ", («Chosen file» от answers)] по "")] иначе пустой список),
+    (если (asked равен "work") и притом (пусто («Made of» от asked и answers)) то [(соединить ["временный каталог не завёлся: ", («Errors of» от asked и answers)] по "")] иначе пустой список)]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  если (stages меньше 0) или (stages больше 3)
+    то пустой список
+    иначе элемент (4 минус stages) в [(«Opening»), («Preparation» от answers), («Gathering» от answers), («Sorting» от answers)]
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Finish» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 4
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_SEED_LAG_NOT_MEASURED" и сообщение равным голова
+    случай пусто
+      то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Report»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

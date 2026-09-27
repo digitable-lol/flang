@@ -143,4 +143,3 @@
 ПУТИ	scripts/release/emit-package.flang	17	задача 8649 переехала в docs/tasks/completed; имя стоит в комментарии как ссылка на разбор, а не как живой файл
 ПУТИ	scripts/guards/homebrew-formula-guard.fscript	484	содержимое сабмодуля packaging/homebrew-tap: в git ls-files лежит одно имя сабмодуля, а не Formula/flang.rb
 ПУТИ	scripts/release/release-in-c.fscript	158	«куда» ПРИМЕРА — каталог, который складывает прогон выпуска (output/release-c/…); в дереве его нет по устройству
-ПУТИ	scripts/seed/two-prints-identical.sh	76	ложное срабатывание переписи: точка предложения приклеилась к имени (scripts/seed/print-progress.sh.), сам файл в дереве есть

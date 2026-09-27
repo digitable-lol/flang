@@ -298,7 +298,7 @@ ADR-0044   | индукция по прогону в сверщике (1404 Ш2)
    Вл1 в ведомости, лемма и ловушка в Lean, `sh flang/proof/tables-guard.sh` — шесть
    сторожей зелены; `--строки-кода` — не больше +35 сверх съеденного A.
 3. После C: `flang check flang/self/lexer.flang parser.flang zapis.flang` — замечаний нет;
-   `sh scripts/доказуемость.sh` — ДОКАЗУЕМ; строк C сверщика не прибавилось.
+   `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — ДОКАЗУЕМ; строк C сверщика не прибавилось.
 4. После перепечатки семенем №2: `letters-in-turn.flang` — код 0; подлоги 13, 14 — код 1;
    `temp-directory.flang` с `разрешает` — код 0, а с обработчиком, выдающим «Запустить
    процесс», — код 1 с именем.

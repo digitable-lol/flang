@@ -1,0 +1,40 @@
+модуль «Rules»
+
+тип «Rule» от «А»
+  вариант «Holding» содержит holds: признак, outcome: «А»
+
+тотальная функция «When» от «А»
+  принимает holds: признак, outcome: «А»
+  возвращает «Rule» от «А»
+  пример «A rule is a condition with its outcome»
+    дано holds равно да
+    дано outcome равно "two"
+    ожидается вариант «Holding» с holds равным да и outcome равным "two"
+  вариант «Holding» с holds равным holds и outcome равным outcome
+
+тотальная функция «Applying» от «А»
+  принимает rules: список («Rule» от «А»)
+  возвращает список «А»
+  пример «Only the outcomes of rules that hold are kept, in their order»
+    дано rules равно [вариант «Holding» с holds равным нет и outcome равным "one", вариант «Holding» с holds равным да и outcome равным "two", вариант «Holding» с holds равным да и outcome равным "three"]
+    ожидается ["two", "three"]
+  свёртка rules начиная с (пустой список) как kept и candidate → разбор candidate
+    случай вариант «Holding» с holds как holds и outcome как outcome
+      то если holds то (добавить outcome к kept) иначе kept
+
+тотальная функция «Chosen» от «А»
+  принимает rules: список («Rule» от «А»), otherwise: «А»
+  возвращает «А»
+  пример «The first rule that holds decides»
+    дано rules равно [вариант «Holding» с holds равным нет и outcome равным "one", вариант «Holding» с holds равным да и outcome равным "two", вариант «Holding» с holds равным да и outcome равным "three"]
+    дано otherwise равно "none"
+    ожидается "two"
+  пример «No rule holds»
+    дано rules равно [вариант «Holding» с holds равным нет и outcome равным "one"]
+    дано otherwise равно "none"
+    ожидается "none"
+  разбор («Applying» от rules)
+    случай пусто
+      то otherwise
+    случай голова и хвост
+      то голова

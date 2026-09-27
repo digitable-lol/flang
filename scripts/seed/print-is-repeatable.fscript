@@ -1,0 +1,422 @@
+модуль «Print is repeatable»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Pair»
+  «label»: строка
+  «left»: строка
+  «right»: строка
+
+объект «Outcome»
+  «same»: признак
+  «files»: число
+  «bytes»: число
+  «lines»: список строки
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Fingerprint»
+  возвращает строка
+  "scripts/seed-fingerprint"
+
+тотальная функция «Usage»
+  возвращает строка
+  "звать: bootstrap/flang io scripts/seed/print-is-repeatable.fscript --plan Check [-- <файл>] либо --plan Forgery"
+
+тотальная функция «Is a forgery»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Given of» от "mode" и answers) содержит "forgery"
+
+тотальная функция «Input»
+  принимает answers: список «Answer»
+  возвращает строка
+  разбор («Given of» от "arguments" и answers)
+    случай пусто
+      то "flang/self/lexer.flang"
+    случай голова и хвост
+      то голова
+
+тотальная функция «Tree»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "tree" и answers)
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "binary" и (соединить [(«Tree» от answers), "/bootstrap/flang"] по "") и answers
+
+тотальная функция «Temporary»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "temporary" и "/srv/tmp" и answers
+
+тотальная функция «Last value after»
+  принимает prefix: строка, text: строка
+  возвращает строка
+  пример «The last of the lines with the prefix gives the value»
+    дано prefix равно "предел-шагов "
+    дано text равно "предел-шагов 10\nпредел-глубины 5\nпредел-шагов 4000\n"
+    ожидается "4000"
+  пример «No such line gives nothing»
+    дано prefix равно "предел-шагов "
+    дано text равно "предел-глубины 5\n"
+    ожидается ""
+  свёртка («Lines» от text) начиная с "" как found и line → если line начинается с prefix то («After» от prefix и line) иначе found
+
+тотальная функция «Steps limit»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Last value after» от "предел-шагов " и («Output of» от "fingerprint" и answers)
+
+тотальная функция «Depth limit»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Last value after» от "предел-глубины " и («Output of» от "fingerprint" и answers)
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Made of» от "work" и answers
+
+тотальная функция «Inside»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Hundred»
+  возвращает строка
+  "щщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщщ"
+
+тотальная функция «Long padding»
+  возвращает строка
+  соединить (отобразить [1, 2, 3, 4, 5, 6, 7, 8] как outer → соединить (отобразить [1, 2, 3, 4, 5] как inner → «Hundred») по "") по ""
+
+тотальная функция «Printing»
+  принимает name: строка, zone: строка, padding: строка, answers: список «Answer»
+  возвращает список «Question»
+  пусть temporary равно («Inside» от (соединить ["temporary-", name] по "") и answers)
+  [(«Run» от (соединить ["directories ", name] по "") и "mkdir" и ["-p", («Inside» от name и answers), temporary]),
+   («Run from» от (соединить ["print ", name] по "") и («Tree» от answers) и "env" и [(соединить ["TZ=", zone] по ""), (соединить ["TMPDIR=", temporary] по ""), (соединить ["FLANG_TMP=", temporary] по ""), (соединить ["FLANG_PADDING=", padding] по ""), («Binary» от answers), "emit", («Input» от answers), "--target", "c", "--out", («Inside» от name и answers), "--cli", "--repl", "--runtime", (соединить [(«Tree» от answers), "/flang/src/emit/c"] по ""), "--max-steps", («Steps limit» от answers), "--max-depth", («Depth limit» от answers)])]
+
+тотальная функция «Pairs»
+  принимает answers: список «Answer»
+  возвращает список «Pair»
+  если «Is a forgery» от answers
+    то [запись «Pair» с «label» равным "copy" и «left» равным («Inside» от "probe" и answers) и «right» равным («Inside» от "copy" и answers),
+      запись «Pair» с «label» равным "changed" и «left» равным («Inside» от "probe" и answers) и «right» равным («Inside» от "changed" и answers),
+      запись «Pair» с «label» равным "missing" и «left» равным («Inside» от "probe" и answers) и «right» равным («Inside» от "missing" и answers)]
+    иначе [запись «Pair» с «label» равным "prints" и «left» равным («Inside» от "first" и answers) и «right» равным («Inside» от "second-print-of-the-same-tree" и answers)]
+
+тотальная функция «Names question»
+  принимает side: строка, pair: «Pair»
+  возвращает строка
+  соединить ["names ", side, " ", (pair.«label»)] по ""
+
+тотальная функция «Names»
+  принимает side: строка, pair: «Pair», answers: список «Answer»
+  возвращает список строки
+  «Lines» от («Output of» от («Names question» от side и pair) и answers)
+
+тотальная функция «Listing»
+  принимает pair: «Pair»
+  возвращает список «Question»
+  [(«Run» от («Names question» от "left" и pair) и "env" и ["LC_ALL=C", "ls", "-A", (pair.«left»)]),
+   («Run» от («Names question» от "right" и pair) и "env" и ["LC_ALL=C", "ls", "-A", (pair.«right»)])]
+
+тотальная функция «Names agree»
+  принимает pair: «Pair», answers: список «Answer»
+  возвращает признак
+  («Output of» от («Names question» от "left" и pair) и answers) равен («Output of» от («Names question» от "right" и pair) и answers)
+
+тотальная функция «Bytes question»
+  принимает pair: «Pair», name: строка
+  возвращает строка
+  соединить ["bytes ", (pair.«label»), " ", name] по ""
+
+тотальная функция «Comparing»
+  принимает pair: «Pair», answers: список «Answer»
+  возвращает список «Question»
+  пусть names равно («Names» от "left" и pair и answers)
+  если «Names agree» от pair и answers
+    то приписать («Run from» от (соединить ["sizes ", (pair.«label»)] по "") и (pair.«left») и "wc" и (приписать "-c" к (приписать "--" к names))) к (отобразить names как name → «Run» от («Bytes question» от pair и name) и "env" и ["LC_ALL=C", "cmp", (соединить [(pair.«left»), "/", name] по ""), (соединить [(pair.«right»), "/", name] по "")])
+    иначе [(«Write» от (соединить ["left list ", (pair.«label»)] по "") и («Inside» от (соединить ["names-left-", (pair.«label»)] по "") и answers) и («Output of» от («Names question» от "left" и pair) и answers)),
+      («Write» от (соединить ["right list ", (pair.«label»)] по "") и («Inside» от (соединить ["names-right-", (pair.«label»)] по "") и answers) и («Output of» от («Names question» от "right" и pair) и answers)),
+      («Run» от (соединить ["names difference ", (pair.«label»)] по "") и "env" и ["LC_ALL=C", "diff", («Inside» от (соединить ["names-left-", (pair.«label»)] по "") и answers), («Inside» от (соединить ["names-right-", (pair.«label»)] по "") и answers)])]
+
+тотальная функция «Size»
+  принимает name: строка, sizes: список строки
+  возвращает число
+  пример «The size stands before the name»
+    дано name равно "Makefile"
+    дано sizes равно ["  120 lexer.c", " 3454 Makefile", " 3574 total"]
+    ожидается 3454
+  пример «A name without a line has no size»
+    дано name равно "absent.c"
+    дано sizes равно [" 3454 Makefile"]
+    ожидается 0
+  «Count» от («Word» от 1 и («First line» от (соединить (отфильтровать sizes где line → («Word» от 2 и line) равен name) по "\n")))
+
+тотальная функция «Difference lines»
+  принимает pair: «Pair», name: строка, answers: список «Answer»
+  возвращает список строки
+  пусть said равно («Reply to» от («Bytes question» от pair и name) и answers)
+  если («Exit code» от said) равен 0
+    то пустой список
+    иначе [(соединить ["РАЗОШЁЛСЯ: ", name] по ""), (соединить ["  ", («First line» от (соединить [(«Output» от said), («Errors» от said)] по "\n"))] по "")]
+
+тотальная функция «Compared bytes»
+  принимает pair: «Pair», answers: список «Answer»
+  возвращает «Outcome»
+  пусть names равно («Names» от "left" и pair и answers)
+  пусть sizes равно («Lines» от («Output of» от (соединить ["sizes ", (pair.«label»)] по "") и answers))
+  пусть differing равно (отфильтровать names где name → не ((«Exit code of» от («Bytes question» от pair и name) и answers) равен 0))
+  пусть lines равно («Gathered words» от (отобразить names как name → «Difference lines» от pair и name и answers))
+  запись «Outcome» с «same» равным ((длина differing) равен 0) и «files» равным (длина names) и «bytes» равным (свёртка names начиная с 0 как sum и name → sum плюс («Size» от name и sizes)) и «lines» равным (если (длина differing) равен 0 то lines иначе (добавить (соединить ["файлов сверено ", (к строке (длина names)), ", разошлось ", (к строке (длина differing))] по "") к lines))
+
+тотальная функция «Compared»
+  принимает pair: «Pair», answers: список «Answer»
+  возвращает «Outcome»
+  если «Names agree» от pair и answers
+    то «Compared bytes» от pair и answers
+    иначе запись «Outcome» с «same» равным нет и «files» равным 0 и «bytes» равным 0 и «lines» равным (приписать "РАЗОШЛИСЬ: наборы напечатанных файлов не совпадают" к (отобразить («Lines» от («Output of» от (соединить ["names difference ", (pair.«label»)] по "") и answers)) как line → соединить ["  ", line] по ""))
+
+тотальная функция «Victim»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "names probe" и answers)
+
+тотальная функция «Ending»
+  принимает lines: список строки, count: число
+  возвращает список строки
+  пример «The last two of three lines»
+    дано lines равно ["one", "two", "three"]
+    дано count равно 2
+    ожидается ["two", "three"]
+  пример «A short text is kept whole»
+    дано lines равно ["one"]
+    дано count равно 2
+    ожидается ["one"]
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если (длина lines) не больше count то lines иначе «Ending» от (хвост) и count
+
+тотальная функция «Print refusal»
+  принимает name: строка, words: список строки, answers: список «Answer»
+  возвращает список строки
+  пусть said равно («Reply to» от (соединить ["print ", name] по "") и answers)
+  если (не («Answered» от (соединить ["print ", name] по "") и answers)) или ((«Exit code» от said) равен 0)
+    то пустой список
+    иначе «Соединить списки» от (приписать (соединить ["НЕ ПРОВЕРЕНО: ", (соединить words по ""), " (код ", (к строке («Exit code» от said)), ")"] по "") к (если «Is a forgery» от answers то пустой список иначе ["Это НЕ «разошлись»: сверять было нечего."])) и («Ending» от («Соединить списки» от («Lines» от («Output» от said)) и («Lines» от («Errors» от said))) и 20)
+
+тотальная функция «Failed»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  («Answered» от name и answers) и притом (не ((«Exit code of» от name и answers) равен 0))
+
+тотальная функция «Wrong call»
+  принимает answers: список «Answer»
+  возвращает признак
+  (длина («Given of» от "arguments" и answers)) больше (если «Is a forgery» от answers то 0 иначе 1)
+
+тотальная функция «Obstacles»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  отфильтровать [(если «Wrong call» от answers то [(«Usage»)] иначе пустой список),
+    (если «Failed» от "input" и answers то [(соединить ["входа нет: ", («Input» от answers)] по "")] иначе пустой список),
+    (если «Failed» от "binary present" и answers то [(соединить ["НЕ ПРОВЕРЕНО: печатать нечем — ", («Binary» от answers), " не исполняемый файл"] по ""), "  Собрать: make -C bootstrap -j\"$(nproc)\""] иначе пустой список),
+    (если («Answered» от "fingerprint" и answers) и притом ((пусто («Steps limit» от answers)) или (пусто («Depth limit» от answers))) то [(соединить ["НЕ ПРОВЕРЕНО: в ", («Fingerprint»), " нет пределов печати"] по ""), "  Печатать с чужими пределами нельзя: это была бы другая печать."] иначе пустой список),
+    (если («Answered» от "work" и answers) и притом (пусто («Work» от answers)) то [(соединить ["НЕ ПРОВЕРЕНО: не создался каталог в ", («Temporary» от answers)] по "")] иначе пустой список),
+    («Print refusal» от "probe" и ["печать пробы отказала"] и answers),
+    («Print refusal» от "first" и ["первая печать отказала"] и answers),
+    («Print refusal» от "second-print-of-the-same-tree" и ["вторая печать отказала"] и answers),
+    (если («Answered» от "names probe" и answers) и притом (пусто («Victim» от answers)) то ["НЕ ПРОВЕРЕНО: печать пробы не дала ни одного файла"] иначе пустой список)] где lines → (длина lines) больше 0
+
+тотальная функция «Is clear»
+  принимает answers: список «Answer»
+  возвращает признак
+  (длина («Obstacles» от answers)) равен 0
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "binary" и "FLANG"), («Environment» от "temporary" и "FLANG_TMP"), («Run from» от "tree" и («Root») и "pwd" и ["-P"]), («Read from» от "fingerprint" и («Root») и («Fingerprint»))]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run from» от "input" и («Tree» от answers) и "test" и ["-f", («Input» от answers)]), («Run» от "binary present" и "test" и ["-x", («Binary» от answers)])]
+
+тотальная функция «Working place»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Temporary directory» от "work" и (соединить [(«Temporary» от answers), "/print-is-repeatable."] по ""))]
+
+тотальная функция «First print»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Printing» от (если «Is a forgery» от answers то "probe" иначе "first") и "UTC" и "x" и answers
+
+тотальная функция «Second print»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если «Is a forgery» от answers
+    то [(«Run» от "names probe" и "env" и ["LC_ALL=C", "ls", "-A", («Inside» от "probe" и answers)])]
+    иначе «Printing» от "second-print-of-the-same-tree" и "Pacific/Kiritimati" и («Long padding») и answers
+
+тотальная функция «Copy»
+  принимает name: строка, answers: список «Answer»
+  возвращает «Question»
+  «Run» от (соединить ["copy ", name] по "") и "cp" и ["-a", («Inside» от "probe" и answers), («Inside» от name и answers)]
+
+тотальная функция «Forging»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если «Is a forgery» от answers
+    то [(«Copy» от "copy" и answers), («Copy» от "changed" и answers), («Copy» от "missing" и answers),
+      («Run» от "change" и "sh" и ["-c", "printf '/* подлог */\\n' >> \"$0\"", («Inside» от (соединить ["changed/", («Victim» от answers)] по "") и answers)]),
+      («Remove» от "removal" и («Inside» от (соединить ["missing/", («Victim» от answers)] по "") и answers))]
+    иначе пустой список
+
+тотальная функция «Listings»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от (отобразить («Pairs» от answers) как pair → «Listing» от pair)
+
+тотальная функция «Comparisons»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от (отобразить («Pairs» от answers) как pair → «Comparing» от pair и answers)
+
+тотальная функция «Cleanup»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Run» от "cleanup" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Work stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  если (stages меньше 1) или (stages больше 7)
+    то пустой список
+    иначе элемент (8 минус stages) в [(«Presence» от answers), («Working place» от answers), («First print» от answers), («Second print» от answers), («Forging» от answers), («Listings» от answers), («Comparisons» от answers)]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (stages равен 8) и («Setup»)),
+    («When» от (stages равен 0) и («Cleanup» от answers)),
+    («When» от («Is clear» от answers) и («Work stage» от stages и answers))] и (пустой список)
+
+тотальная функция «Heading»
+  принимает answers: список «Answer»
+  возвращает список строки
+  [(соединить ["вход:      ", («Input» от answers)] по ""), (соединить ["печатает:  ", («Binary» от answers)] по ""), (соединить ["пределы:   шагов ", («Steps limit» от answers), ", глубины ", («Depth limit» от answers)] по "")]
+
+тотальная функция «Repeatable»
+  принимает outcome: «Outcome»
+  возвращает список строки
+  пример «Equal prints are counted in files and bytes»
+    дано outcome равно запись «Outcome» с «same» равным да и «files» равным 7 и «bytes» равным 1857355 и «lines» равным пустой список
+    ожидается ["печати совпали побайтово: файлов 7, байт 1857355", "Печать этого двоичного не зависит от времени, адресов, номера процесса,", "путей и часового пояса. Это НЕОБХОДИМОЕ условие Г6, и оно держится.", "Достаточным оно не стало: полная пара печатей одного дерева — за", "работой dve-pechati в .github/workflows/reprint.yml."]
+  [(соединить ["печати совпали побайтово: файлов ", (к строке (outcome.«files»)), ", байт ", (к строке (outcome.«bytes»))] по ""), "Печать этого двоичного не зависит от времени, адресов, номера процесса,", "путей и часового пояса. Это НЕОБХОДИМОЕ условие Г6, и оно держится.", "Достаточным оно не стало: полная пара печатей одного дерева — за", "работой dve-pechati в .github/workflows/reprint.yml."]
+
+тотальная функция «Not repeatable»
+  возвращает список строки
+  ["", "ПЕЧАТЬ НЕВОСПРОИЗВОДИМА. Это НАХОДКА, а не поломка машины.", "Один двоичный, один вход, два захода — и разные байты. Значит в вывод", "течёт что-то, чего нет во входах. Гейт Г6 на этом дереве не берётся", "ничем: полная пара печатей разойдётся тем же.", "Чинить надо печать, а не проверку: повтор даст то же самое."]
+
+тотальная функция «Check verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  разбор («Pairs» от answers)
+    случай пусто
+      то вариант «Не проверено» с код равным "FLANG_IO_ORDER" и сообщение равным "сверять нечего"
+    случай голова и хвост
+      то если («Compared» от (голова) и answers).«same»
+        то вариант «Конец работы» с значение равным (соединить («Соединить списки» от («Heading» от answers) и («Repeatable» от («Compared» от (голова) и answers))) по "\n")
+        иначе вариант «Провал» с код равным "FLANG_PRINT_NOT_REPEATABLE" и сообщение равным (соединить («Gathered words» от [(«Heading» от answers), ((«Compared» от (голова) и answers).«lines»), («Not repeatable»)]) по "\n")
+
+тотальная функция «Trial»
+  принимает caught: признак, praise: строка, blame: строка
+  возвращает строка
+  если caught то praise иначе blame
+
+тотальная функция «Trials»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть victim равно («Victim» от answers)
+  отобразить («Pairs» от answers) как pair → «Chosen» от [(«When» от ((pair.«label») равен "copy") и («Trial» от ((«Compared» от pair и answers).«same») и "чисто молчит    дословная копия признана совпавшей" и "ЛОЖНАЯ ТРЕВОГА: сверщик развёл дословную копию")),
+    («When» от ((pair.«label») равен "changed") и («Trial» от (не ((«Compared» от pair и answers).«same»)) и (соединить ["подлог пойман   изменённый байт в ", victim, " назван"] по "") и (соединить ["ПОДЛОГ НЕ ПОЙМАН: сверщик смолчал на изменённом байте в ", victim] по "")))] и («Trial» от (не ((«Compared» от pair и answers).«same»)) и (соединить ["подлог пойман   пропавший файл ", victim, " назван"] по "") и (соединить ["ПОДЛОГ НЕ ПОЙМАН: сверщик смолчал на пропавшем файле ", victim] по ""))
+
+тотальная функция «Is a blame»
+  принимает line: строка
+  возвращает признак
+  (line начинается с "ЛОЖНАЯ ТРЕВОГА") или (line начинается с "ПОДЛОГ НЕ ПОЙМАН")
+
+тотальная функция «Forgery verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть trials равно («Trials» от answers)
+  если (длина (отфильтровать trials где line → «Is a blame» от line)) больше 0
+    то вариант «Провал» с код равным "FLANG_PRINT_COMPARISON_BLIND" и сообщение равным (соединить trials по "\n")
+    иначе вариант «Конец работы» с значение равным (соединить (добавить "прибор краснеет там, где должен, и молчит там, где должен" к trials) по "\n")
+
+тотальная функция «Is a print refusal»
+  принимает lines: список строки
+  возвращает признак
+  (соединить lines по "\n") содержит "печать отказала"
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  разбор («Obstacles» от answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_PRINT_NOT_COMPARED" и сообщение равным (соединить (если «Is a print refusal» от голова то («Соединить списки» от («Heading» от answers) и (голова)) иначе голова) по "\n")
+    случай пусто
+      то если «Is a forgery» от answers то («Forgery verdict» от answers) иначе («Check verdict» от answers)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin in mode»
+  принимает mode: строка
+  возвращает «Inquiry»
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 9 и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+
+тотальная функция «Begin check»
+  возвращает «Inquiry»
+  «Begin in mode» от "check"
+
+тотальная функция «Begin forgery»
+  возвращает «Inquiry»
+  «Begin in mode» от "forgery"
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Begin forgery»
+  обрабатывает «Next»

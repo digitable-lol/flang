@@ -1,0 +1,198 @@
+модуль «Reading»
+  использует «Rules» из "rules.fscript"
+  использует «Lists» только «Соединить списки»
+
+тотальная функция «Lines»
+  принимает text: строка
+  возвращает список строки
+  обеспечивает «dropping empty lines does not add lines» (длина результат) не больше (длина (разделить text по "\n"))
+  пример «Empty lines are dropped»
+    дано text равно "one\n\ntwo\n"
+    ожидается ["one", "two"]
+  отфильтровать (разделить text по "\n") где line → не (пусто line)
+
+тотальная функция «First line»
+  принимает text: строка
+  возвращает строка
+  пример «The first of two lines»
+    дано text равно "one\ntwo\n"
+    ожидается "one"
+  пример «No lines at all»
+    дано text равно ""
+    ожидается ""
+  разбор («Lines» от text)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «After»
+  принимает prefix: строка, line: строка
+  возвращает строка
+  пример «The rest of the line after its prefix»
+    дано prefix равно "коммит "
+    дано line равно "коммит 970deed9"
+    ожидается "970deed9"
+  пример «A line with another beginning gives nothing»
+    дано prefix равно "коммит "
+    дано line равно "вход flang/self"
+    ожидается ""
+  если line начинается с prefix
+    то подстрока line с ((длина prefix) плюс 1) по (длина line)
+    иначе ""
+
+тотальная функция «Value after»
+  принимает prefix: строка, text: строка
+  возвращает строка
+  пример «The first line with the prefix gives the value»
+    дано prefix равно "вход "
+    дано text равно "коммит 970deed9\nвход flang/self\nвход other\n"
+    ожидается "flang/self"
+  пример «No such line gives nothing»
+    дано prefix равно "вход "
+    дано text равно "коммит 970deed9\n"
+    ожидается ""
+  «First line» от (соединить (отобразить (отфильтровать («Lines» от text) где line → line начинается с prefix) как line → «After» от prefix и line) по "\n")
+
+тотальная функция «Words»
+  принимает line: строка
+  возвращает список строки
+  обеспечивает «dropping empty words does not add words» (длина результат) не больше (длина (разделить line по " "))
+  пример «Runs of spaces separate words once»
+    дано line равно "aa11  seed-fingerprint"
+    ожидается ["aa11", "seed-fingerprint"]
+  отфильтровать (разделить line по " ") где word → не (пусто word)
+
+тотальная функция «Word»
+  принимает position: число, line: строка
+  возвращает строка
+  пример «The second word of three»
+    дано position равно 2
+    дано line равно "one two three"
+    ожидается "two"
+  пример «A position past the end gives nothing»
+    дано position равно 4
+    дано line равно "one two three"
+    ожидается ""
+  пример «A position before the beginning gives nothing»
+    дано position равно 0
+    дано line равно "one two three"
+    ожидается ""
+  если (position меньше 1) или (position больше (длина («Words» от line)))
+    то ""
+    иначе элемент position в («Words» от line)
+
+тотальная функция «Without blanks»
+  принимает text: строка
+  возвращает строка
+  пример «Spaces, tabs and line ends are removed»
+    дано text равно " 8285\t16 \r\n"
+    ожидается "828516"
+  свёртка [" ", "\t", "\r", "\n"] начиная с text как kept и blank → соединить (разделить kept по blank) по ""
+
+тотальная функция «Ends with»
+  принимает text: строка, ending: строка
+  возвращает признак
+  пример «The ending is there»
+    дано text равно "aa11  seed-fingerprint"
+    дано ending равно "  seed-fingerprint"
+    ожидается да
+  пример «The ending is longer than the text»
+    дано text равно "int"
+    дано ending равно "fingerprint"
+    ожидается нет
+  если (длина ending) больше (длина text)
+    то нет
+    иначе (подстрока text с (((длина text) минус (длина ending)) плюс 1) по (длина text)) равен ending
+
+тотальная функция «Leading digits»
+  принимает text: строка
+  возвращает строка
+  пример «Digits are taken up to the first other sign»
+    дано text равно "543: отвергнуто"
+    ожидается "543"
+  пример «A text that begins with a letter has none»
+    дано text равно "a12"
+    ожидается ""
+  «First line» от (соединить (разделить (свёртка (разложить text на символы) начиная с "" как taken и sign → «Chosen» от [(«When» от (taken содержит "\n") и taken), («When» от ("0123456789" содержит sign) и (соединить [taken, sign] по ""))] и (соединить [taken, "\n"] по "")) по "\n") по "\n")
+
+тотальная функция «Digits»
+  принимает text: строка
+  возвращает признак
+  пример «A number is made of digits»
+    дано text равно "650"
+    ожидается да
+  пример «An empty text is not a number»
+    дано text равно ""
+    ожидается нет
+  пример «A number with a tail is not a number»
+    дано text равно "650:"
+    ожидается нет
+  (не (пусто text)) и притом ((«Leading digits» от text) равен text)
+
+тотальная функция «Number after»
+  принимает mark: строка, line: строка
+  возвращает строка
+  пример «The number stands right after the mark»
+    дано mark равно "ПРИНЯТО кодом 0 — "
+    дано line равно "подделок 543: ПРИНЯТО кодом 0 — 0 (обязано быть 0)"
+    ожидается "0"
+  пример «A line without the mark has no number»
+    дано mark равно "ПРИНЯТО кодом 0 — "
+    дано line равно "честных 250"
+    ожидается ""
+  если line содержит mark
+    то «Leading digits» от (свёртка (разделить line по mark) начиная с "" как last и part → part)
+    иначе ""
+
+тотальная функция «Beginning with»
+  принимает prefix: строка, lines: список строки
+  возвращает строка
+  пример «The first of the lines with the prefix»
+    дано prefix равно "видов "
+    дано lines равно ["# видов 1", "видов 38", "видов 39"]
+    ожидается "видов 38"
+  пример «No line has the prefix»
+    дано prefix равно "видов "
+    дано lines равно ["на слове 3"]
+    ожидается ""
+  «First line» от (соединить (отфильтровать lines где line → line начинается с prefix) по "\n")
+
+тотальная функция «Holding»
+  принимает mark: строка, lines: список строки
+  возвращает строка
+  пример «The first of the lines with the mark inside»
+    дано mark равно "числитель набора "
+    дано lines равно ["поймано 36 из 36", "  честные половины: числитель набора 187 (храповик 155)"]
+    ожидается "  честные половины: числитель набора 187 (храповик 155)"
+  «First line» от (соединить (отфильтровать lines где line → line содержит mark) по "\n")
+
+тотальная функция «Count»
+  принимает text: строка
+  возвращает число
+  пример «Digits become a number»
+    дано text равно "543"
+    ожидается 543
+  пример «Anything else counts as nothing»
+    дано text равно "?"
+    ожидается 0
+  если «Digits» от text то к числу text иначе 0
+
+тотальная функция «Or unknown»
+  принимает text: строка
+  возвращает строка
+  пример «An empty number is shown as unknown»
+    дано text равно ""
+    ожидается "?"
+  пример «A number is shown as it is»
+    дано text равно "36"
+    ожидается "36"
+  если пусто text то "?" иначе text
+
+тотальная функция «Gathered words»
+  принимает parts: список список строки
+  возвращает список строки
+  пример «Parts follow one another in their order»
+    дано parts равно [["one"], пустой список, ["two", "three"]]
+    ожидается ["one", "two", "three"]
+  свёртка parts начиная с (пустой список) как gathered и part → «Соединить списки» от gathered и part

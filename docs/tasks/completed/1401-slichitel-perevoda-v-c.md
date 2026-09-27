@@ -464,7 +464,7 @@ fl_nothing();` стоит в блоке функции `poddelka_usloviya_bez_sp
   СОВПАЛ со старым — ни одного нового отказа.
 * `sh flang/proof/checker/tests/run.sh` — «сошлось всё» (подделок 529, принято
   кодом 0 — 0; честных 244, отвергнуто 0).
-* `sh scripts/доказуемость.sh` — **ДОКАЗУЕМ**, все четыре проверки сошлись.
+* `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` — **ДОКАЗУЕМ**, все четыре проверки сошлись.
 * `sh scripts/guards/prose-numbers-guard.sh` — 228 примет, сошлось 228: приметы
   строк в `*.sh` и `*.c,*.h` пересняты под этот прирост.
 

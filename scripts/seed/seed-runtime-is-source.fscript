@@ -1,0 +1,282 @@
+модуль «Seed runtime is source»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Runtime files»
+  возвращает список строки
+  ["flang_repl.c", "flang_cli.c", "flang_runtime.c", "flang_runtime.h"]
+
+тотальная функция «Seed path»
+  принимает name: строка
+  возвращает строка
+  пример «The seed copy lies in the bootstrap directory»
+    дано name равно "flang_cli.c"
+    ожидается "bootstrap/flang_cli.c"
+  соединить ["bootstrap/", name] по ""
+
+тотальная функция «Source path»
+  принимает name: строка
+  возвращает строка
+  пример «The source lies beside the C emitter»
+    дано name равно "flang_cli.c"
+    ожидается "flang/src/emit/c/flang_cli.c"
+  соединить ["flang/src/emit/c/", name] по ""
+
+тотальная функция «Opening»
+  принимает name: строка
+  возвращает строка
+  соединить ["opening ", name] по ""
+
+тотальная функция «Position»
+  принимает name: строка
+  возвращает строка
+  соединить ["position ", name] по ""
+
+тотальная функция «Difference»
+  принимает name: строка
+  возвращает строка
+  соединить ["difference ", name] по ""
+
+тотальная функция «Opened»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  («Exit code of» от («Opening» от name) и answers) равен 0
+
+тотальная функция «Found»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  («Opened» от name и answers) и притом ((«Exit code of» от («Position» от name) и answers) равен 0)
+
+тотальная функция «Openings»
+  возвращает список «Question»
+  отобразить («Runtime files») как name → «Run from» от («Opening» от name) и («Root») и "head" и ["-n", "1", («Source path» от name)]
+
+тотальная функция «Positions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  отобразить (отфильтровать («Runtime files») где name → «Opened» от name и answers) как name → «Run from» от («Position» от name) и («Root») и "env" и ["LC_ALL=C.UTF-8", "grep", "-n", "-m1", "-F", "-x", "--", («First line» от («Output of» от («Opening» от name) и answers)), («Seed path» от name)]
+
+тотальная функция «Header end»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  «Leading digits» от («Output of» от («Position» от name) и answers)
+
+тотальная функция «Differences»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  отобразить (отфильтровать («Runtime files») где name → «Found» от name и answers) как name → «Run from» от («Difference» от name) и («Root») и "sh" и ["-c", "tail -n +\"$0\" \"$1\" | diff - \"$2\"", («Header end» от name и answers), («Seed path» от name), («Source path» от name)]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  если (stages меньше 0) или (stages больше 2)
+    то пустой список
+    иначе элемент (3 минус stages) в [(«Openings»), («Positions» от answers), («Differences» от answers)]
+
+тотальная функция «Is a change»
+  принимает line: строка
+  возвращает признак
+  пример «A line taken from the seed is a change»
+    дано line равно "< int old;"
+    ожидается да
+  пример «A line number of the difference is not»
+    дано line равно "12c12"
+    ожидается нет
+  (line начинается с "<") или (line начинается с ">")
+
+тотальная функция «Is a version change»
+  принимает line: строка
+  возвращает признак
+  пример «The version definition is counted apart»
+    дано line равно "> #define FLANG_VERSION \"0.7.22\""
+    ожидается да
+  пример «Any other definition is an ordinary change»
+    дано line равно "> #define FLANG_LIMIT 5"
+    ожидается нет
+  (line начинается с "< #define FLANG_VERSION ") или (line начинается с "> #define FLANG_VERSION ")
+
+тотальная функция «Changes»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Lines» от («Output of» от («Difference» от name) и answers)) где line → «Is a change» от line
+
+тотальная функция «Version changes»
+  принимает name: строка, answers: список «Answer»
+  возвращает число
+  длина (отфильтровать («Changes» от name и answers) где line → «Is a version change» от line)
+
+тотальная функция «Padded»
+  принимает text: строка, width: число
+  возвращает строка
+  пример «A short name is padded on the right»
+    дано text равно "flang_cli.c"
+    дано width равно 18
+    ожидается "flang_cli.c       "
+  пример «A long name is left as it is»
+    дано text равно "flang_runtime_long.c"
+    дано width равно 18
+    ожидается "flang_runtime_long.c"
+  если (длина text) не меньше width
+    то text
+    иначе подстрока (соединить [text, "                  "] по "") с 1 по width
+
+тотальная функция «Aligned»
+  принимает count: число
+  возвращает строка
+  пример «One digit is moved to the right»
+    дано count равно 9
+    ожидается " 9"
+  пример «Two digits fill the width»
+    дано count равно 14
+    ожидается "14"
+  если count меньше 10
+    то соединить [" ", (к строке count)] по ""
+    иначе к строке count
+
+тотальная функция «Measure»
+  принимает name: строка, header: число, changed: число, versions: число
+  возвращает строка
+  пример «A body that caught up with the source»
+    дано name равно "flang_repl.c"
+    дано header равно 9
+    дано changed равно 0
+    дано versions равно 0
+    ожидается "flang_repl.c       шапка  9 строк, тело отстало на 0 строк"
+  пример «A lagging body with the version counted apart»
+    дано name равно "flang_runtime.h"
+    дано header равно 14
+    дано changed равно 7
+    дано versions равно 2
+    ожидается "flang_runtime.h    шапка 14 строк, тело отстало на 5 строк, плюс версия"
+  соединить [(«Padded» от name и 18), " шапка ", («Aligned» от header), " строк, тело отстало на ", (к строке (changed минус versions)), " строк", (если versions больше 0 то ", плюс версия" иначе "")] по ""
+
+тотальная функция «Is strict»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Given of» от "mode" и answers) содержит "after print"
+
+тотальная функция «Lag»
+  принимает name: строка, answers: список «Answer»
+  возвращает число
+  если «Found» от name и answers
+    то длина («Changes» от name и answers)
+    иначе 0
+
+тотальная функция «Is troubled»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  (не («Found» от name и answers)) или ((«Is strict» от answers) и притом ((«Lag» от name и answers) больше 0))
+
+тотальная функция «Shown changes»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
+  пусть changes равно («Changes» от name и answers)
+  если «Is troubled» от name и answers
+    то отфильтровать (отобразить [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] как position → если position больше (длина changes) то "" иначе (элемент position в changes)) где line → не (пусто line)
+    иначе пустой список
+
+тотальная функция «Account»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
+  «Chosen» от [(«When» от (не («Opened» от name и answers)) и ([(соединить ["НЕТ ФАЙЛА: ", («Seed path» от name), " или ", («Source path» от name)] по "")])),
+    («When» от ((не («Found» от name и answers)) и притом ((«Exit code of» от («Position» от name) и answers) равен 1)) и ([(соединить ["ПРИЁМ БОЛЬШЕ НЕ ЗАКОНЕН: ", name, " — первой строки источника в семени нет вовсе"] по "")])),
+    («When» от (не («Found» от name и answers)) и ([(соединить ["НЕТ ФАЙЛА: ", («Seed path» от name), " или ", («Source path» от name)] по "")]))] и (приписать («Measure» от name и ((«Count» от («Header end» от name и answers)) минус 1) и (длина («Changes» от name и answers)) и («Version changes» от name и answers)) к («Shown changes» от name и answers))
+
+тотальная функция «Accounts»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от (отобразить («Runtime files») как name → «Account» от name и answers)
+
+тотальная функция «Troubled»
+  принимает answers: список «Answer»
+  возвращает число
+  длина (отфильтровать («Runtime files») где name → «Is troubled» от name и answers)
+
+тотальная функция «Whole lag»
+  принимает answers: список «Answer»
+  возвращает число
+  свёртка («Runtime files») начиная с 0 как lag и name → lag плюс («Lag» от name и answers)
+
+тотальная функция «Refusal»
+  принимает strict: признак, troubled: число
+  возвращает список строки
+  пример «After a print the seed has to be the source»
+    дано strict равно да
+    дано troubled равно 2
+    ожидается ["", "ПОСЛЕ ПЕЧАТИ СЕМЯ ОБЯЗАНО СОВПАСТЬ С ИСТОЧНИКОМ, а разошлось в 2", "файл(е/ах). Либо печать копирует уже не дословно, либо источник", "правили ПОСЛЕ того, как печать началась."]
+  пример «In the middle of work only a lost header is a trouble»
+    дано strict равно нет
+    дано troubled равно 1
+    ожидается ["", "ПРИЁМ «ШАПКА + ИСТОЧНИК» БОЛЬШЕ НЕ ЗАКОНЕН: в 1 файл(е/ах) первой", "строки источника в семени нет вовсе. Значит печать копирует рантайм", "уже не дословно, и правку в нём без перепечатки проверить нельзя."]
+  если strict
+    то ["", (соединить ["ПОСЛЕ ПЕЧАТИ СЕМЯ ОБЯЗАНО СОВПАСТЬ С ИСТОЧНИКОМ, а разошлось в ", (к строке troubled)] по ""), "файл(е/ах). Либо печать копирует уже не дословно, либо источник", "правили ПОСЛЕ того, как печать началась."]
+    иначе ["", (соединить ["ПРИЁМ «ШАПКА + ИСТОЧНИК» БОЛЬШЕ НЕ ЗАКОНЕН: в ", (к строке troubled), " файл(е/ах) первой"] по ""), "строки источника в семени нет вовсе. Значит печать копирует рантайм", "уже не дословно, и правку в нём без перепечатки проверить нельзя."]
+
+тотальная функция «Approval»
+  принимает lag: число
+  возвращает список строки
+  пример «A seed equal to the source»
+    дано lag равно 0
+    ожидается ["", "приём «шапка + источник» законен: первая строка источника найдена во всех четырёх", "семя совпадает с источником полностью"]
+  пример «A lag in the middle of work is the norm»
+    дано lag равно 12
+    ожидается ["", "приём «шапка + источник» законен: первая строка источника найдена во всех четырёх", "семя отстало от источника на 12 строк — это НОРМА посреди правки,", "сойдётся перепечаткой; после неё звать план «After print»"]
+  если lag больше 0
+    то ["", "приём «шапка + источник» законен: первая строка источника найдена во всех четырёх", (соединить ["семя отстало от источника на ", (к строке lag), " строк — это НОРМА посреди правки,"] по ""), "сойдётся перепечаткой; после неё звать план «After print»"]
+    иначе ["", "приём «шапка + источник» законен: первая строка источника найдена во всех четырёх", "семя совпадает с источником полностью"]
+
+тотальная функция «Broken differences»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Runtime files») где name → («Found» от name и answers) и притом ((«Exit code of» от («Difference» от name) и answers) больше 1)
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  «Chosen» от [(«When» от ((длина («Broken differences» от answers)) больше 0) и (вариант «Не проверено» с код равным "FLANG_SEED_RUNTIME_NOT_COMPARED" и сообщение равным (соединить ["НЕ ПРОВЕРЕНО: diff не отработал на ", (соединить («Broken differences» от answers) по ", ")] по ""))),
+    («When» от ((«Troubled» от answers) больше 0) и (вариант «Провал» с код равным "FLANG_SEED_RUNTIME_DIFFERS" и сообщение равным (соединить («Соединить списки» от («Accounts» от answers) и («Refusal» от («Is strict» от answers) и («Troubled» от answers))) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Соединить списки» от («Accounts» от answers) и («Approval» от («Whole lag» от answers))) по "\n"))
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin in mode»
+  принимает mode: строка
+  возвращает «Inquiry»
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3 и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+
+тотальная функция «Begin check»
+  возвращает «Inquiry»
+  «Begin in mode» от "check"
+
+тотальная функция «Begin after print»
+  возвращает «Inquiry»
+  «Begin in mode» от "after print"
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «After print»
+  состояние «Inquiry»
+  начинает с «Begin after print»
+  обрабатывает «Next»

@@ -1,6 +1,6 @@
 # Двоичный для ведомости, собранный рядом с деревом, не видит его библиотеку и подаёт это как долг автора
 
-`scripts/seed/build-ledger-binary.sh` собирает компилятор третьим путём, рядом с
+`scripts/seed/build-ledger-binary.fscript` собирает компилятор третьим путём, рядом с
 `scripts/bootstrap-reprint.sh` и `scripts/bootstrap-c.sh`: напечатанное семя дословно
 плюс рантайм дерева. Напечатанный компилятор берётся из семени
 (`compiler_flang.c`, `compiler_flang.h`, `Makefile`) и не трогается ничем — это

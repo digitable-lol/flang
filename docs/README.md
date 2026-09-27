@@ -22,7 +22,7 @@
 доказательства компилятора, формализация правил вывода в Lean, известные
 нарушения состоятельности и перевод в C — стоят рядом с пояснением, что каждое
 значит и чего не значит, в [`four-coverages.md`](four-coverages.md); все четыре
-снимает один прибор `sh scripts/four-coverages.sh`.
+снимает один прибор `bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000`.
 
 Рядом лежит [`README.ru.md`](README.ru.md) — русская редакция **корневого**
 `README.md`, а не этой страницы: суффикс `.ru.md` там про корень, и путать их не

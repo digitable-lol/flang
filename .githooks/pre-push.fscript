@@ -18,7 +18,7 @@
   возвращает список «Check»
   обеспечивает «there are exactly eighteen checks» (длина результат) равен 18
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "sh scripts/guards/prose-numbers-guard.sh",
-   запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "sh scripts/seed/seed-runtime-is-source.sh",
+   запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "bootstrap/flang io scripts/seed/seed-runtime-is-source.fscript --plan Check",
    запись «Check» с «name» равным "seed-refresh" и «command» равным "sh scripts/seed/seed-refresh.sh --check",
    запись «Check» с «name» равным "version-derivations-guard" и «command» равным "sh scripts/guards/version-derivations-guard.sh",
    запись «Check» с «name» равным "who-calls-the-guards" и «command» равным "sh scripts/guards/who-calls-the-guards.sh --check",

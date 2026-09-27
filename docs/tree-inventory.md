@@ -172,8 +172,8 @@ flang в C.
 | код на стороне цели | `flang/concurrency/bin/node.{c,cs,ex,go,java,py,rs}` — семь хозяев узлов на семи языках, и `peer.py` — конец связи на цели python | 8 | 8 227 |
 | разметка и оформление | четыре `.html` и `docs/site/style.css` — цели HTML у языка нет и не заявлено | 5 | 1 785 |
 | чужая среда: установщик | `packaging/homebrew/flang.rb` и три файла `packaging/asdf/bin/` — homebrew понимает Ruby, asdf зовёт свои три раньше, чем flang в системе есть | 4 | 470 |
-| точка раскрутки и приёмка | `scripts/bootstrap-reprint.sh`, `scripts/bootstrap-c.sh`, `scripts/seed/new-binary-acceptance.sh`, `scripts/seed/build-ledger-binary.sh` — разобраны отдельно ниже | 4 | 4 080 |
-| сверка двоичного и его печати | `scripts/seed/binary-origin.sh` и `scripts/guards/overlong-string-guard.sh` — заведены 29 августа, разобраны 30-го, см. ниже | 2 | 876 |
+| точка раскрутки и приёмка | `scripts/bootstrap-reprint.sh`, `scripts/bootstrap-c.sh`, `scripts/seed/new-binary-acceptance.fscript`, `scripts/seed/build-ledger-binary.fscript` — разобраны отдельно ниже | 4 | 4 080 |
+| сверка двоичного и его печати | `scripts/seed/binary-origin.fscript` и `scripts/guards/overlong-string-guard.sh` — заведены 29 августа, разобраны 30-го, см. ниже | 2 | 876 |
 | чужой хозяин примера | `docs/examples/host-boundary/host.c` — этим примером и показывают границу с чужим кодом | 1 | 227 <!-- СНЯТО 2026-08-31 строк docs/examples/host-boundary/host.c = 227 --> |
 | независимый чекер записи | `flang/proof/checker/**` — сверщик записи доказательства на C, прогон его проб и одна проба-подделка на оболочке; заведён 31 августа, разобран ниже | 3 | 4 417 |
 
@@ -192,7 +192,7 @@ flang в C.
 ответ переставал бы что-либо значить: сломанный двоичный одинаково способен и
 напечатать не то, и сказать, что напечатал то. То же у
 `scripts/bootstrap-c.sh` (второй путь печати) и у
-`scripts/seed/new-binary-acceptance.sh` (приёмка нового двоичного после перепечатки).
+`scripts/seed/new-binary-acceptance.fscript` (приёмка нового двоичного после перепечатки).
 
 Оболочка при этом ничего нового на путь сборки не приносит: `sh`, `make`, `cc`
 и `cmp` там нужны и так, а Node не нужен ни на одном шаге.
@@ -225,7 +225,7 @@ Python 16, awk 1.
 Столбец «чем это держится» у `ярлык` говорит «круг», и это правда: чтобы
 прочитать `ярлыки.flang`, нужен двоичный, а ярлык умеет собирать его сам, когда
 двоичного ещё нет. Ровно по этому основанию из долга вычеркнуты
-`scripts/bootstrap-reprint.sh` и `scripts/seed/binary-origin.sh`.
+`scripts/bootstrap-reprint.sh` и `scripts/seed/binary-origin.fscript`.
 
 **Довода `ярлык` всё-таки не выписано, и это решение, а не забывчивость.**
 Выписать его — значит опустить долг на единицу и на ту же единицу ослабить
@@ -243,7 +243,7 @@ Python 16, awk 1.
 | `prose-numbers-guard.sh` | 416 | числа, набранные в прозе рукой, сходятся с деревом сегодня <!-- СНЯТО 2026-09-05 строк scripts/guards/prose-numbers-guard.sh = 416 --> |
 | `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |
 | `target-census.sh` | 164 | перепись целей <!-- СНЯТО 2026-09-17 строк scripts/targets/target-census.sh = 164 --> |
-| `seed-freshness.sh` | 115 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-09-17 строк scripts/seed/seed-freshness.sh = 115 --> |
+| `seed-freshness.fscript` | 115 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-09-17 строк scripts/seed/seed-freshness.fscript = 115 --> |
 | `test-remote.sh` | 149 | прогон на чужой машине <!-- СНЯТО 2026-09-14 строк scripts/test-remote.sh = 149 --> |
 | `one-string-measure-guard.sh` | 119 | подаёт сырые октеты в `string-measure.flang` <!-- СНЯТО 2026-08-29 строк scripts/guards/one-string-measure-guard.sh = 119 --> |
 | `identical-declarations.sh` | 82 | что можно ввезти вместо переименования <!-- СНЯТО 2026-09-17 строк scripts/targets/identical-declarations.sh = 82 --> |
@@ -251,7 +251,7 @@ Python 16, awk 1.
 | `targets-inventory.sh` | 50 | опись целей: имя, код, время, причина <!-- СНЯТО 2026-09-17 строк scripts/targets/targets-inventory.sh = 50 --> |
 | `names-in-c.awk` | 79 | «идентификатор C → русское объявление» из напечатанного заголовка <!-- СНЯТО 2026-08-29 строк scripts/targets/names-in-c.awk = 79 --> |
 
-Три из них — `seed-knows-type-words-guard.sh`, `seed-freshness.sh`,
+Три из них — `seed-knows-type-words-guard.sh`, `seed-freshness.fscript`,
 `seed-parses-sources-guard.sh` — стоят рядом с точкой раскрутки, но НЕ под тем
 же доводом: они не судят напечатанное, а спрашивают, читает ли семя исходники.
 Ответ на такой вопрос от правил семени не зависит, и переводить их можно —
@@ -415,8 +415,8 @@ benchmarks/model-authoring/queue-fix-arm.sh         8  то же
 
 | файл | строк | заведён | решение |
 |---|---:|---|---|
-| `scripts/seed/build-ledger-binary.sh` | 130 | 30 авг, `42c641be` | **не долг**: третий путь сборки компилятора |
-| `scripts/seed/binary-origin.sh` | 549 | 29 авг, `b10bff9a` | **не долг**: спрашивает у двоичного о нём самом |
+| `scripts/seed/build-ledger-binary.fscript` | 130 | 30 авг, `42c641be` | **не долг**: третий путь сборки компилятора |
+| `scripts/seed/binary-origin.fscript` | 549 | 29 авг, `b10bff9a` | **не долг**: спрашивает у двоичного о нём самом |
 | `scripts/guards/overlong-string-guard.sh` | 327 | 29 авг, `f36239c0` | **не долг**: обязан отвечать, когда семя не собирается |
 | `scripts/resource-plan.py` | 975 | 30 авг, `7544e149` | **вынесен из дерева 30 авг**: живёт в `/srv/work/resource-plan.py` — прибор машины и смены, а не языка |
 | `scripts/guards/published-vs-tree.sh` | 796 | 31 авг, `03fb4060`+Ч72 | **долг**: переводим; работа `published` в CI нарочно идёт без собранного двоичного |
@@ -435,10 +435,10 @@ benchmarks/model-authoring/queue-fix-arm.sh         8  то же
 Основание дозволено ровно одно, и оно записано в самой описи: **круг**. Файл не
 долг, если он судит или собирает то, чем его самого пришлось бы исполнять.
 
-* `build-ledger-binary.sh` собирает компилятор (семя дословно + рантайм дерева).
+* `build-ledger-binary.fscript` собирает компилятор (семя дословно + рантайм дерева).
   Написать сборку компилятора программой, которую исполняет компилятор, нельзя:
   на этом шаге его ещё нет.
-* `binary-origin.sh` спрашивает у ДВОИЧНОГО, из этого ли он семени. Двоичный,
+* `binary-origin.fscript` спрашивает у ДВОИЧНОГО, из этого ли он семени. Двоичный,
   несущий чужой код, одинаково способен и нести его, и сказать, что не несёт.
 * `overlong-string-guard.sh` спрашивает, собирается ли напечатанное семя своим же
   напечатанным Makefile. Он обязан отвечать ИМЕННО ТОГДА, когда семя не

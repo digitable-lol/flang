@@ -1,0 +1,201 @@
+модуль «Report provenance»
+  использует «Rules» из "rules.fscript"
+  использует «Inquiry» из "inquiry.fscript"
+  использует «Reading» из "reading.fscript"
+
+тотальная функция «Summed files»
+  возвращает список строки
+  ["scripts/seed-fingerprint", "bootstrap/flang", "flang/proof/checker/checker.c", "flang/proof/tables/inference-rules.tsv"]
+
+тотальная функция «Build inputs command»
+  возвращает строка
+  "cd bootstrap && /bin/ls *.c *.h Makefile | LC_ALL=C sort | xargs cat | sha256sum"
+
+тотальная функция «Provenance questions»
+  принимает root: строка
+  возвращает список «Question»
+  [(«Run» от "day" и "date" и ["+%F"]),
+   («Run from» от "head" и root и "git" и ["rev-parse", "HEAD"]),
+   («Run from» от "changes" и root и "git" и ["status", "--porcelain"]),
+   («Read from» от "fingerprint" и root и "scripts/seed-fingerprint"),
+   («Run from» от "sums" и root и "sha256sum" и («Summed files»)),
+   («Run from» от "build inputs" и root и "sh" и ["-c", («Build inputs command»)]),
+   («Run from» от "version" и root и "bootstrap/flang" и ["--version"]),
+   («Read from» от "fingerprint beside binary" и root и "bootstrap/flang.seed-sha256"),
+   («Read from» от "rules digest" и root и "flang/proof/tables/inference-rules.digest"),
+   («Read from» от "toolchain" и root и "flang/proof/lean/lean-toolchain"),
+   («Environment» от "lean" и "LEAN")]
+
+тотальная функция «Lean question»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "lean version" и («Setting of» от "lean" и "lean" и answers) и ["--version"])]
+
+тотальная функция «Kept octets»
+  принимает kept: строка
+  возвращает число
+  пример «Octets of a kept Cyrillic prefix»
+    дано kept равно "де"
+    ожидается 4
+  свёртка (разложить kept на символы) начиная с 0 как total и sign → total плюс («Octets» от sign)
+
+тотальная функция «Octets»
+  принимает sign: строка
+  возвращает число
+  пример «A Latin letter takes one octet»
+    дано sign равно "c"
+    ожидается 1
+  пример «A Cyrillic letter takes two octets»
+    дано sign равно "д"
+    ожидается 2
+  пример «The ellipsis takes three octets»
+    дано sign равно "…"
+    ожидается 3
+  пусть code равно (код символа sign)
+  1 плюс (длина (отфильтровать [128, 2048, 65536] где limit → code не меньше limit))
+
+тотальная функция «Short»
+  принимает sum: строка
+  возвращает строка
+  пример «A sum is cut to twelve octets»
+    дано sum равно "c7eecb965bd0aaaabbbb"
+    ожидается "c7eecb965bd0…"
+  пример «A Cyrillic word is cut by octets, as the shell cuts it»
+    дано sum равно "дерево-правленое"
+    ожидается "дерево…"
+  пример «A dash stays a dash»
+    дано sum равно "—"
+    ожидается "—…"
+  соединить [(«First line» от (свёртка (разложить sum на символы) начиная с "" как kept и sign → если kept содержит "\n" то kept иначе (соединить [kept, (если ((«Kept octets» от kept) плюс («Octets» от sign)) больше 12 то "\n" иначе sign)] по ""))), "…"] по ""
+
+тотальная функция «Or dash»
+  принимает value: строка
+  возвращает строка
+  пример «An empty value becomes a dash»
+    дано value равно ""
+    ожидается "—"
+  пример «A value stays itself»
+    дано value равно "970deed9"
+    ожидается "970deed9"
+  если пусто value то "—" иначе value
+
+тотальная функция «Sum of»
+  принимает path: строка, sums: строка
+  возвращает строка
+  пример «The sum stands before the path»
+    дано path равно "scripts/seed-fingerprint"
+    дано sums равно "aa11  bootstrap/flang\nbb22  scripts/seed-fingerprint\n"
+    ожидается "bb22"
+  пример «A missing file has no sum»
+    дано path равно "scripts/seed-fingerprint"
+    дано sums равно "aa11  bootstrap/flang\n"
+    ожидается ""
+  «First line» от (соединить (отобразить (отфильтровать («Lines» от sums) где line → («Word» от 2 и line) равен path) как line → «Word» от 1 и line) по "\n")
+
+тотальная функция «Tree line»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть changed равно (длина («Lines» от («Output of» от "changes" и answers)))
+  «Chosen» от [(«When» от (не ((«Exit code of» от "head" и answers) равен 0)) и ("SHA дерева         — (дерево не под учётом git)")),
+    («When» от (changed равен 0) и (соединить ["SHA дерева         ", («First line» от («Output of» от "head" и answers)), " (рабочая копия чиста)"] по ""))] и (соединить ["SHA дерева         ", («First line» от («Output of» от "head" и answers)), " (РАБОЧАЯ КОПИЯ ПРАВЛЕНА: файлов ", (к строке changed), " — замер по одному коммиту не повторится)"] по "")
+
+тотальная функция «Seed line»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть fingerprint равно («Output of» от "fingerprint" и answers)
+  соединить ["SHA семени         ", («Short» от («Or dash» от («Sum of» от "scripts/seed-fingerprint" и («Output of» от "sums" и answers)))), " (scripts/seed-fingerprint; печать входа ", («Or dash» от («Value after» от "вход " и fingerprint)), " с коммита ", («Short» от («Or dash» от («Value after» от "коммит " и fingerprint))), ")"] по ""
+
+тотальная функция «Build inputs»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Or dash» от («Word» от 1 и («First line» от («Output of» от "build inputs" и answers)))
+
+тотальная функция «Freshness»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть beside равно («Output of» от "fingerprint beside binary" и answers)
+  пусть binary равно («Sum of» от "bootstrap/flang" и («Output of» от "sums" и answers))
+  «Chosen» от [(«When» от ((пусто beside) или (не ((«Value after» от "двоичный " и beside) равен binary))) и ("отпечатка при этом двоичном нет — свежесть НЕ ПРОВЕРЕНА (записать: sh flang/proof/corpus-share.sh --отпечаток)")),
+    («When» от ((«Value after» от "семя " и beside) равен («Build inputs» от answers)) и ("собран из нынешнего семени (по отпечатку bootstrap/flang.seed-sha256)"))] и ("ОТСТАЛ ОТ СЕМЕНИ: собран не из нынешних bootstrap/*.c — пересобрать: make -C bootstrap")
+
+тотальная функция «Binary present»
+  принимает answers: список «Answer»
+  возвращает признак
+  не (((«Exit code of» от "version" и answers) равен 127) или ((«Exit code of» от "version" и answers) равен 126))
+
+тотальная функция «Version»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть named равно («First line» от («Output of» от "version" и answers))
+  если пусто named то "версии не назвал" иначе named
+
+тотальная функция «Binary line»
+  принимает answers: список «Answer»
+  возвращает строка
+  если «Binary present» от answers
+    то соединить ["двоичный           ", («Version» от answers), " (bootstrap/flang), sha256 ", («Short» от («Sum of» от "bootstrap/flang" и («Output of» от "sums" и answers))), ", ", («Freshness» от answers)] по ""
+    иначе "двоичный           НЕТ В ДЕРЕВЕ — ни одно число этого отчёта не снято собранным двоичным"
+
+тотальная функция «Checker line»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить ["сверщик            flang/proof/checker/checker.c sha256 ", («Short» от («Or dash» от («Sum of» от "flang/proof/checker/checker.c" и («Output of» от "sums" и answers))))] по ""
+
+тотальная функция «Semantics line»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть recorded равно («Without blanks» от («First line» от («Output of» от "rules digest" и answers)))
+  пусть counted равно («Sum of» от "flang/proof/tables/inference-rules.tsv" и («Output of» от "sums" и answers))
+  если (пусто counted) или (не ((«Exit code of» от "rules digest" и answers) равен 0))
+    то "версия семантики   — (нет flang/proof/tables/inference-rules.digest)"
+    иначе соединить ["версия семантики   ", («Short» от recorded), " (flang/proof/tables/inference-rules.digest; ", (если counted равен recorded то "ведомость сходится с отпечатком" иначе "ВЕДОМОСТЬ РАЗОШЛАСЬ С ОТПЕЧАТКОМ — версия семантики не та, что объявлена"), ")"] по ""
+
+тотальная функция «Lean line»
+  принимает answers: список «Answer»
+  возвращает строка
+  если (не («Answered» от "lean version" и answers)) или ((«Exit code of» от "lean version" и answers) равен 127)
+    то соединить ["Lean               ", («Or dash» от («Without blanks» от («First line» от («Output of» от "toolchain" и answers)))), " по flang/proof/lean/lean-toolchain; в PATH НЕТ — здесь не гонялся"] по ""
+    иначе соединить ["Lean               ", («First line» от («Output of» от "lean version" и answers)), " (в PATH)"] по ""
+
+тотальная функция «Provenance»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить ["── чем и на чём снято ──",
+    (соединить ["дата               ", («First line» от («Output of» от "day" и answers))] по ""),
+    («Tree line» от answers),
+    («Seed line» от answers),
+    (соединить ["входы сборки       ", («Short» от («Build inputs» от answers)), " (sha256 bootstrap/*.c, *.h, Makefile)"] по ""),
+    («Binary line» от answers),
+    («Checker line» от answers),
+    («Semantics line» от answers),
+    («Lean line» от answers)] по "\n"
+
+тотальная функция «Provenance stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  если stages равен 1 то («Provenance questions» от "..") иначе («Lean question» от answers)
+
+тотальная функция «Proceed with provenance»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то вариант «Конец работы» с значение равным («Provenance» от answers)
+        иначе «Proceed with provenance» от («Provenance stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin provenance»
+  возвращает «Inquiry»
+  «Begin with» от 2
+
+тотальная функция «Next provenance question»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed with provenance» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Report»
+  состояние «Inquiry»
+  начинает с «Begin provenance»
+  обрабатывает «Next provenance question»

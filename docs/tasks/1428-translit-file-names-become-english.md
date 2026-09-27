@@ -7,7 +7,7 @@
 команда: первая
 карта: Куда идём
 рядом: 1427, 5821
-нужность: 2 — имена вроде raskrutka.sh и доказуемость.sh читаются только своими; язык при этом умеет всё, что этим скриптам нужно
+нужность: 2 — имена вроде raskrutka.sh и provability.fscript читаются только своими; язык при этом умеет всё, что этим скриптам нужно
 ---
 
 ## Часть 1. Почему скрипты не на flang — измерено, и прежний ответ был неверен
@@ -33,23 +33,23 @@
 
 ## Часть 2. Таблица переименований
 
-Имена латиницей, по образцу уже принятому в дереве (`seed-freshness.sh`,
-`binary-origin.sh`, `two-prints-identical.sh`, `*-guard.flang`):
+Имена латиницей, по образцу уже принятому в дереве (`seed-freshness.fscript`,
+`binary-origin.fscript`, `two-prints-identical.fscript`, `*-guard.flang`):
 
 | сейчас | предлагается | живых файлов |
 |---|---|---:|
 | `scripts/raskrutka.sh` | `scripts/bootstrap-reprint.sh` | 126 |
-| `scripts/доказуемость.sh` | `scripts/provability-gate.sh` | 63 |
-| `scripts/seed/chto-otstalo-ot-semeni.sh` | `scripts/seed/what-lags-the-seed.sh` | 15 |
+| `scripts/provability.fscript` | `scripts/provability-gate.sh` | 63 |
+| `scripts/seed/chto-otstalo-ot-semeni.sh` | `scripts/seed/what-lags-the-seed.fscript` | 15 |
 | `scripts/guards/storozha-bez-podloga.sh` | `scripts/guards/guards-without-forgery-probe.sh` | 11 |
 | `scripts/guards/kto-zovet-storozhey.sh` | `scripts/guards/who-calls-the-guards.sh` | 8 |
 | `scripts/guards/pol-dokazannogo-sverka.sh` | `scripts/guards/proved-share-vs-tree.sh` | 5 |
-| `scripts/seed/semya-rantayma-eto-istochnik.sh` | `scripts/seed/seed-runtime-is-source.sh` | 5 |
+| `scripts/seed/semya-rantayma-eto-istochnik.sh` | `scripts/seed/seed-runtime-is-source.fscript` | 5 |
 | `scripts/repl-proba.sh` | `scripts/repl-probe.sh` | 5 |
 | `scripts/flangtutor-proba.sh` | `scripts/tutor-probe.sh` | 5 |
 | `scripts/guards/сторож-дарвина.fscript` | `scripts/guards/darwin-guard.flang` | 4 |
 | `scripts/seed/semya-osvezhit.sh` | `scripts/seed/seed-refresh.sh` | 4 |
-| `scripts/seed/pechat-povtorima.sh` | `scripts/seed/print-is-repeatable.sh` | 3 |
+| `scripts/seed/pechat-povtorima.sh` | `scripts/seed/print-is-repeatable.fscript` | 3 |
 
 ## Цена, померена поимённо
 
@@ -60,7 +60,7 @@
 Машинно-важные места, которые обязаны переименоваться вместе с файлами:
   · `.githooks/pre-push` — 9 строк;
   · `.github/workflows/*.yml` — 35 строк;
-  · `ХРАПОВИК` — 3 (все у `доказуемость.sh`);
+  · `ХРАПОВИК` — 3 (все у `provability.fscript`);
   · `ярлыки.flang` — 9;
   · реестры сторожей — запись «Ждущее» про `raskrutka.sh` в `file-extensions.fscript`
     и упоминания в шапках четырёх сторожей;
@@ -101,9 +101,9 @@
 | `scripts/guards/storozha-bez-podloga.sh` | `scripts/guards/guards-without-forgery-probe.sh` | `--check` | 0 | 0 |
 | `scripts/guards/pol-dokazannogo-sverka.sh` | `scripts/guards/proved-share-vs-tree.sh` | `--числа` | 0 | 0 |
 | `scripts/seed/semya-osvezhit.sh` | `scripts/seed/seed-refresh.sh` | `--help` | 0 | 0 |
-| `scripts/seed/pechat-povtorima.sh` | `scripts/seed/print-is-repeatable.sh` | `--help` (незнакомый ключ) | 2 | 2 |
-| `scripts/seed/chto-otstalo-ot-semeni.sh` | `scripts/seed/what-lags-the-seed.sh` | без ключа | 0 | 0 |
-| `scripts/seed/semya-rantayma-eto-istochnik.sh` | `scripts/seed/seed-runtime-is-source.sh` | `--help` (незнакомый ключ) | 2 | 2 |
+| `scripts/seed/pechat-povtorima.sh` | `scripts/seed/print-is-repeatable.fscript` | `--help` (незнакомый ключ) | 2 | 2 |
+| `scripts/seed/chto-otstalo-ot-semeni.sh` | `scripts/seed/what-lags-the-seed.fscript` | без ключа | 0 | 0 |
+| `scripts/seed/semya-rantayma-eto-istochnik.sh` | `scripts/seed/seed-runtime-is-source.fscript` | `--help` (незнакомый ключ) | 2 | 2 |
 | `scripts/repl-proba.sh` | `scripts/repl-probe.sh` | `--отпечаток` | 0 | 0 |
 | `scripts/flangtutor-proba.sh` | `scripts/tutor-probe.sh` | `<двоичный>` | 0 | 0 |
 
@@ -190,10 +190,10 @@
 | `scripts/ledgers/storozha-bez-podloga.json` | `scripts/ledgers/guards-without-forgery-probe.json` |
 | `scripts/ledgers/storozha-bez-zova.json` | `scripts/ledgers/uncalled-guards.json` |
 | `scripts/repl-proba.sh` | `scripts/repl-probe.sh` |
-| `scripts/seed/pechat-povtorima.sh` | `scripts/seed/print-is-repeatable.sh` |
+| `scripts/seed/pechat-povtorima.sh` | `scripts/seed/print-is-repeatable.fscript` |
 | `scripts/seed/semya-osvezhit.sh` | `scripts/seed/seed-refresh.sh` |
-| `scripts/seed/semya-rantayma-eto-istochnik.sh` | `scripts/seed/seed-runtime-is-source.sh` |
-| `scripts/seed/chto-otstalo-ot-semeni.sh` | `scripts/seed/what-lags-the-seed.sh` |
+| `scripts/seed/semya-rantayma-eto-istochnik.sh` | `scripts/seed/seed-runtime-is-source.fscript` |
+| `scripts/seed/chto-otstalo-ot-semeni.sh` | `scripts/seed/what-lags-the-seed.fscript` |
 | `scripts/targets/lico-celi-cpp.flang` | `scripts/targets/cpp-target-face.flang` |
 | `scripts/flangtutor-proba.sh` | `scripts/tutor-probe.sh` |
 
@@ -208,7 +208,7 @@
 переименовал оба файла, свёл 132 живых читателя, пересобрал двоичный и спросил
 приборы. Ответ другой, и он решает дело:
 
-    sh scripts/seed/seed-freshness.sh
+    bootstrap/flang io scripts/seed/seed-freshness.fscript --plan Check --timeout 300000
       ОТКАЗЫВАЮСЬ СУДИТЬ: семя отстало от исходников на 3 файла
       • flang/self/bootstrap/compiler.flang: изменён после перепечатки
     sh scripts/seed/seed-refresh.sh --check

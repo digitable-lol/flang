@@ -87,7 +87,7 @@ $ pochinka/flang package проба.flang
    `bootstrap/*.c` не трогать — отпечаток прочтёт это как подлог).
 2. Доставить быстрым пересевом `sh scripts/seed/seed-refresh.sh`: `flang_repl.c`
    не печатается из `flang/self`, а копируется в семя дословно (заслон
-   `scripts/seed/seed-runtime-is-source.sh`; `diff` источника и семени — ровно
+   `scripts/seed/seed-runtime-is-source.fscript`; `diff` источника и семени — ровно
    9 строк шапки). Полная перепечатка **не нужна**.
 3. Завести сторожа, которого нет: `flang new` во временном каталоге →
    `flang package` → код 0 → ввоз получившегося пакета чужой программой. Место —
@@ -114,7 +114,7 @@ args[1] = obligations;` и `repl_call("Прогоны для ядра", args, 2,
 (`flang/src/emit/c/flang_repl.c`, `repl_call_within("Прогоны для ядра", pair, 2, …)`).
 
 **Проверено прогоном, а не рассуждением.** Двоичный собран ВНЕ дерева приёмом из
-шапки `scripts/seed/seed-runtime-is-source.sh` (шапка 9 строк + источник →
+шапки `scripts/seed/seed-runtime-is-source.fscript` (шапка 9 строк + источник →
 копия `bootstrap/`, `make -j8`); дерево не тронуто.
 
 | прогон | до | после |

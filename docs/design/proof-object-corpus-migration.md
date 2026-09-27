@@ -458,7 +458,7 @@ svoystvu-stdlib.md §4` подтверждает: «53 из 53 — явный ш
 | `flang/self/zapis.flang` (1713 строк на `r/4128`, БЕЗ печати 4125) | печать записи; после `2eb5633e` (647 добавлений, 1 удаление) — 2359 |
 | `flang/proof/checker/tests/records/corpus/*.record` | 86 записей (55 честных + 31 подделка) |
 | `flang/proof/corpus-share.sh` | линейка Г4 по разрядам помех Р0–Р5 (не доля-проигрыванием) |
-| `scripts/доказуемость.sh` | `перепиской`=10 сегодня → НЕ ДОКАЗУЕМ |
+| `scripts/provability.fscript` | `перепиской`=10 сегодня → НЕ ДОКАЗУЕМ |
 | `/srv/tmp/dokazuemyy/pechat-4125/клон` (ветка `печать-4125`, коммит `2eb5633e`) | код перепечатки, осмотрен ЧТЕНИЕМ (`git show`), не выполнен и не тронут |
 | `docs/design/proof-object-roadmap.md` | связка гейтов и шагов [Ш1]–[Ш6] |
 | пять разведок + лемма-S2 | `-migration.md`, `-po-primeru.md`, `-po-sluchayam.md`, `-razbor-celi.md`, `-lemma-po-svoystvu.md`, `-po-svoystvu.md`, `-po-svoystvu-stdlib.md` |

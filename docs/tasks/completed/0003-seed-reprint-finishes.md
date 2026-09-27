@@ -272,7 +272,7 @@ left.as.list.items == right.as.list.items     печатник:0  дерево:0
 
 ### Пока заход идёт: приёмку прогнали и нашли в ней ложное зелёное
 
-Приёмка (`scripts/new-binary-acceptance.sh`, задача 0043) — единственная дверь
+Приёмка (`scripts/new-binary-acceptance.fscript`, задача 0043) — единственная дверь
 между «печать кончилась» и «двоичный принят», и ждать её конца, ничего не
 проверив, значит проверять её в тот час, когда времени уже нет.
 
@@ -326,7 +326,7 @@ left.as.list.items == right.as.list.items     печатник:0  дерево:0
 === ПРИМЕТА 2 — вердикт «доказано ПРИ УСЛОВИИ»
     вхождений: 0
 0   (было 0)
-scripts/new-binary-acceptance.sh: 63: [: Illegal number: 0
+scripts/new-binary-acceptance.fscript: 63: [: Illegal number: 0
 0
 ```
 
@@ -404,7 +404,7 @@ scripts/new-binary-acceptance.sh: 63: [: Illegal number: 0
 ### Чего в приёмке всё ещё нет, и почему это не дописано сегодня
 
 Примета 1 в тексте задачи 0043 состоит из ДВУХ половин, а в
-`scripts/new-binary-acceptance.sh` живёт одна:
+`scripts/new-binary-acceptance.fscript` живёт одна:
 
 ```
 есть:  nm -a bootstrap/flang | grep 'compiler_flang_…konkurentnost…'
@@ -478,7 +478,7 @@ until ! pgrep -f 'bootstrap-pechatnyy/flang emit' >/dev/null; do sleep 60; done
 ```sh
 tail -30 /srv/work/semya5.log                      # чем кончилось
 make -C /srv/flang-rabota/u-semya5/bootstrap -j8   # собрать семя, ~62 с, 1,05 ГиБ
-sh scripts/new-binary-acceptance.sh /srv/flang-rabota/u-semya5
+sh scripts/new-binary-acceptance.fscript /srv/flang-rabota/u-semya5
 ```
 
 Приёмка сама скажет, если перепечатка ещё идёт, и сама назовёт команду сборки,
@@ -574,7 +574,7 @@ sh scripts/new-binary-acceptance.sh /srv/flang-rabota/u-semya5
 Единственный открытый вопрос прежний — хватит ли глубины 80 000 там, где не
 хватило 20 000, и ответ будет не раньше 20:39 UTC.
 
-**Приёмка готова и проверена**: `sh scripts/new-binary-acceptance.sh /srv/flang-rabota/u-semya5`.
+**Приёмка готова и проверена**: `sh scripts/new-binary-acceptance.fscript /srv/flang-rabota/u-semya5`.
 Вхолостую отвечает «двоичного нет», называет команду сборки семени и
 предупреждает, что перепечатка ещё идёт.
 
@@ -894,4 +894,4 @@ Makefile                 2 893 →      2 893        единственный с
 - `52996005` — перепечатка семени 30 августа 2026 дошла до конца (заход 8 ч 34 мин), семя в `bootstrap/` перепечатано;
 - `262509ea`, `ee3b0121` — перепечатка 6 сентября 2026 (ступень Б под «хеш256»), семя синхронизировано с исходником.
 
-Проверено 8 сентября 2026: `sh scripts/seed-freshness.sh` — код 0; `sh scripts/semya-rantayma-eto-istochnik.sh` в хуке зелен. Все три условия раздела «Как понять, что сделано» выполнены: печать доходит до конца, обе сверки зелены, двоичный в `bootstrap/` перепечатан.
+Проверено 8 сентября 2026: `sh scripts/seed-freshness.fscript` — код 0; `sh scripts/semya-rantayma-eto-istochnik.sh` в хуке зелен. Все три условия раздела «Как понять, что сделано» выполнены: печать доходит до конца, обе сверки зелены, двоичный в `bootstrap/` перепечатан.

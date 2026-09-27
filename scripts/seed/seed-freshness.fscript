@@ -1,0 +1,305 @@
+модуль «Seed freshness»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Outcome»
+  «code»: число
+  «words»: строка
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Bypass»
+  возвращает строка
+  "FLANG_SEED_LAG_KNOWN"
+
+тотальная функция «Reprint»
+  возвращает строка
+  "sh scripts/bootstrap-reprint.sh"
+
+тотальная функция «Argument trouble»
+  принимает passed: список строки
+  возвращает строка
+  пример «No arguments are fine»
+    дано passed равно пустой список
+    ожидается ""
+  пример «The asker is named after its key»
+    дано passed равно ["--what", "ярлык «доказуемость»"]
+    ожидается ""
+  пример «A key without the asker is a trouble»
+    дано passed равно ["--what"]
+    ожидается "--what без имени"
+  пример «Any other key is a trouble»
+    дано passed равно ["--fast"]
+    ожидается "неизвестный довод: --fast"
+  разбор passed
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «Chosen» от [(«When» от (не (голова равен "--what")) и (соединить ["неизвестный довод: ", голова] по "")),
+        («When» от ((длина хвост) равен 1) и "")] и "--what без имени"
+
+тотальная функция «Asker»
+  принимает passed: список строки
+  возвращает строка
+  пример «Without arguments the asker is this check itself»
+    дано passed равно пустой список
+    ожидается "эта проверка"
+  пример «The asker is named after its key»
+    дано passed равно ["--what", "ярлык «доказуемость»"]
+    ожидается "ярлык «доказуемость»"
+  если (длина passed) равен 2 то элемент 2 в passed иначе "эта проверка"
+
+тотальная функция «Asker of»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Asker» от («Given of» от "arguments" и answers)
+
+тотальная функция «Run merged»
+  принимает name: строка, arguments: список строки
+  возвращает «Question»
+  пример «Both streams of the child go into one»
+    дано name равно "body"
+    дано arguments равно ["scripts/bootstrap-reprint.sh", "--telo"]
+    ожидается запись «Question» с «name» равным "body" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\" 2>&1", "../..", "sh", "scripts/bootstrap-reprint.sh", "--telo"])
+  «Run» от name и "sh" и (приписать "-c" к (приписать "cd \"$0\" && exec \"$@\" 2>&1" к (приписать («Root») к (приписать "sh" к arguments))))
+
+тотальная функция «Last filled»
+  принимает pieces: список строки
+  возвращает число
+  пример «Empty pieces at the end are not counted»
+    дано pieces равно ["one", "", "two", "", ""]
+    ожидается 3
+  пример «Nothing but empty pieces»
+    дано pieces равно ["", ""]
+    ожидается 0
+  элемент 2 в (свёртка pieces начиная с [0, 0] как seen и piece → [((элемент 1 в seen) плюс 1), (если пусто piece то (элемент 2 в seen) иначе ((элемент 1 в seen) плюс 1))])
+
+тотальная функция «Leading»
+  принимает pieces: список строки, amount: число
+  возвращает список строки
+  пример «Two of three»
+    дано pieces равно ["one", "two", "three"]
+    дано amount равно 2
+    ожидается ["one", "two"]
+  разбор pieces
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если amount не больше 0
+        то пустой список
+        иначе приписать голова к («Leading» от хвост и (amount минус 1))
+
+тотальная функция «Said»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пусть pieces равно (разделить («Output of» от name и answers) по "\n")
+  соединить («Leading» от pieces и («Last filled» от pieces)) по "\n"
+
+тотальная функция «Unescaped»
+  принимает text: строка
+  возвращает строка
+  пример «Line ends and quotes come back»
+    дано text равно "цель \\\"а\\\"\\nстрока"
+    ожидается "цель \"а\"\nстрока"
+  пример «A backslash stays one backslash»
+    дано text равно "a\\\\nb"
+    ожидается "a\\nb"
+  соединить (отобразить (разделить text по "\\\\") как part → соединить (разделить (соединить (разделить (соединить (разделить part по "\\n") по "\n") по "\\t") по "\t") по "\\\"") по "\"") по "\\"
+
+тотальная функция «Spoken error»
+  принимает errors: строка
+  возвращает строка
+  пример «The words of a refusal are taken out of its wrapping»
+    дано errors равно "доказано: утверждений 3\n{\"error\":\"нет readelf\\nвовсе\",\"diagnostics\":[]}\n"
+    ожидается "нет readelf\nвовсе"
+  пример «Errors of another shape are shown as they are»
+    дано errors равно "flang io: непонятный ключ\n"
+    ожидается "flang io: непонятный ключ\n"
+  пусть wrapped равно (разделить errors по "{\"error\":\"")
+  если (длина wrapped) равен 2
+    то «Unescaped» от («Leading part» от (разделить (элемент 2 в wrapped) по "\",\"diagnostics\":"))
+    иначе errors
+
+тотальная функция «Leading part»
+  принимает parts: список строки
+  возвращает строка
+  разбор parts
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Files word»
+  принимает amount: число
+  возвращает строка
+  пример «One file»
+    дано amount равно 1
+    ожидается "файл"
+  пример «Three files»
+    дано amount равно 3
+    ожидается "файла"
+  пример «Eleven files»
+    дано amount равно 11
+    ожидается "файлов"
+  пример «Twenty one files»
+    дано amount равно 21
+    ожидается "файл"
+  пример «Forty one hundred and twelve»
+    дано amount равно 112
+    ожидается "файлов"
+  пример «Eight files»
+    дано amount равно 8
+    ожидается "файлов"
+  «Chosen» от [(«When» от (((amount остаток от 100) не меньше 11) и притом ((amount остаток от 100) не больше 14)) и ("файлов")),
+    («When» от ((amount остаток от 10) равен 1) и ("файл")),
+    («When» от (((amount остаток от 10) не меньше 2) и притом ((amount остаток от 10) не больше 4)) и ("файла"))] и ("файлов")
+
+тотальная функция «Lagging»
+  принимает said: строка
+  возвращает список строки
+  пример «Only the lines about a reprint are counted»
+    дано said равно "  • flang/self/cli.flang — ждёт перепечатки\nитого 1\n"
+    ожидается ["  • flang/self/cli.flang — ждёт перепечатки"]
+  отфильтровать («Lines» от said) где line → «Ends with» от line и "перепечатки"
+
+тотальная функция «Shown»
+  принимает said: строка, amount: число
+  возвращает список строки
+  пусть marked равно (отфильтровать («Lines» от said) где line → line начинается с "  • ")
+  «Соединить списки» от («Leading» от marked и 8) и (если amount больше 8 то [(соединить ["  …и ещё ", (к строке (amount минус 8))] по "")] иначе пустой список)
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "bypass" и («Bypass»))]
+
+тотальная функция «Origin»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "origin" и "sh" и ["-c", "cd \"$0\" && exec \"$@\" >/dev/null", («Root»), "bootstrap/flang", "io", "scripts/seed/binary-origin.fscript", "--plan", "Check", "--timeout", "300000", "--", "--what", («Asker of» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (stages равен 3) и («Setup»)),
+    («When» от (stages равен 2) и («Origin» от answers)),
+    («When» от (stages равен 1) и ([(«Run merged» от "body" и ["scripts/bootstrap-reprint.sh", "--telo"])]))] и ([(«Run merged» от "inputs" и ["scripts/bootstrap-reprint.sh", "--bystro"])])
+
+тотальная функция «Refusal»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить ["ОТКАЗЫВАЮСЬ СУДИТЬ О ДОКАЗАТЕЛЬСТВАХ: ", («Asker of» от answers)] по ""
+
+тотальная функция «Setup outcomes»
+  принимает answers: список «Answer»
+  возвращает список «Outcome»
+  пусть trouble равно («Argument trouble» от («Given of» от "arguments" и answers))
+  если пусто trouble
+    то пустой список
+    иначе [запись «Outcome» с «code» равным 3 и «words» равным trouble]
+
+тотальная функция «Origin outcomes»
+  принимает answers: список «Answer»
+  возвращает список «Outcome»
+  если («Exit code of» от "origin" и answers) равен 0
+    то пустой список
+    иначе [запись «Outcome» с «code» равным (если («Exit code of» от "origin" и answers) равен 1 то 1 иначе 3) и «words» равным («Spoken error» от («Errors of» от "origin" и answers))]
+
+тотальная функция «Body outcomes»
+  принимает answers: список «Answer»
+  возвращает список «Outcome»
+  «Chosen» от [(«When» от (не ((«Exit code of» от "body" и answers) равен 0)) и ([запись «Outcome» с «code» равным 1 и «words» равным (соединить [(«Refusal» от answers), "", "Дело не в отставании: разошлось ТЕЛО СЕМЕНИ — то, из чего собран двоичный,", "которым эта проверка и судит. Ключа обхода здесь нет.", "", («Said» от "body" и answers)] по "\n")])),
+    («When» от (пусто («Setting of» от "bypass" и "" и answers)) и (пустой список))] и ([запись «Outcome» с «code» равным 0 и «words» равным (соединить [(«Bypass»), ": судим при отставшем семени по прямому указанию.\nОтвет этой проверки — про дерево, собранное из СТАРОГО семени."] по "")])
+
+тотальная функция «Settled»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Outcome»
+  «Chosen» от [(«When» от (stages равен 3) и («Setup outcomes» от answers)),
+    («When» от (stages равен 2) и («Origin outcomes» от answers)),
+    («When» от (stages равен 1) и («Body outcomes» от answers))] и (пустой список)
+
+тотальная функция «Not compared»
+  принимает answers: список «Answer»
+  возвращает «Outcome»
+  запись «Outcome» с «code» равным 3 и «words» равным (соединить [(соединить ["СЕМЯ СВЕРИТЬ НЕ УДАЛОСЬ — судить о доказательствах нельзя: ", («Asker of» от answers)] по ""),
+    "",
+    («Said» от "inputs" и answers),
+    "",
+    (соединить ["Сверка входов печати ответила кодом ", (к строке («Exit code of» от "inputs" и answers)), " и ни одного расхождения не назвала."] по ""),
+    (соединить ["Судить всё равно: ", («Bypass»), "=1 <та же команда>"] по "")] по "\n")
+
+тотальная функция «Lag»
+  принимает amount: число, answers: список «Answer»
+  возвращает «Outcome»
+  запись «Outcome» с «code» равным 1 и «words» равным (соединить («Gathered words» от [[(«Refusal» от answers),
+      "",
+      (соединить ["семя отстало от исходников на ", (к строке amount), " ", («Files word» от amount), ", ведомость показывает состояние,"] по ""),
+      (соединить ["которого нет; перепечатайте `", («Reprint»), "`"] по ""),
+      "",
+      "Двоичный собран из семени и знает СТАРЫЕ правила. Его зелёный ответ — про",
+      "дерево, которого в этой копии нет: правка есть в исходнике и отсутствует в",
+      "семени. Ровно так 21–22 августа 2026 трижды за сутки лежали в стволе",
+      "неработающими правило ядра, четвёртый вердикт и два поручения ввода-вывода.",
+      "",
+      (соединить ["Что разошлось (весь список — `", («Reprint»), " --bystro`):"] по "")],
+    («Shown» от («Said» от "inputs" и answers) и amount),
+    ["",
+      "Перепечатка стоит 8 ч 34 мин одного ядра (docs/reprint-ledger.tsv), и это",
+      "не то, что делают между делом. Знаешь про отставание и берёшь ответ на",
+      "себя — скажи это вслух:",
+      "",
+      (соединить ["  ", («Bypass»), "=1 <та же команда>"] по "")]]) по "\n")
+
+тотальная функция «Verdict of»
+  принимает answers: список «Answer»
+  возвращает «Outcome»
+  пусть amount равно (длина («Lagging» от («Said» от "inputs" и answers)))
+  «Chosen» от [(«When» от ((«Exit code of» от "inputs" и answers) равен 0) и (запись «Outcome» с «code» равным 0 и «words» равным (соединить ["семя не отстало от исходников: ", («Asker of» от answers)] по ""))),
+    («When» от (amount равен 0) и («Not compared» от answers))] и («Lag» от amount и answers)
+
+тотальная функция «Ending»
+  принимает outcome: «Outcome»
+  возвращает «Продолжение»
+  пример «Code zero ends the work»
+    дано outcome равно запись «Outcome» с «code» равным 0 и «words» равным "семя не отстало"
+    ожидается вариант «Конец работы» с значение равным "семя не отстало"
+  пример «Code one is a lag found by the plan»
+    дано outcome равно запись «Outcome» с «code» равным 1 и «words» равным "семя отстало"
+    ожидается вариант «Провал» с код равным "FLANG_SEED_LAGS" и сообщение равным "семя отстало"
+  пример «Any other code means there was nothing to look with»
+    дано outcome равно запись «Outcome» с «code» равным 3 и «words» равным "сверить не удалось"
+    ожидается вариант «Не проверено» с код равным "FLANG_SEED_NOT_COMPARED" и сообщение равным "сверить не удалось"
+  «Chosen» от [(«When» от ((outcome.«code») равен 0) и (вариант «Конец работы» с значение равным (outcome.«words»))),
+    («When» от ((outcome.«code») равен 1) и (вариант «Провал» с код равным "FLANG_SEED_LAGS" и сообщение равным (outcome.«words»)))] и (вариант «Не проверено» с код равным "FLANG_SEED_NOT_COMPARED" и сообщение равным (outcome.«words»))
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то разбор («Settled» от stages и answers)
+        случай голова и хвост
+          то «Ending» от (голова)
+        случай пусто
+          то если stages не больше 0
+            то «Ending» от («Verdict of» от answers)
+            иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 4
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

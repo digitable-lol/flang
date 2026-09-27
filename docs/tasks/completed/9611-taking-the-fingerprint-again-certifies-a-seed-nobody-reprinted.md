@@ -113,4 +113,4 @@ stamp_now "$ROOT" "$KOMMIT" > "$ROOT/$SEED_STAMP"
 - `95fa7f25` — семя объявлено напечатанным из `22d54485`, а не из коммита, где отпечаток сняли заново;
 - `1ec11e72` — отказ «нет тела семени» больше не советует `--otpechatok`; в `scripts/bootstrap-reprint.sh:2644–2651` сказано, почему пересъёмка отпечатка красит красное зелёным.
 
-Г6 после этого держится на `scripts/seed-freshness.sh` (код 0 на 8 сентября 2026) и `semya-osvezhit.sh --check` в хуке.
+Г6 после этого держится на `scripts/seed-freshness.fscript` (код 0 на 8 сентября 2026) и `semya-osvezhit.sh --check` в хуке.

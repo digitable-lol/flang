@@ -49,6 +49,8 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { globSync } from "../test/glob.mjs"
+
 export const КОРЕНЬ = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
 
 /** Где двоичный. `FLANG_BINARY` — для прогона против другой сборки. */
@@ -845,4 +847,52 @@ export function спроситьПачкой(вопросы) {
   return вопросы.map(({ имя, аргументы = [] }) => памятьОтветов.get(ключВопроса(имя, аргументы)))
 }
 
-/** Один вопрос. Ответ помнится: тот же вопрос второй раз процесса не стоит. */
+export const ФАЙЛЫ = ["flang/**/*.flang", "flang/**/*.fp", "flang/**/*.фп", "flang/**/*.фланг", "flang/**/*.fscript"]
+  .flatMap((pattern) => globSync(pattern, { cwd: `${КОРЕНЬ}/` }))
+  .filter((path) => !path.startsWith("flang/test/fixtures/"))
+  .filter((path) => path !== "flang/self/bootstrap/compiler.flang")
+  .sort()
+
+function stringAfterLabel(text, from, label) {
+  const at = text.indexOf(label, from)
+  if (at === -1) return null
+  const start = at + label.length
+  if (text[start] !== '"') return null
+  let end = start + 1
+  while (end < text.length && text[end] !== '"') end += text[end] === "\\" ? 2 : 1
+  if (end >= text.length) return null
+  return JSON.parse(text.slice(start, end + 1))
+}
+
+function envelopeValue(stdout, stderr) {
+  const done = stdout.indexOf('{"plan":"')
+  const value = done === -1 ? null : stringAfterLabel(stdout, done, '"result":')
+  if (value !== null) return value
+  const failed = stderr.indexOf('{"error":"')
+  return failed === -1 ? null : stringAfterLabel(stderr, failed, '"error":')
+}
+
+const LEDGER_PLAN = [
+  "io",
+  "flang/scripts/proof-ledger.fscript",
+  "--plan",
+  "Свод корпуса машине",
+  "--timeout",
+  "3600000",
+  "--max-steps",
+  "400000000000",
+  "--max-orders",
+  "100000",
+  "--на-веру",
+]
+
+export async function сводКорпуса() {
+  const { код, вывод, ошибки } = позвать(LEDGER_PLAN, { предел: 2 * 60 * 60 * 1000 })
+  const text = envelopeValue(вывод, ошибки)
+  if (text === null) {
+    throw new Error(`свод корпуса не ответил: flang io отдал код ${код} без конверта. ${(ошибки || вывод).slice(0, 400)}`)
+  }
+  if (код === 3) throw new Error(`свод корпуса не снят: ${text.slice(text.lastIndexOf("}") + 1).trim()}`)
+  const ledger = JSON.parse(text)
+  return { код, итог: ledger.итог, подмены: ledger.подмены, отказы: ledger.отказы }
+}

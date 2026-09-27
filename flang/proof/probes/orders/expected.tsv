@@ -1,0 +1,9 @@
+program	environment	keys	arguments	code	word
+environment.fscript	FOO=bar	-	-	0	"result":"значение среды: bar"
+environment.fscript	-u FOO	-	-	0	"result":"переменной среды нет"
+environment.fscript	FOO=bar	--no-env	-	1	"code":"FLANG_IO_DENIED","message":"хозяину запрещено читать среду"
+empty-name.fscript	-	-	-	1	"code":"FLANG_IO_ENV","message":"поручению нужно непустое имя переменной"
+arguments.fscript	-	--на-веру	раз два три	0	"result":"доводов 3: раз|два|три"
+arguments.fscript	-	--на-веру	-	0	"result":"доводов 0: "
+arguments.fscript	-	--на-веру --no-args	раз	1	"code":"FLANG_IO_DENIED","message":"хозяину запрещено читать доводы"
+arguments.fscript	-	--на-веру	--no-net --plan Икс	0	"result":"доводов 3: --no-net|--plan|Икс"

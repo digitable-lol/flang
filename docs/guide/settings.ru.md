@@ -128,7 +128,7 @@ allow — запустить, вердикта не считая.
 ```
 
 Пробы всех исходов — `flang/proof/probes/unproven/`
-(`sh flang/proof/probes/unproven/run.sh`).
+(`bootstrap/flang io flang/proof/probes/unproven/run.fscript --plan Binary`).
 
 ## Где файл ищется
 

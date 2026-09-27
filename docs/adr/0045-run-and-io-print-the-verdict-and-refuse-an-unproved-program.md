@@ -17,8 +17,8 @@
 **Основание:** задача 8222; замеры 17 сентября 2026 на копии `wK1` (ветка
 `a/8222-run-verdict`, двоичный `bootstrap/flang` 0.7.19 из семени 12 сентября): «до» —
 `sh flang/proof/probes/run/run.sh`, «после» — то же с `--зондом`.
-**Проверяется:** `sh flang/proof/probes/run/run.sh --зондом` до перепечатки семени;
-`sh flang/proof/probes/run/run.sh` — после неё и правки хозяина.
+**Проверяется:** `bootstrap/flang io flang/proof/probes/run/run.fscript --plan Binary`;
+до перепечатки семени проверялось толкованием исходников, `run.sh --зондом`.
 
 ---
 

@@ -177,7 +177,7 @@ flang check <файл.flang> [--proof [--json] [--строго] [--записа�
 код `2`.
 
 Пробы всех четырёх исходов и умолчания — `flang/proof/probes/strict/`
-(`sh flang/proof/probes/strict/run.sh`).
+(`bootstrap/flang io flang/proof/probes/strict/run.fscript --plan Binary`).
 
 ```bash
 $ flang check привет.flang

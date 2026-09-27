@@ -181,7 +181,7 @@ The key is only meaningful next to `--proof`: `flang check <файл> --стро
 without it exits `2`.
 
 Probes for all four outcomes and for the default are in
-`flang/proof/probes/strict/` (`sh flang/proof/probes/strict/run.sh`).
+`flang/proof/probes/strict/` (`bootstrap/flang io flang/proof/probes/strict/run.fscript --plan Binary`).
 
 ```bash
 $ flang check привет.flang

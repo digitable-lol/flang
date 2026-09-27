@@ -1,33 +1,33 @@
-программа	путь	файл	среда	ключи	код	слово
-unproven.flang	run	—	—	—	3	— запуск только по явному согласию: --на-веру
-unproven.flang	run	—	—	--trust	0	на веру: доказанность не считалась — запуск по ключу --trust
-unproven.flang	run	—	—	--на-веру	0	на веру: доказанность не считалась — запуск по ключу --на-веру
-unproven.flang	run	unproven = allow	—	—	0	запуск по настройке «unproven = allow»
-unproven.flang	run	unproven = allow	—	--unproven refuse	3	— запуск только по явному согласию: --trust
-unproven.flang	run	unproven = allow	—	--недоказанное отказ	3	— запуск только по явному согласию: --на-веру
-unproven.flang	run	unproven = warn	—	—	0	запуск по настройке «unproven = warn»
-unproven.flang	run	unproven = refuse	—	—	3	— запуск только по явному согласию: --trust
-unproven.flang	run	unproven = allowed	—	—	2	такого значения у «unproven» нет
-unproven.flang	run	—	allow	—	0	запуск по переменной среды FLANG_UNPROVEN=allow
-unproven.flang	run	unproven = allow	refuse	—	3	— запуск только по явному согласию: --trust
-unproven.flang	run	—	да	—	2	такого значения у «unproven» нет
-unproven.flang	run	чепуха = что угодно	—	—	3	— запуск только по явному согласию: --на-веру
-unproven.flang	run	недоказанное = разрешение	—	—	0	запуск по настройке «недоказанное = разрешение»
-unproven.flang	run	недоказанное = разрешение	—	—	0	замените её на «unproven = allow»
-unproven.flang	run	недоказанное = предупреждение	—	—	0	замените её на «unproven = warn»
-unproven.flang	run	недоказанное = отказ	—	—	3	замените её на «unproven = refuse»
-unproven.flang	run	недоказанное = allow	—	—	0	замените её на «unproven = allow»
-unproven.flang	run	unproven = разрешение	—	—	0	замените её на «unproven = allow»
-unproven.flang	run	недоказанное = разрешено	—	—	2	такого значения у «недоказанное» нет
-unproven.flang	run	недоказанное = разрешение	—	--unproven refuse	3	— запуск только по явному согласию: --trust
-unproven.flang	run	недоказанное = разрешение	refuse	—	3	— запуск только по явному согласию: --trust
-proved.flang	run	—	—	—	0	доказано: утверждений 1
-proved.flang	run	unproven = warn	—	—	0	доказано: утверждений 1
-proved.flang	run	unproven = allow	—	—	0	на веру: доказанность не считалась
-proved.flang	run	недоказанное = предупреждение	—	—	0	доказано: утверждений 1
-plan-unproven.flang	io	—	—	—	3	— запуск только по явному согласию: --на-веру
-plan-unproven.flang	io	—	—	--trust	0	на веру: доказанность не считалась — запуск по ключу --trust
-plan-unproven.flang	io	unproven = allow	—	—	0	запуск по настройке «unproven = allow»
-plan-unproven.flang	io	unproven = warn	—	—	0	запуск по настройке «unproven = warn»
-plan-unproven.flang	io	unproven = allowed	—	—	2	такого значения у «unproven» нет
-plan-unproven.flang	io	недоказанное = разрешение	—	—	0	замените её на «unproven = allow»
+program	command	settings	environment	keys	code	word
+unproven.flang	run	-	-	-	3	— запуск только по явному согласию: --на-веру
+unproven.flang	run	-	-	--trust	0	на веру: доказанность не считалась — запуск по ключу --trust
+unproven.flang	run	-	-	--на-веру	0	на веру: доказанность не считалась — запуск по ключу --на-веру
+unproven.flang	run	unproven = allow	-	-	0	запуск по настройке «unproven = allow»
+unproven.flang	run	unproven = allow	-	--unproven refuse	3	— запуск только по явному согласию: --trust
+unproven.flang	run	unproven = allow	-	--недоказанное отказ	3	— запуск только по явному согласию: --на-веру
+unproven.flang	run	unproven = warn	-	-	0	запуск по настройке «unproven = warn»
+unproven.flang	run	unproven = refuse	-	-	3	— запуск только по явному согласию: --trust
+unproven.flang	run	unproven = allowed	-	-	2	такого значения у «unproven» нет
+unproven.flang	run	-	allow	-	0	запуск по переменной среды FLANG_UNPROVEN=allow
+unproven.flang	run	unproven = allow	refuse	-	3	— запуск только по явному согласию: --trust
+unproven.flang	run	-	да	-	2	такого значения у «unproven» нет
+unproven.flang	run	чепуха = что угодно	-	-	3	— запуск только по явному согласию: --на-веру
+unproven.flang	run	недоказанное = разрешение	-	-	0	запуск по настройке «недоказанное = разрешение»
+unproven.flang	run	недоказанное = разрешение	-	-	0	замените её на «unproven = allow»
+unproven.flang	run	недоказанное = предупреждение	-	-	0	замените её на «unproven = warn»
+unproven.flang	run	недоказанное = отказ	-	-	3	замените её на «unproven = refuse»
+unproven.flang	run	недоказанное = allow	-	-	0	замените её на «unproven = allow»
+unproven.flang	run	unproven = разрешение	-	-	0	замените её на «unproven = allow»
+unproven.flang	run	недоказанное = разрешено	-	-	2	такого значения у «недоказанное» нет
+unproven.flang	run	недоказанное = разрешение	-	--unproven refuse	3	— запуск только по явному согласию: --trust
+unproven.flang	run	недоказанное = разрешение	refuse	-	3	— запуск только по явному согласию: --trust
+proved.flang	run	-	-	-	0	доказано: утверждений 1
+proved.flang	run	unproven = warn	-	-	0	доказано: утверждений 1
+proved.flang	run	unproven = allow	-	-	0	на веру: доказанность не считалась
+proved.flang	run	недоказанное = предупреждение	-	-	0	доказано: утверждений 1
+plan-unproven.flang	io	-	-	-	3	— запуск только по явному согласию: --на-веру
+plan-unproven.flang	io	-	-	--trust	0	на веру: доказанность не считалась — запуск по ключу --trust
+plan-unproven.flang	io	unproven = allow	-	-	0	запуск по настройке «unproven = allow»
+plan-unproven.flang	io	unproven = warn	-	-	0	запуск по настройке «unproven = warn»
+plan-unproven.flang	io	unproven = allowed	-	-	2	такого значения у «unproven» нет
+plan-unproven.flang	io	недоказанное = разрешение	-	-	0	замените её на «unproven = allow»

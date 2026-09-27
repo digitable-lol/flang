@@ -15,9 +15,9 @@
 правка ядра; [ADR-0023](0023-forgeries-live-in-a-set-not-in-the-metric-corpus.md) — набор
 подделок; [ADR-0045](0045-run-and-io-print-the-verdict-and-refuse-an-unproved-program.md) —
 вердикт при запуске.
-**Проверяется:** `sh flang/proof/probes/syllogism/run.sh` (замер «до», двоичным) и
-`sh flang/proof/probes/syllogism/run.sh --печатью` (замер «после», исправленным
-компилятором, напечатанным в JavaScript); `./ярлык слово:занятость`.
+**Проверяется:** `bootstrap/flang io flang/proof/probes/syllogism/run.fscript --plan Binary`
+(двоичным) и тот же файл с `--plan JavaScript` (компилятором, напечатанным в
+JavaScript; каталог печати — в `PRINTED_COMPILER`); `./ярлык слово:занятость`.
 
 **Номер сменён 22 сентября 2026:** черновик носил номер 0046, но пока партия лежала
 невлитой, 0046 занял ADR о переименовании каталога доказательств, влитый в ствол

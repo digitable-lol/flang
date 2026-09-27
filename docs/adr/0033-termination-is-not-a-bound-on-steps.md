@@ -18,8 +18,8 @@
 отвергнута; [ADR-0022](0022-a-type-fact-travels-as-a-derivation.md) — правила
 вывода одним источником; [ADR-0034](0034-hardware-failure-is-described-not-proved.md) —
 вторая строка той же таблицы, поведение при отказе.
-**Новые задачи:** [1408](../tasks/1408-granica-shagov-v-zapisi-dokazatelstva.md),
-[1409](../tasks/1409-otsenka-vitkov-chislovaya-rekursiya-edinicy-sekundy.md).
+**Новые задачи:** [1408](../tasks/1408-the-step-bound-is-printed-into-the-proof-record.md),
+[1409](../tasks/1409-step-estimate-units-match-the-runtime-and-seconds-name-the-machine.md).
 
 ---
 
@@ -214,14 +214,14 @@ ADR-0026 §11.3 на эту работу не ложится.
 1. **Слово «граница времени отклика» в текстах не употребляем как доказанное.**
    Есть «доказанное завершение» и «оценка витков»; второе — анализ, и называется
    анализом, пока не печатается в запись и не переигрывается.
-2. **Задача [1408](../tasks/1408-granica-shagov-v-zapisi-dokazatelstva.md)** —
+2. **Задача [1408](../tasks/1408-the-step-bound-is-printed-into-the-proof-record.md)** —
    граница шагов печатается в запись доказательства и переигрывается
    проверяющей программой (части А–Г таблицы §4). Условие партии перепечатки
    неизменно: проверяющая программа читает новый узел раньше, чем ядро начинает
    его печатать. Первый шаг — замер, не код: сколько функций набора получили
    бы оценку сегодняшним `bounded.flang`, и на скольких из них узел отрезка даёт
    число вызовов.
-3. **Задача [1409](../tasks/1409-otsenka-vitkov-chislovaya-rekursiya-edinicy-sekundy.md)** —
+3. **Задача [1409](../tasks/1409-step-estimate-units-match-the-runtime-and-seconds-name-the-machine.md)** —
    единицы (часть Д), секунды для названной машины (часть Е) и повтор замера
    зеттеля сегодняшним двоичным. Не зависит от 1408 и от перепечатки.
 4. **Ограничения оценки не прячем.** Десять причин отказа (`bounded.flang:470–532`)

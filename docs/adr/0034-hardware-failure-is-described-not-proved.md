@@ -15,7 +15,7 @@
 свободное утверждение, порог; [ADR-0033](0033-termination-is-not-a-bound-on-steps.md) —
 соседняя строка той же таблицы, границы отклика; [ADR-0030](0030-the-printer-proves-each-run-not-itself.md) —
 собранный код доказательством не покрыт.
-**Новая задача:** [1410](../tasks/1410-perechen-povedeniya-pri-otkaze-i-proglochennyy-sboy.md).
+**Новая задача:** [1410](../tasks/1410-failure-behaviour-is-listed-on-one-page-and-swallowed-failures-are-counted.md).
 
 ---
 
@@ -200,7 +200,7 @@
 ## 5. Решение
 
 1. **Поведение при отказе описываем, а не доказываем** — пока порог §4 не
-   пройден. Задача [1410](../tasks/1410-perechen-povedeniya-pri-otkaze-i-proglochennyy-sboy.md):
+   пройден. Задача [1410](../tasks/1410-failure-behaviour-is-listed-on-one-page-and-swallowed-failures-are-counted.md):
    одна страница `docs/`, четыре слоя §2, у каждого пункта — место в коде,
    примета и слово, чем он держится.
 2. **Проглоченный сбой — считаем и печатаем.** Та же задача: проверка, которая

@@ -376,6 +376,7 @@ static const char FLANG_HELP[] =
     "  flang lock <файл>                  замок: сами зависимости, а не ссылки на них\n"
     "  flang package <файл>               пакет: замок с именем, версией и ведомостью\n"
     "  flang new <имя>                    новый пакет с нуля: модуль, fspec/, манифест\n"
+    "  flang run-script <имя>             короткая команда проекта из «.flangrc»\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "  flang lsp [--stdio]                языковой сервер для редактора (LSP)\n"
     "  flang --mcp-mode                   служба для ИИ-помощника (MCP по стандартным потокам)\n"
@@ -415,7 +416,7 @@ static const char FLANG_HELP_2[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь все 13 команд, и «flang lsp» среди них; отдельная команда «flang-lsp» —\n"
+    "Здесь все 14 команд, и «flang lsp» среди них; отдельная команда «flang-lsp» —\n"
     "тот же языковой сервер, который кладёт на «PATH» пакет npm.\n"
     "Служба для ИИ-помощника отвечает НЕ «ок»: три вердикта — «доказано», «сетка N»\n"
     "и «объявлено, не доказано» — уходят порознь. «flang --mcp-mode --help» — как её\n"
@@ -920,6 +921,27 @@ static const char HELP_NEW[] =
     "или из FLANG_FSPEC_TEMPLATE_DIR; не нашла ни того ни другого — отказ\n"
     "FLANG_NEW, код 1, и каталог не заводится вовсе.";
 
+static const char HELP_RUN_SCRIPT[] =
+    "flang run-script [<имя> [доводы…]]\n"
+    "\n"
+    "Короткая команда проекта: имя, за которым стоит строка оболочки. Записана она\n"
+    "в файле настроек «.flangrc» строкой «script.<имя> = <команда>»:\n"
+    "\n"
+    "  script.site:build = node docs/site/build.mjs\n"
+    "\n"
+    "  flang run-script                   перечень: имя и команда каждой\n"
+    "  flang run-script site:build        исполнить\n"
+    "  flang run-script version 0.7.23    доводы после имени уезжают команде\n"
+    "\n"
+    "Файл — ближайший «.flangrc» от рабочего каталога вверх, по правилу остальных\n"
+    "настроек; файл дома коротких команд не даёт. Команду исполняет «/bin/sh -c» в\n"
+    "каталоге этого файла, и код возврата — её собственный. Одноимённых строк две —\n"
+    "берётся последняя. У строки из нескольких команд через «&&» доводы достаются\n"
+    "последней.\n"
+    "\n"
+    "Имени в файле нет — код 2 и перечень; файла нет — код 2; оболочка не\n"
+    "запустилась — код 3.";
+
 static const char HELP_LOCK[] =
     "flang lock <файл.flang> [--pretty]\n"
     "\n"
@@ -1062,6 +1084,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_FACTS);
   } else if (strcmp(topic, "io") == 0) {
     printf("%s%s%s\n", HELP_IO, HELP_IO_2, HELP_IO_3);
+  } else if (strcmp(topic, "run-script") == 0) {
+    printf("%s\n", HELP_RUN_SCRIPT);
   } else if (strcmp(topic, "lock") == 0) {
     printf("%s\n", HELP_LOCK);
   } else if (strcmp(topic, "package") == 0) {
@@ -3413,8 +3437,8 @@ static void repl_library_places(repl_strings *places) {
  *
  * ЗАЧЕМ. Подъём вверх обрывается одним условием — каталогом без единого
  * `.flang`, — и потому выходит ЗА ПРЕДЕЛЫ дерева всюду, где цепочка каталогов
- * наверх не прерывается. В корне дерева лежит `ярлыки.flang`, значит цепочка не
- * прерывается, и соседний черновик из общей рабочей зоны подменяет модуль языка
+ * наверх не прерывается. Пока в корне дерева лежал хоть один `.flang`, цепочка не
+ * прерывалась, и соседний черновик из общей рабочей зоны подменял модуль языка
  * целиком: замер 8 сентября 2026 — `flang check scripts/releases.flang` берёт
  * «JSON» из `/srv/tmp/json.baseline.flang`, отвечает «замечаний нет» и кодом 0
  * (задача 3127). Дважды это уже стоило дереву времени: час поиска изъяна языка,
@@ -3422,7 +3446,7 @@ static void repl_library_places(repl_strings *places) {
  * замечаниями (27–28 августа).
  *
  * ПОЧЕМУ ПЕРЕМЕННАЯ СРЕДЫ, А НЕ КЛЮЧ КОМАНДНОЙ СТРОКИ. Поиск модуля общий для
- * всех тринадцати команд, и `flang lsp` с `--mcp-mode` доводов от человека не
+ * всех команд, и `flang lsp` с `--mcp-mode` доводов от человека не
  * получают вовсе — ключу там неоткуда взяться. Рядом, в этом же поиске, уже
  * стоит `FLANG_MODULE_DIR` (`repl_library_places`): предел подъёма — тот же род
  * настройки, читается в том же месте и тем же способом, и не заводит ни нового
@@ -10147,58 +10171,74 @@ static const char *unproven_english(unproven_mode mode) {
  * поставленный двоичный живёт без дерева. `flang` из /usr/local/bin никаких
  * наших сценариев рядом с собой не имеет и настройки обязан прочесть сам.
  */
+typedef struct {
+  const char *key;
+  size_t key_bytes;
+  const char *value;
+  size_t value_bytes;
+} flangrc_pair;
+
+static bool flangrc_space(char byte) { return byte == ' ' || byte == '\t'; }
+
+static bool flangrc_split(const char *line, size_t bytes, flangrc_pair *pair) {
+  size_t left = 0;
+  size_t right = bytes;
+  size_t eq = 0;
+  while (left < right && flangrc_space(line[left])) {
+    left += 1;
+  }
+  while (right > left && (flangrc_space(line[right - 1]) || line[right - 1] == '\r')) {
+    right -= 1;
+  }
+  for (eq = left; eq < right && line[eq] != '='; eq += 1) {
+  }
+  if (left == right || line[left] == '#' || eq == right) {
+    return false;
+  }
+  pair->key = line + left;
+  pair->key_bytes = eq - left;
+  while (pair->key_bytes > 0 && flangrc_space(pair->key[pair->key_bytes - 1])) {
+    pair->key_bytes -= 1;
+  }
+  for (eq += 1; eq < right && flangrc_space(line[eq]); eq += 1) {
+  }
+  pair->value = line + eq;
+  pair->value_bytes = right - eq;
+  return true;
+}
+
+static bool flangrc_next(const char *text, size_t bytes, size_t *at, flangrc_pair *pair) {
+  while (*at < bytes) {
+    const size_t start = *at;
+    size_t end = start;
+    while (end < bytes && text[end] != '\n') {
+      end += 1;
+    }
+    *at = end + 1;
+    if (flangrc_split(text + start, end - start, pair)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 static bool flangrc_key(const char *path, const char *key, char *out, size_t room) {
   size_t bytes = 0;
   char *text = repl_read_file(path, &bytes);
   const size_t key_bytes = strlen(key);
+  flangrc_pair pair;
   size_t at = 0;
   bool found = false;
   if (text == NULL) {
     return false;
   }
-  while (at < bytes) {
-    size_t end = at;
-    size_t left = at;
-    size_t right = 0;
-    size_t eq = 0;
-    bool has_eq = false;
-    while (end < bytes && text[end] != '\n') {
-      end += 1;
+  while (flangrc_next(text, bytes, &at, &pair)) {
+    if (pair.key_bytes == key_bytes && memcmp(pair.key, key, key_bytes) == 0) {
+      const size_t take = pair.value_bytes < room - 1 ? pair.value_bytes : room - 1;
+      memcpy(out, pair.value, take);
+      out[take] = '\0';
+      found = true;
     }
-    while (left < end && (text[left] == ' ' || text[left] == '\t')) {
-      left += 1;
-    }
-    right = end;
-    while (right > left &&
-           (text[right - 1] == ' ' || text[right - 1] == '\t' || text[right - 1] == '\r')) {
-      right -= 1;
-    }
-    for (eq = left; eq < right; eq += 1) {
-      if (text[eq] == '=') {
-        has_eq = true;
-        break;
-      }
-    }
-    if (has_eq && left < right && text[left] != '#') {
-      size_t kend = eq;
-      size_t from = eq + 1;
-      while (kend > left && (text[kend - 1] == ' ' || text[kend - 1] == '\t')) {
-        kend -= 1;
-      }
-      while (from < right && (text[from] == ' ' || text[from] == '\t')) {
-        from += 1;
-      }
-      if (kend - left == key_bytes && memcmp(text + left, key, key_bytes) == 0) {
-        size_t take = right - from;
-        if (take > room - 1) {
-          take = room - 1;
-        }
-        memcpy(out, text + from, take);
-        out[take] = '\0';
-        found = true; /* последний побеждает — потому и не выходим */
-      }
-    }
-    at = end + 1;
   }
   free(text);
   return found;
@@ -10249,6 +10289,123 @@ static bool flangrc_project(char *out, size_t room) {
     }
     *slash = '\0';
   }
+}
+
+#define SCRIPT_PREFIX "script."
+#define SCRIPT_FILE "/.flangrc"
+
+static bool script_pair(const flangrc_pair *pair) {
+  const size_t prefix = strlen(SCRIPT_PREFIX);
+  return pair->key_bytes > prefix && pair->value_bytes > 0 && memcmp(pair->key, SCRIPT_PREFIX, prefix) == 0;
+}
+
+static bool script_named(const flangrc_pair *pair, const char *name) {
+  const size_t prefix = strlen(SCRIPT_PREFIX);
+  const size_t bytes = strlen(name);
+  return script_pair(pair) && pair->key_bytes - prefix == bytes &&
+         memcmp(pair->key + prefix, name, bytes) == 0;
+}
+
+static char *script_line(const char *text, size_t bytes, const char *name) {
+  static const char arguments[] = " \"$@\"";
+  flangrc_pair pair;
+  flangrc_pair found = {NULL, 0, NULL, 0};
+  size_t at = 0;
+  char *line = NULL;
+  while (flangrc_next(text, bytes, &at, &pair)) {
+    if (script_named(&pair, name)) {
+      found = pair;
+    }
+  }
+  if (found.value == NULL) {
+    return NULL;
+  }
+  line = malloc(found.value_bytes + sizeof(arguments));
+  if (line != NULL) {
+    memcpy(line, found.value, found.value_bytes);
+    memcpy(line + found.value_bytes, arguments, sizeof(arguments));
+  }
+  return line;
+}
+
+static void script_list(FILE *out, const char *text, size_t bytes) {
+  const size_t prefix = strlen(SCRIPT_PREFIX);
+  flangrc_pair pair;
+  size_t at = 0;
+  while (flangrc_next(text, bytes, &at, &pair)) {
+    if (script_pair(&pair)) {
+      fprintf(out, "  %-34.*s %.*s\n", (int)(pair.key_bytes - prefix), pair.key + prefix,
+              (int)pair.value_bytes, pair.value);
+    }
+  }
+}
+
+static int script_exec(const char *root, char *line, int argc, char **argv) {
+  static char shell[] = "sh";
+  static char flag[] = "-c";
+  char **words = calloc((size_t)argc + 2, sizeof(char *));
+  int index = 0;
+  if (words == NULL || chdir(root) != 0) {
+    fprintf(stderr, "flang run-script: в каталог «%s» не перейти\n", root);
+    free(words);
+    return 3;
+  }
+  words[0] = shell;
+  words[1] = flag;
+  words[2] = line;
+  for (index = 2; index < argc; index += 1) {
+    words[index + 1] = argv[index];
+  }
+  fflush(stdout);
+  fflush(stderr);
+  execv("/bin/sh", words);
+  fprintf(stderr, "flang run-script: «/bin/sh» не запустился: %s\n", strerror(errno));
+  free(words);
+  return 3;
+}
+
+static int script_listing(const char *path, const char *text, size_t bytes) {
+  printf("короткие команды проекта (%s):\n\n", path);
+  script_list(stdout, text, bytes);
+  fputs("\nзвать: flang run-script <имя> [доводы…]\n", stdout);
+  return 0;
+}
+
+static int script_unknown(const char *path, const char *name, const char *text, size_t bytes) {
+  fprintf(stderr, "flang run-script: короткой команды «%s» в «%s» нет. Вот какие есть:\n\n", name, path);
+  script_list(stderr, text, bytes);
+  return 2;
+}
+
+static int script_named_run(char *path, const char *text, size_t bytes, int argc, char **argv) {
+  char *line = script_line(text, bytes, argv[2]);
+  int code = 0;
+  if (line == NULL) {
+    return script_unknown(path, argv[2], text, bytes);
+  }
+  path[strlen(path) - strlen(SCRIPT_FILE)] = '\0';
+  code = script_exec(path, line, argc, argv);
+  free(line);
+  return code;
+}
+
+static int script_command(int argc, char **argv) {
+  char path[4352];
+  size_t bytes = 0;
+  char *text = NULL;
+  int code = 0;
+  if (!flangrc_project(path, sizeof(path))) {
+    fputs("flang run-script: файла «.flangrc» нет ни в рабочем каталоге, ни выше до корня проекта\n", stderr);
+    return 2;
+  }
+  text = repl_read_file(path, &bytes);
+  if (text == NULL) {
+    fprintf(stderr, "flang run-script: файл «%s» не прочитан\n", path);
+    return 3;
+  }
+  code = argc < 3 ? script_listing(path, text, bytes) : script_named_run(path, text, bytes, argc, argv);
+  free(text);
+  return code;
 }
 
 /*
@@ -20339,13 +20496,15 @@ int fl_human_main(int argc, char **argv, const char *self) {
      поставленную рядом с ним, ищет `repl_library_places`, а до неё довод
      `self` не доходит (`check` его не получает). */
   repl_self_kept = self;
+  const bool scripted =
+      strcmp(command, "run-script") == 0 && !(argc > 2 && human_word(argv[2], "--help", "-h", NULL));
   const bool named_help = human_word(command, "--help", "-h", "help");
   /* Версия отвечает РАНЬШЕ справки: `flang --help --version` — это вопрос о
      версии, а не просьба показать справку о ней. Порядок тот же, что у свидетеля
      на Node и у эталона на flang. */
   const bool asks_version =
-      human_word(command, "--version", "-v", "version") || human_flag(argc, argv, "--version", "-v");
-  const bool asks_help = named_help || human_flag(argc, argv, "--help", "-h");
+      !scripted && (human_word(command, "--version", "-v", "version") || human_flag(argc, argv, "--version", "-v"));
+  const bool asks_help = !scripted && (named_help || human_flag(argc, argv, "--help", "-h"));
   int code = 0;
 
   /*
@@ -20406,6 +20565,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = package_file(argc, argv);
   } else if (strcmp(command, "new") == 0) {
     code = new_project(argc, argv, self);
+  } else if (scripted) {
+    code = script_command(argc, argv);
   } else if (strcmp(command, "lsp") == 0) {
     code = lsp_serve(argc, argv);
   } else if (strcmp(command, "--mcp-mode") == 0) {

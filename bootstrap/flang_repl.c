@@ -547,7 +547,7 @@ static const char HELP_RUN[] =
     "«доказано: утверждений N» либо «не доказано: …». Судится ЗАМЫКАНИЕ — всё,\n"
     "что связано, а не один файл. Недоказанная программа не считается вовсе:\n"
     "код 3 (ADR-0045). Запустить её всё же — «--trust» на один прогон либо ключ\n"
-    "«недоказанное» в «.flangrc» — раз и навсегда.\n"
+    "«unproven» в «.flangrc» — раз и навсегда.\n"
     "\n"
     "  --function «Имя»   что вычислять\n"
     "  --args '{…}'       аргументы: ПЛОСКИЙ объект скаляров, вроде '{\"н\":10}'.\n"
@@ -565,11 +565,12 @@ static const char HELP_RUN[] =
     "                     что «--trust»). Кириллицей — «--недоказанное отказ |\n"
     "                     предупреждение | разрешение»\n"
     "\n"
-    "ТО ЖЕ РАЗ И НАВСЕГДА — ключ «недоказанное» в «.flangrc»\n"
-    "(docs/guide/settings.ru.md): «недоказанное = предупреждение». Старшинство:\n"
-    "ключ команды старше переменной среды FLANG_UNPROVEN, та старше «.flangrc», а\n"
-    "он — умолчания «отказ». Значения, которого нет, файл молча не проглатывает:\n"
-    "отказ словами и код 2.";
+    "ТО ЖЕ РАЗ И НАВСЕГДА — ключ «unproven» в «.flangrc»\n"
+    "(docs/guide/settings.ru.md): «unproven = warn». Старшинство: ключ команды\n"
+    "старше переменной среды FLANG_UNPROVEN, та старше «.flangrc», а он —\n"
+    "умолчания «refuse». Значения, которого нет, файл молча не проглатывает:\n"
+    "отказ словами и код 2. Запись до 0.7.22, «недоказанное = отказ», читается\n"
+    "по-прежнему, и одной строкой сказано, какой английской её заменить.";
 
 static const char HELP_EMIT[] =
     "flang emit <файл.flang> --target " EMIT_TARGETS_WORDS "\n"
@@ -788,8 +789,8 @@ static const char HELP_IO[] =
     "  --unproven СЛОВО  что делать с недоказанным: refuse — не исполнять\n"
     "                  (умолчание), warn — сказать и исполнить, allow — то же, что\n"
     "                  «--trust». Кириллицей — «--недоказанное отказ |\n"
-    "                  предупреждение | разрешение». Раз и навсегда — тот же ключ\n"
-    "                  «недоказанное» в «.flangrc» (docs/guide/settings.ru.md)\n"
+    "                  предупреждение | разрешение». Раз и навсегда — ключ\n"
+    "                  «unproven» в «.flangrc» (docs/guide/settings.ru.md)\n"
     "  --              ГРАНИЦА: всё, что стоит после этого отдельного довода, —\n"
     "                  доводы ПЛАНА, а не ключи команды. Их отдаёт поручение\n"
     "                  «Прочитать доводы» списком строк, в том же порядке и без\n"
@@ -817,7 +818,7 @@ static const char HELP_IO_2[] =
     "работой считается вердикт о замыкании и одной строкой уходит в поток ошибок\n"
     "(ADR-0045); «--trust» («--на-веру») его пропускает, «--unproven warn»\n"
     "предупреждает и работает, а сказать это раз и навсегда можно ключом\n"
-    "«недоказанное» в «.flangrc». Негодное значение там — код 2, а не тишина.\n";
+    "«unproven» в «.flangrc». Негодное значение там — код 2, а не тишина.\n";
 
 /*
  * Третья часть справки `io`. Разрез не по смыслу, а по пределу C99 (5.2.4.1):
@@ -9985,33 +9986,41 @@ static const char *run_bare_name(const char *name, size_t *bytes) {
  * С 0.7.21 недоказанная программа не считается вовсе: код 3, а пропустить
  * проверку можно ключом «--на-веру» (латиницей «--trust»). Ключ решает ОДИН
  * прогон, и человеку, который правит свою программу весь день, приходится
- * набирать его каждый раз. Отсюда ключ файла настроек «недоказанное»: сказано
+ * набирать его каждый раз. Отсюда ключ файла настроек «unproven»: сказано
  * один раз — дальше не думаешь.
  *
  * ИСХОДОВ ТРИ, А НЕ ДВА, потому что чаще всего просят не «не проверяй», а
  * «скажи и работай»:
  *
- *   отказ (refuse)         не запускать — умолчание, поведение 0.7.21 в знак;
- *   предупреждение (warn)  вердикт посчитать, сказать и всё равно запустить;
- *   разрешение (allow)     вердикта не считать вовсе — то же, что «--на-веру».
+ *   refuse  не запускать — умолчание, поведение 0.7.21 в знак;
+ *   warn    вердикт посчитать, сказать и всё равно запустить;
+ *   allow   вердикта не считать вовсе — то же, что «--trust».
  *
  * СТАРШИНСТВО то же, что у прочих ключей файла (docs/guide/settings.ru.md):
  * ключ командной строки → переменная среды FLANG_UNPROVEN → .flangrc проекта →
- * .flangrc дома → умолчание «отказ». Локаль здесь не голос: это не про язык.
+ * .flangrc дома → умолчание «refuse». Локаль здесь не голос: это не про язык.
  *
  * ЗНАЧЕНИЕ, КОТОРОГО НЕТ, — ОТКАЗ ВСЛУХ, и это НАРОЧНО против общего правила
  * файла («незнакомый ключ и негодное значение пропускаются молча»). Правило то
  * писано для языка и цвета: не понял — говори по-русски, потеряно ничего.
  * Здесь же молчание значит «ворота остались закрыты», и человек, написавший
- * «недоказанное = разрешено» вместо «разрешение», узнал бы об этом кодом 3 на
- * чужой машине посреди сборки.
+ * «unproven = allowed» вместо «allow», узнал бы об этом кодом 3 на чужой
+ * машине посреди сборки.
+ *
+ * ФАЙЛ ГОВОРИТ ПО-АНГЛИЙСКИ, А СТАРУЮ ЗАПИСЬ ЧИТАЕТ (задача 5930). До 0.7.22
+ * ключ звался «недоказанное», а слова — «отказ», «предупреждение»,
+ * «разрешение», и такие файлы лежат у людей. Старая запись принимается как
+ * прежде, и одной строкой в поток ошибок названа английская, которой её
+ * заменить. Стоят в файле обе — читается английская, а про старую сказано,
+ * что она не читается.
  *
  * ПИСЬМО ОТВЕТА — ПИСЬМО ВОПРОСА. Набравший «--trust» получает в строке
  * «--trust», набравший «--на-веру» — «--на-веру». Ответ, который нельзя
  * повторить, не переключив раскладку, ответом не является.
  */
 
-#define UNPROVEN_KEY "недоказанное"
+#define UNPROVEN_KEY "unproven"
+#define UNPROVEN_KEY_LEGACY "недоказанное"
 #define UNPROVEN_ENV "FLANG_UNPROVEN"
 
 typedef enum {
@@ -10046,21 +10055,31 @@ static bool unproven_word(const char *value, unproven_mode *mode, bool *latin) {
   return false;
 }
 
-static void unproven_bad(const char *value, const char *whence) {
+static void unproven_bad(const char *key, const char *value, const char *whence) {
   fprintf(stderr,
           "flang: «%s» — такого значения у «%s» нет (%s).\n"
-          "Годны три: отказ (refuse) — не запускать; предупреждение (warn) — сказать и\n"
-          "запустить; разрешение (allow) — запустить, вердикта не считая.\n",
-          value, UNPROVEN_KEY, whence);
+          "Годны три: refuse — не запускать; warn — сказать и запустить;\n"
+          "allow — запустить, вердикта не считая.\n",
+          value, key, whence);
+}
+
+static const char *unproven_english(unproven_mode mode) {
+  if (mode == UNPROVEN_WARN) {
+    return "warn";
+  }
+  if (mode == UNPROVEN_ALLOW) {
+    return "allow";
+  }
+  return "refuse";
 }
 
 /*
  * ОДИН КЛЮЧ ИЗ `.flangrc`, а не весь файл. Правила разбора те же, что у
- * scripts/flangrc.sh и scripts/settings-file.flang: «ключ = значение», пробелы
+ * scripts/flangrc.fscript и scripts/settings-file.flang: «ключ = значение», пробелы
  * вокруг знака равенства не в счёт, строка с «#» — примечание, одноимённый
  * ключ назван дважды — побеждает последний.
  *
- * Разбор написан ЗДЕСЬ, а не позван у scripts/flangrc.sh, по одной причине:
+ * Разбор написан ЗДЕСЬ, а не позван у scripts/flangrc.fscript, по одной причине:
  * поставленный двоичный живёт без дерева. `flang` из /usr/local/bin никаких
  * наших сценариев рядом с собой не имеет и настройки обязан прочесть сам.
  */
@@ -10126,7 +10145,7 @@ static bool flangrc_key(const char *path, const char *key, char *out, size_t roo
  * его четыре вещи, каждая на себе: сам `.flangrc` (ближайший и есть
  * настоящий), корневая примета `.git` или `flang.package`, дом человека и
  * корень файловой системы. Правило слово в слово то же, что у
- * scripts/flangrc.sh: файл-то один, и разойтись им нельзя.
+ * scripts/flangrc.fscript: файл-то один, и разойтись им нельзя.
  */
 static bool flangrc_project(char *out, size_t room) {
   char dir[4096];
@@ -10176,19 +10195,63 @@ static bool flangrc_project(char *out, size_t room) {
  * Возвращает false, когда сказанное разобрать не удалось: беда названа
  * словами, и звать точку входа нельзя — «не понял» не равно «умолчание».
  */
+typedef struct {
+  bool taken;
+  bool legacy_key;  /* решает старая запись: английской в файле нет */
+  bool legacy_idle; /* старая запись стоит рядом с английской и не читается */
+  char value[256];
+  char idle[256];
+} unproven_line;
+
+static unproven_line unproven_read(const char *path) {
+  unproven_line line;
+  line.legacy_key = false;
+  line.legacy_idle = false;
+  line.value[0] = '\0';
+  line.idle[0] = '\0';
+  line.taken = flangrc_key(path, UNPROVEN_KEY, line.value, sizeof(line.value));
+  if (line.taken) {
+    line.legacy_idle = flangrc_key(path, UNPROVEN_KEY_LEGACY, line.idle, sizeof(line.idle));
+    return line;
+  }
+  line.taken = flangrc_key(path, UNPROVEN_KEY_LEGACY, line.value, sizeof(line.value));
+  line.legacy_key = line.taken;
+  return line;
+}
+
+/* Одна строка на одну старую запись: что стояло и какой английской заменить. */
+static void unproven_outdated(const unproven_line *line, const unproven_choice *how,
+                              const char *path) {
+  const char *english = unproven_english(how->mode);
+  if (line->legacy_idle) {
+    fprintf(stderr,
+            "flang: %s: запись «%s = %s» не читается — в файле есть «%s = %s»; "
+            "старую строку удалите\n",
+            path, UNPROVEN_KEY_LEGACY, line->idle, UNPROVEN_KEY, line->value);
+  }
+  if (line->legacy_key || strcmp(line->value, english) != 0) {
+    fprintf(stderr,
+            "flang: %s: запись «%s = %s» устарела и пока читается — замените её на "
+            "«%s = %s»\n",
+            path, line->legacy_key ? UNPROVEN_KEY_LEGACY : UNPROVEN_KEY, line->value,
+            UNPROVEN_KEY, english);
+  }
+}
+
 static bool unproven_decide(unproven_choice *how) {
   const char *env = getenv(UNPROVEN_ENV);
   char path[4352];
-  char value[256];
+  unproven_line line;
   const char *home = NULL;
-  bool taken = false;
+  const char *key = UNPROVEN_KEY;
+  line.taken = false;
   if (how->given) {
     return true;
   }
   if (env != NULL && env[0] != '\0') {
     bool spelled = false;
     if (!unproven_word(env, &how->mode, &spelled)) {
-      unproven_bad(env, "переменная среды " UNPROVEN_ENV);
+      unproven_bad(UNPROVEN_KEY, env, "переменная среды " UNPROVEN_ENV);
       return false;
     }
     how->given = true;
@@ -10197,23 +10260,25 @@ static bool unproven_decide(unproven_choice *how) {
     return true;
   }
   if (flangrc_project(path, sizeof(path))) {
-    taken = flangrc_key(path, UNPROVEN_KEY, value, sizeof(value));
+    line = unproven_read(path);
   }
-  if (!taken) {
+  if (!line.taken) {
     home = getenv("HOME");
     if (home != NULL && home[0] != '\0') {
       snprintf(path, sizeof(path), "%s/.flangrc", home);
-      taken = flangrc_key(path, UNPROVEN_KEY, value, sizeof(value));
+      line = unproven_read(path);
     }
   }
-  if (taken) {
-    if (!unproven_word(value, &how->mode, &how->latin)) {
-      unproven_bad(value, path);
+  if (line.taken) {
+    key = line.legacy_key ? UNPROVEN_KEY_LEGACY : UNPROVEN_KEY;
+    if (!unproven_word(line.value, &how->mode, &how->latin)) {
+      unproven_bad(key, line.value, path);
       return false;
     }
+    unproven_outdated(&line, how, path);
     how->given = true;
-    snprintf(how->whence, sizeof(how->whence), "по настройке «%s = %s» (%s)",
-             UNPROVEN_KEY, value, path);
+    snprintf(how->whence, sizeof(how->whence), "по настройке «%s = %s» (%s)", key, line.value,
+             path);
   }
   return true;
 }
@@ -10886,7 +10951,7 @@ static int run_file(int argc, char **argv) {
         return 2;
       }
       if (!unproven_word(argv[index + 1], &how.mode, &spelled)) {
-        unproven_bad(argv[index + 1], argv[index]);
+        unproven_bad(UNPROVEN_KEY, argv[index + 1], argv[index]);
         return 2;
       }
       how.given = true;
@@ -16845,7 +16910,7 @@ static int io_file(int argc, char **argv) {
         return 2;
       }
       if (!unproven_word(argv[index + 1], &how.mode, &spelled)) {
-        unproven_bad(argv[index + 1], argv[index]);
+        unproven_bad(UNPROVEN_KEY, argv[index + 1], argv[index]);
         return 2;
       }
       how.given = true;

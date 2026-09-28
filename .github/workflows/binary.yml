@@ -1762,64 +1762,20 @@ jobs:
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 
-      # ── ЧЕТЫРЕ ИСХОДА СТРОГОГО РЕЖИМА (задача 5502, пункт 5 аудита) ───────
-      #
-      # Аудит требует, чтобы успех был невозможен без независимой проверки всех
-      # обязательств. Прогоном 19 сентября 2026 показано обратное: программа с
-      # ЛОЖНЫМ постусловием («результат не больше 100» при теле «н плюс н») и
-      # парой строк `пример` получала код 0 и от `flang check`, и от
-      # `flang check --proof`, и от независимого сверщика разом — при том что
-      # `flang run --на-веру` на н = 100 печатал FLANG_PROPERTY и код 1. Ноль
-      # ПОКУПАЛСЯ примером: тот же файл без `пример` давал 3.
-      #
-      # Набор держит ОБЕ половины одной таблицей: строки без «--строго» стерегут
-      # умолчание (оно правкой не тронуто ни на знак — разъедься оно, сломалось
-      # бы всё дерево разом), строки с ключом — сами четыре исхода. Слово
-      # проверяется вместе с кодом: смена причины при том же коде — тоже
-      # расхождение.
-      #
-      # Место здесь, а не в работе `chekker`: та собирает C-сверщик БЕЗ
-      # компилятора нарочно, а этот набор спрашивает мнение компилятора о нём
-      # самом. Двоичный уже собран этой работой; лишней сборки нет. Замер: 20
-      # проб, около 2 секунд на всё.
       - name: Check strict mode
-        run: sh flang/proof/probes/strict/run.sh
-        env:
-          FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
-          FLANG_TMP: ${{ runner.temp }}
-
-      # Ворота недоказанного настраиваются тремя способами — ключом команды,
-      # переменной среды и .flangrc, — и старшинство между ними названо. Проба
-      # гоняет все три и каждую пару, иначе «ключ бьёт файл» осталось бы словами.
+        run: bootstrap/flang io flang/proof/probes/strict/run.fscript --plan Binary
       - name: Check unproven gate
-        run: sh flang/proof/probes/unproven/run.sh
-
-      # ПРОБЫ СИЛЛОГИЗМА. Набор лежал с 20 сентября 2026 и НЕ ЗВАЛСЯ НИОТКУДА:
-      # ни один workflow его не трогал, и 25 сентября, после перепечатки семени,
-      # все шесть проб разошлись с таблицей молча — таблица ждала от двоичного
-      # отказа разбора слова `следует`, а он его уже знал. Проверка, которую
-      # никто не зовёт, ничего не проверяет; поэтому шаг здесь. Замер 26 сентября
-      # 2026: шесть проб, около двух секунд на всё — той же ценой, что соседи.
+        run: bootstrap/flang io flang/proof/probes/unproven/run.fscript --plan Binary
+        env:
+          FLANG_TMP: ${{ runner.temp }}
       - name: Check syllogism probes
-        run: sh flang/proof/probes/syllogism/run.sh
-        env:
-          FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
-          FLANG_TMP: ${{ runner.temp }}
-
-      # ПЕРЕПЕЧАТКИ ЖДАЛ И ДОЖДАЛСЯ. Слово «Размер экрана» заведено в словарь
-      # 22 сентября 2026, и прежний двоичный его не знал — шаг был КРАСЕН по
-      # названному долгу. Печать прошла 25 сентября 2026 (выпуск 0.7.22); замер
-      # 26 сентября на дереве `gh/dev` `d5e203b89`: сошлось 6 проб из 6, код 0.
+        run: bootstrap/flang io flang/proof/probes/syllogism/run.fscript --plan Binary
+      - name: Check run verdict
+        run: bootstrap/flang io flang/proof/probes/run/run.fscript --plan Binary
+      - name: Check environment and argument orders
+        run: bootstrap/flang io flang/proof/probes/orders/run.fscript --plan Binary
       - name: Check screen size
-        run: cd flang/proof/probes/screen-size && ../../../../bootstrap/flang io run.fscript
-        env:
-          FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
-          FLANG_TMP: ${{ runner.temp }}
-      - name: Check memory limit
-        run: cd flang/proof/probes/memory-limit && ../../../../bootstrap/flang io run.fscript
-        env:
-          FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
-          FLANG_TMP: ${{ runner.temp }}
+        run: bootstrap/flang io flang/proof/probes/screen-size/run.fscript --plan Binary
 
       - name: Check io timeout answers
         run: cd flang/proof/probes/io-timeout && ../../../../bootstrap/flang io run.fscript

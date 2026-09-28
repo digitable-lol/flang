@@ -1784,7 +1784,7 @@ jobs:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
           FLANG_TMP: ${{ runner.temp }}
       - name: Check memory limit
-        run: cd flang/proof/probes/memory-limit && ../../../../bootstrap/flang io run.fscript --на-веру
+        run: cd flang/proof/probes/memory-limit && ../../../../bootstrap/flang io run.fscript
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
           FLANG_TMP: ${{ runner.temp }}

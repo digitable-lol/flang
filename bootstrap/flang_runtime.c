@@ -129,6 +129,79 @@ static char *fl_chunk_data(fl_chunk *chunk) {
   return (char *)chunk + fl_round_up(sizeof(fl_chunk));
 }
 
+static size_t fl_memory_cap = 0;
+static bool fl_memory_cap_told = false;
+static size_t fl_memory_taken = 0;
+static fl_memory_stop fl_memory_seen;
+#ifdef FL_POSIX_STACK
+static pthread_mutex_t fl_memory_guard = PTHREAD_MUTEX_INITIALIZER;
+#endif
+
+static void fl_memory_note(size_t asked);
+
+static void fl_memory_lock(void) {
+#ifdef FL_POSIX_STACK
+  pthread_mutex_lock(&fl_memory_guard);
+#endif
+}
+
+static void fl_memory_unlock(void) {
+#ifdef FL_POSIX_STACK
+  pthread_mutex_unlock(&fl_memory_guard);
+#endif
+}
+
+static bool fl_memory_buy(size_t bytes) {
+  bool fits = true;
+  if (fl_memory_cap == 0) {
+    return true;
+  }
+  fl_memory_lock();
+  if (fl_memory_taken > fl_memory_cap || bytes > fl_memory_cap - fl_memory_taken) {
+    fits = false;
+    fl_memory_note(bytes);
+  } else {
+    fl_memory_taken += bytes;
+  }
+  fl_memory_unlock();
+  return fits;
+}
+
+static void fl_memory_sell(size_t bytes) {
+  if (fl_memory_cap == 0) {
+    return;
+  }
+  fl_memory_lock();
+  fl_memory_taken = bytes > fl_memory_taken ? 0 : fl_memory_taken - bytes;
+  fl_memory_unlock();
+}
+
+void fl_memory_limit_set(size_t bytes) {
+  fl_memory_cap = bytes;
+  fl_memory_cap_told = true;
+}
+
+size_t fl_memory_limit(void) { return fl_memory_cap; }
+
+bool fl_memory_limit_told(void) { return fl_memory_cap_told; }
+
+size_t fl_memory_held(void) { return fl_memory_taken; }
+
+const fl_memory_stop *fl_memory_stopped(void) { return &fl_memory_seen; }
+
+size_t fl_memory_physical(void) {
+#if defined(FL_POSIX_STACK) && defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
+  const long pages = sysconf(_SC_PHYS_PAGES);
+  const long page = sysconf(_SC_PAGESIZE);
+  if (pages <= 0 || page <= 0 || (size_t)pages > ((size_t)-1) / (size_t)page) {
+    return 0;
+  }
+  return (size_t)pages * (size_t)page;
+#else
+  return 0;
+#endif
+}
+
 void fl_arena_init(fl_arena *arena) {
   fl_arena_init_small(arena, FL_CHUNK_MIN);
 }
@@ -195,8 +268,12 @@ void *fl_arena_alloc(fl_arena *arena, size_t size) {
     if (capacity > (size_t)-1 - header) {
       return NULL; /* переполнение размера — только при абсурдном запросе */
     }
+    if (!fl_memory_buy(header + capacity)) {
+      return NULL;
+    }
     chunk = (fl_chunk *)malloc(header + capacity);
     if (chunk == NULL) {
+      fl_memory_sell(header + capacity);
       return NULL;
     }
     chunk->capacity = capacity;
@@ -318,6 +395,7 @@ void fl_arena_release(fl_arena *arena) {
   chunk = arena->chunks;
   while (chunk != NULL) {
     fl_chunk *next = chunk->next;
+    fl_memory_sell(fl_round_up(sizeof(fl_chunk)) + chunk->capacity);
     free(chunk);
     chunk = next;
   }
@@ -1341,6 +1419,69 @@ static void fl_watch_say(int signal_number) {
   (void)wrote;
 }
 #endif
+
+static void fl_memory_note(size_t asked) {
+  size_t depth = 0;
+  if (fl_memory_seen.reached) {
+    return;
+  }
+  fl_memory_seen.reached = true;
+  fl_memory_seen.limit = fl_memory_cap;
+  fl_memory_seen.held = fl_memory_taken;
+  fl_memory_seen.asked = asked;
+  if (fl_watch_ctx != NULL) {
+    depth = fl_watch_ctx->depth;
+    fl_memory_seen.steps = fl_watch_ctx->steps;
+    fl_memory_seen.depth = depth;
+  }
+  if (depth > FL_WATCH_FRAMES) {
+    depth = FL_WATCH_FRAMES;
+  }
+  fl_memory_seen.function = depth == 0 ? NULL : fl_watch_frames[depth - 1];
+}
+
+static const fl_value *fl_memory_field(const fl_value *value, const char *name, fl_tag tag) {
+  size_t index = 0;
+  if (value->tag != FL_RECORD || value->as.record == NULL) {
+    return NULL;
+  }
+  for (index = 0; index < value->as.record->count; index += 1) {
+    const fl_field *field = &value->as.record->fields[index];
+    if (field->name != NULL && strcmp(field->name, name) == 0 && field->value.tag == tag) {
+      return &field->value;
+    }
+  }
+  return NULL;
+}
+
+static void fl_memory_guest(const fl_value *args, size_t count) {
+  size_t index = 0;
+  if (!fl_memory_seen.reached || fl_memory_seen.guest_known) {
+    return;
+  }
+  for (index = 0; index < count; index += 1) {
+    const fl_value *name = fl_memory_field(&args[index], "текущая", FL_STRING);
+    const fl_value *steps = fl_memory_field(&args[index], "витки", FL_NUMBER);
+    size_t fit = 0;
+    if (name == NULL || steps == NULL) {
+      continue;
+    }
+    fit = name->as.string.bytes;
+    if (fit > sizeof(fl_memory_seen.guest) - 1) {
+      fit = sizeof(fl_memory_seen.guest) - 1;
+      while (fit > 0 && ((unsigned char)name->as.string.utf8[fit] & 0xC0u) == 0x80u) {
+        fit -= 1;
+      }
+    }
+    if (fit > 0) {
+      memcpy(fl_memory_seen.guest, name->as.string.utf8, fit);
+    }
+    fl_memory_seen.guest[fit] = 0;
+    fl_memory_seen.guest_steps = steps->as.number;
+    fl_memory_seen.guest_known = true;
+    return;
+  }
+}
 
 void fl_watch_open(fl_ctx *ctx) {
   fl_watch_ctx = ctx;
@@ -2440,8 +2581,36 @@ static void fl_region_note(fl_arena *arena, int tag, const void *id, size_t coun
 static bool fl_region_fields_size(fl_arena *arena, fl_live zone, const fl_field *fields,
                                   size_t count, size_t budget, size_t depth, size_t *total);
 
+static bool fl_region_node_size(fl_arena *arena, fl_live zone, fl_value value, size_t budget,
+                                size_t depth, size_t *total, const fl_field **last);
+
 static bool fl_region_size(fl_arena *arena, fl_live zone, fl_value value, size_t budget,
                            size_t depth, size_t *total) {
+  const size_t first = *total;
+  const fl_field *last = NULL;
+  const fl_value head = value;
+  bool moved = false;
+  for (;;) {
+    last = NULL;
+    if (!fl_region_node_size(arena, zone, value, budget, depth, total, &last)) {
+      if (moved && head.tag == FL_VARIANT) {
+        fl_region_note(arena, (int)FL_VARIANT, head.as.variant, head.as.variant->count, budget - first);
+      }
+      if (moved && head.tag == FL_RECORD) {
+        fl_region_note(arena, (int)FL_RECORD, head.as.record, head.as.record->count, budget - first);
+      }
+      return false;
+    }
+    if (last == NULL) {
+      return true;
+    }
+    value = last->value;
+    moved = true;
+  }
+}
+
+static bool fl_region_node_size(fl_arena *arena, fl_live zone, fl_value value, size_t budget,
+                                size_t depth, size_t *total, const fl_field **last) {
   if (depth > FL_REGION_DEPTH) {
     return false;
   }
@@ -2500,6 +2669,7 @@ static bool fl_region_size(fl_arena *arena, fl_live zone, fl_value value, size_t
         fl_region_note(arena, (int)FL_RECORD, id, value.as.record->count, budget - entry);
         return false;
       }
+      *last = value.as.record->count == 0 ? NULL : &value.as.record->fields[value.as.record->count - 1];
       return true;
     }
     case FL_VARIANT: {
@@ -2520,6 +2690,7 @@ static bool fl_region_size(fl_arena *arena, fl_live zone, fl_value value, size_t
         fl_region_note(arena, (int)FL_VARIANT, id, value.as.variant->count, budget - entry);
         return false;
       }
+      *last = value.as.variant->count == 0 ? NULL : &value.as.variant->fields[value.as.variant->count - 1];
       return true;
     }
     default:
@@ -2539,7 +2710,7 @@ static bool fl_region_fields_size(fl_arena *arena, fl_live zone, const fl_field 
   if (!fl_region_take(total, budget, count * sizeof(fl_field))) {
     return false;
   }
-  for (index = 0; index < count; index += 1) {
+  for (index = 0; index + 1 < count; index += 1) {
     if (!fl_region_size(arena, zone, fields[index].value, budget, depth + 1, total)) {
       return false;
     }
@@ -2594,7 +2765,24 @@ static void *fl_pack_alloc(fl_pack *pack, size_t size) {
 static bool fl_pack_fields(fl_pack *pack, const fl_field *fields, size_t count, size_t depth,
                            const fl_field **out);
 
+static bool fl_pack_node(fl_pack *pack, fl_value value, size_t depth, fl_value *out, fl_value **next);
+
 static bool fl_pack_value(fl_pack *pack, fl_value value, size_t depth, fl_value *out) {
+  fl_value *next = NULL;
+  for (;;) {
+    next = NULL;
+    if (!fl_pack_node(pack, value, depth, out, &next)) {
+      return false;
+    }
+    if (next == NULL) {
+      return true;
+    }
+    value = *next;
+    out = next;
+  }
+}
+
+static bool fl_pack_node(fl_pack *pack, fl_value value, size_t depth, fl_value *out, fl_value **next) {
   if (depth > FL_REGION_DEPTH) {
     return false;
   }
@@ -2660,6 +2848,7 @@ static bool fl_pack_value(fl_pack *pack, fl_value value, size_t depth, fl_value 
       }
       out->tag = FL_RECORD;
       out->as.record = record;
+      *next = record->count == 0 ? NULL : (fl_value *)&record->fields[record->count - 1].value;
       return true;
     }
     case FL_VARIANT: {
@@ -2680,6 +2869,7 @@ static bool fl_pack_value(fl_pack *pack, fl_value value, size_t depth, fl_value 
       }
       out->tag = FL_VARIANT;
       out->as.variant = variant;
+      *next = variant->count == 0 ? NULL : (fl_value *)&variant->fields[variant->count - 1].value;
       return true;
     }
     default:
@@ -2701,7 +2891,8 @@ static bool fl_pack_fields(fl_pack *pack, const fl_field *fields, size_t count, 
   }
   for (index = 0; index < count; index += 1) {
     copy[index].name = fields[index].name;
-    if (!fl_pack_value(pack, fields[index].value, depth + 1, &copy[index].value)) {
+    copy[index].value = fields[index].value;
+    if (index + 1 < count && !fl_pack_value(pack, fields[index].value, depth + 1, &copy[index].value)) {
       return false;
     }
   }
@@ -2857,6 +3048,7 @@ static void fl_arena_rollback(fl_arena *arena, fl_mark mark) {
       /* `reserved` — это купленное у malloc, и отданное из него вычитается:
          иначе арена считала бы своим то, чего у неё уже нет. */
       arena->reserved -= header + chunk->capacity;
+      fl_memory_sell(header + chunk->capacity);
       free(chunk);
     }
     chunk = next;
@@ -5448,7 +5640,11 @@ fl_status fl_trampoline(fl_ctx *ctx, fl_step step, const fl_value *args, size_t 
       bounce.args[index] = fl_nothing();
     }
     status = step(ctx, buffer, &bounce, result, error);
-    if (status != FL_OK || bounce.next == NULL) {
+    if (status != FL_OK) {
+      fl_memory_guest(buffer, FL_MAX_TAIL_ARGS);
+      break;
+    }
+    if (bounce.next == NULL) {
       break;
     }
     /* Отскок — виток: «Чётное»/«Нечётное» друг на друге идут в постоянной

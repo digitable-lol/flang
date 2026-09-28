@@ -1973,6 +1973,10 @@ fl_status compiler_flang_sozdat_poisk_tela_zapisi(fl_ctx *ctx, fl_value i, fl_va
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_vzglyad_pod_zagolovkom_zapisi(fl_ctx *ctx, fl_value i, fl_value tekst, fl_value vyshli, fl_value *out, fl_error *error);
 
+/* Запись FTS «Разводка записи»: «текст», «закрывающая», «экран», «пробел». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_razvodka_zapisi(fl_ctx *ctx, fl_value tekst, fl_value zakryvayuschaya, fl_value ekran, fl_value probel, fl_value *out, fl_error *error);
+
 /* Запись FTS «Счёт скобок записи»: «глубина», «провал». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_schyot_skobok_zapisi(fl_ctx *ctx, fl_value glubina, fl_value proval, fl_value *out, fl_error *error);
@@ -71429,6 +71433,25 @@ fl_status compiler_flang_szhat_probely_zapisi(fl_ctx *ctx, fl_value tekst, fl_va
  * @return значение: строка
  */
 fl_status compiler_flang_rasstavit_skobki_zapisi(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг разводки записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param r — «р»: «Разводка записи»
+ * @param z — «з»: строка
+ * @return значение: «Разводка записи»
+ */
+fl_status compiler_flang_shag_razvodki_zapisi(fl_ctx *ctx, fl_value r, fl_value z, fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Развести знаки записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_razvesti_znaki_zapisi(fl_ctx *ctx, fl_value tekst, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Скобки сошлись записи».

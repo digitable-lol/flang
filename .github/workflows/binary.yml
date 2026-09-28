@@ -1793,7 +1793,7 @@ jobs:
         run: cd flang/proof/probes/io-timeout && ../../../../bootstrap/flang io run.fscript
 
       - name: Check module search root
-        run: bootstrap/flang io flang/proof/probes/module-root/run.fscript --на-веру
+        run: bootstrap/flang io flang/proof/probes/module-root/run.fscript
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 

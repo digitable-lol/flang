@@ -4447,6 +4447,19 @@ fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *ou
   return fl_join_two(ctx, left, right, out, error);
 }
 
+static size_t fl_next_first(const char *haystack, size_t from, size_t limit, const char *needle,
+                            size_t needle_bytes) {
+  const char *hit = NULL;
+  if (from >= limit) {
+    return limit;
+  }
+  if (needle_bytes == 0 || haystack[from] == needle[0]) {
+    return from;
+  }
+  hit = (const char *)memchr(haystack + from, (unsigned char)needle[0], limit - from);
+  return hit == NULL ? limit : (size_t)(hit - haystack);
+}
+
 /*
  * Поиск подстроки — ПО ЗНАКАМ, а не по октетам.
  *
@@ -4467,6 +4480,7 @@ fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *ou
 static const char *fl_find(const char *haystack, size_t haystack_bytes, const char *needle,
                            size_t needle_bytes, size_t *scanned) {
   size_t index = 0;
+  size_t limit = 0;
   if (scanned != NULL) {
     *scanned = 0;
   }
@@ -4476,17 +4490,22 @@ static const char *fl_find(const char *haystack, size_t haystack_bytes, const ch
   if (needle_bytes > haystack_bytes) {
     return NULL;
   }
-  for (index = 0; index + needle_bytes <= haystack_bytes; index += 1) {
-    if (scanned != NULL) {
-      /* Цена — не длина стога, а пройденная его часть: на раннем совпадении
-         поиск обрывается, и заряжать за весь стог значило бы врать вверх. */
-      *scanned = index + 1;
-    }
+  limit = haystack_bytes - needle_bytes + 1;
+  for (index = fl_next_first(haystack, 0, limit, needle, needle_bytes); index < limit;
+       index = fl_next_first(haystack, index + 1, limit, needle, needle_bytes)) {
     if (memcmp(haystack + index, needle, needle_bytes) == 0 &&
         fl_utf8_starts(haystack, index) &&
         fl_utf8_boundary(haystack, haystack_bytes, index + needle_bytes)) {
+      if (scanned != NULL) {
+        /* Цена — не длина стога, а пройденная его часть: на раннем совпадении
+           поиск обрывается, и заряжать за весь стог значило бы врать вверх. */
+        *scanned = index + 1;
+      }
       return haystack + index;
     }
+  }
+  if (scanned != NULL) {
+    *scanned = limit;
   }
   return NULL;
 }
@@ -4510,14 +4529,19 @@ static fl_status fl_razdelit_kuski(fl_ctx *ctx, fl_value text, fl_value separato
   size_t index = 0;
   size_t start = 0;
   fl_value *items = NULL;
+  const char *utf8 = text.as.string.utf8;
+  const char *first = separator.as.string.utf8;
+  const size_t step = separator.as.string.bytes;
+  const size_t limit = step <= text.as.string.bytes ? text.as.string.bytes - step + 1 : 0;
 
   /* Строка читается ДВАЖДЫ: сперва счёт кусков, потом их нарезка. Заряд снят
      за оба прохода сразу — числа витков это не меняет, а места экономит. */
   fl_charge(ctx, text.as.string.bytes * 2);
-  for (index = 0; index + separator.as.string.bytes <= text.as.string.bytes;) {
+  for (index = fl_next_first(utf8, 0, limit, first, step); index < limit;
+       index = fl_next_first(utf8, index, limit, first, step)) {
     if (fl_razdelit_zdes(text, separator, index)) {
       count += 1;
-      index += separator.as.string.bytes;
+      index += step;
     } else {
       index += 1;
     }
@@ -4526,7 +4550,8 @@ static fl_status fl_razdelit_kuski(fl_ctx *ctx, fl_value text, fl_value separato
   FL_TRY(fl_list_alloc(ctx, count, &items, error));
   count = 0;
   start = 0;
-  for (index = 0; index + separator.as.string.bytes <= text.as.string.bytes;) {
+  for (index = fl_next_first(utf8, 0, limit, first, step); index < limit;
+       index = fl_next_first(utf8, index, limit, first, step)) {
     if (fl_razdelit_zdes(text, separator, index)) {
       const char *piece = text.as.string.utf8 + start;
       const size_t bytes = index - start;

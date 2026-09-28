@@ -2452,6 +2452,26 @@ poddelka_ishodnika_5044 "4573-postcondition-continuation-lies" "$TMN.flang" "$TM
 [ -z "$FAYL_ISH_5044" ] || prichina "4573: постусловие не обещает иного продолжением цели" "доказывается не то, что обещано" "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
 poddelka_ishodnika_5044 "4573-hidden-ordinary-nullary" "$NLL.flang" "$NLL.record" 's/^тотальная функция «Приветствие»$/функция «Приветствие»/'
 [ -z "$FAYL_ISH_5044" ] || { sed -i -e '/зовёт «Приветствие»/d' -e '/^тотальность «Приветствие»/,/конец тотальности/d' -e 's/^тотальностей 2$/тотальностей 1/' "$FAYL_ZAP_5044"; prichina "4573: запись прячет вызов обычной нульместной функции" "тело F зовёт «Приветствие», а запись о нём молчит" "$FAYL_ISH_5044" "$FAYL_ZAP_5044"; }
+say "── 4573 А и Г: литерал в терме дословно; нульместный вызов модуля без набора ──"
+NLO=$SEM/totality-nullary-consumer-only; LCO=$SEM/string-literal/colon-inside-a-literal
+LSP=$SEM/string-literal/double-space-inside-a-literal; LSL=$SEM/string-literal/slashes-inside-a-literal
+opyt C "4573 А: двоеточие внутри литерала — считается настоящий литерал" 0 "$LCO.flang" "$LCO.record"
+opyt C "4573 А: два пробела внутри литерала — считается настоящий литерал" 0 "$LSP.flang" "$LSP.record"
+opyt C "4573 А: косые после экранированной кавычки и в имени — не примечание" 0 "$LSL.flang" "$LSL.record"
+poddelka_ishodnika_5044 "4573-colon-literal-length-five" "$LCO.flang" "$LCO.record" 's/(длина "a:b") равен 3$/(длина "a:b") равен 5/'
+[ -z "$FAYL_ISH_5044" ] || { sed -i 's/⟨(длина "a:b")⟩ = ⟨3⟩/⟨(длина "a:b")⟩ = ⟨5⟩/' "$FAYL_ZAP_5044"; prichina "4573 А: длина \"a:b\" не равна 5" "терм посчитан = 3, а запись несёт ⟨5⟩" "$FAYL_ISH_5044" "$FAYL_ZAP_5044"; }
+poddelka_ishodnika_5044 "4573-double-space-literal-length-three" "$LSP.flang" "$LSP.record" 's/(длина "a  b") равен 4$/(длина "a  b") равен 3/'
+[ -z "$FAYL_ISH_5044" ] || { sed -i 's/⟨(длина "a  b")⟩ = ⟨4⟩/⟨(длина "a  b")⟩ = ⟨3⟩/' "$FAYL_ZAP_5044"; prichina "4573 А: длина \"a  b\" не равна 3" "терм посчитан = 4, а запись несёт ⟨3⟩" "$FAYL_ISH_5044" "$FAYL_ZAP_5044"; }
+poddelka_ishodnika_5044 "4573-slashes-literal-length-three" "$LSL.flang" "$LSL.record" 's|(длина "a\\"//b") равен 5$|(длина "a\\"//b") равен 3|'
+[ -z "$FAYL_ISH_5044" ] || { sed -i 's|⟨(длина "a\\"//b")⟩ = ⟨5⟩|⟨(длина "a\\"//b")⟩ = ⟨3⟩|' "$FAYL_ZAP_5044"; prichina "4573 А: длина \"a\\\"//b\" не равна 3" "терм посчитан = 5, а запись несёт ⟨3⟩" "$FAYL_ISH_5044" "$FAYL_ZAP_5044"; }
+podd_p "4573 А: запись называет не тот литерал" "нет терма" "$LCO.flang" "$LCO.record" 's/⟨(длина "a:b")⟩ = ⟨3⟩/⟨(длина "a;b")⟩ = ⟨3⟩/'
+poddelka_ishodnika_5044 "4573-self-call-behind-slashes-in-single-quotes" "$KAV.flang" "$KAV.record" "s|(«Обрезать» от текст), \"»|(«Обрезать» от текст), '//', («Причина» от текст), \"»|"
+[ -z "$FAYL_ISH_5044" ] || prichina "4573 А: самовызов после '//' в одинарных кавычках не прячется" "тело зовёт саму F" "$FAYL_ISH_5044" "$FAYL_ZAP_5044"
+opyt C "4573 Г: свои имена и поля чужой записи в ёлочках — не нульместный вызов" 0 --зависимость "$SEM/totality-pair-dependency.flang" "$SEM/totality-pair-dependency.record" "$SEM/totality-module-with-local-names.flang" "$SEM/totality-module-with-local-names.record"
+sed '/зовёт «Приветствие»/d' "$NLO.record" > "$RABOTA/4573-only-nullary-call-hidden.record"
+prichina "4573 Г: запись прячет нульместный вызов имени из «только», набор не подан" "тело F зовёт «Приветствие», взятое из модуля списком «только», а запись о нём молчит" "$NLO.flang" "$RABOTA/4573-only-nullary-call-hidden.record"
+opyt C "4573 Г: то же имя из «только» с набором" 0 --зависимость "$NLD.flang" "$NLD.record" "$NLO.flang" "$NLO.record"
+opyt P "4573 Г: запись прячет голое имя модуля без «только», набор не подан — не берусь" 3 "$NLC.flang" "$RABOTA/4573-nullary-call-hidden.record"
 
 say ""
 say "── семья «rewrite» (задача 4722, ADR-0040): склейка строк — моноид, переписка по доказанному утверждению ──"

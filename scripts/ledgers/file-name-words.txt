@@ -288,6 +288,7 @@ collects
 collides
 collision
 collisions
+colon
 come
 comes
 command
@@ -1514,6 +1515,7 @@ size
 sized
 skip
 skips
+slashes
 sleep
 slots
 slower
@@ -1529,6 +1531,7 @@ sometimes
 sort
 source
 sources
+space
 spawn
 spec
 specific

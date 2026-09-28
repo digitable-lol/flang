@@ -176,7 +176,7 @@
 | `scripts/release/asdf-plugin-published.fscript:277` | `«Нечем смотреть»` → `«Провал»` («плагин НЕ ПРОВЕРЕН», строка 353) | 1 |
 | `scripts/release/asdf-version-list.fscript:409` | «список плагина НЕ ПРОВЕРЕН» → `«Нечем смотреть»` → `«Провал»` | 1 |
 | `scripts/guards/bidi-control-guard.fscript:336` | `«Нечем смотреть»` → `«Провал»` | 1 |
-| `scripts/seed/reprint-freshness.fscript:122` | «сверка перепечатки НЕ ПРОВЕРЕНА» → `FLANG_SVERKA_USTARELA` (строка 179) | 1 |
+| `scripts/seed/reprint-freshness.fscript:122` | «сверка перепечатки НЕ ПРОВЕРЕНА» → `FLANG_REPRINT_CHECK_STALE` (строка 179) | 1 |
 | `flang/proof/lean/run.sh:34` | «НИЧЕГО НЕ ПРОВЕРЕНО» | 2 |
 
 Ещё один хвост этого сторожа: в `scripts/ledgers/guards-without-forgery-probe.json`

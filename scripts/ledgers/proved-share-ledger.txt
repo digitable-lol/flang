@@ -1638,3 +1638,12 @@ ddc780082978fc3298ad54ab7e9bd7f6|2|0|0|0|0|flang/proof/probes/syllogism/programs
 acd0ec088b46f7ffe1ebdd953517b414|4|4|0|0|0|.githooks/pre-push.fscript
 6eba4e84a8ecaa935a36ae9d48747516|11|8|3|0|0|flang/proof/binding/parse-cycle.fscript
 04121a85a1f715fdc7d7e98607ae1a05|14|14|0|0|0|scripts/guards/checks-nobody-calls.fscript
+4c040b87c449a2e3cb349bd76431b01f|1|1|0|0|0|flang/proof/checker/tests/families/string-literal/slashes-inside-a-literal.flang
+b07768e93f07c719e5308625d33aa9fb|1|1|0|0|0|flang/proof/checker/tests/families/statement/parametric-chain.flang
+840c6f9127d3ce7aab7c2f9f0a8460d6|1|1|0|0|0|flang/proof/checker/tests/families/string-literal/double-space-inside-a-literal.flang
+7d6175b1c72f28933ce38be0a8dd20f3|1|1|0|0|0|flang/proof/checker/tests/families/statement/theorem-claim-over-several-lines.flang
+20c3b8617bab82ab1555db1d337781f5|2|2|0|0|0|flang/proof/checker/tests/families/measure/fold-by-step-with-two-arguments.flang
+16e171d6b5bf360c40bc0b4f5e21d21e|1|1|0|0|0|flang/proof/checker/tests/families/string-literal/colon-inside-a-literal.flang
+8e14992c133eedfc079cbeff033ca00c|1|1|0|0|0|flang/proof/checker/tests/families/boolean-goal/negation-binds-tighter.flang
+47b79056590d79634a29ca75e78c214e|1|1|0|0|0|flang/proof/checker/tests/families/totality-postcondition-over-several-lines.flang
+afc8a388476719fb2c821b83b8b80200|1|0|0|1|0|flang/proof/checker/tests/families/boolean-goal/negation-before-a-conjunction.flang

@@ -2472,6 +2472,24 @@ sed '/зовёт «Приветствие»/d' "$NLO.record" > "$RABOTA/4573-onl
 prichina "4573 Г: запись прячет нульместный вызов имени из «только», набор не подан" "тело F зовёт «Приветствие», взятое из модуля списком «только», а запись о нём молчит" "$NLO.flang" "$RABOTA/4573-only-nullary-call-hidden.record"
 opyt C "4573 Г: то же имя из «только» с набором" 0 --зависимость "$NLD.flang" "$NLD.record" "$NLO.flang" "$NLO.record"
 opyt P "4573 Г: запись прячет голое имя модуля без «только», набор не подан — не берусь" 3 "$NLC.flang" "$RABOTA/4573-nullary-call-hidden.record"
+say "── 4573: хвост «правило «…»» у строки шага — печать 3464 ──"
+KR=$ZAP/kernel-rule
+for p in "precondition flang/proof/examples/precondition.flang" "four-words flang/proof/examples/four-words.flang" \
+         "honest-modus-ponens-by-guard flang/proof/examples/honest-modus-ponens-by-guard.flang" \
+         "syllogism-by-postcondition $SEM/statement/syllogism-by-postcondition.flang"; do
+  set -- $p
+  sed -E 's/^( *шаг .*) правило «[^«»]*»$/\1/' "$KR/$1.record" > "$RABOTA/4573-$1-without-rule.record"
+  opyt C "4573: $1 — шаги с правилом ядра" 0 "$2" "$KR/$1.record"
+  set +e; s1=$("$C" "$2" "$KR/$1.record" 2>&1); s2=$("$C" "$2" "$RABOTA/4573-$1-without-rule.record" 2>&1); set -e
+  [ "$s1" = "$s2" ] || { say "ПРОВАЛ 4573: $1 — хвост правила меняет ответ сверщика"; BAD=$((BAD+1)); }
+done
+podd_p "4573: шаг «по предположению» назван правилом, которым цель «не меньше 0» не закрывается" "а запись зовёт правило «порядок по построению»" \
+  flang/proof/examples/precondition.flang "$KR/precondition.record" '/^ *шаг /s/правило «неотрицательность по построению»$/правило «порядок по построению»/'
+podd_p "4573: шаг «по примеру» назван правилом сведения" "а шаг этого вида ядро правилом сведения не закрывает" \
+  flang/proof/examples/four-words.flang "$KR/four-words.record" '0,/^\( *шаг .*по примеру.*\)$/s//\1 правило «цель есть допущение»/'
+sed '/^ *шаг /s/правило «неотрицательность по построению»$/правило «выдуманное правило»/' "$KR/precondition.record" > "$RABOTA/4573-unknown-rule.record"
+prichina3 "4573: шаг назван правилом, которого сверщик не знает" "назван правилом «выдуманное правило», которого сверщик не знает" \
+  flang/proof/examples/precondition.flang "$RABOTA/4573-unknown-rule.record"
 
 say ""
 say "── семья «rewrite» (задача 4722, ADR-0040): склейка строк — моноид, переписка по доказанному утверждению ──"

@@ -77,7 +77,7 @@ FL_NOTHING = 0, FL_NUMBER, FL_FLAG, FL_STRING, FL_LIST, FL_RECORD, FL_VARIANT
 
 | файл цели C | строк | мест разбора тега |
 |---|---:|---:|
-| `flang_runtime.c` | 5493 <!-- СНЯТО 2026-09-27 строк flang/src/emit/c/flang_runtime.c = 5493 (задача 3509: поиск через memchr прибавил 25 строк; до неё 5468, снято 2026-09-13) --> | **65** (7 `switch` и 58 сравнений) |
+| `flang_runtime.c` | 5689 <!-- СНЯТО 2026-09-17 строк flang/src/emit/c/flang_runtime.c = 5689 (задача 3509: поиск через memchr прибавил 25 строк; до неё 5468, снято 2026-09-13) --> | **65** (7 `switch` и 58 сравнений) |
 | `flang_conc.c` | 4650 | 22 |
 | `flang_repl.c` | 18541 | 101 |
 | `flang_cli.c` | 1248 | 1 |

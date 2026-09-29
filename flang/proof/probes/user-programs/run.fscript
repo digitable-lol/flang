@@ -1,0 +1,191 @@
+модуль «User program probes»
+
+объект «Program»
+  «name»: строка
+  «expected»: строка
+
+тотальная функция «Measure»
+  принимает name: строка
+  возвращает строка
+  пример «one program is checked by the kernel and replayed by the checker in a temporary directory»
+    дано name равно "socrates"
+    ожидается "d=$(mktemp -d -p \"${FLANG_TMP:-/srv/tmp}\" user-programs.XXXXXX) || exit 2; p=flang/proof/probes/user-programs/programs/socrates.flang; LC_ALL=C.UTF-8 bootstrap/flang check $p --proof --record $d/r --memory-limit 16G > $d/k 2>&1; k=$?; flang/proof/checker/сверщик --по-утверждениям $p $d/r > $d/c 2>&1; c=$?; printf 'proved=%s verified=%s kernel=%s checker=%s\\n' \"$(sed -n 's/.*утверждений [0-9]*: доказано \\([0-9]*\\).*/\\1/p' $d/k | head -1)\" \"$(grep -c ': ПРОВЕРЕНО (' $d/c)\" $k $c; grep '^  утверждение «.*: НЕ \\|^НЕ ВЗЯЛСЯ\\|^НЕ СОШЛОСЬ' $d/c; rm -rf \"$d\""
+  соединить ["d=$(mktemp -d -p \"${FLANG_TMP:-/srv/tmp}\" user-programs.XXXXXX) || exit 2; p=flang/proof/probes/user-programs/programs/", name, ".flang; LC_ALL=C.UTF-8 bootstrap/flang check $p --proof --record $d/r --memory-limit 16G > $d/k 2>&1; k=$?; flang/proof/checker/сверщик --по-утверждениям $p $d/r > $d/c 2>&1; c=$?; printf 'proved=%s verified=%s kernel=%s checker=%s\\n' \"$(sed -n 's/.*утверждений [0-9]*: доказано \\([0-9]*\\).*/\\1/p' $d/k | head -1)\" \"$(grep -c ': ПРОВЕРЕНО (' $d/c)\" $k $c; grep '^  утверждение «.*: НЕ \\|^НЕ ВЗЯЛСЯ\\|^НЕ СОШЛОСЬ' $d/c; rm -rf \"$d\""] по ""
+
+тотальная функция «Expect»
+  принимает name: строка, wanted: строка
+  возвращает «Program»
+  обеспечивает «the program keeps its name» (результат.«name») равен name
+  запись «Program» с «name» равным name и «expected» равным wanted
+
+тотальная функция «Programs»
+  возвращает список «Program»
+  обеспечивает «there are fourteen user programs» (длина результат) равен 14
+  [(«Expect» от "account" и "proved=2 verified=2 kernel=0 checker=0"),
+   («Expect» от "counter" и "proved=1 verified=1 kernel=0 checker=0"),
+   («Expect» от "discount" и "proved=2 verified=1 kernel=0 checker=3"),
+   («Expect» от "door" и "proved=2 verified=2 kernel=0 checker=0"),
+   («Expect» от "greeting" и "proved=1 verified=0 kernel=0 checker=3"),
+   («Expect» от "maybe" и "proved=2 verified=2 kernel=0 checker=0"),
+   («Expect» от "point" и "proved=3 verified=3 kernel=0 checker=0"),
+   («Expect» от "positives" и "proved=3 verified=3 kernel=0 checker=0"),
+   («Expect» от "shapes" и "proved=2 verified=2 kernel=3 checker=0"),
+   («Expect» от "shopping-cart" и "proved=1 verified=1 kernel=0 checker=0"),
+   («Expect» от "socrates" и "proved=3 verified=3 kernel=0 checker=0"),
+   («Expect» от "statements" и "proved=2 verified=2 kernel=3 checker=0"),
+   («Expect» от "tree" и "proved=2 verified=2 kernel=0 checker=0"),
+   («Expect» от "word-lengths" и "proved=2 verified=2 kernel=0 checker=0")]
+
+тотальная функция «Field»
+  принимает line: строка, key: строка
+  возвращает строка
+  пример «a field is read up to the next space»
+    дано line равно "proved=3 verified=2 kernel=0 checker=3"
+    дано key равно "verified="
+    ожидается "2"
+  пример «a missing field is empty»
+    дано line равно "proved=3"
+    дано key равно "verified="
+    ожидается ""
+  разбор (хвост (разделить line по key))
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова (разделить голова по " ")
+
+тотальная функция «Count»
+  принимает text: строка
+  возвращает число
+  пример «digits become a number»
+    дано text равно "12"
+    ожидается 12
+  пример «anything else counts as zero»
+    дано text равно ""
+    ожидается 0
+  разбор (к числу или беда text)
+    случай вариант «Разобрано» с значение как значение
+      то значение
+    случай любое
+      то 0
+
+тотальная функция «First line»
+  принимает text: строка
+  возвращает строка
+  пример «the summary line comes first»
+    дано text равно "proved=1 verified=1 kernel=0 checker=0\nНЕ ВЗЯЛСЯ"
+    ожидается "proved=1 verified=1 kernel=0 checker=0"
+  разбор (разделить text по "\n")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Report line»
+  принимает program: «Program», output: строка
+  возвращает строка
+  пример «a program replayed in full has no reasons»
+    дано program равно запись «Program» с «name» равным "door" и «expected» равным ""
+    дано output равно "proved=2 verified=2 kernel=0 checker=0\n"
+    ожидается "door: kernel proved 2, checker verified 2, declined 0"
+  пример «a declined place is listed with the checker's own words»
+    дано program равно запись «Program» с «name» равным "greeting" и «expected» равным ""
+    дано output равно "proved=1 verified=0 kernel=0 checker=3\n  утверждение «а»: НЕ ПРОВЕРЕНО\n"
+    ожидается "greeting: kernel proved 1, checker verified 0, declined 1\n      утверждение «а»: НЕ ПРОВЕРЕНО"
+  пусть summary равно («First line» от output)
+  пусть proved равно («Count» от («Field» от summary и "proved="))
+  пусть verified равно («Count» от («Field» от summary и "verified="))
+  пусть reasons равно (отфильтровать (хвост (разделить output по "\n")) где line → (длина line) больше 0)
+  соединить (свёртка reasons начиная с [(соединить [(program.«name»), ": kernel proved ", (к строке proved), ", checker verified ", (к строке verified), ", declined ", (к строке (proved минус verified))] по "")] как lines и line → (добавить (соединить ["    ", line] по "") к lines)) по "\n"
+
+объект «Tally»
+  «lines»: список строки
+  «complaints»: список строки
+  «proved»: число
+  «verified»: число
+
+тотальная функция «Empty tally»
+  возвращает «Tally»
+  обеспечивает «nothing is counted before the first program» (результат.«proved») равен 0
+  запись «Tally» с «lines» равным пустой список и «complaints» равным пустой список и «proved» равным 0 и «verified» равным 0
+
+тотальная функция «Add»
+  принимает tally: «Tally», program: «Program», output: строка
+  возвращает «Tally»
+  пример «a match adds the counts and no complaint»
+    дано tally равно запись «Tally» с «lines» равным пустой список и «complaints» равным пустой список и «proved» равным 0 и «verified» равным 0
+    дано program равно запись «Program» с «name» равным "door" и «expected» равным "proved=2 verified=2 kernel=0 checker=0"
+    дано output равно "proved=2 verified=2 kernel=0 checker=0\n"
+    ожидается запись «Tally» с «lines» равным ["door: kernel proved 2, checker verified 2, declined 0"] и «complaints» равным пустой список и «proved» равным 2 и «verified» равным 2
+  пример «a mismatch is a complaint that names both lines»
+    дано tally равно запись «Tally» с «lines» равным пустой список и «complaints» равным пустой список и «proved» равным 0 и «verified» равным 0
+    дано program равно запись «Program» с «name» равным "door" и «expected» равным "proved=2 verified=2 kernel=0 checker=0"
+    дано output равно "proved=2 verified=1 kernel=0 checker=3\n"
+    ожидается запись «Tally» с «lines» равным ["door: kernel proved 2, checker verified 1, declined 1"] и «complaints» равным ["door: expected «proved=2 verified=2 kernel=0 checker=0», got «proved=2 verified=1 kernel=0 checker=3»"] и «proved» равным 2 и «verified» равным 1
+  пусть summary равно («First line» от output)
+  пусть complaint равно (соединить [(program.«name»), ": expected «", (program.«expected»), "», got «", summary, "»"] по "")
+  запись «Tally» с «lines» равным (добавить («Report line» от program и output) к (tally.«lines»)) и «complaints» равным (если summary равен (program.«expected») то (tally.«complaints») иначе (добавить complaint к (tally.«complaints»))) и «proved» равным ((tally.«proved») плюс («Count» от («Field» от summary и "proved="))) и «verified» равным ((tally.«verified») плюс («Count» от («Field» от summary и "verified=")))
+
+тотальная функция «Outcome»
+  принимает tally: «Tally»
+  возвращает «Продолжение»
+  пусть total равно (соединить ["user programs: kernel proved ", (к строке (tally.«proved»)), ", checker verified ", (к строке (tally.«verified»))] по "")
+  пусть text равно (соединить (добавить total к (tally.«lines»)) по "\n")
+  разбор (tally.«complaints»)
+    случай пусто
+      то вариант «Конец работы» с значение равным text
+    случай голова и хвост
+      то вариант «Провал» с код равным "FLANG_USER_PROGRAM_PROBES" и сообщение равным (соединить (добавить (соединить ["user program probes DIVERGED:\n  · ", (соединить (tally.«complaints») по "\n  · ")] по "") к [text]) по "\n")
+
+тип «Stage»
+  вариант «Start»
+  вариант «Awaiting program» содержит program: «Program», remaining: список «Program», tally: «Tally»
+
+тотальная функция «Begin»
+  возвращает «Stage»
+  пример «the plan starts with the first program»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Walk»
+  принимает queue: список «Program», tally: «Tally»
+  возвращает «Продолжение»
+  разбор queue
+    случай пусто
+      то «Outcome» от tally
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", (соединить ["cd ../../../.. && ", («Measure» от (голова.«name»))] по "")]) и потом равным (вариант «Awaiting program» с program равным голова и remaining равным хвост и tally равным tally)
+
+тотальная функция «Nothing to look with»
+  принимает reason: строка
+  возвращает «Продолжение»
+  пример «a program that could not run is not a verdict on the checker»
+    дано reason равно "sh did not start"
+    ожидается вариант «Не проверено» с код равным "FLANG_USER_PROGRAM_PROBES_CANNOT_LOOK" и сообщение равным "sh did not start"
+  вариант «Не проверено» с код равным "FLANG_USER_PROGRAM_PROBES_CANNOT_LOOK" и сообщение равным reason
+
+тотальная функция «After program»
+  принимает program: «Program», remaining: список «Program», tally: «Tally», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Walk» от remaining и («Add» от tally и program и output)
+    случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
+      то «Nothing to look with» от (соединить ["program «", (program.«name»), "» was killed by ", signal] по "")
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Nothing to look with» от (соединить ["program «", (program.«name»), "» did not run (", code, "): ", message] по "")
+    случай любое
+      то «Nothing to look with» от (соединить ["expected a process answer on program «", (program.«name»), "»"] по "")
+
+тотальная функция «Next»
+  принимает stage: «Stage», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Start»
+      то «Walk» от («Programs») и («Empty tally»)
+    случай вариант «Awaiting program» с program как program и remaining как remaining и tally как tally
+      то «After program» от program и remaining и tally и reply
+
+план «User program probes»
+  состояние «Stage»
+  начинает с «Begin»
+  обрабатывает «Next»

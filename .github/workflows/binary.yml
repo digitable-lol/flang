@@ -1783,6 +1783,11 @@ jobs:
           LC_ALL: C.UTF-8
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 
+      - name: Check user programs are replayed by the checker
+        run: cd flang/proof/probes/user-programs && ../../../../bootstrap/flang io run.fscript
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+
   # ── Дорогая половина: только тег и ручной запуск ──────────────────────────
   korpus:
     name: corpus-examples

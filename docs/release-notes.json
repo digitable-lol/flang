@@ -1,6 +1,44 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.23": {
+      "ru": {
+        "заголовок": "Поле записи проверяется по своему типу, и прогон знает предел памяти",
+        "появилось": [
+          "**`--memory-limit N` (`--предел-памяти`) — предел памяти прогона.** Годится при любой команде. У `check`, `test` и `run` по умолчанию три четверти памяти машины; `0` снимает предел. На пределе прогон останавливается кодом 5 и называет функцию, которая считалась.\n\n```\n$ flang run runaway.flang --function «Раздуть» --args '{\"текст\":\"а\",\"раз\":28}' --trust --memory-limit 32M\nFLANG_MEMORY: прогон остановлен на пределе памяти 32 МиБ: занято 25 МиБ, просили ещё 25 165 880 байт\n  считалась функция «Раздуть», шагов программы 544\n                                                                    код 5\n```\n\nЗаявка #160.",
+          "**Шаг доказательства называет правило ядра.** Строка шага в записи `--record` кончается словами `правило «…»`, в `--proof --json` есть поле `stepRules`. Независимая проверяющая программа сверяет имя с правилом, которое применяет сама.\n\n```\n$ flang check chain.flang --proof --json\n… \"stepRules\":[{\"step\":1,\"line\":33,\"rule\":\"цель есть допущение\"}, …]\n```"
+        ],
+        "изменилось": [
+          "**Поле записи проверяется по объявленному типу.** Поле `неотрицательное` принимало `-7`, и ядро доказывало обещание, которое прогон потом нарушал. Теперь такая программа не проходит проверку типов.\n\n```flang\nобъект «Мера»\n  «шаг»: неотрицательное\n\nтотальная функция «Отрицательный шаг»\n  возвращает неотрицательное\n  обеспечивает «итог не меньше нуля» результат не меньше 0\n  (запись «Мера» с «шаг» равным -7).«шаг»\n```\n\n```\n0.7.22: $ flang check step.flang\nstep.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет   код 0\n\n0.7.23: $ flang check step.flang --proof\nFLANG_TYPE в файле step.flang, строка 9, столбец 33: поле «шаг» записи «Мера»: ожидался неотрицательное, получен целое   код 1\n```",
+          "**`flang io`: истёкший срок процесса — «Сбой» `FLANG_IO_TIMEOUT`.** Раньше хозяин отвечал «Процесс убит» `SIG9`, как при убийстве снаружи. `--timeout` — срок тишины, отсчёт от последнего байта вывода, по умолчанию 30000 мс; ключ теперь есть в `flang io --help`.\n\n```\n$ flang io child.fscript --timeout 1000 -- 'sleep 3'\n… \"failed FLANG_IO_TIMEOUT: программа «sh» молчала дольше 1000 мс и оборвана хозяином (--timeout)\"\n```\n\nЗаявка #162.",
+          "**Интерпретатор освобождает память на глубокой рекурсии.** На рекурсии глубже примерно 500 вызовов память не освобождалась и росла с каждым шагом. `«Числа до» от 1000` раньше упирался в 3,6 ГБ, теперь идёт в 370 МБ.\n\nЗаявка #160.",
+          "**`разделить … по` и `содержит` в C-рантайме ищут разделитель через `memchr`.** На 100 МБ текста `разделить` — 0,47 → 0,08 с, `содержит` — 0,39 → 0,008 с; число шагов то же.\n\nЗаявка #161.",
+          "**Ключи `.flangrc` — по-английски.** `language`, `surface`, `color`, `page`, `version`, `name`, `license`, `repository`, `issues`, `unproven`. Старые ключи пока читаются и называют замену.\n\n```\n$ cat .flangrc\nнедоказанное = разрешение\n$ flang run p.flang --function «Ответ»\nflang: .flangrc: запись «недоказанное = разрешение» устарела и пока читается — замените её на «unproven = allow»\n42\n```",
+          "**Строковые литералы в записи доказательства печатаются как есть.** Раньше пробелы расставлялись и внутри строк: вместо `\"://\"` стояло `\" : //\"`."
+        ],
+        "сломалось": [
+          "**Поиск модуля по имени не выходит выше корня проекта.** Корень — ближайший каталог с `.flangrc`, `.git` или `flang.package`. Файл выше корня больше не подменяет модуль проекта или библиотеки; модуль, лежащий только там, не находится.\n\n```\n$ flang check app/main.flang\nFLANG_IMPORT_NOT_FOUND в файле app/main.flang, строка 1, столбец 1: не найден модуль «Мера»   код 1\n```\n\n**Миграция:** перенесите модуль в дерево проекта, ввезите его путём (`использует «Мера» из \"../mera.flang\"`) или назовите предел поиска переменной `FLANG_MODULE_ROOT`."
+        ]
+      },
+      "en": {
+        "заголовок": "Record fields are checked against their type, and runs have a memory limit",
+        "появилось": [
+          "**`--memory-limit N` (`--предел-памяти`) — memory cap for a run.** Works with any command. `check`, `test` and `run` default to three quarters of the machine's memory; `0` removes the cap. At the cap the run stops with exit code 5 and names the function being evaluated.\n\n```\n$ flang run runaway.flang --function «Раздуть» --args '{\"текст\":\"а\",\"раз\":28}' --trust --memory-limit 32M\nFLANG_MEMORY: прогон остановлен на пределе памяти 32 МиБ: занято 25 МиБ, просили ещё 25 165 880 байт\n  считалась функция «Раздуть», шагов программы 544\n                                                                    exit 5\n```\n\nIssue #160.",
+          "**Every proof step names its kernel rule.** A step line in a `--record` file ends with `правило «…»`; `--proof --json` has a `stepRules` field. The independent proof checker compares the name with the rule it applies itself."
+        ],
+        "изменилось": [
+          "**A record field is checked against its declared type.** A `неотрицательное` (non-negative) field accepted `-7`, and the kernel proved a postcondition that the run then violated. Such a program now fails type checking with `FLANG_TYPE … поле «шаг» записи «Мера»: ожидался неотрицательное, получен целое`, exit 1.",
+          "**`flang io`: a process that outlives the host timeout is a `FLANG_IO_TIMEOUT` failure.** It used to be reported as «Процесс убит» `SIG9`, as if killed from outside. `--timeout` is a silence timeout counted from the last output byte, 30000 ms by default, and is now in `flang io --help`. Issue #162.",
+          "**The interpreter frees memory on deep recursion.** Beyond about 500 nested calls memory was never reclaimed and grew with every step. `«Числа до» от 1000` used to hit 3.6 GB and now runs in 370 MB. Issue #160.",
+          "**`разделить … по` (split) and `содержит` (contains) in the C runtime find the separator with `memchr`.** On 100 MB of text: split 0.47 → 0.08 s, contains 0.39 → 0.008 s; step counts are unchanged. Issue #161.",
+          "**`.flangrc` keys are English:** `language`, `surface`, `color`, `page`, `version`, `name`, `license`, `repository`, `issues`, `unproven`. Old keys are still read and name their replacement.",
+          "**String literals are printed verbatim in proof records.** Spaces used to be inserted inside strings: `\" : //\"` instead of `\"://\"`."
+        ],
+        "сломалось": [
+          "**Module search by name stops at the project root** — the nearest directory with `.flangrc`, `.git` or `flang.package`. A file above the root no longer replaces a project or library module, and a module that lives only there is not found (`FLANG_IMPORT_NOT_FOUND`).\n\n**Migration:** move the module into the project, import it by path (`использует «Мера» из \"../mera.flang\"`), or set `FLANG_MODULE_ROOT`."
+        ]
+      }
+    },
     "0.7.22": {
       "ru": {
         "заголовок": "Силлогизм `следует` и верный код символа вне базовой плоскости",

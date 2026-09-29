@@ -1671,3 +1671,5 @@ ecc5ed8448df3a3993a812d47148f231|2|2|0|0|0|docs/examples/guide/promise.flang
 6bc07f762b1b76d0d42e1154769eb4c1|1|1|0|0|0|docs/examples/guide/lookup-table.flang
 e6bf33ae3ed941fbc45e17df841f5948|2|2|0|0|1|docs/examples/guide/precondition.flang
 2e3cfb02fc4453a999bf41a5bde721e8|4|4|0|0|0|.githooks/pre-push.fscript
+e17e5edd32f45d6e7ce814dcaa869e85|1|1|0|0|0|scripts/seed/what-lags-the-seed.fscript
+8057f5d8cfae4775e50af322ca880304|2|2|0|0|0|scripts/reading.fscript

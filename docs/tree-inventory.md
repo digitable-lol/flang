@@ -243,7 +243,7 @@ Python 16, awk 1.
 | `prose-numbers-guard.sh` | 416 | числа, набранные в прозе рукой, сходятся с деревом сегодня <!-- СНЯТО 2026-09-05 строк scripts/guards/prose-numbers-guard.sh = 416 --> |
 | `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |
 | `target-census.sh` | 164 | перепись целей <!-- СНЯТО 2026-09-17 строк scripts/targets/target-census.sh = 164 --> |
-| `seed-freshness.fscript` | 115 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-09-17 строк scripts/seed/seed-freshness.fscript = 115 --> |
+| `seed-freshness.sh` | 3 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-09-17 строк scripts/seed/seed-freshness.sh = 3 (задача 5821: проверка переехала в scripts/seed/seed-freshness.fscript, здесь остался переходник; до неё 115) --> |
 | `test-remote.sh` | 149 | прогон на чужой машине <!-- СНЯТО 2026-09-14 строк scripts/test-remote.sh = 149 --> |
 | `one-string-measure-guard.sh` | 119 | подаёт сырые октеты в `string-measure.flang` <!-- СНЯТО 2026-08-29 строк scripts/guards/one-string-measure-guard.sh = 119 --> |
 | `identical-declarations.sh` | 82 | что можно ввезти вместо переименования <!-- СНЯТО 2026-09-17 строк scripts/targets/identical-declarations.sh = 82 --> |

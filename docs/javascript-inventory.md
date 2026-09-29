@@ -67,8 +67,8 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 
 Эта опись считает ОДИН язык. Остальные шестнадцать — оболочка, C, C++, Python,
 HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
-считает [`tree-inventory.md`](tree-inventory.md) (26 сентября 2026: 246 файлов вне flang,
-<!-- СНЯТО 2026-09-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 246 (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 256, снято 2026-09-21) -->
+считает [`tree-inventory.md`](tree-inventory.md) (26 сентября 2026: 242 файлов вне flang,
+<!-- СНЯТО 2026-09-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 242 (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 256, снято 2026-09-21) -->
 долг вне JavaScript — **97 файлов, 18 427 строк при потолке 63**: храповик
 красен, разбор — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и

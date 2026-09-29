@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 246 файлов вне flang, долг вне JavaScript — 98 при потолке 63
-<!-- СНЯТО 2026-09-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 246 (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 256, снято 2026-09-17) -->
+# Опись дерева по языкам: 242 файлов вне flang, долг вне JavaScript — 93 при потолке 63
+<!-- СНЯТО 2026-09-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 242 (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 256, снято 2026-09-17) -->
 
 ⚠ **ХРАПОВИК ДОЛГА КРАСЕН, и заголовок это теперь говорит.** Прогон
 `./ярлык опись:языки` **5 сентября 2026** отвечает кодом 1: «ДОЛГ ВНЕ

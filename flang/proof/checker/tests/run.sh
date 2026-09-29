@@ -36,7 +36,7 @@ PROG=$CHEK/tests/programs
 
 # Двоичного нет — собираем сами, одним вызовом компилятора и без make: у чекера
 # ровно один файл исходника и ноль зависимостей вне libc.
-if [ ! -x "$C" ] && [ -z "${SVERSCHIK:-}" ]; then
+if [ -z "${SVERSCHIK:-}" ] && { [ ! -x "$C" ] || [ "$CHEK/checker.c" -nt "$C" ]; }; then
   ${CC:-cc} -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o "$C" "$CHEK/checker.c"
 fi
 [ -x "$C" ] || { echo "чекера нет и собрать не вышло: $C" >&2; exit 2; }

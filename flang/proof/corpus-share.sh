@@ -217,6 +217,7 @@ checker=$root/flang/proof/checker/сверщик
 # записан при двоичном», стоящий ДО сборки чекера (прогон 34637639507, код 2).
 if [ "$otpechatok" -eq 0 ] && [ "$podlog_otp" -eq 0 ]; then
   [ -x "$checker" ] || { echo "нет чекера $checker — собрать: make -C flang/proof/checker" >&2; exit 2; }
+  [ "$root/flang/proof/checker/checker.c" -nt "$checker" ] && { echo "чекер $checker старше checker.c — пересобрать: make -C flang/proof/checker" >&2; exit 2; }
 fi
 
 tmp=${TMPDIR:-/tmp}/доля-корпуса.$$

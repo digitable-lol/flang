@@ -9,6 +9,7 @@ acceptance
 accepted
 accepts
 access
+account
 accumulates
 accumulating
 across
@@ -211,6 +212,7 @@ carrier
 carries
 carry
 carrying
+cart
 case
 cases
 catalog
@@ -678,6 +680,7 @@ graph
 gratis
 greater
 green
+greeting
 grep
 grid
 group
@@ -866,6 +869,7 @@ legal
 lemma
 lemmas
 length
+lengths
 less
 lesson
 let
@@ -952,6 +956,7 @@ material
 math
 mathematics
 may
+maybe
 md5
 mean
 means
@@ -1484,12 +1489,14 @@ shadow
 shadows
 shape
 shaped
+shapes
 share
 shared
 shares
 shell
 shifted
 shipment
+shopping
 shortcut
 shortcuts
 shortener

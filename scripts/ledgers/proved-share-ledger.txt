@@ -1646,6 +1646,7 @@ b07768e93f07c719e5308625d33aa9fb|1|1|0|0|0|flang/proof/checker/tests/families/st
 8e14992c133eedfc079cbeff033ca00c|1|1|0|0|0|flang/proof/checker/tests/families/boolean-goal/negation-binds-tighter.flang
 47b79056590d79634a29ca75e78c214e|1|1|0|0|0|flang/proof/checker/tests/families/totality-postcondition-over-several-lines.flang
 afc8a388476719fb2c821b83b8b80200|1|0|0|1|0|flang/proof/checker/tests/families/boolean-goal/negation-before-a-conjunction.flang
+b7cd548c89af8a7e4863ce474cfbff6c|1|1|0|0|0|flang/proof/checker/tests/families/module-type-consumer.flang
 fe51d1d52d0266bdec14f79a067c0dbd|4|4|0|0|0|flang/proof/probes/memory-limit/run.fscript
 6ad60a03be2f80c5573400fe1879c8f7|3|3|0|0|0|flang/proof/probes/module-root/run.fscript
 24e692b2bca339493e8e7601ec41fb12|1|1|0|0|0|docs/examples/guide/ladder-as-table.flang

@@ -1,0 +1,8 @@
+модуль «Namesake consumer»
+  использует «Namesake A» из "same-name-first.flang"
+  использует «Namesake B» из "same-name-second.flang" только «Второе»
+
+тотальная функция «Оба шага»
+  принимает н: число
+  возвращает число
+  «Второе» от («Шаг» от н)

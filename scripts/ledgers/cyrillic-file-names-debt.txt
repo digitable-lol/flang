@@ -1,9 +1,3 @@
-# ВЕДОМОСТЬ КИРИЛЛИЧЕСКИХ ИМЁН ФАЙЛОВ (flang/proof тоже судится с 22.09.2026) (scripts/guards/cyrillic-file-names-guard.fscript).
-# Имена файлов в дереве — английскими словами, без транслита (задача 1419). Здесь — те,
-# что уже лежат; строка уходит вместе с переименованием файла. Сверка в обе стороны:
-# нового имени здесь нет — красно; строка пережила файл — тоже красно.
-# Снято 15 сентября 2026: git -c core.quotepath=false ls-files | grep -v '^flang/proof/'
-#   | grep -P '[А-Яа-яЁё][^/]*$' — 63 имени.
 docs/benchmarks/verdict-cache/второе-ядро.sh
 docs/benchmarks/verdict-cache/кеш.вставка
 docs/benchmarks/verdict-cache/наложить.py
@@ -62,9 +56,4 @@ flang/test/обход-примеров.sh
 flang/test/обход.sh
 flang/test/прогонщик-корпуса.flang
 scripts/guards/сторож-дарвина.fscript
-# ОБРАЗЕЦ РАСШИРЕНИЯ «.фп» (ADR-0046, задача 6421). Основа имени переведена; само
-# расширение кириллическое нарочно: «.фп» — одно из четырёх расширений языка
-# (ADR-0016), и это ЕДИНСТВЕННЫЙ живой файл с ним в дереве. На него поимённо смотрит
-# scripts/guards/file-extensions.fscript. Переименовать — стереть доказательство, что
-# расширение работает.
 flang/proof/checker/tests/families/run-induction/letters.фп

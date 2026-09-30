@@ -1,20 +1,3 @@
-# ВЕДОМОСТЬ ТРАНСЛИТНЫХ ИМЁН ФАЙЛОВ (scripts/guards/translit-file-names-guard.fscript).
-# Имя файла — либо русское, либо английское; транслит — брак (задача 1428). Здесь — те
-# латинские имена стека инструментов, чьи слова не из закрытого списка
-# scripts/ledgers/file-name-words.txt, и у каждой группы — причина, почему имя ещё
-# лежит. Строка уходит вместе с переименованием файла. Сверка в обе стороны:
-# нового имени здесь нет — красно; строка пережила файл или долг — тоже красно.
-# Снято 23 сентября 2026 прогоном на a/seed-scripts-english: латинских имён в
-# области 2160, с чужими словами 105 — ровно столько же строк-имён здесь.
-# Прежний счёт («в области 150, переименовано 83, здесь 67», 17 сентября,
-# main 4ac13dc99) устарел дважды: 22 сентября в область вошёл flang/proof
-# (ADR-0046) и принёс 40 записей корпуса, 23 сентября выплачены два имени
-# печати: scripts/bootstrap-reprint.sh и scripts/seed-fingerprint переименованы
-# и строки отсюда сняты (задача 1428; чем были — в CHANGELOG и в самой задаче).
-#
-# Имя файла — ключ записи доказательства стека K: flang/proof/forgeries/manifest.tsv,
-# flang/proof/checker/tests/records/corpus/<имя>.record, run.sh. Переименовывать
-# вместе с записями (стек K).
 flang/test/fixtures/element-po-nomeru-chestnaya.flang
 flang/test/fixtures/granica-nad-chislom-chestnaya.flang
 flang/test/fixtures/krug-tuda-i-obratno.flang
@@ -57,10 +40,6 @@ flang/test/fixtures/poddelka-svyortka-prefiks.flang
 flang/test/fixtures/poddelka-svyortka-shagom.flang
 flang/test/fixtures/poddelka-vhozhdenie.flang
 flang/test/fixtures/svyortka-prefiks-chestnaya.flang
-#
-# Пути — ключи снимков flang/test/fixtures/record-oracle.json, record-grid.json и
-# flang/test/snimok/proofterm-witness.json (правятся только пересъёмкой); упомянуты в
-# flang/self/bootstrap/compiler.flang.
 flang/test/fixtures/plany/00-tselyj.flang
 flang/test/fixtures/plany/01-dvazhdy.flang
 flang/test/fixtures/plany/02-slovar-zanyat.flang
@@ -75,36 +54,14 @@ flang/test/fixtures/plany/10-shag-vtoroj-argument.flang
 flang/test/fixtures/plany/11-shag-vozvrat.flang
 flang/test/fixtures/plany/12-shag-spisok.flang
 flang/test/fixtures/plany/13-shag-dzhoker.flang
-#
-# Оснастка узла: её ввозит flang/concurrency/bench/node-death-targets.mjs и называет
-# flang/self/emit-js.flang — оба вне стека инструментов.
 flang/test/uzel-osnastka.flang
 flang/test/uzel-osnastka.mjs
-#
-# Имя правила орфографии «жи-ши» — собственное имя примера, перевода не имеет.
 flang/test/fixtures/fts/examples/real-world/zhi-shi.fts
-#
-# Файл workflow на GitHub — сущность с ручным выключением: переименование заводит
-# новый, включённый workflow. Переименовывать только вместе с выключением на GitHub.
-#
-# Три пробы-двойника узла на Node: названы в docs/flang/concurrency/RESILIENCE.md и
-# flang/concurrency/bin/peer.py — вне стека инструментов; переименовывать втроём и
-# вместе с этими упоминаниями.
 flang/test/nadzor-uzla.test.mjs
 flang/test/planirovshchik-celi.test.mjs
 flang/test/svyaz-celi.test.mjs
-#
-# Заметки, на которые ссылаются flang/self/proof-kernel.flang (комментарий у чтения
-# пустоты) и docs/flang/proof/SPEC.md — стек K; переименовывать вместе с ними.
 docs/zettel/emptiness-guards-are-written-with-pusto-but-the-kernel-reads-only-the-measure.md
 docs/zettel/vyvod-na-vetke-ne-vyvod-o-dereve.md
-#
-# ЗАПИСИ КОРПУСА ЧЕКЕРА — 40 имён (ADR-0046, задача 6421, 22 сентября 2026).
-# flang/proof вошёл в область сторожа, и эти имена стали видны. Переименованы они
-# НЕ БУДУТ раньше своих исходников: имя записи ЗЕРКАЛИТ имя файла, с которого она
-# снята, — flang/test/fixtures/poddelka-*.flang и соседи. Разойдись имена, пара
-# «исходник ↔ запись» перестала бы читаться глазами, а прогон корпуса сверяет их
-# именно так. Строки уходят вместе с переименованием исходников (задача 1428).
 flang/proof/checker/tests/records/corpus/element-po-nomeru-chestnaya.record
 flang/proof/checker/tests/records/corpus/granica-nad-chislom-chestnaya.record
 flang/proof/checker/tests/records/corpus/krug-tuda-i-obratno.record

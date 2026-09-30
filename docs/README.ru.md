@@ -1,55 +1,36 @@
-[English](../README.md) · **Русский** · [Сайт документации](https://digitable-lol.github.io/flang/)
+[English](../README.md) · **Русский** · [Документация](https://digitable-lol.github.io/flang/)
 
-# flang — язык, в котором спецификация и есть программа
+# flang
 
 flang — чистый функциональный язык со строгой статической типизацией, записываемый словами, а не
 символами. У функции рядом с телом стоят её примеры и её утверждения о результате; компилятор
-проверяет файл до любого запуска, а `flang emit` печатает проверенную программу в C, C++, Go,
-Rust, Java, JavaScript, TypeScript, Elixir, Python или C#. Компилятор один, написан он на самом
-flang; дерево держит его уже напечатанным в C99, поэтому для сборки нужны компилятор C и `make` —
-и больше ничего.
+проверяет их до любого запуска и переводит проверенную программу на C, C++, Go, Rust, Java,
+JavaScript, TypeScript, Elixir, Python или C#. Компилятор написан на flang. У каждого ключевого
+слова есть русское и английское написание; отвечает компилятор по-русски при любом.
 
-Обещания несут два слова. `тотальная` перед функцией утверждает, что она завершается на любом
-входе; компилятор доказывает это структурным убыванием или объявленной мерой и отказывает файлу,
-когда доказать не может. `обеспечивает` задаёт постусловие; ядро доказательств замыкает его обо
-всех входах там, где умеет, и говорит словами, где не смогло.
-
-Авторская поверхность русская (`модуль`, `функция`, `принимает`, `обеспечивает`, `пример`);
-английская поверхность лексится в те же идентификаторы, так что файл можно писать на любой из
-двух. Имена в ёлочках — `«Место вставки»` — принадлежат предметной области и никем не переводятся.
-Определение языка — [`docs/flang/SPEC.md`](flang/SPEC.md); справочник по конструкциям —
-[Справочник конструкций](https://digitable-lol.github.io/flang/language.html).
+«Формально доказуемый» значит здесь три вещи. `тотальная`: компилятор доказывает, что функция
+завершается на любом входе, либо отвергает файл. `обеспечивает`: ядро доказательств доказывает
+утверждение о результате для всех входов либо сообщает, что оно не доказано, и тогда `flang run`
+программу не запускает. `flang check --proof --record <файл>` записывает доказательство; отдельная
+программа на C, [`checker.c`](../flang/proof/checker/checker.c), перепроверяет его по исходнику и называет
+шаги, принятые со слов ядра. Чего это не значит: [Что доказано, а что нет](https://digitable-lol.github.io/flang/what-is-proved.html).
 
 ## Установка
 
-Весь список зависимостей — компилятор C99 и `make`. Все три пути дают один и тот же двоичный, и
-рядом с ним — рантаймы каждой цели в `share/flang/<цель>/`.
-
 ```bash
 brew install digitable-lol/tap/flang
-```
 
-```bash
 asdf plugin add flang https://github.com/digitable-lol/asdf-flang.git
 asdf install flang latest
 asdf set -u flang latest
-```
 
-```bash
 git clone https://github.com/digitable-lol/flang && cd flang
 make -C bootstrap -j4
 sudo make -C bootstrap install        # или PREFIX=$HOME/.local, без sudo
-flang --version
 ```
 
-Формула Homebrew — [`packaging/homebrew/flang.rb`](../packaging/homebrew/flang.rb), её раздаёт
-[`digitable-lol/homebrew-tap`](https://github.com/digitable-lol/homebrew-tap); плагин asdf (его
-читает и mise) — [`packaging/asdf/`](../packaging/asdf/README.md), опубликован как
-[`digitable-lol/asdf-flang`](https://github.com/digitable-lol/asdf-flang). Оба хранятся здесь
-сабмодулями и сверяются с этим деревом перед каждым выпуском. Оба ставят релизный архив
-`flang-<версия>-c.tar.gz` из GitHub Releases: напечатанные исходники C99, Makefile, страницу
-`flang.1` и `flangtutor` — проводник по языку в духе `vimtutor`. Подробности —
-[Установка](https://digitable-lol.github.io/flang/install.html).
+Homebrew, asdf или клон: во всех трёх случаях компилятор собирается из исходников на C99, нужны
+`cc` и `make`. `flang --version` печатает версию. Подробнее: [Установка](https://digitable-lol.github.io/flang/install.html).
 
 ## Первая программа
 
@@ -66,181 +47,68 @@ flang --version
   н плюс н
 ```
 
-Пять частей: имя модуля; `тотальная` — обещание завершения; `принимает` / `возвращает` — типы;
-`обеспечивает` — именованное постусловие; `пример` — исполняемый пример, который прогоняется при
-каждой проверке; последняя строка — тело. Сохраните это как **привет.flang** и позовите компилятор:
+В файле **привет.flang**:
 
 ```
 $ flang check привет.flang
 модуль «Привет»: функций 1, из них с доказанным завершением 1; типов 0
 привет.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
-
-$ flang test привет.flang
-привет.flang: примеров 1, прошло 1, не прошло 0
-
-$ flang run привет.flang --function «Удвоить» --args '{"н": 21}'
+$ flang run привет.flang --function Удвоить --args '{"н": 21}'
+доказано: утверждений 1
 42
+$ flang check привет.flang --proof 2>&1 | grep постусловие
+  постусловие «удвоенное не меньше исходного» функции «Удвоить» — доказано по объявленным типам аргументов: цель сведена правилом «порядок по построению» — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
 ```
 
-Во всех трёх случаях код возврата 0. Объявите вместо `неотрицательное` тип `н: число` — и проверка
-откажет с `FLANG_BOUND_ON_NAN`: в типе `число` живёт «не число», стоящее вне всякого порядка,
-поэтому постусловие ложно, и контрпример назван. Дальше —
-[Первая программа](https://digitable-lol.github.io/flang/getting-started.html), затем
-[Учебник](https://digitable-lol.github.io/flang/tutorial.html).
-
-## Что умеет компилятор
-
-Источник правды — `bootstrap/flang --help`; страница `packaging/flang.1` и этот перечень сверяются
-с ним на каждый пуш. Двоичный отвечает на тринадцать команд, языковой сервер редактора —
-одна из них: `check`, `test`, `run`, `emit`, `ast`, `tokens`, `facts`, `io`, `lock`, `package`,
-`new`, `repl` и `lsp`. Печатает он в 10 целевых языков.
-<!-- СНЯТО 2026-09-08 файлов flang/self/emit-*.flang = 10 -->
-
-| команда | что делает |
-| --- | --- |
-| `flang check <файл>` | разбор, связывание, типы, завершаемость, ядро доказательств, примеры. `--proof` печатает, чем несётся каждое обещание; `--быстро` пропускает ядро и примеры и говорит об этом, код 4 |
-| `flang test <файл\|каталог>` | прогоняет примеры, объявленные внутри функций, — один файл или весь каталог |
-| `flang run <файл> --function «Имя» --args '{…}'` | вычисляет одну функцию и печатает значение |
-| `flang emit <файл> --target <цель> --out <каталог>` | печатает программу в `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `python` или `csharp`. Программа сначала проверяется — той же дорогой, что `check`, — и при отказе ничего не записывается |
-| `flang io <файл>` | исполняет план: файлы, каталоги, процессы, сеть. Так запускается каждая проверка этого дерева, написанная на flang |
-| `flang ast`, `flang tokens` | разобранная программа в JSON; поток токенов |
-| `flang facts <файл> --claims '[…]'` | проверяет утверждения на фактах |
-| `flang lock`, `flang package`, `flang new` | замок, несущий сами зависимости; пакет с именем, версией и манифестом; новый пакет с нуля |
-| `flang`, `flang repl` | оболочка: объявляй и считай сразу. Под терминалом правит строку (стрелки, переходы по словам, история, дополнение по Tab, подсветка); в конвейере — прогонщик JSON на входе и JSON на выходе |
-| `flang lsp --stdio` | языковой сервер для редактора; `flang --mcp-mode` — служба для ИИ-помощника |
-
-Все ключи — [Справочник команд](https://digitable-lol.github.io/flang/cli.html); коды, которые
-несёт отказ, — [Справочник отказов](https://digitable-lol.github.io/flang/diagnostics.html).
-
-Две поверхности двоичный не судит вовсе: категорную (моноиды, монады, функторы, объявленные
-свойства) и процессы с надзором. `flang check` называет, чего не проверил, и отвечает кодом 2,
-а не пропускает такую программу молча.
-
-## Доказательства: четыре разных покрытия, и чем каждое не является
-
-`flang check <файл> --proof` печатает по каждой функции, чем несётся каждое обещание —
-доказательством, сеткой собственных значений автора или ничем. `--записать <файл>` выписывает
-запись доказательства, а **независимый проверяющий** читает её обратно:
-[`flang/proof/checker/checker.c`](../flang/proof/checker/checker.c) — программа на C, которая берёт
-исходник и запись и отвечает, сходятся ли они; ни одной строки компилятора в ней нет.
-
-Одного числа, которое говорило бы «язык доказан», нет, и эта страница его не печатает. Порознь
-меряются четыре разных покрытия, одним прибором:
-
-```bash
-bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000
-```
-
-Он печатает дату, коммит дерева, отпечаток семени, версию и sha256 собранного двоичного, sha256
-исходника проверяющего и версию перечня правил вывода, а следом — четыре числа ниже. Снято на
-этом дереве **19 сентября 2026** (коммит `404c4ec0a`, двоичный 0.7.20):
-
-| покрытие | измерено | чем оно **не** является |
-| --- | --- | --- |
-| **Собственные записи доказательства** — места в них, переигранные независимо | 650 / 650 = 100 % обязательств в 91 записи; 27 мест вынесено (записи, отвергнутые целиком как нарочные подделки); 16 записей получают код 0, а доказанным в них не числится ничего | это не «100 % программ доказаны», не утверждение о вашем коде и не утверждение о собранном двоичном |
-| **Формализация** — правила вывода, которые судит второй, чужой судья (ядро Lean 4) | 109 из 109 строк перечня правил имеют лемму; отношение приёмки Lean покрывает 76 из 97 правил вывода — 21 вне него (Выч, Р2, Р3, Р5, Р6, Инд1–Инд4 и другие) | лемма о правиле — не проверка вашей программы, которая этим правилом пользуется; сколько блоков записи уходит вне приёмки, требует прогона Lean, а `lean` здесь не установлен |
-| **Известные нарушения состоятельности** — где две независимые проверки говорят разное либо успех значит не то, что читается | 2 открытых (третье закрыто 19 сентября 2026), поимённо в [`flang/proof/tables/consistency-violations.tsv`](../flang/proof/tables/consistency-violations.tsv) | список открытый — «других нет» он не утверждает |
-| **Трансляция** — доказательство КАЖДОГО запуска печати, переигранное против напечатанного C | 23 опыта сходятся; из 41 правила печати 24 сверяются с текстом исходника, а 10 не переигрываются вовсе | сличитель судит ОДИН запуск печати, а не печать целиком |
-
-Полная страница — что каждое покрытие даёт сказать и чего не даёт — [`docs/four-coverages.md`](four-coverages.md).
-
-`bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` сводит первое покрытие и три проверки самого проверяющего к одному
-слову, **ДОКАЗУЕМ** или **НЕ ДОКАЗУЕМ**, при пороге 100 %. Это слово — о первом покрытии и наборе
-проб, а не о языке. Замер 19 сентября 2026: та же команда печатает ДОКАЗУЕМ и отвечает кодом 0
-**даже когда `bootstrap/flang` из дерева убран**, — ни одна из её четырёх проверок собранный
-двоичный не зовёт. Проверка, предмет которой и есть финальный двоичный — перепечатать им каждую
-запись и сличить байты, — это `sh flang/proof/corpus-share.sh --вложенность`, и теперь она
-стоит рядом с вердиктом в
-[`.github/workflows/provability.yml`](../.github/workflows/provability.yml).
-
-## Что не покрыто
-
-Названо потому, что умолчание читалось бы обещанием.
-
-- **Напечатанный код не покрыт никаким доказательством.** `flang check` доказывает постусловия
-  ИСХОДНИКА; то, что `flang emit` печатает в C или в любую из девяти других целей, не доказано.
-  Тот же разрыв есть у Coq, Lean и Idris (CompCert закрывает только C → машина). Как его
-  закрывать — [ADR-0030](adr/0030-the-printer-proves-each-run-not-itself.md).
-- **Состояние во времени, побочные эффекты и параллелизм.** Логика не знает о них ничего: такое
-  утверждение в языке негде даже записать.
-- **Доверять приходится многому, и это выросло.** Решающая часть ядра — 5068 строк, в августе было
-  4669; наряд снизить это число ниже 4000 не выполнен.
-- **Не для медицины, авиации и космоса.** Тем стандартам нужны квалификация инструмента,
-  доказанные границы отклика и поведение при отказе железа, и ничего из этого здесь нет
-  ([ADR-0031](adr/0031-certification-is-a-process-not-a-property-of-the-language.md),
-  [ADR-0033](adr/0033-termination-is-not-a-bound-on-steps.md),
-  [ADR-0034](adr/0034-hardware-failure-is-described-not-proved.md)).
-
-Что доказуемость даёт разработчику сегодня, на настоящих прогонах, и сколько осталось до
-«правильной» — [`docs/what-provability-gives-today.ru.md`](what-provability-gives-today.ru.md);
-подробный разбор — [Что доказано, а что нет](https://digitable-lol.github.io/flang/what-is-proved.html).
-
-## Печать в целевой язык
-
-Это [`docs/examples/leetcode/035-search-insert-position.flang`](examples/leetcode/035-search-insert-position.flang)
-как он лежит в дереве — место, куда значение встаёт в отсортированном списке:
+`пример` выполняется при каждой проверке. `--proof` сообщает, на чём держится каждое утверждение:
+здесь постусловие следует из объявленного типа `неотрицательное` для всех входов. Замените его
+утверждением, которое ядро не доказывает:
 
 ```flang
-тотальная функция «Место вставки»
-  принимает элементы: список числа, цель: число
-  возвращает число
-  пример «Пример 1 из условия»
-    дано элементы равно [1, 3, 5, 6]
-    дано цель равно 5
-    ожидается 2
-  свёртка элементы начиная с 0 как акк и эл → «Шаг места вставки» от акк и эл и цель
+  обеспечивает «результат чётный» (результат остаток от 2) равен 0
 ```
 
-```bash
-flang emit docs/examples/leetcode/035-search-insert-position.flang --target c  --out out-c
-flang emit docs/examples/leetcode/035-search-insert-position.flang --target js --out out-js
+Такую программу, сохранённую как **чётное.flang**, `flang check` принимает с кодом 0, а `flang run` отвергает:
+
+```
+$ flang run чётное.flang --function Удвоить --args '{"н": 21}' 2>&1 | head -n 1
+не доказано: утверждений 1: доказано 0, сетка 1, на веру 0 — запуск только по явному согласию: --на-веру
+$ flang run чётное.flang --function Удвоить --args '{"н": 21}' 2>/dev/null; echo $?
+3
 ```
 
-Каждая цель получает модуль, рантайм, прогонщик с JSON на входе и выходе, файл сборки и — где у
-цели он есть — манифест пакета (`go.mod`, `Cargo.toml`, `flang.csproj`, `package.json`). Вот что
-печатается в C для функции выше, вставлено из прогона без правок:
+Следующие строки сообщения называют недоказанное утверждение; ключ `--trust` запускает программу
+как есть.
 
-```c
-fl_status search_insert_position_mesto_vstavki(fl_ctx *ctx, fl_value elementy, fl_value cel, fl_value *result, fl_error *error) {
-  fl_value fl_t2 = fl_nothing();
-  FL_TRY(fl_require_list(ctx, elementy, "свёртка", &fl_t2, error));
-  fl_value akk = fl_number(0.0); /* «акк» */
-  const fl_mark fl_t4 = fl_region_open(ctx);
-  for (size_t fl_t3 = 0; fl_t3 < fl_t2.as.list.count; fl_t3 += 1) {
-    const fl_value el = fl_t2.as.list.items[fl_t3]; /* «эл» */
-    fl_value fl_t5 = fl_nothing();
-    FL_TRY(search_insert_position_shag_mesta_vstavki(ctx, akk, el, cel, &fl_t5, error));
-    akk = fl_t5;
-    FL_TRY(fl_region_recycle(ctx, fl_t4, &akk, error));
-  }
-  FL_TRY(fl_region_close(ctx, fl_t4, FL_OK, &akk, error));
-  *result = akk;
+## Перевод на целевой язык
+
+```
+$ flang emit привет.flang --target c --out out-c 2>/dev/null
+$ grep -A 4 '^fl_status privet_udvoit' out-c/privet.c
+fl_status privet_udvoit(fl_ctx *ctx, fl_value n, fl_value *result, fl_error *error) {
+  if (n.tag != FL_NUMBER || n.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "add", n, n, error));
+  *result = fl_number(n.as.number + n.as.number);
   return FL_OK;
 }
 ```
 
-Напечатанный код несёт имена предметной области в комментариях и дословно сообщает коды
-диагностик компилятора. Исходники рантайма каждой цели копируются в вывод дословно — из
-`share/flang/<цель>/` рядом с двоичным или из `--runtime <каталог>`. Тот же разбор по всем десяти
-целям — [`docs/guide/emit-walkthrough.ru.md`](guide/emit-walkthrough.ru.md); как проверяются цели
-и насколько неровно — [Известные ограничения](guide/limits.ru.md).
+`flang emit` проверяет программу так же, как `flang check`, при отказе ничего не записывает, а
+отчёт пишет в stderr. В каталоге вывода — модуль, рантайм цели, драйвер командной строки и
+`Makefile`. После `make -C bootstrap install` рантайм задаётся ключом `--runtime flang/src/emit/c`.
+
+У `flang` тринадцать команд, языковой сервер редактора — одна из них: `check`, `test`, `run`,
+`emit`, `ast`, `tokens`, `facts`, `io`, `lock`, `package`,
+`new`, `repl` и `lsp`. Печатает он код для целей `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`,
+`elixir`, `python` и `csharp`.
 
 ## Документация
 
-Сайт собирается из `docs/site/` в двух редакциях —
-[Русский](https://digitable-lol.github.io/flang/) ·
-[English](https://digitable-lol.github.io/flang/en/index.html) — и читать надо его; указатель
-всего остального под `docs/` — [`docs/README.md`](README.md).
+- Начало: [Первая программа](https://digitable-lol.github.io/flang/getting-started.html), [Учебник](https://digitable-lol.github.io/flang/tutorial.html), [Какую конструкцию когда брать](https://digitable-lol.github.io/flang/which-construct.html)
+- Язык: [Карта конструкций языка](https://digitable-lol.github.io/flang/language-map.html), [Справочник конструкций](https://digitable-lol.github.io/flang/language.html), [Справочник стандартной библиотеки](https://digitable-lol.github.io/flang/stdlib.html), [`docs/flang/SPEC.md`](flang/SPEC.md)
+- Инструменты: [Справочник команд](https://digitable-lol.github.io/flang/cli.html), [Справочник отказов](https://digitable-lol.github.io/flang/diagnostics.html), [Выпуски](https://digitable-lol.github.io/flang/releases.html)
+- Доказательства и программы: [Доказательства: зачем и как](https://digitable-lol.github.io/flang/proofs.html), [`docs/examples/`](examples)
 
-| чтобы… | читать |
-| --- | --- |
-| написать первый файл | [Первая программа](https://digitable-lol.github.io/flang/getting-started.html) · [Учебник](https://digitable-lol.github.io/flang/tutorial.html) |
-| найти конструкцию | [Справочник конструкций](https://digitable-lol.github.io/flang/language.html) · [Справочник библиотеки](https://digitable-lol.github.io/flang/stdlib.html) · [Справочник отказов](https://digitable-lol.github.io/flang/diagnostics.html) |
-| понять доказательства | [Четыре покрытия](four-coverages.md) · [Что доказано](https://digitable-lol.github.io/flang/what-is-proved.html) · [Какие обещания ядро берёт](https://digitable-lol.github.io/flang/what-the-kernel-accepts.html) · [Ядро отказало: чья это ошибка](https://digitable-lol.github.io/flang/proof-refused.html) |
-| запустить где-то | [Установка](https://digitable-lol.github.io/flang/install.html) · [Справочник команд](https://digitable-lol.github.io/flang/cli.html) · [Редактор](https://digitable-lol.github.io/flang/editor.html) · [Процессы, надзор, распределённость](https://digitable-lol.github.io/flang/processes.html) |
-| посмотреть настоящие программы | [Каталог примеров](https://digitable-lol.github.io/flang/examples.html) — наборы в [`docs/examples/`](examples) |
-| прочесть контракты | [`docs/flang/SPEC.md`](flang/SPEC.md) · [`docs/flang/self/SPEC.md`](flang/self/SPEC.md) · [`docs/flang/proof/SPEC.md`](flang/proof/SPEC.md) · [`docs/flang/concurrency/SPEC.md`](flang/concurrency/SPEC.md) · [`docs/ct/spec.md`](ct/spec.md) |
-| узнать, куда это идёт | [`docs/ROADMAP.md`](ROADMAP.md) — пять этапов и что каждый меняет для разработчика · [`docs/what-provability-gives-today.ru.md`](what-provability-gives-today.ru.md) · [`docs/road-to-1-0.md`](road-to-1-0.md) |
+## Участие в разработке
 
 Правило имён: файл без языкового суффикса — английский; суффикс `.ru.md` отмечает его русскую
 редакцию. Исключение — `README.md` и `SPEC.md` рядом с кодом: они держат эти имена на любом
@@ -356,6 +224,4 @@ git config core.hooksPath .githooks      # хук перед пушем: деш�
 
 ## Лицензия
 
-BSD 2-Clause — [LICENSE](../LICENSE); русская редакция без юридической силы —
-[LICENSE-RU.md](../LICENSE-RU.md). Прежние версии выходили под Apache-2.0, и получивший код на тех
-условиях сохраняет те права.
+BSD 2-Clause — [LICENSE](../LICENSE). Русская редакция без юридической силы — [LICENSE-RU.md](../LICENSE-RU.md).

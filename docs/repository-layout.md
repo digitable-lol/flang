@@ -15,7 +15,7 @@ against the tree on every push.
 ```
 bootstrap/      the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
 flang/          the language: self/ (the compiler), core/, stdlib/, proof/, concurrency/, ct/, src/emit/ (target runtimes), scripts/, test/, bin/ (flangtutor) — code only; its contracts are in docs/flang/
-docs/examples/  204 flang programs in 25 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
+docs/examples/  238 flang programs in 26 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
 docs/editors/   the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/      the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
 scripts/        guards of the tree, the reprint of the bootstrap point, the release archive, the changelog
@@ -30,24 +30,23 @@ docs/tasks/     the open and closed work of the tree, one file per task
 <!-- КАРТА-КОНЕЦ -->
 
 Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 68 files of flang —
-<!-- СНЯТО 2026-09-20 файлов flang/self/*.flang = 68 -->
-lexer, parser, types, totality, proof kernel and one printer per target; what the layers owe each
-other is [`docs/flang/self/SPEC.md`](flang/self/SPEC.md). [`flang/stdlib/`](../flang/stdlib) is the
-standard library — **51 modules, 1764 functions and 3745 examples** that run on every check:
+<!-- СНЯТО 2026-09-17 файлов flang/self/*.flang = 68 -->
+lexer, parser, types, totality, proof kernel and one printer per target.
+[`flang/stdlib/`](../flang/stdlib) is the standard library — **51 modules, 1764 functions and 3745
+examples** that run on every check:
 <!-- СНЯТО 2026-09-13 файлов flang/stdlib/*.flang = 51 -->
 <!-- СНЯТО 2026-09-13 примеров-в flang/stdlib/*.flang = 3745 -->
-lists, strings, numbers, sets, maps, JSON, UTF-8, dates, and beyond them two database drivers
-(`postgres`, `sqlite`), networking (`http`, `tls`, `redis`), a cryptography set written in flang
-(`aes`, `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`) and a regular-expression engine.
-[`flang/src/emit/`](../flang/src/emit) holds the runtime of each target, copied into printed code
-verbatim. [`flang/test/`](../flang/test) holds the checks written in flang that the binary
-walks, next to what is left of a test suite written against a deleted JavaScript
-implementation, kept as fixtures (the checks moved here from `flang/проверки` on 14 September 2026).
+lists, strings, numbers, sets, maps, JSON, UTF-8, dates, two database drivers (`postgres`,
+`sqlite`), networking (`http`, `tls`, `redis`), a cryptography set written in flang (`aes`,
+`x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`) and a regular-expression engine.
+[`flang/src/emit/`](../flang/src/emit) holds the runtime of each target; [`flang/test/`](../flang/test)
+holds the checks written in flang that the binary walks.
 
-Two of the example sets are full-size projects — [`docs/examples/web/shortener`](examples/web/shortener/README.md),
-a link shortener with nothing but flang between the request bytes and the response bytes, and
-[`docs/examples/library-api`](examples/library-api/README.md), the domain half of a library service;
-the 189 more programs in the other sets are single files, the LeetCode set among them:
+Two of the example sets are full-size projects —
+[`docs/examples/web/shortener`](examples/web/shortener/README.md), a link shortener with
+nothing but flang between the request bytes and the response bytes, and
+[`docs/examples/library-api`](examples/library-api/README.md), the domain half of a library
+service; the 223 more programs in the other sets are single files, the LeetCode set among them:
 82 solutions carrying 806 examples.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
 <!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->
@@ -55,23 +54,22 @@ the 189 more programs in the other sets are single files, the LeetCode set among
 **The bootstrap point.** `bootstrap/` holds the compiler already printed to C99, which is why
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the
 result is compared with what is committed: `sh scripts/bootstrap-reprint.sh --check`. The inputs of the
-last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 48 lines in the input half; with the second half, the seed body,
-the file is 65 lines. <!-- СНЯТО 2026-09-13 строк scripts/seed-fingerprint = 65 -->
-The
-seed lags the sources today, in three files and 77 functions: `sh scripts/seed/chto-otstalo-ot-semeni.sh`
-lists which files and functions are newer than the seed, and a reprint (`sh scripts/bootstrap-reprint.sh`, hours on one core)
-is how edits to `flang/self/` reach the binary. What the seed is and what guards it —
-[`bootstrap/README.md`](../bootstrap/README.md) and [the bootstrap circle](guide/bootstrap-circle.md).
+last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 48 lines in the
+input half; with the second half, the seed body, the file is 65 lines.
+<!-- СНЯТО 2026-09-13 строк scripts/seed-fingerprint = 65 -->
+The seed lags the sources: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` lists which files and functions
+are newer than the seed, and a reprint (`sh scripts/bootstrap-reprint.sh`, hours on one core) is how edits
+to `flang/self/` reach the binary. **An edit to the sources is not in the binary until that
+reprint**.
+[`bootstrap/README.md`](../bootstrap/README.md) · [the bootstrap circle](guide/bootstrap-circle.md).
 
-The loose files in the root: `README.md` (this page; the Russian edition is a page of its own,
+The loose files in the root: `README.md` (the front page of the repository; its Russian edition is
 [`docs/README.ru.md`](README.ru.md)), `LICENSE` · `LICENSE-RU.md`,
-`CONTRIBUTING.md`, `AGENTS.md` (guidance for an agent working in the tree — a symbolic link to
-`.ai/AGENTS.md`, as `.claude` is a link to `.ai/.claude`), `docs/DESCRIPTION.md` (a
-long-form description of the language, in Russian) and `docs/ROADMAP.md` (measured, not intended) —
-both symbolic links into `docs/`; the documents themselves
-are [`docs/DESCRIPTION.md`](DESCRIPTION.md) and [`docs/ROADMAP.md`](ROADMAP.md),
-and the links keep the addresses other repositories already point at,
-`CHANGELOG.md` · `changelog.json` (printed from tags and commit subjects, never edited by hand),
-`.flangrc` (the settings file, and the one place the version, the licence and the two addresses are read from: the site footer, the release workflow and the Homebrew formula guard. `package.json` left the tree in September 2026; what every key means is [the settings page](guide/settings.ru.md)) and
-`ярлык` · `ярлыки.flang` — the shortcuts of the tree and the `sh` entry point that runs them:
-`./ярлык задачник:доска`, `./ярлык спеки:проверка`.
+`CONTRIBUTING.md`, `AGENTS.md` (a symbolic link to `.ai/AGENTS.md`),
+[`docs/DESCRIPTION.md`](DESCRIPTION.md) (a long-form description, in Russian) and
+[`docs/ROADMAP.md`](ROADMAP.md) (measured, not intended) — both reachable through symbolic
+links in the root, which keep the addresses other repositories already point at; `CHANGELOG.md` ·
+`changelog.json` (printed from tags and commit subjects, never edited by hand); `.flangrc` (the
+settings file, and the one place the version, the licence and the two addresses are read from —
+[the settings page](guide/settings.ru.md)); `ярлык` · `ярлыки.flang` — the shortcuts of the
+tree and the `sh` entry point that runs them.

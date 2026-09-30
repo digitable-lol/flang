@@ -5,10 +5,8 @@ CHANGELOG.md	obligations.mjs	история: заголовок коммита �
 CHANGELOG.md	src/types.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 CHANGELOG.md	flang/src/proof.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 CHANGELOG.md	io.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
-README.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/README.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/README.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-docs/README.ru.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/benchmark-speed.md	proverka_tipov.c	иллюстративный пример в тексте, не файл
 docs/course/02-first-program.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/course/06-cost.md	-2.md	обозначение расширения/суффикса-конвенции, не имя файла

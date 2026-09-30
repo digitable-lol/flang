@@ -26,9 +26,9 @@
 #   sh scripts/guards/published-vs-tree.sh --доля     только доля доказанного
 #   sh scripts/guards/published-vs-tree.sh --перепись только перепись не-flang
 #   sh scripts/guards/published-vs-tree.sh --выпуск  только выпуск: версия и теги
-#   sh scripts/guards/published-vs-tree.sh --карта   только карта раскладки в README
+#   sh scripts/guards/published-vs-tree.sh --карта   только карта раскладки в docs/repository-layout
 #   sh scripts/guards/published-vs-tree.sh --команды только напечатанные команды
-#   sh scripts/guards/published-vs-tree.sh --проза   только числа прозы (README и страницы)
+#   sh scripts/guards/published-vs-tree.sh --проза   только числа прозы (страницы)
 #
 # ИМЕНА ЗДЕСЬ ЛАТИНИЦЕЙ, как в scripts/bootstrap-reprint.sh и в `ярлык`: ни dash, ни
 # bash не принимают кириллицу в именах переменных.
@@ -593,7 +593,7 @@ vypusk() {
   fi
 }
 
-# ── Числа прозы: README и страницы против дерева ─────────────────────────────
+# ── Числа прозы: страницы против дерева ─────────────────────────────
 #
 # ЗАЧЕМ. Числа `numbers.json` держит подстановка `{{ключ}}`, и разойтись молча им
 # больше не дают. Но добрая половина чисел, которые проект говорит о себе, стоит
@@ -619,30 +619,30 @@ vypusk() {
 # Вместо диапазона — «что угодно, кроме разделителя»: `[^ ]*`, `[^,]+`. Они
 # работают побайтно и одинаковы в любой локали.
 proza() {
-  echo "ЧИСЛА ПРОЗЫ (README и страницы против дерева):"
+  echo "ЧИСЛА ПРОЗЫ (страницы против дерева):"
 
   # Примеры: сколько программ и сколько наборов.
   pr_vsego=$(find docs/examples -name '*.flang' | wc -l | tr -d ' ')
   pr_naborov=$(find docs/examples -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
   pr_ostalnyh=$(find docs/examples -name '*.flang' \
                 | grep -vE '^docs/examples/(web/shortener|library-api)/' | wc -l | tr -d ' ')
-  skazat "README.ru: программ"  "$(grep -oE 'docs/examples/ +[0-9]+ программ' docs/README.ru.md | grep -oE '[0-9]+')" "$pr_vsego"
-  skazat "README: программ"     "$(grep -oE 'docs/examples/ +[0-9]+ flang programs' README.md | grep -oE '[0-9]+')" "$pr_vsego"
-  skazat "README.ru: наборов"   "$(grep -oE 'программ[^ ]* на flang в [0-9]+ наборах' docs/README.ru.md | grep -oE '[0-9]+' | tail -1)" "$pr_naborov"
-  skazat "README: наборов"      "$(grep -oE 'flang programs in [0-9]+ sets' README.md | grep -oE '[0-9]+')" "$pr_naborov"
-  skazat "README.ru: остальных" "$(grep -oE 'ещё [0-9]+ программ' docs/README.ru.md | grep -oE '[0-9]+')" "$pr_ostalnyh"
-  skazat "README: остальных"    "$(grep -oE '[0-9]+ more programs in' README.md | grep -oE '[0-9]+')" "$pr_ostalnyh"
+  skazat "layout.ru: программ"  "$(grep -oE 'docs/examples/ +[0-9]+ программ' docs/repository-layout.ru.md | grep -oE '[0-9]+')" "$pr_vsego"
+  skazat "layout: программ"     "$(grep -oE 'docs/examples/ +[0-9]+ flang programs' docs/repository-layout.md | grep -oE '[0-9]+')" "$pr_vsego"
+  skazat "layout.ru: наборов"   "$(grep -oE 'программ[^ ]* на flang в [0-9]+ наборах' docs/repository-layout.ru.md | grep -oE '[0-9]+' | tail -1)" "$pr_naborov"
+  skazat "layout: наборов"      "$(grep -oE 'flang programs in [0-9]+ sets' docs/repository-layout.md | grep -oE '[0-9]+')" "$pr_naborov"
+  skazat "layout.ru: остальных" "$(grep -oE 'ещё [0-9]+ программ' docs/repository-layout.ru.md | grep -oE '[0-9]+')" "$pr_ostalnyh"
+  skazat "layout: остальных"    "$(grep -oE '[0-9]+ more programs in' docs/repository-layout.md | grep -oE '[0-9]+')" "$pr_ostalnyh"
 
-  # Библиотека: модулей, функций, тотальных, примеров — одной фразой в обоих README.
+  # Библиотека: модулей, функций, тотальных, примеров — одной фразой на обеих страницах раскладки.
   bf=0; bfn=0; btot=0; bpr=0
   for f in flang/stdlib/*.flang; do
     [ -f "$f" ] || continue
     bf=$((bf + 1)); bfn=$((bfn + $(fn "$f"))); btot=$((btot + $(tot "$f"))); bpr=$((bpr + $(pr "$f")))
   done
-  skazat "README.ru: модулей"   "$(grep -oE '\*\*[0-9]+ модул[^,]+, [0-9]+ функц' docs/README.ru.md | grep -oE '[0-9]+' | head -1)" "$bf"
-  skazat "README.ru: функций"   "$(grep -oE '\*\*[0-9]+ модул[^,]+, [0-9]+ функц' docs/README.ru.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
-  skazat "README: модулей"      "$(grep -oE '\*\*[0-9]+ modules, [0-9]+' README.md | grep -oE '[0-9]+' | head -1)" "$bf"
-  skazat "README: функций"      "$(grep -oE '\*\*[0-9]+ modules, [0-9]+' README.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
+  skazat "layout.ru: модулей"   "$(grep -oE '\*\*[0-9]+ модул[^,]+, [0-9]+ функц' docs/repository-layout.ru.md | grep -oE '[0-9]+' | head -1)" "$bf"
+  skazat "layout.ru: функций"   "$(grep -oE '\*\*[0-9]+ модул[^,]+, [0-9]+ функц' docs/repository-layout.ru.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
+  skazat "layout: модулей"      "$(grep -oE '\*\*[0-9]+ modules, [0-9]+' docs/repository-layout.md | grep -oE '[0-9]+' | head -1)" "$bf"
+  skazat "layout: функций"      "$(grep -oE '\*\*[0-9]+ modules, [0-9]+' docs/repository-layout.md | grep -oE '[0-9]+' | tail -1)" "$bfn"
 
   # Теоремы: всего в дереве и в библиотеке. Ключ -a обязателен — без него
   # flang/concurrency/link.flang пропускается молча (это уже ловили).
@@ -678,8 +678,8 @@ proza() {
   # разом, а README всегда говорило только о первой — числа разошлись бы даже
   # на дереве, где всё остальное верно, и находка выглядела бы как чужая беда.
   otp=$(awk '/^# ── тело семени ──$/{exit} NF==2 && $1 ~ /^[0-9a-f]{64}$/' scripts/seed-fingerprint | wc -l | tr -d ' ')
-  skazat "README.ru: строк отпечатка" "$(grep -oE 'хешированной строке на файл — [0-9]+ строк' docs/README.ru.md | grep -oE '[0-9]+')" "$otp"
-  skazat "README: строк отпечатка"    "$(grep -oE 'one hashed line each — [0-9]+ lines' README.md | grep -oE '[0-9]+')" "$otp"
+  skazat "layout.ru: строк отпечатка" "$(grep -oE 'хешированной строке на файл — [0-9]+ строк' docs/repository-layout.ru.md | grep -oE '[0-9]+')" "$otp"
+  skazat "layout: строк отпечатка"    "$(grep -oE 'one hashed line each — [0-9]+ lines' docs/repository-layout.md | grep -oE '[0-9]+')" "$otp"
 
   # Подделок в каталоге — то же число называет сторож ядра.
   pod=$(find flang/test/fixtures -maxdepth 1 -name 'poddelka-*' | wc -l | tr -d ' ')
@@ -741,7 +741,7 @@ komandy() {
   rm -f "$VREMENNO.kmd"
 }
 
-# ── Карта раскладки: README против корня дерева ──────────────────────────────
+# ── Карта раскладки: docs/repository-layout против корня дерева ──────────────────────────────
 #
 # ЗАЧЕМ. Карта каталогов в README сверялась пробой `flang/test/readme-layout.test.mjs`.
 # Проба удалена вместе с реализацией на JavaScript, и с того дня карта держалась
@@ -756,11 +756,11 @@ komandy() {
 # Сортировка идёт под LC_ALL=C: `comm` сличает строки байтами, и в другой
 # раскладке он объявляет «input is not in sorted order» на ровном месте.
 karta() {
-  echo "КАРТА РАСКЛАДКИ (README против корня дерева):"
+  echo "КАРТА РАСКЛАДКИ (docs/repository-layout против корня дерева):"
   find . -mindepth 1 -maxdepth 1 -type d ! -name '.*' -printf '%f\n' | LC_ALL=C sort > "$VREMENNO.derevo"
   n_dereve=$(wc -l < "$VREMENNO.derevo" | tr -d ' ')
 
-  for f in README.md docs/README.ru.md; do
+  for f in docs/repository-layout.md docs/repository-layout.ru.md; do
     skazano=$(grep -aoE '(There are|У корня) [0-9]+ (directories at the root|каталогов)' "$f" \
               | head -1 | grep -oE '[0-9]+')
     skazat "$f: число у корня" "${skazano:-нет}" "$n_dereve"

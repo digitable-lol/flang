@@ -233,21 +233,18 @@ Python 16, awk 1.
 владельцем: либо довод пишется (тогда долг 105), либо строка остаётся в долге
 как есть. Сама опись до этого решения не меняется.
 
-### Тринадцать файлов в `scripts` — по убыванию, разбор 29 августа 2026
+### Десять файлов в `scripts` — по убыванию, разбор 29 августа 2026
 
 | файл | строк | что делает |
 |---|---:|---|
 | `target-collisions.sh` | 248 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-09-17 строк scripts/targets/target-collisions.sh = 248 --> |
 | `bad-octet-guard.sh` | 340 | сторож негодных октетов <!-- СНЯТО 2026-09-14 строк scripts/guards/bad-octet-guard.sh = 340 --> |
-| `seed-knows-type-words-guard.sh` | 311 | слова в позициях типа известны закоммиченному семени (стоит первой работой в `ci.yml`) <!-- СНЯТО 2026-09-14 строк scripts/guards/seed-knows-type-words-guard.sh = 311 --> |
-| `prose-numbers-guard.sh` | 416 | числа, набранные в прозе рукой, сходятся с деревом сегодня <!-- СНЯТО 2026-09-05 строк scripts/guards/prose-numbers-guard.sh = 416 --> |
 | `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |
 | `target-census.sh` | 164 | перепись целей <!-- СНЯТО 2026-09-17 строк scripts/targets/target-census.sh = 164 --> |
 | `seed-freshness.sh` | 3 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-09-17 строк scripts/seed/seed-freshness.sh = 3 (задача 5821: проверка переехала в scripts/seed/seed-freshness.fscript, здесь остался переходник; до неё 115) --> |
 | `test-remote.sh` | 149 | прогон на чужой машине <!-- СНЯТО 2026-09-14 строк scripts/test-remote.sh = 149 --> |
 | `one-string-measure-guard.sh` | 119 | подаёт сырые октеты в `string-measure.flang` <!-- СНЯТО 2026-08-29 строк scripts/guards/one-string-measure-guard.sh = 119 --> |
 | `identical-declarations.sh` | 82 | что можно ввезти вместо переименования <!-- СНЯТО 2026-09-17 строк scripts/targets/identical-declarations.sh = 82 --> |
-| `seed-parses-sources-guard.sh` | 220 | семя разбирает исходники, которые потом печатает <!-- СНЯТО 2026-08-31 строк scripts/guards/seed-parses-sources-guard.sh = 220 --> |
 | `targets-inventory.sh` | 50 | опись целей: имя, код, время, причина <!-- СНЯТО 2026-09-17 строк scripts/targets/targets-inventory.sh = 50 --> |
 | `names-in-c.awk` | 79 | «идентификатор C → русское объявление» из напечатанного заголовка <!-- СНЯТО 2026-08-29 строк scripts/targets/names-in-c.awk = 79 --> |
 

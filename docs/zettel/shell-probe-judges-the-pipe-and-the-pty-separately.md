@@ -40,5 +40,11 @@
 или sha256) — не пройденная проверка. Без `cc` выражение проверяется, но не
 вычисляется, и ответа «5» не будет.
 
+**Поправка 30 сентября 2026.** Проба перенесена с оболочки на план
+`scripts/repl-probe.fscript` (задача 5821). Судится то же самое теми же двумя
+концами, но псевдотерминал даёт уже не python3, а `script`, и «судить нечем»
+теперь код 3, а не 2: у плана кодов три — 0, 1 и 3. Как это устроено —
+[[a-terminal-probe-needs-no-python-script-and-a-timed-feeder-press-the-keys]].
+
 Связано: [[the-shell-read-the-line-with-fgets-and-the-terminal-printed-the-arrow]],
 [[bare-command-opens-the-shell]]

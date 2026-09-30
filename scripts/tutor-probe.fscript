@@ -1,0 +1,627 @@
+модуль «Tutor probe»
+  использует «Rules» из "rules.fscript"
+  использует «Inquiry» из "inquiry.fscript"
+  использует «Reading» из "reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Lesson»
+  «number»: число
+  «file»: строка
+
+объект «Taken»
+  «inside»: признак
+  «lines»: список строки
+
+тотальная функция «Root»
+  возвращает строка
+  ".."
+
+тотальная функция «Usage»
+  возвращает строка
+  "звать: bootstrap/flang io scripts/tutor-probe.fscript --plan Check --timeout 120000 [-- <двоичный полным путём>]"
+
+тотальная функция «Escape»
+  возвращает строка
+  символ по коду 27
+
+тотальная функция «Sequence»
+  принимает tail: строка
+  возвращает строка
+  соединить [(«Escape»), "[", tail] по ""
+
+тотальная функция «Tree»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "tree" и answers)
+
+тотальная функция «In the tree»
+  принимает path: строка, answers: список «Answer»
+  возвращает строка
+  соединить [(«Tree» от answers), "/", path] по ""
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  разбор («Given of» от "arguments" и answers)
+    случай пусто
+      то «In the tree» от "bootstrap/flang" и answers
+    случай голова и хвост
+      то голова
+
+тотальная функция «Tutor»
+  принимает answers: список «Answer»
+  возвращает строка
+  «In the tree» от "flang/bin/flangtutor" и answers
+
+тотальная функция «Temporary»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "temporary" и "/srv/tmp" и answers
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Made of» от "work" и answers
+
+тотальная функция «Inside»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Numbered»
+  принимает names: список строки
+  возвращает список «Lesson»
+  пример «Lessons are numbered from one in their order»
+    дано names равно ["01-function.урок", "02-two-functions.урок"]
+    ожидается [запись «Lesson» с «number» равным 1 и «file» равным "01-function.урок", запись «Lesson» с «number» равным 2 и «file» равным "02-two-functions.урок"]
+  свёртка names начиная с (пустой список) как numbered и name → добавить (запись «Lesson» с «number» равным ((длина numbered) плюс 1) и «file» равным name) к numbered
+
+тотальная функция «Lessons»
+  принимает answers: список «Answer»
+  возвращает список «Lesson»
+  «Numbered» от (отфильтровать («Lines» от («Output of» от "lessons" и answers)) где name → «Ends with» от name и ".урок")
+
+тотальная функция «Total»
+  принимает answers: список «Answer»
+  возвращает число
+  длина («Lessons» от answers)
+
+тотальная функция «Numeral»
+  принимает number: число
+  возвращает строка
+  к строке number
+
+тотальная функция «Lesson question»
+  принимает number: число
+  возвращает строка
+  соединить ["lesson ", («Numeral» от number)] по ""
+
+тотальная функция «Without the last»
+  принимает lines: список строки
+  возвращает список строки
+  пример «The last of three lines is dropped»
+    дано lines равно ["one", "two", ""]
+    ожидается ["one", "two"]
+  пример «Nothing is left of one line»
+    дано lines равно [""]
+    ожидается пустой список
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если пусто хвост то пустой список иначе приписать голова к («Without the last» от хвост)
+
+тотальная функция «Text lines»
+  принимает text: строка
+  возвращает список строки
+  пример «The line end after the last line adds no line»
+    дано text равно "one\n\ntwo\n"
+    ожидается ["one", "", "two"]
+  пример «A text without the last line end keeps its last line»
+    дано text равно "one\ntwo"
+    ожидается ["one", "two"]
+  пример «An empty text has no lines»
+    дано text равно ""
+    ожидается пустой список
+  если «Ends with» от text и "\n"
+    то «Without the last» от (разделить text по "\n")
+    иначе отфильтровать (разделить text по "\n") где line → не (пусто text)
+
+тотальная функция «Is a heading»
+  принимает line: строка
+  возвращает признак
+  пример «A name between two equal signs»
+    дано line равно "=впиши="
+    ожидается да
+  пример «A line of the answer is not a heading»
+    дано line равно "х умножить на 2"
+    ожидается нет
+  пример «An equal sign inside the name spoils the heading»
+    дано line равно "=a=b="
+    ожидается нет
+  ((длина (разделить line по "=")) равен 3) и притом ((line начинается с "=") и притом («Ends with» от line и "="))
+
+тотальная функция «Taking»
+  принимает heading: строка, taken: «Taken», line: строка
+  возвращает «Taken»
+  «Chosen» от [(«When» от (line равен heading) и (запись «Taken» с «inside» равным да и «lines» равным (taken.«lines»))),
+    («When» от («Is a heading» от line) и (запись «Taken» с «inside» равным нет и «lines» равным (taken.«lines»))),
+    («When» от (taken.«inside») и (запись «Taken» с «inside» равным да и «lines» равным (добавить line к (taken.«lines»))))] и taken
+
+тотальная функция «Section»
+  принимает name: строка, text: строка
+  возвращает список строки
+  пример «The lines between the heading and the next heading»
+    дано name равно "впиши"
+    дано text равно "=номер=\n1\n=впиши=\nУрок\n\n.\n=хвост=\nтело\n"
+    ожидается ["Урок", "", "."]
+  пример «A lesson without the section gives nothing»
+    дано name равно "впиши"
+    дано text равно "=номер=\n1\n"
+    ожидается пустой список
+  (свёртка («Text lines» от text) начиная с (запись «Taken» с «inside» равным нет и «lines» равным пустой список) как taken и line → «Taking» от (соединить ["=", name, "="] по "") и taken и line).«lines»
+
+тотальная функция «As text»
+  принимает lines: список строки
+  возвращает строка
+  пример «Every line ends with a line end»
+    дано lines равно ["Урок", "."]
+    ожидается "Урок\n.\n"
+  пример «No lines give an empty text»
+    дано lines равно пустой список
+    ожидается ""
+  соединить (отобразить lines как line → соединить [line, "\n"] по "") по ""
+
+тотальная функция «Answer to»
+  принимает number: число, answers: список «Answer»
+  возвращает строка
+  «As text» от («Section» от "впиши" и («Output of» от («Lesson question» от number) и answers))
+
+тотальная функция «Neighbour»
+  принимает number: число, total: число
+  возвращает число
+  пример «The next lesson»
+    дано number равно 3
+    дано total равно 12
+    ожидается 4
+  пример «The last lesson takes the first»
+    дано number равно 12
+    дано total равно 12
+    ожидается 1
+  если number не меньше total то 1 иначе number плюс 1
+
+тотальная функция «Answer file»
+  принимает number: число, answers: список «Answer»
+  возвращает строка
+  «Inside» от (соединить ["answer-", («Numeral» от number)] по "") и answers
+
+тотальная функция «Ending»
+  принимает lines: список строки, count: число
+  возвращает список строки
+  пример «The last two of three lines»
+    дано lines равно ["one", "two", "three"]
+    дано count равно 2
+    ожидается ["two", "three"]
+  пример «A short text is kept whole»
+    дано lines равно ["one"]
+    дано count равно 2
+    ожидается ["one"]
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если (длина lines) не больше count то lines иначе «Ending» от (хвост) и count
+
+тотальная функция «Tail»
+  принимает name: строка, count: число, answers: список «Answer»
+  возвращает список строки
+  «Ending» от («Text lines» от («Output of» от name и answers)) и count
+
+тотальная функция «Said»
+  принимает name: строка, words: строка, answers: список «Answer»
+  возвращает признак
+  («Output of» от name и answers) содержит words
+
+тотальная функция «Code»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  к строке («Exit code of» от name и answers)
+
+тотальная функция «Passed»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  («Exit code of» от name и answers) равен 0
+
+тотальная функция «Without prefix»
+  принимает prefix: строка, text: строка
+  возвращает строка
+  пример «The prefix is cut off»
+    дано prefix равно "    \"|"
+    дано text равно "    \"|модуль:module|"
+    ожидается "модуль:module|"
+  пример «A text with another beginning is kept»
+    дано prefix равно "    \"|"
+    дано text равно "  ["
+    ожидается "  ["
+  если text начинается с prefix
+    то подстрока text с ((длина prefix) плюс 1) по (длина text)
+    иначе text
+
+тотальная функция «Without suffix»
+  принимает suffix: строка, text: строка
+  возвращает строка
+  пример «The suffix is cut off»
+    дано suffix равно "|\","
+    дано text равно "модуль:module|\","
+    ожидается "модуль:module"
+  пример «A text with another ending is kept»
+    дано suffix равно "|\","
+    дано text равно "модуль:module|\""
+    ожидается "модуль:module|\""
+  если «Ends with» от text и suffix
+    то подстрока text с 1 по ((длина text) минус (длина suffix))
+    иначе text
+
+тотальная функция «Phrase»
+  принимает pair: строка
+  возвращает строка
+  пример «The phrase stands before the colon»
+    дано pair равно "символ по коду:charFromCode"
+    ожидается "символ по коду"
+  разбор (разделить pair по ":")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Lexer phrases»
+  принимает table: строка
+  возвращает список строки
+  пример «Every pair of the table gives its phrase»
+    дано table равно "тотальная функция «Куски таблицы»\n  [\n    \"|модуль:module|module:module|\",\n    \"|план:plan|\"\n  ]\n"
+    ожидается ["модуль", "module", "план"]
+  отфильтровать (отобразить (разделить (соединить (отобразить (отфильтровать («Lines» от table) где line → line начинается с "    \"") как line → «Without suffix» от "|\"" и («Without suffix» от "|\"," и («Without prefix» от "    \"|" и line))) по "|") по "|") как pair → «Phrase» от pair) где phrase → не (пусто phrase)
+
+тотальная функция «Tutor phrases»
+  принимает table: строка
+  возвращает список строки
+  пример «The lines between the quotes are one list cut by bars»
+    дано table равно "LANGUAGE_WORDS='\n|модуль|module|\nплан|\n'\n"
+    ожидается ["модуль", "module", "план"]
+  отфильтровать (разделить (соединить (отфильтровать («Lines» от table) где line → не (line содержит "'")) по "") по "|") где phrase → не (пусто phrase)
+
+тотальная функция «Missing from»
+  принимает mark: строка, wanted: список строки, present: список строки
+  возвращает список строки
+  пример «Words of the first list that the second lacks»
+    дано mark равно "< "
+    дано wanted равно ["модуль", "следует", "follows"]
+    дано present равно ["модуль"]
+    ожидается ["< следует", "< follows"]
+  отобразить (отфильтровать wanted где phrase → не (present содержит phrase)) как phrase → соединить [mark, phrase] по ""
+
+тотальная функция «Word differences»
+  принимает lexer: список строки, tutor: список строки
+  возвращает список строки
+  пример «Equal sets in another order are named as such»
+    дано lexer равно ["модуль", "план"]
+    дано tutor равно ["план", "модуль"]
+    ожидается ["  слова те же, порядок другой"]
+  пусть differing равно («Соединить списки» от («Missing from» от "< " и lexer и tutor) и («Missing from» от "> " и tutor и lexer))
+  если пусто differing то ["  слова те же, порядок другой"] иначе «Beginning of» от differing и 10
+
+тотальная функция «Beginning of»
+  принимает lines: список строки, count: число
+  возвращает список строки
+  пример «The first two of three lines»
+    дано lines равно ["one", "two", "three"]
+    дано count равно 2
+    ожидается ["one", "two"]
+  свёртка lines начиная с (пустой список) как kept и line → если (длина kept) меньше count то (добавить line к kept) иначе kept
+
+тотальная функция «Tutor run»
+  принимает name: строка, input: строка, place: строка, arguments: список строки, answers: список «Answer»
+  возвращает «Question»
+  «Run» от name и "sh" и (приписать "-c" к (приписать "input=$0; temporary=$1; state=$2; binary=$3; tutor=$4; shift 4; NO_COLOR= FLANG_TMP=\"$temporary\" FLANG_TUTOR_STATE=\"$state\" FLANG=\"$binary\" sh \"$tutor\" \"$@\" < \"$input\" 2>&1" к (приписать input к (приписать («Temporary» от answers) к (приписать place к (приписать («Binary» от answers) к (приписать («Tutor» от answers) к arguments)))))))
+
+тотальная функция «Terminal run»
+  принимает name: строка, settings: строка, answers: список «Answer»
+  возвращает «Question»
+  «Run» от name и "sh" и ["-c", (соединить ["{ sleep 1.5; cat \"$1\"; sleep 0.5; } | env -u NO_COLOR LC_ALL=C.UTF-8 TERM=xterm-256color FLANG=\"$0\" FLANG_TUTOR_STATE=нет FLANG_TMP=\"$3\" ", settings, " timeout -k 2 60 script -qec \"sh \\\"$2\\\" --только 1\" /dev/null"] по ""), («Binary» от answers), («Answer file» от 1 и answers), («Tutor» от answers), («Temporary» от answers)]
+
+тотальная функция «Own question»
+  принимает number: число
+  возвращает строка
+  соединить ["own ", («Numeral» от number)] по ""
+
+тотальная функция «Foreign question»
+  принимает number: число
+  возвращает строка
+  соединить ["foreign ", («Numeral» от number)] по ""
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"), («Run from» от "tree" и («Root») и "pwd" и ["-P"])]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "binary present" и "test" и ["-x", («Binary» от answers)]),
+   («Run» от "terminal present" и "sh" и ["-c", "command -v script && command -v timeout"]),
+   («Run» от "lessons" и "env" и ["LC_ALL=C", "ls", («In the tree» от "docs/tutor" и answers)])]
+
+тотальная функция «Studying»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  отобразить («Lessons» от answers) как lesson → «Read» от («Lesson question» от (lesson.«number»)) и («In the tree» от (соединить ["docs/tutor/", (lesson.«file»)] по "") и answers)
+
+тотальная функция «Working place»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Temporary directory» от "work" и (соединить [(«Temporary» от answers), "/tutor-probe."] по ""))]
+
+тотальная функция «All answers»
+  принимает lessons: список «Lesson», answers: список «Answer»
+  возвращает строка
+  соединить (отобразить lessons как lesson → «Answer to» от (lesson.«number») и answers) по ""
+
+тотальная функция «Writing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть lessons равно («Lessons» от answers)
+  «Gathered» от [(отобразить lessons как lesson → «Write» от (соединить ["answer ", («Numeral» от (lesson.«number»))] по "") и («Answer file» от (lesson.«number») и answers) и («Answer to» от (lesson.«number») и answers)),
+    [(«Write» от "all answers" и («Inside» от "whole" и answers) и («All answers» от lessons и answers)),
+     («Write» от "remaining answers" и («Inside» от "remaining" и answers) и («All answers» от (отфильтровать lessons где lesson → (lesson.«number») больше 1) и answers)),
+     («Write» от "session input" и («Inside» от "session" и answers) и "Урок\nх умножить на 2\n\"Удвоить\" от 21\nи непонятно как это работает\n\n")]]
+
+тотальная функция «Lesson runs»
+  принимает lesson: «Lesson», answers: список «Answer»
+  возвращает список «Question»
+  [(«Tutor run» от («Own question» от (lesson.«number»)) и («Answer file» от (lesson.«number») и answers) и "нет" и ["--только", («Numeral» от (lesson.«number»))] и answers),
+   («Tutor run» от («Foreign question» от (lesson.«number»)) и («Answer file» от («Neighbour» от (lesson.«number») и («Total» от answers)) и answers) и "нет" и ["--только", («Numeral» от (lesson.«number»))] и answers)]
+
+тотальная функция «Running»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от [[(«Tutor run» от "whole" и («Inside» от "whole" и answers) и "нет" и ["--сначала"] и answers)],
+    («Gathered» от (отобразить («Lessons» от answers) как lesson → «Lesson runs» от lesson и answers)),
+    [(«Tutor run» от "session" и («Inside» от "session" и answers) и "нет" и ["--только", "1"] и answers),
+     («Run» от "lexer table" и "sed" и ["-n", "/^тотальная функция «Куски таблицы»/,/^  \\]/p", («In the tree» от "flang/self/lexer.flang" и answers)]),
+     («Run» от "tutor table" и "sed" и ["-n", "/^LANGUAGE_WORDS='/,/^'/p", («Tutor» от answers)]),
+     («Tutor run» от "place first" и («Answer file» от 1 и answers) и («Inside» от "place" и answers) и ["--сначала"] и answers),
+     («Read» от "place" и («Inside» от "place" и answers)),
+     («Tutor run» от "list en" и "/dev/null" и "нет" и ["--список", "--язык", "en"] и answers),
+     («Tutor run» от "list ru" и "/dev/null" и "нет" и ["--список", "--язык", "ru"] и answers)]]
+
+тотальная функция «Place is kept»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Without blanks» от («Output of» от "place" и answers)) равен "1"
+
+тотальная функция «Has a line beginning with»
+  принимает prefix: строка, name: строка, answers: список «Answer»
+  возвращает признак
+  не (пусто («Beginning with» от prefix и («Lines» от («Output of» от name и answers))))
+
+тотальная функция «Both languages listed»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Has a line beginning with» от "lesson 1 · " и "list en" и answers) и притом («Has a line beginning with» от "урок 1 · " и "list ru" и answers)
+
+тотальная функция «Whole is plain»
+  принимает answers: список «Answer»
+  возвращает признак
+  не («Said» от "whole" и («Escape») и answers)
+
+тотальная функция «Following»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от («Applying» от [(«When» от («Place is kept» от answers) и [(«Tutor run» от "place rest" и («Inside» от "remaining" и answers) и («Inside» от "place" и answers) и (пустой список) и answers)]),
+    («When» от («Both languages listed» от answers) и [(«Tutor run» от "unknown language" и («Answer file» от 1 и answers) и "нет" и ["--только", "1", "--язык", "eo"] и answers)]),
+    («When» от ((«Whole is plain» от answers) и притом («Passed» от "terminal present" и answers)) и [(«Terminal run» от "colour on" и "" и answers), («Terminal run» от "colour off" и "NO_COLOR=" и answers)])])
+
+тотальная функция «Cleanup»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Run» от "cleanup" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Failed»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  («Answered» от name и answers) и притом (не («Passed» от name и answers))
+
+тотальная функция «Obstacles»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  «Applying» от [(«When» от ((длина («Given of» от "arguments" и answers)) больше 1) и [(«Usage»)]),
+    («When» от ((«Answered» от "tree" и answers) и притом (пусто («Tree» от answers))) и ["корень дерева узнать не удалось — судить нечем (код 3)"]),
+    («When» от («Failed» от "binary present" и answers) и [(соединить ["нет двоичного: ", («Binary» от answers), " — судить нечем (код 3)"] по "")]),
+    («When» от ((«Answered» от "lessons" и answers) и притом ((«Total» от answers) меньше 1)) и ["уроков нет — судить нечем (код 3)"]),
+    («When» от ((«Answered» от "work" и answers) и притом (пусто («Work» от answers))) и [(соединить ["не создался каталог в ", («Temporary» от answers), " (код 3)"] по "")])]
+
+тотальная функция «Is clear»
+  принимает answers: список «Answer»
+  возвращает признак
+  (длина («Obstacles» от answers)) равен 0
+
+тотальная функция «Work stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  если (stages меньше 1) или (stages больше 6)
+    то пустой список
+    иначе элемент (7 минус stages) в [(«Presence» от answers), («Studying» от answers), («Working place» от answers), («Writing» от answers), («Running» от answers), («Following» от answers)]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (stages равен 7) и («Setup»)),
+    («When» от (stages равен 0) и («Cleanup» от answers)),
+    («When» от («Is clear» от answers) и («Work stage» от stages и answers))] и (пустой список)
+
+тотальная функция «Whole complaints»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть total равно («Numeral» от («Total» от answers))
+  «Chosen» от [(«When» от (не («Passed» от "whole" и answers)) и (приписать (соединить ["целиком: код ", («Code» от "whole" и answers), ", ждали 0 — проводник не дошёл до конца"] по "") к («Tail» от "whole" и 12 и answers))),
+    («When» от (не («Said» от "whole" и (соединить ["все ", total, " уроков пройдены"] по "") и answers)) и [(соединить ["целиком: код 0, а слов «все ", total, " уроков пройдены» в выводе нет"] по "")])] и (пустой список)
+
+тотальная функция «Own complaints»
+  принимает lesson: «Lesson», answers: список «Answer»
+  возвращает список строки
+  пусть number равно («Numeral» от (lesson.«number»))
+  пусть name равно («Own question» от (lesson.«number»))
+  «Chosen» от [(«When» от (не («Passed» от name и answers)) и (приписать (соединить ["урок ", number, ": свой верный ответ дал код ", («Code» от name и answers), ", ждали 0"] по "") к («Tail» от name и 8 и answers))),
+    («When» от (не («Said» от name и (соединить ["урок ", number, " пройден"] по "") и answers)) и [(соединить ["урок ", number, ": код 0, а «урок ", number, " пройден» не напечатано"] по "")])] и (пустой список)
+
+тотальная функция «Foreign complaints»
+  принимает lesson: «Lesson», answers: список «Answer»
+  возвращает список строки
+  пусть number равно («Numeral» от (lesson.«number»))
+  пусть name равно («Foreign question» от (lesson.«number»))
+  если («Passed» от name и answers) или («Said» от name и (соединить ["урок ", number, " пройден"] по "") и answers)
+    то [(соединить ["урок ", number, ": ПРИНЯЛ ответ урока ", («Numeral» от («Neighbour» от (lesson.«number») и («Total» от answers))), " — судит не компилятор, а вежливость"] по "")]
+    иначе пустой список
+
+тотальная функция «Lesson complaints»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от (отобразить («Lessons» от answers) как lesson → «Соединить списки» от («Own complaints» от lesson и answers) и («Foreign complaints» от lesson и answers))
+
+тотальная функция «Session complaints»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Chosen» от [(«When» от ((не («Passed» от "session" и answers)) или (не («Said» от "session" и "урок 1 пройден" и answers))) и (приписать (соединить ["сеанс: ввод владельца дал код ", («Code» от "session" и answers), ", а урок 1 не пройден"] по "") к («Tail» от "session" и 8 и answers))),
+    («When» от (не («Said» от "session" и "принял как «Урок»" и answers)) и ["сеанс: имя модуля без кавычек, а проводник не сказал, что взял его в кавычки"]),
+    («When» от (не («Said» от "session" и "вызов самой «Удвоить» внутри её тела" и answers)) и ["сеанс: вызов «Удвоить» от 21 в теле «Удвоить», а объяснения, где ему место, нет"]),
+    («When» от (не («Said» от "session" и "ни одного слова языка" и answers)) и ["сеанс: вопрос словами, а проводник не сказал, что это не строка языка"]),
+    («When» от (не («Said» от "session" и "понял: слова языка: умножить на; числа: 2" и answers)) и ["сеанс: на верную строку тела нет реакции «понял: …»"])] и (пустой список)
+
+тотальная функция «Words of the lexer»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Lexer phrases» от («Output of» от "lexer table" и answers)
+
+тотальная функция «Words of the tutor»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Tutor phrases» от («Output of» от "tutor table" и answers)
+
+тотальная функция «Word complaints»
+  принимает answers: список «Answer»
+  возвращает список строки
+  если («Words of the lexer» от answers) равен («Words of the tutor» от answers)
+    то пустой список
+    иначе приписать "слова: список слов в flangtutor разошёлся с таблицей лексера («Куски таблицы» в flang/self/lexer.flang):" к («Word differences» от («Words of the lexer» от answers) и («Words of the tutor» от answers))
+
+тотальная функция «Place complaints»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть total равно («Numeral» от («Total» от answers))
+  «Chosen» от [(«When» от (не («Place is kept» от answers)) и [(соединить ["место: после первого урока в ", («Inside» от "place" и answers), " не записана единица"] по "")]),
+    («When» от ((не («Passed» от "place rest" и answers)) или (не («Said» от "place rest" и (соединить ["урок 2 из ", total] по "") и answers))) и (приписать (соединить ["место: продолжение пошло не со второго урока (код ", («Code» от "place rest" и answers), ")"] по "") к («Tail» от "place rest" и 8 и answers))),
+    («When» от («Said» от "place rest" и (соединить ["урок 1 из ", total] по "") и answers) и ["место: продолжение начало с первого урока заново"])] и (пустой список)
+
+тотальная функция «Language complaints»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Chosen» от [(«When» от (не («Has a line beginning with» от "lesson 1 · " и "list en" и answers)) и ["язык: «--язык en» не дал английских имён уроков"]),
+    («When» от (не («Has a line beginning with» от "урок 1 · " и "list ru" и answers)) и ["язык: «--язык ru» не дал русских имён уроков"]),
+    («When» от (не («Said» от "unknown language" и "no lessons in" и answers)) и ["язык: на код «eo» уроков нет, а проводник об этом не сказал"])] и (пустой список)
+
+тотальная функция «Terminal complaints»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Applying» от [(«When» от (не («Said» от "colour on" и («Sequence» от "1m") и answers)) и "цвет: под терминалом без NO_COLOR нет ни одной последовательности SGR"),
+    («When» от (не («Said» от "colour on" и («Sequence» от "1;34m") и answers)) и "цвет: под терминалом слова языка не подсвечены (нет SGR 1;34)"),
+    («When» от (не («Said» от "colour on" и («Sequence» от "36m") и answers)) и "цвет: под терминалом имена в ёлочках не подсвечены (нет SGR 36)"),
+    («When» от («Said» от "colour off" и («Sequence» от "") и answers) и "цвет: под терминалом с NO_COLOR последовательности остались")]
+
+тотальная функция «Colour complaints»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Chosen» от [(«When» от (не («Whole is plain» от answers)) и ["цвет: NO_COLOR стоял, а в выводе есть ESC"]),
+    («When» от («Passed» от "terminal present" и answers) и («Terminal complaints» от answers))] и (пустой список)
+
+тотальная функция «Colour praise»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Chosen» от [(«When» от (не (пусто («Colour complaints» от answers))) и (пустой список)),
+    («When» от («Passed» от "terminal present" и answers) и ["  зелен  цвет: под терминалом красит слова, имена, числа и строки; NO_COLOR снимает цвет"])] и ["  ЦВЕТ НЕ СУДИЛСЯ: нет script или timeout — под трубой цвета нет и так"]
+
+тотальная функция «Praise»
+  принимает earned: признак, line: строка
+  возвращает список строки
+  если earned то [line] иначе пустой список
+
+тотальная функция «Report»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  пусть total равно («Numeral» от («Total» от answers))
+  пусть whole равно («Whole complaints» от answers)
+  пусть single равно («Lesson complaints» от answers)
+  пусть session равно («Session complaints» от answers)
+  пусть words равно («Word complaints» от answers)
+  пусть place равно («Place complaints» от answers)
+  пусть language равно («Language complaints» от answers)
+  [whole,
+   («Praise» от (пусто whole) и (соединить ["  зелен  целиком: ", total, " уроков подряд верными ответами, код 0"] по "")),
+   single,
+   («Praise» от ((пусто whole) и притом (пусто single)) и (соединить ["  зелен  поодиночке: каждый из ", total, " уроков проходится своим ответом и отвергает чужой"] по "")),
+   session,
+   («Praise» от (пусто session) и "  зелен  сеанс: ввод владельца — на каждую строку своя реакция, урок пройден"),
+   words,
+   («Praise» от (пусто words) и (соединить ["  зелен  слова: ", («Numeral» от (длина («Words of the tutor» от answers))), " фраз лексера — те же в проводнике"] по "")),
+   place,
+   («Praise» от (пусто place) и "  зелен  место: оборванная работа продолжается со следующего урока"),
+   language,
+   («Praise» от (пусто language) и "  зелен  язык: ru и en ведут на своём, а код без уроков назван вслух"),
+   («Colour complaints» от answers),
+   («Colour praise» от answers)]
+
+тотальная функция «Is red»
+  принимает answers: список «Answer»
+  возвращает признак
+  (длина («Gathered words» от [(«Whole complaints» от answers), («Lesson complaints» от answers), («Session complaints» от answers), («Word complaints» от answers), («Place complaints» от answers), («Language complaints» от answers), («Colour complaints» от answers)])) больше 0
+
+тотальная функция «Check verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  если «Is red» от answers
+    то вариант «Провал» с код равным "FLANG_TUTOR_PROBE" и сообщение равным (соединить (добавить "ПРОБА ПРОВОДНИКА КРАСНА" к («Gathered words» от («Report» от answers))) по "\n")
+    иначе вариант «Конец работы» с значение равным (соединить (добавить "проба проводника зелена" к («Gathered words» от («Report» от answers))) по "\n")
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  разбор («Obstacles» от answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_TUTOR_PROBE_CANNOT_LOOK" и сообщение равным (соединить голова по "\n")
+    случай пусто
+      то «Check verdict» от answers
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 8
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

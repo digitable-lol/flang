@@ -330,6 +330,7 @@
 - [Путь установки не проходил целиком никто, и потому `flang emit --target c` не работал НИ У ОДНОГО поставившего язык](the-installed-path-was-never-walked-end-to-end.md)
 - [Номер выпуска не отвечает на вопрос «что у меня в руках»: два двоичных 0.7.14 вели себя по-разному, и отличить их можно было только по поведению](the-release-number-cannot-say-what-is-inside-the-binary.md)
 - [Оболочка читала строку каноническим fgets, и стрелку печатал терминал, а не она; клавиш flang-tui не разбирает, а файл оболочки уезжает в семя дословно — правка доезжает быстрым пересевом, не перепечаткой](the-shell-read-the-line-with-fgets-and-the-terminal-printed-the-arrow.md)
+- [Пробе под терминалом не нужен Python: `script` и подача со сроками нажимают те же клавиши](a-terminal-probe-needs-no-python-script-and-a-timed-feeder-press-the-keys.md)
 - [Два плана postgres держит не предел шагов, а стек хозяина: 1 ГиБ и 2 074 970 кадров, и ключами это не двигается](two-postgres-plans-are-held-by-the-host-stack-not-the-step-limit.md)
 - [Ключ предела задаёт предел, а не поднимает его: число «с запасом» меньше вшитого опускает предел и роняет прогон](a-limit-flag-sets-the-limit-and-a-smaller-number-lowers-it.md)
 

@@ -39,9 +39,9 @@ termios, escape-последовательностей, редактора ст�
 с трёх согласных источников: `courses.digitable.life/css/digitable.tokens.css`,
 dotfiles владельца (`.alacritty.toml`, `.vim/colors/digitable.vim` — там же
 индексы xterm-256) и переменные `EZA_COLORS`/`FZF_DEFAULT_OPTS` рабочей машины.
-Проба `scripts/repl-probe.sh` держит оба конца: под трубой с
+Проба `scripts/repl-probe.fscript` держит оба конца: под трубой с
 `COLORTERM=truecolor` вывод побайтно прежний и без единого ESC; под pty
-(python3 `pty`, без expect) Home/End/Backspace/↑/⌥b/Ctrl-←/Ctrl-U делают то,
+(`script -qec`, без expect и без python3) Home/End/Backspace/↑/⌥b/Ctrl-←/Ctrl-U делают то,
 что обещаны, а `NO_COLOR=` снимает цвет.
 
 **Чего нет и почему.** Ключа `--без-цвета` у `flang repl` нет: перечень ключей
@@ -49,6 +49,11 @@ dotfiles владельца (`.alacritty.toml`, `.vim/colors/digitable.vim` — 
 [--max-depth N]`), а это замыкание семени — новый ключ потянул бы перепечатку.
 `NO_COLOR` покрывает ту же нужду. ⌘-стрелки до tty не доходят вовсе — их
 перехватывает приложение терминала; сказано в `.помощь`.
+
+**Поправка 30 сентября 2026.** Здесь стояло «проба `scripts/repl-probe.sh`»
+и «python3 `pty`». Проба перенесена на план `scripts/repl-probe.fscript`
+(задача 5821), псевдотерминал даёт `script`, клавиши подаёт подача со сроками —
+см. [[a-terminal-probe-needs-no-python-script-and-a-timed-feeder-press-the-keys]].
 
 Соседи: [[bootstrap-seed-lags-the-sources-by-one-language-form]],
 [[a-connection-pipe-carries-text-not-octets]].

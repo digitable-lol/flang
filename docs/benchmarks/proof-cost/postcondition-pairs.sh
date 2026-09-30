@@ -32,12 +32,11 @@ A=$1; B=$2; N=$3; shift 3
 
 KOREN=$(cd "$(dirname "$0")/../../.." && pwd)
 FLANG=$KOREN/bootstrap/flang
-SCHET=$KOREN/scripts/memory-limit.sh
+SCHET="$FLANG io $KOREN/scripts/memory-headroom.fscript --plan Count"
 [ -x "$FLANG" ] || { echo "нет двоичного $FLANG — собери: make -C bootstrap -j4" >&2; exit 2; }
 
 kontekst() {
-  if [ -x "$SCHET" ]; then "$SCHET" --schet 2>/dev/null | sed -n '1,2p'
-  else free -g | sed -n '2p'; fi
+  $SCHET 2>/dev/null | jq -r '.result // empty' 2>/dev/null | sed -n '1,2p' | grep . || free -g | sed -n '2p'
 }
 
 echo "команда: flang $* <файл>"

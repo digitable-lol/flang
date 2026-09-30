@@ -184,9 +184,10 @@ jobs:
       # Он ничего не ограничивает и никого не снимает — только смотрит и
       # называет. Доводы, чего он НЕ ловит, — в шапке самого сторожа.
       - name: Watch memory
-        run: sh scripts/memory-headroom.sh --следить
+        run: nohup free -k -s 5 > "$FLANG_TMP/memory-headroom.log" 2>&1 &
         env:
           FLANG_TMP: ${{ runner.temp }}
+          LC_ALL: C
 
       # ── ИЗ ЧЕГО СОБИРАЕМ — СПРАШИВАЕТСЯ ДО СБОРКИ ────────────────────────
       #
@@ -681,10 +682,11 @@ jobs:
       # Последним шагом и ВСЕГДА: без него наблюдатель выше — это запись,
       # которую никто не читает.
       - name: Report memory
-        if: always()
-        run: sh scripts/memory-headroom.sh --отчёт --итог "${{ job.status }}"
+        if: always() && hashFiles('bootstrap/flang') != ''
+        run: bootstrap/flang io scripts/memory-headroom.fscript --plan Report -- --status "${{ job.status }}"
         env:
           FLANG_TMP: ${{ runner.temp }}
+          FLANG_WATCH_STEP: 5
 
   # ── ПРИМЕРЫ САМОГО КОМПИЛЯТОРА: их не гонял НИКТО ─────────────────────────
   #
@@ -780,9 +782,10 @@ jobs:
       # до 6,7 ГиБ, и обрыв по памяти обязан быть назван памятью, а не «exit
       # code 143».
       - name: Watch memory
-        run: sh scripts/memory-headroom.sh --следить
+        run: nohup free -k -s 5 > "$FLANG_TMP/memory-headroom.log" 2>&1 &
         env:
           FLANG_TMP: ${{ runner.temp }}
+          LC_ALL: C
       - name: Restore binary cache
         id: kesh-dvoichnogo
         uses: actions/cache@v4
@@ -817,10 +820,11 @@ jobs:
       - name: Run self examples
         run: sh flang/test/обход-self.sh
       - name: Report memory
-        if: always()
-        run: sh scripts/memory-headroom.sh --отчёт --итог "${{ job.status }}"
+        if: always() && hashFiles('bootstrap/flang') != ''
+        run: bootstrap/flang io scripts/memory-headroom.fscript --plan Report -- --status "${{ job.status }}"
         env:
           FLANG_TMP: ${{ runner.temp }}
+          FLANG_WATCH_STEP: 5
 
   # ── Столкновения имён: отвечает раньше сборки ─────────────────────────────
   #
@@ -1112,9 +1116,10 @@ jobs:
       # работу снимали сигналом каждый прогон, и в журнале это выглядело
       # обрывом, а не отказом. Устройство и оговорки — в шапке сторожа.
       - name: Watch memory
-        run: sh scripts/memory-headroom.sh --следить
+        run: nohup free -k -s 5 > "$FLANG_TMP/memory-headroom.log" 2>&1 &
         env:
           FLANG_TMP: ${{ runner.temp }}
+          LC_ALL: C
 
       # ── ДВА РАЗРЯДА, А НЕ ОДИН СПИСОК ─────────────────────────────────────
       #
@@ -1287,10 +1292,11 @@ jobs:
 
       # Последним шагом и ВСЕГДА — по тому же доводу, что и в `sborka`.
       - name: Report memory
-        if: always()
-        run: sh scripts/memory-headroom.sh --отчёт --итог "${{ job.status }}"
+        if: always() && hashFiles('bootstrap/flang') != ''
+        run: bootstrap/flang io scripts/memory-headroom.fscript --plan Report -- --status "${{ job.status }}"
         env:
           FLANG_TMP: ${{ runner.temp }}
+          FLANG_WATCH_STEP: 5
 
   # ── ДОРОГО И НЕ НА ЭТОМ РАННЕРЕ: сама прогулка по дереву ──────────────────
   #
@@ -1336,9 +1342,10 @@ jobs:
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       - name: Watch memory
-        run: sh scripts/memory-headroom.sh --следить
+        run: nohup free -k -s 5 > "$FLANG_TMP/memory-headroom.log" 2>&1 &
         env:
           FLANG_TMP: ${{ runner.temp }}
+          LC_ALL: C
       # ── ДВОИЧНЫЙ БЕРЁТСЯ ГОТОВЫМ, ЕСЛИ ВХОДЫ СБОРКИ ТЕ ЖЕ ──────────────────
       #
       # 27 работ дерева собирали одно и то же заново. Ключ кеша — хеш ВСЕХ
@@ -1376,10 +1383,11 @@ jobs:
           fi
       - run: ./bootstrap/flang io scripts/guards/name-splicing-guard.fscript --на-веру --max-orders 2000
       - name: Report memory
-        if: always()
-        run: sh scripts/memory-headroom.sh --отчёт --итог "${{ job.status }}"
+        if: always() && hashFiles('bootstrap/flang') != ''
+        run: bootstrap/flang io scripts/memory-headroom.fscript --plan Report -- --status "${{ job.status }}"
         env:
           FLANG_TMP: ${{ runner.temp }}
+          FLANG_WATCH_STEP: 5
 
   # ── Сторожа заводятся: считает ЧИСЛОМ, и сегодня число красное ────────────
   #

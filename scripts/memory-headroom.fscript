@@ -1,0 +1,559 @@
+модуль «Memory headroom»
+  использует «Rules» из "rules.fscript"
+  использует «Inquiry» из "inquiry.fscript"
+  использует «Reading» из "reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Low»
+  «total»: число
+  «lowest»: число
+  «position»: число
+  «samples»: число
+
+тотальная функция «Whole»
+  принимает value: число
+  возвращает число
+  пример «The fraction is dropped»
+    дано value равно 7.75
+    ожидается 7
+  value минус (value остаток от 1)
+
+тотальная функция «Rounded»
+  принимает value: число
+  возвращает число
+  пример «A half goes up»
+    дано value равно 2.5
+    ожидается 3
+  пример «Less than a half goes down»
+    дано value равно 2.25
+    ожидается 2
+  «Whole» от (value плюс 0.5)
+
+тотальная функция «Two digits»
+  принимает value: число
+  возвращает строка
+  пример «One digit gets a leading zero»
+    дано value равно 7
+    ожидается "07"
+  пример «Two digits stay as they are»
+    дано value равно 42
+    ожидается "42"
+  если value меньше 10
+    то соединить ["0", (к строке value)] по ""
+    иначе к строке value
+
+тотальная функция «Hundredths»
+  принимает count: число
+  возвращает строка
+  пример «Hundredths are shown with two decimals»
+    дано count равно 1561
+    ожидается "15.61"
+  пример «A whole number keeps its zeros»
+    дано count равно 200
+    ожидается "2.00"
+  соединить [(к строке («Whole» от (count делить на 100))), ".", («Two digits» от (count остаток от 100))] по ""
+
+тотальная функция «Tenths»
+  принимает count: число
+  возвращает строка
+  пример «Tenths are shown with one decimal»
+    дано count равно 287
+    ожидается "28.7"
+  соединить [(к строке («Whole» от (count делить на 10))), ".", (к строке (count остаток от 10))] по ""
+
+тотальная функция «Gibibytes»
+  принимает kilobytes: число
+  возвращает строка
+  пример «Sixteen million kilobytes»
+    дано kilobytes равно 16368456
+    ожидается "15.61"
+  пример «Nothing at all»
+    дано kilobytes равно 0
+    ожидается "0.00"
+  «Hundredths» от («Rounded» от ((kilobytes умножить на 100) делить на 1048576))
+
+тотальная функция «Gibibytes of bytes»
+  принимает bytes: число
+  возвращает строка
+  пример «Forty gibibytes»
+    дано bytes равно 42949672960
+    ожидается "40.0"
+  «Tenths» от («Rounded» от ((bytes умножить на 10) делить на 1073741824))
+
+тотальная функция «Kilobytes»
+  принимает key: строка, text: строка
+  возвращает число
+  пример «The number stands after the key»
+    дано key равно "MemAvailable:"
+    дано text равно "MemTotal:       16368456 kB\nMemAvailable:   15000000 kB\n"
+    ожидается 15000000
+  пример «A missing key counts as nothing»
+    дано key равно "MemAvailable:"
+    дано text равно "MemTotal:       16368456 kB\n"
+    ожидается 0
+  «Count» от («Word» от 2 и («Beginning with» от key и («Lines» от text)))
+
+тотальная функция «Own process»
+  принимает text: строка
+  возвращает строка
+  пример «The process number opens its own status line»
+    дано text равно "4242 (flang) R 1 4242"
+    ожидается "4242"
+  «Word» от 1 и («First line» от text)
+
+тотальная функция «Log name»
+  возвращает строка
+  "memory-headroom.log"
+
+тотальная функция «Log path»
+  принимает directory: строка
+  возвращает строка
+  пример «The log lies in the temporary directory»
+    дано directory равно "/srv/tmp"
+    ожидается "/srv/tmp/memory-headroom.log"
+  соединить [directory, "/", («Log name»)] по ""
+
+тотальная функция «Last word»
+  принимает line: строка
+  возвращает строка
+  пример «The last of the words of a line»
+    дано line равно "Mem:       16368456    1    2    3    4    9000000"
+    ожидается "9000000"
+  пример «An empty line has no words»
+    дано line равно ""
+    ожидается ""
+  свёртка (разделить line по " ") начиная с "" как last и word → word
+
+тотальная функция «Available in»
+  принимает block: строка
+  возвращает число
+  пример «A whole sample gives its available memory»
+    дано block равно "               total        used        free      shared  buff/cache   available\nMem:       16368456    1    2    3    4    9000000\nSwap:      0           0   0"
+    ожидается 9000000
+  пример «A sample cut short by the end of the job is not a sample»
+    дано block равно "               total        used        free      shared  buff/cache   available\nMem:       16368456    1    2    3    4    90"
+    ожидается -1
+  пример «An empty block is not a sample»
+    дано block равно ""
+    ожидается -1
+  пусть lines равно (разделить block по "\n")
+  если (длина lines) меньше 3
+    то -1
+    иначе если ((элемент 2 в lines) начинается с "Mem:") и притом ((элемент 3 в lines) начинается с "Swap:") и притом ("0123456789" содержит (подстрока («Last word» от (элемент 2 в lines)) с 1 по 1)) и притом (не (пусто («Last word» от (элемент 2 в lines))))
+      то к числу («Last word» от (элемент 2 в lines))
+      иначе -1
+
+тотальная функция «Total in»
+  принимает text: строка
+  возвращает число
+  пример «The total stands second in the first memory line»
+    дано text равно "               total        used\nMem:       16368456    1    2    3    4    9000000\nSwap:      0           0   0\n\n"
+    ожидается 16368456
+  пример «A log without a memory line has no total»
+    дано text равно ""
+    ожидается 0
+  «Count» от («Word» от 1 и («Value after» от "Mem:" и text))
+
+тотальная функция «Nothing seen»
+  возвращает «Low»
+  запись «Low» с «total» равным 0 и «lowest» равным 0 и «position» равным 0 и «samples» равным 0
+
+тотальная функция «Seen»
+  принимает low: «Low», available: число
+  возвращает «Low»
+  пример «The first sample is the lowest so far»
+    дано low равно запись «Low» с «total» равным 16368456 и «lowest» равным 0 и «position» равным 0 и «samples» равным 0
+    дано available равно 9000000
+    ожидается запись «Low» с «total» равным 16368456 и «lowest» равным 9000000 и «position» равным 1 и «samples» равным 1
+  пример «A lower sample takes the place and is remembered by its position»
+    дано low равно запись «Low» с «total» равным 16368456 и «lowest» равным 9000000 и «position» равным 1 и «samples» равным 4
+    дано available равно 524288
+    ожидается запись «Low» с «total» равным 16368456 и «lowest» равным 524288 и «position» равным 5 и «samples» равным 5
+  пример «A higher sample is only counted»
+    дано low равно запись «Low» с «total» равным 16368456 и «lowest» равным 524288 и «position» равным 5 и «samples» равным 5
+    дано available равно 9000000
+    ожидается запись «Low» с «total» равным 16368456 и «lowest» равным 524288 и «position» равным 5 и «samples» равным 6
+  пример «A block that is not a sample changes nothing»
+    дано low равно запись «Low» с «total» равным 16368456 и «lowest» равным 524288 и «position» равным 5 и «samples» равным 5
+    дано available равно -1
+    ожидается запись «Low» с «total» равным 16368456 и «lowest» равным 524288 и «position» равным 5 и «samples» равным 5
+  «Chosen» от [(«When» от (available меньше 0) и low),
+    («When» от (((low.«samples») равен 0) или (available меньше (low.«lowest»))) и (запись «Low» с «total» равным (low.«total») и «lowest» равным available и «position» равным ((low.«samples») плюс 1) и «samples» равным ((low.«samples») плюс 1)))] и (запись «Low» с «total» равным (low.«total») и «lowest» равным (low.«lowest») и «position» равным (low.«position») и «samples» равным ((low.«samples») плюс 1))
+
+тотальная функция «Lowest of»
+  принимает text: строка
+  возвращает «Low»
+  пример «An empty log has seen nothing»
+    дано text равно ""
+    ожидается запись «Low» с «total» равным 0 и «lowest» равным 0 и «position» равным 0 и «samples» равным 0
+  пример «Two whole samples and a cut one»
+    дано text равно "  total\nMem: 16368456 1 2 3 4 9000000\nSwap: 0 0 0\n\n  total\nMem: 16368456 1 2 3 4 524288\nSwap: 0 0 0\n\n  total\nMem: 16368456 1 2 3 4 52"
+    ожидается запись «Low» с «total» равным 16368456 и «lowest» равным 524288 и «position» равным 2 и «samples» равным 2
+  свёртка (разделить text по "\n\n") начиная с (запись «Low» с «total» равным («Total in» от text) и «lowest» равным 0 и «position» равным 0 и «samples» равным 0) как low и block → «Seen» от low и («Available in» от block)
+
+тотальная функция «Low line»
+  принимает low: «Low»
+  возвращает строка
+  соединить [(к строке (low.«total»)), (к строке (low.«lowest»)), (к строке (low.«position»)), (к строке (low.«samples»))] по " "
+
+тотальная функция «Low of line»
+  принимает line: строка
+  возвращает «Low»
+  пример «A noted line is read back»
+    дано line равно "16368456 524288 2 9"
+    ожидается запись «Low» с «total» равным 16368456 и «lowest» равным 524288 и «position» равным 2 и «samples» равным 9
+  пример «Nothing noted means nothing seen»
+    дано line равно ""
+    ожидается запись «Low» с «total» равным 0 и «lowest» равным 0 и «position» равным 0 и «samples» равным 0
+  запись «Low» с «total» равным («Count» от («Word» от 1 и line)) и «lowest» равным («Count» от («Word» от 2 и line)) и «position» равным («Count» от («Word» от 3 и line)) и «samples» равным («Count» от («Word» от 4 и line))
+
+тотальная функция «Elapsed»
+  принимает position: число, pause: число
+  возвращает строка
+  пример «The first sample is taken at the start»
+    дано position равно 1
+    дано pause равно 5
+    ожидается "0 мин 0 с"
+  пример «Minutes and seconds since the watch began»
+    дано position равно 152
+    дано pause равно 5
+    ожидается "12 мин 35 с"
+  пусть seconds равно ((position минус 1) умножить на pause)
+  соединить [(к строке («Whole» от (seconds делить на 60))), " мин ", (к строке (seconds остаток от 60)), " с"] по ""
+
+тотальная функция «Size in bytes»
+  принимает text: строка
+  возвращает число
+  пример «Gibibytes are named by a letter»
+    дано text равно "40G"
+    ожидается 42949672960
+  пример «Mebibytes and kibibytes too»
+    дано text равно "512M"
+    ожидается 536870912
+  пример «A bare number is bytes»
+    дано text равно "1024"
+    ожидается 1024
+  пример «Anything else is not a size»
+    дано text равно "много"
+    ожидается 0
+  пусть digits равно («Leading digits» от text)
+  пусть letter равно (подстрока text с ((длина digits) плюс 1) по (длина text))
+  «Chosen» от [(«When» от (пусто digits) и 0),
+    («When» от (пусто letter) и («Count» от digits)),
+    («When» от ((letter равен "G") или (letter равен "g")) и ((«Count» от digits) умножить на 1073741824)),
+    («When» от ((letter равен "M") или (letter равен "m")) и ((«Count» от digits) умножить на 1048576)),
+    («When» от ((letter равен "K") или (letter равен "k")) и ((«Count» от digits) умножить на 1024))] и 0
+
+тотальная функция «Value of»
+  принимает key: строка, arguments: список строки, fallback: строка
+  возвращает строка
+  пример «The value stands after its key»
+    дано key равно "--limit"
+    дано arguments равно ["--limit", "16G", "--reserve", "8G"]
+    дано fallback равно "40G"
+    ожидается "16G"
+  пример «A key joined with its value by the equals sign»
+    дано key равно "--limit"
+    дано arguments равно ["--limit=16G"]
+    дано fallback равно "40G"
+    ожидается "16G"
+  пример «A missing key falls back»
+    дано key равно "--limit"
+    дано arguments равно ["--reserve", "8G"]
+    дано fallback равно "40G"
+    ожидается "40G"
+  разбор arguments
+    случай пусто
+      то fallback
+    случай голова и хвост
+      то «Chosen» от [(«When» от (голова начинается с (соединить [key, "="] по "")) и («After» от (соединить [key, "="] по "") и голова)),
+        («When» от (голова равен key) и («First line» от (соединить хвост по "\n")))] и («Value of» от key и хвост и fallback)
+
+тотальная функция «Unknown arguments»
+  принимает keys: список строки, arguments: список строки
+  возвращает список строки
+  пример «A key that is not known is named»
+    дано keys равно ["--limit", "--reserve"]
+    дано arguments равно ["--limit", "16G", "--width", "3"]
+    ожидается ["--width"]
+  отфильтровать arguments где argument → (argument начинается с "--") и притом ((длина (отфильтровать keys где key → (argument равен key) или (argument начинается с (соединить [key, "="] по "")))) равен 0)
+
+тотальная функция «Runs»
+  принимает self: строка, text: строка
+  возвращает список строки
+  пример «The counting run does not count itself»
+    дано self равно "4242"
+    дано text равно " 4242 900000 a\n   17 2000 b\n"
+    ожидается ["2000 b"]
+  отобразить (отфильтровать («Lines» от text) где line → не ((«Word» от 1 и line) равен self)) как line → соединить [(«Word» от 2 и line), " ", («Word» от 3 и line)] по ""
+
+тотальная функция «Held»
+  принимает runs: список строки
+  возвращает число
+  пример «Kilobytes of all runs become bytes»
+    дано runs равно ["2000 a", "5000 b"]
+    ожидается 7168000
+  свёртка runs начиная с 0 как sum и line → sum плюс ((«Count» от («Word» от 1 и line)) умножить на 1024)
+
+тотальная функция «Biggest run»
+  принимает runs: список строки
+  возвращает строка
+  пример «The biggest run is kept with its owner»
+    дано runs равно ["2000 a", "5000 b", "3000 a"]
+    ожидается "5000 b"
+  пример «No runs at all»
+    дано runs равно пустой список
+    ожидается "0 -"
+  свёртка runs начиная с "0 -" как biggest и line → если («Count» от («Word» от 1 и line)) больше («Count» от («Word» от 1 и biggest)) то line иначе biggest
+
+тотальная функция «Count lines»
+  принимает meminfo: строка, runs: список строки, limit: число, reserve: число
+  возвращает список строки
+  пример «The machine, the runs and the request are named in numbers»
+    дано meminfo равно "MemTotal:       16777216 kB\nMemAvailable:    8388608 kB\nSwapTotal:       4194304 kB\nSwapFree:        2097152 kB\n"
+    дано runs равно ["2097152 a"]
+    дано limit равно 4294967296
+    дано reserve равно 2147483648
+    ожидается ["память машины: всего 16.0 ГиБ, доступно 8.0 ГиБ, своп 2.0 из 4.0 ГиБ свободен", "прогонов flang сейчас: 1, держат 2.0 ГиБ, крупнейший 2.0 ГиБ (a)", "этот прогон просит: предел 4.0 ГиБ, запас сверх него 2.0 ГиБ"]
+  [(соединить ["память машины: всего ", («Gibibytes of bytes» от ((«Kilobytes» от "MemTotal:" и meminfo) умножить на 1024)), " ГиБ, доступно ", («Gibibytes of bytes» от ((«Kilobytes» от "MemAvailable:" и meminfo) умножить на 1024)), " ГиБ, своп ", («Gibibytes of bytes» от ((«Kilobytes» от "SwapFree:" и meminfo) умножить на 1024)), " из ", («Gibibytes of bytes» от ((«Kilobytes» от "SwapTotal:" и meminfo) умножить на 1024)), " ГиБ свободен"] по ""),
+   (соединить ["прогонов flang сейчас: ", (к строке (длина runs)), ", держат ", («Gibibytes of bytes» от («Held» от runs)), " ГиБ, крупнейший ", («Gibibytes of bytes» от ((«Count» от («Word» от 1 и («Biggest run» от runs))) умножить на 1024)), " ГиБ (", («Word» от 2 и («Biggest run» от runs)), ")"] по ""),
+   (соединить ["этот прогон просит: предел ", («Gibibytes of bytes» от limit), " ГиБ, запас сверх него ", («Gibibytes of bytes» от reserve), " ГиБ"] по "")]
+
+тотальная функция «Count verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть arguments равно («Given of» от "arguments" и answers)
+  пусть unknown равно («Unknown arguments» от ["--limit", "--reserve"] и arguments)
+  пусть limit равно («Size in bytes» от («Value of» от "--limit" и arguments и («Setting of» от "limit" и "40G" и answers)))
+  пусть reserve равно («Size in bytes» от («Value of» от "--reserve" и arguments и («Setting of» от "reserve" и "48G" и answers)))
+  пусть meminfo равно («Output of» от "meminfo" и answers)
+  пусть available равно ((«Kilobytes» от "MemAvailable:" и meminfo) умножить на 1024)
+  пусть lines равно («Count lines» от meminfo и («Runs» от («Own process» от («Output of» от "self" и answers)) и («Output of» от "runs" и answers)) и limit и reserve)
+  «Chosen» от [(«When» от ((длина unknown) больше 0) и (вариант «Не проверено» с код равным "FLANG_MEMORY_ARGUMENT" и сообщение равным (соединить ["неизвестный довод: ", (соединить unknown по ", "), " (знаю --limit и --reserve)"] по ""))),
+    («When» от ((limit равен 0) или (reserve равен 0)) и (вариант «Не проверено» с код равным "FLANG_MEMORY_ARGUMENT" и сообщение равным "не понял размер (ждал 32G, 512M, 1024K или число байт)")),
+    («When» от ((«Kilobytes» от "MemTotal:" и meminfo) равен 0) и (вариант «Не проверено» с код равным "FLANG_MEMORY_NO_METER" и сообщение равным "мерки нет: /proc/meminfo не читается")),
+    («When» от (available меньше (limit плюс reserve)) и (вариант «Провал» с код равным "FLANG_MEMORY_NO_ROOM" и сообщение равным (соединить (добавить (соединить ["КРАСНО: свободно ", («Gibibytes of bytes» от available), " ГиБ, нужно ", («Gibibytes of bytes» от (limit плюс reserve)), " ГиБ — прогон бы не начался"] по "") к lines) по "\n")))] и (вариант «Конец работы» с значение равным (соединить (добавить "ЗЕЛЕНО: места хватает" к lines) по "\n"))
+
+тотальная функция «Count questions»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "limit" и "FLANG_MEMORY_LIMIT"), («Environment» от "reserve" и "FLANG_MEMORY_RESERVE"), («Read» от "meminfo" и "/proc/meminfo"), («Read» от "self" и "/proc/self/stat"), («Run» от "runs" и "ps" и ["-C", "flang", "-o", "pid=,rss=,user="])]
+
+тотальная функция «Status»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Value of» от "--status" и («Given of» от "arguments" и answers) и ""
+
+тотальная функция «Has failed»
+  принимает status: строка
+  возвращает признак
+  (status равен "failure") или (status равен "cancelled")
+
+тотальная функция «No log»
+  возвращает список строки
+  ["## Память раннера", "", "Наблюдатель не оставил записи: либо шаг «Watch memory» не выполнялся,", "либо `FLANG_TMP` указывал не туда. Сказать, влезла работа или нет,", "**нечем** — и это сказано, а не замолчано."]
+
+тотальная функция «Table»
+  принимает low: «Low», pause: число
+  возвращает список строки
+  ["## Память раннера", "", "| что | сколько |", "|---|---|",
+   (соединить ["| всего у раннера | ", («Gibibytes» от (low.«total»)), " ГиБ |"] по ""),
+   (соединить ["| меньше всего оставалось свободной | **", («Gibibytes» от (low.«lowest»)), " ГиБ** (через ", («Elapsed» от (low.«position») и pause), " от начала наблюдения) |"] по ""),
+   (соединить ["| замеров | ", (к строке (low.«samples»)), ", каждые ", (к строке pause), " с |"] по ""), ""]
+
+тотальная функция «Did not fit»
+  принимает low: «Low»
+  возвращает список строки
+  ["### НЕ ВЛЕЗЛО", "", "Работа красная, и свободной памяти у раннера оставалось",
+   (соединить [(«Gibibytes» от (low.«lowest»)), " ГиБ из ", («Gibibytes» от (low.«total»)), " ГиБ. Это снятие ПО ПАМЯТИ, а не"] по ""),
+   "отказ по предмету: смотреть надо на вес шага, а не на то, что он проверял.", "В журнале у такого снятия свои признаки — «exit code 143» или", "«The runner has received a shutdown signal», без кода возврата и без", "имени файла. Когда до своего предела доходит сам flang, он останавливается", "кодом 5 и пишет `FLANG_MEMORY: прогон остановлен на пределе памяти` с именем", "функции (ключ `--memory-limit`).", "", "Куда девать такой шаг: на раннер с большой памятью за переменной", "`BOLSHAYA_PAMYAT=da`, как `sverka` в `reprint.yml`."]
+
+тотальная функция «Failed on its merits»
+  принимает low: «Low»
+  возвращает список строки
+  ["### Упало ПО СУЩЕСТВУ, а не по памяти", "", "Работа красная, но памяти было вдоволь: в самый тесный миг свободной",
+   (соединить ["оставалось ", («Gibibytes» от (low.«lowest»)), " ГиБ. Причину искать в предмете шага."] по "")]
+
+тотальная функция «Barely fit»
+  принимает low: «Low»
+  возвращает список строки
+  ["### Влезло впритык", "",
+   (соединить ["Работа зелёная, но запас — ", («Gibibytes» от (low.«lowest»)), " ГиБ. Следующий рост дерева"] по ""),
+   "снимет её, и снимет молча. Место такому шагу — на раннере с большой", "памятью (`BOLSHAYA_PAMYAT=da`), как у `sverka` в `reprint.yml`."]
+
+тотальная функция «Outcome»
+  принимает low: «Low», failed: признак, tight: признак
+  возвращает список строки
+  пример «A green job with memory to spare needs no words»
+    дано low равно запись «Low» с «total» равным 16368456 и «lowest» равным 9000000 и «position» равным 3 и «samples» равным 9
+    дано failed равно нет
+    дано tight равно нет
+    ожидается пустой список
+  «Chosen» от [(«When» от (failed и притом tight) и («Did not fit» от low)),
+    («When» от failed и («Failed on its merits» от low)),
+    («When» от tight и («Barely fit» от low))] и (пустой список)
+
+тотальная функция «Notice»
+  принимает low: «Low», failed: признак, tight: признак
+  возвращает строка
+  пример «A red job that ran out of memory is an error on the page of the job»
+    дано low равно запись «Low» с «total» равным 16368456 и «lowest» равным 524288 и «position» равным 3 и «samples» равным 9
+    дано failed равно да
+    дано tight равно да
+    ожидается "::error title=Не влезло::работа снята по памяти: свободной оставалось 0.50 ГиБ из 15.61 ГиБ\n"
+  пример «A green job that barely fit is a warning»
+    дано low равно запись «Low» с «total» равным 16368456 и «lowest» равным 524288 и «position» равным 3 и «samples» равным 9
+    дано failed равно нет
+    дано tight равно да
+    ожидается "::warning title=Влезло впритык::свободной памяти оставалось 0.50 ГиБ из 15.61 ГиБ\n"
+  пример «A job with memory to spare leaves no notice»
+    дано low равно запись «Low» с «total» равным 16368456 и «lowest» равным 9000000 и «position» равным 3 и «samples» равным 9
+    дано failed равно да
+    дано tight равно нет
+    ожидается ""
+  «Chosen» от [(«When» от (failed и притом tight) и (соединить ["::error title=Не влезло::работа снята по памяти: свободной оставалось ", («Gibibytes» от (low.«lowest»)), " ГиБ из ", («Gibibytes» от (low.«total»)), " ГиБ\n"] по "")),
+    («When» от ((не failed) и притом tight) и (соединить ["::warning title=Влезло впритык::свободной памяти оставалось ", («Gibibytes» от (low.«lowest»)), " ГиБ из ", («Gibibytes» от (low.«total»)), " ГиБ\n"] по ""))] и ""
+
+тотальная функция «Log directory»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "temporary" и "/srv/tmp" и answers
+
+тотальная функция «Margin»
+  принимает answers: список «Answer»
+  возвращает число
+  «Count» от («Setting of» от "margin" и "1048576" и answers)
+
+тотальная функция «Pause»
+  принимает answers: список «Answer»
+  возвращает число
+  «Count» от («Setting of» от "pause" и "5" и answers)
+
+тотальная функция «Kept low»
+  принимает answers: список «Answer»
+  возвращает «Low»
+  «Low of line» от («Output of» от "low" и answers)
+
+тотальная функция «Noted»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Answer»
+  пример «Nothing is noted before the log has been read»
+    дано stages равно 1
+    дано answers равно пустой список
+    ожидается пустой список
+  если (stages равен 0) и притом («Answered» от "log" и answers)
+    то добавить (запись «Answer» с «name» равным "low" и «reply» равным (вариант «Прочитано» с содержимое равным («Low line» от («Lowest of» от («Output of» от "log" и answers))))) к answers
+    иначе answers
+
+тотальная функция «Report of»
+  принимает low: «Low», status: строка, margin: число, pause: число
+  возвращает список строки
+  пример «A log without a sample says that there is nothing to tell»
+    дано low равно запись «Low» с «total» равным 0 и «lowest» равным 0 и «position» равным 0 и «samples» равным 0
+    дано status равно "success"
+    дано margin равно 1048576
+    дано pause равно 5
+    ожидается ["## Память раннера", "", "Наблюдатель не оставил записи: либо шаг «Watch memory» не выполнялся,", "либо `FLANG_TMP` указывал не туда. Сказать, влезла работа или нет,", "**нечем** — и это сказано, а не замолчано."]
+  если (low.«total») равен 0
+    то «No log»
+    иначе «Соединить списки» от («Table» от low и pause) и («Outcome» от low и («Has failed» от status) и ((low.«lowest») меньше margin))
+
+тотальная функция «Report lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Report of» от («Kept low» от answers) и («Status» от answers) и («Margin» от answers) и («Pause» от answers)
+
+тотальная функция «Report notice»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть low равно («Kept low» от answers)
+  если (low.«total») равен 0
+    то ""
+    иначе «Notice» от low и («Has failed» от («Status» от answers)) и ((low.«lowest») меньше («Margin» от answers))
+
+тотальная функция «Summary path»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "summary" и "" и answers
+
+тотальная функция «Report setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"), («Environment» от "margin" и "FLANG_MARGIN_KB"), («Environment» от "pause" и "FLANG_WATCH_STEP"), («Environment» от "summary" и "GITHUB_STEP_SUMMARY")]
+
+тотальная функция «Report reading»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от [[(«Read» от "log" и («Log path» от («Log directory» от answers)))],
+    (если пусто («Summary path» от answers) то пустой список иначе [(«Read» от "summary so far" и («Summary path» от answers))])]
+
+тотальная функция «Report writing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от [(если пусто («Summary path» от answers) то пустой список иначе [(«Write» от "summary written" и («Summary path» от answers) и (соединить [(«Output of» от "summary so far" и answers), (соединить («Report lines» от answers) по "\n"), "\n"] по ""))]),
+    (если пусто («Report notice» от answers) то пустой список иначе [(«Write» от "notice" и "/dev/stdout" и («Report notice» от answers))])]
+
+тотальная функция «Report verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть unknown равно («Unknown arguments» от ["--status"] и («Given of» от "arguments" и answers))
+  если (длина unknown) больше 0
+    то вариант «Не проверено» с код равным "FLANG_MEMORY_ARGUMENT" и сообщение равным (соединить ["неизвестный довод: ", (соединить unknown по ", "), " (знаю --status)"] по "")
+    иначе вариант «Конец работы» с значение равным (соединить («Report lines» от answers) по "\n")
+
+тотальная функция «Is a report»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Given of» от "mode" и answers) содержит "report"
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от ((stages равен 2) и притом («Is a report» от answers)) и («Report setup»)),
+    («When» от (stages равен 2) и («Count questions»)),
+    («When» от ((stages равен 1) и притом («Is a report» от answers)) и («Report reading» от answers)),
+    («When» от ((stages равен 0) и притом («Is a report» от answers)) и («Report writing» от answers))] и (пустой список)
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  если «Is a report» от answers
+    то «Report verdict» от answers
+    иначе «Count verdict» от answers
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и («Noted» от (stages минус 1) и answers)) и (stages минус 1) и («Noted» от (stages минус 1) и answers)
+
+тотальная функция «Begin in mode»
+  принимает mode: строка
+  возвращает «Inquiry»
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3 и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+
+тотальная функция «Begin count»
+  возвращает «Inquiry»
+  «Begin in mode» от "count"
+
+тотальная функция «Begin report»
+  возвращает «Inquiry»
+  «Begin in mode» от "report"
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Report»
+  состояние «Inquiry»
+  начинает с «Begin report»
+  обрабатывает «Next»
+
+план «Count»
+  состояние «Inquiry»
+  начинает с «Begin count»
+  обрабатывает «Next»

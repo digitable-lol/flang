@@ -269,8 +269,7 @@ through — code `FLANG_HANDLER_NOT_TOTAL`.
 Today the binary does judge it, but answers with a different code. Here is what
 it answers on
 [`docs/examples/web/shortener/handler-without-budget.flang`](../examples/web/shortener/handler-without-budget.flang),
-a file written precisely to test this rule (run on 11 September 2026, binary
-0.7.17 from seed `0ce948bfd`):
+a file written precisely to test this rule:
 
 ```
 FLANG_UNCOVERED_FAILURE в файле docs/examples/web/shortener/handler-without-budget.flang, строка 13, столбец 1: у процесса «Разборщик» обработчик «шаг разбора» без доказанного завершения — значит отказ «запас витков исчерпан» достижим, — а под надзором этот процесс не стоит: такой отказ уронит программу целиком

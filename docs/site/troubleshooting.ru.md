@@ -71,7 +71,7 @@ flang run docs/examples/rosetta/factorial.flang --function 'Факториал' 
 | `cpp`, `csharp`, `go`, `java`, `python`, `rust` | печать отказывает целиком, код 1, ни файла не записано |
 
 Снято на `docs/examples/service-on-processes/service.flang` (три процесса, надзор,
-три прогона), прогон 11 сентября 2026, двоичный 0.7.17, коммит 2c40752d0.
+три прогона).
 
 Отказ у `go` выглядит дословно так:
 

@@ -40,9 +40,8 @@ carries the runtime — `flang emit` must print into every target the binary
 itself lists. Only released versions install:
 `asdf install flang ref:main` refuses on purpose: the plugin installs release
 archives only. The reason it prints while refusing — "needs Node" — is stale:
-there has been no Node implementation since 20 August 2026 (commit `fe8e8a37`),
-and a clone of any branch builds with `make -C bootstrap`, as in the section
-below. The third line is `asdf set`, not `asdf global`: `global` and `local`
+there is no Node implementation, and a clone of any branch builds with
+`make -C bootstrap`, as in the section below. The third line is `asdf set`, not `asdf global`: `global` and `local`
 were removed in asdf 0.16.0. The same plugin works with mise:
 `mise plugin add flang https://github.com/digitable-lol/asdf-flang.git`.
 
@@ -80,9 +79,8 @@ cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o flang \
 
 ## There is no npm path any more
 
-There used to be a fourth one. It is gone as of 3 September 2026: the package,
-the `bin` entries `flang` and `flang-lsp`, the `postinstall` build and the
-publishing workflow were all removed. `npm install @digitable-lol/flang` never
+There is no fourth one: there is no package, no `bin` entries `flang` and
+`flang-lsp`, no `postinstall` build and no publishing workflow. `npm install @digitable-lol/flang` never
 worked — nothing was ever published under that name — and
 `npm install git+https://github.com/digitable-lol/flang.git` no longer installs
 any command, because the manifest declares none.

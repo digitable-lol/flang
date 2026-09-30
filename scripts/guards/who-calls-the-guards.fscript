@@ -1,0 +1,1205 @@
+модуль «Who calls the guards»
+  использует «Ярлыки» из "../../ярлыки.flang" только «Ярлык», «Все ярлыки»
+
+объект «Scan»
+  «floor»: число
+  «running»: признак
+  «lines»: список строки
+
+объект «Walk»
+  «before»: строка
+  «scripts»: список строки
+
+объект «Search»
+  «before»: строка
+  «match»: строка
+
+объект «Standing»
+  «name»: строка
+  «named»: признак
+  «filed»: признак
+
+объект «Calls»
+  «names»: список строки
+  «scripts»: список строки
+
+объект «Entry»
+  «guard»: строка
+  «reason»: строка
+
+объект «Reading»
+  «name»: строка
+  «text»: строка
+  «inside»: признак
+  «entries»: список «Entry»
+
+объект «Move»
+  «title»: строка
+  «order»: «Поручение»
+  «wanted»: число
+  «telling»: строка
+
+тип «Step»
+  вариант «Listing» содержит mode: строка
+  вариант «Reading flows» содержит mode: строка, pending: список строки, calls: «Calls»
+  вариант «Reading ledger» содержит mode: строка, calls: «Calls»
+  вариант «Reading table» содержит census: «Census», entries: список «Entry»
+  вариант «Finding place»
+  вариант «Making place»
+  вариант «Moving» содержит root: строка, current: «Move», rest: список «Move», shown: список строки
+  вариант «Clearing» содержит fault: строка, shown: список строки
+
+объект «Census»
+  «shortcuts»: число
+  «guards»: список строки
+  «named»: число
+  «filed»: число
+  «uncalled»: список строки
+
+тотальная функция «Joined» от «Kind»
+  принимает front: список «Kind», back: список «Kind»
+  возвращает список «Kind»
+  пример «The back list follows the front one»
+    дано front равно ["one"]
+    дано back равно ["two", "three"]
+    ожидается ["one", "two", "three"]
+  свёртка back начиная с front как joined и piece → добавить piece к joined
+
+тотальная функция «Holds»
+  принимает pieces: список строки, wanted: строка
+  возвращает признак
+  пример «A piece of the list is held»
+    дано pieces равно ["sh", "bash"]
+    дано wanted равно "bash"
+    ожидается да
+  пример «A part of a piece is not held»
+    дано pieces равно ["bash"]
+    дано wanted равно "sh"
+    ожидается нет
+  (длина (отфильтровать pieces где piece → piece равен wanted)) больше 0
+
+тотальная функция «Ends with»
+  принимает text: строка, ending: строка
+  возвращает признак
+  пример «A guard is known by the ending of its name»
+    дано text равно "зов:проверка"
+    дано ending равно ":проверка"
+    ожидается да
+  пример «A shorter text does not end with a longer ending»
+    дано text равно "yml"
+    дано ending равно ".yml"
+    ожидается нет
+  если (длина text) меньше (длина ending)
+    то нет
+    иначе (подстрока text с (((длина text) минус (длина ending)) плюс 1) по (длина text)) равен ending
+
+тотальная функция «Without leading blanks»
+  принимает text: строка
+  возвращает строка
+  пример «Blanks and tabs before the text are dropped»
+    дано text равно " \t  run: make"
+    ожидается "run: make"
+  разбор text
+    случай пусто
+      то ""
+    случай голова и хвост
+      то если " \t\r\n" содержит голова
+        то «Without leading blanks» от хвост
+        иначе text
+
+тотальная функция «Indent of»
+  принимает line: строка
+  возвращает число
+  пример «The indent is the count of leading blanks»
+    дано line равно "      - run: make"
+    ожидается 6
+  пример «A line without blanks has no indent»
+    дано line равно "jobs:"
+    ожидается 0
+  разбор line
+    случай пусто
+      то 0
+    случай голова и хвост
+      то если голова равен " "
+        то 1 плюс («Indent of» от хвост)
+        иначе 0
+
+тотальная функция «Words»
+  принимает line: строка
+  возвращает список строки
+  пример «Blanks and tabs part the words»
+    дано line равно "  sh \tscripts/guards/one.sh  --check"
+    ожидается ["sh", "scripts/guards/one.sh", "--check"]
+  отфильтровать (разделить (соединить (разделить line по "\t") по " ") по " ") где word → не (word равен "")
+
+тотальная функция «Entry body»
+  принимает line: строка
+  возвращает строка
+  пример «The dash of a list entry is not a part of the key»
+    дано line равно "      - run: make"
+    ожидается "run: make"
+  пример «A key of a mapping is taken as it stands»
+    дано line равно "        run: |"
+    ожидается "run: |"
+  пусть body равно («Without leading blanks» от line)
+  если body начинается с "- "
+    то «Without leading blanks» от (подстрока body с 3 по (длина body))
+    иначе body
+
+тотальная функция «Entry indent»
+  принимает line: строка
+  возвращает число
+  пример «The dash of a list entry moves the key two signs to the right»
+    дано line равно "      - run: |"
+    ожидается 8
+  пример «A key of a mapping stands at its indent»
+    дано line равно "        run: |"
+    ожидается 8
+  если («Without leading blanks» от line) начинается с "- "
+    то («Indent of» от line) плюс 2
+    иначе «Indent of» от line
+
+тотальная функция «Is block sign»
+  принимает word: строка
+  возвращает признак
+  пример «A bar opens a literal block»
+    дано word равно "|"
+    ожидается да
+  пример «A folded block may strip its last line break»
+    дано word равно ">-"
+    ожидается да
+  пример «A command is not a block sign»
+    дано word равно "make"
+    ожидается нет
+  «Holds» от ["|", "|-", "|+", ">", ">-", ">+"] и word
+
+тотальная функция «Opens a block»
+  принимает body: строка
+  возвращает признак
+  пример «A key followed by a bar opens a block»
+    дано body равно "script: |"
+    ожидается да
+  пример «A key with a plain value opens nothing»
+    дано body равно "name: uncalled-guards"
+    ожидается нет
+  пример «A bar inside a command opens nothing»
+    дано body равно "echo a |"
+    ожидается нет
+  пусть words равно («Words» от body)
+  если (длина words) меньше 2
+    то нет
+    иначе («Is block sign» от (элемент (длина words) в words)) и притом («Ends with» от (элемент ((длина words) минус 1) в words) и ":")
+
+тотальная функция «Without comment»
+  принимает line: строка
+  возвращает строка
+  пример «A hash after a blank opens a comment»
+    дано line равно "make -C bootstrap # сборка"
+    ожидается "make -C bootstrap"
+  пример «A hash inside a word is not a comment»
+    дано line равно "echo a#b"
+    ожидается "echo a#b"
+  разбор (разделить line по " #")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то разбор (разделить голова по "\t#")
+        случай пусто
+          то ""
+        случай голова и хвост
+          то голова
+
+тотальная функция «Kept»
+  принимает lines: список строки, line: строка
+  возвращает список строки
+  пример «A line of a command is kept without its comment»
+    дано lines равно пустой список
+    дано line равно "  ./ярлык зов:проверка # сверка"
+    ожидается ["  ./ярлык зов:проверка"]
+  пример «A comment of the shell is not a command»
+    дано lines равно пустой список
+    дано line равно "  # sh scripts/guards/one.sh"
+    ожидается пустой список
+  если («Without leading blanks» от line) начинается с "#"
+    то lines
+    иначе добавить («Without comment» от line) к lines
+
+тотальная функция «Run value»
+  принимает body: строка
+  возвращает строка
+  пример «The value of the run key stands after the colon»
+    дано body равно "run: make -C bootstrap"
+    ожидается "make -C bootstrap"
+  пример «A run key without a value has an empty value»
+    дано body равно "run:"
+    ожидается ""
+  пример «Another key has no run value»
+    дано body равно "runs-on: ubuntu-latest"
+    ожидается ""
+  если body начинается с "run: "
+    то «Without leading blanks» от (подстрока body с 5 по (длина body))
+    иначе ""
+
+тотальная функция «Closed»
+  принимает lines: список строки
+  возвращает «Scan»
+  пример «Outside of blocks the floor is zero»
+    дано lines равно ["make"]
+    ожидается (запись «Scan» с «floor» равным 0 и «running» равным нет и «lines» равным ["make"])
+  запись «Scan» с «floor» равным 0 и «running» равным нет и «lines» равным lines
+
+тотальная функция «Key step»
+  принимает lines: список строки, line: строка
+  возвращает «Scan»
+  пример «A run key with a bar opens a block of commands»
+    дано lines равно пустой список
+    дано line равно "      - run: |"
+    ожидается (запись «Scan» с «floor» равным 9 и «running» равным да и «lines» равным пустой список)
+  пример «A run key with a plain value is one command»
+    дано lines равно пустой список
+    дано line равно "        run: ./ярлык зов:проверка"
+    ожидается (запись «Scan» с «floor» равным 0 и «running» равным нет и «lines» равным ["./ярлык зов:проверка"])
+  пример «A block of another key is opened to be skipped»
+    дано lines равно пустой список
+    дано line равно "          script: |"
+    ожидается (запись «Scan» с «floor» равным 11 и «running» равным нет и «lines» равным пустой список)
+  пример «A run key inside a comment is not a command»
+    дано lines равно пустой список
+    дано line равно "      # run: sh scripts/guards/one.sh"
+    ожидается (запись «Scan» с «floor» равным 0 и «running» равным нет и «lines» равным пустой список)
+  пусть body равно («Entry body» от line)
+  пусть value равно («Run value» от body)
+  пусть noted равно (body начинается с "#")
+  пусть running равно ((не noted) и притом ((value начинается с "|") или (value начинается с ">")))
+  пусть opened равно (running или ((не noted) и притом («Opens a block» от body)))
+  пусть kept равно (если noted или opened или (value равен "") то lines иначе («Kept» от lines и value))
+  запись «Scan» с «floor» равным (если opened то ((«Entry indent» от line) плюс 1) иначе 0) и «running» равным running и «lines» равным kept
+
+тотальная функция «Outside step»
+  принимает lines: список строки, line: строка
+  возвращает «Scan»
+  пример «A filter of paths is not a command»
+    дано lines равно пустой список
+    дано line равно "      - 'scripts/guards/one.sh'"
+    ожидается (запись «Scan» с «floor» равным 0 и «running» равным нет и «lines» равным пустой список)
+  пример «A run key is looked at closely»
+    дано lines равно пустой список
+    дано line равно "      - run: make -C bootstrap"
+    ожидается (запись «Scan» с «floor» равным 0 и «running» равным нет и «lines» равным ["make -C bootstrap"])
+  если (line содержит "run:") или (line содержит "|") или (line содержит ">")
+    то «Key step» от lines и line
+    иначе «Closed» от lines
+
+тотальная функция «Padding»
+  принимает width: число
+  возвращает строка
+  пример «The padding is as wide as the floor of a block»
+    дано width равно 4
+    ожидается "    "
+  подстрока "                                                                " с 1 по width
+
+тотальная функция «Belongs to block»
+  принимает floor: число, line: строка
+  возвращает признак
+  пример «A deeper line belongs to the block»
+    дано floor равно 9
+    дано line равно "          make"
+    ожидается да
+  пример «A blank line does not close the block»
+    дано floor равно 9
+    дано line равно "  "
+    ожидается да
+  пример «A line at the depth of the key closes the block»
+    дано floor равно 9
+    дано line равно "        env:"
+    ожидается нет
+  пример «No block is open outside of blocks»
+    дано floor равно 0
+    дано line равно "          make"
+    ожидается нет
+  если floor равен 0
+    то нет
+    иначе (line начинается с («Padding» от floor)) или ((соединить (разделить line по " ") по "") равен "")
+
+тотальная функция «Scan step»
+  принимает scan: «Scan», line: строка
+  возвращает «Scan»
+  пример «A line of a block of commands is kept»
+    дано scan равно (запись «Scan» с «floor» равным 9 и «running» равным да и «lines» равным пустой список)
+    дано line равно "          sh scripts/guards/one.sh"
+    ожидается (запись «Scan» с «floor» равным 9 и «running» равным да и «lines» равным ["          sh scripts/guards/one.sh"])
+  пример «A line of a block of another key is skipped»
+    дано scan равно (запись «Scan» с «floor» равным 9 и «running» равным нет и «lines» равным пустой список)
+    дано line равно "          run: sh scripts/guards/one.sh"
+    ожидается (запись «Scan» с «floor» равным 9 и «running» равным нет и «lines» равным пустой список)
+  если «Belongs to block» от (scan.«floor») и line
+    то если scan.«running»
+      то запись «Scan» с «floor» равным (scan.«floor») и «running» равным да и «lines» равным («Kept» от (scan.«lines») и line)
+      иначе scan
+    иначе «Outside step» от (scan.«lines») и line
+
+тотальная функция «Commands of»
+  принимает text: строка
+  возвращает список строки
+  пример «Commands are taken from the run keys only»
+    дано text равно "on:\n  push:\n    paths:\n      - 'scripts/guards/one.sh'\njobs:\n  guards:\n    steps:\n      # run: sh scripts/guards/two.sh\n      - name: Check\n        run: |\n          # подлог\n          sh scripts/guards/three.sh --check # сверка\n\n          ./ярлык зов:проверка\n      - run: make -C bootstrap\n"
+    ожидается ["          sh scripts/guards/three.sh --check", "", "          ./ярлык зов:проверка", "make -C bootstrap"]
+  (свёртка (разделить text по "\n") начиная с («Closed» от (пустой список)) как scan и line → «Scan step» от scan и line).«lines»
+
+тотальная функция «Ends a name»
+  принимает sign: строка
+  возвращает признак
+  пример «A blank ends a name»
+    дано sign равно " "
+    ожидается да
+  пример «A colon is a part of a name»
+    дано sign равно ":"
+    ожидается нет
+  " \t\n;&|`\"')" содержит sign
+
+тотальная функция «Name at start»
+  принимает text: строка
+  возвращает строка
+  пример «A name lasts until a sign that ends it»
+    дано text равно "зов:проверка; echo"
+    ожидается "зов:проверка"
+  пример «A name may last until the end»
+    дано text равно "длина:проверка"
+    ожидается "длина:проверка"
+  разбор text
+    случай пусто
+      то ""
+    случай голова и хвост
+      то если «Ends a name» от голова
+        то ""
+        иначе соединить [голова, («Name at start» от хвост)] по ""
+
+тотальная функция «Name after»
+  принимает names: список строки, part: строка
+  возвращает список строки
+  пример «A name stands after blanks»
+    дано names равно пустой список
+    дано part равно "  зов:проверка --check"
+    ожидается ["зов:проверка"]
+  пример «A launcher glued to other signs calls nothing»
+    дано names равно пустой список
+    дано part равно "-подлог"
+    ожидается пустой список
+  пусть name равно («Name at start» от («Without leading blanks» от part))
+  если ((part начинается с " ") или (part начинается с "\t")) и притом (не (name равен ""))
+    то добавить name к names
+    иначе names
+
+тотальная функция «Names in»
+  принимает names: список строки, line: строка
+  возвращает список строки
+  пример «Every call of the launcher names a shortcut»
+    дано names равно пустой список
+    дано line равно "./ярлык зов:проверка && ./ярлык длина:проверка"
+    ожидается ["зов:проверка", "длина:проверка"]
+  пример «A line without the launcher names nothing»
+    дано names равно ["зов:проверка"]
+    дано line равно "make -C bootstrap"
+    ожидается ["зов:проверка"]
+  разбор (разделить line по "./ярлык")
+    случай пусто
+      то names
+    случай голова и хвост
+      то свёртка хвост начиная с names как found и part → «Name after» от found и part
+
+тотальная функция «Extension at»
+  принимает piece: строка
+  возвращает строка
+  пример «A script of the language»
+    дано piece равно "fscript"
+    ожидается "fscript"
+  пример «An extension is taken by its start»
+    дано piece равно "json"
+    ожидается "js"
+  пример «A page is not a script»
+    дано piece равно "md"
+    ожидается ""
+  свёртка ["flang", "fscript", "mjs", "sh", "js"] начиная с "" как found и each → (если (found равен "") и притом (piece начинается с each) то each иначе found)
+
+тотальная функция «Names a script»
+  принимает word: строка
+  возвращает признак
+  пример «A plan of the language is a script»
+    дано word равно "scripts/guards/one.fscript"
+    ожидается да
+  пример «A page is not a script»
+    дано word равно "docs/one.md"
+    ожидается нет
+  («Ends with» от word и ".flang") или («Ends with» от word и ".fscript") или («Ends with» от word и ".mjs") или («Ends with» от word и ".sh") или («Ends with» от word и ".js")
+
+тотальная функция «Is launcher»
+  принимает word: строка
+  возвращает признак
+  пример «The shell launches a script»
+    дано word равно "sh"
+    ожидается да
+  пример «The first word of a line needs no launcher»
+    дано word равно ""
+    ожидается да
+  пример «A redirect does not launch»
+    дано word равно ">"
+    ожидается нет
+  «Holds» от ["", "sh", "bash", "io", "node", "python3", "python", "check", "emit", "run", "--test", "--proof"] и word
+
+тотальная функция «Walk step»
+  принимает walk: «Walk», word: строка
+  возвращает «Walk»
+  пример «A script after a launcher is called»
+    дано walk равно (запись «Walk» с «before» равным "sh" и «scripts» равным пустой список)
+    дано word равно "scripts/guards/one.sh"
+    ожидается (запись «Walk» с «before» равным "scripts/guards/one.sh" и «scripts» равным ["scripts/guards/one.sh"])
+  пример «A script after a redirect is only mentioned»
+    дано walk равно (запись «Walk» с «before» равным ">" и «scripts» равным пустой список)
+    дано word равно "scripts/guards/one.sh"
+    ожидается (запись «Walk» с «before» равным "scripts/guards/one.sh" и «scripts» равным пустой список)
+  если (word содержит ".") и притом («Names a script» от word) и притом («Is launcher» от (walk.«before»))
+    то запись «Walk» с «before» равным word и «scripts» равным (добавить word к (walk.«scripts»))
+    иначе запись «Walk» с «before» равным word и «scripts» равным (walk.«scripts»)
+
+тотальная функция «Scripts in»
+  принимает scripts: список строки, line: строка
+  возвращает список строки
+  пример «A script is called by the word before it»
+    дано scripts равно пустой список
+    дано line равно "bootstrap/flang io scripts/guards/one.fscript --plan Check > scripts/two.sh"
+    ожидается ["scripts/guards/one.fscript"]
+  если line содержит "."
+    то (свёртка («Words» от line) начиная с (запись «Walk» с «before» равным "" и «scripts» равным scripts) как walk и word → «Walk step» от walk и word).«scripts»
+    иначе scripts
+
+тотальная функция «Calls in»
+  принимает calls: «Calls», line: строка
+  возвращает «Calls»
+  пример «A line may call by the name and by the file»
+    дано calls равно (запись «Calls» с «names» равным пустой список и «scripts» равным пустой список)
+    дано line равно "./ярлык зов:проверка && sh scripts/guards/one.sh"
+    ожидается (запись «Calls» с «names» равным ["зов:проверка"] и «scripts» равным ["scripts/guards/one.sh"])
+  запись «Calls» с «names» равным («Names in» от (calls.«names») и line) и «scripts» равным («Scripts in» от (calls.«scripts») и line)
+
+тотальная функция «Calls of»
+  принимает calls: «Calls», text: строка
+  возвращает «Calls»
+  свёртка («Commands of» от text) начиная с calls как found и line → «Calls in» от found и line
+
+тотальная функция «Parting signs»
+  возвращает список строки
+  пример «Every sign that is neither a letter, a digit nor a sign of a path parts two paths»
+    ожидается ["\t", "\n", "!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "`", "{", "|", "}", "~", "«", "»", "“", "”", "„", "…", "—", "–", "№"]
+  ["\t", "\n", "!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "`", "{", "|", "}", "~", "«", "»", "“", "”", "„", "…", "—", "–", "№"]
+
+тотальная функция «Parted»
+  принимает command: строка
+  возвращает список строки
+  пример «Quotes and stars part a command as blanks do»
+    дано command равно "sh one.sh 'two.sh' flang/test/*.test.mjs"
+    ожидается ["sh", "one.sh", "two.sh", "flang/test/", ".test.mjs"]
+  «Words» от (свёртка («Parting signs») начиная с command как parted и sign → соединить (разделить parted по sign) по " ")
+
+тотальная функция «Search step»
+  принимает search: «Search», piece: строка
+  возвращает «Search»
+  пример «A dot before an extension closes a script»
+    дано search равно (запись «Search» с «before» равным "scripts/one" и «match» равным "")
+    дано piece равно "sh"
+    ожидается (запись «Search» с «before» равным "scripts/one.sh" и «match» равным "scripts/one.sh")
+  пример «A later extension wins»
+    дано search равно (запись «Search» с «before» равным "one.sh" и «match» равным "one.sh")
+    дано piece равно "json"
+    ожидается (запись «Search» с «before» равным "one.sh.json" и «match» равным "one.sh.js")
+  пример «An extension without a name before the dot is not a script»
+    дано search равно (запись «Search» с «before» равным "" и «match» равным "")
+    дано piece равно "sh"
+    ожидается (запись «Search» с «before» равным ".sh" и «match» равным "")
+  пусть longer равно (соединить [(search.«before»), ".", piece] по "")
+  если ((«Extension at» от piece) равен "") или ((search.«before») равен "")
+    то запись «Search» с «before» равным longer и «match» равным (search.«match»)
+    иначе запись «Search» с «before» равным longer и «match» равным (соединить [(search.«before»), ".", («Extension at» от piece)] по "")
+
+тотальная функция «Script of»
+  принимает stretch: строка
+  возвращает строка
+  пример «The script ends at its extension»
+    дано stretch равно "flang/test/one.test.mjs"
+    ожидается "flang/test/one.test.mjs"
+  пример «A run without an extension is not a script»
+    дано stretch равно "bootstrap/flang"
+    ожидается ""
+  пример «A mask keeps only what follows the star»
+    дано stretch равно ".test.mjs"
+    ожидается ".test.mjs"
+  разбор (разделить stretch по ".")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то (свёртка хвост начиная с (запись «Search» с «before» равным голова и «match» равным "") как search и piece → «Search step» от search и piece).«match»
+
+тотальная функция «Paths of»
+  принимает command: строка
+  возвращает список строки
+  пример «The scripts of a command are its paths»
+    дано command равно "bootstrap/flang io scripts/guards/one.fscript --plan 'Задачник цел' && sh scripts/two.sh"
+    ожидается ["scripts/guards/one.fscript", "scripts/two.sh"]
+  пример «A mask is not a path of a script»
+    дано command равно "node --test flang/test/*.test.mjs"
+    ожидается [".test.mjs"]
+  отфильтровать (отобразить (отфильтровать («Parted» от command) где stretch → stretch содержит ".") как stretch → «Script of» от stretch) где script → не (script равен "")
+
+тотальная функция «Marked»
+  принимает pieces: список строки
+  возвращает строка
+  пример «Every piece stands on a line of its own»
+    дано pieces равно ["one", "two"]
+    ожидается "\none\ntwo\n"
+  соединить ["\n", (соединить pieces по "\n"), "\n"] по ""
+
+тотальная функция «Is marked»
+  принимает marks: строка, piece: строка
+  возвращает признак
+  пример «A whole piece is found»
+    дано marks равно "\nscripts/one.sh\nscripts/two.sh\n"
+    дано piece равно "scripts/two.sh"
+    ожидается да
+  пример «A part of a piece is not found»
+    дано marks равно "\nscripts/one.sh\n"
+    дано piece равно "one.sh"
+    ожидается нет
+  marks содержит (соединить ["\n", piece, "\n"] по "")
+
+тотальная функция «Is called by file»
+  принимает command: строка, launched: строка
+  возвращает признак
+  пример «A shortcut is called when its script is launched»
+    дано command равно "sh scripts/guards/one.sh --check"
+    дано launched равно "\nscripts/guards/one.sh\n"
+    ожидается да
+  пример «A shortcut without a script is not called by file»
+    дано command равно "make -C bootstrap"
+    дано launched равно "\nscripts/guards/one.sh\n"
+    ожидается нет
+  (длина (отфильтровать («Paths of» от command) где path → «Is marked» от launched и path)) больше 0
+
+тотальная функция «Is guard»
+  принимает name: строка
+  возвращает признак
+  пример «A check is a guard»
+    дано name равно "зов:проверка"
+    ожидается да
+  пример «A comparison is a guard»
+    дано name равно "опись:сверка"
+    ожидается да
+  пример «A build is not a guard»
+    дано name равно "сборка"
+    ожидается нет
+  («Ends with» от name и ":проверка") или («Ends with» от name и ":сверка")
+
+тотальная функция «Heads in order»
+  принимает left: строка, right: строка
+  возвращает признак
+  пример «a smaller sign goes first»
+    дано left равно "а"
+    дано right равно "б"
+    ожидается да
+  пример «nothing goes before an empty text»
+    дано left равно "а"
+    дано right равно ""
+    ожидается нет
+  если right равен ""
+    то нет
+    иначе (код символа left) меньше (код символа right)
+
+тотальная функция «Goes before»
+  принимает left: строка, right: строка
+  возвращает признак
+  пример «The order is the order of the signs»
+    дано left равно "вкладка"
+    дано right равно "времянки"
+    ожидается да
+  пример «A shorter name goes before its longer twin»
+    дано left равно "имена"
+    дано right равно "имена-модулей"
+    ожидается да
+  пример «A name does not go before itself»
+    дано left равно "зов"
+    дано right равно "зов"
+    ожидается нет
+  разбор left
+    случай пусто
+      то не (right равен "")
+    случай голова и хвост
+      то если right начинается с голова
+        то «Goes before» от хвост и (подстрока right с 2 по (длина right))
+        иначе «Heads in order» от left и right
+
+тотальная функция «Placed»
+  принимает name: строка, sorted: список строки
+  возвращает список строки
+  пример «A name takes its place among the sorted ones»
+    дано name равно "зов:проверка"
+    дано sorted равно ["длина:проверка", "коды:проверка"]
+    ожидается ["длина:проверка", "зов:проверка", "коды:проверка"]
+  «Joined» от (добавить name к (отфильтровать sorted где each → не («Goes before» от name и each))) и (отфильтровать sorted где each → «Goes before» от name и each)
+
+тотальная функция «Sorted»
+  принимает names: список строки
+  возвращает список строки
+  пример «Names are put in the order of their signs»
+    дано names равно ["коды:проверка", "длина:проверка", "зов:проверка"]
+    ожидается ["длина:проверка", "зов:проверка", "коды:проверка"]
+  свёртка names начиная с (пустой список) как sorted и name → «Placed» от name и sorted
+
+тотальная функция «Standings of»
+  принимает shortcuts: список «Ярлык», calls: «Calls»
+  возвращает список «Standing»
+  пример «Every shortcut is asked both ways of calling»
+    дано shortcuts равно [(запись «Ярлык» с «имя» равным "зов:проверка" и «команда» равным "sh scripts/guards/one.sh --check" и «зачем» равным ""), (запись «Ярлык» с «имя» равным "длина:проверка" и «команда» равным "make length" и «зачем» равным "")]
+    дано calls равно (запись «Calls» с «names» равным ["длина:проверка"] и «scripts» равным ["scripts/guards/one.sh"])
+    ожидается [(запись «Standing» с «name» равным "зов:проверка" и «named» равным нет и «filed» равным да), (запись «Standing» с «name» равным "длина:проверка" и «named» равным да и «filed» равным нет)]
+  пусть named равно («Marked» от (calls.«names»))
+  пусть launched равно («Marked» от (calls.«scripts»))
+  отобразить shortcuts как shortcut → запись «Standing» с «name» равным (shortcut.«имя») и «named» равным («Is marked» от named и (shortcut.«имя»)) и «filed» равным («Is called by file» от (shortcut.«команда») и launched)
+
+тотальная функция «Census of»
+  принимает standings: список «Standing»
+  возвращает «Census»
+  пример «Guards are counted by the way they are called»
+    дано standings равно [(запись «Standing» с «name» равным "зов:проверка" и «named» равным нет и «filed» равным да), (запись «Standing» с «name» равным "длина:проверка" и «named» равным да и «filed» равным нет), (запись «Standing» с «name» равным "коды:проверка" и «named» равным нет и «filed» равным нет), (запись «Standing» с «name» равным "сборка" и «named» равным нет и «filed» равным нет)]
+    ожидается (запись «Census» с «shortcuts» равным 4 и «guards» равным ["длина:проверка", "зов:проверка", "коды:проверка"] и «named» равным 1 и «filed» равным 1 и «uncalled» равным ["коды:проверка"])
+  пусть guards равно (отфильтровать standings где standing → «Is guard» от (standing.«name»))
+  пусть uncalled равно (отфильтровать guards где standing → не ((standing.«named») или (standing.«filed»)))
+  запись «Census» с «shortcuts» равным (длина standings) и «guards» равным («Sorted» от (отобразить guards как standing → standing.«name»)) и «named» равным (длина (отфильтровать standings где standing → standing.«named»)) и «filed» равным (длина (отфильтровать standings где standing → standing.«filed»)) и «uncalled» равным («Sorted» от (отобразить uncalled как standing → standing.«name»))
+
+тотальная функция «Ledger path»
+  возвращает строка
+  пример «The ledger is named by its path from the root of the tree»
+    ожидается "scripts/ledgers/uncalled-guards.json"
+  "scripts/ledgers/uncalled-guards.json"
+
+тотальная функция «Text read»
+  принимает reading: «Reading», piece: строка
+  возвращает «Reading»
+  если (reading.«name») равен ""
+    то запись «Reading» с «name» равным "" и «text» равным piece и «inside» равным нет и «entries» равным (reading.«entries»)
+    иначе запись «Reading» с «name» равным "" и «text» равным "" и «inside» равным нет и «entries» равным (добавить (запись «Entry» с «guard» равным (reading.«name») и «reason» равным (соединить (разделить piece по "\u0001") по "\"")) к (reading.«entries»))
+
+тотальная функция «Gap read»
+  принимает reading: «Reading», piece: строка
+  возвращает «Reading»
+  пусть named равно (((«Without leading blanks» от piece) начинается с ":") и притом (не ((piece содержит "[") или (piece содержит "{"))))
+  запись «Reading» с «name» равным (если named то (reading.«text») иначе "") и «text» равным (reading.«text») и «inside» равным да и «entries» равным (reading.«entries»)
+
+тотальная функция «Reading step»
+  принимает reading: «Reading», piece: строка
+  возвращает «Reading»
+  пример «A text before a colon is a name»
+    дано reading равно (запись «Reading» с «name» равным "" и «text» равным "зов:проверка" и «inside» равным нет и «entries» равным пустой список)
+    дано piece равно ": "
+    ожидается (запись «Reading» с «name» равным "зов:проверка" и «text» равным "зов:проверка" и «inside» равным да и «entries» равным пустой список)
+  пример «A text after a name is its reason»
+    дано reading равно (запись «Reading» с «name» равным "зов:проверка" и «text» равным "зов:проверка" и «inside» равным да и «entries» равным пустой список)
+    дано piece равно "дорог"
+    ожидается (запись «Reading» с «name» равным "" и «text» равным "" и «inside» равным нет и «entries» равным [(запись «Entry» с «guard» равным "зов:проверка" и «reason» равным "дорог")])
+  пример «A name of a list has no reason»
+    дано reading равно (запись «Reading» с «name» равным "" и «text» равным "//" и «inside» равным нет и «entries» равным пустой список)
+    дано piece равно ": [\n    "
+    ожидается (запись «Reading» с «name» равным "" и «text» равным "//" и «inside» равным да и «entries» равным пустой список)
+  если reading.«inside»
+    то «Text read» от reading и piece
+    иначе «Gap read» от reading и piece
+
+тотальная функция «Entries of»
+  принимает text: строка
+  возвращает список «Entry»
+  пример «Every guard of the ledger has its reason»
+    дано text равно "{\n  \"зов:проверка\": \"дорог: \\\"час\\\"\",\n  \"коды:проверка\": \"красен\"\n}\n"
+    ожидается [(запись «Entry» с «guard» равным "зов:проверка" и «reason» равным "дорог: \"час\""), (запись «Entry» с «guard» равным "коды:проверка" и «reason» равным "красен")]
+  пример «A note of the ledger is not a guard»
+    дано text равно "{\n  \"//\": [\n    \"ведомость\",\n    \"незваных\"\n  ],\n  \"зов:проверка\": \"дорог\"\n}\n"
+    ожидается [(запись «Entry» с «guard» равным "зов:проверка" и «reason» равным "дорог")]
+  пусть pieces равно (разделить (соединить (разделить text по "\\\"") по "\u0001") по "\"")
+  пусть reading равно (свёртка pieces начиная с (запись «Reading» с «name» равным "" и «text» равным "" и «inside» равным нет и «entries» равным пустой список) как reading и piece → «Reading step» от reading и piece)
+  отфильтровать (reading.«entries») где entry → не ((entry.«guard») начинается с "//")
+
+тотальная функция «Way of calling»
+  принимает name: строка, standings: список «Standing»
+  возвращает строка
+  пример «A call by the name is told first»
+    дано name равно "зов:проверка"
+    дано standings равно [(запись «Standing» с «name» равным "зов:проверка" и «named» равным да и «filed» равным да)]
+    ожидается "по имени"
+  пример «A call by the file is told second»
+    дано name равно "зов:проверка"
+    дано standings равно [(запись «Standing» с «name» равным "зов:проверка" и «named» равным нет и «filed» равным да)]
+    ожидается "по файлу"
+  пример «A guard that has left the table is told so»
+    дано name равно "зов:проверка"
+    дано standings равно пустой список
+    ожидается "уже не заведён"
+  пусть own равно (отфильтровать standings где standing → (standing.«name») равен name)
+  пусть named равно (отобразить (отфильтровать own где standing → standing.«named») как standing → "по имени")
+  пусть filed равно (отобразить (отфильтровать own где standing → standing.«filed») как standing → "по файлу")
+  разбор («Joined» от named и filed)
+    случай пусто
+      то "уже не заведён"
+    случай голова и хвост
+      то голова
+
+тотальная функция «Trouble of the new»
+  принимает name: строка
+  возвращает строка
+  пример «A new uncalled guard is named with both ways out»
+    дано name равно "пустышка:проверка"
+    ожидается "НОВЫЙ НЕЗВАНЫЙ: «пустышка:проверка» заведён, но ни один workflow его не зовёт, и в scripts/ledgers/uncalled-guards.json его нет.\n  Либо позвать его из CI, либо записать в ведомость с причиной."
+  соединить ["НОВЫЙ НЕЗВАНЫЙ: «", name, "» заведён, но ни один workflow его не зовёт, и в ", («Ledger path»), " его нет.\n  Либо позвать его из CI, либо записать в ведомость с причиной."] по ""
+
+тотальная функция «Trouble of the closed»
+  принимает name: строка, way: строка
+  возвращает строка
+  пример «A closed debt is named with the way the guard is called»
+    дано name равно "длина:проверка"
+    дано way равно "по имени"
+    ожидается "ЗАПИСЬ СТАЛА НЕПРАВДОЙ: «длина:проверка» числится незваным, а CI его зовёт (по имени).\n  Долг закрыт — убрать запись из scripts/ledgers/uncalled-guards.json обязан тот, кто закрыл."
+  соединить ["ЗАПИСЬ СТАЛА НЕПРАВДОЙ: «", name, "» числится незваным, а CI его зовёт (", way, ").\n  Долг закрыт — убрать запись из ", («Ledger path»), " обязан тот, кто закрыл."] по ""
+
+тотальная функция «Troubles»
+  принимает census: «Census», entries: список «Entry», standings: список «Standing»
+  возвращает список строки
+  пример «A new uncalled guard and a closed debt are both named»
+    дано census равно (запись «Census» с «shortcuts» равным 2 и «guards» равным ["зов:проверка", "коды:проверка"] и «named» равным 1 и «filed» равным 0 и «uncalled» равным ["коды:проверка"])
+    дано entries равно [(запись «Entry» с «guard» равным "зов:проверка" и «reason» равным "дорог")]
+    дано standings равно [(запись «Standing» с «name» равным "зов:проверка" и «named» равным да и «filed» равным нет), (запись «Standing» с «name» равным "коды:проверка" и «named» равным нет и «filed» равным нет)]
+    ожидается ["НОВЫЙ НЕЗВАНЫЙ: «коды:проверка» заведён, но ни один workflow его не зовёт, и в scripts/ledgers/uncalled-guards.json его нет.\n  Либо позвать его из CI, либо записать в ведомость с причиной.", "ЗАПИСЬ СТАЛА НЕПРАВДОЙ: «зов:проверка» числится незваным, а CI его зовёт (по имени).\n  Долг закрыт — убрать запись из scripts/ledgers/uncalled-guards.json обязан тот, кто закрыл."]
+  пусть written равно (отобразить entries как entry → entry.«guard»)
+  пусть fresh равно (отфильтровать (census.«uncalled») где name → не («Holds» от written и name))
+  пусть closed равно («Sorted» от (отфильтровать written где name → не («Holds» от (census.«uncalled») и name)))
+  «Joined» от (отобразить fresh как name → «Trouble of the new» от name) и (отобразить closed как name → «Trouble of the closed» от name и («Way of calling» от name и standings))
+
+тотальная функция «Verdict»
+  принимает census: «Census», troubles: список строки
+  возвращает «Продолжение»
+  пример «A ledger that names every uncalled guard ends the work»
+    дано census равно (запись «Census» с «shortcuts» равным 3 и «guards» равным ["зов:проверка", "коды:проверка"] и «named» равным 0 и «filed» равным 1 и «uncalled» равным ["коды:проверка"])
+    дано troubles равно пустой список
+    ожидается вариант «Конец работы» с значение равным "сторожа без зова: 1, все названы в ведомости — сходится"
+  пример «A trouble fails the work»
+    дано census равно (запись «Census» с «shortcuts» равным 3 и «guards» равным ["зов:проверка", "коды:проверка"] и «named» равным 0 и «filed» равным 1 и «uncalled» равным ["коды:проверка"])
+    дано troubles равно ["НОВЫЙ НЕЗВАНЫЙ"]
+    ожидается вариант «Провал» с код равным "FLANG_UNCALLED_GUARDS" и сообщение равным "НОВЫЙ НЕЗВАНЫЙ"
+  если (длина troubles) равен 0
+    то вариант «Конец работы» с значение равным (соединить ["сторожа без зова: ", (к строке (длина (census.«uncalled»))), ", все названы в ведомости — сходится"] по "")
+    иначе вариант «Провал» с код равным "FLANG_UNCALLED_GUARDS" и сообщение равным (соединить troubles по "\n")
+
+тотальная функция «Padded»
+  принимает name: строка
+  возвращает строка
+  пример «A short name is padded to the column of reasons»
+    дано name равно "зов:проверка"
+    ожидается "зов:проверка                "
+  пример «A long name is left as it is»
+    дано name равно "самое:длинное:имя:сторожа:проверка"
+    ожидается "самое:длинное:имя:сторожа:проверка"
+  если (длина name) меньше 28
+    то соединить [name, (подстрока "                            " с 1 по (28 минус (длина name)))] по ""
+    иначе name
+
+тотальная функция «Shortened»
+  принимает reason: строка
+  возвращает строка
+  пример «A short reason is told whole»
+    дано reason равно "дорог"
+    ожидается "дорог"
+  если (длина reason) больше 88
+    то подстрока reason с 1 по 88
+    иначе reason
+
+тотальная функция «Reason of»
+  принимает name: строка, entries: список «Entry»
+  возвращает строка
+  пример «The reason is read from the ledger»
+    дано name равно "зов:проверка"
+    дано entries равно [(запись «Entry» с «guard» равным "зов:проверка" и «reason» равным "дорог")]
+    ожидается "дорог"
+  пример «A guard outside the ledger has no reason»
+    дано name равно "зов:проверка"
+    дано entries равно пустой список
+    ожидается "причина в ведомости не названа"
+  разбор (отфильтровать entries где entry → (entry.«guard») равен name)
+    случай пусто
+      то "причина в ведомости не названа"
+    случай голова и хвост
+      то голова.«reason»
+
+тотальная функция «Report»
+  принимает census: «Census», entries: список «Entry», inside: число
+  возвращает строка
+  пример «The census counts the guards and names the uncalled ones»
+    дано census равно (запись «Census» с «shortcuts» равным 3 и «guards» равным ["зов:проверка", "коды:проверка"] и «named» равным 0 и «filed» равным 1 и «uncalled» равным ["коды:проверка"])
+    дано entries равно [(запись «Entry» с «guard» равным "коды:проверка" и «reason» равным "красен")]
+    дано inside равно 4
+    ожидается "ПЕРЕПИСЬ СТОРОЖЕЙ: кого CI зовёт, а кого нет\n\n  ярлыков заведено в дереве      3\n  записей внутри блоков «пример» 4  (не ярлыки, не считаны)\n  из ярлыков — сторожа           2  (имя оканчивается на :проверка или :сверка)\n\n  зовёт CI по имени              0  (run: ./ярлык ИМЯ)\n  зовёт CI по файлу              1  (run: … путь/к/сторожу)\n\n  СТОРОЖЕЙ ЗОВЁТ CI              1 из 2\n  СТОРОЖЕЙ НЕ ЗОВЁТ              1\n\nНЕЗВАНЫЕ, поимённо:\n\n  коды:проверка                красен\n\nСверка с ведомостью — тем же прибором:\n  bootstrap/flang io scripts/guards/who-calls-the-guards.fscript --plan Check"
+  пусть guards равно (длина (census.«guards»))
+  пусть uncalled равно (длина (census.«uncalled»))
+  пусть named равно (отобразить (census.«uncalled») как name → соединить ["  ", («Padded» от name), " ", («Shortened» от («Reason of» от name и entries))] по "")
+  соединить ["ПЕРЕПИСЬ СТОРОЖЕЙ: кого CI зовёт, а кого нет\n\n  ярлыков заведено в дереве      ", (к строке (census.«shortcuts»)), "\n  записей внутри блоков «пример» ", (к строке inside), "  (не ярлыки, не считаны)\n  из ярлыков — сторожа           ", (к строке guards), "  (имя оканчивается на :проверка или :сверка)\n\n  зовёт CI по имени              ", (к строке (census.«named»)), "  (run: ./ярлык ИМЯ)\n  зовёт CI по файлу              ", (к строке (census.«filed»)), "  (run: … путь/к/сторожу)\n\n  СТОРОЖЕЙ ЗОВЁТ CI              ", (к строке (guards минус uncalled)), " из ", (к строке guards), "\n  СТОРОЖЕЙ НЕ ЗОВЁТ              ", (к строке uncalled), "\n\nНЕЗВАНЫЕ, поимённо:\n\n", (соединить named по "\n"), "\n\nСверка с ведомостью — тем же прибором:\n  bootstrap/flang io scripts/guards/who-calls-the-guards.fscript --plan Check"] по ""
+
+тотальная функция «Records inside examples»
+  принимает text: строка, shortcuts: число
+  возвращает число
+  пример «Records of the table are not records of examples»
+    дано text равно "[запись «Ярлык» с «имя» равным \"раз\"]\n    дано я равно запись «Ярлык» с «имя» равным \"два\"\n"
+    дано shortcuts равно 1
+    ожидается 1
+  ((длина (разделить text по "запись «Ярлык» с «имя» равным")) минус 1) минус shortcuts
+
+тотальная функция «Read flows»
+  принимает mode: строка, pending: список строки, calls: «Calls»
+  возвращает «Продолжение»
+  разбор pending
+    случай пусто
+      то если mode равен "list"
+        то вариант «Конец работы» с значение равным (соединить ((«Census of» от («Standings of» от («Все ярлыки») и calls)).«uncalled») по "\n")
+        иначе вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным (соединить ["../../", («Ledger path»)] по "")) и потом равным (вариант «Reading ledger» с mode равным mode и calls равным calls)
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным (соединить ["../../.github/workflows/", голова] по "")) и потом равным (вариант «Reading flows» с mode равным mode и pending равным pending и calls равным calls)
+
+тотальная функция «After listing»
+  принимает mode: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The folder of workflows is listed first»
+    дано mode равно "check"
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным "../../.github/workflows") и потом равным (вариант «Listing» с mode равным "check")
+  разбор reply
+    случай вариант «Пока ничего»
+      то вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным "../../.github/workflows") и потом равным (вариант «Listing» с mode равным mode)
+    случай вариант «Перечислено» с имена как names
+      то «Read flows» от mode и (отфильтровать names где name → «Ends with» от name и ".yml") и (запись «Calls» с «names» равным пустой список и «scripts» равным пустой список)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то вариант «Не проверено» с код равным code и сообщение равным (соединить ["каталог .github/workflows не перечислить — перепись не считается: ", message] по "")
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали список каталога workflow"
+
+тотальная функция «After flow»
+  принимает mode: строка, pending: список строки, calls: «Calls», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор pending
+    случай пусто
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "текст workflow приехал, а его никто не спрашивал"
+    случай голова и хвост
+      то разбор reply
+        случай вариант «Прочитано» с содержимое как text
+          то «Read flows» от mode и хвост и («Calls of» от calls и text)
+        случай вариант «Сбой» с код как code и сообщение как message
+          то вариант «Не проверено» с код равным code и сообщение равным (соединить [".github/workflows/", голова, " не читается — перепись неполна и потому не считается: ", message] по "")
+        случай любое
+          то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали текст workflow"
+
+тотальная функция «Judge»
+  принимает mode: строка, calls: «Calls», entries: список «Entry»
+  возвращает «Продолжение»
+  пусть standings равно («Standings of» от («Все ярлыки») и calls)
+  пусть census равно («Census of» от standings)
+  если mode равен "census"
+    то вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "../../ярлыки.flang") и потом равным (вариант «Reading table» с census равным census и entries равным entries)
+    иначе «Verdict» от census и («Troubles» от census и entries и standings)
+
+тотальная функция «After ledger»
+  принимает mode: строка, calls: «Calls», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Judge» от mode и calls и («Entries of» от text)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то если mode равен "census"
+        то «Judge» от mode и calls и (пустой список)
+        иначе вариант «Не проверено» с код равным code и сообщение равным (соединить ["ведомости ", («Ledger path»), " нет — сверять не с чем"] по "")
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали текст ведомости"
+
+тотальная функция «After table»
+  принимает census: «Census», entries: список «Entry», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то вариант «Конец работы» с значение равным («Report» от census и entries и («Records inside examples» от text и (census.«shortcuts»)))
+    случай вариант «Сбой» с код как code и сообщение как message
+      то вариант «Не проверено» с код равным code и сообщение равным (соединить ["ярлыки.flang не читается: ", message] по "")
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали текст таблицы ярлыков"
+
+тотальная функция «Table text»
+  принимает added: строка
+  возвращает строка
+  пример «The table of the forgery names three guards and what is added»
+    дано added равно ""
+    ожидается "модуль «Ярлыки»\n\nобъект «Ярлык»\n  «имя»: строка\n  «команда»: строка\n  «зачем»: строка\n\nтотальная функция «Все ярлыки»\n  возвращает список «Ярлык»\n  [запись «Ярлык» с «имя» равным \"named:проверка\" и «команда» равным \"make named\" и «зачем» равным \"зван по имени\",\n   запись «Ярлык» с «имя» равным \"filed:проверка\" и «команда» равным \"bootstrap/flang io scripts/guards/filed.fscript --plan Check\" и «зачем» равным \"зван по файлу\",\n   запись «Ярлык» с «имя» равным \"filtered:проверка\" и «команда» равным \"sh scripts/guards/filtered.sh\" и «зачем» равным \"только упомянут\"]\n"
+  соединить ["модуль «Ярлыки»\n\nобъект «Ярлык»\n  «имя»: строка\n  «команда»: строка\n  «зачем»: строка\n\nтотальная функция «Все ярлыки»\n  возвращает список «Ярлык»\n  [запись «Ярлык» с «имя» равным \"named:проверка\" и «команда» равным \"make named\" и «зачем» равным \"зван по имени\",\n   запись «Ярлык» с «имя» равным \"filed:проверка\" и «команда» равным \"bootstrap/flang io scripts/guards/filed.fscript --plan Check\" и «зачем» равным \"зван по файлу\",\n", added, "   запись «Ярлык» с «имя» равным \"filtered:проверка\" и «команда» равным \"sh scripts/guards/filtered.sh\" и «зачем» равным \"только упомянут\"]\n"] по ""
+
+тотальная функция «Added guard»
+  возвращает строка
+  пример «The added guard is called by nobody»
+    ожидается "   запись «Ярлык» с «имя» равным \"forged:проверка\" и «команда» равным \"echo forged\" и «зачем» равным \"подлог: заведомо незваный\",\n"
+  "   запись «Ярлык» с «имя» равным \"forged:проверка\" и «команда» равным \"echo forged\" и «зачем» равным \"подлог: заведомо незваный\",\n"
+
+тотальная функция «Flow text»
+  возвращает строка
+  пример «The workflow calls one guard by the name and one by the file, and only mentions the third»
+    ожидается "on:\n  push:\n    paths:\n      - 'scripts/guards/filtered.sh'\njobs:\n  guards:\n    runs-on: ubuntu-latest\n    steps:\n      # run: sh scripts/guards/filtered.sh\n      - run: ./ярлык named:проверка\n      - name: Check\n        run: |\n          bootstrap/flang io scripts/guards/filed.fscript --plan Check\n          echo sh > scripts/guards/filtered.sh\n"
+  "on:\n  push:\n    paths:\n      - 'scripts/guards/filtered.sh'\njobs:\n  guards:\n    runs-on: ubuntu-latest\n    steps:\n      # run: sh scripts/guards/filtered.sh\n      - run: ./ярлык named:проверка\n      - name: Check\n        run: |\n          bootstrap/flang io scripts/guards/filed.fscript --plan Check\n          echo sh > scripts/guards/filtered.sh\n"
+
+тотальная функция «Ledger text»
+  принимает added: строка
+  возвращает строка
+  пример «The ledger of the forgery names the only uncalled guard and what is added»
+    дано added равно ""
+    ожидается "{\n  \"filtered:проверка\": \"путь стоит только в отборе paths, в примечании и в перенаправлении\"\n}\n"
+  соединить ["{\n", added, "  \"filtered:проверка\": \"путь стоит только в отборе paths, в примечании и в перенаправлении\"\n}\n"] по ""
+
+тотальная функция «Silent»
+  принимает order: «Поручение»
+  возвращает «Move»
+  пример «A silent move shows nothing and wants the code zero»
+    дано order равно (вариант «Удалить файл» с путь равным "/tmp/forged")
+    ожидается (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 0 и «telling» равным "")
+  запись «Move» с «title» равным "" и «order» равным order и «wanted» равным 0 и «telling» равным ""
+
+тотальная функция «Written»
+  принимает root: строка, place: строка, text: строка
+  возвращает «Move»
+  пример «A file of the forgery is written under its root»
+    дано root равно "/tmp/forgery"
+    дано place равно "/ярлыки.flang"
+    дано text равно "модуль"
+    ожидается (запись «Move» с «title» равным "" и «order» равным (вариант «Записать файл» с путь равным "/tmp/forgery/ярлыки.flang" и содержимое равным "модуль") и «wanted» равным 0 и «telling» равным "")
+  «Silent» от (вариант «Записать файл» с путь равным (соединить [root, place] по "") и содержимое равным text)
+
+тотальная функция «Judging»
+  принимает root: строка, title: строка, wanted: число, telling: строка
+  возвращает «Move»
+  пример «The guard judges the tree of the forgery by itself»
+    дано root равно "/tmp/forgery"
+    дано title равно "сторона первая"
+    дано wanted равно 0
+    дано telling равно "сходится"
+    ожидается (запись «Move» с «title» равным "сторона первая" и «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io", "/tmp/forgery/scripts/guards/who-calls-the-guards.fscript", "--plan", "Check"]) и «wanted» равным 0 и «telling» равным "сходится")
+  запись «Move» с «title» равным title и «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io", (соединить [root, "/scripts/guards/who-calls-the-guards.fscript"] по ""), "--plan", "Check"]) и «wanted» равным wanted и «telling» равным telling
+
+тотальная функция «Tree of the forgery»
+  принимает root: строка
+  возвращает список «Move»
+  [(«Silent» от (вариант «Запустить процесс» с программа равным "mkdir" и аргументы равным ["-p", (соединить [root, "/scripts/guards"] по ""), (соединить [root, "/scripts/ledgers"] по ""), (соединить [root, "/.github/workflows"] по "")])), («Silent» от (вариант «Запустить процесс» с программа равным "cp" и аргументы равным ["who-calls-the-guards.fscript", (соединить [root, "/scripts/guards/who-calls-the-guards.fscript"] по "")])), («Written» от root и "/.github/workflows/ci.yml" и («Flow text»)), («Written» от root и "/ярлыки.flang" и («Table text» от "")), («Written» от root и "/scripts/ledgers/uncalled-guards.json" и («Ledger text» от ""))]
+
+тотальная функция «Sides»
+  принимает root: строка
+  возвращает список «Move»
+  [(«Judging» от root и "сторона первая: ведомость называет единственного незваного, ждём код 0" и 0 и "сторожа без зова: 1, все названы в ведомости"), («Written» от root и "/ярлыки.flang" и («Table text» от («Added guard»))), («Judging» от root и "сторона вторая: заведён сторож, которого никто не зовёт и нет в ведомости, ждём код 1" и 1 и "НОВЫЙ НЕЗВАНЫЙ: «forged:проверка»"), («Written» от root и "/ярлыки.flang" и («Table text» от "")), («Written» от root и "/scripts/ledgers/uncalled-guards.json" и («Ledger text» от "  \"named:проверка\": \"подлог: этого зовут\",\n")), («Judging» от root и "сторона третья: в ведомость вписан сторож, которого зовут, ждём код 1" и 1 и "ЗАПИСЬ СТАЛА НЕПРАВДОЙ: «named:проверка»"), («Written» от root и "/scripts/ledgers/uncalled-guards.json" и "{\n}\n"), («Judging» от root и "сторона четвёртая: путь сторожа стоит только в отборе paths, в примечании и в перенаправлении, а из ведомости он убран, ждём код 1" и 1 и "НОВЫЙ НЕЗВАНЫЙ: «filtered:проверка»")]
+
+тотальная функция «Moves»
+  принимает root: строка
+  возвращает список «Move»
+  «Joined» от («Tree of the forgery» от root) и («Sides» от root)
+
+тотальная функция «Shown after»
+  принимает shown: список строки, move: «Move», code: число
+  возвращает список строки
+  пример «A judged side is shown by its title, its code and what it has told»
+    дано shown равно пустой список
+    дано move равно (запись «Move» с «title» равным "сторона первая" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 0 и «telling» равным "сходится")
+    дано code равно 0
+    ожидается ["── сторона первая ──\nкод 0, сказано «сходится»"]
+  пример «A silent move shows nothing»
+    дано shown равно пустой список
+    дано move равно (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 0 и «telling» равным "")
+    дано code равно 0
+    ожидается пустой список
+  если (move.«title») равен ""
+    то shown
+    иначе добавить (соединить ["── ", (move.«title»), " ──\nкод ", (к строке code), ", сказано «", (move.«telling»), "»"] по "") к shown
+
+тотальная функция «Clear»
+  принимает root: строка, fault: строка, shown: список строки
+  возвращает «Продолжение»
+  пример «The tree of the forgery is removed whatever it has shown»
+    дано root равно "/tmp/forgery"
+    дано fault равно ""
+    дано shown равно пустой список
+    ожидается вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", "/tmp/forgery"]) и потом равным (вариант «Clearing» с fault равным "" и shown равным пустой список)
+  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", root]) и потом равным (вариант «Clearing» с fault равным fault и shown равным shown)
+
+тотальная функция «Move on»
+  принимает root: строка, moves: список «Move», shown: список строки
+  возвращает «Продолжение»
+  разбор moves
+    случай пусто
+      то «Clear» от root и "" и shown
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным (голова.«order») и потом равным (вариант «Moving» с root равным root и current равным голова и rest равным хвост и shown равным shown)
+
+тотальная функция «Fault of»
+  принимает move: «Move», answer: строка
+  возвращает строка
+  пример «A side that answered otherwise is named with what was wanted»
+    дано move равно (запись «Move» с «title» равным "сторона вторая" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 1 и «telling» равным "НОВЫЙ НЕЗВАНЫЙ")
+    дано answer равно "код 0"
+    ожидается "ПОДЛОГ НЕ ПОКАЗАН — сторона вторая: ждали код 1 и слова «НОВЫЙ НЕЗВАНЫЙ», получено: код 0"
+  пример «A broken step of the forgery is named by what it answered»
+    дано move равно (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 0 и «telling» равным "")
+    дано answer равно "файла нет"
+    ожидается "ПОДЛОГ НЕ СОБРАЛСЯ — шаг пробы ответил: файла нет"
+  если (move.«title») равен ""
+    то соединить ["ПОДЛОГ НЕ СОБРАЛСЯ — шаг пробы ответил: ", answer] по ""
+    иначе соединить ["ПОДЛОГ НЕ ПОКАЗАН — ", (move.«title»), ": ждали код ", (к строке (move.«wanted»)), " и слова «", (move.«telling»), "», получено: ", answer] по ""
+
+тотальная функция «Answered as wanted»
+  принимает move: «Move», code: число, said: строка
+  возвращает признак
+  пример «The code and the words are both wanted»
+    дано move равно (запись «Move» с «title» равным "сторона вторая" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 1 и «telling» равным "НОВЫЙ НЕЗВАНЫЙ")
+    дано code равно 1
+    дано said равно "{\"error\":\"НОВЫЙ НЕЗВАНЫЙ: «forged:проверка»\"}"
+    ожидается да
+  пример «The wanted code with other words is not the wanted answer»
+    дано move равно (запись «Move» с «title» равным "сторона вторая" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 1 и «telling» равным "НОВЫЙ НЕЗВАНЫЙ")
+    дано code равно 1
+    дано said равно "{\"error\":\"ведомости нет\"}"
+    ожидается нет
+  (code равен (move.«wanted»)) и притом (said содержит (move.«telling»))
+
+тотальная функция «After move»
+  принимает root: строка, current: «Move», rest: список «Move», shown: список строки, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если «Answered as wanted» от current и code и (соединить [output, errors] по "")
+        то «Move on» от root и rest и («Shown after» от shown и current и code)
+        иначе «Clear» от root и («Fault of» от current и (соединить ["код ", (к строке code), "\n", output, errors] по "")) и shown
+    случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
+      то «Clear» от root и («Fault of» от current и (соединить ["сигнал ", signal] по "")) и shown
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Clear» от root и («Fault of» от current и message) и shown
+    случай любое
+      то «Move on» от root и rest и shown
+
+тотальная функция «After clearing»
+  принимает fault: строка, shown: список строки
+  возвращает «Продолжение»
+  пример «Four shown sides end the work»
+    дано fault равно ""
+    дано shown равно ["── сторона ──\nкод 1, сказано «НОВЫЙ НЕЗВАНЫЙ»"]
+    ожидается вариант «Конец работы» с значение равным "── сторона ──\nкод 1, сказано «НОВЫЙ НЕЗВАНЫЙ»\n\nвсе четыре стороны показаны прогоном."
+  пример «A side that was not shown fails the work»
+    дано fault равно "ПОДЛОГ НЕ ПОКАЗАН"
+    дано shown равно пустой список
+    ожидается вариант «Провал» с код равным "FLANG_UNCALLED_GUARDS_FORGERY" и сообщение равным "ПОДЛОГ НЕ ПОКАЗАН"
+  если fault равен ""
+    то вариант «Конец работы» с значение равным (соединить («Joined» от shown и ["все четыре стороны показаны прогоном."]) по "\n\n")
+    иначе вариант «Провал» с код равным "FLANG_UNCALLED_GUARDS_FORGERY" и сообщение равным fault
+
+тотальная функция «Make place»
+  принимает base: строка
+  возвращает «Продолжение»
+  пример «The tree of the forgery gets a folder of its own»
+    дано base равно "/tmp"
+    ожидается вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным "/tmp/who-calls-the-guards-forgery-") и потом равным (вариант «Making place»)
+  вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным (соединить [base, "/who-calls-the-guards-forgery-"] по "")) и потом равным (вариант «Making place»)
+
+тотальная функция «After finding place»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The folder for temporary files is asked first»
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и потом равным (вариант «Finding place»)
+  пример «Without the named folder the forgery goes to the common one»
+    дано reply равно вариант «Переменной среды нет»
+    ожидается вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным "/tmp/who-calls-the-guards-forgery-") и потом равным (вариант «Making place»)
+  разбор reply
+    случай вариант «Пока ничего»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и потом равным (вариант «Finding place»)
+    случай вариант «Значение среды» с значение как base
+      то «Make place» от base
+    случай любое
+      то «Make place» от "/tmp"
+
+тотальная функция «After making place»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Заведено» с путь как root
+      то «Move on» от root и («Moves» от root) и (пустой список)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то вариант «Не проверено» с код равным code и сообщение равным (соединить ["ПОДЛОГ НЕ СОБРАЛСЯ — временный каталог не завёлся: ", message] по "")
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали временный каталог"
+
+тотальная функция «Begin check»
+  возвращает «Step»
+  пример «The check compares the census with the ledger»
+    ожидается вариант «Listing» с mode равным "check"
+  вариант «Listing» с mode равным "check"
+
+тотальная функция «Begin census»
+  возвращает «Step»
+  пример «The census prints every count»
+    ожидается вариант «Listing» с mode равным "census"
+  вариант «Listing» с mode равным "census"
+
+тотальная функция «Begin list»
+  возвращает «Step»
+  пример «The list names the uncalled guards only»
+    ожидается вариант «Listing» с mode равным "list"
+  вариант «Listing» с mode равным "list"
+
+тотальная функция «Begin forgery»
+  возвращает «Step»
+  пример «The forgery begins with a place for its tree»
+    ожидается вариант «Finding place»
+  вариант «Finding place»
+
+тотальная функция «Next»
+  принимает step: «Step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор step
+    случай вариант «Listing» с mode как mode
+      то «After listing» от mode и reply
+    случай вариант «Reading flows» с mode как mode и pending как pending и calls как calls
+      то «After flow» от mode и pending и calls и reply
+    случай вариант «Reading ledger» с mode как mode и calls как calls
+      то «After ledger» от mode и calls и reply
+    случай вариант «Reading table» с census как census и entries как entries
+      то «After table» от census и entries и reply
+    случай вариант «Finding place»
+      то «After finding place» от reply
+    случай вариант «Making place»
+      то «After making place» от reply
+    случай вариант «Moving» с root как root и current как current и rest как rest и shown как shown
+      то «After move» от root и current и rest и shown и reply
+    случай вариант «Clearing» с fault как fault и shown как shown
+      то «After clearing» от fault и shown
+
+план «Check»
+  состояние «Step»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Census»
+  состояние «Step»
+  начинает с «Begin census»
+  обрабатывает «Next»
+
+план «List»
+  состояние «Step»
+  начинает с «Begin list»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Step»
+  начинает с «Begin forgery»
+  обрабатывает «Next»
+
+тотальная функция «Объявление ярлыка зов:проверка»
+  возвращает строка
+  "bootstrap/flang io --plan Check — проверки, которых CI не зовёт, сходятся с описью — в обе стороны"

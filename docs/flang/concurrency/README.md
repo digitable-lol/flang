@@ -21,4 +21,4 @@
 
 - `flang check <файл> --быстро` — типы, тотальность, примеры;
 - комментариев в `.flang` здесь нет и быть не должно — `scripts/guards/no-comments-guard.fscript`;
-- ссылки — `scripts/guards/link-guard.fscript`, числа в прозе — `scripts/guards/prose-numbers-guard.sh`.
+- ссылки — `scripts/guards/link-guard.fscript`, числа в прозе — `scripts/guards/prose-numbers-guard.fscript`.

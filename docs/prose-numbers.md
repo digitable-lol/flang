@@ -51,7 +51,7 @@
 Числа без них не бывает — бывает слух.
 
 Где прибор дешёв, примета ставится машинно и её стережёт
-[`scripts/guards/prose-numbers-guard.sh`](../scripts/guards/prose-numbers-guard.sh):
+[`scripts/guards/prose-numbers-guard.fscript`](../scripts/guards/prose-numbers-guard.fscript):
 
 Примета ставится РЯДОМ с числом, которое она стережёт, — на той же строке или
 не дальше трёх строк ниже. Так это выглядит в трёх языках дерева:

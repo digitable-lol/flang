@@ -88,7 +88,7 @@ jobs:
       - name: Probe brackets guard
         run: |
           set -u
-          if sh scripts/guards/stdlib-proof-guard.sh --подлог-скобки; then
+          if bootstrap/flang io scripts/guards/stdlib-proof-guard.fscript --plan "Brackets forgery"; then
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
@@ -97,7 +97,7 @@ jobs:
       - name: Probe promise guard
         run: |
           set -u
-          if sh scripts/guards/stdlib-proof-guard.sh --подлог; then
+          if bootstrap/flang io scripts/guards/stdlib-proof-guard.fscript --plan Forgery --timeout 600000; then
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
@@ -108,7 +108,7 @@ jobs:
           set +e
           export LC_ALL=C.UTF-8
           log="$RUNNER_TEMP/stdlib-proof.log"
-          PARALLEL=$(nproc) PREDEL=3600 sh scripts/guards/stdlib-proof-guard.sh --check > "$log" 2>&1
+          PARALLEL=$(nproc) PREDEL=3600 bootstrap/flang io scripts/guards/stdlib-proof-guard.fscript --plan Check --timeout 20000000 > "$log" 2>&1
           kod=$?
           cat "$log"
           {

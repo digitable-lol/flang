@@ -17,14 +17,14 @@
 тотальная функция «Checks»
   возвращает список «Check»
   обеспечивает «there are exactly nineteen checks» (длина результат) равен 19
-  [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "sh scripts/guards/prose-numbers-guard.sh",
+  [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check",
    запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "bootstrap/flang io scripts/seed/seed-runtime-is-source.fscript --plan Check",
    запись «Check» с «name» равным "seed-refresh" и «command» равным "sh scripts/seed/seed-refresh.sh --check",
    запись «Check» с «name» равным "version-derivations-guard" и «command» равным "sh scripts/guards/version-derivations-guard.sh",
-   запись «Check» с «name» равным "who-calls-the-guards" и «command» равным "sh scripts/guards/who-calls-the-guards.sh --check",
+   запись «Check» с «name» равным "who-calls-the-guards" и «command» равным "bootstrap/flang io scripts/guards/who-calls-the-guards.fscript --plan Check",
    запись «Check» с «name» равным "guards-without-forgery-probe" и «command» равным "sh scripts/guards/guards-without-forgery-probe.sh --check",
    запись «Check» с «name» равным "proved-share-vs-tree" и «command» равным "sh scripts/guards/proved-share-vs-tree.sh",
-   запись «Check» с «name» равным "stdlib-proof-guard" и «command» равным "sh scripts/guards/stdlib-proof-guard.sh --скобки",
+   запись «Check» с «name» равным "stdlib-proof-guard" и «command» равным "bootstrap/flang io scripts/guards/stdlib-proof-guard.fscript --plan Brackets",
    запись «Check» с «name» равным "cyrillic-file-names-guard" и «command» равным "bootstrap/flang io scripts/guards/cyrillic-file-names-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "translit-file-names-guard" и «command» равным "bootstrap/flang io scripts/guards/translit-file-names-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "no-package-json-guard" и «command» равным "bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Проверка",

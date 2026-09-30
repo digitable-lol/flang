@@ -220,7 +220,7 @@
    запись «Место» с «путь» равным "scripts/guards/no-comments-guard.fscript" и «нужно» равным "ls-files -z '*.flang' '*.fscript'" и «нельзя» равным "ls-files -z '*.flang' |",
    запись «Место» с «путь» равным "scripts/guards/what-blocks-inventory-guard.fscript" и «нужно» равным "\".flang\", \".fscript\"" и «нельзя» равным "\".flang\", \".tsv\"",
    запись «Место» с «путь» равным "scripts/guards/module-origin-guard.sh" и «нужно» равным "i.endswith((\".flang\", \".fscript\"))" и «нельзя» равным "",
-   запись «Место» с «путь» равным "scripts/guards/seed-knows-type-words-guard.sh" и «нужно» равным "-name '*.flang' -o -name '*.fscript'" и «нельзя» равным "",
+   запись «Место» с «путь» равным "scripts/guards/seed-knows-type-words-guard.fscript" и «нужно» равным "-name '*.flang' -o -name '*.fscript'" и «нельзя» равным "",
    запись «Место» с «путь» равным "flang/scripts/ledger-summary.fscript" и «нужно» равным "'flang/*.flang' 'flang/*.fscript'" и «нельзя» равным "'flang/*.flang'\"]",
    запись «Место» с «путь» равным "flang/scripts/closed-length-guard.fscript" и «нужно» равным "(«Кончается на» от имя и \".flang\") или («Кончается на» от имя и \".fscript\")" и «нельзя» равным "",
    запись «Место» с «путь» равным "flang/scripts/link-collision-guard.fscript" и «нужно» равным "(«Кончается на» от имя и \".flang\") или («Кончается на» от имя и \".fscript\")" и «нельзя» равным "",

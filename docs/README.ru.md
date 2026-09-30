@@ -338,7 +338,7 @@ git config core.hooksPath .githooks      # хук перед пушем: деш�
 измеренные факты и отвергнутые пути — в [`docs/zettel/`](zettel/README.md).
 
 Проза этого дерева держится при дереве прогонами, а не памятью: число, набранное рукой, несёт
-примету о том, чем снято (`scripts/guards/prose-numbers-guard.sh`), путь в ссылке обязан
+примету о том, чем снято (`scripts/guards/prose-numbers-guard.fscript`), путь в ссылке обязан
 существовать (`scripts/guards/link-guard.fscript`), а внутреннее слово на странице для читателя со
 стороны получает отказ (`scripts/guards/jargon-guard.fscript`). Эта страница — одна из тех, что эти
 проверки читают.

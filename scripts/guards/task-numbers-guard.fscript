@@ -1,0 +1,804 @@
+модуль «Task numbers guard»
+
+объект «Task»
+  «folder»: строка
+  «name»: строка
+
+объект «Section»
+  «inside»: признак
+  «lines»: список строки
+
+объект «Move»
+  «title»: строка
+  «remark»: строка
+  «order»: «Поручение»
+  «wanted»: число
+
+тип «Step»
+  вариант «Listing» содержит folders: список строки, tasks: список «Task»
+  вариант «Reading headers» содержит tasks: список «Task»
+  вариант «Reading refusals» содержит pending: список «Task», tasks: список «Task», troubles: список строки
+  вариант «Finding place»
+  вариант «Making place»
+  вариант «Moving» содержит root: строка, current: «Move», rest: список «Move», shown: список строки
+  вариант «Clearing» содержит fault: строка, shown: список строки
+
+тотальная функция «Folders»
+  возвращает список строки
+  пример «Open tasks first, then the closed folders in the order of their names»
+    ожидается ["", "archive", "completed", "rejected"]
+  ["", "archive", "completed", "rejected"]
+
+тотальная функция «Folder path»
+  принимает folder: строка
+  возвращает строка
+  пример «Open tasks lie in the task folder itself»
+    дано folder равно ""
+    ожидается "../../docs/tasks"
+  пример «Closed tasks lie one level deeper»
+    дано folder равно "rejected"
+    ожидается "../../docs/tasks/rejected"
+  если folder равен ""
+    то "../../docs/tasks"
+    иначе соединить ["../../docs/tasks/", folder] по ""
+
+тотальная функция «File path»
+  принимает task: «Task»
+  возвращает строка
+  пример «The path is counted from the folder of the guard»
+    дано task равно (запись «Task» с «folder» равным "completed" и «name» равным "0001-ci.md")
+    ожидается "../../docs/tasks/completed/0001-ci.md"
+  соединить [(«Folder path» от (task.«folder»)), "/", (task.«name»)] по ""
+
+тотальная функция «Shown path»
+  принимает task: «Task»
+  возвращает строка
+  пример «A trouble names the path from the root of the tree»
+    дано task равно (запись «Task» с «folder» равным "" и «name» равным "0028-typed.md")
+    ожидается "docs/tasks/0028-typed.md"
+  подстрока («File path» от task) с 7 по (длина («File path» от task))
+
+тотальная функция «Joined» от «Kind»
+  принимает front: список «Kind», back: список «Kind»
+  возвращает список «Kind»
+  пример «The back list follows the front one»
+    дано front равно ["one"]
+    дано back равно ["two", "three"]
+    ожидается ["one", "two", "three"]
+  свёртка back начиная с front как joined и piece → добавить piece к joined
+
+тотальная функция «Is digit»
+  принимает sign: строка
+  возвращает признак
+  пример «Seven is a digit»
+    дано sign равно "7"
+    ожидается да
+  пример «A letter is not a digit»
+    дано sign равно "a"
+    ожидается нет
+  пример «An empty sign is not a digit»
+    дано sign равно ""
+    ожидается нет
+  ((длина sign) равен 1) и притом ("0123456789" содержит sign)
+
+тотальная функция «Ends with»
+  принимает text: строка, ending: строка
+  возвращает признак
+  пример «A task file ends with its extension»
+    дано text равно "0028-typed.md"
+    дано ending равно ".md"
+    ожидается да
+  пример «A shorter text does not end with a longer ending»
+    дано text равно "md"
+    дано ending равно ".md"
+    ожидается нет
+  если (длина text) меньше (длина ending)
+    то нет
+    иначе (подстрока text с (((длина text) минус (длина ending)) плюс 1) по (длина text)) равен ending
+
+тотальная функция «Is task name»
+  принимает name: строка
+  возвращает признак
+  пример «Four digits, a dash and the extension make a task»
+    дано name равно "0028-typed.md"
+    ожидается да
+  пример «The index of the folder is not a task»
+    дано name равно "README.md"
+    ожидается нет
+  пример «Five digits are not a task number»
+    дано name равно "10001-long.md"
+    ожидается нет
+  пример «A folder of closed tasks is not a task»
+    дано name равно "completed"
+    ожидается нет
+  если (длина name) меньше 8
+    то нет
+    иначе («Is digit» от (символ 1 в name)) и притом («Is digit» от (символ 2 в name)) и притом («Is digit» от (символ 3 в name)) и притом («Is digit» от (символ 4 в name)) и притом ((символ 5 в name) равен "-") и притом («Ends with» от name и ".md")
+
+тотальная функция «Number of»
+  принимает task: «Task»
+  возвращает строка
+  пример «The number is the first four signs of the name»
+    дано task равно (запись «Task» с «folder» равным "" и «name» равным "0028-typed.md")
+    ожидается "0028"
+  подстрока (task.«name») с 1 по 4
+
+тотальная функция «Tasks of»
+  принимает folder: строка, names: список строки
+  возвращает список «Task»
+  пример «Only task files are taken from a folder»
+    дано folder равно "archive"
+    дано names равно ["0007-old.md", "README.md", "rejected"]
+    ожидается [(запись «Task» с «folder» равным "archive" и «name» равным "0007-old.md")]
+  отобразить (отфильтровать names где name → «Is task name» от name) как name → запись «Task» с «folder» равным folder и «name» равным name
+
+тотальная функция «Count in»
+  принимает tasks: список «Task», folder: строка
+  возвращает число
+  пример «Tasks are counted by their folder»
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0001-a.md"), (запись «Task» с «folder» равным "archive" и «name» равным "0002-b.md")]
+    дано folder равно "archive"
+    ожидается 1
+  длина (отфильтровать tasks где task → (task.«folder») равен folder)
+
+тотальная функция «Number marks»
+  принимает tasks: список «Task»
+  возвращает строка
+  пример «Every number stands between its own marks»
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0001-a.md"), (запись «Task» с «folder» равным "archive" и «name» равным "0001-b.md")]
+    ожидается "<0001><0001>"
+  соединить (отобразить tasks как task → соединить ["<", («Number of» от task), ">"] по "") по ""
+
+тотальная функция «Is taken twice»
+  принимает marks: строка, serial: строка
+  возвращает признак
+  пример «Two neighbours with one number are twins»
+    дано marks равно "<0001><0001><0002>"
+    дано serial равно "0001"
+    ожидается да
+  пример «One task holds its number alone»
+    дано marks равно "<0001><0001><0002>"
+    дано serial равно "0002"
+    ожидается нет
+  (длина (разделить marks по (соединить ["<", serial, ">"] по ""))) больше 2
+
+тотальная функция «Value of»
+  принимает task: «Task»
+  возвращает число
+  пример «Leading zeros do not change the value»
+    дано task равно (запись «Task» с «folder» равным "" и «name» равным "0028-typed.md")
+    ожидается 28
+  к числу («Number of» от task)
+
+тотальная функция «Inserted by number»
+  принимает task: «Task», sorted: список «Task»
+  возвращает список «Task»
+  пример «A task takes its place after the equal and before the greater»
+    дано task равно (запись «Task» с «folder» равным "archive" и «name» равным "0002-b.md")
+    дано sorted равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
+    ожидается [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "archive" и «name» равным "0002-b.md"), (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
+  свёртка (отфильтровать sorted где each → («Value of» от each) больше («Value of» от task)) начиная с (добавить task к (отфильтровать sorted где each → («Value of» от each) не больше («Value of» от task))) как placed и each → добавить each к placed
+
+тотальная функция «Sorted by number»
+  принимает tasks: список «Task»
+  возвращает список «Task»
+  пример «Numbers go up, equal numbers keep their order»
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0003-c.md"), (запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "archive" и «name» равным "0002-b.md")]
+    ожидается [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "archive" и «name» равным "0002-b.md"), (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
+  свёртка tasks начиная с (пустой список) как sorted и task → «Inserted by number» от task и sorted
+
+тотальная функция «Twin lines»
+  принимает lines: список строки, task: «Task»
+  возвращает список строки
+  пример «The first twin opens the trouble with its number»
+    дано lines равно пустой список
+    дано task равно (запись «Task» с «folder» равным "" и «name» равным "0028-a.md")
+    ожидается ["НОМЕР 0028 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0028-a.md"]
+  пример «The second twin only adds its path»
+    дано lines равно ["НОМЕР 0028 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0028-a.md"]
+    дано task равно (запись «Task» с «folder» равным "completed" и «name» равным "0028-b.md")
+    ожидается ["НОМЕР 0028 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0028-a.md", "  · docs/tasks/completed/0028-b.md"]
+  пусть heading равно (соединить ["НОМЕР ", («Number of» от task), " ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:"] по "")
+  пусть opened равно (если (длина (отфильтровать lines где line → line равен heading)) больше 0 то lines иначе (добавить heading к lines))
+  добавить (соединить ["  · ", («Shown path» от task)] по "") к opened
+
+тотальная функция «Twin troubles»
+  принимает tasks: список «Task»
+  возвращает список строки
+  пример «A number taken in two folders is a trouble»
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "completed" и «name» равным "0002-b.md"), (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
+    ожидается ["НОМЕР 0002 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0002-a.md", "  · docs/tasks/completed/0002-b.md"]
+  пример «Different numbers make no trouble»
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
+    ожидается пустой список
+  пусть marks равно («Number marks» от tasks)
+  пусть twins равно (отфильтровать tasks где task → «Is taken twice» от marks и («Number of» от task))
+  свёртка («Sorted by number» от twins) начиная с (пустой список) как lines и task → «Twin lines» от lines и task
+
+тотальная функция «Without leading blanks»
+  принимает text: строка
+  возвращает строка
+  пример «Blanks and tabs before the value are dropped»
+    дано text равно " \t0028"
+    ожидается "0028"
+  пример «A blank inside the value stays»
+    дано text равно " в работе"
+    ожидается "в работе"
+  разбор text
+    случай пусто
+      то ""
+    случай голова и хвост
+      то если (голова равен " ") или (голова равен "\t") или (голова равен "\r")
+        то «Without leading blanks» от хвост
+        иначе text
+
+тотальная функция «First line»
+  принимает text: строка
+  возвращает строка
+  пример «Only the first line is taken»
+    дано text равно " 0028\nномер: 0029\n"
+    ожидается " 0028"
+  пример «An empty text has an empty first line»
+    дано text равно ""
+    ожидается ""
+  разбор (разделить text по "\n")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Value after»
+  принимает text: строка, key: строка
+  возвращает строка
+  пример «The value stands after the key on the same line»
+    дано text равно "\n---\nномер: 0028\nстатус: свободна\n"
+    дано key равно "\nстатус:"
+    ожидается "свободна"
+  пример «A missing key gives an empty value»
+    дано text равно "\n---\nномер: 0028\n"
+    дано key равно "\nстатус:"
+    ожидается ""
+  пусть parts равно (разделить text по key)
+  если (длина parts) меньше 2
+    то ""
+    иначе «Without leading blanks» от («First line» от (элемент 2 в parts))
+
+тотальная функция «Header of»
+  принимает task: «Task», found: строка
+  возвращает строка
+  пример «The header number is read from the answer of the search»
+    дано task равно (запись «Task» с «folder» равным "" и «name» равным "0028-a.md")
+    дано found равно "../../docs/tasks/0027-b.md:номер: 0027\n../../docs/tasks/0028-a.md:номер: 0028\n"
+    ожидается "0028"
+  пример «A task without the header line has no header number»
+    дано task равно (запись «Task» с «folder» равным "" и «name» равным "0029-c.md")
+    дано found равно "../../docs/tasks/0028-a.md:номер: 0028\n"
+    ожидается ""
+  «Value after» от (соединить ["\n", found] по "") и (соединить ["\n", («File path» от task), ":номер:"] по "")
+
+тотальная функция «Header trouble»
+  принимает task: «Task», header: строка
+  возвращает строка
+  пример «The trouble names the file, the header and the name»
+    дано task равно (запись «Task» с «folder» равным "completed" и «name» равным "0001-ci.md")
+    дано header равно "9998"
+    ожидается "0001-ci.md: в шапке номер «9998», а имя файла говорит «0001»"
+  соединить [(task.«name»), ": в шапке номер «", header, "», а имя файла говорит «", («Number of» от task), "»"] по ""
+
+тотальная функция «Header troubles»
+  принимает tasks: список «Task», found: строка
+  возвращает список строки
+  пример «A header that differs from the name is a trouble»
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0028-a.md"), (запись «Task» с «folder» равным "completed" и «name» равным "0001-ci.md")]
+    дано found равно "../../docs/tasks/0028-a.md:номер: 0028\n../../docs/tasks/completed/0001-ci.md:номер: 9998\n"
+    ожидается ["0001-ci.md: в шапке номер «9998», а имя файла говорит «0001»"]
+  пусть wrong равно (отфильтровать tasks где task → не ((«Header of» от task и found) равен («Number of» от task)))
+  отобразить («Sorted by number» от wrong) как task → «Header trouble» от task и («Header of» от task и found)
+
+тотальная функция «Number troubles»
+  принимает tasks: список «Task», found: строка
+  возвращает список строки
+  пример «Twins are named before headers»
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "completed" и «name» равным "0002-b.md")]
+    дано found равно "../../docs/tasks/0002-a.md:номер: 0002\n../../docs/tasks/completed/0002-b.md:номер: 0003\n"
+    ожидается ["НОМЕР 0002 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0002-a.md", "  · docs/tasks/completed/0002-b.md", "0002-b.md: в шапке номер «0003», а имя файла говорит «0002»"]
+  «Joined» от («Twin troubles» от tasks) и («Header troubles» от tasks и found)
+
+тотальная функция «Is blank»
+  принимает line: строка
+  возвращает признак
+  пример «Blanks and tabs make a blank line»
+    дано line равно " \t "
+    ожидается да
+  пример «One letter makes the line not blank»
+    дано line равно "  a"
+    ожидается нет
+  («Without leading blanks» от line) равен ""
+
+тотальная функция «Section step»
+  принимает section: «Section», line: строка
+  возвращает «Section»
+  пример «The heading of the reason opens the section»
+    дано section равно (запись «Section» с «inside» равным нет и «lines» равным пустой список)
+    дано line равно "## Почему отклонена"
+    ожидается (запись «Section» с «inside» равным да и «lines» равным пустой список)
+  пример «Another heading closes the section»
+    дано section равно (запись «Section» с «inside» равным да и «lines» равным ["довод"])
+    дано line равно "## Что дальше"
+    ожидается (запись «Section» с «inside» равным нет и «lines» равным ["довод"])
+  пример «A line inside the section is kept»
+    дано section равно (запись «Section» с «inside» равным да и «lines» равным пустой список)
+    дано line равно "довод"
+    ожидается (запись «Section» с «inside» равным да и «lines» равным ["довод"])
+  пусть heading равно (line начинается с "## ")
+  пусть inside равно (если heading то (line начинается с "## Почему отклонена") иначе (section.«inside»))
+  пусть kept равно (если (section.«inside») и притом (не heading) то (добавить line к (section.«lines»)) иначе (section.«lines»))
+  запись «Section» с «inside» равным inside и «lines» равным kept
+
+тотальная функция «Reason lines»
+  принимает text: строка
+  возвращает список строки
+  пример «Only the lines of the reason are taken»
+    дано text равно "# 1003. Задача\n\n## Почему отклонена\n\nрешение: владелец — 2026\n\n## Что дальше\n\nничего\n"
+    ожидается ["", "решение: владелец — 2026", ""]
+  (свёртка (разделить text по "\n") начиная с (запись «Section» с «inside» равным нет и «lines» равным пустой список) как section и line → «Section step» от section и line).«lines»
+
+тотальная функция «Has year»
+  принимает text: строка
+  возвращает признак
+  пример «A year of this century is found»
+    дано text равно "владелец — 8 сентября 2026"
+    ожидается да
+  пример «Twenty twenty is a year too»
+    дано text равно "в 2020 году"
+    ожидается да
+  пример «Two digits are not a year»
+    дано text равно "20 штук"
+    ожидается нет
+  разбор text
+    случай пусто
+      то нет
+    случай голова и хвост
+      то если ((длина text) больше 3) и притом (text начинается с "20") и притом («Is digit» от (символ 3 в text)) и притом («Is digit» от (символ 4 в text))
+        то да
+        иначе «Has year» от хвост
+
+тотальная функция «Is decision»
+  принимает line: строка
+  возвращает признак
+  пример «A decision names who and when»
+    дано line равно "решение: владелец — 8 сентября 2026"
+    ожидается да
+  пример «A decision without a year is not a decision»
+    дано line равно "решение: владелец — вчера"
+    ожидается нет
+  пример «A year outside the decision line does not count»
+    дано line равно "отклонено в 2026 году"
+    ожидается нет
+  (line начинается с "решение: ") и притом («Has year» от line)
+
+тотальная функция «Reason troubles»
+  принимает name: строка, reason: список строки
+  возвращает список строки
+  пример «A reason with a decision and three lines is accepted»
+    дано name равно "1003-refused.md"
+    дано reason равно ["", "решение: владелец — 2026", "", "Первая строка довода.", "Вторая строка довода."]
+    ожидается пустой список
+  пример «A reason without a decision and shorter than three lines gives two troubles»
+    дано name равно "1003-refused.md"
+    дано reason равно ["", "не нужно"]
+    ожидается ["1003-refused.md: в разделе «Почему отклонена» нет строки «решение: кто — когда» с годом", "1003-refused.md: довод отказа короче трёх строк — это не довод"]
+  пусть undecided равно (если (длина (отфильтровать reason где line → «Is decision» от line)) равен 0 то [(соединить [name, ": в разделе «Почему отклонена» нет строки «решение: кто — когда» с годом"] по "")] иначе (пустой список))
+  пусть short равно (если (длина (отфильтровать reason где line → не («Is blank» от line))) меньше 3 то [(соединить [name, ": довод отказа короче трёх строк — это не довод"] по "")] иначе (пустой список))
+  «Joined» от undecided и short
+
+тотальная функция «Status troubles»
+  принимает name: строка, status: строка
+  возвращает список строки
+  пример «A refused task says so in its status»
+    дано name равно "1003-refused.md"
+    дано status равно "отклонена (8 сентября 2026)"
+    ожидается пустой список
+  пример «A free task in the folder of refusals is a trouble»
+    дано name равно "1003-refused.md"
+    дано status равно "свободна"
+    ожидается ["1003-refused.md: лежит в rejected, а статус «свободна» — не «отклонена»"]
+  если (status равен "отклонена") или (status начинается с "отклонена ")
+    то пустой список
+    иначе [(соединить [name, ": лежит в rejected, а статус «", status, "» — не «отклонена»"] по "")]
+
+тотальная функция «Has reason»
+  принимает text: строка
+  возвращает признак
+  пример «The section is found by its heading at the start of a line»
+    дано text равно "# 1003. Задача\n\n## Почему отклонена\n\nдовод\n"
+    ожидается да
+  пример «The heading inside a line is not a section»
+    дано text равно "см. ## Почему отклонена\n"
+    ожидается нет
+  (соединить ["\n", text] по "") содержит "\n## Почему отклонена"
+
+тотальная функция «Refusal troubles»
+  принимает name: строка, text: строка
+  возвращает список строки
+  пример «A refusal without the section of the reason is a trouble»
+    дано name равно "1004-refusal.md"
+    дано text равно "---\nномер: 1004\nстатус: отклонена\n---\n\n# 1004. Подлог\n"
+    ожидается ["1004-refusal.md: в отклонённой задаче нет раздела «Почему отклонена»"]
+  пусть status равно («Status troubles» от name и («Value after» от (соединить ["\n", text] по "") и "\nстатус:"))
+  если «Has reason» от text
+    то «Joined» от status и («Reason troubles» от name и («Reason lines» от text))
+    иначе добавить (соединить [name, ": в отклонённой задаче нет раздела «Почему отклонена»"] по "") к status
+
+тотальная функция «Summary»
+  принимает tasks: список «Task»
+  возвращает строка
+  пример «Every folder is counted by name»
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0001-a.md"), (запись «Task» с «folder» равным "completed" и «name» равным "0002-b.md"), (запись «Task» с «folder» равным "completed" и «name» равным "0003-c.md")]
+    ожидается "номера задач целы: задач 3 (открытых 1, сделанных 2, отклонённых 0, сданных в архив 0), двойных номеров 0"
+  соединить ["номера задач целы: задач ", (к строке (длина tasks)), " (открытых ", (к строке («Count in» от tasks и "")), ", сделанных ", (к строке («Count in» от tasks и "completed")), ", отклонённых ", (к строке («Count in» от tasks и "rejected")), ", сданных в архив ", (к строке («Count in» от tasks и "archive")), "), двойных номеров 0"] по ""
+
+тотальная функция «Verdict»
+  принимает tasks: список «Task», troubles: список строки
+  возвращает «Продолжение»
+  пример «No trouble ends the work with the count»
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0001-a.md")]
+    дано troubles равно пустой список
+    ожидается вариант «Конец работы» с значение равным "номера задач целы: задач 1 (открытых 1, сделанных 0, отклонённых 0, сданных в архив 0), двойных номеров 0"
+  пример «A trouble fails the work and is named»
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0001-a.md")]
+    дано troubles равно ["0001-a.md: в шапке номер «», а имя файла говорит «0001»"]
+    ожидается вариант «Провал» с код равным "FLANG_TASK_NUMBERS" и сообщение равным "0001-a.md: в шапке номер «», а имя файла говорит «0001»"
+  если (длина troubles) равен 0
+    то вариант «Конец работы» с значение равным («Summary» от tasks)
+    иначе вариант «Провал» с код равным "FLANG_TASK_NUMBERS" и сообщение равным (соединить troubles по "\n")
+
+тотальная функция «Header search»
+  возвращает «Поручение»
+  пример «One search reads the first header line of every task file»
+    ожидается вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-m1", "-H", "--include=[0-9][0-9][0-9][0-9]-*.md", "^номер:", "../../docs/tasks"]
+  вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-m1", "-H", "--include=[0-9][0-9][0-9][0-9]-*.md", "^номер:", "../../docs/tasks"]
+
+тотальная функция «List next»
+  принимает folders: список строки, tasks: список «Task»
+  возвращает «Продолжение»
+  пример «The next folder is listed»
+    дано folders равно ["rejected"]
+    дано tasks равно пустой список
+    ожидается вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным "../../docs/tasks/rejected") и потом равным (вариант «Listing» с folders равным ["rejected"] и tasks равным пустой список)
+  пример «No task in any folder leaves nothing to judge»
+    дано folders равно пустой список
+    дано tasks равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным "НЕ СУДИЛ: в docs/tasks ни одной задачи вида NNNN-имя.md"
+  разбор folders
+    случай пусто
+      то если (длина tasks) равен 0
+        то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным "НЕ СУДИЛ: в docs/tasks ни одной задачи вида NNNN-имя.md"
+        иначе вариант «Сделать» с поручение равным («Header search») и потом равным (вариант «Reading headers» с tasks равным tasks)
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным («Folder path» от голова)) и потом равным (вариант «Listing» с folders равным folders и tasks равным tasks)
+
+тотальная функция «Listed»
+  принимает folders: список строки, tasks: список «Task», names: список строки
+  возвращает «Продолжение»
+  разбор folders
+    случай пусто
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "список каталога приехал, а каталога никто не спрашивал"
+    случай голова и хвост
+      то «List next» от хвост и (свёртка («Tasks of» от голова и names) начиная с tasks как known и task → добавить task к known)
+
+тотальная функция «Starts with open tasks»
+  принимает folders: список строки
+  возвращает признак
+  пример «The folder of open tasks has an empty name»
+    дано folders равно ["", "archive"]
+    ожидается да
+  пример «A folder of closed tasks has a name»
+    дано folders равно ["archive", "completed"]
+    ожидается нет
+  разбор folders
+    случай пусто
+      то нет
+    случай голова и хвост
+      то голова равен ""
+
+тотальная функция «Not listed»
+  принимает folders: список строки, tasks: список «Task», message: строка
+  возвращает «Продолжение»
+  пример «The task folder itself must exist»
+    дано folders равно ["", "archive"]
+    дано tasks равно пустой список
+    дано message равно "каталога нет"
+    ожидается вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным "НЕ СУДИЛ: нет каталога задач docs/tasks — каталога нет"
+  если «Starts with open tasks» от folders
+    то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным (соединить ["НЕ СУДИЛ: нет каталога задач docs/tasks — ", message] по "")
+    иначе «Listed» от folders и tasks и (пустой список)
+
+тотальная функция «After listing»
+  принимает folders: список строки, tasks: список «Task», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Пока ничего»
+      то «List next» от folders и tasks
+    случай вариант «Перечислено» с имена как names
+      то «Listed» от folders и tasks и names
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Not listed» от folders и tasks и message
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали список каталога задач"
+
+тотальная функция «Read refusals»
+  принимает pending: список «Task», tasks: список «Task», troubles: список строки
+  возвращает «Продолжение»
+  разбор pending
+    случай пусто
+      то «Verdict» от tasks и troubles
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным («File path» от голова)) и потом равным (вариант «Reading refusals» с pending равным pending и tasks равным tasks и troubles равным troubles)
+
+тотальная функция «After headers»
+  принимает tasks: список «Task», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как found и ошибки как errors
+      то если code больше 1
+        то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным (соединить ["НЕ СУДИЛ: поиск шапок ответил кодом ", (к строке code), ": ", errors] по "")
+        иначе «Read refusals» от (отфильтровать tasks где task → (task.«folder») равен "rejected") и tasks и («Number troubles» от tasks и found)
+    случай вариант «Процесс убит» с сигнал как signal и вывод как found и ошибки как errors
+      то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным (соединить ["НЕ СУДИЛ: поиск шапок убит сигналом ", signal] по "")
+    случай вариант «Сбой» с код как code и сообщение как message
+      то вариант «Не проверено» с код равным code и сообщение равным (соединить ["НЕ СУДИЛ: поиск шапок не запустился — ", message] по "")
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали ответ поиска шапок"
+
+тотальная функция «After refusal»
+  принимает pending: список «Task», tasks: список «Task», troubles: список строки, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор pending
+    случай пусто
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "текст отказа приехал, а отказа никто не спрашивал"
+    случай голова и хвост
+      то разбор reply
+        случай вариант «Прочитано» с содержимое как text
+          то «Read refusals» от хвост и tasks и («Joined» от troubles и («Refusal troubles» от (голова.«name») и text))
+        случай вариант «Сбой» с код как code и сообщение как message
+          то вариант «Не проверено» с код равным code и сообщение равным (соединить ["НЕ СУДИЛ: ", (голова.«name»), " не читается — ", message] по "")
+        случай любое
+          то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали текст отклонённой задачи"
+
+тотальная функция «Task text»
+  принимает serial: строка, status: строка, body: строка
+  возвращает строка
+  пример «A forged task carries the eight header lines and its body»
+    дано serial равно "1001"
+    дано status равно "свободна"
+    дано body равно ""
+    ожидается "---\nномер: 1001\nзаголовок: Подлог\nстатус: свободна\nисполнитель: —\nветка: —\nкоманда: любая\nкарта: —\nрядом: —\n---\n\n# 1001. Подлог\n"
+  соединить ["---\nномер: ", serial, "\nзаголовок: Подлог\nстатус: ", status, "\nисполнитель: —\nветка: —\nкоманда: любая\nкарта: —\nрядом: —\n---\n\n# ", serial, ". Подлог\n", body] по ""
+
+тотальная функция «Lawful reason»
+  возвращает строка
+  пример «A lawful reason names the decision and gives three lines»
+    ожидается "\n## Почему отклонена\n\nрешение: проба проверки — 27 сентября 2026\n\nЭто временная задача пробы, заведённая самой проверкой во временном каталоге.\nОна показывает, что законный отказ проходит, а не только что незаконный краснеет.\n"
+  "\n## Почему отклонена\n\nрешение: проба проверки — 27 сентября 2026\n\nЭто временная задача пробы, заведённая самой проверкой во временном каталоге.\nОна показывает, что законный отказ проходит, а не только что незаконный краснеет.\n"
+
+тотальная функция «Silent»
+  принимает order: «Поручение»
+  возвращает «Move»
+  пример «A silent move shows nothing and wants the code zero»
+    дано order равно (вариант «Удалить файл» с путь равным "/tmp/forged.md")
+    ожидается (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged.md") и «wanted» равным 0)
+  запись «Move» с «title» равным "" и «remark» равным "" и «order» равным order и «wanted» равным 0
+
+тотальная функция «Judging»
+  принимает root: строка, title: строка, wanted: число, remark: строка
+  возвращает «Move»
+  пример «The guard judges the copy of the tree by itself»
+    дано root равно "/tmp/forgery"
+    дано title равно "сторона вторая: подлог убран, ждём код 0"
+    дано wanted равно 0
+    дано remark равно "зеленеет, как и должен"
+    ожидается (запись «Move» с «title» равным "сторона вторая: подлог убран, ждём код 0" и «remark» равным "зеленеет, как и должен" и «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io", "/tmp/forgery/scripts/guards/task-numbers-guard.fscript", "--plan", "Check"]) и «wanted» равным 0)
+  запись «Move» с «title» равным title и «remark» равным remark и «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io", (соединить [root, "/scripts/guards/task-numbers-guard.fscript"] по ""), "--plan", "Check"]) и «wanted» равным wanted
+
+тотальная функция «Forged»
+  принимает root: строка, place: строка, text: строка, judging: «Move»
+  возвращает список «Move»
+  пример «A forged file is written, judged and removed»
+    дано root равно "/tmp/forgery"
+    дано place равно "/docs/tasks/1001-forged-twin.md"
+    дано text равно "подлог"
+    дано judging равно (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0)
+    ожидается [(запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Записать файл» с путь равным "/tmp/forgery/docs/tasks/1001-forged-twin.md" и содержимое равным "подлог") и «wanted» равным 0), (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0), (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forgery/docs/tasks/1001-forged-twin.md") и «wanted» равным 0)]
+  [(«Silent» от (вариант «Записать файл» с путь равным (соединить [root, place] по "") и содержимое равным text)), judging, («Silent» от (вариант «Удалить файл» с путь равным (соединить [root, place] по "")))]
+
+тотальная функция «Tree of the forgery»
+  принимает root: строка
+  возвращает список «Move»
+  [(«Silent» от (вариант «Запустить процесс» с программа равным "mkdir" и аргументы равным ["-p", (соединить [root, "/scripts/guards"] по ""), (соединить [root, "/docs/tasks/completed"] по ""), (соединить [root, "/docs/tasks/rejected"] по "")])), («Silent» от (вариант «Запустить процесс» с программа равным "cp" и аргументы равным ["task-numbers-guard.fscript", (соединить [root, "/scripts/guards/task-numbers-guard.fscript"] по "")])), («Silent» от (вариант «Записать файл» с путь равным (соединить [root, "/docs/tasks/1001-open-task.md"] по "") и содержимое равным («Task text» от "1001" и "свободна" и ""))), («Silent» от (вариант «Записать файл» с путь равным (соединить [root, "/docs/tasks/completed/1002-closed-task.md"] по "") и содержимое равным («Task text» от "1002" и "сделана" и ""))), («Silent» от (вариант «Записать файл» с путь равным (соединить [root, "/docs/tasks/rejected/1003-refused-task.md"] по "") и содержимое равным («Task text» от "1003" и "отклонена" и («Lawful reason»))))]
+
+тотальная функция «Sides of numbers»
+  принимает root: строка
+  возвращает список «Move»
+  «Joined» от («Forged» от root и "/docs/tasks/1001-forged-twin.md" и («Task text» от "1001" и "свободна" и "") и («Judging» от root и "сторона первая: подлог заведён, ждём код 1" и 1 и "краснеет, как и должен")) и («Joined» от [(«Judging» от root и "сторона вторая: подлог убран, ждём код 0" и 0 и "зеленеет, как и должен")] и («Forged» от root и "/docs/tasks/1002-forged-twin-of-closed.md" и («Task text» от "1002" и "свободна" и "") и («Judging» от root и "сторона третья: номер из completed/ занят живой задачей, ждём код 1" и 1 и "двойник ЧЕРЕЗ каталоги пойман")))
+
+тотальная функция «Sides of refusals»
+  принимает root: строка
+  возвращает список «Move»
+  «Joined» от («Forged» от root и "/docs/tasks/rejected/1006-refusal-without-reason.md" и («Task text» от "1006" и "отклонена" и "") и («Judging» от root и "сторона четвёртая: отказ без довода, ждём код 1" и 1 и "отказ без раздела «Почему отклонена» пойман")) и («Forged» от root и "/docs/tasks/rejected/1006-refusal-with-reason.md" и («Task text» от "1006" и "отклонена" и («Lawful reason»)) и («Judging» от root и "сторона пятая: тот же отказ С доводом, ждём код 0" и 0 и "законный отказ принят"))
+
+тотальная функция «Side of the header»
+  принимает root: строка
+  возвращает список «Move»
+  «Forged» от root и "/docs/tasks/1004-forged-header.md" и («Task text» от "1005" и "свободна" и "") и («Judging» от root и "сторона шестая: номер в шапке разошёлся с именем файла, ждём код 1" и 1 и "расхождение шапки с именем файла поймано")
+
+тотальная функция «Moves»
+  принимает root: строка
+  возвращает список «Move»
+  «Joined» от («Joined» от («Tree of the forgery» от root) и («Sides of numbers» от root)) и («Joined» от («Sides of refusals» от root) и («Side of the header» от root))
+
+тотальная функция «Shown after»
+  принимает shown: список строки, move: «Move», code: число
+  возвращает список строки
+  пример «A judged side is shown by its title and its code»
+    дано shown равно пустой список
+    дано move равно (запись «Move» с «title» равным "сторона вторая: подлог убран, ждём код 0" и «remark» равным "зеленеет, как и должен" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0)
+    дано code равно 0
+    ожидается ["── сторона вторая: подлог убран, ждём код 0 ──\nкод 0 — зеленеет, как и должен"]
+  пример «A silent move shows nothing»
+    дано shown равно пустой список
+    дано move равно (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged.md") и «wanted» равным 0)
+    дано code равно 0
+    ожидается пустой список
+  если (move.«title») равен ""
+    то shown
+    иначе добавить (соединить ["── ", (move.«title»), " ──\nкод ", (к строке code), " — ", (move.«remark»)] по "") к shown
+
+тотальная функция «Clear»
+  принимает root: строка, fault: строка, shown: список строки
+  возвращает «Продолжение»
+  пример «The copy of the tree is removed whatever the forgery has shown»
+    дано root равно "/tmp/forgery"
+    дано fault равно ""
+    дано shown равно пустой список
+    ожидается вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", "/tmp/forgery"]) и потом равным (вариант «Clearing» с fault равным "" и shown равным пустой список)
+  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", root]) и потом равным (вариант «Clearing» с fault равным fault и shown равным shown)
+
+тотальная функция «Move on»
+  принимает root: строка, moves: список «Move», shown: список строки
+  возвращает «Продолжение»
+  разбор moves
+    случай пусто
+      то «Clear» от root и "" и shown
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным (голова.«order») и потом равным (вариант «Moving» с root равным root и current равным голова и rest равным хвост и shown равным shown)
+
+тотальная функция «Fault of»
+  принимает move: «Move», answer: строка
+  возвращает строка
+  пример «A side that answered with another code is named with both codes»
+    дано move равно (запись «Move» с «title» равным "сторона первая: подлог заведён, ждём код 1" и «remark» равным "краснеет, как и должен" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 1)
+    дано answer равно "код 0"
+    ожидается "ПОДЛОГ НЕ ПОКАЗАН — сторона первая: подлог заведён, ждём код 1: ждали код 1, получен код 0"
+  пример «A broken step of the forgery is named by what it answered»
+    дано move равно (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged.md") и «wanted» равным 0)
+    дано answer равно "файла нет"
+    ожидается "ПОДЛОГ НЕ СОБРАЛСЯ — шаг пробы ответил: файла нет"
+  если (move.«title») равен ""
+    то соединить ["ПОДЛОГ НЕ СОБРАЛСЯ — шаг пробы ответил: ", answer] по ""
+    иначе соединить ["ПОДЛОГ НЕ ПОКАЗАН — ", (move.«title»), ": ждали код ", (к строке (move.«wanted»)), ", получен ", answer] по ""
+
+тотальная функция «After move»
+  принимает root: строка, current: «Move», rest: список «Move», shown: список строки, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если code равен (current.«wanted»)
+        то «Move on» от root и rest и («Shown after» от shown и current и code)
+        иначе «Clear» от root и («Fault of» от current и (соединить ["код ", (к строке code)] по "")) и shown
+    случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
+      то «Clear» от root и («Fault of» от current и (соединить ["сигнал ", signal] по "")) и shown
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Clear» от root и («Fault of» от current и message) и shown
+    случай любое
+      то «Move on» от root и rest и shown
+
+тотальная функция «After clearing»
+  принимает fault: строка, shown: список строки
+  возвращает «Продолжение»
+  пример «Six shown sides end the work»
+    дано fault равно ""
+    дано shown равно ["── сторона ──\nкод 1 — поймано"]
+    ожидается вариант «Конец работы» с значение равным "── сторона ──\nкод 1 — поймано\n\nвсе шесть сторон показаны прогоном."
+  пример «A side that was not shown fails the work»
+    дано fault равно "ПОДЛОГ НЕ ПОКАЗАН"
+    дано shown равно пустой список
+    ожидается вариант «Провал» с код равным "FLANG_TASK_NUMBERS_FORGERY" и сообщение равным "ПОДЛОГ НЕ ПОКАЗАН"
+  если fault равен ""
+    то вариант «Конец работы» с значение равным (соединить («Joined» от shown и ["все шесть сторон показаны прогоном."]) по "\n\n")
+    иначе вариант «Провал» с код равным "FLANG_TASK_NUMBERS_FORGERY" и сообщение равным fault
+
+тотальная функция «Make place»
+  принимает base: строка
+  возвращает «Продолжение»
+  пример «The copy of the tree gets a folder of its own»
+    дано base равно "/tmp"
+    ожидается вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным "/tmp/task-numbers-forgery-") и потом равным (вариант «Making place»)
+  вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным (соединить [base, "/task-numbers-forgery-"] по "")) и потом равным (вариант «Making place»)
+
+тотальная функция «After finding place»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The folder for temporary files is asked first»
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и потом равным (вариант «Finding place»)
+  пример «Without the named folder the forgery goes to the common one»
+    дано reply равно вариант «Переменной среды нет»
+    ожидается вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным "/tmp/task-numbers-forgery-") и потом равным (вариант «Making place»)
+  разбор reply
+    случай вариант «Пока ничего»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и потом равным (вариант «Finding place»)
+    случай вариант «Значение среды» с значение как base
+      то «Make place» от base
+    случай любое
+      то «Make place» от "/tmp"
+
+тотальная функция «After making place»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Заведено» с путь как root
+      то «Move on» от root и («Moves» от root) и (пустой список)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то вариант «Не проверено» с код равным code и сообщение равным (соединить ["ПОДЛОГ НЕ СОБРАЛСЯ — временный каталог не завёлся: ", message] по "")
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали временный каталог"
+
+тотальная функция «Begin check»
+  возвращает «Step»
+  пример «The check begins with the folders of tasks»
+    ожидается вариант «Listing» с folders равным ["", "archive", "completed", "rejected"] и tasks равным пустой список
+  вариант «Listing» с folders равным («Folders») и tasks равным (пустой список)
+
+тотальная функция «Begin forgery»
+  возвращает «Step»
+  пример «The forgery begins with a place for the copy of the tree»
+    ожидается вариант «Finding place»
+  вариант «Finding place»
+
+тотальная функция «Next»
+  принимает step: «Step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор step
+    случай вариант «Listing» с folders как folders и tasks как tasks
+      то «After listing» от folders и tasks и reply
+    случай вариант «Reading headers» с tasks как tasks
+      то «After headers» от tasks и reply
+    случай вариант «Reading refusals» с pending как pending и tasks как tasks и troubles как troubles
+      то «After refusal» от pending и tasks и troubles и reply
+    случай вариант «Finding place»
+      то «After finding place» от reply
+    случай вариант «Making place»
+      то «After making place» от reply
+    случай вариант «Moving» с root как root и current как current и rest как rest и shown как shown
+      то «After move» от root и current и rest и shown и reply
+    случай вариант «Clearing» с fault как fault и shown как shown
+      то «After clearing» от fault и shown
+
+план «Check»
+  состояние «Step»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Step»
+  начинает с «Begin forgery»
+  обрабатывает «Next»
+
+тотальная функция «Объявление ярлыка задачник:номера»
+  возвращает строка
+  "bootstrap/flang io --plan Check — номер задачи не занят дважды НИ В ОДНОМ из четырёх каталогов (tasks, archive, completed, rejected) и сходится с именем файла, а у отклонённой названы довод и дата — 31 августа две ветки от одного основания раздали семь одинаковых номеров, и не покраснел никто"
+
+тотальная функция «Объявление ярлыка задачник:номера-подлог»
+  возвращает строка
+  "bootstrap/flang io --plan Forgery — проверка номеров задач краснеет на двойном номере, на двойнике через каталоги, на отказе без довода и на шапке, разошедшейся с именем файла, а зеленеет на законном отказе — шесть сторон прогоном, в собранном на время дереве"

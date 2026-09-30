@@ -342,7 +342,7 @@ checks and send a change is [`CONTRIBUTING.md`](CONTRIBUTING.md). Decisions are 
 [`docs/zettel/`](docs/zettel/README.md).
 
 Prose in this tree is held to the tree by runs, not by memory: a number written by hand carries a
-note saying how it was measured (`scripts/guards/prose-numbers-guard.sh`), a path in a link must
+note saying how it was measured (`scripts/guards/prose-numbers-guard.fscript`), a path in a link must
 exist (`scripts/guards/link-guard.fscript`), and a word of internal jargon on a page for an outside
 reader is refused (`scripts/guards/jargon-guard.fscript`). This page is one of the pages those
 checks read.

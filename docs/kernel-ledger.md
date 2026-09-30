@@ -12,7 +12,7 @@
 ```sh
 KOMMIT=4a26cf05 bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 -- /путь/куда   # 66,64 с
 PREDEL_SHAGOV=400000000000 DVOICHNYY=/путь/куда/flang \
-  sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang        # 399,17 с
+  bootstrap/flang io scripts/ledgers/take-proof-ledger.fscript --timeout 36000000 -- flang/stdlib/aes.flang        # 399,17 с
 ```
 
 ## Часть 1. Двоичный: компилятор из семени, рантайм из дерева
@@ -79,7 +79,7 @@ PREDEL_SHAGOV=400000000000 DVOICHNYY=/путь/куда/flang \
 записанный в задаче 6128 как «огромный», на семени 30 августа ОПУСКАЕТ предел в
 3,5 раза.** 29 августа он поднимал его в 400 раз против вшитого миллиарда. Число
 из вчерашней записки — не постоянная, а замер; сверяться надо с шапкой того
-семени, из которого собран двоичный. `take-proof-ledger.sh` сверяет сам, читая
+семени, из которого собран двоичный. `take-proof-ledger.fscript` сверяет сам, читая
 шапку из каталога сборки рядом с двоичным, и говорит вслух:
 
 ```
@@ -96,7 +96,7 @@ PREDEL_SHAGOV=400000000000 DVOICHNYY=/путь/куда/flang \
 
 ```sh
 PIK=1G PAMYAT=45G PREDEL_SHAGOV=400000000000 \
-  sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang
+  bootstrap/flang io scripts/ledgers/take-proof-ledger.fscript --timeout 36000000 -- flang/stdlib/aes.flang
 ```
 
 `PAMYAT` — адресное пространство (умолчание скрипта 45G), `PIK` — замеренный пик
@@ -110,7 +110,7 @@ PIK=1G PAMYAT=45G PREDEL_SHAGOV=400000000000 \
 замыканию, а не к файлу: на ядре она завышает в 34,2 раза, на `proofterm` — в
 12,9. Долю САМОГО файла считает `scripts/ledgers/proved-share-of-a-file.py` — по имени
 функции, объявленной в файле, двумя независимыми счётами, которые обязаны
-сойтись. `take-proof-ledger.sh` зовёт его сам.
+сойтись. `take-proof-ledger.fscript` зовёт его сам.
 
 ## Проверка прогоном: 30 августа 2026, ствол `747fe6ee`
 
@@ -155,7 +155,7 @@ $ cmp <собранное>/flang /srv/flang-rabota/m-kernel-ledger/build-kernel/
 
 ```
 $ DVOICHNYY=…/flang PIK=1G PAMYAT=45G PREDEL_SHAGOV=400000000000 \
-    sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang
+    bootstrap/flang io scripts/ledgers/take-proof-ledger.fscript --timeout 36000000 -- flang/stdlib/aes.flang
 двоичный: …/flang (f32d89f599dd6b9f740f42a752dff1ff)
 ключи: --proof --json --предел-шагов 400000000000
 код 0 ZAMER 399.17 571176
@@ -207,12 +207,12 @@ md5:      4e32f9f76d8215c3b5df1b6abe0b6a68
 Им же сняты две ведомости, обе сошлись с описью:
 
 ```
-$ PIK=2G PAMYAT=16G sh scripts/ledgers/take-proof-ledger.sh flang/proof/map/abilities.flang
+$ PIK=2G PAMYAT=16G bootstrap/flang io scripts/ledgers/take-proof-ledger.fscript --timeout 36000000 -- flang/proof/map/abilities.flang
 код 0 ZAMER 1.41 44484
   доказано 27, сетка 0, объявлено 1 → два счёта сошлись: доказано 27 из 38 = 71,1 %
 опись: 4cff036ef9b62c189f00312cede89bac|38|27|0|1|10
 
-$ PIK=2G PAMYAT=16G sh scripts/ledgers/take-proof-ledger.sh flang/proof/examples/corpus-alphabet.flang
+$ PIK=2G PAMYAT=16G bootstrap/flang io scripts/ledgers/take-proof-ledger.fscript --timeout 36000000 -- flang/proof/examples/corpus-alphabet.flang
 код 0 ZAMER 0.89 21420
   два счёта сошлись: доказано 7 из 7 = 100,0 %
 опись: eba240cf6cb7ccae108943260e9892eb|7|7|0|0|0
@@ -224,11 +224,11 @@ $ PIK=2G PAMYAT=16G sh scripts/ledgers/take-proof-ledger.sh flang/proof/examples
 шаги, а в глубину вызовов:
 
 ```
-$ PIK=2G PAMYAT=45G sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang
+$ PIK=2G PAMYAT=45G bootstrap/flang io scripts/ledgers/take-proof-ledger.fscript --timeout 36000000 -- flang/stdlib/aes.flang
 код 1 ZAMER 25.38 402420
 FLANG_RECURSION_LIMIT: функция «Дальше после шага» превысила предел глубины вызовов (20000) на глубине 20001
 
-$ PIK=4G PAMYAT=45G PREDEL_GLUBINY=200000 sh scripts/ledgers/take-proof-ledger.sh flang/stdlib/aes.flang
+$ PIK=4G PAMYAT=45G PREDEL_GLUBINY=200000 bootstrap/flang io scripts/ledgers/take-proof-ledger.fscript --timeout 36000000 -- flang/stdlib/aes.flang
 код 1 ZAMER 13.30 578120
 FLANG_RECURSION_LIMIT: функция «Поле знач по ключу» превысила предел глубины вызовов (200000) на глубине 200001
 ```

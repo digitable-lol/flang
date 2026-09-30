@@ -1,0 +1,735 @@
+модуль «Seed knows type words guard»
+
+объект «Found»
+  «path»: строка
+  «line»: строка
+  «word»: строка
+  «place»: строка
+
+объект «Reading»
+  «path»: строка
+  «block»: строка
+  «noted»: признак
+  «words»: число
+  «seen»: строка
+  «strange»: список «Found»
+
+объект «Known»
+  «marks»: строка
+  «words»: число
+
+объект «Toggle»
+  «inside»: признак
+  «text»: строка
+
+объект «Rule»
+  «name»: строка
+  «holds»: признак
+
+тип «Step»
+  вариант «Asking names» содержит forged: признак
+  вариант «Finding place» содержит forged: признак, names: список строки
+  вариант «Making place» содержит forged: признак, names: список строки
+  вариант «Forging» содержит root: строка
+  вариант «Gathering» содержит root: строка, forged: признак
+  вариант «Asking seed» содержит root: строка, forged: признак, files: строка
+  вариант «Reading lines» содержит root: строка, forged: признак, files: строка, known: «Known»
+  вариант «Clearing» содержит verdict: «Продолжение»
+
+тотальная функция «Joined» от «Kind»
+  принимает front: список «Kind», back: список «Kind»
+  возвращает список «Kind»
+  пример «The back list follows the front one»
+    дано front равно ["one"]
+    дано back равно ["two", "three"]
+    ожидается ["one", "two", "three"]
+  свёртка back начиная с front как joined и piece → добавить piece к joined
+
+тотальная функция «Without leading blanks»
+  принимает text: строка
+  возвращает строка
+  пример «Blanks and tabs before the text are dropped»
+    дано text равно " \t  run: make"
+    ожидается "run: make"
+  разбор text
+    случай пусто
+      то ""
+    случай голова и хвост
+      то если " \t\r\n" содержит голова
+        то «Without leading blanks» от хвост
+        иначе text
+
+тотальная функция «Words»
+  принимает line: строка
+  возвращает список строки
+  пример «Blanks and tabs part the words»
+    дано line равно "  sh \tscripts/guards/one.sh  --check"
+    ожидается ["sh", "scripts/guards/one.sh", "--check"]
+  отфильтровать (разделить (соединить (разделить line по "\t") по " ") по " ") где word → не (word равен "")
+
+тотальная функция «Gathering script»
+  возвращает строка
+  "cd ../.. && place=$1 && shift && { if [ $# -gt 0 ]; then printf '%s\\n' \"$@\"; else find . \\( -name '*.flang' -o -name '*.fscript' \\) -not -path '*/.git/*' | LC_ALL=C sort; fi; } > \"$place/files\" && { tr '\\n' '\\0' < \"$place/files\" | LC_ALL=C.UTF-8 xargs -0 grep -n -H -o -E '^[ \t]+принимает .*|^[ \t]+возвращает .*|^[ \t]+дано [^«]*:.*|^[ \t]+«[^»]+»[ \t]*:.*|^[ \t]+«[^»]+»[ \t]+(иногда[ \t]+)?является[ \t].*|^[ \t]+вариант «[^»]+»[ \t]+содержит[ \t].*|^тип «.*|^(объект «|(тотальная |частичная )?функция «|теорема )|^[ \t]*/\\*.*|^.*\\*/.*|^[^ \t/]' > \"$place/lines\"; wc -l < \"$place/files\"; }"
+
+тотальная функция «Forged source»
+  возвращает строка
+  пример «an invented type stands in two places of a type»
+    ожидается "модуль «Forged»\n\nтотальная функция «Taken»\n  принимает size: невыдуманноеслово\n  возвращает невыдуманноеслово\n  size\n"
+  "модуль «Forged»\n\nтотальная функция «Taken»\n  принимает size: невыдуманноеслово\n  возвращает невыдуманноеслово\n  size\n"
+
+тотальная функция «First piece»
+  принимает text: строка, sign: строка
+  возвращает строка
+  пример «the text before the sign»
+    дано text равно "число:tNumber"
+    дано sign равно ":"
+    ожидается "число"
+  пример «a text without the sign is its own first piece»
+    дано text равно "нат"
+    дано sign равно ":"
+    ожидается "нат"
+  разбор (разделить text по sign)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «After first»
+  принимает text: строка, sign: строка
+  возвращает строка
+  пример «the text after the first sign keeps the later signs»
+    дано text равно "a:b:c"
+    дано sign равно ":"
+    ожидается "b:c"
+  пример «a text without the sign has nothing after it»
+    дано text равно "abc"
+    дано sign равно ":"
+    ожидается ""
+  разбор (разделить text по sign)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то соединить хвост по sign
+
+тотальная функция «First holding»
+  принимает rules: список «Rule», otherwise: строка
+  возвращает строка
+  пример «the first rule that holds gives the name»
+    дано rules равно [(запись «Rule» с «name» равным "one" и «holds» равным нет), (запись «Rule» с «name» равным "two" и «holds» равным да), (запись «Rule» с «name» равным "three" и «holds» равным да)]
+    дано otherwise равно "none"
+    ожидается "two"
+  пример «no rule holds»
+    дано rules равно [(запись «Rule» с «name» равным "one" и «holds» равным нет)]
+    дано otherwise равно "none"
+    ожидается "none"
+  разбор (отфильтровать rules где each → each.«holds»)
+    случай пусто
+      то otherwise
+    случай голова и хвост
+      то голова.«name»
+
+тотальная функция «Seed word»
+  принимает piece: строка
+  возвращает строка
+  пример «the lexer form keeps its left half»
+    дано piece равно "число:tNumber"
+    ожидается "число"
+  пример «the mark of a surface is dropped»
+    дано piece равно "если@ru"
+    ожидается "если"
+  пример «a plain word stays»
+    дано piece равно "нат"
+    ожидается "нат"
+  пусть left равно («First piece» от piece и ":")
+  если ((длина left) больше 3) и притом ((символ ((длина left) минус 2) в left) равен "@")
+    то подстрока left с 1 по ((длина left) минус 3)
+    иначе left
+
+тотальная функция «Is known»
+  принимает marks: строка, word: строка
+  возвращает признак
+  пример «a whole word is known»
+    дано marks равно "|число|строка|"
+    дано word равно "строка"
+    ожидается да
+  пример «a part of a word is not known»
+    дано marks равно "|число|строка|"
+    дано word равно "стро"
+    ожидается нет
+  marks содержит (соединить ["|", word, "|"] по "")
+
+тотальная функция «Known step»
+  принимает known: «Known», piece: строка
+  возвращает «Known»
+  пример «a new word is added»
+    дано known равно (запись «Known» с «marks» равным "|" и «words» равным 0)
+    дано piece равно "число:tNumber"
+    ожидается (запись «Known» с «marks» равным "|число|" и «words» равным 1)
+  пример «a word is counted once»
+    дано known равно (запись «Known» с «marks» равным "|число|" и «words» равным 1)
+    дано piece равно "число"
+    ожидается (запись «Known» с «marks» равным "|число|" и «words» равным 1)
+  пример «a blank piece is not a word»
+    дано known равно (запись «Known» с «marks» равным "|" и «words» равным 0)
+    дано piece равно "  "
+    ожидается (запись «Known» с «marks» равным "|" и «words» равным 0)
+  пусть word равно («Seed word» от piece)
+  если ((«Without leading blanks» от word) равен "") или («Is known» от (known.«marks») и word)
+    то known
+    иначе запись «Known» с «marks» равным (соединить [(known.«marks»), word, "|"] по "") и «words» равным ((known.«words») плюс 1)
+
+тотальная функция «Known of»
+  принимает lists: строка
+  возвращает «Known»
+  пример «the words of every list of the seed are known»
+    дано lists равно "|число:tNumber|числа:tNumber|\n|нат|число|\n"
+    ожидается (запись «Known» с «marks» равным "|число|числа|нат|" и «words» равным 3)
+  свёртка (разделить (соединить (разделить lists по "\n") по "|") по "|") начиная с (запись «Known» с «marks» равным "|" и «words» равным 0) как known и piece → «Known step» от known и piece
+
+тотальная функция «Toggle step»
+  принимает toggle: «Toggle», piece: строка
+  возвращает «Toggle»
+  если toggle.«inside»
+    то запись «Toggle» с «inside» равным нет и «text» равным (соединить [(toggle.«text»), " "] по "")
+    иначе запись «Toggle» с «inside» равным да и «text» равным (соединить [(toggle.«text»), piece] по "")
+
+тотальная функция «Plain»
+  принимает content: строка
+  возвращает строка
+  пример «a text in quotes and a note after two slashes are not the code»
+    дано content равно "  принимает size: число // \"нат\""
+    ожидается "  принимает size: число "
+  пример «a text in quotes becomes a blank»
+    дано content равно "a \"b\" c"
+    ожидается "a   c"
+  пусть bare равно (если content содержит "\"" то ((свёртка (разделить content по "\"") начиная с (запись «Toggle» с «inside» равным нет и «text» равным "") как toggle и piece → «Toggle step» от toggle и piece).«text») иначе content)
+  «First piece» от bare и "//"
+
+тотальная функция «Masked»
+  принимает text: строка
+  возвращает строка
+  пример «a name in angle quotes becomes one sign»
+    дано text равно "«поле один»: список «Узел»"
+    ожидается "\u0001: список \u0001"
+  пример «a text without names stays»
+    дано text равно "size: число"
+    ожидается "size: число"
+  разбор (разделить text по "«")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то свёртка хвост начиная с голова как masked и piece → соединить [masked, "\u0001", («After first» от piece и "»")] по ""
+
+тотальная функция «Without last»
+  принимает pieces: список строки
+  возвращает список строки
+  пример «the name of the next parameter is not a word of the type»
+    дано pieces равно ["список", "строки,", "size"]
+    ожидается ["список", "строки,"]
+  пример «nothing is left of one piece»
+    дано pieces равно ["size"]
+    ожидается пустой список
+  свёртка pieces начиная с (пустой список) как kept и piece → (если (длина kept) меньше ((длина pieces) минус 1) то (добавить piece к kept) иначе kept)
+
+тотальная функция «Spelled»
+  принимает pieces: список строки
+  возвращает список строки
+  пример «brackets and commas part the words»
+    дано pieces равно ["(список", "строки),"]
+    ожидается ["список", "строки"]
+  «Words» от (свёртка ["(", ")", ",", "?", "|", "→"] начиная с (соединить pieces по " ") как spelled и sign → соединить (разделить spelled по sign) по " ")
+
+тотальная функция «Is plain word»
+  принимает word: строка
+  возвращает признак
+  пример «a word of letters»
+    дано word равно "невыдуманноеслово"
+    ожидается да
+  пример «a piece with a sign is a misfire of the reading»
+    дано word равно "a.b"
+    ожидается нет
+  пример «a number is not a word»
+    дано word равно "42"
+    ожидается нет
+  пример «a masked name is not a word»
+    дано word равно "\u0001"
+    ожидается нет
+  пусть signs равно (отфильтровать ["[", "]", "(", ")", "{", "}", "<", ">", ":", ";", ",", ".", "!", "?", "|", "=", "+", "*", "/", "\\", "'", "\"", "\u0001", "»", "-"] где sign → word содержит sign)
+  пусть letters равно (отфильтровать (разложить word на символы) где sign → не ("0123456789" содержит sign))
+  ((длина signs) равен 0) и притом ((длина letters) больше 0)
+
+тотальная функция «Counted»
+  принимает reading: «Reading», line: строка, place: строка, word: строка, known: признак
+  возвращает «Reading»
+  пример «a known word is remembered as seen»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
+    дано line равно "4"
+    дано place равно "принимает"
+    дано word равно "число"
+    дано known равно да
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 2 и «seen» равным "|число|" и «strange» равным пустой список)
+  пример «a strange word is kept with its place»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
+    дано line равно "4"
+    дано place равно "принимает"
+    дано word равно "невыдуманноеслово"
+    дано known равно нет
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 2 и «seen» равным "|" и «strange» равным [(запись «Found» с «path» равным "./a.flang" и «line» равным "4" и «word» равным "невыдуманноеслово" и «place» равным "принимает")])
+  если known
+    то запись «Reading» с «path» равным (reading.«path») и «block» равным (reading.«block») и «noted» равным (reading.«noted») и «words» равным ((reading.«words») плюс 1) и «seen» равным (соединить [(reading.«seen»), word, "|"] по "") и «strange» равным (reading.«strange»)
+    иначе запись «Reading» с «path» равным (reading.«path») и «block» равным (reading.«block») и «noted» равным (reading.«noted») и «words» равным ((reading.«words») плюс 1) и «seen» равным (reading.«seen») и «strange» равным (добавить (запись «Found» с «path» равным (reading.«path») и «line» равным line и «word» равным word и «place» равным place) к (reading.«strange»))
+
+тотальная функция «Seen»
+  принимает reading: «Reading»
+  возвращает «Reading»
+  запись «Reading» с «path» равным (reading.«path») и «block» равным (reading.«block») и «noted» равным (reading.«noted») и «words» равным ((reading.«words») плюс 1) и «seen» равным (reading.«seen») и «strange» равным (reading.«strange»)
+
+тотальная функция «Spelled step»
+  принимает reading: «Reading», marks: строка, line: строка, place: строка, word: строка
+  возвращает «Reading»
+  пусть known равно («Is known» от marks и word)
+  если known или («Is plain word» от word)
+    то «Counted» от reading и line и place и word и known
+    иначе reading
+
+тотальная функция «Word step»
+  принимает reading: «Reading», marks: строка, line: строка, place: строка, piece: строка
+  возвращает «Reading»
+  пример «a word seen before is only counted»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|число|" и «strange» равным пустой список)
+    дано marks равно "|число|список|"
+    дано line равно "4"
+    дано place равно "принимает"
+    дано piece равно "число"
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 2 и «seen» равным "|число|" и «strange» равным пустой список)
+  пример «a masked name is not a word»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
+    дано marks равно "|число|список|"
+    дано line равно "4"
+    дано place равно "принимает"
+    дано piece равно "\u0001"
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
+  пример «a piece with brackets is spelled into words»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано marks равно "|число|список|"
+    дано line равно "4"
+    дано place равно "принимает"
+    дано piece равно "(список,невыдуманноеслово),"
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 2 и «seen» равным "|список|" и «strange» равным [(запись «Found» с «path» равным "./a.flang" и «line» равным "4" и «word» равным "невыдуманноеслово" и «place» равным "принимает")])
+  пусть kind равно («First holding» от [(запись «Rule» с «name» равным "masked" и «holds» равным (piece равен "\u0001")), (запись «Rule» с «name» равным "seen" и «holds» равным («Is known» от (reading.«seen») и piece))] и "fresh")
+  разбор kind
+    случай "masked"
+      то reading
+    случай "seen"
+      то «Seen» от reading
+    случай любое
+      то свёртка («Spelled» от [piece]) начиная с reading как spelled и word → «Spelled step» от spelled и marks и line и place и word
+
+тотальная функция «Taken»
+  принимает reading: «Reading», marks: строка, line: строка, place: строка, pieces: список строки
+  возвращает «Reading»
+  свёртка pieces начиная с reading как taken и piece → «Word step» от taken и marks и line и place и piece
+
+тотальная функция «Type of parameter»
+  принимает pieces: список строки
+  возвращает список строки
+  пример «the word that joins parameters is not a word of the type»
+    дано pieces равно ["число", "и", "\u0001"]
+    ожидается ["число"]
+  пример «the joining word inside a type stays»
+    дано pieces равно ["«Разбор»", "от", "«З»", "и", "«Б»", "size"]
+    ожидается ["«Разбор»", "от", "«З»", "и", "«Б»"]
+  пусть kept равно («Without last» от pieces)
+  разбор kept
+    случай пусто
+      то kept
+    случай голова и хвост
+      то если (элемент (длина kept) в kept) равен "и"
+        то «Without last» от kept
+        иначе kept
+
+тотальная функция «Signed pieces»
+  принимает signature: строка
+  возвращает список строки
+  пример «every type stands between a colon and the name of the next parameter»
+    дано signature равно "size: число, names: список строки и \u0001: невыдуманноеслово"
+    ожидается ["число,", "список", "строки", "невыдуманноеслово"]
+  разбор (разделить (соединить [signature, " \u0001"] по "") по ":")
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то свёртка хвост начиная с (пустой список) как taken и piece → «Joined» от taken и («Type of parameter» от («Words» от piece))
+
+тотальная функция «In block»
+  принимает reading: «Reading», blocks: строка
+  возвращает признак
+  пример «a function is one of the blocks with a signature»
+    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано blocks равно "|function|theorem|"
+    ожидается да
+  blocks содержит (соединить ["|", (reading.«block»), "|"] по "")
+
+тотальная функция «Field pieces»
+  принимает body: строка
+  возвращает список строки
+  пример «a field with a colon»
+    дано body равно "\u0001: число"
+    ожидается ["число"]
+  пример «a field spoken with a word»
+    дано body равно "\u0001 иногда является число"
+    ожидается ["число"]
+  пример «a line that is not a field»
+    дано body равно "\u0001 от число"
+    ожидается пустой список
+  пусть spoken равно (соединить (разделить (соединить ["\u0001", («After first» от body и "\u0001")] по "") по "\u0001 иногда является ") по "\u0001 является ")
+  пусть kind равно («First holding» от [(запись «Rule» с «name» равным "colon" и «holds» равным ((«Without leading blanks» от («After first» от body и "\u0001")) начинается с ":")), (запись «Rule» с «name» равным "spoken" и «holds» равным (spoken начинается с "\u0001 является "))] и "none")
+  разбор kind
+    случай "colon"
+      то «Words» от («After first» от body и ":")
+    случай "spoken"
+      то «Words» от («After first» от spoken и "\u0001 является ")
+    случай любое
+      то пустой список
+
+тотальная функция «Inside step»
+  принимает reading: «Reading», marks: строка, line: строка, content: строка
+  возвращает «Reading»
+  пример «the types of a signature are counted»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано marks равно "|число|"
+    дано line равно "4"
+    дано content равно "  принимает size: число, «имя»: число"
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 2 и «seen» равным "|число|" и «strange» равным пустой список)
+  пример «a signature outside of a function is not read»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано marks равно "|число|"
+    дано line равно "4"
+    дано content равно "  возвращает число"
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+  пусть body равно («Without leading blanks» от («Masked» от («Plain» от content)))
+  пусть signed равно («In block» от reading и "|function|theorem|")
+  разбор («First piece» от body и " ")
+    случай "принимает"
+      то «Taken» от reading и marks и line и "принимает" и (если signed то («Signed pieces» от («After first» от body и "принимает ")) иначе (пустой список))
+    случай "возвращает"
+      то «Taken» от reading и marks и line и "возвращает" и (если signed то («Words» от («After first» от body и "возвращает ")) иначе (пустой список))
+    случай "дано"
+      то «Taken» от reading и marks и line и "дано" и (если «In block» от reading и "|theorem|" то («Signed pieces» от («First piece» от («After first» от body и "дано ") и " таких что")) иначе (пустой список))
+    случай "вариант"
+      то «Taken» от reading и marks и line и "вариант" и (если «In block» от reading и "|sum|" то («Signed pieces» от («After first» от body и " содержит ")) иначе (пустой список))
+    случай любое
+      то «Taken» от reading и marks и line и "поле" и (если «In block» от reading и "|object|" то («Field pieces» от body) иначе (пустой список))
+
+тотальная функция «Alias pieces»
+  принимает content: строка
+  возвращает список строки
+  пример «the type after the word of an alias»
+    дано content равно "тип «Вес» является число"
+    ожидается ["число"]
+  пример «a sum type is not an alias»
+    дано content равно "тип «Ход»"
+    ожидается пустой список
+  пусть spoken равно (свёртка [" alias ", " является ", " is ", " = "] начиная с (соединить [(«Masked» от («Plain» от content)), " "] по "") как spoken и sign → соединить (разделить spoken по sign) по "\u0002")
+  разбор (разделить spoken по "\u0002")
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то «Words» от (свёртка хвост начиная с "" как last и piece → piece)
+
+тотальная функция «Top step»
+  принимает reading: «Reading», marks: строка, line: строка, content: строка
+  возвращает «Reading»
+  пример «a function opens a block with a signature»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано marks равно "|число|"
+    дано line равно "3"
+    дано content равно "тотальная функция «"
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+  пример «an alias is read at once and opens nothing»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано marks равно "|число|"
+    дано line равно "3"
+    дано content равно "тип «Вес» является число"
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и «words» равным 1 и «seen» равным "|число|" и «strange» равным пустой список)
+  пусть alias равно (если content начинается с "тип «" то («Alias pieces» от content) иначе (пустой список))
+  пусть block равно («First holding» от [(запись «Rule» с «name» равным "other" и «holds» равным ((длина alias) больше 0)), (запись «Rule» с «name» равным "object" и «holds» равным (content начинается с "объект «")), (запись «Rule» с «name» равным "sum" и «holds» равным (content начинается с "тип «")), (запись «Rule» с «name» равным "theorem" и «holds» равным (content начинается с "теорема ")), (запись «Rule» с «name» равным "function" и «holds» равным (content содержит "функция «"))] и "other")
+  «Taken» от (запись «Reading» с «path» равным (reading.«path») и «block» равным block и «noted» равным нет и «words» равным (reading.«words») и «seen» равным (reading.«seen») и «strange» равным (reading.«strange»)) и marks и line и "псевдоним" и alias
+
+тотальная функция «Noting»
+  принимает reading: «Reading», noted: признак
+  возвращает «Reading»
+  запись «Reading» с «path» равным (reading.«path») и «block» равным (reading.«block») и «noted» равным noted и «words» равным (reading.«words») и «seen» равным (reading.«seen») и «strange» равным (reading.«strange»)
+
+тотальная функция «Fresh»
+  принимает reading: «Reading», path: строка
+  возвращает «Reading»
+  пример «a new file forgets the block of the last one»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным да и «words» равным 5 и «seen» равным "|" и «strange» равным пустой список)
+    дано path равно "./b.flang"
+    ожидается (запись «Reading» с «path» равным "./b.flang" и «block» равным "" и «noted» равным нет и «words» равным 5 и «seen» равным "|" и «strange» равным пустой список)
+  если path равен (reading.«path»)
+    то reading
+    иначе запись «Reading» с «path» равным path и «block» равным "" и «noted» равным нет и «words» равным (reading.«words») и «seen» равным (reading.«seen») и «strange» равным (reading.«strange»)
+
+тотальная функция «Content step»
+  принимает reading: «Reading», marks: строка, line: строка, content: строка
+  возвращает «Reading»
+  пусть opening равно ((content содержит "/*") и притом ((«Without leading blanks» от content) начинается с "/*"))
+  пусть kind равно («First holding» от [(запись «Rule» с «name» равным "noted" и «holds» равным ((reading.«noted») или opening)), (запись «Rule» с «name» равным "skipped" и «holds» равным ((content равен "/") или (content содержит "*/"))), (запись «Rule» с «name» равным "inside" и «holds» равным ((content начинается с " ") или (content начинается с "\t")))] и "top")
+  разбор kind
+    случай "noted"
+      то «Noting» от reading и (не (content содержит "*/"))
+    случай "skipped"
+      то reading
+    случай "inside"
+      то «Inside step» от reading и marks и line и content
+    случай любое
+      то «Top step» от reading и marks и line и content
+
+тотальная функция «Line step»
+  принимает reading: «Reading», marks: строка, found: строка
+  возвращает «Reading»
+  пример «a line of the search names the file, the line and what stands there»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано marks равно "|число|"
+    дано found равно "./a.flang:5:  возвращает невыдуманноеслово"
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|" и «strange» равным [(запись «Found» с «path» равным "./a.flang" и «line» равным "5" и «word» равным "невыдуманноеслово" и «place» равным "возвращает")])
+  пример «an empty line of the search changes nothing»
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано marks равно "|число|"
+    дано found равно ""
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+  пусть tail равно («After first» от found и ":")
+  если tail равен ""
+    то reading
+    иначе «Content step» от («Fresh» от reading и («First piece» от found и ":")) и marks и («First piece» от tail и ":") и («After first» от tail и ":")
+
+тотальная функция «Shown path»
+  принимает path: строка
+  возвращает строка
+  пример «the path is told from the root of the tree»
+    дано path равно "./flang/self/types.flang"
+    ожидается "flang/self/types.flang"
+  пример «a path from the root of the disk is told whole»
+    дано path равно "/tmp/forged.flang"
+    ожидается "/tmp/forged.flang"
+  если path начинается с "./"
+    то подстрока path с 3 по (длина path)
+    иначе path
+
+тотальная функция «Trouble of»
+  принимает found: «Found»
+  возвращает строка
+  пример «the place of a strange word is told to the line»
+    дано found равно (запись «Found» с «path» равным "./a.flang" и «line» равным "5" и «word» равным "невыдуманноеслово" и «place» равным "возвращает")
+    ожидается "  a.flang:5: применено «невыдуманноеслово» (возвращает) — семя такого слова не знает"
+  соединить ["  ", («Shown path» от (found.«path»)), ":", (found.«line»), ": применено «", (found.«word»), "» (", (found.«place»), ") — семя такого слова не знает"] по ""
+
+тотальная функция «Uses of»
+  принимает strange: список «Found»
+  возвращает список строки
+  пример «every strange word is told once with the count of its uses»
+    дано strange равно [(запись «Found» с «path» равным "./a.flang" и «line» равным "4" и «word» равным "невыдуманноеслово" и «place» равным "принимает"), (запись «Found» с «path» равным "./a.flang" и «line» равным "5" и «word» равным "невыдуманноеслово" и «place» равным "возвращает")]
+    ожидается ["  «невыдуманноеслово» — применений: 2"]
+  пусть told равно (свёртка strange начиная с (запись «Known» с «marks» равным "|" и «words» равным 0) как known и found → «Known step» от known и (found.«word»))
+  отобразить (отфильтровать (разделить (told.«marks») по "|") где word → не (word равен "")) как word → соединить ["  «", word, "» — применений: ", (к строке (длина (отфильтровать strange где found → (found.«word») равен word)))] по ""
+
+тотальная функция «Advice»
+  возвращает строка
+  "\nСЛОВО ВВЕДЕНО И ПРИМЕНЕНО В ОДНОМ ИЗМЕНЕНИИ. Так нельзя: закоммиченное семя об\nэтом слове не знает, узнать может только перепечаткой, а перепечатка читает эти\nже исходники. Дерево перестаёт проверяться любым существующим двоичным.\n\nПорядок трёхшаговый:\n  1. ввести слово в компилятор, НЕ применяя его в позициях типа;\n  2. перепечатать семя  —  sh scripts/bootstrap-reprint.sh\n  3. применить, отдельным изменением.\n\nСейчас надо откатить ТРЕТИЙ шаг — применение — и оставить первый."
+
+тотальная функция «Counts»
+  принимает files: строка, reading: «Reading», known: «Known»
+  возвращает строка
+  пример «four counts on one line»
+    дано files равно "1064"
+    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "" и «noted» равным нет и «words» равным 57184 и «seen» равным "|" и «strange» равным пустой список)
+    дано known равно (запись «Known» с «marks» равным "|" и «words» равным 871)
+    ожидается "сторож слов: файлов 1064, слов в позициях типа 57184, словарь семени 871, чужих семени 0"
+  соединить ["сторож слов: файлов ", files, ", слов в позициях типа ", (к строке (reading.«words»)), ", словарь семени ", (к строке (known.«words»)), ", чужих семени ", (к строке (длина (reading.«strange»)))] по ""
+
+тотальная функция «Verdict»
+  принимает forged: признак, files: строка, reading: «Reading», known: «Known»
+  возвращает «Продолжение»
+  пример «a tree without strange words ends the work»
+    дано forged равно нет
+    дано files равно "2"
+    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "" и «noted» равным нет и «words» равным 7 и «seen» равным "|" и «strange» равным пустой список)
+    дано known равно (запись «Known» с «marks» равным "|" и «words» равным 871)
+    ожидается вариант «Конец работы» с значение равным "сторож слов: файлов 2, слов в позициях типа 7, словарь семени 871, чужих семени 0"
+  пример «a forgery that was not caught is told aloud»
+    дано forged равно да
+    дано files равно "1"
+    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано known равно (запись «Known» с «marks» равным "|" и «words» равным 871)
+    ожидается вариант «Конец работы» с значение равным "ПОДЛОГ НЕ ПОЙМАН — выдуманный тип «невыдуманноеслово» прошёл\nсторож слов: файлов 1, слов в позициях типа 0, словарь семени 871, чужих семени 0"
+  пусть counted равно (соединить [(если forged то "сторож слов: ПОДЛОГ — применён выдуманный тип «невыдуманноеслово»\n" иначе ""), («Counts» от files и reading и known)] по "")
+  разбор reading.«strange»
+    случай пусто
+      то вариант «Конец работы» с значение равным (если forged то (соединить ["ПОДЛОГ НЕ ПОЙМАН — выдуманный тип «невыдуманноеслово» прошёл\n", («Counts» от files и reading и known)] по "") иначе counted)
+    случай голова и хвост
+      то вариант «Провал» с код равным "FLANG_SEED_DOES_NOT_KNOW_THE_WORD" и сообщение равным (соединить [counted, "\n\n", (соединить (отобразить (reading.«strange») как found → «Trouble of» от found) по "\n"), "\n\n", (соединить («Uses of» от (reading.«strange»)) по "\n"), "\n", («Advice»)] по "")
+
+тотальная функция «Judged»
+  принимает forged: признак, files: строка, known: «Known», lines: строка
+  возвращает «Продолжение»
+  «Verdict» от forged и files и (свёртка (разделить lines по "\n") начиная с (запись «Reading» с «path» равным "" и «block» равным "" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список) как reading и found → «Line step» от reading и (known.«marks») и found) и known
+
+тотальная функция «Clear»
+  принимает root: строка, verdict: «Продолжение»
+  возвращает «Продолжение»
+  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", root]) и потом равным (вариант «Clearing» с verdict равным verdict)
+
+тотальная функция «Nothing to judge»
+  принимает what: строка
+  возвращает «Продолжение»
+  пример «what could not be seen is named»
+    дано what равно "семени нет"
+    ожидается вариант «Не проверено» с код равным "FLANG_SEED_WORDS_NOT_JUDGED" и сообщение равным "сторож слов: семени нет"
+  вариант «Не проверено» с код равным "FLANG_SEED_WORDS_NOT_JUDGED" и сообщение равным (соединить ["сторож слов: ", what] по "")
+
+тотальная функция «Gather»
+  принимает root: строка, forged: признак, names: список строки
+  возвращает «Продолжение»
+  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным («Joined» от ["-c", («Gathering script»), "sh", root] и names)) и потом равным (вариант «Gathering» с root равным root и forged равным forged)
+
+тотальная функция «After names»
+  принимает forged: признак, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «the files named by the caller are asked first»
+    дано forged равно нет
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Asking names» с forged равным нет)
+  разбор reply
+    случай вариант «Пока ничего»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Asking names» с forged равным forged)
+    случай вариант «Доводы» с доводы как names
+      то вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и потом равным (вариант «Finding place» с forged равным forged и names равным names)
+    случай любое
+      то вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и потом равным (вариант «Finding place» с forged равным forged и names равным (пустой список))
+
+тотальная функция «Make place»
+  принимает forged: признак, names: список строки, base: строка
+  возвращает «Продолжение»
+  вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным (соединить [base, "/seed-knows-type-words-"] по "")) и потом равным (вариант «Making place» с forged равным forged и names равным names)
+
+тотальная функция «After finding place»
+  принимает forged: признак, names: список строки, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Значение среды» с значение как base
+      то «Make place» от forged и names и base
+    случай любое
+      то «Make place» от forged и names и "/tmp"
+
+тотальная функция «After making place»
+  принимает forged: признак, names: список строки, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Заведено» с путь как root
+      то если forged
+        то вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным (соединить [root, "/forged.flang"] по "") и содержимое равным («Forged source»)) и потом равным (вариант «Forging» с root равным root)
+        иначе «Gather» от root и нет и names
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Nothing to judge» от (соединить ["временный каталог не завёлся — ", message] по "")
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали временный каталог"
+
+тотальная функция «After forging»
+  принимает root: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Clear» от root и («Nothing to judge» от (соединить ["ПОДЛОГ НЕ СОБРАЛСЯ — ", message] по ""))
+    случай любое
+      то «Gather» от root и да и [(соединить [root, "/forged.flang"] по "")]
+
+тотальная функция «Seed search»
+  возвращает «Поручение»
+  пример «the lists of words are taken from the printed seed»
+    ожидается вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-o", "-h", "-a", "-E", "--include=*.c", "\\|[^\"]+\\|", "../../bootstrap"]
+  вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-o", "-h", "-a", "-E", "--include=*.c", "\\|[^\"]+\\|", "../../bootstrap"]
+
+тотальная функция «After gathering»
+  принимает root: строка, forged: признак, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если (code равен 0) и притом (не ((«First piece» от output и "\n") равен "0"))
+        то вариант «Сделать» с поручение равным («Seed search») и потом равным (вариант «Asking seed» с root равным root и forged равным forged и files равным («First piece» от output и "\n"))
+        иначе «Clear» от root и («Nothing to judge» от (соединить ["читать нечего ", errors] по ""))
+    случай любое
+      то «Clear» от root и («Nothing to judge» от "обход дерева не состоялся")
+
+тотальная функция «After seed»
+  принимает root: строка, forged: признак, files: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если ((«Known of» от output).«words») меньше 100
+        то «Clear» от root и («Nothing to judge» от (соединить ["в семени нашлось всего ", (к строке ((«Known of» от output).«words»)), " слов — это не семя"] по ""))
+        иначе вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным (соединить [root, "/lines"] по "")) и потом равным (вариант «Reading lines» с root равным root и forged равным forged и files равным files и known равным («Known of» от output))
+    случай любое
+      то «Clear» от root и («Nothing to judge» от "каталога семени нет — bootstrap")
+
+тотальная функция «After lines»
+  принимает root: строка, forged: признак, files: строка, known: «Known», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как lines
+      то «Clear» от root и («Judged» от forged и files и known и lines)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Clear» от root и («Nothing to judge» от (соединить ["найденное не читается — ", message] по ""))
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали найденные строки"
+
+тотальная функция «Begin check»
+  возвращает «Step»
+  пример «the check reads the tree»
+    ожидается вариант «Asking names» с forged равным нет
+  вариант «Asking names» с forged равным нет
+
+тотальная функция «Begin forgery»
+  возвращает «Step»
+  пример «the forgery reads one forged file»
+    ожидается вариант «Asking names» с forged равным да
+  вариант «Asking names» с forged равным да
+
+тотальная функция «Next»
+  принимает step: «Step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор step
+    случай вариант «Asking names» с forged как forged
+      то «After names» от forged и reply
+    случай вариант «Finding place» с forged как forged и names как names
+      то «After finding place» от forged и names и reply
+    случай вариант «Making place» с forged как forged и names как names
+      то «After making place» от forged и names и reply
+    случай вариант «Forging» с root как root
+      то «After forging» от root и reply
+    случай вариант «Gathering» с root как root и forged как forged
+      то «After gathering» от root и forged и reply
+    случай вариант «Asking seed» с root как root и forged как forged и files как files
+      то «After seed» от root и forged и files и reply
+    случай вариант «Reading lines» с root как root и forged как forged и files как files и known как known
+      то «After lines» от root и forged и files и known и reply
+    случай вариант «Clearing» с verdict как verdict
+      то verdict
+
+план «Check»
+  состояние «Step»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Step»
+  начинает с «Begin forgery»
+  обрабатывает «Next»
+
+тотальная функция «Объявление ярлыка семя:слова»
+  возвращает строка
+  "bootstrap/flang io --plan Check --max-steps 4000000000 — слово в позиции типа известно закоммиченному семени — иначе дерево не читается ни одним двоичным"
+
+тотальная функция «Объявление ярлыка семя:слова:подлог»
+  возвращает строка
+  "bootstrap/flang io --plan Forgery — проверка слов семени краснеет на выдуманном типе: ключ у проверки был, а ярлыка не было — и поломку никто не гонял"

@@ -1,0 +1,1117 @@
+модуль «Prose numbers guard»
+
+объект «Mark»
+  «file»: строка
+  «line»: число
+  «parsed»: признак
+  «date»: строка
+  «instrument»: строка
+  «argument»: строка
+  «written»: строка
+  «text»: строка
+
+объект «Tally»
+  «root»: строка
+  «forged»: признак
+  «total»: число
+  «quotes»: число
+  «agreed»: число
+  «parted»: число
+  «broken»: число
+  «findings»: список строки
+
+объект «Brackets»
+  «strings»: число
+  «depth»: число
+  «closed»: признак
+  «seen»: признак
+
+объект «Walk»
+  «place»: число
+  «kept»: строка
+
+объект «Rule»
+  «name»: строка
+  «holds»: признак
+
+тип «Step»
+  вариант «Finding root» содержит forged: признак
+  вариант «Finding marks» содержит tally: «Tally»
+  вариант «Finding fences» содержит tally: «Tally», found: список строки
+  вариант «Counting files» содержит tally: «Tally», current: «Mark», rest: список «Mark»
+  вариант «Measuring» содержит tally: «Tally», current: «Mark», rest: список «Mark»
+  вариант «Counting list» содержит tally: «Tally», current: «Mark», rest: список «Mark», brackets: «Brackets», upto: число
+  вариант «Reading prose» содержит tally: «Tally», current: «Mark», rest: список «Mark», measured: строка
+
+тотальная функция «First holding»
+  принимает rules: список «Rule», otherwise: строка
+  возвращает строка
+  пример «the first rule that holds gives the name»
+    дано rules равно [(запись «Rule» с «name» равным "one" и «holds» равным нет), (запись «Rule» с «name» равным "two" и «holds» равным да)]
+    дано otherwise равно "none"
+    ожидается "two"
+  разбор (отфильтровать rules где each → each.«holds»)
+    случай пусто
+      то otherwise
+    случай голова и хвост
+      то голова.«name»
+
+тотальная функция «First piece»
+  принимает text: строка, sign: строка
+  возвращает строка
+  пример «the text before the sign»
+    дано text равно "docs/a.md:12:текст"
+    дано sign равно ":"
+    ожидается "docs/a.md"
+  разбор (разделить text по sign)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «After first»
+  принимает text: строка, sign: строка
+  возвращает строка
+  пример «the text after the first sign keeps the later signs»
+    дано text равно "docs/a.md:12:текст: ещё"
+    дано sign равно ":"
+    ожидается "12:текст: ещё"
+  разбор (разделить text по sign)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то соединить хвост по sign
+
+тотальная функция «Before last»
+  принимает text: строка, sign: строка
+  возвращает строка
+  пример «the path of a list stands before the last colon»
+    дано text равно "flang/self/parser.flang:6620"
+    дано sign равно ":"
+    ожидается "flang/self/parser.flang"
+  пусть pieces равно (разделить text по sign)
+  соединить (свёртка pieces начиная с (пустой список) как kept и piece → (если (длина kept) меньше ((длина pieces) минус 1) то (добавить piece к kept) иначе kept)) по sign
+
+тотальная функция «After last»
+  принимает text: строка, sign: строка
+  возвращает строка
+  пример «the line of a list stands after the last colon»
+    дано text равно "flang/self/parser.flang:6620"
+    дано sign равно ":"
+    ожидается "6620"
+  свёртка (разделить text по sign) начиная с "" как last и piece → piece
+
+тотальная функция «Is digit»
+  принимает sign: строка
+  возвращает признак
+  пример «seven is a digit»
+    дано sign равно "7"
+    ожидается да
+  пример «a letter is not a digit»
+    дано sign равно "a"
+    ожидается нет
+  ((длина sign) равен 1) и притом ("0123456789" содержит sign)
+
+тотальная функция «Leading digits»
+  принимает text: строка
+  возвращает строка
+  пример «the digits at the start»
+    дано text равно "96-->"
+    ожидается "96"
+  пример «no digits at the start»
+    дано text равно "-->"
+    ожидается ""
+  разбор text
+    случай пусто
+      то ""
+    случай голова и хвост
+      то если «Is digit» от голова
+        то соединить [голова, («Leading digits» от хвост)] по ""
+        иначе ""
+
+тотальная функция «Made of»
+  принимает text: строка, signs: строка
+  возвращает признак
+  пример «a date is made of digits and dashes»
+    дано text равно "2026-09-17"
+    дано signs равно "0123456789-"
+    ожидается да
+  пример «a letter spoils it»
+    дано text равно "2026-09-1x"
+    дано signs равно "0123456789-"
+    ожидается нет
+  (длина (отфильтровать (разложить text на символы) где sign → не (signs содержит sign))) равен 0
+
+тотальная функция «Word at»
+  принимает words: список строки, place: число
+  возвращает строка
+  пример «a word past the end is empty»
+    дано words равно ["a"]
+    дано place равно 3
+    ожидается ""
+  если place больше (длина words)
+    то ""
+    иначе элемент place в words
+
+тотальная функция «Is mark»
+  принимает piece: строка
+  возвращает признак
+  пример «a mark names the date, the instrument, the argument and the number»
+    дано piece равно "2026-09-17 файлов *.sh = 96 (задача)"
+    ожидается да
+  пример «a pattern of a mark is not a mark»
+    дано piece равно "ГГГГ-ММ-ДД <прибор> <довод> = <число>"
+    ожидается нет
+  пусть words равно (разделить piece по " ")
+  пусть opening равно («Word at» от words и 1)
+  (не (opening равен "")) и притом («Made of» от opening и "0123456789-") и притом (не ((«Word at» от words и 2) равен "")) и притом (не ((«Word at» от words и 3) равен "")) и притом ((«Word at» от words и 4) равен "=") и притом (не ((«Leading digits» от («Word at» от words и 5)) равен ""))
+
+тотальная функция «Mark of»
+  принимает file: строка, line: число, piece: строка
+  возвращает «Mark»
+  пример «the fields of a mark are its words»
+    дано file равно "docs/a.md"
+    дано line равно 3
+    дано piece равно "2026-09-17 строк docs/b.md = 12 -->"
+    ожидается (запись «Mark» с «file» равным "docs/a.md" и «line» равным 3 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "строк" и «argument» равным "docs/b.md" и «written» равным "12" и «text» равным "")
+  пусть words равно (разделить piece по " ")
+  запись «Mark» с «file» равным file и «line» равным line и «parsed» равным да и «date» равным («Word at» от words и 1) и «instrument» равным («Word at» от words и 2) и «argument» равным («Word at» от words и 3) и «written» равным («Leading digits» от («Word at» от words и 5)) и «text» равным ""
+
+тотальная функция «Unparsed»
+  принимает file: строка, line: число, text: строка
+  возвращает «Mark»
+  запись «Mark» с «file» равным file и «line» равным line и «parsed» равным нет и «date» равным "" и «instrument» равным "" и «argument» равным "" и «written» равным "" и «text» равным text
+
+тотальная функция «Marks of line»
+  принимает file: строка, line: число, text: строка
+  возвращает список «Mark»
+  пример «two marks on one line of a table»
+    дано file равно "docs/a.md"
+    дано line равно 7
+    дано text равно "| 3 | 12 <!-- СНЯТО 2026-09-17 файлов *.sh = 3 --> <!-- СНЯТО 2026-09-17 строк-в *.sh = 12 --> |"
+    ожидается [(запись «Mark» с «file» равным "docs/a.md" и «line» равным 7 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "файлов" и «argument» равным "*.sh" и «written» равным "3" и «text» равным ""), (запись «Mark» с «file» равным "docs/a.md" и «line» равным 7 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "строк-в" и «argument» равным "*.sh" и «written» равным "12" и «text» равным "")]
+  пример «a line without a whole mark is kept as it is»
+    дано file равно "docs/a.md"
+    дано line равно 7
+    дано text равно "<!-- СНЯТО 2026-09-17 файлов -->"
+    ожидается [(запись «Mark» с «file» равным "docs/a.md" и «line» равным 7 и «parsed» равным нет и «date» равным "" и «instrument» равным "" и «argument» равным "" и «written» равным "" и «text» равным "<!-- СНЯТО 2026-09-17 файлов -->")]
+  пусть pieces равно (разделить text по "СНЯТО ")
+  разбор (отфильтровать («Tail of» от pieces) где piece → «Is mark» от piece)
+    случай пусто
+      то [(«Unparsed» от file и line и text)]
+    случай голова и хвост
+      то отобразить (отфильтровать («Tail of» от pieces) где piece → «Is mark» от piece) как piece → «Mark of» от file и line и piece
+
+тотальная функция «Tail of»
+  принимает pieces: список строки
+  возвращает список строки
+  пример «all but the first piece»
+    дано pieces равно ["a", "b", "c"]
+    ожидается ["b", "c"]
+  разбор pieces
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Found line»
+  принимает found: строка
+  возвращает число
+  пример «the number stands after the file»
+    дано found равно "docs/a.md:12:текст"
+    ожидается 12
+  к числу («First piece» от («After first» от found и ":") и ":")
+
+тотальная функция «Found text»
+  принимает found: строка
+  возвращает строка
+  пример «the text stands after the number»
+    дано found равно "docs/a.md:12:текст: ещё"
+    ожидается "текст: ещё"
+  «After first» от («After first» от found и ":") и ":"
+
+тотальная функция «Fenced»
+  принимает fences: список строки, file: строка, line: число
+  возвращает признак
+  пример «a line between two fences is fenced»
+    дано fences равно ["docs/a.md:4:```", "docs/a.md:9:```"]
+    дано file равно "docs/a.md"
+    дано line равно 6
+    ожидается да
+  пример «a line after a closed block is not fenced»
+    дано fences равно ["docs/a.md:4:```", "docs/a.md:9:```"]
+    дано file равно "docs/a.md"
+    дано line равно 12
+    ожидается нет
+  пример «a fence line itself is fenced»
+    дано fences равно ["docs/a.md:4:```"]
+    дано file равно "docs/a.md"
+    дано line равно 4
+    ожидается да
+  пример «fences of another file do not count»
+    дано fences равно ["docs/b.md:4:```"]
+    дано file равно "docs/a.md"
+    дано line равно 6
+    ожидается нет
+  пусть own равно (отфильтровать fences где found → found начинается с (соединить [file, ":"] по ""))
+  пусть before равно (отфильтровать own где found → («Found line» от found) меньше line)
+  пусть on равно (отфильтровать own где found → («Found line» от found) равен line)
+  ((длина on) больше 0) или (((длина before) остаток от 2) равен 1)
+
+тотальная функция «Is dated piece»
+  принимает piece: строка
+  возвращает признак
+  пример «a year and a dash»
+    дано piece равно "2026-09-17 файлов"
+    ожидается да
+  пример «a pattern is not a year»
+    дано piece равно "ГГГГ-ММ-ДД"
+    ожидается нет
+  ((длина piece) больше 4) и притом («Made of» от (подстрока piece с 1 по 4) и "0123456789") и притом ((символ 5 в piece) равен "-")
+
+тотальная функция «Before first mark»
+  принимает text: строка
+  возвращает строка
+  пример «the text before the first dated mark»
+    дано text равно "таблица <!-- СНЯТО 2026-09-17 файлов *.sh = 3 -->"
+    ожидается "таблица <!-- "
+  пример «a mark without a year is passed over»
+    дано text равно "СНЯТО ГГГГ-ММ-ДД а потом СНЯТО 2026-09-17"
+    ожидается "СНЯТО ГГГГ-ММ-ДД а потом "
+  разбор (отфильтровать («Tail of» от (разделить text по "СНЯТО ")) где piece → «Is dated piece» от piece)
+    случай пусто
+      то text
+    случай голова и хвост
+      то «First piece» от text и (соединить ["СНЯТО ", голова] по "")
+
+тотальная функция «Is page»
+  принимает file: строка
+  возвращает признак
+  пример «a page of prose»
+    дано file равно "docs/a.md"
+    ожидается да
+  пример «a script»
+    дано file равно "scripts/a.fscript"
+    ожидается нет
+  ((длина file) больше 3) и притом ((подстрока file с ((длина file) минус 2) по (длина file)) равен ".md")
+
+тотальная функция «Is quote»
+  принимает fences: список строки, found: строка
+  возвращает признак
+  пример «a mark in a page without a note is a quote»
+    дано fences равно пустой список
+    дано found равно "docs/a.md:3:пример: СНЯТО 2026-09-17 файлов *.sh = 3"
+    ожидается да
+  пример «a mark in a note of a page is a mark»
+    дано fences равно пустой список
+    дано found равно "docs/a.md:3:3 <!-- СНЯТО 2026-09-17 файлов *.sh = 3 -->"
+    ожидается нет
+  пример «code keeps its marks without notes»
+    дано fences равно пустой список
+    дано found равно "scripts/a.fscript:3:СНЯТО 2026-09-17 файлов *.sh = 3"
+    ожидается нет
+  пусть file равно («First piece» от found и ":")
+  («Is page» от file) и притом (((«Fenced» от fences и file и («Found line» от found))) или (не («Before first mark» от («Found text» от found) содержит "<!--")))
+
+тотальная функция «Joined marks»
+  принимает front: список «Mark», back: список «Mark»
+  возвращает список «Mark»
+  свёртка back начиная с front как joined и piece → добавить piece к joined
+
+тотальная функция «Marks»
+  принимает fences: список строки, found: список строки
+  возвращает список «Mark»
+  пример «quotes are left out and the rest is laid flat»
+    дано fences равно пустой список
+    дано found равно ["docs/a.md:3:<!-- СНЯТО 2026-09-17 файлов *.sh = 3 -->", "docs/a.md:5:СНЯТО 2026-09-17 файлов *.sh = 3"]
+    ожидается [(запись «Mark» с «file» равным "docs/a.md" и «line» равным 3 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "файлов" и «argument» равным "*.sh" и «written» равным "3" и «text» равным "")]
+  свёртка (отфильтровать found где each → не («Is quote» от fences и each)) начиная с (пустой список) как marks и each → «Joined marks» от marks и («Marks of line» от («First piece» от each и ":") и («Found line» от each) и («Found text» от each))
+
+тотальная функция «Bumped»
+  принимает marks: список «Mark»
+  возвращает список «Mark»
+  пример «the first whole mark is off by one»
+    дано marks равно [(запись «Mark» с «file» равным "a" и «line» равным 1 и «parsed» равным нет и «date» равным "" и «instrument» равным "" и «argument» равным "" и «written» равным "" и «text» равным "x"), (запись «Mark» с «file» равным "a" и «line» равным 2 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "строк" и «argument» равным "a" и «written» равным "9" и «text» равным ""), (запись «Mark» с «file» равным "a" и «line» равным 3 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "строк" и «argument» равным "a" и «written» равным "9" и «text» равным "")]
+    ожидается [(запись «Mark» с «file» равным "a" и «line» равным 1 и «parsed» равным нет и «date» равным "" и «instrument» равным "" и «argument» равным "" и «written» равным "" и «text» равным "x"), (запись «Mark» с «file» равным "a" и «line» равным 2 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "строк" и «argument» равным "a" и «written» равным "10" и «text» равным ""), (запись «Mark» с «file» равным "a" и «line» равным 3 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "строк" и «argument» равным "a" и «written» равным "9" и «text» равным "")]
+  разбор marks
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если голова.«parsed»
+        то приписать (запись «Mark» с «file» равным (голова.«file») и «line» равным (голова.«line») и «parsed» равным да и «date» равным (голова.«date») и «instrument» равным (голова.«instrument») и «argument» равным (голова.«argument») и «written» равным (к строке ((к числу (голова.«written»)) плюс 1)) и «text» равным "") к хвост
+        иначе приписать голова к («Bumped» от хвост)
+
+тотальная функция «Mark cut»
+  принимает piece: строка
+  возвращает строка
+  пример «the words of a mark and its digits are cut»
+    дано piece равно "2026-09-17 файлов *.sh = 96 (задача)"
+    ожидается " (задача)"
+  пример «a mark at the end of the line leaves nothing»
+    дано piece равно "2026-09-17 строк a.md = 12"
+    ожидается ""
+  пример «a piece that is not a mark keeps the word»
+    дано piece равно "потом"
+    ожидается "СНЯТО потом"
+  пусть words равно (разделить piece по " ")
+  если ((длина words) больше 4) и притом («Made of» от («Word at» от words и 1) и "0123456789-") и притом ((«Word at» от words и 4) равен "=")
+    то подстрока piece с ((длина (соединить [(«Word at» от words и 1), («Word at» от words и 2), («Word at» от words и 3), "=", («Leading digits» от («Word at» от words и 5))] по " ")) плюс 1) по (длина piece)
+    иначе соединить ["СНЯТО ", piece] по ""
+
+тотальная функция «Without marks»
+  принимает text: строка
+  возвращает строка
+  пример «a mark is taken out of the prose»
+    дано text равно "| 9 186 | <!-- СНЯТО 2026-09-17 строк-в *.sh = 9186 --> |"
+    ожидается "| 9 186 | <!--  --> |"
+  пример «a broken mark stays»
+    дано text равно "СНЯТО 2026 файлов"
+    ожидается "СНЯТО 2026 файлов"
+  разбор (разделить text по "СНЯТО ")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то свёртка хвост начиная с голова как kept и piece → соединить [kept, («Mark cut» от piece)] по ""
+
+тотальная функция «Spaced»
+  принимает text: строка
+  возвращает строка
+  пример «narrow and fixed blanks become plain ones»
+    дано text равно "9 186 3 5"
+    ожидается "9 186 3 5"
+  свёртка [" ", " ", " "] начиная с text как spaced и blank → соединить (разделить spaced по blank) по " "
+
+тотальная функция «Digits joined»
+  принимает text: строка
+  возвращает строка
+  пример «a blank between two digits goes away»
+    дано text равно "из 9 186 файлов 1 2 3"
+    ожидается "из 9186 файлов 123"
+  пример «two blanks stay»
+    дано text равно "1  2"
+    ожидается "1  2"
+  разбор (разделить text по " ")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то свёртка хвост начиная с голова как joined и piece → (если ((длина joined) больше 0) и притом («Is digit» от (символ (длина joined) в joined)) и притом (не ((«Leading digits» от piece) равен "")) то (соединить [joined, piece] по "") иначе (соединить [joined, " ", piece] по ""))
+
+тотальная функция «Digit runs»
+  принимает text: строка
+  возвращает список строки
+  пример «every run of digits»
+    дано text равно "1,5 из 186-го"
+    ожидается ["1", "5", "186"]
+  отфильтровать (разделить (соединить (отобразить (разложить text на символы) как sign → (если «Is digit» от sign то sign иначе " ")) по "") по " ") где stretch → не (stretch равен "")
+
+тотальная функция «Lower sign»
+  принимает sign: строка
+  возвращает строка
+  пример «a capital letter»
+    дано sign равно "Д"
+    ожидается "д"
+  пример «the capital yo»
+    дано sign равно "Ё"
+    ожидается "ё"
+  пример «a small letter stays»
+    дано sign равно "ж"
+    ожидается "ж"
+  пусть code равно (код символа sign)
+  разбор («First holding» от [(запись «Rule» с «name» равным "capital" и «holds» равным ((code не меньше 1040) и притом (code не больше 1071))), (запись «Rule» с «name» равным "yo" и «holds» равным (code равен 1025))] и "other")
+    случай "capital"
+      то символ по коду (code плюс 32)
+    случай "yo"
+      то "ё"
+    случай любое
+      то sign
+
+тотальная функция «Russian words»
+  принимает text: строка
+  возвращает список строки
+  пример «only small russian letters make words»
+    дано text равно "Их ВОСЕМЬ, abc двух-трёх"
+    ожидается ["их", "восемь", "двух", "трёх"]
+  отфильтровать (разделить (соединить (отобразить (разложить text на символы) как sign → (если "абвгдеёжзийклмнопрстуфхцчшщъыьэюя" содержит («Lower sign» от sign) то («Lower sign» от sign) иначе " ")) по "") по " ") где word → не (word равен "")
+
+тотальная функция «Roots of»
+  принимает written: строка
+  возвращает список строки
+  пример «a number with two roots»
+    дано written равно "8"
+    ожидается ["восем", "восьм"]
+  пример «a number without a word»
+    дано written равно "45"
+    ожидается пустой список
+  разбор written
+    случай "0"
+      то ["нол"]
+    случай "1"
+      то ["один", "одн"]
+    случай "2"
+      то ["дв"]
+    случай "3"
+      то ["тр"]
+    случай "4"
+      то ["четыр"]
+    случай "5"
+      то ["пят"]
+    случай "6"
+      то ["шест"]
+    случай "7"
+      то ["сем"]
+    случай "8"
+      то ["восем", "восьм"]
+    случай "9"
+      то ["девят"]
+    случай "10"
+      то ["десят"]
+    случай "11"
+      то ["одиннадцат"]
+    случай "12"
+      то ["двенадцат"]
+    случай "13"
+      то ["тринадцат"]
+    случай "14"
+      то ["четырнадцат"]
+    случай "15"
+      то ["пятнадцат"]
+    случай "16"
+      то ["шестнадцат"]
+    случай "17"
+      то ["семнадцат"]
+    случай "18"
+      то ["восемнадцат"]
+    случай "19"
+      то ["девятнадцат"]
+    случай "20"
+      то ["двадцат"]
+    случай "30"
+      то ["тридцат"]
+    случай "40"
+      то ["сорок"]
+    случай "50"
+      то ["пятьдесят", "пятидесят"]
+    случай "100"
+      то ["ста", "сто"]
+    случай любое
+      то пустой список
+
+тотальная функция «Is spoken as»
+  принимает word: строка, root: строка
+  возвращает признак
+  пример «a root with an ending of three letters»
+    дано word равно "восьмью"
+    дано root равно "восьм"
+    ожидается да
+  пример «a longer number is not the root»
+    дано word равно "двадцать"
+    дано root равно "дв"
+    ожидается нет
+  (word начинается с root) и притом (((длина word) минус (длина root)) не больше 3)
+
+тотальная функция «Carries number»
+  принимает prose: строка, written: строка
+  возвращает признак
+  пример «a number in figures with a blank between thousands»
+    дано prose равно "всего 9 186 строк <!-- СНЯТО 2026-09-17 строк-в *.sh = 9186 -->\n"
+    дано written равно "9186"
+    ожидается да
+  пример «the number of the mark itself does not count»
+    дано prose равно "<!-- СНЯТО 2026-09-17 строк-в *.sh = 9186 -->\n"
+    дано written равно "9186"
+    ожидается нет
+  пример «a number in words»
+    дано prose равно "Их восемь.\n"
+    дано written равно "8"
+    ожидается да
+  пример «a part of a number is not the number»
+    дано prose равно "строк 793\n"
+    дано written равно "79"
+    ожидается нет
+  пусть lines равно (отобразить (разделить prose по "\n") как line → «Digits joined» от («Spaced» от («Without marks» от line)))
+  пусть text равно (соединить lines по " ")
+  пусть words равно («Russian words» от text)
+  ((длина (отфильтровать («Digit runs» от text) где stretch → stretch равен written)) больше 0) или ((длина (отфильтровать («Roots of» от written) где root → (длина (отфильтровать words где word → «Is spoken as» от word и root)) больше 0)) больше 0)
+
+тотальная функция «Unquoted step»
+  принимает walk: «Walk», piece: строка, last: число
+  возвращает «Walk»
+  пример «an odd piece is outside of the strings»
+    дано walk равно (запись «Walk» с «place» равным 0 и «kept» равным "")
+    дано piece равно "  ["
+    дано last равно 3
+    ожидается (запись «Walk» с «place» равным 1 и «kept» равным "  [")
+  пример «an unpaired quote is kept with what follows it»
+    дано walk равно (запись «Walk» с «place» равным 1 и «kept» равным "a")
+    дано piece равно "b"
+    дано last равно 2
+    ожидается (запись «Walk» с «place» равным 2 и «kept» равным "a\"b")
+  пусть place равно ((walk.«place») плюс 1)
+  разбор («First holding» от [(запись «Rule» с «name» равным "outside" и «holds» равным ((place остаток от 2) равен 1)), (запись «Rule» с «name» равным "unpaired" и «holds» равным (place равен last))] и "inside")
+    случай "outside"
+      то запись «Walk» с «place» равным place и «kept» равным (соединить [(walk.«kept»), piece] по "")
+    случай "unpaired"
+      то запись «Walk» с «place» равным place и «kept» равным (соединить [(walk.«kept»), "\"", piece] по "")
+    случай любое
+      то запись «Walk» с «place» равным place и «kept» равным (walk.«kept»)
+
+тотальная функция «Unquoted»
+  принимает line: строка
+  возвращает строка
+  пример «the strings are taken out and an unpaired quote stays»
+    дано line равно "  [\"a]\", \"b\", \"c"
+    ожидается "  [, , \"c"
+  пусть pieces равно (разделить line по "\"")
+  (свёртка pieces начиная с (запись «Walk» с «place» равным 0 и «kept» равным "") как walk и piece → «Unquoted step» от walk и piece и (длина pieces)).«kept»
+
+тотальная функция «Strings in»
+  принимает line: строка
+  возвращает число
+  пример «two whole strings and an unpaired quote»
+    дано line равно "  [\"a]\", \"b\", \"c"
+    ожидается 2
+  пусть quotes равно ((длина (разделить line по "\"")) минус 1)
+  (quotes минус (quotes остаток от 2)) делить на 2
+
+тотальная функция «Count of»
+  принимает text: строка, sign: строка
+  возвращает число
+  пример «two opening brackets»
+    дано text равно "[[a]"
+    дано sign равно "["
+    ожидается 2
+  (длина (разделить text по sign)) минус 1
+
+тотальная функция «Bracket step»
+  принимает brackets: «Brackets», line: строка
+  возвращает «Brackets»
+  пример «a list closed on its own line»
+    дано brackets равно (запись «Brackets» с «strings» равным 0 и «depth» равным 0 и «closed» равным нет и «seen» равным нет)
+    дано line равно "  [\"a\", \"b\"]"
+    ожидается (запись «Brackets» с «strings» равным 2 и «depth» равным 0 и «closed» равным да и «seen» равным да)
+  пример «a list that goes on»
+    дано brackets равно (запись «Brackets» с «strings» равным 0 и «depth» равным 0 и «closed» равным нет и «seen» равным нет)
+    дано line равно "const names = [\"a\","
+    ожидается (запись «Brackets» с «strings» равным 1 и «depth» равным 1 и «closed» равным нет и «seen» равным да)
+  пример «a closed list counts nothing more»
+    дано brackets равно (запись «Brackets» с «strings» равным 2 и «depth» равным 0 и «closed» равным да и «seen» равным да)
+    дано line равно "[\"c\"]"
+    ожидается (запись «Brackets» с «strings» равным 2 и «depth» равным 0 и «closed» равным да и «seen» равным да)
+  пусть rest равно («Unquoted» от line)
+  пусть depth равно (((brackets.«depth») плюс («Count of» от rest и "[")) минус («Count of» от rest и "]"))
+  если brackets.«closed»
+    то brackets
+    иначе запись «Brackets» с «strings» равным ((brackets.«strings») плюс («Strings in» от line)) и «depth» равным depth и «closed» равным (depth не больше 0) и «seen» равным да
+
+тотальная функция «Chunk»
+  возвращает число
+  пример «two hundred lines at a time»
+    ожидается 200
+  200
+
+тотальная функция «Lines order»
+  принимает file: строка, start: число, stop: число
+  возвращает «Поручение»
+  пример «lines are taken by the stream editor and it stops at the last one»
+    дано file равно "docs/a.md"
+    дано start равно 3
+    дано stop равно 6
+    ожидается вариант «Запустить процесс» с программа равным "sed" и аргументы равным ["-n", "3,6p;6q", "../../docs/a.md"]
+  вариант «Запустить процесс» с программа равным "sed" и аргументы равным ["-n", (соединить [(к строке start), ",", (к строке stop), "p;", (к строке stop), "q"] по ""), (соединить ["../../", file] по "")]
+
+тотальная функция «Files order»
+  принимает patterns: строка, tail: строка
+  возвращает «Поручение»
+  пример «the files of the patterns are asked from git»
+    дано patterns равно "*.sh"
+    дано tail равно " | wc -l"
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && printf '%s' \"$1\" | tr ',' '\\0' | xargs -0 -I{} git -c core.quotepath=false ls-files -- '{}' | LC_ALL=C sort -u | wc -l", "sh", "*.sh"]
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", (соединить ["cd ../.. && printf '%s' \"$1\" | tr ',' '\\0' | xargs -0 -I{} git -c core.quotepath=false ls-files -- '{}' | LC_ALL=C sort -u", tail] по ""), "sh", patterns]
+
+тотальная функция «Measure tail»
+  принимает instrument: строка
+  возвращает строка
+  пример «lines of all files»
+    дано instrument равно "строк-в"
+    ожидается " | tr '\\n' '\\0' | xargs -0 --no-run-if-empty cat 2>/dev/null | wc -l"
+  разбор instrument
+    случай "строк-в"
+      то " | tr '\\n' '\\0' | xargs -0 --no-run-if-empty cat 2>/dev/null | wc -l"
+    случай любое
+      то " | tr '\\n' '\\0' | xargs -0 --no-run-if-empty cat 2>/dev/null | { grep -ac '^ *пример «' || true; }"
+
+тотальная функция «Words of»
+  принимает text: строка
+  возвращает список строки
+  пример «blanks, tabs and line breaks part the words»
+    дано text равно "  129\t../../a\n"
+    ожидается ["129", "../../a"]
+  отфильтровать (разделить (соединить (разделить (соединить (разделить text по "\n") по " ") по "\t") по " ") по " ") где word → не (word равен "")
+
+тотальная функция «Number said»
+  принимает output: строка
+  возвращает строка
+  пример «the first word of the answer»
+    дано output равно "  129 ../../docs/a.md\n"
+    ожидается "129"
+  разбор («Words of» от output)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Finding»
+  принимает mark: «Mark», words: строка
+  возвращает строка
+  пример «a finding names the file and the line»
+    дано mark равно (запись «Mark» с «file» равным "docs/a.md" и «line» равным 3 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "строк" и «argument» равным "a" и «written» равным "9" и «text» равным "")
+    дано words равно "ПРИМЕТА НЕГОДНА — файла «a» нет"
+    ожидается "docs/a.md:3: ПРИМЕТА НЕГОДНА — файла «a» нет"
+  соединить [(mark.«file»), ":", (к строке (mark.«line»)), ": ", words] по ""
+
+тотальная функция «With finding»
+  принимает tally: «Tally», finding: строка, parted: число, broken: число
+  возвращает «Tally»
+  запись «Tally» с «root» равным (tally.«root») и «forged» равным (tally.«forged») и «total» равным (tally.«total») и «quotes» равным (tally.«quotes») и «agreed» равным (tally.«agreed») и «parted» равным ((tally.«parted») плюс parted) и «broken» равным ((tally.«broken») плюс broken) и «findings» равным (добавить finding к (tally.«findings»))
+
+тотальная функция «Broken»
+  принимает tally: «Tally», mark: «Mark», words: строка
+  возвращает «Tally»
+  «With finding» от tally и («Finding» от mark и (соединить ["ПРИМЕТА НЕГОДНА — ", words] по "")) и 0 и 1
+
+тотальная функция «Parted»
+  принимает tally: «Tally», mark: «Mark», words: строка
+  возвращает «Tally»
+  «With finding» от tally и («Finding» от mark и words) и 1 и 0
+
+тотальная функция «Agreed»
+  принимает tally: «Tally»
+  возвращает «Tally»
+  запись «Tally» с «root» равным (tally.«root») и «forged» равным (tally.«forged») и «total» равным (tally.«total») и «quotes» равным (tally.«quotes») и «agreed» равным ((tally.«agreed») плюс 1) и «parted» равным (tally.«parted») и «broken» равным (tally.«broken») и «findings» равным (tally.«findings»)
+
+тотальная функция «Is date»
+  принимает date: строка
+  возвращает признак
+  пример «a proper date»
+    дано date равно "2026-09-17"
+    ожидается да
+  пример «a short month»
+    дано date равно "2026-9-17"
+    ожидается нет
+  ((длина date) равен 10) и притом («Made of» от date и "0123456789-") и притом ((символ 5 в date) равен "-") и притом ((символ 8 в date) равен "-") и притом ((«Count of» от date и "-") равен 2)
+
+тотальная функция «Joined» от «Kind»
+  принимает front: список «Kind», back: список «Kind»
+  возвращает список «Kind»
+  пример «The back list follows the front one»
+    дано front равно ["one"]
+    дано back равно ["two", "three"]
+    ожидается ["one", "two", "three"]
+  свёртка back начиная с front как joined и piece → добавить piece к joined
+
+тотальная функция «Heads in order»
+  принимает left: строка, right: строка
+  возвращает признак
+  пример «a smaller sign goes first»
+    дано left равно "а"
+    дано right равно "б"
+    ожидается да
+  пример «nothing goes before an empty text»
+    дано left равно "а"
+    дано right равно ""
+    ожидается нет
+  если right равен ""
+    то нет
+    иначе (код символа left) меньше (код символа right)
+
+тотальная функция «Goes before»
+  принимает left: строка, right: строка
+  возвращает признак
+  пример «The order is the order of the signs»
+    дано left равно "вкладка"
+    дано right равно "времянки"
+    ожидается да
+  пример «A shorter name goes before its longer twin»
+    дано left равно "имена"
+    дано right равно "имена-модулей"
+    ожидается да
+  пример «A name does not go before itself»
+    дано left равно "зов"
+    дано right равно "зов"
+    ожидается нет
+  разбор left
+    случай пусто
+      то не (right равен "")
+    случай голова и хвост
+      то если right начинается с голова
+        то «Goes before» от хвост и (подстрока right с 2 по (длина right))
+        иначе «Heads in order» от left и right
+
+тотальная функция «Placed»
+  принимает name: строка, sorted: список строки
+  возвращает список строки
+  пример «A name takes its place among the sorted ones»
+    дано name равно "зов:проверка"
+    дано sorted равно ["длина:проверка", "коды:проверка"]
+    ожидается ["длина:проверка", "зов:проверка", "коды:проверка"]
+  «Joined» от (добавить name к (отфильтровать sorted где each → не («Goes before» от name и each))) и (отфильтровать sorted где each → «Goes before» от name и each)
+
+тотальная функция «Sorted»
+  принимает names: список строки
+  возвращает список строки
+  пример «Names are put in the order of their signs»
+    дано names равно ["коды:проверка", "длина:проверка", "зов:проверка"]
+    ожидается ["длина:проверка", "зов:проверка", "коды:проверка"]
+  свёртка names начиная с (пустой список) как sorted и name → «Placed» от name и sorted
+
+тотальная функция «Rule line»
+  возвращает строка
+  пример «sixty seven dashes»
+    ожидается "───────────────────────────────────────────────────────────────────"
+  "───────────────────────────────────────────────────────────────────"
+
+тотальная функция «Findings block»
+  принимает findings: список строки
+  возвращает список строки
+  пример «no findings give no block»
+    дано findings равно пустой список
+    ожидается пустой список
+  разбор findings
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то «Joined» от («Joined» от ["", («Rule line»)] и («Sorted» от findings)) и [(«Rule line»)]
+
+тотальная функция «Report»
+  принимает tally: «Tally»
+  возвращает список строки
+  пример «the counts, the quotes and the findings between two rules»
+    дано tally равно (запись «Tally» с «root» равным "/srv/tree" и «forged» равным нет и «total» равным 2 и «quotes» равным 1 и «agreed» равным 1 и «parted» равным 1 и «broken» равным 0 и «findings» равным ["b.md:1: РАЗОШЛОСЬ", "a.md:1: РАЗОШЛОСЬ"])
+    ожидается ["сторож чисел в прозе: сверяю приметы «СНЯТО» с деревом /srv/tree", "примет 2: сошлось 1, разошлось 1, негодных 0", "строк «СНЯТО» вне комментария — 1: это цитаты, приметами не считаны", "", "───────────────────────────────────────────────────────────────────", "a.md:1: РАЗОШЛОСЬ", "b.md:1: РАЗОШЛОСЬ", "───────────────────────────────────────────────────────────────────"]
+  пусть heading равно [(соединить ["сторож чисел в прозе: сверяю приметы «СНЯТО» с деревом ", (tally.«root»)] по "")]
+  пусть forged равно (если tally.«forged» то ["сторож чисел: ПОДЛОГ — первой примете число подкручено на единицу.", "ждём КРАСНОГО. Зелёный ответ значит, что сторож слеп."] иначе (пустой список))
+  пусть counts равно [(соединить ["примет ", (к строке (tally.«total»)), ": сошлось ", (к строке (tally.«agreed»)), ", разошлось ", (к строке (tally.«parted»)), ", негодных ", (к строке (tally.«broken»))] по "")]
+  пусть quotes равно (если (tally.«quotes») больше 0 то [(соединить ["строк «СНЯТО» вне комментария — ", (к строке (tally.«quotes»)), ": это цитаты, приметами не считаны"] по "")] иначе (пустой список))
+  пусть findings равно («Findings block» от (tally.«findings»))
+  «Joined» от («Joined» от heading и forged) и («Joined» от («Joined» от counts и quotes) и findings)
+
+тотальная функция «Red words»
+  принимает tally: «Tally»
+  возвращает список строки
+  пример «both kinds of trouble are named»
+    дано tally равно (запись «Tally» с «root» равным "" и «forged» равным нет и «total» равным 3 и «quotes» равным 0 и «agreed» равным 1 и «parted» равным 1 и «broken» равным 1 и «findings» равным пустой список)
+    ожидается ["сторож чисел: числа в прозе разошлись с деревом — мест 1", "сторож чисел: примет негодных — 1: они не стерегут ничего", "почините число ИЛИ примету: у каждого числа есть прибор и дата."]
+  пусть parted равно (если (tally.«parted») больше 0 то [(соединить ["сторож чисел: числа в прозе разошлись с деревом — мест ", (к строке (tally.«parted»))] по "")] иначе (пустой список))
+  пусть broken равно (если (tally.«broken») больше 0 то [(соединить ["сторож чисел: примет негодных — ", (к строке (tally.«broken»)), ": они не стерегут ничего"] по "")] иначе (пустой список))
+  «Joined» от («Joined» от parted и broken) и ["почините число ИЛИ примету: у каждого числа есть прибор и дата."]
+
+тотальная функция «Verdict»
+  принимает tally: «Tally»
+  возвращает «Продолжение»
+  пример «every mark agreed»
+    дано tally равно (запись «Tally» с «root» равным "/srv/tree" и «forged» равным нет и «total» равным 1 и «quotes» равным 0 и «agreed» равным 1 и «parted» равным 0 и «broken» равным 0 и «findings» равным пустой список)
+    ожидается вариант «Конец работы» с значение равным "сторож чисел в прозе: сверяю приметы «СНЯТО» с деревом /srv/tree\nпримет 1: сошлось 1, разошлось 0, негодных 0\nсторож чисел: все 1 примет сошлись с деревом"
+  пример «a forged number that went unseen ends the work with the words of blindness»
+    дано tally равно (запись «Tally» с «root» равным "/srv/tree" и «forged» равным да и «total» равным 1 и «quotes» равным 0 и «agreed» равным 1 и «parted» равным 0 и «broken» равным 0 и «findings» равным пустой список)
+    ожидается вариант «Конец работы» с значение равным "сторож чисел в прозе: сверяю приметы «СНЯТО» с деревом /srv/tree\nсторож чисел: ПОДЛОГ — первой примете число подкручено на единицу.\nждём КРАСНОГО. Зелёный ответ значит, что сторож слеп.\nпримет 1: сошлось 1, разошлось 0, негодных 0\nсторож чисел: ПОДЛОГ ПРОШЁЛ МИМО — сторож не увидел подкрученного числа.\nпроверять им нечего: он зеленеет на том, что заведомо неверно."
+  пусть report равно («Report» от tally)
+  пусть good равно ((tally.«agreed») плюс (tally.«parted»))
+  разбор («First holding» от [(запись «Rule» с «name» равным "blind" и «holds» равным ((good равен 0) и притом ((tally.«broken») больше 0))), (запись «Rule» с «name» равным "red" и «holds» равным (((tally.«parted») больше 0) или ((tally.«broken») больше 0))), (запись «Rule» с «name» равным "missed" и «holds» равным (tally.«forged»))] и "green")
+    случай "blind"
+      то вариант «Не проверено» с код равным "FLANG_PROSE_NUMBERS_NOT_JUDGED" и сообщение равным (соединить («Joined» от report и [(соединить ["сторож чисел: НЕ ДОСМОТРЕНО — годных примет нет ни одной, негодных ", (к строке (tally.«broken»)), "."] по ""), "это не зелень и не краснота: судить нечем."]) по "\n")
+    случай "red"
+      то вариант «Провал» с код равным "FLANG_PROSE_NUMBERS" и сообщение равным (соединить («Joined» от report и («Red words» от tally)) по "\n")
+    случай "missed"
+      то вариант «Конец работы» с значение равным (соединить («Joined» от report и ["сторож чисел: ПОДЛОГ ПРОШЁЛ МИМО — сторож не увидел подкрученного числа.", "проверять им нечего: он зеленеет на том, что заведомо неверно."]) по "\n")
+    случай любое
+      то вариант «Конец работы» с значение равным (соединить («Joined» от report и [(соединить ["сторож чисел: все ", (к строке (tally.«total»)), " примет сошлись с деревом"] по "")]) по "\n")
+
+тотальная функция «Judge next»
+  принимает tally: «Tally», marks: список «Mark»
+  возвращает «Продолжение»
+  разбор marks
+    случай пусто
+      то «Verdict» от tally
+    случай голова и хвост
+      то «Measure» от tally и (голова) и (хвост)
+
+тотальная функция «List line»
+  принимает mark: «Mark»
+  возвращает число
+  пример «the line of a list is the number after the last colon»
+    дано mark равно (запись «Mark» с «file» равным "a.md" и «line» равным 1 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "список" и «argument» равным "flang/self/parser.flang:6620" и «written» равным "23" и «text» равным "")
+    ожидается 6620
+  пусть digits равно («After last» от (mark.«argument») и ":")
+  если (не (digits равен "")) и притом («Made of» от digits и "0123456789")
+    то к числу digits
+    иначе 0
+
+тотальная функция «Ask list»
+  принимает tally: «Tally», mark: «Mark», rest: список «Mark», brackets: «Brackets», start: число
+  возвращает «Продолжение»
+  вариант «Сделать» с поручение равным («Lines order» от («Before last» от (mark.«argument») и ":") и start и ((start плюс («Chunk»)) минус 1)) и потом равным (вариант «Counting list» с tally равным tally и current равным mark и rest равным rest и brackets равным brackets и upto равным ((start плюс («Chunk»)) минус 1))
+
+тотальная функция «Measure»
+  принимает tally: «Tally», mark: «Mark», rest: список «Mark»
+  возвращает «Продолжение»
+  разбор mark.«instrument»
+    случай "строк"
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "wc" и аргументы равным ["-l", "--", (соединить ["../../", (mark.«argument»)] по "")]) и потом равным (вариант «Measuring» с tally равным tally и current равным mark и rest равным rest)
+    случай "список"
+      то «Ask list» от tally и mark и rest и (запись «Brackets» с «strings» равным 0 и «depth» равным 0 и «closed» равным нет и «seen» равным нет) и («List line» от mark)
+    случай любое
+      то вариант «Сделать» с поручение равным («Files order» от (mark.«argument») и " | wc -l") и потом равным (вариант «Counting files» с tally равным tally и current равным mark и rest равным rest)
+
+тотальная функция «Holds»
+  принимает pieces: список строки, wanted: строка
+  возвращает признак
+  пример «a piece of the list is held»
+    дано pieces равно ["файлов", "строк-в"]
+    дано wanted равно "строк-в"
+    ожидается да
+  (длина (отфильтровать pieces где piece → piece равен wanted)) больше 0
+
+тотальная функция «Fault of»
+  принимает mark: «Mark»
+  возвращает строка
+  пример «a whole mark with a known instrument has no fault»
+    дано mark равно (запись «Mark» с «file» равным "a.md" и «line» равным 1 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "строк" и «argument» равным "a" и «written» равным "9" и «text» равным "")
+    ожидается ""
+  пример «an unknown instrument»
+    дано mark равно (запись «Mark» с «file» равным "a.md" и «line» равным 1 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "байт" и «argument» равным "a" и «written» равным "9" и «text» равным "")
+    ожидается "прибор «байт» не из пяти (строк, файлов, строк-в, примеров-в, список)"
+  разбор («First holding» от [(запись «Rule» с «name» равным "unparsed" и «holds» равным (не (mark.«parsed»))), (запись «Rule» с «name» равным "undated" и «holds» равным (не («Is date» от (mark.«date»)))), (запись «Rule» с «name» равным "unknown" и «holds» равным (не («Holds» от ["строк", "файлов", "строк-в", "примеров-в", "список"] и (mark.«instrument»))))] и "whole")
+    случай "unparsed"
+      то соединить ["не разбирается: ", (mark.«text»)] по ""
+    случай "undated"
+      то соединить ["дата «", (mark.«date»), "» не вида ГГГГ-ММ-ДД"] по ""
+    случай "unknown"
+      то соединить ["прибор «", (mark.«instrument»), "» не из пяти (строк, файлов, строк-в, примеров-в, список)"] по ""
+    случай любое
+      то ""
+
+тотальная функция «Faults»
+  принимает tally: «Tally», marks: список «Mark»
+  возвращает «Tally»
+  свёртка marks начиная с tally как counted и mark → (если («Fault of» от mark) равен "" то counted иначе («Broken» от counted и mark и («Fault of» от mark)))
+
+тотальная функция «Sound»
+  принимает marks: список «Mark»
+  возвращает список «Mark»
+  отфильтровать marks где mark → («Fault of» от mark) равен ""
+
+тотальная функция «Prose start»
+  принимает line: число
+  возвращает число
+  пример «three lines above»
+    дано line равно 10
+    ожидается 7
+  пример «not above the first line»
+    дано line равно 2
+    ожидается 1
+  если line больше 4 то (line минус 3) иначе 1
+
+тотальная функция «Compare»
+  принимает tally: «Tally», mark: «Mark», rest: список «Mark», measured: строка
+  возвращает «Продолжение»
+  если measured равен (mark.«written»)
+    то вариант «Сделать» с поручение равным («Lines order» от (mark.«file») и («Prose start» от (mark.«line»)) и (mark.«line»)) и потом равным (вариант «Reading prose» с tally равным tally и current равным mark и rest равным rest и measured равным measured)
+    иначе «Judge next» от («Parted» от tally и mark и (соединить ["РАЗОШЛОСЬ С ДЕРЕВОМ — ", (mark.«instrument»), " ", (mark.«argument»), ": в примете ", (mark.«written»), ", снято сегодня ", measured, " (примета от ", (mark.«date»), ")"] по "")) и rest
+
+тотальная функция «After measuring»
+  принимает tally: «Tally», mark: «Mark», rest: список «Mark», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если code равен 0
+        то «Compare» от tally и mark и rest и («Number said» от output)
+        иначе «Judge next» от («Broken» от tally и mark и (соединить ["файла «", (mark.«argument»), "» нет"] по "")) и rest
+    случай любое
+      то вариант «Не проверено» с код равным "FLANG_PROSE_NUMBERS_NOT_JUDGED" и сообщение равным (соединить ["сторож чисел: прибор ", (mark.«instrument»), " не ответил на ", (mark.«file»), ":", (к строке (mark.«line»))] по "")
+
+тотальная функция «Files counted»
+  принимает tally: «Tally», mark: «Mark», rest: список «Mark», files: строка
+  возвращает «Продолжение»
+  разбор («First holding» от [(запись «Rule» с «name» равным "none" и «holds» равным (files равен "0")), (запись «Rule» с «name» равным "counted" и «holds» равным ((mark.«instrument») равен "файлов"))] и "measure")
+    случай "none"
+      то «Judge next» от («Broken» от tally и mark и (соединить ["под образец «", (mark.«argument»), "» не подпадает ни один файл: стеречь нечего"] по "")) и rest
+    случай "counted"
+      то «Compare» от tally и mark и rest и files
+    случай любое
+      то вариант «Сделать» с поручение равным («Files order» от (mark.«argument») и («Measure tail» от (mark.«instrument»))) и потом равным (вариант «Measuring» с tally равным tally и current равным mark и rest равным rest)
+
+тотальная функция «After counting files»
+  принимает tally: «Tally», mark: «Mark», rest: список «Mark», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Files counted» от tally и mark и rest и («Number said» от output)
+    случай любое
+      то вариант «Не проверено» с код равным "FLANG_PROSE_NUMBERS_NOT_JUDGED" и сообщение равным (соединить ["сторож чисел: git не назвал файлов для ", (mark.«file»), ":", (к строке (mark.«line»))] по "")
+
+тотальная функция «Output lines»
+  принимает output: строка
+  возвращает список строки
+  пример «the last line break ends the last line»
+    дано output равно "a\n\nb\n"
+    ожидается ["a", "", "b"]
+  пример «nothing gives no lines»
+    дано output равно ""
+    ожидается пустой список
+  пусть pieces равно (разделить output по "\n")
+  свёртка pieces начиная с (пустой список) как kept и piece → (если (длина kept) меньше ((длина pieces) минус 1) то (добавить piece к kept) иначе kept)
+
+тотальная функция «After list»
+  принимает tally: «Tally», mark: «Mark», rest: список «Mark», brackets: «Brackets», upto: число, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если не (code равен 0)
+        то «Judge next» от («Broken» от tally и mark и (соединить ["файла «", («Before last» от (mark.«argument») и ":"), "» нет"] по "")) и rest
+        иначе «After list lines» от tally и mark и rest и (свёртка («Output lines» от output) начиная с brackets как counted и line → «Bracket step» от counted и line) и upto и (длина («Output lines» от output))
+    случай любое
+      то вариант «Не проверено» с код равным "FLANG_PROSE_NUMBERS_NOT_JUDGED" и сообщение равным (соединить ["сторож чисел: список не прочитан для ", (mark.«file»), ":", (к строке (mark.«line»))] по "")
+
+тотальная функция «After list lines»
+  принимает tally: «Tally», mark: «Mark», rest: список «Mark», brackets: «Brackets», upto: число, lines: число
+  возвращает «Продолжение»
+  если (не (brackets.«closed»)) и притом (lines равен («Chunk»))
+    то «Ask list» от tally и mark и rest и brackets и (upto плюс 1)
+    иначе «Compare» от tally и mark и rest и (к строке (brackets.«strings»))
+
+тотальная функция «After prose»
+  принимает tally: «Tally», mark: «Mark», rest: список «Mark», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если «Carries number» от output и (mark.«written»)
+        то «Judge next» от («Agreed» от tally) и rest
+        иначе «Judge next» от («Parted» от tally и mark и (соединить ["ПРИМЕТА ОТОРВАЛАСЬ ОТ ПРОЗЫ — числа ", (mark.«written»), " нет ни на этой строке, ни в трёх выше"] по "")) и rest
+    случай любое
+      то вариант «Не проверено» с код равным "FLANG_PROSE_NUMBERS_NOT_JUDGED" и сообщение равным (соединить ["сторож чисел: проза не прочитана у ", (mark.«file»), ":", (к строке (mark.«line»))] по "")
+
+тотальная функция «Own path»
+  возвращает строка
+  пример «the guard does not judge the marks it quotes»
+    ожидается "scripts/guards/prose-numbers-guard.fscript:"
+  "scripts/guards/prose-numbers-guard.fscript:"
+
+тотальная функция «Pages of»
+  принимает found: список строки
+  возвращает список строки
+  пример «every page with a mark once»
+    дано found равно ["docs/a.md:1:x", "docs/a.md:5:y", "b.fscript:2:z", "docs/c.md:3:w"]
+    ожидается ["docs/a.md", "docs/c.md"]
+  отфильтровать (свёртка (отобразить found как each → «First piece» от each и ":") начиная с (пустой список) как pages и page → (если «Holds» от pages и page то pages иначе (добавить page к pages))) где page → «Is page» от page
+
+тотальная функция «Fence order»
+  принимает pages: список строки
+  возвращает «Поручение»
+  пример «the fences of every page are found at once»
+    дано pages равно ["docs/a.md"]
+    ожидается вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-n", "-H", "-E", "^[[:space:]]*```+[^`]*$", "--", "../../docs/a.md"]
+  пусть paths равно (отобразить pages как page → соединить ["../../", page] по "")
+  вариант «Запустить процесс» с программа равным "grep" и аргументы равным («Joined» от ["-n", "-H", "-E", "^[[:space:]]*```+[^`]*$", "--"] и paths)
+
+тотальная функция «Start judging»
+  принимает tally: «Tally», found: список строки, fences: список строки
+  возвращает «Продолжение»
+  пусть marks равно («Marks» от fences и found)
+  пусть counted равно (запись «Tally» с «root» равным (tally.«root») и «forged» равным (tally.«forged») и «total» равным (длина marks) и «quotes» равным (длина (отфильтровать found где each → «Is quote» от fences и each)) и «agreed» равным 0 и «parted» равным 0 и «broken» равным 0 и «findings» равным пустой список)
+  если (длина marks) равен 0
+    то вариант «Не проверено» с код равным "FLANG_PROSE_NUMBERS_NOT_JUDGED" и сообщение равным (соединить [(соединить ["сторож чисел в прозе: сверяю приметы «СНЯТО» с деревом ", (tally.«root»)] по ""), "сторож чисел: примет в дереве НЕТ — сверять нечего", "это не зелень: ни одно число в прозе не под присмотром"] по "\n")
+    иначе «Judge sound» от counted и (если tally.«forged» то («Bumped» от marks) иначе marks)
+
+тотальная функция «Judge sound»
+  принимает tally: «Tally», marks: список «Mark»
+  возвращает «Продолжение»
+  «Judge next» от («Faults» от tally и marks) и («Sound» от marks)
+
+тотальная функция «After marks»
+  принимает tally: «Tally», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если code больше 1
+        то вариант «Не проверено» с код равным "FLANG_PROSE_NUMBERS_NOT_JUDGED" и сообщение равным (соединить ["сторож чисел: git grep ответил кодом ", (к строке code), ": ", errors] по "")
+        иначе «After search» от tally и (отфильтровать («Output lines» от output) где each → не (each начинается с («Own path»)))
+    случай любое
+      то вариант «Не проверено» с код равным "FLANG_PROSE_NUMBERS_NOT_JUDGED" и сообщение равным "сторож чисел: git grep не запустился — прибора нет"
+
+тотальная функция «After search»
+  принимает tally: «Tally», found: список строки
+  возвращает «Продолжение»
+  разбор («Pages of» от found)
+    случай пусто
+      то «Start judging» от tally и found и (пустой список)
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным («Fence order» от («Pages of» от found)) и потом равным (вариант «Finding fences» с tally равным tally и found равным found)
+
+тотальная функция «After fences»
+  принимает tally: «Tally», found: список строки, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Start judging» от tally и found и (отобразить («Output lines» от output) как each → подстрока each с 7 по (длина each))
+    случай любое
+      то вариант «Не проверено» с код равным "FLANG_PROSE_NUMBERS_NOT_JUDGED" и сообщение равным "сторож чисел: ограждения кода в страницах не найти"
+
+тотальная функция «Marks order»
+  возвращает «Поручение»
+  пример «marks are searched by git in the whole tree»
+    ожидается вариант «Запустить процесс» с программа равным "git" и аргументы равным ["-C", "../..", "-c", "core.quotepath=false", "grep", "-n", "-I", "-e", "СНЯТО [0-9][0-9][0-9][0-9]-", "--", "."]
+  вариант «Запустить процесс» с программа равным "git" и аргументы равным ["-C", "../..", "-c", "core.quotepath=false", "grep", "-n", "-I", "-e", "СНЯТО [0-9][0-9][0-9][0-9]-", "--", "."]
+
+тотальная функция «After root»
+  принимает forged: признак, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Пока ничего»
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && git rev-parse --git-dir >/dev/null 2>&1 && pwd"]) и потом равным (вариант «Finding root» с forged равным forged)
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если code равен 0
+        то вариант «Сделать» с поручение равным («Marks order») и потом равным (вариант «Finding marks» с tally равным (запись «Tally» с «root» равным («First piece» от output и "\n") и «forged» равным forged и «total» равным 0 и «quotes» равным 0 и «agreed» равным 0 и «parted» равным 0 и «broken» равным 0 и «findings» равным пустой список))
+        иначе вариант «Не проверено» с код равным "FLANG_PROSE_NUMBERS_NOT_JUDGED" и сообщение равным "сторож чисел: дерево не под учётом git — прибора нет"
+    случай любое
+      то вариант «Не проверено» с код равным "FLANG_PROSE_NUMBERS_NOT_JUDGED" и сообщение равным "сторож чисел: git не найден — прибора нет"
+
+тотальная функция «Begin check»
+  возвращает «Step»
+  пример «the check begins with the root of the tree»
+    ожидается вариант «Finding root» с forged равным нет
+  вариант «Finding root» с forged равным нет
+
+тотальная функция «Begin forgery»
+  возвращает «Step»
+  пример «the forgery begins the same way»
+    ожидается вариант «Finding root» с forged равным да
+  вариант «Finding root» с forged равным да
+
+тотальная функция «Next»
+  принимает step: «Step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор step
+    случай вариант «Finding root» с forged как forged
+      то «After root» от forged и reply
+    случай вариант «Finding marks» с tally как tally
+      то «After marks» от tally и reply
+    случай вариант «Finding fences» с tally как tally и found как found
+      то «After fences» от tally и found и reply
+    случай вариант «Counting files» с tally как tally и current как current и rest как rest
+      то «After counting files» от tally и current и rest и reply
+    случай вариант «Measuring» с tally как tally и current как current и rest как rest
+      то «After measuring» от tally и current и rest и reply
+    случай вариант «Counting list» с tally как tally и current как current и rest как rest и brackets как brackets и upto как upto
+      то «After list» от tally и current и rest и brackets и upto и reply
+    случай вариант «Reading prose» с tally как tally и current как current и rest как rest и measured как measured
+      то «After prose» от tally и current и rest и reply
+
+план «Check»
+  состояние «Step»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Step»
+  начинает с «Begin forgery»
+  обрабатывает «Next»

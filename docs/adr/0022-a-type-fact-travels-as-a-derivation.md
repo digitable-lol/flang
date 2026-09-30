@@ -780,7 +780,7 @@ $ for f in flang/ct/*.flang; do flang check "$f"; echo $?; done
 И — это стоит сказать резче, чем сказано в `karta-95`: **самого списка `АКСИОМЫ` в
 дереве нет вовсе.** Все ссылки на него (`docs/HANDOFF.md:462`,
 `docs/спецификации/язык-доказательств.md:352`,
-`flang/proof/examples/corpus-factorial.flang:63`, `segment.flang:19`, навык
+`flang/proof/examples/corpus-factorial.flang:3`, `segment.flang:3`, навык
 `flang-code`) указывают на `flang/src/proofterm.mjs` с `АКСИОМЫ =
 Object.freeze([])`, а такого файла в дереве больше не существует. Объявления
 списка нет ни одного; слово встречается только в комментариях. Значит

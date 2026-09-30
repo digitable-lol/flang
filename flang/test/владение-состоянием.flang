@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-// SPDX-License-Identifier: BSD-2-Clause
-
 модуль «Проверка владения состоянием»
   использует «Проверка процессов» из "../self/processes.flang"
   использует «Проверка типов» из "../self/types.flang"

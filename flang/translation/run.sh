@@ -88,8 +88,8 @@ opyt "подменённый фрагмент протокола: вызов д�
 zamenit "$SI" 'fl_t2 = fl_t3;' 'fl_t2 = fl_t1;' > "$RAB/2.c"
 opyt "изменённая строка C при прежнем протоколе" 1 "$ISH" "$RAB/2.c" "$PR" "напечатанный C, строка"
 
-vyrezat "$PR" 49 51 'узел var строка 35 столбец 31' > "$RAB/3.protocol"
-opyt "пропущенный узел: довод вызова выпал из протокола" 1 "$ISH" "$SI" "$RAB/3.protocol" "исходник строка 35 столбец 11"
+vyrezat "$PR" 49 51 'узел var строка 9 столбец 31' > "$RAB/3.protocol"
+opyt "пропущенный узел: довод вызова выпал из протокола" 1 "$ISH" "$SI" "$RAB/3.protocol" "исходник строка 9 столбец 11"
 
 opyt "протокол от другого исходника" 1 "$PRIMERY/traffic-light.flang" "$SI" "$PR" "протокол от другого исходника"
 
@@ -106,7 +106,7 @@ PARA='kruzhit_po_pare(ctx, m, n, &fl_t8'
 NAOBOROT='kruzhit_po_pare(ctx, n, m, &fl_t8'
 zamenit "$PR" "$PARA" "$NAOBOROT" > "$RAB/8.protocol"
 zamenit "$SI" "$PARA" "$NAOBOROT" > "$RAB/8.c"
-opyt "переставленные доводы (C и протокол заодно)" 1 "$ISH" "$RAB/8.c" "$RAB/8.protocol" "исходник строка 46 столбец 11"
+opyt "переставленные доводы (C и протокол заодно)" 1 "$ISH" "$RAB/8.c" "$RAB/8.protocol" "исходник строка 17 столбец 11"
 
 zamenit "$PR" 'столбец 11 правило «вызов» имя «Стоит на месте»' 'столбец 11 правило «вызов-наугад» имя «Стоит на месте»' > "$RAB/9.protocol"
 opyt "правило не из закрытого списка" 1 "$ISH" "$SI" "$RAB/9.protocol" "не из закрытого списка"
@@ -124,7 +124,7 @@ opyt "оборванный протокол" 1 "$ISH" "$SI" "$RAB/12.protocol" "
 { cat "$SI"; echo '/* строка, которой не печатал ни один узел */'; } > "$RAB/13.c"
 opyt "лишняя строка в конце C" 1 "$ISH" "$RAB/13.c" "$PR" "не напечатал ни один узел"
 
-vyrezat "$PR" 162 164 'узел var строка 46 столбец 31' > "$RAB/14a.protocol"
+vyrezat "$PR" 162 164 'узел var строка 17 столбец 31' > "$RAB/14a.protocol"
 zamenit "$RAB/14a.protocol" "$PARA" 'kruzhit_po_pare(ctx, n, &fl_t8' > "$RAB/14.protocol"
 zamenit "$SI" "$PARA" 'kruzhit_po_pare(ctx, n, &fl_t8' > "$RAB/14.c"
 opyt "довод выпал (C и протокол заодно)" 1 "$ISH" "$RAB/14.c" "$RAB/14.protocol" "доводов у вызова 1, а функция в исходнике принимает 2"
@@ -168,8 +168,8 @@ opyt "переименованная временная: внутренняя н
 PRYAMO='fl_flag(n.as.number <= 0.0)'
 NAVYVOROT='fl_flag(0.0 <= n.as.number)'
 OPER=$OSN/perestavlennye_operandy
-stroka "$PR" 10 'узел var строка 33 столбец 8 правило «число-распакованное»'
-stroka "$PR" 16 'узел literal строка 33 столбец 20 правило «число-литерал»'
+stroka "$PR" 10 'узел var строка 7 столбец 8 правило «число-распакованное»'
+stroka "$PR" 16 'узел literal строка 7 столбец 20 правило «число-литерал»'
 stroka "$PR" 21 "значение $PRYAMO"
 stroka "$PR" 25 "$PRYAMO"
 stroka "$SI" 16 "$PRYAMO"

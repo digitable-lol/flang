@@ -630,7 +630,7 @@ jobs:
       - name: Trace requirement
         run: LC_ALL=C.UTF-8 FLANG_TRACE='У1 сумма читается в обратном порядке' ./bootstrap/flang io scripts/guards/traceability-guard.fscript --на-веру --plan 'От требования' --max-steps 4000000000
       - name: Trace source line
-        run: LC_ALL=C.UTF-8 FLANG_TRACE='flang/proof/map/abilities.flang:34' ./bootstrap/flang io scripts/guards/traceability-guard.fscript --на-веру --plan 'От строки' --max-steps 4000000000
+        run: LC_ALL=C.UTF-8 FLANG_TRACE='flang/proof/map/abilities.flang:11' ./bootstrap/flang io scripts/guards/traceability-guard.fscript --на-веру --plan 'От строки' --max-steps 4000000000
 
       # ── Шесть сторожей, найденных «не запускается нигде» (Ч77, 31 авг 2026) ──
       #

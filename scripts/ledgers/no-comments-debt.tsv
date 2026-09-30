@@ -1,455 +1,68 @@
-# ЧТО: долг комментариев в .flang — строка на файл: путь, число строк «//», третий столбец — причина, если число поднимали рукой. ЗАЧЕМ: храповик — комментариев в .flang может только убывать; сторож краснеет на файле, где их прибавилось. КТО ЧИТАЕТ: scripts/guards/no-comments-guard.sh (сумма второго столбца и join по первому; строка без табуляции, как эта, в счёт не идёт, --снять её сохраняет).
-docs/benchmark/01-link-key.flang	13
-docs/benchmark/02-node-key.flang	8
-docs/benchmark/03-insert.flang	11
-docs/benchmark/04-dictionary-size.flang	4
-docs/benchmark/05-opposite.flang	13
-docs/benchmark/06-prepend.flang	4
-docs/benchmark/07-insert-at.flang	6
-docs/benchmark/08-maximum.flang	9
-docs/benchmark/09-take-first.flang	4
-docs/benchmark/10-binary-search.flang	9
-docs/benchmark/11-unique.flang	11
-docs/benchmark/12-implies.flang	4
-docs/benchmark/13-even.flang	17
-docs/benchmark/14-tree-of-numbers.flang	5
-docs/benchmark/15-first-or-default.flang	11
-docs/benchmark/16-success.flang	17
-docs/benchmark/17-member-of-set.flang	4
-docs/benchmark/18-prepend-string.flang	4
-docs/benchmark/19-lowercase-letter.flang	5
-docs/benchmark/20-trim-spaces.flang	5
-docs/benchmark2/01-link-key.flang	14
-docs/benchmark2/02-node-key.flang	14
-docs/benchmark2/03-insert.flang	16
-docs/benchmark2/04-dictionary-size.flang	5
-docs/benchmark2/05-opposite.flang	17
-docs/benchmark2/06-prepend.flang	19
-docs/benchmark2/07-insert-at.flang	18
-docs/benchmark2/08-maximum.flang	5
-docs/benchmark2/09-take-first.flang	14
-docs/benchmark2/10-binary-search.flang	8
-docs/benchmark2/11-unique.flang	12
-docs/benchmark2/12-implies.flang	5
-docs/benchmark2/13-even.flang	17
-docs/benchmark2/14-tree-of-numbers.flang	8
-docs/benchmark2/15-first-or-default.flang	21
-docs/benchmark2/16-success.flang	14
-docs/benchmark2/17-member-of-set.flang	5
-docs/benchmark2/18-prepend-string.flang	19
-docs/benchmark2/19-lowercase-letter.flang	11
-docs/benchmark2/20-trim-spaces.flang	5
-docs/benchmarks/proof-cost/count-20.flang	151
-docs/benchmarks/proof-cost/probe-closed-goal.flang	2
-docs/benchmarks/proof-cost/probe-forgery.flang	3
-docs/benchmarks/speed/memory.flang	64
-docs/benchmarks/speed/programs/tasks.flang	84
-docs/course/check.flang	53
-docs/editors/vim/checks/probe-error.flang	6
-docs/editors/vim/checks/probe-transition.flang	2
-docs/examples/operations.flang	8
-docs/examples/package/discount.flang	19
-docs/examples/package/shop/shop.flang	14
-docs/examples/tutorial.flang	8
-docs/examples/web/browser-app/hailstone.flang	62
-docs/examples/web/shortener-client/client.flang	76
-docs/examples/web/stand.flang	116
-docs/examples/web/wasm/descent.flang	8
-docs/site/contrast-guard.flang	80
-docs/zamer-teorkat/class-string-to-string.flang	226
-docs/zamer-teorkat/iso-object-to-category.flang	13
-docs/zettel/zettel-index.flang	47
-docs/спецификации/слой-отказов.flang	66
-flang/core/evaluate.flang	85
-flang/core/json.flang	84
-flang/core/lexer.flang	124
-flang/core/parser.flang	248
-flang/proof/checker/tests/families/algebra-domains/corrupt/guard-lies.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/algebra-domains/corrupt/head-lies.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/algebra-domains/guard.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/algebra-domains/head.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/boolean-goal/flag.flang	5
-flang/proof/checker/tests/families/boundary/r2-grid-distributivity.flang	7
-flang/proof/checker/tests/families/carrier/name-natural.flang	43	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/constructor/copy.flang	6	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/body-not-nonnegative.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch4-branch-of-another-character.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch4-common-prefix.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch4-right-concatenation.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch6-fact-without-verdict.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch6-foreign-prefix.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/ch6-prefix.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/double-by-zero.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/double-factor-minus.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/double-literal.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/guard-false-conclusion.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/guard-other-threshold.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/guard-same-condition.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/o9-count.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/o9-fold-start-one.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/o9-foreign-list.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/o9-step-two.flang	1	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/safety-count-by-fold.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/safety-fold-start-minus.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/safety-multiply-by-n.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/safety-step-minus.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/coverage/safety-triple.flang	2	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/half-b/arithmetic.flang	10
-flang/proof/checker/tests/families/half-b/element.flang	30
-flang/proof/checker/tests/families/half-b/length.flang	10
-flang/proof/checker/tests/families/if-branch/height.flang	7
-flang/proof/checker/tests/families/inference/corrupt/boundaries-two.flang	13	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/neighbours.flang	8
-flang/proof/checker/tests/families/not-applicable/r6-length-brackets.flang	8
-flang/proof/checker/tests/families/precondition-discharge/three-feeds.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/precondition-discharge/unpaid-callee.flang	7	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/quantifier/name-outside-the-list.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/quantifier/two-names.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/recursion-step-abyss.flang	5
-flang/proof/checker/tests/families/recursion-step-grows.flang	4
-flang/proof/checker/tests/families/recursion-step.flang	6
-flang/proof/checker/tests/families/recursion-structure-no-self-call.flang	4
-flang/proof/checker/tests/families/recursion-structure.flang	8
-flang/proof/checker/tests/families/reflexive.flang	12
-flang/proof/checker/tests/families/run/letters-in-turn.flang	10	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/totality-self-call.flang	8
-flang/proof/checker/tests/families/totality.flang	8
-flang/proof/checker/tests/families/type-families/corrupt/remainder-guard-not-an-assumption.flang	5	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/families/type-families/remainder.flang	4	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/programs/example-binding-lie-foreign-variant.flang	28
-flang/proof/checker/tests/programs/example-binding-p-case-with-the-same-value.flang	28
-flang/proof/checker/tests/programs/example-binding-p-example-lies-about-the-value.flang	28
-flang/proof/checker/tests/programs/example-binding-p-example-outside-the-block.flang	28
-flang/proof/checker/tests/programs/example-binding-p-example-without-expectation.flang	28
-flang/proof/checker/tests/programs/example-binding-p-goal-does-not-hold.flang	28
-flang/proof/checker/tests/programs/lie-collision.flang	33
-flang/proof/checker/tests/programs/lie-difference-pure.flang	4
-flang/proof/checker/tests/programs/lie-tree.flang	21
-flang/proof/checker/tests/programs/list-body-f1-goal-is-false.flang	33
-flang/proof/checker/tests/programs/list-body-f2-body-misses-the-example.flang	33
-flang/proof/checker/tests/programs/list-body-f3-two-links-on-one-line.flang	33
-flang/proof/checker/tests/programs/list-body-f4-link-commented-out.flang	34
-flang/proof/checker/tests/programs/measure-not-value-inflation-by-assumption.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/programs/measure-not-value-inflation-unverifiable.flang	123	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/checker/tests/programs/measure-not-value-zero-character-honest.flang	15
-flang/proof/checker/tests/programs/measure-not-value-zero-character-lie.flang	15
-flang/proof/checker/tests/programs/note-instead-of-postcondition.flang	91
-flang/proof/checker/tests/programs/step-outside-case-1-body-misses-the-example.flang	34
-flang/proof/checker/tests/programs/step-outside-case-2-goal-is-false.flang	34
-flang/proof/checker/tests/programs/step-outside-case-3-marks-coincided.flang	34
-flang/proof/checker/tests/programs/step-outside-case-4-relation-unknown.flang	34
-flang/proof/checker/tests/programs/step-outside-case-5-length-greater-by-one.flang	27
-flang/proof/checker/tests/programs/step-outside-case-6-digits-swapped.flang	27
-flang/proof/checker/tests/programs/step-outside-case-9-body-not-one-literal.flang	34
-flang/proof/checker/tests/records/3314-conditional-by-branches/false-negation.flang	13
-flang/proof/checker/tests/records/8615-theorem-keeps/countdown-with-theorem.flang	9
-flang/proof/checker/tests/records/8615-theorem-keeps/descent-does-not-decrease.flang	9
-flang/proof/checker/tests/records/9951-laws/law-boundaries.flang	26
-flang/proof/checker/tests/records/9991-result-equals/unfolding-guard.flang	14
-flang/proof/checker/tests/records/9991-starts-with/false-prefix.flang	11
-flang/proof/checker/tests/records/case-split-algebra/00-untouched.flang	29
-flang/proof/checker/tests/records/case-split-algebra/01-branch-lies.flang	29
-flang/proof/checker/tests/records/case-split-algebra/02-variant-swapped.flang	29
-flang/proof/checker/tests/records/case-split-algebra/03-coverage-incomplete.flang	29
-flang/proof/checker/tests/records/case-split-segment/00-untouched.flang	43
-flang/proof/checker/tests/records/case-split-segment/01-bottom-lies.flang	43
-flang/proof/checker/tests/records/case-split-segment/02-no-descent.flang	43
-flang/proof/checker/tests/records/case-split-segment/03-summand-minus.flang	43
-flang/proof/checker/tests/records/case-split-segment/04-form-unknown.flang	43
-flang/proof/checker/tests/records/case-split-segment/05-branches-swapped.flang	43
-flang/proof/checker/tests/records/case-split-segment/06-foreign-summand.flang	43
-flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p10-e2-yields-a-foreign-element.flang	34
-flang/proof/checker/tests/records/identity-after-rewrite/p2-body-misses-the-goal.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p3-associativity-instead-of-the-door.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p4-swap-through-the-node.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p5-body-not-on-one-line.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p6-law-outside-the-closed-list.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p7-closed-lie-without-requires.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p8-the-same-lie-under-an-assumption.flang	8
-flang/proof/checker/tests/records/identity-after-rewrite/p9-index-outside-the-list-bounds.flang	34
-flang/proof/checker/tests/records/reason-types/subtraction-does-not-keep.flang	15
-flang/proof/checker/tests/records/v1-g2/type-behind-a-note.flang	12
-flang/proof/checker/tests/records/v1-g2/variant-behind-a-note.flang	21
-flang/proof/examples/binder-hides-the-condition.flang	18
-flang/proof/examples/binder-wall-map.flang	33
-flang/proof/examples/body-forms.flang	91
-flang/proof/examples/corpus-alphabet.flang	49
-flang/proof/examples/corpus-brackets.flang	47
-flang/proof/examples/corpus-bytes.flang	56
-flang/proof/examples/corpus-carrier.flang	41
-flang/proof/examples/corpus-case.flang	33
-flang/proof/examples/corpus-cforms.flang	62
-flang/proof/examples/corpus-cident.flang	27
-flang/proof/examples/corpus-depth.flang	29
-flang/proof/examples/corpus-endings.flang	39
-flang/proof/examples/corpus-factorial.flang	73	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/examples/corpus-fullwidth.flang	25
-flang/proof/examples/corpus-hof.flang	80
-flang/proof/examples/corpus-json.flang	28
-flang/proof/examples/corpus-jsonescape.flang	37
-flang/proof/examples/corpus-keywords.flang	39
-flang/proof/examples/corpus-length.flang	30
-flang/proof/examples/corpus-lists.flang	138
-flang/proof/examples/corpus-marks.flang	34
-flang/proof/examples/corpus-namesigns.flang	20
-flang/proof/examples/corpus-nat-names.flang	31
-flang/proof/examples/corpus-natural-ceiling.flang	45	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/examples/corpus-natural.flang	33
-flang/proof/examples/corpus-numtree.flang	48
-flang/proof/examples/corpus-ophelpers.flang	23
-flang/proof/examples/corpus-phrases.flang	43
-flang/proof/examples/corpus-signs.flang	52
-flang/proof/examples/corpus-tables.flang	39
-flang/proof/examples/corpus-translit.flang	41
-flang/proof/examples/corpus-tree-depth.flang	33
-flang/proof/examples/corpus-tree-height.flang	36
-flang/proof/examples/corpus-tree.flang	21
-flang/proof/examples/forgery-binder-hides-the-condition.flang	28
-flang/proof/examples/forgery-if-without-descent-theorem.flang	10
-flang/proof/examples/forgery-if-without-descent.flang	38
-flang/proof/examples/forgery-modus-ponens-by-guard.flang	25
-flang/proof/examples/forgery-precondition-discharge-reads-proved-facts.flang	18	под flang/proof — правка после перепечатки и 1420
-flang/proof/examples/forgery-subtraction-under-precondition.flang	17	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/examples/four-words.flang	100	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/examples/honest-modus-ponens-by-guard.flang	13
-flang/proof/examples/if-over-a-segment.flang	43
-flang/proof/examples/precondition-discharge-reads-proved-facts.flang	23	под flang/proof — правка после перепечатки и 1420
-flang/proof/examples/precondition.flang	101	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/examples/segment.flang	75	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/examples/stack.flang	91
-flang/proof/examples/subtraction-under-precondition.flang	21	запись пришпилена к байтам исходника (строк, знаков, отпечаток): убрать комментарий — перепородить запись
-flang/proof/examples/traffic-light.flang	28
-flang/proof/forgeries/base-with-field.flang	12
-flang/proof/forgeries/by-division.flang	14
-flang/proof/forgeries/by-identity.flang	16
-flang/proof/forgeries/circle.flang	10
-flang/proof/forgeries/part-count-false.flang	44
-flang/proof/forgeries/part-count-true.flang	18
-flang/proof/forgeries/reduced-base.flang	12
-flang/proof/forgeries/transitivity.flang	64
-flang/proof/kernel.flang	136	под flang/proof — правка после перепечатки и 1420
-flang/proof/map/abilities.flang	85
-flang/proof/map/boundaries.flang	13
-flang/proof/map/equality.flang	10
-flang/proof/map/forms.flang	12
-flang/proof/map/order.flang	16
-flang/proof/map/refusal-boundaries.flang	11
-flang/proof/map/refusal-order.flang	7
-flang/proof/map/refusal-substantive.flang	13
-flang/proof/map/sources.flang	16
-flang/proof/map/substantive.flang	11
-flang/proof/map/types.flang	10
-flang/proof/midpoint-price.flang	57
-flang/proof/midpoint-verdicts.flang	67
-flang/proof/rules-match.flang	72
-flang/proof/small-reducer.flang	197
-flang/self/bootstrap/compiler.flang	1371	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/bootstrap/corpus.flang	160	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/bounded.flang	249
-flang/self/builtins.flang	260	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/carriers.flang	148	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/cli.flang	161
-flang/self/commutative.flang	71
-flang/self/conc.flang	474
-flang/self/defunc.flang	366
-flang/self/distributed.flang	189
-flang/self/distributive.flang	72
-flang/self/emit-c.flang	586
-flang/self/emit-cpp.flang	105
-flang/self/emit-csharp.flang	336
-flang/self/emit-elixir.flang	375
-flang/self/emit-go.flang	224
-flang/self/emit-java.flang	346
-flang/self/emit-js.flang	359	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/emit-python.flang	317
-flang/self/emit-rust.flang	297
-flang/self/factcheck.flang	184
-flang/self/failures.flang	255
-flang/self/functor-oracle.flang	59
-flang/self/functor.flang	189
-flang/self/grid.flang	109
-flang/self/hotswap.flang	189
-flang/self/idempotent.flang	95
-flang/self/interpret.flang	450	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/io.flang	169
-flang/self/iso.flang	108
-flang/self/law-oracle.flang	70
-flang/self/lexer.flang	477
-flang/self/link.flang	299
-flang/self/lsp.flang	272
-flang/self/mcp.flang	87
-flang/self/monad-expand.flang	209
-flang/self/monad.flang	146
-flang/self/monoid.flang	213
-flang/self/monotone.flang	89
-flang/self/obligations.flang	366	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/obyazatelstva-i-yadro.flang	54
-flang/self/oracle.flang	100
-flang/self/otkazy-tipov.flang	8
-flang/self/otkazy-totalnosti.flang	16
-flang/self/parser.flang	1349	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/partialorder.flang	117
-flang/self/processes.flang	195
-flang/self/proof-initial.flang	718
-flang/self/proof-kernel.flang	3739	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/proof.flang	556	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/proofterm.flang	1216	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/repl/repl.flang	252
-flang/self/setoid-oracle.flang	137
-flang/self/setoid.flang	279
-flang/self/sets-oracle.flang	74
-flang/self/sets.flang	232
-flang/self/svoystva.flang	143
-flang/self/tags.flang	145
-flang/self/totality.flang	655
-flang/self/types.flang	1641	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/zapis.flang	678	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/test/fixtures/binary-rules/bifunctor-object-missing.flang	2
-flang/test/fixtures/binary-rules/category-not-closed.flang	3
-flang/test/fixtures/binary-rules/embedding-not-injective.flang	3
-flang/test/fixtures/binary-rules/equality-not-symmetric.flang	12
-flang/test/fixtures/binary-rules/functor-arrow.flang	3
-flang/test/fixtures/binary-rules/iso-mismatch.flang	52
-flang/test/fixtures/binary-rules/meet-same-side.flang	31
-flang/test/fixtures/binary-rules/monad-left-unit.flang	5
-flang/test/fixtures/binary-rules/monoid-assoc.flang	3
-flang/test/fixtures/binary-rules/morphism-compose.flang	3
-flang/test/fixtures/binary-rules/property-not-commutative.flang	2
-flang/test/fixtures/binary-rules/scale-mismatch.flang	4
-flang/test/fixtures/binary-rules/transform-not-natural.flang	50
-flang/test/fixtures/binary-rules/transform-not-total.flang	40
-flang/test/fixtures/element-po-nomeru-chestnaya.flang	34
-flang/test/fixtures/granica-nad-chislom-chestnaya.flang	26
-flang/test/fixtures/install-path/false-example.flang	6
-flang/test/fixtures/korpus/clean.flang	2
-flang/test/fixtures/korpus/lying.flang	4
-flang/test/fixtures/krug-tuda-i-obratno.flang	24
-flang/test/fixtures/ledger-refuses-only-unjudged-surfaces.flang	29
-flang/test/fixtures/nachalo-po-postroeniyu-chestnaya.flang	23
-flang/test/fixtures/ohrana-daet-fakt.flang	13
-flang/test/fixtures/plany/00-tselyj.flang	3
-flang/test/fixtures/plany/01-dvazhdy.flang	1
-flang/test/fixtures/plany/02-slovar-zanyat.flang	8
-flang/test/fixtures/plany/03-sostoyanie-neizvestno.flang	1
-flang/test/fixtures/plany/04-nachalo-neizvestno.flang	1
-flang/test/fixtures/plany/05-nachalo-s-argumentom.flang	2
-flang/test/fixtures/plany/06-nachalo-ne-tot-tip.flang	2
-flang/test/fixtures/plany/07-shag-neizvesten.flang	1
-flang/test/fixtures/plany/08-shag-odin-argument.flang	2
-flang/test/fixtures/plany/09-shag-pervyj-argument.flang	2
-flang/test/fixtures/plany/10-shag-vtoroj-argument.flang	2
-flang/test/fixtures/plany/11-shag-vozvrat.flang	2
-flang/test/fixtures/plany/12-shag-spisok.flang	2
-flang/test/fixtures/plany/13-shag-dzhoker.flang	15
-flang/test/fixtures/poddelka-builtin-emptiness-fact.flang	69
-flang/test/fixtures/poddelka-dlina.flang	47
-flang/test/fixtures/poddelka-dno-proizvedeniya.flang	62
-flang/test/fixtures/poddelka-element-po-nomeru.flang	49
-flang/test/fixtures/poddelka-granica-nad-ne-chislom.flang	40
-flang/test/fixtures/poddelka-indukciya-po-stroke.flang	45
-flang/test/fixtures/poddelka-integrality-from-fact.flang	35
-flang/test/fixtures/poddelka-istinnaya-vetv.flang	25
-flang/test/fixtures/poddelka-konyunkciya.flang	17
-flang/test/fixtures/poddelka-krug-pri-rabote.flang	13
-flang/test/fixtures/poddelka-lozhnaya-polovina.flang	12
-flang/test/fixtures/poddelka-mera-dliny-stroki.flang	47
-flang/test/fixtures/poddelka-nachalo-po-postroeniyu.flang	26
-flang/test/fixtures/poddelka-ogovorka-o-konechnosti.flang	39
-flang/test/fixtures/poddelka-order-arithmetic.flang	70
-flang/test/fixtures/poddelka-porjadok-sosednih.flang	30
-flang/test/fixtures/poddelka-primer-pod-kvantorom.flang	26
-flang/test/fixtures/poddelka-promezhutochnyy-fakt.flang	45
-flang/test/fixtures/poddelka-protivorechie.flang	30
-flang/test/fixtures/poddelka-ravenstvo-v-tele-ne-dokazyvaet.flang	35
-flang/test/fixtures/poddelka-ravenstvo-v-tele.flang	25
-flang/test/fixtures/poddelka-razbor-sluchaev.flang	41
-flang/test/fixtures/poddelka-razbor-spiska.flang	66
-flang/test/fixtures/poddelka-razbor-vnutrennim.flang	26
-flang/test/fixtures/poddelka-razdvoenie-diz.flang	9
-flang/test/fixtures/poddelka-razvyazka-postusloviy.flang	19
-flang/test/fixtures/poddelka-refleksivnost.flang	25
-flang/test/fixtures/poddelka-slova-celey.flang	38
-flang/test/fixtures/poddelka-slovo-o-dokazannosti.flang	35
-flang/test/fixtures/poddelka-snyatie-storozha.flang	21
-flang/test/fixtures/poddelka-sortirovka-ne-ubyvaet.flang	12
-flang/test/fixtures/poddelka-strict-order.flang	50
-flang/test/fixtures/poddelka-svyortka-nad-pustym.flang	39
-flang/test/fixtures/poddelka-svyortka-prefiks.flang	76
-flang/test/fixtures/poddelka-svyortka-shagom.flang	37
-flang/test/fixtures/poddelka-vhozhdenie.flang	24
-flang/test/fixtures/processes/00-whole.flang	3
-flang/test/fixtures/processes/01-handler-not-total-without-budget.flang	3
-flang/test/fixtures/processes/02-handler-not-declared.flang	2
-flang/test/fixtures/processes/03-initial-not-declared.flang	2
-flang/test/fixtures/processes/04-watched-process-not-declared.flang	3
-flang/test/fixtures/processes/05-nested-supervisor-not-declared.flang	1
-flang/test/fixtures/processes/06-run-names-unknown-process.flang	2
-flang/test/fixtures/processes/07-process-under-two-supervisors.flang	2
-flang/test/fixtures/processes/08-supervisor-under-two-supervisors-fixed.flang	2
-flang/test/fixtures/processes/08-supervisor-under-two-supervisors.flang	3
-flang/test/fixtures/processes/09-supervision-cycle.flang	3
-flang/test/fixtures/processes/10-strategy-expected-without-supervision-fixed.flang	2
-flang/test/fixtures/processes/10-strategy-expected-without-supervision.flang	4
-flang/test/fixtures/processes/11-send-to-undeclared-process-fixed.flang	2
-flang/test/fixtures/processes/11-send-to-undeclared-process.flang	3
-flang/test/fixtures/processes/12-spawn-of-undeclared-kind-fixed.flang	2
-flang/test/fixtures/processes/12-spawn-of-undeclared-kind.flang	3
-flang/test/fixtures/razrez-kruga/circle-through-payload.flang	3
-flang/test/fixtures/razrez-kruga/circle-with-a-fold.flang	2
-flang/test/fixtures/razrez-kruga/continuation-through-a-nested-payload.flang	4
-flang/test/fixtures/razrez-kruga/forgery-continuation-with-the-same-argument.flang	2
-flang/test/fixtures/razrez-kruga/forgery-empty-list-separately.flang	4
-flang/test/fixtures/razrez-kruga/forgery-fold-step.flang	2
-flang/test/fixtures/razrez-kruga/forgery-whole-node.flang	3
-flang/test/fixtures/razrez-kruga/literal-print-comparison.flang	6
-flang/test/fixtures/svyortka-prefiks-chestnaya.flang	27
-flang/test/http.flang	2
-flang/test/process-failures.flang	55
-flang/test/владение-состоянием.flang	2	шапка SPDX: правообладатель и лицензия, не объяснение
-flang/test/встроенные-формы.flang	76
-flang/test/жаргон.flang	2
-flang/test/прогонщик-корпуса.flang	37
-scripts/editors/language-words.flang	57
-scripts/editors/lsp-check.fscript	20
-scripts/editors/vim-highlight-check.fscript	34
-scripts/editors/vim-highlighting.fscript	19
-scripts/editors/vim-rules.flang	45
-scripts/editors/vscode-highlight-check.fscript	27
-scripts/editors/vscode-highlighting.fscript	17
-scripts/editors/vscode-rules.flang	44
-scripts/guards/adr-numbers-guard.fscript	34
-scripts/guards/bidi-control-guard.fscript	47
-scripts/guards/check-before-run.fscript	63
-scripts/guards/child-timeout.fscript	44
-scripts/guards/corpus-runner.fscript	71
-scripts/guards/dictionary-guard.fscript	61
-scripts/guards/file-extensions.fscript	91
-scripts/guards/input-boundary.fscript	42
-scripts/guards/license-guard.fscript	39
-scripts/guards/module-name-guard.fscript	114
-scripts/guards/name-collision-guard.fscript	354
-scripts/guards/name-splicing-guard.fscript	87
-scripts/guards/occupancy-check.fscript	31
-scripts/guards/release-guard.fscript	53
-scripts/guards/stale-pages-guard.fscript	124
-scripts/guards/string-measure.flang	27
-scripts/guards/tab-host-guard.fscript	48
-scripts/guards/сторож-дарвина.fscript	33
-scripts/registry-tool.fscript	62
-scripts/release/asdf-plugin-published.fscript	33
-scripts/release/asdf-version-list.fscript	47
-scripts/release/path-without-node.fscript	63
-scripts/seed/new-binary-acceptance-probe.flang	17
-scripts/seed/reprint-freshness.fscript	38
-scripts/site/emit-dictionary.fscript	63
-scripts/site/releases-page-verify.fscript	11
-scripts/site/releases-page.fscript	15
-scripts/site/releases.flang	55
-scripts/site/surfaces-page.fscript	44
-scripts/targets/conc-link-emit.fscript	55
-scripts/targets/emit-and-examples.fscript	59
-scripts/targets/emit-law.fscript	80
-scripts/targets/plan-across-targets.fscript	101
-scripts/targets/region-in-c-target.fscript	51
-scripts/targets/variant-probe.flang	36
+flang/core/evaluate.flang	85	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/core/json.flang	84	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/proof/checker/tests/programs/intermediate-step-by-note.flang	1	проба сверщика: этот комментарий и есть подделка, которую сверщик обязан не читать (flang/proof/checker/tests/run.sh)
+flang/proof/checker/tests/programs/list-body-f4-link-commented-out.flang	1	проба сверщика: этот комментарий и есть подделка, которую сверщик обязан не читать (flang/proof/checker/tests/run.sh)
+flang/proof/checker/tests/programs/note-instead-of-postcondition.flang	1	проба сверщика: этот комментарий и есть подделка, которую сверщик обязан не читать (flang/proof/checker/tests/run.sh)
+flang/proof/checker/tests/records/v1-g2/type-behind-a-note.flang	1	проба сверщика: этот комментарий и есть подделка, которую сверщик обязан не читать (flang/proof/checker/tests/run.sh)
+flang/proof/checker/tests/records/v1-g2/variant-behind-a-note.flang	1	проба сверщика: этот комментарий и есть подделка, которую сверщик обязан не читать (flang/proof/checker/tests/run.sh)
+flang/self/bootstrap/compiler.flang	1371	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/bootstrap/corpus.flang	160	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/bounded.flang	249	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/builtins.flang	260	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/carriers.flang	148	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/cli.flang	161	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/commutative.flang	71	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/conc.flang	474	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/defunc.flang	366	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/distributed.flang	189	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/distributive.flang	72	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/emit-c.flang	598	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/emit-cpp.flang	105	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/emit-csharp.flang	336	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/emit-elixir.flang	375	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/emit-go.flang	224	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/emit-java.flang	346	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/emit-js.flang	359	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/emit-python.flang	329	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/emit-rust.flang	297	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/factcheck.flang	184	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/failures.flang	255	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/functor-oracle.flang	59	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/functor.flang	189	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/grid.flang	109	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/hotswap.flang	189	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/idempotent.flang	95	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/interpret.flang	450	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/io.flang	169	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/iso.flang	108	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/law-oracle.flang	70	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/lexer.flang	477	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/link.flang	299	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/lsp.flang	272	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/mcp.flang	87	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/monad-expand.flang	209	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/monad.flang	146	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/monoid.flang	213	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/monotone.flang	89	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/obligations.flang	366	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/obyazatelstva-i-yadro.flang	54	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/oracle.flang	100	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/otkazy-tipov.flang	8	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/otkazy-totalnosti.flang	16	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/parser.flang	1349	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/partialorder.flang	117	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/processes.flang	195	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/proof-initial.flang	718	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/proof-kernel.flang	3739	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/proof.flang	556	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/proofterm.flang	1216	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/repl/repl.flang	252	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/setoid-oracle.flang	137	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/setoid.flang	279	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/sets-oracle.flang	74	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/sets.flang	232	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/svoystva.flang	143	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/tags.flang	145	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/totality.flang	655	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/types.flang	1641	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью
+flang/self/zapis.flang	678	вход печати семени (scripts/seed-fingerprint или flang/self): снимается следующей печатью

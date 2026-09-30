@@ -16,7 +16,7 @@
 
 тотальная функция «Checks»
   возвращает список «Check»
-  обеспечивает «there are exactly nineteen checks» (длина результат) равен 19
+  обеспечивает «there are exactly twenty checks» (длина результат) равен 20
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check",
    запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "bootstrap/flang io scripts/seed/seed-runtime-is-source.fscript --plan Check",
    запись «Check» с «name» равным "seed-refresh" и «command» равным "bootstrap/flang io scripts/seed/seed-refresh.fscript --plan Check",
@@ -30,6 +30,7 @@
    запись «Check» с «name» равным "no-package-json-guard" и «command» равным "bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "run-verdict-debt-guard" и «command» равным "bootstrap/flang io scripts/guards/run-verdict-debt-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "record-follows-its-source" и «command» равным "bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Проверка",
+   запись «Check» с «name» равным "no-comments-guard" и «command» равным "cd scripts/guards && ../../bootstrap/flang io no-comments-guard.fscript --на-веру --plan Проверка",
    запись «Check» с «name» равным "shortcut-collector" и «command» равным "bootstrap/flang io scripts/shortcut-collector.fscript --plan Сбор --max-orders 20000",
    запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check",
    запись «Check» с «name» равным "licenses" и «command» равным "bootstrap/flang run-script licenses:check",
@@ -305,7 +306,7 @@
 тотальная функция «Leftovers»
   принимает directory: строка
   возвращает список строки
-  обеспечивает «one file for every check and the directory itself» (длина результат) равен 20
+  обеспечивает «one file for every check and the directory itself» (длина результат) равен 21
   добавить directory к (отобразить («Checks») как check → («Output path» от directory и check))
 
 тотальная функция «Remove files»

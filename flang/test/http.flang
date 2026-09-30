@@ -1,9 +1,6 @@
 модуль «Корпус HTTP»
   использует «Requests and responses» из "../stdlib/http.flang"
 
-// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-// SPDX-License-Identifier: BSD-2-Clause
-
 примечание "Content-Length здесь считается по числу знаков строки, а не по октетам, поэтому «Content-Length: 2» с двухбайтовой кириллицей в теле — целый запрос, а не обрезанный"
 
 тотальная функция «Исход»

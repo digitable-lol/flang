@@ -1,12 +1,3 @@
-// Программы страницы «Учебник» (docs/site/tutorial.ru.md) — одним файлом,
-// чтобы читатель мог прогнать их у себя целиком:
-//
-//   flang test docs/examples/tutorial.flang
-//   flang check docs/examples/tutorial.flang --proof
-//
-// Порядок тот же, что в главах. Каждая функция здесь — то, что в главе
-// показано куском.
-
 модуль «Tutorial»
 
 тотальная функция «Удвоить»

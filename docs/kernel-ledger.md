@@ -210,12 +210,12 @@ md5:      4e32f9f76d8215c3b5df1b6abe0b6a68
 $ PIK=2G PAMYAT=16G bootstrap/flang io scripts/ledgers/take-proof-ledger.fscript --timeout 36000000 -- flang/proof/map/abilities.flang
 код 0 ZAMER 1.41 44484
   доказано 27, сетка 0, объявлено 1 → два счёта сошлись: доказано 27 из 38 = 71,1 %
-опись: 4cff036ef9b62c189f00312cede89bac|38|27|0|1|10
+опись: 7e3bf3e7d9b6e6b5328c1d88e0dbd7cc|38|27|0|1|10
 
 $ PIK=2G PAMYAT=16G bootstrap/flang io scripts/ledgers/take-proof-ledger.fscript --timeout 36000000 -- flang/proof/examples/corpus-alphabet.flang
 код 0 ZAMER 0.89 21420
   два счёта сошлись: доказано 7 из 7 = 100,0 %
-опись: eba240cf6cb7ccae108943260e9892eb|7|7|0|0|0
+опись: 4b71c689991b6cb50457429a07e2e2d2|7|7|0|0|0
 ```
 
 ## Отрицательный результат: на семени 30 августа предел ГЛУБИНЫ бьёт раньше шагов

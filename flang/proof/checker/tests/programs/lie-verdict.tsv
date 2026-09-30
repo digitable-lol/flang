@@ -1,0 +1,4 @@
+program	code	reason
+lie-tree.flang	1	FLANG_PROOF_STEP
+lie-difference-pure.flang	0	сетка 1 значение
+lie-collision.flang	1	FLANG_PROPERTY

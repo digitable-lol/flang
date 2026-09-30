@@ -1,0 +1,43 @@
+модуль «Tables»
+
+тотальная функция «Data lines»
+  принимает text: строка
+  возвращает список строки
+  пример «The heading and empty lines are not data»
+    дано text равно "program\tcode\n\nhonest.flang\t0\n"
+    ожидается ["honest.flang\t0"]
+  пример «An empty table has no data»
+    дано text равно ""
+    ожидается пустой список
+  разбор (отфильтровать (разделить text по "\n") где line → не (пусто line))
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Rows»
+  принимает text: строка
+  возвращает список список строки
+  пример «A data line is cut into cells at tabs»
+    дано text равно "program\tcode\nhonest.flang\t0\n"
+    ожидается [["honest.flang", "0"]]
+  отобразить («Data lines» от text) как line → разделить line по "\t"
+
+тотальная функция «Cell»
+  принимает position: число, row: список строки
+  возвращает строка
+  пример «The second cell of two»
+    дано position равно 2
+    дано row равно ["honest.flang", "0"]
+    ожидается "0"
+  пример «A position past the end gives nothing»
+    дано position равно 3
+    дано row равно ["honest.flang", "0"]
+    ожидается ""
+  пример «A position before the beginning gives nothing»
+    дано position равно 0
+    дано row равно ["honest.flang", "0"]
+    ожидается ""
+  если (position меньше 1) или (position больше (длина row))
+    то ""
+    иначе элемент position в row

@@ -1,0 +1,230 @@
+модуль «Lie verdict»
+  использует «Rules» из "../../../../../scripts/rules.fscript"
+  использует «Inquiry» из "../../../../../scripts/inquiry.fscript"
+  использует «Reading» из "../../../../../scripts/reading.fscript"
+  использует «Tables» из "../../../../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Case»
+  «program»: строка
+  «code»: строка
+  «reason»: строка
+
+тотальная функция «Case of»
+  принимает row: список строки
+  возвращает «Case»
+  пример «A row of the table becomes a entry»
+    дано row равно ["lie-tree.flang", "1", "FLANG_PROOF_STEP"]
+    ожидается запись «Case» с «program» равным "lie-tree.flang" и «code» равным "1" и «reason» равным "FLANG_PROOF_STEP"
+  запись «Case» с «program» равным («Cell» от 1 и row) и «code» равным («Cell» от 2 и row) и «reason» равным («Cell» от 3 и row)
+
+тотальная функция «Cases»
+  принимает answers: список «Answer»
+  возвращает список «Case»
+  пример «No table gives no entries»
+    дано answers равно пустой список
+    ожидается пустой список
+  отобразить («Rows» от («Output of» от "table" и answers)) как row → «Case of» от row
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The built binary is taken when the environment names none»
+    дано answers равно пустой список
+    ожидается "../../../../../bootstrap/flang"
+  «Setting of» от "binary" и "../../../../../bootstrap/flang" и answers
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The table, the directory and the binary are asked first»
+    ожидается [запись «Question» с «name» равным "table" и «order» равным (вариант «Прочитать файл» с путь равным "lie-verdict.tsv"), запись «Question» с «name» равным "directory" и «order» равным (вариант «Перечислить каталог» с путь равным "."), запись «Question» с «name» равным "binary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN")]
+  [(«Read» от "table" и "lie-verdict.tsv"), («List» от "directory" и "."), («Environment» от "binary" и "FLANG_BIN")]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «The binary is tested before it is called»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "../../../../../bootstrap/flang"])]
+  [(«Run» от "present" и "test" и ["-x", («Binary» от answers)])]
+
+тотальная функция «Checks»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No entries give no checks»
+    дано answers равно пустой список
+    ожидается пустой список
+  отобразить («Cases» от answers) как entry → «Run» от (entry.«program») и («Binary» от answers) и ["check", (entry.«program»), "--proof"]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «The last stage runs the checks»
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается пустой список
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 7
+    дано answers равно пустой список
+    ожидается пустой список
+  если (stages меньше 0) или (stages больше 2)
+    то пустой список
+    иначе элемент (3 минус stages) в [(«Setup»), («Presence» от answers), («Checks» от answers)]
+
+тотальная функция «Short»
+  принимает text: строка
+  возвращает строка
+  пример «The first line of what was said»
+    дано text равно "one\ntwo"
+    ожидается "one"
+  пусть line равно («First line» от text)
+  если (длина line) больше 200 то (подстрока line с 1 по 200) иначе line
+
+тотальная функция «Case line»
+  принимает entry: «Case», code: число, said: строка
+  возвращает строка
+  пример «The code and the reason agree»
+    дано entry равно запись «Case» с «program» равным "lie-tree.flang" и «code» равным "1" и «reason» равным "FLANG_PROOF_STEP"
+    дано code равно 1
+    дано said равно "FLANG_PROOF_STEP: шаг не следует"
+    ожидается "СОШЛОСЬ lie-tree.flang — код 1, причина «FLANG_PROOF_STEP» на месте"
+  пример «Another code is a failure and the first line is shown»
+    дано entry равно запись «Case» с «program» равным "lie-tree.flang" и «code» равным "1" и «reason» равным "FLANG_PROOF_STEP"
+    дано code равно 0
+    дано said равно "проверено\nзамечаний нет"
+    ожидается "ПРОВАЛ   lie-tree.flang — ждали код 1, получили 0\n         проверено"
+  пример «The same code for another reason is a failure too»
+    дано entry равно запись «Case» с «program» равным "lie-tree.flang" и «code» равным "1" и «reason» равным "FLANG_PROOF_STEP"
+    дано code равно 1
+    дано said равно "FLANG_PROPERTY: пример не сошёлся"
+    ожидается "ПРОВАЛ   lie-tree.flang — код 1 совпал, а слов «FLANG_PROOF_STEP» в выводе нет (причина другая)"
+  «Chosen» от [(«When» от (не ((к строке code) равен (entry.«code»))) и (соединить ["ПРОВАЛ   ", (entry.«program»), " — ждали код ", (entry.«code»), ", получили ", (к строке code), "\n         ", («Short» от said)] по "")),
+    («When» от (said содержит (entry.«reason»)) и (соединить ["СОШЛОСЬ ", (entry.«program»), " — код ", (к строке code), ", причина «", (entry.«reason»), "» на месте"] по ""))] и (соединить ["ПРОВАЛ   ", (entry.«program»), " — код ", (к строке code), " совпал, а слов «", (entry.«reason»), "» в выводе нет (причина другая)"] по "")
+
+тотальная функция «Case lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «No entries give no lines»
+    дано answers равно пустой список
+    ожидается пустой список
+  отобразить («Cases» от answers) как entry → «Case line» от entry и («Exit code of» от (entry.«program») и answers) и (соединить [(«Output of» от (entry.«program») и answers), («Errors of» от (entry.«program») и answers)] по "")
+
+тотальная функция «Is a lie»
+  принимает name: строка
+  возвращает признак
+  пример «A lying program»
+    дано name равно "lie-tree.flang"
+    ожидается да
+  пример «The table is not a program»
+    дано name равно "lie-verdict.tsv"
+    ожидается нет
+  пример «Another program is not a lie»
+    дано name равно "note-instead-of-postcondition.flang"
+    ожидается нет
+  (name начинается с "lie-") и притом («Ends with» от name и ".flang")
+
+тотальная функция «Unregistered»
+  принимает names: список строки, entries: список «Case»
+  возвращает список строки
+  пример «A lying program without a row is named»
+    дано names равно ["lie-tree.flang", "lie-new.flang", "lie-verdict.tsv"]
+    дано entries равно [запись «Case» с «program» равным "lie-tree.flang" и «code» равным "1" и «reason» равным "FLANG_PROOF_STEP"]
+    ожидается ["НЕЗАРЕГИСТРИРОВАННАЯ ЛОЖЬ: lie-new.flang лежит в каталоге, а вердикта для неё в таблице нет — впишите его"]
+  отобразить (отфильтровать names где name → («Is a lie» от name) и притом ((длина (отфильтровать entries где entry → (entry.«program») равен name)) равен 0)) как name → соединить ["НЕЗАРЕГИСТРИРОВАННАЯ ЛОЖЬ: ", name, " лежит в каталоге, а вердикта для неё в таблице нет — впишите его"] по ""
+
+тотальная функция «Is a failure»
+  принимает line: строка
+  возвращает признак
+  пример «A failed entry»
+    дано line равно "ПРОВАЛ   lie-tree.flang — ждали код 1, получили 0"
+    ожидается да
+  пример «An agreed entry»
+    дано line равно "СОШЛОСЬ lie-tree.flang — код 1, причина «FLANG_PROOF_STEP» на месте"
+    ожидается нет
+  (line начинается с "ПРОВАЛ") или (line начинается с "НЕЗАРЕГИСТРИРОВАННАЯ")
+
+тотальная функция «Judged»
+  принимает lines: список строки, entries: число
+  возвращает «Продолжение»
+  пример «Agreed entries end the work»
+    дано lines равно ["СОШЛОСЬ lie-tree.flang — код 1, причина «FLANG_PROOF_STEP» на месте"]
+    дано entries равно 1
+    ожидается вариант «Конец работы» с значение равным "СОШЛОСЬ lie-tree.flang — код 1, причина «FLANG_PROOF_STEP» на месте\n\nсошлось: вердикты программ лжи, числом 1, те же, что записаны в lie-verdict.tsv"
+  пример «A failed entry fails the plan and is counted»
+    дано lines равно ["ПРОВАЛ   lie-tree.flang — код 1 совпал, а слов «FLANG_PROOF_STEP» в выводе нет (причина другая)"]
+    дано entries равно 1
+    ожидается вариант «Провал» с код равным "FLANG_LIE_VERDICT" и сообщение равным "ПРОВАЛ   lie-tree.flang — код 1 совпал, а слов «FLANG_PROOF_STEP» в выводе нет (причина другая)\n\nрасхождений: 1"
+  пример «An empty table is not a verdict»
+    дано lines равно пустой список
+    дано entries равно 0
+    ожидается вариант «Не проверено» с код равным "FLANG_LIE_VERDICT_NOT_MEASURED" и сообщение равным "в lie-verdict.tsv нет ни одной строки данных"
+  пусть failures равно (длина (отфильтровать lines где line → «Is a failure» от line))
+  «Chosen» от [(«When» от (entries равен 0) и (вариант «Не проверено» с код равным "FLANG_LIE_VERDICT_NOT_MEASURED" и сообщение равным "в lie-verdict.tsv нет ни одной строки данных")),
+    («When» от (failures больше 0) и (вариант «Провал» с код равным "FLANG_LIE_VERDICT" и сообщение равным (соединить («Соединить списки» от lines и ["", (соединить ["расхождений: ", (к строке failures)] по "")]) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Соединить списки» от lines и ["", (соединить ["сошлось: вердикты программ лжи, числом ", (к строке entries), ", те же, что записаны в lie-verdict.tsv"] по "")]) по "\n"))
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Nothing was asked, so nothing was measured»
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_LIE_VERDICT_NOT_MEASURED" и сообщение равным "в lie-verdict.tsv нет ни одной строки данных"
+  «Judged» от («Соединить списки» от («Case lines» от answers) и («Unregistered» от («Listed of» от "directory" и answers) и («Cases» от answers))) и (длина («Cases» от answers))
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «A missing binary is an obstacle»
+    дано asked равно "present"
+    дано answers равно [запись «Answer» с «name» равным "present" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "")]
+    ожидается ["двоичного нет: ../../../../../bootstrap/flang (собрать: make -C bootstrap)"]
+  пример «A missing table is an obstacle»
+    дано asked равно "table"
+    дано answers равно [запись «Answer» с «name» равным "table" и «reply» равным (вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "файл не прочитан")]
+    ожидается ["таблицы нет: lie-verdict.tsv"]
+  пример «An answered question is no obstacle»
+    дано asked равно "binary"
+    дано answers равно пустой список
+    ожидается пустой список
+  «Chosen» от [(«When» от ((asked равен "present") и притом (не ((«Exit code of» от asked и answers) равен 0))) и ([(соединить ["двоичного нет: ", («Binary» от answers), " (собрать: make -C bootstrap)"] по "")])),
+    («When» от ((asked равен "table") и притом (не ((«Exit code of» от asked и answers) равен 0))) и (["таблицы нет: lie-verdict.tsv"]))] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_LIE_VERDICT_NOT_MEASURED" и сообщение равным "в lie-verdict.tsv нет ни одной строки данных"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Three stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3 и «answers» равным пустой список
+  «Begin with» от 3
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the table»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "lie-verdict.tsv") и потом равным (запись «Inquiry» с «asked» равным "table" и «queue» равным [запись «Question» с «name» равным "directory" и «order» равным (вариант «Перечислить каталог» с путь равным "."), запись «Question» с «name» равным "binary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN")] и «stages» равным 2 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_LIE_VERDICT_NOT_MEASURED" и сообщение равным голова
+    случай пусто
+      то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Lie verdict»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

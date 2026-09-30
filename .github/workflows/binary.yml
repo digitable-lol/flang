@@ -1744,25 +1744,8 @@ jobs:
       - name: Check kernel forgeries
         run: bootstrap/flang io flang/scripts/kernel-forgeries.fscript --на-веру --plan 'Подделки остаются недоказанными'
 
-      # ── ТРИ ПРОГРАММЫ ЛЖИ Ч40: вердикт живого компилятора пришпилен ────────
-      #
-      # `flang/proof/checker/tests/programs/lozh-*.flang` — не корпус, а вход
-      # для проб независимого чекера (`flang/proof/checker/tests/records/proof-of-a-lie/`):
-      # программы, которые нарочно лгут в постусловии. `flang check` тоже их
-      # видит, и без списка два красных исхода читались бы как поломка дерева,
-      # а не как предмет пробы — кто-нибудь однажды «починил» бы файл, и проба
-      # перестала бы проверять то, ради чего заведена. `flang/proof/checker/tests/
-      # programs/lie-verdict.sh` держит для каждой из трёх точный ожидаемый
-      # код возврата `flang check --proof` И причину словами (смена причины при
-      # том же коде — тоже расхождение), сверен с каталогом в обе стороны, тем
-      # же способом, что и `kernel-forgeries.fscript` — только предмет другой.
-      #
-      # Место здесь, а не в работе `chekker`: та собирает C-чекер БЕЗ
-      # компилятора flang нарочно (см. её же комментарий выше), а этому шагу
-      # компилятор нужен по устройству — он спрашивает мнение О НЁМ САМОМ.
-      # Двоичный уже собран этой работой; лишней сборки нет.
       - name: Check lying programs
-        run: sh flang/proof/checker/tests/programs/lie-verdict.sh
+        run: bootstrap/flang io flang/proof/checker/tests/programs/lie-verdict.fscript
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 

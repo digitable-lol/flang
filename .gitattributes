@@ -30,9 +30,6 @@ flang/test/fixtures/** linguist-generated=true
 #                                      .github/workflows/binary.yml.
 bootstrap/** -diff -merge linguist-generated
 
-# Проза про каталог — рукопись, и читается как рукопись.
-bootstrap/README.md diff merge -linguist-generated
-
 # Сырьё замеров — данные прогонов, а не исходники языка. 546 файлов замера
 # «пишет ли на языке модель, а не человек» и 20 файлов замера цены
 # доказательства попадали бы в языковую статистику наравне с библиотекой и

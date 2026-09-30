@@ -172,7 +172,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 функции новее семени, а перепечатка (`sh scripts/bootstrap-reprint.sh`, часы на одном ядре) — единственный
 путь, которым правки `flang/self/` доезжают до двоичного. **Правка исходника не попадает в
 двоичный до этой перепечатки** — потому проверки выше и различают исходник и двоичный.
-[`bootstrap/README.md`](../bootstrap/README.md) · [круг раскрутки](guide/bootstrap-circle.ru.md).
+[`docs/bootstrap-point.md`](bootstrap-point.md) · [круг раскрутки](guide/bootstrap-circle.ru.md).
 
 Файлы корня россыпью: `README.md` (вход хранилища; эта страница — его русская редакция),
 `LICENSE` · `LICENSE-RU.md`, `CONTRIBUTING.md`, `AGENTS.md` (символическая ссылка на

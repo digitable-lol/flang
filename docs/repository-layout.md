@@ -61,7 +61,7 @@ The seed lags the sources: `bootstrap/flang io scripts/seed/what-lags-the-seed.f
 are newer than the seed, and a reprint (`sh scripts/bootstrap-reprint.sh`, hours on one core) is how edits
 to `flang/self/` reach the binary. **An edit to the sources is not in the binary until that
 reprint**.
-[`bootstrap/README.md`](../bootstrap/README.md) · [the bootstrap circle](guide/bootstrap-circle.md).
+[`docs/bootstrap-point.md`](bootstrap-point.md) · [the bootstrap circle](guide/bootstrap-circle.md).
 
 The loose files in the root: `README.md` (the front page of the repository; its Russian edition is
 [`docs/README.ru.md`](README.ru.md)), `LICENSE` · `LICENSE-RU.md`,

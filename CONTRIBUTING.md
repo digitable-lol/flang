@@ -23,7 +23,7 @@ bootstrap/flang_cli --version
 
 That binary is the five layers of [`flang/self/`](flang/self): lexer, parser,
 types, totality, printing to C. There is no evaluator among them — what it is and
-what guards it: [`bootstrap/README.md`](bootstrap/README.md).
+what guards it: [`docs/bootstrap-point.md`](docs/bootstrap-point.md).
 
 The built binary is what you then run:
 

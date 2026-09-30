@@ -161,8 +161,7 @@ sh scripts/bootstrap-reprint.sh --check  # ярлык: bootstrap/flang run-scrip
 3. `sh scripts/bootstrap-reprint.sh --check` отвечает 0.
 
 Править `bootstrap/` руками нельзя: правка потеряется при первой перепечатке, а
-до того валит сверку. Разбор решения «обновлять каждым коммитом, а не при
-выпуске» и цена в истории — `bootstrap/README.md`.
+до того валит сверку. Устройство каталога — `docs/bootstrap-point.md`.
 
 ## Долги
 

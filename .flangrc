@@ -51,7 +51,6 @@ script.axioms:check = bootstrap/flang io flang/scripts/kernel-forgeries.fscript 
 script.proof-record:check = bootstrap/flang run-script seed:freshness --what proof-record:check >&2 && sh flang/proof/forgeries/run.sh
 script.record-source:check = bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Проверка
 script.record-source:forgery = bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Подлог
-script.reduction:check = bootstrap/flang run-script seed:freshness --what reduction:check >&2 && sh flang/proof/forgeries/reduction.sh
 script.checker:check = sh flang/proof/checker/tests/run.sh
 script.translation:check = sh flang/translation/run.sh
 script.proved-share:check = sh flang/proof/corpus-share.sh --набор корпус

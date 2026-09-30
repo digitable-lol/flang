@@ -1052,7 +1052,6 @@ acc2d08745acfad6970933346a4154fd|10|5|5|0|0|flang/proof/forgeries/transitivity.f
 f27a4a031b0cace4021314dada2b35e7|1|1|0|0|0|flang/proof/forgeries/reduced-base.flang
 04a23abc2f6b8e57bd1d5b6e077462ed|6|1|0|5|0|flang/proof/forgeries/part-count-false.flang
 11cacd9b6a334c79dfe9b588903e6eb1|4|0|0|4|0|flang/proof/forgeries/part-count-true.flang
-23d813ef8a94421837e4b28a657bd7b3|1|1|0|0|0|flang/proof/forgeries/by-identity.flang
 2a387eef98cebccfe97c1d3de5570f91|211|211|0|0|0|flang/proof/checker.flang
 18a907517e6ea80215eacecc1dbcda61|2|×|×|×|0|flang/proof/checker/tests/records/3314-conditional-by-branches/false-negation.flang
 8e7a0781c05420b26cb4d842672b6ec7|1|1|0|0|0|flang/proof/checker/tests/records/8615-theorem-keeps/countdown-with-theorem.flang

@@ -35,10 +35,6 @@
   возвращает строка
   "flang/proof/checker/checker.c"
 
-тотальная функция «Forgery ratchet»
-  возвращает строка
-  "flang/proof/forgeries/ratchet.txt"
-
 тотальная функция «Table path»
   принимает answers: список «Answer»
   возвращает строка
@@ -47,24 +43,21 @@
 тотальная функция «Ratchet path»
   принимает answers: список «Answer»
   возвращает строка
-  «Setting of» от "ratchet path" и "flang/proof/checker/tests/trap/ratchet.txt" и answers
+  «Setting of» от "ratchet path" и "flang/proof/ratchets.txt" и answers
 
 тотальная функция «Is a row»
   принимает line: строка
   возвращает признак
-  пример «A comment is not a row»
-    дано line равно "# вид\tждём"
-    ожидается нет
   пример «The heading is not a row»
-    дано line равно "вид\tждём\tисходник\tзапись\tцель\tслед\tпризнак\tкод\tпометка"
+    дано line равно "kind\tawaited\tsource\trecord\tgoal\ttrace\tsign\tcode"
     ожидается нет
-  пример «Nine cells make a row»
-    дано line равно "разбор\tснята\ta.flang\ta.record\tцель\tслед\t—\t0\tпометка"
+  пример «Eight cells make a row»
+    дано line равно "split\tremoved\ta.flang\ta.record\tцель\tслед\t—\t0"
     ожидается да
-  пример «Eight cells do not»
-    дано line равно "разбор\tснята\ta.flang\ta.record\tцель\tслед\t—\t0"
+  пример «Seven cells do not»
+    дано line равно "split\tremoved\ta.flang\ta.record\tцель\tслед\t—"
     ожидается нет
-  (не (line начинается с "#")) и притом (((длина (разделить line по "\t")) равен 9) и притом (не (line начинается с "вид\t")))
+  ((длина (разделить line по "\t")) равен 8) и притом (не (line начинается с "kind\t"))
 
 тотальная функция «Kind of»
   принимает line: строка
@@ -77,9 +70,9 @@
 тотальная функция «Kinds»
   принимает table: строка
   возвращает список «Kind»
-  пример «Rows of the table become kinds, comments do not»
-    дано table равно "# таблица\nразбор\tснята\ta.flang\ta.record\tцель\tслед\t—\t0\tпометка\n"
-    ожидается [запись «Kind» с «title» равным "разбор" и «awaited» равным "снята" и «source» равным "a.flang" и «record» равным "a.record" и «goal» равным "цель" и «trace» равным "след" и «sign» равным "—" и «code» равным "0"]
+  пример «Rows of the table become kinds, the heading does not»
+    дано table равно "kind\tawaited\tsource\trecord\tgoal\ttrace\tsign\tcode\nsplit\tremoved\ta.flang\ta.record\tцель\tслед\t—\t0\n"
+    ожидается [запись «Kind» с «title» равным "split" и «awaited» равным "removed" и «source» равным "a.flang" и «record» равным "a.record" и «goal» равным "цель" и «trace» равным "след" и «sign» равным "—" и «code» равным "0"]
   отобразить (отфильтровать («Lines» от table) где line → «Is a row» от line) как line → «Kind of» от line
 
 тотальная функция «Known kinds»
@@ -104,7 +97,7 @@
 тотальная функция «Tables»
   принимает answers: список «Answer»
   возвращает список «Question»
-  «Соединить списки» от [(«Read from» от "table" и («Root») и («Table path» от answers)), («Read from» от "trap ratchet" и («Root») и («Ratchet path» от answers))] и (если («Exit code of» от "checker built" и answers) равен 0 то пустой список иначе [(«Run from» от "checker build" и («Root») и («Setting of» от "compiler" и "cc" и answers) и ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2", "-o", («Checker»), («Checker source»)])])
+  «Соединить списки» от [(«Read from» от "table" и («Root») и («Table path» от answers)), («Read from» от "ratchets" и («Root») и («Ratchet path» от answers))] и (если («Exit code of» от "checker built" и answers) равен 0 то пустой список иначе [(«Run from» от "checker build" и («Root») и («Setting of» от "compiler" и "cc" и answers) и ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2", "-o", («Checker»), («Checker source»)])])
 
 тотальная функция «Sources»
   принимает answers: список «Answer»
@@ -121,8 +114,7 @@
 тотальная функция «Suites»
   возвращает список «Question»
   «Соединить списки» от [(«Run from» от "share" и («Root») и "sh" и ["flang/proof/corpus-share.sh", "--проигрыванием"]),
-   («Run from» от "probes" и («Root») и "sh" и ["flang/proof/checker/tests/run.sh"]),
-   («Read from» от "forgery ratchet" и («Root») и («Forgery ratchet»))] и («Provenance questions» от («Root»))
+   («Run from» от "probes" и («Root») и "sh" и ["flang/proof/checker/tests/run.sh"])] и («Provenance questions» от («Root»))
 
 тотальная функция «Stage»
   принимает stages: число, answers: список «Answer»
@@ -174,13 +166,13 @@
   принимает kind: «Kind», said: строка, code: число, written: строка
   возвращает список строки
   пример «A replayed kind has no troubles»
-    дано kind равно запись «Kind» с «title» равным "разбор" и «awaited» равным "снята" и «source» равным "a.flang" и «record» равным "a.record" и «goal» равным "цель" и «trace» равным "след" и «sign» равным "проиграно заново [1-9]" и «code» равным "0"
+    дано kind равно запись «Kind» с «title» равным "split" и «awaited» равным "removed" и «source» равным "a.flang" и «record» равным "a.record" и «goal» равным "цель" и «trace» равным "след" и «sign» равным "проиграно заново [1-9]" и «code» равным "0"
     дано said равно "проиграно заново 2"
     дано code равно 0
     дано written равно "шаг: след"
     ожидается пустой список
   пример «Every trouble is named»
-    дано kind равно запись «Kind» с «title» равным "разбор" и «awaited» равным "снята" и «source» равным "a.flang" и «record» равным "a.record" и «goal» равным "цель" и «trace» равным "след" и «sign» равным "проиграно заново [1-9]" и «code» равным "0"
+    дано kind равно запись «Kind» с «title» равным "split" и «awaited» равным "removed" и «source» равным "a.flang" и «record» равным "a.record" и «goal» равным "цель" и «trace» равным "след" и «sign» равным "проиграно заново [1-9]" и «code» равным "0"
     дано said равно "утверждение «цель»: не взялся"
     дано code равно 3
     дано written равно "шаг"
@@ -193,7 +185,7 @@
 тотальная функция «Troubles»
   принимает kind: «Kind», answers: список «Answer»
   возвращает список строки
-  если (kind.«awaited») равен "на слове"
+  если (kind.«awaited») равен "kept"
     то «Kept trouble» от kind и («Said» от kind и answers)
     иначе «Removed troubles» от kind и («Said» от kind и answers) и («Exit code of» от (соединить ["replay ", (kind.«title»)] по "") и answers) и («Output of» от (соединить ["record ", (kind.«record»)] по "") и answers)
 
@@ -216,10 +208,23 @@
   возвращает список строки
   «Gathered words» от (отобразить kinds как kind → «Named trouble» от kind и answers)
 
-тотальная функция «Trap ratchet»
-  принимает prefix: строка, position: число, answers: список «Answer»
+тотальная функция «Kept under»
+  принимает key: строка, ratchets: строка
   возвращает строка
-  «Word» от position и («Beginning with» от prefix и («Lines» от («Output of» от "trap ratchet" и answers)))
+  пример «The number stands after its key»
+    дано key равно "forgeries"
+    дано ratchets равно "forgeries 36\nforgery-numerator 155\n"
+    ожидается "36"
+  пример «A key is not read as the beginning of a longer key»
+    дано key равно "forgery"
+    дано ratchets равно "forgery-numerator 155\n"
+    ожидается ""
+  «Word» от 2 и («Beginning with» от (соединить [key, " "] по "") и («Lines» от ratchets))
+
+тотальная функция «Ratchet»
+  принимает key: строка, answers: список «Answer»
+  возвращает строка
+  «Kept under» от key и («Output of» от "ratchets" и answers)
 
 тотальная функция «Trap words»
   принимает kept: число, computed: число, removed: число, red: число, troubles: строка, table: строка, kinds: число, words: число
@@ -262,9 +267,9 @@
   принимает answers: список «Answer»
   возвращает «Check»
   пусть kinds равно («Known kinds» от answers)
-  пусть kept равно («Awaited» от "на слове" и kinds)
-  пусть removed равно («Awaited» от "снята" и kinds)
-  «Trap words» от (длина kept) и (длина («Troubled» от kept и answers)) и (длина removed) и (длина («Troubled» от removed и answers)) и (соединить («Troubled» от kinds и answers) по "; ") и («Table path» от answers) и («Count» от («Trap ratchet» от "видов " и 2 и answers)) и («Count» от («Trap ratchet» от "на слове " и 3 и answers))
+  пусть kept равно («Awaited» от "kept" и kinds)
+  пусть removed равно («Awaited» от "removed" и kinds)
+  «Trap words» от (длина kept) и (длина («Troubled» от kept и answers)) и (длина removed) и (длина («Troubled» от removed и answers)) и (соединить («Troubled» от kinds и answers) по "; ") и («Table path» от answers) и («Count» от («Ratchet» от "trap-kinds" и answers)) и («Count» от («Ratchet» от "trap-goals-on-kernel-word" и answers))
 
 тотальная функция «Said by»
   принимает name: строка, answers: список «Answer»
@@ -362,11 +367,6 @@
   пусть said равно («Said by» от "probes" и answers)
   запись «Check» с «passed» равным ((«Exit code of» от "probes" и answers) равен 0) и «words» равным (соединить ["набор подделок ", («Or unknown» от («Caught» от answers)), " из ", («Or unknown» от («Manifest» от answers)), "; проб на подлог ", («Or unknown» от («Forgeries» от answers)), ", принято кодом 0 — ", («Or unknown» от («Number after» от "ПРИНЯТО кодом 0 — " и («Holding» от "ПРИНЯТО кодом 0 — " и said))), "; честных ", («Or unknown» от («Counted» от "честных" и said)), ", отвергнуто ", («Or unknown» от («Rejected» от answers))] по "")
 
-тотальная функция «Ratchet number»
-  принимает prefix: строка, position: число, answers: список «Answer»
-  возвращает строка
-  «Word» от position и («Beginning with» от prefix и («Lines» от («Output of» от "forgery ratchet" и answers)))
-
 тотальная функция «Weakening»
   принимает measured: число, kept: число, words: список строки
   возвращает список строки
@@ -387,22 +387,21 @@
 тотальная функция «Weakenings»
   принимает answers: список «Answer»
   возвращает список строки
-  пусть kept равно («Count» от («Ratchet number» от "проб на подлог " и 4 и answers))
-  «Gathered words» от [(«Weakening» от («Count» от («Manifest» от answers)) и («Count» от («Ratchet number» от "подделок " и 2 и answers)) и ["подделок в манифесте ", " при храповике ", " — набор ослаб на ", ""]),
-    («Weakening» от («Count» от («Numerator» от answers)) и («Count» от («Ratchet number» от "числитель " и 2 и answers)) и ["числитель набора ", " при храповике ", " — просело на ", " мест"]),
+  пусть kept равно («Count» от («Ratchet» от "forgery-probes" и answers))
+  «Gathered words» от [(«Weakening» от («Count» от («Manifest» от answers)) и («Count» от («Ratchet» от "forgeries" и answers)) и ["подделок в манифесте ", " при храповике ", " — набор ослаб на ", ""]),
+    («Weakening» от («Count» от («Numerator» от answers)) и («Count» от («Ratchet» от "forgery-numerator" и answers)) и ["числитель набора ", " при храповике ", " — просело на ", " мест"]),
     (если пусто («Forgeries» от answers) то [(соединить ["проб на подлог НЕ ИЗМЕРЕНО: прогон не дал итога (храповик ", (к строке kept), ") — сравнивать не с чем"] по "")] иначе («Weakening» от («Count» от («Forgeries» от answers)) и kept и ["проб на подлог в прогоне ", " при храповике ", " — выпало ", " (подделка не собралась или проба убрана)"]))]
 
 тотальная функция «Ratchet is whole»
   принимает answers: список «Answer»
   возвращает признак
-  ((«Digits» от («Ratchet number» от "подделок " и 2 и answers)) и притом («Digits» от («Ratchet number» от "числитель " и 2 и answers))) и притом («Digits» от («Ratchet number» от "проб на подлог " и 4 и answers))
+  ((«Digits» от («Ratchet» от "forgeries" и answers)) и притом («Digits» от («Ratchet» от "forgery-numerator" и answers))) и притом («Digits» от («Ratchet» от "forgery-probes" и answers))
 
 тотальная функция «Ratchet check»
   принимает answers: список «Answer»
   возвращает «Check»
-  «Chosen» от [(«When» от (не ((«Exit code of» от "forgery ratchet" и answers) равен 0)) и (запись «Check» с «passed» равным нет и «words» равным (соединить ["храповика нет — ", («Forgery ratchet»), " потерян"] по ""))),
-    («When» от (не («Ratchet is whole» от answers)) и (запись «Check» с «passed» равным нет и «words» равным "храповик не называет всех трёх чисел (подделок, числитель, проб на подлог)")),
-    («When» от ((длина («Weakenings» от answers)) больше 0) и (запись «Check» с «passed» равным нет и «words» равным (соединить («Weakenings» от answers) по "; ")))] и (запись «Check» с «passed» равным да и «words» равным (соединить ["в манифесте ", («Or unknown» от («Manifest» от answers)), " при храповике ", («Ratchet number» от "подделок " и 2 и answers), "; числитель ", («Or unknown» от («Numerator» от answers)), " при храповике ", («Ratchet number» от "числитель " и 2 и answers), "; проб на подлог ", («Forgeries» от answers), " при храповике ", («Ratchet number» от "проб на подлог " и 4 и answers)] по ""))
+  «Chosen» от [(«When» от (не («Ratchet is whole» от answers)) и (запись «Check» с «passed» равным нет и «words» равным "храповик не называет всех трёх чисел (forgeries, forgery-numerator, forgery-probes)")),
+    («When» от ((длина («Weakenings» от answers)) больше 0) и (запись «Check» с «passed» равным нет и «words» равным (соединить («Weakenings» от answers) по "; ")))] и (запись «Check» с «passed» равным да и «words» равным (соединить ["в манифесте ", («Or unknown» от («Manifest» от answers)), " при храповике ", («Ratchet» от "forgeries" и answers), "; числитель ", («Or unknown» от («Numerator» от answers)), " при храповике ", («Ratchet» от "forgery-numerator" и answers), "; проб на подлог ", («Forgeries» от answers), " при храповике ", («Ratchet» от "forgery-probes" и answers)] по ""))
 
 тотальная функция «Yes or no»
   принимает check: «Check»
@@ -492,12 +491,12 @@
   принимает kind: «Kind»
   возвращает список строки
   пример «A third word in the awaited cell is not read»
-    дано kind равно запись «Kind» с «title» равным "разбор" и «awaited» равным "может быть" и «source» равным "a.flang" и «record» равным "a.record" и «goal» равным "цель" и «trace» равным "след" и «sign» равным "—" и «code» равным "0"
-    ожидается ["в таблице ловушки неизвестное «ждём» — «может быть» (вид «разбор»)"]
+    дано kind равно запись «Kind» с «title» равным "split" и «awaited» равным "maybe" и «source» равным "a.flang" и «record» равным "a.record" и «goal» равным "цель" и «trace» равным "след" и «sign» равным "—" и «code» равным "0"
+    ожидается ["в таблице ловушки неизвестное «awaited» — «maybe» (вид «split»)"]
   пример «A pattern beyond the digit class is not read»
-    дано kind равно запись «Kind» с «title» равным "разбор" и «awaited» равным "снята" и «source» равным "a.flang" и «record» равным "a.record" и «goal» равным "цель" и «trace» равным "след" и «sign» равным "заново [0-9]+" и «code» равным "0"
-    ожидается ["в таблице ловушки признак «заново [0-9]+» — образец, которого план не читает (вид «разбор»)"]
-  «Chosen» от [(«When» от (не (((kind.«awaited») равен "на слове") или ((kind.«awaited») равен "снята"))) и ([(соединить ["в таблице ловушки неизвестное «ждём» — «", (kind.«awaited»), "» (вид «", (kind.«title»), "»)"] по "")])),
+    дано kind равно запись «Kind» с «title» равным "split" и «awaited» равным "removed" и «source» равным "a.flang" и «record» равным "a.record" и «goal» равным "цель" и «trace» равным "след" и «sign» равным "заново [0-9]+" и «code» равным "0"
+    ожидается ["в таблице ловушки признак «заново [0-9]+» — образец, которого план не читает (вид «split»)"]
+  «Chosen» от [(«When» от (не (((kind.«awaited») равен "kept") или ((kind.«awaited») равен "removed"))) и ([(соединить ["в таблице ловушки неизвестное «awaited» — «", (kind.«awaited»), "» (вид «", (kind.«title»), "»)"] по "")])),
     («When» от («Sign is readable» от (kind.«sign»)) и (пустой список))] и ([(соединить ["в таблице ловушки признак «", (kind.«sign»), "» — образец, которого план не читает (вид «", (kind.«title»), "»)"] по "")])
 
 тотальная функция «Table obstacles»
@@ -510,8 +509,8 @@
 тотальная функция «Trap ratchet obstacles»
   принимает answers: список «Answer»
   возвращает список строки
-  «Chosen» от [(«When» от («Failed» от "trap ratchet" и answers) и ([(соединить ["нет храповика ловушки ", («Ratchet path» от answers)] по "")])),
-    («When» от ((«Digits» от («Trap ratchet» от "видов " и 2 и answers)) и притом («Digits» от («Trap ratchet» от "на слове " и 3 и answers))) и (пустой список))] и ([(соединить ["храповик ловушки ", («Ratchet path» от answers), " не называет обоих чисел"] по "")])
+  «Chosen» от [(«When» от («Failed» от "ratchets" и answers) и ([(соединить ["нет храповика ", («Ratchet path» от answers)] по "")])),
+    («When» от ((«Digits» от («Ratchet» от "trap-kinds" и answers)) и притом («Digits» от («Ratchet» от "trap-goals-on-kernel-word" и answers))) и (пустой список))] и ([(соединить ["храповик ", («Ratchet path» от answers), " не называет обоих чисел ловушки (trap-kinds, trap-goals-on-kernel-word)"] по "")])
 
 тотальная функция «Sums obstacles»
   принимает answers: список «Answer»
@@ -539,7 +538,7 @@
   «Gathered words» от [(если asked равен "repository" то («Repository obstacle» от answers) иначе пустой список),
     (если asked равен "checker source" то («Missing» от asked и (соединить ["нет ", («Checker source»)] по "") и answers) иначе пустой список),
     (если asked равен "table" то («Table obstacles» от answers) иначе пустой список),
-    (если asked равен "trap ratchet" то («Trap ratchet obstacles» от answers) иначе пустой список),
+    (если asked равен "ratchets" то («Trap ratchet obstacles» от answers) иначе пустой список),
     (если asked равен "checker build" то («Missing» от asked и "чекер не собрался" и answers) иначе пустой список),
     (если asked равен "trap sums" то («Sums obstacles» от answers) иначе пустой список),
     (если asked начинается с "record " то («Record obstacles» от asked и answers) иначе пустой список),

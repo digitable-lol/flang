@@ -337,21 +337,18 @@ trap 'rm -rf "$tmp"' 0 2 3 15
 #
 # ПОРОГ Г4 = 95 % — печатается для чтения; сам гейт держит `provability.fscript`.
 #
-# МАНИФЕСТ НАБОРА: путь и как читается. Столбцы TSV — имя, исходник, запись,
-# что стережёт, ожидаемый исход, класс, заведена (шапка файла их называет).
-# Строки-примечания начинаются с «#», первая строка данных — заголовок столбцов.
+# МАНИФЕСТ НАБОРА: путь и как читается. Столбцы TSV — исходник, запись, класс;
+# первая строка — заголовок столбцов.
 NABOR_TSV=$root/flang/proof/forgeries/manifest.tsv
-# Класс записи по манифесту: печатает «лжёт-запись», «лжёт-программа» либо пусто.
+# Класс записи по манифесту: печатает «record-lies», «program-lies» либо пусто.
 # Ищется по ИМЕНИ ФАЙЛА записи, а не по приставке в нём: имя тут — ключ строки
 # объявленного списка, и решает список, а не то, как файл назван.
 klass_nabora() { # имя файла записи
   [ -f "$NABOR_TSV" ] || return 0
   awk -F'\t' -v b="$1" '
-    /^#/ { next }
-    $1 == "имя" { next }
-    NF >= 6 {
-      n = split($3, ch, "/")
-      if (ch[n] == b) { print $6; exit }
+    NR > 1 && NF >= 3 {
+      n = split($2, ch, "/")
+      if (ch[n] == b) { print $3; exit }
     }' "$NABOR_TSV"
 }
 proigrat_dolyu() { # каталог; печатает 27 полей: ЧИСЛ ЗНАМ ЗАПИСЕЙ ПОРУЧ ОТВЕРГ ХОДОВ НЕСУТ НСЛ НСШ СНЯТО ПРИМ СВОЙ ОБЪЯВ ЗНАМ-ОТВЕРГ УЗЛЫ БУЛЕВО НЕДОСТ НАБ-ЗАП НАБ-ЧИСЛ НАБ-ЗНАМ НАБ-ЛЗ НАБ-ЛЗ-ОТВ НАБ-ЛЗ-ПРИН0 ВЫВОДЫ СНЯТ-ЧИСЛ СНЯТ-ЗНАМ СНЯТ-НЕДОСТ
@@ -370,7 +367,7 @@ proigrat_dolyu() { # каталог; печатает 27 полей: ЧИСЛ З
     zapisey=$((zapisey+1))
     kl=$(klass_nabora "$(basename "$z")")
     [ -n "$kl" ] && nab_zap=$((nab_zap+1))
-    [ "$kl" = "лжёт-запись" ] && nab_lz=$((nab_lz+1))
+    [ "$kl" = "record-lies" ] && nab_lz=$((nab_lz+1))
     # Обязательства, ОБЪЯВЛЕННЫЕ записью, берутся из ШАПКИ, а не из вывода чекера:
     # шапка есть у КАЖДОЙ записи, что бы чекер ни ответил, и её формат чекер сам
     # и сверяет. Через шапку ни одна запись не выпадает из знаменателя.
@@ -389,8 +386,8 @@ proigrat_dolyu() { # каталог; печатает 27 полей: ЧИСЛ З
       # одного обязательства не заверил и сводки не печатает. Числитель 0, а
       # объявленные шапкой обязательства идут в знаменатель непроигранными.
       otverg=$((otverg+1)); znam_otv=$((znam_otv+utv_h+tot_h))
-      [ "$kl" = "лжёт-запись" ] && nab_lz_otv=$((nab_lz_otv+1))
-      if [ "$kl" = "лжёт-запись" ]; then
+      [ "$kl" = "record-lies" ] && nab_lz_otv=$((nab_lz_otv+1))
+      if [ "$kl" = "record-lies" ]; then
         # НЕДОСТИЖИМО: чекер отверг запись целиком (замер) И манифест объявил её
         # классом «лжёт-запись» (объявление). Обязательства в знаменатель НЕ идут.
         nedost=$((nedost+utv_h+tot_h)); sn_nedost=$((sn_nedost+sn_h))
@@ -403,7 +400,7 @@ proigrat_dolyu() { # каталог; печатает 27 полей: ЧИСЛ З
       [ -n "$kl" ] && nab_znam=$((nab_znam+utv_h+tot_h))
       continue
     fi
-    [ "$kl" = "лжёт-запись" ] && [ "$kod" -eq 0 ] && nab_lz_prin0=$((nab_lz_prin0+1))
+    [ "$kl" = "record-lies" ] && [ "$kod" -eq 0 ] && nab_lz_prin0=$((nab_lz_prin0+1))
     poruch=$((poruch+1))
     # Поля берутся якорными sed'ами по «НА СЛОВО ЯДРА:», как их берёт izmerit ниже;
     # «снято со слова ядра мест» встречается трижды (узлы/тождество/разбор) — все
@@ -540,17 +537,16 @@ if [ "$proigr" -eq 1 ]; then
   dobral=$(awk -v a="$CHISL_V" -v b="$ZNAM" -v p="$POROG_G4" 'BEGIN{ print (b>0 && 100*a/b >= p) ? "ДА" : "НЕТ" }')
   neprov=$((NSL+NSH+SNYATO))
   ZNAM_POLNY=$((ZNAM+NEDOST))
-  # Строк данных в манифесте — сколько подделок объявлено. Заголовок столбцов и
-  # строки-примечания не в счёт.
+  # Строк данных в манифесте — сколько подделок объявлено. Заголовок не в счёт.
   NAB_VSEGO=0
-  [ -f "$NABOR_TSV" ] && NAB_VSEGO=$(awk -F'\t' '/^#/{next} $1=="имя"{next} NF>=6 {n++} END{print n+0}' "$NABOR_TSV")
+  [ -f "$NABOR_TSV" ] && NAB_VSEGO=$(awk -F'\t' 'NR > 1 && NF >= 3 {n++} END{print n+0}' "$NABOR_TSV")
   # Храповик печатается рядом с числом, чтобы просадку было видно там же, где
   # число, а не только в вердикте.
   HRAP_P="—"; HRAP_CH="—"
-  HRAP_F=$root/flang/proof/forgeries/ratchet.txt
+  HRAP_F=$root/flang/proof/ratchets.txt
   if [ -f "$HRAP_F" ]; then
-    HRAP_P=$(awk '/^подделок /{print $2; exit}' "$HRAP_F"); HRAP_P=${HRAP_P:-—}
-    HRAP_CH=$(awk '/^числитель /{print $2; exit}' "$HRAP_F"); HRAP_CH=${HRAP_CH:-—}
+    HRAP_P=$(awk '$1 == "forgeries" {print $2; exit}' "$HRAP_F"); HRAP_P=${HRAP_P:-—}
+    HRAP_CH=$(awk '$1 == "forgery-numerator" {print $2; exit}' "$HRAP_F"); HRAP_CH=${HRAP_CH:-—}
   fi
   # Провенанс печатается ПЕРЕД числами: доля, снятая на правленом дереве или
   # отставшим двоичным, — другое число, и по одному проценту этого не видно.
@@ -1018,9 +1014,7 @@ izmerit() {
   nabor_imena=$tmp/набор-имена.txt
   : > "$nabor_imena"
   [ -f "$NABOR_TSV" ] && awk -F'\t' '
-      /^#/ { next }
-      $1 == "имя" { next }
-      NF >= 6 { n = split($3, ch, "/"); print ch[n] }' "$NABOR_TSV" > "$nabor_imena"
+      NR > 1 && NF >= 3 { n = split($2, ch, "/"); print ch[n] }' "$NABOR_TSV" > "$nabor_imena"
   awk -F'\t' -v nabor_f="$nabor_imena" -v nabor="$name" -v dir="$dir" -v razoshlos="$razoshlos" \
       -v vedimya="$vedimya" -v vedstrok="$vedstrok" '
     function dolya(n,d){ return d>0 ? sprintf("%.2f %%", 100*n/d) : "знаменатель ноль" }

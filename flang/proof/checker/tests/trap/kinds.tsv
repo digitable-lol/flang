@@ -1,84 +1,43 @@
-# ЛОВУШКА ПРОВЕРКИ 1 «КАЛЬКУЛЯТОР СНЯТ?» — по одной цели на каждый вид обязательства.
-#
-# Читает: scripts/provability.fscript, проверка 1. Основание: задача 3781 (ловушка
-# вместо грепа), ячейка К11 кластера 6202/6203 (9 сентября 2026).
-#
-# ЗАЧЕМ ТАБЛИЦА, А НЕ ДВЕ ЦЕЛИ. До К11 ловушка держала две ∀-цели («на слове» —
-# их снять можно ТОЛЬКО вычислением, и сверщик обязан их не снимать) и одно
-# тождество знак в знак («снята» — обратная половина: сверщик, сломанный до
-# «ничего не доказываю», тоже не снял бы ∀-целей, и без обратной половины
-# проверку 1 брал бы и он). Обратная половина из одной цели стерегла ОДИН вид
-# обязательства из тридцати с лишком, которые сверщик переигрывает: приём узла,
-# приём вывода, ходы, шаги теоремы, тотальность могли отвалиться молча, и
-# проверка 1 оставалась зелёной. Здесь — по одной цели на КАЖДЫЙ вид, что
-# сверщик умеет сегодня (виды сняты по коду: ветки `без_теоремы`/`сверить_теорему`,
-# семейства `шаг_вывода`, носители `сверить_покрытие`, виды тотальности).
-# Вид, за который сверщик перестал браться, красит проверку 1 своим именем.
-# Цели живут ВНЕ корпуса (записи не в tests/records/corpus): долю они не двигают.
-#
-# ХРАПОВИК — рядом, ratchet.txt: видов «снята» не меньше названного, целей
-# «на слове» не меньше названного. Убыль строки таблицы — красно.
-#
-# ── КОЛОНКИ, ВОСЕМЬ, РАЗДЕЛИТЕЛЬ — ТАБУЛЯЦИЯ ────────────────────────────────
-#  1 вид       имя вида обязательства; ЕДИНСТВЕННОЕ в таблице; оно и печатается
-#  2 ждём      снята     — сверщик ОБЯЗАН переиграть цель (обратная половина);
-#              на слове  — сверщик ОБЯЗАН оставить цель на слове ядра поимённо
-#                          (решающая половина: снял — калькулятор в дереве)
-#  3 исходник  путь в дереве; отпечаток sha256 подаётся сверщику третьим доводом
-#  4 запись    путь в дереве, ВНЕ tests/records/corpus
-#  5 цель      имя утверждения / теоремы / тотальности в записи
-#  6 след      подстрока, обязанная стоять в ЗАПИСИ: то, чем цель принадлежит
-#              своему виду (имя правила вывода, носитель, вид тотальности, ход).
-#              Стережёт от «убрать цель, оставив имя»: запись без следа — красно
-#  7 признак   регулярное выражение (grep -E), обязанное сойтись с СВОДКОЙ
-#              сверщика: счётчик вида больше нуля. «—» — не спрашивается
-#  8 код       ожидаемый код возврата сверщика на паре целиком (0 либо 3)
-#  9 пометка   «—», либо чем запись отличается от печати ядра: рукотворная
-#              правка — не вывод ядра, и читатель ловушки обязан это видеть
-#
-# Для «снята» проверяется всё четыре: код, имя цели НЕ названо в выводе сверщика
-# (названное имя — это либо беда, либо «на слове ядра»), след в записи, признак
-# в сводке. Для «на слове» — что имя цели названо строкой «за узел не взялся».
-вид	ждём	исходник	запись	цель	след	признак	код	пометка
-тождество знак в знак	снята	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.flang	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.record	сумма трёх	функции «Три слагаемых»	—	3	—
-∀-цель: перестановка соседей — только вычислением	на слове	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.flang	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.record	сумма наоборот	функции «Соседи переставлены»	—	3	—
-∀-цель: мера прибавления — только вычислением	на слове	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.flang	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.record	длина растёт на один	функции «Длина прибавления»	—	3	—
-узел «разбором по случаям», носитель segment	снята	flang/proof/checker/tests/records/case-split-segment/00-untouched.flang	flang/proof/checker/tests/records/case-split-segment/00-untouched.record	сумма до неотрицательна	носитель segment	«разбором по случаям» проиграно заново [1-9]	0	—
-узел, носитель algebra, домен неотрицательности	снята	flang/proof/checker/tests/records/case-split-algebra/00-untouched.flang	flang/proof/checker/tests/records/case-split-algebra/00-untouched.record	глубина неотрицательна	носитель algebra	«разбором по случаям» проиграно заново [1-9]	0	—
-узел, носитель algebra, булева цель	снята	flang/proof/checker/tests/families/boolean-goal/flag.flang	flang/proof/checker/tests/families/boolean-goal/flag.record	всегда истинно	носитель algebra	булевой веткой снято мест [1-9]	0	—
-узел, носитель algebra, тождество с развёрткой по конструктору	снята	flang/proof/checker/tests/families/constructor/copy.flang	flang/proof/checker/tests/families/constructor/copy.record	копия равна оригиналу	носитель algebra	«разбором по случаям» проиграно заново [1-9]	0	—
-узел, носитель fold	снята	flang/proof/checker/tests/programs/1573-counting-body.flang	flang/proof/checker/tests/records/1573/1573-counting-body.record	сколько есть длина	носитель fold	«разбором по случаям» проиграно заново [1-9]	0	—
-носитель с объявления: синоним имени отрезка	снята	flang/proof/checker/tests/families/carrier/name-natural.flang	flang/proof/checker/tests/families/carrier/name-natural.record	сумма до неотрицательна	тип «натуральное»	«разбором по случаям» проиграно заново [1-9]	0	—
-носитель с объявления: псевдоним к отрезку	снята	flang/proof/checker/tests/families/carrier/alias-segment.flang	flang/proof/checker/tests/families/carrier/alias-segment.record	сумма лет неотрицательна	тип «Возраст»	«разбором по случаям» проиграно заново [1-9]	0	—
-разбор цели по условию	снята	flang/proof/checker/tests/records/goal-split-by-condition/00-untouched.flang	flang/proof/checker/tests/records/goal-split-by-condition/00-untouched.record	при положительном пороге ровно длина	вердикт доказано	«разбор цели по условию» проиграно заново [1-9]	0	—
-ходы под постусловием: соседи	снята	flang/proof/checker/tests/families/neighbours.flang	flang/proof/checker/tests/families/neighbours.record	У1 сумма читается в обратном порядке	ход 2 соседи	сведений проиграно заново [1-9]	0	—
-ходы под постусловием: развёртка и закрыть тождеством	снята	flang/proof/checker/tests/families/reflexive.flang	flang/proof/checker/tests/families/reflexive.record	Р7 сохранение: список тот же	закрыть тождеством	сведений проиграно заново [1-9]	0	—
-ходы разбора цели: деление и выбор	снята	flang/proof/checker/tests/families/goal-breakdown/breakdown.flang	flang/proof/checker/tests/families/goal-breakdown/breakdown.record	нулевой остаток даёт признак	ход 2 деление	сведений проиграно заново [1-9]	0	—
-шаг теоремы «по примеру» в случае	снята	flang/proof/examples/traffic-light.flang	flang/proof/checker/tests/records/example-binding/honest.record	штраф неотрицателен	по примеру	Шагов по примеру проверено по существу [1-9]	0	—
-шаг теоремы «по свойству»	снята	flang/proof/examples/honest-modus-ponens-by-guard.flang	flang/proof/checker/tests/records/3455/honest.record	на положительном сам вход	по свойству	Шагов по свойству проверено по существу [1-9]	0	—
-шаг теоремы вне случая: подстановка тела	снята	flang/proof/examples/corpus-cident.flang	flang/proof/checker/tests/records/step-outside-case/honest.record	словарные символы — часть символов слова	по примеру	Шагов по примеру проверено по существу [1-9]	0	—
-шаг теоремы над списочным телом: оглавление печати	снята	flang/proof/examples/corpus-case.flang	flang/proof/checker/tests/records/list-body-by-contents/honest.record	поднятие обращает опускание	таблиц 2	Шагов по примеру проверено по существу [1-9]	0	—
-вывод, семейство Н (неотрицательность)	снята	flang/proof/checker/tests/families/inference/inference.flang	flang/proof/checker/tests/families/inference/inference.record	сумма пары неотрицательна	вывод 3 Н5	Выводов факта о типе проиграно заново [1-9]	0	—
-вывод, семейство П (потолок)	снята	flang/proof/checker/tests/families/inference/inference.flang	flang/proof/checker/tests/families/inference/inference.record	разность под потолком	вывод 3 П5	Выводов факта о типе проиграно заново [1-9]	0	—
-вывод, семейство Пред (представимость → П3)	снята	flang/proof/checker/tests/families/inference/inference.flang	flang/proof/checker/tests/families/inference/inference.record	довод под точным потолком	вывод 1 Пред1	Выводов факта о типе проиграно заново [1-9]	0	—
-вывод, семейство Т (цель есть допущение)	снята	flang/proof/checker/tests/families/inference/inference.flang	flang/proof/checker/tests/families/inference/inference.record	то же самое допущение	вывод 1 Т1	Выводов факта о типе проиграно заново [1-9]	0	—
-вывод, семейство Разв (развёртка плоского определения)	снята	flang/proof/checker/tests/families/inference/inference.flang	flang/proof/checker/tests/families/inference/inference.record	ноль неотрицателен	вывод 2 Разв2	Выводов факта о типе проиграно заново [1-9]	0	—
-вывод, семейство О (порядок)	снята	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	сам довод под границей	вывод 1 О1	Выводов факта о типе проиграно заново [1-9]	0	—
-вывод, семейство Д (дно терма)	снята	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	два под доводом	Д1 ⟨	Выводов факта о типе проиграно заново [1-9]	0	—
-вывод, семейство С (строгий порядок)	снята	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	довод строго ниже	вывод 1 С1	Выводов факта о типе проиграно заново [1-9]	0	—
-вывод, семейство СС (порядок соседних)	снята	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	пустой список не убывает	вывод 1 СС1	Выводов факта о типе проиграно заново [1-9]	0	—
-вывод, семейство В (вхождение)	снята	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	выписанный содержит член	вывод 1 В1	Выводов факта о типе проиграно заново [1-9]	0	—
-вывод, семейство Ч (начало строки)	снята	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	всякая строка начинается собой	вывод 1 Ч1	Выводов факта о типе проиграно заново [1-9]	0	—
-обязательство входа, закрытое зовущим	снята	flang/proof/checker/tests/families/inference/repr-call.flang	flang/proof/checker/tests/families/inference/repr-call.record	разность не выходит за потолок представления	обязательство вход	Выводов факта о типе проиграно заново [1-9]	0	—
-тотальность composition	снята	flang/proof/checker/tests/families/totality.flang	flang/proof/checker/tests/families/totality.record	Сложить	вид composition	сведений проиграно заново [1-9]	0	—
-тотальность structure	снята	flang/proof/checker/tests/families/recursion-structure.flang	flang/proof/checker/tests/families/recursion-structure.record	Длина	вид structure	сведений проиграно заново [1-9]	0	—
-тотальность step	снята	flang/proof/checker/tests/families/recursion-step.flang	flang/proof/checker/tests/families/recursion-step.record	Отсчёт	вид step	сведений проиграно заново [1-9]	0	—
-узел, носитель algebra, домен «не больше» (порядок/потолок по телу случая)	снята	flang/proof/checker/tests/families/algebra-domains/head.flang	flang/proof/checker/tests/families/algebra-domains/head.record	длина головы не больше единицы	сведение «ограниченность точным потолком по построению»	«разбором по случаям» проиграно заново [1-9]	0	—
-узел, носитель algebra, домен охраны «если У то Ц иначе да» (конъюнкт охраны по конструктору)	снята	flang/proof/checker/tests/families/algebra-domains/guard.flang	flang/proof/checker/tests/families/algebra-domains/guard.record	у хорошего дерева левое хорошо	сведение «разбор цели по условию»	«разбором по случаям» проиграно заново [1-9]	0	запись правлена руками: у посылки «Пусто» правило заменено на «разбор цели по условию» — ядро печатает «вычисление замкнутой цели», и узел со смешанными правилами приём оставляет вне; см. README семьи и задачу 6204
-утверждение без функции: доказательство переиграно (К3b), сведением к постусловию вызываемой функции	снята	flang/proof/checker/tests/families/statement/f05k-statement.flang	flang/proof/checker/tests/families/statement/f05k-statement.record	счёт любого списка неотрицателен	вид statement	«разбором по случаям» проиграно заново [1-9]	0	запись рукотворная: ядро блока «вид statement» ещё не печатает (партия перепечатки кванторов); переснять печатью ядра после партии
-утверждение без функции: ∀-цель перестановки соседей без ходов — только вычислением	на слове	flang/proof/checker/tests/families/statement/addition-is-commutative.flang	flang/proof/checker/tests/families/statement/corrupt/addition-without-moves.record	сложение перестановочно	вид statement	—	3	ОБЯЗАНА оставаться «на слове»: запись — печать ядра с вынутым блоком сведения (рукотворная правка: убраны строка «правило», строка «по объявлению» и четыре хода — ядро печатает их вместе, порознь запись противоречива и даёт 1); цель «(а плюс б) равен (б плюс а)» без хода «соседи» доказуема только вычислением, и сверщик не вправе её снять — снял бы, значит в дереве калькулятор; заменила прежнюю «не бери» о нескольких связываниях в одной строке (форма записи для них с 5144 названа и читается — храповик «на слове» не опущен)
-утверждение без функции: несколько связываний в одной строке «для всех», ход «соседи»	снята	flang/proof/checker/tests/families/statement/addition-is-commutative.flang	flang/proof/checker/tests/families/statement/addition-is-commutative.record	сложение перестановочно	ход 1 соседи	сведений проиграно заново [1-9]	0	—
-утверждение без функции: нейтральный ноль при посылке «таких что н больше 0» (Тожд2)	снята	flang/proof/checker/tests/families/statement/zero-is-neutral.flang	flang/proof/checker/tests/families/statement/zero-is-neutral.record	ноль нейтрален при сложении	ход 1 нейтральный ноль	сведений проиграно заново [1-9]	0	—
-утверждение без функции и без связываний: вычисление замкнутой цели (Выч)	снята	flang/proof/checker/tests/families/statement/length-of-the-empty-list.flang	flang/proof/checker/tests/families/statement/length-of-the-empty-list.record	длина пустого списка нулевая	ход 1 вычислить	сведений проиграно заново [1-9]	0	—
-узел утверждения без функции, носитель algebra по СВОЕЙ сумме	снята	flang/proof/checker/tests/families/own-type/natural.flang	flang/proof/checker/tests/families/own-type/natural.record	шаг растит счёт на один	принцип тип «Нат» по «н» носитель algebra	«разбором по случаям» проиграно заново [1-9]	0	—
-вывод по семейству Э: цель «для всех э из Л: П» выведена по построению списка	снята	flang/proof/checker/tests/families/all-elements/filter-of-positives.flang	flang/proof/checker/tests/families/all-elements/filter-of-positives.record	все положительны	правило «все элементы по построению»	сведений проиграно заново [1-9]	0	запись — печать ядра, снятая толкованием исходников flang/self семенем (зонд check-with-source-compiler.flang): семя ещё не перепечатано и на этой программе отвечает FLANG_PARSE; после перепечатки сличить побайтно
+kind	awaited	source	record	goal	trace	sign	code
+identity-sign-for-sign	removed	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.flang	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.record	сумма трёх	функции «Три слагаемых»	—	3
+forall-neighbours-swapped	kept	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.flang	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.record	сумма наоборот	функции «Соседи переставлены»	—	3
+forall-length-after-append	kept	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.flang	flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality.record	длина растёт на один	функции «Длина прибавления»	—	3
+node-carrier-segment	removed	flang/proof/checker/tests/records/case-split-segment/00-untouched.flang	flang/proof/checker/tests/records/case-split-segment/00-untouched.record	сумма до неотрицательна	носитель segment	«разбором по случаям» проиграно заново [1-9]	0
+node-carrier-algebra-nonnegative	removed	flang/proof/checker/tests/records/case-split-algebra/00-untouched.flang	flang/proof/checker/tests/records/case-split-algebra/00-untouched.record	глубина неотрицательна	носитель algebra	«разбором по случаям» проиграно заново [1-9]	0
+node-carrier-algebra-boolean	removed	flang/proof/checker/tests/families/boolean-goal/flag.flang	flang/proof/checker/tests/families/boolean-goal/flag.record	всегда истинно	носитель algebra	булевой веткой снято мест [1-9]	0
+node-carrier-algebra-identity	removed	flang/proof/checker/tests/families/constructor/copy.flang	flang/proof/checker/tests/families/constructor/copy.record	копия равна оригиналу	носитель algebra	«разбором по случаям» проиграно заново [1-9]	0
+node-carrier-fold	removed	flang/proof/checker/tests/programs/1573-counting-body.flang	flang/proof/checker/tests/records/1573/1573-counting-body.record	сколько есть длина	носитель fold	«разбором по случаям» проиграно заново [1-9]	0
+carrier-declared-segment-synonym	removed	flang/proof/checker/tests/families/carrier/name-natural.flang	flang/proof/checker/tests/families/carrier/name-natural.record	сумма до неотрицательна	тип «натуральное»	«разбором по случаям» проиграно заново [1-9]	0
+carrier-declared-segment-alias	removed	flang/proof/checker/tests/families/carrier/alias-segment.flang	flang/proof/checker/tests/families/carrier/alias-segment.record	сумма лет неотрицательна	тип «Возраст»	«разбором по случаям» проиграно заново [1-9]	0
+goal-split-by-condition	removed	flang/proof/checker/tests/records/goal-split-by-condition/00-untouched.flang	flang/proof/checker/tests/records/goal-split-by-condition/00-untouched.record	при положительном пороге ровно длина	вердикт доказано	«разбор цели по условию» проиграно заново [1-9]	0
+moves-neighbours	removed	flang/proof/checker/tests/families/neighbours.flang	flang/proof/checker/tests/families/neighbours.record	У1 сумма читается в обратном порядке	ход 2 соседи	сведений проиграно заново [1-9]	0
+moves-unfold-and-identity	removed	flang/proof/checker/tests/families/reflexive.flang	flang/proof/checker/tests/families/reflexive.record	Р7 сохранение: список тот же	закрыть тождеством	сведений проиграно заново [1-9]	0
+moves-division-and-choice	removed	flang/proof/checker/tests/families/goal-breakdown/breakdown.flang	flang/proof/checker/tests/families/goal-breakdown/breakdown.record	нулевой остаток даёт признак	ход 2 деление	сведений проиграно заново [1-9]	0
+step-by-example-in-case	removed	flang/proof/examples/traffic-light.flang	flang/proof/checker/tests/records/example-binding/honest.record	штраф неотрицателен	по примеру	Шагов по примеру проверено по существу [1-9]	0
+step-by-property	removed	flang/proof/examples/honest-modus-ponens-by-guard.flang	flang/proof/checker/tests/records/3455/honest.record	на положительном сам вход	по свойству	Шагов по свойству проверено по существу [1-9]	0
+step-by-example-outside-case	removed	flang/proof/examples/corpus-cident.flang	flang/proof/checker/tests/records/step-outside-case/honest.record	словарные символы — часть символов слова	по примеру	Шагов по примеру проверено по существу [1-9]	0
+step-over-list-body	removed	flang/proof/examples/corpus-case.flang	flang/proof/checker/tests/records/list-body-by-contents/honest.record	поднятие обращает опускание	таблиц 2	Шагов по примеру проверено по существу [1-9]	0
+inference-family-nonnegative	removed	flang/proof/checker/tests/families/inference/inference.flang	flang/proof/checker/tests/families/inference/inference.record	сумма пары неотрицательна	вывод 3 Н5	Выводов факта о типе проиграно заново [1-9]	0
+inference-family-ceiling	removed	flang/proof/checker/tests/families/inference/inference.flang	flang/proof/checker/tests/families/inference/inference.record	разность под потолком	вывод 3 П5	Выводов факта о типе проиграно заново [1-9]	0
+inference-family-representable	removed	flang/proof/checker/tests/families/inference/inference.flang	flang/proof/checker/tests/families/inference/inference.record	довод под точным потолком	вывод 1 Пред1	Выводов факта о типе проиграно заново [1-9]	0
+inference-family-assumption	removed	flang/proof/checker/tests/families/inference/inference.flang	flang/proof/checker/tests/families/inference/inference.record	то же самое допущение	вывод 1 Т1	Выводов факта о типе проиграно заново [1-9]	0
+inference-family-unfolding	removed	flang/proof/checker/tests/families/inference/inference.flang	flang/proof/checker/tests/families/inference/inference.record	ноль неотрицателен	вывод 2 Разв2	Выводов факта о типе проиграно заново [1-9]	0
+inference-family-order	removed	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	сам довод под границей	вывод 1 О1	Выводов факта о типе проиграно заново [1-9]	0
+inference-family-floor	removed	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	два под доводом	Д1 ⟨	Выводов факта о типе проиграно заново [1-9]	0
+inference-family-strict-order	removed	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	довод строго ниже	вывод 1 С1	Выводов факта о типе проиграно заново [1-9]	0
+inference-family-adjacent-order	removed	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	пустой список не убывает	вывод 1 СС1	Выводов факта о типе проиграно заново [1-9]	0
+inference-family-membership	removed	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	выписанный содержит член	вывод 1 В1	Выводов факта о типе проиграно заново [1-9]	0
+inference-family-string-prefix	removed	flang/proof/checker/tests/families/type-families/families.flang	flang/proof/checker/tests/families/type-families/families.record	всякая строка начинается собой	вывод 1 Ч1	Выводов факта о типе проиграно заново [1-9]	0
+input-obligation-closed-by-caller	removed	flang/proof/checker/tests/families/inference/repr-call.flang	flang/proof/checker/tests/families/inference/repr-call.record	разность не выходит за потолок представления	обязательство вход	Выводов факта о типе проиграно заново [1-9]	0
+totality-composition	removed	flang/proof/checker/tests/families/totality.flang	flang/proof/checker/tests/families/totality.record	Сложить	вид composition	сведений проиграно заново [1-9]	0
+totality-structure	removed	flang/proof/checker/tests/families/recursion-structure.flang	flang/proof/checker/tests/families/recursion-structure.record	Длина	вид structure	сведений проиграно заново [1-9]	0
+totality-step	removed	flang/proof/checker/tests/families/recursion-step.flang	flang/proof/checker/tests/families/recursion-step.record	Отсчёт	вид step	сведений проиграно заново [1-9]	0
+node-carrier-algebra-at-most	removed	flang/proof/checker/tests/families/algebra-domains/head.flang	flang/proof/checker/tests/families/algebra-domains/head.record	длина головы не больше единицы	сведение «ограниченность точным потолком по построению»	«разбором по случаям» проиграно заново [1-9]	0
+node-carrier-algebra-guard	removed	flang/proof/checker/tests/families/algebra-domains/guard.flang	flang/proof/checker/tests/families/algebra-domains/guard.record	у хорошего дерева левое хорошо	сведение «разбор цели по условию»	«разбором по случаям» проиграно заново [1-9]	0
+statement-reduced-to-postcondition	removed	flang/proof/checker/tests/families/statement/f05k-statement.flang	flang/proof/checker/tests/families/statement/f05k-statement.record	счёт любого списка неотрицателен	вид statement	«разбором по случаям» проиграно заново [1-9]	0
+statement-forall-neighbours-swapped	kept	flang/proof/checker/tests/families/statement/addition-is-commutative.flang	flang/proof/checker/tests/families/statement/corrupt/addition-without-moves.record	сложение перестановочно	вид statement	—	3
+statement-several-binders-neighbours	removed	flang/proof/checker/tests/families/statement/addition-is-commutative.flang	flang/proof/checker/tests/families/statement/addition-is-commutative.record	сложение перестановочно	ход 1 соседи	сведений проиграно заново [1-9]	0
+statement-neutral-zero	removed	flang/proof/checker/tests/families/statement/zero-is-neutral.flang	flang/proof/checker/tests/families/statement/zero-is-neutral.record	ноль нейтрален при сложении	ход 1 нейтральный ноль	сведений проиграно заново [1-9]	0
+statement-closed-goal-computed	removed	flang/proof/checker/tests/families/statement/length-of-the-empty-list.flang	flang/proof/checker/tests/families/statement/length-of-the-empty-list.record	длина пустого списка нулевая	ход 1 вычислить	сведений проиграно заново [1-9]	0
+statement-node-own-sum	removed	flang/proof/checker/tests/families/own-type/natural.flang	flang/proof/checker/tests/families/own-type/natural.record	шаг растит счёт на один	принцип тип «Нат» по «н» носитель algebra	«разбором по случаям» проиграно заново [1-9]	0
+inference-family-all-elements	removed	flang/proof/checker/tests/families/all-elements/filter-of-positives.flang	flang/proof/checker/tests/families/all-elements/filter-of-positives.record	все положительны	правило «все элементы по построению»	сведений проиграно заново [1-9]	0

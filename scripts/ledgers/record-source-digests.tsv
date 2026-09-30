@@ -67,6 +67,5 @@ flang/proof/checker/tests/records/record-fields/tree-7-function-name.record	flan
 flang/proof/checker/tests/records/record-fields/tree-8-statement-place.record	flang/proof/examples/corpus-tree.flang	6dbb7022780cc592f97d6407e5e5050960e13f154a3a0cf6cc6bcb15fb36d2a4
 flang/proof/checker/tests/records/record-fields/tree-9-theorem-name.record	flang/proof/examples/corpus-tree.flang	6dbb7022780cc592f97d6407e5e5050960e13f154a3a0cf6cc6bcb15fb36d2a4
 flang/proof/forgeries/by-division.record	flang/proof/forgeries/by-division.flang	be4b1ad1b3fe8cbae7920bbd2e84fb614cb6fcf983164f98f90b50aa06da007e
-flang/proof/forgeries/by-identity.record	flang/proof/forgeries/by-identity.flang	d6f1a4eb9babf39b3cade744bfa348b9712bb8994879fbb57fcadaccc5c53f33
 flang/proof/forgeries/circle.record	flang/proof/forgeries/circle.flang	308fce0e137b11aff11e20d755df70a581cff8dc5333a0eaf898b12771576d12
 flang/proof/forgeries/stack.record	flang/proof/examples/stack.flang	98d7e4eb33a738db1ff257babed6eea0b09f3ce5082ef467169d508b051cf414

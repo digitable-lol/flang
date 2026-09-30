@@ -1,45 +1,98 @@
 # Which construct to use when
 
-This page answers one question: **I want to do X — what do I write**. The input
-is an action, the output is a construct and a program that passes the check.
+A cheat sheet: **what I want to do — what to write in flang**. Find the task in
+the "Quick pick" table, open the example by its number, copy it and adjust.
+Every example is a working file from `docs/examples/guide/`, shown with the real
+compiler output.
 
-How every construct is written is in the [Language reference](language.html);
-every word of the language as a graph is the
+The syntax of every construct is in the [Language reference](language.html);
+every keyword of the language in one diagram is the
 [Map of the language constructs](language-map.html).
 
-The programs below are written on the Russian surface and are the files of the
-repository as they are. What the compiler prints comes out in Russian on every
-surface.
+The programs below use the Russian keywords and are the repository files as
+they are. The compiler prints its output in Russian.
 
-## Why the choice of the body form matters
+## Glossary: flang words and the usual terms
 
-Induction in a proof attaches to `разбор` (match). A promise about a function
-whose body is a ladder of `если … иначе если` (if, else if) is either not taken
-by the proof kernel or taken in a weaker form.
-
-| What was measured | Number | With what and when |
+| In flang | Usual name | Closest analogue |
 | --- | --- | --- |
-| bodies of the form `разбор` over a parameter in `flang/stdlib` | 58 of 208 | measured on 16 August 2026, `docs/body-shapes.md` |
-| bodies from which the kernel builds induction premises, after it learned `свёртка` (fold) | 96 of 208 | the same measurement |
-| lines that begin with `если` in `scripts/guards/*.fscript` | 340 | `grep -c '^ *если'`, 27 September 2026 |
-| of them, `иначе если` steps | 190 | `grep -c 'иначе если'`, the same day |
-| lines that begin with `разбор` | 265 | `grep -c '^ *разбор'`, the same day |
-| lines that begin with `свёртка` | 145 | `grep -c '^ *свёртка'`, the same day |
+| `тип` with `вариант`s | enum with data, tagged union | `enum` in Rust, union in TypeScript |
+| `разбор … случай` | pattern matching | `match` in Rust and Python |
+| `если … то … иначе` | if as an expression | the ternary operator |
+| `пусть` | constant | `const` |
+| `отобразить`, `отфильтровать`, `свёртка` | map, filter, reduce | the same in JavaScript and Python |
+| `объект` and `запись` | a struct with fields and its value | dataclass, interface |
+| `пример` | a unit test inside the function | doctest |
+| `требует` | precondition: what must hold on input | an assert at the top of a function |
+| `обеспечивает` | postcondition: what the function guarantees on output | an assert at the end, but checked for all inputs |
+| `тотальная функция` | a function the compiler has proved to always terminate | — |
+| `теорема` | a proof you write yourself | — |
+| `план` | side effects: the function returns a command ("read the file"), the runtime executes it and calls the function again with the response | reducer, state machine |
+
+The **prover** is the part of the compiler that proves `обеспечивает` for all
+possible inputs, not only for your examples. In the compiler output it is called
+«ядро» (kernel), and an `обеспечивает` line is called «постусловие»
+(postcondition). Below, "guarantee" means an `обеспечивает` line.
+
+## Quick pick
+
+| What you need | What to write | Example |
+| --- | --- | --- |
+| choose by the kind of a value | a `тип` with variants and `разбор` | 1 |
+| a value may be absent (Optional) | a type «Есть / Нет» and `разбор` | 2 |
+| return an error (Result) | a type «Успех / Отказ» with a code and a reason | 3 |
+| parse a number from a string | `к числу или беда` and `разбор` | 4 |
+| several steps, each may fail | every step returns a Result, the next one matches on it | 5 |
+| walk a list and exit early | recursion: `разбор` into `пусто` and `голова и хвост` | 6 |
+| walk a tree | `разбор` and recursive calls on the parts | 7 |
+| compute a total over a list (reduce) | `свёртка` | 8, 9 |
+| convert every item (map) | `отобразить` | 10 |
+| keep the items that fit (filter) | `отфильтровать` | 11 |
+| find the first item that fits (find) | `отфильтровать` and `разбор` | 12 |
+| look a value up by a key | a table of records, `отфильтровать`, `разбор` | 13 |
+| check several rules (validation) | a list of rules and `отфильтровать` | 14 |
+| one condition, two outcomes | `если … то … иначе` | 15 |
+| repeat N times | recursion over a number with `если` as the exit | 16 |
+| name an intermediate value | `пусть` | 17 |
+| change a field of an object | build a new record | 18 |
+| split a string into words | `разделить … по …` | 19 |
+| count money without rounding errors | the type `сотых` | 20 |
+| pass a function as an argument (callback) | `функция «Имя»` | 21 |
+| guarantee a property of every item of the result | `обеспечивает … для всех … из результат` | 22 |
+| forbid bad arguments | `требует` | 23 |
+| prove what the prover could not | `теорема` and `индукция по` | 24 |
+| state a property apart from a function | `утверждение` | 25 |
+| read a file | `план` and the command «Прочитать файл» | 26 |
+| run an external program | `план` and the command «Запустить процесс» | 27 |
+| make an HTTP request | `план` and the command «Запросить» | 28 |
+
+## The main rule: branch on the kind of a value with `разбор`
+
+When the code chooses by what kind of value it has, write `разбор` (match), not
+a chain of `если … иначе если` (if, else if). There are two reasons.
+
+The compiler checks that every variant is handled: a forgotten variant is the
+error `FLANG_MATCH_NOT_EXHAUSTIVE`. In an `если` chain a forgotten case silently
+falls into the last `иначе`.
+
+The prover proves guarantees over `разбор`: it goes through the variants of the
+type and checks each one. Over a chain of `если … иначе если` it either cannot
+prove the guarantee at all or proves only a weaker one.
 
 ## The chooser
 
-Go from top to bottom and stop at the first "yes".
+If you prefer to go by questions: go from top to bottom and stop at the first "yes".
 
-```mermaid What to do and which construct to take
+```mermaid What you need to do and what to write
 flowchart TD
-  Q1{Is a file, the screen,<br>another program or the network needed?}
-  Q1 -->|yes| R1[план: a step returns an order,<br>разбор matches on the reply]
+  Q1{Is a file, the screen,<br>an external program or the network needed?}
+  Q1 -->|yes| R1[план: the function returns a command,<br>разбор matches on the response]
   Q1 -->|no| Q2{Is the input a list<br>that must be gone through?}
   Q2 -->|yes| R2([the «List» diagram below])
   Q2 -->|no| Q3{Does the value come<br>in several kinds?}
-  Q3 -->|yes| R3[разбор over the variants of a sum]
-  Q3 -->|no| Q4{May the answer be absent,<br>or may the job fail?}
-  Q4 -->|yes| R4[own sum: «Есть» and «Нет»,<br>«Успех» and «Отказ» with a code]
+  Q3 -->|yes| R3[a type with variants and разбор]
+  Q3 -->|no| Q4{May the value be absent,<br>or may the operation fail?}
+  Q4 -->|yes| R4[your own type: «Есть» and «Нет»,<br>«Успех» and «Отказ» with a code]
   Q4 -->|no| Q5{Are there several conditions<br>checked in a row?}
   Q5 -->|yes| R5[a list of rules<br>and отфильтровать]
   Q5 -->|no| Q6{Is the answer chosen by a key:<br>a string or a number?}
@@ -52,17 +105,6 @@ flowchart TD
   class R3 glavnoe
   class R1,R4,R5,R6,R7,R8,R9 vyvod
 ```
-
-| Answer of the diagram | Cases below |
-| --- | --- |
-| plan | 26, 27, 28 |
-| the «List» diagram | 6, 8, 9, 10, 11, 12 |
-| `разбор` over variants | 1, 7 |
-| own sum | 2, 3, 4, 5 |
-| a list of rules | 14 |
-| a table of records | 13 |
-| `если` | 15, 16 |
-| `пусть` | 17 |
 
 ### A list
 
@@ -89,24 +131,24 @@ flowchart TD
   I1 -->|no| I2{Does the condition ask<br>what kind the value is<br>or whether a list is empty?}
   I2 -->|yes| N1[разбор]
   I2 -->|no| N2[если is in its place]
-  I1 -->|yes| I3{Do all the steps compare<br>one and the same value?}
+  I1 -->|yes| I3{Do all the branches compare<br>one and the same value?}
   I3 -->|no| N3[a list of rules]
-  I3 -->|yes| I4{Is the set of values closed<br>and known in advance?}
-  I4 -->|yes| N4[own sum and разбор]
+  I3 -->|yes| I4{Is the list of values fixed<br>and known in advance?}
+  I4 -->|yes| N4[a type with variants and разбор]
   I4 -->|no| N5[a table of records]
   class N1,N4 glavnoe
   class N2,N3,N5 vyvod
 ```
 
-`если` is in its place when there is one condition, two outcomes, and the
-condition is a comparison, not a question about the kind of a value. Its other
-place is the bottom of a recursion over a number: the kernel reads the descent
-by one from `если предел не больше 0` (case 16).
+Write `если` when there is one condition, two outcomes, and the condition is an
+ordinary comparison (`больше`, `равен`, `не меньше`). If the condition asks
+"which variant is this?" or "is the list empty?", that is `разбор`. The other
+proper place for `если` is the exit of a recursion over a number (example 16).
 
-### The ladder
+### Anti-example: a chain of `если … иначе если`
 
-Do not write this. The program passes the check, and that is the trouble: a
-misprint in the name of the zone silently gives zero.
+Do not write this. The code passes the check, and that is exactly the problem:
+a typo in the name of the zone («горд» instead of «город») silently returns 0.
 
 File: `docs/examples/guide/ladder-before.flang`
 
@@ -142,11 +184,12 @@ $ echo $?
 
 ### The same with `разбор`
 
-There are three values and they are known in advance, so this is a sum type. The
-misprint cannot be written any more: there is no variant «Горд». A fourth zone
-cannot be left unmatched. The promise became stronger — "the price is positive"
-instead of "the price is not negative" — and the kernel proved it by induction
-on the type.
+There are three zones and they are known in advance, so this is an enum: a
+`тип` with three variants. The typo cannot be written any more: there is no
+variant «Горд», and the compiler will not let it through. Add a fourth zone and
+the compiler makes you handle it. The guarantee can also be made stronger, from
+"the price is not negative" to "the price is greater than zero": the prover
+proves it for all zones at once.
 
 File: `docs/examples/guide/ladder-as-match.flang`
 
@@ -196,13 +239,15 @@ $ echo $?
 0
 ```
 
-On the ladder the same promise is false: the example with the misprint breaks
-it, and the check answers `FLANG_EXAMPLE` with `FLANG_PROPERTY` inside.
+On the version with the `если` chain the same guarantee is false: the example
+with the typo breaks it, and `flang check` answers with the error
+`FLANG_EXAMPLE` with `FLANG_PROPERTY` inside.
 
 ### The same with a table
 
-The zone arrives from outside as a string and the set of zones changes, so this
-is a table. An unknown zone is named by a variant of its own.
+If the zone arrives from outside as a string (from a request, from a file) and
+the list of zones changes, keep it as data: a table. An unknown zone does not
+turn into 0; it comes back as a separate variant «Зоны нет».
 
 File: `docs/examples/guide/ladder-as-table.flang`
 
@@ -246,10 +291,11 @@ $ echo $?
 0
 ```
 
-### Do not replace `если` with a match on a flag
+### Do not replace `если` with `разбор` over yes and no
 
-`разбор (condition)` with the cases `да` and `нет` passes the check but loses
-provability. Below is one function written two ways.
+The opposite mistake is to write `разбор (condition)` with the cases `да` and
+`нет` instead of `если`. The code works, but the prover stops proving the
+guarantee. Below is one function written two ways.
 
 File: `docs/examples/guide/two-outcomes.flang`
 
@@ -319,33 +365,35 @@ $ echo $?
 0
 ```
 
-With `если` the promise is proved; with the match on a flag it is "сетка 2
-значения", a grid of two values. A recursion over a number with its bottom in
-`разбор (предел не больше 0)` does not pass at all: `FLANG_NOT_TOTAL`.
+With `если` the guarantee is proved. With `разбор` over yes and no the report
+says «сетка 2 значения»: the guarantee is checked only on your two examples and
+there is no proof. A recursion over a number whose exit is
+`разбор (предел не больше 0)` does not pass the check at all: `FLANG_NOT_TOTAL`.
 
 ## The order of work on a function
 
-Write in this order: the signature (`принимает`, `возвращает`), the promise
-(`требует`, `обеспечивает`), the example, the body. The body comes last.
+Write in this order: the signature (`принимает`, `возвращает`), the contract
+(`требует` — what must hold on input, `обеспечивает` — what the function
+guarantees on output), at least one `пример`, and only then the body.
 
 ```mermaid Work on one function
 sequenceDiagram
   participant П as Programmer
   participant К as Compiler
-  participant Я as Proof<br>kernel
-  participant Н as Independent<br>checking<br>program
-  Note over П: writes in order:<br>signature, promise,<br>example, body
+  participant Я as Prover
+  participant Н as Independent<br>checker
+  Note over П: writes in order:<br>signature, contract,<br>example, body
   П->>К: flang check
-  К->>К: parsing, types,<br>termination, examples
-  К->>Я: promises
-  Я-->>К: a verdict for each
+  К->>К: syntax, types,<br>termination, examples
+  К->>Я: guarantees
+  Я-->>К: a result for each
   alt no remarks
     К-->>П: checked, code 0
   else there is a remark
     К-->>П: FLANG_…, code 1
   end
   П->>К: flang check --proof
-  К->>Я: every promise
+  К->>Я: every guarantee
   alt доказано
     Я-->>К: proved
     К-->>П: code 0
@@ -372,24 +420,37 @@ sequenceDiagram
   end
 ```
 
-| Command | When to call it | What the answer means |
+| Command | When to run it | What it answers |
 | --- | --- | --- |
-| `flang check file` | after every change | code 0 — parsing, types, termination and examples passed; code 1 — the remark is named by its `FLANG_…` code, line and column |
-| `flang check file --proof` | when a promise is written | a verdict for every promise; code 3 — something is "объявлено, не доказано" |
-| `flang check file --proof --strict` | in a build script | code 0 only when everything is proved; "сетка" gives code 3 |
-| `flang check file --proof --record record` | when the proof is checked a second time | the proof is written to a file; the independent checking program `flang/proof/checker/checker.c` replays it |
-| `flang test file` | when the count of examples is needed | how many examples there are and how many passed |
-| `flang run file --function «Имя» --args '{…}'` | when a value is needed | the verdict is computed first; on a program that is not proved nothing is computed, code 3 |
+| `flang check file` | after every change | code 0 — syntax, types, termination and examples are fine; code 1 — an error: its `FLANG_…` code, line and column |
+| `flang check file --proof` | when you have written `обеспечивает` | for every guarantee, whether it is proved; code 3 — a guarantee has neither a proof nor examples |
+| `flang check file --proof --strict` | in CI | code 0 only when everything is proved; a guarantee checked on examples only gives code 3 |
+| `flang check file --proof --record record` | when the proof must be re-checked independently | writes the proof to a file; a separate program, `flang/proof/checker/checker.c`, re-checks it without trusting the prover |
+| `flang test file` | when you only need to run the examples | how many examples there are and how many passed |
+| `flang run file --function «Имя» --args '{…}'` | when you need a value | checks the proofs first; if something is not proved it computes nothing, code 3 |
 
-### Three verdicts
+### Three results of checking a guarantee
 
-| Verdict | What it means | Code of `check --proof` | Code of `run` |
+| The output says | What it means | Code of `check --proof` | Code of `run` |
 | --- | --- | --- | --- |
-| доказано (proved) | true on all inputs | 0 | 0 |
-| сетка N (grid of N) | computed on N values of the author; it is not a proof | 0, with `--strict` 3 | 3 |
-| объявлено, не доказано (declared, not proved) | there is neither a theorem nor an example | 3 | 3 |
+| «доказано» (proved) | true for all possible inputs | 0 | 0 |
+| «сетка N» (grid of N) | checked only on your N examples, like unit tests; there is no proof | 0, with `--strict` 3 | 3 |
+| «объявлено, не доказано» (declared, not proved) | there is neither a proof nor an example | 3 | 3 |
 
-Proved — the file `two-outcomes.flang` above:
+How to read the other words of the `--proof` report:
+
+| The report says | What it means |
+| --- | --- |
+| «что высказано и чем это несётся» | the list of guarantees and what backs each one |
+| «постусловие» | your `обеспечивает` line |
+| «доказано индукцией по «Тип»» | the prover went through every variant of the type |
+| «доказано по объявленным типам аргументов» | the prover went through the branches of `если` using the types of the arguments |
+| «ПРОВЕРЕНО САМОСТОЯТЕЛЬНО» | every guarantee in the file is proved |
+| «ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ» | some guarantees rest on examples only, and this command did not run the examples |
+| «НЕ УДАЛОСЬ ДОКАЗАТЬ» | the same under `--strict`: code 3 |
+| «НЕ ПРОВЕРЕНО» | a guarantee has neither a proof nor examples |
+
+«Доказано» — the file `two-outcomes.flang` above:
 
 ```
 $ flang test docs/examples/guide/two-outcomes.flang
@@ -406,8 +467,9 @@ $ echo $?
 0
 ```
 
-A grid — the file `flag-match-unproved.flang` above. The binary prints the path
-in the last line in full; here it is shown from the root of the repository.
+«Сетка» — the file `flag-match-unproved.flang` above. In the last line the
+compiler prints the full path of the file; here it is shown from the root of the
+repository.
 
 ```
 $ flang check docs/examples/guide/flag-match-unproved.flang --proof --strict
@@ -428,7 +490,7 @@ $ echo $?
 3
 ```
 
-Declared, not proved — the same promise without a single example.
+«Объявлено, не доказано» — the same guarantee without a single example.
 
 File: `docs/examples/guide/promise-without-examples.flang`
 
@@ -465,16 +527,15 @@ $ echo $?
 3
 ```
 
-## Use cases
+## Examples
 
-There are 28 cases. Every program is a file in `docs/examples/guide/`
-and was run with the binary 0.7.22 on 27 September 2026 from the root of the
-repository. The output is verbatim; an ellipsis marks the lines of the `--proof`
-report that are left out here.
+There are 28 examples. Each is a file in `docs/examples/guide/`. The commands
+run from the root of the repository and the compiler output is verbatim; an
+ellipsis marks the lines of the `--proof` report that are left out.
 
 ### 1. I want to choose by the kind of value
 
-I take: `разбор` (match) over your own sum type. A forgotten variant is the refusal `FLANG_MATCH_NOT_EXHAUSTIVE`, and the kernel proves a promise about the function by induction on the type.
+What to write: a `тип` with variants (an enum with data) and `разбор` over it — this is pattern matching. Forget a variant and the compiler stops with `FLANG_MATCH_NOT_EXHAUSTIVE`. The guarantee «углов не больше четырёх» is proved by the prover on its own: it goes through every variant of the type.
 
 File: `docs/examples/guide/choose-by-variant.flang`
 
@@ -540,7 +601,7 @@ $ echo $?
 
 ### 2. I want to handle a value that may be absent
 
-I take: a sum of two variants and `разбор`. `ничто` (null) is not used for this: the variant «Нет» cannot be left unmatched.
+What to write: a type with two variants — «Есть» with the data and «Нет» — and `разбор`. This is Optional. `ничто` (null) is not used for this: the compiler will not let you forget the «Нет» branch, while it would let you forget a null check.
 
 File: `docs/examples/guide/absent-value.flang`
 
@@ -577,9 +638,9 @@ $ echo $?
 0
 ```
 
-### 3. I want to return a refusal
+### 3. I want to return an error
 
-I take: a variant of a sum with a code and a reason. There are no exceptions. A refusal is a value, and the caller must match on it. There is one condition and two outcomes here, which is the case for `если` (if).
+What to write: a result type with the variants «Успех» and «Отказ» (a code and a reason) — this is Result. flang has no exceptions: an error is an ordinary return value and the caller must match on it. The check "the divisor equals 0" is one condition with two outcomes, so `если` (if) is used here.
 
 File: `docs/examples/guide/refusal.flang`
 
@@ -629,9 +690,9 @@ $ echo $?
 0
 ```
 
-### 4. I want to turn a string into a number without stopping
+### 4. I want to parse a number from a string without crashing
 
-I take: `к числу или беда` and `разбор` over its answer. The built-in form answers with the variants «Разобрано» and «Не разобрано»; the reason arrives as text.
+What to write: `к числу или беда` and `разбор` over its result. The built-in function does not crash on a bad string; it returns one of two variants: «Разобрано» with the number or «Не разобрано» with the reason as text.
 
 File: `docs/examples/guide/parse-number.flang`
 
@@ -666,9 +727,9 @@ $ echo $?
 0
 ```
 
-### 5. I want to do several steps, each of which may refuse
+### 5. I want to do several steps, each of which may fail
 
-I take: every step returns a sum and the next one matches on it. The reason of the first refusal reaches the result without a single `если`.
+What to write: every step returns a Result (a type with a success and a failure variant) and the next step does `разбор` over it. The error of the first failed step reaches the end of the chain by itself — without `если` and without exceptions. The `?` operator in Rust does the same; here it is written out.
 
 File: `docs/examples/guide/chain-of-steps.flang`
 
@@ -755,7 +816,7 @@ $ echo $?
 
 ### 6. I want to walk a list and stop before its end
 
-I take: `разбор` over a list: `пусто`, `голова и хвост`, a call on the tail. Termination is proved by structure, the promise about the length by induction on the list.
+What to write: recursion with `разбор` over the list. The case `пусто` is the exit; the case `голова и хвост` handles the head and calls itself on the tail. This replaces a loop with `break`. The compiler sees termination by itself: the tail is shorter than the list. The guarantee about the length is proved by induction on the list.
 
 File: `docs/examples/guide/walk-list.flang`
 
@@ -802,7 +863,7 @@ $ echo $?
 
 ### 7. I want to walk a tree
 
-I take: `разбор` over the sum, calls on the parts. A part of a value is smaller than the value, so no decreasing measure is written.
+What to write: `разбор` over the variants of a node and recursive calls on its parts. A part of a tree is always smaller than the tree, so termination needs no separate proof: `убывает` is not written.
 
 File: `docs/examples/guide/walk-tree.flang`
 
@@ -849,9 +910,9 @@ $ echo $?
 0
 ```
 
-### 8. I want to accumulate a total in one pass
+### 8. I want to compute a total over a list
 
-I take: `свёртка` (fold). There is no loop. The list is finite and is passed once, so termination comes for free.
+What to write: `свёртка` — this is reduce. flang has no loops. The list is finite and is passed once, so termination needs no proof.
 
 File: `docs/examples/guide/fold-total.flang`
 
@@ -890,9 +951,9 @@ $ echo $?
 0
 ```
 
-### 9. I want to accumulate two totals at once
+### 9. I want to compute two totals in one pass
 
-I take: `свёртка` with a record as the accumulator. The step lives in its own function with an example; there is no mutable variable.
+What to write: `свёртка` whose accumulator is a record with two fields. The step lives in its own function with its own example. There are no mutable variables: the step returns a new accumulator.
 
 File: `docs/examples/guide/fold-record.flang`
 
@@ -931,7 +992,7 @@ $ echo $?
 
 ### 10. I want to convert every item
 
-I take: `отобразить` (map). The kernel proves the promise about the length by itself.
+What to write: `отобразить` — this is map. The prover proves the guarantee about the length of the result on its own.
 
 File: `docs/examples/guide/map-each.flang`
 
@@ -969,7 +1030,7 @@ $ echo $?
 
 ### 11. I want to keep the items that fit
 
-I take: `отфильтровать` (filter). 
+What to write: `отфильтровать` — this is filter.
 
 File: `docs/examples/guide/keep-matching.flang`
 
@@ -1007,7 +1068,7 @@ $ echo $?
 
 ### 12. I want to find the first item that fits
 
-I take: `отфильтровать`, then `разбор`: `пусто` or `голова и хвост`. "Not found" is a variant of its own, not a special value.
+What to write: `отфильтровать`, then `разбор` over the result: `пусто` means not found, `голова и хвост` means the head is the first item that fits. "Not found" is a separate variant of the result, not `-1` and not null.
 
 File: `docs/examples/guide/find-first.flang`
 
@@ -1044,9 +1105,9 @@ $ echo $?
 0
 ```
 
-### 13. I want to choose an answer by a key
+### 13. I want to look a value up by a key
 
-I take: a table of records, `отфильтровать`, `разбор`. A new row of the table is a change of data, not one more `иначе если` step.
+What to write: a table of records (a list of key and value objects), `отфильтровать` by the key and `разбор` over the result. A new key is a new row of data, not one more `иначе если` in the code.
 
 File: `docs/examples/guide/lookup-table.flang`
 
@@ -1092,7 +1153,7 @@ $ echo $?
 
 ### 14. I want to check several conditions in a row
 
-I take: a list of rules: a rule is a variant of a sum, the check is `разбор`, the pass is `отфильтровать`. Every broken rule is named, not only the first. All three promises are proved.
+What to write: a list of rules. Every rule is a variant of a type, checking one rule is `разбор`, running all of them is `отфильтровать`. The output is every broken rule at once, not only the first. All three guarantees in the example are proved.
 
 File: `docs/examples/guide/rule-list.flang`
 
@@ -1188,7 +1249,7 @@ $ echo $?
 
 ### 15. I want to choose one of two by one condition
 
-I take: `если … то … иначе` (if, then, else). Here `если` is in its place. The kernel proves the promise by the rule «разбор цели по условию».
+What to write: `если … то … иначе` (if, then, else). One condition and two outcomes is exactly the case for `если`. The prover proves the guarantee by going through both branches; the report calls this rule «разбор цели по условию».
 
 File: `docs/examples/guide/two-outcomes.flang`
 
@@ -1233,7 +1294,7 @@ $ echo $?
 
 ### 16. I want to repeat N times
 
-I take: recursion over `неотрицательное` with a descent by 1 and the bottom in `если`. Termination is proved by the exact step, the promise by induction. The kernel reads the descent from `если` and from nothing else.
+What to write: recursion over a number of the type `неотрицательное` (non-negative): every call decreases the counter by 1 and the exit is an `если`. This replaces a `for` loop. The compiler derives termination from the "minus 1" step and the prover proves the guarantee by induction. Write the exit with `если` and nothing else: that is the only form in which the compiler recognises the decreasing counter.
 
 File: `docs/examples/guide/count-down.flang`
 
@@ -1282,9 +1343,9 @@ $ echo $?
 0
 ```
 
-### 17. I want to bind an intermediate name
+### 17. I want to name an intermediate value
 
-I take: `пусть` (let). It binds once; there is no second assignment.
+What to write: `пусть` — this is `const`. The name gets its value once and cannot be reassigned.
 
 File: `docs/examples/guide/bind-name.flang`
 
@@ -1316,7 +1377,7 @@ $ echo $?
 
 ### 18. I want to change a field of a record
 
-I take: build a new record. There is no change in place. That the other fields are untouched is a promise, and it is proved.
+What to write: build a new record with the changed field. A field cannot be changed in place: values are immutable. That the other fields stay the same is a guarantee in `обеспечивает`, and it is proved.
 
 File: `docs/examples/guide/build-record.flang`
 
@@ -1359,7 +1420,7 @@ $ echo $?
 
 ### 19. I want to split a string into words
 
-I take: `разделить … по …`, then `отфильтровать`. 
+What to write: `разделить … по …` — this is split. In the example `отфильтровать` then keeps the words longer than three letters.
 
 File: `docs/examples/guide/split-text.flang`
 
@@ -1397,7 +1458,7 @@ $ echo $?
 
 ### 20. I want to count money without a rounding error
 
-I take: the type `сотых` on the input. The amount is kept as a whole number of hundredths.
+What to write: the type `сотых` (hundredths) for the amount on input. The amount is kept as a whole number of hundredths, so there are no rounding errors of the float kind.
 
 File: `docs/examples/guide/exact-money.flang`
 
@@ -1424,7 +1485,7 @@ $ echo $?
 
 ### 21. I want to pass a function to another function
 
-I take: `функция «Имя»` and a named capture. There is no anonymous function value: only a declared function is taken as a value.
+What to write: `функция «Имя»` — a reference to a declared function. Some arguments can be fixed in advance by name: `функция «Прибавить» с слагаемое равным 10`. There are no anonymous functions (lambdas) as values: only a declared function can be passed.
 
 File: `docs/examples/guide/function-value.flang`
 
@@ -1467,9 +1528,9 @@ $ echo $?
 0
 ```
 
-### 22. I want to promise a property of every item of the result
+### 22. I want to guarantee a property of every item of the result
 
-I take: `обеспечивает … для всех … из результат:`. No theorem is needed: the kernel closes both promises by itself.
+What to write: `обеспечивает … для всех … из результат:` — a guarantee about every item of the resulting list. No `теорема` is needed: the prover proves both guarantees on its own.
 
 File: `docs/examples/guide/promise.flang`
 
@@ -1507,9 +1568,9 @@ $ echo $?
 0
 ```
 
-### 23. I want to forbid unfit arguments
+### 23. I want to forbid bad arguments
 
-I take: `требует` (requires). The caller discharges the precondition; the second function calls the first, and the kernel has checked that.
+What to write: `требует` — a precondition. The caller must satisfy it: in the example the second function calls the first, and the prover has proved that the condition holds there.
 
 File: `docs/examples/guide/precondition.flang`
 
@@ -1557,9 +1618,9 @@ $ echo $?
 0
 ```
 
-### 24. I want to prove what the kernel did not close by itself
+### 24. I want to prove what the prover could not
 
-I take: `теорема` (theorem) with `индукция по` (induction on). The induction goes over your own sum type; `убывает` is not needed.
+What to write: `теорема` (theorem) with `индукция по` (induction on) — a proof you lead yourself. The induction goes over the variants of your type; `убывает` is not needed.
 
 File: `docs/examples/guide/theorem.flang`
 
@@ -1617,9 +1678,9 @@ $ echo $?
 0
 ```
 
-### 25. I want to state a claim without a function
+### 25. I want to state a property apart from a function
 
-I take: `утверждение` (statement). 
+What to write: `утверждение` — a property stated apart from a function. The prover proves it the same way as `обеспечивает`.
 
 File: `docs/examples/guide/statement.flang`
 
@@ -1655,7 +1716,7 @@ $ echo $?
 
 ### 26. I want to read a file
 
-I take: `план` (plan): a step returns the order «Прочитать файл», the answer arrives as a reply. The functions of the plan are total and are checked by examples without a file. It is `flang io` that meets the disk.
+What to write: a `план` (plan). The function does not read the file itself: it returns the command «Прочитать файл», the runtime executes it and calls the function again with the response. So all the logic is ordinary functions checked by examples without a disk. Only the command `flang io` works with the real file. In the code the command is called «поручение» and the response of the runtime «отклик».
 
 File: `docs/examples/guide/read-file.flang`
 
@@ -1732,9 +1793,9 @@ $ echo $?
 0
 ```
 
-### 27. I want to run another program
+### 27. I want to run an external program
 
-I take: `план` with the order «Запустить процесс». A non-zero exit code is a result, not a failure; a killed child is a reply variant of its own.
+What to write: a `план` with the command «Запустить процесс». A non-zero exit code is an ordinary result, not a launch error; a process killed by a signal arrives as a separate response variant.
 
 File: `docs/examples/guide/run-process.flang`
 
@@ -1807,9 +1868,9 @@ $ echo $?
 0
 ```
 
-### 28. I want to ask the network
+### 28. I want to make an HTTP request
 
-I take: `план` with the order «Запросить». The run below was taken on a machine where nothing listens at this address: the network refusal reached the plan as the reply «Сбой», and the plan gave up by itself with code 1.
+What to write: a `план` with the command «Запросить». The output below was taken where nothing listens at this address: the network error reached the plan as the response «Сбой», and the plan ended by itself with code 1.
 
 File: `docs/examples/guide/ask-network.flang`
 
@@ -1880,7 +1941,7 @@ $ echo $?
 
 ## Next
 
-- [Map of the language constructs](language-map.html) — every word of the language as a graph
-- [Language reference](language.html) — how every construct is written
-- [Which promises the kernel takes](what-the-kernel-accepts.html) — which way of writing a promise gets proved
+- [Map of the language constructs](language-map.html) — every keyword of the language in one diagram
+- [Language reference](language.html) — the syntax of every construct
+- [Which promises the kernel takes](what-the-kernel-accepts.html) — how to write a guarantee so that the prover proves it
 - [Command reference](cli.html) — keys and exit codes

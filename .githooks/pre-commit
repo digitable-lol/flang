@@ -1,0 +1,2 @@
+#!/bin/sh
+exec bootstrap/flang io .githooks/no-growth.fscript --plan "Staged"

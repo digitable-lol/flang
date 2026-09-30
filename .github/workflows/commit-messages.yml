@@ -35,3 +35,8 @@ jobs:
         env:
           LC_ALL: C.UTF-8
           FLANG_TMP: ${{ runner.temp }}
+      - name: Check shell, python and stray markdown do not grow
+        run: bootstrap/flang io .githooks/no-growth.fscript --plan "Range" -- "origin/${{ github.base_ref }}"
+        env:
+          LC_ALL: C.UTF-8
+          FLANG_TMP: ${{ runner.temp }}

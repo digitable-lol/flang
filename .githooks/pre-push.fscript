@@ -16,7 +16,7 @@
 
 тотальная функция «Checks»
   возвращает список «Check»
-  обеспечивает «there are exactly eighteen checks» (длина результат) равен 18
+  обеспечивает «there are exactly nineteen checks» (длина результат) равен 19
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "sh scripts/guards/prose-numbers-guard.sh",
    запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "bootstrap/flang io scripts/seed/seed-runtime-is-source.fscript --plan Check",
    запись «Check» с «name» равным "seed-refresh" и «command» равным "sh scripts/seed/seed-refresh.sh --check",
@@ -34,7 +34,8 @@
    запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка",
    запись «Check» с «name» равным "licenses" и «command» равным "./ярлык лицензии:проверка",
    запись «Check» с «name» равным "task-ledger" и «command» равным "./ярлык задачник:проверка",
-   запись «Check» с «name» равным "tree-inventory" и «command» равным "./ярлык опись:сверка"]
+   запись «Check» с «name» равным "tree-inventory" и «command» равным "./ярлык опись:сверка",
+   запись «Check» с «name» равным "no-growth" и «command» равным "bootstrap/flang io .githooks/no-growth.fscript --plan Range -- \"$(git for-each-ref --format='%(refname:short)' 'refs/remotes/*/dev' | head -1)\""]
 
 тотальная функция «Output path»
   принимает directory: строка, check: «Check»
@@ -304,7 +305,7 @@
 тотальная функция «Leftovers»
   принимает directory: строка
   возвращает список строки
-  обеспечивает «one file for every check and the directory itself» (длина результат) равен 19
+  обеспечивает «one file for every check and the directory itself» (длина результат) равен 20
   добавить directory к (отобразить («Checks») как check → («Output path» от directory и check))
 
 тотальная функция «Remove files»

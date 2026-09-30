@@ -590,6 +590,7 @@ farewell
 fast
 feature
 fee
+feeder
 feeds
 fgets
 field
@@ -1234,6 +1235,7 @@ premise
 premises
 prepend
 preserved
+press
 presses
 previous
 price
@@ -1707,6 +1709,7 @@ tier
 tiers
 tighter
 time
+timed
 timeout
 times
 tls

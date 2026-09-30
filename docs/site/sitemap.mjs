@@ -295,36 +295,6 @@ export const РАЗДЕЛЫ = [
     ],
   },
   {
-    /* ВНУТРЕННЕЕ. Раздел стоял первым уровнем меню, и открывший сайт впервые
-       упирался в отчёты о том, во сколько раз мы медленнее Python и сколько
-       памяти держит арена. Это ценные документы — но для того, кто ДЕЛАЕТ
-       язык, а не для того, кто его пробует. Читатель владельца сказал об этом
-       прямо: «нейрослоп про какое-то исследование».
-       Страницы никуда не делись и адресов не сменили: они собраны за одной
-       дверью — `contributing.html`. */
-    имя: 'Замеры', англ: 'Measurements', дляУчастников: true,
-    страницы: [
-      { адрес: 'benchmark-speed.html', имя: 'Скорость против Python и Node', из: 'docs/benchmark-speed.md' },
-      { адрес: 'benchmark-proof-cost.html', имя: 'Цена доказательства против тестов', из: 'docs/benchmark-proof-cost.md' },
-      /* ВТОРОЙ ЗАМЕР ТОЙ ЖЕ РАБОТЫ, и он не был опубликован вовсе. Сайт печатал
-         первый замер («0 из 20»), а страницы про доказательства уже говорили
-         «2 из 20» — по второму. Читатель, пошедший за подтверждением, попадал
-         на отчёт, который этих чисел не содержит. Оба замера стоят рядом:
-         движение видно только по паре. */
-      { адрес: 'benchmark-proof-cost-2.html', имя: 'Цена доказательства, второй замер', из: 'docs/benchmark-proof-cost-2.md' },
-      /* КЕШ ПРИГОВОРОВ. Единственное описание механизма жило в README каталога
-         `docs/benchmarks/verdict-cache/` — по-русски, без английской пары и мимо
-         сайта. Здесь то, что читателю нужно, чтобы кеш включить и проверить:
-         переменная среды, что входит в ключ и почему, приборы каталога;
-         дневник замеров остался в истории. README каталога — указатель сюда. */
-      { адрес: 'verdict-cache.html', имя: 'Кеш приговоров ядра', из: 'docs/site/verdict-cache.ru.md' },
-      { адрес: 'benchmark-processes.html', имя: 'Сколько процессов тянет планировщик', из: 'docs/scheduler-benchmark.md' },
-      { адрес: 'memory.html', имя: 'Память и области', из: 'docs/memory-and-regions.md' },
-      { адрес: 'modules.html', имя: 'Модульность и пакеты', из: 'docs/modularity-and-packages.md' },
-      { адрес: 'wasm.html', имя: 'WebAssembly через C', из: 'docs/wasm-via-c.md' },
-    ],
-  },
-  {
     /* РАЗДЕЛ ПЕРЕЕХАЛ СО ВТОРОГО МЕСТА В КОНЕЦ, и довод, стоявший здесь раньше
        («заходящий второй раз ищет, что приехало с прошлого раза»), отменён не
        вкусом, а чтением самих страниц. Обе печатаются из тем вливаний, а темы
@@ -347,13 +317,7 @@ export const РАЗДЕЛЫ = [
       // Всё остальное внутреннее достижимо ссылками отсюда, и сборка эти
       // ссылки проверяет так же, как все прочие.
       { адрес: 'contributing.html', имя: 'Тем, кто делает язык', из: 'docs/site/contributing.ru.md' },
-      /* ОТЧЁТ ПЕРЕЕХАЛ ИЗ РАЗДЕЛА «ДОКАЗАТЕЛЬСТВА», где стоял четвёртым пунктом,
-         то есть на дорожке читателя. Читать там его нечем: это рабочий отчёт по
-         дереву, где через строку стоят пути к файлам реализации, имена проверок
-         и разбор того, что во что перенесено. Читателю на тот же вопрос отвечает
-         «Что доказано, а что нет» — она написана для него и числа берёт прогоном.
-         Адрес не сменился: внешняя ссылка на `overview.html` работает. */
-      { адрес: 'overview.html', имя: 'Отчёт о доказательствах по дереву', из: 'docs/overview.ru.md' },
+      { адрес: 'verdict-cache.html', имя: 'Кеш приговоров ядра', из: 'docs/site/verdict-cache.ru.md' },
       { адрес: 'project-layout.html', имя: 'Раскладка репозитория', из: 'docs/guide/project-layout.ru.md' },
       // `печатается` снимает требование английской пары. Перевод печатаемой
       // страницы обязан приходить из печати, а не от переводчика: руками его
@@ -398,7 +362,7 @@ export const ПЕРЕЕЗДЫ = {
   'izmeneniya.html': 'releases.html',
   'zhurnal.html': 'journal.html',
   'dokazatelstva.html': 'proofs.html',
-  'obzor.html': 'overview.html',
+  'obzor.html': 'what-is-proved.html',
   'odin-istochnik.html': 'single-source.html',
   'totalnost.html': 'totality.html',
   'dve-realizacii.html': 'bootstrap-circle.html',
@@ -406,11 +370,11 @@ export const ПЕРЕЕЗДЫ = {
   'razvitie.html': 'developing.html',
   'ogranicheniya.html': 'limits.html',
   'raskladka.html': 'project-layout.html',
-  'zamer-skorosti.html': 'benchmark-speed.html',
-  'zamer-tseny.html': 'benchmark-proof-cost.html',
-  'zamer-processov.html': 'benchmark-processes.html',
-  'pamyat.html': 'memory.html',
-  'moduli.html': 'modules.html',
+  'zamer-skorosti.html': 'contributing.html',
+  'zamer-tseny.html': 'proofs.html',
+  'zamer-processov.html': 'processes.html',
+  'pamyat.html': 'contributing.html',
+  'moduli.html': 'packages.html',
   'znanie.html': 'knowledge.html',
   // Страница «Чем проверена установка» снята: это был журнал прогонов
   // выпуска 0.5.1, и разработчику он не нужен. Адрес был опубликован —
@@ -420,6 +384,14 @@ export const ПЕРЕЕЗДЫ = {
   'kak-dokazat.html': 'what-the-kernel-accepts.html',
   'matematika.html': 'mathematics.html',
   'dlya-ii.html': 'ai-assistant.html',
+  'overview.html': 'what-is-proved.html',
+  'benchmark-speed.html': 'contributing.html',
+  'benchmark-proof-cost.html': 'proofs.html',
+  'benchmark-proof-cost-2.html': 'proofs.html',
+  'benchmark-processes.html': 'processes.html',
+  'memory.html': 'contributing.html',
+  'modules.html': 'packages.html',
+  'wasm.html': 'embedding.html',
 };
 
 /**

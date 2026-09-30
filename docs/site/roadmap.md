@@ -124,7 +124,7 @@ avoid. A pattern with them does not fail silently: the reason is put into the
 **No two versions of one library in one program.** When two dependencies pull
 one library at different versions, that is solved by raising the version, not by
 having both side by side in the program. The reasoning is in
-[Modules and packages](../modules.html).
+[Modules and packages](../modularity-and-packages.md).
 
 **Not the full Unison model.** Storing code in a database instead of files means
 owning the editor, owning the host and losing git. Half of it — content

@@ -183,7 +183,7 @@ Three rules are visible right there, and you will have to keep them:
    stack. One context can be reused across calls, as above.
 
 WebAssembly comes from the same place: the emitted C moves there without edits —
-see [WebAssembly through C](../wasm.html).
+see [WebAssembly through C](../wasm-via-c.md).
 
 ## The value at the boundary
 

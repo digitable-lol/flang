@@ -22,6 +22,22 @@ The check re-emits and so costs what the print costs (7 h 28 min on the 11 Septe
 plus a `make` if the binary is not built. Call `--check` before merging a change under `flang/self/` or `flang/src/emit/c/`, not on
 every save.
 
+To try an edited compiler source on one program before a print, let the built binary interpret the
+sources: `flang/self/bootstrap/check-with-source-compiler.flang` checks one file with them and
+prints the proof ledger in words and the proof record. `--trust` skips the verdict over the
+compiler itself; a small program takes about ten minutes and 12 GiB:
+
+```bash
+bootstrap/flang run flang/self/bootstrap/check-with-source-compiler.flang \
+  --function 'Проверить исходным компилятором' --trust --max-steps 2000000000 \
+  --args "$(jq -n --arg path FILE --rawfile text FILE '{"путь": $path, "текст": $text}')"
+```
+
+The order of imports in that module matters: linking takes a module's declarations through
+whoever imports it first, together with that importer's `только` list, so «Compiler flang» comes
+first, as in `compiler.flang`. With «Печать в C» first, a checked program with `требует` stops at
+`FLANG_UNKNOWN_NAME` for «Печать значения».
+
 The commands the language answers to:
 
 ```bash

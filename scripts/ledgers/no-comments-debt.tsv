@@ -246,8 +246,6 @@ flang/proof/rules-match.flang	72
 flang/proof/small-reducer.flang	197
 flang/self/bootstrap/compiler.flang	1371	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/bootstrap/corpus.flang	160	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/bootstrap/zond-2040.flang	4	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
-flang/self/bootstrap/zond-k7.flang	9	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/bounded.flang	249
 flang/self/builtins.flang	260	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё
 flang/self/carriers.flang	148	flang/self не правится до конца перепечатки семени 0.7.20 — вынос комментариев после неё

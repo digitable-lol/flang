@@ -32,7 +32,7 @@
 ## Откуда записи
 
 `three-feeds.record` — ПЕЧАТЬ ЯДРА, снятая толкованием исходников `flang/self`
-семенем (зонд `flang/self/bootstrap/zond-k7.flang`): семя ещё не перепечатано и
+семенем (зонд `flang/self/bootstrap/check-with-source-compiler.flang`): семя ещё не перепечатано и
 блока снятия не печатает. `unpaid-callee.record` — рукотворная: программе с
 неоплаченным `требует` ядро записи не печатает вовсе (`FLANG_PRECONDITION_CALL`),
 а подделка изображает запись, будто оплата была.

@@ -514,7 +514,7 @@ ADR-0048 (ссылка на доказанное утверждение упир
 
 ### Правка ПРОВЕРЕНА ТОЛКОВАНИЕМ — до печати, прогоном, а не рассуждением
 
-Прогон зонда `flang/self/bootstrap/zond-k7.flang`: он ТОЛКУЕТ исходники
+Прогон зонда `flang/self/bootstrap/check-with-source-compiler.flang`: он ТОЛКУЕТ исходники
 `flang/self/**` нынешним двоичным, поэтому показывает поведение правки ДО
 перепечатки. Вход — `flang/proof/probes/syllogism/programs/conditional.flang`,
 ключи `--trust --max-steps 400000000000`, код 0.

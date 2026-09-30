@@ -394,8 +394,9 @@
 `poddelka-razbor-vnutrennim` (ходы) — записи сняты тем же зондом, числа ниже в
 разделе «Шаг Б».
 
-Зонд: `bootstrap/flang run flang/self/bootstrap/zond-k7.flang --function «Проверка
-зонда К7» --max-steps 2000000000 --args …` — 750–890 с и 29–30 ГиБ на программу.
+Зонд: `bootstrap/flang run flang/self/bootstrap/check-with-source-compiler.flang
+--function 'Проверить исходным компилятором' --trust --max-steps 2000000000 --args …` —
+750–890 с и 29–30 ГиБ на программу.
 Две грабли, обе названы: (1) без `--max-steps` зонд упирается в 40 000 000 витков
 («Предел витков проверки» из `compiler.flang`) уже на этих печатях — ключ обязателен;
 (2) с 12 сентября (`edd10e9e`) зонд не ввозит «Печать JSON», и незакрытое

@@ -80,7 +80,7 @@
 считает и каталог улик, и даёт те же числа:
 
 ```
-sh scripts/targets/target-census.sh flang/proof/map
+bootstrap/flang io scripts/targets/target-census.fscript --plan Census --timeout 1800000 -- flang/proof/map
   → модулей измерено: 8, не измерено: 3
     утверждений в разборе: 80; с вердиктом: 79; охран «иначе да» снято: 4
     ИТОГО 79  дказ 55  инд 5  сетка 18  объявл 1
@@ -311,7 +311,7 @@ bootstrap/flang check flang/proof/map/sources.flang --proof
 командой:
 
 ```
-sh scripts/targets/target-census.sh flang/stdlib
+bootstrap/flang io scripts/targets/target-census.fscript --plan Census --timeout 3600000 -- flang/stdlib
 ```
 
 Вид цели читается с разбора самого языка (`bootstrap/flang ast`) — форма

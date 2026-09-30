@@ -1,0 +1,336 @@
+модуль «Targets inventory»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+
+объект «Outcome»
+  «code»: строка
+  «seconds»: число
+  «reason»: строка
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Shortcut table»
+  возвращает строка
+  "ярлыки.flang"
+
+тотальная функция «Name mark»
+  возвращает строка
+  "«имя» равным \""
+
+тотальная функция «Gate refusal»
+  возвращает строка
+  "место не освободилось, прогон не начат"
+
+тотальная функция «Retake»
+  возвращает строка
+  "переснять"
+
+тотальная функция «Usage»
+  возвращает строка
+  "звать: bootstrap/flang io scripts/targets/targets-inventory.fscript --plan Report --timeout <мс> [-- <имя ярлыка> …]"
+
+тотальная функция «Gate»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "gate" и "/srv/flang-rabota/vorota/flang-vorota" и answers
+
+тотальная функция «Gate memory»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "gate memory" и "45G" и answers
+
+тотальная функция «Raw output»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "raw output" и "/srv/tmp/targets-inventory" и answers
+
+тотальная функция «Last part»
+  принимает parts: список строки
+  возвращает строка
+  пример «The last of three parts»
+    дано parts равно ["one", "two", "three"]
+    ожидается "three"
+  пример «No parts give nothing»
+    дано parts равно пустой список
+    ожидается ""
+  свёртка parts начиная с "" как last и part → part
+
+тотальная функция «Name in line»
+  принимает line: строка
+  возвращает строка
+  пример «The name stands in quotes after the mark»
+    дано line равно "   запись «Ярлык» с «имя» равным \"версия:проверка\" и «команда» равным (соединить ["
+    ожидается "версия:проверка"
+  пример «A line without the mark has no name»
+    дано line равно "     \"bootstrap/flang --version\"] по \"\")"
+    ожидается ""
+  пример «A name without its closing quote is not a name»
+    дано line равно "«имя» равным \"версия"
+    ожидается ""
+  пусть pieces равно (разделить («Last part» от (разделить line по («Name mark»))) по "\"")
+  если (line содержит («Name mark»)) и притом ((длина pieces) больше 1)
+    то «First line» от (соединить pieces по "\n")
+    иначе ""
+
+тотальная функция «Names in table»
+  принимает text: строка
+  возвращает список строки
+  пример «Each shortcut record gives its name in order»
+    дано text равно "  [запись «Ярлык» с «имя» равным \"сборка\" и «команда» равным \"make\",\n   запись «Ярлык» с «имя» равным \"тесты\" и «команда» равным \"x\"]\n"
+    ожидается ["сборка", "тесты"]
+  отфильтровать (отобразить («Lines» от text) как line → «Name in line» от line) где name → не (пусто name)
+
+тотальная функция «Names»
+  принимает answers: список «Answer»
+  возвращает список строки
+  разбор («Given of» от "arguments" и answers)
+    случай пусто
+      то «Names in table» от («Output of» от "table" и answers)
+    случай голова и хвост
+      то «Given of» от "arguments" и answers
+
+тотальная функция «File name»
+  принимает name: строка
+  возвращает строка
+  пример «Slashes and colons become underscores»
+    дано name равно "версия:проверка/всё"
+    ожидается "версия_проверка_всё"
+  соединить (разделить (соединить (разделить name по "/") по "_") по ":") по "_"
+
+тотальная функция «Raw path»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  соединить [(«Raw output» от answers), "/", («File name» от name), ".txt"] по ""
+
+тотальная функция «Clock»
+  принимает name: строка
+  возвращает «Question»
+  пример «A clock question carries nothing but its name»
+    дано name равно "started сборка"
+    ожидается запись «Question» с «name» равным "started сборка" и «order» равным (вариант «Текущее время»)
+  запись «Question» с «name» равным name и «order» равным (вариант «Текущее время»)
+
+тотальная функция «Milliseconds»
+  принимает reply: «Отклик»
+  возвращает число
+  пример «A time mark gives its milliseconds»
+    дано reply равно вариант «Отметка времени» с миллисекунды равным 1500
+    ожидается 1500
+  пример «Anything else counts as zero»
+    дано reply равно вариант «Пока ничего»
+    ожидается 0
+  разбор reply
+    случай вариант «Отметка времени» с миллисекунды как milliseconds
+      то milliseconds
+    случай любое
+      то 0
+
+тотальная функция «Whole seconds»
+  принимает started: число, finished: число
+  возвращает число
+  пример «Seconds are whole and rounded down»
+    дано started равно 1000
+    дано finished равно 3999
+    ожидается 2
+  пусть elapsed равно ((finished минус started) делить на 1000)
+  elapsed минус (elapsed остаток от 1)
+
+тотальная функция «Question of»
+  принимает kind: строка, name: строка
+  возвращает строка
+  соединить [kind, " ", name] по ""
+
+тотальная функция «Running»
+  принимает name: строка, answers: список «Answer»
+  возвращает список «Question»
+  [(«Clock» от («Question of» от "started" и name)),
+   («Run from» от («Question of» от "run" и name) и («Root») и "sh" и ["-c", "PAMYAT=\"$0\" \"$1\" -- ./ярлык \"$2\" > \"$3\" 2>&1", («Gate memory» от answers), («Gate» от answers), name, («Raw path» от name и answers)]),
+   («Clock» от («Question of» от "finished" и name)),
+   («Read» от («Question of» от "raw" и name) и («Raw path» от name и answers))]
+
+тотальная функция «Starts a code»
+  принимает text: строка
+  возвращает признак
+  пример «A capital letter continues the code»
+    дано text равно "IO_TIMEOUT: срок"
+    ожидается да
+  пример «A small letter does not»
+    дано text равно "io"
+    ожидается нет
+  пример «An empty text does not»
+    дано text равно ""
+    ожидается нет
+  (не (пусто text)) и притом ("ABCDEFGHIJKLMNOPQRSTUVWXYZ_" содержит (подстрока text с 1 по 1))
+
+тотальная функция «Reason after»
+  принимает parts: список строки
+  возвращает строка
+  пример «The code runs to the quote»
+    дано parts равно ["IO_TIMEOUT — срок вышел\",\"x\""]
+    ожидается "FLANG_IO_TIMEOUT — срок вышел"
+  пример «A mark followed by a small letter is skipped»
+    дано parts равно ["bin=x ", "LEX в файле"]
+    ожидается "FLANG_LEX в файле"
+  пример «No parts give no reason»
+    дано parts равно пустой список
+    ожидается ""
+  разбор parts
+    случай пусто
+      то ""
+    случай голова и хвост
+      то если «Starts a code» от (соединить parts по "FLANG_")
+        то соединить ["FLANG_", («First line» от (соединить (разделить (соединить parts по "FLANG_") по "\"") по "\n"))] по ""
+        иначе «Reason after» от хвост
+
+тотальная функция «Reason in line»
+  принимает line: строка
+  возвращает строка
+  пример «The first code of the line with its tail up to the quote»
+    дано line равно "{\"error\":\"FLANG_LEX в файле x\",\"code\":1}"
+    ожидается "FLANG_LEX в файле x"
+  пример «A line without a code gives nothing»
+    дано line равно "всё зелено"
+    ожидается ""
+  разбор (разделить line по "FLANG_")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «Reason after» от хвост
+
+тотальная функция «Reason»
+  принимает text: строка
+  возвращает строка
+  пример «The first line with a code decides»
+    дано text равно "зелено\nFLANG_A: раз\nFLANG_B: два\n"
+    ожидается "FLANG_A: раз"
+  пример «A text without codes has no reason»
+    дано text равно "зелено\n"
+    ожидается ""
+  «First line» от (соединить (отобразить («Lines» от text) как line → «Reason in line» от line) по "\n")
+
+тотальная функция «Judged»
+  принимает code: число, seconds: число, raw: строка
+  возвращает «Outcome»
+  пример «A gate refusal is a retake and not a verdict»
+    дано code равно 75
+    дано seconds равно 600
+    дано raw равно "ворота: место не освободилось, прогон не начат\n"
+    ожидается запись «Outcome» с «code» равным "переснять" и «seconds» равным 600 и «reason» равным "ворота места не дали — прогон не запускался, это НЕ вердикт цели"
+  пример «Code 75 without the refusal line is the verdict of the target»
+    дано code равно 75
+    дано seconds равно 2
+    дано raw равно "FLANG_X: своё\n"
+    ожидается запись «Outcome» с «code» равным "75" и «seconds» равным 2 и «reason» равным "FLANG_X: своё"
+  пример «A green target has no reason»
+    дано code равно 0
+    дано seconds равно 1
+    дано raw равно "зелено\n"
+    ожидается запись «Outcome» с «code» равным "0" и «seconds» равным 1 и «reason» равным ""
+  если (code равен 75) и притом (raw содержит («Gate refusal»))
+    то запись «Outcome» с «code» равным («Retake») и «seconds» равным seconds и «reason» равным "ворота места не дали — прогон не запускался, это НЕ вердикт цели"
+    иначе запись «Outcome» с «code» равным (к строке code) и «seconds» равным seconds и «reason» равным («Reason» от raw)
+
+тотальная функция «Outcome of»
+  принимает name: строка, answers: список «Answer»
+  возвращает «Outcome»
+  «Judged» от («Exit code of» от («Question of» от "run" и name) и answers) и («Whole seconds» от («Milliseconds» от («Reply to» от («Question of» от "started" и name) и answers)) и («Milliseconds» от («Reply to» от («Question of» от "finished" и name) и answers))) и («Output of» от («Question of» от "raw" и name) и answers)
+
+тотальная функция «Row»
+  принимает position: число, name: строка, outcome: «Outcome»
+  возвращает строка
+  пример «A row names the target, its code, its time and its reason»
+    дано position равно 2
+    дано name равно "версия:проверка"
+    дано outcome равно запись «Outcome» с «code» равным "1" и «seconds» равным 7 и «reason» равным "FLANG_VERSION: разошлись"
+    ожидается "| 2 | `версия:проверка` | 1 | 7 с | FLANG_VERSION: разошлись |"
+  соединить ["| ", (к строке position), " | `", name, "` | ", (outcome.«code»), " | ", (к строке (outcome.«seconds»)), " с | ", (outcome.«reason»), " |"] по ""
+
+тотальная функция «Rows»
+  принимает answers: список «Answer»
+  возвращает список строки
+  свёртка («Names» от answers) начиная с (пустой список) как rows и name → добавить («Row» от ((длина rows) плюс 1) и name и («Outcome of» от name и answers)) к rows
+
+тотальная функция «Retakes»
+  принимает answers: список «Answer»
+  возвращает число
+  длина (отфильтровать («Names» от answers) где name → ((«Outcome of» от name и answers).«code») равен («Retake»))
+
+тотальная функция «Report text»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить («Gathered words» от [["| # | цель | код | время | причина |", "|---:|---|---|---:|---|"], («Rows» от answers), ["", (соединить ["Целей снято: ", (к строке (длина («Names» от answers))), ". Из них ждали слота дольше срока и требуют пересъёма: ", (к строке («Retakes» от answers)), "."] по ""), (соединить ["Сырой вывод каждой цели: ", («Raw output» от answers)] по "")]]) по "\n"
+
+тотальная функция «Failed»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  («Answered» от name и answers) и притом (не ((«Exit code of» от name и answers) равен 0))
+
+тотальная функция «Obstacles»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  отфильтровать [(если («Answered» от "table" и answers) и притом ((длина («Names» от answers)) равен 0) то ["НЕ ИЗМЕРЯЛ: ни одного имени ярлыка — в ярлыки.flang их не нашлось, и доводами они не названы.", "Это не «целей нет», это «снимать нечего».", («Usage»)] иначе пустой список),
+    (если «Failed» от "gate present" и answers то [(соединить ["НЕ ИЗМЕРЯЛ: ворот нет — ", («Gate» от answers), " не исполняемый файл."] по ""), "Каждая цель ответила бы кодом 127, и опись из таких кодов — не опись.", "Свои ворота: FLANG_GATE=/путь/к/воротам"] иначе пустой список),
+    (если «Failed» от "raw directory" и answers то [(соединить ["НЕ ИЗМЕРЯЛ: каталог сырого вывода не завёлся — ", («Raw output» от answers)] по ""), "Свой каталог: FLANG_RAW_OUTPUT=/путь"] иначе пустой список)] где lines → (длина lines) больше 0
+
+тотальная функция «Is clear»
+  принимает answers: список «Answer»
+  возвращает признак
+  (длина («Obstacles» от answers)) равен 0
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "gate" и "FLANG_GATE"), («Environment» от "gate memory" и "FLANG_GATE_MEMORY"), («Environment» от "raw output" и "FLANG_RAW_OUTPUT"), («Read from» от "table" и («Root») и («Shortcut table»))]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "gate present" и "test" и ["-x", («Gate» от answers)]), («Run» от "raw directory" и "mkdir" и ["-p", («Raw output» от answers)])]
+
+тотальная функция «Runs»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от (отобразить («Names» от answers) как name → «Running» от name и answers)
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (stages равен 2) и («Setup»)),
+    («When» от (stages равен 1) и («Presence» от answers)),
+    («When» от ((stages равен 0) и притом («Is clear» от answers)) и («Runs» от answers))] и (пустой список)
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  разбор («Obstacles» от answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_TARGETS_NOT_MEASURED" и сообщение равным (соединить голова по "\n")
+    случай пусто
+      то вариант «Конец работы» с значение равным («Report text» от answers)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 3
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Report»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

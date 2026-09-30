@@ -2536,7 +2536,7 @@ bootstrap/flang check --proof flang/proof/map/abilities.flang
 ```
 
 Перепись целей считает файл улик наравне с остальными:
-`sh scripts/target-census.sh flang/proof/map` даёт
+`bootstrap/flang io scripts/targets/target-census.fscript --plan Census -- flang/proof/map` даёт
 `модулей измерено: 8, не измерено: 3; утверждений в разборе: 80; с вердиктом: 79`
 (было 7 и 51 — карта клеток осталась той же, прибавились ровно эти 28).
 

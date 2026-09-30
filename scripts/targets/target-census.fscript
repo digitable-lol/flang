@@ -1,0 +1,771 @@
+модуль «Target census»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+
+объект «Row»
+  «kind»: строка
+  «total»: число
+  «proved»: число
+  «induction»: число
+  «grid»: число
+  «declared»: число
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Usage»
+  возвращает строка
+  "звать: bootstrap/flang io scripts/targets/target-census.fscript --plan Census --timeout <мс> [-- <каталог>]"
+
+тотальная функция «Extensions»
+  возвращает список строки
+  пример «Four source extensions and the script extension»
+    ожидается [".flang", ".fp", ".фп", ".фланг", ".fscript"]
+  [".flang", ".fp", ".фп", ".фланг", ".fscript"]
+
+тотальная функция «Ledger mark»
+  возвращает строка
+  "что высказано и чем это несётся"
+
+тотальная функция «Digest program»
+  возвращает строка
+  ".functions[]? | .name as $f | (.postconditions // [])[] | . as $post | \"@\\t\\($f)\\t\\(.name)\", (paths(type != \"object\" and type != \"array\") | select(.[0] == \"expr\" and (.[-1] | IN(\"kind\", \"op\", \"name\", \"value\")) and all(.[1:-1][]; IN(\"then\", \"else\", \"left\", \"right\"))) | . as $p | \"\\($p | map(tostring) | join(\"/\"))\\t\\($post | getpath($p) | tojson)\")"
+
+тотальная функция «Extension of»
+  принимает file: строка
+  возвращает строка
+  пример «A source file has its extension»
+    дано file равно "lists.flang"
+    ожидается ".flang"
+  пример «A script counts as a source»
+    дано file равно "census.fscript"
+    ожидается ".fscript"
+  пример «Anything else has none»
+    дано file равно "README.md"
+    ожидается ""
+  «First line» от (соединить (отфильтровать («Extensions») где extension → «Ends with» от file и extension) по "\n")
+
+тотальная функция «Module name»
+  принимает file: строка
+  возвращает строка
+  пример «The name is the file without its extension»
+    дано file равно "refusal-order.flang"
+    ожидается "refusal-order"
+  подстрока file с 1 по ((длина file) минус (длина («Extension of» от file)))
+
+тотальная функция «Directory»
+  принимает answers: список «Answer»
+  возвращает строка
+  разбор («Given of» от "arguments" и answers)
+    случай пусто
+      то "flang/stdlib"
+    случай голова и хвост
+      то голова
+
+тотальная функция «Tree»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "tree" и answers)
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "binary" и (соединить [(«Tree» от answers), "/bootstrap/flang"] по "") и answers
+
+тотальная функция «Memory»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "memory" и "40G" и answers
+
+тотальная функция «Files»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Lines» от («Output of» от "listing" и answers)) где file → не (пусто («Extension of» от file))
+
+тотальная функция «Question of»
+  принимает kind: строка, file: строка
+  возвращает строка
+  соединить [kind, " ", file] по ""
+
+тотальная функция «Path of»
+  принимает file: строка, answers: список «Answer»
+  возвращает строка
+  соединить [(«Directory» от answers), "/", file] по ""
+
+тотальная функция «Measuring»
+  принимает file: строка, answers: список «Answer»
+  возвращает список «Question»
+  [(«Run from» от («Question of» от "digest" и file) и («Tree» от answers) и "sh" и ["-c", "\"$0\" ast \"$1\" --memory-limit \"$2\" 2>/dev/null | jq -r \"$3\"", («Binary» от answers), («Path of» от file и answers), («Memory» от answers), («Digest program»)]),
+   («Run from» от («Question of» от "ledger" и file) и («Tree» от answers) и («Binary» от answers) и ["check", («Path of» от file и answers), "--proof", "--memory-limit", («Memory» от answers)])]
+
+тотальная функция «Last part»
+  принимает parts: список строки
+  возвращает строка
+  пример «The last of three parts»
+    дано parts равно ["one", "two", "three"]
+    ожидается "three"
+  свёртка parts начиная с "" как last и part → part
+
+тотальная функция «Second part»
+  принимает parts: список строки
+  возвращает строка
+  пример «The second of three parts»
+    дано parts равно ["one", "two", "three"]
+    ожидается "two"
+  пример «A single part has no second»
+    дано parts равно ["one"]
+    ожидается ""
+  если (длина parts) больше 1 то (элемент 2 в parts) иначе ""
+
+тотальная функция «Fact»
+  принимает block: строка, path: строка
+  возвращает строка
+  пример «The value stands after the path and a tab»
+    дано block равно "f\tp\nexpr/kind\t\"binary\"\nexpr/op\t\"gte\"\n"
+    дано path равно "expr/op"
+    ожидается "\"gte\""
+  пример «A path that is not there has no value»
+    дано block равно "f\tp\nexpr/kind\t\"var\"\n"
+    дано path равно "expr/op"
+    ожидается ""
+  «First line» от («Second part» от (разделить block по (соединить ["\n", path, "\t"] по "")))
+
+тотальная функция «Bare»
+  принимает value: строка
+  возвращает строка
+  пример «A text value loses its quotes»
+    дано value равно "\"gte\""
+    ожидается "gte"
+  пример «A bare value stays as it is»
+    дано value равно "true"
+    ожидается "true"
+  если (value начинается с "\"") и притом ((длина value) больше 1)
+    то подстрока value с 2 по ((длина value) минус 1)
+    иначе value
+
+тотальная функция «Value»
+  принимает block: строка, path: строка, key: строка
+  возвращает строка
+  «Bare» от («Fact» от block и (соединить [path, "/", key] по ""))
+
+тотальная функция «Is kind»
+  принимает block: строка, path: строка, kind: строка
+  возвращает признак
+  («Value» от block и path и "kind") равен kind
+
+тотальная функция «Is literal»
+  принимает block: строка, path: строка
+  возвращает признак
+  «Is kind» от block и path и "literal"
+
+тотальная функция «Is true»
+  принимает block: строка, path: строка
+  возвращает признак
+  («Is literal» от block и path) и притом ((«Fact» от block и (соединить [path, "/value"] по "")) равен "true")
+
+тотальная функция «Is false»
+  принимает block: строка, path: строка
+  возвращает признак
+  («Is literal» от block и path) и притом ((«Fact» от block и (соединить [path, "/value"] по "")) равен "false")
+
+тотальная функция «Is zero»
+  принимает block: строка, path: строка
+  возвращает признак
+  пример «A literal zero»
+    дано block равно "f\tp\nexpr/right/kind\t\"literal\"\nexpr/right/value\t0\n"
+    дано path равно "expr/right"
+    ожидается да
+  пример «A literal one is not zero»
+    дано block равно "f\tp\nexpr/right/kind\t\"literal\"\nexpr/right/value\t1\n"
+    дано path равно "expr/right"
+    ожидается нет
+  («Is literal» от block и path) и притом (["0", "-0", "0.0", "-0.0", "false"] содержит («Fact» от block и (соединить [path, "/value"] по "")))
+
+тотальная функция «Is length»
+  принимает block: строка, path: строка
+  возвращает признак
+  («Is kind» от block и path и "builtin") и притом (["длина", "length"] содержит («Value» от block и path и "name"))
+
+тотальная функция «Is call»
+  принимает block: строка, path: строка
+  возвращает признак
+  «Is kind» от block и path и "call"
+
+тотальная функция «Inside»
+  принимает path: строка, key: строка
+  возвращает строка
+  соединить [path, "/", key] по ""
+
+тотальная функция «Connective»
+  принимает block: строка, path: строка
+  возвращает строка
+  пример «False then true is a negation»
+    дано block равно "f\tp\nexpr/kind\t\"if\"\nexpr/then/kind\t\"literal\"\nexpr/then/value\tfalse\nexpr/else/kind\t\"literal\"\nexpr/else/value\ttrue\n"
+    дано path равно "expr"
+    ожидается "отрицание"
+  пример «True then a term is a disjunction»
+    дано block равно "f\tp\nexpr/kind\t\"if\"\nexpr/then/kind\t\"literal\"\nexpr/then/value\ttrue\nexpr/else/kind\t\"var\"\n"
+    дано path равно "expr"
+    ожидается "связка: дизъюнкция"
+  пример «A term then false is a conjunction»
+    дано block равно "f\tp\nexpr/kind\t\"if\"\nexpr/then/kind\t\"var\"\nexpr/else/kind\t\"literal\"\nexpr/else/value\tfalse\n"
+    дано path равно "expr"
+    ожидается "связка: конъюнкция"
+  пример «A guard with else true is not a connective»
+    дано block равно "f\tp\nexpr/kind\t\"if\"\nexpr/then/kind\t\"var\"\nexpr/else/kind\t\"literal\"\nexpr/else/value\ttrue\n"
+    дано path равно "expr"
+    ожидается ""
+  пусть consequent равно («Inside» от path и "then")
+  пусть alternative равно («Inside» от path и "else")
+  «Chosen» от [(«When» от (не («Is kind» от block и path и "if")) и ""),
+    («When» от ((«Is false» от block и consequent) и притом («Is true» от block и alternative)) и "отрицание"),
+    («When» от ((«Is true» от block и consequent) и притом ((не («Is true» от block и alternative)) и притом (не («Is false» от block и alternative)))) и "связка: дизъюнкция"),
+    («When» от ((«Is false» от block и alternative) и притом ((не («Is true» от block и consequent)) и притом (не («Is false» от block и consequent)))) и "связка: конъюнкция")] и ""
+
+тотальная функция «Is a guard»
+  принимает block: строка, path: строка
+  возвращает признак
+  ((«Is kind» от block и path и "if") и притом (пусто («Connective» от block и path))) и притом («Is true» от block и («Inside» от path и "else"))
+
+тотальная функция «Core»
+  принимает block: строка, path: строка, fuel: нат
+  возвращает строка
+  пример «A guard is taken off and its goal is left»
+    дано block равно "f\tp\nexpr/kind\t\"if\"\nexpr/then/kind\t\"var\"\nexpr/else/kind\t\"literal\"\nexpr/else/value\ttrue\n"
+    дано path равно "expr"
+    дано fuel равно 8
+    ожидается "expr/then"
+  пример «A goal without a guard stays where it is»
+    дано block равно "f\tp\nexpr/kind\t\"var\"\n"
+    дано path равно "expr"
+    дано fuel равно 8
+    ожидается "expr"
+  если fuel не больше 0
+    то path
+    иначе если «Is a guard» от block и path
+      то «Core» от block и («Inside» от path и "then") и (fuel минус 1)
+      иначе path
+
+тотальная функция «Guards taken off»
+  принимает core: строка
+  возвращает число
+  пример «Every step into then is one guard»
+    дано core равно "expr/then/then"
+    ожидается 2
+  пример «The goal itself has none»
+    дано core равно "expr"
+    ожидается 0
+  (длина (разделить core по "/")) минус 1
+
+тотальная функция «Lower bound»
+  принимает block: строка, path: строка
+  возвращает строка
+  «Chosen» от [(«When» от («Is zero» от block и («Inside» от path и "right")) и "граница: не меньше нуля"),
+    («When» от («Is literal» от block и («Inside» от path и "right")) и "граница: не меньше литерала")] и "граница: не меньше терма"
+
+тотальная функция «Upper bound»
+  принимает block: строка, path: строка
+  возвращает строка
+  «Chosen» от [(«When» от («Is literal» от block и («Inside» от path и "right")) и "граница: не больше литерала"),
+    («When» от («Is literal» от block и («Inside» от path и "left")) и "граница: литерал не больше терма")] и "граница: не больше терма"
+
+тотальная функция «Equality»
+  принимает block: строка, path: строка
+  возвращает строка
+  пусть left равно («Inside» от path и "left")
+  пусть right равно («Inside» от path и "right")
+  «Chosen» от [(«When» от ((«Is call» от block и left) и притом («Is call» от block и right)) и "равенство: круг (вызов равен вызову)"),
+    («When» от ((«Is call» от block и left) или («Is call» от block и right)) и "равенство: вызов равен терму"),
+    («When» от ((«Is length» от block и left) и притом («Is length» от block и right)) и "равенство: длин (сохранение)"),
+    («When» от ((«Is literal» от block и right) или («Is literal» от block и left)) и "равенство: с литералом")] и "равенство: термов"
+
+тотальная функция «Binary kind»
+  принимает block: строка, path: строка
+  возвращает строка
+  пусть operator равно («Value» от block и path и "op")
+  «Chosen» от [(«When» от (operator равен "and") и "связка: конъюнкция"),
+    («When» от (operator равен "or") и "связка: дизъюнкция"),
+    («When» от (operator равен "gte") и («Lower bound» от block и path)),
+    («When» от (operator равен "lte") и («Upper bound» от block и path)),
+    («When» от (["gt", "lt"] содержит operator) и "граница: строгое неравенство"),
+    («When» от (operator равен "eq") и («Equality» от block и path)),
+    («When» от (operator равен "neq") и "равенство: отрицание равенства")] и (соединить ["сравнение: ", operator] по "")
+
+тотальная функция «Builtin kind»
+  принимает block: строка, path: строка
+  возвращает строка
+  пусть name равно («Value» от block и path и "name")
+  «Chosen» от [(«When» от (["содержит", "contains"] содержит name) и "принадлежность: содержит"),
+    («When» от (["не", "not"] содержит name) и "отрицание")] и (соединить ["встроенное: ", name] по "")
+
+тотальная функция «Kind of»
+  принимает block: строка, path: строка
+  возвращает строка
+  пример «A comparison with zero is a lower bound at zero»
+    дано block равно "f\tp\nexpr/kind\t\"binary\"\nexpr/op\t\"gte\"\nexpr/left/kind\t\"var\"\nexpr/right/kind\t\"literal\"\nexpr/right/value\t0\n"
+    дано path равно "expr"
+    ожидается "граница: не меньше нуля"
+  пример «Two lengths compared are a preservation of length»
+    дано block равно "f\tp\nexpr/kind\t\"binary\"\nexpr/op\t\"eq\"\nexpr/left/kind\t\"builtin\"\nexpr/left/name\t\"длина\"\nexpr/right/kind\t\"builtin\"\nexpr/right/name\t\"длина\"\n"
+    дано path равно "expr"
+    ожидается "равенство: длин (сохранение)"
+  пример «A membership builtin»
+    дано block равно "f\tp\nexpr/kind\t\"builtin\"\nexpr/name\t\"содержит\"\n"
+    дано path равно "expr"
+    ожидается "принадлежность: содержит"
+  пример «An unknown node is named by its kind»
+    дано block равно "f\tp\nexpr/kind\t\"forallIn\"\n"
+    дано path равно "expr"
+    ожидается "прочее: forallIn"
+  пример «No expression at all»
+    дано block равно "f\tp\n"
+    дано path равно "expr"
+    ожидается "прочее"
+  пусть kind равно («Value» от block и path и "kind")
+  «Chosen» от [(«When» от (пусто kind) и "прочее"),
+    («When» от (не (пусто («Connective» от block и path))) и («Connective» от block и path)),
+    («When» от (kind равен "binary") и («Binary kind» от block и path)),
+    («When» от (kind равен "builtin") и («Builtin kind» от block и path)),
+    («When» от (kind равен "if") и "условное: дерево условий"),
+    («When» от (kind равен "call") и "голый вызов предиката"),
+    («When» от (kind равен "var") и "голое имя"),
+    («When» от (kind равен "literal") и "цель-литерал"),
+    («When» от (kind равен "match") и "условное: разбор"),
+    («When» от (kind равен "let") и "прочее: пусть")] и (соединить ["прочее: ", kind] по "")
+
+тотальная функция «Claim»
+  принимает block: строка
+  возвращает строка
+  пример «A claim is its function, its name, its kind and the number of guards taken off»
+    дано block равно "Сумма\tнеотрицательна\nexpr/kind\t\"if\"\nexpr/then/kind\t\"binary\"\nexpr/then/op\t\"gte\"\nexpr/then/right/kind\t\"literal\"\nexpr/then/right/value\t0\nexpr/else/kind\t\"literal\"\nexpr/else/value\ttrue\n"
+    ожидается "Сумма\tнеотрицательна\tграница: не меньше нуля\t1"
+  пусть core равно («Core» от block и "expr" и 8)
+  соединить [(«First line» от block), («Kind of» от block и core), (к строке («Guards taken off» от core))] по "\t"
+
+тотальная функция «Blocks»
+  принимает digest: строка
+  возвращает список строки
+  пример «Every claim begins with its mark»
+    дано digest равно "@\tf\tp\nexpr/kind\t\"var\"\n@\tg\tq\nexpr/kind\t\"call\"\n"
+    ожидается ["f\tp\nexpr/kind\t\"var\"", "g\tq\nexpr/kind\t\"call\"\n"]
+  пример «An empty digest has no claims»
+    дано digest равно ""
+    ожидается пустой список
+  разбор (разделить (соединить ["\n", digest] по "") по "\n@\t")
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Claims of»
+  принимает file: строка, answers: список «Answer»
+  возвращает список строки
+  отобразить («Blocks» от («Output of» от («Question of» от "digest" и file) и answers)) как block → «Claim» от (соединить [block, "\n"] по "")
+
+тотальная функция «Claims»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от (отобразить («Files» от answers) как file → «Claims of» от file и answers)
+
+тотальная функция «Ledger of»
+  принимает file: строка, answers: список «Answer»
+  возвращает строка
+  пусть said равно («Reply to» от («Question of» от "ledger" и file) и answers)
+  соединить [(«Output» от said), («Errors» от said)] по "\n"
+
+тотальная функция «Is measured»
+  принимает file: строка, answers: список «Answer»
+  возвращает признак
+  («Ledger of» от file и answers) содержит («Ledger mark»)
+
+тотальная функция «Verdict word»
+  принимает text: строка
+  возвращает строка
+  пример «Induction is told apart from other proofs»
+    дано text равно "доказано индукцией по н"
+    ожидается "индукцией"
+  пример «A grid is not a proof»
+    дано text равно "сетка 40 значений"
+    ожидается "на сетке"
+  пример «Anything unknown counts as violated»
+    дано text равно "контрпример: 3"
+    ожидается "НАРУШЕНО"
+  «Chosen» от [(«When» от (text начинается с "доказано индукцией") и "индукцией"),
+    («When» от (text начинается с "доказано") и "доказано"),
+    («When» от (text начинается с "сетка") и "на сетке"),
+    («When» от (text начинается с "объявлено, не доказано") и "объявлено")] и "НАРУШЕНО"
+
+тотальная функция «Before»
+  принимает mark: строка, text: строка
+  возвращает строка
+  пример «The text up to the first mark»
+    дано mark равно "» — "
+    дано text равно "Сумма до» — доказано"
+    ожидается "Сумма до"
+  разбор (разделить text по mark)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Past»
+  принимает mark: строка, text: строка
+  возвращает строка
+  пример «The text after the first mark, later marks kept»
+    дано mark равно "» — "
+    дано text равно "Сумма до» — доказано» — дважды"
+    ожидается "доказано» — дважды"
+  пример «A text without the mark has nothing past it»
+    дано mark равно "» — "
+    дано text равно "Сумма до"
+    ожидается ""
+  разбор (разделить text по mark)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то соединить хвост по mark
+
+тотальная функция «Verdict in line»
+  принимает line: строка
+  возвращает строка
+  пример «A ledger line gives the function, the promise and the verdict»
+    дано line равно "  постусловие «сумма неотрицательна» функции «Сумма до» — доказано индукцией по н"
+    ожидается "Сумма до\tсумма неотрицательна\tиндукцией"
+  пример «Any other line gives nothing»
+    дано line равно "  «Сумма до»  доказано точным шагом"
+    ожидается ""
+  пусть named равно («After» от "  постусловие «" и line)
+  пусть owned равно («Past» от "» функции «" и named)
+  если ((named содержит "» функции «") и притом (owned содержит "» — ")) и притом ((не (пусто («Before» от "» функции «" и named))) и притом (не (пусто («Before» от "» — " и owned))))
+    то соединить [(«Before» от "» — " и owned), («Before» от "» функции «" и named), («Verdict word» от («Past» от "» — " и owned))] по "\t"
+    иначе ""
+
+тотальная функция «Verdicts of»
+  принимает file: строка, answers: список «Answer»
+  возвращает список строки
+  если «Is measured» от file и answers
+    то отфильтровать (отобразить («Lines» от («Ledger of» от file и answers)) как line → «Verdict in line» от line) где found → не (пусто found)
+    иначе пустой список
+
+тотальная функция «Verdicts»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от (отобразить («Files» от answers) как file → «Verdicts of» от file и answers)
+
+тотальная функция «Key of»
+  принимает line: строка
+  возвращает строка
+  пример «The key is the function and the claim»
+    дано line равно "Сумма до\tсумма неотрицательна\tиндукцией"
+    ожидается "Сумма до\tсумма неотрицательна"
+  пусть fields равно (разделить line по "\t")
+  соединить [(«Second part» от (приписать "" к fields)), («Second part» от fields)] по "\t"
+
+тотальная функция «Indexed»
+  принимает lines: список строки
+  возвращает строка
+  пример «Every line stands between line ends»
+    дано lines равно ["a\t1", "b\t2"]
+    ожидается "\na\t1\nb\t2\n"
+  соединить ["\n", (соединить lines по "\n"), "\n"] по ""
+
+тотальная функция «Found»
+  принимает index: строка, key: строка
+  возвращает список строки
+  разделить index по (соединить ["\n", key, "\t"] по "")
+
+тотальная функция «Last of»
+  принимает index: строка, key: строка
+  возвращает строка
+  пример «The last entry of a key wins»
+    дано index равно "\nf\tp\tодин\t0\nf\tp\tдва\t1\n"
+    дано key равно "f\tp"
+    ожидается "два\t1"
+  пример «A key that is not there has no entry»
+    дано index равно "\nf\tp\tодин\t0\n"
+    дано key равно "g\tq"
+    ожидается ""
+  если (длина («Found» от index и key)) больше 1
+    то «First line» от («Last part» от («Found» от index и key))
+    иначе ""
+
+тотальная функция «First of»
+  принимает index: строка, key: строка
+  возвращает строка
+  пример «The first entry of a key is the one seen first»
+    дано index равно "\nf\tp\tодин\t0\nf\tp\tдва\t1\n"
+    дано key равно "f\tp"
+    ожидается "один\t0"
+  «First line» от («Second part» от («Found» от index и key))
+
+тотальная функция «Distinct»
+  принимает lines: список строки
+  возвращает список строки
+  пример «Each line is kept once, where it was first seen»
+    дано lines равно ["b", "a", "b", "c", "a"]
+    ожидается ["b", "a", "c"]
+  свёртка lines начиная с (пустой список) как kept и line → если kept содержит line то kept иначе (добавить line к kept)
+
+тотальная функция «Keys»
+  принимает lines: список строки
+  возвращает список строки
+  «Distinct» от (отобразить lines как line → «Key of» от line)
+
+тотальная функция «Field»
+  принимает position: число, entry: строка
+  возвращает строка
+  пример «The second field of a entry»
+    дано position равно 2
+    дано entry равно "два\t1"
+    ожидается "1"
+  пример «A field past the end is empty»
+    дано position равно 3
+    дано entry равно "два\t1"
+    ожидается ""
+  если (position меньше 1) или (position больше (длина (разделить entry по "\t")))
+    то ""
+    иначе элемент position в (разделить entry по "\t")
+
+тотальная функция «Guarded claims»
+  принимает keys: список строки, index: строка
+  возвращает число
+  пример «A claim counts once, by its first entry»
+    дано keys равно ["f\tp", "g\tq"]
+    дано index равно "\nf\tp\tодин\t2\ng\tq\tдва\t0\nf\tp\tтри\t0\n"
+    ожидается 1
+  длина (отфильтровать keys где key → не ((«Field» от 2 и («First of» от index и key)) равен "0"))
+
+тотальная функция «Pairs»
+  принимает keys: список строки, kinds: строка, verdicts: строка
+  возвращает список строки
+  пример «A claim with a verdict gives its kind and its verdict»
+    дано keys равно ["f\tp", "g\tq"]
+    дано kinds равно "\nf\tp\tголое имя\t0\ng\tq\tотрицание\t0\n"
+    дано verdicts равно "\nf\tp\tдоказано\n"
+    ожидается ["голое имя\tдоказано"]
+  отобразить (отфильтровать keys где key → (длина («Found» от verdicts и key)) больше 1) как key → соединить [(«Field» от 1 и («Last of» от kinds и key)), («Last of» от verdicts и key)] по "\t"
+
+тотальная функция «Doubled»
+  принимает lines: список строки
+  возвращает строка
+  пример «Every line has its own line ends»
+    дано lines равно ["a", "a"]
+    ожидается "\na\n\na\n"
+  соединить (отобразить lines как line → соединить ["\n", line, "\n"] по "") по ""
+
+тотальная функция «Occurrences»
+  принимает text: строка, mark: строка
+  возвращает число
+  пример «Two lines of the same kind»
+    дано text равно "\na\tx\n\na\ty\n\nb\tx\n"
+    дано mark равно "\na\t"
+    ожидается 2
+  (длина (разделить text по mark)) минус 1
+
+тотальная функция «Row of»
+  принимает kind: строка, doubled: строка
+  возвращает «Row»
+  пример «A row counts its kind by verdict»
+    дано kind равно "голое имя"
+    дано doubled равно "\nголое имя\tдоказано\n\nголое имя\tНАРУШЕНО\n\nотрицание\tна сетке\n"
+    ожидается запись «Row» с «kind» равным "голое имя" и «total» равным 2 и «proved» равным 1 и «induction» равным 0 и «grid» равным 0 и «declared» равным 0
+  запись «Row» с «kind» равным kind и «total» равным («Occurrences» от doubled и (соединить ["\n", kind, "\t"] по "")) и «proved» равным («Occurrences» от doubled и (соединить ["\n", kind, "\tдоказано\n"] по "")) и «induction» равным («Occurrences» от doubled и (соединить ["\n", kind, "\tиндукцией\n"] по "")) и «grid» равным («Occurrences» от doubled и (соединить ["\n", kind, "\tна сетке\n"] по "")) и «declared» равным («Occurrences» от doubled и (соединить ["\n", kind, "\tобъявлено\n"] по ""))
+
+тотальная функция «Placed»
+  принимает row: «Row», sorted: список «Row»
+  возвращает список «Row»
+  разбор sorted
+    случай пусто
+      то [row]
+    случай голова и хвост
+      то если (row.«total») больше (голова.«total»)
+        то приписать row к sorted
+        иначе приписать голова к («Placed» от row и хвост)
+
+тотальная функция «Rows»
+  принимает pairs: список строки
+  возвращает список «Row»
+  пример «The larger kind goes first and equal kinds keep their order»
+    дано pairs равно ["а\tдоказано", "б\tдоказано", "в\tна сетке", "в\tдоказано"]
+    ожидается [запись «Row» с «kind» равным "в" и «total» равным 2 и «proved» равным 1 и «induction» равным 0 и «grid» равным 1 и «declared» равным 0, запись «Row» с «kind» равным "а" и «total» равным 1 и «proved» равным 1 и «induction» равным 0 и «grid» равным 0 и «declared» равным 0, запись «Row» с «kind» равным "б" и «total» равным 1 и «proved» равным 1 и «induction» равным 0 и «grid» равным 0 и «declared» равным 0]
+  свёртка («Distinct» от (отобразить pairs как pair → «Field» от 1 и pair)) начиная с (пустой список) как sorted и kind → «Placed» от («Row of» от kind и («Doubled» от pairs)) и sorted
+
+тотальная функция «Spaces»
+  принимает count: число
+  возвращает строка
+  пример «Three spaces»
+    дано count равно 3
+    ожидается "   "
+  пример «No spaces for a count below one»
+    дано count равно 0
+    ожидается ""
+  если count меньше 1
+    то ""
+    иначе подстрока "                                                            " с 1 по count
+
+тотальная функция «Left aligned»
+  принимает text: строка, width: число
+  возвращает строка
+  пример «A short text is padded on the right»
+    дано text равно "вид"
+    дано width равно 5
+    ожидается "вид  "
+  соединить [text, («Spaces» от (width минус (длина text)))] по ""
+
+тотальная функция «Right aligned»
+  принимает text: строка, width: число
+  возвращает строка
+  пример «A short text is padded on the left»
+    дано text равно "79"
+    дано width равно 5
+    ожидается "   79"
+  соединить [(«Spaces» от (width минус (длина text))), text] по ""
+
+тотальная функция «Table line»
+  принимает cells: список строки
+  возвращает строка
+  пример «The heading of the table»
+    дано cells равно ["вид цели", "всего", "дказ", "инд", "сетка", "объявл"]
+    ожидается "вид цели                                       всего  дказ  инд  сетка  объявл"
+  разбор cells
+    случай пусто
+      то ""
+    случай голова и хвост
+      то соединить (приписать («Left aligned» от голова и 46) к (отобразить («Widths» от хвост) как cell → cell)) по " "
+
+тотальная функция «Widths»
+  принимает cells: список строки
+  возвращает список строки
+  пример «The five number columns have their own widths»
+    дано cells равно ["79", "59", "5", "14", "1"]
+    ожидается ["   79", "   59", "   5", "    14", "      1"]
+  свёртка cells начиная с (пустой список) как aligned и cell → добавить («Right aligned» от cell и («Width at» от ((длина aligned) плюс 1))) к aligned
+
+тотальная функция «Width at»
+  принимает position: число
+  возвращает число
+  если (position меньше 1) или (position больше 5)
+    то 0
+    иначе элемент position в [5, 5, 4, 6, 7]
+
+тотальная функция «Row line»
+  принимает row: «Row»
+  возвращает строка
+  пример «A row of the table»
+    дано row равно запись «Row» с «kind» равным "равенство: термов" и «total» равным 15 и «proved» равным 11 и «induction» равным 1 и «grid» равным 3 и «declared» равным 0
+    ожидается "равенство: термов                                 15    11    1      3       0"
+  «Table line» от [(row.«kind»), (к строке (row.«total»)), (к строке (row.«proved»)), (к строке (row.«induction»)), (к строке (row.«grid»)), (к строке (row.«declared»))]
+
+тотальная функция «Sum row»
+  принимает rows: список «Row»
+  возвращает «Row»
+  свёртка rows начиная с (запись «Row» с «kind» равным "ИТОГО" и «total» равным 0 и «proved» равным 0 и «induction» равным 0 и «grid» равным 0 и «declared» равным 0) как sum и row → запись «Row» с «kind» равным "ИТОГО" и «total» равным ((sum.«total») плюс (row.«total»)) и «proved» равным ((sum.«proved») плюс (row.«proved»)) и «induction» равным ((sum.«induction») плюс (row.«induction»)) и «grid» равным ((sum.«grid») плюс (row.«grid»)) и «declared» равным ((sum.«declared») плюс (row.«declared»))
+
+тотальная функция «Unmeasured»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отобразить (отфильтровать («Files» от answers) где file → не («Is measured» от file и answers)) как file → «Module name» от file
+
+тотальная функция «Counting lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от [(отобразить («Unmeasured» от answers) как name → соединить ["НЕ ИЗМЕРЕН: ", name] по ""),
+    [(соединить ["модулей измерено: ", (к строке ((длина («Files» от answers)) минус (длина («Unmeasured» от answers)))), ", не измерено: ", (к строке (длина («Unmeasured» от answers)))] по "")]]
+
+тотальная функция «Table»
+  принимает claims: список строки, verdicts: список строки
+  возвращает список строки
+  пример «The census of two claims, one of them guarded and one without a verdict»
+    дано claims равно ["f\tp\tголое имя\t1", "g\tq\tотрицание\t0"]
+    дано verdicts равно ["f\tp\tдоказано"]
+    ожидается ["утверждений в разборе: 2; с вердиктом: 1; охран «иначе да» снято: 1", "", "вид цели                                       всего  дказ  инд  сетка  объявл", "голое имя                                          1     1    0      0       0", "ИТОГО                                              1     1    0      0       0"]
+  пусть keys равно («Keys» от claims)
+  пусть pairs равно («Pairs» от keys и («Indexed» от claims) и («Indexed» от verdicts))
+  пусть rows равно («Rows» от pairs)
+  «Gathered words» от [[(соединить ["утверждений в разборе: ", (к строке (длина keys)), "; с вердиктом: ", (к строке (длина pairs)), "; охран «иначе да» снято: ", (к строке («Guarded claims» от keys и («Indexed» от claims)))] по ""), "", («Table line» от ["вид цели", "всего", "дказ", "инд", "сетка", "объявл"])],
+    (отобразить rows как row → «Row line» от row),
+    [(«Row line» от («Sum row» от rows))]]
+
+тотальная функция «Failed»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  («Answered» от name и answers) и притом (не ((«Exit code of» от name и answers) равен 0))
+
+тотальная функция «Obstacles»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  отфильтровать [(если (длина («Given of» от "arguments" и answers)) больше 1 то [(«Usage»)] иначе пустой список),
+    (если «Failed» от "binary present" и answers то [(соединить ["НЕ ИЗМЕРЯЛ: нет двоичного ", («Binary» от answers), "."] по ""), "Вид цели читается разбором (`flang ast`), вердикт — ведомостью", "(`flang check --proof`); без двоичного ни того, ни другого нет.", "Это не «утверждений нет», это «смотреть нечем».", "Соберите его: make -C bootstrap -j8"] иначе пустой список),
+    (если «Failed» от "reader present" и answers то ["НЕ ИЗМЕРЯЛ: нет jq — разбор (`flang ast`) приходит в JSON, и читать его нечем.", "Это не «утверждений нет», это «смотреть нечем»."] иначе пустой список),
+    (если «Failed» от "listing" и answers то [(соединить ["НЕ ИЗМЕРЯЛ: каталога нет — ", («Directory» от answers)] по ""), («Usage»)] иначе пустой список)] где lines → (длина lines) больше 0
+
+тотальная функция «Is clear»
+  принимает answers: список «Answer»
+  возвращает признак
+  (длина («Obstacles» от answers)) равен 0
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "binary" и "FLANG"), («Environment» от "memory" и "FLANG_CENSUS_MEMORY"), («Run from» от "tree" и («Root») и "pwd" и ["-P"])]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "binary present" и "test" и ["-x", («Binary» от answers)]),
+   («Run» от "reader present" и "jq" и ["--version"]),
+   («Run from» от "listing" и («Tree» от answers) и "env" и ["LC_ALL=C", "ls", "-1", "--", («Directory» от answers)])]
+
+тотальная функция «Measures»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от (отобразить («Files» от answers) как file → «Measuring» от file и answers)
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (stages равен 2) и («Setup»)),
+    («When» от (stages равен 1) и («Presence» от answers)),
+    («When» от ((stages равен 0) и притом («Is clear» от answers)) и («Measures» от answers))] и (пустой список)
+
+тотальная функция «Census verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  если (длина («Unmeasured» от answers)) равен (длина («Files» от answers))
+    то вариант «Не проверено» с код равным "FLANG_CENSUS_NOT_MEASURED" и сообщение равным (соединить (добавить "НЕ ИЗМЕРЕН НИ ОДИН МОДУЛЬ: ведомости пусты, считать нечего. Таблица не печатается — нули от пустоты не перепись." к («Counting lines» от answers)) по "\n")
+    иначе вариант «Конец работы» с значение равным (соединить («Gathered words» от [(«Counting lines» от answers), («Table» от («Claims» от answers) и («Verdicts» от answers))]) по "\n")
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  разбор («Obstacles» от answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_CENSUS_NOT_MEASURED" и сообщение равным (соединить голова по "\n")
+    случай пусто
+      то «Census verdict» от answers
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 3
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Census»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

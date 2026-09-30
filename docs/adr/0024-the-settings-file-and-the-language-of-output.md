@@ -143,7 +143,7 @@ $ bootstrap/flang check смесь.flang
 `"постусловие «"`, `"доказано ПРИ УСЛОВИИ"`, `"объявлено, не доказано"`,
 `"утверждений "`, `"непонятный ключ"`, `"нарушено свойство «утверждение»"`.
 Живут они в `scripts/bootstrap-reprint.sh`, `scripts/seed/new-binary-acceptance.fscript`,
-`scripts/targets/target-census.sh`, `scripts/guards/seed-parses-sources-guard.sh`,
+`scripts/targets/target-census.fscript`, `scripts/guards/seed-parses-sources-guard.sh`,
 `flang/scripts/proven-guard.fscript`, `flang/scripts/word-guard.fscript`,
 `flang/scripts/ledger-summary.fscript`, `flang/scripts/emptiness-guard.fscript` и ещё
 шести файлах.

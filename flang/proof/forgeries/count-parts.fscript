@@ -1,0 +1,235 @@
+модуль «Count parts»
+  использует «Rules» из "../../../scripts/rules.fscript"
+  использует «Inquiry» из "../../../scripts/inquiry.fscript"
+  использует «Reading» из "../../../scripts/reading.fscript"
+  использует «Tables» из "../../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Pledge»
+  «program»: строка
+  «statement»: строка
+  «verdict»: строка
+
+тотальная функция «Pledge of»
+  принимает row: список строки
+  возвращает «Pledge»
+  пример «A row of the table becomes a pledge»
+    дано row равно ["part-count-true.flang", "прибавлена ровно единица", "доказано"]
+    ожидается запись «Pledge» с «program» равным "part-count-true.flang" и «statement» равным "прибавлена ровно единица" и «verdict» равным "доказано"
+  запись «Pledge» с «program» равным («Cell» от 1 и row) и «statement» равным («Cell» от 2 и row) и «verdict» равным («Cell» от 3 и row)
+
+тотальная функция «Pledges»
+  принимает answers: список «Answer»
+  возвращает список «Pledge»
+  пример «No table gives no pledges»
+    дано answers равно пустой список
+    ожидается пустой список
+  отобразить («Rows» от («Output of» от "table" и answers)) как row → «Pledge of» от row
+
+тотальная функция «Programs»
+  принимает pledges: список «Pledge»
+  возвращает список строки
+  пример «Every program is named once, in the order of the table»
+    дано pledges равно [запись «Pledge» с «program» равным "a.flang" и «statement» равным "one" и «verdict» равным "доказано", запись «Pledge» с «program» равным "b.flang" и «statement» равным "two" и «verdict» равным "доказано", запись «Pledge» с «program» равным "a.flang" и «statement» равным "three" и «verdict» равным "доказано"]
+    ожидается ["a.flang", "b.flang"]
+  свёртка pledges начиная с (пустой список) как named и pledge → если (длина (отфильтровать named где program → program равен (pledge.«program»))) больше 0 то named иначе (добавить (pledge.«program») к named)
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The built binary is taken when the environment names none»
+    дано answers равно пустой список
+    ожидается "../../../bootstrap/flang"
+  «Setting of» от "binary" и "../../../bootstrap/flang" и answers
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The table and the binary are asked first»
+    ожидается [запись «Question» с «name» равным "table" и «order» равным (вариант «Прочитать файл» с путь равным "count-parts.tsv"), запись «Question» с «name» равным "binary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN")]
+  [(«Read» от "table" и "count-parts.tsv"), («Environment» от "binary" и "FLANG_BIN")]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «The binary is tested before it is called»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "../../../bootstrap/flang"])]
+  [(«Run» от "present" и "test" и ["-x", («Binary» от answers)])]
+
+тотальная функция «Reports»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No pledges give no reports»
+    дано answers равно пустой список
+    ожидается пустой список
+  отобразить («Programs» от («Pledges» от answers)) как program → «Run» от program и («Binary» от answers) и ["check", program, "--proof"]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «The last stage asks for the reports»
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается пустой список
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 7
+    дано answers равно пустой список
+    ожидается пустой список
+  если (stages меньше 0) или (stages больше 2)
+    то пустой список
+    иначе элемент (3 минус stages) в [(«Setup»), («Presence» от answers), («Reports» от answers)]
+
+тотальная функция «Measured»
+  принимает title: строка, report: строка
+  возвращает строка
+  пример «A proved statement»
+    дано title равно "прибавлена ровно единица"
+    дано report равно "  постусловие «прибавлена ровно единица» функции «Прибавить» — доказано: счётом замкнутых частей"
+    ожидается "доказано"
+  пример «A declared title is not proved»
+    дано title равно "минус ноль есть ноль"
+    дано report равно "  постусловие «минус ноль есть ноль» функции «Врёт» — объявлено, не доказано: ни теоремы, ни примеров"
+    ожидается "не доказано"
+  пример «A title the report does not name»
+    дано title равно "минус ноль есть ноль"
+    дано report равно "замечаний нет"
+    ожидается "НЕТ В ОТЧЁТЕ"
+  пусть line равно («Holding» от (соединить ["постусловие «", title, "» функции"] по "") и («Lines» от report))
+  «Chosen» от [(«When» от (пусто line) и "НЕТ В ОТЧЁТЕ"),
+    («When» от (line содержит "— доказано") и "доказано")] и "не доказано"
+
+тотальная функция «Pledge line»
+  принимает pledge: «Pledge», measured: строка
+  возвращает строка
+  пример «The awaited verdict»
+    дано pledge равно запись «Pledge» с «program» равным "a.flang" и «statement» равным "минус ноль есть ноль" и «verdict» равным "не доказано"
+    дано measured равно "не доказано"
+    ожидается "СОШЛОСЬ  «минус ноль есть ноль» — не доказано, как и ждали"
+  пример «Another verdict is a failure»
+    дано pledge равно запись «Pledge» с «program» равным "a.flang" и «statement» равным "минус ноль есть ноль" и «verdict» равным "не доказано"
+    дано measured равно "доказано"
+    ожидается "ПРОВАЛ   «минус ноль есть ноль» — ждали «не доказано», получили «доказано»"
+  если measured равен (pledge.«verdict»)
+    то соединить ["СОШЛОСЬ  «", (pledge.«statement»), "» — ", measured, ", как и ждали"] по ""
+    иначе соединить ["ПРОВАЛ   «", (pledge.«statement»), "» — ждали «", (pledge.«verdict»), "», получили «", measured, "»"] по ""
+
+тотальная функция «Report of»
+  принимает program: строка, answers: список «Answer»
+  возвращает строка
+  пример «An unknown program has no report»
+    дано program равно "a.flang"
+    дано answers равно пустой список
+    ожидается "\n"
+  соединить [(«Output of» от program и answers), («Errors of» от program и answers)] по "\n"
+
+тотальная функция «Program lines»
+  принимает program: строка, pledges: список «Pledge», answers: список «Answer»
+  возвращает список строки
+  пример «The exit code of the check stands above the pledges of the program»
+    дано program равно "a.flang"
+    дано pledges равно [запись «Pledge» с «program» равным "a.flang" и «statement» равным "минус ноль есть ноль" и «verdict» равным "не доказано", запись «Pledge» с «program» равным "b.flang" и «statement» равным "единица" и «verdict» равным "доказано"]
+    дано answers равно [запись «Answer» с «name» равным "a.flang" и «reply» равным (вариант «Процесс завершён» с код равным 3 и вывод равным "  постусловие «минус ноль есть ноль» функции «Врёт» — объявлено, не доказано" и ошибки равным "")]
+    ожидается ["flang check a.flang --proof → код 3", "СОШЛОСЬ  «минус ноль есть ноль» — не доказано, как и ждали", ""]
+  «Соединить списки» от (приписать (соединить ["flang check ", program, " --proof → код ", (к строке («Exit code of» от program и answers))] по "") к (отобразить (отфильтровать pledges где pledge → (pledge.«program») равен program) как pledge → «Pledge line» от pledge и («Measured» от (pledge.«statement») и («Report of» от program и answers)))) и [""]
+
+тотальная функция «Agreed»
+  принимает verdict: строка, pledges: список «Pledge», answers: список «Answer»
+  возвращает число
+  пример «No pledges, none agreed»
+    дано verdict равно "доказано"
+    дано pledges равно пустой список
+    дано answers равно пустой список
+    ожидается 0
+  длина (отфильтровать pledges где pledge → ((pledge.«verdict») равен verdict) и притом ((«Measured» от (pledge.«statement») и («Report of» от (pledge.«program») и answers)) равен verdict))
+
+тотальная функция «Judged»
+  принимает lines: список строки, pledges: число, rejected: число, proved: число
+  возвращает «Продолжение»
+  пример «Every pledge agreed»
+    дано lines равно ["СОШЛОСЬ  «единица» — доказано, как и ждали", ""]
+    дано pledges равно 1
+    дано rejected равно 0
+    дано proved равно 1
+    ожидается вариант «Конец работы» с значение равным "СОШЛОСЬ  «единица» — доказано, как и ждали\n\nсошлось всё: подделок отвергнуто 0, честных доказано 1"
+  пример «A pledge that did not agree fails the plan»
+    дано lines равно ["ПРОВАЛ   «единица» — ждали «доказано», получили «не доказано»", ""]
+    дано pledges равно 1
+    дано rejected равно 0
+    дано proved равно 0
+    ожидается вариант «Провал» с код равным "FLANG_COUNT_PARTS" и сообщение равным "ПРОВАЛ   «единица» — ждали «доказано», получили «не доказано»\n\nопытов не сошлось: 1"
+  пример «An empty table is not a verdict»
+    дано lines равно пустой список
+    дано pledges равно 0
+    дано rejected равно 0
+    дано proved равно 0
+    ожидается вариант «Не проверено» с код равным "FLANG_COUNT_PARTS_NOT_MEASURED" и сообщение равным "в count-parts.tsv нет ни одной строки данных"
+  «Chosen» от [(«When» от (pledges равен 0) и (вариант «Не проверено» с код равным "FLANG_COUNT_PARTS_NOT_MEASURED" и сообщение равным "в count-parts.tsv нет ни одной строки данных")),
+    («When» от ((rejected плюс proved) меньше pledges) и (вариант «Провал» с код равным "FLANG_COUNT_PARTS" и сообщение равным (соединить («Соединить списки» от lines и [(соединить ["опытов не сошлось: ", (к строке (pledges минус (rejected плюс proved)))] по "")]) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Соединить списки» от lines и [(соединить ["сошлось всё: подделок отвергнуто ", (к строке rejected), ", честных доказано ", (к строке proved)] по "")]) по "\n"))
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Nothing was asked, so nothing was measured»
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_COUNT_PARTS_NOT_MEASURED" и сообщение равным "в count-parts.tsv нет ни одной строки данных"
+  пусть pledges равно («Pledges» от answers)
+  «Judged» от («Gathered words» от (отобразить («Programs» от pledges) как program → «Program lines» от program и pledges и answers)) и (длина pledges) и («Agreed» от "не доказано" и pledges и answers) и («Agreed» от "доказано" и pledges и answers)
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «A missing binary is an obstacle»
+    дано asked равно "present"
+    дано answers равно [запись «Answer» с «name» равным "present" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "")]
+    ожидается ["двоичного нет: ../../../bootstrap/flang"]
+  пример «A missing table is an obstacle»
+    дано asked равно "table"
+    дано answers равно [запись «Answer» с «name» равным "table" и «reply» равным (вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "файл не прочитан")]
+    ожидается ["таблицы нет: count-parts.tsv"]
+  пример «An answered question is no obstacle»
+    дано asked равно "binary"
+    дано answers равно пустой список
+    ожидается пустой список
+  «Chosen» от [(«When» от ((asked равен "present") и притом (не ((«Exit code of» от asked и answers) равен 0))) и ([(соединить ["двоичного нет: ", («Binary» от answers)] по "")])),
+    («When» от ((asked равен "table") и притом (не ((«Exit code of» от asked и answers) равен 0))) и (["таблицы нет: count-parts.tsv"]))] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_COUNT_PARTS_NOT_MEASURED" и сообщение равным "в count-parts.tsv нет ни одной строки данных"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Three stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3 и «answers» равным пустой список
+  «Begin with» от 3
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the table»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "count-parts.tsv") и потом равным (запись «Inquiry» с «asked» равным "table" и «queue» равным [запись «Question» с «name» равным "binary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN")] и «stages» равным 2 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_COUNT_PARTS_NOT_MEASURED" и сообщение равным голова
+    случай пусто
+      то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Count parts»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

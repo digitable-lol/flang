@@ -1,0 +1,11 @@
+program	statement	verdict
+part-count-false.flang	перенос скобок ничего не меняет	не доказано
+part-count-false.flang	одна десятая и две десятых дают три десятых	не доказано
+part-count-false.flang	ноль со знаком есть ноль	не доказано
+part-count-false.flang	бесконечности сокращаются в ноль	не доказано
+part-count-false.flang	что угодно есть ноль	не доказано
+part-count-false.flang	минус ноль есть ноль	не доказано
+part-count-true.flang	прибавлено ровно пятьдесят	доказано
+part-count-true.flang	прибавлена ровно единица	доказано
+part-count-true.flang	прибавлен ровно код буквы А	доказано
+part-count-true.flang	прибавлено ровно сто двадцать	доказано

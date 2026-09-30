@@ -439,6 +439,19 @@ done
    печатает его целиком в `"log"`. Режим показа `bump-version` спрашивает у
    `grep` ровно нужные строки — 13 556 байт вместо 1 029 130.
 
+## Перенос 30 сентября 2026
+
+Ещё девять файлов из перечня выше стали планами (`seed-refresh`, `bootstrap-c`,
+`memory-headroom`, `test-remote`, `repl-probe`, `tutor-probe`,
+`targets-inventory`, `target-census`) либо сняты без замены (`memory-limit.sh` —
+предел ставит сам двоичный ключом `--memory-limit`). Таблица пар прогонов,
+коды, найденные дефекты и что осталось — в задаче
+[5821](tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md),
+раздел «Что сделано 30 сентября 2026». Границы, которые снялись: терминал
+даёт `script -qec` с подачей клавиш по времени (без python3); фоновый
+наблюдатель — стандартный `free -s`, а не процесс на flang; чужой код возврата
+не пробрасывается — «мерить нечем» стало кодом 3, «места нет» — кодом 1.
+
 ## Связанное
 
 - задача `docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md`

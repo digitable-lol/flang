@@ -51,7 +51,7 @@
 
 1. Четыре имени — латиницей (правка `flang/src/emit/c/**`, печатник не трогается;
    `flang_repl.c` и `flang_runtime.c` уезжают в семя дословно — понадобится перепечатка
-   или пересев, см. `docs/tasks/completed/4088-runtime-c-seed-equals-source-plus-nine-header-lines.md`).
+   или пересев, см. задача 4088 (закрыта)).
 2. В шапку напечатанного `Makefile` (её печатает `flang/self/emit-c.flang`) — строку с
    набором ключей для ccomp, чтобы `make CC=ccomp CFLAGS='…'` не приходилось подбирать.
    Сам Makefile менять не надо: `make CC=ccomp CFLAGS='-std=c99 -Wall -Werror -O2

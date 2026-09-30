@@ -4,7 +4,7 @@
 основание — [ADR-0022](../../../../../../adr/0022-a-type-fact-travels-as-a-derivation.md)
 §3.10; форма блока и границы приёма расписаны в
 [docs/design/proof-object-blok-vyvoda.md](../../../../../../design/proof-object-blok-vyvoda.md).
-Задача [6202](../../../../../../tasks/completed/6202-the-ceiling-is-a-type-property-not-a-proved-obligation.md)
+Задача 6202 (закрыта)
 (ADR-0025, проект [6202](../../../../../../design/6202-potolok-kak-obyazatelstvo.md) §2.4–§2.5):
 потолок точного типа — обязательство на зовущем, и П3 получает посылку Пред1.
 

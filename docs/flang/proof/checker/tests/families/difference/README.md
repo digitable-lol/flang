@@ -1,6 +1,6 @@
 # Семья «разность»: разность под записанным порядком (правило Н12)
 
-Задача [1403](../../../../../../tasks/completed/1403-vychitanie-pod-predusloviem.md),
+Задача 1403 (закрыта),
 основание — [ADR-0032](../../../../../../adr/0032-one-missing-rule-and-three-other-logics.md)
 §2. Строка ведомости `Н12`, лемма «Н12» и две леммы-соседки в
 `flang/proof/lean/Rules.lean`, ловушки 9 и 10 в `Trap.lean`.

@@ -1256,7 +1256,7 @@ ea1158594f0caa46237101fc3a6b2ddf|1|0|1|0|0|flang/scripts/binary.fscript
 47700ac76c714a188e2e9ea3e0bcfa95|2|0|2|0|0|flang/scripts/claim-guard.fscript
 44d471d298687c75ab7111710b28ca0f|1|1|0|0|0|flang/scripts/closed-length-guard.fscript
 da7fad16a84c755f2638b38faa0a9c94|20|19|1|0|0|flang/scripts/code-forgery.fscript
-856cb1c31b4ce4c379aff5cfc5077213|10|10|0|0|0|flang/scripts/code-guard.fscript
+566df784de903626dd9ab31f709780e4|10|10|0|0|0|flang/scripts/code-guard.fscript
 cd50b4ec140445992c5b5051918b76b0|1|1|0|0|0|flang/scripts/direct-run.flang
 4660f4078dbb69ef66df64263cb80208|48|48|0|0|0|flang/scripts/emptiness-guard.fscript
 dd5c6fa5aeaa9edc65474e5cf9df01fe|21|21|0|0|0|flang/scripts/guards-start.fscript
@@ -1273,7 +1273,7 @@ f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.fscript
 41ff43f2cca335b1ac94a00de37d57f4|6|6|0|0|0|flang/scripts/scheduler-across-targets.fscript
 2886864b965d7a0ddedcc3a2c40826c1|2|2|0|0|0|flang/scripts/supervisor-across-targets.fscript
 20f7f7e9cd7aaf78ab7d05eb270ae99d|2|2|0|0|0|flang/scripts/target-words.fscript
-8ee325b60830da216694b989ab60926b|30|28|2|0|0|flang/scripts/tasks.fscript
+4d59d53b262cae1822826fb02b8f1796|28|26|2|0|0|flang/scripts/tasks.fscript
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.fscript
 e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/жаргон-образцы.flang
 75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/породить-атомы.fscript
@@ -1537,7 +1537,7 @@ b00f9a812077e3b8497c15864acff995|10|7|3|0|0|scripts/guards/io-dictionary-copies-
 38cfa9e534117545dbc14c8afb46262b|2|0|2|0|0|scripts/guards/jargon-guard.fscript
 ea1518a801b7e78ee25788b065921aff|23|11|2|3|0|scripts/guards/kernel-abilities-guard.fscript
 5ab01492f40c7c4a19b89433856c1786|6|6|0|0|0|scripts/guards/license-guard.fscript
-4513584f34eca442e744d2b05863e98a|85|34|44|0|0|scripts/guards/link-guard.fscript
+b162a51d6ae08b12527da153f5957d56|85|37|48|0|0|scripts/guards/link-guard.fscript
 3eea8a647996e57cc3e492c8f4e4763e|15|13|2|0|0|scripts/guards/manpage-guard.fscript
 f8e01fecff7e47ed055e836a42195ee0|15|15|0|0|0|scripts/guards/module-name-guard.fscript
 a63d8465a17432a9e21c55efe890d510|27|26|0|1|0|scripts/guards/name-collision-guard.fscript

@@ -123,8 +123,8 @@ The walk runs 211 checks written in flang and diffs the result against
 <!-- СНЯТО 2026-09-13 строк flang/test/ведомость.txt = 211 -->
 `flang/test/ведомость.txt`, one line per check. The hook runs the guards that finish in seconds and
 names what it did not run; the long ones are CI (`.github/workflows/binary.yml`). Work is tracked
-in [`docs/tasks/`](docs/tasks/README.md), one file per task; `docs/tasks/rejected/` holds the ones
-that were considered and turned down, so the reason survives the decision. The rules of the tree
+in [`docs/tasks/`](docs/tasks/README.md), one file per open task; a closed task leaves the tree and
+its number stays taken in `docs/tasks/used-numbers.tsv`. The rules of the tree
 that are not visible from the code are in [`AGENTS.md`](.ai/AGENTS.md); how to build, run the
 checks and send a change is [`CONTRIBUTING.md`](CONTRIBUTING.md). Decisions are recorded in
 [`docs/adr/`](docs/adr); the knowledge base of measured facts and rejected paths is

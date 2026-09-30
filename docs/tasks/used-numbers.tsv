@@ -1,0 +1,369 @@
+number	state	title
+0001	done	Ci targets inventory
+0002	done	One binary one ledger
+0003	done	Seed reprint finishes
+0004	done	Arena returns chunks
+0005	done	Postgres redis proofs
+0006	done	Three big compiler files
+0007	done	Emit python csharp proofs
+0008	done	Strict inequality open goal
+0009	done	Integrality read as fact
+0010	done	Closed goal any sign
+0011	done	Liveness without temporal logic
+0012	done	Math classics from coq and lean
+0013	done	Scheduler waits for network
+0014	done	Regex as finite automaton
+0015	rejected	Lookaround in the pattern engine
+0016	done	Guards move from javascript
+0017	done	Layer that flang may write
+0018	done	How to call foreign code
+0019	done	Examples live in one place
+0020	done	Quadratic lookup in the evaluator
+0021	done	Hot swap reaches a live node
+0022	done	Proved under condition
+0023	done	What 0.7.0 promises not to break
+0024	done	Record variant measurement conflict
+0025	done	Roadmap matches the tree
+0026	done	Zettel names in english
+0027	done	Task check has a shortcut
+0029	rejected	Typescript target buys almost nothing
+0030	done	Shortcut target names in one language
+0031	done	Reprint says how far it got
+0032	rejected	Printing streams to the file
+0033	done	Obligations check spreads over cores
+0034	done	Seed discipline is enforced
+0035	done	Hashmap proved so the dictionary gets fast
+0036	done	Packaging metadata is printed not kept
+0038	done	Task numbers collide under a dozen agents
+0039	done	Logical fallacy detector for specs
+0040	rejected	Reprint reuses what did not change
+0041	done	The concurrency layer nobody can reach
+0042	done	A gate refusal is not a check verdict
+0043	done	The new binary is accepted by four marks
+0045	done	The old jargon guard is removed
+0046	done	Comparing records is quadratic
+0047	done	The language can open a connection itself
+0050	done	The two remaining kernel holes
+0052	done	Linking is quadratic
+0053	done	Examples are cheaper than proofs
+0054	done	The library is proved
+0055	done	Leetcode and rosetta examples are proved
+0059	done	Walking the functions costs a frame each
+0060	dropped	A function promises its cost
+0061	done	Attach to a running program
+1130	done	Lean acceptance covers 29 of 70 checker rules
+1132	done	A deferral silences a code everywhere not where the prose stands
+1174	done	Transliteration collapses two names into one
+1227	done	The examples remainder is https and packaging
+1261	done	A call precondition is not discharged by a proved callee postcondition
+1290	done	What rule the kernel needs for bounds
+1300	done	The word collector is declared twice
+1301	done	Handoff of 1 September
+1302	done	The checker reads the source differently from the language
+1303	done	The inference step has three counts
+1304	dropped	A reprint without checkpoints
+1305	rejected	Release summary by surface
+1306	done	Lists typed by hand
+1308	done	Task numbers collide
+1312	done	The list guard is red on the trunk
+1314	dropped	Seven forgeries pass
+1389	done	Every guard is shown to redden on a deliberate break
+1401	done	A comparer replays the translation into C
+1402	done	Printed C builds under CompCert
+1403	done	Subtraction under a precondition
+1404	done	A statement about a sequence of steps
+1405	done	A plan promises nothing
+1406	done	A process promises nothing
+1407	done	Traceability from requirement to code to test
+1411	done	The carrier of the exact integer is a new kind of value
+1414	rejected	A directory walk is one non recursive effect
+1418	done	Three directories get english names
+1420	rejected	Cyrillic file names under proof become english
+1421	rejected	The txt extension becomes ftext
+1427	rejected	Named axioms of type laws
+1430	done	The translit guard judges a third of the tree
+1431	done	The jargon guard lives in two places
+1432	done	Ci step names and shortcut lines are a reader surface
+1434	done	A quote character is part of a path
+1435	done	Two inference rules are replayed by the independent checker
+1470	done	Seven print targets are unattended
+1477	done	A promise should not cost a frame
+1547	done	A goal of the form at least a term has no rule
+1573	done	The checker computes what it took on trust
+1574	done	Proved share ledger had no instrument and drifted 191 rows
+1600	done	Real mutual recursion cycles are measured
+1606	done	Published numbers are checked against the tree by one command
+1652	done	Number plan issued numbers the archive already held
+1714	done	A surface is a table names and diagnostics are not
+1722	dropped	The discriminating search writes a temp dir into the tree
+1729	done	Preconditions can never enter the numerator
+1794	done	The sources goal is written as an element quantifier
+1799	done	The flang twin scanned a list where node used a hash map
+1800	done	Five measured tables in open work are six days stale
+1853	done	Nobody judges processes supervisors and runs
+1887	done	One ruler for flang and c lived in a temp dir
+1893	done	Emit parses the entry file three times
+1931	done	Theorems in the goal map yield zero and would break the instrument
+2044	done	The checker read a type declaration through a note
+2052	done	The verdict printing is already written only the seed is old
+2072	dropped	Most records of the kernel carry no derivation trace
+2226	done	The dictionary for list substitution does not generalize across twins
+2256	dropped	The checker reads the source differently from the language
+2262	done	Chunked body is collected into a list not glued per chunk
+2335	done	The release recommendation is either carried out or visible
+2390	done	The kernel judges its own file and the ledger cannot fix that
+2398	done	Proof corpus examples lift runtime checks
+2411	done	A refusal for unproven names the statements
+2416	done	Forgeries move out of the metric corpus
+2469	done	Files that only hit the step limit get their ledger
+2481	done	The proved share ledger lags the kernel and md5 cannot see it
+2522	done	Prose guard had no instrument for examples
+2562	done	Kernel print: 18 rewrite places are printed as steps
+2573	done	Seed fingerprint named a commit whose seed differs
+2599	done	Debt columns cannot carry a mark and the inventory should check them
+2600	done	The inventory checks its own table and where it is still blind
+2718	done	Hole 9984 is closed, both halves
+2731	done	Record header carries an absolute path and breaks the corpus
+2844	done	Checker unfold rules 2 and 3 ask freshness of substituted names
+2907	done	The record and the checker are modelled in lean and soundness is proved
+3006	rejected	A not equal goal is invisible to the kernel
+3009	done	Writing theorems lowers g4 because the checker cannot replay the induction step
+3017	done	Broken links are history about removed javascript
+3022	done	A verdict on a file does not depend on who imported it
+3032	done	G3 regressed by alpha invariant matching not the verdict cache
+3099	done	All sixteen library files do check and the ledger cost is not proportional
+3120	done	The per example cost in aes and crl is measured one by one
+3123	done	A precondition cannot quantify over list elements
+3144	done	Three guards do not start at all
+3197	done	Ct shows the popular categories
+3223	done	Three more guards get forgeries and one was checking nothing
+3274	done	Per example cost did not grow the average is dominated by two files
+3314	done	Order of G4 work by records: eight records in one place
+3348	done	The provability threshold is one hundred percent
+3380	done	A ninth print target for c plus plus
+3388	done	A quick seed refresh without a reprint
+3397	done	The expensive guards nobody ran are red too
+3420	done	Js print puts no node manifest and the root one holds it
+3448	done	The example evaluator of the checker reads nul strings and filter
+3449	done	The example evaluator reads a list by link and a variant with fields
+3488	done	The name prefix took four characters and numbers above 9999 turned the guards red
+3515	done	Release notes for 0.7.x exist on main and never reached dev
+3559	done	Five prose numbers lagged behind an hour of merges
+3570	done	Package json leaves the tree
+3630	done	Seed lag has no per function answer
+3636	done	The repl edits the line and wears digitable colours
+3714	done	The ledger refusal counts only unjudged names
+3717	done	Stale pages name themselves after a tag
+3781	done	Remove the calculator: a guard is not a prover
+3823	done	How much of the tree is unchecked
+3841	done	Stdlib examples got fifty times slower and the source did not change
+3846	done	Lean gipo and gipd get lemmas or a written argument
+3855	done	Six ledger rules have no lean lemma
+3902	done	A file from the first wave arrived without its licence line
+3907	done	The verdict cache key is forged not found
+4004	done	The proof object is a certificate: a chain of steps
+4025	done	The seed stopped dropping processes and the network
+4058	done	A listed list a map and an applied tag have no all elements rule
+4088	done	Runtime c seed equals source plus nine header lines
+4102	done	The proof kernel is proved about itself
+4134	done	Pulse profiles a real check
+4143	done	A plan cannot be given arguments from the command line
+4258	done	Forgery fixtures in the g4 denominator are honest halves
+4271	done	The Elixir printer prints a dead result line
+4316	done	The shell borrows what is worth borrowing from iex
+4401	done	Span strip fix verified and the cache block has no examples
+4454	done	Why the order rule does not fire
+4471	done	Prose numbers two thirds live and fix would falsify tasks
+4472	done	Release archive is not byte identical across machines
+4501	done	Sqlite overflow and row insert
+4587	done	Examples pilot on three compiler files
+4635	done	G4 ceiling is fifty two percent because most proofs are the computation itself
+4672	done	Seed fingerprint on dev is old format and blocks a fresh checkout
+4810	done	Four weak library modules are proved
+4820	done	The checker's case is named by the tree, not by the record under check
+4837	done	Trampolines come back with one example
+4838	done	The debt outside flang crossed its ceiling
+4929	done	The collision guard is readable again
+4970	done	Five version places disagree because main never returns to dev
+5077	done	The verdict cache had no instrument
+5123	done	Six places still carry the old step ceiling
+5144	done	A free statement with a pure goal is proved by kernel rules and replayed by the checker
+5169	done	Proof as a term: what carries over from Coq and Lean
+5170	done	Flangtutor leads through the language and the compiler judges the answer
+5190	done	The seed is reprinted once for the proof batch
+5209	done	The code guard cannot tell naming a code from having one
+5275	done	Main and dev diverged the merge fixes the version guard
+5290	done	Backticks paired across the whole file and the guard died on its own property
+5332	done	The discharge of a precondition is printed as a derivation
+5353	done	Handlers of processes say what they return
+5379	done	Archive and stale in progress statuses diverged from the tree
+5397	done	Five laws are three kernel rules and the checker already knows their names
+5414	done	Links guard skips block quotes and counts them
+5435	done	Filter first is cheaper but the compiler cannot see the descent
+5498	done	The installed binary and a fresh one report the same version
+5501	done	One command bumps the version everywhere
+5503	done	Nine tsv files carry a header
+5515	done	String glue in a fold is replaced by one pass
+5519	done	The readme stops promising four things that are false
+5562	done	Map cell with a theorem stops measuring and nothing noticed
+5563	done	Kernel runs only the examples someone asks for
+5578	done	The proved share is one number with its warning attached
+5612	done	Five uncalled guards get proofs and the ledgers drifted in one evening
+5710	done	The crosses of the ledger fall into three piles
+5732	done	All superlinearities are named and measured
+5754	done	The shortener works from a browser
+5763	done	Printing goal case splits: 33 places as steps
+5822	done	Two prints check skips the printed compiler
+5823	done	New binary acceptance stops at the kernel rules sign
+5855	done	The concurrency layer is counted and proved
+5930	done	The tenth flangrc key is read by the binary and hidden by the script
+5957	done	Nested quantifiers over elements are not sayable
+6025	done	The abilities list lagged the kernel not the other way round
+6028	done	Five blind guards and the ninth target
+6047	done	Moving the s1 printer changes the class of the fold over empty forgery
+6128	done	The way to take a ledger nothing could take is written down
+6134	done	Lean rejected two inference rules
+6163	done	Ci binary job runs fifty minutes and the build is not why
+6189	rejected	Goal split places and the numerator a metric decision
+6190	done	Node replay covers fold and non negative goals
+6191	done	Unfold foreign case by constructor
+6202	done	The ceiling is a type property not a proved obligation
+6203	done	The carrier of induction is a closed list of three in two places
+6205	done	Existence is parsed and proved but not typed
+6206	done	Forall over list elements is not sayable
+6234	done	Fourteen library files outside the emptiness census measured one by one
+6255	done	Twenty prose numbers fell behind a day of growth
+6275	done	One bad mark declared the whole verdict void
+6329	done	The four files around the kernel get their ledger
+6341	done	The remaining gap of 2718 is measured, the fix is not taken, the cost is named
+6382	done	The second reason for revoking g2 is removed by measurement
+6411	done	What waits for the reprint
+6421	done	The proof directory needs a layout and a naming rule
+6427	done	The c host asks for the verdict and answers code three
+6432	done	Measure projection and declared sums close five kernel word places
+6438	done	Preconditions enter the replayed share
+6516	done	Tree guards are proved
+6530	done	The course catches up with the tree
+6532	done	A red example hides the ledger
+6545	done	The name of the word collector is taken three times and blocks importing sha256
+6551	done	Occupied names guard dies in a fresh checkout
+6612	done	Seven guards are shown to redden and two old probes proved nothing
+6614	done	Why finding a declaration gets dearer as it runs
+6658	done	The guide says which construct to use when
+6715	done	The shared binary cannot be rebuilt from the tree
+6724	done	The flang guards are proved
+6744	done	The kernel counts constants and glue lengths
+6754	done	sha256 becomes a word of the language
+6805	done	The code guard remembers a forgery after it is gone
+6812	done	A contradictory pair of assumptions is a ledger family
+6818	dropped	What blocks one point oh
+6871	done	The ledger issues a certificate to what check rejects
+6890	done	Ci lints on push builds only on tag
+7005	done	Links guard hid its reason in the run summary
+7098	done	The element quantifier is not printed into any target
+7101	done	The process rules are enforced after the reprint
+7198	done	The language holds a real service under failure
+7205	done	The hundred files without a ledger are taken file by file
+7261	done	The release ships the runtime of one target out of nine
+7298	done	Who calls the guards has no instrument
+7351	done	The example step describes a tree three times smaller
+7359	done	Strings have no induction principle
+7405	done	Debt outside flang is sorted by kind and the counting rule is fixed
+7444	done	Max depth flag does not reach the host limit
+7471	done	Examples close the last ten algebra files
+7563	done	Kernel renaming lets a free name be captured
+7742	done	The kernel lines to trust grew and nobody noticed
+7771	done	Verdict node is replayed under a theorem too
+7837	done	The board and the integrity check run again
+7842	done	There are nine targets and 56 lists say eight
+7855	done	G5 has a number for binding but the roundtrip instrument is outside the tree
+8118	done	Nobody runs the examples of the compiler itself
+8222	done	Run and io print the proof verdict and refuse an unproved program
+8291	done	Two orders have no host and the environment is unreadable
+8429	done	G7 gate is satisfied by construction and measures nothing
+8460	done	The occupied names guard was blind to the ninth target
+8581	done	A pre push hook keeps red out of github
+8596	done	Typescript target over the javascript printer
+8605	done	Where a delegating match stops proving
+8615	done	Binders not the goal kind are what blocks the checker
+8649	done	Npm leaves the tree
+8651	done	Ci burns quota and shows raw transliterated job ids
+8690	done	Corpus records are stale and the checker machinery never fired
+8714	done	The form 'result equals' is 2 places, not 15
+8721	done	Reprint run three starts from a clean tree
+8802	done	Kind P1: there is no theorem and cannot be one; corpus records lag the print
+8836	done	Unfolding lets a call of a function argument through
+8935	done	The cache block had no examples and examples are not evaluated
+8936	done	Flangtutor: templates with gaps, highlighting and twelve lessons
+8970	done	Record header check accepts any plain function header
+9028	done	Twenty seven guards are called by nobody
+9043	done	Five codes named by prose are absent from the sources
+9088	done	Fold heavy library modules are proved
+9111	done	Version guard reads the source while the release builds the seed
+9113	done	Alpha matching has no search to move out of the decision kernel
+9159	done	Four of seven lagging files are outside the compiler closure
+9204	done	Every dash is tried with the depth key
+9205	done	Closed goal lies turn red
+9220	done	Six green guards verified three wired into ci
+9233	done	Mirror catches up the address stays
+9283	done	Sixteen library files are outside the emptiness census
+9350	done	Two guards search with binary skipping and lie quietly
+9420	done	Ci never ran on dev and twenty seven jobs rebuild the binary
+9518	done	G2 revocation grounds remeasured one hole is deeper than recorded
+9526	done	Own sum types cannot be reasoned about by induction in a free statement
+9586	done	The new seed cannot link its own sources
+9601	done	Emit prints without postcondition checks
+9611	done	Taking the fingerprint again certifies a seed nobody reprinted
+9613	rejected	A multi hour run must not be a child of an agent
+9615	done	The instruments that measure the gates were not in the repository
+9618	done	The kernel proves a falsehood by capturing a name on unfolding
+9619	done	Per file proof checking does not divide the work
+9620	done	An assertion checked the first line and deleted twenty eight
+9621	done	The proof ledger exit code cannot tell proved from merely declared
+9688	done	Debt outside flang is 103 and the ceiling cannot be raised honestly
+9712	done	The ledger path accepts what plain check rejects
+9740	done	Spec tooling and stand are proved
+9751	done	Roundtrip instrument lived in a temp dir and the doc pointed there
+9841	dropped	Typed term cannot be done in proofterm the kernel lives elsewhere
+9951	done	The forms 'not greater' and 'not less': 21 places and four records in one place
+9952	done	The kernel does not step inside a binder
+9954	done	The name collision check is in the tree but not in the seed
+9956	dropped	A fresh seed does not link the compiler at the built-in depth limit
+9957	done	A binary from a fresh seed cannot print the compiler
+9958	done	The kernel is not alpha invariant and renaming drops true proofs
+9959	done	The shipped binary misreported its own version for two releases
+9960	done	Node tooling rewritten in flang twelve cells
+9961	done	Flang new package scaffolding
+9962	done	Hot tasks list ecosystem libraries
+9964	done	Gate g2 checker sha256 and four lines
+9965	done	Gate g4 checker coverage 95 percent
+9966	done	Gates g5 g6 honest fresh numbers
+9967	done	Gate g7 independent verification share
+9972	done	Cli argument parser for user programs
+9973	done	Cyrillic uppercase and a unified case surface
+9974	done	Number formatting bases and fixed precision
+9975	done	Uuid parse format compare and generate
+9976	done	Datetime durations intervals and epoch seconds
+9977	done	Descriptive statistics over lists of numbers
+9978	done	Websocket handshake and frame format
+9979	done	Dns packet parsing
+9980	done	Toml parsing a named subset
+9981	done	Protobuf wire format encoding and decoding
+9982	done	Spawned check proof json dies sig9
+9983	done	Version string drifts every release
+9984	done	Step verification does not verify induction steps
+9985	done	Verdict cache key position leak unconfirmed
+9986	done	G2: a fresh print contradicts the checker on 2 of 43
+9987	done	G5: binding repairs foreign functions
+9988	done	Print launcher breaks end of print contract again
+9989	done	Goal split by condition: 22 of 40 is stale and the places are not uniform
+9990	done	Task ledger guard is red with 220 findings and not wired to CI
+9991	done	G4: 43 places by postcondition form, six groups
+9992	done	Corruption probe battery: the mechanism is blind to silent acceptance
+9993	done	G7 remeasured: numbers lagged the G4 section
+9994	done	G6: the pair from one tree is taken by hand
+9995	done	Task ledger is green and gates CI
+9996	done	The 2.8x spread between prints is split into two factors
+9997	done	Printing by declaration is ready but the checker was not taught; a reprint would redden 38 records
+9998	done	The rule 'start by construction' is ready but adds no share
+9999	done	The goal follows from what is declared about the arguments: ready

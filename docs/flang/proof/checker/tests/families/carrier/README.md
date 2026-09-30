@@ -1,6 +1,6 @@
 # Семья «носитель»: носитель индукции читается с объявления типа
 
-Задача [6203](../../../../../../tasks/completed/6203-the-carrier-of-induction-is-a-closed-list-of-three-in-two-places.md),
+Задача 6203 (закрыта),
 основание — [ADR-0026](../../../../../../adr/0026-quantifiers-over-any-type-are-a-kernel-change.md)
 §2.4 и §5 шаг 1; проект — [docs/design/6203-nositel-indukcii-iz-obyavleniya.md](../../../../../../design/6203-nositel-indukcii-iz-obyavleniya.md)
 §3.4–§3.5, §6. Инкремент Ш0: только сверщик, без ядра и без семени.

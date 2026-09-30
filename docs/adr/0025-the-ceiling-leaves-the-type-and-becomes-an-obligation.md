@@ -14,7 +14,7 @@
 `docs/integer-closed-under-addition.md` — разбор от 2026-08, где длинная
 арифметика уже рассматривалась и была отклонена (раздел 6 отвечает ему прямо).
 **Новые задачи:** [6201](../tasks/6201-tree-still-cites-the-removed-javascript-implementation.md),
-[6202](../tasks/completed/6202-the-ceiling-is-a-type-property-not-a-proved-obligation.md).
+6202 (закрыта).
 
 ---
 

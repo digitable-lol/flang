@@ -322,6 +322,7 @@ jobs:
   # воротами, без `continue-on-error`: у него нет признанного долга, который
   # такую поблажку оправдывал бы (в отличие от работы `links` ниже, где долг
   # назван числом и объяснён).
+
   zadachnik:
     name: task-tracker
     runs-on: ubuntu-latest
@@ -330,8 +331,6 @@ jobs:
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
-      # Сторожу верят только после того, как он покраснел на подлоге: зелёный
-      # сторож, не умеющий краснеть, — это не проверка, а её изображение.
       - name: Probe task tracker
         run: |
           set -u
@@ -340,6 +339,10 @@ jobs:
           podlog=docs/tasks/1315-vremennoe-v-dereve-ishodnikov.md
           sed -i 's/^статус: свободна$/статус: сделяно (подлог)/' "$podlog"
           if bootstrap/flang run-script tasks:check; then
+
+          podlog=$(ls docs/tasks/[0-9][0-9][0-9][0-9]-*.md | head -1)
+          sed -i 's/^статус: .*$/статус: сделяно (подлог)/' "$podlog"
+          if ./ярлык задачник:проверка; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1

@@ -32,8 +32,8 @@
 ## Замер корня (8 сентября 2026, `f2945456`)
 
 Файлов — по `git ls-files`; «ссылок» — сколько файлов дерева называют путь
-(вне истории: без `CHANGELOG.md`, `changelog.json`, `docs/archive/`,
-`docs/tasks/completed/`). Цена — сколько файлов пришлось бы править при переезде.
+(вне истории: без `CHANGELOG.md`, `changelog.json`, `docs/archive/` и
+закрытых задач). Цена — сколько файлов пришлось бы править при переезде.
 
 | Путь | Что это | Файлов | Ссылок | Цена переезда | Риск |
 | --- | --- | ---: | ---: | --- | --- |
@@ -138,8 +138,8 @@ git mv web packaging/web
 
 Правило замены: `benchmarks/` → `tools/benchmarks/`, `web/` → `packaging/web/`,
 только на границе слова (не трогать `docs/examples/web/`, `docs/benchmark/`).
-**Не править**: `CHANGELOG.md`, `changelog.json`, `docs/archive/`,
-`docs/tasks/completed/` (история), `bootstrap/**` (семя) и входы семени
+**Не править**: `CHANGELOG.md`, `changelog.json`, `docs/archive/`
+(история), `bootstrap/**` (семя) и входы семени
 `flang/src/emit/c/*`, `flang/self/**` (их правит только перепечатка).
 
 | Категория | Где | Что |

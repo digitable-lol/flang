@@ -1,0 +1,526 @@
+модуль «Seed refresh»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Seed runtime is source» из "seed-runtime-is-source.fscript" только «Runtime files», «Seed path», «Source path», «Opening», «Position», «Opened», «Found», «Openings», «Positions», «Header end»
+  использует «Lists» только «Соединить списки»
+
+объект «Input»
+  «hash»: строка
+  «path»: строка
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Fingerprint»
+  возвращает строка
+  "scripts/seed-fingerprint"
+
+тотальная функция «Reprint»
+  возвращает строка
+  "scripts/bootstrap-reprint.sh"
+
+тотальная функция «Runtime directory»
+  возвращает строка
+  "flang/src/emit/c/"
+
+тотальная функция «Body mark»
+  возвращает строка
+  "# ── тело семени ──"
+
+тотальная функция «Is a reseed»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Given of» от "mode" и answers) содержит "reseed"
+
+тотальная функция «Tree»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "tree" и answers)
+
+тотальная функция «Temporary»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "temporary" и "/srv/tmp" и answers
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить [(«Tree» от answers), "/bootstrap/flang"] по ""
+
+тотальная функция «Cores»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть counted равно («Leading digits» от («Output of» от "cores" и answers))
+  если пусто counted то "4" иначе counted
+
+тотальная функция «Hasher»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing found means no hasher»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть found равно («First line» от («Output of» от "hasher" и answers))
+  «Chosen» от [(«When» от («Ends with» от found и "sha256sum") и ["sha256sum"]),
+    («When» от («Ends with» от found и "shasum") и ["shasum", "-a", "256"])] и (пустой список)
+
+тотальная функция «Has a fingerprint»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Exit code of» от "fingerprint" и answers) равен 0
+
+тотальная функция «Has a hasher»
+  принимает answers: список «Answer»
+  возвращает признак
+  (длина («Hasher» от answers)) больше 0
+
+тотальная функция «Is a hash»
+  принимает word: строка
+  возвращает признак
+  пример «Sixty four hexadecimal digits are a hash»
+    дано word равно "ddb5f077f95050492d4af2a51e6c423f72a9e0b079dc7812d3349427d896f3ff"
+    ожидается да
+  пример «A key of the fingerprint is not a hash»
+    дано word равно "предел-шагов"
+    ожидается нет
+  ((длина word) равен 64) и притом ((длина (отфильтровать (разложить word на символы) где sign → не ("0123456789abcdef" содержит sign))) равен 0)
+
+тотальная функция «Before the body»
+  принимает text: строка
+  возвращает строка
+  пример «Lines after the body mark are dropped»
+    дано text равно "вход a\n# ── тело семени ──\nтело b\n"
+    ожидается "вход a"
+  пример «A text without the mark is kept whole»
+    дано text равно "вход a\n"
+    ожидается "вход a\n"
+  разбор (разделить text по (соединить ["\n", («Body mark»), "\n"] по ""))
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Inputs»
+  принимает text: строка
+  возвращает список «Input»
+  пример «Only hashed lines outside the runtime are inputs of the closure»
+    дано text равно "предел-шагов 10\nddb5f077f95050492d4af2a51e6c423f72a9e0b079dc7812d3349427d896f3ff  flang/core/evaluate.flang\nddb5f077f95050492d4af2a51e6c423f72a9e0b079dc7812d3349427d896f3ff  flang/src/emit/c/flang_cli.c\n# ── тело семени ──\nddb5f077f95050492d4af2a51e6c423f72a9e0b079dc7812d3349427d896f3ff  bootstrap/Makefile\n"
+    ожидается [запись «Input» с «hash» равным "ddb5f077f95050492d4af2a51e6c423f72a9e0b079dc7812d3349427d896f3ff" и «path» равным "flang/core/evaluate.flang"]
+  отфильтровать (отобразить (отфильтровать («Lines» от («Before the body» от text)) где line → «Is a hash» от («Word» от 1 и line)) как line → запись «Input» с «hash» равным («Word» от 1 и line) и «path» равным («Word» от 2 и line)) где input → не ((input.«path») начинается с («Runtime directory»))
+
+тотальная функция «Closure»
+  принимает answers: список «Answer»
+  возвращает список «Input»
+  «Inputs» от («Output of» от "fingerprint" и answers)
+
+тотальная функция «Stamped limit»
+  принимает key: строка, text: строка
+  возвращает строка
+  пример «The limit stands after its key»
+    дано key равно "предел-шагов"
+    дано text равно "# шапка\nпредел-шагов 4000\nпредел-глубины 20\n"
+    ожидается "4000"
+  пример «No such key gives nothing»
+    дано key равно "предел-шагов"
+    дано text равно "предел-глубины 20\n"
+    ожидается ""
+  «Word» от 2 и («First line» от (соединить (отфильтровать («Lines» от text) где line → («Word» от 1 и line) равен key) по "\n"))
+
+тотальная функция «Present limit»
+  принимает variable: строка, text: строка
+  возвращает строка
+  пример «The number stands after the equals sign»
+    дано variable равно "MAX_STEPS"
+    дано text равно "MEASURED_COST=24\nMAX_STEPS=4000\n"
+    ожидается "4000"
+  пример «No such variable gives nothing»
+    дано variable равно "MAX_STEPS"
+    дано text равно "MAX_DEPTH=20\n"
+    ожидается ""
+  «Value after» от (соединить [variable, "="] по "") и text
+
+тотальная функция «Limit trouble»
+  принимает key: строка, variable: строка, answers: список «Answer»
+  возвращает список строки
+  пусть stamped равно («Stamped limit» от key и («Output of» от "fingerprint" и answers))
+  пусть present равно («Present limit» от variable и («Output of» от "reprint" и answers))
+  если stamped равен present
+    то пустой список
+    иначе [(соединить ["  • ", key, ": в отпечатке ", stamped, ", в ", («Reprint»), " ", present] по "")]
+
+тотальная функция «Input trouble»
+  принимает input: «Input», hashed: строка
+  возвращает список строки
+  пример «An input with the stamped hash is no trouble»
+    дано input равно запись «Input» с «hash» равным "aa11" и «path» равным "flang/core/evaluate.flang"
+    дано hashed равно "aa11  flang/core/evaluate.flang\n"
+    ожидается пустой список
+  пример «A changed input is named»
+    дано input равно запись «Input» с «hash» равным "aa11" и «path» равным "flang/core/evaluate.flang"
+    дано hashed равно "cc33  flang/core/evaluate.flang\n"
+    ожидается ["  • flang/core/evaluate.flang: изменён относительно отпечатка семени"]
+  пример «A vanished input is named»
+    дано input равно запись «Input» с «hash» равным "aa11" и «path» равным "flang/core/evaluate.flang"
+    дано hashed равно ""
+    ожидается ["  • flang/core/evaluate.flang: был в отпечатке, в дереве нет"]
+  «Chosen» от [(«When» от (hashed содержит (соединить [(input.«hash»), "  ", (input.«path»), "\n"] по "")) и (пустой список)),
+    («When» от (hashed содержит (соединить ["  ", (input.«path»), "\n"] по "")) и [(соединить ["  • ", (input.«path»), ": изменён относительно отпечатка семени"] по "")])] и [(соединить ["  • ", (input.«path»), ": был в отпечатке, в дереве нет"] по "")]
+
+тотальная функция «Found troubles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть hashed равно («Output of» от "hashes" и answers)
+  «Gathered words» от (приписать («Limit trouble» от "предел-шагов" и "MAX_STEPS" и answers) к (приписать («Limit trouble» от "предел-глубины" и "MAX_DEPTH" и answers) к (отобразить («Closure» от answers) как input → «Input trouble» от input и hashed)))
+
+тотальная функция «Noted»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Answer»
+  пример «Nothing is noted before the closure has been looked at»
+    дано stages равно 8
+    дано answers равно пустой список
+    ожидается пустой список
+  если stages равен 7
+    то добавить (запись «Answer» с «name» равным "closure troubles" и «reply» равным (вариант «Прочитано» с содержимое равным (соединить («Found troubles» от answers) по "\n"))) к answers
+    иначе answers
+
+тотальная функция «Closure troubles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Lines» от («Output of» от "closure troubles" и answers)
+
+тотальная функция «Closure is fresh»
+  принимает answers: список «Answer»
+  возвращает признак
+  (длина («Closure troubles» от answers)) равен 0
+
+тотальная функция «Comparison»
+  принимает name: строка
+  возвращает строка
+  соединить ["same ", name] по ""
+
+тотальная функция «Is the source»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  («Found» от name и answers) и притом ((«Exit code of» от («Comparison» от name) и answers) равен 0)
+
+тотальная функция «Runtime caught up»
+  принимает answers: список «Answer»
+  возвращает признак
+  (длина (отфильтровать («Runtime files») где name → не («Is the source» от name и answers))) равен 0
+
+тотальная функция «Stale files»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Runtime files») где name → («Found» от name и answers) и притом (не («Is the source» от name и answers))
+
+тотальная функция «Seed present»
+  принимает name: строка
+  возвращает строка
+  соединить ["seed ", name] по ""
+
+тотальная функция «Missing files»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Runtime files») где name → (не («Opened» от name и answers)) или (не ((«Exit code of» от («Seed present» от name) и answers) равен 0))
+
+тотальная функция «Headless files»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Runtime files») где name → («Opened» от name и answers) и притом (не («Found» от name и answers))
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Environment» от "temporary" и "FLANG_TMP"), («Run from» от "tree" и («Root») и "pwd" и ["-P"]), («Read from» от "fingerprint" и («Root») и («Fingerprint»)), («Read from» от "reprint" и («Root») и («Reprint»)), («Run» от "hasher" и "sh" и ["-c", "command -v sha256sum || command -v shasum"]), («Run» от "cores" и "getconf" и ["_NPROCESSORS_ONLN"])]
+
+тотальная функция «Hashing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть paths равно (отобразить («Closure» от answers) как input → input.«path»)
+  разбор («Hasher» от answers)
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если (длина paths) равен 0
+        то пустой список
+        иначе [(«Run from» от "hashes" и («Root») и (голова) и («Соединить списки» от (хвост) и paths))]
+
+тотальная функция «Seeds»
+  возвращает список «Question»
+  отобразить («Runtime files») как name → «Run from» от («Seed present» от name) и («Root») и "test" и ["-f", («Seed path» от name)]
+
+тотальная функция «Looking»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от [(«Hashing» от answers), («Openings»), («Seeds»)]
+
+тотальная функция «Comparisons»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  отобразить (отфильтровать («Runtime files») где name → «Found» от name и answers) как name → «Run from» от («Comparison» от name) и («Root») и "sh" и ["-c", "tail -n +\"$0\" \"$1\" | cmp -s - \"$2\"", («Header end» от name и answers), («Seed path» от name), («Source path» от name)]
+
+тотальная функция «May reseed»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Is a reseed» от answers) и притом («Has a fingerprint» от answers) и притом («Has a hasher» от answers) и притом («Closure is fresh» от answers) и притом ((длина («Missing files» от answers)) равен 0) и притом ((длина («Headless files» от answers)) равен 0)
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Made of» от "work" и answers
+
+тотальная функция «Length»
+  принимает name: строка
+  возвращает строка
+  соединить ["length ", name] по ""
+
+тотальная функция «Composition»
+  принимает name: строка
+  возвращает строка
+  соединить ["compose ", name] по ""
+
+тотальная функция «Preparing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если («May reseed» от answers) и притом ((длина («Stale files» от answers)) больше 0)
+    то приписать («Temporary directory» от "work" и (соединить [(«Temporary» от answers), "/seed-refresh."] по "")) к (отобразить («Stale files» от answers) как name → «Run from» от («Length» от name) и («Root») и "wc" и ["-l", («Source path» от name)])
+    иначе пустой список
+
+тотальная функция «Header lines»
+  принимает name: строка, answers: список «Answer»
+  возвращает число
+  («Count» от («Header end» от name и answers)) минус 1
+
+тотальная функция «Composing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если («May reseed» от answers) и притом (не (пусто («Work» от answers)))
+    то отобразить («Stale files» от answers) как name → «Run from» от («Composition» от name) и («Root») и "sh" и ["-c", "{ head -n \"$0\" \"$1\" && cat \"$2\"; } > \"$3\" && mv \"$3\" \"$1\"", (к строке («Header lines» от name и answers)), («Seed path» от name), («Source path» от name), (соединить [(«Work» от answers), "/", name] по "")]
+    иначе пустой список
+
+тотальная функция «Uncomposed files»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Stale files» от answers) где name → не ((«Exit code of» от («Composition» от name) и answers) равен 0)
+
+тотальная функция «Is composed»
+  принимает answers: список «Answer»
+  возвращает признак
+  («May reseed» от answers) и притом ((длина («Uncomposed files» от answers)) равен 0)
+
+тотальная функция «Stamping»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если («Is composed» от answers) и притом ((длина («Stale files» от answers)) больше 0)
+    то [(«Run from» от "stamp" и («Root») и "sh" и [(«Reprint»), "--otpechatok"])]
+    иначе пустой список
+
+тотальная функция «Is stamped»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Is composed» от answers) и притом (((длина («Stale files» от answers)) равен 0) или ((«Exit code of» от "stamp" и answers) равен 0))
+
+тотальная функция «Building»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если «Is stamped» от answers
+    то [(«Run from» от "build" и («Root») и "make" и ["-C", "bootstrap", (соединить ["-j", («Cores» от answers)] по "")])]
+    иначе пустой список
+
+тотальная функция «Is built»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Is stamped» от answers) и притом ((«Exit code of» от "build" и answers) равен 0)
+
+тотальная функция «Guarding»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если «Is built» от answers
+    то [(«Run from» от "body" и («Root») и "sh" и [(«Reprint»), "--telo"]),
+      («Run from» от "runtime" и («Root») и («Binary» от answers) и ["io", "scripts/seed/seed-runtime-is-source.fscript", "--plan", "After print"]),
+      («Run» от "version" и («Binary» от answers) и ["--version"])]
+    иначе пустой список
+
+тотальная функция «Cleanup»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Run» от "cleanup" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (stages равен 9) и («Setup»)),
+    («When» от (stages равен 8) и («Looking» от answers)),
+    («When» от (stages равен 7) и («Positions» от answers)),
+    («When» от (stages равен 6) и («Comparisons» от answers)),
+    («When» от (stages равен 5) и («Preparing» от answers)),
+    («When» от (stages равен 4) и («Composing» от answers)),
+    («When» от (stages равен 3) и («Stamping» от answers)),
+    («When» от (stages равен 2) и («Building» от answers)),
+    («When» от (stages равен 1) и («Guarding» от answers)),
+    («When» от (stages равен 0) и («Cleanup» от answers))] и (пустой список)
+
+тотальная функция «Fast path holds»
+  возвращает список строки
+  ["печатаемая часть семени отвечает flang/self и пределам.", "тронуты только копируемые файлы — быстрый пересев «семя:освежить» достаточен."]
+
+тотальная функция «Fast path misused»
+  принимает troubles: список строки
+  возвращает список строки
+  «Gathered words» от [["БЫСТРЫЙ ПЕРЕСЕВ ПРИМЕНЁН ТАМ, ГДЕ НЕЛЬЗЯ.", "", "Рантайм-часть семени догнала источник (как после «семя:освежить»),", "но печатаемая часть разошлась с flang/self или пределами:"], troubles, ["", "compiler_flang.c печатается из flang/self/**, и быстрый путь его не", "трогает. Раз замыкание другое — печатаемая часть устарела, и семя", "собрано не из того, чем оно объявлено. Нужна полная перепечатка:", "  sh scripts/bootstrap-reprint.sh"]]
+
+тотальная функция «Ordinary lag»
+  принимает troubles: список строки
+  возвращает список строки
+  «Gathered words» от [["flang/self или пределы ушли вперёд семени — обычное отставание середины работы."], troubles, ["", "Это НЕ беда: рантайм тоже отстаёт, семя честно старое. Догонится полной", "перепечаткой перед выпуском (sh scripts/bootstrap-reprint.sh); быстрый пересев здесь", "не годится — он трогает только копируемые файлы, а разошлось замыкание."]]
+
+тотальная функция «Check verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  «Chosen» от [(«When» от («Closure is fresh» от answers) и (вариант «Конец работы» с значение равным (соединить («Fast path holds») по "\n"))),
+    («When» от («Runtime caught up» от answers) и (вариант «Провал» с код равным "FLANG_SEED_FAST_PATH_MISUSED" и сообщение равным (соединить («Fast path misused» от («Closure troubles» от answers)) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Ordinary lag» от («Closure troubles» от answers)) по "\n"))
+
+тотальная функция «Opening lines»
+  возвращает список строки
+  ["быстрый пересев семени: проверяю, что печатаемая часть не устарела"]
+
+тотальная функция «Closure approval»
+  возвращает список строки
+  добавить "  замыкание и пределы совпали с отпечатком — печатаемую часть оставляем как есть" к («Opening lines»)
+
+тотальная функция «Closure refusal»
+  принимает troubles: список строки
+  возвращает список строки
+  «Gathered words» от [(«Opening lines»), troubles, ["", "ОТКАЗ: замыкание компилятора или пределы тронуты относительно отпечатка.", "compiler_flang.c печатается из flang/self/** — быстрый пересев его не даёт.", "Нужна полная перепечатка (те самые ~4,5 часа):", "  sh scripts/bootstrap-reprint.sh"]]
+
+тотальная функция «File account»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  если «Is the source» от name и answers
+    то соединить ["  ", name, ": уже совпадает с источником — не трогаю"] по ""
+    иначе соединить ["  ", name, ": шапка ", (к строке («Header lines» от name и answers)), " строк + источник ", («Word» от 1 и («Output of» от («Length» от name) и answers)), " строк — обновлён"] по ""
+
+тотальная функция «Accounts»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Соединить списки» от («Closure approval») и (отобразить («Runtime files») как name → «File account» от name и answers)
+
+тотальная функция «Stamp account»
+  принимает answers: список «Answer»
+  возвращает список строки
+  если (длина («Stale files» от answers)) равен 0
+    то ["", "семя уже свежо: копируемые файлы совпадают с источником, обновлять нечего.", "проверяю заслоны на всякий случай."]
+    иначе «Gathered words» от [["", (соединить ["снимаю отпечаток тем же прибором, что и печать: sh ", («Reprint»), " --otpechatok"] по "")], («Lines» от («Output of» от "stamp" и answers)), («Lines» от («Errors of» от "stamp" и answers))]
+
+тотальная функция «Guard line»
+  принимает green: признак, name: строка, meaning: строка
+  возвращает строка
+  пример «A green guard says what it holds»
+    дано green равно да
+    дано name равно "bootstrap-reprint.sh --telo"
+    дано meaning равно "тело семени сходится с отпечатком"
+    ожидается "  зелен  bootstrap-reprint.sh --telo (тело семени сходится с отпечатком)"
+  пример «A red guard is only named»
+    дано green равно нет
+    дано name равно "bootstrap-reprint.sh --telo"
+    дано meaning равно "тело семени сходится с отпечатком"
+    ожидается "  КРАСЕН bootstrap-reprint.sh --telo"
+  если green
+    то соединить ["  зелен  ", name, " (", meaning, ")"] по ""
+    иначе соединить ["  КРАСЕН ", name] по ""
+
+тотальная функция «Guards are green»
+  принимает answers: список «Answer»
+  возвращает признак
+  ((«Exit code of» от "body" и answers) равен 0) и притом ((«Exit code of» от "runtime" и answers) равен 0)
+
+тотальная функция «Guard account»
+  принимает answers: список «Answer»
+  возвращает список строки
+  ["", "пересобираю двоичный из обновлённого семени: make -C bootstrap", "", "сверяю заслоны семени:",
+   («Guard line» от ((«Exit code of» от "body" и answers) равен 0) и "bootstrap-reprint.sh --telo" и "тело семени сходится с отпечатком"),
+   («Guard line» от ((«Exit code of» от "runtime" и answers) равен 0) и "seed-runtime-is-source.fscript, план «After print»" и "семя = источник"),
+   "", (соединить ["версия собранного двоичного: ", («First line» от (соединить [(«Output of» от "version" и answers), («Errors of» от "version" и answers)] по "\n"))] по "")]
+
+тотальная функция «Ending»
+  принимает lines: список строки, count: число
+  возвращает список строки
+  пример «The last two of three lines»
+    дано lines равно ["one", "two", "three"]
+    дано count равно 2
+    ожидается ["two", "three"]
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если (длина lines) не больше count то lines иначе «Ending» от (хвост) и count
+
+тотальная функция «Said by»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
+  «Ending» от («Соединить списки» от («Lines» от («Output of» от name и answers)) и («Lines» от («Errors of» от name и answers))) и 20
+
+тотальная функция «Not judged»
+  принимает lines: список строки
+  возвращает «Продолжение»
+  вариант «Не проверено» с код равным "FLANG_SEED_NOT_REFRESHED" и сообщение равным (соединить lines по "\n")
+
+тотальная функция «Reseed verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  «Chosen» от [(«When» от (не («Closure is fresh» от answers)) и (вариант «Провал» с код равным "FLANG_SEED_CLOSURE_CHANGED" и сообщение равным (соединить («Closure refusal» от («Closure troubles» от answers)) по "\n"))),
+    («When» от ((длина («Missing files» от answers)) больше 0) и («Not judged» от («Соединить списки» от («Closure approval») и (отобразить («Missing files» от answers) как name → соединить ["нет файла: ", («Source path» от name), " или ", («Seed path» от name), " — пересеять нечего"] по "")))),
+    («When» от ((длина («Headless files» от answers)) больше 0) и (вариант «Провал» с код равным "FLANG_SEED_HEADER_LOST" и сообщение равным (соединить («Соединить списки» от («Closure approval») и [(соединить ["ПРИЁМ БОЛЬШЕ НЕ ЗАКОНЕН: первой строки источника ", (соединить («Headless files» от answers) по ", "), " в семени нет вовсе."] по ""), "Печать копирует рантайм уже не дословно — быстрым путём не пересеять.", "Нужна полная перепечатка: sh scripts/bootstrap-reprint.sh"]) по "\n"))),
+    («When» от (((длина («Stale files» от answers)) больше 0) и притом (пусто («Work» от answers))) и («Not judged» от [(соединить ["нет времянки: не создался каталог в ", («Temporary» от answers)] по "")])),
+    («When» от (не («Is composed» от answers)) и («Not judged» от [(соединить ["составить не удалось: ", (соединить («Uncomposed files» от answers) по ", "), " — семя оставлено как было"] по "")])),
+    («When» от (не («Is stamped» от answers)) и («Not judged» от («Gathered words» от [(«Accounts» от answers), («Stamp account» от answers), ["снять отпечаток не удалось — семя оставлено обновлённым, но отпечаток старый"]]))),
+    («When» от (не («Is built» от answers)) и («Not judged» от («Gathered words» от [(«Accounts» от answers), («Stamp account» от answers), («Said by» от "build" и answers), ["сборка не удалась"]]))),
+    («When» от (не («Guards are green» от answers)) и (вариант «Провал» с код равным "FLANG_SEED_GUARDS_RED" и сообщение равным (соединить («Gathered words» от [(«Accounts» от answers), («Stamp account» от answers), («Guard account» от answers)]) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Gathered words» от [(«Accounts» от answers), («Stamp account» от answers), («Guard account» от answers), ["", "семя пересеяно быстрым путём, заслоны зелены."]]) по "\n"))
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  «Chosen» от [(«When» от (не («Has a fingerprint» от answers)) и («Not judged» от [(соединить ["отпечатка нет: ", («Fingerprint»), " — сверять не с чем"] по "")])),
+    («When» от (не («Has a hasher» от answers)) и («Not judged» от ["нужен sha256sum или shasum — отпечаток нечем пересчитать"])),
+    («When» от («Is a reseed» от answers) и («Reseed verdict» от answers))] и («Check verdict» от answers)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и («Noted» от (stages минус 1) и answers)) и (stages минус 1) и («Noted» от (stages минус 1) и answers)
+
+тотальная функция «Begin in mode»
+  принимает mode: строка
+  возвращает «Inquiry»
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 10 и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+
+тотальная функция «Begin check»
+  возвращает «Inquiry»
+  «Begin in mode» от "check"
+
+тотальная функция «Begin reseed»
+  возвращает «Inquiry»
+  «Begin in mode» от "reseed"
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Reseed»
+  состояние «Inquiry»
+  начинает с «Begin reseed»
+  обрабатывает «Next»

@@ -70,8 +70,8 @@ script.link-collisions:check = node flang/scripts/link-collision-guard.mjs --д�
 script.link-collisions:corrupt = node flang/scripts/link-collision-guard.mjs --порча
 script.seed:freshness = bootstrap/flang io scripts/seed/seed-freshness.fscript --plan Check --timeout 300000 --
 script.seed:fast = sh scripts/bootstrap-reprint.sh --bystro
-script.seed:refresh = sh scripts/seed/seed-refresh.sh
-script.seed:can-refresh = sh scripts/seed/seed-refresh.sh --check
+script.seed:refresh = bootstrap/flang io scripts/seed/seed-refresh.fscript --plan Reseed --timeout 900000
+script.seed:can-refresh = bootstrap/flang io scripts/seed/seed-refresh.fscript --plan Check
 script.seed:type-words = bootstrap/flang io scripts/guards/seed-knows-type-words-guard.fscript --plan Check --max-steps 4000000000
 script.seed:type-words:forgery = bootstrap/flang io scripts/guards/seed-knows-type-words-guard.fscript --plan Forgery
 script.name-collisions:recount = bootstrap/flang io scripts/guards/name-collision-guard.fscript --на-веру
@@ -160,4 +160,4 @@ script.what-blocks:check = bootstrap/flang io scripts/guards/what-blocks-invento
 script.what-blocks:forgery = bootstrap/flang io scripts/guards/what-blocks-inventory-guard.fscript --plan Подлог
 script.criterion:score = bootstrap/flang io scripts/guards/criterion-score-guard.fscript --
 script.tests = node --test --test-timeout=1800000 flang/test/*.test.mjs
-script.tests:remote = bash scripts/test-remote.sh
+script.tests:remote = bootstrap/flang io scripts/test-remote.fscript --plan Run --timeout 3600000

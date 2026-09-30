@@ -19,7 +19,7 @@
   обеспечивает «there are exactly nineteen checks» (длина результат) равен 19
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check",
    запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "bootstrap/flang io scripts/seed/seed-runtime-is-source.fscript --plan Check",
-   запись «Check» с «name» равным "seed-refresh" и «command» равным "sh scripts/seed/seed-refresh.sh --check",
+   запись «Check» с «name» равным "seed-refresh" и «command» равным "bootstrap/flang io scripts/seed/seed-refresh.fscript --plan Check",
    запись «Check» с «name» равным "version-derivations-guard" и «command» равным "sh scripts/guards/version-derivations-guard.sh",
    запись «Check» с «name» равным "who-calls-the-guards" и «command» равным "bootstrap/flang io scripts/guards/who-calls-the-guards.fscript --plan Check",
    запись «Check» с «name» равным "guards-without-forgery-probe" и «command» равным "sh scripts/guards/guards-without-forgery-probe.sh --check",

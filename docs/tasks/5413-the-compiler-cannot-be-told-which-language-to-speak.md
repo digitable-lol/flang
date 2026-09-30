@@ -1,67 +1,77 @@
 ---
 номер: 5413
-заголовок: Двоичный не читает `.flangrc` и не знает ключа языка — выбрать язык вывода нечем
+заголовок: Компилятору нечем сказать, на каком языке отвечать: ключ языка молча игнорируется
 статус: свободна
+приоритет: P2
 исполнитель: —
 ветка: —
 команда: любая
 карта: Что мешает больше всего
 рядом: 8161, 7203
-нужность: 2 — 27 сентября 2026: `flang --язык en --help` и `flang --lang en --help` печатают то же, что `flang --help`, код 0, и молчат об этом; `.flangrc` с `язык = eo` ответ `flang --version` не меняет; FLANG_LANG в bootstrap/*.c — 0; из десяти ключей .flangrc двоичный читает один, «недоказанное» (5930)
+нужность: файл настроек и его ADR обещают выбор языка вывода, компилятор его не исполняет
 ---
 
-# 5413. Двоичный не читает `.flangrc` и не знает ключа языка
+# 5413. Компилятору нечем сказать, на каком языке отвечать: ключ языка молча игнорируется
 
-Файл настроек, его разбор и старшинство источников написаны и прогнаны
-(`scripts/settings-file.flang`, `scripts/flangrc.fscript`, `.flangrc` в корне,
-`docs/guide/settings.ru.md`, решение
-[ADR-0024](../adr/0024-the-settings-file-and-the-language-of-output.md)).
-Читает их сегодня только оснастка. **Сам `bootstrap/flang` о настройках не знает
-ничего.**
+Правила файла настроек и старшинство источников записаны в
+`docs/adr/0024-the-settings-file-and-the-language-of-output.md` и
+`docs/guide/settings.ru.md`, разбор написан в `scripts/settings-file.flang` и
+`scripts/flangrc.fscript`. Сам компилятор читает из `.flangrc` один ключ —
+`unproven`.
 
-## Замер, 8 сентября 2026, двоичный 0.7.14
+## Шаги воспроизведения
+
+1. `bootstrap/flang --help > a.txt; bootstrap/flang --язык en --help > b.txt; bootstrap/flang --lang en --help > c.txt`
+2. `cmp a.txt b.txt; cmp a.txt c.txt`
+3. В пустом каталоге: `printf 'language = eo\n' > .flangrc; bootstrap/flang --version`
+4. `grep -c 'FLANG_LANG' bootstrap/flang_cli.c bootstrap/flang_repl.c`
+
+## Что происходит
 
 ```
-$ grep -c 'setlocale\|"LANG"\|LC_MESSAGES\|nl_langinfo' bootstrap/*.c
-0
-$ grep -oE '"--[^"]{2,40}"' bootstrap/flang_repl.c | grep -ci 'lang\|язык'
-0
+$ cmp a.txt b.txt; cmp a.txt c.txt
+                                                   код 0, код 0: вывод тот же
+$ bootstrap/flang --version            (рядом лежит .flangrc с language = eo)
+flang 0.7.23
+оболочка 9f361fce: правит строку (стрелки, слова, история, Tab), цвет digitable
+$ grep -c 'FLANG_LANG' bootstrap/flang_cli.c bootstrap/flang_repl.c
+bootstrap/flang_cli.c:0
+bootstrap/flang_repl.c:0
 ```
 
-Из 15 переменных среды с приставкой `FLANG_`, которые двоичный читает, на язык
-не влияет ни одна. Цвет выбрать можно (`NO_COLOR`, `TERM`, `COLORTERM`) — язык
-нечем.
+Все три вызова `--help` отвечают кодом 0 и одним и тем же текстом; о том, что
+ключ языка не понят, не сказано ничего.
 
-## Что надо сделать
+Версия: flang 0.7.23, 30 сентября 2026.
 
-1. **Ключ CLI** `--язык ru|en|eo|zh` и латинский близнец `--lang`, годный при
-   любой команде — по образцу `--предел-глубины`/`--depth-limit`.
-2. **Чтение `.flangrc`** в самом двоичном, по правилу из ADR-0024: подъём от
-   рабочего каталога, обрыв на первой примете (`.flangrc`, `.git`,
-   `flang.package`), потом `$HOME/.flangrc`. Правило уже пересчитано в
-   `scripts/flangrc.fscript` и проверено `scripts/guards/flangrc-guard.fscript` — расходиться
-   этим двум записям нельзя, и за этим должна следить проверка.
-3. **Переменные среды** `FLANG_LANG`, `FLANG_SURFACE`, `FLANG_COLOR`,
-   `FLANG_MANPAGE` — латиницей, потому что `bash` и `dash` кириллическое имя
-   переменной не принимают вовсе (код 127; замер в ADR-0024).
-4. **Локаль** — `LC_ALL`, затем `LC_MESSAGES`, затем `LANG`; `C` и `POSIX`
-   кодом языка не считаются.
-5. **Старшинство** ровно то, что записано в «Выбранное значение»
-   (`scripts/settings-file.flang`): довод → среда → файл проекта → файл дома →
-   локаль → умолчание.
+## Что должно быть
 
-## Почему это требует перепечатки
+По ADR-0024 язык вывода выбирается в таком порядке: ключ командной строки
+(`--язык ru|en|eo|zh`, латинский близнец `--lang`), переменная среды
+`FLANG_LANG`, `.flangrc` проекта, `.flangrc` в домашнем каталоге, локаль
+(`LC_ALL`, `LC_MESSAGES`, `LANG`; `C` и `POSIX` языком не считаются),
+умолчание. Так же читаются `FLANG_SURFACE`, `FLANG_COLOR`, `FLANG_MANPAGE` и
+соответствующие ключи файла. Вывод `--json` и коды `FLANG_*` от языка не
+зависят.
 
-Разбор ключей и чтение файла живут в `flang/self/cli.flang` и в написанном
-руками слое C. Правка `flang/self/**` доедет до собранного компилятора только
-через перепечатку семени (`bootstrap/compiler_flang.c`).
+## Обходной путь
 
-## Как проверять
+Нет.
 
-* `flang --язык en --help` печатает не то же, что `flang --help`, — после того
-  как задача 8161 даст откуда брать перевод; до неё — печатает то же и говорит
-  об этом одной строкой, а не молчит;
-* `.flangrc` с `language = eo` меняет ответ `flang --version` в части прозы;
-* чужой `.flangrc` выше корня проекта НЕ действует — то же, что проверяет
+## Когда задача сделана
+
+- `flang --язык en --help` печатает английский текст, когда перевод есть
+  (задача 8161); пока перевода нет — печатает прежний и говорит об этом одной
+  строкой;
+- `.flangrc` с `language = eo` меняет прозу ответа `flang --version`;
+- `.flangrc` выше корня проекта не действует — то же, что проверяет
   `bootstrap/flang io scripts/guards/flangrc-guard.fscript --plan Forgery`;
-* `flang --json` и коды `FLANG_*` от ключа языка не зависят ни в одном прогоне.
+- негодное значение ключа — код 2 с названным ключом;
+- проверка сличает правило поиска файла в компиляторе и в
+  `scripts/flangrc.fscript`.
+
+## Где живёт правка
+
+`flang/src/emit/c/flang_repl.c` и его близнец в `bootstrap/` (там уже есть
+`flangrc_key` и `flangrc_project` для ключа `unproven`), `flang/self/cli.flang`
+(разбор ключей). Правка `flang/self/**` требует перепечатки.

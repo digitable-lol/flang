@@ -1,88 +1,67 @@
 ---
 номер: 5090
-заголовок: Шесть самопроверок, на которые ссылаются пять ярлыков, существуют — или перестают быть обещанными
-статус: свободна (на 8 сентября 2026 ни одного из шести файлов в дереве нет; ссылки на пять из них стоят)
+заголовок: Три проверки ссылаются на файлы самопроверок, которых в дереве нет, и одна из них такой файл запускает
+статус: свободна
+приоритет: P2
 исполнитель: —
 ветка: —
 команда: вторая
 карта: Что мешает больше всего
-рядом: 0001, 0016, 0049
-нужность: 2 — 27 сентября 2026: `git ls-files '*.test.mjs'` — 3 файла, ни одного из шести; flang/scripts/tempdir-guard.fscript:279 по-прежнему запускает отсутствующий flang/test/uzel-celi.test.mjs, name-guard.mjs:151 обещает name-guard.test.mjs, count-guard.mjs:15 — manpage.test.mjs
+рядом: 5204
+нужность: проверка обещает читателю самопроверку, которой нет; одна упадёт, дойдя до запуска
 ---
 
-# 5090. Шесть обещанных самопроверок в дереве отсутствуют
+# 5090. Три проверки ссылаются на файлы самопроверок, которых в дереве нет, и одна из них такой файл запускает
 
-## Чем измерено
+## Шаги воспроизведения
 
-Снято 30 августа 2026 на стволе `f9e67fa6`; перепроверено 8 сентября 2026
-(`git ls-files '*.test.mjs'` — четыре файла, ни одного из шести). **Нет ни
-одного из шести**:
+1. `git ls-files '*.test.mjs'`
+2. `grep -n 'test\.mjs' flang/scripts/name-guard.mjs flang/scripts/count-guard.mjs flang/scripts/tempdir-guard.fscript`
 
-```
-flang/test/claim-guard.test.mjs
-flang/test/count-guard.test.mjs
-flang/test/name-guard.test.mjs
-flang/test/binary-rules.test.mjs
-flang/test/binary-rules-guard.test.mjs
-flang/test/uzel-celi.test.mjs
-```
-
-**Ссылаются на них пятеро** (строки на 8 сентября 2026):
-
-| ярлык | где ссылка |
-|---|---|
-| `claims:check` | `flang/scripts/claim-guard.mjs:74` — `claim-guard.test.mjs` |
-| `counts:check` | `flang/scripts/count-guard.mjs:15` — теперь называет `manpage.test.mjs`, которого тоже нет |
-| `names:check` | `flang/scripts/name-guard.mjs:151` — `name-guard.test.mjs` |
-| `binary-rules:check` | `flang/scripts/binary-rules-guard.mjs:116` и `:133` (сразу на два); строка 73 честно говорит «обоих файлов в дереве НЕТ» |
-| `tempdir:check` | `flang/scripts/tempdir-guard.fscript:367–368` — `uzel-celi.test.mjs` |
-
-**Последний не поминает, а ЗАПУСКАЕТ.** `flang/scripts/tempdir-guard.fscript:367`:
+## Что происходит
 
 ```
-["node", "--test", "--test-timeout=1800000", "flang/test/uzel-celi.test.mjs", …]
+$ git ls-files '*.test.mjs'
+flang/test/nadzor-uzla.test.mjs
+flang/test/planirovshchik-celi.test.mjs
+flang/test/svyaz-celi.test.mjs
 ```
 
-Остальные три файла в этой строке существуют — а `uzel-celi.test.mjs` нет.
-Незаметно это потому, что сам ярлык `tempdir:check` не заводится вовсе (соседняя задача):
-`FLANG_UNKNOWN_PLAN`, код 3, и до строки 367 дело не доходит.
+| кто ссылается | на что | файл есть |
+|---|---|---|
+| `flang/scripts/name-guard.mjs:151` | flang/test/name-guard.test.mjs | нет |
+| `flang/scripts/count-guard.mjs:15` | flang/test/manpage.test.mjs | нет |
+| `flang/scripts/tempdir-guard.fscript:279` | flang/test/uzel-celi.test.mjs | нет |
 
-## Почему это не «недописанные проверки»
+Первые два называют файл в тексте как свою самопроверку. Третий ставит его в
+строку запуска `node --test …` рядом с тремя существующими файлами.
 
-Ссылка на несуществующую самопроверку читается как обещание. Четыре сторожа из
-пяти говорят своему читателю «меня проверяет вот этот файл», и читатель верит,
-не открывая. Пятый вдобавок пытается его запустить и упал бы, дойдя.
+Версия: flang 0.7.23, 30 сентября 2026.
 
-## Что сделать
+## Что должно быть
 
-Выбрать по каждому из шести одно из двух и сказать в коммите, что именно:
+Каждый файл самопроверки, названный проверкой, существует. Файла нет — нет и
+ссылки на него.
 
-1. **написать самопроверку** — тогда она встаёт в `ярлыки.flang` отдельным
-   ярлыком, иначе она тихо умрёт, как умирала проверка слов восемь часов
-   (`docs/tasks/README.md`);
-2. **снять ссылку** — тогда сторож перестаёт обещать то, чего нет.
+## Обходной путь
 
-Запуск в `tempdir-guard.fscript:367` — случай особый: там выбора нет, файл либо
-появляется, либо убирается из списка, иначе `tempdir:check` после починки упадёт по
-второму разу.
+Нет.
 
-## Как понять, что сделано
+## Когда задача сделана
+
+Для каждого из трёх файлов выбрано одно: самопроверка написана и поставлена
+отдельным ярлыком в `ярлыки.flang`, либо ссылка снята. Для
+`tempdir-guard.fscript` выбор тот же, но оставить как есть нельзя: файл стоит в
+строке запуска.
 
 ```sh
-grep -ran 'test\.mjs' flang/scripts/ scripts/ | grep -v bootstrap/
+grep -rhoE 'flang/test/[a-z-]+\.test\.mjs' flang/scripts/name-guard.mjs flang/scripts/count-guard.mjs flang/scripts/tempdir-guard.fscript | sort -u | while read f; do test -f "$f" || echo "нет: $f"; done
 ```
 
-Каждый названный файл существует. Проверка:
+Команда молчит.
 
-```sh
-for f in $(git ls-files '*.test.mjs'); do test -f "$f" || echo "нет: $f"; done
-```
+## Где живёт правка
 
-молчит, и `bootstrap/flang run-script guards:check` называет их все — сегодня он смотрит
-четыре файла из шестидесяти с лишним (соседняя задача).
-
-## Что от неё зависит
-
-Задача о трёх незаводящихся ярлыках: `tempdir:check` после починки упрётся
-ровно в этот отсутствующий файл. И всякий довод вида «сторож проверен сам на
-себе»: сегодня у пятерых он опирается на пустоту.
+`flang/scripts/name-guard.mjs`, `flang/scripts/count-guard.mjs`,
+`flang/scripts/tempdir-guard.fscript` (функция со строкой запуска `node --test`
+и её пример), `ярлыки.flang`. Перепечатка не нужна.

@@ -8,7 +8,7 @@
 команда: любая
 карта: Что мешает больше всего
 рядом: —
-нужность: 3 — ключ заведён 27 сентября 2026 в C (flang_cli.c), flang/self/cli.flang трогать было нельзя: шла печать семени
+нужность: эталон на flang и двоичный судят разный набор ключей
 ---
 
 # 7201. Эталон разбора командной строки на flang не знает ключа --memory-limit, который знает двоичный
@@ -26,11 +26,13 @@
 $ grep -c 'memory-limit' flang/self/cli.flang
 0                                                           код 1
 $ grep -c 'step-limit' flang/self/cli.flang
-4                                                           код 0
+8                                                           код 0
 ```
 
-Двоичный ключ понимает (`flang run … --memory-limit 32M`, код 5 на пределе;
-проба `flang/proof/probes/memory-limit/run.fscript`, 7 из 7).
+Двоичный ключ понимает: `flang run … --memory-limit 32M` отвечает кодом 5 на
+пределе, проба — `flang/proof/probes/memory-limit/run.fscript`.
+
+Версия: flang 0.7.23, 30 сентября 2026.
 
 ## Что должно быть
 
@@ -40,8 +42,7 @@ $ grep -c 'step-limit' flang/self/cli.flang
 
 ## Обходной путь
 
-Не нужен: ключ снимается в `main` (flang_cli.c) до разбора команды, как
-`--step-limit`.
+Не нужен: ключ снимается в `main` до разбора команды, как `--step-limit`.
 
 ## Когда задача сделана
 
@@ -50,4 +51,5 @@ $ grep -c 'step-limit' flang/self/cli.flang
 
 ## Где живёт правка
 
-`flang/self/cli.flang` — только перепечаткой семени.
+`flang/self/cli.flang`; разбор ключа в двоичном — `flang/src/emit/c/flang_cli.c`.
+Требует перепечатки самосборной части.

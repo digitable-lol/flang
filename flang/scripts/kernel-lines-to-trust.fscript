@@ -819,7 +819,7 @@
     "awk -v k=runtimeCode -v k2=runtimeFiles \"$COUNT_C\" $RUNTIME && ",
     "awk -v k=printedCCode -v k2=printedCFiles \"$COUNT_C\" $SEED && ",
     "awk -v k=checkerCode \"$COUNT_C\" flang/proof/checker/checker.c && ",
-    "awk -F'\t' -v k=inferenceRules '$1 !~ /^#/ && NF > 3 { n++ } END { print k, n+0 }' flang/proof/tables/inference-rules.tsv"
+    "awk -F'\t' -v k=inferenceRules 'NR > 1 && NF > 3 { n++ } END { print k, n+0 }' flang/proof/tables/inference-rules.tsv"
   ] по "")]
 
 тотальная функция «Файл потолка пути»

@@ -1,3 +1,4 @@
+file	target	reason
 CHANGELOG.md	distributed.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 CHANGELOG.md	compat.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 CHANGELOG.md	obligations.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей

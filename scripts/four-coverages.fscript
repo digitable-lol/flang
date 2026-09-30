@@ -56,11 +56,11 @@
 тотальная функция «Rows»
   принимает least: число, text: строка
   возвращает список список строки
-  пример «Comments and short rows are not rows»
+  пример «Short rows are not rows»
     дано least равно 2
-    дано text равно "# имя\tузел\nТ1\tтождество\nодин\n"
+    дано text равно "Т1\tтождество\nодин\n"
     ожидается [["Т1", "тождество"]]
-  отфильтровать (отобразить (отфильтровать («Lines» от text) где line → не (line начинается с "#")) как line → разделить line по "\t") где cells → (длина cells) не меньше least
+  отфильтровать (отобразить («Lines» от text) как line → разделить line по "\t") где cells → (длина cells) не меньше least
 
 тотальная функция «Cell»
   принимает position: число, cells: список строки
@@ -80,7 +80,7 @@
 тотальная функция «Rules»
   принимает answers: список «Answer»
   возвращает список строки
-  отобразить («Rows» от 12 и («Output of» от "rules" и answers)) как cells → «Cell» от 1 и cells
+  отобразить (отфильтровать («Rows» от 6 и («Output of» от "rules" и answers)) где cells → не ((«Cell» от 1 и cells) равен "name")) как cells → «Cell» от 1 и cells
 
 тотальная функция «Ban lemma»
   принимает title: строка
@@ -241,29 +241,27 @@
 тотальная функция «Violation lines»
   принимает cells: список строки
   возвращает список строки
-  пример «An open violation is told in three lines»
-    дано cells равно ["ключ-1", "что случилось", "где лежит", "чем снять", "16", "—", "открыто"]
-    ожидается ["   · ключ-1 — что случилось", "       где: где лежит", "       число: 16; чем снять: чем снять; задача: —"]
+  пример «An open violation is told by its key»
+    дано cells равно ["key-1", "open"]
+    ожидается ["   · key-1"]
   пример «A closed violation is not told»
-    дано cells равно ["ключ-1", "что случилось", "где лежит", "чем снять", "16", "—", "закрыто"]
+    дано cells равно ["key-1", "closed"]
     ожидается пустой список
-  если («Cell» от 7 и cells) равен "открыто"
-    то [(соединить ["   · ", («Cell» от 1 и cells), " — ", («Cell» от 2 и cells)] по ""),
-      (соединить ["       где: ", («Cell» от 3 и cells)] по ""),
-      (соединить ["       число: ", («Cell» от 5 и cells), "; чем снять: ", («Cell» от 4 и cells), "; задача: ", («Cell» от 6 и cells)] по "")]
+  если («Cell» от 2 и cells) равен "open"
+    то [(соединить ["   · ", («Cell» от 1 и cells)] по "")]
     иначе пустой список
 
 тотальная функция «Violations»
   принимает answers: список «Answer»
   возвращает список список строки
-  отфильтровать («Rows» от 7 и («Output of» от "violations" и answers)) где cells → не ((«Cell» от 1 и cells) равен "ключ")
+  отфильтровать («Rows» от 2 и («Output of» от "violations" и answers)) где cells → не ((«Cell» от 1 и cells) равен "key")
 
 тотальная функция «Violations section»
   принимает answers: список «Answer»
   возвращает список строки
   пусть told равно («Gathered words» от (отобразить («Violations» от answers) как cells → «Violation lines» от cells))
   «Gathered words» от [["3. ИЗВЕСТНЫЕ НАРУШЕНИЯ СОСТОЯТЕЛЬНОСТИ — открыто, поимённо"],
-    (если («Exit code of» от "violations" и answers) равен 0 то («Соединить списки» от told и [(соединить ["   открытых нарушений: ", (к строке ((длина told) делить на 3)), " (ведомость ", («Violations table»), ")"] по "")]) иначе [(соединить ["   НЕ СНЯТО: нет ", («Violations table»)] по "")]),
+    (если («Exit code of» от "violations" и answers) равен 0 то («Соединить списки» от told и [(соединить ["   открытых нарушений: ", (к строке (длина told)), " (список ", («Violations table»), ", описание docs/flang/proof/known-soundness-violations.md)"] по "")]) иначе [(соединить ["   НЕ СНЯТО: нет ", («Violations table»)] по "")]),
     ["   ЧЕГО НЕ ЗНАЧИТ: список открытый — «других нет» он не утверждает.", ""]]
 
 тотальная функция «Print rows»

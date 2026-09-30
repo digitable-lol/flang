@@ -104,7 +104,7 @@ echo "ловушка — искажений $VSEGO, Lean отверг $OTVERGNUT
 cat "$KAT/Rules.lean" "$KAT/Term.lean" > "$RAB/леммы.lean"
 PARY=$(awk -F'\t' '
   FNR == NR { if ($0 ~ /^theorem «/) { split($0, a, "«"); split(a[2], b, "»"); L[b[1]] = 1 } next }
-  NF > 11 && $1 !~ /^#/ {
+  FNR > 1 && NF > 5 {
     r = $1; s++; ok = 0
     if (index(r, "✗")) {
       k = r; if (!sub(/✗✗✗$/, "-запрет3", k)) if (!sub(/✗✗$/, "-запрет2", k)) sub(/✗/, "-запрет", k)

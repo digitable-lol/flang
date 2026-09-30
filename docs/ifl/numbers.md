@@ -200,5 +200,5 @@ SPEC отдельным коммитом — к подаче оно отноше
 |---|---|
 | `npm test` на Node ≥ 20 без тулчейнов (тесты бэкендов честно пропустятся) | прогон без единого пропуска: нужны cc, go, cargo, python3, javac, dotnet, elixir — CI их не ставит |
 | неподвижная точка: нужен только `cc` | сверка девяти исполнителей: нужны все восемь тулчейнов |
-| `docs/ifl/facts.mjs`, `docs/ifl/measure-across-targets.sh --fast` | `scripts/test-remote.sh` — ходит по ssh на приватный хост владельца, посторонний его не запустит |
+| `docs/ifl/facts.mjs`, `docs/ifl/measure-across-targets.sh --fast` | `scripts/test-remote.fscript` — ходит по ssh на приватный хост владельца, посторонний его не запустит |
 | `.github/workflows/ci.yml` на форке | числа 252 с / 15 с из `CONTRIBUTING.md` — они с того же приватного хоста |

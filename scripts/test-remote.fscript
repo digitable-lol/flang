@@ -1,0 +1,230 @@
+модуль «Test remote»
+  использует «Rules» из "rules.fscript"
+  использует «Inquiry» из "inquiry.fscript"
+  использует «Reading» из "reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+тотальная функция «Root»
+  возвращает строка
+  ".."
+
+тотальная функция «Usage»
+  возвращает строка
+  "звать: bootstrap/flang io scripts/test-remote.fscript --plan Run [-- <ярлык>] либо --plan Info либо --plan Sync; хост — FLANG_REMOTE=<алиас ssh>"
+
+тотальная функция «Remote environment»
+  возвращает строка
+  "export PATH=\"$HOME/.local/bin:/usr/local/go/bin:/usr/local/cargo/bin:/usr/local/bin:/usr/bin:/bin\"; export LC_ALL=C.UTF-8 LANG=C.UTF-8;"
+
+тотальная функция «Toolchains»
+  возвращает список строки
+  ["cc:c", "g++:cpp", "go:go", "rustc:rust", "javac:java", "dotnet:csharp", "python3:python", "elixir:elixir", "node:js"]
+
+тотальная функция «Information script»
+  возвращает строка
+  соединить [(«Remote environment»), "\n    printf \"    %s, %s ядер, %s ГБ RAM, свободно %s\\n\" \"$(. /etc/os-release; echo \"$PRETTY_NAME\")\" \"$(nproc)\" \"$(free -g | awk \"/^Mem:/{print \\$2}\")\" \"$(df -h / | awk \"NR==2{print \\$4}\")\"\n    printf \"    %-12s %s\\n\" c \"$(cc --version 2>/dev/null | head -1 || echo НЕТ)\" go \"$(go version 2>/dev/null || echo НЕТ)\" rust \"$(rustc --version 2>/dev/null || echo НЕТ)\" java \"$(javac --version 2>/dev/null || echo НЕТ)\" csharp \"$(dotnet --version 2>/dev/null || echo НЕТ)\" python \"$(python3 --version 2>/dev/null || echo НЕТ)\" elixir \"$(elixir --version 2>/dev/null | tail -1 || echo НЕТ)\" node \"$(node --version 2>/dev/null || echo НЕТ)\" cpp \"$(g++ --version 2>/dev/null | head -1 || echo НЕТ)\""] по ""
+
+тотальная функция «Toolchain script»
+  возвращает строка
+  соединить [(«Remote environment»), "\n    for para in ", (соединить («Toolchains») по " "), "; do\n      command -v \"${para%%:*}\" >/dev/null 2>&1 || printf \"%s \" \"${para#*:}(нет ${para%%:*})\"\n    done"] по ""
+
+тотальная функция «Mode»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от (соединить («Given of» от "mode" и answers) по "\n")
+
+тотальная функция «Host»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "host" и "" и answers
+
+тотальная функция «Tree»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "tree" и answers)
+
+тотальная функция «Tree name»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "tree name" и answers)
+
+тотальная функция «Remote directory»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "remote directory" и (соединить [".cache/flang-remote/", («Tree name» от answers)] по "") и answers
+
+тотальная функция «Requirement»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "requirement" и "all" и answers
+
+тотальная функция «Target»
+  принимает answers: список «Answer»
+  возвращает строка
+  разбор («Given of» от "arguments" и answers)
+    случай пусто
+      то "тесты"
+    случай голова и хвост
+      то голова
+
+тотальная функция «Remote command»
+  принимает answers: список «Answer», command: строка
+  возвращает «Question»
+  «Run» от "run" и "ssh" и [(«Host» от answers), (соединить [(«Remote environment»), " cd '", («Remote directory» от answers), "' && ", command] по "")]
+
+тотальная функция «Failed»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  («Answered» от name и answers) и притом (не ((«Exit code of» от name и answers) равен 0))
+
+тотальная функция «Missing toolchains»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Without blanks» от («Output of» от "toolchains" и answers)
+
+тотальная функция «Obstacles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от [(если (длина («Given of» от "arguments" и answers)) больше (если («Mode» от answers) равен "run" то 1 иначе 0) то [(«Usage»)] иначе пустой список),
+    (если «Failed» от "rsync" и answers то ["ОШИБКА нужен rsync"] иначе пустой список),
+    (если («Answered» от "host" и answers) и притом (пусто («Host» от answers)) то ["ОШИБКА не задан хост. FLANG_REMOTE=<ваш ssh-алиас> — нужна машина, где стоят все девять тулчейнов и куда пускают по ключу"] иначе пустой список),
+    (если «Failed» от "reachable" и answers то [(соединить ["ОШИБКА хост «", («Host» от answers), "» недоступен по ssh без пароля"] по "")] иначе пустой список),
+    (если («Answered» от "toolchains" и answers) и притом (не (пусто («Missing toolchains» от answers))) то [(соединить ["ОШИБКА на хосте «", («Host» от answers), "» не хватает тулчейнов: ", («Output of» от "toolchains" и answers), "— прогон был бы зелен на целях, которых никто не собирал. Поставьте недостающее: девять целей печати — девять тулчейнов"] по "")] иначе пустой список),
+    (если «Failed» от "sync" и answers то («Соединить списки» от [(соединить ["ОШИБКА синхронизация не удалась (код ", (к строке («Exit code of» от "sync" и answers)), ")"] по "")] и («Lines» от («Errors of» от "sync" и answers))) иначе пустой список)]
+
+тотальная функция «Is clear»
+  принимает answers: список «Answer»
+  возвращает признак
+  (длина («Obstacles» от answers)) равен 0
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "host" и "FLANG_REMOTE"), («Environment» от "remote directory" и "FLANG_REMOTE_DIR"), («Environment» от "requirement" и "FTS_REQUIRE_TOOLCHAINS"), («Run from» от "tree" и («Root») и "pwd" и ["-P"]), («Run from» от "tree name" и («Root») и "sh" и ["-c", "basename \"$(pwd -P)\""]), («Run» от "rsync" и "sh" и ["-c", "command -v rsync >/dev/null 2>&1"])]
+
+тотальная функция «Reaching»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "reachable" и "ssh" и ["-o", "BatchMode=yes", "-o", "ConnectTimeout=10", («Host» от answers), "true"])]
+
+тотальная функция «Information»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Run» от "information" и "ssh" и [(«Host» от answers), («Information script»)])]
+
+тотальная функция «Toolchain check»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если («Mode» от answers) равен "run"
+    то [(«Run» от "toolchains" и "ssh" и [(«Host» от answers), («Toolchain script»)])]
+    иначе пустой список
+
+тотальная функция «Syncing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если («Mode» от answers) равен "info"
+    то пустой список
+    иначе [(«Run» от "directory" и "ssh" и [(«Host» от answers), (соединить ["mkdir -p '", («Remote directory» от answers), "'"] по "")]),
+      («Run» от "sync" и "rsync" и ["-a", "--delete", "--info=stats1", "--exclude", ".git/", "--exclude", "node_modules/", "--exclude", "dist/", "--exclude", "*.log", "--exclude", ".cache/", (соединить [(«Tree» от answers), "/"] по ""), (соединить [(«Host» от answers), ":", («Remote directory» от answers), "/"] по "")])]
+
+тотальная функция «Running»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если («Mode» от answers) равен "run"
+    то [(«Run» от "started" и "date" и ["+%s"]), («Remote command» от answers и (соединить ["FTS_REQUIRE_TOOLCHAINS='", («Requirement» от answers), "' ./ярлык ", («Target» от answers)] по "")), («Run» от "finished" и "date" и ["+%s"])]
+    иначе пустой список
+
+тотальная функция «Work stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  если (stages меньше 1) или (stages больше 5)
+    то пустой список
+    иначе элемент (6 минус stages) в [(«Reaching» от answers), («Information» от answers), («Toolchain check» от answers), («Syncing» от answers), («Running» от answers)]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (stages равен 6) и («Setup»)),
+    («When» от («Is clear» от answers) и («Work stage» от stages и answers))] и (пустой список)
+
+тотальная функция «Host lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  если «Answered» от "information" и answers
+    то приписать (соединить ["==> Хост ", («Host» от answers)] по "") к («Lines» от («Output of» от "information" и answers))
+    иначе пустой список
+
+тотальная функция «Sync lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  если «Answered» от "sync" и answers
+    то приписать (соединить ["==> Синхронизация ", («Tree» от answers), " → ", («Host» от answers), ":", («Remote directory» от answers)] по "") к (отобразить («Lines» от («Output of» от "sync" и answers)) как line → соединить ["    ", line] по "")
+    иначе пустой список
+
+тотальная функция «Elapsed»
+  принимает answers: список «Answer»
+  возвращает число
+  («Count» от («First line» от («Output of» от "finished" и answers))) минус («Count» от («First line» от («Output of» от "started" и answers)))
+
+тотальная функция «Run lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть code равно («Exit code of» от "run" и answers)
+  «Gathered words» от [[(соединить ["==> Прогон: ./ярлык ", («Target» от answers), " (FTS_REQUIRE_TOOLCHAINS=", («Requirement» от answers), ")"] по ""), "    отсутствие любого тулчейна на хосте — провал, а не пропуск"],
+    («Lines» от («Output of» от "run" и answers)), («Lines» от («Errors of» от "run" и answers)),
+    ["", "==> Итог", (соединить ["    хост:  ", («Host» от answers), ":", («Remote directory» от answers)] по ""), (соединить ["    время: ", (к строке («Elapsed» от answers)), " с"] по ""),
+     (если code равен 0 то "    НАБОР ПРОЙДЕН — все девять тулчейнов присутствовали, пропусков по тулчейнам не было" иначе (соединить ["    НАБОР НЕ ПРОЙДЕН (код ", (к строке code), ")"] по ""))]]
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть lines равно («Gathered words» от [(«Host lines» от answers), («Sync lines» от answers), (если («Mode» от answers) равен "run" то («Run lines» от answers) иначе пустой список)])
+  «Chosen» от [(«When» от (не («Is clear» от answers)) и (вариант «Не проверено» с код равным "FLANG_REMOTE_NOT_RUN" и сообщение равным (соединить («Соединить списки» от («Host lines» от answers) и («Obstacles» от answers)) по "\n"))),
+    («When» от («Failed» от "run" и answers) и (вариант «Провал» с код равным "FLANG_REMOTE_RED" и сообщение равным (соединить lines по "\n")))] и (вариант «Конец работы» с значение равным (соединить lines по "\n"))
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin in mode»
+  принимает mode: строка
+  возвращает «Inquiry»
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 7 и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+
+тотальная функция «Begin info»
+  возвращает «Inquiry»
+  «Begin in mode» от "info"
+
+тотальная функция «Begin sync»
+  возвращает «Inquiry»
+  «Begin in mode» от "sync"
+
+тотальная функция «Begin run»
+  возвращает «Inquiry»
+  «Begin in mode» от "run"
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Info»
+  состояние «Inquiry»
+  начинает с «Begin info»
+  обрабатывает «Next»
+
+план «Sync»
+  состояние «Inquiry»
+  начинает с «Begin sync»
+  обрабатывает «Next»
+
+план «Run»
+  состояние «Inquiry»
+  начинает с «Begin run»
+  обрабатывает «Next»

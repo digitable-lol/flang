@@ -1,0 +1,1348 @@
+модуль «Reasoning sentences»
+  использует «Rules» из "../../../../../scripts/rules.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Word»
+  «kind»: строка
+  «singular»: строка
+  «plural»: строка
+  «feminine»: строка
+  «neuter»: строка
+  «gender»: строка
+
+тип «Form»
+  вариант «All»
+  вариант «None»
+  вариант «Some»
+  вариант «Some not»
+  вариант «Is»
+  вариант «Is not»
+
+объект «Judgment»
+  «form»: «Form»
+  «subject»: строка
+  «predicate»: строка
+
+объект «Sentence»
+  «number»: число
+  «concludes»: признак
+  «judgment»: «Judgment»
+
+тотальная функция «Spaced words»
+  принимает line: строка
+  возвращает список строки
+  пример «Runs of spaces separate words once»
+    дано line равно "  Все   люди смертны "
+    ожидается ["Все", "люди", "смертны"]
+  отфильтровать (разделить line по " ") где piece → не (пусто piece)
+
+тотальная функция «Trimmed»
+  принимает line: строка
+  возвращает строка
+  пример «Spaces at the edges are dropped and inner runs become one space»
+    дано line равно "  дышит   жабрами "
+    ожидается "дышит жабрами"
+  соединить («Spaced words» от line) по " "
+
+тотальная функция «Replaced»
+  принимает text: строка, sought: строка, replacement: строка
+  возвращает строка
+  пример «Every occurrence is replaced»
+    дано text равно "а,б,в"
+    дано sought равно ","
+    дано replacement равно " "
+    ожидается "а б в"
+  соединить (разделить text по sought) по replacement
+
+тотальная функция «Sentences of»
+  принимает text: строка
+  возвращает список строки
+  пример «A text is cut at full stops and line ends count as spaces»
+    дано text равно "Имя: Сократ.\nВсе люди\nсмертны. Сократ — человек."
+    ожидается ["Имя: Сократ", "Все люди смертны", "Сократ — человек"]
+  отфильтровать (отобразить (разделить (свёртка ["\n", "\r", "\t"] начиная с text как flat и blank → «Replaced» от flat и blank и " ") по ".") как piece → «Trimmed» от piece) где piece → не (пусто piece)
+
+тотальная функция «Kind of»
+  принимает sentence: строка
+  возвращает строка
+  пример «A notion is declared by its heading»
+    дано sentence равно "Понятие: человек, люди"
+    ожидается "notion"
+  пример «A property is declared by its heading»
+    дано sentence равно "Свойство: смертен, смертны"
+    ожидается "property"
+  пример «A proper name is declared by its heading»
+    дано sentence равно "Имя: Сократ"
+    ожидается "name"
+  пример «A sentence of the reasoning declares nothing»
+    дано sentence равно "Все люди смертны"
+    ожидается ""
+  «Chosen» от [(«When» от (sentence начинается с "Понятие:") и "notion"), («When» от (sentence начинается с "Свойство:") и "property"), («When» от (sentence начинается с "Имя:") и "name")] и ""
+
+тотальная функция «After the heading»
+  принимает sentence: строка
+  возвращает строка
+  пример «The heading and its colon are dropped»
+    дано sentence равно "Понятие: человек, люди"
+    ожидается "человек, люди"
+  разбор (разделить sentence по ":")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «Trimmed» от (соединить хвост по ":")
+
+тотальная функция «Clauses of»
+  принимает sentence: строка
+  возвращает список строки
+  пример «Clauses stand between semicolons»
+    дано sentence равно "Свойство: смертен, смертны; она смертна; оно смертно"
+    ожидается ["смертен, смертны", "она смертна", "оно смертно"]
+  отобразить (разделить («After the heading» от sentence) по ";") как piece → «Trimmed» от piece
+
+тотальная функция «Forms of»
+  принимает sentence: строка
+  возвращает список строки
+  пример «The first clause lists the forms for one and for many»
+    дано sentence равно "Понятие: домашний питомец, домашние питомцы; он"
+    ожидается ["домашний питомец", "домашние питомцы"]
+  разбор («Clauses of» от sentence)
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то отфильтровать (отобразить (разделить голова по ",") как piece → «Trimmed» от piece) где piece → не (пусто piece)
+
+тотальная функция «Agreements of»
+  принимает sentence: строка
+  возвращает список строки
+  пример «Every clause after the first one speaks of agreement»
+    дано sentence равно "Свойство: смертен, смертны; она смертна; оно смертно"
+    ожидается ["она смертна", "оно смертно"]
+  разбор («Clauses of» от sentence)
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Form at»
+  принимает forms: список строки, position: число
+  возвращает строка
+  пример «The second form of two»
+    дано forms равно ["человек", "люди"]
+    дано position равно 2
+    ожидается "люди"
+  пример «A missing form is empty»
+    дано forms равно ["Сократ"]
+    дано position равно 2
+    ожидается ""
+  если (position не меньше 1) и притом (position не больше (длина forms))
+    то элемент position в forms
+    иначе ""
+
+тотальная функция «Agreed form»
+  принимает agreements: список строки, pronoun: строка
+  возвращает строка
+  пример «The form that follows the pronoun»
+    дано agreements равно ["она смертна", "оно смертно"]
+    дано pronoun равно "оно"
+    ожидается "смертно"
+  пример «A pronoun that was not named gives nothing»
+    дано agreements равно ["она смертна"]
+    дано pronoun равно "оно"
+    ожидается ""
+  свёртка agreements начиная с "" как found и clause → если clause начинается с (соединить [pronoun, " "] по "") то (подстрока clause с ((длина pronoun) плюс 2) по (длина clause)) иначе found
+
+тотальная функция «Declared gender»
+  принимает agreements: список строки
+  возвращает строка
+  пример «A bare pronoun names the gender»
+    дано agreements равно ["она"]
+    ожидается "она"
+  пример «Without a bare pronoun the gender is masculine»
+    дано agreements равно ["она смертна"]
+    ожидается "он"
+  свёртка agreements начиная с "он" как found и clause → если (clause равен "она") или (clause равен "оно") то clause иначе found
+
+тотальная функция «Declared word»
+  принимает sentence: строка
+  возвращает «Word»
+  пример «A notion carries the form for one and the form for many»
+    дано sentence равно "Понятие: человек, люди"
+    ожидается запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+  пример «A feminine notion names its pronoun»
+    дано sentence равно "Понятие: рыба, рыбы; она"
+    ожидается запись «Word» с «kind» равным "notion" и «singular» равным "рыба" и «plural» равным "рыбы" и «feminine» равным "" и «neuter» равным "" и «gender» равным "она"
+  пример «A property may carry the forms that agree with she and it»
+    дано sentence равно "Свойство: смертен, смертны; она смертна; оно смертно"
+    ожидается запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "смертна" и «neuter» равным "смертно" и «gender» равным "он"
+  пример «A proper name has one form»
+    дано sentence равно "Имя: Сократ"
+    ожидается запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+  запись «Word» с «kind» равным («Kind of» от sentence) и «singular» равным («Form at» от («Forms of» от sentence) и 1) и «plural» равным («Form at» от («Forms of» от sentence) и 2) и «feminine» равным («Agreed form» от («Agreements of» от sentence) и "она") и «neuter» равным («Agreed form» от («Agreements of» от sentence) и "оно") и «gender» равным («Declared gender» от («Agreements of» от sentence))
+
+тотальная функция «Forms wanted»
+  принимает kind: строка
+  возвращает число
+  пример «A proper name has one form»
+    дано kind равно "name"
+    ожидается 1
+  пример «A notion has a form for one and a form for many»
+    дано kind равно "notion"
+    ожидается 2
+  если kind равен "name" то 1 иначе 2
+
+тотальная функция «Declaration faults»
+  принимает sentence: строка
+  возвращает список строки
+  пример «A notion with both forms is declared well»
+    дано sentence равно "Понятие: человек, люди"
+    ожидается пустой список
+  пример «A notion without the form for many is named»
+    дано sentence равно "Понятие: человек"
+    ожидается ["строка словаря «Понятие: человек» называет форм: 1, а нужно 2"]
+  пример «A clause that does not begin with a pronoun is named»
+    дано sentence равно "Имя: Ксантиппа; женщина"
+    ожидается ["строка словаря «Имя: Ксантиппа; женщина»: после точки с запятой ждали «она» или «оно», а стоит «женщина»"]
+  «Соединить списки» от («Applying» от [(«When» от (не ((длина («Forms of» от sentence)) равен («Forms wanted» от («Kind of» от sentence)))) и (соединить ["строка словаря «", sentence, "» называет форм: ", (к строке (длина («Forms of» от sentence))), ", а нужно ", (к строке («Forms wanted» от («Kind of» от sentence)))] по ""))]) и (отобразить (отфильтровать («Agreements of» от sentence) где clause → не ((clause равен "она") или (clause равен "оно") или (clause начинается с "она ") или (clause начинается с "оно "))) как clause → соединить ["строка словаря «", sentence, "»: после точки с запятой ждали «она» или «оно», а стоит «", clause, "»"] по "")
+
+тотальная функция «Forms of word»
+  принимает word: «Word»
+  возвращает список строки
+  пример «Only the declared forms are listed»
+    дано word равно запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "смертна" и «neuter» равным "" и «gender» равным "он"
+    ожидается ["смертен", "смертны", "смертна"]
+  отфильтровать [(word.«singular»), (word.«plural»), (word.«feminine»), (word.«neuter»)] где form → не (пусто form)
+
+тотальная функция «All forms»
+  принимает words: список «Word»
+  возвращает список строки
+  пример «Forms of every word follow one another»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    ожидается ["человек", "люди", "Сократ"]
+  свёртка words начиная с (пустой список) как gathered и word → «Соединить списки» от gathered и («Forms of word» от word)
+
+тотальная функция «Repeated forms»
+  принимает forms: список строки
+  возвращает список строки
+  пример «A form declared twice is named once»
+    дано forms равно ["человек", "люди", "человек", "человек"]
+    ожидается ["форма «человек» объявлена в словаре больше одного раза"]
+  пример «Different forms are fine»
+    дано forms равно ["человек", "люди"]
+    ожидается пустой список
+  отобразить (свёртка forms начиная с (пустой список) как repeated и form → если ((длина (отфильтровать forms где other → other равен form)) больше 1) и притом (не (repeated содержит form)) то (добавить form к repeated) иначе repeated) как form → соединить ["форма «", form, "» объявлена в словаре больше одного раза"] по ""
+
+тотальная функция «No word»
+  возвращает «Word»
+  пример «A word that was not found has no kind»
+    ожидается запись «Word» с «kind» равным "" и «singular» равным "" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+  запись «Word» с «kind» равным "" и «singular» равным "" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+
+тотальная функция «Word of»
+  принимает words: список «Word», form: строка
+  возвращает «Word»
+  пример «A word is found by any of its forms»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано form равно "люди"
+    ожидается запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+  пример «An undeclared form finds no word»
+    дано words равно пустой список
+    дано form равно "люди"
+    ожидается запись «Word» с «kind» равным "" и «singular» равным "" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+  свёртка words начиная с («No word») как found и word → если (пусто (found.«kind»)) и притом ((«Forms of word» от word) содержит form) то word иначе found
+
+тотальная функция «Tokens of»
+  принимает sentence: строка
+  возвращает список строки
+  пример «Commas and dashes are not words»
+    дано sentence равно "Следовательно, Сократ — человек"
+    ожидается ["Следовательно", "Сократ", "человек"]
+  отфильтровать («Spaced words» от («Replaced» от sentence и "," и " ")) где token → не (["—", "–", "-"] содержит token)
+
+тотальная функция «Concludes»
+  принимает tokens: список строки
+  возвращает признак
+  пример «The conclusion opens with its mark»
+    дано tokens равно ["Следовательно", "Сократ", "смертен"]
+    ожидается да
+  пример «A premise has no mark»
+    дано tokens равно ["Сократ", "смертен"]
+    ожидается нет
+  разбор tokens
+    случай пусто
+      то нет
+    случай голова и хвост
+      то ["Следовательно", "следовательно"] содержит голова
+
+тотальная функция «Without the first»
+  принимает tokens: список строки
+  возвращает список строки
+  пример «The first token is dropped»
+    дано tokens равно ["Следовательно", "Сократ", "смертен"]
+    ожидается ["Сократ", "смертен"]
+  пример «Nothing is left of nothing»
+    дано tokens равно пустой список
+    ожидается пустой список
+  разбор tokens
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Claim tokens»
+  принимает tokens: список строки
+  возвращает список строки
+  пример «The conclusion mark is not part of the claim»
+    дано tokens равно ["Следовательно", "Сократ", "смертен"]
+    ожидается ["Сократ", "смертен"]
+  пример «A premise is its own claim»
+    дано tokens равно ["Сократ", "человек"]
+    ожидается ["Сократ", "человек"]
+  если «Concludes» от tokens то «Without the first» от tokens иначе tokens
+
+объект «Opening»
+  «pattern»: строка
+  «gender»: строка
+  «rest»: список строки
+
+тотальная функция «First of»
+  принимает tokens: список строки
+  возвращает строка
+  пример «The first token»
+    дано tokens равно ["один", "кит"]
+    ожидается "один"
+  пример «Nothing has no first token»
+    дано tokens равно пустой список
+    ожидается ""
+  разбор tokens
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Gender of the numeral»
+  принимает numeral: строка
+  возвращает строка
+  пример «The feminine numeral»
+    дано numeral равно "одна"
+    ожидается "она"
+  пример «Another word is no numeral»
+    дано numeral равно "кит"
+    ожидается ""
+  «Chosen» от [(«When» от (numeral равен "один") и "он"), («When» от (numeral равен "одна") и "она"), («When» от (numeral равен "одно") и "оно")] и ""
+
+тотальная функция «Opening of»
+  принимает tokens: список строки
+  возвращает «Opening»
+  пример «A universal affirmative opens with its quantifier»
+    дано tokens равно ["Все", "люди", "смертны"]
+    ожидается запись «Opening» с «pattern» равным "all" и «gender» равным "" и «rest» равным ["люди", "смертны"]
+  пример «A universal negative opens with two words and the numeral carries the gender»
+    дано tokens равно ["ни", "одна", "рыба", "не", "кит"]
+    ожидается запись «Opening» с «pattern» равным "none" и «gender» равным "она" и «rest» равным ["рыба", "не", "кит"]
+  пример «A particular opens with its quantifier»
+    дано tokens равно ["Некоторые", "питомцы", "мохнаты"]
+    ожидается запись «Opening» с «pattern» равным "some" и «gender» равным "" и «rest» равным ["питомцы", "мохнаты"]
+  пример «A singular phrase opens with no quantifier»
+    дано tokens равно ["Сократ", "человек"]
+    ожидается запись «Opening» с «pattern» равным "one" и «gender» равным "" и «rest» равным ["Сократ", "человек"]
+  «Chosen» от [(«When» от (["Все", "все"] содержит («First of» от tokens)) и (запись «Opening» с «pattern» равным "all" и «gender» равным "" и «rest» равным («Without the first» от tokens))), («When» от (["Некоторые", "некоторые"] содержит («First of» от tokens)) и (запись «Opening» с «pattern» равным "some" и «gender» равным "" и «rest» равным («Without the first» от tokens))), («When» от (["Ни", "ни"] содержит («First of» от tokens)) и (запись «Opening» с «pattern» равным "none" и «gender» равным («Gender of the numeral» от («First of» от («Without the first» от tokens))) и «rest» равным («Without the first» от («Without the first» от tokens))))] и (запись «Opening» с «pattern» равным "one" и «gender» равным "" и «rest» равным tokens)
+
+объект «Split»
+  «subject»: строка
+  «denied»: признак
+  «predicate»: строка
+
+тотальная функция «Split at»
+  принимает subject: строка, rest: список строки
+  возвращает «Split»
+  пример «The negation stands between the subject and the predicate»
+    дано subject равно "кит"
+    дано rest равно ["не", "рыба"]
+    ожидается запись «Split» с «subject» равным "кит" и «denied» равным да и «predicate» равным "рыба"
+  пример «Without the negation the rest is the predicate»
+    дано subject равно "Сократ"
+    дано rest равно ["дышит", "жабрами"]
+    ожидается запись «Split» с «subject» равным "Сократ" и «denied» равным нет и «predicate» равным "дышит жабрами"
+  если («First of» от rest) равен "не"
+    то запись «Split» с «subject» равным subject и «denied» равным да и «predicate» равным (соединить («Without the first» от rest) по " ")
+    иначе запись «Split» с «subject» равным subject и «denied» равным нет и «predicate» равным (соединить rest по " ")
+
+тотальная функция «Splits after»
+  принимает taken: строка, rest: список строки
+  возвращает список «Split»
+  пример «Every place between two words may part the subject from the predicate»
+    дано taken равно ""
+    дано rest равно ["морские", "животные", "рыбы"]
+    ожидается [запись «Split» с «subject» равным "морские" и «denied» равным нет и «predicate» равным "животные рыбы", запись «Split» с «subject» равным "морские животные" и «denied» равным нет и «predicate» равным "рыбы", запись «Split» с «subject» равным "морские животные рыбы" и «denied» равным нет и «predicate» равным ""]
+  разбор rest
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то приписать («Split at» от («Trimmed» от (соединить [taken, голова] по " ")) и хвост) к («Splits after» от («Trimmed» от (соединить [taken, голова] по " ")) и хвост)
+
+тотальная функция «Splits of»
+  принимает rest: список строки
+  возвращает список «Split»
+  пример «A split needs a predicate»
+    дано rest равно ["Сократ", "смертен"]
+    ожидается [запись «Split» с «subject» равным "Сократ" и «denied» равным нет и «predicate» равным "смертен"]
+  отфильтровать («Splits after» от "" и rest) где parting → не (пусто (parting.«predicate»))
+
+тип «Outcome»
+  вариант «Understood» содержит judgment: «Judgment»
+  вариант «Misread» содержит weight: число, message: строка
+
+тотальная функция «Singular for»
+  принимает word: «Word», gender: строка
+  возвращает строка
+  пример «A property agrees with a feminine subject»
+    дано word равно запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "смертна" и «neuter» равным "" и «gender» равным "он"
+    дано gender равно "она"
+    ожидается "смертна"
+  пример «A notion has one form for one whatever the subject»
+    дано word равно запись «Word» с «kind» равным "notion" и «singular» равным "рыба" и «plural» равным "рыбы" и «feminine» равным "" и «neuter» равным "" и «gender» равным "она"
+    дано gender равно "он"
+    ожидается "рыба"
+  «Chosen» от [(«When» от (не ((word.«kind») равен "property")) и (word.«singular»)), («When» от (gender равен "она") и (word.«feminine»)), («When» от (gender равен "оно") и (word.«neuter»))] и (word.«singular»)
+
+тотальная функция «Kind in words»
+  принимает kind: строка
+  возвращает строка
+  пример «A notion is called a notion»
+    дано kind равно "notion"
+    ожидается "понятие"
+  «Chosen» от [(«When» от (kind равен "notion") и "понятие"), («When» от (kind равен "property") и "свойство"), («When» от (kind равен "name") и "имя")] и "слово вне словаря"
+
+тотальная функция «Wanted form»
+  принимает place: строка, wanted: строка, found: строка
+  возвращает список строки
+  пример «The right form raises no fault»
+    дано place равно "после «Все»"
+    дано wanted равно "люди"
+    дано found равно "люди"
+    ожидается пустой список
+  пример «Another form of the same word is named together with the wanted one»
+    дано place равно "после «Все»"
+    дано wanted равно "люди"
+    дано found равно "человек"
+    ожидается ["после «Все» ждали форму «люди», а стоит «человек»"]
+  пример «A form that was never declared is asked for»
+    дано place равно "при «Ксантиппа» (она)"
+    дано wanted равно ""
+    дано found равно "смертен"
+    ожидается ["при «Ксантиппа» (она) нужна форма, которой в словаре нет: допишите её в строку слова «смертен»"]
+  «Applying» от [(«When» от (пусто wanted) и (соединить [place, " нужна форма, которой в словаре нет: допишите её в строку слова «", found, "»"] по "")), («When» от ((не (пусто wanted)) и притом (не (wanted равен found))) и (соединить [place, " ждали форму «", wanted, "», а стоит «", found, "»"] по ""))]
+
+тотальная функция «Wanted kind»
+  принимает place: строка, wanted: строка, word: «Word»
+  возвращает список строки
+  пример «A notion where a notion is wanted raises no fault»
+    дано place равно "после «Все»"
+    дано wanted равно "notion"
+    дано word равно запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    ожидается пустой список
+  пример «A proper name where a notion is wanted is named»
+    дано place равно "после «Все»"
+    дано wanted равно "notion"
+    дано word равно запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    ожидается ["после «Все» ждали понятие, а «Сократ» объявлено как имя"]
+  «Applying» от [(«When» от (не ((word.«kind») равен wanted)) и (соединить [place, " ждали ", («Kind in words» от wanted), ", а «", (word.«singular»), "» объявлено как ", («Kind in words» от (word.«kind»))] по ""))]
+
+тотальная функция «Predicate faults»
+  принимает predicate: «Word»
+  возвращает список строки
+  пример «A proper name is not said of anything»
+    дано predicate равно запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    ожидается ["имя «Сократ» стоит там, где ждали понятие или свойство"]
+  «Applying» от [(«When» от ((predicate.«kind») равен "name") и (соединить ["имя «", (predicate.«singular»), "» стоит там, где ждали понятие или свойство"] по ""))]
+
+тотальная функция «Numeral for»
+  принимает gender: строка, capital: признак
+  возвращает строка
+  пример «The feminine numeral at the beginning of a sentence»
+    дано gender равно "она"
+    дано capital равно да
+    ожидается "Ни одна"
+  пример «The masculine numeral after the conclusion mark»
+    дано gender равно "он"
+    дано capital равно нет
+    ожидается "ни один"
+  соединить [(если capital то "Ни" иначе "ни"), («Chosen» от [(«When» от (gender равен "она") и "одна"), («When» от (gender равен "оно") и "одно")] и "один")] по " "
+
+тотальная функция «Parting faults»
+  принимает opening: «Opening», parting: «Split», subject: «Word», predicate: «Word»
+  возвращает список строки
+  пример «A universal affirmative with plural forms is read without faults»
+    дано opening равно запись «Opening» с «pattern» равным "all" и «gender» равным "" и «rest» равным ["люди", "смертны"]
+    дано parting равно запись «Split» с «subject» равным "люди" и «denied» равным нет и «predicate» равным "смертны"
+    дано subject равно запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    дано predicate равно запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    ожидается пустой список
+  пример «A universal affirmative with a negation is refused as ambiguous»
+    дано opening равно запись «Opening» с «pattern» равным "all" и «gender» равным "" и «rest» равным ["люди", "не", "смертны"]
+    дано parting равно запись «Split» с «subject» равным "люди" и «denied» равным да и «predicate» равным "смертны"
+    дано subject равно запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    дано predicate равно запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    ожидается ["образца «Все S не P» нет, он читается двояко: пишите «Ни один S не P» или «Некоторые S не P»"]
+  пример «The numeral of a universal negative agrees with its subject»
+    дано opening равно запись «Opening» с «pattern» равным "none" и «gender» равным "он" и «rest» равным ["рыба", "не", "кит"]
+    дано parting равно запись «Split» с «subject» равным "рыба" и «denied» равным да и «predicate» равным "кит"
+    дано subject равно запись «Word» с «kind» равным "notion" и «singular» равным "рыба" и «plural» равным "рыбы" и «feminine» равным "" и «neuter» равным "" и «gender» равным "она"
+    дано predicate равно запись «Word» с «kind» равным "notion" и «singular» равным "кит" и «plural» равным "киты" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    ожидается ["перед «рыба» ждали «Ни одна»: слово объявлено как «она»"]
+  пример «A singular phrase begins with a proper name»
+    дано opening равно запись «Opening» с «pattern» равным "one" и «gender» равным "" и «rest» равным ["человек", "смертен"]
+    дано parting равно запись «Split» с «subject» равным "человек" и «denied» равным нет и «predicate» равным "смертен"
+    дано subject равно запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    дано predicate равно запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    ожидается ["в начале предложения без «Все», «Ни один» и «Некоторые» ждали имя, а «человек» объявлено как понятие"]
+  «Соединить списки» от («Predicate faults» от predicate) и («Chosen» от [(«When» от ((opening.«pattern») равен "all") и («Соединить списки» от («Соединить списки» от («Wanted kind» от "после «Все»" и "notion" и subject) и («Wanted form» от "после «Все»" и (subject.«plural») и (parting.«subject»))) и («Соединить списки» от («Applying» от [(«When» от (parting.«denied») и "образца «Все S не P» нет, он читается двояко: пишите «Ни один S не P» или «Некоторые S не P»")]) и («Wanted form» от "в сказуемом при «Все»" и (predicate.«plural») и (parting.«predicate»))))), («When» от ((opening.«pattern») равен "some") и («Соединить списки» от («Соединить списки» от («Wanted kind» от "после «Некоторые»" и "notion" и subject) и («Wanted form» от "после «Некоторые»" и (subject.«plural») и (parting.«subject»))) и («Wanted form» от "в сказуемом при «Некоторые»" и (predicate.«plural») и (parting.«predicate»)))), («When» от ((opening.«pattern») равен "none") и («Соединить списки» от («Соединить списки» от («Wanted kind» от "после «Ни один»" и "notion" и subject) и («Wanted form» от "после «Ни один»" и (subject.«singular») и (parting.«subject»))) и («Соединить списки» от («Applying» от [(«When» от (не ((opening.«gender») равен (subject.«gender»))) и (соединить ["перед «", (subject.«singular»), "» ждали «", («Numeral for» от (subject.«gender») и да), "»: слово объявлено как «", (subject.«gender»), "»"] по "")), («When» от (не (parting.«denied»)) и "после «Ни один S» ждали «не»")]) и («Wanted form» от (соединить ["в сказуемом при «", (subject.«singular»), "» (", (subject.«gender»), ")"] по "") и («Singular for» от predicate и (subject.«gender»)) и (parting.«predicate»)))))] и («Соединить списки» от («Wanted kind» от "в начале предложения без «Все», «Ни один» и «Некоторые»" и "name" и subject) и («Wanted form» от (соединить ["в сказуемом при «", (subject.«singular»), "» (", (subject.«gender»), ")"] по "") и («Singular for» от predicate и (subject.«gender»)) и (parting.«predicate»))))
+
+тотальная функция «Form for»
+  принимает pattern: строка, denied: признак
+  возвращает «Form»
+  пример «A particular phrase with a negation»
+    дано pattern равно "some"
+    дано denied равно да
+    ожидается вариант «Some not»
+  пример «A singular phrase without a negation»
+    дано pattern равно "one"
+    дано denied равно нет
+    ожидается вариант «Is»
+  «Chosen» от [(«When» от (pattern равен "all") и (вариант «All»)), («When» от (pattern равен "none") и (вариант «None»)), («When» от ((pattern равен "some") и притом denied) и (вариант «Some not»)), («When» от (pattern равен "some") и (вариант «Some»)), («When» от denied и (вариант «Is not»))] и (вариант «Is»)
+
+тотальная функция «Judged parting»
+  принимает words: список «Word», opening: «Opening», parting: «Split»
+  возвращает «Outcome»
+  пример «Declared forms in their places give a judgment»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано opening равно запись «Opening» с «pattern» равным "all" и «gender» равным "" и «rest» равным ["люди", "смертны"]
+    дано parting равно запись «Split» с «subject» равным "люди" и «denied» равным нет и «predicate» равным "смертны"
+    ожидается вариант «Understood» с judgment равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен")
+  пример «An undeclared form is a misreading of no weight»
+    дано words равно пустой список
+    дано opening равно запись «Opening» с «pattern» равным "all" и «gender» равным "" и «rest» равным ["люди", "смертны"]
+    дано parting равно запись «Split» с «subject» равным "люди" и «denied» равным нет и «predicate» равным "смертны"
+    ожидается вариант «Misread» с weight равным 0 и message равным ""
+  если (пусто ((«Word of» от words и (parting.«subject»)).«kind»)) или (пусто ((«Word of» от words и (parting.«predicate»)).«kind»))
+    то вариант «Misread» с weight равным 0 и message равным ""
+    иначе разбор («Parting faults» от opening и parting и («Word of» от words и (parting.«subject»)) и («Word of» от words и (parting.«predicate»)))
+      случай пусто
+        то вариант «Understood» с judgment равным (запись «Judgment» с «form» равным («Form for» от (opening.«pattern») и (parting.«denied»)) и «subject» равным ((«Word of» от words и (parting.«subject»)).«singular») и «predicate» равным ((«Word of» от words и (parting.«predicate»)).«singular»))
+      случай голова и хвост
+        то вариант «Misread» с weight равным 1 и message равным голова
+
+тотальная функция «Understood ones»
+  принимает outcomes: список «Outcome»
+  возвращает список «Judgment»
+  пример «Only judgments are kept»
+    дано outcomes равно [вариант «Misread» с weight равным 0 и message равным "", вариант «Understood» с judgment равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")]
+    ожидается [запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"]
+  свёртка outcomes начиная с (пустой список) как kept и outcome → разбор outcome
+    случай вариант «Understood» с judgment как judgment
+      то добавить judgment к kept
+    случай любое
+      то kept
+
+тотальная функция «Weighty messages»
+  принимает outcomes: список «Outcome»
+  возвращает список строки
+  пример «Only misreadings that name a fault are kept»
+    дано outcomes равно [вариант «Misread» с weight равным 0 и message равным "", вариант «Misread» с weight равным 1 и message равным "после «Все» ждали форму «люди», а стоит «человек»"]
+    ожидается ["после «Все» ждали форму «люди», а стоит «человек»"]
+  свёртка outcomes начиная с (пустой список) как kept и outcome → разбор outcome
+    случай вариант «Misread» с weight как weight и message как message
+      то если weight больше 0 то (добавить message к kept) иначе kept
+    случай любое
+      то kept
+
+тотальная функция «Known tokens»
+  принимает words: список «Word»
+  возвращает список строки
+  пример «Every word of every declared form is known, and so is the negation»
+    дано words равно [запись «Word» с «kind» равным "property" и «singular» равным "дышит жабрами" и «plural» равным "дышат жабрами" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    ожидается ["не", "дышит", "жабрами", "дышат", "жабрами"]
+  свёртка («All forms» от words) начиная с ["не"] как known и form → «Соединить списки» от known и («Spaced words» от form)
+
+тотальная функция «Unknown word message»
+  принимает words: список «Word», rest: список строки
+  возвращает строка
+  пример «The first undeclared word is named»
+    дано words равно [запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано rest равно ["Сократ", "мудр"]
+    ожидается "слово «мудр» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»"
+  пример «Declared words that fit no pattern are said to fit none»
+    дано words равно [запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано rest равно ["Сократ"]
+    ожидается "предложение не подходит ни под один образец: ждали подлежащее и сказуемое из объявленных форм"
+  разбор (отфильтровать rest где token → не ((«Known tokens» от words) содержит token))
+    случай пусто
+      то "предложение не подходит ни под один образец: ждали подлежащее и сказуемое из объявленных форм"
+    случай голова и хвост
+      то соединить ["слово «", голова, "» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»"] по ""
+
+тотальная функция «Misreading»
+  принимает words: список «Word», rest: список строки, outcomes: список «Outcome»
+  возвращает «Outcome»
+  пример «A named fault is preferred to an unknown word»
+    дано words равно пустой список
+    дано rest равно ["человек", "смертны"]
+    дано outcomes равно [вариант «Misread» с weight равным 1 и message равным "после «Все» ждали форму «люди», а стоит «человек»"]
+    ожидается вариант «Misread» с weight равным 1 и message равным "после «Все» ждали форму «люди», а стоит «человек»"
+  разбор («Weighty messages» от outcomes)
+    случай пусто
+      то вариант «Misread» с weight равным 0 и message равным («Unknown word message» от words и rest)
+    случай голова и хвост
+      то вариант «Misread» с weight равным 1 и message равным голова
+
+тотальная функция «Single reading»
+  принимает words: список «Word», rest: список строки, outcomes: список «Outcome»
+  возвращает «Outcome»
+  пример «One judgment is the reading»
+    дано words равно пустой список
+    дано rest равно ["Сократ", "человек"]
+    дано outcomes равно [вариант «Understood» с judgment равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")]
+    ожидается вариант «Understood» с judgment равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")
+  пример «Two judgments are no reading»
+    дано words равно пустой список
+    дано rest равно ["Сократ", "человек"]
+    дано outcomes равно [вариант «Understood» с judgment равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), вариант «Understood» с judgment равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен")]
+    ожидается вариант «Misread» с weight равным 1 и message равным "предложение читается двумя способами: формы словаря накладываются друг на друга"
+  разбор («Understood ones» от outcomes)
+    случай пусто
+      то «Misreading» от words и rest и outcomes
+    случай голова и хвост
+      то если (длина хвост) равен 0
+        то вариант «Understood» с judgment равным голова
+        иначе вариант «Misread» с weight равным 1 и message равным "предложение читается двумя способами: формы словаря накладываются друг на друга"
+
+тотальная функция «Read claim»
+  принимает words: список «Word», tokens: список строки
+  возвращает «Outcome»
+  пример «A universal affirmative is read from declared forms»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано tokens равно ["Все", "люди", "смертны"]
+    ожидается вариант «Understood» с judgment равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен")
+  пример «An undeclared word is named»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано tokens равно ["Все", "люди", "смертны"]
+    ожидается вариант «Misread» с weight равным 0 и message равным "слово «смертны» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»"
+  «Single reading» от words и ((«Opening of» от tokens).«rest») и (отобразить («Splits of» от ((«Opening of» от tokens).«rest»)) как parting → «Judged parting» от words и («Opening of» от tokens) и parting)
+
+объект «Numbered»
+  «number»: число
+  «text»: строка
+
+тотальная функция «Numbered ones»
+  принимает statements: список строки
+  возвращает список «Numbered»
+  пример «Sentences are counted from one»
+    дано statements равно ["Все люди смертны", "Сократ — человек"]
+    ожидается [запись «Numbered» с «number» равным 1 и «text» равным "Все люди смертны", запись «Numbered» с «number» равным 2 и «text» равным "Сократ — человек"]
+  свёртка statements начиная с (пустой список) как counted и phrase → добавить (запись «Numbered» с «number» равным ((длина counted) плюс 1) и «text» равным phrase) к counted
+
+тотальная функция «Statement faults»
+  принимает words: список «Word», phrase: «Numbered»
+  возвращает список строки
+  пример «A sentence that is read raises no fault»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано phrase равно запись «Numbered» с «number» равным 2 и «text» равным "Сократ — человек"
+    ожидается пустой список
+  пример «A fault carries the number and the text of its sentence»
+    дано words равно [запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано phrase равно запись «Numbered» с «number» равным 2 и «text» равным "Сократ — человек"
+    ожидается ["предложение 2 «Сократ — человек.»: слово «человек» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»"]
+  разбор («Read claim» от words и («Claim tokens» от («Tokens of» от (phrase.«text»))))
+    случай вариант «Misread» с weight как weight и message как message
+      то [(соединить ["предложение ", (к строке (phrase.«number»)), " «", (phrase.«text»), ".»: ", message] по "")]
+    случай любое
+      то пустой список
+
+тотальная функция «No judgment»
+  возвращает «Judgment»
+  пример «A sentence that was not read carries an empty judgment»
+    ожидается запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "" и «predicate» равным ""
+  запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "" и «predicate» равным ""
+
+тотальная функция «Judgment of»
+  принимает outcome: «Outcome»
+  возвращает «Judgment»
+  пример «A reading gives its judgment»
+    дано outcome равно вариант «Understood» с judgment равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен")
+    ожидается запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен"
+  пример «A misreading gives the empty judgment»
+    дано outcome равно вариант «Misread» с weight равным 0 и message равным ""
+    ожидается запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "" и «predicate» равным ""
+  разбор outcome
+    случай вариант «Understood» с judgment как judgment
+      то judgment
+    случай любое
+      то «No judgment»
+
+тотальная функция «Sentence from»
+  принимает words: список «Word», phrase: «Numbered»
+  возвращает «Sentence»
+  пример «The conclusion mark makes a sentence the conclusion»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано phrase равно запись «Numbered» с «number» равным 3 и «text» равным "Следовательно, Сократ — человек"
+    ожидается запись «Sentence» с «number» равным 3 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")
+  запись «Sentence» с «number» равным (phrase.«number») и «concludes» равным («Concludes» от («Tokens of» от (phrase.«text»))) и «judgment» равным («Judgment of» от («Read claim» от words и («Claim tokens» от («Tokens of» от (phrase.«text»)))))
+
+тотальная функция «Order faults»
+  принимает statements: список строки
+  возвращает список строки
+  пример «Premises and then one conclusion are in order»
+    дано statements равно ["Все люди смертны", "Следовательно, Сократ смертен"]
+    ожидается пустой список
+  пример «A text without a conclusion is named»
+    дано statements равно ["Все люди смертны"]
+    ожидается ["в рассуждении нет заключения: последнее предложение начинается со слова «Следовательно,»"]
+  пример «A conclusion without premises is named»
+    дано statements равно ["Следовательно, Сократ смертен"]
+    ожидается ["в рассуждении нет ни одной посылки"]
+  пример «A conclusion in the middle is named»
+    дано statements равно ["Следовательно, Сократ смертен", "Все люди смертны"]
+    ожидается ["заключение стоит не последним: после «Следовательно, …» предложений быть не должно"]
+  «Applying» от [(«When» от ((длина (отфильтровать statements где phrase → «Concludes» от («Tokens of» от phrase))) равен 0) и "в рассуждении нет заключения: последнее предложение начинается со слова «Следовательно,»"), («When» от ((длина (отфильтровать statements где phrase → «Concludes» от («Tokens of» от phrase))) больше 1) и "в рассуждении больше одного заключения: «Следовательно,» стоит только в последнем предложении"), («When» от ((длина (отфильтровать statements где phrase → не («Concludes» от («Tokens of» от phrase)))) равен 0) и "в рассуждении нет ни одной посылки"), («When» от (((длина (отфильтровать statements где phrase → «Concludes» от («Tokens of» от phrase))) равен 1) и притом (не («Concludes» от («Tokens of» от (свёртка statements начиная с "" как last и phrase → phrase))))) и "заключение стоит не последним: после «Следовательно, …» предложений быть не должно")]
+
+тип «Reading»
+  вариант «Read» содержит words: список «Word», sentences: список «Sentence»
+  вариант «Unread» содержит faults: список строки
+
+тотальная функция «Text faults»
+  принимает text: строка
+  возвращает список строки
+  пример «The classic text is read without faults»
+    дано text равно "Понятие: человек, люди. Свойство: смертен, смертны. Имя: Сократ. Все люди смертны. Сократ — человек. Следовательно, Сократ смертен."
+    ожидается пустой список
+  пример «An undeclared form is named with its sentence»
+    дано text равно "Понятие: человек, люди. Имя: Сократ. Сократ — человек. Следовательно, Сократ смертен."
+    ожидается ["предложение 2 «Следовательно, Сократ смертен.»: слово «смертен» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»"]
+  «Соединить списки» от («Соединить списки» от (свёртка (отфильтровать («Sentences of» от text) где sentence → не (пусто («Kind of» от sentence))) начиная с (пустой список) как gathered и sentence → «Соединить списки» от gathered и («Declaration faults» от sentence)) и («Repeated forms» от («All forms» от («Words of» от text)))) и («Соединить списки» от (свёртка («Numbered ones» от («Statements of» от text)) начиная с (пустой список) как gathered и phrase → «Соединить списки» от gathered и («Statement faults» от («Words of» от text) и phrase)) и («Order faults» от («Statements of» от text)))
+
+тотальная функция «Words of»
+  принимает text: строка
+  возвращает список «Word»
+  пример «Every declaration of the text gives a word»
+    дано text равно "Имя: Сократ. Сократ — человек."
+    ожидается [запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+  отобразить (отфильтровать («Sentences of» от text) где sentence → не (пусто («Kind of» от sentence))) как sentence → «Declared word» от sentence
+
+тотальная функция «Statements of»
+  принимает text: строка
+  возвращает список строки
+  пример «Sentences that declare nothing are the reasoning»
+    дано text равно "Имя: Сократ. Сократ — человек."
+    ожидается ["Сократ — человек"]
+  отфильтровать («Sentences of» от text) где sentence → пусто («Kind of» от sentence)
+
+тотальная функция «Read text»
+  принимает text: строка
+  возвращает «Reading»
+  пример «A text with an undeclared word is not read, and the word is named»
+    дано text равно "Имя: Сократ. Сократ — человек. Следовательно, Сократ — человек."
+    ожидается вариант «Unread» с faults равным ["предложение 1 «Сократ — человек.»: слово «человек» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»", "предложение 2 «Следовательно, Сократ — человек.»: слово «человек» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»"]
+  пример «A declared text gives its words and its judgments»
+    дано text равно "Понятие: человек, люди. Имя: Сократ. Сократ — человек. Следовательно, Сократ — человек."
+    ожидается вариант «Read» с words равным [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"] и sentences равным [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")]
+  разбор («Text faults» от text)
+    случай пусто
+      то вариант «Read» с words равным («Words of» от text) и sentences равным (отобразить («Numbered ones» от («Statements of» от text)) как phrase → «Sentence from» от («Words of» от text) и phrase)
+    случай голова и хвост
+      то вариант «Unread» с faults равным («Text faults» от text)
+
+тотальная функция «Word named»
+  принимает words: список «Word», name: строка
+  возвращает «Word»
+  пример «A word is named by its form for one»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано name равно "человек"
+    ожидается запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+  пример «The form for many names no word»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано name равно "люди"
+    ожидается запись «Word» с «kind» равным "" и «singular» равным "" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+  свёртка words начиная с («No word») как found и word → если (пусто (found.«kind»)) и притом ((word.«singular») равен name) то word иначе found
+
+тотальная функция «Copula»
+  принимает predicate: «Word», denied: признак
+  возвращает строка
+  пример «A notion is joined with a dash»
+    дано predicate равно запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    дано denied равно нет
+    ожидается " — "
+  пример «A denied notion keeps the dash»
+    дано predicate равно запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    дано denied равно да
+    ожидается " — не "
+  пример «A property follows its subject directly»
+    дано predicate равно запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"
+    дано denied равно нет
+    ожидается " "
+  «Chosen» от [(«When» от (((predicate.«kind») равен "notion") и притом denied) и " — не "), («When» от ((predicate.«kind») равен "notion") и " — "), («When» от denied и " не ")] и " "
+
+тотальная функция «Quantifier»
+  принимает word: строка, capital: признак
+  возвращает строка
+  пример «A quantifier opens a premise with a capital letter»
+    дано word равно "все"
+    дано capital равно да
+    ожидается "Все"
+  пример «A quantifier after the conclusion mark stays small»
+    дано word равно "некоторые"
+    дано capital равно нет
+    ожидается "некоторые"
+  «Chosen» от [(«When» от (capital и притом (word равен "все")) и "Все"), («When» от (capital и притом (word равен "некоторые")) и "Некоторые")] и word
+
+тотальная функция «Clause of»
+  принимает words: список «Word», judgment: «Judgment», capital: признак
+  возвращает строка
+  пример «A universal affirmative with a property»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано judgment равно запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен"
+    дано capital равно да
+    ожидается "Все люди смертны"
+  пример «A universal negative agrees with a feminine subject»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "рыба" и «plural» равным "рыбы" и «feminine» равным "" и «neuter» равным "" и «gender» равным "она", запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "смертна" и «neuter» равным "" и «gender» равным "он"]
+    дано judgment равно запись «Judgment» с «form» равным (вариант «None») и «subject» равным "рыба" и «predicate» равным "смертен"
+    дано capital равно нет
+    ожидается "ни одна рыба не смертна"
+  пример «A particular negative with a notion keeps the dash»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "кит" и «plural» равным "киты" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "notion" и «singular» равным "рыба" и «plural» равным "рыбы" и «feminine» равным "" и «neuter» равным "" и «gender» равным "она"]
+    дано judgment равно запись «Judgment» с «form» равным (вариант «Some not») и «subject» равным "кит" и «predicate» равным "рыба"
+    дано capital равно да
+    ожидается "Некоторые киты — не рыбы"
+  пример «A singular statement with a notion»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано judgment равно запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"
+    дано capital равно нет
+    ожидается "Сократ — человек"
+  разбор (judgment.«form»)
+    случай вариант «All»
+      то соединить [(«Quantifier» от "все" и capital), " ", ((«Word named» от words и (judgment.«subject»)).«plural»), («Copula» от («Word named» от words и (judgment.«predicate»)) и нет), ((«Word named» от words и (judgment.«predicate»)).«plural»)] по ""
+    случай вариант «None»
+      то соединить [(«Numeral for» от ((«Word named» от words и (judgment.«subject»)).«gender») и capital), " ", (judgment.«subject»), " не ", («Singular for» от («Word named» от words и (judgment.«predicate»)) и ((«Word named» от words и (judgment.«subject»)).«gender»))] по ""
+    случай вариант «Some»
+      то соединить [(«Quantifier» от "некоторые" и capital), " ", ((«Word named» от words и (judgment.«subject»)).«plural»), («Copula» от («Word named» от words и (judgment.«predicate»)) и нет), ((«Word named» от words и (judgment.«predicate»)).«plural»)] по ""
+    случай вариант «Some not»
+      то соединить [(«Quantifier» от "некоторые" и capital), " ", ((«Word named» от words и (judgment.«subject»)).«plural»), («Copula» от («Word named» от words и (judgment.«predicate»)) и да), ((«Word named» от words и (judgment.«predicate»)).«plural»)] по ""
+    случай вариант «Is»
+      то соединить [(judgment.«subject»), («Copula» от («Word named» от words и (judgment.«predicate»)) и нет), («Singular for» от («Word named» от words и (judgment.«predicate»)) и ((«Word named» от words и (judgment.«subject»)).«gender»))] по ""
+    случай вариант «Is not»
+      то соединить [(judgment.«subject»), («Copula» от («Word named» от words и (judgment.«predicate»)) и да), («Singular for» от («Word named» от words и (judgment.«predicate»)) и ((«Word named» от words и (judgment.«subject»)).«gender»))] по ""
+
+тотальная функция «Sentence text»
+  принимает words: список «Word», sentence: «Sentence»
+  возвращает строка
+  пример «A premise is printed as a sentence of the language»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано sentence равно запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен")
+    ожидается "Все люди смертны."
+  пример «The conclusion is printed with its mark»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано sentence равно запись «Sentence» с «number» равным 3 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен")
+    ожидается "Следовательно, все люди смертны."
+  если sentence.«concludes»
+    то соединить ["Следовательно, ", («Clause of» от words и (sentence.«judgment») и нет), "."] по ""
+    иначе соединить [(«Clause of» от words и (sentence.«judgment») и да), "."] по ""
+
+тотальная функция «Printed and read again»
+  принимает words: список «Word», judgment: «Judgment»
+  возвращает «Outcome»
+  пример «A universal negative survives printing and reading»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "кит" и «plural» равным "киты" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "notion" и «singular» равным "рыба" и «plural» равным "рыбы" и «feminine» равным "" и «neuter» равным "" и «gender» равным "она"]
+    дано judgment равно запись «Judgment» с «form» равным (вариант «None») и «subject» равным "кит" и «predicate» равным "рыба"
+    ожидается вариант «Understood» с judgment равным (запись «Judgment» с «form» равным (вариант «None») и «subject» равным "кит" и «predicate» равным "рыба")
+  пример «A particular negative survives printing and reading»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "кит" и «plural» равным "киты" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "notion" и «singular» равным "рыба" и «plural» равным "рыбы" и «feminine» равным "" и «neuter» равным "" и «gender» равным "она"]
+    дано judgment равно запись «Judgment» с «form» равным (вариант «Some not») и «subject» равным "кит" и «predicate» равным "рыба"
+    ожидается вариант «Understood» с judgment равным (запись «Judgment» с «form» равным (вариант «Some not») и «subject» равным "кит" и «predicate» равным "рыба")
+  «Read claim» от words и («Tokens of» от («Clause of» от words и judgment и да))
+
+объект «Literal»
+  «who»: строка
+  «what»: строка
+  «holds»: признак
+
+объект «Given»
+  «conditional»: признак
+  «cause»: «Literal»
+  «effect»: «Literal»
+
+тотальная функция «Literal text»
+  принимает literal: «Literal»
+  возвращает строка
+  пример «A literal that holds is a column of its individual»
+    дано literal равно запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да
+    ожидается "«Сократ».«человек»"
+  пример «A literal that does not hold is a negation»
+    дано literal равно запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным нет
+    ожидается "(не «всякий».«рыба»)"
+  если literal.«holds»
+    то соединить ["«", (literal.«who»), "».«", (literal.«what»), "»"] по ""
+    иначе соединить ["(не «", (literal.«who»), "».«", (literal.«what»), "»)"] по ""
+
+тотальная функция «Given text»
+  принимает assumption: «Given»
+  возвращает строка
+  пример «A fact is its literal»
+    дано assumption равно запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да)
+    ожидается "«Сократ».«человек»"
+  пример «A link is a guard that promises nothing when its cause is false»
+    дано assumption равно запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да)
+    ожидается "(если «Сократ».«человек» то «Сократ».«смертен» иначе да)"
+  если assumption.«conditional»
+    то соединить ["(если ", («Literal text» от (assumption.«cause»)), " то ", («Literal text» от (assumption.«effect»)), " иначе да)"] по ""
+    иначе «Literal text» от (assumption.«effect»)
+
+тотальная функция «Fact»
+  принимает who: строка, what: строка, holds: признак
+  возвращает «Given»
+  пример «A fact is a assumption without a condition»
+    дано who равно "Сократ"
+    дано what равно "человек"
+    дано holds равно да
+    ожидается запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да)
+  запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным who и «what» равным what и «holds» равным holds) и «effect» равным (запись «Literal» с «who» равным who и «what» равным what и «holds» равным holds)
+
+тотальная функция «Link»
+  принимает who: строка, cause: строка, effect: строка, holds: признак
+  возвращает «Given»
+  пример «A link carries one individual from a cause to an effect»
+    дано who равно "всякий"
+    дано cause равно "кит"
+    дано effect равно "рыба"
+    дано holds равно нет
+    ожидается запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "кит" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным нет)
+  запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным who и «what» равным cause и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным who и «what» равным effect и «holds» равным holds)
+
+тотальная функция «Witness of»
+  принимает number: число
+  возвращает строка
+  пример «A particular premise names its own individual»
+    дано number равно 2
+    ожидается "предмет посылки 2"
+  соединить ["предмет посылки ", (к строке number)] по ""
+
+тотальная функция «Conclusion of»
+  принимает sentences: список «Sentence»
+  возвращает «Judgment»
+  пример «The sentence with the mark carries the conclusion»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен")]
+    ожидается запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен"
+  свёртка sentences начиная с («No judgment») как found и sentence → если sentence.«concludes» то (sentence.«judgment») иначе found
+
+тотальная функция «Premises of»
+  принимает sentences: список «Sentence»
+  возвращает список «Sentence»
+  пример «Sentences without the mark are premises»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен")]
+    ожидается [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")]
+  отфильтровать sentences где sentence → не (sentence.«concludes»)
+
+тотальная функция «Individual of»
+  принимает sentence: «Sentence»
+  возвращает список строки
+  пример «A singular statement speaks of its proper name»
+    дано sentence равно запись «Sentence» с «number» равным 2 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")
+    ожидается ["Сократ"]
+  пример «A particular premise brings an individual of its own»
+    дано sentence равно запись «Sentence» с «number» равным 2 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Some») и «subject» равным "питомец" и «predicate» равным "кролик")
+    ожидается ["предмет посылки 2"]
+  пример «A particular conclusion brings none»
+    дано sentence равно запись «Sentence» с «number» равным 3 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Some») и «subject» равным "питомец" и «predicate» равным "кролик")
+    ожидается пустой список
+  пример «A universal conclusion speaks of an arbitrary individual»
+    дано sentence равно запись «Sentence» с «number» равным 3 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "грек" и «predicate» равным "смертен")
+    ожидается ["всякий"]
+  пример «A universal premise brings none»
+    дано sentence равно запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен")
+    ожидается пустой список
+  разбор ((sentence.«judgment»).«form»)
+    случай вариант «Is»
+      то [((sentence.«judgment»).«subject»)]
+    случай вариант «Is not»
+      то [((sentence.«judgment»).«subject»)]
+    случай вариант «Some»
+      то если sentence.«concludes» то (пустой список) иначе [(«Witness of» от (sentence.«number»))]
+    случай вариант «Some not»
+      то если sentence.«concludes» то (пустой список) иначе [(«Witness of» от (sentence.«number»))]
+    случай любое
+      то если sentence.«concludes» то ["всякий"] иначе (пустой список)
+
+тотальная функция «Individuals of»
+  принимает sentences: список «Sentence»
+  возвращает список строки
+  пример «Each individual is listed once, in the order of the text»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен")]
+    ожидается ["Сократ"]
+  пример «A particular conclusion over no individual at all gets a nameless one»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "грек" и «predicate» равным "человек"), запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Some») и «subject» равным "грек" и «predicate» равным "человек")]
+    ожидается ["некий"]
+  разбор (свёртка sentences начиная с (пустой список) как gathered и sentence → свёртка («Individual of» от sentence) начиная с gathered как kept и individual → если kept содержит individual то kept иначе (добавить individual к kept))
+    случай пусто
+      то ["некий"]
+    случай голова и хвост
+      то приписать голова к хвост
+
+тотальная функция «Givens of premise»
+  принимает individuals: список строки, sentence: «Sentence»
+  возвращает список «Given»
+  пример «A universal premise is applied to every individual»
+    дано individuals равно ["Сократ", "Платон"]
+    дано sentence равно запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен")
+    ожидается [запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да), запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "Платон" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Платон" и «what» равным "смертен" и «holds» равным да)]
+  пример «A particular negative premise states two facts about its own individual»
+    дано individuals равно ["предмет посылки 2"]
+    дано sentence равно запись «Sentence» с «number» равным 2 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Some not») и «subject» равным "кит" и «predicate» равным "рыба")
+    ожидается [запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "предмет посылки 2" и «what» равным "кит" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "предмет посылки 2" и «what» равным "кит" и «holds» равным да), запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "предмет посылки 2" и «what» равным "рыба" и «holds» равным нет) и «effect» равным (запись «Literal» с «who» равным "предмет посылки 2" и «what» равным "рыба" и «holds» равным нет)]
+  разбор ((sentence.«judgment»).«form»)
+    случай вариант «All»
+      то отобразить individuals как individual → «Link» от individual и ((sentence.«judgment»).«subject») и ((sentence.«judgment»).«predicate») и да
+    случай вариант «None»
+      то отобразить individuals как individual → «Link» от individual и ((sentence.«judgment»).«subject») и ((sentence.«judgment»).«predicate») и нет
+    случай вариант «Some»
+      то [(«Fact» от («Witness of» от (sentence.«number»)) и ((sentence.«judgment»).«subject») и да), («Fact» от («Witness of» от (sentence.«number»)) и ((sentence.«judgment»).«predicate») и да)]
+    случай вариант «Some not»
+      то [(«Fact» от («Witness of» от (sentence.«number»)) и ((sentence.«judgment»).«subject») и да), («Fact» от («Witness of» от (sentence.«number»)) и ((sentence.«judgment»).«predicate») и нет)]
+    случай вариант «Is»
+      то [(«Fact» от ((sentence.«judgment»).«subject») и ((sentence.«judgment»).«predicate») и да)]
+    случай вариант «Is not»
+      то [(«Fact» от ((sentence.«judgment»).«subject») и ((sentence.«judgment»).«predicate») и нет)]
+
+тотальная функция «Givens of premises»
+  принимает sentences: список «Sentence»
+  возвращает список «Given»
+  пример «Premises give their assumptions in the order of the text»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен"), запись «Sentence» с «number» равным 2 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 3 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен")]
+    ожидается [запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да), запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да)]
+  свёртка («Premises of» от sentences) начиная с (пустой список) как gathered и sentence → «Соединить списки» от gathered и («Givens of premise» от («Individuals of» от sentences) и sentence)
+
+тотальная функция «Claims of»
+  принимает conclusion: «Judgment», witness: строка
+  возвращает список «Literal»
+  пример «A universal conclusion claims its predicate of the arbitrary individual»
+    дано conclusion равно запись «Judgment» с «form» равным (вариант «None») и «subject» равным "кашалот" и «predicate» равным "рыба"
+    дано witness равно "Сократ"
+    ожидается [запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным нет]
+  пример «A particular conclusion claims both terms of its witness»
+    дано conclusion равно запись «Judgment» с «form» равным (вариант «Some») и «subject» равным "питомец" и «predicate» равным "мохнат"
+    дано witness равно "предмет посылки 2"
+    ожидается [запись «Literal» с «who» равным "предмет посылки 2" и «what» равным "питомец" и «holds» равным да, запись «Literal» с «who» равным "предмет посылки 2" и «what» равным "мохнат" и «holds» равным да]
+  разбор (conclusion.«form»)
+    случай вариант «All»
+      то [(запись «Literal» с «who» равным "всякий" и «what» равным (conclusion.«predicate») и «holds» равным да)]
+    случай вариант «None»
+      то [(запись «Literal» с «who» равным "всякий" и «what» равным (conclusion.«predicate») и «holds» равным нет)]
+    случай вариант «Some»
+      то [(запись «Literal» с «who» равным witness и «what» равным (conclusion.«subject») и «holds» равным да), (запись «Literal» с «who» равным witness и «what» равным (conclusion.«predicate») и «holds» равным да)]
+    случай вариант «Some not»
+      то [(запись «Literal» с «who» равным witness и «what» равным (conclusion.«subject») и «holds» равным да), (запись «Literal» с «who» равным witness и «what» равным (conclusion.«predicate») и «holds» равным нет)]
+    случай вариант «Is»
+      то [(запись «Literal» с «who» равным (conclusion.«subject») и «what» равным (conclusion.«predicate») и «holds» равным да)]
+    случай вариант «Is not»
+      то [(запись «Literal» с «who» равным (conclusion.«subject») и «what» равным (conclusion.«predicate») и «holds» равным нет)]
+
+тотальная функция «Assumed with»
+  принимает conclusion: «Judgment»
+  возвращает список «Given»
+  пример «A universal conclusion takes an arbitrary individual of its subject»
+    дано conclusion равно запись «Judgment» с «form» равным (вариант «All») и «subject» равным "грек" и «predicate» равным "смертен"
+    ожидается [запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да)]
+  пример «A singular conclusion assumes nothing»
+    дано conclusion равно запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен"
+    ожидается пустой список
+  разбор (conclusion.«form»)
+    случай вариант «All»
+      то [(«Fact» от "всякий" и (conclusion.«subject») и да)]
+    случай вариант «None»
+      то [(«Fact» от "всякий" и (conclusion.«subject») и да)]
+    случай любое
+      то пустой список
+
+тотальная функция «Denial of»
+  принимает individuals: список строки, conclusion: «Judgment»
+  возвращает список «Given»
+  пример «A universal affirmative is denied by an individual of the subject without the predicate»
+    дано individuals равно ["всякий"]
+    дано conclusion равно запись «Judgment» с «form» равным (вариант «All») и «subject» равным "грек" и «predicate» равным "смертен"
+    ожидается [запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да), запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "смертен" и «holds» равным нет) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "смертен" и «holds» равным нет)]
+  пример «A particular negative is denied by the universal affirmative over every individual»
+    дано individuals равно ["предмет посылки 2"]
+    дано conclusion равно запись «Judgment» с «form» равным (вариант «Some not») и «subject» равным "кит" и «predicate» равным "рыба"
+    ожидается [запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "предмет посылки 2" и «what» равным "кит" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "предмет посылки 2" и «what» равным "рыба" и «holds» равным да)]
+  разбор (conclusion.«form»)
+    случай вариант «All»
+      то [(«Fact» от "всякий" и (conclusion.«subject») и да), («Fact» от "всякий" и (conclusion.«predicate») и нет)]
+    случай вариант «None»
+      то [(«Fact» от "всякий" и (conclusion.«subject») и да), («Fact» от "всякий" и (conclusion.«predicate») и да)]
+    случай вариант «Some»
+      то отобразить individuals как individual → «Link» от individual и (conclusion.«subject») и (conclusion.«predicate») и нет
+    случай вариант «Some not»
+      то отобразить individuals как individual → «Link» от individual и (conclusion.«subject») и (conclusion.«predicate») и да
+    случай вариант «Is»
+      то [(«Fact» от (conclusion.«subject») и (conclusion.«predicate») и нет)]
+    случай вариант «Is not»
+      то [(«Fact» от (conclusion.«subject») и (conclusion.«predicate») и да)]
+
+объект «Step»
+  «claim»: «Literal»
+  «reason»: «Literal»
+
+объект «Derivation»
+  «known»: список строки
+  «steps»: список «Step»
+
+тотальная функция «Applied»
+  принимает derivation: «Derivation», assumption: «Given»
+  возвращает «Derivation»
+  пример «A link whose cause is known makes its effect known»
+    дано derivation равно запись «Derivation» с «known» равным ["«Сократ».«человек»"] и «steps» равным пустой список
+    дано assumption равно запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да)
+    ожидается запись «Derivation» с «known» равным ["«Сократ».«человек»", "«Сократ».«смертен»"] и «steps» равным [запись «Step» с «claim» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да) и «reason» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да)]
+  пример «A link whose cause is unknown adds nothing»
+    дано derivation равно запись «Derivation» с «known» равным ["«Сократ».«смертен»"] и «steps» равным пустой список
+    дано assumption равно запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да)
+    ожидается запись «Derivation» с «known» равным ["«Сократ».«смертен»"] и «steps» равным пустой список
+  если (assumption.«conditional») и притом ((derivation.«known») содержит («Literal text» от (assumption.«cause»))) и притом (не ((derivation.«known») содержит («Literal text» от (assumption.«effect»))))
+    то запись «Derivation» с «known» равным (добавить («Literal text» от (assumption.«effect»)) к (derivation.«known»)) и «steps» равным (добавить (запись «Step» с «claim» равным (assumption.«effect») и «reason» равным (assumption.«cause»)) к (derivation.«steps»))
+    иначе derivation
+
+тотальная функция «Derived from»
+  принимает assumptions: список «Given»
+  возвращает «Derivation»
+  пример «Links are followed until nothing new becomes known»
+    дано assumptions равно [запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "смертен" и «holds» равным да), запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "человек" и «holds» равным да), запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да)]
+    ожидается запись «Derivation» с «known» равным ["«всякий».«грек»", "«всякий».«человек»", "«всякий».«смертен»"] и «steps» равным [запись «Step» с «claim» равным (запись «Literal» с «who» равным "всякий" и «what» равным "человек" и «holds» равным да) и «reason» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да), запись «Step» с «claim» равным (запись «Literal» с «who» равным "всякий" и «what» равным "смертен" и «holds» равным да) и «reason» равным (запись «Literal» с «who» равным "всякий" и «what» равным "человек" и «holds» равным да)]
+  свёртка assumptions начиная с (запись «Derivation» с «known» равным (отобразить (отфильтровать assumptions где assumption → не (assumption.«conditional»)) как assumption → «Literal text» от (assumption.«effect»)) и «steps» равным пустой список) как derivation и round → свёртка assumptions начиная с derivation как reached и assumption → «Applied» от reached и assumption
+
+объект «Selection»
+  «wanted»: список строки
+  «kept»: список «Step»
+
+тотальная функция «Needed steps»
+  принимает steps: список «Step», targets: список строки
+  возвращает список «Step»
+  пример «Only the steps that lead to the target are kept, in their order»
+    дано steps равно [запись «Step» с «claim» равным (запись «Literal» с «who» равным "всякий" и «what» равным "человек" и «holds» равным да) и «reason» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да), запись «Step» с «claim» равным (запись «Literal» с «who» равным "всякий" и «what» равным "двуног" и «holds» равным да) и «reason» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да), запись «Step» с «claim» равным (запись «Literal» с «who» равным "всякий" и «what» равным "смертен" и «holds» равным да) и «reason» равным (запись «Literal» с «who» равным "всякий" и «what» равным "человек" и «holds» равным да)]
+    дано targets равно ["«всякий».«смертен»"]
+    ожидается [запись «Step» с «claim» равным (запись «Literal» с «who» равным "всякий" и «what» равным "человек" и «holds» равным да) и «reason» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да), запись «Step» с «claim» равным (запись «Literal» с «who» равным "всякий" и «what» равным "смертен" и «holds» равным да) и «reason» равным (запись «Literal» с «who» равным "всякий" и «what» равным "человек" и «holds» равным да)]
+  (свёртка (свёртка steps начиная с (пустой список) как turned и step → приписать step к turned) начиная с (запись «Selection» с «wanted» равным targets и «kept» равным пустой список) как selection и step → если (selection.«wanted») содержит («Literal text» от (step.«claim»)) то (запись «Selection» с «wanted» равным (добавить («Literal text» от (step.«reason»)) к (selection.«wanted»)) и «kept» равным (приписать step к (selection.«kept»))) иначе selection).«kept»
+
+тотальная функция «Opposite»
+  принимает literal: «Literal»
+  возвращает «Literal»
+  пример «The opposite of a literal that holds does not hold»
+    дано literal равно запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным да
+    ожидается запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным нет
+  запись «Literal» с «who» равным (literal.«who») и «what» равным (literal.«what») и «holds» равным (не (literal.«holds»))
+
+тотальная функция «Clash in»
+  принимает assumptions: список «Given», known: список строки
+  возвращает список «Literal»
+  пример «A literal known together with its opposite is a clash»
+    дано assumptions равно [запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным да)]
+    дано known равно ["«всякий».«рыба»", "(не «всякий».«рыба»)"]
+    ожидается [запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным да, запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным нет]
+  пример «Without an opposite there is no clash»
+    дано assumptions равно [запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным да)]
+    дано known равно ["«всякий».«рыба»"]
+    ожидается пустой список
+  свёртка assumptions начиная с (пустой список) как found и assumption → если ((длина found) равен 0) и притом (known содержит («Literal text» от (assumption.«effect»))) и притом (known содержит («Literal text» от («Opposite» от (assumption.«effect»)))) то (если (assumption.«effect»).«holds» то [(assumption.«effect»), («Opposite» от (assumption.«effect»))] иначе [(«Opposite» от (assumption.«effect»)), (assumption.«effect»)]) иначе found
+
+тотальная функция «All known»
+  принимает known: список строки, claims: список «Literal»
+  возвращает признак
+  пример «Every target is among the known literals»
+    дано known равно ["«Сократ».«человек»", "«Сократ».«смертен»"]
+    дано claims равно [запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да]
+    ожидается да
+  пример «One unknown target is enough to fail»
+    дано known равно ["«Сократ».«смертен»"]
+    дано claims равно [запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да]
+    ожидается нет
+  (длина (отфильтровать claims где target → не (known содержит («Literal text» от target)))) равен 0
+
+тотальная функция «Witness for»
+  принимает sentences: список «Sentence»
+  возвращает строка
+  пример «The individual of a particular premise bears a particular conclusion»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "кролик" и «predicate» равным "мохнат"), запись «Sentence» с «number» равным 2 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Some») и «subject» равным "питомец" и «predicate» равным "кролик"), запись «Sentence» с «number» равным 3 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Some») и «subject» равным "питомец" и «predicate» равным "мохнат")]
+    ожидается "предмет посылки 2"
+  пример «Without a fitting individual the first one is taken»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "грек" и «predicate» равным "человек"), запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Some») и «subject» равным "грек" и «predicate» равным "человек")]
+    ожидается "некий"
+  разбор (отфильтровать («Individuals of» от sentences) где individual → «All known» от ((«Derived from» от («Givens of premises» от sentences)).«known») и («Claims of» от («Conclusion of» от sentences) и individual))
+    случай пусто
+      то «First of» от («Individuals of» от sentences)
+    случай голова и хвост
+      то голова
+
+тотальная функция «Goal text»
+  принимает claims: список «Literal»
+  возвращает строка
+  пример «One target is the goal»
+    дано claims равно [запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да]
+    ожидается "«Сократ».«смертен»"
+  пример «Two claims are joined into one goal»
+    дано claims равно [запись «Literal» с «who» равным "некий" и «what» равным "кит" и «holds» равным да, запись «Literal» с «who» равным "некий" и «what» равным "рыба" и «holds» равным нет]
+    ожидается "(«некий».«кит» и притом (не «некий».«рыба»))"
+  если (длина claims) равен 1
+    то соединить (отобразить claims как target → «Literal text» от target) по ""
+    иначе соединить ["(", (соединить (отобразить claims как target → «Literal text» от target) по " и притом "), ")"] по ""
+
+объект «Proof»
+  «variables»: список строки
+  «assumptions»: список «Given»
+  «goal»: строка
+  «steps»: список строки
+
+тотальная функция «Direct steps»
+  принимает assumptions: список «Given», claims: список «Literal»
+  возвращает список строки
+  пример «The middle term is written out and the target itself is left to the closing step»
+    дано assumptions равно [запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "смертен" и «holds» равным да), запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "человек" и «holds» равным да), запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "грек" и «holds» равным да)]
+    дано claims равно [запись «Literal» с «who» равным "всякий" и «what» равным "смертен" и «holds» равным да]
+    ожидается ["«всякий».«человек»"]
+  отфильтровать (отобразить («Needed steps» от ((«Derived from» от assumptions).«steps») и (отобразить claims как target → «Literal text» от target)) как step → «Literal text» от (step.«claim»)) где written → не ((отобразить claims как target → «Literal text» от target) содержит written)
+
+тотальная функция «Refuting steps»
+  принимает assumptions: список «Given»
+  возвращает список строки
+  пример «Both sides of the clash are written out»
+    дано assumptions равно [запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "дышит жабрами" и «holds» равным да), запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "кит" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "дышит жабрами" и «holds» равным нет), запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "кит" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "кит" и «holds» равным да), запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "всякий" и «what» равным "рыба" и «holds» равным да)]
+    ожидается ["«всякий».«дышит жабрами»", "(не «всякий».«дышит жабрами»)"]
+  отобразить («Needed steps» от ((«Derived from» от assumptions).«steps») и (отобразить («Clash in» от assumptions и ((«Derived from» от assumptions).«known»)) как literal → «Literal text» от literal)) как step → «Literal text» от (step.«claim»)
+
+тотальная функция «Proof of»
+  принимает sentences: список «Sentence»
+  возвращает «Proof»
+  пример «A conclusion reached by following links is proved directly»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен"), запись «Sentence» с «number» равным 2 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 3 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен")]
+    ожидается запись «Proof» с «variables» равным ["Сократ"] и «assumptions» равным [запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да), запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да)] и «goal» равным "«Сократ».«смертен»" и «steps» равным пустой список
+  пример «A conclusion that does not follow keeps its direct goal and gets no steps»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен"), запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")]
+    ожидается запись «Proof» с «variables» равным ["Сократ"] и «assumptions» равным [запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да)] и «goal» равным "«Сократ».«человек»" и «steps» равным пустой список
+  пусть conclusion равно («Conclusion of» от sentences)
+  пусть claims равно («Claims of» от conclusion и («Witness for» от sentences))
+  пусть direct равно («Соединить списки» от («Givens of premises» от sentences) и («Assumed with» от conclusion))
+  пусть refuting равно («Соединить списки» от («Givens of premises» от sentences) и («Denial of» от («Individuals of» от sentences) и conclusion))
+  «Chosen» от [(«When» от («All known» от ((«Derived from» от direct).«known») и claims) и (запись «Proof» с «variables» равным («Individuals of» от sentences) и «assumptions» равным direct и «goal» равным («Goal text» от claims) и «steps» равным («Direct steps» от direct и claims))), («When» от ((длина («Clash in» от refuting и ((«Derived from» от refuting).«known»))) больше 0) и (запись «Proof» с «variables» равным («Individuals of» от sentences) и «assumptions» равным refuting и «goal» равным "нет" и «steps» равным («Refuting steps» от refuting)))] и (запись «Proof» с «variables» равным («Individuals of» от sentences) и «assumptions» равным direct и «goal» равным («Goal text» от claims) и «steps» равным пустой список)
+
+тотальная функция «Program lines»
+  принимает fields: список строки, title: строка, proof: «Proof»
+  возвращает список строки
+  пример «The statement carries the premises as its restriction and the theorem repeats them as assumptions»
+    дано fields равно ["человек", "смертен"]
+    дано title равно "Сократ смертен"
+    дано proof равно запись «Proof» с «variables» равным ["Сократ"] и «assumptions» равным [запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "смертен" и «holds» равным да), запись «Given» с «conditional» равным нет и «cause» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным "Сократ" и «what» равным "человек" и «holds» равным да)] и «goal» равным "«Сократ».«смертен»" и «steps» равным пустой список
+    ожидается ["модуль «Reasoning»", "", "объект «Предмет»", "  «человек»: признак", "  «смертен»: признак", "", "утверждение «Сократ смертен»", "  для всех «Сократ»: «Предмет» таких что (если «Сократ».«человек» то «Сократ».«смертен» иначе да) и притом «Сократ».«человек»", "  утверждаем «Сократ».«смертен»", "", "следует «Сократ смертен»", "  дано «Сократ»: «Предмет»", "  дано (если «Сократ».«человек» то «Сократ».«смертен» иначе да)", "  дано «Сократ».«человек»", "  утверждаем «Сократ».«смертен»", "  по предположению"]
+  «Соединить списки» от («Соединить списки» от («Соединить списки» от ["модуль «Reasoning»", "", "объект «Предмет»"] и (отобразить fields как column → соединить ["  «", column, "»: признак"] по "")) и ["", (соединить ["утверждение «", title, "»"] по ""), (соединить ["  для всех ", (соединить (отобразить (proof.«variables») как variable → соединить ["«", variable, "»: «Предмет»"] по "") по " и "), " таких что ", (соединить (отобразить (proof.«assumptions») как assumption → «Given text» от assumption) по " и притом ")] по ""), (соединить ["  утверждаем ", (proof.«goal»)] по ""), "", (соединить ["следует «", title, "»"] по "")]) и («Соединить списки» от («Соединить списки» от (отобразить (proof.«variables») как variable → соединить ["  дано «", variable, "»: «Предмет»"] по "") и (отобразить (proof.«assumptions») как assumption → соединить ["  дано ", («Given text» от assumption)] по "")) и («Соединить списки» от (приписать (соединить ["  утверждаем ", (proof.«goal»)] по "") к (отобразить (proof.«steps») как written → соединить ["  затем ", written, " по предположению"] по "")) и ["  по предположению"]))
+
+тотальная функция «Fields of»
+  принимает words: список «Word»
+  возвращает список строки
+  пример «Notions and properties become fields, proper names do not»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    ожидается ["человек"]
+  отобразить (отфильтровать words где word → не ((word.«kind») равен "name")) как word → word.«singular»
+
+тотальная функция «Program of»
+  принимает words: список «Word», sentences: список «Sentence»
+  возвращает строка
+  пример «The classic reasoning becomes a statement with a theorem»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен"), запись «Sentence» с «number» равным 2 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 3 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен")]
+    ожидается "модуль «Reasoning»\n\nобъект «Предмет»\n  «человек»: признак\n  «смертен»: признак\n\nутверждение «Сократ смертен»\n  для всех «Сократ»: «Предмет» таких что (если «Сократ».«человек» то «Сократ».«смертен» иначе да) и притом «Сократ».«человек»\n  утверждаем «Сократ».«смертен»\n\nследует «Сократ смертен»\n  дано «Сократ»: «Предмет»\n  дано (если «Сократ».«человек» то «Сократ».«смертен» иначе да)\n  дано «Сократ».«человек»\n  утверждаем «Сократ».«смертен»\n  по предположению\n"
+  соединить [(соединить («Program lines» от («Fields of» от words) и («Clause of» от words и («Conclusion of» от sentences) и нет) и («Proof of» от sentences)) по "\n"), "\n"] по ""
+
+тотальная функция «Role of»
+  принимает sentence: «Sentence»
+  возвращает строка
+  пример «The sentence with the mark is the conclusion»
+    дано sentence равно запись «Sentence» с «number» равным 3 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен")
+    ожидается "заключение"
+  пример «Any other sentence is a premise»
+    дано sentence равно запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")
+    ожидается "посылка"
+  если sentence.«concludes» то "заключение" иначе "посылка"
+
+тотальная функция «Read back»
+  принимает words: список «Word», sentences: список «Sentence»
+  возвращает список строки
+  пример «Every sentence is printed from its judgment with its number and its role»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")]
+    ожидается ["1. посылка: Сократ — человек.", "2. заключение: Следовательно, Сократ — человек."]
+  отобразить sentences как sentence → соединить [(к строке (sentence.«number»)), ". ", («Role of» от sentence), ": ", («Sentence text» от words и sentence)] по ""
+
+тотальная функция «Premise numbers»
+  принимает sentences: список «Sentence»
+  возвращает строка
+  пример «One premise is named in the singular»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")]
+    ожидается "посылки 1"
+  пример «Several premises are listed»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 2 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")]
+    ожидается "посылок 1, 2"
+  соединить [(если (длина («Premises of» от sentences)) равен 1 то "посылки " иначе "посылок "), (соединить (отобразить («Premises of» от sentences) как sentence → к строке (sentence.«number»)) по ", ")] по ""
+
+тотальная функция «Conclusion sentence»
+  принимает sentences: список «Sentence»
+  возвращает «Sentence»
+  пример «The sentence with the mark»
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен")]
+    ожидается запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен")
+  свёртка sentences начиная с (запись «Sentence» с «number» равным 0 и «concludes» равным да и «judgment» равным («No judgment»)) как found и sentence → если sentence.«concludes» то sentence иначе found
+
+тотальная функция «Closing line»
+  принимает program: строка
+  возвращает число
+  пример «The closing step stands on the last line of the program»
+    дано program равно "модуль «Reasoning»\n\n  по предположению\n"
+    ожидается 3
+  (длина (разделить program по "\n")) минус 1
+
+тотальная функция «Counterexample»
+  принимает words: список «Word», sentences: список «Sentence»
+  возвращает строка
+  пример «Whatever the premises do not force is taken to be false»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек" и «predicate» равным "смертен"), запись «Sentence» с «number» равным 2 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "смертен"), запись «Sentence» с «number» равным 3 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")]
+    ожидается "«Сократ»: человек — нет, смертен — да"
+  соединить (отобразить («Individuals of» от sentences) как individual → соединить ["«", individual, "»: ", (соединить (отобразить («Fields of» от words) как column → соединить [column, (если ((«Derived from» от («Соединить списки» от («Givens of premises» от sentences) и («Denial of» от («Individuals of» от sentences) и («Conclusion of» от sentences)))).«known») содержит («Literal text» от (запись «Literal» с «who» равным individual и «what» равным column и «holds» равным да)) то " — да" иначе " — нет")] по "") по ", ")] по "") по "; "
+
+тотальная функция «After the mark»
+  принимает output: строка, mark: строка
+  возвращает строка
+  пример «The line is taken from the mark to its end»
+    дано output равно "/tmp/reasoning.flang: ДОКАЗАНО — утверждений 1: доказано 1\nещё строка"
+    дано mark равно "ДОКАЗАНО — "
+    ожидается "ДОКАЗАНО — утверждений 1: доказано 1"
+  пример «An output without the mark gives nothing»
+    дано output равно "ничего"
+    дано mark равно "ДОКАЗАНО — "
+    ожидается ""
+  если output содержит mark
+    то соединить [mark, («First of» от (разделить («Form at» от (разделить output по mark) и 2) по "\n"))] по ""
+    иначе ""
+
+тип «Verdict»
+  вариант «Follows» содержит report: строка
+  вариант «Does not follow» содержит report: строка
+  вариант «Not judged» содержит report: строка
+
+тотальная функция «Verdict of»
+  принимает words: список «Word», sentences: список «Sentence», output: строка
+  возвращает «Verdict»
+  пример «A proved statement means the conclusion follows»
+    дано words равно [запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он", запись «Word» с «kind» равным "name" и «singular» равным "Сократ" и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"]
+    дано sentences равно [запись «Sentence» с «number» равным 1 и «concludes» равным нет и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек"), запись «Sentence» с «number» равным 2 и «concludes» равным да и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ" и «predicate» равным "человек")]
+    дано output равно "/tmp/reasoning.flang: ДОКАЗАНО — утверждений 1: доказано 1, условно 0\n"
+    ожидается вариант «Follows» с report равным "1. посылка: Сократ — человек.\n2. заключение: Следовательно, Сократ — человек.\nСЛЕДУЕТ: предложение 2 выведено из посылки 1\nядро: ДОКАЗАНО — утверждений 1: доказано 1, условно 0"
+  пример «An answer of another kind is not a verdict»
+    дано words равно пустой список
+    дано sentences равно пустой список
+    дано output равно "FLANG_PARSE"
+    ожидается вариант «Not judged» с report равным "ядро ответило не приговором о заключении: FLANG_PARSE"
+  «Chosen» от [(«When» от (output содержит "ДОКАЗАНО — утверждений 1: доказано 1") и (вариант «Follows» с report равным (соединить («Соединить списки» от («Read back» от words и sentences) и [(соединить ["СЛЕДУЕТ: предложение ", (к строке ((«Conclusion sentence» от sentences).«number»)), " выведено из ", («Premise numbers» от sentences)] по ""), (соединить ["ядро: ", («After the mark» от output и "ДОКАЗАНО — ")] по "")]) по "\n"))), («When» от ((output содержит "FLANG_PROOF_STEP") и притом (output содержит (соединить [", строка ", (к строке («Closing line» от («Program of» от words и sentences))), ", столбец"] по ""))) и (вариант «Does not follow» с report равным (соединить («Соединить списки» от («Read back» от words и sentences) и [(соединить ["НЕ СЛЕДУЕТ: предложение ", (к строке ((«Conclusion sentence» от sentences).«number»)), " «", («Sentence text» от words и («Conclusion sentence» от sentences)), "» не выведено из ", («Premise numbers» от sentences)] по ""), (соединить ["ядро: FLANG_PROOF_STEP, строка ", (к строке («Closing line» от («Program of» от words и sentences))), " проверенной программы — цель не выведена из допущений теоремы"] по ""), (соединить ["пример против, подсказка переводчика, ядром не проверена — ", («Counterexample» от words и sentences)] по "")]) по "\n")))] и (вариант «Not judged» с report равным (соединить ["ядро ответило не приговором о заключении: ", (если (длина output) больше 600 то (подстрока output с 1 по 600) иначе output)] по ""))

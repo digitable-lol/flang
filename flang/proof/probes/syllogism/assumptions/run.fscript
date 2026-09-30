@@ -1,0 +1,91 @@
+модуль «Syllogism premises as assumptions»
+
+использует «Таблица проб» из "../../table.fscript"
+
+тотальная функция «This set»
+  возвращает «Набор»
+  пример «The set is named, and a mismatch and blindness carry different codes»
+    ожидается запись «Набор» с «имя» равным "syllogism/assumptions" и «код расхождения» равным "FLANG_PROBE_ASSUMPTIONS" и «код слепоты» равным "FLANG_PROBE_ASSUMPTIONS_CANNOT_LOOK"
+  запись «Набор» с «имя» равным "syllogism/assumptions" и «код расхождения» равным "FLANG_PROBE_ASSUMPTIONS" и «код слепоты» равным "FLANG_PROBE_ASSUMPTIONS_CANNOT_LOOK"
+
+тотальная функция «Path of»
+  принимает program: строка
+  возвращает строка
+  пример «A program is named from the root of the tree»
+    дано program равно "socrates.flang"
+    ожидается "flang/proof/probes/syllogism/assumptions/programs/socrates.flang"
+  соединить ["flang/proof/probes/syllogism/assumptions/programs/", program] по ""
+
+тотальная функция «From the root»
+  принимает call: строка
+  возвращает строка
+  пример «The command runs from the root of the tree with the built binary»
+    дано call равно "$flang check x"
+    ожидается "cd ../../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && $flang check x"
+  соединить ["cd ../../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && ", call] по ""
+
+тотальная функция «Kernel command»
+  принимает program: строка
+  возвращает строка
+  пример «The kernel is asked for the strict verdict»
+    дано program равно "socrates.flang"
+    ожидается "cd ../../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { $flang check 'flang/proof/probes/syllogism/assumptions/programs/socrates.flang' --proof --strict; } 2>&1; echo \"[code=$?]\""
+  «From the root» от («С меткой» от (соединить ["$flang check '", («Path of» от program), "' --proof --strict"] по ""))
+
+тотальная функция «Checker command»
+  принимает program: строка
+  возвращает строка
+  пример «The independent checker reads the record the kernel has just written»
+    дано program равно "socrates.flang"
+    ожидается "cd ../../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { [ -x flang/proof/checker/сверщик ] || make -C flang/proof/checker >/dev/null; } && box=$(mktemp -d -p \"${FLANG_TMP:-${TMPDIR:-/tmp}}\" probe-assumptions.XXXXXX) && { $flang check 'flang/proof/probes/syllogism/assumptions/programs/socrates.flang' --proof --record \"$box/record\" >/dev/null 2>&1; flang/proof/checker/сверщик 'flang/proof/probes/syllogism/assumptions/programs/socrates.flang' \"$box/record\"; } 2>&1; echo \"[code=$?]\"; rm -rf \"$box\""
+  «From the root» от (соединить ["{ [ -x flang/proof/checker/сверщик ] || make -C flang/proof/checker >/dev/null; } && box=$(mktemp -d -p \"${FLANG_TMP:-${TMPDIR:-/tmp}}\" probe-assumptions.XXXXXX) && ", («С меткой» от (соединить ["$flang check '", («Path of» от program), "' --proof --record \"$box/record\" >/dev/null 2>&1; flang/proof/checker/сверщик '", («Path of» от program), "' \"$box/record\""] по "")), "; rm -rf \"$box\""] по "")
+
+тотальная функция «Command»
+  принимает parts: список строки
+  возвращает строка
+  пример «The judge column chooses the command»
+    дано parts равно ["socrates.flang", "kernel", "0", "ДОКАЗАНО"]
+    ожидается "cd ../../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { $flang check 'flang/proof/probes/syllogism/assumptions/programs/socrates.flang' --proof --strict; } 2>&1; echo \"[code=$?]\""
+  если («Поле» от parts и 2) равен "checker"
+    то «Checker command» от («Поле» от parts и 1)
+    иначе «Kernel command» от («Поле» от parts и 1)
+
+тотальная функция «Probe of»
+  принимает parts: список строки
+  возвращает «Проба»
+  пример «A table line becomes a probe»
+    дано parts равно ["socrates.flang", "kernel", "0", "ДОКАЗАНО"]
+    ожидается запись «Проба» с «программа» равным "socrates.flang" и «приметы» равным "socrates.flang [kernel]" и «команда» равным "cd ../../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { $flang check 'flang/proof/probes/syllogism/assumptions/programs/socrates.flang' --proof --strict; } 2>&1; echo \"[code=$?]\"" и «код» равным "0" и «слово» равным "ДОКАЗАНО"
+  запись «Проба» с «программа» равным («Поле» от parts и 1) и «приметы» равным («Приметы» от («Поле» от parts и 1) и [(«Поле» от parts и 2)]) и «команда» равным («Command» от parts) и «код» равным («Поле» от parts и 3) и «слово» равным («Поле» от parts и 4)
+
+тотальная функция «Probes»
+  принимает text: строка
+  возвращает список «Проба»
+  пример «Every data line of the table is a probe»
+    дано text равно "program\tjudge\tcode\tword\nsocrates.flang\tkernel\t0\tДОКАЗАНО\n"
+    ожидается [запись «Проба» с «программа» равным "socrates.flang" и «приметы» равным "socrates.flang [kernel]" и «команда» равным "cd ../../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { $flang check 'flang/proof/probes/syllogism/assumptions/programs/socrates.flang' --proof --strict; } 2>&1; echo \"[code=$?]\"" и «код» равным "0" и «слово» равным "ДОКАЗАНО"]
+  отобразить («Строки данных» от text) как parts → («Probe of» от parts)
+
+тотальная функция «Begin»
+  возвращает «Ход»
+  пример «The plan begins at the beginning»
+    ожидается вариант «Начало»
+  вариант «Начало»
+
+тотальная функция «Next»
+  принимает step: «Ход», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The table is read first»
+    дано step равно вариант «Начало»
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "expected.tsv") и потом равным (вариант «Ждём таблицу»)
+  разбор step
+    случай вариант «Ждём таблицу»
+      то «После таблицы» от («This set») и («Probes» от («Содержимое» от reply))
+    случай любое
+      то «Шаг» от («This set») и step и reply
+
+план «Binary»
+  состояние «Ход»
+  начинает с «Begin»
+  обрабатывает «Next»

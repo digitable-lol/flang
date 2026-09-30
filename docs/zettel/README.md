@@ -41,6 +41,7 @@
 ## Доказательства
 
 - [Обещание о ВЕТВИ тела ядро берёт там, где обещание о функции целиком не берётся](a-branch-promise-is-what-the-kernel-can-take-when-the-whole-promise-is-not.md)
+- [Силлогизм доказывается из допущений сегодняшним ядром, а русские предложения читаются без словаря морфологии](premises-as-assumptions-prove-a-syllogism-without-a-morphology-dictionary.md)
 - [Ядро подставляет равенство вызванной, но не ослабляет её неравенство: «не больше одного» у помощника не доказывает «не больше чем на один длиннее» у зовущего](a-callee-promise-reaches-the-handler-through-seven-branches-not-fifteen.md)
 - [Про значение объявленной суммы в постусловии нельзя сказать ничего: ни сравнить, ни разобрать](a-declared-sum-cannot-be-spoken-about-in-a-postcondition.md)
 - [Сумма трёх слагаемых в тексте — это вложенная сумма в дереве, и записывать ход про неё нельзя](a-flat-sum-in-text-is-a-nested-sum-in-the-tree.md)

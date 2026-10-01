@@ -1464,6 +1464,8 @@ jobs:
             echo "сторож ведомости промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
+        env:
+          FLANG_TMP: ${{ runner.temp }}
       - name: Check corpus ledger
         run: sh flang/proof/corpus-share.sh --набор корпус
 
@@ -1597,10 +1599,14 @@ jobs:
         run: bootstrap/flang io flang/proof/binary-fingerprint.fscript
       - name: Probe seed fingerprint
         run: bootstrap/flang io flang/proof/binary-fingerprint.fscript -- --forgery
+        env:
+          FLANG_TMP: ${{ runner.temp }}
       - name: Build proof checker
         run: make -C flang/proof/checker
       - name: Check corpus records
         run: bootstrap/flang io flang/proof/records-nesting.fscript --max-steps 4000000000 --timeout 900000
+        env:
+          FLANG_TMP: ${{ runner.temp }}
 
       # Предмет тут другой — сторож кодов, — но работа та же по той же причине,
       # по которой `imena` не стала шагом в `sborka`: сборка двоичного стоит

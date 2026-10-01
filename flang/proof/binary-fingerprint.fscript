@@ -249,7 +249,7 @@
   «Chosen» от [(«When» от (asked равен "arguments") и (отобразить (отфильтровать («Given of» от "arguments" и answers) где word → не (word равен "--forgery")) как word → соединить ["не знаю ключа: ", word, "; звать: bootstrap/flang io flang/proof/binary-fingerprint.fscript [-- --forgery]"] по "")),
     («When» от ((asked равен "binary present") и притом failed) и ["нет двоичного bootstrap/flang — записывать отпечаток не при чем"]),
     («When» от ((asked равен "copied") и притом failed) и ["нет двоичного bootstrap/flang — подлог ставить не на чем"]),
-    («When» от ((asked равен "work") и притом (пусто («Made of» от "work" и answers))) и ["временный каталог не заведён"])] и (пустой список)
+    («When» от ((asked равен "work") и притом (пусто («Made of» от "work" и answers))) и ["временный каталог не заведён: каталога из FLANG_TMP (по умолчанию /srv/tmp) нет либо он не для записи"])] и (пустой список)
 
 тотальная функция «Proceed»
   принимает queue: список «Question», stages: число, answers: список «Answer»

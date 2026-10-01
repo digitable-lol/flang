@@ -215,7 +215,7 @@
   пусть kernel равно (соединить [(«First line» от («Output of» от "root" и answers)), "/bootstrap/flang"] по "")
   «Chosen» от [(«When» от ((asked равен "binary present") и притом (не ((«Exit code of» от asked и answers) равен 0))) и [(соединить ["нет двоичного ядра ", kernel, " — собрать: make -C bootstrap"] по "")]),
     («When» от ((asked равен "look") и притом ((«Verdict of» от («Look answer» от "look" и answers)) равен "отстало")) и [(соединить ["ЯДРО ОТСТАЛО ОТ СЕМЕНИ: ", kernel, " собран не из нынешнего bootstrap/*.c, *.h, Makefile.\nМерить нечем — старое ядро печатает старые записи и объявит свежие отставшими.\nПересобрать: make -C bootstrap -j8 && bootstrap/flang io flang/proof/binary-fingerprint.fscript"] по "")]),
-    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и ["временный каталог не заведён"])] и (пустой список)
+    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и ["временный каталог не заведён: каталога из FLANG_TMP (по умолчанию /srv/tmp) нет либо он не для записи"])] и (пустой список)
 
 тотальная функция «Proceed»
   принимает queue: список «Question», stages: число, answers: список «Answer»

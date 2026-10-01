@@ -1,2 +1,2 @@
 #!/bin/sh
-bootstrap/flang io .githooks/no-growth.fscript --plan "Staged" && exec bootstrap/flang io .githooks/lint-growth.fscript --plan "Staged"
+bootstrap/flang io .githooks/no-growth.fscript --plan "Staged" && exec bootstrap/flang io .githooks/lint-growth.fscript --plan "Staged" --max-orders 100000

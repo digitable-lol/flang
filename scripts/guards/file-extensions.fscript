@@ -153,8 +153,6 @@
    запись «Место» с «путь» равным "flang/scripts/ledger-summary.fscript" и «нужно» равным "'flang/*.flang' 'flang/*.fscript'" и «нельзя» равным "'flang/*.flang'\"]",
    запись «Место» с «путь» равным "flang/scripts/closed-length-guard.fscript" и «нужно» равным "(«Кончается на» от имя и \".flang\") или («Кончается на» от имя и \".fscript\")" и «нельзя» равным "",
    запись «Место» с «путь» равным "flang/scripts/link-collision-guard.fscript" и «нужно» равным "(«Кончается на» от имя и \".flang\") или («Кончается на» от имя и \".fscript\")" и «нельзя» равным "",
-   запись «Место» с «путь» равным "flang/scripts/одна-линейка.py" и «нужно» равным ".endswith((\".flang\", \".fscript\"))" и «нельзя» равным "",
-   запись «Место» с «путь» равным "flang/scripts/per-file-proof-share.py" и «нужно» равным ".endswith(('.flang', '.fscript'))" и «нельзя» равным "",
    запись «Место» с «путь» равным "scripts/shortcut-collector.fscript" и «нужно» равным "(«Кончается на» от слово и \".flang\") или («Кончается на» от слово и \".fscript\")" и «нельзя» равным "",
    запись «Место» с «путь» равным "bootstrap/compiler_flang.c" и «нужно» равным "\".фланг\"" и «нельзя» равным ""]
 

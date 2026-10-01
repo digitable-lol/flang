@@ -1,6 +1,5 @@
 docs/benchmarks/verdict-cache/второе-ядро.sh
 docs/benchmarks/verdict-cache/кеш.вставка
-docs/benchmarks/verdict-cache/наложить.py
 docs/benchmarks/verdict-cache/проба.flang
 docs/benchmarks/verdict-cache/пробы.sh
 docs/benchmarks/verdict-cache/три-печати.sh
@@ -37,9 +36,7 @@ docs/спецификации/слой-отказов.flang
 docs/спецификации/чего-не-хватает-fts.md
 docs/спецификации/язык-доказательств.md
 flang/scripts/жаргон-образцы.flang
-flang/scripts/одна-линейка.py
 flang/scripts/породить-атомы.fscript
-flang/scripts/сличить-двух-сводителей.py
 flang/stdlib/образцы.flang
 flang/test/fixtures/fts-naslediye/скидки-в-подписки.fts
 flang/test/fixtures/fts/tools/ftspec/examples/shop/memory/001-предел-скидки.fts

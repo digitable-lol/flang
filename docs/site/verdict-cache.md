@@ -104,7 +104,6 @@ Everything lies in `docs/benchmarks/verdict-cache/`:
 sh docs/benchmarks/verdict-cache/пробы.sh <binary> [<second binary>]
 sh docs/benchmarks/verdict-cache/второе-ядро.sh [<where to build>]
 sh docs/benchmarks/verdict-cache/три-печати.sh [<working directory>]
-python3 docs/benchmarks/verdict-cache/наложить.py [<tree root>]
 ```
 
 - `пробы.sh` asks four questions and answers each with a number: does the
@@ -121,9 +120,7 @@ python3 docs/benchmarks/verdict-cache/наложить.py [<tree root>]
   times — without the cache, with a cold one, with a hot one — and compares
   the seed after each printing with the printing without the cache. This takes
   hours.
-- `наложить.py` applies the mechanism to a tree without it (it edits
-  `proofterm.flang` and `flang_repl.c`); on this tree everything is already
-  applied, and a repeated run touches nothing. `кеш.вставка` is the inserted
+- `кеш.вставка` is the inserted
   piece of the kernel in flang; the extension is not `.flang` on purpose,
   because it is a piece of a module, not a module.
 

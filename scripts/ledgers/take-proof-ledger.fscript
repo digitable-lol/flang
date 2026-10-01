@@ -306,7 +306,7 @@
 тотальная функция «Share order»
   принимает job: «Job»
   возвращает «Поручение»
-  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$1\" && shift && exec \"$@\"", "sh", (job.«root»), "python3", (соединить [(job.«root»), "/scripts/ledgers/proved-share-of-a-file.py"] по ""), (job.«file»), (соединить [(job.«out»), "/", («Slug» от (job.«file»)), ".json"] по "")]
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$1\" && shift && exec \"$@\"", "sh", (job.«root»), (соединить [(job.«root»), "/bootstrap/flang"] по ""), "io", (соединить [(job.«root»), "/scripts/ledgers/proved-share-of-a-file.fscript"] по ""), "--plan", "Share", "--на-веру", "--", (соединить [(job.«root»), "/", (job.«file»)] по ""), (соединить [(job.«out»), "/", («Slug» от (job.«file»)), ".json"] по "")]
 
 тотальная функция «Ask next»
   принимает names: список строки, values: список строки

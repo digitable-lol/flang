@@ -145,7 +145,7 @@ standard library is on [What is proved and what is not](what-is-proved.html).
 Twenty ordinary library functions, picked at a fixed step through the list of
 declarations (out of {{библиотека.функций}}) so that convenient ones could not
 be chosen; each got both tests and a proof. The numbers come from the
-[proof-cost benchmark](../benchmark-proof-cost.html).
+[proof-cost benchmark](https://github.com/digitable-lol/flang/blob/main/docs/benchmark-proof-cost.md).
 
 | | tests | proof |
 |---|---:|---:|
@@ -181,4 +181,4 @@ inputs.
 - [The prover refused: whose mistake is it](proof-refused.html) — what to do with each refusal
 - [What comes next](roadmap.html) — where the proof work stands
 - [Prover specification](../spec-proof.html) — in Russian; the rules in full
-- [The price of a proof, measured](../benchmark-proof-cost.html) — in Russian; the report with numbers
+- [The price of a proof, measured](https://github.com/digitable-lol/flang/blob/main/docs/benchmark-proof-cost.md) — in Russian; the report with numbers

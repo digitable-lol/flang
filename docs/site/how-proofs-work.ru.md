@@ -426,4 +426,4 @@ $ grep -c 'fl_post(' /tmp/out/lists.c
 | `flang test <файл>` | прогоняет примеры |
 
 Отчёт о доказательствах по всему репозиторию — [Отчёт о доказательствах по
-дереву](overview.html); зачем всё это — [Зачем и как](proofs.html).
+дереву](https://github.com/digitable-lol/flang/blob/main/docs/overview.ru.md); зачем всё это — [Зачем и как](proofs.html).

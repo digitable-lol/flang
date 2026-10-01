@@ -1,79 +1,93 @@
 ---
 номер: 3402
-заголовок: Пример пакета в docs собран под старым именем модуля, а страницы о пакетах отстали от дерева на три недели
+заголовок: Пример пакета в docs не пересобирается: модуль назван «Discount», а объявление и собранный пакет — «Скидка»
 статус: свободна
+приоритет: P2
 исполнитель: —
 ветка: —
 команда: вторая
 карта: Что уже есть
 рядом: 3401, 3403, 9968, 1186
-нужность: 2 — прогон 27 сентября 2026: flang package docs/examples/package/discount.flang — код 1, FLANG_PACKAGE «Скидка» против «Discount»; docs/road-to-1-0.md:160 всё ещё «нет разрешения версий»; комментарий asdf-version-list.fscript:40 про FLANG_IO_NO_TLS стоит
+нужность: читатель, который повторяет образцовый пример пакета шаг в шаг, получает отказ на первой команде
 ---
 
-# 3402. Пример, который нельзя пересобрать, и три неверных утверждения на страницах
+# 3402. Пример пакета в docs не пересобирается: модуль назван «Discount», а объявление и собранный пакет — «Скидка»
 
-Замер 8 сентября 2026, `gh/dev` `5f679521`, двоичный 0.7.14 собран в дереве.
+## Шаги воспроизведения
 
-## Изъян первый: пример рассинхронизирован после переименования модуля
-
-`docs/examples/package/` устроен так:
-
-| файл | что говорит |
-|---|---|
-| `discount.flang:1` | `модуль «Discount»` |
-| `flang.package` | `{"имя": "Скидка", …}` |
-| `shop/discount.flang-package` | `"имя":"Скидка"`, в грузе `модуль «Скидка»` |
-| `shop/shop.flang:2` | `использует «Скидка» из "discount.flang-package"` |
-
-Исходник переименовали (задача 1186, «модуль получает английское имя от
-автора»), манифест, собранный пакет и программу-потребителя — нет. Проверено
-двоичным с починкой 3401 (без неё отказ приходит раньше, см. ту задачу):
+1. Собрать пакет из примера в дереве:
 
 ```
-FLANG_PACKAGE: в flang.package пакет назван «Скидка»,
-               а модуль в docs/examples/package/discount.flang называется «Discount»
+bootstrap/flang package docs/examples/package/discount.flang
 ```
 
-То есть **образцовый пример пакета сегодня не пересобирается**, и читатель, идущий
-по странице шаг в шаг, упирается в отказ.
+2. Сравнить имена в четырёх файлах примера:
 
-## Изъян второй: страницы говорят неправду о сегодняшнем дереве
+```
+head -1 docs/examples/package/discount.flang
+grep -a 'имя' docs/examples/package/flang.package
+grep -a 'использует' docs/examples/package/shop/shop.flang
+```
 
-Прогон против `docs/site/packages.ru.md`:
+3. Два утверждения в текстах, которые расходятся с деревом:
 
-| строка страницы | что на самом деле |
-|---|---|
-| «`package` и `lock` есть у `flang`, поставленного через `npm install`… У отдельного двоичного их нет» + выдуманный отказ «неизвестная команда «package»» | `bootstrap/flang --help` (0.7.14) печатает `flang lock` и `flang package`; `lock` прогнан и работает, `package` сломан по другой причине (3401). npm из дерева убран 3 сентября |
-| раздел «Чего нет»: «пакетов в отдельном двоичном `flang`» | то же |
-| `"схема": 1` в примере разобранного пакета | в дереве схема **2**: адрес модуля — sha256 исходника, груз — сам исходник |
+```
+grep -an 'разрешения версий' docs/road-to-1-0.md
+grep -an 'FLANG_IO_NO_TLS' scripts/release/asdf-version-list.fscript
+bootstrap/flang io scripts/registry-tool.fscript --plan 'Разрешить' --trust
+```
 
-И `docs/road-to-1-0.md:142` («чего нет: почти всего — установки, **разрешения
-версий**, замыкания зависимостей») — разрешение версий в дереве есть и прогнано:
-`flang io scripts/registry-tool.fscript --plan 'Разрешить'` отвечает
-«запрос «Множество строк: не ниже 1.1» разрешён: пакетов 3» с транзитивными
-`Списки 1.4.2` и `Логика 1.2.0`.
+## Что происходит
 
-## Что сделать
+```
+$ bootstrap/flang package docs/examples/package/discount.flang
+FLANG_PACKAGE: в flang.package пакет назван «Скидка», а модуль в
+docs/examples/package/discount.flang называется «Discount»       код 1
+$ grep -an 'разрешения версий' docs/road-to-1-0.md
+160:**Чего нет.** Почти всего: установки, разрешения версий, замыкания зависимостей.
+$ bootstrap/flang io scripts/registry-tool.fscript --plan 'Разрешить' --trust
+{"plan":"Разрешить","result":"запрос «Множество строк: не ниже 1.1» разрешён:
+ пакетов 3 …",…}                                                  код 0
+```
 
-1. Свести четыре стороны примера к одному имени модуля и пересобрать
-   `shop/discount.flang-package` командой (не руками).
-2. Снять со страницы `docs/site/packages.ru.md` три неверных утверждения; там,
-   где написано «схема 1», поставить снятое прогоном.
-3. Поправить пункт 6 `docs/road-to-1-0.md`: назвать, что уже есть
-   (`flang/stdlib/registry.flang` 617 строк, `scripts/registry-tool.fscript` 473,
-   четыре плана прогнаны), и оставить в «чего нет» только установку и раздачу.
-4. Заодно снять устаревший комментарий `scripts/release/asdf-version-list.fscript:40-41`
-   («у хозяина нет шифрования, на https он отвечает FLANG_IO_NO_TLS») — с
-   ADR-0007 https работает через внешний `curl`.
+Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
 
-Правки только в `docs/**` и `scripts/**`: перепечатки не требуется.
+Исходник примера переименован в «Discount», а `flang.package`, собранный
+`docs/examples/package/shop/discount.flang-package` и строка `использует «Скидка»` в `docs/examples/package/shop/shop.flang`
+остались со старым именем. Страница `docs/road-to-1-0.md` говорит, что
+разрешения версий нет, хотя план «Разрешить» его выполняет. Комментарий в
+`scripts/release/asdf-version-list.fscript` (строки 40–41) говорит, что на https
+хозяин отвечает `FLANG_IO_NO_TLS`, хотя поручение «Запросить» ходит по https
+через curl.
 
-## Приёмка
+## Что должно быть
 
-- `flang package docs/examples/package/discount.flang` — код 0, и вывод сходится
-  байт в байт с лежащим `shop/discount.flang-package`;
-- `flang check shop/shop.flang` и `flang test shop/shop.flang` — коды 0
-  (сегодня они зелёные и должны такими остаться);
-- сборка сайта проходит;
-- ни на одной странице не осталось утверждения, которое ломается одним прогоном
-  двоичного из дерева.
+Пример из `docs/examples/package` пересобирается командой со страницы
+`docs/site/packages.ru.md` без правок. Страницы не утверждают того, что
+опровергается одним прогоном двоичного из дерева.
+
+## Обходной путь
+
+Перед сборкой поправить имя в `flang.package` на «Discount» руками. Лежащий в
+дереве `docs/examples/package/shop/discount.flang-package` собран раньше и программой `docs/examples/package/shop/shop.flang`
+читается: `bootstrap/flang check docs/examples/package/shop/shop.flang` — код 0.
+
+## Когда задача сделана
+
+```
+bootstrap/flang package docs/examples/package/discount.flang     код 0
+```
+
+и вывод совпадает байт в байт с `docs/examples/package/shop/discount.flang-package`;
+`bootstrap/flang check docs/examples/package/shop/shop.flang` — код 0. В разделе 6
+`docs/road-to-1-0.md` в «чего нет» остаются только установка и раздача, а
+`flang/stdlib/registry.flang` и `scripts/registry-tool.fscript` названы в «что
+уже есть». Устаревшего комментария про `FLANG_IO_NO_TLS` в
+`asdf-version-list.fscript` нет. Проба сборки пакета — задача 3401.
+
+## Где живёт правка
+
+`docs/examples/package/flang.package`, `docs/examples/package/shop/shop.flang`,
+`docs/examples/package/shop/discount.flang-package` (пересобрать командой, не
+руками), `docs/road-to-1-0.md`, `scripts/release/asdf-version-list.fscript`.
+Пересборка семени (bootstrap regeneration) не нужна.

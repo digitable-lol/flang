@@ -5,7 +5,7 @@
 **Дата:** 26 августа 2026
 **Дополняет:** [ADR-0016](0016-three-file-extensions.md) — три расширения; счёт в нём
 поднят с трёх до четырёх, всё остальное остаётся в силе.
-**Основание:** задача [0062](../tasks/0062-the-file-extensions-are-one-list.md);
+**Основание:** задача 0062 (закрыта);
 замер прогоном 26 августа 2026 (ниже); `scripts/guards/file-extensions.fscript` — сам список.
 **Проверяется:** `bootstrap/flang run-script file-extensions:check`.
 

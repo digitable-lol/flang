@@ -340,7 +340,7 @@ benchmarks/model-authoring/queue-fix-arm.sh         8  то же
 печати 30 августа (`docs/reprint-ledger.tsv`), — и рядом с ней пик по трём
 заходам 31 августа: 24,3 / 35,4 / 34,7 ГиБ. Замер 24 августа снят ДО починки
 арены рантайма и по памяти врёт в 7,3 раза
-([задача 1310](tasks/1310-semya-sverka-zheleza.md)).
+([задача 1310](tasks/1310-seed-verification-has-no-runner-with-enough-memory-and-time.md)).
 
 Дешёвая половина прогоняется и стоит секунды. `sh scripts/bootstrap-reprint.sh
 --bystro` на этом дереве 29 августа: **0,66 с, расхождений 45.** То есть семя

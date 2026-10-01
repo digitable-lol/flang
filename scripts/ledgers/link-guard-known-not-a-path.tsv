@@ -158,8 +158,8 @@ docs/tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	length-probe.f
 docs/tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	tower.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/tasks/1186-a-module-gets-its-english-name-from-the-author.md	fibonachchi.py	учебный/иллюстративный пример на C или Python, не файл проекта
 docs/tasks/1186-a-module-gets-its-english-name-from-the-author.md	zapis_uroborosa.py	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/tasks/1315-vremennoe-v-dereve-ishodnikov.md	g3.json	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/tasks/1315-vremennoe-v-dereve-ishodnikov.md	proba-stolknoveniy.flang	временный файл прогона, который сам себя убирает; в тексте сказано «ПОЧИНЕНО»
+docs/tasks/1315-temporary-files-of-checks-land-in-the-source-tree.md	g3.json	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
+docs/tasks/1315-temporary-files-of-checks-land-in-the-source-tree.md	proba-stolknoveniy.flang	временный файл прогона, который сам себя убирает; в тексте сказано «ПОЧИНЕНО»
 docs/tasks/1734-element-n-counts-the-number-not-the-list.md	flang/src/bounded.mjs	явное отрицание в тексте: «файла в дереве больше нет»
 docs/tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md	над/чужой-черновик.flang	иллюстративное имя пробы в тексте (каталог «над» вне дерева), не файл
 docs/tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md	дерево/scripts/proba.flang	иллюстративное имя пробы в тексте (каталог «дерево» — копия), не файл
@@ -231,9 +231,6 @@ docs/tasks/0049-the-last-javascript-leaves-the-tree.md	count-library.mjs	ист�
 docs/tasks/0049-the-last-javascript-leaves-the-tree.md	scripts/type-collision-guard.flang	история: двойник на flang снят 11 сентября 2026 разбором scripts/ по каталогам (2f2f474a) — ни ярлыка, ни шага CI на него не было; имя оставлено, чтобы опись сходилась с git log
 docs/tasks/0049-the-last-javascript-leaves-the-tree.md	latin-collision-guard-known.tsv	история: ведомость снята 11 сентября 2026 тем же коммитом (2f2f474a) — записей в ней было 0 и сторож её не читал; имя оставлено, чтобы опись сходилась с git log
 docs/tasks/0311-name-collision-linter-takes-seconds-and-calls-the-real-rule.md	scripts/type-collision-guard.flang	история: двойник на flang снят 11 сентября 2026 разбором scripts/ по каталогам (2f2f474a); запись задачи от 9 сентября называет его живым, и это правда того дня
-docs/tasks/1745-the-tree-is-reorganized-by-the-owners-words-of-11-september.md	sobrat.sh	история: та же строка описи и говорит, что 11 сентября 2026 файл переименован в build.sh; транслитное имя оставлено, чтобы опись сходилась с git log
-docs/tasks/1423-node-leaves-the-concurrency-directory.md	flang/scripts/conc-link-emitted.flang	история: освежитель снят 14 сентября 2026 задачей 1423 (Ш1) — он печатал модули узла рядом с исходником и воскрешал бы снятые файлы; упоминания — замер «кто зовёт» 13 сентября и запись Ш0, сделанные до сноса
-docs/tasks/1423-node-leaves-the-concurrency-directory.md	flang/src/emit/js.mjs	цитата: строка шапки «Сгенерировано flang (бэкенд JavaScript, flang/src/emit/js.mjs)» у файлов, напечатанных прежним печатником; такого файла в дереве нет с переезда печати на flang/self/emit-js.flang, а сами напечатанные файлы сняты этой задачей
 docs/design/nositel-tochnogo-celogo.md	n-stroka.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
 docs/design/nositel-tochnogo-celogo.md	n-zapis.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
 docs/design/nositel-tochnogo-celogo.md	n-ravenstvo.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
@@ -241,7 +238,6 @@ docs/examples/frameworks/react-ts-pure/README.md	.d.ts	обозначение р
 docs/tasks/1416-the-shortcut-list-is-computed-from-the-scripts.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	obhod.sh	иллюстративное имя в разборе задачи/заметки, не файл (пример транслита-брака при переименовании)
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk.sh	иллюстративное имя в разборе задачи/заметки, не файл (предлагаемое английское имя в примере)
-docs/tasks/1423-node-leaves-the-concurrency-directory.md	.test.mjs	обозначение расширения/суффикса-конвенции, не имя файла
 docs/tasks/6752-a-law-of-the-category-surface-is-a-statement-about-the-carrier.md	probe-777.flang	иллюстративное имя пробы в тексте, не файл
 docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	scripts/flangtutor-proba.sh	история: перепись оболочки снята 17 сентября 2026 на дереве cbfaf3899 («строки — wc -l на этом дереве»), имя того дня; 1428 переименовала файл в scripts/tutor-probe.sh (a82dbad8d)
 docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	scripts/guards/kto-zovet-storozhey.sh	история: перепись оболочки снята 17 сентября 2026 на дереве cbfaf3899 («строки — wc -l на этом дереве»), имя того дня; 1428 переименовала файл в scripts/guards/who-calls-the-guards.sh (a82dbad8d)

@@ -51,8 +51,10 @@ number	state	title
 0059	done	Walking the functions costs a frame each
 0060	dropped	A function promises its cost
 0061	done	Attach to a running program
+0062	done	The file extensions are one list
 1130	done	Lean acceptance covers 29 of 70 checker rules
 1132	done	A deferral silences a code everywhere not where the prose stands
+1162	done	An io timeout answers with a failure, not a kill
 1174	done	Transliteration collapses two names into one
 1227	done	The examples remainder is https and packaging
 1261	done	A call precondition is not discharged by a proved callee postcondition
@@ -80,6 +82,8 @@ number	state	title
 1418	done	Three directories get english names
 1420	rejected	Cyrillic file names under proof become english
 1421	rejected	The txt extension becomes ftext
+1422	done	The proof ledger gets its flang twin
+1423	done	Node leaves the concurrency directory
 1427	rejected	Named axioms of type laws
 1430	done	The translit guard judges a third of the tree
 1431	done	The jargon guard lives in two places
@@ -88,6 +92,7 @@ number	state	title
 1435	done	Two inference rules are replayed by the independent checker
 1470	done	Seven print targets are unattended
 1477	done	A promise should not cost a frame
+1505	done	Prose READMEs next to code move to docs
 1547	done	A goal of the form at least a term has no rule
 1573	done	The checker computes what it took on trust
 1574	done	Proved share ledger had no instrument and drifted 191 rows
@@ -97,6 +102,7 @@ number	state	title
 1714	done	A surface is a table names and diagnostics are not
 1722	dropped	The discriminating search writes a temp dir into the tree
 1729	done	Preconditions can never enter the numerator
+1745	done	The tree is reorganized by the owner's words of 11 September
 1794	done	The sources goal is written as an element quantifier
 1799	done	The flang twin scanned a list where node used a hash map
 1800	done	Five measured tables in open work are six days stale
@@ -104,9 +110,12 @@ number	state	title
 1887	done	One ruler for flang and c lived in a temp dir
 1893	done	Emit parses the entry file three times
 1931	done	Theorems in the goal map yield zero and would break the instrument
+1943	done	Zero axioms is said in three places and the forgery guard is red
 2044	done	The checker read a type declaration through a note
 2052	done	The verdict printing is already written only the seed is old
 2072	dropped	Most records of the kernel carry no derivation trace
+2200	done	The print batch is gathered in one inventory
+2213	done	The CLI help leads with the Cyrillic half of every key pair
 2226	done	The dictionary for list substitution does not generalize across twins
 2256	dropped	The checker reads the source differently from the language
 2262	done	Chunked body is collected into a list not glued per chunk

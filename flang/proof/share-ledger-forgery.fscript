@@ -1,0 +1,235 @@
+модуль «Share ledger forgery»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Kernel verdict» из "kernel-verdict.fscript" только «Ledger command»
+  использует «Lists» только «Соединить списки»
+
+тотальная функция «Source»
+  возвращает строка
+  пример «The source the probe spoils»
+    ожидается "flang/proof/examples/corpus-natural.flang"
+  "flang/proof/examples/corpus-natural.flang"
+
+тотальная функция «Record»
+  возвращает строка
+  пример «The honest record of that source»
+    ожидается "flang/proof/checker/tests/records/corpus/corpus-natural.record"
+  "flang/proof/checker/tests/records/corpus/corpus-natural.record"
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No work directory yet»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «In work»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file in the work directory»
+    дано name равно "a.tsv"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/a.tsv"
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Root»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The root as the shell sees it»
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным "")]
+    ожидается "/t"
+  «First line» от («Output of» от "root" и answers)
+
+тотальная функция «Minus»
+  принимает text: строка
+  возвращает строка
+  пример «The sum becomes a difference»
+    дано text равно "а\n  первое плюс второе\nб\n"
+    ожидается "а\n  первое минус второе\nб\n"
+  соединить (отобразить (разделить text по "\n") как line → если line равен "  первое плюс второе" то "  первое минус второе" иначе line) по "\n"
+
+тотальная функция «Swapped»
+  принимает text: строка
+  возвращает строка
+  пример «The record names a file outside the commit»
+    дано text равно "запись\nисходник flang/a.flang\nконец\n"
+    ожидается "запись\nисходник own/brazen.flang\nконец\n"
+  соединить (отобразить (разделить text по "\n") как line → если line начинается с "исходник " то "исходник own/brazen.flang" иначе line) по "\n"
+
+тотальная функция «Build command»
+  возвращает строка
+  пример «A spoiled tree and two sets of records»
+    ожидается "mkdir -p \"$0/honest\" \"$0/swapped\" \"$0/tree/flang/proof/examples\" \"$0/tree/flang/proof/checker\" \"$0/tree/own\" && cp \"$1/flang/proof/checker/сверщик\" \"$0/tree/flang/proof/checker/сверщик\" && cp \"$1/flang/proof/examples/corpus-natural.flang\" \"$0/tree/own/brazen.flang\" && cp \"$1/flang/proof/checker/tests/records/corpus/corpus-natural.record\" \"$0/honest/corpus-natural.record\""
+  "mkdir -p \"$0/honest\" \"$0/swapped\" \"$0/tree/flang/proof/examples\" \"$0/tree/flang/proof/checker\" \"$0/tree/own\" && cp \"$1/flang/proof/checker/сверщик\" \"$0/tree/flang/proof/checker/сверщик\" && cp \"$1/flang/proof/examples/corpus-natural.flang\" \"$0/tree/own/brazen.flang\" && cp \"$1/flang/proof/checker/tests/records/corpus/corpus-natural.record\" \"$0/honest/corpus-natural.record\""
+
+тотальная функция «Share run»
+  принимает name: строка, root: строка, set: строка, dump: строка, answers: список «Answer»
+  возвращает «Question»
+  пример «The share instrument on a tree, a ledger and a set»
+    дано name равно "control"
+    дано root равно "/t"
+    дано set равно "/w/honest"
+    дано dump равно "/w/control.tsv"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается запись «Question» с «name» равным "control" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "sh \"$0\" --корень \"$1\" --ведомость \"$2\" --набор \"$3\" --разбор \"$4\" > /dev/null 2>&1", "/flang/proof/corpus-share.sh", "/t", "/w/ledger.tsv", "/w/honest", "/w/control.tsv"])
+  «Run» от name и "sh" и ["-c", "sh \"$0\" --корень \"$1\" --ведомость \"$2\" --набор \"$3\" --разбор \"$4\" > /dev/null 2>&1", (соединить [(«Root» от answers), "/flang/proof/corpus-share.sh"] по ""), root, («In work» от "ledger.tsv" и answers), set, dump]
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The root, the source and its record»
+    ожидается [запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP"), запись «Question» с «name» равным "root" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && pwd"]), запись «Question» с «name» равным "source" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/examples/corpus-natural.flang"), запись «Question» с «name» равным "record" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/tests/records/corpus/corpus-natural.record")]
+  [(«Environment» от "temporary" и "FLANG_TMP"), («Run» от "root" и "sh" и ["-c", "cd ../.. && pwd"]), («Read» от "source" и (соединить ["../../", («Source»)] по "")), («Read» от "record" и (соединить ["../../", («Record»)] по ""))]
+
+тотальная функция «Start»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «A work directory and the checker»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "work" и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/ledger-forgery."), запись «Question» с «name» равным "checker present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "/flang/proof/checker/сверщик"])]
+  [(«Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/ledger-forgery."] по "")), («Run» от "checker present" и "test" и ["-x", (соединить [(«Root» от answers), "/flang/proof/checker/сверщик"] по "")])]
+
+тотальная функция «Building»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is built»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Run» от "ledger" и "sh" и ["-c", («Ledger command»), («Root» от answers), "HEAD", («Work» от answers)]), («Run» от "built" и "sh" и ["-c", («Build command»), («Work» от answers), («Root» от answers)]), («Write» от "spoiled source" и (соединить [(«In work» от "tree/" и answers), («Source»)] по "") и («Minus» от («Output of» от "source" и answers))), («Write» от "swapped record" и («In work» от "swapped/corpus-natural.record" и answers) и («Swapped» от («Output of» от "record" и answers)))]
+
+тотальная функция «Measuring»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is measured»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Share run» от "control" и («Root» от answers) и («In work» от "honest" и answers) и («In work» от "control.tsv" и answers) и answers), («Share run» от "outside" и («In work» от "tree" и answers) и («In work» от "swapped" и answers) и («In work» от "a.tsv" и answers) и answers), («Share run» от "drifted" и («In work» от "tree" и answers) и («In work» от "honest" и answers) и («In work» от "b.tsv" и answers) и answers), («Read» от "control dump" и («In work» от "control.tsv" и answers)), («Read» от "outside dump" и («In work» от "a.tsv" и answers)), («Read» от "drifted dump" и («In work» от "b.tsv" и answers))]
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 9
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 4
+      то «Setup»
+    случай 3
+      то «Start» от answers
+    случай 2
+      то «Building» от answers
+    случай 1
+      то «Measuring» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Class rows»
+  принимает dump: строка, wanted: строка
+  возвращает число
+  пример «Rows the share instrument put in one class»
+    дано dump равно "head\na\tb\tc\td\te\tf\tg\th\ti\tj\tk\tl\tm\tn\to\tР5\n"
+    дано wanted равно "Р5"
+    ожидается 1
+  длина (отфильтровать («Rows» от dump) где row → («Cell» от 16 и row) равен wanted)
+
+тотальная функция «Probe lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing measured fails all three»
+    дано answers равно пустой список
+    ожидается ["контроль: честная запись на честном дереве\tПРОВАЛ (код 127, Р0=0)", "подлог А: исходник вне коммита\tПРОШЁЛ — охраны нет (код 127, Р5=0)", "подлог Б: файл дерева разошёлся с коммитом\tПРОШЁЛ — охраны нет (код 127, Р5=0)"]
+  пусть control равно («Exit code of» от "control" и answers)
+  пусть kept равно («Class rows» от («Output of» от "control dump" и answers) и "Р0")
+  пусть outside равно («Exit code of» от "outside" и answers)
+  пусть stranger равно («Class rows» от («Output of» от "outside dump" и answers) и "Р5")
+  пусть drifted равно («Exit code of» от "drifted" и answers)
+  пусть changed равно («Class rows» от («Output of» от "drifted dump" и answers) и "Р5")
+  [(если (control равен 0) и притом (kept равен 1) то "контроль: честная запись на честном дереве\tЦЕЛА (Р0, код 0)" иначе (соединить ["контроль: честная запись на честном дереве\tПРОВАЛ (код ", (к строке control), ", Р0=", (к строке kept), ")"] по "")),
+   (если (outside равен 1) и притом (stranger равен 1) то "подлог А: исходник вне коммита\tОТВЕРГНУТ (Р5, код 1)" иначе (соединить ["подлог А: исходник вне коммита\tПРОШЁЛ — охраны нет (код ", (к строке outside), ", Р5=", (к строке stranger), ")"] по "")),
+   (если (drifted равен 1) и притом (changed равен 1) то "подлог Б: файл дерева разошёлся с коммитом\tОТВЕРГНУТ (Р5, код 1)" иначе (соединить ["подлог Б: файл дерева разошёлся с коммитом\tПРОШЁЛ — охраны нет (код ", (к строке drifted), ", Р5=", (к строке changed), ")"] по ""))]
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «A source without the line to spoil is no probe at all»
+    дано answers равно пустой список
+    ожидается вариант «Провал» с код равным "FLANG_LEDGER_FORGERY" и сообщение равным "ПОДЛОГ НЕ СОБРАЛСЯ: строки «первое плюс второе» в «flang/proof/examples/corpus-natural.flang» больше нет — поправить пробу, линейка ни при чём"
+  пусть lines равно («Probe lines» от answers)
+  «Chosen» от [(«When» от ((«Minus» от («Output of» от "source" и answers)) равен («Output of» от "source" и answers)) и (вариант «Провал» с код равным "FLANG_LEDGER_FORGERY" и сообщение равным "ПОДЛОГ НЕ СОБРАЛСЯ: строки «первое плюс второе» в «flang/proof/examples/corpus-natural.flang» больше нет — поправить пробу, линейка ни при чём")),
+    («When» от (пусто (отфильтровать lines где line → (line содержит "ПРОВАЛ") или (line содержит "ПРОШЁЛ"))) и (вариант «Конец работы» с значение равным (соединить (добавить "проба порчи на ведомость: подделка отвергнута, честная запись зелена" к lines) по "\n")))] и (вариант «Провал» с код равным "FLANG_LEDGER_FORGERY" и сообщение равным (соединить lines по "\n"))
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «No checker»
+    дано asked равно "checker present"
+    дано answers равно [запись «Answer» с «name» равным "checker present" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "")]
+    ожидается ["нет чекера /flang/proof/checker/сверщик — собрать: make -C flang/proof/checker"]
+  пусть failed равно (не ((«Exit code of» от asked и answers) равен 0))
+  «Chosen» от [(«When» от ((asked равен "checker present") и притом failed) и [(соединить ["нет чекера ", («Root» от answers), "/flang/proof/checker/сверщик — собрать: make -C flang/proof/checker"] по "")]),
+    («When» от (((asked равен "source") или (asked равен "record")) и притом failed) и ["ПОДЛОГ НЕ СОБРАЛСЯ: нет «flang/proof/examples/corpus-natural.flang» или его записи — поправить пробу, линейка ни при чём"]),
+    («When» от ((asked равен "ledger") и притом failed) и ["ведомость не построена: коммит HEAD не отдал дерево"]),
+    («When» от ((asked равен "built") и притом failed) и ["ПОДЛОГ НЕ СОБРАЛСЯ: подменное дерево не сложилось"]),
+    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и ["временный каталог не заведён"])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Провал» с код равным "FLANG_LEDGER_FORGERY" и сообщение равным "ПОДЛОГ НЕ СОБРАЛСЯ: строки «первое плюс второе» в «flang/proof/examples/corpus-natural.flang» больше нет — поправить пробу, линейка ни при чём"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Five stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 5 и «answers» равным пустой список
+  «Begin with» от 5
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the place of temporary files»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 5 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и потом равным (запись «Inquiry» с «asked» равным "temporary" и «queue» равным [запись «Question» с «name» равным "root" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && pwd"]), запись «Question» с «name» равным "source" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/examples/corpus-natural.flang"), запись «Question» с «name» равным "record" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/tests/records/corpus/corpus-natural.record")] и «stages» равным 4 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то если пусто («Work» от answers)
+        то вариант «Не проверено» с код равным "FLANG_LEDGER_FORGERY_NOT_MEASURED" и сообщение равным голова
+        иначе вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", («Work» от answers)]) и потом равным (запись «Inquiry» с «asked» равным (соединить ["stopped: ", голова] по "") и «queue» равным пустой список и «stages» равным 0 и «answers» равным answers)
+    случай пусто
+      то если (inquiry.«asked») начинается с "stopped: "
+        то вариант «Не проверено» с код равным "FLANG_LEDGER_FORGERY_NOT_MEASURED" и сообщение равным («After» от "stopped: " и (inquiry.«asked»))
+        иначе «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Share ledger forgery»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

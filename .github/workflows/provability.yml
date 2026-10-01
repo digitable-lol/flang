@@ -103,7 +103,7 @@ jobs:
       # Без этого шага вердикт ниже говорил бы о записях, напечатанных когда-то,
       # а не о двоичном, который выйдет в выпуск.
       - name: Check corpus records
-        run: sh flang/proof/corpus-share.sh --вложенность
+        run: bootstrap/flang io flang/proof/records-nesting.fscript --max-steps 4000000000 --timeout 900000
 
       # Сторож, которого нельзя покрасить, неотличим от выключенного. Двоичный
       # уносится в RUNNER_TEMP и возвращается при ЛЮБОМ исходе: иначе неудача
@@ -112,7 +112,7 @@ jobs:
         run: |
           set +e
           mv bootstrap/flang "$RUNNER_TEMP/flang.отложен"
-          sh flang/proof/corpus-share.sh --вложенность > "$RUNNER_TEMP/без-двоичного.log" 2>&1
+          bootstrap/flang io flang/proof/records-nesting.fscript --max-steps 4000000000 --timeout 900000 > "$RUNNER_TEMP/без-двоичного.log" 2>&1
           kod=$?
           mv "$RUNNER_TEMP/flang.отложен" bootstrap/flang
           cat "$RUNNER_TEMP/без-двоичного.log"

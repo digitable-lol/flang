@@ -1,0 +1,263 @@
+модуль «Records nesting»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Binary fingerprint» из "binary-fingerprint.fscript" только «Look», «Look at», «Look answer», «Verdict of», «Look command», «Look of», «Root»
+  использует «Kernel verdict» из "kernel-verdict.fscript" только «Key value», «Pick», «Picked»
+  использует «Lists» только «Соединить списки»
+
+тотальная функция «Tree root»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The tree of the plan unless another is named»
+    дано answers равно пустой список
+    ожидается "../.."
+  пусть named равно («Key value» от "--root" и («Given of» от "arguments" и answers))
+  если пусто named то "../.." иначе named
+
+тотальная функция «Allowed to differ»
+  возвращает список строки
+  пример «Six records that lie on purpose and so differ from the print»
+    ожидается ["poddelka-nositel-chislo-segment", "poddelka-nositel-psevdonim-ne-otrezok", "poddelka-raznost-bez-poryadka", "poddelka-svyortka-nad-pustym", "poddelka-razv2-sebya", "poddelka-razv3-raznost"]
+  ["poddelka-nositel-chislo-segment", "poddelka-nositel-psevdonim-ne-otrezok", "poddelka-raznost-bez-poryadka", "poddelka-svyortka-nad-pustym", "poddelka-razv2-sebya", "poddelka-razv3-raznost"]
+
+тотальная функция «Print command»
+  возвращает строка
+  пример «Every record of the corpus is printed again and compared byte for byte»
+    ожидается "cd \"$0\" || exit 2; for z in flang/proof/checker/tests/records/corpus/*.record; do b=$(basename \"$z\" .record); d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2); if [ ! -f \"$d\" ]; then s=missing; else ./bootstrap/flang check --proof --записать \"$1/$b.record\" \"$d\" >/dev/null 2>&1; if [ ! -s \"$1/$b.record\" ]; then s=refused; else sed '2s#.*#исходник —#' \"$1/$b.record\" > \"$1/a\"; sed '2s#.*#исходник —#' \"$z\" > \"$1/b\"; if cmp -s \"$1/a\" \"$1/b\"; then s=same; else s=differs; fi; fi; fi; printf '%s\\t%s\\t%s\\n' \"$b\" \"$d\" \"$s\"; done"
+  "cd \"$0\" || exit 2; for z in flang/proof/checker/tests/records/corpus/*.record; do b=$(basename \"$z\" .record); d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2); if [ ! -f \"$d\" ]; then s=missing; else ./bootstrap/flang check --proof --записать \"$1/$b.record\" \"$d\" >/dev/null 2>&1; if [ ! -s \"$1/$b.record\" ]; then s=refused; else sed '2s#.*#исходник —#' \"$1/$b.record\" > \"$1/a\"; sed '2s#.*#исходник —#' \"$z\" > \"$1/b\"; if cmp -s \"$1/a\" \"$1/b\"; then s=same; else s=differs; fi; fi; fi; printf '%s\\t%s\\t%s\\n' \"$b\" \"$d\" \"$s\"; done"
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No work directory yet»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «Printed»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  пример «Nothing printed»
+    дано answers равно пустой список
+    ожидается пустой список
+  отфильтровать (отобразить («Lines» от («Output of» от "printed" и answers)) как line → разделить line по "\t") где row → (длина row) равен 3
+
+тотальная функция «Outcome»
+  принимает row: список строки
+  возвращает строка
+  пример «A lying record that now matches the print»
+    дано row равно ["poddelka-razv2-sebya", "a.flang", "same"]
+    ожидается "awake"
+  пример «A lying record that still differs»
+    дано row равно ["poddelka-razv2-sebya", "a.flang", "differs"]
+    ожидается "allowed"
+  пусть allowed равно (не (пусто (отфильтровать («Allowed to differ») где name → name равен («Cell» от 1 и row))))
+  пусть said равно («Cell» от 3 и row)
+  «Chosen» от [(«When» от ((said равен "missing") или (said равен "refused")) и said),
+    («When» от (allowed и притом (said равен "same")) и "awake"),
+    («When» от allowed и "allowed")] и said
+
+тотальная функция «Mark»
+  принимает row: список строки
+  возвращает список строки
+  пример «A record printed otherwise is named»
+    дано row равно ["a", "a.flang", "differs"]
+    ожидается [" РАЗОШЛАСЬ:a"]
+  пример «A record printed the same is not»
+    дано row равно ["a", "a.flang", "same"]
+    ожидается пустой список
+  разбор («Outcome» от row)
+    случай "missing"
+      то [(соединить [" ИСХОДНИКА-НЕТ:", («Cell» от 1 и row)] по "")]
+    случай "refused"
+      то [(соединить [" ПЕЧАТЬ-ОТКАЗАЛА:", («Cell» от 1 и row)] по "")]
+    случай "awake"
+      то [(соединить [" ОГОВОРКА-ПРОСНУЛАСЬ:", («Cell» от 1 и row)] по "")]
+    случай "allowed"
+      то [(соединить [" РАСХОДИТСЯ-ЗАКОННО:", («Cell» от 1 и row)] по "")]
+    случай "differs"
+      то [(соединить [" РАЗОШЛАСЬ:", («Cell» от 1 и row)] по "")]
+    случай любое
+      то пустой список
+
+тотальная функция «Directory of»
+  принимает path: строка
+  возвращает строка
+  пример «The directory of a source»
+    дано path равно "flang/proof/examples/a.flang"
+    ожидается "flang/proof/examples"
+  пусть parts равно (разделить path по "/")
+  если (длина parts) меньше 2 то path иначе (соединить (свёртка parts начиная с (пустой список) как kept и part → если (длина kept) равен ((длина parts) минус 1) то kept иначе (добавить part к kept)) по "/")
+
+тотальная функция «Directory counts»
+  принимает rows: список список строки
+  возвращает строка
+  пример «Sources counted by directory»
+    дано rows равно [["a", "x/a.flang", "same"], ["b", "x/b.flang", "same"], ["c", "y/c.flang", "same"]]
+    ожидается "x\t2\ny\t1\n"
+  пусть directories равно (отобразить rows как row → «Directory of» от («Cell» от 2 и row))
+  пусть named равно (свёртка directories начиная с (пустой список) как seen и directory → если пусто (отфильтровать seen где other → other равен directory) то (добавить directory к seen) иначе seen)
+  соединить (отобразить named как directory → соединить [directory, "\t", (к строке (длина (отфильтровать directories где other → other равен directory))), "\n"] по "") по ""
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The binary and the place of temporary files»
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»), запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")]
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP")]
+
+тотальная функция «Bootstrap»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The bootstrap directory of the tree of the plan, seen from its root»
+    дано answers равно пустой список
+    ожидается "bootstrap"
+  пример «Of another tree, by its own path»
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--root", "/r"])]
+    ожидается "/r/bootstrap"
+  если («Tree root» от answers) равен "../.." то "bootstrap" иначе (соединить [(«Tree root» от answers), "/bootstrap"] по "")
+
+тотальная функция «Start»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «The root, the binary, its freshness, then a work directory»
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--root", "/r"])]
+    ожидается [запись «Question» с «name» равным "root" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && pwd", "/r"]), запись «Question» с «name» равным "binary present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "/r/bootstrap/flang"])]
+  [(«Run» от "root" и "sh" и ["-c", "cd \"$0\" && pwd", («Tree root» от answers)]), («Run» от "binary present" и "test" и ["-x", (соединить [(«Tree root» от answers), "/bootstrap/flang"] по "")])]
+
+тотальная функция «Looking»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Freshness first, then a work directory»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "look" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "sh", "-c", "cd \"$0\" || exit 2; printf 'binary %s\\n' \"$(sha256sum flang 2>/dev/null | cut -d' ' -f1)\"; printf 'seed %s\\n' \"$(/bin/ls *.c *.h Makefile 2>/dev/null | LC_ALL=C sort | xargs cat | sha256sum | cut -d' ' -f1)\"; if [ -f Makefile ] && [ -f compiler_flang.c ]; then echo 'sources yes'; else echo 'sources no'; fi; make -q flang >/dev/null 2>&1; echo \"make $?\"; sed -n 's/^двоичный /written-binary /p; s/^семя /written-seed /p' flang.seed-sha256 2>/dev/null; exit 0", "bootstrap"]), запись «Question» с «name» равным "work" и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/nesting.")]
+  [(«Look at» от "look" и («Bootstrap» от answers)), («Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/nesting."] по ""))]
+
+тотальная функция «Printing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is printed»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "printed" и "sh" и ["-c", («Print command»), («Tree root» от answers), («Work» от answers)])]
+
+тотальная функция «Sorting»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing printed, nothing sorted»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "sorted" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "printf '%s' \"$0\" | sort -k2 -rn", ""])]
+  [(«Run» от "sorted" и "sh" и ["-c", "printf '%s' \"$0\" | sort -k2 -rn", («Directory counts» от («Printed» от answers))])]
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 9
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 5
+      то «Setup»
+    случай 4
+      то «Start» от answers
+    случай 3
+      то «Looking» от answers
+    случай 2
+      то «Printing» от answers
+    случай 1
+      то «Sorting» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Counted»
+  принимает outcomes: список строки, wanted: строка
+  возвращает число
+  пример «Outcomes of one kind»
+    дано outcomes равно ["same", "differs", "same"]
+    дано wanted равно "same"
+    ожидается 2
+  длина (отфильтровать outcomes где outcome → outcome равен wanted)
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty corpus is no failure»
+    дано answers равно пустой список
+    ожидается вариант «Конец работы» с значение равным "записей корпуса\t0\nядро напечатало ту же запись побайтово\t0\nнапечатало другое\t0\nрасходится законно (подделка «лжёт-запись», названа поимённо)\t0\nоговорка проснулась (подделка совпала с печатью — ложь протухла)\t0\nпечать отказала\t0\nисходника в дереве нет\t0\n\n-- откуда исходники записей корпуса --"
+  пусть rows равно («Printed» от answers)
+  пусть outcomes равно (отобразить rows как row → «Outcome» от row)
+  пусть marks равно (соединить («Gathered words» от (отобразить rows как row → «Mark» от row)) по "")
+  пусть lines равно («Соединить списки» от [(соединить ["записей корпуса\t", (к строке (длина rows))] по ""), (соединить ["ядро напечатало ту же запись побайтово\t", (к строке («Counted» от outcomes и "same"))] по ""), (соединить ["напечатало другое\t", (к строке («Counted» от outcomes и "differs"))] по ""), (соединить ["расходится законно (подделка «лжёт-запись», названа поимённо)\t", (к строке («Counted» от outcomes и "allowed"))] по ""), (соединить ["оговорка проснулась (подделка совпала с печатью — ложь протухла)\t", (к строке («Counted» от outcomes и "awake"))] по ""), (соединить ["печать отказала\t", (к строке («Counted» от outcomes и "refused"))] по ""), (соединить ["исходника в дереве нет\t", (к строке («Counted» от outcomes и "missing"))] по "")] и («Соединить списки» от (если пусто marks то (пустой список) иначе [(соединить ["поимённо:", marks] по "")]) и («Соединить списки» от ["", "-- откуда исходники записей корпуса --"] и («Lines» от («Output of» от "sorted" и answers)))))
+  пусть troubles равно (длина (отфильтровать outcomes где outcome → не ((outcome равен "same") или (outcome равен "allowed"))))
+  если troubles равен 0
+    то вариант «Конец работы» с значение равным (соединить lines по "\n")
+    иначе вариант «Провал» с код равным "FLANG_RECORDS_NESTING" и сообщение равным (соединить lines по "\n")
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «No kernel binary»
+    дано asked равно "binary present"
+    дано answers равно [запись «Answer» с «name» равным "binary present" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "")]
+    ожидается ["нет двоичного ядра /bootstrap/flang — собрать: make -C bootstrap"]
+  пусть kernel равно (соединить [(«First line» от («Output of» от "root" и answers)), "/bootstrap/flang"] по "")
+  «Chosen» от [(«When» от ((asked равен "binary present") и притом (не ((«Exit code of» от asked и answers) равен 0))) и [(соединить ["нет двоичного ядра ", kernel, " — собрать: make -C bootstrap"] по "")]),
+    («When» от ((asked равен "look") и притом ((«Verdict of» от («Look answer» от "look" и answers)) равен "отстало")) и [(соединить ["ЯДРО ОТСТАЛО ОТ СЕМЕНИ: ", kernel, " собран не из нынешнего bootstrap/*.c, *.h, Makefile.\nМерить нечем — старое ядро печатает старые записи и объявит свежие отставшими.\nПересобрать: make -C bootstrap -j8 && bootstrap/flang io flang/proof/binary-fingerprint.fscript"] по "")]),
+    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и ["временный каталог не заведён"])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Конец работы» с значение равным "записей корпуса\t0\nядро напечатало ту же запись побайтово\t0\nнапечатало другое\t0\nрасходится законно (подделка «лжёт-запись», названа поимённо)\t0\nоговорка проснулась (подделка совпала с печатью — ложь протухла)\t0\nпечать отказала\t0\nисходника в дереве нет\t0\n\n-- откуда исходники записей корпуса --"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Six stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6 и «answers» равным пустой список
+  «Begin with» от 6
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the arguments»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (запись «Inquiry» с «asked» равным "arguments" и «queue» равным [запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")] и «stages» равным 5 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то если пусто («Work» от answers)
+        то вариант «Не проверено» с код равным "FLANG_RECORDS_NESTING_NOT_MEASURED" и сообщение равным голова
+        иначе вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", («Work» от answers)]) и потом равным (запись «Inquiry» с «asked» равным (соединить ["stopped: ", голова] по "") и «queue» равным пустой список и «stages» равным 0 и «answers» равным answers)
+    случай пусто
+      то если (inquiry.«asked») начинается с "stopped: "
+        то вариант «Не проверено» с код равным "FLANG_RECORDS_NESTING_NOT_MEASURED" и сообщение равным («After» от "stopped: " и (inquiry.«asked»))
+        иначе «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Records nesting»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

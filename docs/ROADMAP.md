@@ -325,7 +325,7 @@ bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 90000
 «100 % утверждений дерева доказаны». О собранном коде оно не говорит ничего (этап 2), и о
 собранном ДВОИЧНОМ тоже: замер 19 сентября 2026 — `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` печатает
 ДОКАЗУЕМ и кодом 0 даже тогда, когда `bootstrap/flang` из дерева убран. Двоичный судит
-отдельная проверка `sh flang/proof/corpus-share.sh --вложенность`, и она заведена в ту же
+отдельная проверка `bootstrap/flang io flang/proof/records-nesting.fscript`, и она заведена в ту же
 работу CI. Полный разбор четырёх покрытий — [`docs/four-coverages.md`](four-coverages.md).
 
 **Правила.** 109 строк перечня `flang/proof/tables/inference-rules.tsv`, у всех 109 есть лемма в
@@ -511,7 +511,7 @@ make -C bootstrap -j8                                    собрать комп
 bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000                             четыре покрытия порознь, с датой и SHA
 bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000                               ДОКАЗУЕМ / НЕ ДОКАЗУЕМ по четырём числам, ≈18 с
 sh flang/proof/corpus-share.sh --проигрыванием           из чего сложена доля первого покрытия
-sh flang/proof/corpus-share.sh --вложенность             записи — то, что печатает СОБРАННЫЙ двоичный
+bootstrap/flang io flang/proof/records-nesting.fscript             записи — то, что печатает СОБРАННЫЙ двоичный
 bootstrap/flang run-script checker:check                                   пробы на подлог у независимого проверяющего
 ./bootstrap/flang check --proof ФАЙЛ                     отчёт о доказательствах файла
 ./bootstrap/flang check --proof ФАЙЛ --записать З         запись доказательства

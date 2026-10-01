@@ -543,6 +543,86 @@ Limit: the comparisons are `is at least` and `is at most`. Other phrasings by
 analogy do not work — `not less than` is not a keyword. Take the spelling from
 the [glossary](../glossary.html).
 
+### A string over several lines
+
+A `"…"` literal survives a line break: the value continues on the next line, and
+the line break is part of it as written. Single quotes `'…'` are the same
+literal. These two spellings give the same string:
+
+```flang
+module «Two spellings»
+
+total function «Through a line break»
+  returns string
+  example «the same as with \n»
+    expected "first\nsecond"
+  "first
+second"
+
+total function «In single quotes»
+  returns string
+  example «the same quotes, only different»
+    expected "text"
+  'text'
+```
+
+Edge: the indentation of a continuation line is part of the value, character
+for character. `"first⏎    second"` equals `"first\n    second"`, so a text
+inside a function body would have to start at the first column. For a text over
+several lines inside an indented body there is the text block.
+
+### The text block `"""` — from 0.7.24
+
+Three double quotes open a block; the text starts on the next line; the common
+indentation is removed:
+
+```flang
+total function «Help»
+  returns string
+  """
+  Commands:
+    .help   this text
+    .quit   leave
+  """
+```
+
+The value is `"Commands:\n  .help   this text\n  .quit   leave\n"`. The token is
+the one a literal with `\n` gives: the block is a spelling, not a new kind of
+string.
+
+| Rule | What it means |
+| --- | --- |
+| nothing after the opening `"""` on its line | the text starts on the next line; another character there is a `FLANG_LEX` refusal at its position |
+| the first unescaped `"""` closes | the rest of that line is read as usual |
+| common indentation | the smallest indentation among the non-blank lines and the line of the closing quotes; a tab counts as one character, like a space |
+| every line loses the common indentation | a line of only spaces and tabs becomes empty; trailing spaces stay |
+| closing quotes on their own line | the text ends with a line break; on the last text line — it does not |
+| escapes are those of `"…"` | `\n`, `\t`, `\"`, `\\`, `\uXXXX`; the quotes `"` and `'` inside are written as they are |
+
+```flang
+total function «Without a trailing line break»
+  returns string
+  example «closing quotes on the last text line»
+    expected "first\nsecond"
+  """
+  first
+  second"""
+
+total function «With indentation inside»
+  returns string
+  example «closing quotes left of the text set the common indentation»
+    expected "  first\n"
+  """
+    first
+  """
+```
+
+Edges: an unclosed block is a `FLANG_LEX` refusal at the opening quotes; a bad
+`\uXXXX` inside the block is a refusal at the line and column of the backslash
+itself. There is no interpolation. The decision with every case:
+[ADR-0052](../adr/0052-a-text-block-literal-strips-its-common-indentation.md)
+(in Russian).
+
 ## Built-in forms over lists and strings
 
 | Form | What it does |

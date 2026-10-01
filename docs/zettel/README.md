@@ -210,6 +210,7 @@
 - [Пульс, чей `trap` на TERM не выходит, переживает веер и держит план `flang io` без конца](a-heartbeat-whose-term-trap-does-not-exit-hangs-the-plan-forever.md)
 - [Работа CI останавливается на первом красном шаге и скрывает остальные — полный список красных даёт только локальный прогон всех шагов подряд](a-job-that-stops-at-the-first-red-step-hides-the-rest.md)
 - [Слой, попавший в точку раскрутки, заморожен до её перепечатки](a-layer-inside-the-bootstrap-point-is-frozen-until-it-is-reprinted.md)
+- [Исходник лексера под интерпретатором стоит минуты на сто килобайт, поэтому сверка потока токенов идёт по выборке, а не по дереву](the-lexer-source-under-the-interpreter-costs-minutes-per-hundred-kilobytes.md)
 - [Измеренный ноль ценнее ненайденного правила](a-measured-zero-is-valuable.md)
 - [Слияние не умеет сливать напечатанное семя: любая сторона теряет правило, и на стволе `4c1b6aef` потерялась индукция по строке](a-merge-cannot-merge-a-generated-seed-either-side-loses-a-rule.md)
 - [Число, у которого нет ключа подстановки, расходится не с другой страницей, а со своим же отчётом](a-number-with-no-key-drifts-from-its-own-report.md)

@@ -60,6 +60,7 @@
     "\n",
     "syn region flangString start=+\"+ skip=+\\\\.+ end=+\"+ oneline\n",
     "syn region flangString start=+'+ skip=+\\\\.+ end=+'+ oneline\n",
+    "syn region flangString start=+\"\"\"+ skip=+\\\\.+ end=+\"\"\"+\n",
     "\n",
     "syn match flangNumber \"\\k\\@<!-\\=\\d\\+\\%(\\.\\d\\+\\)\\=\\%([eE][-+]\\=\\d\\+\\)\\=\\>\"\n",
     "\n",

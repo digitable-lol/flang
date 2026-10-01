@@ -26,7 +26,7 @@
                  `разбор` 44,5 %, `свёртка` 24,6 %; у прочих тел 82,0 %
 ```
 
-Разрез целиком — [`docs/binder-goal-share.md`](../binder-goal-share.md), приборы —
+Разрез целиком — `docs/binder-goal-share.md` (снят), приборы —
 `docs/tools/binder-goal-share.py` и `docs/tools/binder-rule-reach.py`.
 
 ## Проба, которая стены не нашла

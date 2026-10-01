@@ -94,7 +94,7 @@ bootstrap/flang run-script proofs:summary      # доля по дереву
 ## Что снято прогоном 30 августа 2026 (b, ветка `b/9952-binders`)
 
 Первый пункт закрыт: разрез снят и лежит в дереве —
-[`docs/binder-goal-share.md`](../docs/binder-goal-share.md), приборы
+`docs/binder-goal-share.md` (снят), приборы
 `docs/tools/binder-goal-share.py` и `docs/tools/binder-rule-reach.py`, заметка
 `docs/zettel/binder-bodies-hold-two-thirds-of-the-unproven-but-the-binder-wall-itself-did-not-show-on-six-probes.md`.
 Ствол `9190b0be`, двоичный ведомости `f32d89f599dd6b9f740f42a752dff1ff`, ключ

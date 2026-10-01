@@ -100,7 +100,7 @@ Haskell. flang целится в одно: язык, на котором и до
 рода в принципе переигрывается — а переиграется ли он у вас, говорит только прогон
 проверяющего на вашей паре «исходник + запись».
 
-**Чем проверяется.** `corpus-share.sh --проигрыванием` печатает
+**Чем проверяется.** `replay-share.fscript` печатает
 «на слово ядра: посылок и утверждений 0; шагов 0; снято калькулятором 0», а
 `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` по-прежнему ДОКАЗУЕМ.
 
@@ -510,7 +510,7 @@ make -C bootstrap -j8                                    собрать комп
 ./bootstrap/flang --version                              версия собранного двоичного
 bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000                             четыре покрытия порознь, с датой и SHA
 bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000                               ДОКАЗУЕМ / НЕ ДОКАЗУЕМ по четырём числам, ≈18 с
-sh flang/proof/corpus-share.sh --проигрыванием           из чего сложена доля первого покрытия
+bootstrap/flang io flang/proof/replay-share.fscript           из чего сложена доля первого покрытия
 bootstrap/flang io flang/proof/records-nesting.fscript             записи — то, что печатает СОБРАННЫЙ двоичный
 bootstrap/flang run-script checker:check                                   пробы на подлог у независимого проверяющего
 ./bootstrap/flang check --proof ФАЙЛ                     отчёт о доказательствах файла

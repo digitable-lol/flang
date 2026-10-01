@@ -3,6 +3,7 @@
   использует «Inquiry» из "inquiry.fscript"
   использует «Reading» из "reading.fscript"
   использует «Report provenance» из "report-provenance.fscript"
+  использует «Plan output» из "plan-output.fscript"
   использует «Lists» только «Соединить списки»
 
 тотальная функция «Tree»
@@ -27,7 +28,7 @@
 
 тотальная функция «Measurements»
   возвращает список «Question»
-  «Соединить списки» от («Provenance questions» от («Tree»)) и [(«Run from» от "share" и («Tree») и "sh" и ["flang/proof/corpus-share.sh", "--проигрыванием"]),
+  «Соединить списки» от («Provenance questions» от («Tree»)) и [(«Run from» от "share" и («Tree») и "bootstrap/flang" и ["io", "flang/proof/replay-share.fscript", "--max-steps", "4000000000", "--timeout", "900000"]),
    («Run from» от "corpus" и («Tree») и "sh" и ["flang/proof/corpus-share.sh", "--набор", "корпус"]),
    («Run from» от "lemmas" и («Tree») и "grep" и ["-h", "-a", "^theorem «", "flang/proof/lean/Rules.lean", "flang/proof/lean/Term.lean"]),
    («Run from» от "accepted" и («Tree») и "sed" и ["-n", "/^def «правила» : List/,/\\]$/p", "flang/proof/lean/Acceptance.lean"]),
@@ -175,7 +176,7 @@
 тотальная функция «Said by»
   принимает name: строка, answers: список «Answer»
   возвращает список строки
-  «Соединить списки» от («Lines» от («Output of» от name и answers)) и («Lines» от («Errors of» от name и answers))
+  «Lines» от («Plan said by» от name и answers)
 
 тотальная функция «Share words»
   принимает line: строка

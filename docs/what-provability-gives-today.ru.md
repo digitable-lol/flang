@@ -182,7 +182,7 @@ $ make -C flang/proof/checker && flang/proof/checker/сверщик заказ.f
 
 ```
 bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000          → ДОКАЗУЕМ                       (18 сентября 2026, ≈13 с)
-sh flang/proof/corpus-share.sh --проигрыванием
+bootstrap/flang io flang/proof/replay-share.fscript
 → доля-проигрыванием = 650 / 650 = 100.00 %
   на слово ядра: посылок и утверждений 0; шагов 0; снято калькулятором 0
 ```

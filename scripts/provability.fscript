@@ -124,7 +124,7 @@
 тотальная функция «Suites»
   принимает answers: список «Answer»
   возвращает список «Question»
-  «Соединить списки» от [(«Run from» от "share" и («Root») и "sh" и ["flang/proof/corpus-share.sh", "--проигрыванием"]),
+  «Соединить списки» от [(«Run from» от "share" и («Root») и "bootstrap/flang" и ["io", "flang/proof/replay-share.fscript", "--max-steps", "4000000000", "--timeout", "900000"]),
    («Run from» от "probes" и («Root») и "sh" и ["-c", "exec \"$0\" \"$@\" > /dev/null", "bootstrap/flang", "io", "flang/proof/checker/tests/run.fscript", "--max-steps", "4000000000", "--timeout", "600000", "--", («Report file» от answers)]),
    («Read» от "probes report" и («Report file» от answers))] и («Provenance questions» от («Root»))
 

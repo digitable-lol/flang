@@ -14,7 +14,7 @@
 | `checker-code-lines` | строк кода в `flang/proof/checker/checker.c` без комментариев и пустых | замер не больше числа | `flang/proof/tables-guard.fscript`, проверка С-6 |
 | `checker-primitives` | имён в массиве `ПРИМИТИВЫ[]` проверяющей программы | замер равен числу | там же |
 
-`flang/proof/corpus-share.sh` печатает `forgeries` и `forgery-numerator` рядом со
+`flang/proof/replay-share.fscript` печатает `forgeries` и `forgery-numerator` рядом со
 своим замером, чтобы просадку было видно там же, где число.
 
 ## Что делает вердикт при нарушении

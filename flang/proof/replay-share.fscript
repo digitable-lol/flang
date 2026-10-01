@@ -1,0 +1,543 @@
+модуль «Replay share»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Plan output» из "../../scripts/plan-output.fscript"
+  использует «Memory headroom» из "../../scripts/memory-headroom.fscript" только «Whole», «Rounded», «Two digits», «Hundredths»
+  использует «Checker probes» из "checker/tests/run.fscript" только «Provenance lines»
+  использует «Lists» только «Соединить списки»
+
+объект «Measured»
+  «name»: строка
+  «statements»: число
+  «totalities»: число
+  «discharges»: число
+  «declared»: число
+  «source»: строка
+  «code»: число
+  «said»: строка
+
+объект «Share»
+  «numerator»: число
+  «denominator»: число
+  «records»: число
+  «vouched»: число
+  «refused»: число
+  «moves»: число
+  «carrying»: число
+  «premises»: число
+  «steps»: число
+  «calculated»: число
+  «by example»: число
+  «by property»: число
+  «declared»: число
+  «refused denominator»: число
+  «nodes»: число
+  «boolean»: число
+  «unreachable»: число
+  «set records»: число
+  «set numerator»: число
+  «set denominator»: число
+  «lying»: число
+  «lying refused»: число
+  «lying accepted»: число
+  «facts»: число
+  «discharged numerator»: число
+  «discharged denominator»: число
+  «discharged unreachable»: число
+
+тотальная функция «Measure command»
+  возвращает строка
+  пример «Every record of a set is counted and checked»
+    ожидается "cd \"$0\" || exit 2; for z in $(find \"$1\" -name '*.record' | sort); do b=$(basename \"$z\"); d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-); u=$(grep -a -m1 '^утверждений ' \"$z\" | sed 's/^утверждений //'); t=$(grep -a -m1 '^тотальностей ' \"$z\" | sed 's/^тотальностей //'); s=$(grep -ac '^снятие «' \"$z\"); o=$(grep -ac '^  по объявлению ' \"$z\"); printf '\\036 record %s\\t%s\\t%s\\t%s\\t%s\\t%s\\n' \"$b\" \"${u:-0}\" \"${t:-0}\" \"$s\" \"$o\" \"$d\"; if [ -f \"$d\" ]; then ./flang/proof/checker/сверщик \"$PWD/$d\" \"$z\" 2>&1; k=$?; else k=2; fi; printf '\\n\\036 code %s\\n' \"$k\"; done > \"$2\""
+  "cd \"$0\" || exit 2; for z in $(find \"$1\" -name '*.record' | sort); do b=$(basename \"$z\"); d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-); u=$(grep -a -m1 '^утверждений ' \"$z\" | sed 's/^утверждений //'); t=$(grep -a -m1 '^тотальностей ' \"$z\" | sed 's/^тотальностей //'); s=$(grep -ac '^снятие «' \"$z\"); o=$(grep -ac '^  по объявлению ' \"$z\"); printf '\\036 record %s\\t%s\\t%s\\t%s\\t%s\\t%s\\n' \"$b\" \"${u:-0}\" \"${t:-0}\" \"$s\" \"$o\" \"$d\"; if [ -f \"$d\" ]; then ./flang/proof/checker/сверщик \"$PWD/$d\" \"$z\" 2>&1; k=$?; else k=2; fi; printf '\\n\\036 code %s\\n' \"$k\"; done > \"$2\""
+
+тотальная функция «Carrier command»
+  возвращает строка
+  пример «The first record whose numerator rests on its moves»
+    ожидается "cd \"$0\" || exit 2; n() { sed -n 's/.*сведений проиграно заново \\([0-9]*\\) (ходов.*/\\1/p'; }; for z in $(find \"$1\" -name '*.record' | sort); do d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-); [ -f \"$d\" ] || continue; a=$(./flang/proof/checker/сверщик \"$PWD/$d\" \"$z\" 2>&1 | n); a=${a:-0}; [ \"$a\" -gt 0 ] || continue; grep -av '^    ход ' \"$z\" > \"$2/probe.record\"; c=$(./flang/proof/checker/сверщик \"$PWD/$d\" \"$2/probe.record\" 2>&1 | n); c=${c:-0}; if [ \"$c\" -lt \"$a\" ]; then mkdir -p \"$2/honest\" \"$2/forged\" && cp \"$z\" \"$2/honest/carrier.record\" && grep -av '^    ход ' \"$z\" > \"$2/forged/carrier.record\" && basename \"$z\"; exit 0; fi; done; exit 1"
+  "cd \"$0\" || exit 2; n() { sed -n 's/.*сведений проиграно заново \\([0-9]*\\) (ходов.*/\\1/p'; }; for z in $(find \"$1\" -name '*.record' | sort); do d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-); [ -f \"$d\" ] || continue; a=$(./flang/proof/checker/сверщик \"$PWD/$d\" \"$z\" 2>&1 | n); a=${a:-0}; [ \"$a\" -gt 0 ] || continue; grep -av '^    ход ' \"$z\" > \"$2/probe.record\"; c=$(./flang/proof/checker/сверщик \"$PWD/$d\" \"$2/probe.record\" 2>&1 | n); c=${c:-0}; if [ \"$c\" -lt \"$a\" ]; then mkdir -p \"$2/honest\" \"$2/forged\" && cp \"$z\" \"$2/honest/carrier.record\" && grep -av '^    ход ' \"$z\" > \"$2/forged/carrier.record\" && basename \"$z\"; exit 0; fi; done; exit 1"
+
+тотальная функция «Measured of»
+  принимает chunk: строка
+  возвращает «Measured»
+  пример «A record with its counts and what the checker said»
+    дано chunk равно "a.record\t4\t1\t0\t2\tflang/a.flang\nПРОВЕРЕНО\n\n\u001e code 0\n"
+    ожидается запись «Measured» с «name» равным "a.record" и «statements» равным 4 и «totalities» равным 1 и «discharges» равным 0 и «declared» равным 2 и «source» равным "flang/a.flang" и «code» равным 0 и «said» равным "ПРОВЕРЕНО\n"
+  пусть halves равно (разделить chunk по "\n\u001e code ")
+  пусть head равно (разделить («Cell» от 1 и halves) по "\n")
+  пусть cells равно (разделить («Cell» от 1 и head) по "\t")
+  запись «Measured» с «name» равным («Cell» от 1 и cells) и «statements» равным («Count» от («Cell» от 2 и cells)) и «totalities» равным («Count» от («Cell» от 3 и cells)) и «discharges» равным («Count» от («Cell» от 4 и cells)) и «declared» равным («Count» от («Cell» от 5 и cells)) и «source» равным («Cell» от 6 и cells) и «code» равным («Count» от («Without blanks» от («Cell» от 2 и halves))) и «said» равным (соединить («Without first» от head) по "\n")
+
+тотальная функция «Without first»
+  принимает items: список строки
+  возвращает список строки
+  пример «The first line is dropped»
+    дано items равно ["1", "a", "b"]
+    ожидается ["a", "b"]
+  разбор items
+    случай голова и хвост
+      то хвост
+    случай пусто
+      то пустой список
+
+тотальная функция «Measured records»
+  принимает text: строка
+  возвращает список «Measured»
+  пример «Nothing measured»
+    дано text равно ""
+    ожидается пустой список
+  отобразить (отфильтровать (разделить text по "\u001e record ") где chunk → не (пусто chunk)) как chunk → «Measured of» от chunk
+
+тотальная функция «Digits after»
+  принимает mark: строка, text: строка
+  возвращает число
+  пример «The digits right after the mark»
+    дано mark равно "Шагов по примеру проверено по существу "
+    дано text равно "x. Шагов по примеру проверено по существу 12. y"
+    ожидается 12
+  пример «No mark, naught»
+    дано mark равно "проиграно "
+    дано text равно "ничего"
+    ожидается 0
+  пусть parts равно (разделить text по mark)
+  если (длина parts) меньше 2 то 0 иначе («Count» от («Leading digits» от (если (длина («Cell» от (длина parts) и parts)) больше 24 то (подстрока («Cell» от (длина parts) и parts) с 1 по 24) иначе («Cell» от (длина parts) и parts))))
+
+тотальная функция «Sum after»
+  принимает mark: строка, text: строка
+  возвращает число
+  пример «Every occurrence is summed»
+    дано mark равно "снято со слова ядра мест "
+    дано text равно "снято со слова ядра мест 2; снято со слова ядра мест 3"
+    ожидается 5
+  свёртка («Without first» от (разделить text по mark)) начиная с 0 как total и part → total плюс («Count» от («Leading digits» от (если (длина part) больше 24 то (подстрока part с 1 по 24) иначе part)))
+
+тотальная функция «Class of»
+  принимает name: строка, manifest: строка
+  возвращает строка
+  пример «The class the manifest gives a record»
+    дано name равно "x.record"
+    дано manifest равно "source\trecord\tclass\nflang/a.flang\tflang/r/x.record\trecord-lies\n"
+    ожидается "record-lies"
+  «Cell» от 1 и (отобразить (отфильтровать («Rows» от manifest) где row → («File name» от («Cell» от 2 и row)) равен name) как row → «Cell» от 3 и row)
+
+тотальная функция «File name»
+  принимает path: строка
+  возвращает строка
+  пример «The last part of a path»
+    дано path равно "flang/r/x.record"
+    ожидается "x.record"
+  «Cell» от (длина (разделить path по "/")) и (разделить path по "/")
+
+тотальная функция «Empty share»
+  возвращает «Share»
+  пример «Every count starts at naught»
+    ожидается запись «Share» с «numerator» равным 0 и «denominator» равным 0 и «records» равным 0 и «vouched» равным 0 и «refused» равным 0 и «moves» равным 0 и «carrying» равным 0 и «premises» равным 0 и «steps» равным 0 и «calculated» равным 0 и «by example» равным 0 и «by property» равным 0 и «declared» равным 0 и «refused denominator» равным 0 и «nodes» равным 0 и «boolean» равным 0 и «unreachable» равным 0 и «set records» равным 0 и «set numerator» равным 0 и «set denominator» равным 0 и «lying» равным 0 и «lying refused» равным 0 и «lying accepted» равным 0 и «facts» равным 0 и «discharged numerator» равным 0 и «discharged denominator» равным 0 и «discharged unreachable» равным 0
+  запись «Share» с «numerator» равным 0 и «denominator» равным 0 и «records» равным 0 и «vouched» равным 0 и «refused» равным 0 и «moves» равным 0 и «carrying» равным 0 и «premises» равным 0 и «steps» равным 0 и «calculated» равным 0 и «by example» равным 0 и «by property» равным 0 и «declared» равным 0 и «refused denominator» равным 0 и «nodes» равным 0 и «boolean» равным 0 и «unreachable» равным 0 и «set records» равным 0 и «set numerator» равным 0 и «set denominator» равным 0 и «lying» равным 0 и «lying refused» равным 0 и «lying accepted» равным 0 и «facts» равным 0 и «discharged numerator» равным 0 и «discharged denominator» равным 0 и «discharged unreachable» равным 0
+
+тотальная функция «Inner number»
+  принимает outer: строка, inner: строка, text: строка
+  возвращает число
+  пример «The number inside the brackets after a mark»
+    дано outer равно "Выводов факта о типе проиграно заново "
+    дано inner равно "(снято со слова ядра мест "
+    дано text равно "Выводов факта о типе проиграно заново 3 (снято со слова ядра мест 2)."
+    ожидается 2
+  пусть parts равно (разделить text по outer)
+  если (длина parts) меньше 2 то 0 иначе («Digits after» от inner и («Cell» от 1 и (разделить («Cell» от (длина parts) и parts) по ")")))
+
+тотальная функция «Added»
+  принимает share: «Share», measured: «Measured», manifest: строка
+  возвращает «Share»
+  пример «A refused record of a lying class leaves the denominator»
+    дано share равно запись «Share» с «numerator» равным 0 и «denominator» равным 0 и «records» равным 0 и «vouched» равным 0 и «refused» равным 0 и «moves» равным 0 и «carrying» равным 0 и «premises» равным 0 и «steps» равным 0 и «calculated» равным 0 и «by example» равным 0 и «by property» равным 0 и «declared» равным 0 и «refused denominator» равным 0 и «nodes» равным 0 и «boolean» равным 0 и «unreachable» равным 0 и «set records» равным 0 и «set numerator» равным 0 и «set denominator» равным 0 и «lying» равным 0 и «lying refused» равным 0 и «lying accepted» равным 0 и «facts» равным 0 и «discharged numerator» равным 0 и «discharged denominator» равным 0 и «discharged unreachable» равным 0
+    дано measured равно запись «Measured» с «name» равным "x.record" и «statements» равным 2 и «totalities» равным 1 и «discharges» равным 1 и «declared» равным 0 и «source» равным "a.flang" и «code» равным 1 и «said» равным ""
+    дано manifest равно "source\trecord\tclass\na.flang\tr/x.record\trecord-lies\n"
+    ожидается запись «Share» с «numerator» равным 0 и «denominator» равным 0 и «records» равным 1 и «vouched» равным 0 и «refused» равным 1 и «moves» равным 0 и «carrying» равным 0 и «premises» равным 0 и «steps» равным 0 и «calculated» равным 0 и «by example» равным 0 и «by property» равным 0 и «declared» равным 0 и «refused denominator» равным 3 и «nodes» равным 0 и «boolean» равным 0 и «unreachable» равным 3 и «set records» равным 1 и «set numerator» равным 0 и «set denominator» равным 3 и «lying» равным 1 и «lying refused» равным 1 и «lying accepted» равным 0 и «facts» равным 0 и «discharged numerator» равным 0 и «discharged denominator» равным 0 и «discharged unreachable» равным 1
+  пусть kind равно («Class of» от (measured.«name») и manifest)
+  пусть lies равно (если kind равен "record-lies" то 1 иначе 0)
+  пусть inset равно (если пусто kind то 0 иначе 1)
+  пусть code равно (measured.«code»)
+  если (code равен 0) или (code равен 3)
+    то «Vouched» от share и measured и lies и inset
+    иначе «Refused» от share и measured и lies и inset
+
+тотальная функция «Refused»
+  принимает share: «Share», measured: «Measured», lies: число, inset: число
+  возвращает «Share»
+  пример «An honest refused record stays in the denominator»
+    дано share равно запись «Share» с «numerator» равным 0 и «denominator» равным 0 и «records» равным 0 и «vouched» равным 0 и «refused» равным 0 и «moves» равным 0 и «carrying» равным 0 и «premises» равным 0 и «steps» равным 0 и «calculated» равным 0 и «by example» равным 0 и «by property» равным 0 и «declared» равным 0 и «refused denominator» равным 0 и «nodes» равным 0 и «boolean» равным 0 и «unreachable» равным 0 и «set records» равным 0 и «set numerator» равным 0 и «set denominator» равным 0 и «lying» равным 0 и «lying refused» равным 0 и «lying accepted» равным 0 и «facts» равным 0 и «discharged numerator» равным 0 и «discharged denominator» равным 0 и «discharged unreachable» равным 0
+    дано measured равно запись «Measured» с «name» равным "x.record" и «statements» равным 2 и «totalities» равным 0 и «discharges» равным 1 и «declared» равным 1 и «source» равным "a.flang" и «code» равным 1 и «said» равным ""
+    дано lies равно 0
+    дано inset равно 0
+    ожидается запись «Share» с «numerator» равным 0 и «denominator» равным 2 и «records» равным 1 и «vouched» равным 0 и «refused» равным 1 и «moves» равным 0 и «carrying» равным 0 и «premises» равным 0 и «steps» равным 0 и «calculated» равным 0 и «by example» равным 0 и «by property» равным 0 и «declared» равным 1 и «refused denominator» равным 2 и «nodes» равным 0 и «boolean» равным 0 и «unreachable» равным 0 и «set records» равным 0 и «set numerator» равным 0 и «set denominator» равным 0 и «lying» равным 0 и «lying refused» равным 0 и «lying accepted» равным 0 и «facts» равным 0 и «discharged numerator» равным 0 и «discharged denominator» равным 1 и «discharged unreachable» равным 0
+  пусть owed равно ((measured.«statements») плюс (measured.«totalities»))
+  запись «Share» с «numerator» равным (share.«numerator») и «denominator» равным ((share.«denominator») плюс (owed умножить на (1 минус lies))) и «records» равным ((share.«records») плюс 1) и «vouched» равным (share.«vouched») и «refused» равным ((share.«refused») плюс 1) и «moves» равным (share.«moves») и «carrying» равным (share.«carrying») и «premises» равным (share.«premises») и «steps» равным (share.«steps») и «calculated» равным (share.«calculated») и «by example» равным (share.«by example») и «by property» равным (share.«by property») и «declared» равным ((share.«declared») плюс (measured.«declared»)) и «refused denominator» равным ((share.«refused denominator») плюс owed) и «nodes» равным (share.«nodes») и «boolean» равным (share.«boolean») и «unreachable» равным ((share.«unreachable») плюс (owed умножить на lies)) и «set records» равным ((share.«set records») плюс inset) и «set numerator» равным (share.«set numerator») и «set denominator» равным ((share.«set denominator») плюс (owed умножить на inset)) и «lying» равным ((share.«lying») плюс lies) и «lying refused» равным ((share.«lying refused») плюс lies) и «lying accepted» равным (share.«lying accepted») и «facts» равным (share.«facts») и «discharged numerator» равным (share.«discharged numerator») и «discharged denominator» равным ((share.«discharged denominator») плюс ((measured.«discharges») умножить на (1 минус lies))) и «discharged unreachable» равным ((share.«discharged unreachable») плюс ((measured.«discharges») умножить на lies))
+
+тотальная функция «Vouched»
+  принимает share: «Share», measured: «Measured», lies: число, inset: число
+  возвращает «Share»
+  пример «A vouched record adds what it replayed»
+    дано share равно запись «Share» с «numerator» равным 0 и «denominator» равным 0 и «records» равным 0 и «vouched» равным 0 и «refused» равным 0 и «moves» равным 0 и «carrying» равным 0 и «premises» равным 0 и «steps» равным 0 и «calculated» равным 0 и «by example» равным 0 и «by property» равным 0 и «declared» равным 0 и «refused denominator» равным 0 и «nodes» равным 0 и «boolean» равным 0 и «unreachable» равным 0 и «set records» равным 0 и «set numerator» равным 0 и «set denominator» равным 0 и «lying» равным 0 и «lying refused» равным 0 и «lying accepted» равным 0 и «facts» равным 0 и «discharged numerator» равным 0 и «discharged denominator» равным 0 и «discharged unreachable» равным 0
+    дано measured равно запись «Measured» с «name» равным "x.record" и «statements» равным 2 и «totalities» равным 0 и «discharges» равным 0 и «declared» равным 0 и «source» равным "a.flang" и «code» равным 0 и «said» равным "сведений проиграно заново 3 (ходов проверено 5). НА СЛОВО ЯДРА: посылок и утверждений 1, шагов 2."
+    дано lies равно 0
+    дано inset равно 0
+    ожидается запись «Share» с «numerator» равным 3 и «denominator» равным 6 и «records» равным 1 и «vouched» равным 1 и «refused» равным 0 и «moves» равным 5 и «carrying» равным 1 и «premises» равным 1 и «steps» равным 2 и «calculated» равным 0 и «by example» равным 0 и «by property» равным 0 и «declared» равным 0 и «refused denominator» равным 0 и «nodes» равным 0 и «boolean» равным 0 и «unreachable» равным 0 и «set records» равным 0 и «set numerator» равным 0 и «set denominator» равным 0 и «lying» равным 0 и «lying refused» равным 0 и «lying accepted» равным 0 и «facts» равным 0 и «discharged numerator» равным 0 и «discharged denominator» равным 0 и «discharged unreachable» равным 0
+  пусть said равно (measured.«said»)
+  пусть replayed равно («Digits after» от "сведений проиграно заново " и said)
+  пусть moves равно («Digits after» от "(ходов проверено " и said)
+  пусть premises равно («Digits after» от "НА СЛОВО ЯДРА: посылок и утверждений " и said)
+  пусть steps равно («Inner number» от "НА СЛОВО ЯДРА: посылок и утверждений " и ", шагов " и said)
+  пусть branchy равно («Digits after» от "из них булевой веткой снято мест " и said)
+  пусть nodal равно ((«Inner number» от "Узлов вердикта «разбором по случаям» проиграно заново " и "(снято со слова ядра мест " и said) минус branchy)
+  пусть facts равно («Inner number» от "Выводов факта о типе проиграно заново " и "(снято со слова ядра мест " и said)
+  пусть calculated равно (((«Sum after» от "снято со слова ядра мест " и said) минус nodal) минус facts)
+  пусть posed равно («Digits after» от "Снятий предусловий " и said)
+  пусть regained равно («Inner number» от "Снятий предусловий " и ": проиграно заново " и said)
+  пусть unpaid равно («Inner number» от "Снятий предусловий " и "мест вызова без блока снятия " и said)
+  пусть sampled равно («Digits after» от "Шагов по примеру проверено по существу " и said)
+  пусть propertied равно («Digits after» от "Шагов по свойству проверено по существу " и said)
+  пусть open равно ((((((premises плюс steps) плюс calculated) плюс sampled) плюс propertied) плюс nodal) плюс facts)
+  запись «Share» с «numerator» равным ((share.«numerator») плюс replayed) и «denominator» равным (((share.«denominator») плюс replayed) плюс open) и «records» равным ((share.«records») плюс 1) и «vouched» равным ((share.«vouched») плюс 1) и «refused» равным (share.«refused») и «moves» равным ((share.«moves») плюс moves) и «carrying» равным ((share.«carrying») плюс (если replayed больше 0 то 1 иначе 0)) и «premises» равным ((share.«premises») плюс premises) и «steps» равным ((share.«steps») плюс steps) и «calculated» равным ((share.«calculated») плюс calculated) и «by example» равным ((share.«by example») плюс sampled) и «by property» равным ((share.«by property») плюс propertied) и «declared» равным ((share.«declared») плюс (measured.«declared»)) и «refused denominator» равным (share.«refused denominator») и «nodes» равным ((share.«nodes») плюс nodal) и «boolean» равным ((share.«boolean») плюс branchy) и «unreachable» равным (share.«unreachable») и «set records» равным ((share.«set records») плюс inset) и «set numerator» равным ((share.«set numerator») плюс (((((replayed плюс sampled) плюс propertied) плюс nodal) плюс facts) умножить на inset)) и «set denominator» равным ((share.«set denominator») плюс ((replayed плюс open) умножить на inset)) и «lying» равным ((share.«lying») плюс lies) и «lying refused» равным (share.«lying refused») и «lying accepted» равным ((share.«lying accepted») плюс (если (measured.«code») равен 0 то lies иначе 0)) и «facts» равным ((share.«facts») плюс facts) и «discharged numerator» равным ((share.«discharged numerator») плюс regained) и «discharged denominator» равным (((share.«discharged denominator») плюс posed) плюс unpaid) и «discharged unreachable» равным (share.«discharged unreachable»)
+
+тотальная функция «Percent»
+  принимает part: число, whole: число
+  возвращает строка
+  пример «Two decimals»
+    дано part равно 650
+    дано whole равно 651
+    ожидается "99.85"
+  пример «No whole, no share»
+    дано part равно 0
+    дано whole равно 0
+    ожидается "—"
+  если whole равен 0 то "—" иначе («Hundredths» от («Rounded» от ((part умножить на 10000) делить на whole)))
+
+тотальная функция «Report lines»
+  принимает t: «Share», path: строка, manifest: строка, listed: число, kept: строка, numerated: строка
+  возвращает список строки
+  пример «An empty set»
+    дано t равно запись «Share» с «numerator» равным 0 и «denominator» равным 0 и «records» равным 0 и «vouched» равным 0 и «refused» равным 0 и «moves» равным 0 и «carrying» равным 0 и «premises» равным 0 и «steps» равным 0 и «calculated» равным 0 и «by example» равным 0 и «by property» равным 0 и «declared» равным 0 и «refused denominator» равным 0 и «nodes» равным 0 и «boolean» равным 0 и «unreachable» равным 0 и «set records» равным 0 и «set numerator» равным 0 и «set denominator» равным 0 и «lying» равным 0 и «lying refused» равным 0 и «lying accepted» равным 0 и «facts» равным 0 и «discharged numerator» равным 0 и «discharged denominator» равным 0 и «discharged unreachable» равным 0
+    дано path равно "/r"
+    дано manifest равно "/m"
+    дано listed равно 0
+    дано kept равно "—"
+    дано numerated равно "—"
+    ожидается ["═══ ДОЛЯ-ПРОИГРЫВАНИЕМ по корпусу ═══", "каталог записей   /r", "записей в наборе  0 (чекер поручился 0, отверг либо не позвал 0)", "", "ЧИСЛИТЕЛЬ   — Σ независимо проверенного чекером (ходами/тотальностью + по существу + узлы): 0", "  ├ проиграно ходами/тотальностью:                                       0", "  ├ проверено по существу вычислением («по примеру»/«по свойству»):        0", "  ├ структурный переигрыш узлов тотальности (дно/спуск по телу функции):    0", "  └ переигранные выводы факта о типе (по шагу на правило):                 0", "ЗНАМЕНАТЕЛЬ — Σ обязательств корпуса за вычетом недостижимых:                          0", "доля-проигрыванием = 0 / 0 = — %", "доля с предусловиями = 0 / 0 = — % (снятий в знаменателе 0, переиграно 0, вынесено недостижимых 0)", "", "-- из чего сложен знаменатель --", "проверено чекером (в числителе)                         0", "не проверено у поручённых записей (на слово + калькулятор) 0", "обязательства отвергнутых записей (по шапкам)            0", "  из них ВЫНЕСЕНО из знаменателя как недостижимые         0", "  из них осталось в знаменателе                           0", "", "-- вынесенные из знаменателя места: сколько и почему --", "исключено мест                                          0", "почему: чекер отверг эти записи ЦЕЛИКОМ (код 1 «НЕ СОШЛОСЬ») и манифест", "        /m объявил их классом «лжёт-запись».", "        Сводки у отвергнутой записи нет, проиграно заново ноль — и ноль", "        этот от работы не зависит: место недостижимо, а не открыто.", "записей вынесено                                        0 из 0 объявленных классом «лжёт-запись»", "", "-- баланс знаменателя (принимается по нему, а не по процентам) --", "знаменатель после сужения                               0", "вынесено недостижимых мест                              0", "прежний знаменатель (все обязательства корпуса)          0", "сходится: 0 + 0 = 0 — СОШЁЛСЯ", "", "-- набор подделок (ADR-0023): доля без него не печатается --", "поймано 0 из 0 (манифест /m, храповик —)", "  класс «лжёт-запись»: отвергнуто 0 из 0, принято кодом 0 — 0", "  честные половины подделочных файлов: числитель набора 0 (храповик —)", "  обязательств у набора всего                            0", "", "-- не проверенное у поручённых записей, поимённо --", "на слово ядра: посылок и утверждений                    0", "на слово ядра: шагов                                    0", "снято калькулятором (тождество/разбор), не игрой         0", "  из них булевой веткой узла «разбором по случаям»        0", "", "-- прочая поддержка --", "ходов проверено, всего                                  0", "записей несут хоть один проигранный ход                 0", "строк «по объявлению» в записях (композиция)             0", "", "порог Г4 = 95 %; добрала ли доля порога: НЕТ"]
+  пусть numerator равно (((((t.«numerator») плюс (t.«by example»)) плюс (t.«by property»)) плюс (t.«nodes»)) плюс (t.«facts»))
+  пусть balance равно "СОШЁЛСЯ"
+  пусть reached равно (если ((t.«denominator») больше 0) и притом ((numerator умножить на 100) не меньше ((t.«denominator») умножить на 95)) то "ДА" иначе "НЕТ")
+  «Соединить списки» от ["═══ ДОЛЯ-ПРОИГРЫВАНИЕМ по корпусу ═══",
+    (соединить ["каталог записей   ", path] по ""),
+    (соединить ["записей в наборе  ", (к строке (t.«records»)), " (чекер поручился ", (к строке (t.«vouched»)), ", отверг либо не позвал ", (к строке (t.«refused»)), ")"] по ""),
+    "",
+    (соединить ["ЧИСЛИТЕЛЬ   — Σ независимо проверенного чекером (ходами/тотальностью + по существу + узлы): ", (к строке numerator)] по ""),
+    (соединить ["  ├ проиграно ходами/тотальностью:                                       ", (к строке (t.«numerator»))] по ""),
+    (соединить ["  ├ проверено по существу вычислением («по примеру»/«по свойству»):        ", (к строке ((t.«by example») плюс (t.«by property»)))] по ""),
+    (соединить ["  ├ структурный переигрыш узлов тотальности (дно/спуск по телу функции):    ", (к строке (t.«nodes»))] по ""),
+    (соединить ["  └ переигранные выводы факта о типе (по шагу на правило):                 ", (к строке (t.«facts»))] по ""),
+    (соединить ["ЗНАМЕНАТЕЛЬ — Σ обязательств корпуса за вычетом недостижимых:                          ", (к строке (t.«denominator»))] по ""),
+    (соединить ["доля-проигрыванием = ", (к строке numerator), " / ", (к строке (t.«denominator»)), " = ", («Percent» от numerator и (t.«denominator»)), " %"] по ""),
+    (соединить ["доля с предусловиями = ", (к строке (numerator плюс (t.«discharged numerator»))), " / ", (к строке ((t.«denominator») плюс (t.«discharged denominator»))), " = ", («Percent» от (numerator плюс (t.«discharged numerator»)) и ((t.«denominator») плюс (t.«discharged denominator»))), " % (снятий в знаменателе ", (к строке (t.«discharged denominator»)), ", переиграно ", (к строке (t.«discharged numerator»)), ", вынесено недостижимых ", (к строке (t.«discharged unreachable»)), ")"] по ""),
+    "",
+    "-- из чего сложен знаменатель --",
+    (соединить ["проверено чекером (в числителе)                         ", (к строке numerator)] по ""),
+    (соединить ["не проверено у поручённых записей (на слово + калькулятор) ", (к строке (((t.«premises») плюс (t.«steps»)) плюс (t.«calculated»)))] по ""),
+    (соединить ["обязательства отвергнутых записей (по шапкам)            ", (к строке (t.«refused denominator»))] по ""),
+    (соединить ["  из них ВЫНЕСЕНО из знаменателя как недостижимые         ", (к строке (t.«unreachable»))] по ""),
+    (соединить ["  из них осталось в знаменателе                           ", (к строке ((t.«refused denominator») минус (t.«unreachable»)))] по ""),
+    "",
+    "-- вынесенные из знаменателя места: сколько и почему --",
+    (соединить ["исключено мест                                          ", (к строке (t.«unreachable»))] по ""),
+    "почему: чекер отверг эти записи ЦЕЛИКОМ (код 1 «НЕ СОШЛОСЬ») и манифест",
+    (соединить ["        ", manifest, " объявил их классом «лжёт-запись»."] по ""),
+    "        Сводки у отвергнутой записи нет, проиграно заново ноль — и ноль",
+    "        этот от работы не зависит: место недостижимо, а не открыто.",
+    (соединить ["записей вынесено                                        ", (к строке (t.«lying refused»)), " из ", (к строке (t.«lying»)), " объявленных классом «лжёт-запись»"] по ""),
+    "",
+    "-- баланс знаменателя (принимается по нему, а не по процентам) --",
+    (соединить ["знаменатель после сужения                               ", (к строке (t.«denominator»))] по ""),
+    (соединить ["вынесено недостижимых мест                              ", (к строке (t.«unreachable»))] по ""),
+    (соединить ["прежний знаменатель (все обязательства корпуса)          ", (к строке ((t.«denominator») плюс (t.«unreachable»)))] по ""),
+    (соединить ["сходится: ", (к строке (t.«denominator»)), " + ", (к строке (t.«unreachable»)), " = ", (к строке ((t.«denominator») плюс (t.«unreachable»))), " — ", balance] по "")] и («Соединить списки» от (если (t.«refused denominator») равен (t.«unreachable») то (пустой список) иначе [(соединить ["РАСХОЖДЕНИЕ: у отвергнутых записей обязательств ", (к строке (t.«refused denominator»)), ", а объявлено"] по ""),
+    (соединить ["  манифестом недостижимыми ", (к строке (t.«unreachable»)), ". Чекер отверг запись, которой в наборе"] по ""),
+    "  нет: либо её надо завести строкой манифеста, либо чинить саму запись."]) и ["",
+    "-- набор подделок (ADR-0023): доля без него не печатается --",
+    (соединить ["поймано ", (к строке (t.«set records»)), " из ", (к строке listed), " (манифест ", manifest, ", храповик ", kept, ")"] по ""),
+    (соединить ["  класс «лжёт-запись»: отвергнуто ", (к строке (t.«lying refused»)), " из ", (к строке (t.«lying»)), ", принято кодом 0 — ", (к строке (t.«lying accepted»))] по ""),
+    (соединить ["  честные половины подделочных файлов: числитель набора ", (к строке (t.«set numerator»)), " (храповик ", numerated, ")"] по ""),
+    (соединить ["  обязательств у набора всего                            ", (к строке (t.«set denominator»))] по ""),
+    "",
+    "-- не проверенное у поручённых записей, поимённо --",
+    (соединить ["на слово ядра: посылок и утверждений                    ", (к строке (t.«premises»))] по ""),
+    (соединить ["на слово ядра: шагов                                    ", (к строке (t.«steps»))] по ""),
+    (соединить ["снято калькулятором (тождество/разбор), не игрой         ", (к строке (t.«calculated»))] по ""),
+    (соединить ["  из них булевой веткой узла «разбором по случаям»        ", (к строке (t.«boolean»))] по ""),
+    "",
+    "-- прочая поддержка --",
+    (соединить ["ходов проверено, всего                                  ", (к строке (t.«moves»))] по ""),
+    (соединить ["записей несут хоть один проигранный ход                 ", (к строке (t.«carrying»))] по ""),
+    (соединить ["строк «по объявлению» в записях (композиция)             ", (к строке (t.«declared»))] по ""),
+    "",
+    (соединить ["порог Г4 = ", "95", " %; добрала ли доля порога: ", reached] по "")])
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The tree lies two directories up»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Words given»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «No arguments»
+    дано answers равно пустой список
+    ожидается пустой список
+  «Given of» от "arguments" и answers
+
+тотальная функция «Forging»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «Without the key the share is measured»
+    дано answers равно пустой список
+    ожидается нет
+  не (пусто (отфильтровать («Words given» от answers) где word → word равен "--forgery"))
+
+тотальная функция «Set name»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The corpus unless another set is named»
+    дано answers равно пустой список
+    ожидается "corpus"
+  пусть named равно («Cell» от 1 и (отфильтровать («Words given» от answers) где word → не (word начинается с "--")))
+  если пусто named то "corpus" иначе named
+
+тотальная функция «Absolute root»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The root as the shell sees it»
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным "")]
+    ожидается "/t"
+  «First line» от («Output of» от "root" и answers)
+
+тотальная функция «Set path»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The records of the corpus»
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным "")]
+    ожидается "/t/flang/proof/checker/tests/records/corpus"
+  соединить [(«Absolute root» от answers), "/flang/proof/checker/tests/records/", («Set name» от answers)] по ""
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No work directory yet»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «In work»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file in the work directory»
+    дано name равно "measured.txt"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/measured.txt"
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Measure»
+  принимает name: строка, directory: строка, written: строка
+  возвращает «Question»
+  пример «One set is measured into a file»
+    дано name равно "measured"
+    дано directory равно "/r"
+    дано written равно "/w/m.txt"
+    ожидается запись «Question» с «name» равным "measured" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" || exit 2; for z in $(find \"$1\" -name '*.record' | sort); do b=$(basename \"$z\"); d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-); u=$(grep -a -m1 '^утверждений ' \"$z\" | sed 's/^утверждений //'); t=$(grep -a -m1 '^тотальностей ' \"$z\" | sed 's/^тотальностей //'); s=$(grep -ac '^снятие «' \"$z\"); o=$(grep -ac '^  по объявлению ' \"$z\"); printf '\\036 record %s\\t%s\\t%s\\t%s\\t%s\\t%s\\n' \"$b\" \"${u:-0}\" \"${t:-0}\" \"$s\" \"$o\" \"$d\"; if [ -f \"$d\" ]; then ./flang/proof/checker/сверщик \"$PWD/$d\" \"$z\" 2>&1; k=$?; else k=2; fi; printf '\\n\\036 code %s\\n' \"$k\"; done > \"$2\"", "../..", "/r", "/w/m.txt"])
+  «Run» от name и "sh" и ["-c", («Measure command»), («Root»), directory, written]
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The arguments, the root, the manifest, the ratchets and the checker»
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»), запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP"), запись «Question» с «name» равным "root" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && pwd"]), запись «Question» с «name» равным "manifest" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/forgeries/manifest.tsv"), запись «Question» с «name» равным "ratchets" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/ratchets.txt"), запись «Question» с «name» равным "checker present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "../../flang/proof/checker/сверщик"]), запись «Question» с «name» равным "checker stale" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["../../flang/proof/checker/checker.c", "-nt", "../../flang/proof/checker/сверщик"])]
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"), («Run» от "root" и "sh" и ["-c", "cd ../.. && pwd"]), («Read» от "manifest" и "../../flang/proof/forgeries/manifest.tsv"), («Read» от "ratchets" и "../../flang/proof/ratchets.txt"), («Run» от "checker present" и "test" и ["-x", "../../flang/proof/checker/сверщик"]), («Run» от "checker stale" и "test" и ["../../flang/proof/checker/checker.c", "-nt", "../../flang/proof/checker/сверщик"])]
+
+тотальная функция «Start»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «A work directory»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "work" и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/replay-share.")]
+  [(«Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/replay-share."] по ""))]
+
+тотальная функция «First pass»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing without a work directory»
+    дано answers равно пустой список
+    ожидается пустой список
+  «Chosen» от [(«When» от (пусто («Work» от answers)) и (пустой список)),
+    («When» от («Forging» от answers) и [(«Run» от "carrier" и "sh" и ["-c", («Carrier command»), («Root»), («Set path» от answers), («Work» от answers)])])] и [(«Run from» от "provenance" и («Root») и "bootstrap/flang" и ["io", "scripts/report-provenance.fscript", "--plan", "Report"]), («Measure» от "measured" и («Set path» от answers) и («In work» от "measured.txt" и answers)), («Read» от "measured text" и («In work» от "measured.txt" и answers))]
+
+тотальная функция «Second pass»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing more without the key»
+    дано answers равно пустой список
+    ожидается пустой список
+  если («Forging» от answers) и притом ((«Exit code of» от "carrier" и answers) равен 0)
+    то [(«Measure» от "honest" и («In work» от "honest" и answers) и («In work» от "honest.txt" и answers)), («Measure» от "forged" и («In work» от "forged" и answers) и («In work» от "forged.txt" и answers)), («Read» от "honest text" и («In work» от "honest.txt" и answers)), («Read» от "forged text" и («In work» от "forged.txt" и answers))]
+    иначе пустой список
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 9
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 4
+      то «Setup»
+    случай 3
+      то «Start» от answers
+    случай 2
+      то «First pass» от answers
+    случай 1
+      то «Second pass» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Share of»
+  принимает text: строка, manifest: строка
+  возвращает «Share»
+  пример «Nothing measured»
+    дано text равно ""
+    дано manifest равно ""
+    ожидается запись «Share» с «numerator» равным 0 и «denominator» равным 0 и «records» равным 0 и «vouched» равным 0 и «refused» равным 0 и «moves» равным 0 и «carrying» равным 0 и «premises» равным 0 и «steps» равным 0 и «calculated» равным 0 и «by example» равным 0 и «by property» равным 0 и «declared» равным 0 и «refused denominator» равным 0 и «nodes» равным 0 и «boolean» равным 0 и «unreachable» равным 0 и «set records» равным 0 и «set numerator» равным 0 и «set denominator» равным 0 и «lying» равным 0 и «lying refused» равным 0 и «lying accepted» равным 0 и «facts» равным 0 и «discharged numerator» равным 0 и «discharged denominator» равным 0 и «discharged unreachable» равным 0
+  свёртка («Measured records» от text) начиная с («Empty share») как share и measured → «Added» от share и measured и manifest
+
+тотальная функция «Ratchet»
+  принимает key: строка, text: строка
+  возвращает строка
+  пример «A number kept under its key»
+    дано key равно "forgeries"
+    дано text равно "forgeries 36\nforgery-numerator 155\n"
+    ожидается "36"
+  пример «No such key»
+    дано key равно "forgeries"
+    дано text равно ""
+    ожидается "—"
+  пусть found равно («Word» от 2 и («Beginning with» от (соединить [key, " "] по "") и («Lines» от text)))
+  если пусто found то "—" иначе found
+
+тотальная функция «Main verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty set is not a measure»
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_REPLAY_SHARE_NOT_MEASURED" и сообщение равным "в «/flang/proof/checker/tests/records/corpus» нет ни одной записи"
+  пусть manifest равно («Output of» от "manifest" и answers)
+  пусть share равно («Share of» от («Output of» от "measured text" и answers) и manifest)
+  пусть listed равно (длина (отфильтровать («Rows» от manifest) где row → (длина row) не меньше 3))
+  пусть lines равно («Соединить списки» от («Provenance lines» от answers) и («Report lines» от share и («Set path» от answers) и (соединить [(«Absolute root» от answers), "/flang/proof/forgeries/manifest.tsv"] по "") и listed и («Ratchet» от "forgeries" и («Output of» от "ratchets" и answers)) и («Ratchet» от "forgery-numerator" и («Output of» от "ratchets" и answers))))
+  «Chosen» от [(«When» от ((share.«records») равен 0) и (вариант «Не проверено» с код равным "FLANG_REPLAY_SHARE_NOT_MEASURED" и сообщение равным (соединить ["в «", («Set path» от answers), "» нет ни одной записи"] по ""))),
+    («When» от (не ((share.«refused denominator») равен (share.«unreachable»))) и (вариант «Провал» с код равным "FLANG_REPLAY_SHARE" и сообщение равным (соединить lines по "\n")))] и (вариант «Конец работы» с значение равным (соединить lines по "\n"))
+
+тотальная функция «Probe share»
+  принимает share: «Share»
+  возвращает число
+  пример «Replayed and nodes count, in hundredths of a percent»
+    дано share равно запись «Share» с «numerator» равным 1 и «denominator» равным 4 и «records» равным 1 и «vouched» равным 1 и «refused» равным 0 и «moves» равным 0 и «carrying» равным 0 и «premises» равным 0 и «steps» равным 0 и «calculated» равным 0 и «by example» равным 0 и «by property» равным 0 и «declared» равным 0 и «refused denominator» равным 0 и «nodes» равным 1 и «boolean» равным 0 и «unreachable» равным 0 и «set records» равным 0 и «set numerator» равным 0 и «set denominator» равным 0 и «lying» равным 0 и «lying refused» равным 0 и «lying accepted» равным 0 и «facts» равным 0 и «discharged numerator» равным 0 и «discharged denominator» равным 0 и «discharged unreachable» равным 0
+    ожидается 5000
+  если (share.«denominator») больше 0 то («Rounded» от ((((share.«numerator») плюс (share.«nodes»)) умножить на 10000) делить на (share.«denominator»))) иначе 0
+
+тотальная функция «Forgery verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «No carrier, no probe»
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_REPLAY_SHARE_NOT_MEASURED" и сообщение равным "проба не построена: в корпусе нет записи, чей числитель держится на ходах"
+  пусть manifest равно («Output of» от "manifest" и answers)
+  пусть honest равно («Share of» от («Output of» от "honest text" и answers) и manifest)
+  пусть forged равно («Share of» от («Output of» от "forged text" и answers) и manifest)
+  пусть kept равно ((honest.«numerator») плюс (honest.«nodes»))
+  пусть dropped равно ((forged.«numerator») плюс (forged.«nodes»))
+  пусть lines равно [(соединить ["ПРОБА доли-проигрыванием (носитель: ", («First line» от («Output of» от "carrier" и answers)), ")"] по ""), (соединить ["  честная запись — проиграно заново ", (к строке kept), ", знаменатель ", (к строке (honest.«denominator»)), ", доля ", («Hundredths» от («Probe share» от honest)), " %"] по ""), (соединить ["  подделка (ходы сняты) — проиграно заново ", (к строке dropped), ", знаменатель ", (к строке (forged.«denominator»)), ", доля ", («Hundredths» от («Probe share» от forged)), " %"] по "")]
+  «Chosen» от [(«When» от (не ((«Exit code of» от "carrier" и answers) равен 0)) и (вариант «Не проверено» с код равным "FLANG_REPLAY_SHARE_NOT_MEASURED" и сообщение равным "проба не построена: в корпусе нет записи, чей числитель держится на ходах")),
+    («When» от ((kept больше 0) и притом ((dropped меньше kept) и притом ((«Probe share» от forged) меньше («Probe share» от honest)))) и (вариант «Конец работы» с значение равным (соединить (добавить "ЦЕЛА: снятие ходов уронило и числитель, и долю — прибор мерит игру, а не вердикт" к lines) по "\n")))] и (вариант «Провал» с код равным "FLANG_REPLAY_SHARE_FORGERY" и сообщение равным (соединить (добавить "ПРОВАЛ: на подделке числитель либо доля не упали — прибор держит долю на снятых ходах" к lines) по "\n"))
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Without the key the share is judged»
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_REPLAY_SHARE_NOT_MEASURED" и сообщение равным "в «/flang/proof/checker/tests/records/corpus» нет ни одной записи"
+  если «Forging» от answers то «Forgery verdict» от answers иначе «Main verdict» от answers
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «No checker»
+    дано asked равно "checker present"
+    дано answers равно [запись «Answer» с «name» равным "checker present" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "")]
+    ожидается ["нет чекера /flang/proof/checker/сверщик — собрать: make -C flang/proof/checker"]
+  пусть checker равно (соединить [(«Absolute root» от answers), "/flang/proof/checker/сверщик"] по "")
+  «Chosen» от [(«When» от ((asked равен "checker present") и притом (не ((«Exit code of» от asked и answers) равен 0))) и [(соединить ["нет чекера ", checker, " — собрать: make -C flang/proof/checker"] по "")]),
+    («When» от ((asked равен "checker stale") и притом ((«Exit code of» от asked и answers) равен 0)) и [(соединить ["чекер ", checker, " старше checker.c — пересобрать: make -C flang/proof/checker"] по "")]),
+    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и ["временный каталог не заведён"])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_REPLAY_SHARE_NOT_MEASURED" и сообщение равным "в «/flang/proof/checker/tests/records/corpus» нет ни одной записи"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Five stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 5 и «answers» равным пустой список
+  «Begin with» от 5
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the arguments»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 5 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (запись «Inquiry» с «asked» равным "arguments" и «queue» равным [запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP"), запись «Question» с «name» равным "root" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && pwd"]), запись «Question» с «name» равным "manifest" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/forgeries/manifest.tsv"), запись «Question» с «name» равным "ratchets" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/ratchets.txt"), запись «Question» с «name» равным "checker present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "../../flang/proof/checker/сверщик"]), запись «Question» с «name» равным "checker stale" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["../../flang/proof/checker/checker.c", "-nt", "../../flang/proof/checker/сверщик"])] и «stages» равным 4 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то если пусто («Work» от answers)
+        то вариант «Не проверено» с код равным "FLANG_REPLAY_SHARE_NOT_MEASURED" и сообщение равным голова
+        иначе вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", («Work» от answers)]) и потом равным (запись «Inquiry» с «asked» равным (соединить ["stopped: ", голова] по "") и «queue» равным пустой список и «stages» равным 0 и «answers» равным answers)
+    случай пусто
+      то если (inquiry.«asked») начинается с "stopped: "
+        то вариант «Не проверено» с код равным "FLANG_REPLAY_SHARE_NOT_MEASURED" и сообщение равным («After» от "stopped: " и (inquiry.«asked»))
+        иначе «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Replay share»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

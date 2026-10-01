@@ -18,6 +18,7 @@ says what it means.
 | `emit` | to generate code in one of the {{цели.поАнглийски}} target languages | `flang emit привет.flang --target js --file привет.js` |
 | `ast` | to see the parsed program as a JSON tree | `flang ast привет.flang --pretty` |
 | `tokens` | to see what the lexer made of each word | `flang tokens привет.flang` |
+| `lint` | to keep lines short and conditionals shallow, against the limits in `.flangrc` | `flang lint scripts/` |
 | `facts` | to check claims against data in a JSON file | `flang facts привет.flang --facts факты.json --claims '["…"]'` |
 | `io` | to run a program that reads files, starts processes or uses the network | `flang io план.flang --pretty` |
 | `lock` | to write a lock file that contains the dependencies themselves | `flang lock привет.flang > flang.lock` |
@@ -470,6 +471,107 @@ $ flang tokens --keyword 'код символа'
 
 Each line is `line:column`, the token kind (`слово` — word, `ёлочка` — a name
 in guillemets) and its text.
+
+## lint
+
+`flang lint` measures flang sources by two measures and compares them with the
+limits written in `.flangrc`:
+
+* **line length** — how many characters a line holds;
+* **conditional depth** — how many `если` and `разбор` sit inside one another in
+  the body of a function.
+
+Both limits live in the settings file, next to the other keys:
+
+```
+max-line-length = 120
+max-conditional-depth = 2
+lint = refuse
+```
+
+A key that is absent means no limit: a project without these lines gets no
+findings at all.
+
+### Calling it
+
+```bash
+flang lint [<path>…] [--max-line-length N] [--max-conditional-depth N]
+           [--warn | --refuse] [--tsv]
+```
+
+A path is a file or a directory. A directory is walked whole, except names that
+begin with a dot; the files taken are those with the five source extensions:
+`.flang`, `.fscript`, `.fp`, `.фп`, `.фланг`. A named file that is not a flang source
+is skipped and said so. Without a path the command walks the working directory.
+
+A key on the command line beats the project `.flangrc`, and the project file
+beats `.flangrc` in the home directory.
+
+```
+$ flang lint scripts/guards/tree-inventory.fscript
+scripts/guards/tree-inventory.fscript:84: глубина ветвлений 17 > 2 в «Язык пути» (max-conditional-depth)
+scripts/guards/tree-inventory.fscript:138: глубина ветвлений 16 > 2 в «Довод не-долга» (max-conditional-depth)
+flang lint: файлов 1; max-line-length 120: 0; max-conditional-depth 2: 2; не разобрано 0
+```
+
+A finding names the file, the line, the measured value, the limit and the key.
+The last line goes to the error stream and counts files and findings.
+
+| Code | Meaning |
+| --- | --- |
+| `0` | nothing over the limits, or `lint = warn` |
+| `1` | findings, and `lint = refuse` |
+| `2` | a bad call: an unknown key, a path that does not exist, a bad value in `.flangrc` |
+| `3` | nothing over the limits, but some files did not parse, and their depth was not measured |
+
+`--tsv` prints one finding per line with tab-separated fields and no summary:
+
+```
+length	<path>	<line>	<length>	<limit>
+depth	<path>	<line>	<depth>	<limit>	<function>	<first line>	<last line>
+unparsed	<path>
+skipped	<path>
+```
+
+### What is counted
+
+**Length** is counted in characters, not bytes: `«Сумма»` is seven characters
+long. The line break is not counted; a tab is one character. A long string
+literal is a long line too.
+
+**Depth** is measured on the parse tree of the function body, not on its
+indentation. Every `если` and every `разбор` on the way from the body to a node
+adds one level, wherever it stands: in a condition, in a branch, in an argument,
+in the value of `пусть`. The depth of a function is its deepest such way, and the
+finding points to the line of the deepest conditional.
+
+```flang
+если а
+  то 1
+  иначе если б
+    то 2
+    иначе 3
+```
+
+This is depth 2: the `если` in the `иначе` branch of another `если` is one level
+deeper. A ladder of five such branches is depth 5. The way to stay shallow is a
+list of rules and one `разбор`, not a ladder.
+
+`или` and `и притом` are not conditionals for the linter, although the parse tree
+writes them as `если`. Examples, `обеспечивает`, `требует` and theorems are not
+measured: only the body is.
+
+### What the grammar lets you break
+
+A line breaks only where the grammar allows it to continue:
+
+* inside a list literal, after `[` and after a comma;
+* inside parentheses, before `иначе`;
+* at the level of a statement, `если … то … иначе …` as three lines.
+
+A record literal, a variant with fields and a chain of calls do not break: a
+line break inside them ends the expression. Such a line is shortened by naming a
+part of it with `пусть` or by a small function.
 
 ## facts
 

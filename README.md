@@ -97,8 +97,8 @@ and reports on stderr. The output directory holds the module, the runtime of the
 command-line driver and a `Makefile`. A binary installed by `make -C bootstrap install` takes the
 runtime from `--runtime flang/src/emit/c`.
 
-The binary answers to fourteen commands, the editor language server among them: `check`, `test`,
-`run`, `emit`, `ast`, `tokens`, `facts`, `io`, `lock`, `package`, `new`, `run-script`, `repl` and
+The binary answers to fifteen commands, the editor language server among them: `check`, `test`,
+`run`, `emit`, `ast`, `tokens`, `lint`, `facts`, `io`, `lock`, `package`, `new`, `run-script`, `repl` and
 `lsp`. It prints into `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `python` and `csharp`.
 
 ## Documentation

@@ -96,8 +96,8 @@ fl_status privet_udvoit(fl_ctx *ctx, fl_value n, fl_value *result, fl_error *err
 отчёт пишет в stderr. В каталоге вывода — модуль, рантайм цели, драйвер командной строки и
 `Makefile`. После `make -C bootstrap install` рантайм задаётся ключом `--runtime flang/src/emit/c`.
 
-У `flang` четырнадцать команд, языковой сервер редактора — одна из них: `check`, `test`, `run`,
-`emit`, `ast`, `tokens`, `facts`, `io`, `lock`, `package`,
+У `flang` пятнадцать команд, языковой сервер редактора — одна из них: `check`, `test`, `run`,
+`emit`, `ast`, `tokens`, `lint`, `facts`, `io`, `lock`, `package`,
 `new`, `run-script`, `repl` и `lsp`. Печатает он код для целей `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`,
 `elixir`, `python` и `csharp`.
 

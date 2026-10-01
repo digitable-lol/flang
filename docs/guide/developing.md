@@ -24,7 +24,7 @@ every save.
 
 To try an edited compiler source on one program before a print, let the built binary interpret the
 sources: `flang/self/bootstrap/check-with-source-compiler.flang` checks one file with them and
-prints the proof ledger in words and the proof record. `--trust` skips the verdict over the
+prints the proof report in words and the proof record. `--trust` skips the proof check of the
 compiler itself; a small program takes about ten minutes and 12 GiB:
 
 ```bash

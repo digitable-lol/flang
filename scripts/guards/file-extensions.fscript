@@ -193,7 +193,7 @@
    запись «Место» с «путь» равным "flang/scripts/claim-guard.fscript" и «нужно» равным "\".фланг\", \".fscript\", \".fts\"" и «нельзя» равным "\".фланг\", \".fts\"",
    запись «Место» с «путь» равным "flang/scripts/count-guard.mjs" и «нужно» равным "\".фланг\", \".fscript\", \".fts\"" и «нельзя» равным "\".фланг\", \".fts\"",
    запись «Место» с «путь» равным "flang/test/обход.sh" и «нужно» равным "\"$dir\"/*.fscript; do" и «нельзя» равным "\"$dir\"/*.фланг; do",
-   запись «Место» с «путь» равным "scripts/targets/target-census.sh" и «нужно» равным "\"$katalog\"/*.fscript; do" и «нельзя» равным "\"$katalog\"/*.фланг; do",
+   запись «Место» с «путь» равным "scripts/targets/target-census.fscript" и «нужно» равным "\".фланг\", \".fscript\"]" и «нельзя» равным "\".фланг\"]",
    запись «Место» с «путь» равным "docs/ifl/reproduce.sh" и «нужно» равным "--include='*.fscript'" и «нельзя» равным "--include='*.фланг' .",
    запись «Место» с «путь» равным "docs/editors/vim/ftdetect/flang.vim" и «нужно» равным "*.flang,*.fp,*.фп,*.фланг,*.fscript setfiletype flang" и «нельзя» равным "*.фланг setfiletype",
    запись «Место» с «путь» равным "docs/editors/vim/lua/flang/init.lua" и «нужно» равным "[\"фланг\"] = \"flang\", fscript = \"flang\" }" и «нельзя» равным "[\"фланг\"] = \"flang\" }",

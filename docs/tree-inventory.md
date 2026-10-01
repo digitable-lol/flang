@@ -233,13 +233,12 @@ Python 16, awk 1.
 владельцем: либо довод пишется (тогда долг 105), либо строка остаётся в долге
 как есть. Сама опись до этого решения не меняется.
 
-### Семь файлов в `scripts` — по убыванию, разбор 29 августа 2026
+### Шесть файлов в `scripts` — по убыванию, разбор 29 августа 2026
 
 | файл | строк | что делает |
 |---|---:|---|
 | `target-collisions.sh` | 248 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-09-17 строк scripts/targets/target-collisions.sh = 248 --> |
 | `bad-octet-guard.sh` | 340 | сторож негодных октетов <!-- СНЯТО 2026-09-14 строк scripts/guards/bad-octet-guard.sh = 340 --> |
-| `target-census.sh` | 164 | перепись целей <!-- СНЯТО 2026-09-17 строк scripts/targets/target-census.sh = 164 --> |
 | `seed-freshness.sh` | 3 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-09-17 строк scripts/seed/seed-freshness.sh = 3 (задача 5821: проверка переехала в scripts/seed/seed-freshness.fscript, здесь остался переходник; до неё 115) --> |
 | `one-string-measure-guard.sh` | 119 | подаёт сырые октеты в `string-measure.flang` <!-- СНЯТО 2026-08-29 строк scripts/guards/one-string-measure-guard.sh = 119 --> |
 | `identical-declarations.sh` | 82 | что можно ввезти вместо переименования <!-- СНЯТО 2026-09-17 строк scripts/targets/identical-declarations.sh = 82 --> |

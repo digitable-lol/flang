@@ -1,5 +1,5 @@
 запись доказательства 1
-исходник flang/proof/checker/tests/families/hypothesis/precondition-says-something-else.flang
+исходник flang/proof/checker/tests/families/hypothesis/precondition-does-not-carry-the-hypothesis.flang
 строк 19
 знаков 427
 отпечаток 245808399 123859526

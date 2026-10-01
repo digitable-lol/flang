@@ -9,6 +9,7 @@ acceptance
 accepted
 accepts
 access
+accessor
 account
 accumulates
 accumulating
@@ -619,6 +620,7 @@ follows
 for
 foreign
 forever
+forged
 forgeries
 forgery
 forgotten
@@ -1018,6 +1020,7 @@ n7
 name
 named
 names
+namesake
 namesigns
 naming
 nan
@@ -1591,6 +1594,7 @@ stops
 storage
 stored
 stories
+stranger
 strategy
 stray
 stream
@@ -1620,6 +1624,7 @@ substituted
 substitution
 subtracted
 subtraction
+subtracts
 success
 such
 suffix
@@ -1798,6 +1803,7 @@ unreachable
 unreadable
 unreducible
 unregistered
+unrelated
 unrevoked
 unstatable
 untied

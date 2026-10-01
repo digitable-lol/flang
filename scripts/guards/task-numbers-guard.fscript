@@ -151,7 +151,8 @@
   принимает tasks: список «Task», folder: строка
   возвращает число
   пример «Tasks are counted by their folder»
-    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0001-a.md"), (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md")]
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0001-a.md"),
+      (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md")]
     дано folder равно "closed"
     ожидается 1
   длина (отфильтровать tasks где task → (task.«folder») равен folder)
@@ -160,7 +161,8 @@
   принимает tasks: список «Task»
   возвращает строка
   пример «Every number stands between its own marks»
-    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0001-a.md"), (запись «Task» с «folder» равным "closed" и «name» равным "0001-b.md")]
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0001-a.md"),
+      (запись «Task» с «folder» равным "closed" и «name» равным "0001-b.md")]
     ожидается "<0001><0001>"
   соединить (отобразить tasks как task → соединить ["<", («Number of» от task), ">"] по "") по ""
 
@@ -190,16 +192,23 @@
   возвращает список «Task»
   пример «A task takes its place after the equal and before the greater»
     дано task равно (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md")
-    дано sorted равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
-    ожидается [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md"), (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
+    дано sorted равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"),
+      (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
+    ожидается [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"),
+      (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md"),
+      (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
   свёртка (отфильтровать sorted где each → («Value of» от each) больше («Value of» от task)) начиная с (добавить task к (отфильтровать sorted где each → («Value of» от each) не больше («Value of» от task))) как placed и each → добавить each к placed
 
 тотальная функция «Sorted by number»
   принимает tasks: список «Task»
   возвращает список «Task»
   пример «Numbers go up, equal numbers keep their order»
-    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0003-c.md"), (запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md")]
-    ожидается [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md"), (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0003-c.md"),
+      (запись «Task» с «folder» равным "" и «name» равным "0002-a.md"),
+      (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md")]
+    ожидается [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"),
+      (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md"),
+      (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
   свёртка tasks начиная с (пустой список) как sorted и task → «Inserted by number» от task и sorted
 
 тотальная функция «Twin lines»
@@ -212,19 +221,25 @@
   пример «The second twin only adds its path»
     дано lines равно ["НОМЕР 0028 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0028-a.md"]
     дано task равно (запись «Task» с «folder» равным "closed" и «name» равным "0028-b.md")
-    ожидается ["НОМЕР 0028 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0028-a.md", "  · docs/tasks/used-numbers.tsv: 0028"]
+    ожидается ["НОМЕР 0028 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0028-a.md",
+      "  · docs/tasks/used-numbers.tsv: 0028"]
   пусть heading равно (соединить ["НОМЕР ", («Number of» от task), " ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:"] по "")
-  пусть opened равно (если (длина (отфильтровать lines где line → line равен heading)) больше 0 то lines иначе (добавить heading к lines))
+  пусть opened равно (если (длина (отфильтровать lines где line → line равен heading)) больше 0 то lines
+    иначе (добавить heading к lines))
   добавить (соединить ["  · ", («Shown path» от task)] по "") к opened
 
 тотальная функция «Twin troubles»
   принимает tasks: список «Task»
   возвращает список строки
   пример «A number taken in two folders is a trouble»
-    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md"), (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
-    ожидается ["НОМЕР 0002 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0002-a.md", "  · docs/tasks/used-numbers.tsv: 0002"]
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"),
+      (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md"),
+      (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
+    ожидается ["НОМЕР 0002 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0002-a.md",
+      "  · docs/tasks/used-numbers.tsv: 0002"]
   пример «Different numbers make no trouble»
-    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"),
+      (запись «Task» с «folder» равным "" и «name» равным "0003-c.md")]
     ожидается пустой список
   пусть marks равно («Number marks» от tasks)
   пусть twins равно (отфильтровать tasks где task → «Is taken twice» от marks и («Number of» от task))
@@ -304,7 +319,9 @@
   принимает tasks: список «Task», found: строка
   возвращает список строки
   пример «A header that differs from the name is a trouble»
-    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0028-a.md"), (запись «Task» с «folder» равным "" и «name» равным "0001-ci.md"), (запись «Task» с «folder» равным "closed" и «name» равным "0005-closed.md")]
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0028-a.md"),
+      (запись «Task» с «folder» равным "" и «name» равным "0001-ci.md"),
+      (запись «Task» с «folder» равным "closed" и «name» равным "0005-closed.md")]
     дано found равно "../../docs/tasks/0028-a.md:номер: 0028\n../../docs/tasks/0001-ci.md:номер: 9998\n"
     ожидается ["0001-ci.md: в шапке номер «9998», а имя файла говорит «0001»"]
   пусть wrong равно (отфильтровать tasks где task → ((task.«folder») равен "") и притом (не ((«Header of» от task и found) равен («Number of» от task))))
@@ -314,7 +331,8 @@
   принимает tasks: список «Task», found: строка
   возвращает список строки
   пример «Twins are named before headers»
-    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"), (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md")]
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0002-a.md"),
+      (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md")]
     дано found равно "../../docs/tasks/0002-a.md:номер: 0002\n../../docs/tasks/drafts/0009-c.md:номер: 0009\n"
     ожидается ["НОМЕР 0002 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0002-a.md", "  · docs/tasks/used-numbers.tsv: 0002", "docs/tasks/drafts/0009-c.md: задача лежит в подкаталоге — закрытую задачу удаляют, а номер вписывают в docs/tasks/used-numbers.tsv"]
   «Joined» от («Twin troubles» от tasks) и («Joined» от («Header troubles» от tasks и found) и («Nested troubles» от found))
@@ -327,7 +345,8 @@
     ожидается ["docs/tasks/drafts/0009-c.md: задача лежит в подкаталоге — закрытую задачу удаляют, а номер вписывают в docs/tasks/used-numbers.tsv"]
   пусть paths равно (отобразить (отфильтровать (разделить found по "\n") где line → line начинается с "../../docs/tasks/") как line → голова (разделить (подстрока line с 7 по (длина line)) по ":"))
   пусть nested равно (отфильтровать paths где path → (длина (разделить path по "/")) больше 3)
-  отобразить nested как path → соединить [path, ": задача лежит в подкаталоге — закрытую задачу удаляют, а номер вписывают в docs/tasks/used-numbers.tsv"] по ""
+  отобразить nested как path → соединить [path,
+    ": задача лежит в подкаталоге — закрытую задачу удаляют, а номер вписывают в docs/tasks/used-numbers.tsv"] по ""
 
 тотальная функция «Is closed state»
   принимает closing: строка
@@ -371,7 +390,8 @@
   возвращает список «Task»
   пример «Every good line is a closed task with its number»
     дано text равно "number\tstate\ttitle\n0007\tdone\tOld task\n0008\trejected\tAnother\n"
-    ожидается [(запись «Task» с «folder» равным "closed" и «name» равным "0007-closed.md"), (запись «Task» с «folder» равным "closed" и «name» равным "0008-closed.md")]
+    ожидается [(запись «Task» с «folder» равным "closed" и «name» равным "0007-closed.md"),
+      (запись «Task» с «folder» равным "closed" и «name» равным "0008-closed.md")]
   отобразить (отфильтровать («Closed lines» от text) где line → «Is closed line» от line) как line → запись «Task» с «folder» равным («Closed folder») и «name» равным (соединить [(голова (разделить line по "\t")), "-closed.md"] по "")
 
 тотальная функция «Ledger troubles»
@@ -383,7 +403,8 @@
   пример «A broken line and a wrong first line are named»
     дано text равно "номер\n0007\tсделана\tOld task\n"
     ожидается ["docs/tasks/used-numbers.tsv: первая строка не «number<таб>state<таб>title»", "docs/tasks/used-numbers.tsv: строка не вида «NNNN<таб>done|rejected|dropped<таб>заголовок» — 0007\tсделана\tOld task"]
-  пусть heading равно (если («First line» от text) равен "number\tstate\ttitle" то (пустой список) иначе ["docs/tasks/used-numbers.tsv: первая строка не «number<таб>state<таб>title»"])
+  пусть heading равно (если («First line» от text) равен "number\tstate\ttitle" то (пустой список)
+    иначе ["docs/tasks/used-numbers.tsv: первая строка не «number<таб>state<таб>title»"])
   пусть broken равно (отобразить (отфильтровать («Closed lines» от text) где line → не («Is closed line» от line)) как line → соединить ["docs/tasks/used-numbers.tsv: строка не вида «NNNN<таб>done|rejected|dropped<таб>заголовок» — ", line] по "")
   «Joined» от heading и broken
 
@@ -391,9 +412,12 @@
   принимает tasks: список «Task»
   возвращает строка
   пример «Open tasks and taken numbers are counted apart»
-    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0001-a.md"), (запись «Task» с «folder» равным "closed" и «name» равным "0002-closed.md"), (запись «Task» с «folder» равным "closed" и «name» равным "0003-closed.md")]
+    дано tasks равно [(запись «Task» с «folder» равным "" и «name» равным "0001-a.md"),
+      (запись «Task» с «folder» равным "closed" и «name» равным "0002-closed.md"),
+      (запись «Task» с «folder» равным "closed" и «name» равным "0003-closed.md")]
     ожидается "номера задач целы: открытых 1, занято закрытыми 2, двойных номеров 0"
-  соединить ["номера задач целы: открытых ", (к строке («Count in» от tasks и "")), ", занято закрытыми ", (к строке («Count in» от tasks и («Closed folder»))), ", двойных номеров 0"] по ""
+  соединить ["номера задач целы: открытых ", (к строке («Count in» от tasks и "")), ", занято закрытыми ",
+    (к строке («Count in» от tasks и («Closed folder»))), ", двойных номеров 0"] по ""
 
 тотальная функция «Verdict»
   принимает tasks: список «Task», troubles: список строки
@@ -413,8 +437,10 @@
 тотальная функция «Header search»
   возвращает «Поручение»
   пример «One search reads the first header line of every task file»
-    ожидается вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-m1", "-H", "--include=[0-9][0-9][0-9][0-9]-*.md", "^номер:", "../../docs/tasks"]
-  вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-m1", "-H", "--include=[0-9][0-9][0-9][0-9]-*.md", "^номер:", "../../docs/tasks"]
+    ожидается вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-m1", "-H",
+      "--include=[0-9][0-9][0-9][0-9]-*.md", "^номер:", "../../docs/tasks"]
+  вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-m1", "-H",
+    "--include=[0-9][0-9][0-9][0-9]-*.md", "^номер:", "../../docs/tasks"]
 
 тотальная функция «List next»
   принимает folders: список строки, tasks: список «Task»
@@ -468,7 +494,8 @@
     дано message равно "каталога нет"
     ожидается вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным "НЕ СУДИЛ: нет каталога задач docs/tasks — каталога нет"
   если «Starts with open tasks» от folders
-    то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным (соединить ["НЕ СУДИЛ: нет каталога задач docs/tasks — ", message] по "")
+    то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным (соединить [
+      "НЕ СУДИЛ: нет каталога задач docs/tasks — ", message] по "")
     иначе «Listed» от folders и tasks и (пустой список)
 
 тотальная функция «After listing»
@@ -491,7 +518,8 @@
     случай вариант «Прочитано» с содержимое как text
       то вариант «Сделать» с поручение равным («Header search») и потом равным (вариант «Reading headers» с tasks равным («Joined» от tasks и («Closed tasks» от text)) и troubles равным («Ledger troubles» от text))
     случай вариант «Сбой» с код как code и сообщение как message
-      то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным (соединить ["НЕ СУДИЛ: нет списка занятых номеров docs/tasks/used-numbers.tsv — ", message] по "")
+      то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным (соединить [
+        "НЕ СУДИЛ: нет списка занятых номеров docs/tasks/used-numbers.tsv — ", message] по "")
     случай любое
       то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали список занятых номеров"
 
@@ -501,12 +529,15 @@
   разбор reply
     случай вариант «Процесс завершён» с код как code и вывод как found и ошибки как errors
       то если code больше 1
-        то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным (соединить ["НЕ СУДИЛ: поиск шапок ответил кодом ", (к строке code), ": ", errors] по "")
+        то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным (соединить [
+          "НЕ СУДИЛ: поиск шапок ответил кодом ", (к строке code), ": ", errors] по "")
         иначе «Verdict» от tasks и («Joined» от troubles и («Number troubles» от tasks и found))
     случай вариант «Процесс убит» с сигнал как signal и вывод как found и ошибки как errors
-      то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным (соединить ["НЕ СУДИЛ: поиск шапок убит сигналом ", signal] по "")
+      то вариант «Не проверено» с код равным "FLANG_TASK_NUMBERS_NOTHING" и сообщение равным (соединить [
+        "НЕ СУДИЛ: поиск шапок убит сигналом ", signal] по "")
     случай вариант «Сбой» с код как code и сообщение как message
-      то вариант «Не проверено» с код равным code и сообщение равным (соединить ["НЕ СУДИЛ: поиск шапок не запустился — ", message] по "")
+      то вариант «Не проверено» с код равным code и сообщение равным (соединить [
+        "НЕ СУДИЛ: поиск шапок не запустился — ", message] по "")
     случай любое
       то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали ответ поиска шапок"
 
@@ -518,7 +549,8 @@
     дано status равно "свободна"
     дано body равно ""
     ожидается "---\nномер: 1001\nзаголовок: Подлог\nстатус: свободна\nисполнитель: —\nветка: —\nкоманда: любая\nкарта: —\nрядом: —\n---\n\n# 1001. Подлог\n"
-  соединить ["---\nномер: ", serial, "\nзаголовок: Подлог\nстатус: ", status, "\nисполнитель: —\nветка: —\nкоманда: любая\nкарта: —\nрядом: —\n---\n\n# ", serial, ". Подлог\n", body] по ""
+  соединить ["---\nномер: ", serial, "\nзаголовок: Подлог\nстатус: ", status,
+    "\nисполнитель: —\nветка: —\nкоманда: любая\nкарта: —\nрядом: —\n---\n\n# ", serial, ". Подлог\n", body] по ""
 
 тотальная функция «Silent»
   принимает order: «Поручение»
@@ -548,7 +580,8 @@
     дано text равно "подлог"
     дано judging равно (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0)
     ожидается [(запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Записать файл» с путь равным "/tmp/forgery/docs/tasks/1001-forged-twin.md" и содержимое равным "подлог") и «wanted» равным 0), (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0), (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forgery/docs/tasks/1001-forged-twin.md") и «wanted» равным 0)]
-  [(«Silent» от (вариант «Записать файл» с путь равным (соединить [root, place] по "") и содержимое равным text)), judging, («Silent» от (вариант «Удалить файл» с путь равным (соединить [root, place] по "")))]
+  [(«Silent» от (вариант «Записать файл» с путь равным (соединить [root, place] по "") и содержимое равным text)),
+    judging, («Silent» от (вариант «Удалить файл» с путь равным (соединить [root, place] по "")))]
 
 тотальная функция «Tree of the forgery»
   принимает root: строка
@@ -590,7 +623,8 @@
     ожидается пустой список
   если (move.«title») равен ""
     то shown
-    иначе добавить (соединить ["── ", (move.«title»), " ──\nкод ", (к строке code), " — ", (move.«remark»)] по "") к shown
+    иначе добавить (соединить ["── ", (move.«title»), " ──\nкод ", (к строке code), " — ",
+      (move.«remark»)] по "") к shown
 
 тотальная функция «Clear»
   принимает root: строка, fault: строка, shown: список строки
@@ -624,7 +658,8 @@
     ожидается "ПОДЛОГ НЕ СОБРАЛСЯ — шаг пробы ответил: файла нет"
   если (move.«title») равен ""
     то соединить ["ПОДЛОГ НЕ СОБРАЛСЯ — шаг пробы ответил: ", answer] по ""
-    иначе соединить ["ПОДЛОГ НЕ ПОКАЗАН — ", (move.«title»), ": ждали код ", (к строке (move.«wanted»)), ", получен ", answer] по ""
+    иначе соединить ["ПОДЛОГ НЕ ПОКАЗАН — ", (move.«title»), ": ждали код ", (к строке (move.«wanted»)), ", получен ",
+      answer] по ""
 
 тотальная функция «After move»
   принимает root: строка, current: «Move», rest: список «Move», shown: список строки, reply: «Отклик»
@@ -688,7 +723,8 @@
     случай вариант «Заведено» с путь как root
       то «Move on» от root и («Moves» от root) и (пустой список)
     случай вариант «Сбой» с код как code и сообщение как message
-      то вариант «Не проверено» с код равным code и сообщение равным (соединить ["ПОДЛОГ НЕ СОБРАЛСЯ — временный каталог не завёлся: ", message] по "")
+      то вариант «Не проверено» с код равным code и сообщение равным (соединить [
+        "ПОДЛОГ НЕ СОБРАЛСЯ — временный каталог не завёлся: ", message] по "")
     случай любое
       то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали временный каталог"
 

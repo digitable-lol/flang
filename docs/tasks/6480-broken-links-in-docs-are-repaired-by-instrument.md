@@ -70,7 +70,7 @@
 | 12 | `docs/design/nositel-tochnogo-celogo.md` | 240 | n-zapis.flang | ведомость | то же |
 | 13 | `docs/design/nositel-tochnogo-celogo.md` | 312 | n-ravenstvo.flang | ведомость | то же |
 | 14 | `docs/examples/frameworks/react-ts-pure/README.md` | 61 | .d.ts | ведомость | обозначение расширения, не имя файла (как .ru.md у `README.md` в той же ведомости) |
-| 15 | `docs/tasks/1416-the-shortcut-list-is-computed-from-the-scripts.md` | 173 | .ru.md | ведомость | обозначение суффикса-конвенции, не имя файла |
+| 15 | `задача 1416 (закрыта)` | 173 | .ru.md | ведомость | обозначение суффикса-конвенции, не имя файла |
 | 16 | `docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md` | 16 | obhod.sh | ведомость | иллюстративное имя в разборе задачи (пример транслита-брака), не файл |
 | 17 | `docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md` | 16, 60 | walk.sh | ведомость | иллюстративное английское имя из примера, не файл |
 | 18 | `docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md` | 176 | walk.sh | та же запись ведомости | вторая встреча той же пары «файл–цель»; сторож считает встречи, ведомость — пары |

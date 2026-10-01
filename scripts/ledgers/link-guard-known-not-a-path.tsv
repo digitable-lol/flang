@@ -235,7 +235,6 @@ docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	scr
 docs/tasks/1415-the-fscript-extension-marks-a-script.md	script.fscript	пример из задачи об расширениях: имя вымышленное, показывает форму «<имя>.fscript», а не файл дерева
 docs/tasks/1415-the-fscript-extension-marks-a-script.md	plain.flang	пара к «script.fscript»: тот же вымышленный пример, противопоставление .flang и .fscript
 docs/tasks/1415-the-fscript-extension-marks-a-script.md	TABLE=ярлыки.flang	не путь, а присваивание переменной окружения в показанной команде
-docs/tasks/1416-the-shortcut-list-is-computed-from-the-scripts.md	scripts/guards/translit-file-names-guard.sh	история: сторож переехал на .fscript (задача 5821), в тексте назван прежним именем как было
 docs/tasks/3560-count-the-places-that-need-rules-about-time-effects-and-processes.md	ПЕРЕДАЧА/отчёты/3560-zamer.py	файл рабочей передачи вне репозитория: /srv/tmp/dokazuemyy/ПЕРЕДАЧА, в дерево не входит
 docs/tasks/4431-cli-help-names-the-latin-key-first.md	flang/proof/сверщик.flang	история: имя до переименования flang/proof на латиницу (ADR-0046); ныне flang/proof/checker.flang
 docs/tasks/0062-the-file-extensions-are-one-list.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня

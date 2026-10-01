@@ -234,14 +234,14 @@ storozh_1() {
 
   # Где двоичный есть — сосед спрашивается и обязан согласиться.
   if [ -x "$FLANG" ]; then
-    if sh "$KOREN/flang/proof/rules-match.sh" --только-первая > "$RABOTA/сосед" 2>&1; then
-      say "   сосед «rules-match.sh --только-первая» согласен (код 0)"
+    if (cd "$KOREN" && "$FLANG" io flang/proof/rules-match.fscript --timeout 900000 -- --list-only) > "$RABOTA/сосед" 2>&1; then
+      say "   сосед «rules-match.fscript --list-only» согласен (код 0)"
     else
-      plocho "сосед «rules-match.sh --только-первая» покраснел — верить надо ЕМУ:"
+      plocho "сосед «rules-match.fscript --list-only» покраснел — верить надо ЕМУ:"
       tail -5 "$RABOTA/сосед" | sed 's/^/          /'
     fi
   else
-    say "   двоичного нет ($FLANG) — сосед «rules-match.sh» не спрошен;"
+    say "   двоичного нет ($FLANG) — сосед «rules-match.fscript» не спрошен;"
     say "   сличение набора ядра со списками сверщиков сделано здесь, текстом"
   fi
   say ""

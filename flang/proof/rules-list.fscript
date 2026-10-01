@@ -1,0 +1,23 @@
+модуль «Rule list match»
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Errand» из "errand.fscript"
+
+тотальная функция «This errand»
+  возвращает «Errand»
+  пример «Three paths are carried to the program that compares the two rule lists»
+    ожидается запись «Errand» с «usage» равным "звать: rules-list.fscript -- <ядро> <терм> <сверщик> [<rules-match.flang>]" и «program» равным "rules-match.flang" и «prefix» равным "rules" и «paths» равным 3 и «keys» равным ["--max-steps", "200000000", "--max-depth", "20000"] и «refusal» равным "FLANG_RULE_LIST" и «blindness» равным "FLANG_RULE_LIST_NOT_MEASURED" и «refused» равным "РАЗОШЛОСЬ: "
+  запись «Errand» с «usage» равным "звать: rules-list.fscript -- <ядро> <терм> <сверщик> [<rules-match.flang>]" и «program» равным "rules-match.flang" и «prefix» равным "rules" и «paths» равным 3 и «keys» равным ["--max-steps", "200000000", "--max-depth", "20000"] и «refusal» равным "FLANG_RULE_LIST" и «blindness» равным "FLANG_RULE_LIST_NOT_MEASURED" и «refused» равным "РАЗОШЛОСЬ: "
+
+тотальная функция «Step»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A call without paths is refused before anything is run»
+    дано inquiry равно запись «Inquiry» с «asked» равным "arguments" и «queue» равным пустой список и «stages» равным 5 и «answers» равным пустой список
+    дано reply равно вариант «Доводы» с доводы равным пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_RULE_LIST_NOT_MEASURED" и сообщение равным "звать: rules-list.fscript -- <ядро> <терм> <сверщик> [<rules-match.flang>]"
+  «Next» от («This errand») и inquiry и reply
+
+план «Rules»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Step»

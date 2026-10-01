@@ -116,11 +116,12 @@
 тотальная функция «Running»
   принимает errand: «Errand», answers: список «Answer»
   возвращает список «Question»
-  пример «The copied program is run by the binary with the keys of the errand»
+  пример «The copied program runs with its printed log kept in a file, and only its result is read back»
     дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
     дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
-    ожидается [запись «Question» с «name» равным "run" и «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io", "/w/checker.flang", "--max-steps", "9"])]
-  [(«Run» от "run" и («Binary» от answers) и (приписать "io" к (приписать («In work» от (errand.«program») и answers) к (errand.«keys»))))]
+    ожидается [запись «Question» с «name» равным "run" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "log=$1; shift; exec \"$@\" > \"$log\"", "sh", "/w/log", "../../bootstrap/flang", "io", "/w/checker.flang", "--max-steps", "9"]), запись «Question» с «name» равным "result" и «order» равным (вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-o", "-m1", "-e", "\"result\":\"\\([^\"\\\\]\\|\\\\.\\)*\"", "/w/log"])]
+  [(«Run» от "run" и "sh" и («Соединить списки» от ["-c", "log=$1; shift; exec \"$@\" > \"$log\"", "sh", («In work» от "log" и answers), («Binary» от answers), "io", («In work» от (errand.«program») и answers)] и (errand.«keys»))),
+   («Run» от "result" и "grep" и ["-o", "-m1", "-e", "\"result\":\"\\([^\"\\\\]\\|\\\\.\\)*\"", («In work» от "log" и answers)])]
 
 тотальная функция «Cleaning»
   принимает errand: «Errand», answers: список «Answer»
@@ -128,9 +129,10 @@
   пример «The two files leave first and the directory after them»
     дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
     дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
-    ожидается [запись «Question» с «name» равным "program removed" и «order» равным (вариант «Удалить файл» с путь равным "/w/checker.flang"), запись «Question» с «name» равным "paths removed" и «order» равным (вариант «Удалить файл» с путь равным "/w/наряд"), запись «Question» с «name» равным "work removed" и «order» равным (вариант «Удалить файл» с путь равным "/w")]
+    ожидается [запись «Question» с «name» равным "program removed" и «order» равным (вариант «Удалить файл» с путь равным "/w/checker.flang"), запись «Question» с «name» равным "paths removed" и «order» равным (вариант «Удалить файл» с путь равным "/w/наряд"), запись «Question» с «name» равным "log removed" и «order» равным (вариант «Удалить файл» с путь равным "/w/log"), запись «Question» с «name» равным "work removed" и «order» равным (вариант «Удалить файл» с путь равным "/w")]
   [(«Remove» от "program removed" и («In work» от (errand.«program») и answers)),
    («Remove» от "paths removed" и («In work» от "наряд" и answers)),
+   («Remove» от "log removed" и («In work» от "log" и answers)),
    («Remove» от "work removed" и («Work» от answers))]
 
 тотальная функция «Stage»
@@ -144,6 +146,20 @@
   если (stages меньше 0) или (stages больше 5)
     то пустой список
     иначе элемент (6 минус stages) в [(«Setup»), («Presence» от errand и answers), («Making» от errand и answers), («Filling» от errand и answers), («Running» от errand и answers), («Cleaning» от errand и answers)]
+
+тотальная функция «Said back»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «A finished program gives back its result»
+    дано answers равно [запись «Answer» с «name» равным "run" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""), запись «Answer» с «name» равным "result" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "\"result\":\"сошлось:\\nвсё\"\n" и ошибки равным "")]
+    ожидается "сошлось:\nвсё"
+  пример «A program that gave up gives back its message»
+    дано answers равно [запись «Answer» с «name» равным "run" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "{\"error\":\"шаг не тот\",\"diagnostics\":[]}\n")]
+    ожидается "шаг не тот"
+  пусть line равно («First line» от («Output of» от "result" и answers))
+  если ((«Exit code of» от "run" и answers) равен 0) и притом (line начинается с "\"result\":\"")
+    то «Unescaped» от (подстрока line с 11 по ((длина line) минус 1))
+    иначе «Plan said by» от "run" и answers
 
 тотальная функция «Verdict»
   принимает errand: «Errand», answers: список «Answer»
@@ -165,7 +181,7 @@
     дано answers равно пустой список
     ожидается вариант «Не проверено» с код равным "FLANG_SAMPLE_NOT_MEASURED" и сообщение равным "checker.flang не скопирован в рабочий каталог: "
   пусть code равно («Exit code of» от "run" и answers)
-  пусть said равно («Plan said by» от "run" и answers)
+  пусть said равно («Said back» от answers)
   «Chosen» от [(«When» от (не ((«Exit code of» от "copy" и answers) равен 0)) и (вариант «Не проверено» с код равным (errand.«blindness») и сообщение равным (соединить [(errand.«program»), " не скопирован в рабочий каталог: ", («Errors of» от "copy" и answers)] по ""))),
     («When» от (code равен 0) и (вариант «Конец работы» с значение равным said)),
     («When» от (code равен 1) и (вариант «Провал» с код равным (errand.«refusal») и сообщение равным (соединить [(errand.«refused»), said] по "")))] и (вариант «Не проверено» с код равным (errand.«blindness») и сообщение равным (соединить [(errand.«program»), " кончил кодом ", (к строке code), ": ", said] по ""))

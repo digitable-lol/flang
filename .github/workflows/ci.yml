@@ -1079,7 +1079,7 @@ jobs:
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
-      - run: sh flang/proof/rules-match.sh --только-первая
+      - run: bootstrap/flang io flang/proof/rules-match.fscript --timeout 900000 -- --list-only
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -1095,7 +1095,7 @@ jobs:
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
-      - run: sh flang/proof/rules-match.sh
+      - run: bootstrap/flang io flang/proof/rules-match.fscript --timeout 14400000
         env:
           FLANG_TMP: ${{ runner.temp }}
 

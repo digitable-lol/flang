@@ -1,0 +1,439 @@
+модуль «Rules match»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Plan output» из "../../scripts/plan-output.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Trial»
+  «tag»: строка
+  «source»: строка
+  «record»: строка
+  «awaited»: число
+  «rule»: строка
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The root of the tree lies two directories up»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Value of»
+  принимает name: строка, fallback: строка, answers: список «Answer»
+  возвращает строка
+  пример «An unset variable falls back»
+    дано name равно "kernel"
+    дано fallback равно "flang/self/proof-kernel.flang"
+    дано answers равно пустой список
+    ожидается "flang/self/proof-kernel.flang"
+  «Setting of» от name и fallback и answers
+
+тотальная функция «Kernel»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The kernel of the tree»
+    дано answers равно пустой список
+    ожидается "flang/self/proof-kernel.flang"
+  «Value of» от "kernel" и "flang/self/proof-kernel.flang" и answers
+
+тотальная функция «Term»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The term builder of the tree»
+    дано answers равно пустой список
+    ожидается "flang/self/proofterm.flang"
+  «Value of» от "term" и "flang/self/proofterm.flang" и answers
+
+тотальная функция «Checker»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The checker of the tree»
+    дано answers равно пустой список
+    ожидается "flang/proof/checker.flang"
+  «Value of» от "checker" и "flang/proof/checker.flang" и answers
+
+тотальная функция «Source»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The program whose premise the kernel closes by the rule»
+    дано answers равно пустой список
+    ожидается "flang/test/fixtures/ohrana-daet-fakt.flang"
+  «Value of» от "source" и "flang/test/fixtures/ohrana-daet-fakt.flang" и answers
+
+тотальная функция «Second source»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The program with a statement that has no theorem»
+    дано answers равно пустой список
+    ожидается "flang/proof/map/substantive.flang"
+  «Value of» от "second source" и "flang/proof/map/substantive.flang" и answers
+
+тотальная функция «Rule»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The named that stands in the honest record»
+    дано answers равно пустой список
+    ожидается "разбор цели по условию"
+  «Value of» от "rule" и "разбор цели по условию" и answers
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The built binary»
+    дано answers равно пустой список
+    ожидается "bootstrap/flang"
+  «Value of» от "binary" и "bootstrap/flang" и answers
+
+тотальная функция «List only»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «The key asks for the opening half alone»
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--list-only"])]
+    ожидается да
+  (длина (отфильтровать («Given of» от "arguments" и answers) где word → word равен "--list-only")) больше 0
+
+тотальная функция «Unknown keys»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Any other key is not read»
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--мягко"])]
+    ожидается ["--мягко"]
+  отфильтровать («Given of» от "arguments" и answers) где word → не (word равен "--list-only")
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The arguments and the settings are asked first»
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»), запись «Question» с «name» равным "binary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN"), запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP"), запись «Question» с «name» равным "kernel" и «order» равным (вариант «Прочитать переменную среды» с имя равным "RULES_KERNEL"), запись «Question» с «name» равным "term" и «order» равным (вариант «Прочитать переменную среды» с имя равным "RULES_TERM"), запись «Question» с «name» равным "checker" и «order» равным (вариант «Прочитать переменную среды» с имя равным "RULES_CHECKER"), запись «Question» с «name» равным "source" и «order» равным (вариант «Прочитать переменную среды» с имя равным "RULES_SOURCE"), запись «Question» с «name» равным "second source" и «order» равным (вариант «Прочитать переменную среды» с имя равным "RULES_SECOND_SOURCE"), запись «Question» с «name» равным "rule" и «order» равным (вариант «Прочитать переменную среды» с имя равным "RULES_RULE")]
+  [(«Arguments» от "arguments"), («Environment» от "binary" и "FLANG_BIN"), («Environment» от "temporary" и "FLANG_TMP"), («Environment» от "kernel" и "RULES_KERNEL"), («Environment» от "term" и "RULES_TERM"), («Environment» от "checker" и "RULES_CHECKER"), («Environment» от "source" и "RULES_SOURCE"), («Environment» от "second source" и "RULES_SECOND_SOURCE"), («Environment» от "rule" и "RULES_RULE")]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Every input is tested before anything runs»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "present bootstrap/flang" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "test", "-x", "bootstrap/flang"]), запись «Question» с «name» равным "present flang/self/proof-kernel.flang" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "test", "-f", "flang/self/proof-kernel.flang"]), запись «Question» с «name» равным "present flang/self/proofterm.flang" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "test", "-f", "flang/self/proofterm.flang"]), запись «Question» с «name» равным "present flang/proof/checker.flang" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "test", "-f", "flang/proof/checker.flang"]), запись «Question» с «name» равным "present flang/test/fixtures/ohrana-daet-fakt.flang" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "test", "-f", "flang/test/fixtures/ohrana-daet-fakt.flang"]), запись «Question» с «name» равным "present flang/proof/map/substantive.flang" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "test", "-f", "flang/proof/map/substantive.flang"])]
+  приписать («Run from» от (соединить ["present ", («Binary» от answers)] по "") и («Root») и "test" и ["-x", («Binary» от answers)]) к (отобразить [(«Kernel» от answers), («Term» от answers), («Checker» от answers), («Source» от answers), («Second source» от answers)] как path → «Run from» от (соединить ["present ", path] по "") и («Root») и "test" и ["-f", path])
+
+тотальная функция «Listing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «The two lists are compared by their own plan»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "list" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "bootstrap/flang", "io", "flang/proof/rules-list.fscript", "--timeout", "600000", "--", "flang/self/proof-kernel.flang", "flang/self/proofterm.flang", "flang/proof/checker.flang"])]
+  [(«Run from» от "list" и («Root») и («Binary» от answers) и ["io", "flang/proof/rules-list.fscript", "--timeout", "600000", "--", («Kernel» от answers), («Term» от answers), («Checker» от answers)])]
+
+тотальная функция «Names»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «The names stand after the colon, one by one»
+    дано answers равно [запись «Answer» с «name» равным "list" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "{\"plan\":\"Rules\",\"result\":\"список сошёлся с ядром: правил 2 и пустое имя; имена: а|б\",\"orders\":1,\"log\":[]}" и ошибки равным "")]
+    ожидается ["а", "б"]
+  пусть said равно («Plan said by» от "list" и answers)
+  если said содержит "имена: "
+    то отфильтровать (разделить (свёртка (разделить said по "имена: ") начиная с "" как last и part → part) по "|") где name → не (пусто name)
+    иначе пустой список
+
+тотальная функция «Continues»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «Nothing heard does not go on»
+    дано answers равно пустой список
+    ожидается нет
+  ((«Exit code of» от "list" и answers) равен 0) и притом (не («List only» от answers))
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No directory was made yet»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «In work»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file of the working directory»
+    дано name равно "honest.record"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/honest.record"
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Recording»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing is recorded when the lists were not compared»
+    дано answers равно пустой список
+    ожидается пустой список
+  если «Continues» от answers
+    то [(«Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/rules."] по ""))]
+    иначе пустой список
+
+тотальная функция «Writing records»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing is written without a working directory»
+    дано answers равно пустой список
+    ожидается пустой список
+  если («Continues» от answers) и притом (не (пусто («Work» от answers)))
+    то [(«Run from» от "honest" и («Root») и («Binary» от answers) и ["check", («Source» от answers), "--proof", "--записать", («In work» от "honest.record" и answers)]),
+      («Run from» от "plain" и («Root») и («Binary» от answers) и ["check", («Second source» от answers), "--proof", "--записать", («In work» от "plain.record" и answers)]),
+      («Read» от "honest text" и («In work» от "honest.record" и answers)),
+      («Read» от "plain text" и («In work» от "plain.record" и answers))]
+    иначе пустой список
+
+тотальная функция «Ruled»
+  принимает named: строка
+  возвращает строка
+  пример «The way a record names a rule»
+    дано named равно "а"
+    ожидается "правило «а»"
+  соединить ["правило «", named, "»"] по ""
+
+тотальная функция «Swapped»
+  принимает text: строка, named: строка, other: строка
+  возвращает строка
+  пример «Every mention of the named names the other one»
+    дано text равно "правило «а»\nправило «б»\n"
+    дано named равно "а"
+    дано other равно "в"
+    ожидается "правило «в»\nправило «б»\n"
+  соединить (разделить text по («Ruled» от named)) по («Ruled» от other)
+
+тотальная функция «Foreign»
+  возвращает список строки
+  пример «The three names outside the kernel set»
+    ожидается ["разбор цели по настроению", "развёртка по конструктору", "развёртка определения без вызовов"]
+  ["разбор цели по настроению", "развёртка по конструктору", "развёртка определения без вызовов"]
+
+тотальная функция «Trials»
+  принимает answers: список «Answer»
+  возвращает список «Trial»
+  пример «Nothing compared, nothing tried»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть names равно («Names» от answers)
+  если пусто names то (пустой список) иначе «Соединить списки» от (отобразить names как name → запись «Trial» с «tag» равным (соединить ["name ", name] по "") и «source» равным («Source» от answers) и «record» равным («In work» от (соединить ["name-", name, ".record"] по "") и answers) и «awaited» равным 0 и «rule» равным name) и («Соединить списки» от [(запись «Trial» с «tag» равным "untouched" и «source» равным («Source» от answers) и «record» равным («In work» от "honest.record" и answers) и «awaited» равным 0 и «rule» равным "")] и («Соединить списки» от (отобразить («Foreign») как name → запись «Trial» с «tag» равным (соединить ["foreign ", name] по "") и «source» равным («Source» от answers) и «record» равным («In work» от (соединить ["foreign-", name, ".record"] по "") и answers) и «awaited» равным 1 и «rule» равным name) и [(запись «Trial» с «tag» равным "plain" и «source» равным («Second source» от answers) и «record» равным («In work» от "plain.record" и answers) и «awaited» равным 0 и «rule» равным ""), (запись «Trial» с «tag» равным "plain foreign" и «source» равным («Second source» от answers) и «record» равным («In work» от "plain-foreign.record" и answers) и «awaited» равным 1 и «rule» равным "правило моего сочинения")]))
+
+тотальная функция «Holds rule»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «Nothing read holds nothing»
+    дано answers равно пустой список
+    ожидается нет
+  ((«Output of» от "honest text" и answers) содержит («Ruled» от («Rule» от answers))) и притом (((«Output of» от "plain text" и answers) содержит («Ruled» от («Rule» от answers))) и притом ((«Output of» от "plain text" и answers) содержит "теоремы нет"))
+
+тотальная функция «Forging»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing is forged before the records are read»
+    дано answers равно пустой список
+    ожидается пустой список
+  если «Holds rule» от answers
+    то отобразить (отфильтровать («Trials» от answers) где trial → не (пусто (trial.«rule»))) как trial → «Write» от (соединить ["forged ", (trial.«tag»)] по "") и (trial.«record») и («Swapped» от (если (trial.«tag») начинается с "plain" то («Output of» от "plain text" и answers) иначе («Output of» от "honest text" и answers)) и («Rule» от answers) и (trial.«rule»))
+    иначе пустой список
+
+тотальная функция «Checking»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing is checked before the records are read»
+    дано answers равно пустой список
+    ожидается пустой список
+  если «Holds rule» от answers
+    то отобразить («Trials» от answers) как trial → «Run from» от (соединить ["check ", (trial.«tag»)] по "") и («Root») и («Binary» от answers) и ["io", "flang/proof/check.fscript", "--timeout", "14400000", "--", (trial.«source»), (trial.«record»), («Checker» от answers)]
+    иначе пустой список
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a working directory there is nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то (пустой список) иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 12
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 7
+      то «Setup»
+    случай 6
+      то «Presence» от answers
+    случай 5
+      то «Listing» от answers
+    случай 4
+      то «Recording» от answers
+    случай 3
+      то «Writing records» от answers
+    случай 2
+      то «Forging» от answers
+    случай 1
+      то «Checking» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «First said»
+  принимает tag: строка, answers: список «Answer»
+  возвращает строка
+  пример «Nothing said gives an empty line»
+    дано tag равно "untouched"
+    дано answers равно пустой список
+    ожидается ""
+  пусть said равно («First line» от («Plan said by» от (соединить ["check ", tag] по "") и answers))
+  если (длина said) больше 200 то (подстрока said с 1 по 200) иначе said
+
+тотальная функция «Trial lines»
+  принимает trial: «Trial», answers: список «Answer»
+  возвращает список строки
+  пример «The awaited code agrees»
+    дано trial равно запись «Trial» с «tag» равным "name а" и «source» равным "s" и «record» равным "r" и «awaited» равным 0 и «rule» равным "а"
+    дано answers равно [запись «Answer» с «name» равным "check name а" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным "")]
+    ожидается ["СОШЛОСЬ  правило «а» — код 0, как и ждали"]
+  пример «Another code is a failure with the opening line of the answer»
+    дано trial равно запись «Trial» с «tag» равным "name а" и «source» равным "s" и «record» равным "r" и «awaited» равным 0 и «rule» равным "а"
+    дано answers равно [запись «Answer» с «name» равным "check name а" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "{\"error\":\"НЕ СОШЛОСЬ: имя\",\"diagnostics\":[]}")]
+    ожидается ["ПРОВАЛ   правило «а» — ждали код 0, получили 1", "         НЕ СОШЛОСЬ: имя"]
+  пусть code равно («Exit code of» от (соединить ["check ", (trial.«tag»)] по "") и answers)
+  пусть what равно (если пусто (trial.«rule») то "запись без подмены (в ней же пустое имя правила)" иначе («Ruled» от (trial.«rule»)))
+  если code равен (trial.«awaited»)
+    то [(соединить ["СОШЛОСЬ  ", what, " — код ", (к строке code), (если пусто (trial.«rule») то "" иначе ", как и ждали")] по "")]
+    иначе [(соединить ["ПРОВАЛ   ", what, " — ждали код ", (к строке (trial.«awaited»)), ", получили ", (к строке code)] по ""), (соединить ["         ", («First said» от (trial.«tag») и answers)] по "")]
+
+тотальная функция «Plain lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing checked fails both plain trials»
+    дано answers равно пустой список
+    ожидается ["ПРОВАЛ   честная запись без теоремы отвергнута — код 127", "         ", "ПРОВАЛ   чужое правило у утверждения без теоремы не отвергнуто как надо — код 127", "         "]
+  пусть plain равно («Exit code of» от "check plain" и answers)
+  пусть foreign равно («Exit code of» от "check plain foreign" и answers)
+  пусть said равно («Plan said by» от "check plain foreign" и answers)
+  «Соединить списки» от (если plain равен 0 то ["СОШЛОСЬ  честная запись без теоремы принята — код 0"] иначе [(соединить ["ПРОВАЛ   честная запись без теоремы отвергнута — код ", (к строке plain)] по ""), (соединить ["         ", («First said» от "plain" и answers)] по "")]) и (если (foreign равен 1) и притом ((said содержит "утверждение «") и притом (said содержит "правило моего сочинения")) то ["СОШЛОСЬ  чужое правило у утверждения БЕЗ теоремы отвергнуто и названо — код 1"] иначе [(соединить ["ПРОВАЛ   чужое правило у утверждения без теоремы не отвергнуто как надо — код ", (к строке foreign)] по ""), (соединить ["         ", («First said» от "plain foreign" и answers)] по "")])
+
+тотальная функция «Named line»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «A refusal that does not name the named is a failure»
+    дано answers равно пустой список
+    ожидается ["ПРОВАЛ   отказ не называет имя: "]
+  если («Plan said by» от "check foreign разбор цели по настроению" и answers) содержит "разбор цели по настроению"
+    то ["СОШЛОСЬ  отказ называет подставленное имя"]
+    иначе [(соединить ["ПРОВАЛ   отказ не называет имя: ", («First said» от "foreign разбор цели по настроению" и answers)] по "")]
+
+тотальная функция «Is a failure»
+  принимает line: строка
+  возвращает признак
+  пример «A failure line»
+    дано line равно "ПРОВАЛ   правило «а» — ждали код 0, получили 1"
+    ожидается да
+  line начинается с "ПРОВАЛ"
+
+тотальная функция «First half»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «The opening half names its three inputs»
+    дано answers равно пустой список
+    ожидается ["── половина первая: список сверщика против набора ядра ──", "   ядро:    flang/self/proof-kernel.flang", "   терм:    flang/self/proofterm.flang", "   сверщик: flang/proof/checker.flang", "", ""]
+  ["── половина первая: список сверщика против набора ядра ──", (соединить ["   ядро:    ", («Kernel» от answers)] по ""), (соединить ["   терм:    ", («Term» от answers)] по ""), (соединить ["   сверщик: ", («Checker» от answers)] по ""), («Plan said by» от "list" и answers), ""]
+
+тотальная функция «List only words»
+  принимает count: число
+  возвращает список строки
+  пример «The narrowed word says what was not asked»
+    дано count равно 17
+    ожидается ["сошлась ОДНА ПЕРВАЯ ПОЛОВИНА: закрытый список в исходнике сверщика знак в", "знак равен набору имён, которые ядро способно поставить (17 правил и", "пустое имя).", "", "ЧЕГО ЭТОТ КЛЮЧ НЕ СПРАШИВАЛ, СКАЗАНО ЗДЕСЬ, А НЕ УМОЛЧАНО:", " • сверщика не звали ни разу — принимает ли он честную запись с этими", "   именами и отвергает ли чужое, отсюда не видно;", " • сличался ТЕКСТ списка. Правка у потребителя списка, оставляющая литералы", "   целыми, эту половину зелёной и оставит — проверено подделкой.", "Спрашивает вторая половина, и зовётся она без ключа."]
+  ["сошлась ОДНА ПЕРВАЯ ПОЛОВИНА: закрытый список в исходнике сверщика знак в", (соединить ["знак равен набору имён, которые ядро способно поставить (", (к строке count), " правил и"] по ""), "пустое имя).", "", "ЧЕГО ЭТОТ КЛЮЧ НЕ СПРАШИВАЛ, СКАЗАНО ЗДЕСЬ, А НЕ УМОЛЧАНО:", " • сверщика не звали ни разу — принимает ли он честную запись с этими", "   именами и отвергает ли чужое, отсюда не видно;", " • сличался ТЕКСТ списка. Правка у потребителя списка, оставляющая литералы", "   целыми, эту половину зелёной и оставит — проверено подделкой.", "Спрашивает вторая половина, и зовётся она без ключа."]
+
+тотальная функция «Second half»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Without names there are no trials, and the road without a theorem fails»
+    дано answers равно пустой список
+    ожидается ["── половина вторая: настоящая запись, подменённое имя правила ──", "   исходник: flang/test/fixtures/ohrana-daet-fakt.flang", "   записано доказательство: 0 строк", "", "честное: 0 имён набора ядра, каждое обязано быть принято", "", "порча: имена вне набора ядра, каждое обязано быть отвергнуто", "", "── дорога без теоремы: flang/proof/map/substantive.flang ──", "ПРОВАЛ   честная запись без теоремы отвергнута — код 127", "         ", "ПРОВАЛ   чужое правило у утверждения без теоремы не отвергнуто как надо — код 127", "         ", "", "ПРОВАЛ   отказ не называет имя: "]
+  пусть trials равно («Trials» от answers)
+  «Gathered words» от [["── половина вторая: настоящая запись, подменённое имя правила ──", (соединить ["   исходник: ", («Source» от answers)] по ""), (соединить ["   записано доказательство: ", (к строке ((длина (разделить («Output of» от "honest text" и answers) по "\n")) минус 1)), " строк"] по ""), "", (соединить ["честное: ", (к строке (длина («Names» от answers))), " имён набора ядра, каждое обязано быть принято"] по "")],
+    («Gathered words» от (отобразить (отфильтровать trials где trial → ((trial.«awaited») равен 0) и притом (не ((trial.«tag») начинается с "plain"))) как trial → «Trial lines» от trial и answers)),
+    ["", "порча: имена вне набора ядра, каждое обязано быть отвергнуто"],
+    («Gathered words» от (отобразить (отфильтровать trials где trial → (trial.«tag») начинается с "foreign ") как trial → «Trial lines» от trial и answers)),
+    ["", (соединить ["── дорога без теоремы: ", («Second source» от answers), " ──"] по "")],
+    («Plain lines» от answers),
+    [""],
+    («Named line» от answers)]
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Nothing heard measured nothing»
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_RULES_MATCH_NOT_MEASURED" и сообщение равным "сличение списков не дошло до конца (код 127): "
+  пусть opening равно («First half» от answers)
+  пусть closing равно («Second half» от answers)
+  пусть failures равно (длина (отфильтровать closing где line → «Is a failure» от line))
+  «Chosen» от [(«When» от ((«Exit code of» от "list" и answers) равен 1) и (вариант «Провал» с код равным "FLANG_RULES_MATCH" и сообщение равным (соединить («Соединить списки» от opening и [(соединить ["РАЗОШЛОСЬ: ", («Plan said by» от "list" и answers)] по "")]) по "\n"))),
+    («When» от (не ((«Exit code of» от "list" и answers) равен 0)) и (вариант «Не проверено» с код равным "FLANG_RULES_MATCH_NOT_MEASURED" и сообщение равным (соединить ["сличение списков не дошло до конца (код ", (к строке («Exit code of» от "list" и answers)), "): ", («Plan said by» от "list" и answers)] по ""))),
+    («When» от («List only» от answers) и (вариант «Конец работы» с значение равным (соединить («Соединить списки» от opening и («List only words» от (длина («Names» от answers)))) по "\n"))),
+    («When» от (не («Holds rule» от answers)) и (вариант «Провал» с код равным "FLANG_RULES_MATCH" и сообщение равным (соединить ["ОСТАНОВКА: в записи нет строки «", («Ruled» от («Rule» от answers)), "» или нет ни одного утверждения «теоремы нет» — подменять нечего, и молча сделать вид, что опыт состоялся, нельзя."] по ""))),
+    («When» от (failures равен 0) и (вариант «Конец работы» с значение равным (соединить («Соединить списки» от opening и («Соединить списки» от closing и ["", (соединить ["сошлось всё: список сверщика равен набору ядра (", (к строке (длина («Names» от answers))), " правил и пустое имя),"] по ""), "каждое имя принято живой записью, чужое имя отвергнуто и названо —", "и на дороге с теоремой, и на дороге без неё"])) по "\n")))] и (вариант «Провал» с код равным "FLANG_RULES_MATCH" и сообщение равным (соединить («Соединить списки» от opening и («Соединить списки» от closing и ["", (соединить ["опытов не сошлось: ", (к строке failures)] по "")])) по "\n"))
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «An unknown key is an obstacle»
+    дано asked равно "arguments"
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--мягко"])]
+    ожидается ["не знаю ключа: --мягко; звать: bootstrap/flang io flang/proof/rules-match.fscript [-- --list-only]"]
+  пример «A missing file is an obstacle»
+    дано asked равно "present a.flang"
+    дано answers равно [запись «Answer» с «name» равным "present a.flang" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "")]
+    ожидается ["файла нет: a.flang"]
+  «Chosen» от [(«When» от ((asked равен "arguments") и притом ((длина («Unknown keys» от answers)) больше 0)) и ([(соединить ["не знаю ключа: ", (соединить («Unknown keys» от answers) по " "), "; звать: bootstrap/flang io flang/proof/rules-match.fscript [-- --list-only]"] по "")])),
+    («When» от ((asked начинается с "present ") и притом (не ((«Exit code of» от asked и answers) равен 0))) и ([(соединить ["файла нет: ", («After» от "present " и asked)] по "")])),
+    («When» от (((asked равен "honest") или (asked равен "plain")) и притом (не ((«Exit code of» от asked и answers) равен 0))) и ([(соединить ["запись не снята: ", («Errors of» от asked и answers)] по "")]))] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_RULES_MATCH_NOT_MEASURED" и сообщение равным "сличение списков не дошло до конца (код 127): "
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Eight stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 8 и «answers» равным пустой список
+  «Begin with» от 8
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «An unknown key stops the plan before anything runs»
+    дано inquiry равно запись «Inquiry» с «asked» равным "arguments" и «queue» равным пустой список и «stages» равным 7 и «answers» равным пустой список
+    дано reply равно вариант «Доводы» с доводы равным ["--мягко"]
+    ожидается вариант «Не проверено» с код равным "FLANG_RULES_MATCH_NOT_MEASURED" и сообщение равным "не знаю ключа: --мягко; звать: bootstrap/flang io flang/proof/rules-match.fscript [-- --list-only]"
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то если пусто («Work» от answers)
+        то вариант «Не проверено» с код равным "FLANG_RULES_MATCH_NOT_MEASURED" и сообщение равным голова
+        иначе «Proceed» от («Cleaning» от answers) и 0 и (добавить (запись «Answer» с «name» равным "list" и «reply» равным (вариант «Сбой» с код равным "FLANG_RULES_MATCH_NOT_MEASURED" и сообщение равным голова)) к answers)
+    случай пусто
+      то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Rules match»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

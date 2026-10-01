@@ -1,0 +1,904 @@
+модуль «Lean check»
+  использует «Rules» из "../../../scripts/rules.fscript"
+  использует «Inquiry» из "../../../scripts/inquiry.fscript"
+  использует «Reading» из "../../../scripts/reading.fscript"
+  использует «Tables» из "../../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Split»
+  «header»: строка
+  «done»: список строки
+  «current»: строка
+  «started»: признак
+
+объект «Visit»
+  «dir»: строка
+  «code»: строка
+  «arguments»: список строки
+  «kept»: список список строки
+
+объект «Pair»
+  «dir»: строка
+  «source»: строка
+  «proof»: строка
+  «key»: строка
+
+объект «Pairing»
+  «pairs»: список «Pair»
+  «keys»: список строки
+
+объект «Section»
+  «lines»: список строки
+  «bad»: признак
+  «fatal»: признак
+
+объект «Report»
+  «lines»: список строки
+  «bad»: признак
+  «stopped»: признак
+
+объект «Tally»
+  «blocks»: число
+  «both»: число
+  «both refused»: число
+  «refused»: число
+  «unread»: число
+  «outside accepted»: число
+  «outside refused»: число
+  «outside rules»: список строки
+  «disagreements»: список строки
+
+тотальная функция «Modules»
+  возвращает список список строки
+  пример «Eight files in the order of their imports»
+    ожидается [["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"], ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"]]
+  [["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"], ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"]]
+
+тотальная функция «Standard axioms»
+  возвращает список строки
+  пример «Three axioms every Lean proof may lean on»
+    ожидается ["propext", "Classical.choice", "Quot.sound"]
+  ["propext", "Classical.choice", "Quot.sound"]
+
+тотальная функция «Wrapper»
+  возвращает строка
+  пример «The wrapper keeps every call of the checker»
+    ожидается "d=$(mktemp -d \"$CALLS/call.XXXXXX\")\ni=0\nfor a in \"$@\"; do\n  i=$((i+1)); printf '%s\\n' \"$a\" >> \"$d/arguments\"\n  [ -f \"$a\" ] && cp \"$a\" \"$d/arg$i\"\ndone\n\"$REAL\" \"$@\" >\"$d/output\" 2>\"$d/errors\"; k=$?\necho \"$k\" > \"$d/code\"\ncat \"$d/output\"; cat \"$d/errors\" >&2\nexit $k\n"
+  "d=$(mktemp -d \"$CALLS/call.XXXXXX\")\ni=0\nfor a in \"$@\"; do\n  i=$((i+1)); printf '%s\\n' \"$a\" >> \"$d/arguments\"\n  [ -f \"$a\" ] && cp \"$a\" \"$d/arg$i\"\ndone\n\"$REAL\" \"$@\" >\"$d/output\" 2>\"$d/errors\"; k=$?\necho \"$k\" > \"$d/code\"\ncat \"$d/output\"; cat \"$d/errors\" >&2\nexit $k\n"
+
+тотальная функция «Calls script»
+  возвращает строка
+  пример «Every kept call is printed with its code, its arguments and its files»
+    ожидается "for d in \"$1\"/call.*; do\n  [ -f \"$d/arguments\" ] || continue\n  printf '\\036 visit %s\\n' \"$d\"\n  printf '\\036 code %s\\n' \"$(cat \"$d/code\" 2>/dev/null)\"\n  cat \"$d/arguments\"\n  printf '\\036 kept\\n'\n  for f in \"$d\"/arg*; do\n    [ -f \"$f\" ] || continue\n    s=$(cksum < \"$f\" | tr ' ' _)\n    if grep -q '^ *вывод ' \"$f\"; then w=1; else w=0; fi\n    printf '%s %s %s\\n' \"${f##*/arg}\" \"$s\" \"$w\"\n  done\ndone > \"$2\"\n"
+  "for d in \"$1\"/call.*; do\n  [ -f \"$d/arguments\" ] || continue\n  printf '\\036 visit %s\\n' \"$d\"\n  printf '\\036 code %s\\n' \"$(cat \"$d/code\" 2>/dev/null)\"\n  cat \"$d/arguments\"\n  printf '\\036 kept\\n'\n  for f in \"$d\"/arg*; do\n    [ -f \"$f\" ] || continue\n    s=$(cksum < \"$f\" | tr ' ' _)\n    if grep -q '^ *вывод ' \"$f\"; then w=1; else w=0; fi\n    printf '%s %s %s\\n' \"${f##*/arg}\" \"$s\" \"$w\"\n  done\ndone > \"$2\"\n"
+
+тотальная функция «Refusals script»
+  возвращает строка
+  пример «The statements a checker call refused are printed with the call»
+    ожидается "while IFS= read -r d; do\n  cat \"$d/output\" \"$d/errors\" | grep -o 'утверждение «[^»]*», вывод:' | sed 's/^утверждение «\\(.*\\)», вывод:$/\\1/' | sort -u | sed \"s|^|$d\t|\"\ndone < \"$1\" > \"$2\"\n"
+  "while IFS= read -r d; do\n  cat \"$d/output\" \"$d/errors\" | grep -o 'утверждение «[^»]*», вывод:' | sed 's/^утверждение «\\(.*\\)», вывод:$/\\1/' | sort -u | sed \"s|^|$d\t|\"\ndone < \"$1\" > \"$2\"\n"
+
+тотальная функция «Lean»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «Lean is looked for on the path»
+    дано answers равно пустой список
+    ожидается "lean"
+  «Setting of» от "lean" и "lean" и answers
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The built binary of the tree»
+    дано answers равно пустой список
+    ожидается "../../../bootstrap/flang"
+  «Setting of» от "binary" и "../../../bootstrap/flang" и answers
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No directory was made»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «In work»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file in the work directory»
+    дано name равно "list"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/list"
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Lean run»
+  принимает name: строка, file: строка, answers: список «Answer»
+  возвращает «Question»
+  пример «Lean runs in the work directory with its modules at hand»
+    дано name равно "axioms"
+    дано file равно "axioms.lean"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается запись «Question» с «name» равным "axioms" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && LEAN_PATH=\"$0\" exec \"$1\" \"$2\" 2>&1", "/w", "lean", "axioms.lean"])
+  «Run» от name и "sh" и ["-c", "cd \"$0\" && LEAN_PATH=\"$0\" exec \"$1\" \"$2\" 2>&1", («Work» от answers), («Lean» от answers), file]
+
+тотальная функция «Split step»
+  принимает cutting: «Split», line: строка
+  возвращает «Split»
+  пример «A marked line starts a new piece»
+    дано cutting равно запись «Split» с «header» равным "h\n" и «done» равным пустой список и «current» равным "" и «started» равным нет
+    дано line равно "/- ИСКАЖЕНИЕ 1"
+    ожидается запись «Split» с «header» равным "h\n" и «done» равным пустой список и «current» равным "/- ИСКАЖЕНИЕ 1\n" и «started» равным да
+  «Chosen» от [(«When» от ((line содержит "ИСКАЖЕНИЕ") и притом (cutting.«started»)) и (запись «Split» с «header» равным (cutting.«header») и «done» равным (добавить (cutting.«current») к (cutting.«done»)) и «current» равным (соединить [line, "\n"] по "") и «started» равным да)),
+    («When» от (line содержит "ИСКАЖЕНИЕ") и (запись «Split» с «header» равным (cutting.«header») и «done» равным (cutting.«done») и «current» равным (соединить [line, "\n"] по "") и «started» равным да)),
+    («When» от (cutting.«started») и (запись «Split» с «header» равным (cutting.«header») и «done» равным (cutting.«done») и «current» равным (соединить [(cutting.«current»), line, "\n"] по "") и «started» равным да))] и (запись «Split» с «header» равным (соединить [(cutting.«header»), line, "\n"] по "") и «done» равным (cutting.«done») и «current» равным "" и «started» равным нет)
+
+тотальная функция «Text lines»
+  принимает text: строка
+  возвращает список строки
+  пример «The line end after the last line opens no line»
+    дано text равно "a\n\nb\n"
+    ожидается ["a", "", "b"]
+  пример «Nothing has no lines»
+    дано text равно ""
+    ожидается пустой список
+  пусть parts равно (разделить text по "\n")
+  если пусто text то пустой список иначе (если «Ends with» от text и "\n" то (свёртка parts начиная с (пустой список) как kept и part → если (длина kept) равен ((длина parts) минус 1) то kept иначе (добавить part к kept)) иначе parts)
+
+тотальная функция «Split trap»
+  принимает text: строка
+  возвращает «Split»
+  пример «The header and two pieces»
+    дано text равно "import\n/- ИСКАЖЕНИЕ 1\nа\n/- ИСКАЖЕНИЕ 2\nб\n"
+    ожидается запись «Split» с «header» равным "import\n" и «done» равным ["/- ИСКАЖЕНИЕ 1\nа\n", "/- ИСКАЖЕНИЕ 2\nб\n"] и «current» равным "" и «started» равным нет
+  пусть cutting равно (свёртка («Text lines» от text) начиная с (запись «Split» с «header» равным "" и «done» равным пустой список и «current» равным "" и «started» равным нет) как cutting и line → «Split step» от cutting и line)
+  запись «Split» с «header» равным (cutting.«header») и «done» равным (если cutting.«started» то (добавить (cutting.«current») к (cutting.«done»)) иначе (cutting.«done»)) и «current» равным "" и «started» равным нет
+
+тотальная функция «Numbered»
+  принимает items: список строки
+  возвращает список список строки
+  пример «Pieces are numbered from one»
+    дано items равно ["а", "б"]
+    ожидается [["1", "а"], ["2", "б"]]
+  свёртка items начиная с (пустой список) как numbered и piece → добавить [(к строке ((длина numbered) плюс 1)), piece] к numbered
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The settings and the files read first»
+    ожидается [запись «Question» с «name» равным "lean" и «order» равным (вариант «Прочитать переменную среды» с имя равным "LEAN"), запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP"), запись «Question» с «name» равным "compiler" и «order» равным (вариант «Прочитать переменную среды» с имя равным "CC"), запись «Question» с «name» равным "binary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN"), запись «Question» с «name» равным "table" и «order» равным (вариант «Прочитать файл» с путь равным "../tables/inference-rules.tsv"), запись «Question» с «name» равным "trap" и «order» равным (вариант «Прочитать файл» с путь равным "Trap.lean"), запись «Question» с «name» равным "rules" и «order» равным (вариант «Прочитать файл» с путь равным "Rules.lean"), запись «Question» с «name» равным "term" и «order» равным (вариант «Прочитать файл» с путь равным "Term.lean")]
+  [(«Environment» от "lean" и "LEAN"), («Environment» от "temporary" и "FLANG_TMP"), («Environment» от "compiler" и "CC"), («Environment» от "binary" и "FLANG_BIN"), («Read» от "table" и "../tables/inference-rules.tsv"), («Read» от "trap" и "Trap.lean"), («Read» от "rules" и "Rules.lean"), («Read» от "term" и "Term.lean")]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Lean is looked for, a work directory is made»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "found" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "command -v \"$0\"", "lean"]), запись «Question» с «name» равным "work" и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/lean-check.")]
+  [(«Run» от "found" и "sh" и ["-c", "command -v \"$0\"", («Lean» от answers)]), («Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/lean-check."] по ""))]
+
+тотальная функция «Building»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is built»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе приписать («Run» от "version" и («Lean» от answers) и ["--version"]) к (отобразить («Modules») как pair → «Run» от (соединить ["build ", («Cell» от 1 и pair)] по "") и "sh" и ["-c", "LEAN_PATH=\"$0\" exec \"$1\" -o \"$0/$2.olean\" \"$3.lean\" 2>&1", («Work» от answers), («Lean» от answers), («Cell» от 2 и pair), («Cell» от 1 и pair)])
+
+тотальная функция «Built»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «Nothing built is not built»
+    дано answers равно пустой список
+    ожидается нет
+  пусто (отфильтровать («Modules») где pair → не ((«Exit code of» от (соединить ["build ", («Cell» от 1 и pair)] по "") и answers) равен 0))
+
+тотальная функция «Trap files»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No trap read, no trap written»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть cutting равно («Split trap» от («Output of» от "trap" и answers))
+  «Соединить списки» от (отобразить («Numbered» от (cutting.«done»)) как piece → «Write» от (соединить ["trap file ", («Cell» от 1 и piece)] по "") и («In work» от (соединить ["trap-", («Cell» от 1 и piece), ".lean"] по "") и answers) и (соединить [(cutting.«header»), («Cell» от 2 и piece)] по "")) и (отобразить («Numbered» от (cutting.«done»)) как piece → «Lean run» от (соединить ["trap ", («Cell» от 1 и piece)] по "") и (соединить ["trap-", («Cell» от 1 и piece), ".lean"] по "") и answers)
+
+тотальная функция «Trapping»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing is tried until everything is built»
+    дано answers равно пустой список
+    ожидается пустой список
+  если не («Built» от answers)
+    то пустой список
+    иначе «Соединить списки» от [(«Write» от "axioms file" и («In work» от "axioms.lean" и answers) и "import «Состоятельность»\n#print axioms «состоятельность»\n"), («Lean run» от "axioms" и "axioms.lean" и answers)] и («Соединить списки» от («Trap files» от answers) и [(«Run» от "cc" и («Setting of» от "compiler" и "cc" и answers) и ["-std=c99", "-O2", "-o", («In work» от "checker" и answers), "../checker/checker.c"]), («Write» от "wrapper" и («In work» от "wrapper.sh" и answers) и («Wrapper»)), («Run» от "wrapper mode" и "chmod" и ["+x", («In work» от "wrapper.sh" и answers)]), («Run» от "probes" и "sh" и ["-c", "mkdir -p \"$0/calls\" && CALLS=\"$0/calls\" REAL=\"$0/checker\" FLANG_CHECKER=\"$0/wrapper.sh\" FLANG_TMP=\"$0\" && export CALLS REAL FLANG_CHECKER FLANG_TMP && exec \"$1\" io ../checker/tests/run.fscript --max-steps 4000000000 --timeout 600000 -- \"$0/probes.report\" > \"$0/probes.out\" 2>&1", («Work» от answers), («Binary» от answers)]), («Read» от "report" и («In work» от "probes.report" и answers)), («Write» от "calls script" и («In work» от "calls.sh" и answers) и («Calls script»)), («Run» от "calls" и "sh" и [(«In work» от "calls.sh" и answers), («In work» от "calls" и answers), («In work» от "calls.txt" и answers)]), («Read» от "calls text" и («In work» от "calls.txt" и answers))])
+
+тотальная функция «Visit of»
+  принимает chunk: строка
+  возвращает «Visit»
+  пример «A call with its code, its arguments and its files»
+    дано chunk равно "/w/calls/call.1\n\u001e code 1\na.flang\n--на-веру\nb.record\n\u001e kept\n1 7_9 0\n3 8_2 1\n"
+    ожидается запись «Visit» с «dir» равным "/w/calls/call.1" и «code» равным "1" и «arguments» равным ["a.flang", "--на-веру", "b.record"] и «kept» равным [["1", "7_9", "0"], ["3", "8_2", "1"]]
+  пусть halves равно (разделить chunk по "\u001e kept\n")
+  пусть top равно (разделить («Cell» от 1 и halves) по "\n\u001e code ")
+  пусть rest равно («Text lines» от («Cell» от 2 и top))
+  запись «Visit» с «dir» равным («Cell» от 1 и top) и «code» равным («Cell» от 1 и rest) и «arguments» равным («Without first» от rest) и «kept» равным (отобразить («Text lines» от («Cell» от 2 и halves)) как line → разделить line по " ")
+
+тотальная функция «Without first»
+  принимает items: список строки
+  возвращает список строки
+  пример «The first line is dropped»
+    дано items равно ["1", "a", "b"]
+    ожидается ["a", "b"]
+  разбор items
+    случай голова и хвост
+      то хвост
+    случай пусто
+      то пустой список
+
+тотальная функция «Visits»
+  принимает text: строка
+  возвращает список «Visit»
+  пример «Nothing printed, no calls»
+    дано text равно ""
+    ожидается пустой список
+  отобразить (отфильтровать (разделить text по "\u001e visit ") где chunk → не (пусто chunk)) как chunk → «Visit of» от chunk
+
+тотальная функция «Positions»
+  принимает arguments: список строки
+  возвращает список строки
+  пример «The places of the first two arguments that are not keys»
+    дано arguments равно ["--на-веру", "a.flang", "b.record", "c"]
+    ожидается ["2", "3"]
+  свёртка («Numbered» от arguments) начиная с (пустой список) как places и entry → если ((длина places) меньше 2) и притом (не ((«Cell» от 2 и entry) начинается с "--")) то (добавить («Cell» от 1 и entry) к places) иначе places
+
+тотальная функция «Kept file»
+  принимает position: строка, visit: «Visit»
+  возвращает список строки
+  пример «The file copied for an argument»
+    дано position равно "3"
+    дано visit равно запись «Visit» с «dir» равным "/w" и «code» равным "0" и «arguments» равным пустой список и «kept» равным [["1", "7_9", "0"], ["3", "8_2", "1"]]
+    ожидается ["3", "8_2", "1"]
+  «Gathered words» от (отфильтровать (visit.«kept») где file → («Cell» от 1 и file) равен position)
+
+тотальная функция «Pair of»
+  принимает visit: «Visit»
+  возвращает список «Pair»
+  пример «A source and a record with a derivation make a pair»
+    дано visit равно запись «Visit» с «dir» равным "/w/c" и «code» равным "1" и «arguments» равным ["a.flang", "b.record"] и «kept» равным [["1", "7_9", "0"], ["2", "8_2", "1"]]
+    ожидается [запись «Pair» с «dir» равным "/w/c" и «source» равным "/w/c/arg1" и «proof» равным "/w/c/arg2" и «key» равным "7_9 8_2"]
+  пример «A record without a derivation makes none»
+    дано visit равно запись «Visit» с «dir» равным "/w/c" и «code» равным "1" и «arguments» равным ["a.flang", "b.record"] и «kept» равным [["1", "7_9", "0"], ["2", "8_2", "0"]]
+    ожидается пустой список
+  пусть places равно («Positions» от (visit.«arguments»))
+  пусть source равно («Kept file» от («Cell» от 1 и places) и visit)
+  пусть proof равно («Kept file» от («Cell» от 2 и places) и visit)
+  если ((длина places) равен 2) и притом ((не (пусто source)) и притом ((длина proof) равен 3) и притом ((«Cell» от 3 и proof) равен "1"))
+    то [(запись «Pair» с «dir» равным (visit.«dir») и «source» равным (соединить [(visit.«dir»), "/arg", («Cell» от 1 и places)] по "") и «proof» равным (соединить [(visit.«dir»), "/arg", («Cell» от 2 и places)] по "") и «key» равным (соединить [(«Cell» от 2 и source), " ", («Cell» от 2 и proof)] по ""))]
+    иначе пустой список
+
+тотальная функция «Pairs»
+  принимает visits: список «Visit»
+  возвращает список «Pair»
+  пример «The second pair with the same files is dropped»
+    дано visits равно [запись «Visit» с «dir» равным "/w/a" и «code» равным "0" и «arguments» равным ["a", "b"] и «kept» равным [["1", "7", "0"], ["2", "8", "1"]], запись «Visit» с «dir» равным "/w/b" и «code» равным "0" и «arguments» равным ["a", "b"] и «kept» равным [["1", "7", "0"], ["2", "8", "1"]]]
+    ожидается [запись «Pair» с «dir» равным "/w/a" и «source» равным "/w/a/arg1" и «proof» равным "/w/a/arg2" и «key» равным "7 8"]
+  (свёртка visits начиная с (запись «Pairing» с «pairs» равным пустой список и «keys» равным пустой список) как pairing и visit → «Paired» от pairing и («Pair of» от visit)).«pairs»
+
+тотальная функция «Paired»
+  принимает pairing: «Pairing», found: список «Pair»
+  возвращает «Pairing»
+  пример «A new key is kept»
+    дано pairing равно запись «Pairing» с «pairs» равным пустой список и «keys» равным пустой список
+    дано found равно [запись «Pair» с «dir» равным "/w/a" и «source» равным "s" и «proof» равным "p" и «key» равным "7 8"]
+    ожидается запись «Pairing» с «pairs» равным [запись «Pair» с «dir» равным "/w/a" и «source» равным "s" и «proof» равным "p" и «key» равным "7 8"] и «keys» равным ["7 8"]
+  разбор found
+    случай голова и хвост
+      то если пусто (отфильтровать (pairing.«keys») где key → key равен ((голова).«key»))
+        то запись «Pairing» с «pairs» равным (добавить (голова) к (pairing.«pairs»)) и «keys» равным (добавить ((голова).«key») к (pairing.«keys»))
+        иначе pairing
+    случай пусто
+      то pairing
+
+тотальная функция «Pair list»
+  принимает pairs: список «Pair»
+  возвращает строка
+  пример «One line per pair»
+    дано pairs равно [запись «Pair» с «dir» равным "/w/a" и «source» равным "/w/a/arg1" и «proof» равным "/w/a/arg2" и «key» равным "7 8"]
+    ожидается "/w/a\t/w/a/arg1\t/w/a/arg2\n"
+  соединить (отобразить pairs как pair → соединить [(pair.«dir»), "\t", (pair.«source»), "\t", (pair.«proof»), "\n"] по "") по ""
+
+тотальная функция «Probed»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «No calls, nothing to pair»
+    дано answers равно пустой список
+    ожидается нет
+  ((«Exit code of» от "cc" и answers) равен 0) и притом (не (пусто («Pairs» от («Visits» от («Output of» от "calls text" и answers)))))
+
+тотальная функция «Pairing stage»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing to pair, nothing asked»
+    дано answers равно пустой список
+    ожидается пустой список
+  если не («Probed» от answers)
+    то пустой список
+    иначе [(«Write» от "list" и («In work» от "list" и answers) и («Pair list» от («Pairs» от («Visits» от («Output of» от "calls text" и answers))))), («Run» от "verdicts" и "sh" и ["-c", "LEAN_PATH=\"$2\" exec \"$0\" --run VerdictCheck.lean \"$1\" > \"$1.lean.tsv\" 2> \"$1.lean.err\"", («Lean» от answers), («In work» от "list" и answers), («Work» от answers)]), («Read» от "lean rows" и («In work» от "list.lean.tsv" и answers)), («Read» от "lean errors" и («In work» от "list.lean.err" и answers))]
+
+тотальная функция «Tab rows»
+  принимает text: строка
+  возвращает список список строки
+  пример «Lines cut at tabs, the empty fifth cell kept»
+    дано text равно "/w/a\tН1\tН1\tПРИНЯЛ\t\n"
+    ожидается [["/w/a", "Н1", "Н1", "ПРИНЯЛ", ""]]
+  отобразить («Lines» от text) как line → разделить line по "\t"
+
+тотальная функция «Checked dirs»
+  принимает rows: список список строки
+  возвращает список строки
+  пример «Each call once»
+    дано rows равно [["/w/a", "x"], ["/w/b", "y"], ["/w/a", "z"]]
+    ожидается ["/w/a", "/w/b"]
+  свёртка rows начиная с (пустой список) как seen и row → если пусто (отфильтровать seen где dir → dir равен («Cell» от 1 и row)) то (добавить («Cell» от 1 и row) к seen) иначе seen
+
+тотальная функция «Verified»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «No verdicts without a run»
+    дано answers равно пустой список
+    ожидается нет
+  ((«Exit code of» от "verdicts" и answers) равен 0) и притом (не (пусто («Tab rows» от («Output of» от "lean rows" и answers))))
+
+тотальная функция «Refusal stage»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing verified, nothing asked»
+    дано answers равно пустой список
+    ожидается пустой список
+  если не («Verified» от answers)
+    то пустой список
+    иначе [(«Write» от "dirs" и («In work» от "dirs" и answers) и (соединить (отобразить («Checked dirs» от («Tab rows» от («Output of» от "lean rows" и answers))) как dir → соединить [dir, "\n"] по "") по "")), («Write» от "refusals script" и («In work» от "refusals.sh" и answers) и («Refusals script»)), («Run» от "refusals" и "sh" и [(«In work» от "refusals.sh" и answers), («In work» от "dirs" и answers), («In work» от "refused.tsv" и answers)]), («Read» от "refused" и («In work» от "refused.tsv" и answers))]
+
+тотальная функция «Refused set»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing refused»
+    дано answers равно пустой список
+    ожидается пустой список
+  «Lines» от («Output of» от "refused" и answers)
+
+тотальная функция «Lean rows»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  пример «No rows without a run»
+    дано answers равно пустой список
+    ожидается пустой список
+  «Tab rows» от («Output of» от "lean rows" и answers)
+
+тотальная функция «Code of»
+  принимает dir: строка, visits: список «Visit»
+  возвращает строка
+  пример «The code the checker gave in that call»
+    дано dir равно "/w/b"
+    дано visits равно [запись «Visit» с «dir» равным "/w/a" и «code» равным "0" и «arguments» равным пустой список и «kept» равным пустой список, запись «Visit» с «dir» равным "/w/b" и «code» равным "1" и «arguments» равным пустой список и «kept» равным пустой список]
+    ожидается "1"
+  «Cell» от 1 и (отобразить (отфильтровать visits где visit → (visit.«dir») равен dir) как visit → visit.«code»)
+
+тотальная функция «Checker refused»
+  принимает row: список строки, refused: список строки
+  возвращает признак
+  пример «A statement named by the checker was refused»
+    дано row равно ["/w/a", "Н1", "", "ПРИНЯЛ", ""]
+    дано refused равно ["/w/a\tН1"]
+    ожидается да
+  пример «The theorem may be named instead»
+    дано row равно ["/w/a", "Н1", "Т", "ПРИНЯЛ", ""]
+    дано refused равно ["/w/a\tТ"]
+    ожидается да
+  («Has» от (соединить [(«Cell» от 1 и row), "\t", («Cell» от 2 и row)] по "") и refused) или ((не (пусто («Cell» от 3 и row))) и притом («Has» от (соединить [(«Cell» от 1 и row), "\t", («Cell» от 3 и row)] по "") и refused))
+
+тотальная функция «Has»
+  принимает word: строка, words: список строки
+  возвращает признак
+  пример «A word in the list»
+    дано word равно "б"
+    дано words равно ["а", "б"]
+    ожидается да
+  не (пусто (отфильтровать words где other → other равен word))
+
+тотальная функция «Silent rows»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  пример «No rows, nothing to spoil»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть refused равно («Refused set» от answers)
+  пусть visits равно («Visits» от («Output of» от "calls text" и answers))
+  пусть silent равно (отфильтровать («Lean rows» от answers) где row → (не («Has» от (соединить [(«Cell» от 1 и row), "\t", («Cell» от 2 и row)] по "") и refused)) и притом (((«Cell» от 4 и row) равен "ПРИНЯЛ") и притом ((«Code of» от («Cell» от 1 и row) и visits) равен "1")))
+  свёртка silent начиная с (пустой список) как chosen и row → если ((длина chosen) меньше 5) и притом (пусто (отфильтровать chosen где taken → («Cell» от 1 и taken) равен («Cell» от 1 и row))) то (добавить row к chosen) иначе chosen
+
+тотальная функция «Pair at»
+  принимает dir: строка, answers: список «Answer»
+  возвращает список «Pair»
+  пример «No pairs, none found»
+    дано dir равно "/w/a"
+    дано answers равно пустой список
+    ожидается пустой список
+  отфильтровать («Pairs» от («Visits» от («Output of» от "calls text" и answers))) где pair → (pair.«dir») равен dir
+
+тотальная функция «Rule counts»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No rows, no rules»
+    дано answers равно пустой список
+    ожидается ""
+  пусть outside равно (отфильтровать («Lean rows» от answers) где row → («Cell» от 4 и row) равен "ВНЕ")
+  пусть names равно (свёртка outside начиная с (пустой список) как seen и row → если «Has» от («Cell» от 5 и row) и seen то seen иначе (добавить («Cell» от 5 и row) к seen))
+  соединить (отобразить names как name → соединить [(к строке (длина (отфильтровать outside где row → («Cell» от 5 и row) равен name))), "\t", name, "\n"] по "") по ""
+
+тотальная функция «Control»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing verified, nothing controlled»
+    дано answers равно пустой список
+    ожидается пустой список
+  если не («Verified» от answers)
+    то пустой список
+    иначе «Соединить списки» от [(«Write» от "rule counts" и («In work» от "rule-counts" и answers) и («Rule counts» от answers)), («Run» от "sorted rules" и "sh" и ["-c", "LC_ALL=C sort -t \"$(printf '\\t')\" -k1,1nr -k2,2 \"$0\"", («In work» от "rule-counts" и answers)])] и («Flattened» от (отобразить («Numbered» от (отобразить («Silent rows» от answers) как row → «Cell» от 1 и row)) как entry → отобразить («Pair at» от («Cell» от 2 и entry) и answers) как pair → «Read» от (соединить ["proof ", («Cell» от 1 и entry)] по "") и (pair.«proof»)))
+
+тотальная функция «Spoil step»
+  принимает spoiling: «Split», line: строка, name: строка
+  возвращает «Split»
+  пример «The first derivation step of the named statement gets a rule that does not exist»
+    дано spoiling равно запись «Split» с «header» равным "" и «done» равным пустой список и «current» равным "да" и «started» равным нет
+    дано line равно "  вывод 1 Н3 цель"
+    дано name равно "а"
+    ожидается запись «Split» с «header» равным "" и «done» равным ["  вывод 1 Н✗ цель"] и «current» равным "да" и «started» равным да
+  пусть inside равно (если line начинается с "утверждение «" то (line начинается с (соединить ["утверждение «", name, "»"] по "")) иначе (не (пусто (spoiling.«current»))))
+  пусть marked равно (inside и притом ((не (spoiling.«started»)) и притом ((line содержит "вывод 1 ") и притом (пусто («Without blanks» от («Cell» от 1 и (разделить line по "вывод 1 ")))))))
+  запись «Split» с «header» равным "" и «done» равным (добавить (если marked то («Spoiled» от line) иначе line) к (spoiling.«done»)) и «current» равным (если inside то "да" иначе "") и «started» равным ((spoiling.«started») или marked)
+
+тотальная функция «Spoiled»
+  принимает line: строка
+  возвращает строка
+  пример «The rule word after the step number is replaced»
+    дано line равно "  вывод 1 Н3 цель"
+    ожидается "  вывод 1 Н✗ цель"
+  пример «A rule word with nothing after it stays»
+    дано line равно "  вывод 1 Н3"
+    ожидается "  вывод 1 Н3"
+  пусть parts равно (разделить line по "вывод 1 ")
+  пусть rest равно (соединить («Without first» от parts) по "вывод 1 ")
+  пусть words равно (разделить rest по " ")
+  если (длина words) меньше 2 то line иначе (соединить [(«Cell» от 1 и parts), "вывод 1 Н✗ ", (соединить («Without first» от words) по " ")] по "")
+
+тотальная функция «Spoiled proof»
+  принимает text: строка, name: строка
+  возвращает строка
+  пример «Only the named statement is spoiled»
+    дано text равно "утверждение «б»\n  вывод 1 Н3 x\nутверждение «а»\n  вывод 1 Н3 y\n  вывод 1 Н4 z\n"
+    дано name равно "а"
+    ожидается "утверждение «б»\n  вывод 1 Н3 x\nутверждение «а»\n  вывод 1 Н✗ y\n  вывод 1 Н4 z\n"
+  соединить (отобразить ((свёртка («Text lines» от text) начиная с (запись «Split» с «header» равным "" и «done» равным пустой список и «current» равным "" и «started» равным нет) как spoiling и line → «Spoil step» от spoiling и line и name).«done») как line → соединить [line, "\n"] по "") по ""
+
+тотальная функция «Corrupting»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing chosen, nothing spoiled»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть chosen равно («Numbered» от (отобразить («Silent rows» от answers) как row → соединить [(«Cell» от 1 и row), "\t", («Cell» от 2 и row)] по ""))
+  «Соединить списки» от (отобразить chosen как entry → «Spoiled file» от entry и answers) и («Flattened» от (отобразить chosen как entry → «Spoiled run» от entry и answers))
+
+тотальная функция «Spoiled file»
+  принимает entry: список строки, answers: список «Answer»
+  возвращает «Question»
+  пример «The spoiled copy goes to the work directory»
+    дано entry равно ["1", "/w/a\tН1"]
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается запись «Question» с «name» равным "spoiled file 1" и «order» равным (вариант «Записать файл» с путь равным "/w/spoiled-1.record" и содержимое равным "")
+  «Write» от (соединить ["spoiled file ", («Cell» от 1 и entry)] по "") и («In work» от (соединить ["spoiled-", («Cell» от 1 и entry), ".record"] по "") и answers) и («Spoiled proof» от («Output of» от (соединить ["proof ", («Cell» от 1 и entry)] по "") и answers) и («Cell» от 2 и (разделить («Cell» от 2 и entry) по "\t")))
+
+тотальная функция «Spoiled run»
+  принимает entry: список строки, answers: список «Answer»
+  возвращает список «Question»
+  пример «No pair, no run»
+    дано entry равно ["1", "/w/a\tН1"]
+    дано answers равно пустой список
+    ожидается пустой список
+  отобразить («Pair at» от («Cell» от 1 и (разделить («Cell» от 2 и entry) по "\t")) и answers) как pair → «Run» от (соединить ["spoiled ", («Cell» от 1 и entry)] по "") и "sh" и ["-c", "exec \"$0\" \"$1\" \"$2\" 2>&1", («In work» от "checker" и answers), (pair.«source»), («In work» от (соединить ["spoiled-", («Cell» от 1 и entry), ".record"] по "") и answers)]
+
+тотальная функция «Flattened»
+  принимает parts: список список «Question»
+  возвращает список «Question»
+  пример «Nothing to join»
+    дано parts равно пустой список
+    ожидается пустой список
+  свёртка parts начиная с (пустой список) как joined и part → «Соединить списки» от joined и part
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 12
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 8
+      то «Setup»
+    случай 7
+      то «Presence» от answers
+    случай 6
+      то «Building» от answers
+    случай 5
+      то «Trapping» от answers
+    случай 4
+      то «Pairing stage» от answers
+    случай 3
+      то «Refusal stage» от answers
+    случай 2
+      то «Control» от answers
+    случай 1
+      то «Corrupting» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Said lines»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
+  пример «Nothing said, no lines»
+    дано name равно "axioms"
+    дано answers равно пустой список
+    ожидается пустой список
+  «Text lines» от (соединить [(«Output of» от name и answers), («Errors of» от name и answers)] по "")
+
+тотальная функция «Build step»
+  принимает part: «Section», pair: список строки, answers: список «Answer»
+  возвращает «Section»
+  пример «A module that did not build stops the run»
+    дано part равно запись «Section» с «lines» равным пустой список и «bad» равным нет и «fatal» равным нет
+    дано pair равно ["Model", "Модель"]
+    дано answers равно пустой список
+    ожидается запись «Section» с «lines» равным ["Model.lean НЕ СОБРАЛСЯ:"] и «bad» равным да и «fatal» равным да
+  пусть name равно (соединить ["build ", («Cell» от 1 и pair)] по "")
+  «Chosen» от [(«When» от (part.«fatal») и part),
+    («When» от (не ((«Exit code of» от name и answers) равен 0)) и (запись «Section» с «lines» равным («Соединить списки» от (part.«lines») и (приписать (соединить [(«Cell» от 1 и pair), ".lean НЕ СОБРАЛСЯ:"] по "") к («Said lines» от name и answers))) и «bad» равным да и «fatal» равным да)),
+    («When» от (не (пусто («Said lines» от name и answers))) и (запись «Section» с «lines» равным («Соединить списки» от (part.«lines») и (приписать (соединить [(«Cell» от 1 и pair), ".lean собрался, но Lean не молчит:"] по "") к («Said lines» от name и answers))) и «bad» равным да и «fatal» равным нет))] и part
+
+тотальная функция «Build section»
+  принимает answers: список «Answer»
+  возвращает «Section»
+  пример «Nothing built stops at the first module»
+    дано answers равно пустой список
+    ожидается запись «Section» с «lines» равным ["Lean: ", "", "Model.lean НЕ СОБРАЛСЯ:"] и «bad» равным да и «fatal» равным да
+  пусть built равно (свёртка («Modules») начиная с (запись «Section» с «lines» равным [(соединить ["Lean: ", («First line» от («Output of» от "version" и answers))] по ""), ""] и «bad» равным нет и «fatal» равным нет) как part и pair → «Build step» от part и pair и answers)
+  если built.«fatal» то built иначе (запись «Section» с «lines» равным (добавить "сборка — Model, Rules, Term, Record, Acceptance, Consistency, RecordReader, VerdictCheck: без сообщений" к (built.«lines»)) и «bad» равным (built.«bad») и «fatal» равным нет)
+
+тотальная функция «Axioms of»
+  принимает said: строка
+  возвращает строка
+  пример «The axioms Lean printed»
+    дано said равно "'«состоятельность»' depends on axioms: [propext,\n Classical.choice]\n"
+    ожидается "propext,  Classical.choice"
+  пусть joined равно (соединить (разделить said по "\n") по " ")
+  пусть parts равно (разделить joined по "depends on axioms: [")
+  если (длина parts) меньше 2 то "" иначе («Cell» от 1 и (разделить («Cell» от (длина parts) и parts) по "]"))
+
+тотальная функция «Axioms section»
+  принимает answers: список «Answer»
+  возвращает «Section»
+  пример «Lean said nothing it could be read by»
+    дано answers равно пустой список
+    ожидается запись «Section» с «lines» равным ["аксиомы — вывод Lean не разобран:"] и «bad» равным да и «fatal» равным нет
+  пусть said равно (соединить [(«Output of» от "axioms" и answers), («Errors of» от "axioms" и answers)] по "")
+  пусть none равно (said содержит "does not depend on any axioms")
+  пусть found равно (если none то "" иначе («Axioms of» от said))
+  пусть extra равно (отфильтровать (отобразить (разделить found по ",") как word → «Without blanks» от word) где word → (не (пусто word)) и притом (не («Has» от word и («Standard axioms»))))
+  «Chosen» от [(«When» от ((пусто found) и притом (не none)) и (запись «Section» с «lines» равным (приписать "аксиомы — вывод Lean не разобран:" к («Said lines» от "axioms" и answers)) и «bad» равным да и «fatal» равным нет)),
+    («When» от (не (пусто extra)) и (запись «Section» с «lines» равным [(соединить ["аксиомы «состоятельность» — лишние: ", (соединить (отобразить extra как word → соединить [word, " "] по "") по "")] по "")] и «bad» равным да и «fatal» равным нет))] и (запись «Section» с «lines» равным [(соединить ["аксиомы «состоятельность» — [", found, "], сверх трёх стандартных ни одной"] по "")] и «bad» равным нет и «fatal» равным нет)
+
+тотальная функция «Trap section»
+  принимает answers: список «Answer»
+  возвращает «Section»
+  пример «No pieces is a failure»
+    дано answers равно пустой список
+    ожидается запись «Section» с «lines» равным ["ловушка — искажений 0, Lean отверг 0"] и «bad» равным да и «fatal» равным нет
+  пусть pieces равно («Numbered» от ((«Split trap» от («Output of» от "trap" и answers)).«done»))
+  пусть taken равно (отфильтровать pieces где piece → («Exit code of» от (соединить ["trap ", («Cell» от 1 и piece)] по "") и answers) равен 0)
+  пусть refused равно ((длина pieces) минус (длина taken))
+  пусть failed равно (отобразить taken как chunk → соединить ["  ЛОВУШКА НЕ СРАБОТАЛА: Lean ПРИНЯЛ искажение из trap-", («Cell» от 1 и chunk), ".lean"] по "")
+  пусть total равно (соединить ["ловушка — искажений ", (к строке (длина pieces)), ", Lean отверг ", (к строке refused)] по "")
+  запись «Section» с «lines» равным (добавить total к failed) и «bad» равным (((длина taken) больше 0) или (пусто pieces)) и «fatal» равным нет
+
+тотальная функция «Lemma names»
+  принимает text: строка
+  возвращает список строки
+  пример «Names of the theorems»
+    дано text равно "theorem «Н1» (n : Int)\n  theorem «x»\ntheorem «О2-запрет» : True\n"
+    ожидается ["Н1", "О2-запрет"]
+  отобразить (отфильтровать (разделить text по "\n") где line → line начинается с "theorem «") как line → «Cell» от 1 и (разделить («After» от "theorem «" и line) по "»")
+
+тотальная функция «Ban name»
+  принимает name: строка
+  возвращает строка
+  пример «Three crosses»
+    дано name равно "Н✗✗✗"
+    ожидается "Н-запрет3"
+  пример «Two crosses»
+    дано name равно "С✗✗"
+    ожидается "С-запрет2"
+  пример «One cross»
+    дано name равно "Ч✗"
+    ожидается "Ч-запрет"
+  пусть parts равно (разделить name по "✗")
+  разбор ((длина parts) минус 1)
+    случай 3
+      то соединить [(«Cell» от 1 и parts), "-запрет3"] по ""
+    случай 2
+      то соединить [(«Cell» от 1 и parts), "-запрет2"] по ""
+    случай любое
+      то соединить [(«Cell» от 1 и parts), "-запрет", (соединить («Without first» от parts) по "✗")] по ""
+
+тотальная функция «Has lemma»
+  принимает name: строка, lemmas: список строки
+  возвращает признак
+  пример «A rule with a numbered lemma»
+    дано name равно "Р5"
+    дано lemmas равно ["Р5-1", "Н1"]
+    ожидается да
+  пример «A ban with its lemma»
+    дано name равно "Н✗"
+    дано lemmas равно ["Н-запрет"]
+    ожидается да
+  «Chosen» от [(«When» от (name содержит "✗") и («Has» от («Ban name» от name) и lemmas)),
+    («When» от («Has» от name и lemmas) и да)] и (не (пусто (отфильтровать lemmas где lemma → lemma начинается с (соединить [name, "-"] по ""))))
+
+тотальная функция «Lemma section»
+  принимает answers: список «Answer»
+  возвращает «Section»
+  пример «Nothing read, nothing listed»
+    дано answers равно пустой список
+    ожидается запись «Section» с «lines» равным ["перечень — строк 0, из них с леммой 0, без леммы 0", "правила    — лемм в файле 0", ""] и «bad» равным нет и «fatal» равным нет
+  пусть lemmas равно («Lemma names» от (соединить [(«Output of» от "rules" и answers), («Output of» от "term" и answers)] по ""))
+  пусть names равно (отобразить (отфильтровать (отобразить («Without first» от (разделить («Output of» от "table" и answers) по "\n")) как line → разделить line по "\t") где row → ((длина row) больше 5) и притом (не ((«Cell» от 1 и row) начинается с "#"))) как row → «Cell» от 1 и row)
+  пусть missing равно (отфильтровать names где name → не («Has lemma» от name и lemmas))
+  запись «Section» с «lines» равным [(соединить ["перечень — строк ", (к строке (длина names)), ", из них с леммой ", (к строке ((длина names) минус (длина missing))), ", без леммы ", (к строке (длина missing)), (если пусто missing то "" иначе (соединить [": ", (соединить missing по ", ")] по ""))] по ""), (соединить ["правила    — лемм в файле ", (к строке (длина («Lemma names» от («Output of» от "rules" и answers))))] по ""), ""] и «bad» равным нет и «fatal» равным нет
+
+тотальная функция «Count label»
+  принимает line: строка, word: строка
+  возвращает строка
+  пример «The count of forgeries»
+    дано line равно "  подделок 575: отвергнуто 488"
+    дано word равно "подделок"
+    ожидается "подделок 575"
+  пример «The honest ones are spaced twice»
+    дано line равно "  честных  274: принято 274"
+    дано word равно "честных"
+    ожидается "честных 274"
+  пример «Another line gives nothing»
+    дано line равно "  набор подделок: поймано 1"
+    дано word равно "подделок"
+    ожидается ""
+  пусть bare равно («Without blanks» от («Cell» от 1 и (разделить line по ":")))
+  пусть digits равно («After» от word и bare)
+  если ((line содержит ":") и притом (bare начинается с word)) и притом («Digits» от digits) то (соединить [word, " ", digits] по "") иначе ""
+
+тотальная функция «Probe counts»
+  принимает report: строка
+  возвращает строка
+  пример «Both counts from the report»
+    дано report равно "── ПО КЛАССУ ПРОБЫ ──\n  подделок 575: отвергнуто 488\n  честных  274: принято 274\n"
+    ожидается "подделок 575, честных 274"
+  пример «A report without counts»
+    дано report равно ""
+    ожидается "?"
+  пусть found равно (отфильтровать (отобразить («Lines» от report) как line → соединить [(«Count label» от line и "подделок"), («Count label» от line и "честных")] по "") где label → не (пусто label))
+  разбор found
+    случай пусто
+      то "?"
+    случай голова и хвост
+      то если пусто (хвост) то (голова) иначе (соединить [(голова), ", ", (соединить (хвост) по ",")] по "")
+
+тотальная функция «Probe section»
+  принимает answers: список «Answer»
+  возвращает «Section»
+  пример «A checker that did not build stops the run»
+    дано answers равно пустой список
+    ожидается запись «Section» с «lines» равным ["сверка вердиктов НЕ ПРОВЕДЕНА: сверщик не собрался"] и «bad» равным да и «fatal» равным да
+  пусть probes равно («Exit code of» от "probes" и answers)
+  пусть verdict равно (если probes равен 0 то "сошлось всё" иначе (соединить ["НЕ СОШЛОСЬ (код ", (к строке probes), ")"] по ""))
+  пусть visits равно («Visits» от («Output of» от "calls text" и answers))
+  пусть line равно (соединить ["набор проб сверщика — ", («Probe counts» от («Output of» от "report" и answers)), "; вызовов сверщика ", (к строке (длина visits)), "; сам набор: ", verdict] по "")
+  «Chosen» от [(«When» от (не ((«Exit code of» от "cc" и answers) равен 0)) и (запись «Section» с «lines» равным (приписать "сверка вердиктов НЕ ПРОВЕДЕНА: сверщик не собрался" к («Said lines» от "cc" и answers)) и «bad» равным да и «fatal» равным да)),
+    («When» от (пусто («Pairs» от visits)) и (запись «Section» с «lines» равным [line, "сверка вердиктов НЕ ПРОВЕДЕНА: ни одной пары с блоком вывода"] и «bad» равным да и «fatal» равным да)),
+    («When» от (не ((«Exit code of» от "verdicts" и answers) равен 0)) и (запись «Section» с «lines» равным («Соединить списки» от [line, "сверка вердиктов НЕ ПРОВЕДЕНА: VerdictCheck.lean упала"] и («Text lines» от («Output of» от "lean errors" и answers))) и «bad» равным да и «fatal» равным да))] и (запись «Section» с «lines» равным [line] и «bad» равным (не (probes равен 0)) и «fatal» равным нет)
+
+тотальная функция «Second argument»
+  принимает dir: строка, visits: список «Visit»
+  возвращает строка
+  пример «The record of the call, the tree before it cut away»
+    дано dir равно "/w/a"
+    дано visits равно [запись «Visit» с «dir» равным "/w/a" и «code» равным "1" и «arguments» равным ["/t/flang/proof/x.flang", "--на-веру", "/t/flang/proof/checker/tests/y.record"] и «kept» равным пустой список]
+    ожидается "checker/tests/y.record"
+  пусть arguments равно («Gathered words» от (отобразить (отфильтровать visits где visit → (visit.«dir») равен dir) как visit → visit.«arguments»))
+  пусть named равно (отфильтровать arguments где word → не (word начинается с "--"))
+  пусть second равно (если (длина named) меньше 2 то "?" иначе («Cell» от 2 и named))
+  пусть parts равно (разделить second по "/flang/proof/")
+  «Cell» от (длина parts) и parts
+
+тотальная функция «Tallied»
+  принимает tally: «Tally», row: список строки, refused: список строки, visits: список «Visit»
+  возвращает «Tally»
+  пример «Both accepted»
+    дано tally равно запись «Tally» с «blocks» равным 0 и «both» равным 0 и «both refused» равным 0 и «refused» равным 0 и «unread» равным 0 и «outside accepted» равным 0 и «outside refused» равным 0 и «outside rules» равным пустой список и «disagreements» равным пустой список
+    дано row равно ["/w/a", "Н1", "", "ПРИНЯЛ", ""]
+    дано refused равно пустой список
+    дано visits равно пустой список
+    ожидается запись «Tally» с «blocks» равным 1 и «both» равным 1 и «both refused» равным 0 и «refused» равным 0 и «unread» равным 0 и «outside accepted» равным 0 и «outside refused» равным 0 и «outside rules» равным пустой список и «disagreements» равным пустой список
+  пусть said равно (если «Checker refused» от row и refused то "отверг" иначе "принял")
+  пусть verdict равно («Cell» от 4 и row)
+  пусть blocks равно ((tally.«blocks») плюс 1)
+  разбор («Agreement» от verdict и said)
+    случай "both"
+      то запись «Tally» с «blocks» равным blocks и «both» равным ((tally.«both») плюс 1) и «both refused» равным ((tally.«both refused») плюс (если («Code of» от («Cell» от 1 и row) и visits) равен "1" то 1 иначе 0)) и «refused» равным (tally.«refused») и «unread» равным (tally.«unread») и «outside accepted» равным (tally.«outside accepted») и «outside refused» равным (tally.«outside refused») и «outside rules» равным (tally.«outside rules») и «disagreements» равным (tally.«disagreements»)
+    случай "refused"
+      то запись «Tally» с «blocks» равным blocks и «both» равным (tally.«both») и «both refused» равным (tally.«both refused») и «refused» равным ((tally.«refused») плюс 1) и «unread» равным (tally.«unread») и «outside accepted» равным (tally.«outside accepted») и «outside refused» равным (tally.«outside refused») и «outside rules» равным (tally.«outside rules») и «disagreements» равным (tally.«disagreements»)
+    случай "unread"
+      то запись «Tally» с «blocks» равным blocks и «both» равным (tally.«both») и «both refused» равным (tally.«both refused») и «refused» равным (tally.«refused») и «unread» равным ((tally.«unread») плюс 1) и «outside accepted» равным (tally.«outside accepted») и «outside refused» равным (tally.«outside refused») и «outside rules» равным (tally.«outside rules») и «disagreements» равным (tally.«disagreements»)
+    случай "outside"
+      то запись «Tally» с «blocks» равным blocks и «both» равным (tally.«both») и «both refused» равным (tally.«both refused») и «refused» равным (tally.«refused») и «unread» равным (tally.«unread») и «outside accepted» равным ((tally.«outside accepted») плюс (если said равен "принял" то 1 иначе 0)) и «outside refused» равным ((tally.«outside refused») плюс (если said равен "принял" то 0 иначе 1)) и «outside rules» равным (добавить («Cell» от 5 и row) к (tally.«outside rules»)) и «disagreements» равным (tally.«disagreements»)
+    случай любое
+      то запись «Tally» с «blocks» равным blocks и «both» равным (tally.«both») и «both refused» равным (tally.«both refused») и «refused» равным (tally.«refused») и «unread» равным (tally.«unread») и «outside accepted» равным (tally.«outside accepted») и «outside refused» равным (tally.«outside refused») и «outside rules» равным (tally.«outside rules») и «disagreements» равным (добавить (соединить ["  РАСХОЖДЕНИЕ: ", («Second argument» от («Cell» от 1 и row) и visits), " «", («Cell» от 2 и row), "» — сверщик ", said, ", Lean ", verdict, (если пусто («Cell» от 5 и row) то "" иначе (соединить [" (", («Cell» от 5 и row), ")"] по ""))] по "") к (tally.«disagreements»))
+
+тотальная функция «Agreement»
+  принимает verdict: строка, said: строка
+  возвращает строка
+  пример «Lean outside its acceptance»
+    дано verdict равно "ВНЕ"
+    дано said равно "отверг"
+    ожидается "outside"
+  пример «Lean accepted what the checker refused»
+    дано verdict равно "ПРИНЯЛ"
+    дано said равно "отверг"
+    ожидается "apart"
+  «Chosen» от [(«When» от ((verdict равен "ПРИНЯЛ") и притом (said равен "принял")) и "both"),
+    («When» от ((verdict равен "ОТВЕРГ") и притом (said равен "отверг")) и "refused"),
+    («When» от ((verdict равен "НЕ ПРОЧЁЛ") и притом (said равен "отверг")) и "unread"),
+    («When» от (verdict равен "ВНЕ") и "outside")] и "apart"
+
+тотальная функция «Sorted rules»
+  принимает text: строка
+  возвращает строка
+  пример «Counts printed after the names»
+    дано text равно "60\tВыч\n24\tР5\n"
+    ожидается "Выч 60, Р5 24"
+  соединить (отобразить («Tab rows» от text) как row → соединить [(«Cell» от 2 и row), " ", («Cell» от 1 и row)] по "") по ", "
+
+тотальная функция «Verdict section»
+  принимает answers: список «Answer»
+  возвращает «Section»
+  пример «No rows, no blocks»
+    дано answers равно пустой список
+    ожидается запись «Section» с «lines» равным ["сверка вердиктов — пар «исходник + запись» с блоком вывода 0, блоков, которые сверщик проигрывает, 0", "  сверщик принял, Lean принял (цель следует по теореме): 0", "  сверщик отверг, Lean отверг: 0", "  сверщик отверг, Lean не прочёл блок: 0", "  вне приёмки Lean (первый непринятый шаг — правило, которого в Acceptance.lean нет): сверщик принял 0, отверг 0", "  расхождений: 0"] и «bad» равным нет и «fatal» равным нет
+  пусть visits равно («Visits» от («Output of» от "calls text" и answers))
+  пусть refused равно («Refused set» от answers)
+  пусть tally равно (свёртка («Lean rows» от answers) начиная с (запись «Tally» с «blocks» равным 0 и «both» равным 0 и «both refused» равным 0 и «refused» равным 0 и «unread» равным 0 и «outside accepted» равным 0 и «outside refused» равным 0 и «outside rules» равным пустой список и «disagreements» равным пустой список) как tally и row → «Tallied» от tally и row и refused и visits)
+  пусть head равно [(соединить ["сверка вердиктов — пар «исходник + запись» с блоком вывода ", (к строке (длина («Pairs» от visits))), ", блоков, которые сверщик проигрывает, ", (к строке (tally.«blocks»))] по ""), (соединить ["  сверщик принял, Lean принял (цель следует по теореме): ", (к строке (tally.«both»)), (если (tally.«both refused») больше 0 то (соединить [" (из них ", (к строке (tally.«both refused»)), " — в записях, отвергнутых сверщиком по другой причине)"] по "") иначе "")] по ""), (соединить ["  сверщик отверг, Lean отверг: ", (к строке (tally.«refused»))] по ""), (соединить ["  сверщик отверг, Lean не прочёл блок: ", (к строке (tally.«unread»))] по ""), (соединить ["  вне приёмки Lean (первый непринятый шаг — правило, которого в Acceptance.lean нет): сверщик принял ", (к строке (tally.«outside accepted»)), ", отверг ", (к строке (tally.«outside refused»))] по "")]
+  пусть rules равно (если пусто (tally.«outside rules») то (пустой список) иначе [(соединить ["    правила: ", («Sorted rules» от («Output of» от "sorted rules" и answers))] по "")])
+  запись «Section» с «lines» равным («Соединить списки» от head и («Соединить списки» от rules и (добавить (соединить ["  расхождений: ", (к строке (длина (tally.«disagreements»)))] по "") к (tally.«disagreements»)))) и «bad» равным (не (пусто (tally.«disagreements»))) и «fatal» равным нет
+
+тотальная функция «Named back»
+  принимает entry: список строки, answers: список «Answer»
+  возвращает признак
+  пример «Nothing said names nothing»
+    дано entry равно ["1", "/w/a", "Н1", "Т1"]
+    дано answers равно пустой список
+    ожидается нет
+  пусть said равно («Output of» от (соединить ["spoiled ", («Cell» от 1 и entry)] по "") и answers)
+  (said содержит (соединить ["утверждение «", («Cell» от 3 и entry), "», вывод:"] по "")) или (said содержит (соединить ["утверждение «", («Cell» от 4 и entry), "», вывод:"] по ""))
+
+тотальная функция «Control section»
+  принимает answers: список «Answer»
+  возвращает «Section»
+  пример «Nothing to spoil is said»
+    дано answers равно пустой список
+    ожидается запись «Section» с «lines» равным ["  контроль молчания — не на чем: блоков, принятых обоими в отвергнутых записях, нет"] и «bad» равным нет и «fatal» равным нет
+  пусть entries равно (отобразить («Numbered» от (отобразить («Silent rows» от answers) как row → соединить [(«Cell» от 1 и row), "\t", («Cell» от 2 и row), "\t", («Cell» от 3 и row)] по "")) как entry → приписать («Cell» от 1 и entry) к (разделить («Cell» от 2 и entry) по "\t"))
+  пусть tried равно (длина entries)
+  пусть named равно (длина (отфильтровать entries где entry → «Named back» от entry и answers))
+  «Chosen» от [(«When» от (tried равен 0) и (запись «Section» с «lines» равным ["  контроль молчания — не на чем: блоков, принятых обоими в отвергнутых записях, нет"] и «bad» равным нет и «fatal» равным нет)),
+    («When» от (named равен tried) и (запись «Section» с «lines» равным [(соединить ["  контроль молчания — испорчен молчавший блок в ", (к строке tried), " отвергнутых записях, сверщик назвал его ", (к строке named), " из ", (к строке tried)] по "")] и «bad» равным нет и «fatal» равным нет))] и (запись «Section» с «lines» равным [(соединить ["  контроль молчания — испорчен молчавший блок в ", (к строке tried), " записях, сверщик назвал его лишь ", (к строке named), " раз"] по "")] и «bad» равным да и «fatal» равным нет)
+
+тотальная функция «Reported»
+  принимает report: «Report», part: «Section»
+  возвращает «Report»
+  пример «A fatal section stops the report»
+    дано report равно запись «Report» с «lines» равным ["а"] и «bad» равным нет и «stopped» равным нет
+    дано part равно запись «Section» с «lines» равным ["б"] и «bad» равным да и «fatal» равным да
+    ожидается запись «Report» с «lines» равным ["а", "б"] и «bad» равным да и «stopped» равным да
+  если report.«stopped» то report иначе (запись «Report» с «lines» равным («Соединить списки» от (report.«lines») и (part.«lines»)) и «bad» равным ((report.«bad») или (part.«bad»)) и «stopped» равным (part.«fatal»))
+
+тотальная функция «Ending»
+  принимает report: «Report»
+  возвращает «Продолжение»
+  пример «A clean report ends the work»
+    дано report равно запись «Report» с «lines» равным ["а"] и «bad» равным нет и «stopped» равным нет
+    ожидается вариант «Конец работы» с значение равным "а\n\nсошлось всё"
+  пример «A stopped report fails as it stands»
+    дано report равно запись «Report» с «lines» равным ["а"] и «bad» равным да и «stopped» равным да
+    ожидается вариант «Провал» с код равным "FLANG_LEAN_CHECK" и сообщение равным "а"
+  «Chosen» от [(«When» от (report.«stopped») и (вариант «Провал» с код равным "FLANG_LEAN_CHECK" и сообщение равным (соединить (report.«lines») по "\n"))),
+    («When» от (report.«bad») и (вариант «Провал» с код равным "FLANG_LEAN_CHECK" и сообщение равным (соединить («Соединить списки» от (report.«lines») и ["", "НЕ СОШЛОСЬ"]) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Соединить списки» от (report.«lines») и ["", "сошлось всё"]) по "\n"))
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Nothing built stops at the first module»
+    дано answers равно пустой список
+    ожидается вариант «Провал» с код равным "FLANG_LEAN_CHECK" и сообщение равным "Lean: \n\nModel.lean НЕ СОБРАЛСЯ:"
+  «Ending» от (свёртка [(«Build section» от answers), («Axioms section» от answers), («Trap section» от answers), («Lemma section» от answers), («Probe section» от answers), («Verdict section» от answers), («Control section» от answers)] начиная с (запись «Report» с «lines» равным пустой список и «bad» равным нет и «stopped» равным нет) как report и part → «Reported» от report и part)
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «Lean that is not there stops the run»
+    дано asked равно "found"
+    дано answers равно [запись «Answer» с «name» равным "found" и «reply» равным (вариант «Процесс завершён» с код равным 127 и вывод равным "" и ошибки равным "")]
+    ожидается ["Lean не найден: ни в переменной LEAN, ни в PATH.\nНИЧЕГО НЕ ПРОВЕРЕНО. Поставить: elan toolchain install stable."]
+  пример «An answered question is no obstacle»
+    дано asked равно "lean"
+    дано answers равно пустой список
+    ожидается пустой список
+  «Chosen» от [(«When» от ((asked равен "found") и притом (не ((«Exit code of» от asked и answers) равен 0))) и ["Lean не найден: ни в переменной LEAN, ни в PATH.\nНИЧЕГО НЕ ПРОВЕРЕНО. Поставить: elan toolchain install stable."]),
+    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и ["временный каталог не заведён"])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Провал» с код равным "FLANG_LEAN_CHECK" и сообщение равным "Lean: \n\nModel.lean НЕ СОБРАЛСЯ:"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Nine stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 9 и «answers» равным пустой список
+  «Begin with» от 9
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks which Lean to run»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 9 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "LEAN") и потом равным (запись «Inquiry» с «asked» равным "lean" и «queue» равным [запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP"), запись «Question» с «name» равным "compiler" и «order» равным (вариант «Прочитать переменную среды» с имя равным "CC"), запись «Question» с «name» равным "binary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN"), запись «Question» с «name» равным "table" и «order» равным (вариант «Прочитать файл» с путь равным "../tables/inference-rules.tsv"), запись «Question» с «name» равным "trap" и «order» равным (вариант «Прочитать файл» с путь равным "Trap.lean"), запись «Question» с «name» равным "rules" и «order» равным (вариант «Прочитать файл» с путь равным "Rules.lean"), запись «Question» с «name» равным "term" и «order» равным (вариант «Прочитать файл» с путь равным "Term.lean")] и «stages» равным 8 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_LEAN_CHECK_NOT_MEASURED" и сообщение равным голова
+    случай пусто
+      то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Lean check»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

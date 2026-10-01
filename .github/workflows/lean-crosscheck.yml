@@ -62,5 +62,8 @@ jobs:
       - name: Build proof checker
         run: make -C flang/proof/checker
 
+      - name: Build flang
+        run: make -C bootstrap -j4
+
       - name: Run Lean crosscheck
-        run: sh flang/proof/lean/run.sh
+        run: bootstrap/flang io flang/proof/lean/run.fscript --max-steps 4000000000 --timeout 900000

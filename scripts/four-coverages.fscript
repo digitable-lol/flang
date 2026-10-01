@@ -229,7 +229,7 @@
   [(соединить ["   в приёмке Lean (Acceptance.lean) ", (к строке (длина («Accepted» от answers))), " правил из ", (к строке (длина («Inference rules» от answers))), " правил вывода"] по ""),
    (соединить ["   ВНЕ приёмки Lean              ", (к строке (длина outside)), ": ", (соединить (отобразить outside как title → соединить [title, " "] по "") по "")] по ""),
    "   блоков записи, ушедших «вне приёмки», — НЕ СНЯТО ЗДЕСЬ: нужен прогон Lean",
-   "                                 (sh flang/proof/lean/run.sh, Lean по flang/proof/lean/lean-toolchain)"]
+   "                                 (flang/proof/lean/run.fscript, Lean по flang/proof/lean/lean-toolchain)"]
 
 тотальная функция «Formalization section»
   принимает answers: список «Answer»

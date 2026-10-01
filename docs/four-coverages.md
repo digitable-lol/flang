@@ -61,7 +61,7 @@ bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 90000
 
 Файлов Lean в дереве 9.
 <!-- СНЯТО 2026-09-19 файлов flang/proof/lean/*.lean = 9 -->
-Снимается целиком: `sh flang/proof/lean/run.sh` (нужен Lean в PATH, версия — в
+Снимается целиком: `bootstrap/flang io flang/proof/lean/run.fscript --max-steps 4000000000 --timeout 900000` (нужен Lean в PATH, версия — в
 `flang/proof/lean/lean-toolchain`). Первый из двух вопросов прибор четырёх покрытий считает и без
 Lean: это счёт текста, а не доказательство.
 

@@ -1,45 +1,70 @@
 # Language reference
 
-This page answers one question: **how is it written**. For every construction —
-the form, a working example, what it gives you and where its edge is.
+This page answers one question: **how is it written**. For every construct you
+get its usual name, the syntax, a working example, what the compiler checks and
+where its limits are.
 
-Neighbouring pages answer other questions:
+Other pages answer other questions:
 
 | Question | Page |
 | --- | --- |
 | what does this word mean | [Glossary](../glossary.html) — in Russian |
+| I have a task — which construct do I use | [Which construct to use when](which-construct.html) |
 | I have a list and need a sum without duplicates — what do I write | [Operations](operations.html) |
 | show me from zero, step by step | [Tutorial](tutorial.html) |
 | what does "proved" mean, and how does it differ from "checked" | [Why and how](proofs.html) |
 | the full language contract | [Language specification](../spec.html) — in Russian |
 
+## Glossary: flang words and the usual terms
+
+| In flang | Usual name | Closest analogue |
+| --- | --- | --- |
+| `тип` with `вариант`s | enum with data, tagged union | `enum` in Rust, union in TypeScript |
+| `разбор … случай` | pattern matching | `match` in Rust and Python |
+| `если … то … иначе` | if as an expression | the ternary operator |
+| `пусть` | constant | `const` |
+| `отобразить`, `отфильтровать`, `свёртка` | map, filter, reduce | the same in JavaScript and Python |
+| `объект` and `запись` | a struct with fields and its value | dataclass, interface |
+| `пример` | a unit test inside the function | doctest |
+| `требует` | precondition: what must hold on input | an assert at the top of a function |
+| `обеспечивает` | postcondition: what the function guarantees on output | an assert at the end, but checked for all inputs |
+| `тотальная функция` | a function the compiler has proved to always terminate | — |
+| `теорема` | a proof you write yourself | — |
+| `план` | side effects: the function returns a command ("read the file"), the runtime executes it and calls the function again with the response | reducer, state machine |
+
+The **prover** is the part of the compiler that proves `обеспечивает` for all
+possible inputs, not only for your examples. In the compiler output it is called
+«ядро» (kernel), and an `обеспечивает` line is called «постусловие»
+(postcondition).
+
 ## How to read the examples
 
-Most examples below are whole programs, and every such one was checked with:
+Most examples below are whole programs, and each of them passes:
 
 ```bash
 flang check file.flang
 ```
 
-Where that is not so it is said. Three snippets are given without a `module`
-line because they show one form of writing, not a program. And the examples of
-the categorical surface, of monads and of processes answer with **exit code 2**,
-not 0: parsing, types, termination and their own examples pass, while the rules
-of those declarations are not judged by the binary compiler, which says so in
-words.
+Where that is not so, the text says it. Snippets without a `module` line show one
+form, not a program. The examples of categories, monads and
+processes exit with **code 2**, not 0: parsing, types, termination and examples
+pass, but the binary compiler does not check the rules of those declarations,
+and it says so in its output.
 
-The blocks without highlighting are what the compiler **prints**: refusals and
-reports. They come out in Russian on every surface. The word at the start of the
-line (`FLANG_TYPE`, `FLANG_PROOF_STEP`) is the refusal code.
+Blocks without highlighting are what the compiler **prints**: errors and
+reports. The compiler prints in Russian whatever language the file is written
+in. The word at the start of a line (`FLANG_TYPE`, `FLANG_PROOF_STEP`) is the
+error code; every code is explained in the [Diagnostics reference](diagnostics.html).
 
-Everything is written on two surfaces out of four: English and Russian. These
-are the same word of the language, not a translation, and both parse to one
-tree. The table holds {{словарь.понятий}} concepts; the full list with all four
-spellings is the [Glossary](../glossary.html), and how surfaces work is
+Every keyword has an English and a Russian spelling (there are four spellings in
+all, called surfaces). They are the same keyword, not a translation: both parse
+to the same tree, and one file may use either. There are {{словарь.понятий}}
+concepts; the full list with all four spellings is the
+[Glossary](../glossary.html), and how the spellings work is
 [Four writing surfaces](../surfaces.html) — both in Russian.
 
-Names — of modules, functions, types, examples, claims — are written in
-guillemets `«…»` on every surface.
+Names — of modules, functions, types, examples, postconditions — are written in
+guillemets `«…»`, in either spelling of the keywords.
 
 ### What can be typed more than one way
 
@@ -83,28 +108,33 @@ total function «Total»
   «Сумма» of («Уникальные» of items)
 ```
 
-**Take `only` with care, and here is why.** The word decides not what the
-importer sees but **what reaches the assembled program at all**: whatever is not
-on the list is not in the program. An imported function may have claims of its
-own that call its neighbours. Replace the third line above with `uses «Lists»
-only «Сумма», «Уникальные»` and the check refuses:
+**Avoid `only` unless you need it.** It does not just hide names: whatever is
+not on the list is **left out of the program**. But the functions you import
+call other functions of their module, in their bodies and in their
+postconditions. Replace the third line above with `uses «Lists» only «Сумма»,
+«Уникальные»` and the check fails:
 
 ```
+модуль «Report»: функций 3, из них с доказанным завершением 0; типов 0; файлов вместе с импортами 2
+без доказанного завершения: «Сумма» «Уникальные» «Total»
+место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 2, а диагностика компилятора имени файла не несёт
 FLANG_UNKNOWN_NAME, строка 460, столбец 47: неизвестная функция «Шаг суммы»
 FLANG_UNKNOWN_NAME, строка 453, столбец 74: неизвестная функция «Все не меньше»
 FLANG_UNKNOWN_NAME, строка 453, столбец 130: неизвестная функция «Максимум»
+FLANG_UNKNOWN_NAME, строка 564, столбец 59: неизвестная функция «Шаг уникальных»
+FLANG_NOT_TOTAL, строка 460, столбец 47: тотальная функция «Сумма» вызывает неизвестную функцию «Шаг суммы»: завершение доказать нельзя
+FLANG_NOT_TOTAL, строка 564, столбец 59: тотальная функция «Уникальные» вызывает неизвестную функцию «Шаг уникальных»: завершение доказать нельзя
+only.flang: не проверено — замечаний 6
 ```
 
-(Compiler diagnostics are printed in Russian whatever surface the file is
-written on. `неизвестная функция` — unknown function.)
+`неизвестная функция` means "unknown function". The line numbers point into
+`flang/stdlib/lists.flang`: line 453 is the postcondition of `«Сумма»` ("the sum
+of non-negative numbers is at least the largest of them"), which calls
+`«Все не меньше»` and `«Максимум»`; line 460 is the body of `«Сумма»`, which calls
+`«Шаг суммы»`; line 564 is the body of `«Уникальные»`. `only` left all of them
+out. The same file with a plain `uses «Lists»` passes with exit code 0.
 
-Line 453 is the postcondition of `«Сумма»` itself in `lists.flang`: "the sum of
-non-negative numbers is at least the largest of them". It calls `«Все не меньше»`
-and `«Максимум»`, and line 460 is the body of `«Сумма»`, which calls `«Шаг суммы»`;
-`only` did not let them in (run of 11 September 2026, binary 0.7.17, commit 2c40752d0). The same file with a plain
-`uses «Lists»` passes with exit code 0.
-
-There is no path in the line: **a module is found by name**. The name is what
+There is no path in `uses`: **a module is found by name**. The name is what
 stands on the first line of the file in `module «Lists»`; the file name and its
 directory play no part, and a module moved to another directory keeps being
 found.
@@ -116,33 +146,33 @@ The search covers three places, in this order:
    `.flang` file;
 3. the library shipped with the compiler.
 
-The search does not descend: a module lying off that road is found only if you
-name the place in `FLANG_MODULE_DIR` (directories separated by colons) — or name
-the file directly, with `uses «Module» from "path"`. The path is read from the
-file, not from the root, and works for a package too: `from "name.flang-package"`.
+The search does not go into subdirectories. For a module elsewhere, list its
+directory in `FLANG_MODULE_DIR` (directories separated by colons), or name the
+file directly with `uses «Module» from "path"`. The path is relative to the
+importing file, and it works for a package too: `from "name.flang-package"`.
 
-One name on two found modules is a refusal listing both paths, not a silent pick
-of the first.
+If two modules with the same name are found, the check fails and lists both
+paths; the compiler never picks one silently.
 
-Edge: module names are not translated. The library's list module is called
-`«Lists»` (first line of `flang/stdlib/lists.flang`), and it is imported under
-that name from a file written in Russian words too; `uses «Списки»` answers
-`FLANG_IMPORT_NOT_FOUND` (run of 11 September 2026, binary 0.7.17, commit 2c40752d0).
+Limit: module names are not translated. The standard list module is called
+`«Lists»` (first line of `flang/stdlib/lists.flang`), and a file written in
+Russian keywords imports it under that name too. `uses «Списки»` fails with
+`FLANG_IMPORT_NOT_FOUND`.
 
 ## Function
 
-The order of the parts is fixed. The body comes last, in one form.
+The parts go in a fixed order. The body comes last and is one expression.
 
 | Part | Required | What it means |
 | --- | --- | --- |
-| `total` | no | a promise to terminate on every input; it is checked |
+| `total` | no | the function always terminates; the compiler proves it |
 | `function «Name»` | yes | the declaration |
 | `accepts name: type, name: type` | no | parameters; types are required |
 | `returns type` | yes | the result type |
-| `requires «name» condition` | no | precondition; discharged by the **caller** |
-| `decreases expression` | no | a declared decreasing measure |
+| `requires «name» condition` | no | precondition; the **caller** must make it true |
+| `decreases expression` | no | a termination measure: a number that goes down on every recursive call |
 | `for all p ensures «name» condition` | no | postcondition about `result` |
-| `example «name»` / `given` / `expected` | no | an executable example |
+| `example «name»` / `given` / `expected` | no | a unit test: arguments and the expected result |
 
 ```flang
 module «Signature»
@@ -159,36 +189,35 @@ total function «Share»
   part divided by whole
 ```
 
-A call is `«Name» of argument and argument`. The word `and` separates arguments;
-conjunction is written with the compound `and also`, so the two never collide.
+A call is `«Name» of argument and argument`. The word `and` separates
+arguments; logical AND is written `and also`, so the two never clash.
 
-Edges:
+Limits:
 
-- in emitted code `requires` sits only on the boundary of the program — where a
-  value arrives from outside. Internal calls do not pay for it;
-- `ensures` cannot be written without a name: the name is how the claim is found
-  in the `flang check --proof` report and how a theorem refers to it;
-- examples run on **every** check. If one does not hold: `FLANG_EXAMPLE`, and
-  the compiler refuses to emit the program.
+- in generated code `requires` is checked only at the boundary of the program,
+  where a value comes from outside. Internal calls do not pay for the check;
+- `ensures` must have a name: the `flang check --proof` report shows the result
+  under that name, and a theorem refers to it by that name;
+- examples run on **every** check. A failing example is the error
+  `FLANG_EXAMPLE`, and the compiler does not generate code for the program.
 
 ## Totality and measures
 
-`total` is carried by one of five means. The first three cost nothing at run
-time; the last two put a check into the emitted code. Which one carried which
-function is in the `flang check --proof` report; the counts across the tree are
-on [Why and how](proofs.html).
+The compiler proves termination of a `total` function in one of five ways. The
+first three cost nothing at run time; the last two add a check to the generated
+code. Which way was used for which function is in the `flang check --proof`
+report; the counts across the repository are on [Why and how](proofs.html).
 
-| Means | When it applies |
+| Way | When it applies |
 | --- | --- |
 | by composition | no recursion at all |
-| by structure | `match` walks a part of the value |
+| by structure | `match` recurses on a part of the value |
 | by exact step | a `nat` parameter descending by a constant |
 | by constant step | the same on `number`, with a run-time check |
 | by declared measure | `decreases`, with a run-time check |
 
-`decreases` sits between `returns` and the body and must be a number. It is
-written where the decrease lives in the arithmetic rather than in the shape of
-the call:
+`decreases` goes between `returns` and the body and must be a number. Write it
+when the recursion goes down by arithmetic, not by taking a part of the value:
 
 ```flang
 module «Measure»
@@ -206,16 +235,15 @@ total function «GCD»
     else «GCD» of b and (a modulo b)
 ```
 
-Edge: the measure must be integral and non-negative, and that is checked on
-every turn. `«GCD»` of integers always works; `«GCD»` of a real pair refuses
-with `FLANG_MEASURE` — their chain of remainders decreases strictly and never
-ends.
+Limit: the measure must be a non-negative integer, and this is checked on every
+call. `«GCD»` of integers always works; `«GCD»` of two fractions stops with
+`FLANG_MEASURE`, because a chain of fractional remainders can go down forever.
 
 ## The body: four forms
 
-Branching, matching a sum, folding, binding. There are no loops.
+`match`, `fold`, `if` and `let`. There are no loops.
 
-### `match` — over a sum type
+### `match` — pattern matching over an enum
 
 ```flang
 module «Tree»
@@ -237,15 +265,17 @@ total function «Nodes»
       then 1 plus («Nodes» of l) plus («Nodes» of r)
 ```
 
-Patterns: `case Name` — a variant without fields; `case variant Name with field
-as name` — with field bindings; `case empty` and `case head and tail` — a list
-or a string; `case any` — everything else.
+A type with variants is an enum with data (a tagged union). Patterns:
+`case Name` — a variant without fields; `case variant Name with field as name` —
+a variant with its fields bound to names; `case empty` and `case head and tail`
+— a list or a string; `case any` — everything else.
 
-What it gives: exhaustiveness is computed by the type checker — a missing
-variant is a refusal, not silence. Recursion over a part of the value is total
-by construction. Induction in a theorem attaches **only** to this form.
+What the compiler checks: every variant is handled; a missing variant is the
+error `FLANG_MATCH_NOT_EXHAUSTIVE`. Recursion on a part of the value is proved
+to terminate without a measure. Induction in a theorem works **only** over this
+form.
 
-### `fold` — one pass over a list
+### `fold` — reduce: one pass over a list
 
 ```flang
 module «Fold»
@@ -259,12 +289,12 @@ total function «Product»
   fold items starting with 1 as acc and x → acc times x
 ```
 
-What it gives: totality by construction — the list is finite, the pass is one.
+Termination is free: the list is finite and the pass is one.
 
-Edge: the accumulator type is not refined. A `nat` in the accumulator stays
+Limit: the accumulator type is not refined. A `nat` in the accumulator stays
 `number`.
 
-### `if` — branching
+### `if` — if as an expression
 
 ```flang
 module «Branching»
@@ -283,11 +313,27 @@ total function «Sum up to»
     else n plus («Sum up to» of (n minus 1))
 ```
 
-Edge: both branches are required, and the condition must be a boolean. The
-condition narrows **numeric bounds** inside its branch, but it does not become a
-fact for the proof kernel.
+Limits: both branches are required, and the condition must be a boolean. The
+condition narrows **numeric bounds** inside its branch, but the prover does not
+use it as a fact. This postcondition is not proved: `check --proof` says
+«объявлено, не доказано» (declared, not proved) and exits 3:
 
-### `let` — binding a name
+```flang
+модуль «Если»
+
+тотальная функция «Положительное»
+  принимает н: число
+  возвращает число
+  для всех н обеспечивает «больше нуля» результат больше 0
+  если н больше 0
+    то н
+    иначе 1
+```
+
+To branch on the kind of a value, use `match`; why, and how it differs for
+proofs, is on [Which construct to use when](which-construct.html).
+
+### `let` — a constant
 
 ```flang
 module «Binding»
@@ -307,9 +353,9 @@ total function «Line cost»
   net plus tax
 ```
 
-Edge: it binds once. This is not a variable; there is no second assignment. The
+Limit: `let` binds once. It is not a variable; there is no reassignment. The
 name is one word or is written in guillemets: `let net amount equals …` does not
-parse — a multi-word name is written `let «net amount» equals …`.
+parse — write a multi-word name as `let «net amount» equals …`.
 
 ## Types
 
@@ -329,10 +375,10 @@ parse — a multi-word name is written `let «net amount» equals …`.
 Nesting: `nat` ≤ `integer` ≤ `number` and `nat` ≤ `weight` ≤ `number`. A value
 flows into a declared position, never back out.
 
-What declaring an exact type gives: bounds and integrality for the proof kernel,
-a floor and a ceiling for the termination analysis. `number` gives nothing.
+Why declare an exact type: the prover gets bounds and integrality from it, and
+the termination check gets a lower and an upper bound. `number` gives nothing.
 
-Edge: `divided by` leaves the exact type — the result becomes `number`. There is
+Limit: `divided by` leaves the exact type — the result becomes `number`. There is
 no rounding in the language, neither explicit nor silent. Each type in full:
 [Language specification](../spec.html), section "Types" (in Russian).
 
@@ -345,7 +391,7 @@ no rounding in the language, neither explicit nor silent. Each type in full:
 | money: units and cents | `hundredths` | an integer count of minor units; `19.99` is written `1999` |
 | rates, shares, exchange rates | `thousandths` | the same with three decimal places |
 | weight, distance, path cost | `weight` | non-negative, where `+∞` is a value rather than an edge |
-| everything else, and any division | `number` | IEEE-754 double, no promises |
+| everything else, and any division | `number` | IEEE-754 double, no guarantees |
 
 ```flang
 module «Exact types»
@@ -370,16 +416,16 @@ total function «Share»
   part divided by whole
 ```
 
-Edge: **arithmetic does not inherit exactness.** Add two `nat` values, declare
-the return as `nat`, and you get a refusal:
+Limit: **arithmetic does not keep the exact type.** Add two `nat` values,
+declare the return as `nat`, and the check fails:
 
 ```
-FLANG_TYPE, строка 6, столбец 5: функция «Sum of nats» объявлена как неотрицательное, а тело даёт число
+FLANG_TYPE в файле nats.flang, строка 6, столбец 5: функция «Sum of nats» объявлена как неотрицательное, а тело даёт число
 ```
 
-An exact type belongs on **inputs and record fields** — where the proof kernel
-takes bounds and integrality from it, and the termination analysis takes a floor.
-Declare the return as `number` when the body computes with arithmetic.
+Put exact types on **parameters and record fields**: that is where the prover
+and the termination check use them. Declare the return as `number` when the
+body does arithmetic.
 
 ### List
 
@@ -389,7 +435,7 @@ Declare the return as `number` when the body computes with arithmetic.
 `list of` is the same thing in other words: `list of number` in type position
 and `list of 1 and 2 and 3` in value position.
 
-### Record
+### Record (struct)
 
 ```flang
 object «Line»
@@ -402,10 +448,10 @@ A field is written `name is type` or `«name»: type`. `may be` means the field
 can be absent. A record is built with `record «Line» with title equal to "bolt"
 and price equal to 30` and read with a dot: `entry.price`.
 
-Edge: records are invariant. There is no field replacement — values are
-immutable, so a new record is built.
+Limit: record types are invariant. A field cannot be changed: values are
+immutable, so you build a new record.
 
-### Sum type
+### Type with variants (enum)
 
 ```flang
 type «Answer»
@@ -415,8 +461,8 @@ type «Answer»
 
 Built with `variant Ok with value equal to 30`, taken apart with `match`.
 
-What it gives: "found" and "not found" are different values of different
-variants, and matching over them is mandatory. `null` is not used for this.
+Use it for Optional and Result: "found" and "not found" are different
+variants, and the caller has to match on them. `null` is not used for this.
 
 All of it in one program:
 
@@ -450,7 +496,7 @@ total function «Check price»
 
 A field declared with `may be` does not have to be written in the examples.
 
-### Alias and parametric types
+### Alias and generic types
 
 ```flang
 тип «Invoice» это list «Line»
@@ -460,18 +506,19 @@ type «Maybe» of «A»
   variant «None»
 ```
 
-Parameters are introduced with `of` and applied with the same word. Arguments at
-the call site are inferred from the values — there is nowhere to write them.
+Type parameters (generics) are introduced with `of` and applied with the same
+word. At a call site they are inferred from the values; there is no syntax to
+write them.
 
-Edge: the alias word `это` has no English spelling. In a file written on the
-English surface it is written with the Russian word, as above.
+Limit: the alias word `это` has no English spelling. In a file written with
+English keywords it is written with the Russian word, as above.
 
 ### Function types
 
 `function from number and string to boolean` is the worded form; `number →
 number` is the arrow form. Both give one type.
 
-Edge: on the English surface the worded form `function from number to number`
+Limit: in English keywords the worded form `function from number to number`
 does not parse — `to number` is taken by the built-in string conversion. Use the
 arrow: `number → number`.
 
@@ -492,9 +539,9 @@ Precedence, from weakest to strongest:
 or  <  and also  <  not  <  comparisons  <  plus minus  <  times divided  <  of  .
 ```
 
-Edge: the comparisons are `is at least` and `is at most`. They do not assemble
-by analogy — `not less than` is not a phrase of the language. Take the spelling
-from the [glossary](../glossary.html).
+Limit: the comparisons are `is at least` and `is at most`. Other phrasings by
+analogy do not work — `not less than` is not a keyword. Take the spelling from
+the [glossary](../glossary.html).
 
 ## Built-in forms over lists and strings
 
@@ -505,8 +552,8 @@ from the [glossary](../glossary.html).
 | `item N in X` | the N-th element of a list |
 | `char N in X` | the N-th character of a string |
 | `add X to Y`, `prepend X to Y` | at the end and at the front of a list |
-| `map X as name → body` | a new list |
-| `filter X where name → condition` | selection |
+| `map X as name → body` | map: a new list |
+| `filter X where name → condition` | filter: the items that fit |
 | `substring X from A to B` | a slice of a string |
 | `split X by Y` | string → list of strings |
 | `join X by Y` | list of strings → string |
@@ -514,7 +561,7 @@ from the [glossary](../glossary.html).
 | `contains`, `begins with` | checks over a string |
 | `to number`, `to number or failure`, `to text` | conversions |
 | `character code X`, `decompose X into characters` | character by character |
-| `character by code N` | code point as a number → a one-character string; refuses on fractions, outside [0, 1114111], and on a lone surrogate |
+| `character by code N` | code point as a number → a one-character string; fails on fractions, outside [0, 1114111], and on a lone surrogate |
 
 ```flang
 module «Built-in forms»
@@ -536,7 +583,7 @@ total function «Word lengths»
   map words as word → length word
 ```
 
-The prepositions are fixed, and they differ from form to form:
+Each form has its own fixed prepositions:
 
 ```flang
 module «Strings»
@@ -574,9 +621,9 @@ total function «Initial»
   char 1 in text
 ```
 
-Edge: indexing starts at one and is inclusive. An index outside the list stops
-the computation with a refusal. Everything not in this list is a library
-function; which task is solved by which one is on [Operations](operations.html).
+Limit: indexes start at one, and ranges include both ends. An index outside the
+list stops the computation with an error. Everything else is a library
+function; which one solves which task is on [Operations](operations.html).
 
 ## Functions as values
 
@@ -618,35 +665,34 @@ total function «Trial with capture»
 | `f of 5` | applying a value |
 | `number → number` | the type |
 
-**What replaces closures.** Capture is by name: `function «Add» with a equal to
-10` yields a one-argument function. The order of capture must follow the order
-of the declared parameters. There is no anonymous function value: only a
-declared function is taken as a value. A body written in place (`x → x plus 1`)
-is accepted by the built-in `map`, `filter` and `fold`, but such a body is part
-of the form, not a value, and cannot be passed anywhere.
+**Instead of closures: partial application by name.** `function «Add» with a
+equal to 10` gives a function of one argument. Captured parameters must come in
+the order they are declared. There are no lambdas as values: only a declared
+function can be a value. The built-in `map`, `filter` and `fold` accept a body in
+place (`x → x plus 1`), but that body is part of the form, not a value, and
+cannot be passed anywhere.
 
-Edge: you can only apply a function that the program takes somewhere with the
-form `function «Name»`. A function value arriving from outside and taken nowhere
-in the program is rejected with `FLANG_APPLY`. There is no separate compilation:
-function values are lowered across the whole program at once.
+Limit: you can apply only a function that the program somewhere takes with
+`function «Name»`. A function value that comes from outside and is not taken
+anywhere in the program is rejected with `FLANG_APPLY`. There is no separate
+compilation: function values are resolved over the whole program at once.
 
-## Claims about behaviour
+## Contracts and proofs
 
-Four words promise more about a function than its type does. They are checked in
-different ways, and the difference shows at once.
+These words say more about a function than its type does. Each is checked in its
+own way.
 
-| Word | Where it stands | Who answers for it | What checks it |
+| Word | Where it goes | Who must make it true | What checks it |
 | --- | --- | --- | --- |
-| `requires «name» condition` | after `returns`, before the body | **the caller** | a run-time check on the boundary of the program |
-| `for all p ensures «name» condition` | the same place, after `requires` | the function itself | the kernel at check time; if it fails, a check on every return |
+| `requires «name» condition` | after `returns`, before the body | **the caller** | a run-time check at the boundary of the program |
+| `for all p ensures «name» condition` | the same place, after `requires` | the function | the prover at check time; if not proved, a run-time check on every return |
 | `total` | before the word `function` | the compiler | at check time; see [Totality and measures](#totality-and-measures) |
-| `theorem «name»` | top level, next to the function | the author of the proof | the kernel at check time, step by step |
-| `утверждение «name»` | top level, with NO function | the author | the kernel at check time; reaches `--proof --json` |
+| `theorem «name»` | top level, next to the function | you | the prover at check time, step by step |
+| `утверждение «name»` | top level, with NO function | you | the prover at check time; included in `--proof --json` |
 
 ### `requires` — a precondition
 
-`requires «name» condition` — the condition under which calling the function is
-lawful.
+`requires «name» condition` — what must hold for a call to be valid.
 
 ```flang
 module «Precondition»
@@ -662,16 +708,16 @@ total function «Share»
   part divided by whole
 ```
 
-What it gives: inside the function the condition becomes an **assumption** — the
-one `by hypothesis` refers to in a theorem, even where there is no induction.
+Inside the function the condition is an **assumption**: a theorem can use it
+with `by hypothesis`, even without induction.
 
-Edge: the run-time check is emitted only on the boundary of the program — where
-a value arrives from outside. Internal calls do not pay for it.
+Limit: the run-time check is generated only at the boundary of the program,
+where a value comes from outside. Internal calls do not pay for it.
 
 ### `ensures` — a postcondition
 
-`for all p ensures «name» condition` — what holds of `result` on every input.
-The word `result` in the condition means the returned value.
+`for all p ensures «name» condition` — what holds for `result` on every input.
+`result` in the condition is the returned value.
 
 ```flang
 module «Postcondition»
@@ -686,19 +732,19 @@ total function «Double all»
   map items as x → x times 2
 ```
 
-What it gives: the kernel first tries to **prove** the condition. Proved — there
-is no check in the emitted code. Not proved — the condition is checked on every
-return, and a violation stops the computation. What closed and what did not is
-shown by `flang check --proof`.
+The prover first tries to **prove** the condition. If it is proved, the
+generated code has no check. If not, the condition is checked on every return,
+and a violation stops the computation. `flang check --proof` shows what is
+proved and what is not.
 
-Edge: the name is not optional — `ensures` without a name does not parse. A
-theorem refers to the claim by that name, and so does `by property` from someone
-else's proof.
+Limit: the name is required — `ensures` without a name does not parse. A theorem
+refers to the postcondition by that name, and so does `by property` in another
+proof.
 
-### `для всех … из …:` — a quantifier over the elements of a list
+### `для всех … из …:` — a property of every element of a list
 
-Speaking about every element of a list is done in the goal itself. A colon
-separates the body.
+To say something about every element of a list, write the quantifier in the
+postcondition itself. A colon separates its body.
 
 ```flang
 модуль «Все элементы после отбора»
@@ -713,32 +759,31 @@ separates the body.
   отфильтровать элементы где э → э больше 0
 ```
 
-What it gives: the kernel proves such a goal from the SHAPE of the list the body
-builds, not by running it. Four shapes are taken: the empty list;
+The prover proves such a postcondition from the SHAPE of the list the body
+builds, not by running it. It accepts four shapes: the empty list;
 `отфильтровать Л где х → У`, where `У` is the property being proved;
 `добавить Х к Л` and `приписать Х к Л`, where the property holds of `Х` and of
 `Л`; and `если У то А иначе Б`, where it holds in both branches. A list written
-out element by element, a `отобразить`, and a call to another function are not
-taken — there is no rule for them.
+out element by element, `отобразить` (map) and a call to another function are
+not accepted — the prover has no rule for them.
 
-The body after the colon is a goal again, so quantifiers nest:
+The body after the colon is a condition again, so quantifiers nest:
 
 ```flang
   обеспечивает «каждый с каждым положителен» для всех х из результат: для всех м из результат: м больше 0
 ```
 
-The value that makes it true may be named inside:
-`есть такой м, а именно х, что …`. The author writes that value — the kernel
-does not search for one and will not.
+For "there exists", name the value yourself:
+`есть такой м, а именно х, что …`. The prover does not search for it.
 
-Edge: the colon cuts the goal at the FIRST top level, and everything to the right
-of it goes into the body whole. The quantifier of a goal and the induction
-variable (`для всех н обеспечивает …`) are different things, and the kernel does
-not confuse them.
+Limit: the first top-level colon ends the quantifier, and everything to the
+right of it is the body. The quantifier inside the condition and the variable in
+`для всех н обеспечивает …` are different things, and the prover keeps them
+apart.
 
 ### `theorem`
 
-Written when a postcondition is not enough: the kernel did not close it by itself.
+Write a theorem when the prover could not prove a postcondition on its own.
 
 ```flang
 module «Theorem»
@@ -767,16 +812,15 @@ theorem «sum up to is non-negative»
 
 | Line | What it does |
 | --- | --- |
-| `theorem «name»` | the name matches the postcondition's name |
-| `given name: type` | the variables of the claim |
+| `theorem «name»` | the same name as the postcondition it proves |
+| `given name: type` | the variables |
 | `claim condition` | what is being proved |
-| `induction on name decreases measure` | the induction principle and its measure; `decreases` is needed only where a number goes down, not a part of a value |
-| `case …` / `then justification` | a step |
-| `next claim by justification` | an intermediate fact: prove it and later steps may lean on it |
+| `induction on name decreases measure` | proof by induction; `decreases` is needed only when a number goes down, not a part of a value |
+| `case …` / `then justification` | one step |
+| `next claim by justification` | an intermediate fact; later steps can use it |
 | `therefore proved` | the end |
 
-There may be no induction at all — a short theorem fits into a single line of
-justification:
+A theorem does not need induction; a short one is a single justification:
 
 ```flang
 module «Property»
@@ -800,14 +844,14 @@ theorem «through doubling the length is the same»
   therefore proved
 ```
 
-Edge: a theorem is not always needed — write the postcondition first and see
-whether the kernel closes it on its own. Induction attaches to a `match` over a
-declared sum — including a sum you declared yourself, see below — and to a
-descent along a number.
+Limit: often no theorem is needed — write the postcondition first and see
+whether the prover proves it on its own. Induction works over a `match` on a
+type with variants, including your own type (see below), and over a number that
+goes down.
 
-### `утверждение` — a claim outside a function
+### `утверждение` — a property outside a function
 
-A claim may stand on its own, with no function beside it.
+A property can stand on its own, without a function.
 
 ```flang
 модуль «Свободные утверждения»
@@ -820,20 +864,19 @@ A claim may stand on its own, with no function beside it.
   утверждаем (н плюс 0) равен н
 ```
 
-What it gives: the kernel judges such a claim exactly as it judges a
-postcondition, and it reaches the machine report `flang check --proof --json` and
-the proved-share report. The line `для всех имя: тип таких что условие`
-introduces the variables and the premise; that premise is not decoration —
+The prover checks it exactly like a postcondition, and it appears in
+`flang check --proof --json`. The line `для всех имя: тип таких что условие`
+gives the variables and an assumption. The assumption matters here:
 `неотрицательное` admits minus zero at run time, and without `н больше 0` the
-second claim is false.
+second property is false.
 
-Edge: a claim may also be closed by a theorem of the same name, written next to
-it in the usual way.
+A property can also be proved by a theorem with the same name, written next to
+it.
 
 ### Induction over a type you declared yourself
 
-`индукция по` is not limited to the built-in types: a sum you declared works the
-same way, because the principle is read off its declaration.
+`индукция по` (induction on) works for your own types with variants as well as
+for the built-in ones: the induction principle comes from the type declaration.
 
 ```flang
 модуль «Своё натуральное»
@@ -864,83 +907,81 @@ same way, because the principle is read off its declaration.
   следовательно доказано
 ```
 
-The report says so in words: «доказано индукцией по «Нат»». No `убывает` is
-needed here: what goes down is a part of the value, not a number.
+The report says «доказано индукцией по «Нат»» (proved by induction on «Нат»).
+No `убывает` is needed: what goes down is a part of the value, not a number.
 
 ### Justifications for a step
 
-A step without a justification is rejected by the parser. There are four, and
-each works in its own place.
+Every step needs a justification, or it does not parse. There are four.
 
-| Justification | Works when |
+| Justification | Use it when |
 | --- | --- |
-| `by property «name»` | the conclusion of the step holds a **call** to a function that has a postcondition of that name |
-| `by hypothesis` | there is an assumption: an induction hypothesis (`induction on`) or a precondition of the function (`requires`) |
-| `by example «name»` | the case holds **one** value, that is, a pattern with no bound names, and the function has an example of that name |
-| `under law «name»` | the law is declared: by a monoid, a monad or an isomorphism of this module |
+| `by property «name»` | the step contains a **call** to a function that has a postcondition with that name |
+| `by hypothesis` | there is an assumption: the induction hypothesis (`induction on`) or the function's precondition (`requires`) |
+| `by example «name»` | the case has **one** value (a pattern with no bound names), and the function has an example with that name |
+| `under law «name»` | the name is a monoid, monad or isomorphism declared in this module, or one of the inference rules the prover checks (see [A step that names its rule](#a-step-that-names-its-rule)) |
 
 ### `by property`
 
-A reference to **someone else's** postcondition. The kernel looks for calls to
-the named function in the conclusion and substitutes its postcondition:
-parameters for the arguments of that call, `result` for the call itself. There is
-nothing to search: the call itself names the substitution.
+Uses the postcondition of **another** function. The prover finds the calls to
+that function in the step and substitutes its postcondition: parameters become
+the arguments of the call, `result` becomes the call itself.
 
-The example is the theorem "through doubling the length is the same" above. A
-reference to **your own** postcondition is a circle, and the kernel says so:
+The example is the theorem "through doubling the length is the same" above.
+Referring to the postcondition you are proving is circular, and the check fails:
 
 ```
-FLANG_PROOF_STEP, строка 12, столбец 3: шаг 1, теорема «длина сохраняется»: «по свойству «длина сохраняется»» ссылается на то самое постусловие, которое сейчас доказывается — это круг. Часть значения обосновывает «по предположению», а не ссылка на саму цель
+FLANG_PROOF_STEP в файле circle.flang, строка 12, столбец 3: шаг 1, теорема «длина сохраняется»: «по свойству «длина сохраняется»» ссылается на то самое постусловие, которое сейчас доказывается — это круг. Часть значения обосновывает «по предположению», а не ссылка на саму цель. к этому месту не известно ничего, кроме гипотез «дано»
 ```
 
-Edge: a postcondition of that name must exist **on some function of the module**.
-If there is none, the refusal says there is nothing to refer to.
+Limit: some function of the module must have a postcondition with that name;
+otherwise the check fails and says there is nothing to refer to.
 
 ### `by hypothesis`
 
-Takes an assumption. There are two kinds and the word covers both: an induction
-hypothesis — the same claim about a smaller part of the value; and a precondition
-of the function — the `requires` line. Inside induction it is the `by hypothesis`
-of the "Sum up to" example.
+Uses an assumption. There are two kinds: the induction hypothesis (the same
+property for a smaller part of the value) and the function's precondition (the
+`requires` line). The "Sum up to" theorem above uses the induction hypothesis.
 
-With neither one, the refusal names exactly what was missing:
+Without either, the check fails and says what is missing:
 
 ```
-FLANG_PROOF_INDUCTION_STEP, строка 12, столбец 3: шаг 1, теорема «половина неотрицательна»: «по предположению» стоит вне индукции, а допущений у этой цели нет ни одного: ни посылки индукции (её даёт `индукция по`), ни предусловия функции (его даёт `требует`). Предполагать не о чем
+FLANG_PROOF_INDUCTION_STEP в файле hyp.flang, строка 12, столбец 3: шаг 1, теорема «половина неотрицательна»: «по предположению» стоит вне индукции, а допущений у этой цели нет ни одного: ни посылки индукции (её даёт `индукция по`), ни предусловия функции (его даёт `требует`). Предполагать не о чем. к этому месту не известно ничего, кроме гипотез «дано»
 ```
 
-Edge: a hypothesis has no name. There is one per case, and there is no way to
-refer to the hypothesis of another case.
+Limit: a hypothesis has no name. There is one per case, and you cannot use the
+hypothesis of another case.
 
 ### `by example`
 
-Closes a case by running an example. An example is **one** value, so it can close
-exactly the case that holds one value: `case 0`, `case Leaf`, `case empty` — a
-pattern **with no bound names**.
+Proves a case by running an example. An example is **one** value, so it proves
+only a case with one value: `case 0`, `case Leaf`, `case empty` — a pattern
+**with no bound names**.
 
-`case variant Node with left as l` is not closed by one example: it holds
-infinitely many values, and the example speaks of one. Such cases are closed by
-`by hypothesis`.
+`case variant Node with left as l` covers infinitely many values, and one
+example does not prove it. Use `by hypothesis` there.
 
-Edge: the example is looked up on the function whose postcondition is being
-proved, and by name. No example of that name — the refusal names both strings in
-guillemets.
+Limit: the example is looked up by name on the function whose postcondition is
+being proved. If there is no example with that name, the check fails and names
+both.
 
 ### `under law`
 
-A reference to a law declared in the module: a law of a monoid, a monad or an
-isomorphism. An undeclared law is not accepted — otherwise the line
-`under law «what never happens»` would close anything:
+Refers to a monoid, monad or isomorphism declared in the module, or to an
+inference rule by name. Any other name is rejected — otherwise
+`under law «what never happens»` would prove anything:
 
 ```
-закона «чего не бывает» в модуле нет: ни моноида, ни монады, ни изоморфизма с таким именем не объявлено — сослаться не на что
+FLANG_PROOF_STEP в файле law.flang, строка 12, столбец 3: теорема «то же»: шаг 1 (чего не бывает, без основания): правило «чего не бывает» ведомости ядро пока не проверяет; проверяет шесть: Н1, Н3, Н5, О1, О10, Разв2
 ```
 
-### A step named by hand
+The message says: the prover does not check a rule called «чего не бывает»; it
+checks six rules, Н1, Н3, Н5, О1, О10 and Разв2.
 
-A step may name the rule of the inference list it uses and the premises it
-rests on. The kernel then checks the naming instead of searching for a derivation
-itself.
+### A step that names its rule
+
+A step can name the inference rule it uses and the facts it rests on. The prover
+then checks that rule application instead of searching for a proof itself.
 
 ```flang
 теорема «результат не больше десяти»
@@ -954,21 +995,24 @@ itself.
   следовательно доказано
 ```
 
-`из строки N` is a line of the source the fact comes from (a precondition, the
-body); `из K` and `из K L` are the numbers of earlier steps of the same theorem.
-The rule names come from the file `flang/proof/tables/inference-rules.tsv`.
+`из строки N` is the source line the fact comes from (a precondition, the body);
+`из K` and `из K L` are the numbers of earlier steps of the same theorem. The
+rule names are listed in `flang/proof/tables/inference-rules.tsv`.
 
-What it gives: such steps used to be anonymous, and the independent checker
-counted them as taken on the kernel's word. A named step it replays.
+Why name the rule: the independent proof checker (`flang/proof/checker/checker.c`)
+re-checks a step that names its rule; a step without a name it has to take on the
+prover's word.
 
-Edge: the rule must be in that file; an invented name is a refusal.
+Limit: the prover checks six rules — Н1, Н3, Н5, О1, О10, Разв2; any other name
+is an error (see the output above).
 
-How much closes without a theorem, and by which rules: [Why and
-how](proofs.html) and [Kernel specification](../spec-proof.html) (in Russian).
+How much is proved without a theorem, and by which rules: [Why and
+how](proofs.html) and [Prover specification](../spec-proof.html) (in Russian).
 
-## The categorical surface
+## Categories: a pipeline declared as data
 
-Declaring a pipeline as data: objects, arrows between them, composition.
+Objects, arrows (morphisms) between them and their composition, declared rather
+than called.
 
 ```flang
 module «Order pipeline»
@@ -1014,7 +1058,7 @@ chain «process an order»
 | `object «X»` | a kind of data; fields as in a record |
 | `morphism «m» from «A» to «B»` | an arrow with declared ends |
 | `gives «F»` | the function the arrow is |
-| `law «name»` with examples | what the arrow promises, on values |
+| `law «name»` with examples | what the arrow guarantees, checked on example values |
 | `«b» after «a»` | composition; the right one runs first |
 | `chain` / `first` / `next` | the same composition in reading order |
 | `identity «X»` | the identity arrow of an object |
@@ -1023,62 +1067,57 @@ chain «process an order»
 | `functor` / `bifunctor` | a link between categories |
 | `monoid` / `carrier` / `operation` / `identity` / `inverse element` | a structure with its own laws |
 
-### What it gives a developer today
+### What the compiler checks and what it does not
 
-One thing it gives, three promised refusals it does not, and the two must not be
-confused. Measured by a run on 21 August 2026.
-
-**It gives: the laws of a category are computed.** If a category declares its own
-equality (`объект «Х» даёт «Х равны»`), the compiler computes over a finite grid
-of values that the equality is an equivalence, that composition respects it, and
-that composition is associative. The report states the grid size:
+**Checked: the laws of a category, on a finite set of values.** If a category
+declares its own equality (`объект «Х» даёт «Х равны»`), the compiler checks on a
+finite set of values that the equality is an equivalence, that composition
+respects it, and that composition is associative. The report gives the size of
+the set («сетка», grid):
 
 ```
-категория «Отгрузки»: сетка 5 значений на 3 объектах, троек стрелок 7,
-нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+категория «Отгрузки»: сетка 5 значений на 3 объектах, троек стрелок 7, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 ```
 
-A violation is a refusal with exit code 1 and the offending pair of values shown,
-and emitting such a program is cancelled: zero files. The same holds for a
-natural transformation — `FLANG_TRANSFORM_NOT_NATURAL`, with both paths and their
+It reads: 5 values on 3 objects, 7 triples of arrows, 0 violations — counted on
+these values, not proved. A violation fails the check with exit code 1 and shows
+the values that break the law, and no code is generated. The same holds for a
+natural transformation: `FLANG_TRANSFORM_NOT_NATURAL` with both paths and their
 values.
 
-**It does not give: the shape of the declarations is not checked.** Closure of a
-category under composition, identities on objects, the endpoints of composed
-arrows agreeing, the shape of a functor — none of that is checked by anything
-today, and the compiler says so in a separate line and answers with exit code 2
-rather than going green in silence. So:
+**Not checked: the shape of the declarations.** Closure under composition,
+identities on objects, matching ends of composed arrows, the shape of a functor —
+the binary compiler checks none of it. It says so in a separate line and exits
+with code 2, so it never looks like a pass. In particular:
 
-- a swapped composition order (`«отгрузить» после «выставить»`) yields **no**
-  refusal, although `FLANG_COMPOSE_MISMATCH` is described in the contract;
-- an arrow drifting from its function yields **no** refusal, although
+- a swapped composition order (`«отгрузить» после «выставить»`) gives **no**
+  error, although the language contract describes `FLANG_COMPOSE_MISMATCH`;
+- an arrow that does not match its function gives **no** error, although
   `FLANG_MORPHISM_SHAPE` is described;
-- a functor square that does not commute yields **no** refusal: functors are not
-  judged at all, and `FLANG_FUNCTOR_SQUARE` does not fire.
+- a functor square that does not commute gives **no** error: functors are not
+  checked at all, and `FLANG_FUNCTOR_SQUARE` never fires.
 
-All three codes exist in the sources and the rules are written down — the binary
-simply does not get to them. Read it this way: **a category declaration today
-documents intent and gives you the laws counted over a grid; it is not a check of
-the shape.** With runs: [The categorical surface](categories.html).
+So today **a category declaration documents intent and checks its laws on example
+values; it does not check the shape.** With full runs: [The categorical
+surface](categories.html).
 
-Edges, worth knowing before you start:
+Before you use it:
 
-- an ordinary composition written as a call is caught by type checking without
-  any arrows. Arrows are for pipelines that are **declared** rather than called;
-- the structure (ends, composition, identities, completeness of a link) is
-  proved by comparing declarations. The functor square and the arrow laws are
-  **checked on a grid** built from the author's examples, and that is not a
-  proof. The report prints the size of the grid;
-- a category stays a note to the reader until it is given a list of its own
-  arrows; there is nothing to check a claim that an object belongs to one;
-- a translation without an implementation (`maps to` without `gives`) is not
-  checked at all: such a link is recorded as assumed.
+- an ordinary composition written as a function call is already checked by the
+  type checker. Arrows are for pipelines that are **declared**, not called;
+- the functor square and the arrow laws are **checked on a finite set of values**
+  built from your examples; that is not a proof. The report prints the size of
+  the set;
+- a category is only a note to the reader until you list its arrows; nothing
+  checks that an object belongs to it;
+- a mapping without an implementation (`maps to` without `gives`) is not checked
+  at all: it is recorded as taken on trust.
 
 The full contract: [Categories and functors](../spec-cat.html) (in Russian).
 Where "proved" ends and "checked" begins: [What is proved and what is
 not](what-is-proved.html).
 
-## Monads and `in monad`
+## Monads and `in monad`: chaining steps that may fail
 
 ```flang
 module «Discount»
@@ -1143,19 +1182,19 @@ total function «Discounted total»
 | `let name equals step` | a step that is allowed not to answer |
 | `return expression` | the last line of the block |
 
-What it gives: the block is expanded by the compiler into a nested `match` over
-the variants of the type. The staircase of "none on none", which grows with
-every step, is not written.
+The compiler expands the block into nested `match`es over the variants of the
+type. You do not write the chain "if none, return none" at every step — the
+same idea as `?` in Rust or `do` in Haskell.
 
-Edge: `return` must be the last line of the block. The endofunctor mapping is
-not declared — the compiler derives it from the shape of the type. The binding
-laws are checked on a finite grid; the structure is proved by comparing
-declarations.
+Limits: `return` must be the last line of the block. The mapping (fmap) is not
+declared — the compiler derives it from the type. The monad laws are checked on
+a finite set of values, not proved.
 
 ## Processes and supervision
 
-State belongs to a process. The handler is an ordinary total function returning
-a new state and a list of actions. Sending is described, not performed.
+A process owns its state, like an actor in Erlang. The handler is an ordinary
+total function: it takes the state and a message and returns the new state and a
+list of actions. Sending a message is an action in that list, not a side effect.
 
 ```flang
 module «Counter»
@@ -1210,43 +1249,42 @@ run «two additions»
 | `starts with «F»` | the function giving the initial state |
 | `accepts «T»` | the type of messages |
 | `handles «F»` | the handler |
-| `with budget N` | the turn limit for a non-total handler |
+| `with budget N` | the step limit for a handler that is not `total` |
 | `with mailbox N` | the size of the mailbox |
-| `supervision «S»` | failure decisions, as data |
+| `supervision «S»` | a supervisor: what to do on failures, as data |
 | `process «P» strategy «…»` | what to do on a failure |
 | `failure threshold N within M … else «…»` | the window and the fallback strategy |
-| `run «name»` / `seed` / `given` / `expected` | an example of a concurrent program |
-| `seed from N to M` | the same run over a grid of interleavings |
+| `run «name»` / `seed` / `given` / `expected` | a test of a concurrent program: messages in, expected state out |
+| `seed from N to M` | the same test over a range of message orderings |
 
-Edge: the reply fields (`состояние`, `действия`) and the type `«Действие»` are
-part of the model's contract, not a convention of the file, and they keep their
-Russian spelling on every surface. So do the strategy names (`перезапустить`,
-`остановить`, `передать выше`) and the normal stop reason `норма`.
+Limit: the reply fields (`состояние`, `действия`) and the type `«Действие»` are
+fixed names of the process model, and they are spelled in Russian in every file.
+So are the strategy names (`перезапустить` restart, `остановить` stop,
+`передать выше` escalate) and the normal stop reason `норма`.
 
-The model in full, with its costs and measurements: [Processes and fault
-tolerance](../spec-conc.html) (in Russian).
+The full model: [Processes and fault tolerance](../spec-conc.html) (in Russian).
 
 ## Words that do not appear in the examples above
 
-The forms above are the ones programs are written from. The remaining words of
-the table are named here so that nobody has to hunt for them.
+The forms above are what programs are written with. The remaining keywords are
+listed here so you know where they belong.
 
 | Word | Where it belongs | Where it is described |
 | --- | --- | --- |
-| `embedding`, `intersection` | the categorical surface: a part of an object and the common part of two | [Categories and functors](../spec-cat.html) |
+| `embedding`, `intersection` | categories: a part of an object and the common part of two | [Categories and functors](../spec-cat.html) |
 | `objects`, `morphisms` | bifunctor: a pair of objects and a pair of arrows | the same |
 | `maps to`, `maps to field`, `maps to morphism` | the lines of a functor | the same |
 | `property` | a law of a single operation: commutativity, monotonicity and three more | [Categories and functors](../spec-cat.html) |
-| `plan` | input and output: declared by the same three lines as a process | [Categories and functors](../spec-cat.html), section "Эффекты и HTTP" |
-| `date`, `money` | heritage of the earlier surface: `date` behaves as `string`, `money` as `number` | [Glossary](../glossary.html) |
-| `has` — the line `given «Object» has «field» equal to value` | heritage of the earlier theorem form; next to the words of a proof it is rejected | below |
-| `utility`, `rule`, `nested object`, `in data`, `find where`, `by morphism` | heritage of the earlier surface: still parsed, but a program can no longer be built out of them | [Glossary](../glossary.html) |
+| `plan` | side effects (file, network, processes): declared by the same three lines as a process | [Categories and functors](../spec-cat.html), section "Эффекты и HTTP" |
+| `date`, `money` | older keywords: `date` behaves as `string`, `money` as `number` | [Glossary](../glossary.html) |
+| `has` — the line `given «Object» has «field» equal to value` | an older theorem form; rejected next to proof steps | below |
+| `utility`, `rule`, `nested object`, `in data`, `find where`, `by morphism` | older keywords: still parsed, but a program cannot be built from them | [Glossary](../glossary.html) |
 
-The earlier theorem form does not blend with the present one: the line
-`given «Object» has «field»` next to `claim` is a refusal, not a mixture.
+The older theorem form cannot be mixed with the current one: the line
+`given «Object» has «field»` next to `claim` is an error.
 
 ```
-FLANG_PARSE, строка 12, столбец 1: теорема «цена та же» смешала две формы: дано «Объект» имеет «поле» — из старой, а рядом стоят слова доказательства. Выберите одну форму
+FLANG_PARSE в файле mix.flang, строка 12, столбец 1: теорема «цена та же» смешала две формы: дано «Объект» имеет «поле» — из старой, а рядом стоят слова доказательства. Выберите одну форму
 ```
 
 `in data`, `by morphism` and `therefore «conclusion»` behave the same way.
@@ -1257,11 +1295,11 @@ FLANG_PARSE, строка 12, столбец 1: теорема «цена та �
 | --- | --- |
 | a loop | `fold` and recursion |
 | changing an element in place | building a new value |
-| an exception | a variant of a sum type carrying the reason |
-| `null` for "not found" | a sum type and a mandatory `match` |
+| an exception | a Result: a variant of a type that carries the reason |
+| `null` for "not found" | an Optional: a type with variants and a mandatory `match` |
 | a variable | `let`, which binds once |
-| a function body in place (a lambda) | `function «Name»` with named capture |
-| a closure carrying a local name outwards | capture of declared parameters only: `function «Name» with a equal to 10` |
+| a lambda | a declared function, passed as `function «Name»` |
+| a closure that captures a local variable | partial application by parameter name: `function «Name» with a equal to 10` |
 | bitwise operations: `and`, `or`, `xor`, shifts | arithmetic: `times`, `divided by`, `modulo` |
 | writing into a list by index (`x[i] = v`) | `map` builds a new list |
 | a dependent type (`list of length n`) | `ensures` about the length, and a theorem about it |

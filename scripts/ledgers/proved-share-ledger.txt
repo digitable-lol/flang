@@ -1735,3 +1735,8 @@ cba7ff01e5be6222aa70291cf1823888|1|×|×|×|0|flang/proof/checker/tests/families
 c2c3d6fc379b940f0a2baccf8a3c2ca4|1|1|0|0|0|flang/proof/checker/tests/families/field-projection/accessor.flang
 0c125f724f5673513efd0d8b9b1605d1|1|×|×|×|0|flang/proof/checker/tests/families/field-projection/result-field-other.flang
 f8065d1d57b972e091c656779e5cad7d|1|1|0|0|0|flang/proof/checker/tests/families/field-projection/result-field.flang
+23f4e082d1c2a514a9e319fdb0272bf9|4|4|0|0|0|flang/stdlib/fmath.flang
+5313bb0cd8663e23ae50a33f07205966|4|3|0|1|0|flang/proof/checker/tests/families/fmath/difference-of-lengths.flang
+6a0ff051db5f51bd386f210884f440d7|4|3|0|1|0|flang/proof/checker/tests/families/fmath/restricted-sum.flang
+cf872d516e34dd69bc73a4e95995017f|2|2|0|0|0|flang/proof/checker/tests/families/fmath/scores.flang
+1d3bc37e838ba54753e02518e95dad9b|4|3|0|1|0|flang/proof/checker/tests/families/fmath/sum-of-a-number.flang

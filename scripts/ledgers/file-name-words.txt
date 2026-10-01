@@ -614,6 +614,7 @@ flatness
 flattened
 floating
 floor
+fmath
 fold
 folds
 follows
@@ -1457,6 +1458,7 @@ scan
 schedule
 scheduler
 score
+scores
 screen
 script
 scrutinee

@@ -1690,3 +1690,4 @@ c5bc5b2eaf415e4126188d3bf80e0e35|1|1|0|0|0|flang/proof/probes/syllogism/assumpti
 ba12a7e782c1bdf155b39b990c48e9a0|1|1|0|0|0|flang/proof/probes/syllogism/assumptions/programs/socrates-with-premises-only-in-the-statement.flang
 a8eee38c95df323b25bba18cc80c8e82|1|1|0|0|0|flang/proof/probes/syllogism/assumptions/programs/socrates-with-premises-only-in-the-theorem.flang
 85eba61c3667f614954f787efe8a6bd3|1|0|0|0|0|flang/proof/probes/syllogism/assumptions/programs/undistributed-middle.flang
+08cfc8c8533721f22dcd06592e2cfc1b|3|3|0|0|0|flang/proof/probes/kernel-memo/run.fscript

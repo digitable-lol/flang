@@ -966,6 +966,7 @@ meet
 meetings
 member
 membership
+memo
 memory
 merge
 merged

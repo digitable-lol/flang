@@ -1,4 +1,3 @@
 файл	ключ	довод
 flang/test/обход.sh	да	обходчик гоняет проверки дерева на flang; вердикта они не проходят (замер 18.09: «доказано 224, сетка 42, на веру 83»), без ключа не прогналась бы ни одна
 scripts/guards/one-string-measure-guard.sh	нет	зовёт flang/test/string-measure.flang через переменную PLAN; файл вердикт проходит
-flang/proof/forgeries/run.sh	нет	зовёт план сверки flang/proof/check.fscript через переменную; план вердикт проходит

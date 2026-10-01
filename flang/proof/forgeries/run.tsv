@@ -1,0 +1,6 @@
+name	source	record	edit	code
+честная: настоящее доказательство настоящей программы	examples/body-forms.flang	examples/body-forms.flang	-	0
+подделка 1: подменённый шаг	examples/body-forms.flang	examples/body-forms.flang	swapped-step	1
+подделка 2: верная запись подложена к другому исходнику	examples/corpus-factorial.flang	examples/body-forms.flang	-	1
+подделка 3: обрубленное доказательство	examples/body-forms.flang	examples/body-forms.flang	last-step-dropped	1
+подделка 4: шаг обосновывает сам себя	forgeries/circle.flang	forgeries/circle.record	-	1

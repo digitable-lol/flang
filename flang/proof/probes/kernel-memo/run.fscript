@@ -1,0 +1,193 @@
+модуль «Kernel memo probes»
+
+объект «Run»
+  «label»: строка
+  «source»: строка
+  «mode»: строка
+
+объект «Outcome»
+  «label»: строка
+  «code»: число
+  «out»: строка
+  «err»: строка
+
+тотальная функция «Default binary»
+  возвращает строка
+  пример «the binary path counts from the plan directory»
+    ожидается "../../../../bootstrap/flang"
+  "../../../../bootstrap/flang"
+
+тотальная функция «Modules»
+  возвращает список строки
+  обеспечивает «two modules are sampled» (длина результат) равен 2
+  пример «a short and a long proof stage»
+    ожидается ["../../../../flang/stdlib/lists.flang", "../../../../flang/stdlib/hashmap.flang"]
+  ["../../../../flang/stdlib/lists.flang", "../../../../flang/stdlib/hashmap.flang"]
+
+тотальная функция «Modes»
+  возвращает список строки
+  обеспечивает «three modes per source» (длина результат) равен 3
+  пример «memo off, memo on, memo on with the audit»
+    ожидается ["off", "on", "audit"]
+  ["off", "on", "audit"]
+
+тотальная функция «Settings»
+  принимает mode: строка
+  возвращает список строки
+  обеспечивает «every mode names the memo switch» (длина результат) больше 1
+  пример «off switches the memo off»
+    дано mode равно "off"
+    ожидается ["LC_ALL=C.UTF-8", "FLANG_MEMO=0"]
+  пример «audit recomputes every hit and reports to stderr»
+    дано mode равно "audit"
+    ожидается ["LC_ALL=C.UTF-8", "FLANG_MEMO=1", "FLANG_MEMO_AUDIT=1", "FLANG_MEMO_STATS=/dev/stderr"]
+  если mode равен "off"
+    то ["LC_ALL=C.UTF-8", "FLANG_MEMO=0"]
+    иначе
+      если mode равен "on"
+        то ["LC_ALL=C.UTF-8", "FLANG_MEMO=1", "FLANG_MEMO_STATS=/dev/stderr"]
+        иначе ["LC_ALL=C.UTF-8", "FLANG_MEMO=1", "FLANG_MEMO_AUDIT=1", "FLANG_MEMO_STATS=/dev/stderr"]
+
+тотальная функция «Label»
+  принимает source: строка, mode: строка
+  возвращает строка
+  пример «a label names the source and the mode»
+    дано source равно "../../../../flang/stdlib/lists.flang"
+    дано mode равно "on"
+    ожидается "../../../../flang/stdlib/lists.flang on"
+  соединить [source, " ", mode] по ""
+
+тотальная функция «Add runs of source»
+  принимает done: список «Run», source: строка
+  возвращает список «Run»
+  свёртка («Modes») начиная с done как acc и mode → добавить (запись «Run» с «label» равным («Label» от source и mode) и «source» равным source и «mode» равным mode) к acc
+
+тотальная функция «All runs»
+  возвращает список «Run»
+  свёртка («Modules») начиная с пустой список как done и source → «Add runs of source» от done и source
+
+тотальная функция «Arguments»
+  принимает binary: строка, job: «Run»
+  возвращает список строки
+  пример «check with proofs under the memory limit»
+    дано binary равно "flang"
+    дано job равно запись «Run» с «label» равным "m off" и «source» равным "m" и «mode» равным "off"
+    ожидается ["LC_ALL=C.UTF-8", "FLANG_MEMO=0", "flang", "--memory-limit", "8G", "check", "m", "--proof"]
+  свёртка [binary, "--memory-limit", "8G", "check", (job.«source»), "--proof"] начиная с («Settings» от (job.«mode»)) как acc и part → добавить part к acc
+
+тотальная функция «Empty outcome»
+  возвращает «Outcome»
+  запись «Outcome» с «label» равным "" и «code» равным -1 и «out» равным "" и «err» равным ""
+
+тотальная функция «Outcome of»
+  принимает outcomes: список «Outcome», label: строка
+  возвращает «Outcome»
+  пример «a missing outcome is empty»
+    дано outcomes равно пустой список
+    дано label равно "x"
+    ожидается запись «Outcome» с «label» равным "" и «code» равным -1 и «out» равным "" и «err» равным ""
+  свёртка outcomes начиная с («Empty outcome») как found и each
+    если (each.«label») равен label то each иначе found
+
+тотальная функция «Same answer»
+  принимает issues: список строки, left: «Outcome», right: «Outcome»
+  возвращает список строки
+  пример «equal code and output add no issue»
+    дано issues равно пустой список
+    дано left равно запись «Outcome» с «label» равным "a" и «code» равным 0 и «out» равным "x" и «err» равным ""
+    дано right равно запись «Outcome» с «label» равным "b" и «code» равным 0 и «out» равным "x" и «err» равным "y"
+    ожидается пустой список
+  пример «a different output is an issue»
+    дано issues равно пустой список
+    дано left равно запись «Outcome» с «label» равным "a" и «code» равным 0 и «out» равным "x" и «err» равным ""
+    дано right равно запись «Outcome» с «label» равным "b" и «code» равным 0 и «out» равным "z" и «err» равным ""
+    ожидается ["b: output differs from a"]
+  если ((left.«code») равен (right.«code»)) и притом ((left.«out») равен (right.«out»))
+    то issues
+    иначе добавить (соединить [(right.«label»), ": output differs from ", (left.«label»)] по "") к issues
+
+тотальная функция «Must say»
+  принимает issues: список строки, outcome: «Outcome», word: строка
+  возвращает список строки
+  если (outcome.«err») содержит word
+    то issues
+    иначе добавить (соединить [(outcome.«label»), ": stderr lacks «", word, "»"] по "") к issues
+
+тотальная функция «Must not say»
+  принимает issues: список строки, outcome: «Outcome», word: строка
+  возвращает список строки
+  если (outcome.«err») содержит word
+    то добавить (соединить [(outcome.«label»), ": stderr says «", word, "»"] по "") к issues
+    иначе issues
+
+тотальная функция «Judge source»
+  принимает issues: список строки, outcomes: список «Outcome», source: строка
+  возвращает список строки
+  пусть off равно («Outcome of» от outcomes и («Label» от source и "off"))
+  пусть on равно («Outcome of» от outcomes и («Label» от source и "on"))
+  пусть audit равно («Outcome of» от outcomes и («Label» от source и "audit"))
+  пусть same равно («Same answer» от («Same answer» от issues и off и on) и off и audit)
+  пусть hits равно («Must not say» от («Must say» от («Must say» от same и on и "memo\tНормализовать с определениями\t") и on и "memo\tСвести при известном\t") и on и "\thits 0\t")
+  «Must not say» от («Must not say» от («Must say» от hits и audit и "memo\tСвести при известном\t") и audit и "\taudited 0\t") и audit и "FLANG_MEMO_AUDIT:"
+
+тотальная функция «Judge»
+  принимает outcomes: список «Outcome»
+  возвращает «Продолжение»
+  пусть issues равно (свёртка («Modules») начиная с пустой список как found и source → «Judge source» от found и outcomes и source)
+  разбор issues
+    случай пусто
+      то вариант «Конец работы» с значение равным (соединить ["kernel memo: runs ", (к строке (длина outcomes)), ", memo on and audit answer byte for byte as memo off"] по "")
+    случай голова и хвост
+      то вариант «Провал» с код равным "FLANG_KERNEL_MEMO_PROBES" и сообщение равным (соединить (приписать "KERNEL MEMO CHANGES THE ANSWER:" к issues) по "\n  · ")
+
+тотальная функция «No means»
+  принимает why: строка
+  возвращает «Продолжение»
+  вариант «Не проверено» с код равным "FLANG_KERNEL_MEMO_PROBES_NO_MEANS" и сообщение равным why
+
+тип «Ход»
+  вариант «Waiting binary»
+  вариант «Waiting job» содержит binary: строка, job: «Run», rest: список «Run», outcomes: список «Outcome»
+
+тотальная функция «Start»
+  возвращает «Ход»
+  вариант «Waiting binary»
+
+тотальная функция «Go»
+  принимает binary: строка, queue: список «Run», outcomes: список «Outcome»
+  возвращает «Продолжение»
+  разбор queue
+    случай пусто
+      то «Judge» от outcomes
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "env" и аргументы равным («Arguments» от binary и голова)) и потом равным (вариант «Waiting job» с binary равным binary и job равным голова и rest равным хвост и outcomes равным outcomes)
+
+тотальная функция «Next»
+  принимает ход: «Ход», отклик: «Отклик»
+  возвращает «Продолжение»
+  разбор ход
+    случай вариант «Waiting binary»
+      то разбор отклик
+        случай вариант «Пока ничего»
+          то вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN") и потом равным (вариант «Waiting binary»)
+        случай вариант «Значение среды» с значение как значение
+          то «Go» от значение и («All runs») и пустой список
+        случай вариант «Переменной среды нет»
+          то «Go» от («Default binary») и («All runs») и пустой список
+        случай любое
+          то «No means» от "expected an answer about FLANG_BIN"
+    случай вариант «Waiting job» с binary как binary и job как job и rest как rest и outcomes как outcomes
+      то разбор отклик
+        случай вариант «Процесс завершён» с код как код и вывод как вывод и ошибки как ошибки
+          то «Go» от binary и rest и (добавить (запись «Outcome» с «label» равным (job.«label») и «code» равным код и «out» равным вывод и «err» равным ошибки) к outcomes)
+        случай вариант «Процесс убит» с сигнал как сигнал и вывод как вывод и ошибки как ошибки
+          то вариант «Провал» с код равным "FLANG_KERNEL_MEMO_PROBES" и сообщение равным (соединить [(job.«label»), " killed by signal ", сигнал, ": ", ошибки] по "")
+        случай вариант «Сбой» с код как код и сообщение как сообщение
+          то «No means» от (соединить [(job.«label»), " did not start (", код, "): ", сообщение] по "")
+        случай любое
+          то «No means» от "expected a finished process"
+
+план «Kernel memo probes»
+  состояние «Ход»
+  начинает с «Start»
+  обрабатывает «Next»

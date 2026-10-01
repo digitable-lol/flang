@@ -215,6 +215,8 @@ void fl_arena_init_small(fl_arena *arena, size_t least) {
   arena->deny = NULL;
   arena->recycle_mark = 0;
   arena->recycle_next = 0;
+  arena->memo_pins = 0;
+  arena->memo_owner = false;
   /* Нулевой кусок не бывает, а кусок больше общего минимума и есть общий
      минимум: мельчить умеем, крупнить незачем. */
   arena->least = least == 0 || least > FL_CHUNK_MIN ? FL_CHUNK_MIN : fl_round_up(least);
@@ -363,12 +365,15 @@ bool fl_arena_extend(fl_arena *arena, const void *block, size_t size, size_t ext
 }
 
 static void fl_region_forget(fl_arena *arena);
+static void fl_memo_unpin(fl_arena *arena, const fl_chunk *from, size_t used);
+static void fl_memo_disown(fl_arena *arena);
 
 void fl_arena_reset(fl_arena *arena) {
   fl_chunk *chunk = NULL;
   if (arena == NULL) {
     return;
   }
+  fl_memo_unpin(arena, NULL, 0);
   for (chunk = arena->chunks; chunk != NULL; chunk = chunk->next) {
     chunk->used = 0;
   }
@@ -386,6 +391,8 @@ void fl_arena_release(fl_arena *arena) {
   if (arena == NULL) {
     return;
   }
+  fl_memo_unpin(arena, NULL, 0);
+  fl_memo_disown(arena);
   chunk = arena->chunks;
   while (chunk != NULL) {
     fl_chunk *next = chunk->next;
@@ -701,6 +708,8 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
   ctx->arena = arena;
   ctx->depth = 0;
   ctx->max_depth = fl_max_depth_default();
+  ctx->depth_peak = 0;
+  ctx->copied = 0;
   ctx->steps = 0;
   ctx->max_steps = fl_max_steps_default();
   ctx->stack_base = &here;
@@ -1758,6 +1767,14 @@ void fl_charge(fl_ctx *ctx, size_t count) {
   ctx->steps += count;
 }
 
+static void fl_charge_copy(fl_ctx *ctx, size_t count) {
+  const size_t before = ctx == NULL ? 0 : ctx->steps;
+  fl_charge(ctx, count);
+  if (ctx != NULL) {
+    ctx->copied += ctx->steps - before;
+  }
+}
+
 /*
  * ВТОРОЙ ПУЛЬС — ПО ВИТКАМ, А НЕ ПО ВХОДАМ.
  *
@@ -2283,6 +2300,9 @@ fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
     fl_watch_frames[ctx->depth] = function;
   }
   ctx->depth += 1;
+  if (ctx->depth > ctx->depth_peak) {
+    ctx->depth_peak = ctx->depth;
+  }
   if (ctx->depth > ctx->max_depth) {
     /* Текст дословно как у интерпретатора: сперва предел, потом достигнутая
        глубина (она на единицу больше предела). */
@@ -3019,6 +3039,7 @@ static void fl_arena_rollback(fl_arena *arena, fl_mark mark) {
   fl_chunk *keep_head = NULL;
   fl_chunk *keep_tail = NULL;
   size_t kept = 0;
+  fl_memo_unpin(arena, mark.chunk, mark.used);
   if (mark.chunk == NULL) {
     /* На отметке арена была пуста: пусто всё, что после неё. */
     chunk = arena->chunks;
@@ -5437,7 +5458,7 @@ fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out,
        концом и стоит постоянного времени — зарядить его длиной значило бы
        оболгать «добавить» вверх и вернуть тот самый квадрат, ради снятия
        которого запас и заведён. */
-    fl_charge(ctx, count);
+    fl_charge_copy(ctx, count);
     memcpy(items, list.as.list.items, count * sizeof(fl_value));
   }
   items[count] = item;
@@ -5516,7 +5537,7 @@ fl_status fl_b_pripisat(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out
   FL_TRY(fl_list_alloc(ctx, capacity, &items, error));
   if (count > 0) {
     /* Как и у «добавить»: платит копия, а не запись в занятый заранее запас. */
-    fl_charge(ctx, count);
+    fl_charge_copy(ctx, count);
     memcpy(items + slack, list.as.list.items, count * sizeof(fl_value));
   }
   items[slack - 1] = item;
@@ -5686,4 +5707,989 @@ fl_status fl_trampoline(fl_ctx *ctx, fl_step step, const fl_value *args, size_t 
     }
   }
   return fl_region_close(ctx, mark, status, result, error);
+}
+
+#ifndef FL_MEMO_BIG
+#define FL_MEMO_BIG (size_t)4096
+#endif
+#ifndef FL_MEMO_PINS
+#define FL_MEMO_PINS 64
+#endif
+#ifndef FL_MEMO_PIN_MIN
+#define FL_MEMO_PIN_MIN (size_t)(1024u * 1024u)
+#endif
+#ifndef FL_MEMO_BLOCK
+#define FL_MEMO_BLOCK (size_t)(4u * 1024u * 1024u)
+#endif
+#ifndef FL_MEMO_CAP
+#define FL_MEMO_CAP ((size_t)4u * 1024u * 1024u * 1024u)
+#endif
+#define FL_MEMO_TALLIES 16
+#define FL_MEMO_OFF 0
+#define FL_MEMO_STORE 1
+#define FL_MEMO_AUDIT 2
+#define FL_MEMO_PASS 3
+
+typedef struct fl_memo_entry {
+  unsigned long long hash;
+  const unsigned char *key;
+  size_t key_bytes;
+  fl_value value;
+  size_t steps;
+  size_t copied;
+  size_t span;
+  bool counted;
+} fl_memo_entry;
+
+typedef struct fl_memo_blob {
+  unsigned long long hash;
+  const unsigned char *bytes;
+  size_t size;
+  size_t id;
+} fl_memo_blob;
+
+typedef struct fl_memo_pin {
+  const fl_arena *arena;
+  fl_tag tag;
+  const void *address;
+  size_t count;
+  size_t id;
+  size_t size;
+} fl_memo_pin;
+
+typedef struct fl_memo_name {
+  unsigned long long hash;
+  const char *text;
+} fl_memo_name;
+
+typedef struct fl_memo_tally {
+  const char *function;
+  unsigned long long calls;
+  unsigned long long hits;
+  unsigned long long misses;
+  unsigned long long kept;
+  unsigned long long over_steps;
+  unsigned long long over_depth;
+  unsigned long long unkept;
+  unsigned long long audited;
+} fl_memo_tally;
+
+typedef struct fl_memo_buffer {
+  unsigned char *data;
+  size_t size;
+  size_t capacity;
+  bool failed;
+} fl_memo_buffer;
+
+typedef struct fl_memo_state {
+  int ready;
+  const fl_arena *owner;
+  bool enabled;
+  bool audit;
+  bool full;
+  size_t cap;
+  size_t spent;
+  char *block;
+  size_t block_used;
+  size_t block_size;
+  fl_memo_entry *entries;
+  size_t entry_slots;
+  size_t entry_count;
+  fl_memo_blob *blobs;
+  size_t blob_slots;
+  size_t blob_count;
+  fl_memo_name *names;
+  size_t name_slots;
+  size_t name_count;
+  fl_memo_pin pins[FL_MEMO_PINS];
+  fl_memo_tally tallies[FL_MEMO_TALLIES];
+  size_t tally_count;
+  fl_memo_buffer key;
+  fl_memo_buffer left;
+  fl_memo_buffer right;
+  const char *stats;
+  unsigned long long pins_made;
+  unsigned long long pins_used;
+  unsigned long long pins_dropped;
+} fl_memo_state;
+
+static fl_memo_state fl_memo;
+
+static unsigned long long fl_memo_hash(const unsigned char *bytes, size_t size) {
+  unsigned long long hash = 14695981039346656037ULL ^ (unsigned long long)size;
+  size_t index = 0;
+  while (index + 8u <= size) {
+    unsigned long long word = 0;
+    memcpy(&word, bytes + index, 8u);
+    hash = (hash ^ word) * 1099511628211ULL;
+    hash ^= hash >> 29;
+    index += 8u;
+  }
+  while (index < size) {
+    hash = (hash ^ bytes[index]) * 1099511628211ULL;
+    index += 1u;
+  }
+  hash ^= hash >> 32;
+  hash *= 0x9E3779B97F4A7C15ULL;
+  hash ^= hash >> 29;
+  return hash;
+}
+
+static void fl_memo_reserve(fl_memo_buffer *buffer, size_t more) {
+  size_t want = 0;
+  unsigned char *grown = NULL;
+  if (buffer->failed) {
+    return;
+  }
+  if (more > (size_t)-1 - buffer->size) {
+    buffer->failed = true;
+    return;
+  }
+  want = buffer->size + more;
+  if (want <= buffer->capacity) {
+    return;
+  }
+  if (want < 4096u) {
+    want = 4096u;
+  }
+  if (want < buffer->capacity * 2u) {
+    want = buffer->capacity * 2u;
+  }
+  grown = (unsigned char *)realloc(buffer->data, want);
+  if (grown == NULL) {
+    buffer->failed = true;
+    return;
+  }
+  buffer->data = grown;
+  buffer->capacity = want;
+}
+
+static void fl_memo_put(fl_memo_buffer *buffer, const void *bytes, size_t size) {
+  fl_memo_reserve(buffer, size);
+  if (buffer->failed || size == 0) {
+    return;
+  }
+  memcpy(buffer->data + buffer->size, bytes, size);
+  buffer->size += size;
+}
+
+static void fl_memo_put_byte(fl_memo_buffer *buffer, unsigned char byte) {
+  fl_memo_put(buffer, &byte, 1u);
+}
+
+static void fl_memo_put_size(fl_memo_buffer *buffer, size_t size) {
+  unsigned long long wide = (unsigned long long)size;
+  fl_memo_put(buffer, &wide, sizeof wide);
+}
+
+static void fl_memo_put_text(fl_memo_buffer *buffer, const char *text) {
+  const size_t size = text == NULL ? 0 : strlen(text);
+  fl_memo_put_size(buffer, size);
+  fl_memo_put(buffer, text, size);
+}
+
+static void fl_memo_write(fl_memo_buffer *buffer, fl_value value) {
+  size_t index = 0;
+  fl_memo_put_byte(buffer, (unsigned char)value.tag);
+  switch (value.tag) {
+  case FL_NUMBER:
+    fl_memo_put(buffer, &value.as.number, sizeof value.as.number);
+    break;
+  case FL_FLAG:
+    fl_memo_put_byte(buffer, value.as.flag ? 1u : 0u);
+    break;
+  case FL_STRING:
+    fl_memo_put_size(buffer, value.as.string.bytes);
+    fl_memo_put(buffer, value.as.string.utf8, value.as.string.bytes);
+    break;
+  case FL_LIST:
+    fl_memo_put_size(buffer, value.as.list.count);
+    for (index = 0; index < value.as.list.count && !buffer->failed; index += 1) {
+      fl_memo_write(buffer, value.as.list.items[index]);
+    }
+    break;
+  case FL_RECORD:
+    fl_memo_put_size(buffer, value.as.record->count);
+    for (index = 0; index < value.as.record->count && !buffer->failed; index += 1) {
+      fl_memo_put_text(buffer, value.as.record->fields[index].name);
+      fl_memo_write(buffer, value.as.record->fields[index].value);
+    }
+    break;
+  case FL_VARIANT:
+    fl_memo_put_text(buffer, value.as.variant->name);
+    fl_memo_put_size(buffer, value.as.variant->count);
+    for (index = 0; index < value.as.variant->count && !buffer->failed; index += 1) {
+      fl_memo_put_text(buffer, value.as.variant->fields[index].name);
+      fl_memo_write(buffer, value.as.variant->fields[index].value);
+    }
+    break;
+  case FL_NOTHING:
+  default:
+    break;
+  }
+}
+
+static void *fl_memo_take(size_t size) {
+  void *block = NULL;
+  size = fl_round_up(size == 0 ? 1u : size);
+  if (fl_memo.full) {
+    return NULL;
+  }
+  if (fl_memo.block == NULL || fl_memo.block_size - fl_memo.block_used < size) {
+    size_t fresh = size > FL_MEMO_BLOCK ? size : FL_MEMO_BLOCK;
+    if (fl_memo.spent > fl_memo.cap || fresh > fl_memo.cap - fl_memo.spent || !fl_memory_buy(fresh)) {
+      fl_memo.full = true;
+      return NULL;
+    }
+    fl_memo.block = (char *)malloc(fresh);
+    if (fl_memo.block == NULL) {
+      fl_memory_sell(fresh);
+      fl_memo.full = true;
+      return NULL;
+    }
+    fl_memo.spent += fresh;
+    fl_memo.block_size = fresh;
+    fl_memo.block_used = 0;
+  }
+  block = fl_memo.block + fl_memo.block_used;
+  fl_memo.block_used += size;
+  return block;
+}
+
+static void *fl_memo_table(size_t slots, size_t width) {
+  void *table = NULL;
+  const size_t bytes = slots * width;
+  if (fl_memo.spent > fl_memo.cap || bytes > fl_memo.cap - fl_memo.spent || !fl_memory_buy(bytes)) {
+    fl_memo.full = true;
+    return NULL;
+  }
+  table = calloc(slots, width);
+  if (table == NULL) {
+    fl_memory_sell(bytes);
+    fl_memo.full = true;
+    return NULL;
+  }
+  fl_memo.spent += bytes;
+  return table;
+}
+
+static void fl_memo_untable(void *table, size_t slots, size_t width) {
+  if (table == NULL) {
+    return;
+  }
+  free(table);
+  fl_memo.spent -= slots * width;
+  fl_memory_sell(slots * width);
+}
+
+static size_t fl_memo_env_size(const char *name, size_t fallback) {
+  const char *text = getenv(name);
+  char *end = NULL;
+  unsigned long long parsed = 0;
+  if (text == NULL || text[0] == '\0') {
+    return fallback;
+  }
+  parsed = strtoull(text, &end, 10);
+  if (end == text) {
+    return fallback;
+  }
+  return (size_t)parsed;
+}
+
+static void fl_memo_report(void) {
+  FILE *out = NULL;
+  size_t index = 0;
+  if (fl_memo.stats == NULL) {
+    return;
+  }
+  out = fopen(fl_memo.stats, "a");
+  if (out == NULL) {
+    return;
+  }
+  for (index = 0; index < fl_memo.tally_count; index += 1) {
+    const fl_memo_tally *tally = &fl_memo.tallies[index];
+    fprintf(out,
+            "memo\t%s\tcalls %llu\thits %llu\tmisses %llu\tkept %llu\tover-steps %llu\tover-depth %llu\tunkept %llu"
+            "\taudited %llu\n",
+            tally->function, tally->calls, tally->hits, tally->misses, tally->kept, tally->over_steps,
+            tally->over_depth, tally->unkept, tally->audited);
+  }
+  fprintf(out, "memo-bytes\t%llu\tcap %llu\tfull %d\tentries %llu\tblobs %llu\tpins %llu\tpin-hits %llu\tpin-drops %llu\n",
+          (unsigned long long)fl_memo.spent, (unsigned long long)fl_memo.cap, fl_memo.full ? 1 : 0,
+          (unsigned long long)fl_memo.entry_count, (unsigned long long)fl_memo.blob_count, fl_memo.pins_made,
+          fl_memo.pins_used, fl_memo.pins_dropped);
+  fclose(out);
+}
+
+void fl_memo_setup(int enabled, int audit, size_t cap) {
+  fl_memo.ready = 1;
+  fl_memo.enabled = enabled != 0;
+  fl_memo.audit = audit != 0;
+  fl_memo.cap = cap;
+}
+
+static void fl_memo_ready(void) {
+  const char *on = NULL;
+  const char *audit = NULL;
+  size_t cap = FL_MEMO_CAP;
+  if (fl_memo.ready) {
+    return;
+  }
+  fl_memo.ready = 1;
+  on = getenv("FLANG_MEMO");
+  audit = getenv("FLANG_MEMO_AUDIT");
+  fl_memo.enabled = !(on != NULL && strcmp(on, "0") == 0);
+  fl_memo.audit = audit != NULL && strcmp(audit, "1") == 0;
+  if (fl_memory_limit() != 0 && fl_memory_limit() / 8u < cap) {
+    cap = fl_memory_limit() / 8u;
+  }
+  fl_memo.cap = fl_memo_env_size("FLANG_MEMO_BYTES", cap);
+  fl_memo.stats = getenv("FLANG_MEMO_STATS");
+  if (fl_memo.stats != NULL && fl_memo.stats[0] != '\0') {
+    atexit(fl_memo_report);
+  } else {
+    fl_memo.stats = NULL;
+  }
+}
+
+static size_t fl_memo_tally_of(const char *function) {
+  size_t index = 0;
+  for (index = 0; index < fl_memo.tally_count; index += 1) {
+    if (fl_memo.tallies[index].function == function || strcmp(fl_memo.tallies[index].function, function) == 0) {
+      return index;
+    }
+  }
+  if (fl_memo.tally_count < FL_MEMO_TALLIES) {
+    memset(&fl_memo.tallies[fl_memo.tally_count], 0, sizeof(fl_memo_tally));
+    fl_memo.tallies[fl_memo.tally_count].function = function;
+    fl_memo.tally_count += 1;
+    return fl_memo.tally_count - 1u;
+  }
+  return FL_MEMO_TALLIES - 1u;
+}
+
+static const void *fl_memo_address(fl_value value, size_t *count) {
+  switch (value.tag) {
+  case FL_STRING:
+    *count = value.as.string.bytes;
+    return value.as.string.utf8;
+  case FL_LIST:
+    *count = value.as.list.count;
+    return value.as.list.items;
+  case FL_RECORD:
+    *count = value.as.record->count;
+    return value.as.record;
+  case FL_VARIANT:
+    *count = value.as.variant->count;
+    return value.as.variant;
+  case FL_NOTHING:
+  case FL_NUMBER:
+  case FL_FLAG:
+  default:
+    *count = 0;
+    return NULL;
+  }
+}
+
+static bool fl_memo_owned(const fl_arena *arena, const void *address) {
+  const fl_chunk *chunk = NULL;
+  const char *point = (const char *)address;
+  if (arena == NULL || address == NULL) {
+    return false;
+  }
+  for (chunk = arena->chunks; chunk != NULL; chunk = chunk->next) {
+    const char *base = fl_chunk_data((fl_chunk *)chunk);
+    if (point >= base && point < base + chunk->used) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static size_t fl_memo_pinned_id(const fl_arena *arena, fl_value value) {
+  size_t count = 0;
+  size_t index = 0;
+  const void *address = NULL;
+  if (arena == NULL || arena->memo_pins == 0) {
+    return 0;
+  }
+  address = fl_memo_address(value, &count);
+  if (address == NULL) {
+    return 0;
+  }
+  for (index = 0; index < FL_MEMO_PINS; index += 1) {
+    const fl_memo_pin *pin = &fl_memo.pins[index];
+    if (pin->id != 0 && pin->arena == arena && pin->address == address && pin->tag == value.tag &&
+        pin->count == count) {
+      fl_memo.pins_used += 1;
+      return pin->id;
+    }
+  }
+  return 0;
+}
+
+static void fl_memo_pin_value(fl_arena *arena, fl_value value, size_t id, size_t size) {
+  size_t count = 0;
+  size_t index = 0;
+  const void *address = NULL;
+  fl_memo_pin *pin = NULL;
+  if (size < FL_MEMO_PIN_MIN) {
+    return;
+  }
+  for (index = 0; index < FL_MEMO_PINS; index += 1) {
+    fl_memo_pin *other = &fl_memo.pins[index];
+    if (other->id == 0) {
+      pin = other;
+      break;
+    }
+    if (pin == NULL || other->size < pin->size) {
+      pin = other;
+    }
+  }
+  if (pin->id != 0 && (pin->size >= size || pin->arena != arena)) {
+    return;
+  }
+  address = fl_memo_address(value, &count);
+  if (address == NULL || !fl_memo_owned(arena, address)) {
+    return;
+  }
+  if (pin->id == 0) {
+    arena->memo_pins += 1;
+  }
+  pin->arena = arena;
+  pin->tag = value.tag;
+  pin->address = address;
+  pin->count = count;
+  pin->id = id;
+  pin->size = size;
+  fl_memo.pins_made += 1;
+}
+
+static void fl_memo_unpin(fl_arena *arena, const fl_chunk *from, size_t used) {
+  size_t index = 0;
+  if (arena == NULL || arena->memo_pins == 0) {
+    return;
+  }
+  for (index = 0; index < FL_MEMO_PINS; index += 1) {
+    fl_memo_pin *pin = &fl_memo.pins[index];
+    bool drop = false;
+    const fl_chunk *chunk = NULL;
+    const char *point = (const char *)pin->address;
+    if (pin->id == 0 || pin->arena != arena) {
+      continue;
+    }
+    if (from == NULL) {
+      drop = true;
+    } else {
+      const char *base = fl_chunk_data((fl_chunk *)from);
+      if (point >= base + used && point < base + from->capacity) {
+        drop = true;
+      }
+      for (chunk = from->next; chunk != NULL && !drop; chunk = chunk->next) {
+        base = fl_chunk_data((fl_chunk *)chunk);
+        if (point >= base && point < base + chunk->capacity) {
+          drop = true;
+        }
+      }
+    }
+    if (drop) {
+      pin->id = 0;
+      pin->address = NULL;
+      arena->memo_pins -= 1;
+      fl_memo.pins_dropped += 1;
+    }
+  }
+}
+
+static bool fl_memo_grow_blobs(void) {
+  fl_memo_blob *fresh = NULL;
+  const size_t slots = fl_memo.blob_slots == 0 ? 1024u : fl_memo.blob_slots * 2u;
+  size_t index = 0;
+  fresh = (fl_memo_blob *)fl_memo_table(slots, sizeof(fl_memo_blob));
+  if (fresh == NULL) {
+    return false;
+  }
+  for (index = 0; index < fl_memo.blob_slots; index += 1) {
+    const fl_memo_blob *old = &fl_memo.blobs[index];
+    size_t at = 0;
+    if (old->id == 0) {
+      continue;
+    }
+    at = (size_t)(old->hash & (unsigned long long)(slots - 1u));
+    while (fresh[at].id != 0) {
+      at = (at + 1u) & (slots - 1u);
+    }
+    fresh[at] = *old;
+  }
+  fl_memo_untable(fl_memo.blobs, fl_memo.blob_slots, sizeof(fl_memo_blob));
+  fl_memo.blobs = fresh;
+  fl_memo.blob_slots = slots;
+  return true;
+}
+
+static size_t fl_memo_intern(const unsigned char *bytes, size_t size, bool *seen) {
+  const unsigned long long hash = fl_memo_hash(bytes, size);
+  size_t at = 0;
+  unsigned char *copy = NULL;
+  *seen = false;
+  if (fl_memo.blob_slots != 0) {
+    at = (size_t)(hash & (unsigned long long)(fl_memo.blob_slots - 1u));
+    while (fl_memo.blobs[at].id != 0) {
+      const fl_memo_blob *blob = &fl_memo.blobs[at];
+      if (blob->hash == hash && blob->size == size && memcmp(blob->bytes, bytes, size) == 0) {
+        *seen = true;
+        return blob->id;
+      }
+      at = (at + 1u) & (fl_memo.blob_slots - 1u);
+    }
+  }
+  if ((fl_memo.blob_count + 1u) * 2u > fl_memo.blob_slots) {
+    if (!fl_memo_grow_blobs()) {
+      return 0;
+    }
+  }
+  copy = (unsigned char *)fl_memo_take(size);
+  if (copy == NULL) {
+    return 0;
+  }
+  memcpy(copy, bytes, size);
+  at = (size_t)(hash & (unsigned long long)(fl_memo.blob_slots - 1u));
+  while (fl_memo.blobs[at].id != 0) {
+    at = (at + 1u) & (fl_memo.blob_slots - 1u);
+  }
+  fl_memo.blob_count += 1;
+  fl_memo.blobs[at].hash = hash;
+  fl_memo.blobs[at].bytes = copy;
+  fl_memo.blobs[at].size = size;
+  fl_memo.blobs[at].id = fl_memo.blob_count;
+  return fl_memo.blob_count;
+}
+
+static bool fl_memo_key(fl_arena *arena, const char *function, const fl_value *args, size_t count) {
+  size_t index = 0;
+  fl_memo_buffer *key = &fl_memo.key;
+  key->size = 0;
+  key->failed = false;
+  fl_memo_put_text(key, function);
+  fl_memo_put_size(key, count);
+  for (index = 0; index < count && !key->failed; index += 1) {
+    size_t id = fl_memo_pinned_id(arena, args[index]);
+    if (id == 0) {
+      const size_t start = key->size;
+      fl_memo_write(key, args[index]);
+      if (key->failed) {
+        return false;
+      }
+      if (key->size - start >= FL_MEMO_BIG) {
+        bool seen = false;
+        id = fl_memo_intern(key->data + start, key->size - start, &seen);
+        if (id == 0) {
+          return false;
+        }
+        fl_memo_pin_value(arena, args[index], id, key->size - start);
+        key->size = start;
+      }
+    }
+    if (id != 0) {
+      fl_memo_put_byte(key, 0xFFu);
+      fl_memo_put_size(key, id);
+    }
+  }
+  return !key->failed;
+}
+
+static size_t fl_memo_lookup(unsigned long long hash, const unsigned char *key, size_t size) {
+  size_t at = 0;
+  if (fl_memo.entry_slots == 0) {
+    return (size_t)-1;
+  }
+  at = (size_t)(hash & (unsigned long long)(fl_memo.entry_slots - 1u));
+  while (fl_memo.entries[at].key != NULL) {
+    const fl_memo_entry *entry = &fl_memo.entries[at];
+    if (entry->hash == hash && entry->key_bytes == size && memcmp(entry->key, key, size) == 0) {
+      return at;
+    }
+    at = (at + 1u) & (fl_memo.entry_slots - 1u);
+  }
+  return (size_t)-1;
+}
+
+static const char *fl_memo_name_of(const char *name) {
+  size_t size = 0;
+  unsigned long long hash = 0;
+  size_t at = 0;
+  char *copy = NULL;
+  if (name == NULL) {
+    return NULL;
+  }
+  size = strlen(name);
+  hash = fl_memo_hash((const unsigned char *)name, size);
+  if ((fl_memo.name_count + 1u) * 2u > fl_memo.name_slots) {
+    const size_t slots = fl_memo.name_slots == 0 ? 256u : fl_memo.name_slots * 2u;
+    fl_memo_name *fresh = (fl_memo_name *)fl_memo_table(slots, sizeof(fl_memo_name));
+    size_t index = 0;
+    if (fresh == NULL) {
+      return NULL;
+    }
+    for (index = 0; index < fl_memo.name_slots; index += 1) {
+      if (fl_memo.names[index].text != NULL) {
+        at = (size_t)(fl_memo.names[index].hash & (unsigned long long)(slots - 1u));
+        while (fresh[at].text != NULL) {
+          at = (at + 1u) & (slots - 1u);
+        }
+        fresh[at] = fl_memo.names[index];
+      }
+    }
+    fl_memo_untable(fl_memo.names, fl_memo.name_slots, sizeof(fl_memo_name));
+    fl_memo.names = fresh;
+    fl_memo.name_slots = slots;
+  }
+  at = (size_t)(hash & (unsigned long long)(fl_memo.name_slots - 1u));
+  while (fl_memo.names[at].text != NULL) {
+    if (fl_memo.names[at].hash == hash && strcmp(fl_memo.names[at].text, name) == 0) {
+      return fl_memo.names[at].text;
+    }
+    at = (at + 1u) & (fl_memo.name_slots - 1u);
+  }
+  copy = (char *)fl_memo_take(size + 1u);
+  if (copy == NULL) {
+    return NULL;
+  }
+  memcpy(copy, name, size + 1u);
+  fl_memo.names[at].hash = hash;
+  fl_memo.names[at].text = copy;
+  fl_memo.name_count += 1;
+  return copy;
+}
+
+static bool fl_memo_copy_fields(const fl_field *fields, size_t count, const fl_field **out);
+
+static bool fl_memo_copy(fl_value value, fl_value *out) {
+  size_t index = 0;
+  *out = value;
+  switch (value.tag) {
+  case FL_STRING: {
+    char *text = NULL;
+    if (value.as.string.bytes == 0) {
+      out->as.string.utf8 = "";
+      return true;
+    }
+    text = (char *)fl_memo_take(value.as.string.bytes);
+    if (text == NULL) {
+      return false;
+    }
+    memcpy(text, value.as.string.utf8, value.as.string.bytes);
+    out->as.string.utf8 = text;
+    return true;
+  }
+  case FL_LIST: {
+    fl_value *items = NULL;
+    out->as.list.grow = NULL;
+    if (value.as.list.count == 0) {
+      out->as.list.items = NULL;
+      return true;
+    }
+    if (value.as.list.count > ((size_t)-1) / sizeof(fl_value)) {
+      return false;
+    }
+    items = (fl_value *)fl_memo_take(value.as.list.count * sizeof(fl_value));
+    if (items == NULL) {
+      return false;
+    }
+    for (index = 0; index < value.as.list.count; index += 1) {
+      if (!fl_memo_copy(value.as.list.items[index], &items[index])) {
+        return false;
+      }
+    }
+    out->as.list.items = items;
+    return true;
+  }
+  case FL_RECORD: {
+    fl_record *record = (fl_record *)fl_memo_take(sizeof(fl_record));
+    if (record == NULL) {
+      return false;
+    }
+    record->count = value.as.record->count;
+    if (!fl_memo_copy_fields(value.as.record->fields, value.as.record->count, &record->fields)) {
+      return false;
+    }
+    out->as.record = record;
+    return true;
+  }
+  case FL_VARIANT: {
+    fl_variant *variant = (fl_variant *)fl_memo_take(sizeof(fl_variant));
+    if (variant == NULL) {
+      return false;
+    }
+    variant->name = fl_memo_name_of(value.as.variant->name);
+    if (variant->name == NULL && value.as.variant->name != NULL) {
+      return false;
+    }
+    variant->count = value.as.variant->count;
+    if (!fl_memo_copy_fields(value.as.variant->fields, value.as.variant->count, &variant->fields)) {
+      return false;
+    }
+    out->as.variant = variant;
+    return true;
+  }
+  case FL_NOTHING:
+  case FL_NUMBER:
+  case FL_FLAG:
+  default:
+    return true;
+  }
+}
+
+static bool fl_memo_copy_fields(const fl_field *fields, size_t count, const fl_field **out) {
+  fl_field *copy = NULL;
+  size_t index = 0;
+  *out = NULL;
+  if (count == 0) {
+    return true;
+  }
+  if (count > ((size_t)-1) / sizeof(fl_field)) {
+    return false;
+  }
+  copy = (fl_field *)fl_memo_take(count * sizeof(fl_field));
+  if (copy == NULL) {
+    return false;
+  }
+  for (index = 0; index < count; index += 1) {
+    copy[index].name = fl_memo_name_of(fields[index].name);
+    if (copy[index].name == NULL && fields[index].name != NULL) {
+      return false;
+    }
+    if (!fl_memo_copy(fields[index].value, &copy[index].value)) {
+      return false;
+    }
+  }
+  *out = copy;
+  return true;
+}
+
+static bool fl_memo_insert(unsigned long long hash, const unsigned char *key, size_t size, fl_value value,
+                           size_t steps, size_t copied, size_t span, bool counted) {
+  unsigned char *stored = NULL;
+  fl_value copy = fl_nothing();
+  size_t at = 0;
+  if ((fl_memo.entry_count + 1u) * 2u > fl_memo.entry_slots) {
+    const size_t slots = fl_memo.entry_slots == 0 ? 4096u : fl_memo.entry_slots * 2u;
+    fl_memo_entry *fresh = (fl_memo_entry *)fl_memo_table(slots, sizeof(fl_memo_entry));
+    size_t index = 0;
+    if (fresh == NULL) {
+      return false;
+    }
+    for (index = 0; index < fl_memo.entry_slots; index += 1) {
+      if (fl_memo.entries[index].key != NULL) {
+        at = (size_t)(fl_memo.entries[index].hash & (unsigned long long)(slots - 1u));
+        while (fresh[at].key != NULL) {
+          at = (at + 1u) & (slots - 1u);
+        }
+        fresh[at] = fl_memo.entries[index];
+      }
+    }
+    fl_memo_untable(fl_memo.entries, fl_memo.entry_slots, sizeof(fl_memo_entry));
+    fl_memo.entries = fresh;
+    fl_memo.entry_slots = slots;
+  }
+  stored = (unsigned char *)fl_memo_take(size);
+  if (stored == NULL || !fl_memo_copy(value, &copy)) {
+    return false;
+  }
+  memcpy(stored, key, size);
+  at = (size_t)(hash & (unsigned long long)(fl_memo.entry_slots - 1u));
+  while (fl_memo.entries[at].key != NULL) {
+    at = (at + 1u) & (fl_memo.entry_slots - 1u);
+  }
+  fl_memo.entries[at].hash = hash;
+  fl_memo.entries[at].key = stored;
+  fl_memo.entries[at].key_bytes = size;
+  fl_memo.entries[at].value = copy;
+  fl_memo.entries[at].steps = steps;
+  fl_memo.entries[at].copied = copied;
+  fl_memo.entries[at].span = span;
+  fl_memo.entries[at].counted = counted;
+  fl_memo.entry_count += 1;
+  return true;
+}
+
+static void fl_memo_mismatch(const fl_memo_call *call, const char *what);
+
+static void fl_memo_disown(fl_arena *arena) {
+  if (!arena->memo_owner) {
+    return;
+  }
+  fl_memory_lock();
+  if (fl_memo.owner == arena) {
+    fl_memo.owner = NULL;
+  }
+  fl_memory_unlock();
+  arena->memo_owner = false;
+}
+
+static bool fl_memo_mine(fl_arena *arena) {
+  bool mine = false;
+  if (arena == NULL) {
+    return false;
+  }
+  fl_memory_lock();
+  fl_memo_ready();
+  if (fl_memo.enabled) {
+    if (fl_memo.owner == NULL) {
+      fl_memo.owner = arena;
+      arena->memo_owner = true;
+    }
+    mine = fl_memo.owner == arena;
+  }
+  fl_memory_unlock();
+  return mine;
+}
+
+static void fl_memo_open(fl_ctx *ctx, fl_memo_call *call) {
+  call->copied = ctx->copied;
+  call->steps = ctx->steps;
+  call->depth = ctx->depth;
+  call->peak = ctx->depth_peak;
+  ctx->depth_peak = ctx->depth;
+}
+
+bool fl_memo_find(fl_ctx *ctx, const char *function, const fl_value *args, size_t count, fl_memo_call *call,
+                  fl_value *result) {
+  fl_memo_tally *tally = NULL;
+  size_t at = 0;
+  call->mode = FL_MEMO_OFF;
+  call->key = NULL;
+  call->key_bytes = 0;
+  call->tally = 0;
+  if (ctx == NULL || result == NULL || function == NULL) {
+    return false;
+  }
+  if (!fl_memo_mine(ctx->arena)) {
+    return false;
+  }
+  call->tally = fl_memo_tally_of(function);
+  tally = &fl_memo.tallies[call->tally];
+  tally->calls += 1;
+  if (!fl_memo_key(ctx->arena, function, args, count)) {
+    tally->unkept += 1;
+    return false;
+  }
+  call->hash = fl_memo_hash(fl_memo.key.data, fl_memo.key.size);
+  at = fl_memo_lookup(call->hash, fl_memo.key.data, fl_memo.key.size);
+  if (at != (size_t)-1) {
+    const fl_memo_entry *entry = &fl_memo.entries[at];
+    const bool counting = ctx->max_steps != 0;
+    if (counting && !entry->counted) {
+      tally->over_steps += 1;
+      call->mode = FL_MEMO_PASS;
+    } else if (counting && (entry->steps > ctx->max_steps || ctx->steps > ctx->max_steps - entry->steps)) {
+      tally->over_steps += 1;
+      call->mode = FL_MEMO_PASS;
+    } else if (entry->span > ctx->max_depth || ctx->depth > ctx->max_depth - entry->span) {
+      tally->over_depth += 1;
+      call->mode = FL_MEMO_PASS;
+    } else if (fl_memo.audit) {
+      call->key = (unsigned char *)malloc(fl_memo.key.size == 0 ? 1u : fl_memo.key.size);
+      if (call->key == NULL) {
+        fl_memo_mismatch(call, "no memory to keep the key for the audit");
+      }
+      memcpy(call->key, fl_memo.key.data, fl_memo.key.size);
+      call->key_bytes = fl_memo.key.size;
+      tally->audited += 1;
+      call->mode = FL_MEMO_AUDIT;
+    } else {
+      tally->hits += 1;
+      if (counting) {
+        ctx->steps += entry->steps;
+        ctx->copied += entry->copied;
+      }
+      if (ctx->depth + entry->span > ctx->depth_peak) {
+        ctx->depth_peak = ctx->depth + entry->span;
+      }
+      *result = entry->value;
+      return true;
+    }
+    fl_memo_open(ctx, call);
+    return false;
+  }
+  tally->misses += 1;
+  if (fl_memo.full) {
+    tally->unkept += 1;
+    return false;
+  }
+  call->key = (unsigned char *)malloc(fl_memo.key.size == 0 ? 1u : fl_memo.key.size);
+  if (call->key == NULL) {
+    tally->unkept += 1;
+    return false;
+  }
+  memcpy(call->key, fl_memo.key.data, fl_memo.key.size);
+  call->key_bytes = fl_memo.key.size;
+  call->mode = FL_MEMO_STORE;
+  fl_memo_open(ctx, call);
+  return false;
+}
+
+static void fl_memo_mismatch(const fl_memo_call *call, const char *what) {
+  fprintf(stderr, "FLANG_MEMO_AUDIT: «%s»: %s\n", fl_memo.tallies[call->tally].function, what);
+  fflush(stderr);
+  abort();
+}
+
+fl_status fl_memo_keep(fl_ctx *ctx, fl_memo_call *call, fl_status status, fl_value *result) {
+  size_t span = 0;
+  size_t steps = 0;
+  size_t copied = 0;
+  if (call->mode == FL_MEMO_OFF || ctx == NULL) {
+    return status;
+  }
+  span = ctx->depth_peak > call->depth ? ctx->depth_peak - call->depth : 0;
+  if (call->peak > ctx->depth_peak) {
+    ctx->depth_peak = call->peak;
+  }
+  steps = ctx->steps - call->steps;
+  copied = ctx->copied - call->copied;
+  if (call->mode == FL_MEMO_AUDIT) {
+    const size_t at = fl_memo_lookup(call->hash, call->key, call->key_bytes);
+    const fl_memo_entry *entry = NULL;
+    free(call->key);
+    call->key = NULL;
+    if (at == (size_t)-1) {
+      fl_memo_mismatch(call, "the remembered call is gone");
+    }
+    entry = &fl_memo.entries[at];
+    if (status != FL_OK) {
+      fl_memo_mismatch(call, "the remembered call succeeded, the fresh one failed");
+    }
+    if (ctx->max_steps != 0 && steps - copied != entry->steps - entry->copied) {
+      fl_memo_mismatch(call, "the fresh call charged a different number of steps");
+    }
+    if (span != entry->span) {
+      fl_memo_mismatch(call, "the fresh call reached a different depth");
+    }
+    fl_memo.left.size = 0;
+    fl_memo.left.failed = false;
+    fl_memo.right.size = 0;
+    fl_memo.right.failed = false;
+    fl_memo_write(&fl_memo.left, entry->value);
+    fl_memo_write(&fl_memo.right, *result);
+    if (fl_memo.left.failed || fl_memo.right.failed) {
+      fl_memo_mismatch(call, "no memory to compare the results");
+    }
+    if (fl_memo.left.size != fl_memo.right.size || memcmp(fl_memo.left.data, fl_memo.right.data, fl_memo.left.size) != 0) {
+      fl_memo_mismatch(call, "the fresh result differs from the remembered one");
+    }
+    return status;
+  }
+  if (call->mode == FL_MEMO_STORE) {
+    if (status == FL_OK && result != NULL) {
+      if (fl_memo_insert(call->hash, call->key, call->key_bytes, *result, steps, copied, span, ctx->max_steps != 0)) {
+        fl_memo.tallies[call->tally].kept += 1;
+      } else {
+        fl_memo.tallies[call->tally].unkept += 1;
+      }
+    }
+    free(call->key);
+    call->key = NULL;
+  }
+  return status;
 }

@@ -1,0 +1,361 @@
+модуль «Kernel verdict forgery»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Head»
+  «lines»: число
+  «signs»: число
+  «first»: число
+  «second»: число
+
+объект «Rewrite»
+  «lines»: список строки
+  «placed»: признак
+
+тотальная функция «Source»
+  возвращает строка
+  пример «The source the probe spoils»
+    ожидается "flang/proof/examples/corpus-natural.flang"
+  "flang/proof/examples/corpus-natural.flang"
+
+тотальная функция «Record»
+  возвращает строка
+  пример «The record of that source»
+    ожидается "flang/proof/checker/tests/records/corpus/corpus-natural.record"
+  "flang/proof/checker/tests/records/corpus/corpus-natural.record"
+
+тотальная функция «Lie»
+  возвращает строка
+  пример «A total function with a false postcondition»
+    ожидается "\nтотальная функция «Ложь 2390»\n  принимает первое: число, второе: число\n  возвращает число\n  обеспечивает «ложь 2390 неотрицательна» результат не меньше 0\n  первое плюс второе\n"
+  "\nтотальная функция «Ложь 2390»\n  принимает первое: число, второе: число\n  возвращает число\n  обеспечивает «ложь 2390 неотрицательна» результат не меньше 0\n  первое плюс второе\n"
+
+тотальная функция «Build command»
+  возвращает строка
+  пример «Two small trees share the checker and the kernel»
+    ожидается "for d in honest forged; do mkdir -p \"$0/$d/flang/proof/examples\" \"$0/$d/records\" \"$0/$d/flang/proof/checker\" \"$0/$d/bootstrap\" && cp \"$1/flang/proof/checker/сверщик\" \"$0/$d/flang/proof/checker/сверщик\" && ln -sf \"$1/bootstrap/flang\" \"$0/$d/bootstrap/flang\" || exit 1; done; cp \"$1/flang/proof/examples/corpus-natural.flang\" \"$0/honest/flang/proof/examples/\" && cp \"$1/flang/proof/checker/tests/records/corpus/corpus-natural.record\" \"$0/honest/records/probe.record\""
+  "for d in honest forged; do mkdir -p \"$0/$d/flang/proof/examples\" \"$0/$d/records\" \"$0/$d/flang/proof/checker\" \"$0/$d/bootstrap\" && cp \"$1/flang/proof/checker/сверщик\" \"$0/$d/flang/proof/checker/сверщик\" && ln -sf \"$1/bootstrap/flang\" \"$0/$d/bootstrap/flang\" || exit 1; done; cp \"$1/flang/proof/examples/corpus-natural.flang\" \"$0/honest/flang/proof/examples/\" && cp \"$1/flang/proof/checker/tests/records/corpus/corpus-natural.record\" \"$0/honest/records/probe.record\""
+
+тотальная функция «Ledger command»
+  возвращает строка
+  пример «A ledger of the same kind as one built from a commit»
+    ожидается "(cd \"$0\" && find . -type f \\( -name '*.flang' -o -name '*.record' \\) -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) | sed 's|  \\./|\\t|' > \"$1\""
+  "(cd \"$0\" && find . -type f \\( -name '*.flang' -o -name '*.record' \\) -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) | sed 's|  \\./|\\t|' > \"$1\""
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The tree lies two directories up»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No work directory yet»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «In work»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file in the work directory»
+    дано name равно "honest.tsv"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/honest.tsv"
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Absolute root»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The root as the shell sees it»
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным "")]
+    ожидается "/t"
+  «First line» от («Output of» от "root" и answers)
+
+тотальная функция «Head of»
+  принимает text: строка
+  возвращает «Head»
+  пример «Two lines of two signs, counted as the checker counts them»
+    дано text равно "a\n"
+    ожидается запись «Head» с «lines» равным 2 и «signs» равным 2 и «first» равным 132844 и «second» равным 144682
+  пусть codes равно (отобразить (разложить text на символы) как sign → код символа sign)
+  запись «Head» с «lines» равным (длина (разделить text по "\n")) и «signs» равным (длина codes) и «first» равным (свёртка codes начиная с 7 как h и code → ((h умножить на 131) плюс code) остаток от 1000000007) и «second» равным (свёртка codes начиная с 7 как h и code → ((h умножить на 137) плюс code) остаток от 998244353)
+
+тотальная функция «Line of»
+  принимает text: строка, start: строка
+  возвращает строка
+  пример «The number of the first line that starts so»
+    дано text равно "a\nб\nб\n"
+    дано start равно "б"
+    ожидается "2"
+  «Cell» от 1 и (отобразить (отфильтровать («Numbered» от (разделить text по "\n")) где entry → («Cell» от 2 и entry) начинается с start) как entry → «Cell» от 1 и entry)
+
+тотальная функция «Statement block»
+  принимает line: строка
+  возвращает список строки
+  пример «The forged statement, said without a theorem»
+    дано line равно "9"
+    ожидается ["утверждение «ложь 2390 неотрицательна» функции «Ложь 2390» строка 9", "  вид postcondition", "  вердикт нет вердикта", "  теоремы нет", "конец утверждения", ""]
+  [(соединить ["утверждение «ложь 2390 неотрицательна» функции «Ложь 2390» строка ", line] по ""), "  вид postcondition", "  вердикт нет вердикта", "  теоремы нет", "конец утверждения", ""]
+
+тотальная функция «Rewritten line»
+  принимает rewrite: «Rewrite», line: строка, head: «Head», sum: строка, said: строка, made: строка
+  возвращает «Rewrite»
+  пример «The count of statements grows by one»
+    дано rewrite равно запись «Rewrite» с «lines» равным пустой список и «placed» равным нет
+    дано line равно "утверждений 3"
+    дано head равно запись «Head» с «lines» равным 1 и «signs» равным 0 и «first» равным 7 и «second» равным 7
+    дано sum равно "ff"
+    дано said равно "9"
+    дано made равно "8"
+    ожидается запись «Rewrite» с «lines» равным ["утверждений 4"] и «placed» равным нет
+  пусть keep равно (запись «Rewrite» с «lines» равным (добавить line к (rewrite.«lines»)) и «placed» равным (rewrite.«placed»))
+  пусть swap равно («Swapped line» от rewrite и line и head и sum)
+  «Chosen» от [(«When» от (не (swap равен line)) и (запись «Rewrite» с «lines» равным (добавить swap к (rewrite.«lines»)) и «placed» равным (rewrite.«placed»))),
+    («When» от ((line начинается с "тотальность «") и притом (не (rewrite.«placed»))) и (запись «Rewrite» с «lines» равным (добавить line к («Соединить списки» от (rewrite.«lines») и («Statement block» от said))) и «placed» равным да)),
+    («When» от (line равен "конец записи") и (запись «Rewrite» с «lines» равным («Соединить списки» от (rewrite.«lines») и («Соединить списки» от (если rewrite.«placed» то (пустой список) иначе («Statement block» от said)) и [(соединить ["тотальность «Ложь 2390» строка ", made] по ""), "  вид composition", "  зовёт примитив «плюс»", "  самовызова нет", "  конец тотальности", line])) и «placed» равным да))] и keep
+
+тотальная функция «Swapped line»
+  принимает rewrite: «Rewrite», line: строка, head: «Head», sum: строка
+  возвращает строка
+  пример «The fingerprint line takes the new sum»
+    дано rewrite равно запись «Rewrite» с «lines» равным пустой список и «placed» равным нет
+    дано line равно "отпечаток256 aa"
+    дано head равно запись «Head» с «lines» равным 1 и «signs» равным 0 и «first» равным 7 и «second» равным 7
+    дано sum равно "ff"
+    ожидается "отпечаток256 ff"
+  «Chosen» от [(«When» от (line начинается с "строк ") и (соединить ["строк ", (к строке (head.«lines»))] по "")),
+    («When» от (line начинается с "знаков ") и (соединить ["знаков ", (к строке (head.«signs»))] по "")),
+    («When» от (line начинается с "отпечаток256 ") и (соединить ["отпечаток256 ", sum] по "")),
+    («When» от (line начинается с "отпечаток ") и (соединить ["отпечаток ", (к строке (head.«first»)), " ", (к строке (head.«second»))] по "")),
+    («When» от (line начинается с "утверждений ") и (соединить ["утверждений ", (к строке ((«Count» от («After» от "утверждений " и line)) плюс 1))] по "")),
+    («When» от (line начинается с "тотальностей ") и (соединить ["тотальностей ", (к строке ((«Count» от («After» от "тотальностей " и line)) плюс 1))] по ""))] и line
+
+тотальная функция «Forged record»
+  принимает written: строка, forged: строка, sum: строка
+  возвращает строка
+  пример «A record without statements gets the forged one before its end»
+    дано written равно "утверждений 0\nтотальностей 0\nконец записи\n"
+    дано forged равно "  обеспечивает «ложь 2390»\nтотальная функция «Ложь 2390»\n"
+    дано sum равно "ff"
+    ожидается "утверждений 1\nтотальностей 1\nутверждение «ложь 2390 неотрицательна» функции «Ложь 2390» строка 1\n  вид postcondition\n  вердикт нет вердикта\n  теоремы нет\nконец утверждения\n\nтотальность «Ложь 2390» строка 2\n  вид composition\n  зовёт примитив «плюс»\n  самовызова нет\n  конец тотальности\nконец записи\n"
+  пусть head равно («Head of» от forged)
+  пусть said равно («Line of» от forged и "  обеспечивает «ложь 2390")
+  пусть made равно («Line of» от forged и "тотальная функция «Ложь 2390»")
+  пусть lines равно (разделить written по "\n")
+  пусть kept равно (если «Ends with» от written и "\n" то (отфильтровать («Numbered» от lines) где entry → не ((«Cell» от 1 и entry) равен (к строке (длина lines)))) иначе («Numbered» от lines))
+  соединить (отобразить ((свёртка kept начиная с (запись «Rewrite» с «lines» равным пустой список и «placed» равным нет) как rewrite и entry → «Rewritten line» от rewrite и («Cell» от 2 и entry) и head и sum и said и made).«lines») как line → соединить [line, "\n"] по "") по ""
+
+тотальная функция «Numbered»
+  принимает items: список строки
+  возвращает список список строки
+  пример «Lines are numbered from one»
+    дано items равно ["а", "б"]
+    ожидается [["1", "а"], ["2", "б"]]
+  свёртка items начиная с (пустой список) как numbered и piece → добавить [(к строке ((длина numbered) плюс 1)), piece] к numbered
+
+тотальная функция «Kernel»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The kernel of the tree»
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным "")]
+    ожидается "/t/bootstrap/flang"
+  соединить [(«Absolute root» от answers), "/bootstrap/flang"] по ""
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The root, the source and its record»
+    ожидается [запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP"), запись «Question» с «name» равным "root" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && pwd"]), запись «Question» с «name» равным "source" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/examples/corpus-natural.flang"), запись «Question» с «name» равным "record" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/tests/records/corpus/corpus-natural.record")]
+  [(«Environment» от "temporary" и "FLANG_TMP"), («Run» от "root" и "sh" и ["-c", "cd ../.. && pwd"]), («Read» от "source" и (соединить [(«Root»), "/", («Source»)] по "")), («Read» от "record" и (соединить [(«Root»), "/", («Record»)] по ""))]
+
+тотальная функция «Start»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «A work directory, the kernel and the checker»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "work" и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/kernel-forgery."), запись «Question» с «name» равным "kernel present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "/bootstrap/flang"]), запись «Question» с «name» равным "checker present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "/flang/proof/checker/сверщик"])]
+  [(«Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/kernel-forgery."] по "")), («Run» от "kernel present" и "test" и ["-x", («Kernel» от answers)]), («Run» от "checker present" и "test" и ["-x", (соединить [(«Absolute root» от answers), "/flang/proof/checker/сверщик"] по "")])]
+
+тотальная функция «Forged source»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The lie is added to the end of the source»
+    дано answers равно пустой список
+    ожидается "\nтотальная функция «Ложь 2390»\n  принимает первое: число, второе: число\n  возвращает число\n  обеспечивает «ложь 2390 неотрицательна» результат не меньше 0\n  первое плюс второе\n"
+  соединить [(«Output of» от "source" и answers), («Lie»)] по ""
+
+тотальная функция «Building»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is built»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Run» от "built" и "sh" и ["-c", («Build command»), («Work» от answers), («Absolute root» от answers)]), («Write» от "forged source" и (соединить [(«In work» от "forged/" и answers), («Source»)] по "") и («Forged source» от answers)), («Run» от "kernel on forged" и "sh" и ["-c", "cd \"$0\" && exec ./bootstrap/flang check \"$1\" > /dev/null 2>&1", («In work» от "forged" и answers), («Source»)]), («Run» от "forged sum" и "sha256sum" и [(соединить [(«In work» от "forged/" и answers), («Source»)] по "")])]
+
+тотальная функция «Recording»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is recorded»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Write» от "forged record" и («In work» от "forged/records/probe.record" и answers) и («Forged record» от («Output of» от "record" и answers) и («Forged source» от answers) и («Word» от 1 и («First line» от («Output of» от "forged sum" и answers))))), («Run» от "honest ledger" и "sh" и ["-c", («Ledger command»), («In work» от "honest" и answers), («In work» от "honest.tsv" и answers)]), («Run» от "forged ledger" и "sh" и ["-c", («Ledger command»), («In work» от "forged" и answers), («In work» от "forged.tsv" и answers)])]
+
+тотальная функция «Share run»
+  принимает side: строка, answers: список «Answer»
+  возвращает «Question»
+  пример «The share instrument measures one small tree»
+    дано side равно "honest"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается запись «Question» с «name» равным "honest share" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "sh \"$0\" --корень \"$1\" --ведомость \"$2\" --набор \"$3\" --разбор \"$4\" > /dev/null 2>&1", "/flang/proof/corpus-share.sh", "/w/honest", "/w/honest.tsv", "/w/honest/records", "/w/honest.dump"])
+  «Run» от (соединить [side, " share"] по "") и "sh" и ["-c", "sh \"$0\" --корень \"$1\" --ведомость \"$2\" --набор \"$3\" --разбор \"$4\" > /dev/null 2>&1", (соединить [(«Absolute root» от answers), "/flang/proof/corpus-share.sh"] по ""), («In work» от side и answers), («In work» от (соединить [side, ".tsv"] по "") и answers), («In work» от (соединить [side, "/records"] по "") и answers), («In work» от (соединить [side, ".dump"] по "") и answers)]
+
+тотальная функция «Verdict run»
+  принимает side: строка, answers: список «Answer»
+  возвращает «Question»
+  пример «The kernel verdict plan judges one small tree»
+    дано side равно "forged"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается запись «Question» с «name» равным "forged verdict" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "exec \"$0\" io kernel-verdict.fscript --max-steps 4000000000 --timeout 900000 -- --root \"$1\" --ledger \"$2\" > /dev/null", "/bootstrap/flang", "/w/forged", "/w/forged.tsv"])
+  «Run» от (соединить [side, " verdict"] по "") и "sh" и ["-c", "exec \"$0\" io kernel-verdict.fscript --max-steps 4000000000 --timeout 900000 -- --root \"$1\" --ledger \"$2\" > /dev/null", («Kernel» от answers), («In work» от side и answers), («In work» от (соединить [side, ".tsv"] по "") и answers)]
+
+тотальная функция «Measuring»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is measured»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Share run» от "honest" и answers), («Verdict run» от "honest" и answers), («Share run» от "forged" и answers), («Verdict run» от "forged" и answers), («Read» от "honest dump" и («In work» от "honest.dump" и answers)), («Read» от "forged dump" и («In work» от "forged.dump" и answers))]
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 9
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 5
+      то «Setup»
+    случай 4
+      то «Start» от answers
+    случай 3
+      то «Building» от answers
+    случай 2
+      то «Recording» от answers
+    случай 1
+      то «Measuring» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Accepted rows»
+  принимает dump: строка
+  возвращает число
+  пример «Rows the share instrument put in its first class»
+    дано dump равно "head\na\tb\tc\td\te\tf\tg\th\ti\tj\tk\tl\tm\tn\to\tР0\n"
+    ожидается 1
+  длина (отфильтровать («Rows» от dump) где row → («Cell» от 16 и row) равен "Р0")
+
+тотальная функция «Probe lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing measured fails all three»
+    дано answers равно пустой список
+    ожидается ["контроль: честный файл в коммите\tПРОВАЛ (линейка код 127, Р0=0, приговор код 127)", "дыра: ложь в коммите, ведомость её НЕ ловит\tНЕ ПОКАЗАНА (код 127, Р0=0) — подделка не собралась либо линейку правили", "охрана: приговор ядра на той же подделке\tПРОШЛА — охраны нет (код 127)"]
+  пусть share равно («Exit code of» от "honest share" и answers)
+  пусть guard равно («Exit code of» от "honest verdict" и answers)
+  пусть kept равно («Accepted rows» от («Output of» от "honest dump" и answers))
+  пусть lying равно («Exit code of» от "forged share" и answers)
+  пусть missed равно («Accepted rows» от («Output of» от "forged dump" и answers))
+  пусть caught равно («Exit code of» от "forged verdict" и answers)
+  [(если (share равен 0) и притом ((kept равен 1) и притом (guard равен 0)) то "контроль: честный файл в коммите\tЦЕЛА (линейка Р0 код 0, приговор ядра код 0)" иначе (соединить ["контроль: честный файл в коммите\tПРОВАЛ (линейка код ", (к строке share), ", Р0=", (к строке kept), ", приговор код ", (к строке guard), ")"] по "")),
+   (если (lying равен 0) и притом (missed равен 1) то "дыра: ложь в коммите, ведомость её НЕ ловит\tПОКАЗАНА (линейка Р0 код 0, Р5 ноль)" иначе (соединить ["дыра: ложь в коммите, ведомость её НЕ ловит\tНЕ ПОКАЗАНА (код ", (к строке lying), ", Р0=", (к строке missed), ") — подделка не собралась либо линейку правили"] по "")),
+   (если (caught равен 1) и притом ((«Errors of» от "forged verdict" и answers) содержит "ЯДРО ОТВЕРГАЕТ ФАЙЛ") то "охрана: приговор ядра на той же подделке\tОТВЕРГНУТА (код 1)" иначе (соединить ["охрана: приговор ядра на той же подделке\tПРОШЛА — охраны нет (код ", (к строке caught), ")"] по ""))]
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «A forgery the kernel accepted is no probe at all»
+    дано answers равно [запись «Answer» с «name» равным "kernel on forged" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным "")]
+    ожидается вариант «Провал» с код равным "FLANG_KERNEL_FORGERY" и сообщение равным "ПОДЛОГ НЕ СОБРАЛСЯ: ядро приняло файл с ложным постусловием — поправить пробу, линейка ни при чём"
+  пусть lines равно («Probe lines» от answers)
+  «Chosen» от [(«When» от ((«Exit code of» от "kernel on forged" и answers) равен 0) и (вариант «Провал» с код равным "FLANG_KERNEL_FORGERY" и сообщение равным "ПОДЛОГ НЕ СОБРАЛСЯ: ядро приняло файл с ложным постусловием — поправить пробу, линейка ни при чём")),
+    («When» от (пусто (отфильтровать lines где line → (line содержит "ПРОВАЛ") или ((line содержит "НЕ ПОКАЗАНА") или (line содержит "ПРОШЛА")))) и (вариант «Конец работы» с значение равным (соединить (добавить "проба порчи на приговор ядра: дыра показана, охрана краснеет, честный файл зелен" к lines) по "\n")))] и (вариант «Провал» с код равным "FLANG_KERNEL_FORGERY" и сообщение равным (соединить lines по "\n"))
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «No kernel binary»
+    дано asked равно "kernel present"
+    дано answers равно [запись «Answer» с «name» равным "kernel present" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "")]
+    ожидается ["нет двоичного ядра /bootstrap/flang — собрать: make -C bootstrap"]
+  пусть failed равно (не ((«Exit code of» от asked и answers) равен 0))
+  «Chosen» от [(«When» от ((asked равен "kernel present") и притом failed) и [(соединить ["нет двоичного ядра ", («Kernel» от answers), " — собрать: make -C bootstrap"] по "")]),
+    («When» от ((asked равен "checker present") и притом failed) и [(соединить ["нет чекера ", («Absolute root» от answers), "/flang/proof/checker/сверщик — собрать: make -C flang/proof/checker"] по "")]),
+    («When» от (((asked равен "source") или (asked равен "record")) и притом failed) и ["ПОДЛОГ НЕ СОБРАЛСЯ: нет «flang/proof/examples/corpus-natural.flang» или его записи — поправить пробу, линейка ни при чём"]),
+    («When» от ((asked равен "built") и притом failed) и ["ПОДЛОГ НЕ СОБРАЛСЯ: два малых дерева не сложились"]),
+    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и ["временный каталог не заведён"])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно [запись «Answer» с «name» равным "kernel on forged" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным "")]
+    ожидается вариант «Провал» с код равным "FLANG_KERNEL_FORGERY" и сообщение равным "ПОДЛОГ НЕ СОБРАЛСЯ: ядро приняло файл с ложным постусловием — поправить пробу, линейка ни при чём"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Six stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6 и «answers» равным пустой список
+  «Begin with» от 6
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the place of temporary files»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и потом равным (запись «Inquiry» с «asked» равным "temporary" и «queue» равным [запись «Question» с «name» равным "root" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && pwd"]), запись «Question» с «name» равным "source" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/examples/corpus-natural.flang"), запись «Question» с «name» равным "record" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/tests/records/corpus/corpus-natural.record")] и «stages» равным 5 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то если пусто («Work» от answers)
+        то вариант «Не проверено» с код равным "FLANG_KERNEL_FORGERY_NOT_MEASURED" и сообщение равным голова
+        иначе вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", («Work» от answers)]) и потом равным (запись «Inquiry» с «asked» равным (соединить ["stopped: ", голова] по "") и «queue» равным пустой список и «stages» равным 0 и «answers» равным answers)
+    случай пусто
+      то если (inquiry.«asked») начинается с "stopped: "
+        то вариант «Не проверено» с код равным "FLANG_KERNEL_FORGERY_NOT_MEASURED" и сообщение равным («After» от "stopped: " и (inquiry.«asked»))
+        иначе «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Kernel verdict forgery»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

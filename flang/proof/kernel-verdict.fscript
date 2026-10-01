@@ -1,0 +1,351 @@
+модуль «Kernel verdict»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Pick»
+  «waiting»: признак
+  «found»: список строки
+
+объект «Case»
+  «path»: строка
+  «known»: признак
+  «same»: признак
+  «code»: число
+  «excused»: признак
+
+тотальная функция «Excused»
+  возвращает список строки
+  пример «Eight files the kernel refuses on purpose»
+    ожидается ["flang/proof/forgeries/circle.flang", "flang/proof/checker/tests/records/3314-conditional-by-branches/false-negation.flang", "flang/proof/checker/tests/records/9991-starts-with/false-prefix.flang", "flang/proof/checker/tests/records/goal-split-by-condition/p3-let-binds-a-foreign-name.flang", "flang/proof/checker/tests/programs/lie-collision.flang", "flang/proof/checker/tests/programs/note-instead-of-postcondition.flang", "flang/proof/checker/tests/programs/intermediate-step-by-note.flang", "flang/proof/checker/tests/programs/measure-not-value-zero-character-lie.flang"]
+  ["flang/proof/forgeries/circle.flang", "flang/proof/checker/tests/records/3314-conditional-by-branches/false-negation.flang", "flang/proof/checker/tests/records/9991-starts-with/false-prefix.flang", "flang/proof/checker/tests/records/goal-split-by-condition/p3-let-binds-a-foreign-name.flang", "flang/proof/checker/tests/programs/lie-collision.flang", "flang/proof/checker/tests/programs/note-instead-of-postcondition.flang", "flang/proof/checker/tests/programs/intermediate-step-by-note.flang", "flang/proof/checker/tests/programs/measure-not-value-zero-character-lie.flang"]
+
+тотальная функция «Ledger command»
+  возвращает строка
+  пример «The ledger is built from the files of a commit»
+    ожидается "git -C \"$0\" rev-parse --verify -q \"$1^{commit}\" >/dev/null 2>&1 || exit 4; mkdir -p \"$2/tree\" || exit 5; git -C \"$0\" archive \"$1\" -- '*.flang' '*.record' 2>/dev/null | tar -x -C \"$2/tree\" || exit 6; (cd \"$2/tree\" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) | sed 's|  \\./|\\t|' > \"$2/ledger.tsv\""
+  "git -C \"$0\" rev-parse --verify -q \"$1^{commit}\" >/dev/null 2>&1 || exit 4; mkdir -p \"$2/tree\" || exit 5; git -C \"$0\" archive \"$1\" -- '*.flang' '*.record' 2>/dev/null | tar -x -C \"$2/tree\" || exit 6; (cd \"$2/tree\" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) | sed 's|  \\./|\\t|' > \"$2/ledger.tsv\""
+
+тотальная функция «Heads command»
+  возвращает строка
+  пример «Every record of the ledger names its source»
+    ожидается "while IFS= read -r z; do [ -f \"$0/$z\" ] || continue; d=$(grep -a -m1 '^исходник ' \"$0/$z\" | cut -d' ' -f2-); [ -n \"$d\" ] && printf '%s\\n' \"$d\"; done < \"$1\" | LC_ALL=C sort -u"
+  "while IFS= read -r z; do [ -f \"$0/$z\" ] || continue; d=$(grep -a -m1 '^исходник ' \"$0/$z\" | cut -d' ' -f2-); [ -n \"$d\" ] && printf '%s\\n' \"$d\"; done < \"$1\" | LC_ALL=C sort -u"
+
+тотальная функция «Judge command»
+  возвращает строка
+  пример «Each source is summed and judged by the kernel of the tree»
+    ожидается "cd \"$0\" || exit 2; while IFS= read -r f; do if [ -f \"$f\" ]; then s=$(sha256sum \"$f\" | cut -d' ' -f1); ./bootstrap/flang check --proof \"$f\" >/dev/null 2>&1; k=$?; else s=-; k=-; fi; printf '%s\\t%s\\t%s\\n' \"$f\" \"$s\" \"$k\"; done < \"$1\""
+  "cd \"$0\" || exit 2; while IFS= read -r f; do if [ -f \"$f\" ]; then s=$(sha256sum \"$f\" | cut -d' ' -f1); ./bootstrap/flang check --proof \"$f\" >/dev/null 2>&1; k=$?; else s=-; k=-; fi; printf '%s\\t%s\\t%s\\n' \"$f\" \"$s\" \"$k\"; done < \"$1\""
+
+тотальная функция «Words given»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «No arguments»
+    дано answers равно пустой список
+    ожидается пустой список
+  «Given of» от "arguments" и answers
+
+тотальная функция «Key value»
+  принимает key: строка, words: список строки
+  возвращает строка
+  пример «The word after its key»
+    дано key равно "--root"
+    дано words равно ["--ledger", "/l", "--root", "/r"]
+    ожидается "/r"
+  пример «A key not given»
+    дано key равно "--commit"
+    дано words равно ["--root", "/r"]
+    ожидается ""
+  «Cell» от 1 и ((свёртка words начиная с (запись «Pick» с «waiting» равным нет и «found» равным пустой список) как pick и word → «Picked» от pick и word и key).«found»)
+
+тотальная функция «Picked»
+  принимает pick: «Pick», word: строка, key: строка
+  возвращает «Pick»
+  пример «The word after the key is taken»
+    дано pick равно запись «Pick» с «waiting» равным да и «found» равным пустой список
+    дано word равно "/r"
+    дано key равно "--root"
+    ожидается запись «Pick» с «waiting» равным нет и «found» равным ["/r"]
+  запись «Pick» с «waiting» равным (word равен key) и «found» равным (если pick.«waiting» то (добавить word к (pick.«found»)) иначе (pick.«found»))
+
+тотальная функция «Root»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The tree of the plan unless another is named»
+    дано answers равно пустой список
+    ожидается "../.."
+  пусть named равно («Key value» от "--root" и («Words given» от answers))
+  если пусто named то "../.." иначе named
+
+тотальная функция «Commit»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The head commit unless another is named»
+    дано answers равно пустой список
+    ожидается "HEAD"
+  пусть named равно («Key value» от "--commit" и («Words given» от answers))
+  если пусто named то "HEAD" иначе named
+
+тотальная функция «Ledger file»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No ready ledger»
+    дано answers равно пустой список
+    ожидается ""
+  «Key value» от "--ledger" и («Words given» от answers)
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No work directory yet»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «In work»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file in the work directory»
+    дано name равно "cases"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/cases"
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Ledger rows»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  пример «Nothing read, no rows»
+    дано answers равно пустой список
+    ожидается пустой список
+  отобразить («Lines» от («Output of» от "ledger" и answers)) как line → разделить line по "\t"
+
+тотальная функция «Ledger sum»
+  принимает path: строка, rows: список список строки
+  возвращает строка
+  пример «The sum the commit holds for a file»
+    дано path равно "a.flang"
+    дано rows равно [["11", "b.flang"], ["22", "a.flang"]]
+    ожидается "22"
+  «Cell» от 1 и (отобразить (отфильтровать rows где row → («Cell» от 2 и row) равен path) как row → «Cell» от 1 и row)
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The arguments and the place of temporary files»
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»), запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")]
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP")]
+
+тотальная функция «Start»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «A work directory and the binary of the tree»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "work" и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/kernel-verdict."), запись «Question» с «name» равным "binary present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "../../bootstrap/flang"])]
+  [(«Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/kernel-verdict."] по "")), («Run» от "binary present" и "test" и ["-x", (соединить [(«Root» от answers), "/bootstrap/flang"] по "")])]
+
+тотальная функция «Ledger»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «A ready ledger is read as it is»
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--ledger", "/l.tsv"])]
+    ожидается [запись «Question» с «name» равным "ledger" и «order» равным (вариант «Прочитать файл» с путь равным "/l.tsv")]
+  если не (пусто («Ledger file» от answers))
+    то [(«Read» от "ledger" и («Ledger file» от answers))]
+    иначе [(«Run» от "built ledger" и "sh" и ["-c", («Ledger command»), («Root» от answers), («Commit» от answers), («Work» от answers)]), («Read» от "ledger" и («In work» от "ledger.tsv" и answers)), («Run» от "short" и "git" и ["-C", («Root» от answers), "rev-parse", "--short", («Commit» от answers)])]
+
+тотальная функция «Heads»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «The records of the ledger are listed for the shell»
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается [запись «Question» с «name» равным "records" и «order» равным (вариант «Записать файл» с путь равным "/w/records" и содержимое равным ""), запись «Question» с «name» равным "heads" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "while IFS= read -r z; do [ -f \"$0/$z\" ] || continue; d=$(grep -a -m1 '^исходник ' \"$0/$z\" | cut -d' ' -f2-); [ -n \"$d\" ] && printf '%s\\n' \"$d\"; done < \"$1\" | LC_ALL=C sort -u", "../..", "/w/records"])]
+  [(«Write» от "records" и («In work» от "records" и answers) и (соединить (отобразить (отфильтровать («Ledger rows» от answers) где row → «Ends with» от («Cell» от 2 и row) и ".record") как row → соединить [(«Cell» от 2 и row), "\n"] по "") по "")), («Run» от "heads" и "sh" и ["-c", («Heads command»), («Root» от answers), («In work» от "records" и answers)])]
+
+тотальная функция «Judging»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «The cases go to the kernel»
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается [запись «Question» с «name» равным "cases" и «order» равным (вариант «Записать файл» с путь равным "/w/cases" и содержимое равным ""), запись «Question» с «name» равным "judged" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" || exit 2; while IFS= read -r f; do if [ -f \"$f\" ]; then s=$(sha256sum \"$f\" | cut -d' ' -f1); ./bootstrap/flang check --proof \"$f\" >/dev/null 2>&1; k=$?; else s=-; k=-; fi; printf '%s\\t%s\\t%s\\n' \"$f\" \"$s\" \"$k\"; done < \"$1\"", "../..", "/w/cases"])]
+  [(«Write» от "cases" и («In work» от "cases" и answers) и («Output of» от "heads" и answers)), («Run» от "judged" и "sh" и ["-c", («Judge command»), («Root» от answers), («In work» от "cases" и answers)])]
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 9
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 5
+      то «Setup»
+    случай 4
+      то «Start» от answers
+    случай 3
+      то «Ledger» от answers
+    случай 2
+      то «Heads» от answers
+    случай 1
+      то «Judging» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Case of»
+  принимает row: список строки, rows: список список строки
+  возвращает «Case»
+  пример «A source of the commit the kernel accepted»
+    дано row равно ["a.flang", "22", "0"]
+    дано rows равно [["22", "a.flang"]]
+    ожидается запись «Case» с «path» равным "a.flang" и «known» равным да и «same» равным да и «code» равным 0 и «excused» равным нет
+  пусть sum равно («Ledger sum» от («Cell» от 1 и row) и rows)
+  запись «Case» с «path» равным («Cell» от 1 и row) и «known» равным (не (пусто sum)) и «same» равным (sum равен («Cell» от 2 и row)) и «code» равным (если «Digits» от («Cell» от 3 и row) то («Count» от («Cell» от 3 и row)) иначе (0 минус 1)) и «excused» равным («Has» от («Cell» от 1 и row) и («Excused»))
+
+тотальная функция «Has»
+  принимает word: строка, words: список строки
+  возвращает признак
+  пример «A word in the list»
+    дано word равно "б"
+    дано words равно ["а", "б"]
+    ожидается да
+  не (пусто (отфильтровать words где other → other равен word))
+
+тотальная функция «Kind of suit»
+  принимает suit: «Case»
+  возвращает строка
+  пример «An excused file the kernel now accepts»
+    дано suit равно запись «Case» с «path» равным "a.flang" и «known» равным да и «same» равным да и «code» равным 0 и «excused» равным да
+    ожидается "awake"
+  «Chosen» от [(«When» от (не (suit.«known»)) и "unknown"),
+    («When» от (не (suit.«same»)) и "drifted"),
+    («When» от ((suit.«excused») и притом ((suit.«code») равен 0)) и "awake"),
+    («When» от (suit.«excused») и "excused"),
+    («When» от ((suit.«code») равен 0) и "accepted"),
+    («When» от ((suit.«code») равен 3) и "unproved")] и "refused"
+
+тотальная функция «Count of»
+  принимает kinds: список строки, wanted: список строки
+  возвращает число
+  пример «Kinds counted together»
+    дано kinds равно ["accepted", "awake", "excused"]
+    дано wanted равно ["awake", "excused"]
+    ожидается 2
+  длина (отфильтровать kinds где kind → «Has» от kind и wanted)
+
+тотальная функция «Trouble of»
+  принимает suit: «Case»
+  возвращает список строки
+  пример «A file that differs from the commit»
+    дано suit равно запись «Case» с «path» равным "a.flang" и «known» равным да и «same» равным нет и «code» равным 0 и «excused» равным нет
+    ожидается ["  РАЗОШЁЛСЯ С КОММИТОМ, судить нечего: a.flang"]
+  разбор («Kind of suit» от suit)
+    случай "drifted"
+      то [(соединить ["  РАЗОШЁЛСЯ С КОММИТОМ, судить нечего: ", (suit.«path»)] по "")]
+    случай "refused"
+      то [(соединить ["  ЯДРО ОТВЕРГАЕТ ФАЙЛ (код ", (к строке (suit.«code»)), "), а запись о нём лежит в дереве: ", (suit.«path»)] по "")]
+    случай любое
+      то пустой список
+
+тотальная функция «Ledger name»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «A ready ledger is named by its file»
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--ledger", "/l.tsv"])]
+    ожидается "/l.tsv"
+  если пусто («Ledger file» от answers) то (соединить ["коммит ", («Or commit» от («First line» от («Output of» от "short" и answers)) и («Commit» от answers))] по "") иначе («Ledger file» от answers)
+
+тотальная функция «Or commit»
+  принимает short: строка, commit: строка
+  возвращает строка
+  пример «A commit git could not shorten is named as given»
+    дано short равно ""
+    дано commit равно "HEAD"
+    ожидается "HEAD"
+  если пусто short то commit иначе short
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Nothing judged, nothing refused»
+    дано answers равно пустой список
+    ожидается вариант «Конец работы» с значение равным "═══ ПРИГОВОР ЯДРА НА ФАЙЛАХ, НАЗВАННЫХ ЗАПИСЯМИ ═══\nведомость дела\tкоммит HEAD\nисходников названо записями дерева\t0\n  из них дела в дереве нет (ведомость молчит)\t0\nсудимо ядром\t0\n  ядро приняло (код 0)\t0\n  ядро приняло, но НЕ ДОКАЗАЛО ничего (код 3 с --proof)\t0\n  ядро отвергло, оговорено поимённо\t0\n  ЯДРО ОТВЕРГЛО БЕЗ ОГОВОРКИ\t0\nприговор ядра: ни один судимый файл ядром не опровергнут, оговорки на месте\n  (это ВСЯ охрана: «не опровергнут» — не «доказан». Файлов, на которых\n   ядро не доказало ничего, здесь 0, и они прошли эту дверь честно.)"
+  пусть rows равно («Ledger rows» от answers)
+  пусть cases равно (отобразить (отфильтровать (отобразить («Lines» от («Output of» от "judged" и answers)) как line → разделить line по "\t") где row → (длина row) равен 3) как row → «Case of» от row и rows)
+  пусть kinds равно (отобразить cases как suit → «Kind of suit» от suit)
+  пусть troubles равно («Gathered words» от (отобразить cases как suit → «Trouble of» от suit))
+  пусть awake равно (отобразить (отфильтровать cases где suit → («Kind of suit» от suit) равен "awake") как suit → соединить ["  ОГОВОРКА ПРОСНУЛАСЬ (ядро больше не отвергает — проба протухла): ", (suit.«path»)] по "")
+  пусть head равно ["═══ ПРИГОВОР ЯДРА НА ФАЙЛАХ, НАЗВАННЫХ ЗАПИСЯМИ ═══", (соединить ["ведомость дела\t", («Ledger name» от answers)] по ""), (соединить ["исходников названо записями дерева\t", (к строке (длина cases))] по ""), (соединить ["  из них дела в дереве нет (ведомость молчит)\t", (к строке («Count of» от kinds и ["unknown"]))] по ""), (соединить ["судимо ядром\t", (к строке («Count of» от kinds и ["awake", "excused", "accepted", "unproved", "refused"]))] по ""), (соединить ["  ядро приняло (код 0)\t", (к строке («Count of» от kinds и ["accepted"]))] по ""), (соединить ["  ядро приняло, но НЕ ДОКАЗАЛО ничего (код 3 с --proof)\t", (к строке («Count of» от kinds и ["unproved"]))] по ""), (соединить ["  ядро отвергло, оговорено поимённо\t", (к строке («Count of» от kinds и ["awake", "excused"]))] по ""), (соединить ["  ЯДРО ОТВЕРГЛО БЕЗ ОГОВОРКИ\t", (к строке («Count of» от kinds и ["refused"]))] по "")]
+  если (длина troubles) плюс (длина awake) больше 0
+    то вариант «Провал» с код равным "FLANG_KERNEL_VERDICT" и сообщение равным (соединить («Соединить списки» от head и («Соединить списки» от (приписать "" к troubles) и («Соединить списки» от (если пусто awake то (пустой список) иначе (приписать "" к awake)) и ["", "ЯДРО СУДИТ ФАЙЛ САМО: запись о файле, который ядро отвергает, проверенной не считается"]))) по "\n")
+    иначе вариант «Конец работы» с значение равным (соединить («Соединить списки» от head и ["приговор ядра: ни один судимый файл ядром не опровергнут, оговорки на месте", "  (это ВСЯ охрана: «не опровергнут» — не «доказан». Файлов, на которых", (соединить ["   ядро не доказало ничего, здесь ", (к строке («Count of» от kinds и ["unproved"])), ", и они прошли эту дверь честно.)"] по "")]) по "\n")
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «No kernel binary»
+    дано asked равно "binary present"
+    дано answers равно [запись «Answer» с «name» равным "binary present" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "")]
+    ожидается ["нет двоичного ядра ../../bootstrap/flang — собрать: make -C bootstrap"]
+  пусть code равно («Exit code of» от asked и answers)
+  «Chosen» от [(«When» от ((asked равен "binary present") и притом (не (code равен 0))) и [(соединить ["нет двоичного ядра ", («Root» от answers), "/bootstrap/flang — собрать: make -C bootstrap"] по "")]),
+    («When» от ((asked равен "built ledger") и притом (code равен 4)) и [(соединить ["ведомость не построена: «", («Commit» от answers), "» не коммит дерева «", («Root» от answers), "».\nготовую ведомость можно подать ключом --ledger ФАЙЛ"] по "")]),
+    («When» от ((asked равен "built ledger") и притом (не (code равен 0))) и [(соединить ["ведомость не построена: git archive «", («Commit» от answers), "» не отдал дерево"] по "")]),
+    («When» от ((asked равен "ledger") и притом (не (code равен 0))) и [(соединить ["ведомости нет: ", («Ledger file» от answers)] по "")]),
+    («When» от ((asked равен "ledger") и притом (пусто («Ledger rows» от answers))) и [(соединить ["ведомость пуста: в коммите «", («Commit» от answers), "» нет ни одного *.flang"] по "")]),
+    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и ["временный каталог не заведён"])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Конец работы» с значение равным "═══ ПРИГОВОР ЯДРА НА ФАЙЛАХ, НАЗВАННЫХ ЗАПИСЯМИ ═══\nведомость дела\tкоммит HEAD\nисходников названо записями дерева\t0\n  из них дела в дереве нет (ведомость молчит)\t0\nсудимо ядром\t0\n  ядро приняло (код 0)\t0\n  ядро приняло, но НЕ ДОКАЗАЛО ничего (код 3 с --proof)\t0\n  ядро отвергло, оговорено поимённо\t0\n  ЯДРО ОТВЕРГЛО БЕЗ ОГОВОРКИ\t0\nприговор ядра: ни один судимый файл ядром не опровергнут, оговорки на месте\n  (это ВСЯ охрана: «не опровергнут» — не «доказан». Файлов, на которых\n   ядро не доказало ничего, здесь 0, и они прошли эту дверь честно.)"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Six stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6 и «answers» равным пустой список
+  «Begin with» от 6
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the arguments»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (запись «Inquiry» с «asked» равным "arguments" и «queue» равным [запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")] и «stages» равным 5 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то если пусто («Work» от answers)
+        то вариант «Не проверено» с код равным "FLANG_KERNEL_VERDICT_NOT_MEASURED" и сообщение равным голова
+        иначе вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", («Work» от answers)]) и потом равным (запись «Inquiry» с «asked» равным (соединить ["stopped: ", голова] по "") и «queue» равным пустой список и «stages» равным 0 и «answers» равным answers)
+    случай пусто
+      то если (inquiry.«asked») начинается с "stopped: "
+        то вариант «Не проверено» с код равным "FLANG_KERNEL_VERDICT_NOT_MEASURED" и сообщение равным («After» от "stopped: " и (inquiry.«asked»))
+        иначе «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Kernel verdict»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

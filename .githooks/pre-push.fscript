@@ -36,6 +36,7 @@
    запись «Check» с «name» равным "licenses" и «command» равным "bootstrap/flang run-script licenses:check",
    запись «Check» с «name» равным "task-ledger" и «command» равным "bootstrap/flang run-script tasks:check",
    запись «Check» с «name» равным "tree-inventory" и «command» равным "bootstrap/flang run-script inventory:check",
+   запись «Check» с «name» равным "lint-growth" и «command» равным "bootstrap/flang run-script lint:growth",
    запись «Check» с «name» равным "no-growth" и «command» равным "bootstrap/flang io .githooks/no-growth.fscript --plan Range -- \"$(git for-each-ref --format='%(refname:short)' 'refs/remotes/*/dev' | head -1)\""]
 
 тотальная функция «Output path»

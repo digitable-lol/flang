@@ -40,3 +40,8 @@ jobs:
         env:
           LC_ALL: C.UTF-8
           FLANG_TMP: ${{ runner.temp }}
+      - name: Check added lines and touched functions stay within the lint limits
+        run: bootstrap/flang io .githooks/lint-growth.fscript --plan "Range" -- "origin/${{ github.base_ref }}"
+        env:
+          LC_ALL: C.UTF-8
+          FLANG_TMP: ${{ runner.temp }}

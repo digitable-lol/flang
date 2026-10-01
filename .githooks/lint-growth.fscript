@@ -1,0 +1,506 @@
+модуль «Lint growth»
+
+тип «Step»
+  вариант «Start staged»
+  вариант «Start range»
+  вариант «Awaiting base»
+  вариант «Awaiting dev»
+  вариант «Awaiting diff»
+  вариант «Awaiting findings» содержит hunks: список «Hunk»
+
+объект «Hunk»
+  «path»: строка
+  «first»: число
+  «count»: число
+
+объект «Reading»
+  «path»: строка
+  «hunks»: список «Hunk»
+
+тотальная функция «Number»
+  принимает text: строка
+  возвращает число
+  пример «digits become a number»
+    дано text равно "12"
+    ожидается 12
+  пример «anything else is zero»
+    дано text равно "x"
+    ожидается 0
+  разбор (к числу или беда text)
+    случай вариант «Разобрано» с значение как значение
+      то значение
+    случай вариант «Не разобрано» с код как код и сообщение как сообщение
+      то 0
+
+тотальная функция «Second»
+  принимает parts: список строки
+  возвращает строка
+  пример «the second of two»
+    дано parts равно ["a", "b"]
+    ожидается "b"
+  пример «nothing after the first»
+    дано parts равно ["a"]
+    ожидается ""
+  разбор parts
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «First of» от хвост
+
+тотальная функция «First of»
+  принимает parts: список строки
+  возвращает строка
+  пример «the first of two»
+    дано parts равно ["a", "b"]
+    ожидается "a"
+  пример «nothing at all»
+    дано parts равно пустой список
+    ожидается ""
+  разбор parts
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Hunk of header»
+  принимает path: строка, header: строка
+  возвращает «Hunk»
+  пример «a hunk of three added lines from line 10»
+    дано path равно "a.flang"
+    дано header равно "@@ -9,2 +10,3 @@ модуль"
+    ожидается запись «Hunk» с «path» равным "a.flang" и «first» равным 10 и «count» равным 3
+  пример «a hunk of one line has no count»
+    дано path равно "a.flang"
+    дано header равно "@@ -9 +10 @@"
+    ожидается запись «Hunk» с «path» равным "a.flang" и «first» равным 10 и «count» равным 1
+  пусть added равно (голова (разделить («Second» от (разделить header по " +")) по " "))
+  пусть parts равно (разделить added по ",")
+  пусть opening равно («Number» от (голова parts))
+  пусть size равно (если (длина parts) равен 2 то («Number» от («Second» от parts)) иначе 1)
+  запись «Hunk» с «path» равным path и «first» равным opening и «count» равным size
+
+тотальная функция «Path of line»
+  принимает path: строка, line: строка
+  возвращает строка
+  пример «a new file name replaces the old one»
+    дано path равно "a.flang"
+    дано line равно "+++ b/scripts/b.flang"
+    ожидается "scripts/b.flang"
+  пример «another line keeps the name»
+    дано path равно "a.flang"
+    дано line равно "@@ -1 +1 @@"
+    ожидается "a.flang"
+  если line начинается с "+++ b/"
+    то подстрока line с 7 по (длина line)
+    иначе path
+
+тотальная функция «Keeps hunk»
+  принимает path: строка, line: строка
+  возвращает признак
+  пример «a hunk with added lines»
+    дано path равно "a.flang"
+    дано line равно "@@ -1,0 +2,4 @@"
+    ожидается да
+  пример «a hunk that only removes»
+    дано path равно "a.flang"
+    дано line равно "@@ -1,3 +0,0 @@"
+    ожидается нет
+  пример «not a hunk header»
+    дано path равно "a.flang"
+    дано line равно "+@@ x"
+    ожидается нет
+  пусть sizable равно ((«Hunk of header» от path и line).«count») больше 0
+  (line начинается с "@@ ") и притом sizable
+
+тотальная функция «Read diff line»
+  принимает reading: «Reading», line: строка
+  возвращает «Reading»
+  пример «a new file name opens its hunks»
+    дано reading равно запись «Reading» с «path» равным "" и «hunks» равным пустой список
+    дано line равно "+++ b/scripts/a.flang"
+    ожидается запись «Reading» с «path» равным "scripts/a.flang" и «hunks» равным пустой список
+  пример «a hunk of a source is kept»
+    дано reading равно запись «Reading» с «path» равным "a.flang" и «hunks» равным пустой список
+    дано line равно "@@ -1,0 +2,4 @@"
+    ожидается запись «Reading» с «path» равным "a.flang" и «hunks» равным [
+      запись «Hunk» с «path» равным "a.flang" и «first» равным 2 и «count» равным 4]
+  пусть path равно («Path of line» от (reading.«path») и line)
+  пусть hunk равно («Hunk of header» от path и line)
+  пусть kept равно (reading.«hunks»)
+  пусть hunks равно (если «Keeps hunk» от path и line то (добавить hunk к kept) иначе kept)
+  запись «Reading» с «path» равным path и «hunks» равным hunks
+
+тотальная функция «Hunks of diff»
+  принимает diff: строка
+  возвращает список «Hunk»
+  пример «two files, two hunks»
+    дано diff равно "+++ b/a.md\n@@ -0,0 +1 @@\n+x\n+++ b/a.flang\n@@ -3,0 +4,2 @@\n+y\n+z\n"
+    ожидается [запись «Hunk» с «path» равным "a.md" и «first» равным 1 и «count» равным 1,
+      запись «Hunk» с «path» равным "a.flang" и «first» равным 4 и «count» равным 2]
+  пусть start равно (запись «Reading» с «path» равным "" и «hunks» равным пустой список)
+  пусть lines равно (разделить diff по "\n")
+  пусть read равно (свёртка lines начиная с start как reading и line → «Read diff line» от reading и line)
+  read.«hunks»
+
+тотальная функция «Paths of hunks»
+  принимает hunks: список «Hunk»
+  возвращает список строки
+  пример «a path is named once»
+    дано hunks равно [
+      запись «Hunk» с «path» равным "a.flang" и «first» равным 1 и «count» равным 1,
+      запись «Hunk» с «path» равным "a.flang" и «first» равным 9 и «count» равным 2]
+    ожидается ["a.flang"]
+  свёртка hunks начиная с пустой список как paths и hunk → («Path once» от paths и (hunk.«path»))
+
+тотальная функция «Path once»
+  принимает paths: список строки, path: строка
+  возвращает список строки
+  пример «a new path is added»
+    дано paths равно ["a.flang"]
+    дано path равно "b.flang"
+    ожидается ["a.flang", "b.flang"]
+  пример «a known path is not added again»
+    дано paths равно ["a.flang"]
+    дано path равно "a.flang"
+    ожидается ["a.flang"]
+  если paths содержит path то paths иначе (добавить path к paths)
+
+тотальная функция «Cells»
+  принимает row: строка
+  возвращает список строки
+  пример «a row of the linter becomes eight cells»
+    дано row равно "length\ta.flang\t7\t130\t100"
+    ожидается ["length", "a.flang", "7", "130", "100", "", "", ""]
+  пример «a depth row keeps all its cells»
+    дано row равно "depth\ta.flang\t12\t3\t2\tШаг\t5\t20"
+    ожидается ["depth", "a.flang", "12", "3", "2", "Шаг", "5", "20"]
+  пусть cells равно (разделить row по "\t")
+  пусть blanks равно ["", "", "", "", "", "", "", ""]
+  свёртка blanks начиная с cells как grown и blank → («Grown» от grown и blank)
+
+тотальная функция «Grown»
+  принимает cells: список строки, blank: строка
+  возвращает список строки
+  пример «a short row grows»
+    дано cells равно ["length"]
+    дано blank равно ""
+    ожидается ["length", ""]
+  пример «a full row stays»
+    дано cells равно ["1", "2", "3", "4", "5", "6", "7", "8"]
+    дано blank равно ""
+    ожидается ["1", "2", "3", "4", "5", "6", "7", "8"]
+  если (длина cells) меньше 8 то (добавить blank к cells) иначе cells
+
+тотальная функция «Is measured»
+  принимает cells: список строки
+  возвращает признак
+  пример «a long line is measured»
+    дано cells равно ["length", "a.flang", "7", "130", "100", "", "", ""]
+    ожидается да
+  пример «an unparsed file is not a finding»
+    дано cells равно ["unparsed", "b.flang", "", "", "", "", "", ""]
+    ожидается нет
+  ["length", "depth"] содержит (голова cells)
+
+тотальная функция «Lines of finding»
+  принимает cells: список строки
+  возвращает список число
+  пример «a long line spans its own line»
+    дано cells равно ["length", "a.flang", "7", "130", "100", "", "", ""]
+    ожидается [7, 7]
+  пример «a deep function spans its declaration»
+    дано cells равно ["depth", "a.flang", "12", "3", "2", "Шаг", "5", "20"]
+    ожидается [5, 20]
+  пусть line равно («Number» от (элемент 3 в cells))
+  если (голова cells) равен "depth"
+    то [(«Number» от (элемент 7 в cells)), («Number» от (элемент 8 в cells))]
+    иначе [line, line]
+
+тотальная функция «Touches»
+  принимает cells: список строки, hunk: «Hunk»
+  возвращает признак
+  пример «an added line inside the function»
+    дано cells равно ["depth", "a.flang", "12", "3", "2", "Шаг", "5", "20"]
+    дано hunk равно запись «Hunk» с «path» равным "a.flang" и «first» равным 18 и «count» равным 9
+    ожидается да
+  пример «the hunk ends before the function»
+    дано cells равно ["depth", "a.flang", "12", "3", "2", "Шаг", "5", "20"]
+    дано hunk равно запись «Hunk» с «path» равным "a.flang" и «first» равным 1 и «count» равным 4
+    ожидается нет
+  пример «another file»
+    дано cells равно ["length", "b.flang", "2", "130", "100", "", "", ""]
+    дано hunk равно запись «Hunk» с «path» равным "a.flang" и «first» равным 1 и «count» равным 4
+    ожидается нет
+  пусть span равно («Lines of finding» от cells)
+  пусть starts равно (hunk.«first») не больше (элемент 2 в span)
+  пусть ends равно (голова span) меньше ((hunk.«first») плюс (hunk.«count»))
+  ((элемент 2 в cells) равен (hunk.«path»)) и притом (starts и притом ends)
+
+тотальная функция «Said»
+  принимает cells: список строки
+  возвращает строка
+  пример «a long line is named with its length»
+    дано cells равно ["length", "a.flang", "7", "130", "100", "", "", ""]
+    ожидается "a.flang:7: an added line is 130 characters long, the limit is 100"
+  пример «a deep function is named with its depth»
+    дано cells равно ["depth", "a.flang", "12", "3", "2", "Шаг", "5", "20"]
+    ожидается "a.flang:12: «Шаг» nests conditionals 3 deep, the limit is 2"
+  пусть place равно (соединить [(элемент 2 в cells), ":", (элемент 3 в cells), ": "] по "")
+  пусть value равно (элемент 4 в cells)
+  пусть limit равно (элемент 5 в cells)
+  если (голова cells) равен "length"
+    то соединить [place, "an added line is ", value, " characters long, the limit is ", limit] по ""
+    иначе соединить [place, "«", (элемент 6 в cells), "» nests conditionals ", value,
+      " deep, the limit is ", limit] по ""
+
+тотальная функция «Is new»
+  принимает cells: список строки, hunks: список «Hunk»
+  возвращает признак
+  пример «a finding on an added line is new»
+    дано cells равно ["length", "a.flang", "7", "130", "100", "", "", ""]
+    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 7 и «count» равным 1]
+    ожидается да
+  пример «an unparsed file is never a finding»
+    дано cells равно ["unparsed", "a.flang", "", "", "", "", "", ""]
+    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 1 и «count» равным 9]
+    ожидается нет
+  пусть touched равно не (пусто (отфильтровать hunks где hunk → «Touches» от cells и hunk))
+  («Is measured» от cells) и притом touched
+
+тотальная функция «New findings»
+  принимает output: строка, hunks: список «Hunk»
+  возвращает список строки
+  пример «only what the change touched is named»
+    дано output равно "length\ta.flang\t7\t130\t100\nlength\ta.flang\t40\t120\t100\nunparsed\tb.flang\n"
+    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 7 и «count» равным 1]
+    ожидается ["a.flang:7: an added line is 130 characters long, the limit is 100"]
+  пусть rows равно (отобразить (разделить output по "\n") как row → «Cells» от row)
+  отобразить (отфильтровать rows где cells → «Is new» от cells и hunks) как cells → «Said» от cells
+
+тотальная функция «Process»
+  принимает program: строка, arguments: список строки
+  возвращает «Поручение»
+  пример «an order to run git»
+    дано program равно "git"
+    дано arguments равно ["status"]
+    ожидается вариант «Запустить процесс» с программа равным "git" и аргументы равным ["status"]
+  вариант «Запустить процесс» с программа равным program и аргументы равным arguments
+
+тотальная функция «Diff arguments»
+  принимает range: строка
+  возвращает список строки
+  пример «the index is compared without context lines»
+    дано range равно "--cached"
+    ожидается ["-c", "core.quotepath=off", "diff", "--no-renames", "--no-color", "-U0",
+      "--diff-filter=d", "--cached"]
+  ["-c", "core.quotepath=off", "diff", "--no-renames", "--no-color", "-U0", "--diff-filter=d",
+   range]
+
+тотальная функция «Git diff»
+  принимает range: строка
+  возвращает «Поручение»
+  пример «git is asked for the added lines of the index»
+    дано range равно "--cached"
+    ожидается вариант «Запустить процесс» с программа равным "git" и аргументы равным [
+      "-c", "core.quotepath=off", "diff", "--no-renames", "--no-color", "-U0", "--diff-filter=d",
+      "--cached"]
+  «Process» от "git" и («Diff arguments» от range)
+
+тотальная функция «Run»
+  принимает order: «Поручение», waiting: «Step»
+  возвращает «Продолжение»
+  пример «an order and the step that waits for its answer»
+    дано order равно вариант «Прочитать доводы»
+    дано waiting равно вариант «Awaiting base»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting base»)
+  вариант «Сделать» с поручение равным order и потом равным waiting
+
+тотальная функция «Lint arguments»
+  принимает hunks: список «Hunk»
+  возвращает список строки
+  пример «the touched files are measured from the root of the tree»
+    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 7 и «count» равным 1]
+    ожидается ["-c", "cd .. && exec bootstrap/flang lint --tsv --warn \"$@\"", "lint", "a.flang"]
+  пусть command равно "cd .. && exec bootstrap/flang lint --tsv --warn \"$@\""
+  свёртка («Paths of hunks» от hunks) начиная с ["-c", command, "lint"] как gathered и path → добавить path к gathered
+
+тотальная функция «Measure»
+  принимает hunks: список «Hunk»
+  возвращает «Продолжение»
+  пример «nothing to measure»
+    дано hunks равно пустой список
+    ожидается вариант «Конец работы» с значение равным "no added lines"
+  пусть order равно («Process» от "sh" и («Lint arguments» от hunks))
+  пусть waiting равно (вариант «Awaiting findings» с hunks равным hunks)
+  разбор hunks
+    случай пусто
+      то вариант «Конец работы» с значение равным "no added lines"
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным order и потом равным waiting
+
+тотальная функция «Verdict»
+  принимает findings: список строки
+  возвращает «Продолжение»
+  пример «nothing new over the limits»
+    дано findings равно пустой список
+    ожидается вариант «Конец работы» с значение равным "no added line and no touched function over the limits"
+  пример «a finding refuses the change»
+    дано findings равно ["a.flang:7: too long"]
+    ожидается вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным "a.flang:7: too long"
+  разбор findings
+    случай пусто
+      то вариант «Конец работы» с значение равным "no added line and no touched function over the limits"
+    случай голова и хвост
+      то вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным (соединить findings по "\n")
+
+тотальная функция «Refusal»
+  принимает words: список строки
+  возвращает «Продолжение»
+  пример «the words are joined»
+    дано words равно ["git diff failed: ", "bad revision"]
+    ожидается вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным "git diff failed: bad revision"
+  вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным (соединить words по "")
+
+тотальная функция «Process trouble»
+  принимает what: строка, отклик: «Отклик»
+  возвращает «Продолжение»
+  пример «a failed host order is passed on»
+    дано what равно "git"
+    дано отклик равно вариант «Сбой» с код равным "FLANG_IO_SPAWN" и сообщение равным "no git"
+    ожидается вариант «Провал» с код равным "FLANG_IO_SPAWN" и сообщение равным "no git"
+  пример «an unexpected answer is named»
+    дано what равно "git"
+    дано отклик равно вариант «Пока ничего»
+    ожидается вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "expected git to finish"
+  пусть complaint равно (соединить ["expected ", what, " to finish"] по "")
+  разбор отклик
+    случай вариант «Сбой» с код как код и сообщение как сообщение
+      то вариант «Провал» с код равным код и сообщение равным сообщение
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным complaint
+
+тотальная функция «After diff»
+  принимает отклик: «Отклик»
+  возвращает «Продолжение»
+  пример «git refused»
+    дано отклик равно вариант «Процесс завершён» с код равным 128 и вывод равным "" и ошибки равным "bad"
+    ожидается вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным "git diff failed: bad"
+  пример «an empty diff passes»
+    дано отклик равно вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""
+    ожидается вариант «Конец работы» с значение равным "no added lines"
+  разбор отклик
+    случай вариант «Процесс завершён» с код как код и вывод как вывод и ошибки как ошибки
+      то если код равен 0
+        то «Measure» от («Hunks of diff» от вывод)
+        иначе «Refusal» от ["git diff failed: ", ошибки]
+    случай любое
+      то «Process trouble» от "git" и отклик
+
+тотальная функция «After findings»
+  принимает hunks: список «Hunk», отклик: «Отклик»
+  возвращает «Продолжение»
+  пример «the linter could not run»
+    дано hunks равно пустой список
+    дано отклик равно вариант «Процесс завершён» с код равным 2 и вывод равным "" и ошибки равным "bad key"
+    ожидается вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным "flang lint failed: bad key"
+  пример «silence of the linter passes»
+    дано hunks равно пустой список
+    дано отклик равно вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""
+    ожидается вариант «Конец работы» с значение равным "no added line and no touched function over the limits"
+  разбор отклик
+    случай вариант «Процесс завершён» с код как код и вывод как вывод и ошибки как ошибки
+      то если (код равен 0) или (код равен 3)
+        то «Verdict» от («New findings» от вывод и hunks)
+        иначе «Refusal» от ["flang lint failed: ", ошибки]
+    случай любое
+      то «Process trouble» от "flang lint" и отклик
+
+тотальная функция «Range of base»
+  принимает base: строка
+  возвращает «Продолжение»
+  пример «no base»
+    дано base равно ""
+    ожидается вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным "no base: no remote dev branch"
+  если base равен ""
+    то «Refusal» от ["no base: no remote dev branch"]
+    иначе «Run» от («Git diff» от (соединить [base, "...HEAD"] по "")) и (вариант «Awaiting diff»)
+
+тотальная функция «Default base»
+  возвращает «Поручение»
+  пример «the first remote dev branch is the base»
+    ожидается вариант «Запустить процесс» с программа равным "git" и аргументы равным [
+      "for-each-ref", "--format=%(refname:short)", "refs/remotes/*/dev"]
+  «Process» от "git" и ["for-each-ref", "--format=%(refname:short)", "refs/remotes/*/dev"]
+
+тотальная функция «After base»
+  принимает отклик: «Отклик»
+  возвращает «Продолжение»
+  пример «anything but the arguments is trouble»
+    дано отклик равно вариант «Пока ничего»
+    ожидается вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "expected the arguments to finish"
+  разбор отклик
+    случай вариант «Доводы» с доводы как доводы
+      то если пусто доводы
+        то «Run» от («Default base») и (вариант «Awaiting dev»)
+        иначе «Range of base» от («First of» от доводы)
+    случай любое
+      то «Process trouble» от "the arguments" и отклик
+
+тотальная функция «After default base»
+  принимает отклик: «Отклик»
+  возвращает «Продолжение»
+  пример «no remote dev branch»
+    дано отклик равно вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""
+    ожидается вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным "no base: no remote dev branch"
+  разбор отклик
+    случай вариант «Процесс завершён» с код как код и вывод как вывод и ошибки как ошибки
+      то «Range of base» от («First of» от (разделить вывод по "\n"))
+    случай любое
+      то «Process trouble» от "git" и отклик
+
+тотальная функция «Staged start»
+  возвращает «Step»
+  пример «the index is checked from its own start»
+    ожидается вариант «Start staged»
+  вариант «Start staged»
+
+тотальная функция «Range start»
+  возвращает «Step»
+  пример «the range is checked from its own start»
+    ожидается вариант «Start range»
+  вариант «Start range»
+
+тотальная функция «Next»
+  принимает step: «Step», отклик: «Отклик»
+  возвращает «Продолжение»
+  пример «the range first reads its base»
+    дано step равно вариант «Start range»
+    дано отклик равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting base»)
+  разбор step
+    случай вариант «Start staged»
+      то «Run» от («Git diff» от "--cached") и (вариант «Awaiting diff»)
+    случай вариант «Start range»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting base»)
+    случай вариант «Awaiting base»
+      то «After base» от отклик
+    случай вариант «Awaiting dev»
+      то «After default base» от отклик
+    случай вариант «Awaiting diff»
+      то «After diff» от отклик
+    случай вариант «Awaiting findings» с hunks как hunks
+      то «After findings» от hunks и отклик
+
+план «Staged»
+  состояние «Step»
+  начинает с «Staged start»
+  обрабатывает «Next»
+
+план «Range»
+  состояние «Step»
+  начинает с «Range start»
+  обрабатывает «Next»
+
+тотальная функция «Объявление короткой команды lint:growth»
+  возвращает строка
+  "bootstrap/flang io --plan Range -- — no added line and no touched function over the limits since the remote dev"

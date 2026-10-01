@@ -79,6 +79,7 @@ number	state	title
 1407	done	Traceability from requirement to code to test
 1411	done	The carrier of the exact integer is a new kind of value
 1414	rejected	A directory walk is one non recursive effect
+1416	done	Short commands live in the settings file
 1418	done	Three directories get english names
 1420	rejected	Cyrillic file names under proof become english
 1421	rejected	The txt extension becomes ftext
@@ -197,6 +198,7 @@ number	state	title
 5077	done	The verdict cache had no instrument
 5123	done	Six places still carry the old step ceiling
 5144	done	A free statement with a pure goal is proved by kernel rules and replayed by the checker
+5147	done	The c target declares one byte too few for a character outside the bmp
 5169	done	Proof as a term: what carries over from Coq and Lean
 5170	done	Flangtutor leads through the language and the compiler judges the answer
 5190	done	The seed is reprinted once for the proof batch
@@ -226,6 +228,7 @@ number	state	title
 5823	done	New binary acceptance stops at the kernel rules sign
 5855	done	The concurrency layer is counted and proved
 5930	done	The tenth flangrc key is read by the binary and hidden by the script
+5931	done	The settings file speaks english
 5957	done	Nested quantifiers over elements are not sayable
 6025	done	The abilities list lagged the kernel not the other way round
 6028	done	Five blind guards and the ninth target
@@ -242,6 +245,7 @@ number	state	title
 6206	done	Forall over list elements is not sayable
 6234	done	Fourteen library files outside the emptiness census measured one by one
 6255	done	Twenty prose numbers fell behind a day of growth
+6267	done	The bootstrap point guard is red when it cannot check
 6275	done	One bad mark declared the whole verdict void
 6329	done	The four files around the kernel get their ledger
 6341	done	The remaining gap of 2718 is measured, the fix is not taken, the cost is named
@@ -288,8 +292,10 @@ number	state	title
 7855	done	G5 has a number for binding but the roundtrip instrument is outside the tree
 8118	done	Nobody runs the examples of the compiler itself
 8222	done	Run and io print the proof verdict and refuse an unproved program
+8235	done	The repository layout says what the project is
 8291	done	Two orders have no host and the environment is unreadable
 8429	done	G7 gate is satisfied by construction and measures nothing
+8455	done	The proof report crashes on one stdlib module
 8460	done	The occupied names guard was blind to the ninth target
 8581	done	A pre push hook keeps red out of github
 8596	done	Typescript target over the javascript printer
@@ -325,6 +331,7 @@ number	state	title
 9611	done	Taking the fingerprint again certifies a seed nobody reprinted
 9613	rejected	A multi hour run must not be a child of an agent
 9615	done	The instruments that measure the gates were not in the repository
+9616	done	The kernel computes the evidence and the record drops it
 9618	done	The kernel proves a falsehood by capturing a name on unfolding
 9619	done	Per file proof checking does not divide the work
 9620	done	An assertion checked the first line and deleted twenty eight
@@ -334,6 +341,7 @@ number	state	title
 9740	done	Spec tooling and stand are proved
 9751	done	Roundtrip instrument lived in a temp dir and the doc pointed there
 9841	dropped	Typed term cannot be done in proofterm the kernel lives elsewhere
+9902	done	Emit has no key for its own step ceiling
 9951	done	The forms 'not greater' and 'not less': 21 places and four records in one place
 9952	done	The kernel does not step inside a binder
 9954	done	The name collision check is in the tree but not in the seed
@@ -376,4 +384,3 @@ number	state	title
 9997	done	Printing by declaration is ready but the checker was not taught; a reprint would redden 38 records
 9998	done	The rule 'start by construction' is ready but adds no share
 9999	done	The goal follows from what is declared about the arguments: ready
-1416	done	Short commands live in the settings file

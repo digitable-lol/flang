@@ -623,7 +623,7 @@
 | `file-extensions:check` | 0 (1,03 с) | **1** (0,94 с) | 0 (1,03 с) | из `docs/editors/vim/ftdetect/flang.vim` убрано `,*.фланг` | «список расширений разошёлся с оснасткой, мест 1 · docs/editors/vim/ftdetect/flang.vim: отбор не называет …» |
 | `пакет:проверка` — снят 17 сентября 2026 вместе с `package.json` (задача 3570); проверку производных версии несёт `sh scripts/guards/version-derivations-guard.sh` | 0 (1,15 с) | **1** (1,14 с) | 0 (1,14 с) | `"version"` в `package.json` → `9.9.9` | код отказа пакета («package.json разошёлся с объявлением пакета») снят вместе с файлом — замер 13 сентября остаётся историей |
 | `contrast:check` | 0 (4,31 с) | **1** (4,31 с) | 0 (4,30 с) | `--digitable-cyan` в `docs/site/style.css` сведён с подложкой | таблица ролей с колонкой «норма», у испорченной роли — «нет» |
-| `dictionary:check` | 0 (6,61 с) | **1** (6,53 с) | 0 (6,50 с) | в `docs/glossary.md` испорчен заголовок раздела | `FLANG_SLOVAR_USTAREL`: «docs/glossary.md разошёлся с таблицей поверхностей» |
+| `dictionary:check` | 0 (6,61 с) | **1** (6,53 с) | 0 (6,50 с) | в `docs/glossary.md` испорчен заголовок раздела | `FLANG_DICTIONARY_STALE`: «docs/glossary.md разошёлся с таблицей поверхностей» |
 | `site:check` | 0 (14,11 с) | **1** (13,81 с) | 0 (13,56 с) | в `docs/site/index.md` дописана ссылка в никуда | «ссылка на несуществующую страницу net-takoy-stranicy.html на en/index.html» |
 | `releases:page:check` | 0 (18 с) | **1** (18 с) | 0 (18 с) | строка заголовка `docs/site/releases.md` | `FLANG_VYPUSKI_RASHOZHDENIE`, назван `releases.md` |
 

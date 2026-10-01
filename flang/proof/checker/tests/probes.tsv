@@ -499,7 +499,7 @@ say		-	-	-	-	-	-	-	-	-	-
 say	── семья «ограничение» (ADR-0026 К5): «таких что» и допущения теоремы ──	-	-	-	-	-	-	-	-	-	-
 C	ограничение: постусловие «таких что», строки есть (честная)	flang/proof/checker/tests/families/restriction/f09-restricted.flang	flang/proof/checker/tests/families/restriction/f09-restricted.record	-	-	-	-	3	-	-	-
 C	ограничение: теорема «дано н: … таких что …», шаг по допущению 1 (честная)	flang/proof/checker/tests/families/restriction/k2bk-theorem-such-that.flang	flang/proof/checker/tests/families/restriction/k2bk-theorem-such-that.record	-	-	-	-	3	-	-	-
-C	ограничение: теорема с гипотезой «дано н больше 0» (честная)	flang/proof/checker/tests/families/restriction/k2b-direct-theorem-hypothesis.flang	flang/proof/checker/tests/families/restriction/k2b-direct-theorem-hypothesis.record	-	-	-	-	3	-	-	-
+P	ограничение: гипотеза «дано н больше 0», которой у постусловия нет	flang/proof/checker/tests/families/restriction/k2b-direct-theorem-hypothesis.flang	flang/proof/checker/tests/families/restriction/k2b-direct-theorem-hypothesis.record	-	-	-	-	1	не является допущением утверждения	-	-
 P	ограничение: потеряно — запись З10 матрицы (прежде код 3)	flang/proof/checker/tests/families/restriction/f09-restricted.flang	flang/proof/checker/tests/families/restriction/corrupt/z10-restriction-lost.record	-	-	-	-	1	ограничение потеряно	-	-
 P	ограничение: другое	flang/proof/checker/tests/families/restriction/f09-restricted.flang	flang/proof/checker/tests/families/restriction/corrupt/other-restriction.record	-	-	-	-	1	«1⟩» вместо «0⟩»	-	-
 P	ограничение: не под «для всех»	flang/proof/checker/tests/families/restriction/f09-restricted.flang	flang/proof/checker/tests/families/restriction/corrupt/restriction-not-under-the-quantifier.record	-	-	-	-	1	стоит не сразу под строкой «для всех»	-	-
@@ -507,6 +507,14 @@ P	ограничение: шаг закрыт допущением, которо
 P	ограничение: допущение теоремы потеряно	flang/proof/checker/tests/families/restriction/k2bk-theorem-such-that.flang	flang/proof/checker/tests/families/restriction/corrupt/assumption-lost.record	-	-	-	-	1	дано 15, допущение 15	-	-
 P	ограничение: другое допущение	flang/proof/checker/tests/families/restriction/k2bk-theorem-such-that.flang	flang/proof/checker/tests/families/restriction/corrupt/other-assumption.record	-	-	-	-	1	допущение 1 — в записи ⟨н больше 1⟩	-	-
 P	ограничение: гипотеза «дано н больше 0» без строки допущения	flang/proof/checker/tests/families/restriction/k2b-direct-theorem-hypothesis.flang	flang/proof/checker/tests/families/restriction/corrupt/hypothesis-without-assumption-line.record	-	-	-	-	1	допущение 16	-	-
+say		-	-	-	-	-	-	-	-	-	-
+say	── семья «гипотеза»: гипотеза теоремы снята ограничением утверждения ──	-	-	-	-	-	-	-	-	-	-
+C	гипотеза: часть «таких что» утверждения (честная)	flang/proof/probes/syllogism/assumptions/programs/socrates.flang	flang/proof/checker/tests/families/hypothesis/statement-carries-the-hypothesis.record	-	-	-	-	3	-	-	-
+P	гипотеза: у утверждения «таких что» нет	flang/proof/probes/syllogism/assumptions/programs/socrates-with-premises-only-in-the-theorem.flang	flang/proof/checker/tests/families/hypothesis/statement-does-not-carry-the-hypothesis.record	-	-	-	-	1	не является допущением утверждения	-	-
+C	гипотеза: предусловие «требует» функции (честная)	flang/proof/checker/tests/families/hypothesis/precondition-carries-the-hypothesis.flang	flang/proof/checker/tests/families/hypothesis/precondition-carries-the-hypothesis.record	-	-	-	-	3	-	-	-
+P	гипотеза: предусловие говорит о другом	flang/proof/checker/tests/families/hypothesis/precondition-says-something-else.flang	flang/proof/checker/tests/families/hypothesis/precondition-says-something-else.record	-	-	-	-	1	не является допущением утверждения	-	-
+C	гипотеза: «не меньше 0» из объявленного отрезка (честная)	flang/proof/checker/tests/families/hypothesis/type-carries-the-hypothesis.flang	flang/proof/checker/tests/families/hypothesis/type-carries-the-hypothesis.record	-	-	-	-	3	-	-	-
+P	гипотеза: «не меньше 0» о целом	flang/proof/checker/tests/families/hypothesis/type-does-not-carry-the-hypothesis.flang	flang/proof/checker/tests/families/hypothesis/type-does-not-carry-the-hypothesis.record	-	-	-	-	1	не является допущением утверждения	-	-
 say		-	-	-	-	-	-	-	-	-	-
 say	── семья «утверждение» (ADR-0026 К3a): утверждение без функции ──	-	-	-	-	-	-	-	-	-	-
 C	утверждение: связывание и теорема по индукции (честная, проиграна целиком — К3b)	flang/proof/checker/tests/families/statement/f05k-statement.flang	flang/proof/checker/tests/families/statement/f05k-statement.record	-	-	-	-	0	-	-	-

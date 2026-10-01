@@ -1185,6 +1185,10 @@ c895d96922efd9cd69238c4e9fd31b2d|1|1|0|0|0|flang/proof/checker/tests/families/ca
 f156b44ebb9d062276fb048d8d558551|1|×|×|×|0|flang/proof/checker/tests/families/restriction/k2b-direct-theorem-hypothesis.flang
 43516f88b43387599d936a2979af66d1|1|×|×|×|0|flang/proof/checker/tests/families/restriction/k2bk-theorem-such-that.flang
 bc17b199769f3c2a966e71d18ebcee89|1|×|×|×|0|flang/proof/checker/tests/families/restriction/f09-restricted.flang
+2f70a5cf8cbb44e1a88bdf15eee9b1c9|2|×|×|×|0|flang/proof/checker/tests/families/hypothesis/precondition-carries-the-hypothesis.flang
+2c28f2fe75e00f19601f9f6cf9f8d835|2|×|×|×|0|flang/proof/checker/tests/families/hypothesis/precondition-says-something-else.flang
+ad3459ff6037a5f4fd987dad04cdcb69|1|×|×|×|0|flang/proof/checker/tests/families/hypothesis/type-carries-the-hypothesis.flang
+d645f02d887cf92fdffc69f02adc2e82|1|×|×|×|0|flang/proof/checker/tests/families/hypothesis/type-does-not-carry-the-hypothesis.flang
 48fabdcaa9d040986fe87d584786ff9b|1|0|0|0|1|flang/proof/checker/tests/families/plan/temporary-directory.flang
 58695c0261bca20c054c8f8e7fade6c3|1|0|0|0|1|flang/proof/checker/tests/families/plan/corrupt/foreign-order.flang
 441a75abee9f78ef507959ee1b7155a8|1|×|×|×|1|flang/proof/checker/tests/families/coverage/o9-fold-start-one.flang
@@ -1598,6 +1602,7 @@ af7fda1d841676c09ef8c20595636892|1|1|0|1|0|flang/proof/checker/tests/programs/75
 b84a0d9b2c597e85945650941c5bb1c9|1|0|1|0|0|flang/proof/probes/run/programs/grid.flang
 1e489b4612bc356f4c6a28b0b7bfaa4b|1|1|0|1|0|flang/proof/checker/tests/programs/7563/identity.flang
 66a842f08485d3ff08202a087187e3b5|1|0|0|0|0|flang/proof/probes/run/programs/plan-proved.flang
+fd9c112a1fec91f46377a3ae4c907af2|1|×|×|×|0|flang/proof/probes/syllogism/assumptions/programs/postcondition-with-a-hypothesis-only-in-the-theorem.flang
 4704717d9ed5ce08f447c0e69f5c6b5f|1|1|0|1|0|flang/proof/checker/tests/programs/7563/unfold1-constructor.flang
 // ── Набор проб строгого режима (задача 5502), снято 19 сентября 2026 ──────
 // Семь программ каталога `flang/proof/probes/strict/programs/`; восьмая

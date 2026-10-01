@@ -35,3 +35,5 @@ flang/proof/checker/tests/families/carrier/alias-not-a-segment.flang	flang/proof
 flang/proof/examples/forgery-subtraction-under-precondition.flang	flang/proof/checker/tests/records/corpus/poddelka-raznost-bez-poryadka.record	record-lies
 flang/proof/checker/tests/programs/audit-2844/unfold2-itself.flang	flang/proof/checker/tests/records/corpus/poddelka-razv2-sebya.record	record-lies
 flang/proof/checker/tests/programs/audit-2844/unfold3-difference.flang	flang/proof/checker/tests/records/corpus/poddelka-razv3-raznost.record	record-lies
+flang/proof/probes/syllogism/assumptions/programs/socrates-with-premises-only-in-the-theorem.flang	flang/proof/checker/tests/records/corpus/forgery-hypothesis-outside-the-statement.record	record-lies
+flang/proof/probes/syllogism/assumptions/programs/postcondition-with-a-hypothesis-only-in-the-theorem.flang	flang/proof/checker/tests/records/corpus/forgery-hypothesis-outside-the-postcondition.record	record-lies

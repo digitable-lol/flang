@@ -1922,3 +1922,5 @@ predicates
 undistributed
 xanthippe
 translator
+applied
+way

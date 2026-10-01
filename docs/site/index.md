@@ -1,40 +1,45 @@
 # flang — a language whose compiler proves properties of your program
 
-flang is a pure functional language with strict static typing. Values are
-immutable, there are no loops, and a program has no side effects: input and
-output come back as data, and the host performs them.
+flang is a pure functional language with static types. Values are immutable,
+there are no loops, and functions have no side effects: a program that needs a
+file, the network or the screen returns a command as data, and the runtime
+executes it.
 
-One thing sets it apart: **promises about the program are checked by the
-compiler, not by tests.** `total` in front of a function promises it terminates
-on every input. `requires` is a condition the *caller* must discharge.
-`ensures` is a claim about the result, closed over **all** inputs. If it cannot
-be proved, the file is not emitted and the exit code is 1.
+What sets it apart: **the compiler checks the contract of a function for all
+inputs, not only for the inputs your tests happen to use.**
 
-The proof is not taken on the compiler's word either: `flang check --proof
---записать` writes the whole derivation to a file, and a **separate C program**
-(`flang/proof/checker/checker.c`, the trusted base) replays every step from
-scratch. The kernel has zero axioms, and that too is a run:
-`flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль'` answers
-with exit code 0.
+| You write | It means | The compiler does |
+| --- | --- | --- |
+| `total` (`тотальная`) before a function | the function always terminates | proves it; if it cannot, the file is rejected |
+| `requires` (`требует`) | precondition: what must hold on input | checks it at every call site |
+| `ensures` (`обеспечивает`) | postcondition: what the function guarantees on output | the **prover** proves it for every possible input |
+| `example` (`пример`) | a unit test inside the function | runs it on every check |
+
+The prover is the part of the compiler that proves postconditions; in the
+compiler output it is called «ядро» (kernel). You do not have to trust it:
+`flang check --proof --record <file>` writes the whole proof to a file, and a
+separate program in C, `flang/proof/checker/checker.c`, re-checks every step
+without using the compiler. The prover has no axioms; to check that yourself,
+run `flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль' --trust`
+— it answers with exit code 0.
 
 ```mermaid Who checks whom
 flowchart LR
   R([developer]) --> S[source .flang]
   S --> K[flang compiler<br>written in flang]
   K --> T[types and termination]
-  K --> Y{proof kernel}
-  Y --> C[certificate:<br>the whole derivation]
-  C --> V[C checker:<br>replays every step]
-  V --> W[verdict]
-  K --> P[emission into 10 target languages]
+  K --> Y{prover}
+  Y --> C[proof record:<br>every step]
+  C --> V[checker in C:<br>re-checks every step]
+  V --> W[result: accepted or not]
+  K --> P[code in 10 target languages]
   class Y glavnoe
   class W vyvod
 ```
 
-The language is self-hosted: the flang compiler is written in flang and prints
-itself. The standard library, the process scheduler, supervision and the link
-between nodes are written in flang too — its own layer in place of OTP/BEAM. It
-is written in words rather than symbols, and every keyword exists in both a
+The flang compiler is written in flang and compiles itself. The standard
+library, the process scheduler and supervision (in place of Erlang/OTP) are
+written in flang too. Keywords are words, not symbols, and every keyword has a
 Russian and an English spelling.
 
 ## Five minutes
@@ -50,18 +55,24 @@ total function «Double»
   n plus n
 ```
 
+Check it, then run it:
+
 ```bash
 $ flang check hello.flang
 модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
 hello.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 
 $ flang run hello.flang --function Double --args '{"n": 21}'
+доказано: утверждений 0
 42
 ```
 
-(The compiler's own report is in Russian today.) What a refusal looks like, what
-carries each promise, and what disappears from the compiled code once a promise
-is proved: [how a proof actually works](how-proofs-work.html).
+The compiler prints its messages in Russian. `check` says: one function, its
+termination is proved, no remarks. `run` first says how many postconditions
+are proved (here there are none), then prints the value.
+
+What a rejected proof looks like and what the compiler removes from the
+generated code once a property is proved: [How a proof works](how-proofs-work.html).
 
 ## Install
 
@@ -72,80 +83,89 @@ flang --version
 
 The first line installs from the
 [`homebrew-tap`](https://github.com/digitable-lol/homebrew-tap) repository; the
-second answers `flang {{выпуск.версия}}`. The other paths — asdf, from source —
-are on the [Install](install.html) page.
+second answers `flang {{выпуск.версия}}`. asdf and building from source are on
+the [Install](install.html) page.
 
-## What the language can do today
+## What the language can do
 
-| What exists | Where the border is |
+| What you get | What it does not do |
 | --- | --- |
-| **Termination**: `total` is checked by the compiler, not by a reviewer | the language has no loops and no mutable variables; if it cannot prove, it refuses the file |
-| **Contracts**: `requires` is discharged at the call site, `ensures` is closed over all inputs | the kernel does not accept every shape; which ones it does is [listed](what-the-kernel-accepts.html) |
-| **Emission into {{цели.поАнглийски}} target languages**: {{цели.список}} | sockets, clocks and the process table are not emitted |
-| **[Processes and supervision](processes.html)**: scheduler, supervision and back pressure, all written in flang itself | the `процесс` and `надзор` declarations are not judged by the binary compiler |
-| **[PostgreSQL](database.html) and SQLite**: the PostgreSQL protocol is built and parsed, an SQLite file is read, built from nothing, and written a row into | PostgreSQL takes `trust` and cleartext password only; SQLite writes only into a ready file's own free space, no page split, no journal |
-| **HTTP**: requests and responses parsed and printed, headers, codes, addresses, percent encoding | there is no socket: the host carries the bytes |
-| **Cryptography of our own**: SHA-256, HMAC, AES-128 in CTR and GCM, X25519, reading an X.509 certificate | TLS is not built: `https` is done by an external `curl` |
+| **Termination**: `total` is proved by the compiler | there are no loops and no mutable variables; if termination cannot be proved, the file is rejected |
+| **Contracts**: `requires` is checked at the call site, `ensures` is proved for all inputs | the prover does not accept every way of writing a postcondition; the forms it accepts are [listed](what-the-kernel-accepts.html) |
+| **Code generation into {{цели.поАнглийски}} target languages**: {{цели.список}} | sockets, clocks and the process table are not generated |
+| **[Processes and supervision](processes.html)**: scheduler, supervisors, back pressure, all written in flang | the binary compiler parses `процесс` and `надзор` declarations but does not check them |
+| **[PostgreSQL](database.html) and SQLite**: the PostgreSQL wire protocol is built and parsed; an SQLite file can be read, created from scratch and given a new row | PostgreSQL login supports only `trust` and a cleartext password; SQLite writes only into free space inside an existing file: no page split, no journal |
+| **HTTP**: requests and responses are parsed and printed: headers, status codes, URLs, percent encoding | there are no sockets: the runtime sends and receives the bytes |
+| **Cryptography written in flang**: SHA-256, HMAC, AES-128 in CTR and GCM, X25519, reading an X.509 certificate | there is no TLS: `https` goes through an external `curl` |
 
-## What backs that up
+## How to check these claims
 
-`bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` on trunk, 19 September 2026 (commit `a5609e322`),
-about three minutes:
+One command checks that the compiler's own proofs hold up:
 
 ```
-ДОКАЗУЕМ                                                      (PROVABLE)
-проверка 2 — доля проигрыванием не ниже 100 %? ДА (100.00 %: 650 из 650)
-проверка 3 — набор проб пройден? ДА (проб на подлог 533, принято кодом 0 — 0;
-                                     честных 245, отвергнуто 0)
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000
 ```
 
-All 650 obligations the kernel wrote into the certificate were replayed by the
-checker itself; 533 forged proofs were rejected, 245 honest ones accepted.
+It takes about a minute and ends like this:
 
-**This is not "100 % of programs are proved".** The hundred per cent is the
-share of places in the compiler's **own** proof records, and it says nothing
-about the emitted code. There are four coverages in all, and the other three are
-lower: inference rules formalised in Lean, an open list of known soundness
-violations, and the translation check for C. `bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000`
-prints all four side by side with a date and a commit; what each one is *not* is
-spelled out on [what is proved and what is not](what-is-proved.html).
+```
+ДОКАЗУЕМ
 
-Across the tree: {{корпус.тотальных}} functions out of {{корпус.функций}}
-terminate provably, and of {{утверждения.высказано}} behaviour claims the kernel
-has closed {{утверждения.доказано}}. Those four were measured on 23 August 2026
-(commit `252606e8`) by a run of the compiler over the whole tree — it takes hours
-and has not been re-measured since; the cheap numbers on this page (files, lines,
-functions) are recomputed in nine seconds and checked on every push
-(`sh scripts/guards/published-vs-tree.sh --числа`).
+проверка 1 — калькулятор снят? ДА (ловушка: ∀-целей на слове ядра 3 из 3, видов обязательства переиграно 39 из 39 (храповик 38/3))
+проверка 2 — доля проигрыванием не ниже 100 %? ДА (100.00 %: 650 из 650; недостижимых мест вынесено 27)
+проверка 3 — набор проб пройден? ДА (набор подделок 36 из 36; проб на подлог 575, принято кодом 0 — 0; честных 274, отвергнуто 0)
+проверка 4 — набор не ослаб? ДА (в манифесте 36 при храповике 36; числитель 187 при храповике 155; проб на подлог 575 при храповике 572)
+```
+
+How to read it: the C checker re-checked on its own all 650 steps of the proof
+records the compiler writes; it rejected all 575 deliberately broken proofs and
+accepted all 274 correct ones.
+
+**This does not mean "100 % of programs are proved".** The 100 % is about the
+proofs the compiler writes, not about the code it generates. Three other
+measures are lower: how many inference rules are formalised in Lean, the list
+of known soundness bugs, and how much of the translation into C is checked.
+`bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000`
+prints all four. What each of them does not cover is on
+[What is proved and what is not](what-is-proved.html).
+
+Across the repository, {{корпус.тотальных}} functions out of
+{{корпус.функций}} have proved termination, and the prover has proved
+{{утверждения.доказано}} of {{утверждения.высказано}} postconditions and other
+properties. These four numbers come from a full run of the compiler over the
+repository (`bootstrap/flang run-script numbers:build`, several hours), so they
+can lag behind the code. The cheap numbers (files, lines, functions) are
+recounted on every push by `sh scripts/guards/published-vs-tree.sh --числа`.
 
 ## How this differs from Coq and Lean
 
-**Not in who writes the proof.** You can write one by hand here too: `теорема`
-with the steps `дано`, `утверждаем`, `затем … по свойству «…»`, `индукция по …`
-and `следовательно доказано` — a structured proof in the spirit of Isabelle's
-Isar, not a script of tactics. There are **287** such theorems in the tree, **55**
-of them in the standard library (`grep -rac '^\s*теорема ' flang
---include='*.flang'`, summed with `awk`, 19 September 2026).
+**You can write proofs by hand here too.** A `теорема` (theorem) is written in
+steps: `дано` (given), `утверждаем` (we claim), `затем … по свойству «…»` (then …
+by property …), `индукция по …` (induction on …), `следовательно доказано`
+(hence proved). It reads like a proof in Isabelle's Isar, not like a script of
+tactics. There are **287** such theorems in the repository, 55 of them in the
+standard library (`grep -rac '^\s*теорема ' flang --include='*.flang'`, summed
+with `awk`).
 
-The difference is **what is left for the hand to write.** The kernel closes a
-claim on its own, and a written theorem is only needed for the remainder. The
-report gives that as its own number: for `flang/stdlib/lists.flang`, "утверждений
-66: доказано 42 … из них без теоремы 37" — 66 claims, 42 proved, 37 of them with
-no theorem written. Coq and Lean have no such number: there every claim gets
-either a term or a tactic.
+**The difference is how much you have to write.** The prover proves most
+properties on its own, and you write a theorem only for the rest. The report
+shows this as a separate number: for `flang/stdlib/lists.flang` it says
+"утверждений 66: доказано 42 … из них без теоремы 37" — 66 properties, 42
+proved, 37 of them without a written theorem. In Coq and Lean every property
+needs a proof term or a tactic script.
 
-The second difference is not in our favour: thirty years have accumulated tens of
-thousands of ready lemmas there, while the library of proved statements here is
-only being built up, and a program is more often *extracted* out of Coq and Lean
-into another language than used to run a service.
+**Where Coq and Lean are ahead:** they have tens of thousands of ready lemmas;
+the library of proved properties in flang is small. On the other hand, Coq and
+Lean programs are usually *extracted* into another language, while a flang
+program is meant to be run as it is.
 
 ## Next
 
-- [How a proof actually works](how-proofs-work.html) — termination,
-  preconditions and postconditions, on code and on captured output.
+- [How a proof works](how-proofs-work.html) — termination, preconditions and
+  postconditions, with real compiler output.
 - [Your first program](getting-started.html) — the same five minutes in full,
-  down to emitting the program into C.
-- [Language reference](language.html) — how every form of the language is
-  written.
-- [Operations](operations.html) — what to call when you need a library function
-  that already exists.
+  up to generating C.
+- [Which construct to use when](which-construct.html) — what to write for a
+  task: enum, Optional, Result, map, filter, reduce, file I/O.
+- [Language reference](language.html) — the syntax of every construct.
+- [Operations](operations.html) — functions of the standard library by task.

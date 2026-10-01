@@ -80,7 +80,7 @@ $ grep -c 'Вне языка' ROADMAP.md
 `grep -c 'Вне языка' docs/tree-inventory.md` печатает 0. Число строк
 JavaScript стоит в дереве в одном месте; рядом с ним и с числом файлов в
 заголовке есть отметка снятого числа, которую сверяет
-`scripts/guards/prose-numbers-guard.sh`: проверка краснеет, когда число
+`scripts/guards/prose-numbers-guard.fscript`: проверка краснеет, когда число
 расходится с деревом.
 
 ## Где живёт правка

@@ -1553,6 +1553,7 @@ ca577bce09cd63ed95ee91dd19eb6179|17|17|0|0|0|scripts/guards/run-verdict-debt-gua
 d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/guards/string-measure.flang
 d25c2b3399f45c84d4b13bf0ec83ba1a|5|3|2|0|0|scripts/guards/tab-host-guard.fscript
 0df69d55cfac1868ab36c20db5019da2|2|2|0|0|0|scripts/guards/target-function-drift.fscript
+665e3db7c9378eceaed841791897f698|2|2|0|0|0|scripts/guards/task-numbers-guard.fscript
 68dc1ca8f2d8213dfacf881c0a77ac16|42|20|22|0|0|scripts/guards/traceability-guard.fscript
 32abb506d7825a5a941106acc8419d59|11|11|0|0|0|scripts/guards/translit-file-names-guard.fscript
 0eb8181532ae602de4c212cbde33749e|33|19|5|1|0|scripts/guards/tree-inventory.fscript

@@ -29,20 +29,18 @@ git ls-files -z 'scripts/*.sh' 'scripts/**/*.sh' | sort -zu \
 
 ```
 $ git ls-files -z 'scripts/*.sh' 'scripts/**/*.sh' | sort -zu | xargs -0 awk '/^[[:space:]]*#/{c++} {t++} END{print c, t}'
-3754 10471                                                        код 0
+3093 8709                                                         код 0
 $ git ls-files 'scripts/*.sh' 'scripts/**/*.sh' | sort -u | wc -l
-29
+22
 ```
 
-Дата прогона: 30 сентября 2026. Двоичный flang в замере не участвует.
+Дата прогона: 1 октября 2026. Двоичный flang в замере не участвует.
 
-3754 из 10471 — это 36 %. Ниже 20 % только восемь файлов из 29: четыре в
-`scripts/targets`, `scripts/seed/seed-refresh.sh`,
-`scripts/ledgers/take-proof-ledger.sh`, `scripts/tutor-probe.sh`,
-`scripts/guards/task-numbers-guard.sh`. Самые тяжёлые —
-`scripts/guards/seed-parses-sources-guard.sh` (60 %) и `scripts/bootstrap-c.sh`
-(49 %). Один `scripts/bootstrap-reprint.sh` несёт 1446 строк комментариев из
-3754.
+3093 из 8709 — это 36 %. Ниже 20 % только шесть файлов из 22: четыре в
+`scripts/targets`, `scripts/seed/seed-refresh.sh`, `scripts/tutor-probe.sh`.
+Самые тяжёлые — `scripts/bootstrap-c.sh` (49 %),
+`scripts/guards/published-vs-tree.sh` (41 %), `scripts/memory-limit.sh` (40 %).
+Один `scripts/bootstrap-reprint.sh` несёт 1446 строк комментариев из 3093.
 
 ## Что должно быть
 
@@ -63,7 +61,7 @@ $ git ls-files 'scripts/*.sh' 'scripts/**/*.sh' | sort -u | wc -l
 - вынесенная из шапок история лежит в `docs/zettel`, по заметке на скрипт;
 - строки-приметы проверки чисел (комментарий со словом СНЯТО и датой, по
   одной в четырёх файлах) остались на месте, и
-  `sh scripts/guards/prose-numbers-guard.sh` отвечает кодом 0;
+  `bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check` отвечает кодом 0;
 - числа строк оболочки в `docs/tree-inventory.md` пересняты,
   `bootstrap/flang run-script inventory:check` отвечает кодом 0.
 

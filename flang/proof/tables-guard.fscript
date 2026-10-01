@@ -1,0 +1,956 @@
+модуль «Tables guard»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Plan output» из "../../scripts/plan-output.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Inputs»
+  «table»: строка
+  «digest»: строка
+  «sum»: строка
+  «kernel»: строка
+  «types»: строка
+  «native»: строка
+  «program»: строка
+  «segments»: строка
+  «ratchets»: строка
+  «neighbour»: число
+  «heard»: строка
+
+объект «Block»
+  «inside»: признак
+  «done»: признак
+  «found»: список строки
+
+объект «Scan»
+  «pending»: строка
+  «left»: число
+  «found»: список строки
+
+объект «Numbered row»
+  «row»: список строки
+  «index»: число
+
+объект «Counting»
+  «comment»: признак
+  «lines»: число
+
+объект «Cut»
+  «open»: признак
+  «rest»: признак
+  «code»: признак
+  «started»: признак
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The root of the tree lies two directories up»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Red»
+  принимает trouble: строка
+  возвращает строка
+  пример «A trouble is printed red»
+    дано trouble равно "отпечаток разошёлся"
+    ожидается "КРАСНО  отпечаток разошёлся"
+  соединить ["КРАСНО  ", trouble] по ""
+
+тотальная функция «Reds»
+  принимает lines: список строки
+  возвращает число
+  пример «Only red lines are counted»
+    дано lines равно ["── С-4 ──", "КРАСНО  отпечаток разошёлся"]
+    ожидается 1
+  длина (отфильтровать lines где line → line начинается с "КРАСНО  ")
+
+тотальная функция «Has»
+  принимает name: строка, names: список строки
+  возвращает признак
+  пример «A name in the list»
+    дано name равно "а"
+    дано names равно ["б", "а"]
+    ожидается да
+  пример «A name not in the list»
+    дано name равно "в"
+    дано names равно ["б", "а"]
+    ожидается нет
+  (длина (отфильтровать names где other → other равен name)) больше 0
+
+тотальная функция «Unique»
+  принимает names: список строки
+  возвращает список строки
+  пример «A name stays once, in its first place»
+    дано names равно ["а", "б", "а"]
+    ожидается ["а", "б"]
+  свёртка names начиная с (пустой список) как kept и name → если «Has» от name и kept то kept иначе (добавить name к kept)
+
+тотальная функция «Quoted parts»
+  принимает line: строка
+  возвращает список строки
+  пример «The parts between quotes, empty ones dropped»
+    дано line равно "  \"а\", \"\", \"б в\","
+    ожидается ["а", "б в"]
+  отфильтровать ((свёртка (разделить line по "\"") начиная с (запись «Block» с «inside» равным нет и «done» равным нет и «found» равным (пустой список)) как block и part → запись «Block» с «inside» равным (не (block.«inside»)) и «done» равным нет и «found» равным (если block.«inside» то (добавить part к (block.«found»)) иначе (block.«found»))).«found») где part → не (пусто part)
+
+тотальная функция «Array step»
+  принимает block: «Block», line: строка, opening: строка
+  возвращает «Block»
+  пример «The opening line starts the block»
+    дано block равно запись «Block» с «inside» равным нет и «done» равным нет и «found» равным пустой список
+    дано line равно "static int A[] = {"
+    дано opening равно "static int A[] = {"
+    ожидается запись «Block» с «inside» равным да и «done» равным нет и «found» равным пустой список
+  «Chosen» от [(«When» от (block.«done») и block),
+    («When» от (не (block.«inside»)) и (запись «Block» с «inside» равным (line начинается с opening) и «done» равным нет и «found» равным (block.«found»))),
+    («When» от (line начинается с "};") и (запись «Block» с «inside» равным нет и «done» равным да и «found» равным (block.«found»)))] и (запись «Block» с «inside» равным да и «done» равным нет и «found» равным («Соединить списки» от (block.«found») и («Quoted parts» от line)))
+
+тотальная функция «Array literals»
+  принимает text: строка, opening: строка
+  возвращает список строки
+  пример «The literals of a C array up to its closing line»
+    дано text равно "x\nstatic int A[] = {\n  \"а\", \"б\",\n};\n\"в\"\n"
+    дано opening равно "static int A[] = {"
+    ожидается ["а", "б"]
+  (свёртка (разделить text по "\n") начиная с (запись «Block» с «inside» равным нет и «done» равным нет и «found» равным (пустой список)) как block и line → «Array step» от block и line и opening).«found»
+
+тотальная функция «List step»
+  принимает block: «Block», line: строка
+  возвращает «Block»
+  пример «The list ends on the line with its closing bracket»
+    дано block равно запись «Block» с «inside» равным да и «done» равным нет и «found» равным пустой список
+    дано line равно "   \"б\"]"
+    ожидается запись «Block» с «inside» равным да и «done» равным да и «found» равным ["б"]
+  «Chosen» от [(«When» от (block.«done») и block),
+    («When» от (не (block.«inside»)) и (запись «Block» с «inside» равным (line равен "тотальная функция «Правила сведения»") и «done» равным нет и «found» равным (block.«found»)))] и (запись «Block» с «inside» равным да и «done» равным (line содержит "]") и «found» равным («Соединить списки» от (block.«found») и («Quoted parts» от line)))
+
+тотальная функция «Flang list»
+  принимает text: строка
+  возвращает список строки
+  пример «The literals of the list function up to its closing bracket»
+    дано text равно "тотальная функция «Правила сведения»\n  возвращает список строки\n  [\"а\",\n   \"б\"]\n\"в\"\n"
+    ожидается ["а", "б"]
+  (свёртка (разделить text по "\n") начиная с (запись «Block» с «inside» равным нет и «done» равным нет и «found» равным (пустой список)) как block и line → «List step» от block и line).«found»
+
+тотальная функция «Wanted rules»
+  принимает text: строка
+  возвращает список строки
+  пример «The functions named as rules»
+    дано text равно "  то «Принято правилом» от («Порядок») и «Принято правилом» от («Строгий»)\n"
+    ожидается ["Порядок", "Строгий"]
+  «Gathered words» от (отобразить (отфильтровать (разделить text по "\n") где line → line содержит "«Принято правилом» от («") как line → «Wanted on a line» от line)
+
+тотальная функция «Wanted on a line»
+  принимает line: строка
+  возвращает список строки
+  пример «Every name after the mark»
+    дано line равно "«Принято правилом» от («А») и «Принято правилом» от («Б»)"
+    ожидается ["А", "Б"]
+  разбор (разделить line по "«Принято правилом» от («")
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то отфильтровать (отобразить хвост как part → «Cell» от 1 и (разделить part по "»)")) где name → (не (пусто name)) и притом (не (name содержит "«"))
+
+тотальная функция «Function name»
+  принимает line: строка
+  возвращает строка
+  пример «The name of a declared function»
+    дано line равно "тотальная функция «Порядок»"
+    ожидается "Порядок"
+  пример «Another line has no name»
+    дано line равно "  \"порядок\""
+    ожидается ""
+  «Chosen» от [(«When» от (line начинается с "тотальная функция «") и («Cell» от 1 и (разделить («After» от "тотальная функция «" и line) по "»"))), («When» от (line начинается с "функция «") и («Cell» от 1 и (разделить («After» от "функция «" и line) по "»")))] и ""
+
+тотальная функция «Scan step»
+  принимает scan: «Scan», line: строка, wanted: список строки
+  возвращает «Scan»
+  пример «A wanted function opens the search for its literal»
+    дано scan равно запись «Scan» с «pending» равным "" и «left» равным 0 и «found» равным пустой список
+    дано line равно "тотальная функция «Порядок»"
+    дано wanted равно ["Порядок"]
+    ожидается запись «Scan» с «pending» равным "Порядок" и «left» равным 19 и «found» равным пустой список
+  пусть named равно («Function name» от line)
+  «Chosen» от [(«When» от ((не (пусто named)) и притом («Has» от named и wanted)) и (запись «Scan» с «pending» равным named и «left» равным 19 и «found» равным (scan.«found»))),
+    («When» от ((не (пусто (scan.«pending»))) и притом ((line начинается с "  \"") и притом ((scan.«left») больше 0))) и (запись «Scan» с «pending» равным "" и «left» равным 0 и «found» равным (добавить («Cell» от 1 и (разделить («After» от "  \"" и line) по "\"")) к (scan.«found»)))),
+    («When» от ((scan.«left») больше 0) и (запись «Scan» с «pending» равным (scan.«pending») и «left» равным ((scan.«left») минус 1) и «found» равным (scan.«found»)))] и (запись «Scan» с «pending» равным "" и «left» равным 0 и «found» равным (scan.«found»))
+
+тотальная функция «Kernel set»
+  принимает text: строка
+  возвращает список строки
+  пример «The literal body of every function named as a rule»
+    дано text равно "  то «Принято правилом» от («Порядок»)\nтотальная функция «Порядок»\n  возвращает строка\n  \"порядок по построению\"\n"
+    ожидается ["порядок по построению"]
+  пусть wanted равно («Wanted rules» от text)
+  «Unique» от ((свёртка (разделить text по "\n") начиная с (запись «Scan» с «pending» равным "" и «left» равным 0 и «found» равным (пустой список)) как scan и line → «Scan step» от scan и line и wanted).«found»)
+
+тотальная функция «Set troubles»
+  принимает left: список строки, right: список строки, words: строка
+  возвращает список строки
+  пример «Two equal sets give nothing»
+    дано left равно ["а", "б"]
+    дано right равно ["б", "а"]
+    дано words равно "набор разошёлся"
+    ожидается пустой список
+  пример «The difference is named on both sides»
+    дано left равно ["а", "б"]
+    дано right равно ["б", "в"]
+    дано words равно "набор разошёлся"
+    ожидается ["набор разошёлся:\n          < а\n          > в"]
+  пусть lonely равно (отфильтровать («Unique» от left) где name → не («Has» от name и right))
+  пусть extra равно (отфильтровать («Unique» от right) где name → не («Has» от name и left))
+  если ((длина lonely) плюс (длина extra)) равен 0
+    то пустой список
+    иначе [(соединить («Соединить списки» от [(соединить [words, ":"] по "")] и («Соединить списки» от (отобразить lonely как name → соединить ["          < ", name] по "") и (отобразить extra как name → соединить ["          > ", name] по ""))) по "\n")]
+
+тотальная функция «Anchor»
+  принимает cell: строка
+  возвращает список строки
+  пример «An anchor gives its line and its function»
+    дано cell равно "proof-kernel.flang:2334 «Литерал неотрицателен»"
+    ожидается ["2334", "Литерал неотрицателен"]
+  пример «Another form gives nothing»
+    дано cell равно "где-то"
+    ожидается пустой список
+  пусть rest равно («After» от "proof-kernel.flang:" и cell)
+  пусть number равно («Leading digits» от rest)
+  пусть named равно («Cell» от 1 и (разделить («After» от (соединить [number, " «"] по "") и rest) по "»"))
+  если (пусто number) или (пусто named) то (пустой список) иначе [number, named]
+
+тотальная функция «Anchor trouble»
+  принимает row: список строки, lines: список строки
+  возвращает список строки
+  пример «An anchor on the line of its function is no trouble»
+    дано row равно ["Н1", "Н", "rule", "x", "proof-kernel.flang:2 «Литерал»", "code"]
+    дано lines равно ["модуль", "тотальная функция «Литерал»"]
+    ожидается пустой список
+  пример «An anchor off by a line is named»
+    дано row равно ["Н1", "Н", "rule", "x", "proof-kernel.flang:1 «Литерал»", "code"]
+    дано lines равно ["модуль", "тотальная функция «Литерал»"]
+    ожидается ["опора правила «Н1» не сошлась: proof-kernel.flang:1 — там «модуль»"]
+  пусть anchor равно («Anchor» от («Cell» от 5 и row))
+  пусть there равно («Cell» от («Count» от («Cell» от 1 и anchor)) и lines)
+  «Chosen» от [(«When» от (пусто anchor) и ([(соединить ["опора правила «", («Cell» от 1 и row), "» не читается: ", («Cell» от 5 и row)] по "")])),
+    («When» от ((there равен (соединить ["функция «", («Cell» от 2 и anchor), "»"] по "")) или (there равен (соединить ["тотальная функция «", («Cell» от 2 и anchor), "»"] по ""))) и (пустой список))] и ([(соединить ["опора правила «", («Cell» от 1 и row), "» не сошлась: proof-kernel.flang:", («Cell» от 1 и anchor), " — там «", there, "»"] по "")])
+
+тотальная функция «Families of the law»
+  возвращает список строки
+  пример «Eight families of type laws»
+    ожидается ["неотрицательность по построению", "ограниченность точным потолком по построению", "порядок по построению", "строгий порядок по построению", "порядок соседних по построению", "вхождение по построению", "начало по построению", "цель есть допущение"]
+  ["неотрицательность по построению", "ограниченность точным потолком по построению", "порядок по построению", "строгий порядок по построению", "порядок соседних по построению", "вхождение по построению", "начало по построению", "цель есть допущение"]
+
+тотальная функция «Row rules»
+  принимает row: список строки
+  возвращает список строки
+  пример «Names of the kernel field, a dash names nothing»
+    дано row равно ["Н1", "Н", "rule", "а|б"]
+    ожидается ["а", "б"]
+  пример «A dash names nothing»
+    дано row равно ["Н2", "Н", "rule", "—"]
+    ожидается пустой список
+  если («Cell» от 4 и row) равен "—" то (пустой список) иначе (отфильтровать (разделить («Cell» от 4 и row) по "|") где name → не (пусто name))
+
+тотальная функция «Neighbour line»
+  принимает inputs: «Inputs», asked: признак
+  возвращает строка
+  пример «The neighbour was not asked»
+    дано inputs равно запись «Inputs» с «table» равным "" и «digest» равным "" и «sum» равным "" и «kernel» равным "" и «types» равным "" и «native» равным "" и «program» равным "" и «segments» равным "" и «ratchets» равным "" и «neighbour» равным 0 и «heard» равным ""
+    дано asked равно нет
+    ожидается "   сосед «rules-match.fscript --list-only» не спрошен"
+  «Chosen» от [(«When» от (не asked) и "   сосед «rules-match.fscript --list-only» не спрошен"),
+    («When» от ((inputs.«neighbour») равен 0) и "   сосед «rules-match.fscript --list-only» согласен (код 0)")] и («Red» от (соединить ["сосед «rules-match.fscript --list-only» покраснел — верить надо ЕМУ: ", («First line» от (inputs.«heard»))] по ""))
+
+тотальная функция «Completeness»
+  принимает inputs: «Inputs», asked: признак
+  возвращает список строки
+  пример «Empty inputs are red»
+    дано inputs равно запись «Inputs» с «table» равным "name\n" и «digest» равным "" и «sum» равным "" и «kernel» равным "" и «types» равным "" и «native» равным "" и «program» равным "" и «segments» равным "" и «ratchets» равным "" и «neighbour» равным 0 и «heard» равным ""
+    дано asked равно нет
+    ожидается ["── С-1: полнота — ведомость против ядра и обоих сверщиков ──", "   набор ядра: 0 имён (плюс пустое)", "КРАСНО  из ядра вычитано 0 имён — разбор «Принято правилом» сломан", "КРАСНО  ни одна строка ведомости не закрывает правило ядра «неотрицательность по построению»", "КРАСНО  ни одна строка ведомости не закрывает правило ядра «ограниченность точным потолком по построению»", "КРАСНО  ни одна строка ведомости не закрывает правило ядра «порядок по построению»", "КРАСНО  ни одна строка ведомости не закрывает правило ядра «строгий порядок по построению»", "КРАСНО  ни одна строка ведомости не закрывает правило ядра «порядок соседних по построению»", "КРАСНО  ни одна строка ведомости не закрывает правило ядра «вхождение по построению»", "КРАСНО  ни одна строка ведомости не закрывает правило ядра «начало по построению»", "КРАСНО  ни одна строка ведомости не закрывает правило ядра «цель есть допущение»", "   сосед «rules-match.fscript --list-only» не спрошен", ""]
+  пусть kernel равно («Kernel set» от (inputs.«kernel»))
+  пусть listed равно («Array literals» от (inputs.«native») и "static const char *ПРАВИЛА[] = {")
+  пусть rows равно («Rows» от (inputs.«table»))
+  пусть named равно («Gathered words» от (отобразить rows как row → «Row rules» от row))
+  пусть lines равно (разделить (inputs.«kernel») по "\n")
+  «Соединить списки» от ["── С-1: полнота — ведомость против ядра и обоих сверщиков ──", (соединить ["   набор ядра: ", (к строке (длина kernel)), " имён (плюс пустое)"] по "")] и («Соединить списки» от (отобразить («Gathered words» от [(если (длина kernel) не меньше 8 то (пустой список) иначе [(соединить ["из ядра вычитано ", (к строке (длина kernel)), " имён — разбор «Принято правилом» сломан"] по "")]),
+    («Set troubles» от kernel и listed и "набор ядра разошёлся с ПРАВИЛА[] сверщика на C"),
+    («Set troubles» от kernel и («Flang list» от (inputs.«program»)) и "набор ядра разошёлся со списком «Правила сведения» сверщика на flang"),
+    («Gathered words» от (отобразить rows как row → отобразить (отфильтровать («Row rules» от row) где name → не («Has» от name и kernel)) как name → соединить ["правило «", («Cell» от 1 и row), "» ссылается на имя, которого ядро не ставит: «", name, "»"] по "")),
+    (отобразить (отфильтровать («Families of the law») где name → не («Has» от name и named)) как name → соединить ["ни одна строка ведомости не закрывает правило ядра «", name, "»"] по ""),
+    (отобразить (отфильтровать ["развёртка по конструктору", "развёртка определения без вызовов"] где name → «Has» от name и listed) как name → соединить ["«", name, "» стоит в ПРАВИЛА[] сверщика, хотя ядро в поле rule его не кладёт"] по ""),
+    («Gathered words» от (отобразить rows как row → «Anchor trouble» от row и lines))]) как trouble → «Red» от trouble) и [(«Neighbour line» от inputs и asked), ""])
+
+тотальная функция «Families»
+  возвращает список строки
+  пример «The closed list of rule families»
+    ожидается ["Н", "Кон", "П", "Пред", "О", "Д", "С", "СС", "В", "Ч", "Разв", "Т", "Р", "Инд", "Тожд", "Э", "Св", "Пр", "М"]
+  ["Н", "Кон", "П", "Пред", "О", "Д", "С", "СС", "В", "Ч", "Разв", "Т", "Р", "Инд", "Тожд", "Э", "Св", "Пр", "М"]
+
+тотальная функция «Statuses»
+  возвращает список строки
+  пример «The closed list of statuses»
+    ожидается ["code", "code-wider", "code-stricter", "code-narrower", "not-in-adr", "not-in-code"]
+  ["code", "code-wider", "code-stricter", "code-narrower", "not-in-adr", "not-in-code"]
+
+тотальная функция «Row troubles»
+  принимает row: список строки, index: число, pairs: список «Numbered row»
+  возвращает список строки
+  пример «A whole row of a known family is no trouble»
+    дано row равно ["Н1", "Н", "rule", "x", "proof-kernel.flang:2 «Литерал»", "code"]
+    дано index равно 2
+    дано pairs равно [запись «Numbered row» с «row» равным ["Н1", "Н", "rule", "x", "proof-kernel.flang:2 «Литерал»", "code"] и «index» равным 2]
+    ожидается пустой список
+  пример «A row of five cells is named by its line»
+    дано row равно ["Н1", "Н", "rule", "x", "y"]
+    дано index равно 3
+    дано pairs равно пустой список
+    ожидается ["строка 3: колонок 5, а надо 6"]
+  пример «A name seen on an earlier line is named with both lines»
+    дано row равно ["Н1", "Н", "rule", "x", "proof-kernel.flang:2 «Литерал»", "code"]
+    дано index равно 5
+    дано pairs равно [запись «Numbered row» с «row» равным ["Н1", "Н", "rule", "x", "proof-kernel.flang:2 «Литерал»", "code"] и «index» равным 2]
+    ожидается ["имя «Н1» стоит в ведомости дважды (строки 2 и 5)"]
+  пусть name равно («Cell» от 1 и row)
+  если не ((длина row) равен 6)
+    то [(соединить ["строка ", (к строке index), ": колонок ", (к строке (длина row)), ", а надо 6"] по "")]
+    иначе «Gathered words» от [(отобразить (отфильтровать [1, 2, 3, 4, 5, 6] где position → пусто («Cell» от position и row)) как position → соединить ["правило «", name, "»: колонка ", (к строке position), " пуста"] по ""),
+      (отобразить («Earliest» от name и index и pairs) как earlier → соединить ["имя «", name, "» стоит в ведомости дважды (строки ", (к строке earlier), " и ", (к строке index), ")"] по ""),
+      (если «Has» от («Cell» от 2 и row) и («Families») то (пустой список) иначе [(соединить ["правило «", name, "»: семейство «", («Cell» от 2 и row), "» вне закрытого списка"] по "")]),
+      (если («Has» от («Cell» от 3 и row) и ["rule", "ban"]) то (пустой список) иначе [(соединить ["правило «", name, "»: вид «", («Cell» от 3 и row), "» вне {rule, ban}"] по "")]),
+      (если пусто («Anchor» от («Cell» от 5 и row)) то [(соединить ["правило «", name, "»: опора «", («Cell» от 5 и row), "» не той формы"] по "")] иначе пустой список),
+      (если «Has» от («Cell» от 6 и row) и («Statuses») то (пустой список) иначе [(соединить ["правило «", name, "»: «status» = «", («Cell» от 6 и row), "» вне закрытого списка"] по "")])]
+
+тотальная функция «Pairs»
+  принимает rows: список список строки
+  возвращает список «Numbered row»
+  пример «Rows are numbered from one, the heading not counted»
+    дано rows равно [["а"], ["б"]]
+    ожидается [запись «Numbered row» с «row» равным ["а"] и «index» равным 1, запись «Numbered row» с «row» равным ["б"] и «index» равным 2]
+  свёртка rows начиная с (пустой список) как pairs и row → добавить (запись «Numbered row» с «row» равным row и «index» равным ((длина pairs) плюс 1)) к pairs
+
+тотальная функция «Earliest»
+  принимает name: строка, index: число, pairs: список «Numbered row»
+  возвращает список число
+  пример «The last earlier line with the same name»
+    дано name равно "Н1"
+    дано index равно 5
+    дано pairs равно [запись «Numbered row» с «row» равным ["Н1"] и «index» равным 2, запись «Numbered row» с «row» равным ["Н1"] и «index» равным 5]
+    ожидается [2]
+  свёртка (отфильтровать pairs где pair → ((pair.«index») меньше index) и притом ((«Cell» от 1 и (pair.«row»)) равен name)) начиная с (пустой список) как last и pair → [(pair.«index»)]
+
+тотальная функция «Ceiling»
+  принимает text: строка, name: строка
+  возвращает строка
+  пример «The digits on the body line of the named function»
+    дано text равно "тотальная функция «Точный потолок»\n  возвращает нат\n  9007199254740991\n"
+    дано name равно "Точный потолок"
+    ожидается "9007199254740991"
+  пусть heading равно (соединить ["тотальная функция «", name, "»"] по "")
+  «Cell» от 1 и ((свёртка (разделить text по "\n") начиная с (запись «Scan» с «pending» равным "" и «left» равным 0 и «found» равным (пустой список)) как scan и line → «Chosen» от [(«When» от ((длина (scan.«found»)) больше 0) и scan), («When» от (line равен heading) и (запись «Scan» с «pending» равным name и «left» равным 0 и «found» равным (scan.«found»))), («When» от ((не (пусто (scan.«pending»))) и притом (((line начинается с "  ") и притом («Digits» от («After» от "  " и line))))) и (запись «Scan» с «pending» равным "" и «left» равным 0 и «found» равным [(«After» от "  " и line)]))] и scan).«found»)
+
+тотальная функция «Consistency»
+  принимает inputs: «Inputs»
+  возвращает список строки
+  пример «An empty table counts nothing and misses the five named bans»
+    дано inputs равно запись «Inputs» с «table» равным "name\n" и «digest» равным "" и «sum» равным "" и «kernel» равным "" и «types» равным "" и «native» равным "" и «program» равным "" и «segments» равным "" и «ratchets» равным "" и «neighbour» равным 0 и «heard» равным ""
+    ожидается ["── С-2: непротиворечивость записи ведомости ──", "КРАСНО  правил из ADR (0022 §3 — 55, 0027 §3.1 — 12, 0029 — 4, 0032 — 1, 0026 — 6, 0037 — 3, 0042 — 5) в ведомости 0, а названо 86", "КРАСНО  запретов из ADR-0022 §3 в ведомости 0, а названо 5", "КРАСНО  именованного запрета ADR-0022 §3 «Н✗» в ведомости нет", "КРАСНО  именованного запрета ADR-0022 §3 «П✗» в ведомости нет", "КРАСНО  именованного запрета ADR-0022 §3 «С✗» в ведомости нет", "КРАСНО  именованного запрета ADR-0022 §3 «С✗✗» в ведомости нет", "КРАСНО  именованного запрета ADR-0022 §3 «Ч✗» в ведомости нет", "   правил 0 (из них по ADR §3 — 0), запретов 0 (из них по ADR §3 — 0)", "КРАСНО  точный потолок не вычитан: ядро «», типизатор «»", ""]
+  пусть rows равно («Rows» от (inputs.«table»))
+  пусть rules равно (отфильтровать rows где row → («Cell» от 3 и row) равен "rule")
+  пусть bans равно (отфильтровать rows где row → («Cell» от 3 и row) равен "ban")
+  пусть ruled равно (длина (отфильтровать rules где row → не ((«Cell» от 6 и row) равен "not-in-adr")))
+  пусть banned равно (длина (отфильтровать bans где row → не ((«Cell» от 6 и row) равен "not-in-adr")))
+  пусть names равно (отобразить rows как row → «Cell» от 1 и row)
+  пусть kernel равно («Ceiling» от (inputs.«kernel») и "Точный потолок")
+  пусть typed равно («Ceiling» от (inputs.«types») и "Потолок точных")
+  «Соединить списки» от (приписать "── С-2: непротиворечивость записи ведомости ──" к (отобразить («Gathered words» от [(«Gathered words» от (отобразить («Pairs» от rows) как pair → «Row troubles» от (pair.«row») и (pair.«index») и («Pairs» от rows))),
+    (если ruled равен 86 то (пустой список) иначе [(соединить ["правил из ADR (0022 §3 — 55, 0027 §3.1 — 12, 0029 — 4, 0032 — 1, 0026 — 6, 0037 — 3, 0042 — 5) в ведомости ", (к строке ruled), ", а названо 86"] по "")]),
+    (если banned равен 5 то (пустой список) иначе [(соединить ["запретов из ADR-0022 §3 в ведомости ", (к строке banned), ", а названо 5"] по "")]),
+    (отобразить (отфильтровать ["Н✗", "П✗", "С✗", "С✗✗", "Ч✗"] где name → не («Has» от name и names)) как name → соединить ["именованного запрета ADR-0022 §3 «", name, "» в ведомости нет"] по "")]) как trouble → «Red» от trouble)) и [(соединить ["   правил ", (к строке (длина rules)), " (из них по ADR §3 — ", (к строке ruled), "), запретов ", (к строке (длина bans)), " (из них по ADR §3 — ", (к строке banned), ")"] по ""), («Chosen» от [(«When» от ((пусто kernel) или (пусто typed)) и («Red» от (соединить ["точный потолок не вычитан: ядро «", kernel, "», типизатор «", typed, "»"] по ""))), («When» от (не (kernel равен typed)) и («Red» от (соединить ["точный потолок разошёлся: ядро ", kernel, ", типизатор ", typed] по "")))] и (соединить ["   точный потолок сошёлся: ядро и типизатор оба ", kernel] по "")), ""]
+
+тотальная функция «Hex only»
+  принимает text: строка
+  возвращает строка
+  пример «Only hexadecimal digits are kept»
+    дано text равно "ab12 \n"
+    ожидается "ab12"
+  соединить (отфильтровать (разложить text на символы) где sign → "0123456789abcdef" содержит sign) по ""
+
+тотальная функция «Digest check»
+  принимает inputs: «Inputs»
+  возвращает список строки
+  пример «A digest that agrees»
+    дано inputs равно запись «Inputs» с «table» равным "" и «digest» равным "ab12\n" и «sum» равным "ab12  t.tsv\n" и «kernel» равным "" и «types» равным "" и «native» равным "" и «program» равным "" и «segments» равным "" и «ratchets» равным "" и «neighbour» равным 0 и «heard» равным ""
+    ожидается ["── С-4: отпечаток ведомости ──", "   записано: ab12", "   снято:    ab12", ""]
+  пусть written равно («Hex only» от («First line» от (inputs.«digest»)))
+  пусть taken равно («Word» от 1 и («First line» от (inputs.«sum»)))
+  «Соединить списки» от ["── С-4: отпечаток ведомости ──", (соединить ["   записано: ", written] по ""), (соединить ["   снято:    ", taken] по "")] и (если taken равен written то [""] иначе [(«Red» от "отпечаток ведомости разошёлся — ведомость правлена, а число при ней нет"), "        переснять — ОТДЕЛЬНОЕ действие руками, сторож его не делает:", "        sha256sum flang/proof/tables/inference-rules.tsv | cut -d' ' -f1 > flang/proof/tables/inference-rules.digest", ""])
+
+тотальная функция «Kernel segments»
+  принимает text: строка
+  возвращает список строки
+  пример «The names inside the literal of the naming function»
+    дано text равно "тотальная функция «Названо натуральным»\n  принимает имя: строка\n  \"|нат|натуральное|\" содержит имя\n"
+    ожидается ["нат", "натуральное"]
+  пусть scan равно (свёртка (разделить text по "\n") начиная с (запись «Scan» с «pending» равным "" и «left» равным 0 и «found» равным (пустой список)) как scan и line → «Chosen» от [(«When» от ((длина (scan.«found»)) больше 0) и scan), («When» от (line равен "тотальная функция «Названо натуральным»") и (запись «Scan» с «pending» равным "да" и «left» равным 0 и «found» равным (scan.«found»))), («When» от ((не (пусто (scan.«pending»))) и притом (line содержит "\"|")) и (запись «Scan» с «pending» равным "" и «left» равным 0 и «found» равным [line]))] и scan)
+  отфильтровать (разделить («Cell» от 1 и (разделить («Cell» от 2 и (разделить («Cell» от 1 и (scan.«found»)) по "\"|")) по "|\"")) по "|") где name → не (пусто name)
+
+тотальная функция «Segment row troubles»
+  принимает pair: «Numbered row», pairs: список «Numbered row», ceiling: строка
+  возвращает список строки
+  пример «A whole row is no trouble»
+    дано pair равно запись «Numbered row» с «row» равным ["нат", "0", "9", "integer"] и «index» равным 2
+    дано pairs равно пустой список
+    дано ceiling равно "9"
+    ожидается пустой список
+  пример «A wrong floor, ceiling and integrality are each named»
+    дано pair равно запись «Numbered row» с «row» равным ["нат", "1", "8", "whole"] и «index» равным 2
+    дано pairs равно пустой список
+    дано ceiling равно "9"
+    ожидается ["имя «нат»: дно «1», а у встроенного отрезка дно 0", "имя «нат»: потолок «8», а «Точный потолок» ядра — 9", "имя «нат»: целость «whole» вне {integer, fractional}"]
+  пусть row равно (pair.«row»)
+  пусть name равно («Cell» от 1 и row)
+  «Gathered words» от [(если («Cell» от 2 и row) равен "0" то (пустой список) иначе [(соединить ["имя «", name, "»: дно «", («Cell» от 2 и row), "», а у встроенного отрезка дно 0"] по "")]),
+    (если («Cell» от 3 и row) равен ceiling то (пустой список) иначе [(соединить ["имя «", name, "»: потолок «", («Cell» от 3 и row), "», а «Точный потолок» ядра — ", ceiling] по "")]),
+    (если «Has» от («Cell» от 4 и row) и ["integer", "fractional"] то (пустой список) иначе [(соединить ["имя «", name, "»: целость «", («Cell» от 4 и row), "» вне {integer, fractional}"] по "")]),
+    (если (длина («Earliest» от name и (pair.«index») и pairs)) больше 0 то [(соединить ["имя «", name, "» стоит в таблице дважды"] по "")] иначе пустой список)]
+
+тотальная функция «Segment check»
+  принимает inputs: «Inputs»
+  возвращает список строки
+  пример «Empty inputs are red three times»
+    дано inputs равно запись «Inputs» с «table» равным "" и «digest» равным "" и «sum» равным "" и «kernel» равным "" и «types» равным "" и «native» равным "" и «program» равным "" и «segments» равным "name\n" и «ratchets» равным "" и «neighbour» равным 0 и «heard» равным ""
+    ожидается ["── С-5: имена встроенного отрезка — таблица, ядро, сверщик на C ──", "   имён: в таблице 0, у ядра 0, у сверщика на C 0", "КРАСНО  таблица tables/segments.tsv вычитана в 0 имён — разбор сломан либо таблица пуста", "КРАСНО  из ядра вычитано 0 имён — разбор «Названо натуральным» сломан", "КРАСНО  из сверщика вычитано 0 имён — массива НАТУРАЛЬНОЕ[] нет либо разбор сломан", ""]
+  пусть rows равно (отфильтровать («Rows» от (inputs.«segments»)) где row → (длина row) не меньше 4)
+  пусть table равно («Unique» от (отобразить rows как row → «Cell» от 1 и row))
+  пусть kernel равно («Unique» от («Kernel segments» от (inputs.«kernel»)))
+  пусть native равно («Unique» от («Array literals» от (inputs.«native») и "static const char *НАТУРАЛЬНОЕ[] = {"))
+  пусть ceiling равно («Ceiling» от (inputs.«kernel») и "Точный потолок")
+  «Соединить списки» от ["── С-5: имена встроенного отрезка — таблица, ядро, сверщик на C ──", (соединить ["   имён: в таблице ", (к строке (длина table)), ", у ядра ", (к строке (длина kernel)), ", у сверщика на C ", (к строке (длина native))] по "")] и («Соединить списки» от (отобразить («Gathered words» от [(если (длина table) не меньше 2 то (пустой список) иначе [(соединить ["таблица tables/segments.tsv вычитана в ", (к строке (длина table)), " имён — разбор сломан либо таблица пуста"] по "")]),
+    (если (длина kernel) не меньше 2 то (пустой список) иначе [(соединить ["из ядра вычитано ", (к строке (длина kernel)), " имён — разбор «Названо натуральным» сломан"] по "")]),
+    (если (длина native) не меньше 2 то (пустой список) иначе [(соединить ["из сверщика вычитано ", (к строке (длина native)), " имён — массива НАТУРАЛЬНОЕ[] нет либо разбор сломан"] по "")]),
+    («Set troubles» от table и kernel и "имена отрезка: таблица разошлась с ядром («Названо натуральным»)"),
+    («Set troubles» от table и native и "имена отрезка: таблица разошлась с НАТУРАЛЬНОЕ[] сверщика на C"),
+    («Gathered words» от (отобразить («Pairs» от rows) как pair → «Segment row troubles» от pair и («Pairs» от rows) и ceiling))]) как trouble → «Red» от trouble) и [""])
+
+тотальная функция «Plain text»
+  принимает cut: «Cut», text: строка
+  возвращает «Cut»
+  пример «Text before a line comment is code»
+    дано cut равно запись «Cut» с «open» равным нет и «rest» равным нет и «code» равным нет и «started» равным да
+    дано text равно " x; // y"
+    ожидается запись «Cut» с «open» равным нет и «rest» равным да и «code» равным да и «started» равным да
+  запись «Cut» с «open» равным нет и «rest» равным (text содержит "//") и «code» равным ((cut.«code») или (не (пусто («Without blanks» от («Cell» от 1 и (разделить text по "//")))))) и «started» равным да
+
+тотальная функция «Piece kind»
+  принимает cut: «Cut»
+  возвращает строка
+  пример «A piece after an opening mark lies in a comment»
+    дано cut равно запись «Cut» с «open» равным нет и «rest» равным нет и «code» равным нет и «started» равным да
+    ожидается "open"
+  «Chosen» от [(«When» от (cut.«rest») и "rest"),
+    («When» от ((cut.«open») или (cut.«started»)) и "open")] и "plain"
+
+тотальная функция «Piece»
+  принимает cut: «Cut», piece: строка
+  возвращает «Cut»
+  пример «A comment closed inside the piece leaves code after it»
+    дано cut равно запись «Cut» с «open» равным нет и «rest» равным нет и «code» равным нет и «started» равным да
+    дано piece равно " c */ int b;"
+    ожидается запись «Cut» с «open» равным нет и «rest» равным нет и «code» равным да и «started» равным да
+  пример «A comment not closed stays open»
+    дано cut равно запись «Cut» с «open» равным да и «rest» равным нет и «code» равным нет и «started» равным да
+    дано piece равно " still"
+    ожидается запись «Cut» с «open» равным да и «rest» равным нет и «code» равным нет и «started» равным да
+  разбор («Piece kind» от cut)
+    случай "rest"
+      то cut
+    случай "open"
+      то разбор (разделить piece по "*/")
+        случай голова и хвост
+          то если пусто (хвост)
+            то запись «Cut» с «open» равным да и «rest» равным нет и «code» равным (cut.«code») и «started» равным да
+            иначе «Plain text» от cut и (соединить (хвост) по "*/")
+        случай пусто
+          то cut
+    случай любое
+      то «Plain text» от cut и piece
+
+тотальная функция «Marked line»
+  принимает progress: «Counting», line: строка
+  возвращает «Counting»
+  пример «Code between two comments counts once»
+    дано progress равно запись «Counting» с «comment» равным нет и «lines» равным 0
+    дано line равно "/* a */ int b; /* c"
+    ожидается запись «Counting» с «comment» равным да и «lines» равным 1
+  пусть cut равно (свёртка (разделить line по "/*") начиная с (запись «Cut» с «open» равным (progress.«comment») и «rest» равным нет и «code» равным нет и «started» равным нет) как cut и piece → «Piece» от cut и piece)
+  запись «Counting» с «comment» равным (cut.«open») и «lines» равным (если cut.«code» то ((progress.«lines») плюс 1) иначе (progress.«lines»))
+
+тотальная функция «Counted line»
+  принимает progress: «Counting», line: строка
+  возвращает «Counting»
+  пример «A plain line of code»
+    дано progress равно запись «Counting» с «comment» равным нет и «lines» равным 0
+    дано line равно "  int a; // tail"
+    ожидается запись «Counting» с «comment» равным нет и «lines» равным 1
+  пример «A line inside a comment»
+    дано progress равно запись «Counting» с «comment» равным да и «lines» равным 0
+    дано line равно "  still inside"
+    ожидается запись «Counting» с «comment» равным да и «lines» равным 0
+  разбор («Line kind» от progress и line)
+    случай "marked"
+      то «Marked line» от progress и line
+    случай "quiet"
+      то progress
+    случай любое
+      то запись «Counting» с «comment» равным нет и «lines» равным ((progress.«lines») плюс 1)
+
+тотальная функция «Line kind»
+  принимает progress: «Counting», line: строка
+  возвращает строка
+  пример «A line with a comment mark is cut at the marks»
+    дано progress равно запись «Counting» с «comment» равным нет и «lines» равным 0
+    дано line равно "int a; /* b */"
+    ожидается "marked"
+  пример «A line comment alone is quiet»
+    дано progress равно запись «Counting» с «comment» равным нет и «lines» равным 0
+    дано line равно "   // b"
+    ожидается "quiet"
+  «Chosen» от [(«When» от ((line содержит "/*") или (line содержит "*/")) и "marked"),
+    («When» от ((progress.«comment») или (пусто («Without blanks» от («Cell» от 1 и (разделить line по "//"))))) и "quiet")] и "code"
+
+тотальная функция «Code lines»
+  принимает text: строка
+  возвращает число
+  пример «Comments and blank lines are not code»
+    дано text равно "int a;\n/* comment\n still */ int b; // tail\n\n// only\nx /*/ still */\n"
+    ожидается 3
+  (свёртка (разделить text по "\n") начиная с (запись «Counting» с «comment» равным нет и «lines» равным 0) как progress и line → «Counted line» от progress и line).«lines»
+
+тотальная функция «Ratchet»
+  принимает text: строка, key: строка
+  возвращает строка
+  пример «The value after its key»
+    дано text равно "forgeries 36\nchecker-code-lines 7711\n"
+    дано key равно "checker-code-lines"
+    ожидается "7711"
+  «Word» от 2 и («Beginning with» от (соединить [key, " "] по "") и («Lines» от text))
+
+тотальная функция «Size check»
+  принимает inputs: «Inputs»
+  возвращает список строки
+  пример «A checker within its ceiling»
+    дано inputs равно запись «Inputs» с «table» равным "" и «digest» равным "" и «sum» равным "" и «kernel» равным "" и «types» равным "" и «native» равным "static const char *ПРИМИТИВЫ[] = {\n  \"плюс\",\n};\n" и «program» равным "" и «segments» равным "" и «ratchets» равным "checker-code-lines 9\nchecker-primitives 1\n" и «neighbour» равным 0 и «heard» равным ""
+    ожидается ["── С-6: потолок доверенной базы — строк кода и примитивов сверщика на C ──", "   checker.c: 3 строк кода, до потолка 6 (потолок 9); примитивов 1 (названо 1)", ""]
+  пусть lines равно («Code lines» от (inputs.«native»))
+  пусть primitives равно (длина («Array literals» от (inputs.«native») и "static const char *ПРИМИТИВЫ[] = {"))
+  пусть ceiling равно («Ratchet» от (inputs.«ratchets») и "checker-code-lines")
+  пусть named равно («Ratchet» от (inputs.«ratchets») и "checker-primitives")
+  пусть top равно («Count» от ceiling)
+  пусть want равно («Count» от named)
+  «Соединить списки» от ["── С-6: потолок доверенной базы — строк кода и примитивов сверщика на C ──"] и («Соединить списки» от (отобразить («Gathered words» от [(если «Digits» от ceiling то (пустой список) иначе [(соединить ["храповик не называет потолка строк: «", ceiling, "»"] по "")]), (если «Digits» от named то (пустой список) иначе [(соединить ["храповик не называет числа примитивов: «", named, "»"] по "")])]) как trouble → «Red» от trouble) и («Соединить списки» от [(соединить ["   checker.c: ", (к строке lines), " строк кода, до потолка ", (к строке (top минус lines)), " (потолок ", (к строке top), "); примитивов ", (к строке primitives), " (названо ", (к строке want), ")"] по "")] и («Соединить списки» от (отобразить («Gathered words» от [(если lines не больше top то (пустой список) иначе [(соединить ["checker.c вырос до ", (к строке lines), " строк кода при потолке ", (к строке top), " — доверенная база выше бюджета на ", (к строке (lines минус top)), "; потолок двигает строка в ADR, не ячейка"] по "")]), (если primitives равен want то (пустой список) иначе [(соединить ["в ПРИМИТИВЫ[] сверщика ", (к строке primitives), " имён при названных ", (к строке want), " — граница доверия сдвинута молча"] по "")])]) как trouble → «Red» от trouble) и [""])))
+
+тотальная функция «Forged»
+  принимает inputs: «Inputs», table: строка, kernel: строка, segments: строка, native: строка, sum: строка
+  возвращает «Inputs»
+  пример «The forged copies take the place of the read ones»
+    дано inputs равно запись «Inputs» с «table» равным "t" и «digest» равным "d" и «sum» равным "s" и «kernel» равным "k" и «types» равным "y" и «native» равным "n" и «program» равным "p" и «segments» равным "g" и «ratchets» равным "r" и «neighbour» равным 0 и «heard» равным ""
+    дано table равно "T"
+    дано kernel равно "K"
+    дано segments равно "G"
+    дано native равно "N"
+    дано sum равно "S"
+    ожидается запись «Inputs» с «table» равным "T" и «digest» равным "d" и «sum» равным "S" и «kernel» равным "K" и «types» равным "y" и «native» равным "N" и «program» равным "p" и «segments» равным "G" и «ratchets» равным "r" и «neighbour» равным 0 и «heard» равным ""
+  запись «Inputs» с «table» равным table и «digest» равным (inputs.«digest») и «sum» равным sum и «kernel» равным kernel и «types» равным (inputs.«types») и «native» равным native и «program» равным (inputs.«program») и «segments» равным segments и «ratchets» равным (inputs.«ratchets») и «neighbour» равным 0 и «heard» равным ""
+
+тотальная функция «Replaced»
+  принимает text: строка, old: строка, new: строка
+  возвращает строка
+  пример «Every occurrence is replaced»
+    дано text равно "a-b-c"
+    дано old равно "-"
+    дано new равно "+"
+    ожидается "a+b+c"
+  соединить (разделить text по old) по new
+
+тотальная функция «Probe lines»
+  принимает label: строка, what: строка, lines: список строки
+  возвращает список строки
+  пример «A red guard refused the forgery»
+    дано label равно "7"
+    дано what равно "ведомость правлена"
+    дано lines равно ["── С-4 ──", "КРАСНО  отпечаток разошёлся"]
+    ожидается ["СОШЛОСЬ  подлог 7 (ведомость правлена) — код 1", "         КРАСНО  отпечаток разошёлся"]
+  пример «A green guard let the forgery through»
+    дано label равно "7"
+    дано what равно "ведомость правлена"
+    дано lines равно ["── С-4 ──"]
+    ожидается ["ПРОВАЛ   подлог 7 (ведомость правлена) — ждали код 1, получили 0"]
+  разбор (отфильтровать lines где line → line начинается с "КРАСНО")
+    случай пусто
+      то [(соединить ["ПРОВАЛ   подлог ", label, " (", what, ") — ждали код 1, получили 0"] по "")]
+    случай голова и хвост
+      то [(соединить ["СОШЛОСЬ  подлог ", label, " (", what, ") — код 1"] по ""), (соединить ["         ", «Clipped» от («First line» от (голова))] по "")]
+
+тотальная функция «Clipped»
+  принимает line: строка
+  возвращает строка
+  пример «A short line stays whole»
+    дано line равно "КРАСНО  x"
+    ожидается "КРАСНО  x"
+  если (длина line) больше 150 то (подстрока line с 1 по 150) иначе line
+
+тотальная функция «Unbuilt»
+  принимает label: строка, why: строка, built: признак, lines: список строки, what: строка
+  возвращает список строки
+  пример «A forgery that changed nothing is a failure of its own»
+    дано label равно "4"
+    дано why равно "потолок в копии ядра не изменился"
+    дано built равно нет
+    дано lines равно пустой список
+    дано what равно "точный потолок ядра изменён на единицу"
+    ожидается ["ПРОВАЛ   подлог 4 не собрался: потолок в копии ядра не изменился"]
+  если built то «Probe lines» от label и what и lines иначе [(соединить ["ПРОВАЛ   подлог ", label, " не собрался: ", why] по "")]
+
+тотальная функция «First anchor»
+  принимает table: строка
+  возвращает строка
+  пример «The anchor of the first row that has one»
+    дано table равно "name\nН1\tН\trule\tx\tгде-то\tcode\nН2\tН\trule\tx\tproof-kernel.flang:7 «Литерал»\tcode\n"
+    ожидается "proof-kernel.flang:7 «Литерал»"
+  «Cell» от 1 и (отобразить (отфильтровать («Rows» от table) где row → не (пусто («Anchor» от («Cell» от 5 и row)))) как row → «Anchor text» от («Anchor» от («Cell» от 5 и row)))
+
+тотальная функция «Anchor text»
+  принимает parts: список строки
+  возвращает строка
+  пример «A line and a function make an anchor»
+    дано parts равно ["7", "Литерал"]
+    ожидается "proof-kernel.flang:7 «Литерал»"
+  соединить ["proof-kernel.flang:", («Cell» от 1 и parts), " «", («Cell» от 2 и parts), "»"] по ""
+
+тотальная функция «Shifted anchor»
+  принимает anchor: строка
+  возвращает строка
+  пример «The line of the anchor moves one down»
+    дано anchor равно "proof-kernel.flang:7 «Литерал»"
+    ожидается "proof-kernel.flang:8 «Литерал»"
+  пусть parts равно («Anchor» от anchor)
+  соединить ["proof-kernel.flang:", (к строке ((«Count» от («Cell» от 1 и parts)) плюс 1)), " «", («Cell» от 2 и parts), "»"] по ""
+
+тотальная функция «Extra lines»
+  принимает inputs: «Inputs»
+  возвращает число
+  пример «One line past the ceiling»
+    дано inputs равно запись «Inputs» с «table» равным "" и «digest» равным "" и «sum» равным "" и «kernel» равным "" и «types» равным "" и «native» равным "int a;\n" и «program» равным "" и «segments» равным "" и «ratchets» равным "checker-code-lines 3\n" и «neighbour» равным 0 и «heard» равным ""
+    ожидается 3
+  («Count» от («Ratchet» от (inputs.«ratchets») и "checker-code-lines")) минус ((«Code lines» от (inputs.«native»)) минус 1)
+
+тотальная функция «Forgery lines»
+  принимает inputs: «Inputs», comments: строка, code: строка, sum: строка
+  возвращает список строки
+  пример «Empty copies fail where nothing could be forged»
+    дано inputs равно запись «Inputs» с «table» равным "name\n" и «digest» равным "" и «sum» равным "" и «kernel» равным "" и «types» равным "" и «native» равным "" и «program» равным "" и «segments» равным "name\n" и «ratchets» равным "checker-code-lines 0\nchecker-primitives 0\n" и «neighbour» равным 0 и «heard» равным ""
+    дано comments равно ""
+    дано code равно "int a;\n"
+    дано sum равно "ff  -\n"
+    ожидается ["── девять проб на подлог: портятся КОПИИ, дерево не тронуто ──", "", "СОШЛОСЬ  подлог 1 (лишнее имя правила в ведомости) — код 1", "         КРАСНО  из ядра вычитано 0 имён — разбор «Принято правилом» сломан", "ПРОВАЛ   подлог 2 не собрался: в ведомости не нашлось опоры вида «proof-kernel.flang:N «Имя»»", "СОШЛОСЬ  подлог 3 (имя правила в ведомости дважды) — код 1", "         КРАСНО  правил из ADR (0022 §3 — 55, 0027 §3.1 — 12, 0029 — 4, 0032 — 1, 0026 — 6, 0037 — 3, 0042 — 5) в ведомости 0, а названо 86", "ПРОВАЛ   подлог 4 не собрался: потолок в копии ядра не изменился", "СОШЛОСЬ  подлог 9 (имя отрезка убрано из таблицы, ядро его знает) — код 1", "         КРАСНО  таблица tables/segments.tsv вычитана в 0 имён — разбор сломан либо таблица пуста", "СОШЛОСЬ  подлог 10а (комментарии сверх потолка — не код, сторож зелен) — код 0", "СОШЛОСЬ  подлог 10 (checker.c на строку кода выше потолка (1 при 0)) — код 1", "         КРАСНО  checker.c вырос до 1 строк кода при потолке 0 — доверенная база выше бюджета на 1; потолок двигает строка в ADR, не ячейка", "ПРОВАЛ   подлог 11 (в ПРИМИТИВЫ[] сверщика дописано имя) — ждали код 1, получили 0", "СОШЛОСЬ  подлог 7 (ведомость правлена, отпечаток не переснят) — код 1", "         КРАСНО  отпечаток ведомости разошёлся — ведомость правлена, а число при ней нет", ""]
+  пусть table равно (inputs.«table»)
+  пусть kernel равно (inputs.«kernel»)
+  пусть native равно (inputs.«native»)
+  пусть segments равно (inputs.«segments»)
+  пусть anchor равно («First anchor» от table)
+  пусть shifted равно (если пусто anchor то table иначе («Replaced» от table и anchor и («Shifted anchor» от anchor)))
+  пусть lowered равно («Replaced» от kernel и "\n  9007199254740991\n" и "\n  9007199254740990\n")
+  пусть quiet равно (соединить [native, comments] по "")
+  пусть grown равно (соединить [native, comments, code] по "")
+  пусть widened равно («Replaced» от native и "static const char *ПРИМИТИВЫ[] = {\n" и "static const char *ПРИМИТИВЫ[] = {\n  \"шестнадцатый\",\n")
+  «Соединить списки» от ["── девять проб на подлог: портятся КОПИИ, дерево не тронуто ──", ""] и («Соединить списки» от («Gathered words» от [(«Probe lines» от "1" и "лишнее имя правила в ведомости" и («Completeness» от («Forged» от inputs и (соединить [table, "Х1\tН\trule\tразбор цели по настроению\tproof-kernel.flang:2309 «Литерал неотрицателен»\tcode\n"] по "") и kernel и segments и native и (inputs.«sum»)) и нет)),
+    («Unbuilt» от "2" и (если пусто anchor то "в ведомости не нашлось опоры вида «proof-kernel.flang:N «Имя»»" иначе "опора в копии ведомости не сдвинулась") и (не (shifted равен table)) и («Completeness» от («Forged» от inputs и shifted и kernel и segments и native и (inputs.«sum»)) и нет) и "опора правила указывает не на ту строку ядра"),
+    («Probe lines» от "3" и "имя правила в ведомости дважды" и («Consistency» от («Forged» от inputs и (соединить [table, («Beginning with» от "Н5\t" и («Lines» от table)), "\n"] по "") и kernel и segments и native и (inputs.«sum»)))),
+    («Unbuilt» от "4" и "потолок в копии ядра не изменился" и (не (lowered равен kernel)) и («Consistency» от («Forged» от inputs и table и lowered и segments и native и (inputs.«sum»))) и "точный потолок ядра изменён на единицу"),
+    («Probe lines» от "9" и "имя отрезка убрано из таблицы, ядро его знает" и («Segment check» от («Forged» от inputs и table и kernel и (соединить (отобразить (отфильтровать («Lines» от segments) где line → не (line начинается с "натуральное\t")) как line → соединить [line, "\n"] по "") по "") и native и (inputs.«sum»)))),
+    (если пусто (отфильтровать («Size check» от («Forged» от inputs и table и kernel и segments и quiet и (inputs.«sum»))) где line → line начинается с "КРАСНО") то ["СОШЛОСЬ  подлог 10а (комментарии сверх потолка — не код, сторож зелен) — код 0"] иначе ["ПРОВАЛ   подлог 10а (комментарии сверх потолка) — сторож покраснел на комментариях: мерит не код"]),
+    («Probe lines» от "10" и (соединить ["checker.c на строку кода выше потолка (", (к строке («Code lines» от grown)), " при ", («Ratchet» от (inputs.«ratchets») и "checker-code-lines"), ")"] по "") и («Size check» от («Forged» от inputs и table и kernel и segments и grown и (inputs.«sum»)))),
+    («Probe lines» от "11" и "в ПРИМИТИВЫ[] сверщика дописано имя" и («Size check» от («Forged» от inputs и table и kernel и segments и widened и (inputs.«sum»)))),
+    («Probe lines» от "7" и "ведомость правлена, отпечаток не переснят" и («Digest check» от («Forged» от inputs и (соединить [table, "# правка без пересъёма отпечатка\n"] по "") и kernel и segments и native и sum)))]) и [""])
+
+тотальная функция «Sources»
+  возвращает список список строки
+  пример «Eight files and where they lie by default»
+    ожидается [["rules", "TABLES_RULES", "flang/proof/tables/inference-rules.tsv"], ["digest", "TABLES_DIGEST", "flang/proof/tables/inference-rules.digest"], ["kernel", "TABLES_KERNEL", "flang/self/proof-kernel.flang"], ["types", "TABLES_TYPES", "flang/self/types.flang"], ["native", "TABLES_CHECKER_C", "flang/proof/checker/checker.c"], ["program", "TABLES_CHECKER_FLANG", "flang/proof/checker.flang"], ["segments", "TABLES_SEGMENTS", "flang/proof/tables/segments.tsv"], ["ratchets", "TABLES_RATCHETS", "flang/proof/ratchets.txt"]]
+  [["rules", "TABLES_RULES", "flang/proof/tables/inference-rules.tsv"], ["digest", "TABLES_DIGEST", "flang/proof/tables/inference-rules.digest"], ["kernel", "TABLES_KERNEL", "flang/self/proof-kernel.flang"], ["types", "TABLES_TYPES", "flang/self/types.flang"], ["native", "TABLES_CHECKER_C", "flang/proof/checker/checker.c"], ["program", "TABLES_CHECKER_FLANG", "flang/proof/checker.flang"], ["segments", "TABLES_SEGMENTS", "flang/proof/tables/segments.tsv"], ["ratchets", "TABLES_RATCHETS", "flang/proof/ratchets.txt"]]
+
+тотальная функция «Path of»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file the environment does not name lies where it always lies»
+    дано name равно "segments"
+    дано answers равно пустой список
+    ожидается "flang/proof/tables/segments.tsv"
+  «Setting of» от name и («Cell» от 1 и (отобразить (отфильтровать («Sources») где source → («Cell» от 1 и source) равен name) как source → «Cell» от 3 и source)) и answers
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The built binary»
+    дано answers равно пустой список
+    ожидается "bootstrap/flang"
+  «Setting of» от "binary" и "bootstrap/flang" и answers
+
+тотальная функция «Text of»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file not read is empty»
+    дано name равно "rules"
+    дано answers равно пустой список
+    ожидается ""
+  «Output of» от (соединить ["read ", name] по "") и answers
+
+тотальная функция «Keys»
+  возвращает список строки
+  пример «The keys the guard knows»
+    ожидается ["--forgeries", "--code-lines", "--guard", "С-1", "С-2", "С-4", "С-5", "С-6"]
+  ["--forgeries", "--code-lines", "--guard", "С-1", "С-2", "С-4", "С-5", "С-6"]
+
+тотальная функция «Given keys»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «No arguments, no keys»
+    дано answers равно пустой список
+    ожидается пустой список
+  «Given of» от "arguments" и answers
+
+тотальная функция «Wants»
+  принимает key: строка, answers: список «Answer»
+  возвращает признак
+  пример «A key that was given»
+    дано key равно "--forgeries"
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--forgeries"])]
+    ожидается да
+  «Has» от key и («Given keys» от answers)
+
+тотальная функция «Only»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «One guard was named»
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--guard", "С-5"])]
+    ожидается "С-5"
+  «Cell» от 1 и (отфильтровать («Given keys» от answers) где key → key начинается с "С-")
+
+тотальная функция «Neighbour wanted»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «A full run asks the neighbour once the binary is there»
+    дано answers равно [запись «Answer» с «name» равным "present" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным "")]
+    ожидается да
+  пример «Without the binary the neighbour is not asked»
+    дано answers равно пустой список
+    ожидается нет
+  ((«Exit code of» от "present" и answers) равен 0) и притом ((не («Wants» от "--forgeries" и answers)) и притом ((не («Wants» от "--code-lines" и answers)) и притом («Has» от («Only» от answers) и ["", "С-1"])))
+
+тотальная функция «Inputs of»
+  принимает answers: список «Answer»
+  возвращает «Inputs»
+  пример «Nothing read gives empty inputs»
+    дано answers равно пустой список
+    ожидается запись «Inputs» с «table» равным "" и «digest» равным "" и «sum» равным "" и «kernel» равным "" и «types» равным "" и «native» равным "" и «program» равным "" и «segments» равным "" и «ratchets» равным "" и «neighbour» равным 127 и «heard» равным ""
+  запись «Inputs» с «table» равным («Text of» от "rules" и answers) и «digest» равным («Text of» от "digest" и answers) и «sum» равным («Output of» от "sum" и answers) и «kernel» равным («Text of» от "kernel" и answers) и «types» равным («Text of» от "types" и answers) и «native» равным («Text of» от "native" и answers) и «program» равным («Text of» от "program" и answers) и «segments» равным («Text of» от "segments" и answers) и «ratchets» равным («Text of» от "ratchets" и answers) и «neighbour» равным («Exit code of» от "neighbour" и answers) и «heard» равным («Plan said by» от "neighbour" и answers)
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The arguments, the eight files and the binary are asked first»
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»), запись «Question» с «name» равным "rules" и «order» равным (вариант «Прочитать переменную среды» с имя равным "TABLES_RULES"), запись «Question» с «name» равным "digest" и «order» равным (вариант «Прочитать переменную среды» с имя равным "TABLES_DIGEST"), запись «Question» с «name» равным "kernel" и «order» равным (вариант «Прочитать переменную среды» с имя равным "TABLES_KERNEL"), запись «Question» с «name» равным "types" и «order» равным (вариант «Прочитать переменную среды» с имя равным "TABLES_TYPES"), запись «Question» с «name» равным "native" и «order» равным (вариант «Прочитать переменную среды» с имя равным "TABLES_CHECKER_C"), запись «Question» с «name» равным "program" и «order» равным (вариант «Прочитать переменную среды» с имя равным "TABLES_CHECKER_FLANG"), запись «Question» с «name» равным "segments" и «order» равным (вариант «Прочитать переменную среды» с имя равным "TABLES_SEGMENTS"), запись «Question» с «name» равным "ratchets" и «order» равным (вариант «Прочитать переменную среды» с имя равным "TABLES_RATCHETS"), запись «Question» с «name» равным "binary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN")]
+  «Соединить списки» от (приписать («Arguments» от "arguments") к (отобразить («Sources») как source → «Environment» от («Cell» от 1 и source) и («Cell» от 2 и source))) и [(«Environment» от "binary" и "FLANG_BIN")]
+
+тотальная функция «Reading»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «The files are read, the table is summed and the binary is looked for»
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--code-lines"])]
+    ожидается [запись «Question» с «name» равным "read native" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/checker.c"), запись «Question» с «name» равным "read ratchets" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/ratchets.txt")]
+  если «Wants» от "--code-lines" и answers
+    то [(«Read from» от "read native" и («Root») и («Path of» от "native" и answers)), («Read from» от "read ratchets" и («Root») и («Path of» от "ratchets" и answers))]
+    иначе «Соединить списки» от (отобразить («Sources») как source → «Read from» от (соединить ["read ", («Cell» от 1 и source)] по "") и («Root») и («Path of» от («Cell» от 1 и source) и answers)) и [(«Run from» от "sum" и («Root») и "sha256sum" и [(«Path of» от "rules" и answers)]), («Run from» от "present" и («Root») и "test" и ["-x", («Binary» от answers)])]
+
+тотальная функция «Counter»
+  принимает name: строка, line: строка, count: число
+  возвращает «Question»
+  пример «A shell loop prints the lines a forgery needs»
+    дано name равно "comments"
+    дано line равно "/* %d */\\n"
+    дано count равно 2
+    ожидается запись «Question» с «name» равным "comments" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "i=0; while [ \"$i\" -lt \"$0\" ]; do printf \"$1\" \"$i\"; i=$((i + 1)); done", "2", "/* %d */\\n"])
+  «Run» от name и "sh" и ["-c", "i=0; while [ \"$i\" -lt \"$0\" ]; do printf \"$1\" \"$i\"; i=$((i + 1)); done", (к строке count), line]
+
+тотальная функция «Extras»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «A run that wants nothing more asks nothing»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть inputs равно («Inputs of» от answers)
+  «Соединить списки» от (если «Neighbour wanted» от answers то [(«Run from» от "neighbour" и («Root») и "sh" и ["-c", "exec \"$0\" \"$@\" > /dev/null", («Binary» от answers), "io", "flang/proof/rules-match.fscript", "--timeout", "900000", "--", "--list-only"])] иначе (пустой список)) и (если «Wants» от "--forgeries" и answers то [(«Run» от "forged sum" и "sh" и ["-c", "printf '%s' \"$0\" | sha256sum", (соединить [(inputs.«table»), "# правка без пересъёма отпечатка\n"] по "")]), («Counter» от "comments" и "/* строка комментария сверх потолка %d */\\n" и («Extra lines» от inputs)), («Counter» от "code" и "static int сверх_потолка_%d;\\n" и («Extra lines» от inputs))] иначе (пустой список))
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 7
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 2
+      то «Setup»
+    случай 1
+      то «Reading» от answers
+    случай 0
+      то «Extras» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Sections»
+  принимает chosen: строка, inputs: «Inputs», asked: признак
+  возвращает список строки
+  пример «The digest guard alone»
+    дано chosen равно "С-4"
+    дано inputs равно запись «Inputs» с «table» равным "" и «digest» равным "ab\n" и «sum» равным "ab  t\n" и «kernel» равным "" и «types» равным "" и «native» равным "" и «program» равным "" и «segments» равным "" и «ratchets» равным "" и «neighbour» равным 0 и «heard» равным ""
+    дано asked равно нет
+    ожидается ["── С-4: отпечаток ведомости ──", "   записано: ab", "   снято:    ab", ""]
+  разбор chosen
+    случай "С-1"
+      то «Completeness» от inputs и asked
+    случай "С-2"
+      то «Consistency» от inputs
+    случай "С-4"
+      то «Digest check» от inputs
+    случай "С-5"
+      то «Segment check» от inputs
+    случай "С-6"
+      то «Size check» от inputs
+    случай любое
+      то «Gathered words» от [(«Completeness» от inputs и asked), («Consistency» от inputs), («Digest check» от inputs), («Segment check» от inputs), («Size check» от inputs)]
+
+тотальная функция «Reds of»
+  принимает lines: список строки
+  возвращает число
+  пример «Red lines and failed probes are counted»
+    дано lines равно ["КРАСНО  x", "ПРОВАЛ   подлог 1", "СОШЛОСЬ  подлог 2", "         КРАСНО  y"]
+    ожидается 2
+  длина (отфильтровать lines где line → (line начинается с "КРАСНО") или (line начинается с "ПРОВАЛ"))
+
+тотальная функция «Unasked»
+  возвращает список строки
+  пример «What a full run did not ask is said»
+    ожидается ["", "ЧЕГО ЭТОТ ПРОГОН НЕ СПРАШИВАЛ, СКАЗАНО ЗДЕСЬ, А НЕ УМОЛЧАНО:", " • ВЕРНОСТЬ правил не проверялась ни разу. Проверено, что ведомость полна", "   относительно набора имён ядра, опирается на настоящие места ядра,", "   и непротиворечива.", "   Что правило выводит ИСТИНУ — судят парные образцы (ADR-0022 §5, С-4),", "   и их в дереве пока нет ни одной пары.", " • ПОЛНОТА взята по именам поля rule и по опорам, а не по случаям вывода:", "   что ядро не применяет случая, которого в ведомости нет, отсюда не видно.", "   Это станет видно, когда ядро начнёт печатать вывод (задача 6132)."]
+  ["", "ЧЕГО ЭТОТ ПРОГОН НЕ СПРАШИВАЛ, СКАЗАНО ЗДЕСЬ, А НЕ УМОЛЧАНО:", " • ВЕРНОСТЬ правил не проверялась ни разу. Проверено, что ведомость полна", "   относительно набора имён ядра, опирается на настоящие места ядра,", "   и непротиворечива.", "   Что правило выводит ИСТИНУ — судят парные образцы (ADR-0022 §5, С-4),", "   и их в дереве пока нет ни одной пары.", " • ПОЛНОТА взята по именам поля rule и по опорам, а не по случаям вывода:", "   что ядро не применяет случая, которого в ведомости нет, отсюда не видно.", "   Это станет видно, когда ядро начнёт печатать вывод (задача 6132)."]
+
+тотальная функция «Judged»
+  принимает lines: список строки, closing: список строки
+  возвращает «Продолжение»
+  пример «A red line fails the plan»
+    дано lines равно ["КРАСНО  x", ""]
+    дано closing равно ["сошлось"]
+    ожидается вариант «Провал» с код равным "FLANG_TABLES_GUARD" и сообщение равным "КРАСНО  x\n\nРАЗОШЛОСЬ: красных проверок 1"
+  пример «No red line ends the work»
+    дано lines равно ["── С-4 ──", ""]
+    дано closing равно ["сошлось"]
+    ожидается вариант «Конец работы» с значение равным "── С-4 ──\n\nсошлось"
+  если («Reds of» от lines) больше 0
+    то вариант «Провал» с код равным "FLANG_TABLES_GUARD" и сообщение равным (соединить («Соединить списки» от lines и [(соединить ["РАЗОШЛОСЬ: красных проверок ", (к строке («Reds of» от lines))] по "")]) по "\n")
+    иначе вариант «Конец работы» с значение равным (соединить («Соединить списки» от lines и closing) по "\n")
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Counting code lines of nothing gives naught»
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--code-lines"])]
+    ожидается вариант «Конец работы» с значение равным "0"
+  пусть inputs равно («Inputs of» от answers)
+  разбор («Mode» от answers)
+    случай "code lines"
+      то вариант «Конец работы» с значение равным (к строке («Code lines» от (inputs.«native»)))
+    случай "forgeries"
+      то «Judged» от («Forgery lines» от inputs и («Output of» от "comments" и answers) и («Output of» от "code" и answers) и («Output of» от "forged sum" и answers)) и ["сошлось"]
+    случай "all"
+      то «Judged» от («Sections» от "" и inputs и («Neighbour wanted» от answers)) и («Соединить списки» от [(соединить ["сошлось всё: ", (к строке (длина («Rows» от (inputs.«table»)))), " строк ведомости, пять сторожей зелены"] по "")] и («Unasked»))
+    случай любое
+      то «Judged» от («Sections» от («Only» от answers) и inputs и («Neighbour wanted» от answers)) и ["сошлось"]
+
+тотальная функция «Mode»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No keys ask for every guard»
+    дано answers равно пустой список
+    ожидается "all"
+  пример «A named guard runs alone»
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["С-4"])]
+    ожидается "one"
+  «Chosen» от [(«When» от («Wants» от "--code-lines" и answers) и "code lines"),
+    («When» от («Wants» от "--forgeries" и answers) и "forgeries"),
+    («When» от (пусто («Only» от answers)) и "all")] и "one"
+
+тотальная функция «Usage»
+  возвращает строка
+  пример «How the guard is called»
+    ожидается "звать: bootstrap/flang io flang/proof/tables-guard.fscript [-- С-1|С-2|С-4|С-5|С-6] [--forgeries] [--code-lines]"
+  "звать: bootstrap/flang io flang/proof/tables-guard.fscript [-- С-1|С-2|С-4|С-5|С-6] [--forgeries] [--code-lines]"
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «An unknown key stops the guard»
+    дано asked равно "arguments"
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--мягко"])]
+    ожидается ["не знаю ключа: --мягко; звать: bootstrap/flang io flang/proof/tables-guard.fscript [-- С-1|С-2|С-4|С-5|С-6] [--forgeries] [--code-lines]"]
+  пример «A file not read stops the guard»
+    дано asked равно "read segments"
+    дано answers равно [запись «Answer» с «name» равным "read segments" и «reply» равным (вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "нет")]
+    ожидается ["файла нет: flang/proof/tables/segments.tsv"]
+  пример «An answered question is no obstacle»
+    дано asked равно "binary"
+    дано answers равно пустой список
+    ожидается пустой список
+  «Chosen» от [(«When» от (asked равен "arguments") и (отобразить (отфильтровать («Given keys» от answers) где key → не («Has» от key и («Keys»))) как key → соединить ["не знаю ключа: ", key, "; ", («Usage»)] по "")),
+    («When» от ((asked начинается с "read ") и притом (не ((«Exit code of» от asked и answers) равен 0))) и [(соединить ["файла нет: ", («Path of» от («After» от "read " и asked) и answers)] по "")])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--code-lines"])]
+    ожидается вариант «Конец работы» с значение равным "0"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Three stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3 и «answers» равным пустой список
+  «Begin with» от 3
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The second stage reads the files»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 2 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "../../flang/proof/tables/inference-rules.tsv") и потом равным (запись «Inquiry» с «asked» равным "read rules" и «queue» равным [запись «Question» с «name» равным "read digest" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/tables/inference-rules.digest"), запись «Question» с «name» равным "read kernel" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/self/proof-kernel.flang"), запись «Question» с «name» равным "read types" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/self/types.flang"), запись «Question» с «name» равным "read native" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/checker.c"), запись «Question» с «name» равным "read program" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker.flang"), запись «Question» с «name» равным "read segments" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/tables/segments.tsv"), запись «Question» с «name» равным "read ratchets" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/ratchets.txt"), запись «Question» с «name» равным "sum" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "sha256sum", "flang/proof/tables/inference-rules.tsv"]), запись «Question» с «name» равным "present" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "test", "-x", "bootstrap/flang"])] и «stages» равным 1 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_TABLES_GUARD_NOT_MEASURED" и сообщение равным голова
+    случай пусто
+      то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Tables guard»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

@@ -17,7 +17,7 @@
 Посылки, заключение, побочные условия и категорная запись каждого правила —
 [правила вывода](inference-rules.md).
 
-Читатели: `flang/proof/tables-guard.sh` (проверки С-1, С-2, С-4), `flang/proof/lean/run.sh`
+Читатели: `flang/proof/tables-guard.fscript` (проверки С-1, С-2, С-4), `flang/proof/lean/run.fscript`
 (лемма на каждую строку), `scripts/four-coverages.fscript` (покрытие формализации),
 `flang/scripts/kernel-lines-to-trust.fscript` (число строк), `scripts/report-provenance.fscript`
 (версия семантики).

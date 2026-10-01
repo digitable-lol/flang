@@ -11,7 +11,7 @@
 | `forgery-probes` | проб на подлог в `flang/proof/checker/tests/run.sh` | замер не меньше числа | там же |
 | `trap-kinds` | строк `removed` в [таблице ловушки](checker/tests/trap/README.md) | замер не меньше числа | `scripts/provability.fscript`, проверка 1 |
 | `trap-goals-on-kernel-word` | строк `kept` в той же таблице | замер не меньше числа | там же |
-| `checker-code-lines` | строк кода в `flang/proof/checker/checker.c` без комментариев и пустых | замер не больше числа | `flang/proof/tables-guard.sh`, проверка С-6 |
+| `checker-code-lines` | строк кода в `flang/proof/checker/checker.c` без комментариев и пустых | замер не больше числа | `flang/proof/tables-guard.fscript`, проверка С-6 |
 | `checker-primitives` | имён в массиве `ПРИМИТИВЫ[]` проверяющей программы | замер равен числу | там же |
 
 `flang/proof/corpus-share.sh` печатает `forgeries` и `forgery-numerator` рядом со
@@ -35,5 +35,5 @@
 
 ```sh
 FLANG_TRAP_RATCHET=/путь/копия.txt bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000
-POTOLOK=/путь/копия.txt sh flang/proof/tables-guard.sh --проверка С-6
+TABLES_RATCHETS=/путь/копия.txt bootstrap/flang io flang/proof/tables-guard.fscript --max-steps 4000000000 --timeout 900000 -- С-6
 ```

@@ -17,7 +17,7 @@
 
 1. `python3 -c "import json; print(len(json.load(open('docs/examples/leetcode/index.json'))['чего не хватает языку']))"`
 2. `grep -rl 'чего не хватает языку' scripts flang/scripts flang/test .github`
-3. `grep -c 'недостачи:проверка' ярлыки.flang`
+3. `grep -c 'script.missing-features:check' .flangrc`
 
 ## Что происходит
 
@@ -25,7 +25,7 @@
 $ python3 -c "import json; print(len(json.load(open('docs/examples/leetcode/index.json'))['чего не хватает языку']))"
 16
 $ grep -rl 'чего не хватает языку' scripts flang/scripts flang/test .github
-$ grep -c 'недостачи:проверка' ярлыки.flang
+$ grep -c 'script.missing-features:check' .flangrc
 0
 ```
 
@@ -46,7 +46,7 @@ $ grep -c 'недостачи:проверка' ярлыки.flang
 
 ## Когда задача сделана
 
-- `./ярлык недостачи:проверка` отвечает кодом 0: все шестнадцать программ
+- `bootstrap/flang run-script missing-features:check` отвечает кодом 0: все шестнадцать программ
   отвергнуты своим кодом;
 - проверка краснеет в двух случаях: программа прошла; программа отвергнута не
   тем кодом, что записан;

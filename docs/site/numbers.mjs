@@ -29,12 +29,12 @@ export function прочитатьЧисла() {
   try {
     сырое = readFileSync(ПУТЬ_ЧИСЕЛ, 'utf8');
   } catch (беда) {
-    throw new Error(`docs/site/numbers.json не читается (${беда.code}). Лечится: ./ярлык числа`);
+    throw new Error(`docs/site/numbers.json не читается (${беда.code}). Лечится: bootstrap/flang run-script numbers:build`);
   }
   const замер = JSON.parse(сырое);
   if (замер.формат !== ФОРМАТ) {
     throw new Error(
-      `docs/site/numbers.json написан в формате ${замер.формат}, а ждали ${ФОРМАТ}. Лечится: ./ярлык числа`,
+      `docs/site/numbers.json написан в формате ${замер.формат}, а ждали ${ФОРМАТ}. Лечится: bootstrap/flang run-script numbers:build`,
     );
   }
   return замер.числа;

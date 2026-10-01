@@ -43,7 +43,7 @@ sh scripts/bootstrap-reprint.sh --check
 ```
 
 These three run on the binary and need no Node. The JavaScript suite —
-`./ярлык тесты` — **does not start on this tree**:
+`bootstrap/flang run-script tests` — **does not start on this tree**:
 its preparation step imports a module of the removed second implementation and
 fails before the first check. Moving the suite onto the binary is separate work.
 Until it is done, the three commands above are the checks there are; two of them
@@ -65,8 +65,8 @@ Before the run, the preflight prints what is actually going to be checked:
 
 There is no such report in the tree any more: the preflight script read the
 list of targets from the JavaScript implementation, and both went away with it
-on 20 August 2026. There is no `preflight` shortcut either — the list in
-`ярлыки.flang` never had one. The argument below still holds, and it is the reason the table above was worth printing. A backend test proves code generation exactly one way: a real
+on 20 August 2026. There is no `preflight` short command either — the list in
+`.flangrc` never had one. The argument below still holds, and it is the reason the table above was worth printing. A backend test proves code generation exactly one way: a real
 compiler accepted the emitted code, and the result agreed with the interpreter.
 Eight toolchains rarely live on one machine, the tests of the missing ones skip,
 and the suite goes green while half the backends were never checked. That is how
@@ -90,12 +90,12 @@ That second check is dormant today and says so (`зависимостей у п�
 ставить нечего`); it stays because the day a dependency returns is exactly the
 day nobody remembers to add it back.
 
-If you do have a machine with all eight toolchains on it, `./ярлык тесты:по-ssh`
+If you do have a machine with all eight toolchains on it, `bootstrap/flang run-script tests:remote`
 will copy the tree there and run the suite over ssh with
 `FTS_REQUIRE_TOOLCHAINS=all`. You name the host yourself:
 
 ```bash
-FLANG_REMOTE=<your ssh alias> ./ярлык тесты:по-ssh
+FLANG_REMOTE=<your ssh alias> bootstrap/flang run-script tests:remote
 ```
 
 It is a convenience and nothing more — CI does not use it, and no change is
@@ -121,98 +121,90 @@ implementation printed the same bytes; that implementation is gone (commit
 `fe8e8a37`), and with it the cheap second opinion. Run `--check` before a merge
 that touches `flang/self/` or `flang/src/emit/c/`, not on every save.
 
-## Every shortcut, and who runs it
+## Short commands, and who runs them
 
-A shortcut is a name with a command line behind it. They used to live in
-`package.json`, which meant typing `npm run спеки:проверка` to run a command that is
+A short command is a name with a command line behind it. They used to live in
+`package.json`, which meant typing `npm run specs:check` to run a command that is
 `bootstrap/flang io fspec/guard.flang` — npm substituted a string and did
 nothing else, yet everyone who read the page concluded the language needs
 Node.js. It does not: one compiler, written in flang, built by one `make`.
 
-The list now lives in `ярлыки.flang`. It is a flang program, not a settings
-file: the names and the command lines are type-checked, the functions that take
-them apart carry examples, and the plan `Целость` walks the tree and goes red
-when a shortcut names a file that is not there. The entry point is `./ярлык` —
-`sh`, 66 lines of code inside 143 with the reasoning written down, which asks
-the binary for the command line and runs it. It holds no list of its own.
+The list lives in the settings file `.flangrc`, one line per command, the way
+`scripts` lived in `package.json`:
 
-```bash
-./ярлык                        print every shortcut
-./ярлык спеки:проверка         run one
-./ярлык слово:занятость это    anything after the name goes to the command
-./ярлык сборка                 build the binary compiler (see below)
+```
+script.specs:check = bootstrap/flang run-script seed:freshness --what specs:check >&2 && bootstrap/flang io fspec/guard.flang --на-веру
 ```
 
-**The first shortcut cannot be written in flang, and that is stated rather than
-hidden.** Reading `ярлыки.flang` needs the binary, and the binary is what the
-first shortcut builds. Exactly one line resolves it: `make -C bootstrap` is
-known to the shell script itself, before it ever calls the binary. On a fresh
-clone any shortcut therefore works — the script builds the binary first and says
-so, the way `scripts/bootstrap-reprint.sh` already does (38 s measured on a cold tree).
-The same line also stands in `ярлыки.flang`, and the script compares the two on
-every run, so the duplicate cannot drift in silence.
+The binary runs them itself: `flang run-script <name>`. In this tree the binary
+is `bootstrap/flang`, so the call is `bootstrap/flang run-script <name>`. The
+command line is handed to `/bin/sh -c` in the directory of `.flangrc`, and the
+exit code is the command's own. The decision is recorded in
+[ADR-0049](docs/adr/0049-short-commands-live-in-the-settings-file.md).
 
-| shortcut | who runs it |
+```bash
+bootstrap/flang run-script                        print every short command
+bootstrap/flang run-script specs:check            run one
+bootstrap/flang run-script word:occupancy это     anything after the name goes to the command
+bootstrap/flang run-script build                  rebuild the binary compiler
+```
+
+**The binary cannot build itself from nothing, and that is stated rather than
+hidden.** On a fresh clone there is no `bootstrap/flang` yet, so the first
+command is `make -C bootstrap -j8`; every workflow that calls a short command
+builds the binary in a step of its own before that.
+
+The plan `Целость` of `scripts/shortcut-collector.fscript` walks the tree and
+goes red when a short command names a file that is not there; the plan `Сбор`
+compares every line with the declaration written inside the script it calls.
+Both run as `bootstrap/flang run-script scripts:check`.
+
+| short command | what it does |
 | --- | --- |
-| `./ярлык сборка` | build the binary compiler from the C99 in `bootstrap/`; the one shortcut the shell script knows by itself |
-| `./ярлык ярлыки` | every shortcut names a file that exists in the tree |
-| `./ярлык тесты` | the whole suite, `flang/test/*.test.mjs`, preflight first |
-| `./ярлык тесты:по-ssh` | the same suite on a host of your choosing, over ssh |
-| `./ярлык раскрутка` · `./ярлык раскрутка:проверка` · `./ярлык строки:проверка` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
-| `./ярлык утверждения:проверка` · `./ярлык подсчёты:проверка` · `./ярлык коды:проверка` · `./ярлык печать:проверка` · `./ярлык имена:проверка` | the five prose guards below |
-| `./ярлык лицензии:проверка` | SPDX marking of every code file under `flang/` and `docs/examples/` (not `bootstrap/` — see below); **CI runs the file directly** (`bootstrap/flang io scripts/guards/license-guard.fscript`), not through the shortcut |
-| `./ярлык ссылки:проверка` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/guards/link-guard.fscript`) |
-| `./ярлык сайт` · `./ярлык сайт:проверка` | build the documentation site and check its links; **Pages runs the file directly** |
-| `./ярлык числа` · `./ярлык числа:проверка` | reprint the site pages' own numbers from the measurer, and check them against it |
-| `./ярлык словарь` · `./ярлык словарь:проверка` | print `docs/glossary.md` from the surface table, and check it is fresh |
-| `./ярлык поверхности:прогон` · `./ярлык поверхности:проверка` | measure the four writing surfaces, and check the page against the run |
-| `./ярлык журнал` · `./ярлык журнал:проверка` | print `CHANGELOG.md` and `changelog.json` from the tags, and check they match the history |
-| `./ярлык журнал:страница` · `./ярлык журнал:страница:проверка` | print the merge page of the site, and check it against the history; **Pages runs the file directly** |
-| `./ярлык выпуски:страница` · `./ярлык выпуски:страница:проверка` | print the releases page, both halves of it, and check it against the tags |
-| `./ярлык спеки:проверка` | a spec written in flang must be proven from zero axioms, and the next spec must leave the previous one's claims proven |
-| `./ярлык правила:проверка` | the guard that the two implementations judge a program by the same set of rules — every rule the binary lacks must be named, and named in its own help |
-| `./ярлык память:проверка` | every peak-memory number stated in prose, remeasured by a run |
-| `./ярлык времянки:проверка` | a run that leaves temporary directories behind is required to say so, with a number |
-| `./ярлык занятые:проверка` | how many modules of the corpus would collide with names each target reserves |
-| `./ярлык подделки:проверка` | a program that tries to prove a falsehood must be refused, and the refusal must name it |
-| `./ярлык столкновения:проверка` | name collisions inside the closure of imports |
-| `./ярлык доказательства:ведомость` | the proof ledger over the corpus |
-| `./ярлык сторожа:проверка` | every check file of the tree LOADS; the ones that do not are named, with the verbatim refusal |
-| `./ярлык коды:подлог` | the code guard turns red on a planted code and goes silent once it is removed |
-| `./ярлык слово:занятость` | how many written programs would break if a given word became a keyword; takes arguments |
+| `bootstrap/flang run-script build` | rebuild the binary compiler from the C99 in `bootstrap/`: the seed body is checked against its fingerprint first, the seed fingerprint is written next to the binary last |
+| `bootstrap/flang run-script scripts:check` | every short command names a file that exists in the tree, and the declaration inside each script agrees with the line in `.flangrc` |
+| `bootstrap/flang run-script tests` | the whole suite, `flang/test/*.test.mjs`, preflight first |
+| `bootstrap/flang run-script tests:remote` | the same suite on a host of your choosing, over ssh |
+| `bootstrap/flang run-script reprint` · `bootstrap/flang run-script reprint:check` · `bootstrap/flang run-script seed-lines:check` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
+| `bootstrap/flang run-script claims:check` · `bootstrap/flang run-script counts:check` · `bootstrap/flang run-script codes:check` · `bootstrap/flang run-script emit-promises:check` · `bootstrap/flang run-script names:check` | the five prose guards below |
+| `bootstrap/flang run-script licenses:check` | SPDX marking of every code file under `flang/` and `docs/examples/` (not `bootstrap/` — see below); **CI runs the file directly** (`bootstrap/flang io scripts/guards/license-guard.fscript`), not through the short command |
+| `bootstrap/flang run-script links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/guards/link-guard.fscript`) |
+| `bootstrap/flang run-script site:build` · `bootstrap/flang run-script site:check` | build the documentation site and check its links; **Pages runs the file directly** |
+| `bootstrap/flang run-script numbers:build` · `bootstrap/flang run-script numbers:check` | reprint the site pages' own numbers from the measurer, and check them against it |
+| `bootstrap/flang run-script dictionary:build` · `bootstrap/flang run-script dictionary:check` | print `docs/glossary.md` from the surface table, and check it is fresh |
+| `bootstrap/flang run-script surfaces:run` · `bootstrap/flang run-script surfaces:check` | measure the four writing surfaces, and check the page against the run |
+| `bootstrap/flang run-script changelog:build` · `bootstrap/flang run-script changelog:check` | print `CHANGELOG.md` and `changelog.json` from the tags, and check they match the history |
+| `bootstrap/flang run-script changelog:page` · `bootstrap/flang run-script changelog:page:check` | print the merge page of the site, and check it against the history; **Pages runs the file directly** |
+| `bootstrap/flang run-script releases:page` · `bootstrap/flang run-script releases:page:check` | print the releases page, both halves of it, and check it against the tags |
+| `bootstrap/flang run-script specs:check` | a spec written in flang must be proven from zero axioms, and the next spec must leave the previous one's claims proven |
+| `bootstrap/flang run-script binary-rules:check` | the guard that the two implementations judge a program by the same set of rules — every rule the binary lacks must be named, and named in its own help |
+| `bootstrap/flang run-script memory:check` | every peak-memory number stated in prose, remeasured by a run |
+| `bootstrap/flang run-script tempdir:check` | a run that leaves temporary directories behind is required to say so, with a number |
+| `bootstrap/flang run-script occupied-names:check` | how many modules of the corpus would collide with names each target reserves |
+| `bootstrap/flang run-script kernel-forgeries:check` | a program that tries to prove a falsehood must be refused, and the refusal must name it |
+| `bootstrap/flang run-script link-collisions:check` | name collisions inside the closure of imports |
+| `bootstrap/flang run-script proofs:report` | the proof ledger over the corpus |
+| `bootstrap/flang run-script guards:check` | every check file of the tree LOADS; the ones that do not are named, with the verbatim refusal |
+| `bootstrap/flang run-script codes:forgery` | the code guard turns red on a planted code and goes silent once it is removed |
+| `bootstrap/flang run-script word:occupancy` | how many written programs would break if a given word became a keyword; takes arguments |
+
 
 Some of these still start with `node`, because the program they run is written
 in JavaScript and lives in the tree (`flang/scripts/*.mjs`, `docs/site/*.mjs`).
-Moving those programs to flang is separate work; a shortcut substitutes a string
-and does not decide what is in it.
+Moving those programs to flang is separate work; a short command substitutes a
+string and does not decide what is in it.
 
 Four of these CI and Pages run as `node …` directly rather than through the
-shortcut. That is a place two spellings can drift apart, and it is written down
-here rather than discovered later.
+short command. That is a place two spellings can drift apart, and it is written
+down here rather than discovered later.
 
-### What is left in `package.json`
+### What became of `package.json`
 
-**No `scripts` section at all, and no `bin`.** All three entries that used to sit
-here were npm lifecycle hooks — `postinstall` built the binary during
-`npm install`, `test` forwarded to `./ярлык тесты`, `prepublishOnly` ran the
-suite before publishing. npm was removed from the tree on 3 September 2026
-(task 8649), and they went with it; the file now carries `"private": true`, so
-`npm publish` refuses on its own.
-
-What is left is the **version**, the licence and the two addresses — read by the
-site build, by the Homebrew formula guard and by the release workflow — plus
-`name`, `private`, `type` and `engines`. `type: "module"` is load-bearing: the
-`.js` files in the tree are loaded by Node as ES modules. `engines` is not about
-npm either — it names the Node version the `.mjs` tooling that is left is run on.
-
-On 12 September 2026 the three fields nobody read — `description`, `homepage`
-and `keywords` — were dropped (task 1745, the owner's first point). Searched
-before removing, not assumed: no workflow, guard, test or build ever looked at
-any of them; the long description of the language lives in `docs/DESCRIPTION.md`.
-
-The file is printed from `scripts/release/emit-package.flang` and never
-hand-edited: `./ярлык пакет` prints it, `./ярлык пакет:проверка` refuses if the
-two have drifted.
+The file left the tree on 17 September 2026 (task 3570). Its version, name,
+licence and the two addresses are keys of `.flangrc`, spread there by
+`bootstrap/flang run-script version <N>` from the single source
+`scripts/release/emit-package.flang`; its `scripts` section is the `script.*`
+lines of the same file.
 
 ## Prose is checked, not trusted
 
@@ -221,11 +213,11 @@ runs goes stale silently. Five guards run them instead. Each is a script you can
 run on its own and a test that also proves the guard itself can go red:
 
 ```bash
-./ярлык утверждения:проверка  # "the language has no such form" — asked of the real lexer
-./ярлык подсчёты:проверка     # every "N lines of `path`" and every ledger count, remeasured
-./ярлык коды:проверка         # every FLANG_* named in any .md must exist in the sources
-./ярлык печать:проверка       # "seven backends emit …", the ten prose promises and the eight cost claims
-./ярлык имена:проверка        # naming rules, against the parse tree of the whole corpus
+bootstrap/flang run-script claims:check  # "the language has no such form" — asked of the real lexer
+bootstrap/flang run-script counts:check     # every "N lines of `path`" and every ledger count, remeasured
+bootstrap/flang run-script codes:check         # every FLANG_* named in any .md must exist in the sources
+bootstrap/flang run-script emit-promises:check       # "seven backends emit …", the ten prose promises and the eight cost claims
+bootstrap/flang run-script names:check        # naming rules, against the parse tree of the whole corpus
 ```
 
 What this means when you write:
@@ -303,7 +295,7 @@ git config core.hooksPath .githooks
 ```
 
 It runs nine checks in parallel and takes about 50 seconds on a loaded machine
-(the slowest single one, `задачник:проверка`, is 48 of those seconds; run one
+(the slowest single one, `tasks:check`, is 48 of those seconds; run one
 after another they would be 83). On success it says so; on failure it stops the
 push and prints the guard, the file and the line.
 

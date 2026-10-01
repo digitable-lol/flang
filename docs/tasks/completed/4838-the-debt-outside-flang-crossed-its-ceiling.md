@@ -31,7 +31,7 @@
 ## Чем измерено
 
 Ствол `6c6ae04a`, свой `bootstrap/flang` из семени этого же ствола,
-`PIK=1G PAMYAT=4G` через ворота, прогон `./ярлык опись:языки`
+`PIK=1G PAMYAT=4G` через ворота, прогон `bootstrap/flang run-script inventory:languages`
 (`scripts/tree-inventory.flang`, 19 с, 0,44 ГиБ):
 
 ```
@@ -206,14 +206,14 @@ $ python3 flang/scripts/per-file-proof-share.py . отчёты/
 ## Как понять, что сделано
 
 ```sh
-./ярлык опись:языки
+bootstrap/flang run-script inventory:languages
 ```
 
 код 0 и строки «ДОЛГ ВЫРОС» нет. Число, с которого считаем: **68 при потолке 63**.
 
 ## Замер 1 сентября 2026: долг снова растёт, и это не догадка
 
-    ./ярлык опись:языки
+    bootstrap/flang run-script inventory:languages
     # ДОЛГ ВНЕ JavaScript: файлов 74, строк 8729, потолок файлов 63
     # ДОЛГ ВЫРОС: файлов 74 при потолке 63.               код 1
 
@@ -261,7 +261,7 @@ $ python3 flang/scripts/per-file-proof-share.py . отчёты/
 
 ## Замер 7 сентября 2026 (ветка `r/scripts-mjs`, `7c4f074d`)
 
-    ./ярлык опись:языки
+    bootstrap/flang run-script inventory:languages
     # ДОЛГ ВНЕ JavaScript: файлов 112, строк 17870, потолок файлов 63
     # ДОЛГ ВЫРОС: файлов 112 при потолке 63.               код 1
 

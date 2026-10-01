@@ -39,7 +39,7 @@
 Одним свежим двоичным, за один заход (это и есть задача 0002):
 
 ```
-docs/site/numbers.json     машинный вывод «./ярлык числа» — только прогоном
+docs/site/numbers.json     машинный вывод «bootstrap/flang run-script numbers:build» — только прогоном
 docs/ROADMAP.md                 25 августа в нём нашли 17 расхождений из 33
 README.md, README.ru.md
 docs/what-blocks-1-0.md

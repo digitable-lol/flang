@@ -73,7 +73,7 @@ docs/examples/leetcode/217-contains-duplicate.flang: проверено — ра
 Сводка по всему дереву языка. Пересчитать её можно одной командой:
 
 ```bash
-./ярлык числа
+bootstrap/flang run-script numbers:build
 ```
 
 Она перемеряет все числа страниц и кладёт их в `docs/site/numbers.json`. Вот что

@@ -22,18 +22,18 @@
 
 | № | ярлык | команда |
 |---:|---|---|
-| 43 | `спеки:подлог` | `bootstrap/flang io fspec/forgery.flang --timeout 600000` |
-| 44 | `доказательства:ведомость` | `node flang/scripts/proof-ledger.mjs` |
-| 45 | `доказательства:свод` | `bootstrap/flang io flang/scripts/ledger-summary.fscript --plan 'Свод' --timeout 900000` |
-| 48 | `доказательства:пустота` | `node flang/scripts/proof-ledger.mjs --pustota` |
-| 51 | `пустота:порча` | `bootstrap/flang io flang/scripts/emptiness-guard.fscript --plan 'Порча' --timeout 900000` |
-| 53 | `доказанное:порча` | `bootstrap/flang io flang/scripts/proven-guard.fscript --plan 'Порча' --timeout 900000` |
+| 43 | `specs:forgery` | `bootstrap/flang io fspec/forgery.flang --timeout 600000` |
+| 44 | `proofs:report` | `node flang/scripts/proof-ledger.mjs` |
+| 45 | `proofs:summary` | `bootstrap/flang io flang/scripts/ledger-summary.fscript --plan 'Свод' --timeout 900000` |
+| 48 | `proofs:emptiness` | `node flang/scripts/proof-ledger.mjs --pustota` |
+| 51 | `emptiness:corrupt` | `bootstrap/flang io flang/scripts/emptiness-guard.fscript --plan 'Порча' --timeout 900000` |
+| 53 | `proven:corrupt` | `bootstrap/flang io flang/scripts/proven-guard.fscript --plan 'Порча' --timeout 900000` |
 
 **Двух строк этой таблицы больше нет, и это не догадка, а правка дерева.**
 26 сентября 2026 (задача 4413) ярлык `доказательства:пустота` убран вместе с
 `flang/scripts/proof-ledger.mjs`, который он звал; его вопрос закрывают
-`пустота:проверка` и `пустота:перепись` над `emptiness-guard.fscript`. Строка 44
-устарела иначе: `доказательства:ведомость` зовёт не `node`, а двойник на flang
+`emptiness:check` и `emptiness:census` над `emptiness-guard.fscript`. Строка 44
+устарела иначе: `proofs:report` зовёт не `node`, а двойник на flang
 (`flang/scripts/proof-ledger.fscript`, план «Свод корпуса») с 14 сентября
 (задача 1422). Тяжёлых ярлыков в этом наряде осталось пять.
 
@@ -46,14 +46,14 @@
 ## Осторожно: номера ярлыков ходят в двух нумерациях
 
 Разбор 1389 писан, когда ярлыков было **95** (`ярлыки.flang:45`,
-«ярлыков девяносто пять»). С тех пор прибавились четыре — `имена-модулей:проверка`
-(ныне 15), `аксиомы:проверка` (27), `опись:языки` (59), `опубликованное:сверка`
+«ярлыков девяносто пять»). С тех пор прибавились четыре — `module-names:check`
+(ныне 15), `axioms:check` (27), `inventory:languages` (59), `published:check`
 (86). Пересчёт старого номера в нынешний: ≤14 — так же, 15–25 → +1, 26–56 → +2,
 57–82 → +3, 83–95 → +4.
 
-По старой нумерации те же шесть номеров читаются как `доказательства:свод`,
-`слово:проверка`, `слово:подлог`, `пустота:перепись`, `доказанное:порча`,
-`слово:занятость`. **В обеих нумерациях все шесть попадают в разряд «прогоном не
+По старой нумерации те же шесть номеров читаются как `proofs:summary`,
+`word:check`, `word:forgery`, `emptiness:census`, `proven:corrupt`,
+`word:occupancy`. **В обеих нумерациях все шесть попадают в разряд «прогоном не
 померены»**, поэтому задача берётся по ИМЕНАМ из таблицы выше, а не по номерам.
 Если исполнитель предпочтёт старое чтение — пусть возьмёт те шесть и скажет об
 этом в коммите; хуже не будет, но называть надо имя, а не число.

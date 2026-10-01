@@ -117,14 +117,14 @@ if [ "$REZHIM" = check ]; then
   if zamykanie_svezhee 2>/tmp/.semya-check.$$; then
     rm -f /tmp/.semya-check.$$
     say "печатаемая часть семени отвечает flang/self и пределам."
-    say "тронуты только копируемые файлы — быстрый пересев «семя:освежить» достаточен."
+    say "тронуты только копируемые файлы — быстрый пересев «seed:refresh» достаточен."
     exit 0
   fi
   RAZN=$(cat /tmp/.semya-check.$$ 2>/dev/null); rm -f /tmp/.semya-check.$$
   if rantaym_dognan; then
     err "БЫСТРЫЙ ПЕРЕСЕВ ПРИМЕНЁН ТАМ, ГДЕ НЕЛЬЗЯ."
     err ""
-    err "Рантайм-часть семени догнала источник (как после «семя:освежить»),"
+    err "Рантайм-часть семени догнала источник (как после «seed:refresh»),"
     err "но печатаемая часть разошлась с flang/self или пределами:"
     err "$RAZN"
     err ""
@@ -213,10 +213,10 @@ if sh "$ROOT/$PEREPECHATKA" --telo >/dev/null 2>&1; then
 else
   say "  КРАСЕН bootstrap-reprint.sh --telo"; OK=1
 fi
-if sh "$ROOT/scripts/seed/seed-runtime-is-source.fscript" --после-печати >/dev/null 2>&1; then
-  say "  зелен  seed-runtime-is-source.fscript --после-печати (семя = источник)"
+if "$ROOT/bootstrap/flang" io scripts/seed/seed-runtime-is-source.fscript --plan "After print" >/dev/null 2>&1; then
+  say "  зелен  seed-runtime-is-source.fscript, план «After print» (семя = источник)"
 else
-  say "  КРАСЕН seed-runtime-is-source.fscript --после-печати"; OK=1
+  say "  КРАСЕН seed-runtime-is-source.fscript, план «After print»"; OK=1
 fi
 say ""
 say "версия собранного двоичного: $(./bootstrap/flang --version 2>&1 | head -1)"
@@ -226,5 +226,5 @@ if [ "$OK" = 0 ]; then
   say "семя пересеяно быстрым путём, заслоны зелены."
 fi
 exit "$OK"
-# ярлык «семя:освежить» sh — пересеять без 4,5-часовой печати, когда flang/self не тронут: обновить копируемый рантайм, снять отпечаток тем же прибором, пересобрать; замыкание тронуто — отказать
-# ярлык «семя:можно-быстро» sh --check — сказать, годен ли быстрый пересев: печатаемая часть семени отвечает flang/self или замыкание ушло вперёд и нужна полная перепечатка
+# короткая команда «seed:refresh» sh — пересеять без 4,5-часовой печати, когда flang/self не тронут: обновить копируемый рантайм, снять отпечаток тем же прибором, пересобрать; замыкание тронуто — отказать
+# короткая команда «seed:can-refresh» sh --check — сказать, годен ли быстрый пересев: печатаемая часть семени отвечает flang/self или замыкание ушло вперёд и нужна полная перепечатка

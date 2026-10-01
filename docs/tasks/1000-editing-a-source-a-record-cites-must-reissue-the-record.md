@@ -276,7 +276,7 @@ SHA-256 её исходника. Обойти проверку можно тол
 - `.github/workflows/binary.yml`, три шага. Хук обходится ключом `--no-verify`,
   и шапка хука называет три случая, когда это законно; проверка без CI держала
   бы только тех, кто хук не обходит.
-- `ярлыки.flang`: `привязка:проверка` и `привязка:подлог`. Без ярлыка проверку не
+- `ярлыки.flang`: `record-source:check` и `record-source:forgery`. Без ярлыка проверку не
   видят ни `who-calls-the-guards.sh` (кого зовёт CI), ни
   `guards-without-forgery-probe.sh` (у кого показано, что он краснеет).
 - `docs/HANDOFF.md`, раздел 6 — правило одной строкой.
@@ -389,8 +389,8 @@ sources from inside` зовёт план `Подлог`: тот же исход�
 | `sh scripts/доказуемость.sh` | ДОКАЗУЕМ, код 0: доля проигрыванием 100,00 % (650 из 650); набор подделок 36 из 36; проб на подлог 543, принято кодом 0 — 0; честных 250, отвергнуто 0 |
 | `sh flang/proof/check.sh` на честной паре раздела 3 | код 0 |
 | `sh scripts/guards/prose-numbers-guard.sh` | код 0, 231 число из 231 сошлось |
-| `./ярлык задачник:проверка` | код 0 |
-| `./ярлык опись:сверка` | код 0 |
+| `bootstrap/flang run-script tasks:check` | код 0 |
+| `bootstrap/flang run-script inventory:check` | код 0 |
 | `scripts/guards/file-extensions.fscript`, `translit-file-names-guard.fscript`, `cyrillic-file-names-guard.fscript`, `no-comments-guard.fscript` | код 0 у каждой |
 | `who-calls-the-guards.sh --check`, `guards-without-forgery-probe.sh --check`, `proved-share-vs-tree.sh` | код 0 у каждой |
 | `scripts/shortcut-collector.fscript --plan Сбор` | 146 объявлений из 149 целей сошлись знак в знак, расходится 0 |
@@ -399,7 +399,7 @@ sources from inside` зовёт план `Подлог`: тот же исход�
 это не проверка, поэтому он гонялся на паре.
 
 Одна строка в хуке сдвинула счёт оболочки в `docs/tree-inventory.md`: строк
-24 610 → 24 611, долг строк 15 991 → 15 992 (снято `./ярлык опись:языки`).
+24 610 → 24 611, долг строк 15 991 → 15 992 (снято `bootstrap/flang run-script inventory:languages`).
 Файлов на оболочке не прибавилось.
 
 ### 9. Свои ошибки

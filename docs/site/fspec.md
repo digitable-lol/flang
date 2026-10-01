@@ -343,7 +343,7 @@ second function and a second spec. The question is not whether the new one works
 two people read the code. Here it is one command:
 
 ```sh
-./ярлык спеки:проверка
+bootstrap/flang run-script specs:check
 ```
 
 The answer "specs agree" is the goal of this command, not today's run: on the
@@ -367,7 +367,7 @@ Next to the specs lives a **forgery set**: cases where a spec is deliberately
 spoiled, and the check must go red on every one.
 
 ```sh
-./ярлык спеки:подлог
+bootstrap/flang run-script specs:forgery
 ```
 
 Among the things it catches: a rule weakened under the same name; a spec with no

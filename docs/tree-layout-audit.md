@@ -25,7 +25,7 @@ sh scripts/guards/cyrillic-file-names-guard.sh --check     # код 0
 sh scripts/guards/translit-file-names-guard.sh --check     # код 0
 sh scripts/guards/published-vs-tree.sh --карта             # код 0
 sh scripts/guards/no-package-json-guard.sh --check         # код 0
-./ярлык жаргон:проверка                                    # код 0
+bootstrap/flang run-script jargon:check                                    # код 0
 ```
 
 **Про два разных счёта.** Владелец до начала работы насчитал 886 файлов «с кириллицей»
@@ -246,7 +246,7 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 `jargon-guard.fscript` лежит **в двух местах и эти копии разные**:
 
 ```
-flang/scripts/jargon-guard.fscript   169 559 байт   ← её зовёт ./ярлык жаргон:проверка,
+flang/scripts/jargon-guard.fscript   169 559 байт   ← её зовёт bootstrap/flang run-script jargon:check,
                                                       на неё ссылаются README.md,
                                                       docs/README.ru.md, .ai/AGENTS.md,
                                                       docs/jargon.json и ci.yml
@@ -256,7 +256,7 @@ scripts/guards/jargon-guard.fscript  176 023 байта  ← её зовёт fla
 
 Расходятся на 92 строки. В `scripts/guards/` копия **новее**: в ней есть функции
 «Вставить по убыванию», «По убыванию долга» и «Первые пять», которые печатают строку
-«долг больше всего в: …». Прогон `./ярлык жаргон:проверка` этой строки не печатает —
+«долг больше всего в: …». Прогон `bootstrap/flang run-script jargon:check` этой строки не печатает —
 значит, работает старая копия.
 
 То есть **проверяется примерами одна копия, а в работе и в CI — другая**. Это не
@@ -316,7 +316,7 @@ UTF-8, оставшаяся текстом.
 ### Что ловит прибор, который в дереве есть
 
 ```
-./ярлык жаргон:проверка
+bootstrap/flang run-script jargon:check
   → Сторож жаргона: поверхностей 151, внутренних слов 1030
     (долг по 37 файлам, расти не имеет права), новых 0.          код 0
 ```
@@ -337,7 +337,7 @@ UTF-8, оставшаяся текстом.
 | поверхность | всего | со внутренним словом из `jargon.json` |
 |---|---:|---:|
 | имена шагов CI (`.github/workflows/*.yml`, ключ `- name:`) | 244 (177 различных) | **49** |
-| пояснения ярлыков (`ярлыки.flang`, поле «зачем») — их печатает `./ярлык` без доводов | 147 | **34** |
+| пояснения ярлыков (`ярлыки.flang`, поле «зачем») — их печатает `bootstrap/flang run-script` без доводов | 147 | **34** |
 
 По словам в именах шагов CI: `сторож` 38, `ведомость` 6, `побайтов` 5, `корпус` 3,
 `свод` 1. В пояснениях ярлыков: `сторож` 21, `ведомость` 12, `корпус` 4, `эталон` 1,

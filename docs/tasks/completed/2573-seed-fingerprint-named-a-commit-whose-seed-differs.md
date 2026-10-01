@@ -13,7 +13,7 @@
 
 ## Беда
 
-В свежем worktree от `gh/dev` любой `./ярлык` давал **код 3** и не начинал
+В свежем worktree от `gh/dev` любой `bootstrap/flang run-script` давал **код 3** и не начинал
 сборку:
 
 ```
@@ -127,8 +127,8 @@ sh <кат>/scripts/bootstrap-reprint.sh --otpechatok
 ## Проверено
 
 ```
-до починки   ./ярлык задачник:проверка   код 3, «СБОРКА НЕ НАЧАТА»
-после        ./ярлык задачник:проверка   код 0, сборка пошла, двоичный
+до починки   bootstrap/flang run-script tasks:check   код 3, «СБОРКА НЕ НАЧАТА»
+после        bootstrap/flang run-script tasks:check   код 0, сборка пошла, двоичный
              21 983 032 байта, «flang 0.7.0»
              sh scripts/bootstrap-reprint.sh --bystro   код 0
              sh scripts/bootstrap-reprint.sh --telo     код 0

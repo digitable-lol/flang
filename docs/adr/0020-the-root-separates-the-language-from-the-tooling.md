@@ -15,7 +15,7 @@
 уровень выше. Прецеденты переезда: `acca80a3` и `8142524b` (`flang/cat` → `flang/ct`,
 проза → `docs/ct`, 54 файла правки на один каталог).
 **Проверяется:** после переезда — `sh scripts/bootstrap-reprint.sh --bystro` (отпечаток
-цел), `./ярлык тесты` (ссылки не порваны), `sh .githooks/pre-push`, сборка сайта
+цел), `bootstrap/flang run-script tests` (ссылки не порваны), `sh .githooks/pre-push`, сборка сайта
 `node docs/site/build.mjs --check`, `bootstrap/flang io scripts/guards/link-guard.fscript`.
 
 ---
@@ -41,7 +41,7 @@
 | `flang/` | **язык**: `self/` компилятор, `core/`, `stdlib/`, `proof/`, `concurrency/`, `ct/`, `src/emit/` рантаймы, `test/`, `bin/` (проводник `flangtutor`); внутри — `flang/scripts/` (53 файла оснастки языка, 271 ссылка) | 955 | 647 (`self/`), 417 (`stdlib/`), 408 (`src/`) | не переезжает | 48 из 55 строк отпечатка — пути `flang/…`; двоичный ищет библиотеку по `<каталог двоичного>/../flang/stdlib` |
 | `docs/examples/` | **язык: корпус** — 185 программ в 22 наборах | 242 | 303 | не переезжает | `published-vs-tree.sh` сверяет числа README; сайт берёт два файла из `docs/examples/rosetta/` |
 | `fspec/` | **язык: образец пакета** — `flang new` копирует его по пути `<каталог двоичного>/../fspec` (`flang_repl.c:16359`) | 77 | 60 | **переезд = правка входа семени = перепечатка**; не переезжает | семя |
-| `ярлык`, `ярлыки.flang` | вход оснастки: оболочка запуска и список целей | 2 | 55 | остаются в корне (`./ярлык тесты` в README, хук) | — |
+| `ярлык`, `ярлыки.flang` | вход оснастки: оболочка запуска и список целей | 2 | 55 | остаются в корне (`bootstrap/flang run-script tests` в README, хук) | — |
 | `scripts/` | **оснастка**: сторожа, перепечатка семени, релиз, журнал | 141 | 453 (workflows 9, оболочка 53, flang 86, js/json 23, md 255, tsv 9) | ≈450 файлов; плюс 365 путей `"../` в 56 планах, если меняется глубина; плюс строки справки двоичного `scripts/bootstrap-reprint.sh`, `scripts/seed-fingerprint` в `flang/self/cli.flang` и `flang/src/emit/c/flang_repl.c` — **входы семени** | перепечатка обязательна; хук, все восемь workflows |
 | `benchmarks/` | **оснастка: измерительный стенд** | 579 | 89 (workflows 1, оболочка 10, flang 12, js/json 8, md 50, tsv/txt 3, git 3) | ≈85 файлов; 4 скрипта считают корень как `../..`; 2 плана с `"../` | `.gitattributes` (`linguist-vendored`), `no-comments-debt.tsv`, `proved-share-ledger.txt` (строки «md5|…|путь»), `flang/test/glob.mjs`, `name-guard.mjs` |
 | `web/` | **оснастка: наружу** — wasm-сборка, приложение во вкладке, сокращатель | 14 | 51 (workflows 1, оболочка 4, flang 2, js 4, md 31, tsv 4, git 2) | ≈50 файлов; 3 скрипта считают корень от себя | `.gitignore` (5 строк), ведомости; сайт — только комментарии `sitemap.mjs`; **один комментарий во входе семени** `flang/src/emit/c/flang_runtime.h:465` |
@@ -171,8 +171,8 @@ sh .githooks/pre-push                                 # дешёвые стор�
 sh scripts/bootstrap-reprint.sh --bystro              # отпечаток цел (переезд его не трогает)
 bootstrap/flang io scripts/guards/link-guard.fscript  # ни одной битой ссылки в прозе
 node docs/site/build.mjs --check                      # сайт собирается, ссылки целы
-./ярлык опись:языки                                   # опись дерева пересчитана
-./ярлык тесты
+bootstrap/flang run-script inventory:languages                                   # опись дерева пересчитана
+bootstrap/flang run-script tests
 ```
 
 Плюс запись в `CHANGELOG.md`: старые адреса `benchmarks/…` и `web/…` на GitHub
@@ -233,13 +233,13 @@ plan-8235-layout.md): клон ветки, готовый двоичный то�
 | `scripts/guards/file-extensions.fscript` | 0 | 0 | — |
 | `./ярлык пакет:проверка` | 0 | 0 | — |
 | `scripts/guards/hand-written-lists.sh --check` | 1 | 1 | красен по своему долгу и до, и после |
-| `./ярлык опись:языки` | 1 | 1 | код тот же, **но число другое — см. ниже** |
+| `bootstrap/flang run-script inventory:languages` | 1 | 1 | код тот же, **но число другое — см. ниже** |
 | `scripts/guards/published-vs-tree.sh` | 1 | 1 | код тот же, **но мест расхождения 5 → 9** |
 | `make -C bootstrap` | — | 0 | двоичный собирается из семени после переезда |
 
 ### Две находки, ради которых репетиция и делалась
 
-**1. Опись дерева тихо ЛИСТАЕТ ДОЛГ ВНИЗ.** `./ярлык опись:языки` до переезда:
+**1. Опись дерева тихо ЛИСТАЕТ ДОЛГ ВНИЗ.** `bootstrap/flang run-script inventory:languages` до переезда:
 «долг вне JavaScript: файлов 113, строк 18149», после: «файлов 110, строк
 17773». Из счёта ушли ровно три файла — `web/browser-probe.sh`, `web/sobrat.sh`,
 `web/wasm/build.sh`. Причина в правиле счёта

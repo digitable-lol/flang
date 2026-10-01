@@ -575,8 +575,8 @@ ADR-0010 §2 обещает четыре кода и запрещает пере
 | `sh flang/proof/probes/strict/run.sh` | 0 | проб 23, разошлось 0 |
 | `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` | 0 | ДОКАЗУЕМ: доля 650 из 650, набор подделок 36 из 36, проб на подлог 543, честных 250 |
 | `sh scripts/guards/prose-numbers-guard.sh` | 0 | примет 231, разошлось 0 |
-| `./ярлык задачник:проверка` | 0 | всего задач 166: свободно 142, в работе 17, сделано 7 |
-| `./ярлык опись:сверка` | 0 | таблица описи сошлась с деревом |
+| `bootstrap/flang run-script tasks:check` | 0 | всего задач 166: свободно 142, в работе 17, сделано 7 |
+| `bootstrap/flang run-script inventory:check` | 0 | таблица описи сошлась с деревом |
 | `bootstrap/flang io scripts/seed/seed-runtime-is-source.fscript --plan Check` | 0 | семя совпадает с источником |
 | `sh scripts/seed/seed-refresh.sh --check` | 0 | быстрый пересев достаточен |
 | `bootstrap/flang io scripts/guards/no-comments-guard.fscript --plan Проверка --на-веру` | 0 | комментариев в `.flang` не прибавилось |

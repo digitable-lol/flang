@@ -4,7 +4,7 @@
 # Опись целей: имя, код, время, причина — таблица markdown как docs/ci-inventory.md (288 строк,
 # СНЯТО 2026-08-31 строк docs/ci-inventory.md = 288 Снятая
 # руками, та опись не повторяется). Код 75 вместе со строкой отказа ворот = «переснять», не вердикт.
-# Звать: sh scripts/targets/targets-inventory.sh [имя …]   все цели из ярлыки.flang или названные;
+# Звать: sh scripts/targets/targets-inventory.sh [имя …]   все команды из .flangrc или названные;
 #   VOROTA, PAMYAT (45G), VYVOD (/srv/tmp/opis-celey) — ворота, память, сырой вывод. Код 0.
 # см. docs/zettel/the-gate-passes-the-command-exit-code-through-so-75-alone-proves-nothing.md
 set -u
@@ -18,14 +18,14 @@ mkdir -p "$VYVOD"
 
 names() {
   if [ $# -gt 0 ]; then printf '%s\n' "$@"; return; fi
-  sed -n 's/.*«имя» равным "\([^"]*\)".*/\1/p' ярлыки.flang
+  sed -n 's/^[ \t]*script\.\([^ =]*\)[ \t]*=.*/\1/p' .flangrc
 }
 
 run_one() {
   imya=$1
   syroy="$VYVOD/$(printf '%s' "$imya" | tr '/:' '__').txt"
   nachalo=$(date +%s)
-  "$VOROTA" -- ./ярлык "$imya" > "$syroy" 2>&1
+  "$VOROTA" -- bootstrap/flang run-script "$imya" > "$syroy" 2>&1
   kod=$?
   sek=$(( $(date +%s) - nachalo ))
   if [ "$kod" -eq 75 ] && grep -qF "$OTKAZ_VOROT" "$syroy"; then

@@ -38,7 +38,7 @@ bootstrap/flang io flang/scripts/kernel-lines-to-trust.flang \
 (**+1648**)». Потолок записан в
 `flang/scripts/kernel-lines-to-trust-ceiling.json`.
 
-**Ярлык `сколько-верим` (41) этого не покажет:** он отказывается судить, потому
+**Ярлык `trust:ceiling` (41) этого не покажет:** он отказывается судить, потому
 что семя отстало на 44 файла. Двоичный, позванный напрямую, отвечает.
 
 **Проверка при этом стоит в CI и красная сейчас.** `.github/workflows/binary.yml:440`,

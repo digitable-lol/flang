@@ -58,12 +58,12 @@ target-function-drift-known) первая строка — `#`-примечан�
 |---|---|---|---|
 | docs/eight-targets-renames.tsv | никто из приборов; человек — по ссылке из `docs/eight-targets-collision-map.md`; перепись перечней лишь считает в ней имена целей | строка без имён целей | перечни 1 / 1 (новых 59, мёртвых 29 — те же; строка перечня 2 → 3) |
 | docs/reprint-ledger.tsv | `scripts/seed/reprint-freshness.fscript`; `reprint.yml`, `bootstrap-reprint.sh`, `seed-freshness.fscript` только называют файл | «Поле» за краем строки без табуляции даёт «» | reprint-freshness 1 / 1 (тот же текст: сверка 2026-09-08 устарела); seed-freshness 3 / 3 (тот же текст) |
-| flang/translation/PRINT-RULES.tsv | `flang/translation/run.sh` (`перевод:проверка`); `matcher.c` держит список литералом | `awk '!/^#/ && $1 != "имя"'` | 0 / 0 (41 правило, 21 опыт — тот же текст) |
-| scripts/ledgers/hand-written-lists-ledger.tsv | `scripts/guards/hand-written-lists.sh --check` (`перечни:проверка`) | `grep -v '^#'` | 1 / 1 (новых 59, мёртвых 29) |
-| scripts/ledgers/link-guard-known-not-a-path.tsv | `scripts/guards/link-guard.fscript` (`ссылки:проверка`); `file-extensions.fscript` вынимает файл из переписи | первая строка отброшена как заголовок | ссылки 1 / 1 (битых 36 из 7051, список тот же, устаревших исключений 1); расширения 0 / 0 (тот же текст) |
+| flang/translation/PRINT-RULES.tsv | `flang/translation/run.sh` (`translation:check`); `matcher.c` держит список литералом | `awk '!/^#/ && $1 != "имя"'` | 0 / 0 (41 правило, 21 опыт — тот же текст) |
+| scripts/ledgers/hand-written-lists-ledger.tsv | `scripts/guards/hand-written-lists.sh --check` (`hand-written-lists:check`) | `grep -v '^#'` | 1 / 1 (новых 59, мёртвых 29) |
+| scripts/ledgers/link-guard-known-not-a-path.tsv | `scripts/guards/link-guard.fscript` (`links:check`); `file-extensions.fscript` вынимает файл из переписи | первая строка отброшена как заголовок | ссылки 1 / 1 (битых 36 из 7051, список тот же, устаревших исключений 1); расширения 0 / 0 (тот же текст) |
 | scripts/ledgers/no-comments-debt.tsv | `scripts/guards/no-comments-guard.fscript` | `join`/`awk` по табуляции: строка без неё даёт 0 | 0 / 0 (строк 39624 в 567 файлах) |
-| scripts/ledgers/target-function-drift-known.tsv | `scripts/guards/target-function-drift.fscript` (`расхождение:проверка`) | «Пояснение»: строка с «#» — не долг | 1 / 1 (тот же текст: 16 расхождений, долг называет 8) |
-| scripts/ledgers/traceability-debt.tsv | `scripts/guards/traceability-guard.fscript` (`прослеживаемость:проверка`) | берёт строки ровно из двух столбцов | 0 / 0 (тот же текст) |
+| scripts/ledgers/target-function-drift-known.tsv | `scripts/guards/target-function-drift.fscript` (`target-drift:check`) | «Пояснение»: строка с «#» — не долг | 1 / 1 (тот же текст: 16 расхождений, долг называет 8) |
+| scripts/ledgers/traceability-debt.tsv | `scripts/guards/traceability-guard.fscript` (`traceability:check`) | берёт строки ровно из двух столбцов | 0 / 0 (тот же текст) |
 | docs/javascript-checks-breakdown.tsv | никто | — | снесён |
 
 Приметы прозы: 216 сошлось, разошлось 0 — до и после. Сторож ссылок: «в записях
@@ -71,9 +71,9 @@ target-function-drift-known) первая строка — `#`-примечан�
 летописи (`docs/tasks/completed/7842…` строка 74, `docs/tasks/6201…` строка 96 —
 датирована в шапке), сторож кладёт их в свой счёт, а не в беды; битых не прибавилось.
 
-Опись дерева (`опись:сверка`): 0 → 1 только из-за двух строк, добавленных в
+Опись дерева (`inventory:check`): 0 → 1 только из-за двух строк, добавленных в
 `no-comments-guard.sh` (оболочка 24768 → 24770); `docs/tree-inventory.md` переснята
-`./ярлык опись:языки` на перебазированной ветке.
+`bootstrap/flang run-script inventory:languages` на перебазированной ветке.
 
 Заодно: `no-comments-guard.sh --снять` переписывал долг из дерева и стёр бы шапку
 первым же заходом — теперь строки с «#» переживают переписку (проверено: `--снять`

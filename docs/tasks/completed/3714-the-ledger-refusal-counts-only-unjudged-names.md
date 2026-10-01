@@ -218,7 +218,7 @@ $ /srv/flang-rabota/b-batut/bootstrap/flang check flang/conc/examples/counter.fl
 <проба> check flang/test/fixtures/ledger-refuses-only-unjudged-surfaces.flang --proof
 #   → код 2, «… не считает — monoids» — одно имя, а не четыре
 # 3. задачник цел
-./ярлык задачник:проверка                                  # код 0
+bootstrap/flang run-script tasks:check                                  # код 0
 ```
 
 После следующей перепечатки те же три строки обязаны давать то же самое на

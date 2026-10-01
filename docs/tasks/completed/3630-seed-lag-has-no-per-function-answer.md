@@ -33,7 +33,7 @@
 sh scripts/bootstrap-reprint.sh --bystro     → код 1
 sh scripts/seed-freshness.fscript         → код 3   («сверить не удалось», не «прошло»)
 sh scripts/binary-origin.fscript          → код 3
-./ярлык доказанное:проверка          → код 3, сборка НЕ НАЧАТА
+bootstrap/flang run-script proven:check          → код 3, сборка НЕ НАЧАТА
 ```
 
 Он вшит в оболочку `ярлык` (`ярлык:180`), у него раздельные коды («отстало» — 1,
@@ -130,8 +130,8 @@ sh scripts/chto-otstalo-ot-semeni.sh flang/self/zapis.flang # имена по ф
 * **Сторож свежести не поставлен в CI** — файлы `.github/workflows/**` в эту
   волну принадлежат другому работнику. Это главная оставшаяся дыра: сторож
   стережёт `ярлык`, а пуш не стережёт никто. Сегодня это уже **четвёртый**
-  случай подряд «сторож написан, в CI его нет» — после `задачник:проверка`,
-  `чекер:проверка` и `перечни:проверка`.
+  случай подряд «сторож написан, в CI его нет» — после `tasks:check`,
+  `checker:check` и `hand-written-lists:check`.
 * Прибор не вписан в `ярлыки.flang` — файл занят другим работником этой волны.
 * Отставание семи файлов (`builtins`, `functor`, `partialorder`, `monoid`,
   `functor-oracle`, `distributive`, `svoystva`) не разобрано: неизвестно, ждут

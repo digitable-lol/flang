@@ -122,7 +122,7 @@ Client of the URL-shortener service, written entirely in flang.
 
 - **`docs/editors/vscode/README.md`** — VS Code Marketplace рендерит его как описание
   расширения. Ссылка вместо текста означает пустую страницу в маркетплейсе.
-- **`docs/zettel/README.md`** — печатается прогоном (`указатель:печать`), руками
+- **`docs/zettel/README.md`** — печатается прогоном (`zettel-index:build`), руками
   не правится вовсе.
 - **`bootstrap/README.md`** — объясняет машинный вывод, лежащий в том же
   каталоге; его читают, уже открыв каталог, и обычно без сети.

@@ -131,8 +131,8 @@ CI).
 одной строкой.
 
 ```
-sh flang/proof/corpus-share.sh --приговор-ядра   (ярлык ядро-судит:проверка)
-sh flang/proof/corpus-share.sh --подлог-ядра     (ярлык ядро-судит:подлог)
+sh flang/proof/corpus-share.sh --приговор-ядра   (ярлык kernel-verdict:check)
+sh flang/proof/corpus-share.sh --подлог-ядра     (ярлык kernel-verdict:forgery)
 ```
 
 **ОХРАНА ОДНОСТОРОННЯЯ, и это сказано вслух в самом файле.** Код 1 ядра есть
@@ -145,7 +145,7 @@ sh flang/proof/corpus-share.sh --подлог-ядра     (ярлык ядро-
 
 ### Кто зовёт
 
-* ярлык `ядро-судит:проверка` и парный `ядро-судит:подлог`;
+* ярлык `kernel-verdict:check` и парный `kernel-verdict:forgery`;
 * два шага в работе CI `build` (`.github/workflows/binary.yml`) — там, где
   двоичный уже собран, а не в `proof-checker`, которому компилятор нельзя.
 
@@ -190,7 +190,7 @@ sh flang/proof/corpus-share.sh --подлог-ядра     (ярлык ядро-
 
 `flang/proof/corpus-share.sh`: **663 → 897 строк (+234)**, из них **КОДА 156**,
 остальное — комментарий. **Новых файлов вне flang — ноль**, потолок описи
-(`./ярлык опись:языки`) не тронут: он стоит на ФАЙЛАХ.
+(`bootstrap/flang run-script inventory:languages`) не тронут: он стоит на ФАЙЛАХ.
 
 Из 156 строк кода **66 — проба порчи `podlog_yadra`**, то есть больше двух пятых
 цены куплена не охраной, а доказательством того, что охрана краснеет и что

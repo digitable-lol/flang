@@ -182,7 +182,7 @@ export function отказыЯдра() {
 /**
  * Версия выпуска — из `.flangrc` (ключ `version`), а не из памяти. До 17 сентября
  * 2026 читалась из package.json; файл выброшен (задача 3570), а ключ в `.flangrc`
- * разносит `./ярлык версия` из scripts/release/emit-package.flang. Последний
+ * разносит `bootstrap/flang run-script version` из scripts/release/emit-package.flang. Последний
  * одноимённый ключ побеждает — как у scripts/settings-file.flang.
  */
 export function версияВыпуска() {
@@ -246,7 +246,7 @@ function происхождениеЗамера() {
     "дорогиеДата": сегодня,
     "дорогиеКоммит": дерево,
     "дорогиеЧем":
-      "node docs/site/site-numbers.mjs --write (./ярлык числа) — прогон двоичного по всему корпусу, часы",
+      "node docs/site/site-numbers.mjs --write (bootstrap/flang run-script numbers:build) — прогон двоичного по всему корпусу, часы",
     "какие дорогие":
       "корпус.функций, корпус.тотальных, корпус.обычных, корпус.безПроверок, утверждения.*," +
       " законы.наВеру, носители.*, сторож.*, словарь.*",
@@ -532,7 +532,7 @@ if (запущенНапрямую(import.meta.url)) {
     if (беды.length) {
       console.error("Числа сайта ОТКАЗЫВАЮТ — записанное разошлось с деревом:")
       for (const б of беды) console.error("  · " + б)
-      console.error(`\nвсего бед: ${беды.length}. Лечится одной командой: ./ярлык числа`)
+      console.error(`\nвсего бед: ${беды.length}. Лечится одной командой: bootstrap/flang run-script numbers:build`)
       process.exit(1)
     }
     const числа = прочитатьЧисла()
@@ -555,5 +555,5 @@ if (запущенНапрямую(import.meta.url)) {
     console.log(`${ключ.padEnd(26)} ${значение}`)
   }
 }
-// ярлык «числа» node --write — перепечатать числа страниц сайта из измерителя
-// ярлык «числа:проверка» node --check — число на сайте не уехало от дерева
+// короткая команда «numbers:build» node --write — перепечатать числа страниц сайта из измерителя
+// короткая команда «numbers:check» node --check — число на сайте не уехало от дерева

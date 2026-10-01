@@ -64,5 +64,5 @@ grep course docs/site/build.mjs
 ```sh
 node docs/site/build.mjs --check     # ссылки глав не ведут в никуда
 grep -c course docs/site/sitemap.mjs # не ноль
-./ярлык числа:проверка               # версия на страницах курса подставлена, а не набрана
+bootstrap/flang run-script numbers:check               # версия на страницах курса подставлена, а не набрана
 ```

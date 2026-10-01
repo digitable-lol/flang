@@ -43,15 +43,15 @@
 Среди них — девять, у которых flang-двойник существует:
 
 ```
-правила:проверка      -> node flang/scripts/binary-rules-guard.mjs
-подсчёты:проверка     -> node flang/scripts/count-guard.mjs
-ключи:проверка        -> node flang/scripts/cli-keys-guard.mjs
-столкновения:проверка -> node flang/scripts/link-collision-guard.mjs --дерево
-столкновения:порча    -> node flang/scripts/link-collision-guard.mjs --порча
-поиск:различающий     -> node flang/scripts/discriminating-search.mjs
-слово:проверка        -> node flang/scripts/word-guard.mjs
-слово:подлог          -> node flang/scripts/word-guard.mjs --porcha vse
-журнал / журнал:страница -> node scripts/build-changelog*.mjs
+binary-rules:check      -> node flang/scripts/binary-rules-guard.mjs
+counts:check     -> node flang/scripts/count-guard.mjs
+cli-keys:check        -> node flang/scripts/cli-keys-guard.mjs
+link-collisions:check -> node flang/scripts/link-collision-guard.mjs --дерево
+link-collisions:corrupt    -> node flang/scripts/link-collision-guard.mjs --порча
+search:discriminating     -> node flang/scripts/discriminating-search.mjs
+word:check        -> node flang/scripts/word-guard.mjs
+word:forgery          -> node flang/scripts/word-guard.mjs --porcha vse
+журнал / changelog:page -> node scripts/build-changelog*.mjs
 ```
 
 **Двойники написаны, а зовут по-прежнему node.** Поверхность node не
@@ -69,7 +69,7 @@
 | `discriminating-search` | код 0, выдал разбор | **не уложился** в отведённое время при пределе 500 млн шагов |
 
 Предел по умолчанию у `flang io` — 10 000 000 шагов. Его можно поднять
-(`--max-steps`, так уже сделано для `задачник:проверка` — 200 млн). Но
+(`--max-steps`, так уже сделано для `tasks:check` — 200 млн). Но
 дело не в пределе: `link-collision-guard.fscript` при `--max-steps
 2000000000` и десятиминутном сроке съел **3 211 671 257 шагов**, доходил
 до 4,4 ГиБ памяти, полоса хода всё время показывала «0 %» — и был убит
@@ -117,7 +117,7 @@
 
 Шапка `word-guard.fscript` сама говорит: ключа `--porcha` (шесть встроенных
 порч) «здесь НЕТ вовсе», `--perepis` тоже не перенесена. А ярлык
-`слово:подлог` зовёт именно `--porcha vse`. Значит `word-guard.mjs` не может
+`word:forgery` зовёт именно `--porcha vse`. Значит `word-guard.mjs` не может
 быть удалён даже если основной прогон двойника заработает.
 
 ## Что это значит для вопроса владельца
@@ -166,8 +166,8 @@
 
 | файл | двойник | сравнение прогоном | что переключено |
 |---|---|---|---|
-| `binary-rules-guard` (900) | код 1 у обоих, те же 7 находок; 5 с → 38 с, 0,68 ГиБ | ярлык `правила:проверка` |
-| `cli-keys-guard` (372) | код 0 у обоих, те же 8 разрядов долга; 0,2 с → 39 с; проба подлога `--fast` на двойнике красит | ярлык `ключи:проверка`, работа `klyuchi` в `ci.yml` (без `setup-node`) |
+| `binary-rules-guard` (900) | код 1 у обоих, те же 7 находок; 5 с → 38 с, 0,68 ГиБ | ярлык `binary-rules:check` |
+| `cli-keys-guard` (372) | код 0 у обоих, те же 8 разрядов долга; 0,2 с → 39 с; проба подлога `--fast` на двойнике красит | ярлык `cli-keys:check`, работа `klyuchi` в `ci.yml` (без `setup-node`) |
 | `direct-run-guard` (556) | mjs 3 находки, двойник те же 3 **плюс** `flang/src/emit/js/flang_host_node.js:497` — mjs прощал его списком образцов (строка 338), двойник знает одного изгнанника; 0,3 с → 343 с, 1,9 ГиБ | ничего: не звал никто |
 
 Двойнику ключей нужен `--max-steps 200000000`: без него «Шаг литералов»
@@ -195,7 +195,7 @@ node v26.7.0, все прогоны `env -u FLANG_MODULE_DIR LC_ALL=C.UTF-8` и�
 
 | `.mjs` | двойник на flang | сравнение прогоном сегодня | почему остаётся |
 |---|---|---|---|
-| `binary` | `binary.fscript` — библиотека на flang | — | библиотеку flang нельзя ввезти в Node, а её ввозят 4 файла `flang/test/*.mjs` (ярлык `тесты`), `docs/site/{podsvetka,surfaces-run}.mjs` и семь `.mjs` этого каталога |
+| `binary` | `binary.fscript` — библиотека на flang | — | библиотеку flang нельзя ввезти в Node, а её ввозят 4 файла `flang/test/*.mjs` (ярлык `tests`), `docs/site/{podsvetka,surfaces-run}.mjs` и семь `.mjs` этого каталога |
 | `claim-guard` | нет | код 1 за 1,3 с: 3 утверждения о недостаче больше не правда | переписывать нечего — двойника нет |
 | `count-guard` | `count-guard.fscript`, частичный | двойник: код 1 за 8 мин 3 с, одна находка — в его же комментарии (`MAX_STEPS` сказано 300000000000, измерено 1400000000000). `.mjs` находил 238 расхождений и идёт 1 ч 55 мин | у двойника нет правил «N строк про путь», таблиц, ведомости, `--fix`, `--дерево` |
 | `direct-run` | `direct-run.flang` — порт только чистой части (раскодирование `file://`) | снял файл и прогнал: `node docs/site/site-numbers.mjs --check` падает `ERR_MODULE_NOT_FOUND`; вернул — работает | это Node-библиотека, её ввозят 13 файлов; вопроса «запущен я или ввезён» у flang нет вовсе, заменить нечем |

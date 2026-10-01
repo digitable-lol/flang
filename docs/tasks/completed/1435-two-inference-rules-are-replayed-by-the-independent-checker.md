@@ -77,8 +77,8 @@
 - `sh flang/proof/tables-guard.sh` — шесть сторожей зелены, код 0; С-6: 7602 строки кода
   при потолке 7603, потолок НЕ двигался.
 - `sh scripts/guards/prose-numbers-guard.sh` — все 231 примета сошлись, код 0.
-- `./ярлык задачник:проверка` — «задачник цел», код 0.
-- `./ярлык транслит:проверка` — «новых нет», код 0.
+- `bootstrap/flang run-script tasks:check` — «задачник цел», код 0.
+- `bootstrap/flang run-script transliteration:check` — «новых нет», код 0.
 
 ## Что осталось
 
@@ -171,7 +171,7 @@ $ git check-ignore -v flang/proof/checker/tests/families/coverage/n6-choice.reco
 | сверщик на паре `o9-derivation` | код **0**, то же |
 | `flang/proof/checker/tests/run.sh` | код **0**, «сошлось всё» |
 | `prose-numbers-guard.sh` | код **0**, все 231 примет |
-| `./ярлык задачник:проверка` | код **0** |
+| `bootstrap/flang run-script tasks:check` | код **0** |
 
 Глубина проверки не уменьшилась: числа сверщика на моей паре и на прежней
 совпали знак в знак (сличены пословно; разошлась только примета о поле

@@ -189,7 +189,7 @@ taken by name, so the ruler does not move with the thing it measures.
 Something is proved for 14 of the 20 functions. Something substantive, for 10.
 
 ```
-./ярлык доказательства:20
+bootstrap/flang run-script proofs:count-20
 ```
 
 ### Some of the unproved is unprovable because it is untrue
@@ -465,7 +465,7 @@ language itself. Printing itself is something the compiler does, and does withou
 a single divergence; checking what it prints is something it cannot do.
 
 ```
-./ярлык доказательства:ведомость
+bootstrap/flang run-script proofs:report
 ```
 
 ---
@@ -478,8 +478,8 @@ None of the numbers above have to be taken on trust — commands print all of th
 |---|---|
 | Report for one file | `flang check <file> --proof` |
 | The same for a machine | `flang check <file> --proof --json` |
-| Summary over every program in the repository | `./ярлык доказательства:ведомость` |
-| Substantive claims out of the twenty | `./ярлык доказательства:20` |
+| Summary over every program in the repository | `bootstrap/flang run-script proofs:report` |
+| Substantive claims out of the twenty | `bootstrap/flang run-script proofs:count-20` |
 
 ## Further
 

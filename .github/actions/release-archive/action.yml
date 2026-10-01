@@ -38,7 +38,7 @@
 #
 # Простой `tar -czf` кладёт в архив время правки, права и владельца, и один и
 # тот же каталог даёт разные байты. Хеш, который нельзя повторить, нельзя и
-# проверить — а на нём стоят и `формула:проверка`, и `brew install`.
+# проверить — а на нём стоят и `homebrew-formula:check`, и `brew install`.
 #
 # На macOS обычный `tar` — это bsdtar, у него нет ни `--sort`, ни `--mtime`.
 # Поэтому ищется `gtar` (ставится `brew install gnu-tar`), и если найденный tar
@@ -82,7 +82,7 @@ runs:
 
         # Точка раскрутки собирается ТОЛЬКО если двоичного нет: `make` здесь
         # ни при чём — работа, собравшая его шагом выше, второй раз не платит.
-        # Ровно так же ведёт себя `./ярлык` и `scripts/bootstrap-reprint.sh`.
+        # Ровно так же ведёт себя `scripts/bootstrap-reprint.sh`.
         if [ ! -x bootstrap/flang ]; then
           echo "двоичного bootstrap/flang нет — собираю из точки раскрутки: make -C bootstrap"
           make -C bootstrap -j"$(getconf _NPROCESSORS_ONLN)"
@@ -95,7 +95,7 @@ runs:
 
         version="$(bootstrap/flang io scripts/flangrc.fscript -- version | sed -n 's/^{"plan":"Settings","result":"\([^"\\]*\).*/\1/p')"
         if [ -z "$version" ]; then
-          echo "::error::версию не вычитать из .flangrc — ключа «version» нет или scripts/flangrc.fscript не ответил; разносит его ./ярлык версия из scripts/release/emit-package.flang" >&2
+          echo "::error::версию не вычитать из .flangrc — ключа «version» нет или scripts/flangrc.fscript не ответил; разносит его bootstrap/flang run-script version из scripts/release/emit-package.flang" >&2
           exit 1
         fi
 

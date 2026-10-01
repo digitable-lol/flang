@@ -94,7 +94,7 @@ docs/tasks/9959-…md                       +48      новый
 
 ## Цена: четыре новых замечания задачника, и задачник — ворота CI
 
-Сторож задачника (`./ярлык задачник:проверка`, он же `ci.yml:259`):
+Сторож задачника (`bootstrap/flang run-script tasks:check`, он же `ci.yml:259`):
 
 ```
 чистый dev:     5 замечаний
@@ -165,7 +165,7 @@ git -c user.name="Marat Zimnurov" -c user.email="zimtir@mail.ru" commit
 ```sh
 make -C bootstrap                                   # код 0
 bootstrap/flang io scripts/version-guard.flang      # код 0, «совпадают — 0.7.10»
-./ярлык задачник:проверка                           # 5 замечаний, не 9
+bootstrap/flang run-script tasks:check                           # 5 замечаний, не 9
 git diff --numstat gh/dev HEAD                      # 5 файлов, ни одной потери из dev
 ```
 
@@ -199,9 +199,9 @@ dev не теряет, чинит красный сторож версии и с
 Проверено прогоном на слитом дереве:
 
 ```
-./ярлык версия:проверка   код 0, «package.json и FLANG_VERSION совпадают — 0.7.10»
+bootstrap/flang run-script version:check   код 0, «package.json и FLANG_VERSION совпадают — 0.7.10»
                           (до слияния — код 1, FLANG_VERSION_RAZOSHLAS)
-./ярлык задачник:проверка код 0, замечаний столько же, сколько на чистом dev
+bootstrap/flang run-script tasks:check код 0, замечаний столько же, сколько на чистом dev
 ```
 
 Больше по этой задаче делать нечего — она перенесена в архив.

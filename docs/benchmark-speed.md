@@ -566,7 +566,7 @@ make -C /tmp/zamer/qs -j4
 docs/benchmarks/speed/arena.sh /tmp/zamer/qs
 
 # 5. Свод по корпусу: чем несётся обещание «тотальная» и где сторожа
-./ярлык доказательства:ведомость
+bootstrap/flang run-script proofs:report
 ```
 
 Разовая проба одной задачи на трёх языках, с временем и памятью:

@@ -40,7 +40,7 @@ comm -12 <(ls flang/scripts/ | sort) <(ls scripts/guards/ | sort)
 
 | копия | кто её зовёт |
 |---|---|
-| `flang/scripts/jargon-guard.fscript` (169 559, **старее**) | `ярлыки.flang` (`жаргон:проверка`, `жаргон:список`, `жаргон:долг`), `README.md:347`, `docs/README.ru.md:343`, `.ai/AGENTS.md:394`, `.ai/.claude/skills/flang-code/SKILL.md:360`, `docs/jargon.json:2`, комментарий `ci.yml:444` |
+| `flang/scripts/jargon-guard.fscript` (169 559, **старее**) | `ярлыки.flang` (`jargon:check`, `jargon:list`, `jargon:debt`), `README.md:347`, `docs/README.ru.md:343`, `.ai/AGENTS.md:394`, `.ai/.claude/skills/flang-code/SKILL.md:360`, `docs/jargon.json:2`, комментарий `ci.yml:444` |
 | `scripts/guards/jargon-guard.fscript` (176 023, **новее**) | `flang/test/jargon-guard.test.flang:234`, `scripts/ledgers/proved-share-ledger.txt:1530` |
 
 Чем новее отличается: в ней есть функции «Вставить по убыванию», «По убыванию долга» и
@@ -48,7 +48,7 @@ comm -12 <(ls flang/scripts/ | sort) <(ls scripts/guards/ | sort)
 копия работает:
 
 ```sh
-$ ./ярлык жаргон:проверка
+$ bootstrap/flang run-script jargon:check
 Сторож жаргона: поверхностей 151, внутренних слов 1030 (долг по 37 файлам, расти не имеет права), новых 0.
 ```
 
@@ -91,9 +91,9 @@ $ ./ярлык жаргон:проверка
 ## Как проверить, что сделано
 
 * `git ls-files | grep -c 'jargon-guard.fscript'` → **1**;
-* `./ярлык жаргон:проверка` — код 0, и в выводе есть строка «долг больше всего в: …»
+* `bootstrap/flang run-script jargon:check` — код 0, и в выводе есть строка «долг больше всего в: …»
   (признак, что работает новая копия);
-* `./ярлык жаргон:список` и `./ярлык жаргон:долг` — оба отвечают;
+* `bootstrap/flang run-script jargon:list` и `bootstrap/flang run-script jargon:debt` — оба отвечают;
 * `bootstrap/flang test flang/test/jargon-guard.test.flang` — все примеры проходят;
 * `sh scripts/guards/link-guard.fscript` не находит битых путей;
 * `sh scripts/guards/proved-share-vs-tree.sh` — ведомость доли сходится с деревом;
@@ -105,9 +105,9 @@ $ ./ярлык жаргон:проверка
 
 ```
 git ls-files | grep -c 'jargon-guard.fscript'        → 1   (было 2)
-./ярлык жаргон:проверка                        → код 0, и в выводе стоит
+bootstrap/flang run-script jargon:check                        → код 0, и в выводе стоит
   «долг больше всего в: docs/flang/proof/SPEC.md (478), …» — признак новой копии
-./ярлык жаргон:список                          → код 0
-./ярлык жаргон:долг                            → код 0
+bootstrap/flang run-script jargon:list                          → код 0
+bootstrap/flang run-script jargon:debt                            → код 0
 bootstrap/flang test flang/test/jargon-guard.test.flang → примеров 11, прошло 11
 ```

@@ -129,7 +129,7 @@ scripts/guards/*                 flang/scripts/*guard*        flang/scripts/*for
 
 Половина работы в дереве была, и её надо было не начинать заново, а дополнить.
 
-`scripts/guards/who-calls-the-guards.sh` (ярлык `зов:проверка`, стоит в
+`scripts/guards/who-calls-the-guards.sh` (ярлык `guard-calls:check`, стоит в
 `ci.yml` и в `.githooks/pre-push`) ведёт ведомость
 `scripts/ledgers/uncalled-guards.json`. Его прогон 27 сентября: ярлыков в дереве
 147, из них сторожей 73, CI зовёт 45, **не зовёт 28**, все 28 названы в
@@ -160,8 +160,8 @@ scripts/guards/*                 flang/scripts/*guard*        flang/scripts/*for
 
 ## Новый сторож
 
-`scripts/guards/checks-nobody-calls.fscript`, ярлык `незваные:проверка`.
-838 строк на fscript, 66 функций, у всех 66 доказано завершение, утверждений 14 <!-- СНЯТО 2026-09-27 строк scripts/guards/checks-nobody-calls.fscript = 838 -->
+`scripts/guards/checks-nobody-calls.fscript`, ярлык `uncalled-checks:check`.
+835 строк на fscript, 66 функций, у всех 66 доказано завершение, утверждений 14 <!-- СНЯТО 2026-09-17 строк scripts/guards/checks-nobody-calls.fscript = 835 -->
 и все 14 доказаны ядром (`flang check --proof` → «ПРОВЕРЕНО САМОСТОЯТЕЛЬНО …
 доказано 14, сетка 0»). Ввозов нет ни одного: пять помощников (`Кончается на`,
 `Заменить всюду`, `Сложить списки`, `Номера`, `Поле`) написаны на месте, потому
@@ -206,7 +206,7 @@ scripts/guards/*                 flang/scripts/*guard*        flang/scripts/*for
   Заведена новой работой в конце файла, чтобы не толкаться в `binary.yml`, где
   сейчас работают трое. В `ярлыки.flang` число ярлыков в двух утверждениях
   поднято со 147 до 148.
-- `ярлыки.flang`: ярлык `незваные:проверка` — рукой и из любого скрипта.
+- `ярлыки.flang`: ярлык `uncalled-checks:check` — рукой и из любого скрипта.
 
 В хук перед пушем сторож НЕ вписан. Сначала строка была добавлена в
 `.githooks/pre-push` и снята: лишняя строка оболочки сдвигала примету числа строк

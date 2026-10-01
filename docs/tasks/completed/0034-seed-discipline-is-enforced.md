@@ -111,29 +111,29 @@ examples/measure/natural.flang: не проверено — замечаний 9
 
 | файл | сколько | строки | чем гоняется |
 |---|---|---|---|
-| `ярлыки.flang` | 8 | 226 502 506 510 514 514 514 514 | ярлык «ярлыки», и каждый запуск `./ярлык` |
-| `docs/site/storozh-kontrasta.flang` | 7 | 125 239 303 447 462 770 781 | ярлык «контраст:проверка» |
-| `flang/proof/map/abilities.flang` | 4 | 159 171 186 220 | ярлык «умения:улики» |
-| `fspec/spec/03-urgency-markup.flang` | 1 | 30 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/04-discount-tiers.flang` | 1 | 27 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/08-delivery-lead-time.flang` | 1 | 16 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/12-subscription-grace.flang` | 1 | 16 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/13-subscription-refund.flang` | 2 | 28 28 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/14-tax-rates.flang` | 1 | 19 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/16-tax-registration.flang` | 1 | 43 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/17-stock-reserve.flang` | 3 | 36 36 37 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/19-stock-receipt.flang` | 1 | 30 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/23-money-minor-units.flang` | 2 | 32 32 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/24-money-payment.flang` | 3 | 21 25 40 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/29-return-window.flang` | 1 | 19 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/31-loyalty-tiers.flang` | 1 | 33 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/32-loyalty-accrual.flang` | 1 | 20 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/33-loyalty-redemption.flang` | 3 | 27 51 51 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/34-warranty-term.flang` | 1 | 17 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/37-booking-slots.flang` | 1 | 28 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/39-booking-cancellation.flang` | 2 | 24 24 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `fspec/spec/42-data-retention.flang` | 1 | 21 | ярлык «спеки:проверка» — `fspec/guard.flang` перечисляет каталог |
-| `scripts/license-guard.flang` | 1 | 99 | ярлык «лицензии:проверка», ci.yml |
+| `ярлыки.flang` | 8 | 226 502 506 510 514 514 514 514 | ярлык «scripts:check», и каждый запуск `bootstrap/flang run-script` |
+| `docs/site/storozh-kontrasta.flang` | 7 | 125 239 303 447 462 770 781 | ярлык «contrast:check» |
+| `flang/proof/map/abilities.flang` | 4 | 159 171 186 220 | ярлык «kernel-abilities:evidence» |
+| `fspec/spec/03-urgency-markup.flang` | 1 | 30 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/04-discount-tiers.flang` | 1 | 27 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/08-delivery-lead-time.flang` | 1 | 16 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/12-subscription-grace.flang` | 1 | 16 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/13-subscription-refund.flang` | 2 | 28 28 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/14-tax-rates.flang` | 1 | 19 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/16-tax-registration.flang` | 1 | 43 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/17-stock-reserve.flang` | 3 | 36 36 37 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/19-stock-receipt.flang` | 1 | 30 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/23-money-minor-units.flang` | 2 | 32 32 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/24-money-payment.flang` | 3 | 21 25 40 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/29-return-window.flang` | 1 | 19 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/31-loyalty-tiers.flang` | 1 | 33 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/32-loyalty-accrual.flang` | 1 | 20 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/33-loyalty-redemption.flang` | 3 | 27 51 51 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/34-warranty-term.flang` | 1 | 17 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/37-booking-slots.flang` | 1 | 28 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/39-booking-cancellation.flang` | 2 | 24 24 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `fspec/spec/42-data-retention.flang` | 1 | 21 | ярлык «specs:check» — `fspec/guard.flang` перечисляет каталог |
+| `scripts/license-guard.flang` | 1 | 99 | ярлык «licenses:check», ci.yml |
 
 ### Мины, которые сегодня НЕ гоняет ничто — как было с `uart.flang`
 
@@ -288,7 +288,7 @@ sh scripts/seed-knows-type-words-guard.sh            # назовёт файл, 
 
 ### Половина вторая: сторож
 
-`scripts/seed-knows-type-words-guard.sh`, ярлык `семя:слова`, работа `semya` в
+`scripts/seed-knows-type-words-guard.sh`, ярлык `seed:type-words`, работа `semya` в
 `.github/workflows/ci.yml` — ПЕРВАЯ в ленте и единственная, которой не нужно
 ничего: ни Node, ни `make`, ни двоичного.
 
@@ -355,7 +355,7 @@ busybox awk    файлов 1004, слов 37644, чужих 0, код 0    по
 
 ### Ярлыки, которых мина стоила
 
-`ярлыки.flang` краснел восемью `FLANG_UNKNOWN_NAME`, то есть `./ярлык` не читался
+`ярлыки.flang` краснел восемью `FLANG_UNKNOWN_NAME`, то есть `bootstrap/flang run-script` не читался
 ни одним двоичным вовсе. После починки:
 
 ```

@@ -90,7 +90,7 @@
 
 ```sh
 grep -rn 'flang 0\.5\.' docs/course/          # пусто
-./ярлык жаргон:проверка                       # docs/course/*.md в списке, бед по курсу нет
+bootstrap/flang run-script jargon:check                       # docs/course/*.md в списке, бед по курсу нет
 cd docs/course && flang io check.flang        # вынуто блоков 15, не прошло 0
 ```
 

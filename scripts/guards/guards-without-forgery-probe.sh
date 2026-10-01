@@ -13,7 +13,7 @@
 # 5 сентября 2026 эта порода поймана четыре раза, и ни разу прибором — всякий
 # раз случайно:
 #
-#   · `слова:проверка` ПРОВЕРЯЛ ПУСТОТУ. Подделку, на которой он стоит,
+#   · `target-words:check` ПРОВЕРЯЛ ПУСТОТУ. Подделку, на которой он стоит,
 #     заменили тривиальным модулем без единого занятого слова — сторож остался
 #     зелёным и написал «занятые слова экранированы (8 из 8)». Раздел 1 не
 #     делал ничего, и сказать об этом было некому (задача 3223).
@@ -37,11 +37,11 @@
 # эти два состояния нельзя: построенная, но никем не званная проба не
 # срабатывает никогда, ровно как сторож без зовущего.
 #
-#   ПРОБА ПОСТРОЕНА — в дереве есть парный ярлык `X:подлог` или `X:порча`
-#     рядом со сторожем `X:проверка`:
-#         "коды:проверка"  … flang/scripts/code-guard.fscript --plan 'Коды целы'
-#         "коды:подлог"    … flang/scripts/code-guard.fscript --plan 'Подлог кода'
-#     Такой ярлык портит вход изнутри сторожа: он не зависит от номеров строк
+#   ПРОБА ПОСТРОЕНА — в дереве есть парная команда `X:forgery` или `X:corrupt`
+#     рядом со сторожем `X:check`:
+#         "codes:check"  … flang/scripts/code-guard.fscript --plan 'Коды целы'
+#         "codes:forgery"    … flang/scripts/code-guard.fscript --plan 'Подлог кода'
+#     Такая команда портит вход изнутри сторожа: он не зависит от номеров строк
 #     и портит ровно то, что сторож смотрит. Лучший вид пробы.
 #
 #   ПРОБА ПОЗВАНА — в теле `run:` какого-нибудь workflow стоит вызов сторожа
@@ -49,7 +49,7 @@
 #         if sh scripts/guards/seed-knows-type-words-guard.sh --подлог; then exit 1; fi
 #     либо, для внешней порчи, — с правкой файла и откатом:
 #         sed -i '5s/|[0-9]*$/|9999/' "$podlog"
-#         if ./ярлык доказанное:проверка; then git checkout -- "$podlog"; exit 1; fi
+#         if bootstrap/flang run-script proven:check; then git checkout -- "$podlog"; exit 1; fi
 #     Признак один и тот же и от вида порчи не зависит: шаг падает ровно
 #     тогда, когда сторож промолчал.
 #
@@ -99,58 +99,10 @@ except ImportError:
     print("нет модуля yaml — поставить: pip install pyyaml", file=sys.stderr)
     sys.exit(3)
 
-# ── Имена ярлыков: только записи в позиции элемента списка ───────────────────
-# Правило то же, что в scripts/guards/who-calls-the-guards.sh, и по той же причине:
-# в самом ярлыки.flang слова «запись «Ярлык» с «имя» равным» встречаются ещё и
-# внутри блоков «пример», и подстрочный счёт даёт лишние имена.
-#
-# Команда пишется ДВУМЯ формами: литералом "…" и списком кусков
-# (соединить ["…", "…"] по ""). Вторая появилась 13 сентября 2026, когда ярлыки
-# разложили по строкам, и построчный разбор на ней давал НОЛЬ ярлыков — а
-# значит, все записи ведомости числились протухшими. Читаем обе формы.
-TEKST_YARLYKOV = io.open("ярлыки.flang", encoding="utf-8").read()
-NACHALO_YARLYKA = re.compile(
-    r'^[ \t]*\[?[ \t]*запись «Ярлык» с «имя» равным "([^"]+)" и «команда» равным ',
-    re.M)
-KUSOK_STROKI = re.compile(r'"((?:[^"\\]|\\.)*)"')
+SCRIPT_LINE = re.compile(r'^[ \t]*script\.([^\s=]+)[ \t]*=[ \t]*(\S.*?)[ \t\r]*$', re.M)
+yarlyki = dict(SCRIPT_LINE.findall(io.open(".flangrc", encoding="utf-8").read()))
 
-def komanda_yarlyka(hvost):
-    """Текст команды: литерал целиком либо склейка кусков списка."""
-    if hvost.startswith('"'):
-        sovpalo = KUSOK_STROKI.match(hvost)
-        return sovpalo.group(1) if sovpalo else ""
-    if hvost.lstrip().startswith("(соединить"):
-        nachalo = hvost.find("[")
-        if nachalo < 0:
-            return ""
-        glubina, mesto, v_stroke, ekran = 0, None, False, False
-        for i, znak in enumerate(hvost[nachalo:], nachalo):
-            if ekran:
-                ekran = False
-            elif znak == "\\" and v_stroke:
-                ekran = True
-            elif znak == '"':
-                v_stroke = not v_stroke
-            elif not v_stroke and znak == "[":
-                glubina += 1
-            elif not v_stroke and znak == "]":
-                glubina -= 1
-                if glubina == 0:
-                    mesto = i
-                    break
-        if mesto is None:
-            return ""
-        kuski = KUSOK_STROKI.findall(hvost[nachalo:mesto])
-        razdelitel = KUSOK_STROKI.search(hvost[mesto:mesto + 80])
-        return (razdelitel.group(1) if razdelitel else "").join(kuski)
-    return ""
-
-yarlyki = {}
-for sovpalo in NACHALO_YARLYKA.finditer(TEKST_YARLYKOV):
-    yarlyki[sovpalo.group(1)] = komanda_yarlyka(TEKST_YARLYKOV[sovpalo.end():])
-
-storozha = sorted(i for i in yarlyki
-                  if i.endswith(":проверка") or i.endswith(":сверка"))
+storozha = sorted(i for i in yarlyki if i.endswith(":check"))
 
 # ── Тела `run:` целиком, а не построчно ─────────────────────────────────────
 # Проба — конструкция из нескольких строк: порча, условие, откат. Резать её на
@@ -183,7 +135,7 @@ for fajl in sorted(glob.glob(".github/workflows/*.yml")):
         tela.append((os.path.basename(fajl), telo))
 
 # ── Признак пробы: вызов в условии `if`, и в том же теле `exit 1` ───────────
-ZOV_PO_IMENI = re.compile(r"\./ярлык\s+([^\s;&|`\"')]+)")
+ZOV_PO_IMENI = re.compile(r"bootstrap/flang run-script\s+([^\s;&|`\"')]+)")
 PUT = re.compile(r"[\w./-]+\.(?:flang|fscript|mjs|sh|js)")
 # Список запускающих снят с дерева тем же способом, что в переписи зова: путь,
 # УПОМЯНУТЫЙ в строке, ещё не вызов — он бывает доводом echo, телом heredoc,
@@ -209,7 +161,7 @@ def zovy_v_stroke(stroka, puti_storozhey):
     return nashli
 
 # Разложение «путь файла → какие сторожа за ним стоят». Один файл бывает за
-# двумя ярлыками (у сторожа с ключом и без), поэтому значение — множество.
+# двумя командами (у сторожа с ключом и без), поэтому значение — множество.
 po_imeni = set(storozha)
 po_fajlu = {}
 for imya in storozha:
@@ -232,14 +184,14 @@ for fajl, telo in tela:
         for imya in zovy_v_stroke(golaya, puti):
             with_probe.setdefault(imya, (fajl, golaya[:70]))
 
-# ── Проба, ПОСТРОЕННАЯ ярлыком: `X:подлог` или `X:порча` рядом с `X:проверка` ─
-# Приставка берётся отбрасыванием последней доли имени: у «коды:проверка» это
-# «коды», у «семя:слова:проверка» было бы «семя:слова». Так парность видна и у
+# ── Проба, ПОСТРОЕННАЯ короткой командой: `X:forgery` или `X:corrupt` рядом с `X:check` ─
+# Приставка берётся отбрасыванием последней доли имени: у «codes:check» это
+# «codes», у «word:occupancy:check» — «word:occupancy». Так парность видна и у
 # составных имён.
 postroena = {}
 for imya in storozha:
     pristavka = imya.rsplit(":", 1)[0]
-    for hvost in ("подлог", "порча"):
+    for hvost in ("forgery", "corrupt"):
         parnyj = f"{pristavka}:{hvost}"
         if parnyj in yarlyki:
             postroena[imya] = parnyj
@@ -277,12 +229,12 @@ if rezhim != "--check":
         print("\nПРОБА ПОСТРОЕНА, НО НИКТО ЕЁ НЕ ЗОВЁТ"
               " — она не срабатывает никогда:\n")
         for imya in tolko_postroena:
-            print(f"  {imya:30} ярлык {postroena[imya]}")
+            print(f"  {imya:30} команда {postroena[imya]}")
     print("\nДОЛГ — проба не показана, поимённо:\n")
     for imya in without_probe:
         prichina = prichiny.get(imya, "причина в ведомости не названа")
         if imya in postroena:
-            prichina = f"проба ПОСТРОЕНА ярлыком {postroena[imya]}, но её не зовут"
+            prichina = f"проба ПОСТРОЕНА командой {postroena[imya]}, но её не зовут"
         print(f"  {imya:30} {prichina[:80]}")
     print("\nСверка с ведомостью — тем же прибором:"
           "\n  sh scripts/guards/guards-without-forgery-probe.sh --check")
@@ -314,7 +266,7 @@ for imya in sorted(zakrytye):
         fajl, _ = with_probe[imya]
         poyasnenie = f"проба стоит в {fajl}"
     else:
-        poyasnenie = "ярлык уже не заведён"
+        poyasnenie = "команда уже не заведена"
     print(f"ЗАПИСЬ СТАЛА НЕПРАВДОЙ: «{imya}» числится беспробным,"
           f" а {poyasnenie}.", file=sys.stderr)
     print(f"  Долг закрыт — убрать запись из {vedomost} обязан тот, кто закрыл.",

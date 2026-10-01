@@ -16,9 +16,9 @@
 
 Снято 30 августа 2026 на стволе `f9e67fa6`.
 
-Ярлык 38 `столкновения:пересчёт` (`ярлыки.flang:116`) —
+Ярлык 38 `name-collisions:recount` (`ярлыки.flang:116`) —
 `bootstrap/flang io scripts/guards/name-collision-guard.fscript`. Он делает ту же работу,
-что и `столкновения:проверка` на JavaScript, но на flang: всё дерево, 160 входов
+что и `link-collisions:check` на JavaScript, но на flang: всё дерево, 160 входов
 и 784 файла.
 
 **Что записано в самом стороже:**
@@ -49,18 +49,18 @@ scripts/guards/name-collision-guard.fscript:135   памяти он съедае
 
 ## Что сделать
 
-1. Пустить `столкновения:пересчёт` до конца через ворота с `PAMYAT`, взятым от
+1. Пустить `name-collisions:recount` до конца через ворота с `PAMYAT`, взятым от
    замера, а не на глаз, и снять **время, пик и код**.
 2. Записать снятый пик в `scripts/guards/name-collision-guard.fscript` вместо 37,8 ГБ и
    убрать оттуда упоминание предела ворот в 40 ГБ — его больше нет.
-3. Сверить вердикт с `столкновения:проверка` (ярлык 34, на JavaScript): два
+3. Сверить вердикт с `link-collisions:check` (ярлык 34, на JavaScript): два
    сторожа обязаны назвать одни и те же столкновения. Расхождение — это задача
    7192, и туда его и отдать.
 
 ## Как понять, что сделано
 
 ```sh
-env PAMYAT=<замеренный+запас> /srv/flang-rabota/vorota/flang-vorota -- ./ярлык столкновения:пересчёт
+env PAMYAT=<замеренный+запас> /srv/flang-rabota/vorota/flang-vorota -- bootstrap/flang run-script name-collisions:recount
 ```
 
 доходит до конца с названным кодом, и в `docs/ci-inventory.md` вместо «обрыв»
@@ -72,4 +72,4 @@ env PAMYAT=<замеренный+запас> /srv/flang-rabota/vorota/flang-voro
 Задача 7192 (близнец сторожа столкновений видит столько же, сколько старый):
 сравнить два вердикта нельзя, пока второй не доезжает. И задача 0049 (последний
 JavaScript уходит из дерева): пока пересчёт на flang не бежит, снять
-`столкновения:проверка` с JavaScript нечем.
+`link-collisions:check` с JavaScript нечем.

@@ -355,7 +355,7 @@ bootstrap/flang io flang/scripts/kernel-lines-to-trust.fscript \
 прибор считает ещё девять куч, и все десять под одним храповиком (задача 9790):
 
 ```sh
-./ярлык сколько-верим
+bootstrap/flang run-script trust:ceiling
 ```
 
 | куча | строк | что это ядру |

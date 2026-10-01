@@ -69,12 +69,12 @@ flang emit docs/examples/leetcode/035-search-insert-position.flang \
 sh flang/test/обход.sh          # проверки обходчика двоичным
 sh flang/test/обход-примеров.sh # все примеры дерева
 sh scripts/bootstrap-reprint.sh --check  # семя против того, что печатают исходники
-./ярлык                                  # список всех проверок дерева с пояснением к каждой
-./ярлык тесты                            # весь набор разом
+bootstrap/flang run-script                                  # список всех проверок дерева с пояснением к каждой
+bootstrap/flang run-script tests                            # весь набор разом
 ```
 
-Отдельная проверка зовётся по имени из этого списка: `./ярлык спеки:проверка`, `./ярлык ссылки:проверка`,
-`./ярлык сайт:проверка`. У каждой свой код возврата: 0 — чисто, ненулевой — назван виновник.
+Отдельная проверка зовётся по имени из этого списка: `bootstrap/flang run-script specs:check`, `bootstrap/flang run-script links:check`,
+`bootstrap/flang run-script site:check`. У каждой свой код возврата: 0 — чисто, ненулевой — назван виновник.
 
 
 Каждая команда пишет JSON в stdout, диагностику в stderr и возвращает ненулевой код при отказе —

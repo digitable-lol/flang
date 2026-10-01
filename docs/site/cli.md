@@ -1,6 +1,6 @@
 # Command reference
 
-The `flang` binary has thirteen commands. Here is each one: what it is for, how to
+The `flang` binary has fourteen commands. Here is each one: what it is for, how to
 call it, what its keys are, what it prints and what code it exits with.
 
 The source of this page is the program itself: `flang --help` and
@@ -33,6 +33,7 @@ check. Task 7731 is about closing that.
 | `lock` | Prints the lock: the dependencies themselves, not links to them | `flang lock привет.flang > flang.lock` |
 | `package` | Prints the package: a lock with a name, a version and a list of what is proved | `flang package привет.flang > привет.flang-package` |
 | `new` | A new package from scratch: module, `fspec/`, manifest | `flang new проба` |
+| `run-script` | Runs a short command of the project, written in `.flangrc` | `flang run-script site:build` |
 | `repl` | The interactive shell | `flang repl привет.flang` |
 | `lsp` | The language server for your editor | `flang lsp --stdio` |
 
@@ -517,14 +518,14 @@ shell quotes.** Guillemets are how the language writes names in source, but the
 `--plan` key takes the name exactly as given, guillemets included:
 
 ```bash
-$ flang io ярлыки.flang --plan «Целость» --trust
-на веру: доказанность не считалась — запуск по ключу --trust
+$ flang io scripts/shortcut-collector.fscript --plan «Целость»
+доказано: утверждений 9
 {"error":"не найден план ««Целость»»", … "code":"FLANG_UNKNOWN_PLAN" …}
 $ echo $?
 3
-$ flang io ярлыки.flang --plan Целость --trust
-на веру: доказанность не считалась — запуск по ключу --trust
-{"plan":"Целость","result":"ярлыков 146; …
+$ flang io scripts/shortcut-collector.fscript --plan Целость
+доказано: утверждений 9
+{"plan":"Целость","result":"коротких команд 150; …
 $ echo $?
 0
 ```
@@ -565,8 +566,8 @@ $ echo $?
 There **is** a wait time, and it is `--timeout N`, in milliseconds, 30000 by
 default. This page said the opposite until 29 August 2026 and showed a refusal
 that the binary does not print; the key is accepted, checks its value
-(`--timeout 0` and `--timeout abc` are refused with exit 2), and twenty-three of this
-tree's own shortcuts pass it (`ярлыки.flang`). Beyond it the run is bounded by
+(`--timeout 0` and `--timeout abc` are refused with exit 2), and twenty-five of this
+tree's own short commands pass it (`.flangrc`). Beyond it the run is bounded by
 the number of orders and the number of steps.
 
 The exit codes are a contract: `0` — the plan ran to the end; `1` — the program
@@ -693,6 +694,59 @@ $ flang package привет.flang | cut -c1-96
 
 A package is built only from what was checked. How to use one is on the
 [How to write packages](packages.html) page.
+
+## run-script
+
+```
+flang run-script [<name> [arguments…]]
+```
+
+A short command is a name with a shell line behind it. It is written in the
+settings file `.flangrc` as `script.<name> = <command>`, the way `scripts` are
+written in `package.json`:
+
+```
+script.site:build = node docs/site/build.mjs
+```
+
+`flang run-script` without a name prints every short command of the project;
+with a name it runs that one. Everything after the name goes to the command.
+Run on 27 September 2026 in a directory holding the two lines shown:
+
+```bash
+$ cat .flangrc
+script.hello = echo hello
+script.fail = exit 7
+
+$ flang run-script hello
+hello
+$ echo $?
+0
+
+$ flang run-script fail
+$ echo $?
+7
+
+$ flang run-script missing
+flang run-script: короткой команды «missing» в «…/.flangrc» нет. Вот какие есть:
+$ echo $?
+2
+```
+
+The file is the nearest `.flangrc` from the working directory upwards, found by
+the rule the other settings use; the file in the home directory gives no short
+commands. The line is handed to `/bin/sh -c` in the directory of that file, and
+the exit code is the command's own. A name written twice takes the last line. In
+a line of several commands joined by `&&` the arguments go to the last one.
+
+| Exit code | When |
+| --- | --- |
+| the command's own | the command ran |
+| `2` | no such name in the file, or no `.flangrc` up to the project root |
+| `3` | the file could not be read, or `/bin/sh` did not start |
+
+The keys of the binary itself, `--depth-limit` and `--step-limit`, are taken by
+the binary before the name is read and do not reach the command.
 
 ## repl
 

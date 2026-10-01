@@ -63,7 +63,7 @@ An honest answer. On this function the kernel closed the goal «by declaration»
 that yet: it neither confirms nor refutes, it names the place where it takes the
 kernel's word. Since 18 September 2026 no such place is left in the compiler's
 own record set: the checker replays all 650 obligations, and 529 deliberate
-forgery probes are rejected (`./ярлык чекер:проверка`). A program with a
+forgery probes are rejected (`bootstrap/flang run-script checker:check`). A program with a
 **user-declared type** is another matter — there the checker still takes the
 kernel's word, and that is written down as task 2748.
 
@@ -111,7 +111,7 @@ Not expressible — there is no place to write it:
   them — `flang test` does.
 - **Space, medicine, aviation.** Standards ask for traceability, tool
   qualification, proved response bounds, behaviour on hardware failure. Of these
-  only traceability exists, and with gaps: `./ярлык прослеживаемость:проверка`
+  only traceability exists, and with gaps: `bootstrap/flang run-script traceability:check`
   on 11 September — 409 postconditions, 322 with an example, 361 in a record,
   244 proved, gaps 62 and 68 (task 1407). The rest does not exist, and a
   percentage does not replace it

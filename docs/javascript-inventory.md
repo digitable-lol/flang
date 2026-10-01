@@ -32,7 +32,7 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 (39 с против 0,2 с), проба подлога `--fast` красит; прямой запуск: те же три копии
 в `docs/examples/frameworks/*/printed/flang_cli.js` плюс одна, которую JavaScript
 прощал списком (`flang_host_node.js:497`), — звал его никто. Ярлыки
-`правила:проверка` и `ключи:проверка` и работа `cli-keys` в `ci.yml` зовут теперь
+`binary-rules:check` и `cli-keys:check` и работа `cli-keys` в `ci.yml` зовут теперь
 `flang io`, и работе больше не нужен `setup-node`. Файлов JavaScript стало 66,
 строк 31 525. Разбор по каждому из четырнадцати файлов `flang/scripts/*.mjs` —
 `/srv/tmp/dokazuemyy/ПЕРЕДАЧА/karta-mjs.md` (вне дерева).
@@ -67,8 +67,8 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 
 Эта опись считает ОДИН язык. Остальные шестнадцать — оболочка, C, C++, Python,
 HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
-считает [`tree-inventory.md`](tree-inventory.md) (26 сентября 2026: 225 файлов вне flang,
-<!-- СНЯТО 2026-09-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 225 (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 256, снято 2026-09-21) -->
+считает [`tree-inventory.md`](tree-inventory.md) (26 сентября 2026: 224 файлов вне flang,
+<!-- СНЯТО 2026-09-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 224 (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 256, снято 2026-09-21) -->
 долг вне JavaScript — **97 файлов, 18 427 строк при потолке 63**: храповик
 красен, разбор — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
@@ -441,7 +441,7 @@ bootstrap/flang io docs/benchmarks/speed/memory.flang
 
 Взяты два счётчика содержательности, делающие одну работу над ОДНИМИ И ТЕМИ ЖЕ
 двадцатью файлами `docs/benchmark2` (1 113 строк) и одним и тем же двоичным:
-`count-20.flang` (на flang, живёт в дереве, зовётся `./ярлык доказательства:20`)
+`count-20.flang` (на flang, живёт в дереве, зовётся `bootstrap/flang run-script proofs:count-20`)
 и `count-library.mjs` (на JavaScript), у которого каталог переставлен на те же
 двадцать файлов. Оба прогона — через ворота, `PAMYAT=45G`.
 

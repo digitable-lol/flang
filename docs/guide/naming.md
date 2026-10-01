@@ -9,7 +9,7 @@ finds out when it stopped being true.
 
 So this page is split in two, and the split is not cosmetic:
 
-- a **rule** is settled by a run and goes red — `./ярлык имена:проверка`;
+- a **rule** is settled by a run and goes red — `bootstrap/flang run-script names:check`;
 - **advice** cannot be settled by a run, and therefore stays advice.
 
 Turning something into a rule that is not one is forbidden here separately. A guard that goes red on
@@ -251,7 +251,7 @@ the change.
 ## Running it
 
 ```bash
-./ярлык имена:проверка                         # the guard
+bootstrap/flang run-script names:check                         # the guard
 node flang/scripts/name-guard.mjs --list       # the debt per file, by name
 node flang/scripts/name-guard.mjs --debt       # rewrite the debt after cleaning
 bootstrap/flang test scripts/guards/module-name-guard.fscript   # the 34 examples of the R7 check (11 September 2026: 34 of 34)

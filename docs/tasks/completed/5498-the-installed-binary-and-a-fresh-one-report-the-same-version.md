@@ -72,7 +72,7 @@ flang 0.7.14
 - `sh scripts/repl-proba.sh` красна, если правку в `flang_repl.c` сделали, а
   строку отпечатка не обновили, и называет верное значение.
 - Проба красна, если двоичный не пересобран после правки исходника.
-- `sh scripts/version-derivations-guard.sh`, `./ярлык версия:проверка`,
+- `sh scripts/version-derivations-guard.sh`, `bootstrap/flang run-script version:check`,
   `sh scripts/published-vs-tree.sh` — прежние коды.
 
 ## Чем закрыта

@@ -93,7 +93,7 @@ matched 3 of 3», 4,263 с. План пробы доказан («доказан
 - `bootstrap/flang_repl.c` и `scripts/seed-fingerprint` — быстрым пересевом
   `sh scripts/seed/seed-refresh.sh`; самосборная часть (`flang/self/**`) не
   тронута, перепечатка не нужна.
-- `docs/tree-inventory.md`: строки C по числам `./ярлык опись:сверка` и
+- `docs/tree-inventory.md`: строки C по числам `bootstrap/flang run-script inventory:check` и
   сторожа чисел (по 18 строк в каждом из двух `flang_repl.c`).
 - `scripts/ledgers/proved-share-ledger.txt`: строка пробы `run.fscript`
   (утверждений 2, доказано 2 по `bootstrap/flang check … --proof`); у

@@ -31,11 +31,11 @@ flang/test/uzel-celi.test.mjs
 
 | ярлык | где ссылка |
 |---|---|
-| `утверждения:проверка` | `flang/scripts/claim-guard.mjs:74` — `claim-guard.test.mjs` |
-| `подсчёты:проверка` | `flang/scripts/count-guard.mjs:15` — теперь называет `manpage.test.mjs`, которого тоже нет |
-| `имена:проверка` | `flang/scripts/name-guard.mjs:151` — `name-guard.test.mjs` |
-| `правила:проверка` | `flang/scripts/binary-rules-guard.mjs:116` и `:133` (сразу на два); строка 73 честно говорит «обоих файлов в дереве НЕТ» |
-| `времянки:проверка` | `flang/scripts/tempdir-guard.fscript:367–368` — `uzel-celi.test.mjs` |
+| `claims:check` | `flang/scripts/claim-guard.mjs:74` — `claim-guard.test.mjs` |
+| `counts:check` | `flang/scripts/count-guard.mjs:15` — теперь называет `manpage.test.mjs`, которого тоже нет |
+| `names:check` | `flang/scripts/name-guard.mjs:151` — `name-guard.test.mjs` |
+| `binary-rules:check` | `flang/scripts/binary-rules-guard.mjs:116` и `:133` (сразу на два); строка 73 честно говорит «обоих файлов в дереве НЕТ» |
+| `tempdir:check` | `flang/scripts/tempdir-guard.fscript:367–368` — `uzel-celi.test.mjs` |
 
 **Последний не поминает, а ЗАПУСКАЕТ.** `flang/scripts/tempdir-guard.fscript:367`:
 
@@ -44,7 +44,7 @@ flang/test/uzel-celi.test.mjs
 ```
 
 Остальные три файла в этой строке существуют — а `uzel-celi.test.mjs` нет.
-Незаметно это потому, что сам ярлык `времянки:проверка` не заводится вовсе (соседняя задача):
+Незаметно это потому, что сам ярлык `tempdir:check` не заводится вовсе (соседняя задача):
 `FLANG_UNKNOWN_PLAN`, код 3, и до строки 367 дело не доходит.
 
 ## Почему это не «недописанные проверки»
@@ -63,7 +63,7 @@ flang/test/uzel-celi.test.mjs
 2. **снять ссылку** — тогда сторож перестаёт обещать то, чего нет.
 
 Запуск в `tempdir-guard.fscript:367` — случай особый: там выбора нет, файл либо
-появляется, либо убирается из списка, иначе `времянки:проверка` после починки упадёт по
+появляется, либо убирается из списка, иначе `tempdir:check` после починки упадёт по
 второму разу.
 
 ## Как понять, что сделано
@@ -78,11 +78,11 @@ grep -ran 'test\.mjs' flang/scripts/ scripts/ | grep -v bootstrap/
 for f in $(git ls-files '*.test.mjs'); do test -f "$f" || echo "нет: $f"; done
 ```
 
-молчит, и `./ярлык сторожа:проверка` называет их все — сегодня он смотрит
+молчит, и `bootstrap/flang run-script guards:check` называет их все — сегодня он смотрит
 четыре файла из шестидесяти с лишним (соседняя задача).
 
 ## Что от неё зависит
 
-Задача о трёх незаводящихся ярлыках: `времянки:проверка` после починки упрётся
+Задача о трёх незаводящихся ярлыках: `tempdir:check` после починки упрётся
 ровно в этот отсутствующий файл. И всякий довод вида «сторож проверен сам на
 себе»: сегодня у пятерых он опирается на пустоту.

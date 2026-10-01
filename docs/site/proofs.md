@@ -206,7 +206,7 @@ separate run, and counted mechanically — by replacing the body with a stub, no
 by keeping a list of names:
 
 ```
-./ярлык доказательства:20
+bootstrap/flang run-script proofs:count-20
 ```
 
 On the tree of 11 September 2026 (0.7.17, commit `2c40752d0`) it answers:

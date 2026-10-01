@@ -109,16 +109,13 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          # «формула:проверка» ниже сверяет формулу дерева с формулой крана —
-          # сабмодулем packaging/homebrew-tap, а «плагин:проверка» — файлы
+          # «homebrew-formula:check» ниже сверяет формулу дерева с формулой крана —
+          # сабмодулем packaging/homebrew-tap, а «asdf-plugin:check» — файлы
           # packaging/asdf с сабмодулем плагина packaging/asdf-plugin. Не
           # развёрнут любой из двух — свой сторож красен.
           submodules: true
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
-      # `cache: npm` и `npm ci` сняты вместе с `package-lock.json`. Двоичный
-      # они здесь и не давали: `postinstall` клал его в `dvoichnyy/`, а всё
-      # ниже зовёт `bootstrap/flang`, который собирает себе сам `./ярлык`.
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
@@ -136,12 +133,17 @@ jobs:
       # в дереве уже нет, и потому НЕ ПРОХОДИЛ ни одного из четырёх путей —
       # красным был не путь установки, а сам прогон. Статическую его половину
       # держат сторожа на flang; настоящую установку держит работа brew ниже.
+      - name: Build bootstrap binary
+        run: |
+          set -eu
+          sh scripts/bootstrap-reprint.sh --telo
+          make -C bootstrap -j"$(getconf _NPROCESSORS_ONLN)"
       - name: Check Darwin build
-        run: ./ярлык дарвин:проверка
+        run: bootstrap/flang run-script darwin:check
 
       # ── АРХИВ, ЗА КОТОРЫМ ХОДИТ BREW ──────────────────────────────────────
       #
-      # Шаг ниже («формула:проверка») сверяет объявленный в формуле sha256 с
+      # Шаг ниже («homebrew-formula:check») сверяет объявленный в формуле sha256 с
       # архивом и КРАСНЕЕТ, когда архива нет: хеш, который никто не может
       # сверить, — это хеш, который никто и не сверял. Архива в этой работе не
       # собиралось никогда, поэтому шаг был красен с 0.7.9 на обеих платформах
@@ -202,7 +204,7 @@ jobs:
         uses: ./.github/actions/release-archive
 
       - name: Check Homebrew formula
-        run: ./ярлык формула:проверка
+        run: bootstrap/flang run-script homebrew-formula:check
 
       # `asdf plugin add flang` клонирует НЕ packaging/asdf, а отдельный
       # репозиторий digitable-lol/asdf-flang — с 8 сентября 2026 он сабмодуль
@@ -214,13 +216,13 @@ jobs:
       # падал последним шагом (docs/zettel/a-packaging-copy-in-another-
       # repository-drifts-both-ways.md).
       - name: Check asdf plugin
-        run: ./ярлык плагин:проверка
+        run: bootstrap/flang run-script asdf-plugin:check
 
       # Сторожу верят после того, как он покраснел на подложенном. Подлог здесь
       # внутренний: план «Подлог» того же файла подменяет прочитанный bin/install
       # копии и ОБЯЗАН ответить провалом «подлог пойман». Ответил кодом 0 —
       # значит сравнение выпотрошено, и зелёный шаг выше ничего не значит.
-      # Зовётся файлом, а не ярлыком `плагин:подлог`: прибор проб порчи
+      # Зовётся файлом, а не командой `asdf-plugin:forgery`: прибор проб порчи
       # (scripts/guards/guards-without-forgery-probe.sh) относит пробу к сторожу по файлу.
       - name: Probe asdf plugin
         run: |
@@ -239,12 +241,12 @@ jobs:
       # файл обязан либо поехать в поставку, либо быть назван с причиной
       # остаться в дереве.
       - name: Check delivery contents
-        run: ./ярлык поставка:проверка
+        run: bootstrap/flang run-script delivery:check
 
       # И тот же порядок, что у плагина: сторожу верят после того, как он
       # покраснел на подложенном. Подлог внутренний — план «Подлог» того же
       # файла вычёркивает проводник из прочитанного состава архива и ОБЯЗАН
-      # ответить провалом «подлог пойман». Зовётся файлом, а не ярлыком:
+      # ответить провалом «подлог пойман». Зовётся файлом, а не командой:
       # прибор проб порчи (scripts/guards/guards-without-forgery-probe.sh) относит пробу к
       # сторожу по файлу.
       - name: Probe delivery contents
@@ -277,14 +279,14 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./ярлык версия:проверка; then
+          if bootstrap/flang run-script version:check; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Check version
-        run: ./ярлык версия:проверка
+        run: bootstrap/flang run-script version:check
 
   # ── НАСТОЯЩИЙ brew, а не воспроизведение ───────────────────────────────────
   #
@@ -305,9 +307,6 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
-      # `cache: npm` и `npm ci` сняты вместе с `package-lock.json`. Двоичный
-      # они здесь и не давали: `postinstall` клал его в `dvoichnyy/`, а всё
-      # ниже зовёт `bootstrap/flang`, который собирает себе сам `./ярлык`.
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24

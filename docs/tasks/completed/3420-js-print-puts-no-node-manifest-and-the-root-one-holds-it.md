@@ -49,7 +49,7 @@ SyntaxError: Cannot use import statement outside a module
 `node`.
 
 **В `.flangrc` заведены ключи `версия` и `имя`** — не как новый источник, а как
-производные места: число и имя разносит туда `./ярлык версия <N>`, а сверяет
+производные места: число и имя разносит туда `bootstrap/flang run-script version <N>`, а сверяет
 `scripts/guards/version-derivations-guard.sh`. Второго источника версии не
 заведено нарочно: именно от двух источников разъезжались числа в задачах 9983 и
 4970.

@@ -203,7 +203,7 @@ sha256 (`hashlib` Python, тот же C-код FIPS 180-4):
 
 ## Г3: потолок доверия не пробит, но база уже красна не мной
 
-`./ярлык сколько-верим` на ЧИСТОМ `gh/dev` (283e0ca0), до единой моей правки:
+`bootstrap/flang run-script trust:ceiling` на ЧИСТОМ `gh/dev` (283e0ca0), до единой моей правки:
 
     код возврата 1
     FLANG_VERIT_POTOLOK_USTAREL

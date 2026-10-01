@@ -10,7 +10,7 @@ cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o сверщик checker.c
 ```
 
 Или короче: `make -C flang/proof/checker`, а весь набор проб —
-`./ярлык чекер:проверка`.
+`bootstrap/flang run-script checker:check`.
 
 ## Зачем он вообще
 
@@ -22,7 +22,7 @@ cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o сверщик checker.c
 напечатанное семя названы каждый своим счётом (задача 9790):
 
 ```sh
-./ярлык сколько-верим
+bootstrap/flang run-script trust:ceiling
 ```
 
 | куча | строк кода | чем считается строка |

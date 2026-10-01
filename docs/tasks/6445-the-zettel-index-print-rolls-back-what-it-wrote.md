@@ -16,7 +16,7 @@
 
 Снято 30 августа 2026 на стволе `f9e67fa6`.
 
-Ярлык 63 `указатель:печать` (`ярлыки.flang:141`) —
+Ярлык 63 `zettel-index:build` (`ярлыки.flang:141`) —
 `bootstrap/flang io docs/zettel/zettel-index.flang --max-orders 4000 --timeout 900000`.
 Пишет он прямо в дерево: `docs/zettel/zettel-index.flang:346` —
 `«Записать файл» с путь равным («Файл указателя»)`.
@@ -49,7 +49,7 @@
 ## Как понять, что сделано
 
 ```sh
-./ярлык указатель:печать &   # снять на середине: flang-vorota --snyat <место>
+bootstrap/flang run-script zettel-index:build &   # снять на середине: flang-vorota --snyat <место>
 git status --porcelain -- docs/zettel/
 ```
 

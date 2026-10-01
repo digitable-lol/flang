@@ -17,7 +17,7 @@
 
 Снято 30 августа 2026 на стволе `f9e67fa6`.
 
-**Ярлык 40 `поиск:различающий`** (`ярлыки.flang:118`,
+**Ярлык 40 `search:discriminating`** (`ярлыки.flang:118`,
 `node flang/scripts/discriminating-search.mjs`) заводит каталог **в корне
 репозитория**:
 
@@ -66,13 +66,13 @@ const ГНЕЗДО = mkdtempSync(join(КОРЕНЬ, ".flang-razlichitelnyy-"))
 ## Как понять, что сделано
 
 ```sh
-./ярлык поиск:различающий &   # оборвать на середине
+bootstrap/flang run-script search:discriminating &   # оборвать на середине
 git status --porcelain        # пусто
-./ярлык времянки:проверка     # код 0
+bootstrap/flang run-script tempdir:check     # код 0
 ```
 
 и обратная проба: нарочно оставленный каталог `.flang-razlichitelnyy-проба` в
-корне даёт **красный** `времянки:проверка` с этим именем в выводе. Сегодня он
+корне даёт **красный** `tempdir:check` с этим именем в выводе. Сегодня он
 даёт код 3 и `FLANG_UNKNOWN_PLAN`, то есть не отвечает вовсе.
 
 ## Что от неё зависит

@@ -130,8 +130,8 @@
   обеспечивает «незаведённые файлы тоже видны» (элемент 2 в результат) содержит "--exclude-standard"
   обеспечивает «отбор строк-зовов идёт по именам самих проверок» (элемент 2 в результат) содержит "grep -nH -F -f"
   пример «Одна команда оболочки: перечень проверок, затем строки, называющие их по имени»
-    ожидается ["-c", "cd ../.. && T=${FLANG_TMP:-/srv/tmp}/checks-nobody-calls.$$ && mkdir -p \"$T\" && git -c core.quotepath=false ls-files -c -o --exclude-standard -- ':(glob)flang/proof/probes/*/*.sh' ':(glob)flang/proof/probes/*/*.fscript' ':(glob)flang/proof/*/run.sh' ':(glob)flang/proof/*/run.fscript' ':(glob)flang/proof/*/*/run.sh' ':(glob)flang/proof/*/*/run.fscript' ':(glob)scripts/guards/*' ':(glob)flang/scripts/*guard*' ':(glob)flang/scripts/*forger*' | LC_ALL=C sort > \"$T/checks\" && sed 's#.*/##' \"$T/checks\" | LC_ALL=C sort -u > \"$T/names\" && echo '@@CHECKS' && cat \"$T/checks\" && echo '@@CALLS' && git -c core.quotepath=false ls-files -c -o --exclude-standard -- '*.yml' '*.yaml' '*.sh' '*.fscript' '*.flang' '*.mjs' '*.py' '.githooks/*' 'ярлык' '*Makefile' | tr '\\n' '\\0' | xargs -0 grep -nH -F -f \"$T/names\" 2>/dev/null; rm -rf \"$T\""]
-  ["-c", "cd ../.. && T=${FLANG_TMP:-/srv/tmp}/checks-nobody-calls.$$ && mkdir -p \"$T\" && git -c core.quotepath=false ls-files -c -o --exclude-standard -- ':(glob)flang/proof/probes/*/*.sh' ':(glob)flang/proof/probes/*/*.fscript' ':(glob)flang/proof/*/run.sh' ':(glob)flang/proof/*/run.fscript' ':(glob)flang/proof/*/*/run.sh' ':(glob)flang/proof/*/*/run.fscript' ':(glob)scripts/guards/*' ':(glob)flang/scripts/*guard*' ':(glob)flang/scripts/*forger*' | LC_ALL=C sort > \"$T/checks\" && sed 's#.*/##' \"$T/checks\" | LC_ALL=C sort -u > \"$T/names\" && echo '@@CHECKS' && cat \"$T/checks\" && echo '@@CALLS' && git -c core.quotepath=false ls-files -c -o --exclude-standard -- '*.yml' '*.yaml' '*.sh' '*.fscript' '*.flang' '*.mjs' '*.py' '.githooks/*' 'ярлык' '*Makefile' | tr '\\n' '\\0' | xargs -0 grep -nH -F -f \"$T/names\" 2>/dev/null; rm -rf \"$T\""]
+    ожидается ["-c", "cd ../.. && T=${FLANG_TMP:-/srv/tmp}/checks-nobody-calls.$$ && mkdir -p \"$T\" && git -c core.quotepath=false ls-files -c -o --exclude-standard -- ':(glob)flang/proof/probes/*/*.sh' ':(glob)flang/proof/probes/*/*.fscript' ':(glob)flang/proof/*/run.sh' ':(glob)flang/proof/*/run.fscript' ':(glob)flang/proof/*/*/run.sh' ':(glob)flang/proof/*/*/run.fscript' ':(glob)scripts/guards/*' ':(glob)flang/scripts/*guard*' ':(glob)flang/scripts/*forger*' | LC_ALL=C sort > \"$T/checks\" && sed 's#.*/##' \"$T/checks\" | LC_ALL=C sort -u > \"$T/names\" && echo '@@CHECKS' && cat \"$T/checks\" && echo '@@CALLS' && git -c core.quotepath=false ls-files -c -o --exclude-standard -- '*.yml' '*.yaml' '*.sh' '*.fscript' '*.flang' '*.mjs' '*.py' '.githooks/*' '.flangrc' '*Makefile' | tr '\\n' '\\0' | xargs -0 grep -nH -F -f \"$T/names\" 2>/dev/null; rm -rf \"$T\""]
+  ["-c", "cd ../.. && T=${FLANG_TMP:-/srv/tmp}/checks-nobody-calls.$$ && mkdir -p \"$T\" && git -c core.quotepath=false ls-files -c -o --exclude-standard -- ':(glob)flang/proof/probes/*/*.sh' ':(glob)flang/proof/probes/*/*.fscript' ':(glob)flang/proof/*/run.sh' ':(glob)flang/proof/*/run.fscript' ':(glob)flang/proof/*/*/run.sh' ':(glob)flang/proof/*/*/run.fscript' ':(glob)scripts/guards/*' ':(glob)flang/scripts/*guard*' ':(glob)flang/scripts/*forger*' | LC_ALL=C sort > \"$T/checks\" && sed 's#.*/##' \"$T/checks\" | LC_ALL=C sort -u > \"$T/names\" && echo '@@CHECKS' && cat \"$T/checks\" && echo '@@CALLS' && git -c core.quotepath=false ls-files -c -o --exclude-standard -- '*.yml' '*.yaml' '*.sh' '*.fscript' '*.flang' '*.mjs' '*.py' '.githooks/*' '.flangrc' '*Makefile' | tr '\\n' '\\0' | xargs -0 grep -nH -F -f \"$T/names\" 2>/dev/null; rm -rf \"$T\""]
 
 тотальная функция «Строки»
   принимает текст: строка
@@ -232,13 +232,10 @@
   пример «Двоичный запускает, как бы к нему ни шли»
     дано слово равно "../../../../bootstrap/flang"
     ожидается да
-  пример «Ярлык запускает»
-    дано слово равно "./ярлык"
-    ожидается да
   пример «Слово равным не запускает: за ним стоит запись таблицы, а не вызов»
     дано слово равно "равным"
     ожидается нет
-  («Среди пусковых» от слово) или («Кончается на» от слово и "/flang") или (слово равен "flang") или («Кончается на» от слово и "ярлык") или («Кончается на» от слово и "flang.mjs")
+  («Среди пусковых» от слово) или («Кончается на» от слово и "/flang") или (слово равен "flang") или («Кончается на» от слово и "flang.mjs")
 
 тотальная функция «Без начального шага»
   принимает токен: строка
@@ -300,7 +297,7 @@
     дано путь равно "scripts/guards/раз.sh"
     ожидается "scripts/guards"
   пример «Файл в корне — каталога нет»
-    дано путь равно "ярлык"
+    дано путь равно "LICENSE"
     ожидается ""
   пусть имя равно («Имя файла» от путь)
   если (длина путь) не больше ((длина имя) плюс 1) то "" иначе (подстрока путь с 1 по (((длина путь) минус (длина имя)) минус 1))
@@ -312,8 +309,8 @@
     дано путь равно "flang/proof/probes/раз/run.sh"
     ожидается "run.sh"
   пример «Файл в корне сам себе имя»
-    дано путь равно "ярлык"
-    ожидается "ярлык"
+    дано путь равно "LICENSE"
+    ожидается "LICENSE"
   пусть части равно (разделить путь по "/")
   «Поле» от части и (длина части)
 
@@ -554,8 +551,8 @@
   возвращает строка
   пример «Новый незваный назван путём и обеими выходами»
     дано путь равно "scripts/guards/раз.sh"
-    ожидается "НОВАЯ ПРОВЕРКА БЕЗ ЗОВА: scripts/guards/раз.sh лежит в дереве, и ни одна работа CI, ни ярлык, ни хук, ни другой скрипт её не запускает. Либо позвать, либо вписать в scripts/ledgers/checks-nobody-calls.tsv с доводом."
-  соединить ["НОВАЯ ПРОВЕРКА БЕЗ ЗОВА: ", путь, " лежит в дереве, и ни одна работа CI, ни ярлык, ни хук, ни другой скрипт её не запускает. Либо позвать, либо вписать в ", («Ведомость в дереве»), " с доводом."] по ""
+    ожидается "НОВАЯ ПРОВЕРКА БЕЗ ЗОВА: scripts/guards/раз.sh лежит в дереве, и ни одна работа CI, ни короткая команда, ни хук, ни другой скрипт её не запускает. Либо позвать, либо вписать в scripts/ledgers/checks-nobody-calls.tsv с доводом."
+  соединить ["НОВАЯ ПРОВЕРКА БЕЗ ЗОВА: ", путь, " лежит в дереве, и ни одна работа CI, ни короткая команда, ни хук, ни другой скрипт её не запускает. Либо позвать, либо вписать в ", («Ведомость в дереве»), " с доводом."] по ""
 
 тотальная функция «Слово о мёртвой записи»
   принимает путь: строка, в_дереве: признак
@@ -579,7 +576,7 @@
     дано незваные равно ["scripts/guards/раз.sh"]
     дано проверки равно ["scripts/guards/раз.sh", "scripts/guards/два.sh"]
     дано записанные равно ["scripts/guards/два.sh"]
-    ожидается ["НОВАЯ ПРОВЕРКА БЕЗ ЗОВА: scripts/guards/раз.sh лежит в дереве, и ни одна работа CI, ни ярлык, ни хук, ни другой скрипт её не запускает. Либо позвать, либо вписать в scripts/ledgers/checks-nobody-calls.tsv с доводом.", "ЗАПИСЬ СТАЛА НЕПРАВДОЙ: scripts/guards/два.sh числится без зова, а её зовут. Долг закрыт — убрать запись из scripts/ledgers/checks-nobody-calls.tsv обязан тот, кто закрыл."]
+    ожидается ["НОВАЯ ПРОВЕРКА БЕЗ ЗОВА: scripts/guards/раз.sh лежит в дереве, и ни одна работа CI, ни короткая команда, ни хук, ни другой скрипт её не запускает. Либо позвать, либо вписать в scripts/ledgers/checks-nobody-calls.tsv с доводом.", "ЗАПИСЬ СТАЛА НЕПРАВДОЙ: scripts/guards/два.sh числится без зова, а её зовут. Долг закрыт — убрать запись из scripts/ledgers/checks-nobody-calls.tsv обязан тот, кто закрыл."]
   пример «Сошлось — бед нет»
     дано незваные равно ["scripts/guards/раз.sh"]
     дано проверки равно ["scripts/guards/раз.sh"]
@@ -608,7 +605,7 @@
     дано незваные равно ["scripts/guards/раз.sh"]
     дано проверки равно ["scripts/guards/раз.sh"]
     дано записанные равно пустой список
-    ожидается вариант «Провал» с код равным "FLANG_CHECK_NOBODY_CALLS" и сообщение равным "НОВАЯ ПРОВЕРКА БЕЗ ЗОВА: scripts/guards/раз.sh лежит в дереве, и ни одна работа CI, ни ярлык, ни хук, ни другой скрипт её не запускает. Либо позвать, либо вписать в scripts/ledgers/checks-nobody-calls.tsv с доводом."
+    ожидается вариант «Провал» с код равным "FLANG_CHECK_NOBODY_CALLS" и сообщение равным "НОВАЯ ПРОВЕРКА БЕЗ ЗОВА: scripts/guards/раз.sh лежит в дереве, и ни одна работа CI, ни короткая команда, ни хук, ни другой скрипт её не запускает. Либо позвать, либо вписать в scripts/ledgers/checks-nobody-calls.tsv с доводом."
   пусть беды равно («Беды» от незваные и проверки и записанные)
   если (длина беды) равен 0
     то вариант «Конец работы» с значение равным («Слово о согласии» от (длина проверки) и (длина незваные))
@@ -737,7 +734,7 @@
   пример «Первым делом спрашивается опись дерева»
     дано перепись равно нет
     дано отклик равно вариант «Пока ничего»
-    ожидается вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && T=${FLANG_TMP:-/srv/tmp}/checks-nobody-calls.$$ && mkdir -p \"$T\" && git -c core.quotepath=false ls-files -c -o --exclude-standard -- ':(glob)flang/proof/probes/*/*.sh' ':(glob)flang/proof/probes/*/*.fscript' ':(glob)flang/proof/*/run.sh' ':(glob)flang/proof/*/run.fscript' ':(glob)flang/proof/*/*/run.sh' ':(glob)flang/proof/*/*/run.fscript' ':(glob)scripts/guards/*' ':(glob)flang/scripts/*guard*' ':(glob)flang/scripts/*forger*' | LC_ALL=C sort > \"$T/checks\" && sed 's#.*/##' \"$T/checks\" | LC_ALL=C sort -u > \"$T/names\" && echo '@@CHECKS' && cat \"$T/checks\" && echo '@@CALLS' && git -c core.quotepath=false ls-files -c -o --exclude-standard -- '*.yml' '*.yaml' '*.sh' '*.fscript' '*.flang' '*.mjs' '*.py' '.githooks/*' 'ярлык' '*Makefile' | tr '\\n' '\\0' | xargs -0 grep -nH -F -f \"$T/names\" 2>/dev/null; rm -rf \"$T\""]) и потом равным (вариант «Ждём опись» с подлог равным нет и перепись равным нет)
+    ожидается вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && T=${FLANG_TMP:-/srv/tmp}/checks-nobody-calls.$$ && mkdir -p \"$T\" && git -c core.quotepath=false ls-files -c -o --exclude-standard -- ':(glob)flang/proof/probes/*/*.sh' ':(glob)flang/proof/probes/*/*.fscript' ':(glob)flang/proof/*/run.sh' ':(glob)flang/proof/*/run.fscript' ':(glob)flang/proof/*/*/run.sh' ':(glob)flang/proof/*/*/run.fscript' ':(glob)scripts/guards/*' ':(glob)flang/scripts/*guard*' ':(glob)flang/scripts/*forger*' | LC_ALL=C sort > \"$T/checks\" && sed 's#.*/##' \"$T/checks\" | LC_ALL=C sort -u > \"$T/names\" && echo '@@CHECKS' && cat \"$T/checks\" && echo '@@CALLS' && git -c core.quotepath=false ls-files -c -o --exclude-standard -- '*.yml' '*.yaml' '*.sh' '*.fscript' '*.flang' '*.mjs' '*.py' '.githooks/*' '.flangrc' '*Makefile' | tr '\\n' '\\0' | xargs -0 grep -nH -F -f \"$T/names\" 2>/dev/null; rm -rf \"$T\""]) и потом равным (вариант «Ждём опись» с подлог равным нет и перепись равным нет)
   разбор отклик
     случай вариант «Пока ничего»
       то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным («Доводы описи»)) и потом равным (вариант «Ждём опись» с подлог равным нет и перепись равным перепись)
@@ -781,7 +778,7 @@
     дано проверки равно ["scripts/guards/раз.sh"]
     дано незваные равно ["scripts/guards/раз.sh"]
     дано текст равно "проверка\tдовод\n"
-    ожидается вариант «Провал» с код равным "FLANG_CHECK_NOBODY_CALLS" и сообщение равным "НОВАЯ ПРОВЕРКА БЕЗ ЗОВА: scripts/guards/раз.sh лежит в дереве, и ни одна работа CI, ни ярлык, ни хук, ни другой скрипт её не запускает. Либо позвать, либо вписать в scripts/ledgers/checks-nobody-calls.tsv с доводом."
+    ожидается вариант «Провал» с код равным "FLANG_CHECK_NOBODY_CALLS" и сообщение равным "НОВАЯ ПРОВЕРКА БЕЗ ЗОВА: scripts/guards/раз.sh лежит в дереве, и ни одна работа CI, ни короткая команда, ни хук, ни другой скрипт её не запускает. Либо позвать, либо вписать в scripts/ledgers/checks-nobody-calls.tsv с доводом."
   пусть записи равно («Записи ведомости» от текст)
   пусть записанные равно (отобразить записи как строчка → («Путь записи» от строчка))
   пусть доводы равно (отобразить записи как строчка → («Довод записи» от строчка))
@@ -833,6 +830,6 @@
   начинает с «Начать подлог»
   обрабатывает «Дальше»
 
-тотальная функция «Объявление ярлыка незваные:проверка»
+тотальная функция «Объявление короткой команды uncalled-checks:check»
   возвращает строка
   "bootstrap/flang io --plan Проверка --max-steps 4000000000 — проверки, которых никто не зовёт, сходятся с ведомостью — в обе стороны"

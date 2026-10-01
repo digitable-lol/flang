@@ -30,11 +30,11 @@
    запись «Check» с «name» равным "no-package-json-guard" и «command» равным "bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "run-verdict-debt-guard" и «command» равным "bootstrap/flang io scripts/guards/run-verdict-debt-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "record-follows-its-source" и «command» равным "bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Проверка",
-   запись «Check» с «name» равным "shortcut-collector" и «command» равным "bootstrap/flang io scripts/shortcut-collector.fscript --plan Сбор --max-orders 20000 --на-веру",
-   запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка",
-   запись «Check» с «name» равным "licenses" и «command» равным "./ярлык лицензии:проверка",
-   запись «Check» с «name» равным "task-ledger" и «command» равным "./ярлык задачник:проверка",
-   запись «Check» с «name» равным "tree-inventory" и «command» равным "./ярлык опись:сверка",
+   запись «Check» с «name» равным "shortcut-collector" и «command» равным "bootstrap/flang io scripts/shortcut-collector.fscript --plan Сбор --max-orders 20000",
+   запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check",
+   запись «Check» с «name» равным "licenses" и «command» равным "bootstrap/flang run-script licenses:check",
+   запись «Check» с «name» равным "task-ledger" и «command» равным "bootstrap/flang run-script tasks:check",
+   запись «Check» с «name» равным "tree-inventory" и «command» равным "bootstrap/flang run-script inventory:check",
    запись «Check» с «name» равным "no-growth" и «command» равным "bootstrap/flang io .githooks/no-growth.fscript --plan Range -- \"$(git for-each-ref --format='%(refname:short)' 'refs/remotes/*/dev' | head -1)\""]
 
 тотальная функция «Output path»
@@ -42,7 +42,7 @@
   возвращает строка
   пример «the file is named after the check»
     дано directory равно "/srv/tmp/pre-push-a"
-    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check"
     ожидается "/srv/tmp/pre-push-a/version.out"
   соединить [directory, "/", (check.«name»), ".out"] по ""
 
@@ -51,8 +51,8 @@
   возвращает строка
   пример «a job keeps its output in a file and prints its name with the exit code»
     дано directory равно "/srv/tmp/pre-push-a"
-    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
-    ожидается "( ./ярлык версия:проверка >\"/srv/tmp/pre-push-a/version.out\" 2>&1; echo \"version $?\" ) &"
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check"
+    ожидается "( bootstrap/flang run-script version:check >\"/srv/tmp/pre-push-a/version.out\" 2>&1; echo \"version $?\" ) &"
   соединить ["( ", (check.«command»), " >\"", («Output path» от directory и check), "\" 2>&1; echo \"", (check.«name»), " $?\" ) &"] по ""
 
 тотальная функция «Launch line»
@@ -60,8 +60,8 @@
   возвращает строка
   пример «all jobs start at once from the root of the tree and the line waits for every one of them»
     дано directory равно "/srv/tmp/pre-push-a"
-    дано checks равно [запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка", запись «Check» с «name» равным "licenses" и «command» равным "./ярлык лицензии:проверка"]
-    ожидается "cd .. && { ( ./ярлык версия:проверка >\"/srv/tmp/pre-push-a/version.out\" 2>&1; echo \"version $?\" ) & ( ./ярлык лицензии:проверка >\"/srv/tmp/pre-push-a/licenses.out\" 2>&1; echo \"licenses $?\" ) & wait; }"
+    дано checks равно [запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check", запись «Check» с «name» равным "licenses" и «command» равным "bootstrap/flang run-script licenses:check"]
+    ожидается "cd .. && { ( bootstrap/flang run-script version:check >\"/srv/tmp/pre-push-a/version.out\" 2>&1; echo \"version $?\" ) & ( bootstrap/flang run-script licenses:check >\"/srv/tmp/pre-push-a/licenses.out\" 2>&1; echo \"licenses $?\" ) & wait; }"
   соединить ["cd .. && { ", (соединить (отобразить checks как check → («Job» от directory и check)) по " "), " wait; }"] по ""
 
 тотальная функция «Exit code»
@@ -82,24 +82,24 @@
   возвращает список «Check»
   обеспечивает «red checks are some of the checks» (длина результат) не больше (длина checks)
   пример «a check is red when its code is not zero and when it kept silent»
-    дано checks равно [запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка", запись «Check» с «name» равным "licenses" и «command» равным "./ярлык лицензии:проверка", запись «Check» с «name» равным "task-ledger" и «command» равным "./ярлык задачник:проверка"]
+    дано checks равно [запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check", запись «Check» с «name» равным "licenses" и «command» равным "bootstrap/flang run-script licenses:check", запись «Check» с «name» равным "task-ledger" и «command» равным "bootstrap/flang run-script tasks:check"]
     дано answers равно ["licenses 0", "version 1"]
-    ожидается [запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка", запись «Check» с «name» равным "task-ledger" и «command» равным "./ярлык задачник:проверка"]
+    ожидается [запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check", запись «Check» с «name» равным "task-ledger" и «command» равным "bootstrap/flang run-script tasks:check"]
   отфильтровать checks где check → не ((«Exit code» от (check.«name») и answers) равен "0")
 
 тотальная функция «Summary line»
   принимает check: «Check», answers: список строки
   возвращает строка
   пример «zero is green»
-    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check"
     дано answers равно ["version 0"]
     ожидается "  зелен   version"
   пример «any other code is red and the code is named»
-    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check"
     дано answers равно ["version 3"]
     ожидается "  КРАСЕН  version (код 3)"
   пример «silence is red too»
-    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check"
     дано answers равно пустой список
     ожидается "  КРАСЕН  version (ответа нет)"
   пусть code равно («Exit code» от (check.«name») и answers)
@@ -126,8 +126,8 @@
    "  · тесты, набор проб чекера, потолок доверия Г3 — минуты каждый",
    "  · сборку двоичного и всё, что её требует",
    "  · десять сторожей дороже 200 с и двенадцать, красных по долгу дерева",
-   "  · целость перечня ярлыков (план «Целость», 23 с) — вторая половина",
-   "    ./ярлык ярлыки; первая половина, «Сбор», здесь есть"]
+   "  · целость коротких команд (план «Целость») — вторая половина",
+   "    bootstrap/flang run-script scripts:check; первая половина, «Сбор», здесь есть"]
 
 тотальная функция «Summary»
   принимает answers: список строки, seconds: число
@@ -173,7 +173,7 @@
   принимает check: «Check», output: строка
   возвращает строка
   пример «the output of a red check goes under its name»
-    дано check равно запись «Check» с «name» равным "version" и «command» равным "./ярлык версия:проверка"
+    дано check равно запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check"
     дано output равно "версия разошлась\n"
     ожидается "───── version ─────\nверсия разошлась\n"
   соединить ["───── ", (check.«name»), " ─────\n", («Last lines» от output), "\n"] по ""

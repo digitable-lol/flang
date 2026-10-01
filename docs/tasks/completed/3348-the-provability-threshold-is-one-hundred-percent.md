@@ -23,7 +23,7 @@
 `main` — 633 из 650 (`sh /srv/tmp/dokazuemyy/ПЕРЕДАЧА/proverka-dereva.sh`, 17.09);
 при пороге 100 % вердикт станет «НЕ ДОКАЗУЕМ … 633 из 650» — это честно, а не поломка.
 
-Скрипт зовёт только `ярлыки.flang` (`./ярлык доказуемость`); в `.github/workflows/*.yml`
+Скрипт зовёт только `ярлыки.flang` (`bootstrap/flang run-script provability`); в `.github/workflows/*.yml`
 и `.githooks/pre-push` его нет (`git grep provability.fscript -- .github .githooks` — 0 строк).
 Прогон стоит около 3 минут (ПЕРЕДАЧА, 17.09) — на каждый пуш не ставить.
 

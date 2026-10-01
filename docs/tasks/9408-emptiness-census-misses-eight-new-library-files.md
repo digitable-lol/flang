@@ -7,7 +7,7 @@
 команда: вторая
 карта: Сколько доказано на самом деле
 рядом: 9283, 6234
-нужность: 2 — 27 сентября 2026: `FLANG_SEED_LAG_KNOWN=1 ./ярлык пустота:проверка` код 1, не названы уже ДЕВЯТЬ файлов: к восьми прибавился bignum.flang; в flang/stdlib/ 51 файл
+нужность: 2 — 27 сентября 2026: `FLANG_SEED_LAG_KNOWN=1 bootstrap/flang run-script emptiness:check` код 1, не названы уже ДЕВЯТЬ файлов: к восьми прибавился bignum.flang; в flang/stdlib/ 51 файл
 ---
 
 # 9408. Перепись пустоты снова красна — восемь новых файлов библиотеки
@@ -17,7 +17,7 @@
 ## Что видно
 
 ```sh
-FLANG_SEED_LAG_KNOWN=1 ./ярлык пустота:проверка
+FLANG_SEED_LAG_KNOWN=1 bootstrap/flang run-script emptiness:check
 # FLANG_PUSTOTA_KORPUS: файл библиотеки не назван ни в «Наших», ни в «Отложенных»:
 #   cli.flang dns.flang number-format.flang protobuf.flang stats.flang
 #   toml.flang uuid.flang websocket.flang
@@ -38,6 +38,6 @@ cli eae241bd7, toml 735043361, uuid e389bc6de, websocket 760717ff0). В
 ## Как понять, что сделано
 
 ```sh
-FLANG_SEED_LAG_KNOWN=1 ./ярлык пустота:проверка   # код 0
+FLANG_SEED_LAG_KNOWN=1 bootstrap/flang run-script emptiness:check   # код 0
 sh scripts/guards/hand-written-lists.sh                 # перечень не вырос
 ```

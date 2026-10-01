@@ -31,11 +31,9 @@
 #
 # Шаг «Build release archive» зовёт `bootstrap/flang`, а собирать его в этом
 # файле было НЕКОМУ: `bootstrap/flang` — продукт сборки и в дереве не лежит
-# (`.gitignore`), `npm ci` клал двоичный в `dvoichnyy/`, а не в `bootstrap/`, и
-# единственное место, которое собирало семя само, — `./ярлык` — звалось шагом
-# `npm test` ПОСЛЕ архива. То есть выпуск падал на первом же собственном шаге.
-# То же самое записано словами в шапке `./ярлык`: «там `bootstrap/flang` не
-# собирает никто». Теперь семя собирается явным шагом до архива.
+# (`.gitignore`), `npm ci` клал двоичный в `dvoichnyy/`, а не в `bootstrap/`.
+# То есть выпуск падал на первом же собственном шаге. Теперь семя собирается
+# явным шагом до архива.
 #
 # ── ПОЧЕМУ ПОРЯДОК ИМЕННО ТАКОЙ ────────────────────────────────────────────
 #
@@ -78,7 +76,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           # Вся история и все теги: журнал изменений печатается из них
-          # (scripts/site/build-changelog.fscript, ярлык `журнал`), и сверка сверяет
+          # (scripts/site/build-changelog.fscript, команда `changelog:build`), и сверка сверяет
           # записанный файл с историей. В клоне из одной ревизии эта сверка сравнивает пустоту с
           # пустотой и молчит.
           fetch-depth: 0
@@ -100,7 +98,7 @@ jobs:
         with:
           mode: release
 
-      # Node остаётся ради набора проверок (`./ярлык тесты` — это
+      # Node остаётся ради набора проверок (`bootstrap/flang run-script tests` — это
       # `node --test`). `cache: npm` снят вместе с `package-lock.json`: без
       # замка этот ключ падает с «unable to cache dependencies», а `registry-url`
       # был нужен только публикации.
@@ -113,11 +111,11 @@ jobs:
         run: make -C bootstrap -j"$(nproc)"
 
       - name: Check binary version
-        # ЗАЧЕМ ОТДЕЛЬНО ОТ «версия:проверка» (install-path.yml:138). Тот сторож
+        # ЗАЧЕМ ОТДЕЛЬНО ОТ «version:check» (install-path.yml:138). Тот сторож
         # (scripts/guards/version-guard.fscript) читает ИСХОДНИК —
         # flang/src/emit/c/flang_repl.c. А выпуск собирается из СЕМЕНИ (шаг
         # выше, make -C bootstrap), и между перепечатками эти два файла
-        # расходятся ЗАКОННО. Значит зелёный «версия:проверка» ничего не
+        # расходятся ЗАКОННО. Значит зелёный «version:check» ничего не
         # обещает про то, как назовёт себя отгружаемый двоичный.
         #
         # Что это не выдумка, видно числом на 5 сентября 2026 (задача 9111):
@@ -142,7 +140,7 @@ jobs:
           set -eu
           package_version="$(bootstrap/flang io scripts/flangrc.fscript -- version | sed -n 's/^{"plan":"Settings","result":"\([^"\\]*\).*/\1/p')"
           if [ -z "$package_version" ]; then
-            echo "::error::версию не вычитать из .flangrc — ключа «version» нет или scripts/flangrc.fscript не ответил; разносит его ./ярлык версия из scripts/release/emit-package.flang"
+            echo "::error::версию не вычитать из .flangrc — ключа «version» нет или scripts/flangrc.fscript не ответил; разносит его bootstrap/flang run-script version из scripts/release/emit-package.flang"
             exit 1
           fi
           # `head -1` — не украшение. С 8 сентября 2026 оболочка печатает ВТОРУЮ
@@ -178,7 +176,7 @@ jobs:
           if [ "$binary_version" != "$package_version" ]; then
             echo "::error::собранный двоичный зовёт себя «${binary_version}», а .flangrc объявляет «${package_version}»"
             echo "::error::Выпуск собирается из СЕМЕНИ (bootstrap/), и версию в нём поднимает ПЕРЕПЕЧАТКА,"
-            echo "::error::а не правка flang/src/emit/c/flang_repl.c — её видит только «версия:проверка»."
+            echo "::error::а не правка flang/src/emit/c/flang_repl.c — её видит только «version:check»."
             echo "::error::Так вышли 9959 («двоичный называл себя версией на два релиза позади») и 9983."
             exit 1
           fi
@@ -196,7 +194,7 @@ jobs:
           tag_version="${GITHUB_REF_NAME#v}"
           package_version="$(bootstrap/flang io scripts/flangrc.fscript -- version | sed -n 's/^{"plan":"Settings","result":"\([^"\\]*\).*/\1/p')"
           if [ -z "$package_version" ]; then
-            echo "::error::версию не вычитать из .flangrc — ключа «version» нет или scripts/flangrc.fscript не ответил; разносит его ./ярлык версия из scripts/release/emit-package.flang"
+            echo "::error::версию не вычитать из .flangrc — ключа «version» нет или scripts/flangrc.fscript не ответил; разносит его bootstrap/flang run-script version из scripts/release/emit-package.flang"
             exit 1
           fi
           if [ "$tag_version" != "$package_version" ]; then
@@ -234,7 +232,7 @@ jobs:
       # только применять его там некуда.
       #
       # `--max-steps 80000000` — не запас на глаз, а то же число, что стоит у
-      # печати страницы выпусков (`ярлыки.flang`, «выпуски:страница»): у `flang
+      # печати страницы выпусков (`.flangrc`, «releases:page»): у `flang
       # io` умолчание предела 10 000 000 шагов, и разбор `docs/release-notes.json`
       # в него не влезает.
       - name: Build release body
@@ -356,7 +354,7 @@ jobs:
         # (version, url, sha256) обязаны совпасть с формулой дерева ДО выкладки.
         # Расхождение — красное; сабмодуль, указывающий на непушенный коммит
         # крана, checkout выше не развернёт вовсе — тоже красное. Ту же сверку
-        # без сети держит «формула:проверка» (scripts/guards/homebrew-formula-guard.fscript).
+        # без сети держит «homebrew-formula:check» (scripts/guards/homebrew-formula-guard.fscript).
         run: |
           set -eu
           kran=packaging/homebrew-tap/Formula/flang.rb
@@ -387,7 +385,7 @@ jobs:
         # flang, и `asdf install` падал последним шагом. Здесь четыре файла
         # плагина сверяются с деревом побайтово ДО выкладки, три скрипта — на
         # бит исполнимости. Расхождение — красное; неразвёрнутый сабмодуль —
-        # тоже. Ту же сверку без сети держит «плагин:проверка»
+        # тоже. Ту же сверку без сети держит «asdf-plugin:check»
         # (scripts/guards/asdf-plugin-guard.fscript).
         run: |
           set -eu
@@ -441,7 +439,7 @@ jobs:
           gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name'
 
       - name: Run all checks
-        # Был `npm test` — это ровно `./ярлык тесты`, то есть
+        # Был `npm test` — это ровно `bootstrap/flang run-script tests`, то есть
         # `node --test flang/test/*.test.mjs`. npm не делал здесь ничего, кроме
         # подстановки строки из `package.json`.
-        run: ./ярлык тесты
+        run: bootstrap/flang run-script tests

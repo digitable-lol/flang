@@ -698,7 +698,7 @@
   возвращает строка
   пример «Версии нет вовсе»
     дано свод равно запись «Свод» с «новая» равным "" и «источник» равным "" и «репл» равным "" и «страница» равным "" и «настройки» равным "" и «формула» равным "" и «кран» равным "" и «есть кран» равным нет и «коммит крана» равным "" и «есть плагин» равным нет и «коммит плагина» равным "" и «отстали» равным пустой список
-    ожидается "текущая версия (источник scripts/release/emit-package.flang): не найдена\n\nвытекает в:\n  flang/src/emit/c/flang_repl.c  \n  packaging/flang.1               .TH \n  packaging/homebrew/flang.rb  \n  .flangrc                      version , name , license , repository , issues \n  packaging/homebrew-tap/Formula/flang.rb  НЕ РАЗВЁРНУТ: git submodule update --init packaging/homebrew-tap\n  packaging/asdf-plugin/  НЕ РАЗВЁРНУТ: git submodule update --init packaging/asdf-plugin\n\nподнять: ./ярлык версия <НОВОЕ ЧИСЛО>   (например ./ярлык версия 0.7.13)"
+    ожидается "текущая версия (источник scripts/release/emit-package.flang): не найдена\n\nвытекает в:\n  flang/src/emit/c/flang_repl.c  \n  packaging/flang.1               .TH \n  packaging/homebrew/flang.rb  \n  .flangrc                      version , name , license , repository , issues \n  packaging/homebrew-tap/Formula/flang.rb  НЕ РАЗВЁРНУТ: git submodule update --init packaging/homebrew-tap\n  packaging/asdf-plugin/  НЕ РАЗВЁРНУТ: git submodule update --init packaging/asdf-plugin\n\nподнять: bootstrap/flang run-script version <НОВОЕ ЧИСЛО>   (например bootstrap/flang run-script version 0.7.13)"
   соединить [
     "текущая версия (источник ", («Путь источника»), "): ", (если («Текущая версия» от свод.«источник») равен "" то "не найдена" иначе («Текущая версия» от свод.«источник»)), "\n",
     "\n",
@@ -710,7 +710,7 @@
     («Строка крана» от свод), "\n",
     («Строка плагина» от свод), "\n",
     "\n",
-    "поднять: ./ярлык версия <НОВОЕ ЧИСЛО>   (например ./ярлык версия 0.7.13)"] по ""
+    "поднять: bootstrap/flang run-script version <НОВОЕ ЧИСЛО>   (например bootstrap/flang run-script version 0.7.13)"] по ""
 
 тотальная функция «Шапка подъёма»
   принимает свод: «Свод», старая: строка
@@ -736,18 +736,18 @@
   обеспечивает «вторая половина наказа — пять строк» (длина результат) равен 5
   пример «Вторая половина»
     дано свод равно запись «Свод» с «новая» равным "0.7.21" и «источник» равным "" и «репл» равным "" и «страница» равным "" и «настройки» равным "" и «формула» равным "" и «кран» равным "" и «есть кран» равным нет и «коммит крана» равным "" и «есть плагин» равным нет и «коммит плагина» равным "" и «отстали» равным пустой список
-    ожидается ["  git -C packaging/homebrew-tap commit -am \'flang 0.7.21: url, sha256, version\' && git -C packaging/homebrew-tap push origin main", "  git add packaging/homebrew-tap   # указатель сабмодуля — в тот же коммит выпуска", "Пока указатель не поднят, «формула:проверка» и release.yml КРАСНЫ — это и есть защита от забытого крана.", "", "Плагин asdf (сабмодуль packaging/asdf-plugin) — числа версии в нём нет, поднимать нечего; сверка файлов:"]
-  [(соединить ["  git -C packaging/homebrew-tap commit -am \'flang ", свод.«новая», ": url, sha256, version\' && git -C packaging/homebrew-tap push origin main"] по ""), "  git add packaging/homebrew-tap   # указатель сабмодуля — в тот же коммит выпуска", "Пока указатель не поднят, «формула:проверка» и release.yml КРАСНЫ — это и есть защита от забытого крана.", "", (соединить ["Плагин asdf (сабмодуль ", («Путь плагина»), ") — числа версии в нём нет, поднимать нечего; сверка файлов:"] по "")]
+    ожидается ["  git -C packaging/homebrew-tap commit -am \'flang 0.7.21: url, sha256, version\' && git -C packaging/homebrew-tap push origin main", "  git add packaging/homebrew-tap   # указатель сабмодуля — в тот же коммит выпуска", "Пока указатель не поднят, «homebrew-formula:check» и release.yml КРАСНЫ — это и есть защита от забытого крана.", "", "Плагин asdf (сабмодуль packaging/asdf-plugin) — числа версии в нём нет, поднимать нечего; сверка файлов:"]
+  [(соединить ["  git -C packaging/homebrew-tap commit -am \'flang ", свод.«новая», ": url, sha256, version\' && git -C packaging/homebrew-tap push origin main"] по ""), "  git add packaging/homebrew-tap   # указатель сабмодуля — в тот же коммит выпуска", "Пока указатель не поднят, «homebrew-formula:check» и release.yml КРАСНЫ — это и есть защита от забытого крана.", "", (соединить ["Плагин asdf (сабмодуль ", («Путь плагина»), ") — числа версии в нём нет, поднимать нечего; сверка файлов:"] по "")]
 
 тотальная функция «Наказ о плагине»
   принимает свод: «Свод»
   возвращает список строки
   пример «Плагин не развёрнут — четыре строки наказа»
     дано свод равно запись «Свод» с «новая» равным "0.7.21" и «источник» равным "" и «репл» равным "" и «страница» равным "" и «настройки» равным "" и «формула» равным "" и «кран» равным "" и «есть кран» равным нет и «коммит крана» равным "" и «есть плагин» равным нет и «коммит плагина» равным "" и «отстали» равным пустой список
-    ожидается ["  cp -R packaging/asdf/. packaging/asdf-plugin/", "  git -C packaging/asdf-plugin commit -am \'Плагин догнал packaging/asdf (flang 0.7.21)\' && git -C packaging/asdf-plugin push origin main", "  git add packaging/asdf-plugin   # указатель сабмодуля — в тот же коммит выпуска", "Пока указатель не поднят, «плагин:проверка» и release.yml КРАСНЫ — это и есть защита от забытого плагина."]
+    ожидается ["  cp -R packaging/asdf/. packaging/asdf-plugin/", "  git -C packaging/asdf-plugin commit -am \'Плагин догнал packaging/asdf (flang 0.7.21)\' && git -C packaging/asdf-plugin push origin main", "  git add packaging/asdf-plugin   # указатель сабмодуля — в тот же коммит выпуска", "Пока указатель не поднят, «asdf-plugin:check» и release.yml КРАСНЫ — это и есть защита от забытого плагина."]
   если (свод.«есть плагин») и притом (пусто свод.«отстали»)
     то ["  трогать нечего."]
-    иначе [(соединить ["  cp -R packaging/asdf/. ", («Путь плагина»), "/"] по ""), (соединить ["  git -C ", («Путь плагина»), " commit -am \'Плагин догнал packaging/asdf (flang ", свод.«новая», ")\' && git -C ", («Путь плагина»), " push origin main"] по ""), (соединить ["  git add ", («Путь плагина»), "   # указатель сабмодуля — в тот же коммит выпуска"] по ""), "Пока указатель не поднят, «плагин:проверка» и release.yml КРАСНЫ — это и есть защита от забытого плагина."]
+    иначе [(соединить ["  cp -R packaging/asdf/. ", («Путь плагина»), "/"] по ""), (соединить ["  git -C ", («Путь плагина»), " commit -am \'Плагин догнал packaging/asdf (flang ", свод.«новая», ")\' && git -C ", («Путь плагина»), " push origin main"] по ""), (соединить ["  git add ", («Путь плагина»), "   # указатель сабмодуля — в тот же коммит выпуска"] по ""), "Пока указатель не поднят, «asdf-plugin:check» и release.yml КРАСНЫ — это и есть защита от забытого плагина."]
 
 тотальная функция «Отчёт подъёма»
   принимает свод: «Свод», старая: строка
@@ -755,7 +755,7 @@
   пример «Крана и плагина нет»
     дано свод равно запись «Свод» с «новая» равным "0.7.21" и «источник» равным "" и «репл» равным "" и «страница» равным "" и «настройки» равным "" и «формула» равным "" и «кран» равным "" и «есть кран» равным нет и «коммит крана» равным "" и «есть плагин» равным нет и «коммит плагина» равным "" и «отстали» равным пустой список
     дано старая равно "0.7.20"
-    ожидается "версия: 0.7.20 → 0.7.21\nкран packaging/homebrew-tap/Formula/flang.rb НЕ РАЗВЁРНУТ — не поднят. Разверните и повторите: git submodule update --init packaging/homebrew-tap\n\nготово. Проверить сведение: sh scripts/guards/version-derivations-guard.sh\nНе поднято намеренно (это делает выпуск): sha256 формулы, changelog.json, семя bootstrap/flang_repl.c.\n\nКран Homebrew (сабмодуль packaging/homebrew-tap) — ПОСЛЕ того, как sha256 архива вписан в packaging/homebrew/flang.rb:\n  cp packaging/homebrew/flang.rb packaging/homebrew-tap/Formula/flang.rb\n  git -C packaging/homebrew-tap commit -am 'flang 0.7.21: url, sha256, version' && git -C packaging/homebrew-tap push origin main\n  git add packaging/homebrew-tap   # указатель сабмодуля — в тот же коммит выпуска\nПока указатель не поднят, «формула:проверка» и release.yml КРАСНЫ — это и есть защита от забытого крана.\n\nПлагин asdf (сабмодуль packaging/asdf-plugin) — числа версии в нём нет, поднимать нечего; сверка файлов:\n  packaging/asdf-plugin/  НЕ РАЗВЁРНУТ: git submodule update --init packaging/asdf-plugin\n  cp -R packaging/asdf/. packaging/asdf-plugin/\n  git -C packaging/asdf-plugin commit -am 'Плагин догнал packaging/asdf (flang 0.7.21)' && git -C packaging/asdf-plugin push origin main\n  git add packaging/asdf-plugin   # указатель сабмодуля — в тот же коммит выпуска\nПока указатель не поднят, «плагин:проверка» и release.yml КРАСНЫ — это и есть защита от забытого плагина."
+    ожидается "версия: 0.7.20 → 0.7.21\nкран packaging/homebrew-tap/Formula/flang.rb НЕ РАЗВЁРНУТ — не поднят. Разверните и повторите: git submodule update --init packaging/homebrew-tap\n\nготово. Проверить сведение: sh scripts/guards/version-derivations-guard.sh\nНе поднято намеренно (это делает выпуск): sha256 формулы, changelog.json, семя bootstrap/flang_repl.c.\n\nКран Homebrew (сабмодуль packaging/homebrew-tap) — ПОСЛЕ того, как sha256 архива вписан в packaging/homebrew/flang.rb:\n  cp packaging/homebrew/flang.rb packaging/homebrew-tap/Formula/flang.rb\n  git -C packaging/homebrew-tap commit -am 'flang 0.7.21: url, sha256, version' && git -C packaging/homebrew-tap push origin main\n  git add packaging/homebrew-tap   # указатель сабмодуля — в тот же коммит выпуска\nПока указатель не поднят, «homebrew-formula:check» и release.yml КРАСНЫ — это и есть защита от забытого крана.\n\nПлагин asdf (сабмодуль packaging/asdf-plugin) — числа версии в нём нет, поднимать нечего; сверка файлов:\n  packaging/asdf-plugin/  НЕ РАЗВЁРНУТ: git submodule update --init packaging/asdf-plugin\n  cp -R packaging/asdf/. packaging/asdf-plugin/\n  git -C packaging/asdf-plugin commit -am 'Плагин догнал packaging/asdf (flang 0.7.21)' && git -C packaging/asdf-plugin push origin main\n  git add packaging/asdf-plugin   # указатель сабмодуля — в тот же коммит выпуска\nПока указатель не поднят, «asdf-plugin:check» и release.yml КРАСНЫ — это и есть защита от забытого плагина."
   соединить («Соединить списки» от («Соединить списки» от («Соединить списки» от («Шапка подъёма» от свод и старая) и («Наказ о кране» от свод)) и («Соединить списки» от («Наказ о кране дальше» от свод) и [(«Строка плагина» от свод)])) и («Наказ о плагине» от свод)) по "\n"
 
 объект «Запись»
@@ -1112,7 +1112,7 @@
     дано свод равно запись «Свод» с «новая» равным "" и «источник» равным "" и «репл» равным "" и «страница» равным "" и «настройки» равным "" и «формула» равным "" и «кран» равным "" и «есть кран» равным нет и «коммит крана» равным "" и «есть плагин» равным нет и «коммит плагина» равным "" и «отстали» равным пустой список
     дано старая равно ""
     дано отклик равно вариант «Сбой» с код равным "FLANG_IO_NOT_FOUND" и сообщение равным "нет файла"
-    ожидается вариант «Конец работы» с значение равным "текущая версия (источник scripts/release/emit-package.flang): не найдена\n\nвытекает в:\n  flang/src/emit/c/flang_repl.c  \n  packaging/flang.1               .TH \n  packaging/homebrew/flang.rb  \n  .flangrc                      version , name , license , repository , issues \n  packaging/homebrew-tap/Formula/flang.rb  НЕ РАЗВЁРНУТ: git submodule update --init packaging/homebrew-tap\n  packaging/asdf-plugin/  НЕ РАЗВЁРНУТ: git submodule update --init packaging/asdf-plugin\n\nподнять: ./ярлык версия <НОВОЕ ЧИСЛО>   (например ./ярлык версия 0.7.13)"
+    ожидается вариант «Конец работы» с значение равным "текущая версия (источник scripts/release/emit-package.flang): не найдена\n\nвытекает в:\n  flang/src/emit/c/flang_repl.c  \n  packaging/flang.1               .TH \n  packaging/homebrew/flang.rb  \n  .flangrc                      version , name , license , repository , issues \n  packaging/homebrew-tap/Formula/flang.rb  НЕ РАЗВЁРНУТ: git submodule update --init packaging/homebrew-tap\n  packaging/asdf-plugin/  НЕ РАЗВЁРНУТ: git submodule update --init packaging/asdf-plugin\n\nподнять: bootstrap/flang run-script version <НОВОЕ ЧИСЛО>   (например bootstrap/flang run-script version 0.7.13)"
   разбор отклик
     случай вариант «Прочитано» с содержимое как текст
       то «Сверять дальше» от («Свод с плагином» от свод и да и "" и (пустой список)) и старая и («Файлы плагина»)
@@ -1143,7 +1143,7 @@
     дано свод равно запись «Свод» с «новая» равным "" и «источник» равным "" и «репл» равным "" и «страница» равным "" и «настройки» равным "" и «формула» равным "" и «кран» равным "" и «есть кран» равным нет и «коммит крана» равным "" и «есть плагин» равным да и «коммит плагина» равным "" и «отстали» равным пустой список
     дано старая равно ""
     дано отклик равно вариант «Процесс завершён» с код равным 0 и вывод равным "abc1234\n" и ошибки равным ""
-    ожидается вариант «Конец работы» с значение равным "текущая версия (источник scripts/release/emit-package.flang): не найдена\n\nвытекает в:\n  flang/src/emit/c/flang_repl.c  \n  packaging/flang.1               .TH \n  packaging/homebrew/flang.rb  \n  .flangrc                      version , name , license , repository , issues \n  packaging/homebrew-tap/Formula/flang.rb  НЕ РАЗВЁРНУТ: git submodule update --init packaging/homebrew-tap\n  packaging/asdf-plugin/  совпадает с packaging/asdf  (плагин asdf, сабмодуль abc1234)\n\nподнять: ./ярлык версия <НОВОЕ ЧИСЛО>   (например ./ярлык версия 0.7.13)"
+    ожидается вариант «Конец работы» с значение равным "текущая версия (источник scripts/release/emit-package.flang): не найдена\n\nвытекает в:\n  flang/src/emit/c/flang_repl.c  \n  packaging/flang.1               .TH \n  packaging/homebrew/flang.rb  \n  .flangrc                      version , name , license , repository , issues \n  packaging/homebrew-tap/Formula/flang.rb  НЕ РАЗВЁРНУТ: git submodule update --init packaging/homebrew-tap\n  packaging/asdf-plugin/  совпадает с packaging/asdf  (плагин asdf, сабмодуль abc1234)\n\nподнять: bootstrap/flang run-script version <НОВОЕ ЧИСЛО>   (например bootstrap/flang run-script version 0.7.13)"
   разбор отклик
     случай вариант «Процесс завершён» с код как код и вывод как вывод и ошибки как ошибки
       то «Приговор» от («Свод с плагином» от свод и свод.«есть плагин» и (если код равен 0 то (элемент 1 в (разделить вывод по "\n")) иначе "") и свод.«отстали») и старая
@@ -1184,6 +1184,6 @@
   начинает с «Начало»
   обрабатывает «Дальше»
 
-тотальная функция «Объявление ярлыка версия»
+тотальная функция «Объявление короткой команды version»
   возвращает строка
-  "bootstrap/flang io -- — поднять версию одной командой: число из источника scripts/release/emit-package.flang разносится в .flangrc, flang_repl.c, .TH страницы man и три числа формулы Homebrew; ./ярлык версия 0.7.13"
+  "bootstrap/flang io -- — поднять версию одной командой: число из источника scripts/release/emit-package.flang разносится в .flangrc, flang_repl.c, .TH страницы man и три числа формулы Homebrew; bootstrap/flang run-script version 0.7.13"

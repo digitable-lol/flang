@@ -48,13 +48,13 @@
 ## Сделано (11 сентября 2026, ветка r/proslezhivaemost)
 
 Прибор — `scripts/guards/traceability-guard.flang`, четыре плана, четыре ярлыка
-(`прослеживаемость:проверка`, `:подлог`, `:требование`, `:строка`), все четыре
+(`traceability:check`, `:подлог`, `:требование`, `:строка`), все четыре
 зовутся из `.github/workflows/binary.yml`. Набор — три каталога из условия
 плюс исходники, которые называют сами записи (два лежат в
 `flang/proof/checker/tests/families/carrier/`): без них две записи из 88 показывали
 бы в пустоту.
 
-**Замер (свой прогон, `./ярлык прослеживаемость:проверка`, 87 с, код 0):**
+**Замер (свой прогон, `bootstrap/flang run-script traceability:check`, 87 с, код 0):**
 
 | что | сколько |
 |---|---:|
@@ -80,17 +80,17 @@
 **Оба направления на настоящем примере** (`flang/proof/map/abilities.flang`):
 
 ```
-FLANG_TRACE='У1 сумма читается в обратном порядке' ./ярлык прослеживаемость:требование
+FLANG_TRACE='У1 сумма читается в обратном порядке' bootstrap/flang run-script traceability:requirement
 требование «У1 сумма читается в обратном порядке»
   код:     flang/proof/map/abilities.flang:29, функция «Сумма наоборот»
   примеры: «два и три»
   запись:  flang/proof/checker/tests/records/corpus/abilities.record — вердикт доказано
 
-FLANG_TRACE='flang/proof/map/abilities.flang:34' ./ярлык прослеживаемость:строка
+FLANG_TRACE='flang/proof/map/abilities.flang:34' bootstrap/flang run-script traceability:line
 строка flang/proof/map/abilities.flang:34 лежит в функции «Сумма наоборот» (объявлена в строке 26)
 требование «У1 сумма читается в обратном порядке» …(та же цепочка)
 
-FLANG_TRACE='flang/proof/examples/corpus-alphabet.flang:55' ./ярлык прослеживаемость:строка
+FLANG_TRACE='flang/proof/examples/corpus-alphabet.flang:55' bootstrap/flang run-script traceability:line
 строка … лежит в функции «Заглавные» (объявлена в строке 53)
 РАЗРЫВ: у функции «Заглавные» нет ни одного постусловия — код без требования   (код 1)
 ```
@@ -100,7 +100,7 @@ FLANG_TRACE='flang/proof/examples/corpus-alphabet.flang:55' ./ярлык про�
 (долг в `scripts/guards/io-dictionary-copies-guard.flang`); прибор читает переменную
 через `printenv`.
 
-**Подлог** (`./ярлык прослеживаемость:подлог`, код 1): из текста
+**Подлог** (`bootstrap/flang run-script traceability:forgery`, код 1): из текста
 `abilities.flang` в памяти вырезается строка
 `обеспечивает «У1 сумма читается в обратном порядке»`; прибор отвечает
 «записей, называющих требование, которого в коде нет: 1», называет запись и

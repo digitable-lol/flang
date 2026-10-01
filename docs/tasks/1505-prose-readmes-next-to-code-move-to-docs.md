@@ -175,7 +175,7 @@ git ls-files '*README.md' | grep -v '^docs/' \
   в 124 файлах, плюс адрес сайта `spec-conc.html` привязан к `docs/flang/conc/SPEC.md`
   (`docs/site/sitemap.mjs:278`) и путь стережёт `.github/workflows/pages.yml:34`.
   Отдельная задача, не эта ячейка.
-- **`./ярлык ссылки:проверка` красен долгом дерева**: битых 10 из 6873. Ни одна не моя
+- **`bootstrap/flang run-script links:check` красен долгом дерева**: битых 10 из 6873. Ни одна не моя
   и ни одна не в тронутых файлах — цели `docs/tasks/6421-…` и `docs/adr/0023-…` в
   `gh/main` отсутствуют (`git cat-file -e` — код 1). Это предмет задачи 6480.
 

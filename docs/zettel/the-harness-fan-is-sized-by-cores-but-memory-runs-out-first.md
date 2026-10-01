@@ -26,7 +26,7 @@ const сколько = потоков || Math.max(1, Math.min(64, cpus().length)
 docs/site/site-numbers.mjs  →  flang/scripts/proof-ledger.mjs  →  binary.mjs
 ```
 
-То есть `./ярлык числа`, `./ярлык числа:проверка` и `./ярлык доказательства:ведомость` —
+То есть `bootstrap/flang run-script numbers:build`, `bootstrap/flang run-script numbers:check` и `bootstrap/flang run-script proofs:report` —
 безобидные с виду ярлыки, каждый из которых кладёт машину. Правило работы «не
 больше двух прогонов `flang` разом» здесь не спасает: тот, кто его соблюдает,
 всё равно получает 64, потому что разводит их не он.

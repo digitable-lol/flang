@@ -37,11 +37,11 @@
 Все девять прогнаны поодиночке (`/usr/bin/time`, машина под нагрузкой):
 
 ```
-задачник:проверка                          48,5 с   код 0
+tasks:check                          48,5 с   код 0
 pol-dokazannogo-sverka.sh                  11,4 с   код 0
-лицензии:проверка                           7,8 с   код 0
+licenses:check                           7,8 с   код 0
 prose-numbers-guard.sh                      6,1 с   код 0
-версия:проверка                             4,2 с   код 0
+version:check                             4,2 с   код 0
 пакет:проверка                              4,1 с   код 0
 kto-zovet-storozhey.sh --check              0,3 с   код 0
 storozha-bez-podloga.sh --check             0,2 с   код 0
@@ -55,9 +55,9 @@ semya-rantayma-eto-istochnik.sh             0,1 с   код 0
 ## Что отвергнуто и почему
 
 ```
-./ярлык тесты                    дольше 2 минут — замерено, оборвано таймаутом
+bootstrap/flang run-script tests                    дольше 2 минут — замерено, оборвано таймаутом
 набор проб чекера (run.sh)    минуты
-./ярлык сколько-верим (потолок Г3) минуты, нужен --max-steps 2e9
+bootstrap/flang run-script trust:ceiling (потолок Г3) минуты, нужен --max-steps 2e9
 сборка bootstrap                 5–6 минут (и 322 с только на LTO, задача о цене CI)
 семь сторожей дороже 120 с       см. scripts/kto-zovet-storozhey.sh
 ```
@@ -70,7 +70,7 @@ semya-rantayma-eto-istochnik.sh             0,1 с   код 0
 
 ## Двоичный хук не собирает
 
-`./ярлык` при отсутствии `bootstrap/flang` полез бы собирать — 5–6 минут.
+`bootstrap/flang run-script` при отсутствии `bootstrap/flang` полез бы собирать — 5–6 минут.
 Хук этого не делает: если двоичного нет, четыре проверки, которым он
 нужен, пропускаются, и хук **называет их поимённо** вместе с командой
 сборки.

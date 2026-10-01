@@ -134,15 +134,15 @@ JavaScript снята 20 августа 2026 (коммит `fe8e8a37`), и св�
 Совпадение означает, что компилятор воспроизводит сам себя. Сверяет:
 
 ```sh
-make -C bootstrap                        # ярлык: ./ярлык сборка
-sh scripts/bootstrap-reprint.sh --check  # ярлык: ./ярлык раскрутка:проверка
+make -C bootstrap                        # ярлык: bootstrap/flang run-script build
+sh scripts/bootstrap-reprint.sh --check  # ярлык: bootstrap/flang run-script reprint:check
 ```
 
 Проверка печатает файлы заново и сравнивает с закоммиченными; расхождение
 называется файлом, байтом и строкой. Она краснеет на всех четырёх видах
 расхождения: правка исходника без перепечатки, правка `bootstrap/` руками,
 пропавший файл печати, лишний файл от прошлой печати. Что печатает сам двоичный,
-а не что-то другое, стережёт `./ярлык точка:проверка`
+а не что-то другое, стережёт `bootstrap/flang run-script bootstrap-point:check`
 (`scripts/bootstrap-point-by-binary.flang`).
 
 Пределы печати (`MAX_STEPS`, `MAX_DEPTH`) записаны один раз — в

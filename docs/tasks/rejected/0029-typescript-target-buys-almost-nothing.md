@@ -162,4 +162,4 @@ JSDoc в этом месте не печатается», то есть чини
 ## Откуда
 
 Замер записан в `typescript-target-buys-almost-nothing.md` (108 строк, ждёт
-`./ярлык указатель:печать`). Разговор 24 августа 2026.
+`bootstrap/flang run-script zettel-index:build`). Разговор 24 августа 2026.

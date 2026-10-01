@@ -298,7 +298,7 @@ grep -ac '|×|×|×|×|' scripts/proved-share-ledger.txt   # 0
 sh scripts/published-vs-tree.sh --доля | grep -c 'без приговора'   # 0
 
 # задачник цел
-./ярлык задачник:проверка   # код 0, «задачник цел: всего задач 159»
+bootstrap/flang run-script tasks:check   # код 0, «задачник цел: всего задач 159»
 ```
 
 `published-vs-tree.sh --доля` при этом по-прежнему уходит **кодом 1** и называет

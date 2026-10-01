@@ -7,7 +7,7 @@
 команда: любая
 карта: Что мешает больше всего
 рядом: 9621, 9622
-нужность: 3 — 27 сентября 2026: `./ярлык жаргон:проверка` код 0, но долг flang_repl.c в docs/jargon.json всё ещё 42; «--ledger» (flang_repl.c:511) и «СТОРОЖА ОСТАЛИСЬ ВСЕ» (:12733) на месте; ключ дописи долга теперь `./ярлык жаргон:долг`, а не node scripts/jargon-guard.mjs
+нужность: 3 — 27 сентября 2026: `bootstrap/flang run-script jargon:check` код 0, но долг flang_repl.c в docs/jargon.json всё ещё 42; «--ledger» (flang_repl.c:511) и «СТОРОЖА ОСТАЛИСЬ ВСЕ» (:12733) на месте; ключ дописи долга теперь `bootstrap/flang run-script jargon:debt`, а не node scripts/jargon-guard.mjs
 ---
 
 # 8650 — компилятор говорит с пользователем нашими внутренними словами

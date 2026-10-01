@@ -1536,7 +1536,7 @@ d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/guards/delivery-guard.flang
 baa3170dc90958c56352eb9b3f49ab9b|62|49|10|3|0|scripts/guards/homebrew-formula-guard.fscript
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/guards/input-boundary.fscript
 b00f9a812077e3b8497c15864acff995|10|7|3|0|0|scripts/guards/io-dictionary-copies-guard.fscript
-a07232cd8b9e683bc530843d7f95d821|4|0|2|0|0|scripts/guards/jargon-guard.fscript
+38cfa9e534117545dbc14c8afb46262b|2|0|2|0|0|scripts/guards/jargon-guard.fscript
 ea1518a801b7e78ee25788b065921aff|23|11|2|3|0|scripts/guards/kernel-abilities-guard.fscript
 5ab01492f40c7c4a19b89433856c1786|6|6|0|0|0|scripts/guards/license-guard.fscript
 4513584f34eca442e744d2b05863e98a|85|34|44|0|0|scripts/guards/link-guard.fscript
@@ -1571,6 +1571,7 @@ a98d9e712b2f955014f8cbb920a0249c|36|36|0|0|0|scripts/release/bump-version.fscrip
 fa5067d21a8ef524d58b5b8117c253b4|4|0|0|4|0|scripts/seed/new-binary-acceptance-probe.flang
 8c533af5ebe420fe7a9b8a1a9ef35ccf|9|9|0|0|0|scripts/seed/print-progress.fscript
 6bec7ed819a851590422857589b315ec|10|7|3|0|0|scripts/seed/reprint-freshness.fscript
+a7fd5b267e80fc79a516e05a1127662d|9|9|0|0|0|scripts/shortcut-collector.fscript
 43e86020b1b1785b15113241ecf0c0ee|1|1|0|0|0|scripts/site/changelog-page.flang
 5e4578f4c48ff79aa6669de59fecb019|14|14|0|0|0|scripts/site/emit-dictionary.fscript
 b84d7c3b1bf00b6bfe83e62e063aea2d|21|21|0|0|0|scripts/site/surfaces-page.fscript
@@ -1580,7 +1581,6 @@ ce97ff0ab2094dce6783702de4290b85|34|32|0|2|0|scripts/targets/emit-and-examples.f
 5f0d2e189fb05b4383ad353ab7f23fa7|48|42|3|3|0|scripts/targets/emit-law.fscript
 8d77245282ed034860ef3855371b30a0|26|26|0|0|0|scripts/targets/plan-across-targets.fscript
 9c2d3aecbfe7786b9701fb51fd4b1147|33|30|0|0|0|scripts/targets/region-in-c-target.fscript
-85322a38f7e60b8a3e786fb994be27b6|17|14|3|0|0|ярлыки.flang
 198cf373ae6cb9c1db86d1b84a527ace|1|0|0|0|0|flang/proof/probes/run/programs/induction.flang
 392e890f8ca71328df2c329278bbe474|1|1|0|1|0|flang/proof/probes/run/programs/plan-on-trust.flang
 a20022c07cab82df4b2458855c51460a|1|1|0|1|1|flang/proof/checker/tests/programs/7563/t2-two-binders.flang

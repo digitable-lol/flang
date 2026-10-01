@@ -64,7 +64,7 @@ for f in <12 файлов>; do cat "$f"; done | awk '/^[[:space:]]*#/{c++} {t++}
 | заметок docs/zettel | — | +16 (по одной на скрипт), указатель перепечатан |
 | коды 39 прогонов (штатные ключи, `--подлог`, негодный довод, фикстуры) | сняты | те же 39 |
 | тексты 39 прогонов | сняты | те же у 37; отличаются `semya-osvezhit.sh --help` (печатает шапку) и `identical-declarations.sh` без двоичного (bash называет номер строки) |
-| код без комментариев и пустых строк (`grep -v '^\s*#' | grep -v '^\s*$'`, diff до/после) | — | пуст у 16 файлов; одно изменение кода — диапазон `sed -n '3,20p'` в `--help` семя:освежить под новую шапку |
+| код без комментариев и пустых строк (`grep -v '^\s*#' | grep -v '^\s*$'`, diff до/после) | — | пуст у 16 файлов; одно изменение кода — диапазон `sed -n '3,20p'` в `--help` seed:refresh под новую шапку |
 
 Пересняты числа строк в `docs/tree-inventory.md` (пять примет «строк <файл>», строка
 оболочки 23 803 / долг 15 440, суммы 3 973 и 661) и примета `строк-в *.sh = 23161` в
@@ -121,13 +121,13 @@ make -C bootstrap
 
 | что | почему не в хуке |
 |---|---|
-| `./ярлык тесты` | дольше 2 минут |
+| `bootstrap/flang run-script tests` | дольше 2 минут |
 | набор проб независимой проверяющей программы | минуты |
-| `./ярлык сколько-верим` (потолок Г3) | минуты, нужен `--max-steps 2e9` |
+| `bootstrap/flang run-script trust:ceiling` (потолок Г3) | минуты, нужен `--max-steps 2e9` |
 | сборка `bootstrap/flang` | 2 минуты на этой машине, 5–6 на раннере |
 | десять проверок дороже 200 с | перечень — `scripts/guards/who-calls-the-guards.sh` |
 | `scripts/seed/what-lags-the-seed.fscript` | краснеть не умеет, это отчёт, а не проверка |
-| план «Целость» из `./ярлык ярлыки` | 23 с; её предмет зелен с 15 сентября |
+| план «Целость» из `bootstrap/flang run-script scripts:check` | 23 с; её предмет зелен с 15 сентября |
 
 ### Когда обход `git push --no-verify` законен
 
@@ -156,10 +156,10 @@ make -C bootstrap
 | 10 | `translit-file-names-guard` | translit | `bootstrap/flang io …/translit-file-names-guard.fscript --plan Проверка` | flang |
 | 11 | `no-package-json-guard` | bez-paketa | `bootstrap/flang io …/no-package-json-guard.fscript --plan Проверка` | flang |
 | 12 | `shortcut-collector` | sbor | `bootstrap/flang io scripts/shortcut-collector.fscript --plan Сбор --max-orders 20000 --на-веру` | flang |
-| 13 | `version` | versiya | `./ярлык версия:проверка` | через `ярлык` |
-| 14 | `licenses` | licenzii | `./ярлык лицензии:проверка` | через `ярлык` |
-| 15 | `task-ledger` | zadachnik | `./ярлык задачник:проверка` | через `ярлык` |
-| 16 | `tree-inventory` | opis-sverka | `./ярлык опись:сверка` | через `ярлык` |
+| 13 | `version` | versiya | `bootstrap/flang run-script version:check` | через `ярлык` |
+| 14 | `licenses` | licenzii | `bootstrap/flang run-script licenses:check` | через `ярлык` |
+| 15 | `task-ledger` | zadachnik | `bootstrap/flang run-script tasks:check` | через `ярлык` |
+| 16 | `tree-inventory` | opis-sverka | `bootstrap/flang run-script inventory:check` | через `ярлык` |
 
 Восемь вызовов (1–8) остаются оболочкой, пока эти скрипты не переведены; файл
 `ярлык` — тоже оболочка. Хук зовёт их как есть.

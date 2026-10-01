@@ -68,11 +68,11 @@ bootstrap/flang io scripts/guards/stale-pages-guard.fscript --plan 'Страни
 
 | проверка | что сняли | код |
 | --- | --- | --- |
-| `числа:проверка` (`node docs/site/site-numbers.mjs --check`) | не уложилась в 900 секунд, убита по сроку | 124 |
-| `выпуски:страница:проверка` | `не доказано: утверждений 60: доказано 23, сетка 37, на веру 0 — запуск только по явному согласию: --на-веру` | 3 |
-| `словарь:проверка` | `не доказано: утверждений 30: доказано 24, сетка 6, на веру 0` | 3 |
+| `numbers:check` (`node docs/site/site-numbers.mjs --check`) | не уложилась в 900 секунд, убита по сроку | 124 |
+| `releases:page:check` | `не доказано: утверждений 60: доказано 23, сетка 37, на веру 0 — запуск только по явному согласию: --на-веру` | 3 |
+| `dictionary:check` | `не доказано: утверждений 30: доказано 24, сетка 6, на веру 0` | 3 |
 
-Для сравнения: `сайт:проверка` (`node docs/site/build.mjs --check`) зелена, код 0.
+Для сравнения: `site:check` (`node docs/site/build.mjs --check`) зелена, код 0.
 
 ## Пересъёмка: место → команда → что вышло
 
@@ -199,7 +199,7 @@ bootstrap/flang io scripts/guards/stale-pages-guard.fscript --plan 'Страни
 1. **«Дорогая» половина `docs/site/numbers.json`** — `корпус.функций`,
    `корпус.тотальных`, `корпус.обычных`, `корпус.безПроверок`, `утверждения.*`,
    `носители.*`, `сторож.*`, `словарь.*`. Прибор — `node
-   docs/site/site-numbers.mjs --write` (`./ярлык числа`), прогон двоичного по
+   docs/site/site-numbers.mjs --write` (`bootstrap/flang run-script numbers:build`), прогон двоичного по
    всему корпусу, часы. Даже `--check` не уложился в 900 секунд: убит по сроку,
    код 124. Числа на страницах сверены с файлом и с его объявленной родословной
    (`252606e8`, 23 августа 2026), заново не снимались. Ноль вместо них не
@@ -219,7 +219,7 @@ bootstrap/flang io scripts/guards/stale-pages-guard.fscript --plan 'Страни
    `npm install`. Ходят в сеть; расшифровок у них на странице нет, и заводить их
    было нечем.
 
-Прогонов, не уложившихся в отведённое время: **один** (`числа:проверка`, предел
+Прогонов, не уложившихся в отведённое время: **один** (`numbers:check`, предел
 900 секунд).
 
 ## Чтобы не протухало молча: чего сторожу не хватало
@@ -258,7 +258,7 @@ bootstrap/flang io scripts/guards/stale-pages-guard.fscript --plan 'Страни
    остальными.
 
 Сверх страниц: **код 3 сторож считает вердиктом проверки.** Два члена его семьи
-(`выпуски:страница:проверка`, `словарь:проверка`) отвечают кодом 3 — «не
+(`releases:page:check`, `dictionary:check`) отвечают кодом 3 — «не
 доказано, запуск только по явному согласию», — и это «прибор не дал вердикта», а
 не «страница разошлась». У сторожа для такого уже есть отдельная полка («НЕ
 СПРОШЕНО», печатается рядом с зелёным итогом), но заводится она только на код
@@ -277,9 +277,9 @@ bootstrap/flang io scripts/guards/stale-pages-guard.fscript --plan 'Замер �
 
 | проверка | почему красна | чинится |
 | --- | --- | --- |
-| `числа:проверка` | пересчёт идёт часы, в 900 секунд не лезет | подъёмом срока у сторожа либо дешёвым `--check`; вход растёт с каждым выпуском |
-| `выпуски:страница:проверка` | код 3: в программе 37 утверждений на сетке из 60 | отдельная работа по доказуемости |
-| `словарь:проверка` | код 3: 6 утверждений из 30 на сетке | отдельная работа по доказуемости |
+| `numbers:check` | пересчёт идёт часы, в 900 секунд не лезет | подъёмом срока у сторожа либо дешёвым `--check`; вход растёт с каждым выпуском |
+| `releases:page:check` | код 3: в программе 37 утверждений на сетке из 60 | отдельная работа по доказуемости |
+| `dictionary:check` | код 3: 6 утверждений из 30 на сетке | отдельная работа по доказуемости |
 
 Значит `ci.yml` этой работой ещё не включается: сторож зелен по страницам и красен
 по семье.
@@ -291,12 +291,12 @@ bootstrap/flang io scripts/guards/stale-pages-guard.fscript --plan 'Замер �
 
 | страница | что называет |
 | --- | --- |
-| `03-totality.md` | `./ярлык числа` |
-| `05-promise.md` | `./ярлык числа` |
-| `09-eight-targets.md` | `./ярлык тесты` |
-| `13-where-next.md` | `./ярлык числа` (дважды), `./ярлык числа:проверка`, `./ярлык тесты` (дважды), `node docs/site/build.mjs --check` |
-| `00-overview.md` | `./ярлык числа` — в записи о происхождении числа |
-| `README.md` | `./ярлык числа` — там же |
+| `03-totality.md` | `bootstrap/flang run-script numbers:build` |
+| `05-promise.md` | `bootstrap/flang run-script numbers:build` |
+| `09-eight-targets.md` | `bootstrap/flang run-script tests` |
+| `13-where-next.md` | `bootstrap/flang run-script numbers:build` (дважды), `bootstrap/flang run-script numbers:check`, `bootstrap/flang run-script tests` (дважды), `node docs/site/build.mjs --check` |
+| `00-overview.md` | `bootstrap/flang run-script numbers:build` — в записи о происхождении числа |
+| `README.md` | `bootstrap/flang run-script numbers:build` — там же |
 
 Шесть файлов, десять упоминаний ярлыков.
 
@@ -323,8 +323,8 @@ bootstrap/flang io scripts/guards/stale-pages-guard.fscript --plan 'Замер �
 ```sh
 bootstrap/flang io scripts/guards/stale-pages-guard.fscript --plan 'Замер версии' --на-веру
 sh scripts/guards/prose-numbers-guard.sh
-./ярлык задачник:проверка
-./ярлык ссылки:проверка
+bootstrap/flang run-script tasks:check
+bootstrap/flang run-script links:check
 node docs/site/build.mjs --check
 bootstrap/flang check scripts/guards/stale-pages-guard.fscript
 cd docs/course && ../../bootstrap/flang io check.flang --на-веру

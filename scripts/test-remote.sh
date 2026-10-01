@@ -12,8 +12,8 @@
 # Лечится не уговорами, а местом прогона: на хосте, где стоят все девять,
 # пропусков нет по построению, и там же прогон банально быстрее — ядер больше.
 #
-#   scripts/test-remote.sh                  весь набор (ярлык «тесты»)
-#   scripts/test-remote.sh спеки:проверка   любой ярлык из ярлыки.flang
+#   scripts/test-remote.sh                  весь набор (команда «tests»)
+#   scripts/test-remote.sh specs:check      любая короткая команда из .flangrc
 #   scripts/test-remote.sh --shell "cmd"    произвольная команда в копии
 #   scripts/test-remote.sh --sync           только синхронизировать
 #   scripts/test-remote.sh --info           что за хост и что на нём стоит
@@ -103,8 +103,8 @@ sync_tree() {
 # ЗДЕСЬ БЫЛ `npm ci`. Снят 3 сентября 2026 вместе с npm: зависимостей у дерева
 # ноль, `package-lock.json` удалён, и без замка `npm ci` отвечает кодом 1
 # («can only install with an existing package-lock.json») — то есть шаг стал бы
-# ронять прогон, ничего не поставив. Двоичный, который нужен ярлыку, собирает
-# сам `./ярлык` на той стороне.
+# ронять прогон, ничего не поставив. Двоичного на той стороне нет — его
+# собирает `make -C bootstrap` перед прогоном.
 
 case "${1:-}" in
   --info) show_info; exit 0 ;;
@@ -122,17 +122,17 @@ case "${1:-}" in
     ;;
 esac
 
-TARGET="${1:-тесты}"
+TARGET="${1:-tests}"
 
 show_info
 check_toolchains
 sync_tree
 
-say "Прогон: ./ярлык $TARGET (FTS_REQUIRE_TOOLCHAINS=$REQUIRE)"
+say "Прогон: bootstrap/flang run-script $TARGET (FTS_REQUIRE_TOOLCHAINS=$REQUIRE)"
 info "${DIM}отсутствие любого тулчейна на хосте — провал, а не пропуск${RST}"
 START=$(date +%s)
 set +e
-remote_run "FTS_REQUIRE_TOOLCHAINS='$REQUIRE' ./ярлык $TARGET"
+remote_run "{ [ -x bootstrap/flang ] || make -C bootstrap -j\"\$(nproc)\"; } && FTS_REQUIRE_TOOLCHAINS='$REQUIRE' bootstrap/flang run-script $TARGET"
 STATUS=$?
 set -e
 ELAPSED=$(( $(date +%s) - START ))
@@ -146,4 +146,4 @@ else
   printf '    %sНАБОР НЕ ПРОЙДЕН%s (код %d)\n' "$RED" "$RST" "$STATUS"
 fi
 exit "$STATUS"
-# ярлык «тесты:по-ssh» bash — тот же набор на машине по ssh: FLANG_REMOTE=<алиас>
+# короткая команда «tests:remote» bash — тот же набор на машине по ssh: FLANG_REMOTE=<алиас>

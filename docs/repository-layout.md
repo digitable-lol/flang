@@ -71,5 +71,5 @@ The loose files in the root: `README.md` (the front page of the repository; its 
 links in the root, which keep the addresses other repositories already point at; `CHANGELOG.md` ·
 `changelog.json` (printed from tags and commit subjects, never edited by hand); `.flangrc` (the
 settings file, and the one place the version, the licence and the two addresses are read from —
-[the settings page](guide/settings.ru.md)); `ярлык` · `ярлыки.flang` — the shortcuts of the
-tree and the `sh` entry point that runs them.
+[the settings page](guide/settings.ru.md)), which also holds the short commands of the tree, one
+`script.<name>` line each, run as `bootstrap/flang run-script <name>`.

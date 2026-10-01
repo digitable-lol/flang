@@ -22,7 +22,7 @@
 лицензия, два адреса, `engines`. npm из дерева убран 3 сентября 2026 (задача 8649);
 файл печатается из `scripts/release/emit-package.flang` (`./ярлык пакет`), а версия
 для оболочки уже читается без JSON: `sh scripts/flangrc.sh версия` → `0.7.19`
-(ключ `версия` в `.flangrc`, разносит `./ярлык версия <N>`).
+(ключ `версия` в `.flangrc`, разносит `bootstrap/flang run-script version <N>`).
 
 Читатели корневого файла в живом коде:
 
@@ -33,7 +33,7 @@
 | `.github/workflows/install-path.yml:73,85,257–284` | фильтр путей и шаг «FLANG_VERSION совпадает с package.json» | сверять с `.flangrc` |
 | `.github/workflows/ci.yml:1506–1524` | шаг «package.json сходится с объявлением пакета» и подлог | сторож «файла нет» |
 | `scripts/release/emit-package.flang` | печатает файл; ярлыки `пакет`, `пакет:проверка` | оставить печать `.flangrc`-ключей либо снести планы печати |
-| `scripts/guards/version-guard.flang` (`./ярлык версия:проверка`) | «FLANG_VERSION совпадает с package.json» | сверять с `.flangrc` |
+| `scripts/guards/version-guard.flang` (`bootstrap/flang run-script version:check`) | «FLANG_VERSION совпадает с package.json» | сверять с `.flangrc` |
 | `scripts/guards/version-derivations-guard.sh`, `scripts/release/bump-version.sh` | разносят версию в package.json | убрать это место из списка |
 | `docs/site/site-numbers.mjs`, `scripts/guards/homebrew-formula-guard.flang` | версию | `.flangrc` |
 | `flang/scripts/code-guard.flang:226,244` | строка «где» с package.json | проверить, что это |
@@ -46,7 +46,7 @@
 ## Как поймём, что сделано
 
 - `git ls-files package.json` пуст;
-- `./ярлык версия` печатает `0.7.19` без package.json; `./ярлык версия:проверка` код 0;
+- `bootstrap/flang run-script version` печатает `0.7.19` без package.json; `bootstrap/flang run-script version:check` код 0;
 - сторож (`sh scripts/guards/no-package-json-guard.sh` или рядом) красен, когда файл
   подложен, и зелен, когда его нет — показано прогоном;
 - работы «Двоичный», «Путь установки», «Выпуск» зелены на ветке (3 из 3);
@@ -67,7 +67,7 @@
 
 - **Откуда читаются пять значений.** Имя, версия, лицензия, адрес склада и адрес бед —
   ключи `имя`, `версия`, `лицензия`, `склад`, `беды` в `.flangrc`. Разносит их туда
-  `./ярлык версия <N>` из единственного источника `scripts/release/emit-package.flang`
+  `bootstrap/flang run-script version <N>` из единственного источника `scripts/release/emit-package.flang`
   (функции «Имя пакета», «Версия», «Лицензия», «Адрес склада», «Адрес бед»). Читают:
   `docs/site/build.flang`, `docs/site/site-numbers.flang`, `scripts/site/build-changelog.flang`,
   `scripts/site/release-body.flang`, `scripts/guards/version-guard.flang`,

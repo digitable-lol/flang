@@ -95,7 +95,7 @@ flang check docs/examples/rosetta/fibonacci.flang --proof
 ## Сводка по всему дереву
 
 ```bash
-./ярлык числа
+bootstrap/flang run-script numbers:build
 ```
 
 | утверждения о поведении по всему дереву | сколько |

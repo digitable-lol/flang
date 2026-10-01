@@ -21,9 +21,9 @@
 
 | потребитель | что ввозит из трёх каталогов | кто зовёт потребителя |
 |---|---|---|
-| `docs/site/highlighting.mjs` | `flang/scripts/binary.mjs` (`кодыРазбора`, `токеныИсходника`) | `docs/site/build.mjs` → `pages.yml`, ярлыки `сайт`, `сайт:проверка` |
-| `docs/site/surfaces-run.mjs` | `binary.mjs`, `flang/scripts/direct-run.mjs`, `flang/test/surface-pair.mjs` | ярлыки `поверхности:прогон`, `поверхности:проверка` |
-| `docs/site/site-numbers.mjs` | `direct-run.mjs`, `flang/scripts/proof-ledger.mjs` (`ФАЙЛЫ`, `сводКорпуса`) | ярлыки `числа`, `числа:проверка` |
+| `docs/site/highlighting.mjs` | `flang/scripts/binary.mjs` (`кодыРазбора`, `токеныИсходника`) | `docs/site/build.mjs` → `pages.yml`, ярлыки `site:build`, `site:check` |
+| `docs/site/surfaces-run.mjs` | `binary.mjs`, `flang/scripts/direct-run.mjs`, `flang/test/surface-pair.mjs` | ярлыки `surfaces:run`, `surfaces:check` |
+| `docs/site/site-numbers.mjs` | `direct-run.mjs`, `flang/scripts/proof-ledger.mjs` (`ФАЙЛЫ`, `сводКорпуса`) | ярлыки `numbers:build`, `numbers:check` |
 | `flang/concurrency/bench/node-death-targets.mjs` | `flang/test/{tempdir,toolchain-guard,uzel-osnastka}.mjs` | **никто** (ни ярлык, ни `.yml`, ни `.sh`) |
 
 Решение координатора 9 сентября 2026: общие модули переезжают ПОД своих
@@ -64,5 +64,5 @@
 `git ls-files 'docs/site/*.mjs' 'flang/concurrency/bench/*.mjs' | wc -l` → 0 (кроме
 `docs/site/search-check.mjs`, если решение о нём не изменилось — он
 проверяет тот же `search.js`, что читает браузер); `pages.yml` без `node`;
-`./ярлык сайт:проверка` и `./ярлык поверхности:проверка` отвечают тем же
+`bootstrap/flang run-script site:check` и `bootstrap/flang run-script surfaces:check` отвечают тем же
 кодом, что до сноса.

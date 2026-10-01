@@ -751,17 +751,17 @@
   принимает name: строка, sorted: список строки
   возвращает список строки
   пример «A name takes its place among the sorted ones»
-    дано name равно "зов:проверка"
-    дано sorted равно ["длина:проверка", "коды:проверка"]
-    ожидается ["длина:проверка", "зов:проверка", "коды:проверка"]
+    дано name равно "guard-calls:check"
+    дано sorted равно ["closed-length:check", "codes:check"]
+    ожидается ["closed-length:check", "codes:check", "guard-calls:check"]
   «Joined» от (добавить name к (отфильтровать sorted где each → не («Goes before» от name и each))) и (отфильтровать sorted где each → «Goes before» от name и each)
 
 тотальная функция «Sorted»
   принимает names: список строки
   возвращает список строки
   пример «Names are put in the order of their signs»
-    дано names равно ["коды:проверка", "длина:проверка", "зов:проверка"]
-    ожидается ["длина:проверка", "зов:проверка", "коды:проверка"]
+    дано names равно ["codes:check", "closed-length:check", "guard-calls:check"]
+    ожидается ["closed-length:check", "codes:check", "guard-calls:check"]
   свёртка names начиная с (пустой список) как sorted и name → «Placed» от name и sorted
 
 тотальная функция «Rule line»

@@ -77,7 +77,7 @@
 
 ## Как понять, что сделано
 
-`sh .githooks/pre-push` зелен, все прогоны зелены, `./ярлык` перечисляет прежние
+`sh .githooks/pre-push` зелен, все прогоны зелены, `bootstrap/flang run-script` перечисляет прежние
 ярлыки с новыми командами, и `git grep -l raskrutka.sh` находит только историю.
 
 ## Замер 17 сентября 2026 (часть 2 — имена без транслита и сторож)
@@ -91,7 +91,7 @@
 | сторож `--check` / `--подлог` | — | 0 / 1 (подлог пойман, дерево чистое) | `sh scripts/guards/translit-file-names-guard.sh --check`, `--подлог` |
 | ссылок на старые имена вне летописи (completed, rejected, changelog, release-notes, таблица этой задачи) | 143 строки после черновика | 0 в стеке T; 3 комментария вне стека (`flang/proof/tables-guard.sh:87`, `flang/src/emit/c/flang_repl.c:269` и его семя) | `git grep -n -P '(?<![\w-])<старое имя>(?![\w-])'` по каждому из 83 имён |
 | `proba` в коде (без docs и *.md) | 165 | 83 — из них в стеке T 10 (строки ведомостей `link-guard-known-not-a-path.tsv`, `uncalled-guards.json`, `guards-without-forgery-probe.json`, привязанные к тексту документов и к имени порождённого cpp-заголовка); 73 вне стека (flang/proof 59, raskrutka.sh 11, flang_repl.c ×2, flang/self/cli.flang) | `git grep -c -i -E '\bprob[aiy]\b\|proba' -- . ':!docs' ':!*.md'` |
-| ярлыков в `ярлыки.flang` | 144 | 146 (`транслит:проверка`, `транслит:подлог`) | `bootstrap/flang check ярлыки.flang` |
+| ярлыков в `ярлыки.flang` | 144 | 146 (`transliteration:check`, `transliteration:forgery`) | `bootstrap/flang check ярлыки.flang` |
 
 Коды переименованных скриптов, тот же ключ до и после (двоичный один — `bootstrap/flang` ветки):
 
@@ -282,7 +282,7 @@ scripts/guards/task-numbers-guard.sh: line 138: target-twins=: command not found
 истинно всегда.
 
 Почему никто не заметил: эту проверку зовёт только `ярлыки.flang`, и двойные
-номера параллельно ловит `./ярлык задачник:проверка` (своя реализация на flang,
+номера параллельно ловит `bootstrap/flang run-script tasks:check` (своя реализация на flang,
 код 0). Дыры в надзоре не открылось — но сторож не работал ни у кого.
 
 Правка: `twins` вместо `target-twins` в трёх местах (объявление, проверка на

@@ -145,7 +145,7 @@ window.flang: не проверено — замечаний 2                  
 
 - `flang/src/emit/c/flang_repl.c:15644` `io_perform` — ветка рядом с
   «Прочитать октеты из файла» (строка 15748), `pread`/`fseek`; это хозяин
-  `flang io`. Доезжает до двоичного быстрым пересевом `./ярлык семя:освежить`;
+  `flang io`. Доезжает до двоичного быстрым пересевом `bootstrap/flang run-script seed:refresh`;
 - `flang/src/emit/c/flang_conc.c:1731` `fl_conc_perform` — ветка рядом со
   строкой 1882; это хозяин напечатанного C с процессами. Попадает в вывод
   `flang emit` сразу: рантайм берётся из `flang/src/emit/c` при печати;

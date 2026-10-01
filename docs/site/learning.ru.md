@@ -134,7 +134,7 @@ flang run hello.flang --function Удвоить --args '{"н": 21}'
 ```bash
 flang check файл.flang         # что не сошлось
 flang check файл.flang --proof # что именно доказано, а что нет
-flang --help                   # тринадцать команд и что каждая делает
+flang --help                   # четырнадцать команд и что каждая делает
 ```
 
 Отказ начинается с имени: `FLANG_TYPE`, `FLANG_NOT_TOTAL`,

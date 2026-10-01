@@ -16,7 +16,7 @@
 
 Снято 30 августа 2026 на стволе `f9e67fa6`.
 
-Ярлык `двоичный:приёмка` → `bootstrap/flang io scripts/seed/new-binary-acceptance.fscript --plan Accept --timeout 3600000 --`.
+Ярлык `binary:acceptance` → `bootstrap/flang io scripts/seed/new-binary-acceptance.fscript --plan Accept --timeout 3600000 --`.
 **Примет ровно шесть**, `scripts/seed/new-binary-acceptance.fscript`, строки 106, 114/118,
 126/127, 136/138, 161/178, 203/206:
 

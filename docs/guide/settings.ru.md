@@ -86,7 +86,7 @@ flang: /work/.flangrc: запись «недоказанное = разреше�
 разносит
 
 ```
-./ярлык версия <НОВОЕ ЧИСЛО>
+bootstrap/flang run-script version <НОВОЕ ЧИСЛО>
 ```
 
 из функций «Версия», «Имя пакета», «Лицензия», «Адрес репозитория» и «Адрес
@@ -129,6 +129,25 @@ allow — запустить, вердикта не считая.
 
 Пробы всех исходов — `flang/proof/probes/unproven/`
 (`bootstrap/flang io flang/proof/probes/unproven/run.fscript --plan Binary`).
+
+## Короткие команды
+
+Строка `script.<имя> = <команда>` заводит короткую команду проекта — так же,
+как раздел `scripts` в `package.json`. Имя пишется по-английски: строчная
+латиница, цифры, дефис и двоеточие.
+
+```
+script.site:build = node docs/site/build.mjs
+script.site:check = node docs/site/build.mjs --check
+```
+
+Исполняет её сам двоичный: `flang run-script site:build`; в этом дереве —
+`bootstrap/flang run-script site:build`. Без имени команда печатает перечень.
+Строку получает `/bin/sh -c` в каталоге файла, код возврата — её собственный.
+Берётся только файл проекта: файл дома коротких команд не даёт, переменной
+среды и довода для них нет. Решение —
+[ADR-0049](../adr/0049-short-commands-live-in-the-settings-file.md); ключи и
+коды — на странице [команд](../site/cli.ru.md).
 
 ## Где файл ищется
 

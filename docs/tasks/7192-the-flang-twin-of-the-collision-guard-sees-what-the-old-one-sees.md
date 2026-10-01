@@ -40,7 +40,7 @@ $ node flang/scripts/link-collision-guard.mjs flang/self/bootstrap/compiler.flan
 ## Настоящая слепота — у близнеца на flang, и она измерена
 
 `scripts/guards/name-collision-guard.fscript`, 1723 строки, ярлык
-`столкновения:пересчёт` (`ярлыки.flang:80`). Замер 23 августа, ствол `c6cb34b7`,
+`name-collisions:recount` (`ярлыки.flang:80`). Замер 23 августа, ствол `c6cb34b7`,
 оба прогона на ОДНОМ дереве подряд
 (`docs/zettel/the-flang-twin-of-the-collision-guard-stayed-green-on-three-real-collisions.md`):
 

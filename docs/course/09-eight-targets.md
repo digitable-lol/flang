@@ -298,7 +298,7 @@ dotnet bin/Debug/net8.0/flang.dll MestoVstavki
 > 15,83 секунды, 5 сентября 2026.
 
 ```bash
-./ярлык тесты
+bootstrap/flang run-script tests
 ```
 
 Отдельного ярлыка на одни цели печати больше нет. Он звал

@@ -149,7 +149,7 @@ permissions:
 #
 # Число это здесь БОЛЬШЕ НЕ ЖИВЁТ, и это главное изменение: пометка в шапке
 # устаревает молча, а прогон — нет. Считает его
-# `flang/scripts/guards-start.fscript` (ярлык `сторожа:проверка`), он ходит
+# `flang/scripts/guards-start.fscript` (команда `guards:check`), он ходит
 # на КАЖДЫЙ пуш работой `storozha` в `binary.yml`, отвечает числом и красным
 # кодом возврата, и «мне нечем смотреть» отличает от «предмет плох».
 #
@@ -310,8 +310,8 @@ jobs:
 
   # ЗАДАЧНИК СВЕРЯЕТСЯ АВТОМАТИКОЙ, А НЕ ПО ПАМЯТИ.
   #
-  # 5 сентября 2026 сторож `задачник:проверка` дал 221 замечание — и ни одно из
-  # них не было новым: ярлык существовал, но его не звал НИ ОДИН workflow, и
+  # 5 сентября 2026 сторож `tasks:check` дал 221 замечание — и ни одно из
+  # них не было новым: команда существовала, но её не звал НИ ОДИН workflow, и
   # разъезд копился месяцами, потому что смотреть было некому. Нашли его
   # случайным ручным прогоном (задача 9990), а не воротами.
   #
@@ -339,14 +339,14 @@ jobs:
           # переменных оболочки, и `файл=...` было бы разобрано как команда.
           podlog=docs/tasks/1315-vremennoe-v-dereve-ishodnikov.md
           sed -i 's/^статус: свободна$/статус: сделяно (подлог)/' "$podlog"
-          if ./ярлык задачник:проверка; then
+          if bootstrap/flang run-script tasks:check; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Check task tracker
-        run: ./ярлык задачник:проверка
+        run: bootstrap/flang run-script tasks:check
 
   # СЕМЯ ОБЯЗАНО СОБИРАТЬСЯ ТЕМИ ФЛАГАМИ, КОТОРЫЕ САМО ЖЕ И ПРОСИТ.
   #
@@ -437,13 +437,13 @@ jobs:
   # были красны. Задача 0049 перенесла 11 из 14 проб примерами в
   # `flang/test/жаргон.flang` (95 своих примеров; ещё 164 прогоняются из
   # подключённого `scripts/guards/jargon-guard.fscript`), а сторож на Node снят —
-  # ярлыки `жаргон:*` и работа с `./ярлык жаргон:проверка` ниже зовут двойник
+  # команды `jargon:*` и работа с `bootstrap/flang run-script jargon:check` ниже зовут двойник
   # на flang. Замер на дереве `6dff8a3a9`, двоичный из его семени: «примеров
   # 259, прошло 259, не прошло 0» за 10 с и 248 МиБ; два испорченных ожидания
   # красят («прошло 257, не прошло 2», код 1, оба примера названы).
   #
   # Три пробы не перенесены, и вот куда они делись: «сегодня зелёный» — это
-  # прогон по дереву, его делает `./ярлык жаргон:проверка`; «каждая страница
+  # прогон по дереву, его делает `bootstrap/flang run-script jargon:check`; «каждая страница
   # карты сайта под маской» — карта живёт в `docs/site/sitemap.mjs`, на flang
   # её читать нечем; «код сторожа не выпущен наружу строкой» читал исходник
   # самого снятого файла.
@@ -478,8 +478,8 @@ jobs:
         node-version: [20, 22, 24]
     steps:
       # Вся история и все теги: журнал изменений печатается из них
-      # (scripts/site/build-changelog.fscript, ярлык `журнал`), и ярлык
-      # `журнал:проверка` сверяет записанный файл с историей. Клон по умолчанию — одна ревизия без единого
+      # (scripts/site/build-changelog.fscript, команда `changelog:build`), и команда
+      # `changelog:check` сверяет записанный файл с историей. Клон по умолчанию — одна ревизия без единого
       # тега, и в нём эта сверка сравнивать нечего с чем: она осталась бы
       # зелёной, ничего не проверив.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -527,9 +527,9 @@ jobs:
       # (flang/test/self-bootstrap.test.mjs) удалён вместе с реализацией на
       # JavaScript, и семя с того дня не сверял никто. Сторожит его теперь работа
       # «semya» в binary.yml — она ходит на каждый пуш и стоит полсекунды.
-      # Был `npm test` — это ровно `./ярлык тесты`. npm не делал здесь ничего,
+      # Был `npm test` — это ровно `bootstrap/flang run-script tests`. npm не делал здесь ничего,
       # кроме подстановки строки из `package.json`.
-      - run: ./ярлык тесты
+      - run: bootstrap/flang run-script tests
         env:
           FTS_REQUIRE_TOOLCHAINS: c
           FTS_REQUIRE_BINARY: 1
@@ -1168,10 +1168,10 @@ jobs:
   # ⚠ КРАСНА СЕГОДНЯ, и это надо знать тому, кто поставит следующую метку:
   # 8 замечаний. Шесть — версия 0.6.2, набранная руками вместо подстановки
   # `{{выпуск.версия}}` (`docs/site/contributing.md:25`, `contributing.ru.md:24`,
-  # `ai-assistant.md:8,32`, `ai-assistant.ru.md:7,30`). Два — свои же дети: `числа:проверка`
-  # не уложилась в срок, `выпуски:страница:проверка` кончилась
+  # `ai-assistant.md:8,32`, `ai-assistant.ru.md:7,30`). Два — свои же дети: `numbers:check`
+  # не уложилась в срок, `releases:page:check` кончилась
   # FLANG_RECURSION_LIMIT на 10 млн шагов. Оба — ровно те две починки, которые
-  # Ч77 называет «правкой на минуты в ярлыки.flang»: свой `--timeout` и
+  # Ч77 называет «правкой на минуты в списке команд»: свой `--timeout` и
   # `--max-steps`.
   stale-pages:
     name: stale-pages
@@ -1193,14 +1193,14 @@ jobs:
 
   # ── СТОРОЖА, КОТОРЫХ НИКТО НЕ ЗВАЛ ──────────────────────────────────────────
   #
-  # Перепись снимается ПРИБОРОМ, а не рукой: `./ярлык зов:проверка`
+  # Перепись снимается ПРИБОРОМ, а не рукой: `bootstrap/flang run-script guard-calls:check`
   # (scripts/guards/who-calls-the-guards.fscript, девять секунд). Числа здесь нарочно НЕ
   # повторены — они уже протухали: рука насчитала «сторожей 56, зовёт 29», а
-  # прибор даёт другое, потому что рука считала записи из блоков `пример` за
-  # ярлыки и принимала путь в фильтре `paths:` за вызов (задача 7298).
-  # Порода стоила дорого трижды за сутки: `задачник:проверка` дорос до 220
-  # замечаний незамеченным, числа ярлыка `чекер:проверка` протухли на сотню,
-  # `перечни:проверка` копил 55 расхождений.
+  # прибор даёт другое, потому что рука принимала путь в фильтре `paths:` за
+  # вызов (задача 7298).
+  # Порода стоила дорого трижды за сутки: `tasks:check` дорос до 220
+  # замечаний незамеченным, числа команды `checker:check` протухли на сотню,
+  # `hand-written-lists:check` копил 55 расхождений.
   # Сторож, которого не зовут, — не проверка, а её изображение; и починка тут
   # самая дешёвая из всех наших: не написать сторожа, а вписать строку сюда.
   #
@@ -1208,13 +1208,13 @@ jobs:
   # задачей 9220, сверка ведомости — задачей 7298. У каждого впереди идёт шаг
   # подлога: сторожу верят только после того, как он покраснел на подложенном.
   #
-  # `занятые:проверка` СТОИТ ЗДЕСЬ с 5 сентября (задача 5612): проба ему
+  # `occupied-names:check` СТОИТ ЗДЕСЬ с 5 сентября (задача 5612): проба ему
   # построена и прогнана, а прежняя вторая беда — падение на свежей выкладке,
   # потому что он кладёт файл в output/, а каталога не создавал, — починена:
   # каталог заводит теперь он сам («Команда корпуса», mkdir -p output). Прогнан
   # на нарочно чистой выкладке 5 сентября: код 0 за 31 с.
   #
-  # `слова:проверка` зелен прогоном (53 с) и проба у него ЕСТЬ, но здесь его
+  # `target-words:check` зелен прогоном (53 с) и проба у него ЕСТЬ, но здесь его
   # нет, и причина не в пробе: он судит восемь целей печати и на непроверенной
   # цели отвечает кодом 2, а не 0. На `ubuntu-latest` нет `elixirc` — прогон с
   # таким PATH даёт код 2 и слова «целей проверено 7 из 8». Он краснел бы здесь
@@ -1235,14 +1235,14 @@ jobs:
           set -u
           podlog=docs/glossary.md
           sed -i '0,/^| /s/^| /| ПОДЛОГ-ВЫДУМАННОЕ-ПОНЯТИЕ | подлог |\n| /' "$podlog"
-          if ./ярлык словарь:проверка; then
+          if bootstrap/flang run-script dictionary:check; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Check glossary
-        run: ./ярлык словарь:проверка
+        run: bootstrap/flang run-script dictionary:check
 
       - name: Probe blockers table
         run: |
@@ -1259,14 +1259,14 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./ярлык что-мешает:проверка; then
+          if bootstrap/flang run-script what-blocks:check; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Check blockers table
-        run: ./ярлык что-мешает:проверка
+        run: bootstrap/flang run-script what-blocks:check
 
       # Ниже — трое, прогнанные и снабжённые подлогом задачей R1. Каждый идёт
       # парой: сперва подлог обязан покраснеть, потом рабочий шаг обязан быть
@@ -1278,14 +1278,14 @@ jobs:
           set -u
           podlog=CONTRIBUTING.md
           printf '\nПодлог: внутрикорпусный близнец отстаёт.\n' >> "$podlog"
-          if ./ярлык жаргон:проверка; then
+          if bootstrap/flang run-script jargon:check; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Check jargon
-        run: ./ярлык жаргон:проверка
+        run: bootstrap/flang run-script jargon:check
 
       - name: Probe length claims
         run: |
@@ -1302,14 +1302,14 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./ярлык длина:проверка; then
+          if bootstrap/flang run-script closed-length:check; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Check length claims
-        run: ./ярлык длина:проверка
+        run: bootstrap/flang run-script closed-length:check
 
       - name: Probe command list
         run: |
@@ -1320,23 +1320,23 @@ jobs:
           # снимает разбором справки двоичного, а не своим списком.
           cp "$podlog" "$podlog.do"
           # Перечень переносится со строки на строку, и образец через перенос
-          # («`package`, `new`, `repl`») с 14 сентября 2026 не совпадал ни с чем.
+          # («`package`, `new`, `run-script`») с 14 сентября 2026 не совпадал ни с чем.
           # Режем «new» там, где он стоит в начале строки перечня.
-          sed -i 's/^`new`, `repl`/`repl`/' "$podlog"
+          sed -i 's/^`new`, `run-script`/`run-script`/' "$podlog"
           if cmp -s "$podlog.do" "$podlog"; then
             rm -f "$podlog.do"; git checkout -- "$podlog"
             echo "ПОДЛОГ НЕ СОБРАЛСЯ: перечень команд в $podlog уже не тот — поправить подлог, сторож ни при чём" >&2
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./ярлык команды:проверка; then
+          if bootstrap/flang run-script cli-commands:check; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Check command list
-        run: ./ярлык команды:проверка
+        run: bootstrap/flang run-script cli-commands:check
 
       - name: Probe uncalled guards
         run: |
@@ -1347,7 +1347,7 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: Check uncalled guards
-        run: ./ярлык зов:проверка
+        run: bootstrap/flang run-script guard-calls:check
 
       # ── Ещё двое, прогнанные и снабжённые подлогом задачей 6612 ────────────
       #
@@ -1360,11 +1360,11 @@ jobs:
       # Здесь они встают парой: сперва подлог обязан покраснеть, потом рабочий
       # шаг обязан быть зелёным. Времена: 4 с и 21 с на прогон.
       #
-      # ЗОВЁМ ПО ИМЕНИ ЯРЛЫКА, А НЕ ПО ПУТИ ФАЙЛА, и это не вкусовщина. Оба
+      # ЗОВЁМ ПО ИМЕНИ КОМАНДЫ, А НЕ ПО ПУТИ ФАЙЛА, и это не вкусовщина. Оба
       # прибора переписи считают зов по файлу; напиши здесь
       # `sh scripts/bootstrap-reprint.sh --stroki` — и они зачли бы пробу ещё и
-      # `раскрутка:проверка`, у которого её нет и не будет дёшево (полный
-      # прогон дороже 130 с). Имя ярлыка однозначно, путь — нет.
+      # `reprint:check`, у которого её нет и не будет дёшево (полный
+      # прогон дороже 130 с). Имя команды однозначно, путь — нет.
 
       - name: Probe C literals
         run: |
@@ -1380,14 +1380,14 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./ярлык строки:проверка; then
+          if bootstrap/flang run-script seed-lines:check; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Check C literals
-        run: ./ярлык строки:проверка
+        run: bootstrap/flang run-script seed-lines:check
 
       - name: Probe kernel axioms
         run: |
@@ -1403,14 +1403,14 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./ярлык аксиомы:проверка; then
+          if bootstrap/flang run-script axioms:check; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Check kernel axioms
-        run: ./ярлык аксиомы:проверка
+        run: bootstrap/flang run-script axioms:check
 
       # ── Ещё пятеро, прогнанные и снабжённые пробой задачей 5612 ────────────
       #
@@ -1419,11 +1419,11 @@ jobs:
       # же). Каждый идёт парой: сперва проба обязана покраснеть, потом рабочий
       # шаг обязан быть зелёным. Пара стоит вдвое: около двух минут на всех пятерых.
       #
-      # ЗОВЁМ ПО ИМЕНИ ЯРЛЫКА, А НЕ ПО ПУТИ — довод тот же, что у соседей выше:
+      # ЗОВЁМ ПО ИМЕНИ КОМАНДЫ, А НЕ ПО ПУТИ — довод тот же, что у соседей выше:
       # оба прибора переписи считают зов по файлу и зачли бы пробу чужому
       # сторожу, стоящему за тем же файлом.
       #
-      # Шестого — `слова:проверка` — здесь НЕТ НАРОЧНО, и это не забывчивость:
+      # Шестого — `target-words:check` — здесь НЕТ НАРОЧНО, и это не забывчивость:
       # он зелен на своей машине (53 с), но судит восемь целей печати и на
       # непроверенной цели отвечает кодом 2, а не 0. На `ubuntu-latest` нет
       # `elixirc`, и прогон это говорит прямо: «целей проверено 7 из 8, не
@@ -1438,10 +1438,7 @@ jobs:
           # PATH без Node из такого не выкроить, и сторож обязан это сказать.
           podstavnoy="$RUNNER_TEMP/podlog-path"
           rm -rf "$podstavnoy"; mkdir -p "$podstavnoy"
-          # `dirname` и `sed` нужны не сторожу, а самому ./ярлык. Без них
-          # оболочка спотыкается ДО вызова сторожа, и шаг зачёл бы за красноту
-          # сторожа красноту скрипта-обёртки — то есть проба стала бы холостой.
-          for programma in cc make node sh dirname sed; do
+          for programma in cc make node sh; do
             put=$(command -v "$programma") || {
               echo "ПОДЛОГ НЕ СОБРАЛСЯ: на машине нет $programma — поправить подлог, сторож ни при чём" >&2
               exit 1
@@ -1452,7 +1449,7 @@ jobs:
           # (scripts/guards/guards-without-forgery-probe.sh) засчитывает пробу только такой
           # форме. Записанный как `otvet=$(…) && { … }`, тот же шаг работает,
           # но прибор его не видит, и сторож числится беспробным.
-          if otvet=$(PATH="$podstavnoy" ./ярлык путь:проверка 2>&1); then
+          if otvet=$(PATH="$podstavnoy" bootstrap/flang run-script install-path:check 2>&1); then
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
@@ -1467,10 +1464,10 @@ jobs:
               ;;
           esac
       - name: Check Node-free PATH
-        run: ./ярлык путь:проверка
+        run: bootstrap/flang run-script install-path:check
 
       # package.json ВЫБРОШЕН 17 сентября 2026 (задача 3570): версию, имя,
-      # лицензию и адреса читают из .flangrc, куда их разносит ./ярлык версия из
+      # лицензию и адреса читают из .flangrc, куда их разносит bootstrap/flang run-script version из
       # scripts/release/emit-package.flang. Вернувшийся файл — второе место
       # версии и чужой «type» для каждого .js, и на это краснеет сторож ниже.
       # Подлог внутренний: --подлог подкладывает файл в КОПИИ дерева, само
@@ -1500,7 +1497,7 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./ярлык контраст:проверка; then
+          if bootstrap/flang run-script contrast:check; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
@@ -1510,7 +1507,7 @@ jobs:
       # «Docs site» ходит только на push в main и только по фильтру
       # paths. Здесь он ходит на каждый пуш и на каждый запрос на слияние.
       - name: Check WCAG contrast
-        run: ./ярлык контраст:проверка
+        run: bootstrap/flang run-script contrast:check
 
       - name: Probe reserved names
         run: |
@@ -1540,14 +1537,14 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./ярлык занятые:проверка; then
+          if bootstrap/flang run-script occupied-names:check; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
       - name: Check reserved names
-        run: ./ярлык занятые:проверка
+        run: bootstrap/flang run-script occupied-names:check
 
   # ── СВЯЗЬ НА ДЕВЯТИ ЦЕЛЯХ: ЕДИНСТВЕННЫЙ ИЗ ЧЕТЫРЁХ ДВОЙНИКОВ, КОТОРЫЙ ДЁШЕВ ─
   #
@@ -1631,7 +1628,7 @@ jobs:
 
   # ── ПРИГОВОРЫ, КОТОРЫМ НУЖНО СЕМЯ С ЧИСТОГО ДЕРЕВА ────────────────────────
   #
-  # `доказанное:проверка` и `умения:проверка` прежде стояли в `uncalled-guards`.
+  # `proven:check` и `kernel-abilities:check` прежде стояли в `uncalled-guards`.
   # Оба сверяют семя через `scripts/bootstrap-reprint.sh --check` и судят, только если
   # отпечаток семени снят с чистого дерева. На стволе 15 сентября 2026 он снят
   # с правленого («ОТПЕЧАТОК СНЯТ С ПРАВЛЕНОГО ДЕРЕВА»): оба отвечают кодом 3,
@@ -1671,7 +1668,7 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./ярлык доказанное:проверка > "$RUNNER_TEMP/dokazannoe-podlog.out" 2>&1; then
+          if bootstrap/flang run-script proven:check > "$RUNNER_TEMP/dokazannoe-podlog.out" 2>&1; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
@@ -1692,7 +1689,7 @@ jobs:
       # тот кладёт отпечаток в ${FLANG_TMP:-/srv/tmp}. На раннере /srv/tmp нет,
       # и без переменной шаг отвечал кодом 3 «не создался каталог» — не приговор.
       - name: Check proved ledger
-        run: ./ярлык доказанное:проверка
+        run: bootstrap/flang run-script proven:check
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -1712,7 +1709,7 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if ./ярлык умения:проверка > "$RUNNER_TEMP/umeniya-podlog.out" 2>&1; then
+          if bootstrap/flang run-script kernel-abilities:check > "$RUNNER_TEMP/umeniya-podlog.out" 2>&1; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
@@ -1729,7 +1726,7 @@ jobs:
           FLANG_TMP: ${{ runner.temp }}
       # FLANG_TMP — по той же причине, что у «доказанного»: сверка семени.
       - name: Check kernel abilities
-        run: ./ярлык умения:проверка
+        run: bootstrap/flang run-script kernel-abilities:check
         env:
           FLANG_TMP: ${{ runner.temp }}
   uncalled:

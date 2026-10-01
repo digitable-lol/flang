@@ -17,7 +17,7 @@
 версии. Сторож позеленел:
 
 ```
-./ярлык версия:проверка → код 0, «package.json и FLANG_VERSION совпадают — 0.7.10»
+bootstrap/flang run-script version:check → код 0, «package.json и FLANG_VERSION совпадают — 0.7.10»
 ```
 
 А двоичный, собранный из ТОГО ЖЕ дерева, продолжил говорить:

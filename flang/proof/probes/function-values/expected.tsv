@@ -1,0 +1,6 @@
+program	keys	code	word
+loop-through-function-value.flang	-	1	FLANG_NOT_TOTAL
+loop-through-captured-value.flang	-	1	FLANG_NOT_TOTAL
+call-inside-application.flang	-	1	FLANG_NOT_TOTAL
+finite-chain-of-two-appliers.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
+same-applier-with-different-values.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры

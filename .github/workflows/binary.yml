@@ -1743,6 +1743,8 @@ jobs:
 
       - name: Check strict mode
         run: bootstrap/flang io flang/proof/probes/strict/run.fscript --plan Binary
+      - name: Check function value probes
+        run: bootstrap/flang io flang/proof/probes/function-values/run.fscript --plan Binary
       - name: Check unproven gate
         run: bootstrap/flang io flang/proof/probes/unproven/run.fscript --plan Binary
         env:

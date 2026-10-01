@@ -16,7 +16,7 @@
 
 тотальная функция «Checks»
   возвращает список «Check»
-  обеспечивает «there are exactly twenty checks» (длина результат) равен 20
+  обеспечивает «there are exactly twenty-one checks» (длина результат) равен 21
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check",
    запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "bootstrap/flang io scripts/seed/seed-runtime-is-source.fscript --plan Check",
    запись «Check» с «name» равным "seed-refresh" и «command» равным "bootstrap/flang io scripts/seed/seed-refresh.fscript --plan Check",
@@ -307,7 +307,7 @@
 тотальная функция «Leftovers»
   принимает directory: строка
   возвращает список строки
-  обеспечивает «one file for every check and the directory itself» (длина результат) равен 21
+  обеспечивает «one file for every check and the directory itself» (длина результат) равен 22
   добавить directory к (отобразить («Checks») как check → («Output path» от directory и check))
 
 тотальная функция «Remove files»

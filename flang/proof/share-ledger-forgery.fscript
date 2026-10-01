@@ -74,8 +74,8 @@
     дано set равно "/w/honest"
     дано dump равно "/w/control.tsv"
     дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
-    ожидается запись «Question» с «name» равным "control" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "sh \"$0\" --корень \"$1\" --ведомость \"$2\" --набор \"$3\" --разбор \"$4\" > /dev/null 2>&1", "/flang/proof/corpus-share.sh", "/t", "/w/ledger.tsv", "/w/honest", "/w/control.tsv"])
-  «Run» от name и "sh" и ["-c", "sh \"$0\" --корень \"$1\" --ведомость \"$2\" --набор \"$3\" --разбор \"$4\" > /dev/null 2>&1", (соединить [(«Root» от answers), "/flang/proof/corpus-share.sh"] по ""), root, («In work» от "ledger.tsv" и answers), set, dump]
+    ожидается запись «Question» с «name» равным "control" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec ./bootstrap/flang io flang/proof/share-measure.fscript --max-steps 4000000000 --timeout 900000 -- --root \"$1\" --ledger \"$2\" --set \"$3\" --dump \"$4\" > /dev/null 2>&1", "", "/t", "/w/ledger.tsv", "/w/honest", "/w/control.tsv"])
+  «Run» от name и "sh" и ["-c", "cd \"$0\" && exec ./bootstrap/flang io flang/proof/share-measure.fscript --max-steps 4000000000 --timeout 900000 -- --root \"$1\" --ledger \"$2\" --set \"$3\" --dump \"$4\" > /dev/null 2>&1", («Root» от answers), root, («In work» от "ledger.tsv" и answers), set, dump]
 
 тотальная функция «Setup»
   возвращает список «Question»

@@ -214,8 +214,8 @@
   пример «The share instrument measures one small tree»
     дано side равно "honest"
     дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
-    ожидается запись «Question» с «name» равным "honest share" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "sh \"$0\" --корень \"$1\" --ведомость \"$2\" --набор \"$3\" --разбор \"$4\" > /dev/null 2>&1", "/flang/proof/corpus-share.sh", "/w/honest", "/w/honest.tsv", "/w/honest/records", "/w/honest.dump"])
-  «Run» от (соединить [side, " share"] по "") и "sh" и ["-c", "sh \"$0\" --корень \"$1\" --ведомость \"$2\" --набор \"$3\" --разбор \"$4\" > /dev/null 2>&1", (соединить [(«Absolute root» от answers), "/flang/proof/corpus-share.sh"] по ""), («In work» от side и answers), («In work» от (соединить [side, ".tsv"] по "") и answers), («In work» от (соединить [side, "/records"] по "") и answers), («In work» от (соединить [side, ".dump"] по "") и answers)]
+    ожидается запись «Question» с «name» равным "honest share" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec ./bootstrap/flang io flang/proof/share-measure.fscript --max-steps 4000000000 --timeout 900000 -- --root \"$1\" --ledger \"$2\" --set \"$3\" --dump \"$4\" > /dev/null 2>&1", "", "/w/honest", "/w/honest.tsv", "/w/honest/records", "/w/honest.dump"])
+  «Run» от (соединить [side, " share"] по "") и "sh" и ["-c", "cd \"$0\" && exec ./bootstrap/flang io flang/proof/share-measure.fscript --max-steps 4000000000 --timeout 900000 -- --root \"$1\" --ledger \"$2\" --set \"$3\" --dump \"$4\" > /dev/null 2>&1", («Absolute root» от answers), («In work» от side и answers), («In work» от (соединить [side, ".tsv"] по "") и answers), («In work» от (соединить [side, "/records"] по "") и answers), («In work» от (соединить [side, ".dump"] по "") и answers)]
 
 тотальная функция «Verdict run»
   принимает side: строка, answers: список «Answer»

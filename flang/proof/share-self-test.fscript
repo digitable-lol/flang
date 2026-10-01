@@ -1,0 +1,571 @@
+модуль «Share self test»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Plan output» из "../../scripts/plan-output.fscript"
+  использует «Share measure» из "share-measure.fscript" только «Kinds», «Kinds of», «No kinds», «Kind step», «Line role», «Statement opened», «Statement closed», «Line seen», «Trimmed», «Third named», «Step ground», «One line», «Stripped ends», «Numbered», «Ledger sum»
+  использует «Replay share» из "replay-share.fscript" только «Digits after», «Sum after», «Without first», «File name»
+  использует «Kernel verdict» из "kernel-verdict.fscript" только «Ledger command»
+  использует «Lists» только «Соединить списки»
+
+тотальная функция «Corpus»
+  возвращает строка
+  пример «The corpus of records»
+    ожидается "flang/proof/checker/tests/records/corpus"
+  "flang/proof/checker/tests/records/corpus"
+
+тотальная функция «Records read»
+  возвращает список строки
+  пример «Six records the probes spoil or read»
+    ожидается ["abilities", "types", "corpus-natural", "corpus-alphabet", "poddelka-refleksivnost", "corpus-factorial"]
+  ["abilities", "types", "corpus-natural", "corpus-alphabet", "poddelka-refleksivnost", "corpus-factorial"]
+
+тотальная функция «Text»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A record not read»
+    дано name равно "types"
+    дано answers равно пустой список
+    ожидается ""
+  «Output of» от (соединить ["record ", name] по "") и answers
+
+тотальная функция «Source of»
+  принимает text: строка
+  возвращает строка
+  пример «The source a record names»
+    дано text равно "запись доказательства 1\nисходник flang/a.flang\n"
+    ожидается "flang/a.flang"
+  «After» от "исходник " и («Beginning with» от "исходник " и («Lines» от text))
+
+тотальная функция «Kept lines»
+  принимает text: строка
+  возвращает список строки
+  пример «The line end after the last line opens no line»
+    дано text равно "a\nb\n"
+    ожидается ["a", "b"]
+  пусть parts равно (разделить text по "\n")
+  если «Ends with» от text и "\n" то (отобразить (отфильтровать («Numbered» от parts) где entry → не ((«Count» от («Cell» от 1 и entry)) равен (длина parts))) как entry → «Cell» от 2 и entry) иначе parts
+
+тотальная функция «Printed lines»
+  принимает lines: список строки
+  возвращает строка
+  пример «Every line ends with a line end»
+    дано lines равно ["a", "b"]
+    ожидается "a\nb\n"
+  соединить (отобразить lines как line → соединить [line, "\n"] по "") по ""
+
+тотальная функция «Is proved line»
+  принимает line: строка
+  возвращает признак
+  пример «A proved verdict»
+    дано line равно "  вердикт доказано "
+    ожидается да
+  («Trimmed» от line) равен "вердикт доказано"
+
+тотальная функция «Is trace»
+  принимает line: строка, hence: признак
+  возвращает признак
+  пример «A rule line is a trace of the derivation»
+    дано line равно "    правило «а»"
+    дано hence равно да
+    ожидается да
+  пусть l равно («Trimmed» от line)
+  (l начинается с "правило «") или ((l начинается с "по объявлению ") или (hence и притом (l начинается с "следовательно доказано")))
+
+тотальная функция «All stripped»
+  принимает text: строка
+  возвращает строка
+  пример «The verdict and every trace leave»
+    дано text равно "  вердикт доказано\n  правило «а»\n  следовательно доказано\nконец\n"
+    ожидается "  вердикт нет вердикта\nконец\n"
+  «Printed lines» от (отобразить (отфильтровать («Kept lines» от text) где line → не («Is trace» от line и да)) как line → если «Is proved line» от line то "  вердикт нет вердикта" иначе line)
+
+тотальная функция «Verdict stripped»
+  принимает text: строка
+  возвращает строка
+  пример «Only the word goes»
+    дано text равно "  вердикт доказано\n  правило «а»\n"
+    ожидается "  вердикт нет вердикта\n  правило «а»\n"
+  «Printed lines» от (отобразить («Kept lines» от text) как line → если «Is proved line» от line то "  вердикт нет вердикта" иначе line)
+
+тотальная функция «Partly stripped»
+  принимает text: строка
+  возвращает строка
+  пример «Two verdicts go, and the traces after the first»
+    дано text равно "  правило «а»\n  вердикт доказано\n  правило «б»\n  вердикт доказано\n  вердикт доказано\n  по объявлению да\n"
+    ожидается "  правило «а»\n  вердикт нет вердикта\n  вердикт нет вердикта\n  вердикт доказано\n"
+  «Printed lines» от ((свёртка («Kept lines» от text) начиная с (запись «Cut» с «count» равным 0 и «lines» равным пустой список) как cut и line → «Cut line» от cut и line).«lines»)
+
+объект «Cut»
+  «count»: число
+  «lines»: список строки
+
+тотальная функция «Cut line»
+  принимает cut: «Cut», line: строка
+  возвращает «Cut»
+  пример «The first verdict goes»
+    дано cut равно запись «Cut» с «count» равным 0 и «lines» равным пустой список
+    дано line равно "  вердикт доказано"
+    ожидается запись «Cut» с «count» равным 1 и «lines» равным ["  вердикт нет вердикта"]
+  «Chosen» от [(«When» от (((cut.«count») меньше 2) и притом («Is proved line» от line)) и (запись «Cut» с «count» равным ((cut.«count») плюс 1) и «lines» равным (добавить "  вердикт нет вердикта" к (cut.«lines»)))),
+    («When» от (((cut.«count») больше 0) и притом («Is trace» от line и нет)) и cut)] и (запись «Cut» с «count» равным (cut.«count») и «lines» равным (добавить line к (cut.«lines»)))
+
+тотальная функция «Without theorem»
+  принимает text: строка
+  возвращает строка
+  пример «The lines saying there is no theorem leave»
+    дано text равно "а\n  теоремы нет\nб\n"
+    ожидается "а\nб\n"
+  «Printed lines» от (отфильтровать («Kept lines» от text) где line → не ((«Trimmed» от line) равен "теоремы нет"))
+
+тотальная функция «Build command»
+  возвращает строка
+  пример «Small trees for the probes that need a tree of their own»
+    ожидается "r=$0; w=$1; c=\"$r/flang/proof/checker/сверщик\"; k=flang/proof/checker/tests/records/corpus; for d in verdict/honest verdict/both verdict/word verdict/part; do mkdir -p \"$w/$d/$k\" \"$w/$d/flang/proof/examples\" \"$w/$d/flang/proof/map\" \"$w/$d/flang/proof/checker\" && cp \"$c\" \"$w/$d/flang/proof/checker/сверщик\" && cp \"$r/flang/proof/examples/corpus-natural.flang\" \"$w/$d/flang/proof/examples/\" && cp \"$r/flang/proof/map/types.flang\" \"$w/$d/flang/proof/map/\" || exit 1; done; for d in empty/honest empty/stripped empty/named; do for s in \"$2\" \"$3\" \"$4\"; do mkdir -p \"$w/$d/$(dirname \"$s\")\" && cp \"$r/$s\" \"$w/$d/$s\" || exit 1; done; mkdir -p \"$w/$d/$k\" \"$w/$d/flang/proof/checker\" && cp \"$c\" \"$w/$d/flang/proof/checker/сверщик\" || exit 1; done; for d in print/honest print/forged; do mkdir -p \"$w/$d/$k\" \"$w/$d/flang/proof/map\" \"$w/$d/flang/proof/checker\" \"$w/$d/bootstrap\" && cp \"$c\" \"$w/$d/flang/proof/checker/сверщик\" && cp \"$r/flang/proof/map/types.flang\" \"$w/$d/flang/proof/map/\" && ln -sf \"$r/bootstrap/flang\" \"$w/$d/bootstrap/flang\" || exit 1; done; cp \"$r/$k/corpus-natural.record\" \"$r/$k/types.record\" \"$w/verdict/honest/$k/\" && cp \"$r/$k/types.record\" \"$w/verdict/both/$k/\" && cp \"$r/$k/corpus-natural.record\" \"$w/verdict/word/$k/\" && cp \"$r/$k/corpus-natural.record\" \"$w/verdict/part/$k/\" && cp \"$r/$k/corpus-alphabet.record\" \"$w/empty/honest/$k/\" && cp \"$r/$k/poddelka-refleksivnost.record\" \"$w/empty/named/$k/\" && cp \"$r/$k/types.record\" \"$w/print/honest/$k/\""
+  "r=$0; w=$1; c=\"$r/flang/proof/checker/сверщик\"; k=flang/proof/checker/tests/records/corpus; for d in verdict/honest verdict/both verdict/word verdict/part; do mkdir -p \"$w/$d/$k\" \"$w/$d/flang/proof/examples\" \"$w/$d/flang/proof/map\" \"$w/$d/flang/proof/checker\" && cp \"$c\" \"$w/$d/flang/proof/checker/сверщик\" && cp \"$r/flang/proof/examples/corpus-natural.flang\" \"$w/$d/flang/proof/examples/\" && cp \"$r/flang/proof/map/types.flang\" \"$w/$d/flang/proof/map/\" || exit 1; done; for d in empty/honest empty/stripped empty/named; do for s in \"$2\" \"$3\" \"$4\"; do mkdir -p \"$w/$d/$(dirname \"$s\")\" && cp \"$r/$s\" \"$w/$d/$s\" || exit 1; done; mkdir -p \"$w/$d/$k\" \"$w/$d/flang/proof/checker\" && cp \"$c\" \"$w/$d/flang/proof/checker/сверщик\" || exit 1; done; for d in print/honest print/forged; do mkdir -p \"$w/$d/$k\" \"$w/$d/flang/proof/map\" \"$w/$d/flang/proof/checker\" \"$w/$d/bootstrap\" && cp \"$c\" \"$w/$d/flang/proof/checker/сверщик\" && cp \"$r/flang/proof/map/types.flang\" \"$w/$d/flang/proof/map/\" && ln -sf \"$r/bootstrap/flang\" \"$w/$d/bootstrap/flang\" || exit 1; done; cp \"$r/$k/corpus-natural.record\" \"$r/$k/types.record\" \"$w/verdict/honest/$k/\" && cp \"$r/$k/types.record\" \"$w/verdict/both/$k/\" && cp \"$r/$k/corpus-natural.record\" \"$w/verdict/word/$k/\" && cp \"$r/$k/corpus-natural.record\" \"$w/verdict/part/$k/\" && cp \"$r/$k/corpus-alphabet.record\" \"$w/empty/honest/$k/\" && cp \"$r/$k/poddelka-refleksivnost.record\" \"$w/empty/named/$k/\" && cp \"$r/$k/types.record\" \"$w/print/honest/$k/\""
+
+тотальная функция «Trees»
+  возвращает список строки
+  пример «Nine small trees»
+    ожидается ["verdict/honest", "verdict/both", "verdict/word", "verdict/part", "empty/honest", "empty/stripped", "empty/named", "print/honest", "print/forged"]
+  ["verdict/honest", "verdict/both", "verdict/word", "verdict/part", "empty/honest", "empty/stripped", "empty/named", "print/honest", "print/forged"]
+
+тотальная функция «Ledgers command»
+  возвращает строка
+  пример «A ledger beside each small tree»
+    ожидается "for d in verdict/honest verdict/both verdict/word verdict/part empty/honest empty/stripped empty/named print/honest print/forged; do (cd \"$0/$d\" && find . -type f \\( -name '*.flang' -o -name '*.record' \\) -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) | sed 's|  \\./|\\t|' > \"$0/$d.tsv\" || exit 1; done"
+  "for d in verdict/honest verdict/both verdict/word verdict/part empty/honest empty/stripped empty/named print/honest print/forged; do (cd \"$0/$d\" && find . -type f \\( -name '*.flang' -o -name '*.record' \\) -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) | sed 's|  \\./|\\t|' > \"$0/$d.tsv\" || exit 1; done"
+
+тотальная функция «Printed sum command»
+  возвращает строка
+  пример «Each corpus record checked with its sum written in and with its sum given»
+    ожидается "cd \"$0\" || exit 2; for z in flang/proof/checker/tests/records/corpus/*.record; do s=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2); [ -f \"$s\" ] || continue; h=$(sha256sum \"$s\" | cut -d' ' -f1); { sed -n '1,/^утверждений /p' \"$z\"; printf 'отпечаток256 %s\\n' \"$h\"; sed '1,/^утверждений /d' \"$z\"; } > \"$1/with-sum.record\"; ./flang/proof/checker/сверщик \"$PWD/$s\" \"$1/with-sum.record\" >/dev/null 2>&1; a=$?; ./flang/proof/checker/сверщик \"$PWD/$s\" \"$PWD/$z\" \"$h\" >/dev/null 2>&1; b=$?; printf '%s %s\\n' \"$a\" \"$b\"; done"
+  "cd \"$0\" || exit 2; for z in flang/proof/checker/tests/records/corpus/*.record; do s=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2); [ -f \"$s\" ] || continue; h=$(sha256sum \"$s\" | cut -d' ' -f1); { sed -n '1,/^утверждений /p' \"$z\"; printf 'отпечаток256 %s\\n' \"$h\"; sed '1,/^утверждений /d' \"$z\"; } > \"$1/with-sum.record\"; ./flang/proof/checker/сверщик \"$PWD/$s\" \"$1/with-sum.record\" >/dev/null 2>&1; a=$?; ./flang/proof/checker/сверщик \"$PWD/$s\" \"$PWD/$z\" \"$h\" >/dev/null 2>&1; b=$?; printf '%s %s\\n' \"$a\" \"$b\"; done"
+
+тотальная функция «Property sum command»
+  возвращает строка
+  пример «Steps by property checked in the records of task 3455»
+    ожидается "cd \"$0\" || exit 2; [ -d flang/proof/checker/tests/records/3455 ] || exit 4; for z in flang/proof/checker/tests/records/3455/*.record; do [ -f \"$z\" ] || continue; s=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-); [ -f \"$s\" ] || continue; ./flang/proof/checker/сверщик \"$PWD/$s\" \"$PWD/$z\" 2>&1 | grep -ao 'Шагов по свойству проверено по существу [0-9]*'; done; exit 0"
+  "cd \"$0\" || exit 2; [ -d flang/proof/checker/tests/records/3455 ] || exit 4; for z in flang/proof/checker/tests/records/3455/*.record; do [ -f \"$z\" ] || continue; s=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-); [ -f \"$s\" ] || continue; ./flang/proof/checker/сверщик \"$PWD/$s\" \"$PWD/$z\" 2>&1 | grep -ao 'Шагов по свойству проверено по существу [0-9]*'; done; exit 0"
+
+тотальная функция «Plan probe command»
+  возвращает строка
+  пример «A plan of the tree run with its output kept and one mark looked for»
+    ожидается "cd \"$0\" || exit 2; o=$1; m=$2; shift 2; ./bootstrap/flang io \"$@\" > \"$o\" 2>&1; k=$?; printf 'code %s\\n' \"$k\"; if grep -aqF -e \"$m\" \"$o\"; then echo 'mark yes'; else echo 'mark no'; fi"
+  "cd \"$0\" || exit 2; o=$1; m=$2; shift 2; ./bootstrap/flang io \"$@\" > \"$o\" 2>&1; k=$?; printf 'code %s\\n' \"$k\"; if grep -aqF -e \"$m\" \"$o\"; then echo 'mark yes'; else echo 'mark no'; fi"
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The tree lies two directories up»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Absolute root»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The root as the shell sees it»
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным "")]
+    ожидается "/t"
+  «First line» от («Output of» от "root" и answers)
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No work directory yet»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «In work»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file in the work directory»
+    дано name равно "ledger.tsv"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/ledger.tsv"
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Checker»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The checker of the tree»
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным "")]
+    ожидается "/t/flang/proof/checker/сверщик"
+  соединить [(«Absolute root» от answers), "/flang/proof/checker/сверщик"] по ""
+
+тотальная функция «Source path»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «The source of a record read, from the root»
+    дано name равно "types"
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным ""), запись «Answer» с «name» равным "record types" и «reply» равным (вариант «Прочитано» с содержимое равным "запись\nисходник flang/proof/map/types.flang\n")]
+    ожидается "/t/flang/proof/map/types.flang"
+  соединить [(«Absolute root» от answers), "/", («Source of» от («Text» от name и answers))] по ""
+
+тотальная функция «Measure probe»
+  принимает name: строка, tree: строка, mark: строка, dump: признак, answers: список «Answer»
+  возвращает «Question»
+  пример «The measure on a small tree with its own ledger»
+    дано name равно "verdict/both"
+    дано tree равно "verdict/both"
+    дано mark равно "ПУСТАЯ В ЧИСЛИТЕЛЕ"
+    дано dump равно нет
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным ""), запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается запись «Question» с «name» равным "verdict/both" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" || exit 2; o=$1; m=$2; shift 2; ./bootstrap/flang io \"$@\" > \"$o\" 2>&1; k=$?; printf 'code %s\\n' \"$k\"; if grep -aqF -e \"$m\" \"$o\"; then echo 'mark yes'; else echo 'mark no'; fi", "/t", "/w/verdict/both.out", "ПУСТАЯ В ЧИСЛИТЕЛЕ", "flang/proof/share-measure.fscript", "--max-steps", "4000000000", "--timeout", "900000", "--", "--root", "/w/verdict/both", "--ledger", "/w/verdict/both.tsv", "--set", "corpus"])
+  «Run» от name и "sh" и («Соединить списки» от ["-c", («Plan probe command»), («Absolute root» от answers), («In work» от (соединить [tree, ".out"] по "") и answers), mark, "flang/proof/share-measure.fscript", "--max-steps", "4000000000", "--timeout", "900000", "--", "--root", («In work» от tree и answers), "--ledger", («In work» от (соединить [tree, ".tsv"] по "") и answers), "--set", "corpus"] и (если dump то ["--dump", («In work» от (соединить [tree, ".dump"] по "") и answers)] иначе (пустой список)))
+
+тотальная функция «Plan probe»
+  принимает name: строка, mark: строка, program: строка, keys: список строки, answers: список «Answer»
+  возвращает «Question»
+  пример «A program run from the root of the tree»
+    дано name равно "ledger probe"
+    дано mark равно "x"
+    дано program равно "flang/proof/share-ledger-forgery.fscript"
+    дано keys равно пустой список
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным ""), запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается запись «Question» с «name» равным "ledger probe" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" || exit 2; o=$1; m=$2; shift 2; ./bootstrap/flang io \"$@\" > \"$o\" 2>&1; k=$?; printf 'code %s\\n' \"$k\"; if grep -aqF -e \"$m\" \"$o\"; then echo 'mark yes'; else echo 'mark no'; fi", "/t", "/w/ledger probe.out", "x", "flang/proof/share-ledger-forgery.fscript", "--max-steps", "4000000000", "--timeout", "900000"])
+  «Run» от name и "sh" и («Соединить списки» от ["-c", («Plan probe command»), («Absolute root» от answers), («In work» от (соединить [name, ".out"] по "") и answers), mark, program, "--max-steps", "4000000000", "--timeout", "900000"] и keys)
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The temporary place and the root»
+    ожидается [запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP"), запись «Question» с «name» равным "root" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && pwd"])]
+  [(«Environment» от "temporary" и "FLANG_TMP"), («Run» от "root" и "sh" и ["-c", "cd ../.. && pwd"])]
+
+тотальная функция «Start»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Records, the checker, the binary and a work directory»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "record abilities" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/tests/records/corpus/abilities.record"), запись «Question» с «name» равным "record types" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/tests/records/corpus/types.record"), запись «Question» с «name» равным "record corpus-natural" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/tests/records/corpus/corpus-natural.record"), запись «Question» с «name» равным "record corpus-alphabet" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/tests/records/corpus/corpus-alphabet.record"), запись «Question» с «name» равным "record poddelka-refleksivnost" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/tests/records/corpus/poddelka-refleksivnost.record"), запись «Question» с «name» равным "record corpus-factorial" и «order» равным (вариант «Прочитать файл» с путь равным "../../flang/proof/checker/tests/records/corpus/corpus-factorial.record"), запись «Question» с «name» равным "checker present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "/flang/proof/checker/сверщик"]), запись «Question» с «name» равным "binary present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "/bootstrap/flang"]), запись «Question» с «name» равным "work" и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/share-self-test.")]
+  «Соединить списки» от (отобразить («Records read») как name → «Read» от (соединить ["record ", name] по "") и (соединить ["../../", («Corpus»), "/", name, ".record"] по "")) и [(«Run» от "checker present" и "test" и ["-x", («Checker» от answers)]), («Run» от "binary present" и "test" и ["-x", (соединить [(«Absolute root» от answers), "/bootstrap/flang"] по "")]), («Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/share-self-test."] по ""))]
+
+тотальная функция «Checker run»
+  принимает name: строка, arguments: список строки, answers: список «Answer»
+  возвращает «Question»
+  пример «The checker with its output and errors together»
+    дано name равно "wrong key"
+    дано arguments равно ["--x"]
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным "")]
+    ожидается запись «Question» с «name» равным "wrong key" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "exec \"$@\" 2>&1", "sh", "/t/flang/proof/checker/сверщик", "--x"])
+  «Run» от name и "sh" и («Соединить списки» от ["-c", "exec \"$@\" 2>&1", "sh", («Checker» от answers)] и arguments)
+
+тотальная функция «Building»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing without a work directory»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть w равно («Work» от answers)
+  пусть k равно («Corpus»)
+  пусть root равно («Absolute root» от answers)
+  если пусто w
+    то пустой список
+    иначе [(«Run» от "ledger built" и "sh" и ["-c", («Ledger command»), root, "HEAD", w]), («Read» от "ledger" и («In work» от "ledger.tsv" и answers)), («Run» от "trees" и "sh" и ["-c", («Build command»), root, w, («Source of» от («Text» от "corpus-alphabet" и answers)), («Source of» от («Text» от "corpus-natural" и answers)), («Source of» от («Text» от "poddelka-refleksivnost" и answers))]), («Write» от "verdict both" и (соединить [w, "/verdict/both/", k, "/corpus-natural.record"] по "") и («All stripped» от («Text» от "corpus-natural" и answers))), («Write» от "verdict word" и (соединить [w, "/verdict/word/", k, "/types.record"] по "") и («Verdict stripped» от («Text» от "types" и answers))), («Write» от "verdict part" и (соединить [w, "/verdict/part/", k, "/types.record"] по "") и («Partly stripped» от («Text» от "types" и answers))), («Write» от "empty stripped" и (соединить [w, "/empty/stripped/", k, "/corpus-natural.record"] по "") и («All stripped» от («Text» от "corpus-natural" и answers))), («Write» от "print forged" и (соединить [w, "/print/forged/", k, "/types.record"] по "") и («Partly stripped» от («Text» от "types" и answers))), («Run» от "printed sums" и "sh" и ["-c", («Printed sum command»), root, w]), («Run» от "property sums" и "sh" и ["-c", («Property sum command»), root]), («Checker run» от "foreign sum" и [(«Source path» от "corpus-factorial" и answers), (соединить [root, "/", k, "/corpus-factorial.record"] по ""), "0000000000000000000000000000000000000000000000000000000000000000"] и answers), («Checker run» от "wrong key" и ["--такого-ключа-нет", («Source path» от "corpus-factorial" и answers), (соединить [root, "/", k, "/corpus-factorial.record"] по "")] и answers), («Checker run» от "types said" и [(«Source path» от "types" и answers), (соединить [root, "/", k, "/types.record"] по "")] и answers), («Checker run» от "abilities said" и [(«Source path» от "abilities" и answers), (соединить [root, "/", k, "/abilities.record"] по "")] и answers), («Run» от "natural sum" и "sha256sum" и [(соединить [root, "/flang/proof/examples/corpus-natural.flang"] по "")])]
+
+тотальная функция «Ledgering»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing without a work directory»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "ledgers" и "sh" и ["-c", («Ledgers command»), («Work» от answers)])]
+
+тотальная функция «Probing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing without a work directory»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе «Соединить списки» от [(«Plan probe» от "ledger probe" и "проба порчи на ведомость" и "flang/proof/share-ledger-forgery.fscript" и (пустой список) и answers), («Plan probe» от "kernel probe" и "проба порчи на приговор ядра" и "flang/proof/kernel-verdict-forgery.fscript" и (пустой список) и answers), («Measure probe» от "verdict/honest" и "verdict/honest" и "ПУСТАЯ В ЧИСЛИТЕЛЕ" и нет и answers), («Measure probe» от "verdict/both" и "verdict/both" и "ПУСТАЯ В ЧИСЛИТЕЛЕ" и нет и answers), («Measure probe» от "verdict/word" и "verdict/word" и "СНЯТЫЙ ВЕРДИКТ" и нет и answers), («Measure probe» от "verdict/part" и "verdict/part" и "ПУСТАЯ В ЧИСЛИТЕЛЕ" и нет и answers), («Measure probe» от "empty/honest" и "empty/honest" и "ПУСТАЯ В ЧИСЛИТЕЛЕ" и да и answers), («Measure probe» от "empty/stripped" и "empty/stripped" и "ПУСТАЯ В ЧИСЛИТЕЛЕ" и да и answers), («Measure probe» от "empty/named" и "empty/named" и "ПУСТАЯ В ЧИСЛИТЕЛЕ" и да и answers), («Plan probe» от "print/honest" и "РАЗОШЛАСЬ" и "flang/proof/records-nesting.fscript" и ["--", "--root", («In work» от "print/honest" и answers)] и answers), («Plan probe» от "print/forged" и "РАЗОШЛАСЬ" и "flang/proof/records-nesting.fscript" и ["--", "--root", («In work» от "print/forged" и answers)] и answers), («Plan probe» от "property probe" и "разошёлся с чекером\\t0" и "flang/proof/share-measure.fscript" и ["--", "--root", («Absolute root» от answers), "--ledger", («In work» от "ledger.tsv" и answers), "--set", (соединить [(«Absolute root» от answers), "/flang/proof/checker/tests/records/3455"] по "")] и answers)] и [(«Read» от "empty/honest dump" и («In work» от "empty/honest.dump" и answers)), («Read» от "empty/stripped dump" и («In work» от "empty/stripped.dump" и answers)), («Read» от "empty/named dump" и («In work» от "empty/named.dump" и answers)), («Read» от "ledger probe text" и («In work» от "ledger probe.out" и answers)), («Read» от "kernel probe text" и («In work» от "kernel probe.out" и answers))]
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 20
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 5
+      то «Setup»
+    случай 4
+      то «Start» от answers
+    случай 3
+      то «Building» от answers
+    случай 2
+      то «Ledgering» от answers
+    случай 1
+      то «Probing» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Probe code»
+  принимает name: строка, answers: список «Answer»
+  возвращает число
+  пример «A probe not run»
+    дано name равно "verdict/both"
+    дано answers равно пустой список
+    ожидается 127
+  пусть said равно («Without blanks» от («Value after» от "code " и («Output of» от name и answers)))
+  если пусто said то 127 иначе («Count» от said)
+
+тотальная функция «Marked»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  пример «A mark found»
+    дано name равно "p"
+    дано answers равно [запись «Answer» с «name» равным "p" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "code 1\nmark yes\n" и ошибки равным "")]
+    ожидается да
+  («Output of» от name и answers) содержит "mark yes"
+
+тотальная функция «Said lines»
+  принимает text: строка
+  возвращает список строки
+  пример «What a finished plan said, line by line»
+    дано text равно "доказано: утверждений 0\n{\"plan\":\"P\",\"result\":\"a\\nb\",\"orders\":1,\"log\":[]}\n"
+    ожидается ["a", "b"]
+  пусть finished равно (отфильтровать (разделить text по "\n") где line → line начинается с "{\"plan\":\"")
+  разделить (если пусто finished то («Failure» от text) иначе («Result» от («Cell» от 1 и finished))) по "\n"
+
+тотальная функция «Hollow accepted»
+  принимает dump: строка
+  возвращает число
+  пример «Accepted rows with nothing proved»
+    дано dump равно "h\na\tb\t0\t0\t1\t0\tc\td\te\tf\tg\th\ti\tj\tk\tР0\n"
+    ожидается 1
+  длина (отфильтровать («Rows» от dump) где row → ((«Cell» от 16 и row) равен "Р0") и притом ((«Cell» от 6 и row) равен "0"))
+
+тотальная функция «Kept removed»
+  принимает said: строка
+  возвращает список число
+  пример «Every count of places kept off the kernel word»
+    дано said равно "снято со слова ядра мест 2; снято со слова ядра мест 0, снято со слова ядра мест 5"
+    ожидается [2, 0, 5]
+  отобразить (отфильтровать (отобразить («Without first» от (разделить said по "снято со слова ядра мест ")) как part → «Leading digits» от (если (длина part) больше 24 то (подстрока part с 1 по 24) иначе part)) где digits → не (пусто digits)) как digits → «Count» от digits
+
+тотальная функция «Removed line»
+  принимает said: строка
+  возвращает строка
+  пример «Several addends sum to more than the largest»
+    дано said равно "снято со слова ядра мест 2; снято со слова ядра мест 3"
+    ожидается "П7 снятые места складываются по всем приёмам\tЦЕЛА (слагаемых 2: 2 3, сумма 5 > наибольшего 3)"
+  пусть kept равно («Kept removed» от said)
+  пусть total равно (свёртка kept начиная с 0 как sum и each → sum плюс each)
+  пусть largest равно (свёртка kept начиная с 0 как top и each → если each больше top то each иначе top)
+  пусть nonzero равно (длина (отфильтровать kept где each → each больше 0))
+  пусть listed равно (соединить (отобразить kept как each → к строке each) по " ")
+  «Chosen» от [(«When» от (nonzero меньше 2) и "П7 снятые места складываются по всем приёмам\tПРОВАЛ (у «abilities.record» ненулевое слагаемое одно — сторожить нечего)"),
+    («When» от (((«Sum after» от "снято со слова ядра мест " и said) равен total) и притом (total больше largest)) и (соединить ["П7 снятые места складываются по всем приёмам\tЦЕЛА (слагаемых ", (к строке (длина kept)), ": ", listed, ", сумма ", (к строке total), " > наибольшего ", (к строке largest), ")"] по ""))] и (соединить ["П7 снятые места складываются по всем приёмам\tПРОВАЛ (сумма ", (к строке («Sum after» от "снято со слова ядра мест " и said)), ", а слагаемые ", listed, ")"] по "")
+
+тотальная функция «Flat line»
+  принимает said: строка
+  возвращает строка
+  пример «A verdict of many lines is flattened»
+    дано said равно "а\nб\n"
+    ожидается "П6 столбец вердикта — одна строка\tЦЕЛА (настоящий вердикт из 2 строк сплющен)"
+  пусть stripped равно («Stripped ends» от said)
+  пусть lines равно (длина (разделить stripped по "\n"))
+  пусть flat равно («One line» от said)
+  «Chosen» от [(«When» от (lines меньше 2) и "П6 столбец вердикта — одна строка\tПРОВАЛ (вердикт «types.record» больше не многострочен — сторожить нечего)"),
+    («When» от ((не (flat содержит "\n")) и притом (не (пусто flat))) и (соединить ["П6 столбец вердикта — одна строка\tЦЕЛА (настоящий вердикт из ", (к строке lines), " строк сплющен)"] по ""))] и "П6 столбец вердикта — одна строка\tПРОВАЛ (переводов строки 1)"
+
+тотальная функция «Sum lines»
+  принимает said: строка
+  возвращает строка
+  пример «Every record judged the same both ways»
+    дано said равно "0 0\n3 3\n"
+    ожидается "П5 строка «отпечаток256» = отпечаток доводом\tЦЕЛА (2 записей, расхождений 0)"
+  пусть pairs равно («Lines» от said)
+  пусть apart равно (длина (отфильтровать pairs где pair → не ((«Word» от 1 и pair) равен («Word» от 2 и pair))))
+  если (apart равен 0) и притом ((длина pairs) больше 0) то (соединить ["П5 строка «отпечаток256» = отпечаток доводом\tЦЕЛА (", (к строке (длина pairs)), " записей, расхождений 0)"] по "") иначе (соединить ["П5 строка «отпечаток256» = отпечаток доводом\tПРОВАЛ (записей ", (к строке (длина pairs)), ", расхождений ", (к строке apart), ")"] по "")
+
+тотальная функция «Verdict probe lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing run fails the control»
+    дано answers равно пустой список
+    ожидается ["контроль: честные записи корпуса\tПРОВАЛ (код 127)", "подлог А: вердикт и следы сняты вместе\tПРОШЁЛ — охраны нет (код 127)", "подлог Б: снято только слово «доказано»\tПРОШЁЛ — охраны нет (код 127)", "дыра: вердикт снят у ЧАСТИ утверждений\tНЕ ПОКАЗАНА (код 127) — подделка не собралась либо линейку правили"]
+  пусть honest равно («Probe code» от "verdict/honest" и answers)
+  пусть both равно («Probe code» от "verdict/both" и answers)
+  пусть word равно («Probe code» от "verdict/word" и answers)
+  пусть part равно («Probe code» от "verdict/part" и answers)
+  [(если honest равен 0 то "контроль: честные записи корпуса\tЦЕЛА (код 0)" иначе (соединить ["контроль: честные записи корпуса\tПРОВАЛ (код ", (к строке honest), ")"] по "")),
+   (если (both равен 1) и притом («Marked» от "verdict/both" и answers) то "подлог А: вердикт и следы сняты вместе\tОТВЕРГНУТ (пустой числитель, код 1)" иначе (соединить ["подлог А: вердикт и следы сняты вместе\tПРОШЁЛ — охраны нет (код ", (к строке both), ")"] по "")),
+   (если (word равен 1) и притом («Marked» от "verdict/word" и answers) то "подлог Б: снято только слово «доказано»\tОТВЕРГНУТ (примета, код 1)" иначе (соединить ["подлог Б: снято только слово «доказано»\tПРОШЁЛ — охраны нет (код ", (к строке word), ")"] по "")),
+   (если part равен 0 то "дыра: вердикт снят у ЧАСТИ утверждений\tПОКАЗАНА (оба сторожа молчат, код 0)" иначе (соединить ["дыра: вердикт снят у ЧАСТИ утверждений\tНЕ ПОКАЗАНА (код ", (к строке part), ") — подделка не собралась либо линейку правили"] по ""))]
+
+тотальная функция «Empty probe lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing run»
+    дано answers равно пустой список
+    ожидается ["контроль: честная непустая запись в числителе\tПРОВАЛ (код 127, пустых в Р0 0)", "подлог: пустая запись просочилась в числитель\tПРОШЁЛ — охраны нет (код 127, пустых в Р0 0)", "показ: пустая, но названная поимённо\tПРОВАЛ (код 127) — список разошёлся с корпусом"]
+  пусть honest равно («Probe code» от "empty/honest" и answers)
+  пусть stripped равно («Probe code» от "empty/stripped" и answers)
+  пусть named равно («Probe code» от "empty/named" и answers)
+  пусть honesthollow равно («Hollow accepted» от («Output of» от "empty/honest dump" и answers))
+  пусть strippedhollow равно («Hollow accepted» от («Output of» от "empty/stripped dump" и answers))
+  пусть namedhollow равно («Hollow accepted» от («Output of» от "empty/named dump" и answers))
+  [(если (honest равен 0) и притом (honesthollow равен 0) то "контроль: честная непустая запись в числителе\tЦЕЛА (Р0, доказанными 7, код 0)" иначе (соединить ["контроль: честная непустая запись в числителе\tПРОВАЛ (код ", (к строке honest), ", пустых в Р0 ", (к строке honesthollow), ")"] по "")),
+   (если (stripped равен 1) и притом ((strippedhollow больше 0) и притом («Marked» от "empty/stripped" и answers)) то "подлог: пустая запись просочилась в числитель\tОТВЕРГНУТ (Р0 при доказанными 0, код 1)" иначе (соединить ["подлог: пустая запись просочилась в числитель\tПРОШЁЛ — охраны нет (код ", (к строке stripped), ", пустых в Р0 ", (к строке strippedhollow), ")"] по "")),
+   (если (named равен 0) и притом (namedhollow больше 0) то "показ: пустая, но названная поимённо\tЗАКОННА (Р0 при доказанными 0, код 0)" иначе (соединить ["показ: пустая, но названная поимённо\tПРОВАЛ (код ", (к строке named), ") — список разошёлся с корпусом"] по ""))]
+
+тотальная функция «Print probe lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing run»
+    дано answers равно пустой список
+    ожидается ["контроль: честная запись против печати ядра\tПРОВАЛ (код 127)", "охрана: печать ядра на той же подделке\tПРОШЛА — охраны нет (код 127)"]
+  пусть honest равно («Probe code» от "print/honest" и answers)
+  пусть forged равно («Probe code» от "print/forged" и answers)
+  [(если honest равен 0 то "контроль: честная запись против печати ядра\tЦЕЛА (побайтово, код 0)" иначе (соединить ["контроль: честная запись против печати ядра\tПРОВАЛ (код ", (к строке honest), ")"] по "")),
+   (если (forged равен 1) и притом («Marked» от "print/forged" и answers) то "охрана: печать ядра на той же подделке\tОТВЕРГНУТА (код 1)" иначе (соединить ["охрана: печать ядра на той же подделке\tПРОШЛА — охраны нет (код ", (к строке forged), ")"] по ""))]
+
+тотальная функция «Summed up»
+  принимает lines: список строки, closing: строка, title: строка
+  возвращает список строки
+  пример «All inner lines agreed»
+    дано lines равно ["контроль\tЦЕЛА"]
+    дано closing равно "проба цела"
+    дано title равно "П9 проба"
+    ожидается ["контроль\tЦЕЛА", "проба цела", "П9 проба\tЦЕЛА"]
+  пусть bad равно (не (пусто (отфильтровать lines где line → (line содержит "\tПРОВАЛ") или ((line содержит "\tПРОШЁЛ") или ((line содержит "\tПРОШЛА") или (line содержит "\tНЕ ПОКАЗАНА"))))))
+  «Соединить списки» от lines и (если bad то [(соединить [title, "\tПРОВАЛ"] по "")] иначе [closing, (соединить [title, "\tЦЕЛА"] по "")])
+
+тотальная функция «Report lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing read at all»
+    дано answers равно пустой список
+    ожидается ["П1 счёт пород не слеп\tПРОВАЛ", "П2 изъятие роняет счёт\tПРОВАЛ (0 → 0)", "П3 чужой отпечаток отвергнут\tПРОВАЛ (код 127)", "П4 кривой вызов — код 2\tПРОВАЛ (код 127)", "П5 строка «отпечаток256» = отпечаток доводом\tПРОВАЛ (записей 0, расхождений 0)", "П6 столбец вердикта — одна строка\tПРОВАЛ (вердикт «types.record» больше не многострочен — сторожить нечего)", "П7 снятые места складываются по всем приёмам\tПРОВАЛ (у «abilities.record» ненулевое слагаемое одно — сторожить нечего)", "П8 ведомость знает дерево и не знает выдуманного\tПРОВАЛ (в ведомости «», у файла «», выдуманный «»)", "", "П9 подлог отвергнут, честная запись зелена\tПРОВАЛ", "П10 подлог, проведённый в коммит, ловится приговором ядра\tНЕ ЗВАЛАСЬ (нет bootstrap/flang)", "контроль: честные записи корпуса\tПРОВАЛ (код 127)", "подлог А: вердикт и следы сняты вместе\tПРОШЁЛ — охраны нет (код 127)", "подлог Б: снято только слово «доказано»\tПРОШЁЛ — охраны нет (код 127)", "дыра: вердикт снят у ЧАСТИ утверждений\tНЕ ПОКАЗАНА (код 127) — подделка не собралась либо линейку правили", "П11/П12 ложно-зелёная запись отвергнута, честная зелена\tПРОВАЛ", "П14 тождество сверено там, где слагаемые не нули\tПРОВАЛ (нет каталога 3455)", "контроль: честная непустая запись в числителе\tПРОВАЛ (код 127, пустых в Р0 0)", "подлог: пустая запись просочилась в числитель\tПРОШЁЛ — охраны нет (код 127, пустых в Р0 0)", "показ: пустая, но названная поимённо\tПРОВАЛ (код 127) — список разошёлся с корпусом", "П15 пустая запись в числителе Г4 краснит прогон\tПРОВАЛ", "П13 подделка записи ловится печатью ядра\tНЕ ЗВАЛАСЬ (нет bootstrap/flang)"]
+  пусть abilities равно («Kinds of» от («Text» от "abilities" и answers))
+  пусть bare равно («Kinds of» от («Without theorem» от («Text» от "abilities" и answers)))
+  пусть foreign равно («Exit code of» от "foreign sum" и answers)
+  пусть crooked равно («Exit code of» от "wrong key" и answers)
+  пусть ledger равно («Output of» от "ledger" и answers)
+  пусть known равно («Ledger sum» от "flang/proof/examples/corpus-natural.flang" и ledger)
+  пусть actual равно («Word» от 1 и («First line» от («Output of» от "natural sum" и answers)))
+  пусть invented равно («Ledger sum» от "свои/выдуманный.flang" и ledger)
+  пусть binary равно ((«Exit code of» от "binary present" и answers) равен 0)
+  пусть p1 равно (если (((abilities.«p1») плюс (abilities.«p2»)) плюс (abilities.«p3»)) больше 0 то (соединить ["П1 счёт пород не слеп\tЦЕЛА (П1=", (к строке (abilities.«p1»)), " П2=", (к строке (abilities.«p2»)), " П3=", (к строке (abilities.«p3»)), ")"] по "") иначе "П1 счёт пород не слеп\tПРОВАЛ")
+  пусть p2 равно (соединить ["П2 изъятие роняет счёт\t", (если (bare.«p1») меньше (abilities.«p1») то "ЦЕЛА" иначе "ПРОВАЛ"), " (", (к строке (abilities.«p1»)), " → ", (к строке (bare.«p1»)), ")"] по "")
+  пусть p3 равно (если foreign равен 1 то "П3 чужой отпечаток отвергнут\tЦЕЛА (код 1)" иначе (соединить ["П3 чужой отпечаток отвергнут\tПРОВАЛ (код ", (к строке foreign), ")"] по ""))
+  пусть p4 равно (если crooked равен 2 то "П4 кривой вызов — код 2\tЦЕЛА" иначе (соединить ["П4 кривой вызов — код 2\tПРОВАЛ (код ", (к строке crooked), ")"] по ""))
+  пусть p8 равно (если (не (пусто known)) и притом ((known равен actual) и притом (пусто invented)) то "П8 ведомость знает дерево и не знает выдуманного\tЦЕЛА" иначе (соединить ["П8 ведомость знает дерево и не знает выдуманного\tПРОВАЛ (в ведомости «", known, "», у файла «", actual, "», выдуманный «", invented, "»)"] по ""))
+  пусть p9 равно (добавить (если («Probe code» от "ledger probe" и answers) равен 0 то "П9 подлог отвергнут, честная запись зелена\tЦЕЛА" иначе "П9 подлог отвергнут, честная запись зелена\tПРОВАЛ") к («Said lines» от («Output of» от "ledger probe text" и answers)))
+  пусть p10 равно («Kernel probe lines» от binary и answers)
+  пусть p14 равно («Property line» от answers)
+  пусть p13 равно (если binary то («Summed up» от («Print probe lines» от answers) и "проба на печать ядра: подделка записи отвергнута, честная запись зелена" и "П13 подделка записи ловится печатью ядра") иначе ["П13 подделка записи ловится печатью ядра\tНЕ ЗВАЛАСЬ (нет bootstrap/flang)"])
+  «All lines» от [[p1, p2, p3, p4, («Sum lines» от («Output of» от "printed sums" и answers)), («Flat line» от («Output of» от "types said" и answers)), («Removed line» от («Output of» от "abilities said" и answers)), p8], p9, p10, («Summed up» от («Verdict probe lines» от answers) и "проба на снятый вердикт: обе подделки отвергнуты, честные записи зелены, остаток назван" и "П11/П12 ложно-зелёная запись отвергнута, честная зелена"), [p14], («Summed up» от («Empty probe lines» от answers) и "проба на пустой числитель: незаявленная пустота красна, честная зелена, заявленная законна" и "П15 пустая запись в числителе Г4 краснит прогон"), p13]
+
+тотальная функция «All lines»
+  принимает parts: список список строки
+  возвращает список строки
+  пример «Parts joined in order»
+    дано parts равно [["а"], ["б", "в"]]
+    ожидается ["а", "б", "в"]
+  свёртка parts начиная с (пустой список) как joined и part → «Соединить списки» от joined и part
+
+тотальная функция «Kernel probe lines»
+  принимает binary: признак, answers: список «Answer»
+  возвращает список строки
+  пример «Without the binary the probe is not called»
+    дано binary равно нет
+    дано answers равно пустой список
+    ожидается ["П10 подлог, проведённый в коммит, ловится приговором ядра\tНЕ ЗВАЛАСЬ (нет bootstrap/flang)"]
+  пусть said равно («Said lines» от («Output of» от "kernel probe text" и answers))
+  «Chosen» от [(«When» от (не binary) и ["П10 подлог, проведённый в коммит, ловится приговором ядра\tНЕ ЗВАЛАСЬ (нет bootstrap/flang)"]),
+    («When» от ((«Probe code» от "kernel probe" и answers) равен 0) и (добавить "П10 подлог, проведённый в коммит, ловится приговором ядра\tЦЕЛА" к said))] и (добавить "П10 подлог, проведённый в коммит, ловится приговором ядра\tПРОВАЛ" к said)
+
+тотальная функция «Property line»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No directory of task 3455»
+    дано answers равно [запись «Answer» с «name» равным "property sums" и «reply» равным (вариант «Процесс завершён» с код равным 4 и вывод равным "" и ошибки равным "")]
+    ожидается "П14 тождество сверено там, где слагаемые не нули\tПРОВАЛ (нет каталога 3455)"
+  пусть checked равно («Sum after» от "Шагов по свойству проверено по существу " и («Output of» от "property sums" и answers))
+  пусть probe равно («Probe code» от "property probe" и answers)
+  «Chosen» от [(«When» от (не ((«Exit code of» от "property sums" и answers) равен 0)) и "П14 тождество сверено там, где слагаемые не нули\tПРОВАЛ (нет каталога 3455)"),
+    («When» от (checked равен 0) и "П14 тождество сверено там, где слагаемые не нули\tПРОВАЛ (в 3455 снятий «по свойству» больше нет — сторожить нечем)"),
+    («When» от ((probe равен 0) и притом («Marked» от "property probe" и answers)) и (соединить ["П14 тождество сверено там, где слагаемые не нули\tЦЕЛА (снятий «по свойству» ", (к строке checked), ", расхождений 0)"] по ""))] и (соединить ["П14 тождество сверено там, где слагаемые не нули\tПРОВАЛ (код ", (к строке probe), ")"] по "")
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Nothing read fails»
+    дано answers равно пустой список
+    ожидается вариант «Провал» с код равным "FLANG_SHARE_SELF_TEST" и сообщение равным "П1 счёт пород не слеп\tПРОВАЛ\nП2 изъятие роняет счёт\tПРОВАЛ (0 → 0)\nП3 чужой отпечаток отвергнут\tПРОВАЛ (код 127)\nП4 кривой вызов — код 2\tПРОВАЛ (код 127)\nП5 строка «отпечаток256» = отпечаток доводом\tПРОВАЛ (записей 0, расхождений 0)\nП6 столбец вердикта — одна строка\tПРОВАЛ (вердикт «types.record» больше не многострочен — сторожить нечего)\nП7 снятые места складываются по всем приёмам\tПРОВАЛ (у «abilities.record» ненулевое слагаемое одно — сторожить нечего)\nП8 ведомость знает дерево и не знает выдуманного\tПРОВАЛ (в ведомости «», у файла «», выдуманный «»)\n\nП9 подлог отвергнут, честная запись зелена\tПРОВАЛ\nП10 подлог, проведённый в коммит, ловится приговором ядра\tНЕ ЗВАЛАСЬ (нет bootstrap/flang)\nконтроль: честные записи корпуса\tПРОВАЛ (код 127)\nподлог А: вердикт и следы сняты вместе\tПРОШЁЛ — охраны нет (код 127)\nподлог Б: снято только слово «доказано»\tПРОШЁЛ — охраны нет (код 127)\nдыра: вердикт снят у ЧАСТИ утверждений\tНЕ ПОКАЗАНА (код 127) — подделка не собралась либо линейку правили\nП11/П12 ложно-зелёная запись отвергнута, честная зелена\tПРОВАЛ\nП14 тождество сверено там, где слагаемые не нули\tПРОВАЛ (нет каталога 3455)\nконтроль: честная непустая запись в числителе\tПРОВАЛ (код 127, пустых в Р0 0)\nподлог: пустая запись просочилась в числитель\tПРОШЁЛ — охраны нет (код 127, пустых в Р0 0)\nпоказ: пустая, но названная поимённо\tПРОВАЛ (код 127) — список разошёлся с корпусом\nП15 пустая запись в числителе Г4 краснит прогон\tПРОВАЛ\nП13 подделка записи ловится печатью ядра\tНЕ ЗВАЛАСЬ (нет bootstrap/flang)"
+  пусть lines равно («Report lines» от answers)
+  если пусто (отфильтровать lines где line → (line начинается с "П") и притом (line содержит "\tПРОВАЛ"))
+    то вариант «Конец работы» с значение равным (соединить lines по "\n")
+    иначе вариант «Провал» с код равным "FLANG_SHARE_SELF_TEST" и сообщение равным (соединить lines по "\n")
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «No checker»
+    дано asked равно "checker present"
+    дано answers равно [запись «Answer» с «name» равным "checker present" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "")]
+    ожидается ["нет чекера /flang/proof/checker/сверщик — собрать: make -C flang/proof/checker"]
+  «Chosen» от [(«When» от ((asked равен "checker present") и притом (не ((«Exit code of» от asked и answers) равен 0))) и [(соединить ["нет чекера ", («Checker» от answers), " — собрать: make -C flang/proof/checker"] по "")]),
+    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и ["временный каталог не заведён"]),
+    («When» от ((asked равен "trees") и притом (не ((«Exit code of» от asked и answers) равен 0))) и ["ПОДЛОГ НЕ СОБРАЛСЯ: малые деревья проб не сложились — поправить пробу, линейка ни при чём"])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно [запись «Answer» с «name» равным "checker present" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным "")]
+    ожидается вариант «Провал» с код равным "FLANG_SHARE_SELF_TEST" и сообщение равным "П1 счёт пород не слеп\tПРОВАЛ\nП2 изъятие роняет счёт\tПРОВАЛ (0 → 0)\nП3 чужой отпечаток отвергнут\tПРОВАЛ (код 127)\nП4 кривой вызов — код 2\tПРОВАЛ (код 127)\nП5 строка «отпечаток256» = отпечаток доводом\tПРОВАЛ (записей 0, расхождений 0)\nП6 столбец вердикта — одна строка\tПРОВАЛ (вердикт «types.record» больше не многострочен — сторожить нечего)\nП7 снятые места складываются по всем приёмам\tПРОВАЛ (у «abilities.record» ненулевое слагаемое одно — сторожить нечего)\nП8 ведомость знает дерево и не знает выдуманного\tПРОВАЛ (в ведомости «», у файла «», выдуманный «»)\n\nП9 подлог отвергнут, честная запись зелена\tПРОВАЛ\nП10 подлог, проведённый в коммит, ловится приговором ядра\tНЕ ЗВАЛАСЬ (нет bootstrap/flang)\nконтроль: честные записи корпуса\tПРОВАЛ (код 127)\nподлог А: вердикт и следы сняты вместе\tПРОШЁЛ — охраны нет (код 127)\nподлог Б: снято только слово «доказано»\tПРОШЁЛ — охраны нет (код 127)\nдыра: вердикт снят у ЧАСТИ утверждений\tНЕ ПОКАЗАНА (код 127) — подделка не собралась либо линейку правили\nП11/П12 ложно-зелёная запись отвергнута, честная зелена\tПРОВАЛ\nП14 тождество сверено там, где слагаемые не нули\tПРОВАЛ (нет каталога 3455)\nконтроль: честная непустая запись в числителе\tПРОВАЛ (код 127, пустых в Р0 0)\nподлог: пустая запись просочилась в числитель\tПРОШЁЛ — охраны нет (код 127, пустых в Р0 0)\nпоказ: пустая, но названная поимённо\tПРОВАЛ (код 127) — список разошёлся с корпусом\nП15 пустая запись в числителе Г4 краснит прогон\tПРОВАЛ\nП13 подделка записи ловится печатью ядра\tНЕ ЗВАЛАСЬ (нет bootstrap/flang)"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Six stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6 и «answers» равным пустой список
+  «Begin with» от 6
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the place of temporary files»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и потом равным (запись «Inquiry» с «asked» равным "temporary" и «queue» равным [запись «Question» с «name» равным "root" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && pwd"])] и «stages» равным 5 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то если пусто («Work» от answers)
+        то вариант «Не проверено» с код равным "FLANG_SHARE_SELF_TEST_NOT_MEASURED" и сообщение равным голова
+        иначе вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", («Work» от answers)]) и потом равным (запись «Inquiry» с «asked» равным (соединить ["stopped: ", голова] по "") и «queue» равным пустой список и «stages» равным 0 и «answers» равным answers)
+    случай пусто
+      то если (inquiry.«asked») начинается с "stopped: "
+        то вариант «Не проверено» с код равным "FLANG_SHARE_SELF_TEST_NOT_MEASURED" и сообщение равным («After» от "stopped: " и (inquiry.«asked»))
+        иначе «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Share self test»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

@@ -1,0 +1,969 @@
+модуль «Share measure»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Memory headroom» из "../../scripts/memory-headroom.fscript" только «Whole», «Rounded», «Two digits», «Hundredths»
+  использует «Replay share» из "replay-share.fscript" только «Digits after», «Sum after», «Without first», «File name»
+  использует «Kernel verdict» из "kernel-verdict.fscript" только «Ledger command», «Key value», «Pick», «Picked»
+  использует «Lists» только «Соединить списки»
+
+объект «Kinds»
+  «inside»: признак
+  «verdict»: строка
+  «no theorem»: признак
+  «ruled»: признак
+  «moved»: признак
+  «debt»: число
+  «rule named»: признак
+  «therefore»: признак
+  «declared»: признак
+  «premised»: признак
+  «unpremised end»: признак
+  «p1»: число
+  «p2»: число
+  «p3»: число
+  «p4»: число
+  «stripped»: число
+  «steps»: число
+  «moves»: число
+  «by example»: число
+  «by property»: число
+  «by law»: число
+
+объект «Row»
+  «name»: строка
+  «source»: строка
+  «code»: число
+  «printed code»: число
+  «statements»: число
+  «proved»: число
+  «premises»: число
+  «steps»: число
+  «p1»: число
+  «p2»: число
+  «p3»: число
+  «by example»: число
+  «by property»: число
+  «by law»: число
+  «agreed»: строка
+  «class»: строка
+  «p4»: число
+  «said»: строка
+  «p5»: число
+  «moves»: число
+  «stripped»: число
+  «mismatch»: строка
+  «refusal»: признак
+
+тотальная функция «No kinds»
+  возвращает «Kinds»
+  пример «Every count starts at naught»
+    ожидается запись «Kinds» с «inside» равным нет и «verdict» равным "" и «no theorem» равным нет и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 0 и «moves» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0
+  запись «Kinds» с «inside» равным нет и «verdict» равным "" и «no theorem» равным нет и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 0 и «moves» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0
+
+тотальная функция «Trimmed»
+  принимает line: строка
+  возвращает строка
+  пример «Spaces and tabs at both ends go»
+    дано line равно " \t шаг 1 \t"
+    ожидается "шаг 1"
+  соединить («Words» от (соединить (разделить line по "\t") по " ")) по " "
+
+тотальная функция «Third named»
+  принимает line: строка
+  возвращает строка
+  пример «The third name in angle quotes»
+    дано line равно "посылка «а» «б» «правило»"
+    ожидается "правило"
+  пусть parts равно (разделить line по "«")
+  если (длина parts) меньше 4 то "" иначе («Cell» от 1 и (разделить («Cell» от 4 и parts) по "»"))
+
+тотальная функция «Step ground»
+  принимает line: строка
+  возвращает строка
+  пример «What closes a step»
+    дано line равно "шаг 1 строка 9 закрывающий по примеру «а»"
+    ожидается "по примеру «а»"
+  соединить («Without first» от («Without first» от («Without first» от («Without first» от («Without first» от («Words» от line)))))) по " "
+
+тотальная функция «Statement opened»
+  принимает kinds: «Kinds»
+  возвращает «Kinds»
+  пример «A new statement forgets the last one»
+    дано kinds равно запись «Kinds» с «inside» равным нет и «verdict» равным "доказано" и «no theorem» равным да и «ruled» равным да и «moved» равным да и «debt» равным 2 и «rule named» равным да и «therefore» равным да и «declared» равным да и «premised» равным да и «unpremised end» равным да и «p1» равным 1 и «p2» равным 0 и «p3» равным 0 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 0 и «moves» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0
+    ожидается запись «Kinds» с «inside» равным да и «verdict» равным "" и «no theorem» равным нет и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 1 и «p2» равным 0 и «p3» равным 0 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 0 и «moves» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0
+  запись «Kinds» с «inside» равным да и «verdict» равным "" и «no theorem» равным нет и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным (kinds.«p1») и «p2» равным (kinds.«p2») и «p3» равным (kinds.«p3») и «p4» равным (kinds.«p4») и «stripped» равным (kinds.«stripped») и «steps» равным (kinds.«steps») и «moves» равным (kinds.«moves») и «by example» равным (kinds.«by example») и «by property» равным (kinds.«by property») и «by law» равным (kinds.«by law»)
+
+тотальная функция «Statement closed»
+  принимает kinds: «Kinds»
+  возвращает «Kinds»
+  пример «A proved statement without a theorem counts in the first kind»
+    дано kinds равно запись «Kinds» с «inside» равным да и «verdict» равным "доказано" и «no theorem» равным да и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 0 и «moves» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0
+    ожидается запись «Kinds» с «inside» равным нет и «verdict» равным "доказано" и «no theorem» равным да и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 1 и «p2» равным 0 и «p3» равным 0 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 0 и «moves» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0
+  пусть debt равно ((kinds.«debt») плюс (если (kinds.«ruled») и притом (не (kinds.«moved»)) то 1 иначе 0))
+  пусть counted равно ((kinds.«no theorem») и притом ((kinds.«verdict») равен "доказано"))
+  пусть stripped равно ((не ((kinds.«verdict») равен "доказано")) и притом ((kinds.«rule named») или ((kinds.«declared») или (kinds.«therefore»))))
+  запись «Kinds» с «inside» равным нет и «verdict» равным (kinds.«verdict») и «no theorem» равным (kinds.«no theorem») и «ruled» равным (kinds.«ruled») и «moved» равным (kinds.«moved») и «debt» равным debt и «rule named» равным (kinds.«rule named») и «therefore» равным (kinds.«therefore») и «declared» равным (kinds.«declared») и «premised» равным (kinds.«premised») и «unpremised end» равным (kinds.«unpremised end») и «p1» равным ((kinds.«p1») плюс (если counted и притом (не (kinds.«unpremised end»)) то 1 иначе 0)) и «p2» равным ((kinds.«p2») плюс debt) и «p3» равным (kinds.«p3») и «p4» равным (kinds.«p4») и «stripped» равным ((kinds.«stripped») плюс (если stripped то 1 иначе 0)) и «steps» равным (kinds.«steps») и «moves» равным ((kinds.«moves») плюс (если counted и притом (kinds.«unpremised end») то 1 иначе 0)) и «by example» равным (kinds.«by example») и «by property» равным (kinds.«by property») и «by law» равным (kinds.«by law»)
+
+тотальная функция «Line seen»
+  принимает kinds: «Kinds», l: строка
+  возвращает «Kinds»
+  пример «A step closed by example»
+    дано kinds равно запись «Kinds» с «inside» равным да и «verdict» равным "" и «no theorem» равным нет и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 0 и «moves» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0
+    дано l равно "шаг 1 строка 9 закрывающий по примеру «а»"
+    ожидается запись «Kinds» с «inside» равным да и «verdict» равным "" и «no theorem» равным нет и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 0 и «p2» равным 0 и «p3» равным 1 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 1 и «moves» равным 0 и «by example» равным 1 и «by property» равным 0 и «by law» равным 0
+  пусть premise равно (l начинается с "посылка ")
+  пусть ended равно (l равен "ход конец")
+  пусть declared равно (l начинается с "по объявлению ")
+  пусть step равно (l начинается с "шаг ")
+  пусть ground равно (если step то («Step ground» от l) иначе "")
+  пусть sampled равно (ground начинается с "по примеру")
+  пусть propertied равно (ground начинается с "по свойству")
+  пусть lawful равно (ground начинается с "по закону")
+  запись «Kinds» с «inside» равным да и «verdict» равным (если l начинается с "вердикт " то («Word» от 2 и l) иначе (kinds.«verdict»)) и «no theorem» равным ((kinds.«no theorem») или (l равен "теоремы нет")) и «ruled» равным (если premise то (не (пусто («Third named» от l))) иначе (kinds.«ruled»)) и «moved» равным (если premise то нет иначе ((kinds.«moved») или ended)) и «debt» равным ((kinds.«debt») плюс (если premise и притом ((kinds.«ruled») и притом (не (kinds.«moved»))) то 1 иначе 0)) и «rule named» равным ((kinds.«rule named») или (l начинается с "правило «")) и «therefore» равным ((kinds.«therefore») или (l начинается с "следовательно доказано")) и «declared» равным ((kinds.«declared») или declared) и «premised» равным ((kinds.«premised») или premise) и «unpremised end» равным ((kinds.«unpremised end») или (ended и притом (не ((kinds.«premised») или premise)))) и «p1» равным (kinds.«p1») и «p2» равным (kinds.«p2») и «p3» равным ((kinds.«p3») плюс (если (sampled или propertied) или lawful то 1 иначе 0)) и «p4» равным ((kinds.«p4») плюс (если declared то 1 иначе 0)) и «stripped» равным (kinds.«stripped») и «steps» равным ((kinds.«steps») плюс (если step то 1 иначе 0)) и «moves» равным (kinds.«moves») и «by example» равным ((kinds.«by example») плюс (если sampled то 1 иначе 0)) и «by property» равным ((kinds.«by property») плюс (если propertied то 1 иначе 0)) и «by law» равным ((kinds.«by law») плюс (если lawful то 1 иначе 0))
+
+тотальная функция «Kind step»
+  принимает kinds: «Kinds», line: строка
+  возвращает «Kinds»
+  пример «Lines outside a statement count nothing»
+    дано kinds равно запись «Kinds» с «inside» равным нет и «verdict» равным "" и «no theorem» равным нет и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 0 и «moves» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0
+    дано line равно "шаг 1 по примеру"
+    ожидается запись «Kinds» с «inside» равным нет и «verdict» равным "" и «no theorem» равным нет и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 0 и «moves» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0
+  пусть l равно («Trimmed» от line)
+  разбор («Line role» от kinds и l)
+    случай "open"
+      то «Statement opened» от kinds
+    случай "close"
+      то «Statement closed» от kinds
+    случай "inside"
+      то «Line seen» от kinds и l
+    случай любое
+      то kinds
+
+тотальная функция «Line role»
+  принимает kinds: «Kinds», l: строка
+  возвращает строка
+  пример «The end of a statement»
+    дано kinds равно запись «Kinds» с «inside» равным да и «verdict» равным "" и «no theorem» равным нет и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 0 и «moves» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0
+    дано l равно "конец утверждения"
+    ожидается "close"
+  «Chosen» от [(«When» от (l начинается с "утверждение «") и "open"),
+    («When» от (не (kinds.«inside»)) и "outside"),
+    («When» от (l равен "конец утверждения") и "close")] и "inside"
+
+тотальная функция «Kinds of»
+  принимает text: строка
+  возвращает «Kinds»
+  пример «A statement proved without a theorem, with a step by example»
+    дано text равно "утверждение «а»\n  вердикт доказано\n  теоремы нет\n  шаг 1 строка 9 закрывающий по примеру «б»\nконец утверждения\n"
+    ожидается запись «Kinds» с «inside» равным нет и «verdict» равным "доказано" и «no theorem» равным да и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 1 и «p2» равным 0 и «p3» равным 1 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 1 и «moves» равным 0 и «by example» равным 1 и «by property» равным 0 и «by law» равным 0
+  свёртка (разделить text по "\n") начиная с («No kinds») как kinds и line → «Kind step» от kinds и line
+
+тотальная функция «Allowed empty»
+  возвращает список строки
+  пример «Records allowed to sit empty in the numerator»
+    ожидается ["corpus-brackets.record", "forgery-binder-hides-the-condition.record", "forgery-if-without-descent.record", "krug-tuda-i-obratno.record", "poddelka-element-po-nomeru.record", "poddelka-istinnaya-vetv.record", "poddelka-krug-pri-rabote.record", "poddelka-lozhnaya-polovina.record", "poddelka-mera-dliny-stroki.record", "poddelka-porjadok-sosednih.record", "poddelka-ravenstvo-v-tele-ne-dokazyvaet.record", "poddelka-razdvoenie-diz.record", "poddelka-refleksivnost.record", "poddelka-slova-celey.record", "poddelka-sortirovka-ne-ubyvaet.record", "poddelka-vhozhdenie.record"]
+  ["corpus-brackets.record", "forgery-binder-hides-the-condition.record", "forgery-if-without-descent.record", "krug-tuda-i-obratno.record", "poddelka-element-po-nomeru.record", "poddelka-istinnaya-vetv.record", "poddelka-krug-pri-rabote.record", "poddelka-lozhnaya-polovina.record", "poddelka-mera-dliny-stroki.record", "poddelka-porjadok-sosednih.record", "poddelka-ravenstvo-v-tele-ne-dokazyvaet.record", "poddelka-razdvoenie-diz.record", "poddelka-refleksivnost.record", "poddelka-slova-celey.record", "poddelka-sortirovka-ne-ubyvaet.record", "poddelka-vhozhdenie.record"]
+
+тотальная функция «One line»
+  принимает said: строка
+  возвращает строка
+  пример «Lines are joined by spaces and cut to sixty-four signs»
+    дано said равно "a\tb\nc\n\n"
+    ожидается "a b c"
+  пусть kept равно («Stripped ends» от said)
+  пусть joined равно (соединить (разделить (соединить (разделить kept по "\n") по " ") по "\t") по " ")
+  если (длина joined) больше 64 то (подстрока joined с 1 по 64) иначе joined
+
+тотальная функция «Stripped ends»
+  принимает text: строка
+  возвращает строка
+  пример «Trailing line ends go, as a shell substitution drops them»
+    дано text равно "a\nb\n\n"
+    ожидается "a\nb"
+  пусть parts равно (разделить text по "\n")
+  пусть last равно (свёртка («Numbered» от parts) начиная с 0 как found и entry → если пусто («Cell» от 2 и entry) то found иначе («Count» от («Cell» от 1 и entry)))
+  соединить (отобразить (отфильтровать («Numbered» от parts) где entry → («Count» от («Cell» от 1 и entry)) не больше last) как entry → «Cell» от 2 и entry) по "\n"
+
+тотальная функция «Numbered»
+  принимает items: список строки
+  возвращает список список строки
+  пример «Numbered from one»
+    дано items равно ["а", "б"]
+    ожидается [["1", "а"], ["2", "б"]]
+  свёртка items начиная с (пустой список) как numbered и piece → добавить [(к строке ((длина numbered) плюс 1)), piece] к numbered
+
+тотальная функция «Summary line»
+  принимает said: строка
+  возвращает строка
+  пример «The line that counts what was checked»
+    дано said равно "ПРОВЕРЕНО\nутверждений 4, шагов сверено с исходником 2, сведений проиграно заново 1 (ходов проверено 3). Числятся доказанными 4. НА СЛОВО ЯДРА: посылок и утверждений 0, шагов 0.\n"
+    ожидается "утверждений 4, шагов сверено с исходником 2, сведений проиграно заново 1 (ходов проверено 3). Числятся доказанными 4. НА СЛОВО ЯДРА: посылок и утверждений 0, шагов 0."
+  «Cell» от 1 и (отфильтровать (разделить said по "\n") где line → (line содержит "утверждений ") и притом ((line содержит ", шагов сверено с исходником ") и притом ((line содержит "Числятся доказанными ") и притом (line содержит "НА СЛОВО ЯДРА: посылок и утверждений "))))
+
+тотальная функция «Row of»
+  принимает name: строка, source: строка, class: строка, code: число, printed: число, said: строка, text: строка
+  возвращает «Row»
+  пример «A record the checker accepted»
+    дано name равно "a.record"
+    дано source равно "a.flang"
+    дано class равно ""
+    дано code равно 0
+    дано printed равно 0
+    дано said равно "ПРОВЕРЕНО\nутверждений 1, шагов сверено с исходником 0, сведений проиграно заново 0 (ходов проверено 0). Числятся доказанными 1. НА СЛОВО ЯДРА: посылок и утверждений 1, шагов 0.\n"
+    дано text равно "утверждение «а»\n  вердикт доказано\n  теоремы нет\nконец утверждения\n"
+    ожидается запись «Row» с «name» равным "a.record" и «source» равным "a.flang" и «code» равным 0 и «printed code» равным 0 и «statements» равным 1 и «proved» равным 1 и «premises» равным 1 и «steps» равным 0 и «p1» равным 1 и «p2» равным 0 и «p3» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0 и «agreed» равным "да" и «class» равным "Р0" и «p4» равным 0 и «said» равным "ПРОВЕРЕНО утверждений 1, шагов сверено с исходником 0, сведений " и «p5» равным 0 и «moves» равным 0 и «stripped» равным 0 и «mismatch» равным "" и «refusal» равным нет
+  пусть summary равно («Summary line» от said)
+  пусть statements равно («Digits after» от "утверждений " и («Cell» от 1 и (разделить summary по ", шагов сверено")))
+  пусть replayed равно («Digits after» от "сведений проиграно заново " и summary)
+  пусть moved равно («Digits after» от "(ходов проверено " и summary)
+  пусть proved равно («Digits after» от "Числятся доказанными " и summary)
+  пусть premises равно («Digits after» от "НА СЛОВО ЯДРА: посылок и утверждений " и summary)
+  пусть steps равно («Digits after» от ", шагов " и summary)
+  пусть removed равно («Sum after» от "снято со слова ядра мест " и said)
+  пусть sampled равно («Sum after» от "Шагов по примеру проверено по существу " и said)
+  пусть propertied равно («Sum after» от "Шагов по свойству проверено по существу " и said)
+  пусть bodied равно («Sum after» от "проверено по телу функции " и said)
+  пусть kinds равно («Kinds of» от text)
+  пусть seen равно (((kinds.«p1») плюс (kinds.«p2»)) плюс (kinds.«steps»))
+  пусть counted равно (((((premises плюс steps) плюс removed) плюс sampled) плюс propertied) плюс bodied)
+  пусть verdict равно ((code равен 0) или (code равен 3))
+  пусть mismatch равно («Mismatch» от verdict и name и kinds и moved и seen и counted и premises и steps и removed и sampled и propertied и bodied)
+  запись «Row» с «name» равным name и «source» равным source и «code» равным code и «printed code» равным printed и «statements» равным statements и «proved» равным proved и «premises» равным premises и «steps» равным steps и «p1» равным (kinds.«p1») и «p2» равным (kinds.«p2») и «p3» равным (kinds.«p3») и «by example» равным (kinds.«by example») и «by property» равным (kinds.«by property») и «by law» равным (kinds.«by law») и «agreed» равным (если пусто mismatch то "да" иначе "нет") и «class» равным («Class of code» от code и premises и steps) и «p4» равным (kinds.«p4») и «said» равным («One line» от said) и «p5» равным ((kinds.«steps») минус (kinds.«p3»)) и «moves» равным (kinds.«moves») и «stripped» равным (kinds.«stripped») и «mismatch» равным mismatch и «refusal» равным нет
+
+тотальная функция «Class of code»
+  принимает code: число, premises: число, steps: число
+  возвращает строка
+  пример «Not checked with nothing on the kernel word»
+    дано code равно 3
+    дано premises равно 0
+    дано steps равно 0
+    ожидается "Р1"
+  «Chosen» от [(«When» от (code равен 0) и "Р0"),
+    («When» от (code равен 1) и "Р3"),
+    («When» от ((code равен 3) и притом ((premises равен 0) и притом (steps равен 0))) и "Р1"),
+    («When» от (code равен 3) и "Р2")] и "Р4"
+
+тотальная функция «Mismatch»
+  принимает verdict: признак, name: строка, kinds: «Kinds», moved: число, seen: число, counted: число, premises: число, steps: число, removed: число, sampled: число, propertied: число, bodied: число
+  возвращает строка
+  пример «Moves the checker never checked»
+    дано verdict равно да
+    дано name равно "a.record"
+    дано kinds равно запись «Kinds» с «inside» равным нет и «verdict» равным "" и «no theorem» равным нет и «ruled» равным нет и «moved» равным нет и «debt» равным 0 и «rule named» равным нет и «therefore» равным нет и «declared» равным нет и «premised» равным нет и «unpremised end» равным нет и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «p4» равным 0 и «stripped» равным 0 и «steps» равным 0 и «moves» равным 2 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0
+    дано moved равно 0
+    дано seen равно 0
+    дано counted равно 0
+    дано premises равно 0
+    дано steps равно 0
+    дано removed равно 0
+    дано sampled равно 0
+    дано propertied равно 0
+    дано bodied равно 0
+    ожидается "  a.record: ходов под постусловием 2, а чекер ходов проверил 0 — зеркало вычло бы их со слова зря"
+  «Chosen» от [(«When» от (не verdict) и ""),
+    («When» от (((kinds.«moves») больше 0) и притом (moved равен 0)) и (соединить ["  ", name, ": ходов под постусловием ", (к строке (kinds.«moves»)), ", а чекер ходов проверил 0 — зеркало вычло бы их со слова зря"] по "")),
+    («When» от (seen равен counted) и "")] и (соединить ["  ", name, ": текст П1 ", (к строке (kinds.«p1»)), " + П2 ", (к строке (kinds.«p2»)), " + шагов ", (к строке (kinds.«steps»)), " = ", (к строке seen), " (вне тождества: ходами ", (к строке (kinds.«moves»)), "); чекер посылок ", (к строке premises), " + шагов ", (к строке steps), " + снято ", (к строке removed), " + по примеру ", (к строке sampled), " + по свойству ", (к строке propertied), " + по телу функции ", (к строке bodied), " = ", (к строке counted)] по "")
+
+тотальная функция «Refusal row»
+  принимает name: строка, source: строка, class: строка, said: строка
+  возвращает «Row»
+  пример «A record the instrument will not judge»
+    дано name равно "a.record"
+    дано source равно "a.flang"
+    дано class равно "Р5"
+    дано said равно "не берусь"
+    ожидается запись «Row» с «name» равным "a.record" и «source» равным "a.flang" и «code» равным 126 и «printed code» равным 126 и «statements» равным 0 и «proved» равным 0 и «premises» равным 0 и «steps» равным 0 и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0 и «agreed» равным "нет" и «class» равным "Р5" и «p4» равным 0 и «said» равным "не берусь" и «p5» равным 0 и «moves» равным 0 и «stripped» равным 0 и «mismatch» равным "" и «refusal» равным да
+  запись «Row» с «name» равным name и «source» равным source и «code» равным 126 и «printed code» равным 126 и «statements» равным 0 и «proved» равным 0 и «premises» равным 0 и «steps» равным 0 и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0 и «agreed» равным "нет" и «class» равным class и «p4» равным 0 и «said» равным said и «p5» равным 0 и «moves» равным 0 и «stripped» равным 0 и «mismatch» равным "" и «refusal» равным да
+
+тотальная функция «Dump line»
+  принимает row: «Row»
+  возвращает строка
+  пример «A refusal has nineteen cells»
+    дано row равно запись «Row» с «name» равным "a.record" и «source» равным "a.flang" и «code» равным 126 и «printed code» равным 126 и «statements» равным 0 и «proved» равным 0 и «premises» равным 0 и «steps» равным 0 и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0 и «agreed» равным "нет" и «class» равным "Р5" и «p4» равным 0 и «said» равным "не берусь" и «p5» равным 0 и «moves» равным 0 и «stripped» равным 0 и «mismatch» равным "" и «refusal» равным да
+    ожидается "a.record\ta.flang\t126\t126\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\tнет\tР5\t0\tне берусь\t0"
+  пусть cells равно [(row.«name»), (row.«source»), (к строке (row.«code»)), (к строке (row.«printed code»)), (к строке (row.«statements»)), (к строке (row.«proved»)), (к строке (row.«premises»)), (к строке (row.«steps»)), (к строке (row.«p1»)), (к строке (row.«p2»)), (к строке (row.«p3»)), (к строке (row.«by example»)), (к строке (row.«by property»)), (к строке (row.«by law»)), (row.«agreed»), (row.«class»), (к строке (row.«p4»)), (row.«said»), (к строке (row.«p5»))]
+  соединить (если row.«refusal» то cells иначе (добавить (к строке (row.«moves»)) к cells)) по "\t"
+
+тотальная функция «Share text»
+  принимает part: число, whole: число
+  возвращает строка
+  пример «Two decimals and a percent sign»
+    дано part равно 1
+    дано whole равно 3
+    ожидается "33.33 %"
+  пример «No whole»
+    дано part равно 0
+    дано whole равно 0
+    ожидается "знаменатель ноль"
+  если whole больше 0 то (соединить [(«Hundredths» от («Rounded» от ((part умножить на 10000) делить на whole))), " %"] по "") иначе "знаменатель ноль"
+
+тотальная функция «Padded»
+  принимает text: строка, width: число, left: признак
+  возвращает строка
+  пример «Padded on the right to a width»
+    дано text равно "ab"
+    дано width равно 4
+    дано left равно нет
+    ожидается "ab  "
+  пример «Padded on the left»
+    дано text равно "7"
+    дано width равно 3
+    дано left равно да
+    ожидается "  7"
+  пусть room равно (width минус (длина text))
+  пусть fill равно (если room больше 0 то (подстрока "                                        " с 1 по room) иначе "")
+  если left то (соединить [fill, text] по "") иначе (соединить [text, fill] по "")
+
+тотальная функция «Count of class»
+  принимает rows: список «Row», class: строка
+  возвращает число
+  пример «Rows of one class»
+    дано rows равно пустой список
+    дано class равно "Р0"
+    ожидается 0
+  длина (отфильтровать rows где row → (row.«class») равен class)
+
+тотальная функция «Total»
+  принимает numbers: список число
+  возвращает число
+  пример «A sum»
+    дано numbers равно [1, 2, 3]
+    ожидается 6
+  свёртка numbers начиная с 0 как total и each → total плюс each
+
+тотальная функция «Map line»
+  принимает mask: строка, rows: список «Row», proved: число
+  возвращает строка
+  пример «Nothing taken off, nothing counted»
+    дано mask равно "000"
+    дано rows равно пустой список
+    дано proved равно 0
+    ожидается "— ничего                        0          0 знаменатель ноль"
+  пусть lead равно (подстрока mask с 1 по 1)
+  пусть mid равно (подстрока mask с 2 по 2)
+  пусть rear равно (подстрока mask с 3 по 3)
+  пусть kept равно (отфильтровать rows где row → (не (((row.«p1») больше 0) и притом (lead равен "0"))) и притом ((не (((row.«p2») больше 0) и притом (mid равен "0"))) и притом (не ((((row.«p3») плюс (row.«p5»)) больше 0) и притом (rear равен "0")))))
+  пусть proven равно («Total» от (отобразить kept как row → row.«proved»))
+  пусть label равно (соединить [(если lead равен "1" то "П1 " иначе ""), (если mid равен "1" то "П2 " иначе ""), (если rear равен "1" то "П3+П5 " иначе "")] по "")
+  соединить [(«Padded» от (если пусто label то "— ничего " иначе label) и 24 и нет), " ", («Padded» от (к строке (длина kept)) и 8 и да), " ", («Padded» от (к строке proven) и 10 и да), " ", («Padded» от («Share text» от proven и proved) и 11 и да)] по ""
+
+тотальная функция «Codes»
+  принимает codes: список число, wanted: число
+  возвращает число
+  пример «Codes of one value»
+    дано codes равно [0, 1, 0]
+    дано wanted равно 0
+    ожидается 2
+  длина (отфильтровать codes где code → code равен wanted)
+
+тотальная функция «Summary lines»
+  принимает rows: список «Row», title: строка, place: строка, ledger: строка, ledgered: число, forged: список строки, mismatches: число
+  возвращает список строки
+  пример «An empty set still names its denominators»
+    дано rows равно пустой список
+    дано title равно "к"
+    дано place равно "/d"
+    дано ledger равно "коммит x"
+    дано ledgered равно 3
+    дано forged равно пустой список
+    дано mismatches равно 0
+    ожидается ["", "═══ НАБОР «к» ═══", "каталог записей\t/d", "записей в наборе\t0", "ведомость дела\tкоммит x", "файлов в ведомости\t3", "", "-- исходы чекера, как его зовёт оснастка (два довода) --", "код 0 ПРОВЕРЕНО\t0", "код 1 НЕ СОШЛОСЬ\t0", "код 3 НЕ ПРОВЕРЕНО — не приговор\t0", "код 2 кривой вызов — не приговор\t0", "коды больше 3 — не приговор\t0", "", "-- тем же чекером, отпечаток подан третьим доводом --", "код 0 ПРОВЕРЕНО\t0", "код 1 НЕ СОШЛОСЬ\t0", "код 3 НЕ ПРОВЕРЕНО\t0", "прочие коды — не приговор\t0", "", "-- ДОЛЯ Г4, знаменатель назван вместе с числителем --", "по ЗАПИСЯМ, сегодня\t0 из 0\tзнаменатель ноль", "  из них ВПУСТУЮ, доказанным не числится ничего\t0", "по ЗАПИСЯМ, не считая пустых\t0 из 0\tзнаменатель ноль", "  (по УТВЕРЖДЕНИЯМ пустые дают ноль и числа не двигают)", "  записей набора подделок (манифест, не имя файла)\t0", "  из них в числителе\t0", "по ЗАПИСЯМ, снят разряд Р1\t0 из 0\tзнаменатель ноль", "по УТВЕРЖДЕНИЯМ, сегодня\t0 из 0\tзнаменатель ноль", "по УТВЕРЖДЕНИЯМ, снят разряд Р1\t0 из 0\tзнаменатель ноль", "", "-- разряды помех, по записям --", "Р0 принято кодом 0\t0", "Р1 мешает только нехватка «отпечаток256»\t0", "Р2 то же плюс места на слово ядра\t0", "Р3 противоречие, код 1\t0", "Р4 не приговор\t0", "Р5 НЕ БЕРУСЬ: дело не из дерева\t0", "", "-- породы мест на слово ядра, по всему набору --", "П1 «доказано», теоремы в записи нет\t0", "П2 посылка с правилом и без ходов\t0", "П3 шаг «по примеру»/«по свойству»/«по закону»\t0", "П5 шаг, который сверщик не проигрывает вовсе\t0", "П4 из них — значение «по объявлению» (внутри П1, не сверх)\t0", "ходами под постусловием проиграно мест (не на слове, вне П1)\t0", "чекер: на слово ядра — посылок и утверждений\t0", "чекер: на слово ядра — шагов\t0", "  из П3: шаг «по примеру»\t0", "  из П3: шаг «по свойству»\t0", "  из П3: шаг «по закону»\t0", "сумма мест П1+П2+П3+П5\t0", "", "-- КАРТА РАБОТ: числитель, если снять Р1 и названные породы --", "снято сверх Р1            записей   утвержд.         доля", "— ничего                        0          0 знаменатель ноль", "П1                              0          0 знаменатель ноль", "П2                              0          0 знаменатель ноль", "П3+П5                           0          0 знаменатель ноль", "П1 П2                           0          0 знаменатель ноль", "П1 П3+П5                        0          0 знаменатель ноль", "П2 П3+П5                        0          0 знаменатель ноль", "П1 П2 П3+П5                     0          0 знаменатель ноль", "", "-- сходимость двух приборов --", "записей, где текстовый счёт разошёлся с чекером\t0", "утверждений в наборе всего\t0", "числятся доказанными — знаменатель по утверждениям\t0"]
+  пусть codes равно (отобразить rows как row → row.«code»)
+  пусть printed равно (отобразить rows как row → row.«printed code»)
+  пусть all равно (длина rows)
+  пусть proved равно («Total» от (отобразить rows как row → row.«proved»))
+  пусть accepted равно (отфильтровать rows где row → (row.«code») равен 0)
+  пусть hollow равно (длина (отфильтровать accepted где row → (row.«proved») равен 0))
+  пусть taken равно (длина accepted)
+  пусть printedtaken равно (отфильтровать rows где row → (row.«printed code») равен 0)
+  пусть inset равно (отфильтровать rows где row → не (пусто (отфильтровать forged где name → name равен (row.«name»))))
+  пусть p1 равно («Total» от (отобразить rows как row → row.«p1»))
+  пусть p2 равно («Total» от (отобразить rows как row → row.«p2»))
+  пусть p3 равно («Total» от (отобразить rows как row → row.«p3»))
+  пусть p5 равно («Total» от (отобразить rows как row → row.«p5»))
+  [
+    "", (соединить ["═══ НАБОР «", title, "» ═══"] по ""), (соединить ["каталог записей\t", place] по ""), (соединить ["записей в наборе\t", (к строке all)] по ""), (соединить ["ведомость дела\t", ledger] по ""), (соединить ["файлов в ведомости\t", (к строке ledgered)] по ""),
+    "", "-- исходы чекера, как его зовёт оснастка (два довода) --", (соединить ["код 0 ПРОВЕРЕНО\t", (к строке («Codes» от codes и 0))] по ""), (соединить ["код 1 НЕ СОШЛОСЬ\t", (к строке («Codes» от codes и 1))] по ""), (соединить ["код 3 НЕ ПРОВЕРЕНО — не приговор\t", (к строке («Codes» от codes и 3))] по ""), (соединить ["код 2 кривой вызов — не приговор\t", (к строке («Codes» от codes и 2))] по ""), (соединить ["коды больше 3 — не приговор\t", (к строке (длина (отфильтровать codes где code → code больше 3)))] по ""),
+    "", "-- тем же чекером, отпечаток подан третьим доводом --", (соединить ["код 0 ПРОВЕРЕНО\t", (к строке («Codes» от printed и 0))] по ""), (соединить ["код 1 НЕ СОШЛОСЬ\t", (к строке («Codes» от printed и 1))] по ""), (соединить ["код 3 НЕ ПРОВЕРЕНО\t", (к строке («Codes» от printed и 3))] по ""), (соединить ["прочие коды — не приговор\t", (к строке (длина (отфильтровать printed где code → не ((code равен 0) или ((code равен 1) или (code равен 3))))))] по ""),
+    "", "-- ДОЛЯ Г4, знаменатель назван вместе с числителем --", (соединить ["по ЗАПИСЯМ, сегодня\t", (к строке taken), " из ", (к строке all), "\t", («Share text» от taken и all)] по ""), (соединить ["  из них ВПУСТУЮ, доказанным не числится ничего\t", (к строке hollow)] по ""), (соединить ["по ЗАПИСЯМ, не считая пустых\t", (к строке (taken минус hollow)), " из ", (к строке all), "\t", («Share text» от (taken минус hollow) и all)] по ""), "  (по УТВЕРЖДЕНИЯМ пустые дают ноль и числа не двигают)", (соединить ["  записей набора подделок (манифест, не имя файла)\t", (к строке (длина inset))] по ""), (соединить ["  из них в числителе\t", (к строке (длина (отфильтровать inset где row → (row.«code») равен 0)))] по ""), (соединить ["по ЗАПИСЯМ, снят разряд Р1\t", (к строке (длина printedtaken)), " из ", (к строке all), "\t", («Share text» от (длина printedtaken) и all)] по ""), (соединить ["по УТВЕРЖДЕНИЯМ, сегодня\t", (к строке («Total» от (отобразить accepted как row → row.«proved»))), " из ", (к строке proved), "\t", («Share text» от («Total» от (отобразить accepted как row → row.«proved»)) и proved)] по ""), (соединить ["по УТВЕРЖДЕНИЯМ, снят разряд Р1\t", (к строке («Total» от (отобразить printedtaken как row → row.«proved»))), " из ", (к строке proved), "\t", («Share text» от («Total» от (отобразить printedtaken как row → row.«proved»)) и proved)] по ""),
+    "", "-- разряды помех, по записям --", (соединить ["Р0 принято кодом 0\t", (к строке («Count of class» от rows и "Р0"))] по ""), (соединить ["Р1 мешает только нехватка «отпечаток256»\t", (к строке («Count of class» от rows и "Р1"))] по ""), (соединить ["Р2 то же плюс места на слово ядра\t", (к строке («Count of class» от rows и "Р2"))] по ""), (соединить ["Р3 противоречие, код 1\t", (к строке («Count of class» от rows и "Р3"))] по ""), (соединить ["Р4 не приговор\t", (к строке («Count of class» от rows и "Р4"))] по ""), (соединить ["Р5 НЕ БЕРУСЬ: дело не из дерева\t", (к строке («Count of class» от rows и "Р5"))] по ""),
+    "", "-- породы мест на слово ядра, по всему набору --", (соединить ["П1 «доказано», теоремы в записи нет\t", (к строке p1)] по ""), (соединить ["П2 посылка с правилом и без ходов\t", (к строке p2)] по ""), (соединить ["П3 шаг «по примеру»/«по свойству»/«по закону»\t", (к строке p3)] по ""), (соединить ["П5 шаг, который сверщик не проигрывает вовсе\t", (к строке p5)] по ""), (соединить ["П4 из них — значение «по объявлению» (внутри П1, не сверх)\t", (к строке («Total» от (отобразить rows как row → row.«p4»)))] по ""), (соединить ["ходами под постусловием проиграно мест (не на слове, вне П1)\t", (к строке («Total» от (отобразить rows как row → row.«moves»)))] по ""), (соединить ["чекер: на слово ядра — посылок и утверждений\t", (к строке («Total» от (отобразить rows как row → row.«premises»)))] по ""), (соединить ["чекер: на слово ядра — шагов\t", (к строке («Total» от (отобразить rows как row → row.«steps»)))] по ""), (соединить ["  из П3: шаг «по примеру»\t", (к строке («Total» от (отобразить rows как row → row.«by example»)))] по ""), (соединить ["  из П3: шаг «по свойству»\t", (к строке («Total» от (отобразить rows как row → row.«by property»)))] по ""), (соединить ["  из П3: шаг «по закону»\t", (к строке («Total» от (отобразить rows как row → row.«by law»)))] по ""), (соединить ["сумма мест П1+П2+П3+П5\t", (к строке (((p1 плюс p2) плюс p3) плюс p5))] по ""),
+    "", "-- КАРТА РАБОТ: числитель, если снять Р1 и названные породы --", (соединить [(«Padded» от "снято сверх Р1" и 24 и нет), " ", («Padded» от "записей" и 8 и да), " ", («Padded» от "утвержд." и 10 и да), " ", («Padded» от "доля" и 12 и да)] по ""), («Map line» от "000" и rows и proved), («Map line» от "100" и rows и proved), («Map line» от "010" и rows и proved), («Map line» от "001" и rows и proved), («Map line» от "110" и rows и proved), («Map line» от "101" и rows и proved), («Map line» от "011" и rows и proved), («Map line» от "111" и rows и proved),
+    "", "-- сходимость двух приборов --", (соединить ["записей, где текстовый счёт разошёлся с чекером\t", (к строке mismatches)] по ""), (соединить ["утверждений в наборе всего\t", (к строке («Total» от (отобразить rows как row → row.«statements»)))] по ""), (соединить ["числятся доказанными — знаменатель по утверждениям\t", (к строке proved)] по "")]
+
+объект «Fact»
+  «record»: строка
+  «name»: строка
+  «declared»: строка
+  «source»: строка
+  «present»: признак
+  «source sum»: строка
+  «record sum»: строка
+
+объект «Judgement»
+  «record»: строка
+  «code»: число
+  «printed code»: число
+  «said»: строка
+  «text»: строка
+
+тотальная функция «Facts command»
+  возвращает строка
+  пример «What the shell tells about each record of a set»
+    ожидается "cd \"$0\" || exit 2; for z in $(find \"$1\" -name '*.record' | sort); do nm=$(basename \"$z\"); d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-); if [ -n \"$2\" ]; then s=\"$2/$(basename \"$d\")\"; else s=\"$0/$d\"; fi; if [ -f \"$s\" ]; then e=1; h=$(sha256sum \"$s\" | cut -d' ' -f1); else e=0; h=-; fi; zh=$(sha256sum \"$z\" | cut -d' ' -f1); printf '%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n' \"$z\" \"$nm\" \"$d\" \"$s\" \"$e\" \"$h\" \"$zh\"; done"
+  "cd \"$0\" || exit 2; for z in $(find \"$1\" -name '*.record' | sort); do nm=$(basename \"$z\"); d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-); if [ -n \"$2\" ]; then s=\"$2/$(basename \"$d\")\"; else s=\"$0/$d\"; fi; if [ -f \"$s\" ]; then e=1; h=$(sha256sum \"$s\" | cut -d' ' -f1); else e=0; h=-; fi; zh=$(sha256sum \"$z\" | cut -d' ' -f1); printf '%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n' \"$z\" \"$nm\" \"$d\" \"$s\" \"$e\" \"$h\" \"$zh\"; done"
+
+тотальная функция «Judge command»
+  возвращает строка
+  пример «Each job is checked twice and its record printed beside»
+    ожидается "t=$(printf '\\t'); while IFS=\"$t\" read -r z s o; do \"$0\" \"$s\" \"$z\" > \"$1/said\" 2>&1; k=$?; \"$0\" \"$s\" \"$z\" \"$o\" > /dev/null 2>&1; kd=$?; printf '\\036 job %s\\t%s\\t%s\\n' \"$z\" \"$k\" \"$kd\"; cat \"$1/said\"; printf '\\n\\036 text\\n'; grep -a -E '^[[:space:]]*(утверждение «|конец утверждения|вердикт |теоремы нет|посылка |ход конец|по объявлению |правило «|следовательно доказано|шаг )' \"$z\"; printf '\\n'; done < \"$2\" > \"$3\""
+  "t=$(printf '\\t'); while IFS=\"$t\" read -r z s o; do \"$0\" \"$s\" \"$z\" > \"$1/said\" 2>&1; k=$?; \"$0\" \"$s\" \"$z\" \"$o\" > /dev/null 2>&1; kd=$?; printf '\\036 job %s\\t%s\\t%s\\n' \"$z\" \"$k\" \"$kd\"; cat \"$1/said\"; printf '\\n\\036 text\\n'; grep -a -E '^[[:space:]]*(утверждение «|конец утверждения|вердикт |теоремы нет|посылка |ход конец|по объявлению |правило «|следовательно доказано|шаг )' \"$z\"; printf '\\n'; done < \"$2\" > \"$3\""
+
+тотальная функция «Examples command»
+  возвращает строка
+  пример «The kernel prints a record for every example»
+    ожидается "cd \"$0\" || exit 2; mkdir -p \"$1\"; n=0; f=0; who=''; for s in flang/proof/examples/*.flang; do b=$(basename \"$s\" .flang); ./bootstrap/flang check --proof --записать \"$1/$b.record\" \"$s\" >/dev/null 2>&1; if [ -s \"$1/$b.record\" ]; then n=$((n+1)); else f=$((f+1)); who=\"$who $b\"; rm -f \"$1/$b.record\"; fi; done; printf 'примеров подано\\t%s\\nзаписей напечатано\\t%s\\nпечать отказала\\t%s\\t%s\\n' \"$(ls flang/proof/examples/*.flang | wc -l)\" \"$n\" \"$f\" \"$who\""
+  "cd \"$0\" || exit 2; mkdir -p \"$1\"; n=0; f=0; who=''; for s in flang/proof/examples/*.flang; do b=$(basename \"$s\" .flang); ./bootstrap/flang check --proof --записать \"$1/$b.record\" \"$s\" >/dev/null 2>&1; if [ -s \"$1/$b.record\" ]; then n=$((n+1)); else f=$((f+1)); who=\"$who $b\"; rm -f \"$1/$b.record\"; fi; done; printf 'примеров подано\\t%s\\nзаписей напечатано\\t%s\\nпечать отказала\\t%s\\t%s\\n' \"$(ls flang/proof/examples/*.flang | wc -l)\" \"$n\" \"$f\" \"$who\""
+
+тотальная функция «Facts of»
+  принимает text: строка
+  возвращает список «Fact»
+  пример «One record of a set»
+    дано text равно "/r/a.record\ta.record\tx/a.flang\t/t/x/a.flang\t1\taa\tbb\n"
+    ожидается [запись «Fact» с «record» равным "/r/a.record" и «name» равным "a.record" и «declared» равным "x/a.flang" и «source» равным "/t/x/a.flang" и «present» равным да и «source sum» равным "aa" и «record sum» равным "bb"]
+  отобразить (отфильтровать (отобразить («Lines» от text) как line → разделить line по "\t") где cells → (длина cells) равен 7) как cells → запись «Fact» с «record» равным («Cell» от 1 и cells) и «name» равным («Cell» от 2 и cells) и «declared» равным («Cell» от 3 и cells) и «source» равным («Cell» от 4 и cells) и «present» равным ((«Cell» от 5 и cells) равен "1") и «source sum» равным («Cell» от 6 и cells) и «record sum» равным («Cell» от 7 и cells)
+
+тотальная функция «Judgements of»
+  принимает text: строка
+  возвращает список «Judgement»
+  пример «One job»
+    дано text равно "\u001e job /r/a.record\t0\t1\nПРОВЕРЕНО\n\n\u001e text\nутверждений 1\n\n"
+    ожидается [запись «Judgement» с «record» равным "/r/a.record" и «code» равным 0 и «printed code» равным 1 и «said» равным "ПРОВЕРЕНО\n" и «text» равным "утверждений 1\n\n"]
+  отобразить (отфильтровать (разделить text по "\u001e job ") где chunk → не (пусто chunk)) как chunk → «Judgement of» от chunk
+
+тотальная функция «Judgement of»
+  принимает chunk: строка
+  возвращает «Judgement»
+  пример «A job without its text»
+    дано chunk равно "/r/a.record\t1\t1\nНЕ СОШЛОСЬ\n"
+    ожидается запись «Judgement» с «record» равным "/r/a.record" и «code» равным 1 и «printed code» равным 1 и «said» равным "НЕ СОШЛОСЬ\n" и «text» равным ""
+  пусть halves равно (разделить chunk по "\n\u001e text\n")
+  пусть head равно (разделить («Cell» от 1 и halves) по "\n")
+  пусть cells равно (разделить («Cell» от 1 и head) по "\t")
+  запись «Judgement» с «record» равным («Cell» от 1 и cells) и «code» равным («Count» от («Cell» от 2 и cells)) и «printed code» равным («Count» от («Cell» от 3 и cells)) и «said» равным (соединить («Without first» от head) по "\n") и «text» равным (соединить («Without first» от halves) по "\n\u001e text\n")
+
+тотальная функция «Ledger sum»
+  принимает path: строка, ledger: строка
+  возвращает строка
+  пример «The sum the ledger holds for a path»
+    дано path равно "a.flang"
+    дано ledger равно "11\tb.flang\n22\ta.flang\n"
+    ожидается "22"
+  пусть parts равно (разделить (соединить ["\n", ledger, "\n"] по "") по (соединить ["\t", path, "\n"] по ""))
+  пусть before равно («Cell» от 1 и parts)
+  пусть tail равно (если (длина before) больше 80 то (подстрока before с ((длина before) минус 79) по (длина before)) иначе before)
+  пусть lines равно (разделить tail по "\n")
+  если (длина parts) меньше 2 то "" иначе («Cell» от (длина lines) и lines)
+
+тотальная функция «Under root»
+  принимает path: строка, root: строка
+  возвращает строка
+  пример «A path inside the root loses its prefix»
+    дано path равно "/t/x/a.flang"
+    дано root равно "/t"
+    ожидается "x/a.flang"
+  пример «A path outside stays whole»
+    дано path равно "/w/a.flang"
+    дано root равно "/t"
+    ожидается "/w/a.flang"
+  если path начинается с (соединить [root, "/"] по "") то («After» от (соединить [root, "/"] по "") и path) иначе path
+
+тотальная функция «Refusal of»
+  принимает fact: «Fact», root: строка, ledger: строка
+  возвращает список строки
+  пример «A source the commit does not hold»
+    дано fact равно запись «Fact» с «record» равным "/w/a.record" и «name» равным "a.record" и «declared» равным "x/a.flang" и «source» равным "/t/x/a.flang" и «present» равным да и «source sum» равным "aa" и «record sum» равным "bb"
+    дано root равно "/t"
+    дано ledger равно ""
+    ожидается ["Р5", "не берусь: исходника «x/a.flang» нет в ведомости коммита"]
+  пусть rel равно («Under root» от (fact.«source») и root)
+  пусть sum равно («Ledger sum» от rel и ledger)
+  пусть inside равно ((fact.«record») начинается с (соединить [root, "/"] по ""))
+  пусть recorded равно («Ledger sum» от («Under root» от (fact.«record») и root) и ledger)
+  «Chosen» от [(«When» от (пусто sum) и ["Р5", (соединить ["не берусь: исходника «", rel, "» нет в ведомости коммита"] по "")]),
+    («When» от (не (fact.«present»)) и ["Р4", (соединить ["исходника нет: ", (fact.«source»)] по "")]),
+    («When» от (не ((fact.«source sum») равен sum)) и ["Р5", (соединить ["не берусь: файл «", rel, "» разошёлся с коммитом"] по "")]),
+    («When» от (inside и притом ((пусто recorded) или (не (recorded равен (fact.«record sum»))))) и ["Р5", (соединить ["не берусь: записи «", («Under root» от (fact.«record») и root), "» нет в ведомости коммита либо она правлена"] по "")])] и (пустой список)
+
+тотальная функция «Jobs»
+  принимает facts: список «Fact», root: строка, ledger: строка
+  возвращает строка
+  пример «A record judged against the sum its source has in the commit»
+    дано facts равно [запись «Fact» с «record» равным "/w/a.record" и «name» равным "a.record" и «declared» равным "x/a.flang" и «source» равным "/t/x/a.flang" и «present» равным да и «source sum» равным "aa" и «record sum» равным "bb"]
+    дано root равно "/t"
+    дано ledger равно "aa\tx/a.flang\n"
+    ожидается "/w/a.record\t/t/x/a.flang\taa\n"
+  соединить (отобразить (отфильтровать facts где fact → пусто («Refusal of» от fact и root и ledger)) как fact → соединить [(fact.«record»), "\t", (fact.«source»), "\t", («Ledger sum» от («Under root» от (fact.«source») и root) и ledger), "\n"] по "") по ""
+
+тотальная функция «Rows of»
+  принимает facts: список «Fact», judgements: список «Judgement», root: строка, ledger: строка
+  возвращает список «Row»
+  пример «A refused record becomes a refusal row»
+    дано facts равно [запись «Fact» с «record» равным "/w/a.record" и «name» равным "a.record" и «declared» равным "x/a.flang" и «source» равным "/t/x/a.flang" и «present» равным нет и «source sum» равным "-" и «record sum» равным "bb"]
+    дано judgements равно пустой список
+    дано root равно "/t"
+    дано ledger равно "aa\tx/a.flang\n"
+    ожидается [запись «Row» с «name» равным "a.record" и «source» равным "x/a.flang" и «code» равным 126 и «printed code» равным 126 и «statements» равным 0 и «proved» равным 0 и «premises» равным 0 и «steps» равным 0 и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0 и «agreed» равным "нет" и «class» равным "Р4" и «p4» равным 0 и «said» равным "исходника нет: /t/x/a.flang" и «p5» равным 0 и «moves» равным 0 и «stripped» равным 0 и «mismatch» равным "" и «refusal» равным да]
+  отобразить facts как fact → «Row for» от fact и («Refusal of» от fact и root и ledger) и judgements
+
+тотальная функция «Row for»
+  принимает fact: «Fact», refusal: список строки, judgements: список «Judgement»
+  возвращает «Row»
+  пример «A refusal»
+    дано fact равно запись «Fact» с «record» равным "/w/a.record" и «name» равным "a.record" и «declared» равным "x/a.flang" и «source» равным "/t/x/a.flang" и «present» равным нет и «source sum» равным "-" и «record sum» равным "bb"
+    дано refusal равно ["Р4", "исходника нет"]
+    дано judgements равно пустой список
+    ожидается запись «Row» с «name» равным "a.record" и «source» равным "x/a.flang" и «code» равным 126 и «printed code» равным 126 и «statements» равным 0 и «proved» равным 0 и «premises» равным 0 и «steps» равным 0 и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0 и «agreed» равным "нет" и «class» равным "Р4" и «p4» равным 0 и «said» равным "исходника нет" и «p5» равным 0 и «moves» равным 0 и «stripped» равным 0 и «mismatch» равным "" и «refusal» равным да
+  разбор refusal
+    случай голова и хвост
+      то «Refusal row» от (fact.«name») и (fact.«declared») и (голова) и («Cell» от 1 и (хвост))
+    случай пусто
+      то «Judged row» от fact и (отфильтровать judgements где judgement → (judgement.«record») равен (fact.«record»))
+
+тотальная функция «Judged row»
+  принимает fact: «Fact», found: список «Judgement»
+  возвращает «Row»
+  пример «A record never judged counts as a refusal of the fourth kind»
+    дано fact равно запись «Fact» с «record» равным "/w/a.record" и «name» равным "a.record" и «declared» равным "x/a.flang" и «source» равным "/t/x/a.flang" и «present» равным да и «source sum» равным "aa" и «record sum» равным "bb"
+    дано found равно пустой список
+    ожидается запись «Row» с «name» равным "a.record" и «source» равным "x/a.flang" и «code» равным 126 и «printed code» равным 126 и «statements» равным 0 и «proved» равным 0 и «premises» равным 0 и «steps» равным 0 и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0 и «agreed» равным "нет" и «class» равным "Р4" и «p4» равным 0 и «said» равным "не судилась" и «p5» равным 0 и «moves» равным 0 и «stripped» равным 0 и «mismatch» равным "" и «refusal» равным да
+  разбор found
+    случай голова и хвост
+      то «Row of» от (fact.«name») и (fact.«declared») и "" и ((голова).«code») и ((голова).«printed code») и ((голова).«said») и ((голова).«text»)
+    случай пусто
+      то «Refusal row» от (fact.«name») и (fact.«declared») и "Р4" и "не судилась"
+
+объект «Report»
+  «lines»: список строки
+  «failed»: признак
+
+тотальная функция «Empty line»
+  принимает row: «Row», listed: признак
+  возвращает список строки
+  пример «An accepted record with nothing proved and no excuse»
+    дано row равно запись «Row» с «name» равным "a.record" и «source» равным "a.flang" и «code» равным 0 и «printed code» равным 0 и «statements» равным 0 и «proved» равным 0 и «premises» равным 0 и «steps» равным 0 и «p1» равным 0 и «p2» равным 0 и «p3» равным 0 и «by example» равным 0 и «by property» равным 0 и «by law» равным 0 и «agreed» равным "да" и «class» равным "Р0" и «p4» равным 0 и «said» равным "" и «p5» равным 0 и «moves» равным 0 и «stripped» равным 0 и «mismatch» равным "" и «refusal» равным нет
+    дано listed равно да
+    ожидается ["  ПУСТАЯ В ЧИСЛИТЕЛЕ, а поимённо не названа: a.record"]
+  пусть allowed равно (не (пусто (отфильтровать («Allowed empty») где name → name равен (row.«name»))))
+  пусть hollow равно (((row.«code») равен 0) и притом ((row.«proved») равен 0))
+  «Chosen» от [(«When» от (allowed и притом (listed и притом ((не ((row.«code») равен 0)) или ((row.«proved») больше 0)))) и [(соединить ["  СПИСОК ПРОТУХ (запись больше не пуста в числителе): ", (row.«name»), " (код ", (к строке (row.«code»)), ", доказанными ", (к строке (row.«proved»)), ")"] по "")]),
+    («When» от allowed и (пустой список)),
+    («When» от (hollow и притом listed) и [(соединить ["  ПУСТАЯ В ЧИСЛИТЕЛЕ, а поимённо не названа: ", (row.«name»)] по "")]),
+    («When» от hollow и [(соединить ["  пустая в числителе (список на этот набор не заведён, прогон не роняется): ", (row.«name»)] по "")])] и (пустой список)
+
+тотальная функция «Set report»
+  принимает rows: список «Row», title: строка, place: строка, ledger: строка, ledgered: число, forged: список строки, listed: признак
+  возвращает «Report»
+  пример «An empty set measures to its summary and passes»
+    дано rows равно пустой список
+    дано title равно "к"
+    дано place равно "/d"
+    дано ledger равно "коммит x"
+    дано ledgered равно 3
+    дано forged равно пустой список
+    дано listed равно да
+    ожидается запись «Report» с «lines» равным ["", "═══ НАБОР «к» ═══", "каталог записей\t/d", "записей в наборе\t0", "ведомость дела\tкоммит x", "файлов в ведомости\t3", "", "-- исходы чекера, как его зовёт оснастка (два довода) --", "код 0 ПРОВЕРЕНО\t0", "код 1 НЕ СОШЛОСЬ\t0", "код 3 НЕ ПРОВЕРЕНО — не приговор\t0", "код 2 кривой вызов — не приговор\t0", "коды больше 3 — не приговор\t0", "", "-- тем же чекером, отпечаток подан третьим доводом --", "код 0 ПРОВЕРЕНО\t0", "код 1 НЕ СОШЛОСЬ\t0", "код 3 НЕ ПРОВЕРЕНО\t0", "прочие коды — не приговор\t0", "", "-- ДОЛЯ Г4, знаменатель назван вместе с числителем --", "по ЗАПИСЯМ, сегодня\t0 из 0\tзнаменатель ноль", "  из них ВПУСТУЮ, доказанным не числится ничего\t0", "по ЗАПИСЯМ, не считая пустых\t0 из 0\tзнаменатель ноль", "  (по УТВЕРЖДЕНИЯМ пустые дают ноль и числа не двигают)", "  записей набора подделок (манифест, не имя файла)\t0", "  из них в числителе\t0", "по ЗАПИСЯМ, снят разряд Р1\t0 из 0\tзнаменатель ноль", "по УТВЕРЖДЕНИЯМ, сегодня\t0 из 0\tзнаменатель ноль", "по УТВЕРЖДЕНИЯМ, снят разряд Р1\t0 из 0\tзнаменатель ноль", "", "-- разряды помех, по записям --", "Р0 принято кодом 0\t0", "Р1 мешает только нехватка «отпечаток256»\t0", "Р2 то же плюс места на слово ядра\t0", "Р3 противоречие, код 1\t0", "Р4 не приговор\t0", "Р5 НЕ БЕРУСЬ: дело не из дерева\t0", "", "-- породы мест на слово ядра, по всему набору --", "П1 «доказано», теоремы в записи нет\t0", "П2 посылка с правилом и без ходов\t0", "П3 шаг «по примеру»/«по свойству»/«по закону»\t0", "П5 шаг, который сверщик не проигрывает вовсе\t0", "П4 из них — значение «по объявлению» (внутри П1, не сверх)\t0", "ходами под постусловием проиграно мест (не на слове, вне П1)\t0", "чекер: на слово ядра — посылок и утверждений\t0", "чекер: на слово ядра — шагов\t0", "  из П3: шаг «по примеру»\t0", "  из П3: шаг «по свойству»\t0", "  из П3: шаг «по закону»\t0", "сумма мест П1+П2+П3+П5\t0", "", "-- КАРТА РАБОТ: числитель, если снять Р1 и названные породы --", "снято сверх Р1            записей   утвержд.         доля", "— ничего                        0          0 знаменатель ноль", "П1                              0          0 знаменатель ноль", "П2                              0          0 знаменатель ноль", "П3+П5                           0          0 знаменатель ноль", "П1 П2                           0          0 знаменатель ноль", "П1 П3+П5                        0          0 знаменатель ноль", "П2 П3+П5                        0          0 знаменатель ноль", "П1 П2 П3+П5                     0          0 знаменатель ноль", "", "-- сходимость двух приборов --", "записей, где текстовый счёт разошёлся с чекером\t0", "утверждений в наборе всего\t0", "числятся доказанными — знаменатель по утверждениям\t0"] и «failed» равным нет
+  пусть mismatched равно (отфильтровать rows где row → не (пусто (row.«mismatch»)))
+  пусть marked равно (отфильтровать rows где row → (row.«stripped») больше 0)
+  пусть refused равно («Count of class» от rows и "Р5")
+  пусть hollows равно («Gathered words» от (отобразить rows как row → «Empty line» от row и listed))
+  пусть summary равно («Summary lines» от rows и title и place и ledger и ledgered и forged и (длина mismatched))
+  пусть verdict равно («Chosen» от [(«When» от (не (пусто mismatched)) и ["", "РАСХОЖДЕНИЕ: линейка себе не верит"]), («When» от (refused больше 0) и ["", (соединить ["НЕ БЕРУСЬ: ", (к строке refused), " записей назвали исходником или собой не то, что лежит в коммите"] по "")])] и (пустой список))
+  пусть first12 равно (отобразить (отфильтровать («Numbered» от (отобразить mismatched как row → row.«mismatch»)) где entry → («Count» от («Cell» от 1 и entry)) не больше 12) как entry → «Cell» от 2 и entry)
+  пусть located равно (если пусто mismatched то (пустой список) иначе («Соединить списки» от ["", (соединить ["ГДЕ ИМЕННО РАЗОШЛИСЬ ДВА ПРИБОРА (первые ", (к строке (длина first12)), "):"] по "")] и (добавить "Разошлось обычно потому, что чекер научился новому, а зеркало пород за ним не поехало." к (добавить "Слева — места, какие видит текст записи; справа — куда их разложил чекер." к first12))))
+  пусть stripped равно («Total» от (отобразить marked как row → row.«stripped»))
+  пусть traced равно (отобразить marked как row → соединить ["  ", (row.«name»), ": мест ", (к строке (row.«stripped»)), " — утверждение без вердикта «доказано» несёт след разбора"] по "")
+  пусть traces равно (если пусто marked то (пустой список) иначе («Соединить списки» от ["", (соединить ["СНЯТЫЙ ВЕРДИКТ: мест ", (к строке stripped), " — утверждение без «доказано» несёт след разбора"] по ""), ""] и («Соединить списки» от traced и ["Печать ядра такого не пишет: разбор кладётся только под «доказано».", "Скорее всего слово «доказано» вычеркнули, чтобы обнулить счёт «на слово ядра»."])))
+  пусть empties равно (если пусто hollows то (пустой список) иначе («Соединить списки» от (приписать "" к (приписать "ЧИСЛИТЕЛЬ Г4 ВПУСТУЮ:" к hollows)) и (если listed то ["Список законно пустых — в flang/proof/share-measure.fscript, «Allowed empty»."] иначе (пустой список))))
+  запись «Report» с «lines» равным («Соединить списки» от summary и («Соединить списки» от verdict и («Соединить списки» от located и («Соединить списки» от traces и empties)))) и «failed» равным ((не (пусто verdict)) или ((не (пусто marked)) или (listed и притом (не (пусто hollows)))))
+
+объект «Set»
+  «tag»: строка
+  «title»: строка
+  «place»: строка
+  «sources»: строка
+  «listed»: признак
+  «dump»: строка
+
+тотальная функция «Words given»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «No arguments»
+    дано answers равно пустой список
+    ожидается пустой список
+  «Given of» от "arguments" и answers
+
+тотальная функция «Keys taking a value»
+  возвращает список строки
+  пример «Six keys take a value»
+    ожидается ["--set", "--dump", "--root", "--commit", "--ledger", "--write-ledger"]
+  ["--set", "--dump", "--root", "--commit", "--ledger", "--write-ledger"]
+
+тотальная функция «Strange keys»
+  принимает words: список строки
+  возвращает список строки
+  пример «A key the measure does not know»
+    дано words равно ["--set", "corpus", "--мягко"]
+    ожидается ["--мягко"]
+  пусть pick равно (свёртка words начиная с (запись «Pick» с «waiting» равным нет и «found» равным пустой список) как pick и word → запись «Pick» с «waiting» равным (не (пусто (отфильтровать («Keys taking a value») где key → key равен word))) и «found» равным (если (pick.«waiting») или ((word равен "--both") или (не (пусто (отфильтровать («Keys taking a value») где key → key равен word)))) то (pick.«found») иначе (добавить word к (pick.«found»))))
+  pick.«found»
+
+тотальная функция «Value»
+  принимает key: строка, answers: список «Answer»
+  возвращает строка
+  пример «The word after a key»
+    дано key равно "--set"
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--set", "corpus"])]
+    ожидается "corpus"
+  «Key value» от key и («Words given» от answers)
+
+тотальная функция «Root»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The root as the shell sees it»
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным "")]
+    ожидается "/t"
+  «First line» от («Output of» от "root" и answers)
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No work directory yet»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «In work»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file in the work directory»
+    дано name равно "ledger.tsv"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/ledger.tsv"
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Both»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «One set unless both are asked for»
+    дано answers равно пустой список
+    ожидается нет
+  не (пусто (отфильтровать («Words given» от answers) где word → word равен "--both"))
+
+тотальная функция «Corpus set»
+  принимает answers: список «Answer», dump: строка
+  возвращает «Set»
+  пример «The corpus of the tree»
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным "")]
+    дано dump равно ""
+    ожидается запись «Set» с «tag» равным "1" и «title» равным "корпус — 86 готовых записей дерева" и «place» равным "/t/flang/proof/checker/tests/records/corpus" и «sources» равным "" и «listed» равным да и «dump» равным ""
+  запись «Set» с «tag» равным "1" и «title» равным "корпус — 86 готовых записей дерева" и «place» равным (соединить [(«Root» от answers), "/flang/proof/checker/tests/records/corpus"] по "") и «sources» равным "" и «listed» равным да и «dump» равным dump
+
+тотальная функция «Examples set»
+  принимает answers: список «Answer», dump: строка
+  возвращает «Set»
+  пример «The examples printed by the kernel»
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным ""), запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    дано dump равно ""
+    ожидается запись «Set» с «tag» равным "2" и «title» равным "примеры — записи, напечатанные ядром" и «place» равным "/w/examples" и «sources» равным "/t/flang/proof/examples" и «listed» равным да и «dump» равным ""
+  запись «Set» с «tag» равным "2" и «title» равным "примеры — записи, напечатанные ядром" и «place» равным («In work» от "examples" и answers) и «sources» равным (соединить [(«Root» от answers), "/flang/proof/examples"] по "") и «listed» равным да и «dump» равным dump
+
+тотальная функция «Sets»
+  принимает answers: список «Answer»
+  возвращает список «Set»
+  пример «Nothing named, nothing measured»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть named равно («Value» от "--set" и answers)
+  пусть dump равно («Value» от "--dump" и answers)
+  «Chosen» от [(«When» от («Both» от answers) и [(«Corpus set» от answers и dump), («Examples set» от answers и (если пусто dump то "" иначе (соединить [dump, ".примеры"] по "")))]),
+    («When» от (named равен "corpus") и [(«Corpus set» от answers и dump)]),
+    («When» от (named равен "examples") и [(«Examples set» от answers и dump)]),
+    («When» от (пусто named) и (пустой список))] и [(запись «Set» с «tag» равным "1" и «title» равным (соединить ["каталог ", named] по "") и «place» равным named и «sources» равным "" и «listed» равным нет и «dump» равным dump)]
+
+тотальная функция «Ledger text»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «Nothing read»
+    дано answers равно пустой список
+    ожидается ""
+  «Output of» от "ledger" и answers
+
+тотальная функция «Ledger name»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «A commit named by its short form»
+    дано answers равно [запись «Answer» с «name» равным "short" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "abc\n" и ошибки равным "")]
+    ожидается "коммит abc"
+  пусть file равно («Value» от "--ledger" и answers)
+  пусть short равно («First line» от («Output of» от "short" и answers))
+  «Chosen» от [(«When» от (не (пусто file)) и file),
+    («When» от (не (пусто short)) и (соединить ["коммит ", short] по ""))] и (соединить ["коммит ", («Commit» от answers)] по "")
+
+тотальная функция «Commit»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The head commit unless another is named»
+    дано answers равно пустой список
+    ожидается "HEAD"
+  пусть named равно («Value» от "--commit" и answers)
+  если пусто named то "HEAD" иначе named
+
+тотальная функция «Checker»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The checker of the tree measured»
+    дано answers равно [запись «Answer» с «name» равным "root" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "/t\n" и ошибки равным "")]
+    ожидается "/t/flang/proof/checker/сверщик"
+  соединить [(«Root» от answers), "/flang/proof/checker/сверщик"] по ""
+
+тотальная функция «Forged names»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Names of the records the manifest lists»
+    дано answers равно [запись «Answer» с «name» равным "manifest" и «reply» равным (вариант «Прочитано» с содержимое равным "source\trecord\tclass\na.flang\tr/x.record\trecord-lies\n")]
+    ожидается ["x.record"]
+  отобразить (отфильтровать («Rows» от («Output of» от "manifest" и answers)) где row → (длина row) не меньше 3) как row → «File name» от («Cell» от 2 и row)
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The arguments and the place of temporary files»
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»), запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")]
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP")]
+
+тотальная функция «Rooting»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «The tree of the plan unless another is named»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "root" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && pwd", "../.."]), запись «Question» с «name» равным "work" и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/share-measure.")]
+  пусть named равно («Value» от "--root" и answers)
+  [(«Run» от "root" и "sh" и ["-c", "cd \"$0\" && pwd", (если пусто named то "../.." иначе named)]), («Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/share-measure."] по ""))]
+
+тотальная функция «Base»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a root nothing is asked yet»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "manifest" и «order» равным (вариант «Прочитать файл» с путь равным "/flang/proof/forgeries/manifest.tsv"), запись «Question» с «name» равным "checker present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "/flang/proof/checker/сверщик"]), запись «Question» с «name» равным "checker stale" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["/flang/proof/checker/checker.c", "-nt", "/flang/proof/checker/сверщик"])]
+  [(«Read» от "manifest" и (соединить [(«Root» от answers), "/flang/proof/forgeries/manifest.tsv"] по "")), («Run» от "checker present" и "test" и ["-x", («Checker» от answers)]), («Run» от "checker stale" и "test" и [(соединить [(«Root» от answers), "/flang/proof/checker/checker.c"] по ""), "-nt", («Checker» от answers)])]
+
+тотальная функция «Ledgering»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «A ready ledger is read as it is»
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--ledger", "/l.tsv"])]
+    ожидается [запись «Question» с «name» равным "ledger" и «order» равным (вариант «Прочитать файл» с путь равным "/l.tsv")]
+  если не (пусто («Value» от "--ledger" и answers))
+    то [(«Read» от "ledger" и («Value» от "--ledger" и answers))]
+    иначе [(«Run» от "built ledger" и "sh" и ["-c", («Ledger command»), («Root» от answers), («Commit» от answers), («Work» от answers)]), («Read» от "ledger" и («In work» от "ledger.tsv" и answers)), («Run» от "short" и "git" и ["-C", («Root» от answers), "rev-parse", "--short", («Commit» от answers)])]
+
+тотальная функция «Printing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No examples, nothing printed»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто (отфильтровать («Sets» от answers) где set → (set.«tag») равен "2") то пустой список иначе [(«Run» от "examples" и "sh" и ["-c", («Examples command»), («Root» от answers), («In work» от "examples" и answers)])]
+
+тотальная функция «Facting»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No sets, no facts»
+    дано answers равно пустой список
+    ожидается пустой список
+  отобразить («Sets» от answers) как set → «Run» от (соединить ["facts ", (set.«tag»)] по "") и "sh" и ["-c", («Facts command»), («Root» от answers), (set.«place»), (set.«sources»)]
+
+тотальная функция «Set facts»
+  принимает set: «Set», answers: список «Answer»
+  возвращает список «Fact»
+  пример «Nothing listed»
+    дано set равно запись «Set» с «tag» равным "1" и «title» равным "к" и «place» равным "/d" и «sources» равным "" и «listed» равным нет и «dump» равным ""
+    дано answers равно пустой список
+    ожидается пустой список
+  «Facts of» от («Output of» от (соединить ["facts ", (set.«tag»)] по "") и answers)
+
+тотальная функция «Judging»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No sets, nothing judged»
+    дано answers равно пустой список
+    ожидается пустой список
+  «Flattened» от (отобразить («Sets» от answers) как set → [(«Write» от (соединить ["jobs ", (set.«tag»)] по "") и («In work» от (соединить ["jobs-", (set.«tag»)] по "") и answers) и («Jobs» от («Set facts» от set и answers) и («Root» от answers) и («Ledger text» от answers))), («Run» от (соединить ["judge ", (set.«tag»)] по "") и "sh" и ["-c", («Judge command»), («Checker» от answers), («Work» от answers), («In work» от (соединить ["jobs-", (set.«tag»)] по "") и answers), («In work» от (соединить ["judged-", (set.«tag»)] по "") и answers)]), («Read» от (соединить ["judged ", (set.«tag»)] по "") и («In work» от (соединить ["judged-", (set.«tag»)] по "") и answers))])
+
+тотальная функция «Flattened»
+  принимает parts: список список «Question»
+  возвращает список «Question»
+  пример «Nothing to join»
+    дано parts равно пустой список
+    ожидается пустой список
+  свёртка parts начиная с (пустой список) как joined и part → «Соединить списки» от joined и part
+
+тотальная функция «Set rows»
+  принимает set: «Set», answers: список «Answer»
+  возвращает список «Row»
+  пример «Nothing measured»
+    дано set равно запись «Set» с «tag» равным "1" и «title» равным "к" и «place» равным "/d" и «sources» равным "" и «listed» равным нет и «dump» равным ""
+    дано answers равно пустой список
+    ожидается пустой список
+  «Rows of» от («Set facts» от set и answers) и («Judgements of» от («Output of» от (соединить ["judged ", (set.«tag»)] по "") и answers)) и («Root» от answers) и («Ledger text» от answers)
+
+тотальная функция «Dump text»
+  принимает rows: список «Row»
+  возвращает строка
+  пример «The heading alone»
+    дано rows равно пустой список
+    ожидается "запись\tисходник\tкод\tкод-с-отпечатком\tутверждений\tдоказанными\tна-слово-посылок-и-утв\tна-слово-шагов\tП1\tП2\tП3\tпо-примеру\tпо-свойству\tпо-закону\tприборы-сошлись\tразряд\tП4\tвердикт\tП5\tходами-под-постусловием\n"
+  соединить (приписать "запись\tисходник\tкод\tкод-с-отпечатком\tутверждений\tдоказанными\tна-слово-посылок-и-утв\tна-слово-шагов\tП1\tП2\tП3\tпо-примеру\tпо-свойству\tпо-закону\tприборы-сошлись\tразряд\tП4\tвердикт\tП5\tходами-под-постусловием\n" к (отобразить rows как row → соединить [(«Dump line» от row), "\n"] по "")) по ""
+
+тотальная функция «Writing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing to write»
+    дано answers равно пустой список
+    ожидается пустой список
+  «Соединить списки» от (отобразить (отфильтровать («Sets» от answers) где set → не (пусто (set.«dump»))) как set → «Write» от (соединить ["dump ", (set.«tag»)] по "") и (set.«dump») и («Dump text» от («Set rows» от set и answers))) и (если пусто («Value» от "--write-ledger" и answers) то (пустой список) иначе [(«Write» от "ledger written" и («Value» от "--write-ledger" и answers) и («Ledger text» от answers))])
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 20
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 8
+      то «Setup»
+    случай 7
+      то «Rooting» от answers
+    случай 6
+      то «Base» от answers
+    случай 5
+      то «Ledgering» от answers
+    случай 4
+      то «Printing» от answers
+    случай 3
+      то «Facting» от answers
+    случай 2
+      то «Judging» от answers
+    случай 1
+      то «Writing» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Reports»
+  принимает answers: список «Answer»
+  возвращает «Report»
+  пример «No sets, no lines»
+    дано answers равно пустой список
+    ожидается запись «Report» с «lines» равным пустой список и «failed» равным нет
+  пусть ledgered равно (длина («Lines» от («Ledger text» от answers)))
+  свёртка («Sets» от answers) начиная с (запись «Report» с «lines» равным пустой список и «failed» равным нет) как gathered и set → «Joined» от gathered и (если (set.«tag») равен "2" то («Lines» от («Output of» от "examples" и answers)) иначе (пустой список)) и («Set report» от («Set rows» от set и answers) и (set.«title») и (set.«place») и («Ledger name» от answers) и ledgered и («Forged names» от answers) и (set.«listed»))
+
+тотальная функция «Joined»
+  принимает gathered: «Report», printed: список строки, report: «Report»
+  возвращает «Report»
+  пример «Two reports in a row»
+    дано gathered равно запись «Report» с «lines» равным ["а"] и «failed» равным нет
+    дано printed равно ["п"]
+    дано report равно запись «Report» с «lines» равным ["б"] и «failed» равным да
+    ожидается запись «Report» с «lines» равным ["а", "п", "б"] и «failed» равным да
+  запись «Report» с «lines» равным («Соединить списки» от (gathered.«lines») и («Соединить списки» от printed и (report.«lines»))) и «failed» равным ((gathered.«failed») или (report.«failed»))
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «No set named»
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_SHARE_MEASURE_NOT_MEASURED" и сообщение равным "назвать набор: --set {corpus|examples|КАТАЛОГ} либо --both"
+
+  пусть report равно («Reports» от answers)
+  пусть bare равно (отфильтровать («Sets» от answers) где set → пусто («Set facts» от set и answers))
+  «Chosen» от [(«When» от (пусто («Sets» от answers)) и (вариант «Не проверено» с код равным "FLANG_SHARE_MEASURE_NOT_MEASURED" и сообщение равным "назвать набор: --set {corpus|examples|КАТАЛОГ} либо --both")),
+    («When» от (не (пусто bare)) и (вариант «Не проверено» с код равным "FLANG_SHARE_MEASURE_NOT_MEASURED" и сообщение равным (соединить ["в «", («Cell» от 1 и (отобразить bare как set → set.«place»)), "» нет ни одной записи"] по ""))),
+    («When» от (report.«failed») и (вариант «Провал» с код равным "FLANG_SHARE_MEASURE" и сообщение равным (соединить (report.«lines») по "\n")))] и (вариант «Конец работы» с значение равным (соединить (report.«lines») по "\n"))
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «An unknown key»
+    дано asked равно "arguments"
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--мягко"])]
+    ожидается ["не знаю ключа «--мягко»; ключи: --set {corpus|examples|КАТАЛОГ} --both --dump ФАЙЛ --root ПУТЬ --commit X --ledger Ф --write-ledger Ф"]
+  пусть code равно («Exit code of» от asked и answers)
+  «Chosen» от [(«When» от (asked равен "arguments") и (отобразить («Strange keys» от («Words given» от answers)) как word → соединить ["не знаю ключа «", word, "»; ключи: --set {corpus|examples|КАТАЛОГ} --both --dump ФАЙЛ --root ПУТЬ --commit X --ledger Ф --write-ledger Ф"] по "")),
+    («When» от ((asked равен "root") и притом (не (code равен 0))) и [(соединить ["корня нет: ", («Value» от "--root" и answers)] по "")]),
+    («When» от ((asked равен "checker present") и притом (не (code равен 0))) и [(соединить ["нет чекера ", («Checker» от answers), " — собрать: make -C flang/proof/checker"] по "")]),
+    («When» от ((asked равен "checker stale") и притом (code равен 0)) и [(соединить ["чекер ", («Checker» от answers), " старше checker.c — пересобрать: make -C flang/proof/checker"] по "")]),
+    («When» от ((asked равен "built ledger") и притом (code равен 4)) и [(соединить ["ведомость не построена: «", («Commit» от answers), "» не коммит дерева «", («Root» от answers), "».\nготовую ведомость можно подать ключом --ledger ФАЙЛ"] по "")]),
+    («When» от ((asked равен "built ledger") и притом (не (code равен 0))) и [(соединить ["ведомость не построена: git archive «", («Commit» от answers), "» не отдал дерево"] по "")]),
+    («When» от ((asked равен "ledger") и притом (не (code равен 0))) и [(соединить ["ведомости нет: ", («Value» от "--ledger" и answers)] по "")]),
+    («When» от ((asked равен "ledger") и притом (пусто («Lines» от («Ledger text» от answers)))) и [(соединить ["ведомость пуста: в коммите «", («Commit» от answers), "» нет ни одного *.flang"] по "")]),
+    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и ["временный каталог не заведён"])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_SHARE_MEASURE_NOT_MEASURED" и сообщение равным "назвать набор: --set {corpus|examples|КАТАЛОГ} либо --both"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Nine stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 9 и «answers» равным пустой список
+  «Begin with» от 9
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the arguments»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 9 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (запись «Inquiry» с «asked» равным "arguments" и «queue» равным [запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")] и «stages» равным 8 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то если пусто («Work» от answers)
+        то вариант «Не проверено» с код равным "FLANG_SHARE_MEASURE_NOT_MEASURED" и сообщение равным голова
+        иначе вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", («Work» от answers)]) и потом равным (запись «Inquiry» с «asked» равным (соединить ["stopped: ", голова] по "") и «queue» равным пустой список и «stages» равным 0 и «answers» равным answers)
+    случай пусто
+      то если (inquiry.«asked») начинается с "stopped: "
+        то вариант «Не проверено» с код равным "FLANG_SHARE_MEASURE_NOT_MEASURED" и сообщение равным («After» от "stopped: " и (inquiry.«asked»))
+        иначе «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Share measure»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

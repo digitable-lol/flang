@@ -24,7 +24,7 @@
 в которой доказанным не числится ничего. Код успеха читается как «доказано», а
 проверено в такой записи ноль мест; отличить можно только по тексту вывода.
 Сколько таких записей в корпусе, печатает
-`sh flang/proof/corpus-share.sh --набор корпус`.
+`bootstrap/flang io flang/proof/share-measure.fscript -- --set corpus`.
 
 ## `theorem-hypothesis-not-discharged` — открыто
 

@@ -29,7 +29,7 @@
 тотальная функция «Measurements»
   возвращает список «Question»
   «Соединить списки» от («Provenance questions» от («Tree»)) и [(«Run from» от "share" и («Tree») и "bootstrap/flang" и ["io", "flang/proof/replay-share.fscript", "--max-steps", "4000000000", "--timeout", "900000"]),
-   («Run from» от "corpus" и («Tree») и "sh" и ["flang/proof/corpus-share.sh", "--набор", "корпус"]),
+   («Run from» от "corpus" и («Tree») и "bootstrap/flang" и ["io", "flang/proof/share-measure.fscript", "--max-steps", "4000000000", "--timeout", "900000", "--", "--set", "corpus"]),
    («Run from» от "lemmas" и («Tree») и "grep" и ["-h", "-a", "^theorem «", "flang/proof/lean/Rules.lean", "flang/proof/lean/Term.lean"]),
    («Run from» от "accepted" и («Tree») и "sed" и ["-n", "/^def «правила» : List/,/\\]$/p", "flang/proof/lean/Acceptance.lean"]),
    («Read from» от "rules" и («Tree») и («Rules table»)),
@@ -194,7 +194,7 @@
 тотальная функция «Idle»
   принимает answers: список «Answer»
   возвращает строка
-  пусть line равно («First line» от (соединить (отфильтровать («Lines» от («Output of» от "corpus" и answers)) где line → (соединить («Words» от line) по " ") начинается с "из них ВПУСТУЮ") по "\n"))
+  пусть line равно («First line» от (соединить (отфильтровать («Said by» от "corpus" и answers) где line → (соединить («Words» от line) по " ") начинается с "из них ВПУСТУЮ") по "\n"))
   «Leading digits» от («Cell» от 2 и (разделить line по "\t"))
 
 тотальная функция «Share lines»

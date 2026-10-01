@@ -20,7 +20,7 @@
 
 ```
 $ flang check модель.fts
-{"error":"…","diagnostics":[{"code":"FLANG_FTS_REMOVED",…}]}
+{"error":"…","diagnostics":[{"code":"…",…}]}
 ```
 
 Отказ приходит от всех четырёх читающих команд (`check`, `ast`, `run`, `test`) —
@@ -30,8 +30,8 @@ $ flang check модель.fts
 строить `FtsDocument` в этом дереве нечем, и зовёт перевод одна проверка.
 
 Сегодня (9 сентября 2026, задача 6201) ни `flang/test/fts-ubran.test.mjs`, ни
-`flang/src/compat.mjs`, ни `flang/src/fts-legacy.mjs` в дереве нет, а кода
-`FLANG_FTS_REMOVED` нет ни в `flang/self/*.flang`, ни в семени; осталась только
+`flang/src/compat.mjs`, ни `flang/src/fts-legacy.mjs` в дереве нет, а кода отказа о снятой FTS
+нет ни в `flang/self/*.flang`, ни в семени; осталась только
 поверхность FTS в разборщике (`flang/self/parser.flang:4482`, узлы `ftsLegacy`).
 
 **Значит спека в файле `.fts` не проверяется ничем** — это текст в другом

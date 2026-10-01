@@ -96,7 +96,7 @@ the [Install](install.html) page.
 | **[Processes and supervision](processes.html)**: scheduler, supervisors, back pressure, all written in flang | the binary compiler parses `процесс` and `надзор` declarations but does not check them |
 | **[PostgreSQL](database.html) and SQLite**: the PostgreSQL wire protocol is built and parsed; an SQLite file can be read, created from scratch and given a new row | PostgreSQL login supports only `trust` and a cleartext password; SQLite writes only into free space inside an existing file: no page split, no journal |
 | **HTTP**: requests and responses are parsed and printed: headers, status codes, URLs, percent encoding | there are no sockets: the runtime sends and receives the bytes |
-| **Cryptography written in flang**: SHA-256, HMAC, AES-128 in CTR and GCM, X25519, reading an X.509 certificate | there is no TLS: `https` goes through an external `curl` |
+| **Cryptography written in flang**: SHA-256, HMAC, AES-128 and AES-256 in CBC, CTR and GCM, X25519, reading an X.509 certificate | there is no TLS: `https` goes through an external `curl` |
 
 ## How to check these claims
 

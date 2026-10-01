@@ -1349,7 +1349,7 @@ a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 2c8ea5e4a5fe329bc74c90238b627639|42|42|0|0|0|flang/self/sets.flang
 0415f36439e19883e5516407500a09ec|19|12|2|5|0|flang/self/svoystva.flang
 bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
-e6bd6e2dcbd72e44099aeb3d412d2167|279|231|11|37|0|flang/self/totality.flang
+f183bd3228a250fc6aa70daa713a32eb|309|258|14|37|0|flang/self/totality.flang
 6f5995562eb91e54ecbcd9bde4c4853e|410|119|4|265|0|flang/self/types.flang
 94902a6939c9331164c3fdd856ef2a93|227|98|57|3|0|flang/self/zapis.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang

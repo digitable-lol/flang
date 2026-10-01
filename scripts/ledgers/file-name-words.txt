@@ -1936,3 +1936,8 @@ alike
 conditioned
 kilobytes
 tokens
+finite
+appliers
+applier
+captured
+values

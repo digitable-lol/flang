@@ -11,7 +11,7 @@ issues = https://github.com/digitable-lol/flang/issues
 
 unproven = refuse
 
-script.build = sh scripts/bootstrap-reprint.sh --telo && make -C bootstrap -j"$(getconf _NPROCESSORS_ONLN)" && sh flang/proof/corpus-share.sh --отпечаток
+script.build = sh scripts/bootstrap-reprint.sh --telo && make -C bootstrap -j"$(getconf _NPROCESSORS_ONLN)" && bootstrap/flang io flang/proof/binary-fingerprint.fscript
 script.scripts:check = bootstrap/flang io scripts/shortcut-collector.fscript --plan Целость && bootstrap/flang io scripts/shortcut-collector.fscript --plan Сбор --max-orders 20000
 script.licenses:check = bootstrap/flang io scripts/guards/license-guard.fscript
 script.claims:check = bootstrap/flang io flang/scripts/claim-guard.fscript --plan 'Утверждения о недостаче сверены с лексером' --max-steps 2000000000 --max-orders 100000 --на-веру

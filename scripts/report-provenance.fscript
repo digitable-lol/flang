@@ -115,7 +115,7 @@
   возвращает строка
   пусть beside равно («Output of» от "fingerprint beside binary" и answers)
   пусть binary равно («Sum of» от "bootstrap/flang" и («Output of» от "sums" и answers))
-  «Chosen» от [(«When» от ((пусто beside) или (не ((«Value after» от "двоичный " и beside) равен binary))) и ("отпечатка при этом двоичном нет — свежесть НЕ ПРОВЕРЕНА (записать: sh flang/proof/corpus-share.sh --отпечаток)")),
+  «Chosen» от [(«When» от ((пусто beside) или (не ((«Value after» от "двоичный " и beside) равен binary))) и ("отпечатка при этом двоичном нет — свежесть НЕ ПРОВЕРЕНА (записать: bootstrap/flang io flang/proof/binary-fingerprint.fscript)")),
     («When» от ((«Value after» от "семя " и beside) равен («Build inputs» от answers)) и ("собран из нынешнего семени (по отпечатку bootstrap/flang.seed-sha256)"))] и ("ОТСТАЛ ОТ СЕМЕНИ: собран не из нынешних bootstrap/*.c — пересобрать: make -C bootstrap")
 
 тотальная функция «Binary present»

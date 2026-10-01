@@ -94,7 +94,7 @@ jobs:
       # в обе стороны (кеш отдаёт двоичный со старым временем, checkout кладёт
       # семя свежим).
       - name: Record seed fingerprint
-        run: sh flang/proof/corpus-share.sh --отпечаток
+        run: bootstrap/flang io flang/proof/binary-fingerprint.fscript
 
       # `--вложенность` — единственная проверка этого дерева, где предмет суда
       # есть САМ СОБРАННЫЙ ДВОИЧНЫЙ: каждая запись корпуса печатается заново

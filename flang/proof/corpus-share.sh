@@ -20,8 +20,6 @@
 #   sh flang/proof/corpus-share.sh --набор КАТАЛОГ    # любой каталог с *.record
 #   sh flang/proof/corpus-share.sh --оба              # корпус и примеры рядом
 #   sh flang/proof/corpus-share.sh --вложенность      # вложен ли меньший набор в больший
-#   sh flang/proof/corpus-share.sh --отпечаток        # после make: записать отпечаток семени при двоичном
-#   sh flang/proof/corpus-share.sh --подлог-отпечатка # четыре пробы на признак свежести ядра
 #   sh flang/proof/corpus-share.sh --самопроверка     # десять проб на сам прибор
 # Ключи:
 #   --разбор ФАЙЛ   положить построчный разбор (TSV) в ФАЙЛ
@@ -178,7 +176,7 @@ LC_ALL=C.UTF-8; export LC_ALL
 self=$0
 root=$(CDPATH= cd -- "$(dirname -- "$self")/../.." && pwd)
 nabor=""; dump=""; oba=0; selftest=0; vlozh=0; proigr=0
-kommit=HEAD; vedfile=""; vedout=""; podlog=0; prigovor=0; podlog_yad=0; otpechatok=0; podlog_otp=0
+kommit=HEAD; vedfile=""; vedout=""; podlog=0; prigovor=0; podlog_yad=0
 
 while [ $# -gt 0 ]; do
   case $1 in
@@ -193,8 +191,6 @@ while [ $# -gt 0 ]; do
     --приговор-ядра) prigovor=1; shift ;;
     --подлог-ядра)   podlog_yad=1; shift ;;
     --вложенность)  vlozh=1; shift ;;
-    --отпечаток)    otpechatok=1; shift ;;
-    --подлог-отпечатка) podlog_otp=1; shift ;;
     --самопроверка) selftest=1; shift ;;
     # Ш5: доля-ПРОИГРЫВАНИЕМ — иной вопрос, чем разряды помех Р0–Р5 этой линейки.
     # Не «сошлась ли запись кодом 0», а «сколько обязательств корпуса РЕАЛЬНО
@@ -204,7 +200,7 @@ while [ $# -gt 0 ]; do
     # записей, которые чекер отверг). Ниже, в блоке `proigr`, это разобрано.
     --проигрыванием) proigr=1; shift ;;
     *) echo "линейка не знает ключа «$1»" >&2
-       echo "ключи: --набор {корпус|примеры|КАТАЛОГ} --оба --вложенность --отпечаток --подлог-отпечатка --разбор ФАЙЛ --корень ПУТЬ --самопроверка" >&2
+       echo "ключи: --набор {корпус|примеры|КАТАЛОГ} --оба --вложенность --разбор ФАЙЛ --корень ПУТЬ --самопроверка" >&2
        echo "       --коммит X --ведомость Ф --выписать-ведомость Ф --подлог" >&2
        echo "       --приговор-ядра --подлог-ядра --проигрыванием" >&2
        exit 2 ;;
@@ -212,13 +208,8 @@ while [ $# -gt 0 ]; do
 done
 
 checker=$root/flang/proof/checker/сверщик
-# Отпечатку семени и его подлогу чекер не нужен: они смотрят только на
-# bootstrap/. Требовать его здесь значило бы ронять шаг CI «Отпечаток семени
-# записан при двоичном», стоящий ДО сборки чекера (прогон 34637639507, код 2).
-if [ "$otpechatok" -eq 0 ] && [ "$podlog_otp" -eq 0 ]; then
-  [ -x "$checker" ] || { echo "нет чекера $checker — собрать: make -C flang/proof/checker" >&2; exit 2; }
-  [ "$root/flang/proof/checker/checker.c" -nt "$checker" ] && { echo "чекер $checker старше checker.c — пересобрать: make -C flang/proof/checker" >&2; exit 2; }
-fi
+[ -x "$checker" ] || { echo "нет чекера $checker — собрать: make -C flang/proof/checker" >&2; exit 2; }
+[ "$root/flang/proof/checker/checker.c" -nt "$checker" ] && { echo "чекер $checker старше checker.c — пересобрать: make -C flang/proof/checker" >&2; exit 2; }
 
 tmp=${TMPDIR:-/tmp}/доля-корпуса.$$
 mkdir -p "$tmp" || exit 2
@@ -1684,7 +1675,7 @@ poddelka-razv3-raznost.record"
 # Теперь рядом с двоичным лежит ОТПЕЧАТОК — файл bootstrap/flang.seed-sha256
 # из двух строк: sha256 самого двоичного и sha256 входов его сборки (те же
 # `bootstrap/*.c`, `*.h`, `Makefile`, что в ключе кеша CI). Пишет его тот, кто
-# собрал: `--отпечаток` сразу после `make` (CI и `bootstrap/flang run-script build` зовут его
+# собрал: план `binary-fingerprint.fscript` сразу после `make` (CI и `bootstrap/flang run-script build` зовут его
 # сами). Проверка: отпечаток есть и назван ИМЕННО этот двоичный — решает
 # сравнение семени, и время файлов не спрашивается вовсе; отпечатка нет или
 # он о другом двоичном (собрали голым `make`, отпечаток не переписали) —
@@ -1699,14 +1690,6 @@ otpechatok_semeni() { # каталог bootstrap
 }
 otpechatok_faila() { sha256sum "$1" | cut -d' ' -f1; }
 
-# Записать отпечаток при двоичном. Зовётся ПОСЛЕ сборки тем, кто собрал; сам
-# факт сборки прибор не проверяет — за это отвечает зовущий (make только что
-# прошёл, либо кеш CI отдал двоичный по ключу из тех же входов).
-zapisat_otpechatok() { # каталог bootstrap
-  [ -x "$1/flang" ] || { echo "нет двоичного $1/flang — записывать отпечаток не при чем" >&2; return 2; }
-  printf 'двоичный %s\nсемя %s\n' "$(otpechatok_faila "$1/flang")" "$(otpechatok_semeni "$1")" > "$1/$OTPECHATOK_IMYA"
-}
-
 # Ответ 0 — ОТСТАЛО (как у `make -q`: «цель старше исходников»), 1 — свежее.
 # Каким признаком решено, печатается в stderr: молчаливый выбор признака
 # неотличим от его отсутствия.
@@ -1720,48 +1703,9 @@ yadro_otstalo_ot_semeni() { # каталог bootstrap
     fi
     echo "свежесть ядра: по отпечатку семени ($OTPECHATOK_IMYA) — семя ДРУГОЕ" >&2; return 0
   fi
-  echo "свежесть ядра: отпечатка при этом двоичном нет — по времени файлов (make -q); записать: $0 --отпечаток" >&2
+  echo "свежесть ядра: отпечатка при этом двоичном нет — по времени файлов (make -q); записать: bootstrap/flang io flang/proof/binary-fingerprint.fscript" >&2
   ( cd "$b" && make -q flang ) >/dev/null 2>&1
   [ $? -eq 1 ]
-}
-
-# ── ПРОБА ПОРЧИ НА ОТПЕЧАТОК (--подлог-отпечатка) ─────────────────────────
-# Копия bootstrap/ во временном каталоге (с временами файлов, `cp -p`), и на
-# ней четыре вопроса. Ответ «свежее»/«отстало» сверяется с ожиданием; любое
-# расхождение — код 1 с именем пробы.
-podlog_otpechatka() {
-  b=$tmp/подлог-отпечатка/bootstrap; mkdir -p "$b"
-  for f in "$root"/bootstrap/*.c "$root"/bootstrap/*.h "$root"/bootstrap/Makefile \
-           "$root"/bootstrap/*.o "$root"/bootstrap/*.a "$root"/bootstrap/flang; do
-    [ -e "$f" ] && cp -p "$f" "$b/"
-  done
-  [ -x "$b/flang" ] || { echo "нет двоичного $root/bootstrap/flang — подлог ставить не на чем" >&2; return 2; }
-  bed=0
-  proba() { # имя, ожидание (свежее|отстало)
-    if yadro_otstalo_ot_semeni "$b" 2>/dev/null; then otvet=отстало; else otvet=свежее; fi
-    if [ "$otvet" = "$2" ]; then echo "  сошлось  $1: $otvet"
-    else echo "  ПРОВАЛ   $1: ждали «$2», прибор ответил «$otvet»"; bed=$((bed+1)); fi
-  }
-  # 1. Отпечаток записан при этом двоичном, семя то же, а время двоичного
-  #    СТАРШЕ семени — ровно случай кеша CI. Старый признак краснел; новый — свежее.
-  zapisat_otpechatok "$b"; touch "$b"/*.c "$b"/*.h; touch -d '2000-01-01' "$b/flang"
-  proba "кеш CI: двоичный старше по времени, семя то же" свежее
-  # 2. Семя правлено, двоичный тот же, отпечаток прежний, а время двоичного
-  #    НОВЕЕ семени (`cp` без -p). Старый признак пропускал; новый — отстало.
-  printf '\n/* подлог */\n' >> "$b/compiler_flang.c"; touch "$b/flang"
-  proba "семя правлено, двоичный подмолодили: ловится по содержимому" отстало
-  # 3. Тот же подлог, но отпечаток переписан честно ПОСЛЕ порчи семени —
-  #    значит собрали заново, и это свежее.
-  zapisat_otpechatok "$b"
-  proba "отпечаток переписан при новом семени" свежее
-  # 4. Отпечатка при этом двоичном нет (он о другом файле): остаётся признак по
-  #    времени, и он ловит двоичный старше семени. Здесь .o тоже старятся — иначе
-  #    `make -q` спросил бы про них, а не про двоичный.
-  printf 'двоичный не-тот\nсемя не-то\n' > "$b/$OTPECHATOK_IMYA"
-  touch -d '2000-01-01' "$b/flang" "$b"/*.o "$b"/*.a
-  proba "отпечатка нет: по времени, двоичный старше семени" отстало
-  [ "$bed" -eq 0 ] || { echo "подлог отпечатка: провалов $bed" >&2; return 1; }
-  echo "подлог отпечатка: четыре пробы сошлись — ловит семя по содержимому, а без отпечатка — по времени, как прежде"
 }
 
 vlozhennost() {
@@ -1770,7 +1714,7 @@ vlozhennost() {
   if yadro_otstalo_ot_semeni "$root/bootstrap"; then
     echo "ЯДРО ОТСТАЛО ОТ СЕМЕНИ: $yadro собран не из нынешнего bootstrap/*.c, *.h, Makefile." >&2
     echo "Мерить нечем — старое ядро печатает старые записи и объявит свежие отставшими." >&2
-    echo "Пересобрать: make -C bootstrap -j8 && sh $0 --отпечаток" >&2
+    echo "Пересобрать: make -C bootstrap -j8 && bootstrap/flang io flang/proof/binary-fingerprint.fscript" >&2
     return 2
   fi
   corp=$root/flang/proof/checker/tests/records/corpus
@@ -2123,8 +2067,6 @@ if [ "$podlog" -eq 1 ]; then proba_podloga; exit $?; fi
 if [ "$prigovor" -eq 1 ]; then prigovor_yadra; exit $?; fi
 if [ "$podlog_yad" -eq 1 ]; then podlog_yadra; exit $?; fi
 if [ "$vlozh" -eq 1 ]; then vlozhennost; exit $?; fi
-if [ "$otpechatok" -eq 1 ]; then zapisat_otpechatok "$root/bootstrap" && echo "отпечаток семени записан: bootstrap/$OTPECHATOK_IMYA"; exit $?; fi
-if [ "$podlog_otp" -eq 1 ]; then podlog_otpechatka; exit $?; fi
 if [ "$selftest" -eq 1 ]; then samoproverka; exit $?; fi
 
 pechat_primerov() {

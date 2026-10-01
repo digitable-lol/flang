@@ -41,7 +41,7 @@ bootstrap/*.a
 bootstrap/flang
 bootstrap/flang_cli
 # Отпечаток семени при двоичном (sha256 двоичного и входов сборки) — пишет
-# `sh flang/proof/corpus-share.sh --отпечаток` после make; по нему прибор
+# `bootstrap/flang io flang/proof/binary-fingerprint.fscript` после make; по нему прибор
 # `--вложенность` судит, из этого ли семени собран двоичный, не глядя на время.
 bootstrap/flang.seed-sha256
 

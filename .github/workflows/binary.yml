@@ -1594,9 +1594,9 @@ jobs:
       # и прибор его для них не требует; шаг сборки чекера при коммите ae42220a2
       # отсюда выпал, и `--вложенность` осталась бы без него — возвращён.
       - name: Record seed fingerprint
-        run: sh flang/proof/corpus-share.sh --отпечаток
+        run: bootstrap/flang io flang/proof/binary-fingerprint.fscript
       - name: Probe seed fingerprint
-        run: sh flang/proof/corpus-share.sh --подлог-отпечатка
+        run: bootstrap/flang io flang/proof/binary-fingerprint.fscript -- --forgery
       - name: Build proof checker
         run: make -C flang/proof/checker
       - name: Check corpus records

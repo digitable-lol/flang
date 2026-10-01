@@ -1,0 +1,295 @@
+модуль «Binary fingerprint»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Look»
+  «binary»: строка
+  «seed»: строка
+  «sources»: признак
+  «make»: число
+  «written binary»: строка
+  «written seed»: строка
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The root of the tree lies two directories up»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «File name»
+  возвращает строка
+  пример «The fingerprint lies beside the binary»
+    ожидается "flang.seed-sha256"
+  "flang.seed-sha256"
+
+тотальная функция «Look command»
+  возвращает строка
+  пример «One shell line tells all a freshness verdict needs»
+    ожидается "cd \"$0\" || exit 2; printf 'binary %s\\n' \"$(sha256sum flang 2>/dev/null | cut -d' ' -f1)\"; printf 'seed %s\\n' \"$(/bin/ls *.c *.h Makefile 2>/dev/null | LC_ALL=C sort | xargs cat | sha256sum | cut -d' ' -f1)\"; if [ -f Makefile ] && [ -f compiler_flang.c ]; then echo 'sources yes'; else echo 'sources no'; fi; make -q flang >/dev/null 2>&1; echo \"make $?\"; sed -n 's/^двоичный /written-binary /p; s/^семя /written-seed /p' flang.seed-sha256 2>/dev/null; exit 0"
+  "cd \"$0\" || exit 2; printf 'binary %s\\n' \"$(sha256sum flang 2>/dev/null | cut -d' ' -f1)\"; printf 'seed %s\\n' \"$(/bin/ls *.c *.h Makefile 2>/dev/null | LC_ALL=C sort | xargs cat | sha256sum | cut -d' ' -f1)\"; if [ -f Makefile ] && [ -f compiler_flang.c ]; then echo 'sources yes'; else echo 'sources no'; fi; make -q flang >/dev/null 2>&1; echo \"make $?\"; sed -n 's/^двоичный /written-binary /p; s/^семя /written-seed /p' flang.seed-sha256 2>/dev/null; exit 0"
+
+тотальная функция «Copy command»
+  возвращает строка
+  пример «The bootstrap directory is copied with the times of its files»
+    ожидается "mkdir -p \"$0\" && for f in \"$1\"/*.c \"$1\"/*.h \"$1\"/Makefile \"$1\"/*.o \"$1\"/*.a \"$1\"/flang; do [ -e \"$f\" ] && cp -p \"$f\" \"$0/\"; done; [ -x \"$0/flang\" ]"
+  "mkdir -p \"$0\" && for f in \"$1\"/*.c \"$1\"/*.h \"$1\"/Makefile \"$1\"/*.o \"$1\"/*.a \"$1\"/flang; do [ -e \"$f\" ] && cp -p \"$f\" \"$0/\"; done; [ -x \"$0/flang\" ]"
+
+тотальная функция «Look of»
+  принимает text: строка
+  возвращает «Look»
+  пример «What the shell line printed»
+    дано text равно "binary aa\nseed bb\nsources yes\nmake 1\nwritten-binary aa\nwritten-seed cc\n"
+    ожидается запись «Look» с «binary» равным "aa" и «seed» равным "bb" и «sources» равным да и «make» равным 1 и «written binary» равным "aa" и «written seed» равным "cc"
+  пусть lines равно («Lines» от text)
+  запись «Look» с «binary» равным («Value after» от "binary " и text) и «seed» равным («Value after» от "seed " и text) и «sources» равным (не (пусто («Beginning with» от "sources yes" и lines))) и «make» равным («Count» от («Value after» от "make " и text)) и «written binary» равным («Value after» от "written-binary " и text) и «written seed» равным («Value after» от "written-seed " и text)
+
+тотальная функция «Verdict of»
+  принимает look: «Look»
+  возвращает строка
+  пример «The fingerprint names this binary and the same seed»
+    дано look равно запись «Look» с «binary» равным "aa" и «seed» равным "bb" и «sources» равным да и «make» равным 1 и «written binary» равным "aa" и «written seed» равным "bb"
+    ожидается "свежее"
+  пример «The fingerprint names this binary and another seed»
+    дано look равно запись «Look» с «binary» равным "aa" и «seed» равным "bb" и «sources» равным да и «make» равным 0 и «written binary» равным "aa" и «written seed» равным "cc"
+    ожидается "отстало"
+  пример «Without a fingerprint of this binary the times decide»
+    дано look равно запись «Look» с «binary» равным "aa" и «seed» равным "bb" и «sources» равным да и «make» равным 1 и «written binary» равным "zz" и «written seed» равным "bb"
+    ожидается "отстало"
+  пример «No seed sources, nothing can be stale»
+    дано look равно запись «Look» с «binary» равным "aa" и «seed» равным "bb" и «sources» равным нет и «make» равным 1 и «written binary» равным "" и «written seed» равным ""
+    ожидается "свежее"
+  «Chosen» от [(«When» от (не (look.«sources»)) и "свежее"),
+    («When» от (((look.«written binary») равен (look.«binary»)) и притом ((look.«written seed») равен (look.«seed»))) и "свежее"),
+    («When» от ((look.«written binary») равен (look.«binary»)) и "отстало"),
+    («When» от ((look.«make») равен 1) и "отстало")] и "свежее"
+
+тотальная функция «Fingerprint text»
+  принимает look: «Look»
+  возвращает строка
+  пример «Two lines: the binary and the seed it was built from»
+    дано look равно запись «Look» с «binary» равным "aa" и «seed» равным "bb" и «sources» равным да и «make» равным 1 и «written binary» равным "" и «written seed» равным ""
+    ожидается "двоичный aa\nсемя bb\n"
+  соединить ["двоичный ", (look.«binary»), "\nсемя ", (look.«seed»), "\n"] по ""
+
+тотальная функция «Probes»
+  возвращает список список строки
+  пример «Four probes and the answer each awaits»
+    ожидается [["кеш CI: двоичный старше по времени, семя то же", "свежее"], ["семя правлено, двоичный подмолодили: ловится по содержимому", "отстало"], ["отпечаток переписан при новом семени", "свежее"], ["отпечатка нет: по времени, двоичный старше семени", "отстало"]]
+  [["кеш CI: двоичный старше по времени, семя то же", "свежее"], ["семя правлено, двоичный подмолодили: ловится по содержимому", "отстало"], ["отпечаток переписан при новом семени", "свежее"], ["отпечатка нет: по времени, двоичный старше семени", "отстало"]]
+
+тотальная функция «Forging»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «Without the key the fingerprint is written»
+    дано answers равно пустой список
+    ожидается нет
+  не (пусто (отфильтровать («Given of» от "arguments" и answers) где word → word равен "--forgery"))
+
+тотальная функция «Copy»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The copy lies in the work directory»
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/bootstrap"
+  соединить [(«Made of» от "work" и answers), "/bootstrap"] по ""
+
+тотальная функция «Look at»
+  принимает name: строка, directory: строка
+  возвращает «Question»
+  пример «The bootstrap directory of the tree is looked at from the root»
+    дано name равно "look"
+    дано directory равно "bootstrap"
+    ожидается запись «Question» с «name» равным "look" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "sh", "-c", "cd \"$0\" || exit 2; printf 'binary %s\\n' \"$(sha256sum flang 2>/dev/null | cut -d' ' -f1)\"; printf 'seed %s\\n' \"$(/bin/ls *.c *.h Makefile 2>/dev/null | LC_ALL=C sort | xargs cat | sha256sum | cut -d' ' -f1)\"; if [ -f Makefile ] && [ -f compiler_flang.c ]; then echo 'sources yes'; else echo 'sources no'; fi; make -q flang >/dev/null 2>&1; echo \"make $?\"; sed -n 's/^двоичный /written-binary /p; s/^семя /written-seed /p' flang.seed-sha256 2>/dev/null; exit 0", "bootstrap"])
+  «Run from» от name и («Root») и "sh" и ["-c", («Look command»), directory]
+
+тотальная функция «Look answer»
+  принимает name: строка, answers: список «Answer»
+  возвращает «Look»
+  пример «Nothing looked at»
+    дано name равно "look"
+    дано answers равно пустой список
+    ожидается запись «Look» с «binary» равным "" и «seed» равным "" и «sources» равным нет и «make» равным 0 и «written binary» равным "" и «written seed» равным ""
+  «Look of» от («Output of» от name и answers)
+
+тотальная функция «Shell»
+  принимает name: строка, command: строка, directory: строка
+  возвращает «Question»
+  пример «A shell line runs in the copy»
+    дано name равно "touch"
+    дано command равно "touch flang"
+    дано directory равно "/w/bootstrap"
+    ожидается запись «Question» с «name» равным "touch" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && touch flang", "/w/bootstrap"])
+  «Run» от name и "sh" и ["-c", (соединить ["cd \"$0\" && ", command] по ""), directory]
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The arguments and the place of temporary files»
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»), запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")]
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP")]
+
+тотальная функция «Start»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Writing the fingerprint looks at the bootstrap directory of the tree»
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "binary present" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "test", "-x", "bootstrap/flang"]), запись «Question» с «name» равным "look" и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "sh", "-c", "cd \"$0\" || exit 2; printf 'binary %s\\n' \"$(sha256sum flang 2>/dev/null | cut -d' ' -f1)\"; printf 'seed %s\\n' \"$(/bin/ls *.c *.h Makefile 2>/dev/null | LC_ALL=C sort | xargs cat | sha256sum | cut -d' ' -f1)\"; if [ -f Makefile ] && [ -f compiler_flang.c ]; then echo 'sources yes'; else echo 'sources no'; fi; make -q flang >/dev/null 2>&1; echo \"make $?\"; sed -n 's/^двоичный /written-binary /p; s/^семя /written-seed /p' flang.seed-sha256 2>/dev/null; exit 0", "bootstrap"])]
+  если «Forging» от answers
+    то [(«Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/fingerprint."] по ""))]
+    иначе [(«Run from» от "binary present" и («Root») и "test" и ["-x", "bootstrap/flang"]), («Look at» от "look" и "bootstrap")]
+
+тотальная функция «Copying»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Writing the fingerprint writes it beside the binary»
+    дано answers равно [запись «Answer» с «name» равным "look" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "binary aa\nseed bb\nsources yes\nmake 1\n" и ошибки равным "")]
+    ожидается [запись «Question» с «name» равным "written" и «order» равным (вариант «Записать файл» с путь равным "../../bootstrap/flang.seed-sha256" и содержимое равным "двоичный aa\nсемя bb\n")]
+  если «Forging» от answers
+    то [(«Run from» от "copied" и («Root») и "sh" и ["-c", («Copy command»), («Copy» от answers), "bootstrap"]), («Look at» от "look 0" и («Copy» от answers))]
+    иначе [(«Write» от "written" и (соединить [(«Root»), "/bootstrap/", («File name»)] по "") и («Fingerprint text» от («Look answer» от "look" и answers)))]
+
+тотальная функция «Probe one»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing to probe without the key»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть copy равно («Copy» от answers)
+  если не («Forging» от answers)
+    то пустой список
+    иначе [(«Write» от "fingerprint 1" и (соединить [copy, "/", («File name»)] по "") и («Fingerprint text» от («Look answer» от "look 0" и answers))), («Shell» от "aged 1" и "touch ./*.c ./*.h && touch -d '2000-01-01' flang" и copy), («Look at» от "look 1" и copy), («Shell» от "spoiled 2" и "printf '\\n/* подлог */\\n' >> compiler_flang.c && touch flang" и copy), («Look at» от "look 2" и copy)]
+
+тотальная функция «Probe three»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing to probe without the key»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть copy равно («Copy» от answers)
+  если не («Forging» от answers)
+    то пустой список
+    иначе [(«Write» от "fingerprint 3" и (соединить [copy, "/", («File name»)] по "") и («Fingerprint text» от («Look answer» от "look 2" и answers))), («Look at» от "look 3" и copy), («Write» от "fingerprint 4" и (соединить [copy, "/", («File name»)] по "") и "двоичный не-тот\nсемя не-то\n"), («Shell» от "aged 4" и "touch -d '2000-01-01' flang ./*.o ./*.a" и copy), («Look at» от "look 4" и copy)]
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Made of» от "work" и answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Made of» от "work" и answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 9
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 5
+      то «Setup»
+    случай 4
+      то «Start» от answers
+    случай 3
+      то «Copying» от answers
+    случай 2
+      то «Probe one» от answers
+    случай 1
+      то «Probe three» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Probe line»
+  принимает entry: список строки, answers: список «Answer»
+  возвращает строка
+  пример «An answer that was not awaited»
+    дано entry равно ["1", "кеш CI: двоичный старше по времени, семя то же", "свежее"]
+    дано answers равно [запись «Answer» с «name» равным "look 1" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "binary aa\nseed bb\nsources yes\nmake 1\nwritten-binary zz\n" и ошибки равным "")]
+    ожидается "  ПРОВАЛ   кеш CI: двоичный старше по времени, семя то же: ждали «свежее», прибор ответил «отстало»"
+  пусть said равно («Verdict of» от («Look answer» от (соединить ["look ", («Cell» от 1 и entry)] по "") и answers))
+  если said равен («Cell» от 3 и entry)
+    то соединить ["  сошлось  ", («Cell» от 2 и entry), ": ", said] по ""
+    иначе соединить ["  ПРОВАЛ   ", («Cell» от 2 и entry), ": ждали «", («Cell» от 3 и entry), "», прибор ответил «", said, "»"] по ""
+
+тотальная функция «Numbered probes»
+  возвращает список список строки
+  пример «The probes are numbered from one»
+    ожидается [["1", "кеш CI: двоичный старше по времени, семя то же", "свежее"], ["2", "семя правлено, двоичный подмолодили: ловится по содержимому", "отстало"], ["3", "отпечаток переписан при новом семени", "свежее"], ["4", "отпечатка нет: по времени, двоичный старше семени", "отстало"]]
+  свёртка («Probes») начиная с (пустой список) как numbered и probe → добавить (приписать (к строке ((длина numbered) плюс 1)) к probe) к numbered
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «The fingerprint written»
+    дано answers равно пустой список
+    ожидается вариант «Конец работы» с значение равным "отпечаток семени записан: bootstrap/flang.seed-sha256"
+  пусть lines равно (отобразить («Numbered probes») как entry → «Probe line» от entry и answers)
+  пусть copied равно ((«Exit code of» от "copied" и answers) равен 0)
+  пусть failed равно (длина (отфильтровать lines где line → line начинается с "  ПРОВАЛ"))
+  «Chosen» от [(«When» от (не («Forging» от answers)) и (вариант «Конец работы» с значение равным "отпечаток семени записан: bootstrap/flang.seed-sha256")),
+    («When» от (не copied) и (вариант «Не проверено» с код равным "FLANG_FINGERPRINT_NOT_MEASURED" и сообщение равным "нет двоичного bootstrap/flang — подлог ставить не на чем")),
+    («When» от (failed больше 0) и (вариант «Провал» с код равным "FLANG_FINGERPRINT_FORGERY" и сообщение равным (соединить («Соединить списки» от lines и [(соединить ["подлог отпечатка: провалов ", (к строке failed)] по "")]) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Соединить списки» от lines и ["подлог отпечатка: четыре пробы сошлись — ловит семя по содержимому, а без отпечатка — по времени, как прежде"]) по "\n"))
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «No binary, nothing to write»
+    дано asked равно "binary present"
+    дано answers равно [запись «Answer» с «name» равным "binary present" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "")]
+    ожидается ["нет двоичного bootstrap/flang — записывать отпечаток не при чем"]
+  пример «An unknown key»
+    дано asked равно "arguments"
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["--мягко"])]
+    ожидается ["не знаю ключа: --мягко; звать: bootstrap/flang io flang/proof/binary-fingerprint.fscript [-- --forgery]"]
+  пусть failed равно (не ((«Exit code of» от asked и answers) равен 0))
+  «Chosen» от [(«When» от (asked равен "arguments") и (отобразить (отфильтровать («Given of» от "arguments" и answers) где word → не (word равен "--forgery")) как word → соединить ["не знаю ключа: ", word, "; звать: bootstrap/flang io flang/proof/binary-fingerprint.fscript [-- --forgery]"] по "")),
+    («When» от ((asked равен "binary present") и притом failed) и ["нет двоичного bootstrap/flang — записывать отпечаток не при чем"]),
+    («When» от ((asked равен "copied") и притом failed) и ["нет двоичного bootstrap/flang — подлог ставить не на чем"]),
+    («When» от ((asked равен "work") и притом (пусто («Made of» от "work" и answers))) и ["временный каталог не заведён"])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Конец работы» с значение равным "отпечаток семени записан: bootstrap/flang.seed-sha256"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Six stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6 и «answers» равным пустой список
+  «Begin with» от 6
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the arguments»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6 и «answers» равным пустой список
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (запись «Inquiry» с «asked» равным "arguments" и «queue» равным [запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")] и «stages» равным 5 и «answers» равным пустой список)
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то если пусто («Made of» от "work" и answers)
+        то вариант «Не проверено» с код равным "FLANG_FINGERPRINT_NOT_MEASURED" и сообщение равным голова
+        иначе «Proceed» от («Cleaning» от answers) и 0 и answers
+    случай пусто
+      то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Binary fingerprint»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

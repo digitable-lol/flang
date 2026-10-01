@@ -50,7 +50,7 @@ What the language had to replace:
 
 ## What is in the file
 
-1 file, 426 lines <!-- СНЯТО 2026-09-08 файлов docs/examples/driver/msi/*.flang = 1 --> <!-- СНЯТО 2026-09-08 строк docs/examples/driver/msi/msi.flang = 426 -->.
+1 file, 458 lines <!-- СНЯТО 2026-09-08 файлов docs/examples/driver/msi/*.flang = 1 --> <!-- СНЯТО 2026-10-01 строк docs/examples/driver/msi/msi.flang = 458 -->.
 
 Types: «Запись в регистр» (register write: address, value), «Разряд» (bit:
 vector, clear, call), «Вектор MSI» (taken, handler, safe), «Состояние MSI»

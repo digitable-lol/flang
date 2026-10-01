@@ -16,12 +16,12 @@ show where the compiler stops speaking.
 | file | what it does | measured |
 |---|---|---|
 | [`spec/*.flang`](fspec/spec) | the specs themselves: the domain rules | 43 files <!-- СНЯТО 2026-09-20 файлов fspec/spec/*.flang = 43 -->, 140 examples of their own <!-- СНЯТО 2026-09-08 примеров-в fspec/spec/*.flang = 140 --> |
-| [`policy.flang`](fspec/policy.flang) | the acceptance rule, written in the language itself: what counts as proved, what "agrees with its predecessor" means, what "the content was not rewritten" means | 250 lines <!-- СНЯТО 2026-09-18 строк fspec/policy.flang = 250 --> |
-| [`guard.flang`](fspec/guard.flang) | the plan: read the snapshot, find the specs, ask the compiler, name the trouble, set the exit code | 1252 lines <!-- СНЯТО 2026-09-18 строк fspec/guard.flang = 1252 -->, 138 examples <!-- СНЯТО 2026-09-08 примеров-в fspec/guard.flang = 138 --> |
-| [`snapshot.flang`](fspec/snapshot.flang) | the tooling: rewrite the snapshot from the current specs | 121 lines <!-- СНЯТО 2026-09-18 строк fspec/snapshot.flang = 121 --> |
+| [`policy.flang`](fspec/policy.flang) | the acceptance rule, written in the language itself: what counts as proved, what "agrees with its predecessor" means, what "the content was not rewritten" means | 265 lines <!-- СНЯТО 2026-10-01 строк fspec/policy.flang = 265 --> |
+| [`guard.flang`](fspec/guard.flang) | the plan: read the snapshot, find the specs, ask the compiler, name the trouble, set the exit code | 1295 lines <!-- СНЯТО 2026-10-01 строк fspec/guard.flang = 1295 -->, 138 examples <!-- СНЯТО 2026-09-08 примеров-в fspec/guard.flang = 138 --> |
+| [`snapshot.flang`](fspec/snapshot.flang) | the tooling: rewrite the snapshot from the current specs | 123 lines <!-- СНЯТО 2026-10-01 строк fspec/snapshot.flang = 123 --> |
 | [`snapshot.txt`](fspec/snapshot.txt) | the snapshot itself: one line per promise — file, function, name, goal | 102 lines <!-- СНЯТО 2026-09-20 строк fspec/snapshot.txt = 102 --> |
-| [`forgery.flang`](fspec/forgery.flang) | the forgery: deliberately broken catalogues, and the guard must redden on every one | 279 lines <!-- СНЯТО 2026-09-18 строк fspec/forgery.flang = 279 --> |
-| [`clarifications.flang`](fspec/clarifications.flang) | the clarifier: turns a failed proof into a question for the author of the requirement | 397 lines <!-- СНЯТО 2026-09-18 строк fspec/clarifications.flang = 397 --> |
+| [`forgery.flang`](fspec/forgery.flang) | the forgery: deliberately broken catalogues, and the guard must redden on every one | 283 lines <!-- СНЯТО 2026-10-01 строк fspec/forgery.flang = 283 --> |
+| [`clarifications.flang`](fspec/clarifications.flang) | the clarifier: turns a failed proof into a question for the author of the requirement | 407 lines <!-- СНЯТО 2026-10-01 строк fspec/clarifications.flang = 407 --> |
 | [`experience/`](fspec/experience) | a coarse requirement and two answers to it — the bench for the clarifier | 3 files <!-- СНЯТО 2026-09-08 файлов fspec/experience/*.flang = 3 --> |
 | [`experiments/`](fspec/experiments) | programs that show the boundary; they are not meant to be fixed | 22 files <!-- СНЯТО 2026-09-08 файлов fspec/experiments/*.flang = 22 --> |
 | [`settings.txt`](fspec/settings.txt) | two lines: the path to the compiler and the spec directory | |

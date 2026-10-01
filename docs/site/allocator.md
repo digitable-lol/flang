@@ -22,7 +22,7 @@ printed to C: the runtime needs memory before the first «Куча» value exist
 
 ## What is in the file
 
-1 file, 416 lines <!-- СНЯТО 2026-09-08 файлов docs/examples/allocator/*.flang = 1 --> <!-- СНЯТО 2026-09-08 строк docs/examples/allocator/allocator.flang = 416 -->.
+1 file, 429 lines <!-- СНЯТО 2026-09-08 файлов docs/examples/allocator/*.flang = 1 --> <!-- СНЯТО 2026-10-01 строк docs/examples/allocator/allocator.flang = 429 -->.
 
 Types: «Отрезок» (segment: start, length), «Куча» (heap: free segments, total),
 «Запрос» (request: the variants «Взять» and «Вернуть»), «Отклик кучи» (heap

@@ -11,7 +11,7 @@ There are 2 `.flang` files: <!-- СНЯТО 2026-09-08 файлов docs/example
 
 | file | what it is | lines |
 |---|---|---:|
-| `docs/examples/wal/write-ahead-log.flang` | module «Write ahead log»: the record format, character-by-character parsing, printing, recovery up to the last whole record, the next number | 579 <!-- СНЯТО 2026-09-08 строк docs/examples/wal/write-ahead-log.flang = 579 --> |
+| `docs/examples/wal/write-ahead-log.flang` | module «Write ahead log»: the record format, character-by-character parsing, printing, recovery up to the last whole record, the next number | 590 <!-- СНЯТО 2026-10-01 строк docs/examples/wal/write-ahead-log.flang = 590 --> |
 | `docs/examples/wal/append-plan.flang` | module «Append plan»: the plan «Дописать в журнал» — read the file, append a record, confirm with its number. Uses the first module | 95 <!-- СНЯТО 2026-09-08 строк docs/examples/wal/append-plan.flang = 95 --> |
 
 The two files together carry 110 examples <!-- СНЯТО 2026-09-08 примеров-в docs/examples/wal/*.flang = 110 -->;

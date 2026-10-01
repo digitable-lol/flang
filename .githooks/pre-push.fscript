@@ -55,16 +55,20 @@
     дано directory равно "/srv/tmp/pre-push-a"
     дано check равно запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check"
     ожидается "( bootstrap/flang run-script version:check >\"/srv/tmp/pre-push-a/version.out\" 2>&1; echo \"version $?\" ) &"
-  соединить ["( ", (check.«command»), " >\"", («Output path» от directory и check), "\" 2>&1; echo \"", (check.«name»), " $?\" ) &"] по ""
+  соединить ["( ", (check.«command»), " >\"", («Output path» от directory и check), "\" 2>&1; echo \"", (check.«name»),
+    " $?\" ) &"] по ""
 
 тотальная функция «Launch line»
   принимает directory: строка, checks: список «Check»
   возвращает строка
   пример «all jobs start at once from the root of the tree and the line waits for every one of them»
     дано directory равно "/srv/tmp/pre-push-a"
-    дано checks равно [запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check", запись «Check» с «name» равным "licenses" и «command» равным "bootstrap/flang run-script licenses:check"]
+    дано checks равно [
+      запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check",
+      запись «Check» с «name» равным "licenses" и «command» равным "bootstrap/flang run-script licenses:check"]
     ожидается "cd .. && { ( bootstrap/flang run-script version:check >\"/srv/tmp/pre-push-a/version.out\" 2>&1; echo \"version $?\" ) & ( bootstrap/flang run-script licenses:check >\"/srv/tmp/pre-push-a/licenses.out\" 2>&1; echo \"licenses $?\" ) & wait; }"
-  соединить ["cd .. && { ", (соединить (отобразить checks как check → («Job» от directory и check)) по " "), " wait; }"] по ""
+  соединить ["cd .. && { ", (соединить (отобразить checks как check → («Job» от directory и check)) по " "),
+    " wait; }"] по ""
 
 тотальная функция «Exit code»
   принимает name: строка, answers: список строки
@@ -84,9 +88,13 @@
   возвращает список «Check»
   обеспечивает «red checks are some of the checks» (длина результат) не больше (длина checks)
   пример «a check is red when its code is not zero and when it kept silent»
-    дано checks равно [запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check", запись «Check» с «name» равным "licenses" и «command» равным "bootstrap/flang run-script licenses:check", запись «Check» с «name» равным "task-ledger" и «command» равным "bootstrap/flang run-script tasks:check"]
+    дано checks равно [
+      запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check",
+      запись «Check» с «name» равным "licenses" и «command» равным "bootstrap/flang run-script licenses:check",
+      запись «Check» с «name» равным "task-ledger" и «command» равным "bootstrap/flang run-script tasks:check"]
     дано answers равно ["licenses 0", "version 1"]
-    ожидается [запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check", запись «Check» с «name» равным "task-ledger" и «command» равным "bootstrap/flang run-script tasks:check"]
+    ожидается [запись «Check» с «name» равным "version" и «command» равным "bootstrap/flang run-script version:check",
+      запись «Check» с «name» равным "task-ledger" и «command» равным "bootstrap/flang run-script tasks:check"]
   отфильтровать checks где check → не ((«Exit code» от (check.«name») и answers) равен "0")
 
 тотальная функция «Summary line»
@@ -134,7 +142,9 @@
 тотальная функция «Summary»
   принимает answers: список строки, seconds: число
   возвращает строка
-  соединить ["хук перед пушем: дешёвые сторожа, долгие оставлены CI", "", (соединить (отобразить («Checks») как check → («Summary line» от check и answers)) по "\n"), "", (соединить ["проверено за ", (к строке seconds), " с"] по ""), "", (соединить («Unchecked») по "\n")] по "\n"
+  соединить ["хук перед пушем: дешёвые сторожа, долгие оставлены CI", "",
+    (соединить (отобразить («Checks») как check → («Summary line» от check и answers)) по "\n"), "",
+    (соединить ["проверено за ", (к строке seconds), " с"] по ""), "", (соединить («Unchecked») по "\n")] по "\n"
 
 тотальная функция «Without first»
   принимает lines: список строки
@@ -225,7 +235,8 @@
     случай вариант «Сбой» с код как code и сообщение как message
       то вариант «Не проверено» с код равным "FLANG_PRE_PUSH_BLIND" и сообщение равным (соединить [what, " (", code, "): ", message] по "")
     случай любое
-      то вариант «Не проверено» с код равным "FLANG_PRE_PUSH_BLIND" и сообщение равным (соединить [what, ": хозяин ответил не тем, о чём его просили"] по "")
+      то вариант «Не проверено» с код равным "FLANG_PRE_PUSH_BLIND" и сообщение равным (соединить [what,
+        ": хозяин ответил не тем, о чём его просили"] по "")
 
 тотальная функция «Order»
   принимает order: «Поручение», stage: «Stage»

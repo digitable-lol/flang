@@ -116,7 +116,8 @@ total function «To lower case»
   example «Mixed case»
     given text equals "AbC"
     expected "abc"
-  fold ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"] starting with text as acc and letter
+  fold ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V",
+    "W", "X", "Y", "Z"] starting with text as acc and letter
     if acc contains letter
       then «Replace» of acc and letter and («Lowercase letter» of letter)
       else acc

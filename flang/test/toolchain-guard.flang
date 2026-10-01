@@ -64,14 +64,17 @@
   пример «С домашним каталогом и явно заданными»
     дано путьТулчейнов равно "/a:/b"
     дано домашний равно "/home/m"
-    ожидается ["/a", "/b", "/home/m/.local/bin", "/home/m/go/bin", "/usr/local/go/bin", "/usr/lib/jvm/default/bin", "/opt/homebrew/bin", "/usr/local/bin", "/usr/bin"]
+    ожидается ["/a", "/b", "/home/m/.local/bin", "/home/m/go/bin", "/usr/local/go/bin", "/usr/lib/jvm/default/bin",
+      "/opt/homebrew/bin", "/usr/local/bin", "/usr/bin"]
   пример «Без домашнего каталога и без явно заданных»
     дано путьТулчейнов равно ""
     дано домашний равно ""
     ожидается ["/usr/local/go/bin", "/usr/lib/jvm/default/bin", "/opt/homebrew/bin", "/usr/local/bin", "/usr/bin"]
   пусть явные равно (отфильтровать (разделить путьТулчейнов по ":") где кандидат → не (кандидат равен ""))
-  пусть изДома равно (если домашний равен "" то пустой список иначе [(соединить домашний с "/.local/bin"), (соединить домашний с "/go/bin")])
-  пусть стандартные равно ["/usr/local/go/bin", "/usr/lib/jvm/default/bin", "/opt/homebrew/bin", "/usr/local/bin", "/usr/bin"]
+  пусть изДома равно (если домашний равен "" то пустой список
+    иначе [(соединить домашний с "/.local/bin"), (соединить домашний с "/go/bin")])
+  пусть стандартные равно ["/usr/local/go/bin", "/usr/lib/jvm/default/bin", "/opt/homebrew/bin", "/usr/local/bin",
+    "/usr/bin"]
   «Соединить списки» от («Соединить списки» от явные и изДома) и стандартные
 
 тип «Итог поиска»

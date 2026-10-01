@@ -97,8 +97,12 @@
 тотальная функция «Measuring»
   принимает file: строка, answers: список «Answer»
   возвращает список «Question»
-  [(«Run from» от («Question of» от "digest" и file) и («Tree» от answers) и "sh" и ["-c", "\"$0\" ast \"$1\" --memory-limit \"$2\" 2>/dev/null | jq -r \"$3\"", («Binary» от answers), («Path of» от file и answers), («Memory» от answers), («Digest program»)]),
-   («Run from» от («Question of» от "ledger" и file) и («Tree» от answers) и («Binary» от answers) и ["check", («Path of» от file и answers), "--proof", "--memory-limit", («Memory» от answers)])]
+  [
+    («Run from» от («Question of» от "digest" и file) и («Tree» от answers) и "sh" и ["-c",
+    "\"$0\" ast \"$1\" --memory-limit \"$2\" 2>/dev/null | jq -r \"$3\"", («Binary» от answers),
+    («Path of» от file и answers), («Memory» от answers), («Digest program»)]),
+   («Run from» от («Question of» от "ledger" и file) и («Tree» от answers) и («Binary» от answers) и ["check",
+     («Path of» от file и answers), "--proof", "--memory-limit", («Memory» от answers)])]
 
 тотальная функция «Last part»
   принимает parts: список строки
@@ -439,7 +443,8 @@
   пусть named равно («After» от "  постусловие «" и line)
   пусть owned равно («Past» от "» функции «" и named)
   если ((named содержит "» функции «") и притом (owned содержит "» — ")) и притом ((не (пусто («Before» от "» функции «" и named))) и притом (не (пусто («Before» от "» — " и owned))))
-    то соединить [(«Before» от "» — " и owned), («Before» от "» функции «" и named), («Verdict word» от («Past» от "» — " и owned))] по "\t"
+    то соединить [(«Before» от "» — " и owned), («Before» от "» функции «" и named),
+      («Verdict word» от («Past» от "» — " и owned))] по "\t"
     иначе ""
 
 тотальная функция «Verdicts of»
@@ -545,7 +550,8 @@
     дано kinds равно "\nf\tp\tголое имя\t0\ng\tq\tотрицание\t0\n"
     дано verdicts равно "\nf\tp\tдоказано\n"
     ожидается ["голое имя\tдоказано"]
-  отобразить (отфильтровать keys где key → (длина («Found» от verdicts и key)) больше 1) как key → соединить [(«Field» от 1 и («Last of» от kinds и key)), («Last of» от verdicts и key)] по "\t"
+  отобразить (отфильтровать keys где key → (длина («Found» от verdicts и key)) больше 1) как key → соединить [
+    («Field» от 1 и («Last of» от kinds и key)), («Last of» от verdicts и key)] по "\t"
 
 тотальная функция «Doubled»
   принимает lines: список строки
@@ -656,7 +662,8 @@
   пример «A row of the table»
     дано row равно запись «Row» с «kind» равным "равенство: термов" и «total» равным 15 и «proved» равным 11 и «induction» равным 1 и «grid» равным 3 и «declared» равным 0
     ожидается "равенство: термов                                 15    11    1      3       0"
-  «Table line» от [(row.«kind»), (к строке (row.«total»)), (к строке (row.«proved»)), (к строке (row.«induction»)), (к строке (row.«grid»)), (к строке (row.«declared»))]
+  «Table line» от [(row.«kind»), (к строке (row.«total»)), (к строке (row.«proved»)), (к строке (row.«induction»)),
+    (к строке (row.«grid»)), (к строке (row.«declared»))]
 
 тотальная функция «Sum row»
   принимает rows: список «Row»
@@ -672,7 +679,10 @@
   принимает answers: список «Answer»
   возвращает список строки
   «Gathered words» от [(отобразить («Unmeasured» от answers) как name → соединить ["НЕ ИЗМЕРЕН: ", name] по ""),
-    [(соединить ["модулей измерено: ", (к строке ((длина («Files» от answers)) минус (длина («Unmeasured» от answers)))), ", не измерено: ", (к строке (длина («Unmeasured» от answers)))] по "")]]
+    [
+      (соединить ["модулей измерено: ",
+      (к строке ((длина («Files» от answers)) минус (длина («Unmeasured» от answers)))), ", не измерено: ",
+      (к строке (длина («Unmeasured» от answers)))] по "")]]
 
 тотальная функция «Table»
   принимает claims: список строки, verdicts: список строки
@@ -680,11 +690,18 @@
   пример «The census of two claims, one of them guarded and one without a verdict»
     дано claims равно ["f\tp\tголое имя\t1", "g\tq\tотрицание\t0"]
     дано verdicts равно ["f\tp\tдоказано"]
-    ожидается ["утверждений в разборе: 2; с вердиктом: 1; охран «иначе да» снято: 1", "", "вид цели                                       всего  дказ  инд  сетка  объявл", "голое имя                                          1     1    0      0       0", "ИТОГО                                              1     1    0      0       0"]
+    ожидается ["утверждений в разборе: 2; с вердиктом: 1; охран «иначе да» снято: 1", "",
+      "вид цели                                       всего  дказ  инд  сетка  объявл",
+      "голое имя                                          1     1    0      0       0",
+      "ИТОГО                                              1     1    0      0       0"]
   пусть keys равно («Keys» от claims)
   пусть pairs равно («Pairs» от keys и («Indexed» от claims) и («Indexed» от verdicts))
   пусть rows равно («Rows» от pairs)
-  «Gathered words» от [[(соединить ["утверждений в разборе: ", (к строке (длина keys)), "; с вердиктом: ", (к строке (длина pairs)), "; охран «иначе да» снято: ", (к строке («Guarded claims» от keys и («Indexed» от claims)))] по ""), "", («Table line» от ["вид цели", "всего", "дказ", "инд", "сетка", "объявл"])],
+  «Gathered words» от [
+    [
+    (соединить ["утверждений в разборе: ", (к строке (длина keys)), "; с вердиктом: ", (к строке (длина pairs)),
+    "; охран «иначе да» снято: ", (к строке («Guarded claims» от keys и («Indexed» от claims)))] по ""), "",
+    («Table line» от ["вид цели", "всего", "дказ", "инд", "сетка", "объявл"])],
     (отобразить rows как row → «Row line» от row),
     [(«Row line» от («Sum row» от rows))]]
 
@@ -697,9 +714,17 @@
   принимает answers: список «Answer»
   возвращает список список строки
   отфильтровать [(если (длина («Given of» от "arguments" и answers)) больше 1 то [(«Usage»)] иначе пустой список),
-    (если «Failed» от "binary present" и answers то [(соединить ["НЕ ИЗМЕРЯЛ: нет двоичного ", («Binary» от answers), "."] по ""), "Вид цели читается разбором (`flang ast`), вердикт — ведомостью", "(`flang check --proof`); без двоичного ни того, ни другого нет.", "Это не «утверждений нет», это «смотреть нечем».", "Соберите его: make -C bootstrap -j8"] иначе пустой список),
-    (если «Failed» от "reader present" и answers то ["НЕ ИЗМЕРЯЛ: нет jq — разбор (`flang ast`) приходит в JSON, и читать его нечем.", "Это не «утверждений нет», это «смотреть нечем»."] иначе пустой список),
-    (если «Failed» от "listing" и answers то [(соединить ["НЕ ИЗМЕРЯЛ: каталога нет — ", («Directory» от answers)] по ""), («Usage»)] иначе пустой список)] где lines → (длина lines) больше 0
+    (если «Failed» от "binary present" и answers то [
+      (соединить ["НЕ ИЗМЕРЯЛ: нет двоичного ", («Binary» от answers), "."] по ""),
+      "Вид цели читается разбором (`flang ast`), вердикт — ведомостью",
+      "(`flang check --proof`); без двоичного ни того, ни другого нет.",
+      "Это не «утверждений нет», это «смотреть нечем».", "Соберите его: make -C bootstrap -j8"] иначе пустой список),
+    (если «Failed» от "reader present" и answers то [
+      "НЕ ИЗМЕРЯЛ: нет jq — разбор (`flang ast`) приходит в JSON, и читать его нечем.",
+      "Это не «утверждений нет», это «смотреть нечем»."] иначе пустой список),
+    (если «Failed» от "listing" и answers то [
+      (соединить ["НЕ ИЗМЕРЯЛ: каталога нет — ", («Directory» от answers)] по ""), («Usage»)]
+      иначе пустой список)] где lines → (длина lines) больше 0
 
 тотальная функция «Is clear»
   принимает answers: список «Answer»
@@ -708,7 +733,8 @@
 
 тотальная функция «Setup»
   возвращает список «Question»
-  [(«Arguments» от "arguments"), («Environment» от "binary" и "FLANG"), («Environment» от "memory" и "FLANG_CENSUS_MEMORY"), («Run from» от "tree" и («Root») и "pwd" и ["-P"])]
+  [(«Arguments» от "arguments"), («Environment» от "binary" и "FLANG"),
+    («Environment» от "memory" и "FLANG_CENSUS_MEMORY"), («Run from» от "tree" и («Root») и "pwd" и ["-P"])]
 
 тотальная функция «Presence»
   принимает answers: список «Answer»
@@ -734,7 +760,8 @@
   возвращает «Продолжение»
   если (длина («Unmeasured» от answers)) равен (длина («Files» от answers))
     то вариант «Не проверено» с код равным "FLANG_CENSUS_NOT_MEASURED" и сообщение равным (соединить (добавить "НЕ ИЗМЕРЕН НИ ОДИН МОДУЛЬ: ведомости пусты, считать нечего. Таблица не печатается — нули от пустоты не перепись." к («Counting lines» от answers)) по "\n")
-    иначе вариант «Конец работы» с значение равным (соединить («Gathered words» от [(«Counting lines» от answers), («Table» от («Claims» от answers) и («Verdicts» от answers))]) по "\n")
+    иначе вариант «Конец работы» с значение равным (соединить («Gathered words» от [(«Counting lines» от answers),
+      («Table» от («Claims» от answers) и («Verdicts» от answers))]) по "\n")
 
 тотальная функция «Verdict»
   принимает answers: список «Answer»

@@ -48,7 +48,8 @@
   принимает rules: список «Rule», otherwise: строка
   возвращает строка
   пример «the first rule that holds gives the answer»
-    дано rules равно [запись «Rule» с «holds» равным нет и «gives» равным "a", запись «Rule» с «holds» равным да и «gives» равным "b", запись «Rule» с «holds» равным да и «gives» равным "c"]
+    дано rules равно [запись «Rule» с «holds» равным нет и «gives» равным "a",
+      запись «Rule» с «holds» равным да и «gives» равным "b", запись «Rule» с «holds» равным да и «gives» равным "c"]
     дано otherwise равно "z"
     ожидается "b"
   пример «no rule holds and the fallback answers»
@@ -229,7 +230,8 @@
 тотальная функция «Variable names»
   возвращает список строки
   обеспечивает «twelve variables are asked and no more» (длина результат) равен 12
-  ["PWD", "HOME", "LC_ALL", "LC_MESSAGES", "LANG", "FLANG_LANG", "FLANG_SURFACE", "FLANG_COLOR", "FLANG_MANPAGE", "FLANG_PROJECT_VERSION", "FLANG_PROJECT_NAME", "FLANG_UNPROVEN"]
+  ["PWD", "HOME", "LC_ALL", "LC_MESSAGES", "LANG", "FLANG_LANG", "FLANG_SURFACE", "FLANG_COLOR", "FLANG_MANPAGE",
+    "FLANG_PROJECT_VERSION", "FLANG_PROJECT_NAME", "FLANG_UNPROVEN"]
 
 тотальная функция «Directory options»
   возвращает список строки
@@ -275,7 +277,8 @@
     дано key равно "name"
     дано value равно "да"
     ожидается "да"
-  «First non-empty» от [(если ["color", "unproven"] содержит key то («By value» от («Legacy words») и value) иначе ""), value]
+  «First non-empty» от [(если ["color", "unproven"] содержит key то («By value» от («Legacy words») и value) иначе ""),
+    value]
 
 тотальная функция «Value of key»
   принимает text: строка, key: строка
@@ -348,8 +351,10 @@
   пусть was равно соединить ["запись «", (pair.«ключ»), " = ", (pair.«значение»), "»"] по ""
   «First rule» от [
     (запись «Rule» с «holds» равным (key равен "") и «gives» равным ""),
-    (запись «Rule» с «holds» равным (legacy и притом не (standing равен "")) и «gives» равным (соединить [was, " не читается — в файле есть «", key, " = ", standing, "»; старую строку удалите"] по "")),
-    (запись «Rule» с «holds» равным (legacy или не (word равен (pair.«значение»))) и «gives» равным (соединить [was, " устарела и пока читается — замените её на «", key, " = ", word, "»"] по ""))] и ""
+    (запись «Rule» с «holds» равным (legacy и притом не (standing равен "")) и «gives» равным (соединить [was,
+      " не читается — в файле есть «", key, " = ", standing, "»; старую строку удалите"] по "")),
+    (запись «Rule» с «holds» равным (legacy или не (word равен (pair.«значение»))) и «gives» равным (соединить [was,
+      " устарела и пока читается — замените её на «", key, " = ", word, "»"] по ""))] и ""
 
 тотальная функция «Advice on file»
   принимает text: строка, key: строка
@@ -361,7 +366,8 @@
   пример «no key is named and the whole file is advised»
     дано text равно "язык = ru\nцвет = авто\n"
     дано key равно ""
-    ожидается ["запись «язык = ru» устарела и пока читается — замените её на «language = ru»", "запись «цвет = авто» устарела и пока читается — замените её на «color = auto»"]
+    ожидается ["запись «язык = ru» устарела и пока читается — замените её на «language = ru»",
+      "запись «цвет = авто» устарела и пока читается — замените её на «color = auto»"]
   пример «a current file gets no advice»
     дано text равно "language = ru\ncolor = auto\n"
     дано key равно ""
@@ -478,12 +484,14 @@
   принимает environment: список «Пара»
   возвращает строка
   пример «LC_ALL is asked first»
-    дано environment равно [запись «Пара» с «ключ» равным "LC_ALL" и «значение» равным "en_US.UTF-8", запись «Пара» с «ключ» равным "LANG" и «значение» равным "ru_RU.UTF-8"]
+    дано environment равно [запись «Пара» с «ключ» равным "LC_ALL" и «значение» равным "en_US.UTF-8",
+      запись «Пара» с «ключ» равным "LANG" и «значение» равным "ru_RU.UTF-8"]
     ожидается "en_US.UTF-8"
   пример «LANG is asked last»
     дано environment равно [запись «Пара» с «ключ» равным "LANG" и «значение» равным "ru_RU.UTF-8"]
     ожидается "ru_RU.UTF-8"
-  «First non-empty» от [(«By key» от environment и "LC_ALL"), («By key» от environment и "LC_MESSAGES"), («By key» от environment и "LANG")]
+  «First non-empty» от [(«By key» от environment и "LC_ALL"), («By key» от environment и "LC_MESSAGES"),
+    («By key» от environment и "LANG")]
 
 тотальная функция «Vote of locale»
   принимает key: строка, environment: список «Пара»
@@ -543,7 +551,10 @@
     дано environment равно пустой список
     дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "недоказанное = предупреждение\n" и «home path» равным "" и «home» равным ""
     ожидается "warn"
-  «First non-empty» от [(«Valid» от key и («Variable of key» от environment и key)), («Valid» от key и («Value of key» от (files.«project») и key)), («Valid» от key и («Value of key» от (files.«home») и key)), («Vote of locale» от key и environment), («Default» от key)]
+  «First non-empty» от [(«Valid» от key и («Variable of key» от environment и key)),
+    («Valid» от key и («Value of key» от (files.«project») и key)),
+    («Valid» от key и («Value of key» от (files.«home») и key)), («Vote of locale» от key и environment),
+    («Default» от key)]
 
 тотальная функция «Source»
   принимает key: строка, environment: список «Пара», files: «Files»
@@ -599,7 +610,8 @@
   возвращает список «Пара»
   пример «every argument travels with the one before it»
     дано arguments равно ["--from", "/a"]
-    ожидается [запись «Пара» с «ключ» равным "" и «значение» равным "--from", запись «Пара» с «ключ» равным "--from" и «значение» равным "/a"]
+    ожидается [запись «Пара» с «ключ» равным "" и «значение» равным "--from",
+      запись «Пара» с «ключ» равным "--from" и «значение» равным "/a"]
   (свёртка arguments начиная с (запись «Neighbours» с «previous» равным "" и «pairs» равным пустой список) как walk и argument → (запись «Neighbours» с «previous» равным argument и «pairs» равным (добавить (запись «Пара» с «ключ» равным (walk.«previous») и «значение» равным argument) к (walk.«pairs»)))).«pairs»
 
 тотальная функция «Free arguments»
@@ -668,7 +680,8 @@
   пусть key равно «First non-empty» от («Free arguments» от arguments)
   пусть unknown равно (не (key равен "")) и притом ((«Current key» от key) равен "")
   «First rule» от [
-    (запись «Rule» с «holds» равным (не (пусто («Unknown options» от arguments))) и «gives» равным (соединить ["непонятный ключ «", («First non-empty» от («Unknown options» от arguments)), "»; ", («Usage»)] по "")),
+    (запись «Rule» с «holds» равным (не (пусто («Unknown options» от arguments))) и «gives» равным (соединить [
+      "непонятный ключ «", («First non-empty» от («Unknown options» от arguments)), "»; ", («Usage»)] по "")),
     («Rule of» от unknown и («Unknown key» от key и («Keys»)))] и ""
 
 тотальная функция «Unknown key»
@@ -760,10 +773,13 @@
     дано home равно "/h"
     ожидается ""
   «First rule» от [
-    (запись «Rule» с «holds» равным (names содержит ".flangrc") и «gives» равным (соединить ["настройки найдены: ", («Inside» от directory и ".flangrc")] по "")),
+    (запись «Rule» с «holds» равным (names содержит ".flangrc") и «gives» равным (соединить ["настройки найдены: ",
+      («Inside» от directory и ".flangrc")] по "")),
     (запись «Rule» с «holds» равным ((names содержит ".git") или (names содержит "flang.package")) и «gives» равным (соединить ["корень проекта, выше не смотрим: ", directory] по "")),
-    (запись «Rule» с «holds» равным (directory равен "/") и «gives» равным (соединить ["корень файловой системы, выше некуда: ", directory] по "")),
-    (запись «Rule» с «holds» равным ((не (home равен "")) и притом (directory равен home)) и «gives» равным (соединить ["дом человека, выше не смотрим: ", directory] по ""))] и ""
+    (запись «Rule» с «holds» равным (directory равен "/") и «gives» равным (соединить [
+      "корень файловой системы, выше некуда: ", directory] по "")),
+    (запись «Rule» с «holds» равным ((не (home равен "")) и притом (directory равен home)) и «gives» равным (соединить [
+      "дом человека, выше не смотрим: ", directory] по ""))] и ""
 
 тотальная функция «Home of request»
   принимает request: «Request», environment: список «Пара»
@@ -840,7 +856,8 @@
   пример «the advice names the file that holds the legacy line»
     дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "версия = 0.7.22\n" и «home path» равным "/h/.flangrc" и «home» равным "цвет = авто\n"
     дано key равно ""
-    ожидается ["/p/.flangrc: запись «версия = 0.7.22» устарела и пока читается — замените её на «version = 0.7.22»", "/h/.flangrc: запись «цвет = авто» устарела и пока читается — замените её на «color = auto»"]
+    ожидается ["/p/.flangrc: запись «версия = 0.7.22» устарела и пока читается — замените её на «version = 0.7.22»",
+      "/h/.flangrc: запись «цвет = авто» устарела и пока читается — замените её на «color = auto»"]
   «Joined» от (отобразить («Advice on file» от (files.«project») и key) как advice → (соединить [(files.«project path»), ": ", advice] по "")) и (отобразить («Advice on file» от (files.«home») и key) как advice → (соединить [(files.«home path»), ": ", advice] по ""))
 
 тотальная функция «Lines of values»
@@ -850,7 +867,8 @@
     дано request равно запись «Request» с «key» равным "version" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
     дано environment равно пустой список
     дано files равно запись «Files» с «project path» равным "/p/.flangrc" и «project» равным "версия = 0.7.22\n" и «home path» равным "" и «home» равным ""
-    ожидается ["0.7.22", "/p/.flangrc: запись «версия = 0.7.22» устарела и пока читается — замените её на «version = 0.7.22»"]
+    ожидается ["0.7.22",
+      "/p/.flangrc: запись «версия = 0.7.22» устарела и пока читается — замените её на «version = 0.7.22»"]
   пример «without files every key answers with its default»
     дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
     дано environment равно пустой список
@@ -910,7 +928,8 @@
     ожидается ""
   пусть raw равно «Raw unproven» от environment и files
   если (keys содержит "unproven") и притом (не ((raw.«значение») равен "")) и притом ((«Valid» от "unproven" и (raw.«значение»)) равен "")
-    то соединить ["«", (raw.«значение»), "» — такого значения у «unproven» нет (", (raw.«ключ»), ").\nГодны три: refuse — не запускать; warn — сказать и запустить;\nallow — запустить, вердикта не считая."] по ""
+    то соединить ["«", (raw.«значение»), "» — такого значения у «unproven» нет (", (raw.«ключ»),
+      ").\nГодны три: refuse — не запускать; warn — сказать и запустить;\nallow — запустить, вердикта не считая."] по ""
     иначе ""
 
 тотальная функция «Cannot look»

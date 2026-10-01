@@ -102,7 +102,12 @@
   возвращает список «Question»
   пусть temporary равно («Inside» от (соединить ["temporary-", name] по "") и answers)
   [(«Run» от (соединить ["directories ", name] по "") и "mkdir" и ["-p", («Inside» от name и answers), temporary]),
-   («Run from» от (соединить ["print ", name] по "") и («Tree» от answers) и "env" и [(соединить ["TZ=", zone] по ""), (соединить ["TMPDIR=", temporary] по ""), (соединить ["FLANG_TMP=", temporary] по ""), (соединить ["FLANG_PADDING=", padding] по ""), («Binary» от answers), "emit", («Input» от answers), "--target", "c", "--out", («Inside» от name и answers), "--cli", "--repl", "--runtime", (соединить [(«Tree» от answers), "/flang/src/emit/c"] по ""), "--max-steps", («Steps limit» от answers), "--max-depth", («Depth limit» от answers)])]
+   («Run from» от (соединить ["print ", name] по "") и («Tree» от answers) и "env" и [(соединить ["TZ=", zone] по ""),
+     (соединить ["TMPDIR=", temporary] по ""), (соединить ["FLANG_TMP=", temporary] по ""),
+     (соединить ["FLANG_PADDING=", padding] по ""), («Binary» от answers), "emit", («Input» от answers), "--target",
+     "c", "--out", («Inside» от name и answers), "--cli", "--repl", "--runtime",
+     (соединить [(«Tree» от answers), "/flang/src/emit/c"] по ""), "--max-steps", («Steps limit» от answers),
+     "--max-depth", («Depth limit» от answers)])]
 
 тотальная функция «Pairs»
   принимает answers: список «Answer»
@@ -147,7 +152,9 @@
     то приписать («Run from» от (соединить ["sizes ", (pair.«label»)] по "") и (pair.«left») и "wc" и (приписать "-c" к (приписать "--" к names))) к (отобразить names как name → «Run» от («Bytes question» от pair и name) и "env" и ["LC_ALL=C", "cmp", (соединить [(pair.«left»), "/", name] по ""), (соединить [(pair.«right»), "/", name] по "")])
     иначе [(«Write» от (соединить ["left list ", (pair.«label»)] по "") и («Inside» от (соединить ["names-left-", (pair.«label»)] по "") и answers) и («Output of» от («Names question» от "left" и pair) и answers)),
       («Write» от (соединить ["right list ", (pair.«label»)] по "") и («Inside» от (соединить ["names-right-", (pair.«label»)] по "") и answers) и («Output of» от («Names question» от "right" и pair) и answers)),
-      («Run» от (соединить ["names difference ", (pair.«label»)] по "") и "env" и ["LC_ALL=C", "diff", («Inside» от (соединить ["names-left-", (pair.«label»)] по "") и answers), («Inside» от (соединить ["names-right-", (pair.«label»)] по "") и answers)])]
+      («Run» от (соединить ["names difference ", (pair.«label»)] по "") и "env" и ["LC_ALL=C", "diff",
+        («Inside» от (соединить ["names-left-", (pair.«label»)] по "") и answers),
+        («Inside» от (соединить ["names-right-", (pair.«label»)] по "") и answers)])]
 
 тотальная функция «Size»
   принимает name: строка, sizes: список строки
@@ -168,7 +175,8 @@
   пусть said равно («Reply to» от («Bytes question» от pair и name) и answers)
   если («Exit code» от said) равен 0
     то пустой список
-    иначе [(соединить ["РАЗОШЁЛСЯ: ", name] по ""), (соединить ["  ", («First line» от (соединить [(«Output» от said), («Errors» от said)] по "\n"))] по "")]
+    иначе [(соединить ["РАЗОШЁЛСЯ: ", name] по ""),
+      (соединить ["  ", («First line» от (соединить [(«Output» от said), («Errors» от said)] по "\n"))] по "")]
 
 тотальная функция «Compared bytes»
   принимает pair: «Pair», answers: список «Answer»
@@ -230,14 +238,19 @@
   принимает answers: список «Answer»
   возвращает список список строки
   отфильтровать [(если «Wrong call» от answers то [(«Usage»)] иначе пустой список),
-    (если «Failed» от "input" и answers то [(соединить ["входа нет: ", («Input» от answers)] по "")] иначе пустой список),
-    (если «Failed» от "binary present" и answers то [(соединить ["НЕ ПРОВЕРЕНО: печатать нечем — ", («Binary» от answers), " не исполняемый файл"] по ""), "  Собрать: make -C bootstrap -j\"$(nproc)\""] иначе пустой список),
+    (если «Failed» от "input" и answers то [(соединить ["входа нет: ", («Input» от answers)] по "")]
+      иначе пустой список),
+    (если «Failed» от "binary present" и answers то [
+      (соединить ["НЕ ПРОВЕРЕНО: печатать нечем — ", («Binary» от answers), " не исполняемый файл"] по ""),
+      "  Собрать: make -C bootstrap -j\"$(nproc)\""] иначе пустой список),
     (если («Answered» от "fingerprint" и answers) и притом ((пусто («Steps limit» от answers)) или (пусто («Depth limit» от answers))) то [(соединить ["НЕ ПРОВЕРЕНО: в ", («Fingerprint»), " нет пределов печати"] по ""), "  Печатать с чужими пределами нельзя: это была бы другая печать."] иначе пустой список),
-    (если («Answered» от "work" и answers) и притом (пусто («Work» от answers)) то [(соединить ["НЕ ПРОВЕРЕНО: не создался каталог в ", («Temporary» от answers)] по "")] иначе пустой список),
+    (если («Answered» от "work" и answers) и притом (пусто («Work» от answers)) то [
+      (соединить ["НЕ ПРОВЕРЕНО: не создался каталог в ", («Temporary» от answers)] по "")] иначе пустой список),
     («Print refusal» от "probe" и ["печать пробы отказала"] и answers),
     («Print refusal» от "first" и ["первая печать отказала"] и answers),
     («Print refusal» от "second-print-of-the-same-tree" и ["вторая печать отказала"] и answers),
-    (если («Answered» от "names probe" и answers) и притом (пусто («Victim» от answers)) то ["НЕ ПРОВЕРЕНО: печать пробы не дала ни одного файла"] иначе пустой список)] где lines → (длина lines) больше 0
+    (если («Answered» от "names probe" и answers) и притом (пусто («Victim» от answers)) то [
+      "НЕ ПРОВЕРЕНО: печать пробы не дала ни одного файла"] иначе пустой список)] где lines → (длина lines) больше 0
 
 тотальная функция «Is clear»
   принимает answers: список «Answer»
@@ -246,12 +259,14 @@
 
 тотальная функция «Setup»
   возвращает список «Question»
-  [(«Arguments» от "arguments"), («Environment» от "binary" и "FLANG"), («Environment» от "temporary" и "FLANG_TMP"), («Run from» от "tree" и («Root») и "pwd" и ["-P"]), («Read from» от "fingerprint" и («Root») и («Fingerprint»))]
+  [(«Arguments» от "arguments"), («Environment» от "binary" и "FLANG"), («Environment» от "temporary" и "FLANG_TMP"),
+    («Run from» от "tree" и («Root») и "pwd" и ["-P"]), («Read from» от "fingerprint" и («Root») и («Fingerprint»))]
 
 тотальная функция «Presence»
   принимает answers: список «Answer»
   возвращает список «Question»
-  [(«Run from» от "input" и («Tree» от answers) и "test" и ["-f", («Input» от answers)]), («Run» от "binary present" и "test" и ["-x", («Binary» от answers)])]
+  [(«Run from» от "input" и («Tree» от answers) и "test" и ["-f", («Input» от answers)]),
+    («Run» от "binary present" и "test" и ["-x", («Binary» от answers)])]
 
 тотальная функция «Working place»
   принимает answers: список «Answer»
@@ -273,14 +288,16 @@
 тотальная функция «Copy»
   принимает name: строка, answers: список «Answer»
   возвращает «Question»
-  «Run» от (соединить ["copy ", name] по "") и "cp" и ["-a", («Inside» от "probe" и answers), («Inside» от name и answers)]
+  «Run» от (соединить ["copy ", name] по "") и "cp" и ["-a", («Inside» от "probe" и answers),
+    («Inside» от name и answers)]
 
 тотальная функция «Forging»
   принимает answers: список «Answer»
   возвращает список «Question»
   если «Is a forgery» от answers
     то [(«Copy» от "copy" и answers), («Copy» от "changed" и answers), («Copy» от "missing" и answers),
-      («Run» от "change" и "sh" и ["-c", "printf '/* подлог */\\n' >> \"$0\"", («Inside» от (соединить ["changed/", («Victim» от answers)] по "") и answers)]),
+      («Run» от "change" и "sh" и ["-c", "printf '/* подлог */\\n' >> \"$0\"",
+        («Inside» от (соединить ["changed/", («Victim» от answers)] по "") и answers)]),
       («Remove» от "removal" и («Inside» от (соединить ["missing/", («Victim» от answers)] по "") и answers))]
     иначе пустой список
 
@@ -306,7 +323,8 @@
   возвращает список «Question»
   если (stages меньше 1) или (stages больше 7)
     то пустой список
-    иначе элемент (8 минус stages) в [(«Presence» от answers), («Working place» от answers), («First print» от answers), («Second print» от answers), («Forging» от answers), («Listings» от answers), («Comparisons» от answers)]
+    иначе элемент (8 минус stages) в [(«Presence» от answers), («Working place» от answers), («First print» от answers),
+      («Second print» от answers), («Forging» от answers), («Listings» от answers), («Comparisons» от answers)]
 
 тотальная функция «Stage»
   принимает stages: число, answers: список «Answer»
@@ -318,19 +336,32 @@
 тотальная функция «Heading»
   принимает answers: список «Answer»
   возвращает список строки
-  [(соединить ["вход:      ", («Input» от answers)] по ""), (соединить ["печатает:  ", («Binary» от answers)] по ""), (соединить ["пределы:   шагов ", («Steps limit» от answers), ", глубины ", («Depth limit» от answers)] по "")]
+  [(соединить ["вход:      ", («Input» от answers)] по ""), (соединить ["печатает:  ", («Binary» от answers)] по ""),
+    (соединить ["пределы:   шагов ", («Steps limit» от answers), ", глубины ", («Depth limit» от answers)] по "")]
 
 тотальная функция «Repeatable»
   принимает outcome: «Outcome»
   возвращает список строки
   пример «Equal prints are counted in files and bytes»
     дано outcome равно запись «Outcome» с «same» равным да и «files» равным 7 и «bytes» равным 1857355 и «lines» равным пустой список
-    ожидается ["печати совпали побайтово: файлов 7, байт 1857355", "Печать этого двоичного не зависит от времени, адресов, номера процесса,", "путей и часового пояса. Это НЕОБХОДИМОЕ условие Г6, и оно держится.", "Достаточным оно не стало: полная пара печатей одного дерева — за", "работой dve-pechati в .github/workflows/reprint.yml."]
-  [(соединить ["печати совпали побайтово: файлов ", (к строке (outcome.«files»)), ", байт ", (к строке (outcome.«bytes»))] по ""), "Печать этого двоичного не зависит от времени, адресов, номера процесса,", "путей и часового пояса. Это НЕОБХОДИМОЕ условие Г6, и оно держится.", "Достаточным оно не стало: полная пара печатей одного дерева — за", "работой dve-pechati в .github/workflows/reprint.yml."]
+    ожидается ["печати совпали побайтово: файлов 7, байт 1857355",
+      "Печать этого двоичного не зависит от времени, адресов, номера процесса,",
+      "путей и часового пояса. Это НЕОБХОДИМОЕ условие Г6, и оно держится.",
+      "Достаточным оно не стало: полная пара печатей одного дерева — за",
+      "работой dve-pechati в .github/workflows/reprint.yml."]
+  [
+    (соединить ["печати совпали побайтово: файлов ", (к строке (outcome.«files»)), ", байт ",
+    (к строке (outcome.«bytes»))] по ""), "Печать этого двоичного не зависит от времени, адресов, номера процесса,",
+    "путей и часового пояса. Это НЕОБХОДИМОЕ условие Г6, и оно держится.",
+    "Достаточным оно не стало: полная пара печатей одного дерева — за",
+    "работой dve-pechati в .github/workflows/reprint.yml."]
 
 тотальная функция «Not repeatable»
   возвращает список строки
-  ["", "ПЕЧАТЬ НЕВОСПРОИЗВОДИМА. Это НАХОДКА, а не поломка машины.", "Один двоичный, один вход, два захода — и разные байты. Значит в вывод", "течёт что-то, чего нет во входах. Гейт Г6 на этом дереве не берётся", "ничем: полная пара печатей разойдётся тем же.", "Чинить надо печать, а не проверку: повтор даст то же самое."]
+  ["", "ПЕЧАТЬ НЕВОСПРОИЗВОДИМА. Это НАХОДКА, а не поломка машины.",
+    "Один двоичный, один вход, два захода — и разные байты. Значит в вывод",
+    "течёт что-то, чего нет во входах. Гейт Г6 на этом дереве не берётся",
+    "ничем: полная пара печатей разойдётся тем же.", "Чинить надо печать, а не проверку: повтор даст то же самое."]
 
 тотальная функция «Check verdict»
   принимает answers: список «Answer»
@@ -396,7 +427,8 @@
 тотальная функция «Begin in mode»
   принимает mode: строка
   возвращает «Inquiry»
-  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 9 и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 9 и «answers» равным [
+    запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
 
 тотальная функция «Begin check»
   возвращает «Inquiry»

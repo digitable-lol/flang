@@ -179,7 +179,8 @@
   принимает rules: список «Rule», otherwise: строка
   возвращает строка
   пример «the first rule that holds gives the name»
-    дано rules равно [(запись «Rule» с «name» равным "one" и «holds» равным нет), (запись «Rule» с «name» равным "two" и «holds» равным да)]
+    дано rules равно [(запись «Rule» с «name» равным "one" и «holds» равным нет),
+      (запись «Rule» с «name» равным "two" и «holds» равным да)]
     дано otherwise равно "none"
     ожидается "two"
   разбор (отфильтровать rules где each → each.«holds»)
@@ -244,7 +245,8 @@
     дано folder равно "/srv/tree"
     дано fallback равно "x"
     ожидается "x"
-  разбор («First holding» от [(запись «Rule» с «name» равным "none" и «holds» равным (value равен "")), (запись «Rule» с «name» равным "absolute" и «holds» равным (value начинается с "/"))] и "relative")
+  разбор («First holding» от [(запись «Rule» с «name» равным "none" и «holds» равным (value равен "")),
+    (запись «Rule» с «name» равным "absolute" и «holds» равным (value начинается с "/"))] и "relative")
     случай "none"
       то fallback
     случай "absolute"
@@ -285,7 +287,9 @@
 тотальная функция «Probe order»
   принимает setup: «Setup», place: строка
   возвращает «Поручение»
-  вариант «Запустить процесс» с программа равным "xargs" и аргументы равным ["-a", (соединить [place, "/modules"] по ""), "-P", (setup.«parallel»), "-I{}", "sh", "-c", («Probe script»), "sh", "{}", place, (setup.«binary»), (setup.«limit»)]
+  вариант «Запустить процесс» с программа равным "xargs" и аргументы равным ["-a",
+    (соединить [place, "/modules"] по ""), "-P", (setup.«parallel»), "-I{}", "sh", "-c", («Probe script»), "sh", "{}",
+    place, (setup.«binary»), (setup.«limit»)]
 
 тотальная функция «Probe of»
   принимает line: строка
@@ -362,7 +366,9 @@
     ожидается "aes                    код 3    127 с    135329 байт ведомости"
   пусть seconds равно (к строке (probe.«seconds»))
   пусть bytes равно (к строке (probe.«bytes»))
-  соединить [(probe.«module»), («Blanks» от (22 минус (длина (probe.«module»)))), " код ", (к строке (probe.«code»)), "  ", («Blanks» от (5 минус (длина seconds))), seconds, " с  ", («Blanks» от (8 минус (длина bytes))), bytes, " байт ведомости"] по ""
+  соединить [(probe.«module»), («Blanks» от (22 минус (длина (probe.«module»)))), " код ", (к строке (probe.«code»)),
+    "  ", («Blanks» от (5 минус (длина seconds))), seconds, " с  ", («Blanks» от (8 минус (длина bytes))), bytes,
+    " байт ведомости"] по ""
 
 тотальная функция «Failed»
   принимает probe: «Probe»
@@ -410,11 +416,16 @@
     дано ledger равно "/srv/tree/debt.tsv"
     ожидается ["ПРИБАВИЛОСЬ: kdf.flang — код 1, ведомости 0 байт, а в долге его нет; поток ошибок:", "    беда"]
   пусть owed равно («Holds» от debt и (probe.«module»))
-  разбор («First holding» от [(запись «Rule» с «name» равным "new" и «holds» равным ((«Failed» от probe) и притом (не owed))), (запись «Rule» с «name» равным "gravestone" и «holds» равным ((не («Failed» от probe)) и притом owed))] и "none")
+  разбор («First holding» от [
+    (запись «Rule» с «name» равным "new" и «holds» равным ((«Failed» от probe) и притом (не owed))),
+    (запись «Rule» с «name» равным "gravestone" и «holds» равным ((не («Failed» от probe)) и притом owed))] и "none")
     случай "new"
       то приписать (соединить ["ПРИБАВИЛОСЬ: ", (probe.«module»), ".flang — код ", (к строке (probe.«code»)), ", ведомости ", (к строке (probe.«bytes»)), " байт, а в долге его нет; поток ошибок:"] по "") к (отобразить («Said of» от said и (probe.«module»)) как line → соединить ["    ", line] по "")
     случай "gravestone"
-      то [(соединить ["НАДГРОБИЕ: ", (probe.«module»), ".flang стоит в ", ledger, ", а ведомость с него снимается (код ", (к строке (probe.«code»)), ", ", (к строке (probe.«bytes»)), " байт) — уберите строку, иначе она глушит проверку"] по "")]
+      то [
+        (соединить ["НАДГРОБИЕ: ", (probe.«module»), ".flang стоит в ", ledger, ", а ведомость с него снимается (код ",
+        (к строке (probe.«code»)), ", ", (к строке (probe.«bytes»)),
+        " байт) — уберите строку, иначе она глушит проверку"] по "")]
     случай любое
       то пустой список
 
@@ -435,9 +446,14 @@
   пусть counted равно (длина (отфильтровать ordered где probe → (длина («Trouble of» от probe и debt и said и (setup.«ledger»))) больше 0))
   разбор troubles
     случай пусто
-      то вариант «Конец работы» с значение равным (соединить ["модулей библиотеки ", (к строке (длина probes)), ", ведомость снимается с ", (к строке ((длина probes) минус failures)), "; не снимается с ", (к строке failures), ", и все они названы в ", (setup.«ledger»), " (дольше всех: ", («Slowest» от probes), ")"] по "")
+      то вариант «Конец работы» с значение равным (соединить ["модулей библиотеки ", (к строке (длина probes)),
+        ", ведомость снимается с ", (к строке ((длина probes) минус failures)), "; не снимается с ",
+        (к строке failures), ", и все они названы в ", (setup.«ledger»), " (дольше всех: ", («Slowest» от probes),
+        ")"] по "")
     случай голова и хвост
-      то вариант «Провал» с код равным "FLANG_STDLIB_PROOF" и сообщение равным (соединить («Joined» от troubles и [(соединить ["модулей библиотеки ", (к строке (длина probes)), ", отказов ", (к строке failures), ", расхождений с ведомостью долга ", (к строке counted), " — названы выше"] по "")]) по "\n")
+      то вариант «Провал» с код равным "FLANG_STDLIB_PROOF" и сообщение равным (соединить («Joined» от troubles и [
+        (соединить ["модулей библиотеки ", (к строке (длина probes)), ", отказов ", (к строке failures),
+        ", расхождений с ведомостью долга ", (к строке counted), " — названы выше"] по "")]) по "\n")
 
 тотальная функция «Forgery verdict»
   принимает setup: «Setup», probes: список «Probe», debt: список строки, said: список «Said»
@@ -445,8 +461,12 @@
   разбор («Check verdict» от setup и probes и debt и said)
     случай вариант «Провал» с код как code и сообщение как message
       то если message содержит "ПРИБАВИЛОСЬ: forged-guard.flang"
-        то вариант «Провал» с код равным "FLANG_STDLIB_PROOF" и сообщение равным (соединить ["подлог пойман: модуль с необеспеченным обещанием назван поимённо, код 1\n  ПРИБАВИЛОСЬ: forged-guard.flang", («First piece» от («After first» от message и "ПРИБАВИЛОСЬ: forged-guard.flang") и "\n")] по "")
-        иначе вариант «Конец работы» с значение равным (соединить ["ПРОБА ХОЛОСТА: сторож покраснел не на подлоге — ждали «ПРИБАВИЛОСЬ: forged-guard», а сказано:\n", message] по "")
+        то вариант «Провал» с код равным "FLANG_STDLIB_PROOF" и сообщение равным (соединить [
+          "подлог пойман: модуль с необеспеченным обещанием назван поимённо, код 1\n  ПРИБАВИЛОСЬ: forged-guard.flang",
+          («First piece» от («After first» от message и "ПРИБАВИЛОСЬ: forged-guard.flang") и "\n")] по "")
+        иначе вариант «Конец работы» с значение равным (соединить [
+          "ПРОБА ХОЛОСТА: сторож покраснел не на подлоге — ждали «ПРИБАВИЛОСЬ: forged-guard», а сказано:\n",
+          message] по "")
     случай любое
       то вариант «Конец работы» с значение равным "ПОДЛОГ НЕ ПОЙМАН — сторож сломан: модуль с необеспеченным обещанием прошёл"
 
@@ -472,7 +492,8 @@
   пусть closes равно ((strung.«inside») и притом (((«Trailing escapes» от (strung.«raw»)) остаток от 2) равен 0))
   если closes
     то запись «Strung» с «inside» равным нет и «kept» равным (соединить [(strung.«kept»), "\"\"", piece] по "") и «raw» равным ""
-    иначе запись «Strung» с «inside» равным да и «kept» равным (strung.«kept») и «raw» равным (соединить [(если strung.«inside» то (strung.«raw») иначе ""), "\"", piece] по "")
+    иначе запись «Strung» с «inside» равным да и «kept» равным (strung.«kept») и «raw» равным (соединить [
+      (если strung.«inside» то (strung.«raw») иначе ""), "\"", piece] по "")
 
 тотальная функция «Kept and raw»
   принимает strung: «Strung»
@@ -507,7 +528,9 @@
     случай пусто
       то ""
     случай голова и хвост
-      то свёртка хвост начиная с голова как kept и piece → соединить [kept, (если piece содержит "»" то (соединить ["«»", («After first» от piece и "»")] по "") иначе (соединить ["«", piece] по ""))] по ""
+      то свёртка хвост начиная с голова как kept и piece → соединить [kept,
+        (если piece содержит "»" то (соединить ["«»", («After first» от piece и "»")] по "")
+        иначе (соединить ["«", piece] по ""))] по ""
 
 тотальная функция «Brackets of»
   принимает text: строка
@@ -608,7 +631,8 @@
     случай пусто
       то вариант «Конец работы» с значение равным "дизъюнкций без внешних скобок перед «и притом» в дереве нет"
     случай голова и хвост
-      то вариант «Провал» с код равным "FLANG_STDLIB_BRACKETS" и сообщение равным (соединить (добавить (соединить ["мест без внешних скобок: ", (к строке (длина findings))] по "") к findings) по "\n")
+      то вариант «Провал» с код равным "FLANG_STDLIB_BRACKETS" и сообщение равным (соединить (добавить (соединить [
+        "мест без внешних скобок: ", (к строке (длина findings))] по "") к findings) по "\n")
 
 тотальная функция «Brackets forgery verdict»
   принимает tree: строка, output: строка
@@ -616,8 +640,12 @@
   разбор («Brackets verdict» от tree и output)
     случай вариант «Провал» с код как code и сообщение как message
       то если message содержит "СКОБКИ: forged.flang:6"
-        то вариант «Провал» с код равным "FLANG_STDLIB_BRACKETS" и сообщение равным (соединить ["подлог пойман: место названо файлом и строкой, код 1\n  ", (соединить («Text lines» от message) по "\n  ")] по "")
-        иначе вариант «Конец работы» с значение равным (соединить ["ПРОБА ХОЛОСТА: сторож покраснел не на подлоге — ждали «СКОБКИ: forged.flang:6», а сказано:\n", message] по "")
+        то вариант «Провал» с код равным "FLANG_STDLIB_BRACKETS" и сообщение равным (соединить [
+          "подлог пойман: место названо файлом и строкой, код 1\n  ",
+          (соединить («Text lines» от message) по "\n  ")] по "")
+        иначе вариант «Конец работы» с значение равным (соединить [
+          "ПРОБА ХОЛОСТА: сторож покраснел не на подлоге — ждали «СКОБКИ: forged.flang:6», а сказано:\n",
+          message] по "")
     случай любое
       то вариант «Конец работы» с значение равным "ПОДЛОГ НЕ ПОЙМАН — сторож сломан: дизъюнкция без внешних скобок прошла"
 
@@ -626,8 +654,11 @@
   возвращает «Поручение»
   пример «only lines with both words are asked»
     дано tree равно "/srv/tree"
-    ожидается вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-n", "-H", "--include=*.flang", "--include=*.fscript", "--exclude-dir=.git", "--exclude-dir=node_modules", "-e", " или .* и притом ", "/srv/tree"]
-  вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-n", "-H", "--include=*.flang", "--include=*.fscript", "--exclude-dir=.git", "--exclude-dir=node_modules", "-e", " или .* и притом ", tree]
+    ожидается вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-n", "-H",
+      "--include=*.flang", "--include=*.fscript", "--exclude-dir=.git", "--exclude-dir=node_modules", "-e",
+      " или .* и притом ", "/srv/tree"]
+  вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-r", "-n", "-H", "--include=*.flang",
+    "--include=*.fscript", "--exclude-dir=.git", "--exclude-dir=node_modules", "-e", " или .* и притом ", tree]
 
 тотальная функция «Forged module»
   возвращает строка
@@ -735,7 +766,9 @@
 тотальная функция «List modules»
   принимает setup: «Setup», debt: список строки, place: строка
   возвращает «Продолжение»
-  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "find" и аргументы равным [(setup.«catalogue»), "-maxdepth", "1", "-name", "*.flang"]) и потом равным (вариант «Listing» с setup равным setup и debt равным debt и place равным place)
+  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "find" и аргументы равным [
+    (setup.«catalogue»), "-maxdepth", "1", "-name",
+    "*.flang"]) и потом равным (вариант «Listing» с setup равным setup и debt равным debt и place равным place)
 
 тотальная функция «With catalogue»
   принимает setup: «Setup», catalogue: строка
@@ -784,7 +817,8 @@
   возвращает «Продолжение»
   разбор pending
     случай пусто
-      то «Clear» от place и (если (setup.«mode») равен "forgery" то («Forgery verdict» от setup и probes и debt и said) иначе («Check verdict» от setup и probes и debt и said))
+      то «Clear» от place и (если (setup.«mode») равен "forgery" то («Forgery verdict» от setup и probes и debt и said)
+        иначе («Check verdict» от setup и probes и debt и said))
     случай голова и хвост
       то вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным (соединить [place, "/", (голова.«module»), ".err"] по "")) и потом равным (вариант «Reading errors» с setup равным setup и debt равным debt и place равным place и probes равным probes и pending равным pending и said равным said)
 
@@ -795,14 +829,16 @@
     случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
       то «Probed» от setup и debt и place и (отобразить («Text lines» от output) как line → «Probe of» от line)
     случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
-      то «Clear» от place и («Not judged» от (соединить ["прогон убит сигналом ", signal, " — поднимите срок потомка ключом --timeout"] по ""))
+      то «Clear» от place и («Not judged» от (соединить ["прогон убит сигналом ", signal,
+        " — поднимите срок потомка ключом --timeout"] по ""))
     случай любое
       то «Clear» от place и («Not judged» от "прогон не запустился — мерить нечем")
 
 тотальная функция «Probed»
   принимает setup: «Setup», debt: список строки, place: строка, probes: список «Probe»
   возвращает «Продолжение»
-  разбор («First holding» от [(запись «Rule» с «name» равным "empty" и «holds» равным ((длина probes) равен 0)), (запись «Rule» с «name» равным "census" и «holds» равным ((setup.«mode») равен "census"))] и "judge")
+  разбор («First holding» от [(запись «Rule» с «name» равным "empty" и «holds» равным ((длина probes) равен 0)),
+    (запись «Rule» с «name» равным "census" и «holds» равным ((setup.«mode») равен "census"))] и "judge")
     случай "empty"
       то «Clear» от place и («Not judged» от "прогон не дал ни строки — мерить нечем")
     случай "census"
@@ -849,7 +885,8 @@
   возвращает «Step»
   пример «every plan begins by asking its settings»
     дано mode равно "check"
-    ожидается вариант «Asking» с mode равным "check" и names равным ["PWD", "PARALLEL", "PREDEL", "KATALOG", "VEDOMOST", "FLANG", "FLANG_TMP", "DEREVO"] и values равным пустой список
+    ожидается вариант «Asking» с mode равным "check" и names равным ["PWD", "PARALLEL", "PREDEL", "KATALOG", "VEDOMOST",
+      "FLANG", "FLANG_TMP", "DEREVO"] и values равным пустой список
   вариант «Asking» с mode равным mode и names равным («Setting names») и values равным (пустой список)
 
 тотальная функция «Begin check»

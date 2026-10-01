@@ -76,7 +76,8 @@
   пример «Nothing but empty pieces»
     дано pieces равно ["", ""]
     ожидается 0
-  элемент 2 в (свёртка pieces начиная с [0, 0] как seen и piece → [((элемент 1 в seen) плюс 1), (если пусто piece то (элемент 2 в seen) иначе ((элемент 1 в seen) плюс 1))])
+  элемент 2 в (свёртка pieces начиная с [0, 0] как seen и piece → [((элемент 1 в seen) плюс 1),
+    (если пусто piece то (элемент 2 в seen) иначе ((элемент 1 в seen) плюс 1))])
 
 тотальная функция «Leading»
   принимает pieces: список строки, amount: число
@@ -154,7 +155,8 @@
   пример «Eight files»
     дано amount равно 8
     ожидается "файлов"
-  «Chosen» от [(«When» от (((amount остаток от 100) не меньше 11) и притом ((amount остаток от 100) не больше 14)) и ("файлов")),
+  «Chosen» от [
+    («When» от (((amount остаток от 100) не меньше 11) и притом ((amount остаток от 100) не больше 14)) и ("файлов")),
     («When» от ((amount остаток от 10) равен 1) и ("файл")),
     («When» от (((amount остаток от 10) не меньше 2) и притом ((amount остаток от 10) не больше 4)) и ("файла"))] и ("файлов")
 
@@ -170,7 +172,8 @@
   принимает said: строка, amount: число
   возвращает список строки
   пусть marked равно (отфильтровать («Lines» от said) где line → line начинается с "  • ")
-  «Соединить списки» от («Leading» от marked и 8) и (если amount больше 8 то [(соединить ["  …и ещё ", (к строке (amount минус 8))] по "")] иначе пустой список)
+  «Соединить списки» от («Leading» от marked и 8) и (если amount больше 8 то [
+    (соединить ["  …и ещё ", (к строке (amount минус 8))] по "")] иначе пустой список)
 
 тотальная функция «Setup»
   возвращает список «Question»
@@ -179,14 +182,18 @@
 тотальная функция «Origin»
   принимает answers: список «Answer»
   возвращает список «Question»
-  [(«Run» от "origin" и "sh" и ["-c", "cd \"$0\" && exec \"$@\" >/dev/null", («Root»), "bootstrap/flang", "io", "scripts/seed/binary-origin.fscript", "--plan", "Check", "--timeout", "300000", "--", "--what", («Asker of» от answers)])]
+  [
+    («Run» от "origin" и "sh" и ["-c", "cd \"$0\" && exec \"$@\" >/dev/null", («Root»), "bootstrap/flang", "io",
+    "scripts/seed/binary-origin.fscript", "--plan", "Check", "--timeout", "300000", "--", "--what",
+    («Asker of» от answers)])]
 
 тотальная функция «Stage»
   принимает stages: число, answers: список «Answer»
   возвращает список «Question»
   «Chosen» от [(«When» от (stages равен 3) и («Setup»)),
     («When» от (stages равен 2) и («Origin» от answers)),
-    («When» от (stages равен 1) и ([(«Run merged» от "body" и ["scripts/bootstrap-reprint.sh", "--telo"])]))] и ([(«Run merged» от "inputs" и ["scripts/bootstrap-reprint.sh", "--bystro"])])
+    («When» от (stages равен 1) и ([(«Run merged» от "body" и ["scripts/bootstrap-reprint.sh", "--telo"])]))] и ([
+      («Run merged» от "inputs" и ["scripts/bootstrap-reprint.sh", "--bystro"])])
 
 тотальная функция «Refusal»
   принимает answers: список «Answer»
@@ -206,12 +213,18 @@
   возвращает список «Outcome»
   если («Exit code of» от "origin" и answers) равен 0
     то пустой список
-    иначе [запись «Outcome» с «code» равным (если («Exit code of» от "origin" и answers) равен 1 то 1 иначе 3) и «words» равным («Spoken error» от («Errors of» от "origin" и answers))]
+    иначе [
+      запись «Outcome» с «code» равным (если («Exit code of» от "origin" и answers) равен 1 то 1
+      иначе 3) и «words» равным («Spoken error» от («Errors of» от "origin" и answers))]
 
 тотальная функция «Body outcomes»
   принимает answers: список «Answer»
   возвращает список «Outcome»
-  «Chosen» от [(«When» от (не ((«Exit code of» от "body" и answers) равен 0)) и ([запись «Outcome» с «code» равным 1 и «words» равным (соединить [(«Refusal» от answers), "", "Дело не в отставании: разошлось ТЕЛО СЕМЕНИ — то, из чего собран двоичный,", "которым эта проверка и судит. Ключа обхода здесь нет.", "", («Said» от "body" и answers)] по "\n")])),
+  «Chosen» от [
+    («When» от (не ((«Exit code of» от "body" и answers) равен 0)) и ([
+    запись «Outcome» с «code» равным 1 и «words» равным (соединить [(«Refusal» от answers), "",
+    "Дело не в отставании: разошлось ТЕЛО СЕМЕНИ — то, из чего собран двоичный,",
+    "которым эта проверка и судит. Ключа обхода здесь нет.", "", («Said» от "body" и answers)] по "\n")])),
     («When» от (пусто («Setting of» от "bypass" и "" и answers)) и (пустой список))] и ([запись «Outcome» с «code» равным 0 и «words» равным (соединить [(«Bypass»), ": судим при отставшем семени по прямому указанию.\nОтвет этой проверки — про дерево, собранное из СТАРОГО семени."] по "")])
 
 тотальная функция «Settled»
@@ -224,11 +237,13 @@
 тотальная функция «Not compared»
   принимает answers: список «Answer»
   возвращает «Outcome»
-  запись «Outcome» с «code» равным 3 и «words» равным (соединить [(соединить ["СЕМЯ СВЕРИТЬ НЕ УДАЛОСЬ — судить о доказательствах нельзя: ", («Asker of» от answers)] по ""),
+  запись «Outcome» с «code» равным 3 и «words» равным (соединить [
+    (соединить ["СЕМЯ СВЕРИТЬ НЕ УДАЛОСЬ — судить о доказательствах нельзя: ", («Asker of» от answers)] по ""),
     "",
     («Said» от "inputs" и answers),
     "",
-    (соединить ["Сверка входов печати ответила кодом ", (к строке («Exit code of» от "inputs" и answers)), " и ни одного расхождения не назвала."] по ""),
+    (соединить ["Сверка входов печати ответила кодом ", (к строке («Exit code of» от "inputs" и answers)),
+      " и ни одного расхождения не назвала."] по ""),
     (соединить ["Судить всё равно: ", («Bypass»), "=1 <та же команда>"] по "")] по "\n")
 
 тотальная функция «Lag»
@@ -236,7 +251,8 @@
   возвращает «Outcome»
   запись «Outcome» с «code» равным 1 и «words» равным (соединить («Gathered words» от [[(«Refusal» от answers),
       "",
-      (соединить ["семя отстало от исходников на ", (к строке amount), " ", («Files word» от amount), ", ведомость показывает состояние,"] по ""),
+      (соединить ["семя отстало от исходников на ", (к строке amount), " ", («Files word» от amount),
+        ", ведомость показывает состояние,"] по ""),
       (соединить ["которого нет; перепечатайте `", («Reprint»), "`"] по ""),
       "",
       "Двоичный собран из семени и знает СТАРЫЕ правила. Его зелёный ответ — про",

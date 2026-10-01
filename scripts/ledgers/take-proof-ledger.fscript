@@ -81,7 +81,8 @@
   принимает rules: список «Rule», otherwise: строка
   возвращает строка
   пример «the first rule that holds gives the name»
-    дано rules равно [(запись «Rule» с «name» равным "one" и «holds» равным нет), (запись «Rule» с «name» равным "two" и «holds» равным да)]
+    дано rules равно [(запись «Rule» с «name» равным "one" и «holds» равным нет),
+      (запись «Rule» с «name» равным "two" и «holds» равным да)]
     дано otherwise равно "none"
     ожидается "two"
   разбор (отфильтровать rules где each → each.«holds»)
@@ -137,7 +138,8 @@
     дано folder равно "/srv/tree"
     дано fallback равно "x"
     ожидается "x"
-  разбор («First holding» от [(запись «Rule» с «name» равным "none" и «holds» равным (value равен "")), (запись «Rule» с «name» равным "absolute" и «holds» равным (value начинается с "/"))] и "relative")
+  разбор («First holding» от [(запись «Rule» с «name» равным "none" и «holds» равным (value равен "")),
+    (запись «Rule» с «name» равным "absolute" и «holds» равным (value начинается с "/"))] и "relative")
     случай "none"
       то fallback
     случай "absolute"
@@ -282,7 +284,9 @@
   пример «only the named limits become keys»
     дано job равно (запись «Job» с «root» равным "" и «file» равным "" и «binary» равным "" и «out» равным "" и «memory» равным "" и «peak» равным "" и «steps» равным "5" и «depth» равным "" и «said» равным пустой список)
     ожидается ["--предел-шагов", "5"]
-  «Joined» от (если (job.«steps») равен "" то (пустой список) иначе ["--предел-шагов", (job.«steps»)]) и (если (job.«depth») равен "" то (пустой список) иначе ["--предел-глубины", (job.«depth»)])
+  «Joined» от (если (job.«steps») равен "" то (пустой список)
+    иначе ["--предел-шагов", (job.«steps»)]) и (если (job.«depth») равен "" то (пустой список)
+    иначе ["--предел-глубины", (job.«depth»)])
 
 тотальная функция «Run script»
   возвращает строка
@@ -292,8 +296,11 @@
   принимает job: «Job», keys: список строки, gated: признак
   возвращает «Поручение»
   пусть check равно («Joined» от [(job.«binary»), "check", (job.«file»), "--proof", "--json"] и («Limit keys» от job))
-  пусть gates равно (если gated то («Joined» от («Joined» от ["env", (соединить ["PAMYAT=", (job.«memory»)] по "")] и (если (job.«peak») равен "" то (пустой список) иначе [(соединить ["PIK=", (job.«peak»)] по "")])) и [(«Gates»), "--"]) иначе (пустой список))
-  вариант «Запустить процесс» с программа равным "sh" и аргументы равным («Joined» от ["-c", («Run script»), "sh", (job.«root»), (job.«out»), («Slug» от (job.«file»))] и («Joined» от gates и check))
+  пусть gates равно (если gated то («Joined» от («Joined» от ["env",
+    (соединить ["PAMYAT=", (job.«memory»)] по "")] и (если (job.«peak») равен "" то (пустой список)
+    иначе [(соединить ["PIK=", (job.«peak»)] по "")])) и [(«Gates»), "--"]) иначе (пустой список))
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным («Joined» от ["-c", («Run script»), "sh",
+    (job.«root»), (job.«out»), («Slug» от (job.«file»))] и («Joined» от gates и check))
 
 тотальная функция «Code of»
   принимает said: строка
@@ -306,7 +313,11 @@
 тотальная функция «Share order»
   принимает job: «Job»
   возвращает «Поручение»
-  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$1\" && shift && exec \"$@\"", "sh", (job.«root»), (соединить [(job.«root»), "/bootstrap/flang"] по ""), "io", (соединить [(job.«root»), "/scripts/ledgers/proved-share-of-a-file.fscript"] по ""), "--plan", "Share", "--на-веру", "--", (соединить [(job.«root»), "/", (job.«file»)] по ""), (соединить [(job.«out»), "/", («Slug» от (job.«file»)), ".json"] по "")]
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd \"$1\" && shift && exec \"$@\"",
+    "sh", (job.«root»), (соединить [(job.«root»), "/bootstrap/flang"] по ""), "io",
+    (соединить [(job.«root»), "/scripts/ledgers/proved-share-of-a-file.fscript"] по ""), "--plan", "Share", "--на-веру",
+    "--", (соединить [(job.«root»), "/", (job.«file»)] по ""),
+    (соединить [(job.«out»), "/", («Slug» от (job.«file»)), ".json"] по "")]
 
 тотальная функция «Ask next»
   принимает names: список строки, values: список строки
@@ -355,7 +366,8 @@
 тотальная функция «Ask file»
   принимает job: «Job»
   возвращает «Продолжение»
-  вариант «Сделать» с поручение равным («Test order» от "-f" и (если (job.«file») начинается с "/" то (job.«file») иначе (соединить [(job.«root»), "/", (job.«file»)] по ""))) и потом равным (вариант «Finding file» с job равным job)
+  вариант «Сделать» с поручение равным («Test order» от "-f" и (если (job.«file») начинается с "/" то (job.«file»)
+    иначе (соединить [(job.«root»), "/", (job.«file»)] по ""))) и потом равным (вариант «Finding file» с job равным job)
 
 тотальная функция «Header of»
   принимает binary: строка
@@ -426,14 +438,17 @@
   пусть built равно («Text lines» от limits)
   пусть warned равно («Joined» от («Limit words» от "--предел-шагов" и (job.«steps») и («Defined» от built и "FL_MAX_STEPS")) и («Limit words» от "--предел-глубины" и (job.«depth») и («Defined» от built и "FL_MAX_DEPTH")))
   пусть keys равно («Limit keys» от job)
-  пусть said равно («Joined» от warned и [(соединить ["снимаю ведомость: ", (job.«file»)] по ""), (соединить ["двоичный: ", (job.«binary»), " (", («First piece» от («Reply text» от reply) и " "), ")"] по ""), (соединить («Joined» от ["ключи: --proof --json"] и keys) по " ")])
+  пусть said равно («Joined» от warned и [(соединить ["снимаю ведомость: ", (job.«file»)] по ""),
+    (соединить ["двоичный: ", (job.«binary»), " (", («First piece» от («Reply text» от reply) и " "), ")"] по ""),
+    (соединить («Joined» от ["ключи: --proof --json"] и keys) по " ")])
   вариант «Сделать» с поручение равным («Test order» от "-x" и («Gates»)) и потом равным (вариант «Finding gates» с job равным («Saying» от job и said) и keys равным keys)
 
 тотальная функция «After gates»
   принимает job: «Job», keys: список строки, reply: «Отклик»
   возвращает «Продолжение»
   пусть gated равно («Passed» от reply)
-  пусть told равно (если gated то job иначе («Saying» от job и [(соединить ["ворот ", («Gates»), " нет — прогон идёт напрямую"] по "")]))
+  пусть told равно (если gated то job
+    иначе («Saying» от job и [(соединить ["ворот ", («Gates»), " нет — прогон идёт напрямую"] по "")]))
   вариант «Сделать» с поручение равным («Run order» от told и keys и gated) и потом равным (вариант «Taking» с job равным told)
 
 тотальная функция «After taking»
@@ -459,7 +474,8 @@
 тотальная функция «Begin»
   возвращает «Step»
   пример «the settings are asked first»
-    ожидается вариант «Asking» с names равным ["PWD", "DVOICHNYY", "VYHOD", "PAMYAT", "PIK", "PREDEL_SHAGOV", "PREDEL_GLUBINY"] и values равным пустой список
+    ожидается вариант «Asking» с names равным ["PWD", "DVOICHNYY", "VYHOD", "PAMYAT", "PIK", "PREDEL_SHAGOV",
+      "PREDEL_GLUBINY"] и values равным пустой список
   вариант «Asking» с names равным («Setting names») и values равным (пустой список)
 
 план «Take»

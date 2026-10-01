@@ -116,7 +116,8 @@
   возвращает список «Question»
   пример «Parts follow one another in their order»
     дано parts равно [[запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»)], пустой список, [запись «Question» с «name» равным "ledger" и «order» равным (вариант «Прочитать файл» с путь равным "ledger.tsv")]]
-    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»), запись «Question» с «name» равным "ledger" и «order» равным (вариант «Прочитать файл» с путь равным "ledger.tsv")]
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»),
+      запись «Question» с «name» равным "ledger" и «order» равным (вариант «Прочитать файл» с путь равным "ledger.tsv")]
   свёртка parts начиная с (пустой список) как gathered и part → «Соединить списки» от gathered и part
 
 тотальная функция «Ask»

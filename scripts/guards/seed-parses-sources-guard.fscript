@@ -85,7 +85,8 @@
     дано binary равно "../../bootstrap/flang"
     дано limit равно "300000"
     дано path равно "../../flang/self/types.flang"
-    ожидается вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["check", "../../flang/self/types.flang", "--предел-шагов", "300000"]
+    ожидается вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["check",
+      "../../flang/self/types.flang", "--предел-шагов", "300000"]
   вариант «Запустить процесс» с программа равным binary и аргументы равным ["check", path, "--предел-шагов", limit]
 
 тотальная функция «Tells of reading»
@@ -122,7 +123,8 @@
   пример «A shorter list is shown whole»
     дано lines равно ["one"]
     ожидается ["one"]
-  свёртка lines начиная с (пустой список) как shown и line → (если (длина shown) меньше 3 то (добавить line к shown) иначе shown)
+  свёртка lines начиная с (пустой список) как shown и line → (если (длина shown) меньше 3 то (добавить line к shown)
+    иначе shown)
 
 тотальная функция «Trouble of»
   принимает path: строка, said: строка
@@ -141,7 +143,8 @@
     дано tally равно (запись «Tally» с «files» равным 0 и «unread» равным пустой список и «unfinished» равным 0)
     дано path равно "../../flang/self/cli.flang"
     дано said равно "FLANG_PARSE в файле cli.flang\n"
-    ожидается (запись «Tally» с «files» равным 1 и «unread» равным ["  ✗ flang/self/cli.flang\n      FLANG_PARSE в файле cli.flang"] и «unfinished» равным 0)
+    ожидается (запись «Tally» с «files» равным 1 и «unread» равным [
+      "  ✗ flang/self/cli.flang\n      FLANG_PARSE в файле cli.flang"] и «unfinished» равным 0)
   пример «A check cut short is counted apart»
     дано tally равно (запись «Tally» с «files» равным 1 и «unread» равным пустой список и «unfinished» равным 0)
     дано path равно "../../flang/self/cli.flang"
@@ -153,8 +156,10 @@
     дано said равно "cli.flang: проверено\n"
     ожидается (запись «Tally» с «files» равным 2 и «unread» равным пустой список и «unfinished» равным 0)
   пусть unread равно («Tells of reading» от said)
-  пусть troubles равно (если unread то (добавить («Trouble of» от path и said) к (tally.«unread»)) иначе (tally.«unread»))
-  пусть unfinished равно (если (не unread) и притом («Was cut short» от said) то ((tally.«unfinished») плюс 1) иначе (tally.«unfinished»))
+  пусть troubles равно (если unread то (добавить («Trouble of» от path и said) к (tally.«unread»))
+    иначе (tally.«unread»))
+  пусть unfinished равно (если (не unread) и притом («Was cut short» от said) то ((tally.«unfinished») плюс 1)
+    иначе (tally.«unfinished»))
   запись «Tally» с «files» равным ((tally.«files») плюс 1) и «unread» равным troubles и «unfinished» равным unfinished
 
 тотальная функция «Heading»
@@ -171,7 +176,8 @@
   пример «Three counts on one line»
     дано tally равно (запись «Tally» с «files» равным 68 и «unread» равным пустой список и «unfinished» равным 68)
     ожидается "сторож семени: файлов 68, семя не читает 0, не досмотрено 68"
-  соединить ["сторож семени: файлов ", (к строке (tally.«files»)), ", семя не читает ", (к строке (длина (tally.«unread»))), ", не досмотрено ", (к строке (tally.«unfinished»))] по ""
+  соединить ["сторож семени: файлов ", (к строке (tally.«files»)), ", семя не читает ",
+    (к строке (длина (tally.«unread»))), ", не досмотрено ", (к строке (tally.«unfinished»))] по ""
 
 тотальная функция «Advice on unread»
   возвращает строка
@@ -191,7 +197,8 @@
     дано tally равно (запись «Tally» с «files» равным 2 и «unread» равным пустой список и «unfinished» равным 0)
     ожидается вариант «Конец работы» с значение равным "файлов 2"
   если (tally.«unfinished») больше 0
-    то вариант «Не проверено» с код равным "FLANG_SEED_NOT_JUDGED" и сообщение равным (соединить [counted, "\n", («Advice on unfinished» от tally и limit)] по "")
+    то вариант «Не проверено» с код равным "FLANG_SEED_NOT_JUDGED" и сообщение равным (соединить [counted, "\n",
+      («Advice on unfinished» от tally и limit)] по "")
     иначе вариант «Конец работы» с значение равным counted
 
 тотальная функция «Verdict»
@@ -207,7 +214,8 @@
     случай пусто
       то «Verdict of the read» от counted и limit и tally
     случай голова и хвост
-      то вариант «Провал» с код равным "FLANG_SEED_DOES_NOT_READ" и сообщение равным (соединить [counted, "\n", (соединить (tally.«unread») по "\n"), "\n", («Advice on unread»)] по "")
+      то вариант «Провал» с код равным "FLANG_SEED_DOES_NOT_READ" и сообщение равным (соединить [counted, "\n",
+        (соединить (tally.«unread») по "\n"), "\n", («Advice on unread»)] по "")
 
 тотальная функция «Check next»
   принимает binary: строка, limit: строка, pending: список строки, tally: «Tally»
@@ -231,7 +239,8 @@
         случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
           то «Check next» от binary и limit и хвост и («Counted» от tally и голова и "FLANG_CLI")
         случай вариант «Сбой» с код как code и сообщение как message
-          то вариант «Не проверено» с код равным code и сообщение равным (соединить ["сторож семени: проверка ", («Shown path» от голова), " не запустилась — ", message] по "")
+          то вариант «Не проверено» с код равным code и сообщение равным (соединить ["сторож семени: проверка ",
+            («Shown path» от голова), " не запустилась — ", message] по "")
         случай любое
           то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали ответ проверки"
 
@@ -263,7 +272,8 @@
       то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "отказ каталога приехал, а каталога никто не спрашивал"
     случай голова и хвост
       то если голова равен («Sources folder»)
-        то вариант «Не проверено» с код равным "FLANG_SEED_NOT_JUDGED" и сообщение равным (соединить ["сторож семени: каталога исходников компилятора flang/self нет — ", message] по "")
+        то вариант «Не проверено» с код равным "FLANG_SEED_NOT_JUDGED" и сообщение равным (соединить [
+          "сторож семени: каталога исходников компилятора flang/self нет — ", message] по "")
         иначе «List next» от binary и limit и хвост и files
 
 тотальная функция «After listing»
@@ -297,7 +307,8 @@
     случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
       то «List next» от binary и limit и [(«Sources folder»)] и (пустой список)
     случай вариант «Сбой» с код как code и сообщение как message
-      то вариант «Не проверено» с код равным code и сообщение равным (соединить ["сторож семени: двоичного нет — ", binary, "\nсоберите его: make -C bootstrap\n", message] по "")
+      то вариант «Не проверено» с код равным code и сообщение равным (соединить ["сторож семени: двоичного нет — ",
+        binary, "\nсоберите его: make -C bootstrap\n", message] по "")
     случай любое
       то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали ответ двоичного о ключе"
 
@@ -367,7 +378,9 @@
     случай вариант «Значение среды» с значение как folder
       то «Ask limit» от (соединить [folder, "/", asked] по "")
     случай любое
-      то вариант «Не проверено» с код равным "FLANG_SEED_NOT_JUDGED" и сообщение равным (соединить ["сторож семени: двоичный назван от каталога зовущего (", asked, "), а каталог зовущего не узнать — назовите двоичный полным путём"] по "")
+      то вариант «Не проверено» с код равным "FLANG_SEED_NOT_JUDGED" и сообщение равным (соединить [
+        "сторож семени: двоичный назван от каталога зовущего (", asked,
+        "), а каталог зовущего не узнать — назовите двоичный полным путём"] по "")
 
 тотальная функция «Clean source»
   принимает name: строка
@@ -375,7 +388,8 @@
   пример «A clean source is one small function»
     дано name равно "Types"
     ожидается "модуль «Types»\n\nтотальная функция «Twice»\n  принимает size: число\n  возвращает число\n  size плюс size\n"
-  соединить ["модуль «", name, "»\n\nтотальная функция «Twice»\n  принимает size: число\n  возвращает число\n  size плюс size\n"] по ""
+  соединить ["модуль «", name,
+    "»\n\nтотальная функция «Twice»\n  принимает size: число\n  возвращает число\n  size плюс size\n"] по ""
 
 тотальная функция «Source with a new word»
   возвращает строка
@@ -433,12 +447,23 @@
     дано text равно "модуль"
     дано judging равно (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0 и «telling» равным "")
     ожидается [(запись «Move» с «title» равным "" и «order» равным (вариант «Записать файл» с путь равным "/tmp/forgery/flang/self/forged.flang" и содержимое равным "модуль") и «wanted» равным 0 и «telling» равным ""), (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0 и «telling» равным ""), (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forgery/flang/self/forged.flang") и «wanted» равным 0 и «telling» равным "")]
-  [(«Written» от root и place и text), judging, («Silent» от (вариант «Удалить файл» с путь равным (соединить [root, place] по "")))]
+  [(«Written» от root и place и text), judging,
+    («Silent» от (вариант «Удалить файл» с путь равным (соединить [root, place] по "")))]
 
 тотальная функция «Tree of the forgery»
   принимает root: строка
   возвращает список «Move»
-  [(«Silent» от (вариант «Запустить процесс» с программа равным "mkdir" и аргументы равным ["-p", (соединить [root, "/scripts/guards"] по ""), (соединить [root, "/bootstrap"] по ""), (соединить [root, "/flang/self/repl"] по "")])), («Silent» от (вариант «Запустить процесс» с программа равным "cp" и аргументы равным ["seed-parses-sources-guard.fscript", (соединить [root, "/scripts/guards/seed-parses-sources-guard.fscript"] по "")])), («Silent» от (вариант «Запустить процесс» с программа равным "cp" и аргументы равным ["../../bootstrap/flang", (соединить [root, "/bootstrap/flang"] по "")])), («Written» от root и "/flang/self/types.flang" и («Clean source» от "Types")), («Written» от root и "/flang/self/repl/shell.flang" и («Clean source» от "Shell"))]
+  [
+    («Silent» от (вариант «Запустить процесс» с программа равным "mkdir" и аргументы равным ["-p",
+    (соединить [root, "/scripts/guards"] по ""), (соединить [root, "/bootstrap"] по ""),
+    (соединить [root, "/flang/self/repl"] по "")])),
+    («Silent» от (вариант «Запустить процесс» с программа равным "cp" и аргументы равным [
+    "seed-parses-sources-guard.fscript",
+    (соединить [root, "/scripts/guards/seed-parses-sources-guard.fscript"] по "")])),
+    («Silent» от (вариант «Запустить процесс» с программа равным "cp" и аргументы равным ["../../bootstrap/flang",
+    (соединить [root, "/bootstrap/flang"] по "")])),
+    («Written» от root и "/flang/self/types.flang" и («Clean source» от "Types")),
+    («Written» от root и "/flang/self/repl/shell.flang" и («Clean source» от "Shell"))]
 
 тотальная функция «Sides of reading»
   принимает root: строка
@@ -465,7 +490,8 @@
     ожидается пустой список
   если (move.«title») равен ""
     то shown
-    иначе добавить (соединить ["── ", (move.«title»), " ──\nкод ", (к строке code), ", сказано «", (move.«telling»), "»"] по "") к shown
+    иначе добавить (соединить ["── ", (move.«title»), " ──\nкод ", (к строке code), ", сказано «", (move.«telling»),
+      "»"] по "") к shown
 
 тотальная функция «Clear»
   принимает root: строка, fault: строка, shown: список строки
@@ -499,7 +525,8 @@
     ожидается "ПОДЛОГ НЕ СОБРАЛСЯ — шаг пробы ответил: файла нет"
   если (move.«title») равен ""
     то соединить ["ПОДЛОГ НЕ СОБРАЛСЯ — шаг пробы ответил: ", answer] по ""
-    иначе соединить ["ПОДЛОГ НЕ ПОКАЗАН — ", (move.«title»), ": ждали код ", (к строке (move.«wanted»)), " и слова «", (move.«telling»), "», получено: ", answer] по ""
+    иначе соединить ["ПОДЛОГ НЕ ПОКАЗАН — ", (move.«title»), ": ждали код ", (к строке (move.«wanted»)), " и слова «",
+      (move.«telling»), "», получено: ", answer] по ""
 
 тотальная функция «Answered as wanted»
   принимает move: «Move», code: число, said: строка
@@ -523,7 +550,8 @@
     случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
       то если «Answered as wanted» от current и code и (соединить [output, errors] по "")
         то «Move on» от root и rest и («Shown after» от shown и current и code)
-        иначе «Clear» от root и («Fault of» от current и (соединить ["код ", (к строке code), "\n", output, errors] по "")) и shown
+        иначе «Clear» от root и («Fault of» от current и (соединить ["код ", (к строке code), "\n", output,
+          errors] по "")) и shown
     случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
       то «Clear» от root и («Fault of» от current и (соединить ["сигнал ", signal] по "")) и shown
     случай вариант «Сбой» с код как code и сообщение как message
@@ -543,7 +571,8 @@
     дано shown равно пустой список
     ожидается вариант «Провал» с код равным "FLANG_SEED_FORGERY" и сообщение равным "ПОДЛОГ НЕ ПОКАЗАН"
   если fault равен ""
-    то вариант «Конец работы» с значение равным (соединить («Joined» от shown и ["все четыре стороны показаны прогоном."]) по "\n\n")
+    то вариант «Конец работы» с значение равным (соединить («Joined» от shown и [
+      "все четыре стороны показаны прогоном."]) по "\n\n")
     иначе вариант «Провал» с код равным "FLANG_SEED_FORGERY" и сообщение равным fault
 
 тотальная функция «Make place»
@@ -578,7 +607,8 @@
     случай вариант «Заведено» с путь как root
       то «Move on» от root и («Moves» от root) и (пустой список)
     случай вариант «Сбой» с код как code и сообщение как message
-      то вариант «Не проверено» с код равным code и сообщение равным (соединить ["ПОДЛОГ НЕ СОБРАЛСЯ — временный каталог не завёлся: ", message] по "")
+      то вариант «Не проверено» с код равным code и сообщение равным (соединить [
+        "ПОДЛОГ НЕ СОБРАЛСЯ — временный каталог не завёлся: ", message] по "")
     случай любое
       то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали временный каталог"
 

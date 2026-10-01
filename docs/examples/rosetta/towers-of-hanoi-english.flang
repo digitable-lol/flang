@@ -43,13 +43,21 @@ total function «Move tower»
     given source equals "A"
     given target equals "C"
     given spare equals "B"
-    expected [(record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "B"), (record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "B" and «target» equals "C")]
+    expected [(record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "B"),
+      (record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "C"),
+      (record «Move» with «disk» equals 1 and «source» equals "B" and «target» equals "C")]
   example «Three disks — the canonical seven moves»
     given disks equals [3, 2, 1]
     given source equals "A"
     given target equals "C"
     given spare equals "B"
-    expected [(record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "B"), (record «Move» with «disk» equals 1 and «source» equals "C" and «target» equals "B"), (record «Move» with «disk» equals 3 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "B" and «target» equals "A"), (record «Move» with «disk» equals 2 and «source» equals "B" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C")]
+    expected [(record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C"),
+      (record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "B"),
+      (record «Move» with «disk» equals 1 and «source» equals "C" and «target» equals "B"),
+      (record «Move» with «disk» equals 3 and «source» equals "A" and «target» equals "C"),
+      (record «Move» with «disk» equals 1 and «source» equals "B" and «target» equals "A"),
+      (record «Move» with «disk» equals 2 and «source» equals "B" and «target» equals "C"),
+      (record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C")]
   match disks
     case empty
       then empty list
@@ -99,7 +107,13 @@ total function «Towers of Hanoi»
   returns list of «Move»
   example «The task: three disks»
     given disks equals 3
-    expected [(record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "B"), (record «Move» with «disk» equals 1 and «source» equals "C" and «target» equals "B"), (record «Move» with «disk» equals 3 and «source» equals "A" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "B" and «target» equals "A"), (record «Move» with «disk» equals 2 and «source» equals "B" and «target» equals "C"), (record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C")]
+    expected [(record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C"),
+      (record «Move» with «disk» equals 2 and «source» equals "A" and «target» equals "B"),
+      (record «Move» with «disk» equals 1 and «source» equals "C" and «target» equals "B"),
+      (record «Move» with «disk» equals 3 and «source» equals "A" and «target» equals "C"),
+      (record «Move» with «disk» equals 1 and «source» equals "B" and «target» equals "A"),
+      (record «Move» with «disk» equals 2 and «source» equals "B" and «target» equals "C"),
+      (record «Move» with «disk» equals 1 and «source» equals "A" and «target» equals "C")]
   «Move tower» of («Tower of» of disks) and "A" and "C" and "B"
 
 theorem «a move count is never negative»

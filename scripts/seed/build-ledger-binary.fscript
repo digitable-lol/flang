@@ -71,26 +71,32 @@
   возвращает список «Question»
   если пусто («Commit» от answers)
     то пустой список
-    иначе [(«Run from» от "full commit" и («Root») и "git" и ["rev-parse", "--verify", (соединить [(«Commit» от answers), "^{commit}"] по "")])]
+    иначе [
+      («Run from» от "full commit" и («Root») и "git" и ["rev-parse", "--verify",
+      (соединить [(«Commit» от answers), "^{commit}"] по "")])]
 
 тотальная функция «Show»
   принимает source: строка, directory: строка, file: строка, answers: список «Answer»
   возвращает «Question»
-  «Run from» от (соединить ["show ", directory, "/", file] по "") и («Root») и "sh" и ["-c", "git show \"$0\" > \"$1\"", (соединить [(«Full commit» от answers), ":", source, "/", file] по ""), (соединить [directory, "/", file] по "")]
+  «Run from» от (соединить ["show ", directory, "/", file] по "") и («Root») и "sh" и ["-c", "git show \"$0\" > \"$1\"",
+    (соединить [(«Full commit» от answers), ":", source, "/", file] по ""), (соединить [directory, "/", file] по "")]
 
 тотальная функция «Fetch»
   принимает answers: список «Answer»
   возвращает список «Question»
   если пусто («Commit» от answers)
     то пустой список
-    иначе «Gathered» от [[(«Run» от "directories" и "mkdir" и ["-p", («Seed directory» от answers), («Runtime directory» от answers)])],
+    иначе «Gathered» от [
+      [(«Run» от "directories" и "mkdir" и ["-p", («Seed directory» от answers), («Runtime directory» от answers)])],
       (отобразить («Соединить списки» от («Printed files») и («Runtime files»)) как file → «Show» от "bootstrap" и («Seed directory» от answers) и file и answers),
       (отобразить («Runtime files») как file → «Show» от "flang/src/emit/c" и («Runtime directory» от answers) и file и answers)]
 
 тотальная функция «Needed files»
   принимает answers: список «Answer»
   возвращает список строки
-  «Соединить списки» от (отобразить («Соединить списки» от («Printed files») и («Runtime files»)) как file → соединить [(«Seed directory» от answers), "/", file] по "") и (отобразить («Runtime files») как file → соединить [(«Runtime directory» от answers), "/", file] по "")
+  «Соединить списки» от (отобразить («Соединить списки» от («Printed files») и («Runtime files»)) как file → соединить [
+    («Seed directory» от answers), "/", file] по "") и (отобразить («Runtime files») как file → соединить [
+    («Runtime directory» от answers), "/", file] по "")
 
 тотальная функция «Presence»
   принимает answers: список «Answer»
@@ -102,7 +108,8 @@
   возвращает список «Question»
   «Gathered» от [[(«Run» от "target" и "mkdir" и ["-p", («Target» от answers)]),
       («Run» от "printed" и "cp" и («Соединить списки» от (приписать "-p" к (отобразить («Printed files») как file → соединить [(«Seed directory» от answers), "/", file] по "")) и [(«Target» от answers)]))],
-    (отобразить («Runtime files») как file → «Run» от (соединить ["header ", file] по "") и "grep" и ["-n", "-m1", "^/\\* SPDX-FileCopyrightText", (соединить [(«Seed directory» от answers), "/", file] по "")])]
+    (отобразить («Runtime files») как file → «Run» от (соединить ["header ", file] по "") и "grep" и ["-n", "-m1",
+      "^/\\* SPDX-FileCopyrightText", (соединить [(«Seed directory» от answers), "/", file] по "")])]
 
 тотальная функция «Header length»
   принимает file: строка, answers: список «Answer»
@@ -112,8 +119,14 @@
 тотальная функция «Assemble»
   принимает file: строка, answers: список «Answer»
   возвращает список «Question»
-  [(«Run» от (соединить ["assemble ", file] по "") и "sh" и ["-c", "{ head -n \"$0\" \"$1\"; cat \"$2\"; } > \"$3\"", (к строке («Header length» от file и answers)), (соединить [(«Seed directory» от answers), "/", file] по ""), (соединить [(«Runtime directory» от answers), "/", file] по ""), (соединить [(«Target» от answers), "/", file] по "")]),
-   («Run» от (соединить ["ahead ", file] по "") и "sh" и ["-c", "diff \"$0\" \"$1\" | grep -c \"^[<>]\"", (соединить [(«Seed directory» от answers), "/", file] по ""), (соединить [(«Target» от answers), "/", file] по "")])]
+  [
+    («Run» от (соединить ["assemble ", file] по "") и "sh" и ["-c", "{ head -n \"$0\" \"$1\"; cat \"$2\"; } > \"$3\"",
+    (к строке («Header length» от file и answers)), (соединить [(«Seed directory» от answers), "/", file] по ""),
+    (соединить [(«Runtime directory» от answers), "/", file] по ""),
+    (соединить [(«Target» от answers), "/", file] по "")]),
+   («Run» от (соединить ["ahead ", file] по "") и "sh" и ["-c", "diff \"$0\" \"$1\" | grep -c \"^[<>]\"",
+     (соединить [(«Seed directory» от answers), "/", file] по ""),
+     (соединить [(«Target» от answers), "/", file] по "")])]
 
 тотальная функция «Assembly»
   принимает answers: список «Answer»
@@ -128,7 +141,9 @@
 тотальная функция «Build»
   принимает answers: список «Answer»
   возвращает список «Question»
-  [(«Run» от "build" и "make" и ["-C", («Target» от answers), (соединить ["-j", («Jobs» от answers)] по ""), (соединить ["CC=", («Setting of» от "compiler" и "cc" и answers)] по "")])]
+  [
+    («Run» от "build" и "make" и ["-C", («Target» от answers), (соединить ["-j", («Jobs» от answers)] по ""),
+    (соединить ["CC=", («Setting of» от "compiler" и "cc" и answers)] по "")])]
 
 тотальная функция «Built»
   принимает answers: список «Answer»
@@ -185,7 +200,11 @@
   принимает answers: список «Answer»
   возвращает список «Outcome»
   если «Failed» от "build" и answers
-    то [запись «Outcome» с «code» равным 1 и «words» равным (соединить [(соединить («Progress» от answers) по "\n"), («Output of» от "build" и answers), («Errors of» от "build" и answers), (соединить ["сборка в ", («Target» от answers), " не прошла: make ответил кодом ", (к строке («Exit code of» от "build" и answers))] по "")] по "\n")]
+    то [
+      запись «Outcome» с «code» равным 1 и «words» равным (соединить [(соединить («Progress» от answers) по "\n"),
+      («Output of» от "build" и answers), («Errors of» от "build" и answers),
+      (соединить ["сборка в ", («Target» от answers), " не прошла: make ответил кодом ",
+      (к строке («Exit code of» от "build" и answers))] по "")] по "\n")]
     иначе пустой список
 
 тотальная функция «Settled»
@@ -231,9 +250,13 @@
 тотальная функция «Progress»
   принимает answers: список «Answer»
   возвращает список строки
-  «Gathered words» от [(если пусто («Commit» от answers) то пустой список иначе [(соединить ["семя и рантайм взяты из коммита ", («Full commit» от answers)] по "")]),
-    (отобразить («Runtime files») как file → соединить ["рантайм ", («Padded» от file и 18), " дерево обгоняет семя на ", (к строке («Ahead» от file и answers)), " строк"] по ""),
-    (если (длина (отфильтровать («Runtime files») где file → («Ahead» от file и answers) больше 0)) равен 0 то ["рантайм дерева и рантайм семени СОВПАЛИ: этот двоичный будет равен bootstrap/flang"] иначе пустой список)]
+  «Gathered words» от [
+    (если пусто («Commit» от answers) то пустой список
+    иначе [(соединить ["семя и рантайм взяты из коммита ", («Full commit» от answers)] по "")]),
+    (отобразить («Runtime files») как file → соединить ["рантайм ", («Padded» от file и 18),
+      " дерево обгоняет семя на ", (к строке («Ahead» от file и answers)), " строк"] по ""),
+    (если (длина (отфильтровать («Runtime files») где file → («Ahead» от file и answers) больше 0)) равен 0 то [
+      "рантайм дерева и рантайм семени СОВПАЛИ: этот двоичный будет равен bootstrap/flang"] иначе пустой список)]
 
 тотальная функция «Library warning»
   принимает answers: список «Answer»
@@ -249,7 +272,8 @@
       "",
       "  Как снимать ведомость: положите двоичный ВНУТРЬ дерева и зовите оттуда",
       (соединить ["    mkdir -p ", («Root path» от answers), "/build-ledger"] по ""),
-      (соединить ["    cp -p ", («Target» от answers), "/flang ", («Target» от answers), "/flang_runtime.h ", («Root path» от answers), "/build-ledger/"] по ""),
+      (соединить ["    cp -p ", («Target» от answers), "/flang ", («Target» от answers), "/flang_runtime.h ",
+        («Root path» от answers), "/build-ledger/"] по ""),
       (соединить ["    ", («Root path» от answers), "/build-ledger/flang check <файл> --proof --json"] по ""),
       "  Каталог build-ledger — временный: уберите его перед коммитом, иначе",
       "  сторож раскладки покажет лишний каталог в корне."]
@@ -265,7 +289,8 @@
     ожидается пустой список
   если пусто text
     то пустой список
-    иначе разделить (если «Ends with» от text и "\n" то (подстрока text с 1 по ((длина text) минус 1)) иначе text) по "\n"
+    иначе разделить (если «Ends with» от text и "\n" то (подстрока text с 1 по ((длина text) минус 1))
+      иначе text) по "\n"
 
 тотальная функция «Report»
   принимает answers: список «Answer»

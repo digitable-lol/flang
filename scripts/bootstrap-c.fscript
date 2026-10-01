@@ -187,7 +187,10 @@
   пусть planted равно («Seed sizes» от answers)
   пусть fresh равно («New names» от answers)
   пусть changed равно («Changed names» от answers)
-  «Соединить списки» от («Gathered words» от (отобразить («Printed names» от answers) как name → «Chosen» от [(«When» от (fresh содержит name) и [(соединить ["  ", («In the seed» от name), ": печать даёт ", (к строке («Size» от name и printed)), " байт, а в дереве файла нет"] по "")]),
+  «Соединить списки» от («Gathered words» от (отобразить («Printed names» от answers) как name → «Chosen» от [
+    («When» от (fresh содержит name) и [
+    (соединить ["  ", («In the seed» от name), ": печать даёт ", (к строке («Size» от name и printed)),
+    " байт, а в дереве файла нет"] по "")]),
     («When» от (changed содержит name) и [(соединить ["  ", («In the seed» от name), ": в дереве ", (к строке («Size» от name и planted)), " байт, печать даёт ", (к строке («Size» от name и printed))] по "")])] и (пустой список))) и (отобразить («Leftover names» от answers) как name → соединить ["  ", («In the seed» от name), ": лежит в дереве, но печать его не даёт — след прошлой перепечатки"] по "")
 
 тотальная функция «Failed»
@@ -227,12 +230,24 @@
   принимает answers: список «Answer»
   возвращает список список строки
   отфильтровать [(если (длина («Given of» от "arguments" и answers)) больше 0 то [(«Usage»)] иначе пустой список),
-    (если («Answered» от "limits" и answers) и притом (не («Limits are known» от answers)) то [(соединить ["bootstrap-c.fscript: в ", («Limits record»), " не найдены MAX_STEPS, MAX_DEPTH и MEASURED_COST —"] по ""), "печатать с чужими пределами нельзя: это была бы другая печать."] иначе пустой список),
+    (если («Answered» от "limits" и answers) и притом (не («Limits are known» от answers)) то [
+      (соединить ["bootstrap-c.fscript: в ", («Limits record»),
+      " не найдены MAX_STEPS, MAX_DEPTH и MEASURED_COST —"] по ""),
+      "печатать с чужими пределами нельзя: это была бы другая печать."] иначе пустой список),
     (если («Limits are known» от answers) и притом ((«Count» от («Steps limit» от answers)) меньше («Count» от («Measured cost» от answers))) то [(соединить ["bootstrap-c.fscript: потолок ", («Steps limit» от answers), " ниже измеренной цены шага ", («Measured cost» от answers), " —"] по ""), "семя с таким потолком не сможет перепечатать дерево."] иначе пустой список),
-    (если «Failed» от "binary present" и answers то [(соединить ["bootstrap-c.fscript: не найден двоичный «", («Binary» от answers), "». Соберите его: make -C ", («Output directory»)] по "")] иначе пустой список),
-    (если («Answered» от "work" и answers) и притом (пусто («Work» от answers)) то [(соединить ["bootstrap-c.fscript: не создался каталог в ", («Temporary» от answers)] по "")] иначе пустой список),
-    (если «Failed» от "print" и answers то «Gathered words» от [(«Heading» от answers), («Ending» от («Said by» от "print" и answers) и 20), [(соединить ["bootstrap-c.fscript: печать отказала (код ", (к строке («Exit code of» от "print" и answers)), ") — сверять нечего"] по "")]] иначе пустой список),
-    (если («Answered» от "printed names" и answers) и притом ((длина («Printed names» от answers)) равен 0) то ["bootstrap-c.fscript: печать не дала ни одного файла — сверять нечего"] иначе пустой список)] где lines → (длина lines) больше 0
+    (если «Failed» от "binary present" и answers то [
+      (соединить ["bootstrap-c.fscript: не найден двоичный «", («Binary» от answers), "». Соберите его: make -C ",
+      («Output directory»)] по "")] иначе пустой список),
+    (если («Answered» от "work" и answers) и притом (пусто («Work» от answers)) то [
+      (соединить ["bootstrap-c.fscript: не создался каталог в ", («Temporary» от answers)] по "")] иначе пустой список),
+    (если «Failed» от "print" и answers то «Gathered words» от [(«Heading» от answers),
+      («Ending» от («Said by» от "print" и answers) и 20),
+      [
+      (соединить ["bootstrap-c.fscript: печать отказала (код ", (к строке («Exit code of» от "print" и answers)),
+      ") — сверять нечего"] по "")]] иначе пустой список),
+    (если («Answered» от "printed names" и answers) и притом ((длина («Printed names» от answers)) равен 0) то [
+      "bootstrap-c.fscript: печать не дала ни одного файла — сверять нечего"]
+      иначе пустой список)] где lines → (длина lines) больше 0
 
 тотальная функция «Is clear»
   принимает answers: список «Answer»
@@ -241,7 +256,9 @@
 
 тотальная функция «Setup»
   возвращает список «Question»
-  [(«Arguments» от "arguments"), («Environment» от "binary" и "FLANG"), («Environment» от "temporary" и "FLANG_TMP"), («Environment» от "system temporary" и "TMPDIR"), («Run from» от "tree" и («Root») и "pwd" и ["-P"]), («Read from» от "limits" и («Root») и («Limits record»))]
+  [(«Arguments» от "arguments"), («Environment» от "binary" и "FLANG"), («Environment» от "temporary" и "FLANG_TMP"),
+    («Environment» от "system temporary" и "TMPDIR"), («Run from» от "tree" и («Root») и "pwd" и ["-P"]),
+    («Read from» от "limits" и («Root») и («Limits record»))]
 
 тотальная функция «Presence»
   принимает answers: список «Answer»
@@ -256,12 +273,16 @@
 тотальная функция «Printing»
   принимает answers: список «Answer»
   возвращает список «Question»
-  [(«Run from» от "print" и («Tree» от answers) и («Binary» от answers) и ["emit", («Entry»), "--target", "c", "--cli", "--repl", "--max-steps", («Steps limit» от answers), "--max-depth", («Depth limit» от answers), "--runtime", («Runtime source»), "--out", («Work» от answers)])]
+  [
+    («Run from» от "print" и («Tree» от answers) и («Binary» от answers) и ["emit", («Entry»), "--target", "c", "--cli",
+    "--repl", "--max-steps", («Steps limit» от answers), "--max-depth", («Depth limit» от answers), "--runtime",
+    («Runtime source»), "--out", («Work» от answers)])]
 
 тотальная функция «Listing»
   принимает answers: список «Answer»
   возвращает список «Question»
-  [(«Run» от "printed names" и "env" и ["LC_ALL=C", "ls", («Work» от answers)]), («Run» от "seed names" и "env" и ["LC_ALL=C", "ls", («Seed directory» от answers)])]
+  [(«Run» от "printed names" и "env" и ["LC_ALL=C", "ls", («Work» от answers)]),
+    («Run» от "seed names" и "env" и ["LC_ALL=C", "ls", («Seed directory» от answers)])]
 
 тотальная функция «Sizing»
   принимает name: строка, directory: строка, names: список строки
@@ -275,7 +296,9 @@
   возвращает список «Question»
   «Gathered» от [(«Sizing» от "printed sizes" и («Work» от answers) и («Printed names» от answers)),
     («Sizing» от "seed sizes" и («Seed directory» от answers) и («Common names» от answers)),
-    (отобразить («Common names» от answers) как name → «Run» от («Bytes question» от name) и "cmp" и ["-s", "--", (соединить [(«Work» от answers), "/", name] по ""), (соединить [(«Seed directory» от answers), "/", name] по "")])]
+    (отобразить («Common names» от answers) как name → «Run» от («Bytes question» от name) и "cmp" и ["-s", "--",
+      (соединить [(«Work» от answers), "/", name] по ""),
+      (соединить [(«Seed directory» от answers), "/", name] по "")])]
 
 тотальная функция «Copy question»
   принимает name: строка
@@ -318,7 +341,8 @@
   возвращает список «Question»
   если (stages меньше 1) или (stages больше 6)
     то пустой список
-    иначе элемент (7 минус stages) в [(«Presence» от answers), («Working place» от answers), («Printing» от answers), («Listing» от answers), («Comparing» от answers), («Writing» от answers)]
+    иначе элемент (7 минус stages) в [(«Presence» от answers), («Working place» от answers), («Printing» от answers),
+      («Listing» от answers), («Comparing» от answers), («Writing» от answers)]
 
 тотальная функция «Stage»
   принимает stages: число, answers: список «Answer»
@@ -335,14 +359,17 @@
 тотальная функция «Counted»
   принимает answers: список «Answer»
   возвращает строка
-  соединить [(к строке (длина («Printed names» от answers))), " файлов, ", (к строке («Printed bytes» от answers)), " байт"] по ""
+  соединить [(к строке (длина («Printed names» от answers))), " файлов, ", (к строке («Printed bytes» от answers)),
+    " байт"] по ""
 
 тотальная функция «Check verdict»
   принимает answers: список «Answer»
   возвращает «Продолжение»
   пусть differences равно («Differences» от answers)
   если (длина differences) равен 0
-    то вариант «Конец работы» с значение равным (соединить (добавить (соединить ["точка раскрутки ", («Output directory»), "/ совпадает с печатью двоичного: ", («Counted» от answers)] по "") к («Printed account» от answers)) по "\n")
+    то вариант «Конец работы» с значение равным (соединить (добавить (соединить ["точка раскрутки ",
+      («Output directory»), "/ совпадает с печатью двоичного: ",
+      («Counted» от answers)] по "") к («Printed account» от answers)) по "\n")
     иначе вариант «Провал» с код равным "FLANG_BOOTSTRAP_POINT_DIFFERS" и сообщение равным (соединить («Gathered words» от [(«Printed account» от answers), differences, [(соединить ["точка раскрутки ", («Output directory»), "/ разошлась с печатью двоичного — расхождений ", (к строке (длина differences))] по ""), (соединить ["Перепечатайте её в том же коммите, что и правку компилятора: ", («Print call»)] по "")]]) по "\n")
 
 тотальная функция «Repeat advice»
@@ -353,7 +380,11 @@
     ожидается пустой список
   если touched равен 0
     то пустой список
-    иначе [(соединить ["печать тронула ", (к строке touched), " файлов — пересоберите двоичный и перепечатайте ещё раз,"] по ""), (соединить ["пока два захода подряд не дадут одно и то же: make -C ", («Output directory»), " && ", («Check call»)] по "")]
+    иначе [
+      (соединить ["печать тронула ", (к строке touched),
+      " файлов — пересоберите двоичный и перепечатайте ещё раз,"] по ""),
+      (соединить ["пока два захода подряд не дадут одно и то же: make -C ", («Output directory»), " && ",
+      («Check call»)] по "")]
 
 тотальная функция «Print verdict»
   принимает answers: список «Answer»
@@ -362,7 +393,12 @@
   пусть unwritten равно («Unwritten names» от answers)
   если (длина unwritten) больше 0
     то вариант «Не проверено» с код равным "FLANG_BOOTSTRAP_POINT_NOT_WRITTEN" и сообщение равным (соединить («Gathered words» от [(«Printed account» от answers), differences, [(соединить ["bootstrap-c.fscript: записать не удалось: ", (соединить unwritten по ", ")] по "")]]) по "\n")
-    иначе вариант «Конец работы» с значение равным (соединить («Gathered words» от [(«Printed account» от answers), differences, [(соединить ["итого ", («Counted» от answers), " в ", («Output directory»), "/; тронуто ", (к строке (длина differences))] по "")], («Repeat advice» от (длина differences)), [(соединить ["сборка без Node: make -C ", («Output directory»)] по "")]]) по "\n")
+    иначе вариант «Конец работы» с значение равным (соединить («Gathered words» от [(«Printed account» от answers),
+      differences,
+      [
+      (соединить ["итого ", («Counted» от answers), " в ", («Output directory»), "/; тронуто ",
+      (к строке (длина differences))] по "")], («Repeat advice» от (длина differences)),
+      [(соединить ["сборка без Node: make -C ", («Output directory»)] по "")]]) по "\n")
 
 тотальная функция «Verdict»
   принимает answers: список «Answer»
@@ -387,7 +423,8 @@
 тотальная функция «Begin in mode»
   принимает mode: строка
   возвращает «Inquiry»
-  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 8 и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 8 и «answers» равным [
+    запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
 
 тотальная функция «Begin print»
   возвращает «Inquiry»

@@ -4,8 +4,10 @@ total function «Sift with fuel»
   accepts fuel: list of number, candidates: list of number
   returns list of number
   example «Candidates up to thirty»
-    given fuel equals [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
-    given candidates equals [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    given fuel equals [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
+      28, 29, 30]
+    given candidates equals [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+      27, 28, 29, 30]
     expected [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
   example «No candidates at all»
     given fuel equals [1]
@@ -26,7 +28,8 @@ function «Sift»
   accepts candidates: list of number
   returns list of number
   example «Candidates up to thirty»
-    given candidates equals [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    given candidates equals [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+      27, 28, 29, 30]
     expected [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
   example «Empty list»
     given candidates equals empty list

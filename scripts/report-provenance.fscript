@@ -5,7 +5,8 @@
 
 тотальная функция «Summed files»
   возвращает список строки
-  ["scripts/seed-fingerprint", "bootstrap/flang", "flang/proof/checker/checker.c", "flang/proof/tables/inference-rules.tsv"]
+  ["scripts/seed-fingerprint", "bootstrap/flang", "flang/proof/checker/checker.c",
+    "flang/proof/tables/inference-rules.tsv"]
 
 тотальная функция «Build inputs command»
   возвращает строка
@@ -66,7 +67,10 @@
   пример «A dash stays a dash»
     дано sum равно "—"
     ожидается "—…"
-  соединить [(«First line» от (свёртка (разложить sum на символы) начиная с "" как kept и sign → если kept содержит "\n" то kept иначе (соединить [kept, (если ((«Kept octets» от kept) плюс («Octets» от sign)) больше 12 то "\n" иначе sign)] по ""))), "…"] по ""
+  соединить [
+    («First line» от (свёртка (разложить sum на символы) начиная с "" как kept и sign → если kept содержит "\n" то kept
+    иначе (соединить [kept,
+    (если ((«Kept octets» от kept) плюс («Octets» от sign)) больше 12 то "\n" иначе sign)] по ""))), "…"] по ""
 
 тотальная функция «Or dash»
   принимает value: строка
@@ -97,13 +101,19 @@
   возвращает строка
   пусть changed равно (длина («Lines» от («Output of» от "changes" и answers)))
   «Chosen» от [(«When» от (не ((«Exit code of» от "head" и answers) равен 0)) и ("SHA дерева         — (дерево не под учётом git)")),
-    («When» от (changed равен 0) и (соединить ["SHA дерева         ", («First line» от («Output of» от "head" и answers)), " (рабочая копия чиста)"] по ""))] и (соединить ["SHA дерева         ", («First line» от («Output of» от "head" и answers)), " (РАБОЧАЯ КОПИЯ ПРАВЛЕНА: файлов ", (к строке changed), " — замер по одному коммиту не повторится)"] по "")
+    («When» от (changed равен 0) и (соединить ["SHA дерева         ",
+      («First line» от («Output of» от "head" и answers)), " (рабочая копия чиста)"] по ""))] и (соединить [
+      "SHA дерева         ", («First line» от («Output of» от "head" и answers)), " (РАБОЧАЯ КОПИЯ ПРАВЛЕНА: файлов ",
+      (к строке changed), " — замер по одному коммиту не повторится)"] по "")
 
 тотальная функция «Seed line»
   принимает answers: список «Answer»
   возвращает строка
   пусть fingerprint равно («Output of» от "fingerprint" и answers)
-  соединить ["SHA семени         ", («Short» от («Or dash» от («Sum of» от "scripts/seed-fingerprint" и («Output of» от "sums" и answers)))), " (scripts/seed-fingerprint; печать входа ", («Or dash» от («Value after» от "вход " и fingerprint)), " с коммита ", («Short» от («Or dash» от («Value after» от "коммит " и fingerprint))), ")"] по ""
+  соединить ["SHA семени         ",
+    («Short» от («Or dash» от («Sum of» от "scripts/seed-fingerprint" и («Output of» от "sums" и answers)))),
+    " (scripts/seed-fingerprint; печать входа ", («Or dash» от («Value after» от "вход " и fingerprint)), " с коммита ",
+    («Short» от («Or dash» от («Value after» от "коммит " и fingerprint))), ")"] по ""
 
 тотальная функция «Build inputs»
   принимает answers: список «Answer»
@@ -133,13 +143,16 @@
   принимает answers: список «Answer»
   возвращает строка
   если «Binary present» от answers
-    то соединить ["двоичный           ", («Version» от answers), " (bootstrap/flang), sha256 ", («Short» от («Sum of» от "bootstrap/flang" и («Output of» от "sums" и answers))), ", ", («Freshness» от answers)] по ""
+    то соединить ["двоичный           ", («Version» от answers), " (bootstrap/flang), sha256 ",
+      («Short» от («Sum of» от "bootstrap/flang" и («Output of» от "sums" и answers))), ", ",
+      («Freshness» от answers)] по ""
     иначе "двоичный           НЕТ В ДЕРЕВЕ — ни одно число этого отчёта не снято собранным двоичным"
 
 тотальная функция «Checker line»
   принимает answers: список «Answer»
   возвращает строка
-  соединить ["сверщик            flang/proof/checker/checker.c sha256 ", («Short» от («Or dash» от («Sum of» от "flang/proof/checker/checker.c" и («Output of» от "sums" и answers))))] по ""
+  соединить ["сверщик            flang/proof/checker/checker.c sha256 ",
+    («Short» от («Or dash» от («Sum of» от "flang/proof/checker/checker.c" и («Output of» от "sums" и answers))))] по ""
 
 тотальная функция «Semantics line»
   принимает answers: список «Answer»
@@ -148,14 +161,19 @@
   пусть counted равно («Sum of» от "flang/proof/tables/inference-rules.tsv" и («Output of» от "sums" и answers))
   если (пусто counted) или (не ((«Exit code of» от "rules digest" и answers) равен 0))
     то "версия семантики   — (нет flang/proof/tables/inference-rules.digest)"
-    иначе соединить ["версия семантики   ", («Short» от recorded), " (flang/proof/tables/inference-rules.digest; ", (если counted равен recorded то "ведомость сходится с отпечатком" иначе "ВЕДОМОСТЬ РАЗОШЛАСЬ С ОТПЕЧАТКОМ — версия семантики не та, что объявлена"), ")"] по ""
+    иначе соединить ["версия семантики   ", («Short» от recorded), " (flang/proof/tables/inference-rules.digest; ",
+      (если counted равен recorded то "ведомость сходится с отпечатком"
+      иначе "ВЕДОМОСТЬ РАЗОШЛАСЬ С ОТПЕЧАТКОМ — версия семантики не та, что объявлена"), ")"] по ""
 
 тотальная функция «Lean line»
   принимает answers: список «Answer»
   возвращает строка
   если (не («Answered» от "lean version" и answers)) или ((«Exit code of» от "lean version" и answers) равен 127)
-    то соединить ["Lean               ", («Or dash» от («Without blanks» от («First line» от («Output of» от "toolchain" и answers)))), " по flang/proof/lean/lean-toolchain; в PATH НЕТ — здесь не гонялся"] по ""
-    иначе соединить ["Lean               ", («First line» от («Output of» от "lean version" и answers)), " (в PATH)"] по ""
+    то соединить ["Lean               ",
+      («Or dash» от («Without blanks» от («First line» от («Output of» от "toolchain" и answers)))),
+      " по flang/proof/lean/lean-toolchain; в PATH НЕТ — здесь не гонялся"] по ""
+    иначе соединить ["Lean               ", («First line» от («Output of» от "lean version" и answers)),
+      " (в PATH)"] по ""
 
 тотальная функция «Provenance»
   принимает answers: список «Answer»
@@ -164,7 +182,8 @@
     (соединить ["дата               ", («First line» от («Output of» от "day" и answers))] по ""),
     («Tree line» от answers),
     («Seed line» от answers),
-    (соединить ["входы сборки       ", («Short» от («Build inputs» от answers)), " (sha256 bootstrap/*.c, *.h, Makefile)"] по ""),
+    (соединить ["входы сборки       ", («Short» от («Build inputs» от answers)),
+      " (sha256 bootstrap/*.c, *.h, Makefile)"] по ""),
     («Binary line» от answers),
     («Checker line» от answers),
     («Semantics line» от answers),

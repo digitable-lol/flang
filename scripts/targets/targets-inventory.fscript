@@ -147,7 +147,9 @@
   принимает name: строка, answers: список «Answer»
   возвращает список «Question»
   [(«Clock» от («Question of» от "started" и name)),
-   («Run from» от («Question of» от "run" и name) и («Root») и "sh" и ["-c", "PAMYAT=\"$0\" \"$1\" -- ./ярлык \"$2\" > \"$3\" 2>&1", («Gate memory» от answers), («Gate» от answers), name, («Raw path» от name и answers)]),
+   («Run from» от («Question of» от "run" и name) и («Root») и "sh" и ["-c",
+     "PAMYAT=\"$0\" \"$1\" -- ./ярлык \"$2\" > \"$3\" 2>&1", («Gate memory» от answers), («Gate» от answers), name,
+     («Raw path» от name и answers)]),
    («Clock» от («Question of» от "finished" и name)),
    («Read» от («Question of» от "raw" и name) и («Raw path» от name и answers))]
 
@@ -182,7 +184,8 @@
       то ""
     случай голова и хвост
       то если «Starts a code» от (соединить parts по "FLANG_")
-        то соединить ["FLANG_", («First line» от (соединить (разделить (соединить parts по "FLANG_") по "\"") по "\n"))] по ""
+        то соединить ["FLANG_",
+          («First line» от (соединить (разделить (соединить parts по "FLANG_") по "\"") по "\n"))] по ""
         иначе «Reason after» от хвост
 
 тотальная функция «Reason in line»
@@ -246,7 +249,8 @@
     дано name равно "версия:проверка"
     дано outcome равно запись «Outcome» с «code» равным "1" и «seconds» равным 7 и «reason» равным "FLANG_VERSION: разошлись"
     ожидается "| 2 | `версия:проверка` | 1 | 7 с | FLANG_VERSION: разошлись |"
-  соединить ["| ", (к строке position), " | `", name, "` | ", (outcome.«code»), " | ", (к строке (outcome.«seconds»)), " с | ", (outcome.«reason»), " |"] по ""
+  соединить ["| ", (к строке position), " | `", name, "` | ", (outcome.«code»), " | ", (к строке (outcome.«seconds»)),
+    " с | ", (outcome.«reason»), " |"] по ""
 
 тотальная функция «Rows»
   принимает answers: список «Answer»
@@ -261,7 +265,12 @@
 тотальная функция «Report text»
   принимает answers: список «Answer»
   возвращает строка
-  соединить («Gathered words» от [["| # | цель | код | время | причина |", "|---:|---|---|---:|---|"], («Rows» от answers), ["", (соединить ["Целей снято: ", (к строке (длина («Names» от answers))), ". Из них ждали слота дольше срока и требуют пересъёма: ", (к строке («Retakes» от answers)), "."] по ""), (соединить ["Сырой вывод каждой цели: ", («Raw output» от answers)] по "")]]) по "\n"
+  соединить («Gathered words» от [["| # | цель | код | время | причина |", "|---:|---|---|---:|---|"],
+    («Rows» от answers),
+    ["",
+    (соединить ["Целей снято: ", (к строке (длина («Names» от answers))),
+    ". Из них ждали слота дольше срока и требуют пересъёма: ", (к строке («Retakes» от answers)), "."] по ""),
+    (соединить ["Сырой вывод каждой цели: ", («Raw output» от answers)] по "")]]) по "\n"
 
 тотальная функция «Failed»
   принимает name: строка, answers: список «Answer»
@@ -271,9 +280,17 @@
 тотальная функция «Obstacles»
   принимает answers: список «Answer»
   возвращает список список строки
-  отфильтровать [(если («Answered» от "table" и answers) и притом ((длина («Names» от answers)) равен 0) то ["НЕ ИЗМЕРЯЛ: ни одного имени ярлыка — в ярлыки.flang их не нашлось, и доводами они не названы.", "Это не «целей нет», это «снимать нечего».", («Usage»)] иначе пустой список),
-    (если «Failed» от "gate present" и answers то [(соединить ["НЕ ИЗМЕРЯЛ: ворот нет — ", («Gate» от answers), " не исполняемый файл."] по ""), "Каждая цель ответила бы кодом 127, и опись из таких кодов — не опись.", "Свои ворота: FLANG_GATE=/путь/к/воротам"] иначе пустой список),
-    (если «Failed» от "raw directory" и answers то [(соединить ["НЕ ИЗМЕРЯЛ: каталог сырого вывода не завёлся — ", («Raw output» от answers)] по ""), "Свой каталог: FLANG_RAW_OUTPUT=/путь"] иначе пустой список)] где lines → (длина lines) больше 0
+  отфильтровать [
+    (если («Answered» от "table" и answers) и притом ((длина («Names» от answers)) равен 0) то [
+    "НЕ ИЗМЕРЯЛ: ни одного имени ярлыка — в ярлыки.flang их не нашлось, и доводами они не названы.",
+    "Это не «целей нет», это «снимать нечего».", («Usage»)] иначе пустой список),
+    (если «Failed» от "gate present" и answers то [
+      (соединить ["НЕ ИЗМЕРЯЛ: ворот нет — ", («Gate» от answers), " не исполняемый файл."] по ""),
+      "Каждая цель ответила бы кодом 127, и опись из таких кодов — не опись.",
+      "Свои ворота: FLANG_GATE=/путь/к/воротам"] иначе пустой список),
+    (если «Failed» от "raw directory" и answers то [
+      (соединить ["НЕ ИЗМЕРЯЛ: каталог сырого вывода не завёлся — ", («Raw output» от answers)] по ""),
+      "Свой каталог: FLANG_RAW_OUTPUT=/путь"] иначе пустой список)] где lines → (длина lines) больше 0
 
 тотальная функция «Is clear»
   принимает answers: список «Answer»
@@ -282,12 +299,15 @@
 
 тотальная функция «Setup»
   возвращает список «Question»
-  [(«Arguments» от "arguments"), («Environment» от "gate" и "FLANG_GATE"), («Environment» от "gate memory" и "FLANG_GATE_MEMORY"), («Environment» от "raw output" и "FLANG_RAW_OUTPUT"), («Read from» от "table" и («Root») и («Shortcut table»))]
+  [(«Arguments» от "arguments"), («Environment» от "gate" и "FLANG_GATE"),
+    («Environment» от "gate memory" и "FLANG_GATE_MEMORY"), («Environment» от "raw output" и "FLANG_RAW_OUTPUT"),
+    («Read from» от "table" и («Root») и («Shortcut table»))]
 
 тотальная функция «Presence»
   принимает answers: список «Answer»
   возвращает список «Question»
-  [(«Run» от "gate present" и "test" и ["-x", («Gate» от answers)]), («Run» от "raw directory" и "mkdir" и ["-p", («Raw output» от answers)])]
+  [(«Run» от "gate present" и "test" и ["-x", («Gate» от answers)]),
+    («Run» от "raw directory" и "mkdir" и ["-p", («Raw output» от answers)])]
 
 тотальная функция «Runs»
   принимает answers: список «Answer»

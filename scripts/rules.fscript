@@ -16,7 +16,9 @@
   принимает rules: список («Rule» от «А»)
   возвращает список «А»
   пример «Only the outcomes of rules that hold are kept, in their order»
-    дано rules равно [вариант «Holding» с holds равным нет и outcome равным "one", вариант «Holding» с holds равным да и outcome равным "two", вариант «Holding» с holds равным да и outcome равным "three"]
+    дано rules равно [вариант «Holding» с holds равным нет и outcome равным "one",
+      вариант «Holding» с holds равным да и outcome равным "two",
+      вариант «Holding» с holds равным да и outcome равным "three"]
     ожидается ["two", "three"]
   свёртка rules начиная с (пустой список) как kept и candidate → разбор candidate
     случай вариант «Holding» с holds как holds и outcome как outcome
@@ -26,7 +28,9 @@
   принимает rules: список («Rule» от «А»), otherwise: «А»
   возвращает «А»
   пример «The first rule that holds decides»
-    дано rules равно [вариант «Holding» с holds равным нет и outcome равным "one", вариант «Holding» с holds равным да и outcome равным "two", вариант «Holding» с holds равным да и outcome равным "three"]
+    дано rules равно [вариант «Holding» с holds равным нет и outcome равным "one",
+      вариант «Holding» с holds равным да и outcome равным "two",
+      вариант «Holding» с holds равным да и outcome равным "three"]
     дано otherwise равно "none"
     ожидается "two"
   пример «No rule holds»

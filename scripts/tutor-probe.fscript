@@ -73,7 +73,8 @@
   возвращает список «Lesson»
   пример «Lessons are numbered from one in their order»
     дано names равно ["01-function.урок", "02-two-functions.урок"]
-    ожидается [запись «Lesson» с «number» равным 1 и «file» равным "01-function.урок", запись «Lesson» с «number» равным 2 и «file» равным "02-two-functions.урок"]
+    ожидается [запись «Lesson» с «number» равным 1 и «file» равным "01-function.урок",
+      запись «Lesson» с «number» равным 2 и «file» равным "02-two-functions.урок"]
   свёртка names начиная с (пустой список) как numbered и name → добавить (запись «Lesson» с «number» равным ((длина numbered) плюс 1) и «file» равным name) к numbered
 
 тотальная функция «Lessons»
@@ -144,7 +145,8 @@
 тотальная функция «Taking»
   принимает heading: строка, taken: «Taken», line: строка
   возвращает «Taken»
-  «Chosen» от [(«When» от (line равен heading) и (запись «Taken» с «inside» равным да и «lines» равным (taken.«lines»))),
+  «Chosen» от [
+    («When» от (line равен heading) и (запись «Taken» с «inside» равным да и «lines» равным (taken.«lines»))),
     («When» от («Is a heading» от line) и (запись «Taken» с «inside» равным нет и «lines» равным (taken.«lines»))),
     («When» от (taken.«inside») и (запись «Taken» с «inside» равным да и «lines» равным (добавить line к (taken.«lines»))))] и taken
 
@@ -341,7 +343,8 @@
 
 тотальная функция «Setup»
   возвращает список «Question»
-  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"), («Run from» от "tree" и («Root») и "pwd" и ["-P"])]
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"),
+    («Run from» от "tree" и («Root») и "pwd" и ["-P"])]
 
 тотальная функция «Presence»
   принимает answers: список «Answer»
@@ -377,7 +380,9 @@
 тотальная функция «Lesson runs»
   принимает lesson: «Lesson», answers: список «Answer»
   возвращает список «Question»
-  [(«Tutor run» от («Own question» от (lesson.«number»)) и («Answer file» от (lesson.«number») и answers) и "нет" и ["--только", («Numeral» от (lesson.«number»))] и answers),
+  [
+    («Tutor run» от («Own question» от (lesson.«number»)) и («Answer file» от (lesson.«number») и answers) и "нет" и [
+    "--только", («Numeral» от (lesson.«number»))] и answers),
    («Tutor run» от («Foreign question» от (lesson.«number»)) и («Answer file» от («Neighbour» от (lesson.«number») и («Total» от answers)) и answers) и "нет" и ["--только", («Numeral» от (lesson.«number»))] и answers)]
 
 тотальная функция «Running»
@@ -386,7 +391,8 @@
   «Gathered» от [[(«Tutor run» от "whole" и («Inside» от "whole" и answers) и "нет" и ["--сначала"] и answers)],
     («Gathered» от (отобразить («Lessons» от answers) как lesson → «Lesson runs» от lesson и answers)),
     [(«Tutor run» от "session" и («Inside» от "session" и answers) и "нет" и ["--только", "1"] и answers),
-     («Run» от "lexer table" и "sed" и ["-n", "/^тотальная функция «Куски таблицы»/,/^  \\]/p", («In the tree» от "flang/self/lexer.flang" и answers)]),
+     («Run» от "lexer table" и "sed" и ["-n", "/^тотальная функция «Куски таблицы»/,/^  \\]/p",
+       («In the tree» от "flang/self/lexer.flang" и answers)]),
      («Run» от "tutor table" и "sed" и ["-n", "/^LANGUAGE_WORDS='/,/^'/p", («Tutor» от answers)]),
      («Tutor run» от "place first" и («Answer file» от 1 и answers) и («Inside» от "place" и answers) и ["--сначала"] и answers),
      («Read» от "place" и («Inside» от "place" и answers)),
@@ -418,7 +424,8 @@
   возвращает список «Question»
   «Gathered» от («Applying» от [(«When» от («Place is kept» от answers) и [(«Tutor run» от "place rest" и («Inside» от "remaining" и answers) и («Inside» от "place" и answers) и (пустой список) и answers)]),
     («When» от («Both languages listed» от answers) и [(«Tutor run» от "unknown language" и («Answer file» от 1 и answers) и "нет" и ["--только", "1", "--язык", "eo"] и answers)]),
-    («When» от ((«Whole is plain» от answers) и притом («Passed» от "terminal present" и answers)) и [(«Terminal run» от "colour on" и "" и answers), («Terminal run» от "colour off" и "NO_COLOR=" и answers)])])
+    («When» от ((«Whole is plain» от answers) и притом («Passed» от "terminal present" и answers)) и [
+      («Terminal run» от "colour on" и "" и answers), («Terminal run» от "colour off" и "NO_COLOR=" и answers)])])
 
 тотальная функция «Cleanup»
   принимает answers: список «Answer»
@@ -436,10 +443,13 @@
   принимает answers: список «Answer»
   возвращает список список строки
   «Applying» от [(«When» от ((длина («Given of» от "arguments" и answers)) больше 1) и [(«Usage»)]),
-    («When» от ((«Answered» от "tree" и answers) и притом (пусто («Tree» от answers))) и ["корень дерева узнать не удалось — судить нечем (код 3)"]),
-    («When» от («Failed» от "binary present" и answers) и [(соединить ["нет двоичного: ", («Binary» от answers), " — судить нечем (код 3)"] по "")]),
+    («When» от ((«Answered» от "tree" и answers) и притом (пусто («Tree» от answers))) и [
+      "корень дерева узнать не удалось — судить нечем (код 3)"]),
+    («When» от («Failed» от "binary present" и answers) и [
+      (соединить ["нет двоичного: ", («Binary» от answers), " — судить нечем (код 3)"] по "")]),
     («When» от ((«Answered» от "lessons" и answers) и притом ((«Total» от answers) меньше 1)) и ["уроков нет — судить нечем (код 3)"]),
-    («When» от ((«Answered» от "work" и answers) и притом (пусто («Work» от answers))) и [(соединить ["не создался каталог в ", («Temporary» от answers), " (код 3)"] по "")])]
+    («When» от ((«Answered» от "work" и answers) и притом (пусто («Work» от answers))) и [
+      (соединить ["не создался каталог в ", («Temporary» от answers), " (код 3)"] по "")])]
 
 тотальная функция «Is clear»
   принимает answers: список «Answer»
@@ -451,7 +461,8 @@
   возвращает список «Question»
   если (stages меньше 1) или (stages больше 6)
     то пустой список
-    иначе элемент (7 минус stages) в [(«Presence» от answers), («Studying» от answers), («Working place» от answers), («Writing» от answers), («Running» от answers), («Following» от answers)]
+    иначе элемент (7 минус stages) в [(«Presence» от answers), («Studying» от answers), («Working place» от answers),
+      («Writing» от answers), («Running» от answers), («Following» от answers)]
 
 тотальная функция «Stage»
   принимает stages: число, answers: список «Answer»
@@ -464,16 +475,23 @@
   принимает answers: список «Answer»
   возвращает список строки
   пусть total равно («Numeral» от («Total» от answers))
-  «Chosen» от [(«When» от (не («Passed» от "whole" и answers)) и (приписать (соединить ["целиком: код ", («Code» от "whole" и answers), ", ждали 0 — проводник не дошёл до конца"] по "") к («Tail» от "whole" и 12 и answers))),
-    («When» от (не («Said» от "whole" и (соединить ["все ", total, " уроков пройдены"] по "") и answers)) и [(соединить ["целиком: код 0, а слов «все ", total, " уроков пройдены» в выводе нет"] по "")])] и (пустой список)
+  «Chosen» от [
+    («When» от (не («Passed» от "whole" и answers)) и (приписать (соединить ["целиком: код ",
+    («Code» от "whole" и answers),
+    ", ждали 0 — проводник не дошёл до конца"] по "") к («Tail» от "whole" и 12 и answers))),
+    («When» от (не («Said» от "whole" и (соединить ["все ", total, " уроков пройдены"] по "") и answers)) и [
+      (соединить ["целиком: код 0, а слов «все ", total, " уроков пройдены» в выводе нет"] по "")])] и (пустой список)
 
 тотальная функция «Own complaints»
   принимает lesson: «Lesson», answers: список «Answer»
   возвращает список строки
   пусть number равно («Numeral» от (lesson.«number»))
   пусть name равно («Own question» от (lesson.«number»))
-  «Chosen» от [(«When» от (не («Passed» от name и answers)) и (приписать (соединить ["урок ", number, ": свой верный ответ дал код ", («Code» от name и answers), ", ждали 0"] по "") к («Tail» от name и 8 и answers))),
-    («When» от (не («Said» от name и (соединить ["урок ", number, " пройден"] по "") и answers)) и [(соединить ["урок ", number, ": код 0, а «урок ", number, " пройден» не напечатано"] по "")])] и (пустой список)
+  «Chosen» от [
+    («When» от (не («Passed» от name и answers)) и (приписать (соединить ["урок ", number,
+    ": свой верный ответ дал код ", («Code» от name и answers), ", ждали 0"] по "") к («Tail» от name и 8 и answers))),
+    («When» от (не («Said» от name и (соединить ["урок ", number, " пройден"] по "") и answers)) и [
+      (соединить ["урок ", number, ": код 0, а «урок ", number, " пройден» не напечатано"] по "")])] и (пустой список)
 
 тотальная функция «Foreign complaints»
   принимает lesson: «Lesson», answers: список «Answer»
@@ -481,7 +499,10 @@
   пусть number равно («Numeral» от (lesson.«number»))
   пусть name равно («Foreign question» от (lesson.«number»))
   если («Passed» от name и answers) или («Said» от name и (соединить ["урок ", number, " пройден"] по "") и answers)
-    то [(соединить ["урок ", number, ": ПРИНЯЛ ответ урока ", («Numeral» от («Neighbour» от (lesson.«number») и («Total» от answers))), " — судит не компилятор, а вежливость"] по "")]
+    то [
+      (соединить ["урок ", number, ": ПРИНЯЛ ответ урока ",
+      («Numeral» от («Neighbour» от (lesson.«number») и («Total» от answers))),
+      " — судит не компилятор, а вежливость"] по "")]
     иначе пустой список
 
 тотальная функция «Lesson complaints»
@@ -493,10 +514,14 @@
   принимает answers: список «Answer»
   возвращает список строки
   «Chosen» от [(«When» от ((не («Passed» от "session" и answers)) или (не («Said» от "session" и "урок 1 пройден" и answers))) и (приписать (соединить ["сеанс: ввод владельца дал код ", («Code» от "session" и answers), ", а урок 1 не пройден"] по "") к («Tail» от "session" и 8 и answers))),
-    («When» от (не («Said» от "session" и "принял как «Урок»" и answers)) и ["сеанс: имя модуля без кавычек, а проводник не сказал, что взял его в кавычки"]),
-    («When» от (не («Said» от "session" и "вызов самой «Удвоить» внутри её тела" и answers)) и ["сеанс: вызов «Удвоить» от 21 в теле «Удвоить», а объяснения, где ему место, нет"]),
-    («When» от (не («Said» от "session" и "ни одного слова языка" и answers)) и ["сеанс: вопрос словами, а проводник не сказал, что это не строка языка"]),
-    («When» от (не («Said» от "session" и "понял: слова языка: умножить на; числа: 2" и answers)) и ["сеанс: на верную строку тела нет реакции «понял: …»"])] и (пустой список)
+    («When» от (не («Said» от "session" и "принял как «Урок»" и answers)) и [
+      "сеанс: имя модуля без кавычек, а проводник не сказал, что взял его в кавычки"]),
+    («When» от (не («Said» от "session" и "вызов самой «Удвоить» внутри её тела" и answers)) и [
+      "сеанс: вызов «Удвоить» от 21 в теле «Удвоить», а объяснения, где ему место, нет"]),
+    («When» от (не («Said» от "session" и "ни одного слова языка" и answers)) и [
+      "сеанс: вопрос словами, а проводник не сказал, что это не строка языка"]),
+    («When» от (не («Said» от "session" и "понял: слова языка: умножить на; числа: 2" и answers)) и [
+      "сеанс: на верную строку тела нет реакции «понял: …»"])] и (пустой список)
 
 тотальная функция «Words of the lexer»
   принимает answers: список «Answer»
@@ -519,16 +544,23 @@
   принимает answers: список «Answer»
   возвращает список строки
   пусть total равно («Numeral» от («Total» от answers))
-  «Chosen» от [(«When» от (не («Place is kept» от answers)) и [(соединить ["место: после первого урока в ", («Inside» от "place" и answers), " не записана единица"] по "")]),
+  «Chosen» от [
+    («When» от (не («Place is kept» от answers)) и [
+    (соединить ["место: после первого урока в ", («Inside» от "place" и answers), " не записана единица"] по "")]),
     («When» от ((не («Passed» от "place rest" и answers)) или (не («Said» от "place rest" и (соединить ["урок 2 из ", total] по "") и answers))) и (приписать (соединить ["место: продолжение пошло не со второго урока (код ", («Code» от "place rest" и answers), ")"] по "") к («Tail» от "place rest" и 8 и answers))),
-    («When» от («Said» от "place rest" и (соединить ["урок 1 из ", total] по "") и answers) и ["место: продолжение начало с первого урока заново"])] и (пустой список)
+    («When» от («Said» от "place rest" и (соединить ["урок 1 из ", total] по "") и answers) и [
+      "место: продолжение начало с первого урока заново"])] и (пустой список)
 
 тотальная функция «Language complaints»
   принимает answers: список «Answer»
   возвращает список строки
-  «Chosen» от [(«When» от (не («Has a line beginning with» от "lesson 1 · " и "list en" и answers)) и ["язык: «--язык en» не дал английских имён уроков"]),
-    («When» от (не («Has a line beginning with» от "урок 1 · " и "list ru" и answers)) и ["язык: «--язык ru» не дал русских имён уроков"]),
-    («When» от (не («Said» от "unknown language" и "no lessons in" и answers)) и ["язык: на код «eo» уроков нет, а проводник об этом не сказал"])] и (пустой список)
+  «Chosen» от [
+    («When» от (не («Has a line beginning with» от "lesson 1 · " и "list en" и answers)) и [
+    "язык: «--язык en» не дал английских имён уроков"]),
+    («When» от (не («Has a line beginning with» от "урок 1 · " и "list ru" и answers)) и [
+      "язык: «--язык ru» не дал русских имён уроков"]),
+    («When» от (не («Said» от "unknown language" и "no lessons in" и answers)) и [
+      "язык: на код «eo» уроков нет, а проводник об этом не сказал"])] и (пустой список)
 
 тотальная функция «Terminal complaints»
   принимает answers: список «Answer»
@@ -548,7 +580,9 @@
   принимает answers: список «Answer»
   возвращает список строки
   «Chosen» от [(«When» от (не (пусто («Colour complaints» от answers))) и (пустой список)),
-    («When» от («Passed» от "terminal present" и answers) и ["  зелен  цвет: под терминалом красит слова, имена, числа и строки; NO_COLOR снимает цвет"])] и ["  ЦВЕТ НЕ СУДИЛСЯ: нет script или timeout — под трубой цвета нет и так"]
+    («When» от («Passed» от "terminal present" и answers) и [
+      "  зелен  цвет: под терминалом красит слова, имена, числа и строки; NO_COLOR снимает цвет"])] и [
+      "  ЦВЕТ НЕ СУДИЛСЯ: нет script или timeout — под трубой цвета нет и так"]
 
 тотальная функция «Praise»
   принимает earned: признак, line: строка
@@ -566,13 +600,16 @@
   пусть place равно («Place complaints» от answers)
   пусть language равно («Language complaints» от answers)
   [whole,
-   («Praise» от (пусто whole) и (соединить ["  зелен  целиком: ", total, " уроков подряд верными ответами, код 0"] по "")),
+   («Praise» от (пусто whole) и (соединить ["  зелен  целиком: ", total,
+     " уроков подряд верными ответами, код 0"] по "")),
    single,
-   («Praise» от ((пусто whole) и притом (пусто single)) и (соединить ["  зелен  поодиночке: каждый из ", total, " уроков проходится своим ответом и отвергает чужой"] по "")),
+   («Praise» от ((пусто whole) и притом (пусто single)) и (соединить ["  зелен  поодиночке: каждый из ", total,
+     " уроков проходится своим ответом и отвергает чужой"] по "")),
    session,
    («Praise» от (пусто session) и "  зелен  сеанс: ввод владельца — на каждую строку своя реакция, урок пройден"),
    words,
-   («Praise» от (пусто words) и (соединить ["  зелен  слова: ", («Numeral» от (длина («Words of the tutor» от answers))), " фраз лексера — те же в проводнике"] по "")),
+   («Praise» от (пусто words) и (соединить ["  зелен  слова: ",
+     («Numeral» от (длина («Words of the tutor» от answers))), " фраз лексера — те же в проводнике"] по "")),
    place,
    («Praise» от (пусто place) и "  зелен  место: оборванная работа продолжается со следующего урока"),
    language,
@@ -583,7 +620,9 @@
 тотальная функция «Is red»
   принимает answers: список «Answer»
   возвращает признак
-  (длина («Gathered words» от [(«Whole complaints» от answers), («Lesson complaints» от answers), («Session complaints» от answers), («Word complaints» от answers), («Place complaints» от answers), («Language complaints» от answers), («Colour complaints» от answers)])) больше 0
+  (длина («Gathered words» от [(«Whole complaints» от answers), («Lesson complaints» от answers),
+    («Session complaints» от answers), («Word complaints» от answers), («Place complaints» от answers),
+    («Language complaints» от answers), («Colour complaints» от answers)])) больше 0
 
 тотальная функция «Check verdict»
   принимает answers: список «Answer»

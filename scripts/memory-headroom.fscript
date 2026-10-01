@@ -194,7 +194,8 @@
 тотальная функция «Low line»
   принимает low: «Low»
   возвращает строка
-  соединить [(к строке (low.«total»)), (к строке (low.«lowest»)), (к строке (low.«position»)), (к строке (low.«samples»))] по " "
+  соединить [(к строке (low.«total»)), (к строке (low.«lowest»)), (к строке (low.«position»)),
+    (к строке (low.«samples»))] по " "
 
 тотальная функция «Low of line»
   принимает line: строка
@@ -285,7 +286,8 @@
     дано self равно "4242"
     дано text равно " 4242 900000 a\n   17 2000 b\n"
     ожидается ["2000 b"]
-  отобразить (отфильтровать («Lines» от text) где line → не ((«Word» от 1 и line) равен self)) как line → соединить [(«Word» от 2 и line), " ", («Word» от 3 и line)] по ""
+  отобразить (отфильтровать («Lines» от text) где line → не ((«Word» от 1 и line) равен self)) как line → соединить [
+    («Word» от 2 и line), " ", («Word» от 3 и line)] по ""
 
 тотальная функция «Held»
   принимает runs: список строки
@@ -314,10 +316,21 @@
     дано runs равно ["2097152 a"]
     дано limit равно 4294967296
     дано reserve равно 2147483648
-    ожидается ["память машины: всего 16.0 ГиБ, доступно 8.0 ГиБ, своп 2.0 из 4.0 ГиБ свободен", "прогонов flang сейчас: 1, держат 2.0 ГиБ, крупнейший 2.0 ГиБ (a)", "этот прогон просит: предел 4.0 ГиБ, запас сверх него 2.0 ГиБ"]
-  [(соединить ["память машины: всего ", («Gibibytes of bytes» от ((«Kilobytes» от "MemTotal:" и meminfo) умножить на 1024)), " ГиБ, доступно ", («Gibibytes of bytes» от ((«Kilobytes» от "MemAvailable:" и meminfo) умножить на 1024)), " ГиБ, своп ", («Gibibytes of bytes» от ((«Kilobytes» от "SwapFree:" и meminfo) умножить на 1024)), " из ", («Gibibytes of bytes» от ((«Kilobytes» от "SwapTotal:" и meminfo) умножить на 1024)), " ГиБ свободен"] по ""),
-   (соединить ["прогонов flang сейчас: ", (к строке (длина runs)), ", держат ", («Gibibytes of bytes» от («Held» от runs)), " ГиБ, крупнейший ", («Gibibytes of bytes» от ((«Count» от («Word» от 1 и («Biggest run» от runs))) умножить на 1024)), " ГиБ (", («Word» от 2 и («Biggest run» от runs)), ")"] по ""),
-   (соединить ["этот прогон просит: предел ", («Gibibytes of bytes» от limit), " ГиБ, запас сверх него ", («Gibibytes of bytes» от reserve), " ГиБ"] по "")]
+    ожидается ["память машины: всего 16.0 ГиБ, доступно 8.0 ГиБ, своп 2.0 из 4.0 ГиБ свободен",
+      "прогонов flang сейчас: 1, держат 2.0 ГиБ, крупнейший 2.0 ГиБ (a)",
+      "этот прогон просит: предел 4.0 ГиБ, запас сверх него 2.0 ГиБ"]
+  [
+    (соединить ["память машины: всего ",
+    («Gibibytes of bytes» от ((«Kilobytes» от "MemTotal:" и meminfo) умножить на 1024)), " ГиБ, доступно ",
+    («Gibibytes of bytes» от ((«Kilobytes» от "MemAvailable:" и meminfo) умножить на 1024)), " ГиБ, своп ",
+    («Gibibytes of bytes» от ((«Kilobytes» от "SwapFree:" и meminfo) умножить на 1024)), " из ",
+    («Gibibytes of bytes» от ((«Kilobytes» от "SwapTotal:" и meminfo) умножить на 1024)), " ГиБ свободен"] по ""),
+   (соединить ["прогонов flang сейчас: ", (к строке (длина runs)), ", держат ",
+     («Gibibytes of bytes» от («Held» от runs)), " ГиБ, крупнейший ",
+     («Gibibytes of bytes» от ((«Count» от («Word» от 1 и («Biggest run» от runs))) умножить на 1024)), " ГиБ (",
+     («Word» от 2 и («Biggest run» от runs)), ")"] по ""),
+   (соединить ["этот прогон просит: предел ", («Gibibytes of bytes» от limit), " ГиБ, запас сверх него ",
+     («Gibibytes of bytes» от reserve), " ГиБ"] по "")]
 
 тотальная функция «Count verdict»
   принимает answers: список «Answer»
@@ -336,7 +349,9 @@
 
 тотальная функция «Count questions»
   возвращает список «Question»
-  [(«Arguments» от "arguments"), («Environment» от "limit" и "FLANG_MEMORY_LIMIT"), («Environment» от "reserve" и "FLANG_MEMORY_RESERVE"), («Read» от "meminfo" и "/proc/meminfo"), («Read» от "self" и "/proc/self/stat"), («Run» от "runs" и "ps" и ["-C", "flang", "-o", "pid=,rss=,user="])]
+  [(«Arguments» от "arguments"), («Environment» от "limit" и "FLANG_MEMORY_LIMIT"),
+    («Environment» от "reserve" и "FLANG_MEMORY_RESERVE"), («Read» от "meminfo" и "/proc/meminfo"),
+    («Read» от "self" и "/proc/self/stat"), («Run» от "runs" и "ps" и ["-C", "flang", "-o", "pid=,rss=,user="])]
 
 тотальная функция «Status»
   принимает answers: список «Answer»
@@ -350,22 +365,31 @@
 
 тотальная функция «No log»
   возвращает список строки
-  ["## Память раннера", "", "Наблюдатель не оставил записи: либо шаг «Watch memory» не выполнялся,", "либо `FLANG_TMP` указывал не туда. Сказать, влезла работа или нет,", "**нечем** — и это сказано, а не замолчано."]
+  ["## Память раннера", "", "Наблюдатель не оставил записи: либо шаг «Watch memory» не выполнялся,",
+    "либо `FLANG_TMP` указывал не туда. Сказать, влезла работа или нет,", "**нечем** — и это сказано, а не замолчано."]
 
 тотальная функция «Table»
   принимает low: «Low», pause: число
   возвращает список строки
   ["## Память раннера", "", "| что | сколько |", "|---|---|",
    (соединить ["| всего у раннера | ", («Gibibytes» от (low.«total»)), " ГиБ |"] по ""),
-   (соединить ["| меньше всего оставалось свободной | **", («Gibibytes» от (low.«lowest»)), " ГиБ** (через ", («Elapsed» от (low.«position») и pause), " от начала наблюдения) |"] по ""),
+   (соединить ["| меньше всего оставалось свободной | **", («Gibibytes» от (low.«lowest»)), " ГиБ** (через ",
+     («Elapsed» от (low.«position») и pause), " от начала наблюдения) |"] по ""),
    (соединить ["| замеров | ", (к строке (low.«samples»)), ", каждые ", (к строке pause), " с |"] по ""), ""]
 
 тотальная функция «Did not fit»
   принимает low: «Low»
   возвращает список строки
   ["### НЕ ВЛЕЗЛО", "", "Работа красная, и свободной памяти у раннера оставалось",
-   (соединить [(«Gibibytes» от (low.«lowest»)), " ГиБ из ", («Gibibytes» от (low.«total»)), " ГиБ. Это снятие ПО ПАМЯТИ, а не"] по ""),
-   "отказ по предмету: смотреть надо на вес шага, а не на то, что он проверял.", "В журнале у такого снятия свои признаки — «exit code 143» или", "«The runner has received a shutdown signal», без кода возврата и без", "имени файла. Когда до своего предела доходит сам flang, он останавливается", "кодом 5 и пишет `FLANG_MEMORY: прогон остановлен на пределе памяти` с именем", "функции (ключ `--memory-limit`).", "", "Куда девать такой шаг: на раннер с большой памятью за переменной", "`BOLSHAYA_PAMYAT=da`, как `sverka` в `reprint.yml`."]
+   (соединить [(«Gibibytes» от (low.«lowest»)), " ГиБ из ", («Gibibytes» от (low.«total»)),
+     " ГиБ. Это снятие ПО ПАМЯТИ, а не"] по ""),
+   "отказ по предмету: смотреть надо на вес шага, а не на то, что он проверял.",
+     "В журнале у такого снятия свои признаки — «exit code 143» или",
+     "«The runner has received a shutdown signal», без кода возврата и без",
+     "имени файла. Когда до своего предела доходит сам flang, он останавливается",
+     "кодом 5 и пишет `FLANG_MEMORY: прогон остановлен на пределе памяти` с именем", "функции (ключ `--memory-limit`).",
+     "", "Куда девать такой шаг: на раннер с большой памятью за переменной",
+     "`BOLSHAYA_PAMYAT=da`, как `sverka` в `reprint.yml`."]
 
 тотальная функция «Failed on its merits»
   принимает low: «Low»
@@ -378,7 +402,8 @@
   возвращает список строки
   ["### Влезло впритык", "",
    (соединить ["Работа зелёная, но запас — ", («Gibibytes» от (low.«lowest»)), " ГиБ. Следующий рост дерева"] по ""),
-   "снимет её, и снимет молча. Место такому шагу — на раннере с большой", "памятью (`BOLSHAYA_PAMYAT=da`), как у `sverka` в `reprint.yml`."]
+   "снимет её, и снимет молча. Место такому шагу — на раннере с большой",
+     "памятью (`BOLSHAYA_PAMYAT=da`), как у `sverka` в `reprint.yml`."]
 
 тотальная функция «Outcome»
   принимает low: «Low», failed: признак, tight: признак
@@ -410,8 +435,13 @@
     дано failed равно да
     дано tight равно нет
     ожидается ""
-  «Chosen» от [(«When» от (failed и притом tight) и (соединить ["::error title=Не влезло::работа снята по памяти: свободной оставалось ", («Gibibytes» от (low.«lowest»)), " ГиБ из ", («Gibibytes» от (low.«total»)), " ГиБ\n"] по "")),
-    («When» от ((не failed) и притом tight) и (соединить ["::warning title=Влезло впритык::свободной памяти оставалось ", («Gibibytes» от (low.«lowest»)), " ГиБ из ", («Gibibytes» от (low.«total»)), " ГиБ\n"] по ""))] и ""
+  «Chosen» от [
+    («When» от (failed и притом tight) и (соединить [
+    "::error title=Не влезло::работа снята по памяти: свободной оставалось ", («Gibibytes» от (low.«lowest»)),
+    " ГиБ из ", («Gibibytes» от (low.«total»)), " ГиБ\n"] по "")),
+    («When» от ((не failed) и притом tight) и (соединить [
+      "::warning title=Влезло впритык::свободной памяти оставалось ", («Gibibytes» от (low.«lowest»)), " ГиБ из ",
+      («Gibibytes» от (low.«total»)), " ГиБ\n"] по ""))] и ""
 
 тотальная функция «Log directory»
   принимает answers: список «Answer»
@@ -452,7 +482,9 @@
     дано status равно "success"
     дано margin равно 1048576
     дано pause равно 5
-    ожидается ["## Память раннера", "", "Наблюдатель не оставил записи: либо шаг «Watch memory» не выполнялся,", "либо `FLANG_TMP` указывал не туда. Сказать, влезла работа или нет,", "**нечем** — и это сказано, а не замолчано."]
+    ожидается ["## Память раннера", "", "Наблюдатель не оставил записи: либо шаг «Watch memory» не выполнялся,",
+      "либо `FLANG_TMP` указывал не туда. Сказать, влезла работа или нет,",
+      "**нечем** — и это сказано, а не замолчано."]
   если (low.«total») равен 0
     то «No log»
     иначе «Соединить списки» от («Table» от low и pause) и («Outcome» от low и («Has failed» от status) и ((low.«lowest») меньше margin))
@@ -477,26 +509,35 @@
 
 тотальная функция «Report setup»
   возвращает список «Question»
-  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"), («Environment» от "margin" и "FLANG_MARGIN_KB"), («Environment» от "pause" и "FLANG_WATCH_STEP"), («Environment» от "summary" и "GITHUB_STEP_SUMMARY")]
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"),
+    («Environment» от "margin" и "FLANG_MARGIN_KB"), («Environment» от "pause" и "FLANG_WATCH_STEP"),
+    («Environment» от "summary" и "GITHUB_STEP_SUMMARY")]
 
 тотальная функция «Report reading»
   принимает answers: список «Answer»
   возвращает список «Question»
   «Gathered» от [[(«Read» от "log" и («Log path» от («Log directory» от answers)))],
-    (если пусто («Summary path» от answers) то пустой список иначе [(«Read» от "summary so far" и («Summary path» от answers))])]
+    (если пусто («Summary path» от answers) то пустой список
+      иначе [(«Read» от "summary so far" и («Summary path» от answers))])]
 
 тотальная функция «Report writing»
   принимает answers: список «Answer»
   возвращает список «Question»
-  «Gathered» от [(если пусто («Summary path» от answers) то пустой список иначе [(«Write» от "summary written" и («Summary path» от answers) и (соединить [(«Output of» от "summary so far" и answers), (соединить («Report lines» от answers) по "\n"), "\n"] по ""))]),
-    (если пусто («Report notice» от answers) то пустой список иначе [(«Write» от "notice" и "/dev/stdout" и («Report notice» от answers))])]
+  «Gathered» от [
+    (если пусто («Summary path» от answers) то пустой список
+    иначе [
+    («Write» от "summary written" и («Summary path» от answers) и (соединить [
+    («Output of» от "summary so far" и answers), (соединить («Report lines» от answers) по "\n"), "\n"] по ""))]),
+    (если пусто («Report notice» от answers) то пустой список
+      иначе [(«Write» от "notice" и "/dev/stdout" и («Report notice» от answers))])]
 
 тотальная функция «Report verdict»
   принимает answers: список «Answer»
   возвращает «Продолжение»
   пусть unknown равно («Unknown arguments» от ["--status"] и («Given of» от "arguments" и answers))
   если (длина unknown) больше 0
-    то вариант «Не проверено» с код равным "FLANG_MEMORY_ARGUMENT" и сообщение равным (соединить ["неизвестный довод: ", (соединить unknown по ", "), " (знаю --status)"] по "")
+    то вариант «Не проверено» с код равным "FLANG_MEMORY_ARGUMENT" и сообщение равным (соединить ["неизвестный довод: ",
+      (соединить unknown по ", "), " (знаю --status)"] по "")
     иначе вариант «Конец работы» с значение равным (соединить («Report lines» от answers) по "\n")
 
 тотальная функция «Is a report»
@@ -533,7 +574,8 @@
 тотальная функция «Begin in mode»
   принимает mode: строка
   возвращает «Inquiry»
-  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3 и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3 и «answers» равным [
+    запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
 
 тотальная функция «Begin count»
   возвращает «Inquiry»

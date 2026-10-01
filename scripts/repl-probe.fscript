@@ -111,7 +111,8 @@
   пример «A word is not a digest»
     дано text равно "правит"
     ожидается нет
-  (не (пусто text)) и притом (пусто («Without signs» от text и ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]))
+  (не (пусто text)) и притом (пусто («Without signs» от text и ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a",
+    "b", "c", "d", "e", "f"]))
 
 тотальная функция «Before first»
   принимает mark: строка, text: строка
@@ -284,17 +285,22 @@
   пример «The feeder waits for the prompt, presses the keys, empties the line and ends the input»
     дано keys равно [запись «Key» с «data» равным "2" и «wait» равным "0.3"]
     ожидается "{ sleep 1; printf '%b' '2'; sleep 0.3; printf '%b' '\\025\\004'; sleep 0.3; }"
-  соединить ["{ sleep 1; ", (соединить (отобразить keys как key → «Stroke» от key) по " "), " printf '%b' '\\025\\004'; sleep 0.3; }"] по ""
+  соединить ["{ sleep 1; ", (соединить (отобразить keys как key → «Stroke» от key) по " "),
+    " printf '%b' '\\025\\004'; sleep 0.3; }"] по ""
 
 тотальная функция «Terminal command»
   принимает scenario: «Scenario»
   возвращает строка
-  соединить [(«Feeder» от (scenario.«keys»)), " | env -u NO_COLOR -u FLANG_MODULE_DIR LC_ALL=C.UTF-8 TERM=xterm-256color COLORTERM=truecolor ", (scenario.«settings»), " FLANG_HISTORY=\"$1\" timeout -k 2 ", (scenario.«limit»), " script -qec \"exec \\\"$0\\\" repl\" /dev/null"] по ""
+  соединить [(«Feeder» от (scenario.«keys»)),
+    " | env -u NO_COLOR -u FLANG_MODULE_DIR LC_ALL=C.UTF-8 TERM=xterm-256color COLORTERM=truecolor ",
+    (scenario.«settings»), " FLANG_HISTORY=\"$1\" timeout -k 2 ", (scenario.«limit»),
+    " script -qec \"exec \\\"$0\\\" repl\" /dev/null"] по ""
 
 тотальная функция «In the terminal»
   принимает scenario: «Scenario», answers: список «Answer»
   возвращает «Question»
-  «Run» от (scenario.«name») и "sh" и ["-c", («Terminal command» от scenario), («Binary» от answers), (scenario.«history»)]
+  «Run» от (scenario.«name») и "sh" и ["-c", («Terminal command» от scenario), («Binary» от answers),
+    (scenario.«history»)]
 
 тотальная функция «Enter»
   принимает wait: строка
@@ -331,11 +337,13 @@
 
 тотальная функция «Colourless»
   возвращает «Scenario»
-  запись «Scenario» с «name» равным "keys plain" и «keys» равным [(«Press» от "1 плюс 1" и "0.3"), («Enter» от («Answer wait»))] и «settings» равным "NO_COLOR=" и «history» равным "нет" и «limit» равным "32"
+  запись «Scenario» с «name» равным "keys plain" и «keys» равным [(«Press» от "1 плюс 1" и "0.3"),
+    («Enter» от («Answer wait»))] и «settings» равным "NO_COLOR=" и «history» равным "нет" и «limit» равным "32"
 
 тотальная функция «Colourless help»
   возвращает «Scenario»
-  запись «Scenario» с «name» равным "keys plain help" и «keys» равным [(«Press» от ".помощь" и "0.3"), («Enter» от "1.5")] и «settings» равным "NO_COLOR=" и «history» равным "нет" и «limit» равным "25"
+  запись «Scenario» с «name» равным "keys plain help" и «keys» равным [(«Press» от ".помощь" и "0.3"),
+    («Enter» от "1.5")] и «settings» равным "NO_COLOR=" и «history» равным "нет" и «limit» равным "25"
 
 тотальная функция «Pipe input»
   возвращает строка
@@ -351,7 +359,8 @@
 
 тотальная функция «Setup»
   возвращает список «Question»
-  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"), («Run from» от "tree" и («Root») и "pwd" и ["-P"])]
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"),
+    («Run from» от "tree" и («Root») и "pwd" и ["-P"])]
 
 тотальная функция «Presence»
   принимает answers: список «Answer»
@@ -374,7 +383,8 @@
   принимает answers: список «Answer»
   возвращает список «Question»
   [(«Digest question» от answers),
-   («Run» от "stated" и "env" и ["LC_ALL=C", "sed", "-n", "s/^#define FLANG_SHELL_ID \"\\([0-9a-f]*\\)\".*/\\1/p", («In the tree» от («Source») и answers)]),
+   («Run» от "stated" и "env" и ["LC_ALL=C", "sed", "-n", "s/^#define FLANG_SHELL_ID \"\\([0-9a-f]*\\)\".*/\\1/p",
+     («In the tree» от («Source») и answers)]),
    («Run» от "version" и "env" и ["-u", "NO_COLOR", "LC_ALL=C.UTF-8", («Binary» от answers), "--version"])]
 
 тотальная функция «Piping»
@@ -383,10 +393,16 @@
   [(«Write» от "pipe input" и («Inside» от "input" и answers) и («Pipe input»)),
    («Write» от "expected output" и («Inside» от "expected.out" и answers) и («Pipe output»)),
    («Write» от "expected errors" и («Inside» от "expected.err" и answers) и («Pipe errors»)),
-   («Run» от "pipe" и "sh" и ["-c", "env -u NO_COLOR COLORTERM=truecolor TERM=xterm-256color LC_ALL=C.UTF-8 \"$0\" repl < \"$1\" > \"$2\" 2> \"$3\"", («Binary» от answers), («Inside» от "input" и answers), («Inside» от "got.out" и answers), («Inside» от "got.err" и answers)]),
-   («Run» от "pipe output difference" и "diff" и [(«Inside» от "expected.out" и answers), («Inside» от "got.out" и answers)]),
-   («Run» от "pipe errors difference" и "diff" и [(«Inside» от "expected.err" и answers), («Inside» от "got.err" и answers)]),
-   («Run» от "pipe escapes" и "env" и ["LC_ALL=C", "grep", "-q", («Escape»), («Inside» от "got.out" и answers), («Inside» от "got.err" и answers)])]
+   («Run» от "pipe" и "sh" и ["-c",
+     "env -u NO_COLOR COLORTERM=truecolor TERM=xterm-256color LC_ALL=C.UTF-8 \"$0\" repl < \"$1\" > \"$2\" 2> \"$3\"",
+     («Binary» от answers), («Inside» от "input" и answers), («Inside» от "got.out" и answers),
+     («Inside» от "got.err" и answers)]),
+   («Run» от "pipe output difference" и "diff" и [(«Inside» от "expected.out" и answers),
+     («Inside» от "got.out" и answers)]),
+   («Run» от "pipe errors difference" и "diff" и [(«Inside» от "expected.err" и answers),
+     («Inside» от "got.err" и answers)]),
+   («Run» от "pipe escapes" и "env" и ["LC_ALL=C", "grep", "-q", («Escape»), («Inside» от "got.out" и answers),
+     («Inside» от "got.err" и answers)])]
 
 тотальная функция «Typing»
   принимает answers: список «Answer»
@@ -431,12 +447,16 @@
   принимает answers: список «Answer»
   возвращает список список строки
   «Applying» от [(«When» от ((длина («Given of» от "arguments" и answers)) больше 1) и [(«Usage»)]),
-    («When» от ((«Answered» от "tree" и answers) и притом (пусто («Tree» от answers))) и ["корень дерева узнать не удалось — судить нечем (код 3)"]),
-    («When» от («Failed» от "binary present" и answers) и [(соединить ["нет двоичного: ", («Binary» от answers), " — судить нечем (код 3)"] по "")]),
+    («When» от ((«Answered» от "tree" и answers) и притом (пусто («Tree» от answers))) и [
+      "корень дерева узнать не удалось — судить нечем (код 3)"]),
+    («When» от («Failed» от "binary present" и answers) и [
+      (соединить ["нет двоичного: ", («Binary» от answers), " — судить нечем (код 3)"] по "")]),
     («When» от («Failed» от "terminal present" и answers) и ["нет script или timeout — pty взять нечем (код 3)"]),
     («When» от («Failed» от "compiler present" и answers) и ["нет cc — выражения не вычислятся (код 3)"]),
-    («When» от ((«Answered» от "work" и answers) и притом (пусто («Work» от answers))) и [(соединить ["не создался каталог в ", («Temporary» от answers), " (код 3)"] по "")]),
-    («When» от ((«Answered» от "digest" и answers) и притом (пусто («Digest» от answers))) и [(соединить ["нечем считать sha256 либо не читается ", («Source»), " — отпечаток не сверен (код 3)"] по "")])]
+    («When» от ((«Answered» от "work" и answers) и притом (пусто («Work» от answers))) и [
+      (соединить ["не создался каталог в ", («Temporary» от answers), " (код 3)"] по "")]),
+    («When» от ((«Answered» от "digest" и answers) и притом (пусто («Digest» от answers))) и [
+      (соединить ["нечем считать sha256 либо не читается ", («Source»), " — отпечаток не сверен (код 3)"] по "")])]
 
 тотальная функция «Is clear»
   принимает answers: список «Answer»
@@ -448,7 +468,8 @@
   возвращает список «Question»
   если (stages меньше 1) или (stages больше 5)
     то пустой список
-    иначе элемент (6 минус stages) в [(«Presence» от answers), («Working place» от answers), («Fingerprinting» от answers), («Piping» от answers), («Typing» от answers)]
+    иначе элемент (6 минус stages) в [(«Presence» от answers), («Working place» от answers),
+      («Fingerprinting» от answers), («Piping» от answers), («Typing» от answers)]
 
 тотальная функция «Stage»
   принимает stages: число, answers: список «Answer»
@@ -462,22 +483,35 @@
 тотальная функция «Fingerprint complaints»
   принимает answers: список «Answer»
   возвращает список строки
-  «Gathered words» от («Applying» от [(«When» от (не ((«Digest» от answers) равен («Stated» от answers))) и [(соединить ["отпечаток: в файле «", («Stated» от answers), "», а исходник даёт «", («Digest» от answers), "» — поставьте строку:"] по ""), "  bootstrap/flang io scripts/repl-probe.fscript --plan Fingerprint"]),
-    («When» от да и («Chosen» от [(«When» от (пусто («Named by the binary» от answers)) и [(соединить ["отпечаток: «", («Binary» от answers), " --version» не назвал оболочку — это двоичный старее задачи 3637"] по "")]),
-      («When» от (не ((«Named by the binary» от answers) равен («Stated» от answers))) и [(соединить ["отпечаток: двоичный говорит «", («Named by the binary» от answers), "», а исходник дерева — «", («Stated» от answers), "»: двоичный не пересобран"] по "")])] и (пустой список)))])
+  «Gathered words» от («Applying» от [
+    («When» от (не ((«Digest» от answers) равен («Stated» от answers))) и [
+    (соединить ["отпечаток: в файле «", («Stated» от answers), "», а исходник даёт «", («Digest» от answers),
+    "» — поставьте строку:"] по ""), "  bootstrap/flang io scripts/repl-probe.fscript --plan Fingerprint"]),
+    («When» от да и («Chosen» от [
+      («When» от (пусто («Named by the binary» от answers)) и [
+      (соединить ["отпечаток: «", («Binary» от answers),
+      " --version» не назвал оболочку — это двоичный старее задачи 3637"] по "")]),
+      («When» от (не ((«Named by the binary» от answers) равен («Stated» от answers))) и [
+        (соединить ["отпечаток: двоичный говорит «", («Named by the binary» от answers), "», а исходник дерева — «",
+        («Stated» от answers), "»: двоичный не пересобран"] по "")])] и (пустой список)))])
 
 тотальная функция «Difference»
   принимает heading: строка, name: строка, answers: список «Answer»
   возвращает список строки
-  приписать heading к («Lines» от (соединить [(«Output of» от name и answers), («Errors of» от name и answers)] по "\n"))
+  приписать heading к («Lines» от (соединить [(«Output of» от name и answers),
+    («Errors of» от name и answers)] по "\n"))
 
 тотальная функция «Pipe complaints»
   принимает answers: список «Answer»
   возвращает список строки
-  «Gathered words» от («Applying» от [(«When» от (не ((«Exit code of» от "pipe" и answers) равен 1)) и [(соединить ["труба: код ", (к строке («Exit code of» от "pipe" и answers)), ", ждали 1 (в сценарии есть отказ, конвейеру он нужен кодом)"] по "")]),
+  «Gathered words» от («Applying» от [
+    («When» от (не ((«Exit code of» от "pipe" и answers) равен 1)) и [
+    (соединить ["труба: код ", (к строке («Exit code of» от "pipe" и answers)),
+    ", ждали 1 (в сценарии есть отказ, конвейеру он нужен кодом)"] по "")]),
     («When» от («Failed» от "pipe output difference" и answers) и («Difference» от "труба: stdout разошёлся" и "pipe output difference" и answers)),
     («When» от («Failed» от "pipe errors difference" и answers) и («Difference» от "труба: stderr разошёлся" и "pipe errors difference" и answers)),
-    («When» от ((«Exit code of» от "pipe escapes" и answers) равен 0) и ["труба: в выводе есть ESC — цвет протёк в конвейер"])])
+    («When» от ((«Exit code of» от "pipe escapes" и answers) равен 0) и [
+      "труба: в выводе есть ESC — цвет протёк в конвейер"])])
 
 тотальная функция «Hanging»
   принимает scenario: строка, answers: список «Answer»
@@ -489,7 +523,9 @@
   возвращает список строки
   пусть raw равно («Output of» от "keys edit" и answers)
   «Applying» от [(«Hanging» от "keys edit" и answers),
-    («When» от (не ((«Answers» от raw) равен ["5", "5", "9"])) и (соединить ["pty: ответы ", («Shown» от («Answers» от raw)), " ждали [5, 5, 9] — Home/End, Backspace, история или слова не сработали"] по "")),
+    («When» от (не ((«Answers» от raw) равен ["5", "5", "9"])) и (соединить ["pty: ответы ",
+      («Shown» от («Answers» от raw)),
+      " ждали [5, 5, 9] — Home/End, Backspace, история или слова не сработали"] по "")),
     («When» от ((raw содержит "^[[") или (raw содержит "^[b")) и "pty: в выводе буквальное ^[ — клавиша напечаталась знаками, а не сработала"),
     («When» от (не (raw содержит («Sequence» от "38;2;"))) и "pty: под truecolor нет ни одной последовательности 38;2 — тема не красит"),
     («When» от (не (raw содержит («Sequence» от "1;38;2;245;247;250m5"))) и "pty: ответ 5 не выкрашен белым полужирным (палитра digitable)")]
@@ -499,9 +535,14 @@
   возвращает список строки
   пусть raw равно («Output of» от "keys clear" и answers)
   «Gathered words» от [(«Applying» от [(«Hanging» от "keys clear" и answers)]),
-    («Chosen» от [(«When» от (не (raw содержит («Sequence» от "2J"))) и ["pty: Ctrl-L не очистил экран — последовательности 2J в выводе нет"]),
-      («When» от (не ((«Plain» от («After last» от («Sequence» от "2J") и raw)) содержит "4 плюс")) и ["pty: после Ctrl-L набранное не перерисовано — строка потеряна вместе с экраном"])] и (пустой список)),
-    («Applying» от [(«When» от (не ((«Answers» от raw) равен ["8"])) и (соединить ["pty: после Ctrl-L ответ ", («Shown» от («Answers» от raw)), " ждали [8] — набранное до очистки не досчиталось"] по ""))])]
+    («Chosen» от [
+      («When» от (не (raw содержит («Sequence» от "2J"))) и [
+      "pty: Ctrl-L не очистил экран — последовательности 2J в выводе нет"]),
+      («When» от (не ((«Plain» от («After last» от («Sequence» от "2J") и raw)) содержит "4 плюс")) и [
+        "pty: после Ctrl-L набранное не перерисовано — строка потеряна вместе с экраном"])] и (пустой список)),
+    («Applying» от [
+      («When» от (не ((«Answers» от raw) равен ["8"])) и (соединить ["pty: после Ctrl-L ответ ",
+      («Shown» от («Answers» от raw)), " ждали [8] — набранное до очистки не досчиталось"] по ""))])]
 
 тотальная функция «Completing complaints»
   принимает answers: список «Answer»
@@ -510,12 +551,17 @@
   пусть seen равно («Plain» от raw)
   «Applying» от [(«Hanging» от "keys completion" и answers),
     («When» от (не (seen содержит "объявлено: тотальная функция «Втрое»")) и "pty: вставка четырёх строк одним куском не приняла объявление"),
-    («When» от (не ((«Last answer» от raw) равен ["15"])) и (соединить ["pty: «Втр + Tab + « от 5» дало ", («Shown» от («Last answer» от raw)), " ждали [15] — дополнение имени не сработало"] по "")),
-    («When» от ((«Count of» от («Sequence» от "K") и («Before first» от "объявлено" и raw)) больше 30) и (соединить ["pty: вставка перерисовала строку ", (к строке («Count of» от («Sequence» от "K") и («Before first» от "объявлено" и raw))), " раз — мельтешение вернулось"] по "")),
+    («When» от (не ((«Last answer» от raw) равен ["15"])) и (соединить ["pty: «Втр + Tab + « от 5» дало ",
+      («Shown» от («Last answer» от raw)), " ждали [15] — дополнение имени не сработало"] по "")),
+    («When» от ((«Count of» от («Sequence» от "K") и («Before first» от "объявлено" и raw)) больше 30) и (соединить [
+      "pty: вставка перерисовала строку ",
+      (к строке («Count of» от («Sequence» от "K") и («Before first» от "объявлено" и raw))),
+      " раз — мельтешение вернулось"] по "")),
     («When» от (не ((seen содержит "Эта сборка: flang") и притом (seen содержит "строку правит оболочка"))) и "pty: «.пом + Tab» не дало справки со сведениями о сборке"),
     («When» от (не (seen содержит "история: строк в этой сессии")) и "pty: справка не сказала про историю"),
     («When» от (не (raw содержит («Sequence» от "2J"))) и "pty: «.оч + Tab» не очистило экран — команды не дополняются"),
-    («When» от («Failed» от "history present" и answers) и (соединить ["pty: файл истории ", («Inside» от "history" и answers), " не заведён"] по ""))]
+    («When» от («Failed» от "history present" и answers) и (соединить ["pty: файл истории ",
+      («Inside» от "history" и answers), " не заведён"] по ""))]
 
 тотальная функция «Remembered»
   принимает answers: список «Answer»
@@ -534,7 +580,8 @@
   пусть raw равно («Output of» от "keys plain" и answers)
   «Applying» от [(«Hanging» от "keys plain" и answers),
     («When» от («Has a colour» от raw) и "pty: NO_COLOR= стоит, а цвет (SGR) есть"),
-    («When» от (не ((«Answers» от raw) равен ["2"])) и (соединить ["pty: без цвета ответ ", («Shown» от («Answers» от raw)), " ждали [2]"] по "")),
+    («When» от (не ((«Answers» от raw) равен ["2"])) и (соединить ["pty: без цвета ответ ",
+      («Shown» от («Answers» от raw)), " ждали [2]"] по "")),
     («Hanging» от "keys plain help" и answers),
     («When» от (не ((«Plain» от («Output of» от "keys plain help" и answers)) содержит "выключен: стоит NO_COLOR")) и "pty: при NO_COLOR справка не назвала причину выключенного цвета")]
 
@@ -553,7 +600,8 @@
   пусть completing равно («Соединить списки» от («Completing complaints» от answers) и («Remembering complaints» от answers))
   пусть colourless равно («Colourless complaints» от answers)
   [stamp,
-   («Praise» от (пусто stamp) и (соединить ["  зелен  отпечаток: исходник, строка и двоичный сошлись (", («Digest» от answers), ")"] по "")),
+   («Praise» от (пусто stamp) и (соединить ["  зелен  отпечаток: исходник, строка и двоичный сошлись (",
+     («Digest» от answers), ")"] по "")),
    pipe,
    («Praise» от ((пусто stamp) и притом (пусто pipe)) и "  зелен  труба: вывод прежний, ESC нет"),
    editing,
@@ -568,7 +616,9 @@
 тотальная функция «Is red»
   принимает answers: список «Answer»
   возвращает признак
-  (длина («Gathered words» от [(«Fingerprint complaints» от answers), («Pipe complaints» от answers), («Editing complaints» от answers), («Clearing complaints» от answers), («Completing complaints» от answers), («Remembering complaints» от answers), («Colourless complaints» от answers)])) больше 0
+  (длина («Gathered words» от [(«Fingerprint complaints» от answers), («Pipe complaints» от answers),
+    («Editing complaints» от answers), («Clearing complaints» от answers), («Completing complaints» от answers),
+    («Remembering complaints» от answers), («Colourless complaints» от answers)])) больше 0
 
 тотальная функция «Check verdict»
   принимает answers: список «Answer»
@@ -582,7 +632,8 @@
   возвращает «Продолжение»
   если пусто («Digest» от answers)
     то вариант «Не проверено» с код равным "FLANG_REPL_PROBE_CANNOT_LOOK" и сообщение равным "отпечаток не посчитан (код 3)"
-    иначе вариант «Конец работы» с значение равным (соединить ["#define FLANG_SHELL_ID \"", («Digest» от answers), "\""] по "")
+    иначе вариант «Конец работы» с значение равным (соединить ["#define FLANG_SHELL_ID \"", («Digest» от answers),
+      "\""] по "")
 
 тотальная функция «Verdict»
   принимает answers: список «Answer»
@@ -591,7 +642,9 @@
     случай голова и хвост
       то вариант «Не проверено» с код равным "FLANG_REPL_PROBE_CANNOT_LOOK" и сообщение равным (соединить голова по "\n")
     случай пусто
-      то если «Is asking for the fingerprint» от answers то («Fingerprint verdict» от answers) иначе («Check verdict» от answers)
+      то если «Is asking for the fingerprint» от answers
+        то («Fingerprint verdict» от answers)
+        иначе («Check verdict» от answers)
 
 тотальная функция «Proceed»
   принимает queue: список «Question», stages: число, answers: список «Answer»
@@ -607,7 +660,8 @@
 тотальная функция «Begin in mode»
   принимает mode: строка
   возвращает «Inquiry»
-  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 7 и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 7 и «answers» равным [
+    запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
 
 тотальная функция «Begin check»
   возвращает «Inquiry»

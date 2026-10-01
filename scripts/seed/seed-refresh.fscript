@@ -164,8 +164,11 @@
     дано input равно запись «Input» с «hash» равным "aa11" и «path» равным "flang/core/evaluate.flang"
     дано hashed равно ""
     ожидается ["  • flang/core/evaluate.flang: был в отпечатке, в дереве нет"]
-  «Chosen» от [(«When» от (hashed содержит (соединить [(input.«hash»), "  ", (input.«path»), "\n"] по "")) и (пустой список)),
-    («When» от (hashed содержит (соединить ["  ", (input.«path»), "\n"] по "")) и [(соединить ["  • ", (input.«path»), ": изменён относительно отпечатка семени"] по "")])] и [(соединить ["  • ", (input.«path»), ": был в отпечатке, в дереве нет"] по "")]
+  «Chosen» от [
+    («When» от (hashed содержит (соединить [(input.«hash»), "  ", (input.«path»), "\n"] по "")) и (пустой список)),
+    («When» от (hashed содержит (соединить ["  ", (input.«path»), "\n"] по "")) и [
+      (соединить ["  • ", (input.«path»), ": изменён относительно отпечатка семени"] по "")])] и [
+      (соединить ["  • ", (input.«path»), ": был в отпечатке, в дереве нет"] по "")]
 
 тотальная функция «Found troubles»
   принимает answers: список «Answer»
@@ -231,7 +234,10 @@
 
 тотальная функция «Setup»
   возвращает список «Question»
-  [(«Environment» от "temporary" и "FLANG_TMP"), («Run from» от "tree" и («Root») и "pwd" и ["-P"]), («Read from» от "fingerprint" и («Root») и («Fingerprint»)), («Read from» от "reprint" и («Root») и («Reprint»)), («Run» от "hasher" и "sh" и ["-c", "command -v sha256sum || command -v shasum"]), («Run» от "cores" и "getconf" и ["_NPROCESSORS_ONLN"])]
+  [(«Environment» от "temporary" и "FLANG_TMP"), («Run from» от "tree" и («Root») и "pwd" и ["-P"]),
+    («Read from» от "fingerprint" и («Root») и («Fingerprint»)), («Read from» от "reprint" и («Root») и («Reprint»)),
+    («Run» от "hasher" и "sh" и ["-c", "command -v sha256sum || command -v shasum"]),
+    («Run» от "cores" и "getconf" и ["_NPROCESSORS_ONLN"])]
 
 тотальная функция «Hashing»
   принимает answers: список «Answer»
@@ -295,7 +301,10 @@
   принимает answers: список «Answer»
   возвращает список «Question»
   если («May reseed» от answers) и притом (не (пусто («Work» от answers)))
-    то отобразить («Stale files» от answers) как name → «Run from» от («Composition» от name) и («Root») и "sh" и ["-c", "{ head -n \"$0\" \"$1\" && cat \"$2\"; } > \"$3\" && mv \"$3\" \"$1\"", (к строке («Header lines» от name и answers)), («Seed path» от name), («Source path» от name), (соединить [(«Work» от answers), "/", name] по "")]
+    то отобразить («Stale files» от answers) как name → «Run from» от («Composition» от name) и («Root») и "sh" и ["-c",
+      "{ head -n \"$0\" \"$1\" && cat \"$2\"; } > \"$3\" && mv \"$3\" \"$1\"",
+      (к строке («Header lines» от name и answers)), («Seed path» от name), («Source path» от name),
+      (соединить [(«Work» от answers), "/", name] по "")]
     иначе пустой список
 
 тотальная функция «Uncomposed files»
@@ -324,7 +333,8 @@
   принимает answers: список «Answer»
   возвращает список «Question»
   если «Is stamped» от answers
-    то [(«Run from» от "build" и («Root») и "make" и ["-C", "bootstrap", (соединить ["-j", («Cores» от answers)] по "")])]
+    то [
+      («Run from» от "build" и («Root») и "make" и ["-C", "bootstrap", (соединить ["-j", («Cores» от answers)] по "")])]
     иначе пустой список
 
 тотальная функция «Is built»
@@ -337,7 +347,8 @@
   возвращает список «Question»
   если «Is built» от answers
     то [(«Run from» от "body" и («Root») и "sh" и [(«Reprint»), "--telo"]),
-      («Run from» от "runtime" и («Root») и («Binary» от answers) и ["io", "scripts/seed/seed-runtime-is-source.fscript", "--plan", "After print"]),
+      («Run from» от "runtime" и («Root») и («Binary» от answers) и ["io",
+        "scripts/seed/seed-runtime-is-source.fscript", "--plan", "After print"]),
       («Run» от "version" и («Binary» от answers) и ["--version"])]
     иначе пустой список
 
@@ -364,17 +375,27 @@
 
 тотальная функция «Fast path holds»
   возвращает список строки
-  ["печатаемая часть семени отвечает flang/self и пределам.", "тронуты только копируемые файлы — быстрый пересев «семя:освежить» достаточен."]
+  ["печатаемая часть семени отвечает flang/self и пределам.",
+    "тронуты только копируемые файлы — быстрый пересев «семя:освежить» достаточен."]
 
 тотальная функция «Fast path misused»
   принимает troubles: список строки
   возвращает список строки
-  «Gathered words» от [["БЫСТРЫЙ ПЕРЕСЕВ ПРИМЕНЁН ТАМ, ГДЕ НЕЛЬЗЯ.", "", "Рантайм-часть семени догнала источник (как после «семя:освежить»),", "но печатаемая часть разошлась с flang/self или пределами:"], troubles, ["", "compiler_flang.c печатается из flang/self/**, и быстрый путь его не", "трогает. Раз замыкание другое — печатаемая часть устарела, и семя", "собрано не из того, чем оно объявлено. Нужна полная перепечатка:", "  sh scripts/bootstrap-reprint.sh"]]
+  «Gathered words» от [
+    ["БЫСТРЫЙ ПЕРЕСЕВ ПРИМЕНЁН ТАМ, ГДЕ НЕЛЬЗЯ.", "",
+    "Рантайм-часть семени догнала источник (как после «семя:освежить»),",
+    "но печатаемая часть разошлась с flang/self или пределами:"], troubles,
+    ["", "compiler_flang.c печатается из flang/self/**, и быстрый путь его не",
+    "трогает. Раз замыкание другое — печатаемая часть устарела, и семя",
+    "собрано не из того, чем оно объявлено. Нужна полная перепечатка:", "  sh scripts/bootstrap-reprint.sh"]]
 
 тотальная функция «Ordinary lag»
   принимает troubles: список строки
   возвращает список строки
-  «Gathered words» от [["flang/self или пределы ушли вперёд семени — обычное отставание середины работы."], troubles, ["", "Это НЕ беда: рантайм тоже отстаёт, семя честно старое. Догонится полной", "перепечаткой перед выпуском (sh scripts/bootstrap-reprint.sh); быстрый пересев здесь", "не годится — он трогает только копируемые файлы, а разошлось замыкание."]]
+  «Gathered words» от [["flang/self или пределы ушли вперёд семени — обычное отставание середины работы."], troubles,
+    ["", "Это НЕ беда: рантайм тоже отстаёт, семя честно старое. Догонится полной",
+    "перепечаткой перед выпуском (sh scripts/bootstrap-reprint.sh); быстрый пересев здесь",
+    "не годится — он трогает только копируемые файлы, а разошлось замыкание."]]
 
 тотальная функция «Check verdict»
   принимает answers: список «Answer»
@@ -393,14 +414,18 @@
 тотальная функция «Closure refusal»
   принимает troubles: список строки
   возвращает список строки
-  «Gathered words» от [(«Opening lines»), troubles, ["", "ОТКАЗ: замыкание компилятора или пределы тронуты относительно отпечатка.", "compiler_flang.c печатается из flang/self/** — быстрый пересев его не даёт.", "Нужна полная перепечатка (те самые ~4,5 часа):", "  sh scripts/bootstrap-reprint.sh"]]
+  «Gathered words» от [(«Opening lines»), troubles,
+    ["", "ОТКАЗ: замыкание компилятора или пределы тронуты относительно отпечатка.",
+    "compiler_flang.c печатается из flang/self/** — быстрый пересев его не даёт.",
+    "Нужна полная перепечатка (те самые ~4,5 часа):", "  sh scripts/bootstrap-reprint.sh"]]
 
 тотальная функция «File account»
   принимает name: строка, answers: список «Answer»
   возвращает строка
   если «Is the source» от name и answers
     то соединить ["  ", name, ": уже совпадает с источником — не трогаю"] по ""
-    иначе соединить ["  ", name, ": шапка ", (к строке («Header lines» от name и answers)), " строк + источник ", («Word» от 1 и («Output of» от («Length» от name) и answers)), " строк — обновлён"] по ""
+    иначе соединить ["  ", name, ": шапка ", (к строке («Header lines» от name и answers)), " строк + источник ",
+      («Word» от 1 и («Output of» от («Length» от name) и answers)), " строк — обновлён"] по ""
 
 тотальная функция «Accounts»
   принимает answers: список «Answer»
@@ -411,8 +436,11 @@
   принимает answers: список «Answer»
   возвращает список строки
   если (длина («Stale files» от answers)) равен 0
-    то ["", "семя уже свежо: копируемые файлы совпадают с источником, обновлять нечего.", "проверяю заслоны на всякий случай."]
-    иначе «Gathered words» от [["", (соединить ["снимаю отпечаток тем же прибором, что и печать: sh ", («Reprint»), " --otpechatok"] по "")], («Lines» от («Output of» от "stamp" и answers)), («Lines» от («Errors of» от "stamp" и answers))]
+    то ["", "семя уже свежо: копируемые файлы совпадают с источником, обновлять нечего.",
+      "проверяю заслоны на всякий случай."]
+    иначе «Gathered words» от [
+      ["", (соединить ["снимаю отпечаток тем же прибором, что и печать: sh ", («Reprint»), " --otpechatok"] по "")],
+      («Lines» от («Output of» от "stamp" и answers)), («Lines» от («Errors of» от "stamp" и answers))]
 
 тотальная функция «Guard line»
   принимает green: признак, name: строка, meaning: строка
@@ -442,7 +470,10 @@
   ["", "пересобираю двоичный из обновлённого семени: make -C bootstrap", "", "сверяю заслоны семени:",
    («Guard line» от ((«Exit code of» от "body" и answers) равен 0) и "bootstrap-reprint.sh --telo" и "тело семени сходится с отпечатком"),
    («Guard line» от ((«Exit code of» от "runtime" и answers) равен 0) и "seed-runtime-is-source.fscript, план «After print»" и "семя = источник"),
-   "", (соединить ["версия собранного двоичного: ", («First line» от (соединить [(«Output of» от "version" и answers), («Errors of» от "version" и answers)] по "\n"))] по "")]
+   "",
+     (соединить ["версия собранного двоичного: ",
+     («First line» от (соединить [(«Output of» от "version" и answers),
+     («Errors of» от "version" и answers)] по "\n"))] по "")]
 
 тотальная функция «Ending»
   принимает lines: список строки, count: число
@@ -473,17 +504,26 @@
   «Chosen» от [(«When» от (не («Closure is fresh» от answers)) и (вариант «Провал» с код равным "FLANG_SEED_CLOSURE_CHANGED" и сообщение равным (соединить («Closure refusal» от («Closure troubles» от answers)) по "\n"))),
     («When» от ((длина («Missing files» от answers)) больше 0) и («Not judged» от («Соединить списки» от («Closure approval») и (отобразить («Missing files» от answers) как name → соединить ["нет файла: ", («Source path» от name), " или ", («Seed path» от name), " — пересеять нечего"] по "")))),
     («When» от ((длина («Headless files» от answers)) больше 0) и (вариант «Провал» с код равным "FLANG_SEED_HEADER_LOST" и сообщение равным (соединить («Соединить списки» от («Closure approval») и [(соединить ["ПРИЁМ БОЛЬШЕ НЕ ЗАКОНЕН: первой строки источника ", (соединить («Headless files» от answers) по ", "), " в семени нет вовсе."] по ""), "Печать копирует рантайм уже не дословно — быстрым путём не пересеять.", "Нужна полная перепечатка: sh scripts/bootstrap-reprint.sh"]) по "\n"))),
-    («When» от (((длина («Stale files» от answers)) больше 0) и притом (пусто («Work» от answers))) и («Not judged» от [(соединить ["нет времянки: не создался каталог в ", («Temporary» от answers)] по "")])),
-    («When» от (не («Is composed» от answers)) и («Not judged» от [(соединить ["составить не удалось: ", (соединить («Uncomposed files» от answers) по ", "), " — семя оставлено как было"] по "")])),
-    («When» от (не («Is stamped» от answers)) и («Not judged» от («Gathered words» от [(«Accounts» от answers), («Stamp account» от answers), ["снять отпечаток не удалось — семя оставлено обновлённым, но отпечаток старый"]]))),
-    («When» от (не («Is built» от answers)) и («Not judged» от («Gathered words» от [(«Accounts» от answers), («Stamp account» от answers), («Said by» от "build" и answers), ["сборка не удалась"]]))),
+    («When» от (((длина («Stale files» от answers)) больше 0) и притом (пусто («Work» от answers))) и («Not judged» от [
+      (соединить ["нет времянки: не создался каталог в ", («Temporary» от answers)] по "")])),
+    («When» от (не («Is composed» от answers)) и («Not judged» от [
+      (соединить ["составить не удалось: ", (соединить («Uncomposed files» от answers) по ", "),
+      " — семя оставлено как было"] по "")])),
+    («When» от (не («Is stamped» от answers)) и («Not judged» от («Gathered words» от [(«Accounts» от answers),
+      («Stamp account» от answers),
+      ["снять отпечаток не удалось — семя оставлено обновлённым, но отпечаток старый"]]))),
+    («When» от (не («Is built» от answers)) и («Not judged» от («Gathered words» от [(«Accounts» от answers),
+      («Stamp account» от answers), («Said by» от "build" и answers), ["сборка не удалась"]]))),
     («When» от (не («Guards are green» от answers)) и (вариант «Провал» с код равным "FLANG_SEED_GUARDS_RED" и сообщение равным (соединить («Gathered words» от [(«Accounts» от answers), («Stamp account» от answers), («Guard account» от answers)]) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Gathered words» от [(«Accounts» от answers), («Stamp account» от answers), («Guard account» от answers), ["", "семя пересеяно быстрым путём, заслоны зелены."]]) по "\n"))
 
 тотальная функция «Verdict»
   принимает answers: список «Answer»
   возвращает «Продолжение»
-  «Chosen» от [(«When» от (не («Has a fingerprint» от answers)) и («Not judged» от [(соединить ["отпечатка нет: ", («Fingerprint»), " — сверять не с чем"] по "")])),
-    («When» от (не («Has a hasher» от answers)) и («Not judged» от ["нужен sha256sum или shasum — отпечаток нечем пересчитать"])),
+  «Chosen» от [
+    («When» от (не («Has a fingerprint» от answers)) и («Not judged» от [
+    (соединить ["отпечатка нет: ", («Fingerprint»), " — сверять не с чем"] по "")])),
+    («When» от (не («Has a hasher» от answers)) и («Not judged» от [
+      "нужен sha256sum или shasum — отпечаток нечем пересчитать"])),
     («When» от («Is a reseed» от answers) и («Reseed verdict» от answers))] и («Check verdict» от answers)
 
 тотальная функция «Proceed»
@@ -500,7 +540,8 @@
 тотальная функция «Begin in mode»
   принимает mode: строка
   возвращает «Inquiry»
-  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 10 и «answers» равным [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 10 и «answers» равным [
+    запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
 
 тотальная функция «Begin check»
   возвращает «Inquiry»

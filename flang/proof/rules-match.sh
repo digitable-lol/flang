@@ -108,7 +108,7 @@ done
 
 KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 FLANG=${FLANG:-$KOREN/bootstrap/flang}
-SVERIT=$KOREN/flang/proof/check.sh
+SVERIT=$KOREN/flang/proof/check.fscript
 # Пути перекрываются извне НАРОЧНО: порча ядра проверяется на КОПИИ, потому что
 # сам `proof-kernel.flang` править нельзя, а сторож, которого не пробовали
 # сломать, ничего не сторожит.
@@ -210,7 +210,7 @@ say ""
 opyt() {
   imya=$1; zhdyom=$2
   sed "s/правило «$ESTNOE»/правило «$imya»/" "$RABOTA/честная" > "$RABOTA/проба"
-  vyvod=$(sh "$SVERIT" "$ISHODNIK" "$RABOTA/проба" 2>&1) && kod=0 || kod=$?
+  vyvod=$("$FLANG" io "$SVERIT" --timeout 14400000 -- "$ISHODNIK" "$RABOTA/проба" "$SVERSHCHIK" 2>&1) && kod=0 || kod=$?
   if [ "$kod" -eq "$zhdyom" ]; then
     say "СОШЛОСЬ  правило «$imya» — код $kod, как и ждали"
   else
@@ -229,7 +229,7 @@ done < "$RABOTA/имена"
 
 # Пустое имя правила стоит в этой записи и без подмены: у базовой посылки
 # «правило «»». Значит честный прогон без подмены и есть опыт на пустое имя.
-vyvod=$(sh "$SVERIT" "$ISHODNIK" "$RABOTA/честная" 2>&1) && kod=0 || kod=$?
+vyvod=$("$FLANG" io "$SVERIT" --timeout 14400000 -- "$ISHODNIK" "$RABOTA/честная" "$SVERSHCHIK" 2>&1) && kod=0 || kod=$?
 if [ "$kod" -eq 0 ]; then
   say "СОШЛОСЬ  запись без подмены (в ней же пустое имя правила) — код 0"
 else
@@ -259,7 +259,7 @@ grep -q "теоремы нет" "$RABOTA/без-теоремы" || {
   say "ОСТАНОВКА: в записи нет ни одного утверждения «теоремы нет» — дорога не та"
   exit 1
 }
-vyvod=$(sh "$SVERIT" "$BEZ_TEOREMY" "$RABOTA/без-теоремы" 2>&1) && kod=0 || kod=$?
+vyvod=$("$FLANG" io "$SVERIT" --timeout 14400000 -- "$BEZ_TEOREMY" "$RABOTA/без-теоремы" "$SVERSHCHIK" 2>&1) && kod=0 || kod=$?
 if [ "$kod" -eq 0 ]; then
   say "СОШЛОСЬ  честная запись без теоремы принята — код 0"
 else
@@ -268,7 +268,7 @@ else
   BAD=$((BAD + 1))
 fi
 sed "s/правило «$ESTNOE»/правило «правило моего сочинения»/" "$RABOTA/без-теоремы" > "$RABOTA/проба"
-vyvod=$(sh "$SVERIT" "$BEZ_TEOREMY" "$RABOTA/проба" 2>&1) && kod=0 || kod=$?
+vyvod=$("$FLANG" io "$SVERIT" --timeout 14400000 -- "$BEZ_TEOREMY" "$RABOTA/проба" "$SVERSHCHIK" 2>&1) && kod=0 || kod=$?
 case "$kod:$vyvod" in
   1:*"утверждение «"*"правило моего сочинения"*)
     say "СОШЛОСЬ  чужое правило у утверждения БЕЗ теоремы отвергнуто и названо — код 1" ;;
@@ -281,7 +281,7 @@ say ""
 
 # Порча называет имя, а не отделывается общими словами.
 sed "s/правило «$ESTNOE»/правило «разбор цели по настроению»/" "$RABOTA/честная" > "$RABOTA/проба"
-vyvod=$(sh "$SVERIT" "$ISHODNIK" "$RABOTA/проба" 2>&1) || true
+vyvod=$("$FLANG" io "$SVERIT" --timeout 14400000 -- "$ISHODNIK" "$RABOTA/проба" "$SVERSHCHIK" 2>&1) || true
 case "$vyvod" in
   *"разбор цели по настроению"*) say "СОШЛОСЬ  отказ называет подставленное имя" ;;
   *) say "ПРОВАЛ   отказ не называет имя: $(printf '%s' "$vyvod" | head -1 | cut -c1-200)"; BAD=$((BAD + 1)) ;;

@@ -1,0 +1,23 @@
+модуль «Small reduction»
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Errand» из "errand.fscript"
+
+тотальная функция «This errand»
+  возвращает «Errand»
+  пример «One path is carried to the small reducer»
+    ожидается запись «Errand» с «usage» равным "звать: reduce.fscript -- <исходник.flang> [<сводитель.flang>]" и «program» равным "small-reducer.flang" и «prefix» равным "reduce" и «paths» равным 1 и «keys» равным ["--max-steps", "2000000000", "--max-depth", "40000"] и «refusal» равным "FLANG_SMALL_REDUCTION" и «blindness» равным "FLANG_SMALL_REDUCTION_NOT_MEASURED" и «refused» равным ""
+  запись «Errand» с «usage» равным "звать: reduce.fscript -- <исходник.flang> [<сводитель.flang>]" и «program» равным "small-reducer.flang" и «prefix» равным "reduce" и «paths» равным 1 и «keys» равным ["--max-steps", "2000000000", "--max-depth", "40000"] и «refusal» равным "FLANG_SMALL_REDUCTION" и «blindness» равным "FLANG_SMALL_REDUCTION_NOT_MEASURED" и «refused» равным ""
+
+тотальная функция «Step»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A call without a path is refused before anything is run»
+    дано inquiry равно запись «Inquiry» с «asked» равным "arguments" и «queue» равным пустой список и «stages» равным 5 и «answers» равным пустой список
+    дано reply равно вариант «Доводы» с доводы равным пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_SMALL_REDUCTION_NOT_MEASURED" и сообщение равным "звать: reduce.fscript -- <исходник.flang> [<сводитель.flang>]"
+  «Next» от («This errand») и inquiry и reply
+
+план «Reduce»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Step»

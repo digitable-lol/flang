@@ -512,6 +512,7 @@ environments
 equal
 equality
 equals
+errand
 escapes
 estimate
 evaluator

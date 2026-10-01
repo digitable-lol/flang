@@ -1,0 +1,27 @@
+модуль «Paths»
+
+тотальная функция «Absolute»
+  принимает directory: строка, path: строка
+  возвращает строка
+  пример «A relative path is counted from the directory»
+    дано directory равно "/srv/tree"
+    дано path равно "flang/proof/a.flang"
+    ожидается "/srv/tree/flang/proof/a.flang"
+  пример «An absolute path stays as it is»
+    дано directory равно "/srv/tree"
+    дано path равно "/srv/tmp/a.record"
+    ожидается "/srv/tmp/a.record"
+  если path начинается с "/"
+    то path
+    иначе соединить [directory, "/", path] по ""
+
+тотальная функция «File name»
+  принимает path: строка
+  возвращает строка
+  пример «The last part of a path»
+    дано path равно "flang/proof/examples/stack.flang"
+    ожидается "stack.flang"
+  пример «A bare name is its own file name»
+    дано path равно "stack.flang"
+    ожидается "stack.flang"
+  свёртка (разделить path по "/") начиная с "" как last и part → part

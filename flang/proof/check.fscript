@@ -1,0 +1,23 @@
+модуль «Proof check»
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Errand» из "errand.fscript"
+
+тотальная функция «This errand»
+  возвращает «Errand»
+  пример «Two paths are carried to the checker, and a refused record is named as such»
+    ожидается запись «Errand» с «usage» равным "звать: check.fscript -- <исходник.flang> <запись> [<сверщик.flang>]" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "4000000000", "--max-depth", "20000", "--на-веру"] и «refusal» равным "FLANG_PROOF_CHECK" и «blindness» равным "FLANG_PROOF_CHECK_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+  запись «Errand» с «usage» равным "звать: check.fscript -- <исходник.flang> <запись> [<сверщик.flang>]" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "4000000000", "--max-depth", "20000", "--на-веру"] и «refusal» равным "FLANG_PROOF_CHECK" и «blindness» равным "FLANG_PROOF_CHECK_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+
+тотальная функция «Step»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A call without paths is refused before anything is run»
+    дано inquiry равно запись «Inquiry» с «asked» равным "arguments" и «queue» равным пустой список и «stages» равным 5 и «answers» равным пустой список
+    дано reply равно вариант «Доводы» с доводы равным пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_PROOF_CHECK_NOT_MEASURED" и сообщение равным "звать: check.fscript -- <исходник.flang> <запись> [<сверщик.flang>]"
+  «Next» от («This errand») и inquiry и reply
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Step»

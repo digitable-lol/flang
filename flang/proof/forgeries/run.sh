@@ -18,7 +18,7 @@ set -eu
 
 KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 FLANG=${FLANG:-$KOREN/bootstrap/flang}
-SVERIT=$KOREN/flang/proof/check.sh
+SVERIT=$KOREN/flang/proof/check.fscript
 CHESTNYY=$KOREN/flang/proof/examples/body-forms.flang
 CHUZHOY=$KOREN/flang/proof/examples/corpus-factorial.flang
 KRUG=$KOREN/flang/proof/forgeries/circle.flang
@@ -35,7 +35,7 @@ say() { printf '%s\n' "$*"; }
 # Один опыт: имя, исходник, запись, ожидаемый код возврата сверщика.
 sverit() {
   imya=$1; ish=$2; zap=$3; zhdyom=$4
-  vyvod=$(sh "$SVERIT" "$ish" "$zap" 2>&1) && kod=0 || kod=$?
+  vyvod=$("$FLANG" io "$SVERIT" --timeout 14400000 -- "$ish" "$zap" 2>&1) && kod=0 || kod=$?
   if [ "$kod" -eq "$zhdyom" ]; then
     say "СОШЛОСЬ  $imya — код $kod, как и ждали"
   else
@@ -91,7 +91,7 @@ for f in "$KOREN"/flang/proof/examples/*.flang "$KOREN"/flang/proof/examples/*.f
   VSEGO=$((VSEGO + 1))
   if "$FLANG" check "$f" --proof --записать "$RABOTA/подряд" > /dev/null 2>&1; then
     ZAPISEY=$((ZAPISEY + 1))
-    if vyvod=$(sh "$SVERIT" "$f" "$RABOTA/подряд" 2>&1); then
+    if vyvod=$("$FLANG" io "$SVERIT" --timeout 14400000 -- "$f" "$RABOTA/подряд" 2>&1); then
       PRINYATO=$((PRINYATO + 1))
     else
       say "ОТВЕРГНУТА честная запись $(basename "$f"): $(printf '%s' "$vyvod" | head -1 | cut -c1-200)"

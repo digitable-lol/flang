@@ -1,0 +1,234 @@
+модуль «Errand»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Paths» из "../../scripts/paths.fscript"
+  использует «Plan output» из "../../scripts/plan-output.fscript"
+
+объект «Errand»
+  «usage»: строка
+  «program»: строка
+  «prefix»: строка
+  «paths»: число
+  «keys»: список строки
+  «refusal»: строка
+  «blindness»: строка
+  «refused»: строка
+
+тотальная функция «Given path»
+  принимает position: число, answers: список «Answer»
+  возвращает строка
+  пример «The second argument from the directory of the caller»
+    дано position равно 2
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["a.flang", "a.record"]), запись «Answer» с «name» равным "directory" и «reply» равным (вариант «Значение среды» с значение равным "/srv/tree")]
+    ожидается "/srv/tree/a.record"
+  пример «A missing argument gives no path»
+    дано position равно 3
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["a.flang", "a.record"])]
+    ожидается ""
+  пусть passed равно («Given of» от "arguments" и answers)
+  если (position меньше 1) или (position больше (длина passed))
+    то ""
+    иначе «Absolute» от («Setting of» от "directory" и "." и answers) и (элемент position в passed)
+
+тотальная функция «Carried»
+  принимает errand: «Errand», answers: список «Answer»
+  возвращает список строки
+  пример «The carried paths are the first arguments, made absolute»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["/t/a.flang", "/t/a.record", "/t/other.flang"])]
+    ожидается ["/t/a.flang", "/t/a.record"]
+  отобразить (отфильтровать [1, 2, 3, 4, 5, 6, 7, 8] где position → position не больше (errand.«paths»)) как position → «Given path» от position и answers
+
+тотальная функция «Program»
+  принимает errand: «Errand», answers: список «Answer»
+  возвращает строка
+  пример «The program of the tree is taken when no extra argument names another»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно пустой список
+    ожидается "checker.flang"
+  пример «An extra argument names another program»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["/t/a.flang", "/t/a.record", "/t/other.flang"])]
+    ожидается "/t/other.flang"
+  пусть named равно («Given path» от ((errand.«paths») плюс 1) и answers)
+  если пусто named то (errand.«program») иначе named
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The built binary is taken when the environment names none»
+    дано answers равно пустой список
+    ожидается "../../bootstrap/flang"
+  «Setting of» от "binary" и "../../bootstrap/flang" и answers
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No directory was made yet»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «In work»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file of the working directory»
+    дано name равно "checker.flang"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/srv/tmp/check.a1")]
+    ожидается "/srv/tmp/check.a1/checker.flang"
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «The arguments and three settings are asked first»
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»), запись «Question» с «name» равным "directory" и «order» равным (вариант «Прочитать переменную среды» с имя равным "PWD"), запись «Question» с «name» равным "binary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN"), запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")]
+  [(«Arguments» от "arguments"), («Environment» от "directory" и "PWD"), («Environment» от "binary" и "FLANG_BIN"), («Environment» от "temporary" и "FLANG_TMP")]
+
+тотальная функция «Presence»
+  принимает errand: «Errand», answers: список «Answer»
+  возвращает список «Question»
+  пример «Every input is tested before the work begins»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["/t/a.flang", "/t/a.record"])]
+    ожидается [запись «Question» с «name» равным "present /t/a.flang" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-f", "/t/a.flang"]), запись «Question» с «name» равным "present /t/a.record" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-f", "/t/a.record"]), запись «Question» с «name» равным "present checker.flang" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-f", "checker.flang"]), запись «Question» с «name» равным "binary present" и «order» равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", "../../bootstrap/flang"])]
+  добавить («Run» от "binary present" и "test" и ["-x", («Binary» от answers)]) к (отобразить (добавить («Program» от errand и answers) к («Carried» от errand и answers)) как path → «Run» от (соединить ["present ", path] по "") и "test" и ["-f", path])
+
+тотальная функция «Making»
+  принимает errand: «Errand», answers: список «Answer»
+  возвращает список «Question»
+  пример «The working directory is made where temporary files live»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно [запись «Answer» с «name» равным "temporary" и «reply» равным (вариант «Значение среды» с значение равным "/srv/scratch")]
+    ожидается [запись «Question» с «name» равным "work" и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/scratch/check.")]
+  [(«Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/", (errand.«prefix»), "."] по ""))]
+
+тотальная функция «Filling»
+  принимает errand: «Errand», answers: список «Answer»
+  возвращает список «Question»
+  пример «The program is copied and the paths are written beside it»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["/t/a.flang", "/t/a.record"]), запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается [запись «Question» с «name» равным "copy" и «order» равным (вариант «Запустить процесс» с программа равным "cp" и аргументы равным ["checker.flang", "/w/checker.flang"]), запись «Question» с «name» равным "paths" и «order» равным (вариант «Записать файл» с путь равным "/w/наряд" и содержимое равным "/t/a.flang\n/t/a.record\n")]
+  [(«Run» от "copy" и "cp" и [(«Program» от errand и answers), («In work» от (errand.«program») и answers)]),
+   («Write» от "paths" и («In work» от "наряд" и answers) и (соединить [(соединить («Carried» от errand и answers) по "\n"), "\n"] по ""))]
+
+тотальная функция «Running»
+  принимает errand: «Errand», answers: список «Answer»
+  возвращает список «Question»
+  пример «The copied program is run by the binary with the keys of the errand»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается [запись «Question» с «name» равным "run" и «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io", "/w/checker.flang", "--max-steps", "9"])]
+  [(«Run» от "run" и («Binary» от answers) и (приписать "io" к (приписать («In work» от (errand.«program») и answers) к (errand.«keys»))))]
+
+тотальная функция «Cleaning»
+  принимает errand: «Errand», answers: список «Answer»
+  возвращает список «Question»
+  пример «The two files leave first and the directory after them»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается [запись «Question» с «name» равным "program removed" и «order» равным (вариант «Удалить файл» с путь равным "/w/checker.flang"), запись «Question» с «name» равным "paths removed" и «order» равным (вариант «Удалить файл» с путь равным "/w/наряд"), запись «Question» с «name» равным "work removed" и «order» равным (вариант «Удалить файл» с путь равным "/w")]
+  [(«Remove» от "program removed" и («In work» от (errand.«program») и answers)),
+   («Remove» от "paths removed" и («In work» от "наряд" и answers)),
+   («Remove» от "work removed" и («Work» от answers))]
+
+тотальная функция «Stage»
+  принимает errand: «Errand», stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано stages равно 9
+    дано answers равно пустой список
+    ожидается пустой список
+  если (stages меньше 0) или (stages больше 5)
+    то пустой список
+    иначе элемент (6 минус stages) в [(«Setup»), («Presence» от errand и answers), («Making» от errand и answers), («Filling» от errand и answers), («Running» от errand и answers), («Cleaning» от errand и answers)]
+
+тотальная функция «Verdict»
+  принимает errand: «Errand», answers: список «Answer»
+  возвращает «Продолжение»
+  пример «A finished program ends the work with its own words»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно [запись «Answer» с «name» равным "copy" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""), запись «Answer» с «name» равным "run" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "{\"plan\":\"Сверить доказательство\",\"result\":\"сошлось: утверждений 1\",\"orders\":3,\"log\":[]}" и ошибки равным "")]
+    ожидается вариант «Конец работы» с значение равным "сошлось: утверждений 1"
+  пример «A program that gave up fails the plan with the named trouble»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно [запись «Answer» с «name» равным "copy" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""), запись «Answer» с «name» равным "run" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "{\"error\":\"шаг 2 не тот\",\"diagnostics\":[]}")]
+    ожидается вариант «Провал» с код равным "FLANG_SAMPLE" и сообщение равным "НЕ СОШЛОСЬ: шаг 2 не тот"
+  пример «A program that ran out of steps measured nothing»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно [запись «Answer» с «name» равным "copy" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""), запись «Answer» с «name» равным "run" и «reply» равным (вариант «Процесс завершён» с код равным 3 и вывод равным "" и ошибки равным "{\"error\":\"предел шагов\",\"diagnostics\":[]}")]
+    ожидается вариант «Не проверено» с код равным "FLANG_SAMPLE_NOT_MEASURED" и сообщение равным "checker.flang кончил кодом 3: предел шагов"
+  пример «A program that was not copied measured nothing»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_SAMPLE_NOT_MEASURED" и сообщение равным "checker.flang не скопирован в рабочий каталог: "
+  пусть code равно («Exit code of» от "run" и answers)
+  пусть said равно («Plan said by» от "run" и answers)
+  «Chosen» от [(«When» от (не ((«Exit code of» от "copy" и answers) равен 0)) и (вариант «Не проверено» с код равным (errand.«blindness») и сообщение равным (соединить [(errand.«program»), " не скопирован в рабочий каталог: ", («Errors of» от "copy" и answers)] по ""))),
+    («When» от (code равен 0) и (вариант «Конец работы» с значение равным said)),
+    («When» от (code равен 1) и (вариант «Провал» с код равным (errand.«refusal») и сообщение равным (соединить [(errand.«refused»), said] по "")))] и (вариант «Не проверено» с код равным (errand.«blindness») и сообщение равным (соединить [(errand.«program»), " кончил кодом ", (к строке code), ": ", said] по ""))
+
+тотальная функция «Obstacles»
+  принимает errand: «Errand», asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «A call with too few paths is an obstacle»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано asked равно "arguments"
+    дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["a.flang"])]
+    ожидается ["звать: check <исходник> <запись>"]
+  пример «A missing file is named»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано asked равно "present /t/a.flang"
+    дано answers равно [запись «Answer» с «name» равным "present /t/a.flang" и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "")]
+    ожидается ["файла нет: /t/a.flang"]
+  пример «An answered question is no obstacle»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано asked равно "binary"
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть passed равно (длина («Given of» от "arguments" и answers))
+  пусть failed равно (не ((«Exit code of» от asked и answers) равен 0))
+  «Chosen» от [(«When» от ((asked равен "arguments") и притом ((passed меньше (errand.«paths»)) или (passed больше ((errand.«paths») плюс 1)))) и ([(errand.«usage»)])),
+    («When» от ((asked начинается с "present ") и притом failed) и ([(соединить ["файла нет: ", («After» от "present " и asked)] по "")])),
+    («When» от ((asked равен "binary present") и притом failed) и ([(соединить ["двоичного нет: ", («Binary» от answers)] по "")])),
+    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и ([(соединить ["рабочий каталог не заведён: ", («Errors of» от "work" и answers)] по "")]))] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает errand: «Errand», queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_SAMPLE_NOT_MEASURED" и сообщение равным "checker.flang не скопирован в рабочий каталог: "
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от errand и answers
+        иначе «Proceed» от errand и («Stage» от errand и (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Six stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6 и «answers» равным пустой список
+  «Begin with» от 6
+
+тотальная функция «Next»
+  принимает errand: «Errand», inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A call without paths is refused before anything is run»
+    дано errand равно запись «Errand» с «usage» равным "звать: check <исходник> <запись>" и «program» равным "checker.flang" и «prefix» равным "check" и «paths» равным 2 и «keys» равным ["--max-steps", "9"] и «refusal» равным "FLANG_SAMPLE" и «blindness» равным "FLANG_SAMPLE_NOT_MEASURED" и «refused» равным "НЕ СОШЛОСЬ: "
+    дано inquiry равно запись «Inquiry» с «asked» равным "arguments" и «queue» равным пустой список и «stages» равным 5 и «answers» равным пустой список
+    дано reply равно вариант «Доводы» с доводы равным пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_SAMPLE_NOT_MEASURED" и сообщение равным "звать: check <исходник> <запись>"
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от errand и (inquiry.«asked») и answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным (errand.«blindness») и сообщение равным голова
+    случай пусто
+      то «Proceed» от errand и (inquiry.«queue») и (inquiry.«stages») и answers

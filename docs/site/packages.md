@@ -1,24 +1,26 @@
 # Packages
 
-A flang package is **one file** holding a library together with everything it
-depends on. No registry, no store, no `~/.flang`. Publishing a package means
-committing a file to git; using one means writing a single line; building on
-another machine means copying two files over and running `flang check`.
+A flang package is **one file** that holds a library together with everything
+it imports. There is no registry and no package cache. To publish a package,
+commit the file to git; to use it, put the file next to your program and write
+one import line. Building on another machine needs only your program and the
+package file, and never touches the network.
 
-Both commands — `flang package` and `flang lock` — are in the `flang` binary
-0.7.17 (`flang package --help`, `flang lock --help`). The JavaScript
-implementation and the `npm install` route were removed from the tree on
-20 August 2026 (commit `fe8e8a37`); every output on this page was taken from the
-binary on 11 September 2026 on the example in `docs/examples/package/`.
+Two commands of the `flang` binary do the work: `flang package` builds a
+package, `flang lock` writes a lock file for a whole program. Both have
+`--help`. The examples below use `docs/examples/package/`.
 
-## Take someone else's package
+## Use a package
 
-Drop the package file next to your program and write one line:
+1. Put the package file next to your program.
+2. Import it by its module name:
 
 ```
 модуль «Shop»
   использует «Скидка» из "discount.flang-package"
 ```
+
+3. Check and test as usual:
 
 ```bash
 $ ls
@@ -32,12 +34,11 @@ $ flang test shop.flang
 shop.flang: примеров 7, прошло 7, не прошло 0
 ```
 
-The library's sources are not in this directory: its functions arrived inside
-the package file, with their examples, types and proofs. Those two files are the
-whole project.
+The library's source files are not in this directory: its functions came
+inside the package file, with their unit tests, types and proofs.
 
-The quoted name must match the module inside the package. If it does not, the
-check refuses and names both:
+The name in the import must match the module name inside the package.
+Otherwise the check fails and names both:
 
 ```bash
 $ flang check shop.flang
@@ -45,9 +46,10 @@ FLANG_IMPORT_NAME, строка 1, столбец 1: модуль в …/discoun
 shop.flang: не проверено — замечаний 1
 ```
 
-Preconditions travel with the code and are paid at every call site. Drop a
-`требует` on your side and the program stops building, though the library did
-not change:
+Preconditions (`требует`) of the library's functions come with the package, and
+your code must satisfy them at every call. Remove a `требует` from your own
+function, and your program stops compiling even though the library did not
+change:
 
 ```bash
 $ flang check shop.flang
@@ -55,10 +57,10 @@ FLANG_PRECONDITION_CALL, строка 34, столбец 3: вызов «Ски�
 shop.flang: не проверено — замечаний 1
 ```
 
-## Declare your own package
+## Make a package
 
-Put a `flang.package` next to your library's entry file — three fields, two of
-them required:
+**Step 1. Write the manifest.** Put `flang.package` next to the library's entry
+file:
 
 ```json
 {
@@ -68,9 +70,10 @@ them required:
 }
 ```
 
-`имя` must equal the module name on the file's first line: that is the name the
-package is imported by. If the two diverge, the build refuses before anything is
-assembled:
+`имя` (name) and `версия` (version) are required, `источник` (source URL) is
+optional. `имя` must equal the module name on the first line of the entry
+file: users import the package by this name. If they differ, `flang package`
+refuses:
 
 ```bash
 $ flang package skidka/discount.flang
@@ -79,18 +82,16 @@ $ echo $?
 1
 ```
 
-Nothing new was added to the language for this: `skidka/discount.flang` is an
-ordinary module with an ordinary `модуль` / `экспортирует` header.
+The library itself needs nothing special: `skidka/discount.flang` is an
+ordinary module with the usual `модуль` / `экспортирует` header.
 
-Honestly about the example in the tree: on 29 August 2026 the example modules
-were given English names (commit `03f0359ab`), and
-`docs/examples/package/discount.flang` is now called «Discount», while the
-manifest next to it still says «Скидка». So on 0.7.17 the command
-`flang package docs/examples/package/discount.flang` refuses with exactly this
-refusal, and the package `shop/discount.flang-package` that `shop.flang` works
-with was built before the rename and carries the module «Скидка».
+The example in the repository has exactly this mismatch: the module in
+`docs/examples/package/discount.flang` is called «Discount», and the manifest
+next to it says «Скидка». So `flang package docs/examples/package/discount.flang`
+refuses with `FLANG_PACKAGE`. The package `shop/discount.flang-package` that
+`shop.flang` uses was built from a version of the module called «Скидка».
 
-## Build it
+**Step 2. Build the package.**
 
 ```bash
 $ flang package skidka/discount.flang > skidka/discount.flang-package
@@ -101,11 +102,11 @@ $ ls -la skidka/
 -rw-rw-r-- 1 b b  122 flang.package
 ```
 
-A package is built **only from checked code**: `flang package` first runs the
-same checks `flang check` runs and refuses on a program with a type error.
+`flang package` builds **only checked code**: it first runs the same checks as
+`flang check` and refuses a program with an error.
 
-The package is a JSON file. Here it is with the payload (the `исходник` field —
-the module text in full, uncompressed, no base64) cut out for readability:
+The package is a JSON file. Here it is with the module source (the `исходник`
+field: the full module text, not compressed, not base64) shortened:
 
 ```json
 {
@@ -127,14 +128,14 @@ the module text in full, uncompressed, no base64) cut out for readability:
 }
 ```
 
-The `ведомость` field is the proof report: what the kernel said about the
-author's functions (`доказано`, `сетка N`, `объявлено, не доказано`). It is a
-record to choose a library by, not a verdict taken on trust — whoever imports
-the package proves everything again, because the bodies travelled whole.
+The field `ведомость` is the proof report: for each postcondition of the
+library, whether the prover proved it (`доказано`), checked it only on the
+examples (`сетка N`), or has neither a proof nor examples (`объявлено, не
+доказано`). Use it to choose a library. You do not have to trust it: when you
+import the package, your compiler proves everything again, because the full
+source is inside.
 
-## Publish it
-
-Commit one file:
+**Step 3. Publish it.** Commit one file:
 
 ```bash
 $ git add skidka/discount.flang-package
@@ -142,39 +143,38 @@ $ git commit -m "Скидка 1.0.0"
 $ git push
 ```
 
-Whoever takes the package downloads **that file** — by raw link, from a release,
-by mail, off a USB stick. There is no registry to upload to, and no
-`flang publish`.
+Users download **that file** by any means: a raw link, a release asset, mail.
+There is no registry and no `flang publish`.
 
 ## A library of several modules
 
-If the library is several files, all of them travel: the closure follows import
-edges and leaves the library's own directory when the author wrote it that way;
-whoever uses the package need not know. The example in the tree,
-`docs/examples/library-api/lib/`, does not build as a package today: there is no
-`flang.package` next to `api.flang`, and
-`flang package docs/examples/library-api/lib/api.flang` on 0.7.17 answers
-`FLANG_PACKAGE: рядом с … нет объявления flang.package` (run on 11 September
-2026). Put a manifest there, and the command is the same as above.
+If the library has several files, all of them go into the package: `flang
+package` follows the imports from the entry file. The user of the package does
+not see this.
 
-The payload is **not compressed**. A module's address is the sha256 of its
-source, 64 characters, and the payload is checked against it when the package is
-used: change a byte and the address changes.
+The multi-module example `docs/examples/library-api/lib/` has no manifest, so
+`flang package docs/examples/library-api/lib/api.flang` answers
+`FLANG_PACKAGE: рядом с … нет объявления flang.package`. Add a `flang.package`
+next to `api.flang`, and the steps are the same as above.
 
-A package may sit on top of a package:
+Each module in the package has an address: the sha256 of its source, 64 hex
+characters. When the package is used, the source is checked against the
+address, so changing a single byte is detected.
+
+A package may import another package:
 
 ```
 verh.flang            использует «Скидка» из "discount.flang-package"
 verh.flang-package    holds both «Верх» and «Скидка»
 ```
 
-Whoever imports `verh.flang-package` has no `discount.flang-package` on disk at
-all, and `flang check` does not look for one: it travels as cargo inside.
+Whoever imports `verh.flang-package` does not need `discount.flang-package` on
+disk: it is inside.
 
-## Pin a version
+## Change the version
 
-The version lives in `flang.package` and is covered by the package seal.
-Bumping it means editing the manifest and rebuilding:
+The version lives in `flang.package`. To release a new version, edit the
+manifest and build again:
 
 ```bash
 $ sed -i 's/"версия": "1.0.0"/"версия": "1.1.0"/' skidka/flang.package
@@ -182,8 +182,10 @@ $ flang package skidka/discount.flang --pretty | grep '"версия"'
   "версия": "1.1.0",
 ```
 
-Editing the version inside a built package is pointless: the seal is recomputed
-on read and will not match.
+Do not edit the version inside a built package. The package carries a
+checksum (`печать`) over its name, version, source URL and the function
+count of each module, and each module has its own address (see above). Both are
+recomputed when the package is read, and an edited package is rejected:
 
 ```bash
 $ sed -i 's/"версия":"1.0.0"/"версия":"9.9.9"/' vitrina/discount.flang-package
@@ -193,13 +195,13 @@ $ echo $?
 1
 ```
 
-There are no version ranges (`^1.2`, `~> 1.2`). The program gets exactly the file
-that was put next to it, and nothing can update itself.
+There are no version ranges (`^1.2`, `~> 1.2`). Your program uses exactly the
+file next to it, and nothing updates by itself.
 
 ## Build offline
 
-There is no flag for it, and none is needed. **The build never touches the
-network**: there is nothing to fetch, because the code is already in the file.
+There is no flag for that because none is needed: **a build never uses the
+network**. The code is already in the package file.
 
 ```bash
 $ ls
@@ -209,9 +211,8 @@ $ flang check shop.flang
 shop.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
-That is also the answer to "will it build on another machine": move two files and
-it builds. To check that the package yields the same thing as the sources, emit
-the program twice and compare the directories:
+To make sure the package gives the same result as the library sources,
+generate the program both ways and compare the directories:
 
 ```bash
 flang emit shop.flang --target c --out ./from-package   # where the package lives
@@ -219,22 +220,21 @@ flang emit shop.flang --target c --out ./from-sources   # where the sources live
 diff -r ./from-package ./from-sources && echo same
 ```
 
-## What a tampered package reads like
+## What an edited package looks like
 
-| Tampered with | Answer |
+| What was edited | Error |
 | --- | --- |
-| one character in a module's payload | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится: пакет правлен или испорчен" |
-| the version | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится" |
-| the package name | `FLANG_PACKAGE`: "печать пакета не сходится" |
-| the source URL | `FLANG_PACKAGE`: "печать пакета не сходится" |
-| a module's function count | `FLANG_PACKAGE`: "печать пакета не сходится" |
+| one character of a module's source | `FLANG_PACKAGE`: "адрес модуля «Скидка» не сходится с его исходником: правлен или испорчен" |
+| the version | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится: пакет правлен или испорчен" |
+| the package name | the same, with the edited name in the quotes |
+| the source URL | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится: пакет правлен или испорчен" |
+| a module's function count | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится: пакет правлен или испорчен" |
 
-The seal covers everything the package says about itself: name, version, source,
-and each module's function count. It is not a signature — it answers "this file
-was not edited", not "this file is from whom you think".
+The checksum shows that the file was not edited after it was built. It is not
+a signature: it does not tell you who built the file.
 
-Two packages carrying the same module path with different content are named
-outright:
+If two packages bring the same module path with different content, the
+compiler stops and names both:
 
 ```
 FLANG_PACKAGE: путь …/obshee.flang привезли два пакета с разным содержимым:
@@ -242,39 +242,41 @@ FLANG_PACKAGE: путь …/obshee.flang привезли два пакета с
   в одной программе не бывает: поднимите обе стороны до одной версии
 ```
 
-If both sides carry identical content the diamond resolves itself, silently:
-packages are compared by cargo, not by file name.
+If the content is the same, the program compiles: packages are compared by
+content, not by file name.
 
-## The lock versus a package
+## A lock file versus a package
 
-Both put code inside a file, and they are easy to confuse.
+Both put code into a file, so they are easy to confuse.
 
 | | `flang lock` | `flang package` |
 | --- | --- | --- |
-| answers | "what was THIS program built from" | "here is a library, take it" |
+| answers | "what was this program built from" | "here is a library, use it" |
 | name and version | none | required |
-| how it is used | sits alongside, named `flang.lock` | written as `использует … из "…"` |
-| how many per program | one | as many as you like |
-| the seal covers | the cargo | cargo, name, version, source, function counts |
+| how it is used | lies next to the program as `flang.lock` | imported with `использует … из "…"` |
+| how many per program | one | any number |
+| the checksum covers | the modules | the modules, name, version, source URL, function counts |
 
-They do not interfere: a program may have both a `flang.lock` and packages.
+A program can have a `flang.lock` and packages at the same time.
 
 ## What is missing
 
-- **a registry and search.** There is nowhere to look a package up by name;
-  `flang publish`, `flang add`, `flang search` do not exist;
-- **version ranges and dependency resolution.** No `^`, no `~>`, no `latest`;
-- **two versions of one library** in one program: an import merges declarations
-  into one flat namespace;
-- **partial updates.** An update is a full `flang package` again;
-- **an author's signature.** The seal is self-certified integrity;
-- **packages in the shell and the language server.** `flang repl` and
-  `flang lsp` link imports themselves and know nothing of packages:
-  `flang repl shop.flang`, in the very directory where `flang check` answers
-  «замечаний нет», gives `FLANG_PARSE, заголовок модуля, строка 1` (the shell
-  was checked on 0.7.17; the server was not).
+- **A registry and search.** You cannot look a package up by name; there is no
+  `flang publish`, `flang add` or `flang search`.
+- **Version ranges and dependency resolution.** No `^`, no `~>`, no `latest`.
+- **Two versions of one library** in one program: imports merge into one flat
+  namespace.
+- **Partial updates.** To update, run `flang package` again.
+- **A signature of the author.** The checksum only shows the file was not
+  edited.
+- **Packages in the REPL and the language server.** `flang repl` and `flang
+  lsp` resolve imports themselves and do not read packages. In the directory
+  where `flang check shop.flang` reports no errors, `flang repl shop.flang`
+  prints `FLANG_PARSE, заголовок модуля, строка 1` and does not see the
+  library's functions. The language server has not been tried.
 
-## Where to next
+## Next
 
-- [Embedding flang](embedding.html) — how a library becomes code in your language
-- [Roadmap](roadmap.html) — when the missing pieces are expected
+- [Embedding flang](embedding.html) — how a library becomes code in your
+  language.
+- [Roadmap](roadmap.html) — when the missing pieces are planned.

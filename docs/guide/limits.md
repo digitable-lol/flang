@@ -2,156 +2,138 @@
 
 # Known limits
 
-Stated plainly, because a project with undrawn borders is not one you can rely on. The same line
-is drawn in [`docs/overview.ru.md`](../../docs/overview.ru.md); the full lists are in
-[`docs/flang/SPEC.md`](../flang/SPEC.md) §10 and the "Долги" sections of the contracts.
+What does not work in flang today, and what to do instead. The full lists are
+in [`docs/flang/SPEC.md`](../flang/SPEC.md) §10 and in the "Долги" sections of
+the specifications.
 
-**Three words that are not confused here.** The distinctions matter and the words sound alike, so:
+## How to read the proof report
 
-- *proven* (`доказано`) — statements about **all** inputs, established by the compiler: termination
-  (`тотальная`), types and exhaustiveness of `разбор`, composition and chain wiring, the three
-  functor laws — and `обеспечивает` postconditions the kernel derived from the declarations and the
-  body (109 inference rules; every proof is replayed by an independent C program,
-  `flang/proof/checker/checker.c`, and `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` on 19 September 2026 answers
-  «ДОКАЗУЕМ»: 650 obligations out of 650 replayed, 100.00 %);
-- *grid N* (`сетка N`) — computed on a **finite** set of the author's own values: utility
-  properties, declared examples, concurrency runs, and the agreement between the interpreter and
-  the ten backends. Nothing is known about the other inputs. **This is not a proof**;
-- *stated, not proven* (`объявлено, не доказано`) — the claim is written down and nothing backs it.
+`flang check --proof` gives every postcondition (`обеспечивает`) one of three
+results. They are not the same thing:
 
-The three words are not prose decoration: they are exactly what the proof report
-(`flang check --proof`) and the assistant service answer with, and this page does not use one for
-another.
+| The report says | What it means |
+| --- | --- |
+| `доказано` (proved) | true for **all** inputs. The prover proved it, and the separate C program `flang/proof/checker/checker.c` can re-check the proof step by step |
+| `сетка N` (grid of N) | checked only on N values you wrote, like unit tests. Nothing is known about other inputs. **This is not a proof** |
+| `объявлено, не доказано` (declared, not proved) | written down, but there is neither a proof nor an example |
 
-What the kernel takes today: inequalities over numbers, list lengths, order, the quantifier over a
-function's inputs, a quantifier over the elements of a list (`для всех п из результат: …`) and
-nested quantifiers, existence with the value WRITTEN OUT (`есть такой м, а именно н, что …`),
-induction over a type you declared yourself, and a claim that stands outside a function. All of
-that arrived in 0.7.19, and the kernel now has thirteen decision rules. What it does not take:
-existence with no value named — the kernel does not search and will not — and state over time,
-effects and concurrency: about those three the logic knows nothing, and there is no place in the
-language to write such a claim (ADR-0026, ADR-0032). The printed code — C and the other targets —
-is not covered by the proof: the printer is not proven (ADR-0030, tasks 1401/1402). No external
-solver is attached to the verification conditions. Software for medicine, aviation or space is not
-to be written in flang (ADR-0031).
+Termination of `тотальная` functions, types and exhaustive pattern matching
+(`разбор`) are always proved, not tested.
 
-**The language.**
+## What you cannot prove
 
-- Functions are first-class values in the language, and they print to all ten targets. The
-  restriction was lifted by defunctionalization (Reynolds, 1972): a function value is a tag,
-  `функция «Удвоить»`, and an application `ф от 5` is a dispatcher over a finite list of tags — so
-  targets without closures and the termination proof both survive (`docs/archive/hof.md`). The
-  lowering is ONE pass before printing (`flang/self/defunc.flang`): each backend receives a
-  first-order program, so none of the ten sees higher order at all. The printed code is built
-  with real toolchains and checked against the interpreter over a grid of inputs. What is still
-  missing is self-application: `self/` does not know the new form, so the repository's own
-  programs (`stdlib`, `examples`) do not use it.
-- Effects are described, not performed — and this works: `вариант «Прочитать файл» с путь
-  равным …` builds a value, and whoever ran the plan executes it (`flang io`).
-  There are twenty-two orders and the set is closed: read and write a file as characters and
-  separately as octets, delete a file, make a temporary directory, list a directory,
-  make a network request, open and accept a connection, read and write a connection as characters
-  and separately as octets, spawn a process and spawn a process with input, draw on the screen,
-  wait for an event, read the clock, draw a random number, read an environment variable, read the
-  call's arguments. The set is closed in the code, not just
-  in prose: it is one line in the function `«Варианты поручения»` (`flang/self/parser.flang`), and
-  its length — 23 — is held by an `обеспечивает`, so the compiler checks it.
-  <!-- СНЯТО 2026-09-22 список flang/self/parser.flang:6620 = 23 --> The file octet pair landed on
-  22 August 2026: before it a binary file went through the text pair SILENTLY — 4096 octets in,
-  7 bytes out. The text pair now refuses invalid UTF-8 (`FLANG_IO_NOT_TEXT`), and the octet pair
-  carries a binary byte for byte. There is no I/O monad, though, and the reason is
-  no longer polymorphism: parametric types are in the language, in self-application and in the
-  standard library (`«Возможно» от «А»` in `flang/stdlib/optional.flang`). What is missing is the
-  category layer: the functor check knows a type's name, not its application — phase 3 in
-  `docs/archive/poly.md`. Until then, sequencing is expressed by a continuation machine where the
-  continuation is a declared value rather than a hidden closure; how that differs from a monad is
-  in `docs/ct/spec.md`. Emitting a program with a `план` declaration works for
-  TWO targets out of ten: `js` and `ts` emit the declaration in full together with the host
-  `flang_host_node.js` and exit 0, and the other eight refuse with `FLANG_PLAN_UNSUPPORTED`, name
-  the plan and write no file (the refusal text is in `flang/self/bootstrap/compiler.flang`; run on
-  11 September 2026 on the «План записи» module from `docs/DESCRIPTION.md` §9: `js`, `ts` — exit 0,
-  `c`, `cpp`, `go` — exit 1). Until 22 August 2026 (eight targets then) the other seven emitted the
-  program with exit code 0 and silently dropped the declaration — the worst of the outcomes,
-  because the module built and did not work. The breakdown is in
-  `docs/zettel/plan-printing-is-promised-inside-out-and-nothing-verifies-it.md`.
-- An array is read by index in constant time (`элемент N в СПИСОК`, seven targets out of eight), and
-  a dictionary comes in three kinds: a list of pairs with linear lookup (`dictionary.flang`), a
-  search tree whose priority is the hash of the key, O(log n) (`tree.flang`), and a trie over the
-  digits of the hash with CONSTANT-time access (`hashmap.flang`, a HAMT: depth is bounded by the
-  fourteen digits of the hash for any number of keys). What is missing is WRITING by index: values
-  are immutable, and "the list with its Nth replaced" would have to be rebuilt whole. Until that
-  exists, table-driven dynamic programming (Coin Change, Edit Distance) does not transfer and a
-  BUCKETED hash table — the kind that needs an array with replacement by index — cannot be built;
-  a constant-time dictionary can, because a trie rewrites only the path to the key, not the whole
-  array. No bitwise operations either.
-- The totality analysis INFERS structural decrease and a numeric measure with a CONSTANT step —
-  either a literal (`н минус 1`) or a parameter that arrives in the call unchanged and is strictly
-  positive (`н минус ш` under `если ш не больше 0`). Where the step CHANGES from turn to turn there
-  is nothing to infer it from, so the author NAMES the measure — a `убывает <expression>` line.
-  That is how binary search (`убывает верх минус низ плюс 1`) and Euclid (`убывает б`) are
-  written; they no longer need a "fuel" list — see `docs/examples/measure/`. **Counting UP is not
-  written with a measure**: it has no upper bound and nothing to prove with. It is turned into
-  counting down over a `неотрицательное` parameter, and then the type itself proves it
-  (`docs/examples/measure/natural.flang`). Decrease with a floor is not enough: 1, ½, ¼ … stays above zero
-  forever, so the guard on a declared measure checks three things at once — strict decrease,
-  non-negativity and WHOLENESS. The constant-step measure is propped up by the same guard for a
-  different reason: flang numbers are IEEE-754 doubles and `x минус 1` equals x for large |x|. No
-  decrease means a `FLANG_MEASURE` refusal — identical in the interpreter and in all ten targets
-  — not a hang.
-- The constant-step guard is DROPPED when the parameter is declared an exact natural (`неотрицательное` — a
-  whole number in [0, 2^53−1]). The type supplies both ends the argument was missing: a floor of
-  0 and a ceiling below which `н минус c` for whole c ≥ 1 is EXACTLY smaller than н. The proof
-  becomes complete, and the ledger names a fifth carrier of the promise — «точным шагом», the
-  only one without a guard. The figures come from the ledger and are substituted by the
-  build rather than typed: today {{носители.постоянныйШаг}} functions carry the promise by
-  constant step with a guard, {{носители.точныйШаг}} carry it by exact step with none, and the
-  guard stands at {{сторож.мест}} sites in {{сторож.функций}} functions. The move to `неотрицательное` added ZERO sites — overflow is caught by widening the type
-  (`неотрицательное плюс неотрицательное` is `число`), not by a check in the emitted code. Worked
-  example: `docs/examples/measure/natural.flang`.
-- A variant named like a keyword (`Да`, `Плюс`, `Больше`) is not matched in patterns, and the
-  diagnostic blames the pattern instead of naming the real cause. Workaround: rename it, or use
-  the explicit `случай вариант «Имя»` form the stdlib uses.
+| Does not work | What to do instead |
+| --- | --- |
+| "there exists x such that …" without naming x: the prover does not search for a value | name the value: `есть такой м, а именно н, что …` |
+| a property of state over time, of side effects or of concurrency: there is no way to write it in the language (ADR-0026, ADR-0032) | test it with `пример` and, for processes, with `прогон` scenarios |
+| a property of the generated C, Go, Rust and other code: the proof covers the flang program, the code generator is not proved (ADR-0030) | test the generated program on its own |
+| a postcondition the prover does not accept | see [What the prover accepts](../site/what-the-kernel-accepts.md); write a `теорема`, or rephrase the postcondition |
 
-**The category surface.** Morphisms, composition, chains, identities, functors, bifunctors,
-isomorphisms, monoids, groups and monads are implemented; a monad also comes with the binding form
-`в монаде`. Set relations are said with two words: `вложение` is a subobject (an arrow that glues
-nothing together), `пересечение` is a pullback over the ambient set. The shape of both is proved by
-matching declarations; injectivity of an embedding is checked on the author's own values and, when
-the arrow glues, the message presents the counterexample; non-emptiness of a common part is
-confirmed by a witness. Universality of the common part stays the author's assumption, and the
-compiler draws no consequences from it ([`docs/ct/sets.md`](../../docs/ct/sets.md)). Union did NOT
-become a word: the coproduct is already in the language — it is `тип … вариант …` with exhaustive
-`разбор`. An arrow may carry a law: `даёт` names the function, `закон` carries the examples, and
-a broken law fails `flang test` naming both the arrow and the law. Isomorphism invertibility is
-checked wherever both arrows are named through `даёт`, and stays the author's assumption wherever
-at least one is not. The precondition (`требует`) is implemented, and the caller discharges it, as
-in Dafny: inside the body it is a known fact the kernel reasons from, at every call site it is an
-obligation refused by name when unmet, and at the program boundary (`--args`, examples) it is
-computed because there is nothing to prove there. Its cost is named in bytes: a program with no
-`требует` at all emits byte for byte as before, and a program with one grows by exactly the door —
-334 bytes in Python, 349 in Java, 369 in Elixir, 387 in C#, 452 in Rust, 462 in Go, 477 in C and
-1 654 in JavaScript ([`docs/flang/SPEC.md`](../flang/SPEC.md), "Предусловия функции"). Natural transformations are specified in
-[`docs/ct/spec.md`](../../docs/ct/spec.md) and are not implemented. Category names in a functor declaration are a note for the reader, not a
-checked claim. A list — and anything recursive, I/O included — cannot be declared a monad today:
-the endofunctor map is printed in place, so the parameter must occupy a whole field
-([`docs/archive/monad.md`](../../docs/archive/monad.md)).
+No external SMT solver is used. Do not write software for medicine, aviation or
+space in flang: certification is a process, not a property of a language
+(ADR-0031).
 
-**Concurrency.** The scheduler in the C runtime runs in two modes. The checking one is a single
-thread interleaving by seed: it produces byte for byte the same delivery log as the witness, and
-that is what it is for. The second is a worker pool, switched on by the `workers` field in the
-request and measured directly: on a program with parallel work the pool is 1.85–4.80 times faster
-already at one run per handoff, and on a program with NO parallelism it is 6.7 times slower while
-burning fifteen cores (measurements in
-[`docs/scheduler-benchmark.md`](../../docs/scheduler-benchmark.md)). FOUR targets emit processes —
-C, Elixir, JavaScript and TypeScript; the other six (C++, Go, Rust, Python, Java, C#) REFUSE to emit a program with
-`процесс` at all («у цели «…» нет планировщика конкурентности», exit 1, no files), rather than emitting half of it
-(run on 11 September 2026 on the «Счётчик» module from `docs/DESCRIPTION.md` §10 across all ten targets). `породить` spawns
-instances of declared kinds at run time in the witness and in target C; the JavaScript and Elixir
-schedulers answer that action with a named error. The parent names the child, because a described
-action cannot return anything; a message addressee must still be a literal, so you can only speak
-to a spawned process through the message it was born with; there is no distribution. The seed grid
-checks a finite set of interleavings — a checked claim, not a proof — and it gives no freedom from
-deadlock. The machine was never idle for any of the measurements (load 125–734 with 256 cores, and
-60–1250 on the pool runs), so every time figure in them is an upper bound; the figures that do not
-depend on load (interpreter steps, reductions, bytes) are given separately and repeat run to
-run.
+## The language
+
+**There is no writing into a list by index.** You can read an element,
+`элемент N в список`, and this works in every target language. Values are immutable,
+so "the list with element N replaced" means building a new list. Algorithms
+built on an updatable table — dynamic programming like Coin Change or Edit
+Distance, a bucketed hash table — do not carry over directly. For a dictionary,
+use one of the library ones: a list of pairs with linear lookup
+(`flang/stdlib/dictionary.flang`), a search tree with O(log n) lookup
+(`flang/stdlib/tree.flang`), or a hash trie (HAMT) whose depth is bounded by
+the hash length (`flang/stdlib/hashmap.flang`).
+
+**There are no bitwise operators.** Use the library functions that implement
+them with arithmetic, for example `«Исключающее или байтов»` (XOR of bytes) in
+`flang/stdlib/aes.flang`.
+
+**Counting up does not prove termination.** A recursive call on `н плюс 1`
+is rejected with `FLANG_NOT_TOTAL`: "the recursive call does not decrease". Turn
+it into counting down over a `неотрицательное` (non-negative integer)
+parameter; then the type proves termination
+(`docs/examples/measure/natural.flang`).
+
+**When the step changes from call to call, the compiler cannot find the
+decreasing measure itself.** It finds structural recursion (on the tail of a
+list, on a part of a tree) and a numeric argument that decreases by a constant
+step. For anything else, write the measure yourself with a `убывает
+<expression>` line: binary search uses `убывает верх минус низ плюс 1`, Euclid's
+algorithm uses `убывает б` (`docs/examples/measure/`). The generated code then
+checks at run time that the measure is a whole number, non-negative and
+strictly decreasing, and stops with `FLANG_MEASURE` instead of hanging. The
+same run-time check guards a constant step on a plain `число`, because numbers
+are IEEE-754 doubles and `x минус 1` equals `x` for large `x`. On a
+`неотрицательное` parameter the check is not needed and not generated: the type
+already bounds the value. The proof report counts these cases:
+{{носители.постоянныйШаг}} functions terminate by a constant step with the
+run-time check, {{носители.точныйШаг}} by an exact step without it, and the
+check stands at {{сторож.мест}} places in {{сторож.функций}} functions.
+
+**A variant named like a keyword is not matched.** With variants `Да`, `Нет`,
+`Плюс` or `Больше`, `случай Да` is read as the keyword, and the error blames
+the pattern (`FLANG_TYPE: образец-литерал имеет тип признак …`) instead of the
+name. Write `случай вариант «Да»`, or rename the variant.
+
+**Side effects work through `план` only.** A function never reads a file
+itself: it returns a command as data (`вариант «Прочитать файл» с путь равным
+…`), and `flang io` executes it and calls the function again with the
+response. There are 23 commands, and the list is closed: <!-- СНЯТО 2026-09-22 список flang/self/parser.flang:6620 = 23 -->
+read and write a file as text and as bytes, delete a file, make a temporary
+directory, list a directory, make an HTTP request, open and accept a
+connection, read and write a connection as text and as bytes, start a process
+with or without input, show on the screen, wait for an event, get the screen
+size, read the clock, get a random number, read an environment variable, read
+the command-line arguments. The list is the function `«Варианты поручения»` in
+`flang/self/parser.flang`, and a postcondition there fixes its length at 23.
+Reading invalid UTF-8 as text fails with `FLANG_IO_NOT_TEXT`; read binary
+files as bytes.
+
+**A program with `план` is generated only into `js` and `ts`.** The other
+eight targets refuse with `FLANG_PLAN_UNSUPPORTED`, name the plan and write no
+files. To run such a program elsewhere, run it with `flang io`.
+
+**There is no I/O monad.** Steps are chained by returning a command together
+with the next step as a declared value, not as a hidden closure. How this
+differs from a monad: [`docs/ct/spec.md`](../ct/spec.md).
+
+## Category declarations
+
+`категория`, `морфизм`, `функтор`, `моноид`, `монада`, `изоморфизм`,
+`вложение`, `пересечение`, `свойство` and natural transformations are parsed,
+but the binary compiler checks their rules only in part. For monoids, monads,
+functors, isomorphisms, embeddings, intersections and declared properties it
+checks no laws at all; for categories and morphisms it does not check closure
+under composition, identities or matching ends of a composition. `flang check`
+names what it did not check and exits 2:
+
+```
+$ flang check flang/ct/monoid-and-monad.flang
+модуль «Monoid and monad»: функций 12, из них с доказанным завершением 12; типов 2
+проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе — monoids, monads. Ответ «замечаний нет» здесь читался бы как «проверено», а это неправда. Судья, вшитый в замыкание, до них не достаёт: `flang/self/setoid.flang` и `flang/self/setoid-oracle.flang` (264 функции) считают законы категорий, морфизмов и преобразований, и только их. Правил, которые сверяли бы названное выше, в замыкании этого двоичного нет ни строкой. Часть их в дереве написана слоями, которые сюда не ввезены, — а правило, которое никто не запускает, от ненаписанного неотличимо. Пока это так, названное выше не судит НИКТО
+flang/ct/monoid-and-monad.flang: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли
+$ echo $?
+2
+```
+
+The functions inside such a file are checked as usual: types, termination,
+proofs, unit tests. If you need a law to hold, write it as an `обеспечивает` or
+a `пример` on the functions. Details: [`docs/ct/spec.md`](../ct/spec.md).
+
+## Processes
+
+| Does not work | What to do instead |
+| --- | --- |
+| processes in `cpp`, `csharp`, `go`, `java`, `python`, `rust`: `flang emit` refuses with code 1, "у цели «…» нет планировщика конкурентности" | generate into `c`, `elixir`, `js` or `ts` |
+| `породить` (spawn) in Elixir and JavaScript: the scheduler answers with an error | use the `c` target, which supports it |
+| a bounded mailbox in Elixir: `flang emit --target elixir` refuses | use `c`, `js` or `ts`, or an unbounded mailbox |
+| sending to a spawned process by a name computed at run time: the compiler checks only literal names | give the spawned process its work in the first message, and let it reply to a process with a declared name |
+| running on several machines: the binary compiler does not read the node placement file (`--размещение` is an unknown key) | run on one node |
+| proving freedom from deadlock: `прогон` scenarios try a finite set of message orders under fixed seeds; that is testing, not a proof | design the protocol so that no process waits on another in a cycle |
+
+The scheduler in the generated C has two modes: a single thread that orders
+messages by a seed, so the same seed gives the same delivery log, and a pool of
+worker threads (the `workers` field in the request). The pool is faster only
+when the program has parallel work; on a program without it, the pool is
+several times slower. Measurements: [`docs/scheduler-benchmark.md`](../scheduler-benchmark.md).

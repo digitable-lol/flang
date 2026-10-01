@@ -1,6 +1,6 @@
 forgeries 36
 forgery-numerator 155
-forgery-probes 608
+forgery-probes 611
 checker-code-lines 7949
 checker-primitives 15
 trap-kinds 38

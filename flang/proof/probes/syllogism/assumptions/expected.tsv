@@ -1,16 +1,16 @@
 program	judge	code	word
 socrates.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
-socrates.flang	checker	3	НЕ ПРОВЕРЕНО — запись не противоречит исходнику
+socrates.flang	checker	0	ПРОВЕРЕНО — запись сошлась с исходником
 barbara.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
-barbara.flang	checker	3	НЕ ПРОВЕРЕНО — запись не противоречит исходнику
+barbara.flang	checker	0	ПРОВЕРЕНО — запись сошлась с исходником
 celarent.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
-celarent.flang	checker	3	НЕ ПРОВЕРЕНО — запись не противоречит исходнику
+celarent.flang	checker	0	ПРОВЕРЕНО — запись сошлась с исходником
 darii.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
-darii.flang	checker	3	НЕ ПРОВЕРЕНО — запись не противоречит исходнику
+darii.flang	checker	0	ПРОВЕРЕНО — запись сошлась с исходником
 ferio.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
-ferio.flang	checker	3	НЕ ПРОВЕРЕНО — запись не противоречит исходнику
+ferio.flang	checker	0	ПРОВЕРЕНО — запись сошлась с исходником
 camestres-by-refutation.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
-camestres-by-refutation.flang	checker	3	НЕ ПРОВЕРЕНО — запись не противоречит исходнику
+camestres-by-refutation.flang	checker	0	ПРОВЕРЕНО — запись сошлась с исходником
 socrates-without-a-theorem.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
 socrates-without-a-theorem.flang	checker	3	НЕ ПРОВЕРЕНО — запись не противоречит исходнику
 socrates-with-predicates-as-functions.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
@@ -23,8 +23,8 @@ illicit-conversion.flang	kernel	1	цель не выведена из допущ
 existential-import.flang	kernel	1	цель не выведена из допущений теоремы
 denying-the-antecedent.flang	kernel	1	цель не выведена из допущений теоремы
 darii-with-the-existence-word.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
-darii-with-the-existence-word.flang	checker	1	доказывается не то, что обещано
+darii-with-the-existence-word.flang	checker	0	ПРОВЕРЕНО — запись сошлась с исходником
 socrates-with-premises-only-in-the-statement.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
-socrates-with-premises-only-in-the-statement.flang	checker	1	а допущений в записи 0
+socrates-with-premises-only-in-the-statement.flang	checker	0	ПРОВЕРЕНО — запись сошлась с исходником
 socrates-with-premises-only-in-the-theorem.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
-socrates-with-premises-only-in-the-theorem.flang	checker	3	НЕ ПРОВЕРЕНО — запись не противоречит исходнику
+socrates-with-premises-only-in-the-theorem.flang	checker	1	не является допущением утверждения

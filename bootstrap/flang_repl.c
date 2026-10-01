@@ -3605,6 +3605,8 @@ static bool repl_shadow_started = false;
  * stderr и печатается один раз на имя модуля. Судит же не она: перекрытые файлы
  * едут связыванию вместе с победителем, и оно отвечает FLANG_IMPORT_AMBIGUOUS.
  */
+static bool repl_profile_refuses(const char *importer, const char *name, const char *path);
+
 static void repl_find_module(const char *importer, const char *name, repl_strings *found) {
   repl_strings places;
   repl_strings shadowed;
@@ -3634,6 +3636,11 @@ static void repl_find_module(const char *importer, const char *name, repl_string
       repl_place_scan(places.items[index], name, found);
       have = found->count > 0;
     }
+  }
+  if (have && repl_profile_refuses(importer, name, found->items[0])) {
+    strings_free(found);
+    strings_init(found);
+    have = false;
   }
   if (!repl_shadow_started) {
     strings_init(&repl_shadow_said);
@@ -10298,6 +10305,187 @@ static bool flangrc_project(char *out, size_t room) {
     }
     *slash = '\0';
   }
+}
+
+typedef struct {
+  bool ready;
+  bool active;
+  repl_strings allowed;
+  repl_strings said;
+  char label[512];
+  char file[4096];
+} repl_profile_state;
+
+static repl_profile_state repl_profile;
+
+static bool profile_trim_byte(char byte) { return byte == ' ' || byte == '\t'; }
+
+static void profile_add_names(repl_strings *into, const char *value, size_t bytes) {
+  static const char open_quote[] = "\xc2\xab";
+  static const char close_quote[] = "\xc2\xbb";
+  size_t start = 0;
+  while (start <= bytes) {
+    size_t end = start;
+    size_t left = start;
+    size_t right = 0;
+    while (end < bytes && value[end] != ',') {
+      end += 1;
+    }
+    right = end;
+    while (left < right && profile_trim_byte(value[left])) {
+      left += 1;
+    }
+    while (right > left && profile_trim_byte(value[right - 1])) {
+      right -= 1;
+    }
+    if (right - left >= 4 && memcmp(value + left, open_quote, 2) == 0 && memcmp(value + right - 2, close_quote, 2) == 0) {
+      left += 2;
+      right -= 2;
+    }
+    if (right > left && !strings_has(into, value + left, right - left)) {
+      strings_add(into, value + left, right - left);
+    }
+    start = end + 1;
+  }
+}
+
+static bool profile_defined(const char *text, size_t bytes, const char *name, size_t name_bytes, repl_strings *into) {
+  static const char prefix[] = "profile.";
+  const size_t prefix_bytes = sizeof(prefix) - 1;
+  flangrc_pair pair;
+  flangrc_pair last = {NULL, 0, NULL, 0};
+  size_t at = 0;
+  bool found = false;
+  while (flangrc_next(text, bytes, &at, &pair)) {
+    if (pair.key_bytes == prefix_bytes + name_bytes && memcmp(pair.key, prefix, prefix_bytes) == 0 &&
+        memcmp(pair.key + prefix_bytes, name, name_bytes) == 0) {
+      last = pair;
+      found = true;
+    }
+  }
+  if (found) {
+    profile_add_names(into, last.value, last.value_bytes);
+  }
+  return found;
+}
+
+static bool profile_shipped(const char *name, size_t name_bytes, repl_strings *into) {
+  repl_strings places;
+  size_t index = 0;
+  bool found = false;
+  strings_init(&places);
+  repl_library_places(&places);
+  for (index = 0; index < places.count && !found; index += 1) {
+    char *path = repl_join(places.items[index], "profiles.flangrc");
+    size_t bytes = 0;
+    char *text = repl_exists(path) ? repl_read_file(path, &bytes) : NULL;
+    if (text != NULL) {
+      found = profile_defined(text, bytes, name, name_bytes, into);
+      free(text);
+    }
+    free(path);
+  }
+  strings_free(&places);
+  return found;
+}
+
+static void profile_load(void) {
+  char path[4096];
+  size_t bytes = 0;
+  char *text = NULL;
+  flangrc_pair pair;
+  flangrc_pair profile = {NULL, 0, NULL, 0};
+  flangrc_pair modules = {NULL, 0, NULL, 0};
+  size_t at = 0;
+  repl_profile.ready = true;
+  strings_init(&repl_profile.allowed);
+  strings_init(&repl_profile.said);
+  if (!flangrc_project(path, sizeof(path))) {
+    return;
+  }
+  text = repl_read_file(path, &bytes);
+  if (text == NULL) {
+    return;
+  }
+  while (flangrc_next(text, bytes, &at, &pair)) {
+    if (pair.key_bytes == 7 && memcmp(pair.key, "profile", 7) == 0) {
+      profile = pair;
+    } else if (pair.key_bytes == 7 && memcmp(pair.key, "modules", 7) == 0) {
+      modules = pair;
+    }
+  }
+  if (profile.key != NULL || modules.key != NULL) {
+    repl_strings names;
+    size_t index = 0;
+    repl_profile.active = true;
+    snprintf(repl_profile.file, sizeof(repl_profile.file), "%s", path);
+    snprintf(repl_profile.label, sizeof(repl_profile.label), "%.*s", profile.key != NULL ? (int)profile.value_bytes : 0,
+             profile.key != NULL ? profile.value : "");
+    if (modules.key != NULL) {
+      profile_add_names(&repl_profile.allowed, modules.value, modules.value_bytes);
+    }
+    strings_init(&names);
+    if (profile.key != NULL) {
+      profile_add_names(&names, profile.value, profile.value_bytes);
+    }
+    for (index = 0; index < names.count; index += 1) {
+      if (!profile_defined(text, bytes, names.items[index], names.sizes[index], &repl_profile.allowed) &&
+          !profile_shipped(names.items[index], names.sizes[index], &repl_profile.allowed)) {
+        fprintf(stderr,
+                "flang: %s: профиль «%s» не объявлен ни строкой «profile.%s = …» в этом файле, ни в profiles.flangrc "
+                "библиотеки — его модули не ввозятся\n",
+                path, names.items[index], names.items[index]);
+      }
+    }
+    strings_free(&names);
+  }
+  free(text);
+}
+
+static bool profile_in_library(const char *path) {
+  repl_strings places;
+  size_t index = 0;
+  bool inside = false;
+  char *real = realpath(path, NULL);
+  if (real == NULL) {
+    return false;
+  }
+  strings_init(&places);
+  repl_library_places(&places);
+  for (index = 0; index < places.count && !inside; index += 1) {
+    const char *place = places.items[index];
+    const size_t place_bytes = strlen(place);
+    char *root = place_bytes >= 5 && strcmp(place + place_bytes - 5, "/core") == 0 ? NULL : realpath(place, NULL);
+    if (root != NULL) {
+      const size_t bytes = strlen(root);
+      inside = strncmp(real, root, bytes) == 0 && real[bytes] == '/';
+      free(root);
+    }
+  }
+  strings_free(&places);
+  free(real);
+  return inside;
+}
+
+static bool repl_profile_refuses(const char *importer, const char *name, const char *path) {
+  const size_t bytes = strlen(name);
+  if (!repl_profile.ready) {
+    profile_load();
+  }
+  if (!repl_profile.active || strings_has(&repl_profile.allowed, name, bytes)) {
+    return false;
+  }
+  if (!profile_in_library(path) || profile_in_library(importer)) {
+    return false;
+  }
+  if (!strings_has(&repl_profile.said, name, bytes)) {
+    strings_add(&repl_profile.said, name, bytes);
+    fprintf(stderr,
+            "flang: модуль «%s» библиотеки не входит в профиль «%s» (%s) — по имени не ввозится; допишите его в "
+            "«modules» или выберите другой профиль\n",
+            name, repl_profile.label, repl_profile.file);
+  }
+  return true;
 }
 
 #define SCRIPT_PREFIX "script."

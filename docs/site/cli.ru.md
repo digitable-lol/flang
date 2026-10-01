@@ -500,10 +500,10 @@ flang lint [<путь>…] [--max-line-length N] [--max-conditional-depth N]
 `.flangrc` в домашнем каталоге.
 
 ```
-$ flang lint scripts/guards/tree-inventory.fscript
-scripts/guards/tree-inventory.fscript:84: глубина ветвлений 17 > 2 в «Язык пути» (max-conditional-depth)
-scripts/guards/tree-inventory.fscript:138: глубина ветвлений 16 > 2 в «Довод не-долга» (max-conditional-depth)
-flang lint: файлов 1; max-line-length 120: 0; max-conditional-depth 2: 2; не разобрано 0
+$ flang lint docs/examples/guide/ladder-before.flang docs/examples/guide/walk-tree.flang
+docs/examples/guide/ladder-before.flang:17: глубина ветвлений 3 > 2 в «Цена доставки» (max-conditional-depth)
+docs/examples/guide/walk-tree.flang:15: длина строки 206 > 120 (max-line-length)
+flang lint: файлов 2; max-line-length 120: 1; max-conditional-depth 2: 1; не разобрано 0
 ```
 
 Находка называет файл, строку, измеренное значение, предел и ключ. Последняя

@@ -7,7 +7,7 @@
 длинные горизонтальные строки».
 **Рядом:** [ADR-0024](0024-the-settings-file-and-the-language-of-output.md) — файл настроек;
 [ADR-0049](0049-short-commands-live-in-the-settings-file.md) — короткие команды в нём же;
-[ADR-0052](0052-a-text-block-literal-strips-its-common-indentation.md) — литерал-блок текста,
+ADR-0052 — литерал-блок текста,
 которым укорачиваются строки с длинным строковым литералом.
 **Проверяется:** `bootstrap/flang lint`, `bootstrap/flang run-script lint:growth`,
 `bootstrap/flang io .githooks/lint-growth.fscript --plan Staged`.
@@ -113,7 +113,7 @@
   вариант с полями, вызов и цепочка вызовов не переносятся. Перенос внутри них — правка
   разбора в `flang/self/parser.flang`, то есть партия печати.
 * Строка с длинным строковым литералом укорачивается литералом-блоком
-  ([ADR-0052](0052-a-text-block-literal-strips-its-common-indentation.md)).
+  (ADR-0052).
 * Исходник ли файл, двоичный спрашивает у напечатанного компилятора (функция «Заканчивается
   расширением» из `flang/self/bootstrap/corpus.flang`) и сам добавляет `.fscript`. План заслона
   списка расширений не держит: он отдаёт двоичному все тронутые файлы.

@@ -14,7 +14,7 @@
 ```
 bootstrap/      компилятор, напечатанный в C99, и его Makefile: «make -C bootstrap» собирает двоичный
 flang/          язык: self/ (компилятор), core/, stdlib/, proof/, concurrency/, ct/, src/emit/ (рантаймы целей), scripts/, test/, bin/ (flangtutor) — только код; его контракты лежат в docs/flang/
-docs/examples/  238 программ на flang в 26 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
+docs/examples/  242 программ на flang в 28 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
 docs/editors/   языковой сервер, подсветка для Vim и VS Code, заявка в github-linguist
 packaging/      формула Homebrew, плагин asdf, страница flang.1, проверки установки
 scripts/        проверки дерева, перепечатка точки раскрутки, релизный архив, журнал изменений
@@ -31,10 +31,10 @@ docs/tasks/     открытая и закрытая работа дерева, 
 Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 64 файлов на flang —
 <!-- СНЯТО 2026-09-17 файлов flang/self/*.flang = 64 -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель.
-[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **52 модуль, 1764 функции и 3745
+[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **52 модуль, 1793 функции и 3803
 примеров**, которые прогоняются при каждой проверке:
 <!-- СНЯТО 2026-09-17 файлов flang/stdlib/*.flang = 52 -->
-<!-- СНЯТО 2026-09-13 примеров-в flang/stdlib/*.flang = 3745 -->
+<!-- СНЯТО 2026-09-17 примеров-в flang/stdlib/*.flang = 3803 -->
 списки, строки, числа, множества, словари, JSON, UTF-8, даты, два драйвера баз данных
 (`postgres`, `sqlite`), сеть (`http`, `tls`, `redis`), криптография, написанная на flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`), и движок регулярных выражений.
@@ -45,7 +45,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 [`docs/examples/web/shortener`](examples/web/shortener/README.md), сокращатель ссылок, где между
 байтами запроса и байтами ответа нет ничего, кроме flang, и
 [`docs/examples/library-api`](examples/library-api/README.md), предметная половина библиотечной
-службы; ещё 223 программ в остальных наборах — отдельные файлы, среди них набор LeetCode: 82
+службы; ещё 227 программ в остальных наборах — отдельные файлы, среди них набор LeetCode: 82
 решения с 806 примерами.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
 <!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->

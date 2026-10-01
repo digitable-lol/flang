@@ -15,7 +15,7 @@ against the tree on every push.
 ```
 bootstrap/      the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
 flang/          the language: self/ (the compiler), core/, stdlib/, proof/, concurrency/, ct/, src/emit/ (target runtimes), scripts/, test/, bin/ (flangtutor) — code only; its contracts are in docs/flang/
-docs/examples/  238 flang programs in 26 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
+docs/examples/  242 flang programs in 28 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
 docs/editors/   the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/      the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
 scripts/        guards of the tree, the reprint of the bootstrap point, the release archive, the changelog
@@ -32,10 +32,10 @@ docs/tasks/     the open and closed work of the tree, one file per task
 Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 64 files of flang —
 <!-- СНЯТО 2026-09-17 файлов flang/self/*.flang = 64 -->
 lexer, parser, types, totality, proof kernel and one printer per target.
-[`flang/stdlib/`](../flang/stdlib) is the standard library — **52 modules, 1764 functions and 3745
+[`flang/stdlib/`](../flang/stdlib) is the standard library — **52 modules, 1793 functions and 3803
 examples** that run on every check:
 <!-- СНЯТО 2026-09-17 файлов flang/stdlib/*.flang = 52 -->
-<!-- СНЯТО 2026-09-13 примеров-в flang/stdlib/*.flang = 3745 -->
+<!-- СНЯТО 2026-09-17 примеров-в flang/stdlib/*.flang = 3803 -->
 lists, strings, numbers, sets, maps, JSON, UTF-8, dates, two database drivers (`postgres`,
 `sqlite`), networking (`http`, `tls`, `redis`), a cryptography set written in flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`) and a regular-expression engine.
@@ -46,7 +46,7 @@ Two of the example sets are full-size projects —
 [`docs/examples/web/shortener`](examples/web/shortener/README.md), a link shortener with
 nothing but flang between the request bytes and the response bytes, and
 [`docs/examples/library-api`](examples/library-api/README.md), the domain half of a library
-service; the 223 more programs in the other sets are single files, the LeetCode set among them:
+service; the 227 more programs in the other sets are single files, the LeetCode set among them:
 82 solutions carrying 806 examples.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
 <!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->

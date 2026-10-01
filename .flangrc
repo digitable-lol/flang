@@ -11,6 +11,10 @@ issues = https://github.com/digitable-lol/flang/issues
 
 unproven = refuse
 
+max-line-length = 120
+max-conditional-depth = 2
+lint = refuse
+
 script.build = sh scripts/bootstrap-reprint.sh --telo && make -C bootstrap -j"$(getconf _NPROCESSORS_ONLN)" && bootstrap/flang io flang/proof/binary-fingerprint.fscript
 script.scripts:check = bootstrap/flang io scripts/shortcut-collector.fscript --plan Целость && bootstrap/flang io scripts/shortcut-collector.fscript --plan Сбор --max-orders 20000
 script.licenses:check = bootstrap/flang io scripts/guards/license-guard.fscript

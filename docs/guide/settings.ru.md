@@ -9,7 +9,8 @@ flang читает файл настроек `.flangrc`. В нём выбира�
 
 ## Как выглядит файл
 
-Файл этого проекта — десять ключей, и больше в нём ничего нет. Ключи и
+Файл этого проекта — тринадцать ключей и короткие команды `script.<имя>`
+([ADR-0049](../adr/0049-short-commands-live-in-the-settings-file.md)). Ключи и
 слова-значения английские:
 
 ```
@@ -18,13 +19,17 @@ surface = ru
 color = auto
 page = ru
 
-version = 0.7.22
+version = 0.7.23
 name = @digitable-lol/flang
 license = BSD-2-Clause
 repository = https://github.com/digitable-lol/flang
 issues = https://github.com/digitable-lol/flang/issues
 
 unproven = refuse
+
+max-line-length = 120
+max-conditional-depth = 2
+lint = refuse
 ```
 
 Правил записи три:
@@ -82,6 +87,9 @@ flang: /work/.flangrc: запись «недоказанное = разреше�
 | `profile` | имя профиля или несколько через запятую | нет — библиотека без ограничений | сам двоичный при поиске модуля по имени (`flang/src/emit/c/flang_repl.c`) |
 | `modules` | имена модулей библиотеки через запятую | нет | то же |
 | `profile.<имя>` | имена модулей через запятую — объявление профиля | профили `flang/stdlib/profiles.flangrc` | то же |
+| `max-line-length` | целое число больше нуля | нет: длина не ограничена | `flang lint` |
+| `max-conditional-depth` | целое число больше нуля | нет: глубина не ограничена | `flang lint` |
+| `lint` | `refuse` `warn` | `refuse` | `flang lint` |
 
 Четыре верхних ключа — выбор человека из закрытого списка: негодное значение
 отбрасывается, и решает умолчание. Пять следующих несут сведения о проекте:
@@ -96,8 +104,11 @@ bootstrap/flang run-script version <НОВОЕ ЧИСЛО>
 задач» в `scripts/release/emit-package.flang`. Расхождение называет
 `sh scripts/guards/version-derivations-guard.sh`.
 
+Три нижних ключа задают пределы линтера; что именно считается, рассказывает
+раздел `lint` [справочника команд](../site/cli.ru.md#lint).
+
 **Что из этого работает сегодня.** Сам двоичный читает из файла ключ
-`unproven` и ключи профиля — `profile`, `modules`, `profile.<имя>`. Отвечает он по-русски всегда: выбор языка вывода — задача
+`unproven`, ключи профиля — `profile`, `modules`, `profile.<имя>` — и три ключа линтера. Отвечает он по-русски всегда: выбор языка вывода — задача
 [5413](../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md),
 и она требует правки самосборной части. Ключ `language` уже меняет язык
 проводника `flangtutor`.
@@ -210,7 +221,7 @@ bootstrap/flang io scripts/guards/flangrc-guard.fscript --plan Forgery
 Ответ плана — строка JSON; значение лежит в поле `result`.
 
 ```
-bootstrap/flang io scripts/flangrc.fscript                  все десять ключей
+bootstrap/flang io scripts/flangrc.fscript                  все тринадцать ключей
 bootstrap/flang io scripts/flangrc.fscript -- version       одно значение
 bootstrap/flang io scripts/flangrc.fscript -- --sources     значения и откуда каждое взято
 bootstrap/flang io scripts/flangrc.fscript -- --places      какие каталоги просмотрены

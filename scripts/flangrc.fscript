@@ -108,8 +108,9 @@
 
 тотальная функция «Keys»
   возвращает список строки
-  обеспечивает «there are exactly ten keys» (длина результат) равен 10
-  ["language", "surface", "color", "page", "version", "name", "license", "repository", "issues", "unproven"]
+  обеспечивает «there are exactly thirteen keys» (длина результат) равен 13
+  ["language", "surface", "color", "page", "version", "name", "license", "repository", "issues",
+   "unproven", "max-line-length", "max-conditional-depth", "lint"]
 
 тотальная функция «Project keys»
   возвращает список строки
@@ -136,9 +137,63 @@
   обеспечивает «unproven takes three words» (длина результат) равен 3
   ["refuse", "warn", "allow"]
 
+тотальная функция «Lint words»
+  возвращает список строки
+  обеспечивает «lint takes two words» (длина результат) равен 2
+  ["refuse", "warn"]
+
+тотальная функция «Limit keys»
+  возвращает список строки
+  обеспечивает «two keys take a limit» (длина результат) равен 2
+  ["max-line-length", "max-conditional-depth"]
+
+тотальная функция «Is whole and positive»
+  принимает number: число
+  возвращает признак
+  пример «one hundred»
+    дано number равно 100
+    ожидается да
+  пример «a half»
+    дано number равно 0.5
+    ожидается нет
+  (number больше 0) и притом ((number остаток от 1) равен 0)
+
+тотальная функция «Is limit»
+  принимает value: строка
+  возвращает признак
+  пример «a positive whole number is a limit»
+    дано value равно "100"
+    ожидается да
+  пример «zero is no limit»
+    дано value равно "0"
+    ожидается нет
+  пример «a fraction is no limit»
+    дано value равно "2.5"
+    ожидается нет
+  пример «a leading zero is not the way a number is written»
+    дано value равно "0100"
+    ожидается нет
+  пример «a word is no limit»
+    дано value равно "wide"
+    ожидается нет
+  разбор (к числу или беда value)
+    случай вариант «Разобрано» с значение как number
+      то («Is whole and positive» от number) и притом ((к строке number) равен value)
+    случай вариант «Не разобрано» с код как код и сообщение как сообщение
+      то нет
+
+тотальная функция «Rule of»
+  принимает condition: признак, answer: строка
+  возвращает «Rule»
+  пример «a rule is a condition and its answer»
+    дано condition равно да
+    дано answer равно "warn"
+    ожидается запись «Rule» с «holds» равным да и «gives» равным "warn"
+  запись «Rule» с «holds» равным condition и «gives» равным answer
+
 тотальная функция «Legacy keys»
   возвращает список «Пара»
-  обеспечивает «every key has a legacy name» (длина результат) равен 10
+  обеспечивает «ten keys have a legacy name» (длина результат) равен 10
   [запись «Пара» с «ключ» равным "language" и «значение» равным "язык",
    запись «Пара» с «ключ» равным "surface" и «значение» равным "поверхность",
    запись «Пара» с «ключ» равным "color" и «значение» равным "цвет",
@@ -241,7 +296,26 @@
     дано text равно "версия = 0.7.21\nversion = 0.7.22\n"
     дано key равно "version"
     ожидается "0.7.22"
-  «Current word» от key и («First non-empty» от [(«Значение ключа» от text и key), («Значение ключа» от text и («By key» от («Legacy keys») и key))])
+  пусть legacy равно «By key» от («Legacy keys») и key
+  пусть current равно «Значение ключа» от («Lines naming» от text и key) и key
+  пусть older равно «Значение ключа» от («Lines naming» от text и legacy) и legacy
+  «Current word» от key и («First non-empty» от [current, older])
+
+тотальная функция «Lines naming»
+  принимает text: строка, key: строка
+  возвращает строка
+  пример «only the lines that name the key are kept»
+    дано text равно "language = eo\nscript.build = make\nlanguage = ru\n"
+    дано key равно "language"
+    ожидается "language = eo\nlanguage = ru"
+  пример «an empty key keeps nothing»
+    дано text равно "language = eo\n"
+    дано key равно ""
+    ожидается ""
+  пусть lines равно (разделить text по "\n")
+  если key равен ""
+    то ""
+    иначе соединить (отфильтровать lines где line → line содержит key) по "\n"
 
 тотальная функция «Advice on line»
   принимает text: строка, line: строка
@@ -347,12 +421,31 @@
     дано key равно "unproven"
     дано value равно "ru"
     ожидается ""
+  пример «a line length limit is a positive whole number»
+    дано key равно "max-line-length"
+    дано value равно "100"
+    ожидается "100"
+  пример «a depth of zero is dropped»
+    дано key равно "max-conditional-depth"
+    дано value равно "0"
+    ожидается ""
+  пример «the linter may warn»
+    дано key равно "lint"
+    дано value равно "warn"
+    ожидается "warn"
+  пример «the linter has no third word»
+    дано key равно "lint"
+    дано value равно "allow"
+    ожидается ""
   пусть word равно «Current word» от key и value
+  пусть language равно ((«Language keys») содержит key) и притом ((«Language codes») содержит word)
   «First rule» от [
     (запись «Rule» с «holds» равным ((key равен "color") и притом ((«Colour words») содержит word)) и «gives» равным word),
     (запись «Rule» с «holds» равным ((key равен "unproven") и притом ((«Unproven words») содержит word)) и «gives» равным word),
     (запись «Rule» с «holds» равным ((«Project keys») содержит key) и «gives» равным word),
-    (запись «Rule» с «holds» равным (((«Language keys») содержит key) и притом ((«Language codes») содержит word)) и «gives» равным word)] и ""
+    («Rule of» от language и word),
+    («Rule of» от ((key равен "lint") и притом ((«Lint words») содержит word)) и word),
+    («Rule of» от (((«Limit keys») содержит key) и притом («Is limit» от word)) и word)] и ""
 
 тотальная функция «Default»
   принимает key: строка
@@ -369,9 +462,16 @@
   пример «a project key has no default»
     дано key равно "version"
     ожидается ""
+  пример «the linter refuses by default»
+    дано key равно "lint"
+    ожидается "refuse"
+  пример «an absent limit is no limit»
+    дано key равно "max-line-length"
+    ожидается ""
   «First rule» от [
     (запись «Rule» с «holds» равным (key равен "color") и «gives» равным "auto"),
     (запись «Rule» с «holds» равным (key равен "unproven") и «gives» равным "refuse"),
+    («Rule of» от (key равен "lint") и "refuse"),
     (запись «Rule» с «holds» равным ((«Language keys») содержит key) и «gives» равным "ru")] и ""
 
 тотальная функция «Locale»
@@ -565,13 +665,20 @@
   пример «an unknown option is named with the usage line»
     дано arguments равно ["--откуда"]
     ожидается "непонятный ключ «--откуда»; звать: bootstrap/flang io scripts/flangrc.fscript [-- [ключ настроек] [--sources | --places | --file] [--from КАТАЛОГ] [--home КАТАЛОГ]]"
-  пример «an unknown settings key is named with the known ones»
-    дано arguments равно ["nonsense"]
-    ожидается "ключа настроек «nonsense» нет; ключи: language, surface, color, page, version, name, license, repository, issues, unproven"
   пусть key равно «First non-empty» от («Free arguments» от arguments)
+  пусть unknown равно (не (key равен "")) и притом ((«Current key» от key) равен "")
   «First rule» от [
     (запись «Rule» с «holds» равным (не (пусто («Unknown options» от arguments))) и «gives» равным (соединить ["непонятный ключ «", («First non-empty» от («Unknown options» от arguments)), "»; ", («Usage»)] по "")),
-    (запись «Rule» с «holds» равным ((не (key равен "")) и притом ((«Current key» от key) равен "")) и «gives» равным (соединить ["ключа настроек «", key, "» нет; ключи: ", (соединить («Keys») по ", ")] по ""))] и ""
+    («Rule of» от unknown и («Unknown key» от key и («Keys»)))] и ""
+
+тотальная функция «Unknown key»
+  принимает key: строка, keys: список строки
+  возвращает строка
+  пример «an unknown settings key is named with the known ones»
+    дано key равно "nonsense"
+    дано keys равно ["language", "lint"]
+    ожидается "ключа настроек «nonsense» нет; ключи: language, lint"
+  соединить ["ключа настроек «", key, "» нет; ключи: ", (соединить keys по ", ")] по ""
 
 тотальная функция «Inside»
   принимает directory: строка, name: строка
@@ -680,9 +787,10 @@
   пример «a legacy name in the request is translated»
     дано request равно запись «Request» с «key» равным "беды" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
     ожидается ["issues"]
-  пример «no key means all ten»
+  пример «no key means all thirteen»
     дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
-    ожидается ["language", "surface", "color", "page", "version", "name", "license", "repository", "issues", "unproven"]
+    ожидается ["language", "surface", "color", "page", "version", "name", "license", "repository",
+      "issues", "unproven", "max-line-length", "max-conditional-depth", "lint"]
   если (request.«key») равен "" то («Keys») иначе [«Current key» от (request.«key»)]
 
 тотальная функция «Line of key»
@@ -747,7 +855,9 @@
     дано request равно запись «Request» с «key» равным "" и «kind» равным (вариант «Values») и «start» равным "" и «home» равным ""
     дано environment равно пустой список
     дано files равно запись «Files» с «project path» равным "" и «project» равным "" и «home path» равным "" и «home» равным ""
-    ожидается ["language = ru", "surface = ru", "color = auto", "page = ru", "version = ", "name = ", "license = ", "repository = ", "issues = ", "unproven = refuse"]
+    ожидается ["language = ru", "surface = ru", "color = auto", "page = ru", "version = ",
+      "name = ", "license = ", "repository = ", "issues = ", "unproven = refuse",
+      "max-line-length = ", "max-conditional-depth = ", "lint = refuse"]
   «Joined» от («Joined» от (отобразить («Keys of request» от request) как key → («Line of key» от key и request и environment и files)) и («Advice on request» от (request.«key»))) и («Advice on files» от files и («Current key» от (request.«key»)))
 
 тотальная функция «Lines of places»

@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     # FLANG_TMP НА ВСЮ РАБОТУ, а не по шагам. Прогон набора проб чекера
-    # (flang/proof/checker/tests/run.sh, его зовёт scripts/provability.fscript)
+    # (flang/proof/checker/tests/run.fscript, его зовёт scripts/provability.fscript)
     # берёт времянку как `mktemp -d -p "${FLANG_TMP:-/srv/tmp}"`. На раннере
     # каталога /srv/tmp нет, mktemp падает, и при `set -eu` прогон кончается
     # НЕМЕДЛЕННО кодом 1, не напечатав ни одной строки итога. Вердикт читает

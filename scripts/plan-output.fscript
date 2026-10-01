@@ -1,0 +1,154 @@
+модуль «Plan output»
+  использует «Inquiry» из "inquiry.fscript"
+
+тотальная функция «Hexadecimal digit»
+  принимает sign: строка
+  возвращает число
+  пример «A letter digit»
+    дано sign равно "b"
+    ожидается 11
+  пример «A decimal digit»
+    дано sign равно "7"
+    ожидается 7
+  пример «Anything else counts as zero»
+    дано sign равно "z"
+    ожидается 0
+  свёртка ["1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"] начиная с 0 как found и digit → если (found равен 0) и притом (sign равен digit) то (если ("123456789" содержит digit) то (к числу digit) иначе ((код символа digit) минус 87)) иначе found
+
+тотальная функция «Control sign»
+  принимает tail: строка
+  возвращает строка
+  пример «Two hexadecimal digits become the sign and the rest stays»
+    дано tail равно "41 text"
+    ожидается "A text"
+  пример «A tail shorter than two digits stays as it is»
+    дано tail равно "4"
+    ожидается "4"
+  если (длина tail) меньше 2
+    то tail
+    иначе соединить [(символ по коду (((«Hexadecimal digit» от (подстрока tail с 1 по 1)) умножить на 16) плюс («Hexadecimal digit» от (подстрока tail с 2 по 2)))), (подстрока tail с 3 по (длина tail))] по ""
+
+тотальная функция «Control signs»
+  принимает text: строка
+  возвращает строка
+  пример «An escaped control sign is restored»
+    дано text равно "a\\u0041b"
+    ожидается "aAb"
+  пример «A text without such signs stays»
+    дано text равно "plain"
+    ожидается "plain"
+  разбор (разделить text по "\\u00")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то соединить (приписать голова к (отобразить хвост как tail → «Control sign» от tail)) по ""
+
+тотальная функция «Simple escapes»
+  принимает text: строка
+  возвращает строка
+  пример «Line ends, tabs and quotes are restored»
+    дано text равно "one\\ntwo\\t\\\"three\\\""
+    ожидается "one\ntwo\t\"three\""
+  «Control signs» от (свёртка [["\\n", "\n"], ["\\t", "\t"], ["\\r", "\r"], ["\\\"", "\""], ["\\/", "/"]] начиная с text как kept и pair → соединить (разделить kept по (элемент 1 в pair)) по (элемент 2 в pair))
+
+тотальная функция «Unescaped»
+  принимает text: строка
+  возвращает строка
+  пример «An escaped backslash is one backslash and does not start another escape»
+    дано text равно "a\\\\nb\\nc"
+    ожидается "a\\nb\nc"
+  пример «A plain text stays»
+    дано text равно "plain"
+    ожидается "plain"
+  соединить (отобразить (разделить text по "\\\\") как part → «Simple escapes» от part) по "\\"
+
+тотальная функция «First of»
+  принимает parts: список строки
+  возвращает строка
+  пример «The first of two parts»
+    дано parts равно ["one", "two"]
+    ожидается "one"
+  пример «No parts give nothing»
+    дано parts равно пустой список
+    ожидается ""
+  разбор parts
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Between»
+  принимает opening: строка, closing: строка, text: строка
+  возвращает строка
+  пример «The text between the two marks»
+    дано opening равно "\"result\":\""
+    дано closing равно "\",\"orders\":"
+    дано text равно "{\"plan\":\"Check\",\"result\":\"done\",\"orders\":2,\"log\":[]}"
+    ожидается "done"
+  пример «No opening mark gives nothing»
+    дано opening равно "\"result\":\""
+    дано closing равно "\",\"orders\":"
+    дано text равно "{\"error\":\"bad\"}"
+    ожидается ""
+  разбор (разделить text по opening)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «First of» от (разделить (соединить хвост по opening) по closing)
+
+тотальная функция «Result»
+  принимает output: строка
+  возвращает строка
+  пример «The result of a finished plan»
+    дано output равно "{\"plan\":\"Check\",\"result\":\"one\\ntwo\",\"orders\":2,\"log\":[]}\n"
+    ожидается "one\ntwo"
+  пример «Anything else has no result»
+    дано output равно "usage"
+    ожидается ""
+  если output начинается с "{\"plan\":\""
+    то «Unescaped» от («Between» от "\"result\":\"" и "\",\"orders\":" и output)
+    иначе ""
+
+тотальная функция «Failure»
+  принимает errors: строка
+  возвращает строка
+  пример «The message of a plan that gave up»
+    дано errors равно "доказано: утверждений 0\n{\"error\":\"one\\ntwo\",\"diagnostics\":[{\"code\":\"FLANG_TRY\"}]}\n"
+    ожидается "one\ntwo"
+  пример «Errors of another shape carry no message»
+    дано errors равно "sh: not found\n"
+    ожидается ""
+  разбор (отфильтровать (разделить errors по "\n") где line → line начинается с "{\"error\":\"")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «Unescaped» от («Between» от "{\"error\":\"" и "\",\"diagnostics\":" и голова)
+
+тотальная функция «Plan said»
+  принимает reply: «Отклик»
+  возвращает строка
+  пример «A finished plan says its result»
+    дано reply равно вариант «Процесс завершён» с код равным 0 и вывод равным "{\"plan\":\"Check\",\"result\":\"done\",\"orders\":2,\"log\":[]}\n" и ошибки равным "доказано: утверждений 0\n"
+    ожидается "done"
+  пример «A plan that gave up says its message»
+    дано reply равно вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "{\"error\":\"bad\",\"diagnostics\":[]}\n"
+    ожидается "bad"
+  пример «Anything else is given as it came»
+    дано reply равно вариант «Процесс завершён» с код равным 2 и вывод равным "" и ошибки равным "usage\n"
+    ожидается "usage\n"
+  пусть output равно («Output» от reply)
+  пусть errors равно («Errors» от reply)
+  если output начинается с "{\"plan\":\""
+    то «Result» от output
+    иначе если пусто («Failure» от errors)
+      то соединить [output, errors] по ""
+      иначе «Failure» от errors
+
+тотальная функция «Plan said by»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «An unknown name said nothing»
+    дано name равно "check"
+    дано answers равно пустой список
+    ожидается ""
+  «Plan said» от («Reply to» от name и answers)

@@ -12,7 +12,7 @@
 #      — каждое подаётся отдельным файлом, чтобы отказ был именно на нём;
 #   4) у какой строки перечня есть лемма, а у какой нет — поимённо;
 #   5) сверка вердиктов C ↔ Lean (ADR-0041 §2.2). Весь набор проб сверщика
-#      (`checker/tests/run.sh`) гоняется через обёртку, которая сохраняет
+#      (`checker/tests/run.fscript`) гоняется через обёртку, которая сохраняет
 #      каждый вызов: исходник, запись, код, вывод. Каждое утверждение с блоком
 #      «вывод», который сверщик проигрывает, читает `RecordReader.lean` и судит
 #      «принят?» (`VerdictCheck.lean`); вердикт по блоку сличается с вердиктом
@@ -143,9 +143,9 @@ exit $k
 OB
 chmod +x "$RAB/обёртка.sh"
 SBOR="$RAB/сбор"; mkdir -p "$SBOR"
-( export SBOR; REAL="$RAB/сверщик" SVERSCHIK="$RAB/обёртка.sh" FLANG_TMP="$RAB" \
-  sh "$CHEK/tests/run.sh" ) > "$RAB/tests.out" 2>&1
-KPROB=$?
+( export SBOR; REAL="$RAB/сверщик" FLANG_CHECKER="$RAB/обёртка.sh" FLANG_TMP="$RAB" \
+  "$KAT/../../../bootstrap/flang" io "$CHEK/tests/run.fscript" --max-steps 4000000000 --timeout 600000 ) > "$RAB/tests.out" 2>&1
+KPROB=$?; sed -i 's/\\n/\n/g' "$RAB/tests.out"
 NABOR=$(sed -n 's/^ *\(подделок [0-9]*\):.*/\1/p; s/^ *\(честных *[0-9]*\):.*/\1/p' "$RAB/tests.out" | tr -s ' ' | paste -sd, - | sed 's/,/, /')
 VYZ=$(ls "$SBOR" | wc -l | tr -d ' ')
 if [ "$KPROB" -eq 0 ]; then SVOD="сошлось всё"; else SVOD="${KRAS}НЕ СОШЛОСЬ (код $KPROB)${SBROS}"; PLOHO=1; fi

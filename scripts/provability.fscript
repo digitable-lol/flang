@@ -3,6 +3,7 @@
   использует «Inquiry» из "inquiry.fscript"
   использует «Reading» из "reading.fscript"
   использует «Report provenance» из "report-provenance.fscript"
+  использует «Plan output» из "plan-output.fscript"
   использует «Lists» только «Соединить списки»
 
 объект «Kind»
@@ -92,12 +93,13 @@
    («Environment» от "table path" и "FLANG_TRAP_TABLE"),
    («Environment» от "ratchet path" и "FLANG_TRAP_RATCHET"),
    («Environment» от "compiler" и "CC"),
+   («Environment» от "temporary" и "FLANG_TMP"),
    («Run from» от "checker built" и («Root») и "test" и ["-x", («Checker»)])]
 
 тотальная функция «Tables»
   принимает answers: список «Answer»
   возвращает список «Question»
-  «Соединить списки» от [(«Read from» от "table" и («Root») и («Table path» от answers)), («Read from» от "ratchets" и («Root») и («Ratchet path» от answers))] и (если («Exit code of» от "checker built" и answers) равен 0 то пустой список иначе [(«Run from» от "checker build" и («Root») и («Setting of» от "compiler" и "cc" и answers) и ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2", "-o", («Checker»), («Checker source»)])])
+  «Соединить списки» от [(«Read from» от "table" и («Root») и («Table path» от answers)), («Read from» от "ratchets" и («Root») и («Ratchet path» от answers)), («Temporary directory» от "report dir" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/provability."] по ""))] и (если («Exit code of» от "checker built" и answers) равен 0 то пустой список иначе [(«Run from» от "checker build" и («Root») и («Setting of» от "compiler" и "cc" и answers) и ["-std=c99", "-Wall", "-Wextra", "-Werror", "-pedantic", "-O2", "-o", («Checker»), («Checker source»)])])
 
 тотальная функция «Sources»
   принимает answers: список «Answer»
@@ -111,17 +113,27 @@
   пусть sums равно («Output of» от "trap sums" и answers)
   отобразить («Known kinds» от answers) как kind → «Run from» от (соединить ["replay ", (kind.«title»)] по "") и («Root») и («Checker») и [(kind.«source»), (kind.«record»), («Sum of» от (kind.«source») и sums)]
 
+тотальная функция «Report file»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The report of the probes lies in the directory made for it»
+    дано answers равно [запись «Answer» с «name» равным "report dir" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/probes.report"
+  соединить [(«Made of» от "report dir" и answers), "/probes.report"] по ""
+
 тотальная функция «Suites»
+  принимает answers: список «Answer»
   возвращает список «Question»
   «Соединить списки» от [(«Run from» от "share" и («Root») и "sh" и ["flang/proof/corpus-share.sh", "--проигрыванием"]),
-   («Run from» от "probes" и («Root») и "sh" и ["flang/proof/checker/tests/run.sh"])] и («Provenance questions» от («Root»))
+   («Run from» от "probes" и («Root») и "sh" и ["-c", "exec \"$0\" \"$@\" > /dev/null", "bootstrap/flang", "io", "flang/proof/checker/tests/run.fscript", "--max-steps", "4000000000", "--timeout", "600000", "--", («Report file» от answers)]),
+   («Read» от "probes report" и («Report file» от answers))] и («Provenance questions» от («Root»))
 
 тотальная функция «Stage»
   принимает stages: число, answers: список «Answer»
   возвращает список «Question»
   если (stages меньше 0) или (stages больше 5)
     то пустой список
-    иначе элемент (6 минус stages) в [(«Setup»), («Tables» от answers), («Sources» от answers), («Replays» от answers), («Suites»), («Lean question» от answers)]
+    иначе элемент (6 минус stages) в [(«Setup»), («Tables» от answers), («Sources» от answers), («Replays» от answers), («Suites» от answers), («Соединить списки» от («Lean question» от answers) и [(«Remove» от "report removed" и («Report file» от answers)), («Remove» от "report dir removed" и («Made of» от "report dir" и answers))])]
 
 тотальная функция «Said»
   принимает kind: «Kind», answers: список «Answer»
@@ -274,7 +286,17 @@
 тотальная функция «Said by»
   принимает name: строка, answers: список «Answer»
   возвращает список строки
-  «Соединить списки» от («Lines» от («Output of» от name и answers)) и («Lines» от («Errors of» от name и answers))
+  пример «A plan says its result line by line»
+    дано name равно "probes"
+    дано answers равно [запись «Answer» с «name» равным "probes" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "{\"plan\":\"Probes\",\"result\":\"подделок 1\\nчестных 2\",\"orders\":2,\"log\":[]}" и ошибки равным "")]
+    ожидается ["подделок 1", "честных 2"]
+  пример «A script says its output and its errors»
+    дано name равно "share"
+    дано answers равно [запись «Answer» с «name» равным "share" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "доля\n" и ошибки равным "шум\n")]
+    ожидается ["доля", "шум"]
+  если (name равен "probes") и притом («Answered» от "probes report" и answers)
+    то «Lines» от («Output of» от "probes report" и answers)
+    иначе «Lines» от («Plan said by» от name и answers)
 
 тотальная функция «Share line»
   принимает answers: список «Answer»
@@ -542,7 +564,8 @@
     (если asked равен "checker build" то («Missing» от asked и "чекер не собрался" и answers) иначе пустой список),
     (если asked равен "trap sums" то («Sums obstacles» от answers) иначе пустой список),
     (если asked начинается с "record " то («Record obstacles» от asked и answers) иначе пустой список),
-    (если asked равен "probes" то («Probes obstacles» от answers) иначе пустой список)]
+    (если asked равен "probes" то («Probes obstacles» от answers) иначе пустой список),
+    (если (asked равен "report dir") и притом (пусто («Made of» от "report dir" и answers)) то [(соединить ["временный каталог для отчёта проб не заведён: ", («Errors of» от "report dir" и answers)] по "")] иначе пустой список)]
 
 тотальная функция «Verdict text»
   принимает answers: список «Answer»

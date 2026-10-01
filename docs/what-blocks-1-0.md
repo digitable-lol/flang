@@ -1201,7 +1201,7 @@ flang нет, поэтому это мера готовности, а не от�
 перестаёт.
 
 ```sh
-make -C flang/proof/checker && sh flang/proof/checker/tests/run.sh
+make -C flang/proof/checker && bootstrap/flang io flang/proof/checker/tests/run.fscript --max-steps 4000000000 --timeout 600000
 ```
 
 Итог прогона — два числа, и одно без другого не значит ничего, потому что

@@ -1,239 +1,220 @@
 # What is proved and what is not
 
-The language calls itself provable — this page says what stands behind that word
-and what does not. Every number here is printed by the compiler itself, and the
-command that reproduces it stands next to it.
+flang calls itself provable. This page says what that covers and what it does
+not, so that you know which results of `flang check --proof` you can rely on and
+where you still need tests. Every number here is printed by a command, and the
+command is next to it.
 
-Counted over {{корпус.файлов}} files in the repository: {{корпус.функций}}
-functions, {{корпус.строк|разрядами}} lines.
+Across the repository: {{корпус.файлов}} files, {{корпус.функций}} functions,
+{{корпус.строк|разрядами}} lines. Files and lines are recounted from the sources
+on every push (`sh scripts/guards/published-vs-tree.sh --числа`). The other
+numbers on this page — termination, postconditions, run-time checks — come from
+a full run of the compiler over the repository (`bootstrap/flang run-script
+numbers:build`, several hours), so they can lag behind the code. For one file
+you get the same numbers in seconds:
 
 ```
 flang check <file> --proof --json
 ```
 
-> **When the numbers on this page were measured.** Files and lines are
-> recomputed from the sources in nine seconds and are checked on every push
-> (`sh scripts/guards/published-vs-tree.sh --числа`). Everything else — termination,
-> carriers, guard sites, claims about behaviour — is printed by the compiler in a
-> run over the whole corpus (hours), and it printed them on **23 August 2026**
-> (commit `252606e8`). They have not been re-measured since.
->
-> On the day of measurement the compiler was built from a seed that had fallen
-> behind the sources; the seed has since been reprinted (10–11 September 2026,
-> commit `0ce948bfd`; `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` on 11 September
-> names 3 files, 77 functions, still behind). The expensive numbers have not been
-> re-measured yet; the same `published-vs-tree.sh --числа` prints how many
-> `.flang` files have moved since `252606e8`.
+## The answers of the prover
 
-For every claim that is stated, the kernel answers with one of three words, and
-they are not interchangeable.
+For every postcondition (`обеспечивает`) and precondition (`требует`) the
+prover — the part of the compiler that proves them, «ядро» in the output —
+gives one of three answers:
 
-```mermaid The kernel's three answers, and what each is worth
+```mermaid The three answers of the prover and what each is worth
 flowchart TD
-  A[a claim about a function] --> B{derivable from declarations<br>and structure?}
-  B -->|yes| C([proved<br>on ALL inputs])
-  B -->|no| D{computed on the author's<br>own values?}
-  D -->|yes| E([grid of N<br>no violation found<br>on N values])
-  D -->|no| F([declared, not proved<br>no proof attached])
-  C --> G[nothing is left behind<br>in the emitted program]
-  E --> H[this is NOT a proof:<br>it holds exactly on the grid]
+  A[a postcondition of a function] --> B{follows from the declarations<br>and the code?}
+  B -->|yes| C([proved<br>for ALL inputs])
+  B -->|no| D{does the function<br>have examples?}
+  D -->|yes| E([checked on N examples<br>no violation found])
+  D -->|no| F([declared, not proved<br>no proof at all])
+  C --> G[no check is left<br>in the generated program]
+  E --> H[this is NOT a proof:<br>only the examples are covered]
   class C vyvod
   class E glavnoe
   class F otkaz
 ```
 
-There is a fourth word too — "on trust": a claim computed by nothing at all.
-Assumptions of that kind in the tree: {{законы.наВеру}}.
+| The output says | What it means | What happens at run time |
+| --- | --- | --- |
+| «доказано» | proved for all inputs | nothing: the check is not in the generated code |
+| «сетка N» | checked only on N values (your examples); like unit tests | the condition is checked on every return |
+| «объявлено, не доказано» | neither a proof nor an example | the condition is checked on every return |
+| «на веру» | an assumption nothing checks | — |
+
+Assumptions «на веру» in the repository: {{законы.наВеру}}.
 
 ---
 
-## Proved
+## What is proved
 
 ### Termination: {{корпус.тотальных}} functions out of {{корпус.функций}}
 
-The `тотальная` mark is a promise that the function ends on every input. The
-compiler checks it and refuses to build the file when it cannot. The promise is
-carried in five ways, and the way used shows up per function in the report:
+`тотальная` (total) before a function says it stops on every input. The
+compiler proves it or rejects the file. There are five ways it can prove it, and
+the proof report names the way for each function:
 
-| How it is proved | Functions | Cost at run time |
+| How termination is proved | Functions | Cost at run time |
 |---|---:|---|
-| By composition — no recursion at all | {{носители.композиция}} | none |
-| By structure — walking part of a value | {{носители.структура}} | none |
-| By an exact step over a natural number | {{носители.точныйШаг}} | none |
-| By a constant step with a lower bound | {{носители.постоянныйШаг}} | a check in the code |
-| By a declared measure | {{носители.мера}} | a check in the code |
+| No recursion at all | {{носители.композиция}} | none |
+| Recursion on a part of the input (tail, field) | {{носители.структура}} | none |
+| Counting down a `неотрицательное` number | {{носители.точныйШаг}} | none |
+| Counting down a plain `число` with a lower bound | {{носители.постоянныйШаг}} | a check in the code |
+| A declared measure (`убывает`) | {{носители.мера}} | a check in the code |
 
-The gap between the third row and the fourth is wider than it looks, and it has
-been measured. The first three prove termination before the program runs and
-leave nothing behind in the printed code. The last two rest on a number going
-down, and numbers here are floating point: at a large value `х minus 1` equals
-`х`, so the proof is complete over the reals and incomplete over machine
-numbers. The difference is caught by a check in the printed code —
-**{{сторож.мест}} places in {{сторож.функций}} functions**, exactly those in the
-last two rows of the table and in no other.
+The first three are proved before the program runs and leave nothing in the
+generated code. The last two rely on a number going down, and `число` is a
+binary64 float: for a large `х`, `х минус 1` equals `х`. The proof holds for
+real numbers but not for floats, so the compiler adds a check to the generated
+code — **{{сторож.мест}} places in {{сторож.функций}} functions**, exactly the
+functions in the last two rows. To avoid the check, use `неотрицательное` for a
+counter.
 
-### Claims about behaviour: {{утверждения.доказано}} out of {{утверждения.высказано}}
+### Postconditions: {{утверждения.доказано}} out of {{утверждения.высказано}}
 
-A claim is an `обеспечивает` or `требует` line next to a function. The kernel
-answers each of them in one of three ways, and the three must not be blurred
-together:
-
-| Kernel's answer | Count | What it means |
+| The prover's answer | Count | What it means |
 |---|---:|---|
-| Proved for all inputs | {{утверждения.доказано}} | true for any input, not for the ones written down |
-| On a grid | {{утверждения.сеткой}} | run over a set of values, no violation found |
-| Declared, not proved | 6 | checked at run time, on whatever inputs arrive |
+| Proved for all inputs | {{утверждения.доказано}} | true for every input, not only for the written ones |
+| Checked only on examples | {{утверждения.сеткой}} | the examples pass; there is no proof |
 
-Of the {{утверждения.доказано}} proved, **39 are closed by induction** — a base
-case and a step, not a substitution of values. Refused:
-{{утверждения.отвергнуто}}. Violated: 0.
+The rest are declared without a proof or an example; they are checked at run
+time on whatever inputs arrive. Refused as false: {{утверждения.отвергнуто}}.
 
-### Zero axioms
+### No axioms
 
-An axiom is something taken without proof. Coq and Lean have them and use them:
-excluded middle, the axiom of choice. Each one is something the machine does not
-check but accepts.
+An axiom is a statement accepted without proof. Coq and Lean have axioms and
+use them: the law of excluded middle, the axiom of choice. The machine does not
+check them.
 
-Here there are **{{законы.наВеру}}**, and that is not a claim but a field of the
-report: the list of assumptions is printed together with the other numbers, and
-on the day of the measurement it was empty.
-
-"Zero axioms" itself rests not on that field but on a run, and the run is named
-here. The kernel has no list of axioms as a device — an axiom can only be written
-in words in the source — so a separate program reads the whole of
-`flang/self/proof-kernel.flang` and demands that the word "аксиома" appear
-nowhere in it except in the named reasons explaining why this or that rule is a
-theorem:
+The flang prover has none. The proof report prints the list of assumptions with
+the other numbers ({{законы.наВеру}} in the repository). The prover has no
+mechanism for declaring an axiom, so a separate script reads all of
+`flang/self/proof-kernel.flang` and fails if the word «аксиома» appears there
+except in the named reasons that explain why a rule is a theorem:
 
 ```
-flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль'
-→ zero axioms, 0 violations   (exit 0)
+flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль' --trust
 ```
 
-What that command does not confirm: that every rule rejects its own forgery. That
-is the second end of the same guard — the plan `'Подделки остаются недоказанными'`
-— and today it is red (run on 11 September 2026 with 0.7.17, exit code 1). The
-reason is not that the kernel took a falsehood: on the forgery
-`flang/test/fixtures/poddelka-order-arithmetic.flang` the compiler answers with
-exit code 3 ("declared, not proved: 5"), while the plan expects a different code
-and counts the forgery as unchecked. The independent checker's own forgery set
-is a different one, and it is green — see the next section.
+It exits with 0 and prints «аксиом ноль, нарушений 0» (zero axioms, zero
+violations). `--trust` is needed because the script itself has unproved
+postconditions, and `flang io` does not run such a script without consent.
 
-For a reader this means one thing: when the report says "proved for all inputs",
-there is no invisible side condition behind that line that somebody once found
-obvious. Trust is still required — in the kernel's rules, in the compiler under
-them, in the hardware — but not in a separate list of exemptions.
+A second plan of the same script checks that each deliberately broken proof in
+`flang/test/fixtures/poddelka-*` is rejected:
 
-### The proof is replayed by an independent checker
+```
+flang io flang/scripts/kernel-forgeries.fscript --plan 'Подделки остаются недоказанными' --trust
+```
 
-The word "proved" in the compiler's report need not be taken on trust.
-`flang check --proof --записать <file>` writes the proof itself to a file, and a
-separate C program — `flang/proof/checker/checker.c`, which has never seen the
-compiler — takes the source and the record and replays every step anew. The run
-`bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` on 19 September 2026 on trunk (commit
-`a5609e322`, about three minutes) answers **PROVABLE** and prints four checks as
-numbers: **650 obligations out of 650 replayed (100.00 %)**, with 27 unreachable
-places carved out; forgery set 36 of 36; 533 forgery probes, none accepted with
-exit code 0; 245 honest records, none rejected.
+It also exits with 0: «подделки отвергнуты: 36 файлов каталога» (forgeries
+rejected: 36 files).
 
-The share reached 100 % on 18 September 2026 (task 3348): 633 → 650 of 650. There
-is no longer a single place where the checker takes the kernel's word; there used
-to be 12 premises and 4 steps.
+What this gives you: when the report says "proved for all inputs", there is no
+hidden condition behind it. You still trust the prover's rules, the compiler
+that runs them and the hardware, but not a list of exceptions.
 
-Read the 100 % precisely: it is the share of places **in the compiler's own
-proof** (the corpus of records) where the independent checker replayed the step —
-not "all programs are proved". The inference rules the checker uses have also
-been checked by a foreign judge: all 109 rules are translated into Lean 4 lemmas
-and accepted by its kernel — the run at commit `a5609e322`: 0 verdict
-divergences, 52 traps and all 52 rejected, no `sorry`, `axiom` or
-`native_decide`, and `#print axioms` on the consistency theorem gives exactly the
-three standard ones. The long report
-(`docs/lean-checks-the-inference-rules.md`) lags behind: its numbers were taken
-on 11 September.
+### The proof is re-checked by an independent program
+
+You do not have to trust the word "proved" in the compiler output.
+`flang check <file> --proof --record <record>` writes the proof to a file, and a
+separate C program, `flang/proof/checker/checker.c`, which shares no code with
+the compiler, reads the source and the record and re-checks every step.
+
+One command runs this check over the compiler's own proofs:
+
+```
+bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000
+```
+
+It runs for about a minute and answers «ДОКАЗУЕМ» (provable) with four numbers:
+650 of 650 proof steps re-checked by the C program (100.00 %), 27 unreachable
+places excluded; 36 of 36 forgeries in the forgery set; 575 broken proofs, none
+accepted; 274 correct proofs, none rejected.
+
+What the 100 % means: the share of steps **in the compiler's own proof records**
+that the independent checker re-checked. It is not "all programs are proved",
+and it says nothing about the generated code.
+
+The inference rules of the prover are also stated in Lean 4. `bootstrap/flang
+io scripts/four-coverages.fscript --plan Measure --timeout 900000` reports how
+far: every rule line in `flang/proof/tables/inference-rules.tsv` (112) has a
+Lean lemma, and 76 of the 97 inference rules are in the Lean acceptance file;
+21 are not. Lean itself is not run by that command; it is run by
+`sh flang/proof/lean/run.sh` with the toolchain from
+`flang/proof/lean/lean-toolchain`. The same command lists the known soundness
+problems of the checker and says how much of the translation into C is checked.
 
 ---
 
-## Not proved
+## What is not proved
 
-This half of the page matters more than the first.
+This half of the page matters more.
 
-### Substantively proved: 10 functions out of 20
+### A proved postcondition can say nothing
 
-Empty statements can be proved, and the figure is easy to inflate. The
-postcondition `результат равен (0 минус х)` over the body `0 минус х` closes in
-one step: the specification was copied from the implementation and has nothing
-left to check. Such a claim is not false — it just says nothing.
+Empty postconditions are easy to prove. The postcondition
+`результат равен (0 минус х)` over the body `0 минус х` is proved in one step:
+it repeats the body and checks nothing. It is not false, it is just useless.
 
-Telling a substantive claim from a free one by a list of names does not work: a
-list is kept by hand, and a hand errs in its own favour. So the line is drawn by
-a run, and the run asks two mechanical questions:
+To count useful postconditions, a script asks two mechanical questions about
+each one:
 
-1. **Was the body copied into the postcondition?** Parse trees are compared.
-2. **Does the claim survive the body being replaced by a stub?** The body becomes
-   `0`, `""`, `нет` or `пустой список` — whichever the declared type allows —
-   while the signature and the claim stay. A claim still proved against the stub
-   is true of any function with that signature and says nothing about this one:
-   "the length of the result is non-negative" is true of the empty string too.
+1. **Is the body copied into the postcondition?** The parse trees are compared.
+2. **Does the postcondition still hold if the body is replaced by a stub?** The
+   body becomes `0`, `""`, `нет` or `пустой список`, whichever fits the type;
+   the signature and the postcondition stay. If the prover still proves it, the
+   postcondition is true of any function with that signature and says nothing
+   about this one. "The length of the result is non-negative" is true of the
+   empty string too.
 
-The sample is twenty library functions taken at a fixed stride down the list of
-declarations, so that convenient ones could not be picked; since then they are
-taken by name, so the ruler does not move with the thing it measures.
-
-| | Claims |
-|---|---:|
-| Substantive — fall away against the stub | **11** |
-| Weakened — proved against the stub as well | 6 |
-| Free — body copied into the postcondition | 1 |
-| Not checked — no stub exists for that result type | 2 |
-
-Something is proved for 14 of the 20 functions. Something substantive, for 10.
+The sample is twenty library functions, copied into `docs/benchmark2/`:
 
 ```
 bootstrap/flang run-script proofs:count-20
 ```
 
-### Some of the unproved is unprovable because it is untrue
+| | Postconditions |
+|---|---:|
+| Useful — not proved for the stub | **11** |
+| Weak — proved for the stub too | 6 |
+| Free — the body is copied into the postcondition | 1 |
+| Not checked — no stub for that result type | 2 |
 
-"The kernel did not take it" and "the kernel was too weak" are also different
-things, and on the same twenty they came apart twice. Two of the twenty claims are
-**false**, and the kernel is right to have refused them:
+Something is proved for 14 of the 20 functions; something useful, for 10.
 
-- `«Противоположное»` — "negate" — with the claim that the result plus the input
-  is zero: `(результат плюс х) равен 0`. At an infinite `х` this works out to
-  `(0 − ∞) + ∞`, that is, "not a number", and "not a number" does not equal zero.
-  The same at minus infinity and at "not a number" itself;
-- `«Первый элемент или запасное»` — "first element or fallback" — with the claim
-  that the list is empty OR the result equals the fallback. On the list `[7]` with
-  fallback `0` the list is not empty and the result is seven, so the claim is
-  false. An implication was meant — if empty, then the fallback — and a
-  disjunction without the negation was written.
+**What to do:** after the prover accepts a postcondition, ask whether it would
+also hold for `0` or an empty list. If yes, it does not describe your function.
 
-So the denominator is not twenty honest claims but eighteen honest ones and two
-wrong ones. Hence a rule worth more than any number on this page: **before fixing
-the kernel to satisfy an unproved claim, run the claim itself against a hostile
-sample** — `±0`, `±∞`, "not a number", the empty string. Unprovability often turns
-out to be a property of the claim rather than of the kernel.
+### Some postconditions are unprovable because they are false
 
-### A bound claim silently means "for finite numbers"
+"The prover could not" and "the claim is false" are different things.
+`docs/benchmark2/05-opposite.flang` («Противоположное», negate) has the
+postcondition "the result plus the input is zero":
+`(результат плюс х) равен 0`. For an infinite `х` this is `(0 − ∞) + ∞`, which
+is NaN, and NaN is not equal to zero. The prover is right to refuse it.
 
-This is a trap the tree has already been caught by, and it is worth its own
-section.
+**What to do:** before you ask why the prover does not accept a postcondition,
+run it against hostile values: `0`, `−0`, `±∞`, NaN, `2⁵³`, the empty string.
 
-The language's numbers are machine IEEE-754, and "not a number" (`NaN`) is
-produced from inside the language without breaking a rule. `0 делить на 0` passes
-the check with no diagnostic at all:
+### A bound on a number silently means "for finite numbers"
+
+Numbers in flang are IEEE-754 floats, and NaN can be produced inside the
+language without an error. `0 делить на 0` passes `flang check` with no remark:
 
 ```
-$ flang run граница.flang --function '«Ноль на ноль»'
+$ flang run граница.flang --function '«Ноль на ноль»' --trust
+на веру: доказанность не считалась — запуск по ключу --trust
 NaN
 $ echo $?
 0
 ```
 
-`NaN` sits **outside the ordering**: both `NaN не меньше 0` and `NaN меньше 0`
-are false. So the "obvious" postcondition "the absolute value of the result is
-non-negative" is not a cautious wording but a **false claim**. The kernel does
-not take it, and it is right not to:
+NaN is **outside the order**: both `NaN не меньше 0` and `NaN меньше 0` are
+false. So "the absolute value is non-negative" is a **false** postcondition, and
+the prover is right not to prove it:
 
 ```flang
 тотальная функция «Модуль»
@@ -256,114 +237,90 @@ $ echo $?
 3
 ```
 
-With `--proof` an unproved claim gives exit code 3, not 0 (run on 11 September
-2026, 0.7.17); without `--proof` the same file passes with exit code 0.
+Without `--proof` the same file passes `flang check` with exit code 0. With
+`--proof` an unproved postcondition gives exit code 3.
 
-The runtime check catches it on the first "not a number":
+The run-time check catches the first NaN (`«Модуль не числа»` calls «Модуль» on
+`0 делить на 0`):
 
 ```
-$ flang run граница.flang --function '«Модуль не числа»'
+$ flang run граница.flang --function '«Модуль не числа»' --trust
+на веру: доказанность не считалась — запуск по ключу --trust
 FLANG_PROPERTY: нарушено свойство «модуль неотрицателен» функции «Модуль»
 $ echo $?
 1
 ```
 
-The working rule: **before asking the kernel for a rule, run the claim itself
-over a hostile sample** — `0`, `−0`, `±∞`, "not a number", `2⁵³`. Every bound
-claim written without a finiteness proviso means "for finite numbers" — and is
-false on the rest.
+**What to do:** a bound on `число` without a finiteness condition is false for
+NaN and infinities. Either add the condition to the postcondition, or
+declare the argument with a precise type (`неотрицательное`, `сотых`,
+`тысячных`).
 
-### An unproved postcondition costs run time, and the cost is measured
+### An unproved postcondition costs time on every call
 
-If the kernel accepted a claim, nothing of it remains in the emitted program. If
-the kernel did not, the claim is **computed on every return of the function**,
-and whoever runs the program pays for it.
+A proved postcondition is not in the generated program. An unproved one is
+**computed on every return of the function**. The cost is not the condition
+itself but the work inside it: every comparison, field read and call. The
+expensive case is a postcondition on a small function that `свёртка` (reduce)
+calls for every element of a list.
 
-The cost was measured over the whole library. `flang test flang/stdlib/` over 20
-files and 1216 examples: 360 150 ms at 454 claims before, 469 284 ms at 620
-after — **a factor of 1.30**. Measured by interleaving (the variants run one
-after another inside a single repetition), minimum of three pairs; a single run
-cannot measure this at all — the spread across the repository’s programs of ±20% is larger than the effect.
+**What to do:** if a hot function has an unproved postcondition, prove it (add a
+`требует`, a precise type, or a `теорема`) or move the condition to the caller.
 
-What is paid for is not the claims but the **actions inside them**: every
-comparison, every field read, every call, about 14 µs per action. So the
-expensive claim is not the most complex one but the one attached to a function a
-fold calls on every element: in `json.flang`, 19 claims on seven step functions
-accounted for 78% of the increase on 40% of the claims.
+### Checked on examples is not proved
 
-By module: `json` ×2.90, `base64` ×1.94, `sha256` ×1.76, `http` ×1.73,
-`postgres` ×1.20.
-
-### "On a grid" is not a proof
-
-{{утверждения.сеткой}} claims are closed by walking a set of values: the program
-was run over a range of inputs and no violation turned up. The report ends such a
-line with the words "this is not a proof", and it ends that way on purpose —
-walking a finite set proves nothing about an infinite one.
-
-The "on a grid" line and the "proved for all inputs" line look nearly alike side
-by side and are worth different things. That field is how the report should be
-read.
+{{утверждения.сеткой}} postconditions are only checked on examples. The report
+ends such a line with «Это не доказательство» (this is not a proof). In a
+summary, "proved" and "checked on examples" look alike; read which one it is.
+`flang check --proof --strict` exits with 3 if anything is only checked on
+examples — use it in CI.
 
 ### Proved does not mean correct
 
-A proof says the code matches the specification. It says nothing about whether
-the specification expresses what was wanted. This is not a cautious footnote but
-a live case in this very repository.
-
-The library function `«Чётное»` — "even". Its report line:
+A proof says the code matches the postcondition. It does not say the
+postcondition is what you meant. An example from the standard library:
+`«Чётное»` (even) in `flang/stdlib/numbers.flang` is proved:
 
 ```
 постусловие «чётность есть делимость на два» — доказано сведением цели
 с телом функции … утверждение обо ВСЕХ входах, а не о написанных
 ```
 
-The same function on the same tree:
+And the same function on −4:
 
 ```
-$ flang run flang/stdlib/numbers.flang --function "Чётное" --args '{"число": -4}'
+$ flang run flang/stdlib/numbers.flang --function "Чётное" --args '{"число": -4}' --trust
+на веру: доказанность не считалась — запуск по ключу --trust
 false
 ```
 
-Minus four is an even number. There is no contradiction between those two
-outputs, and that is the whole point: `«Чётное»` is written through
-`«Делится на»`, both go wrong on minus zero in the same way, and "proved" here
-means exactly "two errors agree on all inputs". The kernel is right. The
-specification is wrong.
+−4 is even. The two outputs do not contradict each other: `«Чётное»` is
+`(число остаток от 2) равен 0`, the postcondition says the same through
+`«Делится на»`, and for −4 the remainder is −0, which `равен 0` treats as not
+equal. The proof says "the function and its postcondition agree for all
+inputs", and they do — both are wrong on negative numbers.
 
-No kernel undoes this, and no language will. Checking that a specification
-expresses the intent is left to a person — and that is the single reason formal
-methods have not taken over the industry in fifty years.
+No prover fixes this. Whether a specification says what you wanted is for a
+person to check.
 
-### Functions that need not terminate
+### Functions that do not have to terminate
 
-The language's evaluator is written in the language itself, and its main loop
-runs somebody else's program. Promising that somebody else's program ends is not
-possible: an ordinary program is allowed to loop forever. So that machine's loop
-— three functions, `«Прогон»`, `«Виток»` and `«Дальше после шага»` in
-`flang/self/interpret.flang` — is declared ordinary rather than total. The
-comment above `«Прогон»` says so outright: this is a property of the task, not
-unfinished work. What guards the loop is not a proof but a step limit: on hitting
-it the evaluator answers `FLANG_RECURSION_LIMIT` and says so.
+The flang interpreter is written in flang, and its main loop runs someone
+else's program, which may loop forever. So its three loop functions,
+`«Прогон»`, `«Виток»` and `«Дальше после шага»` in
+`flang/self/interpret.flang`, are declared without `тотальная`. What stops them
+is a step limit: when it is reached, the interpreter stops with
+`FLANG_RECURSION_LIMIT`.
 
-Declare it total and the language's promise would become false on the first
-looping program. A separate check watches for exactly that, so the mark cannot be
-flipped quietly.
+The repository has {{корпус.обычных}} functions without `тотальная`. For these
+three it is a property of the task; for most of the others termination is not
+proved yet.
 
-Ordinary functions in the repository number {{корпус.обычных}} in total. The loop
-just named is the place where ordinariness is a property of the task; the rest is
-unfinished work.
+### A termination rule that proves more is not always right
 
-### What blocks proving the rest
-
-It is easy to swap the question here. "Which rule closes more functions" and
-"which rule is true" are different questions, and on this work they came apart
-loudly.
-
-A measurement named two rules and promised that together they close 574
-functions. The number reproduced twice; it is real. But one of the two rules —
-"every call returns a strict part of its first argument" — is **false**. A
-three-line program refutes it:
+A tempting rule: "every call returns a strict part of its first argument". It
+would prove termination for many functions at once, and it is false. Three lines
+refute it:
 
 ```flang
 тотальная функция «Само»
@@ -377,12 +334,9 @@ three-line program refutes it:
   «Вечно» от («Само» от значение)
 ```
 
-`«Само»` hands back its argument whole, so `«Вечно»` spins forever. Under that
-rule every turn of it looks like a strict descent, and the analysis would declare
-a non-terminating program terminating. A rule closing five hundred functions at a
-stroke would be proving a falsehood — so it was rejected.
-
-Today's compiler does refuse that program, and names what was missing:
+`«Само»` returns its argument unchanged, so `«Вечно»` never stops. With that
+rule the compiler would call it terminating. The compiler does not have that
+rule and rejects the program:
 
 ```
 $ flang check вечность.flang
@@ -397,95 +351,48 @@ $ echo $?
 1
 ```
 
-(Output of 0.7.17, 11 September 2026.)
+**What to do:** when termination is rejected, pass a part of the argument (the
+tail from `голова и хвост`, a field of a variant or a record) directly to the
+recursive call, not through another function.
 
-There is no check today that keeps that program in the tree and watches it has
-not turned green: the fixture directory `flang/test/fixtures/binary-rules/` does
-not hold it (`grep -rl Вечно flang/test/fixtures/` is empty, 11 September 2026).
+### The compiler's own sources are not fully checked
 
-Its honest replacement closes **exactly zero**, and the reason is substantive
-rather than a matter of effort: in a tree walker the base branch returns a
-constructed value (`пусто`, a literal, a constructor), and a constructed value is
-never part of the argument under any reading.
+`flang check` stops a run that exceeds the step limit with
+`FLANG_RECURSION_LIMIT`. The default limit is built into the binary; raise it
+for one run with `--step-limit N` (Cyrillic `--предел-шагов`). A full run over
+the repository, `bootstrap/flang run-script proofs:report`, takes hours. Files
+it gives no report for fall into three groups:
 
-What is actually reachable:
+* the file declares categories or processes: the binary compiler checks these
+  declarations only partly, says «проверено НЕ ДО КОНЦА» (not fully checked) and
+  exits with 2;
+* the run hit the step limit; this happens on the largest sources of the
+  compiler itself;
+* the file has real errors.
 
-| Rule | Functions closed |
-|---|---:|
-| Size-change graphs: the descent is spread around the call cycle | 47 |
-| The argument grows by a constant step, bounded by an unchanging parameter | 28 |
-| The same, but bounded by a numeric literal | 0 |
-| Total | **75** |
-
-These figures were taken from a run over the programs in the repository, but
-there is no command in the tree to reproduce them today, and no note recording
-that run either. The neighbouring note
-[[two-termination-rules-together-give-574]] gives **54**
-for size-change graphs, not 47 — the number was taken twice and disagreed. Trust
-the order of magnitude and the conclusion "not 574 but a few dozen", not the
-digits themselves.
-
-Not 574 but 75. The first rule is already written in the language itself and
-checked by five programs: two legitimate ones it is meant to cover turned green,
-and three forgeries — including the one above — stayed refused. The zero in the
-third row is no accident either: the real upward walks compare against a
-parameter, not against a number.
-
-The five hundred functions between 574 and 75 are reachable by nothing short of
-types on the parse tree — and that is no longer a rule somebody can write down but
-work the language does not yet have.
-
-### The compiler does not check its own sources in full
-
-On the 23 August 2026 measurement `flang check` on the compiler's own sources ran
-into the step limit and stopped: `FLANG_RECURSION_LIMIT`. Parsing and linking did
-go all the way through — 29 files including imports, zero import errors — and it
-was the example run that exhausted the budget.
-
-This page used to say: "`check` has no flag that raises the limit". Today that is
-not so: `flang check --help` in 0.7.17 names `--предел-шагов N` (in Latin
-`--step-limit`) and `--предел-глубины N`; the default is baked into the binary
-(`FL_MAX_STEPS` in `bootstrap/flang_runtime.h`, 1 400 000 000 000) and takes
-part in the self-assembly match. Whether `check` over all compiler sources would
-go through to the end today was not checked: the run takes hours. What is checked
-is that the compiler's proof is replayed by the independent checker (section
-above).
-
-Of the {{корпус.файлов}} files, the report came out for 244 (measured 23 August
-2026). The rest are named one by one, and they are three different things:
-
-| Why there is no report | Files |
-|---|---:|
-| Categorical surface or processes are declared — the compiler does not judge those rules and says so with exit code 2 | 26 |
-| Hit the step limit — all seven are sources of the compiler itself | 7 |
-| Genuine remarks about the program | 2 |
-
-The second row is precisely where the language's promise is not checked in the
-language itself. Printing itself is something the compiler does, and does without
-a single divergence; checking what it prints is something it cannot do.
-
-```
-bootstrap/flang run-script proofs:report
-```
+So the compiler compiles itself, but a plain `flang check` over its largest
+sources may stop at the step limit before all examples and proofs are checked.
+The compiler's proofs are re-checked another way: by the independent C program
+(see above).
 
 ---
 
-## Checking this yourself
-
-None of the numbers above have to be taken on trust — commands print all of them:
+## Check it yourself
 
 | What | Command |
 |---|---|
-| Report for one file | `flang check <file> --proof` |
-| The same for a machine | `flang check <file> --proof --json` |
-| Summary over every program in the repository | `bootstrap/flang run-script proofs:report` |
-| Substantive claims out of the twenty | `bootstrap/flang run-script proofs:count-20` |
+| The proof report for one file | `flang check <file> --proof` |
+| The same as JSON | `flang check <file> --proof --json` |
+| The report over every program in the repository | `bootstrap/flang run-script proofs:report` |
+| Useful postconditions among the twenty | `bootstrap/flang run-script proofs:count-20` |
+| The compiler's proofs re-checked by the C program | `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` |
+| All four measures side by side | `bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000` |
 
 ## Further
 
-- [The kernel refused: whose mistake is it](proof-refused.html) — every kernel refusal by name
+- [The prover refused: whose mistake is it](proof-refused.html) — every refusal by name
 - [Proofs: why and how](proofs.html) — how a proof differs from a test
-- [Kernel specification](../spec-proof.html) — in Russian; the rules in full
+- [Prover specification](../spec-proof.html) — in Russian; the rules in full
 - [Known limitations](limits.html) — what the language cannot do
 - [Real cases, taken apart](case-studies.html) — where a proof caught a bug
 - [Knowledge base](../knowledge.html) — in Russian; what was measured and what turned out false

@@ -1,52 +1,65 @@
-# How a proof actually works
-<!-- замер: версия 0.7.22 · дерево 1043ff82a · сверено 2026-09-27 -->
+# How a proof works
+<!-- замер: версия 0.7.23 · дерево 47f34686a · сверено 2026-10-01 -->
 
-The flang compiler discharges three promises before it will build a file:
+Before the flang compiler accepts a file, it checks three kinds of statements:
 
-| Promise | Keyword | What it means |
-| --- | --- | --- |
-| the function terminates on every input | `тотальная` (total) | there is no input it loops on |
-| the call is legal | `требует` (requires) | checked **at the call site**, not inside the function |
-| the result is what you said | `обеспечивает` (ensures) | a statement about **all** inputs, not about the examples you wrote |
+| You write | Usual term | What it means | Where it is checked |
+| --- | --- | --- | --- |
+| `тотальная` (total) | termination | the function stops on every input | in the function itself |
+| `требует` (requires) | precondition | what must hold on input | **at every call site**, not inside the function |
+| `обеспечивает` (ensures) | postcondition | what the function guarantees on output | for **all** inputs, not only for your examples |
 
-Below is how each of the three is discharged, what stays in the compiled code,
-and what disappears from it. Every output block was captured from actual runs of
-`flang {{выпуск.версия}}`; the command sits next to the output, and any block
-reproduces in under a minute. Which tree and which day is stated in this page's
-measurement declaration — the line a guard reads and markdown does not show — so
-that the blocks going stale is a red check rather than a silence.
+This page shows, on small files, how each of the three is checked, what the
+compiler prints, and how the generated code changes once something is proved.
+Every output block comes from `flang {{выпуск.версия}}`; the command is next to
+the output, and each block takes under a minute to reproduce. Long lines of
+output are wrapped, and `…` marks a cut.
+
+Words of the compiler output used below:
+
+| The output says | What it means |
+| --- | --- |
+| «ядро» | the prover: the part of the compiler that proves postconditions |
+| «доказано» | proved for all inputs |
+| «сетка N» | checked only on N values (your examples), not proved |
+| «объявлено, не доказано» | there is neither a proof nor an example |
+| `сторож`, `сторожей в рантайме: N мест` | a check the compiler adds to the generated code; N places |
+| «обещание» | one of the three statements above |
 
 ## Who checks what
 
-```mermaid From source to verdict
+```mermaid From source to result
 flowchart TD
   A[source .flang] --> B[compiler]
   B --> C[types]
   B --> D[termination]
-  B --> E[obligations: requires, ensures]
-  E --> F{proof kernel}
-  F -->|proved| G[no check is emitted into the compiled code]
+  B --> E[preconditions and postconditions]
+  E --> F{prover}
+  F -->|proved| G[no check in the generated code]
   F -->|not proved| H[a check at run time]
-  F --> I[certificate: the whole derivation, written out]
-  I --> J[checker — a separate C program]
-  J --> K[verdict: replayed, or forgery]
+  F --> I[proof record: every step, in a file]
+  I --> J[proof checker — a separate C program]
+  J --> K[result: every step re-checked, or the record is rejected]
   class F glavnoe
   class G vyvod
   class H otkaz
 ```
 
-The proof kernel is part of the compiler. The checker
-(`flang/proof/checker/checker.c`) is a **separate program** that does not take the
-compiler's word for anything: it reads the certificate and replays every
-inference step from scratch. That separation is why "proved" here means more
-than "the compiler said so".
+The prover is part of the compiler. The proof checker
+(`flang/proof/checker/checker.c`) is a **separate program** that does not trust
+the compiler: it reads the proof record and re-checks every step from scratch.
+So "proved" means that two independent programs agree, not only that the
+compiler said so.
 
 ## 1. Termination
 
-### Structural descent
+There are three ways to make the compiler prove that a recursive function
+stops. Pick the first one that fits.
 
-The recursion walks a **part of the input value**, and the part is smaller than
-the whole every time.
+### Recurse on a part of the input
+
+The recursive call gets a **part of the input value**: the tail of a list, a
+field of a variant. A part is always smaller than the whole.
 
 ```flang
 модуль «Спуск»
@@ -61,9 +74,9 @@ the whole every time.
       первый плюс («Сумма списка» от остальные)
 ```
 
-The recursive call takes `остальные` — the tail of the destructured list. Lists
-are finite, the chain of tails ends by itself, and there is nothing left to
-prove:
+The recursive call takes `остальные`, the tail of the list. Lists are finite, so
+the chain of tails ends. The compiler proves this and adds no check to the
+generated code (the report ends with `сторожа нет`, "no check"):
 
 ```
 $ flang check --proof spusk.flang
@@ -72,14 +85,9 @@ $ flang check --proof spusk.flang
   сторожа нет
 ```
 
-The last two words of that report are the point. When a proof does not close,
-the compiler writes a check into the compiled program that catches the
-difference at run time. Here there is nothing to catch: walking a finite tree
-ends by itself, so no check goes into the code.
+### Recurse on a number: the type decides whether a check stays
 
-### Descending on a number: the type decides whether a check remains
-
-The same shape, but the descent is on a number rather than on part of a value:
+The same shape, but the recursion counts a number down:
 
 ```flang
 тотальная функция «Обратный отсчёт»
@@ -98,11 +106,11 @@ $ flang check --proof bez-mery.flang
   сторожей в рантайме: 1 место
 ```
 
-The reason for the guard is stated outright: `число` is binary64, and above 2⁵³
-subtracting one **does not change the number**. The descent stalls and the
-function loops. The compiler knows this and emits a check.
+The output says why a check is needed: `число` is a binary64 float, and above
+2⁵³ subtracting one **does not change the number**. The recursion would never
+reach zero, so the compiler adds a run-time check in one place.
 
-Change one word — the parameter's type:
+Change one word, the type of the parameter:
 
 ```flang
   принимает н: неотрицательное
@@ -116,26 +124,25 @@ $ flang check --proof tochnyy.flang
   сторожей в рантайме: 0 мест
 ```
 
-`неотрицательное` is the interval [0, 2⁵³−1]. Inside it the step is exact and
-the bottom exists, so the descent is finite. The check left the compiled code.
-**A declared type is cheaper than a run-time check — and that is measured, not
-asserted.**
+`неотрицательное` (non-negative) is the range [0, 2⁵³−1]. Inside it subtracting
+one is exact and there is a bottom, so the recursion ends. The run-time check is
+gone. **If a number counts down, declare it `неотрицательное`: the check
+disappears from the generated code.**
 
-### A declared measure
+### Declare what decreases
 
-When what shrinks is not an argument itself but something computed from the
-arguments, you say so with `убывает` ("decreases"). From the standard library
+When it is not an argument that gets smaller but something computed from the
+arguments, write it in a `убывает` (decreases) line. From the standard library
 (`flang/stdlib/bignum.flang:383`):
 
 ```flang
   убывает (длина первые) плюс (длина вторые)
 ```
 
-The compiler checks two things: that the named expression is strictly smaller on
-every turn, and that it has a floor. A decreasing quantity with a floor does not
-decrease forever.
+The compiler checks that this expression gets strictly smaller on every
+recursive call and that it has a lower bound.
 
-### When it does not prove
+### When the compiler cannot prove it
 
 ```flang
 тотальная функция «До нуля»
@@ -157,9 +164,12 @@ rastyot.flang: не проверено — замечаний 1
 exit 1
 ```
 
-The file is not built. Not a warning, not a lint — a refusal with exit code 1.
+This is an error, not a warning: exit code 1, and the file is not compiled.
+The message tells you what to do: pass a part of the argument (the tail from
+`голова и хвост`, a field of a variant or a record). If the function really may
+run forever, remove `тотальная` from it.
 
-## 2. A precondition is discharged at the call site
+## 2. A precondition is checked at the call site
 
 ```flang
 тотальная функция «Цена со скидкой»
@@ -169,7 +179,7 @@ The file is not built. Not a warning, not a lint — a refusal with exit code 1.
   цена минус скидка
 ```
 
-Now a call with an argument that plainly violates it:
+A call with arguments that break it:
 
 ```flang
 тотальная функция «Счёт»
@@ -191,32 +201,35 @@ zakaz.flang: не проверено — замечаний 1
 exit 1
 ```
 
-```mermaid Who discharges the precondition
+```mermaid Who proves the precondition
 sequenceDiagram
   participant C as Calling function
   participant K as Compiler
-  participant Y as Kernel
+  participant Y as Prover
   C->>K: «Цена со скидкой» от цена и скидка
-  K->>Y: discharge «скидка не больше цены»
-  alt there is something to discharge it with
+  K->>Y: prove «скидка не больше цены»
+  alt the caller gives enough facts
     Y-->>K: proved
-    K-->>C: file emitted,<br>no check in the code
-  else nothing to discharge it with
+    K-->>C: file compiled,<br>no check in the code
+  else not enough facts
     Y-->>K: not proved
-    K-->>C: FLANG_PRECONDITION_CALL,<br>no file emitted
+    K-->>C: FLANG_PRECONDITION_CALL,<br>file not compiled
   end
 ```
 
-The difference from `assert` in Python or Java: an assert fires at a user's
-machine, six months after release, on an input nobody expected. Here the call is
-settled **in the compiler**, and it is the caller's job to discharge the
-precondition — with its own `требует`, with a declared argument type, or with a
-proved promise of whatever computed that argument. Ada/SPARK gives the same
-discipline; the difference is that here it is in the language rather than in a
-separate tool layered on top.
+The error lists the three things the prover can use at the call site, and
+these are your three ways to fix it:
 
-Exactly one run-time check survives, at the **boundary** where foreign data
-enters the program. This is what C emission produces for that function:
+1. a `требует` of the calling function that gives the needed fact;
+2. a declared type of the caller's parameter (`неотрицательное`, `сотых`, …);
+3. a proved postcondition of the function that computed the argument.
+
+Compare with `assert` in Python or Java: an assert fails on a user's machine on
+an input nobody expected. Here a bad call is a compile error, as in Ada/SPARK,
+but without a separate tool.
+
+One run-time check stays: where data comes from outside the program. This is
+the generated C for that function:
 
 ```c
 if (strcmp(name, "Цена со скидкой") == 0) {
@@ -225,13 +238,13 @@ if (strcmp(name, "Цена со скидкой") == 0) {
   if (!fl_t1) return fl_fail(ctx, error, "FLANG_PRECONDITION", ...);
 ```
 
-That is call-by-name dispatch — entry from JSON, from the command line, from
-another program. Inside the program itself there is no such check anywhere:
-every internal call was settled by the compiler.
+This is the entry by function name: a call from JSON, from the command line or
+from another program. Calls inside the program have no such check: the
+compiler has already checked each of them.
 
-## 3. A postcondition: "proved" means "not in the compiled code"
+## 3. A postcondition: proved means removed from the generated code
 
-Take the same function **without** `требует`, and with a promise:
+The same function **without** `требует`, with a postcondition:
 
 ```flang
 тотальная функция «Цена со скидкой»
@@ -245,7 +258,9 @@ Take the same function **without** `требует`, and with a promise:
   цена минус скидка
 ```
 
-The promise is **false** — a discount can exceed the price. The kernel says so:
+The postcondition is **false**: a discount can be larger than the price. The
+prover does not prove it, and the report says it is checked only on one
+example:
 
 ```
 $ flang check --proof skidka.flang
@@ -255,7 +270,8 @@ $ flang check --proof skidka.flang
   утверждений 1: доказано 0, сетка 1, объявлено, не доказано 0
 ```
 
-Since 0.7.21 running that takes explicit consent:
+`flang run` refuses to run a file with an unproved postcondition unless you add
+`--trust` (Cyrillic `--на-веру`):
 
 ```
 $ flang run skidka.flang --function 'Цена со скидкой' --args '{"цена": 100, "скидка": 150}'
@@ -273,7 +289,8 @@ $ flang run skidka.flang --function 'Цена со скидкой' --args '{"ц�
 exit 3
 ```
 
-And in emitted C the promise becomes a check before the return:
+In the generated C the unproved postcondition becomes a check before the
+return:
 
 ```c
 fl_status skidka_cena_so_skidkoy(fl_ctx *ctx, fl_value cena, fl_value skidka,
@@ -291,7 +308,7 @@ fl_status skidka_cena_so_skidkoy(fl_ctx *ctx, fl_value cena, fl_value skidka,
 }
 ```
 
-Now add **one line** — the precondition:
+Now add **one line**, the precondition:
 
 ```flang
   требует «скидка не больше цены» скидка не больше цена
@@ -305,7 +322,8 @@ $ flang check --proof skidka-trebuet.flang
   утверждений 1: доказано 1 (из них без теоремы 1, объявленным типом 1), сетка 0
 ```
 
-And the whole function, in emitted C:
+The postcondition is proved for all inputs, without a written proof. The whole
+function in the generated C:
 
 ```c
 fl_status skidka_s_usloviem_cena_so_skidkoy(fl_ctx *ctx, fl_value cena, fl_value skidka,
@@ -316,34 +334,36 @@ fl_status skidka_s_usloviem_cena_so_skidkoy(fl_ctx *ctx, fl_value cena, fl_value
 }
 ```
 
-No check. Not switched off by a flag — **there is nothing to emit**: the
-statement is closed for all inputs, so there is nothing left to test at run time.
+There is no check, and no flag turned it off: a proved postcondition holds for
+every input, so there is nothing to check at run time.
 
-That is the practical difference from contracts in Eiffel, in Java's JML, or a
-Python `assert`: there the contract is always in the code and always costs time.
-Here a proved contract leaves the code and an unproved one stays — and the
-report tells you out loud which of the two you have.
+This is the practical difference from contracts in Eiffel, JML in Java or
+`assert` in Python: there a contract always stays in the code and always costs
+time. In flang a proved contract leaves the code, an unproved one stays, and the
+report tells you which one you have.
 
-## 4. The grid: what it is, and what good it is if it is not a proof
+## 4. Checked only on examples
 
-A **grid** (`сетка`) is a statement checked over a finite set of values: the
-values in `пример`, the values of a declared law. The report prints it as "сетка
-N значений" and ends the line with "Это не доказательство" — "this is not a
-proof" — deliberately.
+When the prover cannot prove a postcondition but the function has examples,
+the report says «сетка N значений» (checked on N values) and ends the line with
+«Это не доказательство» (this is not a proof).
 
-What the grid buys you:
+What examples give you:
 
-* **it catches a false promise on the inputs you did write.** A promise that
-  breaks on its own example never reaches the kernel at all;
-* **it keeps the boundary visible.** A statement on the grid is never counted as
-  proved in any line of the report, and the verdict tallies the two separately;
-* **it is cheap.** Running examples takes seconds; proving a module takes minutes.
+* **a false postcondition fails on your own example.** If an example breaks a
+  postcondition, `flang check` stops with `FLANG_EXAMPLE` and
+  `FLANG_PROPERTY` and names the example;
+* **the report never counts them as proved.** "Proved" and "checked on
+  examples" are separate numbers in every summary line;
+* **they are cheap.** Running examples takes seconds; proving a module can take
+  minutes.
 
-What it does not buy you: anything about inputs that were not in the set.
-Enumerating a finite set of values is a test written in a different place, not a
-proof.
+What they do not give you: anything about inputs that are not in the examples.
+They are unit tests, not a proof. To turn such a line into "proved", write a
+`теорема` for it, or rewrite the condition so that it matches a branch of the
+body — the `flang run` output above says the same.
 
-## 5. What it adds up to on a real module
+## 5. A real module
 
 The list module of the standard library, `flang/stdlib/lists.flang`:
 
@@ -357,17 +377,17 @@ $ flang check --proof flang/stdlib/lists.flang
                   сетка 24, объявлено, не доказано 0
 ```
 
-Reading that:
+How to read it:
 
-* 38 functions, all 38 with proved termination: 28 simply have no recursion, 8
-  by structural descent, one by exact step, one by constant step (the single
-  guard in the module);
-* 66 promises about results. **42 are closed for all inputs**, and 37 of those
-  without a single written line of proof — the kernel discharged them from
-  declared types and shapes. Five needed induction;
-* 24 stayed on the grid.
+* 38 functions, termination proved for all 38: 28 have no recursion, 8 recurse
+  on a part of the input, one counts down a `неотрицательное` number, one counts
+  down a plain number (the only run-time check in the module);
+* 66 postconditions. **42 are proved for all inputs**, 37 of them without a
+  written proof: the prover used the declared types and the shape of the code.
+  Five needed induction;
+* 24 are checked only on examples.
 
-The same module in emitted C:
+The same module in generated C:
 
 ```
 $ flang emit flang/stdlib/lists.flang --target c --out /tmp/out
@@ -375,34 +395,33 @@ $ grep -c 'fl_post(' /tmp/out/lists.c
 25
 ```
 
-25 run-time checks = 24 unproved postconditions + 1 termination guard. **42
-checks that in Python or Go you would either hand-write or simply not have are
-absent from the compiled program — because they were proved.**
+25 run-time checks = 24 unproved postconditions + 1 termination check. **The 42
+proved postconditions are not in the generated code at all** — in Python or Go
+you would either write these checks by hand or not have them.
 
-## 6. What this does not mean
+## 6. Limits
 
-* **`число` is binary64.** Proofs about it hold in IEEE-754 arithmetic, not in
-  integer arithmetic. Where that matters, the type is written out:
-  `неотрицательное`, `сотых`, `тысячных`.
-* **The kernel does not accept every statement.** What it does accept, and which
-  shapes it refuses: [what the kernel accepts](what-the-kernel-accepts.html) and
-  [the kernel refused — whose bug is it](proof-refused.html).
-* **The trusted base is not empty.** The C checker, the C compiler and the
-  runtime are taken on trust. What covers what: [what is proved and what is
-  not](what-is-proved.html).
-* **A grid is not a proof,** and the verdict counts it as its own number.
+* **`число` is a binary64 float.** Proofs about it hold in IEEE-754
+  arithmetic, not in integer arithmetic. Where that matters, use a precise type:
+  `неотрицательное`, `сотых` (hundredths), `тысячных` (thousandths).
+* **The prover does not accept every postcondition.** Which forms it proves and
+  which it refuses: [What the prover accepts](what-the-kernel-accepts.html) and
+  [The prover refused: whose mistake is it](proof-refused.html).
+* **You still trust something.** The C proof checker, the C compiler and the
+  runtime are trusted without proof (the trusted base, TCB). What covers what:
+  [What is proved and what is not](what-is-proved.html).
+* **Checked on examples is not proved,** and every report counts it separately.
 
-## Reproducing this
+## Commands
 
-```bash
-flang check <file>                        # types, termination, kernel; exit 1 on refusal
-flang check --proof <file>                # report: what carries each promise
-flang check --proof --строго <file>       # the same, but the base must be judged too
-flang check --proof --записать <file>     # certificate to a file, for the checker
-flang emit <file> --target c --out <dir>  # see which checks survived
-flang test <file>                         # run the examples
-```
+| Command | What it does |
+| --- | --- |
+| `flang check <file>` | syntax, types, termination, preconditions at call sites, examples; exit 1 on an error |
+| `flang check --proof <file>` | the proof report: how each function's termination and each postcondition is proved |
+| `flang check --proof --strict <file>` | the same, but exit 0 only if there is at least one postcondition and all of them are proved; use it in CI |
+| `flang check <file> --proof --record <record>` | also writes the proof record to `<record>` for the C proof checker |
+| `flang emit <file> --target c --out <dir>` | generates C; see which checks stayed |
+| `flang test <file>` | runs the examples |
 
-Why any of this exists at all: [proofs — why and how](proofs.html). The
-proof report over the whole tree is published in Russian only, at
-[overview.html](../overview.html).
+Why this matters: [Proofs: why and how](proofs.html). The proof report over the
+whole repository is in Russian only: [overview.html](../overview.html).

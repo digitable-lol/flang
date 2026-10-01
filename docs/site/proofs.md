@@ -1,9 +1,9 @@
 # Proofs: why and how
 
-## A proof against a test
+## A proof versus a test
 
-A test covers the inputs you **thought of**. A proof answers about **all** of
-them at once, including the ones nobody thought of.
+A test covers the inputs you **thought of**. A proof covers **all** inputs at
+once, including the ones nobody thought of.
 
 ```
 example «Two doubled»            ← one input
@@ -13,185 +13,139 @@ example «Two doubled»            ← one input
 ensures «twice the input» result equals (2 times n)    ← all inputs
 ```
 
-Both lines stay in the language. The difference is that examples are written
-forever, and a proof is written once.
+In flang you write both. An `example` (`пример`) is a unit test inside the
+function; an `ensures` (`обеспечивает`) is a postcondition, and the **prover** —
+the part of the compiler that proves postconditions, «ядро» in its output —
+proves it for every input. Tests have to be added as the code changes; a proof
+is written once.
 
-## What happens to termination
+## Termination
 
-`total` is a promise that the function finishes on every input. The compiler
-**checks** it and refuses the file if it cannot prove it.
+`total` (`тотальная`) before a function says it stops on every input. The
+compiler **proves** it and rejects the file if it cannot.
 
-There are five carriers of that promise, and each leaves a trace in the report printed by `flang check --proof`:
+There are five ways the compiler proves termination; `flang check --proof`
+names the way for each function. Across the repository:
 
-| Carrier | Functions |
+| How termination is proved | Functions |
 |---|---:|
-| By composition — no recursion at all | {{носители.композиция}} |
-| By structure — walking part of a value | {{носители.структура}} |
-| By an exact step over a natural number | {{носители.точныйШаг}} |
-| By a constant step with a run-time check | {{носители.постоянныйШаг}} |
-| By a declared measure with a run-time check | {{носители.мера}} |
+| No recursion at all | {{носители.композиция}} |
+| Recursion on a part of the input (tail, field) | {{носители.структура}} |
+| Counting down a `неотрицательное` number | {{носители.точныйШаг}} |
+| Counting down a plain number, with a run-time check | {{носители.постоянныйШаг}} |
+| A declared measure (`убывает`), with a run-time check | {{носители.мера}} |
 
-The last two lines are separated honestly: termination there is not proved all
-the way, and a run-time check picks up the difference. The report shows that as
-its own number — **{{сторож.мест}} sites across {{сторож.функций}} functions** — instead of folding it into
-the total.
-
-> The numbers in the tables on this page were printed by the compiler on
-> **23 August 2026** (commit `252606e8`) in a run over all the programs in the repository, and have
-> not been re-measured since. The bootstrap seed the compiler was built from that
-> day has since been reprinted (10–11 September 2026, commit `0ce948bfd`); the
-> expensive numbers have not been re-measured yet. How the gap is measured is on
-> [What is proved and what is not](what-is-proved.html).
+In the last two rows termination is not fully proved: a floating-point number
+does not always change when you subtract one, so the compiler adds a run-time
+check. The report counts these checks separately —
+**{{сторож.мест}} places in {{сторож.функций}} functions**. The numbers come
+from a full run over the repository (`bootstrap/flang run-script
+numbers:build`, several hours) and can lag behind the code; how each one is
+measured is on [What is proved and what is not](what-is-proved.html).
 
 ## Three answers, not two
 
-The kernel answers in three different ways, and mixing them is not allowed:
+For each postcondition the prover gives one of three answers:
 
-**Proved by the kernel** — the claim holds for all inputs. There are **{{утверждения.доказано}} of {{утверждения.высказано}}**.
+**Proved** («доказано») — true for all inputs. In the repository:
+**{{утверждения.доказано}} of {{утверждения.высказано}}**.
 
-**On a grid** — a set of values was run, no violation found. The report line for
-this ends with the words **"this is not a proof"**, and it ends that way on
-purpose: exhausting a finite set proves nothing.
+**Checked only on examples** («сетка N») — the examples pass, but there is no
+proof. The report line ends with «Это не доказательство» (this is not a proof).
 
-**Stated, not proved** — the kernel ran out of rules. The claim is then checked
-at run time, on the inputs that arrive.
+**Declared, not proved** («объявлено, не доказано») — the prover had no rule for
+it and there are no examples. The condition is checked at run time, on the
+inputs that arrive.
 
-When the kernel does not close a goal by itself, the author has the same way out
-as in Coq and Isabelle: **write the proof by hand**. The word `теорема` with
-structured steps (`дано`, `утверждаем`, `затем … по свойству «…»`,
-`индукция по …`, `следовательно доказано`) is a surface in the spirit of Isar,
-and the kernel checks such a derivation step by step, searching for nothing.
-There are 287 such theorems in the language tree, 55 of them in the standard
-library (`grep -rac '^\s*теорема ' flang --include='*.flang'`, 13 September
-2026, commit `1218aa186`). The difference from Coq and Lean is not that this option exists, but how
-rarely it is reached for: the verdict prints, as a separate number, how many
-claims were closed **without a single written line of proof**.
+If an example breaks a postcondition, you do not get an answer at all:
+`flang check` fails with `FLANG_EXAMPLE` and `FLANG_PROPERTY` and names the
+example. That is a counterexample you wrote yourself.
 
-There is a fourth answer, and it is the most valuable: **VIOLATED** — a
-counterexample was found, and it is shown. Not "could not prove it" but "here is
-an input on which your claim is false".
+When the prover does not prove a postcondition on its own, you can **write the
+proof by hand**, as in Coq or Isabelle. A `теорема` (theorem) is written in
+steps: `дано` (given), `утверждаем` (we claim), `затем … по свойству «…»` (then
+… by property …), `индукция по …` (induction on …), `следовательно доказано`
+(hence proved). It reads like Isar in Isabelle, and the prover checks each step;
+it searches for nothing. There are 288 such theorems in the repository, 55 of
+them in the standard library (`grep -rac '^\s*теорема ' flang
+--include='*.flang'`). Most postconditions need no theorem: the proof report
+shows, as a separate number, how many were proved **without a written proof**.
 
-## Zero axioms — what that means
+## No axioms
 
-An axiom is what you accept without proof. Coq and Lean have axioms and use
-them: excluded middle, the axiom of choice. Each one is something the machine
-**does not check**.
+An axiom is a statement accepted without proof. Coq and Lean have axioms and
+use them: the law of excluded middle, the axiom of choice. The machine does not
+check them.
 
-**flang has zero**, and that is not a promise but a run. An axiom cannot be
-"put into" the kernel: there is no list of axioms there as a device — it can only
-be written in words. So a separate program reads the whole source of the proof
-kernel and demands that the word "аксиома" appear nowhere in it except in the
-named reasons that explain why this or that rule is a theorem; the check runs
-both ways, so a named reason with no matching word in the kernel is trouble too.
-The same program matches the list of forgeries against the `flang/test/fixtures`
-directory, both ways as well.
+**The flang prover has none.** It has no way to declare an axiom, so a separate
+script reads the whole source of the prover and fails if the word «аксиома»
+appears there except in the named reasons that explain why a rule is a
+theorem. The same script checks that the list of deliberately broken proofs
+matches the files in `flang/test/fixtures`, and a second plan checks that the
+prover rejects each of them:
 
 ```
-flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль'
-→ zero axioms, 0 violations; 36 files in the catalogue, every one watched  (exit 0)
+flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль' --trust
+flang io flang/scripts/kernel-forgeries.fscript --plan 'Подделки остаются недоказанными' --trust
 ```
 
-**What that command does not confirm**, and it is worth knowing: that every rule
-rejects its own forgery. That is the second, expensive end of the same guard (the
-plan «Подделки остаются недоказанными»), and today it is red (run on
-11 September 2026 with 0.7.17, exit code 1) — not because the kernel took a
-falsehood, but because on the forgery `poddelka-order-arithmetic.flang` the
-compiler answers with exit code 3 ("declared, not proved: 5"), while the plan
-expects a different code and counts the forgery as unchecked.
+Both exit with 0: «аксиом ноль, нарушений 0» and «подделки отвергнуты: 36 файлов
+каталога». `--trust` is needed because the script itself has unproved
+postconditions.
 
-What is confirmed by another instrument: the proof the compiler prints
-(`flang check --proof --записать`) is replayed by an independent C program —
-`flang/proof/checker/checker.c`. `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` on 19 September 2026
-on trunk (commit `a5609e322`): PROVABLE, 650 obligations out of 650 replayed
-(100.00 %), 533 forgery probes rejected, 245 honest records accepted; all 109
-inference rules accepted by the Lean 4 kernel, 0 verdict divergences. The hundred
-per cent is the share of places in the compiler's **own** proof records and says
-nothing about the emitted code. More on
+The proof is also re-checked by a separate program. `flang check <file> --proof
+--record <record>` writes the proof to a file, and a C program,
+`flang/proof/checker/checker.c`, re-checks every step without the compiler.
+`bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000`
+runs it over the compiler's own proofs and answers «ДОКАЗУЕМ» (provable): 650 of
+650 steps re-checked (100.00 %), 575 deliberately broken proofs rejected, 274
+correct ones accepted. The 100 % is about the compiler's own proof records, not
+about the code it generates. More on
 [What is proved and what is not](what-is-proved.html).
 
-The price is honest: without excluded middle some classical statements cannot be
-proved. For a programming language that turned out to be a lucky coincidence — we
-talk about programs, and programs compute.
+The price: without the excluded middle some classical statements cannot be
+proved. For programs this rarely matters: programs compute.
 
-### What zero axioms does not buy
+### What you still trust
 
-You still trust something, just less of it: that the thirteen decision rules are
-written correctly, that the kernel implementation is correct, that the compiler
-underneath it is correct, that the hardware computes correctly.
+Fewer things, but not nothing: that the prover's rules are correct, that the
+prover implements them correctly, that the compiler under it is correct, that
+the hardware computes correctly. This is the trusted base (TCB).
+`bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000`
+lists the known soundness problems by name.
 
-This is not theory. **In one day six holes were found in those very rules**,
-where the kernel printed "proved for ALL inputs" on claims a run refutes with a
-counterexample.
+## How the prover is built
 
-All six are closed, and a check now stands **over the whole class**: if the
-report said "for all inputs", a run must fail to find a counterexample. It is
-checked on every claim in the repository, not on the ones somebody remembered.
+The prover has thirteen decision rules, each short enough to read in one
+sitting; refusals name them. The count comes from the prover itself
+(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 13).
+Each rule proves one shape of goal: non-negativity, an upper bound, equality
+after substituting an assumption, order, strict order, membership, a prefix,
+order of neighbouring elements, an equality decided by computing closed parts,
+a property of all elements. Three rules do not look at the shape: "the goal is
+an assumption" matches the goal against an assumption, "contradictory
+assumptions" closes an unreachable case, and "unfold" expands a definition by
+its constructor. Besides the rules, the prover computes a closed expression
+instead of deriving it, and splits a goal on an `если` condition.
 
-## How the kernel is built
-
-Thirteen decision rules, each readable in one sitting; the kernel names them in the
-text of its refusals, and the count is taken from the kernel itself
-(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 13). Most
-of them ask about the SHAPE of the goal ("not less than 0", "not greater than a
-literal", "equals", "not greater than a term", "contains", "starts with",
-"non-decreasing"); the rest do not: "goal is an assumption" matches the goal
-against an assumption character for character, "contradictory assumptions" closes
-an unreachable case, "unfold by constructor" unfolds a definition. Plus two moves
-beyond the rules: **a closed expression is a value, so compute it** rather than
-derive it, and splitting a goal on an `если` condition.
-
-There used to be three rules, then eight, and older sections of the specification
-still name the count as it stood on the day they were written. Today there are
-thirteen, and that number can only be argued with the kernel in hand.
-
-Proof **search** stands apart, and how it is built matters: it **believes
-nothing**. It only proposes, and the kernel re-checks everything. That is why
-search can be as brazen as you like — a model, even — without costing rigour.
-
-```mermaid How flang check talks to the kernel
-sequenceDiagram
-  participant C as flang check
-  participant S as Search
-  participant K as Kernel
-  C->>K: goal and assumptions
-  loop until the goal is closed
-    K->>S: what closes it?
-    S-->>K: try this rule
-    K->>K: re-check the step<br>from scratch
-  end
-  alt step verified
-    K-->>C: proved for ALL inputs
-  else rules ran out
-    K-->>C: stated, not proved
-  end
-  Note over S,K: search only proposes,<br>the kernel checks it itself
-```
-
-The same reasoning explains why we **do not wire in an external solver as the
-judge**. Trusting one means handing correctness to two hundred thousand lines of
-somebody else's code. As a hint-giver it is useful. As a source of truth it is
-not.
+flang does **not use an external SMT solver as the judge**. Trusting one would
+mean trusting hundreds of thousands of lines of someone else's code.
 
 ## What a proof does not say
 
-The most important thing on this page, and usually the unsaid one.
+> **A proof says the code matches the specification. It does not say the
+> specification is what you meant.**
 
-> **A proof says the code matches the specification. It says nothing about
-> whether the specification expresses what you meant.**
-
-If the postcondition is wrong, the code will correctly do the wrong thing. That
-is the single reason formal methods did not take over the industry in fifty
-years, and no kernel repeals it.
+If the postcondition is wrong, the code will correctly do the wrong thing. No
+prover fixes that; a person has to read the postcondition. A real case from the
+standard library is on [What is proved and what is not](what-is-proved.html).
 
 ## What it costs
 
-Whether the language is worth building depends on this answer, so the price is
-measured, not estimated.
-
-Twenty ordinary library functions, picked by stepping through the list of
-declarations (out of {{библиотека.функций}}) so that the convenient ones could
-not be picked — and each got both tests and a proof. The numbers in the table
-come from the [proof-cost benchmark](../benchmark-proof-cost.html).
+Twenty ordinary library functions, picked at a fixed step through the list of
+declarations (out of {{библиотека.функций}}) so that convenient ones could not
+be chosen; each got both tests and a proof. The numbers come from the
+[proof-cost benchmark](../benchmark-proof-cost.html).
 
 | | tests | proof |
 |---|---:|---:|
@@ -199,38 +153,32 @@ come from the [proof-cost benchmark](../benchmark-proof-cost.html).
 | Time | 7 min 49 s | 9 min 39 s |
 | Real bugs found | **4** | 0 |
 
-Read that table as: **a proof costs more than tests and finds less.**
+So: **a proof costs more than tests and finds fewer bugs.**
 
-How many of those same twenty functions the kernel closes is counted by a
-separate run, and counted mechanically — by replacing the body with a stub, not
-by keeping a list of names:
+How many of those twenty functions the prover covers is counted mechanically,
+by replacing each body with a stub:
 
 ```
 bootstrap/flang run-script proofs:count-20
 ```
 
-On the tree of 11 September 2026 (0.7.17, commit `2c40752d0`) it answers:
-something is proved for **14 functions of 20**, something substantive for
-**10**. By claim: 11 substantive, 6 weakened (proved
-against a stub body too, so true of any function with that signature), 1 free
-(the body was copied into the postcondition), 2 not checked.
+It reports that something is proved for **14 functions of 20**, and something
+useful for **10**. By postcondition: 11 useful, 6 weak (also proved for a stub
+body, so true of any function with that signature), 1 free (the body copied into
+the postcondition), 2 not checked.
 
-That number moves up and down with the kernel, so it is not typed into prose by
-hand — it is taken from a run.
-
-The measurement is a ruler: it shows whether the language is moving toward the
-goal or merely growing features. The goal is one line:
+The goal of the language is one line:
 
 > **A proof must cost less than the tests it replaces.**
 
-Today, in the world at large, it costs 5–20× more — which is why only OS kernels,
-cryptography and avionics get proved. If the price drops below the price of
-tests, what changes is not the language but what programmers do: a proof is
-written once and covers all inputs, tests are written forever.
+Elsewhere a proof costs 5–20 times more than tests, which is why only OS
+kernels, cryptography and avionics are proved. If a proof becomes cheaper than
+tests, programmers can afford it everywhere: it is written once and covers all
+inputs.
 
 ## Further
 
-- [The kernel refused: whose mistake is it](proof-refused.html) — what to do with each refusal
-- [What comes next](roadmap.html) — where the proof work stands today
-- [Kernel specification](../spec-proof.html) — in Russian; the rules in full
+- [The prover refused: whose mistake is it](proof-refused.html) — what to do with each refusal
+- [What comes next](roadmap.html) — where the proof work stands
+- [Prover specification](../spec-proof.html) — in Russian; the rules in full
 - [The price of a proof, measured](../benchmark-proof-cost.html) — in Russian; the report with numbers

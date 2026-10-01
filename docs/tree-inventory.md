@@ -172,7 +172,7 @@ flang в C.
 | код на стороне цели | `flang/concurrency/bin/node.{c,cs,ex,go,java,py,rs}` — семь хозяев узлов на семи языках, и `peer.py` — конец связи на цели python | 8 | 8 227 |
 | разметка и оформление | четыре `.html` и `docs/site/style.css` — цели HTML у языка нет и не заявлено | 5 | 1 785 |
 | чужая среда: установщик | `packaging/homebrew/flang.rb` и три файла `packaging/asdf/bin/` — homebrew понимает Ruby, asdf зовёт свои три раньше, чем flang в системе есть | 4 | 470 |
-| точка раскрутки и приёмка | `scripts/bootstrap-reprint.sh`, `scripts/bootstrap-c.sh`, `scripts/seed/new-binary-acceptance.fscript`, `scripts/seed/build-ledger-binary.fscript` — разобраны отдельно ниже | 4 | 4 080 |
+| точка раскрутки и приёмка | `scripts/bootstrap-reprint.sh`, `scripts/bootstrap-c.fscript`, `scripts/seed/new-binary-acceptance.fscript`, `scripts/seed/build-ledger-binary.fscript` — разобраны отдельно ниже | 4 | 4 080 |
 | сверка двоичного и его печати | `scripts/seed/binary-origin.fscript` и `scripts/guards/overlong-string-guard.sh` — заведены 29 августа, разобраны 30-го, см. ниже | 2 | 876 |
 | чужой хозяин примера | `docs/examples/host-boundary/host.c` — этим примером и показывают границу с чужим кодом | 1 | 227 <!-- СНЯТО 2026-08-31 строк docs/examples/host-boundary/host.c = 227 --> |
 | независимый чекер записи | `flang/proof/checker/**` — сверщик записи доказательства на C, прогон его проб и одна проба-подделка на оболочке; заведён 31 августа, разобран ниже | 3 | 4 417 |
@@ -191,7 +191,7 @@ flang в C.
 исполнять исполнитель планов ТОГО САМОГО двоичного, который проверяют. Зелёный
 ответ переставал бы что-либо значить: сломанный двоичный одинаково способен и
 напечатать не то, и сказать, что напечатал то. То же у
-`scripts/bootstrap-c.sh` (второй путь печати) и у
+`scripts/bootstrap-c.fscript` (второй путь печати) и у
 `scripts/seed/new-binary-acceptance.fscript` (приёмка нового двоичного после перепечатки).
 
 Оболочка при этом ничего нового на путь сборки не приносит: `sh`, `make`, `cc`
@@ -233,19 +233,16 @@ Python 16, awk 1.
 владельцем: либо довод пишется (тогда долг 105), либо строка остаётся в долге
 как есть. Сама опись до этого решения не меняется.
 
-### Десять файлов в `scripts` — по убыванию, разбор 29 августа 2026
+### Семь файлов в `scripts` — по убыванию, разбор 29 августа 2026
 
 | файл | строк | что делает |
 |---|---:|---|
 | `target-collisions.sh` | 248 | столкновения имён на восьми целях печати <!-- СНЯТО 2026-09-17 строк scripts/targets/target-collisions.sh = 248 --> |
 | `bad-octet-guard.sh` | 340 | сторож негодных октетов <!-- СНЯТО 2026-09-14 строк scripts/guards/bad-octet-guard.sh = 340 --> |
-| `memory-limit.sh` | 259 | предел памяти прогона <!-- СНЯТО 2026-08-29 строк scripts/memory-limit.sh = 259 --> |
 | `target-census.sh` | 164 | перепись целей <!-- СНЯТО 2026-09-17 строк scripts/targets/target-census.sh = 164 --> |
 | `seed-freshness.sh` | 3 | отказ судить о доказательствах при отставшем семени <!-- СНЯТО 2026-09-17 строк scripts/seed/seed-freshness.sh = 3 (задача 5821: проверка переехала в scripts/seed/seed-freshness.fscript, здесь остался переходник; до неё 115) --> |
-| `test-remote.sh` | 149 | прогон на чужой машине <!-- СНЯТО 2026-09-14 строк scripts/test-remote.sh = 149 --> |
 | `one-string-measure-guard.sh` | 119 | подаёт сырые октеты в `string-measure.flang` <!-- СНЯТО 2026-08-29 строк scripts/guards/one-string-measure-guard.sh = 119 --> |
 | `identical-declarations.sh` | 82 | что можно ввезти вместо переименования <!-- СНЯТО 2026-09-17 строк scripts/targets/identical-declarations.sh = 82 --> |
-| `targets-inventory.sh` | 50 | опись целей: имя, код, время, причина <!-- СНЯТО 2026-09-17 строк scripts/targets/targets-inventory.sh = 50 --> |
 | `names-in-c.awk` | 79 | «идентификатор C → русское объявление» из напечатанного заголовка <!-- СНЯТО 2026-08-29 строк scripts/targets/names-in-c.awk = 79 --> |
 
 Три из них — `seed-knows-type-words-guard.sh`, `seed-freshness.fscript`,

@@ -1747,6 +1747,10 @@ jobs:
         run: bootstrap/flang io flang/proof/probes/unproven/run.fscript --plan Binary
         env:
           FLANG_TMP: ${{ runner.temp }}
+      - name: Check library profiles
+        run: bootstrap/flang io flang/proof/probes/profile/run.fscript --plan Binary
+        env:
+          FLANG_TMP: ${{ runner.temp }}
       - name: Check syllogism probes
         run: bootstrap/flang io flang/proof/probes/syllogism/run.fscript --plan Binary
       - name: Check syllogism premises as assumptions

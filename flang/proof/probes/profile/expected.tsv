@@ -1,0 +1,8 @@
+program	command	settings	environment	keys	code	word
+half.flang	check	-	-	-	0	замечаний нет
+half.flang	check	profile = mathematician	-	-	0	замечаний нет
+half.flang	check	modules = «Rationals»	-	-	0	замечаний нет
+half.flang	check	profile = programmer	-	-	1	не входит в профиль «programmer»
+half.flang	check	profile = analyst	-	-	1	не найден модуль «Rationals»
+half.flang	check	profile = nobody	-	-	1	профиль «nobody» не объявлен
+half.flang	check	modules = Bignum	-	-	1	не входит в профиль «»

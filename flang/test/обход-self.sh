@@ -18,7 +18,7 @@
 #     сверки: прогон 33883535490 шёл 2 ч 26 мин и был снят раннером
 #     («The runner has received a shutdown signal») посреди «Прогона примеров
 #     исходников»;
-#   · её ведомость `ведомость-примеров.txt` последний раз писалась 24 августа
+#   · её ведомость `examples-ledger.txt` последний раз писалась 24 августа
 #     (`0eec94a7`): она держит ТРИ числа в строке вместо нынешних ЧЕТЫРЁХ и
 #     знает 41 файл `flang/self/` из 61. То есть разошлась бы на каждой строке,
 #     если бы её вообще сверяли.
@@ -92,7 +92,7 @@ root=$(cd "$(dirname "$0")/../.." && pwd)
 # дереве, где сборка была до переименования, он лежит с прежним именем.
 tool=${FLANG_BIN:-"$root/bootstrap/flang"}
 [ -x "$tool" ] || tool="$root/bootstrap/flang_cli"
-ledger="$root/flang/test/ведомость-self.txt"
+ledger="$root/flang/test/self-ledger.txt"
 
 if [ ! -x "$tool" ]; then
   echo "обходчик self: нет двоичного «$tool». Собрать: make -C bootstrap" >&2

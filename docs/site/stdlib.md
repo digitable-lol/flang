@@ -931,7 +931,7 @@ Types:
 
 Simple pattern matching on strings without a regex engine: five kinds of pattern, one function each.
 
-Import: `использует «Samples»`. Source: `flang/stdlib/образцы.flang`.
+Import: `использует «Samples»`. Source: `flang/stdlib/samples.flang`.
 
 Types:
 

@@ -276,7 +276,7 @@ dotnet bin/Debug/net8.0/flang.dll MestoVstavki
 > говорят об этом разное.** `grep cpp flang/test/` находит три файла, и они не в
 > согласии: `nadzor-uzla.test.mjs` держит `cpp` в списке `С_НАДЗОРОМ`,
 > `uzel-osnastka.mjs` описывает его тулчейн (`c++`/`g++`), а
-> `ведомость-self.txt` строкой 13 записывает `flang/self/emit-cpp.flang вне
+> `self-ledger.txt` строкой 13 записывает `flang/self/emit-cpp.flang вне
 > присмотра 10` — то есть сам печатник цели из присмотра как раз выпадает, на
 > десяти счётах.
 >

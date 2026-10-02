@@ -460,7 +460,7 @@
   ["base64.flang", "math-classics-lists.flang", "registry.flang", "datetime.flang", "dictionary.flang", "hashmap.flang",
     "higher-order.flang", "http.flang", "logic.flang", "numbers.flang", "numtree.flang", "optional.flang", "wire.flang",
     "redis.flang", "result.flang", "sets.flang", "sha256.flang", "strings.flang", "strlists.flang", "tree.flang",
-    "math-classics.flang", "x25519.flang", "rsa.flang", "образцы.flang", "ecdsa.flang", "der.flang"]
+    "math-classics.flang", "x25519.flang", "rsa.flang", "samples.flang", "ecdsa.flang", "der.flang"]
 
 тотальная функция «Отложенные»
   возвращает список строки
@@ -491,7 +491,7 @@
     ожидается ["base64.flang", "math-classics-lists.flang", "registry.flang", "datetime.flang", "dictionary.flang",
       "hashmap.flang", "higher-order.flang", "http.flang", "numbers.flang", "numtree.flang", "optional.flang",
       "wire.flang", "redis.flang", "result.flang", "sets.flang", "sha256.flang", "strings.flang", "strlists.flang",
-      "tree.flang", "math-classics.flang", "x25519.flang", "rsa.flang", "образцы.flang", "ecdsa.flang", "der.flang"]
+      "tree.flang", "math-classics.flang", "x25519.flang", "rsa.flang", "samples.flang", "ecdsa.flang", "der.flang"]
   отфильтровать («Наши файлы») где имя → не (имена содержит имя)
 
 тотальная функция «Ключ»

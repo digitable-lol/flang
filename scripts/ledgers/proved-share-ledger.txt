@@ -1288,8 +1288,8 @@ f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.fscript
 20f7f7e9cd7aaf78ab7d05eb270ae99d|2|2|0|0|0|flang/scripts/target-words.fscript
 4d59d53b262cae1822826fb02b8f1796|28|26|2|0|0|flang/scripts/tasks.fscript
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.fscript
-e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/жаргон-образцы.flang
-75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/породить-атомы.fscript
+e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/jargon-samples.flang
+75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/generate-atom-table.fscript
 af296a5839d250342ca4c8cf67e66060|15|×|×|×|0|flang/self/bootstrap/compiler.flang
 fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-source.flang
 ecd81513258fe500beadfeab45b681e5|153|84|32|37|0|flang/self/bounded.flang
@@ -1403,7 +1403,7 @@ b2b0bd29ba7d4c34ddfdfc5f0ab3ac5d|89|33|56|0|0|flang/stdlib/websocket.flang
 67efa8a01977d51e708734713f2936a9|98|65|34|0|0|flang/stdlib/wire.flang
 7b071e944ac30531a4ba625a980eb77e|35|12|8|15|0|flang/stdlib/x25519.flang
 eaace46d041a7b9b469921b8b762c436|84|71|13|0|0|flang/stdlib/x509.flang
-fe58348f7d9c56234ecd42cf7b2c178b|64|43|21|0|0|flang/stdlib/образцы.flang
+fe58348f7d9c56234ecd42cf7b2c178b|64|43|21|0|0|flang/stdlib/samples.flang
 d8a87ed173e940e95b91df6ac27123c5|0|×|×|×|1|flang/test/fixtures/binary-rules/equality-not-symmetric.flang
 ebf918c1133a06dab715e03c08f1ce4f|0|×|×|×|3|flang/test/fixtures/binary-rules/iso-mismatch.flang
 ed30c9fa927c5a19ab032b137ef07edf|7|0|7|0|0|flang/test/fixtures/element-po-nomeru-chestnaya.flang
@@ -1448,7 +1448,7 @@ acba074326a584bff19aafc6587d5088|1|0|0|1|0|flang/test/fixtures/poddelka-vhozhden
 c7ffb731071b99fe6691b27dffb3afcd|3|0|0|3|0|flang/test/fixtures/svyortka-prefiks-chestnaya.flang
 b9d5b024665527fb15043034cdd8fdaa|18|16|2|0|0|flang/test/http.flang
 cc471be74d8c4180292b5b9847697496|1|1|0|0|0|flang/test/process-failures.flang
-59fafc8a1463e8c939db99ac7e98e514|15|×|×|×|0|flang/test/жаргон.flang
+59fafc8a1463e8c939db99ac7e98e514|15|×|×|×|0|flang/test/jargon.flang
 8f1a5b89dc9539393cd4a3e41437b243|1|0|1|0|0|flang/translation/fixtures/all-elements/all-elements.flang
 90e74d4f92b91cc50f646f424a4ed9f3|2|1|1|0|0|fspec/experience/01-discount-coarse.flang
 aa82f1d7ac9e7246e9a006b658bd3c6f|2|2|0|0|0|fspec/experience/02-discount-exact.flang
@@ -1574,7 +1574,7 @@ d25c2b3399f45c84d4b13bf0ec83ba1a|5|3|2|0|0|scripts/guards/tab-host-guard.fscript
 0eb8181532ae602de4c212cbde33749e|33|19|5|1|0|scripts/guards/tree-inventory.fscript
 19037f1b3d31fce728a4bd55fa1a4835|23|8|7|8|0|scripts/guards/version-guard.fscript
 b5801f9b34173f51e2b0b0216ba311f4|7|7|0|0|0|scripts/guards/what-blocks-inventory-guard.fscript
-a781034b78cf3d516bd825fa2dfd3b93|10|8|2|0|0|scripts/guards/сторож-дарвина.fscript
+a781034b78cf3d516bd825fa2dfd3b93|10|8|2|0|0|scripts/guards/darwin-guard.fscript
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.fscript
 cb83af3366e1aedcf2980e68974f26bc|21|20|1|0|0|scripts/release/asdf-plugin-published.fscript
 1ada44f6de654f4caad9cc2ebd440616|10|10|0|0|0|scripts/release/asdf-version-list.fscript

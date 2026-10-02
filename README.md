@@ -120,8 +120,8 @@ git config core.hooksPath .githooks      # the pre-push hook: the cheap guards, 
 ```
 
 The walk runs 211 checks written in flang and diffs the result against
-<!-- СНЯТО 2026-09-13 строк flang/test/ведомость.txt = 211 -->
-`flang/test/ведомость.txt`, one line per check. The hook runs the guards that finish in seconds and
+<!-- СНЯТО 2026-09-13 строк flang/test/ledger.txt = 211 -->
+`flang/test/ledger.txt`, one line per check. The hook runs the guards that finish in seconds and
 names what it did not run; the long ones are CI (`.github/workflows/binary.yml`). Work is tracked
 in [`docs/tasks/`](docs/tasks/README.md), one file per open task; a closed task leaves the tree and
 its number stays taken in `docs/tasks/used-numbers.tsv`. The rules of the tree

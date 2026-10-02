@@ -18,7 +18,7 @@
 только зная, **что чему соответствует**. В одной «Покупка», в другой «Счёт».
 
 **Разбор строил из этих строк всё нужное.** `parse` на образце
-`flang/test/fixtures/fts-naslediye/скидки-в-подписки.fts` даёт `legacy[0].value`
+`flang/test/fixtures/fts-naslediye/discounts-into-subscriptions.fts` даёт `legacy[0].value`
 с `imports` (две пары «категория → путь»), `objects` (пара «Заказ → Подписка» и
 два поля внутри) и `morphisms`. Не терялось ничего.
 

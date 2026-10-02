@@ -79,14 +79,14 @@ bootstrap/flang run-script jargon:check                                    # к�
 * **`flang/` (1447 файлов, глубина 11).** Самая глубокая ветка — `flang/proof/checker/tests/…`,
   это задача 6421: под `proof/` лежит 931 файл, из них 740 с кириллическим именем. Вне
   `proof/` остаётся 516 файлов и в них 19 кириллических имён — `flang/test/ведомость*.txt`,
-  `обход*.sh`, `владение-состоянием.*`, `жаргон.flang`, четыре файла в `flang/scripts/`,
-  `flang/stdlib/образцы.flang` и три `.fts`-примера. Все 19 — в ведомости долга.
+  `обход*.sh`, `владение-состоянием.*`, `jargon.flang`, четыре файла в `flang/scripts/`,
+  `flang/stdlib/samples.flang` и три `.fts`-примера. Все 19 — в ведомости долга.
   Кириллических каталогов вне `proof/` четыре, и все под
   `flang/test/fixtures/fts/tools/ftspec/examples/`.
 * **`scripts/` (150 файлов, 9 подкаталогов, глубина 3).** Самый аккуратный крупный
   каталог: подкаталоги названы по роду (`guards/`, `ledgers/`, `release/`, `seed/`,
   `site/`, `targets/`, `editors/`, `registry-example/`), кириллических имён два
-  (`provability.fscript` и `guards/сторож-дарвина.fscript`), оба в ведомости долга с
+  (`provability.fscript` и `guards/darwin-guard.fscript`), оба в ведомости долга с
   причиной. **Беспорядка здесь нет.**
 * **`fspec/` (75 файлов, 3 подкаталога, глубина 3).** Мелкая ровная раскладка. Одно
   замечание: `experience/` и `experiments/` — соседи, чьи имена различаются двумя
@@ -352,7 +352,7 @@ bootstrap/flang run-script jargon:check
 |---|---|
 | «а не перечислены» | `.github/workflows/binary.yml:653`, `ярлыки.flang:85` |
 | «обязана дать красное» | `.github/workflows/pages.yml:149` |
-| «не сломана молча» | `.github/workflows/install-path.yml:139`, `scripts/guards/сторож-дарвина.fscript:128` |
+| «не сломана молча» | `.github/workflows/install-path.yml:139`, `scripts/guards/darwin-guard.fscript:128` |
 | «это и есть защита от» | `scripts/release/bump-version.fscript:739` и `:747`, `docs/zettel/the-version-is-written-once-…md:27` |
 
 Полный список имён шагов CI, которые доказывают исправность прибора вместо того, чтобы

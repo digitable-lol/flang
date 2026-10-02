@@ -138,7 +138,7 @@
    запись «Место» с «путь» равным "flang/scripts/name-guard.fscript" и «нужно» равным "-name '*.фланг' -o -name '*.fscript'" и «нельзя» равным "\"фланг\"]",
    запись «Место» с «путь» равным "flang/scripts/proof-ledger.fscript" и «нужно» равным "-name '*.фланг' -o -name '*.fscript'" и «нельзя» равным "",
    запись «Место» с «путь» равным "flang/scripts/word-occupancy.fscript" и «нужно» равным "(«Кончается на» от имя и \".фланг\") или («Кончается на» от имя и \".fscript\")" и «нельзя» равным "",
-   запись «Место» с «путь» равным "flang/test/владение-состоянием.sh" и «нужно» равным "--include='*.фланг' --include='*.fscript'" и «нельзя» равным "--include='*.фланг' .",
+   запись «Место» с «путь» равным "flang/test/state-ownership.sh" и «нужно» равным "--include='*.фланг' --include='*.fscript'" и «нельзя» равным "--include='*.фланг' .",
    запись «Место» с «путь» равным "docs/site/changelog.json" и «нужно» равным ".фп" и «нельзя» равным "\"*.flang\"]",
    запись «Место» с «путь» равным "flang/proof/forgeries/run.fscript" и «нужно» равным "\".fp\", \".фп\", \".фланг\"]" и «нельзя» равным "",
    запись «Место» с «путь» равным "flang/proof/checker/tests/families/run-induction/letters.record" и «нужно» равным ".фп" и «нельзя» равным "\"*.flang\"]",

@@ -53,7 +53,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 - Quantifiers over list elements, nested quantifiers, induction over your own declared type, statements outside functions, and proof steps named by a human did NOT make this release. They are written and checked, but they reach the built compiler only by reprinting the seed, which is still running. They will ship in the next release.
 - The proof still applies to `flang check` and does not cover the built binary: nothing verifies that the emitted C matches the source program. Coq, Lean and Idris have the same gap.
-- The example ledger (`ведомость-примеров.txt`) still holds the old paths: the walker that prints it runs for two hours forty minutes and has never finished — neither here nor in CI. It cannot be rewritten by hand: the check is a line-by-line diff, and the line order there is the walk order.
+- The example ledger (`examples-ledger.txt`) still holds the old paths: the walker that prints it runs for two hours forty minutes and has never finished — neither here nor in CI. It cannot be rewritten by hand: the check is a line-by-line diff, and the line order there is the walk order.
 
 ## 0.7.17 — 11 September 2026
 

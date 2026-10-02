@@ -47,7 +47,7 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
 `reprint.yml` зовут `scripts/guards/latin-collision-guard.fscript`, оба красны на
 подложенной паре имён), `jargon-guard.mjs` и его пробы
 `flang/test/jargon-guard.test.mjs` (11 из 14 проб перенесены в
-`flang/test/жаргон.flang`, работа `jargon` зовёт `flang test`). Файлов
+`flang/test/jargon.flang`, работа `jargon` зовёт `flang test`). Файлов
 JavaScript стало 55, строк 29 733; в трёх каталогах оснастки (`scripts/`,
 `flang/scripts/`, `flang/test/`) осталось 21 файлов — решение по каждому
 записано в задаче 0049.

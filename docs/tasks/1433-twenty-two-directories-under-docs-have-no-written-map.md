@@ -1,6 +1,6 @@
 ---
 номер: 1433
-заголовок: Карта docs/README.md называет семь подкаталогов docs/ из двадцати трёх, а проверка карты внутрь docs/ не смотрит
+заголовок: Карта docs/README.md называет семь подкаталогов из двадцати двух, а проверка карты внутрь docs/ не смотрит
 статус: свободна
 приоритет: P3
 исполнитель: —
@@ -8,10 +8,10 @@
 команда: любая
 карта: Что мешает больше всего
 рядом: 0037, 1745
-нужность: новый подкаталог docs/ заводится молча, а читатель не может по имени отличить два каталога замеров с одинаковыми именами файлов и разным содержимым
+нужность: новый подкаталог docs/ заводится молча — карта его не называет, и ни одна проверка не краснеет
 ---
 
-# 1433. Карта docs/README.md называет семь подкаталогов docs/ из двадцати трёх, а проверка карты внутрь docs/ не смотрит
+# 1433. Карта docs/README.md называет семь подкаталогов из двадцати двух, а проверка карты внутрь docs/ не смотрит
 
 ## Шаги воспроизведения
 
@@ -38,37 +38,36 @@ for f in $(ls docs/benchmark/); do cmp -s "docs/benchmark/$f" "docs/benchmark2/$
 
 ```
 $ for d in docs/*/; do …; done | wc -l
-16                                                               код 0
+15                                                               код 0
 $ sh scripts/guards/published-vs-tree.sh --карта | head -1
-КАРТА РАСКЛАДКИ (README против корня дерева):
+КАРТА РАСКЛАДКИ (docs/repository-layout против корня дерева):
 $ diff <(ls docs/benchmark/) <(ls docs/benchmark2/) && echo IDENTICAL
 IDENTICAL                                                        код 0
 $ for f in …; do cmp -s …; done | wc -l
 21
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026, ствол 0241d36b0.
 
-Подкаталогов у `docs/` двадцать три; карта в `docs/README.md` называет семь
-(guide, adr, archive, zettel, ifl, examples, flang). Не названы benchmark,
-benchmark2, benchmarks, course, ct, design, editors, fspec, releases, site,
-tasks, templates, tools, tutor, zamer-teorkat, спецификации. Функция `karta` в
-`scripts/guards/published-vs-tree.sh` сверяет состав корня дерева с блоком
-между метками КАРТА-НАЧАЛО и КАРТА-КОНЕЦ в `README.md` и `docs/README.ru.md`;
+Подкаталогов у `docs/` двадцать два (считано `git ls-files`, а не `find`); карта в
+`docs/README.md` называет семь (guide, adr, archive, zettel, ifl, examples, flang). Не
+названы пятнадцать: benchmark, benchmark2, benchmarks, course, ct, design, editors, fspec,
+releases, site, specifications, tasks, templates, tutor, zamer-teorkat. Функция `karta` в
+`scripts/guards/published-vs-tree.sh` сверяет состав корня дерева с блоком между метками
+КАРТА-НАЧАЛО и КАРТА-КОНЕЦ в `docs/repository-layout.md` и `docs/repository-layout.ru.md`;
 внутрь `docs/` она не смотрит, и новый подкаталог там заводится молча.
 В `docs/benchmark/` и `docs/benchmark2/` по 21 файлу с одинаковыми именами, и
-все 21 различаются содержимым; что второй — другой заход того же замера, видно
-только из `docs/benchmark-proof-cost-2.md`. Рядом третий каталог
-`docs/benchmarks/` с другим устройством (подкаталоги proof-cost, speed, verdict-cache).
+все 21 различаются содержимым. Заход теперь виден из каталога: у обоих есть свой
+`README.md`, и в нём же записано, почему каталоги решено не переименовывать. Рядом третий
+каталог `docs/benchmarks/` с другим устройством (подкаталоги proof-cost, speed, verdict-cache).
 
 ## Что должно быть
 
 Карта `docs/README.md` называет каждый подкаталог верхнего уровня `docs/` и
 говорит, какой род документа туда попадает; проверка `--карта` сверяет её с
-деревом так же, как корневую, и краснеет на неназванном каталоге. Каталоги
-замеров различимы по имени, а не по цифре. Это обещает сама карта корня
-(`README.md`: «everything else under `docs/` is `docs/README.md`») и правило
-именования в конце `docs/README.md`.
+деревом так же, как корневую, и краснеет на неназванном каталоге. Это обещает сама
+карта корня (`docs/repository-layout.md`: «Prose lives in `docs/` and only there») и
+правило именования в конце `docs/README.md`.
 
 ## Обходной путь
 
@@ -84,20 +83,16 @@ sh scripts/guards/published-vs-tree.sh --карта                             
 ```
 
 Проба: подложить пустой подкаталог в `docs/` — проверка обязана покраснеть и
-назвать его. `diff <(ls docs/benchmark/) <(ls docs/benchmark2/)` больше не даёт
-совпадения имён при разном содержимом, либо каталоги переименованы так, что
-заход виден в имени; `node docs/site/build.mjs --check` — битых ссылок нет.
+назвать его; `node docs/site/build.mjs --check` — битых ссылок нет.
 Каталоги, где имя говорит всё (adr, site, guide, releases, archive,
 templates), собственного README не получают.
 
 ## Где живёт правка
 
-`docs/README.md` (карта подкаталогов, раздел «Правило именования»), функция
-`karta` в `scripts/guards/published-vs-tree.sh` (второй проход по `docs/`),
-переименование `docs/benchmark/` и `docs/benchmark2/` вместе со ссылками из
-`docs/benchmark-proof-cost.md`, `docs/benchmark-proof-cost-2.md` и карты сайта
-`docs/site/sitemap.mjs`. Двоичного правка не касается, пересборка семени
-(bootstrap regeneration) не нужна.
+`docs/README.md` (карта подкаталогов, раздел «Правило именования») и функция
+`karta` в `scripts/guards/published-vs-tree.sh` (второй проход, по `docs/`).
+Двоичного правка не касается, пересборка семени (bootstrap regeneration) не нужна.
 
-Отдельная задача, здесь не решается: имя каталога `docs/specifications/` —
-правило имён файлов, а не раскладка.
+Здесь не решается: переименование `docs/benchmark/` и `docs/benchmark2/` — решено не
+переименовывать, довод записан в `docs/benchmark/README.md` (на эти пути завязаны
+`docs/site/sitemap.mjs`, `docs/jargon.json` и курс).

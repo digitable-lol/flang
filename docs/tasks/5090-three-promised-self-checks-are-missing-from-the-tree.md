@@ -31,12 +31,13 @@ flang/test/svyaz-celi.test.mjs
 |---|---|---|
 | `flang/scripts/name-guard.mjs:151` | flang/test/name-guard.test.mjs | нет |
 | `flang/scripts/count-guard.mjs:15` | flang/test/manpage.test.mjs | нет |
-| `flang/scripts/tempdir-guard.fscript:279` | flang/test/uzel-celi.test.mjs | нет |
+| `flang/scripts/tempdir-guard.fscript:293` | flang/test/uzel-celi.test.mjs | нет |
 
 Первые два называют файл в тексте как свою самопроверку. Третий ставит его в
-строку запуска `node --test …` рядом с тремя существующими файлами.
+строку запуска `node --test …` рядом с тремя существующими файлами: сначала в
+ожидаемом значении (строка 293), затем в самой строке запуска (строка 295).
 
-Версия: flang 0.7.23, 30 сентября 2026.
+Версия: flang 0.7.23, 2 октября 2026, ствол 0241d36b0.
 
 ## Что должно быть
 
@@ -50,7 +51,7 @@ flang/test/svyaz-celi.test.mjs
 ## Когда задача сделана
 
 Для каждого из трёх файлов выбрано одно: самопроверка написана и поставлена
-отдельным ярлыком в `ярлыки.flang`, либо ссылка снята. Для
+отдельным ярлыком в `.flangrc`, либо ссылка снята. Для
 `tempdir-guard.fscript` выбор тот же, но оставить как есть нельзя: файл стоит в
 строке запуска.
 
@@ -64,4 +65,4 @@ grep -rhoE 'flang/test/[a-z-]+\.test\.mjs' flang/scripts/name-guard.mjs flang/sc
 
 `flang/scripts/name-guard.mjs`, `flang/scripts/count-guard.mjs`,
 `flang/scripts/tempdir-guard.fscript` (функция со строкой запуска `node --test`
-и её пример), `ярлыки.flang`. Перепечатка не нужна.
+и её пример), `.flangrc`. Перепечатка не нужна.

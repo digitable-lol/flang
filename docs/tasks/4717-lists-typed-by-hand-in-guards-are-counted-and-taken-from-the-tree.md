@@ -29,25 +29,26 @@ sh scripts/guards/hand-written-lists.sh --check
 
 ```
 $ sh scripts/guards/hand-written-lists.sh
-перечней набрано руками: 350   (целей 82, путей 268)
-из них расходятся с деревом сегодня: 145   (целей 55, путей 90)
+перечней набрано руками: 369   (целей 78, путей 291)
+из них расходятся с деревом сегодня: 166   (целей 53, путей 113)
 …
-  ПУТИ	scripts/targets/emit-law.fscript:99	6 из 15	нет: docs/examples/cat/crdt-merge.flang:100 …
+  ПУТИ	scripts/targets/emit-law.fscript:25	6 из 15	нет: docs/examples/cat/crdt-merge.flang:26 …
                                                                  код 0
 $ sh scripts/guards/hand-written-lists.sh --check
-перепись: новых 89, мёртвых записей 37                          код 1
+перепись: новых 131, мёртвых записей 64                         код 1
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026, ствол 0241d36b0.
 
 Перепись есть и работает: считает перечни целей печати и перечни путей, называет файл,
 строку и чем разошлось. Но расходящиеся перечни никто не чинит: в
-`scripts/ledgers/hand-written-lists-ledger.tsv` записано 93 расхождения с доводами,
-а сегодня 89 новых без довода и 37 записей о расхождениях, которых уже нет. Больше
-всего расходящихся перечней путей в `scripts/guards/checks-nobody-calls.fscript`,
-`scripts/site/changelog.flang`, `scripts/release/bump-version.fscript`,
-`flang/self/bootstrap/compiler.flang`; перечней целей — в `scripts/guards/bad-octet-guard.sh`,
-`scripts/test-remote.sh`, `.github/workflows/ci.yml`.
+`scripts/ledgers/hand-written-lists-ledger.tsv` записано 99 расхождений с доводами,
+а сегодня 131 новое без довода и 64 записи о расхождениях, которых уже нет. Больше
+всего расходящихся перечней путей в `scripts/guards/checks-nobody-calls.fscript` (12),
+`scripts/guards/who-calls-the-guards.fscript` (7), `scripts/site/changelog.flang`,
+`scripts/release/bump-version.fscript` и `flang/self/bootstrap/compiler.flang` (по 5);
+перечней целей — в `scripts/guards/bad-octet-guard.sh` (5), `.github/workflows/ci.yml` (3),
+`scripts/test-remote.fscript` (2).
 
 ## Что должно быть
 
@@ -70,7 +71,7 @@ sh scripts/guards/hand-written-lists.sh --check
 перепись сошлась с ведомостью: N расхождений, все названы с доводом    код 0
 ```
 
-Число «расходятся с деревом сегодня» ниже 145, и разность названа в коммите. Каждая
+Число «расходятся с деревом сегодня» ниже 166, и разность названа в коммите. Каждая
 запись отчёта известных расхождений несёт довод. Проба: `bootstrap/flang run-script hand-written-lists:check`
 краснеет на новом расхождении и на записи, переставшей быть расхождением, — уже
 сегодня; после починки её ставят в набор проверок перед отправкой, чтобы число снова

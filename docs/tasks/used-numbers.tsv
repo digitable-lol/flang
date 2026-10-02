@@ -226,6 +226,7 @@ number	state	title
 5763	done	Printing goal case splits: 33 places as steps
 5822	done	Two prints check skips the printed compiler
 5823	done	New binary acceptance stops at the kernel rules sign
+5825	done	The tutor rejects every correct answer because run prints the verdict line
 5855	done	The concurrency layer is counted and proved
 5930	done	The tenth flangrc key is read by the binary and hidden by the script
 5931	done	The settings file speaks english

@@ -117,7 +117,7 @@
 |---|---:|---|---|
 | `docs/archive/` | 11 | `scripts/` 3, `flang/scripts/` 2, приметы 6; сторож ссылок называет каталог «историей» | `internal/archive/`, сторож — на новый путь |
 | `docs/design/` | 22 | `scripts/` 23, исходники 12, приметы 11 | проектные записки: `internal/design/`, имена английские |
-| `docs/спецификации/` | 4 | `scripts/` 4, исходники 1 | то же, вместе с `design/`; имя каталога — латиницей |
+| `docs/specifications/` | 4 | `scripts/` 4, исходники 1 | то же, вместе с `design/`; имя каталога — латиницей |
 | `docs/ifl/` | 6 | `scripts/` 7 | подача на конференцию: `internal/ifl/` |
 | `docs/zamer-teorkat/` | 3 | `scripts/` 5, исходники 2 | материал замера: в `internal/benchmarks/` под английским именем |
 | `docs/tools/` | 3 | `.github/` 1 | две программы на Python; удалить вместе с `binder-goal-share.md` |

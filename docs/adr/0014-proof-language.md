@@ -2,7 +2,7 @@
 
 **Состояние:** принято владельцем, работа начата
 **Дата:** 20 августа 2026
-**Основание:** спецификация [`docs/спецификации/язык-доказательств.md`](../спецификации/язык-доказательств.md),
+**Основание:** спецификация [`docs/specifications/proof-language.md`](../спецификации/proof-language.md),
 ядро [`flang/self/proofterm.flang`](../../flang/self/proofterm.flang),
 сведение [`flang/self/proof-kernel.flang`](../../flang/self/proof-kernel.flang),
 поверхность `docs/flang/proof/SPEC.md` (раздел 1, девять слов)

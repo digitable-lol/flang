@@ -38,7 +38,7 @@
 
 ## 2. Требование стоит рядом с кодом
 
-[`docs/examples/применение/итог-заказа.flang`](../examples/применение/итог-заказа.flang):
+[`docs/examples/usage/order-total.flang`](../examples/usage/order-total.flang):
 
 ```flang
 модуль «Итог заказа»
@@ -63,14 +63,14 @@
 Прогон:
 
 ```
-$ bootstrap/flang check docs/examples/применение/итог-заказа.flang --proof
+$ bootstrap/flang check docs/examples/usage/order-total.flang --proof
 …
   постусловие «итог не меньше стоимости товаров» функции «Итог заказа» —
   доказано по объявленным типам аргументов: цель сведена правилом «порядок по
   построению» — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём
   нет и не нужно
 …
-docs/examples/применение/итог-заказа.flang: ПРОВЕРЕНО САМОСТОЯТЕЛЬНО —
+docs/examples/usage/order-total.flang: ПРОВЕРЕНО САМОСТОЯТЕЛЬНО —
 утверждений 1: доказано 1 … — код возврата 0
 ```
 
@@ -111,7 +111,7 @@ docs/examples/применение/итог-заказа.flang: ПРОВЕРЕН
 
 ## 4. Недоказанное требование видно
 
-[`docs/examples/применение/скидка.flang`](../examples/применение/скидка.flang):
+[`docs/examples/usage/discount.flang`](../examples/usage/discount.flang):
 
 ```flang
 модуль «Скидка»
@@ -128,13 +128,13 @@ docs/examples/применение/итог-заказа.flang: ПРОВЕРЕН
 Предусловие при нём тоже стоит. Прогон:
 
 ```
-$ bootstrap/flang check docs/examples/применение/скидка.flang --proof
+$ bootstrap/flang check docs/examples/usage/discount.flang --proof
 …
   постусловие «скидка не делает цену отрицательной» функции «Цена со скидкой» —
   объявлено, не доказано: ни теоремы, ни примеров. Его считает рантайм после
   каждого возврата — на тех входах, которые придут
 …
-docs/examples/применение/скидка.flang: НЕ ПРОВЕРЕНО — утверждений 1: доказано 0,
+docs/examples/usage/discount.flang: НЕ ПРОВЕРЕНО — утверждений 1: доказано 0,
 условно 0, сетка 0, объявлено, не доказано 1, отвергнуто 0, нарушено 0 —
 код возврата 3
 ```
@@ -154,7 +154,7 @@ docs/examples/применение/скидка.flang: НЕ ПРОВЕРЕНО �
 
 Предусловие (`требует`) снимает **вызывающий**, и потому в напечатанный код оно
 не попадает ни байтом. Это работает.
-[`docs/examples/применение/скидка-на-вызове.flang`](../examples/применение/скидка-на-вызове.flang)
+[`docs/examples/usage/discount-on-call.flang`](../examples/usage/discount-on-call.flang)
 зовёт ту же функцию литералами:
 
 ```flang
@@ -166,9 +166,9 @@ docs/examples/применение/скидка.flang: НЕ ПРОВЕРЕНО �
 ```
 
 ```
-$ bootstrap/flang check docs/examples/применение/скидка-на-вызове.flang
+$ bootstrap/flang check docs/examples/usage/discount-on-call.flang
 модуль «Скидка на вызове»: функций 2, из них с доказанным завершением 2; типов 0
-docs/examples/применение/скидка-на-вызове.flang: проверено — разбор, типы,
+docs/examples/usage/discount-on-call.flang: проверено — разбор, типы,
 завершаемость, ядро и примеры; замечаний нет
 ```
 

@@ -52,7 +52,7 @@ def bisect_left(a, x, lo=0, hi=None, *, key=None):
 ```
 
 Результат перевода —
-[`docs/examples/применение/место-слева.flang`](../examples/применение/место-слева.flang).
+[`docs/examples/usage/lvalue.flang`](../examples/usage/lvalue.flang).
 
 ## 3. Что всплыло при переписке — шесть мест
 
@@ -115,7 +115,7 @@ def bisect_left(a, x, lo=0, hi=None, *, key=None):
 
 ## 4. Требование записалось — и не сработало ни на одном вызове
 
-[`docs/examples/применение/место-слева-вызов.flang`](../examples/применение/место-слева-вызов.flang)
+[`docs/examples/usage/lvalue-with-call.flang`](../examples/usage/lvalue-with-call.flang)
 зовёт «Место слева» с явно упорядоченным списком литералов:
 
 ```flang
@@ -131,10 +131,10 @@ def bisect_left(a, x, lo=0, hi=None, *, key=None):
 Прогон:
 
 ```
-$ bootstrap/flang check docs/examples/применение/место-слева-вызов.flang
+$ bootstrap/flang check docs/examples/usage/lvalue-with-call.flang
 FLANG_PRECONDITION_CALL … строка 70, столбец 3: вызов «Место слева» в функции
 «Куда встанет цена» не снимает предусловие «список неубывающий» …
-docs/examples/применение/место-слева-вызов.flang: не проверено — замечаний 1
+docs/examples/usage/lvalue-with-call.flang: не проверено — замечаний 1
 ```
 
 код возврата 1. Тот же отказ приходит и на неупорядоченном списке
@@ -153,10 +153,10 @@ docs/examples/применение/место-слева-вызов.flang: не 
 ## 5. Что сказала проверка
 
 Перевод без требований об отрезке индексов
-([`место-слева.flang`](../examples/применение/место-слева.flang)):
+([`lvalue.flang`](../examples/usage/lvalue.flang)):
 
 ```
-$ bootstrap/flang check docs/examples/применение/место-слева.flang --proof
+$ bootstrap/flang check docs/examples/usage/lvalue.flang --proof
 …
 чем несётся обещание «тотальная»:
   «Неубывающий»            доказано структурой: аргумент 1 («элементы») на
@@ -200,7 +200,7 @@ $ bootstrap/flang check docs/examples/применение/место-слева
 верх`), файл перестаёт проверяться:
 
 ```
-$ bootstrap/flang check docs/examples/применение/место-слева-с-отрезком.flang
+$ bootstrap/flang check docs/examples/usage/lvalue-with-slice.flang
 FLANG_PRECONDITION_CALL … строка 46 … не снимает предусловие «низ неотрицателен»
 FLANG_PRECONDITION_CALL … строка 46 … не снимает предусловие «низ не правее верха»
 FLANG_PRECONDITION_CALL … строка 47 … не снимает предусловие «верх не дальше конца списка»
@@ -209,7 +209,7 @@ FLANG_PRECONDITION_CALL … строка 47 … не снимает предус
 ```
 
 код возврата 1, четыре отказа
-([`место-слева-с-отрезком.flang`](../examples/применение/место-слева-с-отрезком.flang)).
+([`lvalue-with-slice.flang`](../examples/usage/lvalue-with-slice.flang)).
 Инвариант, который двоичный поиск держит на каждом витке, ядро не выводит, и
 рекурсивные вызовы не могут снять собственное же требование. Выбор поэтому
 такой: либо требования не записывать — и тогда программа молчит ровно так же,
@@ -222,7 +222,7 @@ FLANG_PRECONDITION_CALL … строка 47 … не снимает предус
 Ветвь `key=None` в `bisect_left` принимает **функцию параметром**. Было
 ожидание, что она не переведётся. Она переводится:
 `ключ: функция из числа в число`, применение `ключ от (элемент … в элементы)`.
-[`место-слева-по-ключу.flang`](../examples/применение/место-слева-по-ключу.flang):
+[`lvalue-by-key.flang`](../examples/usage/lvalue-by-key.flang):
 «функций 4, из них с доказанным завершением 4 … замечаний нет», код возврата 0;
 `flang test` — «примеров 8, прошло 8, не прошло 0», код возврата 0.
 

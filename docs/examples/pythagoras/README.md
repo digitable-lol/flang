@@ -9,7 +9,7 @@
 В наборе два файла, и они разного достоинства. Разницу между ними стоит
 прочитать раньше, чем код.
 
-## `квадрат-гипотенузы.flang` — доказано обо всех входах
+## `hypotenuse-square.flang` — доказано обо всех входах
 
 Четыре утверждения, и все четыре ядро языка приняло: они верны для любых
 значений, а не для написанных примеров.
@@ -31,7 +31,7 @@
 каждый шаг называет закон и посылки, а язык проверяет, что закон к этим
 посылкам применим. Ничего не ищется перебором.
 
-## `формула-евклида.flang` — посчитано на шести тройках, НЕ доказано
+## `euclid-formula.flang` — посчитано на шести тройках, НЕ доказано
 
 Формула Евклида: для любых `м > н > 0` тройка
 
@@ -84,10 +84,10 @@
 
 ## Как проверить самому
 
-    bootstrap/flang check docs/examples/pythagoras/квадрат-гипотенузы.flang --proof
-    bootstrap/flang check docs/examples/pythagoras/формула-евклида.flang --proof
-    bootstrap/flang test  docs/examples/pythagoras/квадрат-гипотенузы.flang
-    bootstrap/flang test  docs/examples/pythagoras/формула-евклида.flang
+    bootstrap/flang check docs/examples/pythagoras/hypotenuse-square.flang --proof
+    bootstrap/flang check docs/examples/pythagoras/euclid-formula.flang --proof
+    bootstrap/flang test  docs/examples/pythagoras/hypotenuse-square.flang
+    bootstrap/flang test  docs/examples/pythagoras/euclid-formula.flang
 
 У первого файла отчёт говорит «доказано» о каждом из четырёх утверждений,
 и со словом `--строго` он тоже отвечает нулём. У второго — «сетка 6 значений»,

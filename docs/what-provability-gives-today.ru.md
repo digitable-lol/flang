@@ -60,13 +60,13 @@ $ flang check --proof заказ.flang
 ```
 
 ```
-$ flang check --proof скидка.flang
+$ flang check --proof discount.flang
 …
   постусловие «скидка не делает цену отрицательной» функции «Цена со скидкой» —
   объявлено, не доказано: ни теоремы, ни примеров. Его считает рантайм после каждого
   возврата — на тех входах, которые придут
 …
-скидка.flang: НЕ ПРОВЕРЕНО — утверждений 1: доказано 0, условно 0, сетка 0,
+discount.flang: НЕ ПРОВЕРЕНО — утверждений 1: доказано 0, условно 0, сетка 0,
 объявлено, не доказано 1, … — код возврата 3
 ```
 
@@ -224,14 +224,14 @@ bootstrap/flang io flang/proof/replay-share.fscript
 ```
 make -C bootstrap -j8
 ./bootstrap/flang check --proof заказ.flang                      # код 0
-./bootstrap/flang check --proof скидка.flang                     # код 3
+./bootstrap/flang check --proof discount.flang                     # код 3
 ./bootstrap/flang check --proof заказ.flang --записать заказ.record
 make -C flang/proof/checker && flang/proof/checker/сверщик заказ.flang заказ.record   # код 3, место названо
 bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000                                       # ДОКАЗУЕМ
 ```
 
 Тексты двух функций — выше, целиком; сохраните их как `заказ.flang` и
-`скидка.flang`.
+`discount.flang`.
 
 ## Что стало можно сказать в доказательстве — 0.7.19
 

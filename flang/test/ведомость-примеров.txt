@@ -41,7 +41,7 @@ docs/benchmark2/17-member-of-set.flang	отказ
 docs/benchmark2/18-prepend-string.flang	отказ
 docs/benchmark2/19-lowercase-letter.flang	отказ
 docs/benchmark2/20-trim-spaces.flang	отказ
-docs/спецификации/слой-отказов.flang	4 4 0
+docs/specifications/failure-layer.flang	4 4 0
 examples/cat/crdt-merge.flang	9 9 0
 examples/cat/euler-orders.flang	4 4 0
 examples/cat/fold-by-cores.flang	5 5 0

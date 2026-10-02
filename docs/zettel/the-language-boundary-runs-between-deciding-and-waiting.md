@@ -43,7 +43,7 @@
 Пока это так, граница держится соглашением, а не проверкой — в этом одном месте.
 
 Решение и опись слоёв: [ADR-0008](../adr/0008-layer-boundary.md), пример стыка —
-`examples/io/фильтр-пакетов.flang`.
+`examples/io/packet-filter.flang`.
 
 Связано: [[the-command-loop-belongs-to-the-host-not-the-language]],
 [[the-bootstrap-point-lags-the-order-dictionary]]

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Три печати одним двоичным: без кеша, с холодным кешем, с горячим.
 #
-#   sh docs/benchmarks/verdict-cache/три-печати.sh [<рабочий каталог>]
+#   sh docs/benchmarks/verdict-cache/three-prints.sh [<рабочий каталог>]
 #
 # Порог, ради которого это меряют: холодный кеш не медленнее, чем без кеша,
 # более чем на 10 %; горячий на НЕИЗМЕННОМ дереве — быстрее не менее чем вдвое;
@@ -14,7 +14,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT=$(CDPATH= cd -- "$HERE/../../.." && pwd)
 RAB=${1:-$(mktemp -d)}
 mkdir -p "$RAB"
-LOG=$RAB/три-печати.log
+LOG=$RAB/three-prints.log
 LC_ALL=C.UTF-8
 export LC_ALL
 : > "$LOG"

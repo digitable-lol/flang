@@ -336,7 +336,7 @@ Three details of the junction that are visible only in the sources:
   on the boundary function; internal ones make do with promises.
 
 Next to it in the tree sits a second junction, made the first way — through the
-dictionary of orders: `docs/examples/io/фильтр-пакетов.flang` parses an IPv4
+dictionary of orders: `docs/examples/io/packet-filter.flang` parses an IPv4
 datagram header together with the TCP destination port and decides whether to
 let it through. Seventeen functions, all total; the octets leave for the
 operating system and come back through `write` and `read`. The same line on

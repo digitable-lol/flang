@@ -27,9 +27,9 @@
 ```
 $ grep -rcE '(: |возвращает |список )нат([^а-яёА-ЯЁ]|$)' docs/examples docs/benchmarks --include='*.flang' | grep -v ':0$'
 docs/examples/package/discount.flang:2
-docs/examples/pythagoras/формула-евклида.flang:4
-docs/examples/pythagoras/квадрат-гипотенузы.flang:4
-docs/benchmarks/verdict-cache/проба.flang:2
+docs/examples/pythagoras/euclid-formula.flang:4
+docs/examples/pythagoras/hypotenuse-square.flang:4
+docs/benchmarks/verdict-cache/cache-probe.flang:2
 docs/examples/io/progress-bar-on-screen.flang:3
 $ bootstrap/flang package docs/examples/package/discount.flang
 FLANG_PACKAGE: в flang.package пакет назван «Скидка», а модуль в docs/examples/package/discount.flang называется «Discount»     код 1

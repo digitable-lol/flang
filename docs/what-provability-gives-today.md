@@ -32,10 +32,10 @@ written.
 цены»`) promises `результат не меньше 0`:
 
 ```
-$ flang check --proof скидка.flang
+$ flang check --proof discount.flang
   … объявлено, не доказано: ни теоремы, ни примеров. Его считает рантайм после
   каждого возврата — на тех входах, которые придут
-скидка.flang: НЕ ПРОВЕРЕНО — утверждений 1: доказано 0 … объявлено, не доказано 1 … — код возврата 3
+discount.flang: НЕ ПРОВЕРЕНО — утверждений 1: доказано 0 … объявлено, не доказано 1 … — код возврата 3
 ```
 
 The claim is true under that precondition, but the kernel has no rule for the

@@ -89,7 +89,7 @@ Two decisions in the key are named together with their price:
 - **The checker fingerprint is of the binary, not of the sources.** Two
   binaries on one tree with a different kernel rule pass different verdicts; a
   key over the tree would hand one binary's verdicts to the other. This is
-  checked by `второе-ядро.sh`.
+  checked by `second-kernel.sh`.
 - **Functions are taken as the whole list, not as the call closure.** The list
   is handed to the kernel whole, and normalisation may unfold any function;
   narrowing the key to the closure is allowed only after proving that unfolding
@@ -101,26 +101,26 @@ Two decisions in the key are named together with their price:
 Everything lies in `docs/benchmarks/verdict-cache/`:
 
 ```sh
-sh docs/benchmarks/verdict-cache/пробы.sh <binary> [<second binary>]
-sh docs/benchmarks/verdict-cache/второе-ядро.sh [<where to build>]
-sh docs/benchmarks/verdict-cache/три-печати.sh [<working directory>]
+sh docs/benchmarks/verdict-cache/probes.sh <binary> [<second binary>]
+sh docs/benchmarks/verdict-cache/second-kernel.sh [<where to build>]
+sh docs/benchmarks/verdict-cache/three-prints.sh [<working directory>]
 ```
 
-- `пробы.sh` asks four questions and answers each with a number: does the
+- `probes.sh` asks four questions and answers each with a number: does the
   printing of several programs with and without the cache match to the last byte;
   does the cache miss when the body of a called function is edited while the
   function with the postcondition is untouched (`проба.flang` and a corrupted
   copy produced from it by one line of `sed`); does it hit when the sound one
   is restored; does a second kernel answer on someone else's cache exactly what
   it answers on an empty one.
-- `второе-ядро.sh` builds from `bootstrap/` a second binary whose printed seed
+- `second-kernel.sh` builds from `bootstrap/` a second binary whose printed seed
   has one kernel rule rewritten («Предел ветвления»); the source tree is not
   changed.
-- `три-печати.sh` reprints the compiler with `scripts/bootstrap-reprint.sh` three
+- `three-prints.sh` reprints the compiler with `scripts/bootstrap-reprint.sh` three
   times — without the cache, with a cold one, with a hot one — and compares
   the seed after each printing with the printing without the cache. This takes
   hours.
-- `кеш.вставка` is the inserted
+- `cache.insert` is the inserted
   piece of the kernel in flang; the extension is not `.flang` on purpose,
   because it is a piece of a module, not a module.
 

@@ -16,7 +16,7 @@
 Основание — `docs/adr/0022-a-type-fact-travels-as-a-derivation.md`, разделы 3
 и 5: у правил вывода один источник (`flang/proof/tables/inference-rules.tsv`) и
 две нотации, логическая и категорная. Ведомость заведена, проверка
-`flang/proof/tables-guard.sh` есть. Остальное не сделано.
+`flang/proof/tables-guard.fscript` есть. Остальное не сделано.
 
 ## Шаги воспроизведения
 
@@ -29,11 +29,11 @@
 
 ```
 $ grep -vc '^#' flang/proof/tables/inference-rules.tsv
-112
+113
 $ grep -c 'Правила вывода как стрелки' docs/ct/spec.md
 0                                                           код 1
 $ git ls-files flang/ct | wc -l
-18
+17
 $ grep -n 'правил восемь' docs/flang/proof/SPEC.md
 1867:> ⚠ **И ЭТО ЧИСЛО УСТАРЕЛО: правил восемь.** Ниже сказано «случаев пять, список
 2483:3в-бис). **Сегодня правил восемь, и называет их само ядро, в текстах отказов:**
@@ -43,8 +43,15 @@ $ grep -n 'правил восемь' docs/flang/proof/SPEC.md
 `docs/ct/spec.md` таблицы правил нет, пар «честная программа и подделка» на
 каждое правило в `flang/ct/` нет.
 
-Версия: flang 0.7.23, 30 сентября 2026. Прогоны `sh flang/proof/tables-guard.sh`
-и `sh flang/proof/rules-match.sh` не перепроверены: дольше минуты.
+Строк в ведомости 113, из них одна — заголовок колонок, правил 112. Отпечаток
+`flang/proof/tables/inference-rules.digest` сходится с `sha256sum` ведомости, и
+привязки правил к `flang/self/proof-kernel.flang` свежие: привязка Н1 ведёт на
+строку 2334, и там стоит «Литерал неотрицателен».
+
+Версия: flang 0.7.23, 2 октября 2026. Прогоны
+`bootstrap/flang io flang/proof/tables-guard.fscript` и
+`bootstrap/flang io flang/proof/rules-match.fscript` не перепроверены: дольше
+минуты.
 
 ## Что должно быть
 
@@ -66,18 +73,19 @@ $ grep -n 'правил восемь' docs/flang/proof/SPEC.md
 3. На каждое правило в `flang/ct/` есть пара: честная программа (код 0 или 2)
    и подделка, где нарушено ровно одно побочное условие (код 1 с названной
    причиной); на каждый запрет ведомости — подделка.
-4. `sh flang/proof/rules-match.sh` сверяет имена ведомости с ядром и с обоими
-   проверяющими записей; лишнее имя в ведомости даёт код 1 и названо.
-5. `flang/proof/tables-guard.sh` краснеет на двух подлогах: «Точный потолок» в
-   ядре изменён на единицу; у правила убрана одна посылка из логической
-   колонки.
+4. `bootstrap/flang io flang/proof/rules-match.fscript` сверяет имена
+   ведомости с ядром и с обоими проверяющими записей; лишнее имя в ведомости
+   даёт код 1 и названо.
+5. `flang/proof/tables-guard.fscript` краснеет на двух подлогах: «Точный
+   потолок» в ядре изменён на единицу; у правила убрана одна посылка из
+   логической колонки.
 
 Печать ядра здесь не меняется (задача 6132). Аксиом не заводить: каждое правило
 ведомости выводимо ядром.
 
 ## Где живёт правка
 
-`flang/proof/tables/inference-rules.tsv`, `flang/proof/tables-guard.sh`,
+`flang/proof/tables/inference-rules.tsv`, `flang/proof/tables-guard.fscript`,
 `flang/proof/rules-match.flang`, `docs/ct/spec.md`,
 `docs/flang/proof/SPEC.md`, `flang/ct/`. Перепечатка не нужна. Расхождение
 текста отказа и кода у правила вхождения — задача 6133.

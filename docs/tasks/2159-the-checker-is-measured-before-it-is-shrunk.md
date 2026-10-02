@@ -1,6 +1,6 @@
 ---
 номер: 2159
-заголовок: В независимой проверяющей программе 7711 строк кода, ровно потолок, и с каждым правилом их больше
+заголовок: В независимой проверяющей программе 8127 строк кода, ровно потолок, и с каждым правилом их больше
 статус: свободна
 приоритет: P2
 исполнитель: —
@@ -11,7 +11,7 @@
 нужность: проверяющей программе верят целиком, поэтому её размер и есть размер доверенной базы (TCB)
 ---
 
-# 2159. В независимой проверяющей программе 7711 строк кода, ровно потолок, и с каждым правилом их больше
+# 2159. В независимой проверяющей программе 8127 строк кода, ровно потолок, и с каждым правилом их больше
 
 ## Шаги воспроизведения
 
@@ -20,8 +20,8 @@
    потолком:
 
 ```
-sh flang/proof/tables-guard.sh --строки-кода
-grep -a '^потолок' flang/proof/checker/ratchet.txt
+bootstrap/flang io flang/proof/tables-guard.fscript --plan 'Tables guard' --timeout 600000 -- --code-lines
+grep -a '^checker-code-lines' flang/proof/ratchets.txt
 wc -l flang/proof/checker/checker.c
 grep -ac '^static' flang/proof/checker/checker.c
 ```
@@ -29,23 +29,23 @@ grep -ac '^static' flang/proof/checker/checker.c
 ## Что происходит
 
 ```
-$ sh flang/proof/tables-guard.sh --строки-кода
-7711                                                              код 0
-$ grep -a '^потолок' flang/proof/checker/ratchet.txt
-потолок 7711                                                      код 0
+$ bootstrap/flang io flang/proof/tables-guard.fscript --plan 'Tables guard' --timeout 600000 -- --code-lines
+{"plan":"Tables guard","result":"8127", …}                        код 0
+$ grep -a '^checker-code-lines' flang/proof/ratchets.txt
+checker-code-lines 8127                                           код 0
 $ wc -l flang/proof/checker/checker.c
-10015 flang/proof/checker/checker.c                               код 0
+10497 flang/proof/checker/checker.c                               код 0
 $ grep -ac '^static' flang/proof/checker/checker.c
-550                                                               код 0
+595                                                               код 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 Запаса под потолком нет: следующее правило вывода требует поднять потолок.
 Повторяющегося кода в файле почти нет, функции мелкие; рост идёт от разбора шага
 записи по видам правил: `шаг_вывода` и функции `семейство_н`, `семейство_р`,
 `семейство_о` ветвятся по именам правил, а правил в
-`flang/proof/tables/inference-rules.tsv` 229.
+`flang/proof/tables/inference-rules.tsv` 112.
 
 ## Что должно быть
 
@@ -61,23 +61,25 @@ $ grep -ac '^static' flang/proof/checker/checker.c
 
 ## Обходной путь
 
-Поднимать потолок в `flang/proof/checker/ratchet.txt` с каждым новым правилом.
+Поднимать потолок `checker-code-lines` в `flang/proof/ratchets.txt` с каждым
+новым правилом.
 
 ## Когда задача сделана
 
 ```
-sh flang/proof/tables-guard.sh --строки-кода                      меньше 7531
-sh flang/proof/checker/tests/run.sh                               «сошлось всё», код 0
+bootstrap/flang io flang/proof/tables-guard.fscript -- --code-lines               меньше 7531
+bootstrap/flang io flang/proof/checker/tests/run.fscript                          «сошлось всё», код 0
 bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000    ДОКАЗУЕМ, код 0
 ```
 
-Потолок в `ratchet.txt` опущен до нового числа, число примитивов не выросло.
-Проверка `sh flang/proof/tables-guard.sh` краснеет, если строк кода снова
-больше потолка.
+Потолок `checker-code-lines` в `flang/proof/ratchets.txt` опущен до нового
+числа, `checker-primitives` не вырос. Проверка
+`bootstrap/flang io flang/proof/tables-guard.fscript` краснеет, если строк кода
+снова больше потолка.
 
 ## Где живёт правка
 
-`flang/proof/checker/checker.c`, `flang/proof/checker/ratchet.txt`,
+`flang/proof/checker/checker.c`, `flang/proof/ratchets.txt`,
 `flang/proof/tables/inference-rules.tsv`. Проверяющая программа собирается
 компилятором C отдельно от `bootstrap/flang`; пересборка семени (bootstrap
 regeneration) не нужна.

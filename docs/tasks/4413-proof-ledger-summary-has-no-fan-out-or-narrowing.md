@@ -15,10 +15,12 @@
 
 ## Шаги воспроизведения
 
-1. Посмотреть, какие ярлыки считают сводку и что они зовут:
+1. Посмотреть, какие ярлыки считают сводку и что они зовут (ярлыки живут в
+   `.flangrc`, ADR-0049; прежние имена `доказательства:ведомость` и
+   `доказательства:свод` переименованы):
 
 ```
-grep -n -A1 '"доказательства:ведомость"\|"доказательства:свод"' ярлыки.flang
+grep -n 'proofs:report\|proofs:summary' .flangrc
 ```
 
 2. Посмотреть планы обоих скриптов и то, кто из них раздаёт файлы по ядрам:
@@ -31,33 +33,37 @@ grep -c 'xargs' flang/scripts/ledger-summary.fscript flang/scripts/proof-ledger.
 ## Что происходит
 
 ```
+$ grep -n 'proofs:report\|proofs:summary' .flangrc
+88:script.proofs:report = … flang/scripts/proof-ledger.fscript --plan 'Свод корпуса' …
+89:script.proofs:summary = … flang/scripts/ledger-summary.fscript --plan 'Свод' --timeout 900000
 $ grep -n '^план ' flang/scripts/proof-ledger.fscript flang/scripts/ledger-summary.fscript
-flang/scripts/ledger-summary.fscript:266:план «Свод»
-flang/scripts/proof-ledger.fscript:1413:план «Свод корпуса»
-flang/scripts/proof-ledger.fscript:1418:план «Свод корпуса по файлам»
-flang/scripts/proof-ledger.fscript:1423:план «Свод корпуса машине»
+flang/scripts/ledger-summary.fscript:270:план «Свод»
+flang/scripts/proof-ledger.fscript:1469:план «Свод корпуса»
+flang/scripts/proof-ledger.fscript:1474:план «Свод корпуса по файлам»
+flang/scripts/proof-ledger.fscript:1479:план «Свод корпуса машине»
 $ grep -c 'xargs' flang/scripts/ledger-summary.fscript flang/scripts/proof-ledger.fscript
 flang/scripts/ledger-summary.fscript:0
 flang/scripts/proof-ledger.fscript:3
                                                                  код 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
-Ярлык `доказательства:ведомость` зовёт `flang/scripts/proof-ledger.fscript`:
+Ярлык `proofs:report` зовёт `flang/scripts/proof-ledger.fscript`:
 он раздаёт файлы по ядрам, вычитает подключённые объявления, умеет машинный
-вид и вид по файлам. Ярлык `доказательства:свод` зовёт
+вид и вид по файлам. Ярлык `proofs:summary` зовёт
 `flang/scripts/ledger-summary.fscript`: тот спрашивает `check --proof` у каждого
 файла по очереди и складывает числа блока «итог», а в перечне ярлыков назван
-«та же сводка». Сами прогоны не перепроверены: оба идут дольше минуты, по
-записи в `docs/ci-inventory.md` второй не укладывался и в десять минут.
-Совпадают ли числа двух сводок на одном дереве, не снято ни разу.
+«та же сводка». Сами прогоны не перепроверены: `proofs:report` ветвится через
+`xargs -P` и держит фоновый пульс, дети переживают смерть прогона; по записи в
+`docs/ci-inventory.md`, строка 104, `proofs:summary` не укладывается и в десять
+минут. Совпадают ли числа двух сводок на одном дереве, не снято ни разу.
 
 ## Что должно быть
 
 На вопрос «сколько доказано по всем программам дерева» отвечает один счёт.
-Либо `доказательства:свод` убран вместе со своим скриптом, либо его числа
-совпадают с `доказательства:ведомость` знак в знак и это держит проверка.
+Либо `proofs:summary` убран вместе со своим скриптом, либо его числа
+совпадают с `proofs:report` знак в знак и это держит проверка.
 
 ## Обходной путь
 
@@ -68,7 +74,7 @@ flang/scripts/proof-ledger.fscript:3
 
 Один из двух исходов.
 
-Первый: `grep -c 'доказательства:свод' ярлыки.flang` даёт 0, файла
+Первый: `grep -c 'proofs:summary' .flangrc` даёт 0, файла
 `flang/scripts/ledger-summary.fscript` нет, `bootstrap/flang run-script scripts:check` отвечает кодом 0,
 `bootstrap/flang run-script file-extensions:check` отвечает кодом 0.
 
@@ -78,12 +84,11 @@ flang/scripts/proof-ledger.fscript:3
 
 ## Где живёт правка
 
-`ярлыки.flang`: запись ярлыка в «Все ярлыки», список «Ярлыки о
-доказательствах» и постусловия о числе ярлыков;
+`.flangrc`: строка `script.proofs:summary`;
 `flang/scripts/ledger-summary.fscript`; строки о ярлыке в
 `docs/ci-inventory.md`; место отбора в `scripts/guards/file-extensions.fscript`.
 Всё читается с диска, пересборка семени (bootstrap regeneration) не нужна,
 кроме упоминания скрипта в `flang/self/bootstrap/compiler.flang`.
 
 Отдельная задача, здесь не решается: вне задач, архива и заметок в дереве
-осталось 61 упоминание снятых proof-ledger.mjs и word-guard.mjs в 32 файлах.
+осталось 56 упоминаний снятых proof-ledger.mjs и word-guard.mjs в 27 файлах.

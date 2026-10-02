@@ -21,8 +21,12 @@
 
 ```
 bootstrap/flang check flang/proof/checker/tests/families/own-type/natural.flang --proof --json > <каталог>/out.json
-python3 scripts/ledgers/proved-share-of-a-file.py flang/proof/checker/tests/families/own-type/natural.flang <каталог>/out.json
+bootstrap/flang io scripts/ledgers/proved-share-of-a-file.fscript --plan Share --trust --timeout 600000 \
+  -- ../../flang/proof/checker/tests/families/own-type/natural.flang ../../<каталог>/out.json
 ```
+
+Счётчик читает пути от своего каталога `scripts/ledgers/`, поэтому оба довода
+даны с `../../`, а `<каталог>` лежит в дереве.
 
 3. Посмотреть строки этой семьи в перечне долей:
 
@@ -37,16 +41,16 @@ $ bootstrap/flang check …/own-type/natural.flang --proof --json > <катал�
                                                                         код 0
   (в отчёте: claims 2, obligations 2, totals.claims.total 2, proved 2,
    оба утверждения — "kind": "утверждение", "of": null, "verdict": "proved-induction")
-$ python3 scripts/ledgers/proved-share-of-a-file.py …/own-type/natural.flang <каталог>/out.json
+$ bootstrap/flang io scripts/ledgers/proved-share-of-a-file.fscript --plan Share --trust -- …/natural.flang …/out.json
 …/own-type/natural.flang: написано 0 (постусловий 0, без приговора 0); приговоров своих 0, ввезённых 2
   доказано 0 (цепочкой 0, индукцией 0), сетка 0, объявлено 0
   два счёта сошлись: доказано 0 из 0 = 0,0 %                           код 0
 $ grep -an 'own-type' scripts/ledgers/proved-share-ledger.txt
-1219:fe1c85c8bcff3ec8d97f6f817fa23f67|2|×|×|×|0|flang/proof/checker/tests/families/own-type/natural.flang
-1220:7872cceb7f330d8be0a2d279eb89fb30|3|×|×|×|0|flang/proof/checker/tests/families/own-type/corrupt/lie-without-theorem.flang
+1228:fe1c85c8bcff3ec8d97f6f817fa23f67|2|×|×|×|0|flang/proof/checker/tests/families/own-type/natural.flang
+1229:7872cceb7f330d8be0a2d279eb89fb30|3|×|×|×|0|flang/proof/checker/tests/families/own-type/corrupt/lie-without-theorem.flang
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 Двоичный свободные утверждения в машинный отчёт уже кладёт. Ошибается счётчик:
 он считает приговор своим, только если поле `of` называет функцию файла, а у
@@ -69,7 +73,7 @@ $ grep -an 'own-type' scripts/ledgers/proved-share-ledger.txt
 ## Когда задача сделана
 
 ```
-$ python3 scripts/ledgers/proved-share-of-a-file.py …/own-type/natural.flang <каталог>/out.json
+$ bootstrap/flang io scripts/ledgers/proved-share-of-a-file.fscript --plan Share --trust -- …/natural.flang …/out.json
 … написано 2 …; приговоров своих 2, ввезённых 0
   два счёта сошлись: доказано 2 из 2 = 100,0 %                         код 0
 ```
@@ -82,8 +86,9 @@ $ python3 scripts/ledgers/proved-share-of-a-file.py …/own-type/natural.flang <
 
 ## Где живёт правка
 
-`scripts/ledgers/proved-share-of-a-file.py`: функции `разобрать_исходник`
-(считать строки `утверждение «…»` написанными) и `счёт` (приговор с
-`"kind": "утверждение"` и пустым `of` относить к файлу по имени утверждения);
+`scripts/ledgers/proved-share-of-a-file.fscript`: функции «Сколько обязательств»
+(считать строки `утверждение «…»` написанными) и «Учесть приговор» с «Ввезённый»
+(приговор с `"kind": "утверждение"` и пустым `of` относить к файлу по имени
+утверждения);
 `scripts/ledgers/proved-share-ledger.txt`. Пересборка семени (bootstrap
 regeneration) не нужна.

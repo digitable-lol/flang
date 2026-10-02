@@ -213,6 +213,7 @@ number	state	title
 5435	done	Filter first is cheaper but the compiler cannot see the descent
 5498	done	The installed binary and a fresh one report the same version
 5501	done	One command bumps the version everywhere
+5502	done	The independent checker has a strict key: an empty ledger is not a proof
 5503	done	Nine tsv files carry a header
 5515	done	String glue in a fold is replaced by one pass
 5519	done	The readme stops promising four things that are false

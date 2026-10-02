@@ -63,4 +63,4 @@ VmHWM  28,7 ГиБ      отношение 1,06
 Связано: [[arena-never-releases]],
 [[arena-makes-memory-not-time-the-limit-of-a-long-computation]],
 [[an-inner-step-limit-multiplies-into-the-outer-budget]],
-[[ветка-если-разворачивается-в-обе-стороны-а-разбор-списка-нет]]
+[[an-if-branch-unfolds-both-ways-a-list-case-does-not]]

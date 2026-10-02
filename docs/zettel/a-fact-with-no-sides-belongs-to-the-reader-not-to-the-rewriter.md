@@ -48,4 +48,4 @@
 
 Связано:
 [[emptiness-guards-are-written-with-pusto-but-the-kernel-reads-only-the-measure]],
-[[ветка-если-разворачивается-в-обе-стороны-а-разбор-списка-нет]]
+[[an-if-branch-unfolds-both-ways-a-list-case-does-not]]

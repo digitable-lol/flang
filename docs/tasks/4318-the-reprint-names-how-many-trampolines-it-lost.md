@@ -43,7 +43,7 @@ $ grep -ac "fl_trampoline\|for (;;)" scripts/seed/new-binary-acceptance.fscript
 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 Хвостовой вызов печатается в C батутом или циклом и стека не занимает. Стоит
 функции получить постусловие, которое считается при работе, — она печатается
@@ -51,9 +51,8 @@ $ grep -ac "fl_trampoline\|for (;;)" scripts/seed/new-binary-acceptance.fscript
 расходовать стек. После пересборки семени (bootstrap regeneration) это видно в
 `bootstrap/compiler_flang.c` обычным `grep`, но план «Accept» в
 `scripts/seed/new-binary-acceptance.fscript` принимает двоичный по шести
-признакам, и этих чисел среди них нет. Однажды так был потерян плоский стек
-главного цикла вычислителя: батутов стало 111 вместо 146, циклов 183 вместо 259,
-и заметили это только по упавшим прогонам.
+приметам (функция «All signs»: Names, Condition, Progress, Rules, Types, Live), и
+этих чисел среди них нет.
 
 ## Что должно быть
 
@@ -90,7 +89,9 @@ bootstrap/flang run-script binary:acceptance
 
 ## Где живёт правка
 
-`scripts/seed/new-binary-acceptance.fscript` (седьмой признак в плане «Accept»),
-его пробы в `scripts/seed/new-binary-acceptance-probe.flang` и объяснение ярлыка
-`двоичный:приёмка` в `ярлыки.flang` («по шести приметам» станет «по семи»).
+`scripts/seed/new-binary-acceptance.fscript` (седьмая примета в «All signs» плана
+«Accept»), его пробы в `scripts/seed/new-binary-acceptance-probe.flang` и строка
+функции «Объявление короткой команды binary:acceptance» в том же файле («по шести
+приметам» станет «по семи»); сама короткая команда объявлена строкой
+`script.binary:acceptance` в `.flangrc`.
 Это скрипты: двоичный читает их с диска, пересборка семени не нужна.

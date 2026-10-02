@@ -17,7 +17,7 @@
 
 ```
 grep -ac 'оценка витков' flang/proof/checker/checker.c flang/self/zapis.flang
-grep -a 'принцип' flang/proof/checker/tests/families/carrier/name-natural.record
+grep -am1 'принцип' flang/proof/checker/tests/families/carrier/name-natural.record
 grep -ac 'оценка витков' flang/proof/checker/tests/families/carrier/name-natural.record
 ```
 
@@ -30,7 +30,7 @@ flang/self/zapis.flang:0
 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 Запись доказательства функции со спуском на единицу несёт узел завершаемости
 (тип, дно, шаг), но числа вызовов в ней нет. Оценка числа шагов многочленом
@@ -52,8 +52,11 @@ ADR-0033 §4–§5 (`docs/adr/0033-termination-is-not-a-bound-on-steps.md`):
    с записью. Читать новый узел она обязана раньше, чем компилятор начнёт его
    печатать.
 
-Секунды в запись не печатаются (это задача 1409). Предел шагов `--max-steps`
-границей не считается: он обрывает счёт, а не доказывает.
+Секунды в запись не печатаются (это задача 1409). Предел шагов границей не
+считается: ключ `--max-steps` и `FL_MAX_STEPS` обрывают счёт, а не доказывают.
+Пределов этих два разных: 4 000 000 000 000, напечатанный в
+`bootstrap/flang_runtime.h`, и 1 000 000 под `#ifndef` в
+`flang/src/emit/c/flang_runtime.h` — умолчание для напечатанного C.
 
 ## Обходной путь
 

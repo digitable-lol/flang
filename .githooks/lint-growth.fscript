@@ -5,15 +5,18 @@
   вариант «Start range»
   вариант «Awaiting base»
   вариант «Awaiting dev»
-  вариант «Awaiting diff»
-  вариант «Measuring» содержит hunks: список «Hunk», remaining: список строки, findings: список строки
+  вариант «Awaiting diff» содержит rev: строка
+  вариант «Measuring» содержит rev: строка, hunks: список «Hunk», rest: список строки, notes: список строки
+  вариант «Comparing» содержит rev: строка, hunks: список «Hunk», rest: список строки, was: строка, notes: список строки
 
 объект «Hunk»
   «path»: строка
   «first»: число
   «count»: число
+  «was»: строка
 
 объект «Reading»
+  «was»: строка
   «path»: строка
   «hunks»: список «Hunk»
 
@@ -63,21 +66,23 @@
       то голова
 
 тотальная функция «Hunk of header»
-  принимает path: строка, header: строка
+  принимает path: строка, was: строка, header: строка
   возвращает «Hunk»
   пример «a hunk of three added lines from line 10»
     дано path равно "a.flang"
+    дано was равно ""
     дано header равно "@@ -9,2 +10,3 @@ модуль"
-    ожидается запись «Hunk» с «path» равным "a.flang" и «first» равным 10 и «count» равным 3
+    ожидается запись «Hunk» с «path» равным "a.flang" и «first» равным 10 и «count» равным 3 и «was» равным ""
   пример «a hunk of one line has no count»
     дано path равно "a.flang"
+    дано was равно ""
     дано header равно "@@ -9 +10 @@"
-    ожидается запись «Hunk» с «path» равным "a.flang" и «first» равным 10 и «count» равным 1
+    ожидается запись «Hunk» с «path» равным "a.flang" и «first» равным 10 и «count» равным 1 и «was» равным ""
   пусть added равно (голова (разделить («Second» от (разделить header по " +")) по " "))
   пусть parts равно (разделить added по ",")
   пусть opening равно («Number» от (голова parts))
   пусть size равно (если (длина parts) равен 2 то («Number» от («Second» от parts)) иначе 1)
-  запись «Hunk» с «path» равным path и «first» равным opening и «count» равным size
+  запись «Hunk» с «path» равным path и «first» равным opening и «count» равным size и «was» равным was
 
 тотальная функция «Path of line»
   принимает path: строка, line: строка
@@ -94,6 +99,25 @@
     то подстрока line с 7 по (длина line)
     иначе path
 
+тотальная функция «Was of line»
+  принимает was: строка, line: строка
+  возвращает строка
+  пример «the old file name is remembered»
+    дано was равно ""
+    дано line равно "--- a/scripts/b.flang"
+    ожидается "scripts/b.flang"
+  пример «a file that is new has no old name»
+    дано was равно "x"
+    дано line равно "--- /dev/null"
+    ожидается ""
+  пример «another line keeps the old name»
+    дано was равно "a.flang"
+    дано line равно "@@ -1 +1 @@"
+    ожидается "a.flang"
+  если line начинается с "--- a/"
+    то подстрока line с 7 по (длина line)
+    иначе (если line начинается с "--- " то "" иначе was)
+
 тотальная функция «Keeps hunk»
   принимает path: строка, line: строка
   возвращает признак
@@ -109,35 +133,36 @@
     дано path равно "a.flang"
     дано line равно "+@@ x"
     ожидается нет
-  пусть sizable равно ((«Hunk of header» от path и line).«count») больше 0
+  пусть sizable равно ((«Hunk of header» от path и "" и line).«count») больше 0
   (line начинается с "@@ ") и притом sizable
 
 тотальная функция «Read diff line»
   принимает reading: «Reading», line: строка
   возвращает «Reading»
   пример «a new file name opens its hunks»
-    дано reading равно запись «Reading» с «path» равным "" и «hunks» равным пустой список
+    дано reading равно запись «Reading» с «was» равным "" и «path» равным "" и «hunks» равным пустой список
     дано line равно "+++ b/scripts/a.flang"
-    ожидается запись «Reading» с «path» равным "scripts/a.flang" и «hunks» равным пустой список
-  пример «a hunk of a source is kept»
-    дано reading равно запись «Reading» с «path» равным "a.flang" и «hunks» равным пустой список
+    ожидается запись «Reading» с «was» равным "" и «path» равным "scripts/a.flang" и «hunks» равным пустой список
+  пример «a hunk of a source is kept with the old name beside the new one»
+    дано reading равно запись «Reading» с «was» равным "b" и «path» равным "a.flang" и «hunks» равным пустой список
     дано line равно "@@ -1,0 +2,4 @@"
-    ожидается запись «Reading» с «path» равным "a.flang" и «hunks» равным [
-      запись «Hunk» с «path» равным "a.flang" и «first» равным 2 и «count» равным 4]
+    ожидается запись «Reading» с «was» равным "b" и «path» равным "a.flang" и «hunks» равным [
+      запись «Hunk» с «path» равным "a.flang" и «first» равным 2 и «count» равным 4 и «was» равным "b"]
+  пусть was равно («Was of line» от (reading.«was») и line)
   пусть path равно («Path of line» от (reading.«path») и line)
-  пусть hunk равно («Hunk of header» от path и line)
+  пусть hunk равно («Hunk of header» от path и was и line)
   пусть kept равно (reading.«hunks»)
   пусть hunks равно (если «Keeps hunk» от path и line то (добавить hunk к kept) иначе kept)
-  запись «Reading» с «path» равным path и «hunks» равным hunks
+  запись «Reading» с «was» равным was и «path» равным path и «hunks» равным hunks
 
 тотальная функция «Hunks of diff»
   принимает diff: строка
   возвращает список «Hunk»
   пример «two files, two hunks»
     дано diff равно "+++ b/a.md\n@@ -0,0 +1 @@\n+x\n+++ b/a.flang\n@@ -3,0 +4,2 @@\n+y\n+z\n"
-    ожидается [запись «Hunk» с «path» равным "a.md" и «first» равным 1 и «count» равным 1,
-      запись «Hunk» с «path» равным "a.flang" и «first» равным 4 и «count» равным 2]
-  пусть start равно (запись «Reading» с «path» равным "" и «hunks» равным пустой список)
+    ожидается [запись «Hunk» с «path» равным "a.md" и «first» равным 1 и «count» равным 1 и «was» равным "",
+      запись «Hunk» с «path» равным "a.flang" и «first» равным 4 и «count» равным 2 и «was» равным ""]
+  пусть start равно (запись «Reading» с «was» равным "" и «path» равным "" и «hunks» равным пустой список)
   пусть lines равно (разделить diff по "\n")
   пусть read равно (свёртка lines начиная с start как reading и line → «Read diff line» от reading и line)
   read.«hunks»
@@ -147,8 +172,8 @@
   возвращает список строки
   пример «a path is named once»
     дано hunks равно [
-      запись «Hunk» с «path» равным "a.flang" и «first» равным 1 и «count» равным 1,
-      запись «Hunk» с «path» равным "a.flang" и «first» равным 9 и «count» равным 2]
+      запись «Hunk» с «path» равным "a.flang" и «first» равным 1 и «count» равным 1 и «was» равным "",
+      запись «Hunk» с «path» равным "a.flang" и «first» равным 9 и «count» равным 2 и «was» равным ""]
     ожидается ["a.flang"]
   свёртка hunks начиная с пустой список как paths и hunk → («Path once» от paths и (hunk.«path»))
 
@@ -221,11 +246,11 @@
   возвращает признак
   пример «an added line inside the function»
     дано span равно [5, 20]
-    дано hunk равно запись «Hunk» с «path» равным "a.flang" и «first» равным 18 и «count» равным 9
+    дано hunk равно запись «Hunk» с «path» равным "a.flang" и «first» равным 18 и «count» равным 9 и «was» равным ""
     ожидается да
   пример «the hunk ends before the function»
     дано span равно [5, 20]
-    дано hunk равно запись «Hunk» с «path» равным "a.flang" и «first» равным 1 и «count» равным 4
+    дано hunk равно запись «Hunk» с «path» равным "a.flang" и «first» равным 1 и «count» равным 4 и «was» равным ""
     ожидается нет
   пусть starts равно (hunk.«first») не больше (элемент 2 в span)
   пусть ends равно (голова span) меньше ((hunk.«first») плюс (hunk.«count»))
@@ -253,11 +278,11 @@
   возвращает признак
   пример «a finding on an added line is new»
     дано cells равно ["length", "a.flang", "7", "130", "100", "", "", ""]
-    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 7 и «count» равным 1]
+    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 7 и «count» равным 1 и «was» равным ""]
     ожидается да
   пример «an unparsed file is never a finding»
     дано cells равно ["unparsed", "a.flang", "", "", "", "", "", ""]
-    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 1 и «count» равным 9]
+    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 1 и «count» равным 9 и «was» равным ""]
     ожидается нет
   пусть span равно («Lines of finding» от cells)
   пусть touched равно не (пусто (отфильтровать hunks где hunk → «Touches» от span и hunk))
@@ -278,21 +303,179 @@
     случай голова и хвост
       то «Second» от голова
 
-тотальная функция «New findings»
-  принимает output: строка, hunks: список «Hunk»
+тотальная функция «Rows of output»
+  принимает output: строка
+  возвращает список (список строки)
+  пример «a row of the linter becomes cells»
+    дано output равно "length\ta.flang\t7\t130\t100\n"
+    ожидается [["length", "a.flang", "7", "130", "100", "", "", ""],
+      ["", "", "", "", "", "", "", ""]]
+  отобразить (разделить output по "\n") как row → «Cells» от row
+
+тотальная функция «Rows of kind»
+  принимает rows: список (список строки), kind: строка
+  возвращает список (список строки)
+  пример «only the rows of that kind stay»
+    дано rows равно [["length", "a.flang", "7", "130", "100", "", "", ""],
+      ["depth", "a.flang", "12", "3", "2", "f", "5", "20"]]
+    дано kind равно "length"
+    ожидается [["length", "a.flang", "7", "130", "100", "", "", ""]]
+  пример «an empty line is of no kind»
+    дано rows равно [["", "", "", "", "", "", "", ""]]
+    дано kind равно "length"
+    ожидается пустой список
+  отфильтровать rows где cells → (голова cells) равен kind
+
+тотальная функция «Larger»
+  принимает most: число, cells: список строки
+  возвращает число
+  пример «the larger measure wins»
+    дано most равно 3
+    дано cells равно ["depth", "a.flang", "40", "5", "2", "g", "38", "44"]
+    ожидается 5
+  пример «the smaller measure loses»
+    дано most равно 7
+    дано cells равно ["depth", "a.flang", "40", "5", "2", "g", "38", "44"]
+    ожидается 7
+  пусть value равно («Number» от (элемент 4 в cells))
+  если value больше most
+    то value
+    иначе most
+
+тотальная функция «Most of rows»
+  принимает rows: список (список строки)
+  возвращает число
+  пример «the largest measure of all rows»
+    дано rows равно [["depth", "a.flang", "12", "3", "2", "f", "5", "20"],
+      ["depth", "a.flang", "40", "5", "2", "g", "38", "44"]]
+    ожидается 5
+  пример «no rows, no measure»
+    дано rows равно пустой список
+    ожидается 0
+  свёртка rows начиная с 0 как most и cells → («Larger» от most и cells)
+
+тотальная функция «Crossed»
+  принимает fresh: строка, before: строка, kind: строка
+  возвращает признак
+  пример «one more long line than before: something crossed the limit»
+    дано fresh равно "length\ta.flang\t7\t130\t100\nlength\ta.flang\t9\t121\t100\n"
+    дано before равно "length\tb.flang\t7\t130\t100\n"
+    дано kind равно "length"
+    ожидается да
+  пример «a line that was long and got longer crossed nothing»
+    дано fresh равно "length\ta.flang\t7\t267\t100\n"
+    дано before равно "length\tb.flang\t7\t265\t100\n"
+    дано kind равно "length"
+    ожидается нет
+  пример «a line that got shorter is never a finding»
+    дано fresh равно "length\ta.flang\t7\t169\t100\n"
+    дано before равно "length\tb.flang\t7\t173\t100\n"
+    дано kind равно "length"
+    ожидается нет
+  пример «a function that got deeper is a finding at the same count»
+    дано fresh равно "depth\ta.flang\t12\t4\t2\tf\t5\t20\n"
+    дано before равно "depth\tb.flang\t12\t3\t2\tf\t5\t20\n"
+    дано kind равно "depth"
+    ожидается да
+  пример «a touched function of the same depth is not a finding»
+    дано fresh равно "depth\ta.flang\t12\t3\t2\tf\t5\t20\n"
+    дано before равно "depth\tb.flang\t12\t3\t2\tf\t5\t20\n"
+    дано kind равно "depth"
+    ожидается нет
+  пусть now равно («Rows of kind» от («Rows of output» от fresh) и kind)
+  пусть was равно («Rows of kind» от («Rows of output» от before) и kind)
+  пусть more равно (длина now) больше (длина was)
+  если kind равен "depth"
+    то more или ((«Most of rows» от now) больше («Most of rows» от was))
+    иначе more
+
+тотальная функция «Touched of kind»
+  принимает output: строка, hunks: список «Hunk», kind: строка
   возвращает список строки
   пример «only what the change touched is named»
     дано output равно "length\ta.flang\t7\t130\t100\nlength\ta.flang\t40\t120\t100\n"
-    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 7 и «count» равным 1]
+    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 7 и «count» равным 1 и «was» равным ""]
+    дано kind равно "length"
     ожидается ["a.flang:7: an added line is 130 characters long, the limit is 100"]
   пример «hunks of another file do not count»
     дано output равно "length\ta.flang\t7\t130\t100\n"
-    дано hunks равно [запись «Hunk» с «path» равным "b.flang" и «first» равным 7 и «count» равным 1]
+    дано hunks равно [запись «Hunk» с «path» равным "b.flang" и «first» равным 7 и «count» равным 1 и «was» равным ""]
+    дано kind равно "length"
     ожидается пустой список
-  пусть rows равно (отобразить (разделить output по "\n") как row → «Cells» от row)
+  пример «another kind does not count»
+    дано output равно "length\ta.flang\t7\t130\t100\n"
+    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 7 и «count» равным 1 и «was» равным ""]
+    дано kind равно "depth"
+    ожидается пустой список
+  пусть rows равно («Rows of output» от output)
   пусть path равно («Path of rows» от rows)
   пусть own равно (отфильтровать hunks где hunk → (hunk.«path») равен path)
-  отобразить (отфильтровать rows где cells → «Is new» от cells и own) как cells → «Said» от cells
+  пусть mine равно («Rows of kind» от rows и kind)
+  отобразить (отфильтровать mine где cells → «Is new» от cells и own) как cells → «Said» от cells
+
+тотальная функция «Marked»
+  принимает text: строка
+  возвращает строка
+  пример «old debt is marked with a tab, which no finding carries»
+    дано text равно "a.flang:7: too long"
+    ожидается "\ta.flang:7: too long"
+  соединить ["\t", text] по ""
+
+тотальная функция «Is debt»
+  принимает line: строка
+  возвращает признак
+  пример «a marked line is debt»
+    дано line равно "\ta.flang:7: too long"
+    ожидается да
+  пример «a bare line is a finding»
+    дано line равно "a.flang:7: too long"
+    ожидается нет
+  line начинается с "\t"
+
+тотальная функция «Bare»
+  принимает line: строка
+  возвращает строка
+  пример «the mark comes off»
+    дано line равно "\ta.flang:7: too long"
+    ожидается "a.flang:7: too long"
+  пример «a bare line stays itself»
+    дано line равно "a.flang:7: too long"
+    ожидается "a.flang:7: too long"
+  если «Is debt» от line
+    то подстрока line с 2 по (длина line)
+    иначе line
+
+тотальная функция «Of kind»
+  принимает fresh: строка, before: строка, hunks: список «Hunk», kind: строка
+  возвращает список строки
+  пример «what crossed the limit is a bare finding»
+    дано fresh равно "length\ta.flang\t7\t130\t100\n"
+    дано before равно ""
+    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 7 и «count» равным 1 и «was» равным ""]
+    дано kind равно "length"
+    ожидается ["a.flang:7: an added line is 130 characters long, the limit is 100"]
+  пример «what was already over the limit is marked as debt»
+    дано fresh равно "length\ta.flang\t7\t130\t100\n"
+    дано before равно "length\tb.flang\t7\t128\t100\n"
+    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 7 и «count» равным 1 и «was» равным ""]
+    дано kind равно "length"
+    ожидается ["\ta.flang:7: an added line is 130 characters long, the limit is 100"]
+  пусть touched равно («Touched of kind» от fresh и hunks и kind)
+  если «Crossed» от fresh и before и kind
+    то touched
+    иначе отобразить touched как line → «Marked» от line
+
+тотальная функция «Of file»
+  принимает fresh: строка, before: строка, hunks: список «Hunk»
+  возвращает список строки
+  пример «both kinds are judged in one pass»
+    дано fresh равно "length\ta.flang\t7\t130\t100\n"
+    дано before равно ""
+    дано hunks равно [запись «Hunk» с «path» равным "a.flang" и «first» равным 7 и «count» равным 1 и «was» равным ""]
+    ожидается ["a.flang:7: an added line is 130 characters long, the limit is 100"]
+  пусть long равно («Of kind» от fresh и before и hunks и "length")
+  пусть deep равно («Of kind» от fresh и before и hunks и "depth")
+  «Joined» от long и deep
 
 тотальная функция «Process»
   принимает program: строка, arguments: список строки
@@ -306,15 +489,16 @@
 тотальная функция «Diff script»
   возвращает строка
   пример «only file names and hunk headers leave the shell»
-    ожидается "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^+++ b\\//p' -e '/^@@ /p'"
-  "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^+++ b\\//p' -e '/^@@ /p'"
+    ожидается "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^--- a\\//p' -e '/^+++ b\\//p' -e '/^@@ /p'"
+  "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^--- a\\//p' -e '/^+++ b\\//p' -e '/^@@ /p'"
 
 тотальная функция «Diff arguments»
   принимает range: строка
   возвращает список строки
   пример «the index is compared without context lines»
     дано range равно "--cached"
-    ожидается ["-c", "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^+++ b\\//p' -e '/^@@ /p'",
+    ожидается ["-c",
+      "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^--- a\\//p' -e '/^+++ b\\//p' -e '/^@@ /p'",
       "diff", "-c", "core.quotepath=off", "diff", "--no-color", "-U0",
       "--diff-filter=d", "--cached"]
   ["-c", («Diff script»), "diff", "-c", "core.quotepath=off", "diff", "--no-color",
@@ -326,7 +510,8 @@
   пример «the shell asks git for the added lines of the index»
     дано range равно "--cached"
     ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным [
-      "-c", "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^+++ b\\//p' -e '/^@@ /p'",
+      "-c",
+      "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^--- a\\//p' -e '/^+++ b\\//p' -e '/^@@ /p'",
       "diff", "-c", "core.quotepath=off", "diff", "--no-color", "-U0",
       "--diff-filter=d", "--cached"]
   «Process» от "sh" и («Diff arguments» от range)
@@ -348,21 +533,57 @@
     ожидается ["-c", "cd .. && exec bootstrap/flang lint --tsv --warn \"$@\"", "lint", "a.flang"]
   ["-c", "cd .. && exec bootstrap/flang lint --tsv --warn \"$@\"", "lint", path]
 
+тотальная функция «Before script»
+  возвращает строка
+  "cd ..; T=${FLANG_TMP:-/tmp}/o.${2##*/}; git show $1 >$T 2>&-; exec bootstrap/flang lint --tsv --warn $T"
+
+тотальная функция «Before arguments»
+  принимает rev: строка, path: строка
+  возвращает список строки
+  ["-c", («Before script»), "before", (соединить [rev, ":", path] по ""), path]
+
+тотальная функция «Was of»
+  принимает hunks: список «Hunk», path: строка
+  возвращает строка
+  пример «the old name of a renamed file is found by its new name»
+    дано hunks равно [запись «Hunk» с «path» равным "b" и «first» равным 1 и «count» равным 1 и «was» равным "a"]
+    дано path равно "b"
+    ожидается "a"
+  пример «a file nobody renamed answers its own name»
+    дано hunks равно пустой список
+    дано path равно "b"
+    ожидается "b"
+  пусть own равно (отфильтровать hunks где hunk → (hunk.«path») равен path)
+  разбор own
+    случай пусто
+      то path
+    случай голова и хвост
+      то (если ((голова.«was») равен "") то path иначе (голова.«was»))
+
+тотальная функция «Measuring step»
+  принимает rev: строка, hunks: список «Hunk», rest: список строки, notes: список строки
+  возвращает «Step»
+  вариант «Measuring» с rev равным rev и hunks равным hunks и rest равным rest и notes равным notes
+
+тотальная функция «Comparing step»
+  принимает rev: строка, hunks: список «Hunk», rest: список строки, was: строка, notes: список строки
+  возвращает «Step»
+  вариант «Comparing» с rev равным rev и hunks равным hunks и rest равным rest и was равным was и notes равным notes
+
 тотальная функция «Measure next»
-  принимает hunks: список «Hunk», remaining: список строки, findings: список строки
+  принимает rev: строка, hunks: список «Hunk», rest: список строки, notes: список строки
   возвращает «Продолжение»
   пример «nothing left to measure gives the verdict»
+    дано rev равно "origin/dev"
     дано hunks равно пустой список
-    дано remaining равно пустой список
-    дано findings равно пустой список
-    ожидается вариант «Конец работы» с значение равным "no added line and no touched function over the limits"
-  пусть rest равно «Rest of» от remaining
-  пусть waiting равно (вариант «Measuring» с hunks равным hunks и remaining равным rest и findings равным findings)
-  разбор remaining
+    дано rest равно пустой список
+    дано notes равно пустой список
+    ожидается вариант «Конец работы» с значение равным "no line crossed the limits and no touched function got deeper"
+  разбор rest
     случай пусто
-      то «Verdict» от findings
+      то «Verdict» от notes
     случай голова и хвост
-      то «Run» от («Process» от "sh" и («Lint arguments» от голова)) и waiting
+      то «Run» от («Process» от "sh" и («Lint arguments» от голова)) и («Measuring step» от rev и hunks и rest и notes)
 
 тотальная функция «Rest of»
   принимает paths: список строки
@@ -380,31 +601,50 @@
       то хвост
 
 тотальная функция «Measure»
-  принимает hunks: список «Hunk»
+  принимает rev: строка, hunks: список «Hunk»
   возвращает «Продолжение»
   пример «nothing to measure»
+    дано rev равно "origin/dev"
     дано hunks равно пустой список
     ожидается вариант «Конец работы» с значение равным "no added lines"
   разбор hunks
     случай пусто
       то вариант «Конец работы» с значение равным "no added lines"
     случай голова и хвост
-      то «Measure next» от hunks и («Paths of hunks» от hunks) и пустой список
+      то «Measure next» от rev и hunks и («Paths of hunks» от hunks) и пустой список
+
+тотальная функция «Debt note»
+  принимает debt: список строки
+  возвращает строка
+  пример «no old debt, no note»
+    дано debt равно пустой список
+    ожидается ""
+  пример «old debt is counted and named, and it does not redden»
+    дано debt равно ["a.flang:7: too long"]
+    ожидается "\ntouched and still over the limits: 1 — old debt, not this change:\n  a.flang:7: too long"
+  если пусто debt
+    то ""
+    иначе соединить ["\ntouched and still over the limits: ", (к строке (длина debt)),
+      " — old debt, not this change:\n  ", (соединить debt по "\n  ")] по ""
 
 тотальная функция «Verdict»
-  принимает findings: список строки
+  принимает notes: список строки
   возвращает «Продолжение»
-  пример «nothing new over the limits»
-    дано findings равно пустой список
-    ожидается вариант «Конец работы» с значение равным "no added line and no touched function over the limits"
+  пример «nothing crossed the limits»
+    дано notes равно пустой список
+    ожидается вариант «Конец работы» с значение равным "no line crossed the limits and no touched function got deeper"
   пример «a finding refuses the change»
-    дано findings равно ["a.flang:7: too long"]
+    дано notes равно ["a.flang:7: too long"]
     ожидается вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным "a.flang:7: too long"
-  разбор findings
+  пусть found равно (отфильтровать notes где line → не («Is debt» от line))
+  пусть debt равно (отобразить (отфильтровать notes где line → «Is debt» от line) как line → «Bare» от line)
+  разбор found
     случай пусто
-      то вариант «Конец работы» с значение равным "no added line and no touched function over the limits"
+      то вариант «Конец работы» с значение равным (соединить [
+        "no line crossed the limits and no touched function got deeper", («Debt note» от debt)] по "")
     случай голова и хвост
-      то вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным (соединить findings по "\n")
+      то вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным (соединить [
+        (соединить found по "\n"), («Debt note» от debt)] по "")
 
 тотальная функция «Refusal»
   принимает words: список строки
@@ -433,18 +673,20 @@
       то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным complaint
 
 тотальная функция «After diff»
-  принимает отклик: «Отклик»
+  принимает rev: строка, отклик: «Отклик»
   возвращает «Продолжение»
   пример «git refused»
+    дано rev равно "origin/dev"
     дано отклик равно вариант «Процесс завершён» с код равным 128 и вывод равным "" и ошибки равным "bad"
     ожидается вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным "git diff failed: bad"
   пример «an empty diff passes»
+    дано rev равно "origin/dev"
     дано отклик равно вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""
     ожидается вариант «Конец работы» с значение равным "no added lines"
   разбор отклик
     случай вариант «Процесс завершён» с код как код и вывод как вывод и ошибки как ошибки
       то если код равен 0
-        то «Measure» от («Hunks of diff» от вывод)
+        то «Measure» от rev и («Hunks of diff» от вывод)
         иначе «Refusal» от ["git diff failed: ", ошибки]
     случай любое
       то «Process trouble» от "git" и отклик
@@ -458,25 +700,42 @@
     ожидается ["a", "b", "c"]
   свёртка tail начиная с head как gathered и line → добавить line к gathered
 
-тотальная функция «After findings»
-  принимает hunks: список «Hunk», remaining: список строки, findings: список строки, отклик: «Отклик»
+тотальная функция «After fresh»
+  принимает rev: строка, hunks: список «Hunk», rest: список строки, notes: список строки, отклик: «Отклик»
   возвращает «Продолжение»
   пример «the linter could not run»
+    дано rev равно "origin/dev"
     дано hunks равно пустой список
-    дано remaining равно пустой список
-    дано findings равно пустой список
+    дано rest равно ["a.flang"]
+    дано notes равно пустой список
     дано отклик равно вариант «Процесс завершён» с код равным 2 и вывод равным "" и ошибки равным "bad key"
     ожидается вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным "flang lint failed: bad key"
-  пример «silence of the linter passes»
-    дано hunks равно пустой список
-    дано remaining равно пустой список
-    дано findings равно пустой список
-    дано отклик равно вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""
-    ожидается вариант «Конец работы» с значение равным "no added line and no touched function over the limits"
+  пусть was равно («Was of» от hunks и («First of» от rest))
+  пусть order равно («Process» от "sh" и («Before arguments» от rev и was))
   разбор отклик
     случай вариант «Процесс завершён» с код как код и вывод как вывод и ошибки как ошибки
       то если (код равен 0) или (код равен 3)
-        то «Measure next» от hunks и remaining и («Joined» от findings и («New findings» от вывод и hunks))
+        то «Run» от order и («Comparing step» от rev и hunks и rest и вывод и notes)
+        иначе «Refusal» от ["flang lint failed: ", ошибки]
+    случай любое
+      то «Process trouble» от "flang lint" и отклик
+
+тотальная функция «After before»
+  принимает rev: строка, hunks: список «Hunk», rest: список строки, was: строка, notes: список строки, отклик: «Отклик»
+  возвращает «Продолжение»
+  пример «the old side could not be measured»
+    дано rev равно "origin/dev"
+    дано hunks равно пустой список
+    дано rest равно ["a.flang"]
+    дано was равно ""
+    дано notes равно пустой список
+    дано отклик равно вариант «Процесс завершён» с код равным 2 и вывод равным "" и ошибки равным "bad key"
+    ожидается вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным "flang lint failed: bad key"
+  пусть left равно («Rest of» от rest)
+  разбор отклик
+    случай вариант «Процесс завершён» с код как код и вывод как вывод и ошибки как ошибки
+      то если (код равен 0) или (код равен 3)
+        то «Measure next» от rev и hunks и left и («Joined» от notes и («Of file» от was и вывод и hunks))
         иначе «Refusal» от ["flang lint failed: ", ошибки]
     случай любое
       то «Process trouble» от "flang lint" и отклик
@@ -487,9 +746,10 @@
   пример «no base»
     дано base равно ""
     ожидается вариант «Провал» с код равным "FLANG_LINT_GROWTH" и сообщение равным "no base: no remote dev branch"
+  пусть order равно («Git diff» от (соединить [base, "...HEAD"] по ""))
   если base равен ""
     то «Refusal» от ["no base: no remote dev branch"]
-    иначе «Run» от («Git diff» от (соединить [base, "...HEAD"] по "")) и (вариант «Awaiting diff»)
+    иначе «Run» от order и (вариант «Awaiting diff» с rev равным base)
 
 тотальная функция «Default base»
   возвращает «Поручение»
@@ -545,17 +805,19 @@
     ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting base»)
   разбор step
     случай вариант «Start staged»
-      то «Run» от («Git diff» от "--cached") и (вариант «Awaiting diff»)
+      то «Run» от («Git diff» от "--cached") и (вариант «Awaiting diff» с rev равным "HEAD")
     случай вариант «Start range»
       то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting base»)
     случай вариант «Awaiting base»
       то «After base» от отклик
     случай вариант «Awaiting dev»
       то «After default base» от отклик
-    случай вариант «Awaiting diff»
-      то «After diff» от отклик
-    случай вариант «Measuring» с hunks как hunks и remaining как remaining и findings как findings
-      то «After findings» от hunks и remaining и findings и отклик
+    случай вариант «Awaiting diff» с rev как rev
+      то «After diff» от rev и отклик
+    случай вариант «Measuring» с rev как rev и hunks как hunks и rest как rest и notes как notes
+      то «After fresh» от rev и hunks и rest и notes и отклик
+    случай вариант «Comparing» с rev как rev и hunks как hunks и rest как rest и was как was и notes как notes
+      то «After before» от rev и hunks и rest и was и notes и отклик
 
 план «Staged»
   состояние «Step»

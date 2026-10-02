@@ -5,3 +5,5 @@ verified-in-vain	open
 theorem-hypothesis-not-discharged	open
 loop-through-function-value	open
 restricted-postcondition-cited-undischarged	open
+checker-refutes-evaluation-of-an-open-term	open
+checker-refutes-a-sum-bottom-past-the-exact-ceiling	open

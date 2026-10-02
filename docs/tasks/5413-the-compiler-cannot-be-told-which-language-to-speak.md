@@ -16,8 +16,9 @@
 Правила файла настроек и старшинство источников записаны в
 `docs/adr/0024-the-settings-file-and-the-language-of-output.md` и
 `docs/guide/settings.ru.md`, разбор написан в `scripts/settings-file.flang` и
-`scripts/flangrc.fscript`. Сам компилятор читает из `.flangrc` один ключ —
-`unproven`.
+`scripts/flangrc.fscript`. Сам компилятор читает из `.flangrc` пять ключей —
+`unproven` с устаревшим близнецом `недоказанное`, `lint`, `max-line-length`
+и `max-conditional-depth`; ключа языка среди них нет.
 
 ## Шаги воспроизведения
 
@@ -42,7 +43,7 @@ bootstrap/flang_repl.c:0
 Все три вызова `--help` отвечают кодом 0 и одним и тем же текстом; о том, что
 ключ языка не понят, не сказано ничего.
 
-Версия: flang 0.7.23, 30 сентября 2026.
+Версия: flang 0.7.23, 2 октября 2026.
 
 ## Что должно быть
 

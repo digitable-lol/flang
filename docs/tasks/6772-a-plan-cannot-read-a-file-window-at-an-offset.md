@@ -64,7 +64,7 @@ window.flang: не проверено — замечаний 2                  
 В словаре 23 поручения и 21 отклик; оба файловых чтения отдают файл целиком
 одним откликом.
 
-Версия: flang 0.7.23, 30 сентября 2026.
+Версия: flang 0.7.23, 2 октября 2026.
 
 ## Что должно быть
 
@@ -98,9 +98,8 @@ window.flang: не проверено — замечаний 2                  
    длин окон равна размеру файла, пик памяти на файле в десять раз больше тот
    же.
 3. `смещение` равно -1 — отклик «Сбой» с названным кодом.
-4. `scripts/guards/io-dictionary-copies-guard.fscript` и
-   `scripts/guards/tab-host-guard.fscript` зелены с числами «поручений 24,
-   откликов 22».
+4. `scripts/guards/io-dictionary-copies-guard.fscript` зелен с числами
+   «поручений 24, откликов 22».
 
 ## Где живёт правка
 
@@ -112,7 +111,8 @@ window.flang: не проверено — замечаний 2                  
 Исполнить — без второй перепечатки:
 
 - `flang/src/emit/c/flang_repl.c`, функция `io_perform`, ветка рядом с
-  «Прочитать октеты из файла»; доезжает до двоичного ярлыком `семя:освежить`;
+  «Прочитать октеты из файла»; доезжает до двоичного короткой командой
+  `seed:refresh`;
 - `flang/src/emit/c/flang_conc.c`, функция `fl_conc_perform`;
 - `flang/src/emit/js/flang_io.js`, `flang/src/emit/js/flang_host_node.js`,
   `flang/src/emit/js/flang_host_browser.js`, `flang/src/emit/python/flang_io.py`;

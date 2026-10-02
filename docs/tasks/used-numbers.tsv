@@ -34,6 +34,7 @@ number	state	title
 0034	done	Seed discipline is enforced
 0035	done	Hashmap proved so the dictionary gets fast
 0036	done	Packaging metadata is printed not kept
+0037	done	The english pair check was limited to docs site so other pages went unchecked
 0038	done	Task numbers collide under a dozen agents
 0039	done	Logical fallacy detector for specs
 0040	rejected	Reprint reuses what did not change

@@ -33,7 +33,7 @@ flang/proof/checker/checker.c
 flang/proof/lean/RecordReader.lean                                код 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026, ствол `09bc6880`.
 
 Независимая проверяющая программа (proof checker) одна —
 `flang/proof/checker/checker.c`, её собирает один вызов `cc`. Две другие
@@ -52,14 +52,14 @@ flang/proof/lean/RecordReader.lean                                код 0
 ## Что должно быть
 
 Две реализации, написанные врозь по одному описанию формата записи
-(`flang/proof/lean/Record.lean`, `flang/proof/SPEC.md`), согласны на всём
+(`flang/proof/lean/Record.lean`, `docs/flang/proof/SPEC.md`), согласны на всём
 наборе проб. Вторая не разделяет с первой ни языка (не C и не flang), ни
 средства сборки и не заимствует её код.
 
 ## Обходной путь
 
 Обходного пути нет. Частичная замена — сличение вердиктов C и Lean по блокам
-«вывод» в `flang/proof/lean/run.sh`.
+«вывод» в `flang/proof/lean/run.fscript`.
 
 ## Когда задача сделана
 
@@ -76,10 +76,13 @@ flang/proof/lean/RecordReader.lean                                код 0
 ## Где живёт правка
 
 Новый каталог рядом с `flang/proof/checker`, скрипт сличения рядом с
-`flang/proof/check.sh`, вызов в `.github/workflows`. Пересборка семени
+`flang/proof/check.fscript`, вызов в `.github/workflows`. Пересборка семени
 (bootstrap regeneration) не нужна.
 
-Потолок размера `flang/proof/checker/checker.c` уже стоит и проверяется
-(`sh flang/proof/tables-guard.sh --сторож С-6`, потолок записан в
-`flang/proof/checker/ratchet.txt`); описание формата записи вынесено в
+Потолок размера `flang/proof/checker/checker.c` уже стоит, но зовётся только руками:
+`bootstrap/flang io flang/proof/tables-guard.fscript --max-steps 4000000000 -- --guard С-6`
+отвечает кодом 0 и «checker.c: 8127 строк кода, до потолка 0 (потолок 8127); примитивов 15
+(названо 15)»; сами числа лежат в `flang/proof/ratchets.txt` (`checker-code-lines`,
+`checker-primitives`). Ни `.flangrc`, ни работы в `.github/workflows`, ни хуки этого сторожа не
+зовут, и опись сторожей без зова его не числит. Описание формата записи вынесено в
 `flang/proof/lean/Record.lean`. В этой задаче их править не нужно.

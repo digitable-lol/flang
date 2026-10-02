@@ -596,6 +596,7 @@
 - [Ложное обещание о длине прячется в отчёте под видом недоказанного](guards-a-false-length-promise-hides-as-undeclared.md)
 - [Запас шагов — общий кошелёк замыкания, а не свойство файла](guards-step-budget-is-a-shared-purse.md)
 - [Сторож, который поймал бы отставание, сам не заводился — и отставание накопилось](guards-the-guard-that-would-have-caught-it-was-itself-red.md)
+- [Греп по словам выдал отклонённый пуш за зелёный: крючок печатает заглавными](a-grep-on-words-let-a-rejected-push-look-green.md)
 - [Чистота обработчика превращает восстановление из журнала в одну свёртку](handler-purity-turns-journal-recovery-into-one-fold.md)
 - [Предусловие принадлежит функции границы, а не внутренней: ветка «если» его не снимает](host-boundary-a-precondition-belongs-to-the-boundary-function-not-the-inner-one.md)
 - [У границы слоёв два стыка, а не один: словарь поручений и рукописный хозяин над напечатанным кодом](host-boundary-the-second-junction-is-the-printed-one-not-the-order-dictionary.md)

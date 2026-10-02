@@ -1,0 +1,14 @@
+cause	violation	task
+theorem-hypothesis/drop-precondition/false-proof	theorem-hypothesis-not-discharged	5311
+theorem-hypothesis/weaken-precondition/false-proof	theorem-hypothesis-not-discharged	5311
+theorem-hypothesis/strengthen-hypothesis/false-proof	theorem-hypothesis-not-discharged	5311
+logic/premises-only-in-theorem/false-proof	theorem-hypothesis-not-discharged	5311
+function-value/loop-through-value/accepted-loop	loop-through-function-value	3870
+function-value/loop-through-partial-application/accepted-loop	loop-through-function-value	3870
+function-value/loop-through-two-functions/accepted-loop	loop-through-function-value	3870
+function-value/loop-through-list/accepted-loop	loop-through-function-value	3870
+restricted-postcondition/drop-precondition/false-proof	restricted-postcondition-cited-undischarged	4573
+restricted-postcondition/weaken-precondition/false-proof	restricted-postcondition-cited-undischarged	4573
+restricted-postcondition/drop-precondition-without-theorem/false-proof	restricted-postcondition-cited-undischarged	4573
+checker-calls-it-a-lie/НЕ СОШЛОСЬ: утверждение «…», сведение: вычислить «…»: терм не замкнут (свободное имя или неарифметический конструктор)	checker-refutes-evaluation-of-an-open-term	4850
+checker-calls-it-a-lie/НЕ СОШЛОСЬ: утверждение «…», вывод: шаг N: Д3	checker-refutes-a-sum-bottom-past-the-exact-ceiling	9674

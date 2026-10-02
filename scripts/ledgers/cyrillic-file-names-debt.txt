@@ -1,56 +1,29 @@
-docs/benchmarks/verdict-cache/второе-ядро.sh
-docs/benchmarks/verdict-cache/кеш.вставка
-docs/benchmarks/verdict-cache/проба.flang
-docs/benchmarks/verdict-cache/пробы.sh
-docs/benchmarks/verdict-cache/три-печати.sh
-docs/examples/io/пакет.bin
-docs/examples/io/фильтр-пакетов.flang
-docs/examples/pythagoras/квадрат-гипотенузы.flang
-docs/examples/pythagoras/формула-евклида.flang
-docs/examples/применение/итог-заказа.flang
-docs/examples/применение/место-слева-вызов.flang
-docs/examples/применение/место-слева-по-ключу.flang
-docs/examples/применение/место-слева-с-отрезком.flang
-docs/examples/применение/место-слева.flang
-docs/examples/применение/скидка-на-вызове.flang
-docs/examples/применение/скидка.flang
-docs/tutor/01-function.урок
-docs/tutor/02-two-functions.урок
-docs/tutor/03-example.урок
-docs/tutor/04-fold.урок
-docs/tutor/05-list-case.урок
-docs/tutor/06-type.урок
-docs/tutor/07-record.урок
-docs/tutor/08-string.урок
-docs/tutor/09-promise.урок
-docs/tutor/10-require.урок
-docs/tutor/11-theorem.урок
-docs/tutor/12-run-emit.урок
-docs/zettel/ветка-если-разворачивается-в-обе-стороны-а-разбор-списка-нет.md
-docs/zettel/компилятор-принимает-имя-в-ёлочках-в-прямых-кавычках-и-без-кавычек-одинаково.md
-docs/zettel/обещание-с-условием-по-варианту-разворачивает-ветвь-разбора.md
-docs/zettel/оценка-витков-и-счётчик-шагов-рантайма-считают-разное-под-одним-словом.md
-docs/zettel/подделка-и-подделочная-запись-это-разные-вещи.md
-docs/zettel/постусловие-о-сбое-доказуемо-для-конкретного-отклика-и-не-пишется-для-всякого.md
-docs/спецификации/слой-отказов.flang
-docs/спецификации/чего-не-хватает-fts.md
-docs/спецификации/язык-доказательств.md
-flang/scripts/жаргон-образцы.flang
-flang/scripts/породить-атомы.fscript
-flang/stdlib/образцы.flang
-flang/test/fixtures/fts-naslediye/скидки-в-подписки.fts
-flang/test/fixtures/fts/tools/ftspec/examples/shop/memory/001-предел-скидки.fts
-flang/test/fixtures/fts/tools/ftspec/examples/stale/memory/002-решение-о-возвратах.fts
-flang/test/ведомость-self.txt
-flang/test/ведомость-примеров.txt
-flang/test/ведомость.txt
-flang/test/владение-состоянием.flang
-flang/test/владение-состоянием.sh
-flang/test/встроенные-формы.flang
-flang/test/жаргон.flang
-flang/test/обход-self.sh
-flang/test/обход-примеров.sh
+# ОСТАТОК ДОЛГА — ПЯТЬ ЗАПИСЕЙ, И У КАЖДОЙ НАЗВАНА ПРИЧИНА.
+#
+# Задача 1419 переименовала 51 имя из 56 и все кириллические каталоги. Что
+# осталось — осталось не по забывчивости, и имя, которое файл получит, стоит
+# рядом с причиной. Строка с решёткой записью не считается.
+#
+# ── ЧЕТЫРЕ ИМЕНИ ЖДУТ ПЕРЕПЕЧАТКИ СЕМЕНИ ────────────────────────────────────
+# Переименовать их значит править flang/self или рантайм, уезжающий в семя
+# ДОСЛОВНО, а семя 0.7.24 печатается прямо сейчас: такая правка сделала бы
+# напечатанное протухшим раньше, чем печать кончится. Переезд — после неё.
+#
+# → walk.sh. Назван в примечании flang/self/processes.flang.
 flang/test/обход.sh
-flang/test/прогонщик-корпуса.flang
-scripts/guards/сторож-дарвина.fscript
+# → walk-examples.sh. Назван дважды в flang/self/bootstrap/corpus.flang.
+flang/test/обход-примеров.sh
+# → walk-self.sh. Сам по себе переименовывается — его не называет ни flang/self,
+# ни семя. Держится здесь, чтобы семья из трёх обходчиков переехала разом: один
+# переименованный из трёх читается хуже, чем три кириллических.
+flang/test/обход-self.sh
+# → builtin-forms.flang. Назван в примечании flang/src/emit/c/flang_repl.c, а
+# тот уезжает в bootstrap/flang_repl.c дословно.
+flang/test/встроенные-формы.flang
+#
+# ── ОБРАЗЕЦ КИРИЛЛИЧЕСКОГО РАСШИРЕНИЯ ПОД flang/proof ───────────────────────
+# Под proof/ кириллические имена — норма, и правило 1419 туда не идёт. Этот
+# файл стоит в ведомости нарочно: он единственный образец кириллического
+# РАСШИРЕНИЯ, и на нём видно, что сторож смотрит на расширение, а не только на
+# слова имени. Переименованию не подлежит.
 flang/proof/checker/tests/families/run-induction/letters.фп

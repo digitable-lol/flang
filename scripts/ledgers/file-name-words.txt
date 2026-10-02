@@ -1925,3 +1925,12 @@ xanthippe
 translator
 applied
 way
+ownership
+subscriptions
+refund
+samples
+generate
+atom
+unfolds
+alike
+conditioned

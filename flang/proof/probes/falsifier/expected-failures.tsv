@@ -13,3 +13,5 @@ restricted-postcondition/drop-precondition-without-theorem/false-proof	restricte
 checker-calls-it-a-lie/НЕ СОШЛОСЬ: утверждение «…», сведение: вычислить «…»: терм не замкнут (свободное имя или неарифметический конструктор)	checker-refutes-evaluation-of-an-open-term	4850
 checker-calls-it-a-lie/НЕ СОШЛОСЬ: утверждение «…», вывод: шаг N: Д3	checker-refutes-a-sum-bottom-past-the-exact-ceiling	9674
 checker-calls-it-a-lie/НЕ СОШЛОСЬ: утверждение «…», сведение: вычислить: в цели «…» нет терма «…»	checker-refutes-evaluation-of-an-open-term	4850
+checker-calls-it-a-lie/НЕ СОШЛОСЬ: теорема «…»: гипотеза ⟨( н ) меньше ( N )⟩ строки N не является допущением утверждения	theorem-hypothesis-not-discharged	5311
+checker-calls-it-a-lie/НЕ СОШЛОСЬ: теорема «…»: гипотеза ⟨предмет.«…» и притом предмет.«…»⟩ строки N не является допущением утверждения	theorem-hypothesis-not-discharged	5311

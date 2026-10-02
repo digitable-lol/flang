@@ -49,7 +49,7 @@ $ grep -c ' = node ' .flangrc
 | `flang/scripts/count-guard.mjs` | ярлык `counts:check` | `flang/scripts/count-guard.fscript`, правила перенесены не все |
 | `flang/scripts/name-guard.mjs` | ярлык `names:check` | `flang/scripts/name-guard.fscript` |
 | `flang/scripts/word-occupancy.mjs` | ярлык `word:occupancy` | `flang/scripts/word-occupancy.fscript`, его и зовёт `scripts/guards/occupancy-check.fscript` |
-| `flang/scripts/link-collision-guard.mjs` | ярлыки `link-collisions:check`, `link-collisions:corrupt`, `.github/workflows/binary.yml`, `scripts/targets/identical-declarations.sh` | `flang/scripts/link-collision-tree.fscript` — задача 2261 |
+| `flang/scripts/link-collision-guard.mjs` | ярлыки `link-collisions:check`, `link-collisions:corrupt`, `.github/workflows/binary.yml`, `scripts/targets/identical-declarations.sh` | `flang/scripts/link-collision-tree.fscript` — задача 7192 |
 | `scripts/site/build-changelog.mjs` | ввозит `scripts/site/build-changelog-page.mjs` | `scripts/site/build-changelog.fscript`, ярлыки `changelog:build` и `changelog:check` уже переключены |
 | `scripts/site/build-changelog-page.mjs` | ярлыки `changelog:page`, `changelog:page:check`, `.github/workflows/pages.yml` | `scripts/site/build-changelog-page.fscript` |
 | `flang/test/nadzor-uzla.test.mjs`, `flang/test/planirovshchik-celi.test.mjs`, `flang/test/svyaz-celi.test.mjs` | ярлык `tests`, `flang/scripts/guards-start.fscript` (обходит все `*.test.mjs`, сегодня их в дереве ровно эти три) | `flang/scripts/supervisor-across-targets.fscript`, `flang/scripts/scheduler-across-targets.fscript`, `flang/scripts/link-across-targets.fscript` |

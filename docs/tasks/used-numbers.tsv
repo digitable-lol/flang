@@ -121,6 +121,7 @@ number	state	title
 2213	done	The CLI help leads with the Cyrillic half of every key pair
 2226	done	The dictionary for list substitution does not generalize across twins
 2256	dropped	The checker reads the source differently from the language
+2261	dropped	The collision recount gets the memory it was measured to need
 2262	done	Chunked body is collected into a list not glued per chunk
 2335	done	The release recommendation is either carried out or visible
 2390	done	The kernel judges its own file and the ledger cannot fix that

@@ -25,7 +25,8 @@ bootstrap/flang install
 
 ```
 ls flang/stdlib/registry.flang scripts/registry-tool.fscript scripts/registry-example
-grep -an '^план «' scripts/registry-tool.fscript
+grep -c '^план «' scripts/registry-tool.fscript
+grep -c 'install' .flangrc
 ```
 
 ## Что происходит
@@ -33,22 +34,27 @@ grep -an '^план «' scripts/registry-tool.fscript
 ```
 $ bootstrap/flang install
 flang: неизвестная команда «install». «flang --help» — что умеет бинарник.   код 2
-$ grep -an '^план «' scripts/registry-tool.fscript
-195:план «Найти»
-263:план «Разрешить»
-342:план «Сверить отпечатки»
-470:план «Собрать реестр»
+$ grep -c '^план «' scripts/registry-tool.fscript
+4                                                                            код 0
+$ grep -c 'install' .flangrc
+1                                                                            код 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 Части есть по отдельности: разбор версий и диапазонов с транзитивным
 разрешением (`flang/stdlib/registry.flang`), четыре плана над реестром
-(`scripts/registry-tool.fscript`), пример реестра с пакетами
-(`scripts/registry-example/`), поручение «Запросить» для https
-(`docs/examples/io/https-request.flang`), встроенная форма `хеш256`, команды
-`flang lock` и `flang package`. Плана, который проходит от перечня нужд проекта
-до записанного замка, нет; файла с нуждами проекта тоже нет.
+(`scripts/registry-tool.fscript`: «Найти», «Разрешить», «Сверить отпечатки»,
+«Собрать реестр»), пример реестра с семью пакетами (`scripts/registry-example/`),
+поручение «Запросить» для https (`docs/examples/io/https-request.flang`),
+встроенная форма `хеш256`, команды `flang lock` и `flang package`.
+
+Формат перечня нужд разбирается и показан: `scripts/registry-example/request.needs`
+— одна строка «Множество строк: не ниже 1.1», и план «Разрешить» её читает.
+Чего нет — файла нужд рядом с программой проекта и плана, который прошёл бы от
+такого файла до записанного замка. Единственная из 153 строк `script.*` в
+`.flangrc` со словом `install` — `script.install-path:check`, она про путь
+установки двоичного, а не про пакеты.
 
 ## Что должно быть
 
@@ -61,8 +67,8 @@ ADR-0021 (`docs/adr/0021-packages-are-installed-over-the-network-and-locked-loca
 2. разрешает версии;
 3. скачивает каждый пакет поручением «Запросить»;
 4. считает отпечаток тела встроенной формой `хеш256` и сверяет с ожидаемым
-   (сегодня `scripts/registry-tool.fscript` зовёт внешний `sha256sum`, и под
-   `--no-spawn` сверка невозможна);
+   (сегодня `scripts/registry-tool.fscript` зовёт внешний `sha256sum` поручением
+   «Запустить процесс», и под `--no-spawn` сверка невозможна);
 5. кладёт файл в каталог внутри проекта, работает под `--in-dir`;
 6. запускает `flang check` над программой с этим пакетом;
 7. только после этого дописывает замок командой `flang lock`.
@@ -96,6 +102,6 @@ ADR-0021 (`docs/adr/0021-packages-are-installed-over-the-network-and-locked-loca
 ## Где живёт правка
 
 Новый сценарий в `scripts/` по образцу `scripts/registry-tool.fscript`;
-`flang/stdlib/registry.flang` — адрес источника; ярлык в `ярлыки.flang`;
-страница в `docs/site/`. Компилятор не меняется, пересборка семени (bootstrap
-regeneration) не нужна.
+`flang/stdlib/registry.flang` — адрес источника; строка `script.<имя>` в
+`.flangrc`; страница в `docs/site/`. Компилятор не меняется, пересборка семени
+(bootstrap regeneration) не нужна.

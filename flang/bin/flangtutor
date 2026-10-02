@@ -379,10 +379,11 @@ judge() {
   fi
 
   expect=$(section "$lesson" ждём | head -1)
-  value=$(LC_ALL=C.UTF-8 "$BINARY" run "$WORK/lesson.flang" --function '«Проверка урока»' 2>&1)
+  value=$(LC_ALL=C.UTF-8 "$BINARY" run "$WORK/lesson.flang" --function '«Проверка урока»' 2> "$WORK/run.err")
   if [ "$value" != "$expect" ]; then
     say "$(phrase "проверка урока ждала $expect, а вышло:" "the lesson check expected $expect, and got:")"
-    printf '%s\n' "$value" | sed "s|$WORK/lesson.flang|$(phrase 'ваш ответ' 'your answer')|g"
+    { printf '%s\n' "$value"; cat "$WORK/run.err"; } \
+      | sed "s|$WORK/lesson.flang|$(phrase 'ваш ответ' 'your answer')|g"
     return 1
   fi
 

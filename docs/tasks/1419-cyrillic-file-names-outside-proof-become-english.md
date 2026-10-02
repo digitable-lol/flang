@@ -1,10 +1,10 @@
 ---
 номер: 1419
 заголовок: Вне flang/proof остаются файлы с кириллическими именами, а правило требует английских
-статус: свободна
+статус: в работе — переименованы 51 имя из 56 и все кириллические каталоги; шаг 1 печатает 4 вместо 55, `cyrillic:check` отвечает «5, все в ведомости» кодом 0; четыре имени в `flang/test` ждут перепечатки семени 0.7.24 — их называют `flang/self` и рантайм, уезжающий в семя дословно, причина у каждого записана в ведомости
 приоритет: P3
-исполнитель: —
-ветка: —
+исполнитель: a
+ветка: a/1419-file-names-outside-proof-are-english
 команда: вторая
 карта: Что мешает больше всего
 рядом: 1420, 1186, 1418
@@ -31,50 +31,35 @@ bootstrap/flang run-script cyrillic:check
 
 ```
 $ git -c core.quotepath=false ls-files | grep -P '[А-Яа-яЁё][^/]*$' | grep -v '^flang/proof/' | wc -l
-60
+4
 $ bootstrap/flang run-script cyrillic:check
-… "result":"кириллица в именах файлов: 61, все в ведомости — новых нет" …   код 0
+… "result":"кириллица в именах файлов: 5, все в ведомости — новых нет" …   код 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Было 55 и 56. Переименованы 51 имя и все кириллические каталоги: три каталога
+под `docs/` и `flang/test/fixtures`, примеры, страницы спецификаций, уроки
+проводника (расширение стало `.lesson`), шесть заметок базы знаний, ведомости и
+обходчики в `flang/test`, сторож в `scripts/guards`. Текст внутри файлов
+остался русским: правило о имени файла, а не о языке кода.
 
-Проверка `scripts/guards/cyrillic-file-names-guard.fscript` не пускает новые
-имена, а уже лежащие держит списком долга
-`scripts/ledgers/cyrillic-file-names-debt.txt` (60 имён вне `flang/proof` и
-один образец расширения внутри). Ни один файл не переименован: имя даёт автор
-(задача 1186), предложенные ниже имена владельцем не утверждены.
+Осталось четыре имени, и каждое — в `flang/test`:
 
-```
-docs/benchmarks/verdict-cache: второе-ядро.sh → second-kernel.sh; кеш.вставка → cache.insert;
-  наложить.py → apply-cache.py; проба.flang → cache-probe.flang; пробы.sh → probes.sh;
-  три-печати.sh → three-prints.sh
-docs/examples/io: пакет.bin → packet.bin; фильтр-пакетов.flang → packet-filter.flang
-docs/examples/pythagoras: квадрат-гипотенузы.flang → hypotenuse-square.flang;
-  формула-евклида.flang → euclid-formula.flang
-docs/examples/применение: итог-заказа.flang → order-total.flang; место-слева.flang → lvalue.flang;
-  место-слева-вызов.flang → lvalue-with-call.flang; место-слева-по-ключу.flang → lvalue-by-key.flang;
-  место-слева-с-отрезком.flang → lvalue-with-slice.flang; скидка.flang → discount.flang;
-  скидка-на-вызове.flang → discount-on-call.flang
-docs/спецификации: слой-отказов.flang → failure-layer.flang; чего-не-хватает-fts.md → what-fts-lacks.md;
-  язык-доказательств.md → proof-language.md
-flang/scripts: жаргон-образцы.flang → jargon-samples.flang; одна-линейка.py → one-gauge.py;
-  породить-атомы.fscript → generate-atom-table.fscript; сличить-двух-сводителей.py → compare-two-mergers.py
-flang/stdlib: образцы.flang → samples.flang
-flang/test: ведомость.txt → ledger.txt; ведомость-self.txt → self-ledger.txt;
-  ведомость-примеров.txt → examples-ledger.txt; владение-состоянием.flang и .sh → state-ownership;
-  встроенные-формы.flang → builtin-forms.flang; жаргон.flang → jargon.flang; обход.sh → walk.sh;
-  обход-self.sh → walk-self.sh; обход-примеров.sh → walk-examples.sh;
-  прогонщик-корпуса.flang → corpus-runner.flang
-flang/test/fixtures: скидки-в-подписки.fts → discounts-into-subscriptions.fts;
-  001-предел-скидки.fts → 001-discount-limit.fts; 002-решение-о-возвратах.fts → 002-refund-decision.fts
-scripts/guards: сторож-дарвина.fscript → darwin-guard.fscript
-корень: ярлык → run; ярлыки.flang → shortcuts.flang
-```
+| файл | станет | почему держится |
+|---|---|---|
+| `обход.sh` | `walk.sh` | назван в примечании `flang/self/processes.flang` |
+| `обход-примеров.sh` | `walk-examples.sh` | назван дважды в `flang/self/bootstrap/corpus.flang` |
+| `обход-self.sh` | `walk-self.sh` | сам по себе переименуем; держится, чтобы семья трёх обходчиков переехала разом |
+| `встроенные-формы.flang` | `builtin-forms.flang` | назван в примечании `flang/src/emit/c/flang_repl.c`, а тот уезжает в `bootstrap/flang_repl.c` дословно |
 
-Решения владельца требуют: `ярлык` и `ярлыки.flang` — входная точка всех
-команд дерева, ссылок на них больше всего; двенадцать уроков в `docs/tutor`,
-у которых кириллица только в расширении; шесть заметок в `docs/zettel`,
-переименование которых меняет указатель заметок и адреса сайта.
+Править `flang/self` и печатаемый рантайм нельзя, пока идёт перепечатка семени
+0.7.24: напечатанное протухло бы раньше, чем печать кончится. Эти четыре —
+работа после перепечатки, и причина у каждого записана в
+`scripts/ledgers/cyrillic-file-names-debt.txt`, а не держится в голове.
+
+Пятая запись ведомости — `flang/proof/checker/tests/families/run-induction/letters.фп`,
+единственный образец кириллического РАСШИРЕНИЯ. Под `proof/` правило не идёт
+(ADR-0046), и образец стоит нарочно: на нём видно, что сторож смотрит
+расширение, а не только слова имени.
 
 ## Что должно быть
 
@@ -97,8 +82,10 @@ walk.sh. Правило касается имени файла, а не язык
 
 ## Где живёт правка
 
-Переименование файлов и ссылок на них: `ярлыки.flang`, каталог `.github`,
-страницы `docs`, сами проверки в `scripts/guards`. Пересборка семени
-(bootstrap regeneration) не нужна: под `flang/self` и `flang/src/emit` нет ни
-одного из этих файлов. Каталоги с кириллическими именами и файлы под
-`flang/proof` в задачу не входят.
+Переименование файлов и ссылок на них: каталог `.github`, страницы `docs`,
+проводник `flang/bin/flangtutor` и то, что считает поставку
+(`scripts/release/release-in-c.fscript`, `scripts/guards/delivery-guard.flang`),
+сами проверки в `scripts/guards`, ведомости в `scripts/ledgers`. Пересборка
+семени (bootstrap regeneration) не нужна для переименованных: ни один из них не
+лежит под `flang/self` и `flang/src/emit`. Четыре оставшихся, наоборот, именно
+в это и упираются — они идут после перепечатки.

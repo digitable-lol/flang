@@ -315,9 +315,9 @@
   пример «the index is compared without context lines»
     дано range равно "--cached"
     ожидается ["-c", "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^+++ b\\//p' -e '/^@@ /p'",
-      "diff", "-c", "core.quotepath=off", "diff", "--no-renames", "--no-color", "-U0",
+      "diff", "-c", "core.quotepath=off", "diff", "--no-color", "-U0",
       "--diff-filter=d", "--cached"]
-  ["-c", («Diff script»), "diff", "-c", "core.quotepath=off", "diff", "--no-renames", "--no-color",
+  ["-c", («Diff script»), "diff", "-c", "core.quotepath=off", "diff", "--no-color",
    "-U0", "--diff-filter=d", range]
 
 тотальная функция «Git diff»
@@ -327,7 +327,7 @@
     дано range равно "--cached"
     ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным [
       "-c", "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^+++ b\\//p' -e '/^@@ /p'",
-      "diff", "-c", "core.quotepath=off", "diff", "--no-renames", "--no-color", "-U0",
+      "diff", "-c", "core.quotepath=off", "diff", "--no-color", "-U0",
       "--diff-filter=d", "--cached"]
   «Process» от "sh" и («Diff arguments» от range)
 

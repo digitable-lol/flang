@@ -29,18 +29,20 @@ git ls-files -z 'scripts/*.sh' 'scripts/**/*.sh' | sort -zu \
 
 ```
 $ git ls-files -z 'scripts/*.sh' 'scripts/**/*.sh' | sort -zu | xargs -0 awk '/^[[:space:]]*#/{c++} {t++} END{print c, t}'
-3093 8709                                                         код 0
+2442 6781                                                         код 0
 $ git ls-files 'scripts/*.sh' 'scripts/**/*.sh' | sort -u | wc -l
-22
+13
 ```
 
-Дата прогона: 1 октября 2026. Двоичный flang в замере не участвует.
+Дата прогона: 2 октября 2026. Двоичный flang в замере не участвует.
 
-3093 из 8709 — это 36 %. Ниже 20 % только шесть файлов из 22: четыре в
-`scripts/targets`, `scripts/seed/seed-refresh.sh`, `scripts/tutor-probe.sh`.
-Самые тяжёлые — `scripts/bootstrap-c.sh` (49 %),
-`scripts/guards/published-vs-tree.sh` (41 %), `scripts/memory-limit.sh` (40 %).
-Один `scripts/bootstrap-reprint.sh` несёт 1446 строк комментариев из 3093.
+2442 из 6781 — это 36 %. Ниже 20 % только два файла из 13:
+`scripts/targets/identical-declarations.sh` (17 %) и
+`scripts/targets/target-collisions.sh` (15 %). Самые тяжёлые —
+`scripts/guards/published-vs-tree.sh` (41 %),
+`scripts/guards/overlong-string-guard.sh` (41 %),
+`scripts/guards/version-derivations-guard.sh` (40 %).
+Один `scripts/bootstrap-reprint.sh` несёт 1346 строк комментариев из 2442.
 
 ## Что должно быть
 
@@ -59,8 +61,9 @@ $ git ls-files 'scripts/*.sh' 'scripts/**/*.sh' | sort -u | wc -l
   `grep -v '^[[:space:]]*#' <файл> | grep -v '^[[:space:]]*$'` до и после
   правки совпадает у каждого файла;
 - вынесенная из шапок история лежит в `docs/zettel`, по заметке на скрипт;
-- строки-приметы проверки чисел (комментарий со словом СНЯТО и датой, по
-  одной в четырёх файлах) остались на месте, и
+- строки-приметы проверки чисел (комментарий со словом СНЯТО и датой) не
+  потеряны: в скриптах оболочки из `scripts` их сегодня ноль, все четыре
+  живут в планах `.fscript`, и
   `bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check` отвечает кодом 0;
 - числа строк оболочки в `docs/tree-inventory.md` пересняты,
   `bootstrap/flang run-script inventory:check` отвечает кодом 0.
@@ -72,9 +75,10 @@ $ git ls-files 'scripts/*.sh' 'scripts/**/*.sh' | sort -u | wc -l
 `docs/tree-inventory.md`. Пересборка семени (bootstrap regeneration) не нужна.
 
 `scripts/bootstrap-reprint.sh` и `scripts/seed-fingerprint` эта задача не
-правит. Если первый оставить как есть, остальным 28 файлам придётся опуститься
-ниже 5 %, чтобы общая доля стала меньше 20 %; решение — править его шапки тоже
-или мерить без него — принимается в начале работы и записывается сюда.
+правит. Если первый оставить как есть, доля ниже 20 % недостижима вовсе: его
+1346 комментариев при 3592 строках держат общую долю не ниже 23,7 % даже при
+нулевых комментариях у остальных 12 файлов. Значит решение одно из двух —
+править его шапки тоже или мерить долю без него — и принимается в начале работы.
 
 Справка, на которую ссылается сообщение `.githooks/pre-push.fscript`: обход
 `git push --no-verify` законен в трёх случаях: пушится рабочая ветка, которую

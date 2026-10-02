@@ -41,6 +41,7 @@
 
 ## Доказательства
 
+- [Опровергатель на 13 874 программах нашёл три известные дыры ядра, ни одной новой в арифметике, и два места, где checker называет ложью верное доказательство](a-falsifier-finds-the-known-holes-and-no-new-ones-in-arithmetic.md)
 - [Обещание о ВЕТВИ тела ядро берёт там, где обещание о функции целиком не берётся](a-branch-promise-is-what-the-kernel-can-take-when-the-whole-promise-is-not.md)
 - [Силлогизм доказывается из допущений сегодняшним ядром, а русские предложения читаются без словаря морфологии](premises-as-assumptions-prove-a-syllogism-without-a-morphology-dictionary.md)
 - [Ядро подставляет равенство вызванной, но не ослабляет её неравенство: «не больше одного» у помощника не доказывает «не больше чем на один длиннее» у зовущего](a-callee-promise-reaches-the-handler-through-seven-branches-not-fifteen.md)

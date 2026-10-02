@@ -577,6 +577,7 @@ failures
 fall
 false
 falsehood
+falsifier
 families
 family
 fan
@@ -597,6 +598,7 @@ filled
 filter
 finalizer
 find
+finds
 fingerprint
 finite2
 fires
@@ -1678,6 +1680,7 @@ tears
 tell
 tells
 tempdir
+templates
 temporary
 ten
 tenths

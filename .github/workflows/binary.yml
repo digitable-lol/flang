@@ -1525,6 +1525,54 @@ jobs:
       - name: Check C translation
         run: sh flang/translation/run.sh
 
+  falsifier:
+    name: falsifier
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - name: Restore binary cache
+        id: kesh-dvoichnogo
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+      - name: Verify cached binary
+        if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
+        run: |
+          set -u
+          if ! ./bootstrap/flang --version >/dev/null 2>&1; then
+            make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+          fi
+      - name: Build proof checker
+        run: make -C flang/proof/checker
+      - name: Probe falsifier
+        env:
+          LC_ALL: C.UTF-8
+          FLANG_TMP: ${{ runner.temp }}
+        run: |
+          if bootstrap/flang io flang/proof/probes/falsifier/run.fscript --plan Forgery --timeout 600000 --max-orders 100000 > "$RUNNER_TEMP/falsifier-forgery.out" 2>&1; then
+            grep -o '"result":"[^"]*' "$RUNNER_TEMP/falsifier-forgery.out" >&2
+            echo "опровергатель без таблицы известных дыр остался зелёным — новую дыру он бы тоже пропустил" >&2
+            exit 1
+          fi
+          grep -o '"error":"[^"]*' "$RUNNER_TEMP/falsifier-forgery.out"
+      - name: Check falsifier
+        env:
+          LC_ALL: C.UTF-8
+          FLANG_TMP: ${{ runner.temp }}
+        run: |
+          bootstrap/flang run-script falsifier:check > "$RUNNER_TEMP/falsifier.out" 2>&1 && kod=0 || kod=$?
+          grep -o '"\(result\|error\)":"[^"]*' "$RUNNER_TEMP/falsifier.out"
+          exit "$kod"
+
   storozha:
     name: guards-selftest
     runs-on: ubuntu-latest

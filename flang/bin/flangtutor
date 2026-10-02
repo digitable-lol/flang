@@ -244,8 +244,42 @@ END {
   }
 }
 '
+# Урок красится awk, и он же разбирает текст посимвольно (substr/length/index),
+# поэтому нужны ДВА условия сразу: локаль UTF-8 и awk, умеющий многобайтные
+# знаки. Замерено 2 октября 2026: mawk 1.3.4 20260129 режет закрывающую «»» по
+# байту (отсюда «towc: multibyte conversion failure» и мусор вместо урока), а
+# gawk 5.3.2 в локали ja_JP.eucjp портит кириллицу. Поэтому пара «локаль + awk»
+# выбирается ПРОГОНОМ: красим строку и требуем, чтобы вывод остался целым UTF-8.
+# Ни одна пара не прошла — краска снимается, текст цел: испорченный урок хуже
+# урока без цвета. Выбор awk можно задать руками через FLANG_AWK.
+paints() {
+  printf 'модуль «Урок»\n' | LC_ALL=$1 "$2" -v mode=paint -v words="$WORDS" -v light="$LIGHT" \
+    -v CW='<' -v CN='[' -v CNUM='' -v CS='' -v RESET='>' "$PARSE_AWK" 2>/dev/null |
+    iconv -f UTF-8 -t UTF-8 >/dev/null 2>&1
+}
+pick_pair() {
+  for l in "${LC_ALL:-}" "${LC_CTYPE:-}" "${LANG:-}" C.UTF-8 en_US.UTF-8 ru_RU.UTF-8; do
+    [ -n "$l" ] || continue
+    for a in ${FLANG_AWK:-awk gawk mawk}; do
+      command -v "$a" >/dev/null 2>&1 || continue
+      paints "$l" "$a" && { printf '%s %s\n' "$l" "$a"; return 0; }
+    done
+  done
+  return 1
+}
+AWK=awk
+PAIR=
+if [ -n "$C_WORD" ] && command -v iconv >/dev/null 2>&1; then PAIR=$(pick_pair) || PAIR=; fi
+if [ -n "$PAIR" ]; then
+  LC_ALL=${PAIR% *}; export LC_ALL; AWK=${PAIR#* }
+elif [ -n "$C_WORD" ]; then
+  C_WORD=''; C_NAME=''; C_NUMBER=''; C_STRING=''
+  printf '%s%s\n' 'flangtutor: ни локаль, ни awk не держат многобайтный текст — ' \
+    'краска снята, текст цел / painting off, text intact' >&2
+fi
+
 parse() {
-  awk -v mode="$1" -v words="$WORDS" -v light="$LIGHT" \
+  $AWK -v mode="$1" -v words="$WORDS" -v light="$LIGHT" \
       -v CW="$C_WORD" -v CN="$C_NAME" -v CNUM="$C_NUMBER" -v CS="$C_STRING" -v RESET="$PLAIN" \
       -v L_WORDS="$(phrase 'слова языка:' 'language words:')" -v L_NAMES="$(phrase 'имена:' 'names:')" \
                            -v L_NUMBERS="$(phrase 'числа:' 'numbers:')" -v L_STRINGS="$(phrase 'строки:' 'strings:')" \
@@ -280,7 +314,7 @@ LIST=$(/bin/ls "$LESSONS" | grep '\.lesson$' | sort)
 TOTAL=$(printf '%s\n' "$LIST" | wc -l | tr -d ' ')
 
 section() {
-  awk -v m="=$2=" '$0 == m { v = 1; next } /^=[^=]*=$/ { v = 0 } v { print }' "$1"
+  $AWK -v m="=$2=" '$0 == m { v = 1; next } /^=[^=]*=$/ { v = 0 } v { print }' "$1"
 }
 lesson_file() {
   printf '%s\n' "$LIST" | sed -n "$1p" | sed "s|^|$LESSONS/|"
@@ -422,17 +456,17 @@ blank_line() {
   template "$1" | grep '___' | sed -n "$2p"
 }
 blank_function() {
-  template "$1" | awk -v n="$2" '
+  template "$1" | $AWK -v n="$2" '
     /функция[ \t]+(«[^»]*»|"[^"]*")/ { f = $0; sub(/.*функция[ \t]+/, "", f); sub(/[ \t].*$/, "", f); gsub(/["«»]/, "", f) }
     /^[^ \t]/ && !/функция/ { f = "" }
     /___/ { k++; if (k == n) { print f; exit } }'
 }
 show_template() {
-  template "$1" | awk '{ while (index($0, "___") > 0) { k++; sub(/___/, "\001" k "\002") } ; print }' \
+  template "$1" | $AWK '{ while (index($0, "___") > 0) { k++; sub(/___/, "\001" k "\002") } ; print }' \
     | sed 's/^/    /' | highlight | sed "s/$(printf '\001')/${BOLD}⟨/g; s/$(printf '\002')/⟩${PLAIN}/g"
 }
 assemble() {
-  template "$1" | awk -v work="$WORK" '
+  template "$1" | $AWK -v work="$WORK" '
     /^[[:space:]]*___[[:space:]]*$/ {
       k++; indent = $0; sub(/___.*$/, "", indent)
       f = work "/blank." k
@@ -457,7 +491,7 @@ fill_from_lesson() {
     if [ "$(blank_kind "$lesson" "$n")" = inline ]; then
       sed -n "${s}p" "$WORK/fill" > "$WORK/blank.$n"; s=$((s + 1))
     else
-      awk -v s="$s" 'NR >= s { if ($0 == ".") { print NR > "/dev/stderr"; exit } print }' "$WORK/fill" \
+      $AWK -v s="$s" 'NR >= s { if ($0 == ".") { print NR > "/dev/stderr"; exit } print }' "$WORK/fill" \
         > "$WORK/blank.$n" 2> "$WORK/fill.end"
       s=$(($(cat "$WORK/fill.end" 2>/dev/null || echo "$s") + 1))
     fi

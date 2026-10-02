@@ -275,6 +275,7 @@ number	state	title
 6805	done	The code guard remembers a forgery after it is gone
 6812	done	A contradictory pair of assumptions is a ledger family
 6818	dropped	What blocks one point oh
+6858	dropped	The flang twins of the node guards do not finish a run
 6871	done	The ledger issues a certificate to what check rejects
 6890	done	Ci lints on push builds only on tag
 7005	done	Links guard hid its reason in the run summary

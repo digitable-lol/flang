@@ -23,7 +23,8 @@
 
 ## Шаги воспроизведения
 
-1. Программа — `flang/proof/probes/user-programs/programs/account.flang` (в дереве, 22 строки).
+1. Программа — `flang/proof/probes/user-programs/programs/account.flang` (21 строка по `wc -l`;
+   запись доказательства в своей шапке считает 22).
 2. `bootstrap/flang check --proof --record /tmp/r flang/proof/probes/user-programs/programs/account.flang`
 3. Смотреть раздел `чем получен каждый шаг` и блоки `утверждение` в записи `/tmp/r`.
 

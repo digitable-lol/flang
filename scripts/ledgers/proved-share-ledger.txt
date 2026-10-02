@@ -1753,3 +1753,4 @@ f8065d1d57b972e091c656779e5cad7d|1|1|0|0|0|flang/proof/checker/tests/families/fi
 6a0ff051db5f51bd386f210884f440d7|4|3|0|1|0|flang/proof/checker/tests/families/fmath/restricted-sum.flang
 cf872d516e34dd69bc73a4e95995017f|2|2|0|0|0|flang/proof/checker/tests/families/fmath/scores.flang
 1d3bc37e838ba54753e02518e95dad9b|4|3|0|1|0|flang/proof/checker/tests/families/fmath/sum-of-a-number.flang
+897051eca79bc4882718b6ad0a7aa309|1|1|0|0|0|flang/proof/checker/tests/families/open-term/identity-of-an-open-term.flang

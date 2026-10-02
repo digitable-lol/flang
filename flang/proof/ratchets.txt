@@ -1,7 +1,7 @@
 forgeries 38
 forgery-numerator 155
 forgery-probes 628
-checker-code-lines 8086
+checker-code-lines 8087
 checker-primitives 15
 trap-kinds 38
 trap-goals-on-kernel-word 3

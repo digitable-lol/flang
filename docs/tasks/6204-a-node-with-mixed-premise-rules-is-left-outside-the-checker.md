@@ -20,26 +20,27 @@
 ## Шаги воспроизведения
 
 1. `make -C flang/proof/checker`
-2. `bootstrap/flang check flang/proof/checker/tests/families/algebra-domains/guard.flang --proof --record guard-kernel.record`
-3. `grep 'посылка' guard-kernel.record`
-4. `flang/proof/checker/сверщик flang/proof/checker/tests/families/algebra-domains/guard.flang guard-kernel.record | tail -1`
+2. `bootstrap/flang check flang/proof/checker/tests/families/algebra-domains/guard.flang --proof --record <запись>`
+3. `grep 'посылка' <запись>`
+4. `flang/proof/checker/сверщик flang/proof/checker/tests/families/algebra-domains/guard.flang <запись> | tail -1`
 
 ## Что происходит
 
 ```
-$ grep 'посылка' guard-kernel.record
+$ grep 'посылка' <запись>
   посылка «Пусто» вид base вариант «Пусто» вердикт доказано закрыта reduction шагов 0 правило «вычисление замкнутой цели» …
   посылка «Узел» вид step вариант «Узел» вердикт доказано закрыта reduction шагов 0 правило «разбор цели по условию» …
-$ flang/proof/checker/сверщик …/guard.flang guard-kernel.record | tail -1
+$ flang/proof/checker/сверщик …/guard.flang <запись> | tail -1
 НЕ ПРОВЕРЕНО — запись не противоречит исходнику, но доказательством это не является: … Узлов вердикта «разбором по случаям» проиграно заново 0 (снято со слова ядра мест 0), из них булевой веткой снято мест 0, вне приёма сверщика 1. …     код 3
 ```
 
 Запись `guard.record`, лежащая в дереве рядом с пробой, даёт код 0 только
 потому, что правлена руками: у «Пусто» правило заменено на «разбор цели по
-условию». Об этом сказано в пометке строки 77 файла
-`flang/proof/checker/tests/trap/kinds.tsv`.
+условию». Об этом сказано в
+`docs/flang/proof/checker/tests/families/algebra-domains/README.md` и строкой
+`node-carrier-algebra-guard` в `flang/proof/checker/tests/trap/kinds.tsv`.
 
-Версия: flang 0.7.23, 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 ## Что должно быть
 
@@ -57,13 +58,16 @@ $ flang/proof/checker/сверщик …/guard.flang guard-kernel.record | tail 
 1. Шаг 4 отвечает кодом 0 и «проиграно заново 1».
 2. Подделка: у посылки названо булево правило, а её цель-ветвь не замкнута, —
    код 1 или «не проверено» с названным случаем, но не код 0.
-3. `guard.record` переснят ядром; пометка в `kinds.tsv` и в README семьи
-   `algebra-domains` снята.
-4. `sh flang/proof/checker/tests/run.sh` — «сошлось всё»; число строк
-   `checker.c` не выше потолка в `flang/proof/checker/ratchet.txt`.
+3. `guard.record` переснят ядром; пометка в README семьи `algebra-domains` и
+   строка `node-carrier-algebra-guard` в `kinds.tsv` сняты.
+4. `bootstrap/flang io flang/proof/checker/tests/run.fscript --max-steps 4000000000 --timeout 600000`
+   — «сошлось всё»; `bootstrap/flang io flang/proof/tables-guard.fscript -- С-6`
+   — код 0.
 
 ## Где живёт правка
 
 `flang/proof/checker/checker.c`, функция `проиграть_узел_algebra`: домен
 выбирается по цели, а не по совпадению правил всех посылок. Перепечатка не
-нужна.
+нужна. Запаса по храповику `checker-code-lines` в `flang/proof/ratchets.txt`
+нет — 8127 при потолке 8127: правка либо укладывается в прежнее число строк
+кода, либо потолок поднимает ADR.

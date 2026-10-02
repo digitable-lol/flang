@@ -15,38 +15,42 @@
 
 Ядро печатает в запись блок `вывод` — дерево применённых правил для факта о
 типе (`docs/adr/0022-a-type-fact-travels-as-a-derivation.md`), и проверяющий
-его проигрывает. Печать сделана. Не сделан отчёт о ней в подсчёте доли.
+его проигрывает. Печать сделана. Не сделан отчёт о ней в подсчёте доли
+(`flang/proof/replay-share.fscript`).
 
 ## Шаги воспроизведения
 
 1. `cat flang/proof/checker/tests/records/corpus/*.record | grep -c '^ *вывод цель'`
-2. `grep -c 'без вывода\|по правилам' flang/proof/corpus-share.sh`
-3. `grep -n 'переигранные выводы' flang/proof/corpus-share.sh`
+2. `grep -c 'без вывода\|по правилам' flang/proof/replay-share.fscript flang/proof/share-measure.fscript`
+3. `grep -n 'переигранные выводы' flang/proof/replay-share.fscript`
+4. `bootstrap/flang io flang/proof/replay-share.fscript --max-steps 4000000000 --timeout 1800000`
 
 ## Что происходит
 
 ```
 $ cat flang/proof/checker/tests/records/corpus/*.record | grep -c '^ *вывод цель'
 81
-$ grep -c 'без вывода\|по правилам' flang/proof/corpus-share.sh
-0                                                           код 1
-$ grep -n 'переигранные выводы' flang/proof/corpus-share.sh
-572:  echo "  └ переигранные выводы факта о типе (по шагу на правило):                 $VYVODY"
+$ grep -c 'без вывода\|по правилам' flang/proof/replay-share.fscript flang/proof/share-measure.fscript
+flang/proof/replay-share.fscript:0
+flang/proof/share-measure.fscript:0                         код 1
+$ grep -n 'переигранные выводы' flang/proof/replay-share.fscript
+227:    ожидается ["═══ ДОЛЯ-ПРОИГРЫВАНИЕМ по корпусу ═══", …
+239:    (соединить ["  └ переигранные выводы факта о типе (по шагу на правило): …
+$ bootstrap/flang io flang/proof/replay-share.fscript …
+  └ переигранные выводы факта о типе (по шагу на правило):                 71
+                                                            код 0
 ```
 
 Выводы идут в числитель одним числом. Сколько мест закрыто именем правила без
 блока `вывод` и какое правило сколько мест закрыло, подсчёт не печатает.
 
-Версия: flang 0.7.23, 30 сентября 2026. Полный прогон
-`sh flang/proof/corpus-share.sh --набор corpus --проигрыванием` не
-перепроверен: дольше минуты.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 ## Что должно быть
 
-`sh flang/proof/corpus-share.sh --набор corpus --проигрыванием` печатает
-отдельной строкой число мест, закрытых именем правила без вывода, и таблицу
-«правило — сколько мест закрыло», сумма которой равна строке «переигранные
-выводы факта о типе».
+`bootstrap/flang io flang/proof/replay-share.fscript` печатает отдельной строкой
+число мест, закрытых именем правила без вывода, и таблицу «правило — сколько
+мест закрыло», сумма которой равна строке «переигранные выводы факта о типе».
 
 ## Обходной путь
 
@@ -63,7 +67,8 @@ $ grep -n 'переигранные выводы' flang/proof/corpus-share.sh
 
 ## Где живёт правка
 
-`flang/proof/corpus-share.sh`, режим `--проигрыванием`: разбор сводки
-проверяющего и печать итога. Имя правила у места без вывода проверяющий
-(`flang/proof/checker/checker.c`) должен отдавать в сводке. Перепечатка не
-нужна.
+`flang/proof/replay-share.fscript`: разбор сводки проверяющего и печать итога.
+Имя правила у места без вывода проверяющий (`flang/proof/checker/checker.c`)
+должен отдавать в сводке, а запаса по храповику `checker-code-lines` в
+`flang/proof/ratchets.txt` нет — 8127 при потолке 8127: строка кода сверх
+потолка требует ADR. Перепечатка не нужна.

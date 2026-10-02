@@ -15,8 +15,9 @@
 
 ## Шаги воспроизведения
 
-1. Программа: шаг теоремы называет правило Н2 из таблицы правил вывода
-   `flang/proof/tables/inference-rules.tsv`.
+1. Программа: шаг теоремы называет правило Н2 из ведомости правил вывода
+   `flang/proof/tables/inference-rules.tsv` (113 строк: заголовок, 97 правил и
+   15 запретов).
 
 ```flang
 модуль «Ledger step probe»
@@ -39,7 +40,7 @@
 
 ```
 bootstrap/flang check <файл> --proof
-grep -av '^#' flang/proof/tables/inference-rules.tsv | cut -f3 | grep -ac '^правило$'
+tail -n +2 flang/proof/tables/inference-rules.tsv | cut -f3 | grep -c '^rule$'
 bootstrap/flang check flang/proof/probes/run/programs/induction.flang --proof
 ```
 
@@ -50,16 +51,17 @@ $ bootstrap/flang check <файл> --proof
 FLANG_PROOF_STEP в файле <файл>, строка 12, столбец 3: теорема «ноль
 неотрицателен»: шаг 1 (Н2, без основания): правило «Н2» ведомости ядро пока не
 проверяет; проверяет шесть: Н1, Н3, Н5, О1, О10, Разв2           код 1
-$ grep -av '^#' flang/proof/tables/inference-rules.tsv | cut -f3 | grep -ac '^правило$'
+$ tail -n +2 flang/proof/tables/inference-rules.tsv | cut -f3 | grep -c '^rule$'
 97                                                                код 0
 $ bootstrap/flang check flang/proof/probes/run/programs/induction.flang --proof
 …
+    шаг 1 строка 17 закрывающий по примеру «пусто» пример строка 7
     шаг 1 строка 19 закрывающий по предположению
     посылка «начало свёртки» вид base вариант «пусто» вердикт доказано закрыта term шагов 1 правило «»
 …                                                                 код 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 Форма шага `по закону «Имя» из …` разбирается, ядро применяет названное правило
 к названным посылкам, независимая проверяющая программа (proof checker)
@@ -70,10 +72,10 @@ $ bootstrap/flang check flang/proof/probes/run/programs/induction.flang --proof
 
 ## Что должно быть
 
-Любое правило таблицы можно назвать в шаге теоремы, в том числе внутри случая
+Любое правило ведомости можно назвать в шаге теоремы, в том числе внутри случая
 индукции; ядро его не ищет, а проверяет, и отказ называет шаг, правило и что не
 сошлось. В отчёте о доказательствах у каждого шага, и под индукцией тоже, стоит
-непустое имя правила из таблицы.
+непустое имя правила из ведомости.
 
 ## Обходной путь
 
@@ -85,16 +87,17 @@ $ bootstrap/flang check flang/proof/probes/run/programs/induction.flang --proof
 
 Программа из шагов воспроизведения даёт код 0. В семье проб
 `flang/proof/checker/tests/families/ledger-steps` есть теорема на каждое правило
-таблицы и теорема с явными шагами внутри случая индукции; проверяющая программа
-на их честных записях отвечает кодом 0, на записи с подменённой посылкой или
-правилом — кодом 1 с причиной. В выводе
+ведомости и теорема с явными шагами внутри случая индукции; проверяющая
+программа на их честных записях отвечает кодом 0, на записи с подменённой
+посылкой или правилом — кодом 1 с причиной. В выводе
 
 ```
 bootstrap/flang check flang/proof/probes/run/programs/induction.flang --proof
 ```
 
 нет строки с `правило «»`, и каждая строка `шаг` несёт имя правила.
-`sh flang/proof/checker/tests/run.sh` отвечает «сошлось всё».
+`bootstrap/flang io flang/proof/checker/tests/run.fscript --max-steps 4000000000 --timeout 600000`
+отвечает «сошлось всё».
 
 ## Где живёт правка
 
@@ -103,3 +106,8 @@ bootstrap/flang check flang/proof/probes/run/programs/induction.flang --proof
 записи — `flang/proof/checker/checker.c`. Правки под `flang/self` доезжают до
 двоичного только пересборкой семени (bootstrap regeneration); проверяющая
 программа собирается отдельно.
+
+Сбор правила по шагам (`«Правила шагов»` в `proofterm.flang`, сшивка по строке в
+`zapis.flang`, печать в `proof.flang`) в семени уже есть, а у шагов `по примеру`
+и `по предположению` имя правила всё равно пусто: ядро его для этих шагов не
+выдаёт — печати нечего сшивать.

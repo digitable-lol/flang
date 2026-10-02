@@ -16,28 +16,28 @@
 Запись доказательства несёт блок `вывод`: дерево применений правил из
 `flang/proof/tables/inference-rules.tsv`. Проверяющий на C
 (`flang/proof/checker/checker.c`) блок проигрывает. Проверяющий на flang
-(`flang/proof/checker.flang`, зовётся через `flang/proof/check.sh`) слова
+(`flang/proof/checker.flang`, зовётся планом `flang/proof/check.fscript`) слова
 «вывод» не знает. Форма блока — `docs/design/proof-object-blok-vyvoda.md`.
 
 ## Шаги воспроизведения
 
 1. `make -C flang/proof/checker`
 2. `flang/proof/checker/сверщик flang/proof/examples/corpus-natural.flang flang/proof/checker/tests/records/corpus/corpus-natural.record | tail -1`
-3. `sh flang/proof/check.sh flang/proof/examples/corpus-natural.flang flang/proof/checker/tests/records/corpus/corpus-natural.record | tail -1`
+3. `bootstrap/flang io flang/proof/check.fscript --timeout 1800000 -- <те же два пути> | grep -o '"result":"[^"]*"'`
 4. `grep -c 'вывод' flang/proof/checker.flang`
 
 ## Что происходит
 
 ```
 $ flang/proof/checker/сверщик … | tail -1
-ПРОВЕРЕНО — запись сошлась с исходником, и всё доказанное проиграно заново: утверждений 1, шагов сверено с исходником 0, сведений проиграно заново 1 (ходов проверено 0). …     код 0
-$ sh flang/proof/check.sh … | tail -1
-… "result":"сошлось: утверждений 1, шагов сверено с исходником 0, сведений проиграно заново 0 (ходов проверено 0), принято на слово ядра 1 …     код 0
+ПРОВЕРЕНО — … сведений проиграно заново 1 (ходов проверено 0). … НА СЛОВО ЯДРА: посылок и утверждений 0, шагов 0. … Выводов факта о типе проиграно заново 1 (снято со слова ядра мест 1). …     код 0
+$ bootstrap/flang io flang/proof/check.fscript … | grep -o '"result":"[^"]*"'
+"result":"сошлось: утверждений 1, шагов сверено с исходником 0, сведений проиграно заново 0 (ходов проверено 0), принято на слово ядра 1 …"     код 0
 $ grep -c 'вывод' flang/proof/checker.flang
 0                                                           код 1
 ```
 
-Версия: flang 0.7.23, 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 ## Что должно быть
 
@@ -51,13 +51,13 @@ $ grep -c 'вывод' flang/proof/checker.flang
 
 ## Когда задача сделана
 
-1. `sh flang/proof/check.sh` на `corpus-natural.record` отвечает «сведений
-   проиграно заново 1», «принято на слово ядра 0».
+1. План `flang/proof/check.fscript` на `corpus-natural.record` отвечает
+   «сведений проиграно заново 1», «принято на слово ядра 0».
 2. На каждой записи семьи `flang/proof/checker/tests/families/inference/`
    (честная, подделки, порчи по одной строке) коды возврата двух проверяющих
    совпадают.
-3. `sh flang/proof/checker/tests/run.sh` — «сошлось всё», подделок принято
-   кодом 0 — ноль (не перепроверено).
+3. `bootstrap/flang io flang/proof/checker/tests/run.fscript --max-steps 4000000000 --timeout 600000`
+   — «сошлось всё», подделок принято кодом 0 — ноль.
 
 Проверяющий проигрывает написанное, а не доказывает заново: он знает формы
 целей и номера строк, системы типов в нём нет.
@@ -66,4 +66,4 @@ $ grep -c 'вывод' flang/proof/checker.flang
 
 `flang/proof/checker.flang`: разбор строк `вывод …` и приём по имени правила,
 по образцу `проиграть_вывод` в `flang/proof/checker/checker.c`. Перепечатка не
-нужна: `flang/proof/check.sh` исполняет файл через `flang io`.
+нужна: план `flang/proof/check.fscript` исполняет файл через `flang io`.

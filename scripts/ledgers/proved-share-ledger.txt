@@ -1256,6 +1256,8 @@ da4b77e73c558c72c9dec94fa8a7725c|1|×|×|×|0|flang/proof/checker/tests/families
 fa3fb9a5955db0b82f480047ad83bf04|2|×|×|×|0|flang/proof/checker/tests/families/statement/syllogism-by-postcondition.flang
 6878457c28ff1862039bad5cf01c3b61|3|×|×|×|0|flang/proof/checker/tests/families/statement/syllogism-socrates.flang
 9ee2cd59eeca8e29bd5985c51b49e252|3|×|×|×|0|flang/proof/checker/tests/families/statement/syllogism-follows.flang
+9a2974470458758ed352d31b4b5d6e13|4|×|×|×|0|flang/proof/checker/tests/families/free-statement-step/statement-about-another-property.flang
+dc3ec3abdf49ae4feca2aef3144603ca|2|×|×|×|0|flang/proof/checker/tests/families/free-statement-step/statement-over-another-set.flang
 d20313c4998d7f800bc92a83f2c83771|1|×|×|×|0|flang/proof/checker/tests/families/statement/addition-is-commutative.flang
 91994d0f41d91dbe7eb634f17c2be0f7|1|×|×|×|0|flang/proof/checker/tests/families/statement/theorem-about-another.flang
 edd199f400faf9219e5fb5d0bfd937fe|1|×|×|×|0|flang/proof/checker/tests/families/statement/statement-with-restriction.flang

@@ -78,11 +78,14 @@
   возвращает список строки
   обеспечивает «длина постоянного списка — Файлы уроков» (длина результат) равен 12
   пример «Двенадцать уроков проводника, по порядку прохождения»
-    ожидается ["01-function.урок", "02-two-functions.урок", "03-example.урок", "04-fold.урок", "05-list-case.урок",
-      "06-type.урок", "07-record.урок", "08-string.урок", "09-promise.урок", "10-require.урок", "11-theorem.урок",
-      "12-run-emit.урок"]
-  ["01-function.урок", "02-two-functions.урок", "03-example.урок", "04-fold.урок", "05-list-case.урок", "06-type.урок",
-    "07-record.урок", "08-string.урок", "09-promise.урок", "10-require.урок", "11-theorem.урок", "12-run-emit.урок"]
+    ожидается ["01-function.lesson", "02-two-functions.lesson", "03-example.lesson",
+      "04-fold.lesson", "05-list-case.lesson", "06-type.lesson", "07-record.lesson",
+      "08-string.lesson", "09-promise.lesson", "10-require.lesson",
+      "11-theorem.lesson", "12-run-emit.lesson"]
+  ["01-function.lesson", "02-two-functions.lesson", "03-example.lesson",
+    "04-fold.lesson", "05-list-case.lesson", "06-type.lesson", "07-record.lesson",
+    "08-string.lesson", "09-promise.lesson", "10-require.lesson",
+    "11-theorem.lesson", "12-run-emit.lesson"]
 
 тотальная функция «Не точка»
   возвращает список строки
@@ -204,8 +207,8 @@
   принимает имя: строка
   возвращает «Копия»
   пример «Урок едет в каталог уроков архива»
-    дано имя равно "01-function.урок"
-    ожидается запись «Копия» с «откуда» равным "../../docs/tutor/01-function.урок" и «куда» равным "../../output/release-c/tutor/01-function.урок" и «сторож» равным нет
+    дано имя равно "01-function.lesson"
+    ожидается запись «Копия» с «откуда» равным "../../docs/tutor/01-function.lesson" и «куда» равным "../../output/release-c/tutor/01-function.lesson" и «сторож» равным нет
   запись «Копия» с «откуда» равным («В дереве» от (соединить [(«Уроки в дереве»), "/", имя] по "")) и «куда» равным (соединить [(«Каталог уроков в архиве»), "/", имя] по "") и «сторож» равным нет
 
 тотальная функция «Копии рядом»

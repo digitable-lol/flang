@@ -72,15 +72,15 @@
   принимает names: список строки
   возвращает список «Lesson»
   пример «Lessons are numbered from one in their order»
-    дано names равно ["01-function.урок", "02-two-functions.урок"]
-    ожидается [запись «Lesson» с «number» равным 1 и «file» равным "01-function.урок",
-      запись «Lesson» с «number» равным 2 и «file» равным "02-two-functions.урок"]
+    дано names равно ["01-function.lesson", "02-two-functions.lesson"]
+    ожидается [запись «Lesson» с «number» равным 1 и «file» равным "01-function.lesson",
+      запись «Lesson» с «number» равным 2 и «file» равным "02-two-functions.lesson"]
   свёртка names начиная с (пустой список) как numbered и name → добавить (запись «Lesson» с «number» равным ((длина numbered) плюс 1) и «file» равным name) к numbered
 
 тотальная функция «Lessons»
   принимает answers: список «Answer»
   возвращает список «Lesson»
-  «Numbered» от (отфильтровать («Lines» от («Output of» от "lessons" и answers)) где name → «Ends with» от name и ".урок")
+  «Numbered» от (отфильтровать («Lines» от («Output of» от "lessons" и answers)) где name → «Ends with» от name и ".lesson")
 
 тотальная функция «Total»
   принимает answers: список «Answer»

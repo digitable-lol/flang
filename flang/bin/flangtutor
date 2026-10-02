@@ -275,7 +275,7 @@ expects_name() {
 }
 
 [ -d "$LESSONS" ] || { say "$(phrase "нет каталога уроков: $LESSONS" "no lesson directory: $LESSONS")" >&2; exit 3; }
-LIST=$(/bin/ls "$LESSONS" | grep '\.урок$' | sort)
+LIST=$(/bin/ls "$LESSONS" | grep '\.lesson$' | sort)
 [ -n "$LIST" ] || { say "$(phrase "в $LESSONS нет ни одного урока" "no lessons in $LESSONS")" >&2; exit 3; }
 TOTAL=$(printf '%s\n' "$LIST" | wc -l | tr -d ' ')
 

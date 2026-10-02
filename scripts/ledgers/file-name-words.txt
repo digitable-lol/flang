@@ -1678,6 +1678,7 @@ tears
 tell
 tells
 tempdir
+temporaries
 temporary
 ten
 tenths

@@ -284,6 +284,49 @@ jobs:
           fi
       - name: Check translit names
         run: bootstrap/flang io scripts/guards/translit-file-names-guard.fscript --plan Проверка
+  # ЗАБЫТЫХ ВРЕМЯНОК ПРОВЕРОК В ДЕРЕВЕ НЕ ОСТАЁТСЯ (задача 1315).
+  #
+  # Шесть проверок кладут временное ВНУТРЬ дерева исходников, и унести его в
+  # TMPDIR нельзя: относительные пути в «использует … из "…"» считаются от места
+  # файла, а замер занятости слов считает КОРПУС дерева. Убирают они за собой по
+  # выходу, и прогон, снятый по времени или по памяти, до уборки не доходит:
+  # 29 августа 2026 `git add -A` затянул чужую пробу `.flang-storozh-ypvg0t/
+  # проба.flang` в коммит `03f0359a` и оттуда в ствол. Сторож смотрит И видимое,
+  # И прощённое `.gitignore` — `git ls-files --others --exclude-standard` вместе
+  # с `--others --ignored`: правило прощения как раз и делает такой файл
+  # невидимым для `git status`, поэтому одним `git status` его не найти.
+  #
+  # ПРОБ ДВЕ, И ВТОРАЯ ВАЖНЕЕ ПЕРВОЙ. Первая подкладывает путь в памяти плана
+  # (`--plan Подлог`). Вторая кладёт НАСТОЯЩУЮ ВРЕМЯНКУ НА ДИСК и требует кода 1:
+  # в чистой выписке CI сторож зелен всегда, а сторож, зелёный всегда, неотличим
+  # от выключенного (scripts/guards/guards-without-forgery-probe.sh, та же порода).
+  vremyanki:
+    name: stray-temporaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - run: make -C bootstrap -j"$(nproc)"
+      - name: Probe stray temporaries in memory
+        run: |
+          if bootstrap/flang io scripts/guards/stray-temporaries-guard.fscript --plan Подлог; then
+            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: Probe stray temporaries on disk
+        run: |
+          mkdir -p .flang-storozh-ci-proba
+          printf 'модуль «Проба»\n' > .flang-storozh-ci-proba/проба.flang
+          : > occupancy-probe.flang
+          if bootstrap/flang io scripts/guards/stray-temporaries-guard.fscript --plan Проверка; then
+            rm -rf .flang-storozh-ci-proba occupancy-probe.flang
+            echo "сторож промолчал на настоящей времянке в дереве — проверять им нечего" >&2
+            exit 1
+          fi
+          rm -rf .flang-storozh-ci-proba occupancy-probe.flang
+      - name: Check stray temporaries
+        run: bootstrap/flang io scripts/guards/stray-temporaries-guard.fscript --plan Проверка
   # ФАЙЛ НАСТРОЕК ЧИТАЕТСЯ ТОЛЬКО ИЗ ДЕРЕВА И ИЗ ДОМА.
   #
   # Поиск МОДУЛЕЙ этого не держит: он поднимается вверх, пока в предке лежит

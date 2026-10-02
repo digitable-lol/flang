@@ -444,7 +444,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 
 | файл | хозяин | почему |
 |---|---|---|
-| `flang/self/zapis.flang` | Б | формат записи доказательства |
+| `flang/self/proof-record.flang` | Б | формат записи доказательства |
 | `flang/self/lexer.flang`, `parser.flang` | Б | терм-примечание живёт там |
 | `flang/src/emit/c/flang_repl.c` | Б | это язык, хотя и вход печати |
 | `scripts/ledgers/proved-share-ledger.txt` | А | опись снимается печатью |

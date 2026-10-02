@@ -21,7 +21,7 @@
 1. `grep -n 'proofterm\.mjs' flang/self/proofterm.flang`
 2. `grep -n 'builtins\.mjs' flang/self/types.flang`
 3. `grep -n 'значений свидетеля' flang/self/emit-*.flang`
-4. `grep -n 'пример «[^»]*свидетел' flang/self/svoystva.flang flang/self/types.flang`
+4. `grep -n 'пример «[^»]*свидетел' flang/self/declared-properties.flang flang/self/types.flang`
 
 ## Что происходит
 
@@ -30,10 +30,10 @@ $ grep -n 'proofterm\.mjs' flang/self/proofterm.flang
 3553:     у свидетеля (`src/proofterm.mjs`, `безОбъявлений`). */
 $ grep -n 'builtins\.mjs' flang/self/types.flang
 6672: * Отказ, ставший значением (`builtins.mjs`). Форма принимает строку и отдаёт
-$ grep -n 'пример «[^»]*свидетел' flang/self/svoystva.flang flang/self/types.flang
-flang/self/svoystva.flang:80:  пример «Пять имён и порядок свидетеля»
-flang/self/svoystva.flang:120:  пример «Список даёт list:null — ошибка свидетеля перенесена»
-flang/self/svoystva.flang:313:  пример «Начало сообщения свидетеля знак в знак»
+$ grep -n 'пример «[^»]*свидетел' flang/self/declared-properties.flang flang/self/types.flang
+flang/self/declared-properties.flang:80:  пример «Пять имён и порядок свидетеля»
+flang/self/declared-properties.flang:120:  пример «Список даёт list:null — ошибка свидетеля перенесена»
+flang/self/declared-properties.flang:313:  пример «Начало сообщения свидетеля знак в знак»
 flang/self/types.flang:3419:  пример «Узел без kind назван undefined, как у свидетеля»
 ```
 
@@ -68,13 +68,13 @@ flang/self/types.flang:3419:  пример «Узел без kind назван u
   печатью. Весь `flang test` на `emit-c.flang` для этого не годится: он не
   укладывается ни в 300 с, ни в 6 млрд шагов;
 - правка имён примеров не меняет числа примеров: `flang test` на
-  `flang/self/svoystva.flang` называет «примеров 185, прошло 185», на
+  `flang/self/declared-properties.flang` называет «примеров 185, прошло 185», на
   `flang/self/types.flang` — «примеров 355, прошло 355».
 
 ## Где живёт правка
 
 `flang/self/proofterm.flang`, `flang/self/types.flang`,
-`flang/self/svoystva.flang`, `flang/self/emit-c.flang`,
+`flang/self/declared-properties.flang`, `flang/self/emit-c.flang`,
 `flang/self/emit-go.flang`, `flang/self/emit-rust.flang`,
 `flang/self/emit-java.flang`, `flang/self/emit-csharp.flang`,
 `flang/self/emit-python.flang`, `flang/self/emit-elixir.flang`. Всё в

@@ -394,7 +394,7 @@ flang emit: печать отказала — имя функции «乘积» �
 
   | Имя | Что это |
   |---|---|
-  | `flang/self/svoystva.flang`, `docs/benchmarks/speed/memory.flang` | рукописные исходники |
+  | `flang/self/declared-properties.flang`, `docs/benchmarks/speed/memory.flang` | рукописные исходники |
   | `flang/test/zakon-*.test.mjs` (шесть) | рукописные тесты — в дереве их больше нет (сняты 20 августа 2026, `fe8e8a37`) |
   | `docs/ct/zakony.md`, `laws-as-a-pointer-not-a-conclusion.md` | проза |
 

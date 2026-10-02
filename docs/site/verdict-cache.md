@@ -23,7 +23,7 @@ rule of trust.
   the cache file, hands it to the kernel as data together with the fingerprint
   of the binary itself, and after the judgement writes the updated cache back.
   The runtime neither sees nor computes the key.
-- **The fingerprint** — «Отпечаток 256 текста» in `flang/self/zapis.flang`:
+- **The fingerprint** — «Отпечаток 256 текста» in `flang/self/proof-record.flang`:
   sha256 through the language's built-in word `хеш256`.
 
 The cache file is JSON: entries are laid out in buckets («Номер корзины» in

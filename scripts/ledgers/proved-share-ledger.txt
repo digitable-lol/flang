@@ -306,7 +306,7 @@
 // ЧЕГО md5 СТРОКИ НЕ ЛОВИТ. Он держит сам файл, а приговор зависит ещё и от
 // ввоза. Пять строк окрестности ядра сняты в деревьях m-kernel-split (30 августа
 // 01:02, proofterm), m-raise-proved-share (29 августа 22:17–22:30, grid,
-// proof-initial, obyazatelstva-i-yadro) и m-okrestnost-yadra (29 августа 10:45,
+// proof-initial, obligations-and-kernel-examples) и m-okrestnost-yadra (29 августа 10:45,
 // obligations). У первых двух модули библиотеки уже английские, у третьего ещё
 // русские — то есть строка obligations снята при ИНОМ замыкании ввоза, чем
 // нынешнее, хотя md5 самого файла сходится.
@@ -598,7 +598,7 @@
 //     после неё строки станут числами.
 // «Без приговора» у всех четырёх 2: два «требует», ни одного «закона».
 //
-// Там же пересчитано «написано» у flang/self/zapis.flang — по исходнику, тем
+// Там же пересчитано «написано» у flang/self/proof-record.flang — по исходнику, тем
 // же счётом, что у сверки: 216 → 226 (97ca726c9 +3, d3783d6dc +4,
 // 32c8cbd1e +1, 9f66098d3 +2). md5 и числитель строки НЕ ТРОНУТЫ: они
 // датируют прежний приговор.
@@ -616,7 +616,7 @@
 // Инд4 не знает): склейка разложения и последний знак у него — сетка, обе
 // подделки — «объявлено, не доказано» либо сетка. Печать ядра ветки (компилятор,
 // напечатанный в JavaScript) доказывает честные две и не доказывает подделки —
-// записи семьи; числитель здесь переснимет перепечатка. У flang/self/zapis.flang
+// записи семьи; числитель здесь переснимет перепечатка. У flang/self/proof-record.flang
 // и flang/self/proof-initial.flang пересчитано только «написано» (+1 и +1 —
 // «Форма склейки разложения записи», «Объявления знака»); md5 и числитель не
 // тронуты: они датируют прежний приговор.
@@ -1298,6 +1298,7 @@ b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
 87efd53b3cad17320ce7282d24440d59|81|53|8|17|0|flang/self/cli.flang
 02ccce0235b40a701fd8baf4ed5c7bc7|13|9|0|4|0|flang/self/commutative.flang
 6962b417f4054916cefff7f1716b5d6c|203|124|23|56|0|flang/self/conc.flang
+0415f36439e19883e5516407500a09ec|19|12|2|5|0|flang/self/declared-properties.flang
 05641fed3c8e2405969b58859d7b46bd|189|125|15|48|0|flang/self/defunc.flang
 8cf37894dbbccdff06a8ef8c0bb9395e|81|54|6|21|1|flang/self/distributed.flang
 ff586b33c1aa75e4b80d727672748361|20|10|0|10|0|flang/self/distributive.flang
@@ -1330,16 +1331,15 @@ b3c135fc13de8e40e182c230215a3ab5|27|17|4|6|0|flang/self/mcp.flang
 c6f52bf7867e5ee7500f3accc6cc949c|37|21|0|16|0|flang/self/monad.flang
 e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 83313e045b2b5dc3ae770467aec9d9e6|21|11|0|10|0|flang/self/monotone.flang
+72a97dbf214a6c37b7de0e3b1e144702|3|0|2|0|0|flang/self/obligations-and-kernel-examples.flang
 301c10cee2d4e63f7fcdb86d634edb44|55|44|0|0|0|flang/self/obligations.flang
-72a97dbf214a6c37b7de0e3b1e144702|3|0|2|0|0|flang/self/obyazatelstva-i-yadro.flang
 3f8970a696cb0bc0b668c6e31668b8bf|41|11|0|30|0|flang/self/oracle.flang
-5fffa3b0c7a035479c3b55c3731fb99a|1|0|1|0|0|flang/self/otkazy-tipov.flang
-6c68e5bf49b6c4f3e184ef519b324d7a|3|0|2|1|0|flang/self/otkazy-totalnosti.flang
 54cfb1a8e907051aafea33efa6ac337d|782|446|22|261|0|flang/self/parser.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|95|82|2|10|0|flang/self/proof-initial.flang
 c8dbb7179b35f785da41f5990dd41238|59|44|0|0|0|flang/self/proof-kernel.flang
+94902a6939c9331164c3fdd856ef2a93|227|98|57|3|0|flang/self/proof-record.flang
 6caf41ec0a767163f46212d635157227|338|268|26|41|0|flang/self/proof.flang
 c9e3ee258bfab2a0503a1214f8d1034f|182|46|1|91|0|flang/self/proofterm.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|×|×|×|0|flang/self/repl/repl.flang
@@ -1347,11 +1347,11 @@ bddb9033aaa4c5848f9eb45f5b8780b7|88|24|0|64|0|flang/self/setoid-oracle.flang
 283bcb74a49880f90b1aa8497a73236d|101|79|0|22|0|flang/self/setoid.flang
 a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 2c8ea5e4a5fe329bc74c90238b627639|42|42|0|0|0|flang/self/sets.flang
-0415f36439e19883e5516407500a09ec|19|12|2|5|0|flang/self/svoystva.flang
 bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
+6c68e5bf49b6c4f3e184ef519b324d7a|3|0|2|1|0|flang/self/totality-refusals.flang
 f183bd3228a250fc6aa70daa713a32eb|309|258|14|37|0|flang/self/totality.flang
+5fffa3b0c7a035479c3b55c3731fb99a|1|0|1|0|0|flang/self/type-refusals.flang
 6f5995562eb91e54ecbcd9bde4c4853e|410|119|4|265|0|flang/self/types.flang
-94902a6939c9331164c3fdd856ef2a93|227|98|57|3|0|flang/self/zapis.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang

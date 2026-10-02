@@ -4,7 +4,7 @@
 ведомость `flang/proof/tables/inference-rules.tsv`, задача
 [6131](../tasks/6131-the-checker-replays-the-derivation-block.md).
 **Состояние:** приём в `flang/proof/checker/checker.c` написан и проверен на рукотворных
-записях; печать в ядре написана (задача 6132, `flang/self/zapis.flang`) и померена — §8;
+записях; печать в ядре написана (задача 6132, `flang/self/proof-record.flang`) и померена — §8;
 второй чекер `flang/proof/checker.flang` не тронут.
 **Проверяется:** `sh flang/proof/checker/tests/run.sh` (семья «вывод»),
 `sh flang/proof/corpus-share.sh --набор корпус --проигрыванием`.
@@ -244,7 +244,7 @@
 
 Дерево `/srv/tmp/dokazuemyy/yadro-vyvod`, ветка `r/yadro-pechataet-vyvod` от `gh/dev`
 `b1c0fd92c`. Чекер — своя сборка `cc -std=c99 -Wall -Wextra -Werror -pedantic -O2`,
-`checker.c` не тронут ни строкой. Печать — `flang/self/zapis.flang`, снята
+`checker.c` не тронут ни строкой. Печать — `flang/self/proof-record.flang`, снята
 истолкованием (`bootstrap/flang run`), без перепечатки семени.
 
 ### 8.1 Разрыв между «место ждёт вывода» и «вывод печатается»

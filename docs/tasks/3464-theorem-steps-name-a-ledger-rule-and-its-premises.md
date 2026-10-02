@@ -102,7 +102,7 @@ bootstrap/flang check flang/proof/probes/run/programs/induction.flang --proof
 ## Где живёт правка
 
 `flang/self/proofterm.flang`: «Шаг ведомости» (выбор правила по имени) и правила
-«Ведомость Н1» и соседние; печать записи — `flang/self/zapis.flang`; приём
+«Ведомость Н1» и соседние; печать записи — `flang/self/proof-record.flang`; приём
 записи — `flang/proof/checker/checker.c`. Правки под `flang/self` доезжают до
 двоичного только пересборкой семени (bootstrap regeneration); проверяющая
 программа собирается отдельно.

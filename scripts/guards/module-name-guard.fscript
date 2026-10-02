@@ -178,6 +178,7 @@
    "flang/self/cli.flang",
    "flang/self/commutative.flang",
    "flang/self/conc.flang",
+   "flang/self/declared-properties.flang",
    "flang/self/defunc.flang",
    "flang/self/distributed.flang",
    "flang/self/distributive.flang",
@@ -208,16 +209,15 @@
    "flang/self/monad.flang",
    "flang/self/monoid.flang",
    "flang/self/monotone.flang",
+   "flang/self/obligations-and-kernel-examples.flang",
    "flang/self/obligations.flang",
-   "flang/self/obyazatelstva-i-yadro.flang",
    "flang/self/oracle.flang",
-   "flang/self/otkazy-tipov.flang",
-   "flang/self/otkazy-totalnosti.flang",
    "flang/self/parser.flang",
    "flang/self/partialorder.flang",
    "flang/self/processes.flang",
    "flang/self/proof-initial.flang",
    "flang/self/proof-kernel.flang",
+   "flang/self/proof-record.flang",
    "flang/self/proof.flang",
    "flang/self/proofterm.flang",
    "flang/self/repl/repl.flang",
@@ -225,11 +225,11 @@
    "flang/self/setoid.flang",
    "flang/self/sets-oracle.flang",
    "flang/self/sets.flang",
-   "flang/self/svoystva.flang",
    "flang/self/tags.flang",
+   "flang/self/totality-refusals.flang",
    "flang/self/totality.flang",
-   "flang/self/types.flang",
-   "flang/self/zapis.flang"]
+   "flang/self/type-refusals.flang",
+   "flang/self/types.flang"]
 
 тотальная функция «Новые строчки»
   принимает плохие: список строки

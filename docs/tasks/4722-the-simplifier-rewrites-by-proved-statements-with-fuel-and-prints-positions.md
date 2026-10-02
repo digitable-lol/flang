@@ -39,7 +39,7 @@
 ```
 bootstrap/flang check flang/proof/checker/tests/families/rewrite/concat-laws.flang --proof
 bootstrap/flang check flang/proof/checker/tests/families/rewrite/rewrite-by-statement.flang --proof
-grep -c 'Переп1\|переписать по свойству' flang/self/proof-kernel.flang flang/self/zapis.flang flang/proof/tables/inference-rules.tsv
+grep -c 'Переп1\|переписать по свойству' flang/self/proof-kernel.flang flang/self/proof-record.flang flang/proof/tables/inference-rules.tsv
 ```
 
 ## Что происходит
@@ -54,7 +54,7 @@ $ bootstrap/flang check …/rewrite-by-statement.flang --proof
   утверждений 4: доказано 0, сетка 2, объявлено, не доказано 2    код 3
 $ grep -c 'Переп1\|переписать по свойству' …
 flang/self/proof-kernel.flang:0
-flang/self/zapis.flang:0
+flang/self/proof-record.flang:0
 flang/proof/tables/inference-rules.tsv:0
 ```
 
@@ -111,7 +111,7 @@ ADR-0040: ядро применяет правило «замена равног
 ## Где живёт правка
 
 `flang/self/proof-kernel.flang`: сбор доказанных равенств, обход терма,
-ограничение числа шагов, включение в «Нормализовать»; `flang/self/zapis.flang`:
+ограничение числа шагов, включение в «Нормализовать»; `flang/self/proof-record.flang`:
 печать шага. Обе правки доезжают до двоичного только пересборкой семени
 (bootstrap regeneration). `flang/proof/tables/inference-rules.tsv` и подделки
 пересборки не требуют, но строка правила принимается проверкой таблицы только

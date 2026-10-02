@@ -460,7 +460,7 @@
 
 ---
 
-## `flang/self/zapis.flang` — запись доказательства
+## `flang/self/proof-record.flang` — запись доказательства
 
 ### Столкновение к многочленным отпечаткам решается за секунду — замер
 
@@ -568,7 +568,7 @@
 
 ---
 
-## Приписки ячеек, снятые с `flang/self/zapis.flang`
+## Приписки ячеек, снятые с `flang/self/proof-record.flang`
 
 Кто что дописал — знает `git log`; в исходнике эти строки говорили читателю
 кода ровно ничего. Сняты такие:
@@ -4468,7 +4468,7 @@ TypeScript — не удалённый свидетель на JavaScript, а в
 
 ---
 
-## `flang/self/obyazatelstva-i-yadro.flang`
+## `flang/self/obligations-and-kernel-examples.flang`
 
 
 Слой обязательств и ядро доказательств под своими примерами.
@@ -4635,7 +4635,7 @@ TypeScript — не удалённый свидетель на JavaScript, а в
 > // Пары ОТВЕТОВ: образ, которого не удалось посчитать, приезжает пустым местом, а
 > // не `ничто`, — как `аргументом(undefined)` у свидетеля.
 
-## `flang/self/otkazy-totalnosti.flang`
+## `flang/self/totality-refusals.flang`
 
 
 Отказы компилятора, выраженные примерами внутри языка.
@@ -7185,7 +7185,7 @@ TypeScript — не удалённый свидетель на JavaScript, а в
 
 ---
 
-## `flang/self/svoystva.flang`
+## `flang/self/declared-properties.flang`
 
 
 Объявленные свойства — общая основа пяти законов.
@@ -7951,7 +7951,7 @@ step === 0` свидетеля», «`params.indexOf(имя)` свидетеля�
 
 ---
 
-## `flang/self/zapis.flang`
+## `flang/self/proof-record.flang`
 
 
 Запись доказательства. Ч334 файл уже правила; здесь остаток.

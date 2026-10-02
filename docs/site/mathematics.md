@@ -40,7 +40,7 @@ is empty (`принято на веру: ничего`).
 > prints no report: the run stops with
 > `FLANG_PROPERTY: нарушено свойство «чужой заголовок не признаётся своим»
 > функции «Это заголовок функции записи»` (a postcondition of the compiler
-> itself, `flang/self/zapis.flang`), exit code 1. Until that is fixed the
+> itself, `flang/self/proof-record.flang`), exit code 1. Until that is fixed the
 > arithmetic table is the 23 August measurement and there is nothing to
 > re-check it with.
 

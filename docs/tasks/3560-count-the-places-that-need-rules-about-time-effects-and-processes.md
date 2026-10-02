@@ -72,7 +72,7 @@ ADR-0044 §4.1 и §5, шаг A: запись несёт ходы базы и ш
 а на испорченной — кодом 1. Цена по ADR-0044: не больше 80 строк в
 `flang/proof/checker/checker.c` (ячейка `checker-code-lines` в
 `flang/proof/ratchets.txt`), около 30 строк печати ходов в
-`flang/self/zapis.flang`, два случая приёмки в `flang/proof/lean/Acceptance.lean`
+`flang/self/proof-record.flang`, два случая приёмки в `flang/proof/lean/Acceptance.lean`
 и `flang/proof/lean/Consistency.lean`.
 
 ## Обходной путь
@@ -98,7 +98,7 @@ ADR-0044 §4.1 и §5, шаг A: запись несёт ходы базы и ш
 
 `flang/proof/checker/checker.c` и пробы в
 `flang/proof/checker/tests/families/run-induction/` — собираются `cc`, от
-двоичного flang не зависят. Печать ходов в `flang/self/zapis.flang` — самосборная
+двоичного flang не зависят. Печать ходов в `flang/self/proof-record.flang` — самосборная
 часть: до двоичного доезжает только пересборкой семени (bootstrap regeneration),
 поэтому проверяющая программа учится правилу раньше, чем ядро начинает печатать
 ходы. Леммы — `flang/proof/lean/`.

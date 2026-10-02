@@ -25,7 +25,7 @@
       …
 
 **Чем подтверждено.** Ветка `vypusk/zamestit-proverki`, коммит `d9d68c7f`.
-Файлы `flang/self/otkazy-totalnosti.flang` и `flang/self/otkazy-tipov.flang`,
+Файлы `flang/self/totality-refusals.flang` и `flang/self/type-refusals.flang`,
 девять примеров. Прогон и свидетелем на Node, и двоичным из `bootstrap/`:
 234 из 234 и 202 из 202 — зелено на обоих.
 

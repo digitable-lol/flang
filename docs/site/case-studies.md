@@ -666,7 +666,7 @@ FLANG_PROPERTY: нарушено свойство «чужой заголово�
 
 That is what binary 0.7.17 answers on 11 September 2026: there is **no** proof
 report for this file — the `--proof` run stops on a violated postcondition of
-the compiler itself (`flang/self/zapis.flang`, «чужой заголовок не признаётся
+the compiler itself (`flang/self/proof-record.flang`, «чужой заголовок не признаётся
 своим»), exit code 1. It is a compiler bug, not the file's: `flang check`
 without `--proof` passes the same file with exit code 0 and prints `без
 доказанного завершения: «Шаг счастья» «Счастливое»`. The 29 August measurement

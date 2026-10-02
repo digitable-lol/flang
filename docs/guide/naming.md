@@ -226,7 +226,7 @@ the change.
 
   | Name | What it is |
   |---|---|
-  | `flang/self/svoystva.flang`, `docs/benchmarks/speed/memory.flang` | hand-written sources |
+  | `flang/self/declared-properties.flang`, `docs/benchmarks/speed/memory.flang` | hand-written sources |
   | `flang/test/zakon-*.test.mjs` (six of them) | hand-written tests — no longer in the tree (removed 20 August 2026, `fe8e8a37`) |
   | `docs/ct/zakony.md`, `laws-as-a-pointer-not-a-conclusion.md` | prose |
 

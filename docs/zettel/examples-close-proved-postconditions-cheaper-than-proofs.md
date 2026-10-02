@@ -31,7 +31,7 @@
 | `factcheck.flang` | 1 | **76** | 59 функций |
 | `bounded.flang` | 126 | **209** | 66 функций |
 | `monad-expand.flang` | 1 | **58** | 77 функций |
-| `zapis.flang` | 124 | **164** | 43 функции |
+| `proof-record.flang` | 124 | **164** | 43 функции |
 | `partialorder.flang` | 8 | **29** | 21 функция |
 | `idempotent.flang` | 9 | **18** | 9 функций |
 | `distributive.flang` | 9 | **17** | 8 функций |

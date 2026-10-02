@@ -121,7 +121,7 @@ markdown-ссылках и в `Makefile` — и ни одна из этих сс
 Поэтому в пяти файлах (`map/abilities.flang`, `midpoint-price.flang`,
 `forgeries/transitivity.flang`, `examples/forgery-subtraction-under-precondition.flang`,
 `checker/tests/records/v1-g2/type-behind-a-note.flang`) комментарии до сих пор называют
-старые пути. Сюда же `flang/self/zapis.flang`, где комментарии зовут
+старые пути. Сюда же `flang/self/proof-record.flang`, где комментарии зовут
 `totalnost.запись`, `rec-structure.запись`, `rec-step.запись` и `sosedi.запись`:
 `flang/self` меняет только перепечатка семени. Долг снимается ПЕРЕСЪЁМКОЙ записей
 (правка исходника + новая печать), а не правкой комментария — отдельной работой.

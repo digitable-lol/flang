@@ -697,7 +697,7 @@ flang и **что именно держит**.
 | `flang/src/factcheck.mjs` | 448 | `self/factcheck.flang` | то же |
 | `flang/src/functor.mjs` | 362 | `self/functor.flang` | то же |
 | `flang/src/grid.mjs` | 201 | `self/grid.flang` | то же |
-| `flang/src/svoystva.mjs` | 162 | `self/svoystva.flang` | **НЕ оракул**: словарь пяти имён `СВОЙСТВА` у типизатора |
+| `flang/src/svoystva.mjs` | 162 | `self/declared-properties.flang` | **НЕ оракул**: словарь пяти имён `СВОЙСТВА` у типизатора |
 
 **ПОПРАВКА ВТОРАЯ, того же 19 августа (заход «дропни javascript прямо сейчас»):
 из шести файлов таблицы В ДЕРЕВЕ ОСТАЛСЯ ОДИН.** Первая поправка ниже вывела их
@@ -823,7 +823,7 @@ flang и **что именно держит**.
 разделением — тем же приёмом, каким выехал `obligations.mjs`.
 
 **ЗАКРЫТО 19 августа, и именно предсказанным приёмом.** Словарь уехал в
-`types.mjs` (хозяином остался слой — `self/svoystva.flang`, «Имена свойств»;
+`types.mjs` (хозяином остался слой — `self/declared-properties.flang`, «Имена свойств»;
 копию сверяет `self-svoystva.test.mjs`), число 12 — копией в `src/self.mjs`, и
 `svoystva.mjs` из рабочего пути ушёл целиком. Из ДЕРЕВА он не ушёл: на нём стоит
 сверка `ключТипа` с эталоном.

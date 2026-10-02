@@ -6,6 +6,7 @@ flang/self/carriers.flang	вне присмотра 6
 flang/self/cli.flang	78 78 0 75
 flang/self/commutative.flang	191 191 0 7
 flang/self/conc.flang	644 644 0 145
+flang/self/declared-properties.flang	184 184 0 19
 flang/self/defunc.flang	134 134 0 134
 flang/self/distributed.flang	206 206 0 70
 flang/self/distributive.flang	193 193 0 9
@@ -37,16 +38,15 @@ flang/self/monad-expand.flang	129 129 0 111
 flang/self/monad.flang	вне присмотра 2
 flang/self/monoid.flang	184 184 0 27
 flang/self/monotone.flang	218 218 0 11
+flang/self/obligations-and-kernel-examples.flang	вне присмотра 4
 flang/self/obligations.flang	вне присмотра 4
-flang/self/obyazatelstva-i-yadro.flang	вне присмотра 4
 flang/self/oracle.flang	вне присмотра 2
-flang/self/otkazy-tipov.flang	вне присмотра 3
-flang/self/otkazy-totalnosti.flang	вне присмотра 6
 flang/self/parser.flang	490 490 0 191
 flang/self/partialorder.flang	207 207 0 23
 flang/self/processes.flang	170 170 0 30
 flang/self/proof-initial.flang	вне присмотра 78
 flang/self/proof-kernel.flang	вне присмотра 37
+flang/self/proof-record.flang	431 431 0 107
 flang/self/proof.flang	413 413 0 242
 flang/self/proofterm.flang	1289 1289 0 37
 flang/self/repl/repl.flang	вне присмотра 14
@@ -54,8 +54,8 @@ flang/self/setoid-oracle.flang	вне присмотра 3
 flang/self/setoid.flang	216 216 0 51
 flang/self/sets-oracle.flang	вне присмотра 12
 flang/self/sets.flang	вне присмотра 3
-flang/self/svoystva.flang	184 184 0 19
 flang/self/tags.flang	151 151 0 14
+flang/self/totality-refusals.flang	вне присмотра 6
 flang/self/totality.flang	448 448 0 275
+flang/self/type-refusals.flang	вне присмотра 3
 flang/self/types.flang	352 352 0 191
-flang/self/zapis.flang	431 431 0 107

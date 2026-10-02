@@ -46,8 +46,8 @@ docs/editors/
 ```
 
 **Подсветка не написана руками ни в одном редакторе, и это замер, а не
-намерение.** В `docs/editors/vim/syntax/flang.vim` — <!-- СНЯТО 2026-09-08 строк docs/editors/vim/syntax/flang.vim = 46 --> 46 строк, в
-`docs/editors/vscode/syntaxes/flang.tmLanguage.json` — <!-- СНЯТО 2026-09-08 строк docs/editors/vscode/syntaxes/flang.tmLanguage.json = 60 --> 60 строк, и обе печатаются из
+намерение.** В `docs/editors/vim/syntax/flang.vim` — <!-- СНЯТО 2026-09-08 строк docs/editors/vim/syntax/flang.vim = 47 --> 47 строк, в
+`docs/editors/vscode/syntaxes/flang.tmLanguage.json` — <!-- СНЯТО 2026-09-08 строк docs/editors/vscode/syntaxes/flang.tmLanguage.json = 66 --> 66 строк, и обе печатаются из
 таблицы ключевых слов языка программами на самом flang
 (`scripts/editors/vim-highlighting.fscript`, `scripts/editors/vscode-highlighting.fscript`). Список
 слов, набранный отдельно, — это второе описание языка, и оно расходится с первым

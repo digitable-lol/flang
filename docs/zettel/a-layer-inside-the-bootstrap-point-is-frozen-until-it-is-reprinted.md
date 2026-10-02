@@ -100,7 +100,7 @@ FLANG_PARSE, строка 2801, столбец 98: … неожиданное '�
 [[bootstrap-circle-is-broken-but-the-binary-cannot-check-itself]]
 
 **Дополнение от 14 сентября: печать слоя, снятая зондом, в набор записей не
-кладётся.** Правку `flang/self/zapis.flang` можно прогнать до перепечатки —
+кладётся.** Правку `flang/self/proof-record.flang` можно прогнать до перепечатки —
 зондом `flang/self/bootstrap/check-with-source-compiler.flang` (толкование исходников семенем,
 684–1031 с и до 30 ГиБ на программу). Но снятая так запись — печать ядра, какой
 двоичное ещё не умеет, и набор записей `flang/proof/checker/tests/records/corpus`

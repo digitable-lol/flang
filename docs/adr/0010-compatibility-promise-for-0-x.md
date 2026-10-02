@@ -6,7 +6,7 @@
 **Дата:** 24 августа 2026
 **Основание:** `docs/what-blocks-1-0.md` раздел 0 (обещание 1.0, из которого это
 вычтено), `flang/self/cli.flang`, `flang/src/emit/c/flang_repl.c`,
-`docs/site/cli.md`, `flang/self/zapis.flang`, `flang/proof/checker.flang`,
+`docs/site/cli.md`, `flang/self/proof-record.flang`, `flang/proof/checker.flang`,
 `flang/self/parser.flang`, `flang/self/failures.flang`
 **Связано:** [ADR-0016](0016-three-file-extensions.md) — три расширения, чьё
 обещание записано здесь пунктом 9; [ADR-0009](0009-tasks-live-in-the-repo.md) —
@@ -236,8 +236,8 @@ grep -n '"proved"\|"proved-induction"\|"proved-conditional"\|"grid"\|"declared"'
 переснимаются, и молчания при этом не будет.
 
 ```sh
-grep -n 'запись доказательства ' flang/self/zapis.flang flang/proof/checker.flang
-grep -n 'Версия записи' flang/self/zapis.flang
+grep -n 'запись доказательства ' flang/self/proof-record.flang flang/proof/checker.flang
+grep -n 'Версия записи' flang/self/proof-record.flang
 ```
 
 ### 8. Словарь поручений ввода-вывода закрыт, и его размер сторожит сам компилятор

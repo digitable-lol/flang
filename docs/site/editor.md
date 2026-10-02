@@ -47,8 +47,8 @@ docs/editors/
 ```
 
 **Highlighting is hand-written in no editor at all, and that is a measurement
-rather than an intention.** `docs/editors/vim/syntax/flang.vim` is <!-- СНЯТО 2026-09-08 строк docs/editors/vim/syntax/flang.vim = 46 --> 46 lines,
-`docs/editors/vscode/syntaxes/flang.tmLanguage.json` is <!-- СНЯТО 2026-09-08 строк docs/editors/vscode/syntaxes/flang.tmLanguage.json = 60 --> 60 lines, and both are printed
+rather than an intention.** `docs/editors/vim/syntax/flang.vim` is <!-- СНЯТО 2026-09-08 строк docs/editors/vim/syntax/flang.vim = 47 --> 47 lines,
+`docs/editors/vscode/syntaxes/flang.tmLanguage.json` is <!-- СНЯТО 2026-09-08 строк docs/editors/vscode/syntaxes/flang.tmLanguage.json = 66 --> 66 lines, and both are printed
 from the language's keyword table by programs written in flang itself
 (`scripts/editors/vim-highlighting.fscript`, `scripts/editors/vscode-highlighting.fscript`). A list of
 words typed out separately is a second description of the language, and it

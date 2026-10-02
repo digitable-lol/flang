@@ -19,7 +19,7 @@ RAB=${FLANG_KESH_RABOTA:-$(mktemp -d)}
 mkdir -p "$RAB"
 echo "рабочий каталог: $RAB"
 
-KORPUS="flang/core/json.flang flang/self/lexer.flang flang/stdlib/base64.flang flang/self/zapis.flang flang/self/monoid.flang"
+KORPUS="flang/core/json.flang flang/self/lexer.flang flang/stdlib/base64.flang flang/self/proof-record.flang flang/self/monoid.flang"
 
 echo "══════════ 1. приговоры с кешем и без: печать побайтово ══════════"
 SVERENO=0

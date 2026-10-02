@@ -213,7 +213,7 @@
 • flang/self/bootstrap/compiler.flang: изменён после перепечатки
 • flang/self/mcp.flang: вошёл в замыкание после перепечатки
 • flang/self/proof-kernel.flang: изменён после перепечатки
-• flang/self/zapis.flang: вошёл в замыкание после перепечатки
+• flang/self/proof-record.flang: вошёл в замыкание после перепечатки
 • flang/src/emit/c/flang_repl.c: изменён после перепечатки
 расхождений 5.
 ```

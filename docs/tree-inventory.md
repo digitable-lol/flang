@@ -91,7 +91,7 @@ $ bootstrap/flang io scripts/guards/tree-inventory.fscript --max-steps 50000000
 | Go | 3 | 2 880 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.go = 3 --><!-- СНЯТО 2026-09-06 строк-в *.go = 2880 --> |
 | Rust | 3 | 3 961 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.rs = 3 --><!-- СНЯТО 2026-09-06 строк-в *.rs = 3961 --> |
 | Lua | 3 | 225 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.lua = 3 --><!-- СНЯТО 2026-09-17 строк-в *.lua = 225 --> |
-| Vimscript | 8 | 389 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.vim = 8 --><!-- СНЯТО 2026-09-17 строк-в *.vim = 389 --> |
+| Vimscript | 8 | 390 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.vim = 8 --><!-- СНЯТО 2026-10-02 строк-в *.vim = 390 --> |
 | Ruby | 1 | 113 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.rb = 1 --><!-- СНЯТО 2026-09-10 строк-в *.rb = 113 --> |
 
 
@@ -166,7 +166,7 @@ flang в C.
 | рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 29 | 52 183 <!-- СНЯТО 2026-09-06 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 29 --><!-- СНЯТО 2026-10-02 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 52183 (задача 1116: счёт неисполненных блоков «прогон» прибавил 60 строк в flang_repl.c; до него 52123) (задача 5709: память вызовов в flang_runtime.[ch]; до неё 50472, снято 2026-10-01) --> |
 | замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/concurrency/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
 | проба рантайма C | `flang/test/oblast/*.c` и `flang/concurrency/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/targets/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
-| чужая среда: редактор | `docs/editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 614 <!-- СНЯТО 2026-08-31 файлов docs/editors/vim/*.vim,docs/editors/vim/*.lua = 11 --><!-- СНЯТО 2026-09-17 строк-в docs/editors/vim/*.vim,docs/editors/vim/*.lua = 614 --> |
+| чужая среда: редактор | `docs/editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 615 <!-- СНЯТО 2026-08-31 файлов docs/editors/vim/*.vim,docs/editors/vim/*.lua = 11 --><!-- СНЯТО 2026-10-02 строк-в docs/editors/vim/*.vim,docs/editors/vim/*.lua = 615 --> |
 | код на стороне цели | `flang/concurrency/bin/node.{c,cs,ex,go,java,py,rs}` — семь хозяев узлов на семи языках | 8 | 8 227 |
 | разметка и оформление | четыре `.html` и `docs/site/style.css` — цели HTML у языка нет и не заявлено | 5 | 1 785 |
 | чужая среда: установщик | `packaging/homebrew/flang.rb` и три файла `packaging/asdf/bin/` — homebrew понимает Ruby, asdf зовёт свои три раньше, чем flang в системе есть | 4 | 470 |

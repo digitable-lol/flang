@@ -168,7 +168,7 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 Где они лежат: `docs/` 141, `flang/` 89, `fspec/` 4. Примеры —
 `docs/design/proof-object-po-obyavleniyu-trace.md`,
 `docs/tasks/1409-otsenka-vitkov-chislovaya-rekursiya-edinicy-sekundy.md`,
-`flang/proof/checker/tests/families/totality.flang`, `flang/self/otkazy-totalnosti.flang`,
+`flang/proof/checker/tests/families/totality.flang`, `flang/self/totality-refusals.flang`,
 `flang/translation/fixtures/…/poddelka_usloviya_bez_spuska.protocol`.
 
 Для сравнения — как выглядит **записанное** исключение: `no-package-json-guard.sh` смотрит
@@ -208,7 +208,7 @@ OBLAST="scripts flang/test flang/scripts docs/site docs/zettel .github"   # ст
 
 1. русская кириллицей — `Record.lean`, `expected.tsv`, `run.sh`;
 2. английская латиницей — `RecordReader.lean`, `binary-origin.fscript`;
-3. **русская латиницей (транслит)** — `totality.flang`, `otkazy-totalnosti.flang`,
+3. **русская латиницей (транслит)** — `totality.flang`, `totality-refusals.flang`,
    `lie-difference-pure.flang`. Она не читается ни русским, ни английским глазом.
 
 Кроме того **52 имени файла мешают письменности внутри одной основы** (не считая

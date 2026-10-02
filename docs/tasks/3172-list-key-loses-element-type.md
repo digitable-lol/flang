@@ -15,10 +15,10 @@
 
 ## Шаги воспроизведения
 
-1. Прочитать тело функции «Ключ вида» в `flang/self/svoystva.flang`:
+1. Прочитать тело функции «Ключ вида» в `flang/self/declared-properties.flang`:
 
 ```
-grep -a -A4 'если «вид» равен "named"' flang/self/svoystva.flang
+grep -a -A4 'если «вид» равен "named"' flang/self/declared-properties.flang
 ```
 
 2. Смотреть ветку `"list"`: ключ не зависит от типа элемента.
@@ -31,7 +31,7 @@ bootstrap/flang check flang/ct/crdt-merge.flang
 ## Что происходит
 
 ```
-$ grep -a -A4 'если «вид» равен "named"' flang/self/svoystva.flang
+$ grep -a -A4 'если «вид» равен "named"' flang/self/declared-properties.flang
   если «вид» равен "named"
     то соединить ["named:", («Строка поля» от «тип» и "name")] по ""
     иначе если «вид» равен "list"
@@ -82,7 +82,7 @@ flang/ct/crdt-merge.flang: проверено НЕ ДО КОНЦА — разб�
 
 ## Где живёт правка
 
-`flang/self/svoystva.flang`: «Ключ вида», «Ключ типа» и их примеры;
+`flang/self/declared-properties.flang`: «Ключ вида», «Ключ типа» и их примеры;
 вызывающие — `flang/self/monotone.flang` и `flang/self/partialorder.flang`.
 До двоичного правка доезжает только пересборкой семени (bootstrap
 regeneration), а видна станет, когда слой объявленных свойств войдёт в

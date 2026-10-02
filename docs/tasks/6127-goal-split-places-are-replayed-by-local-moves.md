@@ -81,5 +81,5 @@ $ cat flang/proof/checker/tests/records/corpus/*.record | grep -c 'ход цел
 
 `flang/proof/checker/checker.c`: функция `половина_закрыта` и места её вызова;
 ключ `checker-code-lines` в `flang/proof/ratchets.txt`. Печать ходов —
-`flang/self/zapis.flang`, функция «Ходы разбора цели постусловия записи»; она
+`flang/self/proof-record.flang`, функция «Ходы разбора цели постусловия записи»; она
 уже в двоичном, перепечатка не нужна.

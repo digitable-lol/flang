@@ -101,7 +101,7 @@ categories, morphisms. … Ответ «замечаний нет» здесь �
 их заново». Замер говорит другое: правила поверхности переписаны на самом flang
 и лежат в дереве — `flang/self/monoid.flang` (822 строки), `monad.flang` (620),
 `iso.flang` (334), `functor.flang` (751), `sets.flang` (1026), `setoid.flang`
-(1727), `svoystva.flang` (386), `grid.flang` (443) и четыре спрашивающих слоя
+(1727), `declared-properties.flang` (386), `grid.flang` (443) и четыре спрашивающих слоя
 `law-oracle`, `functor-oracle`, `setoid-oracle`, `sets-oracle` (1786 суммарно).
 Двенадцать файлов, **7 895 строк**.
 

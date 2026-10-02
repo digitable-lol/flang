@@ -16,7 +16,7 @@
 ## Шаги воспроизведения
 
 ```
-grep -ac 'оценка витков' flang/proof/checker/checker.c flang/self/zapis.flang
+grep -ac 'оценка витков' flang/proof/checker/checker.c flang/self/proof-record.flang
 grep -am1 'принцип' flang/proof/checker/tests/families/carrier/name-natural.record
 grep -ac 'оценка витков' flang/proof/checker/tests/families/carrier/name-natural.record
 ```
@@ -25,7 +25,7 @@ grep -ac 'оценка витков' flang/proof/checker/tests/families/carrier/
 
 ```
 flang/proof/checker/checker.c:0
-flang/self/zapis.flang:0
+flang/self/proof-record.flang:0
   принцип тип «натуральное» по «н» носитель segment база 1 шаг 1
 0
 ```
@@ -73,7 +73,7 @@ ADR-0033 §4–§5 (`docs/adr/0033-termination-is-not-a-bound-on-steps.md`):
 ## Где живёт правка
 
 `flang/self/bounded.flang` (правило для числовой рекурсии),
-`flang/self/zapis.flang` и `flang/self/proof-initial.flang` (узел в записи),
+`flang/self/proof-record.flang` и `flang/self/proof-initial.flang` (узел в записи),
 `flang/proof/checker/checker.c` (пересчёт), строка в
 `flang/proof/tables/inference-rules.tsv` и лемма Lean на правило. Правки под
 `flang/self/` доезжают до двоичного пересборкой семени (bootstrap regeneration).

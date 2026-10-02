@@ -28,3 +28,4 @@ socrates-with-premises-only-in-the-statement.flang	kernel	0	ДОКАЗАНО —
 socrates-with-premises-only-in-the-statement.flang	checker	0	ПРОВЕРЕНО — запись сошлась с исходником
 socrates-with-premises-only-in-the-theorem.flang	kernel	0	ДОКАЗАНО — утверждений 1: доказано 1
 socrates-with-premises-only-in-the-theorem.flang	checker	1	не является допущением утверждения
+postcondition-with-a-hypothesis-only-in-the-theorem.flang	checker	1	не является допущением утверждения

@@ -157,7 +157,6 @@ docs/tasks/8398-plans-are-judged-and-the-compiler-says-so.md	flang/scripts/binar
 docs/tasks/8398-plans-are-judged-and-the-compiler-says-so.md	plany.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/tasks/8398-plans-are-judged-and-the-compiler-says-so.md	tree-plans.flang	план в перечне задачи 8398, не файл
 docs/tasks/8398-plans-are-judged-and-the-compiler-says-so.md	vsyo.sh	план в тексте задачи: перечень будущих скриптов, не файл
-docs/tasks/8567-the-fifth-reprint-run-starts-on-a-grown-closure.md	versiya.sh	внешний: инструмент /srv/priyom, не файл этого дерева
 docs/tasks/8570-the-print-is-outrun-because-it-is-slow.md	hranitel-tikov.sh	внешний: инструмент вне дерева, соседствует с pusk.sh
 docs/tasks/8570-the-print-is-outrun-because-it-is-slow.md	pusk.sh	внешний: инструмент вне дерева (docs/reprint-cost.md)
 docs/tasks/9528-an-en-view-is-not-checked-against-its-promise.md	tools/check-flang-en-views.sh	внешний: файл репозитория digitwm, не файл этого дерева

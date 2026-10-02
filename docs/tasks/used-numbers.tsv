@@ -85,6 +85,7 @@ number	state	title
 1421	rejected	The txt extension becomes ftext
 1422	done	The proof ledger gets its flang twin
 1423	done	Node leaves the concurrency directory
+1426	done	The seed fingerprint names a commit that lives in the trunk
 1427	rejected	Named axioms of type laws
 1430	done	The translit guard judges a third of the tree
 1431	done	The jargon guard lives in two places
@@ -298,6 +299,7 @@ number	state	title
 8429	done	G7 gate is satisfied by construction and measures nothing
 8455	done	The proof report crashes on one stdlib module
 8460	done	The occupied names guard was blind to the ninth target
+8567	done	Fast seed check is green: the fingerprint commit survives a rebase
 8581	done	A pre push hook keeps red out of github
 8596	done	Typescript target over the javascript printer
 8605	done	Where a delegating match stops proving

@@ -109,7 +109,7 @@ sh docs/benchmarks/verdict-cache/three-prints.sh [<working directory>]
 - `probes.sh` asks four questions and answers each with a number: does the
   printing of several programs with and without the cache match to the last byte;
   does the cache miss when the body of a called function is edited while the
-  function with the postcondition is untouched (`проба.flang` and a corrupted
+  function with the postcondition is untouched (`cache-probe.flang` and a corrupted
   copy produced from it by one line of `sed`); does it hit when the sound one
   is restored; does a second kernel answer on someone else's cache exactly what
   it answers on an empty one.

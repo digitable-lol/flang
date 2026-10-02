@@ -73,21 +73,23 @@ bootstrap/flang run-script jargon:check                                    # к�
   (её стережёт `published-vs-tree.sh --карта`, код 0) описывает **корень** дерева и
   называет из 22 подкаталогов `docs/` четыре: `examples/`, `editors/`, `adr/`, `tasks/`.
   Про `benchmark/`, `benchmark2/`, `benchmarks/`, `ct/`, `ifl/`, `design/`,
-  `zamer-teorkat/`, `спецификации/`, `guide/`, `zettel/`, `site/`, `course/`, `tutor/`,
+  `zamer-teorkat/`, `specifications/`, `guide/`, `zettel/`, `site/`, `course/`, `tutor/`,
   `archive/`, `releases/`, `tools/`, `flang/`, `fspec/` карта молчит, и сторож туда не
   смотрит — он сверяет только корень.
 * **`flang/` (1447 файлов, глубина 11).** Самая глубокая ветка — `flang/proof/checker/tests/…`,
   это задача 6421: под `proof/` лежит 931 файл, из них 740 с кириллическим именем. Вне
-  `proof/` остаётся 516 файлов и в них 19 кириллических имён — `flang/test/ведомость*.txt`,
-  `обход*.sh`, `владение-состоянием.*`, `jargon.flang`, четыре файла в `flang/scripts/`,
-  `flang/stdlib/samples.flang` и три `.fts`-примера. Все 19 — в ведомости долга.
-  Кириллических каталогов вне `proof/` четыре, и все под
-  `flang/test/fixtures/fts/tools/ftspec/examples/`.
+  `proof/` остаётся 508 файлов и в них четыре кириллических имени — `обход*.sh`
+  (три обходчика) и `встроенные-формы.flang`. Было девятнадцать: задача 1419
+  переименовала остальные, а эти четыре ждут перепечатки семени, потому что их
+  называют `flang/self` и рантайм, уезжающий в семя дословно; причина у каждого
+  записана в ведомости долга. Кириллических каталогов вне `proof/` не осталось ни
+  одного: четыре под `flang/test/fixtures/fts/tools/ftspec/examples/` переименованы
+  той же задачей.
 * **`scripts/` (150 файлов, 9 подкаталогов, глубина 3).** Самый аккуратный крупный
   каталог: подкаталоги названы по роду (`guards/`, `ledgers/`, `release/`, `seed/`,
-  `site/`, `targets/`, `editors/`, `registry-example/`), кириллических имён два
-  (`provability.fscript` и `guards/darwin-guard.fscript`), оба в ведомости долга с
-  причиной. **Беспорядка здесь нет.**
+  `site/`, `targets/`, `editors/`, `registry-example/`), кириллических имён ни одного:
+  последнее, `guards/сторож-дарвина.fscript`, переименовано задачей 1419 в
+  `guards/darwin-guard.fscript`. **Беспорядка здесь нет.**
 * **`fspec/` (75 файлов, 3 подкаталога, глубина 3).** Мелкая ровная раскладка. Одно
   замечание: `experience/` и `experiments/` — соседи, чьи имена различаются двумя
   буквами, а лежат в них разные вещи (`experience/` — примеры скидок по шагам,
@@ -106,10 +108,10 @@ bootstrap/flang run-script jargon:check                                    # к�
 Правило держат два сторожа, и **оба сегодня зелёные**:
 
 ```
-sh scripts/guards/cyrillic-file-names-guard.sh --check
-  → кириллица в именах файлов вне flang/proof: 63, все в ведомости — новых нет
-sh scripts/guards/translit-file-names-guard.sh --check
-  → транслит в именах файлов: латинских имён 1226, с чужими словами 67 — все в ведомости, новых нет
+bootstrap/flang io scripts/guards/cyrillic-file-names-guard.fscript --plan Проверка
+  → кириллица в именах файлов: 5, все в ведомости — новых нет
+bootstrap/flang io scripts/guards/translit-file-names-guard.fscript --plan Проверка
+  → транслит в именах файлов: латинских имён 2448, с чужими словами 104 — все в ведомости, новых нет
 ```
 
 Зелёные они потому, что оба — храповики по ведомости: судится **прирост**, а не

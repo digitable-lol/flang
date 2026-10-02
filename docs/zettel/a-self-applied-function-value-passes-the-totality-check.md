@@ -33,4 +33,4 @@
 вход печати): ребро от функции, применяющей значение типа «функция из Т в …», к
 каждой функции, чей тег программа строит с подходящим типом. Без печати не чинится.
 
-Связано: [[proven-is-not-correct]], [[termination-is-not-a-bound-on-steps]]
+Связано: [[proven-is-not-correct]], [ADR-0033](../adr/0033-termination-is-not-a-bound-on-steps.md)

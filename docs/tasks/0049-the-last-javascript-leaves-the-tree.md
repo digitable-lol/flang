@@ -25,7 +25,7 @@ git ls-files 'scripts/*.mjs' 'flang/scripts/*.mjs' 'flang/test/*.mjs'
 2. Посмотреть, какие ярлыки и работы CI зовут Node:
 
 ```
-grep -an '"node ' ярлыки.flang
+grep -n ' = node ' .flangrc
 grep -an 'run: node' .github/workflows/binary.yml .github/workflows/pages.yml
 ```
 
@@ -36,21 +36,23 @@ $ git ls-files '*.mjs' | wc -l
 33
 $ git ls-files 'scripts/*.mjs' 'flang/scripts/*.mjs' 'flang/test/*.mjs' | wc -l
 15
+$ grep -c ' = node ' .flangrc
+14
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 Пятнадцать файлов этой задачи и что держит каждый:
 
 | файл | кто зовёт | программа на flang рядом |
 |---|---|---|
-| `flang/scripts/count-guard.mjs` | ярлык `подсчёты:проверка` | `flang/scripts/count-guard.fscript`, правила перенесены не все |
-| `flang/scripts/name-guard.mjs` | ярлык `имена:проверка` | `flang/scripts/name-guard.fscript` |
-| `flang/scripts/word-occupancy.mjs` | ярлык `слово:занятость`, `scripts/guards/occupancy-check.fscript` | `flang/scripts/word-occupancy.fscript` |
-| `flang/scripts/link-collision-guard.mjs` | ярлыки `столкновения:проверка`, `столкновения:порча`, `.github/workflows/binary.yml`, `scripts/targets/identical-declarations.sh` | `flang/scripts/link-collision-tree.fscript` — задача 2261 |
-| `scripts/site/build-changelog.mjs` | ввозит `scripts/site/build-changelog-page.mjs` | `scripts/site/build-changelog.fscript`, ярлык уже переключён |
-| `scripts/site/build-changelog-page.mjs` | ярлыки `журнал:страница`, `журнал:страница:проверка`, `.github/workflows/pages.yml` | `scripts/site/build-changelog-page.fscript` |
-| `flang/test/nadzor-uzla.test.mjs`, `flang/test/planirovshchik-celi.test.mjs`, `flang/test/svyaz-celi.test.mjs` | ярлык `тесты`, `flang/scripts/guards-start.fscript` | `flang/scripts/supervisor-across-targets.fscript`, `flang/scripts/scheduler-across-targets.fscript`, `flang/scripts/link-across-targets.fscript` |
+| `flang/scripts/count-guard.mjs` | ярлык `counts:check` | `flang/scripts/count-guard.fscript`, правила перенесены не все |
+| `flang/scripts/name-guard.mjs` | ярлык `names:check` | `flang/scripts/name-guard.fscript` |
+| `flang/scripts/word-occupancy.mjs` | ярлык `word:occupancy` | `flang/scripts/word-occupancy.fscript`, его и зовёт `scripts/guards/occupancy-check.fscript` |
+| `flang/scripts/link-collision-guard.mjs` | ярлыки `link-collisions:check`, `link-collisions:corrupt`, `.github/workflows/binary.yml`, `scripts/targets/identical-declarations.sh` | `flang/scripts/link-collision-tree.fscript` — задача 2261 |
+| `scripts/site/build-changelog.mjs` | ввозит `scripts/site/build-changelog-page.mjs` | `scripts/site/build-changelog.fscript`, ярлыки `changelog:build` и `changelog:check` уже переключены |
+| `scripts/site/build-changelog-page.mjs` | ярлыки `changelog:page`, `changelog:page:check`, `.github/workflows/pages.yml` | `scripts/site/build-changelog-page.fscript` |
+| `flang/test/nadzor-uzla.test.mjs`, `flang/test/planirovshchik-celi.test.mjs`, `flang/test/svyaz-celi.test.mjs` | ярлык `tests`, `flang/scripts/guards-start.fscript` (обходит все `*.test.mjs`, сегодня их в дереве ровно эти три) | `flang/scripts/supervisor-across-targets.fscript`, `flang/scripts/scheduler-across-targets.fscript`, `flang/scripts/link-across-targets.fscript` |
 | `flang/test/glob.mjs`, `flang/test/tempdir.mjs`, `flang/test/toolchain-guard.mjs`, `flang/test/uzel-osnastka.mjs` | три теста узла и стенд из задачи 4412 | уходят вместе с ввозящими |
 | `flang/scripts/binary.mjs`, `flang/scripts/direct-run.mjs` | все остальные файлы этого списка и сборка сайта | `flang/scripts/binary.fscript`; уходят последними |
 
@@ -75,7 +77,7 @@ flang даёт тот же ответ и тот же код возврата н�
 ```
 $ git ls-files 'scripts/*.mjs' 'flang/scripts/*.mjs' 'flang/test/*.mjs' | wc -l
 0
-$ grep -ac '"node flang/\|"node scripts/\|"node --test' ярлыки.flang
+$ grep -ac '= node flang/\|= node scripts/\|= node --test' .flangrc
 0
 ```
 
@@ -88,7 +90,8 @@ JavaScript. Перечень `docs/javascript-inventory.md` переснят. Ф
 
 ## Где живёт правка
 
-Файлы из таблицы, `ярлыки.flang`, `.github/workflows/binary.yml`,
+Файлы из таблицы, `.flangrc` (объявления ярлыков переехали туда из
+`ярлыки.flang`), `.github/workflows/binary.yml`,
 `.github/workflows/pages.yml`, `scripts/targets/identical-declarations.sh`,
 `scripts/guards/occupancy-check.fscript`, `flang/scripts/guards-start.fscript`,
 `docs/javascript-inventory.md`. Пересборка семени (bootstrap regeneration) не

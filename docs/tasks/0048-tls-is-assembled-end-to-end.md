@@ -32,17 +32,19 @@ grep -a -c -i 'pss' flang/stdlib/rsa.flang
 
 ```
 $ bootstrap/flang io docs/examples/https/tls-hello-to-a-real-host.flang --plan 'Привет узлу' --trust
-{"plan":"Привет узлу","result":"октетов принято 1448, целых записей 2; первая
+{"plan":"Привет узлу","result":"октетов принято 3934, целых записей 3; первая
  запись: тип Handshake, версия TLS 1.2, длина 90; ServerHello, версия TLS 1.3,
- набор TLS_AES_128_GCM_SHA256, группа ecdh_x25519, ключ сервера CBB6…EC2B",
- "orders":3,…}                                                   код 0, 27 с
+ набор TLS_AES_128_GCM_SHA256, группа ecdh_x25519, ключ сервера CC5A…A434",
+ "orders":3,…}                                                   код 0, 25 с
 $ grep -a -n 'define IO_TLS_PROGRAM' bootstrap/flang_repl.c
-15390:#define IO_TLS_PROGRAM "curl"                               код 0
+16167:#define IO_TLS_PROGRAM "curl"                               код 0
 $ grep -a -c -i 'pss' flang/stdlib/rsa.flang
 0                                                                 код 1
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026.
+Версия: flang 0.7.23. Дата прогона: 2 октября 2026. Ключ сервера в каждом
+соединении свой, а номер строки в `bootstrap/flang_repl.c` сдвигается с каждой
+перепечаткой семени: ни то, ни другое приметой не считать.
 
 ServerHello разобран, дальше рукопожатие не идёт. Мешают четыре вещи:
 

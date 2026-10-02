@@ -61,6 +61,11 @@ scripts/guards/seed-parses-sources-guard.fscript
 красна или вердикта не даёт; эти состояния сняты на деревьях прежних дней и
 сегодня не перепроверены. Восьмая, `kernel-memo`, в ведомости не названа вовсе:
 из-за неё план «Проверка» и красен, а работа CI `checks-nobody-calls` падает.
+Её собственный прогон снят: `cd flang/proof/probes/kernel-memo &&
+../../../../bootstrap/flang io run.fscript --на-веру` — код 1 за 306,7 с,
+«KERNEL MEMO CHANGES THE ANSWER», шесть мест на `flang/stdlib/lists.flang` и
+`flang/stdlib/hashmap.flang`. То есть она КРАСНА по делу и дорога: в CI её не
+поставить, пока долг не закрыт, и запись в ведомости ей нужна с этим доводом.
 
 План «Подлог» показывает, что краснеть проверка умеет: подложный набор
 `flang/proof/probes/uncalled-forgery/run.fscript` назван поимённо, код 1.

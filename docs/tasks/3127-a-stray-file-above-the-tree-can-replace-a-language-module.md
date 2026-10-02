@@ -16,23 +16,24 @@
 ## Шаги воспроизведения
 
 1. Игрушечное дерево с приметой корня, со своим модулем в библиотеке и с чужим
-   файлом того же имени над корнем:
+   файлом того же имени над корнем; всё — из корня дерева:
 
 ```
-mkdir -p над/дерево/flang/stdlib над/дерево/scripts над/дерево/bootstrap
-printf 'модуль «JSON»\n'   > над/дерево/flang/stdlib/json.flang
-printf 'модуль «Корень»\n' > над/дерево/root.flang
-printf 'модуль «Проба»\nиспользует «JSON»\n' > над/дерево/scripts/probe.flang
-: > над/дерево/.flangrc
-cp bootstrap/flang над/дерево/bootstrap/flang
-printf 'модуль «JSON»\n'   > над/чужой-черновик.flang
+R=$(mktemp -d)/над
+mkdir -p $R/дерево/flang/stdlib $R/дерево/scripts $R/дерево/bootstrap
+printf 'модуль «JSON»\n'   > $R/дерево/flang/stdlib/json.flang
+printf 'модуль «Корень»\n' > $R/дерево/root.flang
+printf 'модуль «Проба»\nиспользует «JSON»\n' > $R/дерево/scripts/probe.flang
+: > $R/дерево/.flangrc
+cp bootstrap/flang $R/дерево/bootstrap/flang
+printf 'модуль «JSON»\n'   > $R/чужой-черновик.flang
 ```
 
 2. Спросить проверку и спросить сам компилятор об одном и том же файле:
 
 ```
-sh scripts/guards/module-origin-guard.sh --корень над/дерево
-над/дерево/bootstrap/flang ast над/дерево/scripts/probe.flang 2>&1 >/dev/null | grep -c 'взят из'
+sh scripts/guards/module-origin-guard.sh --корень $R/дерево
+$R/дерево/bootstrap/flang ast $R/дерево/scripts/probe.flang 2>&1 >/dev/null | grep -c 'взят из'
 ```
 
 3. Смотреть код возврата первой команды и число во второй.
@@ -40,11 +41,11 @@ sh scripts/guards/module-origin-guard.sh --корень над/дерево
 ## Что происходит
 
 ```
-$ sh scripts/guards/module-origin-guard.sh --корень над/дерево
-МОДУЛЬ ИЗ-ЗА ПРЕДЕЛОВ ДЕРЕВА  scripts/probe.flang:2: «JSON» приедет из над/чужой-черновик.flang
+$ sh scripts/guards/module-origin-guard.sh --корень $R/дерево
+МОДУЛЬ ИЗ-ЗА ПРЕДЕЛОВ ДЕРЕВА  scripts/probe.flang:2: «JSON» приедет из $R/чужой-черновик.flang
       этим перекрыто в дереве: flang/stdlib/json.flang
 СБОРКА НЕ ИЗОЛИРОВАНА: мест 1.                                   код 1
-$ над/дерево/bootstrap/flang ast над/дерево/scripts/probe.flang 2>&1 >/dev/null | grep -c 'взят из'
+$ $R/дерево/bootstrap/flang ast $R/дерево/scripts/probe.flang 2>&1 >/dev/null | grep -c 'взят из'
 0                                       сам разбор отвечает кодом 0
 ```
 

@@ -6,3 +6,5 @@ theorem-hypothesis-not-discharged	closed
 loop-through-function-value	closed
 restricted-postcondition-cited-undischarged	closed
 case-split-substitutes-under-a-binder	closed
+checker-refutes-evaluation-of-an-open-term	open
+checker-refutes-a-sum-bottom-past-the-exact-ceiling	open

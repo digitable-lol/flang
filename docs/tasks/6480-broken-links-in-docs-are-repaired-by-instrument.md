@@ -7,7 +7,7 @@
 ветка: —
 команда: вторая
 карта: Что мешает больше всего
-рядом: —
+рядом: 7731
 нужность: красная проверка ссылок на стволе прячет новые битые ссылки среди старых
 ---
 
@@ -23,17 +23,32 @@
 
 ```
 $ LC_ALL=C.UTF-8 bootstrap/flang run-script links:check
-сторож ссылок ОТКАЗЫВАЕТ, битых 52 из 7273, устаревших исключений 0, в цитатах пропущено 326, в записях о прошлом 2640     код 1
+сторож ссылок ОТКАЗЫВАЕТ, битых 104 из 6650, устаревших исключений 108, в цитатах пропущено 324, в записях о прошлом 1807     код 1
 ```
 
-Сорок пять из них — три снятых файла, названные в кавычках: proof-ledger.mjs
-(29 раз), word-guard.mjs (9), run-verdict-debt-guard.sh (7). Стоят они в
-`docs/flang/proof/SPEC.md`, `docs/flang/concurrency/SPEC.md`,
-`docs/overview.ru.md`, `docs/design/proof-object-po-obyavleniyu-trace.md` и в
-текстах задач. Остальные семь — четыре имени в кавычках и три ссылки Markdown на
-переехавшие файлы задач.
+Из 104 битых 101 — путь в кавычках кода, 3 — ссылка Markdown. Больше всего
+битых даёт одно снятое имя: ярлыки.flang названа 20 раз. Дальше идут
+proof-ledger.mjs (12 раз в двух написаниях), corpus-share.sh (11 в двух
+написаниях), flang/proof/check.sh (5), tables-guard.sh (4). Шесть документов
+дают 42 битых из 104: `docs/design/6202-potolok-kak-obyazatelstvo.md` (11),
+`docs/tasks/8466-the-proof-checker-costs-fifteen-times-its-neighbour.md` (8),
+`docs/flang/proof/SPEC.md` (7),
+`docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md` (6),
+`docs/site/cli.ru.md` (5), `docs/tasks/6921-docs-are-a-manual-not-a-diary.md`
+(5). Девять битых стоят на опубликованных страницах справочника команд —
+`docs/site/cli.ru.md` (5) и `docs/site/cli.md` (4).
 
-Версия: flang 0.7.23, 30 сентября 2026.
+Починить прибором нечего: у `scripts/guards/link-guard.fscript` ровно один
+план, «Ссылки не ведут в никуда», он только читает и ни одного файла не пишет.
+Из 104 он исправляет 0; правка — рукой.
+
+Устаревших исключений 108 строк на 90 разных имён: записи
+`scripts/ledgers/link-guard-known-not-a-path.tsv` прикрывают имена, которых в
+документах больше нет (9 строк на ярлыки.flang, 7 на discriminating-search.mjs
+в двух написаниях, 3 на target-words.mjs). Ведомость чистят отдельно; эта
+задача её не трогает.
+
+Версия: flang 0.7.23, 2 октября 2026.
 
 ## Что должно быть
 

@@ -986,3 +986,8 @@ P	forged: a restriction on one summand is taken for a floor on both	flang/proof/
 say	── семья «открытый терм» (4850): тождество над свободным именем ──	-	-	-	-	-	-	-	-	-	-
 C	открытый терм: ⟨н⟩ = ⟨н⟩ принимается без счёта (честная)	flang/proof/checker/tests/families/open-term/identity-of-an-open-term.flang	flang/proof/checker/tests/families/open-term/identity-of-an-open-term.record	-	-	-	-	0	-	-	-
 P	открытый терм: тождество по терму, которого в цели нет	flang/proof/checker/tests/families/open-term/identity-of-an-open-term.flang	flang/proof/checker/tests/families/open-term/identity-of-a-term-absent-from-the-goal.record	-	-	-	-	1	-	-	-
+say	── семья «строгий ключ» (5502): --строго у сверщика ──	-	-	-	-	-	-	-	-	-	-
+C	строгий ключ: доказано всё, что заявлено — ключ исход не меняет	flang/proof/probes/strict/programs/honest.flang	flang/proof/checker/tests/families/strict/honest.record	-	-	--строго	-	0	-	-	-
+C	строгий ключ: обязательств нет вовсе — ноль обязательств не доказательство	flang/proof/probes/strict/programs/no-obligations.flang	flang/proof/checker/tests/families/strict/no-obligations.record	-	-	--строго	-	3	-	-	-
+C	строгий ключ: ложное постусловие, доказанным не числится ничего	flang/proof/probes/strict/programs/false-postcondition.flang	flang/proof/checker/tests/families/strict/false-postcondition.record	-	-	--строго	-	3	-	-	-
+C	умолчание не тронуто: та же запись без ключа остаётся нулём	flang/proof/probes/strict/programs/false-postcondition.flang	flang/proof/checker/tests/families/strict/false-postcondition.record	-	-	-	-	0	-	-	-

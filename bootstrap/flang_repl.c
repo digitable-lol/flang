@@ -380,6 +380,7 @@ static const char FLANG_HELP[] =
     "  flang emit <файл> --target «цель»  напечатать программу: " EMIT_TARGETS_WORDS "\n"
     "  flang ast <файл>                   разобранная программа деревом в JSON\n"
     "  flang tokens <файл>                поток токенов: чем каждое слово стало у лексера\n"
+    "  flang lint [<путь>…]               длина строк и глубина ветвлений против «.flangrc»\n"
     "  flang facts <файл> --claims '[…]'  проверить утверждения на фактах\n"
     "  flang io <файл>                    исполнить план: файлы, каталоги, процессы, сеть\n"
     "  flang lock <файл>                  замок: сами зависимости, а не ссылки на них\n"
@@ -394,7 +395,9 @@ static const char FLANG_HELP[] =
     "  flang --version                    версия\n"
     "  flang --machine [<файл>]           постоянная этой машины: витков в секунду\n"
     "  flang <команда> --help             все ключи команды\n"
-    "\n"
+    "\n";
+
+static const char FLANG_HELP_LIMITS[] =
     "  --depth-limit N                    предел глубины вызовов САМОГО бинарника\n"
     "                                     на этот прогон; годится при любой команде\n"
     "                                     и поднимает заодно стек. Кириллицей:\n"
@@ -425,7 +428,7 @@ static const char FLANG_HELP_2[] =
     "Без доводов и без терминала на входе (конвейер, «--json») бинарник остаётся\n"
     "прогонщиком: JSON на входе, JSON на выходе, по запросу на строку.\n"
     "\n"
-    "Здесь все 14 команд, и «flang lsp» среди них; отдельная команда «flang-lsp» —\n"
+    "Здесь все 15 команд, и «flang lsp» среди них; отдельная команда «flang-lsp» —\n"
     "тот же языковой сервер, который кладёт на «PATH» пакет npm.\n"
     "Служба для ИИ-помощника отвечает НЕ «ок»: три вердикта — «доказано», «сетка N»\n"
     "и «объявлено, не доказано» — уходят порознь. «flang --mcp-mode --help» — как её\n"
@@ -782,6 +785,30 @@ static const char HELP_TOKENS[] =
     "литерал, рваный отступ; тогда код 1, а машинный вид всё равно печатается, с\n"
     "пустым tokens и заполненным diagnostics.";
 
+static const char HELP_LINT[] =
+    "flang lint [<путь>…] [--max-line-length N] [--max-conditional-depth N]\n"
+    "                     [--warn | --refuse] [--tsv]\n"
+    "\n"
+    "Меряет исходники и планы flang двумя мерами: длину строки в знаках и\n"
+    "глубину ветвлений в теле функции. Каталог обходится целиком, кроме имён с\n"
+    "точкой в начале; без путей — рабочий каталог. Файл не исходник — пропущен.\n"
+    "\n"
+    "  --max-line-length N        предел длины строки в знаках\n"
+    "  --max-conditional-depth N  предел глубины: сколько «если» и «разбор»\n"
+    "                             вложено друг в друга в теле функции\n"
+    "  --warn                     назвать нарушения и ответить нулём\n"
+    "  --refuse                   назвать нарушения и ответить единицей\n"
+    "  --tsv                      машинный вид: строка на находку, поля через\n"
+    "                             табуляцию, без итоговой строки\n"
+    "\n"
+    "Те же пределы — ключи «.flangrc»: max-line-length, max-conditional-depth и\n"
+    "lint = refuse|warn. Ключ команды старше файла проекта, файл проекта старше\n"
+    "файла дома. Предела нет нигде — мера не применяется.\n"
+    "\n"
+    "Коды: 0 — нарушений нет или сказано «warn»; 1 — нарушения есть; 2 — плохой\n"
+    "вызов, нет пути или негодное значение в «.flangrc»; 3 — нарушений нет, но\n"
+    "часть файлов не разобралась, и глубина в них не измерена.";
+
 static const char HELP_IO[] =
     "flang io <файл.flang> [--plan «Имя»] [--max-orders N] [--seed N] [--in-dir] [--pretty]\n"
     "                      [--timeout МС] [--trust] [--unproven refuse|warn|allow] [-- довод…]\n"
@@ -1068,7 +1095,7 @@ static const char HELP_REPL[] =
  */
 static void human_help(const char *topic) {
   if (topic == NULL) {
-    printf("%s%s\n", FLANG_HELP, FLANG_HELP_2);
+    printf("%s%s%s\n", FLANG_HELP, FLANG_HELP_LIMITS, FLANG_HELP_2);
   } else if (strcmp(topic, "check") == 0) {
     printf("%s%s\n", HELP_CHECK, HELP_CHECK_2);
   } else if (strcmp(topic, "test") == 0) {
@@ -1089,6 +1116,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_AST);
   } else if (strcmp(topic, "tokens") == 0) {
     printf("%s\n", HELP_TOKENS);
+  } else if (strcmp(topic, "lint") == 0) {
+    printf("%s\n", HELP_LINT);
   } else if (strcmp(topic, "facts") == 0) {
     printf("%s\n", HELP_FACTS);
   } else if (strcmp(topic, "io") == 0) {
@@ -1102,7 +1131,7 @@ static void human_help(const char *topic) {
   } else if (strcmp(topic, "new") == 0) {
     printf("%s\n", HELP_NEW);
   } else {
-    printf("%s%s\n", FLANG_HELP, FLANG_HELP_2);
+    printf("%s%s%s\n", FLANG_HELP, FLANG_HELP_LIMITS, FLANG_HELP_2);
   }
 }
 
@@ -14007,6 +14036,409 @@ static int ast_file(int argc, char **argv) {
   return code;
 }
 
+#define LINT_LENGTH_KEY "max-line-length"
+#define LINT_DEPTH_KEY "max-conditional-depth"
+#define LINT_MODE_KEY "lint"
+
+typedef struct {
+  long length;
+  long depth;
+  bool warn;
+  bool tsv;
+  size_t files;
+  size_t long_lines;
+  size_t deep_functions;
+  size_t unparsed;
+} lint_run;
+
+typedef struct {
+  size_t depth;
+  size_t line;
+  size_t last;
+} lint_deep;
+
+#define LINT_SCRIPT_EXTENSION ".fscript"
+
+static bool lint_source_name(const char *name) {
+  const size_t bytes = strlen(name);
+  const size_t tail = strlen(LINT_SCRIPT_EXTENSION);
+  fl_value path = fl_nothing();
+  fl_value answer = fl_nothing();
+  if (bytes > tail && strcmp(name + bytes - tail, LINT_SCRIPT_EXTENSION) == 0) {
+    return true;
+  }
+  path = repl_value_say(name);
+  return repl_call("Заканчивается расширением", &path, 1, &answer) == FL_OK && answer.tag == FL_FLAG &&
+         answer.as.flag;
+}
+
+static bool lint_number(const char *text, long *out) {
+  char *end = NULL;
+  long value = 0;
+  if (text == NULL || text[0] < '1' || text[0] > '9') {
+    return false;
+  }
+  value = strtol(text, &end, 10);
+  if (end == NULL || *end != '\0' || value < 1) {
+    return false;
+  }
+  *out = value;
+  return true;
+}
+
+static bool lint_mode(const char *text, bool *warn) {
+  if (strcmp(text, "refuse") == 0) {
+    *warn = false;
+    return true;
+  }
+  if (strcmp(text, "warn") == 0) {
+    *warn = true;
+    return true;
+  }
+  return false;
+}
+
+static bool lint_settings_file(const char *path, lint_run *run, bool *length_said, bool *depth_said,
+                               bool *mode_said) {
+  char value[256];
+  if (!*length_said && flangrc_key(path, LINT_LENGTH_KEY, value, sizeof(value))) {
+    if (!lint_number(value, &run->length)) {
+      fprintf(stderr, "flang lint: %s: «%s = %s» — нужно целое число больше нуля\n", path, LINT_LENGTH_KEY,
+              value);
+      return false;
+    }
+    *length_said = true;
+  }
+  if (!*depth_said && flangrc_key(path, LINT_DEPTH_KEY, value, sizeof(value))) {
+    if (!lint_number(value, &run->depth)) {
+      fprintf(stderr, "flang lint: %s: «%s = %s» — нужно целое число больше нуля\n", path, LINT_DEPTH_KEY,
+              value);
+      return false;
+    }
+    *depth_said = true;
+  }
+  if (!*mode_said && flangrc_key(path, LINT_MODE_KEY, value, sizeof(value))) {
+    if (!lint_mode(value, &run->warn)) {
+      fprintf(stderr, "flang lint: %s: «%s = %s» — годятся «refuse» и «warn»\n", path, LINT_MODE_KEY, value);
+      return false;
+    }
+    *mode_said = true;
+  }
+  return true;
+}
+
+static bool lint_settings(lint_run *run, bool length_said, bool depth_said, bool mode_said) {
+  char path[4352];
+  const char *home = getenv("HOME");
+  if (flangrc_project(path, sizeof(path)) &&
+      !lint_settings_file(path, run, &length_said, &depth_said, &mode_said)) {
+    return false;
+  }
+  if (home != NULL && home[0] != '\0') {
+    snprintf(path, sizeof(path), "%s/.flangrc", home);
+    if (repl_exists(path) && !lint_settings_file(path, run, &length_said, &depth_said, &mode_said)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static double lint_place(fl_value node) {
+  fl_value span = fl_nothing();
+  fl_value field = fl_nothing();
+  double line = 0.0;
+  double column = 0.0;
+  if (!zn_field(node, "span", &span)) {
+    return 0.0;
+  }
+  if (zn_field(span, "line", &field)) {
+    zn_number(field, &line);
+  }
+  if (zn_field(span, "column", &field)) {
+    zn_number(field, &column);
+  }
+  return line * 1000000.0 + column;
+}
+
+static bool lint_conditional(fl_value node, const char *kind, size_t kind_bytes) {
+  fl_value condition = fl_nothing();
+  if (kind_bytes == 5 && memcmp(kind, "match", 5) == 0) {
+    return true;
+  }
+  if (kind_bytes != 2 || memcmp(kind, "if", 2) != 0) {
+    return false;
+  }
+  return !zn_field(node, "cond", &condition) || lint_place(node) < lint_place(condition);
+}
+
+static void lint_walk(fl_value node, size_t here, lint_deep *deep, bool counted) {
+  const fl_value *items = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  fl_value fields = fl_nothing();
+  if (zn_items(node, &items, &count)) {
+    for (index = 0; index < count; index += 1) {
+      lint_walk(items[index], here, deep, counted);
+    }
+    return;
+  }
+  if (!val_is(node, "Значение записи") || !val_field(node, "поля", &fields) || fields.tag != FL_LIST) {
+    return;
+  }
+  {
+    const char *kind = NULL;
+    size_t kind_bytes = 0;
+    const size_t line = zn_line(node);
+    if (line > deep->last) {
+      deep->last = line;
+    }
+    if (counted && zn_field_text(node, "kind", &kind, &kind_bytes) && lint_conditional(node, kind, kind_bytes)) {
+      here += 1;
+      if (here > deep->depth) {
+        deep->depth = here;
+        deep->line = line;
+      }
+    }
+  }
+  for (index = 0; index < fields.as.list.count; index += 1) {
+    fl_value pair = fields.as.list.items[index];
+    fl_value name = fl_nothing();
+    fl_value value = fl_nothing();
+    if (!val_field(pair, "ключ", &name) || !val_field(pair, "значение", &value) || val_same(name, "span")) {
+      continue;
+    }
+    lint_walk(value, here, deep, counted || val_same(name, "body"));
+  }
+}
+
+static void lint_lines(const char *path, const char *text, size_t bytes, lint_run *run) {
+  size_t at = 0;
+  size_t line = 1;
+  long characters = 0;
+  for (at = 0; at <= bytes; at += 1) {
+    if (at == bytes || text[at] == '\n') {
+      if (run->length > 0 && characters > run->length) {
+        run->long_lines += 1;
+        if (run->tsv) {
+          printf("length\t%s\t%zu\t%ld\t%ld\n", path, line, characters, run->length);
+        } else {
+          printf("%s:%zu: длина строки %ld > %ld (%s)\n", path, line, characters, run->length, LINT_LENGTH_KEY);
+        }
+      }
+      line += 1;
+      characters = 0;
+    } else if (((unsigned char)text[at] & 0xC0u) != 0x80u && text[at] != '\r') {
+      characters += 1;
+    }
+  }
+}
+
+static void lint_functions(const char *path, fl_value program, lint_run *run) {
+  const fl_value *functions = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  zn_field_items(program, "functions", &functions, &count);
+  for (index = 0; index < count; index += 1) {
+    lint_deep deep;
+    const char *name = NULL;
+    size_t name_bytes = 0;
+    const size_t first = zn_line(functions[index]);
+    deep.depth = 0;
+    deep.line = first;
+    deep.last = first;
+    lint_walk(functions[index], 0, &deep, false);
+    if ((long)deep.depth <= run->depth) {
+      continue;
+    }
+    run->deep_functions += 1;
+    if (!zn_field_text(functions[index], "name", &name, &name_bytes)) {
+      name = "";
+      name_bytes = 0;
+    }
+    if (run->tsv) {
+      printf("depth\t%s\t%zu\t%zu\t%ld\t%.*s\t%zu\t%zu\n", path, deep.line, deep.depth, run->depth, (int)name_bytes,
+             name, first, deep.last);
+    } else {
+      printf("%s:%zu: глубина ветвлений %zu > %ld в «%.*s» (%s)\n", path, deep.line, deep.depth, run->depth,
+             (int)name_bytes, name, LINT_DEPTH_KEY);
+    }
+  }
+}
+
+static void lint_file(const char *path, lint_run *run) {
+  size_t bytes = 0;
+  char *text = repl_read_file(path, &bytes);
+  fl_value args[2];
+  fl_value parsed = fl_nothing();
+  fl_value program = fl_nothing();
+  fl_value diagnostics = fl_nothing();
+  if (text == NULL) {
+    run->unparsed += 1;
+    if (run->tsv) {
+      printf("unread\t%s\n", path);
+    } else {
+      printf("%s: файл не прочитан\n", path);
+    }
+    return;
+  }
+  run->files += 1;
+  lint_lines(path, text, bytes, run);
+  if (run->depth > 0) {
+    repl_cycle();
+    args[0] = repl_value_text(text, bytes);
+    args[1] = repl_value_list(NULL, 0);
+    repl_call_quiet = true;
+    if (repl_call("Разбор исходника", args, 2, &parsed) != FL_OK || !val_field(parsed, "программа", &program) ||
+        (val_field(parsed, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST &&
+         diagnostics.as.list.count > 0)) {
+      run->unparsed += 1;
+      if (run->tsv) {
+        printf("unparsed\t%s\n", path);
+      } else {
+        printf("%s: не разобран, глубина ветвлений не измерена\n", path);
+      }
+    } else {
+      lint_functions(path, program, run);
+    }
+    repl_call_quiet = false;
+  }
+  free(text);
+}
+
+static int lint_by_name(const void *left, const void *right) {
+  return strcmp(*(char *const *)left, *(char *const *)right);
+}
+
+static bool lint_path(const char *path, lint_run *run) {
+  struct stat info;
+  DIR *directory = NULL;
+  repl_strings names;
+  size_t index = 0;
+  if (stat(path, &info) != 0) {
+    fprintf(stderr, "flang lint: пути «%s» нет\n", path);
+    return false;
+  }
+  if (!S_ISDIR(info.st_mode)) {
+    if (lint_source_name(path)) {
+      lint_file(path, run);
+    } else if (run->tsv) {
+      printf("skipped\t%s\n", path);
+    } else {
+      printf("%s: не исходник flang, пропущен\n", path);
+    }
+    return true;
+  }
+  directory = opendir(path);
+  if (directory == NULL) {
+    fprintf(stderr, "flang lint: каталог «%s» не открыт\n", path);
+    return false;
+  }
+  strings_init(&names);
+  for (;;) {
+    const struct dirent *entry = readdir(directory);
+    if (entry == NULL) {
+      break;
+    }
+    if (entry->d_name[0] != '.') {
+      strings_say(&names, entry->d_name);
+    }
+  }
+  closedir(directory);
+  qsort(names.items, names.count, sizeof(char *), lint_by_name);
+  for (index = 0; index < names.count; index += 1) {
+    const size_t room = strlen(path) + strlen(names.items[index]) + 2;
+    char *inner = (char *)repl_alloc(room);
+    struct stat kind;
+    snprintf(inner, room, "%s/%s", path, names.items[index]);
+    if (stat(inner, &kind) == 0 && (S_ISDIR(kind.st_mode) || lint_source_name(names.items[index]))) {
+      lint_path(inner, run);
+    }
+    free(inner);
+  }
+  strings_free(&names);
+  return true;
+}
+
+static void lint_limit(const char *key, long limit, size_t found) {
+  if (limit > 0) {
+    fprintf(stderr, "; %s %ld: %zu", key, limit, found);
+  } else {
+    fprintf(stderr, "; %s: без предела", key);
+  }
+}
+
+static void lint_summary(const lint_run *run) {
+  fprintf(stderr, "flang lint: файлов %zu", run->files);
+  lint_limit(LINT_LENGTH_KEY, run->length, run->long_lines);
+  lint_limit(LINT_DEPTH_KEY, run->depth, run->deep_functions);
+  fprintf(stderr, "; не разобрано %zu\n", run->unparsed);
+}
+
+static int lint_command(int argc, char **argv) {
+  lint_run run;
+  bool length_said = false;
+  bool depth_said = false;
+  bool mode_said = false;
+  bool paths_given = false;
+  bool ok = true;
+  int index = 0;
+  run.length = 0;
+  run.depth = 0;
+  run.warn = false;
+  run.tsv = false;
+  run.files = 0;
+  run.long_lines = 0;
+  run.deep_functions = 0;
+  run.unparsed = 0;
+  for (index = 2; index < argc; index += 1) {
+    const char *word = argv[index];
+    if (strcmp(word, "--tsv") == 0) {
+      run.tsv = true;
+    } else if (strcmp(word, "--warn") == 0 || strcmp(word, "--refuse") == 0) {
+      run.warn = strcmp(word, "--warn") == 0;
+      mode_said = true;
+    } else if (strcmp(word, "--max-line-length") == 0 || strcmp(word, "--max-conditional-depth") == 0) {
+      const bool length = strcmp(word, "--max-line-length") == 0;
+      if (index + 1 >= argc || !lint_number(argv[index + 1], length ? &run.length : &run.depth)) {
+        fprintf(stderr, "flang lint: после «%s» нужно целое число больше нуля\n", word);
+        return 2;
+      }
+      index += 1;
+      length_said = length_said || length;
+      depth_said = depth_said || !length;
+    } else if (word[0] == '-' && word[1] != '\0') {
+      fprintf(stderr, "flang lint: непонятный ключ «%s»\n", word);
+      return 2;
+    } else {
+      paths_given = true;
+    }
+  }
+  if (!lint_settings(&run, length_said, depth_said, mode_said)) {
+    return 2;
+  }
+  for (index = 2; index < argc; index += 1) {
+    const char *word = argv[index];
+    if (strcmp(word, "--max-line-length") == 0 || strcmp(word, "--max-conditional-depth") == 0) {
+      index += 1;
+    } else if (word[0] != '-' || word[1] == '\0') {
+      ok = lint_path(word, &run) && ok;
+    }
+  }
+  if (!paths_given) {
+    ok = lint_path(".", &run);
+  }
+  if (!ok) {
+    return 2;
+  }
+  if (!run.tsv) {
+    lint_summary(&run);
+  }
+  if (!run.warn && run.long_lines + run.deep_functions > 0) {
+    return 1;
+  }
+  return run.unparsed > 0 ? 3 : 0;
+}
+
 /* ═════════════════════ проверка суждений: `flang facts` ══════════════════ */
 
 /*
@@ -20752,6 +21184,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = ast_file(argc, argv);
   } else if (strcmp(command, "tokens") == 0) {
     code = tokens_file(argc, argv);
+  } else if (strcmp(command, "lint") == 0) {
+    code = lint_command(argc, argv);
   } else if (strcmp(command, "facts") == 0) {
     code = facts_file(argc, argv);
   } else if (strcmp(command, "io") == 0) {

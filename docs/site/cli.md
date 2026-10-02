@@ -257,7 +257,19 @@ flang test 'docs/examples/**/*.flang'  by mask (the quotes keep the shell out)
 ```
 
 Exit codes: `0` — every file was taken and every example passed; `1` — an
-example failed or a file was not taken; `2` — bad call.
+example failed or a file was not taken; `2` — bad call; `3` — the examples
+passed and the file declares `прогон` blocks that nothing ran.
+
+A `прогон` block states a scenario over processes, and the binary does not run
+one: the scheduler is declared in `flang/self/conc.flang`, and that layer is not
+inside the binary. Such a file is named by number and exits `3`, so a program
+whose scenario expectations are all false never exits `0`:
+
+```bash
+$ flang test flang/concurrency/examples/counter.flang
+flang/concurrency/examples/counter.flang: примеров 2, прошло 2, не прошло 0
+flang/concurrency/examples/counter.flang: блоков «прогон» 2, исполнено 0 — исполнить их нечем: планировщика в этом двоичном нет
+```
 
 ```bash
 $ flang test привет.flang

@@ -1754,3 +1754,9 @@ f8065d1d57b972e091c656779e5cad7d|1|1|0|0|0|flang/proof/checker/tests/families/fi
 cf872d516e34dd69bc73a4e95995017f|2|2|0|0|0|flang/proof/checker/tests/families/fmath/scores.flang
 1d3bc37e838ba54753e02518e95dad9b|4|3|0|1|0|flang/proof/checker/tests/families/fmath/sum-of-a-number.flang
 897051eca79bc4882718b6ad0a7aa309|1|1|0|0|0|flang/proof/checker/tests/families/open-term/identity-of-an-open-term.flang
+// ── Проба неисполненных блоков «прогон» (задача 1116), снято 2 октября 2026 ─
+// Приговор снят `flang check --proof` этого же дерева: «утверждений 3:
+// доказано 3 (из них без теоремы 3), сетка 0, объявлено, не доказано 0».
+// Три программы каталога `programs/` обязательств не несут и в опись не
+// входят по общему правилу шапки.
+38286ffe6728e1fb395a6be84acf6c23|3|3|0|0|0|flang/proof/probes/runs-not-executed/run.fscript

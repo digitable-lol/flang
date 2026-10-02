@@ -1792,6 +1792,80 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
 
+  # ── БЛОКИ «прогон»: НАЗВАНЫ ЧИСЛОМ ИЛИ ПРОХОДЯТ МОЛЧА (задача 1116) ───────
+  #
+  # ПОЧЕМУ ОТДЕЛЬНАЯ РАБОТА, А НЕ ШАГ У СОСЕДЕЙ ВЫШЕ. Эта проба собирает ВТОРОЙ
+  # двоичный — из оболочки дерева (`flang/src/emit/c/flang_repl.c`) и логики
+  # компилятора из семени, — потому что `bootstrap/flang` собран из КОПИИ этой
+  # оболочки в семени и правку увидит только после перепечатки. Проба на
+  # `bootstrap/flang` мерила бы семя, а не дерево: ровно та порода, из-за которой
+  # «замер не в том дереве» стоит первым в списке того, что повторять нельзя.
+  # Сборка — одна команда `cc` без `-flto` (замер на машине отряда 2 октября
+  # 2026: 1 мин 10 с), и работа заводит её ДВАЖДЫ — на подлоге и начисто, — так
+  # что держать её шагом в работе `storozha` с её потолком 20 минут нельзя.
+  #
+  # ЧТО СТОРОЖИТСЯ. `flang test` не исполняет блоки `прогон` (планировщик живёт в
+  # `flang/self/conc.flang`, а этого слоя в двоичном нет — задача 1104) и до
+  # 2 октября 2026 НЕ ГОВОРИЛ ОБ ЭТОМ НИЧЕГО: файл, у которого все ожидания в
+  # блоках заведомо ложны, выходил кодом 0. Теперь блоки называются числом и код
+  # 3 (ADR-0010: «сделано, но проверено не всё, и непроверенное названо»).
+  #
+  # ПЕРВЫЙ ШАГ — ПОДЛОГ, и он нужен не для порядка: проба, которая не умеет
+  # краснеть, от чистого дерева неотличима. Подлог возвращает прежний код
+  # возврата, оставляя строку о блоках на месте, — значит краснеет проба СВОИМ
+  # предметом (кодом), а не сломанной сборкой.
+  progony:
+    name: runs-not-executed
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - name: Restore binary cache
+        id: kesh-dvoichnogo
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+      - name: Verify cached binary
+        if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
+        run: |
+          set -u
+          if ! ./bootstrap/flang --version >/dev/null 2>&1; then
+            echo "::warning::двоичный из кеша не запускается — собираю заново"
+            make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+          fi
+      # Имена переменных — латиницей: POSIX не допускает кириллицу в именах
+      # переменных оболочки.
+      - name: Probe runs gate
+        run: |
+          set -u
+          podlog=flang/src/emit/c/flang_repl.c
+          staroe='      code = failed > 0 ? 1 : (runs > 0 ? 3 : 0);'
+          novoe='      code = failed > 0 ? 1 : 0;'
+          cp "$podlog" "$podlog.do"
+          sed -i "s/$staroe/$novoe/" "$podlog"
+          if cmp -s "$podlog.do" "$podlog"; then
+            rm -f "$podlog.do"; git checkout -- "$podlog"
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: строки с кодом 3 в $podlog нет — поправить подлог, проба ни при чём" >&2
+            exit 1
+          fi
+          rm -f "$podlog.do"
+          if bootstrap/flang io flang/proof/probes/runs-not-executed/run.fscript --plan Check --timeout 900000; then
+            git checkout -- "$podlog"
+            echo "проба промолчала на подлоге — проверять ею нечего" >&2
+            exit 1
+          fi
+          git checkout -- "$podlog"
+      - name: Check runs are named by number
+        run: bootstrap/flang io flang/proof/probes/runs-not-executed/run.fscript --plan Check --timeout 900000
+
   # ── Дорогая половина: только тег и ручной запуск ──────────────────────────
   korpus:
     name: corpus-examples

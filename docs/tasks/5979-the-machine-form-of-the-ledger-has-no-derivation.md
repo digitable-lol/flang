@@ -17,7 +17,7 @@
 раздел `чем получен каждый шаг`, запись — блоки `вывод` и `ход`; машинный вид не несёт
 ни того, ни другого.
 
-Решение — [ADR-0055](../adr/0055-a-derivation-is-printed-as-a-reasoning-a-human-reads.md).
+Решение — [ADR-0057](../adr/0057-a-derivation-is-printed-as-a-reasoning-a-human-reads.md).
 
 ## Шаги воспроизведения
 

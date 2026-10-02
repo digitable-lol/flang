@@ -16,7 +16,7 @@
 Строка шага несёт короткий код ведомости. Словесная формулировка стоит только у
 утверждения в целом, и в ведомости `flang/proof/tables/inference-rules.tsv` она не у всех.
 
-Решение — [ADR-0055](../adr/0055-a-derivation-is-printed-as-a-reasoning-a-human-reads.md).
+Решение — [ADR-0057](../adr/0057-a-derivation-is-printed-as-a-reasoning-a-human-reads.md).
 
 ## Шаги воспроизведения
 

@@ -1,6 +1,7 @@
-# ADR-0056. Чужой язык входит недоверенным переводчиком, а не разборщиком в языке
+# ADR-0058. Чужой язык входит недоверенным переводчиком, а не разборщиком в языке
 
-**Состояние:** предложено; измерено двоичным 0.7.23. Выполняется задачами
+**Состояние:** предложено; измерено двоичным 0.7.23. Развилка записана, принять или
+отвергнуть — за хозяином. Выполняется задачами
 [2196](../tasks/2196-no-foreign-language-is-read-into-flang.md) и
 [8406](../tasks/8406-a-specification-is-not-lifted-from-existing-code.md).
 **Дата:** 2 октября 2026
@@ -13,7 +14,7 @@
 а не за себя;
 [ADR-0031](0031-certification-is-a-process-not-a-property-of-the-language.md) —
 сертификация есть процесс;
-[ADR-0055](0055-a-derivation-is-printed-as-a-reasoning-a-human-reads.md) — ход
+[ADR-0057](0057-a-derivation-is-printed-as-a-reasoning-a-human-reads.md) — ход
 доказательства печатается как рассуждение.
 **Проверяется:** `ls flang/self/emit-*.flang | wc -l`;
 `ls flang/self/ | grep -cE '^(parse|import|read|lift|from)-'`; `bootstrap/flang --help`.

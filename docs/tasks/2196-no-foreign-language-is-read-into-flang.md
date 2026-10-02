@@ -49,7 +49,7 @@ $ ls flang/self/ | grep -cE '^(parse|import|read|lift|from)-'
 Один вход, пусть узкий, и названный замером: берётся подмножество одного чужого языка,
 печатается заготовка на flang, и число говорит, какая доля файлов корпуса прошла.
 Решение об устройстве входа —
-[ADR-0056](../adr/0056-a-foreign-language-enters-through-an-untrusted-translator.md):
+[ADR-0058](../adr/0058-a-foreign-language-enters-through-an-untrusted-translator.md):
 разборщик чужого языка стоит вне доверенной основы, его вывод судит ядро.
 
 ## Обходной путь
@@ -64,4 +64,4 @@ $ ls flang/self/ | grep -cE '^(parse|import|read|lift|from)-'
 
 ## Где живёт правка
 
-Новый каталог вне `flang/self` — вход не входит в доверенную основу (ADR-0056).
+Новый каталог вне `flang/self` — вход не входит в доверенную основу (ADR-0058).

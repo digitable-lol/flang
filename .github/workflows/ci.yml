@@ -375,23 +375,58 @@ jobs:
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
+      # ЭТОТ ШАГ НЕ РАЗБИРАЛСЯ ОБОЛОЧКОЙ ВОВСЕ, и узналось это прогоном, а не
+      # чтением (задача 1117). `if` в его теле был открыт и не закрыт `fi`:
+      # `bash -n` отвечает «syntax error: unexpected end of file from `if`
+      # command», ни одна команда шага не выполнялась, работа кончалась кодом 2
+      # ещё до проверки. Молчать об этом было некому — работы файла не ходили.
+      #
+      # Вместе с незакрытым `if` в теле жили две ссылки в пустоту, и обе родом
+      # из одной породы — предмет, вписанный рукой и протухший:
+      # подлог клался в `docs/tasks/1315-vremennoe-v-dereve-ishodnikov.md`
+      # (файл переименован по-английски, а сама задача 1315 закрыта), и
+      # вторая половина звала `./ярлык`, которого в дереве нет.
+      #
+      # ПОЭТОМУ ИМЯ ФАЙЛА ЗДЕСЬ БОЛЬШЕ НЕ ВПИСАНО. Подлог берёт ПЕРВЫЙ файл
+      # задачи по маске, а «подлог не собрался» ловится сравнением до и после —
+      # той же защитой, что у соседних проб этого файла. Команда зовётся по
+      # имени (`tasks:check`), как её зовут хук и дерево сегодня.
+      #
+      # Подлог — статус из слова, которого в словаре задачника нет: четыре
+      # дозволенных это «свободна», «в работе», «сделана», «отклонена».
       - name: Probe task tracker
         run: |
           set -u
           # Имя переменной — латиницей: POSIX не допускает кириллицу в именах
           # переменных оболочки, и `файл=...` было бы разобрано как команда.
-          podlog=docs/tasks/1315-vremennoe-v-dereve-ishodnikov.md
-          sed -i 's/^статус: свободна$/статус: сделяно (подлог)/' "$podlog"
-          if bootstrap/flang run-script tasks:check; then
-
           podlog=$(ls docs/tasks/[0-9][0-9][0-9][0-9]-*.md | head -1)
+          test -n "$podlog" || {
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: в docs/tasks нет ни одного файла задачи — поправить подлог, сторож ни при чём" >&2
+            exit 1
+          }
+          cp "$podlog" "$podlog.do"
           sed -i 's/^статус: .*$/статус: сделяно (подлог)/' "$podlog"
-          if ./ярлык задачник:проверка; then
+          if cmp -s "$podlog.do" "$podlog"; then
+            rm -f "$podlog.do"; git checkout -- "$podlog"
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: строки «статус:» в $podlog нет — поправить подлог, сторож ни при чём" >&2
+            exit 1
+          fi
+          rm -f "$podlog.do"
+          if bootstrap/flang run-script tasks:check > "$RUNNER_TEMP/zadachnik-podlog.out" 2>&1; then
             git checkout -- "$podlog"
             echo "сторож промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
           git checkout -- "$podlog"
+          # Красноты мало — она обязана быть ЕГО краснотой. Сторож называет и
+          # файл, и подложенное слово; без этой сверки шаг зеленел бы от любой
+          # чужой беды, вплоть до «команда не найдена».
+          imya=$(basename "$podlog")
+          if ! grep -q 'сделяно' "$RUNNER_TEMP/zadachnik-podlog.out" || ! grep -Fq "$imya" "$RUNNER_TEMP/zadachnik-podlog.out"; then
+            cat "$RUNNER_TEMP/zadachnik-podlog.out" >&2
+            echo "ПОДЛОГ НЕ ПОКАЗАН: сторож покраснел не на подлоге — его ответ выше" >&2
+            exit 1
+          fi
       - name: Check task tracker
         run: bootstrap/flang run-script tasks:check
 
@@ -1385,10 +1420,24 @@ jobs:
       - name: Check command list
         run: bootstrap/flang run-script cli-commands:check
 
+      # УСЛОВИЕ ЗДЕСЬ С ОТРИЦАНИЕМ, И ЭТО НЕ ОПИСКА. План «Forgery» у этого
+      # сторожа — не ключ порчи, а САМОПРОБА ИЗ ЧЕТЫРЁХ СТОРОН: он сам кладёт
+      # подложенные деревья, сам гоняет по ним `--plan Check` и сам сверяет
+      # коды с ожидаемыми. Сошлись все четыре — он отвечает КОДОМ 0; не
+      # сошлась хоть одна — печатает «ПОДЛОГ НЕ ПОКАЗАН — сторона такая-то:
+      # ждали код X, получено: код Y» и краснеет.
+      #
+      # До этой правки шаг стоял в виде соседей, чей ключ подлога краснеет сам
+      # (`if <подлог>; then «сторож промолчал»; exit 1`), и краснел ровно на
+      # УСПЕХЕ пробы: сторож делал в точности то, что от него ждут, а шаг
+      # называл это молчанием. Работа `uncalled-guards` была из-за этого красна
+      # всегда — померено задачей 1117, которая и нашла перевёрнутое условие.
+      # Правильный образец лежит в этом же файле у `flangrc-guard` (работа
+      # `nastroyki`): там план `Forgery` тоже сам себя судит.
       - name: Probe uncalled guards
         run: |
-          if bootstrap/flang io scripts/guards/who-calls-the-guards.fscript --plan Forgery; then
-            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+          if ! bootstrap/flang io scripts/guards/who-calls-the-guards.fscript --plan Forgery; then
+            echo "проба подлога не сошлась — проверять этим нечего" >&2
             exit 1
           fi
         env:

@@ -364,6 +364,7 @@ number	state	title
 9965	done	Gate g4 checker coverage 95 percent
 9966	done	Gates g5 g6 honest fresh numbers
 9967	done	Gate g7 independent verification share
+9968	dropped	Package cannot be installed by name or published
 9972	done	Cli argument parser for user programs
 9973	done	Cyrillic uppercase and a unified case surface
 9974	done	Number formatting bases and fixed precision

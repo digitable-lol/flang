@@ -1045,6 +1045,7 @@ bd86e5b4cf90f30f13d03daba1bfee3f|8|×|×|×|7|flang/proof/map/refusal-order.flan
 1b5b8939e842e525184b8408664ce6e7|7|1|4|2|0|flang/proof/map/substantive.flang
 1dac20b72245fc2680df72c8481f8ff7|5|3|2|0|1|flang/proof/map/types.flang
 55542d98506dabe4a15448e0e861d770|1|×|×|×|0|flang/proof/midpoint-verdicts.flang
+c24e3a74d21704429b8ec237e2504883|9|9|0|0|0|flang/proof/probes/function-values/run.fscript
 0dbd8c3aca5c041211fc3702f1a64840|52|52|0|0|0|flang/proof/small-reducer.flang
 a075e8a26bed6fd0228f15824bad848a|1|0|0|1|0|flang/proof/forgeries/by-division.flang
 ab1156261b804cb48ee0df2e25cad46f|1|1|0|0|0|flang/proof/forgeries/base-with-field.flang
@@ -1323,7 +1324,7 @@ e408818a261e1abb800309bbb6550470|2|2|0|0|0|flang/self/functor.flang
 732fafea03a19a84be8b371d78d0ba2e|19|19|0|0|0|flang/self/io.flang
 cf285bfaf06251404d184ecee764f85f|24|10|10|4|0|flang/self/iso.flang
 b25da330b06be21a87c8a500d8a24ff5|43|12|30|1|0|flang/self/law-oracle.flang
-3570c4fd5ba0cd9847b35d721d61bb56|92|88|0|0|0|flang/self/lexer.flang
+fb537024bd9a6899533d6a3233e3b092|101|97|4|0|0|flang/self/lexer.flang
 ef419036ed7ae00578750c7972e9c62f|1|×|×|×|0|flang/self/link.flang
 7bc86c81be652752a5964593865681ae|224|96|13|115|0|flang/self/lsp.flang
 b3c135fc13de8e40e182c230215a3ab5|27|17|4|6|0|flang/self/mcp.flang
@@ -1542,7 +1543,7 @@ e18baea9c15082521f1073fb2997b62f|8|7|0|0|0|scripts/guards/cyrillic-file-names-gu
 d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/guards/delivery-guard.flang
 9a1d779542ab08a5a1416bbdc99c0563|10|10|0|0|0|scripts/guards/dictionary-guard.fscript
 35bc4b6ceba5235a93625a25ded7023f|12|12|0|0|0|scripts/guards/emit-promises-guard.fscript
-866bb0d2a5dcddc8a0a98cd0318d45a9|17|12|1|0|0|scripts/guards/file-extensions.fscript
+bb9f8dadc0aa937a5fc4dbda79707edd|18|16|2|0|0|scripts/guards/file-extensions.fscript
 d29d464d969d58822bc10e6e696017ef|14|14|0|0|0|scripts/flangrc.fscript
 001c0ecd7217d8ae84b4133d3dca9085|4|4|0|0|0|scripts/guards/flangrc-guard.fscript
 baa3170dc90958c56352eb9b3f49ab9b|62|49|10|3|0|scripts/guards/homebrew-formula-guard.fscript

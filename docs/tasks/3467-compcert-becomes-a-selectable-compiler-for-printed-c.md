@@ -19,7 +19,8 @@
    уезжает в напечатанную программу дословно:
 
 ```
-grep -anE '(size_t|bool|FILE \*const) [а-яё]+ ' flang/src/emit/c/flang_runtime.c flang/src/emit/c/flang_repl.c
+grep -anE '^[[:space:]]*(const )?(size_t|bool|FILE \*const) [а-яё]+ =' \
+  flang/src/emit/c/flang_runtime.c flang/src/emit/c/flang_repl.c
 ```
 
 2. Спросить, назван ли где-нибудь набор ключей для `ccomp`:
@@ -33,16 +34,18 @@ grep -c ccomp flang/self/emit-c.flang bootstrap/Makefile .github/workflows/binar
 ## Что происходит
 
 ```
-$ grep -anE '(size_t|bool|FILE \*const) [а-яё]+ ' flang/src/emit/c/…
-flang_runtime.c:724:    const size_t измерено = fl_wasm_room(&here);
-flang_runtime.c:4807:    const bool конец = index == text.as.string.bytes;
-flang_runtime.c:4808:    const bool ведущий =
-flang_repl.c:13308:  FILE *const поток = stdout_or_stderr;               код 0
+$ grep -anE '^[[:space:]]*(const )?(size_t|bool|FILE \*const) [а-яё]+ =' …
+flang_runtime.c:733:    const size_t измерено = fl_wasm_room(&here);
+flang_runtime.c:4828:    const bool конец = index == text.as.string.bytes;
+flang_runtime.c:4829:    const bool ведущий =
+flang_repl.c:13742:  FILE *const поток = stdout_or_stderr;               код 0
 $ grep -c ccomp flang/self/emit-c.flang bootstrap/Makefile .github/workflows/binary.yml
-0, 0, 0                                                           код 1
+bootstrap/Makefile:0
+.github/workflows/binary.yml:0
+flang/self/emit-c.flang:0                                         код 1
 ```
 
-Версия: flang 0.7.23. Дата прогона: 30 сентября 2026. Сборка самим `ccomp` не
+Версия: flang 0.7.23. Дата прогона: 3 октября 2026. Сборка самим `ccomp` не
 перепроверена: CompCert на машине нет; записанный ответ CompCert 3.18 на
 кириллическое имя — `invalid symbol '\'`.
 
@@ -70,7 +73,10 @@ $ grep -c ccomp flang/self/emit-c.flang bootstrap/Makefile .github/workflows/bin
 
 ## Когда задача сделана
 
-- Первая команда из шагов воспроизведения ничего не находит (код 1).
+- Первая команда из шагов воспроизведения ничего не находит (код 1). Сегодня
+  она находит четыре строки, и это все кириллические имена этих двух файлов:
+  вне комментариев и строковых литералов в них встречаются ровно `измерено`,
+  `конец`, `ведущий`, `поток`.
 - `make -C bootstrap CC=ccomp CFLAGS='<набор>'` отвечает кодом 0.
 - Отчёт `bootstrap/flang test docs/examples/rosetta --ledger` у сборки `ccomp`
   совпадает побайтно с отчётом сборки `cc`; это сравнение стоит работой CI.

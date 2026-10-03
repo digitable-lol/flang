@@ -4845,7 +4845,7 @@ static bool repl_kernel_stages_wanted(void) {
  * вход», расхождений ноль), а не доказательством.
  *
  * ПОКА НЕ ПРОШЛА ПЕРЕПЕЧАТКА, СЕМЯ ДЕРЖИТ СТАРЫЙ КЛЮЧ: правка лежит в
- * flang/self/proofterm.flang и flang/self/zapis.flang, а собранный
+ * flang/self/proofterm.flang и flang/self/proof-record.flang, а собранный
  * bootstrap/flang считает по-прежнему многочленом. Кеш ЭТОГО двоичного
  * подделывается за две минуты.
  */
@@ -9051,7 +9051,7 @@ static void proof_say_verdict(const char *path, const proof_tally *t, int code, 
  * «вход» точным равенством, compiler.flang) и путём, который уезжает в шапку
  * записи. Ключ обязан быть абсолютным — от него разрешаются импорты, — а
  * шапка обязана быть переносимой: у записи и у сверяющего в разных клонах
- * пути разные, и `zapis.flang` говорит это своими словами: «„исходник" —
+ * пути разные, и `proof-record.flang` говорит это своими словами: «„исходник" —
  * примета для человека, а не привязка».
  *
  * Развести два дела можно ТОЛЬКО ЗДЕСЬ. В flang это один довод, и разделить
@@ -9126,7 +9126,7 @@ static void proof_head_relative(repl_buf *out, const char *utf8, size_t bytes,
  *
  * ПОЧЕМУ НЕ ПРАВКОЙ СЛОЯ НА FLANG. Слова ведомости собирает
  * `flang/self/proof.flang` («Чем сведена цель», «Утверждение термом»), а
- * строки шагов — `flang/self/zapis.flang`. Оба файла в печатаемой части семени:
+ * строки шагов — `flang/self/proof-record.flang`. Оба файла в печатаемой части семени:
  * правка там доезжает до двоичного только полной перепечаткой. Долг назван в
  * `docs/tasks/3464-…md`: имя правила ведомости ПОШАГОВО живёт внутри ядра
  * (`Итог шага`.«правило», `proofterm.flang`), а в вердикт уезжает одним полем
@@ -9499,6 +9499,56 @@ static int test_corpus(const char *given, bool check, const char *steps, const c
                        bool ledger, bool many);
 
 /**
+ * Сколько блоков `прогон` объявлено в САМОМ файле.
+ *
+ * ЗАЧЕМ ЭТО СЧИТАЕТСЯ ВООБЩЕ. Строка `ожидается` в блоке `прогон` при разборе
+ * ОБЯЗАТЕЛЬНА, а исполнить блок двоичному нечем: планировщик объявлен в
+ * `flang/self/conc.flang`, и в замыкании двоичного этого слоя нет — поиск имени
+ * «Прогнать» в `bootstrap/compiler_flang.c` даёт ноль вхождений. До этого счёта
+ * `flang test` называл одни примеры функций, и программа, у которой ВСЕ
+ * ожидания блоков ложны, выходила кодом 0: молчание о непроверенном читалось
+ * как «проверено» (задача 1116).
+ *
+ * Считается по разбору ОДНОГО файла, без зависимостей: блок `прогон` стоит там
+ * же, где объявлены процессы, которых он касается, и ввезённые блоки в счёт
+ * этого файла не входят — по тому же доводу, по которому отдельно считаются
+ * свои примеры файла. Файл, который не разбирается, даёт ноль, и это не ложь:
+ * до этого места такой файл не доходит, его отвергает проверка выше.
+ */
+static size_t test_runs_of(const char *text, size_t bytes) {
+  fl_value args[2];
+  fl_value parsed = fl_nothing();
+  fl_value program = fl_nothing();
+  const fl_value *items = NULL;
+  size_t count = 0;
+  args[0] = repl_value_text(text, bytes);
+  args[1] = repl_value_list(NULL, 0);
+  if (repl_call("Разбор исходника", args, 2, &parsed) != FL_OK) {
+    return 0;
+  }
+  if (!val_field(parsed, "программа", &program)) {
+    return 0;
+  }
+  zn_field_items(program, "runs", &items, &count);
+  return count;
+}
+
+/**
+ * Неисполненные блоки `прогон` — строкой рядом со счётом примеров.
+ *
+ * ЧИСЛО, А НЕ СЛОВО «частично». Строка стоит ровно тогда, когда блок в файле
+ * есть, и называет, сколько их и сколько исполнено; «исполнено 0» написано
+ * прямо, чтобы ноль нельзя было принять за «исполнено, и всё сошлось».
+ */
+static void test_say_runs(const char *path, size_t runs) {
+  if (runs == 0) {
+    return;
+  }
+  printf("%s: блоков «прогон» %lu, исполнено 0 — исполнить их нечем: планировщика в этом двоичном нет\n", path,
+         (unsigned long)runs);
+}
+
+/**
  * `flang test <файл|каталог|маска> [--no-check] [--json]` — прогон примеров.
  *
  * Довод, не кончающийся на «.flang», и всякий довод со звездой или вопросом —
@@ -9531,6 +9581,7 @@ static int test_file(int argc, char **argv) {
   char *text = NULL;
   size_t bytes = 0;
   size_t index = 0;
+  size_t runs = 0;
   bool check = true;
   bool json = false;
   bool ledger = false;
@@ -9604,6 +9655,10 @@ static int test_file(int argc, char **argv) {
   }
 
   repl_cycle();
+
+  /* БЛОКИ `прогон` СЧИТАЮТСЯ ДО ПРОГОНА ПРИМЕРОВ, и в той же области: ответ —
+     одно число, и следующий сброс области ему не страшен. */
+  runs = test_runs_of(text, bytes);
 
   strings_init(&paths);
   strings_init(&texts);
@@ -9686,8 +9741,13 @@ static int test_file(int argc, char **argv) {
       fflush(stderr);
       printf("%s: примеров %lu, прошло %lu, не прошло %lu\n", path, (unsigned long)total, (unsigned long)passed,
              (unsigned long)failed);
+      test_say_runs(path, runs);
       fflush(stdout);
-      code = failed > 0 ? 1 : 0;
+      /* КОД 0 У ПРОГРАММЫ С БЛОКАМИ `прогон` НЕ ВЫХОДИТ. Код 3 по ADR-0010 —
+         «сделано, но проверено не всё, и непроверенное названо»: примеры
+         прогнаны, блоки названы числом. Сорвавшийся пример старше: он говорит
+         «работа не сделана», а это код 1. */
+      code = failed > 0 ? 1 : (runs > 0 ? 3 : 0);
     }
   }
 

@@ -153,10 +153,6 @@ docs/flang/proof/SPEC.md	…-english.flang	шаблон-многоточие в 
 docs/tasks/6127-goal-split-places-are-replayed-by-local-moves.md	ПЕРЕДАЧА/karta-kalkulyatora.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
 docs/tasks/6127-goal-split-places-are-replayed-by-local-moves.md	ПЕРЕДАЧА/proverka-uzlov.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
 docs/tasks/6201-tree-still-cites-the-removed-javascript-implementation.md	proba-vstrechno.mjs	иллюстративное имя пробы в тексте, не файл: проба снята вместе с реализацией на JavaScript (fe8e8a37)
-docs/tasks/8398-plans-are-judged-and-the-compiler-says-so.md	flang/scripts/binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.fscript; упоминание историческое, в задаче/заметке
-docs/tasks/8398-plans-are-judged-and-the-compiler-says-so.md	plany.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/tasks/8398-plans-are-judged-and-the-compiler-says-so.md	tree-plans.flang	план в перечне задачи 8398, не файл
-docs/tasks/8398-plans-are-judged-and-the-compiler-says-so.md	vsyo.sh	план в тексте задачи: перечень будущих скриптов, не файл
 docs/tasks/8570-the-print-is-outrun-because-it-is-slow.md	hranitel-tikov.sh	внешний: инструмент вне дерева, соседствует с pusk.sh
 docs/tasks/8570-the-print-is-outrun-because-it-is-slow.md	pusk.sh	внешний: инструмент вне дерева (docs/reprint-cost.md)
 docs/tasks/9528-an-en-view-is-not-checked-against-its-promise.md	tools/check-flang-en-views.sh	внешний: файл репозитория digitwm, не файл этого дерева
@@ -239,7 +235,6 @@ docs/design/nositel-tochnogo-celogo.md	n-stroka.flang	внешний: проба
 docs/design/nositel-tochnogo-celogo.md	n-zapis.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
 docs/design/nositel-tochnogo-celogo.md	n-ravenstvo.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
 docs/examples/frameworks/react-ts-pure/README.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
-docs/tasks/6752-a-law-of-the-category-surface-is-a-statement-about-the-carrier.md	probe-777.flang	иллюстративное имя пробы в тексте, не файл
 docs/tasks/1416-the-shortcut-list-is-computed-from-the-scripts.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	obhod.sh	иллюстративное имя в разборе задачи/заметки, не файл (пример транслита-брака при переименовании)
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk.sh	иллюстративное имя в разборе задачи/заметки, не файл (предлагаемое английское имя в примере)

@@ -26,26 +26,28 @@
 Сколько таких записей в корпусе, печатает
 `bootstrap/flang io flang/proof/share-measure.fscript -- --set corpus`.
 
-## `theorem-hypothesis-not-discharged` — открыто
+## `theorem-hypothesis-not-discharged` — закрыто
 
 Ядро не сверяет гипотезы теоремы (`дано …`) с условиями утверждения, которое она
 доказывает. Теорема с `дано н больше 0` «доказывает» постусловие `результат
 больше 0` для всех `неотрицательное`, и `--strict` отвечает «доказано», а `flang
-run` на нуле нарушает постусловие. Пробы — в `flang/proof/probes/syllogism/assumptions/`.
-Задача 5311.
+run` на нуле нарушает постусловие. Ядро отказывает такой теореме с 0.7.24. Пробы — в `flang/proof/probes/syllogism/assumptions/`:
+на семени 0.7.24 набор `syllogism` расходится 0 из 9, на семени 0.7.23 — 2 из 9. Задача 5311.
 
-## `loop-through-function-value` — открыто
+## `loop-through-function-value` — закрыто
 
 Проверка завершаемости не видит вызова через значение-функцию: бесконечная петля
 «Петля» → «Применить» от функция «Петля» проходит `flang check` как тотальная, а
-`flang run` упирается в предел шагов. Задача 3870.
+`flang run` упирается в предел шагов. С 0.7.24 проверка видит такой вызов: набор
+`flang/proof/probes/function-values/` расходится 0 из 5 на новом семени и 3 из 5 на 0.7.23. Задача 3870.
 
-## `restricted-postcondition-cited-undischarged` — открыто
+## `restricted-postcondition-cited-undischarged` — закрыто
 
 Постусловие с ограничением `таких что` используется в доказательстве как факт без
 проверки ограничения в месте вызова. `--strict` отвечает «доказано» на ложном
 утверждении. Проба — `flang/proof/checker/tests/families/citation/step-by-restricted-postcondition.flang`;
-независимый checker на этой записи отвечает кодом 3. Задача 4573.
+независимый checker на этой записи отвечает кодом 3. С 0.7.24 цитата принимается только
+после снятия ограничения; пробы — в `flang/proof/probes/syllogism/`. Задача 4573.
 
 ## `verdicts-c-lean` — закрыто
 

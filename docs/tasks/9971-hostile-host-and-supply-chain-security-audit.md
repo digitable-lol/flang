@@ -21,42 +21,84 @@
 2. `grep -n 'run:.*\${{ *github\.' .github/workflows/*.yml | cut -c1-150`
 3. `grep -c 'pull_request_target' .github/workflows/*.yml | grep -v ':0'`
 4. `grep -n 'runs-on:.*self-hosted' .github/workflows/*.yml`
-5. `ls SECURITY.md`
+5. `grep -A4 '^permissions:' .github/workflows/*.yml | grep 'write'`
+6. Прогнать пробу сторожа локально: тело шага вынуть из составного действия и
+   позвать с `MODE=self-test` —
+   `sed -n '115,378p' .github/actions/release-without-cache/action.yml | sed 's/^        //' > guard.sh`,
+   затем `env -u GITHUB_STEP_SUMMARY MODE=self-test KATALOG_RABOT=.github bash guard.sh`
+7. `ls SECURITY.md`
 
 ## Что происходит
 
 ```
 $ grep -n 'uses:' .github/workflows/*.yml | grep -v '@[0-9a-f]\{40\}' | grep -v 'uses: \./'
-.github/workflows/binary.yml:246:        uses: actions/cache@v4
-.github/workflows/binary.yml:792:        uses: actions/cache@v4
-.github/workflows/binary.yml:1006:        uses: actions/cache@v4
-.github/workflows/binary.yml:1209:        uses: actions/cache@v4
-.github/workflows/binary.yml:1362:        uses: actions/cache@v4
-.github/workflows/binary.yml:1559:        uses: actions/cache@v4
-.github/workflows/binary.yml:1819:        uses: actions/cache@v4
 .github/workflows/commit-messages.yml:24:        uses: actions/cache@v4
+.github/workflows/binary.yml:247:        uses: actions/cache@v4
+.github/workflows/binary.yml:791:        uses: actions/cache@v4
+.github/workflows/binary.yml:1006:        uses: actions/cache@v4
+.github/workflows/binary.yml:1208:        uses: actions/cache@v4
+.github/workflows/binary.yml:1361:        uses: actions/cache@v4
+.github/workflows/binary.yml:1551:        uses: actions/cache@v4
+.github/workflows/binary.yml:1827:        uses: actions/cache@v4
+.github/workflows/binary.yml:1893:        uses: actions/cache@v4
 $ grep -n 'run:.*\${{ *github\.' .github/workflows/*.yml | cut -c1-150
 .github/workflows/commit-messages.yml:34:        run: bootstrap/flang io .githooks/commit-msg.fscript --plan "Commit range" -- "origin/${{ github.base
+.github/workflows/commit-messages.yml:39:        run: bootstrap/flang io .githooks/no-growth.fscript --plan "Range" -- "origin/${{ github.base_ref }}"
+.github/workflows/commit-messages.yml:44:        run: bootstrap/flang io .githooks/lint-growth.fscript --plan "Range" --max-orders 100000 -- "origin/$
 $ grep -c 'pull_request_target' .github/workflows/*.yml | grep -v ':0'
                                                                     код 1
 $ grep -n 'runs-on:.*self-hosted' .github/workflows/*.yml
 .github/workflows/binary.yml:1336:    runs-on: [self-hosted, bolshaya-pamyat]
-.github/workflows/reprint.yml:304:    runs-on: [self-hosted, bolshaya-pamyat]
-.github/workflows/reprint.yml:413:    runs-on: [self-hosted, bolshaya-pamyat]
+.github/workflows/reprint.yml:323:    runs-on: [self-hosted, bolshaya-pamyat]
+.github/workflows/reprint.yml:453:    runs-on: [self-hosted, bolshaya-pamyat]
+$ grep -A4 '^permissions:' .github/workflows/*.yml | grep 'write'
+.github/workflows/pages.yml-  pages: write
+.github/workflows/pages.yml-  id-token: write
+.github/workflows/release.yml-  # contents: write — не расширение полномочий ради удобства, а то, без чего
+.github/workflows/release.yml-  contents: write
+                                                                    код 0
+$ env -u GITHUB_STEP_SUMMARY MODE=self-test KATALOG_RABOT=.github bash guard.sh
+проба: выпуск + переменная задана — код 1, как задумано
+проба: выпуск + переменной нет — код 0, как задумано
+проба: выпуск + переменная задана пустым — код 0, как задумано
+проба: не выпуск + переменная задана — код 0, как задумано
+проба: режим release на ветке + переменная — код 1, как задумано
+проба: разметка: работа задаёт переменную — код 1, как задумано
+проба: разметка: имя без присваивания — не в счёт — код 0, как задумано
+проба: неизвестный режим — смотреть нечем — код 2, как задумано
+сторож выпуска без кеша умеет краснеть и умеет молчать: 8 проб из 8
+                                                                    код 0
 $ ls SECURITY.md
 ls: cannot access 'SECURITY.md': No such file or directory           код 2
 ```
 
 Остальные действия закреплены полным хешем коммита. `pull_request_target` нет.
-Три работы на собственном раннере (`binary.yml`, `reprint.yml`) пускают запрос
-на вливание только из веток этого же репозитория. `actions/cache@v4` плавает в
-восьми местах. В `commit-messages.yml` имя целевой ветки и хеш головы запроса
-подставляются прямо в тело команды, без прослойки `env:`. Описания того, что дерево обнаруживает при
-подменённой сборочной машине, а что нет, в дереве нет.
+Три работы на собственном раннере (`binary.yml:1336`, `reprint.yml:323` и
+`reprint.yml:453`) пускают запрос на вливание только из веток этого же
+репозитория.
 
-Версия: flang 0.7.23, 30 сентября 2026. Проба самой проверки
-`release-without-cache` (`mode: self-test`, зовётся из `binary.yml`) локально не
-перепроверена.
+`actions/cache@v4` плавает в ДЕВЯТИ местах: восемь в `binary.yml`, одно в
+`commit-messages.yml`. Значения контекста GitHub подставляются прямо в тело
+команды в ТРЁХ шагах `commit-messages.yml` (строки 34, 39, 44): во всех трёх —
+`github.base_ref`, в первом ещё и `github.event.pull_request.head.sha`. У
+каждого из трёх шагов блок `env:` УЖЕ стоит (`LC_ALL`, `FLANG_TMP`) — правка в
+том, чтобы переложить два значения в готовый блок, а не завести новый.
+
+Два вопроса из этой задачи закрыты прогоном, и работы в них не осталось. Права
+`permissions:` сверены по всем двенадцати файлам работ: запись выдана ровно в
+двух — `release.yml` (`contents: write`) и `pages.yml` (`pages: write`,
+`id-token: write`, при `contents: read`), — а у остальных десяти стоит только
+`contents: read`. Расхождений с меркой нет; в выводе четвёртой строкой идёт
+пояснение из `release.yml`, а не ещё одно право.
+Проба самого сторожа (`mode: self-test`, зовётся из `binary.yml:1677`) прогнана
+локально — 8 проб из 8, код 0, — и первая проба и есть тот подлог, которого
+задача просила: «выпуск + переменная задана» даёт код 1, то есть сторож
+краснеть на заданную переменную кеша приговоров умеет.
+
+Чего нет: описания того, что дерево обнаруживает при подменённой сборочной
+машине, а что нет. `SECURITY.md` в дереве нет.
+
+Версия: flang 0.7.23, 3 октября 2026.
 
 ## Что должно быть
 
@@ -71,14 +113,12 @@ GitHub попадают в команды только через `env:`. Гра
 
 ## Когда задача сделана
 
-1. Команда шага 1 молчит.
-2. Команда шага 2 молчит.
-3. Права `permissions:` каждого файла `.github/workflows/*.yml` сверены: запись
-   есть только у `release.yml` (`contents`) и `pages.yml` (`pages`,
-   `id-token`); расхождения названы.
-4. Последний прогон шага с `mode: self-test` в CI зелёный, и показано подлогом,
-   что он краснеет при заданной переменной кеша приговоров.
-5. В `docs/` есть страница о границе: может ли подменённая машина первой печати
+1. Команда шага 1 молчит: все девять `actions/cache@v4` закреплены полным
+   хешем коммита.
+2. Команда шага 2 молчит: `github.base_ref` и
+   `github.event.pull_request.head.sha` переложены в уже стоящие блоки `env:`
+   трёх шагов `commit-messages.yml` (строки 34, 39, 44).
+3. В `docs/` есть страница о границе: может ли подменённая машина первой печати
    семени внести изменение, которое переживёт самосборку и останется
    невидимым проверяющей программе; что это обнаруживает сегодня и что нет.
 

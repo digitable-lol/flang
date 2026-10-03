@@ -330,6 +330,7 @@ number	state	title
 9220	done	Six green guards verified three wired into ci
 9233	done	Mirror catches up the address stays
 9283	done	Sixteen library files are outside the emptiness census
+9337	dropped	The checker calls an honest stdlib file a lie
 9350	done	Two guards search with binary skipping and lie quietly
 9420	done	Ci never ran on dev and twenty seven jobs rebuild the binary
 9518	done	G2 revocation grounds remeasured one hole is deeper than recorded
@@ -340,6 +341,7 @@ number	state	title
 9613	rejected	A multi hour run must not be a child of an agent
 9615	done	The instruments that measure the gates were not in the repository
 9616	done	The kernel computes the evidence and the record drops it
+9617	dropped	The circulation tests the printer not the parser
 9618	done	The kernel proves a falsehood by capturing a name on unfolding
 9619	done	Per file proof checking does not divide the work
 9620	done	An assertion checked the first line and deleted twenty eight

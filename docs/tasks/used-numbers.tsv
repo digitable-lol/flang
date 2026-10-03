@@ -399,3 +399,4 @@ number	state	title
 9998	done	The rule 'start by construction' is ready but adds no share
 9999	done	The goal follows from what is declared about the arguments: ready
 3870	done	The totality analysis sees calls made through function values
+1315	done	Forgotten check temporaries redden with their path; six legitimate places are named by the guard with a reason

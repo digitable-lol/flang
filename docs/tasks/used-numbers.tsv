@@ -138,6 +138,7 @@ number	state	title
 2600	done	The inventory checks its own table and where it is still blind
 2718	done	Hole 9984 is closed, both halves
 2731	done	Record header carries an absolute path and breaks the corpus
+2748	done	The checker cannot replay a verdict that rests on a declared type
 2844	done	Checker unfold rules 2 and 3 ask freshness of substituted names
 2907	done	The record and the checker are modelled in lean and soundness is proved
 3006	rejected	A not equal goal is invisible to the kernel

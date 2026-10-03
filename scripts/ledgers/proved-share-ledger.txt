@@ -1350,7 +1350,7 @@ a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 2c8ea5e4a5fe329bc74c90238b627639|42|42|0|0|0|flang/self/sets.flang
 bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 6c68e5bf49b6c4f3e184ef519b324d7a|3|0|2|1|0|flang/self/totality-refusals.flang
-f183bd3228a250fc6aa70daa713a32eb|309|258|14|37|0|flang/self/totality.flang
+5244f474a7f26171786a1690f79a98e9|315|257|16|42|0|flang/self/totality.flang
 5fffa3b0c7a035479c3b55c3731fb99a|1|0|1|0|0|flang/self/type-refusals.flang
 6f5995562eb91e54ecbcd9bde4c4853e|410|119|4|265|0|flang/self/types.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang

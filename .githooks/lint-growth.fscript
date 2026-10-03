@@ -500,9 +500,11 @@
     ожидается ["-c",
       "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^--- a\\//p' -e '/^+++ b\\//p' -e '/^@@ /p'",
       "diff", "-c", "core.quotepath=off", "diff", "--no-color", "-U0",
-      "--diff-filter=d", "--cached"]
+      "--diff-filter=d", "--cached", "--", ":(top)*.flang", ":(top)*.fscript",
+      ":(top)*.fp", ":(top)*.фп", ":(top)*.фланг"]
   ["-c", («Diff script»), "diff", "-c", "core.quotepath=off", "diff", "--no-color",
-   "-U0", "--diff-filter=d", range]
+   "-U0", "--diff-filter=d", range, "--", ":(top)*.flang", ":(top)*.fscript",
+   ":(top)*.fp", ":(top)*.фп", ":(top)*.фланг"]
 
 тотальная функция «Git diff»
   принимает range: строка
@@ -513,7 +515,8 @@
       "-c",
       "o=$(git \"$@\") || exit; printf '%s\\n' \"$o\" | sed -n -e '/^--- a\\//p' -e '/^+++ b\\//p' -e '/^@@ /p'",
       "diff", "-c", "core.quotepath=off", "diff", "--no-color", "-U0",
-      "--diff-filter=d", "--cached"]
+      "--diff-filter=d", "--cached", "--", ":(top)*.flang", ":(top)*.fscript",
+      ":(top)*.fp", ":(top)*.фп", ":(top)*.фланг"]
   «Process» от "sh" и («Diff arguments» от range)
 
 тотальная функция «Run»

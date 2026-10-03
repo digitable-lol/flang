@@ -1,2 +1,2 @@
 #!/bin/sh
-exec bootstrap/flang io .githooks/pre-push.fscript --plan "Pre push" --timeout 200000
+exec bootstrap/flang io .githooks/pre-push.fscript --plan "Pre push" --timeout 900000

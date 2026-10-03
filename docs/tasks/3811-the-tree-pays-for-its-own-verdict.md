@@ -54,10 +54,11 @@ $ bootstrap/flang io scripts/guards/run-verdict-debt-guard.fscript --plan Про
 
 В `flang/scripts/run-verdict-debt.tsv` записано 49 инструментов дерева, которые
 вердикта не проходят; больше всего их в `scripts/guards` (23) и `flang/scripts`
-(9). Каждый такой вызов называет ключ `--на-веру` — 51 раз в `.flangrc` и
-остальное в `.github/workflows`. Учёт долга устроен и проверяется: число записей
-ограничено потолком в `flang/scripts/run-verdict-debt-ceiling.tsv`, проверка
-стоит в `.githooks/pre-push.fscript`.
+(9). Каждый такой вызов называет ключ `--на-веру`: из 88 вызовов 51 стоит в
+`.flangrc`, 29 в `.github/workflows`, остальные в прочих файлах дерева. Учёт
+долга устроен и проверяется: число записей ограничено потолком в
+`flang/scripts/run-verdict-debt-ceiling.tsv`, проверка стоит в
+`.githooks/pre-push.fscript`.
 
 У записи `flang/proof/probes/orders/programs/arguments.fscript` причина названа:
 постусловие говорит `результат содержит …`, а правил вывода о слове `содержит`

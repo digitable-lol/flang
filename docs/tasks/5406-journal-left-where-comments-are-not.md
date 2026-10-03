@@ -37,11 +37,14 @@ flang/self/svoystva.flang:313:  пример «Начало сообщения �
 flang/self/types.flang:3419:  пример «Узел без kind назван undefined, как у свидетеля»
 ```
 
-Третья команда находит строковые литералы, которые печатаются в рантайм цели:
-`emit-elixir.flang:4470`, `emit-python.flang:5203`, и те же слова в длинных
-строках `emit-go.flang:2416` и `emit-csharp.flang:5083`.
+Третья команда находит строковые литералы, которые печатаются в рантайм цели,
+и целей этих семь, а не четыре: `emit-elixir.flang:4470`,
+`emit-rust.flang:2943`, `emit-java.flang:4176`, `emit-python.flang:5203` и те же
+слова в длинных строках `emit-go.flang:2416`, `emit-csharp.flang:5083`,
+`emit-c.flang:5311`. У цели C слова стоят ДВАЖДЫ: в печати (строка 5311) и в
+`ожидается` примера рядом (строка 5310), — правка одной строки краснит пример.
 
-Версия: flang 0.7.23, 30 сентября 2026.
+Версия: flang 0.7.23, 3 октября 2026.
 
 ## Что должно быть
 
@@ -56,15 +59,23 @@ flang/self/types.flang:3419:  пример «Узел без kind назван u
 ## Когда задача сделана
 
 - четыре команды из шагов воспроизведения ничего не находят;
-- правка литералов меняет байты напечатанного кода целей Elixir, Go, Python и
-  C#: вывод `flang emit` на одном примере снят до и после, и разница состоит
-  только из этих строк;
+- правка литералов меняет байты напечатанного кода всех семи целей — C, Go,
+  Rust, Java, C#, Python, Elixir: вывод `flang emit` на одном примере снят до и
+  после по каждой цели, и разница состоит только из этих строк;
+- у цели C правлены обе строки, 5310 и 5311:
+  `grep -c 'значений свидетеля' flang/self/emit-c.flang` отвечает 0, сегодня 2
+  (у остальных шести файлов — по 1), иначе `ожидается` примера расходится с
+  печатью. Весь `flang test` на `emit-c.flang` для этого не годится: он не
+  укладывается ни в 300 с, ни в 6 млрд шагов;
 - правка имён примеров не меняет числа примеров: `flang test` на
-  `flang/self/svoystva.flang` и `flang/self/types.flang` называет то же число.
+  `flang/self/svoystva.flang` называет «примеров 185, прошло 185», на
+  `flang/self/types.flang` — «примеров 355, прошло 355».
 
 ## Где живёт правка
 
 `flang/self/proofterm.flang`, `flang/self/types.flang`,
-`flang/self/svoystva.flang`, `flang/self/emit-elixir.flang`,
-`flang/self/emit-go.flang`, `flang/self/emit-python.flang`,
-`flang/self/emit-csharp.flang`. Всё в самосборной части: требует перепечатки.
+`flang/self/svoystva.flang`, `flang/self/emit-c.flang`,
+`flang/self/emit-go.flang`, `flang/self/emit-rust.flang`,
+`flang/self/emit-java.flang`, `flang/self/emit-csharp.flang`,
+`flang/self/emit-python.flang`, `flang/self/emit-elixir.flang`. Всё в
+самосборной части: требует перепечатки.

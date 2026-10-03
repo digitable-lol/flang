@@ -29,6 +29,7 @@
 2. `bootstrap/flang emit proba.flang --target c --no-check --out out`
 3. `grep -n 'flang_repl.c": ' docs/jargon.json`
 4. `grep -c '"--ledger"' flang/src/emit/c/flang_repl.c`
+5. `bootstrap/flang run-script jargon:check`
 
 ## Что происходит
 
@@ -37,13 +38,24 @@ $ bootstrap/flang emit proba.flang --target c --no-check --out out 2>&1 | grep -
 8:  * СТОРОЖА ОСТАЛИСЬ ВСЕ. Постусловия уехали в напечатанный код до одного,
 11:    толще и на работе медленнее, но не слабее: лишний сторож стережёт то,
 $ grep -n 'flang_repl.c": ' docs/jargon.json
-541:    "flang/src/emit/c/flang_repl.c": 42,
+526:    "flang/src/emit/c/flang_repl.c": 42,
 $ grep -c '"--ledger"' flang/src/emit/c/flang_repl.c
 1
+$ bootstrap/flang run-script jargon:check
+flang/src/emit/c/flang_repl.c: внутренних слов 44, дозволено 42. Лишние:
+    строка 15291: «корпус» → программы репозитория / примеры / библиотека
+    строка 15321: «корпус» → программы репозитория / примеры / библиотека
+всего бед: 5                        код 1, пик 3,54 ГиБ, 178,79 с
 ```
 
-Версия: flang 0.7.23, 30 сентября 2026. Проверка `bootstrap/flang run-script jargon:check` за
-минуту не дошла до конца, её ответ не перепроверено.
+Долг не просто не убывает: файл сегодня на два слова ПЕРЕБРАЛ допущенное, и
+сторож от этого красен. Остальные четыре беды — не вывод компилятора, а проза:
+`docs/course/03-totality.md` (две: «сторож», «корпус»),
+`docs/course/09-eight-targets.md` («печатник»), `docs/course/13-where-next.md`
+(«корпус»), `docs/guide/how-to-write-flang.ru.md` («Сторож»); допущено по этим
+файлам ноль, и без них сторож кодом 0 не ответит.
+
+Версия: flang 0.7.23. Дата прогона: 3 октября 2026.
 
 ## Что должно быть
 
@@ -62,13 +74,21 @@ $ grep -c '"--ledger"' flang/src/emit/c/flang_repl.c
 1. Вывод из шага 2 не содержит слова «сторож» ни в каком регистре.
 2. Строка `flang/src/emit/c/flang_repl.c` в разделе «долг» файла
    `docs/jargon.json` равна нулю или снята.
-3. `bootstrap/flang run-script jargon:check` отвечает кодом 0.
+3. `bootstrap/flang run-script jargon:check` отвечает кодом 0 — то есть не
+   называет ни `flang/src/emit/c/flang_repl.c`, ни пять слов из четырёх файлов
+   прозы, названных выше.
 
 ## Где живёт правка
 
 `flang/src/emit/c/flang_repl.c`: строки справки и диагностики (ключ `--ledger`,
 сообщение при `--no-check`, сообщения о ключах `--json`, `--записать`,
-`--быстро`, `--proof`), затем `docs/jargon.json` (`bootstrap/flang run-script jargon:debt`).
-Файл — рантайм, в двоичный он попадает сборкой `make -C bootstrap` из копии в
-`bootstrap/`; править исходник и копию вместе, иначе справка в дереве и в
-собранном компиляторе разойдутся.
+`--быстро`, `--proof`), затем `docs/jargon.json` (`bootstrap/flang run-script jargon:debt`)
+и четыре файла прозы из раздела «Что происходит».
+
+Двоичный собирается не из дерева, а из семенной копии: `bootstrap/Makefile`
+берёт `bootstrap/flang_repl.c`, и перепечатка берёт оттуда же («версия ИЗ
+ДЕРЕВА со старым компилятором НЕ СВЯЗЫВАЕТСЯ» — `scripts/bootstrap-reprint.sh`,
+строка 365). Копии сегодня расходятся на 71 строку: у семенной шапка
+«Сгенерировано … Не редактировать руками», в дереве — 50 строк комментариев;
+кириллические советы и долг жаргона в обеих одни и те же. Значит правку в дереве
+без семенной копии собранный компилятор не покажет.

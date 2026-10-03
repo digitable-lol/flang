@@ -36,7 +36,7 @@ make: Leaving directory 'bootstrap'                                    код 0
 
 Версия: flang 0.7.23, 3 октября 2026.
 
-Что видно в самом дереве, и это меняет форму правки:
+Что видно в самом дереве, и это задаёт форму правки:
 
 ```
 $ grep -n '^#include "' bootstrap/*.c bootstrap/*.h

@@ -299,6 +299,7 @@ number	state	title
 7837	done	The board and the integrity check run again
 7842	done	There are nine targets and 56 lists say eight
 7855	done	G5 has a number for binding but the roundtrip instrument is outside the tree
+8028	dropped	The derivation check conflates a lie with an exhausted budget
 8118	done	Nobody runs the examples of the compiler itself
 8222	done	Run and io print the proof verdict and refuse an unproved program
 8235	done	The repository layout says what the project is

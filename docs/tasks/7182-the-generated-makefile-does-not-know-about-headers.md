@@ -34,7 +34,33 @@ make: Nothing to be done for 'all'.
 make: Leaving directory 'bootstrap'                                    код 0
 ```
 
-Версия: flang 0.7.23, 30 сентября 2026.
+Версия: flang 0.7.23, 3 октября 2026.
+
+Что видно в самом дереве, и это меняет форму правки:
+
+```
+$ grep -n '^#include "' bootstrap/*.c bootstrap/*.h
+bootstrap/flang_cli.c:93:#include "flang_runtime.h"
+bootstrap/flang_cli.c:156:#include "flang_conc.h"
+bootstrap/flang_runtime.c:58:#include "flang_runtime.h"
+bootstrap/flang_repl.c:146:#include "flang_runtime.h"
+bootstrap/compiler_flang.h:10:#include "flang_runtime.h"
+bootstrap/compiler_flang.c:7:#include "compiler_flang.h"
+$ ls bootstrap/*.h
+bootstrap/compiler_flang.h
+bootstrap/flang_runtime.h
+```
+
+Два следствия для правки:
+
+1. `compiler_flang.c` зовёт `flang_runtime.h` НЕ сам, а через
+   `compiler_flang.h`. Зависимости, выписанные только по строкам `#include`
+   самого исходника, смену `flang_runtime.h` до `compiler_flang.o` не донесут —
+   нужен транзитивный обход заголовков.
+2. `flang_cli.c:156` зовёт `flang_conc.h` под `#ifdef FL_WITH_CONC`, и в
+   `bootstrap/` этого заголовка НЕТ. Зависимость на него make оборвёт
+   («No rule to make target»), поэтому выписывать можно только те заголовки,
+   которые печать кладёт рядом с исходником.
 
 ## Что должно быть
 
@@ -55,8 +81,9 @@ make: Leaving directory 'bootstrap'                                    код 0
 
 ## Где живёт правка
 
-`flang/self/emit-c.flang`, функция «Печать Makefile»: объявить поимённо по
-строкам `#include` каждого исходника
+`flang/self/emit-c.flang`, функция «Печать Makefile»: объявить поимённо
+транзитивное замыкание заголовков каждого исходника, считая только те, что
+печать кладёт рядом
 
 ```
 flang_runtime.o: flang_runtime.c flang_runtime.h

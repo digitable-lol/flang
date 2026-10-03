@@ -6,6 +6,174 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.23 — 29 September 2026
+
+**Record fields are checked against their type, and runs have a memory limit**
+
+### What appeared
+
+- **`--memory-limit N` (`--предел-памяти`) — memory cap for a run.** Works with any command. `check`, `test` and `run` default to three quarters of the machine's memory; `0` removes the cap. At the cap the run stops with exit code 5 and names the function being evaluated.
+
+```
+$ flang run runaway.flang --function «Раздуть» --args '{"текст":"а","раз":28}' --trust --memory-limit 32M
+FLANG_MEMORY: прогон остановлен на пределе памяти 32 МиБ: занято 25 МиБ, просили ещё 25 165 880 байт
+  считалась функция «Раздуть», шагов программы 544
+                                                                    exit 5
+```
+
+Issue #160.
+- **Every proof step names its kernel rule.** A step line in a `--record` file ends with `правило «…»`; `--proof --json` has a `stepRules` field. The independent proof checker compares the name with the rule it applies itself.
+
+### What changed
+
+- **A record field is checked against its declared type.** A `неотрицательное` (non-negative) field accepted `-7`, and the kernel proved a postcondition that the run then violated. Such a program now fails type checking with `FLANG_TYPE … поле «шаг» записи «Мера»: ожидался неотрицательное, получен целое`, exit 1.
+- **`flang io`: a process that outlives the host timeout is a `FLANG_IO_TIMEOUT` failure.** It used to be reported as «Процесс убит» `SIG9`, as if killed from outside. `--timeout` is a silence timeout counted from the last output byte, 30000 ms by default, and is now in `flang io --help`. Issue #162.
+- **The interpreter frees memory on deep recursion.** Beyond about 500 nested calls memory was never reclaimed and grew with every step. `«Числа до» от 1000` used to hit 3.6 GB and now runs in 370 MB. Issue #160.
+- **`разделить … по` (split) and `содержит` (contains) in the C runtime find the separator with `memchr`.** On 100 MB of text: split 0.47 → 0.08 s, contains 0.39 → 0.008 s; step counts are unchanged. Issue #161.
+- **`.flangrc` keys are English:** `language`, `surface`, `color`, `page`, `version`, `name`, `license`, `repository`, `issues`, `unproven`. Old keys are still read and name their replacement.
+- **String literals are printed verbatim in proof records.** Spaces used to be inserted inside strings: `" : //"` instead of `"://"`.
+
+### What broke
+
+- **Module search by name stops at the project root** — the nearest directory with `.flangrc`, `.git` or `flang.package`. A file above the root no longer replaces a project or library module, and a module that lives only there is not found (`FLANG_IMPORT_NOT_FOUND`).
+
+**Migration:** move the module into the project, import it by path (`использует «Мера» из "../mera.flang"`), or set `FLANG_MODULE_ROOT`.
+
+## 0.7.22 — 26 September 2026
+
+**The `следует` syllogism and correct code points outside the BMP**
+
+### What appeared
+
+- **`следует` (follows) — derive a statement from premises named above it.** The conclusion is a separate block that cites a proved statement with `по свойству`.
+
+```flang
+утверждение «все люди смертны»
+  для всех кто: «Человек»
+  утверждаем («Смертен» от кто)
+
+следует «Сократ смертен»
+  дано сократ: «Человек»
+  утверждаем («Смертен» от сократ)
+  по свойству «все люди смертны»
+```
+
+```
+$ flang check socrates.flang --proof
+утверждение «Сократ смертен» — доказано: терм принят ядром, 1 шаг, основания: утверждение «все люди смертны» — утверждение обо ВСЕХ входах
+```
+
+Without the `по свойству` line the conclusion is not proved:
+
+```
+FLANG_PROOF_STEP: теорема «Сократ смертен»: ни одного шага        exit 1
+```
+
+### What changed
+
+- **`код символа` (character code) in the shell: characters outside the BMP.** `flang repl` returned 240 — the first UTF-8 octet — for any such character, while `flang run` answered correctly. Both now agree.
+
+```
+$ flang repl
+» код символа "𝒜"
+119964
+» код символа "👍"
+128077
+```
+
+Issue #103.
+- **The binary itself has no `--step-limit` key.** An earlier edition of these notes said the key works with any command. In 0.7.22 only `flang check` parses it.
+
+```
+$ flang --step-limit 100000000 emit file.flang --target c
+flang: неизвестная команда «--step-limit»              exit 2
+```
+
+### What broke
+
+- **The seed print scripts are renamed.** This affects those who rebuild the compiler from source.
+
+| was | now |
+|---|---|
+| `scripts/raskrutka.sh` | `scripts/bootstrap-reprint.sh` |
+| `scripts/otpechatok-semeni` | `scripts/seed-fingerprint` |
+
+**Migration:** replace the names in your scripts and in your CI setup.
+
+## 0.7.21 — 22 September 2026
+
+**Unproved code no longer runs by default**
+
+### What appeared
+
+- **Environment variables and command-line arguments in plans.** The orders were in the language's vocabulary, but the runtime answered `FLANG_IO_UNKNOWN`.
+
+```flang
+вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "HOME")
+```
+
+The reply is `«Значение среды»` with field `значение`, or `«Переменной среды нет»` as its own variant — not an empty string. A plan's arguments are whatever follows `--`:
+
+```
+$ flang io script.fscript -- build --verbose
+```
+
+Deny with `--no-env`, `--no-args`.
+- **Terminal output.** `«Показать»` draws a frame, `«Ждать событие»` waits for a key:
+
+```flang
+вариант «Сделать» с поручение равным (вариант «Показать» с место равным "экран" и текст равным кадр)
+вариант «Сделать» с поручение равным (вариант «Ждать событие» с срок равным 5000)
+```
+
+A key arrives as `«Случилось»` with fields `откуда` and `значение`; a timeout as `«Срок вышел»`. Key names: `ввод`, `пробел`, `таб`, `возврат`, `выход`, `вверх`, `вниз`, `влево`, `вправо`; a printable character arrives as itself.
+
+Working example: `docs/examples/io/progress-bar-on-screen.flang`. The frame goes to `/dev/tty`, not stdout — stdout carries the plan's JSON result. With no terminal (pipe, file, CI) the answer is the same `FLANG_IO_NO_SCREEN` as before. Ctrl-C still kills the program. Deny with `--no-screen`.
+- **`bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 900000`** prints four coverages separately, each with its own line saying what it is not, and every number carries a date and a commit.
+
+### What changed
+
+- **The independent checker no longer accepts a false proof.** Two holes: arguments were substituted sequentially rather than simultaneously, and body substitution did not check for name capture. Neither 529 mutation probes nor four tree gates had caught them.
+- **The same checker no longer rejects honest records** — the verdict depended on the order the blocks were printed in.
+- **The share of places the checker replays independently is 650 of 650.** Not one place is taken on the kernel's word any more; there used to be 12 premises and 4 steps.
+
+### What broke
+
+- **`flang run` and `flang io` exit with code 3 when a function's promise is not proved.** Such a program used to run and exit 0.
+
+```
+$ flang run price.flang --function 'Скидка' --args '{"цена": 100, "скидка": 150}'
+не доказано: утверждений 1: доказано 0, сетка 1 — запуск только по явному согласию: --trust
+exit 3
+```
+
+**Migration:** add `--trust` and the verdict is not computed at all.
+
+Affected: scripts calling `flang run` or `flang io` on programs where `обеспечивает` is backed by examples only. Check in advance with `flang check --proof <file>` — a summary reading «доказано 0, сетка N» means the program falls under the new rule.
+
+## 0.7.20 — 18 September 2026
+
+**The compiler's own proof is fully replayed: 650 places of 650**
+
+### What appeared
+
+- For the first time `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` prints ДОКАЗУЕМ against a 100 % gate: every one of the 650 obligations in the compiler's own proof records was replayed by an independent C program, with nothing taken on the compiler's word. Before this some places were accepted on trust and the gate stood lower.
+- Discharging a precondition (`требует`) at a call site is now printed into the record and replayed as well: the second share, the one that counts preconditions, is 652 of 652.
+- The seed reprint carried kernel fixes into the built compiler: a call's precondition is no longer discharged by the declared type of its argument; `требует` accepts a quantifier over list elements; a written-out list, `отобразить` and an applied function label gained the rights they lacked; the kernel now prints the justification it used to compute and drop.
+
+### What changed
+
+- The provability gate was raised from 95 % to 100 % — the owner's word. Until the reprint the verdict at that gate honestly printed НЕ ДОКАЗУЕМ.
+- `package.json` is gone from the tree: project settings are read from `.flangrc`, and a guard keeps the file from coming back.
+- The inference rules were judged again by a foreign kernel — Lean 4.34.0: 109 rule rows, 107 of them with a lemma, and on 1 488 replayed derivations the checker and Lean disagreed 0 times.
+
+### What broke
+
+- The proof still covers the source, not the printed program: nothing checks that `flang emit --target c` printed the program that was verified. Coq, Lean and Idris have the same gap.
+- The checker is itself trusted code: 7 531 lines of C code against a ratchet ceiling of 7 603, its rules cross-checked by Lean, but not itself proved.
+- Time, side effects and processes still have no rules: 414 places in the tree need them, and only the first three steps are written down.
+- 100 % is the share of places in the compiler's own proof, not «all programs are proved». The verdict about your program comes from `flang check --proof` and the checker beside it.
+
 ## 0.7.19 — 13 September 2026
 
 **Quantifiers reached the built compiler**
@@ -53,7 +221,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 - Quantifiers over list elements, nested quantifiers, induction over your own declared type, statements outside functions, and proof steps named by a human did NOT make this release. They are written and checked, but they reach the built compiler only by reprinting the seed, which is still running. They will ship in the next release.
 - The proof still applies to `flang check` and does not cover the built binary: nothing verifies that the emitted C matches the source program. Coq, Lean and Idris have the same gap.
-- The example ledger (`examples-ledger.txt`) still holds the old paths: the walker that prints it runs for two hours forty minutes and has never finished — neither here nor in CI. It cannot be rewritten by hand: the check is a line-by-line diff, and the line order there is the walk order.
+- The example ledger (`ведомость-примеров.txt`) still holds the old paths: the walker that prints it runs for two hours forty minutes and has never finished — neither here nor in CI. It cannot be rewritten by hand: the check is a line-by-line diff, and the line order there is the walk order.
 
 ## 0.7.17 — 11 September 2026
 
@@ -417,7 +585,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### What broke
 
-- The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/guards/occupied-names-guard.fscript` instead of the removed JavaScript script.
+- The `emit:check` shortcut is gone: the emit check is done by `pechat:check` in the language itself, and `occupied:check` now calls `scripts/guards/occupied-names-guard.flang` instead of the removed JavaScript script.
 - The shared half of the PostgreSQL driver moved into the "Wire" module. Programs that called `«Знак байта»`, `«Четыре октета»`, `«Два октета»` and their neighbours directly from the database module must now import "Wire".
 
 ## 0.5.1 — 19 August 2026

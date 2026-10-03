@@ -398,3 +398,4 @@ number	state	title
 9997	done	Printing by declaration is ready but the checker was not taught; a reprint would redden 38 records
 9998	done	The rule 'start by construction' is ready but adds no share
 9999	done	The goal follows from what is declared about the arguments: ready
+3870	done	The totality analysis sees calls made through function values

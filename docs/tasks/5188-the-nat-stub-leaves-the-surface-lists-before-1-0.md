@@ -79,11 +79,14 @@ flang/self/totality.flang:11
 - таблица `flang/proof/tables/segments.tsv` (строка `нат`) — её и массив ядра
   `flang/proof/tables-guard.fscript` сличает в обе стороны, поэтому снимать
   имя надо из обеих сразу;
-- пробы и корпус, где `нат` стоит нарочно: 61 файл под `flang/proof`, из них 9
-  записей, привязанных к sha256 исходника (список снимается командой
-  `grep -rlP '(?<![\p{L}\p{N}_])нат(?![\p{L}\p{N}_])' flang/proof`);
-  среди них `flang/proof/examples/corpus-nat-names.flang`, семьи
-  `recursion-step` и `recursion-step-grows`, все семь пар
-  `tests/records/case-split-segment/`.
+- второй сверщик на Lean: тот же перечень имён в
+  `flang/proof/lean/RecordReader.lean` (строка 436) и упоминания в
+  `Record.lean` и `Rules.lean`;
+- пробы и корпус, где `нат` стоит нарочно: 64 файла под `flang/proof` (три
+  файла Lean выше в их числе), из них 9 записей, привязанных к sha256 исходника; список
+  снимается командой
+  `grep -rlP '(?<![\p{L}\p{N}_])нат(?![\p{L}\p{N}_])' flang/proof`. Среди них
+  `flang/proof/examples/corpus-nat-names.flang`, семьи `recursion-step` и
+  `recursion-step-grows`, все семь пар `tests/records/case-split-segment/`.
 
 Правка в `flang/self/**` требует перепечатки самосборной части.

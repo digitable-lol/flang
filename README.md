@@ -3,7 +3,7 @@
 # flang
 
 flang is a pure functional language with strict static typing, written in words rather than
-symbols. A function carries its examples and its claims about the result next to its body; the
+symbols. A function carries its examples and its claims about the result next to its body. The
 compiler checks them before anything runs and prints the checked program into C, C++, Go, Rust,
 Java, JavaScript, TypeScript, Elixir, Python or C#. The compiler is written in flang. Every keyword
 has a Russian and an English spelling; the compiler answers in Russian on either.
@@ -12,8 +12,14 @@ has a Russian and an English spelling; the compiler answers in Russian on either
 terminates on every input, or refuses the file. `ensures`: the proof kernel proves the claim about
 the result for all inputs, or reports it as not proved, and `flang run` then refuses the program.
 `flang check --proof --record <file>` writes the proof out; a separate C program,
-[`checker.c`](flang/proof/checker/checker.c), replays it against the source and names the steps it takes
-on the kernel's word. What it does not mean: [What is proved and what is not](https://digitable-lol.github.io/flang/en/what-is-proved.html).
+[`checker.c`](flang/proof/checker/checker.c), replays it against the source and names the steps it
+takes on the kernel's word.
+
+The kernel does not search. It applies rules from a closed table —
+[`flang/proof/tables/inference-rules.tsv`](flang/proof/tables/inference-rules.tsv): 97 rules and
+15 rows that state what is deliberately not derivable, counted there on 3 October 2026 — and the
+report names the rule that carried each claim. What this does not mean:
+[What is proved and what is not](https://digitable-lol.github.io/flang/en/what-is-proved.html).
 
 ## Install
 
@@ -113,22 +119,21 @@ The binary answers to fifteen commands, the editor language server among them: `
 Work happens in a clone; the only thing to build is the compiler.
 
 ```bash
-make -C bootstrap -j8                    # about a minute; gives bootstrap/flang
-sh flang/test/обход.sh                   # the checks written in flang, seconds
+make -C bootstrap -j8                    # gives bootstrap/flang
+sh flang/test/обход.sh                   # the checks written in flang
 ./bootstrap/flang test flang/stdlib/     # the library's examples
 git config core.hooksPath .githooks      # the pre-push hook: the cheap guards, before CI
 ```
 
 The walk runs 211 checks written in flang and diffs the result against
-<!-- СНЯТО 2026-09-13 строк flang/test/ledger.txt = 211 -->
+<!-- СНЯТО 2026-10-03 строк flang/test/ledger.txt = 211 -->
 `flang/test/ledger.txt`, one line per check. The hook runs the guards that finish in seconds and
 names what it did not run; the long ones are CI (`.github/workflows/binary.yml`). Work is tracked
 in [`docs/tasks/`](docs/tasks/README.md), one file per open task; a closed task leaves the tree and
-its number stays taken in `docs/tasks/used-numbers.tsv`. The rules of the tree
-that are not visible from the code are in [`AGENTS.md`](.ai/AGENTS.md); how to build, run the
-checks and send a change is [`CONTRIBUTING.md`](CONTRIBUTING.md). Decisions are recorded in
-[`docs/adr/`](docs/adr); the knowledge base of measured facts and rejected paths is
-[`docs/zettel/`](docs/zettel/README.md).
+its number stays taken in `docs/tasks/used-numbers.tsv`. The rules of the tree that are not visible
+from the code are in [`AGENTS.md`](.ai/AGENTS.md); how to build, run the checks and send a change is
+[`CONTRIBUTING.md`](CONTRIBUTING.md). Decisions are recorded in [`docs/adr/`](docs/adr); the
+knowledge base of measured facts and rejected paths is [`docs/zettel/`](docs/zettel/README.md).
 
 Prose in this tree is held to the tree by runs, not by memory: a number written by hand carries a
 note saying how it was measured (`scripts/guards/prose-numbers-guard.fscript`), a path in a link must
@@ -136,16 +141,16 @@ exist (`scripts/guards/link-guard.fscript`), and a word of internal jargon on a 
 reader is refused (`scripts/guards/jargon-guard.fscript`). This page is one of the pages those
 checks read.
 
-## Status
+## Built with flang
 
-`0.x` is the language-design phase: the JSON shape and the diagnostic codes are compatibility
-surfaces, syntax grows through documented proposals. Four programs outside this repository are
-built with it — [flang-tui](https://github.com/digitable-lol/flang-tui),
+Four programs outside this repository: [flang-tui](https://github.com/digitable-lol/flang-tui),
 [digitdisk](https://github.com/digitable-lol/digitdisk),
 [flang-ribbon](https://github.com/digitable-lol/flang-ribbon) and
-[flang-env](https://github.com/digitable-lol/flang-env). What stands between the tree and 1.0 is
-the five stages of [`docs/ROADMAP.md`](docs/ROADMAP.md), each tied to a decision in `docs/adr/` and
-to tasks in `docs/tasks/`.
+[flang-env](https://github.com/digitable-lol/flang-env).
+
+On `0.x` the JSON shapes and the diagnostic codes are compatibility surfaces; the syntax is not
+frozen. What the prover reaches and where it stops is measured in
+[`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## License
 

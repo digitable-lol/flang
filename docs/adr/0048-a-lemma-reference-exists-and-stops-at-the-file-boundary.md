@@ -3,7 +3,7 @@
 **Состояние:** черновик, только текст; кода этот черновик не несёт. Выполняется задачей
 [5583](../tasks/5583-a-proof-refers-to-a-statement-proved-in-another-file.md).
 **Дата:** 26 сентября 2026
-**Основание:** [задача 1400](../tasks/1400-fmath-is-a-proof-library-about-programs.md) и
+**Основание:** задача 1400 (закрыта) и
 её проектная записка [docs/design/fmath-first-ten-statements.md](../design/fmath-first-ten-statements.md)
 §5 п.1 — «сослаться на доказанное утверждение нечем»; замер этого решения 26 сентября 2026
 в копии `wLemma` (ветка `a/1400-ssylka-na-dokazannoe` от `gh/dev` `d5e203b89`), команды — в §9.

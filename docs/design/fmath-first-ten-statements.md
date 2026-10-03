@@ -12,7 +12,7 @@
 корпуса. Двоичный `bootstrap/flang` не собирался, ядро не запускалось, Lean не
 запускался. Все числа — из поиска и прогона по этому дереву; команды в §6.
 
-**Основание:** [задача 1400](../tasks/1400-fmath-is-a-proof-library-about-programs.md);
+**Основание:** задача 1400 (закрыта);
 ADR-0028 §6, §9, §11. Рядом:
 [ADR-0022](../adr/0022-a-type-fact-travels-as-a-derivation.md) (факт едет в записи выводом),
 [ADR-0025](../adr/0025-the-ceiling-leaves-the-type-and-becomes-an-obligation.md) (потолок — обязательство),

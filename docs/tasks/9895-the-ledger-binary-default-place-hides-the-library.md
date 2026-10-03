@@ -21,30 +21,48 @@
 
 ## Шаги воспроизведения
 
-Сборка двоичного идёт минуты, поэтому место подменено копией готового двоичного
-в каталоге вне дерева:
-
-1. `mkdir -p ../out-ledger-binary && cp -p bootstrap/flang ../out-ledger-binary/flang`
-2. `../out-ledger-binary/flang check scripts/guards/tab-host-guard.fscript --proof --json`
+1. `bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 --`
+   — сборщик без довода, минуты.
+2. `<собранный двоичный> check scripts/guards/tab-host-guard.fscript --proof --json`
 3. `grep -n 'ledger-binary' scripts/seed/build-ledger-binary.fscript`
+4. Разбор отказов по кодам:
+   `<двоичный> check … --proof --json 2>&1 | grep -o 'FLANG_[A-Z_]*' | sort | uniq -c`
 
 ## Что происходит
 
 ```
-$ ../out-ledger-binary/flang check scripts/guards/tab-host-guard.fscript --proof --json
+$ bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 --
+двоичный: /home/b/projects/flang-r5-ledger-binary/flang
+размер:   24559320 байт
+ВНИМАНИЕ: этот двоичный НЕ ВИДИТ библиотеку дерева.
+  он ищет её в /home/b/projects/flang-r5-ledger-binary/../flang/stdlib — а её там нет
+                                                                       код 0
+$ /home/b/projects/flang-r5-ledger-binary/flang check scripts/guards/tab-host-guard.fscript --proof --json
+место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 4, …
 FLANG_IMPORT_NOT_FOUND, строка 1, столбец 1: не найден модуль «Strings»: ни рядом с файлом, ни выше по каталогам, ни в библиотеке компилятора
 FLANG_IMPORT_NOT_FOUND, строка 1, столбец 1: не найден модуль «Печать JSON»: …     код 1
 $ grep -n 'ledger-binary' scripts/seed/build-ledger-binary.fscript
 33:      то соединить [(«Root path» от answers), "-ledger-binary"] по ""
+$ … --proof --json 2>&1 | grep -o 'FLANG_[A-Z_]*' | sort | uniq -c
+    252 FLANG_UNKNOWN_NAME
+     15 FLANG_NOT_TOTAL
+      3 FLANG_IMPORT_NOT_FOUND
 ```
 
 Сборщик в конце печатает предупреждение и строки ручного переноса двоичного в
-каталог build-ledger внутри дерева, но умолчание остаётся прежним. Текст
-предупреждения обещает отказ `FLANG_NOT_TOTAL`, а двоичный отвечает
-`FLANG_IMPORT_NOT_FOUND`.
+каталог build-ledger внутри дерева, но умолчание остаётся прежним: двоичный
+лёг в `<дерево>-ledger-binary`, то есть РЯДОМ с деревом.
 
-Версия: flang 0.7.23, 30 сентября 2026. Сама сборка умолчанием не
-перепроверена.
+Предупреждение называет не тот отказ, который виден первым. Всего двоичный
+отдаёт 272 строки: три `FLANG_IMPORT_NOT_FOUND` — это причина, а 252
+`FLANG_UNKNOWN_NAME` и 15 `FLANG_NOT_TOTAL` — её следствия. `FLANG_NOT_TOTAL`,
+обещанный предупреждением, в выводе есть, но он там следствие, и читающий по
+нему ищет долг автора вместо беды раскладки.
+
+Обходной путь перепроверен тем же двоичным: с `FLANG_MODULE_DIR` тот же вызов
+отвечает кодом 0 — «утверждений 5: доказано 3, сетка 2».
+
+Версия: flang 0.7.23, 3 октября 2026. Сборка умолчанием прогнана целиком.
 
 ## Что должно быть
 
@@ -62,9 +80,10 @@ $ grep -n 'ledger-binary' scripts/seed/build-ledger-binary.fscript
 
 1. `bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 --`
    без довода, затем собранным двоичным
-   `check scripts/guards/tab-host-guard.fscript --proof --json` — код 0.
-2. Предупреждение сборщика называет тот отказ, который двоичный даёт на самом
-   деле, либо снято за ненадобностью.
+   `check scripts/guards/tab-host-guard.fscript --proof --json` — код 0 и ни
+   одного `FLANG_IMPORT_NOT_FOUND` (сегодня код 1 и три штуки).
+2. Предупреждение сборщика называет `FLANG_IMPORT_NOT_FOUND` — первый и
+   причинный отказ, — либо снято за ненадобностью вместе с умолчанием.
 3. Проверка раскладки `sh scripts/guards/published-vs-tree.sh` после сборки
    зелёная: она считает каталоги корня командой `find . -mindepth 1 -maxdepth 1
    -type d ! -name '.*'`, поэтому каталог сборки в корне без точки в имени её

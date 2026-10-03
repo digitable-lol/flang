@@ -1,0 +1,6 @@
+program	judge	code	word
+names-the-type.flang	check	1	FLANG_UNKNOWN_NAME в файле flang/proof/probes/exact-integer/programs/names-the-type.flang, строка 4, столбец 23: имя «целое» не связано
+sum-above-two-to-the-53.flang	check	1	FLANG_UNKNOWN_NAME в файле flang/proof/probes/exact-integer/programs/sum-above-two-to-the-53.flang, строка 4, столбец 23: имя «целое» не связано
+sum-above-two-to-the-53.flang	test	1	flang/proof/probes/exact-integer/programs/sum-above-two-to-the-53.flang: примеры не запускались — программа не прошла проверку
+number-into-exact-needs-a-translation.flang	check	1	FLANG_UNKNOWN_NAME в файле flang/proof/probes/exact-integer/programs/number-into-exact-needs-a-translation.flang, строка 4, столбец 23: имя «целое» не связано
+ring-associativity-over-exact.flang	check --proof	1	FLANG_PARSE в файле flang/proof/probes/exact-integer/programs/ring-associativity-over-exact.flang, строка 4, столбец 27: не разобрана конструкция: неизвестная строка утверждения

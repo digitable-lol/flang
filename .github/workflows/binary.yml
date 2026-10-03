@@ -1787,6 +1787,9 @@ jobs:
           LC_ALL: C.UTF-8
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 
+      - name: Check the exact integer is still absent
+        run: bootstrap/flang io flang/proof/probes/exact-integer/run.fscript --plan Binary
+
       - name: Check user programs are replayed by the checker
         run: cd flang/proof/probes/user-programs && ../../../../bootstrap/flang io run.fscript
         env:

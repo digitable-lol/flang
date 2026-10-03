@@ -1637,6 +1637,15 @@ ff1f78446cbbec240bb14f7676bd91d0|1|1|0|0|0|flang/proof/probes/strict/programs/ho
 aa65f3785b0c62edf336a36297e30b38|1|1|0|0|0|flang/proof/probes/unproven/programs/proved.flang
 651429e810a6816700648e623fdf3850|1|0|1|0|0|flang/proof/probes/unproven/programs/unproven.flang
 567af5e5ea9a21bfc1ae9cd90ff7b11b|1|0|0|1|0|flang/proof/probes/unproven/programs/plan-unproven.flang
+// ── Набор проб точного целого (задача 1908, ADR-0036 §11.6), снято 3 октября 2026 ──
+// Обязательство несёт одна программа каталога
+// `flang/proof/probes/exact-integer/programs/`: `ring-associativity-over-exact.flang`
+// высказывает ассоциативность `плюс` над типом, которого в языке ещё нет. Три
+// её соседки обязательств не несут и в опись не входят по общему правилу шапки.
+// Приговора у неё нет вовсе: имя типа не разобрано, ведомость не печатается —
+// там прочерк «×», как у `probes/strict/programs/refuted.flang` по той же причине.
+// Строка покраснеет в тот день, когда тип появится: закон станет судимым.
+3e46d2c5c825225b7116ad9463e9b543|1|×|×|×|0|flang/proof/probes/exact-integer/programs/ring-associativity-over-exact.flang
 8c27388a17ff86d5bb9e415d3dd3d5dd|1|1|0|1|1|flang/proof/checker/tests/programs/audit-2844/unfold3-difference.flang
 86e0e447b270b761bff6ae33fe3ffd12|1|1|0|1|0|flang/proof/checker/tests/programs/audit-2844/unfold2-itself.flang
 eb5b390d34c90eb95ad3b4382c2a3a1f|1|0|0|0|1|flang/proof/checker/tests/programs/audit-2844/unfold3-control-honest.flang

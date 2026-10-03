@@ -17,23 +17,23 @@
 
 1. `grep -n 'cp "\$TMP/\$name"' scripts/bootstrap-reprint.sh`
 2. `grep -c '^ *mv ' scripts/bootstrap-reprint.sh`
-3. `grep -n '^stamp_now' scripts/bootstrap-reprint.sh`
+3. `grep -n '^stamp_now "$ROOT"' scripts/bootstrap-reprint.sh`
 4. `grep -n '^KEEP=\|^ *KEEP=yes\|^trap cleanup' scripts/bootstrap-reprint.sh`
 
 ## Что происходит
 
 ```
 $ grep -n 'cp "\$TMP/\$name"' scripts/bootstrap-reprint.sh
-3556:  cp "$TMP/$name" "$ROOT/$DIR/$name"
+3550:  cp "$TMP/$name" "$ROOT/$DIR/$name"
 $ grep -c '^ *mv ' scripts/bootstrap-reprint.sh
 0                                                                   код 1
-$ grep -n '^stamp_now' scripts/bootstrap-reprint.sh
-3583:stamp_now "$ROOT" "$KOMMIT" > "$ROOT/$SEED_STAMP"
+$ grep -n '^stamp_now "\$ROOT"' scripts/bootstrap-reprint.sh
+3577:stamp_now "$ROOT" "$KOMMIT" > "$ROOT/$SEED_STAMP"
 $ grep -n '^KEEP=\|^ *KEEP=yes\|^trap cleanup' scripts/bootstrap-reprint.sh
-3437:KEEP=no
-3445:trap cleanup EXIT INT TERM
-3534:  KEEP=yes
-3541:  KEEP=yes
+3431:KEEP=no
+3439:trap cleanup EXIT INT TERM
+3528:  KEEP=yes
+3535:  KEEP=yes
 ```
 
 Три следствия:
@@ -48,7 +48,7 @@ $ grep -n '^KEEP=\|^ *KEEP=yes\|^trap cleanup' scripts/bootstrap-reprint.sh
    каталоге, а ловушка `cleanup` его стирает (`KEEP=yes` ставится лишь на путях
    отказа). Сигнал `TERM` в это окно стирает многочасовую печать.
 
-Версия: flang 0.7.23, 30 сентября 2026. Сам обрыв не воспроизводился: не
+Версия: flang 0.7.23, 3 октября 2026. Сам обрыв не воспроизводился: не
 перепроверено.
 
 ## Что должно быть
@@ -76,5 +76,6 @@ $ grep -n '^KEEP=\|^ *KEEP=yes\|^trap cleanup' scripts/bootstrap-reprint.sh
 
 ## Где живёт правка
 
-`scripts/bootstrap-reprint.sh`: цикл укладки `for name in $PRINTED`, функция
-`cleanup`, вызов `stamp_now`. Перепечатка для самой правки не нужна.
+`scripts/bootstrap-reprint.sh`: цикл укладки `for name in $PRINTED` (строка
+3549), функция `cleanup` (строка 3432), вызов `stamp_now` (строка 3577).
+Перепечатка для самой правки не нужна.

@@ -1524,7 +1524,7 @@ ea0c808c837ad28c1ad06045e2c03504|58|55|3|0|0|packaging/install-check.flang
 a69c24d54cb5ba2dc5e5f1ac2b5475e5|23|23|0|0|0|packaging/install-parity.flang
 e0822c51ca487deb59d8925c20396e93|7|7|0|0|0|scripts/cell-work-preserved.fscript
 986fad97002d55a23e04a3dca541f8a5|1|1|0|0|0|scripts/editors/language-words.flang
-764ea6a077d30318d14a8a0f3da8aea8|23|23|0|0|0|scripts/editors/lsp-check.fscript
+1838287b42f3cd832187265d3edffc40|21|17|0|4|0|scripts/editors/lsp-check.fscript
 53f94937b541c4d0ce9569351f7f23ec|11|11|0|0|0|scripts/editors/vim-highlight-check.fscript
 e3e12eb0215c5a68744c935ef6ee0619|9|9|0|0|0|scripts/editors/vim-highlighting.fscript
 804182bd08fb527a43934b823e6d3de1|16|16|0|0|0|scripts/editors/vim-rules.flang

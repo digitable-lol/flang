@@ -285,6 +285,7 @@
 - [Печать одного модуля в двух средах — необходимое условие гейта Г6, а не сам гейт](one-module-printed-in-two-environments-is-a-necessary-condition-of-gate-six-not-the-gate.md)
 - [Быстрый пересев семени законен ровно тогда, когда замыкание и пределы не тронуты относительно отпечатка](a-fast-reseed-is-legal-only-while-the-closure-and-limits-match-the-stamp.md)
 - [Семя рантайма — это источник плюс шапка, и отставание посреди правки — норма, а беда — только сломанное копирование](the-runtime-seed-is-the-source-plus-a-header-and-lagging-mid-work-is-normal.md)
+- [Напечатанный двоичный без клейма пределов не тянет ни одного набора проб, и красный набор выглядит поломкой набора](a-printed-binary-without-the-stamp-runs-no-probe-suite.md)
 
 ## Устройство репозитория
 

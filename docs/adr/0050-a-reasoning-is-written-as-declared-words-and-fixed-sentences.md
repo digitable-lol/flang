@@ -13,8 +13,9 @@
 **Проверяется:** `bootstrap/flang io flang/proof/probes/syllogism/assumptions/run.fscript --plan Binary`
 (рукописные программы: ядро и независимая проверяющая программа) и
 `bootstrap/flang io flang/proof/probes/syllogism/sentences/run.fscript --plan Binary`
-(тексты через переводчик). Один текст: тот же файл с `--plan Judge -- <текст>`; напечатать
-программу, которую судит ядро: `--plan Translate -- <текст>`.
+с ключом `--max-steps 40000000` (тексты через переводчик; на 62 текстах предел шагов по
+умолчанию мал — замер 4 октября 2026). Один текст: тот же файл с `--plan Judge -- <текст>`;
+напечатать программу, которую судит ядро: `--plan Translate -- <текст>`.
 
 ---
 

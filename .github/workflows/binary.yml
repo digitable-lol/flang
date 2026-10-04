@@ -1760,7 +1760,7 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: Check reasoning in sentences
-        run: bootstrap/flang io flang/proof/probes/syllogism/sentences/run.fscript --plan Binary
+        run: bootstrap/flang io flang/proof/probes/syllogism/sentences/run.fscript --plan Binary --max-steps 40000000
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: Check run verdict

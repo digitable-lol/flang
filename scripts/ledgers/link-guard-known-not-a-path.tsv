@@ -150,71 +150,11 @@ docs/flang/core/SPEC.md	src/natural-parser.ts	внешний: файл выне�
 docs/flang/core/SPEC.md	src/parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 docs/flang/core/SPEC.md	src/utility.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 docs/flang/proof/SPEC.md	…-english.flang	шаблон-многоточие в имени, не файл
-docs/tasks/6127-goal-split-places-are-replayed-by-local-moves.md	ПЕРЕДАЧА/karta-kalkulyatora.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/tasks/6127-goal-split-places-are-replayed-by-local-moves.md	ПЕРЕДАЧА/proverka-uzlov.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/tasks/6201-tree-still-cites-the-removed-javascript-implementation.md	proba-vstrechno.mjs	иллюстративное имя пробы в тексте, не файл: проба снята вместе с реализацией на JavaScript (fe8e8a37)
-docs/tasks/8570-the-print-is-outrun-because-it-is-slow.md	hranitel-tikov.sh	внешний: инструмент вне дерева, соседствует с pusk.sh
-docs/tasks/8570-the-print-is-outrun-because-it-is-slow.md	pusk.sh	внешний: инструмент вне дерева (docs/reprint-cost.md)
-docs/tasks/9528-an-en-view-is-not-checked-against-its-promise.md	tools/check-flang-en-views.sh	внешний: файл репозитория digitwm, не файл этого дерева
-docs/tasks/9614-the-five-code-vocabulary-never-reaches-the-tape.md	cli-keys-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/cli-keys-guard.fscript; упоминание историческое, в задаче/заметке
-docs/tasks/9614-the-five-code-vocabulary-never-reaches-the-tape.md	scripts/cli-keys-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/cli-keys-guard.fscript; упоминание историческое, в задаче/заметке
-docs/tasks/9622-the-seed-is-laid-into-the-tree-in-place-and-a-break-leaves-it-mixed.md	pechat-0-7-0/спаситель.sh	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	binary-rules-guard.mjs	сторож на JavaScript снесён 7 сентября 2026, его двойник — flang/scripts/binary-rules-guard.fscript; упоминание историческое, в задаче/заметке
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	work.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/tasks/archive/0060-a-function-promises-its-cost.md	driver.c	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/tasks/archive/0060-a-function-promises-its-cost.md	works.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	env-threshold.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	equal-lists-probe.flang	иллюстративное имя пробы в тексте, не файл
-docs/tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	length-probe.flang	иллюстративное имя пробы в тексте, не файл
-docs/tasks/1093-frame-per-element-walks-are-swept-file-by-file.md	tower.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/tasks/1186-a-module-gets-its-english-name-from-the-author.md	fibonachchi.py	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/tasks/1186-a-module-gets-its-english-name-from-the-author.md	zapis_uroborosa.py	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/tasks/1315-vremennoe-v-dereve-ishodnikov.md	g3.json	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/tasks/1315-vremennoe-v-dereve-ishodnikov.md	proba-stolknoveniy.flang	временный файл прогона, который сам себя убирает; в тексте сказано «ПОЧИНЕНО»
-docs/tasks/archive/1722-the-discriminating-search-writes-a-temp-dir-into-the-tree.md	proba-zanyatosti.flang	иллюстративный пример в тексте, не файл
-docs/tasks/1734-element-n-counts-the-number-not-the-list.md	flang/src/bounded.mjs	явное отрицание в тексте: «файла в дереве больше нет»
-docs/tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md	над/чужой-черновик.flang	иллюстративное имя пробы в тексте (каталог «над» вне дерева), не файл
-docs/tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md	дерево/scripts/proba.flang	иллюстративное имя пробы в тексте (каталог «дерево» — копия), не файл
-docs/tasks/3403-package-installer-manifest-network-lock.md	scripts/paket.flang	план: файл, который эта задача велит завести
-docs/tasks/completed/4271-pechatnik-elixir-pechataet-myortvuyu-stroku-rezultata.md	zond-elx.flang	внешний: обёртка вне дерева (в тексте так и сказано), не файл этого дерева
-docs/tasks/completed/4271-pechatnik-elixir-pechataet-myortvuyu-stroku-rezultata.md	svyaz_uzlov.ex	внешний: файл, напечатанный пробой вне дерева, не файл этого дерева
-docs/tasks/completed/8596-typescript-target-over-the-javascript-printer.md	.d.ts	обозначение расширения, не имя файла
-docs/tasks/README.md	NNNN-english-words.md	шаблон курса (нумерованный слаг), не файл
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	flang-bridge.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (ноль вызовов в дереве и CI); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	glob.flang.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (ноль вызовов в дереве и CI); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	surface-pair.flang.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (ноль вызовов в дереве и CI); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	tempdir.flang.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (ноль вызовов в дереве и CI); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	toolchain-guard.flang.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (ноль вызовов в дереве и CI); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	uzel-osnastka.flang.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (ноль вызовов в дереве и CI); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	wasm-run.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (ноль вызовов в дереве и CI); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	type-collision-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (ноль вызовов в дереве и CI); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	latin-collision-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (превзойдён двойником scripts/guards/latin-collision-guard.fscript, который и зовёт CI); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	jargon-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (превзойдён flang/scripts/jargon-guard.fscript и flang/test/jargon.flang); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	jargon-guard.test.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (превзойдён flang/scripts/jargon-guard.fscript и flang/test/jargon.flang); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	flang/test/jargon-guard.test.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026 (превзойдён flang/scripts/jargon-guard.fscript и flang/test/jargon.flang); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	scripts/wasm-run.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026; имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	scripts/type-collision-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026; имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	scripts/latin-collision-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026; имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	scripts/jargon-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 9 сентября 2026; имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	target-words.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 10 сентября 2026 (превзойдён flang/scripts/target-words.fscript, который и зовёт ярлык target-words:check); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	flang/scripts/target-words.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 10 сентября 2026; имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	claim-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 10 сентября 2026 (превзойдён flang/scripts/claim-guard.fscript, который и зовёт ярлык claims:check); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	flang/scripts/claim-guard.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 10 сентября 2026; имя оставлено, чтобы опись сходилась с git log
-docs/tasks/6858-the-flang-twins-of-the-node-guards-do-not-finish-a-run.md	target-words.mjs	история: опись двойников 7–8 сентября называет проверку на JavaScript, снятую 10 сентября 2026 (задача 0049) после двойника flang/scripts/target-words.fscript
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	discriminating-search.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 10 сентября 2026 (превзойдён flang/scripts/discriminating-search.fscript, который и зовут ярлык search:discriminating и binary.yml); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	discriminating-search.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 10 сентября 2026 (превзойдён flang/scripts/discriminating-search.fscript, который и зовут ярлык поиск:различающий и binary.yml); имя оставлено, чтобы опись сходилась с git log
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	flang/scripts/discriminating-search.mjs	история: опись задачи 0049 называет файл на JavaScript, снятый той же задачей 10 сентября 2026; имя оставлено, чтобы опись сходилась с git log
-docs/tasks/6858-the-flang-twins-of-the-node-guards-do-not-finish-a-run.md	target-words.mjs	история: опись двойников 7–8 сентября называет проверку на JavaScript, снятую 10 сентября 2026 (задача 0049) после двойника flang/scripts/target-words.fscript
-docs/tasks/6858-the-flang-twins-of-the-node-guards-do-not-finish-a-run.md	discriminating-search.mjs	история: опись двойников 7–8 сентября называет поиск на JavaScript, снятый 10 сентября 2026 (задача 0049) после двойника flang/scripts/discriminating-search.fscript
-docs/tasks/7203-guards-anchor-on-the-russian-prose-of-the-output.md	flang/scripts/discriminating-search.mjs	история: задача перечисляет сторожей, среди них поиск на JavaScript, снятый 10 сентября 2026 (задача 0049); двойник flang/scripts/discriminating-search.fscript
-docs/tasks/9614-the-five-code-vocabulary-never-reaches-the-tape.md	discriminating-search.mjs	история: задача называет код 2 поиска на JavaScript, снятого 10 сентября 2026 (задача 0049); у двойника на flang кода 2 нет, он отвечает 3
-docs/tasks/archive/1722-the-discriminating-search-writes-a-temp-dir-into-the-tree.md	flang/scripts/discriminating-search.mjs	история: задача называет место, где различающий поиск на JavaScript заводил каталог в дереве; файл снят 10 сентября 2026 (задача 0049), двойник flang/scripts/discriminating-search.fscript заводит его вне дерева
 docs/guide/single-source.md	вывод/fine.py	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/guide/single-source.ru.md	вывод/fine.py	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/guide/typescript-target.md	import_check.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/guide/typescript-target.ru.md	import_check.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/site/cli.md	privet.c	имя файла, напечатанного flang emit в примере страницы, не файл дерева
-docs/site/cli.md	privet.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/site/embedding.md	factorial.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/site/embedding.ru.md	factorial.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/guide/naming.md	flang/test/name-guard.test.mjs	явное отрицание в тексте: рядом сказано, что файл снесён
@@ -235,44 +175,7 @@ docs/design/nositel-tochnogo-celogo.md	n-stroka.flang	внешний: проба
 docs/design/nositel-tochnogo-celogo.md	n-zapis.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
 docs/design/nositel-tochnogo-celogo.md	n-ravenstvo.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
 docs/examples/frameworks/react-ts-pure/README.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
-docs/tasks/1416-the-shortcut-list-is-computed-from-the-scripts.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	obhod.sh	иллюстративное имя в разборе задачи/заметки, не файл (пример транслита-брака при переименовании)
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk.sh	иллюстративное имя в разборе задачи/заметки, не файл (предлагаемое английское имя в примере)
-docs/tasks/1423-node-leaves-the-concurrency-directory.md	.test.mjs	обозначение расширения/суффикса-конвенции, не имя файла
-docs/tasks/completed/1431-the-jargon-guard-lives-in-two-places.md	scripts/jargon-guard.mjs	история: разбор задачи 1431 называет сторожа на JavaScript, снятого 9 сентября 2026 задачей 0049 (превзойдён scripts/guards/jargon-guard.fscript); имя оставлено, потому что им объясняется, откуда взялись две копии
-docs/tasks/completed/1434-a-quote-character-is-part-of-a-path.md	ЗАМЕР.md	план: разбор задачи 1434 называет имя, которым файл НАЗЫВАЛСЯ БЫ, будь перенос удачным. Настоящий замер лежит в истории (6ae8e8b4b, examples/frameworks/react-ts-pure/ЗАМЕР.md, 128 строк) и в ствол не влит — та же причина, что у записи docs/site/examples.md выше
-docs/tasks/completed/5503-nine-tsv-files-carry-a-header.md	docs/javascript-checks-breakdown.tsv	история: ведомость снесена этой же задачей 17 сентября 2026, довод сноса называет её по имени; последнее состояние — в git на 9d8d8f35e
-docs/tasks/completed/5503-nine-tsv-files-carry-a-header.md	.test.mjs	обозначение расширения/суффикса-конвенции, не имя файла
-docs/tasks/completed/1401-slichitel-perevoda-v-c.md	ПОВТОРИТЬ.sh	внешний: артефакт опыта в /srv/tmp/dokazuemyy/1401-podelka-vremennoy/ — каталог назван рядом в той же строке; файла дерева с таким именем нет и не будет
-docs/tasks/completed/1401-slichitel-perevoda-v-c.md	poisk_skobki.c	внешний: напечатанный C того же опыта, лежит там же, в /srv/tmp/dokazuemyy/1401-podelka-vremennoy/; напечатанное в дерево не кладут
-docs/tasks/completed/5503-nine-tsv-files-carry-a-header.md	no-comments-guard.sh	история: замер описи снят на дереве c4ada14bf, когда сторож был оболочкой (две строки прибавлены именно в неё); 18 сентября 2026 (19d896afc) он переписан на flang — scripts/guards/no-comments-guard.fscript
-docs/tasks/1415-the-fscript-extension-marks-a-script.md	script.fscript	пример из задачи об расширениях: имя вымышленное, показывает форму «<имя>.fscript», а не файл дерева
-docs/tasks/1415-the-fscript-extension-marks-a-script.md	plain.flang	пара к «script.fscript»: тот же вымышленный пример, противопоставление .flang и .fscript
-docs/tasks/1415-the-fscript-extension-marks-a-script.md	TABLE=ярлыки.flang	не путь, а присваивание переменной окружения в показанной команде
-docs/tasks/3560-count-the-places-that-need-rules-about-time-effects-and-processes.md	ПЕРЕДАЧА/отчёты/3560-zamer.py	файл рабочей передачи вне репозитория: /srv/tmp/dokazuemyy/ПЕРЕДАЧА, в дерево не входит
-docs/tasks/4431-cli-help-names-the-latin-key-first.md	flang/proof/сверщик.flang	история: имя до переименования flang/proof на латиницу (ADR-0046); ныне flang/proof/checker.flang
-docs/tasks/0062-the-file-extensions-are-one-list.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/1186-a-module-gets-its-english-name-from-the-author.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/1415-the-fscript-extension-marks-a-script.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/1423-node-leaves-the-concurrency-directory.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
 docs/tasks/1941-five-heavy-proof-checks-have-no-measured-run.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/2261-the-collision-recount-gets-the-memory-it-was-measured-to-need.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/3127-a-stray-file-above-the-tree-can-replace-a-language-module.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/3740-one-of-seven-non-converging-guards-actually-converges.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/4046-spec-guard-examples-are-run.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/5310-a-check-nobody-calls-goes-red.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/6445-the-zettel-index-print-rolls-back-what-it-wrote.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/6526-the-releases-page-check-runs-and-verifies-the-tags.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/6858-the-flang-twins-of-the-node-guards-do-not-finish-a-run.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/7050-the-missing-language-features-list-has-no-guard.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/7192-the-flang-twin-of-the-collision-guard-sees-what-the-old-one-sees.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/7731-the-published-command-reference-is-not-re-run.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/8235-the-repository-layout-says-what-the-project-is.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/8309-nat-type-renamed-to-neotricatelnoe-everywhere.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/1307-parsing-leaves-the-trusted-base-by-round-trip.md	cycle.py	история: файл снят вместе с прочей оснасткой на Python и оболочке, когда flang/proof очищали от не-flang файлов
 docs/tasks/1307-parsing-leaves-the-trusted-base-by-round-trip.md	flang/proof/binding/cycle.py	история: файл снят вместе с прочей оснасткой на Python и оболочке, когда flang/proof очищали от не-flang файлов
-docs/tasks/1416-the-shortcut-list-is-computed-from-the-scripts.md	flang/proof/forgeries/reduction.sh	история: файл снят вместе с прочей оснасткой на Python и оболочке, когда flang/proof очищали от не-flang файлов
-docs/tasks/1745-the-tree-is-reorganized-by-the-owners-words-of-11-september.md	flang/proof/binding/cycle.py	история: файл снят вместе с прочей оснасткой на Python и оболочке, когда flang/proof очищали от не-flang файлов
-docs/tasks/3740-one-of-seven-non-converging-guards-actually-converges.md	flang/proof/forgeries/reduction.sh	история: файл снят вместе с прочей оснасткой на Python и оболочке, когда flang/proof очищали от не-flang файлов
-docs/tasks/7203-guards-anchor-on-the-russian-prose-of-the-output.md	flang/scripts/per-file-proof-share.py	история: файл снят вместе с прочей оснасткой на Python и оболочке, когда flang/proof очищали от не-flang файлов
 docs/tasks/6975-the-stray-temporaries-guard-is-silent-once-the-temporary-is-staged.md	.flang-storozh-ypvg0t/проба.flang	история: временный каталог сторожа, затянутый в коммит 03f0359a и убранный оттуда же; пути в дереве нет и быть не должно. До задачи 1419 строка резолвилась случайно — по совпадению имени с docs/benchmarks/verdict-cache/проба.flang, переименованным в cache-probe.flang

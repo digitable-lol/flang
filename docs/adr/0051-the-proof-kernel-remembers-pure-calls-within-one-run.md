@@ -4,7 +4,7 @@
 [5709](../tasks/5709-the-stage-that-eats-the-print-has-a-cache-and-it-is-off.md). Память
 вызовов лежит в копируемой части (`flang/src/emit/c/flang_runtime.[ch]`) и доезжает до
 семени быстрым пересевом. Обёртки вокруг трёх функций печатает `flang/self/emit-c.flang`;
-эта правка едет партией печати ([задача 2200](../tasks/2200-the-print-batch-is-gathered-in-one-inventory.md)),
+эта правка едет партией печати (задача 2200, закрыта — см. [`docs/tasks/used-numbers.tsv`](../tasks/used-numbers.tsv)),
 и до печати двоичный память не зовёт ни разу.
 **Дата:** 29 сентября 2026
 **Основание:** разбор внедеревного образца на машине gpu (`/home/u/obmaz-flang`, только

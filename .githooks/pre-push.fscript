@@ -20,7 +20,7 @@
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check",
    запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "bootstrap/flang io scripts/seed/seed-runtime-is-source.fscript --plan Check",
    запись «Check» с «name» равным "seed-refresh" и «command» равным "bootstrap/flang io scripts/seed/seed-refresh.fscript --plan Check",
-   запись «Check» с «name» равным "version-derivations-guard" и «command» равным "sh scripts/guards/version-derivations-guard.sh",
+   запись «Check» с «name» равным "version-derivations-guard" и «command» равным "bootstrap/flang io scripts/guards/version-derivations-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "who-calls-the-guards" и «command» равным "bootstrap/flang io scripts/guards/who-calls-the-guards.fscript --plan Check",
    запись «Check» с «name» равным "guards-without-forgery-probe" и «command» равным "sh scripts/guards/guards-without-forgery-probe.sh --check",
    запись «Check» с «name» равным "proved-share-vs-tree" и «command» равным "sh scripts/guards/proved-share-vs-tree.sh",

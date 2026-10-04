@@ -79,7 +79,7 @@ flang: /work/.flangrc: запись «недоказанное = разреше�
 | `color` | `always` `never` `auto` | `auto` | `scripts/flangrc.fscript` |
 | `page` | `ru` `en` | `ru` (сперва спрошена локаль) | `scripts/flangrc.fscript` |
 | `version` | номер вида `X.Y.Z` | нет | проверки версии, страницы man, формулы Homebrew и выпуска в `scripts/guards/`, `scripts/site/build-changelog.fscript`, `scripts/site/release-body.fscript`, `docs/site/site-numbers.flang`, `.github/workflows/release.yml` |
-| `name` | строка | нет | `scripts/guards/version-derivations-guard.sh` |
+| `name` | строка | нет | `scripts/guards/version-derivations-guard.fscript` |
 | `license` | опознаватель SPDX | нет | `scripts/guards/license-guard.fscript`, подвал сайта — `docs/site/build.flang` |
 | `repository` | адрес репозитория | нет | подвал сайта — `docs/site/build.flang` |
 | `issues` | адрес, куда писать о задачах и ошибках | нет | подвал сайта — `docs/site/build.flang` |
@@ -102,7 +102,7 @@ bootstrap/flang run-script version <НОВОЕ ЧИСЛО>
 
 из функций «Версия», «Имя пакета», «Лицензия», «Адрес репозитория» и «Адрес
 задач» в `scripts/release/emit-package.flang`. Расхождение называет
-`sh scripts/guards/version-derivations-guard.sh`.
+`bootstrap/flang run-script version-derivations:check`.
 
 Три нижних ключа задают пределы линтера; что именно считается, рассказывает
 раздел `lint` [справочника команд](../site/cli.ru.md#lint).

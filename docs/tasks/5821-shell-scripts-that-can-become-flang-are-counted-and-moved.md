@@ -71,11 +71,15 @@ $ git ls-files | grep -c '\.sh$'
    `bootstrap/flang run-script seed:freshness --what …`.
 3. `scripts/targets/target-collisions.sh` и `scripts/targets/identical-declarations.sh`
    — см. «Осталось» ниже.
-4. Девять проверок в `scripts/guards/`: `bad-octet-guard.sh`,
+4. Восемь проверок в `scripts/guards/`: `bad-octet-guard.sh`,
    `guards-without-forgery-probe.sh`, `hand-written-lists.sh`,
    `module-origin-guard.sh`, `one-string-measure-guard.sh`,
-   `overlong-string-guard.sh`, `proved-share-vs-tree.sh`, `published-vs-tree.sh`,
-   `version-derivations-guard.sh` — по причинам из переписи.
+   `overlong-string-guard.sh`, `proved-share-vs-tree.sh`, `published-vs-tree.sh`
+   — по причинам из переписи. Девятая, ~~`version-derivations-guard.sh`~~,
+   СНЯТА 4 октября 2026: сверка стала планом
+   `scripts/guards/version-derivations-guard.fscript` (13 утверждений из 13
+   доказаны ядром, поэтому план идёт без `--на-веру`), хук перед пушем зовёт
+   его, проба порчи отвечает кодом 1 на разведённой `.TH`.
 
 Чего не хватает в `flang io`, чтобы перенос пошёл дальше, перечислено в
 разделе «Что сдвинуло бы перепись дальше, числом» той же переписи: ключ,

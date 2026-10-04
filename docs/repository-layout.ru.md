@@ -13,7 +13,7 @@
 
 ```
 bootstrap/      компилятор, напечатанный в C99, и его Makefile: «make -C bootstrap» собирает двоичный
-flang/          язык: self/ (компилятор), core/, stdlib/, proof/, concurrency/, ct/, src/emit/ (рантаймы целей), scripts/, test/, bin/ (flangtutor) — только код; его контракты лежат в docs/flang/
+flang/          язык: self/ (компилятор), core/, stdlib/, experimental/ (опытные модули), proof/, concurrency/, ct/, src/emit/ (рантаймы целей), scripts/, test/, bin/ (flangtutor) — только код; его контракты лежат в docs/flang/
 docs/examples/  242 программ на flang в 28 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
 docs/editors/   языковой сервер, подсветка для Vim и VS Code, заявка в github-linguist
 packaging/      формула Homebrew, плагин asdf, страница flang.1, проверки установки
@@ -31,13 +31,17 @@ docs/tasks/     открытая и закрытая работа дерева, 
 Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 64 файлов на flang —
 <!-- СНЯТО 2026-09-17 файлов flang/self/*.flang = 64 -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель.
-[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **54 модуля, 1904 функции и 3917
+[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **53 модуля, 1793 функции и 3807
 примеров**, которые прогоняются при каждой проверке:
-<!-- СНЯТО 2026-10-04 файлов flang/stdlib/*.flang = 54 -->
-<!-- СНЯТО 2026-10-04 примеров-в flang/stdlib/*.flang = 3917 -->
+<!-- СНЯТО 2026-10-04 файлов flang/stdlib/*.flang = 53 -->
+<!-- СНЯТО 2026-10-04 примеров-в flang/stdlib/*.flang = 3807 -->
 списки, строки, числа, множества, словари, JSON, UTF-8, даты, два драйвера баз данных
 (`postgres`, `sqlite`), сеть (`http`, `tls`, `redis`), криптография, написанная на flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`), и движок регулярных выражений.
+[`flang/experimental/`](../flang/experimental) — опытные модули: они **не входят в обещания
+стандартной библиотеки** и могут менять имена функций без предупреждения. Отсюда модуль либо
+переезжает в `flang/stdlib/`, когда имена устоялись, либо уходит из дерева. Сегодня там русская
+морфология для силлогизмов (`ru-morphology.flang`) и живой пример к ней.
 [`flang/src/emit/`](../flang/src/emit) держит рантайм каждой цели;
 [`flang/test/`](../flang/test) — проверки на flang, которые обходит двоичный.
 

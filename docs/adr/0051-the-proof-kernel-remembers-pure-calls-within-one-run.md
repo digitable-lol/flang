@@ -123,7 +123,7 @@ fl_status compiler_flang_normalizovat_s_opredeleniyami(fl_ctx *ctx, fl_value uze
 ## 4. Почему в `flang_runtime.c`, а не отдельным файлом
 
 Набор копируемых файлов и `Makefile` семени печатает `emit-c.flang`, а быстрый пересев
-(`scripts/seed/seed-refresh.sh`) обновляет ровно четыре файла. Новый `flang_memo.c`
+(`scripts/seed/seed-refresh.fscript`) обновляет ровно четыре файла. Новый `flang_memo.c`
 попал бы в сборку семени только печатью. Раздел в `flang_runtime.c` доезжает пересевом
 сейчас, а программам, где запоминаемых функций нет, он стоит одного сравнения на откате
 арены (`fl_memo_pinned == 0`).

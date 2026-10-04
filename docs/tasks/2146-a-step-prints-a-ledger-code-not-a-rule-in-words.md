@@ -76,5 +76,5 @@
 
 ## Где живёт правка
 
-`flang/proof/tables/inference-rules.tsv` (+ отпечаток `.digest`), `flang/self/zapis.flang`,
+`flang/proof/tables/inference-rules.tsv` (+ отпечаток `.digest`), `flang/self/proof-record.flang`,
 раздел ведомости в `flang/self`, сторож `flang/proof/tables-guard.fscript`.

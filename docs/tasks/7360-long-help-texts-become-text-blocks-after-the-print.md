@@ -43,7 +43,7 @@
 ## Порядок
 
 1. Дождаться перепечатки семени с ADR-0052 в ней и зелёной
-   `scripts/guards/seed-parses-sources-guard.sh`.
+   `scripts/guards/seed-parses-sources-guard.fscript`.
 2. Переписать функцию, снять правку и посмотреть, что покраснеет: у справок есть
    примеры, у оболочки — сверка с двоичным в `flang/test`.
 3. Сверять значение, а не вид: `bootstrap/flang run … --function «Справка …»` до и

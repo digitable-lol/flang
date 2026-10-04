@@ -1480,11 +1480,16 @@ jobs:
   # 6ebd5e18e, но ни один workflow его не звал, и два сторожа — «кто зовёт
   # сторожей» и сторож проб порчи — держали на нём хук перед пушем красным.
   #
+  # С 4 октября 2026 набор гоняет ПЛАН `flang/translation/run.fscript` (прежняя
+  # оболочка `run.sh` снята): приговор доказан ядром, ожидания 32 опытов стоят
+  # таблицей. Жалоба идёт строкой «  · <имя опыта> — ждали код N …», и проба
+  # порчи ниже ищет в выводе ИМЕННО эту строку.
+  #
   # Работа соседняя чекеру и отдельная по той же причине: компилятор не
-  # собирается и не зовётся, нужны только `cc` и `sh`. Сличитель, который
-  # спрашивает ответ у того же двоичного, о котором судит, не стоит ничего.
-  # Замер 14 сентября 2026 на рабочей машине: весь прогон — сборка сличителя
-  # и шестнадцать опытов — 1,2 с.
+  # собирается, нужны только `cc` и `sh`. Но план зовётся собранным двоичным,
+  # поэтому шаг сборки семени здесь ЕСТЬ, а сличитель по-прежнему не спрашивает
+  # ответ у того двоичного, о котором судит. Замер 4 октября 2026 на рабочей
+  # машине: весь прогон — сборка сличителя и тридцать два опыта — 4,3 с.
   #
   # Порча внешняя, одна строка напечатанного C «Светофора»: штраф красного
   # 500 → 501 при прежнем протоколе. Прогон обязан покраснеть ИМЕННО на этой
@@ -1499,6 +1504,28 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
+      # Двоичный берётся готовым по тем же правилам, что у соседних работ:
+      # ключ кеша — хеш всех входов сборки плюс флаги; негодный кеш собирается
+      # заново, а не принимается молча.
+      - name: Restore binary cache
+        id: kesh-dvoichnogo
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+      - name: Verify cached binary
+        if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
+        run: |
+          set -u
+          if ! ./bootstrap/flang --version >/dev/null 2>&1; then
+            echo "::warning::двоичный из кеша не запускается — собираю заново"
+            make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+          fi
       - name: Probe translation matcher
         run: |
           set -u
@@ -1510,7 +1537,7 @@ jobs:
             echo "ПОДЛОГ НЕ СОБРАЛСЯ: строки «fl_t1 = fl_number(500.0);» в $podlog уже нет — поправить подлог, сличитель ни при чём" >&2
             exit 1
           fi
-          if sh flang/translation/run.sh > "$RUNNER_TEMP/perevod.out" 2>&1; then
+          if bootstrap/flang run-script translation:check > "$RUNNER_TEMP/perevod.out" 2>&1; then
             git checkout -- "$podlog"
             cat "$RUNNER_TEMP/perevod.out"
             echo "сличитель промолчал на подлоге — проверять им нечего" >&2
@@ -1518,12 +1545,12 @@ jobs:
           fi
           git checkout -- "$podlog"
           cat "$RUNNER_TEMP/perevod.out"
-          if ! grep -qF 'КРАСЕН  честная пара с разбором' "$RUNNER_TEMP/perevod.out"; then
+          if ! grep -qF '· честная пара с разбором' "$RUNNER_TEMP/perevod.out"; then
             echo "прогон покраснел, но не на испорченной паре — краснота не по делу" >&2
             exit 1
           fi
       - name: Check C translation
-        run: sh flang/translation/run.sh
+        run: bootstrap/flang run-script translation:check
 
   storozha:
     name: guards-selftest

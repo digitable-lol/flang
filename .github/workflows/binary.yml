@@ -1829,6 +1829,19 @@ jobs:
         run: bootstrap/flang io flang/proof/probes/syllogism/sentences/run.fscript --plan Binary --max-steps 40000000
         env:
           FLANG_TMP: ${{ runner.temp }}
+      # ПОЛЬЗОВАТЕЛЬСКАЯ ИСТОРИЯ — ТРЕБОВАНИЕ, А НЕ КОММЕНТАРИЙ (задача 8545).
+      #
+      # Набор `story` делает для истории то же, что набор выше — для силлогизма:
+      # закреплённые образцы предложений («Как <роль>», «Хочу <величина> не
+      # больше <число>», «Чтобы <зачем>», «При …», «Тогда при …»), переводчик в
+      # программу с целью `обеспечивает`, и приговор ядра о ней. Проба нужна
+      # ровно затем, чтобы ЛОЖНАЯ история краснела: `the-shown-case-does-not-
+      # agree.txt` обещает «скидка не больше 30» и показывает ответ 40 — без
+      # этой работы такая история прошла бы молча.
+      - name: Check a user story in sentences
+        run: bootstrap/flang io flang/proof/probes/story/run.fscript --plan Binary --max-steps 40000000
+        env:
+          FLANG_TMP: ${{ runner.temp }}
       # РУССКАЯ МОРФОЛОГИЯ РАЗЛИЧАЕТ ФОРМЫ, А ГДЕ НЕ РАЗЛИЧАЕТ — ОТКАЗЫВАЕТ ВСЛУХ.
       #
       # `flang/experimental/ru-morphology.flang` читает одну словоформу и отдаёт запись

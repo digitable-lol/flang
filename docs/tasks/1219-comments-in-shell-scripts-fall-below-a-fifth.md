@@ -41,7 +41,8 @@ $ git ls-files 'scripts/*.sh' 'scripts/**/*.sh' | sort -u | wc -l
 `scripts/targets/target-collisions.sh` (15 %). Самые тяжёлые —
 `scripts/guards/published-vs-tree.sh` (41 %),
 `scripts/guards/overlong-string-guard.sh` (41 %),
-`scripts/guards/version-derivations-guard.sh` (40 %).
+`scripts/guards/version-derivations-guard.sh` (40 %; файл снят 4 октября 2026 —
+сверка переехала в план `scripts/guards/version-derivations-guard.fscript`).
 Один `scripts/bootstrap-reprint.sh` несёт 1346 строк комментариев из 2442.
 
 ## Что должно быть

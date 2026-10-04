@@ -212,8 +212,8 @@ jobs:
   # 31 августа 2026 в дереве нашлось 31 место в 14 файлах, где записанное рукой
   # число разошлось с тем, что лежит рядом: `docs/tree-inventory.md` считала
   # `seed-parses-sources-guard.sh` в 83 строки при 195, оболочку — в 66 файлов
-  # при 71 тогдашних — сегодня их 51;
-  # СНЯТО 2026-10-04 файлов *.sh = 51 (задача 0049: scripts/seed/seed-freshness.sh снят — проверка давно живёт планом scripts/seed/seed-freshness.fscript, а переходник ещё и терял довод (exec без "$@"); до него 52, снято 2026-10-04) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 101, снято 2026-09-21) `flang/cat/SPEC.md` обещала восемнадцать поручений при 22;
+  # при 71 тогдашних — сегодня их 50;
+  # СНЯТО 2026-10-04 файлов *.sh = 50 (задача 5821: scripts/guards/version-derivations-guard.sh снят — сверка производных версии стала планом scripts/guards/version-derivations-guard.fscript, приговор доказан ядром (13 из 13), хук зовёт план; до него 51, снято 2026-10-04) (задача 0049: scripts/seed/seed-freshness.sh снят — проверка давно живёт планом scripts/seed/seed-freshness.fscript, а переходник ещё и терял довод (exec без "$@"); до него 52, снято 2026-10-04) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 101, снято 2026-09-21) `flang/cat/SPEC.md` обещала восемнадцать поручений при 22;
   # `flang/PLAN.md` — пять вариантов «Поручение» при 22. Каждое из этих чисел
   # было ВЕРНО В ДЕНЬ ЗАПИСИ и солгало назавтра, и сторожа не было ни на одном.
   #
@@ -1582,6 +1582,27 @@ jobs:
           fi
       - name: Check no package.json
         run: bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Проверка
+
+      # Версия живёт в одном источнике — функции «Версия» в
+      # scripts/release/emit-package.flang — и вытекает в .flangrc, в #define
+      # FLANG_VERSION, в .TH страницы man и в три числа формулы Homebrew. Эти
+      # места разъезжались молча (задачи 9983, 4970). До 4 октября 2026 их
+      # сверял scripts/guards/version-derivations-guard.sh на оболочке; теперь
+      # это план, и приговор у него доказан ядром (13 утверждений из 13),
+      # поэтому ключ --на-веру ему не нужен.
+      # Подлог гоняется ПЕРЕД сверкой, как у соседей: сторож, разучившийся
+      # краснеть, зеленел бы молча. Подлог внутренний — разводит .TH на 9.9.9
+      # в КОПИИ дерева, само дерево не трогает, и краснота (код 1) — его ответ
+      # «подлог пойман».
+      - name: Probe version derivations guard
+        run: |
+          set -u
+          if bootstrap/flang io scripts/guards/version-derivations-guard.fscript --plan Подлог --timeout 600000; then
+            echo "сторож промолчал на разведённой версии — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: Check version derivations
+        run: bootstrap/flang io scripts/guards/version-derivations-guard.fscript --plan Проверка
 
       - name: Probe contrast guard
         run: |

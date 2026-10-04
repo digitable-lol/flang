@@ -48,7 +48,7 @@
 `/`.
 
 **Чем ограничено.** Сведение после подъёма проверяет
-`scripts/guards/version-derivations-guard.sh`, а не сам скрипт.
+`scripts/guards/version-derivations-guard.fscript`, а не сам скрипт.
 
 Связано: [[package-json-is-no-longer-the-source-of-the-version]],
 [[the-release-number-cannot-say-what-is-inside-the-binary]]

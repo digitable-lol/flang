@@ -192,3 +192,59 @@ docs/tasks/1177-a-quantifier-is-refused-inside-a-formula-and-binds-only-a-whole-
 docs/tasks/1188-existence-without-a-named-witness-has-no-rule.md	scripts/guards/proved-share-vs-tree.sh	история: сторож перенесён на план scripts/guards/proved-share-vs-tree.fscript 4 октября 2026; в задаче он назван тем именем, какое носил тогда
 docs/tasks/2277-the-law-judges-of-monoid-functor-and-monad-are-written-and-called-by-nobody.md	scripts/guards/proved-share-vs-tree.sh	история: сторож перенесён на план scripts/guards/proved-share-vs-tree.fscript 4 октября 2026; в задаче он назван тем именем, какое носил тогда
 docs/tasks/4433-the-uncalled-checks-guard-does-not-see-a-judge-in-the-closure.md	scripts/guards/guards-without-forgery-probe.sh	история: сторож перенесён на план scripts/guards/guards-without-forgery-probe.fscript 4 октября 2026; в задаче он назван тем именем, какое носил тогда
+docs/README.ru.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
+docs/adr/0051-the-proof-kernel-remembers-pure-calls-within-one-run.md	flang_memo.c	гипотетический файл в разборе решения: рядом сказано, что он «попал бы в сборку семени только печатью» — файла в дереве нет и не было
+docs/design/6202-potolok-kak-obyazatelstvo.md	corpus-share.sh	история: прибор доли снят из дерева, наследника у него нет; проект называет свой замер того дня
+docs/design/6202-potolok-kak-obyazatelstvo.md	tables-guard.sh	история: цитата по строкам прежней реализации на оболочке (243, 345); нынешний прибор — flang/proof/tables-guard.fscript, и номера строк прежней реализации в нём не действуют
+docs/design/6202-potolok-kak-obyazatelstvo.md	flang/proof/tables-guard.sh	история: то же, с полным путём прежней реализации
+docs/design/proof-object-blok-vyvoda.md	flang/proof/corpus-share.sh	история: прибор доли снят из дерева, наследника у него нет; проект называет свой замер того дня
+docs/design/proof-object-po-obyavleniyu-trace.md	proof-ledger.mjs	история: цитата по строкам прежней реализации на JavaScript (515, 460-461); нынешний прибор — flang/scripts/proof-ledger.fscript, и номера строк прежней реализации в нём не действуют
+docs/design/proof-object-po-obyavleniyu-trace.md	corpus-share.sh	история: прибор доли снят из дерева, наследника у него нет; проект называет свой замер того дня
+docs/design/proof-object-roadmap.md	flang/proof/corpus-share.sh	история: прибор доли снят из дерева, наследника у него нет; карта называет замер входного документа
+docs/releases/0.7.13.md	flang/proof/corpus-share.sh	история: записка выпуска называет прибор своего дня; прибор снят позже, правится только историей
+docs/site/cli.md	привет.flang	учебное имя в примере команды, не файл
+docs/site/cli.md	плохо.flang	учебное имя в примере отказа, не файл
+docs/site/cli.md	план.flang	учебное имя в примере плана, не файл
+docs/site/cli.ru.md	привет.flang	учебное имя в примере команды, не файл
+docs/site/cli.ru.md	плохо.flang	учебное имя в примере отказа, не файл
+docs/site/cli.ru.md	план.flang	учебное имя в примере плана, не файл
+docs/site/cli.ru.md	privet.c	учебное имя напечатанного файла в выводе примера, не файл
+docs/site/diagnostics.md	rec.flang	учебное имя в примере отказа, не файл
+docs/site/diagnostics.ru.md	rec.flang	учебное имя в примере отказа, не файл
+docs/site/releases.md	zapis.flang	история: запись о переименовании называет прежнее имя по праву (zapis.flang -> proof-record.flang)
+docs/site/releases.md	scripts/target-census.sh	история: запись о снятии приборов на оболочке называет прежнее имя по праву
+docs/site/releases.md	scripts/raskrutka.sh	история: таблица «было -> стало» называет прежнее имя по праву
+docs/site/releases.ru.md	zapis.flang	история: запись о переименовании называет прежнее имя по праву (zapis.flang -> proof-record.flang)
+docs/site/releases.ru.md	scripts/target-census.sh	история: запись о снятии приборов на оболочке называет прежнее имя по праву
+docs/site/releases.ru.md	scripts/raskrutka.sh	история: таблица «было -> стало» называет прежнее имя по праву
+docs/site/stdlib.md	imp1.flang	учебное имя в примере отказа, не файл
+docs/site/stdlib.md	заголовок.flang	учебное имя в примере плана, не файл
+docs/site/stdlib.ru.md	imp1.flang	учебное имя в примере отказа, не файл
+docs/site/stdlib.ru.md	заголовок.flang	учебное имя в примере плана, не файл
+docs/tasks/0049-the-last-javascript-leaves-the-tree.md	ярлыки.flang	история: файл снят, назван как место, откуда объявления ярлыков переехали в .flangrc
+docs/tasks/1117-twenty-five-disabled-ci-jobs-run-locally.md	docs/tasks/1315-vremennoe-v-dereve-ishodnikov.md	дословная цитата пути из тела шага .github/workflows/ci.yml:391; задача 1315 закрыта, файл переименован по-английски — об этом в той же строке и сказано
+docs/tasks/1117-twenty-five-disabled-ci-jobs-run-locally.md	scripts/bootstrap-c.sh	дословная цитата ответа сторожа семени; путь подставляет scripts/bootstrap-reprint.sh:110 ($SECOND_PRINT), и сама задача 5821 про эту строку
+docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	builtin-forms.flang	иллюстративное имя в разборе задачи: правая колонка таблицы переименований, имя ещё не выдано
+docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk-examples.sh	иллюстративное имя в разборе задачи: правая колонка таблицы переименований, имя ещё не выдано
+docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk-self.sh	иллюстративное имя в разборе задачи: правая колонка таблицы переименований, имя ещё не выдано
+docs/tasks/2877-a-contradiction-between-two-specs-is-called-agreement.md	01-cap.flang	имя пробы из прогона задачи, не файл дерева
+docs/tasks/2877-a-contradiction-between-two-specs-is-called-agreement.md	02-floor.flang	имя пробы из прогона задачи, не файл дерева
+docs/tasks/2877-a-contradiction-between-two-specs-is-called-agreement.md	spec/01-cap.flang	имя пробы из прогона задачи, не файл дерева
+docs/tasks/2877-a-contradiction-between-two-specs-is-called-agreement.md	spec/02-floor.flang	имя пробы из прогона задачи, не файл дерева
+docs/tasks/2877-a-contradiction-between-two-specs-is-called-agreement.md	o.guard.flang	имя пробы из прогона задачи, не файл дерева
+docs/tasks/4238-role-profiles-have-no-guard-and-nowhere-to-be-written.md	scripts/guards/profiles-guard.fscript	путь, который задача просит создать: по построению его в дереве ещё нет
+docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	flang/scripts/proof-ledger.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
+docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	word-guard.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
+docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	discriminating-search.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
+docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	claim-guard.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
+docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	target-words.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
+docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	scripts/jargon-guard.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
+docs/tasks/4573-checker-verdicts-on-the-standard-library.md	corpus-share.sh	история: прибор доли снят из дерева, наследника у него нет; задача называет прогон своего дня
+docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	SECOND_PRINT=scripts/bootstrap-c.sh	присваивание переменной оболочки из scripts/bootstrap-reprint.sh:110, а не путь; про сам путь и написана эта задача
+docs/tasks/5979-the-machine-form-of-the-ledger-has-no-derivation.md	flang/self/proof-ledger.flang	предположительное имя модуля: в той же строке сказано «или тот модуль flang/self, который печатает ведомость машинным видом»
+docs/tasks/6921-docs-are-a-manual-not-a-diary.md	ярлыки.flang	история: файл снят, назван в переписи удалённых документов
+docs/tasks/6921-docs-are-a-manual-not-a-diary.md	binder-goal-share.md	история: документ удалён, назван в переписи удалённых документов
+docs/tasks/6921-docs-are-a-manual-not-a-diary.md	scripts/memory-limit.sh	история: прибор снят, назван в переписи удалённых документов
+docs/tasks/8545-a-user-story-is-a-written-form-of-a-requirement.md	flang/self/bootstrap/zond-5309.flang	история: зонд снят после перепечатки семени, назван как образец порядка работ
+docs/site/releases.md	scripts/guards/occupied-names-guard.flang	история: записка выпуска называет сторож тем именем, под которым он тогда лежал; страница печатается из docs/release-notes.json, и правится только историей — сегодня это scripts/guards/occupied-names-guard.fscript
+docs/site/releases.ru.md	scripts/guards/occupied-names-guard.flang	история: записка выпуска называет сторож тем именем, под которым он тогда лежал; страница печатается из docs/release-notes.json, и правится только историей — сегодня это scripts/guards/occupied-names-guard.fscript

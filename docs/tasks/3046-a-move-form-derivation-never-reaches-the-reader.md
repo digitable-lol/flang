@@ -72,5 +72,5 @@
 
 ## Где живёт правка
 
-`flang/self/zapis.flang` (печать), раздел ведомости в `flang/self`; при выборе «одна форма» —
+`flang/self/proof-record.flang` (печать), раздел ведомости в `flang/self`; при выборе «одна форма» —
 `flang/self/proofterm.flang` и `flang/proof/checker/checker.c`.

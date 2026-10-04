@@ -152,7 +152,7 @@
 ## 5. Цена, и почему это ADR, а не правка
 
 Правка живёт в терме доказательства (`flang/self/proofterm.flang`), в ядре
-(`flang/self/proof-kernel.flang`), в печати записи (`flang/self/zapis.flang`) и в разделе
+(`flang/self/proof-kernel.flang`), в печати записи (`flang/self/proof-record.flang`) и в разделе
 ведомости — то есть в доверенной основе, и доезжает до двоичного только перепечаткой
 самосборной части. Меняется формат записи, который читают три независимых читателя:
 сверщик `flang/proof/checker/checker.c` (10 497 строк C99), модель Lean

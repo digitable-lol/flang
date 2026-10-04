@@ -195,7 +195,7 @@ GitHub 16 ГБ памяти, а замеренная нужда — 258,9 ГиБ
 
 ## Заодно: сторож, который ничего не проверял
 
-`scripts/guards/seed-parses-sources-guard.sh` звал `flang check … --предел-шагов N`.
+`scripts/guards/seed-parses-sources-guard.fscript` звал `flang check … --предел-шагов N`.
 Ключа этого **нет в семени** — он есть только в исходниках (`flang/self/cli.flang`),
 и двоичный из дерева отвечает на него одной строкой «непонятный ключ» и кодом 2,
 не взглянув на файл. Строка эта не содержит ни `FLANG_UNKNOWN_NAME`, ни

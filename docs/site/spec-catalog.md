@@ -16,11 +16,11 @@ show where the compiler stops speaking.
 | file | what it does | measured |
 |---|---|---|
 | [`spec/*.flang`](fspec/spec) | the specs themselves: the domain rules | 43 files <!-- СНЯТО 2026-09-20 файлов fspec/spec/*.flang = 43 -->, 140 examples of their own <!-- СНЯТО 2026-09-08 примеров-в fspec/spec/*.flang = 140 --> |
-| [`policy.flang`](fspec/policy.flang) | the acceptance rule, written in the language itself: what counts as proved, what "agrees with its predecessor" means, what "the content was not rewritten" means | 265 lines <!-- СНЯТО 2026-10-01 строк fspec/policy.flang = 265 --> |
-| [`guard.flang`](fspec/guard.flang) | the plan: read the snapshot, find the specs, ask the compiler, name the trouble, set the exit code | 1295 lines <!-- СНЯТО 2026-10-01 строк fspec/guard.flang = 1295 -->, 138 examples <!-- СНЯТО 2026-09-08 примеров-в fspec/guard.flang = 138 --> |
+| [`policy.flang`](fspec/policy.flang) | the acceptance rule, written in the language itself: what counts as proved, what "agrees with its predecessor" means, what "the content was not rewritten" means | 534 lines <!-- СНЯТО 2026-10-04 строк fspec/policy.flang = 534 --> |
+| [`guard.flang`](fspec/guard.flang) | the plan: read the snapshot, find the specs, ask the compiler, name the trouble, set the exit code | 1378 lines <!-- СНЯТО 2026-10-04 строк fspec/guard.flang = 1378 -->, 145 examples <!-- СНЯТО 2026-10-04 примеров-в fspec/guard.flang = 145 --> |
 | [`snapshot.flang`](fspec/snapshot.flang) | the tooling: rewrite the snapshot from the current specs | 123 lines <!-- СНЯТО 2026-10-01 строк fspec/snapshot.flang = 123 --> |
 | [`snapshot.txt`](fspec/snapshot.txt) | the snapshot itself: one line per promise — file, function, name, goal | 102 lines <!-- СНЯТО 2026-09-20 строк fspec/snapshot.txt = 102 --> |
-| [`forgery.flang`](fspec/forgery.flang) | the forgery: deliberately broken catalogues, and the guard must redden on every one | 283 lines <!-- СНЯТО 2026-10-01 строк fspec/forgery.flang = 283 --> |
+| [`forgery.flang`](fspec/forgery.flang) | the forgery: deliberately broken catalogues, and the guard must redden on every one | 292 lines <!-- СНЯТО 2026-10-04 строк fspec/forgery.flang = 292 --> |
 | [`clarifications.flang`](fspec/clarifications.flang) | the clarifier: turns a failed proof into a question for the author of the requirement | 407 lines <!-- СНЯТО 2026-10-01 строк fspec/clarifications.flang = 407 --> |
 | [`experience/`](fspec/experience) | a coarse requirement and two answers to it — the bench for the clarifier | 3 files <!-- СНЯТО 2026-09-08 файлов fspec/experience/*.flang = 3 --> |
 | [`experiments/`](fspec/experiments) | programs that show the boundary; they are not meant to be fixed | 22 files <!-- СНЯТО 2026-09-08 файлов fspec/experiments/*.flang = 22 --> |
@@ -348,7 +348,7 @@ in either direction.
 | a check of **satisfiability**, not derivability | "not proved" ≠ "false". To tell them apart you need a search for a counterexample over a finite grid — then what is found is a falsehood presented as a value, not as silence |
 | a spec before the implementation | `обеспечивает` attaches only to a function with a body, and the claim is derived FROM THE BODY. A requirement whose implementation does not exist yet cannot be stated at all |
 | a judgement on whether the new goal is WEAKER than the old | the snapshot sees that the goal differs and reddens on any divergence. To tell weakening from strengthening you need an implication between two goals, and the kernel does not derive one |
-| running the guard's own examples | the 138 examples <!-- СНЯТО 2026-09-08 примеров-в fspec/guard.flang = 138 --> of `guard.flang` are written and are run by no target at all: the run hits the step limit. A guard nobody knows to be working is no better than a missing one |
+| running the guard's own examples | the 145 examples <!-- СНЯТО 2026-10-04 примеров-в fspec/guard.flang = 145 --> of `guard.flang` are written and are run by no target at all: the run hits the step limit. A guard nobody knows to be working is no better than a missing one |
 
 The second row is the main open one. A specification without a body cannot be
 stated in the language today, and one with a body is already half an

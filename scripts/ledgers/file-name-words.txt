@@ -208,6 +208,8 @@ can
 cancels
 candidate
 cannot
+canon
+canonical
 captures
 carried
 carrier
@@ -433,6 +435,7 @@ different
 differently
 digest
 digests
+digit
 digits
 direct
 directories
@@ -509,6 +512,7 @@ end
 endings
 endless
 ends
+enforced
 english
 entry
 environment

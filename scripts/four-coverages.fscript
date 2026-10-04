@@ -6,6 +6,13 @@
   использует «Plan output» из "plan-output.fscript"
   использует «Lists» только «Соединить списки»
 
+примечание "ПОЧЕМУ НАБОР ПЕРЕВОДА ЗОВЁТСЯ ПЛАНОМ, А НЕ ОБОЛОЧКОЙ. До 4 октября 2026 здесь стояло"
+примечание "«sh flang/translation/run.sh», и число опытов считалось строками «opyt » в самом файле."
+примечание "Файл снят переносом набора на план flang/translation/run.fscript, и оба места умерли молча:"
+примечание "зов «sh» по несуществующему пути и подсчёт строк, которых больше нет. Теперь ответ берётся"
+примечание "полем result («Plan said by»), а число опытов — из самого ответа: «опытов 32» говорит прибор,"
+примечание "а не грепание файла. Проверено прогоном: план отвечает за 4,4 с, опытов 32, правил 41."
+
 тотальная функция «Tree»
   возвращает строка
   ".."
@@ -24,7 +31,7 @@
 
 тотальная функция «Translation suite»
   возвращает строка
-  "flang/translation/run.sh"
+  "flang/translation/run.fscript"
 
 тотальная функция «Measurements»
   возвращает список «Question»
@@ -41,7 +48,8 @@
    («Read from» от "violations" и («Tree») и («Violations table»)),
    («Read from» от "print rules" и («Tree») и («Print rules»)),
    («Read from» от "translation suite" и («Tree») и («Translation suite»)),
-   («Run from» от "translation" и («Tree») и "sh" и [(«Translation suite»)])]
+   («Run from» от "translation" и («Tree») и "bootstrap/flang" и ["io", («Translation suite»), "--plan",
+     "Проверка"])]
 
 тотальная функция «Quoted»
   принимает text: строка
@@ -297,7 +305,21 @@
 тотальная функция «Translation result»
   принимает answers: список «Answer»
   возвращает строка
-  «After» от "ИТОГ: " и («Beginning with» от "ИТОГ: " и («Said by» от "translation" и answers))
+  «Plan said by» от "translation" и answers
+
+тотальная функция «Probes in the answer»
+  принимает text: строка
+  возвращает строка
+  пример «The number stands after the word and before the comma»
+    дано text равно "перевод: закрытый список 41 правил, опытов 32, все сошлись с ожиданием"
+    ожидается "32"
+  пример «An answer without the word carries no number»
+    дано text равно "перевод: опыт разошёлся"
+    ожидается ""
+  пусть parts равно (разделить text по "опытов ")
+  если (длина parts) меньше 2
+    то ""
+    иначе «First line» от (соединить (разделить (элемент 2 в parts) по ",") по "\n")
 
 тотальная функция «Translation is readable»
   принимает answers: список «Answer»
@@ -309,7 +331,7 @@
   возвращает список строки
   пусть rows равно («Print rows» от answers)
   пусть total равно (к строке (длина rows))
-  [(соединить ["   опытов в run.sh              ", (к строке (длина (отфильтровать («Lines» от («Output of» от "translation suite" и answers)) где line → line начинается с "opyt ")))] по ""),
+  [(соединить ["   опытов по ответу плана      ", («Probes in the answer» от («Translation result» от answers))] по ""),
    (соединить ["   правил печати в списке       ", total] по ""),
    (соединить ["   сверяются с ИСХОДНИКОМ       ",
      (к строке (длина (отфильтровать rows где cells → не ((«Cell» от 5 и cells) равен "—")))), " из ", total,

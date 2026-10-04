@@ -136,10 +136,13 @@ $ bootstrap/flang io .../syllogism/sentences/run.fscript --plan Judge -- diplom.
 о нём в `expected.tsv`, так что проба краснеет, если отказ опять свалит беду на слово:
 
 ```sh
-bootstrap/flang io flang/proof/probes/syllogism/sentences/run.fscript --plan Binary
+bootstrap/flang io flang/proof/probes/syllogism/sentences/run.fscript --plan Binary \
+  --max-steps 40000000
 ```
 
-Сегодня этот прогон отвечает `syllogism/sentences: проб 14, разошлось 0`, код 0.
+Замер 4 октября 2026: этот прогон отвечает `syllogism/sentences: проб 62, разошлось 0`,
+код 0, 43 с. Ключ `--max-steps` обязателен: на 62 текстах предел по умолчанию
+(10 000 000 шагов) исчерпывается в «Spaced words», нужно между 12 и 14 млн.
 
 ## Где живёт правка
 

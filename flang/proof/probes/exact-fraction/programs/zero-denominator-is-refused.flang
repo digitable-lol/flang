@@ -1,0 +1,5 @@
+модуль «Exact fraction refuses a zero denominator in writing»
+
+тотальная функция «Единица над ничем»
+  возвращает точное дробное
+  [[1], []]

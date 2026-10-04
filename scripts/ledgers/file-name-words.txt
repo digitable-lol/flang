@@ -790,6 +790,7 @@ instead
 instrument
 instruments
 integer
+integers
 integrality
 intermediate
 interpreter

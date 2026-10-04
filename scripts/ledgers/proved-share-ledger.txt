@@ -1310,7 +1310,7 @@ b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
 05641fed3c8e2405969b58859d7b46bd|189|125|15|48|0|flang/self/defunc.flang
 8cf37894dbbccdff06a8ef8c0bb9395e|81|54|6|21|1|flang/self/distributed.flang
 ff586b33c1aa75e4b80d727672748361|20|10|0|10|0|flang/self/distributive.flang
-d328a6015287755e0bf7082b88afdd29|429|291|8|107|0|flang/self/emit-c.flang
+d328a6015287755e0bf7082b88afdd29|438|291|8|107|0|flang/self/emit-c.flang
 e6a1c5149ebb9e155fd5cd9c13fae314|7|4|0|3|0|flang/self/emit-cpp.flang
 29a749a897421f9f3b89dd7f1c372746|659|551|30|78|0|flang/self/emit-csharp.flang
 cc8efee04153882fa095db14dfa0548d|142|88|4|50|0|flang/self/emit-elixir.flang

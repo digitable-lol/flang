@@ -1499,7 +1499,11 @@ jobs:
   perevod:
     name: translation-matcher
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Было 10, пока набор гоняла оболочка: `cc` и шестнадцать опытов. План
+    # зовётся двоичным, и при промахе кеша работа сперва СОБИРАЕТ семя; на
+    # раннере это минуты, а не 4,3 с здешнего прогона. 20 — запас к соседней
+    # работе `guards-selftest`, которая собирает то же и просит столько же.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check verdict cache

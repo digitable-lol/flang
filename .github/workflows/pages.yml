@@ -38,6 +38,9 @@ on:
       - 'scripts/site/changelog.flang'
       - 'scripts/site/releases.flang'
       - 'scripts/site/releases-page.fscript'
+      - 'scripts/site/registry-page.fscript'
+      - 'scripts/registry-example/**'
+      - 'flang/stdlib/registry.flang'
       - '.github/workflows/pages.yml'
       # Подсветка блоков кода красит НАСТОЯЩИМ лексером языка, а он живёт в
       # двоичном компиляторе: правка точки раскрутки или двери к двоичному
@@ -135,6 +138,53 @@ jobs:
       - name: Rebuild releases page
         run: LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/releases-page.fscript --на-веру --max-steps 80000000
 
+      # ПО ТОЙ ЖЕ ПРИЧИНЕ — И РЯДОМ С ЕЩЁ ОДНОЙ. Страница реестра печатается из
+      # ведомости `scripts/registry-example/registry.list`, и между правкой
+      # ведомости и перепечаткой она отстаёт; здесь она печатается заново, и
+      # опубликованное всегда свежее. Дерево при этом не правится.
+      #
+      # ВТОРОЕ, ЧТО ДЕЛАЕТ ЭТОТ ШАГ, И ОНО ГЛАВНОЕ: прогон пересчитывает sha256
+      # каждого адреса ведомости и сличает с полем «отпечаток». Разошёлся знак —
+      # страница не печатается, прогон отвечает кодом 1, и сборка сайта краснеет
+      # ЗДЕСЬ, с именем записи и обоими отпечатками. До этого шага реестр не
+      # звала ни одна работа CI, и отпечатки примера гнили молча (задача 4909).
+      - name: Rebuild registry page
+        run: LC_ALL=C.UTF-8 bootstrap/flang run-script registry:page
+
+      # ПРОБА: сверка отпечатков обязана покраснеть на подкрученном знаке.
+      # Иначе зелёный шаг выше неотличим от выключенного — ровно та беда, из-за
+      # которой отпечатки и прогнили. Портится ОДИН знак в ОДНОМ отпечатке
+      # ведомости; требуется код не 0 И имя подложенной записи в выводе
+      # (покраснеть по чужой причине — не довод); ведомость возвращается и
+      # сравнивается с копией побайтово.
+      - name: Probe registry fingerprint
+        run: |
+          vedomost=scripts/registry-example/registry.list
+          cp "$vedomost" "$RUNNER_TEMP/registry.list"
+          sed -i 's/^\(Списки | 1\.4\.2 | \)./\1X/' "$vedomost"
+          if cmp -s "$vedomost" "$RUNNER_TEMP/registry.list"; then
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: $vedomost не изменилась" >&2
+            exit 1
+          fi
+          if LC_ALL=C.UTF-8 bootstrap/flang run-script registry:page > "$RUNNER_TEMP/probe.out" 2>&1; then
+            cp "$RUNNER_TEMP/registry.list" "$vedomost"
+            echo "СВЕРКА ПРОМОЛЧАЛА: подкрученный отпечаток прошёл" >&2
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/registry.list" "$vedomost"
+          if ! grep -F 'FLANG_REESTR_OTPECHATOK' "$RUNNER_TEMP/probe.out"; then
+            echo "ПОКРАСНЕЛО НЕ НА ОТПЕЧАТКЕ:" >&2
+            tail -20 "$RUNNER_TEMP/probe.out" >&2
+            exit 1
+          fi
+          if ! grep -F 'Списки 1.4.2' "$RUNNER_TEMP/probe.out"; then
+            echo "ОТКАЗ НЕ НАЗВАЛ ПОДЛОЖЕННУЮ ЗАПИСЬ:" >&2
+            tail -20 "$RUNNER_TEMP/probe.out" >&2
+            exit 1
+          fi
+          cmp "$vedomost" "$RUNNER_TEMP/registry.list"
+          LC_ALL=C.UTF-8 bootstrap/flang run-script registry:page
+
       # Отдельным шагом до сборки: если ссылки битые, видно сразу и по имени,
       # а не среди вывода сборки.
       - name: Check links
@@ -174,6 +224,17 @@ jobs:
       - name: Build site
         if: github.event_name != 'pull_request'
         run: node docs/site/build.mjs
+
+      # ВЕДОМОСТЬ РАЗДАЁТСЯ ФАЙЛОМ, А НЕ КАРТИНКОЙ НА СТРАНИЦЕ. Решение ADR-0059:
+      # реестр — строчный файл, раздаваемый обычным HTTP, и отвечает он адресом.
+      # Шаг кладёт ведомость в корень собранного сайта под именем `registry.list`
+      # — тот самый адрес, который называет страница и который берёт поручение
+      # «Запросить». Стоит ПОСЛЕ сборки: `build.mjs` вычищает `docs/site/out`
+      # целиком, и положенное до него не доехало бы. Сличение отпечатков идёт и
+      # здесь: выложить ведомость с гнилым отпечатком нельзя.
+      - name: Publish the registry ledger
+        if: github.event_name != 'pull_request'
+        run: LC_ALL=C.UTF-8 bootstrap/flang run-script registry:publish
 
       - if: github.event_name != 'pull_request'
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0

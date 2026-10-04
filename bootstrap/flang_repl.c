@@ -11384,10 +11384,58 @@ static void unproven_detail(fl_value sources, const char *full, const verdict_sa
   shown += unproven_list(json, bytes, "laws", seen, &number);
   shown += unproven_list(json, bytes, "assumed", seen, &number);
   if (shown == 0) {
-    fprintf(stderr,
-            "  ни одного пункта: утверждения доказаны все, и отказ идёт не от них — смотреть "
-            "«flang check %s --proof»\n",
-            full);
+    /*
+     * ПОЧЕМУ ЗДЕСЬ НЕЛЬЗЯ СКАЗАТЬ «УТВЕРЖДЕНИЯ ДОКАЗАНЫ ВСЕ».
+     *
+     * Счёт вердикта идёт по ЗАМЫКАНИЮ, а ведомость — по ВХОДНОМУ ФАЙЛУ:
+     * «Ведомость по итогам» (`flang/self/bootstrap/compiler.flang`) строит её
+     * из «Только своё из файла» и «Обязательства входного файла». На программе,
+     * которая ввозит модуль с сеткой, первый счёт даёт «сетка N», второй — ноль
+     * пунктов, и прежняя строка объявляла отказ беспричинным.
+     *
+     * Замер 4 октября 2026, задача 7080: проба на точных дробях — `run` сказал
+     * «утверждений 22: доказано 20, сетка 2», ведомость входного файла дала 0
+     * пунктов (claims 0, обязательств 2, оба доказаны), а обе сетки лежали в
+     * `flang/stdlib/bignum.flang` — утверждений 9, доказано 7, сетка 2, — и он
+     * приезжает через `Rationals`. Сетка есть у 21 файла библиотеки из 23, то
+     * есть прежняя строка лгала почти на любой ввозящей программе.
+     *
+     * ПОЧЕМУ ЗДЕСЬ ТОЛЬКО ИМЕНА, А НЕ ЧИСЛА МОДУЛЕЙ. Числа по модулю берутся
+     * только вторым вопросом к ведомости, и это измерено: отказ на той же пробе
+     * шёл 19,8 с, а с вопросом на каждый ввезённый модуль — 38,3 с, то есть
+     * вдвое. Платить вдвое на каждом отказе за то, что человек спросит одной
+     * командой, нельзя. Правильное место для чисел — сама ведомость, одним
+     * проходом: задача 2400.
+     */
+    size_t at = 0;
+    size_t named = 0;
+    for (at = 0; at < sources.as.list.count; at += 1) {
+      fl_value path = fl_nothing();
+      const char *utf8 = NULL;
+      size_t utf8_bytes = 0;
+      if (!val_field(sources.as.list.items[at], "путь", &path)) {
+        continue;
+      }
+      if (!val_text(path, &utf8, &utf8_bytes)) {
+        continue;
+      }
+      if (utf8_bytes == strlen(full) && memcmp(utf8, full, utf8_bytes) == 0) {
+        continue;
+      }
+      if (named == 0) {
+        fputs("  в этом файле пунктов нет; недоказанное пришло из ввезённых модулей:\n", stderr);
+      }
+      named += 1;
+      fprintf(stderr, "    %.*s\n", (int)utf8_bytes, utf8);
+    }
+    if (named == 0) {
+      fprintf(stderr,
+              "  ни одного пункта и ни одного ввезённого модуля — отказ пришёл не от имён; "
+              "смотреть «flang check %s --proof»\n",
+              full);
+    } else {
+      fputs("  спросить поимённо: flang check <модуль> --proof\n", stderr);
+    }
     return;
   }
   for (index = 0; index < UNPROVEN_KIND_COUNT; index += 1) {

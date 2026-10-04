@@ -16,10 +16,11 @@
 
 тотальная функция «Checks»
   возвращает список «Check»
-  обеспечивает «there are exactly twenty-three checks» (длина результат) равен 23
+  обеспечивает «there are exactly twenty-four checks» (длина результат) равен 24
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check",
    запись «Check» с «name» равным "reestr" и «command» равным "bootstrap/flang run-script registry-resolution:check",
    запись «Check» с «name» равным "prints" и «command» равным "bootstrap/flang run-script registry-prints:check",
+   запись «Check» с «name» равным "lock-forms" и «command» равным "bootstrap/flang run-script lock-forms:check",
    запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "bootstrap/flang io scripts/seed/seed-runtime-is-source.fscript --plan Check",
    запись «Check» с «name» равным "seed-refresh" и «command» равным "bootstrap/flang io scripts/seed/seed-refresh.fscript --plan Check",
    запись «Check» с «name» равным "version-derivations-guard" и «command» равным "bootstrap/flang io scripts/guards/version-derivations-guard.fscript --plan Проверка",
@@ -320,7 +321,7 @@
 тотальная функция «Leftovers»
   принимает directory: строка
   возвращает список строки
-  обеспечивает «one file for every check and the directory itself» (длина результат) равен 24
+  обеспечивает «one file for every check and the directory itself» (длина результат) равен 25
   добавить directory к (отобразить («Checks») как check → («Output path» от directory и check))
 
 тотальная функция «Remove files»

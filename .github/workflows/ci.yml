@@ -1987,3 +1987,45 @@ jobs:
           cmp "$vedomost" "$RUNNER_TEMP/registry.list"
       - name: Check registry fingerprints
         run: bootstrap/flang run-script registry-prints:check
+      # ЗАМОК ЗАМЫКАЕТ ВСЕ ТРИ ФОРМЫ ЗАВИСИМОСТИ (задача 2031, ADR-0059 §6 п. 4).
+      #
+      # Четвёртое свойство ADR-0059 §7 — «замок замыкает поставленное». До
+      # 4 октября 2026 оно было невозможно ни в одной форме: по имени замок
+      # писал «модули: []» при четырёх файлах у check, пакет по пути отдавал
+      # разбору flang и отвечал FLANG_PARSE. Сторож сверяет длину списка
+      # «модули» с числом «файлов вместе с импортами» минус входной файл.
+      - name: Probe lock forms by a forged measurement
+        run: |
+          if bootstrap/flang run-script lock-forms:forgery; then
+            echo "сторож промолчал на подлоге замера — проверять им нечего" >&2
+            exit 1
+          fi
+      # ВТОРАЯ ПРОБА ВОЗВРАЩАЕТ ЗАМКУ ПРЕЖНЕЕ ПОВЕДЕНИЕ, а не подменяет замер:
+      # в семени гасится разрешение ввоза ПО ИМЕНИ (`wanted_bytes != 0` →
+      # `== 0`), двоичный пересобирается, и сам `lock-forms:check` обязан
+      # покраснеть. Так проверяется не арифметика сторожа, а то, что он смотрит
+      # на настоящий дефект: на этой машине порченый двоичный даёт «по имени —
+      # модулей 0 при файлах 4» и «из пути — модулей 1 при файлах 4», код 1,
+      # а форма «пакет» остаётся зелёной — её правка другая.
+      - name: Probe lock forms by the old binary
+        run: |
+          cp bootstrap/flang_repl.c "$RUNNER_TEMP/flang_repl.c"
+          sed -i 's/wanted_bytes != 0/wanted_bytes == 0/' bootstrap/flang_repl.c
+          if cmp -s bootstrap/flang_repl.c "$RUNNER_TEMP/flang_repl.c"; then
+            cp "$RUNNER_TEMP/flang_repl.c" bootstrap/flang_repl.c
+            echo "порча не легла в семя — проверять нечем" >&2
+            exit 1
+          fi
+          make -C bootstrap -j"$(nproc)"
+          if bootstrap/flang run-script lock-forms:check > "$RUNNER_TEMP/old.out" 2>&1; then
+            cp "$RUNNER_TEMP/flang_repl.c" bootstrap/flang_repl.c
+            make -C bootstrap -j"$(nproc)"
+            cat "$RUNNER_TEMP/old.out" >&2
+            echo "сторож промолчал на прежнем поведении замка" >&2
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/flang_repl.c" bootstrap/flang_repl.c
+          cmp bootstrap/flang_repl.c "$RUNNER_TEMP/flang_repl.c"
+          make -C bootstrap -j"$(nproc)"
+      - name: Check lock forms
+        run: bootstrap/flang run-script lock-forms:check

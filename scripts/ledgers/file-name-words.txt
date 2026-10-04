@@ -1941,3 +1941,5 @@ appliers
 applier
 captured
 values
+narrow
+wide

@@ -2029,6 +2029,108 @@ jobs:
       - name: Check runs are named by number
         run: bootstrap/flang io flang/proof/probes/runs-not-executed/run.fscript --plan Check --timeout 900000
 
+  # ── ПЛАНЫ: СУДЬЮ СПРАШИВАЮТ НА ОБЩЕМ ПУТИ (задачи 7706 и 8398) ────────────
+  #
+  # ЧТО СТОРОЖИТСЯ. Правила над объявлением `план` («Проверка планов» в
+  # `flang/self/io.flang`) напечатаны в семя и зовутся из
+  # `«Проверить связанное»`, но `flang check` шёл НЕ через неё: дорогу он
+  # повторяет своим кодом в `repl_check_sources`, и вызова планов в ней не
+  # было. Замер 4 октября 2026, ствол `4d76abd53`, двоичный из семени ствола
+  # (md5 `63150ae8`): из двенадцати подделок `flang/test/fixtures/plany/`
+  # `flang check` МОЛЧА ПРИНЯЛ ДВЕНАДЦАТЬ кодом 0, а `flang test` на том же
+  # двоичном отверг все двенадцать кодом 1 и `FLANG_PLAN`. Набор мерит обоих
+  # судей на четырнадцати образцах — двадцать девять проб.
+  #
+  # ПОЧЕМУ ОТДЕЛЬНАЯ РАБОТА, А НЕ ШАГ У СОСЕДЕЙ ВЫШЕ — тот же довод, что у
+  # `progony`. Правка живёт в оболочке дерева
+  # (`flang/src/emit/c/flang_repl.c`), а `bootstrap/flang` собран из КОПИИ
+  # этой оболочки в семени и правку увидит только после перепечатки. Проба на
+  # `bootstrap/flang` мерила бы семя, а не дерево: ровно та порода, из-за
+  # которой «замер не в том дереве» стоит первым в списке того, что повторять
+  # нельзя. Значит нужен ВТОРОЙ двоичный, а его сборка в работу `storozha` с
+  # её потолком 20 минут не влезает: замер на машине отряда 4 октября 2026 —
+  # 300 с без `-flto` при `-j4`, пик занятой 2,65 ГиБ.
+  #
+  # СБОРКА — ЗАКОННЫЙ РЕЦЕПТ КОПИРУЕМОГО ФАЙЛА, тот же, что сверяет
+  # `scripts/seed/seed-runtime-is-source.fscript`: шапка семени (всё до первой
+  # строки источника) плюс источник дословно. Проверено прогоном: собранный
+  # так двоичный совпал по md5 (`817cbea2`) с собранным в `bootstrap/` после
+  # той же правки руками, и клеймо пределов у него семенное —
+  # `bootstrap/flang_runtime.h` копируется байт в байт, то есть
+  # `FL_MAX_DEPTH 20000` и `FL_MAX_STEPS 4000000000000`, а не умолчания
+  # рантайма (docs/zettel/a-printed-binary-without-the-stamp-runs-no-probe-suite.md).
+  #
+  # ПЕРВЫЙ ШАГ — ПОДЛОГ, и он нужен не для порядка: проба, которая не умеет
+  # краснеть, от правленого дерева неотличима. Подлог сбивает ИМЯ судьи в
+  # тихом вызове, а не удаляет вызов: тогда `repl_call` отвечает
+  # `FLANG_UNKNOWN_NAME`, тот глотается нарочно, и двоичный ведёт себя ровно
+  # как до правки — значит краснеет набор СВОИМ предметом, а не сломанной
+  # сборкой. Замер: на подлоге «проб 29, разошлось 12», код 1; начисто
+  # «проб 29, разошлось 0», код 0. Начисто пересобирается ДОСБОРКОЙ — 6,5 с:
+  # дорогой `compiler_flang.o` уже лежит, меняется только оболочка.
+  plany:
+    name: plan-rules-asked
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - name: Restore binary cache
+        id: kesh-dvoichnogo
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+      - name: Verify cached binary
+        if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
+        run: |
+          set -u
+          if ! ./bootstrap/flang --version >/dev/null 2>&1; then
+            echo "::warning::двоичный из кеша не запускается — собираю заново"
+            make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+          fi
+      # Имена переменных — латиницей: POSIX не допускает кириллицу в именах
+      # переменных оболочки.
+      - name: Probe the plan gate on a forged shell
+        run: |
+          set -eu
+          dvor="$RUNNER_TEMP/plan-shell"
+          mkdir -p "$dvor"
+          cp bootstrap/compiler_flang.c bootstrap/compiler_flang.h bootstrap/flang_cli.c \
+             bootstrap/flang_runtime.c bootstrap/flang_runtime.h bootstrap/Makefile "$dvor/"
+          pervaya=$(head -1 flang/src/emit/c/flang_repl.c)
+          nomer=$(grep -n -F -x -m1 "$pervaya" bootstrap/flang_repl.c | cut -d: -f1 || true)
+          if [ -z "$nomer" ] || [ "$nomer" -lt 2 ]; then
+            echo "первой строки источника в семени нет — рецепт «шапка + источник» больше не законен" >&2
+            exit 1
+          fi
+          head -n "$((nomer - 1))" bootstrap/flang_repl.c > "$dvor/chisto.c"
+          cat flang/src/emit/c/flang_repl.c >> "$dvor/chisto.c"
+          sed 's/repl_call("Проверить планы"/repl_call("Проверить планы которых нет"/' \
+            "$dvor/chisto.c" > "$dvor/flang_repl.c"
+          if cmp -s "$dvor/chisto.c" "$dvor/flang_repl.c"; then
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: тихого вызова «Проверить планы» в оболочке нет — поправить подлог, набор ни при чём" >&2
+            exit 1
+          fi
+          make -C "$dvor" -j"$(nproc)" CFLAGS="-std=c99 -Wall -Wextra -Werror -pedantic -O2"
+          if FLANG_BIN="$dvor/flang" bootstrap/flang io flang/proof/probes/plan-rules-asked/run.fscript --plan Binary; then
+            echo "набор промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: Check the plan judge is asked by check
+        run: |
+          set -eu
+          dvor="$RUNNER_TEMP/plan-shell"
+          cp "$dvor/chisto.c" "$dvor/flang_repl.c"
+          make -C "$dvor" -j"$(nproc)" CFLAGS="-std=c99 -Wall -Wextra -Werror -pedantic -O2"
+          FLANG_BIN="$dvor/flang" bootstrap/flang io flang/proof/probes/plan-rules-asked/run.fscript --plan Binary
+
   # ── Дорогая половина: только тег и ручной запуск ──────────────────────────
   korpus:
     name: corpus-examples

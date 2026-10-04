@@ -248,3 +248,9 @@ docs/tasks/6921-docs-are-a-manual-not-a-diary.md	scripts/memory-limit.sh	ист�
 docs/tasks/8545-a-user-story-is-a-written-form-of-a-requirement.md	flang/self/bootstrap/zond-5309.flang	история: зонд снят после перепечатки семени, назван как образец порядка работ
 docs/site/releases.md	scripts/guards/occupied-names-guard.flang	история: записка выпуска называет сторож тем именем, под которым он тогда лежал; страница печатается из docs/release-notes.json, и правится только историей — сегодня это scripts/guards/occupied-names-guard.fscript
 docs/site/releases.ru.md	scripts/guards/occupied-names-guard.flang	история: записка выпуска называет сторож тем именем, под которым он тогда лежал; страница печатается из docs/release-notes.json, и правится только историей — сегодня это scripts/guards/occupied-names-guard.fscript
+docs/tasks/2680-the-declared-measure-is-watched-at-run-time-and-never-proved.md	проба.flang	имя пробы из прогона задачи, не файл дерева
+docs/tasks/5771-integrality-does-not-tighten-a-strict-order-by-one.md	проба.flang	имя пробы из прогона задачи, не файл дерева
+docs/tasks/7328-a-free-statement-over-a-finite-sum-has-no-way-to-exhaust-its-cases.md	проба.flang	имя пробы из прогона задачи, не файл дерева
+docs/tasks/7367-induction-in-a-free-statement-refuses-the-nonnegative-segment.md	проба.flang	имя пробы из прогона задачи, не файл дерева
+docs/tasks/5771-integrality-does-not-tighten-a-strict-order-by-one.md	scripts/guards/proved-share-vs-tree.sh	история: сторож перенесён на план scripts/guards/proved-share-vs-tree.fscript 4 октября 2026; в задаче он назван тем именем, какое носил тогда
+docs/tasks/7328-a-free-statement-over-a-finite-sum-has-no-way-to-exhaust-its-cases.md	scripts/guards/proved-share-vs-tree.sh	история: сторож перенесён на план scripts/guards/proved-share-vs-tree.fscript 4 октября 2026; в задаче он назван тем именем, какое носил тогда

@@ -9861,11 +9861,77 @@ static void run_spaces(const char *text, size_t *at) {
   }
 }
 
+/* Четыре шестнадцатеричные цифры `\uXXXX` с места `at`; -1 — не цифры. */
+static long run_hex4(const char *text, size_t at, size_t end) {
+  long value = 0;
+  size_t index = 0;
+  if (at + 4 > end) {
+    return -1;
+  }
+  for (index = at; index < at + 4; index += 1) {
+    const char symbol = text[index];
+    value <<= 4;
+    if (symbol >= '0' && symbol <= '9') {
+      value |= symbol - '0';
+    } else if (symbol >= 'a' && symbol <= 'f') {
+      value |= symbol - 'a' + 10;
+    } else if (symbol >= 'A' && symbol <= 'F') {
+      value |= symbol - 'A' + 10;
+    } else {
+      return -1;
+    }
+  }
+  return value;
+}
+
+/*
+ * `\uXXXX` (и пара `\uD8xx\uDCxx`) в UTF-8. `*index` стоит сразу за `u`;
+ * буфера хватает всегда: шесть знаков дают не больше трёх байт, двенадцать —
+ * четыре.
+ */
+static bool run_text_unicode(const char *text, size_t *index, size_t end, char *buffer, size_t *used) {
+  long code = run_hex4(text, *index, end);
+  if (code < 0) {
+    return false;
+  }
+  *index += 4;
+  if (code >= 0xD800 && code <= 0xDBFF) {
+    long low = -1;
+    if (*index + 6 > end || text[*index] != '\\' || text[*index + 1] != 'u') {
+      return false;
+    }
+    low = run_hex4(text, *index + 2, end);
+    if (low < 0xDC00 || low > 0xDFFF) {
+      return false;
+    }
+    *index += 6;
+    code = 0x10000 + ((code - 0xD800) << 10) + (low - 0xDC00);
+  } else if (code >= 0xDC00 && code <= 0xDFFF) {
+    return false;
+  }
+  if (code < 0x80) {
+    buffer[(*used)++] = (char)code;
+  } else if (code < 0x800) {
+    buffer[(*used)++] = (char)(0xC0 | (code >> 6));
+    buffer[(*used)++] = (char)(0x80 | (code & 0x3F));
+  } else if (code < 0x10000) {
+    buffer[(*used)++] = (char)(0xE0 | (code >> 12));
+    buffer[(*used)++] = (char)(0x80 | ((code >> 6) & 0x3F));
+    buffer[(*used)++] = (char)(0x80 | (code & 0x3F));
+  } else {
+    buffer[(*used)++] = (char)(0xF0 | (code >> 18));
+    buffer[(*used)++] = (char)(0x80 | ((code >> 12) & 0x3F));
+    buffer[(*used)++] = (char)(0x80 | ((code >> 6) & 0x3F));
+    buffer[(*used)++] = (char)(0x80 | (code & 0x3F));
+  }
+  return true;
+}
+
 /*
  * Строка JSON в память арены. Escape-последовательности разбираются те, что
- * есть в самом JSON; `\uXXXX` намеренно НЕ разбирается, и это не лень: ключи и
- * значения приезжают из командной строки, где UTF-8 уже написан буквами, а
- * половинчатая поддержка суррогатных пар хуже честного отказа.
+ * есть в самом JSON, и `\uXXXX` тоже — с суррогатными парами (`run_text_unicode`):
+ * языковой сервер получает JSON от редактора, а клиент вправе экранировать
+ * любой знак. Одинокая половина пары — отказ, а не подмена знаком.
  */
 static bool run_text(const char *text, size_t *at, char **out, size_t *bytes) {
   size_t start = 0;
@@ -9900,8 +9966,11 @@ static bool run_text(const char *text, size_t *at, char **out, size_t *bytes) {
         } else if (next == 'r') {
           buffer[used] = '\r';
         } else if (next == 'u') {
-          free(buffer);
-          return false;
+          if (!run_text_unicode(text, &index, *at, buffer, &used)) {
+            free(buffer);
+            return false;
+          }
+          continue;
         } else {
           buffer[used] = next;
         }
@@ -20068,6 +20137,20 @@ static char *lsp_path_of(const char *uri, const char *base) {
   return result;
 }
 
+/*
+ * Сколько уже пришло на стандартный ввод — не больше `size` байт, но и не
+ * дожидаясь их: `fread` ждёт полный кусок или конец ввода, а редактор ввод не
+ * закрывает никогда, и ответ на первую же короткую рамку не уходил бы вовсе.
+ * Ноль — конец ввода, отрицательное — ошибка чтения.
+ */
+static ssize_t repl_read_some(char *chunk, size_t size) {
+  ssize_t got = read(STDIN_FILENO, chunk, size);
+  while (got < 0 && errno == EINTR) {
+    got = read(STDIN_FILENO, chunk, size);
+  }
+  return got;
+}
+
 /* ─────────────────────────── рамки Content-Length ───────────────────────── */
 
 /*
@@ -20136,11 +20219,11 @@ static char *lsp_read_frame(repl_buf *tail, size_t *bytes) {
     }
     {
       char chunk[8192];
-      const size_t got = fread(chunk, 1, sizeof(chunk), stdin);
-      if (got == 0) {
+      const ssize_t got = repl_read_some(chunk, sizeof(chunk));
+      if (got <= 0) {
         return NULL;
       }
-      buf_add(tail, chunk, got);
+      buf_add(tail, chunk, (size_t)got);
     }
   }
 }
@@ -20571,11 +20654,11 @@ static char *mcp_read_line(repl_buf *tail, size_t *bytes) {
     }
     {
       char chunk[8192];
-      const size_t got = fread(chunk, 1, sizeof(chunk), stdin);
-      if (got == 0) {
+      const ssize_t got = repl_read_some(chunk, sizeof(chunk));
+      if (got <= 0) {
         return NULL;
       }
-      buf_add(tail, chunk, got);
+      buf_add(tail, chunk, (size_t)got);
     }
   }
 }

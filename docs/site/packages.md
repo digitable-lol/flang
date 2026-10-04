@@ -2,7 +2,7 @@
 
 A flang package is **one file** that holds a library together with everything
 it imports. There is no package cache, and the registry is a
-[ledger of names](registry.html), not a store of code: it has no command of the
+[list of names](registry.html), not a store of code: it has no command of the
 binary and answers with an address. To publish a package, commit the file to
 git; to use it, put the file next to your program and write one import line.
 Building on another machine needs only your program and the package file, and

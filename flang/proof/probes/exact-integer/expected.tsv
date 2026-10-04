@@ -1,7 +1,24 @@
-program	judge	code	word
+program	judge	code	word	ЗАХОД 2 (вычитание, умножение, сравнение, канон) снят измерительным двоичным, напечатанным из этих исходников 4 октября 2026 (печать 43 мин 20 с, сборка 2 мин 12 с)	ДВЕ строки канона — non-canonical-exact-is-refused и digit-above-the-base-is-refused — ждут ПЕРЕПЕЧАТКИ: заслон на аргументе вызова снят прогоном НОВЫХ исходников через старый двоичный (компилятор как библиотека, 17 программ, расхождений 0), а двоичный этой партии напечатан до правки заслона и отвечает на них код 0
 names-the-type.flang	check	0	names-the-type.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 sum-above-two-to-the-53.flang	check	0	sum-above-two-to-the-53.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 sum-above-two-to-the-53.flang	test	0	sum-above-two-to-the-53.flang: примеров 3, прошло 3, не прошло 0
 sum-above-two-to-the-53.flang	run --function "Сумма за потолком"	0	[2,0,512]
 number-into-exact-needs-a-translation.flang	check	1	аргумент «а» функции «Сумма»: ожидался точное целое, получен неотрицательное
 ring-associativity-over-exact.flang	check --proof	0	утверждение «сложение точных целых ассоциативно» — доказано
+difference-above-two-to-the-53.flang	check	0	difference-above-two-to-the-53.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+difference-above-two-to-the-53.flang	test	0	difference-above-two-to-the-53.flang: примеров 4, прошло 4, не прошло 0
+difference-above-two-to-the-53.flang	run --function "Разность за потолком"	0	[1,0,512]
+difference-below-zero-is-refused.flang	check	0	difference-below-zero-is-refused.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+difference-below-zero-is-refused.flang	run --function "Ниже нуля"	1	FLANG_PROPERTY: точное целое ниже нуля значений не имеет: [1] минус [2]; молчаливый ноль запрещён
+product-above-two-to-the-53.flang	check	0	product-above-two-to-the-53.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+product-above-two-to-the-53.flang	test	0	product-above-two-to-the-53.flang: примеров 4, прошло 4, не прошло 0
+product-above-two-to-the-53.flang	run --function "Квадрат за потолком"	0	[1,0,1024,0,262144]
+comparison-above-two-to-the-53.flang	check	0	comparison-above-two-to-the-53.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+comparison-above-two-to-the-53.flang	test	0	comparison-above-two-to-the-53.flang: примеров 11, прошло 11, не прошло 0
+comparison-above-two-to-the-53.flang	run --function "Соседи за потолком различимы"	0	true
+canon-is-enforced-at-the-action.flang	check	0	canon-is-enforced-at-the-action.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+canon-is-enforced-at-the-action.flang	test	0	canon-is-enforced-at-the-action.flang: примеров 2, прошло 2, не прошло 0
+canon-is-enforced-at-the-action.flang	run --function "Переполненный разряд приведён при действии"	0	[1,1]
+division-over-exact-is-refused.flang	check	1	над точным целым «div» не определено: точное целое знает «плюс», «минус» и «умножить на»
+non-canonical-exact-is-refused.flang	check	1	точное целое записано не в каноне: старший разряд нулевой, а канон требует снять старшие нули
+digit-above-the-base-is-refused.flang	check	1	точное целое записано не в каноне: разряд 4194304 не меньше основания 4194304

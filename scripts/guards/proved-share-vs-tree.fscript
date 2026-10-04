@@ -1,0 +1,1267 @@
+модуль «Proved share vs tree»
+
+примечание "СВЕРКА ВЕДОМОСТИ ДОКАЗАННОГО С ДЕРЕВОМ. Зовут тремя ярлыками:"
+примечание "  bootstrap/flang run-script proved-share-tree:check    сверка, код 1 при беде"
+примечание "  bootstrap/flang run-script proved-share-tree:numbers  только итоги, код 0"
+примечание "  bootstrap/flang run-script proved-share-tree:forgery  четыре стороны порчи описи"
+
+примечание "ЗАЧЕМ. scripts/ledgers/proved-share-ledger.txt — опись, из которой берут числа"
+примечание "для Г7 и для доли доказанного. Прибора, который снимал бы её заново и сверял с"
+примечание "деревом, в репозитории НЕ БЫЛО: числа 13 347 и 13 399 ходили по документам"
+примечание "разовым проходом, который в дерево не переехал. Порода та же, что в задачах 7298"
+примечание "(сторожей считали рукой, и счёт был неверен в обе стороны) и 7855 (прибор"
+примечание "кругооборота лежит во времянке)."
+
+примечание "ЧТО СВЕРЯЕТСЯ ТОЧНО, А ЧТО ТОЛЬКО ДАТИРУЕТСЯ. Разница не косметическая."
+примечание "ЗНАМЕНАТЕЛЬ («написано», «без приговора») считается ПО ИСХОДНИКУ — это строки"
+примечание "«обеспечивает», «утверждение», «требует», «закон». Двоичный для него не нужен,"
+примечание "счёт точен, и расхождение с описью есть ОШИБКА ОПИСИ здесь и сейчас."
+примечание "ЧИСЛИТЕЛЬ («доказано», «сетка», «объявлено») — приговор ядра. Чтобы снять его"
+примечание "заново, надо прогнать двоичный по каждому файлу; на ядре доказательств это часы"
+примечание "и десятки гигабайт памяти. Прибор его НЕ пересчитывает и не делает вида, что"
+примечание "пересчитал. Он сверяет md5 исходника и тем ДАТИРУЕТ строку: разошёлся md5 —"
+примечание "приговор в строке относится к файлу, которого уже нет."
+
+примечание "СВЕРЯЕТСЯ В ОБЕ СТОРОНЫ, по образцу flang/scripts/cli-keys-debt.json:"
+примечание "  · файл дерева несёт обязательства, а строки в описи нет — красно;"
+примечание "  · строка описи есть, а файла в дереве нет — красно;"
+примечание "  · строка описи есть, а обязательств в файле не осталось — красно;"
+примечание "  · «написано» в описи не сходится со счётом по исходнику — красно;"
+примечание "  · md5 разошёлся, а «написано» сошлось — НЕ красно: это протухший приговор,"
+примечание "    он печатается числом и ждёт того, кто перемерит."
+
+примечание "ДВЕ ФОРМЫ ОБЯЗАТЕЛЬСТВА, И ПЕРВАЯ РЕДАКЦИЯ ЗНАЛА ОДНУ. Кроме голого"
+примечание "«обеспечивает» язык пишет обязательство с квантором, и имён за «для всех» —"
+примечание "список (ADR-0026 К2/К6/К5). Третья форма — «утверждение» от края (К3b)."
+примечание "Все три стоят в одном образце grep, и сумма по дереву сходится с описью."
+
+примечание "ЧЕМ ЭТОТ ФАЙЛ ОТЛИЧАЕТСЯ ОТ ПРЕЖНЕГО НА ОБОЛОЧКЕ. До 4 октября 2026 то же"
+примечание "сверял scripts/guards/proved-share-vs-tree.sh, 139 строк. Довод переписи «место"
+примечание "вызова — хук до сборки двоичного» УСТАРЕЛ: с задачи 1219 хук сам стал планом"
+примечание "(.githooks/pre-push зовёт bootstrap/flang io .githooks/pre-push.fscript), и"
+примечание "двоичный к этому часу уже собран. Перенос снял две вещи, которых у оболочки"
+примечание "быть не могло. ПЕРВОЕ: разбор описи и счёт по строке проверяются ПРИМЕРАМИ на"
+примечание "месте, а не прогоном на всём дереве. ВТОРОЕ: порча описи идёт В ПАМЯТИ, файл"
+примечание "дерева не трогается и откатывать нечего, тогда как проба оболочки правила опись"
+примечание "на диске и возвращала её копией. Слово согласия и каждая беда списаны у"
+примечание "прежнего сторожа ЗНАК В ЗНАК: прогон обоих на этом дереве 4 октября 2026 дал"
+примечание "одни и те же строки."
+
+примечание "ЧЕГО ЗДЕСЬ НЕТ. «Доказано», «сетка», «объявлено» не пересчитываются — их"
+примечание "снимает scripts/ledgers/take-proof-ledger.fscript по одному файлу, и это часы."
+примечание "Расхождение кода возврата названо: у плана нет кода 5, «описи нет» и «это не"
+примечание "рабочая копия» отвечают кодом 3, а у оболочки был 5."
+
+объект «Count»
+  «path»: строка
+  «number»: число
+
+объект «Row»
+  «path»: строка
+  «written»: число
+  «unjudged»: число
+
+объект «Side»
+  «name»: строка
+  «rows»: список строки
+  «says»: строка
+
+тип «Step»
+  вариант «Listing» содержит mode: строка
+  вариант «Counting written» содержит mode: строка, paths: список строки
+  вариант «Counting unjudged» содержит mode: строка, written: список «Count»
+  вариант «Hashing» содержит mode: строка, rows: список «Row»
+  вариант «Reading ledger» содержит mode: строка, rows: список «Row», hashes: строка
+
+примечание "── РАЗБОР СТРОК ────────────────────────────────────────────────────────────"
+
+тотальная функция «Joined» от «Kind»
+  принимает front: список «Kind», back: список «Kind»
+  возвращает список «Kind»
+  пример «The back list follows the front one»
+    дано front равно ["one"]
+    дано back равно ["two", "three"]
+    ожидается ["one", "two", "three"]
+  свёртка back начиная с front как joined и piece → добавить piece к joined
+
+тотальная функция «Lines of»
+  принимает text: строка
+  возвращает список строки
+  пример «Empty lines are dropped»
+    дано text равно "раз\n\nдва\n"
+    ожидается ["раз", "два"]
+  отфильтровать (разделить text по "\n") где line → не (line равен "")
+
+тотальная функция «Piece number»
+  принимает which: число, pieces: список строки
+  возвращает строка
+  обеспечивает «куска за краем списка нет» если which больше (длина pieces) то (результат равен "") иначе да
+  пример «The second piece»
+    дано which равно 2
+    дано pieces равно ["a", "b"]
+    ожидается "b"
+  пример «Beyond the edge there is nothing»
+    дано which равно 9
+    дано pieces равно ["a"]
+    ожидается ""
+  пример «Before the first piece there is nothing»
+    дано which равно 0
+    дано pieces равно пустой список
+    ожидается ""
+  пусть outside равно ((which больше (длина pieces)) или (which меньше 1))
+  если outside то "" иначе (элемент which в pieces)
+
+тотальная функция «Last of»
+  принимает pieces: список строки
+  возвращает строка
+  пример «The last piece is taken»
+    дано pieces равно ["a", "b", "33"]
+    ожидается "33"
+  пример «Of nothing nothing is taken»
+    дано pieces равно пустой список
+    ожидается ""
+  «Piece number» от (длина pieces) и pieces
+
+тотальная функция «Without last»
+  принимает pieces: список строки
+  возвращает список строки
+  обеспечивает «список не длиннее прежнего» (длина результат) не больше (длина pieces)
+  пример «The last piece is dropped»
+    дано pieces равно ["a", "b", "33"]
+    ожидается ["a", "b"]
+  пример «Of one piece nothing is left»
+    дано pieces равно ["33"]
+    ожидается пустой список
+  разбор pieces
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если (длина хвост) равен 0
+        то пустой список
+        иначе приписать голова к («Without last» от хвост)
+
+тотальная функция «Digit kept»
+  принимает acc: признак, sign: строка
+  возвращает признак
+  пример «A digit keeps the answer»
+    дано acc равно да
+    дано sign равно "7"
+    ожидается да
+  пример «Another sign breaks the answer»
+    дано acc равно да
+    дано sign равно "a"
+    ожидается нет
+  acc и притом ("0123456789" содержит sign)
+
+тотальная функция «Is digits»
+  принимает text: строка
+  возвращает признак
+  пример «A count is digits»
+    дано text равно "33"
+    ожидается да
+  пример «A cross is not digits»
+    дано text равно "×"
+    ожидается нет
+  пример «An empty text is not digits»
+    дано text равно ""
+    ожидается нет
+  пусть digits равно (свёртка (разложить text на символы) начиная с да как acc и sign → «Digit kept» от acc и sign)
+  ((длина text) больше 0) и притом digits
+
+тотальная функция «Number of»
+  принимает text: строка
+  возвращает число
+  обеспечивает «что не цифры — то ноль» если («Is digits» от text) то да иначе (результат равен 0)
+  пример «Digits become a number»
+    дано text равно "33"
+    ожидается 33
+  пример «A cross counts as nothing»
+    дано text равно "×"
+    ожидается 0
+  если («Is digits» от text) то (к числу text) иначе 0
+
+тотальная функция «Is measured»
+  принимает text: строка
+  возвращает признак
+  пример «A number is a measured field»
+    дано text равно "19"
+    ожидается да
+  пример «A cross is not measured»
+    дано text равно "×"
+    ожидается нет
+  пример «A dash is not measured»
+    дано text равно "-"
+    ожидается нет
+  не ((text равен "×") или (text равен "-"))
+
+тотальная функция «Measured number»
+  принимает text: строка
+  возвращает число
+  обеспечивает «неизмеренного поля не складывают» если («Is measured» от text) то да иначе (результат равен 0)
+  пример «A measured field gives its number»
+    дано text равно "19"
+    ожидается 19
+  пример «An unmeasured field gives nothing»
+    дано text равно "×"
+    ожидается 0
+  если («Is measured» от text) то («Number of» от text) иначе 0
+
+тотальная функция «Without front»
+  принимает text: строка, front: строка
+  возвращает строка
+  пример «The front of the path is cut off»
+    дано text равно "../../scripts/one.flang"
+    дано front равно "../../"
+    ожидается "scripts/one.flang"
+  пример «A text no longer than the front stays as it is»
+    дано text равно "../../"
+    дано front равно "../../"
+    ожидается "../../"
+  если (text начинается с front) и притом ((длина text) больше (длина front))
+    то подстрока text с ((длина front) плюс 1) по (длина text)
+    иначе text
+
+примечание "── МЕТКИ: НАБОР СТРОК ДЛЯ ПОИСКА ПО ЦЕЛОМУ КУСКУ ──────────────────────────"
+
+тотальная функция «Marked»
+  принимает pieces: список строки
+  возвращает строка
+  пример «Every piece stands on a line of its own»
+    дано pieces равно ["one", "two"]
+    ожидается "\none\ntwo\n"
+  соединить ["\n", (соединить pieces по "\n"), "\n"] по ""
+
+тотальная функция «Is marked»
+  принимает marks: строка, piece: строка
+  возвращает признак
+  пример «A whole piece is found»
+    дано marks равно "\na.flang\nb.flang\n"
+    дано piece равно "b.flang"
+    ожидается да
+  пример «A part of a piece is not found»
+    дано marks равно "\nscripts/one.flang\n"
+    дано piece равно "one.flang"
+    ожидается нет
+  marks содержит (соединить ["\n", piece, "\n"] по "")
+
+тотальная функция «Keyed»
+  принимает path: строка
+  возвращает строка
+  пример «The key of a path stands between a line break and a tab»
+    дано path равно "a.flang"
+    ожидается "\na.flang\t"
+  соединить ["\n", path, "\t"] по ""
+
+тотальная функция «At mark»
+  принимает index: строка, key: строка
+  возвращает строка
+  пример «What stands behind the mark is taken»
+    дано index равно "\na.flang\t3\nb.flang\t7\n"
+    дано key равно "\nb.flang\t"
+    ожидается "7"
+  пример «Without the mark nothing is taken»
+    дано index равно "\na.flang\t3\n"
+    дано key равно "\nb.flang\t"
+    ожидается ""
+  пусть pieces равно (разделить index по key)
+  если (длина pieces) меньше 2
+    то ""
+    иначе голова (разделить («Piece number» от 2 и pieces) по "\n")
+
+примечание "── СЧЁТ ПО ДЕРЕВУ: ВЫВОД grep -c РАЗБИРАЕТСЯ В ПАРЫ «ПУТЬ — ЧИСЛО» ────────"
+
+тотальная функция «Count of line»
+  принимает line: строка, front: строка
+  возвращает «Count»
+  пример «The count stands after the last colon»
+    дано line равно "../../a.flang:33"
+    дано front равно "../../"
+    ожидается (запись «Count» с «path» равным "a.flang" и «number» равным 33)
+  пример «A colon inside the path stays in the path»
+    дано line равно "../../a:b.flang:7"
+    дано front равно "../../"
+    ожидается (запись «Count» с «path» равным "a:b.flang" и «number» равным 7)
+  пусть pieces равно (разделить line по ":")
+  пусть whole равно (соединить («Without last» от pieces) по ":")
+  пусть path равно («Without front» от whole и front)
+  запись «Count» с «path» равным path и «number» равным («Number of» от («Last of» от pieces))
+
+тотальная функция «Counts of»
+  принимает text: строка, front: строка
+  возвращает список «Count»
+  пример «Every line of the output is a pair»
+    дано text равно "../../a.flang:3\n../../b.flang:0\n"
+    дано front равно "../../"
+    ожидается [(запись «Count» с «path» равным "a.flang" и «number» равным 3),
+      (запись «Count» с «path» равным "b.flang" и «number» равным 0)]
+  отобразить («Lines of» от text) как line → («Count of line» от line и front)
+
+тотальная функция «Count mark»
+  принимает count: «Count»
+  возвращает строка
+  пример «A pair is marked by its path»
+    дано count равно (запись «Count» с «path» равным "a.flang" и «number» равным 3)
+    ожидается "a.flang\t3"
+  соединить [(count.«path»), "\t", (к строке (count.«number»))] по ""
+
+тотальная функция «Count index»
+  принимает counts: список «Count»
+  возвращает строка
+  пример «The index holds every pair»
+    дано counts равно [(запись «Count» с «path» равным "a.flang" и «number» равным 3)]
+    ожидается "\na.flang\t3\n"
+  «Marked» от (отобразить counts как count → («Count mark» от count))
+
+тотальная функция «Number at»
+  принимает index: строка, path: строка
+  возвращает число
+  пример «The number of the path is taken from the index»
+    дано index равно "\na.flang\t3\n"
+    дано path равно "a.flang"
+    ожидается 3
+  пример «A path outside the index carries nothing»
+    дано index равно "\na.flang\t3\n"
+    дано path равно "b.flang"
+    ожидается 0
+  «Number of» от («At mark» от index и («Keyed» от path))
+
+тотальная функция «Row of count»
+  принимает count: «Count», unjudged: строка
+  возвращает «Row»
+  пример «A row takes its two counts»
+    дано count равно (запись «Count» с «path» равным "a.flang" и «number» равным 3)
+    дано unjudged равно "\na.flang\t2\n"
+    ожидается (запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 2)
+  пусть laws равно («Number at» от unjudged и (count.«path»))
+  запись «Row» с «path» равным (count.«path») и «written» равным (count.«number») и «unjudged» равным laws
+
+тотальная функция «Carries obligations»
+  принимает row: «Row»
+  возвращает признак
+  пример «A file with a postcondition carries obligations»
+    дано row равно (запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 0)
+    ожидается да
+  пример «A file with a precondition only carries obligations too»
+    дано row равно (запись «Row» с «path» равным "a.flang" и «written» равным 0 и «unjudged» равным 1)
+    ожидается да
+  пример «An empty file carries none»
+    дано row равно (запись «Row» с «path» равным "a.flang" и «written» равным 0 и «unjudged» равным 0)
+    ожидается нет
+  ((row.«written») больше 0) или ((row.«unjudged») больше 0)
+
+тотальная функция «Rows of»
+  принимает written: список «Count», unjudged: строка
+  возвращает список «Row»
+  пример «Only the files that carry obligations become rows»
+    дано written равно [(запись «Count» с «path» равным "a.flang" и «number» равным 3),
+      (запись «Count» с «path» равным "b.flang" и «number» равным 0)]
+    дано unjudged равно "\na.flang\t0\nb.flang\t0\n"
+    ожидается [(запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 0)]
+  пусть all равно (отобразить written как count → («Row of count» от count и unjudged))
+  отфильтровать all где row → («Carries obligations» от row)
+
+тотальная функция «Row paths»
+  принимает rows: список «Row»
+  возвращает строка
+  пример «The paths of the rows stand one on a line»
+    дано rows равно [(запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 0)]
+    ожидается "\na.flang\n"
+  «Marked» от (отобразить rows как row → row.«path»)
+
+примечание "── md5 ИСХОДНИКОВ: ВЫВОД md5sum РАЗБИРАЕТСЯ В ПАРЫ «ПУТЬ — ОТПЕЧАТОК» ─────"
+
+тотальная функция «Hash mark»
+  принимает line: строка, front: строка
+  возвращает строка
+  пример «The sum stands before the path»
+    дано line равно "0eb8181532ae602de4c212cbde33749e  ../../a.flang"
+    дано front равно "../../"
+    ожидается "a.flang\t0eb8181532ae602de4c212cbde33749e"
+  пусть whole равно (соединить (хвост (разделить line по "  ")) по "  ")
+  соединить [(«Without front» от whole и front), "\t", (голова (разделить line по " "))] по ""
+
+тотальная функция «Hash index»
+  принимает text: строка, front: строка
+  возвращает строка
+  пример «The index holds every sum»
+    дано text равно "aa  ../../a.flang\n"
+    дано front равно "../../"
+    ожидается "\na.flang\taa\n"
+  «Marked» от (отобразить («Lines of» от text) как line → («Hash mark» от line и front))
+
+примечание "── ОПИСЬ: «md5|написано|доказано|сетка|объявлено|без приговора|путь» ───────"
+
+тотальная функция «Is ledger line»
+  принимает text: строка
+  возвращает признак
+  пример «A row of the ledger carries bars»
+    дано text равно "aa|1|1|0|0|0|a.flang"
+    ожидается да
+  пример «A note of the ledger is not a row»
+    дано text равно "// опись"
+    ожидается нет
+  пример «A line without bars is not a row»
+    дано text равно "опись"
+    ожидается нет
+  (не (text начинается с "//")) и притом (text содержит "|")
+
+тотальная функция «Field»
+  принимает which: число, line: строка
+  возвращает строка
+  пример «The second field is what is written»
+    дано which равно 2
+    дано line равно "aa|33|19|5|1|0|a.flang"
+    ожидается "33"
+  пример «The seventh field is the path»
+    дано which равно 7
+    дано line равно "aa|33|19|5|1|0|a.flang"
+    ожидается "a.flang"
+  «Piece number» от which и (разделить line по "|")
+
+тотальная функция «Path of»
+  принимает line: строка
+  возвращает строка
+  пример «The path of a row is its seventh field»
+    дано line равно "aa|33|19|5|1|0|a.flang"
+    ожидается "a.flang"
+  «Field» от 7 и line
+
+тотальная функция «Ledger rows of»
+  принимает text: строка
+  возвращает список строки
+  пример «Notes are dropped and rows are kept»
+    дано text равно "// опись\naa|1|1|0|0|0|a.flang\n"
+    ожидается ["aa|1|1|0|0|0|a.flang"]
+  отфильтровать («Lines of» от text) где line → («Is ledger line» от line)
+
+тотальная функция «Ledger mark»
+  принимает line: строка
+  возвращает строка
+  пример «A row is found by its path and is kept whole»
+    дано line равно "aa|1|1|0|0|0|a.flang"
+    ожидается "a.flang\taa|1|1|0|0|0|a.flang"
+  соединить [(«Path of» от line), "\t", line] по ""
+
+тотальная функция «Ledger index»
+  принимает lines: список строки
+  возвращает строка
+  пример «Every row is found by its path»
+    дано lines равно ["aa|1|1|0|0|0|a.flang"]
+    ожидается "\na.flang\taa|1|1|0|0|0|a.flang\n"
+  «Marked» от (отобразить lines как line → («Ledger mark» от line))
+
+тотальная функция «Line at»
+  принимает index: строка, path: строка
+  возвращает строка
+  пример «The row of the path is taken whole»
+    дано index равно "\na.flang\taa|1|1|0|0|0|a.flang\n"
+    дано path равно "a.flang"
+    ожидается "aa|1|1|0|0|0|a.flang"
+  пример «A path outside the index gives nothing»
+    дано index равно "\na.flang\taa|1|1|0|0|0|a.flang\n"
+    дано path равно "b.flang"
+    ожидается ""
+  «At mark» от index и («Keyed» от path)
+
+примечание "── ИТОГИ ───────────────────────────────────────────────────────────────────"
+
+тотальная функция «Tree written»
+  принимает rows: список «Row»
+  возвращает число
+  пример «The postconditions of the tree are summed»
+    дано rows равно [(запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 0)]
+    ожидается 3
+  свёртка rows начиная с 0 как total и row → total плюс (row.«written»)
+
+тотальная функция «Tree unjudged»
+  принимает rows: список «Row»
+  возвращает число
+  пример «The preconditions and the laws of the tree are summed»
+    дано rows равно [(запись «Row» с «path» равным "a.flang" и «written» равным 0 и «unjudged» равным 2)]
+    ожидается 2
+  свёртка rows начиная с 0 как total и row → total плюс (row.«unjudged»)
+
+тотальная функция «Summed field»
+  принимает which: число, lines: список строки
+  возвращает число
+  пример «Only measured fields are summed»
+    дано which равно 3
+    дано lines равно ["aa|1|7|0|0|0|a.flang", "bb|1|×|×|×|0|b.flang"]
+    ожидается 7
+  свёртка lines начиная с 0 как total и line → total плюс («Measured number» от («Field» от which и line))
+
+тотальная функция «Judged»
+  принимает lines: список строки
+  возвращает число
+  пример «A row with a verdict is judged»
+    дано lines равно ["aa|1|7|0|0|0|a.flang", "bb|1|×|×|×|0|b.flang"]
+    ожидается 1
+  длина (отфильтровать lines где line → («Is measured» от («Field» от 3 и line)))
+
+тотальная функция «Hash at»
+  принимает hashes: строка, path: строка
+  возвращает строка
+  пример «The sum of the file is taken from the index»
+    дано hashes равно "\na.flang\taa\n"
+    дано path равно "a.flang"
+    ожидается "aa"
+  «At mark» от hashes и («Keyed» от path)
+
+тотальная функция «Is stale»
+  принимает row: «Row», index: строка, hashes: строка
+  возвращает признак
+  пример «A row whose sum has moved is stale»
+    дано row равно (запись «Row» с «path» равным "a.flang" и «written» равным 1 и «unjudged» равным 0)
+    дано index равно "\na.flang\taa|1|7|0|0|0|a.flang\n"
+    дано hashes равно "\na.flang\tbb\n"
+    ожидается да
+  пример «A row whose sum stands is fresh»
+    дано row равно (запись «Row» с «path» равным "a.flang" и «written» равным 1 и «unjudged» равным 0)
+    дано index равно "\na.flang\taa|1|7|0|0|0|a.flang\n"
+    дано hashes равно "\na.flang\taa\n"
+    ожидается нет
+  пусть line равно («Line at» от index и (row.«path»))
+  пусть moved равно (не ((«Field» от 1 и line) равен («Hash at» от hashes и (row.«path»))))
+  (не (line равен "")) и притом moved
+
+тотальная функция «Stale lines»
+  принимает rows: список «Row», index: строка, hashes: строка
+  возвращает список строки
+  пример «The stale rows of the ledger are named»
+    дано rows равно [(запись «Row» с «path» равным "a.flang" и «written» равным 1 и «unjudged» равным 0)]
+    дано index равно "\na.flang\taa|1|7|0|0|0|a.flang\n"
+    дано hashes равно "\na.flang\tbb\n"
+    ожидается ["aa|1|7|0|0|0|a.flang"]
+  пусть stale равно (отфильтровать rows где row → («Is stale» от row и index и hashes))
+  отобразить stale как row → («Line at» от index и (row.«path»))
+
+примечание "── БЕДЫ ────────────────────────────────────────────────────────────────────"
+
+тотальная функция «Missing word»
+  принимает row: «Row»
+  возвращает строка
+  пример «A file without a row of its own is named with its count»
+    дано row равно (запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 0)
+    ожидается "НЕТ СТРОКИ: a.flang несёт 3 обязательств, а в описи его нет"
+  соединить ["НЕТ СТРОКИ: ", (row.«path»), " несёт ", (к строке (row.«written»)),
+    " обязательств, а в описи его нет"] по ""
+
+тотальная функция «Extra word»
+  принимает path: строка
+  возвращает строка
+  пример «A row without a file of its own is named»
+    дано path равно "a.flang"
+    ожидается "ЛИШНЯЯ СТРОКА: a.flang есть в описи, а в дереве обязательств не несёт"
+  соединить ["ЛИШНЯЯ СТРОКА: ", path, " есть в описи, а в дереве обязательств не несёт"] по ""
+
+тотальная функция «Differing word»
+  принимает row: «Row», written: строка
+  возвращает строка
+  пример «Both counts are named»
+    дано row равно (запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 0)
+    дано written равно "4"
+    ожидается "«НАПИСАНО» НЕ СХОДИТСЯ: a.flang — 4 против 3"
+  соединить ["«НАПИСАНО» НЕ СХОДИТСЯ: ", (row.«path»), " — ", written, " против ",
+    (к строке (row.«written»))] по ""
+
+тотальная функция «Is missing»
+  принимает row: «Row», index: строка
+  возвращает признак
+  пример «A file the ledger does not know is missing»
+    дано row равно (запись «Row» с «path» равным "a.flang" и «written» равным 1 и «unjudged» равным 0)
+    дано index равно "\nb.flang\tbb|1|1|0|0|0|b.flang\n"
+    ожидается да
+  («Line at» от index и (row.«path»)) равен ""
+
+тотальная функция «Is differing»
+  принимает row: «Row», index: строка
+  возвращает признак
+  пример «A measured count that does not meet the source is differing»
+    дано row равно (запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 0)
+    дано index равно "\na.flang\taa|4|1|0|0|0|a.flang\n"
+    ожидается да
+  пример «An unmeasured count is not differing»
+    дано row равно (запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 0)
+    дано index равно "\na.flang\taa|×|1|0|0|0|a.flang\n"
+    ожидается нет
+  пусть line равно («Line at» от index и (row.«path»))
+  пусть written равно («Field» от 2 и line)
+  пусть apart равно (не ((«Number of» от written) равен (row.«written»)))
+  пусть off равно ((«Is measured» от written) и притом apart)
+  (не (line равен "")) и притом off
+
+тотальная функция «Missing troubles»
+  принимает rows: список «Row», index: строка
+  возвращает список строки
+  пример «Every file without a row is named»
+    дано rows равно [(запись «Row» с «path» равным "a.flang" и «written» равным 1 и «unjudged» равным 0)]
+    дано index равно "\nb.flang\tbb|1|1|0|0|0|b.flang\n"
+    ожидается ["НЕТ СТРОКИ: a.flang несёт 1 обязательств, а в описи его нет"]
+  пусть found равно (отфильтровать rows где row → («Is missing» от row и index))
+  отобразить found как row → («Missing word» от row)
+
+тотальная функция «Extra troubles»
+  принимает lines: список строки, paths: строка
+  возвращает список строки
+  пример «Every row without a file is named»
+    дано lines равно ["aa|1|1|0|0|0|a.flang"]
+    дано paths равно "\nb.flang\n"
+    ожидается ["ЛИШНЯЯ СТРОКА: a.flang есть в описи, а в дереве обязательств не несёт"]
+  пусть found равно (отфильтровать lines где line → не («Is marked» от paths и («Path of» от line)))
+  отобразить found как line → («Extra word» от («Path of» от line))
+
+тотальная функция «Differing of»
+  принимает row: «Row», index: строка
+  возвращает строка
+  пример «The word names what the ledger says»
+    дано row равно (запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 0)
+    дано index равно "\na.flang\taa|4|1|0|0|0|a.flang\n"
+    ожидается "«НАПИСАНО» НЕ СХОДИТСЯ: a.flang — 4 против 3"
+  «Differing word» от row и («Field» от 2 и («Line at» от index и (row.«path»)))
+
+тотальная функция «Differing troubles»
+  принимает rows: список «Row», index: строка
+  возвращает список строки
+  пример «Every count that does not meet the source is named»
+    дано rows равно [(запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 0)]
+    дано index равно "\na.flang\taa|4|1|0|0|0|a.flang\n"
+    ожидается ["«НАПИСАНО» НЕ СХОДИТСЯ: a.flang — 4 против 3"]
+  пусть found равно (отфильтровать rows где row → («Is differing» от row и index))
+  отобразить found как row → («Differing of» от row и index)
+
+тотальная функция «Troubles of»
+  принимает rows: список «Row», lines: список строки
+  возвращает список строки
+  пример «A ledger that meets the tree has no troubles»
+    дано rows равно [(запись «Row» с «path» равным "a.flang" и «written» равным 1 и «unjudged» равным 0)]
+    дано lines равно ["aa|1|1|0|0|0|a.flang"]
+    ожидается пустой список
+  пусть index равно («Ledger index» от lines)
+  пусть missing равно («Missing troubles» от rows и index)
+  пусть extra равно («Extra troubles» от lines и («Row paths» от rows))
+  пусть front равно («Joined» от missing и extra)
+  «Joined» от front и («Differing troubles» от rows и index)
+
+тотальная функция «Summary word»
+  принимает rows: список «Row», lines: список строки
+  возвращает строка
+  пример «The troubles are counted apart»
+    дано rows равно [(запись «Row» с «path» равным "a.flang" и «written» равным 1 и «unjudged» равным 0)]
+    дано lines равно ["bb|1|1|0|0|0|b.flang"]
+    ожидается "бед 2: нет строки 1, лишних 1, «написано» не сходится 0"
+  пусть index равно («Ledger index» от lines)
+  пусть missing равно (длина («Missing troubles» от rows и index))
+  пусть extra равно (длина («Extra troubles» от lines и («Row paths» от rows)))
+  пусть differing равно (длина («Differing troubles» от rows и index))
+  соединить ["бед ", (к строке ((missing плюс extra) плюс differing)), ": нет строки ", (к строке missing),
+    ", лишних ", (к строке extra), ", «написано» не сходится ", (к строке differing)] по ""
+
+примечание "── ОТЧЁТ ───────────────────────────────────────────────────────────────────"
+
+тотальная функция «Report»
+  принимает rows: список «Row», lines: список строки, hashes: строка
+  возвращает строка
+  пусть index равно («Ledger index» от lines)
+  пусть stale равно («Stale lines» от rows и index и hashes)
+  пусть judged равно («Judged» от lines)
+  соединить ["ПОЛ ДОКАЗАННОГО: опись против дерева\n\n",
+    "  ЗНАМЕНАТЕЛЬ — счёт по исходнику, точен\n",
+    "    файлов с обязательствами в дереве   ", (к строке (длина rows)), "\n",
+    "    строк в описи                        ", (к строке (длина lines)), "\n",
+    "    «обеспечивает» по дереву             ", (к строке («Tree written» от rows)), "\n",
+    "    «написано» по описи                  ", (к строке («Summed field» от 2 и lines)), "\n",
+    "    «требует»+«закон» по дереву          ", (к строке («Tree unjudged» от rows)), "\n",
+    "    «без приговора» по описи             ", (к строке («Summed field» от 6 и lines)), "\n",
+    "\n  ЧИСЛИТЕЛЬ — приговор ядра, прибор его НЕ пересчитывает\n",
+    "    файлов с ведомостью                  ", (к строке judged), "\n",
+    "    файлов без ведомости (× или прочерк) ", (к строке ((длина lines) минус judged)), "\n",
+    "    доказано                             ", (к строке («Summed field» от 3 и lines)), "\n",
+    "    на сетке                             ", (к строке («Summed field» от 4 и lines)), "\n",
+    "    объявлено                            ", (к строке («Summed field» от 5 и lines)), "\n",
+    "\n  ПРОТУХЛОСТЬ — md5 исходника разошёлся с описью\n",
+    "    строк протухло                       ", (к строке (длина stale)), " из ",
+    (к строке (длина lines)), "\n",
+    "    из них несут «доказано»              ", (к строке («Summed field» от 3 и stale)), "\n",
+    "    и «написано»                         ", (к строке («Summed field» от 2 и stale))] по ""
+
+примечание "── ПРИГОВОР ────────────────────────────────────────────────────────────────"
+
+тотальная функция «Verdict»
+  принимает report: строка, troubles: список строки, summary: строка
+  возвращает «Продолжение»
+  пример «A ledger that meets the tree ends the work»
+    дано report равно "ПОЛ ДОКАЗАННОГО"
+    дано troubles равно пустой список
+    дано summary равно "бед 0"
+    ожидается вариант «Конец работы» с значение равным "ПОЛ ДОКАЗАННОГО\n\nопись сходится с деревом"
+  пусть agreed равно (соединить [report, "\n\nопись сходится с деревом"] по "")
+  пусть red равно (соединить [report, "\n\n", (соединить troubles по "\n"), "\n\n", summary] по "")
+  если (длина troubles) равен 0
+    то вариант «Конец работы» с значение равным agreed
+    иначе вариант «Провал» с код равным "FLANG_PROVED_SHARE_RAZOSHLIS" и сообщение равным red
+
+тотальная функция «Judge»
+  принимает mode: строка, rows: список «Row», lines: список строки, hashes: строка
+  возвращает «Продолжение»
+  пусть report равно («Report» от rows и lines и hashes)
+  пусть troubles равно («Troubles of» от rows и lines)
+  пусть summary равно («Summary word» от rows и lines)
+  если mode равен "numbers"
+    то вариант «Конец работы» с значение равным report
+    иначе «Verdict» от report и troubles и summary
+
+примечание "── ПОРЧА ОПИСИ В ПАМЯТИ: ЧЕТЫРЕ СТОРОНЫ ───────────────────────────────────"
+
+примечание "ФАЙЛ ОПИСИ НЕ ТРОГАЕТСЯ: порча идёт над уже прочитанным списком строк, и"
+примечание "откатывать нечего. Это то же решение, что у плана «Подлог» описи дерева"
+примечание "(scripts/guards/tree-inventory.fscript): подлог в памяти не оставляет грязи в"
+примечание "рабочей копии, если прогон убьют на середине. Проба оболочки правила опись на"
+примечание "диске и возвращала её копией — на убитом прогоне опись оставалась порченой."
+
+примечание "КОДЫ ПЕРЕВЁРНУТЫ, как у пары про опись дерева: код 1 — подлог пойман, сверка"
+примечание "жива; код 0 — сверка промолчала хотя бы на одной стороне. Оба случая обязаны"
+примечание "красить шаг CI, и шаг написан как «if … then exit 1»."
+
+тотальная функция «Side made»
+  принимает name: строка, rows: список строки, says: строка
+  возвращает «Side»
+  пример «A side carries its name, its ledger and the words it wants»
+    дано name равно "одна"
+    дано rows равно пустой список
+    дано says равно ""
+    ожидается (запись «Side» с «name» равным "одна" и «rows» равным пустой список и «says» равным "")
+  запись «Side» с «name» равным name и «rows» равным rows и «says» равным says
+
+тотальная функция «Is bumpable»
+  принимает line: строка
+  возвращает признак
+  пример «A row with a measured count can be bumped»
+    дано line равно "aa|33|19|5|1|0|a.flang"
+    ожидается да
+  пример «A row without a measured count cannot»
+    дано line равно "aa|×|19|5|1|0|a.flang"
+    ожидается нет
+  «Is digits» от («Field» от 2 и line)
+
+тотальная функция «Bumped line»
+  принимает line: строка
+  возвращает строка
+  пример «The count of the row grows by one»
+    дано line равно "aa|33|19|5|1|0|a.flang"
+    ожидается "aa|34|19|5|1|0|a.flang"
+  пусть pieces равно (разделить line по "|")
+  пусть grown равно (к строке ((«Number of» от («Field» от 2 и line)) плюс 1))
+  пусть rest равно (соединить (хвост (хвост pieces)) по "|")
+  соединить [(«Piece number» от 1 и pieces), grown, rest] по "|"
+
+тотальная функция «Bumped»
+  принимает lines: список строки, which: строка
+  возвращает список строки
+  пример «Only the named row grows»
+    дано lines равно ["aa|33|19|5|1|0|a.flang", "bb|1|1|0|0|0|b.flang"]
+    дано which равно "a.flang"
+    ожидается ["aa|34|19|5|1|0|a.flang", "bb|1|1|0|0|0|b.flang"]
+  отобразить lines как line → (если («Path of» от line) равен which то («Bumped line» от line) иначе line)
+
+тотальная функция «Dropped»
+  принимает lines: список строки, which: строка
+  возвращает список строки
+  обеспечивает «строк не стало больше» (длина результат) не больше (длина lines)
+  пример «The named row leaves the ledger»
+    дано lines равно ["aa|33|19|5|1|0|a.flang", "bb|1|1|0|0|0|b.flang"]
+    дано which равно "a.flang"
+    ожидается ["bb|1|1|0|0|0|b.flang"]
+  отфильтровать lines где line → не ((«Path of» от line) равен which)
+
+тотальная функция «Ghost line»
+  возвращает строка
+  обеспечивает «подложная строка говорит о файле, которого нет» результат содержит "there-is-no-such-file"
+  "00000000000000000000000000000000|1|×|×|×|0|docs/there-is-no-such-file.flang"
+
+тотальная функция «Added»
+  принимает lines: список строки
+  возвращает список строки
+  обеспечивает «строк стало на одну больше» (длина результат) равен ((длина lines) плюс 1)
+  пример «A row about a file that is not there joins the ledger»
+    дано lines равно ["bb|1|1|0|0|0|b.flang"]
+    ожидается ["bb|1|1|0|0|0|b.flang",
+      "00000000000000000000000000000000|1|×|×|×|0|docs/there-is-no-such-file.flang"]
+  добавить («Ghost line») к lines
+
+тотальная функция «First path»
+  принимает rows: список «Row»
+  возвращает строка
+  пример «The first row of the tree names its file»
+    дано rows равно [(запись «Row» с «path» равным "a.flang" и «written» равным 1 и «unjudged» равным 0)]
+    ожидается "a.flang"
+  пример «Of no rows no file is named»
+    дано rows равно пустой список
+    ожидается ""
+  разбор rows
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова.«path»
+
+тотальная функция «First bumpable»
+  принимает lines: список строки
+  возвращает строка
+  пример «The first row with a measured count is named»
+    дано lines равно ["aa|×|19|5|1|0|a.flang", "bb|1|1|0|0|0|b.flang"]
+    ожидается "b.flang"
+  пример «Without such a row nothing is named»
+    дано lines равно ["aa|×|19|5|1|0|a.flang"]
+    ожидается ""
+  разбор (отфильтровать lines где line → («Is bumpable» от line))
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «Path of» от голова
+
+тотальная функция «Title zero»
+  возвращает строка
+  "сторона нулевая: опись как она есть, бед быть не должно"
+
+тотальная функция «Title one»
+  возвращает строка
+  "сторона первая: «написано» первой мерной строки описи +1"
+
+тотальная функция «Title two»
+  возвращает строка
+  "сторона вторая: строка о первом файле дерева вынута из описи"
+
+тотальная функция «Title three»
+  возвращает строка
+  "сторона третья: в опись вписана строка о файле, которого в дереве нет"
+
+тотальная функция «Sides of»
+  принимает rows: список «Row», lines: список строки
+  возвращает список «Side»
+  пусть bumped равно («Bumped» от lines и («First bumpable» от lines))
+  пусть dropped равно («Dropped» от lines и («First path» от rows))
+  пусть zero равно («Side made» от («Title zero») и lines и "")
+  пусть one равно («Side made» от («Title one») и bumped и "«НАПИСАНО» НЕ СХОДИТСЯ")
+  пусть two равно («Side made» от («Title two») и dropped и "НЕТ СТРОКИ")
+  пусть three равно («Side made» от («Title three») и («Added» от lines) и "ЛИШНЯЯ СТРОКА")
+  [zero, one, two, three]
+
+тотальная функция «Side shown»
+  принимает side: «Side», found: список строки
+  возвращает строка
+  пример «A shown side names its words and how many troubles it raised»
+    дано side равно (запись «Side» с «name» равным "одна" и «rows» равным пустой список и «says» равным "НЕТ СТРОКИ")
+    дано found равно ["НЕТ СТРОКИ: a.flang"]
+    ожидается "── одна ──\nбед 1, сказано «НЕТ СТРОКИ»"
+  соединить ["── ", (side.«name»), " ──\nбед ", (к строке (длина found)), ", сказано «",
+    (side.«says»), "»"] по ""
+
+тотальная функция «Says it»
+  принимает found: список строки, telling: строка
+  возвращает признак
+  пример «The words of the side stand among the troubles»
+    дано found равно ["НЕТ СТРОКИ: a.flang несёт 1 обязательств, а в описи его нет"]
+    дано telling равно "НЕТ СТРОКИ"
+    ожидается да
+  пример «No trouble says it»
+    дано found равно пустой список
+    дано telling равно "НЕТ СТРОКИ"
+    ожидается нет
+  (длина (отфильтровать found где trouble → trouble содержит telling)) больше 0
+
+тотальная функция «Side answered»
+  принимает side: «Side», found: список строки
+  возвращает признак
+  пример «The clean side wants no trouble at all»
+    дано side равно (запись «Side» с «name» равным "нулевая" и «rows» равным пустой список и «says» равным "")
+    дано found равно пустой список
+    ожидается да
+  пример «A forged side wants its own words»
+    дано side равно (запись «Side» с «name» равным "одна" и «rows» равным пустой список и «says» равным "НЕТ СТРОКИ")
+    дано found равно ["НЕТ СТРОКИ: a.flang"]
+    ожидается да
+  пример «A forged side that raised nothing has not answered»
+    дано side равно (запись «Side» с «name» равным "одна" и «rows» равным пустой список и «says» равным "НЕТ СТРОКИ")
+    дано found равно пустой список
+    ожидается нет
+  если (side.«says») равен ""
+    то (длина found) равен 0
+    иначе «Says it» от found и (side.«says»)
+
+тотальная функция «Side fault»
+  принимает side: «Side», found: список строки
+  возвращает строка
+  пример «A side that stayed silent is named»
+    дано side равно (запись «Side» с «name» равным "одна" и «rows» равным пустой список и «says» равным "НЕТ СТРОКИ")
+    дано found равно пустой список
+    ожидается "ПОДЛОГ НЕ ПОЙМАН — одна: ждали слова «НЕТ СТРОКИ», а бед найдено 0"
+  соединить ["ПОДЛОГ НЕ ПОЙМАН — ", (side.«name»), ": ждали слова «", (side.«says»),
+    "», а бед найдено ", (к строке (длина found))] по ""
+
+тотальная функция «Side assembled»
+  принимает side: «Side», lines: список строки
+  возвращает признак
+  пример «A forged side differs from the ledger it came from»
+    дано side равно (запись «Side» с «name» равным "одна" и «rows» равным ["y"] и «says» равным "НЕТ СТРОКИ")
+    дано lines равно ["x"]
+    ожидается да
+  пример «A forgery that changed nothing did not assemble»
+    дано side равно (запись «Side» с «name» равным "одна" и «rows» равным ["x"] и «says» равным "НЕТ СТРОКИ")
+    дано lines равно ["x"]
+    ожидается нет
+  пример «The clean side is the ledger itself»
+    дано side равно (запись «Side» с «name» равным "нулевая" и «rows» равным ["x"] и «says» равным "")
+    дано lines равно ["x"]
+    ожидается да
+  пусть moved равно (не ((соединить (side.«rows») по "\n") равен (соединить lines по "\n")))
+  если (side.«says») равен "" то да иначе moved
+
+тотальная функция «Not assembled»
+  принимает side: «Side»
+  возвращает строка
+  пример «A forgery that changed nothing is named»
+    дано side равно (запись «Side» с «name» равным "одна" и «rows» равным пустой список и «says» равным "НЕТ СТРОКИ")
+    ожидается "ПОДЛОГ НЕ СОБРАЛСЯ — одна: опись не изменилась, проверять ею нечего"
+  соединить ["ПОДЛОГ НЕ СОБРАЛСЯ — ", (side.«name»),
+    ": опись не изменилась, проверять ею нечего"] по ""
+
+тотальная функция «Side judged»
+  принимает side: «Side», found: список строки
+  возвращает строка
+  пример «A side that answered is shown»
+    дано side равно (запись «Side» с «name» равным "одна" и «rows» равным пустой список и «says» равным "НЕТ СТРОКИ")
+    дано found равно ["НЕТ СТРОКИ: a.flang"]
+    ожидается "── одна ──\nбед 1, сказано «НЕТ СТРОКИ»"
+  если («Side answered» от side и found)
+    то «Side shown» от side и found
+    иначе «Side fault» от side и found
+
+тотальная функция «Side words»
+  принимает side: «Side», rows: список «Row», lines: список строки
+  возвращает строка
+  пусть found равно («Troubles of» от rows и (side.«rows»))
+  если не («Side assembled» от side и lines)
+    то «Not assembled» от side
+    иначе «Side judged» от side и found
+
+тотальная функция «Forgery words»
+  принимает rows: список «Row», lines: список строки
+  возвращает список строки
+  отобразить («Sides of» от rows и lines) как side → («Side words» от side и rows и lines)
+
+тотальная функция «Is fault»
+  принимает word: строка
+  возвращает признак
+  пример «A side that was not shown is a fault»
+    дано word равно "ПОДЛОГ НЕ ПОЙМАН — первая"
+    ожидается да
+  пример «A forgery that did not assemble is a fault»
+    дано word равно "ПОДЛОГ НЕ СОБРАЛСЯ — первая"
+    ожидается да
+  пример «A shown side is not a fault»
+    дано word равно "── первая ──\nбед 1"
+    ожидается нет
+  (word начинается с "ПОДЛОГ НЕ ПОЙМАН") или (word начинается с "ПОДЛОГ НЕ СОБРАЛСЯ")
+
+тотальная функция «Caught word»
+  возвращает строка
+  "подлог пойман: все четыре стороны показаны прогоном, опись на диске не тронута."
+
+тотальная функция «Hollow word»
+  возвращает строка
+  "ПРОБА ХОЛОСТА: сверка промолчала там, где обязана была покраснеть."
+
+тотальная функция «Forgery verdict»
+  принимает rows: список «Row», lines: список строки
+  возвращает «Продолжение»
+  пусть words равно («Forgery words» от rows и lines)
+  пусть faults равно (отфильтровать words где word → («Is fault» от word))
+  пусть caught равно (соединить («Joined» от words и [(«Caught word»)]) по "\n\n")
+  пусть hollow равно (соединить («Joined» от words и [(«Hollow word»)]) по "\n\n")
+  если (длина faults) равен 0
+    то вариант «Провал» с код равным "FLANG_PROVED_SHARE_PODLOG" и сообщение равным caught
+    иначе вариант «Конец работы» с значение равным hollow
+
+примечание "── ПОРУЧЕНИЯ ───────────────────────────────────────────────────────────────"
+
+тотальная функция «Front»
+  возвращает строка
+  обеспечивает «корень дерева стоит двумя шагами выше плана» результат равен "../../"
+  "../../"
+
+тотальная функция «Ledger file»
+  возвращает строка
+  обеспечивает «опись лежит у ведомостей» результат содержит "scripts/ledgers/"
+  "../../scripts/ledgers/proved-share-ledger.txt"
+
+тотальная функция «Git arguments»
+  возвращает список строки
+  обеспечивает «кириллические пути не прячутся в кавычки» результат содержит "core.quotepath=false"
+  ["-C", "../..", "-c", "core.quotepath=false", "ls-files", "*.flang", "*.fscript"]
+
+тотальная функция «Written pattern»
+  возвращает строка
+  обеспечивает «образец знает и квантор, и утверждение» результат содержит "утверждение"
+  соединить ["^ *(для всех [^ ]+( и [^ ]+)*( для всех [^ ]+( и [^ ]+)*)*( таких что .*)? )?",
+    "обеспечивает |^утверждение «"] по ""
+
+тотальная функция «Unjudged pattern»
+  возвращает строка
+  обеспечивает «без приговора — предусловие и закон» результат содержит "закон"
+  "^ *(требует|закон) "
+
+тотальная функция «Prefixed»
+  принимает paths: список строки
+  возвращает список строки
+  обеспечивает «путей столько же» (длина результат) равен (длина paths)
+  пример «Every path is taken from the root of the tree»
+    дано paths равно ["a.flang"]
+    ожидается ["../../a.flang"]
+  отобразить paths как path → соединить [(«Front»), path] по ""
+
+тотальная функция «Git order»
+  возвращает «Поручение»
+  пример «The list of the tree is asked of git»
+    ожидается (вариант «Запустить процесс» с программа равным "git" и аргументы равным ["-C", "../..",
+      "-c", "core.quotepath=false", "ls-files", "*.flang", "*.fscript"])
+  вариант «Запустить процесс» с программа равным "git" и аргументы равным («Git arguments»)
+
+тотальная функция «Grep order»
+  принимает pattern: строка, paths: список строки
+  возвращает «Поручение»
+  пример «The files are counted by one grep over all of them»
+    дано pattern равно "^закон "
+    дано paths равно ["a.flang"]
+    ожидается (вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-acE", "^закон ",
+      "../../a.flang"])
+  пусть arguments равно («Joined» от ["-acE", pattern] и («Prefixed» от paths))
+  вариант «Запустить процесс» с программа равным "grep" и аргументы равным arguments
+
+тотальная функция «Md5 order»
+  принимает paths: список строки
+  возвращает «Поручение»
+  пример «The sums are taken by one md5sum over all the files»
+    дано paths равно ["a.flang"]
+    ожидается (вариант «Запустить процесс» с программа равным "md5sum" и аргументы равным ["../../a.flang"])
+  вариант «Запустить процесс» с программа равным "md5sum" и аргументы равным («Prefixed» от paths)
+
+тотальная функция «Ledger order»
+  возвращает «Поручение»
+  пример «The ledger is read by an order, not by a grep»
+    ожидается (вариант «Прочитать файл» с путь равным "../../scripts/ledgers/proved-share-ledger.txt")
+  вариант «Прочитать файл» с путь равным («Ledger file»)
+
+тотальная функция «Step on»
+  принимает order: «Поручение», step: «Step»
+  возвращает «Продолжение»
+  вариант «Сделать» с поручение равным order и потом равным step
+
+примечание "── СЛОВА ОТКАЗА ────────────────────────────────────────────────────────────"
+
+тотальная функция «Nothing word»
+  принимает what: строка
+  возвращает строка
+  пример «An empty answer of a tool is named»
+    дано what равно "grep"
+    ожидается "СВЕРКА НЕ НАЧАТА: grep не назвал ни одной строки — считать нечем"
+  соединить ["СВЕРКА НЕ НАЧАТА: ", what, " не назвал ни одной строки — считать нечем"] по ""
+
+тотальная функция «Nothing to count»
+  принимает what: строка
+  возвращает «Продолжение»
+  вариант «Не проверено» с код равным "FLANG_PROVED_SHARE_NECHEM" и сообщение равным («Nothing word» от what)
+
+тотальная функция «Broken word»
+  принимает what: строка, code: строка, message: строка
+  возвращает строка
+  пример «A tool that did not run is named with its code»
+    дано what равно "md5sum"
+    дано code равно "FLANG_IO_DENIED"
+    дано message равно "нельзя"
+    ожидается "СВЕРКА НЕ НАЧАТА: md5sum не запустился (FLANG_IO_DENIED): нельзя"
+  соединить ["СВЕРКА НЕ НАЧАТА: ", what, " не запустился (", code, "): ", message] по ""
+
+тотальная функция «Broken tool»
+  принимает what: строка, code: строка, message: строка
+  возвращает «Продолжение»
+  пусть word равно («Broken word» от what и code и message)
+  вариант «Не проверено» с код равным "FLANG_PROVED_SHARE_NECHEM" и сообщение равным word
+
+тотальная функция «Not a copy»
+  принимает errors: строка
+  возвращает «Продолжение»
+  пусть word равно (соединить ["ни одного файла языка — это не рабочая копия: ", errors] по "")
+  «Broken tool» от "git ls-files" и "FLANG_PROVED_SHARE_NECHEM" и word
+
+тотальная функция «Wrong reply»
+  принимает what: строка
+  возвращает «Продолжение»
+  пример «A reply nobody asked for stops the check»
+    дано what равно "вывод grep"
+    ожидается вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали вывод grep"
+  вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным (соединить ["ждали ", what] по "")
+
+примечание "── ХОД РАБОТЫ ──────────────────────────────────────────────────────────────"
+
+тотальная функция «Ask tree»
+  принимает mode: строка
+  возвращает «Продолжение»
+  «Step on» от («Git order») и (вариант «Listing» с mode равным mode)
+
+тотальная функция «Ask written»
+  принимает mode: строка, paths: список строки
+  возвращает «Продолжение»
+  пусть step равно (вариант «Counting written» с mode равным mode и paths равным paths)
+  «Step on» от («Grep order» от («Written pattern») и paths) и step
+
+тотальная функция «Ask unjudged»
+  принимает mode: строка, written: список «Count», paths: список строки
+  возвращает «Продолжение»
+  пусть step равно (вариант «Counting unjudged» с mode равным mode и written равным written)
+  если (длина written) равен 0
+    то «Nothing to count» от "grep"
+    иначе «Step on» от («Grep order» от («Unjudged pattern») и paths) и step
+
+тотальная функция «Ask hashes»
+  принимает mode: строка, rows: список «Row»
+  возвращает «Продолжение»
+  пусть step равно (вариант «Hashing» с mode равным mode и rows равным rows)
+  если (длина rows) равен 0
+    то «Nothing to count» от "счёт обязательств"
+    иначе «Step on» от («Md5 order» от (отобразить rows как row → row.«path»)) и step
+
+тотальная функция «Ask ledger»
+  принимает mode: строка, rows: список «Row», hashes: строка
+  возвращает «Продолжение»
+  пусть step равно (вариант «Reading ledger» с mode равным mode и rows равным rows и hashes равным hashes)
+  «Step on» от («Ledger order») и step
+
+тотальная функция «After tree»
+  принимает mode: строка, paths: список строки, errors: строка
+  возвращает «Продолжение»
+  если (длина paths) равен 0
+    то «Not a copy» от errors
+    иначе «Ask written» от mode и paths
+
+тотальная функция «After listing»
+  принимает mode: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Пока ничего»
+      то «Ask tree» от mode
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «After tree» от mode и («Lines of» от output) и errors
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Broken tool» от "git ls-files" и code и message
+    случай любое
+      то «Wrong reply» от "список файлов дерева"
+
+тотальная функция «After written»
+  принимает mode: строка, paths: список строки, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Ask unjudged» от mode и («Counts of» от output и («Front»)) и paths
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Broken tool» от "grep" и code и message
+    случай любое
+      то «Wrong reply» от "счёт обязательств"
+
+тотальная функция «After unjudged»
+  принимает mode: строка, written: список «Count», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Ask hashes» от mode и («Rows of» от written и («Count index» от («Counts of» от output и («Front»))))
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Broken tool» от "grep" и code и message
+    случай любое
+      то «Wrong reply» от "счёт без приговора"
+
+тотальная функция «After hashes»
+  принимает mode: строка, rows: список «Row», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Ask ledger» от mode и rows и («Hash index» от output и («Front»))
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Broken tool» от "md5sum" и code и message
+    случай любое
+      то «Wrong reply» от "отпечатки исходников"
+
+тотальная функция «Spoken»
+  принимает mode: строка, rows: список «Row», lines: список строки, hashes: строка
+  возвращает «Продолжение»
+  если mode равен "forgery"
+    то «Forgery verdict» от rows и lines
+    иначе «Judge» от mode и rows и lines и hashes
+
+тотальная функция «After ledger»
+  принимает mode: строка, rows: список «Row», hashes: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Spoken» от mode и rows и («Ledger rows of» от text) и hashes
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Broken tool» от "опись доказанного" и code и message
+    случай любое
+      то «Wrong reply» от "текст описи"
+
+тотальная функция «Next»
+  принимает step: «Step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор step
+    случай вариант «Listing» с mode как mode
+      то «After listing» от mode и reply
+    случай вариант «Counting written» с mode как mode и paths как paths
+      то «After written» от mode и paths и reply
+    случай вариант «Counting unjudged» с mode как mode и written как written
+      то «After unjudged» от mode и written и reply
+    случай вариант «Hashing» с mode как mode и rows как rows
+      то «After hashes» от mode и rows и reply
+    случай вариант «Reading ledger» с mode как mode и rows как rows и hashes как hashes
+      то «After ledger» от mode и rows и hashes и reply
+
+тотальная функция «Begin check»
+  возвращает «Step»
+  пример «The check compares the ledger with the tree»
+    ожидается вариант «Listing» с mode равным "check"
+  вариант «Listing» с mode равным "check"
+
+тотальная функция «Begin numbers»
+  возвращает «Step»
+  пример «The numbers are only told»
+    ожидается вариант «Listing» с mode равным "numbers"
+  вариант «Listing» с mode равным "numbers"
+
+тотальная функция «Begin forgery»
+  возвращает «Step»
+  пример «The forgery walks the same measurement»
+    ожидается вариант «Listing» с mode равным "forgery"
+  вариант «Listing» с mode равным "forgery"
+
+план «Check»
+  состояние «Step»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Numbers»
+  состояние «Step»
+  начинает с «Begin numbers»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Step»
+  начинает с «Begin forgery»
+  обрабатывает «Next»
+
+тотальная функция «Объявление короткой команды proved-share-tree:check»
+  возвращает строка
+  "bootstrap/flang io --plan Check — опись доказанного сходится с деревом в обе стороны"
+
+тотальная функция «Объявление короткой команды proved-share-tree:numbers»
+  возвращает строка
+  "bootstrap/flang io --plan Numbers — те же числа без приговора, код всегда 0"
+
+тотальная функция «Объявление короткой команды proved-share-tree:forgery»
+  возвращает строка
+  "bootstrap/flang io --plan Forgery — четыре порчи описи в памяти краснят сверку, код 1"

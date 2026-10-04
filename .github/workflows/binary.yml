@@ -394,9 +394,9 @@ jobs:
       #
       # Счётчиков долга в дереве было три — раздел «Вне языка» в docs/ROADMAP.md,
       # docs/javascript-inventory.md и числа сайта, — и все три считали ОДИН
-      # язык: JavaScript. Оболочка (49 файлов, 9344 строк), HTML, CSS, пробы на
-      # СНЯТО 2026-10-04 файлов *.sh = 49 (перенос flang/translation/run.sh на план flang/translation/run.fscript снял один файл оболочки; до него 50, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 52, снято 2026-10-04) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 101, снято 2026-09-17)
-      # СНЯТО 2026-10-04 строк-в *.sh = 9344 (перенос flang/translation/run.sh на план flang/translation/run.fscript снял 214 строк оболочки; до него 9558, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 9756, снято 2026-10-04) (задачи 1426 и 8567: поиск коммита отпечатка по содержимому прибавил 135 строк в scripts/bootstrap-reprint.sh, а отменённая хронология предела шагов убрала 141; до них 9762, снято 2026-09-17) (задача 1400: девять проб на подлог и две честные под правила Н6 и О9 прибавили 42 строки в flang/proof/checker/tests/run.sh) (задача 1416: четырнадцать объявлений ярлыков заведены в скриптах и зов «Сбора» — в хуке; до них 23372, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 23980, снято 2026-09-22) (ADR-0046: довод в шапках двух сторожей имён — сперва почему flang/proof не судится, потом почему вошёл в область — прибавил 9 строк; до него 23971, снято 2026-09-17)
+      # язык: JavaScript. Оболочка (47 файлов, 8930 строк), HTML, CSS, пробы на
+      # СНЯТО 2026-10-04 файлов *.sh = 47 (перенос scripts/guards/proved-share-vs-tree.sh и guards-without-forgery-probe.sh на планы снял два файла оболочки; до них 49, снято 2026-10-04) (перенос flang/translation/run.sh на план flang/translation/run.fscript снял один файл оболочки; до него 50, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 52, снято 2026-10-04) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 101, снято 2026-09-17)
+      # СНЯТО 2026-10-04 строк-в *.sh = 8930 (перенос scripts/guards/proved-share-vs-tree.sh и guards-without-forgery-probe.sh на планы снял 414 строк оболочки; до них 9344, снято 2026-10-04) (перенос flang/translation/run.sh на план flang/translation/run.fscript снял 214 строк оболочки; до него 9558, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 9756, снято 2026-10-04) (задачи 1426 и 8567: поиск коммита отпечатка по содержимому прибавил 135 строк в scripts/bootstrap-reprint.sh, а отменённая хронология предела шагов убрала 141; до них 9762, снято 2026-09-17) (задача 1400: девять проб на подлог и две честные под правила Н6 и О9 прибавили 42 строки в flang/proof/checker/tests/run.sh) (задача 1416: четырнадцать объявлений ярлыков заведены в скриптах и зов «Сбора» — в хуке; до них 23372, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 23980, снято 2026-09-22) (ADR-0046: довод в шапках двух сторожей имён — сперва почему flang/proof не судится, потом почему вошёл в область — прибавил 9 строк; до него 23971, снято 2026-09-17)
       # C, Python, awk и Erlang не считались нигде и ни в одной проверке. Долг,
       # которого никто не считает, не убывает: его не видно ни в отчёте, ни в
       # ленте, и растёт он молча.
@@ -407,9 +407,9 @@ jobs:
       # оболочке или на Python останавливает работу в тот же день.
       #
       # Замер на этом дереве: 17,7 с и 471 МБ, двоичному хватает `git` и `wc`.
-      # Предел шагов поднят с умолчания (10 млн): опись обходит 192 файлов и
+      # Предел шагов поднят с умолчания (10 млн): опись обходит 190 файлов и
       # семнадцать языков, и в умолчание не укладывается.
-      # СНЯТО 2026-10-04 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 192 (перенос flang/translation/run.sh на план flang/translation/run.fscript снял один файл вне flang; до него 193, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 196, снято 2026-10-04) (две честные пары сличителя перевода: отбор по признаку и объявленная мера; до них 194, снято 2026-09-17) (задача 5821: семь проверок scripts/** стали планами; до них 251, снято 2026-09-27) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 256, снято 2026-09-17)
+      # СНЯТО 2026-10-04 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.exs,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push = 190 (перенос scripts/guards/proved-share-vs-tree.sh и guards-without-forgery-probe.sh на планы снял два файла вне flang; до них 192, снято 2026-10-04) (перенос flang/translation/run.sh на план flang/translation/run.fscript снял один файл вне flang; до него 193, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 196, снято 2026-10-04) (две честные пары сличителя перевода: отбор по признаку и объявленная мера; до них 194, снято 2026-09-17) (задача 5821: семь проверок scripts/** стали планами; до них 251, снято 2026-09-27) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 256, снято 2026-09-17)
       #
       # СКОЛЬКО ИЗ ЭТИХ ПЯТИДЕСЯТИ МИЛЛИОНОВ УХОДИТ, замер 29 августа 2026.
       # Меряно перебором самого предела: при 10 500 000 опись умирает
@@ -504,52 +504,38 @@ jobs:
 
       # ── ОПИСЬ ДОКАЗАННОГО СВЕРЯЕТСЯ С ДЕРЕВОМ НА КАЖДОМ ПУШЕ ────────────────
       #
-      # `scripts/guards/proved-share-vs-tree.sh` сверяет знаменатель
+      # `scripts/guards/proved-share-vs-tree.fscript` сверяет знаменатель
       # `scripts/ledgers/proved-share-ledger.txt` со счётом по исходнику: у
       # каждого .flang с обязательствами есть строка, у каждой строки — файл, и
       # «написано» сходится со счётом. До 15 сентября 2026 его звал только хук
       # перед пушем, CI — никто: запрос слияния с новым файлом доказательств
       # проходил зелёным, а хук краснел у следующего, кто пушил поверх main.
-      # Двоичный сверке не нужен — ей хватает git, grep, md5sum и awk; 12 с на
-      # машине разработки. FLANG_TMP задан потому, что умолчание /srv/tmp на
-      # раннере не создать.
+      # 4 октября 2026 сверка перенесена с оболочки на план: двоичный к этому
+      # шагу уже собран (шаги выше зовут ./bootstrap/flang), а прежний довод
+      # «её зовёт хук до сборки двоичного» устарел с задачи 1219 — хук сам стал
+      # планом. Считает по-прежнему git, grep и md5sum, 11 с на машине
+      # разработки; FLANG_TMP больше не нужен — времянок план не заводит.
       - name: Check proved share
-        env:
-          FLANG_TMP: ${{ runner.temp }}
-        run: sh scripts/guards/proved-share-vs-tree.sh
-      # Три порчи — по одной на каждую беду, которую сверка обязана назвать:
-      # «написано» первой строки +1, первая строка вынута, строка о файле,
-      # которого нет. Каждая сличается cmp (подлог собрался), требует кода не 0
-      # и своих слов в выводе; опись возвращается и сличается в конце.
+        run: ./bootstrap/flang run-script proved-share-tree:check
+      # Четыре стороны порчи — нулевая (опись как есть, бед быть не должно) и по
+      # одной на каждую беду, которую сверка обязана назвать: «написано» первой
+      # мерной строки +1, строка о первом файле дерева вынута, вписана строка о
+      # файле, которого нет. Порча идёт В ПАМЯТИ: файл описи не трогается, и
+      # откатывать нечего даже если прогон убьют на середине.
+      # КОДЫ ПЕРЕВЁРНУТЫ, как у пары про опись дерева выше: код 1 — подлог
+      # пойман на всех четырёх сторонах; код 0 — сверка промолчала хотя бы на
+      # одной, ЛИБО порча не собралась. Оба случая обязаны красить шаг.
+      # Прогнано на выпотрошенной копии сверки («Troubles of», возвращающая
+      # пустой список на любом входе): она даёт этому шагу код 0.
+      # Зовётся ФАЙЛОМ, а не командой `proved-share-tree:forgery`: прибор проб
+      # порчи (scripts/guards/guards-without-forgery-probe.fscript) относит
+      # пробу к сторожу по файлу, а не по имени парной команды.
       - name: Probe proved share
-        env:
-          FLANG_TMP: ${{ runner.temp }}
         run: |
-          opis=scripts/ledgers/proved-share-ledger.txt
-          cp "$opis" "$RUNNER_TEMP/opis"
-          porcha() {
-            slova=$1; shift
-            awk "$@" "$RUNNER_TEMP/opis" > "$opis"
-            if cmp -s "$opis" "$RUNNER_TEMP/opis"; then
-              echo "ПОДЛОГ НЕ СОБРАЛСЯ: опись не изменилась (порча «$slova»)" >&2
-              exit 1
-            fi
-            if sh scripts/guards/proved-share-vs-tree.sh > "$RUNNER_TEMP/sverka.out" 2>&1; then
-              cp "$RUNNER_TEMP/opis" "$opis"
-              echo "СВЕРКА ПРОМОЛЧАЛА на порче «$slova»" >&2
-              exit 1
-            fi
-            cp "$RUNNER_TEMP/opis" "$opis"
-            if ! grep -F "$slova" "$RUNNER_TEMP/sverka.out"; then
-              echo "ПОКРАСНЕЛО НЕ ПО ПОРЧЕ «$slova»:" >&2
-              tail -5 "$RUNNER_TEMP/sverka.out" >&2
-              exit 1
-            fi
-          }
-          porcha '«НАПИСАНО» НЕ СХОДИТСЯ' -F'|' -v OFS='|' '!s && !/^\/\// && NF == 7 && $2 ~ /^[0-9]+$/ { $2 = $2 + 1; s = 1 } { print }'
-          porcha 'НЕТ СТРОКИ' -F'|' '!s && !/^\/\// && NF == 7 { s = 1; next } { print }'
-          porcha 'ЛИШНЯЯ СТРОКА' '{ print } END { print "00000000000000000000000000000000|1|×|×|×|0|docs/there-is-no-such-file.flang" }'
-          cmp "$opis" "$RUNNER_TEMP/opis"
+          if ./bootstrap/flang io scripts/guards/proved-share-vs-tree.fscript --plan Forgery; then
+            echo "сверка промолчала на порченой описи — проверять ею нечего" >&2
+            exit 1
+          fi
 
       - name: Check records follow their sources
         run: ./bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Проверка
@@ -1021,7 +1007,7 @@ jobs:
             make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
           fi
       # ПРОБА ИДЁТ ПЕРВОЙ И СТОИТ ОДНУ ПЕЧАТЬ ИЗ ТРЁХ. Сторож, которого нельзя
-      # покрасить, неотличим от выключенного (scripts/guards/guards-without-forgery-probe.sh:
+      # покрасить, неотличим от выключенного (scripts/guards/guards-without-forgery-probe.fscript:
       # за одни сутки 5 сентября 2026 эта порода поймана четырежды, и ни разу
       # прибором). Проба подкладывает сверщику изменённый байт и пропавший
       # файл и требует красноты, а от дословной копии — молчания.

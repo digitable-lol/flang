@@ -1913,3 +1913,77 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
 
+
+
+  # РЕЕСТР СТЕРЕЖЁТСЯ ПРОГОНОМ, А НЕ ОБЕЩАНИЕМ (задача 4909, ADR-0059 §7).
+  #
+  # До этой работы реестр не звала НИ ОДНА работа CI: поиск `registry` по
+  # .github/workflows и .githooks давал одно вхождение, и оно было комментарием
+  # про `registry-url` у actions/setup-node. Отпечаток — единственное, на чём по
+  # ADR-0021 п. 3 держится доверие к чужому пакету, и он месяц гнил под зелёным
+  # деревом: 4 записи из 7 разошлись с файлами.
+  #
+  # Здесь зовутся два прибора из четырёх свойств ADR-0059 §7:
+  #   · отпечатки ведомости сходятся с файлами — `registry-prints:check`;
+  #   · ответ не зависит от порядка строк ведомости и отказ назван кодом И
+  #     текстом — `registry-resolution:check` над корпусом
+  #     packaging/registry/cases.
+  #
+  # Подлог гоняется ПЕРЕД сверкой, как у сторожа чисел в прозе: сторож,
+  # разучившийся краснеть, в ленте не отличим от чистого дерева. Подлог
+  # разрешения дописывает к каждому ожидаемому ответу слово и снимает из каждой
+  # ожидаемой причины перечень диапазонов — обе сверки обязаны покраснеть.
+  reestr:
+    name: registry-resolution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - run: make -C bootstrap -j"$(nproc)"
+      - name: Probe registry resolution by a forged corpus
+        run: |
+          if bootstrap/flang run-script registry-resolution:forgery; then
+            echo "сторож промолчал на подлоге корпуса — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: Probe registry resolution by a cut ledger
+        run: |
+          vedomost=packaging/registry/cases/ledger.list
+          cp "$vedomost" "$RUNNER_TEMP/ledger.list"
+          grep -v '^Логика | 1.2.0' "$RUNNER_TEMP/ledger.list" > "$vedomost"
+          if cmp -s "$vedomost" "$RUNNER_TEMP/ledger.list"; then
+            cp "$RUNNER_TEMP/ledger.list" "$vedomost"
+            echo "строка не снялась — проверять нечем" >&2
+            exit 1
+          fi
+          if bootstrap/flang run-script registry-resolution:check > "$RUNNER_TEMP/cut.out" 2>&1; then
+            cp "$RUNNER_TEMP/ledger.list" "$vedomost"
+            cat "$RUNNER_TEMP/cut.out" >&2
+            echo "сторож промолчал на снятой выбранной версии" >&2
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/ledger.list" "$vedomost"
+          cmp "$vedomost" "$RUNNER_TEMP/ledger.list"
+      - name: Check registry resolution
+        run: bootstrap/flang run-script registry-resolution:check
+      - name: Probe registry fingerprints
+        run: |
+          vedomost=scripts/registry-example/registry.list
+          cp "$vedomost" "$RUNNER_TEMP/registry.list"
+          sed -i '2s/| 1dc6/| Xdc6/' "$vedomost"
+          if cmp -s "$vedomost" "$RUNNER_TEMP/registry.list"; then
+            cp "$RUNNER_TEMP/registry.list" "$vedomost"
+            echo "подлог не лёг в ведомость — проверять нечем" >&2
+            exit 1
+          fi
+          if bootstrap/flang run-script registry-prints:check > "$RUNNER_TEMP/probe.out" 2>&1; then
+            cp "$RUNNER_TEMP/registry.list" "$vedomost"
+            cat "$RUNNER_TEMP/probe.out" >&2
+            echo "сторож промолчал на подкрученном отпечатке" >&2
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/registry.list" "$vedomost"
+          cmp "$vedomost" "$RUNNER_TEMP/registry.list"
+      - name: Check registry fingerprints
+        run: bootstrap/flang run-script registry-prints:check

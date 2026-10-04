@@ -1797,6 +1797,16 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
 
+      # ДВА НАБОРА НИЖЕ МЕРЯТ СЕМЯ, И ЭТОГО ИМ ДОВОЛЬНО. Обе беды живут в
+      # замыкании компилятора (`corpus.flang`, `link.flang`), а не в оболочке
+      # дерева, так что второй двоичный — как у работы `progony` ниже — им не
+      # нужен: семя и дерево отвечают здесь одинаково. Отсюда и место: среди
+      # дешёвых шагов, а не отдельной работой с девяностосекундной сборкой.
+      - name: Check verdict surfaces of run blocks
+        run: cd flang/proof/probes/run-verdict-surfaces && ../../../../bootstrap/flang io run.fscript --plan Binary
+      - name: Check import list order
+        run: cd flang/proof/probes/import-list-order && ../../../../bootstrap/flang io run.fscript --plan Binary
+
   # ── БЛОКИ «прогон»: НАЗВАНЫ ЧИСЛОМ ИЛИ ПРОХОДЯТ МОЛЧА (задача 1116) ───────
   #
   # ПОЧЕМУ ОТДЕЛЬНАЯ РАБОТА, А НЕ ШАГ У СОСЕДЕЙ ВЫШЕ. Эта проба собирает ВТОРОЙ

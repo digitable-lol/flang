@@ -1,0 +1,12 @@
+program	surface	code	word
+source.flang	check	0	замечаний нет
+wide.flang	check	0	замечаний нет
+narrow.flang	check	1	FLANG_UNKNOWN_NAME, строка 6, столбец 3: имя «Второе слово» не связано
+narrow-first.flang	check	1	FLANG_UNKNOWN_NAME, строка 6, столбец 3: имя «Второе слово» не связано
+wide-first.flang	check	0	замечаний нет
+narrow-first.flang	run	3	не доказано
+wide-first.flang	run	0	"два"
+direct-narrow-first.flang	check	1	FLANG_UNKNOWN_NAME, строка 7, столбец 3: имя «Второе слово» не связано
+direct-wide-first.flang	check	0	замечаний нет
+direct-narrow-first.flang	run	3	не доказано
+direct-wide-first.flang	run	0	"два"

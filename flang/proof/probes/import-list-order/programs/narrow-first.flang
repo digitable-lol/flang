@@ -1,0 +1,7 @@
+модуль «Narrow import first»
+  использует «Narrow list» из "narrow.flang"
+  использует «Wide list» из "wide.flang"
+
+тотальная функция «Проба»
+  возвращает строка
+  «Сверх списка»

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
 // SPDX-License-Identifier: BSD-2-Clause
-//
+
 // Проба цели «ts»: тот же рантайм, что у цели «js» — печатник TS кладёт его
 // отдельным flang_runtime.js и ввозит имена (emit-js.flang, «Ввоз рантайма
 // TS»), поэтому проба тоже ввозит $add из рантайма, а не объявляет его.

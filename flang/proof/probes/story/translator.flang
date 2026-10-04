@@ -1,0 +1,954 @@
+модуль «User story sentences»
+  использует «Rules» из "../../../../scripts/rules.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Quantity»
+  «one»: строка
+  «at»: строка
+
+тип «Reading»
+  вариант «Read»
+  вариант «Unread» содержит faults: список строки
+
+тотальная функция «Spaced words»
+  принимает line: строка
+  возвращает список строки
+  пример «Runs of spaces separate words once»
+    дано line равно "  Хочу   скидка не больше 30 "
+    ожидается ["Хочу", "скидка", "не", "больше", "30"]
+  отфильтровать (разделить line по " ") где piece → не (пусто piece)
+
+тотальная функция «Trimmed»
+  принимает line: строка
+  возвращает строка
+  пример «Spaces at the edges are dropped and inner runs become one space»
+    дано line равно "  скидка   на заказ "
+    ожидается "скидка на заказ"
+  соединить («Spaced words» от line) по " "
+
+тотальная функция «Replaced»
+  принимает text: строка, sought: строка, replacement: строка
+  возвращает строка
+  пример «Every occurrence is replaced»
+    дано text равно "а,б,в"
+    дано sought равно ","
+    дано replacement равно " "
+    ожидается "а б в"
+  соединить (разделить text по sought) по replacement
+
+тотальная функция «Flattened»
+  принимает text: строка
+  возвращает строка
+  пример «Line ends and tabs count as spaces»
+    дано text равно "Роль: кассир.\nКак кассир."
+    ожидается "Роль: кассир. Как кассир."
+  свёртка ["\n", "\r", "\t"] начиная с text как flat и blank → «Replaced» от flat и blank и " "
+
+тотальная функция «Sentences of»
+  принимает text: строка
+  возвращает список строки
+  пример «A text is cut at full stops and line ends count as spaces»
+    дано text равно "Роль: кассир.\nКак кассир. Хочу скидка не больше 30."
+    ожидается ["Роль: кассир", "Как кассир", "Хочу скидка не больше 30"]
+  пусть cut равно (разделить («Flattened» от text) по ".")
+  пусть trimmed равно (отобразить cut как piece → «Trimmed» от piece)
+  отфильтровать trimmed где piece → не (пусто piece)
+
+тотальная функция «Rest of»
+  принимает pieces: список строки
+  возвращает список строки
+  пример «The first piece is dropped»
+    дано pieces равно ["Хочу", "скидка", "не", "больше", "30"]
+    ожидается ["скидка", "не", "больше", "30"]
+  пример «An empty list stays empty»
+    дано pieces равно пустой список
+    ожидается пустой список
+  разбор pieces
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «First of»
+  принимает pieces: список строки
+  возвращает строка
+  пример «The first piece»
+    дано pieces равно ["менеджер зала", "кассир"]
+    ожидается "менеджер зала"
+  пример «Nothing has no first piece»
+    дано pieces равно пустой список
+    ожидается ""
+  разбор pieces
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Piece at»
+  принимает pieces: список строки, position: число
+  возвращает строка
+  пример «The second piece of two»
+    дано pieces равно ["скидке 40", "30"]
+    дано position равно 2
+    ожидается "30"
+  пример «A missing piece is empty»
+    дано pieces равно ["скидке 40"]
+    дано position равно 2
+    ожидается ""
+  если (position не меньше 1) и притом (position не больше (длина pieces))
+    то элемент position в pieces
+    иначе ""
+
+тотальная функция «Heading of»
+  принимает sentence: строка
+  возвращает строка
+  пример «A role is declared by its heading»
+    дано sentence равно "Роль: менеджер зала"
+    ожидается "роль"
+  пример «A quantity is declared by its heading»
+    дано sentence равно "Величина: скидка, скидке"
+    ожидается "величина"
+  пример «The story is named by its heading»
+    дано sentence равно "История: потолок скидки"
+    ожидается "история"
+  пример «The role of the story stands after Kak»
+    дано sentence равно "Как менеджер зала"
+    ожидается "как"
+  пример «The want stands after Hochu»
+    дано sentence равно "Хочу скидка не больше 30"
+    ожидается "хочу"
+  пример «The purpose stands after Chtoby»
+    дано sentence равно "Чтобы кассир не отдал товар ниже себестоимости"
+    ожидается "чтобы"
+  пример «The condition stands after Pri»
+    дано sentence равно "При скидка не меньше 0"
+    ожидается "при"
+  пример «The shown case stands after Togda»
+    дано sentence равно "Тогда при скидке 40 ответ 30"
+    ожидается "тогда"
+  пример «A sentence of no sample form has no heading»
+    дано sentence равно "Просто слова"
+    ожидается ""
+  «Chosen» от [(«When» от (sentence начинается с "Роль:") и "роль"),
+    («When» от (sentence начинается с "Величина:") и "величина"),
+    («When» от (sentence начинается с "История:") и "история"),
+    («When» от (sentence начинается с "Как ") и "как"),
+    («When» от (sentence начинается с "Хочу ") и "хочу"),
+    («When» от (sentence начинается с "Чтобы ") и "чтобы"),
+    («When» от (sentence начинается с "При ") и "при"),
+    («When» от (sentence начинается с "Тогда при ") и "тогда")] и ""
+
+тотальная функция «Body of»
+  принимает sentence: строка
+  возвращает строка
+  пример «A declaration drops its heading and the colon»
+    дано sentence равно "Величина: скидка, скидке"
+    ожидается "скидка, скидке"
+  пример «A story sentence drops its first word»
+    дано sentence равно "Хочу скидка не больше 30"
+    ожидается "скидка не больше 30"
+  пример «The shown case drops two words»
+    дано sentence равно "Тогда при скидке 40 ответ 30"
+    ожидается "скидке 40 ответ 30"
+  пример «A sentence of no sample form gives nothing»
+    дано sentence равно "Просто слова"
+    ожидается ""
+  пусть words равно («Spaced words» от sentence)
+  пусть declared равно («Trimmed» от (соединить («Rest of» от (разделить sentence по ":")) по ":"))
+  пусть shown равно («Trimmed» от (соединить («Rest of» от («Rest of» от words)) по " "))
+  пусть said равно («Trimmed» от (соединить («Rest of» от words) по " "))
+  «Chosen» от [(«When» от (sentence содержит ":") и declared),
+    («When» от ((«Heading of» от sentence) равен "тогда") и shown),
+    («When» от (не (пусто («Heading of» от sentence))) и said)] и ""
+
+тотальная функция «Said after»
+  принимает text: строка, heading: строка
+  возвращает список строки
+  пример «Every sentence of that heading gives its body»
+    дано text равно "Роль: менеджер зала. Роль: кассир."
+    дано heading равно "роль"
+    ожидается ["менеджер зала", "кассир"]
+  пример «A heading nobody wrote gives nothing»
+    дано text равно "Роль: менеджер зала."
+    дано heading равно "хочу"
+    ожидается пустой список
+  пусть said равно (отфильтровать («Sentences of» от text) где s → («Heading of» от s) равен heading)
+  отобразить said как sentence → «Body of» от sentence
+
+тотальная функция «Said once»
+  принимает text: строка, heading: строка
+  возвращает строка
+  пример «The first sentence of that heading»
+    дано text равно "Хочу скидка не больше 30."
+    дано heading равно "хочу"
+    ожидается "скидка не больше 30"
+  пример «A heading nobody wrote says nothing»
+    дано text равно "Хочу скидка не больше 30."
+    дано heading равно "при"
+    ожидается ""
+  «First of» от («Said after» от text и heading)
+
+тотальная функция «Digits dropped»
+  принимает said: строка
+  возвращает строка
+  пример «A whole number is left with nothing»
+    дано said равно "304"
+    ожидается ""
+  пример «A word keeps its letters»
+    дано said равно "много"
+    ожидается "много"
+  свёртка ["0", "1", "2", "3", "4",
+    "5", "6", "7", "8", "9"] начиная с said как left и digit → «Replaced» от left и digit и ""
+
+тотальная функция «Is a number»
+  принимает said: строка
+  возвращает признак
+  пример «A whole number is a number»
+    дано said равно "30"
+    ожидается да
+  пример «Nothing is not a number»
+    дано said равно ""
+    ожидается нет
+  пример «A word is not a number»
+    дано said равно "много"
+    ожидается нет
+  (не (пусто said)) и притом (пусто («Digits dropped» от said))
+
+тотальная функция «Number in»
+  принимает said: строка
+  возвращает число
+  пример «A number is read»
+    дано said равно "30"
+    ожидается 30
+  пример «What is not a number is read as zero»
+    дано said равно "многого"
+    ожидается 0
+  если «Is a number» от said то (к числу said) иначе 0
+
+тотальная функция «No quantity»
+  возвращает «Quantity»
+  пример «A quantity nobody declared has no forms»
+    ожидается запись «Quantity» с «one» равным "" и «at» равным ""
+  запись «Quantity» с «one» равным "" и «at» равным ""
+
+тотальная функция «Quantity said»
+  принимает said: строка
+  возвращает «Quantity»
+  пример «A quantity is declared in two forms»
+    дано said равно "скидка, скидке"
+    ожидается запись «Quantity» с «one» равным "скидка" и «at» равным "скидке"
+  пример «A quantity declared in one form keeps the second empty»
+    дано said равно "скидка"
+    ожидается запись «Quantity» с «one» равным "скидка" и «at» равным ""
+  пусть forms равно (разделить said по ",")
+  пусть singular равно («Trimmed» от («First of» от forms))
+  пусть oblique равно («Trimmed» от (соединить («Rest of» от forms) по ","))
+  запись «Quantity» с «one» равным singular и «at» равным oblique
+
+тотальная функция «Quantities of»
+  принимает text: строка
+  возвращает список «Quantity»
+  пример «Every declaration of a quantity gives a word of the dictionary»
+    дано text равно "Величина: скидка, скидке."
+    ожидается [запись «Quantity» с «one» равным "скидка" и «at» равным "скидке"]
+  отобразить («Said after» от text и "величина") как said → «Quantity said» от said
+
+тотальная функция «Kept»
+  принимает found: «Quantity», candidate: «Quantity», name: строка
+  возвращает «Quantity»
+  пример «The first word of that name is kept»
+    дано found равно запись «Quantity» с «one» равным "" и «at» равным ""
+    дано candidate равно запись «Quantity» с «one» равным "скидка" и «at» равным "скидке"
+    дано name равно "скидка"
+    ожидается запись «Quantity» с «one» равным "скидка" и «at» равным "скидке"
+  пример «A word of another name is not kept»
+    дано found равно запись «Quantity» с «one» равным "" и «at» равным ""
+    дано candidate равно запись «Quantity» с «one» равным "комиссия" и «at» равным "комиссии"
+    дано name равно "скидка"
+    ожидается запись «Quantity» с «one» равным "" и «at» равным ""
+  если (пусто (found.«one»)) и притом ((candidate.«one») равен name) то candidate иначе found
+
+тотальная функция «Declared quantity»
+  принимает text: строка, name: строка
+  возвращает «Quantity»
+  пример «A quantity is found by its form for one»
+    дано text равно "Величина: скидка, скидке."
+    дано name равно "скидка"
+    ожидается запись «Quantity» с «one» равным "скидка" и «at» равным "скидке"
+  пример «A word nobody declared is no quantity»
+    дано text равно "Величина: скидка, скидке."
+    дано name равно "комиссия"
+    ожидается запись «Quantity» с «one» равным "" и «at» равным ""
+  свёртка («Quantities of» от text) начиная с («No quantity») как found и word → «Kept» от found и word и name
+
+тотальная функция «Comparison of»
+  принимает said: строка
+  возвращает строка
+  пример «A ceiling is said with ne bolshe»
+    дано said равно "скидка не больше 30"
+    ожидается "не больше"
+  пример «A floor is said with ne menshe»
+    дано said равно "комиссия не меньше 10"
+    ожидается "не меньше"
+  пример «Any other wording is of no sample form»
+    дано said равно "скидка маленькая"
+    ожидается ""
+  «Chosen» от [(«When» от (said содержит " не больше ") и "не больше"),
+    («When» от (said содержит " не меньше ") и "не меньше")] и ""
+
+тотальная функция «Measured in»
+  принимает said: строка
+  возвращает строка
+  пример «The quantity stands before the comparison»
+    дано said равно "скидка на заказ не больше 30"
+    ожидается "скидка на заказ"
+  пример «Of no sample form nothing is measured»
+    дано said равно "скидка маленькая"
+    ожидается ""
+  пусть mark равно (соединить [" ", («Comparison of» от said), " "] по "")
+  если пусто («Comparison of» от said)
+    то ""
+    иначе «Trimmed» от («First of» от (разделить said по mark))
+
+тотальная функция «Bound in»
+  принимает said: строка
+  возвращает строка
+  пример «The number stands after the comparison»
+    дано said равно "скидка не больше 30"
+    ожидается "30"
+  пример «Of no sample form no bound is said»
+    дано said равно "скидка маленькая"
+    ожидается ""
+  пусть mark равно (соединить [" ", («Comparison of» от said), " "] по "")
+  если пусто («Comparison of» от said)
+    то ""
+    иначе «Trimmed» от (соединить («Rest of» от (разделить said по mark)) по " ")
+
+тотальная функция «Shown of»
+  принимает text: строка
+  возвращает список строки
+  пример «The shown case is cut at otvet»
+    дано text равно "Тогда при скидке 40 ответ 30."
+    ожидается ["скидке 40", "30"]
+  пример «Without a shown case nothing is cut»
+    дано text равно "Хочу скидка не больше 30."
+    ожидается пустой список
+  пусть said равно («Said once» от text и "тогда")
+  если пусто said
+    то пустой список
+    иначе отобразить (разделить said по " ответ ") как piece → «Trimmed» от piece
+
+тотальная функция «Last word of»
+  принимает said: строка
+  возвращает строка
+  пример «The number closes the shown input»
+    дано said равно "скидке 40"
+    ожидается "40"
+  пример «Nothing has no last word»
+    дано said равно ""
+    ожидается ""
+  «Piece at» от («Spaced words» от said) и (длина («Spaced words» от said))
+
+тотальная функция «Without the last word»
+  принимает said: строка
+  возвращает строка
+  пример «The form of the quantity stands before the number»
+    дано said равно "скидке на заказ 40"
+    ожидается "скидке на заказ"
+  пример «One word without itself is nothing»
+    дано said равно "40"
+    ожидается ""
+  пусть words равно («Spaced words» от said)
+  пусть kept равно (отобразить words как word → если word равен («Last word of» от said) то "" иначе word)
+  соединить (отфильтровать kept где word → не (пусто word)) по " "
+
+тотальная функция «Name of»
+  принимает text: строка
+  возвращает строка
+  пример «The story is named by its heading»
+    дано text равно "История: потолок скидки."
+    ожидается "потолок скидки"
+  «Said once» от text и "история"
+
+тотальная функция «Role of»
+  принимает text: строка
+  возвращает строка
+  пример «The role of the story»
+    дано text равно "Как менеджер зала."
+    ожидается "менеджер зала"
+  «Said once» от text и "как"
+
+тотальная функция «Purpose of»
+  принимает text: строка
+  возвращает строка
+  пример «The purpose of the story»
+    дано text равно "Чтобы кассир не отдал товар ниже себестоимости."
+    ожидается "кассир не отдал товар ниже себестоимости"
+  «Said once» от text и "чтобы"
+
+тотальная функция «Quantity of»
+  принимает text: строка
+  возвращает строка
+  пример «The want says what is measured»
+    дано text равно "Хочу скидка не больше 30."
+    ожидается "скидка"
+  «Measured in» от («Said once» от text и "хочу")
+
+тотальная функция «Goal of»
+  принимает text: строка
+  возвращает строка
+  пример «The want says which way the bound holds»
+    дано text равно "Хочу скидка не больше 30."
+    ожидается "не больше"
+  «Comparison of» от («Said once» от text и "хочу")
+
+тотальная функция «Bound of»
+  принимает text: строка
+  возвращает число
+  пример «The want says the bound»
+    дано text равно "Хочу скидка не больше 30."
+    ожидается 30
+  «Number in» от («Bound in» от («Said once» от text и "хочу"))
+
+тотальная функция «Need of»
+  принимает text: строка
+  возвращает строка
+  пример «The condition says which way its bound holds»
+    дано text равно "При скидка не меньше 0."
+    ожидается "не меньше"
+  пример «A story without a condition needs nothing»
+    дано text равно "Хочу скидка не больше 30."
+    ожидается ""
+  «Comparison of» от («Said once» от text и "при")
+
+тотальная функция «Need bound of»
+  принимает text: строка
+  возвращает число
+  пример «The condition says its bound»
+    дано text равно "При скидка не меньше 5."
+    ожидается 5
+  «Number in» от («Bound in» от («Said once» от text и "при"))
+
+тотальная функция «Shows a case»
+  принимает text: строка
+  возвращает признак
+  пример «A story with a shown case shows one»
+    дано text равно "Тогда при скидке 40 ответ 30."
+    ожидается да
+  пример «A story without a shown case shows none»
+    дано text равно "Хочу скидка не больше 30."
+    ожидается нет
+  (длина («Shown of» от text)) равен 2
+
+тотальная функция «Input of»
+  принимает text: строка
+  возвращает число
+  пример «The shown case says its input»
+    дано text равно "Тогда при скидке 40 ответ 30."
+    ожидается 40
+  «Number in» от («Last word of» от («Piece at» от («Shown of» от text) и 1))
+
+тотальная функция «Answer of»
+  принимает text: строка
+  возвращает число
+  пример «The shown case says its answer»
+    дано text равно "Тогда при скидке 40 ответ 30."
+    ожидается 30
+  «Number in» от («Piece at» от («Shown of» от text) и 2)
+
+тотальная функция «Shown form of»
+  принимает text: строка
+  возвращает строка
+  пример «The shown case says the form of the quantity it speaks of»
+    дано text равно "Тогда при скидке на заказ 40 ответ 30."
+    ожидается "скидке на заказ"
+  «Without the last word» от («Piece at» от («Shown of» от text) и 1)
+
+тотальная функция «Sample of a dictionary word»
+  принимает name: строка
+  возвращает строка
+  пример «The line that declares a quantity is said in full»
+    дано name равно "скидка"
+    ожидается "«Величина: скидка, <ещё форма>»"
+  соединить ["«Величина: ", name, ", <ещё форма>»"] по ""
+
+тотальная функция «Name faults»
+  принимает text: строка
+  возвращает список строки
+  пример «A story without a name is named a fault»
+    дано text равно "Как менеджер зала."
+    ожидается ["у истории нет имени: впишите его строкой «История: <имя>»"]
+  пример «A named story is no fault»
+    дано text равно "История: потолок скидки."
+    ожидается пустой список
+  пусть missing равно "у истории нет имени: впишите его строкой «История: <имя>»"
+  «Applying» от [(«When» от (пусто («Name of» от text)) и missing)]
+
+тотальная функция «Dictionary faults»
+  принимает text: строка
+  возвращает список строки
+  пример «A quantity declared in one form is named a fault»
+    дано text равно "Величина: скидка."
+    ожидается ["у величины «скидка» объявлена одна форма: нужны две — «Величина: скидка, <ещё форма>»"]
+  пример «Two forms are no fault»
+    дано text равно "Величина: скидка, скидке."
+    ожидается пустой список
+  пусть half равно (отфильтровать («Quantities of» от text) где word → пусто (word.«at»))
+  отобразить half как word → соединить ["у величины «", (word.«one»),
+    "» объявлена одна форма: нужны две — ", («Sample of a dictionary word» от (word.«one»))] по ""
+
+тотальная функция «Role faults»
+  принимает text: строка
+  возвращает список строки
+  пример «A story without a role is named a fault»
+    дано text равно "История: потолок скидки."
+    ожидается ["у истории нет роли: впишите её строкой «Как <роль>»"]
+  пример «A role that was not declared is named with the line that declares it»
+    дано text равно "Как завсклад. Роль: менеджер зала."
+    ожидается ["роль «завсклад» не объявлена: впишите её строкой «Роль: завсклад»"]
+  пример «A declared role is no fault»
+    дано text равно "Роль: менеджер зала. Как менеджер зала."
+    ожидается пустой список
+  пусть role равно («Role of» от text)
+  пусть missing равно "у истории нет роли: впишите её строкой «Как <роль>»"
+  пусть stray равно (соединить ["роль «", role,
+    "» не объявлена: впишите её строкой «Роль: ", role, "»"] по "")
+  пусть declared равно ((«Said after» от text и "роль") содержит role)
+  «Applying» от [(«When» от (пусто role) и missing),
+    («When» от ((не (пусто role)) и притом (не declared)) и stray)]
+
+тотальная функция «Bound is wrong»
+  принимает said: строка
+  возвращает признак
+  пример «A want of the sample form with a word for a bound is wrong»
+    дано said равно "скидка не больше многого"
+    ожидается да
+  пример «A want with a number is right»
+    дано said равно "скидка не больше 30"
+    ожидается нет
+  пусть read равно (не (пусто («Comparison of» от said)))
+  read и притом (не («Is a number» от («Bound in» от said)))
+
+тотальная функция «Quantity is stray»
+  принимает text: строка, said: строка
+  возвращает признак
+  пример «A quantity nobody declared is stray»
+    дано text равно "Хочу комиссия не больше 30."
+    дано said равно "комиссия не больше 30"
+    ожидается да
+  пример «A declared quantity is not stray»
+    дано text равно "Величина: скидка, скидке. Хочу скидка не больше 30."
+    дано said равно "скидка не больше 30"
+    ожидается нет
+  пусть name равно («Measured in» от said)
+  пусть found равно («Declared quantity» от text и name)
+  (не (пусто name)) и притом (пусто (found.«one»))
+
+тотальная функция «Want faults»
+  принимает text: строка
+  возвращает список строки
+  пример «A story without a want is named a fault»
+    дано text равно "История: потолок скидки."
+    ожидается ["у истории нет желания: впишите его строкой «Хочу <величина> не больше <число>»"]
+  пример «A want of no sample form is named with the sample»
+    дано text равно "Хочу скидка маленькая."
+    ожидается ["желание «скидка маленькая» не переводится в цель: образец — «Хочу <величина> не больше <число>»"]
+  пример «A want whose bound is not a number is named»
+    дано text равно "Величина: скидка, скидке. Хочу скидка не больше многого."
+    ожидается ["в желании «скидка не больше многого» предел «многого» не число"]
+  пример «A want about a quantity nobody declared is named»
+    дано text равно "Хочу комиссия не больше 30."
+    ожидается ["величина «комиссия» не объявлена: впишите её строкой «Величина: комиссия, <ещё форма>»"]
+  пример «A declared want is no fault»
+    дано text равно "Величина: скидка, скидке. Хочу скидка не больше 30."
+    ожидается пустой список
+  пусть said равно («Said once» от text и "хочу")
+  пусть missing равно "у истории нет желания: впишите его строкой «Хочу <величина> не больше <число>»"
+  пусть unread равно (соединить ["желание «", said,
+    "» не переводится в цель: образец — «Хочу <величина> не больше <число>»"] по "")
+  пусть notanumber равно (соединить ["в желании «", said, "» предел «",
+    («Bound in» от said), "» не число"] по "")
+  пусть stray равно (соединить ["величина «", («Measured in» от said),
+    "» не объявлена: впишите её строкой ",
+    («Sample of a dictionary word» от («Measured in» от said))] по "")
+  «Applying» от [(«When» от (пусто said) и missing),
+    («When» от ((не (пусто said)) и притом (пусто («Comparison of» от said))) и unread),
+    («When» от («Bound is wrong» от said) и notanumber),
+    («When» от («Quantity is stray» от text и said) и stray)]
+
+тотальная функция «Purpose faults»
+  принимает text: строка
+  возвращает список строки
+  пример «A story without a purpose is named a fault»
+    дано text равно "История: потолок скидки."
+    ожидается ["у истории нет «зачем»: впишите его строкой «Чтобы <зачем>» или прочерком «Чтобы —»"]
+  пример «A written purpose is no fault»
+    дано text равно "Чтобы кассир не отдал товар ниже себестоимости."
+    ожидается пустой список
+  пусть missing равно "у истории нет «зачем»: впишите его строкой «Чтобы <зачем>» или прочерком «Чтобы —»"
+  «Applying» от [(«When» от (пусто («Purpose of» от text)) и missing)]
+
+тотальная функция «Need is unread»
+  принимает said: строка
+  возвращает признак
+  пример «A condition of no sample form is unread»
+    дано said равно "скидка маленькая"
+    ожидается да
+  пример «A story without a condition has nothing unread»
+    дано said равно ""
+    ожидается нет
+  (не (пусто said)) и притом (пусто («Comparison of» от said))
+
+тотальная функция «Need is elsewhere»
+  принимает text: строка, said: строка
+  возвращает признак
+  пример «A condition about another quantity is elsewhere»
+    дано text равно "Хочу скидка не больше 30. При комиссия не меньше 0."
+    дано said равно "комиссия не меньше 0"
+    ожидается да
+  пример «A condition about the same quantity is not elsewhere»
+    дано text равно "Хочу скидка не больше 30. При скидка не меньше 0."
+    дано said равно "скидка не меньше 0"
+    ожидается нет
+  пусть name равно («Measured in» от said)
+  (не (пусто name)) и притом (не (name равен («Quantity of» от text)))
+
+тотальная функция «Need faults»
+  принимает text: строка
+  возвращает список строки
+  пример «A condition of no sample form is named with the sample»
+    дано text равно "При скидка маленькая."
+    ожидается ["условие «скидка маленькая» не переводится: образец — «При <величина> не меньше <число>»"]
+  пример «A condition about another quantity is named»
+    дано text равно "Хочу скидка не больше 30. При комиссия не меньше 0."
+    ожидается ["условие «комиссия не меньше 0» о величине «комиссия», а желание — о «скидка»"]
+  пример «A story without a condition is no fault»
+    дано text равно "История: потолок скидки."
+    ожидается пустой список
+  пусть said равно («Said once» от text и "при")
+  пусть unread равно (соединить ["условие «", said,
+    "» не переводится: образец — «При <величина> не меньше <число>»"] по "")
+  пусть notanumber равно (соединить ["в условии «", said, "» предел «",
+    («Bound in» от said), "» не число"] по "")
+  пусть elsewhere равно (соединить ["условие «", said, "» о величине «",
+    («Measured in» от said), "», а желание — о «", («Quantity of» от text), "»"] по "")
+  «Applying» от [(«When» от («Need is unread» от said) и unread),
+    («When» от («Bound is wrong» от said) и notanumber),
+    («When» от («Need is elsewhere» от text и said) и elsewhere)]
+
+тотальная функция «Shown is unread»
+  принимает text: строка
+  возвращает признак
+  пример «A shown case cut by no otvet is unread»
+    дано text равно "Тогда при скидке 40."
+    ожидается да
+  пример «A story without a shown case has nothing unread»
+    дано text равно "История: потолок скидки."
+    ожидается нет
+  пусть said равно («Said once» от text и "тогда")
+  (не (пусто said)) и притом (не («Shows a case» от text))
+
+тотальная функция «Shown is not numbers»
+  принимает text: строка
+  возвращает признак
+  пример «A shown case with a word for its answer is not numbers»
+    дано text равно "Тогда при скидке 40 ответ много."
+    ожидается да
+  пример «A shown case of two numbers is numbers»
+    дано text равно "Тогда при скидке 40 ответ 30."
+    ожидается нет
+  пусть input равно («Last word of» от («Piece at» от («Shown of» от text) и 1))
+  пусть answer равно («Piece at» от («Shown of» от text) и 2)
+  («Shows a case» от text) и притом (не ((«Is a number» от input) и притом («Is a number» от answer)))
+
+тотальная функция «Shown is in another form»
+  принимает text: строка
+  возвращает признак
+  пример «A shown case about another form of the quantity is in another form»
+    дано text равно "Величина: скидка, скидке. Хочу скидка не больше 30. Тогда при комиссии 40 ответ 30."
+    ожидается да
+  пример «A shown case in the declared form is not in another form»
+    дано text равно "Величина: скидка, скидке. Хочу скидка не больше 30. Тогда при скидке 40 ответ 30."
+    ожидается нет
+  пусть wanted равно ((«Declared quantity» от text и («Quantity of» от text)).«at»)
+  («Shows a case» от text) и притом (не ((«Shown form of» от text) равен wanted))
+
+тотальная функция «Shown faults»
+  принимает text: строка
+  возвращает список строки
+  пример «A shown case cut by no otvet is named with the sample»
+    дано text равно "Тогда при скидке 40."
+    ожидается ["пример «скидке 40» не считается: образец — «Тогда при <форма> <число> ответ <число>»"]
+  пример «A shown case about another form of the quantity is named»
+    дано text равно "Величина: скидка, скидке. Хочу скидка не больше 30. Тогда при комиссии 40 ответ 30."
+    ожидается ["в примере «комиссии 40 ответ 30» форма величины «комиссии» не та: ждали «скидке»"]
+  пример «A story without a shown case is no fault»
+    дано text равно "История: потолок скидки."
+    ожидается пустой список
+  пусть said равно («Said once» от text и "тогда")
+  пусть unread равно (соединить ["пример «", said,
+    "» не считается: образец — «Тогда при <форма> <число> ответ <число>»"] по "")
+  пусть notnumbers равно (соединить ["в примере «", said,
+    "» вход и ответ должны быть числами"] по "")
+  пусть wanted равно ((«Declared quantity» от text и («Quantity of» от text)).«at»)
+  пусть otherform равно (соединить ["в примере «", said, "» форма величины «",
+    («Shown form of» от text), "» не та: ждали «", wanted, "»"] по "")
+  «Applying» от [(«When» от («Shown is unread» от text) и unread),
+    («When» от («Shown is not numbers» от text) и notnumbers),
+    («When» от («Shown is in another form» от text) и otherform)]
+
+тотальная функция «Story faults»
+  принимает text: строка
+  возвращает список строки
+  пример «An empty text is named by every half that is missing»
+    дано text равно ""
+    ожидается ["у истории нет имени: впишите его строкой «История: <имя>»",
+      "у истории нет роли: впишите её строкой «Как <роль>»",
+      "у истории нет желания: впишите его строкой «Хочу <величина> не больше <число>»",
+      "у истории нет «зачем»: впишите его строкой «Чтобы <зачем>» или прочерком «Чтобы —»"]
+  пусть named равно («Соединить списки» от («Name faults» от text) и («Dictionary faults» от text))
+  пусть asked равно («Соединить списки» от («Role faults» от text) и («Want faults» от text))
+  пусть shown равно («Соединить списки» от («Need faults» от text) и («Shown faults» от text))
+  пусть why равно («Соединить списки» от («Purpose faults» от text) и shown)
+  «Соединить списки» от («Соединить списки» от named и asked) и why
+
+тотальная функция «Read story»
+  принимает text: строка
+  возвращает «Reading»
+  пример «A story with an undeclared role is not read, and the role is named»
+    дано text равно "Величина: ком, коми. История: пол. Как завсклад. Хочу ком не больше 30. Чтобы —."
+    ожидается вариант «Unread» с faults равным [
+      "роль «завсклад» не объявлена: впишите её строкой «Роль: завсклад»"]
+  пример «A story of the sample forms is read»
+    дано text равно "Роль: кассир. Величина: ком, коми. История: пол. Как кассир. Хочу ком не больше 3. Чтобы —."
+    ожидается вариант «Read»
+  разбор («Story faults» от text)
+    случай пусто
+      то вариант «Read»
+    случай голова и хвост
+      то вариант «Unread» с faults равным («Story faults» от text)
+
+тотальная функция «Head lines»
+  принимает text: строка
+  возвращает список строки
+  пример «The head of the program declares the role and takes it in»
+    дано text равно "Роль: кассир. Величина: ком, коми. История: пол. Как кассир. Хочу ком не больше 3."
+    ожидается ["модуль «Story»", "", "объект «Роль»", "  «кассир»: признак", "",
+      "тотальная функция «пол»", "  принимает «кто»: «Роль», «ком»: число", "  возвращает число",
+      "  требует «как кассир» «кто».«кассир»"]
+  пусть role равно («Role of» от text)
+  пусть named равно (соединить ["тотальная функция «", («Name of» от text), "»"] по "")
+  пусть takes равно (соединить ["  принимает «кто»: «Роль», «", («Quantity of» от text),
+    "»: число"] по "")
+  пусть asks равно (соединить ["  требует «как ", role, "» «кто».«", role, "»"] по "")
+  ["модуль «Story»", "", "объект «Роль»", (соединить ["  «", role, "»: признак"] по ""), "",
+    named, takes, "  возвращает число", asks]
+
+тотальная функция «Need lines»
+  принимает text: строка
+  возвращает список строки
+  пример «A condition becomes a requirement on the input»
+    дано text равно "Величина: ком, коми. Хочу ком не больше 3. При ком не меньше 0."
+    ожидается ["  требует «при: ком не меньше 0» «ком» не меньше 0"]
+  пример «A story without a condition requires nothing»
+    дано text равно "Величина: ком, коми. Хочу ком не больше 3."
+    ожидается пустой список
+  пусть q равно («Quantity of» от text)
+  пусть need равно («Need of» от text)
+  пусть bound равно (к строке («Need bound of» от text))
+  пусть line равно (соединить ["  требует «при: ", q, " ", need, " ", bound, "» «", q, "» ",
+    need, " ", bound] по "")
+  «Applying» от [(«When» от (не (пусто need)) и line)]
+
+тотальная функция «Goal line»
+  принимает text: строка
+  возвращает строка
+  пример «The want becomes the goal of the function»
+    дано text равно "Величина: ком, коми. Хочу ком не больше 3."
+    ожидается "  обеспечивает «хочу: ком не больше 3» результат не больше 3"
+  пусть q равно («Quantity of» от text)
+  пусть goal равно («Goal of» от text)
+  пусть bound равно (к строке («Bound of» от text))
+  соединить ["  обеспечивает «хочу: ", q, " ", goal, " ", bound, "» результат ", goal, " ",
+    bound] по ""
+
+тотальная функция «Goal said»
+  принимает text: строка
+  возвращает строка
+  пример «The goal is named the way the program names it»
+    дано text равно "Величина: ком, коми. Хочу ком не больше 3."
+    ожидается "хочу: ком не больше 3"
+  соединить ["хочу: ", («Quantity of» от text), " ", («Goal of» от text), " ",
+    (к строке («Bound of» от text))] по ""
+
+тотальная функция «Example lines»
+  принимает text: строка
+  возвращает список строки
+  пример «The shown case becomes an example with its input and its answer»
+    дано text равно "Роль: к. Величина: ком, коми. Как к. Хочу ком не больше 3. Тогда при коми 9 ответ 3."
+    ожидается ["  пример «тогда вход 9 ответ 3»",
+      "    дано «кто» равно запись «Роль» с «к» равным да", "    дано «ком» равно 9",
+      "    ожидается 3"]
+  пример «A story without a shown case has no example»
+    дано text равно "Величина: ком, коми. Хочу ком не больше 3."
+    ожидается пустой список
+  пусть input равно (к строке («Input of» от text))
+  пусть answer равно (к строке («Answer of» от text))
+  пусть title равно (соединить ["  пример «тогда вход ", input, " ответ ", answer, "»"] по "")
+  пусть who равно (соединить ["    дано «кто» равно запись «Роль» с «", («Role of» от text),
+    "» равным да"] по "")
+  пусть shownInput равно (соединить ["    дано «", («Quantity of» от text), "» равно ", input] по "")
+  пусть wanted равно (соединить ["    ожидается ", answer] по "")
+  «Applying» от [(«When» от («Shows a case» от text) и title),
+    («When» от («Shows a case» от text) и who),
+    («When» от («Shows a case» от text) и shownInput),
+    («When» от («Shows a case» от text) и wanted)]
+
+тотальная функция «Body lines»
+  принимает text: строка
+  возвращает список строки
+  пример «The body of the function is the rule the want fixes»
+    дано text равно "Величина: ком, коми. Хочу ком не больше 3."
+    ожидается ["  если «ком» не больше 3", "    то «ком»", "    иначе 3"]
+  пусть q равно («Quantity of» от text)
+  пусть bound равно (к строке («Bound of» от text))
+  пусть asks равно (соединить ["  если «", q, "» ", («Goal of» от text), " ", bound] по "")
+  [asks, (соединить ["    то «", q, "»"] по ""), (соединить ["    иначе ", bound] по "")]
+
+тотальная функция «Program lines»
+  принимает text: строка
+  возвращает список строки
+  пример «A story without a condition and without a shown case leaves those lines out»
+    дано text равно "Роль: к. Величина: ком, коми. История: пол. Как к. Хочу ком не меньше 1."
+    ожидается ["модуль «Story»", "", "объект «Роль»", "  «к»: признак", "",
+      "тотальная функция «пол»", "  принимает «кто»: «Роль», «ком»: число", "  возвращает число",
+      "  требует «как к» «кто».«к»", "  обеспечивает «хочу: ком не меньше 1» результат не меньше 1",
+      "  если «ком» не меньше 1", "    то «ком»", "    иначе 1"]
+  пусть head равно («Соединить списки» от («Head lines» от text) и («Need lines» от text))
+  пусть goal равно («Соединить списки» от [(«Goal line» от text)] и («Example lines» от text))
+  «Соединить списки» от («Соединить списки» от head и goal) и («Body lines» от text)
+
+тотальная функция «Program of»
+  принимает text: строка
+  возвращает строка
+  соединить [(соединить («Program lines» от text) по "\n"), "\n"] по ""
+
+тотальная функция «Read back lines»
+  принимает text: строка
+  возвращает список строки
+  пример «The story is printed back in the sample forms»
+    дано text равно "Роль: к. Величина: ком, коми. История: пол. Как к. Хочу ком не меньше 1. Чтобы —."
+    ожидается ["История: пол.", "Как к.", "Хочу ком не меньше 1.", "Чтобы —."]
+  пусть named равно (соединить ["История: ", («Name of» от text), "."] по "")
+  пусть asks равно (соединить ["Как ", («Role of» от text), "."] по "")
+  пусть want равно (соединить ["Хочу ", («Quantity of» от text), " ", («Goal of» от text), " ",
+    (к строке («Bound of» от text)), "."] по "")
+  пусть why равно (соединить ["Чтобы ", («Purpose of» от text), "."] по "")
+  «Соединить списки» от [named, asks, want, why] и («Read back tail» от text)
+
+тотальная функция «Read back tail»
+  принимает text: строка
+  возвращает список строки
+  пример «The condition and the shown case are printed back when they are written»
+    дано text равно "Величина: ком, коми. Хочу ком не больше 3. При ком не меньше 0. Тогда при коми 9 ответ 3."
+    ожидается ["При ком не меньше 0.", "Тогда вход 9 ответ 3."]
+  пример «A story without them prints nothing back»
+    дано text равно "Величина: ком, коми. Хочу ком не больше 3."
+    ожидается пустой список
+  пусть need равно (соединить ["При ", («Quantity of» от text), " ", («Need of» от text), " ",
+    (к строке («Need bound of» от text)), "."] по "")
+  пусть shown равно (соединить ["Тогда вход ", (к строке («Input of» от text)), " ответ ",
+    (к строке («Answer of» от text)), "."] по "")
+  «Applying» от [(«When» от (не (пусто («Need of» от text))) и need),
+    («When» от («Shows a case» от text) и shown)]
+
+тотальная функция «After the mark»
+  принимает output: строка, mark: строка
+  возвращает строка
+  пример «The line is taken from the mark to its end»
+    дано output равно "story.flang: ДОКАЗАНО — утверждений 1\nещё строка"
+    дано mark равно "ДОКАЗАНО — "
+    ожидается "ДОКАЗАНО — утверждений 1"
+  пример «An output without the mark gives nothing»
+    дано output равно "ничего"
+    дано mark равно "ДОКАЗАНО — "
+    ожидается ""
+  пусть tailpart равно («Piece at» от (разделить output по mark) и 2)
+  если output содержит mark
+    то соединить [mark, («First of» от (разделить tailpart по "\n"))] по ""
+    иначе ""
+
+тип «Verdict»
+  вариант «Written» содержит report: список строки
+  вариант «Not written» содержит report: список строки
+  вариант «Not judged» содержит report: список строки
+
+тотальная функция «Written line»
+  принимает text: строка
+  возвращает строка
+  пример «The goal of the story is named as the kernel named it»
+    дано text равно "Величина: ком, коми. Хочу ком не больше 3."
+    ожидается "ЗАПИСАНО: цель «хочу: ком не больше 3» доказана ядром обо всех входах"
+  соединить ["ЗАПИСАНО: цель «", («Goal said» от text),
+    "» доказана ядром обо всех входах"] по ""
+
+тотальная функция «Verdict of»
+  принимает text: строка, output: строка
+  возвращает «Verdict»
+  пример «A proved goal means the requirement is written»
+    дано text равно "Роль: к. Величина: ком, коми. История: пол. Как к. Хочу ком не меньше 1. Чтобы —."
+    дано output равно "story.flang: ДОКАЗАНО — утверждений 1: доказано 1, условно 0\n"
+    ожидается вариант «Written» с report равным ["История: пол.", "Как к.",
+      "Хочу ком не меньше 1.", "Чтобы —.",
+      "ЗАПИСАНО: цель «хочу: ком не меньше 1» доказана ядром обо всех входах",
+      "ядро: ДОКАЗАНО — утверждений 1: доказано 1, условно 0"]
+  пример «An answer of another kind is not a verdict»
+    дано text равно ""
+    дано output равно "FLANG_PARSE"
+    ожидается вариант «Not judged» с report равным [
+      "ядро ответило не приговором о цели истории: FLANG_PARSE"]
+  пусть read равно («Read back lines» от text)
+  пусть proved равно (output содержит "ДОКАЗАНО — утверждений 1: доказано 1")
+  пусть kernel равно (соединить ["ядро: ", («After the mark» от output и "ДОКАЗАНО — ")] по "")
+  пусть written равно («Соединить списки» от read и [(«Written line» от text), kernel])
+  пусть ok равно (вариант «Written» с report равным written)
+  пусть bykernel равно (вариант «Not written» с report равным («Refuted by the kernel» от text и output))
+  пусть bycase равно (вариант «Not written» с report равным («Refuted by the case» от text и output))
+  пусть blind равно (вариант «Not judged» с report равным [(«Not judged line» от output)])
+  «Chosen» от [(«When» от proved и ok),
+    («When» от (output содержит "FLANG_PROPERTY") и bykernel),
+    («When» от (output содержит "FLANG_EXAMPLE") и bycase)] и blind
+
+тотальная функция «Refuted by the kernel»
+  принимает text: строка, output: строка
+  возвращает список строки
+  пример «The kernel refused the goal of the story»
+    дано text равно "Величина: ком, коми. Хочу ком не больше 3."
+    дано output равно "FLANG_PROPERTY: нарушено свойство «хочу: ком не меньше 9»"
+    ожидается ["История: .", "Как .", "Хочу ком не больше 3.", "Чтобы .",
+      "НЕ ЗАПИСАНО: ядро отвергло цель истории — FLANG_PROPERTY: нарушено свойство «хочу: ком не меньше 9»"]
+  пусть said равно («After the mark» от output и "FLANG_PROPERTY: ")
+  пусть line равно (соединить ["НЕ ЗАПИСАНО: ядро отвергло цель истории — ", said] по "")
+  «Соединить списки» от («Read back lines» от text) и [line]
+
+тотальная функция «Refuted by the case»
+  принимает text: строка, output: строка
+  возвращает список строки
+  пример «The shown case of the story does not agree with its want»
+    дано text равно "Величина: ком, коми. Хочу ком не больше 3."
+    дано output равно "FLANG_EXAMPLE: значение не совпало с ожидаемым"
+    ожидается ["История: .", "Как .", "Хочу ком не больше 3.", "Чтобы .",
+      "НЕ ЗАПИСАНО: «тогда» истории не сходится с её «хочу» — FLANG_EXAMPLE: значение не совпало с ожидаемым"]
+  пусть said равно («After the mark» от output и "FLANG_EXAMPLE: ")
+  пусть line равно (соединить ["НЕ ЗАПИСАНО: «тогда» истории не сходится с её «хочу» — ",
+    said] по "")
+  «Соединить списки» от («Read back lines» от text) и [line]
+
+тотальная функция «Not judged line»
+  принимает output: строка
+  возвращает строка
+  пример «An answer of another kind is quoted as it came»
+    дано output равно "FLANG_PARSE"
+    ожидается "ядро ответило не приговором о цели истории: FLANG_PARSE"
+  пусть short равно (если (длина output) больше 600 то (подстрока output с 1 по 600) иначе output)
+  соединить ["ядро ответило не приговором о цели истории: ", short] по ""

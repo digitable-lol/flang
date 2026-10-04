@@ -211,6 +211,7 @@ candidate
 cannot
 canon
 canonical
+cap
 captures
 carried
 carrier
@@ -292,6 +293,7 @@ command
 commands
 commented
 comments
+commission
 commit
 common
 commutative
@@ -1305,6 +1307,7 @@ python
 quadratic
 quadratically
 quantifier
+quantity
 query
 questions
 quiescence
@@ -1440,6 +1443,7 @@ ride
 right
 ring
 roadmap
+role
 rollback
 rolled
 root
@@ -1461,6 +1465,7 @@ sabotages
 safety
 sales
 same
+sample
 say
 says
 scale
@@ -1518,6 +1523,7 @@ shortcuts
 shortener
 show
 showed
+shown
 shows
 shut
 side
@@ -1864,6 +1870,7 @@ walking
 walks
 wall
 walls
+want
 was
 wasm
 watched

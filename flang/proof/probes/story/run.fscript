@@ -1,0 +1,394 @@
+модуль «User story in sentences»
+  использует «Rules» из "../../../../scripts/rules.fscript"
+  использует «Inquiry» из "../../../../scripts/inquiry.fscript"
+  использует «User story sentences» из "translator.flang"
+  использует «Таблица проб» из "../table.fscript"
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The root of the tree seen from this plan»
+    ожидается "../../../.."
+  "../../../.."
+
+тотальная функция «Usage»
+  возвращает строка
+  соединить ["звать: bootstrap/flang io flang/proof/probes/story/run.fscript --plan Judge",
+    " -- <текст от корня дерева>; --plan Translate печатает программу, которую судит ядро"] по ""
+
+тотальная функция «Text path»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The first argument names the text»
+    дано answers равно [
+      запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["t.txt"])]
+    ожидается "t.txt"
+  пример «No argument names no text»
+    дано answers равно пустой список
+    ожидается ""
+  разбор («Given of» от "arguments" и answers)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Check script»
+  возвращает строка
+  соединить ["box=$(mktemp -d -p \"${FLANG_TMP:-${TMPDIR:-/tmp}}\" story.XXXXXX)",
+    " && printf '%s' \"$1\" > \"$box/story.flang\"",
+    " && \"${FLANG_BIN:-$0/bootstrap/flang}\" check \"$box/story.flang\" --proof --strict 2>&1;",
+    " code=$?; rm -rf \"$box\"; exit $code"] по ""
+
+тотальная функция «Text was read»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «A text that was not asked for was not read»
+    дано answers равно пустой список
+    ожидается нет
+  пример «A read file was read»
+    дано answers равно [
+      запись «Answer» с «name» равным "text" и «reply» равным (вариант «Прочитано» с содержимое равным "и")]
+    ожидается да
+  («Answered» от "text" и answers) и притом ((«Exit code of» от "text" и answers) равен 0)
+
+тотальная функция «Check question»
+  принимает text: строка
+  возвращает список «Question»
+  пример «A story that cannot be read is not judged»
+    дано text равно ""
+    ожидается пустой список
+  пусть asked равно [(«Run» от "check" и "sh" и ["-c", («Check script»), («Root»),
+    («Program of» от text)])]
+  если пусто («Story faults» от text) то asked иначе (пустой список)
+
+тотальная функция «Judge stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «The arguments are asked first»
+    дано stages равно 2
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»)]
+  пример «Without a text nothing is judged»
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть path равно («Text path» от answers)
+  пусть reading равно [(«Read from» от "text" и («Root») и path)]
+  пусть judging равно («Check question» от («Output of» от "text" и answers))
+  «Chosen» от [(«When» от (stages равен 2) и [(«Arguments» от "arguments")]),
+    («When» от ((stages равен 1) и притом (не (пусто path))) и reading),
+    («When» от ((stages равен 0) и притом («Text was read» от answers)) и judging)] и (пустой список)
+
+тотальная функция «Faults said»
+  принимает faults: список строки
+  возвращает строка
+  пример «The faults of a story are listed under one line»
+    дано faults равно ["у истории нет роли: впишите её строкой «Как <роль>»"]
+    ожидается "история не прочитана:\nу истории нет роли: впишите её строкой «Как <роль>»"
+  соединить (приписать "история не прочитана:" к faults) по "\n"
+
+тотальная функция «Verdict said»
+  принимает text: строка, output: строка
+  возвращает «Продолжение»
+  разбор («Verdict of» от text и output)
+    случай вариант «Written» с report как report
+      то вариант «Конец работы» с значение равным (соединить report по "\n")
+    случай вариант «Not written» с report как report
+      то вариант «Провал» с код равным "FLANG_STORY_NOT_WRITTEN" и сообщение равным (соединить report по "\n")
+    случай вариант «Not judged» с report как report
+      то вариант «Не проверено» с код равным "FLANG_STORY_CANNOT_LOOK" и сообщение равным (соединить report по "\n")
+
+тотальная функция «Judged»
+  принимает text: строка, output: строка
+  возвращает «Продолжение»
+  разбор («Read story» от text)
+    случай вариант «Unread» с faults как faults
+      то вариант «Провал» с код равным "FLANG_STORY_TEXT" и сообщение равным («Faults said» от faults)
+    случай вариант «Read»
+      то «Verdict said» от text и output
+
+тотальная функция «Judgment given»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть unread равно (соединить ["текст не прочитан: ", («Text path» от answers)] по "")
+  пусть nocall равно (вариант «Не проверено» с код равным "FLANG_STORY_CANNOT_LOOK" и сообщение равным («Usage»))
+  пусть nofile равно (вариант «Не проверено» с код равным "FLANG_STORY_CANNOT_LOOK" и сообщение равным unread)
+  пусть judged равно («Judged» от («Output of» от "text" и answers) и («Output of» от "check" и answers))
+  «Chosen» от [(«When» от (пусто («Text path» от answers)) и nocall),
+    («When» от (не («Text was read» от answers)) и nofile)] и judged
+
+тотальная функция «Proceed with judging»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Judgment given» от answers
+        иначе «Proceed with judging» от («Judge stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin judging»
+  возвращает «Inquiry»
+  «Begin with» от 3
+
+тотальная функция «Next judging question»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed with judging» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Judge»
+  состояние «Inquiry»
+  начинает с «Begin judging»
+  обрабатывает «Next judging question»
+
+тотальная функция «Translated»
+  принимает text: строка
+  возвращает «Продолжение»
+  разбор («Read story» от text)
+    случай вариант «Unread» с faults как faults
+      то вариант «Провал» с код равным "FLANG_STORY_TEXT" и сообщение равным («Faults said» от faults)
+    случай вариант «Read»
+      то вариант «Конец работы» с значение равным («Program of» от text)
+
+тотальная функция «Translation given»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть unread равно (соединить ["текст не прочитан: ", («Text path» от answers)] по "")
+  пусть nocall равно (вариант «Не проверено» с код равным "FLANG_STORY_CANNOT_LOOK" и сообщение равным («Usage»))
+  пусть nofile равно (вариант «Не проверено» с код равным "FLANG_STORY_CANNOT_LOOK" и сообщение равным unread)
+  «Chosen» от [(«When» от (пусто («Text path» от answers)) и nocall),
+    («When» от (не («Text was read» от answers)) и nofile)] и («Translated» от («Output of» от "text" и answers))
+
+тотальная функция «Proceed with translating»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Translation given» от answers
+        иначе «Proceed with translating» от («Judge stage» от stages и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin translating»
+  возвращает «Inquiry»
+  «Begin with» от 2
+
+тотальная функция «Next translating question»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed with translating» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Translate»
+  состояние «Inquiry»
+  начинает с «Begin translating»
+  обрабатывает «Next translating question»
+
+тотальная функция «This set»
+  возвращает «Набор»
+  пусть blind равно "FLANG_PROBE_STORY_CANNOT_LOOK"
+  запись «Набор» с «имя» равным "story" и «код расхождения» равным "FLANG_PROBE_STORY" и «код слепоты» равным blind
+
+тотальная функция «Rows of»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  «Строки данных» от («Output of» от "table" и answers)
+
+тотальная функция «Text name of»
+  принимает row: список строки
+  возвращает строка
+  пример «The first field of a row names the text»
+    дано row равно ["discount-cap.txt", "0", "ЗАПИСАНО"]
+    ожидается "discount-cap.txt"
+  «Поле» от row и 1
+
+тотальная функция «Read name of»
+  принимает row: список строки
+  возвращает строка
+  пример «The answer about a text is named after it»
+    дано row равно ["discount-cap.txt", "0", "ЗАПИСАНО"]
+    ожидается "text discount-cap.txt"
+  соединить ["text ", («Text name of» от row)] по ""
+
+тотальная функция «Check name of»
+  принимает row: список строки
+  возвращает строка
+  пример «The answer of the kernel about a text is named after it»
+    дано row равно ["discount-cap.txt", "0", "ЗАПИСАНО"]
+    ожидается "check discount-cap.txt"
+  соединить ["check ", («Text name of» от row)] по ""
+
+тотальная функция «Text of row»
+  принимает row: список строки, answers: список «Answer»
+  возвращает строка
+  пример «A text that was not read is empty»
+    дано row равно ["discount-cap.txt", "0", "ЗАПИСАНО"]
+    дано answers равно пустой список
+    ожидается ""
+  «Output of» от («Read name of» от row) и answers
+
+тотальная функция «Named»
+  принимает name: строка, question: «Question»
+  возвращает «Question»
+  пример «A question is renamed and keeps its order»
+    дано name равно "check d.txt"
+    дано question равно запись «Question» с «name» равным "x" и «order» равным (вариант «Прочитать доводы»)
+    ожидается запись «Question» с «name» равным "check d.txt" и «order» равным (вариант «Прочитать доводы»)
+  запись «Question» с «name» равным name и «order» равным (question.«order»)
+
+тотальная функция «Kernel questions of»
+  принимает row: список строки, answers: список «Answer»
+  возвращает список «Question»
+  пример «A text that was not read asks the kernel nothing»
+    дано row равно ["discount-cap.txt", "0", "ЗАПИСАНО"]
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть asked равно («Check question» от («Text of row» от row и answers))
+  отобразить asked как question → «Named» от («Check name of» от row) и question
+
+тотальная функция «Read request»
+  принимает row: список строки
+  возвращает «Question»
+  пусть path равно (соединить ["texts/", («Text name of» от row)] по "")
+  «Read» от («Read name of» от row) и path
+
+тотальная функция «Added»
+  принимает gathered: список «Question», row: список строки, answers: список «Answer»
+  возвращает список «Question»
+  «Соединить списки» от gathered и («Kernel questions of» от row и answers)
+
+тотальная функция «Kernel questions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  свёртка («Rows of» от answers) начиная с (пустой список) как gathered и row → «Added» от gathered и row и answers
+
+тотальная функция «Probe stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пусть opening равно [(«Read» от "table" и "expected.tsv"), («List» от "texts" и "texts")]
+  пусть reading равно (отобразить («Rows of» от answers) как row → «Read request» от row)
+  пусть judging равно («Kernel questions» от answers)
+  «Chosen» от [(«When» от (stages равен 2) и opening),
+    («When» от (stages равен 1) и reading)] и judging
+
+тотальная функция «Code of»
+  принимает outcome: «Продолжение»
+  возвращает строка
+  пример «A finished plan returns zero»
+    дано outcome равно вариант «Конец работы» с значение равным "ЗАПИСАНО"
+    ожидается "0"
+  пример «A failure returns one»
+    дано outcome равно вариант «Провал» с код равным "FLANG_STORY_NOT_WRITTEN" и сообщение равным "НЕ ЗАПИСАНО"
+    ожидается "1"
+  разбор outcome
+    случай вариант «Конец работы» с значение как report
+      то "0"
+    случай вариант «Провал» с код как code и сообщение как message
+      то "1"
+    случай любое
+      то "3"
+
+тотальная функция «Words of outcome»
+  принимает outcome: «Продолжение»
+  возвращает строка
+  пример «A finished plan says its report»
+    дано outcome равно вариант «Конец работы» с значение равным "ЗАПИСАНО"
+    ожидается "ЗАПИСАНО"
+  пример «A failure says its code and its message»
+    дано outcome равно вариант «Провал» с код равным "FLANG_STORY_NOT_WRITTEN" и сообщение равным "НЕ ЗАПИСАНО"
+    ожидается "FLANG_STORY_NOT_WRITTEN НЕ ЗАПИСАНО"
+  разбор outcome
+    случай вариант «Конец работы» с значение как report
+      то report
+    случай вариант «Провал» с код как code и сообщение как message
+      то соединить [code, " ", message] по ""
+    случай вариант «Не проверено» с код как code и сообщение как message
+      то соединить [code, " ", message] по ""
+    случай любое
+      то ""
+
+тотальная функция «Outcome of row»
+  принимает row: список строки, answers: список «Answer»
+  возвращает «Продолжение»
+  пусть unread равно (соединить ["текст не прочитан: ", («Text name of» от row)] по "")
+  пусть nofile равно (вариант «Не проверено» с код равным "FLANG_STORY_CANNOT_LOOK" и сообщение равным unread)
+  пусть verdict равно («Output of» от («Check name of» от row) и answers)
+  пусть judged равно («Judged» от («Text of row» от row и answers) и verdict)
+  если («Exit code of» от («Read name of» от row) и answers) равен 0 то judged иначе nofile
+
+тотальная функция «Complaint of row»
+  принимает row: список строки, answers: список «Answer»
+  возвращает строка
+  пусть outcome равно («Outcome of row» от row и answers)
+  соединить [(«Text name of» от row), " — ждали код ", («Поле» от row и 2), " и слово «",
+    («Поле» от row и 3), "», вышло: код ", («Code of» от outcome), ", ",
+    («Кратко» от («Words of outcome» от outcome))] по ""
+
+тотальная функция «Row agrees»
+  принимает row: список строки, answers: список «Answer»
+  возвращает признак
+  пусть outcome равно («Outcome of row» от row и answers)
+  пусть same равно ((«Code of» от outcome) равен («Поле» от row и 2))
+  same и притом ((«Words of outcome» от outcome) содержит («Поле» от row и 3))
+
+тотальная функция «Complaints of row»
+  принимает row: список строки, answers: список «Answer»
+  возвращает список строки
+  пример «A row whose text was not read is a complaint»
+    дано row равно ["d.txt", "0", "З"]
+    дано answers равно пустой список
+    ожидается [
+      "d.txt — ждали код 0 и слово «З», вышло: код 3, FLANG_STORY_CANNOT_LOOK текст не прочитан: d.txt"]
+  «Applying» от [(«When» от (не («Row agrees» от row и answers)) и («Complaint of row» от row и answers))]
+
+тотальная функция «Texts without a row»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть named равно (отобразить («Rows of» от answers) как row → «Text name of» от row)
+  пусть stray равно (отфильтровать («Listed of» от "texts" и answers) где name → не (named содержит name))
+  отобразить stray как name → соединить [name,
+    " — текст лежит в каталоге, а строки о нём в expected.tsv нет"] по ""
+
+тотальная функция «Gathered complaints»
+  принимает gathered: список строки, row: список строки, answers: список «Answer»
+  возвращает список строки
+  «Соединить списки» от gathered и («Complaints of row» от row и answers)
+
+тотальная функция «Complaints of»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть stray равно («Texts without a row» от answers)
+  свёртка («Rows of» от answers) начиная с stray как gathered и row → «Gathered complaints» от gathered и row и answers
+
+тотальная функция «Probes judged»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть found равно («Complaints of» от answers)
+  если (длина («Rows of» от answers)) равен 0
+    то «Нечем смотреть» от («This set») и "в expected.tsv нет ни одной строки данных"
+    иначе «Итог» от («This set») и found и (длина («Rows of» от answers))
+
+тотальная функция «Proceed with probes»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Probes judged» от answers
+        иначе «Proceed with probes» от («Probe stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin probes»
+  возвращает «Inquiry»
+  «Begin with» от 3
+
+тотальная функция «Next probe question»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed with probes» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Binary»
+  состояние «Inquiry»
+  начинает с «Begin probes»
+  обрабатывает «Next probe question»

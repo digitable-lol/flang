@@ -817,7 +817,9 @@ static const char HELP_IO[] =
     "  --timeout МС    срок ТИШИНЫ процесса из «Запустить процесс», миллисекундами\n"
     "                  (по умолчанию 30000): отсчёт от последнего байта в stdout\n"
     "                  или stderr, а не от запуска. Молчит дольше — хозяин убивает\n"
-    "                  его и отвечает «Сбой» с кодом FLANG_IO_TIMEOUT\n"
+    "                  его и отвечает «Сбой» с кодом FLANG_IO_TIMEOUT. Свой срок\n"
+    "                  плана (поручение «Запустить процесс с пределом»)\n"
+    "                  этого срока НЕ отменяет: ждут оба, бьёт тот, что раньше\n"
     "  --pretty        JSON с отступами\n"
     "  --trust         исполнить недоказанный план: вердикт не считается вовсе, и\n"
     "                  об этом говорится своей строкой. Кириллицей — «--на-веру»\n"
@@ -14974,6 +14976,7 @@ static int facts_file(int argc, char **argv) {
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -16085,20 +16088,59 @@ static void io_close(io_host *host) {
   host->listen_count = 0;
 }
 
+/*
+ * Сколько миллисекунд прошло с названной отметки.
+ *
+ * Отдельной функцией, а не на месте, потому что спрашивается это ТРИЖДЫ за
+ * виток чтения, и считать вычитание по-разному в трёх местах значило бы
+ * заводить три разных срока под одним именем.
+ */
+static long io_elapsed_ms(const struct timeval *since) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  return (long)(now.tv_sec - since->tv_sec) * 1000L
+       + (long)(now.tv_usec - since->tv_usec) / 1000L;
+}
+
 /* ── запуск процесса ─────────────────────────────────────────────────────── */
 
 /*
- * Три исхода, и все три названы отдельно, потому что смешать их значит соврать:
+ * Четыре исхода, и все четыре названы отдельно, потому что смешать их значит
+ * соврать:
  *
  *   не запустилось вовсе  → «Сбой» FLANG_IO_SPAWN (процесса не было);
  *   кончилось само        → «Процесс завершён» с КОДОМ, каким бы он ни был;
- *   кончилось не само     → «Процесс убит» с именем сигнала.
+ *   кончилось не само     → «Процесс убит» с именем сигнала;
+ *   оборвал ХОЗЯИН по сроку, названному самим поручением,
+ *                         → «Процесс оборван» с этим сроком и с тем, что
+ *                            процесс успел напечатать.
  *
  * Ненулевой код возврата — РЕЗУЛЬТАТ работы, а не сбой: ради него поручение и
  * заведено. Слить «убит» с «вернул 0» нельзя ни в какую сторону, поэтому
  * `WIFSIGNALED` спрашивается раньше `WEXITSTATUS`.
+ *
+ * ДВА ПРЕДЕЛА ПОРУЧЕНИЯ, и кладут их РАЗНЫЕ руки — в этом вся разница откликов:
+ *
+ *   `memory_kib`   кладёт ЯДРО на дитя (`setrlimit(RLIMIT_AS)` до `execvp`),
+ *                  ровно как `ulimit -v` в оболочке. Дитя упирается в предел
+ *                  САМО: `malloc` отвечает отказом, дитя печатает своё
+ *                  сообщение и кончается своим кодом. Хозяин его НЕ УБИВАЛ и
+ *                  причины не знает, поэтому и отвечает как обычно —
+ *                  «Процесс завершён» с кодом и с его собственным
+ *                  `stderr`. Гадать «это была память» хозяин не вправе:
+ *                  дитя могло упасть и по другой причине;
+ *   `deadline_ms`  держит САМ ХОЗЯИН по своим часам. Срок вышел — хозяин бьёт
+ *                  `SIGKILL` и отвечает «Процесс оборван»: он это сделал,
+ *                  он и называет. Отклик несёт `вывод` и `ошибки`, потому что
+ *                  напечатанное ДО обрыва — это то, ради чего предел и ставят.
+ *
+ * Срок поручения НЕ ОТМЕНЯЕТ срок тишины хозяина (`--timeout`) и не продлевает
+ * его: ждут оба, срабатывает тот, что раньше. Иначе план, назвавший свой срок,
+ * вышел бы из-под хозяйского — то есть получил бы полномочие, которого ему
+ * никто не давал.
  */
-static fl_value io_spawn(io_host *host, const char *program, char *const *argv) {
+static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
+                         long memory_kib, long deadline_ms) {
   int out_pipe[2];
   int err_pipe[2];
   pid_t child = 0;
@@ -16107,6 +16149,9 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
   int status = 0;
   bool too_much = false;
   bool silent_too_long = false;
+  bool deadline_hit = false;
+  struct timeval started;
+  gettimeofday(&started, NULL);
   if (pipe(out_pipe) != 0) {
     return io_fail_errno("FLANG_IO_SPAWN", "труба вывода не заведена");
   }
@@ -16135,6 +16180,23 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
     if (chdir(host->root) != 0) {
       _exit(127);
     }
+    /* Предел памяти кладётся ЗДЕСЬ, в дитя и до `execvp`: так он достаётся
+       программе и всему, что она заведёт дальше, и так же его кладёт `ulimit
+       -v`. Промах `setrlimit` — не повод пустить программу БЕЗ предела: план
+       просил предел, и молча отдать ему беспредельное дитя значило бы соврать.
+       Код 126 выбран отдельно от 127 («`execvp` не нашёл программу»), чтобы
+       причина читалась кодом, а не только строкой. */
+    if (memory_kib > 0) {
+      struct rlimit bound;
+      bound.rlim_cur = (rlim_t)memory_kib * 1024;
+      bound.rlim_max = (rlim_t)memory_kib * 1024;
+      if (setrlimit(RLIMIT_AS, &bound) != 0) {
+        const char *complaint = "flang io: предел памяти не положен на дитя\n";
+        ssize_t ignored = write(2, complaint, strlen(complaint));
+        (void)ignored;
+        _exit(126);
+      }
+    }
     execvp(program, argv);
     _exit(127);
   }
@@ -16158,6 +16220,7 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
       int index = 0;
       struct timeval wait;
       int ready = 0;
+      long slice = host->timeout_ms;
       FD_ZERO(&set);
       for (index = 0; index < 2; index += 1) {
         if (alive[index]) {
@@ -16165,14 +16228,47 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
           if (fds[index] > top) top = fds[index];
         }
       }
-      wait.tv_sec = host->timeout_ms / 1000;
-      wait.tv_usec = (host->timeout_ms % 1000) * 1000;
+      /* Ждут ДВА срока сразу, и ждут по-разному: срок тишины хозяина
+         отсчитывается от последнего байта и потому задаётся каждому витку
+         заново, а срок поручения — от ЗАПУСКА, и до него остаётся всё меньше.
+         Спать дольше остатка нельзя: тогда обрыв опоздал бы ровно на то, на
+         сколько процесс молчал. Поэтому ждут меньший из двух, а кто именно
+         сработал, решается по часам, а не по тому, чей это был отрезок. */
+      if (deadline_ms > 0) {
+        const long left = deadline_ms - io_elapsed_ms(&started);
+        if (left <= 0) {
+          deadline_hit = true;
+          kill(child, SIGKILL);
+          break;
+        }
+        if (left < slice) slice = left;
+      }
+      wait.tv_sec = slice / 1000;
+      wait.tv_usec = (slice % 1000) * 1000;
       ready = select(top + 1, &set, NULL, NULL, &wait);
       if (ready < 0 && errno == EINTR) {
         continue;
       }
-      if (ready <= 0) {
-        silent_too_long = ready == 0;
+      if (ready == 0) {
+        if (deadline_ms > 0 && io_elapsed_ms(&started) >= deadline_ms) {
+          deadline_hit = true;
+          kill(child, SIGKILL);
+          break;
+        }
+        /* Отрезок кончился молча, и теперь важно, ЧЕЙ он был. Полный хозяйский
+           (`slice` не урезан) — это ТИШИНА дольше `--timeout`, и ответ тот же,
+           что был всегда. Урезанный сроком поручения — ещё не тишина: ждать
+           осталось, и виток идёт заново. Без этого различения срок тишины
+           ПЕРЕСТАЁТ РАБОТАТЬ вовсе: `sleep 3` при `--timeout 800` уходил с
+           кодом 0 за 3,4 с вместо отказа за 1,2 с. Снято прогоном. */
+        if (slice >= host->timeout_ms) {
+          silent_too_long = true;
+          kill(child, SIGKILL);
+          break;
+        }
+        continue;
+      }
+      if (ready < 0) {
         kill(child, SIGKILL);
         break;
       }
@@ -16205,6 +16301,21 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv) 
     buf_free(&out);
     buf_free(&err);
     return io_fail("FLANG_IO_SPAWN", buffer);
+  }
+  if (deadline_hit) {
+    /* «Сбой» здесь не годится, и это не вкус: «Сбой» несёт только код и
+       сообщение, то есть ВЫБРОСИЛ БЫ напечатанное. А напечатанное до обрыва —
+       ровно то, ради чего предел и ставился. Поэтому отклик свой и несёт обе
+       трубы, как «Процесс завершён» и «Процесс убит». */
+    fl_value fields[3];
+    fl_value answer = fl_nothing();
+    fields[0] = io_pair("предел", io_number((double)deadline_ms));
+    fields[1] = io_pair("вывод", io_text(out.data == NULL ? "" : out.data, out.used));
+    fields[2] = io_pair("ошибки", io_text(err.data == NULL ? "" : err.data, err.used));
+    answer = io_variant("Процесс оборван", fields, 3);
+    buf_free(&out);
+    buf_free(&err);
+    return answer;
   }
   if (silent_too_long) {
     char buffer[256];
@@ -17071,11 +17182,29 @@ static fl_value io_perform(io_host *host, fl_value order) {
     }
   }
 
-  if (io_order_is(order, "Запустить процесс")) {
+  /*
+   * Два поручения на одной ветке, и это не экономия строк: аргументы, каталог
+   * работы, трубы, ответ — у них ОДНИ, и разойтись они не вправе. Второе
+   * поручение называет сверх первого только два предела. Двумя ветками это
+   * было бы две копии разбора argv, и первая же правка одной из них разошлась
+   * бы с другой МОЛЧА.
+   *
+   * ПОЛНОМОЧИЕ У НИХ ТОЖЕ ОДНО, и это главное: предел не добавляет власти, а
+   * отнимает. Кто вправе завести дитя, тот вправе и связать ему руки, поэтому
+   * своего ключа у предела нет — его запрещает тот же `--no-spawn`, и тем же
+   * словом. Отдельное полномочие понадобилось бы для другого дела: убить
+   * процесс, которого план НЕ ЗАПУСКАЛ, — по номеру или по имени. Этого здесь
+   * нет и нарочно (ADR-0056), поэтому ключа «--no-signal» не заводится.
+   */
+  if (io_order_is(order, "Запустить процесс")
+      || io_order_is(order, "Запустить процесс с пределом")) {
+    const bool with_limits = io_order_is(order, "Запустить процесс с пределом");
     char *program = io_order_text(order, "программа");
     fl_value list = fl_nothing();
     const fl_value *items = NULL;
     size_t count = 0;
+    long memory_kib = 0;
+    long deadline_ms = 0;
     if (!host->spawn) {
       free(program);
       return io_fail("FLANG_IO_DENIED", "хозяину запрещено запускать процессы");
@@ -17083,6 +17212,29 @@ static fl_value io_perform(io_host *host, fl_value order) {
     if (program == NULL || program[0] == '\0') {
       free(program);
       return io_fail("FLANG_IO_SPAWN", "поручению нужно непустое имя программы");
+    }
+    if (with_limits) {
+      /* Нуль значит «без предела», и он назван ЯВНО, а не пропуском поля:
+         вариант в этом языке строится всеми полями, и «поле не назвали» не
+         бывает. Дробь и отрицательное отбиваются громко: предел в пол-кило
+         памяти — это не предел, а описка, и исполнять описку молча хуже, чем
+         отказать. */
+      double memory = 0.0;
+      double deadline = 0.0;
+      if (!io_order_number(order, "память", &memory)
+          || memory < 0.0 || memory != (double)(long)memory) {
+        free(program);
+        return io_fail("FLANG_IO_SPAWN",
+                       "предел памяти — целое число килобайт, не меньше нуля; нуль значит «без предела»");
+      }
+      if (!io_order_number(order, "срок", &deadline)
+          || deadline < 0.0 || deadline != (double)(long)deadline) {
+        free(program);
+        return io_fail("FLANG_IO_SPAWN",
+                       "срок — целое число миллисекунд, не меньше нуля; нуль значит «без предела»");
+      }
+      memory_kib = (long)memory;
+      deadline_ms = (long)deadline;
     }
     if (io_order_field(order, "аргументы", &list)) {
       zn_items(list, &items, &count);
@@ -17098,7 +17250,7 @@ static fl_value io_perform(io_host *host, fl_value order) {
         argv[index + 1] = zn_text(items[index], &utf8, &bytes) ? repl_dup(utf8, bytes) : repl_say("");
       }
       argv[count + 1] = NULL;
-      answer = io_spawn(host, program, argv);
+      answer = io_spawn(host, program, argv, memory_kib, deadline_ms);
       for (index = 0; index < count; index += 1) {
         free(argv[index + 1]);
       }

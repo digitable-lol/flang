@@ -4364,7 +4364,129 @@ static fl_status fl_order(fl_ctx *ctx, fl_value left, fl_value right, fl_error *
   return FL_OK;
 }
 
+/*
+ * ───────────────────── точное целое: разряды основания 2²² ─────────────────────
+ *
+ * Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание 2²².
+ * Выбор представления — задача 1411, решение — ADR-0036 §11; складывает разряды
+ * вычислитель в `flang/self/interpret.flang` («Основание разрядов» и ниже).
+ *
+ * Отличать точное целое от обычного списка по ТИПУ здесь нечем: напечатанная
+ * программа типов не носит, а вычислитель и сам смотрит только на вид значения
+ * («Сложение знач»: оба операнда — списки чисел). Поэтому правило ниже такое же
+ * динамическое, и расхождения между вычислителем и печатью не возникает.
+ *
+ * Путей в вычислителе ДВА, и слить их в один нельзя. Разряд вне [0, 2²²)
+ * законен — собственный пример вычислителя подаёт [4194305], — а на таких
+ * разрядах быстрый путь (до двух разрядов, машинным сложением) и общий путь
+ * (перенос по столбцам) дают РАЗНЫЙ ответ. Переписаны оба, порознь.
+ */
+#define FL_EXACT_BASE 4194304.0
+
+/* «Разряды ли знач»: список, и каждый элемент — число. Пустой список годится. */
+static bool fl_exact_digits(fl_value value) {
+  size_t index;
+  if (value.tag != FL_LIST) {
+    return false;
+  }
+  for (index = 0; index < value.as.list.count; index++) {
+    if (value.as.list.items[index].tag != FL_NUMBER) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/* «Разряд точного»: номер с единицы, за концом списка — ноль. */
+static double fl_exact_digit(fl_value value, size_t number) {
+  if (number < 1 || number > value.as.list.count) {
+    return 0.0;
+  }
+  return value.as.list.items[number - 1].as.number;
+}
+
+/* «Срезать старшие нули»: старший разряд стоит в конце. */
+static size_t fl_exact_trim(const double *digits, size_t count) {
+  while (count > 0 && digits[count - 1] == 0.0) {
+    count--;
+  }
+  return count;
+}
+
+/* «Разряды малого точного»: значение → до трёх разрядов. Пишет ровно три. */
+static size_t fl_exact_small_digits(double value, double *out) {
+  double low = fmod(value, FL_EXACT_BASE);
+  double high = (value - low) / FL_EXACT_BASE;
+  double middle = fmod(high, FL_EXACT_BASE);
+  out[0] = low;
+  out[1] = middle;
+  out[2] = (high - middle) / FL_EXACT_BASE;
+  return fl_exact_trim(out, 3);
+}
+
+/* «Значение малых разрядов»: два младших разряда — машинным числом. */
+static double fl_exact_small_value(fl_value value) {
+  return fl_exact_digit(value, 1) + fl_exact_digit(value, 2) * FL_EXACT_BASE;
+}
+
+/*
+ * «Уложить разряды»: перенос по столбцам, затем разряды переноса сверху.
+ * Читает columns[i] до записи out[i], поэтому зовётся и на месте (out == columns).
+ * Под out нужно count + 3 ячейки.
+ */
+static size_t fl_exact_settle(const double *columns, size_t count, double *out) {
+  double carry = 0.0;
+  size_t index;
+  for (index = 0; index < count; index++) {
+    double sum = columns[index] + carry;
+    double low = fmod(sum, FL_EXACT_BASE);
+    carry = (sum - low) / FL_EXACT_BASE;
+    out[index] = low;
+  }
+  return fl_exact_trim(out, count + fl_exact_small_digits(carry, out + count));
+}
+
+/* «Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы и перенос. */
+static size_t fl_exact_sum(fl_value left, fl_value right, double *out) {
+  size_t wide;
+  size_t index;
+  if (left.as.list.count <= 2 && right.as.list.count <= 2) {
+    return fl_exact_small_digits(fl_exact_small_value(left) + fl_exact_small_value(right), out);
+  }
+  wide = left.as.list.count > right.as.list.count ? left.as.list.count : right.as.list.count;
+  for (index = 0; index < wide; index++) {
+    out[index] = fl_exact_digit(left, index + 1) + fl_exact_digit(right, index + 1);
+  }
+  return fl_exact_settle(out, wide, out);
+}
+
+/* «Точное сложение». Витков не тратит — так же, как в вычислителе. */
+static fl_status fl_exact_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  size_t room = (left.as.list.count > right.as.list.count ? left.as.list.count : right.as.list.count) + 3;
+  double *digits;
+  fl_value *items;
+  size_t count;
+  size_t index;
+  if (room > ((size_t)-1) / sizeof(double)) {
+    return fl_no_memory(error);
+  }
+  digits = (double *)fl_arena_alloc(ctx->arena, room * sizeof(double));
+  if (digits == NULL) {
+    return fl_no_memory(error);
+  }
+  count = fl_exact_sum(left, right, digits);
+  FL_TRY(fl_list_alloc(ctx, count, &items, error));
+  for (index = 0; index < count; index++) {
+    items[index] = fl_number(digits[index]);
+  }
+  *out = fl_list(items, count);
+  return FL_OK;
+}
+
 fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  if (fl_exact_digits(left) && fl_exact_digits(right)) {
+    return fl_exact_add(ctx, left, right, out, error);
+  }
   FL_TRY(fl_numbers(ctx, "add", left, right, error));
   *out = fl_number(left.as.number + right.as.number);
   return FL_OK;

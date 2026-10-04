@@ -1,5 +1,5 @@
 # How a proof works
-<!-- замер: версия 0.7.23 · дерево 47f34686a · сверено 2026-10-01 -->
+<!-- замер: версия 0.7.24 · дерево 5604556ef · сверено 2026-10-04 -->
 
 Before the flang compiler accepts a file, it checks three kinds of statements:
 

@@ -1,4 +1,4 @@
-program	surface	code	word
+program	surface	code	word	ЭТО ФОТОГРАФИЯ ДЕФЕКТА задачи 1113, А НЕ КОНТРАКТ	снято с bootstrap/flang 0.7.24 4 октября 2026	строки wide-first и direct-wide-first отвечают код 0 там, где тот же файл в одиночку отказан — это и есть дефект	закрытие 1113 ОБЯЗАНО покраснить эту таблицу: её тогда перемеряют, а не правят под зелёный
 source.flang	check	0	замечаний нет
 wide.flang	check	0	замечаний нет
 narrow.flang	check	1	FLANG_UNKNOWN_NAME, строка 6, столбец 3: имя «Второе слово» не связано

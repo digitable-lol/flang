@@ -1570,6 +1570,7 @@ bb9f8dadc0aa937a5fc4dbda79707edd|18|16|2|0|0|scripts/guards/file-extensions.fscr
 ce0f26e8f64ce11b7f2f8e559d0f090b|11|11|0|0|0|scripts/guards/guards-without-forgery-probe.fscript
 d29d464d969d58822bc10e6e696017ef|14|14|0|0|0|scripts/flangrc.fscript
 001c0ecd7217d8ae84b4133d3dca9085|4|4|0|0|0|scripts/guards/flangrc-guard.fscript
+17a251103350021e6706a9325319aea6|16|14|2|0|0|scripts/guards/hand-written-lists.fscript
 baa3170dc90958c56352eb9b3f49ab9b|62|49|10|3|0|scripts/guards/homebrew-formula-guard.fscript
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/guards/input-boundary.fscript
 b00f9a812077e3b8497c15864acff995|11|7|3|0|0|scripts/guards/io-dictionary-copies-guard.fscript

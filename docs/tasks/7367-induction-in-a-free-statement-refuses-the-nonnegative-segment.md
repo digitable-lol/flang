@@ -114,10 +114,10 @@ FLANG_PROOF_INDUCTION_TYPE … строка 10, столбец 3: утвержд
 | выбор носителя принципа | `flang/self/proof-kernel.flang`, анкер `Инд1 proof-kernel.flang:1012` «Имя конструктора образца» | носителей сегодня два, перебор закрытый |
 | отказ, который снимается | `flang/self/proof-kernel.flang` либо `flang/self/proof.flang`: место, печатающее `FLANG_PROOF_INDUCTION_TYPE` | один код беды |
 | печать и чтение хода | `flang/self/proof-record.flang`, `flang/proof/checker/checker.c` (<!-- СНЯТО 2026-10-04 строк flang/proof/checker/checker.c = 10497 --> 10 497 строк), `flang/proof/checker.flang` | список ходов закрытый |
-| перечень и лемма | `flang/proof/tables/inference-rules.tsv` (<!-- СНЯТО 2026-10-04 строк flang/proof/tables/inference-rules.tsv = 113 --> 113 строк с шапкой), `flang/proof/lean/Rules.lean` | семья `Инд` — четыре строки перечня (`awk -F'\t' '$2=="Инд"'`, 4 октября 2026) |
+| перечень и лемма | `flang/proof/tables/inference-rules.tsv` (<!-- СНЯТО 2026-10-04 строк flang/proof/tables/inference-rules.tsv = 115 (задача 1412: над точным целым заведены правило Кол1 «Сумма точных сошлась» и запрет Кол✗ «Листья кольца точные» — две строки таблицы; до них 113, снято 2026-10-04) --> 115 строк с шапкой), `flang/proof/lean/Rules.lean` | семья `Инд` — четыре строки перечня (`awk -F'\t' '$2=="Инд"'`, 4 октября 2026) |
 
 Ядро решений — `flang/self/proof-kernel.flang`,
-<!-- СНЯТО 2026-10-04 строк flang/self/proof-kernel.flang = 5811 --> 5 811 строк;
+<!-- СНЯТО 2026-10-04 строк flang/self/proof-kernel.flang = 5932 (задача 1412: над точным целым заведены правило Кол1 «Сумма точных сошлась» и запрет Кол✗ «Листья кольца точные», и четыре примера к ним; до них 5811, снято 2026-10-04) --> 5 932 строки;
 перебор носителей написан дважды — в ядре и в независимой проверяющей
 программе (так сказано в `docs/ROADMAP.md`, этап 4), значит правки две.
 

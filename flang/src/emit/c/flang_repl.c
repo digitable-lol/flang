@@ -19412,6 +19412,35 @@ static bool lock_scan(const char *full, const char *text, size_t bytes, char **n
       char *relative = NULL;
       char *target = NULL;
       if (!zn_field_text(imports[inner], "from", &from, &from_bytes)) {
+        /* ПУТИ НЕТ — ЭТО ВВОЗ ПО ИМЕНИ (`использует «Списки»`), и ключа "from" в
+           узле тогда нет ВОВСЕ; пустая строка значила бы «путь есть, он пустой».
+           До 4 октября 2026 здесь стояло `continue`, и замок над программой с
+           тремя ввозами по имени писал «модули: []» при четырёх файлах, которые
+           насчитал `flang check` (задача 2031).
+
+           Места поиска берутся у загрузчика (`repl_find_module`) — те же и в том
+           же порядке. Свой список мест означал бы, что замок записывает не тот
+           файл, который соберётся, а это хуже пустого замка. */
+        const char *wanted = NULL;
+        size_t wanted_bytes = 0;
+        if (zn_field_text(imports[inner], "category", &wanted, &wanted_bytes) && wanted_bytes != 0) {
+          repl_strings found;
+          char *asked = repl_dup(wanted, wanted_bytes);
+          size_t place = 0;
+          strings_init(&found);
+          repl_find_module(full, asked, &found);
+          for (place = 0; place < found.count; place += 1) {
+            const char *target = found.items[place];
+            if (strings_has(seen, target, strlen(target))) {
+              continue;
+            }
+            strings_say(seen, target);
+            strings_say(queue_paths, target);
+            strings_add(queue_names, wanted, wanted_bytes);
+          }
+          strings_free(&found);
+          free(asked);
+        }
         continue;
       }
       relative = repl_dup(from, from_bytes);
@@ -19434,6 +19463,16 @@ static bool lock_scan(const char *full, const char *text, size_t bytes, char **n
   free(directory);
   return true;
 }
+
+/*
+ * Пакет на пути ввоза: `использует «Имя» из "имя.flang-package"`. Объявлены
+ * здесь, потому что замок встречает пакет РАНЬШЕ, чем они определены ниже; тела
+ * у них одни и те же для замка и для пакета, и двух читателей пакета нет
+ * намеренно — читатель, проверяющий три заставы из четырёх, был бы дырой ровно
+ * там, где её никто не ищет.
+ */
+static bool pkg_is_package(const char *path);
+static bool pkg_take_nested(const char *file, const char *root, lock_modules *out);
 
 /*
  * Обход замыкания «использует» с чтением файлов — то же, что делает
@@ -19463,7 +19502,18 @@ static bool lock_collect(const char *entry, const char *root, const char *entry_
     char *name = NULL;
     size_t functions = 0;
     size_t bytes = 0;
-    char *text = repl_read_file(file, &bytes);
+    char *text = NULL;
+    /* ВСТРЕЧЕННЫЙ `.flang-package` РАСКРЫВАЕТСЯ ЦЕЛИКОМ, А НЕ ЧИТАЕТСЯ КАК
+       ИСХОДНИК. До 4 октября 2026 замок отдавал пакет разбору flang и отвечал
+       `FLANG_PARSE` «документ должен начинаться со слова 'категория'» на той
+       самой форме, которую `DESCRIPTION.md` называет способом употребить пакет
+       (задача 2031). Тело здесь то же, что у пакета над пакетом: груз
+       вложенного переезжает как есть, вместе с адресом каждого модуля. */
+    if (at > 0 && pkg_is_package(file)) {
+      ok = pkg_take_nested(file, root, out);
+      continue;
+    }
+    text = repl_read_file(file, &bytes);
     if (text == NULL) {
       fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", file);
       ok = false;

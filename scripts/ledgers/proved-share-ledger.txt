@@ -1477,7 +1477,7 @@ f2c6d11d7b435c4c7a844e5a3d29821d|1|1|0|0|0|fspec/experiments/spec-legacy.flang
 970d839cdf5884993c5ff23275dd1116|1|1|0|0|0|fspec/experiments/superseded-cap-30.flang
 31162c1077c2f5fabe0133d4b97b935d|2|×|×|×|0|fspec/experiments/theorem-on-false.flang
 50bab3a7f2632438f387385e4a730173|21|21|0|0|0|fspec/forgery.flang
-38d1e13636808ea2c57ce84e5c0da120|23|20|3|0|0|fspec/policy.flang
+4eaddcf14decab0640a483818868babf|23|20|3|0|0|fspec/policy.flang
 7cff85831b0e3d09a1902f10f1b6ef86|3|3|0|0|0|fspec/spec/01-discount-cap.flang
 d628cd2abe29d2fadc5ed75a86aa6ffd|1|1|0|0|0|fspec/spec/02-promo.flang
 4656078865cbe7ecd517e03f4bb7de8e|1|1|0|0|0|fspec/spec/03-urgency-markup.flang

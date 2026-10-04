@@ -86,7 +86,15 @@ property of the language:
 Of what it needs beyond the proof, traceability requirement → code → example →
 record exists as a guard since 11 September 2026
 (`scripts/guards/traceability-guard.fscript`, task 1407): 409 postconditions, 322 with an
-example, 361 in a record, 244 proved; gaps 62 and 68, under a ratchet. Response
+example, 361 in a record, 244 proved; gaps 62 and 68, under a ratchet. Measured
+again 4 October 2026 by the same run: 430 postconditions, 341 with an example,
+367 in a record, 250 proved; the two gap numbers stand, and the guard now splits
+them by kind — 58 of the 62 are forgeries, where an unproved postcondition is
+the required outcome, 4 are honest and 1 is known to no register at all (tasks
+7523, 7008); of the 68 uncovered functions 27 are inside forgeries and 41 are
+ordinary code (task 9008). What an outside reviewer can re-run, requirement by
+requirement, is written down in
+`docs/what-the-proof-covers-and-what-it-does-not.md`. Response
 bounds exist only as an analysis and are not printed into the proof record
 (`docs/adr/0033-termination-is-not-a-bound-on-steps.md`, tasks 1408 and 1409);
 behaviour on failure is described, not proved — an I/O failure arrives as data,

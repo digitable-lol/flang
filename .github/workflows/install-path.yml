@@ -223,7 +223,7 @@ jobs:
       # копии и ОБЯЗАН ответить провалом «подлог пойман». Ответил кодом 0 —
       # значит сравнение выпотрошено, и зелёный шаг выше ничего не значит.
       # Зовётся файлом, а не командой `asdf-plugin:forgery`: прибор проб порчи
-      # (scripts/guards/guards-without-forgery-probe.sh) относит пробу к сторожу по файлу.
+      # (scripts/guards/guards-without-forgery-probe.fscript) относит пробу к сторожу по файлу.
       - name: Probe asdf plugin
         run: |
           set -u
@@ -247,7 +247,7 @@ jobs:
       # покраснел на подложенном. Подлог внутренний — план «Подлог» того же
       # файла вычёркивает проводник из прочитанного состава архива и ОБЯЗАН
       # ответить провалом «подлог пойман». Зовётся файлом, а не командой:
-      # прибор проб порчи (scripts/guards/guards-without-forgery-probe.sh) относит пробу к
+      # прибор проб порчи (scripts/guards/guards-without-forgery-probe.fscript) относит пробу к
       # сторожу по файлу.
       - name: Probe delivery contents
         run: |

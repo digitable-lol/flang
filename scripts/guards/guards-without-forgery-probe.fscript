@@ -1,0 +1,1237 @@
+модуль «Guards without forgery probe»
+  использует «Who calls the guards» из "who-calls-the-guards.fscript"
+
+примечание "У КАКИХ СТОРОЖЕЙ НЕТ ПРОБЫ ПОРЧИ — поимённо, прибором, а не рукой."
+примечание "  bootstrap/flang run-script forgery-probe:check    сверка с ведомостью, код 1"
+примечание "  bootstrap/flang run-script forgery-probe:census   перепись целиком, код 0"
+примечание "  bootstrap/flang run-script forgery-probe:list     только имена беспробных"
+примечание "  bootstrap/flang run-script forgery-probe:forgery  пять сторон порчи, код 1"
+
+примечание "ЗАЧЕМ. СТОРОЖ, КОТОРОГО НЕЛЬЗЯ ПОКРАСИТЬ, НЕОТЛИЧИМ ОТ ВЫКЛЮЧЕННОГО. За одни"
+примечание "сутки 5 сентября 2026 эта порода поймана четыре раза, и ни разу прибором —"
+примечание "всякий раз случайно: target-words:check проверял пустоту (задача 3223); шесть"
+примечание "проверок чекера не отрабатывали ни разу (8690); проба под правило 9999 лежала в"
+примечание "дереве, а run.sh её не звал (9999); две пробы порчи не собрались, и заметно это"
+примечание "было только по тому, что числа не сдвинулись (7855, 9751). Общее у всех"
+примечание "четырёх — беспроверочная вера в то, что проверка работает."
+
+примечание "Прибор scripts/guards/who-calls-the-guards.fscript отвечает на вопрос «кого CI"
+примечание "зовёт»; этот отвечает на второй, без которого первый мало стоит: «а показано"
+примечание "ли, что позванный вообще способен покраснеть»."
+
+примечание "ЧТО СЧИТАЕТСЯ ПРОБОЙ ПОРЧИ. Проба — это то, что ЛОМАЕТ проверяемое и требует,"
+примечание "чтобы сторож на этом покраснел. В дереве проба бывает ПОСТРОЕНА и отдельно —"
+примечание "ПОЗВАНА, и путать эти два состояния нельзя: построенная, но никем не званная"
+примечание "проба не срабатывает никогда, ровно как сторож без зовущего."
+примечание "  ПРОБА ПОСТРОЕНА — рядом с ярлыком X:check в .flangrc есть парный X:forgery"
+примечание "    или X:corrupt. Такая команда портит вход изнутри сторожа: она не зависит от"
+примечание "    номеров строк и портит ровно то, что сторож смотрит. Лучший вид пробы."
+примечание "  ПРОБА ПОЗВАНА — в теле run: какого-нибудь workflow стоит вызов сторожа В"
+примечание "    УСЛОВИИ if, и в том же теле есть exit 1. Признак один и тот же и от вида"
+примечание "    порчи не зависит: шаг падает ровно тогда, когда сторож промолчал."
+примечание "Прибор считает оба и печатает раздельно. В долг («без пробы») попадает тот, у"
+примечание "кого НЕТ НИ ОДНОГО из двух."
+
+примечание "ЧЕГО ЭТОТ ПРИБОР НЕ ГОВОРИТ. Он НЕ говорит, что проба хороша. Проба бывает"
+примечание "холостой: правка не собралась либо испорчено не то, что сторож смотрит. Такую"
+примечание "пробу прибор считает существующей, потому что отличить её от рабочей он не"
+примечание "может — для этого надо прогнать сторожа с порчей и без. Это делает сама проба"
+примечание "в CI; здесь считается только ЕЁ НАЛИЧИЕ."
+
+примечание "ВЕДОМОСТЬ, А НЕ ЗАПРЕТ. Беспробных сторожей больше половины; правило"
+примечание "«беспробных быть не должно» красило бы CI всегда, а вечно красный сторож — это"
+примечание "выключенный сторож. Поэтому план «Check» сверяет с ведомостью"
+примечание "scripts/ledgers/guards-without-forgery-probe.json В ОБЕ СТОРОНЫ:"
+примечание "  · беспробный, которого в ведомости НЕТ, — красно: появился новый долг;"
+примечание "  · запись, у которой проба УЖЕ есть, — тоже красно: долг закрыт, запись стала"
+примечание "    неправдой, и убрать её обязан тот, кто долг закрыл."
+
+примечание "ЧЕМ ЭТОТ ФАЙЛ ОТЛИЧАЕТСЯ ОТ ПРЕЖНЕГО НА ОБОЛОЧКЕ. До 4 октября 2026 то же"
+примечание "считал scripts/guards/guards-without-forgery-probe.sh, 275 строк оболочки с"
+примечание "встроенной программой на python. Перепись дерева"
+примечание "(docs/shell-to-flang-census.md) держала его доводом «разборщик YAML (pyyaml)»."
+примечание "Довод снят не словами, а соседом: who-calls-the-guards.fscript берёт ключи"
+примечание "run: разбором отступов, и его разбор здесь ВВЕЗЁН, а не переписан заново."
+примечание "Нового в этом файле — только группировка строк в ТЕЛА: прежний сосед отдавал"
+примечание "плоский список строк, а здесь нужно, чтобы exit 1 стоял в ТОМ ЖЕ теле, что и"
+примечание "условие. Числа прогона обоих приборов на этом дереве 4 октября 2026 сошлись:"
+примечание "77 сторожей, 34 пробы позваны, 13 построены и не позваны, 43 в долгу."
+
+примечание "ЧЕГО ЗДЕСЬ НЕТ. Расхождение кода возврата названо: у плана нет кода 3 за"
+примечание "«нет модуля yaml» — разборщик свой; «ведомости нет» отвечает кодом 3, как и у"
+примечание "оболочки, а «кривой ключ» у плана невозможен — режим задаётся именем плана."
+
+объект «Sweep»
+  «floor»: число
+  «running»: признак
+  «lines»: список строки
+  «bodies»: список строки
+
+объект «Spot»
+  «file»: строка
+  «names»: строка
+  «scripts»: строка
+
+объект «Post»
+  «name»: строка
+  «file»: строка
+  «built»: строка
+
+объект «Side»
+  «name»: строка
+  «says»: строка
+  «stands»: список «Post»
+  «entries»: список «Entry»
+
+тип «Stage»
+  вариант «Listing flows» содержит mode: строка
+  вариант «Reading a flow» содержит mode: строка, pending: список строки, spots: список «Spot»
+  вариант «Reading the debt» содержит mode: строка, spots: список «Spot»
+  вариант «Reading settings» содержит mode: строка, spots: список «Spot», entries: список «Entry»
+
+примечание "── ТЕЛА КЛЮЧЕЙ run: ГРУППАМИ, А НЕ ПЛОСКИМ СПИСКОМ ────────────────────────"
+
+примечание "Проба — конструкция из нескольких строк: порча, условие, откат. Резать её на"
+примечание "строки значит потерять связь между вызовом и exit 1. Ввезённый сосед"
+примечание "«Commands of» отдаёт плоский список со всех ключей run: разом; здесь тот же"
+примечание "обход копит строки ТЕЛА и закрывает тело, когда блок кончился."
+
+тотальная функция «Sweep made»
+  принимает floor: число, running: признак, lines: список строки, bodies: список строки
+  возвращает «Sweep»
+  запись «Sweep» с «floor» равным floor и «running» равным running и «lines» равным lines и «bodies» равным bodies
+
+тотальная функция «Flushed»
+  принимает lines: список строки, bodies: список строки
+  возвращает список строки
+  пример «The lines of a body become one body»
+    дано lines равно ["a", "b"]
+    дано bodies равно пустой список
+    ожидается ["a\nb"]
+  пример «An empty body closes nothing»
+    дано lines равно пустой список
+    дано bodies равно ["c"]
+    ожидается ["c"]
+  если (длина lines) равен 0
+    то bodies
+    иначе добавить (соединить lines по "\n") к bodies
+
+тотальная функция «Is noted»
+  принимает line: строка
+  возвращает признак
+  пример «A comment of YAML names no key»
+    дано line равно "      # run: sh one.sh"
+    ожидается да
+  пример «A key is not a comment»
+    дано line равно "        run: |"
+    ожидается нет
+  («Entry body» от line) начинается с "#"
+
+тотальная функция «Opens body»
+  принимает line: строка
+  возвращает признак
+  пример «A run key with a bar opens a body of commands»
+    дано line равно "      - run: |"
+    ожидается да
+  пример «A run key with a plain value opens no body»
+    дано line равно "      - run: make"
+    ожидается нет
+  пример «A run key inside a comment opens nothing»
+    дано line равно "      # run: |"
+    ожидается нет
+  пусть value равно («Run value» от («Entry body» от line))
+  пусть block равно ((value начинается с "|") или (value начинается с ">"))
+  (не («Is noted» от line)) и притом block
+
+тотальная функция «Opens any»
+  принимает line: строка
+  возвращает признак
+  пример «A block of another key is opened to be skipped»
+    дано line равно "          script: |"
+    ожидается да
+  пример «A plain value opens nothing»
+    дано line равно "      - run: make"
+    ожидается нет
+  пусть other равно ((не («Is noted» от line)) и притом («Opens a block» от («Entry body» от line)))
+  («Opens body» от line) или other
+
+тотальная функция «Key floor»
+  принимает line: строка
+  возвращает число
+  пример «The floor of a block stands one sign right of its key»
+    дано line равно "      - run: |"
+    ожидается 9
+  пример «A plain value leaves no floor»
+    дано line равно "      - run: make"
+    ожидается 0
+  если («Opens any» от line)
+    то («Entry indent» от line) плюс 1
+    иначе 0
+
+тотальная функция «Plain value»
+  принимает line: строка
+  возвращает строка
+  пример «A run key with a plain value is one body»
+    дано line равно "      - run: make"
+    ожидается "make"
+  пример «A run key with a bar is not a plain value»
+    дано line равно "      - run: |"
+    ожидается ""
+  пример «A comment is not a value»
+    дано line равно "      # run: make"
+    ожидается ""
+  пусть value равно («Run value» от («Entry body» от line))
+  пусть plain равно ((не («Is noted» от line)) и притом (не («Opens any» от line)))
+  если plain то value иначе ""
+
+тотальная функция «Inside sweep»
+  принимает sweep: «Sweep», line: строка
+  возвращает «Sweep»
+  пусть kept равно (добавить line к (sweep.«lines»))
+  если sweep.«running»
+    то «Sweep made» от (sweep.«floor») и да и kept и (sweep.«bodies»)
+    иначе sweep
+
+тотальная функция «Key sweep»
+  принимает sweep: «Sweep», line: строка
+  возвращает «Sweep»
+  пусть closed равно («Flushed» от (sweep.«lines») и (sweep.«bodies»))
+  пусть value равно («Plain value» от line)
+  пусть bodies равно (если value равен "" то closed иначе (добавить value к closed))
+  «Sweep made» от («Key floor» от line) и («Opens body» от line) и (пустой список) и bodies
+
+тотальная функция «Names a key»
+  принимает line: строка
+  возвращает признак
+  пример «A line with a key is looked at closely»
+    дано line равно "      - run: make"
+    ожидается да
+  пример «A filter of paths names no key»
+    дано line равно "      - 'scripts/one.sh'"
+    ожидается нет
+  ((line содержит "run:") или (line содержит "|")) или (line содержит ">")
+
+тотальная функция «Outside sweep»
+  принимает sweep: «Sweep», line: строка
+  возвращает «Sweep»
+  пусть closed равно («Flushed» от (sweep.«lines») и (sweep.«bodies»))
+  если («Names a key» от line)
+    то «Key sweep» от sweep и line
+    иначе «Sweep made» от 0 и нет и (пустой список) и closed
+
+тотальная функция «Sweep step»
+  принимает sweep: «Sweep», line: строка
+  возвращает «Sweep»
+  если «Belongs to block» от (sweep.«floor») и line
+    то «Inside sweep» от sweep и line
+    иначе «Outside sweep» от sweep и line
+
+тотальная функция «Bodies of»
+  принимает text: строка
+  возвращает список строки
+  пример «Every run key gives a body of its own, and comments stay inside it»
+    дано text равно "steps:\n  - run: |\n      # п\n      if sh a.sh; then exit 1; fi\n  - run: make\n"
+    ожидается ["      # п\n      if sh a.sh; then exit 1; fi", "make"]
+  пусть start равно («Sweep made» от 0 и нет и (пустой список) и (пустой список))
+  пусть swept равно (свёртка (разделить text по "\n") начиная с start как sweep и line → «Sweep step» от sweep и line)
+  «Flushed» от (swept.«lines») и (swept.«bodies»)
+
+примечание "── ПРИЗНАК ПРОБЫ: ВЫЗОВ В УСЛОВИИ if, И В ТОМ ЖЕ ТЕЛЕ exit 1 ──────────────"
+
+тотальная функция «Is if line»
+  принимает line: строка
+  возвращает признак
+  пример «A call in a condition is a probe»
+    дано line равно "          if sh one.sh --подлог; then exit 1; fi"
+    ожидается да
+  пример «A bare call is a working run, not a probe»
+    дано line равно "          sh one.sh --check"
+    ожидается нет
+  пример «A comment of the shell is not a condition»
+    дано line равно "          # if sh one.sh; then exit 1; fi"
+    ожидается нет
+  пусть bare равно («Without leading blanks» от line)
+  (bare начинается с "if ") или (bare начинается с "elif ")
+
+тотальная функция «Demands red»
+  принимает body: строка
+  возвращает признак
+  пример «A body that falls demands red»
+    дано body равно "if sh one.sh; then exit 1; fi"
+    ожидается да
+  пример «A body that never falls demands nothing»
+    дано body равно "sh one.sh --check"
+    ожидается нет
+  body содержит "exit 1"
+
+тотальная функция «Spot made»
+  принимает file: строка, names: список строки, scripts: список строки
+  возвращает «Spot»
+  пример «A spot keeps the file and both ways of calling»
+    дано file равно "ci"
+    дано names равно ["a:check"]
+    дано scripts равно ["b.sh"]
+    ожидается (запись «Spot» с «file» равным "ci" и «names» равным "\na:check\n" и «scripts» равным "\nb.sh\n")
+  запись «Spot» с «file» равным file и «names» равным («Marked» от names) и «scripts» равным («Marked» от scripts)
+
+тотальная функция «Parting marks»
+  возвращает список строки
+  обеспечивает «знаков оболочки восемь» (длина результат) равен 8
+  ["\"", "'", "`", "(", ")", ";", "&", "|"]
+
+тотальная функция «Cleaned»
+  принимает line: строка
+  возвращает строка
+  пример «The signs that bind a call to the shell are taken off»
+    дано line равно "if sh one.sh; then exit 1; fi"
+    ожидается "if sh one.sh  then exit 1  fi"
+  пример «A call in brackets stands on its own»
+    дано line равно "if (sh one.sh); then"
+    ожидается "if  sh one.sh   then"
+  свёртка («Parting marks») начиная с line как text и sign → соединить (разделить text по sign) по " "
+
+тотальная функция «Spot of body»
+  принимает file: строка, body: строка
+  возвращает «Spot»
+  пример «The calls of the conditions of a body are gathered»
+    дано file равно "ci"
+    дано body равно "if bootstrap/flang run-script a:check; then exit 1; fi\nsh b.sh"
+    ожидается (запись «Spot» с «file» равным "ci" и «names» равным "\na:check\n" и «scripts» равным "\n\n")
+  пусть kept равно (отфильтровать (разделить body по "\n") где line → («Is if line» от line))
+  пусть lines равно (отобразить kept как line → («Cleaned» от line))
+  пусть names равно (свёртка lines начиная с (пустой список) как found и line → «Names in» от found и line)
+  пусть scripts равно (свёртка lines начиная с (пустой список) как found и line → «Scripts in» от found и line)
+  «Spot made» от file и names и scripts
+
+тотальная функция «Spots of»
+  принимает file: строка, text: строка
+  возвращает список «Spot»
+  пусть bodies равно (отфильтровать («Bodies of» от text) где body → («Demands red» от body))
+  отобразить bodies как body → («Spot of body» от file и body)
+
+примечание "── ПАРНАЯ КОМАНДА: X:forgery ЛИБО X:corrupt РЯДОМ С X:check ───────────────"
+
+тотальная функция «Front pieces»
+  принимает pieces: список строки
+  возвращает список строки
+  обеспечивает «список не длиннее прежнего» (длина результат) не больше (длина pieces)
+  пример «The last piece is dropped»
+    дано pieces равно ["word", "occupancy", "check"]
+    ожидается ["word", "occupancy"]
+  пример «Of one piece nothing is left»
+    дано pieces равно ["check"]
+    ожидается пустой список
+  разбор pieces
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если (длина хвост) равен 0
+        то пустой список
+        иначе приписать голова к («Front pieces» от хвост)
+
+тотальная функция «Prefix of»
+  принимает name: строка
+  возвращает строка
+  пример «The prefix is the name without its last share»
+    дано name равно "codes:check"
+    ожидается "codes"
+  пример «A joined name keeps its middle shares»
+    дано name равно "word:occupancy:check"
+    ожидается "word:occupancy"
+  соединить («Front pieces» от (разделить name по ":")) по ":"
+
+тотальная функция «Pair name»
+  принимает name: строка, tail: строка
+  возвращает строка
+  пример «The pair of a guard stands at its prefix»
+    дано name равно "codes:check"
+    дано tail равно "forgery"
+    ожидается "codes:forgery"
+  соединить [(«Prefix of» от name), ":", tail] по ""
+
+тотальная функция «Or corrupt»
+  принимает name: строка, marks: строка
+  возвращает строка
+  пример «A corrupt command counts as a built probe»
+    дано name равно "codes:check"
+    дано marks равно "\ncodes:corrupt\n"
+    ожидается "codes:corrupt"
+  пример «Without a pair nothing is built»
+    дано name равно "codes:check"
+    дано marks равно "\nother:forgery\n"
+    ожидается ""
+  пусть corrupt равно («Pair name» от name и "corrupt")
+  если («Is marked» от marks и corrupt) то corrupt иначе ""
+
+тотальная функция «Built pair»
+  принимает name: строка, marks: строка
+  возвращает строка
+  пример «A forgery command is the first pair looked for»
+    дано name равно "codes:check"
+    дано marks равно "\ncodes:forgery\n\ncodes:corrupt\n"
+    ожидается "codes:forgery"
+  пример «Without a forgery the corrupt command is taken»
+    дано name равно "codes:check"
+    дано marks равно "\ncodes:corrupt\n"
+    ожидается "codes:corrupt"
+  пусть forgery равно («Pair name» от name и "forgery")
+  если («Is marked» от marks и forgery)
+    то forgery
+    иначе «Or corrupt» от name и marks
+
+примечание "── ПОЛОЖЕНИЕ СТОРОЖА: ГДЕ СТОИТ ЕГО ПРОБА И ПОСТРОЕНА ЛИ ПАРНАЯ КОМАНДА ───"
+
+тотальная функция «Post made»
+  принимает name: строка, file: строка, built: строка
+  возвращает «Post»
+  запись «Post» с «name» равным name и «file» равным file и «built» равным built
+
+тотальная функция «No spot»
+  возвращает «Spot»
+  пример «A guard nobody probes stands at no spot»
+    ожидается (запись «Spot» с «file» равным "" и «names» равным "" и «scripts» равным "")
+  запись «Spot» с «file» равным "" и «names» равным "" и «scripts» равным ""
+
+тотальная функция «Calls it»
+  принимает command: «Command», spot: «Spot»
+  возвращает признак
+  пример «A probe calls the guard by its name»
+    дано command равно (запись «Command» с «name» равным "a:check" и «line» равным "sh one.sh")
+    дано spot равно (запись «Spot» с «file» равным "ci" и «names» равным "\na:check\n" и «scripts» равным "")
+    ожидается да
+  пример «A probe calls the guard by its file»
+    дано command равно (запись «Command» с «name» равным "a:check" и «line» равным "sh one.sh")
+    дано spot равно (запись «Spot» с «file» равным "ci" и «names» равным "" и «scripts» равным "\none.sh\n")
+    ожидается да
+  пример «A spot that calls neither does not call the guard»
+    дано command равно (запись «Command» с «name» равным "a:check" и «line» равным "sh one.sh")
+    дано spot равно (запись «Spot» с «file» равным "ci" и «names» равным "" и «scripts» равным "\ntwo.sh\n")
+    ожидается нет
+  пусть named равно («Is marked» от (spot.«names») и (command.«name»))
+  named или («Is called by file» от (command.«line») и (spot.«scripts»))
+
+тотальная функция «Spot found»
+  принимает command: «Command», spots: список «Spot»
+  возвращает «Spot»
+  пусть found равно (отфильтровать spots где spot → («Calls it» от command и spot))
+  разбор found
+    случай пусто
+      то «No spot»
+    случай голова и хвост
+      то голова
+
+тотальная функция «Post of»
+  принимает command: «Command», spots: список «Spot», marks: строка
+  возвращает «Post»
+  пусть spot равно («Spot found» от command и spots)
+  пусть built равно («Built pair» от (command.«name») и marks)
+  «Post made» от (command.«name») и (spot.«file») и built
+
+тотальная функция «Post named»
+  принимает name: строка, stands: список «Post»
+  возвращает «Post»
+  пример «The stand of the name is taken»
+    дано name равно "a:check"
+    дано stands равно [(запись «Post» с «name» равным "a:check" и «file» равным "ci" и «built» равным "")]
+    ожидается (запись «Post» с «name» равным "a:check" и «file» равным "ci" и «built» равным "")
+  пример «A name outside the stands stands nowhere»
+    дано name равно "b:check"
+    дано stands равно пустой список
+    ожидается (запись «Post» с «name» равным "b:check" и «file» равным "" и «built» равным "")
+  разбор (отфильтровать stands где stand → (stand.«name») равен name)
+    случай пусто
+      то «Post made» от name и "" и ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Sorted stands»
+  принимает stands: список «Post»
+  возвращает список «Post»
+  пусть names равно («Sorted» от (отобразить stands как stand → stand.«name»))
+  отобразить names как name → («Post named» от name и stands)
+
+тотальная функция «Posts of»
+  принимает commands: список «Command», spots: список «Spot»
+  возвращает список «Post»
+  пусть marks равно («Marked» от (отобразить commands как command → command.«name»))
+  пусть guards равно (отфильтровать commands где command → («Is guard» от (command.«name»)))
+  «Sorted stands» от (отобразить guards как command → («Post of» от command и spots и marks))
+
+тотальная функция «Is probed»
+  принимает stand: «Post»
+  возвращает признак
+  пример «A guard whose probe stands somewhere is probed»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "ci" и «built» равным "")
+    ожидается да
+  пример «A guard without a called probe is not probed»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "" и «built» равным "p")
+    ожидается нет
+  не ((stand.«file») равен "")
+
+тотальная функция «Probed»
+  принимает stands: список «Post»
+  возвращает список «Post»
+  отфильтровать stands где stand → («Is probed» от stand)
+
+тотальная функция «In debt»
+  принимает stands: список «Post»
+  возвращает список «Post»
+  отфильтровать stands где stand → не («Is probed» от stand)
+
+тотальная функция «Built only»
+  принимает stands: список «Post»
+  возвращает список «Post»
+  отфильтровать («In debt» от stands) где stand → не ((stand.«built») равен "")
+
+примечание "── ПЕРЕПИСЬ ──────────────────────────────────────────────────────────────────"
+
+тотальная функция «Padded out»
+  принимает text: строка, width: число
+  возвращает строка
+  пример «A short name is padded to the column»
+    дано text равно "a:check"
+    дано width равно 10
+    ожидается "a:check   "
+  пример «A long name is left as it is»
+    дано text равно "a:very:long:check"
+    дано width равно 10
+    ожидается "a:very:long:check"
+  если (длина text) меньше width
+    то соединить [text, («Padding» от (width минус (длина text)))] по ""
+    иначе text
+
+тотальная функция «Cut to»
+  принимает text: строка, width: число
+  возвращает строка
+  пример «A short reason is told whole»
+    дано text равно "дорог"
+    дано width равно 10
+    ожидается "дорог"
+  пример «A long reason is cut»
+    дано text равно "дорог, и очень"
+    дано width равно 5
+    ожидается "дорог"
+  если (длина text) больше width
+    то подстрока text с 1 по width
+    иначе text
+
+тотальная функция «Probe source»
+  принимает stand: «Post»
+  возвращает строка
+  пример «A built pair names itself as the source of the forgery»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "ci" и «built» равным "a:forgery")
+    ожидается "a:forgery"
+  пример «Without a pair the forgery stands in the step itself»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "ci" и «built» равным "")
+    ожидается "порча внешняя, в самом шаге"
+  если (stand.«built») равен ""
+    то "порча внешняя, в самом шаге"
+    иначе stand.«built»
+
+тотальная функция «Called line»
+  принимает stand: «Post»
+  возвращает строка
+  пример «A called probe is told with its file and its source»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "ci.yml" и «built» равным "")
+    ожидается "  a:check                        ci.yml       порча внешняя, в самом шаге"
+  пусть name равно («Padded out» от (stand.«name») и 30)
+  пусть file равно («Padded out» от (stand.«file») и 12)
+  соединить ["  ", name, " ", file, " ", («Probe source» от stand)] по ""
+
+тотальная функция «Built line»
+  принимает stand: «Post»
+  возвращает строка
+  пример «A built but uncalled probe names its command»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "" и «built» равным "a:forgery")
+    ожидается "  a:check                        команда a:forgery"
+  соединить ["  ", («Padded out» от (stand.«name») и 30), " команда ", (stand.«built»)] по ""
+
+тотальная функция «Reason told»
+  принимает name: строка, entries: список «Entry»
+  возвращает строка
+  пример «The reason is read from the ledger»
+    дано name равно "a:check"
+    дано entries равно [(запись «Entry» с «guard» равным "a:check" и «reason» равным "дорог")]
+    ожидается "дорог"
+  пример «A guard outside the ledger has no reason»
+    дано name равно "a:check"
+    дано entries равно пустой список
+    ожидается "причина в ведомости не названа"
+  разбор (отфильтровать entries где entry → (entry.«guard») равен name)
+    случай пусто
+      то "причина в ведомости не названа"
+    случай голова и хвост
+      то голова.«reason»
+
+тотальная функция «Debt reason»
+  принимает stand: «Post», entries: список «Entry»
+  возвращает строка
+  пример «A built pair that nobody calls is the reason itself»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "" и «built» равным "a:forgery")
+    дано entries равно пустой список
+    ожидается "проба ПОСТРОЕНА командой a:forgery, но её не зовут"
+  пусть own равно (соединить ["проба ПОСТРОЕНА командой ", (stand.«built»), ", но её не зовут"] по "")
+  если (stand.«built») равен ""
+    то «Reason told» от (stand.«name») и entries
+    иначе own
+
+тотальная функция «Debt line»
+  принимает stand: «Post», entries: список «Entry»
+  возвращает строка
+  пример «A debt is told with its reason, cut to the column»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "" и «built» равным "")
+    дано entries равно [(запись «Entry» с «guard» равным "a:check" и «reason» равным "дорог")]
+    ожидается "  a:check                        дорог"
+  пусть reason равно («Cut to» от («Debt reason» от stand и entries) и 80)
+  соединить ["  ", («Padded out» от (stand.«name») и 30), " ", reason] по ""
+
+тотальная функция «Head lines»
+  принимает stands: список «Post»
+  возвращает список строки
+  пусть probed равно (к строке (длина («Probed» от stands)))
+  пусть built равно (к строке (длина («Built only» от stands)))
+  пусть debt равно (к строке (длина («In debt» от stands)))
+  ["ПЕРЕПИСЬ ПРОБ ПОРЧИ: у кого показано, что он краснеет", "",
+    (соединить ["  сторожей в дереве              ", (к строке (длина stands))] по ""),
+    (соединить ["  ПРОБА ПОЗВАНА (CI требует красноты)   ", probed] по ""),
+    (соединить ["  проба построена, но НЕ позвана        ", built] по ""),
+    (соединить ["  ПРОБА НЕ ПОКАЗАНА (долг)              ", debt] по "")]
+
+тотальная функция «Called lines»
+  принимает stands: список «Post»
+  возвращает список строки
+  пусть told равно (отобразить («Probed» от stands) как stand → («Called line» от stand))
+  «Joined» от ["", "ПРОБА ПОЗВАНА, и где стоит:", ""] и told
+
+тотальная функция «Built lines»
+  принимает stands: список «Post»
+  возвращает список строки
+  пусть told равно (отобразить («Built only» от stands) как stand → («Built line» от stand))
+  пусть head равно ["", "ПРОБА ПОСТРОЕНА, НО НИКТО ЕЁ НЕ ЗОВЁТ — она не срабатывает никогда:", ""]
+  если (длина told) равен 0 то (пустой список) иначе («Joined» от head и told)
+
+тотальная функция «Debt lines»
+  принимает stands: список «Post», entries: список «Entry»
+  возвращает список строки
+  пусть told равно (отобразить («In debt» от stands) как stand → («Debt line» от stand и entries))
+  «Joined» от ["", "ДОЛГ — проба не показана, поимённо:", ""] и told
+
+тотальная функция «Tail lines»
+  возвращает список строки
+  обеспечивает «хвост зовёт тот же прибор» (длина результат) равен 3
+  ["", "Сверка с ведомостью — тем же прибором:",
+    "  bootstrap/flang io scripts/guards/guards-without-forgery-probe.fscript --plan Check"]
+
+тотальная функция «Census»
+  принимает stands: список «Post», entries: список «Entry»
+  возвращает строка
+  пусть head равно («Joined» от («Head lines» от stands) и («Called lines» от stands))
+  пусть middle равно («Joined» от head и («Built lines» от stands))
+  пусть body равно («Joined» от middle и («Debt lines» от stands и entries))
+  соединить («Joined» от body и («Tail lines»)) по "\n"
+
+примечание "── СВЕРКА С ВЕДОМОСТЬЮ В ОБЕ СТОРОНЫ ──────────────────────────────────────"
+
+тотальная функция «Debt ledger»
+  возвращает строка
+  обеспечивает «ведомость лежит у ведомостей» результат содержит "scripts/ledgers/"
+  "scripts/ledgers/guards-without-forgery-probe.json"
+
+тотальная функция «New head»
+  принимает name: строка
+  возвращает строка
+  пример «The head of the word names the guard»
+    дано name равно "a:check"
+    ожидается "НОВЫЙ БЕЗ ПРОБЫ: «a:check» заведён, но ни один шаг CI не требует, чтобы он"
+  соединить ["НОВЫЙ БЕЗ ПРОБЫ: «", name, "» заведён, но ни один шаг CI не требует, чтобы он"] по ""
+
+тотальная функция «New tail»
+  возвращает строка
+  обеспечивает «назван и путь ведомости, и выход из долга» результат содержит "Либо построить пробу"
+  соединить [" покраснел на порче, и в ", («Debt ledger»), " его нет.\n  Либо построить пробу,",
+    " либо записать в ведомость с причиной: сторож без пробы неотличим от выключенного."] по ""
+
+тотальная функция «New word»
+  принимает name: строка
+  возвращает строка
+  соединить [(«New head» от name), («New tail»)] по ""
+
+тотальная функция «Where probed»
+  принимает stand: «Post»
+  возвращает строка
+  пример «A probe that stands somewhere is named by its file»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "ci.yml" и «built» равным "")
+    ожидается "проба стоит в ci.yml"
+  пример «A command no longer kept is named so»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "" и «built» равным "")
+    ожидается "команда уже не заведена"
+  если («Is probed» от stand)
+    то соединить ["проба стоит в ", (stand.«file»)] по ""
+    иначе "команда уже не заведена"
+
+тотальная функция «Closed head»
+  принимает stand: «Post»
+  возвращает строка
+  пример «A closed debt is named with the place of its probe»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "ci.yml" и «built» равным "")
+    ожидается "ЗАПИСЬ СТАЛА НЕПРАВДОЙ: «a:check» числится беспробным, а проба стоит в ci.yml."
+  пусть place равно («Where probed» от stand)
+  соединить ["ЗАПИСЬ СТАЛА НЕПРАВДОЙ: «", (stand.«name»), "» числится беспробным, а ", place, "."] по ""
+
+тотальная функция «Closed tail»
+  возвращает строка
+  обеспечивает «назван тот, кто обязан убрать запись» результат содержит "обязан тот, кто закрыл"
+  соединить ["\n  Долг закрыт — убрать запись из ", («Debt ledger»), " обязан тот, кто закрыл."] по ""
+
+тотальная функция «Closed word»
+  принимает stand: «Post»
+  возвращает строка
+  соединить [(«Closed head» от stand), («Closed tail»)] по ""
+
+тотальная функция «Troubles of»
+  принимает stands: список «Post», entries: список «Entry»
+  возвращает список строки
+  пример «A ledger that names every debt has no troubles»
+    дано stands равно [(запись «Post» с «name» равным "a:check" и «file» равным "" и «built» равным "")]
+    дано entries равно [(запись «Entry» с «guard» равным "a:check" и «reason» равным "дорог")]
+    ожидается пустой список
+  пусть written равно (отобразить entries как entry → entry.«guard»)
+  пусть debt равно (отобразить («In debt» от stands) как stand → stand.«name»)
+  пусть fresh равно («Sorted» от (отфильтровать debt где name → не («Holds» от written и name)))
+  пусть closed равно («Sorted» от (отфильтровать written где name → не («Holds» от debt и name)))
+  пусть front равно (отобразить fresh как name → («New word» от name))
+  «Joined» от front и (отобразить closed как name → («Closed word» от («Post named» от name и stands)))
+
+тотальная функция «Agreed word»
+  принимает stands: список «Post»
+  возвращает строка
+  пример «The debt that the ledger knows whole is told by its count»
+    дано stands равно [(запись «Post» с «name» равным "a:check" и «file» равным "" и «built» равным "")]
+    ожидается "сторожа без пробы порчи: 1, все названы в ведомости — сходится"
+  пусть debt равно (к строке (длина («In debt» от stands)))
+  соединить ["сторожа без пробы порчи: ", debt, ", все названы в ведомости — сходится"] по ""
+
+тотальная функция «Judgement»
+  принимает stands: список «Post», troubles: список строки
+  возвращает «Продолжение»
+  пример «A ledger that knows every debt ends the work»
+    дано stands равно [(запись «Post» с «name» равным "a:check" и «file» равным "" и «built» равным "")]
+    дано troubles равно пустой список
+    ожидается вариант «Конец работы» с значение равным "сторожа без пробы порчи: 1, все названы в ведомости — сходится"
+  если (длина troubles) равен 0
+    то вариант «Конец работы» с значение равным («Agreed word» от stands)
+    иначе вариант «Провал» с код равным "FLANG_FORGERY_PROBE_DEBT" и сообщение равным (соединить troubles по "\n")
+
+примечание "── ПОРЧА В ПАМЯТИ: ПЯТЬ СТОРОН ────────────────────────────────────────────"
+
+примечание "ПРИБОР, КОТОРЫЙ СТЕРЕЖЁТ НАЛИЧИЕ ПРОБ, ОБЯЗАН НЕСТИ ПРОБУ ТЕМ БОЛЕЕ. Порча"
+примечание "идёт над уже прочитанными ведомостью и переписью: ни один файл дерева не"
+примечание "трогается, временный каталог не заводится, откатывать нечего даже если прогон"
+примечание "убьют на середине."
+
+примечание "Пять сторон покрывают оба конца сверки и сам признак пробы:"
+примечание "  нулевая — перепись как она есть, бед быть не должно;"
+примечание "  первая — из ведомости вынута первая запись: долг вырос, его не назвали;"
+примечание "  вторая — в ведомость вписан сторож, у которого проба ЕСТЬ: запись — неправда;"
+примечание "  третья — заведён сторож, которого никто не зовёт и в ведомости его нет;"
+примечание "  четвёртая — у первого позванного сторожа проба ОТНЯТА: он обязан стать долгом."
+
+примечание "КОДЫ ПЕРЕВЁРНУТЫ: код 1 — подлог пойман на всех пяти сторонах; код 0 — сверка"
+примечание "промолчала хотя бы на одной либо порча не собралась. Оба случая красят шаг."
+
+тотальная функция «Side made»
+  принимает name: строка, says: строка, stands: список «Post», entries: список «Entry»
+  возвращает «Side»
+  запись «Side» с «name» равным name и «says» равным says и «stands» равным stands и «entries» равным entries
+
+тотальная функция «First entry»
+  принимает entries: список «Entry»
+  возвращает строка
+  пример «The first record of the ledger is named»
+    дано entries равно [(запись «Entry» с «guard» равным "a:check" и «reason» равным "дорог")]
+    ожидается "a:check"
+  пример «Of an empty ledger nothing is named»
+    дано entries равно пустой список
+    ожидается ""
+  разбор entries
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова.«guard»
+
+тотальная функция «Without entry»
+  принимает entries: список «Entry», name: строка
+  возвращает список «Entry»
+  обеспечивает «записей не стало больше» (длина результат) не больше (длина entries)
+  пример «The named record leaves the ledger»
+    дано entries равно [(запись «Entry» с «guard» равным "a:check" и «reason» равным "дорог")]
+    дано name равно "a:check"
+    ожидается пустой список
+  отфильтровать entries где entry → не ((entry.«guard») равен name)
+
+тотальная функция «Extra entry»
+  принимает entries: список «Entry», name: строка
+  возвращает список «Entry»
+  обеспечивает «записей стало на одну больше» (длина результат) равен ((длина entries) плюс 1)
+  пример «A record about a probed guard joins the ledger»
+    дано entries равно пустой список
+    дано name равно "a:check"
+    ожидается [(запись «Entry» с «guard» равным "a:check" и «reason» равным "подлог: этого стерегут пробой")]
+  добавить (запись «Entry» с «guard» равным name и «reason» равным "подлог: этого стерегут пробой") к entries
+
+тотальная функция «First probed»
+  принимает stands: список «Post»
+  возвращает строка
+  пример «The first guard with a called probe is named»
+    дано stands равно [(запись «Post» с «name» равным "a:check" и «file» равным "ci" и «built» равным "")]
+    ожидается "a:check"
+  пример «Without a probed guard nothing is named»
+    дано stands равно пустой список
+    ожидается ""
+  разбор («Probed» от stands)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова.«name»
+
+тотальная функция «Unprobed one»
+  принимает stand: «Post», name: строка
+  возвращает «Post»
+  пример «The named guard loses its probe»
+    дано stand равно (запись «Post» с «name» равным "a:check" и «file» равным "ci" и «built» равным "")
+    дано name равно "a:check"
+    ожидается (запись «Post» с «name» равным "a:check" и «file» равным "" и «built» равным "")
+  если (stand.«name») равен name
+    то «Post made» от (stand.«name») и "" и (stand.«built»)
+    иначе stand
+
+тотальная функция «Unprobed»
+  принимает stands: список «Post», name: строка
+  возвращает список «Post»
+  обеспечивает «сторожей столько же» (длина результат) равен (длина stands)
+  отобразить stands как stand → («Unprobed one» от stand и name)
+
+тотальная функция «Extra guard»
+  принимает stands: список «Post»
+  возвращает список «Post»
+  обеспечивает «сторожей стало на одного больше» (длина результат) равен ((длина stands) плюс 1)
+  пример «A guard nobody calls and nobody probes joins the census»
+    дано stands равно пустой список
+    ожидается [(запись «Post» с «name» равным "forged:check" и «file» равным "" и «built» равным "")]
+  добавить («Post made» от "forged:check" и "" и "") к stands
+
+тотальная функция «Side text»
+  принимает stands: список «Post», entries: список «Entry»
+  возвращает строка
+  пусть told равно (отобразить stands как stand → соединить [(stand.«name»), "|", (stand.«file»)] по "")
+  пусть kept равно (отобразить entries как entry → entry.«guard»)
+  соединить [(соединить told по "\n"), "\n--\n", (соединить kept по "\n")] по ""
+
+тотальная функция «Title zero»
+  возвращает строка
+  "сторона нулевая: перепись как она есть, бед быть не должно"
+
+тотальная функция «Title one»
+  возвращает строка
+  "сторона первая: первая запись вынута из ведомости"
+
+тотальная функция «Title two»
+  возвращает строка
+  "сторона вторая: в ведомость вписан сторож, у которого проба есть"
+
+тотальная функция «Title three»
+  возвращает строка
+  "сторона третья: заведён сторож без зова и без пробы, в ведомости его нет"
+
+тотальная функция «Title four»
+  возвращает строка
+  "сторона четвёртая: у первого позванного сторожа проба отнята"
+
+тотальная функция «Sides of»
+  принимает stands: список «Post», entries: список «Entry»
+  возвращает список «Side»
+  пусть dropped равно («Without entry» от entries и («First entry» от entries))
+  пусть added равно («Extra entry» от entries и («First probed» от stands))
+  пусть taken равно («Unprobed» от stands и («First probed» от stands))
+  пусть zero равно («Side made» от («Title zero») и "" и stands и entries)
+  пусть one равно («Side made» от («Title one») и "НОВЫЙ БЕЗ ПРОБЫ" и stands и dropped)
+  пусть two равно («Side made» от («Title two») и "ЗАПИСЬ СТАЛА НЕПРАВДОЙ" и stands и added)
+  пусть three равно («Side made» от («Title three») и "НОВЫЙ БЕЗ ПРОБЫ" и («Extra guard» от stands) и entries)
+  пусть four равно («Side made» от («Title four») и "НОВЫЙ БЕЗ ПРОБЫ" и taken и entries)
+  [zero, one, two, three, four]
+
+тотальная функция «Says it»
+  принимает found: список строки, says: строка
+  возвращает признак
+  пример «The words of the side stand among the troubles»
+    дано found равно ["НОВЫЙ БЕЗ ПРОБЫ: «a:check» заведён"]
+    дано says равно "НОВЫЙ БЕЗ ПРОБЫ"
+    ожидается да
+  пример «No trouble says it»
+    дано found равно пустой список
+    дано says равно "НОВЫЙ БЕЗ ПРОБЫ"
+    ожидается нет
+  (длина (отфильтровать found где trouble → trouble содержит says)) больше 0
+
+тотальная функция «Side answered»
+  принимает says: строка, found: список строки
+  возвращает признак
+  пример «The clean side wants no trouble at all»
+    дано says равно ""
+    дано found равно пустой список
+    ожидается да
+  пример «A forged side wants its own words»
+    дано says равно "НОВЫЙ БЕЗ ПРОБЫ"
+    дано found равно ["НОВЫЙ БЕЗ ПРОБЫ: «a:check» заведён"]
+    ожидается да
+  пример «A forged side that raised nothing has not answered»
+    дано says равно "НОВЫЙ БЕЗ ПРОБЫ"
+    дано found равно пустой список
+    ожидается нет
+  если says равен ""
+    то (длина found) равен 0
+    иначе «Says it» от found и says
+
+тотальная функция «Side shown»
+  принимает name: строка, says: строка, found: список строки
+  возвращает строка
+  пример «A shown side names its words and how many troubles it raised»
+    дано name равно "одна"
+    дано says равно "НОВЫЙ БЕЗ ПРОБЫ"
+    дано found равно ["НОВЫЙ БЕЗ ПРОБЫ: «a:check»"]
+    ожидается "── одна ──\nбед 1, сказано «НОВЫЙ БЕЗ ПРОБЫ»"
+  соединить ["── ", name, " ──\nбед ", (к строке (длина found)), ", сказано «", says, "»"] по ""
+
+тотальная функция «Side fault»
+  принимает name: строка, says: строка, found: список строки
+  возвращает строка
+  пример «A side that stayed silent is named»
+    дано name равно "одна"
+    дано says равно "НОВЫЙ БЕЗ ПРОБЫ"
+    дано found равно пустой список
+    ожидается "ПОДЛОГ НЕ ПОЙМАН — одна: ждали слова «НОВЫЙ БЕЗ ПРОБЫ», а бед найдено 0"
+  соединить ["ПОДЛОГ НЕ ПОЙМАН — ", name, ": ждали слова «", says, "», а бед найдено ",
+    (к строке (длина found))] по ""
+
+тотальная функция «Not assembled»
+  принимает name: строка
+  возвращает строка
+  пример «A forgery that changed nothing is named»
+    дано name равно "одна"
+    ожидается "ПОДЛОГ НЕ СОБРАЛСЯ — одна: перепись не изменилась, проверять ею нечего"
+  соединить ["ПОДЛОГ НЕ СОБРАЛСЯ — ", name, ": перепись не изменилась, проверять ею нечего"] по ""
+
+тотальная функция «Side judged»
+  принимает side: «Side», found: список строки
+  возвращает строка
+  если («Side answered» от (side.«says») и found)
+    то «Side shown» от (side.«name») и (side.«says») и found
+    иначе «Side fault» от (side.«name») и (side.«says») и found
+
+тотальная функция «Side assembled»
+  принимает side: «Side», base: строка
+  возвращает признак
+  пусть own равно («Side text» от (side.«stands») и (side.«entries»))
+  если (side.«says») равен "" то да иначе (не (own равен base))
+
+тотальная функция «Side words»
+  принимает side: «Side», base: строка
+  возвращает строка
+  пусть found равно («Troubles of» от (side.«stands») и (side.«entries»))
+  если не («Side assembled» от side и base)
+    то «Not assembled» от (side.«name»)
+    иначе «Side judged» от side и found
+
+тотальная функция «Forgery words»
+  принимает stands: список «Post», entries: список «Entry»
+  возвращает список строки
+  пусть base равно («Side text» от stands и entries)
+  отобразить («Sides of» от stands и entries) как side → («Side words» от side и base)
+
+тотальная функция «Is fault»
+  принимает word: строка
+  возвращает признак
+  пример «A side that was not shown is a fault»
+    дано word равно "ПОДЛОГ НЕ ПОЙМАН — одна"
+    ожидается да
+  пример «A forgery that did not assemble is a fault»
+    дано word равно "ПОДЛОГ НЕ СОБРАЛСЯ — одна"
+    ожидается да
+  пример «A shown side is not a fault»
+    дано word равно "── одна ──\nбед 1"
+    ожидается нет
+  (word начинается с "ПОДЛОГ НЕ ПОЙМАН") или (word начинается с "ПОДЛОГ НЕ СОБРАЛСЯ")
+
+тотальная функция «Caught word»
+  возвращает строка
+  "подлог пойман: все пять сторон показаны прогоном, ни один файл дерева не тронут."
+
+тотальная функция «Hollow word»
+  возвращает строка
+  "ПРОБА ХОЛОСТА: сверка промолчала там, где обязана была покраснеть."
+
+тотальная функция «Forgery verdict»
+  принимает stands: список «Post», entries: список «Entry»
+  возвращает «Продолжение»
+  пусть words равно («Forgery words» от stands и entries)
+  пусть faults равно (отфильтровать words где word → («Is fault» от word))
+  пусть caught равно (соединить («Joined» от words и [(«Caught word»)]) по "\n\n")
+  пусть hollow равно (соединить («Joined» от words и [(«Hollow word»)]) по "\n\n")
+  если (длина faults) равен 0
+    то вариант «Провал» с код равным "FLANG_FORGERY_PROBE_PODLOG" и сообщение равным caught
+    иначе вариант «Конец работы» с значение равным hollow
+
+примечание "── ПОРУЧЕНИЯ И ХОД РАБОТЫ ─────────────────────────────────────────────────"
+
+тотальная функция «Flows folder»
+  возвращает строка
+  обеспечивает «работы CI лежат у GitHub» результат содержит ".github/workflows"
+  "../../.github/workflows"
+
+тотальная функция «Flows order»
+  возвращает «Поручение»
+  пример «The folder of workflows is listed»
+    ожидается (вариант «Перечислить каталог» с путь равным "../../.github/workflows")
+  вариант «Перечислить каталог» с путь равным («Flows folder»)
+
+тотальная функция «Flow order»
+  принимает name: строка
+  возвращает «Поручение»
+  пример «A workflow is read by its name»
+    дано name равно "ci.yml"
+    ожидается (вариант «Прочитать файл» с путь равным "../../.github/workflows/ci.yml")
+  вариант «Прочитать файл» с путь равным (соединить [(«Flows folder»), "/", name] по "")
+
+тотальная функция «Ledger order»
+  возвращает «Поручение»
+  пример «The ledger is read by an order, not by a grep»
+    ожидается (вариант «Прочитать файл» с путь равным "../../scripts/ledgers/guards-without-forgery-probe.json")
+  вариант «Прочитать файл» с путь равным (соединить ["../../", («Debt ledger»)] по "")
+
+тотальная функция «Settings order»
+  возвращает «Поручение»
+  пример «The settings file is read whole»
+    ожидается (вариант «Прочитать файл» с путь равным "../../.flangrc")
+  вариант «Прочитать файл» с путь равным "../../.flangrc"
+
+тотальная функция «Step on»
+  принимает order: «Поручение», stage: «Stage»
+  возвращает «Продолжение»
+  вариант «Сделать» с поручение равным order и потом равным stage
+
+тотальная функция «Nothing read»
+  принимает what: строка, code: строка, message: строка
+  возвращает «Продолжение»
+  пусть word равно (соединить [what, " не читается — перепись неполна и потому не считается: ", message] по "")
+  вариант «Не проверено» с код равным code и сообщение равным word
+
+тотальная функция «Wrong reply»
+  принимает what: строка
+  возвращает «Продолжение»
+  пример «A reply nobody asked for stops the census»
+    дано what равно "текст workflow"
+    ожидается вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали текст workflow"
+  вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным (соединить ["ждали ", what] по "")
+
+тотальная функция «Is flow»
+  принимает name: строка
+  возвращает признак
+  пример «A workflow is named by its ending»
+    дано name равно "ci.yml"
+    ожидается да
+  пример «A page is not a workflow»
+    дано name равно "README.md"
+    ожидается нет
+  «Ends with» от name и ".yml"
+
+тотальная функция «Ask settings»
+  принимает mode: строка, spots: список «Spot», entries: список «Entry»
+  возвращает «Продолжение»
+  пусть stage равно (вариант «Reading settings» с mode равным mode и spots равным spots и entries равным entries)
+  «Step on» от («Settings order») и stage
+
+тотальная функция «Ask debt»
+  принимает mode: строка, spots: список «Spot»
+  возвращает «Продолжение»
+  пусть stage равно (вариант «Reading the debt» с mode равным mode и spots равным spots)
+  если mode равен "list"
+    то «Ask settings» от mode и spots и (пустой список)
+    иначе «Step on» от («Ledger order») и stage
+
+тотальная функция «Ask flow»
+  принимает mode: строка, pending: список строки, spots: список «Spot», name: строка
+  возвращает «Продолжение»
+  пусть stage равно (вариант «Reading a flow» с mode равным mode и pending равным pending и spots равным spots)
+  «Step on» от («Flow order» от name) и stage
+
+тотальная функция «Reading on»
+  принимает mode: строка, pending: список строки, spots: список «Spot»
+  возвращает «Продолжение»
+  разбор pending
+    случай пусто
+      то «Ask debt» от mode и spots
+    случай голова и хвост
+      то «Ask flow» от mode и pending и spots и голова
+
+тотальная функция «After the folder»
+  принимает mode: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Пока ничего»
+      то «Step on» от («Flows order») и (вариант «Listing flows» с mode равным mode)
+    случай вариант «Перечислено» с имена как names
+      то «Reading on» от mode и (отфильтровать names где name → («Is flow» от name)) и (пустой список)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Nothing read» от "каталог .github/workflows" и code и message
+    случай любое
+      то «Wrong reply» от "список каталога workflow"
+
+тотальная функция «After a flow read»
+  принимает mode: строка, pending: список строки, spots: список «Spot», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор pending
+    случай пусто
+      то «Wrong reply» от "имя workflow, которого никто не спрашивал"
+    случай голова и хвост
+      то «After one flow» от mode и (голова) и хвост и spots и reply
+
+тотальная функция «After one flow»
+  принимает mode: строка, name: строка, rest: список строки, spots: список «Spot», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Reading on» от mode и rest и («Joined» от spots и («Spots of» от name и text))
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Nothing read» от (соединить [".github/workflows/", name] по "") и code и message
+    случай любое
+      то «Wrong reply» от "текст workflow"
+
+тотальная функция «No ledger»
+  принимает code: строка
+  возвращает «Продолжение»
+  пусть word равно (соединить ["ведомости ", («Debt ledger»), " нет — сверять не с чем"] по "")
+  вариант «Не проверено» с код равным code и сообщение равным word
+
+тотальная функция «Or census»
+  принимает mode: строка, spots: список «Spot», code: строка
+  возвращает «Продолжение»
+  если mode равен "census"
+    то «Ask settings» от mode и spots и (пустой список)
+    иначе «No ledger» от code
+
+тотальная функция «After debt»
+  принимает mode: строка, spots: список «Spot», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Ask settings» от mode и spots и («Entries of» от text)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Or census» от mode и spots и code
+    случай любое
+      то «Wrong reply» от "текст ведомости"
+
+тотальная функция «Told»
+  принимает mode: строка, stands: список «Post», entries: список «Entry»
+  возвращает «Продолжение»
+  пусть names равно (отобразить («In debt» от stands) как stand → stand.«name»)
+  если mode равен "list"
+    то вариант «Конец работы» с значение равным (соединить names по "\n")
+    иначе вариант «Конец работы» с значение равным («Census» от stands и entries)
+
+тотальная функция «Or spoken»
+  принимает mode: строка, stands: список «Post», entries: список «Entry»
+  возвращает «Продолжение»
+  если mode равен "forgery"
+    то «Forgery verdict» от stands и entries
+    иначе «Told» от mode и stands и entries
+
+тотальная функция «Judged»
+  принимает mode: строка, stands: список «Post», entries: список «Entry»
+  возвращает «Продолжение»
+  если mode равен "check"
+    то «Judgement» от stands и («Troubles of» от stands и entries)
+    иначе «Or spoken» от mode и stands и entries
+
+тотальная функция «After settings»
+  принимает mode: строка, spots: список «Spot», entries: список «Entry», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Judged» от mode и («Posts of» от («Commands of settings» от text) и spots) и entries
+    случай вариант «Сбой» с код как code и сообщение как message
+      то «Nothing read» от ".flangrc" и code и message
+    случай любое
+      то «Wrong reply» от "текст .flangrc"
+
+тотальная функция «Onward»
+  принимает stage: «Stage», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Listing flows» с mode как mode
+      то «After the folder» от mode и reply
+    случай вариант «Reading a flow» с mode как mode и pending как pending и spots как spots
+      то «After a flow read» от mode и pending и spots и reply
+    случай вариант «Reading the debt» с mode как mode и spots как spots
+      то «After debt» от mode и spots и reply
+    случай вариант «Reading settings» с mode как mode и spots как spots и entries как entries
+      то «After settings» от mode и spots и entries и reply
+
+тотальная функция «Start check»
+  возвращает «Stage»
+  пример «The check compares the census with the ledger»
+    ожидается вариант «Listing flows» с mode равным "check"
+  вариант «Listing flows» с mode равным "check"
+
+тотальная функция «Start census»
+  возвращает «Stage»
+  пример «The census prints every count»
+    ожидается вариант «Listing flows» с mode равным "census"
+  вариант «Listing flows» с mode равным "census"
+
+тотальная функция «Start list»
+  возвращает «Stage»
+  пример «The list names the guards in debt only»
+    ожидается вариант «Listing flows» с mode равным "list"
+  вариант «Listing flows» с mode равным "list"
+
+тотальная функция «Start forgery»
+  возвращает «Stage»
+  пример «The forgery walks the same census»
+    ожидается вариант «Listing flows» с mode равным "forgery"
+  вариант «Listing flows» с mode равным "forgery"
+
+план «Check»
+  состояние «Stage»
+  начинает с «Start check»
+  обрабатывает «Onward»
+
+план «Census»
+  состояние «Stage»
+  начинает с «Start census»
+  обрабатывает «Onward»
+
+план «List»
+  состояние «Stage»
+  начинает с «Start list»
+  обрабатывает «Onward»
+
+план «Forgery»
+  состояние «Stage»
+  начинает с «Start forgery»
+  обрабатывает «Onward»
+
+тотальная функция «Объявление короткой команды forgery-probe:check»
+  возвращает строка
+  "bootstrap/flang io --plan Check — сторожа без пробы порчи сходятся с ведомостью в обе стороны"
+
+тотальная функция «Объявление короткой команды forgery-probe:census»
+  возвращает строка
+  "bootstrap/flang io --plan Census — перепись проб порчи целиком, код всегда 0"
+
+тотальная функция «Объявление короткой команды forgery-probe:list»
+  возвращает строка
+  "bootstrap/flang io --plan List — только имена беспробных, по одному в строке"
+
+тотальная функция «Объявление короткой команды forgery-probe:forgery»
+  возвращает строка
+  "bootstrap/flang io --plan Forgery — пять порч переписи в памяти краснят сверку, код 1"

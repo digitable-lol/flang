@@ -1544,6 +1544,7 @@ d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/guards/delivery-guard.flang
 9a1d779542ab08a5a1416bbdc99c0563|10|10|0|0|0|scripts/guards/dictionary-guard.fscript
 35bc4b6ceba5235a93625a25ded7023f|12|12|0|0|0|scripts/guards/emit-promises-guard.fscript
 bb9f8dadc0aa937a5fc4dbda79707edd|18|16|2|0|0|scripts/guards/file-extensions.fscript
+ce0f26e8f64ce11b7f2f8e559d0f090b|11|11|0|0|0|scripts/guards/guards-without-forgery-probe.fscript
 d29d464d969d58822bc10e6e696017ef|14|14|0|0|0|scripts/flangrc.fscript
 001c0ecd7217d8ae84b4133d3dca9085|4|4|0|0|0|scripts/guards/flangrc-guard.fscript
 baa3170dc90958c56352eb9b3f49ab9b|62|49|10|3|0|scripts/guards/homebrew-formula-guard.fscript
@@ -1560,6 +1561,7 @@ b227c0ad335b884661247019d31270e6|22|22|0|0|0|scripts/guards/name-splicing-guard.
 c5506e0d519db2384994e5edb50f9ad8|13|7|6|0|0|scripts/guards/no-comments-guard.fscript
 323f8525a0746bf647873edd7ba3eaf7|9|9|0|0|0|scripts/guards/no-package-json-guard.fscript
 76e306cbb502d04abaef8d8b0807eb8d|7|7|0|0|0|scripts/guards/occupancy-check.fscript
+01aef169c0bbf946d103d0efc22f3d7e|13|13|0|0|0|scripts/guards/proved-share-vs-tree.fscript
 7feca661ed8e0a679823c1b6f0a431fe|24|24|0|0|0|scripts/guards/occupied-names-guard.fscript
 bcb9a4bd2f77da1cc1fdfe50b7385bed|2|2|0|0|0|scripts/guards/record-follows-its-source.fscript
 1083cc30fab03e5f16e2060519b7c8c1|8|8|0|0|0|scripts/guards/release-guard.fscript

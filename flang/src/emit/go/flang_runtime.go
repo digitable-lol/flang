@@ -681,8 +681,126 @@ func ordered(left, right Value) (float64, float64, error) {
 	return left.Num, right.Num, nil
 }
 
+// ─────────────────── точное целое: разряды основания 2²² ───────────────────
+//
+// Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание 2²².
+// Представление выбрано задачей 1411, решение — ADR-0036 §11; складывает разряды
+// вычислитель в `flang/self/interpret.flang` («Основание разрядов» и ниже).
+//
+// Отличать точное целое от обычного списка по типу здесь нечем: напечатанная
+// программа типов не носит, и вычислитель сам смотрит только на вид значения
+// («Сложение знач»: оба операнда — списки чисел). Правило ниже такое же
+// динамическое, поэтому печать и вычислитель не расходятся.
+//
+// Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
+// собственный пример вычислителя подаёт [4194305], — а на таких разрядах
+// быстрый путь (до двух разрядов, машинным сложением) и общий путь (перенос по
+// столбцам) дают РАЗНЫЙ ответ. Переписаны оба, порознь.
+//
+// Считается в float64, а не в math/big: число flang — IEEE-754 double, и точное
+// целое Go разошлось бы с вычислителем на разрядах вне диапазона. Длина растёт
+// списком, поэтому потолка у значения нет и без math/big.
+
+// ExactBase — основание разряда точного целого: 2²².
+const ExactBase = 4194304.0
+
+// exactDigits — «Разряды ли знач»: список, и каждый элемент — число.
+// Пустой список годится.
+func exactDigits(value Value) bool {
+	if value.Tag != TagList {
+		return false
+	}
+	for _, item := range value.List {
+		if item.Tag != TagNumber {
+			return false
+		}
+	}
+	return true
+}
+
+// exactDigit — «Разряд точного»: номер с единицы, за концом списка — ноль.
+func exactDigit(digits []float64, place int) float64 {
+	if place < 1 || place > len(digits) {
+		return 0
+	}
+	return digits[place-1]
+}
+
+// exactTrim — «Срезать старшие нули»: старший разряд стоит в конце.
+func exactTrim(digits []float64) []float64 {
+	count := len(digits)
+	for count > 0 && digits[count-1] == 0 {
+		count--
+	}
+	return digits[:count]
+}
+
+// exactSmallDigits — «Разряды малого точного»: значение → до трёх разрядов.
+func exactSmallDigits(value float64) []float64 {
+	low := math.Mod(value, ExactBase)
+	high := (value - low) / ExactBase
+	middle := math.Mod(high, ExactBase)
+	return exactTrim([]float64{low, middle, (high - middle) / ExactBase})
+}
+
+// exactSmallValue — «Значение малых разрядов»: два младших машинным числом.
+func exactSmallValue(digits []float64) float64 {
+	return exactDigit(digits, 1) + exactDigit(digits, 2)*ExactBase
+}
+
+// exactSettle — «Уложить разряды»: перенос по столбцам, затем разряды переноса.
+func exactSettle(columns []float64) []float64 {
+	carry := 0.0
+	settled := make([]float64, 0, len(columns)+3)
+	for _, column := range columns {
+		total := column + carry
+		low := math.Mod(total, ExactBase)
+		carry = (total - low) / ExactBase
+		settled = append(settled, low)
+	}
+	return exactTrim(append(settled, exactSmallDigits(carry)...))
+}
+
+// exactSum — «Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы.
+func exactSum(left, right []float64) []float64 {
+	if len(left) <= 2 && len(right) <= 2 {
+		return exactSmallDigits(exactSmallValue(left) + exactSmallValue(right))
+	}
+	wide := len(left)
+	if len(right) > wide {
+		wide = len(right)
+	}
+	columns := make([]float64, wide)
+	for index := range columns {
+		columns[index] = exactDigit(left, index+1) + exactDigit(right, index+1)
+	}
+	return exactSettle(columns)
+}
+
+// exactPlaces — разряды значения числами Go.
+func exactPlaces(value Value) []float64 {
+	digits := make([]float64, len(value.List))
+	for index, item := range value.List {
+		digits[index] = item.Num
+	}
+	return digits
+}
+
+// exactAdd — «Точное сложение». Витков не тратит — как в вычислителе.
+func exactAdd(left, right Value) Value {
+	digits := exactSum(exactPlaces(left), exactPlaces(right))
+	items := make([]Value, len(digits))
+	for index, digit := range digits {
+		items[index] = Number(digit)
+	}
+	return List(items)
+}
+
 // Add — «плюс».
 func Add(ctx *Ctx, left, right Value) (Value, error) {
+	if exactDigits(left) && exactDigits(right) {
+		return exactAdd(left, right), nil
+	}
 	a, b, err := arithmetic("add", left, right)
 	if err != nil {
 		return Nothing(), err

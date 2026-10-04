@@ -805,8 +805,97 @@ def _ordered(left, right):
     return left.data, right.data
 
 
+# ─────────────────── точное целое: разряды основания 2²² ───────────────────
+#
+# Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание 2²².
+# Представление выбрано задачей 1411, решение — ADR-0036 §11; складывает разряды
+# вычислитель в `flang/self/interpret.flang` («Основание разрядов» и ниже).
+#
+# Отличать точное целое от обычного списка по типу здесь нечем: напечатанная
+# программа типов не носит, и вычислитель сам смотрит только на вид значения
+# («Сложение знач»: оба операнда — списки чисел). Правило ниже такое же
+# динамическое, поэтому печать и вычислитель не расходятся.
+#
+# Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
+# собственный пример вычислителя подаёт [4194305], — а на таких разрядах
+# быстрый путь (до двух разрядов, машинным сложением) и общий путь (перенос по
+# столбцам) дают РАЗНЫЙ ответ. Переписаны оба, порознь.
+#
+# Считается во float, а не в int Python: число flang — IEEE-754 double, и
+# точный int разошёлся бы с вычислителем на разрядах вне диапазона.
+
+EXACT_BASE = 4194304.0
+
+
+def _exact_digits(value):
+    """«Разряды ли знач»: список, и каждый элемент — число. Пустой годится."""
+    if value.tag != TAG_LIST:
+        return False
+    return all(item.tag == TAG_NUMBER for item in list_items(value))
+
+
+def _exact_digit(digits, number_):
+    """«Разряд точного»: номер с единицы, за концом списка — ноль."""
+    if number_ < 1 or number_ > len(digits):
+        return 0.0
+    return digits[number_ - 1]
+
+
+def _exact_trim(digits):
+    """«Срезать старшие нули»: старший разряд стоит в конце."""
+    count = len(digits)
+    while count > 0 and digits[count - 1] == 0.0:
+        count -= 1
+    return digits[:count]
+
+
+def _exact_small_digits(value):
+    """«Разряды малого точного»: значение → до трёх разрядов."""
+    low = math.fmod(value, EXACT_BASE)
+    high = (value - low) / EXACT_BASE
+    middle = math.fmod(high, EXACT_BASE)
+    return _exact_trim([low, middle, (high - middle) / EXACT_BASE])
+
+
+def _exact_small_value(digits):
+    """«Значение малых разрядов»: два младших разряда машинным числом."""
+    return _exact_digit(digits, 1) + _exact_digit(digits, 2) * EXACT_BASE
+
+
+def _exact_settle(columns):
+    """«Уложить разряды»: перенос по столбцам, затем разряды переноса сверху."""
+    carry = 0.0
+    settled = []
+    for column in columns:
+        total = column + carry
+        low = math.fmod(total, EXACT_BASE)
+        carry = (total - low) / EXACT_BASE
+        settled.append(low)
+    return _exact_trim(settled + _exact_small_digits(carry))
+
+
+def _exact_sum(left, right):
+    """«Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы."""
+    if len(left) <= 2 and len(right) <= 2:
+        return _exact_small_digits(_exact_small_value(left) + _exact_small_value(right))
+    wide = max(len(left), len(right))
+    columns = [_exact_digit(left, place) + _exact_digit(right, place) for place in range(1, wide + 1)]
+    return _exact_settle(columns)
+
+
+def _exact_add(left, right):
+    """«Точное сложение». Витков не тратит — так же, как в вычислителе."""
+    digits = _exact_sum(
+        [item.data for item in list_items(left)],
+        [item.data for item in list_items(right)],
+    )
+    return list_of([number(digit) for digit in digits])
+
+
 def add(ctx, left, right):
     """«плюс»."""
+    if _exact_digits(left) and _exact_digits(right):
+        return _exact_add(left, right)
     a, b = _arithmetic("add", left, right)
     return Value(TAG_NUMBER, a + b)
 

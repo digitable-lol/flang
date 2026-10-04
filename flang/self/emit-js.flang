@@ -1203,11 +1203,111 @@
     "}"
   ] по "\n"
 
+тотальная функция «Текст exactDigits JS»
+  возвращает строка
+  обеспечивает «рантайм exactDigits несёт function $exactDigits» результат содержит "function $exactDigits("
+  соединить [
+    "function $exactDigits(value) {",
+    "  return $isList(value) && value.every((digit) => typeof digit === \"number\")",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст exactDigit JS»
+  возвращает строка
+  обеспечивает «рантайм exactDigit несёт function $exactDigit» результат содержит "function $exactDigit("
+  соединить [
+    "function $exactDigit(digits, place) {",
+    "  /* Номер с единицы, за концом списка — ноль. */",
+    "  return place < 1 || place > digits.length ? 0 : digits[place - 1]",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст exactTrim JS»
+  возвращает строка
+  обеспечивает «рантайм exactTrim несёт function $exactTrim» результат содержит "function $exactTrim("
+  соединить [
+    "function $exactTrim(digits) {",
+    "  /* Старший разряд стоит в конце, поэтому старшие нули снимаются с хвоста. */",
+    "  let count = digits.length",
+    "  while (count > 0 && digits[count - 1] === 0) {",
+    "    count--",
+    "  }",
+    "  return digits.slice(0, count)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст exactSmallDigits JS»
+  возвращает строка
+  обеспечивает «рантайм exactSmallDigits объявлен» результат содержит "function $exactSmallDigits("
+  соединить [
+    "function $exactSmallDigits(value) {",
+    "  const low = value % 4194304",
+    "  const high = (value - low) / 4194304",
+    "  const middle = high % 4194304",
+    "  return $exactTrim([low, middle, (high - middle) / 4194304])",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст exactSmallValue JS»
+  возвращает строка
+  обеспечивает «рантайм exactSmallValue несёт function $exactSmallValue» результат содержит "function $exactSmallValue("
+  соединить [
+    "function $exactSmallValue(digits) {",
+    "  return $exactDigit(digits, 1) + $exactDigit(digits, 2) * 4194304",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст exactSettle JS»
+  возвращает строка
+  обеспечивает «рантайм exactSettle несёт function $exactSettle» результат содержит "function $exactSettle("
+  соединить [
+    "function $exactSettle(columns) {",
+    "  const settled = []",
+    "  let carry = 0",
+    "  for (const column of columns) {",
+    "    const total = column + carry",
+    "    const low = total % 4194304",
+    "    carry = (total - low) / 4194304",
+    "    settled.push(low)",
+    "  }",
+    "  return $exactTrim(settled.concat($exactSmallDigits(carry)))",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст exactSum JS»
+  возвращает строка
+  обеспечивает «рантайм exactSum несёт function $exactSum» результат содержит "function $exactSum("
+  соединить [
+    "function $exactSum(left, right) {",
+    "  /* Путей ДВА, как в вычислителе («Сумма разрядов»), и слить их нельзя:",
+    "     разряд вне [0, 2**22) законен, а на таких разрядах быстрый путь и",
+    "     перенос по столбцам дают РАЗНЫЙ ответ. */",
+    "  if (left.length <= 2 && right.length <= 2) {",
+    "    return $exactSmallDigits($exactSmallValue(left) + $exactSmallValue(right))",
+    "  }",
+    "  const wide = Math.max(left.length, right.length)",
+    "  const columns = []",
+    "  for (let place = 1; place <= wide; place++) {",
+    "    columns.push($exactDigit(left, place) + $exactDigit(right, place))",
+    "  }",
+    "  return $exactSettle(columns)",
+    "}"
+  ] по "\n"
+
 тотальная функция «Текст add JS»
   возвращает строка
   обеспечивает «рантайм add несёт function $add» результат содержит "function $add("
+  обеспечивает «сложение спрашивает про разряды прежде, чем про числа» результат содержит "$exactDigits(left)"
   соединить [
     "function $add(left, right) {",
+    "  /* Точное целое — СПИСОК разрядов основания 2**22, младший первым",
+    "     (ADR-0036 §11). Отличить его от числа здесь можно только по ВИДУ",
+    "     значения: типов напечатанная программа не носит. Вычислитель решает",
+    "     так же (flang/self/interpret.flang, «Сложение знач»), поэтому печать",
+    "     с ним не расходится. */",
+    "  if ($exactDigits(left) && $exactDigits(right)) {",
+    "    return $exactSum(left, right)",
+    "  }",
     "  $nums(\"add\", left, right)",
     "  return left + right",
     "}"
@@ -2261,9 +2361,19 @@
     "}"
   ] по "\n"
 
+тотальная функция «Нужда суммы точного JS»
+  возвращает список строки
+  ["$exactDigit", "$exactSmallDigits", "$exactSmallValue", "$exactSettle"]
+
+тотальная функция «Собрать кусок JS»
+  принимает «имя»: строка, «нужно»: список строки, «исходник»: строка
+  возвращает «Кусок рантайма JS»
+  обеспечивает «имя куска доезжает как есть» (результат.«имя») равен «имя»
+  запись «Кусок рантайма JS» с «имя» равным «имя» и «нужно» равным «нужно» и «исходник» равным «исходник»
+
 тотальная функция «Рантайм JS»
   возвращает список «Кусок рантайма JS»
-  обеспечивает «кусков рантайма ровно девяносто три» (длина результат) равен 93
+  обеспечивает «кусков рантайма ровно сто» (длина результат) равен 100
   [
     (запись «Кусок рантайма JS» с «имя» равным "$FlangError" и «нужно» равным пустой список и «исходник» равным «Текст FlangError JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$fail" и «нужно» равным ["$FlangError"] и «исходник» равным «Текст fail JS»),
@@ -2290,7 +2400,14 @@
     (запись «Кусок рантайма JS» с «имя» равным "$pre" и «нужно» равным ["$fail", "$typeName"] и «исходник» равным «Текст pre JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$nums" и «нужно» равным ["$fail", "$typeName"] и «исходник» равным «Текст nums JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$ord" и «нужно» равным ["$fail"] и «исходник» равным «Текст ord JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$add" и «нужно» равным ["$nums"] и «исходник» равным «Текст add JS»),
+    («Собрать кусок JS» от "$exactDigits" и ["$isList"] и «Текст exactDigits JS»),
+    («Собрать кусок JS» от "$exactDigit" и пустой список и «Текст exactDigit JS»),
+    («Собрать кусок JS» от "$exactTrim" и пустой список и «Текст exactTrim JS»),
+    («Собрать кусок JS» от "$exactSmallDigits" и ["$exactTrim"] и «Текст exactSmallDigits JS»),
+    («Собрать кусок JS» от "$exactSmallValue" и ["$exactDigit"] и «Текст exactSmallValue JS»),
+    («Собрать кусок JS» от "$exactSettle" и ["$exactTrim", "$exactSmallDigits"] и «Текст exactSettle JS»),
+    («Собрать кусок JS» от "$exactSum" и («Нужда суммы точного JS») и «Текст exactSum JS»),
+    («Собрать кусок JS» от "$add" и ["$nums", "$exactDigits", "$exactSum"] и «Текст add JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$sub" и «нужно» равным ["$nums"] и «исходник» равным «Текст sub JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$mul" и «нужно» равным ["$nums"] и «исходник» равным «Текст mul JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$div" и «нужно» равным ["$nums"] и «исходник» равным «Текст div JS»),

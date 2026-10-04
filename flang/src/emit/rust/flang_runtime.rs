@@ -1028,8 +1028,117 @@ fn ordered(left: &Value, right: &Value) -> Result<(f64, f64), Error> {
     }
 }
 
+// ─────────────────── точное целое: разряды основания 2²² ───────────────────
+//
+// Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание 2²².
+// Представление выбрано задачей 1411, решение — ADR-0036 §11; складывает разряды
+// вычислитель в `flang/self/interpret.flang` («Основание разрядов» и ниже).
+//
+// Отличать точное целое от обычного списка по типу здесь нечем: напечатанная
+// программа типов не носит, и вычислитель сам смотрит только на вид значения
+// («Сложение знач»: оба операнда — списки чисел). Правило ниже такое же
+// динамическое, поэтому печать и вычислитель не расходятся.
+//
+// Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
+// собственный пример вычислителя подаёт [4194305], — а на таких разрядах
+// быстрый путь (до двух разрядов, машинным сложением) и общий путь (перенос по
+// столбцам) дают РАЗНЫЙ ответ. Переписаны оба, порознь.
+//
+// Крейта длинной арифметики здесь нет и не будет: ADR-0012 о корнях доверия, и
+// ADR-0036 §6 называет это прямо. Потолка значению не нужно — длину даёт список,
+// а `%` для `f64` в Rust — это fmod, то есть ровно «остаток от» вычислителя.
+
+/// Основание разряда точного целого: 2²².
+pub const EXACT_BASE: f64 = 4194304.0;
+
+/// «Разряды ли знач»: список, и каждый элемент — число. Пустой годится.
+fn exact_digits(value: &Value) -> bool {
+    match value {
+        Value::List(items) => items.as_slice().iter().all(|item| matches!(item, Value::Number(_))),
+        _ => false,
+    }
+}
+
+/// «Разряд точного»: номер с единицы, за концом списка — ноль.
+fn exact_digit(digits: &[f64], place: usize) -> f64 {
+    if place < 1 || place > digits.len() {
+        return 0.0;
+    }
+    digits[place - 1]
+}
+
+/// «Срезать старшие нули»: старший разряд стоит в конце.
+fn exact_trim(mut digits: Vec<f64>) -> Vec<f64> {
+    while digits.last() == Some(&0.0) {
+        digits.pop();
+    }
+    digits
+}
+
+/// «Разряды малого точного»: значение → до трёх разрядов.
+fn exact_small_digits(value: f64) -> Vec<f64> {
+    let low = value % EXACT_BASE;
+    let high = (value - low) / EXACT_BASE;
+    let middle = high % EXACT_BASE;
+    exact_trim(vec![low, middle, (high - middle) / EXACT_BASE])
+}
+
+/// «Значение малых разрядов»: два младших разряда машинным числом.
+fn exact_small_value(digits: &[f64]) -> f64 {
+    exact_digit(digits, 1) + exact_digit(digits, 2) * EXACT_BASE
+}
+
+/// «Уложить разряды»: перенос по столбцам, затем разряды переноса сверху.
+fn exact_settle(columns: &[f64]) -> Vec<f64> {
+    let mut settled: Vec<f64> = Vec::with_capacity(columns.len() + 3);
+    let mut carry = 0.0;
+    for column in columns {
+        let total = column + carry;
+        let low = total % EXACT_BASE;
+        carry = (total - low) / EXACT_BASE;
+        settled.push(low);
+    }
+    settled.extend(exact_small_digits(carry));
+    exact_trim(settled)
+}
+
+/// «Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы и перенос.
+fn exact_sum(left: &[f64], right: &[f64]) -> Vec<f64> {
+    if left.len() <= 2 && right.len() <= 2 {
+        return exact_small_digits(exact_small_value(left) + exact_small_value(right));
+    }
+    let wide = left.len().max(right.len());
+    let columns: Vec<f64> =
+        (1..=wide).map(|place| exact_digit(left, place) + exact_digit(right, place)).collect();
+    exact_settle(&columns)
+}
+
+/// Разряды значения числами Rust. Зовётся только после `exact_digits`.
+fn exact_places(value: &Value) -> Vec<f64> {
+    match value {
+        Value::List(items) => items
+            .as_slice()
+            .iter()
+            .map(|item| match item {
+                Value::Number(digit) => *digit,
+                _ => 0.0,
+            })
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+
+/// «Точное сложение». Витков не тратит — так же, как в вычислителе.
+fn exact_add(left: &Value, right: &Value) -> Value {
+    let digits = exact_sum(&exact_places(left), &exact_places(right));
+    list(digits.into_iter().map(number).collect())
+}
+
 /// «плюс».
 pub fn add(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if exact_digits(&left) && exact_digits(&right) {
+        return Ok(exact_add(&left, &right));
+    }
     let (a, b) = arithmetic("add", &left, &right)?;
     Ok(number(a + b))
 }

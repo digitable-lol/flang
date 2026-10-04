@@ -930,10 +930,103 @@ defmodule Flang.Rt do
     raise fail(@code_type, "сравнения порядка допустимы только для чисел")
   end
 
+  # ─────────────────── точное целое: разряды основания 2²² ───────────────────
+  #
+  # Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание
+  # 2²². Представление выбрано задачей 1411, решение — ADR-0036 §11; складывает
+  # разряды вычислитель в `flang/self/interpret.flang` («Основание разрядов»).
+  #
+  # Отличать точное целое от обычного списка по типу здесь нечем: напечатанная
+  # программа типов не носит, и вычислитель сам смотрит только на вид значения
+  # («Сложение знач»: оба операнда — списки чисел). Правило ниже такое же
+  # динамическое, поэтому печать и вычислитель не расходятся.
+  #
+  # Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
+  # собственный пример вычислителя подаёт [4194305], — а на таких разрядах
+  # быстрый путь (до двух разрядов) и общий путь (перенос по столбцам) дают
+  # РАЗНЫЙ ответ. Переписаны оба, порознь.
+  #
+  # Считается через `num_*`, а не целыми Erlang: число flang — IEEE-754 double
+  # вместе с `:nan`, `:inf` и `:ninf`, и целое разошлось бы с вычислителем и на
+  # них, и на разрядах вне диапазона. Потолка значению не нужно: длину даёт
+  # список, и произвольная точность приходит от него, а не от разряда.
+
+  @exact_base 4_194_304.0
+
+  @doc "Основание разряда точного целого: 2²²."
+  def exact_base, do: @exact_base
+
+  # «Разряды ли знач»: список, и каждый элемент — число. Пустой годится.
+  defp exact_digits?({:list, _, _} = value), do: Enum.all?(items(value), &match?({:num, _}, &1))
+  defp exact_digits?(_), do: false
+
+  # «Разряд точного»: номер с единицы, за концом списка — ноль.
+  defp exact_digit(digits, place) do
+    case Enum.at(digits, place - 1) do
+      nil -> 0.0
+      digit -> digit
+    end
+  end
+
+  # «Срезать старшие нули»: старший разряд стоит в конце.
+  defp exact_trim(digits) do
+    digits |> Enum.reverse() |> Enum.drop_while(&(&1 == 0.0)) |> Enum.reverse()
+  end
+
+  # «Разряды малого точного»: значение → до трёх разрядов.
+  defp exact_small_digits(value) do
+    low = num_rem(value, @exact_base)
+    high = num_div(num_sub(value, low), @exact_base)
+    middle = num_rem(high, @exact_base)
+    exact_trim([low, middle, num_div(num_sub(high, middle), @exact_base)])
+  end
+
+  # «Значение малых разрядов»: два младших разряда машинным числом.
+  defp exact_small_value(digits) do
+    num_add(exact_digit(digits, 1), num_mul(exact_digit(digits, 2), @exact_base))
+  end
+
+  # «Уложить разряды»: перенос по столбцам, затем разряды переноса сверху.
+  defp exact_settle(columns) do
+    {settled, carry} =
+      Enum.map_reduce(columns, 0.0, fn column, carry ->
+        total = num_add(column, carry)
+        low = num_rem(total, @exact_base)
+        {low, num_div(num_sub(total, low), @exact_base)}
+      end)
+
+    exact_trim(settled ++ exact_small_digits(carry))
+  end
+
+  # «Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы и перенос.
+  defp exact_sum(left, right) when length(left) <= 2 and length(right) <= 2 do
+    exact_small_digits(num_add(exact_small_value(left), exact_small_value(right)))
+  end
+
+  defp exact_sum(left, right) do
+    wide = max(length(left), length(right))
+
+    1..wide
+    |> Enum.map(&num_add(exact_digit(left, &1), exact_digit(right, &1)))
+    |> exact_settle()
+  end
+
+  # Разряды значения числами BEAM. Зовётся только после `exact_digits?`.
+  defp exact_places(value), do: Enum.map(items(value), fn {:num, digit} -> digit end)
+
+  # «Точное сложение». Витков не тратит — так же, как в вычислителе.
+  defp exact_add(left, right) do
+    list(Enum.map(exact_sum(exact_places(left), exact_places(right)), &{:num, &1}))
+  end
+
   @doc "«плюс»."
   def add(left, right) do
-    {a, b, _} = arithmetic("add", left, right)
-    {:num, num_add(a, b)}
+    if exact_digits?(left) and exact_digits?(right) do
+      exact_add(left, right)
+    else
+      {a, b, _} = arithmetic("add", left, right)
+      {:num, num_add(a, b)}
+    end
   end
 
   @doc "«минус»."

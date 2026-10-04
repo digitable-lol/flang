@@ -5,7 +5,8 @@
 [`javascript-inventory.md`](javascript-inventory.md)).
 На 15 сентября 2026, после снятия напечатанного задачей 1423, — 51; на
 26 сентября 2026, после снятия `proof-ledger.mjs` и `word-guard.mjs`
-(задача 4413), — **49**. <!-- СНЯТО 2026-09-26 файлов *.js,*.mjs = 49 (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) -->
+(задача 4413), — 49; 4 октября 2026, после снятия
+`flang/scripts/word-occupancy.mjs` (задача 0049), — **48**. <!-- СНЯТО 2026-10-04 файлов *.js,*.mjs = 48 (задача 0049: flang/scripts/word-occupancy.mjs снят — план flang/scripts/word-occupancy.fscript даёт те же числа знак в знак (файлов 1297, голым 553, в строке 128) и тот же код возврата; до него 49, снято 2026-10-04) (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) -->
 Их не переписывают не потому, что руки не дошли:
 **четыре возможности отсутствуют в самом языке**, и пока их нет, часть файлов
 переписать нельзя в принципе. Ниже — что именно, сколько файлов держит каждая
@@ -26,7 +27,7 @@ flang io: непонятный ключ «--n=5»
 `--pretty` и шесть запретов полномочий. Хвоста строки нет, `--args` нет.
 Единственный отбор — `--plan 'Имя'`.
 
-Держит: `word-occupancy.mjs`, `link-collision-guard.mjs` (зовётся `--дерево`),
+Держит: `link-collision-guard.mjs` (зовётся `--дерево`),
 `proof-ledger.mjs` (`--pustota`), `word-guard.mjs` (`--porcha vse`),
 `build-changelog.mjs` (`--check`/`--self-test`), `build-changelog-page.mjs`,
 `gen.mjs` (пять ключей), `work.mjs`, `wasm-run.mjs`, `flang-launch.mjs`.

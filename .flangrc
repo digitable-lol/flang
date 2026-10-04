@@ -58,6 +58,7 @@ script.proof-record:check = bootstrap/flang run-script seed:freshness --what pro
 script.record-source:check = bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Проверка
 script.record-source:forgery = bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Подлог
 script.checker:check = bootstrap/flang io flang/proof/checker/tests/run.fscript --max-steps 4000000000 --timeout 600000
+script.plan-rules:probe = bootstrap/flang io flang/proof/probes/plan-rules-asked/run.fscript --plan Binary
 script.translation:check = sh flang/translation/run.sh
 script.proved-share:check = bootstrap/flang io flang/proof/share-measure.fscript --max-steps 4000000000 --timeout 900000 -- --set corpus
 script.proved-share:forgery = bootstrap/flang io flang/proof/share-ledger-forgery.fscript --max-steps 4000000000 --timeout 900000

@@ -1,0 +1,5 @@
+модуль «Exact fraction refuses division by the zero fraction»
+
+тотальная функция «На ноль»
+  возвращает точное дробное
+  [[1], [2]] делить на [[], [1]]

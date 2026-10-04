@@ -1,0 +1,2 @@
+program	judge	code	word
+ring-kernel-verdicts.flang	run --trust --function "Свод"	0	кольцо на точном целом: доказано 2 из 2, отвергнуто 6 из 6

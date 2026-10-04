@@ -1,0 +1,30 @@
+program	judge	code	word
+00-tselyj.flang	check	0	flang/test/fixtures/plany/00-tselyj.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+01-dvazhdy.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/01-dvazhdy.flang, строка 25, столбец 1: план «Работа» объявлен дважды
+02-slovar-zanyat.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/02-slovar-zanyat.flang, строка 23, столбец 1: план «Работа» не собран: в программе нет сумм «Отклик» — это словарь ввода-вывода, и его имена заняты собственными объявлениями
+03-sostoyanie-neizvestno.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/03-sostoyanie-neizvestno.flang, строка 20, столбец 1: состояние плана «Работа» — неизвестный тип «Хода»
+04-nachalo-neizvestno.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/04-nachalo-neizvestno.flang, строка 20, столбец 1: начальное состояние плана «Работа» — неизвестная функция «Начало»
+05-nachalo-s-argumentom.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/05-nachalo-s-argumentom.flang, строка 21, столбец 1: начальное состояние плана «Работа» — функция «Начать» с 1 аргум., а обязана быть без аргументов
+06-nachalo-ne-tot-tip.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/06-nachalo-ne-tot-tip.flang, строка 20, столбец 1: функция «Начать» плана «Работа» возвращает «number», а ожидался «Ход»
+07-shag-neizvesten.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/07-shag-neizvesten.flang, строка 20, столбец 1: шаг плана «Работа» — неизвестная функция «Дальнейшее»
+08-shag-odin-argument.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/08-shag-odin-argument.flang, строка 20, столбец 1: шаг плана «Работа» — функция «Дальше» с 1 аргум., а обязана принимать состояние и отклик
+09-shag-pervyj-argument.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/09-shag-pervyj-argument.flang, строка 24, столбец 1: первый аргумент функции «Дальше» «Иное», а ожидался «Ход»
+10-shag-vtoroj-argument.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/10-shag-vtoroj-argument.flang, строка 20, столбец 1: второй аргумент функции «Дальше» «Ход», а ожидался «Отклик»
+11-shag-vozvrat.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/11-shag-vozvrat.flang, строка 20, столбец 1: функция «Дальше» плана «Работа» возвращает «Ход», а ожидался «Продолжение»
+12-shag-spisok.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/12-shag-spisok.flang, строка 16, столбец 1: первый аргумент функции «Дальше» «список», а ожидался «Ход»
+13-shag-dzhoker.flang	check	1	FLANG_UNKNOWN_NAME в файле flang/test/fixtures/plany/13-shag-dzhoker.flang, строка 11, столбец 1: неизвестный тип «Небывалое»
+13-shag-dzhoker.flang	check	1	flang/test/fixtures/plany/13-shag-dzhoker.flang: не проверено — замечаний 1
+00-tselyj.flang	test	0	flang/test/fixtures/plany/00-tselyj.flang: примеров 0, прошло 0, не прошло 0
+01-dvazhdy.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/01-dvazhdy.flang, строка 25, столбец 1: план «Работа» объявлен дважды
+02-slovar-zanyat.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/02-slovar-zanyat.flang, строка 23, столбец 1: план «Работа» не собран: в программе нет сумм «Отклик» — это словарь ввода-вывода, и его имена заняты собственными объявлениями
+03-sostoyanie-neizvestno.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/03-sostoyanie-neizvestno.flang, строка 20, столбец 1: состояние плана «Работа» — неизвестный тип «Хода»
+04-nachalo-neizvestno.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/04-nachalo-neizvestno.flang, строка 20, столбец 1: начальное состояние плана «Работа» — неизвестная функция «Начало»
+05-nachalo-s-argumentom.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/05-nachalo-s-argumentom.flang, строка 21, столбец 1: начальное состояние плана «Работа» — функция «Начать» с 1 аргум., а обязана быть без аргументов
+06-nachalo-ne-tot-tip.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/06-nachalo-ne-tot-tip.flang, строка 20, столбец 1: функция «Начать» плана «Работа» возвращает «number», а ожидался «Ход»
+07-shag-neizvesten.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/07-shag-neizvesten.flang, строка 20, столбец 1: шаг плана «Работа» — неизвестная функция «Дальнейшее»
+08-shag-odin-argument.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/08-shag-odin-argument.flang, строка 20, столбец 1: шаг плана «Работа» — функция «Дальше» с 1 аргум., а обязана принимать состояние и отклик
+09-shag-pervyj-argument.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/09-shag-pervyj-argument.flang, строка 24, столбец 1: первый аргумент функции «Дальше» «Иное», а ожидался «Ход»
+10-shag-vtoroj-argument.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/10-shag-vtoroj-argument.flang, строка 20, столбец 1: второй аргумент функции «Дальше» «Ход», а ожидался «Отклик»
+11-shag-vozvrat.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/11-shag-vozvrat.flang, строка 20, столбец 1: функция «Дальше» плана «Работа» возвращает «Ход», а ожидался «Продолжение»
+12-shag-spisok.flang	test	1	FLANG_PLAN в файле flang/test/fixtures/plany/12-shag-spisok.flang, строка 16, столбец 1: первый аргумент функции «Дальше» «список», а ожидался «Ход»
+13-shag-dzhoker.flang	test	1	FLANG_UNKNOWN_NAME в файле flang/test/fixtures/plany/13-shag-dzhoker.flang, строка 11, столбец 1: неизвестный тип «Небывалое»

@@ -1,0 +1,11 @@
+program	surface	code	word
+true-run.flang	test	3	блоков «прогон» 1, исполнено 0
+false-run.flang	test	3	блоков «прогон» 1, исполнено 0
+without-runs.flang	test	0	примеров 1, прошло 1, не прошло 0
+true-run.flang	json	0	"valid":true
+false-run.flang	json	0	"valid":true
+without-runs.flang	json	0	"valid":true
+true-run.flang	ledger	0	1 1 0 1
+false-run.flang	ledger	0	1 1 0 1
+without-runs.flang	ledger	0	1 1 0 1
+true-run.flang	corpus	0	файлов 3, взято 3, отказано 0

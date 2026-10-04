@@ -4,4 +4,4 @@ sum-above-two-to-the-53.flang	check	0	sum-above-two-to-the-53.flang: прове�
 sum-above-two-to-the-53.flang	test	0	sum-above-two-to-the-53.flang: примеров 3, прошло 3, не прошло 0
 sum-above-two-to-the-53.flang	run --function "Сумма за потолком"	0	[2,0,512]
 number-into-exact-needs-a-translation.flang	check	1	аргумент «а» функции «Сумма»: ожидался точное целое, получен неотрицательное
-ring-associativity-over-exact.flang	check --proof	3	утверждение «сложение точных целых ассоциативно» — объявлено, не доказано
+ring-associativity-over-exact.flang	check --proof	0	утверждение «сложение точных целых ассоциативно» — доказано

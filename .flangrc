@@ -64,6 +64,7 @@ script.ru-morphology:probe = bootstrap/flang io flang/proof/probes/ru-morphology
 script.ru-morphology:forgery = bootstrap/flang io flang/proof/probes/ru-morphology/run.fscript --plan Forgery
 script.ru-morphology:snap = bootstrap/flang io flang/proof/probes/ru-morphology/run.fscript --plan Snap
 script.ru-syllogism:demo = bootstrap/flang io flang/experimental/ru-syllogism-demo.fscript --plan Demo --timeout 600000
+script.ring-rules:probe = bootstrap/flang io flang/proof/probes/ring-laws/run.fscript --plan Binary --max-steps 4000000000 --timeout 1800000
 script.translation:check = bootstrap/flang io flang/translation/run.fscript --plan Проверка
 script.proved-share:check = bootstrap/flang io flang/proof/share-measure.fscript --max-steps 4000000000 --timeout 900000 -- --set corpus
 script.proved-share:forgery = bootstrap/flang io flang/proof/share-ledger-forgery.fscript --max-steps 4000000000 --timeout 900000

@@ -104,7 +104,7 @@ Lean: это счёт текста, а не доказательство.
 (ADR-0030). Генератор кода ведёт протокол перевода, а отдельная программа на C
 (`flang/translation/matcher.c`) переигрывает протокол против исходника и напечатанного кода.
 Меряется двумя числами: сколько опытов в
-[`flang/translation/run.sh`](../flang/translation/run.sh) (честные пары обязаны сойтись,
+[`flang/translation/run.fscript`](../flang/translation/run.fscript) (честные пары обязаны сойтись,
 подделки — не приняться) и сколько правил печати из закрытого списка
 [`flang/translation/PRINT-RULES.tsv`](../flang/translation/PRINT-RULES.tsv) сверяются с ТЕКСТОМ
 ИСХОДНИКА, а не только с протоколом.

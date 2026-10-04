@@ -48,7 +48,7 @@ $ grep -c ' = node ' .flangrc
 |---|---|---|
 | `flang/scripts/count-guard.mjs` | ярлык `counts:check` | `flang/scripts/count-guard.fscript`, правила перенесены не все |
 | `flang/scripts/name-guard.mjs` | ярлык `names:check` | `flang/scripts/name-guard.fscript` |
-| `flang/scripts/word-occupancy.mjs` | ярлык `word:occupancy` | `flang/scripts/word-occupancy.fscript`, его и зовёт `scripts/guards/occupancy-check.fscript` |
+| ~~`flang/scripts/word-occupancy.mjs`~~ СНЯТ 4 октября 2026 | — | `flang/scripts/word-occupancy.fscript`: прогон обоих на слове «неотрицательное» дал одно и то же (файлов 1297, голым 553, цепочкой 0, в ёлочках 0, в строке 128, в комментарии 0, те же места) и один код возврата; подложенное голое имя в `docs/examples/rosetta/quicksort.flang` красит оба (3 места, код 1). Ярлык `word:occupancy` зовёт план |
 | `flang/scripts/link-collision-guard.mjs` | ярлыки `link-collisions:check`, `link-collisions:corrupt`, `.github/workflows/binary.yml`, `scripts/targets/identical-declarations.sh` | `flang/scripts/link-collision-tree.fscript` — задача 7192 |
 | `scripts/site/build-changelog.mjs` | ввозит `scripts/site/build-changelog-page.mjs` | `scripts/site/build-changelog.fscript`, ярлыки `changelog:build` и `changelog:check` уже переключены |
 | `scripts/site/build-changelog-page.mjs` | ярлыки `changelog:page`, `changelog:page:check`, `.github/workflows/pages.yml` | `scripts/site/build-changelog-page.fscript` |

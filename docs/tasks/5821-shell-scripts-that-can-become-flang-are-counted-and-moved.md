@@ -63,9 +63,12 @@ $ git ls-files | grep -c '\.sh$'
    Makefile — правка в `flang/self/emit-c.flang`); отпечаток (`--otpechatok`,
    `--bystro`, `--stroki`); сверка имён и тел ядра (`--imena`, `--тела`);
    печать с `--check`, `--build`, `--замкнутость`.
-2. `scripts/seed/seed-freshness.sh` — переходник в три строки на
-   `scripts/seed/seed-freshness.fscript`; снимается, когда
-   `scripts/guards/published-vs-tree.sh` перестанет его звать.
+2. ~~`scripts/seed/seed-freshness.sh`~~ СНЯТ 4 октября 2026: переходник в три
+   строки не только дублировал `scripts/seed/seed-freshness.fscript`, но и ТЕРЯЛ
+   довод — `exec` без `"$@"`, из-за чего единственный зовущий спрашивал
+   `--chto "доля доказанного"`, а проверка отвечала про «эту проверку».
+   `scripts/guards/published-vs-tree.sh` зовёт теперь ярлык
+   `bootstrap/flang run-script seed:freshness --what …`.
 3. `scripts/targets/target-collisions.sh` и `scripts/targets/identical-declarations.sh`
    — см. «Осталось» ниже.
 4. Девять проверок в `scripts/guards/`: `bad-octet-guard.sh`,
@@ -92,5 +95,4 @@ $ git ls-files | grep -c '\.sh$'
 
 - `scripts/targets/target-collisions.sh` и его `scripts/targets/names-in-c.awk` — в план;
 - `scripts/targets/identical-declarations.sh` — в план, без `jq` и без node-библиотеки замыкания;
-- `scripts/seed/seed-freshness.sh` (переходник) — снять вместе с переводом `scripts/guards/published-vs-tree.sh`, его единственного зовущего;
 - `scripts/bootstrap-reprint.sh`: строка `SECOND_PRINT=scripts/bootstrap-c.sh` указывает на снятый файл — пределы второго пути печати теперь в `scripts/bootstrap-c.fscript` (читает их из `bootstrap-reprint.sh`), проверку `same_numbers_in_second_print` снять или перевести.

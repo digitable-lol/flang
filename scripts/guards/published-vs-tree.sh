@@ -516,12 +516,12 @@ dolya_dokazannogo() {
   # обходом, остаётся зелёным, но обязано называть себя.
   if [ -n "${SEMYA_OTSTALO_ZNAYU:-}" ]; then
     echo "  СЕМЯ НЕ СВЕРЯЛОСЬ: судим по прямому указанию (SEMYA_OTSTALO_ZNAYU)."
-    echo "    свежесть семени держит своя проверка: sh scripts/seed/seed-freshness.sh"
-  elif sh scripts/seed/seed-freshness.sh --chto "доля доказанного" >/dev/null 2>&1; then
+    echo "    свежесть семени держит своя проверка: bootstrap/flang run-script seed:freshness"
+  elif bootstrap/flang run-script seed:freshness --what "доля доказанного" >/dev/null 2>&1; then
     echo "  семя отвечает исходникам — приговоры про это дерево"
   else
     echo "  СЕМЯ ОТСТАЛО: двоичный судит по старым правилам, и всякая доля"
-    echo "    доказанного описывает дерево, которого нет (sh scripts/seed/seed-freshness.sh)"
+    echo "    доказанного описывает дерево, которого нет (bootstrap/flang run-script seed:freshness)"
     plohih=$((plohih + 1))
   fi
 }

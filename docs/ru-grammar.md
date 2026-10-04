@@ -1,6 +1,6 @@
 # Русская морфология для силлогизмов: что прибор умеет и чего не умеет
 
-`flang/stdlib/ru-morphology.flang` — модуль «Russian morphology». Он читает
+`flang/experimental/ru-morphology.flang` — модуль «Russian morphology». Он читает
 **одну русскую словоформу** и отвечает **записью словаря** того вида, который
 разбирает `flang/proof/probes/syllogism/sentences/translator.flang`: класс
 слова, формы по числу, формы по роду. Там, где форма читается двояко, ответ
@@ -203,7 +203,7 @@
 bootstrap/flang run-script ru-morphology:probe     # 83 слова и 14 согласований
 bootstrap/flang run-script ru-morphology:forgery   # подлог: набор обязан покраснеть
 bootstrap/flang run-script ru-morphology:snap      # перенять чтения заново в forms.tsv
-bootstrap/flang check --proof flang/stdlib/ru-morphology.flang
+bootstrap/flang check --proof flang/experimental/ru-morphology.flang
 ```
 
 Зовёт набор работа `sborka` в `.github/workflows/binary.yml`, рядом с пробой

@@ -21,7 +21,7 @@
 
 ## 1. Решение
 
-Заведён модуль `flang/stdlib/ru-morphology.flang` («Russian morphology»). Он
+Заведён модуль `flang/experimental/ru-morphology.flang` («Russian morphology»). Он
 читает **одну русскую словоформу** и отвечает **записью словаря** того вида,
 который разбирает переводчик: класс слова, формы по числу, формы по роду.
 

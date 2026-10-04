@@ -14,7 +14,7 @@ against the tree on every push.
 
 ```
 bootstrap/      the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
-flang/          the language: self/ (the compiler), core/, stdlib/, proof/, concurrency/, ct/, src/emit/ (target runtimes), scripts/, test/, bin/ (flangtutor) — code only; its contracts are in docs/flang/
+flang/          the language: self/ (the compiler), core/, stdlib/, experimental/ (experimental modules), proof/, concurrency/, ct/, src/emit/ (target runtimes), scripts/, test/, bin/ (flangtutor) — code only; its contracts are in docs/flang/
 docs/examples/  242 flang programs in 28 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
 docs/editors/   the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/      the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
@@ -32,13 +32,18 @@ docs/tasks/     the open and closed work of the tree, one file per task
 Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 64 files of flang —
 <!-- СНЯТО 2026-09-17 файлов flang/self/*.flang = 64 -->
 lexer, parser, types, totality, proof kernel and one printer per target.
-[`flang/stdlib/`](../flang/stdlib) is the standard library — **54 modules, 1904 functions and 3917
+[`flang/stdlib/`](../flang/stdlib) is the standard library — **53 modules, 1793 functions and 3807
 examples** that run on every check:
-<!-- СНЯТО 2026-10-04 файлов flang/stdlib/*.flang = 54 -->
-<!-- СНЯТО 2026-10-04 примеров-в flang/stdlib/*.flang = 3917 -->
+<!-- СНЯТО 2026-10-04 файлов flang/stdlib/*.flang = 53 -->
+<!-- СНЯТО 2026-10-04 примеров-в flang/stdlib/*.flang = 3807 -->
 lists, strings, numbers, sets, maps, JSON, UTF-8, dates, two database drivers (`postgres`,
 `sqlite`), networking (`http`, `tls`, `redis`), a cryptography set written in flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`) and a regular-expression engine.
+[`flang/experimental/`](../flang/experimental) holds the experimental modules: they are **not part
+of the promises of the standard library** and may change the names of their functions without
+warning. From here a module either moves into `flang/stdlib/` once its names have settled, or
+leaves the tree. Today it holds the russian morphology for syllogisms (`ru-morphology.flang`) and
+a live example of it.
 [`flang/src/emit/`](../flang/src/emit) holds the runtime of each target; [`flang/test/`](../flang/test)
 holds the checks written in flang that the binary walks.
 

@@ -984,6 +984,7 @@ f7c2a36f3b5d690600431dbbeaeff6f6|1|×|×|×|0|flang/ct/mon-free-forgetful.flang
 fc7a77af11f020be6d3ba57f7efe6909|6|×|×|×|0|flang/ct/pos-approval.flang
 bdff7b7e5851be32fe218a7ca696ebca|2|×|×|×|0|flang/ct/set-mail-routing.flang
 df8d71ded0766702962164b5cb394f16|3|×|×|×|0|flang/ct/vect-plane.flang
+1d006f9b2b52c120f06e942fbf885a82|51|51|0|0|0|flang/experimental/ru-morphology.flang
 886389f8de8cb5fceb9c7cb7130fcdcf|2|2|0|0|0|flang/proof/examples/binder-hides-the-condition.flang
 f76a4dfae4a54bf3ac9b38d1d4237bb2|6|5|0|1|0|flang/proof/examples/binder-wall-map.flang
 49298a241153d0ee610dfca0ad66a71b|4|2|0|2|0|flang/proof/examples/body-forms.flang
@@ -1385,7 +1386,6 @@ c2752234706e4cf56689f7777343fc4c|92|42|46|4|0|flang/stdlib/redis.flang
 655777cb76c79aec6113f79fd7817514|20|20|0|0|0|flang/stdlib/registry.flang
 ac70063dc57c197117f007fe0d6161fa|15|12|0|3|0|flang/stdlib/result.flang
 a8202687b0ee577697f43c44add4ba7b|17|10|1|6|0|flang/stdlib/rsa.flang
-1d006f9b2b52c120f06e942fbf885a82|51|51|0|0|0|flang/stdlib/ru-morphology.flang
 e762097dfe6b7486f85ef012ea3cf88d|23|12|9|2|0|flang/stdlib/scram.flang
 caec0e8f9bd5029a3f8b17690491ddc8|43|30|12|1|0|flang/stdlib/sets.flang
 10f573154de900ce6f7318c5e3b91aaf|64|47|8|9|0|flang/stdlib/sha1.flang

@@ -1,6 +1,6 @@
 модуль «Russian morphology probes»
 
-использует «Russian morphology» из "../../../stdlib/ru-morphology.flang"
+использует «Russian morphology» из "../../../experimental/ru-morphology.flang"
 использует «Таблица проб» из "../table.fscript"
 использует «Rules» из "../../../../scripts/rules.fscript"
 использует «Lists» только «Соединить списки»

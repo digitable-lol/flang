@@ -1316,7 +1316,7 @@ e6a1c5149ebb9e155fd5cd9c13fae314|7|4|0|3|0|flang/self/emit-cpp.flang
 cc8efee04153882fa095db14dfa0548d|142|88|4|50|0|flang/self/emit-elixir.flang
 a21cc98b06700c8c8fb3a0f414a84f23|194|148|7|39|0|flang/self/emit-go.flang
 b1818a43c9906c906ad3d8521756d44b|205|137|7|61|0|flang/self/emit-java.flang
-d716fe052f0b062a45a29f4156e34603|156|152|0|4|0|flang/self/emit-js.flang
+d716fe052f0b062a45a29f4156e34603|165|152|0|4|0|flang/self/emit-js.flang
 f13484b53a5c82fb325806ab879986a2|646|584|24|38|0|flang/self/emit-python.flang
 3ce042a5f1a0c6f91894e71ae4c7452e|114|79|0|35|0|flang/self/emit-rust.flang
 72150e5aad967e98fb24fdecbaedd803|1|1|0|0|0|flang/self/emit-ts.flang

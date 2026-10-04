@@ -276,8 +276,128 @@ public final class Flang {
     }
   }
 
+  /* ─────────────────── точное целое: разряды основания 2²² ───────────────────
+   *
+   * Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание
+   * 2²². Представление выбрано задачей 1411, решение — ADR-0036 §11; складывает
+   * разряды вычислитель в `flang/self/interpret.flang` («Основание разрядов»).
+   *
+   * Отличать точное целое от обычного списка по типу здесь нечем: напечатанная
+   * программа типов не носит, и вычислитель сам смотрит только на вид значения
+   * («Сложение знач»: оба операнда — списки чисел). Правило ниже такое же
+   * динамическое, поэтому печать и вычислитель не расходятся.
+   *
+   * Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
+   * собственный пример вычислителя подаёт [4194305], — а на таких разрядах
+   * быстрый путь (до двух разрядов) и общий путь (перенос по столбцам) дают
+   * РАЗНЫЙ ответ. Переписаны оба, порознь.
+   *
+   * Считается в double, а не в BigInteger: число flang — IEEE-754 double, и
+   * точное целое Java разошлось бы с вычислителем на разрядах вне диапазона.
+   * Длина растёт списком, поэтому потолка у значения нет и без BigInteger.
+   */
+
+  /** Основание разряда точного целого: 2²². */
+  public static final double EXACT_BASE = 4194304.0;
+
+  /** «Разряды ли знач»: список, и каждый элемент — число. Пустой годится. */
+  private static boolean exactDigits(Value value) {
+    if (value.tag != Value.TAG_LIST) {
+      return false;
+    }
+    for (Value item : Value.elements(value)) {
+      if (item.tag != Value.TAG_NUMBER) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** «Разряд точного»: номер с единицы, за концом списка — ноль. */
+  private static double exactDigit(double[] digits, int place) {
+    if (place < 1 || place > digits.length) {
+      return 0.0;
+    }
+    return digits[place - 1];
+  }
+
+  /** «Срезать старшие нули»: старший разряд стоит в конце. */
+  private static double[] exactTrim(double[] digits, int count) {
+    int kept = count;
+    while (kept > 0 && digits[kept - 1] == 0.0) {
+      kept--;
+    }
+    return java.util.Arrays.copyOf(digits, kept);
+  }
+
+  /** «Разряды малого точного»: значение → до трёх разрядов. */
+  private static double[] exactSmallDigits(double value) {
+    double low = value % EXACT_BASE;
+    double high = (value - low) / EXACT_BASE;
+    double middle = high % EXACT_BASE;
+    return exactTrim(new double[] {low, middle, (high - middle) / EXACT_BASE}, 3);
+  }
+
+  /** «Значение малых разрядов»: два младших разряда машинным числом. */
+  private static double exactSmallValue(double[] digits) {
+    return exactDigit(digits, 1) + exactDigit(digits, 2) * EXACT_BASE;
+  }
+
+  /** «Уложить разряды»: перенос по столбцам, затем разряды переноса сверху. */
+  private static double[] exactSettle(double[] columns) {
+    double[] settled = new double[columns.length + 3];
+    double carry = 0.0;
+    for (int index = 0; index < columns.length; index++) {
+      double total = columns[index] + carry;
+      double low = total % EXACT_BASE;
+      carry = (total - low) / EXACT_BASE;
+      settled[index] = low;
+    }
+    double[] above = exactSmallDigits(carry);
+    for (int index = 0; index < above.length; index++) {
+      settled[columns.length + index] = above[index];
+    }
+    return exactTrim(settled, columns.length + above.length);
+  }
+
+  /** «Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы. */
+  private static double[] exactSum(double[] left, double[] right) {
+    if (left.length <= 2 && right.length <= 2) {
+      return exactSmallDigits(exactSmallValue(left) + exactSmallValue(right));
+    }
+    int wide = Math.max(left.length, right.length);
+    double[] columns = new double[wide];
+    for (int index = 0; index < wide; index++) {
+      columns[index] = exactDigit(left, index + 1) + exactDigit(right, index + 1);
+    }
+    return exactSettle(columns);
+  }
+
+  /** Разряды значения числами Java. */
+  private static double[] exactPlaces(Value value) {
+    Value[] items = Value.elements(value);
+    double[] digits = new double[items.length];
+    for (int index = 0; index < items.length; index++) {
+      digits[index] = items[index].num;
+    }
+    return digits;
+  }
+
+  /** «Точное сложение». Витков не тратит — так же, как в вычислителе. */
+  private static Value exactAdd(Value left, Value right) {
+    double[] digits = exactSum(exactPlaces(left), exactPlaces(right));
+    Value[] items = new Value[digits.length];
+    for (int index = 0; index < digits.length; index++) {
+      items[index] = Value.number(digits[index]);
+    }
+    return Value.list(items);
+  }
+
   /** «плюс». */
   public static Value add(Ctx ctx, Value left, Value right) {
+    if (exactDigits(left) && exactDigits(right)) {
+      return exactAdd(left, right);
+    }
     arithmetic("add", left, right);
     return Value.number(left.num + right.num);
   }

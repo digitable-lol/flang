@@ -293,9 +293,145 @@ public static class Flang
         }
     }
 
+    /* ─────────────────── точное целое: разряды основания 2²² ───────────────────
+     *
+     * Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание
+     * 2²². Представление выбрано задачей 1411, решение — ADR-0036 §11;
+     * складывает разряды вычислитель в `flang/self/interpret.flang`
+     * («Основание разрядов» и ниже).
+     *
+     * Отличать точное целое от обычного списка по типу здесь нечем:
+     * напечатанная программа типов не носит, и вычислитель сам смотрит только
+     * на вид значения («Сложение знач»: оба операнда — списки чисел). Правило
+     * ниже такое же динамическое, поэтому печать и вычислитель не расходятся.
+     *
+     * Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
+     * собственный пример вычислителя подаёт [4194305], — а на таких разрядах
+     * быстрый путь (до двух разрядов) и общий путь (перенос по столбцам) дают
+     * РАЗНЫЙ ответ. Переписаны оба, порознь.
+     *
+     * Считается в double, а не в System.Numerics.BigInteger: число flang —
+     * IEEE-754 double, и точное целое разошлось бы с вычислителем на разрядах
+     * вне диапазона. Длина растёт списком, поэтому потолка нет и без BigInteger.
+     */
+
+    /// <summary>Основание разряда точного целого: 2²².</summary>
+    public const double ExactBase = 4194304.0;
+
+    /// <summary>«Разряды ли знач»: список, и каждый элемент — число.</summary>
+    private static bool ExactDigits(Value value)
+    {
+        if (value.Tag != Value.TagList)
+        {
+            return false;
+        }
+        foreach (Value item in Value.Elements(value))
+        {
+            if (item.Tag != Value.TagNumber)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// <summary>«Разряд точного»: номер с единицы, за концом — ноль.</summary>
+    private static double ExactDigit(double[] digits, int place) =>
+        place < 1 || place > digits.Length ? 0.0 : digits[place - 1];
+
+    /// <summary>«Срезать старшие нули»: старший разряд стоит в конце.</summary>
+    private static double[] ExactTrim(double[] digits, int count)
+    {
+        int kept = count;
+        while (kept > 0 && digits[kept - 1] == 0.0)
+        {
+            kept--;
+        }
+        double[] cut = new double[kept];
+        System.Array.Copy(digits, cut, kept);
+        return cut;
+    }
+
+    /// <summary>«Разряды малого точного»: значение → до трёх разрядов.</summary>
+    private static double[] ExactSmallDigits(double value)
+    {
+        double low = value % ExactBase;
+        double high = (value - low) / ExactBase;
+        double middle = high % ExactBase;
+        return ExactTrim(new double[] { low, middle, (high - middle) / ExactBase }, 3);
+    }
+
+    /// <summary>«Значение малых разрядов»: два младших машинным числом.</summary>
+    private static double ExactSmallValue(double[] digits) =>
+        ExactDigit(digits, 1) + ExactDigit(digits, 2) * ExactBase;
+
+    /// <summary>«Уложить разряды»: перенос по столбцам, затем перенос сверху.</summary>
+    private static double[] ExactSettle(double[] columns)
+    {
+        double[] settled = new double[columns.Length + 3];
+        double carry = 0.0;
+        for (int index = 0; index < columns.Length; index++)
+        {
+            double total = columns[index] + carry;
+            double low = total % ExactBase;
+            carry = (total - low) / ExactBase;
+            settled[index] = low;
+        }
+        double[] above = ExactSmallDigits(carry);
+        for (int index = 0; index < above.Length; index++)
+        {
+            settled[columns.Length + index] = above[index];
+        }
+        return ExactTrim(settled, columns.Length + above.Length);
+    }
+
+    /// <summary>«Сумма разрядов»: быстрый путь до двух разрядов.</summary>
+    private static double[] ExactSum(double[] left, double[] right)
+    {
+        if (left.Length <= 2 && right.Length <= 2)
+        {
+            return ExactSmallDigits(ExactSmallValue(left) + ExactSmallValue(right));
+        }
+        int wide = left.Length > right.Length ? left.Length : right.Length;
+        double[] columns = new double[wide];
+        for (int index = 0; index < wide; index++)
+        {
+            columns[index] = ExactDigit(left, index + 1) + ExactDigit(right, index + 1);
+        }
+        return ExactSettle(columns);
+    }
+
+    /// <summary>Разряды значения числами C#.</summary>
+    private static double[] ExactPlaces(Value value)
+    {
+        Value[] items = Value.Elements(value);
+        double[] digits = new double[items.Length];
+        for (int index = 0; index < items.Length; index++)
+        {
+            digits[index] = items[index].Num;
+        }
+        return digits;
+    }
+
+    /// <summary>«Точное сложение». Витков не тратит — как в вычислителе.</summary>
+    private static Value ExactAdd(Value left, Value right)
+    {
+        double[] digits = ExactSum(ExactPlaces(left), ExactPlaces(right));
+        Value[] items = new Value[digits.Length];
+        for (int index = 0; index < digits.Length; index++)
+        {
+            items[index] = Value.Number(digits[index]);
+        }
+        return Value.List(items);
+    }
+
     /// <summary>«плюс».</summary>
     public static Value Add(Ctx ctx, Value left, Value right)
     {
+        if (ExactDigits(left) && ExactDigits(right))
+        {
+            return ExactAdd(left, right);
+        }
         Arithmetic("add", left, right);
         return Value.Number(left.Num + right.Num);
     }

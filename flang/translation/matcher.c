@@ -914,6 +914,10 @@ static int is_generated_apply(const node_t *n) {
   return i > k && i + strlen("»") <= n->head_len && memcmp(n->head + i, "»", strlen("»")) == 0;
 }
 
+/* «функция «мера убывает»» — сторож меры, который печатник кладёт сам; его
+ * закрытый список имён и проверка «кто-то его зовёт» — ниже, у сторожа меры. */
+static int is_generated_measure(const protocol_t *pr, const node_t *n);
+
 static void check_completeness(const protocol_t *pr) {
   size_t i, j;
   for (i = 0; i < source_lines.count; i += 1) {
@@ -936,6 +940,7 @@ static void check_completeness(const protocol_t *pr) {
     int found = 0;
     if (it->is_part || !is_function_block(it->child)) continue;
     if (is_generated_apply(it->child)) continue;
+    if (is_generated_measure(pr, it->child)) continue;
     for (i = 0; i < source_lines.count && !found; i += 1) {
       const char *name;
       size_t len;
@@ -958,6 +963,7 @@ static void check_completeness(const protocol_t *pr) {
 
 static unsigned long unreplayed[RULE_COUNT];
 static unsigned long replayed[RULE_COUNT];
+static unsigned long measure_born = 0; /* узлы сторожа меры: место не сличалось */
 
 typedef struct {
   char text[4096];
@@ -1050,6 +1056,104 @@ static int is_ident(const char *s) {
   return 1;
 }
 
+/* ── сторож меры: функция и узлы, которых в исходнике нет ─────────────────────
+ *
+ * Завершение рекурсии доказано мерой, и у двух способов из пяти («постоянным
+ * шагом» и «объявленной мерой», DESCRIPTION.md) в напечатанном коде остаётся
+ * сторож: мера следующего шага обязана быть строго меньше меры этого витка,
+ * неотрицательной и целой. Сторож — своя функция, «мера убывает» (у
+ * объявленной меры «объявленная мера убывает»; имя занято — с номером), и
+ * узлы под ней автор не писал: «пусть» с мерой шага, «если» сравнения, вызов
+ * этой функции и повторная мера на доводах витка. Место у таких узлов —
+ * хвостовой вызов, убывающий довод или строка «убывает», и слова своего вида
+ * там нет по построению.
+ *
+ * Поблажка узкая и считаная: место такого узла не сличается, зато он назван
+ * числом в итоге, и итог становится «НЕ ПРОВЕРЕНО». ЧЕГО ЭТО НЕ ПРОВЕРЯЕТ:
+ * строгости сравнения (lt против lte — правило «операция-вызовом» их не
+ * переигрывает) и того, какая ветвь сторожа продолжает виток. Блок функции
+ * сторожа принимается, если его кто-то зовёт, — ровно как блок «применить N».
+ */
+static int is_measure_guard_name(const char *name) {
+  static const char *const bases[] = {"мера убывает", "объявленная мера убывает"};
+  size_t i;
+  for (i = 0; i < sizeof bases / sizeof bases[0]; i += 1) {
+    size_t k = strlen(bases[i]), d;
+    if (strncmp(name, bases[i], k) != 0) continue;
+    if (name[k] == '\0') return 1;
+    if (name[k] != ' ') continue;
+    d = k + 1;
+    while (name[d] >= '0' && name[d] <= '9') d += 1;
+    if (d > k + 1 && name[d] == '\0') return 1;
+  }
+  return 0;
+}
+
+/* Имя функции из головы её блока «функция «Имя» …». */
+static int block_function_name(const node_t *n, char *out, size_t cap) {
+  const char *fn = "функция «", *p, *q;
+  size_t k = strlen(fn);
+  if (!is_function_block(n) || n->head_len <= k || memcmp(n->head, fn, k) != 0) return 0;
+  p = n->head + k;
+  q = strstr(p, "»");
+  if (q == NULL || q > n->head + n->head_len) return 0;
+  copy_field(out, cap, p, (size_t)(q - p));
+  return 1;
+}
+
+/* Зовёт ли протокол функцию «имя» хоть откуда-нибудь. */
+static int protocol_calls(const node_t *n, const char *name) {
+  char called[512];
+  size_t i;
+  if (!n->is_block && strcmp(n->rule, "вызов") == 0 && extra_word(n, "имя", called, sizeof called) &&
+      strcmp(called, name) == 0)
+    return 1;
+  for (i = 0; i < n->count; i += 1) {
+    if (!n->items[i].is_part && protocol_calls(n->items[i].child, name)) return 1;
+  }
+  return 0;
+}
+
+static int is_generated_measure(const protocol_t *pr, const node_t *n) {
+  char name[512];
+  return block_function_name(n, name, sizeof name) && is_measure_guard_name(name) && protocol_calls(&pr->root, name);
+}
+
+/* Вызов сторожа меры в поддереве узла, стоящий ровно на месте этого узла: так
+ * узнаются «пусть», «если» и «положить», которые сторож печатает вокруг себя. */
+static int holds_measure_guard(const node_t *n, long line, long column) {
+  char name[512];
+  size_t i;
+  if (!n->is_block && n->line == line && n->column == column && strcmp(n->rule, "вызов") == 0 &&
+      extra_word(n, "имя", name, sizeof name) && is_measure_guard_name(name))
+    return 1;
+  for (i = 0; i < n->count; i += 1) {
+    if (!n->items[i].is_part && holds_measure_guard(n->items[i].child, line, column)) return 1;
+  }
+  return 0;
+}
+
+/* Строка объявленной меры функции «имя»: «  убывает …» под её заголовком и до
+ * заголовка следующей функции; 0 — меры не объявлено. */
+static long measure_line(const char *name) {
+  const char *key = "  убывает ";
+  size_t i, len = strlen(name);
+  for (i = 0; i < source_lines.count; i += 1) {
+    const char *found;
+    size_t found_len, j;
+    if (!source_function_name(source_lines.items[i], &found, &found_len) || found_len != len ||
+        memcmp(found, name, len) != 0)
+      continue;
+    for (j = i + 1; j < source_lines.count; j += 1) {
+      span_t s = source_lines.items[j];
+      if (s.len >= strlen(key) && memcmp(s.text, key, strlen(key)) == 0) return (long)(j + 1);
+      if (source_function_name(s, &found, &found_len)) break;
+    }
+    return 0;
+  }
+  return 0;
+}
+
 static const protocol_t *the_protocol = NULL;
 
 /* Идентификатор C функции «имя» — из головы её блока:
@@ -1076,6 +1180,7 @@ static int function_id(const char *name, char *out, size_t cap) {
 }
 
 static int is_arg_slot(const char *s);
+static int measure_born_node(const node_t *n);
 
 static void rule_mismatch(const node_t *n, const char *fmt, const char *a, const char *b) {
   char who[512];
@@ -1400,6 +1505,10 @@ static int check_anchor(const node_t *n) {
 wrong: {
   char seen[64];
   size_t k = rest < 24 ? rest : 24;
+  if (measure_born_node(n)) {
+    measure_born += 1;
+    return 1;
+  }
   copy_field(seen, sizeof seen, p, k);
   rule_mismatch(n, "на этом месте исходника стоит «%s…», а не слово узла%s", seen, "");
   return 0;
@@ -1425,6 +1534,17 @@ static const char *enclosing_function(const node_t *n, char *out, size_t cap) {
     }
   }
   return NULL;
+}
+
+/* Узел, рождённый сторожем меры: сам сторож и его оболочка стоят на месте
+ * вызова сторожа, повторная мера — на строке «убывает» своей функции, а всё
+ * внутри самой функции сторожа — её же. */
+static int measure_born_node(const node_t *n) {
+  char fn[512];
+  if (holds_measure_guard(n, n->line, n->column)) return 1;
+  if (enclosing_function(n, fn, sizeof fn) == NULL) return 0;
+  if (is_measure_guard_name(fn)) return 1;
+  return n->line != 0 && n->line == measure_line(fn);
 }
 
 /* Число на месте узла: цифры с точкой, возможно со знаком. */
@@ -1781,15 +1901,20 @@ static int replay_promise(const node_t *n, const char *word, const char *helper)
   span_t s;
   if (!extra_word(n, "имя", name, sizeof name) || child_count(n) != 1 || enclosing_function(n, fn, sizeof fn) == NULL)
     return 0;
-  if (n->line < 1 || (size_t)n->line > source_lines.count) return 0;
-  s = source_lines.items[n->line - 1];
-  snprintf(want, sizeof want, "%s «%s»", word, name);
-  {
-    char line[8192];
-    copy_field(line, sizeof line, s.text, s.len);
-    if (strstr(line, want) == NULL) {
-      rule_mismatch(n, "на строке исходника нет «%s»%s", want, "");
-      return 0;
+  if (n->line < 1 || (size_t)n->line > source_lines.count) {
+    /* Обещание без места автор не писал: такие печатает сторож меры о себе. */
+    if (!measure_born_node(n)) return 0;
+    measure_born += 1;
+  } else {
+    s = source_lines.items[n->line - 1];
+    snprintf(want, sizeof want, "%s «%s»", word, name);
+    {
+      char line[8192];
+      copy_field(line, sizeof line, s.text, s.len);
+      if (strstr(line, want) == NULL) {
+        rule_mismatch(n, "на строке исходника нет «%s»%s", want, "");
+        return 0;
+      }
     }
   }
   value_of(child_at(n, 0), value, sizeof value);
@@ -1879,6 +2004,100 @@ static int replay_all_elements(const node_t *n) {
   return 1;
 }
 
+/* Отбор по признаку «отфильтровать Л где э → П» — правило «отфильтровать».
+ * Ребёнок 0 — список Л, ребёнок 1 — «признак» тела с fl_keep (не fl_cond: у
+ * отбора свой помощник). Переигрывается каждая строка: взятие списка, место
+ * под ответ длиной во весь список, счётчик взятых, цикл БЕЗ остановки на
+ * первом «нет», элемент по индексу, гашение неиспользованного элемента и
+ * отбор — ровно четыре строки, в которых элемент попадает в ответ ТОЛЬКО под
+ * признаком и счётчик растёт на один; значение узла — fl_list(место,
+ * счётчик), то есть длина ответа — число взятых, а не длина списка. Имена
+ * списка, места, счётчика, индекса и элемента снимаются с первых строк своих
+ * частей и обязаны быть разными именами C. Что тело читает элемент именно
+ * этим именем — на слове, как у правила «переменная». */
+static int replay_filter(const node_t *n) {
+  const item_t *head = find_part(n, "шапка"), *made = find_part(n, "объявления");
+  const item_t *take = find_part(n, "взятие"), *pick = find_part(n, "отбор");
+  const item_t *quench = find_part(n, "гашение"), *end = find_part(n, "конец");
+  const node_t *body = child_at(n, 1);
+  char item[512], list[256], out[256], kept[256], index[256], elem[256], v[1024], want[4096];
+  line_t got;
+  size_t k;
+  if (!extra_word(n, "элемент", item, sizeof item) || child_count(n) != 2 || body == NULL ||
+      strcmp(body->rule, "признак") != 0 || !extra_word(body, "помощник", v, sizeof v) || strcmp(v, "fl_keep") != 0) {
+    rule_mismatch(n, "у «отфильтровать» нет имени элемента или детей не два (список и признак тела с fl_keep)%s%s",
+                  "", "");
+    return 0;
+  }
+  if (head == NULL || !part_line(head, 0, &got) || strncmp(got.text, "fl_value ", 9) != 0) {
+    rule_mismatch(n, "шапка «отфильтровать» не начинается объявлением списка%s%s", "", "");
+    return 0;
+  }
+  copy_field(list, sizeof list, got.text + 9, strcspn(got.text + 9, " "));
+  if (!replay_temp_decl(n, head, list)) return 0;
+  value_of(child_at(n, 0), v, sizeof v);
+  snprintf(want, sizeof want, "FL_TRY(fl_require_list(ctx, %s, \"отфильтровать\", &%s, error));", v, list);
+  if (!expect_line(n, head, 1, want) || part_lines(head) != 2) return 0;
+  if (made == NULL || !part_line(made, 0, &got) || strncmp(got.text, "fl_value *", 10) != 0) {
+    rule_mismatch(n, "у «отфильтровать» нет места под ответ%s%s", "", "");
+    return 0;
+  }
+  copy_field(out, sizeof out, got.text + 10, strcspn(got.text + 10, " "));
+  snprintf(want, sizeof want, "fl_value *%s = NULL;", out);
+  if (!expect_line(n, made, 0, want)) return 0;
+  if (!part_line(made, 1, &got) || strncmp(got.text, "size_t ", 7) != 0) {
+    rule_mismatch(n, "у «отфильтровать» нет счётчика взятых%s%s", "", "");
+    return 0;
+  }
+  copy_field(kept, sizeof kept, got.text + 7, strcspn(got.text + 7, " "));
+  snprintf(want, sizeof want, "size_t %s = 0;", kept);
+  if (!expect_line(n, made, 1, want)) return 0;
+  snprintf(want, sizeof want, "FL_TRY(fl_list_alloc(ctx, %s.as.list.count, &%s, error));", list, out);
+  if (!expect_line(n, made, 2, want)) return 0;
+  if (!part_line(made, 3, &got) || strncmp(got.text, "for (size_t ", 12) != 0) {
+    rule_mismatch(n, "у «отфильтровать» нет цикла по списку%s%s", "", "");
+    return 0;
+  }
+  copy_field(index, sizeof index, got.text + 12, strcspn(got.text + 12, " "));
+  snprintf(want, sizeof want, "for (size_t %s = 0; %s < %s.as.list.count; %s += 1) {", index, index, list, index);
+  if (!expect_line(n, made, 3, want) || part_lines(made) != 4) return 0;
+  if (take == NULL || !part_line(take, 0, &got) || strncmp(got.text, "const fl_value ", 15) != 0) {
+    rule_mismatch(n, "у «отфильтровать» нет взятия элемента%s%s", "", "");
+    return 0;
+  }
+  copy_field(elem, sizeof elem, got.text + 15, strcspn(got.text + 15, " "));
+  snprintf(want, sizeof want, "const fl_value %s = %s.as.list.items[%s]; /* «%s» */", elem, list, index, item);
+  if (!expect_line(n, take, 0, want) || part_lines(take) != 1) return 0;
+  if (!is_ident(list) || !is_ident(out) || !is_ident(kept) || !is_ident(index) || !is_ident(elem) ||
+      strcmp(list, out) == 0 || strcmp(list, kept) == 0 || strcmp(list, index) == 0 || strcmp(list, elem) == 0 ||
+      strcmp(out, kept) == 0 || strcmp(out, index) == 0 || strcmp(out, elem) == 0 || strcmp(kept, index) == 0 ||
+      strcmp(kept, elem) == 0 || strcmp(index, elem) == 0) {
+    rule_mismatch(n, "имена отбора не имена C или совпадают%s%s", "", "");
+    return 0;
+  }
+  value_of(body, v, sizeof v);
+  snprintf(want, sizeof want, "if (%s) {", v);
+  if (!expect_line(n, pick, 0, want)) return 0;
+  snprintf(want, sizeof want, "%s[%s] = %s;", out, kept, elem);
+  if (!expect_line(n, pick, 1, want)) return 0;
+  snprintf(want, sizeof want, "%s += 1;", kept);
+  if (!expect_line(n, pick, 2, want) || !expect_line(n, pick, 3, "}") || part_lines(pick) != 4) return 0;
+  if (quench != NULL) {
+    for (k = 0; k < part_lines(quench); k += 1) {
+      snprintf(want, sizeof want, "(void)%s;", elem);
+      if (!expect_line(n, quench, k, want)) return 0;
+    }
+  }
+  if (end == NULL || !expect_line(n, end, 0, "}") || part_lines(end) != 1) return 0;
+  value_of(n, v, sizeof v);
+  snprintf(want, sizeof want, "fl_list(%s, %s)", out, kept);
+  if (n->value == NULL || strcmp(v, want) != 0) {
+    rule_mismatch(n, "значение «отфильтровать» «%s», а по правилу «%s»", v, want);
+    return 0;
+  }
+  return 1;
+}
+
 /* ── порядок детей: по местам исходника, а не по порядку протокола ────────────
  *
  * Значение узла правило считает по значениям детей В ПОРЯДКЕ ПРОТОКОЛА. Пока
@@ -1952,6 +2171,7 @@ static void replay_node(const node_t *n) {
   else if (strcmp(n->rule, "постусловие") == 0) ok = replay_promise(n, "обеспечивает", "fl_post");
   else if (strcmp(n->rule, "предусловие") == 0) ok = replay_promise(n, "требует", "fl_pre");
   else if (strcmp(n->rule, "все-элементы") == 0) ok = replay_all_elements(n);
+  else if (strcmp(n->rule, "отфильтровать") == 0) ok = replay_filter(n);
   if (ok < 0) unreplayed[r] += 1;
   else if (ok > 0) replayed[r] += 1;
   else if (!verdict_failed) rule_mismatch(n, "части не по форме правила%s%s", "", "");
@@ -2062,9 +2282,11 @@ int main(int argc, char **argv) {
   }
   printf("узлов в протоколе %lu; переиграно правилом %lu, принято на слово %lu\n", (unsigned long)pr.node_count,
          total_replayed, total_unreplayed);
-  if (pr.digest[0] == '\0' || total_unreplayed > 0) {
+  if (pr.digest[0] == '\0' || total_unreplayed > 0 || measure_born > 0) {
     printf("НЕ ПРОВЕРЕНО — текст C сошёлся с протоколом байт в байт, противоречий нет, но:\n");
     if (pr.digest[0] == '\0') printf("  привязка к исходнику не криптографическая: в протоколе нет отпечатка\n");
+    if (measure_born > 0)
+      printf("  узлов сторожа меры %lu: их места в исходнике не сличались\n", measure_born);
     for (i = 0; i < RULE_COUNT; i += 1) {
       if (unreplayed[i] > 0) printf("  правило «%s» не переиграно, узлов %lu\n", RULES[i], unreplayed[i]);
     }

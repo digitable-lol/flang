@@ -1692,7 +1692,7 @@ ddc780082978fc3298ad54ab7e9bd7f6|2|0|0|0|0|flang/proof/probes/syllogism/programs
 614e1c22503f29af75488348b583c9cd|2|1|1|0|0|flang/proof/probes/syllogism/programs/restricted-postcondition-by-call.flang
 b0f333179aa97c9cc211bbb9da07a504|2|2|0|0|1|flang/proof/probes/syllogism/programs/restricted-postcondition-discharged.flang
 6eba4e84a8ecaa935a36ae9d48747516|11|8|3|0|0|flang/proof/binding/parse-cycle.fscript
-04121a85a1f715fdc7d7e98607ae1a05|14|14|0|0|0|scripts/guards/checks-nobody-calls.fscript
+1f8a398a841b3a35e3f97eed2005dc78|31|31|0|0|0|scripts/guards/checks-nobody-calls.fscript
 4c040b87c449a2e3cb349bd76431b01f|1|1|0|0|0|flang/proof/checker/tests/families/string-literal/slashes-inside-a-literal.flang
 b07768e93f07c719e5308625d33aa9fb|1|1|0|0|0|flang/proof/checker/tests/families/statement/parametric-chain.flang
 840c6f9127d3ce7aab7c2f9f0a8460d6|1|1|0|0|0|flang/proof/checker/tests/families/string-literal/double-space-inside-a-literal.flang

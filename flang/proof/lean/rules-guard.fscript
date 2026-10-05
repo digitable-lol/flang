@@ -1,0 +1,739 @@
+модуль «Lean rules guard»
+  использует «Inquiry» из "../../../scripts/inquiry.fscript"
+  использует «Tables» из "../../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Row»
+  «name»: строка
+  «lemma»: признак
+  «accepted»: признак
+  «debt»: признак
+
+объект «Toggle»
+  «inside»: признак
+  «found»: список строки
+
+объект «Counted»
+  «at»: число
+  «kept»: список строки
+
+тотальная функция «Has»
+  принимает name: строка, names: список строки
+  возвращает признак
+  пример «A name in the list»
+    дано name равно "Н6"
+    дано names равно ["О9", "Н6"]
+    ожидается да
+  пример «A name not in the list»
+    дано name равно "Выч"
+    дано names равно ["О9", "Н6"]
+    ожидается нет
+  (длина (отфильтровать names где other → other равен name)) больше 0
+
+тотальная функция «Unique»
+  принимает names: список строки
+  возвращает список строки
+  пример «A name stays once, in its first place»
+    дано names равно ["Н6", "О9", "Н6"]
+    ожидается ["Н6", "О9"]
+  свёртка names начиная с (пустой список) как kept и n → если «Has» от n и kept то kept иначе (добавить n к kept)
+
+тотальная функция «Before»
+  принимает text: строка, sign: строка
+  возвращает строка
+  пример «The text before the first sign»
+    дано text равно "Н6\") == 0) {"
+    дано sign равно "\""
+    ожидается "Н6"
+  пример «A text without the sign is kept whole»
+    дано text равно "Н6"
+    дано sign равно "\""
+    ожидается "Н6"
+  разбор (разделить text по sign)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «After first»
+  принимает text: строка, sign: строка
+  возвращает строка
+  пример «The text after the first sign keeps the later signs»
+    дано text равно "a:b:c"
+    дано sign равно ":"
+    ожидается "b:c"
+  пример «A text without the sign gives nothing»
+    дано text равно "abc"
+    дано sign равно ":"
+    ожидается ""
+  разбор (разделить text по sign)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то соединить хвост по sign
+
+тотальная функция «Pieces after»
+  принимает text: строка, sign: строка
+  возвращает список строки
+  пример «Every piece that follows the sign»
+    дано text равно "x strcmp(имя, \"Н6\") y strcmp(имя, \"О9\") z"
+    дано sign равно "strcmp(имя, \""
+    ожидается ["Н6\") y ", "О9\") z"]
+  разбор (разделить text по sign)
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Names after»
+  принимает text: строка, sign: строка, closing: строка
+  возвращает список строки
+  пример «The non-empty names after the sign, cut at the closing sign, once each»
+    дано text равно "x strcmp(имя, \"Н6\") y strcmp(имя, \"О9\") strcmp(имя, \"Н6\")"
+    дано sign равно "strcmp(имя, \""
+    дано closing равно "\""
+    ожидается ["Н6", "О9"]
+  пусть names равно (отобразить («Pieces after» от text и sign) как piece → «Before» от piece и closing)
+  «Unique» от (отфильтровать names где name → не (пусто name))
+
+тотальная функция «Region start»
+  возвращает строка
+  пример «The first named move of the checker opens the region»
+    ожидается "static char *правило_т1("
+  "static char *правило_т1("
+
+тотальная функция «Region end»
+  возвращает строка
+  пример «The step reader closes the region»
+    ожидается "static char *разобрать_шаг_вывода("
+  "static char *разобрать_шаг_вывода("
+
+тотальная функция «Dispatched»
+  принимает checker: строка
+  возвращает список строки
+  пример «Every name the step dispatcher compares against, once each»
+    дано checker равно "static char *правило_т1(\nstrcmp(имя, \"Т1\")\nstatic char *разобрать_шаг_вывода("
+    ожидается ["Т1"]
+  пример «Without the region there are no names»
+    дано checker равно "strcmp(имя, \"Т1\")"
+    ожидается пустой список
+  пусть region равно («Before» от («After first» от checker и («Region start»)) и («Region end»))
+  «Names after» от region и "strcmp(имя, \"" и "\""
+
+тотальная функция «List start»
+  возвращает строка
+  пример «The closed list of the acceptance»
+    ожидается "def «правила» : List «Правило» :="
+  "def «правила» : List «Правило» :="
+
+тотальная функция «Accepted»
+  принимает acceptance: строка
+  возвращает список строки
+  пример «Every constructor of the closed list»
+    дано acceptance равно "x\ndef «правила» : List «Правило» :=\n  [.«Т1», .«Н6»,\n   .«О9»]\n\ndef «покрыто» := 3\n"
+    ожидается ["Т1", "Н6", "О9"]
+  пример «Without the list there are no names»
+    дано acceptance равно "def «покрыто» : Nat := 0"
+    ожидается пустой список
+  пусть block равно («Before» от («After first» от acceptance и («List start»)) и "]")
+  «Names after» от block и ".«" и "»"
+
+тотальная функция «Theorems»
+  принимает text: строка
+  возвращает список строки
+  пример «The name of every theorem»
+    дано text равно "theorem «Н6» (u : Bool) :\n  by simp\ntheorem «О9-шаг» (s : X)\n/- theorem «нет» -/\n"
+    ожидается ["Н6", "О9-шаг"]
+  пусть lines равно (отфильтровать (разделить text по "\n") где line → line начинается с "theorem «")
+  отобразить lines как line → «Before» от («After first» от line и "theorem «") и "»"
+
+тотальная функция «Has lemma»
+  принимает name: строка, theorems: список строки
+  возвращает признак
+  пример «A theorem of the same name»
+    дано name равно "Н6"
+    дано theorems равно ["Н6", "Н12"]
+    ожидается да
+  пример «A theorem that continues the name after a dash»
+    дано name равно "Выч"
+    дано theorems равно ["Выч-звено", "Н12"]
+    ожидается да
+  пример «A longer name is not this name»
+    дано name равно "Н1"
+    дано theorems равно ["Н10", "Н12"]
+    ожидается нет
+  пусть dashed равно (соединить name с "-")
+  (длина (отфильтровать theorems где t → (t равен name) или (t начинается с dashed))) больше 0
+
+тотальная функция «Debt names»
+  принимает debt: строка
+  возвращает список строки
+  пример «The first cell of every data row»
+    дано debt равно "name\ttask\treason\nВыч\t1183\tвычислитель\nР5\t1183\tтело по строкам\n"
+    ожидается ["Выч", "Р5"]
+  отобразить («Rows» от debt) как row → «Cell» от 1 и row
+
+тотальная функция «Quote step»
+  принимает t: «Toggle», part: строка
+  возвращает «Toggle»
+  пример «A part inside quotes is kept»
+    дано t равно запись «Toggle» с «inside» равным да и «found» равным пустой список
+    дано part равно "а"
+    ожидается запись «Toggle» с «inside» равным нет и «found» равным ["а"]
+  пример «A part outside quotes is dropped»
+    дано t равно запись «Toggle» с «inside» равным нет и «found» равным ["а"]
+    дано part равно ", "
+    ожидается запись «Toggle» с «inside» равным да и «found» равным ["а"]
+  пусть found равно (если t.«inside» то (добавить part к (t.«found»)) иначе (t.«found»))
+  запись «Toggle» с «inside» равным (не (t.«inside»)) и «found» равным found
+
+тотальная функция «Quoted»
+  принимает text: строка
+  возвращает список строки
+  пример «The parts between quotes, empty ones dropped»
+    дано text равно "  \"\", \"а\",\n  \"б в\"\n"
+    ожидается ["а", "б в"]
+  пусть start равно (запись «Toggle» с «inside» равным нет и «found» равным (пустой список))
+  пусть found равно ((свёртка (разделить text по "\"") начиная с start как t и part → «Quote step» от t и part).«found»)
+  отфильтровать found где part → не (пусто part)
+
+тотальная функция «Kernel rules»
+  принимает checker: строка
+  возвращает список строки
+  пример «The literals of the closed array of kernel rules, the empty one dropped»
+    дано checker равно "x\nstatic const char *ПРАВИЛА[] = {\n  \"\", \"порядок\",\n  \"вхождение\"\n};\n\"y\"\n"
+    ожидается ["порядок", "вхождение"]
+  «Quoted» от («Before» от («After first» от checker и "static const char *ПРАВИЛА[] = {") и "};")
+
+тотальная функция «Rows of kernel rule»
+  принимает kernel: строка, table: строка
+  возвращает список список строки
+  пример «The rows whose kernel-rule cell names the rule, alone or among others»
+    дано kernel равно "порядок"
+    дано table равно "h\nО1\tО\trule\tпорядок\ta\tc\nД1\tД\trule\tпорядок|строгий\ta\tc\nН1\tН\trule\tзнак\ta\tc\n"
+    ожидается [["О1", "О", "rule", "порядок", "a", "c"], ["Д1", "Д", "rule", "порядок|строгий", "a", "c"]]
+  отфильтровать («Rows» от table) где row → «Has» от kernel и (разделить («Cell» от 4 и row) по "|")
+
+тотальная функция «Replaced»
+  принимает inputs: список строки, place: число, text: строка
+  возвращает список строки
+  пример «The element at the position is replaced»
+    дано inputs равно ["a", "b", "c"]
+    дано place равно 2
+    дано text равно "x"
+    ожидается ["a", "x", "c"]
+  пусть start равно (запись «Counted» с «at» равным 0 и «kept» равным (пустой список))
+  (свёртка inputs начиная с start как c и e → «Counting» от c и e и place и text).«kept»
+
+тотальная функция «Counting»
+  принимает c: «Counted», e: строка, place: число, text: строка
+  возвращает «Counted»
+  пример «The counted position takes the text»
+    дано c равно запись «Counted» с «at» равным 1 и «kept» равным ["a"]
+    дано e равно "b"
+    дано place равно 2
+    дано text равно "x"
+    ожидается запись «Counted» с «at» равным 2 и «kept» равным ["a", "x"]
+  пусть grown равно ((c.«at») плюс 1)
+  запись «Counted» с «at» равным grown и «kept» равным (добавить (если grown равен place то text иначе e) к (c.«kept»))
+
+тотальная функция «Row of»
+  принимает name: строка, theorems: список строки, accepted: список строки, debt: список строки
+  возвращает «Row»
+  пример «A covered move»
+    дано name равно "Н6"
+    дано theorems равно ["Н6"]
+    дано accepted равно ["Н6"]
+    дано debt равно пустой список
+    ожидается запись «Row» с «name» равным "Н6" и «lemma» равным да и «accepted» равным да и «debt» равным нет
+  пусть lemma равно («Has lemma» от name и theorems)
+  пусть owed равно («Has» от name и debt)
+  пусть taken равно («Has» от name и accepted)
+  запись «Row» с «name» равным name и «lemma» равным lemma и «accepted» равным taken и «debt» равным owed
+
+тотальная функция «All theorems»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «The theorems of the rules file and of the term file together»
+    дано inputs равно ["", "", "theorem «Н6» x\ntheorem «О1» y", "theorem «Т1-терм» z", "", ""]
+    ожидается ["Н6", "О1", "Т1-терм"]
+  «Соединить списки» от («Theorems» от («Cell» от 3 и inputs)) и («Theorems» от («Cell» от 4 и inputs))
+
+тотальная функция «Census rows»
+  принимает inputs: список строки
+  возвращает список «Row»
+  пример «One row per dispatched name»
+    дано inputs равно ["static char *правило_т1(\n strcmp(имя, \"Н6\")\nstatic char *разобрать_шаг_вывода(",
+      "def «правила» : List «Правило» :=\n [.«Н6»]", "theorem «Н6» x", "", "name\ttask\treason\n", ""]
+    ожидается [запись «Row» с «name» равным "Н6" и «lemma» равным да и «accepted» равным да и «debt» равным нет]
+  пусть theorems равно («All theorems» от inputs)
+  пусть accepted равно («Accepted» от («Cell» от 2 и inputs))
+  пусть debt равно («Debt names» от («Cell» от 5 и inputs))
+  отобразить («Dispatched» от («Cell» от 1 и inputs)) как name → «Row of» от name и theorems и accepted и debt
+
+тотальная функция «Mark»
+  принимает holds: признак, word: строка
+  возвращает строка
+  пример «A held mark is the word»
+    дано holds равно да
+    дано word равно "лемма"
+    ожидается "лемма"
+  пример «An unheld mark is a dash»
+    дано holds равно нет
+    дано word равно "лемма"
+    ожидается "—"
+  если holds то word иначе "—"
+
+тотальная функция «Row line»
+  принимает row: «Row»
+  возвращает строка
+  пример «A covered move prints its three marks»
+    дано row равно запись «Row» с «name» равным "Н6" и «lemma» равным да и «accepted» равным да и «debt» равным нет
+    ожидается "Н6\tлемма\tприёмка\t—"
+  соединить [(row.«name»), "\t", («Mark» от (row.«lemma») и "лемма"), "\t",
+    («Mark» от (row.«accepted») и "приёмка"), "\t", («Mark» от (row.«debt») и "долг")] по ""
+
+тотальная функция «Outside»
+  принимает rows: список «Row»
+  возвращает список строки
+  пример «The moves outside the acceptance»
+    дано rows равно [запись «Row» с «name» равным "Н6" и «lemma» равным да и «accepted» равным да и «debt» равным нет,
+      запись «Row» с «name» равным "Выч" и «lemma» равным да и «accepted» равным нет и «debt» равным да]
+    ожидается ["Выч"]
+  отобразить (отфильтровать rows где row → не (row.«accepted»)) как row → row.«name»
+
+тотальная функция «Without lemma»
+  принимает rows: список «Row»
+  возвращает список строки
+  пример «The moves without a lemma»
+    дано rows равно [запись «Row» с «name» равным "Н6" и «lemma» равным нет и «accepted» равным да и «debt» равным нет]
+    ожидается ["Н6"]
+  отобразить (отфильтровать rows где row → не (row.«lemma»)) как row → row.«name»
+
+тотальная функция «Owed»
+  принимает rows: список «Row»
+  возвращает список строки
+  пример «The moves outside the acceptance that have a debt row»
+    дано rows равно [запись «Row» с «name» равным "Р5" и «lemma» равным да и «accepted» равным нет и «debt» равным нет,
+      запись «Row» с «name» равным "Выч" и «lemma» равным да и «accepted» равным нет и «debt» равным да]
+    ожидается ["Выч"]
+  отобразить (отфильтровать rows где row → (не (row.«accepted»)) и притом (row.«debt»)) как row → row.«name»
+
+тотальная функция «Unpaid»
+  принимает rows: список «Row»
+  возвращает список строки
+  пример «The moves outside the acceptance without a debt row»
+    дано rows равно [запись «Row» с «name» равным "О9" и «lemma» равным да и «accepted» равным нет и «debt» равным нет]
+    ожидается ["О9"]
+  отобразить (отфильтровать rows где row → (не (row.«accepted»)) и притом (не (row.«debt»))) как row → row.«name»
+
+тотальная функция «Paid»
+  принимает rows: список «Row»
+  возвращает список строки
+  пример «The moves inside the acceptance that still have a debt row»
+    дано rows равно [запись «Row» с «name» равным "Н6" и «lemma» равным да и «accepted» равным да и «debt» равным да]
+    ожидается ["Н6"]
+  отобразить (отфильтровать rows где row → (row.«accepted») и притом (row.«debt»)) как row → row.«name»
+
+тотальная функция «Comma list»
+  принимает names: список строки
+  возвращает строка
+  пример «Names are listed with commas»
+    дано names равно ["Выч", "Р5"]
+    ожидается "Выч, Р5"
+  пример «No names is a dash»
+    дано names равно пустой список
+    ожидается "—"
+  если пусто names то "—" иначе (соединить names по ", ")
+
+тотальная функция «Numbers line»
+  принимает rows: список «Row»
+  возвращает строка
+  пример «The five numbers of the census»
+    дано rows равно [запись «Row» с «name» равным "Н6" и «lemma» равным да и «accepted» равным да и «debt» равным нет,
+      запись «Row» с «name» равным "Выч" и «lemma» равным да и «accepted» равным нет и «debt» равным да]
+    ожидается "приёмов 2, с леммой 2, в приёмке 1, вне приёмки 1, в долге 1"
+  пусть total равно (длина rows)
+  соединить ["приёмов ", (к строке total),
+    ", с леммой ", (к строке (total минус (длина («Without lemma» от rows)))),
+    ", в приёмке ", (к строке (total минус (длина («Outside» от rows)))),
+    ", вне приёмки ", (к строке (длина («Outside» от rows))),
+    ", в долге ", (к строке (длина («Owed» от rows)))] по ""
+
+тотальная функция «Kernel line»
+  принимает kernel: строка, table: строка, theorems: список строки
+  возвращает строка
+  пример «A kernel rule names its rows and how many of them carry a lemma»
+    дано kernel равно "порядок"
+    дано table равно "h\nО1\tО\trule\tпорядок\ta\tcode\nД1\tД\trule\tпорядок|строгий\ta\tcode\n"
+    дано theorems равно ["О1"]
+    ожидается "   порядок\tстрок 2\tс леммой 1"
+  пусть rows равно («Rows of kernel rule» от kernel и table)
+  пусть named равно (отфильтровать rows где row → «Has lemma» от («Cell» от 1 и row) и theorems)
+  соединить ["   ", kernel, "\tстрок ", (к строке (длина rows)), "\tс леммой ", (к строке (длина named))] по ""
+
+тотальная функция «Census head»
+  возвращает строка
+  пример «The heading of the census table»
+    ожидается "── приёмы сверщика (шаг_вывода) против Lean: лемма, приёмка, долг ──"
+  "── приёмы сверщика (шаг_вывода) против Lean: лемма, приёмка, долг ──"
+
+тотальная функция «Kernel head»
+  возвращает строка
+  пример «The heading of the kernel view»
+    ожидается "── правила ядра ПРАВИЛА[] сверщика: строк ведомости и лемм к ним ──"
+  "── правила ядра ПРАВИЛА[] сверщика: строк ведомости и лемм к ним ──"
+
+тотальная функция «Census lines»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «The table, its numbers and the kernel view»
+    дано inputs равно ["static char *правило_т1(\n strcmp(имя, \"Н6\")\nstatic char *разобрать_шаг_вывода(",
+      "def «правила» : List «Правило» :=\n [.«Н6»]", "theorem «Н6» x\ntheorem «О1» y", "", "name\ttask\treason\n",
+      "h\nО1\tО\trule\tпорядок\ta\tcode\n"]
+    ожидается ["── приёмы сверщика (шаг_вывода) против Lean: лемма, приёмка, долг ──", "Н6\tлемма\tприёмка\t—", "",
+      "приёмов 1, с леммой 1, в приёмке 1, вне приёмки 0, в долге 0", "вне приёмки: —", "",
+      "── правила ядра ПРАВИЛА[] сверщика: строк ведомости и лемм к ним ──"]
+  пусть rows равно («Census rows» от inputs)
+  пусть theorems равно («All theorems» от inputs)
+  пусть table равно («Cell» от 6 и inputs)
+  пусть rules равно («Kernel rules» от («Cell» от 1 и inputs))
+  пусть kernel равно (отобразить rules как r → «Kernel line» от r и table и theorems)
+  пусть outside равно (соединить ["вне приёмки: ", («Comma list» от («Outside» от rows))] по "")
+  пусть tail равно ["", («Numbers line» от rows), outside, "",
+    («Kernel head»)]
+  пусть body равно (приписать («Census head») к (отобразить rows как row → «Row line» от row))
+  «Соединить списки» от body и («Соединить списки» от tail и kernel)
+
+тотальная функция «Broken»
+  принимает rows: список «Row», accepted: список строки
+  возвращает список строки
+  пример «Fewer than fifty names on either side means the reading broke»
+    дано rows равно пустой список
+    дано accepted равно пустой список
+    ожидается ["сверщик: вычитано 0 приёмов — разбор области шаг_вывода сломан",
+      "Acceptance.lean: вычитано 0 правил — разбор списка «правила» сломан"]
+  пусть few равно (соединить ["сверщик: вычитано ", (к строке (длина rows)),
+    " приёмов — разбор области шаг_вывода сломан"] по "")
+  пусть short равно (соединить ["Acceptance.lean: вычитано ", (к строке (длина accepted)),
+    " правил — разбор списка «правила» сломан"] по "")
+  пусть a равно (если (длина rows) не меньше 50 то (пустой список) иначе [few])
+  пусть b равно (если (длина accepted) не меньше 50 то (пустой список) иначе [short])
+  «Соединить списки» от a и b
+
+тотальная функция «Named»
+  принимает head: строка, names: список строки, tail: строка
+  возвращает список строки
+  пример «Each name is wrapped in the same words»
+    дано head равно "приём «"
+    дано names равно ["О9", "Н6"]
+    дано tail равно "» без теоремы"
+    ожидается ["приём «О9» без теоремы", "приём «Н6» без теоремы"]
+  отобразить names как name → соединить [head, name, tail] по ""
+
+тотальная функция «Drift»
+  принимает rows: список «Row», accepted: список строки, debt: список строки
+  возвращает список строки
+  пример «Names known to Lean or to the debt that the checker does not dispatch are named»
+    дано rows равно [запись «Row» с «name» равным "Н6" и «lemma» равным да и «accepted» равным да и «debt» равным нет]
+    дано accepted равно ["Н6", "Т1"]
+    дано debt равно ["Р5"]
+    ожидается ["приёмка Lean знает «Т1», а сверщик такого приёма не ведёт",
+      "долг «Р5» о приёме, которого в сверщике нет"]
+  пусть names равно (отобразить rows как row → row.«name»)
+  пусть lean равно (отфильтровать accepted где name → не («Has» от name и names))
+  пусть owed равно (отфильтровать debt где name → не («Has» от name и names))
+  пусть a равно («Named» от "приёмка Lean знает «" и lean и "», а сверщик такого приёма не ведёт")
+  пусть b равно («Named» от "долг «" и owed и "» о приёме, которого в сверщике нет")
+  «Соединить списки» от a и b
+
+тотальная функция «Troubles»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «A move outside the acceptance without a debt row is a trouble»
+    дано inputs равно ["static char *правило_т1(\n strcmp(имя, \"Н6\")\nstatic char *разобрать_шаг_вывода(",
+      "def «правила» : List «Правило» :=\n [.«Т1»]", "theorem «Н6» x", "", "name\ttask\treason\nР5\t1183\tтело\n", ""]
+    ожидается ["сверщик: вычитано 1 приёмов — разбор области шаг_вывода сломан",
+      "Acceptance.lean: вычитано 1 правил — разбор списка «правила» сломан",
+      "приём «Н6» без приёмки Lean и без строки долга",
+      "приёмка Lean знает «Т1», а сверщик такого приёма не ведёт", "долг «Р5» о приёме, которого в сверщике нет"]
+  пусть rows равно («Census rows» от inputs)
+  пусть accepted равно («Accepted» от («Cell» от 2 и inputs))
+  пусть unpaid равно («Named» от "приём «" и («Unpaid» от rows) и "» без приёмки Lean и без строки долга")
+  пусть lemmaless равно («Named» от "приём «" и («Without lemma» от rows) и "» без леммы в Rules.lean и Term.lean")
+  пусть paid равно («Named» от "долг «" и («Paid» от rows) и "» уплачен — приём в приёмке Lean, строку долга снять")
+  пусть drift равно («Drift» от rows и accepted и («Debt names» от («Cell» от 5 и inputs)))
+  пусть tail равно («Соединить списки» от paid и drift)
+  пусть rest равно («Соединить списки» от unpaid и («Соединить списки» от lemmaless и tail))
+  «Соединить списки» от («Broken» от rows и accepted) и rest
+
+тотальная функция «Red»
+  принимает trouble: строка
+  возвращает строка
+  пример «A trouble is printed red»
+    дано trouble равно "x"
+    ожидается "КРАСНО  x"
+  соединить ["КРАСНО  ", trouble] по ""
+
+тотальная функция «Check lines»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «Troubles go red, the numbers follow»
+    дано inputs равно пустой список
+    ожидается ["КРАСНО  сверщик: вычитано 0 приёмов — разбор области шаг_вывода сломан",
+      "КРАСНО  Acceptance.lean: вычитано 0 правил — разбор списка «правила» сломан",
+      "приёмов 0, с леммой 0, в приёмке 0, вне приёмки 0, в долге 0"]
+  пусть reds равно (отобразить («Troubles» от inputs) как trouble → «Red» от trouble)
+  «Соединить списки» от reds и [(«Numbers line» от («Census rows» от inputs))]
+
+тотальная функция «Forged acceptance»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «The copy of the acceptance loses the constructor Н5»
+    дано inputs равно ["", "[.«Н4», .«Н5», .«Н9»]", "", "", "", ""]
+    ожидается ["", "[.«Н4», .«Н9»]", "", "", "", ""]
+  «Replaced» от inputs и 2 и (соединить (разделить («Cell» от 2 и inputs) по " .«Н5»,") по "")
+
+тотальная функция «Forged checker»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «The copy of the checker gains a move nobody proved, right inside the region»
+    дано inputs равно ["static char *правило_т1(x", "", "", "", "", ""]
+    ожидается ["static char *правило_т1( strcmp(имя, \"Ъ1\") x", "", "", "", "", ""]
+  пусть rest равно («After first» от («Cell» от 1 и inputs) и («Region start»))
+  пусть head равно (соединить («Region start») с " strcmp(имя, \"Ъ1\") ")
+  «Replaced» от inputs и 1 и (соединить [head, rest] по "")
+
+тотальная функция «Forged debt»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «The copy of the debt table owes a move that is already accepted»
+    дано inputs равно ["", "", "", "", "name\ttask\treason\n", ""]
+    ожидается ["", "", "", "", "name\ttask\treason\nН5\t0\tподлог\n", ""]
+  «Replaced» от inputs и 5 и (соединить («Cell» от 5 и inputs) с "Н5\t0\tподлог\n")
+
+тотальная функция «Probe lines»
+  принимает number: строка, what: строка, troubles: список строки
+  возвращает список строки
+  пример «A forgery the guard caught»
+    дано number равно "1"
+    дано what равно "Н5 убран из приёмки"
+    дано troubles равно ["x"]
+    ожидается ["СОШЛОСЬ  подлог 1 (Н5 убран из приёмки) — красных 1", "         КРАСНО  x"]
+  пример «A forgery the guard missed»
+    дано number равно "2"
+    дано what равно "лишний приём"
+    дано troubles равно пустой список
+    ожидается ["ПРОВАЛ   подлог 2 (лишний приём) — сторож остался зелёным"]
+  пусть missed равно (соединить ["ПРОВАЛ   подлог ", number, " (", what, ") — сторож остался зелёным"] по "")
+  пусть caught равно (соединить ["СОШЛОСЬ  подлог ", number, " (", what, ") — красных ",
+    (к строке (длина troubles))] по "")
+  приписать (если пусто troubles то missed иначе caught) к («Named» от "         КРАСНО  " и troubles и "")
+
+тотальная функция «New troubles»
+  принимает forged: список строки, clean: список строки
+  возвращает список строки
+  пример «Only the troubles the forgery added are its own»
+    дано forged равно пустой список
+    дано clean равно ["сверщик: вычитано 0 приёмов — разбор области шаг_вывода сломан"]
+    ожидается ["Acceptance.lean: вычитано 0 правил — разбор списка «правила» сломан"]
+  отфильтровать («Troubles» от forged) где t → не («Has» от t и clean)
+
+тотальная функция «Forgery head»
+  возвращает строка
+  пример «The heading of the forgery report»
+    ожидается "── три подлога на КОПИЯХ, дерево не тронуто ──"
+  "── три подлога на КОПИЯХ, дерево не тронуто ──"
+
+тотальная функция «Forgery lines»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «Three forgeries on copies, the tree untouched»
+    дано inputs равно пустой список
+    ожидается ["── три подлога на КОПИЯХ, дерево не тронуто ──",
+      "ПРОВАЛ   подлог 1 (Н5 убран из приёмки Lean) — сторож остался зелёным",
+      "ПРОВАЛ   подлог 2 (в сверщике приём Ъ1 без теоремы) — сторож остался зелёным",
+      "ПРОВАЛ   подлог 3 (долг на Н5, который в приёмке есть) — сторож остался зелёным"]
+  пусть clean равно («Troubles» от inputs)
+  пусть fa равно («New troubles» от («Forged acceptance» от inputs) и clean)
+  пусть fc равно («New troubles» от («Forged checker» от inputs) и clean)
+  пусть fd равно («New troubles» от («Forged debt» от inputs) и clean)
+  пусть one равно («Probe lines» от "1" и "Н5 убран из приёмки Lean" и fa)
+  пусть two равно («Probe lines» от "2" и "в сверщике приём Ъ1 без теоремы" и fc)
+  пусть three равно («Probe lines» от "3" и "долг на Н5, который в приёмке есть" и fd)
+  «Соединить списки» от [(«Forgery head»)] и («Соединить списки» от one и («Соединить списки» от two и three))
+
+тотальная функция «Reds of»
+  принимает lines: список строки
+  возвращает число
+  пример «Red lines and failed probes are counted»
+    дано lines равно ["КРАСНО  x", "ПРОВАЛ   подлог 1", "СОШЛОСЬ  подлог 2", "         КРАСНО  y"]
+    ожидается 2
+  длина (отфильтровать lines где line → (line начинается с "КРАСНО") или (line начинается с "ПРОВАЛ"))
+
+тотальная функция «Judged»
+  принимает lines: список строки
+  возвращает «Продолжение»
+  пример «A red line fails the plan»
+    дано lines равно ["КРАСНО  x"]
+    ожидается вариант «Провал» с код равным "FLANG_LEAN_RULES" и сообщение равным "КРАСНО  x\nРАЗОШЛОСЬ: красных 1"
+  пример «No red line ends the work»
+    дано lines равно ["приёмов 83"]
+    ожидается вариант «Конец работы» с значение равным "приёмов 83\nсошлось"
+  пусть reds равно («Reds of» от lines)
+  пусть failed равно (соединить (добавить (соединить ["РАЗОШЛОСЬ: красных ", (к строке reds)] по "") к lines) по "\n")
+  если reds больше 0
+    то вариант «Провал» с код равным "FLANG_LEAN_RULES" и сообщение равным failed
+    иначе вариант «Конец работы» с значение равным (соединить (добавить "сошлось" к lines) по "\n")
+
+тотальная функция «Files»
+  возвращает список список строки
+  пример «Six files, named and placed relative to this plan»
+    ожидается [["checker", "../checker/checker.c"], ["acceptance", "Acceptance.lean"], ["rules", "Rules.lean"],
+      ["term", "Term.lean"], ["debt", "../tables/lean-acceptance-debt.tsv"], ["table", "../tables/inference-rules.tsv"]]
+  [["checker", "../checker/checker.c"], ["acceptance", "Acceptance.lean"], ["rules", "Rules.lean"],
+    ["term", "Term.lean"], ["debt", "../tables/lean-acceptance-debt.tsv"], ["table", "../tables/inference-rules.tsv"]]
+
+тотальная функция «Reading»
+  возвращает список «Question»
+  отобразить («Files») как file → «Read» от («Cell» от 1 и file) и («Cell» от 2 и file)
+
+тотальная функция «Inputs of»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Unanswered files are empty»
+    дано answers равно пустой список
+    ожидается ["", "", "", "", "", ""]
+  отобразить («Files») как file → «Output of» от («Cell» от 1 и file) и answers
+
+тотальная функция «Mode»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The mode is the word the plan started with»
+    дано answers равно [запись «Answer» с «name» равным "x" и «reply» равным (вариант «Пока ничего»),
+      запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным ["census"])]
+    ожидается "census"
+  пример «Without the word the plan checks»
+    дано answers равно пустой список
+    ожидается "check"
+  разбор («Given of» от "mode" и answers)
+    случай пусто
+      то "check"
+    случай голова и хвост
+      то голова
+
+тотальная функция «Report»
+  принимает mode: строка, inputs: список строки
+  возвращает «Продолжение»
+  пример «The numbers of nothing»
+    дано mode равно "numbers"
+    дано inputs равно пустой список
+    ожидается вариант «Конец работы» с значение равным "приёмов 0, с леммой 0, в приёмке 0, вне приёмки 0, в долге 0"
+  разбор mode
+    случай "census"
+      то вариант «Конец работы» с значение равным (соединить («Census lines» от inputs) по "\n")
+    случай "numbers"
+      то вариант «Конец работы» с значение равным («Numbers line» от («Census rows» от inputs))
+    случай "forgery"
+      то «Judged» от («Forgery lines» от inputs)
+    случай любое
+      то «Judged» от («Check lines» от inputs)
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «A file not read stops the guard»
+    дано asked равно "debt"
+    дано answers равно [запись «Answer» с «name» равным "x" и «reply» равным (вариант «Пока ничего»),
+      запись «Answer» с «name» равным "debt" и «reply» равным (вариант «Сбой» с код равным "E" и сообщение равным "x")]
+    ожидается ["не прочитан: debt (../tables/lean-acceptance-debt.tsv)"]
+  пример «An answered question is no obstacle»
+    дано asked равно "rules"
+    дано answers равно [запись «Answer» с «name» равным "y" и «reply» равным (вариант «Пока ничего»),
+      запись «Answer» с «name» равным "rules" и «reply» равным (вариант «Прочитано» с содержимое равным "x")]
+    ожидается пустой список
+  пусть paths равно (отобразить (отфильтровать («Files») где f → («Cell» от 1 и f) равен asked) как f → «Cell» от 2 и f)
+  если (пусто paths) или ((«Exit code of» от asked и answers) равен 0)
+    то пустой список
+    иначе [(соединить ["не прочитан: ", asked, " (", (соединить paths по ""), ")"] по "")]
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Report» от («Mode» от answers) и («Inputs of» от answers)
+        иначе «Proceed» от («Reading») и (stages минус 1) и answers
+
+тотальная функция «Started»
+  принимает mode: строка
+  возвращает «Inquiry»
+  пусть said равно (вариант «Доводы» с доводы равным [mode])
+  пусть remembered равно [(запись «Answer» с «name» равным "mode" и «reply» равным said)]
+  пусть none равно (пустой список)
+  запись «Inquiry» с «asked» равным "" и «queue» равным none и «stages» равным 1 и «answers» равным remembered
+
+тотальная функция «Begin check»
+  возвращает «Inquiry»
+  «Started» от "check"
+
+тотальная функция «Begin census»
+  возвращает «Inquiry»
+  «Started» от "census"
+
+тотальная функция «Begin numbers»
+  возвращает «Inquiry»
+  «Started» от "numbers"
+
+тотальная функция «Begin forgery»
+  возвращает «Inquiry»
+  «Started» от "forgery"
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_LEAN_RULES_NOT_MEASURED" и сообщение равным голова
+    случай пусто
+      то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Census»
+  состояние «Inquiry»
+  начинает с «Begin census»
+  обрабатывает «Next»
+
+план «Numbers»
+  состояние «Inquiry»
+  начинает с «Begin numbers»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Begin forgery»
+  обрабатывает «Next»
+
+тотальная функция «Объявление короткой команды lean-rules:check»
+  возвращает строка
+  "bootstrap/flang io --plan Check — каждый приём сверщика либо в приёмке Lean, либо в долге с номером задачи"
+
+тотальная функция «Объявление короткой команды lean-rules:census»
+  возвращает строка
+  "bootstrap/flang io --plan Census — перепись приёмов сверщика против лемм и приёмки Lean, таблицей и числом"
+
+тотальная функция «Объявление короткой команды lean-rules:numbers»
+  возвращает строка
+  "bootstrap/flang io --plan Numbers — пять чисел переписи одной строкой, для примет в прозе"
+
+тотальная функция «Объявление короткой команды lean-rules:forgery»
+  возвращает строка
+  "bootstrap/flang io --plan Forgery — три подлога на копиях: сторож обязан покраснеть на каждом"

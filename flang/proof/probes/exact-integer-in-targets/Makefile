@@ -170,4 +170,5 @@ ts:
 	  && printf '{"type":"module"}\n' > "$$d/t/vyvod/package.json" && cd "$$d/t" \
 	  && { npx --yes tsc driver.ts --target es2020 --module es2020 --moduleResolution bundler \
 	       --allowJs --checkJs false --outDir vyvod > /dev/null 2>&1 || true; } \
+	  && { [ -f vyvod/driver.js ] || { printf 'skip\tнет tsc: npx не достал typescript\n'; exit 0; }; } \
 	  && node vyvod/driver.js

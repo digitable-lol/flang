@@ -1845,6 +1845,9 @@ jobs:
       - name: Check the exact integer type is in the compiler
         run: bootstrap/flang io flang/proof/probes/exact-integer/run.fscript --plan Binary
 
+      - name: Check the exact fraction type is in the compiler
+        run: bootstrap/flang io flang/proof/probes/exact-fraction/run.fscript --plan Binary
+
       # Цель без инструментов проба печатает со знаком «?» и на код возврата не
       # влияет, поэтому бегунок без go или dotnet её не валит. Зелёных столько,
       # сколько целей РЕАЛЬНО собрано и запущено, — число стоит в ИТОГЕ.

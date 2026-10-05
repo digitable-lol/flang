@@ -1168,6 +1168,25 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
 
+  # КАЖДЫЙ ПРИЁМ СВЕРЩИКА — С ТЕОРЕМОЙ ИЛИ СО СТРОКОЙ ДОЛГА (ADR-0064). Сторож
+  # читает `шаг_вывода` в checker.c, закрытый список приёмки Acceptance.lean,
+  # имена теорем Rules.lean и Term.lean и таблицу долга
+  # flang/proof/tables/lean-acceptance-debt.tsv; Lean ему не нужен, поэтому он
+  # идёт на каждый пуш, а не ночью со сверкой. Замер 5 октября 2026: приёмов 83,
+  # в приёмке 78, в долге 5. Заведён потому, что Н6 и О9 (задача 1435, 26 сентября)
+  # девять дней не имели теоремы, а проза считала «76 из 81» от руки. Сначала
+  # подлог: три порчи копий, каждая обязана покраснеть, иначе сторож слеп.
+  lean-rules-guard:
+    name: lean-rules-guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - run: make -C bootstrap -j"$(nproc)"
+      - name: Forgery goes red
+        run: bootstrap/flang run-script lean-rules:forgery
+      - name: Every checker move has a theorem or a debt row
+        run: bootstrap/flang run-script lean-rules:check
+
   # ВТОРАЯ ПОЛОВИНА — ЖИВОЙ ПРОГОН — на метке, и без ключа: там зовутся ОБЕ.
   # 19 мин 37 с со сборкой против границы в пять минут; на пуш она не идёт, и
   # это названо ценой, а не удобством.

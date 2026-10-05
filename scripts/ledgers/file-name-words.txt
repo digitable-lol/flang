@@ -1993,3 +1993,16 @@ oao
 particular
 s
 wanted
+aur
+binaries
+channel
+flake
+matrix
+nix
+parity
+pkgbuild
+prebuilt
+sha256sums
+ships
+tarballs
+triples

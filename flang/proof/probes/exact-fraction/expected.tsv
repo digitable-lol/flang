@@ -10,9 +10,9 @@ canon-is-enforced-at-the-action.flang	run --function "Ноль над едини
 division-is-exact.flang	check	0	division-is-exact.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 division-is-exact.flang	run --function "Треть на две пятых"	0	[[5],[6]]
 division-is-exact.flang	run --function "Две трети на три четверти"	0	[[1],[2]]
-lcg-step-is-exact.flang	check	0	lcg-step-is-exact.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
-lcg-step-is-exact.flang	run --function "Шаг от единицы"	0	[425638,263]
-lcg-step-is-exact.flang	run --function "Шаг от зерна 8388607"	0	[3793356,466]
+generator-step-is-exact.flang	check	0	generator-step-is-exact.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+generator-step-is-exact.flang	run --function "Шаг от единицы"	0	[425638,263]
+generator-step-is-exact.flang	run --function "Шаг от зерна 8388607"	0	[3793356,466]
 zero-denominator-is-refused.flang	check	1	точное дробное записано не в каноне: знаменатель пуст: ноль внизу не определён
 non-reduced-is-refused.flang	check	1	точное дробное записано не в каноне: дробь не сокращена: числитель и знаменатель делятся на 2
 zero-is-written-over-one.flang	check	1	точное дробное записано не в каноне: нулевая дробь записывается пустыми разрядами над [1]

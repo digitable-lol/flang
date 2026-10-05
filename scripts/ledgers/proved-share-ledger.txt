@@ -620,6 +620,11 @@
 // и flang/self/proof-initial.flang пересчитано только «написано» (+1 и +1 —
 // «Форма склейки разложения записи», «Объявления знака»); md5 и числитель не
 // тронуты: они датируют прежний приговор.
+// ⚑ 5 октября 2026, та же ветка: строки под 120 знаков потребовали помощников,
+// и у четырёх файлов пересчитано только «написано»: limit.fscript 10 → 12,
+// node-death.fscript 17 → 21, io-dictionary-copies-guard.fscript 10 → 11,
+// tab-host-guard.fscript 5 → 6 (обещания новых помощников и близнецов примеров);
+// md5 и числитель НЕ ТРОНУТЫ — их переснимет перепечатка.
 // ⚑ 5 октября 2026, над партией печати 2 (9233077a3): ADR-0062, задача 5243 —
 // точное дробное вошло в компилятор. У flang/self/interpret.flang,
 // flang/self/parser.flang и flang/self/types.flang пересчитано только
@@ -1562,7 +1567,7 @@ d29d464d969d58822bc10e6e696017ef|14|14|0|0|0|scripts/flangrc.fscript
 001c0ecd7217d8ae84b4133d3dca9085|4|4|0|0|0|scripts/guards/flangrc-guard.fscript
 baa3170dc90958c56352eb9b3f49ab9b|62|49|10|3|0|scripts/guards/homebrew-formula-guard.fscript
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/guards/input-boundary.fscript
-b00f9a812077e3b8497c15864acff995|10|7|3|0|0|scripts/guards/io-dictionary-copies-guard.fscript
+b00f9a812077e3b8497c15864acff995|11|7|3|0|0|scripts/guards/io-dictionary-copies-guard.fscript
 38cfa9e534117545dbc14c8afb46262b|2|0|2|0|0|scripts/guards/jargon-guard.fscript
 ea1518a801b7e78ee25788b065921aff|23|11|2|3|0|scripts/guards/kernel-abilities-guard.fscript
 5ab01492f40c7c4a19b89433856c1786|6|6|0|0|0|scripts/guards/license-guard.fscript
@@ -1582,7 +1587,7 @@ ca577bce09cd63ed95ee91dd19eb6179|17|17|0|0|0|scripts/guards/run-verdict-debt-gua
 6428b484fce59de690810ba7fcdce7f4|3|2|1|0|0|scripts/guards/stale-pages-guard.fscript
 67b437a7b5b0dfeb01b82fd408cbb23c|12|12|0|0|0|scripts/guards/stray-temporaries-guard.fscript
 d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/guards/string-measure.flang
-d25c2b3399f45c84d4b13bf0ec83ba1a|5|3|2|0|0|scripts/guards/tab-host-guard.fscript
+d25c2b3399f45c84d4b13bf0ec83ba1a|6|3|2|0|0|scripts/guards/tab-host-guard.fscript
 0df69d55cfac1868ab36c20db5019da2|2|2|0|0|0|scripts/guards/target-function-drift.fscript
 665e3db7c9378eceaed841791897f698|2|2|0|0|0|scripts/guards/task-numbers-guard.fscript
 68dc1ca8f2d8213dfacf881c0a77ac16|60|20|22|0|0|scripts/guards/traceability-guard.fscript
@@ -1813,5 +1818,5 @@ cf872d516e34dd69bc73a4e95995017f|2|2|0|0|0|flang/proof/checker/tests/families/fm
 // числитель этих строк взять нечем. «Написано» и «без приговора» считаны по
 // исходнику и точны, md5 снят сегодня.
 075be434e677d630c10fce0c6b6fa3f4|1|-|-|-|0|docs/examples/io/child-process.flang
-c141f42e94d737f594ca8ec3eccaed3f|10|-|-|-|0|flang/concurrency/bench/limit.fscript
-a5aac9db3e0aa8335191f0da00f99d19|17|-|-|-|0|flang/concurrency/bench/node-death.fscript
+c141f42e94d737f594ca8ec3eccaed3f|12|-|-|-|0|flang/concurrency/bench/limit.fscript
+a5aac9db3e0aa8335191f0da00f99d19|21|-|-|-|0|flang/concurrency/bench/node-death.fscript

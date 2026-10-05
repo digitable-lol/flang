@@ -49931,7 +49931,7 @@ fl_status compiler_flang_proverit_po_vidu(fl_ctx *ctx, fl_value znachenie, fl_va
 fl_status compiler_flang_kanon_schyotnogo(fl_ctx *ctx, fl_value tip, fl_value uzel, fl_value mesto, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Проверить составное значение».
+ * Функция flang «Состав».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
@@ -49946,7 +49946,7 @@ fl_status compiler_flang_kanon_schyotnogo(fl_ctx *ctx, fl_value tip, fl_value uz
  * @param bedy — «беды»: список: «Беда»
  * @return значение: список: «Беда»
  */
-fl_status compiler_flang_proverit_sostavnoe_znachenie(fl_ctx *ctx, fl_value znachenie, fl_value zadano, fl_value tip, fl_value metka_vida, fl_value metka, fl_value tablicy, fl_value mesto, fl_value bedy, fl_value *result, fl_error *error);
+fl_status compiler_flang_sostav(fl_ctx *ctx, fl_value znachenie, fl_value zadano, fl_value tip, fl_value metka_vida, fl_value metka, fl_value tablicy, fl_value mesto, fl_value bedy, fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Проверить значение-функцию».

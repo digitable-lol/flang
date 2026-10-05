@@ -1,1 +1,27 @@
-program	judge	code	word
+program	judge	code	word	снято измерительным двоичным печати 4 (gpu, 5 октября 2026); 23 строки совпали и с печатью 3
+names-the-type.flang	check	0	names-the-type.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+sum-is-associative-where-double-is-not.flang	check	0	sum-is-associative-where-double-is-not.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+sum-is-associative-where-double-is-not.flang	test	0	sum-is-associative-where-double-is-not.flang: примеров 2, прошло 2, не прошло 0
+sum-is-associative-where-double-is-not.flang	run --function "Слева направо"	0	[[3],[5]]
+sum-is-associative-where-double-is-not.flang	run --function "Справа налево"	0	[[3],[5]]
+canon-is-enforced-at-the-action.flang	check	0	canon-is-enforced-at-the-action.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+canon-is-enforced-at-the-action.flang	run --function "Половина"	0	[[1],[2]]
+canon-is-enforced-at-the-action.flang	run --function "Ноль над единицей"	0	[[],[1]]
+division-is-exact.flang	check	0	division-is-exact.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+division-is-exact.flang	run --function "Треть на две пятых"	0	[[5],[6]]
+division-is-exact.flang	run --function "Две трети на три четверти"	0	[[1],[2]]
+lcg-step-is-exact.flang	check	0	lcg-step-is-exact.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+lcg-step-is-exact.flang	run --function "Шаг от единицы"	0	[425638,263]
+lcg-step-is-exact.flang	run --function "Шаг от зерна 8388607"	0	[3793356,466]
+zero-denominator-is-refused.flang	check	1	точное дробное записано не в каноне: знаменатель пуст: ноль внизу не определён
+non-reduced-is-refused.flang	check	1	точное дробное записано не в каноне: дробь не сокращена: числитель и знаменатель делятся на 2
+zero-is-written-over-one.flang	check	1	точное дробное записано не в каноне: нулевая дробь записывается пустыми разрядами над [1]
+difference-below-zero-is-refused.flang	check	0	difference-below-zero-is-refused.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+difference-below-zero-is-refused.flang	run --function "Ниже нуля"	1	FLANG_PROPERTY: точное дробное ниже нуля значений не имеет: [1] над [3] минус [1] над [2]; молчаливый ноль запрещён
+division-by-zero-fraction-is-refused.flang	check	0	division-by-zero-fraction-is-refused.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+division-by-zero-fraction-is-refused.flang	run --function "На ноль"	1	FLANG_PROPERTY: деление на нулевую дробь не определено: [1] над [2] делить на [] над [1]
+remainder-over-fraction-is-refused.flang	check	1	над точным дробным «mod» не определено: дробное знает «плюс», «минус», «умножить на» и «делить на»
+fraction-with-number-needs-a-translation.flang	check	1	«add»: точное дробное с другим видом не смешивается, нужен названный перевод
+comparison-cross-multiplies.flang	check	0	comparison-cross-multiplies.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+comparison-cross-multiplies.flang	run --function "Треть меньше половины"	0	true
+comparison-cross-multiplies.flang	run --function "Две трети не меньше трёх пятых"	0	false

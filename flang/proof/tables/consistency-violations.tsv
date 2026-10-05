@@ -5,3 +5,4 @@ verified-in-vain	open
 theorem-hypothesis-not-discharged	closed
 loop-through-function-value	closed
 restricted-postcondition-cited-undischarged	closed
+case-split-substitutes-under-a-binder	closed

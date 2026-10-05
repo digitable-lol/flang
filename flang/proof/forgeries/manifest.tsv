@@ -37,3 +37,4 @@ flang/proof/checker/tests/programs/audit-2844/unfold2-itself.flang	flang/proof/c
 flang/proof/checker/tests/programs/audit-2844/unfold3-difference.flang	flang/proof/checker/tests/records/corpus/poddelka-razv3-raznost.record	record-lies
 flang/proof/probes/syllogism/assumptions/programs/socrates-with-premises-only-in-the-theorem.flang	flang/proof/checker/tests/records/corpus/forgery-hypothesis-outside-the-statement.record	record-lies
 flang/proof/probes/syllogism/assumptions/programs/postcondition-with-a-hypothesis-only-in-the-theorem.flang	flang/proof/checker/tests/records/corpus/forgery-hypothesis-outside-the-postcondition.record	record-lies
+flang/proof/checker/tests/programs/audit-4791/case-split-under-a-binder.flang	flang/proof/checker/tests/records/corpus/forgery-case-split-captures-a-bound-name.record	record-lies

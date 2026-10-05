@@ -85,6 +85,7 @@ assertions
 assignment
 assistant
 assoc
+associative
 associativity
 assumption
 assumptions
@@ -367,6 +368,7 @@ crash
 creates
 credit
 criterion
+cross
 crosscheck
 crypto
 csharp

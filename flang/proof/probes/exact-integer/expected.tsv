@@ -19,6 +19,6 @@ comparison-above-two-to-the-53.flang	run --function "Соседи за пото�
 canon-is-enforced-at-the-action.flang	check	0	canon-is-enforced-at-the-action.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 canon-is-enforced-at-the-action.flang	test	0	canon-is-enforced-at-the-action.flang: примеров 2, прошло 2, не прошло 0
 canon-is-enforced-at-the-action.flang	run --function "Переполненный разряд приведён при действии"	0	[1,1]
-division-over-exact-is-refused.flang	check	1	над точным целым «div» не определено: точное целое знает «плюс», «минус» и «умножить на»
+division-over-exact-is-refused.flang	check	1	над точным целым «div» не определено: точное целое знает «плюс», «минус», «умножить на» и «остаток от»
 non-canonical-exact-is-refused.flang	check	1	точное целое записано не в каноне: старший разряд нулевой, а канон требует снять старшие нули
 digit-above-the-base-is-refused.flang	check	1	точное целое записано не в каноне: разряд 4194304 не меньше основания 4194304

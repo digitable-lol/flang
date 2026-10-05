@@ -1,139 +1,101 @@
-# What comes next
+# The road to 1.0
 
-This page is about what the language does not have yet: what is being worked on,
-what is queued, and what has been ruled out. There are no dates here — no
-quarters, no months. The order of the stages is taken from the tree's root
-`docs/ROADMAP.md`, which the lead is rewriting into five stages; the decision behind
-each stage is recorded in `docs/adr/`, the tasks live in the tracker, and their
-numbers are given below.
+The current release is {{выпуск.версия}}. Below: what goes into 0.8, 0.9 and 1.0, in which
+order and by when. The dates are the lead's targets, not promises: every bar is closed by a
+run anyone can repeat, and until that run is green the bar is not closed. What the language
+already does is read elsewhere: [Language reference](language.html),
+[Installing](install.html), [Releases](releases.html).
 
-What the language already has is not read here:
-[Language reference](language.html), [Standard library reference](stdlib.html),
-[Command reference](cli.html), [Diagnostics reference](diagnostics.html),
-[Language operations](operations.html), [Setting up your editor](editor.html),
-[Troubleshooting](troubleshooting.html), [Releases](releases.html).
+| bar | 10.26 | 11.26 | 12.26 | 01.27 | 02.27 | 03.27 | 04.27 | status |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
+| **0.7.25 — exact numbers** | | | | | | | | |
+| exact integer and exact fraction without the 2^53 ceiling | ██ |   |   |   |   |   |   | done |
+| a child's memory and time limit named by the program | ██ |   |   |   |   |   |   | done |
+| the package registry page | ██ |   |   |   |   |   |   | done |
+| **0.8 — tooling** | | | | | | | | |
+| prebuilt binaries in the release: Linux and macOS, four triples | ██ | ██ |   |   |   |   |   | in progress |
+| one install per channel (brew, asdf, binary, source) | ██ | ██ |   |   |   |   |   | queued |
+| tooling in flang: shell and JavaScript leave | ██ | ██ | ██ |   |   |   |   | in progress |
+| Latin names are English words, no transliteration | ██ |   |   |   |   |   |   | in progress |
+| field laws over fractions; case analysis, arithmetic, rewriting in the kernel | ██ | ██ |   |   |   |   |   | in progress |
+| every rule of the record checker proved in Lean | ██ | ██ |   |   |   |   |   | in progress |
+| **0.9 — proofs** | | | | | | | | |
+| induction inside a proof; termination by a declared measure as a theorem |   | ██ | ██ | ██ |   |   |   | queued |
+| quantifiers inside formulas, existence without a named value |   |   | ██ | ██ |   |   |   | queued |
+| a second, independent checker of the proof record | ██ | ██ | ██ |   |   |   |   | in progress |
+| packages: install, version resolution, lock file |   |   | ██ | ██ | ██ |   |   | queued |
+| category laws (monoid, monad) judged by the kernel |   |   |   | ██ | ██ |   |   | queued |
+| **1.0** | | | | | | | | |
+| two prints of the compiler agree, and CI checks it |   |   |   | ██ | ██ |   |   | queued |
+| diagnostic and proof-record formats frozen |   |   |   |   | ██ | ██ |   | queued |
+| three real services running for months |   |   | ██ | ██ | ██ | ██ | ██ | depends on users |
 
-## Where the language is now
+## What 1.0 means
 
-| | |
-|---|---:|
-| Functions written in flang | {{корпус.функций}} |
-| Of them with termination proved | {{корпус.тотальных}} |
-| Behaviour claims stated | {{утверждения.высказано}} |
-| Of them proved by the kernel — for all inputs | {{утверждения.доказано}} |
+Seven conditions, each checked by a command, not by a word:
 
-The four numbers in the table were measured on 23 August 2026 (commit
-`252606e8`) by a compiler run over all the programs in the repository and have not been
-re-measured since; on the day of measurement the compiler was built from a seed
-that had fallen behind the sources. What was checked on the tree of
-11 September 2026 (0.7.17, commit `2c40752d0`):
+1. **The compiler builds itself reproducibly.** Two prints from one tree give the same C,
+   and CI compares them on every release.
+2. **Reprinting is cheap.** A full print of the compiler takes under an hour on an ordinary
+   machine (today about 80 minutes on the build server).
+3. **The proof kernel is proved.** Every rule the kernel closes a claim with has a theorem
+   in Lean checked by a foreign kernel, and there is a second, independent check of the record.
+4. **No known typing holes.** Every hole found is either closed or named in the diagnostics
+   reference with a number.
+5. **Formats are stable.** Diagnostic codes, the proof record and the intermediate form do
+   not change without a new major version.
+6. **Packages are complete.** Search by name, install, version resolution, lock file.
+7. **The language is in use.** Several real services that live for months and get fixed
+   when they fall.
 
-- the bootstrap seed was reprinted on 10–11 September (commit `0ce948bfd`);
-  `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` names 3 files, 77 functions, still
-  behind;
-- `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` answers **PROVABLE**: the independent checker
-  (`flang/proof/checker/checker.c`) replayed 650 obligations of the compiler's own
-  proof out of 650 — 100.00 %; 533 forgeries rejected, 245 honest records
-  accepted (19 September 2026, commit `a5609e322`);
-- there are ten emit targets: {{цели.список}}.
+## 0.7.25 — exact numbers (October 2026, shipping)
 
-The main limit of the language shows in the table, and it is also the first
-stage of the plan: termination is proved in bulk, behaviour less often, and the
-proof covers only what stands at a function under the words `требует` and
-`обеспечивает`. Expressible today: inequalities over numbers, list lengths,
-ordering, the quantifier over a function's inputs, a quantifier over the elements
-of a list and nested quantifiers, existence with the value written out,
-induction over a type you declared yourself, and a claim outside a function — the
-last five arrived in 0.7.19. Not expressible: existence with no value named,
-state over time, effects, concurrency. Emitted code (C and the other targets) is
-not covered by the proof.
+- `exact integer` and `exact fraction`: addition, subtraction, multiplication, division of
+  fractions and order without the 2^53 ceiling; `(1/10 + 1/5) + 3/10` and
+  `1/10 + (1/5 + 3/10)` give the same fraction — which never happens over `number` (double).
+- The memory and time limit of a child process is named by the program, not by the shell.
+- The package registry page is printed from the list of names and published on the site.
 
-## Five stages, and each holds the one after it
+## 0.8 — tooling (November 2026)
 
-**1. The set of obligations — up to 100 %. CLOSED on 18 September 2026.** The
-independent checker replays 650 obligations out of 650; not one place is taken on
-the kernel's word any more (there used to be 12 premises and claims and 4 steps,
-with a further 6 closed by computing). The 100 % threshold was set on
-17 September (task 3348) and reached a day later (task 6191). The places that are
-now gone are named one by one in `docs/road-to-one-hundred-measured.md`, with the
-price of each.
+What a programmer gets:
 
-**2. A proved translation into C.** The printer (`flang/self/emit-c.flang`) is
-not proved today, and the emitted program is not covered by the proof: what is
-checked is what was written in flang, not what came out of `flang emit`. The
-decision — `docs/adr/0030-the-printer-proves-each-run-not-itself.md`: the
-printer proves each of its runs, not itself as a whole (how CompCert closes the
-gap below us is worked through there, §9). Tasks 1401 and 1402.
+- **Install without a C compiler.** The release carries prebuilt binaries for Linux (x86_64,
+  aarch64) and macOS (arm64, x86_64) with checksums; `brew`, `asdf` and a direct download
+  install the same file.
+- **Tooling in the language itself.** Repository checks, benches and the site build run as
+  flang plans, not sh and JavaScript; shell stays only where it judges the compiler itself,
+  and those places are named one by one.
+- **Clean names.** Command keys, diagnostic codes and script names are English words.
+- **A more capable kernel.** Field laws over the exact fraction; case analysis over a finite
+  type; linear arithmetic from assumptions; rewriting the goal by proved equalities.
+- **The record check proved whole.** Every rule of the independent check has a Lean lemma,
+  and a separate check turns red if a rule appears without one.
 
-**3. Logic.** Of the owner's four requests one turned out to be a missing rule
-(subtraction under a precondition) and three to be other logics, for which the
-kernel has no mechanism: `docs/adr/0032-one-missing-rule-and-three-other-logics.md`.
-The same document has the price table and an honest section on what this does
-not give. Tasks 1403–1406.
+## 0.9 — proofs (February 2027)
 
-**4. Quantifiers.** Most of this stage is done and shipped in 0.7.19: a
-quantifier over the elements of a list (`для всех п из результат: …`), nested
-quantifiers, existence with the value written out, induction over a type you
-declared yourself, and a claim outside a function. The kernel now has thirteen
-decision rules. What is left is a quantifier in `требует` and — decided against —
-searching for such a value:
-`docs/adr/0026-quantifiers-over-any-type-are-a-kernel-change.md` (accepted
-9 September 2026, §11). Tasks 6202, 6203, 6205, 6206, 5957, 9526.
+- Induction over naturals and over your own types inside a proof; proved termination by a
+  declared measure — as a theorem, not a declaration.
+- Quantifiers inside formulas and existence without a named value.
+- A second implementation of the record check, not written in C: a disagreement between the
+  two is visible on every release.
+- Packages: `flang package` installs, resolves versions and writes the lock.
+- Monoid and monad laws are judged by the kernel, not by an example.
 
-**5. Traceability, response and refusals.** Certification is a process, not a
-property of the language:
-`docs/adr/0031-certification-is-a-process-not-a-property-of-the-language.md`.
-Of what it needs beyond the proof, traceability requirement → code → example →
-record exists as a guard since 11 September 2026
-(`scripts/guards/traceability-guard.fscript`, task 1407): 409 postconditions, 322 with an
-example, 361 in a record, 244 proved; gaps 62 and 68, under a ratchet. Measured
-again 4 October 2026 by the same run: 430 postconditions, 341 with an example,
-367 in a record, 250 proved; the two gap numbers stand, and the guard now splits
-them by kind — 58 of the 62 are forgeries, where an unproved postcondition is
-the required outcome, 4 are honest and 1 is known to no register at all (tasks
-7523, 7008); of the 68 uncovered functions 27 are inside forgeries and 41 are
-ordinary code (task 9008). What an outside reviewer can re-run, requirement by
-requirement, is written down in
-`docs/what-the-proof-covers-and-what-it-does-not.md`. Response
-bounds exist only as an analysis and are not printed into the proof record
-(`docs/adr/0033-termination-is-not-a-bound-on-steps.md`, tasks 1408 and 1409);
-behaviour on failure is described, not proved — an I/O failure arrives as data,
-hardware failure the language does not see
-(`docs/adr/0034-hardware-failure-is-described-not-proved.md`, task 1410). Space,
-medicine and aviation are not promised (ADR-0031, §5.4).
+## 1.0 (spring 2027)
 
-## What used to stand here
-
-Until September 2026 the first item was "there will be no release until the seed
-is reprinted": `sh scripts/bootstrap-reprint.sh --bystro` named 45 divergences, and the
-seed held not a line of the C emission of the process plan. That is gone: the
-seed is reprinted (`0ce948bfd`), `grep -c 'flang_conc.c'
-bootstrap/compiler_flang.c` answers `2`, and release 0.7.17 went out on
-11 September 2026 (commit `144208489`). The items about a package manager,
-application code and auxiliary JavaScript files remain work, but are not part of
-the five-stage plan: the JavaScript implementation was removed on 20 August 2026
-(`fe8e8a37`), and the tree holds 52 auxiliary `.mjs`/`.js` files
-(`git ls-files '*.mjs' '*.js' | wc -l`, 11 September 2026).
+- Reproducible self-build in CI, a print under an hour.
+- Frozen formats of diagnostics and of the proof record.
+- Three services in production for months — this condition is closed by users, not by the
+  lead, so it is the only one without a firm date.
 
 ## Ruled out
 
-**No closures.** Capturing an environment breaks the termination proof and
-direct emission into C, Go and Rust. First-class functions **do** exist: the
-compiler replaces a function value with a label and dispatches on labels. A
-closure and a first-class function are different things; only the first is
-refused.
+- **No closures.** Capturing an environment breaks the termination proof and direct emission
+  into C, Go and Rust; first-class functions exist, closures do not.
+- **No two versions of one library in one program** — the version is raised instead.
+- **No code in a database instead of files (the Unison model)** — only content addressing
+  is taken.
 
-**No lookaheads or lookbehinds in regular expressions.** `(?=…)`, `(?<=…)` and
-back-references `\1` require going back and re-reading what was read — exactly
-the backtracking the engine (`flang/stdlib/automaton.flang`) was written to
-avoid. A pattern with them does not fail silently: the reason is put into the
-«беда» field.
-
-**No two versions of one library in one program.** When two dependencies pull
-one library at different versions, that is solved by raising the version, not by
-having both side by side in the program. The reasoning is in
-[Modules and packages](../modularity-and-packages.md).
-
-**Not the full Unison model.** Storing code in a database instead of files means
-owning the editor, owning the host and losing git. Half of it — content
-addressing — is taken; the other half is not.
+How to check any line above: every bar has a task in `docs/tasks/` and a decision in
+`docs/adr/`; a bar is closed by a green run, named on the [Releases](releases.html) page.

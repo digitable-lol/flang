@@ -40,6 +40,18 @@ install: all
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/flang $(DESTDIR)$(PREFIX)/lib/libcompiler_flang.a $(DESTDIR)$(PREFIX)/share/man/man1/flang.1
 
+# Заголовки названы поимённо. Без них действует одно неявное правило
+# «объектный файл из одноимённого исходника», и смена заголовка не
+# пересобирает ничего: новый компилятор линкуется со старым рантаймом и
+# отвечает FLANG_TYPE на поле записи либо проходит проверки по случайности.
+# Замыкание транзитивное: исходник модуля зовёт flang_runtime.h не сам, а
+# через свой заголовок. Названы ТОЛЬКО заголовки, которые печать кладёт
+# рядом: на отсутствующий make отвечает «No rule to make target».
+flang_runtime.o: flang_runtime.c flang_runtime.h
+compiler_flang.o: compiler_flang.c compiler_flang.h flang_runtime.h
+flang_cli.o: flang_cli.c flang_runtime.h
+flang_repl.o: flang_repl.c flang_runtime.h
+
 clean:
 	rm -f $(OBJECTS) flang_cli.o flang_repl.o flang libcompiler_flang.a
 

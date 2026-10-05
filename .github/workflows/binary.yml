@@ -1852,7 +1852,7 @@ jobs:
       # влияет, поэтому бегунок без go или dotnet её не валит. Зелёных столько,
       # сколько целей РЕАЛЬНО собрано и запущено, — число стоит в ИТОГЕ.
       - name: Check the exact integer adds beyond 2^53 in every print target
-        run: cd flang/proof/probes/exact-integer-in-targets && ../../../../bootstrap/flang io run.fscript
+        run: cd flang/proof/probes/exact-integer-in-targets && ../../../../bootstrap/flang io run.fscript --timeout 180000
         env:
           LC_ALL: C.UTF-8
 

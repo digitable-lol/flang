@@ -18,9 +18,13 @@
 
 тотальная функция «Allowed to differ»
   возвращает список строки
-  пример «Six records that lie on purpose and so differ from the print»
-    ожидается ["poddelka-nositel-chislo-segment", "poddelka-nositel-psevdonim-ne-otrezok", "poddelka-raznost-bez-poryadka", "poddelka-svyortka-nad-pustym", "poddelka-razv2-sebya", "poddelka-razv3-raznost"]
-  ["poddelka-nositel-chislo-segment", "poddelka-nositel-psevdonim-ne-otrezok", "poddelka-raznost-bez-poryadka", "poddelka-svyortka-nad-pustym", "poddelka-razv2-sebya", "poddelka-razv3-raznost"]
+  пример «Seven records that lie on purpose and so differ from the print»
+    ожидается ["poddelka-nositel-chislo-segment", "poddelka-nositel-psevdonim-ne-otrezok", "poddelka-raznost-bez-poryadka",
+      "poddelka-svyortka-nad-pustym", "poddelka-razv2-sebya", "poddelka-razv3-raznost",
+      "forgery-case-split-captures-a-bound-name"]
+  ["poddelka-nositel-chislo-segment", "poddelka-nositel-psevdonim-ne-otrezok", "poddelka-raznost-bez-poryadka",
+    "poddelka-svyortka-nad-pustym", "poddelka-razv2-sebya", "poddelka-razv3-raznost",
+    "forgery-case-split-captures-a-bound-name"]
 
 тотальная функция «Allowed to be refused»
   возвращает список строки

@@ -12,7 +12,7 @@
 
 Под вливанием перечислены заголовки его коммитов — но не все. Правка, от которой язык снаружи не меняется (план, спецификация, проверка, скрипт), сосчитана и не названа: правило то же самое, что у журнала коммитов, и взято из него же, а не написано заново. Числа рядом с вливанием считаются по ВСЕМУ дереву и никакой правки не теряют.
 
-Правило видимости не знает корней: `flang/translation` (путей 14), `.flangrc` (путей 1), `"docs` (путей 1), `flangtutor` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
+Правило видимости не знает корней: `flang/translation` (путей 21), `flang/experimental` (путей 5), `.flangrc` (путей 1), `"docs` (путей 1), `flangtutor` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
 
 ## Чем считано
 
@@ -33,20 +33,95 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `1eaf6a593` от 3 октября 2026. Шагов ствола 3305, из них вливаний 1211; коммитов в истории 8307.
+Дерево на коммите `6286aafed` от 6 октября 2026. Шагов ствола 3469, из них вливаний 1212; коммитов в истории 8473.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 113355 | +2233 | −18017 |
-| Программ на flang | 722 | +63 | +161 |
-| Объявлений `тотальная функция` | 12280 | −2107 | −1770 |
-| Объявлений `функция` | 2523 | +55 | +81 |
-| Объявлений `теорема` | 310 | +4 | +26 |
+| Эталон компилятора на flang | 115645 | −17986 | −15727 |
+| Программ на flang | 760 | +135 | +199 |
+| Объявлений `тотальная функция` | 12622 | +677 | −1428 |
+| Объявлений `функция` | 2550 | +53 | +108 |
+| Объявлений `теорема` | 310 | +22 | +26 |
 | Файлов проверок | 3 | 0 | 0 |
-| Заметок базы знаний | 727 | +48 | +55 |
+| Заметок базы знаний | 730 | +8 | +58 |
 
 «За десять последних» считается от дерева на десятом снизу вливании этого списка до сегодняшнего — то есть ровно то, что видно ниже в первых десяти записях.
+
+## 6 октября 2026
+
+**Merge main into dev before release 0.7.25**
+
+`97c319105` · коммитов 3
+
+Сдвинулось: эталон компилятора на flang 133631 → 115645 (−17986); программ на flang 624 → 759 (+135); объявлений `тотальная функция` 11944 → 12621 (+677); объявлений `функция` 2497 → 2550 (+53); объявлений `теорема` 288 → 310 (+22); заметок базы знаний 720 → 728 (+8).
+
+- build(seed): reprint the seed for the LSP read fix (`5f0ae6adc`)
+- fix(lsp): answer while stdin is open and decode \uXXXX in JSON (`d6e973303`)
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): point the Homebrew tap at 0.7.25 (`6286aafed`)
+- chore(release): the Homebrew formula knows the 0.7.25 archive hash (`84da55071`)
+- chore(release): version 0.7.25 and its release notes (`40d302537`)
+- fix(proof): the new forgery is named and the zettel link resolves (`fa1b622c0`)
+
+Ещё 6 правок языка снаружи не меняют.
+
+## 5 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- fix(checker): a case split refuses its condition under a binder (`25b95f1d1`)
+- feat(lean): moves n6 and o9 enter the acceptance with their theorems (`703f16bc5`)
+- feat(proof): a guard counts checker moves against the lean acceptance (`9dfecf521`)
+- fix(ci): the ten-target probe waits for dotnet and names a missing tsc (`d0961a18f`)
+- chore(seed): reprint the seed after the line-length pass (print 5) (`cba8740de`)
+- chore(ledger): marks and share rows follow the shortened lines (`ca28a90c4`)
+- style(guards): the last ten long lines of the batch are under 120 chars (`fe1e81bcc`)
+- style(bench): the two ADR-0061 plans keep lines under 120 chars (`3fa1ed684`)
+- style(self): the batch keeps every added line under 120 characters (`c07c53267`)
+- test(probes): the generator probe is named in English words (`176d800cc`)
+- chore(ledger): the proved-share rows count the fraction promises (`ff1b3c44a`)
+- test(probes): the exact-integer division refusal names the remainder (`b1a8e9c72`)
+- chore(seed): reprint the seed with the exact fraction (print 4) (`0c46d19a2`)
+- fix(self): the order over two exact fractions passes the typechecker (`cf278244a`)
+
+Ещё 17 правок языка снаружи не меняют.
+
+## 4 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- test(probes): thirteen programs ask the exact fraction before the print (`e1875be71`)
+- feat(self): the exact fraction is a reduced pair of exact integers (`f9a3de01f`)
+- docs(adr): the process-limit decision takes number 0061, 0056 is on dev (`a98f29eae`)
+- chore(seed): reprint the seed from the eight-work batch (`e15289df8`)
+- fix(self): the three canon gate functions are total, as the rest are (`09ae551ee`)
+- test(probes): the exact integer probe holds canon, not only addition (`b2cf681a6`)
+- feat(self): the exact integer subtracts, multiplies and compares (`31b696af1`)
+- feat(rules): prove addition associativity over the exact integer (`e96518558`)
+- fix(bench): the plans keep temporaries out of the tree and out of bash (`9de479707`)
+- feat(bench): the memory limit and the node death benches become plans (`c2fb3cea1`)
+- feat(self): a spawn order names a memory and a time limit for its child (`b8679ac96`)
+- test(probes): every print target builds and sums beyond two to the 53rd (`c761e8434`)
+- feat(emit): the exact integer adds digits in every target runtime (`9a82af634`)
+- fix(emit-c): the printed Makefile names each object's headers (`1cd19e18a`)
+- chore(ledgers): three recounts and four prose numbers follow 1908 (`4b8f7bfd9`)
+- test(probes): the exact integer probe holds the type, not its absence (`8e80c2dba`)
+- feat(self): the exact integer is a type of its own beside the integer (`f5b8e40d4`)
+- refactor(experimental): morphology leaves the standard library (`ace2257ea`)
+- feat(stdlib): russian morphology answers a dictionary entry or a gap (`7206756c4`)
+- build(seed): reseed for the LSP read fix and stamp the print inputs (`d26780ea8`)
+- fix(lsp): answer while stdin is open and decode \uXXXX in JSON (`d5a0ea470`)
+- test(probes): sixty-two reasoning texts cover all twenty-four moods (`8ccbb1834`)
+- fix(repl): the refusal names imported modules instead of denying a cause (`843c429eb`)
+- test(probes): the plan judge is asked on fourteen samples (`6e3748004`)
+- test(probes): the two tables say they are a defect, not a contract (`075aeb207`)
+- test(probes): run verdict surfaces and import order get probes (`76b68dd49`)
+- fix(ledger): all 112 rule anchors point at real kernel lines again (`efdab6497`)
+
+Ещё 95 правок языка снаружи не меняют.
 
 ## 3 октября 2026
 

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "голова": "1eaf6a593a69bd6bf333a12972948b50fa290c7f",
-  "головаКоротко": "1eaf6a593",
-  "головаДата": "2026-10-03",
-  "шаговСтвола": 3305,
-  "всегоКоммитов": 8307,
+  "голова": "6286aafedde5dbc32e00f4c91e26916baa98f1e2",
+  "головаКоротко": "6286aafed",
+  "головаДата": "2026-10-06",
+  "шаговСтвола": 3469,
+  "всегоКоммитов": 8473,
   "измерители": [
     {
       "ключ": "js",
@@ -49,18 +49,22 @@
   ],
   "сейчас": {
     "js": 0,
-    "bliznec": 113355,
-    "programm": 722,
-    "totalnyh": 12280,
-    "obychnyh": 2523,
+    "bliznec": 115645,
+    "programm": 760,
+    "totalnyh": 12622,
+    "obychnyh": 2550,
     "teorem": 310,
     "proverok": 3,
-    "zametok": 727
+    "zametok": 730
   },
   "неизвестныеКорни": [
     {
       "корень": "flang/translation",
-      "путей": 14
+      "путей": 21
+    },
+    {
+      "корень": "flang/experimental",
+      "путей": 5
     },
     {
       "корень": ".flangrc",
@@ -76,6 +80,9 @@
     }
   ],
   "дни": [
+    "2026-10-06",
+    "2026-10-05",
+    "2026-10-04",
     "2026-10-03",
     "2026-10-02",
     "2026-10-01",
@@ -140,6 +147,60 @@
     "2026-08-01"
   ],
   "вливания": [
+    {
+      "коммит": "97c319105",
+      "дата": "2026-10-06",
+      "заголовок": "Merge main into dev before release 0.7.25",
+      "ветка": null,
+      "приехало": 3,
+      "записи": [
+        {
+          "текст": "build(seed): reprint the seed for the LSP read fix",
+          "коммит": "5f0ae6adc"
+        },
+        {
+          "текст": "fix(lsp): answer while stdin is open and decode \\uXXXX in JSON",
+          "коммит": "d6e973303"
+        }
+      ],
+      "скрыто": 0,
+      "числа": {
+        "js": 0,
+        "bliznec": 115645,
+        "programm": 759,
+        "totalnyh": 12621,
+        "obychnyh": 2550,
+        "teorem": 310,
+        "proverok": 3,
+        "zametok": 728
+      },
+      "сдвиг": {
+        "bliznec": {
+          "было": 133631,
+          "стало": 115645
+        },
+        "programm": {
+          "было": 624,
+          "стало": 759
+        },
+        "totalnyh": {
+          "было": 11944,
+          "стало": 12621
+        },
+        "obychnyh": {
+          "было": 2497,
+          "стало": 2550
+        },
+        "teorem": {
+          "было": 288,
+          "стало": 310
+        },
+        "zametok": {
+          "было": 720,
+          "стало": 728
+        }
+      }
+    },
     {
       "коммит": "ffc0a11f2",
       "дата": "2026-09-29",
@@ -40709,6 +40770,204 @@
     }
   ],
   "прямые": [
+    {
+      "дата": "2026-10-06",
+      "записи": [
+        {
+          "текст": "chore(release): point the Homebrew tap at 0.7.25",
+          "коммит": "6286aafed"
+        },
+        {
+          "текст": "chore(release): the Homebrew formula knows the 0.7.25 archive hash",
+          "коммит": "84da55071"
+        },
+        {
+          "текст": "chore(release): version 0.7.25 and its release notes",
+          "коммит": "40d302537"
+        },
+        {
+          "текст": "fix(proof): the new forgery is named and the zettel link resolves",
+          "коммит": "fa1b622c0"
+        }
+      ],
+      "скрыто": 6
+    },
+    {
+      "дата": "2026-10-05",
+      "записи": [
+        {
+          "текст": "fix(checker): a case split refuses its condition under a binder",
+          "коммит": "25b95f1d1"
+        },
+        {
+          "текст": "feat(lean): moves n6 and o9 enter the acceptance with their theorems",
+          "коммит": "703f16bc5"
+        },
+        {
+          "текст": "feat(proof): a guard counts checker moves against the lean acceptance",
+          "коммит": "9dfecf521"
+        },
+        {
+          "текст": "fix(ci): the ten-target probe waits for dotnet and names a missing tsc",
+          "коммит": "d0961a18f"
+        },
+        {
+          "текст": "chore(seed): reprint the seed after the line-length pass (print 5)",
+          "коммит": "cba8740de"
+        },
+        {
+          "текст": "chore(ledger): marks and share rows follow the shortened lines",
+          "коммит": "ca28a90c4"
+        },
+        {
+          "текст": "style(guards): the last ten long lines of the batch are under 120 chars",
+          "коммит": "fe1e81bcc"
+        },
+        {
+          "текст": "style(bench): the two ADR-0061 plans keep lines under 120 chars",
+          "коммит": "3fa1ed684"
+        },
+        {
+          "текст": "style(self): the batch keeps every added line under 120 characters",
+          "коммит": "c07c53267"
+        },
+        {
+          "текст": "test(probes): the generator probe is named in English words",
+          "коммит": "176d800cc"
+        },
+        {
+          "текст": "chore(ledger): the proved-share rows count the fraction promises",
+          "коммит": "ff1b3c44a"
+        },
+        {
+          "текст": "test(probes): the exact-integer division refusal names the remainder",
+          "коммит": "b1a8e9c72"
+        },
+        {
+          "текст": "chore(seed): reprint the seed with the exact fraction (print 4)",
+          "коммит": "0c46d19a2"
+        },
+        {
+          "текст": "fix(self): the order over two exact fractions passes the typechecker",
+          "коммит": "cf278244a"
+        }
+      ],
+      "скрыто": 17
+    },
+    {
+      "дата": "2026-10-04",
+      "записи": [
+        {
+          "текст": "test(probes): thirteen programs ask the exact fraction before the print",
+          "коммит": "e1875be71"
+        },
+        {
+          "текст": "feat(self): the exact fraction is a reduced pair of exact integers",
+          "коммит": "f9a3de01f"
+        },
+        {
+          "текст": "docs(adr): the process-limit decision takes number 0061, 0056 is on dev",
+          "коммит": "a98f29eae"
+        },
+        {
+          "текст": "chore(seed): reprint the seed from the eight-work batch",
+          "коммит": "e15289df8"
+        },
+        {
+          "текст": "fix(self): the three canon gate functions are total, as the rest are",
+          "коммит": "09ae551ee"
+        },
+        {
+          "текст": "test(probes): the exact integer probe holds canon, not only addition",
+          "коммит": "b2cf681a6"
+        },
+        {
+          "текст": "feat(self): the exact integer subtracts, multiplies and compares",
+          "коммит": "31b696af1"
+        },
+        {
+          "текст": "feat(rules): prove addition associativity over the exact integer",
+          "коммит": "e96518558"
+        },
+        {
+          "текст": "fix(bench): the plans keep temporaries out of the tree and out of bash",
+          "коммит": "9de479707"
+        },
+        {
+          "текст": "feat(bench): the memory limit and the node death benches become plans",
+          "коммит": "c2fb3cea1"
+        },
+        {
+          "текст": "feat(self): a spawn order names a memory and a time limit for its child",
+          "коммит": "b8679ac96"
+        },
+        {
+          "текст": "test(probes): every print target builds and sums beyond two to the 53rd",
+          "коммит": "c761e8434"
+        },
+        {
+          "текст": "feat(emit): the exact integer adds digits in every target runtime",
+          "коммит": "9a82af634"
+        },
+        {
+          "текст": "fix(emit-c): the printed Makefile names each object's headers",
+          "коммит": "1cd19e18a"
+        },
+        {
+          "текст": "chore(ledgers): three recounts and four prose numbers follow 1908",
+          "коммит": "4b8f7bfd9"
+        },
+        {
+          "текст": "test(probes): the exact integer probe holds the type, not its absence",
+          "коммит": "8e80c2dba"
+        },
+        {
+          "текст": "feat(self): the exact integer is a type of its own beside the integer",
+          "коммит": "f5b8e40d4"
+        },
+        {
+          "текст": "refactor(experimental): morphology leaves the standard library",
+          "коммит": "ace2257ea"
+        },
+        {
+          "текст": "feat(stdlib): russian morphology answers a dictionary entry or a gap",
+          "коммит": "7206756c4"
+        },
+        {
+          "текст": "build(seed): reseed for the LSP read fix and stamp the print inputs",
+          "коммит": "d26780ea8"
+        },
+        {
+          "текст": "fix(lsp): answer while stdin is open and decode \\uXXXX in JSON",
+          "коммит": "d5a0ea470"
+        },
+        {
+          "текст": "test(probes): sixty-two reasoning texts cover all twenty-four moods",
+          "коммит": "8ccbb1834"
+        },
+        {
+          "текст": "fix(repl): the refusal names imported modules instead of denying a cause",
+          "коммит": "843c429eb"
+        },
+        {
+          "текст": "test(probes): the plan judge is asked on fourteen samples",
+          "коммит": "6e3748004"
+        },
+        {
+          "текст": "test(probes): the two tables say they are a defect, not a contract",
+          "коммит": "075aeb207"
+        },
+        {
+          "текст": "test(probes): run verdict surfaces and import order get probes",
+          "коммит": "76b68dd49"
+        },
+        {
+          "текст": "fix(ledger): all 112 rule anchors point at real kernel lines again",
+          "коммит": "efdab6497"
+        }
+      ],
+      "скрыто": 95
+    },
     {
       "дата": "2026-10-03",
       "записи": [

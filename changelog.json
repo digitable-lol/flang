@@ -2,10 +2,220 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.24",
-  "latest": "0.7.24",
-  "unclassified": [],
+  "declared": "0.7.25",
+  "latest": "0.7.25",
+  "unclassified": [
+    "flang/experimental"
+  ],
   "releases": [
+    {
+      "version": "0.7.25",
+      "tag": "v0.7.25",
+      "date": "2026-10-06",
+      "human": "6 октября 2026",
+      "commit": "6286aaf",
+      "title": null,
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): point the Homebrew tap at 0.7.25",
+          "commit": "6286aaf"
+        },
+        {
+          "text": "chore(release): the Homebrew formula knows the 0.7.25 archive hash",
+          "commit": "84da550"
+        },
+        {
+          "text": "chore(release): version 0.7.25 and its release notes",
+          "commit": "40d3025"
+        },
+        {
+          "text": "fix(proof): the new forgery is named and the zettel link resolves",
+          "commit": "fa1b622"
+        },
+        {
+          "text": "fix(checker): a case split refuses its condition under a binder",
+          "commit": "25b95f1"
+        },
+        {
+          "text": "feat(lean): moves n6 and o9 enter the acceptance with their theorems",
+          "commit": "703f16b"
+        },
+        {
+          "text": "feat(proof): a guard counts checker moves against the lean acceptance",
+          "commit": "9dfecf5"
+        },
+        {
+          "text": "fix(ci): the ten-target probe waits for dotnet and names a missing tsc",
+          "commit": "d0961a1"
+        },
+        {
+          "text": "chore(seed): reprint the seed after the line-length pass (print 5)",
+          "commit": "cba8740"
+        },
+        {
+          "text": "chore(ledger): marks and share rows follow the shortened lines",
+          "commit": "ca28a90"
+        },
+        {
+          "text": "style(guards): the last ten long lines of the batch are under 120 chars",
+          "commit": "fe1e81b"
+        },
+        {
+          "text": "style(bench): the two ADR-0061 plans keep lines under 120 chars",
+          "commit": "3fa1ed6"
+        },
+        {
+          "text": "style(self): the batch keeps every added line under 120 characters",
+          "commit": "c07c532"
+        },
+        {
+          "text": "test(probes): the generator probe is named in English words",
+          "commit": "176d800"
+        },
+        {
+          "text": "chore(ledger): the proved-share rows count the fraction promises",
+          "commit": "ff1b3c4"
+        },
+        {
+          "text": "test(probes): the exact-integer division refusal names the remainder",
+          "commit": "b1a8e9c"
+        },
+        {
+          "text": "chore(seed): reprint the seed with the exact fraction (print 4)",
+          "commit": "0c46d19"
+        },
+        {
+          "text": "fix(self): the order over two exact fractions passes the typechecker",
+          "commit": "cf27824"
+        },
+        {
+          "text": "test(probes): thirteen programs ask the exact fraction before the print",
+          "commit": "e1875be"
+        },
+        {
+          "text": "feat(self): the exact fraction is a reduced pair of exact integers",
+          "commit": "f9a3de0"
+        },
+        {
+          "text": "docs(adr): the process-limit decision takes number 0061, 0056 is on dev",
+          "commit": "a98f29e"
+        },
+        {
+          "text": "chore(seed): reprint the seed from the eight-work batch",
+          "commit": "e15289d"
+        },
+        {
+          "text": "fix(self): the three canon gate functions are total, as the rest are",
+          "commit": "09ae551"
+        },
+        {
+          "text": "test(probes): the exact integer probe holds canon, not only addition",
+          "commit": "b2cf681"
+        },
+        {
+          "text": "feat(self): the exact integer subtracts, multiplies and compares",
+          "commit": "31b696a"
+        },
+        {
+          "text": "feat(rules): prove addition associativity over the exact integer",
+          "commit": "e965185"
+        },
+        {
+          "text": "fix(bench): the plans keep temporaries out of the tree and out of bash",
+          "commit": "9de4797"
+        },
+        {
+          "text": "feat(bench): the memory limit and the node death benches become plans",
+          "commit": "c2fb3ce"
+        },
+        {
+          "text": "feat(self): a spawn order names a memory and a time limit for its child",
+          "commit": "b8679ac"
+        },
+        {
+          "text": "test(probes): every print target builds and sums beyond two to the 53rd",
+          "commit": "c761e84"
+        },
+        {
+          "text": "feat(emit): the exact integer adds digits in every target runtime",
+          "commit": "9a82af6"
+        },
+        {
+          "text": "fix(emit-c): the printed Makefile names each object's headers",
+          "commit": "1cd19e1"
+        },
+        {
+          "text": "chore(ledgers): three recounts and four prose numbers follow 1908",
+          "commit": "4b8f7bf"
+        },
+        {
+          "text": "test(probes): the exact integer probe holds the type, not its absence",
+          "commit": "8e80c2d"
+        },
+        {
+          "text": "feat(self): the exact integer is a type of its own beside the integer",
+          "commit": "f5b8e40"
+        },
+        {
+          "text": "refactor(experimental): morphology leaves the standard library",
+          "commit": "ace2257"
+        },
+        {
+          "text": "feat(stdlib): russian morphology answers a dictionary entry or a gap",
+          "commit": "7206756"
+        },
+        {
+          "text": "build(seed): reseed for the LSP read fix and stamp the print inputs",
+          "commit": "d26780e"
+        },
+        {
+          "text": "fix(lsp): answer while stdin is open and decode \\uXXXX in JSON",
+          "commit": "d5a0ea4"
+        },
+        {
+          "text": "build(seed): reprint the seed for the LSP read fix",
+          "commit": "5f0ae6a"
+        },
+        {
+          "text": "fix(lsp): answer while stdin is open and decode \\uXXXX in JSON",
+          "commit": "d6e9733"
+        },
+        {
+          "text": "refactor(translation): the matcher suite is a proved plan with 32 probes",
+          "commit": "34db94f"
+        },
+        {
+          "text": "test(probes): sixty-two reasoning texts cover all twenty-four moods",
+          "commit": "8ccbb18"
+        },
+        {
+          "text": "fix(repl): the refusal names imported modules instead of denying a cause",
+          "commit": "843c429"
+        },
+        {
+          "text": "test(probes): the plan judge is asked on fourteen samples",
+          "commit": "6e37480"
+        },
+        {
+          "text": "test(probes): the two tables say they are a defect, not a contract",
+          "commit": "075aeb2"
+        },
+        {
+          "text": "test(probes): run verdict surfaces and import order get probes",
+          "commit": "76b68dd"
+        },
+        {
+          "text": "fix(ledger): all 112 rule anchors point at real kernel lines again",
+          "commit": "efdab64"
+        },
+        {
+          "text": "fix(translation): filter is replayed and the measure guard is counted",
+          "commit": "45c8c04"
+        }
+      ],
+      "hidden": 116
+    },
     {
       "version": "0.7.24",
       "tag": "v0.7.24",

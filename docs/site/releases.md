@@ -6,6 +6,36 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.25 — 6 October 2026
+
+**Exact integer and exact fraction, a child's limit named by the order, the registry page**
+
+### What appeared
+
+- **The exact integer is a type of its own, not a new name for number** (ADR-0036; tasks 1908, 1412, 1413). `exact integer` adds, subtracts, multiplies and compares without the 2^53 ceiling; a value is a list of base-2^22 digits without sign, the canon (no leading zeros) holds at every action, a non-canonical literal is refused by the typechecker. Digit addition is printed into all ten targets. The associativity of its addition is proved by a kernel rule, the first ring rule with a Lean lemma and forgery probes.
+- **The exact fraction** (ADR-0062; task 5243). A pair of exact integers, numerator over denominator, reduced at every action; `plus`, `minus`, `times`, `divided by` and the order by cross multiplication; a written literal is checked for canon (a pair, canonical halves, non-empty denominator, reduced); below zero and division by the zero fraction are `FLANG_PROPERTY` refusals by word; it does not mix with `number` or `exact integer`. Probe set `exact-fraction`: 26 of 26; the previous seed refuses all 26.
+- **The remainder over exact integers** (`остаток от`; task 5245): the glibc generator step is exact where double rounds the product 1103515245*8388607.
+- **A child's limit is named by the order, not by the host** (ADR-0061): the order 'run a process with a limit' (memory in KiB, time in ms) and the reply 'process cut off', which carries what was printed before the cut. Two benches, the memory limit and the node death, move from shell to plans.
+- **The package registry page is printed from the ledger** and published on Pages (ADR-0059): the registry is a ledger of names, not a store of code.
+- **`check` asks the plan judge**: twelve forged plans that used to pass are refused.
+- **The experimental directory** `flang/experimental/`: Russian morphology for syllogisms and a demo that fills the dictionary and judges a text.
+- **Every checker move has a Lean theorem or a debt row** (ADR-0064; task 4791). The list of `шаг_вывода` moves is taken from `checker.c` by an instrument, not written in prose: 83 moves, 78 in the Lean acceptance, five stand as debt rows with a task number. Н6 and О9, nine days without a theorem, enter the acceptance; the `lean-rules:check` guard runs on every push, goes red both ways, and its three forgeries run in CI. A hole closed on the way: a case split accepted a false postcondition by pasting the condition as text under a binder; the checker now refuses.
+
+### What changed
+
+- **The printed Makefile names each object's headers** (task 7182): editing a `.h` rebuilds the dependent objects; it reached the seed only on the second print in a row, because the Makefile is printed by the printer, not by the sources.
+- **The seed was reprinted five times in two days**, one print on gpu costs 79-83 minutes (five rows added to `docs/reprint-ledger.tsv`); the print fingerprint names the commit the seed came from.
+- **The 'limit for a foreign process' decision is ADR-0061** — number 0056 on the trunk was already taken by the quantifier measurements; seven references moved.
+- **122 added lines longer than 120 characters were shortened without bypassing the growth guard**: parser lists broken after commas, lexer table pieces split, bench and guard examples moved to twin functions that render the answer as a list; example values are measured, not predicted.
+- **The C-2 report of the rule-ledger guard** names the rule count on one line and the per-ADR breakdown on the next; the C-6 line about the checker.c budget is seven words shorter.
+- **The roadmap page is a dated plan to 1.0.** A month-by-month table from October 2026 to April 2027, milestones 0.7.25, 0.8, 0.9 and 1.0, seven conditions for 1.0 and what is ruled out; the undated text is gone.
+- **ADR-0067 on binary releases is proposed, no code.** A release will ship binaries for four triples with one `SHA256SUMS`; five tasks (7959, 8128, 1710, 1504, 1098) and five decisions await the owner. The names of the decision that no source knows stand in the register of names declared and not made.
+
+### What broke
+
+- **The division refusal over two exact integers now lists four actions**, not three: plus, minus, times and remainder. Probes expecting the old word are re-taken.
+- **The fraction enters none of the ten print targets** — the emitters do not know it; a program with `exact fraction` runs only in the interpreter. There is no keyword for the integer part of a fraction; `docs/flang/SPEC.md` and `DESCRIPTION.md` describe neither exact type — the debt is named in ADR-0062 §6.
+
 ## 0.7.24 — 3 October 2026
 
 **A linter in the language, a kernel memo, and three closed soundness holes**

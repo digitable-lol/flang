@@ -25,8 +25,8 @@ bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 90000
 **Что меряет.** Долю мест в СОБСТВЕННЫХ записях доказательства компилятора, которые независимый
 проверяющий на C ([`flang/proof/checker/checker.c`](../flang/proof/checker/checker.c)) переиграл сам,
 а не принял на слово у ядра. Записи лежат готовыми в
-`flang/proof/checker/tests/records/corpus/` — по одной на программу-образец, всего 93.
-<!-- СНЯТО 2026-10-01 файлов flang/proof/checker/tests/records/corpus/*.record = 93 -->
+`flang/proof/checker/tests/records/corpus/` — по одной на программу-образец, всего 94.
+<!-- СНЯТО 2026-10-06 файлов flang/proof/checker/tests/records/corpus/*.record = 94 (задача 4791: подлог захвата под связывателем в корпусе; до них 93, снято 2026-10-01) -->
 Снимается: `bootstrap/flang io flang/proof/replay-share.fscript`.
 
 **Что это даёт сказать.** Что у этого набора записей слово «доказано» в отчёте компилятора не

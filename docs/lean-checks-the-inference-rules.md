@@ -22,7 +22,7 @@
 > **Сверка 5 октября 2026** (ADR-0064, `bootstrap/flang run-script lean-rules:numbers`):
 > приёмов `шаг_вывода` у сверщика **83**, с леммой в `Rules.lean`/`Term.lean` — 83, в
 > приёмке Lean — **78**, вне приёмки — 5, и все пять стоят строками долга в
-> `flang/proof/tables/lean-acceptance-debt.tsv`. <!-- СНЯТО 2026-10-05 lean-rules:numbers приёмов = 83, с леммой = 83, в приёмке = 78, вне приёмки = 5 -->
+> `flang/proof/tables/lean-acceptance-debt.tsv`.
 > Число снимает прибор `flang/proof/lean/rules-guard.fscript`, а не рука.
 
 Проверялись ПРАВИЛА, а не записи доказательств. Правил конечное число, и

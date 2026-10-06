@@ -1182,8 +1182,17 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
+      # Зовётся ФАЙЛОМ и в условии: прибор проб порчи
+      # (scripts/guards/guards-without-forgery-probe.fscript) признаёт пробу
+      # только по вызову в `if` с `exit 1` в том же теле и относит её к сторожу
+      # по файлу. План «Forgery» кончается кодом 0, когда все три порчи
+      # покраснели, и кодом 1, когда хоть одна прошла, — отсюда `if !`.
       - name: Forgery goes red
-        run: bootstrap/flang run-script lean-rules:forgery
+        run: |
+          if ! bootstrap/flang io flang/proof/lean/rules-guard.fscript --plan Forgery; then
+            echo "сторож приёмов промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
       - name: Every checker move has a theorem or a debt row
         run: bootstrap/flang run-script lean-rules:check
 

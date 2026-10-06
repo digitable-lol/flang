@@ -35,4 +35,4 @@
 сломан» и подлог с дописанным приёмом.
 
 Связано: [[a-hand-copied-wall-list-goes-stale-in-silence]],
-[[checks-that-do-not-check]], [[zero-axioms]]
+[[checks-that-stopped-comparing]], [[zero-axioms]]

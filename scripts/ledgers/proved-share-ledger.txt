@@ -1671,6 +1671,7 @@ aa65f3785b0c62edf336a36297e30b38|1|1|0|0|0|flang/proof/probes/unproven/programs/
 8c27388a17ff86d5bb9e415d3dd3d5dd|1|1|0|1|1|flang/proof/checker/tests/programs/audit-2844/unfold3-difference.flang
 86e0e447b270b761bff6ae33fe3ffd12|1|1|0|1|0|flang/proof/checker/tests/programs/audit-2844/unfold2-itself.flang
 eb5b390d34c90eb95ad3b4382c2a3a1f|1|0|0|0|1|flang/proof/checker/tests/programs/audit-2844/unfold3-control-honest.flang
+6d472ad507bec881b4b1a91cce883f79|1|0|0|1|0|flang/proof/checker/tests/programs/audit-4791/case-split-under-a-binder.flang
 b1b137536d045c4fdd205ece597d4acf|1|0|1|0|0|flang/proof/probes/orders/programs/arguments.fscript
 a9553eaffc7cba5c190df9e076ef0b9c|2|2|0|0|0|flang/proof/probes/io-timeout/run.fscript
 5750e56d208d017c3ef036fe93fce6f7|3|3|0|0|0|flang/proof/probes/non-negative-field/run.fscript

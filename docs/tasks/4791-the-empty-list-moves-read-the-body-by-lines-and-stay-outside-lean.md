@@ -31,8 +31,6 @@ $ bootstrap/flang run-script lean-rules:numbers
 приёмов 83, с леммой 83, в приёмке 78, вне приёмки 5, в долге 5         код 0
 ```
 
-<!-- СНЯТО 2026-10-05 lean-rules:numbers приёмов = 83, в приёмке = 78, вне приёмки = 5 -->
-
 Версия: flang 0.7.24, Lean 4.34.1. Дата прогона: 5 октября 2026, ветка
 `a/checker-rules-are-sound-in-lean`.
 

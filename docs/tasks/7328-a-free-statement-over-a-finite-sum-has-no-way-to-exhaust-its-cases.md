@@ -89,7 +89,7 @@
 | закрытие базы свободного утверждения ядром | `flang/self/proof-kernel.flang` (анкеры `Инд1`, `Р1`) | новый случай, не новое правило |
 | смысл `по примеру` у свободного утверждения | `flang/self/proof-kernel.flang`, `flang/self/proof.flang` | решение: брать пример у ВЫЗЫВАЕМОЙ функции или отказывать дальше |
 | печать хода в запись | `flang/self/proof-record.flang` | ход уже есть у постусловия |
-| чтение хода | `flang/proof/checker/checker.c` (<!-- СНЯТО 2026-10-04 строк flang/proof/checker/checker.c = 10497 --> 10 497 строк), `flang/proof/checker.flang` | список ходов закрытый |
+| чтение хода | `flang/proof/checker/checker.c` (<!-- СНЯТО 2026-10-06 строк flang/proof/checker/checker.c = 10505 (задача 4791: разбор случаев отказывает условию под связывателем; до них 10497, снято 2026-10-04) --> 10 505 строк), `flang/proof/checker.flang` | список ходов закрытый |
 | строка перечня и лемма | `flang/proof/tables/inference-rules.tsv`, `flang/proof/lean/Rules.lean` | если правило новое, а не случай прежнего |
 
 Потолок строк независимой проверяющей программы — ключ `checker-code-lines` в

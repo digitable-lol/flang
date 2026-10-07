@@ -79,7 +79,7 @@ JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по им
 строки прибавились 2 сентября: `scripts/latin-collision-guard.mjs` сравнивает
 теперь ПРОСЬБЫ печати, а не объявленные имена, и довод к этому записан там же.)
 
-Записка [`why-javascript-remains.md`](why-javascript-remains.md) от 23 августа —
+Записка «почему JavaScript остаётся» от 23 августа —
 разбор четырёх дыр языка — остаётся в силе как разбор; счёт файлов в ней (53) и
 список «чего переносить не надо» (12) заменяются этой описью.
 
@@ -356,8 +356,8 @@ $ grep -c 'work.mjs\|count-library.mjs' ярлыки.flang
 
 Зовут их руками, и **с доводами** — так это и записано в дереве:
 
-* `docs/benchmark-speed.md:552` — `node docs/benchmarks/speed/work.mjs /tmp/zamer --кругов 11`;
-* `docs/emptiness-of-what-is-proved.md:51` — `node $W/schyot.mjs <модуль>.flang`,
+* замер скорости — `node docs/benchmarks/speed/work.mjs /tmp/zamer --кругов 11`;
+* разбор пустоты доказанного — `node $W/schyot.mjs <модуль>.flang`,
   и рядом прямо сказано: «**по одному модулю за раз**».
 
 Дальше по файлам.
@@ -382,7 +382,7 @@ $ grep -c 'work.mjs\|count-library.mjs' ярлыки.flang
 ```
 
 `docs/benchmarks/speed/assemble.sh` без довода кладёт сборку именно туда, и так это
-записано в `docs/benchmark-speed.md`:
+записано в замере скорости:
 
 ```bash
 docs/benchmarks/speed/assemble.sh
@@ -414,7 +414,7 @@ bootstrap/flang io docs/benchmarks/speed/memory.flang
 
 **`count-library.mjs` (240) переписуем, и машинерия для него в дереве уже
 лежит** — `docs/benchmarks/proof-cost/count-20.flang` (1 341 строка) делает ровно то
-же самое над `docs/benchmark2`: перечисляет каталог, зовёт `flang ast` и
+же самое над `docs/benchmarks/proof-cost/functions`: перечисляет каталог, зовёт `flang ast` и
 `flang check --proof` процессом, читает ответы счётом скобок, пишет времянку с
 телом-заглушкой и спрашивает ведомость заново. Отличий от `count-library.mjs`
 четыре: каталог, отбор файлов по расширению, вид отчёта и **порядок обхода** —
@@ -441,7 +441,7 @@ bootstrap/flang io docs/benchmarks/speed/memory.flang
 от другого.**
 
 Взяты два счётчика содержательности, делающие одну работу над ОДНИМИ И ТЕМИ ЖЕ
-двадцатью файлами `docs/benchmark2` (1 113 строк) и одним и тем же двоичным:
+двадцатью файлами `docs/benchmarks/proof-cost/functions` (1 113 строк) и одним и тем же двоичным:
 `count-20.flang` (на flang, живёт в дереве, зовётся `bootstrap/flang run-script proofs:count-20`)
 и `count-library.mjs` (на JavaScript), у которого каталог переставлен на те же
 двадцать файлов. Оба прогона — через ворота, `PAMYAT=45G`.
@@ -511,10 +511,10 @@ bootstrap/flang io docs/benchmarks/speed/memory.flang
 вердикт ядра молча, ничем его не пометив. Причина видна прогоном:
 
 ```
-$ flang check docs/benchmark2/13-even.flang --proof
+$ flang check docs/benchmarks/proof-cost/functions/13-even.flang --proof
 FLANG_EXAMPLE: пример «Минус четыре чётно» функции «Чётное»: значение не совпало
   с ожидаемым: ожидалось true, получено false
-docs/benchmark2/13-even.flang: не проверено — ведомость не печатается у программы
+docs/benchmarks/proof-cost/functions/13-even.flang: не проверено — ведомость не печатается у программы
   с замечаниями
 $ echo $?
 1
@@ -547,7 +547,7 @@ $ echo $?
 ЗАДАЁТ, а не поднимает, и мерить надо с тем умолчанием, с которым живёт счётчик.
 
 **Красных примеров в библиотеке нет ни одного.** Вывод 1 от этого не
-отменяется, а сужается: беда настоящая и показана на `docs/benchmark2`, но
+отменяется, а сужается: беда настоящая и показана на `docs/benchmarks/proof-cost/functions`, но
 **цена её для меры библиотеки сегодня — ноль обещаний**. Занижение появится
 ровно в тот день, когда в `flang/stdlib` покраснеет первый пример; до тех пор
 счётчик молчал о болезни, которой ещё нет, и потому её никто и не замечал.

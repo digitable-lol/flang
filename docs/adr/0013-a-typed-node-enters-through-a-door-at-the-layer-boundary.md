@@ -8,9 +8,9 @@
 `docs/flang/self/SPEC.md` строки 1605, 1831, 1989, 2110;
 [`flang/core/json.flang`](../../flang/core/json.flang);
 заметки
-[разрез круга](../zettel/a-mutual-recursion-circle-over-a-tree-is-cut-by-a-payload-record.md)
+«разрез круга»
 и
-[перепись 0028](../zettel/typed-ast-typing-alone-fixes-one-recursion-edge-in-six.md);
+«перепись 0028»;
 пробы `docs/examples/proof-probes/typed-ast-door.flang` и
 `docs/examples/proof-probes/typed-ast-generic-descent-is-refused.flang`
 
@@ -130,8 +130,7 @@
 
 Проектировать сумму по `docs/flang/SPEC.md`, раздел 5, нельзя: спека перечисляет
 виды, но не говорит, какие ключи бывают, а каких не бывает. Снято `flang ast`
-по семнадцати настоящим файлам дерева, больше 176 тысяч узлов; полностью — в
-`docs/zettel/typed-ast-the-real-tree-has-29-kinds-and-list-is-two-different-nodes.md`.
+по семнадцати настоящим файлам дерева, больше 176 тысяч узлов; полностью — в заметке базы знаний.
 
 **Первое: сумм должно быть ДВЕ, а не одна.** Строка `kind` сваливает в одно
 пространство имён выражения и типы, и на двух именах они сталкиваются начисто,

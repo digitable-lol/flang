@@ -304,8 +304,7 @@ bootstrap/flang run-script checker:second-forgery   # испорченная к�
 `вывод цель ⟨Ц⟩ … вывод конец`, шаг — номер, имя правила, формула и основание
 одного из пяти видов (`сам`, `строка N`, `из N`, `из N M`, `из N строка M`).
 Это спецификация формата отдельно от обеих реализаций (задача 1313 §3,
-ADR-0041 §2.1); прозой форма блока описана в
-[`docs/design/proof-object-blok-vyvoda.md`](../../../design/proof-object-blok-vyvoda.md) §2.
+ADR-0041 §2.1).
 
 Текст записи в эти типы переводит
 [`flang/proof/lean/RecordReader.lean`](../../../../flang/proof/lean/RecordReader.lean)

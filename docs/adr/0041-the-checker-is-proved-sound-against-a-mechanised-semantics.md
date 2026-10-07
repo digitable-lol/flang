@@ -15,7 +15,7 @@
 спецификации нет (задача 1313 §3). Lean на машине сборки не установлен —
 `run.sh` отвечает кодом 2.
 **Рядом:** [ADR-0022](0022-a-type-fact-travels-as-a-derivation.md) — правила
-одним источником; `docs/lean-checks-the-inference-rules.md` — что уже проверено
+одним источником; записка о сверке правил вывода Lean — что уже проверено
 Lean и как; [ADR-0031](0031-certification-is-a-process-not-a-property-of-the-language.md)
 — квалификация инструмента; [ADR-0030](0030-the-printer-proves-each-run-not-itself.md) — доказанный перевод, соседняя
 дыра, которую этот документ не закрывает; задачи 1311, 1313, 4102.

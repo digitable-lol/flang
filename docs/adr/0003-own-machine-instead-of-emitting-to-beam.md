@@ -97,5 +97,5 @@ BEAM про свой код не знает ни того, ни другого �
 отсутствующей, и в этом дереве принято помечать снятое, а не убирать его. Три места,
 ссылающиеся на него (1185, 1414, 2694), приводятся в согласие с этим ADR.
 
-Связанное: `docs/zettel/scheduler-holds-a-million-processes.md`,
+Связанное:
 `docs/flang/concurrency/RESILIENCE.md`, `docs/flang/concurrency/DISTRIBUTED.md`.

@@ -60,7 +60,7 @@ ADR-0062.
   и отказы точного целого и точного дробного; набор проб
   `flang/proof/probes/exact-fraction-in-targets` сравнивает ответы вычислителя и
   десяти целей байт в байт, подделанное ожидание его краснит (план `Forgery`).
-- Слово `целая часть` введено решением ADR-0072; применяется в дереве после
+- Слово `целая часть` введено решением ADR-0074; применяется в дереве после
   перепечатки семени.
 - `docs/flang/SPEC.md` и `DESCRIPTION.md` описывают точное целое и точное дробное.
 
@@ -70,4 +70,4 @@ ADR-0062.
 `flang/self/types.flang` (вид, канон литерала, счёт), `flang/self/lexer.flang`,
 `flang/self/parser.flang`, `flang/proof/probes/exact-fraction/`, ADR-0062;
 печать — `flang/src/emit/*` и `flang/self/emit-*.flang`,
-`flang/proof/probes/exact-fraction-in-targets/`; слово `целая часть` — ADR-0072.
+`flang/proof/probes/exact-fraction-in-targets/`; слово `целая часть` — ADR-0074.

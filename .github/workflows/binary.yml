@@ -2078,8 +2078,8 @@ jobs:
             exit 1
           fi
           make -C "$shell" -j"$(nproc)" CFLAGS="-std=c99 -Wall -Wextra -Werror -pedantic -O2"
-          probe=flang/proof/probes/plan-rules-asked/run.fscript
-          if FLANG_BIN="$shell/flang" bootstrap/flang io "$probe" --plan Binary; then
+          if FLANG_BIN="$shell/flang" bootstrap/flang io \
+            flang/proof/probes/plan-rules-asked/run.fscript --plan Binary; then
             echo "the probe stayed green on the forgery" >&2
             exit 1
           fi

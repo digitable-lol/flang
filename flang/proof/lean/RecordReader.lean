@@ -370,14 +370,19 @@ def «телоПоТипу» («тип» : String) (s : String) : Option «Те�
 
 /-! ## Исходник -/
 
-/-- Строка без хвостового примечания `//` (кавычки уважаются). -/
+/-- Строка без хвостового примечания `//`: внутри литерала — `"…"`, `'…'`, `«…»` с
+    экраном `\\` — две косые не примечание. -/
 def «безПримечания» (s : String) : String :=
-  let rec «идти» : List Char → Bool → List Char → List Char
-    | [], _, acc => acc.reverse
-    | '"' :: r, «к», acc => «идти» r (!«к») ('"' :: acc)
-    | '/' :: '/' :: _, false, acc => acc.reverse
-    | c :: r, «к», acc => «идти» r «к» (c :: acc)
-  String.ofList («идти» s.toList false [])
+  let rec «идти» : List Char → Option Char → Bool → List Char → List Char
+    | [], _, _, acc => acc.reverse
+    | c :: r, none, _, acc =>
+      if c = '/' && r.head? = some '/' then acc.reverse
+      else
+        let z := if c = '"' then some '"' else if c = '\'' then some '\'' else if c = '«' then some '»' else none
+        «идти» r z false (c :: acc)
+    | c :: r, some z, e, acc =>
+      «идти» r (if !e && c = z then none else some z) (!e && c = '\\') (c :: acc)
+  String.ofList («идти» s.toList none false [])
 
 /-- Строка так, как её читает язык. -/
 def «какЧитаетЯзык» (s : String) : String :=

@@ -1,0 +1,304 @@
+модуль «Second checker»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Tally»
+  «counts»: список число
+  «disagreements»: список строки
+
+тотальная функция «Loop parts»
+  возвращает список строки
+  пример «Both checkers on every record, the second one fed a forged copy of the record named second»
+    ожидается ["cd \"$0\" || exit 2", "c=flang/proof/checker/сверщик",
+      "l=flang/proof/checker/second/out/второй-сверщик", "[ -x \"$c\" ] && [ -x \"$l\" ] || exit 3",
+      "r=$(find flang/proof/checker/tests flang/proof/forgeries -name '*.record' | sort)",
+      "for z in $r; do d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-)",
+      "if [ ! -f \"$d\" ]; then printf -- '-\\t-\\t%s\\n' \"$z\"; continue; fi",
+      "\"$c\" \"$d\" \"$z\" >/dev/null 2>&1; k=$?; w=\"$z\"",
+      "if [ \"$z\" = \"$2\" ]; then w=\"$3\"; sed 's/^знаков \\([0-9]*\\)$/знаков 1\\1/' \"$z\" > \"$w\"; fi",
+      "\"$l\" \"$d\" \"$w\" >/dev/null 2>&1; m=$?; printf '%s\\t%s\\t%s\\n' \"$k\" \"$m\" \"$z\"", "done > \"$1\""]
+  ["cd \"$0\" || exit 2", "c=flang/proof/checker/сверщик",
+    "l=flang/proof/checker/second/out/второй-сверщик", "[ -x \"$c\" ] && [ -x \"$l\" ] || exit 3",
+    "r=$(find flang/proof/checker/tests flang/proof/forgeries -name '*.record' | sort)",
+    "for z in $r; do d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-)",
+    "if [ ! -f \"$d\" ]; then printf -- '-\\t-\\t%s\\n' \"$z\"; continue; fi",
+    "\"$c\" \"$d\" \"$z\" >/dev/null 2>&1; k=$?; w=\"$z\"",
+    "if [ \"$z\" = \"$2\" ]; then w=\"$3\"; sed 's/^знаков \\([0-9]*\\)$/знаков 1\\1/' \"$z\" > \"$w\"; fi",
+    "\"$l\" \"$d\" \"$w\" >/dev/null 2>&1; m=$?; printf '%s\\t%s\\t%s\\n' \"$k\" \"$m\" \"$z\"", "done > \"$1\""]
+
+тотальная функция «Forged record»
+  возвращает строка
+  пример «The honest record both checkers verify whole is the one the forgery spoils»
+    ожидается "flang/proof/checker/tests/families/type-families/families.record"
+  "flang/proof/checker/tests/families/type-families/families.record"
+
+тотальная функция «Empty tally»
+  возвращает «Tally»
+  пример «Ten counts, all zero, and no disagreement»
+    ожидается запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+  запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+
+тотальная функция «At»
+  принимает position: число, counts: список число
+  возвращает число
+  пример «The third count»
+    дано position равно 3
+    дано counts равно [5, 6, 7]
+    ожидается 7
+  пример «Past the end the count is zero»
+    дано position равно 4
+    дано counts равно [5, 6, 7]
+    ожидается 0
+  если (position меньше 1) или (position больше (длина counts))
+    то 0
+    иначе элемент position в counts
+
+тотальная функция «One if»
+  принимает condition: признак
+  возвращает число
+  пример «A true condition counts one»
+    дано condition равно да
+    ожидается 1
+  пример «A false condition counts nothing»
+    дано condition равно нет
+    ожидается 0
+  если condition то 1 иначе 0
+
+тотальная функция «Added»
+  принимает counts: список число, more: список признак
+  возвращает список число
+  пример «Each count grows by its own condition»
+    дано counts равно [1, 2, 0, 0, 0, 0, 0, 0, 0, 0]
+    дано more равно [да, нет, нет, нет, нет, нет, нет, нет, нет, да]
+    ожидается [2, 2, 0, 0, 0, 0, 0, 0, 0, 1]
+  пусть bumps равно (отобразить more как m → «One if» от m)
+  [(«At» от 1 и counts) плюс («At» от 1 и bumps), («At» от 2 и counts) плюс («At» от 2 и bumps),
+    («At» от 3 и counts) плюс («At» от 3 и bumps), («At» от 4 и counts) плюс («At» от 4 и bumps),
+    («At» от 5 и counts) плюс («At» от 5 и bumps), («At» от 6 и counts) плюс («At» от 6 и bumps),
+    («At» от 7 и counts) плюс («At» от 7 и bumps), («At» от 8 и counts) плюс («At» от 8 и bumps),
+    («At» от 9 и counts) плюс («At» от 9 и bumps), («At» от 10 и counts) плюс («At» от 10 и bumps)]
+
+тотальная функция «Tallied»
+  принимает t: «Tally», row: список строки
+  возвращает «Tally»
+  пример «A record without its source is only counted»
+    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+    дано row равно ["-", "-", "a.record"]
+    ожидается запись «Tally» с «counts» равным [1, 1, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+  пример «A verdict of the second checker unlike the first one is a disagreement»
+    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+    дано row равно ["0", "1", "a.record"]
+    ожидается запись «Tally» с «counts» равным [1, 0, 1, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным [
+      "  РАСХОЖДЕНИЕ  a.record: сверщик на C — 0, второй — 1"]
+  пример «A record the second checker declines is counted by the answer of the first one»
+    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+    дано row равно ["1", "4", "a.record"]
+    ожидается запись «Tally» с «counts» равным [1, 0, 0, 0, 0, 0, 1, 0, 1, 0] и «disagreements» равным пустой список
+  пусть c равно («Cell» от 1 и row)
+  пусть l равно («Cell» от 2 и row)
+  пусть none равно (c равен "-")
+  пусть declined равно (не none) и притом (l равен "4")
+  пусть judged равно (не none) и притом (не declined)
+  пусть same равно judged и притом (c равен l)
+  пусть apart равно judged и притом (не (c равен l))
+  пусть said равно (соединить ["  РАСХОЖДЕНИЕ  ", («Cell» от 3 и row), ": сверщик на C — ", c, ", второй — ", l] по "")
+  пусть more равно [да, none, judged, same и притом (c равен "1"), same и притом (c равен "0"),
+    same и притом (c равен "3"), declined, declined и притом (c равен "0"), declined и притом (c равен "1"),
+    declined и притом (c равен "3")]
+  пусть found равно (если apart то (добавить said к (t.«disagreements»)) иначе (t.«disagreements»))
+  запись «Tally» с «counts» равным («Added» от (t.«counts») и more) и «disagreements» равным found
+
+тотальная функция «Tally of»
+  принимает text: строка
+  возвращает «Tally»
+  пример «Two records, one of them without a source»
+    дано text равно "header\n1\t1\ta.record\n-\t-\tb.record\n"
+    ожидается запись «Tally» с «counts» равным [2, 1, 1, 1, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+  свёртка («Rows» от text) начиная с («Empty tally») как t и row → «Tallied» от t и row
+
+тотальная функция «Labelled»
+  принимает label: строка, count: число
+  возвращает строка
+  пример «A label and its count»
+    дано label равно ", Б "
+    дано count равно 2
+    ожидается ", Б 2"
+  соединить [label, (к строке count)] по ""
+
+тотальная функция «Count line»
+  принимает head: строка, counts: список число, labels: список строки
+  возвращает строка
+  пример «A heading count and three labelled counts»
+    дано head равно "дал вердикт 3: "
+    дано counts равно [1, 2, 0]
+    дано labels равно ["А ", ", Б ", ", В "]
+    ожидается "дал вердикт 3: А 1, Б 2, В 0"
+  пусть pairs равно (отобразить [1, 2, 3] как i → «Labelled» от («Cell» от i и labels) и («At» от i и counts))
+  соединить (приписать head к pairs) по ""
+
+тотальная функция «Report lines»
+  принимает t: «Tally»
+  возвращает список строки
+  пример «Nothing compared»
+    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+    ожидается ["── второй сверщик (Lean) против сверщика на C: записи проб и подделок ──",
+      "записей 0, без исходника 0, сличено 0", "второй дал вердикт 0: НЕ СОШЛОСЬ 0, ПРОВЕРЕНО 0, НЕ ПРОВЕРЕНО 0",
+      "второй не взялся целиком 0: у сверщика на C ПРОВЕРЕНО 0, НЕ СОШЛОСЬ 0, НЕ ПРОВЕРЕНО 0", "расхождений 0"]
+  пусть n равно (t.«counts»)
+  пусть compared равно ((«At» от 1 и n) минус («At» от 2 и n))
+  пусть opening равно (соединить ["записей ", (к строке («At» от 1 и n)), ", без исходника ",
+    (к строке («At» от 2 и n)), ", сличено ", (к строке compared)] по "")
+  пусть h1 равно (соединить ["второй дал вердикт ", (к строке («At» от 3 и n)), ": "] по "")
+  пусть c1 равно [(«At» от 4 и n), («At» от 5 и n), («At» от 6 и n)]
+  пусть judged равно («Count line» от h1 и c1 и ["НЕ СОШЛОСЬ ", ", ПРОВЕРЕНО ", ", НЕ ПРОВЕРЕНО "])
+  пусть h2 равно (соединить ["второй не взялся целиком ", (к строке («At» от 7 и n)), ": у сверщика на C "] по "")
+  пусть c2 равно [(«At» от 8 и n), («At» от 9 и n), («At» от 10 и n)]
+  пусть declined равно («Count line» от h2 и c2 и ["ПРОВЕРЕНО ", ", НЕ СОШЛОСЬ ", ", НЕ ПРОВЕРЕНО "])
+  пусть closing равно (соединить ["расхождений ", (к строке (длина (t.«disagreements»)))] по "")
+  «Соединить списки» от ["── второй сверщик (Lean) против сверщика на C: записи проб и подделок ──", opening,
+    judged, declined, closing] и (t.«disagreements»)
+
+тотальная функция «Judged»
+  принимает mode: строка, lines: список строки, found: список строки
+  возвращает «Продолжение»
+  пример «A crosscheck without disagreements ends the work»
+    дано mode равно "crosscheck"
+    дано lines равно ["x"]
+    дано found равно пустой список
+    ожидается вариант «Конец работы» с значение равным "x\nсошлось"
+  пример «A forgery the crosscheck did not name fails the plan»
+    дано mode равно "forgery"
+    дано lines равно ["x"]
+    дано found равно пустой список
+    ожидается вариант «Провал» с код равным "FLANG_SECOND" и сообщение равным "x\nПРОВАЛ: подлог не назван"
+  пусть named равно (отфильтровать found где line → line содержит («Forged record»))
+  пусть caught равно ((длина found) равен 1) и притом ((длина named) равен 1)
+  пусть forgery равно (mode равен "forgery")
+  пусть ok равно (если forgery то caught иначе (пусто found))
+  пусть good равно (если forgery то "ПОДЛОГ ПОЙМАН: расхождение на испорченной копии названо" иначе "сошлось")
+  пусть bad равно (если forgery то "ПРОВАЛ: подлог не назван" иначе "РАЗОШЛОСЬ")
+  пусть text равно (соединить lines по "\n")
+  если ok
+    то вариант «Конец работы» с значение равным (соединить [text, "\n", good] по "")
+    иначе вариант «Провал» с код равным "FLANG_SECOND" и сообщение равным (соединить [text, "\n", bad] по "")
+
+тотальная функция «In work»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file inside the work directory»
+    дано name равно "codes.tsv"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/codes.tsv"
+  соединить [(«Made of» от "work" и answers), "/", name] по ""
+
+тотальная функция «Mode of»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «Without the word the plan crosschecks»
+    дано answers равно пустой список
+    ожидается "crosscheck"
+  разбор («Given of» от "mode" и answers)
+    случай пусто
+      то "crosscheck"
+    случай голова и хвост
+      то голова
+
+тотальная функция «Questions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть forged равно (если («Mode of» от answers) равен "forgery" то («Forged record») иначе "-")
+  пусть codes равно («In work» от "codes.tsv" и answers)
+  [(«Run» от "loop" и "sh" и ["-c", (соединить («Loop parts») по "; "), "../..", codes, forged,
+    («In work» от "forged.record" и answers)]), («Read» от "codes" и codes)]
+
+тотальная функция «Obstacle»
+  принимает asked: признак, code: число
+  возвращает строка
+  пример «A missing checker is named»
+    дано asked равно да
+    дано code равно 3
+    ожидается "нет сверщика: собрать оба — make -C flang/proof/checker all second"
+  пример «Nothing asked is no obstacle»
+    дано asked равно нет
+    дано code равно 0
+    ожидается ""
+  пусть missing равно "нет сверщика: собрать оба — make -C flang/proof/checker all second"
+  «Chosen» от [(«When» от (asked и притом (code равен 3)) и missing),
+    («When» от (asked и притом (не (code равен 0))) и "прогон обоих сверщиков сорвался")] и ""
+
+тотальная функция «Obstacle of»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «Before the loop there is no obstacle»
+    дано answers равно пустой список
+    ожидается ""
+  «Obstacle» от («Answered» от "loop" и answers) и («Exit code of» от "loop" и answers)
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пусть place равно (соединить [(«Setting of» от "temporary" и "/tmp" и answers), "/second-checker."] по "")
+  «Chosen» от [(«When» от (stages больше 2) и [(«Environment» от "temporary" и "FLANG_TMP")]),
+    («When» от (stages больше 1) и [(«Temporary directory» от "work" и place)])] и («Questions» от answers)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Finished» от («Mode of» от answers) и («Output of» от "codes" и answers)
+        иначе «Proceed» от («Stage» от stages и answers) и (stages минус 1) и answers
+
+тотальная функция «Finished»
+  принимает mode: строка, codes: строка
+  возвращает «Продолжение»
+  пусть t равно («Tally of» от (соединить ["c\tl\tзапись\n", codes] по ""))
+  «Judged» от mode и («Report lines» от t) и (t.«disagreements»)
+
+тотальная функция «Started»
+  принимает mode: строка
+  возвращает «Inquiry»
+  пусть said равно (вариант «Доводы» с доводы равным [mode])
+  пусть remembered равно [(запись «Answer» с «name» равным "mode" и «reply» равным said)]
+  пусть none равно (пустой список)
+  запись «Inquiry» с «asked» равным "" и «queue» равным none и «stages» равным 3 и «answers» равным remembered
+
+тотальная функция «Begin crosscheck»
+  возвращает «Inquiry»
+  «Started» от "crosscheck"
+
+тотальная функция «Begin forgery»
+  возвращает «Inquiry»
+  «Started» от "forgery"
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть answers равно («Heard» от inquiry и reply)
+  пусть obstacle равно («Obstacle of» от answers)
+  если пусто obstacle
+    то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+    иначе вариант «Не проверено» с код равным "FLANG_SECOND_CHECKER_NOT_MEASURED" и сообщение равным obstacle
+
+план «Crosscheck»
+  состояние «Inquiry»
+  начинает с «Begin crosscheck»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Begin forgery»
+  обрабатывает «Next»
+
+тотальная функция «Объявление короткой команды checker:second»
+  возвращает строка
+  "bootstrap/flang io --plan Crosscheck — второй сверщик на Lean против сверщика на C; расхождение — код 1"
+
+тотальная функция «Объявление короткой команды checker:second-forgery»
+  возвращает строка
+  "bootstrap/flang io --plan Forgery — второму подана испорченная копия записи, расхождение обязано быть названо"

@@ -1409,6 +1409,7 @@
   обеспечивает «рантайм add несёт function $add» результат содержит "function $add("
   обеспечивает «сложение спрашивает про разряды прежде, чем про числа» результат содержит "$exactDigits(left)"
   соединить [
+    "/** @returns {any} */",
     "function $add(left, right) {",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
     "    const [a, b] = $fractionParts(left)",
@@ -1427,6 +1428,7 @@
   возвращает строка
   обеспечивает «рантайм sub несёт function $sub» результат содержит "function $sub("
   соединить [
+    "/** @returns {any} */",
     "function $sub(left, right) {",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
     "    const [a, b] = $fractionParts(left)",
@@ -1457,6 +1459,7 @@
   возвращает строка
   обеспечивает «рантайм mul несёт function $mul» результат содержит "function $mul("
   соединить [
+    "/** @returns {any} */",
     "function $mul(left, right) {",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
     "    const [a, b] = $fractionParts(left)",
@@ -1475,6 +1478,7 @@
   возвращает строка
   обеспечивает «рантайм div несёт function $div» результат содержит "function $div("
   соединить [
+    "/** @returns {any} */",
     "function $div(left, right) {",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
     "    const [a, b] = $fractionParts(left)",
@@ -1494,6 +1498,7 @@
   возвращает строка
   обеспечивает «рантайм mod несёт function $mod» результат содержит "function $mod("
   соединить [
+    "/** @returns {any} */",
     "function $mod(left, right) {",
     "  if ($exactDigits(left) && $exactDigits(right)) {",
     "    const a = $exactCanon(left)",

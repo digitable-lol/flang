@@ -163,8 +163,8 @@
 тотальная функция «Allowed empty»
   возвращает список строки
   пример «Records allowed to sit empty in the numerator»
-    ожидается ["corpus-brackets.record", "forgery-binder-hides-the-condition.record", "forgery-if-without-descent.record", "krug-tuda-i-obratno.record", "poddelka-element-po-nomeru.record", "poddelka-istinnaya-vetv.record", "poddelka-krug-pri-rabote.record", "poddelka-lozhnaya-polovina.record", "poddelka-mera-dliny-stroki.record", "poddelka-porjadok-sosednih.record", "poddelka-ravenstvo-v-tele-ne-dokazyvaet.record", "poddelka-razdvoenie-diz.record", "poddelka-refleksivnost.record", "poddelka-slova-celey.record", "poddelka-sortirovka-ne-ubyvaet.record", "poddelka-vhozhdenie.record"]
-  ["corpus-brackets.record", "forgery-binder-hides-the-condition.record", "forgery-if-without-descent.record", "krug-tuda-i-obratno.record", "poddelka-element-po-nomeru.record", "poddelka-istinnaya-vetv.record", "poddelka-krug-pri-rabote.record", "poddelka-lozhnaya-polovina.record", "poddelka-mera-dliny-stroki.record", "poddelka-porjadok-sosednih.record", "poddelka-ravenstvo-v-tele-ne-dokazyvaet.record", "poddelka-razdvoenie-diz.record", "poddelka-refleksivnost.record", "poddelka-slova-celey.record", "poddelka-sortirovka-ne-ubyvaet.record", "poddelka-vhozhdenie.record"]
+    ожидается ["poddelka-slova-celey.record"]
+  ["poddelka-slova-celey.record"]
 
 тотальная функция «One line»
   принимает said: строка

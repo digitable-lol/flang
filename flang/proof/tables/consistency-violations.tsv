@@ -1,7 +1,7 @@
 key	state
 verdicts-c-lean	closed
-rule-outside-the-table	open
-verified-in-vain	open
+rule-outside-the-table	closed
+verified-in-vain	closed
 theorem-hypothesis-not-discharged	closed
 loop-through-function-value	closed
 restricted-postcondition-cited-undischarged	closed

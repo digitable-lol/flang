@@ -18,7 +18,7 @@
   возвращает список «Check»
   обеспечивает «there are exactly twenty-four checks» (длина результат) равен 24
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check",
-   запись «Check» с «name» равным "reestr" и «command» равным "bootstrap/flang run-script registry-resolution:check",
+   запись «Check» с «name» равным "registry" и «command» равным "bootstrap/flang run-script registry-resolution:check",
    запись «Check» с «name» равным "prints" и «command» равным "bootstrap/flang run-script registry-prints:check",
    запись «Check» с «name» равным "lock-forms" и «command» равным "bootstrap/flang run-script lock-forms:check",
    запись «Check» с «name» равным "seed-runtime-is-source" и «command» равным "bootstrap/flang io scripts/seed/seed-runtime-is-source.fscript --plan Check",

@@ -350,7 +350,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 ### What broke
 
 - The verdict is still NOT PROVABLE: three checks of four agree, the share is 79.88 % against a 95 % threshold.
-- The road to the end is measured place by place in `docs/road-to-one-hundred-measured.md`: NOT ONE place is unreachable, and the ceiling of engineering work is 643 / 651 = 98.77 %. The last eight places are not work but a decision about what the number promises.
+- The road to the end is measured place by place: NOT ONE place is unreachable, and the ceiling of engineering work is 643 / 651 = 98.77 %. The last eight places are not work but a decision about what the number promises.
 - Found during the release and not hidden: the release archive is not byte-identical between a local build and the pipeline build, although it is assembled by a deliberately reproducible recipe. The promise «build it yourself and compare» does not hold today.
 
 ## 0.7.15 — 8 September 2026

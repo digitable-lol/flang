@@ -1,14 +1,10 @@
 ЦЕЛИ	docs/ROADMAP.md	1522	правдивое высказывание о ПОДМНОЖЕСТВЕ целей, а не заявка «вот они все»: речь о трёх целях с планировщиком и о пяти без него
 ЦЕЛИ	docs/eight-targets-renames.tsv	3	ведомость переименований по семи целям; «c» заморожена, девятой цели у двоичного нет
-ЦЕЛИ	docs/zettel/the-byte-check-subtracted-the-entry-boundary-and-went-green-for-nothing.md	35	правдивое высказывание о ПОДМНОЖЕСТВЕ целей, а не заявка «вот они все»: «у четырёх остальных целей»
 ЦЕЛИ	flang/self/bootstrap/compiler.flang	100	замер 30 августа по целям, печатающим конкурентность; «js» и девятая цель в замер не входили
 ЦЕЛИ	scripts/targets/identical-declarations.sh	66	«c» — база сличения и в перечень сличаемых не входит нарочно; девятой цели нет у двоичного
 ЦЕЛИ	scripts/targets/target-collisions.sh	48	«c» — база сличения; девятой цели нет у двоичного
 ЦЕЛИ	scripts/targets/target-collisions.sh	200	«c» — база сличения; девятой цели нет у двоичного
 ЦЕЛИ	scripts/test-remote.fscript	21	перечень тулчейнов машины; «js» тулчейна не имеет, девятая цель делит тулчейн с «c»
-ПУТИ	docs/ifl/reproduce.sh	17	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
-ПУТИ	docs/ifl/reproduce.sh	84	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
-ПУТИ	docs/ifl/reproduce.sh	93	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
 ПУТИ	docs/site/build.mjs	175	ложное срабатывание переписи: имя складывается прогоном или это обрубок строки, а не имя дерева (en/limits.html складывается печатью сайта)
 ПУТИ	docs/site/site-numbers.mjs	67	ложное срабатывание переписи: имя складывается прогоном или это обрубок строки, а не имя дерева (обрубок «flang/self/emit-» — приставка, к которой прогон дописывает имя цели)
 ПУТИ	flang/proof/examples/corpus-factorial.flang	7	прежняя реализация на JavaScript, вынесенная из дерева коммитом-удалением; имя стоит в комментарии как история, а не как живой файл
@@ -38,15 +34,12 @@
 ЦЕЛИ	docs/ct/spec.md	1276	таблица замера по восьми целям; cpp в замер не входил
 ЦЕЛИ	docs/guide/project-layout.md	89	проза «all eight target languages», набранная до девятой цели cpp; настоящий долг документации, правится вместе с русской половиной
 ЦЕЛИ	docs/guide/project-layout.ru.md	87	русская половина той же прозы про восемь целей; правится вместе с английской
-ЦЕЛИ	docs/ifl/measure-across-targets.sh	57	прогон замера по восьми целям; правка перечня меняет ПРЕДМЕТ замера, а не описку в нём
 ЦЕЛИ	docs/site/cli.md	195	таблица ключа --target в справке сайта: восемь целей, cpp не дописан — настоящий долг документации
 ЦЕЛИ	docs/site/cli.ru.md	190	русская половина той же таблицы; правится вместе с английской
 ЦЕЛИ	docs/site/embedding.md	61	таблица напечатанных файлов по восьми целям; строки cpp нет — настоящий долг документации
 ЦЕЛИ	docs/site/embedding.ru.md	60	русская половина той же таблицы; правится вместе с английской
 ЦЕЛИ	docs/site/troubleshooting.md	71	разбивка целей по поведению планировщика на три группы; cpp не отнесён ни к одной — настоящий долг документации
 ЦЕЛИ	docs/site/troubleshooting.ru.md	70	русская половина той же разбивки; правится вместе с английской
-ЦЕЛИ	docs/zettel/plan-printing-is-promised-inside-out-and-nothing-verifies-it.md	15	таблица замера в заметке; снята до девятой цели и правится только пересъёмкой замера
-ЦЕЛИ	docs/zettel/plan-printing-is-promised-inside-out-and-nothing-verifies-it.md	29	вторая таблица того же замера; правится только пересъёмкой
 ЦЕЛИ	docs/flang/proof/SPEC.md	154	замер равенства байтов по восьми целям; cpp в замер не входил
 ЦЕЛИ	flang/scripts/node-across-targets.fscript	25	перечень целей, у которых есть хозяин узла; у цели python хозяина нет — перечень описывает то, что можно собрать
 ЦЕЛИ	flang/scripts/supervisor-across-targets.fscript	23	тот же перечень целей с хозяином узла для надзора; у python хозяина нет
@@ -60,9 +53,6 @@
 ЦЕЛИ	scripts/guards/bad-octet-guard.sh	25	таблица «было» по восьми целям: исторический замер до починки октетов
 ЦЕЛИ	scripts/guards/emit-promises-guard.fscript	217	улики по целям рантайма; у elixir и у cpp улик этого класса нет
 ЦЕЛИ	scripts/guards/module-name-guard.fscript	294	перечень модулей flang/self, в котором нет emit-cpp.flang; настоящий долг перечня — правка меняет предмет сторожа и делается вместе с его прогоном
-ЦЕЛИ	docs/tasks/completed/0025-roadmap-matches-the-tree.md	89	закрытая задача: запись о работе на день закрытия, правится только вместе с датой
-ЦЕЛИ	docs/tasks/completed/4025-the-seed-stopped-dropping-processes-and-the-network.md	161	закрытая задача: таблица замера на день закрытия
-ЦЕЛИ	docs/tasks/completed/8460-the-occupied-names-guard-was-blind-to-the-ninth-target.md	117	закрытая задача: «семь целей из девяти без присмотра» — высказывание о подмножестве на день закрытия
 ПУТИ	docs/site/build.flang	71	входы ПРИМЕРОВ функции (docs/site/limits.ru.md → docs/site/limits.md), а не имена дерева: входы примера не протухают
 ПУТИ	docs/examples/frameworks/nestjs-orders/printed/flang_cli.js	533	прежняя реализация на JavaScript (flang/scripts/direct-run-guard.mjs), вынесенная из дерева; имя стоит в шапке НАПЕЧАТАННОГО файла и правится печатью, а не рукой
 ПУТИ	docs/examples/frameworks/react-invoice/printed/flang_cli.js	533	то же напечатанное лицо, вторая рамка; правится печатью, а не рукой

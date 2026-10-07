@@ -1360,30 +1360,6 @@ jobs:
       - name: Check glossary
         run: bootstrap/flang run-script dictionary:check
 
-      - name: Probe blockers table
-        run: |
-          set -u
-          podlog=docs/what-blocks-1-0.md
-          # Подлог прибит к ОБРАЗЦУ ряда таблицы, а не к номеру строки: номер 40
-          # съехал на 42, sed смолчал, и шаг краснел словами «сторож промолчал»
-          # на нетронутом файле. Несобравшийся подлог ловится отдельно.
-          cp "$podlog" "$podlog.do"
-          sed -i 's#^| `docs/reprint-cost.md`, #| `docs/вымышленный-подлог.md`, #' "$podlog"
-          if cmp -s "$podlog.do" "$podlog"; then
-            rm -f "$podlog.do"; git checkout -- "$podlog"
-            echo "ПОДЛОГ НЕ СОБРАЛСЯ: ряда таблицы с docs/reprint-cost.md в $podlog нет — поправить подлог, сторож ни при чём" >&2
-            exit 1
-          fi
-          rm -f "$podlog.do"
-          if bootstrap/flang run-script what-blocks:check; then
-            git checkout -- "$podlog"
-            echo "сторож промолчал на подлоге — проверять им нечего" >&2
-            exit 1
-          fi
-          git checkout -- "$podlog"
-      - name: Check blockers table
-        run: bootstrap/flang run-script what-blocks:check
-
       # Ниже — трое, прогнанные и снабжённые подлогом задачей R1. Каждый идёт
       # парой: сперва подлог обязан покраснеть, потом рабочий шаг обязан быть
       # зелёным. Времена под нагрузкой (шла перепечатка): 94-111 с на прогон,

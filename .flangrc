@@ -154,7 +154,6 @@ script.tasks:numbers = bootstrap/flang io scripts/guards/task-numbers-guard.fscr
 script.tasks:numbers:forgery = bootstrap/flang io scripts/guards/task-numbers-guard.fscript --plan Forgery
 script.tasks:board = bootstrap/flang io flang/scripts/tasks.fscript --plan 'Доска' --max-steps 200000000 --на-веру
 script.tasks:number = bootstrap/flang io flang/scripts/tasks.fscript --plan 'Номер' --max-steps 200000000 --на-веру
-script.zettel-index:build = bootstrap/flang io docs/zettel/zettel-index.flang --max-orders 4000 --timeout 900000
 script.install-path:check = bootstrap/flang io scripts/release/path-without-node.fscript --на-веру
 script.dictionary:coverage = bootstrap/flang io scripts/guards/dictionary-guard.fscript --на-веру
 script.tab-host:check = bootstrap/flang io scripts/guards/tab-host-guard.fscript --на-веру

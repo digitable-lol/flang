@@ -60,8 +60,6 @@ flang/test/fixtures/fts/examples/real-world/zhi-shi.fts
 flang/test/nadzor-uzla.test.mjs
 flang/test/planirovshchik-celi.test.mjs
 flang/test/svyaz-celi.test.mjs
-docs/zettel/emptiness-guards-are-written-with-pusto-but-the-kernel-reads-only-the-measure.md
-docs/zettel/vyvod-na-vetke-ne-vyvod-o-dereve.md
 flang/proof/checker/tests/records/corpus/element-po-nomeru-chestnaya.record
 flang/proof/checker/tests/records/corpus/granica-nad-chislom-chestnaya.record
 flang/proof/checker/tests/records/corpus/krug-tuda-i-obratno.record

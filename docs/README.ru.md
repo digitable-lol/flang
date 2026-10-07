@@ -202,8 +202,7 @@ git config core.hooksPath .githooks      # хук перед пушем: деш�
 ведётся в [`docs/tasks/`](tasks/README.md): один файл — одна открытая задача; закрытая из дерева
 уходит, а её номер остаётся занятым в `docs/tasks/used-numbers.tsv`. Правила дерева, которых из кода не
 видно, — в [`AGENTS.md`](../.ai/AGENTS.md); как собрать, прогнать проверки и прислать правку —
-[`CONTRIBUTING.md`](../CONTRIBUTING.md). Решения записаны в [`docs/adr/`](adr); база знаний —
-измеренные факты и отвергнутые пути — в [`docs/zettel/`](zettel/README.md).
+[`CONTRIBUTING.md`](../CONTRIBUTING.md). Решения записаны в [`docs/adr/`](adr).
 
 Проза этого дерева держится при дереве прогонами, а не памятью: число, набранное рукой, несёт
 примету о том, чем снято (`scripts/guards/prose-numbers-guard.fscript`), путь в ссылке обязан

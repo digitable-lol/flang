@@ -112,7 +112,7 @@
 
 тотальная функция «Места отбора»
   возвращает список «Место»
-  обеспечивает «мест отбора сорок четыре» (длина результат) равен 44
+  обеспечивает «мест отбора сорок два» (длина результат) равен 42
   [запись «Место» с «путь» равным "flang/scripts/link-collision-guard.mjs" и «нужно» равным "/\\.(flang|fp|фп|фланг|fscript)$/u" и «нельзя» равным "/\\.(flang|fp|фп|фланг)$/u",
    запись «Место» с «путь» равным "flang/scripts/binary-rules-guard.fscript" и «нужно» равным "(«Кончается на» от имя и \".фланг\") или («Кончается на» от имя и \".fscript\")" и «нельзя» равным "",
    запись «Место» с «путь» равным "flang/scripts/name-guard.mjs" и «нужно» равным "/\\.(flang|fp|фп|фланг|fscript)$/u" и «нельзя» равным "/\\.(flang|fp|фп|фланг)$/u",
@@ -122,7 +122,6 @@
    запись «Место» с «путь» равным "flang/scripts/count-guard.mjs" и «нужно» равным "\".фланг\", \".fscript\", \".fts\"" и «нельзя» равным "\".фланг\", \".fts\"",
    запись «Место» с «путь» равным "flang/test/обход.sh" и «нужно» равным "\"$dir\"/*.fscript; do" и «нельзя» равным "\"$dir\"/*.фланг; do",
    запись «Место» с «путь» равным "scripts/targets/target-census.fscript" и «нужно» равным "\".фланг\", \".fscript\"]" и «нельзя» равным "\".фланг\"]",
-   запись «Место» с «путь» равным "docs/ifl/reproduce.sh" и «нужно» равным "--include='*.fscript'" и «нельзя» равным "--include='*.фланг' .",
    запись «Место» с «путь» равным "docs/editors/vim/ftdetect/flang.vim" и «нужно» равным "*.flang,*.fp,*.фп,*.фланг,*.fscript setfiletype flang" и «нельзя» равным "*.фланг setfiletype",
    запись «Место» с «путь» равным "docs/editors/vim/lua/flang/init.lua" и «нужно» равным "[\"фланг\"] = \"flang\", fscript = \"flang\" }" и «нельзя» равным "[\"фланг\"] = \"flang\" }",
    запись «Место» с «путь» равным "docs/editors/linguist/languages-flang.yml" и «нужно» равным "- \".fscript\"" и «нельзя» равным "",
@@ -148,7 +147,6 @@
    запись «Место» с «путь» равным (соединить ["scripts/guards/hand-written-lists",
      ".fscript"] по "") и «нужно» равным "\".fscript\", \".mjs\"" и «нельзя» равным "\".flang\", \".mjs\"",
    запись «Место» с «путь» равным "scripts/guards/no-comments-guard.fscript" и «нужно» равным "ls-files -z '*.flang' '*.fscript'" и «нельзя» равным "ls-files -z '*.flang' |",
-   запись «Место» с «путь» равным "scripts/guards/what-blocks-inventory-guard.fscript" и «нужно» равным "\".flang\", \".fscript\"" и «нельзя» равным "\".flang\", \".tsv\"",
    запись «Место» с «путь» равным "scripts/guards/module-origin-guard.sh" и «нужно» равным "i.endswith((\".flang\", \".fscript\"))" и «нельзя» равным "",
    запись «Место» с «путь» равным "scripts/guards/seed-knows-type-words-guard.fscript" и «нужно» равным "-name '*.flang' -o -name '*.fscript'" и «нельзя» равным "",
    запись «Место» с «путь» равным "flang/scripts/ledger-summary.fscript" и «нужно» равным "'flang/*.flang' 'flang/*.fscript'" и «нельзя» равным "'flang/*.flang'\"]",

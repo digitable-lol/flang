@@ -5,24 +5,10 @@ CHANGELOG.md	obligations.mjs	история: заголовок коммита �
 CHANGELOG.md	src/types.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 CHANGELOG.md	flang/src/proof.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 CHANGELOG.md	io.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
-docs/README.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/README.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
-docs/benchmark-speed.md	proverka_tipov.c	иллюстративный пример в тексте, не файл
 docs/course/02-first-program.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/course/06-cost.md	-2.md	обозначение расширения/суффикса-конвенции, не имя файла
-docs/course/09-eight-targets.md	flang/src/emit/c.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
 docs/course/09-eight-targets.md	out-c/mesto_vstavki.c	учебный пример docs/course/09-eight-targets.md
 docs/course/README.md	content/post/flang-kurs/NN-slug.md	шаблон курса (нумерованный слаг), не файл
-docs/design/proof-object-lemma-po-svoystvu.md	источник-разрыв.flang	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/proof-object-migration-po-svoystvu.md	источник-разрыв.flang	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/proof-object-migration-po-svoystvu.md	источник.flang	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/proof-object-roadmap.md	-lemma-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-roadmap.md	-migration.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-roadmap.md	-po-primeru.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-roadmap.md	-po-sluchayam.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-roadmap.md	-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/design/proof-object-roadmap.md	-razbor-celi.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/guide/how-to-write-flang.ru.md	korpus-http.flang	иллюстрация «плохо» в руководстве по именам, не файл
 docs/guide/naming.ru.md	moy_kalkulyator.c	учебный/иллюстративный пример на C или Python, не файл проекта
 docs/guide/naming.ru.md	имя-english.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/guide/naming.ru.md	имя.flang	иллюстративное имя в разборе задачи/заметки, не файл
@@ -38,58 +24,6 @@ docs/guide/totality.md	nt1.flang	шаблон нумерованного упр�
 docs/guide/totality.md	nt2.flang	шаблон нумерованного упражнения, не файл
 docs/guide/totality.ru.md	nt1.flang	шаблон нумерованного упражнения, не файл
 docs/guide/totality.ru.md	nt2.flang	шаблон нумерованного упражнения, не файл
-docs/integer-closed-under-addition.md	proba-korpus.mjs	иллюстративный пример в тексте, не файл
-docs/integer-closed-under-addition.md	proba-nat.mjs	иллюстративный пример в тексте, не файл
-docs/integer-closed-under-addition.md	proba-obhod.mjs	иллюстративный пример в тексте, не файл
-docs/integer-closed-under-addition.md	proba-vstrechno.mjs	иллюстративный пример в тексте, не файл
-docs/journal-carried-out-of-sources.md	conc.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	docs/zamer-skorosti.md	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/examples/io/dvoichnyy-fayl-tuda-i-obratno.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/scripts/poddelki-yadra.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/src/commutative.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/src/distributive.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/src/emit/elixir.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/src/self.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/src/types.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/corpus-claims.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/emit-names.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-conc.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-csharp.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-elixir.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-go.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-js.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-python.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-emit-rust.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-functor.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-hotswap.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-interpret.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-laws.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-lsp.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-obligations.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	flang/test/self-totality.test.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	scripts/storozh-hozyaina-vkladki.flang	явное отрицание в тексте: рядом сказано, что файла в дереве нет
-docs/journal-carried-out-of-sources.md	src/natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-docs/journal-carried-out-of-sources.md	src/parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-docs/journal-carried-out-of-sources.md	src/utility.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-docs/modularity-and-packages.md	flang.json	явное отрицание в тексте: «манифеста проекта нет: ни flang.json...»
-docs/modularity-and-packages.md	flang/src/manifest.mjs	план: помечено «(новый)» в таблице модульности
-docs/modularity-and-packages.md	flang/src/store.mjs	план: помечено «(новый)» в таблице модульности
-docs/modularity-and-packages.md	flang/src/versions.mjs	план: помечено «(новый)» в таблице модульности
-docs/modularity-and-packages.md	flang/test/manifest.test.mjs	план: столбец «~500» из той же таблицы модульности
-docs/modularity-and-packages.md	src/certificate.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-docs/modularity-and-packages.md	store.test.mjs	план: та же таблица модульности, «новый»
-docs/native-x86-backend.md	stupen_1.c	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/overview.ru.md	github.com/digitable-lol/flang	адрес репозитория на GitHub, не путь в дереве
-docs/releases/0.7.13.md	-lemma-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-migration.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-po-primeru.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-po-sluchayam.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-po-svoystvu.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-razbor-celi.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/releases/0.7.13.md	-roadmap.md	сокращение имени по суффиксу (docs/design/proof-object-…), не имя файла
-docs/reprint-cost.md	pusk.sh	внешний: инструмент вне дерева (docs/reprint-cost.md)
-docs/resource-plan.md	claims.tsv	внешний: координационный файл /srv/priyom, не файл этого дерева
-docs/resource-plan.md	svod.sh	внешний: инструмент /srv/priyom, не файл этого дерева
 docs/site/changelog.md	flang/test/changelog-page.test.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 docs/site/changelog.md	compat.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 docs/site/changelog.md	obligations.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
@@ -139,17 +73,14 @@ docs/site/spec-catalog.md	43-….flang	шаблон-многоточие в им
 docs/site/spec-catalog.ru.md	43-….flang	шаблон-многоточие в имени, не файл
 docs/site/troubleshooting.md	./bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
 docs/site/troubleshooting.ru.md	./bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
-docs/editors/vim/README.md	flang/bin/flang-lsp.mjs	явное отрицание в тексте: рядом сказано, что файла в дереве нет (обёртка снята с npm 6 сентября 2026)
 docs/editors/vscode/README.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
 docs/examples/rosetta/WIKI.en.md	flang-outreach/rosetta-как-выложить.md	внешний: материалы flang-outreach, не файл этого дерева
 docs/flang/SPEC.md	json.py	учебный/иллюстративный пример на C или Python, не файл проекта
 docs/flang/SPEC.md	факты.json	иллюстративный пример входа в SPEC.md, не файл
-docs/flang/concurrency/DISTRIBUTED.md	flang/src/conc.mjs	явное отрицание в тексте: рядом сказано, что файл снят 20 августа 2026 (fe8e8a37)
 docs/flang/core/SPEC.md	natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 docs/flang/core/SPEC.md	src/natural-parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 docs/flang/core/SPEC.md	src/parser.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 docs/flang/core/SPEC.md	src/utility.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
-docs/flang/proof/SPEC.md	…-english.flang	шаблон-многоточие в имени, не файл
 docs/guide/single-source.md	вывод/fine.py	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/guide/single-source.ru.md	вывод/fine.py	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/guide/typescript-target.md	import_check.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
@@ -157,51 +88,13 @@ docs/guide/typescript-target.ru.md	import_check.ts	имя файла, напеч
 docs/site/cli.md	privet.c	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/site/embedding.md	factorial.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/site/embedding.ru.md	factorial.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
-docs/guide/naming.md	flang/test/name-guard.test.mjs	явное отрицание в тексте: рядом сказано, что файл снесён
-docs/guide/naming.ru.md	flang/test/name-guard.test.mjs	явное отрицание в тексте: рядом сказано, что файл снесён
-docs/design/fmath-first-ten-statements.md	ПЕРЕДАЧА/stack-B/kontrakt-kvantory.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/fmath-first-ten-statements.md	ПЕРЕДАЧА/otkrytye-84.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/fmath-first-ten-statements.md	ПЕРЕДАЧА/adr-0026-matrix.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/design/vedro-e-semeystvo-r.md	ПЕРЕДАЧА/stack-E/zamer.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/flang/proof/checker/tests/families/coverage/README.md	ПЕРЕДАЧА/stack-E/zamer-put-619.md	внешний: рабочий каталог другой ячейки/смены, не файл этого дерева
-docs/benchmark-speed.md	kompilyaciya.mjs	история: замер называет свои скрипты на JavaScript, снятые 11 сентября 2026 вместе с остальным JavaScript; рядом в той же строке это сказано прямо
-docs/benchmark-speed.md	faz.mjs	история: замер называет свои скрипты на JavaScript, снятые 11 сентября 2026 вместе с остальным JavaScript; рядом в той же строке это сказано прямо
-docs/emptiness-of-what-is-proved.md	benchmarks/proof-cost/count-library.mjs	история: предшественник прибора на JavaScript, снятый 11 сентября 2026; текст называет его вместе с git show b5fcb2ae4:, по которому его и смотрят
-docs/flang/SPEC.md	scripts/error-code-guard.flang	история: сторож снят 11 сентября 2026 (2f2f474a) под именем .flang — до ADR-0043, расширения .fscript он не носил никогда; на его месте flang/scripts/code-guard.fscript; рядом в той же строке это сказано прямо
 docs/site/changelog.md	distributed.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
-docs/site/verdict-cache.md	прибор.c	история: прибор из benchmarks/кеш-доказанного/, снятого 11 сентября 2026; последнее состояние — git show b5fcb2ae4:, и текст называет его строкой выше
-docs/site/verdict-cache.ru.md	прибор.c	история: прибор из benchmarks/кеш-доказанного/, снятого 11 сентября 2026; последнее состояние — git show b5fcb2ae4:, и текст называет его строкой выше
-docs/design/nositel-tochnogo-celogo.md	n-stroka.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
-docs/design/nositel-tochnogo-celogo.md	n-zapis.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
-docs/design/nositel-tochnogo-celogo.md	n-ravenstvo.flang	внешний: проба в рабочем каталоге ячейки ($S), не файл этого дерева
 docs/examples/frameworks/react-ts-pure/README.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk.sh	иллюстративное имя в разборе задачи/заметки, не файл (предлагаемое английское имя в примере)
 docs/tasks/1941-five-heavy-proof-checks-have-no-measured-run.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
-docs/tasks/1307-parsing-leaves-the-trusted-base-by-round-trip.md	flang/proof/binding/cycle.py	история: файл снят вместе с прочей оснасткой на Python и оболочке, когда flang/proof очищали от не-flang файлов
-docs/tasks/6975-the-stray-temporaries-guard-is-silent-once-the-temporary-is-staged.md	.flang-storozh-ypvg0t/проба.flang	история: временный каталог сторожа, затянутый в коммит 03f0359a и убранный оттуда же; пути в дереве нет и быть не должно. До задачи 1419 строка резолвилась случайно — по совпадению имени с docs/benchmarks/verdict-cache/проба.flang, переименованным в cache-probe.flang
-docs/ct/spec.md	flang/scripts/word-occupancy.mjs	история: замер занятости слов того дня снят файлом на JavaScript, который снят 4 октября 2026 (задача 0049); сегодня то же меряет flang/scripts/word-occupancy.fscript, но имя прибора в записи о прогоне не правится
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	flang/scripts/word-occupancy.mjs	история: ячейка задачи про снятый файл; имя оставлено зачёркнутым, чтобы было видно, ЧТО именно снято и чем заменено
-docs/tasks/1219-comments-in-shell-scripts-fall-below-a-fifth.md	scripts/guards/version-derivations-guard.sh	история: замер доли комментариев того дня считал этот файл; он снят 4 октября 2026 (задача 5821), сверка стала планом scripts/guards/version-derivations-guard.fscript
-docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	scripts/seed/seed-freshness.sh	история: пункт задачи про снятый переходник; имя оставлено зачёркнутым, чтобы было видно, ЧТО снято
-docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	version-derivations-guard.sh	история: пункт задачи про снятый сторож; имя оставлено зачёркнутым, чтобы было видно, ЧТО снято
-docs/tasks/3593-the-proved-share-collapses-on-code-that-touches-the-world.md	scripts/guards/proved-share-vs-tree.sh	история: сторож перенесён на план scripts/guards/proved-share-vs-tree.fscript 4 октября 2026; в задаче он назван тем именем, какое носил тогда
-docs/tasks/4416-the-checker-rejects-an-honest-instantiation-proof.md	scripts/guards/proved-share-vs-tree.sh	история: сторож перенесён на план scripts/guards/proved-share-vs-tree.fscript 4 октября 2026; в задаче он назван тем именем, какое носил тогда
-docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	proved-share-vs-tree.sh	история: список кандидатов на перенос, снятый до переноса; сам перенос сделан 4 октября 2026 в scripts/guards/proved-share-vs-tree.fscript
-docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	guards-without-forgery-probe.sh	история: список кандидатов на перенос, снятый до переноса; сам перенос сделан 4 октября 2026 в scripts/guards/guards-without-forgery-probe.fscript
-docs/tasks/1177-a-quantifier-is-refused-inside-a-formula-and-binds-only-a-whole-goal.md	scripts/guards/proved-share-vs-tree.sh	история: сторож перенесён на план scripts/guards/proved-share-vs-tree.fscript 4 октября 2026; в задаче он назван тем именем, какое носил тогда
-docs/tasks/1188-existence-without-a-named-witness-has-no-rule.md	scripts/guards/proved-share-vs-tree.sh	история: сторож перенесён на план scripts/guards/proved-share-vs-tree.fscript 4 октября 2026; в задаче он назван тем именем, какое носил тогда
-docs/tasks/2277-the-law-judges-of-monoid-functor-and-monad-are-written-and-called-by-nobody.md	scripts/guards/proved-share-vs-tree.sh	история: сторож перенесён на план scripts/guards/proved-share-vs-tree.fscript 4 октября 2026; в задаче он назван тем именем, какое носил тогда
 docs/tasks/4433-the-uncalled-checks-guard-does-not-see-a-judge-in-the-closure.md	scripts/guards/guards-without-forgery-probe.sh	история: сторож перенесён на план scripts/guards/guards-without-forgery-probe.fscript 4 октября 2026; в задаче он назван тем именем, какое носил тогда
 docs/README.ru.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/adr/0051-the-proof-kernel-remembers-pure-calls-within-one-run.md	flang_memo.c	гипотетический файл в разборе решения: рядом сказано, что он «попал бы в сборку семени только печатью» — файла в дереве нет и не было
-docs/design/6202-potolok-kak-obyazatelstvo.md	corpus-share.sh	история: прибор доли снят из дерева, наследника у него нет; проект называет свой замер того дня
-docs/design/6202-potolok-kak-obyazatelstvo.md	tables-guard.sh	история: цитата по строкам прежней реализации на оболочке (243, 345); нынешний прибор — flang/proof/tables-guard.fscript, и номера строк прежней реализации в нём не действуют
-docs/design/6202-potolok-kak-obyazatelstvo.md	flang/proof/tables-guard.sh	история: то же, с полным путём прежней реализации
-docs/design/proof-object-blok-vyvoda.md	flang/proof/corpus-share.sh	история: прибор доли снят из дерева, наследника у него нет; проект называет свой замер того дня
-docs/design/proof-object-po-obyavleniyu-trace.md	proof-ledger.mjs	история: цитата по строкам прежней реализации на JavaScript (515, 460-461); нынешний прибор — flang/scripts/proof-ledger.fscript, и номера строк прежней реализации в нём не действуют
-docs/design/proof-object-po-obyavleniyu-trace.md	corpus-share.sh	история: прибор доли снят из дерева, наследника у него нет; проект называет свой замер того дня
-docs/design/proof-object-roadmap.md	flang/proof/corpus-share.sh	история: прибор доли снят из дерева, наследника у него нет; карта называет замер входного документа
-docs/releases/0.7.13.md	flang/proof/corpus-share.sh	история: записка выпуска называет прибор своего дня; прибор снят позже, правится только историей
 docs/site/cli.md	привет.flang	учебное имя в примере команды, не файл
 docs/site/cli.md	плохо.flang	учебное имя в примере отказа, не файл
 docs/site/cli.md	план.flang	учебное имя в примере плана, не файл
@@ -221,17 +114,9 @@ docs/site/stdlib.md	imp1.flang	учебное имя в примере отка�
 docs/site/stdlib.md	заголовок.flang	учебное имя в примере плана, не файл
 docs/site/stdlib.ru.md	imp1.flang	учебное имя в примере отказа, не файл
 docs/site/stdlib.ru.md	заголовок.flang	учебное имя в примере плана, не файл
-docs/tasks/0049-the-last-javascript-leaves-the-tree.md	ярлыки.flang	история: файл снят, назван как место, откуда объявления ярлыков переехали в .flangrc
-docs/tasks/1117-twenty-five-disabled-ci-jobs-run-locally.md	docs/tasks/1315-vremennoe-v-dereve-ishodnikov.md	дословная цитата пути из тела шага .github/workflows/ci.yml:391; задача 1315 закрыта, файл переименован по-английски — об этом в той же строке и сказано
-docs/tasks/1117-twenty-five-disabled-ci-jobs-run-locally.md	scripts/bootstrap-c.sh	дословная цитата ответа сторожа семени; путь подставляет scripts/bootstrap-reprint.sh:110 ($SECOND_PRINT), и сама задача 5821 про эту строку
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	builtin-forms.flang	иллюстративное имя в разборе задачи: правая колонка таблицы переименований, имя ещё не выдано
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk-examples.sh	иллюстративное имя в разборе задачи: правая колонка таблицы переименований, имя ещё не выдано
 docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk-self.sh	иллюстративное имя в разборе задачи: правая колонка таблицы переименований, имя ещё не выдано
-docs/tasks/2877-a-contradiction-between-two-specs-is-called-agreement.md	01-cap.flang	имя пробы из прогона задачи, не файл дерева
-docs/tasks/2877-a-contradiction-between-two-specs-is-called-agreement.md	02-floor.flang	имя пробы из прогона задачи, не файл дерева
-docs/tasks/2877-a-contradiction-between-two-specs-is-called-agreement.md	spec/01-cap.flang	имя пробы из прогона задачи, не файл дерева
-docs/tasks/2877-a-contradiction-between-two-specs-is-called-agreement.md	spec/02-floor.flang	имя пробы из прогона задачи, не файл дерева
-docs/tasks/2877-a-contradiction-between-two-specs-is-called-agreement.md	o.guard.flang	имя пробы из прогона задачи, не файл дерева
 docs/tasks/4238-role-profiles-have-no-guard-and-nowhere-to-be-written.md	scripts/guards/profiles-guard.fscript	путь, который задача просит создать: по построению его в дереве ещё нет
 docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	flang/scripts/proof-ledger.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
 docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	word-guard.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
@@ -239,13 +124,11 @@ docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	discrimin
 docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	claim-guard.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
 docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	target-words.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
 docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	scripts/jargon-guard.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
-docs/tasks/4573-checker-verdicts-on-the-standard-library.md	corpus-share.sh	история: прибор доли снят из дерева, наследника у него нет; задача называет прогон своего дня
 docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	SECOND_PRINT=scripts/bootstrap-c.sh	присваивание переменной оболочки из scripts/bootstrap-reprint.sh:110, а не путь; про сам путь и написана эта задача
 docs/tasks/5979-the-machine-form-of-the-ledger-has-no-derivation.md	flang/self/proof-ledger.flang	предположительное имя модуля: в той же строке сказано «или тот модуль flang/self, который печатает ведомость машинным видом»
 docs/tasks/6921-docs-are-a-manual-not-a-diary.md	ярлыки.flang	история: файл снят, назван в переписи удалённых документов
 docs/tasks/6921-docs-are-a-manual-not-a-diary.md	binder-goal-share.md	история: документ удалён, назван в переписи удалённых документов
 docs/tasks/6921-docs-are-a-manual-not-a-diary.md	scripts/memory-limit.sh	история: прибор снят, назван в переписи удалённых документов
-docs/tasks/8545-a-user-story-is-a-written-form-of-a-requirement.md	flang/self/bootstrap/zond-5309.flang	история: зонд снят после перепечатки семени, назван как образец порядка работ
 docs/site/releases.md	scripts/guards/occupied-names-guard.flang	история: записка выпуска называет сторож тем именем, под которым он тогда лежал; страница печатается из docs/release-notes.json, и правится только историей — сегодня это scripts/guards/occupied-names-guard.fscript
 docs/site/releases.ru.md	scripts/guards/occupied-names-guard.flang	история: записка выпуска называет сторож тем именем, под которым он тогда лежал; страница печатается из docs/release-notes.json, и правится только историей — сегодня это scripts/guards/occupied-names-guard.fscript
 docs/tasks/2680-the-declared-measure-is-watched-at-run-time-and-never-proved.md	проба.flang	имя пробы из прогона задачи, не файл дерева

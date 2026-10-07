@@ -170,7 +170,7 @@ each one:
    about this one. "The length of the result is non-negative" is true of the
    empty string too.
 
-The sample is twenty library functions, copied into `docs/benchmark2/`:
+The sample is twenty library functions, copied into `docs/benchmarks/proof-cost/functions/`:
 
 ```
 bootstrap/flang run-script proofs:count-20
@@ -191,7 +191,7 @@ also hold for `0` or an empty list. If yes, it does not describe your function.
 ### Some postconditions are unprovable because they are false
 
 "The prover could not" and "the claim is false" are different things.
-`docs/benchmark2/05-opposite.flang` («Противоположное», negate) has the
+`docs/benchmarks/proof-cost/functions/05-opposite.flang` («Противоположное», negate) has the
 postcondition "the result plus the input is zero":
 `(результат плюс х) равен 0`. For an infinite `х` this is `(0 − ∞) + ∞`, which
 is NaN, and NaN is not equal to zero. The prover is right to refuse it.
@@ -395,4 +395,3 @@ The compiler's proofs are re-checked another way: by the independent C program
 - [Prover specification](../spec-proof.html) — in Russian; the rules in full
 - [Known limitations](limits.html) — what the language cannot do
 - [Real cases, taken apart](case-studies.html) — where a proof caught a bug
-- [Knowledge base](../knowledge.html) — in Russian; what was measured and what turned out false

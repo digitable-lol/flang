@@ -190,33 +190,27 @@ jobs:
       - name: Check links
         run: node docs/site/build.mjs --check
 
-      # ПРОБА: проверка ссылок обязана покраснеть на подложенной битой ссылке.
-      # Иначе зелёный шаг выше неотличим от выключенного. Портится одна
-      # заметка — вики-ссылка в никуда; требуется код не 0 И имя подложенной
-      # ссылки в выводе (покраснеть по чужой причине — не довод); заметка
-      # возвращается. Сравнивается только она: шаги перепечатки выше законно
-      # правят страницы журнала и выпусков, и `git diff` по всему дереву лгал бы.
-      - name: Probe wiki link
+      - name: Probe broken link
         run: |
-          zametka=$(ls docs/zettel/*.md | grep -v '/README\.md$' | head -n 1)
-          cp "$zametka" "$RUNNER_TEMP/zametka.md"
-          printf '\nСм. [[a-planted-link-that-leads-nowhere]].\n' >> "$zametka"
-          if cmp -s "$zametka" "$RUNNER_TEMP/zametka.md"; then
-            echo "ПОДЛОГ НЕ СОБРАЛСЯ: $zametka не изменилась" >&2
+          stranica=docs/site/index.ru.md
+          cp "$stranica" "$RUNNER_TEMP/stranica.md"
+          printf '\n[x](a-planted-link-that-leads-nowhere.md)\n' >> "$stranica"
+          if cmp -s "$stranica" "$RUNNER_TEMP/stranica.md"; then
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: $stranica не изменилась" >&2
             exit 1
           fi
           if node docs/site/build.mjs --check > "$RUNNER_TEMP/probe.out" 2>&1; then
-            cp "$RUNNER_TEMP/zametka.md" "$zametka"
-            echo "ПРОВЕРКА ПРОМОЛЧАЛА: битая ссылка в $zametka прошла" >&2
+            cp "$RUNNER_TEMP/stranica.md" "$stranica"
+            echo "ПРОВЕРКА ПРОМОЛЧАЛА: битая ссылка в $stranica прошла" >&2
             exit 1
           fi
-          cp "$RUNNER_TEMP/zametka.md" "$zametka"
-          if ! grep -F '[[a-planted-link-that-leads-nowhere]]' "$RUNNER_TEMP/probe.out"; then
+          cp "$RUNNER_TEMP/stranica.md" "$stranica"
+          if ! grep -F 'a-planted-link-that-leads-nowhere.md' "$RUNNER_TEMP/probe.out"; then
             echo "ПОКРАСНЕЛО НЕ НА ПОДЛОЖЕННОЙ ССЫЛКЕ:" >&2
             tail -20 "$RUNNER_TEMP/probe.out" >&2
             exit 1
           fi
-          cmp "$zametka" "$RUNNER_TEMP/zametka.md"
+          cmp "$stranica" "$RUNNER_TEMP/stranica.md"
 
       # Выкладка — только с пуша в main и ручного запуска. На запросе слияния
       # сайт уже собран и проверен шагами выше; писать его на диск и

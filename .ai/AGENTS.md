@@ -31,7 +31,6 @@ flang/concurrency/         процессы, надзор, планировщи�
 flang/src/emit/     рантаймы целей — уезжают в вывод ДОСЛОВНО
 docs/flang/         контракты языка: SPEC.md каждого слоя, вынесенные из кода
 docs/tasks/         задачник: одна задача — один файл
-docs/zettel/        база знаний: что выяснено и чем подтверждено
 ```
 
 ## Сборка — минута, перепечатка — часы. Это разные вещи
@@ -119,7 +118,7 @@ make -C bootstrap -j8       # 62 секунды, 1.05 ГиБ — собрать 
 | `rg` на явно названном файле | честен: все 122, код 0 |
 | `rg` РЕКУРСИВНО по каталогу | **слеп**: `rg -n … .` — пусто, `rg -an … .` — находит |
 | `git grep` без `-I` | честен: нюх двоичности у git — первые 8000 байт, а нуль лежал на 100 226 |
-| `git grep -I` | терял ДРУГОЙ файл — `docs/zettel/the-binary-host-cuts-content-at-the-first-zero-octet.md`, у него нулевой байт на 2636, внутри окна нюха |
+| `git grep -I` | теряет файл, у которого нулевой байт стоит внутри окна нюха |
 
 Ключ `-a` чинил обоих виноватых: обёртке он отменяет `-I`, GNU grep возвращает
 строки после байта. `rg` рекурсивно требует того же.
@@ -226,9 +225,6 @@ INDIVISIBLE=yes PAMYAT=400G /srv/flang-rabota/vorota/flang-vorota -- sh scripts/
 `flang-memory-watchdog`). Ниже 45 ГиБ свободной памяти он снимает самый крупный
 прогон и пишет об этом в `/srv/work/storozh-pamyati.log`. Прогон, умерший без
 объяснения, — сначала загляните туда.
-
-Правила целиком — [`docs/gate-rules.md`](../docs/gate-rules.md): сколько просить,
-что значит каждый отказ, чего делать нельзя, и что делает сторож памяти машины.
 
 ## С чего начать: своё дерево и чужой двоичный
 
@@ -388,7 +384,7 @@ bootstrap/flang io flang/scripts/tasks.fscript --plan 'Задачник цел'
 
 ## Слова
 
-**Жаргон — внутрь, не наружу.** В `docs/zettel/`, комментариях и заданиях слова
+**Жаргон — внутрь, не наружу.** В заданиях слова
 вроде `эталон`, `сторож`, `корпус` уместны. На страницах сайта, в README, в
 `man flang`, в справке и отказах компилятора — нет. Сторожит
 `bootstrap/flang run-script jargon:check` — это `scripts/guards/jargon-guard.fscript`, на flang;
@@ -438,7 +434,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 | стек | пишет | НЕ пишет |
 |---|---|---|
 | **А — печать и семя** | `scripts/bootstrap-reprint.sh`, `scripts/seed/print-progress.fscript`, `scripts/seed/two-prints-identical.fscript`, `bootstrap/**`, `.github/workflows/reprint.yml`, `docs/reprint-*.md` | всё `flang/**` |
-| **Б — язык и доказательства** | `flang/**`, `.claude/skills/**`, `docs/zettel/**` | всё, что в стеке А |
+| **Б — язык и доказательства** | `flang/**`, `.claude/skills/**` | всё, что в стеке А |
 
 **Спорные файлы — у каждого ОДИН хозяин, записано здесь:**
 
@@ -553,10 +549,7 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 про это не знал, пока не спросили напрямую.
 
 То же с asdf: `asdf plugin add flang` клонирует не `packaging/asdf/`, а
-отдельный репозиторий `digitable-lol/asdf-flang`. Он отставал так же молча
-(19 августа 2026 опубликованный `bin/install` искал `flang_cli`, а сборка
-уже клала `flang`, и `asdf install flang 0.5.1` падал последним шагом;
-`docs/zettel/a-packaging-copy-in-another-repository-drifts-both-ways.md`).
+отдельный репозиторий `digitable-lol/asdf-flang`. Он отстаёт так же молча, если его не сверять.
 
 С 7 сентября 2026 кран — **сабмодуль `packaging/homebrew-tap`**
 (`.gitmodules`), и забыть его нельзя: три числа его формулы (version, url,

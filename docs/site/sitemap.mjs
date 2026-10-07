@@ -77,8 +77,7 @@ export const РАЗДЕЛЫ = [
          Спецификация стояла первой и была первым, что видел пришедший в раздел
          «Язык». Она не введение: это контракт на 1926 строк, где рядом с формой
          СНЯТО 2026-10-07 строк docs/flang/SPEC.md = 1926 (ADR-0056: абзац про поручение «Запустить процесс с пределом» и правка строки кода FLANG_IO_TIMEOUT; до них 1802, снято 2026-09-17)
-         языка стоят границы правила и коды отказа; замеры, которыми правила
-         добывались, вынесены в docs/archive/spec-measurements.md. Читателю,
+         языка стоят границы правила и коды отказа. Читателю,
          который пришёл писать, раньше неё нужны операции и словарь;
          спецификация нужна ему потом — и стоит теперь потом. */
       /* Справочник стоит ПЕРВЫМ в разделе. Раздел открывался «Операциями», а те
@@ -343,22 +342,6 @@ export const РАЗДЕЛЫ = [
   },
 ];
 
-/** Каталог базы знаний. Страницы оттуда собираются сами, по файлам. */
-export const БАЗА_ЗНАНИЙ = {
-  // `дляУчастников` — то же, что у разделов: группа не стоит в меню новичка, а
-  // открывается за дверью `contributing.html`. Заметки — рабочие записи о том,
-  // что измерено и какой путь отвергнут; читателю языка они не нужны, а
-  // участнику и агенту нужны обязательно, поэтому не выброшены, а убраны.
-  дляУчастников: true,
-  каталог: 'docs/zettel',
-  указатель: 'docs/zettel/README.md',
-  адресУказателя: 'knowledge.html',
-  имяРаздела: 'База знаний',
-  // Имя страницы заметки: knowledge-<слаг>.html. Так же их называет markdown.mjs
-  // при разборе ссылок [[слаг]] — если менять, менять в обоих местах.
-  адресЗаметки: (слаг) => `knowledge-${слаг}.html`,
-};
-
 /**
  * Переезды: старый адрес → новый.
  *
@@ -389,7 +372,8 @@ export const ПЕРЕЕЗДЫ = {
   'zamer-processov.html': 'processes.html',
   'pamyat.html': 'contributing.html',
   'moduli.html': 'packages.html',
-  'znanie.html': 'knowledge.html',
+  'znanie.html': 'contributing.html',
+  'knowledge.html': 'contributing.html',
   // Страница «Чем проверена установка» снята: это был журнал прогонов
   // выпуска 0.5.1, и разработчику он не нужен. Адрес был опубликован —
   // значит, по нему остаётся строка, уводящая на «Установку».
@@ -453,122 +437,3 @@ export const ПРИМЕРЫ_НА_ГЛАВНОЙ = [
   },
 ];
 
-/**
- * Переезды страниц базы знаний: старый адрес `znanie-<транслит>.html` → новый
- * `knowledge-<английские слова>.html`. Заполняется вместе с переименованием
- * заметок; пустой список законен — значит, ничего ещё не переезжало.
- */
-export const ПЕРЕЕЗДЫ_ЗАМЕТОК = {
-  "znanie-adresatsiya-po-soderzhimomu.html": "knowledge-content-addressing.html",
-  "znanie-arena-ne-otdayot.html": "knowledge-arena-never-releases.html",
-  "znanie-beam-ne-obkhodit-os.html": "knowledge-beam-does-not-bypass-the-os.html",
-  "znanie-beskonechnost-zakonna-bez-vychitaniya.html": "knowledge-infinity-is-legal-without-subtraction.html",
-  "znanie-bliznec-otstayot-ot-uehavshego-etalona.html": "knowledge-twin-lags-behind-the-reference.html",
-  "znanie-bytovaya-sverka.html": "knowledge-byte-for-byte-comparison.html",
-  "znanie-chetyre-kuska-javascript.html": "knowledge-four-pieces-of-javascript.html",
-  "znanie-chisla-kak-kategoriya.html": "knowledge-numbers-as-a-category.html",
-  "znanie-chislo-bez-nazvannogo-izmeritelya.html": "knowledge-a-number-without-a-named-measure.html",
-  "znanie-chistota-ne-znachit-bez-pamyati.html": "knowledge-purity-is-not-zero-allocation.html",
-  "znanie-chto-daet-bolshe-vsego-za-menshuyu-rabotu.html": "knowledge-biggest-win-for-least-work.html",
-  "znanie-chto-otlozheno.html": "knowledge-what-is-deferred.html",
-  "znanie-chto-vhodit-v-hash.html": "knowledge-what-goes-into-the-hash.html",
-  "znanie-dlya-raket-pamyat-zapreshchena.html": "knowledge-safety-standards-ban-dynamic-memory.html",
-  "znanie-dokazano-ne-znachit-pravilno.html": "knowledge-proven-is-not-correct.html",
-  "znanie-dolg-na-neslitoy-vetke.html": "knowledge-debt-closed-on-an-unmerged-branch.html",
-  "znanie-dva-proekta-svyazany-generatorami.html": "knowledge-two-projects-tied-by-generators.html",
-  "znanie-dva-yadra-ne-slivayutsya-tekstom.html": "knowledge-two-cores-do-not-merge-as-text.html",
-  "znanie-flag-lto-uskoryaet-i-sborku.html": "knowledge-lto-speeds-up-the-build-too.html",
-  "znanie-formy-tela-uzkoe-mesto-pereehalo.html": "knowledge-bottleneck-moved-to-claim-shape.html",
-  "znanie-hash-vnutri-imena-snaruzhi.html": "knowledge-hash-inside-names-outside.html",
-  "znanie-igry-i-video-ne-nash-sluchay.html": "knowledge-games-and-video-are-not-our-case.html",
-  "znanie-imena-a-ne-hashi.html": "knowledge-names-not-hashes.html",
-  "znanie-induktsii-net-u-vstroennykh-tipov.html": "knowledge-no-induction-for-builtin-types.html",
-  "znanie-invariant-processa-eto-postuslovie-obrabotchika.html": "knowledge-process-invariant-is-a-handler-postcondition.html",
-  "znanie-izyatie.html": "knowledge-a-removal-must-turn-a-test-red.html",
-  "znanie-komanda-otvechaet-provereno-ne-proveriv.html": "knowledge-checked-without-checking.html",
-  "znanie-kontrolnaya-summa-v-zamere.html": "knowledge-checksum-inside-the-benchmark.html",
-  "znanie-levaya-svyortka-ne-daet-induktsii-po-spisku.html": "knowledge-left-fold-gives-no-list-induction.html",
-  "znanie-medlennee-python-v-1-4.html": "knowledge-slower-than-python-by-1-4.html",
-  "znanie-minus-nol-klass.html": "knowledge-minus-zero-is-a-class.html",
-  "znanie-nan-dostizhim.html": "knowledge-nan-is-reachable.html",
-  "znanie-net-porodit.html": "knowledge-no-spawn-in-two-targets.html",
-  "znanie-net-storozhevoy-stranitsy-v-wasm.html": "knowledge-no-guard-page-in-wasm.html",
-  "znanie-nevyskazyvaemoe-dorozhe.html": "knowledge-unstatable-costs-more-than-unprovable.html",
-  "znanie-ne-vyvod-regionov.html": "knowledge-region-inference-misses-the-point.html",
-  "znanie-nol-aksiom.html": "knowledge-zero-axioms.html",
-  "znanie-otritsatelnyy-rezultat-tsenen.html": "knowledge-a-measured-zero-is-valuable.html",
-  "znanie-pamyat-na-kategoriyu-eto-regiony.html": "knowledge-memory-per-category-is-regions.html",
-  "znanie-peredacha-sostoyaniya.html": "knowledge-handoff-goes-in-a-file.html",
-  "znanie-perenos-fayla-tiho-vyklyuchaet-storozha.html": "knowledge-renaming-a-file-silently-disables-the-guard.html",
-  "znanie-pervyy-zakon-krasneyushchiy-na-chestnoy-programme.html": "knowledge-natural-transformation-catches-what-nothing-else-does.html",
-  "znanie-pisat-prostym-yazykom.html": "knowledge-write-in-plain-language.html",
-  "znanie-planirovshchik-desyatki-tysyach.html": "knowledge-scheduler-holds-a-million-processes.html",
-  "znanie-plavayushchaya-tochka.html": "knowledge-floating-point-bits-are-exact.html",
-  "znanie-poisk-ne-imeet-prava-verit.html": "knowledge-proof-search-must-trust-nothing.html",
-  "znanie-pokoy-ne-otlichaetsya-ot-tupika.html": "knowledge-quiescence-hides-deadlock.html",
-  "znanie-pole-otmyvalo-znachenie.html": "knowledge-a-record-field-laundered-a-value.html",
-  "znanie-postuslovie-obrabotchika-mimo-zamknutogo-mnozhestva.html": "knowledge-handler-postcondition-escapes-the-closed-set.html",
-  "znanie-pribor-vral-a-ne-predmet.html": "knowledge-the-instrument-lied-not-the-subject.html",
-  "znanie-proverki-perestayushchie-sravnivat.html": "knowledge-checks-that-stopped-comparing.html",
-  "znanie-razbor-gugla.html": "knowledge-what-the-popular-stories-get-wrong.html",
-  "znanie-resheniya-vladeltsa.html": "knowledge-owner-decisions.html",
-  "znanie-sila-coq-v-lemmakh.html": "knowledge-coq-strength-is-in-its-lemmas.html",
-  "znanie-slovar-mezhdu-spekami-byl-nemym.html": "knowledge-the-dictionary-between-specs-was-mute.html",
-  "znanie-snyataya-proverka-tipa-eto-ne-otkaz.html": "knowledge-a-dropped-type-check-gives-a-wrong-answer.html",
-  "znanie-spisok-rukami-perezhivaet-derevo.html": "knowledge-a-hand-written-list-outlives-the-tree.html",
-  "znanie-ssylka-lomaetsya-pri-kopirovanii.html": "knowledge-relative-links-break-on-copy.html",
-  "znanie-sverka-ne-vidit-tozhdestva-obektov.html": "knowledge-byte-comparison-misses-object-identity.html",
-  "znanie-svoy-generator-mashinnogo-koda.html": "knowledge-our-own-machine-code-generator.html",
-  "znanie-svyaz-moduley-i-perevod-dannyh.html": "knowledge-module-links-need-a-named-data-translation.html",
-  "znanie-tavtologiya-zakryvaetsya-darom.html": "knowledge-tautologies-close-for-free.html",
-  "znanie-teorkat-perenosit-pravdu.html": "knowledge-category-theory-transports-truth.html",
-  "znanie-tikhie-konflikty-sliyaniya.html": "knowledge-silent-merge-conflicts.html",
-  "znanie-tip-uzla-otdayotsya-otmetkoy.html": "knowledge-type-inference-answers-with-a-node-mark.html",
-  "znanie-tochno-v-kakoy-sisteme.html": "knowledge-exact-in-which-base.html",
-  "znanie-tochnye-drobi-besplatny.html": "knowledge-exact-decimals-are-free.html",
-  "znanie-tri-tipa-chisel.html": "knowledge-three-number-types.html",
-  "znanie-tsel-yazyka.html": "knowledge-goal-of-the-language.html",
-  "znanie-tsena-dokazatelstva-0-iz-20.html": "knowledge-proof-cost-0-of-20.html",
-  "znanie-tsena-dokazuemosti-2-5-protsenta.html": "knowledge-provability-costs-2-5-percent.html",
-  "znanie-u-double-net-zakonov.html": "knowledge-double-has-no-laws.html",
-  "znanie-unison-izmeren.html": "knowledge-unison-measured.html",
-  "znanie-uslovie-revolyutsii.html": "knowledge-condition-for-the-revolution.html",
-  "znanie-usloviya-esli-dali-nol.html": "knowledge-reading-if-conditions-closed-zero-goals.html",
-  "znanie-uzkoe-mesto-ne-v-avtomatike.html": "knowledge-the-bottleneck-is-rule-strength.html",
-  "znanie-uzkoe-mesto-pereehalo-na-formu-tela.html": "knowledge-bottleneck-moved-to-body-shape.html",
-  "znanie-vtoruyu-realizatsiyu-vozmestit-nechem.html": "knowledge-the-second-implementation-cannot-be-replaced.html",
-  "znanie-wasm-cherez-c-besplatno.html": "knowledge-wasm-via-c-is-free.html",
-  "znanie-yadro-dokazalo-lozh.html": "knowledge-the-core-proved-a-falsehood.html",
-  "znanie-yadro-prinimaet-lozh-klass.html": "knowledge-the-core-accepts-falsehood-a-class.html",
-  "znanie-z3-orakul-a-ne-sudya.html": "knowledge-z3-as-oracle-not-judge.html",
-  "znanie-zamknutuyu-tsel-nado-schitat.html": "knowledge-closed-goals-must-be-computed.html",
-  "znanie-zamorozhennyy-etalon.html": "knowledge-a-frozen-reference-changes-the-check.html",
-  // 17 сентября 2026: имена без транслита (задача 1428, часть 2).
-  "knowledge-chisla-sayta-tuhnut-vmeste-so-slovaryom-i-lechatsya-odnoy-komandoy.html": "knowledge-site-numbers-go-stale-with-the-dictionary-and-one-command-cures-both.html",
-  "knowledge-chto-nelzya-napisat-v-obespechivaet.html": "knowledge-four-things-a-postcondition-cannot-say.html",
-  "knowledge-cikl-porucheniy-prinadlezhit-hozyainu-a-ne-yazyku.html": "knowledge-the-command-loop-belongs-to-the-host-not-the-language.html",
-  "knowledge-darovoe-utverzhdenie-uznayotsya-podmenoy-tela-zaglushkoy.html": "knowledge-a-free-statement-is-exposed-by-replacing-the-body-with-a-stub.html",
-  "knowledge-dizyunkciya-v-dopushchenii-razbiraetsya-sluchayami-a-ne-rasshchepliaetsya.html": "knowledge-a-disjunction-in-a-hypothesis-is-split-by-cases-not-torn-apart.html",
-  "knowledge-dva-pravila-zavershaemosti-vmeste-dayut-574.html": "knowledge-two-termination-rules-together-give-574.html",
-  "knowledge-dve-mery-stroki-delyat-vstroennye-formy.html": "knowledge-two-string-measures-divided-the-builtin-forms.html",
-  "knowledge-dvoichnyy-v-main-otstal-ot-svoih-ischodnikov.html": "knowledge-the-binary-in-main-lagged-its-own-sources.html",
-  "knowledge-flang-bliznec-storozha-stolknoveniy-zelenel-na-treh-nastoyashchih-stolknoveniyah.html": "knowledge-the-flang-twin-of-the-collision-guard-stayed-green-on-three-real-collisions.html",
-  "knowledge-indukciya-po-stroke-zakryla-odno-utverzhdenie-a-ne-sotnyu.html": "knowledge-string-induction-closed-one-statement-not-a-hundred.html",
-  "knowledge-instrument-yazyka-pishetsya-na-yazyke-krome-effektov.html": "knowledge-the-corpus-runner-is-written-in-flang-except-for-effects.html",
-  "knowledge-izmeritel-chisla-umiraet-ran-she-chem-chislo-v-proze.html": "knowledge-the-measurer-dies-before-the-number-in-prose.html",
-  "knowledge-keshirovat-dokazatelstvo-dorozhe-chem-dokazat.html": "knowledge-caching-a-proof-costs-more-than-proving-it.html",
-  "knowledge-nezagruzhennaya-proba-v-otchyote-neotlichima-ot-otsutstvuyushchey.html": "knowledge-a-test-file-that-failed-to-load-looks-absent-in-the-report.html",
-  "knowledge-node-ushyol-s-puti-sborki.html": "knowledge-node-left-the-build-path.html",
-  "knowledge-pechat-plana-obeshchana-naiznanku-i-sverit-eyo-nechem.html": "knowledge-plan-printing-is-promised-inside-out-and-nothing-verifies-it.html",
-  "knowledge-pokazat-otvechaet-sboem-a-ne-ronyaet-progon.html": "knowledge-show-answers-with-a-refusal-and-does-not-crash-the-run.html",
-  "knowledge-posle-udaleniya-vtoroy-realizacii-nabor-prob-otdayot-nol.html": "knowledge-after-the-second-implementation-is-deleted-the-test-suite-returns-zero.html",
-  "knowledge-proverka-zovushchaya-kompilyator-perenositsya-na-flang-mehanicheski.html": "knowledge-a-check-that-calls-the-compiler-ports-to-flang-mechanically.html",
-  "knowledge-razbor-tseli-mimo-chislitelya.html": "knowledge-goal-case-split-closes-sites-but-misses-the-numerator.html",
-  "knowledge-refleksivnost-i-cel-vybor-vmeste-dayut-nol.html": "knowledge-reflexivity-and-goal-choice-together-give-zero.html",
-  "knowledge-storozh-stolknoveniy-ne-znal-o-variantah-summy.html": "knowledge-the-collision-guard-did-not-know-sum-variants.html",
-  "knowledge-tri-fakta-o-dline-dali-tri-utverzhdeniya.html": "knowledge-three-length-facts-gave-three-statements.html",
-  "knowledge-vedomost-dvoichnogo-byvaet-slabee-i-nikogda-ne-silnee.html": "knowledge-the-binary-ledger-can-be-weaker-and-never-stronger.html",
-  "knowledge-veer-osnastki-schitaetsya-po-yadram-a-konchaetsya-pamyat.html": "knowledge-the-harness-fan-is-sized-by-cores-but-memory-runs-out-first.html",
-  "knowledge-vypusk-ne-mog-sostoyatsya-nabor-treboval-arhiv-kotorogo-nikto-ne-sobiral.html": "knowledge-the-release-was-closed-on-itself-the-suite-needed-an-archive-nobody-built.html",
-  "knowledge-zakony-kak-ukazatel.html": "knowledge-laws-as-a-pointer-not-a-conclusion.html",
-};

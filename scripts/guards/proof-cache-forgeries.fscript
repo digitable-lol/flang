@@ -12,26 +12,98 @@
 
 тотальная функция «Main source»
   возвращает строка
-  пример «The entry module calls a local function and an imported one»
-    ожидается "модуль «Проба кеша»\n  использует «Проба кеша опора» из \"opora.flang\"\n\nтотальная функция «Ответ»\n  возвращает число\n  7\n\nтотальная функция «Через ответ»\n  возвращает число\n  обеспечивает «через ответ больше нуля» результат больше 0\n  «Ответ»\n\nтотальная функция «Счёт плюс один»\n  принимает «с»: список число\n  возвращает число\n  обеспечивает «счёт плюс один больше нуля» результат больше 0\n  («Счёт» от «с») плюс 1\n"
   «Main with answer» от "7"
+
+тотальная функция «Main source lines»
+  возвращает список строки
+  пример «The entry module calls a local function and an imported one»
+    ожидается [
+      "модуль «Проба кеша»",
+      "  использует «Проба кеша опора» из \"opora.flang\"",
+      "",
+      "тотальная функция «Ответ»",
+      "  возвращает число",
+      "  7",
+      "",
+      "тотальная функция «Через ответ»",
+      "  возвращает число",
+      "  обеспечивает «через ответ больше нуля» результат больше 0",
+      "  «Ответ»",
+      "",
+      "тотальная функция «Счёт плюс один»",
+      "  принимает «с»: список число",
+      "  возвращает число",
+      "  обеспечивает «счёт плюс один больше нуля» результат больше 0",
+      "  («Счёт» от «с») плюс 1",
+      ""]
+  разделить («Main source») по "\n"
 
 тотальная функция «Main with answer»
   принимает answer: строка
   возвращает строка
+  соединить [
+    "модуль «Проба кеша»\n  использует «Проба кеша опора» из \"opora.flang\"\n\n",
+    "тотальная функция «Ответ»\n  возвращает число\n  ", answer, "\n\n",
+    "тотальная функция «Через ответ»\n  возвращает число\n",
+    "  обеспечивает «через ответ больше нуля» результат больше 0\n  «Ответ»\n\n",
+    "тотальная функция «Счёт плюс один»\n  принимает «с»: список число\n  возвращает число\n",
+    "  обеспечивает «счёт плюс один больше нуля» результат больше 0\n  («Счёт» от «с») плюс 1\n"] по ""
+
+тотальная функция «Main with answer lines»
+  принимает answer: строка
+  возвращает список строки
   пример «The body of the local callee is the only varying line»
     дано answer равно "0"
-    ожидается "модуль «Проба кеша»\n  использует «Проба кеша опора» из \"opora.flang\"\n\nтотальная функция «Ответ»\n  возвращает число\n  0\n\nтотальная функция «Через ответ»\n  возвращает число\n  обеспечивает «через ответ больше нуля» результат больше 0\n  «Ответ»\n\nтотальная функция «Счёт плюс один»\n  принимает «с»: список число\n  возвращает число\n  обеспечивает «счёт плюс один больше нуля» результат больше 0\n  («Счёт» от «с») плюс 1\n"
-  соединить ["модуль «Проба кеша»\n  использует «Проба кеша опора» из \"opora.flang\"\n\nтотальная функция «Ответ»\n  возвращает число\n  ", answer, "\n\nтотальная функция «Через ответ»\n  возвращает число\n  обеспечивает «через ответ больше нуля» результат больше 0\n  «Ответ»\n\nтотальная функция «Счёт плюс один»\n  принимает «с»: список число\n  возвращает число\n  обеспечивает «счёт плюс один больше нуля» результат больше 0\n  («Счёт» от «с») плюс 1\n"] по ""
+    ожидается [
+      "модуль «Проба кеша»",
+      "  использует «Проба кеша опора» из \"opora.flang\"",
+      "",
+      "тотальная функция «Ответ»",
+      "  возвращает число",
+      "  0",
+      "",
+      "тотальная функция «Через ответ»",
+      "  возвращает число",
+      "  обеспечивает «через ответ больше нуля» результат больше 0",
+      "  «Ответ»",
+      "",
+      "тотальная функция «Счёт плюс один»",
+      "  принимает «с»: список число",
+      "  возвращает число",
+      "  обеспечивает «счёт плюс один больше нуля» результат больше 0",
+      "  («Счёт» от «с») плюс 1",
+      ""]
+  разделить («Main with answer» от answer) по "\n"
 
 тотальная функция «Support source»
   принимает contract: строка, step: строка
   возвращает строка
+  соединить [
+    "модуль «Проба кеша опора»\n\nтотальная функция «Счёт»\n  принимает «с»: список число\n",
+    "  возвращает число\n  обеспечивает «счёт неотрицателен» результат не меньше ", contract, "\n",
+    "  разбор «с»\n    случай пусто\n      то 0\n    случай голова «г» и хвост «х»\n",
+    "      то ", step, " плюс («Счёт» от «х»)\n"] по ""
+
+тотальная функция «Support source lines»
+  принимает contract: строка, step: строка
+  возвращает список строки
   пример «The imported module promises a non-negative count»
     дано contract равно "0"
     дано step равно "1"
-    ожидается "модуль «Проба кеша опора»\n\nтотальная функция «Счёт»\n  принимает «с»: список число\n  возвращает число\n  обеспечивает «счёт неотрицателен» результат не меньше 0\n  разбор «с»\n    случай пусто\n      то 0\n    случай голова «г» и хвост «х»\n      то 1 плюс («Счёт» от «х»)\n"
-  соединить ["модуль «Проба кеша опора»\n\nтотальная функция «Счёт»\n  принимает «с»: список число\n  возвращает число\n  обеспечивает «счёт неотрицателен» результат не меньше ", contract, "\n  разбор «с»\n    случай пусто\n      то 0\n    случай голова «г» и хвост «х»\n      то ", step, " плюс («Счёт» от «х»)\n"] по ""
+    ожидается [
+      "модуль «Проба кеша опора»",
+      "",
+      "тотальная функция «Счёт»",
+      "  принимает «с»: список число",
+      "  возвращает число",
+      "  обеспечивает «счёт неотрицателен» результат не меньше 0",
+      "  разбор «с»",
+      "    случай пусто",
+      "      то 0",
+      "    случай голова «г» и хвост «х»",
+      "      то 1 плюс («Счёт» от «х»)",
+      ""]
+  разделить («Support source» от contract и step) по "\n"
 
 тотальная функция «Work»
   принимает answers: список «Answer»
@@ -58,61 +130,129 @@
     ожидается "/w/key"
   соединить [(«Work» от answers), "/", name] по ""
 
+тотальная функция «Order words»
+  принимает order: «Поручение»
+  возвращает список строки
+  разбор order
+    случай вариант «Запустить процесс» с программа как program и аргументы как arguments
+      то приписать "Запустить процесс" к (приписать program к arguments)
+    случай вариант «Записать файл» с путь как path и содержимое как content
+      то ["Записать файл", path, content]
+    случай вариант «Прочитать переменную среды» с имя как variable
+      то ["Прочитать переменную среды", variable]
+    случай вариант «Завести временный каталог» с образец как pattern
+      то ["Завести временный каталог", pattern]
+    случай любое
+      то ["иное поручение"]
+
+тотальная функция «Question words»
+  принимает question: «Question»
+  возвращает список строки
+  приписать (question.«name») к («Order words» от (question.«order»))
+
 тотальная функция «Cached check»
   принимает name: строка, answers: список «Answer», key: строка, binary: строка
   возвращает «Question»
+  «Run» от name и "env" и [
+    (соединить ["FLANG_PROOF_CACHE=", («In work» от answers и "cache")] по ""),
+    (соединить ["FLANG_PROOF_CACHE_KEY=", («In work» от answers и key)] по ""),
+    "FLANG_PROOF_CACHE_STATS=1", binary, "check", "--proof", («In work» от answers и "main.flang")]
+
+тотальная функция «Cached check words»
+  принимает name: строка, answers: список «Answer», key: строка, binary: строка
+  возвращает список строки
   пример «A cached check names the cache, the key and the statistics»
     дано name равно "warm"
     дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
     дано key равно "key"
     дано binary равно "f"
-    ожидается запись «Question» с «name» равным "warm" и «order» равным (вариант «Запустить процесс» с программа равным "env" и аргументы равным ["FLANG_PROOF_CACHE=/w/cache", "FLANG_PROOF_CACHE_KEY=/w/key", "FLANG_PROOF_CACHE_STATS=1", "f", "check", "--proof", "/w/main.flang"])
-  «Run» от name и "env" и [(соединить ["FLANG_PROOF_CACHE=", («In work» от answers и "cache")] по ""), (соединить ["FLANG_PROOF_CACHE_KEY=", («In work» от answers и key)] по ""), "FLANG_PROOF_CACHE_STATS=1", binary, "check", "--proof", («In work» от answers и "main.flang")]
+    ожидается [
+      "warm", "Запустить процесс", "env", "FLANG_PROOF_CACHE=/w/cache", "FLANG_PROOF_CACHE_KEY=/w/key",
+      "FLANG_PROOF_CACHE_STATS=1", "f", "check", "--proof", "/w/main.flang"]
+  «Question words» от («Cached check» от name и answers и key и binary)
 
 тотальная функция «Plain check»
   принимает name: строка, answers: список «Answer»
   возвращает «Question»
+  «Run» от name и "env" и [
+    "FLANG_PROOF_CACHE=off", («Binary» от answers), "check", "--proof", («In work» от answers и "main.flang")]
+
+тотальная функция «Plain check words»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
   пример «A plain check switches the cache off»
     дано name равно "plain"
     дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
-    ожидается запись «Question» с «name» равным "plain" и «order» равным (вариант «Запустить процесс» с программа равным "env" и аргументы равным ["FLANG_PROOF_CACHE=off", "../../bootstrap/flang", "check", "--proof", "/w/main.flang"])
-  «Run» от name и "env" и ["FLANG_PROOF_CACHE=off", («Binary» от answers), "check", "--proof", («In work» от answers и "main.flang")]
+    ожидается [
+      "plain", "Запустить процесс", "env", "FLANG_PROOF_CACHE=off", "../../bootstrap/flang", "check", "--proof",
+      "/w/main.flang"]
+  «Question words» от («Plain check» от name и answers)
 
 тотальная функция «Audited check»
   принимает name: строка, answers: список «Answer»
   возвращает «Question»
+  «Run» от name и "env" и [
+    (соединить ["FLANG_PROOF_CACHE=", («In work» от answers и "cache")] по ""),
+    (соединить ["FLANG_PROOF_CACHE_KEY=", («In work» от answers и "key")] по ""),
+    "FLANG_PROOF_CACHE_AUDIT=1", "FLANG_MEMO_AUDIT=1", («Binary» от answers), "check", "--proof",
+    («In work» от answers и "main.flang")]
+
+тотальная функция «Audited check words»
+  принимает name: строка, answers: список «Answer»
+  возвращает список строки
   пример «An audited check recomputes every hit and the full program»
     дано name равно "audited"
     дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
-    ожидается запись «Question» с «name» равным "audited" и «order» равным (вариант «Запустить процесс» с программа равным "env" и аргументы равным ["FLANG_PROOF_CACHE=/w/cache", "FLANG_PROOF_CACHE_KEY=/w/key", "FLANG_PROOF_CACHE_AUDIT=1", "FLANG_MEMO_AUDIT=1", "../../bootstrap/flang", "check", "--proof", "/w/main.flang"])
-  «Run» от name и "env" и [(соединить ["FLANG_PROOF_CACHE=", («In work» от answers и "cache")] по ""), (соединить ["FLANG_PROOF_CACHE_KEY=", («In work» от answers и "key")] по ""), "FLANG_PROOF_CACHE_AUDIT=1", "FLANG_MEMO_AUDIT=1", («Binary» от answers), "check", "--proof", («In work» от answers и "main.flang")]
+    ожидается [
+      "audited", "Запустить процесс", "env", "FLANG_PROOF_CACHE=/w/cache", "FLANG_PROOF_CACHE_KEY=/w/key",
+      "FLANG_PROOF_CACHE_AUDIT=1", "FLANG_MEMO_AUDIT=1", "../../bootstrap/flang", "check", "--proof",
+      "/w/main.flang"]
+  «Question words» от («Audited check» от name и answers)
 
 тотальная функция «Write source»
   принимает name: строка, answers: список «Answer», file: строка, content: строка
   возвращает «Question»
+  «Write» от name и («In work» от answers и file) и content
+
+тотальная функция «Write source words»
+  принимает name: строка, answers: список «Answer», file: строка, content: строка
+  возвращает список строки
   пример «A source is written into the working directory»
     дано name равно "main"
     дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
     дано file равно "main.flang"
     дано content равно "x"
-    ожидается запись «Question» с «name» равным "main" и «order» равным (вариант «Записать файл» с путь равным "/w/main.flang" и содержимое равным "x")
-  «Write» от name и («In work» от answers и file) и content
+    ожидается ["main", "Записать файл", "/w/main.flang", "x"]
+  «Question words» от («Write source» от name и answers и file и content)
 
 тотальная функция «Pair»
   принимает tag: строка, answers: список «Answer»
   возвращает список «Question»
+  [(«Plain check» от (соединить ["plain ", tag] по "") и answers),
+    («Cached check» от (соединить ["cached ", tag] по "") и answers и "key" и («Binary» от answers))]
+
+тотальная функция «Pair words»
+  принимает tag: строка, answers: список «Answer»
+  возвращает список список строки
   пример «A pair checks the same file without the cache and with it»
     дано tag равно "t"
     дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
-    ожидается [запись «Question» с «name» равным "plain t" и «order» равным (вариант «Запустить процесс» с программа равным "env" и аргументы равным ["FLANG_PROOF_CACHE=off", "../../bootstrap/flang", "check", "--proof", "/w/main.flang"]), запись «Question» с «name» равным "cached t" и «order» равным (вариант «Запустить процесс» с программа равным "env" и аргументы равным ["FLANG_PROOF_CACHE=/w/cache", "FLANG_PROOF_CACHE_KEY=/w/key", "FLANG_PROOF_CACHE_STATS=1", "../../bootstrap/flang", "check", "--proof", "/w/main.flang"])]
-  [(«Plain check» от (соединить ["plain ", tag] по "") и answers), («Cached check» от (соединить ["cached ", tag] по "") и answers и "key" и («Binary» от answers))]
+    ожидается [
+      [
+        "plain t", "Запустить процесс", "env", "FLANG_PROOF_CACHE=off", "../../bootstrap/flang", "check",
+        "--proof", "/w/main.flang"],
+      [
+        "cached t", "Запустить процесс", "env", "FLANG_PROOF_CACHE=/w/cache", "FLANG_PROOF_CACHE_KEY=/w/key",
+        "FLANG_PROOF_CACHE_STATS=1", "../../bootstrap/flang", "check", "--proof", "/w/main.flang"]]
+  отобразить («Pair» от tag и answers) как question → («Question words» от question)
 
 тотальная функция «Rewarm»
   принимает tag: строка, answers: список «Answer»
   возвращает список «Question»
   обеспечивает «вопросов 3» (длина результат) равен 3
   [(«Write source» от (соединить ["restore main ", tag] по "") и answers и "main.flang" и («Main source»)),
-    («Write source» от (соединить ["restore support ", tag] по "") и answers и "opora.flang" и («Support source» от "0" и "1")),
+    («Write source» от (соединить [
+      "restore support ", tag] по "") и answers и "opora.flang" и («Support source» от "0" и "1")),
     («Cached check» от (соединить ["rewarm ", tag] по "") и answers и "key" и («Binary» от answers))]
 
 тотальная функция «Temporary»
@@ -125,17 +265,28 @@
 
 тотальная функция «Setup»
   возвращает список «Question»
-  пример «The binary and the temporary root are asked from the environment»
-    ожидается [запись «Question» с «name» равным "binary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_PROOF_CACHE_PROBE_BINARY"), запись «Question» с «name» равным "temporary" и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")]
   [(«Environment» от "binary" и "FLANG_PROOF_CACHE_PROBE_BINARY"), («Environment» от "temporary" и "FLANG_TMP")]
+
+тотальная функция «Setup words»
+  возвращает список список строки
+  пример «The binary and the temporary root are asked from the environment»
+    ожидается [
+      ["binary", "Прочитать переменную среды", "FLANG_PROOF_CACHE_PROBE_BINARY"],
+      ["temporary", "Прочитать переменную среды", "FLANG_TMP"]]
+  отобразить («Setup») как question → («Question words» от question)
 
 тотальная функция «Work directory»
   принимает answers: список «Answer»
   возвращает список «Question»
+  [(«Temporary directory» от "work" и (соединить [(«Temporary» от answers), "/proof-cache-probe."] по ""))]
+
+тотальная функция «Work directory words»
+  принимает answers: список «Answer»
+  возвращает список список строки
   пример «The work directory lies under the temporary root»
     дано answers равно пустой список
-    ожидается [запись «Question» с «name» равным "work" и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/proof-cache-probe.")]
-  [(«Temporary directory» от "work" и (соединить [(«Temporary» от answers), "/proof-cache-probe."] по ""))]
+    ожидается [["work", "Завести временный каталог", "/srv/tmp/proof-cache-probe."]]
+  отобразить («Work directory» от answers) как question → («Question words» от question)
 
 тотальная функция «Sources»
   принимает answers: список «Answer»
@@ -150,31 +301,44 @@
 тотальная функция «Callee body»
   принимает answers: список «Answer»
   возвращает список «Question»
-  добавить («Write source» от "restore after body" и answers и "main.flang" и («Main source»)) к (приписать («Write source» от "callee body" и answers и "main.flang" и («Main with answer» от "0")) к («Pair» от "body" и answers))
+  пусть restore равно («Write source» от "restore after body" и answers и "main.flang" и («Main source»))
+  пусть body равно («Write source» от "callee body" и answers и "main.flang" и («Main with answer» от "0"))
+  добавить restore к (приписать body к («Pair» от "body" и answers))
 
 тотальная функция «Contract only»
   принимает answers: список «Answer»
   возвращает список «Question»
-  «Соединить списки» от («Rewarm» от "contract" и answers) и (приписать («Write source» от "contract only" и answers и "opora.flang" и («Support source» от "(0 минус 5)" и "1")) к («Pair» от "contract" и answers))
+  пусть forged равно («Support source» от "(0 минус 5)" и "1")
+  пусть write равно («Write source» от "contract only" и answers и "opora.flang" и forged)
+  «Соединить списки» от («Rewarm» от "contract" и answers) и (приписать write к («Pair» от "contract" и answers))
 
 тотальная функция «Imported module»
   принимает answers: список «Answer»
   возвращает список «Question»
-  «Соединить списки» от («Rewarm» от "import" и answers) и (приписать («Write source» от "imported body" и answers и "opora.flang" и («Support source» от "0" и "(0 минус 1)")) к («Pair» от "import" и answers))
+  пусть forged равно («Support source» от "0" и "(0 минус 1)")
+  пусть write равно («Write source» от "imported body" и answers и "opora.flang" и forged)
+  «Соединить списки» от («Rewarm» от "import" и answers) и (приписать write к («Pair» от "import" и answers))
 
 тотальная функция «Other kernel»
   принимает answers: список «Answer»
   возвращает список «Question»
   обеспечивает «вопросов 5» (длина результат) равен 5
   «Соединить списки» от («Rewarm» от "kernel" и answers) и [
-    («Run» от "copy kernel" и "sh" и ["-c", "cp \"$0\" \"$1\" && printf x >> \"$1\"", («Binary» от answers), («In work» от answers и "other-flang")]),
+    («Run» от "copy kernel" и "sh" и [
+      "-c", "cp \"$0\" \"$1\" && printf x >> \"$1\"", («Binary» от answers), («In work» от answers и "other-flang")]),
     («Cached check» от "cached kernel" и answers и "key" и («In work» от answers и "other-flang"))]
 
 тотальная функция «Tampered file»
   принимает answers: список «Answer»
   возвращает список «Question»
   обеспечивает «вопросов 5» (длина результат) равен 5
-  [(«Run» от "tamper" и "sh" и ["-c", "for f in \"$0\"/*/*/*.seg; do n=$(wc -c < \"$f\"); printf '\\377' | dd of=\"$f\" bs=1 seek=40 conv=notrunc 2>/dev/null; printf '\\001' | dd of=\"$f\" bs=1 seek=$((n - 40)) conv=notrunc 2>/dev/null; done", («In work» от answers и "cache")]),
+  [(«Run» от "tamper" и "sh" и [
+      "-c",
+      (соединить [
+        "for f in \"$0\"/*/*/*.seg; do n=$(wc -c < \"$f\"); ",
+        "printf '\\377' | dd of=\"$f\" bs=1 seek=40 conv=notrunc 2>/dev/null; ",
+        "printf '\\001' | dd of=\"$f\" bs=1 seek=$((n - 40)) conv=notrunc 2>/dev/null; done"] по ""),
+      («In work» от answers и "cache")]),
     («Cached check» от "cached tamper" и answers и "key" и («Binary» от answers)),
     («Cached check» от "rewarm audit" и answers и "key" и («Binary» от answers)),
     («Audited check» от "audited" и answers),
@@ -215,7 +379,9 @@
     дано right равно "b"
     дано answers равно пустой список
     ожидается да
-  ((«Output of» от left и answers) равен («Output of» от right и answers)) и притом ((«Exit code of» от left и answers) равен («Exit code of» от right и answers))
+  пусть output равно ((«Output of» от left и answers) равен («Output of» от right и answers))
+  пусть code равно ((«Exit code of» от left и answers) равен («Exit code of» от right и answers))
+  output и притом code
 
 тотальная функция «Capable»
   принимает answers: список «Answer»
@@ -225,45 +391,89 @@
     ожидается нет
   («Errors of» от "cold" и answers) содержит "обязательств по сужению"
 
+тотальная функция «Finished»
+  принимает name: строка, code: число, output: строка, errors: строка
+  возвращает «Answer»
+  пусть reply равно (вариант «Процесс завершён» с код равным code и вывод равным output и ошибки равным errors)
+  запись «Answer» с «name» равным name и «reply» равным reply
+
 тотальная функция «Hits»
   принимает name: строка, answers: список «Answer»
   возвращает признак
+  пусть errors равно («Errors of» от name и answers)
+  (errors содержит "попаданий ") и притом (не (errors содержит "попаданий 0,"))
+
+тотальная функция «Hits given»
+  принимает name: строка, errors: строка
+  возвращает признак
   пример «A stats line with zero hits is not a hit»
     дано name равно "warm"
-    дано answers равно [запись «Answer» с «name» равным "warm" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным "кеш доказательств: взято записей 3, попаданий 0, новых 0")]
+    дано errors равно "кеш доказательств: взято записей 3, попаданий 0, новых 0"
     ожидается нет
-  ((«Errors of» от name и answers) содержит "попаданий ") и притом (не ((«Errors of» от name и answers) содержит "попаданий 0,"))
+  «Hits» от name и [(«Finished» от name и 0 и "" и errors)]
+
+тотальная функция «Probe of»
+  принимает n: строка, c: строка, p: строка, o: строка, s: строка
+  возвращает «Probe»
+  запись «Probe» с «name» равным n и «cached» равным c и «plain» равным p и «original» равным o и «sign» равным s
 
 тотальная функция «Probes»
   возвращает список «Probe»
   обеспечивает «проб шесть» (длина результат) равен 6
-  [(запись «Probe» с «name» равным "правлено только тело вызванной функции" и «cached» равным "cached body" и «plain» равным "plain body" и «original» равным "plain original" и «sign» равным ""),
-    (запись «Probe» с «name» равным "правлено только обещание вызванной функции" и «cached» равным "cached contract" и «plain» равным "plain contract" и «original» равным "plain original" и «sign» равным ""),
-    (запись «Probe» с «name» равным "правлен ввезённый модуль" и «cached» равным "cached import" и «plain» равным "plain import" и «original» равным "plain original" и «sign» равным ""),
-    (запись «Probe» с «name» равным "другой двоичный (ядро и таблица правил впечатаны в него)" и «cached» равным "cached kernel" и «plain» равным "plain original" и «original» равным "" и «sign» равным "взято записей 0,"),
-    (запись «Probe» с «name» равным "испорчен файл кеша" и «cached» равным "cached tamper" и «plain» равным "plain original" и «original» равным "" и «sign» равным "подпись не сошлась"),
-    (запись «Probe» с «name» равным "кеш подписан чужим ключом" и «cached» равным "cached foreign" и «plain» равным "plain original" и «original» равным "" и «sign» равным "подпись не сошлась")]
+  пусть body равно "правлено только тело вызванной функции"
+  пусть contract равно "правлено только обещание вызванной функции"
+  пусть kernel равно "другой двоичный (ядро и таблица правил впечатаны в него)"
+  [(«Probe of» от body и "cached body" и "plain body" и "plain original" и ""),
+    («Probe of» от contract и "cached contract" и "plain contract" и "plain original" и ""),
+    («Probe of» от "правлен ввезённый модуль" и "cached import" и "plain import" и "plain original" и ""),
+    («Probe of» от kernel и "cached kernel" и "plain original" и "" и "взято записей 0,"),
+    («Probe of» от "испорчен файл кеша" и "cached tamper" и "plain original" и "" и "подпись не сошлась"),
+    («Probe of» от "кеш подписан чужим ключом" и "cached foreign" и "plain original" и "" и "подпись не сошлась")]
 
 тотальная функция «Probe holds»
   принимает probe: «Probe», answers: список «Answer»
   возвращает признак
-  пример «A forged hit that changed the answer does not hold»
-    дано probe равно запись «Probe» с «name» равным "p" и «cached» равным "c" и «plain» равным "p" и «original» равным "" и «sign» равным ""
-    дано answers равно [запись «Answer» с «name» равным "c" и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "доказано" и ошибки равным ""), запись «Answer» с «name» равным "p" и «reply» равным (вариант «Процесс завершён» с код равным 3 и вывод равным "не доказано" и ошибки равным "")]
-    ожидается нет
-  пусть same равно («Same answer» от (probe.«cached») и (probe.«plain») и answers)
-  пусть visible равно (если пусто (probe.«original») то да иначе (не («Same answer» от (probe.«plain») и (probe.«original») и answers)))
-  пусть signed равно (если пусто (probe.«sign») то да иначе ((«Errors of» от (probe.«cached») и answers) содержит (probe.«sign»)))
+  пусть cached равно (probe.«cached»)
+  пусть plain равно (probe.«plain»)
+  пусть original равно (probe.«original»)
+  пусть same равно («Same answer» от cached и plain и answers)
+  пусть visible равно (если пусто original то да иначе (не («Same answer» от plain и original и answers)))
+  пусть signed равно (если пусто (probe.«sign») то да иначе ((«Errors of» от cached и answers) содержит (probe.«sign»)))
   (same и притом visible) и притом signed
+
+тотальная функция «Probe holds given»
+  принимает name: строка, cached: строка, plain: строка, original: строка, sign: строка, hit: число, held: число
+  возвращает признак
+  пример «A forged hit that changed the answer does not hold»
+    дано name равно "p"
+    дано cached равно "c"
+    дано plain равно "p"
+    дано original равно ""
+    дано sign равно ""
+    дано hit равно 0
+    дано held равно 3
+    ожидается нет
+  пусть answers равно [(«Finished» от "c" и hit и "доказано" и ""), («Finished» от "p" и held и "не доказано" и "")]
+  «Probe holds» от («Probe of» от name и cached и plain и original и sign) и answers
 
 тотальная функция «Probe line»
   принимает probe: «Probe», answers: список «Answer»
   возвращает строка
+  соединить [
+    (если «Probe holds» от probe и answers то "  отвергнуто, пересчитано: " иначе "  ПРОБА НЕ СОШЛАСЬ: "),
+    (probe.«name»)] по ""
+
+тотальная функция «Probe line given»
+  принимает name: строка, cached: строка, plain: строка, original: строка, sign: строка
+  возвращает строка
   пример «A holding probe is named as refused and recomputed»
-    дано probe равно запись «Probe» с «name» равным "p" и «cached» равным "c" и «plain» равным "c" и «original» равным "" и «sign» равным ""
-    дано answers равно пустой список
+    дано name равно "p"
+    дано cached равно "c"
+    дано plain равно "c"
+    дано original равно ""
+    дано sign равно ""
     ожидается "  отвергнуто, пересчитано: p"
-  соединить [(если «Probe holds» от probe и answers то "  отвергнуто, пересчитано: " иначе "  ПРОБА НЕ СОШЛАСЬ: "), (probe.«name»)] по ""
+  «Probe line» от («Probe of» от name и cached и plain и original и sign) и (пустой список)
 
 тотальная функция «Audit holds»
   принимает answers: список «Answer»
@@ -271,7 +481,8 @@
   пример «No audit run — nothing holds»
     дано answers равно пустой список
     ожидается нет
-  ((«Errors of» от "audited" и answers) содержит "совпал с ответом по всей программе") и притом («Same answer» от "audited" и "plain original" и answers)
+  пусть matched равно ((«Errors of» от "audited" и answers) содержит "совпал с ответом по всей программе")
+  matched и притом («Same answer» от "audited" и "plain original" и answers)
 
 тотальная функция «Failed probes»
   принимает answers: список «Answer»
@@ -282,18 +493,44 @@
   принимает answers: список «Answer»
   возвращает список строки
   обеспечивает «строк отчёта восемь» (длина результат) равен 8
-  добавить (соединить [(если «Audit holds» от answers то "  " иначе "  ПРОБА НЕ СОШЛАСЬ: "), "ответ по сужениям сверен с ответом по всей программе, каждое попадание пересчитано"] по "") к (приписать (соединить ["тёплый прогон попал в кеш: ", (если «Hits» от "warm" и answers то "да" иначе "НЕТ")] по "") к (отобразить («Probes») как probe → («Probe line» от probe и answers)))
+  пусть audit равно (соединить [
+    (если «Audit holds» от answers то "  " иначе "  ПРОБА НЕ СОШЛАСЬ: "),
+    "ответ по сужениям сверен с ответом по всей программе, каждое попадание пересчитано"] по "")
+  пусть warm равно (соединить [
+    "тёплый прогон попал в кеш: ", (если «Hits» от "warm" и answers то "да" иначе "НЕТ")] по "")
+  добавить audit к (приписать warm к (отобразить («Probes») как probe → («Probe line» от probe и answers)))
 
 тотальная функция «Verdict»
   принимает answers: список «Answer»
   возвращает «Продолжение»
+  пусть said равно (соединить [
+    "двоичный ", («Binary» от answers),
+    " не знает кеша доказательств: ядро без «Проверить доказательства по сужениям».",
+    " Пробы судят двоичный после печати партии."] по "")
+  пусть report равно (соединить («Report» от answers) по "\n")
+  пусть untested равно (вариант «Не проверено» с код равным "FLANG_PROOF_CACHE_NOT_IN_BINARY" и сообщение равным said)
+  пусть never равно (вариант «Провал» с код равным "FLANG_PROOF_CACHE_NEVER_HITS" и сообщение равным report)
+  пусть forged равно (вариант «Провал» с код равным "FLANG_PROOF_CACHE_FORGERY_PASSED" и сообщение равным report)
+  пусть audit равно (вариант «Провал» с код равным "FLANG_PROOF_CACHE_AUDIT_FAILED" и сообщение равным report)
+  «Chosen» от [(«When» от (не («Capable» от answers)) и untested),
+    («When» от (не («Hits» от "warm" и answers)) и never),
+    («When» от (не (пусто («Failed probes» от answers))) и forged),
+    («When» от (не («Audit holds» от answers)) и audit)] и (вариант «Конец работы» с значение равным report)
+
+тотальная функция «Verdict words»
+  принимает answers: список «Answer»
+  возвращает список строки
   пример «A binary without the cache is not judged»
     дано answers равно пустой список
-    ожидается вариант «Не проверено» с код равным "FLANG_PROOF_CACHE_NOT_IN_BINARY" и сообщение равным "двоичный ../../bootstrap/flang не знает кеша доказательств: ядро без «Проверить доказательства по сужениям». Пробы судят двоичный после печати партии."
-  «Chosen» от [(«When» от (не («Capable» от answers)) и (вариант «Не проверено» с код равным "FLANG_PROOF_CACHE_NOT_IN_BINARY" и сообщение равным (соединить ["двоичный ", («Binary» от answers), " не знает кеша доказательств: ядро без «Проверить доказательства по сужениям». Пробы судят двоичный после печати партии."] по ""))),
-    («When» от (не («Hits» от "warm" и answers)) и (вариант «Провал» с код равным "FLANG_PROOF_CACHE_NEVER_HITS" и сообщение равным (соединить («Report» от answers) по "\n"))),
-    («When» от (не (пусто («Failed probes» от answers))) и (вариант «Провал» с код равным "FLANG_PROOF_CACHE_FORGERY_PASSED" и сообщение равным (соединить («Report» от answers) по "\n"))),
-    («When» от (не («Audit holds» от answers)) и (вариант «Провал» с код равным "FLANG_PROOF_CACHE_AUDIT_FAILED" и сообщение равным (соединить («Report» от answers) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Report» от answers) по "\n"))
+    ожидается [
+      "Не проверено", "FLANG_PROOF_CACHE_NOT_IN_BINARY",
+      "двоичный ../../bootstrap/flang не знает кеша доказательств",
+      "ядро без «Проверить доказательства по сужениям». Пробы судят двоичный после печати партии."]
+  разбор («Verdict» от answers)
+    случай вариант «Не проверено» с код как code и сообщение как message
+      то приписать "Не проверено" к (приписать code к (разделить message по ": "))
+    случай любое
+      то ["иное продолжение"]
 
 тотальная функция «Proceed»
   принимает queue: список «Question», stages: число, answers: список «Answer»
@@ -309,7 +546,7 @@
 тотальная функция «Begin»
   возвращает «Inquiry»
   пример «Nine stages are ahead»
-    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 9 и «answers» равным пустой список
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным [] и «stages» равным 9 и «answers» равным []
   «Begin with» от 9
 
 тотальная функция «Next»
@@ -324,4 +561,4 @@
 
 тотальная функция «Объявление короткой команды proof-cache:forgery»
   возвращает строка
-  "bootstrap/flang io --plan Подлоги --timeout 1800000 — кеш доказательств промахивается на правке тела вызванной функции, обещания, ввезённого модуля, на другом двоичном и не берёт испорченный или чужой файл"
+  "bootstrap/flang io --plan Подлоги --timeout 1800000 — кеш доказательств промахивается на любой правке и подлоге"

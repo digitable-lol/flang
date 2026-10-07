@@ -21,9 +21,9 @@ Digitable. Сайт документации собирается по карт�
 ## Шаги воспроизведения
 
 1. `grep -c course docs/site/sitemap.mjs docs/site/sitemap.flang docs/site/build.mjs docs/site/build.flang`
-2. `grep -c '0\.7\.22' docs/course/*.md | grep -v ':0$' | wc -l`
-3. `grep -o '0\.7\.22' docs/course/*.md | wc -l`
-4. `grep -o 'замер: версия 0\.7\.22' docs/course/*.md | wc -l`
+2. `grep -cE '0\.7\.[0-9]+' docs/course/*.md | grep -v ':0$' | wc -l`
+3. `grep -oE '0\.7\.[0-9]+' docs/course/*.md | wc -l`
+4. `grep -oE 'замер: версия 0\.7\.[0-9]+' docs/course/*.md | wc -l`
 5. `grep -ohE '\]\([0-9]{2}-[a-z0-9-]+\.md' docs/course/*.md | wc -l`
 6. `bootstrap/flang --version`
 
@@ -35,26 +35,26 @@ docs/site/sitemap.mjs:0
 docs/site/sitemap.flang:0
 docs/site/build.mjs:0
 docs/site/build.flang:0
-$ grep -c '0\.7\.22' docs/course/*.md | grep -v ':0$' | wc -l
+$ grep -cE '0\.7\.[0-9]+' docs/course/*.md | grep -v ':0$' | wc -l
 15
-$ grep -o '0\.7\.22' docs/course/*.md | wc -l
+$ grep -oE '0\.7\.[0-9]+' docs/course/*.md | wc -l
 25
-$ grep -o 'замер: версия 0\.7\.22' docs/course/*.md | wc -l
+$ grep -oE 'замер: версия 0\.7\.[0-9]+' docs/course/*.md | wc -l
 16
 $ grep -ohE '\]\([0-9]{2}-[a-z0-9-]+\.md' docs/course/*.md | wc -l
 57
 $ bootstrap/flang --version
-flang 0.7.23
+flang …
 ```
 
 Набранная версия стоит в 25 местах пятнадцати глав. Шестнадцать из них —
-объявления замера `<!-- замер: версия 0.7.22 · дерево … · сверено … -->`,
-заведённые нарочно (`docs/course/README.md`, «Уклад, которого не было»): они
+объявления замера `<!-- замер: версия … · дерево … · сверено … -->`,
+заведённые нарочно (`docs/course/README.md`): они
 говорят, каким двоичным глава переснята, и подстановкой их заменять нельзя.
 Остальные девять — расшифровки `--version` и заставки оболочки и прозаические
-«на 0.7.22»: вот они и отстают от выпуска.
+«на 0.7.x»: вот они и отстают от выпуска.
 
-Версия: flang 0.7.23, 3 октября 2026.
+Версия: flang 0.7.24.
 
 ## Что должно быть
 

@@ -49,7 +49,7 @@ $ grep -rn 'tcc' .github/workflows/
 шла. Корпус, по которому её вести, — 115 файлов: `flang/stdlib` 53,
 `flang/ct` 13, `flang/proof/examples` 49.
 
-Версия: flang 0.7.23, 3 октября 2026.
+Версия: flang 0.7.23.
 
 ## Что должно быть
 

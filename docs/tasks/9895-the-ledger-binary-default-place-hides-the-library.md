@@ -32,12 +32,12 @@
 
 ```
 $ bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 --
-двоичный: /home/b/projects/flang-r5-ledger-binary/flang
+двоичный: <дерево>-ledger-binary/flang
 размер:   24559320 байт
 ВНИМАНИЕ: этот двоичный НЕ ВИДИТ библиотеку дерева.
-  он ищет её в /home/b/projects/flang-r5-ledger-binary/../flang/stdlib — а её там нет
+  он ищет её в <дерево>-ledger-binary/../flang/stdlib — а её там нет
                                                                        код 0
-$ /home/b/projects/flang-r5-ledger-binary/flang check scripts/guards/tab-host-guard.fscript --proof --json
+$ <дерево>-ledger-binary/flang check scripts/guards/tab-host-guard.fscript --proof --json
 место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 4, …
 FLANG_IMPORT_NOT_FOUND, строка 1, столбец 1: не найден модуль «Strings»: ни рядом с файлом, ни выше по каталогам, ни в библиотеке компилятора
 FLANG_IMPORT_NOT_FOUND, строка 1, столбец 1: не найден модуль «Печать JSON»: …     код 1
@@ -62,8 +62,8 @@ $ … --proof --json 2>&1 | grep -o 'FLANG_[A-Z_]*' | sort | uniq -c
 С `FLANG_MODULE_DIR` тот же вызов тем же двоичным отвечает кодом 0 —
 «утверждений 5: доказано 3, сетка 2», — то есть беда ровно в раскладке.
 
-Версия: flang 0.7.23, 3 октября 2026. Все числа выше сняты сборкой умолчанием
-целиком, а не копией двоичного.
+Версия: flang 0.7.23. Все числа выше сняты сборкой умолчанием целиком, а не
+копией двоичного.
 
 ## Что должно быть
 
@@ -82,10 +82,10 @@ $ … --proof --json 2>&1 | grep -o 'FLANG_[A-Z_]*' | sort | uniq -c
 1. `bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 --`
    без довода, затем собранным двоичным
    `check scripts/guards/tab-host-guard.fscript --proof --json` — код 0 и ни
-   одного `FLANG_IMPORT_NOT_FOUND` (сегодня код 1 и три штуки).
+   одного `FLANG_IMPORT_NOT_FOUND` (сейчас код 1 и три штуки).
 2. Предупреждение сборщика называет `FLANG_IMPORT_NOT_FOUND` — первый и
    причинный отказ, — либо снято за ненадобностью вместе с умолчанием.
-3. Проверка раскладки `sh scripts/guards/published-vs-tree.sh` после сборки
+3. Проверка раскладки `bootstrap/flang run-script published:check` после сборки
    зелёная: она считает каталоги корня командой `find . -mindepth 1 -maxdepth 1
    -type d ! -name '.*'`, поэтому каталог сборки в корне без точки в имени её
    красит.
@@ -97,4 +97,4 @@ $ … --proof --json 2>&1 | grep -o 'FLANG_[A-Z_]*' | sort | uniq -c
 ## Где живёт правка
 
 `scripts/seed/build-ledger-binary.fscript`, функции «Target» и «Library
-warning»; `docs/kernel-ledger.md`, где описан вызов. Перепечатка не нужна.
+warning». Перепечатка не нужна.

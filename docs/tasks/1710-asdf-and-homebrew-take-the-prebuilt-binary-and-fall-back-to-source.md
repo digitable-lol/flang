@@ -22,8 +22,8 @@
 1. Что плагин качает: `grep -n 'tar.gz' packaging/asdf/bin/download`
 2. Знает ли он свою тройку: `grep -c 'uname' packaging/asdf/bin/download`
 3. Знает ли формула бутылки: `grep -c 'bottle' packaging/homebrew/flang.rb`
-4. Сколько стоит сборка формулы на раннере macOS:
-   `gh run view 37302964624 --json jobs --jq '.jobs[] | select(.name=="homebrew") | .steps[] | select(.name=="Update formula") | "\(.startedAt) \(.completedAt)"'`
+4. Сколько стоит сборка формулы на раннере macOS: время шага «Update formula»
+   работы `homebrew` в последнем прогоне выпуска (`gh run view <прогон> --json jobs`).
 
 ## Что происходит
 
@@ -34,16 +34,12 @@ $ grep -c 'uname' packaging/asdf/bin/download
 0                                                               код 1
 $ grep -c 'bottle' packaging/homebrew/flang.rb
 0                                                               код 1
-$ gh run view 37302964624 --json jobs --jq '…"Update formula"…'
-2026-10-05T11:40:58Z 2026-10-05T11:44:27Z                       код 0
 ```
 
 Плагин знает одно имя архива и один путь — `make` с `-Werror`. Шаг «Update
-formula» (это `brew install --build-from-source`) на `macos-latest` занял 3 мин
-29 с; плюс `brew install gnu-tar` и скачивание. Формула не несёт блока `bottle`,
+formula» (это `brew install --build-from-source`) на `macos-latest` занимает
+около 3,5 мин; плюс `brew install gnu-tar` и скачивание. Формула не несёт блока `bottle`,
 то есть `brew` собирает у каждого.
-
-Версия: `flang 0.7.24`, `оболочка 9f361fce`. Прогон 5 октября 2026.
 
 ## Что должно быть
 
@@ -75,12 +71,12 @@ macOS, бутылки — вложениями выпуска КРАНА, бло
 
 1. На `macos-latest` и `ubuntu-latest` `asdf install flang <X>` печатает строку
    «скачиваю flang-<X>-<ось>-<арх>.tar.gz», проходит без вызова `make` и
-   укладывается в 60 с от начала до конца (против 3 мин 29 с сборки формулы на
-   том же раннере).
+   укладывается в 60 с от начала до конца (против около 3,5 мин сборки формулы
+   на том же раннере).
 2. `ASDF_FLANG_FROM_SOURCE=1 asdf install flang <X>` собирает из архива C, и
    прибор паритета (задача об install-parity) даёт `расхождений 0` между
    двумя установками одного выпуска.
-3. `asdf install flang 0.7.24` (выпуск без двоичных) печатает названную причину
+3. `asdf install flang <выпуск без двоичных>` печатает названную причину
    отката и ставит из исходников — старые выпуски не ломаются.
 4. Проба порчи: строка `SHA256SUMS` с подменённым хешем — `bin/download` отвечает
    отказом, а не откатом; сторож `asdf-plugin:check` по-прежнему зелен на

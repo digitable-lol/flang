@@ -13,23 +13,17 @@
 
 # 5406. В исходниках компилятора остались упоминания снятой реализации на JavaScript вне строк комментариев
 
-Прежняя реализация на JavaScript в текстах названа «свидетелем». Чистка
-комментариев правила только строки, начинающиеся с `//`; остальное осталось.
+Снятая реализация на JavaScript в текстах названа «свидетелем». Упоминания
+остались в печатаемых литералах и в именах примеров.
 
 ## Шаги воспроизведения
 
-1. `grep -n 'proofterm\.mjs' flang/self/proofterm.flang`
-2. `grep -n 'builtins\.mjs' flang/self/types.flang`
-3. `grep -n 'значений свидетеля' flang/self/emit-*.flang`
-4. `grep -n 'пример «[^»]*свидетел' flang/self/declared-properties.flang flang/self/types.flang`
+1. `grep -n 'значений свидетеля' flang/self/emit-*.flang`
+2. `grep -n 'пример «[^»]*свидетел' flang/self/declared-properties.flang flang/self/types.flang`
 
 ## Что происходит
 
 ```
-$ grep -n 'proofterm\.mjs' flang/self/proofterm.flang
-3553:     у свидетеля (`src/proofterm.mjs`, `безОбъявлений`). */
-$ grep -n 'builtins\.mjs' flang/self/types.flang
-6672: * Отказ, ставший значением (`builtins.mjs`). Форма принимает строку и отдаёт
 $ grep -n 'пример «[^»]*свидетел' flang/self/declared-properties.flang flang/self/types.flang
 flang/self/declared-properties.flang:80:  пример «Пять имён и порядок свидетеля»
 flang/self/declared-properties.flang:120:  пример «Список даёт list:null — ошибка свидетеля перенесена»
@@ -37,20 +31,19 @@ flang/self/declared-properties.flang:313:  пример «Начало сооб�
 flang/self/types.flang:3419:  пример «Узел без kind назван undefined, как у свидетеля»
 ```
 
-Третья команда находит строковые литералы, которые печатаются в рантайм цели,
+Первая команда находит строковые литералы, которые печатаются в рантайм цели,
 и целей этих семь, а не четыре: `emit-elixir.flang:4470`,
 `emit-rust.flang:2943`, `emit-java.flang:4176`, `emit-python.flang:5203` и те же
 слова в длинных строках `emit-go.flang:2416`, `emit-csharp.flang:5083`,
 `emit-c.flang:5311`. У цели C слова стоят ДВАЖДЫ: в печати (строка 5311) и в
 `ожидается` примера рядом (строка 5310), — правка одной строки краснит пример.
 
-Версия: flang 0.7.23, 3 октября 2026.
+Версия: flang 0.7.23.
 
 ## Что должно быть
 
 Исходники не ссылаются на файлы и поведение реализации, которой в дереве нет:
-ни в блочных комментариях `/* … */`, ни в печатаемых литералах, ни в именах
-примеров.
+ни в печатаемых литералах, ни в именах примеров.
 
 ## Обходной путь
 
@@ -58,13 +51,13 @@ flang/self/types.flang:3419:  пример «Узел без kind назван u
 
 ## Когда задача сделана
 
-- четыре команды из шагов воспроизведения ничего не находят;
+- две команды из шагов воспроизведения ничего не находят;
 - правка литералов меняет байты напечатанного кода всех семи целей — C, Go,
   Rust, Java, C#, Python, Elixir: вывод `flang emit` на одном примере снят до и
   после по каждой цели, и разница состоит только из этих строк;
 - у цели C правлены обе строки, 5310 и 5311:
-  `grep -c 'значений свидетеля' flang/self/emit-c.flang` отвечает 0, сегодня 2
-  (у остальных шести файлов — по 1), иначе `ожидается` примера расходится с
+  `grep -c 'значений свидетеля' flang/self/emit-c.flang` отвечает 0, а не 2
+  (у остальных шести файлов — 0, а не 1), иначе `ожидается` примера расходится с
   печатью. Весь `flang test` на `emit-c.flang` для этого не годится: он не
   укладывается ни в 300 с, ни в 6 млрд шагов;
 - правка имён примеров не меняет числа примеров: `flang test` на
@@ -73,7 +66,7 @@ flang/self/types.flang:3419:  пример «Узел без kind назван u
 
 ## Где живёт правка
 
-`flang/self/proofterm.flang`, `flang/self/types.flang`,
+`flang/self/types.flang`,
 `flang/self/declared-properties.flang`, `flang/self/emit-c.flang`,
 `flang/self/emit-go.flang`, `flang/self/emit-rust.flang`,
 `flang/self/emit-java.flang`, `flang/self/emit-csharp.flang`,

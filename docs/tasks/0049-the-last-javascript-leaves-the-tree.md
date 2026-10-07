@@ -35,20 +35,19 @@ grep -an 'run: node' .github/workflows/binary.yml .github/workflows/pages.yml
 $ git ls-files '*.mjs' | wc -l
 33
 $ git ls-files 'scripts/*.mjs' 'flang/scripts/*.mjs' 'flang/test/*.mjs' | wc -l
-15
-$ grep -c ' = node ' .flangrc
 14
+$ grep -c ' = node ' .flangrc
+13
 ```
 
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
+Версия: flang 0.7.23.
 
-Пятнадцать файлов этой задачи и что держит каждый:
+Четырнадцать файлов этой задачи и что держит каждый:
 
 | файл | кто зовёт | программа на flang рядом |
 |---|---|---|
 | `flang/scripts/count-guard.mjs` | ярлык `counts:check` | `flang/scripts/count-guard.fscript`, правила перенесены не все |
 | `flang/scripts/name-guard.mjs` | ярлык `names:check` | `flang/scripts/name-guard.fscript` |
-| ~~`flang/scripts/word-occupancy.mjs`~~ СНЯТ 4 октября 2026 | — | `flang/scripts/word-occupancy.fscript`: прогон обоих на слове «неотрицательное» дал одно и то же (файлов 1297, голым 553, цепочкой 0, в ёлочках 0, в строке 128, в комментарии 0, те же места) и один код возврата; подложенное голое имя в `docs/examples/rosetta/quicksort.flang` красит оба (3 места, код 1). Ярлык `word:occupancy` зовёт план |
 | `flang/scripts/link-collision-guard.mjs` | ярлыки `link-collisions:check`, `link-collisions:corrupt`, `.github/workflows/binary.yml`, `scripts/targets/identical-declarations.sh` | `flang/scripts/link-collision-tree.fscript` — задача 7192 |
 | `scripts/site/build-changelog.mjs` | ввозит `scripts/site/build-changelog-page.mjs` | `scripts/site/build-changelog.fscript`, ярлыки `changelog:build` и `changelog:check` уже переключены |
 | `scripts/site/build-changelog-page.mjs` | ярлыки `changelog:page`, `changelog:page:check`, `.github/workflows/pages.yml` | `scripts/site/build-changelog-page.fscript` |
@@ -90,8 +89,7 @@ JavaScript. Перечень `docs/javascript-inventory.md` переснят. Ф
 
 ## Где живёт правка
 
-Файлы из таблицы, `.flangrc` (объявления ярлыков переехали туда из
-`ярлыки.flang`), `.github/workflows/binary.yml`,
+Файлы из таблицы, `.flangrc` (объявления ярлыков), `.github/workflows/binary.yml`,
 `.github/workflows/pages.yml`, `scripts/targets/identical-declarations.sh`,
 `scripts/guards/occupancy-check.fscript`, `flang/scripts/guards-start.fscript`,
 `docs/javascript-inventory.md`. Пересборка семени (bootstrap regeneration) не

@@ -77,8 +77,6 @@ $ bootstrap/flang io .../syllogism/sentences/run.fscript --plan Judge -- diplom.
 Слова «средний терм» в наборе нет ни одного раза: `grep -ric средн flang/proof/probes/syllogism/`
 — 0 строк; `grep -c терм …/sentences/translator.flang` — 0.
 
-Версия: `flang 0.7.23`. Прогон 2 октября 2026.
-
 ## Что должно быть
 
 Отказ называет беду поимённо, одной строкой рядом с «НЕ СЛЕДУЕТ»: средний терм рассуждения
@@ -107,7 +105,7 @@ bootstrap/flang io flang/proof/probes/syllogism/sentences/run.fscript --plan Bin
   --max-steps 40000000
 ```
 
-Замер 4 октября 2026: этот прогон отвечает `syllogism/sentences: проб 62, разошлось 0`,
+Этот прогон сегодня отвечает `syllogism/sentences: проб 62, разошлось 0`,
 код 0, 43 с. Ключ `--max-steps` обязателен: на 62 текстах предел по умолчанию
 (10 000 000 шагов) исчерпывается в «Spaced words», нужно между 12 и 14 млн.
 

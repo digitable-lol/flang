@@ -36,18 +36,16 @@ grep -c ccomp flang/self/emit-c.flang bootstrap/Makefile .github/workflows/binar
 ```
 $ grep -anE '^[[:space:]]*(const )?(size_t|bool|FILE \*const) [а-яё]+ =' …
 flang_runtime.c:733:    const size_t измерено = fl_wasm_room(&here);
-flang_runtime.c:4828:    const bool конец = index == text.as.string.bytes;
-flang_runtime.c:4829:    const bool ведущий =
-flang_repl.c:13742:  FILE *const поток = stdout_or_stderr;               код 0
+flang_runtime.c:4950:    const bool конец = index == text.as.string.bytes;
+flang_runtime.c:4951:    const bool ведущий =
+flang_repl.c:13861:  FILE *const поток = stdout_or_stderr;               код 0
 $ grep -c ccomp flang/self/emit-c.flang bootstrap/Makefile .github/workflows/binary.yml
 bootstrap/Makefile:0
 .github/workflows/binary.yml:0
 flang/self/emit-c.flang:0                                         код 1
 ```
 
-Версия: flang 0.7.23. Дата прогона: 3 октября 2026. Сборка самим `ccomp` не
-перепроверена: CompCert на машине нет; записанный ответ CompCert 3.18 на
-кириллическое имя — `invalid symbol '\'`.
+Ответ CompCert 3.18 на кириллическое имя — `invalid symbol '\'`.
 
 Кириллица в идентификаторах — расширение GCC и Clang; CompCert не читает ни
 её, ни запись `\uXXXX`. Кроме того, ключи `-pedantic` и `-flto` из

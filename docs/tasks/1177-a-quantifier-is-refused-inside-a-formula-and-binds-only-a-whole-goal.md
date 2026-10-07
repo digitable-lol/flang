@@ -19,7 +19,7 @@
 неотрицателен») выразить нечем: его приходится резать на два постусловия, и
 связь между ними теряется.
 
-Версия: flang 0.7.24, дерево `5bf477f1e`. Дата прогона: 4 октября 2026.
+Версия: flang 0.7.24.
 
 ## Шаги воспроизведения
 
@@ -41,8 +41,8 @@
    `обеспечивает «…» есть такой м, а именно н, что результат равен (м плюс м)` —
    код 0; `flang/proof/checker/tests/families/all-elements/*.flang` — набор
    уже зелен.
-4. Где отказ: `grep -n '"exists"' flang/self/parser.flang` — строки 3227–3231
-   (`«Слово внутри формулы»`); `grep -n 'связывает элементы списка' flang/self/parser.flang`.
+4. Где отказ: `grep -n '"exists"' flang/self/parser.flang` — функция
+   `«Слово внутри формулы»`; `grep -n 'связывает элементы списка' flang/self/parser.flang`.
 
 ## Что происходит
 
@@ -60,8 +60,7 @@
 
 ## Цена, числом
 
-Счёт — вхождениями образцов (`grep -oh … | wc -l`), по образцу `«Вид веса»` = 13
-из `docs/design/nositel-tochnogo-celogo.md:482`. Замыкание — 45 файлов `.flang`
+Счёт — вхождениями образцов (`grep -oh … | wc -l`). Замыкание — 45 файлов `.flang`
 входов печати (`scripts/seed-fingerprint`), 105 991 строка, 9 052 объявленные
 функции.
 
@@ -77,8 +76,8 @@
 `есть такой` — **13**, `а именно` — **8**, `свидетел` — **22**. Итого **43**
 места, и все они о тексте строки, а не о дереве.
 
-**Порядок величин.** Разбор — одно место на каждый квантор (`parser.flang`
-3227–3231, где сегодня стоит отказ) плюс по месту в правилах сведения
+**Порядок величин.** Разбор — одно место на каждый квантор (`«Слово внутри формулы»` в `parser.flang`,
+где сегодня стоит отказ) плюс по месту в правилах сведения
 (`proof-kernel.flang`, 5 и 6 вхождений соответственно). Десять печатей
 `"forallIn"` трогать придётся, если квантор в подформуле надо ПЕЧАТАТЬ, и не
 придётся, если он живёт только в цели обязательства, — это и есть первое
@@ -90,10 +89,10 @@
   `scripts/seed/*freshness` — правка в `flang/self/**`;
 - `scripts/guards/record-follows-its-source.fscript` и
   `scripts/ledgers/record-source-digests.tsv` — **654** файла `.record`;
-- `flang/proof/checker/tests/run.sh` — переигровка; наборы
+- `flang/proof/checker/tests/run.fscript` — переигровка; наборы
   `families/existence`, `families/all-elements`, `families/nested-quantifier`
   придётся дополнить;
-- `scripts/guards/proved-share-vs-tree.sh` и
+- `scripts/guards/proved-share-vs-tree.fscript` и
   `scripts/ledgers/proved-share-ledger.txt` (1 125 строк, 853 с приговором) —
   если правка меняет приговор хоть одному обязательству;
 - `scripts/provability.fscript`, проверка 1 — ADR-0026, раздел 6, пункт 2
@@ -151,11 +150,10 @@
 
 ## Где живёт правка
 
-`flang/self/parser.flang` (3227–3231 и `«Разобрать цель»` 3661–3665),
+`flang/self/parser.flang` (`«Слово внутри формулы»` и `«Разобрать цель»`),
 `flang/self/proof-kernel.flang`, `flang/self/proof-initial.flang`,
 `flang/self/proofterm.flang`, `flang/self/types.flang`,
 `flang/self/proof-record.flang`, возможно десять `flang/self/emit-*.flang`,
 `flang/proof/checker/checker.c`, наборы `flang/proof/checker/tests/families/`.
 
-**Требует перепечатки семени** (`docs/reprint-ledger.tsv`: последняя дошедшая
-печать — 17 сентября 2026, 10 ч 14 мин).
+**Требует перепечатки семени** (цена печати — в `docs/reprint-ledger.tsv`).

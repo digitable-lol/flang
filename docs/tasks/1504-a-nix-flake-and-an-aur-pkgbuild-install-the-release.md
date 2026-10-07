@@ -34,12 +34,9 @@ $ command -v nix makepkg
 ```
 
 Ни флейка, ни PKGBUILD в дереве нет; на машине разработки нет ни `nix`, ни
-`makepkg`, то есть проверять оба канала можно только в CI (снято 5 октября
-2026). В AUR пакет `flang` — «ground-up implementation of a Fortran front end
+`makepkg`, то есть проверять оба канала можно только в CI. В AUR пакет `flang` — «ground-up implementation of a Fortran front end
 written in modern C++» (LLVM Flang); в `homebrew-core` имя `flang` занято им
 же — потому наш кран и зовётся полным именем `digitable-lol/tap/flang`.
-
-Версия: `flang 0.7.24`, `оболочка 9f361fce`. Прогон 5 октября 2026.
 
 ## Что должно быть
 

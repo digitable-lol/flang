@@ -57,8 +57,6 @@ $ bootstrap/flang io scripts/registry-tool.fscript --plan 'Разрешить' -
  пакетов 3 …",…}                                                  код 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
-
 Исходник примера назван «Discount», а `flang.package`, собранный
 `docs/examples/package/shop/discount.flang-package` и строка `использует «Скидка»`
 в `docs/examples/package/shop/shop.flang` носят другое имя. Страницы
@@ -80,7 +78,7 @@ $ bootstrap/flang io scripts/registry-tool.fscript --plan 'Разрешить' -
 ## Обходной путь
 
 Перед сборкой поправить имя в `flang.package` на «Discount» руками. Лежащий в
-дереве `docs/examples/package/shop/discount.flang-package` собран раньше и
+дереве `docs/examples/package/shop/discount.flang-package`
 программой `docs/examples/package/shop/shop.flang` читается:
 `bootstrap/flang check docs/examples/package/shop/shop.flang` — код 0.
 

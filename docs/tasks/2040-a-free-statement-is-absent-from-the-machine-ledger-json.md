@@ -46,11 +46,9 @@ $ bootstrap/flang io scripts/ledgers/proved-share-of-a-file.fscript --plan Share
   доказано 0 (цепочкой 0, индукцией 0), сетка 0, объявлено 0
   два счёта сошлись: доказано 0 из 0 = 0,0 %                           код 0
 $ grep -an 'own-type' scripts/ledgers/proved-share-ledger.txt
-1228:fe1c85c8bcff3ec8d97f6f817fa23f67|2|×|×|×|0|flang/proof/checker/tests/families/own-type/natural.flang
-1229:7872cceb7f330d8be0a2d279eb89fb30|3|×|×|×|0|flang/proof/checker/tests/families/own-type/corrupt/lie-without-theorem.flang
+1226:fe1c85c8bcff3ec8d97f6f817fa23f67|2|×|×|×|0|flang/proof/checker/tests/families/own-type/natural.flang
+1227:7872cceb7f330d8be0a2d279eb89fb30|3|×|×|×|0|flang/proof/checker/tests/families/own-type/corrupt/lie-without-theorem.flang
 ```
-
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 Двоичный свободные утверждения в машинный отчёт уже кладёт. Ошибается счётчик:
 он считает приговор своим, только если поле `of` называет функцию файла, а у
@@ -80,7 +78,7 @@ $ bootstrap/flang io scripts/ledgers/proved-share-of-a-file.fscript --plan Share
 
 В `scripts/ledgers/proved-share-ledger.txt` у двух строк семьи `own-type` числа
 вместо крестов, пояснение о задаче 2040 над ними снято, и
-`sh scripts/guards/proved-share-vs-tree.sh` отвечает кодом 0. На файле без
+`bootstrap/flang run-script proved-share-tree:check` отвечает кодом 0. На файле без
 свободных утверждений, `flang/proof/examples/corpus-hof.flang`, счётчик
 печатает те же числа, что до правки.
 

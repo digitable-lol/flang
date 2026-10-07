@@ -17,7 +17,7 @@
 `flang/proof/tables/inference-rules.tsv`. Проверяющий на C
 (`flang/proof/checker/checker.c`) блок проигрывает. Проверяющий на flang
 (`flang/proof/checker.flang`, зовётся планом `flang/proof/check.fscript`) слова
-«вывод» не знает. Форма блока — `docs/design/proof-object-blok-vyvoda.md`.
+«вывод» не знает.
 
 ## Шаги воспроизведения
 
@@ -37,7 +37,7 @@ $ grep -c 'вывод' flang/proof/checker.flang
 0                                                           код 1
 ```
 
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
+Версия: flang 0.7.23.
 
 ## Что должно быть
 

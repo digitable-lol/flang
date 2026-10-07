@@ -50,7 +50,7 @@ $ grep -c 'says' flang/test/zapis/witness-ledger.json
 записано. Вердикт русским словом записан также в
 `flang/test/snimok/proofterm-witness.json`.
 
-Три места опасны уже сегодня, не дожидаясь перевода.
+Три места опасны и без перевода.
 
 `scripts/seed/new-binary-acceptance.fscript`, строка 86: примета «строка хода»
 считает её через `strings`, а GNU strings кириллицу не печатает вовсе, и счёт
@@ -65,7 +65,7 @@ $ grep -c 'says' flang/test/zapis/witness-ledger.json
 числом 12, `docs/site/cli.ru.md` обещает четырнадцать команд, в
 `bootstrap/flang_repl.c` стоит 15; сторож отвечает кодом 0 и молчит.
 
-Версия: flang 0.7.23, 2 октября 2026.
+Версия: flang 0.7.23.
 
 ## Что должно быть
 

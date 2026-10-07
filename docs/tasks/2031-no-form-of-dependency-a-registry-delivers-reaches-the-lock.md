@@ -32,8 +32,6 @@
 
 ## Что происходит
 
-Прогон 4 октября 2026, двоичный 0.7.24, `origin/dev` `5bf477f1e`.
-
 ```
 $ bootstrap/flang lock docs/examples/web/orders-api.flang | wc -c
 149                                                                   код 0
@@ -48,8 +46,6 @@ $ bootstrap/flang lock flang/stdlib/hmac.flang | wc -c
 87465                                                                 код 0
     модули: 1 запись, SHA-256, исходник 52 532 Б
 ```
-
-Версия: `flang 0.7.24`. Дата прогона: 4 октября 2026.
 
 Вторая строка — отказ на той форме, которую `docs/DESCRIPTION.md` называет
 способом употребить пакет: `использует «Имя» из "имя.flang-package"`. Замок
@@ -99,8 +95,7 @@ $ rm flang.lock && flang check shop.flang
 ## Где живёт правка
 
 Решение «класть модуль в замок» принимается при построении замка: вход
-`flang lock` — `flang/self/cli.flang:400` (по сверке
-`docs/lockfile-without-store.md` от 9 сентября 2026), исполнитель —
+`flang lock` — `flang/self/cli.flang`, исполнитель —
 `flang/src/emit/c/flang_repl.c`, `lock_print`. Разбор `.flang-package` как
 источника модуля живёт рядом со связыванием (`flang/self/link.flang`).
 

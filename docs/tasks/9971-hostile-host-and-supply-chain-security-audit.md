@@ -8,7 +8,7 @@
 команда: любая
 карта: Чего в языке нет вовсе
 рядом: 9969, 9970
-нужность: подмена кода действия или сборочной машины сегодня не обнаруживается
+нужность: подмена кода действия или сборочной машины не обнаруживается
 ---
 
 # 9971. В CI остаются действие с плавающим тегом и подстановка контекста в команду; граница защиты от враждебного хоста не описана
@@ -32,15 +32,16 @@
 
 ```
 $ grep -n 'uses:' .github/workflows/*.yml | grep -v '@[0-9a-f]\{40\}' | grep -v 'uses: \./'
-.github/workflows/commit-messages.yml:24:        uses: actions/cache@v4
 .github/workflows/binary.yml:247:        uses: actions/cache@v4
-.github/workflows/binary.yml:791:        uses: actions/cache@v4
-.github/workflows/binary.yml:1006:        uses: actions/cache@v4
-.github/workflows/binary.yml:1208:        uses: actions/cache@v4
-.github/workflows/binary.yml:1361:        uses: actions/cache@v4
-.github/workflows/binary.yml:1551:        uses: actions/cache@v4
-.github/workflows/binary.yml:1827:        uses: actions/cache@v4
-.github/workflows/binary.yml:1893:        uses: actions/cache@v4
+.github/workflows/binary.yml:778:        uses: actions/cache@v4
+.github/workflows/binary.yml:993:        uses: actions/cache@v4
+.github/workflows/binary.yml:1195:        uses: actions/cache@v4
+.github/workflows/binary.yml:1348:        uses: actions/cache@v4
+.github/workflows/binary.yml:1503:        uses: actions/cache@v4
+.github/workflows/binary.yml:1569:        uses: actions/cache@v4
+.github/workflows/binary.yml:1938:        uses: actions/cache@v4
+.github/workflows/binary.yml:2004:        uses: actions/cache@v4
+.github/workflows/commit-messages.yml:24:        uses: actions/cache@v4
 $ grep -n 'run:.*\${{ *github\.' .github/workflows/*.yml | cut -c1-150
 .github/workflows/commit-messages.yml:34:        run: bootstrap/flang io .githooks/commit-msg.fscript --plan "Commit range" -- "origin/${{ github.base
 .github/workflows/commit-messages.yml:39:        run: bootstrap/flang io .githooks/no-growth.fscript --plan "Range" -- "origin/${{ github.base_ref }}"
@@ -77,7 +78,7 @@ ls: cannot access 'SECURITY.md': No such file or directory           код 2
 `reprint.yml:453`) пускают запрос на вливание только из веток этого же
 репозитория.
 
-`actions/cache@v4` плавает в ДЕВЯТИ местах: восемь в `binary.yml`, одно в
+`actions/cache@v4` плавает в десяти местах: девять в `binary.yml`, одно в
 `commit-messages.yml`. Значения контекста GitHub подставляются прямо в тело
 команды в ТРЁХ шагах `commit-messages.yml` (строки 34, 39, 44): во всех трёх —
 `github.base_ref`, в первом ещё и `github.event.pull_request.head.sha`. У
@@ -98,7 +99,7 @@ ls: cannot access 'SECURITY.md': No such file or directory           код 2
 Чего нет: описания того, что дерево обнаруживает при подменённой сборочной
 машине, а что нет. `SECURITY.md` в дереве нет.
 
-Версия: flang 0.7.23, 3 октября 2026.
+Версия: flang 0.7.23.
 
 ## Что должно быть
 
@@ -113,14 +114,14 @@ GitHub попадают в команды только через `env:`. Гра
 
 ## Когда задача сделана
 
-1. Команда шага 1 молчит: все девять `actions/cache@v4` закреплены полным
+1. Команда шага 1 молчит: все `actions/cache@v4` закреплены полным
    хешем коммита.
 2. Команда шага 2 молчит: `github.base_ref` и
    `github.event.pull_request.head.sha` переложены в уже стоящие блоки `env:`
    трёх шагов `commit-messages.yml` (строки 34, 39, 44).
 3. В `docs/` есть страница о границе: может ли подменённая машина первой печати
    семени внести изменение, которое переживёт самосборку и останется
-   невидимым проверяющей программе; что это обнаруживает сегодня и что нет.
+   невидимым проверяющей программе; что это обнаруживает и что нет.
 
 Аудит учётных записей и прав организации на GitHub в задачу не входит.
 

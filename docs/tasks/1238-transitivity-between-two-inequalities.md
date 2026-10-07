@@ -61,7 +61,7 @@ $ bootstrap/flang check flang/proof/forgeries/transitivity.flang --proof
                                                                  код 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
+Версия: flang 0.7.23.
 
 В приёмке «Ч1 два вызова» и «Ч2 три вызова» стоят на сетке. Цепочку
 «равенство, затем граница» (Ч3) ядро берёт подстановкой; не берёт оно цепочку,
@@ -102,7 +102,7 @@ $ bootstrap/flang check flang/proof/forgeries/transitivity.flang --proof
 «Замыкание середин», «Прибавить середину», «Величина полного порядка» и сбор
 порядков из постусловий вызванных функций. Спросить ядро по исходникам, минуя
 двоичное, можно пробами `flang/proof/midpoint-verdicts.flang` и
-`flang/proof/midpoint-price.flang`; цена перебора середины разобрана в
-`docs/zettel/the-price-of-the-midpoint-search-is-linear-in-the-order-facts.md`.
+`flang/proof/midpoint-price.flang`; цена перебора середины линейна по числу
+известных фактов порядка.
 До двоичного правка доезжает только пересборкой семени (bootstrap
 regeneration).

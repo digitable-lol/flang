@@ -34,18 +34,16 @@ $ bootstrap/flang io flang/proof/tables-guard.fscript --plan 'Tables guard' --ti
 $ grep -a '^checker-code-lines' flang/proof/ratchets.txt
 checker-code-lines 8127                                           код 0
 $ wc -l flang/proof/checker/checker.c
-10497 flang/proof/checker/checker.c                               код 0
+10505 flang/proof/checker/checker.c                               код 0
 $ grep -ac '^static' flang/proof/checker/checker.c
 595                                                               код 0
 ```
-
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 Запаса под потолком нет: следующее правило вывода требует поднять потолок.
 Повторяющегося кода в файле почти нет, функции мелкие; рост идёт от разбора шага
 записи по видам правил: `шаг_вывода` и функции `семейство_н`, `семейство_р`,
 `семейство_о` ветвятся по именам правил, а правил в
-`flang/proof/tables/inference-rules.tsv` 112.
+`flang/proof/tables/inference-rules.tsv` 114.
 
 ## Что должно быть
 

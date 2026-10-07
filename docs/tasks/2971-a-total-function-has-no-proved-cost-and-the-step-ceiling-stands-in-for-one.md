@@ -48,14 +48,12 @@ $ bootstrap/flang check flang/proof/kernel.flang --proof
 $ grep -ac 'стоит не более' docs/flang/SPEC.md
 0
 $ grep -an '^MAX_STEPS=\|^MEASURED_COST=' scripts/bootstrap-reprint.sh
-295:MEASURED_COST=2412102536357
-296:MAX_STEPS=4000000000000
+295:MEASURED_COST=2508501226319
+296:MAX_STEPS=8000000000000
 $ grep -an 'define FL_MAX_STEPS' bootstrap/flang_runtime.h
-11:#define FL_MAX_STEPS 4000000000000
+11:#define FL_MAX_STEPS 8000000000000
 131:#define FL_MAX_STEPS 1000000
 ```
-
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
 
 Отчёт называет, чем доказано завершение каждой функции, но оценки числа шагов
 не даёт: доказательство говорит «конечно», а не «сколько». Счётчик шагов в
@@ -82,7 +80,7 @@ $ grep -an 'define FL_MAX_STEPS' bootstrap/flang_runtime.h
 ## Обходной путь
 
 Поднять `MAX_STEPS` в `scripts/bootstrap-reprint.sh` и пересобрать двоичный с
-новым `FL_MAX_STEPS`. У `emit` своего ключа на предел нет — задача 9902.
+новым `FL_MAX_STEPS`, либо дать прогону предел общим ключом `--step-limit N`.
 
 ## Когда задача сделана
 

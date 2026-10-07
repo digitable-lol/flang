@@ -56,10 +56,18 @@ ADR-0062.
   `check` зелёные (65 с, 74 с, 188 с, 13 с).
 - Семя перепечатано, набор проб `flang/proof/probes/exact-fraction/` снят
   измерительным двоичным и `expected.tsv` заполнена замером, не предсказанием.
-- Печать в десять целей — отдельной задачей, как 1413 для точного целого.
+- Печать в десять целей: рантайм каждой цели знает канон, четыре действия, порядок
+  и отказы точного целого и точного дробного; набор проб
+  `flang/proof/probes/exact-fraction-in-targets` сравнивает ответы вычислителя и
+  десяти целей байт в байт, подделанное ожидание его краснит (план `Forgery`).
+- Слово `целая часть` введено решением ADR-0072; применяется в дереве после
+  перепечатки семени.
+- `docs/flang/SPEC.md` и `DESCRIPTION.md` описывают точное целое и точное дробное.
 
 ## Где живёт правка
 
 `flang/self/interpret.flang` (деление разрядов, НОД, дробь, остаток),
 `flang/self/types.flang` (вид, канон литерала, счёт), `flang/self/lexer.flang`,
-`flang/self/parser.flang`, `flang/proof/probes/exact-fraction/`, ADR-0062.
+`flang/self/parser.flang`, `flang/proof/probes/exact-fraction/`, ADR-0062;
+печать — `flang/src/emit/*` и `flang/self/emit-*.flang`,
+`flang/proof/probes/exact-fraction-in-targets/`; слово `целая часть` — ADR-0072.

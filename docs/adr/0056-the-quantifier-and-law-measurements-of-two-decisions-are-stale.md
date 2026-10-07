@@ -131,7 +131,7 @@ $ bootstrap/flang check <проба> --proof
 одном файле дерева (`grep -rl` даёт пусто).
 
 Это тот же случай, который дерево уже проходило и записало:
-[`docs/zettel/the-category-judge-was-written-and-never-run.md`](../zettel/the-category-judge-was-written-and-never-run.md).
+заметка «категорный судья написан и ни разу не запущен».
 
 **Прирост замыкания, если ввезти недостающее** (`monad`, `sets` — её требует
 `monad`, `iso`, `law-oracle`, `functor-oracle`): файлов 45 → 50, строк

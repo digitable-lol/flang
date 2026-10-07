@@ -9,9 +9,9 @@
 двоичный `bootstrap/flang` 0.7.24 из этого же дерева, Lean 4.34.1 по
 `flang/proof/lean/lean-toolchain`. Числа сняты прогонами 5 октября 2026; где
 прогона нет, стоит «не мерено».
-**Рядом:** [ADR-0041](0041-the-checker-is-proven-sound-against-a-mechanised-semantics.md) —
+**Рядом:** [ADR-0041](0041-the-checker-is-proved-sound-against-a-mechanised-semantics.md) —
 обещание состоятельности сверщика против модели, которое этот документ делает
-проверяемым прибором; [ADR-0042](0042-the-last-places-of-the-corpus.md) — последнее
+проверяемым прибором; [ADR-0042](0042-the-last-twelve-places-get-rules-not-exceptions.md) — последнее
 расширение приёмки, после которого число приёмов считалось вручную.
 **Новые задачи:** 4791.
 

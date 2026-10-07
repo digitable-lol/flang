@@ -32,7 +32,7 @@
 ## Замер корня (8 сентября 2026, `f2945456`)
 
 Файлов — по `git ls-files`; «ссылок» — сколько файлов дерева называют путь
-(вне истории: без `CHANGELOG.md`, `changelog.json`, `docs/archive/` и
+(вне истории: без `CHANGELOG.md`, `changelog.json`, архива записок и
 закрытых задач). Цена — сколько файлов пришлось бы править при переезде.
 
 | Путь | Что это | Файлов | Ссылок | Цена переезда | Риск |
@@ -137,8 +137,8 @@ git mv web packaging/web
 ### Шаг 2. Правка ссылок — по категориям (замер репетицией, см. ниже)
 
 Правило замены: `benchmarks/` → `tools/benchmarks/`, `web/` → `packaging/web/`,
-только на границе слова (не трогать `docs/examples/web/`, `docs/benchmark/`).
-**Не править**: `CHANGELOG.md`, `changelog.json`, `docs/archive/`
+только на границе слова (не трогать `docs/examples/web/`).
+**Не править**: `CHANGELOG.md`, `changelog.json`, архив записок
 (история), `bootstrap/**` (семя) и входы семени
 `flang/src/emit/c/*`, `flang/self/**` (их правит только перепечатка).
 
@@ -150,7 +150,7 @@ git mv web packaging/web
 | JavaScript | `flang/test/glob.mjs` (`СЫРЬЁ_ЗАМЕРОВ`), `flang/scripts/name-guard.mjs`, `word-guard.mjs`, `link-collision-guard.mjs`, `scripts/site/build-changelog-page.mjs`, `docs/site/sitemap.mjs` (комментарии) | образцы и исключения |
 | Ведомости с путями | `scripts/ledgers/no-comments-debt.tsv`, `scripts/ledgers/proved-share-ledger.txt` (строки «md5|…|путь» — md5 не меняется, путь меняется), `scripts/ledgers/hand-written-lists-ledger.tsv`, `flang/test/examples-ledger.txt` | путь в строке |
 | Настройки git | `.gitignore` (5 строк `web/`, 4 строки `benchmarks/`), `.gitattributes` (`benchmarks/** linguist-vendored`) | образцы |
-| Документы | README-карта раскладки (`README.md:307–317`, `README.ru.md:303–313`), `AGENTS.md`, страницы сайта `docs/site/browser-app*`, `shortener*`, `embedding*`, руководство, заметки `docs/zettel/`, открытые задачи | пути в прозе и в обратных кавычках — их проверяет `scripts/guards/link-guard.fscript` |
+| Документы | README-карта раскладки (`README.md:307–317`, `README.ru.md:303–313`), `AGENTS.md`, страницы сайта `docs/site/browser-app*`, `shortener*`, `embedding*`, руководство, заметки базы знаний, открытые задачи | пути в прозе и в обратных кавычках — их проверяет `scripts/guards/link-guard.fscript` |
 | Переехавшие скрипты | `web/sobrat.sh`, `web/browser-probe.sh` (корень = `..` → `../..`), `web/wasm/build.sh`, `benchmarks/speed/assemble.sh`, `systems/measure.sh`, `without-libc/measure.sh`, `proof-cost/postcondition-pairs.sh` (`../..` → `../../..`) | глубина корня |
 | Переехавшие планы | `web/stand.flang` (7 путей `"../`), `benchmarks/proof-cost/*.flang` (18) | пути от каталога плана |
 | Приметы `СНЯТО … файлов <образец>` | ни одна примета не называет `benchmarks/` или `web/` — `prose-numbers-guard.sh` переезда не заметит | — |

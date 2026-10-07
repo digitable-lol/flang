@@ -20,7 +20,7 @@
 [ADR-0026](0026-quantifiers-over-any-type-are-a-kernel-change.md) — мандат на кванторы и
 храповик доверенной базы (п. 9 решений: строки КОДА `checker.c`, база 5788 на `bc1ff161e`,
 бюджет ADR-0026 +600; таблица бюджетов — `flang/proof/checker/ratchet.txt`).
-**Проектная записка:** [vedro-e-semeystvo-r.md](../design/vedro-e-semeystvo-r.md) — точный
+**Проектная записка:** «vedro-e-semeystvo-r» — точный
 контракт правил, которым написаны golden-записи и черновики.
 
 ---

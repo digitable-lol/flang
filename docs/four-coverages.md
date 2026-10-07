@@ -132,8 +132,4 @@ Lean: это счёт текста, а не доказательство.
 видно, где ядро отвечает «объявлено, не доказано». Напечатанный код не покрыт никаким
 доказательством ни в одной из десяти целей.
 
-Соседние страницы: [`docs/what-provability-gives-today.ru.md`](what-provability-gives-today.ru.md) —
-что доказуемость даёт разработчику на настоящих прогонах;
-[`docs/lean-checks-the-inference-rules.md`](lean-checks-the-inference-rules.md) — как Lean судит
-правила; [`docs/road-to-one-hundred-measured.md`](road-to-one-hundred-measured.md) — чем закрывали
-непроигранные места этого набора записей.
+Как Lean судит правила вывода — `flang/proof/lean/` и [ADR-0041](adr/0041-the-checker-is-proved-sound-against-a-mechanised-semantics.md).

@@ -90,7 +90,7 @@ $ flang test /srv/tmp/u-packaging-printed/rasshirenie
 | образцы `globSync` | `proof-ledger.mjs`, `word-occupancy.mjs` | 2 |
 | множество расширений | `claim-guard.mjs`, `count-guard.mjs` | 2 |
 | `for f in …/*.фланг` | 4 файла оболочки | 4 |
-| `find -name` / `grep --include` | `docs/ifl/reproduce.sh` | 1 |
+| `find -name` / `grep --include` | сценарий воспроизведения замера | 1 |
 | объявление редактора | vim ftdetect, vim lua, linguist, vscode `package.json` | 4 |
 | страница `man` | `packaging/flang.1` | 1 |
 

@@ -819,6 +819,7 @@ static bool fl_conc_keep(const fl_ctx *guard, fl_arena *arena, fl_value value, f
   into.depth = 0;
   into.depth_peak = 0;
   into.copied = 0;
+  into.lane = 0;
   into.max_depth = guard->max_depth;
   into.steps = 0;
   into.max_steps = 0;

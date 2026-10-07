@@ -722,6 +722,7 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena) {
   ctx->max_depth = fl_max_depth_default();
   ctx->depth_peak = 0;
   ctx->copied = 0;
+  ctx->lane = 0;
   ctx->steps = 0;
   ctx->max_steps = fl_max_steps_default();
   ctx->stack_base = &here;
@@ -1782,7 +1783,9 @@ static const char *volatile fl_now = NULL;
 static void fl_charge_count(size_t count);
 
 void fl_charge(fl_ctx *ctx, size_t count) {
-  fl_charge_count(count);
+  if (ctx == NULL || ctx->lane == 0) {
+    fl_charge_count(count);
+  }
   if (ctx == NULL || ctx->max_steps == 0 || count == 0) {
     return;
   }
@@ -2149,10 +2152,12 @@ fl_status fl_tick(fl_ctx *ctx, const char *function, fl_error *error) {
   if (ctx == NULL) {
     return FL_INVALID_ARGUMENT;
   }
-  fl_pulse_tick(ctx, function);
-  fl_ticks_count(function);
-  fl_time_open();
-  if (fl_watch_mine) {
+  if (ctx->lane == 0) {
+    fl_pulse_tick(ctx, function);
+    fl_ticks_count(function);
+    fl_time_open();
+  }
+  if (fl_watch_mine && ctx->lane == 0) {
     fl_now = function;
   }
   /* Предел 0 — счёт отключён; иначе первый же виток при max_steps == 0 объявил
@@ -2301,9 +2306,11 @@ fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
   if (ctx == NULL) {
     return FL_INVALID_ARGUMENT;
   }
-  fl_pulse(ctx, function);
-  fl_enters_count(function);
-  if (fl_watch_mine) {
+  if (ctx->lane == 0) {
+    fl_pulse(ctx, function);
+    fl_enters_count(function);
+  }
+  if (fl_watch_mine && ctx->lane == 0) {
     fl_now = function;
   }
   /* Вход в функцию — тоже виток: иначе нерекурсивная по хвосту, но бесконечно
@@ -2328,7 +2335,7 @@ fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
    * не тронуты. `fl_leave` ничего не стирает нарочно: глубина убывает сама, и
    * снимок читает `frames[depth - 1]`, то есть всегда живой кадр.
    */
-  if (fl_watch_mine && ctx->depth < FL_WATCH_FRAMES) {
+  if (fl_watch_mine && ctx->lane == 0 && ctx->depth < FL_WATCH_FRAMES) {
     fl_watch_frames[ctx->depth] = function;
   }
   ctx->depth += 1;
@@ -3588,6 +3595,7 @@ fl_status fl_text(fl_ctx *ctx, const char *utf8, size_t bytes, fl_value *out, fl
  * спискам занять одну и ту же ячейку. Целиком правило — над `fl_b_dobavit`.
  */
 struct fl_grow {
+  const fl_arena *owner;
   fl_value *items; /* база массива; значение с запасом смотрит внутрь неё */
   size_t head;     /* первая занятая кем-то ячейка; только убывает */
   size_t filled;   /* ячеек занято до этой, не включая; только растёт */
@@ -5897,7 +5905,7 @@ fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out,
   }
 
   /* Быстрый путь: ячейка за концом принадлежит этому массиву и свободна. */
-  if (grow != NULL && start + count == grow->filled) {
+  if (grow != NULL && grow->owner == ctx->arena && start + count == grow->filled) {
     bool room = grow->filled < grow->capacity;
     if (!room && grow->capacity <= limit / 2) {
       /* Запас исчерпан, но массив может оказаться последней выдачей арены. */
@@ -5940,6 +5948,7 @@ fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out,
     memcpy(items, list.as.list.items, count * sizeof(fl_value));
   }
   items[count] = item;
+  grow->owner = ctx->arena;
   grow->items = items;
   grow->head = 0;
   grow->filled = count + 1;
@@ -5992,7 +6001,8 @@ fl_status fl_b_pripisat(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out
   grow = list.as.list.grow;
 
   /* Быстрый путь: ячейка перед началом принадлежит этому массиву и свободна. */
-  if (grow != NULL && grow->head > 0 && list.as.list.items == grow->items + grow->head) {
+  if (grow != NULL && grow->owner == ctx->arena && grow->head > 0 &&
+      list.as.list.items == grow->items + grow->head) {
     grow->head -= 1;
     grow->items[grow->head] = item;
     *out = fl_list_grown(grow->items + grow->head, count + 1, grow);
@@ -6019,6 +6029,7 @@ fl_status fl_b_pripisat(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out
     memcpy(items + slack, list.as.list.items, count * sizeof(fl_value));
   }
   items[slack - 1] = item;
+  grow->owner = ctx->arena;
   grow->items = items;
   grow->head = slack - 1;
   grow->filled = capacity;
@@ -7633,3 +7644,586 @@ fl_status fl_memo_keep(fl_ctx *ctx, fl_memo_call *call, fl_status status, fl_val
   }
   return status;
 }
+
+#ifndef FL_PAR_MAX_THREADS
+#define FL_PAR_MAX_THREADS 256
+#endif
+#ifndef FL_PAR_DEFAULT_THREADS
+#define FL_PAR_DEFAULT_THREADS 64
+#endif
+#ifndef FL_PAR_CHUNKS_PER_THREAD
+#define FL_PAR_CHUNKS_PER_THREAD 4
+#endif
+#ifndef FL_PAR_WAIT_NS
+#define FL_PAR_WAIT_NS 20000L
+#endif
+#ifndef FL_PAR_WORTH_NS
+#define FL_PAR_WORTH_NS 100000L
+#endif
+
+#ifdef FL_POSIX_STACK
+
+typedef struct fl_par_lane {
+  char before[128];
+  fl_arena arena;
+  fl_ctx ctx;
+  fl_error error;
+  size_t index;
+  char after[128];
+} fl_par_lane;
+
+typedef struct fl_par_job {
+  bool fold;
+  fl_par_item item;
+  fl_par_pair pair;
+  const fl_value *env;
+  const fl_value *source;
+  fl_value *target;
+  size_t count;
+  size_t chunk;
+  size_t chunks;
+  fl_ctx shape;
+} fl_par_job;
+
+static struct {
+  size_t threads;
+  size_t workers;
+  fl_par_lane lanes[FL_PAR_MAX_THREADS];
+  const fl_par_job *job;
+  unsigned long round;
+  size_t next;
+  size_t running;
+  bool failed;
+} fl_par;
+
+static pthread_once_t fl_par_counted = PTHREAD_ONCE_INIT;
+static pthread_once_t fl_par_started = PTHREAD_ONCE_INIT;
+static pthread_mutex_t fl_par_busy = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t fl_par_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t fl_par_wake = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t fl_par_done = PTHREAD_COND_INITIALIZER;
+static size_t fl_par_wanted = 1;
+
+static void fl_par_count(void) {
+  const char *told = getenv("FLANG_THREADS");
+  long online = 0;
+  if (told != NULL && told[0] != '\0') {
+    char *end = NULL;
+    const unsigned long asked = strtoul(told, &end, 10);
+    if (end != told && *end == '\0' && asked > 0) {
+      fl_par_wanted = asked > FL_PAR_MAX_THREADS ? FL_PAR_MAX_THREADS : (size_t)asked;
+      return;
+    }
+  }
+  online = sysconf(_SC_NPROCESSORS_ONLN);
+  fl_par_wanted = online < 1 ? 1 : (size_t)online > FL_PAR_DEFAULT_THREADS ? FL_PAR_DEFAULT_THREADS : (size_t)online;
+}
+
+size_t fl_par_threads(void) {
+  pthread_once(&fl_par_counted, fl_par_count);
+  return fl_par_wanted;
+}
+
+static long fl_par_clock(void) {
+  struct timespec now;
+  if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) {
+    return 0;
+  }
+  return (long)now.tv_sec * 1000000000L + (long)now.tv_nsec;
+}
+
+static bool fl_par_take(const fl_par_job *job, size_t *chunk) {
+  bool taken = false;
+  pthread_mutex_lock(&fl_par_lock);
+  if (!fl_par.failed && fl_par.next < job->chunks) {
+    *chunk = fl_par.next;
+    fl_par.next += 1;
+    taken = true;
+  }
+  pthread_mutex_unlock(&fl_par_lock);
+  return taken;
+}
+
+static void fl_par_fail(void) {
+  pthread_mutex_lock(&fl_par_lock);
+  fl_par.failed = true;
+  pthread_mutex_unlock(&fl_par_lock);
+}
+
+static bool fl_par_chunk(fl_par_lane *lane, const fl_par_job *job, size_t chunk) {
+  const size_t from = chunk * job->chunk;
+  const size_t to = from + job->chunk < job->count ? from + job->chunk : job->count;
+  size_t index = 0;
+  if (job->fold) {
+    fl_value acc = job->source[from];
+    for (index = from + 1; index < to; index += 1) {
+      if (job->pair(&lane->ctx, acc, job->source[index], job->env, &acc, &lane->error) != FL_OK) {
+        return false;
+      }
+    }
+    job->target[chunk] = acc;
+    return true;
+  }
+  for (index = from; index < to; index += 1) {
+    if (job->item(&lane->ctx, job->source[index], job->env, &job->target[index], &lane->error) != FL_OK) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static void fl_par_lane_run(fl_par_lane *lane, const fl_par_job *job) {
+  char here = 0;
+  size_t chunk = 0;
+  lane->ctx = job->shape;
+  lane->ctx.arena = &lane->arena;
+  lane->ctx.stack_base = &here;
+  lane->ctx.lane = lane->index + 1;
+  lane->error.code = NULL;
+  lane->error.message = NULL;
+  while (fl_par_take(job, &chunk)) {
+    if (!fl_par_chunk(lane, job, chunk)) {
+      fl_par_fail();
+      return;
+    }
+  }
+}
+
+static void *fl_par_worker(void *raw) {
+  fl_par_lane *lane = (fl_par_lane *)raw;
+  unsigned long seen = 0;
+  for (;;) {
+    const fl_par_job *job = NULL;
+    pthread_mutex_lock(&fl_par_lock);
+    while (fl_par.round == seen) {
+      pthread_cond_wait(&fl_par_wake, &fl_par_lock);
+    }
+    seen = fl_par.round;
+    job = fl_par.job;
+    pthread_mutex_unlock(&fl_par_lock);
+    fl_par_lane_run(lane, job);
+    pthread_mutex_lock(&fl_par_lock);
+    fl_par.running -= 1;
+    if (fl_par.running == 0) {
+      pthread_cond_signal(&fl_par_done);
+    }
+    pthread_mutex_unlock(&fl_par_lock);
+  }
+  return NULL;
+}
+
+static void fl_par_start(void) {
+  const size_t wanted = fl_par_threads();
+  size_t stack = fl_stack_room() + FL_STACK_MARGIN;
+  size_t index = 0;
+  for (index = 0; index < FL_PAR_MAX_THREADS; index += 1) {
+    fl_arena_init(&fl_par.lanes[index].arena);
+    fl_par.lanes[index].index = index;
+  }
+  fl_par.threads = 1;
+  if (stack < FL_STACK_MIN) {
+    stack = FL_STACK_MIN;
+  }
+  for (index = 1; index < wanted; index += 1) {
+    pthread_attr_t attr;
+    pthread_t worker;
+    bool made = false;
+    while (!made) {
+      if (pthread_attr_init(&attr) != 0) {
+        break;
+      }
+      made = pthread_attr_setstacksize(&attr, stack) == 0 &&
+             pthread_create(&worker, &attr, fl_par_worker, &fl_par.lanes[index]) == 0;
+      pthread_attr_destroy(&attr);
+      if (made || stack <= FL_STACK_MIN) {
+        break;
+      }
+      stack /= 2;
+      if (stack < FL_STACK_MIN) {
+        stack = FL_STACK_MIN;
+      }
+    }
+    if (!made) {
+      break;
+    }
+    pthread_detach(worker);
+    fl_par.threads += 1;
+  }
+  fl_par.workers = fl_par.threads - 1;
+}
+
+static bool fl_par_copy(fl_ctx *ctx, fl_ctx *probe, fl_value value, fl_value *out);
+
+static bool fl_par_copy_fields(fl_ctx *ctx, fl_ctx *probe, const fl_field *fields, size_t count,
+                               const fl_field **out) {
+  fl_field *copy = NULL;
+  size_t index = 0;
+  if (count == 0) {
+    *out = NULL;
+    return true;
+  }
+  if (count > ((size_t)-1) / sizeof(fl_field)) {
+    return false;
+  }
+  copy = (fl_field *)fl_arena_alloc(ctx->arena, count * sizeof(fl_field));
+  if (copy == NULL) {
+    return false;
+  }
+  for (index = 0; index < count; index += 1) {
+    copy[index].name = fields[index].name;
+    if (!fl_par_copy(ctx, probe, fields[index].value, &copy[index].value)) {
+      return false;
+    }
+  }
+  *out = copy;
+  return true;
+}
+
+static bool fl_par_copy(fl_ctx *ctx, fl_ctx *probe, fl_value value, fl_value *out) {
+  if (fl_stack_spent(probe)) {
+    return false;
+  }
+  switch (value.tag) {
+    case FL_NOTHING:
+    case FL_NUMBER:
+    case FL_FLAG:
+      *out = value;
+      return true;
+    case FL_STRING: {
+      char *text = (char *)fl_arena_alloc(ctx->arena, value.as.string.bytes + 1);
+      if (text == NULL) {
+        return false;
+      }
+      if (value.as.string.bytes > 0) {
+        memcpy(text, value.as.string.utf8, value.as.string.bytes);
+      }
+      text[value.as.string.bytes] = '\0';
+      *out = fl_text_borrow(text, value.as.string.bytes, value.as.string.points);
+      return true;
+    }
+    case FL_LIST: {
+      fl_value *items = NULL;
+      size_t index = 0;
+      if (value.as.list.count == 0) {
+        *out = fl_list(NULL, 0);
+        return true;
+      }
+      if (value.as.list.count > ((size_t)-1) / sizeof(fl_value)) {
+        return false;
+      }
+      items = (fl_value *)fl_arena_alloc(ctx->arena, value.as.list.count * sizeof(fl_value));
+      if (items == NULL) {
+        return false;
+      }
+      for (index = 0; index < value.as.list.count; index += 1) {
+        if (!fl_par_copy(ctx, probe, value.as.list.items[index], &items[index])) {
+          return false;
+        }
+      }
+      *out = fl_list(items, value.as.list.count);
+      return true;
+    }
+    case FL_RECORD: {
+      fl_record *record = (fl_record *)fl_arena_alloc(ctx->arena, sizeof(fl_record));
+      if (record == NULL) {
+        return false;
+      }
+      record->count = value.as.record->count;
+      if (!fl_par_copy_fields(ctx, probe, value.as.record->fields, value.as.record->count, &record->fields)) {
+        return false;
+      }
+      out->tag = FL_RECORD;
+      out->as.record = record;
+      return true;
+    }
+    case FL_VARIANT: {
+      fl_variant *variant = (fl_variant *)fl_arena_alloc(ctx->arena, sizeof(fl_variant));
+      if (variant == NULL) {
+        return false;
+      }
+      variant->name = value.as.variant->name;
+      variant->count = value.as.variant->count;
+      if (!fl_par_copy_fields(ctx, probe, value.as.variant->fields, value.as.variant->count, &variant->fields)) {
+        return false;
+      }
+      out->tag = FL_VARIANT;
+      out->as.variant = variant;
+      return true;
+    }
+  }
+  return false;
+}
+
+static void fl_par_release(void) {
+  size_t index = 0;
+  for (index = 0; index < fl_par.threads; index += 1) {
+    fl_arena_release(&fl_par.lanes[index].arena);
+    fl_arena_init(&fl_par.lanes[index].arena);
+  }
+}
+
+static bool fl_par_shape(fl_ctx *ctx, fl_ctx *shape) {
+  char here = 0;
+  const char *point = &here;
+  size_t used = 0;
+  *shape = *ctx;
+  shape->steps = 0;
+  shape->copied = 0;
+  shape->depth_peak = ctx->depth;
+  shape->stack_seen = 0;
+  if (ctx->max_steps != 0) {
+    if (ctx->steps >= ctx->max_steps) {
+      return false;
+    }
+    shape->max_steps = ctx->max_steps - ctx->steps;
+  }
+  if (ctx->stack_room != 0 && ctx->stack_base != NULL) {
+    used = point < ctx->stack_base ? (size_t)(ctx->stack_base - point) : (size_t)(point - ctx->stack_base);
+    if (used >= ctx->stack_room) {
+      return false;
+    }
+    shape->stack_room = ctx->stack_room - used;
+  }
+  return true;
+}
+
+static bool fl_par_dispatch(fl_par_job *job) {
+  bool failed = false;
+  pthread_mutex_lock(&fl_par_lock);
+  fl_par.job = job;
+  fl_par.next = 0;
+  fl_par.failed = false;
+  fl_par.running = fl_par.workers;
+  fl_par.round += 1;
+  pthread_cond_broadcast(&fl_par_wake);
+  pthread_mutex_unlock(&fl_par_lock);
+  fl_par_lane_run(&fl_par.lanes[0], job);
+  pthread_mutex_lock(&fl_par_lock);
+  while (fl_par.running > 0) {
+    pthread_cond_wait(&fl_par_done, &fl_par_lock);
+  }
+  failed = fl_par.failed;
+  fl_par.job = NULL;
+  pthread_mutex_unlock(&fl_par_lock);
+  return !failed;
+}
+
+static bool fl_par_tally(fl_ctx *ctx, const fl_par_job *job, size_t *steps, size_t *copied, size_t *peak) {
+  size_t index = 0;
+  *steps = 0;
+  *copied = 0;
+  *peak = ctx->depth_peak;
+  for (index = 0; index < fl_par.threads; index += 1) {
+    const fl_ctx *lane = &fl_par.lanes[index].ctx;
+    if (lane->lane == 0) {
+      continue;
+    }
+    if (lane->steps > (size_t)-1 - *steps) {
+      return false;
+    }
+    *steps += lane->steps;
+    *copied += lane->copied;
+    if (lane->depth_peak > *peak) {
+      *peak = lane->depth_peak;
+    }
+  }
+  return job->shape.max_steps == 0 || *steps <= job->shape.max_steps;
+}
+
+static bool fl_par_begin(fl_ctx *ctx, size_t rest) {
+  if (ctx->lane != 0 || rest < 2) {
+    return false;
+  }
+  if (pthread_mutex_trylock(&fl_par_busy) != 0) {
+    return false;
+  }
+  pthread_once(&fl_par_started, fl_par_start);
+  if (fl_par.threads < 2) {
+    pthread_mutex_unlock(&fl_par_busy);
+    return false;
+  }
+  for (rest = 0; rest < fl_par.threads; rest += 1) {
+    fl_par.lanes[rest].ctx.lane = 0;
+  }
+  return true;
+}
+
+static void fl_par_end(void) {
+  fl_par_release();
+  pthread_mutex_unlock(&fl_par_busy);
+}
+
+static void fl_par_split(fl_par_job *job, size_t count) {
+  size_t chunks = fl_par.threads * FL_PAR_CHUNKS_PER_THREAD;
+  if (chunks > count) {
+    chunks = count;
+  }
+  job->count = count;
+  job->chunk = (count + chunks - 1) / chunks;
+  job->chunks = (count + job->chunk - 1) / job->chunk;
+}
+
+static bool fl_par_map_rest(fl_ctx *ctx, fl_value list, size_t from, fl_par_item body, const fl_value *env,
+                            fl_value *items) {
+  fl_par_job job;
+  fl_ctx probe;
+  size_t steps = 0;
+  size_t copied = 0;
+  size_t peak = 0;
+  size_t index = 0;
+  bool done = false;
+  if (!fl_par_begin(ctx, list.as.list.count - from)) {
+    return false;
+  }
+  memset(&job, 0, sizeof(job));
+  job.fold = false;
+  job.item = body;
+  job.env = env;
+  job.source = list.as.list.items + from;
+  job.target = items + from;
+  fl_par_split(&job, list.as.list.count - from);
+  if (fl_par_shape(ctx, &job.shape) && fl_par_dispatch(&job) && fl_par_tally(ctx, &job, &steps, &copied, &peak)) {
+    done = true;
+    probe = *ctx;
+    for (index = from; done && index < list.as.list.count; index += 1) {
+      done = fl_par_copy(ctx, &probe, items[index], &items[index]);
+    }
+  }
+  if (done) {
+    ctx->steps += steps;
+    ctx->copied += copied;
+    ctx->depth_peak = peak;
+  }
+  fl_par_end();
+  return done;
+}
+
+static bool fl_par_fold_rest(fl_ctx *ctx, fl_value list, size_t from, fl_par_pair step, const fl_value *env,
+                             fl_value *acc) {
+  fl_par_job job;
+  fl_ctx probe;
+  fl_value *partial = NULL;
+  fl_value total = *acc;
+  size_t steps = 0;
+  size_t copied = 0;
+  size_t peak = 0;
+  size_t index = 0;
+  const fl_ctx saved = *ctx;
+  bool done = false;
+  if (!fl_par_begin(ctx, list.as.list.count - from)) {
+    return false;
+  }
+  memset(&job, 0, sizeof(job));
+  job.fold = true;
+  job.pair = step;
+  job.env = env;
+  job.source = list.as.list.items + from;
+  fl_par_split(&job, list.as.list.count - from);
+  partial = (fl_value *)malloc(job.chunks * sizeof(fl_value));
+  job.target = partial;
+  if (partial != NULL && fl_par_shape(ctx, &job.shape) && fl_par_dispatch(&job) &&
+      fl_par_tally(ctx, &job, &steps, &copied, &peak)) {
+    fl_error ignored;
+    done = true;
+    probe = *ctx;
+    ctx->steps += steps;
+    ctx->copied += copied;
+    ctx->depth_peak = peak;
+    for (index = 0; done && index < job.chunks; index += 1) {
+      fl_value part = fl_nothing();
+      done = fl_par_copy(ctx, &probe, partial[index], &part) &&
+             step(ctx, total, part, env, &total, &ignored) == FL_OK;
+    }
+    if (!done) {
+      *ctx = saved;
+    }
+  }
+  free(partial);
+  fl_par_end();
+  if (done) {
+    *acc = total;
+  }
+  return done;
+}
+
+static bool fl_par_offer(size_t index, size_t count, long started, size_t *next) {
+  long spent = 0;
+  if (index != *next) {
+    return false;
+  }
+  *next = *next * 2;
+  spent = fl_par_clock() - started;
+  if (spent < FL_PAR_WAIT_NS) {
+    return false;
+  }
+  *next = (size_t)-1;
+  return (double)spent / (double)index * (double)(count - index) >= (double)FL_PAR_WORTH_NS;
+}
+
+fl_status fl_par_map(fl_ctx *ctx, fl_value list, fl_par_item body, const fl_value *env, fl_value *items,
+                     fl_error *error) {
+  const size_t count = list.as.list.count;
+  const bool may = ctx->lane == 0 && count > 2 && fl_par_threads() > 1;
+  const long started = may ? fl_par_clock() : 0;
+  size_t next = may ? 1 : (size_t)-1;
+  size_t index = 0;
+  for (index = 0; index < count; index += 1) {
+    if (fl_par_offer(index, count, started, &next) && fl_par_map_rest(ctx, list, index, body, env, items)) {
+      return FL_OK;
+    }
+    FL_TRY(body(ctx, list.as.list.items[index], env, &items[index], error));
+  }
+  return FL_OK;
+}
+
+fl_status fl_par_fold(fl_ctx *ctx, fl_value list, fl_value start, fl_par_pair step, const fl_value *env,
+                      fl_value *result, fl_error *error) {
+  const size_t count = list.as.list.count;
+  const bool may = ctx->lane == 0 && count > 2 && fl_par_threads() > 1;
+  const long started = may ? fl_par_clock() : 0;
+  size_t next = may ? 1 : (size_t)-1;
+  size_t index = 0;
+  fl_value acc = start;
+  const fl_mark mark = fl_region_open(ctx);
+  for (index = 0; index < count; index += 1) {
+    if (fl_par_offer(index, count, started, &next) && fl_par_fold_rest(ctx, list, index, step, env, &acc)) {
+      break;
+    }
+    FL_TRY(step(ctx, acc, list.as.list.items[index], env, &acc, error));
+    FL_TRY(fl_region_recycle(ctx, mark, &acc, error));
+  }
+  FL_TRY(fl_region_close(ctx, mark, FL_OK, &acc, error));
+  *result = acc;
+  return FL_OK;
+}
+
+#else
+
+size_t fl_par_threads(void) {
+  return 1;
+}
+
+fl_status fl_par_map(fl_ctx *ctx, fl_value list, fl_par_item body, const fl_value *env, fl_value *items,
+                     fl_error *error) {
+  size_t index = 0;
+  for (index = 0; index < list.as.list.count; index += 1) {
+    FL_TRY(body(ctx, list.as.list.items[index], env, &items[index], error));
+  }
+  return FL_OK;
+}
+
+fl_status fl_par_fold(fl_ctx *ctx, fl_value list, fl_value start, fl_par_pair step, const fl_value *env,
+                      fl_value *result, fl_error *error) {
+  size_t index = 0;
+  fl_value acc = start;
+  const fl_mark mark = fl_region_open(ctx);
+  for (index = 0; index < list.as.list.count; index += 1) {
+    FL_TRY(step(ctx, acc, list.as.list.items[index], env, &acc, error));
+    FL_TRY(fl_region_recycle(ctx, mark, &acc, error));
+  }
+  FL_TRY(fl_region_close(ctx, mark, FL_OK, &acc, error));
+  *result = acc;
+  return FL_OK;
+}
+
+#endif

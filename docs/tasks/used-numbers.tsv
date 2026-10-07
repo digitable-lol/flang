@@ -413,3 +413,5 @@ number	state	title
 6445	dropped	The knowledge-base index print writes the index file in place and leaves it truncated on a break
 9790	done	The trusted-base ceiling is no longer broken: grown heaps are rewritten into the ceiling with a reason
 6921	done	docs/ reads as a project diary instead of a manual: layout, classification of every file and plan
+1424	rejected	Site and course pages carry measurements taken by older binaries
+1571	rejected	The course measurement version is typed by hand

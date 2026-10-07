@@ -17,7 +17,7 @@ name	family	kind	kernel-rule	anchor	status
 Кон3	Кон	rule	неотрицательность по построению|ограниченность точным потолком по построению|порядок по построению|строгий порядок по построению	proof-kernel.flang:722 «Конечное охраной»	code
 Цел1	Кон	rule	неотрицательность по построению|ограниченность точным потолком по построению	proof-kernel.flang:3365 «Это целость терма»	code
 Цел2	Кон	rule	неотрицательность по построению|ограниченность точным потолком по построению	proof-kernel.flang:3324 «Целое по типу»	code
-Цел3	Кон	rule	порядок по построению	proof-kernel.flang:5967 «Дно над строгим»	code
+Цел3	Кон	rule	порядок по построению	proof-kernel.flang:5977 «Дно над строгим»	code
 П1	П	rule	ограниченность точным потолком по построению	proof-kernel.flang:1753 «Литерал ограничен»	code-stricter
 П2	П	rule	ограниченность точным потолком по построению	proof-kernel.flang:1785 «Граница допущения годится»	code
 П3	П	rule	ограниченность точным потолком по построению	proof-kernel.flang:1765 «Ограниченное по типу»	code
@@ -70,6 +70,7 @@ name	family	kind	kernel-rule	anchor	status
 Э5	Э	rule	все элементы по построению	proof-kernel.flang:5343 «Прибавленное всё», член — голова выписанного списка (случай "list" в «Все элементы по построению»)	code
 Э6	Э	rule	все элементы по построению	proof-kernel.flang:5360 «Отображённое всё»	code
 Св1	Св	rule	—	proof-kernel.flang:5404 «Свести свидетелем»	code
+Св2	Св	rule	—	proof-kernel.flang:6222 «Свидетели из подтермов»	code
 Ч1	Ч	rule	начало по построению	proof-kernel.flang:3799 «Начинается по построению», случай «Одинаковы»	code
 Ч2	Ч	rule	начало по построению	proof-kernel.flang:3663 «Пустой литерал строки»	code
 Ч3	Ч	rule	начало по построению	proof-kernel.flang:3799 «Начинается по построению», случай "concat"	code
@@ -84,11 +85,11 @@ name	family	kind	kernel-rule	anchor	status
 Разв3	Разв	rule	—	proof-kernel.flang:1302 «Развернуть подстановкой»	code
 К↑	Разв	rule	—	proof-kernel.flang:874 «Поле известного значения»	code
 Инд1	Инд	rule	—	proof-kernel.flang:1012 «Имя конструктора образца»	code
-Инд2	Инд	rule	—	proof-kernel.flang:5454 «Свёртка по пустому»	not-in-adr
-Инд3	Инд	rule	—	proof-kernel.flang:5487 «Свёртка по звену»	not-in-adr
-Инд4	Инд	rule	—	proof-kernel.flang:5799 «Строка под разложением»	not-in-adr
-Инд5	Инд	rule	—	proof-kernel.flang:5934 «Отрезок даёт принцип утверждению»	code
-Инд6	Инд	rule	—	proof-kernel.flang:6000 «Сумма перебирается»	code
+Инд2	Инд	rule	—	proof-kernel.flang:5464 «Свёртка по пустому»	not-in-adr
+Инд3	Инд	rule	—	proof-kernel.flang:5497 «Свёртка по звену»	not-in-adr
+Инд4	Инд	rule	—	proof-kernel.flang:5809 «Строка под разложением»	not-in-adr
+Инд5	Инд	rule	—	proof-kernel.flang:5944 «Отрезок даёт принцип утверждению»	code
+Инд6	Инд	rule	—	proof-kernel.flang:6010 «Сумма перебирается»	code
 Т1	Т	rule	цель есть допущение	proof-kernel.flang:4540 «Есть допущением»	code-narrower
 Т2	Т	rule	цель есть допущение	proof-kernel.flang:4547 «Есть допущением с переименованием»	code
 Р1	Р	rule	разбор цели по условию	proof-kernel.flang:4110 «Ветвлением»	code
@@ -109,11 +110,16 @@ name	family	kind	kernel-rule	anchor	status
 Тожд2	Тожд	rule	—	proof-kernel.flang:5279 «Нейтральный ноль сошёлся»	not-in-adr
 Тожд3	Тожд	rule	—	proof-kernel.flang:5758 «Сошлись без склеек разложения»	not-in-adr
 Тожд4	Тожд	rule	равенство, решённое счётом замкнутых частей	proof-kernel.flang:5055 «Правило счёта частей»	not-in-adr
+Тожд3	Тожд	rule	—	proof-kernel.flang:5768 «Сошлись без склеек разложения»	not-in-adr
+Переп1	Тожд	rule	переписка доказанными равенствами	proof-kernel.flang:6163 «Равенство берётся перепиской»	code
+Скл1	Тожд	rule	переписка доказанными равенствами	proof-kernel.flang:6075 «Склейка вправо»	code
+Скл2	Тожд	rule	переписка доказанными равенствами	proof-kernel.flang:6061 «Пустая склейка слева»	code
+Скл3	Тожд	rule	переписка доказанными равенствами	proof-kernel.flang:6068 «Пустая склейка справа»	code
 Тожд✗	Тожд	ban	тождество после переписки допущением	proof-kernel.flang:305 «Одинаковы до порядка соседей», отсутствие случая перестановки через скобки	not-in-adr
 Тожд✗✗	Тожд	ban	тождество после переписки допущением	proof-kernel.flang:3603 «Свести равенство», закрытый список пяти случаев сведения без раскрытия скобок; над точным целым переассоциацию даёт Кол1, и носитель там другой	not-in-adr
 Тожд✗✗✗	Тожд	ban	тождество после переписки допущением	proof-kernel.flang:5279 «Нейтральный ноль сошёлся», отсутствие случая обратного слагаемого	not-in-adr
 Пр1	Пр	rule	несовместимые допущения	proof-kernel.flang:4715 «Несовместимы»	code-wider
 М1	М	rule	тождество после переписки допущением|строгий порядок по построению	proof-kernel.flang:2176 «Длина от конструкции»	code-wider
 М2	М	rule	тождество после переписки допущением	proof-kernel.flang:2867 «Свёртка ровно на один»	code
-Кол1	Кол	rule	—	proof-kernel.flang:5897 «Сумма точных сошлась»	code
-Кол✗	Кол	ban	тождество после переписки допущением	proof-kernel.flang:5839 «Листья кольца точные», отсутствие случая для листа, который не есть имя, объявленное точным целым	not-in-adr
+Кол1	Кол	rule	—	proof-kernel.flang:5907 «Сумма точных сошлась»	code
+Кол✗	Кол	ban	тождество после переписки допущением	proof-kernel.flang:5849 «Листья кольца точные», отсутствие случая для листа, который не есть имя, объявленное точным целым	not-in-adr

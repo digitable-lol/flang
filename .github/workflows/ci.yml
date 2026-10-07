@@ -1360,6 +1360,15 @@ jobs:
       - name: Check glossary
         run: bootstrap/flang run-script dictionary:check
 
+      - name: Probe description census
+        run: |
+          if bootstrap/flang run-script description:forgery; then
+            echo "сторож описания языка промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: Check description census
+        run: bootstrap/flang run-script description:check
+
       # Ниже — трое, прогнанные и снабжённые подлогом задачей R1. Каждый идёт
       # парой: сперва подлог обязан покраснеть, потом рабочий шаг обязан быть
       # зелёным. Времена под нагрузкой (шла перепечатка): 94-111 с на прогон,

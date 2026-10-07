@@ -821,7 +821,10 @@ static const char HELP_IO[] =
     "\n"
     "  --plan «Имя»    какой план исполнять, если их несколько\n"
     "  --max-orders N  предел поручений за прогон (по умолчанию 10000)\n"
-    "  --seed N        семя случайности: прогон становится повторимым\n"
+    "  --seed N        семя случайности: прогон становится повторимым.\n"
+    "                  «Случайное число» без семени берёт /dev/urandom;\n"
+    "                  «Случайные октеты» берут его всегда, а под семенем\n"
+    "                  отказывают кодом FLANG_IO_ENTROPY\n"
     "  --in-dir        запретить пути за пределы каталога входного файла\n"
     "  --max-steps N   предел шагов вычисления на один виток\n"
     "  --timeout МС    срок ТИШИНЫ процесса из «Запустить процесс», миллисекундами\n"
@@ -4793,76 +4796,78 @@ static bool repl_kernel_stages_wanted(void) {
   return wanted != 0;
 }
 
-/*
- * ═════════════════ КЕШ ПРИГОВОРОВ ЯДРА: ТОЛЬКО СКЛАД ══════════════════════
- *
- * ПРАВИЛО, ПО КОТОРОМУ РЕШАЮТ «ДОКАЗАНО», ОСТАЛОСЬ В ЯДРЕ. Здесь ровно склад:
- * прочитать файл, отдать его ядру ДАННЫМИ, забрать обновлённый и записать
- * обратно. Ключ считает ядро («Ключ кеша» в `flang/self/proofterm.flang`), и
- * рантайм его не видит ни разу — иначе правило доверия уехало бы из слоя, вся
- * ценность которого в недоверии.
- *
- * ОТПЕЧАТОК ПРОВЕРЯЛЬЩИКА — sha256 САМОГО ДВОИЧНОГО, а не исходников дерева, и
- * это замер, а не осторожность. Два двоичных на побайтово одном дереве, в семени
- * переписано одно правило («Предел ветвления» с 4 на 0): 49 приговоров из 103
- * сменились с «доказано» на «не доказано», а всё, что видно из дерева, включая
- * «Версию ядра», осталось прежним. Кеш с ключом по дереву отдал бы 49 ложных
- * доказательств.
- *
- * СЕБЯ НЕ ПРОЧИТАЛИ — КЕШ ВЫКЛЮЧЕН, а не включён с ослабленным ключом.
- * Ослабленный ключ раздаёт ложные доказательства молча, и молчание здесь хуже
- * отказа.
- *
- * ИМЕННО ЭТО И СЛУЧИЛОСЬ С САМИМ КЛЮЧОМ (задача 3907). До 5 сентября 2026 ключ
- * считался двумя многочленными отпечатками — модули 1 000 000 007 и
- * 998 244 353, вместе 59,79 бита (померено: миллион случайных строк дал 510 и
- * 516 столкновений по половинам при ожидаемых 500 и 501). Дни рождения тут ни
- * при чём: при 10 000 ключей случайное столкновение стоит 5e-11, а весь
- * flang/stdlib одним файлом кеша — это 8040 разных ключей на 8334 записи. Но многочленный
- * отпечаток ЛИНЕЕН по кодам знаков, а линейное сравнение не перебирают, а
- * РЕШАЮТ: две разные строки с одним ключом собрались за 3,6 с, два разных
- * обязательства ОДНОЙ функции с одним ключом — за 2 мин 16 с. Кеш отдал
- * «доказано» тому, что ядро без кеша отвергает, и печать перестала ставить
- * сторожа постусловия в напечатанный код: сторожей было 1, стало 0, обе
- * команды кодом 0 и без единого слова здесь. Ширина не лечит — четыре модуля
- * решаются тем же приёмом; лечит НЕЛИНЕЙНОСТЬ, и «Отпечаток строки кеша» с
- * «Отпечатком поля кеша» переведены на «Отпечаток 256 текста».
- *
- * ЦЕНА ЧЕСТНОГО КЛЮЧА БЫЛА ТАКОВА, ЧТО СЪЕДАЛА КЕШ ЦЕЛИКОМ, И ЭТО ПОЧИНЕНО
- * ВСТРОЕННЫМ СЛОВОМ (задача 6754). Пока sha256 считался НА САМОМ flang
- * (flang/stdlib/sha256.flang, 889 строк без единой битовой операции), он стоил
- * 21,6 мкс на байт — в 31 000 раз дороже рантайма, — и кеш переставал
- * окупаться. Теперь тот же счёт делает встроенное слово языка `хеш256`.
- * На base64.flang (125 обязательств, вперемежку, минимум из повторов) два
- * двоичных на ОДНОМ ядре, отличающихся телом одной функции «Отпечаток 256
- * текста» — то есть тем, чем считаются ОБА слоя ключа:
- *
- *   прогон       sha256 на flang  хеш256
- *   без кеша            22,61 с   23,56 с
- *   холодный            42,08 с   22,91 с
- *   горячий             22,90 с    3,02 с
- *
- * То есть выигрыш кеша вернулся — 7,8 раза, — и ключ при этом остался честным:
- * это sha256, а не возврат к многочлену. Заплачено доверием: `хеш256` — это
- * девять реализаций в девяти рантаймах, сверенных прогоном (90 пар «цель ×
- * вход», расхождений ноль), а не доказательством.
- *
- * ПОКА НЕ ПРОШЛА ПЕРЕПЕЧАТКА, СЕМЯ ДЕРЖИТ СТАРЫЙ КЛЮЧ: правка лежит в
- * flang/self/proofterm.flang и flang/self/proof-record.flang, а собранный
- * bootstrap/flang считает по-прежнему многочленом. Кеш ЭТОГО двоичного
- * подделывается за две минуты.
- */
-#define KESH_PEREMENNAYA "FLANG_KESH_PRIGOVOROV"
+static fl_value repl_value_variant_fields(const char *variant, const char *field, fl_value held);
+static fl_value run_scalar(const char *variant, const char *field, fl_value inner);
 
-static char *kesh_stamp_read(void) {
+static const char *const PROOF_CACHE_FUNCTIONS[] = {"Вердикт без теоремы по сужению", "Проверить терм по сужению",
+                                                   "Значение терма записи"};
+static const char PROOF_CACHE_MAGIC[] = "flang-proof-cache-segment 1\n";
+
+typedef struct proof_cache_state {
+  bool tried;
+  bool on;
+  char *shard;
+  char *salt;
+  unsigned char mac[32];
+  repl_strings segments;
+  unsigned long long rejected;
+  unsigned long long loaded;
+} proof_cache_state;
+
+static proof_cache_state proof_cache;
+
+static void proof_cache_hex_bytes(const char *hex, unsigned char *out, size_t count) {
+  size_t at = 0;
+  for (at = 0; at < count; at += 1) {
+    const char high = hex[at * 2];
+    const char low = hex[at * 2 + 1];
+    const unsigned value_high = (unsigned)(high <= '9' ? high - '0' : high - 'a' + 10);
+    const unsigned value_low = (unsigned)(low <= '9' ? low - '0' : low - 'a' + 10);
+    out[at] = (unsigned char)((value_high << 4) | value_low);
+  }
+}
+
+static void proof_cache_hmac(const unsigned char *key, const unsigned char *data, size_t bytes, unsigned char *out) {
+  unsigned char pad[64];
+  char hex[65];
+  unsigned char inner[32];
+  sha256_ctx ctx;
+  size_t at = 0;
+  memset(pad, 0, sizeof pad);
+  memcpy(pad, key, 32);
+  for (at = 0; at < 64; at += 1) {
+    pad[at] ^= 0x36u;
+  }
+  sha256_init(&ctx);
+  sha256_add(&ctx, (const char *)pad, 64);
+  sha256_add(&ctx, proof_cache.salt, strlen(proof_cache.salt));
+  sha256_add(&ctx, (const char *)data, bytes);
+  sha256_hex(&ctx, hex);
+  proof_cache_hex_bytes(hex, inner, 32);
+  for (at = 0; at < 64; at += 1) {
+    pad[at] ^= (unsigned char)(0x36u ^ 0x5cu);
+  }
+  sha256_init(&ctx);
+  sha256_add(&ctx, (const char *)pad, 64);
+  sha256_add(&ctx, (const char *)inner, 32);
+  sha256_hex(&ctx, hex);
+  proof_cache_hex_bytes(hex, out, 32);
+}
+
+static bool proof_cache_same(const unsigned char *left, const unsigned char *right, size_t bytes) {
+  unsigned char differ = 0;
+  size_t at = 0;
+  for (at = 0; at < bytes; at += 1) {
+    differ |= (unsigned char)(left[at] ^ right[at]);
+  }
+  return differ == 0;
+}
+
+static char *proof_cache_file_digest(const char *path) {
   size_t bytes = 0;
-  char *body = NULL;
+  char *body = repl_read_file(path, &bytes);
   char *out = NULL;
   sha256_ctx ctx;
-  if (repl_self_kept == NULL || repl_self_kept[0] == '\0') {
-    return NULL;
-  }
-  body = repl_read_file(repl_self_kept, &bytes);
   if (body == NULL) {
     return NULL;
   }
@@ -4872,12 +4877,848 @@ static char *kesh_stamp_read(void) {
     return NULL;
   }
   sha256_init(&ctx);
-  sha256_add(&ctx, "flang-kesh-1 ", 13);
   sha256_add(&ctx, body, bytes);
   sha256_hex(&ctx, out);
   free(body);
   return out;
 }
+
+static char *proof_cache_text_digest(const char *text) {
+  char *out = (char *)malloc(65);
+  sha256_ctx ctx;
+  if (out == NULL) {
+    return NULL;
+  }
+  sha256_init(&ctx);
+  sha256_add(&ctx, text, strlen(text));
+  sha256_hex(&ctx, out);
+  return out;
+}
+
+static bool proof_cache_make_dirs(const char *path) {
+  char *copy = repl_say(path);
+  size_t at = 0;
+  bool made = true;
+  for (at = 1; copy[at] != '\0'; at += 1) {
+    if (copy[at] == '/') {
+      copy[at] = '\0';
+      if (mkdir(copy, 0700) != 0 && errno != EEXIST) {
+        made = false;
+      }
+      copy[at] = '/';
+    }
+  }
+  if (mkdir(copy, 0700) != 0 && errno != EEXIST) {
+    made = false;
+  }
+  free(copy);
+  return made;
+}
+
+static bool proof_cache_read_key(const char *path) {
+  size_t bytes = 0;
+  char *body = repl_read_file(path, &bytes);
+  if (body == NULL) {
+    return false;
+  }
+  if (bytes != 32) {
+    free(body);
+    return false;
+  }
+  memcpy(proof_cache.mac, body, 32);
+  free(body);
+  return true;
+}
+
+static bool proof_cache_key(void) {
+  const char *named = getenv("FLANG_PROOF_CACHE_KEY");
+  const char *config = getenv("XDG_CONFIG_HOME");
+  const char *home = getenv("HOME");
+  char *dir = NULL;
+  char *path = NULL;
+  unsigned char fresh[32];
+  int random_fd = -1;
+  int out = -1;
+  bool ok = false;
+  if (named != NULL && named[0] != '\0') {
+    path = repl_say(named);
+  } else if (config != NULL && config[0] != '\0') {
+    dir = repl_join(config, "flang");
+    path = repl_join(dir, "proof-cache.key");
+  } else if (home != NULL && home[0] != '\0') {
+    char *base = repl_join(home, ".config/flang");
+    dir = base;
+    path = repl_join(dir, "proof-cache.key");
+  } else {
+    return false;
+  }
+  if (proof_cache_read_key(path)) {
+    free(dir);
+    free(path);
+    return true;
+  }
+  if (dir != NULL) {
+    proof_cache_make_dirs(dir);
+  }
+  random_fd = open("/dev/urandom", O_RDONLY);
+  if (random_fd >= 0 && read(random_fd, fresh, sizeof fresh) == (ssize_t)sizeof fresh) {
+    out = open(path, O_WRONLY | O_CREAT | O_EXCL, 0600);
+    if (out >= 0) {
+      ok = write(out, fresh, sizeof fresh) == (ssize_t)sizeof fresh;
+      close(out);
+    }
+  }
+  if (random_fd >= 0) {
+    close(random_fd);
+  }
+  ok = proof_cache_read_key(path);
+  free(dir);
+  free(path);
+  return ok;
+}
+
+static char *proof_cache_root(const char *entry) {
+  char *dir = repl_dirname(entry);
+  while (true) {
+    char *rc = repl_join(dir, ".flangrc");
+    char *git = repl_join(dir, ".git");
+    const bool found = repl_exists(rc) || repl_exists(git);
+    free(rc);
+    free(git);
+    if (found || strcmp(dir, "/") == 0 || strcmp(dir, ".") == 0) {
+      break;
+    }
+    {
+      char *up = repl_dirname(dir);
+      free(dir);
+      dir = up;
+    }
+  }
+  if (strcmp(dir, "/") == 0) {
+    free(dir);
+    dir = repl_dirname(entry);
+  }
+  return dir;
+}
+
+static size_t proof_cache_u64(const unsigned char *at) {
+  unsigned long long wide = 0;
+  memcpy(&wide, at, sizeof wide);
+  return (size_t)wide;
+}
+
+static void proof_cache_load(const char *path) {
+  size_t bytes = 0;
+  char *body = repl_read_file(path, &bytes);
+  const size_t magic = sizeof PROOF_CACHE_MAGIC - 1u;
+  const size_t head = 32u + 8u * 3u + 1u + 8u;
+  unsigned char mac[32];
+  size_t at = magic;
+  if (body == NULL) {
+    return;
+  }
+  if (bytes < magic + 32u || memcmp(body, PROOF_CACHE_MAGIC, magic) != 0) {
+    proof_cache.rejected += 1;
+    fprintf(stderr, "кеш доказательств: %s — не сегмент кеша, не взят\n", path);
+    free(body);
+    return;
+  }
+  proof_cache_hmac(proof_cache.mac, (const unsigned char *)body, bytes - 32u, mac);
+  if (!proof_cache_same(mac, (const unsigned char *)body + bytes - 32u, 32u)) {
+    proof_cache.rejected += 1;
+    fprintf(stderr, "кеш доказательств: %s — подпись не сошлась, сегмент не взят\n", path);
+    free(body);
+    return;
+  }
+  while (at + head <= bytes - 32u) {
+    const unsigned char *entry = (const unsigned char *)body + at;
+    const size_t steps = proof_cache_u64(entry + 32u);
+    const size_t copied = proof_cache_u64(entry + 40u);
+    const size_t span = proof_cache_u64(entry + 48u);
+    const bool counted = entry[56] != 0u;
+    const size_t size = proof_cache_u64(entry + 57u);
+    if (size > bytes - 32u - at - head) {
+      break;
+    }
+    if (fl_memo_lasting_add(entry, entry + head, size, steps, copied, span, counted)) {
+      proof_cache.loaded += 1;
+    }
+    at += head + size;
+  }
+  free(body);
+}
+
+static void proof_cache_put_u64(repl_buf *buf, size_t value) {
+  unsigned long long wide = (unsigned long long)value;
+  buf_add(buf, (const char *)&wide, sizeof wide);
+}
+
+static void proof_cache_put_record(repl_buf *buf, const fl_memo_lasting_record *record) {
+  const unsigned char counted = record->counted ? 1u : 0u;
+  buf_add(buf, (const char *)record->digest, 32);
+  proof_cache_put_u64(buf, record->steps);
+  proof_cache_put_u64(buf, record->copied);
+  proof_cache_put_u64(buf, record->span);
+  buf_add(buf, (const char *)&counted, 1);
+  proof_cache_put_u64(buf, record->size);
+  buf_add(buf, (const char *)record->bytes, record->size);
+}
+
+static void proof_cache_close(void) {
+  const fl_memo_lasting_record *fresh = NULL;
+  const fl_memo_lasting_record *used = NULL;
+  size_t fresh_count = 0;
+  size_t index = 0;
+  size_t next = 0;
+  size_t kept = 0;
+  repl_buf buf;
+  unsigned char mac[32];
+  char name[96];
+  char *temporary = NULL;
+  char *final = NULL;
+  FILE *out = NULL;
+  bool written = false;
+  unsigned long long loaded = 0;
+  unsigned long long hits = 0;
+  unsigned long long made = 0;
+  unsigned long long lost = 0;
+  if (!proof_cache.on) {
+    return;
+  }
+  fl_memo_lasting_counts(&loaded, &hits, &made, &lost);
+  if (getenv("FLANG_PROOF_CACHE_STATS") != NULL) {
+    fprintf(stderr,
+            "кеш доказательств: взято записей %llu, попаданий %llu, новых %llu, потеряно %llu, отвергнуто сегментов %llu\n",
+            (unsigned long long)proof_cache.loaded, hits, made, lost, proof_cache.rejected);
+  }
+  fresh_count = fl_memo_lasting_fresh(&fresh);
+  if (fresh_count == 0 && proof_cache.rejected == 0 && proof_cache.segments.count <= 1) {
+    return;
+  }
+  buf_init(&buf);
+  buf_add(&buf, PROOF_CACHE_MAGIC, sizeof PROOF_CACHE_MAGIC - 1u);
+  for (index = 0; index < fresh_count; index += 1) {
+    proof_cache_put_record(&buf, &fresh[index]);
+    kept += 1;
+  }
+  next = fl_memo_lasting_used(0, &used);
+  while (next != 0) {
+    proof_cache_put_record(&buf, used);
+    kept += 1;
+    next = fl_memo_lasting_used(next, &used);
+  }
+  proof_cache_hmac(proof_cache.mac, (const unsigned char *)buf.data, buf.used, mac);
+  buf_add(&buf, (const char *)mac, 32);
+  snprintf(name, sizeof name, "%ld-%lx.seg", (long)getpid(), (unsigned long)(machine_now() * 1000000.0));
+  final = repl_join(proof_cache.shard, name);
+  snprintf(name, sizeof name, ".%ld-%lx.tmp", (long)getpid(), (unsigned long)(machine_now() * 1000000.0));
+  temporary = repl_join(proof_cache.shard, name);
+  out = kept == 0 ? NULL : fopen(temporary, "wb");
+  if (out != NULL) {
+    written = fwrite(buf.data, 1, buf.used, out) == buf.used;
+    written = fflush(out) == 0 && written;
+    written = fsync(fileno(out)) == 0 && written;
+    written = fclose(out) == 0 && written;
+    written = written && rename(temporary, final) == 0;
+    if (!written) {
+      unlink(temporary);
+    }
+  }
+  if (written || kept == 0) {
+    for (index = 0; index < proof_cache.segments.count; index += 1) {
+      unlink(proof_cache.segments.items[index]);
+    }
+  }
+  buf_free(&buf);
+  free(temporary);
+  free(final);
+}
+
+static char **proof_cache_argv = NULL;
+
+static int proof_cache_run_checker(const char *checker, const char *source, const char *record) {
+  pid_t child = fork();
+  int status = 0;
+  if (child < 0) {
+    return -1;
+  }
+  if (child == 0) {
+    int quiet = open("/dev/null", O_WRONLY);
+    if (quiet >= 0) {
+      dup2(quiet, 1);
+      dup2(quiet, 2);
+      close(quiet);
+    }
+    execl(checker, checker, source, record, (char *)NULL);
+    _exit(127);
+  }
+  if (waitpid(child, &status, 0) != child || !WIFEXITED(status)) {
+    return -1;
+  }
+  return WEXITSTATUS(status);
+}
+
+static char *proof_cache_checker_path(const char *source) {
+  const char *named = getenv("FLANG_PROOF_CHECKER");
+  char *root = NULL;
+  char *path = NULL;
+  if (named != NULL && named[0] != '\0') {
+    return access(named, X_OK) == 0 ? repl_say(named) : NULL;
+  }
+  root = proof_cache_root(source);
+  path = repl_join(root, "flang/proof/checker/сверщик");
+  free(root);
+  if (access(path, X_OK) != 0) {
+    free(path);
+    return NULL;
+  }
+  return path;
+}
+
+static bool proof_cache_baseline(int *code) {
+  char *path = repl_join(proof_cache.shard, "checker");
+  size_t bytes = 0;
+  char *body = repl_read_file(path, &bytes);
+  unsigned char mac[32];
+  bool ok = false;
+  free(path);
+  if (body != NULL && bytes == 2u + 32u && body[1] == '\n' && body[0] >= '0' && body[0] <= '9') {
+    proof_cache_hmac(proof_cache.mac, (const unsigned char *)body, 2u, mac);
+    if (proof_cache_same(mac, (const unsigned char *)body + 2, 32u)) {
+      *code = body[0] - '0';
+      ok = true;
+    }
+  }
+  free(body);
+  return ok;
+}
+
+static void proof_cache_keep_baseline(int code) {
+  char *path = repl_join(proof_cache.shard, "checker");
+  char *temporary = repl_join(proof_cache.shard, ".checker.tmp");
+  unsigned char body[2 + 32];
+  FILE *out = NULL;
+  body[0] = (unsigned char)('0' + code);
+  body[1] = '\n';
+  proof_cache_hmac(proof_cache.mac, body, 2u, body + 2);
+  out = fopen(temporary, "wb");
+  if (out != NULL) {
+    const bool written = fwrite(body, 1, sizeof body, out) == sizeof body;
+    if (fclose(out) == 0 && written) {
+      rename(temporary, path);
+    } else {
+      unlink(temporary);
+    }
+  }
+  free(temporary);
+  free(path);
+}
+
+static void proof_cache_drop_shard(void) {
+  DIR *listing = opendir(proof_cache.shard);
+  struct dirent *item = NULL;
+  while (listing != NULL && (item = readdir(listing)) != NULL) {
+    if (strcmp(item->d_name, ".") != 0 && strcmp(item->d_name, "..") != 0) {
+      char *path = repl_join(proof_cache.shard, item->d_name);
+      unlink(path);
+      free(path);
+    }
+  }
+  if (listing != NULL) {
+    closedir(listing);
+  }
+}
+
+static void proof_cache_recheck(const char *source, const char *record) {
+  unsigned long long loaded = 0;
+  unsigned long long hits = 0;
+  unsigned long long made = 0;
+  unsigned long long lost = 0;
+  const char *wanted = getenv("FLANG_PROOF_CACHE_RECHECK");
+  char *checker = NULL;
+  int now = 0;
+  int before = 0;
+  if (!proof_cache.on || (wanted != NULL && strcmp(wanted, "0") == 0)) {
+    return;
+  }
+  fl_memo_lasting_counts(&loaded, &hits, &made, &lost);
+  checker = proof_cache_checker_path(source);
+  if (checker == NULL) {
+    if (hits > 0) {
+      fprintf(stderr, "кеш доказательств: попаданий %llu, сверщика нет (make -C flang/proof/checker) — запись не перепроверена\n",
+              hits);
+    }
+    return;
+  }
+  now = proof_cache_run_checker(checker, source, record);
+  free(checker);
+  if (now < 0) {
+    return;
+  }
+  if (hits == 0) {
+    proof_cache_keep_baseline(now);
+    return;
+  }
+  if (!proof_cache_baseline(&before)) {
+    fprintf(stderr, "кеш доказательств: попаданий %llu, сверщик ответил кодом %d, сравнить не с чем — прогона без попаданий у этого файла ещё не было\n",
+            hits, now);
+    return;
+  }
+  if (now == before || now != 1) {
+    if (getenv("FLANG_PROOF_CACHE_STATS") != NULL) {
+      fprintf(stderr, "кеш доказательств: сверщик на записи с попаданиями ответил кодом %d, без попаданий — %d\n", now, before);
+    }
+    return;
+  }
+  fprintf(stderr,
+          "кеш доказательств: сверщик НЕ ПРИНЯЛ запись, собранную с попаданиями кеша (код %d, без попаданий был %d) — кеш этого файла снят, прогон повторяется без кеша\n",
+          now, before);
+  fflush(stderr);
+  proof_cache_drop_shard();
+  if (proof_cache_argv != NULL) {
+    setenv("FLANG_PROOF_CACHE", "off", 1);
+    execv("/proc/self/exe", proof_cache_argv);
+  }
+  exit(1);
+}
+
+static bool proof_cache_wanted(void) {
+  const char *setting = getenv("FLANG_PROOF_CACHE");
+  return setting != NULL && setting[0] != '\0' && strcmp(setting, "off") != 0 && strcmp(setting, "0") != 0;
+}
+
+static void proof_cache_open(const char *entry) {
+  const char *setting = getenv("FLANG_PROOF_CACHE");
+  char *self = NULL;
+  char *binary = NULL;
+  char *place = NULL;
+  char *base = NULL;
+  char *entry_digest = NULL;
+  char *fingerprint_dir = NULL;
+  DIR *listing = NULL;
+  struct dirent *item = NULL;
+  repl_buf salt;
+  if (proof_cache.tried) {
+    return;
+  }
+  proof_cache.tried = true;
+  strings_init(&proof_cache.segments);
+  if (!proof_cache_wanted() || entry == NULL) {
+    return;
+  }
+  self = realpath("/proc/self/exe", NULL);
+  binary = proof_cache_file_digest(self != NULL ? self : (repl_self_kept == NULL ? "" : repl_self_kept));
+  free(self);
+  if (binary == NULL || !proof_cache_key()) {
+    free(binary);
+    return;
+  }
+  if (strcmp(setting, "on") != 0 && strcmp(setting, "1") != 0) {
+    base = repl_say(setting);
+  } else {
+    char *root = proof_cache_root(entry);
+    base = repl_join(root, ".flang-cache/proofs");
+    free(root);
+  }
+  entry_digest = proof_cache_text_digest(entry);
+  if (entry_digest == NULL) {
+    free(binary);
+    free(base);
+    return;
+  }
+  {
+    char *short_binary = repl_dup(binary, 16);
+    fingerprint_dir = repl_join(base, short_binary);
+    free(short_binary);
+  }
+  entry_digest[16] = '\0';
+  place = repl_join(fingerprint_dir, entry_digest);
+  free(fingerprint_dir);
+  free(entry_digest);
+  free(base);
+  if (!proof_cache_make_dirs(place)) {
+    free(binary);
+    free(place);
+    return;
+  }
+  buf_init(&salt);
+  buf_put(&salt, "flang-proof-cache 1\n");
+  buf_put(&salt, binary);
+  buf_char(&salt, '\n');
+  free(binary);
+  proof_cache.salt = repl_dup(salt.data, salt.used);
+  buf_free(&salt);
+  if (!fl_memo_lasting_setup(proof_cache.salt, strlen(proof_cache.salt), PROOF_CACHE_FUNCTIONS,
+                             sizeof PROOF_CACHE_FUNCTIONS / sizeof PROOF_CACHE_FUNCTIONS[0])) {
+    free(place);
+    return;
+  }
+  proof_cache.shard = place;
+  proof_cache.on = true;
+  listing = opendir(place);
+  while (listing != NULL && (item = readdir(listing)) != NULL) {
+    const size_t length = strlen(item->d_name);
+    if (length > 4 && item->d_name[0] != '.' && strcmp(item->d_name + length - 4, ".seg") == 0) {
+      char *path = repl_join(place, item->d_name);
+      strings_say(&proof_cache.segments, path);
+      free(path);
+    }
+  }
+  if (listing != NULL) {
+    closedir(listing);
+  }
+  {
+    size_t index = 0;
+    for (index = 0; index < proof_cache.segments.count; index += 1) {
+      proof_cache_load(proof_cache.segments.items[index]);
+    }
+  }
+  atexit(proof_cache_close);
+}
+
+typedef struct proof_name_slot {
+  const char *text;
+  size_t bytes;
+  size_t id;
+  size_t next;
+} proof_name_slot;
+
+typedef struct proof_names {
+  size_t *heads;
+  size_t head_count;
+  proof_name_slot *slots;
+  size_t slot_count;
+  size_t slot_capacity;
+} proof_names;
+
+static unsigned long long proof_name_hash(const char *text, size_t bytes) {
+  unsigned long long hash = 1469598103934665603ULL;
+  size_t at = 0;
+  for (at = 0; at < bytes; at += 1) {
+    hash = (hash ^ (unsigned char)text[at]) * 1099511628211ULL;
+  }
+  return hash;
+}
+
+static void proof_names_add(proof_names *names, const char *text, size_t bytes, size_t id) {
+  const size_t head = (size_t)(proof_name_hash(text, bytes) % names->head_count);
+  if (bytes == 0) {
+    return;
+  }
+  if (names->slot_count == names->slot_capacity) {
+    names->slot_capacity = names->slot_capacity == 0 ? 1024u : names->slot_capacity * 2u;
+    names->slots = (proof_name_slot *)realloc(names->slots, names->slot_capacity * sizeof(proof_name_slot));
+    if (names->slots == NULL) {
+      repl_oom();
+    }
+  }
+  names->slots[names->slot_count].text = text;
+  names->slots[names->slot_count].bytes = bytes;
+  names->slots[names->slot_count].id = id;
+  names->slots[names->slot_count].next = names->heads[head];
+  names->slot_count += 1;
+  names->heads[head] = names->slot_count;
+}
+
+typedef struct proof_ids {
+  size_t *items;
+  size_t count;
+  size_t capacity;
+} proof_ids;
+
+static void proof_ids_add(proof_ids *ids, size_t id) {
+  if (ids->count == ids->capacity) {
+    ids->capacity = ids->capacity == 0 ? 16u : ids->capacity * 2u;
+    ids->items = (size_t *)realloc(ids->items, ids->capacity * sizeof(size_t));
+    if (ids->items == NULL) {
+      repl_oom();
+    }
+  }
+  ids->items[ids->count] = id;
+  ids->count += 1;
+}
+
+static void proof_refs_of(fl_value node, const proof_names *names, proof_ids *out) {
+  const fl_value *items = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  fl_value fields = fl_nothing();
+  if (zn_text(node, &utf8, &bytes)) {
+    size_t at = names->heads[proof_name_hash(utf8, bytes) % names->head_count];
+    while (at != 0) {
+      const proof_name_slot *slot = &names->slots[at - 1u];
+      if (slot->bytes == bytes && memcmp(slot->text, utf8, bytes) == 0) {
+        proof_ids_add(out, slot->id);
+      }
+      at = slot->next;
+    }
+    return;
+  }
+  if (zn_items(node, &items, &count)) {
+    for (index = 0; index < count; index += 1) {
+      proof_refs_of(items[index], names, out);
+    }
+    return;
+  }
+  if (val_is(node, "Значение записи") && val_field(node, "поля", &fields) && fields.tag == FL_LIST) {
+    for (index = 0; index < fields.as.list.count; index += 1) {
+      fl_value value = fl_nothing();
+      if (val_field(fields.as.list.items[index], "значение", &value)) {
+        proof_refs_of(value, names, out);
+      }
+    }
+  }
+}
+
+static int proof_id_order(const void *left, const void *right) {
+  const size_t a = *(const size_t *)left;
+  const size_t b = *(const size_t *)right;
+  return a < b ? -1 : (a > b ? 1 : 0);
+}
+
+static fl_value proof_closures(fl_value program, fl_value obligations) {
+  static const char *const FIELDS[] = {"functions", "types", "statements", "theorems"};
+  proof_names names;
+  fl_value *decls = NULL;
+  proof_ids *refs = NULL;
+  size_t total = 0;
+  size_t field = 0;
+  size_t index = 0;
+  size_t *seen = NULL;
+  fl_value *rows = NULL;
+  size_t row_count = 0;
+  const fl_value *obligation_items = NULL;
+  size_t obligation_count = 0;
+  memset(&names, 0, sizeof names);
+  if (obligations.tag != FL_LIST) {
+    return repl_value_list(NULL, 0);
+  }
+  obligation_items = obligations.as.list.items;
+  obligation_count = obligations.as.list.count;
+  for (field = 0; field < sizeof FIELDS / sizeof FIELDS[0]; field += 1) {
+    fl_value list = fl_nothing();
+    const fl_value *items = NULL;
+    size_t count = 0;
+    if (zn_field(program, FIELDS[field], &list) && zn_items(list, &items, &count)) {
+      decls = (fl_value *)realloc(decls, (total + count + 1u) * sizeof(fl_value));
+      if (decls == NULL) {
+        repl_oom();
+      }
+      for (index = 0; index < count; index += 1) {
+        decls[total] = items[index];
+        total += 1;
+      }
+    }
+  }
+  names.head_count = total * 2u + 1u;
+  names.heads = (size_t *)calloc(names.head_count, sizeof(size_t));
+  refs = (proof_ids *)calloc(total + 1u, sizeof(proof_ids));
+  seen = (size_t *)calloc(total + 1u, sizeof(size_t));
+  rows = (fl_value *)calloc(obligation_count + 1u, sizeof(fl_value));
+  if (names.heads == NULL || refs == NULL || seen == NULL || rows == NULL) {
+    repl_oom();
+  }
+  for (index = 0; index < total; index += 1) {
+    fl_value name = fl_nothing();
+    fl_value variants = fl_nothing();
+    const fl_value *items = NULL;
+    size_t count = 0;
+    size_t inner = 0;
+    const char *utf8 = NULL;
+    size_t bytes = 0;
+    if (zn_field(decls[index], "name", &name) && zn_text(name, &utf8, &bytes)) {
+      proof_names_add(&names, utf8, bytes, index + 1u);
+    }
+    if (zn_field(decls[index], "variants", &variants) && zn_items(variants, &items, &count)) {
+      for (inner = 0; inner < count; inner += 1) {
+        if (zn_field(items[inner], "name", &name) && zn_text(name, &utf8, &bytes)) {
+          proof_names_add(&names, utf8, bytes, index + 1u);
+        }
+      }
+    }
+  }
+  for (index = 0; index < total; index += 1) {
+    proof_refs_of(decls[index], &names, &refs[index + 1u]);
+  }
+  for (index = 0; index < obligation_count; index += 1) {
+    fl_value id = fl_nothing();
+    proof_ids start;
+    proof_ids reached;
+    size_t at = 0;
+    fl_value *numbers = NULL;
+    const char *names_row[2] = {"k", "v"};
+    fl_value values[2];
+    memset(&start, 0, sizeof start);
+    memset(&reached, 0, sizeof reached);
+    if (!zn_field(obligation_items[index], "id", &id)) {
+      continue;
+    }
+    proof_refs_of(obligation_items[index], &names, &start);
+    for (at = 0; at < start.count; at += 1) {
+      if (seen[start.items[at]] != index + 1u) {
+        seen[start.items[at]] = index + 1u;
+        proof_ids_add(&reached, start.items[at]);
+      }
+    }
+    for (at = 0; at < reached.count; at += 1) {
+      const proof_ids *next = &refs[reached.items[at]];
+      size_t inner = 0;
+      for (inner = 0; inner < next->count; inner += 1) {
+        if (seen[next->items[inner]] != index + 1u) {
+          seen[next->items[inner]] = index + 1u;
+          proof_ids_add(&reached, next->items[inner]);
+        }
+      }
+    }
+    qsort(reached.items, reached.count, sizeof(size_t), proof_id_order);
+    numbers = (fl_value *)calloc(reached.count + 1u, sizeof(fl_value));
+    if (numbers == NULL) {
+      repl_oom();
+    }
+    for (at = 0; at < reached.count; at += 1) {
+      numbers[at] = run_scalar("Скаляр число", "значение", fl_number((double)reached.items[at]));
+    }
+    values[0] = id;
+    values[1] = repl_value_variant_fields("Значение списка", "элементы", repl_value_list(numbers, reached.count));
+    {
+      static const char *const PAIR[] = {"ключ", "значение"};
+      fl_value pair[2];
+      fl_value fields[2];
+      pair[0] = repl_value_say(names_row[0]);
+      pair[1] = values[0];
+      fields[0] = repl_value_record(PAIR, pair, 2);
+      pair[0] = repl_value_say(names_row[1]);
+      pair[1] = values[1];
+      fields[1] = repl_value_record(PAIR, pair, 2);
+      rows[row_count] = repl_value_variant_fields("Значение записи", "поля", repl_value_list(fields, 2));
+    }
+    row_count += 1;
+    free(numbers);
+    free(start.items);
+    free(reached.items);
+  }
+  {
+    fl_value out = repl_value_variant_fields("Значение списка", "элементы", repl_value_list(rows, row_count));
+    for (index = 0; index <= total; index += 1) {
+      free(refs[index].items);
+    }
+    free(refs);
+    free(seen);
+    free(rows);
+    free(decls);
+    free(names.heads);
+    free(names.slots);
+    return out;
+  }
+}
+
+static bool repl_has_function(const char *name) {
+  const fl_entry_table *table = FL_PROGRAM_ENTRY();
+  size_t index = 0;
+  for (index = 0; table != NULL && index < table->param_count; index += 1) {
+    if (table->params[index].function != NULL && strcmp(table->params[index].function, name) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static bool proof_cache_audit_wanted(void) {
+  const char *audit = getenv("FLANG_PROOF_CACHE_AUDIT");
+  return audit != NULL && strcmp(audit, "1") == 0;
+}
+
+static bool repl_same_printed(fl_value left, fl_value right) {
+  fl_value left_text = fl_nothing();
+  fl_value right_text = fl_nothing();
+  const char *left_utf8 = NULL;
+  const char *right_utf8 = NULL;
+  size_t left_bytes = 0;
+  size_t right_bytes = 0;
+  return repl_call_within("Печать значения", &left, 1, &left_text) == FL_OK &&
+         repl_call_within("Печать значения", &right, 1, &right_text) == FL_OK &&
+         val_text(left_text, &left_utf8, &left_bytes) && val_text(right_text, &right_utf8, &right_bytes) &&
+         left_bytes == right_bytes && memcmp(left_utf8, right_utf8, left_bytes) == 0;
+}
+
+static bool repl_kernel_answer(const fl_value *program, fl_value obligations, fl_value runs, const char *entry,
+                               fl_value *verified) {
+  fl_value args[4];
+  fl_value itog = fl_nothing();
+  fl_status said = FL_OK;
+  args[0] = *program;
+  args[1] = obligations;
+  args[2] = runs;
+  proof_cache_open(entry);
+  if (proof_cache.on && repl_has_function("Проверить доказательства по сужениям")) {
+    args[3] = proof_closures(*program, obligations);
+    repl_call_quiet = true;
+    said = repl_call_within("Проверить доказательства по сужениям", args, 4, &itog);
+    repl_call_quiet = false;
+    if (said == FL_OK && val_field(itog, "узел", verified)) {
+      if (getenv("FLANG_PROOF_CACHE_STATS") != NULL) {
+        fl_value narrowed = fl_nothing();
+        fl_value missed = fl_nothing();
+        fprintf(stderr, "кеш доказательств: обязательств по сужению %.0f, без сужения %.0f\n",
+                val_field(itog, "сужено", &narrowed) && narrowed.tag == FL_NUMBER ? narrowed.as.number : 0.0,
+                val_field(itog, "мимо", &missed) && missed.tag == FL_NUMBER ? missed.as.number : 0.0);
+      }
+      if (proof_cache_audit_wanted()) {
+        fl_value plain = fl_nothing();
+        if (repl_call_within("Проверить доказательства", args, 3, &plain) != FL_OK) {
+          return false;
+        }
+        if (!repl_same_printed(plain, *verified)) {
+          fprintf(stderr, "FLANG_PROOF_CACHE_AUDIT: ответ ядра по сужениям разошёлся с ответом по всей программе\n");
+          return false;
+        }
+        fprintf(stderr, "FLANG_PROOF_CACHE_AUDIT: ответ ядра по сужениям совпал с ответом по всей программе\n");
+      }
+      return true;
+    }
+    if (said != FL_OK && strcmp(repl_call_code, "FLANG_UNKNOWN_NAME") != 0) {
+      fprintf(stderr, "%s: %s\n", repl_call_code, repl_call_message);
+      return false;
+    }
+  }
+  return repl_call_within("Проверить доказательства", args, 3, verified) == FL_OK;
+}
+
+static bool repl_ledger_answer(fl_value program, const char *entry, fl_value *verified) {
+  fl_value total = fl_nothing();
+  fl_value descents = fl_nothing();
+  fl_value nodes = fl_nothing();
+  fl_value svod = fl_nothing();
+  fl_value obligations = fl_nothing();
+  fl_value runs = fl_nothing();
+  fl_value pair[2];
+  repl_ctx.steps = 0;
+  repl_ctx.depth = 0;
+  if (repl_call_within("Проверить тотальность", &program, 1, &total) != FL_OK ||
+      !val_field(total, "спуски", &descents) ||
+      repl_call_within("Спуски узлами", &descents, 1, &nodes) != FL_OK) {
+    return false;
+  }
+  pair[0] = program;
+  pair[1] = nodes;
+  if (repl_call_within("Обязательства", pair, 2, &svod) != FL_OK) {
+    return false;
+  }
+  pair[0] = svod;
+  pair[1] = repl_value_say("obligations");
+  if (repl_call_within("Элементы поля", pair, 2, &obligations) != FL_OK) {
+    return false;
+  }
+  pair[0] = program;
+  pair[1] = obligations;
+  if (repl_call_within("Прогоны для ядра", pair, 2, &runs) != FL_OK) {
+    return false;
+  }
+  return repl_kernel_answer(&program, obligations, runs, entry, verified);
+}
+
 
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
                                bool *has_program, repl_strings *proven, bool kernel, bool examples, bool categories,
@@ -5081,7 +5922,6 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
     fl_value verdict = fl_nothing();
     fl_value kernel_bads = fl_nothing();
     fl_value pair[2];
-    fl_value triple[5];
     const bool stages = repl_kernel_stages_wanted();
     double started = 0.0;
     /*
@@ -5148,83 +5988,9 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
       fprintf(stderr, "суд ядра о программе: начата «Проверить доказательства»\n");
       started = machine_now();
     }
-    {
-      const char *kesh_put = getenv(KESH_PEREMENNAYA);
-      char *kesh_stamp = (kesh_put == NULL || kesh_put[0] == '\0') ? NULL : kesh_stamp_read();
-      fl_value kesh_itog = fl_nothing();
-      fl_value kesh_novyy = fl_nothing();
-      fl_value kesh = fl_nothing();
-      triple[0] = *program;
-      triple[1] = obligations;
-      triple[2] = runs;
-      if (kesh_stamp != NULL) {
-        size_t kesh_bytes = 0;
-        char *kesh_text = repl_read_file(kesh_put, &kesh_bytes);
-        if (kesh_text != NULL) {
-          size_t kesh_where = 0;
-          if (!facts_json(kesh_text, &kesh_where, &kesh)) {
-            kesh = fl_nothing();
-          }
-          free(kesh_text);
-        }
-      }
-      triple[3] = kesh;
-      triple[4] = repl_value_say(kesh_stamp == NULL ? "" : kesh_stamp);
-      if (repl_call_within("Проверить доказательства с кешем", triple, 5, &kesh_itog) != FL_OK
-          || !val_field(kesh_itog, "узел", &verified)) {
-        free(kesh_stamp);
-        bads_say(bads, "ядро доказательства прекращено");
-        return false;
-      }
-      /*
-       * ЗАПИСЬ ИДЁТ ДАЖЕ ТОГДА, КОГДА ПРОГРАММА ОТВЕРГНУТА: приговор «не
-       * доказано» стоит тех же шагов, что «доказано», и переспрашивают его
-       * каждым проходом. Замер Ч183: на не закрытых обязательствах уходит
-       * 76–81 % шагов стадии.
-       */
-      if (kesh_stamp != NULL && val_field(kesh_itog, "кеш", &kesh_novyy)) {
-        fl_value printed = fl_nothing();
-        const char *kesh_utf8 = NULL;
-        size_t kesh_printed = 0;
-        if (repl_call("Печать значения", &kesh_novyy, 1, &printed) == FL_OK
-            && val_text(printed, &kesh_utf8, &kesh_printed)) {
-          FILE *kesh_stream = fopen(kesh_put, "wb");
-          if (kesh_stream != NULL) {
-            fwrite(kesh_utf8, 1, kesh_printed, kesh_stream);
-            fclose(kesh_stream);
-          }
-        }
-      }
-      /*
-       * ПРИБОР КЕША: попаданий, промахов, доля — числом, и в КАЖДУЮ печать, где
-       * кеш включён, а не по отдельной переменной среды. До этой строки о кеше
-       * судили по стенным секундам двух прогонов, а стенные секунды меняет ещё
-       * и рост дерева между прогонами: два разных дерева о кеше не говорят
-       * ничего, сколько бы секунд между ними ни было.
-       *
-       * СЧИТАЕТ ЯДРО, а не рантайм: попадание видно только тому, кто сверял
-       * ключ («Спросить кеш» в flang/self/proofterm.flang), а ключа рантайм не
-       * видит ни разу — иначе правило доверия уехало бы из слоя недоверия.
-       * Здесь только названо посчитанное.
-       */
-      if (kesh_stamp != NULL) {
-        fl_value kesh_popal = fl_nothing();
-        fl_value kesh_promah = fl_nothing();
-        double popal = val_field(kesh_itog, "попаданий", &kesh_popal) && kesh_popal.tag == FL_NUMBER
-                           ? kesh_popal.as.number
-                           : 0.0;
-        double promah = val_field(kesh_itog, "промахов", &kesh_promah) && kesh_promah.tag == FL_NUMBER
-                            ? kesh_promah.as.number
-                            : 0.0;
-        double sprosov = popal + promah;
-        if (sprosov > 0.0) {
-          fprintf(stderr, "кеш приговоров: спросов %.0f, попаданий %.0f, промахов %.0f, доля попаданий %.1f %%\n",
-                  sprosov, popal, promah, 100.0 * popal / sprosov);
-        } else {
-          fprintf(stderr, "кеш приговоров: спросов 0 — судить о кеше не по чему\n");
-        }
-      }
-      free(kesh_stamp);
+    if (!repl_kernel_answer(program, obligations, runs, entry, &verified)) {
+      bads_say(bads, "ядро доказательства прекращено");
+      return false;
     }
     if (stages) {
       fprintf(stderr, "суд ядра о программе: «Проверить доказательства» заняла %.2f с\n",
@@ -9337,6 +10103,10 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
   size_t bytes = 0;
   size_t index = 0;
   int code = 0;
+  fl_value kept_program = fl_nothing();
+  bool kept = false;
+  fl_status ledger = FL_OK;
+  bool ledgered = false;
 
   base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
   full = repl_resolve(base, path);
@@ -9447,6 +10217,8 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
      * Ничто в `own` значит «разбор не дошёл» — тогда спрашивают связанную,
      * ровно как спрашивает `check`.
      */
+    kept_program = program;
+    kept = has_program;
     if (has_program) {
       fl_value obstacle = fl_nothing();
       fl_value obstacle_args[2];
@@ -9511,7 +10283,26 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
     }
   }
 
-  if (repl_call("Ведомость исходников", args, 2, &result) != FL_OK) {
+  if (kept && proof_cache_wanted() && repl_has_function("Ведомость исходников с ответом ядра")) {
+    fl_value answer = fl_nothing();
+    if (repl_ledger_answer(kept_program, full, &answer)) {
+      fl_value with_answer[3];
+      with_answer[0] = args[0];
+      with_answer[1] = args[1];
+      with_answer[2] = answer;
+      repl_call_quiet = true;
+      ledger = repl_call("Ведомость исходников с ответом ядра", with_answer, 3, &result);
+      repl_call_quiet = false;
+      ledgered = ledger == FL_OK || strcmp(repl_call_code, "FLANG_UNKNOWN_NAME") != 0;
+      if (ledger != FL_OK && ledgered) {
+        fprintf(stderr, "%s: %s\n", repl_call_code, repl_call_message);
+      }
+    }
+  }
+  if (!ledgered) {
+    ledger = repl_call("Ведомость исходников", args, 2, &result);
+  }
+  if (ledger != FL_OK) {
     code = 1;
   } else if (val_field(result, "годно", &field) && field.tag == FL_FLAG && field.as.flag) {
     proof_tally tally;
@@ -9567,7 +10358,9 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
             code = 2;
           }
           buf_free(&golova);
-          fclose(out);
+          if (fclose(out) == 0 && code != 2) {
+            proof_cache_recheck(full, record);
+          }
         }
       } else {
         fputs("FLANG_CLI: слой ведомости не отдал записи доказательства\n", stderr);
@@ -15847,11 +16640,44 @@ static char *io_path(io_host *host, const char *given, fl_value *bad, bool *ok) 
  * ту же последовательность у всех восьми целей печати — иначе «повторимо»
  * означало бы «повторимо в Node».
  */
-static double io_random(io_host *host) {
+static bool io_entropy(unsigned char *out, size_t count) {
+  size_t got = 0;
+  int fd = open("/dev/urandom", O_RDONLY);
+  if (fd < 0) {
+    return false;
+  }
+  while (got < count) {
+    ssize_t part = read(fd, out + got, count - got);
+    if (part < 0 && errno == EINTR) {
+      continue;
+    }
+    if (part <= 0) {
+      int saved = errno;
+      close(fd);
+      errno = part == 0 ? EIO : saved;
+      return false;
+    }
+    got += (size_t)part;
+  }
+  close(fd);
+  return true;
+}
+
+static bool io_random(io_host *host, double *out) {
   unsigned long state = 0;
   unsigned long t = 0;
   if (!host->seeded) {
-    return (double)rand() / ((double)RAND_MAX + 1.0);
+    unsigned char raw[7];
+    unsigned long long value = 0;
+    size_t at = 0;
+    if (!io_entropy(raw, sizeof(raw))) {
+      return false;
+    }
+    for (at = 0; at < sizeof(raw); at += 1) {
+      value = (value << 8) | (unsigned long long)raw[at];
+    }
+    *out = (double)(value >> 3) / 9007199254740992.0;
+    return true;
   }
   host->seed_state = (host->seed_state + 0x6d2b79f5UL) & 0xffffffffUL;
   state = host->seed_state;
@@ -15859,7 +16685,8 @@ static double io_random(io_host *host) {
   t = ((t ^ (t >> 15)) * (t | 1UL)) & 0xffffffffUL;
   t ^= (t + (((t ^ (t >> 7)) * (t | 61UL)) & 0xffffffffUL)) & 0xffffffffUL;
   t &= 0xffffffffUL;
-  return (double)((t ^ (t >> 14)) & 0xffffffffUL) / 4294967296.0;
+  *out = (double)((t ^ (t >> 14)) & 0xffffffffUL) / 4294967296.0;
+  return true;
 }
 
 /* ── экран: управляющий терминал ─────────────────────────────────────────── */
@@ -17399,8 +18226,52 @@ static fl_value io_perform(io_host *host, fl_value order) {
     if (!host->random) {
       return io_fail("FLANG_IO_DENIED", "хозяину запрещено бросать кости");
     }
-    fields[0] = io_pair("значение", io_number(io_random(host)));
+    {
+      double value = 0.0;
+      if (!io_random(host, &value)) {
+        return io_fail_errno("FLANG_IO_ENTROPY", "источник случайности /dev/urandom не ответил");
+      }
+      fields[0] = io_pair("значение", io_number(value));
+    }
     return io_variant("Выпало", fields, 1);
+  }
+
+  if (io_order_is(order, "Случайные октеты")) {
+    double wanted = 0.0;
+    size_t count = 0;
+    size_t at = 0;
+    unsigned char *raw = NULL;
+    fl_value *values = NULL;
+    fl_value fields[1];
+    fl_value answer = fl_nothing();
+    if (!host->random) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено бросать кости");
+    }
+    if (host->seeded) {
+      return io_fail("FLANG_IO_ENTROPY",
+                     "прогон с семенем обязан повторяться, а тайные октеты повторяться не могут: "
+                     "«Случайные октеты» под --seed не исполняются");
+    }
+    if (!io_order_number(order, "сколько", &wanted) || !(wanted >= 0.0) || wanted > 65536.0 ||
+        wanted != (double)(size_t)wanted) {
+      return io_fail("FLANG_IO_ENTROPY", "«сколько» — целое от 0 до 65536");
+    }
+    count = (size_t)wanted;
+    raw = (unsigned char *)repl_alloc(count == 0 ? 1 : count);
+    if (!io_entropy(raw, count)) {
+      free(raw);
+      return io_fail_errno("FLANG_IO_ENTROPY", "источник случайности /dev/urandom не ответил");
+    }
+    values = count == 0 ? NULL : (fl_value *)repl_alloc(count * sizeof(fl_value));
+    for (at = 0; at < count; at += 1) {
+      values[at] = io_number((double)raw[at]);
+    }
+    memset(raw, 0, count == 0 ? 1 : count);
+    free(raw);
+    fields[0] = io_pair("октеты", io_list(values, count));
+    free(values);
+    answer = io_variant("Октеты", fields, 1);
+    return answer;
   }
 
   if (io_order_is(order, "Прочитать переменную среды")) {
@@ -21578,6 +22449,7 @@ static void human_memory_said(const char *command) {
 
 int fl_human_main(int argc, char **argv, const char *self) {
   const char *command = argc > 1 ? argv[1] : "";
+  proof_cache_argv = argv;
   /* Откуда запущен бинарник — запоминается здесь и только здесь: библиотеку,
      поставленную рядом с ним, ищет `repl_library_places`, а до неё довод
      `self` не доходит (`check` его не получает). */

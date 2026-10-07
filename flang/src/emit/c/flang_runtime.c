@@ -68,6 +68,9 @@
 #include <sys/time.h>
 #include <unistd.h>
 #define FL_WATCH 1
+#define FL_THREAD_LOCAL __thread
+#else
+#define FL_THREAD_LOCAL
 #endif
 
 #ifdef FL_WASM_STACK
@@ -553,14 +556,21 @@ size_t fl_stack_room(void) {
   return fl_stack_known;
 }
 
+static FL_THREAD_LOCAL fl_ctx *fl_watch_ctx = NULL;
+static FL_THREAD_LOCAL int fl_watch_mine = 0;
+
 #ifdef FL_POSIX_STACK
 typedef struct fl_deep_work {
   void (*work)(void *);
   void *state;
+  fl_ctx *watched;
+  int mine;
 } fl_deep_work;
 
 static void *fl_deep_entry(void *raw) {
   fl_deep_work *carry = (fl_deep_work *)raw;
+  fl_watch_ctx = carry->watched;
+  fl_watch_mine = carry->mine;
   carry->work(carry->state);
   return NULL;
 }
@@ -578,6 +588,8 @@ bool fl_call_deep(size_t stack_bytes, void (*work)(void *), void *state) {
   }
   carry.work = work;
   carry.state = state;
+  carry.watched = fl_watch_ctx;
+  carry.mine = fl_watch_mine;
   /*
    * Стек берётся отображением, и под пределом адресного пространства он ОТНИМАЕТ
    * его у арены. Замер, который это и нашёл: под `ulimit -v 16384` восьми
@@ -1255,11 +1267,6 @@ unsigned long fl_say_resident(void) {
  *    контекст в свои структуры, не трогается вовсе.
  * 3. Программа до статики рантайма не дотянется, а до поля контекста дотянулась
  *    бы (см. довод 2 в шапке).
- *
- * ПЛАТА НАЗВАНА: планировщик считает на нескольких потоках ОС (задача 0013), а
- * массив у них один — на многопоточном прогоне снимок может назвать имя из
- * чужого потока. Это искажение ДИАГНОСТИКИ, а не порча расчёта: любой
- * записанный сюда указатель остаётся годным литералом.
  */
 static const char *fl_watch_frames[FL_WATCH_FRAMES];
 
@@ -1269,7 +1276,16 @@ static const char *fl_watch_frames[FL_WATCH_FRAMES];
  * должно. Числа снимаются НА ХОДУ и потому могут отстать на виток — это
  * диагностика, а не учёт.
  */
-static fl_ctx *fl_watch_ctx = NULL;
+static fl_ctx *fl_watch_shown = NULL;
+
+#ifdef FL_POSIX_STACK
+static pthread_once_t fl_watch_once = PTHREAD_ONCE_INIT;
+static pthread_t fl_watch_owner;
+
+static void fl_watch_claim(void) {
+  fl_watch_owner = pthread_self();
+}
+#endif
 
 /* Имя шага от хозяина и готовая строка «повторить». Обе собраны ВНЕ
    обработчика: обработчик их только пишет. */
@@ -1345,10 +1361,10 @@ static void fl_watch_say(int signal_number) {
   ssize_t wrote = 0;
   (void)signal_number;
   fl_watch_want = 1;
-  if (fl_watch_ctx != NULL) {
-    depth = fl_watch_ctx->depth;
-    steps = (unsigned long)fl_watch_ctx->steps;
-    limit = (unsigned long)fl_watch_ctx->max_steps;
+  if (fl_watch_shown != NULL) {
+    depth = fl_watch_shown->depth;
+    steps = (unsigned long)fl_watch_shown->steps;
+    limit = (unsigned long)fl_watch_shown->max_steps;
   }
   seen = depth < FL_WATCH_FRAMES ? depth : FL_WATCH_FRAMES;
 
@@ -1440,7 +1456,7 @@ static void fl_memory_note(size_t asked) {
   if (depth > FL_WATCH_FRAMES) {
     depth = FL_WATCH_FRAMES;
   }
-  fl_memory_seen.function = depth == 0 ? NULL : fl_watch_frames[depth - 1];
+  fl_memory_seen.function = depth == 0 || !fl_watch_mine ? NULL : fl_watch_frames[depth - 1];
 }
 
 static const fl_value *fl_memory_field(const fl_value *value, const char *name, fl_tag tag) {
@@ -1488,6 +1504,18 @@ static void fl_memory_guest(const fl_value *args, size_t count) {
 
 void fl_watch_open(fl_ctx *ctx) {
   fl_watch_ctx = ctx;
+#ifdef FL_POSIX_STACK
+  pthread_once(&fl_watch_once, fl_watch_claim);
+  if (pthread_equal(fl_watch_owner, pthread_self())) {
+    fl_watch_mine = 1;
+  }
+#else
+  fl_watch_mine = 1;
+#endif
+  if (!fl_watch_mine) {
+    return;
+  }
+  fl_watch_shown = ctx;
   fl_say_page_ready();
 #ifdef FL_WATCH
   if (!fl_watch_set) {
@@ -2124,7 +2152,9 @@ fl_status fl_tick(fl_ctx *ctx, const char *function, fl_error *error) {
   fl_pulse_tick(ctx, function);
   fl_ticks_count(function);
   fl_time_open();
-  fl_now = function;
+  if (fl_watch_mine) {
+    fl_now = function;
+  }
   /* Предел 0 — счёт отключён; иначе первый же виток при max_steps == 0 объявил
      бы исчерпанной любую программу. */
   if (ctx->max_steps == 0) {
@@ -2273,7 +2303,9 @@ fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
   }
   fl_pulse(ctx, function);
   fl_enters_count(function);
-  fl_now = function;
+  if (fl_watch_mine) {
+    fl_now = function;
+  }
   /* Вход в функцию — тоже виток: иначе нерекурсивная по хвосту, но бесконечно
      ветвящаяся программа считала бы глубину и не считала шаги. */
   FL_TRY(fl_tick(ctx, function, error));
@@ -2296,7 +2328,7 @@ fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
    * не тронуты. `fl_leave` ничего не стирает нарочно: глубина убывает сама, и
    * снимок читает `frames[depth - 1]`, то есть всегда живой кадр.
    */
-  if (ctx->depth < FL_WATCH_FRAMES) {
+  if (fl_watch_mine && ctx->depth < FL_WATCH_FRAMES) {
     fl_watch_frames[ctx->depth] = function;
   }
   ctx->depth += 1;

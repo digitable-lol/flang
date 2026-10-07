@@ -122,7 +122,10 @@ export function хозяинВкладки(options = {}) {
   const часы = options.часы ?? (() => Date.now())
   const отложить = options.отложить ?? ((что, через) => setTimeout(что, через))
   const снять = options.снять ?? ((метка) => clearTimeout(метка))
-  const бросить = typeof options.бросить === "function" ? options.бросить : Math.random
+  const бросить = typeof options.бросить === "function" ? options.бросить : () => {
+    const октеты = crypto.getRandomValues(new Uint32Array(2))
+    return ((октеты[0] >>> 5) * 67108864 + (октеты[1] >>> 6)) / 9007199254740992
+  }
   const вместимость = options.очередь ?? 64
 
   /* Случившееся, но ещё не отданное плану. Пока план считает, человек нажимает,
@@ -241,6 +244,19 @@ export function хозяинВкладки(options = {}) {
       case "Случайное число": {
         if (!можно.случайность) return сбой("FLANG_IO_DENIED", "хозяину запрещено бросать кости")
         return вариант("Выпало", { значение: бросить() })
+      }
+
+      case "Случайные октеты": {
+        if (!можно.случайность) return сбой("FLANG_IO_DENIED", "хозяину запрещено бросать кости")
+        const сколько = поля["сколько"]
+        if (!Number.isInteger(сколько) || сколько < 0 || сколько > 65536) {
+          return сбой("FLANG_IO_ENTROPY", "«сколько» — целое от 0 до 65536")
+        }
+        const октеты = new Uint8Array(сколько)
+        for (let начало = 0; начало < сколько; начало += 65536) {
+          crypto.getRandomValues(октеты.subarray(начало, Math.min(сколько, начало + 65536)))
+        }
+        return вариант("Октеты", { октеты: Array.from(октеты) })
       }
 
       /* ── файлов у вкладки нет ────────────────────────────────────────────────

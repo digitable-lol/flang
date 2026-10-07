@@ -1,0 +1,9 @@
+program	keys	runs	code	word
+octets.fscript	-	1	0	"result":"октетов 32: 
+octets.fscript	-	2	0	два прогона разошлись
+octets.fscript	--no-random	1	1	"code":"FLANG_IO_DENIED","message":"хозяину запрещено бросать кости"
+octets.fscript	--seed 7	1	1	"code":"FLANG_IO_ENTROPY"
+too-many.fscript	-	1	1	"code":"FLANG_IO_ENTROPY","message":"«сколько» — целое от 0 до 65536"
+number.fscript	-	2	0	два прогона разошлись
+number.fscript	--seed 7	2	0	два прогона совпали
+number.fscript	--no-random	1	1	"code":"FLANG_IO_DENIED","message":"хозяину запрещено бросать кости"

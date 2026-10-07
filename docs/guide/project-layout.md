@@ -68,7 +68,7 @@ parsing, and no "who is allowed to borrow" condition. All of that lives in
 DESCRIBED but not performed: `вариант «Прочитать файл» с путь равным …` builds a
 value — an order — and the host carries it out
 ([`docs/flang/SPEC.md`](../flang/SPEC.md), the "Ввод-вывод" section). There are
-24 orders, the set is closed, and connections are in it —
+25 orders, the set is closed, and connections are in it —
 <!-- СНЯТО 2026-10-04 список flang/self/parser.flang:5985 = 24 -->
 `«Принять соединение»`, `«Прочитать из соединения»`, `«Ответить в соединение»`.
 The boundary does not run along those; it runs along this section's own rule:

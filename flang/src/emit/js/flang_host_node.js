@@ -99,6 +99,7 @@
 import { mkdtempSync, readFileSync, readdirSync, realpathSync, rmdirSync, unlinkSync, writeFileSync } from "node:fs"
 import { dirname, isAbsolute, join, resolve, sep } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
+import { randomBytes } from "node:crypto"
 
 /** Что хозяину позволено. Умолчание — можно всё: запуск и есть согласие. */
 const ПОЛНЫЕ_ПРАВА = Object.freeze({
@@ -283,6 +284,18 @@ export function хозяинУзла(options = {}) {
         return вариант("Выпало", { значение: бросить() })
       }
 
+      case "Случайные октеты": {
+        if (!можно.случайность) return сбой("FLANG_IO_DENIED", "хозяину запрещено бросать кости")
+        if (typeof options.семя === "number" && Number.isFinite(options.семя)) {
+          return сбой("FLANG_IO_ENTROPY", "прогон с семенем обязан повторяться, а тайные октеты повторяться не могут: «Случайные октеты» под --seed не исполняются")
+        }
+        const сколько = поля["сколько"]
+        if (!Number.isInteger(сколько) || сколько < 0 || сколько > 65536) {
+          return сбой("FLANG_IO_ENTROPY", "«сколько» — целое от 0 до 65536")
+        }
+        return вариант("Октеты", { октеты: Array.from(randomBytes(сколько)) })
+      }
+
       case "Прочитать переменную среды": {
         if (!можно.среда) return сбой("FLANG_IO_DENIED", "хозяину запрещено читать среду")
         const имя = поля["имя"]
@@ -404,7 +417,9 @@ function одинокийСуррогат(строка) {
  * дало бы другую последовательность на той же формуле.
  */
 function кости(семя) {
-  if (typeof семя !== "number" || !Number.isFinite(семя)) return Math.random
+  if (typeof семя !== "number" || !Number.isFinite(семя)) {
+    return () => Number(randomBytes(8).readBigUInt64BE() >> 11n) / 9007199254740992
+  }
   /* Семя 0 подменяется тем же числом, что в двоичном: у mulberry32 нулевое
      состояние — законное, но `flang io --seed 0` берёт 0x9e3779b9, и разойтись
      двум хозяевам на одном ключе нельзя. */

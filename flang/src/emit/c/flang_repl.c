@@ -812,7 +812,10 @@ static const char HELP_IO[] =
     "\n"
     "  --plan «Имя»    какой план исполнять, если их несколько\n"
     "  --max-orders N  предел поручений за прогон (по умолчанию 10000)\n"
-    "  --seed N        семя случайности: прогон становится повторимым\n"
+    "  --seed N        семя случайности: прогон становится повторимым.\n"
+    "                  «Случайное число» без семени берёт /dev/urandom;\n"
+    "                  «Случайные октеты» берут его всегда, а под семенем\n"
+    "                  отказывают кодом FLANG_IO_ENTROPY\n"
     "  --in-dir        запретить пути за пределы каталога входного файла\n"
     "  --max-steps N   предел шагов вычисления на один виток\n"
     "  --timeout МС    срок ТИШИНЫ процесса из «Запустить процесс», миллисекундами\n"
@@ -16628,11 +16631,44 @@ static char *io_path(io_host *host, const char *given, fl_value *bad, bool *ok) 
  * ту же последовательность у всех восьми целей печати — иначе «повторимо»
  * означало бы «повторимо в Node».
  */
-static double io_random(io_host *host) {
+static bool io_entropy(unsigned char *out, size_t count) {
+  size_t got = 0;
+  int fd = open("/dev/urandom", O_RDONLY);
+  if (fd < 0) {
+    return false;
+  }
+  while (got < count) {
+    ssize_t part = read(fd, out + got, count - got);
+    if (part < 0 && errno == EINTR) {
+      continue;
+    }
+    if (part <= 0) {
+      int saved = errno;
+      close(fd);
+      errno = part == 0 ? EIO : saved;
+      return false;
+    }
+    got += (size_t)part;
+  }
+  close(fd);
+  return true;
+}
+
+static bool io_random(io_host *host, double *out) {
   unsigned long state = 0;
   unsigned long t = 0;
   if (!host->seeded) {
-    return (double)rand() / ((double)RAND_MAX + 1.0);
+    unsigned char raw[7];
+    unsigned long long value = 0;
+    size_t at = 0;
+    if (!io_entropy(raw, sizeof(raw))) {
+      return false;
+    }
+    for (at = 0; at < sizeof(raw); at += 1) {
+      value = (value << 8) | (unsigned long long)raw[at];
+    }
+    *out = (double)(value >> 3) / 9007199254740992.0;
+    return true;
   }
   host->seed_state = (host->seed_state + 0x6d2b79f5UL) & 0xffffffffUL;
   state = host->seed_state;
@@ -16640,7 +16676,8 @@ static double io_random(io_host *host) {
   t = ((t ^ (t >> 15)) * (t | 1UL)) & 0xffffffffUL;
   t ^= (t + (((t ^ (t >> 7)) * (t | 61UL)) & 0xffffffffUL)) & 0xffffffffUL;
   t &= 0xffffffffUL;
-  return (double)((t ^ (t >> 14)) & 0xffffffffUL) / 4294967296.0;
+  *out = (double)((t ^ (t >> 14)) & 0xffffffffUL) / 4294967296.0;
+  return true;
 }
 
 /* ── экран: управляющий терминал ─────────────────────────────────────────── */
@@ -18180,8 +18217,52 @@ static fl_value io_perform(io_host *host, fl_value order) {
     if (!host->random) {
       return io_fail("FLANG_IO_DENIED", "хозяину запрещено бросать кости");
     }
-    fields[0] = io_pair("значение", io_number(io_random(host)));
+    {
+      double value = 0.0;
+      if (!io_random(host, &value)) {
+        return io_fail_errno("FLANG_IO_ENTROPY", "источник случайности /dev/urandom не ответил");
+      }
+      fields[0] = io_pair("значение", io_number(value));
+    }
     return io_variant("Выпало", fields, 1);
+  }
+
+  if (io_order_is(order, "Случайные октеты")) {
+    double wanted = 0.0;
+    size_t count = 0;
+    size_t at = 0;
+    unsigned char *raw = NULL;
+    fl_value *values = NULL;
+    fl_value fields[1];
+    fl_value answer = fl_nothing();
+    if (!host->random) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено бросать кости");
+    }
+    if (host->seeded) {
+      return io_fail("FLANG_IO_ENTROPY",
+                     "прогон с семенем обязан повторяться, а тайные октеты повторяться не могут: "
+                     "«Случайные октеты» под --seed не исполняются");
+    }
+    if (!io_order_number(order, "сколько", &wanted) || !(wanted >= 0.0) || wanted > 65536.0 ||
+        wanted != (double)(size_t)wanted) {
+      return io_fail("FLANG_IO_ENTROPY", "«сколько» — целое от 0 до 65536");
+    }
+    count = (size_t)wanted;
+    raw = (unsigned char *)repl_alloc(count == 0 ? 1 : count);
+    if (!io_entropy(raw, count)) {
+      free(raw);
+      return io_fail_errno("FLANG_IO_ENTROPY", "источник случайности /dev/urandom не ответил");
+    }
+    values = count == 0 ? NULL : (fl_value *)repl_alloc(count * sizeof(fl_value));
+    for (at = 0; at < count; at += 1) {
+      values[at] = io_number((double)raw[at]);
+    }
+    memset(raw, 0, count == 0 ? 1 : count);
+    free(raw);
+    fields[0] = io_pair("октеты", io_list(values, count));
+    free(values);
+    answer = io_variant("Октеты", fields, 1);
+    return answer;
   }
 
   if (io_order_is(order, "Прочитать переменную среды")) {

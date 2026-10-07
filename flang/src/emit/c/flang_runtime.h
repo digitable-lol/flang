@@ -402,6 +402,7 @@ typedef struct fl_ctx {
   size_t stack_step;
   size_t depth_peak;
   size_t copied;
+  size_t lane;
 } fl_ctx;
 
 void fl_ctx_init(fl_ctx *ctx, fl_arena *arena);
@@ -1047,5 +1048,16 @@ size_t fl_memo_lasting_fresh(const fl_memo_lasting_record **out);
 size_t fl_memo_lasting_used(size_t index, const fl_memo_lasting_record **out);
 void fl_memo_lasting_counts(unsigned long long *loaded, unsigned long long *hits, unsigned long long *fresh,
                             unsigned long long *lost);
+
+typedef fl_status (*fl_par_item)(fl_ctx *ctx, fl_value item, const fl_value *env, fl_value *result,
+                                 fl_error *error);
+typedef fl_status (*fl_par_pair)(fl_ctx *ctx, fl_value left, fl_value right, const fl_value *env,
+                                 fl_value *result, fl_error *error);
+
+size_t fl_par_threads(void);
+fl_status fl_par_map(fl_ctx *ctx, fl_value list, fl_par_item body, const fl_value *env, fl_value *items,
+                     fl_error *error);
+fl_status fl_par_fold(fl_ctx *ctx, fl_value list, fl_value start, fl_par_pair step, const fl_value *env,
+                      fl_value *result, fl_error *error);
 
 #endif /* FLANG_RUNTIME_H */

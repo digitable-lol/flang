@@ -347,10 +347,10 @@ bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 90000
 работу CI. Полный разбор четырёх покрытий — [`docs/four-coverages.md`](four-coverages.md).
 
 **Правила.** 109 строк перечня `flang/proof/tables/inference-rules.tsv`, у всех 109 есть лемма в
-`flang/proof/lean/`; отношение приёмки Lean покрывает 76 правил вывода из 97 — шаг по
-правилу вне приёмки второй судья не судит вовсе
-([`docs/lean-checks-the-inference-rules.md`](lean-checks-the-inference-rules.md); Lean на
-машине этого замера не стоит, прогон Lean не повторялся — счёт лемм и приёмки снят текстом).
+`flang/proof/lean/`; отношение приёмки Lean покрывает все 83 приёма `шаг_вывода`
+проверяющей программы, и каждый принятый блок «вывод» выводит цель по теореме
+([`docs/lean-checks-the-inference-rules.md`](lean-checks-the-inference-rules.md);
+`bootstrap/flang run-script lean-rules:numbers`).
 
 Прежние числа этого раздела — «между 67,2 % и 69,6 %», «9089 из 13 528» — были
 о другом: о доле обязательств всего дерева, снятой двумя разными двоичными и с

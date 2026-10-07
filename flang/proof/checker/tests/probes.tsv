@@ -388,7 +388,7 @@ P	6202: вызов подставляет литерал выше К_предс�
 C	6202: зовущий подаёт выражение — закрыть нечем, третий исход	flang/proof/checker/tests/families/inference/repr-call-nothing-to-close-with.flang	flang/proof/checker/tests/families/inference/repr-call-nothing-to-close-with.record	-	-	-	-	3	сверщик закрыть не смог	-	-
 say		-	-	-	-	-	-	-	-	-	-
 say	── ведро Е (ADR-0027, семейство Р): гипотезы ГипО/ГипД, Р1/Р3/Р4/Р5/Р6, Выч, Или1/Или2 ──	-	-	-	-	-	-	-	-	-	-
-C	Р: охрана ГипО → С4 из шага → Разв2 → Р1	flang/test/fixtures/poddelka-strict-order.flang	flang/proof/checker/tests/families/inference/golden/strict-order.record	-	-	-	-	3	-	-	facts=3
+C	Р: охрана ГипО → С4 из шага → Разв2 → Р1	flang/test/fixtures/poddelka-strict-order.flang	flang/proof/checker/tests/families/inference/golden/strict-order.record	-	-	-	-	0	-	-	facts=3
 C	Р: ГипО → Р5 (ветвь пусто) / Р6 (начало свёртки) → Р1	flang/test/fixtures/poddelka-builtin-emptiness-fact.flang	flang/proof/checker/tests/families/inference/golden/builtin-emptiness.record	-	-	-	-	0	-	-	facts=4
 C	Р: ГипД ×2 → П2 из шага / Или1, Или2 → Р4 → Разв2	flang/test/fixtures/poddelka-razbor-sluchaev.flang	flang/proof/checker/tests/families/inference/golden/case-breakdown.record	-	-	-	-	0	-	-	facts=2
 C	Р: Выч ×2 → Р3 сличением половин → Разв2	flang/proof/examples/corpus-hof.flang	flang/proof/checker/tests/families/inference/golden/corpus-hof.record	-	-	-	-	0	-	-	facts=5
@@ -425,7 +425,7 @@ P	Е-5, И1: взята правая половина конъюнкции	flang
 C	группа А: СС1/СС3, О1/О6, В2/В3, П2 из «равно» (abilities)	flang/proof/map/abilities.flang	flang/proof/checker/tests/families/inference/golden/abilities.record	-	-	-	-	3	-	-	facts=13
 C	группа А: В2 (equality)	flang/proof/map/equality.flang	flang/proof/checker/tests/families/inference/golden/equality.record	-	-	-	-	0	-	-	facts=2
 C	группа А и Д3: О2/О4 от дна длины, Д3 и С3 (boundaries)	flang/proof/map/boundaries.flang	flang/proof/checker/tests/families/inference/golden/boundaries.record	-	-	-	-	0	-	-	facts=6
-C	Д3 и С3: отданное строго больше нуля (strict-order :95)	flang/test/fixtures/poddelka-strict-order.flang	flang/proof/checker/tests/families/inference/golden/strict-order-sum-floor.record	-	-	-	-	3	-	-	facts=3
+C	Д3 и С3: отданное строго больше нуля (strict-order :95)	flang/test/fixtures/poddelka-strict-order.flang	flang/proof/checker/tests/families/inference/golden/strict-order-sum-floor.record	-	-	-	-	0	-	-	facts=3
 P	Д3: написанное дно 2 при донах 1 и 0 — ложна только сумма (цель и Разв2 согласованы)	flang/proof/checker/tests/families/inference/corrupt/boundaries-two.flang	flang/proof/checker/tests/families/inference/corrupt/boundaries-two.record	-	-	-	-	1	-	-	-
 P	Д3 (довесок): дно 2 при донах 1 и 0 — ловится и Разв2, не только суммой	flang/proof/map/boundaries.flang	flang/proof/checker/tests/families/inference/golden/boundaries.record	-	s/вывод 3 Д3 ⟨1 не больше ( 1 плюс ( длина элементы ) )⟩ из 1 2/вывод 3 Д3 ⟨2 не больше ( 1 плюс ( длина элементы ) )⟩ из 1 2/	-	-	1	-	-	-
 P	Д3: отрицательное дно — не литерал	flang/proof/map/boundaries.flang	flang/proof/checker/tests/families/inference/golden/boundaries.record	-	s/вывод 3 Д3 ⟨( 1 плюс ( длина элементы ) ) не меньше 1⟩ из 1 2/вывод 3 Д3 ⟨( 1 плюс ( длина элементы ) ) не меньше ( 0 минус 1 )⟩ из 1 2/	-	-	1	-	-	-

@@ -17,6 +17,7 @@ name	family	kind	kernel-rule	anchor	status
 Кон3	Кон	rule	неотрицательность по построению|ограниченность точным потолком по построению|порядок по построению|строгий порядок по построению	proof-kernel.flang:722 «Конечное охраной»	code
 Цел1	Кон	rule	неотрицательность по построению|ограниченность точным потолком по построению	proof-kernel.flang:3365 «Это целость терма»	code
 Цел2	Кон	rule	неотрицательность по построению|ограниченность точным потолком по построению	proof-kernel.flang:3324 «Целое по типу»	code
+Цел3	Кон	rule	порядок по построению	proof-kernel.flang:5967 «Дно над строгим»	code
 П1	П	rule	ограниченность точным потолком по построению	proof-kernel.flang:1753 «Литерал ограничен»	code-stricter
 П2	П	rule	ограниченность точным потолком по построению	proof-kernel.flang:1785 «Граница допущения годится»	code
 П3	П	rule	ограниченность точным потолком по построению	proof-kernel.flang:1765 «Ограниченное по типу»	code
@@ -86,6 +87,8 @@ name	family	kind	kernel-rule	anchor	status
 Инд2	Инд	rule	—	proof-kernel.flang:5454 «Свёртка по пустому»	not-in-adr
 Инд3	Инд	rule	—	proof-kernel.flang:5487 «Свёртка по звену»	not-in-adr
 Инд4	Инд	rule	—	proof-kernel.flang:5799 «Строка под разложением»	not-in-adr
+Инд5	Инд	rule	—	proof-kernel.flang:5934 «Отрезок даёт принцип утверждению»	code
+Инд6	Инд	rule	—	proof-kernel.flang:6000 «Сумма перебирается»	code
 Т1	Т	rule	цель есть допущение	proof-kernel.flang:4540 «Есть допущением»	code-narrower
 Т2	Т	rule	цель есть допущение	proof-kernel.flang:4547 «Есть допущением с переименованием»	code
 Р1	Р	rule	разбор цели по условию	proof-kernel.flang:4110 «Ветвлением»	code

@@ -1,6 +1,6 @@
 ---
 номер: 0048
-заголовок: Запрос по https ведёт внешний curl — рукопожатие TLS на flang обрывается после ServerHello
+заголовок: Запрос по https ведёт внешний curl — рукопожатие TLS на flang проходит только напечатанным C
 статус: свободна
 приоритет: P2
 исполнитель: —
@@ -11,52 +11,34 @@
 нужность: язык считает все части защищённого соединения, но само соединение отдаёт чужой программе
 ---
 
-# 0048. Запрос по https ведёт внешний curl — рукопожатие TLS на flang обрывается после ServerHello
+# 0048. Запрос по https ведёт внешний curl — рукопожатие TLS на flang проходит только напечатанным C
 
 ## Шаги воспроизведения
 
-1. Программа из дерева: `docs/examples/https/tls-hello-to-a-real-host.flang`
-   (открывает соединение к example.com:443, шлёт свой ClientHello, читает ответ).
+1. Программа из дерева: `docs/examples/https/https-get.flang`.
 2. Команды:
 
 ```
-bootstrap/flang io docs/examples/https/tls-hello-to-a-real-host.flang --plan 'Привет узлу' --trust
-grep -a -n 'define IO_TLS_PROGRAM' bootstrap/flang_repl.c
-grep -a -c -i 'pss' flang/stdlib/rsa.flang
+bootstrap/flang run-script tls:engine
+bootstrap/flang run-script tls:get
+bootstrap/flang io docs/examples/https/https-get.flang -- www.google.com /generate_204
 ```
 
-3. Смотреть: докуда доходит рукопожатие и чем исполняется поручение «Запросить»
-   с адресом https.
+3. Смотреть: чем считается рукопожатие (третья команда — толкователем) и чем
+   исполняется поручение «Запросить» с адресом https.
 
 ## Что происходит
 
-```
-$ bootstrap/flang io docs/examples/https/tls-hello-to-a-real-host.flang --plan 'Привет узлу' --trust
-{"plan":"Привет узлу","result":"октетов принято 3934, целых записей 3; первая
- запись: тип Handshake, версия TLS 1.2, длина 90; ServerHello, версия TLS 1.3,
- набор TLS_AES_128_GCM_SHA256, группа ecdh_x25519, ключ сервера CC5A…A434",
- "orders":3,…}                                                   код 0, 25 с
-$ grep -a -n 'define IO_TLS_PROGRAM' bootstrap/flang_repl.c
-16167:#define IO_TLS_PROGRAM "curl"                               код 0
-$ grep -a -c -i 'pss' flang/stdlib/rsa.flang
-0                                                                 код 1
-```
+Рукопожатие TLS 1.3 собрано на языке целиком (ADR-0078): RSA-PSS, X25519 в доле
+ключа, расписание секретов и стенограмма, слой записей AES-128-GCM, цепочка до
+корня из связки и имя узла. `docs/examples/https/https-get.flang` получает
+`HTTP/1.1 204 No Content` от `www.google.com` — но только когда счёт ведёт
+напечатанный C (`bootstrap/flang run-script tls:engine`), а план зовёт его
+поручением `«Запустить процесс»`. Толкователем одна X25519 стоит 158,7 с, а узел
+ждёт Finished клиента не дольше ~9 с: рукопожатие толкователем не завершается.
 
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026. Ключ сервера в каждом
-соединении свой, а номер строки в `bootstrap/flang_repl.c` сдвигается с каждой
-перепечаткой семени: ни то, ни другое приметой не считать.
-
-ServerHello разобран, дальше рукопожатие не идёт. Мешают четыре вещи:
-
-- обмен ключами не связан с рукопожатием: «Умножить точку» из
-  `flang/stdlib/x25519.flang` в `flang/stdlib/tls.flang` не ввозится, имя «Нули»
-  есть в обоих модулях;
-- подпись сервера проверить нечем: CertificateVerify подписан RSA-PSS, а в
-  `flang/stdlib/rsa.flang` есть только PKCS#1 v1.5;
-- тайный ключ взять неоткуда: поручение «Случайное число» без `--seed` зовёт
-  `rand()` без `srand()` и даёт одно и то же число в каждом прогоне;
-- счёт медленный: расшифровка одной записи AES-128-GCM толкователем занимает
-  десятки секунд, сервер закрывает соединение раньше.
+Ключ берётся поручением `«Случайные октеты»` (ADR-0077), которое двоичный
+ствола не знает до партии печати.
 
 ## Что должно быть
 

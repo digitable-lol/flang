@@ -44,6 +44,11 @@ import «Приёмка»
 | К↑ | «К↑» (проекция произведения) | «полеСтороны-значение», «собрать2-замена» здесь |
 | Разв1 (сумма) | «Разв1-сумма» (ветвь своего варианта) | «ветвь?-значение», «поляИмён-мир», «подстПар-значение» здесь |
 | Разв3 | «Разв3» (β-редукция) | своё тело — «подстановка» + факт «результат равен телу»; вызов — «замФ-верно», «развёрнут?-верно» + факт «функция равна телу» здесь |
+| Выч | «Выч-звено», «Выч-вариант» (замкнутый счёт) | «вычФ-верно», «вычЧ-верно» здесь: ответ счёта — значение формулы в каждом мире |
+| Р2, Р3 | «Р2», «Р3» (разбор случаев по значению условия) | «замФ-верно» с «кусок-верно» здесь: на месте условия — литерал того же значения |
+| Р5 | «Р5» (ветвь «пусто» разбора) | «Р5-мир», «пустота?-верно» + факт «результат равен телу» здесь |
+| Р6 | «Р6» (начало свёртки по пустому списку) | «Р6-мир», «пустота?-верно» + факт «результат равен телу» здесь |
+| Разв1 (строка тела) | «Выч-звено» (ветвь разбора выписанного списка) | «ветвьСписка?-значение» («подстПарТ-значение»), затем как Разв3 по своему телу |
 
 До задачи 3855 у строк Или1, Или2, И1, И2, Цел1, Цел2 лемм в `Rules.lean`
 не было: случаи Или/И закрывались здесь своими леммами о булевых связках, а
@@ -51,11 +56,11 @@ import «Приёмка»
 
 ## Подмножество — числом
 
-Теорема доказана для 78 правил приёмки (`«покрыто» = 78`, проверено
-`decide`) из 83 приёмов `шаг_вывода`; из 15 именованных — для 15 (Разв1 — для
-разбора выписанного конструктора суммы, Разв1 по строке тела вне приёмки).
-Пять непокрытых и почему — в шапке `Acceptance.lean`; что их ровно пять и у каждого
-есть строка долга, стережёт `rules-guard.fscript` (ADR-0064).
+Теорема доказана для всех 83 приёмов `шаг_вывода` (`«покрыто» = 83`, проверено
+`decide`); Разв1 — и для разбора выписанного конструктора суммы, и для разбора
+выписанного списка в теле функции. Что приёмов у сверщика ровно столько и у каждого
+есть приёмка, стережёт `rules-guard.fscript` (ADR-0064). Чего модель не читает и где
+она строже сверщика — в шапке `Acceptance.lean`.
 -/
 
 set_option linter.unusedVariables false
@@ -804,6 +809,13 @@ theorem «замС-верно» (H : «Тело» → «Тело» → Bool) (w 
       · exact «попаданиеС» HH hH
       · subst he; rfl
       · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«разборС» x1 x2 x3 x4 x5, b, h => by
+      unfold «замС» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеС» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
   | .«вызовС» x1 x2, b, h => by
       unfold «замС» at h
       simp only [Bool.or_eq_true, decide_eq_true_eq] at h
@@ -1517,6 +1529,276 @@ theorem «развёрнут?-верно» (d : «Определение») (w :
     · cases h
   · cases h
 
+/-! ## Выч, Р2, Р3: замкнутый счёт и разбор случаев по условию (задачи 1183, 4791) -/
+
+theorem «длинаС?-верно» : ∀ (l : «ТермС») (n : Nat), «длинаС?» l = some n → ∀ w, («оценитьС» l w).length = n
+  | .«пустой», n, h, w => by simp [«длинаС?»] at h; simp [«оценитьС», h]
+  | .«имяС» _, n, h, w => by simp [«длинаС?»] at h
+  | .«выписан» d, n, h, w => by
+      simp only [«длинаС?», Option.some.injEq] at h; subst h
+      simp only [«оценитьС»]; exact «членов-длина» d w
+  | .«приписать» e l, n, h, w => by
+      simp only [«длинаС?», Option.map_eq_some_iff] at h
+      obtain ⟨k, hk, rfl⟩ := h
+      simp [«оценитьС», «длинаС?-верно» l k hk w]
+  | .«добавить» e l, n, h, w => by
+      simp only [«длинаС?», Option.map_eq_some_iff] at h
+      obtain ⟨k, hk, rfl⟩ := h
+      simp [«оценитьС», «длинаС?-верно» l k hk w]
+  | .«отбор» _ _ _, n, h, w => by simp [«длинаС?»] at h
+  | .«еслиС» _ _ _, n, h, w => by simp [«длинаС?»] at h
+  | .«свёрткаС» _ _ _ _ _, n, h, w => by simp [«длинаС?»] at h
+  | .«отобразить» _ _ _, n, h, w => by simp [«длинаС?»] at h
+  | .«разборС» _ _ _ _ _, n, h, w => by simp [«длинаС?»] at h
+  | .«вызовС» _ _, n, h, w => by simp [«длинаС?»] at h
+
+theorem «арифм?-верно» (op : Int → Int → Int) (F : «Знач» → «Знач» → «Знач»)
+    (hF : ∀ x y : Int, -«порог» ≤ op x y → op x y ≤ «порог» → F (.«кон» x) (.«кон» y) = .«кон» (op x y))
+    {ox oy : Option «Знач»} {v : «Знач»} (h : «арифм?» op ox oy = some v) :
+    ∃ x y, ox = some x ∧ oy = some y ∧ F x y = v := by
+  unfold «арифм?» at h
+  split at h
+  · rename_i x y
+    unfold «точно?» at h
+    split at h
+    · rename_i hr
+      cases h
+      exact ⟨_, _, rfl, rfl, hF x y hr.1 hr.2⟩
+    · cases h
+  · cases h
+
+theorem «остаток?-верно» {ox oy : Option «Знач»} {v : «Знач»} (h : «остаток?» ox oy = some v) :
+    ∃ x y, ox = some x ∧ oy = some y ∧ «остаток» x y = v := by
+  unfold «остаток?» at h
+  split at h
+  · rename_i x y
+    split at h
+    · cases h
+    · rename_i hy
+      cases h
+      exact ⟨_, _, rfl, rfl, by simp [«остаток», hy]⟩
+  · cases h
+
+theorem «выбор?-верно» {α : Type} {c : Option Bool} {a b : Option α} {v : α} (h : «выбор?» c a b = some v) :
+    (c = some true ∧ a = some v) ∨ (c = some false ∧ b = some v) := by
+  unfold «выбор?» at h
+  split at h
+  · exact Or.inl ⟨rfl, h⟩
+  · exact Or.inr ⟨rfl, h⟩
+  · cases h
+
+theorem «сравн?-верно» {r : «Знач» → «Знач» → Bool} {ox oy : Option «Знач»} {b : Bool}
+    (h : «сравн?» r ox oy = some b) : ∃ x y, ox = some x ∧ oy = some y ∧ r x y = b := by
+  unfold «сравн?» at h
+  split at h
+  · cases h; exact ⟨_, _, rfl, rfl, rfl⟩
+  · cases h
+
+theorem «иО-верно» {oa ob : Option Bool} {r va vb : Bool} (h : «иО» oa ob = some r)
+    (ha : ∀ x, oa = some x → va = x) (hb : ∀ x, ob = some x → vb = x) : (va && vb) = r := by
+  rcases oa with _ | ⟨_ | _⟩ <;> rcases ob with _ | ⟨_ | _⟩ <;>
+    simp only [«иО», Option.some.injEq, reduceCtorEq] at h <;>
+    simp_all
+
+theorem «илиО-верно» {oa ob : Option Bool} {r va vb : Bool} (h : «илиО» oa ob = some r)
+    (ha : ∀ x, oa = some x → va = x) (hb : ∀ x, ob = some x → vb = x) : (va || vb) = r := by
+  rcases oa with _ | ⟨_ | _⟩ <;> rcases ob with _ | ⟨_ | _⟩ <;>
+    simp only [«илиО», Option.some.injEq, reduceCtorEq] at h <;>
+    simp_all
+
+theorem «плюс-точно» (w : «Мир») (x y : Int) (h1 : -«порог» ≤ x + y) (h2 : x + y ≤ «порог») :
+    «плюс» w.«о» (.«кон» x) (.«кон» y) = .«кон» (x + y) := by
+  simp only [«плюс», «чис»]; exact w.«о».«точно» _ h1 h2
+
+theorem «минус-точно» (w : «Мир») (x y : Int) (h1 : -«порог» ≤ x - y) (h2 : x - y ≤ «порог») :
+    «минус» w.«о» (.«кон» x) (.«кон» y) = .«кон» (x - y) := by
+  unfold «минус» «отр»
+  by_cases hy : y = 0
+  · subst hy
+    simp only [ite_true, «плюс», «чис», Int.add_zero, Int.sub_zero]
+    exact w.«о».«точно» _ (by omega) (by omega)
+  · simp only [hy, ite_false, «плюс», «чис»]
+    rw [show x + -y = x - y by omega]
+    exact w.«о».«точно» _ h1 h2
+
+theorem «умножить-точно» (w : «Мир») (x y : Int) (h1 : -«порог» ≤ x * y) (h2 : x * y ≤ «порог») :
+    «умножить» w.«о» (.«кон» x) (.«кон» y) = .«кон» (x * y) := by
+  simp only [«умножить», «беск», «чис», Bool.or_false, ite_false, Bool.false_eq_true]
+  exact w.«о».«точно» _ h1 h2
+
+mutual
+theorem «вычЧ-верно» : ∀ (t : «ТермЧ») (v : «Знач»), «вычЧ» t = some v → ∀ w, «оценить» t w = v
+  | .«лит» n, v, h, w => by simp only [«вычЧ», Option.some.injEq] at h; subst h; rfl
+  | .«имя» _, v, h, w => by simp [«вычЧ»] at h
+  | .«плюс» a b, v, h, w => by
+      simp only [«вычЧ»] at h
+      obtain ⟨x, y, hx, hy, hv⟩ := «арифм?-верно» _ («плюс» w.«о») («плюс-точно» w) h
+      simp only [«оценить»]; rw [«вычЧ-верно» a x hx w, «вычЧ-верно» b y hy w]; exact hv
+  | .«минус» a b, v, h, w => by
+      simp only [«вычЧ»] at h
+      obtain ⟨x, y, hx, hy, hv⟩ := «арифм?-верно» _ («минус» w.«о») («минус-точно» w) h
+      simp only [«оценить»]; rw [«вычЧ-верно» a x hx w, «вычЧ-верно» b y hy w]; exact hv
+  | .«умножить» a b, v, h, w => by
+      simp only [«вычЧ»] at h
+      obtain ⟨x, y, hx, hy, hv⟩ := «арифм?-верно» _ («умножить» w.«о») («умножить-точно» w) h
+      simp only [«оценить»]; rw [«вычЧ-верно» a x hx w, «вычЧ-верно» b y hy w]; exact hv
+  | .«остаток» a b, v, h, w => by
+      simp only [«вычЧ»] at h
+      obtain ⟨x, y, hx, hy, hv⟩ := «остаток?-верно» h
+      simp only [«оценить»]; rw [«вычЧ-верно» a x hx w, «вычЧ-верно» b y hy w]; exact hv
+  | .«если» u a b, v, h, w => by
+      simp only [«вычЧ»] at h
+      simp only [«оценить», «выбор»]
+      rcases «выбор?-верно» h with ⟨hu, ha⟩ | ⟨hu, hb⟩
+      · rw [«вычФ-верно» u true hu w, «вычЧ-верно» a v ha w]; rfl
+      · rw [«вычФ-верно» u false hu w, «вычЧ-верно» b v hb w]; rfl
+  | .«длина» l, v, h, w => by
+      simp only [«вычЧ»] at h
+      cases hn : «длинаС?» l with
+      | none => simp [hn] at h
+      | some k =>
+        simp [hn] at h
+        subst h
+        simp only [«оценить»]; rw [«длинаС?-верно» l k hn w]
+  | .«кодСимвола» _, v, h, w => by simp [«вычЧ»] at h
+  | .«свёртка» _ _ _ _ _, v, h, w => by simp [«вычЧ»] at h
+  | .«разбор» _ _ _ _ _, v, h, w => by simp [«вычЧ»] at h
+  | .«вызов» _ _, v, h, w => by simp [«вычЧ»] at h
+  | .«поле» _ _, v, h, w => by simp [«вычЧ»] at h
+  | .«ярлык» _, v, h, w => by simp [«вычЧ»] at h
+theorem «вычФ-верно» : ∀ (f : «Форм») (b : Bool), «вычФ» f = some b → ∀ w, «оценитьФ» f w = b
+  | .«да», b, h, w => by simp only [«вычФ», Option.some.injEq] at h; subst h; rfl
+  | .«нет», b, h, w => by simp only [«вычФ», Option.some.injEq] at h; subst h; rfl
+  | .«имяФ» _, b, h, w => by simp [«вычФ»] at h
+  | .«неБольше» a c, b, h, w => by
+      simp only [«вычФ»] at h
+      obtain ⟨x, y, hx, hy, hv⟩ := «сравн?-верно» h
+      simp only [«оценитьФ»]; rw [«вычЧ-верно» a x hx w, «вычЧ-верно» c y hy w]; exact hv
+  | .«неМеньше» a c, b, h, w => by
+      simp only [«вычФ»] at h
+      obtain ⟨x, y, hx, hy, hv⟩ := «сравн?-верно» h
+      simp only [«оценитьФ»]; rw [«вычЧ-верно» a x hx w, «вычЧ-верно» c y hy w]; exact hv
+  | .«меньше» a c, b, h, w => by
+      simp only [«вычФ»] at h
+      obtain ⟨x, y, hx, hy, hv⟩ := «сравн?-верно» h
+      simp only [«оценитьФ»]; rw [«вычЧ-верно» a x hx w, «вычЧ-верно» c y hy w]; exact hv
+  | .«больше» a c, b, h, w => by
+      simp only [«вычФ»] at h
+      obtain ⟨x, y, hx, hy, hv⟩ := «сравн?-верно» h
+      simp only [«оценитьФ»]; rw [«вычЧ-верно» a x hx w, «вычЧ-верно» c y hy w]; exact hv
+  | .«равен» a c, b, h, w => by
+      simp only [«вычФ»] at h
+      by_cases hac : a = c
+      · subst hac
+        simp only [ite_true, Option.some.injEq] at h; subst h
+        simp [«оценитьФ», «равен»]
+      · simp only [hac, ite_false] at h
+        obtain ⟨x, y, hx, hy, hv⟩ := «сравн?-верно» h
+        simp only [«оценитьФ»]; rw [«вычЧ-верно» a x hx w, «вычЧ-верно» c y hy w]; exact hv
+  | .«равенС» _ _, b, h, w => by simp [«вычФ»] at h
+  | .«равенТ» _ _, b, h, w => by simp [«вычФ»] at h
+  | .«содержит» _ _, b, h, w => by simp [«вычФ»] at h
+  | .«неУбывает» _, b, h, w => by simp [«вычФ»] at h
+  | .«пусто» _, b, h, w => by simp [«вычФ»] at h
+  | .«пустоТ» _, b, h, w => by simp [«вычФ»] at h
+  | .«начинается» _ _, b, h, w => by simp [«вычФ»] at h
+  | .«кон» _, b, h, w => by simp [«вычФ»] at h
+  | .«цел» _, b, h, w => by simp [«вычФ»] at h
+  | .«помещается» _, b, h, w => by simp [«вычФ»] at h
+  | .«всех» _ _ _, b, h, w => by simp [«вычФ»] at h
+  | .«есть» _ _ _, b, h, w => by simp [«вычФ»] at h
+  | .«и» a c, b, h, w => by
+      simp only [«вычФ»] at h
+      simp only [«оценитьФ»]
+      exact «иО-верно» h (fun x hx => «вычФ-верно» a x hx w) (fun x hx => «вычФ-верно» c x hx w)
+  | .«или» a c, b, h, w => by
+      simp only [«вычФ»] at h
+      simp only [«оценитьФ»]
+      exact «илиО-верно» h (fun x hx => «вычФ-верно» a x hx w) (fun x hx => «вычФ-верно» c x hx w)
+  | .«не» a, b, h, w => by
+      simp only [«вычФ», Option.map_eq_some_iff] at h
+      obtain ⟨x, hx, rfl⟩ := h
+      simp only [«оценитьФ»]; rw [«вычФ-верно» a x hx w]
+  | .«еслиФ» u a c, b, h, w => by
+      simp only [«вычФ»] at h
+      simp only [«оценитьФ»]
+      rcases «выбор?-верно» h with ⟨hu, ha⟩ | ⟨hu, hc⟩
+      · rw [«вычФ-верно» u true hu w, «вычФ-верно» a b ha w]; rfl
+      · rw [«вычФ-верно» u false hu w, «вычФ-верно» c b hc w]; rfl
+  | .«вызовФ» _ _, b, h, w => by simp [«вычФ»] at h
+  | .«разборСм» _ _, b, h, w => by simp [«вычФ»] at h
+end
+
+theorem «кусок-верно» (v c : «Форм») (w : «Мир») (h : «оценитьФ» v w = «оценитьФ» c w) :
+    ∀ A B, «кусок» v c A B = true → «значение» A w = «значение» B w := by
+  intro A B hAB
+  simp only [«кусок», decide_eq_true_eq] at hAB
+  obtain ⟨rfl, rfl⟩ := hAB
+  simp [«значение», h]
+
+/-! ## Р5, Р6, Разв1 по строке тела (задача 4791) -/
+
+theorem «пустота?-верно» {f : «Форм»} {l : «ТермС»} (h : «пустота?» f = some l) (w : «Мир»)
+    (hf : «Факт-из» f w) : «оценитьС» l w = [] := by
+  unfold «пустота?» at h
+  split at h <;> simp only [Option.some.injEq, reduceCtorEq] at h <;> subst h <;>
+    simp_all [«Факт-из», «оценитьФ», «оценить», «оценитьС», «равен», decide_eq_true_eq] <;>
+    exact of_decide_eq_true hf
+
+theorem «Р5-мир» (b : «Тело») (l : «ТермС») (f : «Форм») (w : «Мир»)
+    (hb : «пустаяВетвь?» b = some (l, f)) (hl : «оценитьС» l w = []) (hr : «результат-есть» b w) :
+    «Факт-из» f w := by
+  unfold «пустаяВетвь?» at hb
+  unfold «результат-есть» at hr
+  split at hb <;> simp only [Option.some.injEq, Prod.mk.injEq, reduceCtorEq] at hb <;>
+    obtain ⟨rfl, rfl⟩ := hb <;>
+    simp_all [«Факт-из», «оценитьФ», «оценить», «оценитьС», «значение», «разборСписка», «равен»]
+
+theorem «Р6-мир» (b : «Тело») (l : «ТермС») (f : «Форм») (w : «Мир»)
+    (hb : «началоСвёртки?» b = some (l, f)) (hl : «оценитьС» l w = []) (hr : «результат-есть» b w) :
+    «Факт-из» f w := by
+  unfold «началоСвёртки?» at hb
+  unfold «результат-есть» at hr
+  split at hb <;> simp only [Option.some.injEq, Prod.mk.injEq, reduceCtorEq] at hb <;>
+    obtain ⟨rfl, rfl⟩ := hb <;>
+    simp_all [«Факт-из», «оценитьФ», «оценить», «оценитьС», «значение», «свёртка», «свёрткаС», «равен»]
+
+theorem «хвостТерм-значение» (r : «Члены») (w : «Мир») : «оценитьС» («хвостТерм» r) w = «оценитьЧл» r w := by
+  cases r <;> rfl
+
+theorem «звено?-число» {z : «ТермЧ»} {g x : String} {h : «ТермЧ»} {r : «Члены»} {t : «Тело»}
+    (hz : «звено?» (.«число» z) g x h r = some t) (w : «Мир») :
+    «значение» t w = .«число» («оценить» z («обновить» («обновитьС» w x («оценитьЧл» r w)) g («оценить» h w))) := by
+  dsimp only [«звено?»] at hz
+  split at hz
+  · rename_i hc
+    cases hz
+    rw [«подстПарТ-значение» w _ _ hc]
+    simp only [List.foldr_cons, List.foldr_nil, «значение», «хвостТерм-значение»]
+  · cases hz
+
+theorem «звено?-список» {z : «ТермС»} {g x : String} {h : «ТермЧ»} {r : «Члены»} {t : «Тело»}
+    (hz : «звено?» (.«список» z) g x h r = some t) (w : «Мир») :
+    «значение» t w = .«список» («оценитьС» z («обновить» («обновитьС» w x («оценитьЧл» r w)) g («оценить» h w))) := by
+  dsimp only [«звено?»] at hz
+  split at hz
+  · rename_i hc
+    cases hz
+    rw [«подстПарТ-значение» w _ _ hc]
+    simp only [List.foldr_cons, List.foldr_nil, «значение», «хвостТерм-значение»]
+  · cases hz
+
+theorem «ветвьСписка?-значение» {b t : «Тело»} (h : «ветвьСписка?» b = some t) (w : «Мир») :
+    «значение» b w = «значение» t w := by
+  unfold «ветвьСписка?» at h
+  split at h
+  all_goals first
+    | (simp only [Option.some.injEq] at h; subst h
+       simp [«значение», «оценить», «оценитьС», «оценитьЧл», «разборСписка»])
+    | (rw [«звено?-число» h w]; simp [«значение», «оценить», «оценитьС», «оценитьЧл», «разборСписка»])
+    | (rw [«звено?-список» h w]; simp [«значение», «оценить», «оценитьС», «оценитьЧл», «разборСписка»])
+    | cases h
+
 /-! ## Инвариант блока и случай на правило -/
 
 /-- Каждый принятый шаг выводится из своих открытых гипотез и окружения. -/
@@ -2012,6 +2294,47 @@ theorem «шаг-верен» (u : «Утверждение») («преж» : L
     simp only [«Факт-из»] at hv ⊢
     rw [heq]; exact hv
 
+  | «Выч» ho hp hv =>
+    simp only [«итог», «гип», List.map_nil, List.nil_append]
+    exact «подъём0» (fun w => «вычФ-верно» _ true hv w)
+  | «Р23» n m q1 q2 v ho hp h1 h2 hc1 hc2 hz hd hn =>
+    simp only [«итог»]
+    have hq1 := «слева» _ q2.«откр» (hinv q1 («шагПо-в» h1))
+    have hq2 := «справа» q1.«откр» _ (hinv q2 («шагПо-в» h2))
+    intro w hw
+    have e1 := hq1 w hw
+    have e2 := hq2 w hw
+    simp only [«Факт-из»] at e1 e2 ⊢
+    cases hv : «оценитьФ» v w
+    · rw [«замФ-верно» («кусок» v .«нет») w («кусок-верно» v .«нет» w (by rw [hv]; rfl)) _ _ hn]; exact e2
+    · rw [«замФ-верно» («кусок» v .«да») w («кусок-верно» v .«да» w (by rw [hv]; rfl)) _ _ hd]; exact e1
+  | «Р5» n m q b l ho hp h1 ht hb he =>
+    simp only [«итог»]
+    have hq := hinv q («шагПо-в» h1)
+    intro w hw
+    have hr : «результат-есть» b w := hw _ (List.mem_append_right _ («результат-в-окружении» u m b ht))
+    exact «Р5-мир» b l _ w hb («пустота?-верно» he w (hq w hw)) hr
+  | «Р6» n m q b l ho hp h1 ht hb he =>
+    simp only [«итог»]
+    have hq := hinv q («шагПо-в» h1)
+    intro w hw
+    have hr : «результат-есть» b w := hw _ (List.mem_append_right _ («результат-в-окружении» u m b ht))
+    exact «Р6-мир» b l _ w hb («пустота?-верно» he w (hq w hw)) hr
+  | «Разв1-строка» n m q b t ho hp h1 ht hbr hz hp1 =>
+    simp only [«итог»]
+    have hq := hp1 ▸ hinv q («шагПо-в» h1)
+    intro w hw
+    have hr0 : «результат-есть» b w := hw _ (List.mem_append_right _ («результат-в-окружении» u m b ht))
+    have hr : «результат-есть» t w := by
+      unfold «результат-есть» at hr0 ⊢; rw [hr0, «ветвьСписка?-значение» hbr w]
+    have hv := hq w hw
+    simp only [«Факт-из»] at hv ⊢
+    rw [«подстановкаФ» _ _ _ _ («захват?-чисто» hz)] at hv
+    simp only [«мир-с»] at hv
+    unfold «результат-есть» at hr
+    rw [← hr, «связать-своё»] at hv
+    exact hv
+
 theorem «блок-верен» (u : «Утверждение») : ∀ («шаги» : List «Шаг») («преж» «итог» : List «Принятый»),
     «БлокПринят» u «шаги» «преж» «итог» → «Инв» u «преж» → «Инв» u «итог»
   | _, _, _, .«конец» _, hinv => hinv
@@ -2042,4 +2365,4 @@ theorem «состоятельность-разрешимо» (u : «Утвер�
   «состоятельность» u («принят?-верно» u h)
 
 /-- Число покрытых правил; сверщик именует 81 приём в `шаг_вывода`. -/
-theorem «покрыто-число» : «покрыто» = 78 := by decide
+theorem «покрыто-число» : «покрыто» = 83 := by decide

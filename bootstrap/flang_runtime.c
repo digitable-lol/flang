@@ -74,6 +74,9 @@
 #include <sys/time.h>
 #include <unistd.h>
 #define FL_WATCH 1
+#define FL_THREAD_LOCAL __thread
+#else
+#define FL_THREAD_LOCAL
 #endif
 
 #ifdef FL_WASM_STACK
@@ -559,14 +562,21 @@ size_t fl_stack_room(void) {
   return fl_stack_known;
 }
 
+static FL_THREAD_LOCAL fl_ctx *fl_watch_ctx = NULL;
+static FL_THREAD_LOCAL int fl_watch_mine = 0;
+
 #ifdef FL_POSIX_STACK
 typedef struct fl_deep_work {
   void (*work)(void *);
   void *state;
+  fl_ctx *watched;
+  int mine;
 } fl_deep_work;
 
 static void *fl_deep_entry(void *raw) {
   fl_deep_work *carry = (fl_deep_work *)raw;
+  fl_watch_ctx = carry->watched;
+  fl_watch_mine = carry->mine;
   carry->work(carry->state);
   return NULL;
 }
@@ -584,6 +594,8 @@ bool fl_call_deep(size_t stack_bytes, void (*work)(void *), void *state) {
   }
   carry.work = work;
   carry.state = state;
+  carry.watched = fl_watch_ctx;
+  carry.mine = fl_watch_mine;
   /*
    * Стек берётся отображением, и под пределом адресного пространства он ОТНИМАЕТ
    * его у арены. Замер, который это и нашёл: под `ulimit -v 16384` восьми
@@ -1261,11 +1273,6 @@ unsigned long fl_say_resident(void) {
  *    контекст в свои структуры, не трогается вовсе.
  * 3. Программа до статики рантайма не дотянется, а до поля контекста дотянулась
  *    бы (см. довод 2 в шапке).
- *
- * ПЛАТА НАЗВАНА: планировщик считает на нескольких потоках ОС (задача 0013), а
- * массив у них один — на многопоточном прогоне снимок может назвать имя из
- * чужого потока. Это искажение ДИАГНОСТИКИ, а не порча расчёта: любой
- * записанный сюда указатель остаётся годным литералом.
  */
 static const char *fl_watch_frames[FL_WATCH_FRAMES];
 
@@ -1275,7 +1282,16 @@ static const char *fl_watch_frames[FL_WATCH_FRAMES];
  * должно. Числа снимаются НА ХОДУ и потому могут отстать на виток — это
  * диагностика, а не учёт.
  */
-static fl_ctx *fl_watch_ctx = NULL;
+static fl_ctx *fl_watch_shown = NULL;
+
+#ifdef FL_POSIX_STACK
+static pthread_once_t fl_watch_once = PTHREAD_ONCE_INIT;
+static pthread_t fl_watch_owner;
+
+static void fl_watch_claim(void) {
+  fl_watch_owner = pthread_self();
+}
+#endif
 
 /* Имя шага от хозяина и готовая строка «повторить». Обе собраны ВНЕ
    обработчика: обработчик их только пишет. */
@@ -1351,10 +1367,10 @@ static void fl_watch_say(int signal_number) {
   ssize_t wrote = 0;
   (void)signal_number;
   fl_watch_want = 1;
-  if (fl_watch_ctx != NULL) {
-    depth = fl_watch_ctx->depth;
-    steps = (unsigned long)fl_watch_ctx->steps;
-    limit = (unsigned long)fl_watch_ctx->max_steps;
+  if (fl_watch_shown != NULL) {
+    depth = fl_watch_shown->depth;
+    steps = (unsigned long)fl_watch_shown->steps;
+    limit = (unsigned long)fl_watch_shown->max_steps;
   }
   seen = depth < FL_WATCH_FRAMES ? depth : FL_WATCH_FRAMES;
 
@@ -1446,7 +1462,7 @@ static void fl_memory_note(size_t asked) {
   if (depth > FL_WATCH_FRAMES) {
     depth = FL_WATCH_FRAMES;
   }
-  fl_memory_seen.function = depth == 0 ? NULL : fl_watch_frames[depth - 1];
+  fl_memory_seen.function = depth == 0 || !fl_watch_mine ? NULL : fl_watch_frames[depth - 1];
 }
 
 static const fl_value *fl_memory_field(const fl_value *value, const char *name, fl_tag tag) {
@@ -1494,6 +1510,18 @@ static void fl_memory_guest(const fl_value *args, size_t count) {
 
 void fl_watch_open(fl_ctx *ctx) {
   fl_watch_ctx = ctx;
+#ifdef FL_POSIX_STACK
+  pthread_once(&fl_watch_once, fl_watch_claim);
+  if (pthread_equal(fl_watch_owner, pthread_self())) {
+    fl_watch_mine = 1;
+  }
+#else
+  fl_watch_mine = 1;
+#endif
+  if (!fl_watch_mine) {
+    return;
+  }
+  fl_watch_shown = ctx;
   fl_say_page_ready();
 #ifdef FL_WATCH
   if (!fl_watch_set) {
@@ -2130,7 +2158,9 @@ fl_status fl_tick(fl_ctx *ctx, const char *function, fl_error *error) {
   fl_pulse_tick(ctx, function);
   fl_ticks_count(function);
   fl_time_open();
-  fl_now = function;
+  if (fl_watch_mine) {
+    fl_now = function;
+  }
   /* Предел 0 — счёт отключён; иначе первый же виток при max_steps == 0 объявил
      бы исчерпанной любую программу. */
   if (ctx->max_steps == 0) {
@@ -2279,7 +2309,9 @@ fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
   }
   fl_pulse(ctx, function);
   fl_enters_count(function);
-  fl_now = function;
+  if (fl_watch_mine) {
+    fl_now = function;
+  }
   /* Вход в функцию — тоже виток: иначе нерекурсивная по хвосту, но бесконечно
      ветвящаяся программа считала бы глубину и не считала шаги. */
   FL_TRY(fl_tick(ctx, function, error));
@@ -2302,7 +2334,7 @@ fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error) {
    * не тронуты. `fl_leave` ничего не стирает нарочно: глубина убывает сама, и
    * снимок читает `frames[depth - 1]`, то есть всегда живой кадр.
    */
-  if (ctx->depth < FL_WATCH_FRAMES) {
+  if (fl_watch_mine && ctx->depth < FL_WATCH_FRAMES) {
     fl_watch_frames[ctx->depth] = function;
   }
   ctx->depth += 1;
@@ -4364,23 +4396,6 @@ static fl_status fl_order(fl_ctx *ctx, fl_value left, fl_value right, fl_error *
   return FL_OK;
 }
 
-/*
- * ───────────────────── точное целое: разряды основания 2²² ─────────────────────
- *
- * Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание 2²².
- * Выбор представления — задача 1411, решение — ADR-0036 §11; складывает разряды
- * вычислитель в `flang/self/interpret.flang` («Основание разрядов» и ниже).
- *
- * Отличать точное целое от обычного списка по ТИПУ здесь нечем: напечатанная
- * программа типов не носит, а вычислитель и сам смотрит только на вид значения
- * («Сложение знач»: оба операнда — списки чисел). Поэтому правило ниже такое же
- * динамическое, и расхождения между вычислителем и печатью не возникает.
- *
- * Путей в вычислителе ДВА, и слить их в один нельзя. Разряд вне [0, 2²²)
- * законен — собственный пример вычислителя подаёт [4194305], — а на таких
- * разрядах быстрый путь (до двух разрядов, машинным сложением) и общий путь
- * (перенос по столбцам) дают РАЗНЫЙ ответ. Переписаны оба, порознь.
- */
 #define FL_EXACT_BASE 4194304.0
 
 /* «Разряды ли знач»: список, и каждый элемент — число. Пустой список годится. */
@@ -4395,14 +4410,6 @@ static bool fl_exact_digits(fl_value value) {
     }
   }
   return true;
-}
-
-/* «Разряд точного»: номер с единицы, за концом списка — ноль. */
-static double fl_exact_digit(fl_value value, size_t number) {
-  if (number < 1 || number > value.as.list.count) {
-    return 0.0;
-  }
-  return value.as.list.items[number - 1].as.number;
 }
 
 /* «Срезать старшие нули»: старший разряд стоит в конце. */
@@ -4424,11 +4431,6 @@ static size_t fl_exact_small_digits(double value, double *out) {
   return fl_exact_trim(out, 3);
 }
 
-/* «Значение малых разрядов»: два младших разряда — машинным числом. */
-static double fl_exact_small_value(fl_value value) {
-  return fl_exact_digit(value, 1) + fl_exact_digit(value, 2) * FL_EXACT_BASE;
-}
-
 /*
  * «Уложить разряды»: перенос по столбцам, затем разряды переноса сверху.
  * Читает columns[i] до записи out[i], поэтому зовётся и на месте (out == columns).
@@ -4446,44 +4448,374 @@ static size_t fl_exact_settle(const double *columns, size_t count, double *out) 
   return fl_exact_trim(out, count + fl_exact_small_digits(carry, out + count));
 }
 
-/* «Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы и перенос. */
-static size_t fl_exact_sum(fl_value left, fl_value right, double *out) {
-  size_t wide;
-  size_t index;
-  if (left.as.list.count <= 2 && right.as.list.count <= 2) {
-    return fl_exact_small_digits(fl_exact_small_value(left) + fl_exact_small_value(right), out);
-  }
-  wide = left.as.list.count > right.as.list.count ? left.as.list.count : right.as.list.count;
-  for (index = 0; index < wide; index++) {
-    out[index] = fl_exact_digit(left, index + 1) + fl_exact_digit(right, index + 1);
-  }
-  return fl_exact_settle(out, wide, out);
-}
+typedef struct {
+  double *d;
+  size_t n;
+} fl_nat;
 
-/* «Точное сложение». Витков не тратит — так же, как в вычислителе. */
-static fl_status fl_exact_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
-  size_t room = (left.as.list.count > right.as.list.count ? left.as.list.count : right.as.list.count) + 3;
-  double *digits;
-  fl_value *items;
-  size_t count;
+static fl_status fl_nat_room(fl_ctx *ctx, size_t room, fl_nat *out, fl_error *error) {
   size_t index;
-  if (room > ((size_t)-1) / sizeof(double)) {
+  if (room > ((size_t)-1) / sizeof(double) - 4) {
     return fl_no_memory(error);
   }
-  digits = (double *)fl_arena_alloc(ctx->arena, room * sizeof(double));
-  if (digits == NULL) {
+  out->d = (double *)fl_arena_alloc(ctx->arena, (room + 4) * sizeof(double));
+  if (out->d == NULL) {
     return fl_no_memory(error);
   }
-  count = fl_exact_sum(left, right, digits);
-  FL_TRY(fl_list_alloc(ctx, count, &items, error));
-  for (index = 0; index < count; index++) {
-    items[index] = fl_number(digits[index]);
+  for (index = 0; index < room + 4; index++) {
+    out->d[index] = 0.0;
   }
-  *out = fl_list(items, count);
+  out->n = 0;
   return FL_OK;
 }
 
+static fl_status fl_nat_canon(fl_ctx *ctx, fl_value value, fl_nat *out, fl_error *error) {
+  size_t count = value.as.list.count;
+  size_t index;
+  FL_TRY(fl_nat_room(ctx, count, out, error));
+  for (index = 0; index < count; index++) {
+    out->d[index] = value.as.list.items[index].as.number;
+  }
+  out->n = fl_exact_settle(out->d, count, out->d);
+  return FL_OK;
+}
+
+static fl_status fl_nat_value(fl_ctx *ctx, fl_nat nat, fl_value *out, fl_error *error) {
+  fl_value *items = NULL;
+  size_t index;
+  FL_TRY(fl_list_alloc(ctx, nat.n, &items, error));
+  for (index = 0; index < nat.n; index++) {
+    items[index] = fl_number(nat.d[index]);
+  }
+  *out = fl_list(items, nat.n);
+  return FL_OK;
+}
+
+static int fl_nat_cmp(fl_nat left, fl_nat right) {
+  size_t index;
+  if (left.n != right.n) {
+    return left.n < right.n ? -1 : 1;
+  }
+  for (index = left.n; index > 0; index--) {
+    if (left.d[index - 1] != right.d[index - 1]) {
+      return left.d[index - 1] < right.d[index - 1] ? -1 : 1;
+    }
+  }
+  return 0;
+}
+
+static fl_status fl_nat_add(fl_ctx *ctx, fl_nat left, fl_nat right, fl_nat *out, fl_error *error) {
+  size_t wide = left.n > right.n ? left.n : right.n;
+  size_t index;
+  FL_TRY(fl_nat_room(ctx, wide, out, error));
+  for (index = 0; index < wide; index++) {
+    out->d[index] = (index < left.n ? left.d[index] : 0.0) + (index < right.n ? right.d[index] : 0.0);
+  }
+  out->n = fl_exact_settle(out->d, wide, out->d);
+  return FL_OK;
+}
+
+static fl_status fl_nat_sub(fl_ctx *ctx, fl_nat left, fl_nat right, fl_nat *out, fl_error *error) {
+  double borrow = 0.0;
+  size_t index;
+  FL_TRY(fl_nat_room(ctx, left.n, out, error));
+  for (index = 0; index < left.n; index++) {
+    double column = left.d[index] - (index < right.n ? right.d[index] : 0.0) - borrow;
+    borrow = column < 0.0 ? 1.0 : 0.0;
+    out->d[index] = column < 0.0 ? column + FL_EXACT_BASE : column;
+  }
+  out->n = fl_exact_trim(out->d, left.n);
+  return FL_OK;
+}
+
+static fl_status fl_nat_mul_small(fl_ctx *ctx, fl_nat left, double factor, fl_nat *out, fl_error *error) {
+  size_t index;
+  FL_TRY(fl_nat_room(ctx, left.n, out, error));
+  for (index = 0; index < left.n; index++) {
+    out->d[index] = left.d[index] * factor;
+  }
+  out->n = fl_exact_settle(out->d, left.n, out->d);
+  return FL_OK;
+}
+
+static fl_status fl_nat_mul(fl_ctx *ctx, fl_nat left, fl_nat right, fl_nat *out, fl_error *error) {
+  size_t wide = left.n + right.n;
+  size_t row;
+  size_t column;
+  FL_TRY(fl_nat_room(ctx, wide, out, error));
+  if (left.n == 0 || right.n == 0) {
+    return FL_OK;
+  }
+  for (row = 0; row < left.n; row++) {
+    for (column = 0; column < right.n; column++) {
+      out->d[row + column] += left.d[row] * right.d[column];
+    }
+    out->n = fl_exact_settle(out->d, wide, out->d);
+  }
+  return FL_OK;
+}
+
+static fl_status fl_nat_divmod(fl_ctx *ctx, fl_nat left, fl_nat right, fl_nat *quotient, fl_nat *rest,
+                               fl_error *error) {
+  size_t place;
+  FL_TRY(fl_nat_room(ctx, left.n, quotient, error));
+  if (right.n == 0) {
+    *rest = left;
+    return FL_OK;
+  }
+  FL_TRY(fl_nat_room(ctx, 0, rest, error));
+  for (place = left.n; place > 0; place--) {
+    fl_nat current;
+    fl_nat taken;
+    double low = 0.0;
+    double high = FL_EXACT_BASE - 1.0;
+    size_t index;
+    FL_TRY(fl_nat_room(ctx, rest->n + 1, &current, error));
+    current.d[0] = left.d[place - 1];
+    for (index = 0; index < rest->n; index++) {
+      current.d[index + 1] = rest->d[index];
+    }
+    current.n = fl_exact_trim(current.d, rest->n + 1);
+    while (low < high) {
+      double middle = floor((low + high + 1.0) / 2.0);
+      FL_TRY(fl_nat_mul_small(ctx, right, middle, &taken, error));
+      if (fl_nat_cmp(current, taken) < 0) {
+        high = middle - 1.0;
+      } else {
+        low = middle;
+      }
+    }
+    quotient->d[place - 1] = low;
+    FL_TRY(fl_nat_mul_small(ctx, right, low, &taken, error));
+    FL_TRY(fl_nat_sub(ctx, current, taken, rest, error));
+  }
+  quotient->n = fl_exact_trim(quotient->d, left.n);
+  return FL_OK;
+}
+
+static fl_status fl_nat_gcd(fl_ctx *ctx, fl_nat left, fl_nat right, fl_nat *out, fl_error *error) {
+  while (right.n > 0) {
+    fl_nat quotient;
+    fl_nat rest;
+    FL_TRY(fl_nat_divmod(ctx, left, right, &quotient, &rest, error));
+    left = right;
+    right = rest;
+  }
+  *out = left;
+  return FL_OK;
+}
+
+static const char *fl_nat_text(fl_ctx *ctx, fl_nat nat) {
+  char *text;
+  size_t used = 0;
+  size_t index;
+  text = (char *)fl_arena_alloc(ctx->arena, nat.n * 32 + 3);
+  if (text == NULL) {
+    return "[]";
+  }
+  text[used++] = '[';
+  for (index = 0; index < nat.n; index++) {
+    used += (size_t)sprintf(text + used, "%s%.0f", index ? ", " : "", nat.d[index]);
+  }
+  text[used++] = ']';
+  text[used] = '\0';
+  return text;
+}
+
+static bool fl_exact_fraction(fl_value value) {
+  return value.tag == FL_LIST && value.as.list.count == 2 && fl_exact_digits(value.as.list.items[0]) &&
+         fl_exact_digits(value.as.list.items[1]);
+}
+
+static fl_status fl_frac_parts(fl_ctx *ctx, fl_value value, fl_nat *top, fl_nat *bottom, fl_error *error) {
+  FL_TRY(fl_nat_canon(ctx, value.as.list.items[0], top, error));
+  return fl_nat_canon(ctx, value.as.list.items[1], bottom, error);
+}
+
+static fl_status fl_frac_value(fl_ctx *ctx, fl_nat top, fl_nat bottom, fl_value *out, fl_error *error) {
+  fl_value *items = NULL;
+  fl_nat common;
+  fl_nat reduced_top;
+  fl_nat reduced_bottom;
+  fl_nat rest;
+  FL_TRY(fl_list_alloc(ctx, 2, &items, error));
+  if (top.n == 0) {
+    FL_TRY(fl_nat_room(ctx, 1, &reduced_bottom, error));
+    reduced_bottom.d[0] = 1.0;
+    reduced_bottom.n = 1;
+    FL_TRY(fl_nat_value(ctx, top, &items[0], error));
+    FL_TRY(fl_nat_value(ctx, reduced_bottom, &items[1], error));
+    *out = fl_list(items, 2);
+    return FL_OK;
+  }
+  FL_TRY(fl_nat_gcd(ctx, top, bottom, &common, error));
+  FL_TRY(fl_nat_divmod(ctx, top, common, &reduced_top, &rest, error));
+  FL_TRY(fl_nat_divmod(ctx, bottom, common, &reduced_bottom, &rest, error));
+  FL_TRY(fl_nat_value(ctx, reduced_top, &items[0], error));
+  FL_TRY(fl_nat_value(ctx, reduced_bottom, &items[1], error));
+  *out = fl_list(items, 2);
+  return FL_OK;
+}
+
+static const char *fl_frac_text(fl_ctx *ctx, fl_nat top, fl_nat bottom) {
+  const char *upper = fl_nat_text(ctx, top);
+  const char *lower = fl_nat_text(ctx, bottom);
+  char *text = (char *)fl_arena_alloc(ctx->arena, strlen(upper) + strlen(lower) + 16);
+  if (text == NULL) {
+    return upper;
+  }
+  sprintf(text, "%s над %s", upper, lower);
+  return text;
+}
+
+static fl_status fl_exact_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a;
+  fl_nat b;
+  fl_nat sum;
+  FL_TRY(fl_nat_canon(ctx, left, &a, error));
+  FL_TRY(fl_nat_canon(ctx, right, &b, error));
+  FL_TRY(fl_nat_add(ctx, a, b, &sum, error));
+  return fl_nat_value(ctx, sum, out, error);
+}
+
+static fl_status fl_exact_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a;
+  fl_nat b;
+  fl_nat difference;
+  FL_TRY(fl_nat_canon(ctx, left, &a, error));
+  FL_TRY(fl_nat_canon(ctx, right, &b, error));
+  if (fl_nat_cmp(a, b) < 0) {
+    return fl_fail(ctx, error, FL_CODE_PROPERTY,
+                   "точное целое ниже нуля значений не имеет: %s минус %s; молчаливый ноль запрещён",
+                   fl_nat_text(ctx, a), fl_nat_text(ctx, b));
+  }
+  FL_TRY(fl_nat_sub(ctx, a, b, &difference, error));
+  return fl_nat_value(ctx, difference, out, error);
+}
+
+static fl_status fl_exact_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a;
+  fl_nat b;
+  fl_nat product;
+  FL_TRY(fl_nat_canon(ctx, left, &a, error));
+  FL_TRY(fl_nat_canon(ctx, right, &b, error));
+  FL_TRY(fl_nat_mul(ctx, a, b, &product, error));
+  return fl_nat_value(ctx, product, out, error);
+}
+
+static fl_status fl_exact_mod(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a;
+  fl_nat b;
+  fl_nat quotient;
+  fl_nat rest;
+  FL_TRY(fl_nat_canon(ctx, left, &a, error));
+  FL_TRY(fl_nat_canon(ctx, right, &b, error));
+  if (b.n == 0) {
+    return fl_fail(ctx, error, FL_CODE_PROPERTY, "остаток от нулевого точного целого не определён: %s остаток от 0",
+                   fl_nat_text(ctx, a));
+  }
+  FL_TRY(fl_nat_divmod(ctx, a, b, &quotient, &rest, error));
+  return fl_nat_value(ctx, rest, out, error);
+}
+
+static fl_status fl_exact_compare(fl_ctx *ctx, fl_value left, fl_value right, int *out, fl_error *error) {
+  fl_nat a;
+  fl_nat b;
+  FL_TRY(fl_nat_canon(ctx, left, &a, error));
+  FL_TRY(fl_nat_canon(ctx, right, &b, error));
+  *out = fl_nat_cmp(a, b);
+  return FL_OK;
+}
+
+static fl_status fl_frac_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a, b, c, d, ad, cb, top, bottom;
+  FL_TRY(fl_frac_parts(ctx, left, &a, &b, error));
+  FL_TRY(fl_frac_parts(ctx, right, &c, &d, error));
+  FL_TRY(fl_nat_mul(ctx, a, d, &ad, error));
+  FL_TRY(fl_nat_mul(ctx, c, b, &cb, error));
+  FL_TRY(fl_nat_add(ctx, ad, cb, &top, error));
+  FL_TRY(fl_nat_mul(ctx, b, d, &bottom, error));
+  return fl_frac_value(ctx, top, bottom, out, error);
+}
+
+static fl_status fl_frac_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a, b, c, d, ad, cb, top, bottom;
+  FL_TRY(fl_frac_parts(ctx, left, &a, &b, error));
+  FL_TRY(fl_frac_parts(ctx, right, &c, &d, error));
+  FL_TRY(fl_nat_mul(ctx, a, d, &ad, error));
+  FL_TRY(fl_nat_mul(ctx, c, b, &cb, error));
+  if (fl_nat_cmp(ad, cb) < 0) {
+    return fl_fail(ctx, error, FL_CODE_PROPERTY,
+                   "точное дробное ниже нуля значений не имеет: %s минус %s; молчаливый ноль запрещён",
+                   fl_frac_text(ctx, a, b), fl_frac_text(ctx, c, d));
+  }
+  FL_TRY(fl_nat_sub(ctx, ad, cb, &top, error));
+  FL_TRY(fl_nat_mul(ctx, b, d, &bottom, error));
+  return fl_frac_value(ctx, top, bottom, out, error);
+}
+
+static fl_status fl_frac_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a, b, c, d, top, bottom;
+  FL_TRY(fl_frac_parts(ctx, left, &a, &b, error));
+  FL_TRY(fl_frac_parts(ctx, right, &c, &d, error));
+  FL_TRY(fl_nat_mul(ctx, a, c, &top, error));
+  FL_TRY(fl_nat_mul(ctx, b, d, &bottom, error));
+  return fl_frac_value(ctx, top, bottom, out, error);
+}
+
+static fl_status fl_frac_div(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a, b, c, d, top, bottom;
+  FL_TRY(fl_frac_parts(ctx, left, &a, &b, error));
+  FL_TRY(fl_frac_parts(ctx, right, &c, &d, error));
+  if (c.n == 0) {
+    return fl_fail(ctx, error, FL_CODE_PROPERTY, "деление на нулевую дробь не определено: %s делить на %s",
+                   fl_frac_text(ctx, a, b), fl_frac_text(ctx, c, d));
+  }
+  FL_TRY(fl_nat_mul(ctx, a, d, &top, error));
+  FL_TRY(fl_nat_mul(ctx, b, c, &bottom, error));
+  return fl_frac_value(ctx, top, bottom, out, error);
+}
+
+static fl_status fl_frac_compare(fl_ctx *ctx, fl_value left, fl_value right, int *out, fl_error *error) {
+  fl_nat a, b, c, d, ad, cb;
+  FL_TRY(fl_frac_parts(ctx, left, &a, &b, error));
+  FL_TRY(fl_frac_parts(ctx, right, &c, &d, error));
+  FL_TRY(fl_nat_mul(ctx, a, d, &ad, error));
+  FL_TRY(fl_nat_mul(ctx, c, b, &cb, error));
+  *out = fl_nat_cmp(ad, cb);
+  return FL_OK;
+}
+
+static fl_status fl_exact_order(fl_ctx *ctx, fl_value left, fl_value right, bool *exact, int *out, fl_error *error) {
+  *exact = true;
+  if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
+    return fl_frac_compare(ctx, left, right, out, error);
+  }
+  if (fl_exact_digits(left) && fl_exact_digits(right)) {
+    return fl_exact_compare(ctx, left, right, out, error);
+  }
+  *exact = false;
+  return fl_order(ctx, left, right, error);
+}
+
+fl_status fl_b_integer_part(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error) {
+  fl_nat top;
+  fl_nat bottom;
+  fl_nat quotient;
+  fl_nat rest;
+  if (!fl_exact_fraction(value)) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "«целая часть»: аргумент должен быть точным дробным, получено %s",
+                   fl_type_name(ctx, value));
+  }
+  FL_TRY(fl_frac_parts(ctx, value, &top, &bottom, error));
+  FL_TRY(fl_nat_divmod(ctx, top, bottom, &quotient, &rest, error));
+  return fl_nat_value(ctx, quotient, out, error);
+}
+
 fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
+    return fl_frac_add(ctx, left, right, out, error);
+  }
   if (fl_exact_digits(left) && fl_exact_digits(right)) {
     return fl_exact_add(ctx, left, right, out, error);
   }
@@ -4493,27 +4825,43 @@ fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_e
 }
 
 fl_status fl_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
+    return fl_frac_sub(ctx, left, right, out, error);
+  }
+  if (fl_exact_digits(left) && fl_exact_digits(right)) {
+    return fl_exact_sub(ctx, left, right, out, error);
+  }
   FL_TRY(fl_numbers(ctx, "sub", left, right, error));
   *out = fl_number(left.as.number - right.as.number);
   return FL_OK;
 }
 
 fl_status fl_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
+    return fl_frac_mul(ctx, left, right, out, error);
+  }
+  if (fl_exact_digits(left) && fl_exact_digits(right)) {
+    return fl_exact_mul(ctx, left, right, out, error);
+  }
   FL_TRY(fl_numbers(ctx, "mul", left, right, error));
   *out = fl_number(left.as.number * right.as.number);
   return FL_OK;
 }
 
-/* Деление на ноль даёт Infinity — это значение IEEE-754, а не ошибка. */
 fl_status fl_div(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
+    return fl_frac_div(ctx, left, right, out, error);
+  }
   FL_TRY(fl_numbers(ctx, "div", left, right, error));
   *out = fl_number(left.as.number / right.as.number);
   return FL_OK;
 }
 
 fl_status fl_mod(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  if (fl_exact_digits(left) && fl_exact_digits(right)) {
+    return fl_exact_mod(ctx, left, right, out, error);
+  }
   FL_TRY(fl_numbers(ctx, "mod", left, right, error));
-  /* Оператор % в JS для чисел — это fmod: знак от делимого, без округления. */
   *out = fl_number(fmod(left.as.number, right.as.number));
   return FL_OK;
 }
@@ -4527,26 +4875,34 @@ fl_status fl_percent(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, 
 }
 
 fl_status fl_gt(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
-  FL_TRY(fl_order(ctx, left, right, error));
-  *out = fl_flag(left.as.number > right.as.number);
+  bool exact = false;
+  int order = 0;
+  FL_TRY(fl_exact_order(ctx, left, right, &exact, &order, error));
+  *out = fl_flag(exact ? order > 0 : left.as.number > right.as.number);
   return FL_OK;
 }
 
 fl_status fl_lt(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
-  FL_TRY(fl_order(ctx, left, right, error));
-  *out = fl_flag(left.as.number < right.as.number);
+  bool exact = false;
+  int order = 0;
+  FL_TRY(fl_exact_order(ctx, left, right, &exact, &order, error));
+  *out = fl_flag(exact ? order < 0 : left.as.number < right.as.number);
   return FL_OK;
 }
 
 fl_status fl_gte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
-  FL_TRY(fl_order(ctx, left, right, error));
-  *out = fl_flag(left.as.number >= right.as.number);
+  bool exact = false;
+  int order = 0;
+  FL_TRY(fl_exact_order(ctx, left, right, &exact, &order, error));
+  *out = fl_flag(exact ? order >= 0 : left.as.number >= right.as.number);
   return FL_OK;
 }
 
 fl_status fl_lte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
-  FL_TRY(fl_order(ctx, left, right, error));
-  *out = fl_flag(left.as.number <= right.as.number);
+  bool exact = false;
+  int order = 0;
+  FL_TRY(fl_exact_order(ctx, left, right, &exact, &order, error));
+  *out = fl_flag(exact ? order <= 0 : left.as.number <= right.as.number);
   return FL_OK;
 }
 
@@ -6641,6 +6997,438 @@ static bool fl_memo_insert(unsigned long long hash, const unsigned char *key, si
   return true;
 }
 
+typedef struct fl_memo_lasting_state {
+  bool on;
+  const char *salt;
+  size_t salt_bytes;
+  const char *const *functions;
+  size_t function_count;
+  fl_memo_lasting_record *entries;
+  size_t slots;
+  size_t count;
+  fl_memo_lasting_record *fresh;
+  size_t fresh_count;
+  size_t fresh_slots;
+  fl_memo_buffer stable;
+  fl_memo_buffer result;
+  unsigned long long hits;
+  unsigned long long lost;
+} fl_memo_lasting_state;
+
+static fl_memo_lasting_state fl_lasting;
+
+static bool fl_memo_lasting_wanted(const char *function) {
+  size_t index = 0;
+  if (!fl_lasting.on || function == NULL) {
+    return false;
+  }
+  for (index = 0; index < fl_lasting.function_count; index += 1) {
+    if (strcmp(fl_lasting.functions[index], function) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static void fl_memo_lasting_hex_bytes(const char *hex, unsigned char *out) {
+  size_t at = 0;
+  for (at = 0; at < 32; at += 1) {
+    const char high = hex[at * 2];
+    const char low = hex[at * 2 + 1];
+    const unsigned value_high = (unsigned)(high <= '9' ? high - '0' : high - 'a' + 10);
+    const unsigned value_low = (unsigned)(low <= '9' ? low - '0' : low - 'a' + 10);
+    out[at] = (unsigned char)((value_high << 4) | value_low);
+  }
+}
+
+static bool fl_memo_lasting_digest(const char *function, const fl_value *args, size_t count, unsigned char *digest) {
+  fl_memo_buffer *buffer = &fl_lasting.stable;
+  char hex[65];
+  size_t index = 0;
+  buffer->size = 0;
+  buffer->failed = false;
+  fl_memo_put(buffer, fl_lasting.salt, fl_lasting.salt_bytes);
+  fl_memo_put_byte(buffer, 0u);
+  fl_memo_put_text(buffer, function);
+  fl_memo_put_size(buffer, count);
+  for (index = 0; index < count && !buffer->failed; index += 1) {
+    fl_memo_write(buffer, args[index]);
+  }
+  if (buffer->failed) {
+    return false;
+  }
+  fl_sha256_hex(buffer->data, buffer->size, hex);
+  fl_memo_lasting_hex_bytes(hex, digest);
+  return true;
+}
+
+static size_t fl_memo_lasting_at(const unsigned char *digest) {
+  size_t at = 0;
+  unsigned long long start = 0;
+  if (fl_lasting.slots == 0) {
+    return (size_t)-1;
+  }
+  memcpy(&start, digest, sizeof start);
+  at = (size_t)(start & (unsigned long long)(fl_lasting.slots - 1u));
+  while (fl_lasting.entries[at].bytes != NULL) {
+    if (memcmp(fl_lasting.entries[at].digest, digest, 32) == 0) {
+      return at;
+    }
+    at = (at + 1u) & (fl_lasting.slots - 1u);
+  }
+  return (size_t)-1;
+}
+
+typedef struct fl_memo_reader {
+  const unsigned char *bytes;
+  size_t size;
+  size_t at;
+  bool failed;
+} fl_memo_reader;
+
+static bool fl_memo_read_raw(fl_memo_reader *reader, void *out, size_t size) {
+  if (reader->failed || size > reader->size - reader->at) {
+    reader->failed = true;
+    return false;
+  }
+  memcpy(out, reader->bytes + reader->at, size);
+  reader->at += size;
+  return true;
+}
+
+static bool fl_memo_read_size(fl_memo_reader *reader, size_t *out) {
+  unsigned long long wide = 0;
+  if (!fl_memo_read_raw(reader, &wide, sizeof wide)) {
+    return false;
+  }
+  if (wide > (unsigned long long)(reader->size - reader->at)) {
+    reader->failed = true;
+    return false;
+  }
+  *out = (size_t)wide;
+  return true;
+}
+
+static const char *fl_memo_read_name(fl_memo_reader *reader) {
+  size_t size = 0;
+  char *text = NULL;
+  const char *name = NULL;
+  if (!fl_memo_read_size(reader, &size) || size > reader->size - reader->at) {
+    reader->failed = true;
+    return NULL;
+  }
+  text = (char *)malloc(size + 1u);
+  if (text == NULL) {
+    reader->failed = true;
+    return NULL;
+  }
+  memcpy(text, reader->bytes + reader->at, size);
+  text[size] = '\0';
+  reader->at += size;
+  name = fl_memo_name_of(text);
+  free(text);
+  if (name == NULL) {
+    reader->failed = true;
+  }
+  return name;
+}
+
+static bool fl_memo_read_fields(fl_memo_reader *reader, size_t count, const fl_field **out);
+
+static bool fl_memo_read_value(fl_memo_reader *reader, fl_value *out, size_t depth) {
+  unsigned char tag = 0;
+  size_t count = 0;
+  size_t index = 0;
+  *out = fl_nothing();
+  if (depth > 100000u || !fl_memo_read_raw(reader, &tag, 1u)) {
+    reader->failed = true;
+    return false;
+  }
+  out->tag = (fl_tag)tag;
+  switch ((fl_tag)tag) {
+  case FL_NOTHING:
+    return true;
+  case FL_NUMBER:
+    return fl_memo_read_raw(reader, &out->as.number, sizeof out->as.number);
+  case FL_FLAG: {
+    unsigned char flag = 0;
+    if (!fl_memo_read_raw(reader, &flag, 1u) || flag > 1u) {
+      reader->failed = true;
+      return false;
+    }
+    out->as.flag = flag == 1u;
+    return true;
+  }
+  case FL_STRING: {
+    char *text = NULL;
+    if (!fl_memo_read_size(reader, &count) || count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    if (count == 0) {
+      out->as.string.utf8 = "";
+      out->as.string.bytes = 0;
+      out->as.string.points = 0;
+      return true;
+    }
+    text = (char *)fl_memo_take(count);
+    if (text == NULL) {
+      reader->failed = true;
+      return false;
+    }
+    memcpy(text, reader->bytes + reader->at, count);
+    reader->at += count;
+    out->as.string.utf8 = text;
+    out->as.string.bytes = count;
+    out->as.string.points = fl_utf8_points(text, count);
+    return true;
+  }
+  case FL_LIST: {
+    fl_value *items = NULL;
+    out->as.list.grow = NULL;
+    out->as.list.items = NULL;
+    out->as.list.count = 0;
+    if (!fl_memo_read_size(reader, &count) || count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    if (count == 0) {
+      return true;
+    }
+    items = (fl_value *)fl_memo_take(count * sizeof(fl_value));
+    if (items == NULL) {
+      reader->failed = true;
+      return false;
+    }
+    for (index = 0; index < count; index += 1) {
+      if (!fl_memo_read_value(reader, &items[index], depth + 1u)) {
+        return false;
+      }
+    }
+    out->as.list.items = items;
+    out->as.list.count = count;
+    return true;
+  }
+  case FL_RECORD: {
+    fl_record *record = (fl_record *)fl_memo_take(sizeof(fl_record));
+    if (record == NULL || !fl_memo_read_size(reader, &count) || count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    record->count = count;
+    if (!fl_memo_read_fields(reader, count, &record->fields)) {
+      return false;
+    }
+    out->as.record = record;
+    return true;
+  }
+  case FL_VARIANT: {
+    fl_variant *variant = (fl_variant *)fl_memo_take(sizeof(fl_variant));
+    if (variant == NULL) {
+      reader->failed = true;
+      return false;
+    }
+    variant->name = fl_memo_read_name(reader);
+    if (variant->name == NULL || !fl_memo_read_size(reader, &count) || count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    variant->count = count;
+    if (!fl_memo_read_fields(reader, count, &variant->fields)) {
+      return false;
+    }
+    out->as.variant = variant;
+    return true;
+  }
+  default:
+    reader->failed = true;
+    return false;
+  }
+}
+
+static bool fl_memo_read_fields(fl_memo_reader *reader, size_t count, const fl_field **out) {
+  fl_field *fields = NULL;
+  size_t index = 0;
+  *out = NULL;
+  if (count == 0) {
+    return true;
+  }
+  fields = (fl_field *)fl_memo_take(count * sizeof(fl_field));
+  if (fields == NULL) {
+    reader->failed = true;
+    return false;
+  }
+  for (index = 0; index < count; index += 1) {
+    fields[index].name = fl_memo_read_name(reader);
+    if (fields[index].name == NULL || !fl_memo_read_value(reader, &fields[index].value, 0u)) {
+      reader->failed = true;
+      return false;
+    }
+  }
+  *out = fields;
+  return true;
+}
+
+bool fl_memo_lasting_setup(const char *salt, size_t salt_bytes, const char *const *functions, size_t count) {
+  fl_memory_lock();
+  fl_memo_ready();
+  fl_memory_unlock();
+  if (!fl_memo.enabled || salt == NULL || functions == NULL || count == 0) {
+    return false;
+  }
+  fl_lasting.salt = salt;
+  fl_lasting.salt_bytes = salt_bytes;
+  fl_lasting.functions = functions;
+  fl_lasting.function_count = count;
+  fl_lasting.on = true;
+  return true;
+}
+
+bool fl_memo_lasting_add(const unsigned char *digest, const unsigned char *bytes, size_t size, size_t steps,
+                         size_t copied, size_t span, bool counted) {
+  size_t at = 0;
+  unsigned long long start = 0;
+  unsigned char *copy = NULL;
+  if (!fl_lasting.on || bytes == NULL || size == 0) {
+    return false;
+  }
+  if (fl_memo_lasting_at(digest) != (size_t)-1) {
+    return true;
+  }
+  if ((fl_lasting.count + 1u) * 2u > fl_lasting.slots) {
+    const size_t slots = fl_lasting.slots == 0 ? 4096u : fl_lasting.slots * 2u;
+    fl_memo_lasting_record *fresh = (fl_memo_lasting_record *)calloc(slots, sizeof(fl_memo_lasting_record));
+    size_t index = 0;
+    if (fresh == NULL) {
+      return false;
+    }
+    for (index = 0; index < fl_lasting.slots; index += 1) {
+      if (fl_lasting.entries[index].bytes != NULL) {
+        memcpy(&start, fl_lasting.entries[index].digest, sizeof start);
+        at = (size_t)(start & (unsigned long long)(slots - 1u));
+        while (fresh[at].bytes != NULL) {
+          at = (at + 1u) & (slots - 1u);
+        }
+        fresh[at] = fl_lasting.entries[index];
+      }
+    }
+    free(fl_lasting.entries);
+    fl_lasting.entries = fresh;
+    fl_lasting.slots = slots;
+  }
+  copy = (unsigned char *)malloc(size);
+  if (copy == NULL) {
+    return false;
+  }
+  memcpy(copy, bytes, size);
+  memcpy(&start, digest, sizeof start);
+  at = (size_t)(start & (unsigned long long)(fl_lasting.slots - 1u));
+  while (fl_lasting.entries[at].bytes != NULL) {
+    at = (at + 1u) & (fl_lasting.slots - 1u);
+  }
+  memcpy(fl_lasting.entries[at].digest, digest, 32);
+  fl_lasting.entries[at].bytes = copy;
+  fl_lasting.entries[at].size = size;
+  fl_lasting.entries[at].steps = steps;
+  fl_lasting.entries[at].copied = copied;
+  fl_lasting.entries[at].span = span;
+  fl_lasting.entries[at].counted = counted;
+  fl_lasting.entries[at].used = false;
+  fl_lasting.count += 1;
+  return true;
+}
+
+static void fl_memo_lasting_remember(const unsigned char *digest, fl_value value, size_t steps, size_t copied,
+                                     size_t span, bool counted) {
+  fl_memo_lasting_record *entry = NULL;
+  unsigned char *bytes = NULL;
+  fl_memo_buffer *buffer = &fl_lasting.result;
+  if (fl_lasting.fresh_count == fl_lasting.fresh_slots) {
+    const size_t slots = fl_lasting.fresh_slots == 0 ? 256u : fl_lasting.fresh_slots * 2u;
+    fl_memo_lasting_record *grown =
+        (fl_memo_lasting_record *)realloc(fl_lasting.fresh, slots * sizeof(fl_memo_lasting_record));
+    if (grown == NULL) {
+      fl_lasting.lost += 1;
+      return;
+    }
+    fl_lasting.fresh = grown;
+    fl_lasting.fresh_slots = slots;
+  }
+  buffer->size = 0;
+  buffer->failed = false;
+  fl_memo_write(buffer, value);
+  if (buffer->failed || buffer->size == 0) {
+    fl_lasting.lost += 1;
+    return;
+  }
+  bytes = (unsigned char *)malloc(buffer->size);
+  if (bytes == NULL) {
+    fl_lasting.lost += 1;
+    return;
+  }
+  memcpy(bytes, buffer->data, buffer->size);
+  entry = &fl_lasting.fresh[fl_lasting.fresh_count];
+  memcpy(entry->digest, digest, 32);
+  entry->bytes = bytes;
+  entry->size = buffer->size;
+  entry->steps = steps;
+  entry->copied = copied;
+  entry->span = span;
+  entry->counted = counted;
+  entry->used = true;
+  fl_lasting.fresh_count += 1;
+}
+
+size_t fl_memo_lasting_fresh(const fl_memo_lasting_record **out) {
+  *out = fl_lasting.fresh;
+  return fl_lasting.fresh_count;
+}
+
+size_t fl_memo_lasting_used(size_t index, const fl_memo_lasting_record **out) {
+  size_t at = index;
+  *out = NULL;
+  while (at < fl_lasting.slots) {
+    if (fl_lasting.entries[at].bytes != NULL && fl_lasting.entries[at].used) {
+      *out = &fl_lasting.entries[at];
+      return at + 1u;
+    }
+    at += 1u;
+  }
+  return 0;
+}
+
+void fl_memo_lasting_counts(unsigned long long *loaded, unsigned long long *hits, unsigned long long *fresh,
+                            unsigned long long *lost) {
+  *loaded = (unsigned long long)fl_lasting.count;
+  *hits = fl_lasting.hits;
+  *fresh = (unsigned long long)fl_lasting.fresh_count;
+  *lost = fl_lasting.lost;
+}
+
+static bool fl_memo_lasting_take(const unsigned char *digest, fl_value *value, size_t *steps, size_t *copied,
+                                 size_t *span, bool *counted) {
+  const size_t at = fl_memo_lasting_at(digest);
+  fl_memo_reader reader;
+  fl_memo_lasting_record *entry = NULL;
+  if (at == (size_t)-1) {
+    return false;
+  }
+  entry = &fl_lasting.entries[at];
+  reader.bytes = entry->bytes;
+  reader.size = entry->size;
+  reader.at = 0;
+  reader.failed = false;
+  if (!fl_memo_read_value(&reader, value, 0u) || reader.at != reader.size) {
+    return false;
+  }
+  entry->used = true;
+  *steps = entry->steps;
+  *copied = entry->copied;
+  *span = entry->span;
+  *counted = entry->counted;
+  return true;
+}
+
 static void fl_memo_mismatch(const fl_memo_call *call, const char *what);
 
 static void fl_memo_disown(fl_arena *arena) {
@@ -6681,6 +7469,59 @@ static void fl_memo_open(fl_ctx *ctx, fl_memo_call *call) {
   ctx->depth_peak = ctx->depth;
 }
 
+static bool fl_memo_answer(fl_ctx *ctx, fl_memo_call *call, fl_memo_tally *tally, const fl_memo_entry *entry,
+                           fl_value *result) {
+  const bool counting = ctx->max_steps != 0;
+  if (counting && !entry->counted) {
+    tally->over_steps += 1;
+    call->mode = FL_MEMO_PASS;
+  } else if (counting && (entry->steps > ctx->max_steps || ctx->steps > ctx->max_steps - entry->steps)) {
+    tally->over_steps += 1;
+    call->mode = FL_MEMO_PASS;
+  } else if (entry->span > ctx->max_depth || ctx->depth > ctx->max_depth - entry->span) {
+    tally->over_depth += 1;
+    call->mode = FL_MEMO_PASS;
+  } else if (fl_memo.audit) {
+    call->key = (unsigned char *)malloc(fl_memo.key.size == 0 ? 1u : fl_memo.key.size);
+    if (call->key == NULL) {
+      fl_memo_mismatch(call, "no memory to keep the key for the audit");
+    }
+    memcpy(call->key, fl_memo.key.data, fl_memo.key.size);
+    call->key_bytes = fl_memo.key.size;
+    tally->audited += 1;
+    call->mode = FL_MEMO_AUDIT;
+  } else {
+    tally->hits += 1;
+    if (counting) {
+      ctx->steps += entry->steps;
+      ctx->copied += entry->copied;
+    }
+    if (ctx->depth + entry->span > ctx->depth_peak) {
+      ctx->depth_peak = ctx->depth + entry->span;
+    }
+    *result = entry->value;
+    return true;
+  }
+  fl_memo_open(ctx, call);
+  return false;
+}
+
+static size_t fl_memo_from_lasting(fl_memo_call *call) {
+  fl_value value = fl_nothing();
+  size_t steps = 0;
+  size_t copied = 0;
+  size_t span = 0;
+  bool counted = false;
+  if (!fl_memo_lasting_take(call->digest, &value, &steps, &copied, &span, &counted)) {
+    return (size_t)-1;
+  }
+  if (!fl_memo_insert(call->hash, fl_memo.key.data, fl_memo.key.size, value, steps, copied, span, counted)) {
+    return (size_t)-1;
+  }
+  fl_lasting.hits += 1;
+  return fl_memo_lookup(call->hash, fl_memo.key.data, fl_memo.key.size);
+}
+
 bool fl_memo_find(fl_ctx *ctx, const char *function, const fl_value *args, size_t count, fl_memo_call *call,
                   fl_value *result) {
   fl_memo_tally *tally = NULL;
@@ -6689,6 +7530,7 @@ bool fl_memo_find(fl_ctx *ctx, const char *function, const fl_value *args, size_
   call->key = NULL;
   call->key_bytes = 0;
   call->tally = 0;
+  call->lasting = false;
   if (ctx == NULL || result == NULL || function == NULL) {
     return false;
   }
@@ -6704,44 +7546,17 @@ bool fl_memo_find(fl_ctx *ctx, const char *function, const fl_value *args, size_
   }
   call->hash = fl_memo_hash(fl_memo.key.data, fl_memo.key.size);
   at = fl_memo_lookup(call->hash, fl_memo.key.data, fl_memo.key.size);
-  if (at != (size_t)-1) {
-    const fl_memo_entry *entry = &fl_memo.entries[at];
-    const bool counting = ctx->max_steps != 0;
-    if (counting && !entry->counted) {
-      tally->over_steps += 1;
-      call->mode = FL_MEMO_PASS;
-    } else if (counting && (entry->steps > ctx->max_steps || ctx->steps > ctx->max_steps - entry->steps)) {
-      tally->over_steps += 1;
-      call->mode = FL_MEMO_PASS;
-    } else if (entry->span > ctx->max_depth || ctx->depth > ctx->max_depth - entry->span) {
-      tally->over_depth += 1;
-      call->mode = FL_MEMO_PASS;
-    } else if (fl_memo.audit) {
-      call->key = (unsigned char *)malloc(fl_memo.key.size == 0 ? 1u : fl_memo.key.size);
-      if (call->key == NULL) {
-        fl_memo_mismatch(call, "no memory to keep the key for the audit");
-      }
-      memcpy(call->key, fl_memo.key.data, fl_memo.key.size);
-      call->key_bytes = fl_memo.key.size;
-      tally->audited += 1;
-      call->mode = FL_MEMO_AUDIT;
-    } else {
-      tally->hits += 1;
-      if (counting) {
-        ctx->steps += entry->steps;
-        ctx->copied += entry->copied;
-      }
-      if (ctx->depth + entry->span > ctx->depth_peak) {
-        ctx->depth_peak = ctx->depth + entry->span;
-      }
-      *result = entry->value;
-      return true;
+  if (at == (size_t)-1 && fl_memo_lasting_wanted(function)) {
+    call->lasting = fl_memo_lasting_digest(function, args, count, call->digest);
+    if (call->lasting) {
+      at = fl_memo_from_lasting(call);
     }
-    fl_memo_open(ctx, call);
-    return false;
+  }
+  if (at != (size_t)-1) {
+    return fl_memo_answer(ctx, call, tally, &fl_memo.entries[at], result);
   }
   tally->misses += 1;
-  if (fl_memo.full) {
+  if (fl_memo.full && !call->lasting) {
     tally->unkept += 1;
     return false;
   }
@@ -6809,6 +7624,9 @@ fl_status fl_memo_keep(fl_ctx *ctx, fl_memo_call *call, fl_status status, fl_val
     return status;
   }
   if (call->mode == FL_MEMO_STORE) {
+    if (status == FL_OK && result != NULL && call->lasting) {
+      fl_memo_lasting_remember(call->digest, *result, steps, copied, span, ctx->max_steps != 0);
+    }
     if (status == FL_OK && result != NULL) {
       if (fl_memo_insert(call->hash, call->key, call->key_bytes, *result, steps, copied, span, ctx->max_steps != 0)) {
         fl_memo.tallies[call->tally].kept += 1;

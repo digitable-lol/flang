@@ -1361,11 +1361,11 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 54cfb1a8e907051aafea33efa6ac337d|784|446|22|261|0|flang/self/parser.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
-82baac47756df343c845cc40f740dfbe|95|82|2|10|0|flang/self/proof-initial.flang
-c8dbb7179b35f785da41f5990dd41238|63|44|0|0|0|flang/self/proof-kernel.flang
-94902a6939c9331164c3fdd856ef2a93|227|98|57|3|0|flang/self/proof-record.flang
-6caf41ec0a767163f46212d635157227|338|268|26|41|0|flang/self/proof.flang
-c9e3ee258bfab2a0503a1214f8d1034f|182|46|1|91|0|flang/self/proofterm.flang
+82baac47756df343c845cc40f740dfbe|97|82|2|10|0|flang/self/proof-initial.flang
+c8dbb7179b35f785da41f5990dd41238|65|44|0|0|0|flang/self/proof-kernel.flang
+94902a6939c9331164c3fdd856ef2a93|230|98|57|3|0|flang/self/proof-record.flang
+6caf41ec0a767163f46212d635157227|339|268|26|41|0|flang/self/proof.flang
+c9e3ee258bfab2a0503a1214f8d1034f|185|46|1|91|0|flang/self/proofterm.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|×|×|×|0|flang/self/repl/repl.flang
 bddb9033aaa4c5848f9eb45f5b8780b7|88|24|0|64|0|flang/self/setoid-oracle.flang
 283bcb74a49880f90b1aa8497a73236d|101|79|0|22|0|flang/self/setoid.flang
@@ -1798,6 +1798,9 @@ f8065d1d57b972e091c656779e5cad7d|1|1|0|0|0|flang/proof/checker/tests/families/fi
 cf872d516e34dd69bc73a4e95995017f|2|2|0|0|0|flang/proof/checker/tests/families/fmath/scores.flang
 1d3bc37e838ba54753e02518e95dad9b|4|3|0|1|0|flang/proof/checker/tests/families/fmath/sum-of-a-number.flang
 897051eca79bc4882718b6ad0a7aa309|1|1|0|0|0|flang/proof/checker/tests/families/open-term/identity-of-an-open-term.flang
+497ba271de0f55bbb295f71d3d47602f|1|×|×|×|0|flang/proof/checker/tests/families/finite-enumeration/number.flang
+ec349a6b628b1b63486f4c75fe14fa55|2|×|×|×|0|flang/proof/checker/tests/families/integer-tightening/strict-floor.flang
+a63ae12c380ae5247ffda7197468a17b|2|×|×|×|0|flang/proof/checker/tests/families/segment-form/descent.flang
 // ── Проба неисполненных блоков «прогон» (задача 1116), снято 2 октября 2026 ─
 // Приговор снят `flang check --proof` этого же дерева: «утверждений 3:
 // доказано 3 (из них без теоремы 3), сетка 0, объявлено, не доказано 0».

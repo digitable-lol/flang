@@ -1,0 +1,35 @@
+function	role	name	claim
+sign	ensures	знак положительного — единица	если «x» больше 0 то результат равен 1 иначе да
+sign	ensures	знак нуля — ноль	если «x» больше 0 то да иначе (если «x» меньше 0 то да иначе (результат равен 0))
+sign	ensures	знак не ниже минус единицы	результат не меньше -1
+sign	ensures	знак не выше единицы	результат не больше 1
+midpoint	requires	lo неотрицательно	«lo» не меньше 0
+midpoint	requires	lo не правее hi	«lo» не больше «hi»
+midpoint	ensures	середина не левее lo	результат не меньше «lo»
+midpoint	ensures	середина не правее hi	результат не больше «hi»
+clamp	requires	lo не правее hi	«lo» не больше «hi»
+clamp	ensures	ниже lo — значит lo	если «x» меньше «lo» то результат равен «lo» иначе да
+clamp	ensures	выше hi — значит hi	если «x» меньше «lo» то да иначе (если «x» больше «hi» то результат равен «hi» иначе да)
+page_count	requires	товаров не меньше нуля	«items» не меньше 0
+page_count	requires	на странице хотя бы один	«per_page» больше 0
+page_count	ensures	страниц хватает	(результат умножить на «per_page») не меньше «items»
+page_count	ensures	лишней страницы нет	((результат минус 1) умножить на «per_page») меньше «items»
+remaining	requires	занято не меньше нуля	«used» не меньше 0
+remaining	requires	занято не больше вместимости	«used» не больше «capacity»
+remaining	ensures	остаток не отрицателен	результат не меньше 0
+bucket	requires	балл не меньше нуля	«score» не меньше 0
+bucket	requires	балл не больше ста	«score» не больше 100
+bucket	requires	корзин хотя бы одна	«buckets» больше 0
+bucket	requires	корзин не больше тысячи	«buckets» не больше 1000
+bucket	ensures	номер корзины не отрицателен	результат не меньше 0
+bucket	ensures	номер корзины меньше числа корзин	результат меньше «buckets»
+grade_points	ensures	баллы не ниже нуля	результат не меньше 0
+grade_points	ensures	баллы не выше четырёх	результат не больше 4
+days_in_month	requires	месяц не раньше января	«month» не меньше 1
+days_in_month	requires	месяц не позже декабря	«month» не больше 12
+days_in_month	ensures	в феврале 29 дней в високосный год и 28 в обычный	если «month» равно 2 то (если «leap» не равно 0 то результат равен 29 иначе результат равен 28) иначе да
+days_in_month	ensures	в месяце не меньше 28 дней	результат не меньше 28
+quarter_of	requires	месяц не раньше января	«month» не меньше 1
+quarter_of	requires	месяц не позже декабря	«month» не больше 12
+quarter_of	ensures	квартал не меньше первого	результат не меньше 1
+quarter_of	ensures	квартал не больше четвёртого	результат не больше 4

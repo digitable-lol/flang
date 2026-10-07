@@ -1,0 +1,13 @@
+function	expected	claim
+average	bug	строка 3: делитель в (total / count) не ноль
+average_or_zero	bug	строка 10: (total / count) не выше INT_MAX
+positive_average	open	
+sign	proved	
+midpoint	bug	строка 3: (lo + hi) не выше INT_MAX
+clamp	proved	
+page_count	bug	лишней страницы нет
+remaining	proved	
+bucket	bug	номер корзины меньше числа корзин
+grade_points	proved	
+days_in_month	bug	в феврале 29 дней в високосный год и 28 в обычный
+quarter_of	proved	

@@ -1,0 +1,2375 @@
+модуль «C translator»
+  использует «Rules» из "../../../scripts/rules.fscript"
+  использует «Reading» из "../../../scripts/reading.fscript"
+  использует «Tables» из "../../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Row»
+  «depth»: число
+  «words»: список строки
+  «line»: число
+
+тип «Node»
+  вариант «Tree» содержит words: список строки, line: число, kids: список «Node»
+
+объект «Open»
+  «depth»: число
+  «words»: список строки
+  «line»: число
+  «children»: список «Node»
+
+объект «Reading rows»
+  «rows»: список «Row»
+  «line»: число
+
+тотальная функция «Reversed» от «А»
+  принимает items: список «А»
+  возвращает список «А»
+  пример «The last comes first»
+    дано items равно ["a", "b", "c"]
+    ожидается ["c", "b", "a"]
+  свёртка items начиная с (пустой список) как turned и entry → приписать entry к turned
+
+тотальная функция «Last word»
+  принимает words: список строки
+  возвращает строка
+  пример «The last of three»
+    дано words равно ["a", "b", "c"]
+    ожидается "c"
+  пример «Nothing gives nothing»
+    дано words равно []
+    ожидается ""
+  свёртка words начиная с "" как last и word → word
+
+объект «Pick»
+  «items»: список строки
+  «keep»: признак
+
+тотальная функция «Picked»
+  принимает pick: «Pick», part: строка
+  возвращает «Pick»
+  пример «A part between quotes is kept»
+    дано pick равно запись «Pick» с «items» равным [] и «keep» равным да
+    дано part равно "int"
+    ожидается запись «Pick» с «items» равным ["int"] и «keep» равным нет
+  пусть kept равно (если pick.«keep» то (добавить part к (pick.«items»)) иначе (pick.«items»))
+  запись «Pick» с «items» равным kept и «keep» равным (не (pick.«keep»))
+
+тотальная функция «Quoted»
+  принимает rest: строка
+  возвращает список строки
+  пример «Every text between single quotes, in order»
+    дано rest равно "0x1 <col:9> 'int' lvalue ParmVar 0x2 'month' 'int'"
+    ожидается ["int", "month", "int"]
+  пример «No quotes, nothing quoted»
+    дано rest равно "0x1 <col:9>"
+    ожидается []
+  пусть start равно (запись «Pick» с «items» равным пустой список и «keep» равным нет)
+  (свёртка (разделить rest по "'") начиная с start как pick и part → «Picked» от pick и part).«items»
+
+тотальная функция «Located line»
+  принимает rest: строка, current: число
+  возвращает число
+  пример «A file name and a line start the location»
+    дано rest равно "0x1 <calendar.c:8:1, line:17:1> line:8:5 quarter_of 'int (int)'"
+    дано current равно 1
+    ожидается 8
+  пример «A line mark moves the line»
+    дано rest равно "0x1 <line:3:5, line:4:16>"
+    дано current равно 1
+    ожидается 3
+  пример «A location without a range»
+    дано rest равно "0x1 <t.c:4:1> col:5 f"
+    дано current равно 1
+    ожидается 4
+  пример «A column mark keeps the line»
+    дано rest равно "0x1 <col:9, col:18> 'int' '=='"
+    дано current равно 3
+    ожидается 3
+  пример «No location keeps the line»
+    дано rest равно "0x1 <<invalid sloc>> <invalid sloc>"
+    дано current равно 3
+    ожидается 3
+  пусть parts равно (разделить rest по "<")
+  пусть opening равно (если (длина parts) больше 1 то («Cell» от 1 и (разделить (элемент 2 в parts) по ">")) иначе "")
+  пусть place равно («Cell» от 1 и (разделить opening по ","))
+  пусть pieces равно (разделить place по ":")
+  пусть found равно (если (длина pieces) больше 2 то («Count» от (элемент ((длина pieces) минус 1) в pieces)) иначе 0)
+  если found больше 0 то found иначе current
+
+тотальная функция «Row of»
+  принимает text: строка, current: число
+  возвращает «Row»
+  пример «The depth is the width of the drawing before the kind, halved»
+    дано text равно "| | |-BinaryOperator 0x1 <line:3:9> 'int' '||'"
+    дано current равно 1
+    ожидается запись «Row» с «depth» равным 3 и «words» равным ["BinaryOperator",
+      "0x1 <line:3:9> 'int' '||'"] и «line» равным 3
+  пример «A function at the top»
+    дано text равно "`-FunctionDecl 0x1 <line:8:1> line:8:5 quarter_of 'int (int)'"
+    дано current равно 6
+    ожидается запись «Row» с «depth» равным 1 и «words» равным ["FunctionDecl",
+      "0x1 <line:8:1> line:8:5 quarter_of 'int (int)'"] и «line» равным 8
+  пусть parts равно (разделить text по "-")
+  пусть width равно (если (длина parts) больше 1 то ((длина (элемент 1 в parts)) плюс 1) иначе 0)
+  пусть content равно (если width больше 0 то (подстрока text с (width плюс 1) по (длина text)) иначе text)
+  пусть kind равно («Cell» от 1 и (разделить content по " "))
+  пусть rest равно («After» от (соединить [kind, " "] по "") и content)
+  пусть depth равно ((width минус (width остаток от 2)) делить на 2)
+  запись «Row» с «depth» равным depth и «words» равным [kind, rest] и «line» равным («Located line» от rest и current)
+
+тотальная функция «Rows of»
+  принимает dump: строка
+  возвращает список «Row»
+  пример «Lines become rows, and the line of the source is carried down»
+    дано dump равно "|-FunctionDecl 0x1 <t.c:1:1> col:5 f 'int (int)'\n| `-ReturnStmt 0x2 <col:30>\n"
+    ожидается [запись «Row» с «depth» равным 1 и «words» равным ["FunctionDecl",
+      "0x1 <t.c:1:1> col:5 f 'int (int)'"] и «line» равным 1, запись «Row» с «depth» равным 2 и «words» равным [
+      "ReturnStmt", "0x2 <col:30>"] и «line» равным 1]
+  пусть start равно (запись «Reading rows» с «rows» равным пустой список и «line» равным 0)
+  пусть read равно (свёртка («Lines» от dump) начиная с start как read и text → «Next rows» от read и text)
+  «Reversed» от (read.«rows»)
+
+тотальная функция «Next rows»
+  принимает read: «Reading rows», text: строка
+  возвращает «Reading rows»
+  пример «A row goes first and its line becomes current»
+    дано read равно запись «Reading rows» с «rows» равным [] и «line» равным 0
+    дано text равно "|-FunctionDecl 0x1 <t.c:4:1>"
+    ожидается запись «Reading rows» с «rows» равным [запись «Row» с «depth» равным 1 и «words» равным ["FunctionDecl",
+      "0x1 <t.c:4:1>"] и «line» равным 4] и «line» равным 4
+  пусть row равно («Row of» от text и (read.«line»))
+  запись «Reading rows» с «rows» равным (приписать row к (read.«rows»)) и «line» равным (row.«line»)
+
+тотальная функция «Closed»
+  принимает open: «Open»
+  возвращает «Node»
+  пример «An open node closes with its children»
+    дано open равно запись «Open» с «depth» равным 2 и «words» равным ["ReturnStmt",
+      ""] и «line» равным 3 и «children» равным []
+    ожидается вариант «Tree» с words равным ["ReturnStmt", ""] и line равным 3 и kids равным []
+  пусть kind равно («Cell» от 1 и (open.«words»))
+  пусть rest равно («Cell» от 2 и (open.«words»))
+  вариант «Tree» с words равным [kind, rest] и line равным (open.«line») и kids равным (open.«children»)
+
+тотальная функция «Adopted»
+  принимает child: «Node», parent: «Open»
+  возвращает «Open»
+  пример «A closed child joins its parent last»
+    дано child равно вариант «Tree» с words равным ["ReturnStmt", ""] и line равным 3 и kids равным []
+    дано parent равно запись «Open» с «depth» равным 1 и «words» равным ["FunctionDecl",
+      ""] и «line» равным 1 и «children» равным []
+    ожидается запись «Open» с «depth» равным 1 и «words» равным ["FunctionDecl",
+      ""] и «line» равным 1 и «children» равным [вариант «Tree» с words равным ["ReturnStmt",
+      ""] и line равным 3 и kids равным []]
+  пусть children равно (добавить child к (parent.«children»))
+  «Open of» от (parent.«depth») и (parent.«words») и (parent.«line») и children
+
+
+тотальная функция «Folded down»
+  принимает depth: число, top: «Open», below: список «Open»
+  возвращает список «Open»
+  пример «A deeper top joins the node below it»
+    дано depth равно 2
+    дано top равно запись «Open» с «depth» равным 2 и «words» равным ["ReturnStmt",
+      ""] и «line» равным 3 и «children» равным []
+    дано below равно [запись «Open» с «depth» равным 0 и «words» равным ["Root",
+      ""] и «line» равным 0 и «children» равным []]
+    ожидается [запись «Open» с «depth» равным 0 и «words» равным ["Root", ""] и «line» равным 0 и «children» равным [
+      вариант «Tree» с words равным ["ReturnStmt", ""] и line равным 3 и kids равным []]]
+  пример «A shallower top stays»
+    дано depth равно 3
+    дано top равно запись «Open» с «depth» равным 2 и «words» равным ["ReturnStmt",
+      ""] и «line» равным 3 и «children» равным []
+    дано below равно []
+    ожидается [запись «Open» с «depth» равным 2 и «words» равным ["ReturnStmt",
+      ""] и «line» равным 3 и «children» равным []]
+  если (top.«depth») меньше depth
+    то приписать top к below
+    иначе
+      разбор below
+        случай пусто
+          то [top]
+        случай голова и хвост
+          то «Folded down» от depth и («Adopted» от («Closed» от top) и голова) и хвост
+
+тотальная функция «Root open»
+  возвращает «Open»
+  пример «The root holds the functions at depth one»
+    ожидается запись «Open» с «depth» равным 0 и «words» равным ["Root", ""] и «line» равным 0 и «children» равным []
+  запись «Open» с «depth» равным 0 и «words» равным ["Root", ""] и «line» равным 0 и «children» равным пустой список
+
+тотальная функция «Pushed»
+  принимает stack: список «Open», row: «Row»
+  возвращает список «Open»
+  пример «A row at the same depth closes the one before»
+    дано stack равно [запись «Open» с «depth» равным 1 и «words» равным ["FunctionDecl",
+      "f"] и «line» равным 1 и «children» равным [], запись «Open» с «depth» равным 0 и «words» равным ["Root",
+      ""] и «line» равным 0 и «children» равным []]
+    дано row равно запись «Row» с «depth» равным 1 и «words» равным ["FunctionDecl", "g"] и «line» равным 5
+    ожидается [запись «Open» с «depth» равным 1 и «words» равным ["FunctionDecl",
+      "g"] и «line» равным 5 и «children» равным [], запись «Open» с «depth» равным 0 и «words» равным ["Root",
+      ""] и «line» равным 0 и «children» равным [вариант «Tree» с words равным ["FunctionDecl",
+      "f"] и line равным 1 и kids равным []]]
+  пусть opened равно («Open of» от (row.«depth») и (row.«words») и (row.«line») и пустой список)
+  разбор stack
+    случай пусто
+      то [opened]
+    случай голова и хвост
+      то приписать opened к («Folded down» от (row.«depth») и (голова) и (хвост))
+
+
+тотальная функция «Tree of»
+  принимает dump: строка
+  возвращает «Node»
+  пример «Two levels of a dump become a tree»
+    дано dump равно "|-FunctionDecl 0x1 col:5 f\n| `-ReturnStmt 0x2\n`-FunctionDecl 0x3 <line:3:1> g\n"
+    ожидается вариант «Tree» с words равным ["Root", ""] и line равным 0 и kids равным [вариант «Tree» с words равным [
+      "FunctionDecl", "0x1 col:5 f"] и line равным 0 и kids равным [вариант «Tree» с words равным ["ReturnStmt",
+      "0x2"] и line равным 0 и kids равным []], вариант «Tree» с words равным ["FunctionDecl",
+      "0x3 <line:3:1> g"] и line равным 3 и kids равным []]
+  пусть stack равно (свёртка («Rows of» от dump) начиная с [(«Root open»)] как built и row → «Pushed» от built и row)
+  разбор («Collapsed» от stack)
+    случай пусто
+      то «Closed» от («Root open»)
+    случай голова и хвост
+      то «Closed» от голова
+
+тотальная функция «Collapsed»
+  принимает stack: список «Open»
+  возвращает список «Open»
+  пример «Every open node joins the one below it, down to the root»
+    дано stack равно [запись «Open» с «depth» равным 1 и «words» равным ["FunctionDecl",
+      "f"] и «line» равным 1 и «children» равным [], запись «Open» с «depth» равным 0 и «words» равным ["Root",
+      ""] и «line» равным 0 и «children» равным []]
+    ожидается [запись «Open» с «depth» равным 0 и «words» равным ["Root", ""] и «line» равным 0 и «children» равным [
+      вариант «Tree» с words равным ["FunctionDecl", "f"] и line равным 1 и kids равным []]]
+  разбор stack
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то «Folded down» от 1 и (голова) и (хвост)
+
+объект «Duty»
+  «words»: список строки
+  «line»: число
+
+объект «Binding»
+  «name»: строка
+  «pure»: строка
+
+объект «Value»
+  «texts»: список строки
+  «marks»: список признак
+  «duties»: список «Duty»
+  «refusals»: список строки
+
+тотальная функция «Body»
+  принимает value: «Value»
+  возвращает строка
+  пример «The text of the body»
+    дано value равно запись «Value» с «texts» равным ["a", "b", "c"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным []
+    ожидается "a"
+  «Cell» от 1 и (value.«texts»)
+
+тотальная функция «Pure»
+  принимает value: «Value»
+  возвращает строка
+  пример «The text for claims»
+    дано value равно запись «Value» с «texts» равным ["a", "b", "c"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным []
+    ожидается "b"
+  «Cell» от 2 и (value.«texts»)
+
+тотальная функция «C text»
+  принимает value: «Value»
+  возвращает строка
+  пример «The text in C»
+    дано value равно запись «Value» с «texts» равным ["a", "b", "c"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным []
+    ожидается "c"
+  «Cell» от 3 и (value.«texts»)
+
+тотальная функция «Mark at»
+  принимает position: число, marks: список признак
+  возвращает признак
+  пример «A mark that is not there is false»
+    дано position равно 3
+    дано marks равно [да, да]
+    ожидается нет
+  если (position меньше 1) или (position больше (длина marks)) то нет иначе (элемент position в marks)
+
+тотальная функция «Truth»
+  принимает value: «Value»
+  возвращает признак
+  пример «A comparison is a truth»
+    дано value равно запись «Value» с «texts» равным ["a", "b", "c"] и «marks» равным [да, нет] и «duties» равным [
+      ] и «refusals» равным []
+    ожидается да
+  «Mark at» от 1 и (value.«marks»)
+
+тотальная функция «Literal»
+  принимает value: «Value»
+  возвращает признак
+  пример «A literal»
+    дано value равно запись «Value» с «texts» равным ["4", "4", "4"] и «marks» равным [нет, да] и «duties» равным [
+      ] и «refusals» равным []
+    ожидается да
+  «Mark at» от 2 и (value.«marks»)
+
+тотальная функция «Duty name»
+  принимает duty: «Duty»
+  возвращает строка
+  пример «The name of a duty»
+    дано duty равно запись «Duty» с «words» равным ["d", "нет"] и «line» равным 3
+    ожидается "d"
+  «Cell» от 1 и (duty.«words»)
+
+тотальная функция «Duty claim»
+  принимает duty: «Duty»
+  возвращает строка
+  пример «The claim of a duty»
+    дано duty равно запись «Duty» с «words» равным ["d", "нет"] и «line» равным 3
+    ожидается "нет"
+  «Cell» от 2 и (duty.«words»)
+
+тотальная функция «Refused value»
+  принимает reason: строка
+  возвращает «Value»
+  пример «A refusal carries its reason and nothing else»
+    дано reason равно "строка 3: CallExpr вне подмножества"
+    ожидается запись «Value» с «texts» равным ["0", "0", "?"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным ["строка 3: CallExpr вне подмножества"]
+  запись «Value» с «texts» равным ["0", "0", "?"] и «marks» равным [нет,
+    нет] и «duties» равным пустой список и «refusals» равным [reason]
+
+тотальная функция «Plain value»
+  принимает body: строка, pure: строка, c: строка, truth: признак
+  возвращает «Value»
+  пример «A name of a parameter is the same in the body and in claims»
+    дано body равно "«lo»"
+    дано pure равно "«lo»"
+    дано c равно "lo"
+    дано truth равно нет
+    ожидается запись «Value» с «texts» равным ["«lo»", "«lo»", "lo"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным []
+  запись «Value» с «texts» равным [body, pure, c] и «marks» равным [truth,
+    нет] и «duties» равным пустой список и «refusals» равным пустой список
+
+тотальная функция «Part»
+  принимает position: число, parts: список «Value»
+  возвращает «Value»
+  пример «A missing part is a refusal»
+    дано position равно 2
+    дано parts равно []
+    ожидается запись «Value» с «texts» равным ["0", "0", "?"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным ["у узла нет части 2"]
+  если (position меньше 1) или (position больше (длина parts))
+    то «Refused value» от (соединить ["у узла нет части ", (к строке position)] по "")
+    иначе элемент position в parts
+
+тотальная функция «As number»
+  принимает value: «Value»
+  возвращает «Value»
+  пример «A comparison used as a number is one or zero, as in C»
+    дано value равно запись «Value» с «texts» равным ["(«a» меньше «b»)", "(«a» меньше «b»)",
+      "(a < b)"] и «marks» равным [да, нет] и «duties» равным [] и «refusals» равным []
+    ожидается запись «Value» с «texts» равным ["(если («a» меньше «b») то 1 иначе 0)",
+      "(если («a» меньше «b») то 1 иначе 0)", "(a < b)"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным []
+  если («Truth» от value)
+    то запись «Value» с «texts» равным [(соединить ["(если ", («Body» от value), " то 1 иначе 0)"] по ""), (соединить [
+      "(если ", («Pure» от value), " то 1 иначе 0)"] по ""), («C text» от value)] и «marks» равным [нет,
+      нет] и «duties» равным (value.«duties») и «refusals» равным (value.«refusals»)
+    иначе value
+
+тотальная функция «As truth»
+  принимает value: «Value»
+  возвращает «Value»
+  пример «A number used as a condition is true when it is not zero, as in C»
+    дано value равно запись «Value» с «texts» равным ["«x»", "«x»", "x"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным []
+    ожидается запись «Value» с «texts» равным ["(«x» не равно 0)", "(«x» не равно 0)", "x"] и «marks» равным [да,
+      нет] и «duties» равным [] и «refusals» равным []
+  если («Truth» от value)
+    то value
+    иначе запись «Value» с «texts» равным [(соединить ["(", («Body» от value), " не равно 0)"] по ""), (соединить ["(",
+      («Pure» от value), " не равно 0)"] по ""), («C text» от value)] и «marks» равным [да,
+      нет] и «duties» равным (value.«duties») и «refusals» равным (value.«refusals»)
+
+тотальная функция «Under»
+  принимает condition: строка, taken: признак, duties: список «Duty»
+  возвращает список «Duty»
+  пример «A duty inside a branch holds only on that branch»
+    дано condition равно "(«b» больше 0)"
+    дано taken равно да
+    дано duties равно [запись «Duty» с «words» равным ["d", "(«a» плюс 1) не больше 2147483647"] и «line» равным 3]
+    ожидается [запись «Duty» с «words» равным ["d",
+      "если («b» больше 0) то ((«a» плюс 1) не больше 2147483647) иначе да"] и «line» равным 3]
+  пример «The other branch»
+    дано condition равно "(«b» больше 0)"
+    дано taken равно нет
+    дано duties равно [запись «Duty» с «words» равным ["d", "нет"] и «line» равным 3]
+    ожидается [запись «Duty» с «words» равным ["d", "если («b» больше 0) то да иначе (нет)"] и «line» равным 3]
+  отобразить duties как duty → запись «Duty» с «words» равным [(«Duty name» от duty), (если taken то (соединить [
+    "если ", condition, " то (", («Duty claim» от duty), ") иначе да"] по "") иначе (соединить ["если ", condition,
+    " то да иначе (", («Duty claim» от duty), ")"] по ""))] и «line» равным (duty.«line»)
+
+тотальная функция «Range duties»
+  принимает pure: строка, c: строка, line: число
+  возвращает список «Duty»
+  пример «Every result of int arithmetic must fit in int»
+    дано pure равно "(«lo» плюс «hi»)"
+    дано c равно "(lo + hi)"
+    дано line равно 3
+    ожидается [запись «Duty» с «words» равным ["строка 3: (lo + hi) не выше INT_MAX",
+      "(«lo» плюс «hi») не больше 2147483647"] и «line» равным 3, запись «Duty» с «words» равным [
+      "строка 3: (lo + hi) не ниже INT_MIN", "(«lo» плюс «hi») не меньше -2147483648"] и «line» равным 3]
+  [запись «Duty» с «words» равным [(соединить ["строка ", (к строке line), ": ", c, " не выше INT_MAX"] по ""),
+    (соединить [pure, " не больше 2147483647"] по "")] и «line» равным line,
+   запись «Duty» с «words» равным [(соединить ["строка ", (к строке line), ": ", c, " не ниже INT_MIN"] по ""),
+     (соединить [pure, " не меньше -2147483648"] по "")] и «line» равным line]
+
+тотальная функция «Divisor duty»
+  принимает divisor: строка, c: строка, line: число
+  возвращает «Duty»
+  пример «A divisor must not be zero»
+    дано divisor равно "«count»"
+    дано c равно "(total / count)"
+    дано line равно 3
+    ожидается запись «Duty» с «words» равным ["строка 3: делитель в (total / count) не ноль",
+      "если «count» больше 0 то да иначе («count» меньше 0)"] и «line» равным 3
+  запись «Duty» с «words» равным [(соединить ["строка ", (к строке line), ": делитель в ", c, " не ноль"] по ""),
+    (соединить ["если ", divisor, " больше 0 то да иначе (", divisor, " меньше 0)"] по "")] и «line» равным line
+
+объект «Operator»
+  «word»: строка
+  «kind»: строка
+
+тотальная функция «Operator of»
+  принимает sign: строка
+  возвращает «Operator»
+  пример «Addition is arithmetic»
+    дано sign равно "+"
+    ожидается запись «Operator» с «word» равным "плюс" и «kind» равным "arithmetic"
+  пример «An assignment is outside the subset»
+    дано sign равно "="
+    ожидается запись «Operator» с «word» равным "" и «kind» равным "outside"
+  разбор sign
+    случай "+"
+      то запись «Operator» с «word» равным "плюс" и «kind» равным "arithmetic"
+    случай "-"
+      то запись «Operator» с «word» равным "минус" и «kind» равным "arithmetic"
+    случай "*"
+      то запись «Operator» с «word» равным "умножить на" и «kind» равным "arithmetic"
+    случай "/"
+      то запись «Operator» с «word» равным "" и «kind» равным "division"
+    случай "%"
+      то запись «Operator» с «word» равным "остаток от" и «kind» равным "remainder"
+    случай "<"
+      то запись «Operator» с «word» равным "меньше" и «kind» равным "comparison"
+    случай "<="
+      то запись «Operator» с «word» равным "не больше" и «kind» равным "comparison"
+    случай ">"
+      то запись «Operator» с «word» равным "больше" и «kind» равным "comparison"
+    случай ">="
+      то запись «Operator» с «word» равным "не меньше" и «kind» равным "comparison"
+    случай "=="
+      то запись «Operator» с «word» равным "равно" и «kind» равным "comparison"
+    случай "!="
+      то запись «Operator» с «word» равным "не равно" и «kind» равным "comparison"
+    случай "&&"
+      то запись «Operator» с «word» равным "и притом" и «kind» равным "and"
+    случай "||"
+      то запись «Operator» с «word» равным "или" и «kind» равным "or"
+    случай любое
+      то запись «Operator» с «word» равным "" и «kind» равным "outside"
+
+тотальная функция «Joined values»
+  принимает left: «Value», right: «Value», body: строка, pure: строка, c: строка, truth: признак, duties: список «Duty»
+  возвращает «Value»
+  пример «Refusals of both sides are kept»
+    дано left равно запись «Value» с «texts» равным ["0", "0", "?"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным ["a"]
+    дано right равно запись «Value» с «texts» равным ["0", "0", "?"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным ["b"]
+    дано body равно "x"
+    дано pure равно "x"
+    дано c равно "x"
+    дано truth равно нет
+    дано duties равно []
+    ожидается запись «Value» с «texts» равным ["x", "x", "x"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным ["a", "b"]
+  запись «Value» с «texts» равным [body, pure, c] и «marks» равным [truth,
+    нет] и «duties» равным duties и «refusals» равным («Соединить списки» от (left.«refusals») и (right.«refusals»))
+
+тотальная функция «Binary operation»
+  принимает sign: строка, leftside: «Value», rightside: «Value», line: число
+  возвращает «Value»
+  пример «Addition must fit in int»
+    дано sign равно "+"
+    дано leftside равно запись «Value» с «texts» равным ["«a»", "«a»", "a"] и «marks» равным [нет,
+      нет] и «duties» равным [] и «refusals» равным []
+    дано rightside равно запись «Value» с «texts» равным ["«b»", "«b»", "b"] и «marks» равным [нет,
+      нет] и «duties» равным [] и «refusals» равным []
+    дано line равно 3
+    ожидается запись «Value» с «texts» равным ["(«a» плюс «b»)", "(«a» плюс «b»)", "(a + b)"] и «marks» равным [нет,
+      нет] и «duties» равным [запись «Duty» с «words» равным ["строка 3: (a + b) не выше INT_MAX",
+      "(«a» плюс «b») не больше 2147483647"] и «line» равным 3, запись «Duty» с «words» равным [
+      "строка 3: (a + b) не ниже INT_MIN",
+        "(«a» плюс «b») не меньше -2147483648"] и «line» равным 3] и «refusals» равным []
+  пусть operator равно («Operator of» от sign)
+  пусть kind равно (operator.«kind»)
+  пусть numbers равно (не (kind равен "and") и притом не (kind равен "or"))
+  пусть left равно (если numbers то («As number» от leftside) иначе («As truth» от leftside))
+  пусть right равно (если numbers то («As number» от rightside) иначе («As truth» от rightside))
+  пусть c равно (соединить ["(", («C text» от left), " ", sign, " ", («C text» от right), ")"] по "")
+  пусть both равно («Соединить списки» от (left.«duties») и (right.«duties»))
+  пусть word равно (operator.«word»)
+  пусть body равно (соединить ["(", («Body» от left), " ", word, " ", («Body» от right), ")"] по "")
+  пусть pure равно (соединить ["(", («Pure» от left), " ", word, " ", («Pure» от right), ")"] по "")
+  пусть ranged равно («Соединить списки» от both и («Range duties» от pure и c и line))
+  пусть divided равно (добавить («Divisor duty» от («Pure» от right) и c и line) к both)
+  пусть guarded равно («Under» от («Pure» от left) и (kind равен "and") и (right.«duties»))
+  пусть chained равно («Соединить списки» от (left.«duties») и guarded)
+  пусть refused равно (соединить ["строка ", (к строке line), ": операция «", sign, "» вне подмножества"] по "")
+  разбор kind
+    случай "arithmetic"
+      то «Joined values» от left и right и body и pure и c и нет и ranged
+    случай "division"
+      то «Division» от left и right и c и both и line
+    случай "remainder"
+      то «Joined values» от left и right и body и pure и c и нет и divided
+    случай "comparison"
+      то «Joined values» от left и right и body и pure и c и да и both
+    случай "and"
+      то «Joined values» от left и right и body и pure и c и да и chained
+    случай "or"
+      то «Joined values» от left и right и body и pure и c и да и chained
+    случай любое
+      то «Refused value» от refused
+
+тотальная функция «Division»
+  принимает left: «Value», right: «Value», c: строка, both: список «Duty», line: число
+  возвращает «Value»
+  пример «Division truncates toward zero, as in C, and asks for a divisor that is not zero»
+    дано left равно запись «Value» с «texts» равным ["t", "t", "t"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным []
+    дано right равно запись «Value» с «texts» равным ["n", "n", "n"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным []
+    дано c равно "(t / n)"
+    дано both равно []
+    дано line равно 2
+    ожидается запись «Value» с «texts» равным ["((t минус (t остаток от n)) делить на n)",
+      "((t минус (t остаток от n)) делить на n)", "(t / n)"] и «marks» равным [нет, нет] и «duties» равным [
+      запись «Duty» с «words» равным ["строка 2: делитель в (t / n) не ноль",
+      "если n больше 0 то да иначе (n меньше 0)"] и «line» равным 2, запись «Duty» с «words» равным [
+      "строка 2: (t / n) не выше INT_MAX",
+      "((t минус (t остаток от n)) делить на n) не больше 2147483647"] и «line» равным 2,
+      запись «Duty» с «words» равным ["строка 2: (t / n) не ниже INT_MIN",
+      "((t минус (t остаток от n)) делить на n) не меньше -2147483648"] и «line» равным 2] и «refusals» равным []
+  пусть lb равно («Body» от left)
+  пусть rb равно («Body» от right)
+  пусть lp равно («Pure» от left)
+  пусть rp равно («Pure» от right)
+  пусть body равно (соединить ["((", lb, " минус (", lb, " остаток от ", rb, ")) делить на ", rb, ")"] по "")
+  пусть pure равно (соединить ["((", lp, " минус (", lp, " остаток от ", rp, ")) делить на ", rp, ")"] по "")
+  пусть divided равно (добавить («Divisor duty» от rp и c и line) к both)
+  пусть duties равно («Соединить списки» от divided и («Range duties» от pure и c и line))
+  «Joined values» от left и right и body и pure и c и нет и duties
+
+
+тотальная функция «Unary»
+  принимает sign: строка, operand: «Value», line: число
+  возвращает «Value»
+  пример «A minus before a literal is a negative literal»
+    дано sign равно "-"
+    дано operand равно запись «Value» с «texts» равным ["1", "1", "1"] и «marks» равным [нет, да] и «duties» равным [
+      ] и «refusals» равным []
+    дано line равно 4
+    ожидается запись «Value» с «texts» равным ["-1", "-1", "-1"] и «marks» равным [нет, да] и «duties» равным [
+      ] и «refusals» равным []
+  пример «An increment is outside the subset»
+    дано sign равно "++"
+    дано operand равно запись «Value» с «texts» равным ["«i»", "«i»", "i"] и «marks» равным [нет,
+      нет] и «duties» равным [] и «refusals» равным []
+    дано line равно 4
+    ожидается запись «Value» с «texts» равным ["0", "0", "?"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным ["строка 4: операция «++» вне подмножества"]
+  пусть number равно («As number» от operand)
+  пусть truth равно («As truth» от operand)
+  пусть blank равно («Plain value» от "" и "" и "" и нет)
+  пусть negated равно (соединить ["(0 минус ", («Pure» от number), ")"] по "")
+  пусть subtracted равно (соединить ["(0 минус ", («Body» от number), ")"] по "")
+  пусть c равно (соединить ["-", («C text» от number)] по "")
+  пусть ranged равно («Соединить списки» от (number.«duties») и («Range duties» от negated и c и line))
+  пусть literal равно [(соединить ["-", («Body» от operand)] по ""), (соединить ["-", («Pure» от operand)] по ""), c]
+  пусть inverted равно [(соединить ["(не ", («Body» от truth), ")"] по ""), (соединить ["(не ", («Pure» от truth),
+    ")"] по "")]
+  пусть refused равно (соединить ["строка ", (к строке line), ": операция «", sign, "» вне подмножества"] по "")
+  разбор sign
+    случай "-"
+      то если («Literal» от operand)
+        то запись «Value» с «texts» равным literal и «marks» равным [нет,
+          да] и «duties» равным пустой список и «refusals» равным (operand.«refusals»)
+        иначе «Joined values» от number и blank и subtracted и negated и c и нет и ranged
+    случай "+"
+      то number
+    случай "!"
+      то «Joined values» от truth и blank и («Cell» от 1 и inverted) и («Cell» от 2 и inverted) и (соединить ["!",
+        («C text» от truth)] по "") и да и (truth.«duties»)
+    случай любое
+      то «Refused value» от refused
+
+тотальная функция «Choice»
+  принимает condition: «Value», chosen: «Value», other: «Value»
+  возвращает «Value»
+  пример «A conditional expression is a branch, and duties inside it hold on their branch»
+    дано condition равно запись «Value» с «texts» равным ["(a больше b)", "(a больше b)", "(a > b)"] и «marks» равным [
+      да, нет] и «duties» равным [] и «refusals» равным []
+    дано chosen равно запись «Value» с «texts» равным ["a", "a", "a"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным []
+    дано other равно запись «Value» с «texts» равным ["b", "b", "b"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным []
+    ожидается запись «Value» с «texts» равным ["(если (a больше b) то a иначе b)", "(если (a больше b) то a иначе b)",
+      "((a > b) ? a : b)"] и «marks» равным [нет, нет] и «duties» равным [] и «refusals» равным []
+  пусть test равно («As truth» от condition)
+  пусть truecase равно («As number» от chosen)
+  пусть falsecase равно («As number» от other)
+  пусть inner равно («Joined values» от truecase и falsecase и "" и "" и "" и нет и пустой список)
+  пусть tb равно («Body» от test)
+  пусть tp равно («Pure» от test)
+  пусть body равно (соединить ["(если ", tb, " то ", («Body» от truecase), " иначе ", («Body» от falsecase), ")"] по "")
+  пусть pure равно (соединить ["(если ", tp, " то ", («Pure» от truecase), " иначе ", («Pure» от falsecase), ")"] по "")
+  пусть cs равно [(«C text» от test), " ? ", («C text» от truecase), " : ", («C text» от falsecase)]
+  пусть c равно (соединить ["(", (соединить cs по ""), ")"] по "")
+  пусть yesduties равно («Under» от tp и да и (truecase.«duties»))
+  пусть noduties равно («Under» от tp и нет и (falsecase.«duties»))
+  пусть duties равно («Joined duties» от [(test.«duties»), yesduties, noduties])
+  пусть refusals равно («Соединить списки» от (test.«refusals») и (inner.«refusals»))
+  запись «Value» с «texts» равным [body, pure, c] и «marks» равным [нет,
+    нет] и «duties» равным duties и «refusals» равным refusals
+
+
+тотальная функция «Looked up»
+  принимает name: строка, scope: список «Binding»
+  возвращает список строки
+  пример «A local is found with what it stands for»
+    дано name равно "full"
+    дано scope равно [запись «Binding» с «name» равным "full" и «pure» равным "(«a» плюс 1)"]
+    ожидается ["(«a» плюс 1)"]
+  пример «An unknown name is not found»
+    дано name равно "g"
+    дано scope равно []
+    ожидается []
+  отобразить (отфильтровать scope где binding → (binding.«name») равен name) как binding → (binding.«pure»)
+
+тотальная функция «Reference»
+  принимает rest: строка, line: число, scope: список «Binding»
+  возвращает «Value»
+  пример «A parameter keeps its C name in quotes»
+    дано rest равно "0x1 <col:9> 'int' lvalue ParmVar 0x2 'month' 'int'"
+    дано line равно 3
+    дано scope равно []
+    ожидается запись «Value» с «texts» равным ["«month»", "«month»", "month"] и «marks» равным [нет,
+      нет] и «duties» равным [] и «refusals» равным []
+  пример «A local stands for its initial value inside claims»
+    дано rest равно "0x1 <col:12> 'int' lvalue Var 0x2 'full' 'int'"
+    дано line равно 4
+    дано scope равно [запись «Binding» с «name» равным "full" и «pure» равным "(«a» плюс 1)"]
+    ожидается запись «Value» с «texts» равным ["«full»", "(«a» плюс 1)", "full"] и «marks» равным [нет,
+      нет] и «duties» равным [] и «refusals» равным []
+  пример «A global variable is outside the subset»
+    дано rest равно "0x1 <col:12> 'int' lvalue Var 0x2 'limit' 'int'"
+    дано line равно 4
+    дано scope равно []
+    ожидается запись «Value» с «texts» равным ["0", "0", "?"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным ["строка 4: имя «limit» не параметр и не локальная переменная этой функции"]
+  пусть quoted равно («Quoted» от rest)
+  пусть name равно (если (длина quoted) больше 1 то (элемент 2 в quoted) иначе "")
+  пусть typed равно ((«Last word» от quoted) равен "int")
+  пусть quotedname равно (соединить ["«", name, "»"] по "")
+  пусть found равно («Looked up» от name и scope)
+  пусть local равно ((rest содержит " Var ") и притом (не (пусто found)))
+  пусть place равно (соединить ["строка ", (к строке line), ": имя «", name, "»"] по "")
+  пусть untyped равно («Refused value» от (соединить [place, " не типа int"] по ""))
+  пусть stranger равно («Refused value» от (соединить [place,
+    " не параметр и не локальная переменная этой функции"] по ""))
+  пусть parameter равно («Plain value» от quotedname и quotedname и name и нет)
+  пусть variable равно («Plain value» от quotedname и («Last word» от found) и name и нет)
+  «Chosen» от [(«When» от (не typed) и untyped), («When» от (rest содержит " ParmVar ") и parameter),
+    («When» от local и variable)] и stranger
+
+
+тотальная функция «Literal value»
+  принимает rest: строка, line: число
+  возвращает «Value»
+  пример «An int literal»
+    дано rest равно "0x1 <col:18> 'int' 4"
+    дано line равно 3
+    ожидается запись «Value» с «texts» равным ["4", "4", "4"] и «marks» равным [нет, да] и «duties» равным [
+      ] и «refusals» равным []
+  пример «A long literal is outside the subset»
+    дано rest равно "0x1 <col:18> 'long' 4"
+    дано line равно 3
+    ожидается запись «Value» с «texts» равным ["0", "0", "?"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным ["строка 3: литерал типа «long» вне подмножества"]
+  пусть digits равно («Last word» от («Words» от rest))
+  пусть ctype равно («Cell» от 1 и («Quoted» от rest))
+  если (ctype равен "int") и притом («Digits» от digits)
+    то запись «Value» с «texts» равным [digits, digits, digits] и «marks» равным [нет,
+      да] и «duties» равным пустой список и «refusals» равным пустой список
+    иначе «Refused value» от (соединить ["строка ", (к строке line), ": литерал типа «", ctype,
+      "» вне подмножества"] по "")
+
+тотальная функция «Expression»
+  принимает node: «Node», scope: список «Binding»
+  возвращает «Value»
+  пример «A comparison of a parameter and a literal»
+    дано node равно вариант «Tree» с words равным ["BinaryOperator", "0x1 'int' '<='"] и line равным 3 и kids равным [
+      вариант «Tree» с words равным ["ImplicitCastExpr", "0x2 'int' <LValueToRValue>"] и line равным 3 и kids равным [
+      вариант «Tree» с words равным ["DeclRefExpr",
+      "0x3 'int' lvalue ParmVar 0x4 'month' 'int'"] и line равным 3 и kids равным []], вариант «Tree» с words равным [
+      "IntegerLiteral", "0x5 'int' 3"] и line равным 3 и kids равным []]
+    дано scope равно []
+    ожидается запись «Value» с «texts» равным ["(«month» не больше 3)", "(«month» не больше 3)",
+      "(month <= 3)"] и «marks» равным [да, нет] и «duties» равным [] и «refusals» равным []
+  разбор node
+    случай вариант «Tree» с words как words и line как line и kids как kids
+      то «Expression of» от words и line и (отобразить kids как kid → «Expression» от kid и scope) и scope
+
+тотальная функция «Expression of»
+  принимает words: список строки, line: число, parts: список «Value», scope: список «Binding»
+  возвращает «Value»
+  пример «A call is outside the subset»
+    дано words равно ["CallExpr", "0x1 <col:12, col:20> 'int'"]
+    дано line равно 7
+    дано parts равно []
+    дано scope равно []
+    ожидается запись «Value» с «texts» равным ["0", "0", "?"] и «marks» равным [нет, нет] и «duties» равным [
+      ] и «refusals» равным ["строка 7: выражение «CallExpr» вне подмножества"]
+  пусть kind равно («Cell» от 1 и words)
+  пусть rest равно («Cell» от 2 и words)
+  пусть sign равно («Last word» от («Quoted» от rest))
+  пусть ctype равно («Cell» от 1 и («Quoted» от rest))
+  пусть place равно (соединить ["строка ", (к строке line), ": "] по "")
+  пусть badtype равно («Refused value» от (соединить [place, "операция над типом «", ctype,
+    "» вне подмножества"] по ""))
+  пусть badcast равно («Refused value» от (соединить [place, "неявное приведение типа вне подмножества: ", rest] по ""))
+  пусть outside равно («Refused value» от (соединить [place, "выражение «", kind, "» вне подмножества"] по ""))
+  пусть leading равно («Part» от 1 и parts)
+  пусть trailing равно («Part» от 2 и parts)
+  разбор kind
+    случай "IntegerLiteral"
+      то «Literal value» от rest и line
+    случай "ImplicitCastExpr"
+      то если rest содержит "<LValueToRValue>" то leading иначе badcast
+    случай "ParenExpr"
+      то leading
+    случай "DeclRefExpr"
+      то «Reference» от rest и line и scope
+    случай "BinaryOperator"
+      то если ctype равен "int" то («Binary operation» от sign и leading и trailing и line) иначе badtype
+    случай "UnaryOperator"
+      то если ctype равен "int" то («Unary» от sign и leading и line) иначе badtype
+    случай "ConditionalOperator"
+      то «Choice» от leading и trailing и («Part» от 3 и parts)
+    случай любое
+      то outside
+
+объект «Turn»
+  «test»: строка
+  «taken»: признак
+
+объект «Leaf»
+  «turns»: список «Turn»
+  «value»: строка
+  «literal»: признак
+
+объект «Flow»
+  «lines»: список строки
+  «duties»: список «Duty»
+  «refusals»: список строки
+  «leaves»: список «Leaf»
+
+тотальная функция «Under path»
+  принимает turns: список «Turn», duties: список «Duty»
+  возвращает список «Duty»
+  пример «The outer condition wraps the inner one»
+    дано turns равно [запись «Turn» с «test» равным "(x меньше lo)" и «taken» равным нет,
+      запись «Turn» с «test» равным "(x больше hi)" и «taken» равным да]
+    дано duties равно [запись «Duty» с «words» равным ["d", "нет"] и «line» равным 9]
+    ожидается [запись «Duty» с «words» равным ["d",
+      "если (x меньше lo) то да иначе (если (x больше hi) то (нет) иначе да)"] и «line» равным 9]
+  свёртка («Reversed» от turns) начиная с duties как wrapped и turn → «Under turn» от turn и wrapped
+
+тотальная функция «Kids»
+  принимает node: «Node»
+  возвращает список «Node»
+  пример «A leaf has no children»
+    дано node равно вариант «Tree» с words равным ["NullStmt", ""] и line равным 1 и kids равным []
+    ожидается []
+  разбор node
+    случай вариант «Tree» с words как words и line как line и kids как kids
+      то kids
+
+тотальная функция «Kind»
+  принимает node: «Node»
+  возвращает строка
+  пример «The kind of a node»
+    дано node равно вариант «Tree» с words равным ["NullStmt", ""] и line равным 1 и kids равным []
+    ожидается "NullStmt"
+  разбор node
+    случай вариант «Tree» с words как words и line как line и kids как kids
+      то («Cell» от 1 и words)
+
+тотальная функция «Rest»
+  принимает node: «Node»
+  возвращает строка
+  пример «The text of a node after its kind»
+    дано node равно вариант «Tree» с words равным ["IntegerLiteral", "0x1 'int' 4"] и line равным 1 и kids равным []
+    ожидается "0x1 'int' 4"
+  разбор node
+    случай вариант «Tree» с words как words и line как line и kids как kids
+      то («Cell» от 2 и words)
+
+тотальная функция «Line»
+  принимает node: «Node»
+  возвращает число
+  пример «The source line of a node»
+    дано node равно вариант «Tree» с words равным ["NullStmt", ""] и line равным 7 и kids равным []
+    ожидается 7
+  разбор node
+    случай вариант «Tree» с words как words и line как line и kids как kids
+      то line
+
+тотальная функция «Missing node»
+  возвращает «Node»
+  пример «A node that stands for nothing»
+    ожидается вариант «Tree» с words равным ["Missing", ""] и line равным 0 и kids равным []
+  вариант «Tree» с words равным ["Missing", ""] и line равным 0 и kids равным пустой список
+
+тотальная функция «Kid»
+  принимает position: число, node: «Node»
+  возвращает «Node»
+  пример «A child that is not there is missing»
+    дано position равно 1
+    дано node равно вариант «Tree» с words равным ["NullStmt", ""] и line равным 7 и kids равным []
+    ожидается вариант «Tree» с words равным ["Missing", ""] и line равным 0 и kids равным []
+  пусть kids равно («Kids» от node)
+  если (position меньше 1) или (position больше (длина kids)) то («Missing node») иначе (элемент position в kids)
+
+тотальная функция «Statement list»
+  принимает node: «Node»
+  возвращает список «Node»
+  пример «A single statement is a list of one»
+    дано node равно вариант «Tree» с words равным ["NullStmt", ""] и line равным 7 и kids равным []
+    ожидается [вариант «Tree» с words равным ["NullStmt", ""] и line равным 7 и kids равным []]
+  если («Kind» от node) равен "CompoundStmt" то («Kids» от node) иначе [node]
+
+тотальная функция «Declared name»
+  принимает rest: строка
+  возвращает строка
+  пример «The name stands right before its type»
+    дано rest равно "0x1 <col:5, col:28> col:9 used full 'int' cinit"
+    ожидается "full"
+  «Last word» от («Words» от («Cell» от 1 и (разделить rest по "'")))
+
+тотальная функция «Refused flow»
+  принимает reason: строка
+  возвращает «Flow»
+  пример «A refused statement»
+    дано reason равно "строка 4: оператор «WhileStmt» вне подмножества"
+    ожидается запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      "строка 4: оператор «WhileStmt» вне подмножества"] и «leaves» равным []
+  запись «Flow» с «lines» равным пустой список и «duties» равным пустой список и «refusals» равным [
+    reason] и «leaves» равным пустой список
+
+функция «Statements»
+  принимает statements: список «Node», scope: список «Binding», turns: список «Turn», indent: строка
+  возвращает «Flow»
+  пример «A return of a parameter»
+    дано statements равно [вариант «Tree» с words равным ["ReturnStmt", ""] и line равным 3 и kids равным [
+      вариант «Tree» с words равным ["DeclRefExpr",
+      "0x2 'int' lvalue ParmVar 0x3 'x' 'int'"] и line равным 3 и kids равным []]]
+    дано scope равно []
+    дано turns равно []
+    дано indent равно "  "
+    ожидается запись «Flow» с «lines» равным ["  «x»"] и «duties» равным [] и «refusals» равным [] и «leaves» равным [
+      запись «Leaf» с «turns» равным [] и «value» равным "«x»" и «literal» равным нет]
+  пример «Falling off the end is a duty that never holds»
+    дано statements равно []
+    дано scope равно []
+    дано turns равно []
+    дано indent равно "  "
+    ожидается запись «Flow» с «lines» равным ["  0"] и «duties» равным [запись «Duty» с «words» равным [
+      "управление доходит до конца функции без return", "нет"] и «line» равным 0] и «refusals» равным [
+      ] и «leaves» равным []
+  пусть fallen равно (запись «Duty» с «words» равным ["управление доходит до конца функции без return",
+    "нет"] и «line» равным 0)
+  пусть end равно [(соединить [indent, "0"] по "")]
+  разбор statements
+    случай пусто
+      то запись «Flow» с «lines» равным end и «duties» равным («Under path» от turns и [fallen]) и «refusals» равным [
+        ] и «leaves» равным []
+    случай голова и хвост
+      то «Statement» от (голова) и (хвост) и scope и turns и indent
+
+функция «Statement»
+  принимает leading: «Node», others: список «Node», scope: список «Binding», turns: список «Turn», indent: строка
+  возвращает «Flow»
+  пример «A loop is outside the subset»
+    дано leading равно вариант «Tree» с words равным ["WhileStmt", ""] и line равным 4 и kids равным []
+    дано others равно []
+    дано scope равно []
+    дано turns равно []
+    дано indent равно "  "
+    ожидается запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      "строка 4: оператор «WhileStmt» вне подмножества"] и «leaves» равным []
+  пусть line равно («Line» от leading)
+  разбор («Kind» от leading)
+    случай "ReturnStmt"
+      то «Returned» от («As number» от («Expression» от («Kid» от 1 и leading) и scope)) и turns и indent
+    случай "CompoundStmt"
+      то «Statements» от («Соединить списки» от («Kids» от leading) и others) и scope и turns и indent
+    случай "DeclStmt"
+      то «Statements» от («Соединить списки» от («Kids» от leading) и others) и scope и turns и indent
+    случай "NullStmt"
+      то «Statements» от others и scope и turns и indent
+    случай "VarDecl"
+      то «Declared» от leading и others и scope и turns и indent
+    случай "IfStmt"
+      то «Branched» от leading и others и scope и turns и indent
+    случай любое
+      то «Refused flow» от (соединить ["строка ", (к строке line), ": оператор «", («Kind» от leading),
+        "» вне подмножества"] по "")
+
+тотальная функция «Returned»
+  принимает value: «Value», turns: список «Turn», indent: строка
+  возвращает «Flow»
+  пример «A returned literal is a leaf with a literal»
+    дано value равно запись «Value» с «texts» равным ["4", "4", "4"] и «marks» равным [нет, да] и «duties» равным [
+      ] и «refusals» равным []
+    дано turns равно []
+    дано indent равно "  "
+    ожидается запись «Flow» с «lines» равным ["  4"] и «duties» равным [] и «refusals» равным [] и «leaves» равным [
+      запись «Leaf» с «turns» равным [] и «value» равным "4" и «literal» равным да]
+  пусть leaf равно («Leaf of» от turns и («Pure» от value) и («Literal» от value))
+  пусть lines равно [(соединить [indent, («Body» от value)] по "")]
+  пусть duties равно («Under path» от turns и (value.«duties»))
+  «Flow of» от lines и duties и (value.«refusals») и [leaf]
+
+
+функция «Declared»
+  принимает declaration: «Node», others: список «Node», scope: список «Binding», turns: список «Turn», indent: строка
+  возвращает «Flow»
+  пример «A local with its initial value»
+    дано declaration равно вариант «Tree» с words равным ["VarDecl",
+      "0x1 col:9 used full 'int' cinit"] и line равным 3 и kids равным [вариант «Tree» с words равным ["IntegerLiteral",
+      "0x2 'int' 7"] и line равным 3 и kids равным []]
+    дано others равно [вариант «Tree» с words равным ["ReturnStmt", ""] и line равным 4 и kids равным [
+      вариант «Tree» с words равным ["DeclRefExpr",
+      "0x4 'int' lvalue Var 0x1 'full' 'int'"] и line равным 4 и kids равным []]]
+    дано scope равно []
+    дано turns равно []
+    дано indent равно "  "
+    ожидается запись «Flow» с «lines» равным ["  пусть «full» равно 7", "  «full»"] и «duties» равным [
+      ] и «refusals» равным [] и «leaves» равным [запись «Leaf» с «turns» равным [
+      ] и «value» равным "7" и «literal» равным нет]
+  пусть rest равно («Rest» от declaration)
+  пусть name равно («Declared name» от rest)
+  пусть typed равно ((«Cell» от 1 и («Quoted» от rest)) равен "int")
+  пусть initial равно («As number» от («Expression» от («Kid» от 1 и declaration) и scope))
+  пусть bound равно (запись «Binding» с «name» равным name и «pure» равным («Pure» от initial))
+  пусть later равно («Statements» от others и (приписать bound к scope) и turns и indent)
+  пусть place равно (соединить ["строка ", (к строке («Line» от declaration)), ": переменная «", name, "»"] по "")
+  пусть untyped равно («Refused flow» от (соединить [place, " не типа int"] по ""))
+  пусть uninitialised равно («Refused flow» от (соединить [place, " без начального значения"] по ""))
+  пусть head равно (соединить [indent, "пусть «", name, "» равно ", («Body» от initial)] по "")
+  пусть duties равно («Соединить списки» от («Under path» от turns и (initial.«duties»)) и (later.«duties»))
+  пусть refusals равно («Соединить списки» от (initial.«refusals») и (later.«refusals»))
+  пусть lines равно (приписать head к (later.«lines»))
+  пусть made равно («Flow of» от lines и duties и refusals и (later.«leaves»))
+  «Chosen» от [(«When» от (не typed) и untyped), («When» от (не (rest содержит " cinit")) и uninitialised)] и made
+
+функция «Branched»
+  принимает branch: «Node», others: список «Node», scope: список «Binding», turns: список «Turn», indent: строка
+  возвращает «Flow»
+  пример «An if without else falls through to what follows»
+    дано branch равно вариант «Tree» с words равным ["IfStmt", "0x1"] и line равным 3 и kids равным [
+      вариант «Tree» с words равным ["BinaryOperator", "0x2 'int' '>'"] и line равным 3 и kids равным [
+      вариант «Tree» с words равным ["DeclRefExpr",
+      "0x4 'int' lvalue ParmVar 0x5 'x' 'int'"] и line равным 3 и kids равным [], вариант «Tree» с words равным [
+      "IntegerLiteral", "0x6 'int' 0"] и line равным 3 и kids равным []], вариант «Tree» с words равным ["ReturnStmt",
+      ""] и line равным 4 и kids равным [вариант «Tree» с words равным ["IntegerLiteral",
+      "0x7 'int' 1"] и line равным 4 и kids равным []]]
+    дано others равно [вариант «Tree» с words равным ["ReturnStmt", ""] и line равным 5 и kids равным [
+      вариант «Tree» с words равным ["IntegerLiteral", "0x8 'int' 0"] и line равным 5 и kids равным []]]
+    дано scope равно []
+    дано turns равно []
+    дано indent равно "  "
+    ожидается запись «Flow» с «lines» равным ["  если («x» больше 0)", "    то", "      1", "    иначе",
+      "      0"] и «duties» равным [] и «refusals» равным [] и «leaves» равным [запись «Leaf» с «turns» равным [
+      запись «Turn» с «test» равным "(«x» больше 0)" и «taken» равным да] и «value» равным "1" и «literal» равным да,
+        запись «Leaf» с «turns» равным [
+        запись «Turn» с «test» равным "(«x» больше 0)" и «taken» равным нет] и «value» равным "0" и «literal» равным да]
+  пусть rest равно («Rest» от branch)
+  пусть test равно («As truth» от («Expression» от («Kid» от 1 и branch) и scope))
+  пусть elsepart равно («Statement list» от («Kid» от 3 и branch))
+  пусть otherwise равно (если rest содержит "has_else" то elsepart иначе пустой список)
+  пусть inner равно (соединить [indent, "    "] по "")
+  пусть yesturn равно (запись «Turn» с «test» равным («Pure» от test) и «taken» равным да)
+  пусть noturn равно (запись «Turn» с «test» равным («Pure» от test) и «taken» равным нет)
+  пусть thenlist равно («Соединить списки» от («Statement list» от («Kid» от 2 и branch)) и others)
+  пусть thenflow равно («Statements» от thenlist и scope и (добавить yesturn к turns) и inner)
+  пусть elselist равно («Соединить списки» от otherwise и others)
+  пусть elseflow равно («Statements» от elselist и scope и (добавить noturn к turns) и inner)
+  пусть head равно [(соединить [indent, "если ", («Body» от test)] по ""), (соединить [indent, "  то"] по "")]
+  пусть middle равно (приписать (соединить [indent, "  иначе"] по "") к (elseflow.«lines»))
+  пусть lines равно («Соединить списки» от head и («Соединить списки» от (thenflow.«lines») и middle))
+  пусть branches равно («Соединить списки» от (thenflow.«duties») и (elseflow.«duties»))
+  пусть duties равно («Соединить списки» от («Under path» от turns и (test.«duties»)) и branches)
+  пусть inside равно («Соединить списки» от (thenflow.«refusals») и (elseflow.«refusals»))
+  пусть refusals равно («Соединить списки» от (test.«refusals») и inside)
+  пусть leaves равно («Соединить списки» от (thenflow.«leaves») и (elseflow.«leaves»))
+  пусть declared равно ((rest содержит "has_init") или (rest содержит "has_var"))
+  пусть refused равно (соединить ["строка ", (к строке («Line» от branch)),
+    ": if с объявлением внутри условия вне подмножества"] по "")
+  если declared
+    то «Refused flow» от refused
+    иначе «Flow of» от lines и duties и refusals и leaves
+
+объект «Claim»
+  «role»: строка
+  «words»: список строки
+
+тотальная функция «Claim name»
+  принимает stated: «Claim»
+  возвращает строка
+  пример «The name of a claim»
+    дано stated равно запись «Claim» с «role» равным "ensures" и «words» равным ["a", "да", "человек"]
+    ожидается "a"
+  «Cell» от 1 и (stated.«words»)
+
+тотальная функция «Claim text»
+  принимает stated: «Claim»
+  возвращает строка
+  пример «The text of a claim»
+    дано stated равно запись «Claim» с «role» равным "ensures" и «words» равным ["a", "да", "человек"]
+    ожидается "да"
+  «Cell» от 2 и (stated.«words»)
+
+тотальная функция «Claim origin»
+  принимает stated: «Claim»
+  возвращает строка
+  пример «Where a claim comes from»
+    дано stated равно запись «Claim» с «role» равным "ensures" и «words» равным ["a", "да", "человек"]
+    ожидается "человек"
+  «Cell» от 3 и (stated.«words»)
+
+объект «Function»
+  «name»: строка
+  «line»: число
+  «parameters»: список строки
+  «flow»: «Flow»
+  «literals»: список строки
+  «refusals»: список строки
+  «defined»: признак
+
+тотальная функция «Literals of»
+  принимает node: «Node»
+  возвращает список строки
+  пример «Every int literal of a tree, in order»
+    дано node равно вариант «Tree» с words равным ["ReturnStmt", ""] и line равным 3 и kids равным [
+      вариант «Tree» с words равным ["IntegerLiteral", "0x1 'int' 30"] и line равным 3 и kids равным []]
+    ожидается ["30"]
+  разбор node
+    случай вариант «Tree» с words как words и line как line и kids как kids
+      то «Joined lists» от («Own literal» от words) и (отобразить kids как kid → «Literals of» от kid)
+
+тотальная функция «Of kind»
+  принимает kind: строка, nodes: список «Node»
+  возвращает список «Node»
+  пример «Only the parameters»
+    дано kind равно "ParmVarDecl"
+    дано nodes равно [вариант «Tree» с words равным ["ParmVarDecl",
+      "0x1 col:11 used a 'int'"] и line равным 1 и kids равным [], вариант «Tree» с words равным ["CompoundStmt",
+      ""] и line равным 1 и kids равным []]
+    ожидается [вариант «Tree» с words равным ["ParmVarDecl", "0x1 col:11 used a 'int'"] и line равным 1 и kids равным [
+      ]]
+  отфильтровать nodes где node → («Kind» от node) равен kind
+
+тотальная функция «Empty flow»
+  возвращает «Flow»
+  пример «Nothing translated»
+    ожидается запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [] и «leaves» равным []
+  запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [] и «leaves» равным []
+
+функция «Function of»
+  принимает node: «Node»
+  возвращает «Function»
+  пример «A pointer parameter is outside the subset»
+    дано node равно вариант «Tree» с words равным ["FunctionDecl",
+      "0x1 line:1:5 length 'int (char *)'"] и line равным 1 и kids равным [вариант «Tree» с words равным ["ParmVarDecl",
+      "0x2 col:24 s 'char *'"] и line равным 1 и kids равным [], вариант «Tree» с words равным ["CompoundStmt",
+      ""] и line равным 2 и kids равным []]
+    ожидается запись «Function» с «name» равным "length" и «line» равным 1 и «parameters» равным [
+      "s"] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      "строка 1: функция «length»: сигнатура «int (char *)» вне подмножества"] и «defined» равным да
+  пусть rest равно («Rest» от node)
+  пусть name равно («Declared name» от rest)
+  пусть signature равно («Cell» от 1 и («Quoted» от rest))
+  пусть parameters равно («Of kind» от "ParmVarDecl" и («Kids» от node))
+  пусть bodies равно («Of kind» от "CompoundStmt" и («Kids» от node))
+  пусть names равно (отобразить parameters как parameter → «Declared name» от («Rest» от parameter))
+  пусть typed равно (длина (отфильтровать parameters где parameter → не («Int typed» от parameter)))
+  пусть plain равно ((не (signature содержит "...")) и притом ((typed равен 0) и притом ((длина parameters) больше 0)))
+  пусть fits равно ((signature начинается с "int (") и притом plain)
+  пусть statements равно («Joined nodes» от (отобразить bodies как body → «Kids» от body))
+  пусть flow равно (если fits то («Statements» от statements и [] и [] и "  ") иначе («Empty flow»))
+  пусть place равно (соединить ["строка ", (к строке («Line» от node)), ": функция «", name, "»"] по "")
+  пусть refusal равно (соединить [place, ": сигнатура «", signature, "» вне подмножества"] по "")
+  пусть refusals равно (если fits то (flow.«refusals») иначе [refusal])
+  пусть line равно («Line» от node)
+  «Function made» от name и node и names и flow и refusals
+
+
+функция «Functions of»
+  принимает dump: строка
+  возвращает список «Function»
+  пример «A prototype without a body is not a definition and is left out»
+    дано dump равно "|-FunctionDecl 0x1 <t.c:1:1> col:5 f 'int (int)'\n| `-ParmVarDecl 0x2 <col:7> col:11 x 'int'\n"
+    ожидается []
+  пусть functions равно (отобразить («Kids» от («Tree of» от dump)) как node → «Function of» от node)
+  отфильтровать functions где translated → translated.«defined»
+
+тотальная функция «Claims for»
+  принимает name: строка, rows: список список строки
+  возвращает список «Claim»
+  пример «The rows of one function become its claims»
+    дано name равно "sign"
+    дано rows равно [["sign", "ensures", "a", "результат не больше 1"], ["clamp", "requires", "b", "да"]]
+    ожидается [запись «Claim» с «role» равным "ensures" и «words» равным ["a", "результат не больше 1", "человек"]]
+  отобразить (отфильтровать rows где row → («Cell» от 1 и row) равен name) как row → «Claim of row» от row
+
+тотальная функция «Of role»
+  принимает role: строка, claims: список «Claim»
+  возвращает список «Claim»
+  пример «Only the requirements»
+    дано role равно "requires"
+    дано claims равно [запись «Claim» с «role» равным "ensures" и «words» равным ["a", "да", "человек"]]
+    ожидается []
+  отфильтровать claims где said → (said.«role») равен role
+
+тотальная функция «Natural»
+  принимает parameters: список строки, claims: список «Claim»
+  возвращает список строки
+  пример «A parameter required to be at least zero is declared natural»
+    дано parameters равно ["lo", "hi"]
+    дано claims равно [запись «Claim» с «role» равным "requires" и «words» равным ["a", "«lo» не меньше 0", "человек"]]
+    ожидается ["lo"]
+  пусть texts равно (отобразить («Of role» от "requires" и claims) как said → «Claim text» от said)
+  отфильтровать parameters где parameter → «Holds» от (соединить ["«", parameter, "» не меньше 0"] по "") и texts
+
+тотальная функция «Holds»
+  принимает word: строка, words: список строки
+  возвращает признак
+  пример «A word among words»
+    дано word равно "lo"
+    дано words равно ["lo"]
+    ожидается да
+  не (пусто (отфильтровать words где other → other равен word))
+
+тотальная функция «Parameter text»
+  принимает parameters: список строки, naturals: список строки, plain: признак
+  возвращает строка
+  пример «A natural parameter keeps its type unless the text is plain»
+    дано parameters равно ["lo", "hi"]
+    дано naturals равно ["lo"]
+    дано plain равно нет
+    ожидается "«lo»: нат, «hi»: целое"
+  соединить (отобразить parameters как parameter → соединить ["«", parameter, "»: ",
+    (если (не plain) и притом («Holds» от parameter и naturals) то "нат" иначе "целое")] по "") по ", "
+
+тотальная функция «Range lines»
+  принимает parameters: список строки, naturals: список строки
+  возвращает список строки
+  пример «A C int lies between INT_MIN and INT_MAX, and a natural one needs only the upper bound»
+    дано parameters равно ["lo", "hi"]
+    дано naturals равно ["lo"]
+    ожидается ["  требует «lo — значение int, не выше INT_MAX» «lo» не больше 2147483647",
+      "  требует «hi — значение int, не ниже INT_MIN» «hi» не меньше -2147483648",
+      "  требует «hi — значение int, не выше INT_MAX» «hi» не больше 2147483647"]
+  «Joined lists» от [] и (отобразить parameters как parameter → «Range of» от parameter и naturals)
+
+
+тотальная функция «Claim lines»
+  принимает keyword: строка, claims: список «Claim»
+  возвращает список строки
+  пример «A claim becomes a line of the function head»
+    дано keyword равно "обеспечивает"
+    дано claims равно [запись «Claim» с «role» равным "ensures" и «words» равным ["a", "результат не меньше 0",
+      "человек"]]
+    ожидается ["  обеспечивает «a» результат не меньше 0"]
+  отобразить claims как said → соединить ["  ", keyword, " «", («Claim name» от said), "» ",
+    («Claim text» от said)] по ""
+
+тотальная функция «Duty claims»
+  принимает duties: список «Duty»
+  возвращает список «Claim»
+  пример «Every duty is numbered, so two duties never share a name»
+    дано duties равно [запись «Duty» с «words» равным ["строка 3: d", "нет"] и «line» равным 3]
+    ожидается [запись «Claim» с «role» равным "ensures" и «words» равным ["обязательство 1 · строка 3: d", "нет",
+      "обязательство C"]]
+  пусть numbered равно (свёртка duties начиная с (пустой список) как made и duty → «Duty pushed» от made и duty)
+  «Reversed» от numbered
+
+
+тотальная функция «Function text»
+  принимает translated: «Function», header: список строки, claims: список «Claim», plain: признак
+  возвращает список строки
+  пример «A translated function with its claims»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      "x"] и «flow» равным (запись «Flow» с «lines» равным ["  «x»"] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да
+    дано header равно ["  требует «x — значение int, не выше INT_MAX» «x» не больше 2147483647"]
+    дано claims равно []
+    дано plain равно нет
+    ожидается ["тотальная функция «f»", "  принимает «x»: целое", "  возвращает число",
+      "  требует «x — значение int, не выше INT_MAX» «x» не больше 2147483647", "  «x»"]
+  пусть naturals равно («Natural» от (translated.«parameters») и claims)
+  пусть parameters равно («Parameter text» от (translated.«parameters») и naturals и plain)
+  пусть head равно [(соединить ["тотальная функция «", (translated.«name»), "»"] по ""), (соединить ["  принимает ",
+    parameters] по ""), "  возвращает число"]
+  пусть required равно («Claim lines» от "требует" и («Of role» от "requires" и claims))
+  пусть promised равно («Claim lines» от "обеспечивает" и («Of role» от "ensures" и claims))
+  пусть body равно ((translated.«flow»).«lines»)
+  «Joined lists» от head и [header, required, promised, body]
+
+тотальная функция «Module text»
+  принимает title: строка, parts: список список строки
+  возвращает список строки
+  пример «A module with two parts, each after an empty line»
+    дано title равно "Перевод f"
+    дано parts равно [["тотальная функция «f»"], ["тотальная функция «g»"]]
+    ожидается ["модуль «Перевод f»", "", "тотальная функция «f»", "", "тотальная функция «g»"]
+  свёртка parts начиная с [(соединить ["модуль «", title,
+    "»"] по "")] как made и part → «Соединить списки» от made и (приписать "" к part)
+
+тотальная функция «Translation text»
+  принимает translated: «Function», claims: список «Claim»
+  возвращает список строки
+  пример «The translation names the C range of every parameter»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      "x"] и «flow» равным (запись «Flow» с «lines» равным ["  «x»"] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да
+    дано claims равно []
+    ожидается ["модуль «Перевод f»", "", "тотальная функция «f»", "  принимает «x»: целое", "  возвращает число",
+      "  требует «x — значение int, не ниже INT_MIN» «x» не меньше -2147483648",
+        "  требует «x — значение int, не выше INT_MAX» «x» не больше 2147483647", "  «x»"]
+  пусть naturals равно («Natural» от (translated.«parameters») и claims)
+  пусть ranges равно («Range lines» от (translated.«parameters») и naturals)
+  пусть promised равно («Соединить списки» от claims и («Duty claims» от ((translated.«flow»).«duties»)))
+  «Module text» от (соединить ["Перевод ", (translated.«name»)] по "") и [
+    («Function text» от translated и ranges и promised и нет)]
+
+тотальная функция «Derived text»
+  принимает translated: «Function», claims: список «Claim», candidates: список «Claim»
+  возвращает список строки
+  пример «The derived draft keeps the requirements and promises only the candidates»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      "x"] и «flow» равным (запись «Flow» с «lines» равным ["  «x»"] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да
+    дано claims равно [запись «Claim» с «role» равным "ensures" и «words» равным ["a", "результат не меньше 5",
+      "человек"]]
+    дано candidates равно [запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 1",
+      "результат не меньше «x»", "из параметра"]]
+    ожидается ["модуль «Выведено f»", "", "тотальная функция «f»", "  принимает «x»: целое", "  возвращает число",
+      "  требует «x — значение int, не ниже INT_MIN» «x» не меньше -2147483648",
+        "  требует «x — значение int, не выше INT_MAX» «x» не больше 2147483647",
+        "  обеспечивает «выведено 1» результат не меньше «x»", "  «x»"]
+  пусть naturals равно («Natural» от (translated.«parameters») и claims)
+  пусть ranges равно («Range lines» от (translated.«parameters») и naturals)
+  пусть promised равно («Соединить списки» от («Of role» от "requires" и claims) и candidates)
+  «Module text» от (соединить ["Выведено ", (translated.«name»)] по "") и [
+    («Function text» от translated и ranges и promised и нет)]
+
+тотальная функция «Call»
+  принимает translated: «Function»
+  возвращает строка
+  пример «A call of the translated function by its parameters»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным ["a",
+      "b"] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да
+    ожидается "(«f» от «a» и «b»)"
+  пусть quoted равно (отобразить (translated.«parameters») как parameter → соединить ["«", parameter, "»"] по "")
+  соединить ["(«", (translated.«name»), "» от ", (соединить quoted по " и "), ")"] по ""
+
+тотальная функция «Predicate text»
+  принимает translated: «Function», name: строка, body: строка
+  возвращает список строки
+  пример «A predicate over the same parameters»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      "a"] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да
+    дано name равно "f admissible"
+    дано body равно "да"
+    ожидается ["тотальная функция «f admissible»", "  принимает «a»: целое", "  возвращает признак", "  да"]
+  пусть parameters равно («Parameter text» от (translated.«parameters») и пустой список и да)
+  [(соединить ["тотальная функция «", name, "»"] по ""), (соединить ["  принимает ", parameters] по ""),
+    "  возвращает признак", (соединить ["  ", body] по "")]
+
+тотальная функция «With result»
+  принимает text: строка, call: строка
+  возвращает строка
+  пример «The result of a claim is the call of the function»
+    дано text равно "результат не меньше «lo»"
+    дано call равно "(«midpoint» от «lo» и «hi»)"
+    ожидается "(«midpoint» от «lo» и «hi») не меньше «lo»"
+  соединить (разделить text по "результат") по call
+
+тотальная функция «Conjunction»
+  принимает claims: список «Claim»
+  возвращает строка
+  пример «Requirements joined»
+    дано claims равно [запись «Claim» с «role» равным "requires" и «words» равным ["a", "«lo» не меньше 0", "человек"]]
+    ожидается "(да) и притом («lo» не меньше 0)"
+  свёртка claims начиная с "да" как joined и said → соединить ["(", joined, ") и притом (", («Claim text» от said),
+    ")"] по ""
+
+тотальная функция «Probe text»
+  принимает translated: «Function», claims: список «Claim», checked: список «Claim»
+  возвращает список список строки
+  пример «The pure function, its admissibility and one predicate per claim»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      "a"] и «flow» равным (запись «Flow» с «lines» равным ["  «a»"] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да
+    дано claims равно []
+    дано checked равно [запись «Claim» с «role» равным "ensures" и «words» равным ["c", "результат не меньше 0",
+      "человек"]]
+    ожидается [["тотальная функция «f»", "  принимает «a»: целое", "  возвращает число", "  «a»"], [
+      "тотальная функция «f admissible»", "  принимает «a»: целое", "  возвращает признак", "  да"], [
+      "тотальная функция «f claim 1»", "  принимает «a»: целое", "  возвращает признак", "  («f» от «a») не меньше 0"]]
+  пусть name равно (translated.«name»)
+  пусть call равно («Call» от translated)
+  пусть pure равно («Function text» от translated и пустой список и пустой список и да)
+  пусть admissible равно («Predicate text» от translated и (соединить [name,
+    " admissible"] по "") и («Conjunction» от («Of role» от "requires" и claims)))
+  пусть numbered равно («Numbered claims of» от checked)
+  пусть predicates равно (отобразить numbered как each → «Predicate text» от translated и (соединить [name, " claim ",
+    (к строке (each.«at»))] по "") и («With result» от («Claim text» от (each.«it»)) и call))
+  приписать pure к (приписать admissible к predicates)
+
+тотальная функция «Without first» от «А»
+  принимает items: список «А»
+  возвращает список «А»
+  пример «The tail of three»
+    дано items равно ["a", "b", "c"]
+    ожидается ["b", "c"]
+  разбор items
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Least»
+  принимает values: список строки
+  возвращает строка
+  пример «The least of literals»
+    дано values равно ["3", "-1", "2"]
+    ожидается "-1"
+  разбор values
+    случай пусто
+      то ""
+    случай голова и хвост
+      то свёртка хвост начиная с голова как least и value → «Smaller» от least и value
+
+
+тотальная функция «Greatest»
+  принимает values: список строки
+  возвращает строка
+  пример «The greatest of literals»
+    дано values равно ["3", "-1", "2"]
+    ожидается "3"
+  разбор values
+    случай пусто
+      то ""
+    случай голова и хвост
+      то свёртка хвост начиная с голова как greatest и value → «Larger» от greatest и value
+
+
+тотальная функция «Candidate»
+  принимает text: строка, origin: строка
+  возвращает «Claim»
+  пример «A candidate is a promise with its origin»
+    дано text равно "результат не меньше 0"
+    дано origin равно "знак результата"
+    ожидается запись «Claim» с «role» равным "ensures" и «words» равным ["", "результат не меньше 0", "знак результата"]
+  запись «Claim» с «role» равным "ensures" и «words» равным ["", text, origin]
+
+тотальная функция «Candidates»
+  принимает translated: «Function»
+  возвращает список «Claim»
+  пример «A function of one parameter that returns one of two literals»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      "x"] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным [запись «Leaf» с «turns» равным [
+      запись «Turn» с «test» равным "c" и «taken» равным да] и «value» равным "1" и «literal» равным да,
+      запись «Leaf» с «turns» равным [] и «value» равным "0" и «literal» равным да]) и «literals» равным [
+      ] и «refusals» равным [] и «defined» равным да
+    ожидается [запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 1", "результат не меньше 0",
+      "знак результата"], запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 2",
+      "результат не меньше «x»", "сравнение с параметром «x»"],
+      запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 3", "результат не больше «x»",
+      "сравнение с параметром «x»"], запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 4",
+      "результат не меньше 0", "наименьшая константа return"],
+      запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 5", "результат не больше 1",
+      "наибольшая константа return"], запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 6",
+      "если c то (результат равен 1) иначе да", "ветвь кода"]]
+  пусть leaves равно ((translated.«flow»).«leaves»)
+  пусть constants равно (отобразить (отфильтровать leaves где leaf → (leaf.«literal»)) как leaf → leaf.«value»)
+  пусть bounded равно ((не (пусто leaves)) и притом ((длина constants) равен (длина leaves)))
+  пусть signed равно [(«Candidate» от "результат не меньше 0" и "знак результата")]
+  пусть parameters равно (translated.«parameters»)
+  пусть compared равно («Joined claims» от (отобразить parameters как parameter → «Compared candidates» от parameter))
+  пусть low равно («Candidate» от (соединить ["результат не меньше ",
+    («Least» от constants)] по "") и "наименьшая константа return")
+  пусть high равно («Candidate» от (соединить ["результат не больше ",
+    («Greatest» от constants)] по "") и "наибольшая константа return")
+  пусть bounds равно (если bounded то [low, high] иначе пустой список)
+  пусть turned равно (отфильтровать leaves где leaf → не (пусто (leaf.«turns»)))
+  пусть branches равно (отобразить turned как leaf → «Branch candidate» от leaf)
+  пусть found равно («Joined claims» от [signed, compared, bounds, branches])
+  свёртка found начиная с (пустой список) как named и said → «Candidate added» от named и said
+
+
+тотальная функция «Last duty claim»
+  принимает turns: список «Turn», wanted: строка
+  возвращает строка
+  пример «A claim under one turn»
+    дано turns равно [запись «Turn» с «test» равным "(x больше 0)" и «taken» равным да]
+    дано wanted равно "результат равен 1"
+    ожидается "если (x больше 0) то (результат равен 1) иначе да"
+  свёртка («Under path» от turns и [(запись «Duty» с «words» равным ["",
+    wanted] и «line» равным 0)]) начиная с wanted как last и duty → «Duty claim» от duty
+
+тотальная функция «Accepted»
+  принимает functions: список «Function»
+  возвращает список «Function»
+  пример «A refused function is left out»
+    дано functions равно [запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      "x"] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным ["нет"] и «defined» равным да]
+    ожидается []
+  отфильтровать functions где translated → пусто (translated.«refusals»)
+
+тотальная функция «Targets»
+  принимает node: «Node», wanted: строка
+  возвращает список строки
+  пример «The texts of every node of a kind, in the order of the source»
+    дано node равно вариант «Tree» с words равным ["ReturnStmt", ""] и line равным 3 и kids равным [
+      вариант «Tree» с words равным ["IntegerLiteral", "0x1 'int' 30"] и line равным 3 и kids равным []]
+    дано wanted равно "IntegerLiteral"
+    ожидается ["0x1 'int' 30"]
+  разбор node
+    случай вариант «Tree» с words как words и line как line и kids как kids
+      то «Joined lists» от («Own target» от words и wanted) и (отобразить kids как kid → «Targets» от kid и wanted)
+
+
+тотальная функция «Shifted»
+  принимает rest: строка
+  возвращает строка
+  пример «A literal one larger»
+    дано rest равно "0x1 <col:18> 'int' 4"
+    ожидается "0x1 <col:18> 'int' 5"
+  пусть words равно («Words» от rest)
+  если «Integer word» от («Last word» от words)
+    то соединить («Соединить списки» от («Reversed» от («Without first» от («Reversed» от words))) и [
+      (к строке ((к числу («Last word» от words)) плюс 1))]) по " "
+    иначе rest
+
+тотальная функция «Mutated»
+  принимает node: «Node», target: строка
+  возвращает «Node»
+  пример «The chosen if loses its then branch and keeps its else branch»
+    дано node равно вариант «Tree» с words равным ["IfStmt", "0x1 has_else"] и line равным 3 и kids равным [
+      вариант «Tree» с words равным ["IntegerLiteral", "0x2 'int' 1"] и line равным 3 и kids равным [],
+      вариант «Tree» с words равным ["NullStmt", "a"] и line равным 3 и kids равным [], вариант «Tree» с words равным [
+      "NullStmt", "b"] и line равным 4 и kids равным []]
+    дано target равно "0x1 has_else"
+    ожидается вариант «Tree» с words равным ["NullStmt", "b"] и line равным 4 и kids равным []
+  пример «The chosen literal grows by one»
+    дано node равно вариант «Tree» с words равным ["IntegerLiteral", "0x2 'int' 1"] и line равным 3 и kids равным []
+    дано target равно "0x2 'int' 1"
+    ожидается вариант «Tree» с words равным ["IntegerLiteral", "0x2 'int' 2"] и line равным 3 и kids равным []
+  разбор node
+    случай вариант «Tree» с words как words и line как line и kids как kids
+      то «Mutation of» от words и line и kids и (отобразить kids как kid → «Mutated» от kid и target) и target
+
+
+тотальная функция «Without then»
+  принимает rest: строка, line: число, kids: список «Node»
+  возвращает «Node»
+  пример «An if without else becomes an empty statement»
+    дано rest равно "0x1"
+    дано line равно 3
+    дано kids равно []
+    ожидается вариант «Tree» с words равным ["NullStmt", ""] и line равным 3 и kids равным []
+  если (rest содержит "has_else") и притом ((длина kids) больше 2)
+    то элемент 3 в kids
+    иначе вариант «Tree» с words равным ["NullStmt", ""] и line равным line и kids равным пустой список
+
+тотальная функция «Forgery places»
+  принимает node: «Node», mode: строка
+  возвращает список строки
+  пример «Only operations where the order of operands matters»
+    дано node равно вариант «Tree» с words равным ["BinaryOperator", "0x1 'int' '*'"] и line равным 3 и kids равным []
+    дано mode равно "swap-operands"
+    ожидается []
+  пусть ordered равно ["-", "/", "%", "<", "<=", ">", ">="]
+  пусть operations равно («Targets» от node и "BinaryOperator")
+  разбор mode
+    случай "drop-branch"
+      то «Targets» от node и "IfStmt"
+    случай "shift-constant"
+      то «Targets» от node и "IntegerLiteral"
+    случай любое
+      то отфильтровать operations где rest → «Holds» от («Last word» от («Quoted» от rest)) и ordered
+
+
+тотальная функция «Forgery target»
+  принимает node: «Node», mode: строка
+  возвращает строка
+  пример «A forger that drops a branch picks the first if»
+    дано node равно вариант «Tree» с words равным ["IfStmt", "0x1"] и line равным 3 и kids равным []
+    дано mode равно "drop-branch"
+    ожидается "0x1"
+  пример «Nothing to forge»
+    дано node равно вариант «Tree» с words равным ["ReturnStmt", "0x1"] и line равным 3 и kids равным []
+    дано mode равно "shift-constant"
+    ожидается ""
+  пример «A forger that swaps operands skips the ones where order does not matter»
+    дано node равно вариант «Tree» с words равным ["BinaryOperator", "0x1 'int' '+'"] и line равным 3 и kids равным [
+      вариант «Tree» с words равным ["BinaryOperator", "0x2 'int' '-'"] и line равным 3 и kids равным []]
+    дано mode равно "swap-operands"
+    ожидается "0x2 'int' '-'"
+  разбор («Forgery places» от node и mode)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Base values»
+  возвращает список строки
+  пример «The edges of int and a few small numbers»
+    ожидается ["-2147483648", "-2147483647", "-1000", "-1", "0", "1", "2", "7", "1000", "1073741824", "2147483646",
+      "2147483647"]
+  ["-2147483648", "-2147483647", "-1000", "-1", "0", "1", "2", "7", "1000", "1073741824", "2147483646", "2147483647"]
+
+тотальная функция «Few values»
+  возвращает список строки
+  пример «The edges of int and the smallest numbers»
+    ожидается ["-2147483648", "-1", "0", "1", "2", "2147483647"]
+  ["-2147483648", "-1", "0", "1", "2", "2147483647"]
+
+тотальная функция «Integer word»
+  принимает word: строка
+  возвращает признак
+  пример «A negative number»
+    дано word равно "-12"
+    ожидается да
+  пример «A name»
+    дано word равно "«lo»"
+    ожидается нет
+  («Digits» от word) или ((word начинается с "-") и притом («Digits» от (подстрока word с 2 по (длина word))))
+
+тотальная функция «Neighbours»
+  принимает numbers: список строки
+  возвращает список строки
+  пример «Each constant with the numbers right before and after it, inside int»
+    дано numbers равно ["100", "2147483647"]
+    ожидается ["99", "100", "101", "2147483646", "2147483647"]
+  пусть near равно («Joined lists» от [] и (отобразить numbers как number → «Near number» от number))
+  отфильтровать near где number → «In int» от number
+
+
+тотальная функция «Distinct»
+  принимает words: список строки
+  возвращает список строки
+  пример «Every word once, in the order of first sight»
+    дано words равно ["1", "2", "1", "3"]
+    ожидается ["1", "2", "3"]
+  свёртка words начиная с (пустой список) как seen и word → «Seen once» от seen и word
+
+
+тотальная функция «Claim numbers»
+  принимает claims: список «Claim»
+  возвращает список строки
+  пример «Numbers written in claims enter the grid»
+    дано claims равно [запись «Claim» с «role» равным "ensures" и «words» равным ["a",
+      "если «month» равно 2 то результат не больше 29 иначе да", "человек"]]
+    ожидается ["2", "29"]
+  «Joined lists» от [] и (отобразить claims как said → «Numbers in» от («Claim text» от said))
+
+
+тотальная функция «Product»
+  принимает rows: список список строки, values: список строки
+  возвращает список список строки
+  пример «Every row grows by every value»
+    дано rows равно [["1"], ["2"]]
+    дано values равно ["a", "b"]
+    ожидается [["1", "a"], ["1", "b"], ["2", "a"], ["2", "b"]]
+  «Reversed» от (свёртка rows начиная с (пустой список) как grown и row → «Grown rows» от grown и row и values)
+
+
+тотальная функция «Grid of»
+  принимает translated: «Function», claims: список «Claim»
+  возвращает список список строки
+  пример «One parameter and one constant»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      "x"] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным ["5"] и «refusals» равным [] и «defined» равным да
+    дано claims равно []
+    ожидается [["-2147483648"], ["-2147483647"], ["-1000"], ["-1"], ["0"], ["1"], ["2"], ["7"], ["1000"], [
+      "1073741824"], ["2147483646"], ["2147483647"], ["4"], ["5"], ["6"]]
+  пусть near равно («Neighbours» от («Соединить списки» от (translated.«literals») и («Claim numbers» от claims)))
+  пусть wide равно («Distinct» от («Соединить списки» от («Base values») и near))
+  пусть narrow равно («Distinct» от («Соединить списки» от («Few values») и near))
+  пусть parameters равно (translated.«parameters»)
+  пусть size равно (свёртка parameters начиная с 1 как total и parameter → total умножить на (длина wide))
+  пусть values равно (если size больше 4000 то narrow иначе wide)
+  свёртка parameters начиная с [пустой список] как rows и parameter → «Product» от rows и values
+
+
+объект «Probe»
+  «name»: строка
+  «parameters»: список строки
+  «inputs»: список список строки
+  «checked»: список «Claim»
+
+объект «Outcome»
+  «arguments»: список строки
+  «c»: строка
+  «value»: строка
+  «admissible»: признак
+  «said»: список строки
+
+тотальная функция «Harness text»
+  принимает source: строка, probes: список «Probe»
+  возвращает список строки
+  пример «A harness calls each function in a child process and reports a trap as undefined»
+    дано source равно "ranges.c"
+    дано probes равно [запись «Probe» с «name» равным "midpoint" и «parameters» равным ["lo", "hi"] и «inputs» равным [
+      ] и «checked» равным []]
+    ожидается ["#define _POSIX_C_SOURCE 200809L", "#include <stdio.h>", "#include <string.h>", "#include <unistd.h>",
+      "#include <sys/wait.h>", "#include \"ranges.c\"", "static int call(const char *f, const long *a) {",
+      "  if (strcmp(f, \"midpoint\") == 0) return midpoint((int)a[0], (int)a[1]);", "  return 0;", "}",
+      "int main(void) {", "  char f[256];", "  long a[4];",
+      "  while (scanf(\"%255s %ld %ld %ld %ld\", f, &a[0], &a[1], &a[2], &a[3]) == 5) {", "    fflush(stdout);",
+      "    pid_t p = fork();", "    if (p == 0) { printf(\"ok %d\\n\", call(f, a)); fflush(stdout); _exit(0); }",
+      "    int s = 0;", "    waitpid(p, &s, 0);", "    if (!(WIFEXITED(s) && WEXITSTATUS(s) == 0)) printf(\"ub\\n\");",
+      "    fflush(stdout);", "  }", "  return 0;", "}"]
+  пусть head равно ["#define _POSIX_C_SOURCE 200809L", "#include <stdio.h>", "#include <string.h>",
+    "#include <unistd.h>", "#include <sys/wait.h>", (соединить ["#include \"", source, "\""] по ""),
+    "static int call(const char *f, const long *a) {"]
+  пусть calls равно (отобразить probes как probe → «Call line» от probe)
+  пусть scan равно "  while (scanf(\"%255s %ld %ld %ld %ld\", f, &a[0], &a[1], &a[2], &a[3]) == 5) {"
+  пусть child равно "    if (p == 0) { printf(\"ok %d\\n\", call(f, a)); fflush(stdout); _exit(0); }"
+  пусть trapped равно "    if (!(WIFEXITED(s) && WEXITSTATUS(s) == 0)) printf(\"ub\\n\");"
+  пусть tail равно ["  return 0;", "}", "int main(void) {", "  char f[256];", "  long a[4];", scan,
+    "    fflush(stdout);", "    pid_t p = fork();", child, "    int s = 0;", "    waitpid(p, &s, 0);", trapped,
+    "    fflush(stdout);", "  }", "  return 0;", "}"]
+  «Joined lists» от head и [calls, tail]
+
+
+тотальная функция «Padded»
+  принимает arguments: список строки
+  возвращает список строки
+  пример «Four numbers for the harness»
+    дано arguments равно ["5", "7"]
+    ожидается ["5", "7", "0", "0"]
+  свёртка ["0", "0", "0",
+    "0"] начиная с arguments как padded и zero → если (длина padded) меньше 4 то (добавить zero к padded) иначе padded
+
+тотальная функция «Harness input»
+  принимает probe: «Probe»
+  возвращает строка
+  пример «One line per input»
+    дано probe равно запись «Probe» с «name» равным "sign" и «parameters» равным ["x"] и «inputs» равным [["-1"], [
+      "2"]] и «checked» равным []
+    ожидается "sign -1 0 0 0\nsign 2 0 0 0\n"
+  соединить (отобразить (probe.«inputs») как arguments → соединить [(probe.«name»), " ",
+    (соединить («Padded» от arguments) по " "), "\n"] по "") по ""
+
+тотальная функция «Request»
+  принимает called: строка, arguments: список строки
+  возвращает строка
+  пример «A request of the printed runner»
+    дано called равно "sign claim 1"
+    дано arguments равно ["-1"]
+    ожидается "{\"fn\":\"sign claim 1\",\"args\":[{\"n\":\"-1\"}]}\n"
+  соединить ["{\"fn\":\"", called, "\",\"args\":[", (соединить (отобразить arguments как argument → соединить [
+    "{\"n\":\"", argument, "\"}"] по "") по ","), "]}\n"] по ""
+
+тотальная функция «Called names»
+  принимает probe: «Probe»
+  возвращает список строки
+  пример «The value, the admissibility, then each claim»
+    дано probe равно запись «Probe» с «name» равным "sign" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным [запись «Claim» с «role» равным "ensures" и «words» равным ["a", "да", "человек"]]
+    ожидается ["sign", "sign admissible", "sign claim 1"]
+  свёртка (probe.«checked») начиная с [(probe.«name»), (соединить [(probe.«name»),
+    " admissible"] по "")] как names и said → добавить (соединить [(probe.«name»), " claim ",
+    (к строке ((длина names) минус 1))] по "") к names
+
+тотальная функция «Requests»
+  принимает probe: «Probe», names: список строки
+  возвращает строка
+  пример «Every name for every input»
+    дано probe равно запись «Probe» с «name» равным "sign" и «parameters» равным ["x"] и «inputs» равным [[
+      "0"]] и «checked» равным []
+    дано names равно ["sign", "sign admissible"]
+    ожидается "{\"fn\":\"sign\",\"args\":[{\"n\":\"0\"}]}\n{\"fn\":\"sign admissible\",\"args\":[{\"n\":\"0\"}]}\n"
+  соединить (отобразить (probe.«inputs») как arguments → «Requests of input» от names и arguments) по ""
+
+
+тотальная функция «Between»
+  принимает start: строка, stop: строка, text: строка
+  возвращает строка
+  пример «The text between two marks»
+    дано start равно "{\"n\":\""
+    дано stop равно "\""
+    дано text равно "{\"ok\":true,\"value\":{\"n\":\"-4\"}}"
+    ожидается "-4"
+  пусть pieces равно (разделить text по start)
+  если (длина pieces) больше 1 то («Cell» от 1 и (разделить (элемент 2 в pieces) по stop)) иначе ""
+
+тотальная функция «Reply value»
+  принимает line: строка
+  возвращает строка
+  пример «A number»
+    дано line равно "{\"ok\":true,\"value\":{\"n\":\"-0\"}}"
+    ожидается "0"
+  пример «A truth»
+    дано line равно "{\"ok\":true,\"value\":false}"
+    ожидается "нет"
+  пример «A refusal»
+    дано line равно "{\"ok\":false,\"code\":\"FLANG_TYPE\",\"message\":\"x\"}"
+    ожидается "отказ"
+  пусть number равно («Between» от "{\"n\":\"" и "\"" и line)
+  пусть rules равно [(«When» от (не (line содержит "\"ok\":true")) и "отказ"),
+    («When» от (line содержит "\"value\":true") и "да"), («When» от (line содержит "\"value\":false") и "нет"),
+    («When» от (number равен "-0") и "0")]
+  «Chosen» от rules и number
+
+
+объект «Chunking»
+  «open»: список строки
+  «done»: список список строки
+
+тотальная функция «Chunks»
+  принимает lines: список строки, size: число
+  возвращает список список строки
+  пример «Lines cut into groups of a size»
+    дано lines равно ["a", "b", "c", "d"]
+    дано size равно 2
+    ожидается [["a", "b"], ["c", "d"]]
+  пусть start равно (запись «Chunking» с «open» равным пустой список и «done» равным пустой список)
+  «Reversed» от ((свёртка lines начиная с start как cut и line → «Cut» от cut и line и size).«done»)
+
+
+тотальная функция «Outcomes»
+  принимает probe: «Probe», c: строка, replies: строка, size: число
+  возвращает список «Outcome»
+  пример «An input, what C did and what the printed translation said»
+    дано probe равно запись «Probe» с «name» равным "sign" и «parameters» равным ["x"] и «inputs» равным [[
+      "0"]] и «checked» равным []
+    дано c равно "ok 0\n"
+    дано replies равно "{\"ok\":true,\"value\":{\"n\":\"0\"}}\n{\"ok\":true,\"value\":true}\n"
+    дано size равно 2
+    ожидается [запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok 0" и «value» равным "0" и «admissible» равным да и «said» равным []]
+  пусть cs равно («Lines» от c)
+  пусть groups равно («Chunks» от (отобразить («Lines» от replies) как line → «Reply value» от line) и size)
+  пусть made равно («Outcomes made» от (probe.«inputs») и cs и groups)
+  «Reversed» от made
+
+
+тотальная функция «Outcome of»
+  принимает arguments: список строки, c: строка, group: список строки
+  возвращает «Outcome»
+  пример «A group without replies is not admissible»
+    дано arguments равно ["1"]
+    дано c равно "ok 1"
+    дано group равно []
+    ожидается запись «Outcome» с «arguments» равным [
+      "1"] и «c» равным "ok 1" и «value» равным "" и «admissible» равным нет и «said» равным []
+  пусть admissible равно (((длина group) равен 1) или ((«Cell» от 2 и group) равен "да"))
+  пусть said равно («Without first» от («Without first» от group))
+  пусть value равно («Cell» от 1 и group)
+  запись «Outcome» с «arguments» равным («Соединить списки» от arguments и [
+    ]) и «c» равным c и «value» равным value и «admissible» равным admissible и «said» равным said
+
+
+объект «Mark»
+  «claim»: «Claim»
+  «said»: строка
+
+тотальная функция «Paired»
+  принимает probe: «Probe», outcome: «Outcome»
+  возвращает список «Mark»
+  пример «Each claim with what the printed translation said about it on this input»
+    дано probe равно запись «Probe» с «name» равным "sign" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным [запись «Claim» с «role» равным "ensures" и «words» равным ["a", "да", "человек"]]
+    дано outcome равно запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok 0" и «value» равным "0" и «admissible» равным да и «said» равным ["нет"]
+    ожидается [запись «Mark» с «claim» равным (запись «Claim» с «role» равным "ensures" и «words» равным ["a", "да",
+      "человек"]) и «said» равным "нет"]
+  пусть said равно (outcome.«said»)
+  свёртка (probe.«checked») начиная с (пустой список) как marks и stated → «Mark added» от marks и stated и said
+
+
+тотальная функция «Undefined»
+  принимает probe: «Probe», outcome: «Outcome»
+  возвращает признак
+  пример «A broken duty means C is undefined on this input»
+    дано probe равно запись «Probe» с «name» равным "f" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным [запись «Claim» с «role» равным "ensures" и «words» равным ["d", "да", "обязательство C"]]
+    дано outcome равно запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ub" и «value» равным "0" и «admissible» равным да и «said» равным ["нет"]
+    ожидается да
+  пусть broken равно (отфильтровать («Paired» от probe и outcome) где mark → «Broken duty» от mark)
+  не (пусто broken)
+
+
+тотальная функция «Class»
+  принимает probe: «Probe», outcome: «Outcome», value: строка
+  возвращает строка
+  пример «C and the printed translation agree»
+    дано probe равно запись «Probe» с «name» равным "f" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным []
+    дано outcome равно запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok 4" и «value» равным "4" и «admissible» равным да и «said» равным []
+    дано value равно "4"
+    ожидается "сошлось"
+  пример «A forged constant»
+    дано probe равно запись «Probe» с «name» равным "f" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным []
+    дано outcome равно запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok 4" и «value» равным "4" и «admissible» равным да и «said» равным []
+    дано value равно "5"
+    ожидается "РАЗОШЛОСЬ"
+  пусть undefined равно («Undefined» от probe и outcome)
+  пусть trapped равно ((outcome.«c») равен "ub")
+  «Chosen» от [(«When» от (не (outcome.«admissible»)) и "вне требований"),
+    («When» от (trapped и притом undefined) и "UB у C, названо обязательством"),
+    («When» от trapped и "UB у C, обязательства молчат"),
+    («When» от undefined и "обязательство нарушено, C вернул значение"),
+    («When» от ((«After» от "ok " и (outcome.«c»)) равен value) и "сошлось")] и "РАЗОШЛОСЬ"
+
+тотальная функция «Wrong class»
+  принимает class: строка
+  возвращает признак
+  пример «A silent trap is wrong»
+    дано class равно "UB у C, обязательства молчат"
+    ожидается да
+  (class равен "РАЗОШЛОСЬ") или (class равен "UB у C, обязательства молчат")
+
+тотальная функция «Arguments text»
+  принимает parameters: список строки, arguments: список строки
+  возвращает строка
+  пример «Names with values»
+    дано parameters равно ["lo", "hi"]
+    дано arguments равно ["1", "2"]
+    ожидается "lo = 1, hi = 2"
+  соединить («Without first» от (свёртка parameters начиная с [""] как made и parameter → добавить (соединить [
+    parameter, " = ", («Cell» от (длина made) и arguments)] по "") к made)) по ", "
+
+тотальная функция «Arguments json»
+  принимает parameters: список строки, arguments: список строки
+  возвращает строка
+  пример «Arguments for flang run»
+    дано parameters равно ["lo", "hi"]
+    дано arguments равно ["1", "2"]
+    ожидается "{\"lo\": 1, \"hi\": 2}"
+  соединить ["{", (соединить («Without first» от (свёртка parameters начиная с [
+    ""] как made и parameter → добавить (соединить ["\"", parameter, "\": ",
+    («Cell» от (длина made) и arguments)] по "") к made)) по ", "), "}"] по ""
+
+тотальная функция «Kernel word»
+  принимает output: строка, owner: строка, name: строка
+  возвращает строка
+  пример «A proved promise»
+    дано output равно "  постусловие «a» функции «f» — доказано правилом\n"
+    дано owner равно "f"
+    дано name равно "a"
+    ожидается "доказано ядром"
+  пример «A promise the kernel could not prove»
+    дано output равно "  постусловие «a» функции «f» — объявлено, не доказано\n"
+    дано owner равно "f"
+    дано name равно "a"
+    ожидается "не доказано ядром"
+  пусть mark равно (соединить ["  постусловие «", name, "» функции «", owner, "» — "] по "")
+  пусть line равно («Beginning with» от mark и («Lines» от output))
+  пусть refuted равно (не (пусто (отфильтровать («Lines» от output) где text → (text содержит (соединить ["«", name,
+    "»"] по "")) и притом (text содержит "ЛОЖНО"))))
+  «Chosen» от [(«When» от refuted и "ядро опровергло"), («When» от (пусто line) и "ядро не судило"),
+    («When» от ((«After» от mark и line) начинается с "доказано") и "доказано ядром")] и "не доказано ядром"
+
+тотальная функция «Under turn»
+  принимает turn: «Turn», duties: список «Duty»
+  возвращает список «Duty»
+  пример «One turn wraps a duty»
+    дано turn равно запись «Turn» с «test» равным "(x больше hi)" и «taken» равным да
+    дано duties равно [запись «Duty» с «words» равным ["d", "нет"] и «line» равным 9]
+    ожидается [запись «Duty» с «words» равным ["d", "если (x больше hi) то (нет) иначе да"] и «line» равным 9]
+  «Under» от (turn.«test») и (turn.«taken») и duties
+
+тотальная функция «Own literal»
+  принимает words: список строки
+  возвращает список строки
+  пример «A literal node gives its digits»
+    дано words равно ["IntegerLiteral", "0x1 'int' 30"]
+    ожидается ["30"]
+  если («Cell» от 1 и words) равен "IntegerLiteral" то [
+    («Last word» от («Words» от («Cell» от 2 и words)))] иначе пустой список
+
+тотальная функция «Joined lists»
+  принимает opening: список строки, more: список список строки
+  возвращает список строки
+  пример «Lists one after another»
+    дано opening равно ["a"]
+    дано more равно [["b"], ["c"]]
+    ожидается ["a", "b", "c"]
+  свёртка more начиная с opening как found и piece → «Соединить списки» от found и piece
+
+тотальная функция «Int typed»
+  принимает node: «Node»
+  возвращает признак
+  пример «A parameter of type int»
+    дано node равно вариант «Tree» с words равным ["ParmVarDecl",
+      "0x2 col:11 used a 'int'"] и line равным 1 и kids равным []
+    ожидается да
+  («Cell» от 1 и («Quoted» от («Rest» от node))) равен "int"
+
+тотальная функция «Claim of row»
+  принимает row: список строки
+  возвращает «Claim»
+  пример «A row of the claims table»
+    дано row равно ["sign", "ensures", "a", "результат не больше 1"]
+    ожидается запись «Claim» с «role» равным "ensures" и «words» равным ["a", "результат не больше 1", "человек"]
+  запись «Claim» с «role» равным («Cell» от 2 и row) и «words» равным [(«Cell» от 3 и row), («Cell» от 4 и row),
+    "человек"]
+
+тотальная функция «Range of»
+  принимает parameter: строка, naturals: список строки
+  возвращает список строки
+  пример «A natural parameter needs only the upper bound»
+    дано parameter равно "lo"
+    дано naturals равно ["lo"]
+    ожидается ["  требует «lo — значение int, не выше INT_MAX» «lo» не больше 2147483647"]
+  пусть low равно (соединить ["  требует «", parameter, " — значение int, не ниже INT_MIN» «", parameter,
+    "» не меньше -2147483648"] по "")
+  пусть high равно (соединить ["  требует «", parameter, " — значение int, не выше INT_MAX» «", parameter,
+    "» не больше 2147483647"] по "")
+  если «Holds» от parameter и naturals то [high] иначе [low, high]
+
+тотальная функция «Duty pushed»
+  принимает made: список «Claim», duty: «Duty»
+  возвращает список «Claim»
+  пример «A duty goes first with the next number»
+    дано made равно []
+    дано duty равно запись «Duty» с «words» равным ["d", "нет"] и «line» равным 3
+    ожидается [запись «Claim» с «role» равным "ensures" и «words» равным ["обязательство 1 · d", "нет",
+      "обязательство C"]]
+  приписать («Numbered duty» от ((длина made) плюс 1) и duty) к made
+
+тотальная функция «Numbered duty»
+  принимает number: число, duty: «Duty»
+  возвращает «Claim»
+  пример «A duty becomes a claim with its number»
+    дано number равно 2
+    дано duty равно запись «Duty» с «words» равным ["строка 3: d", "нет"] и «line» равным 3
+    ожидается запись «Claim» с «role» равным "ensures" и «words» равным ["обязательство 2 · строка 3: d", "нет",
+      "обязательство C"]
+  пусть name равно (соединить ["обязательство ", (к строке number), " · ", («Duty name» от duty)] по "")
+  запись «Claim» с «role» равным "ensures" и «words» равным [name, («Duty claim» от duty), "обязательство C"]
+
+тотальная функция «Text of lines»
+  принимает lines: список строки
+  возвращает строка
+  пример «Lines become a text that ends with a line end»
+    дано lines равно ["a", "b"]
+    ожидается "a\nb\n"
+  соединить [(соединить lines по "\n"), "\n"] по ""
+
+объект «Numbered»
+  «at»: число
+  «it»: «Claim»
+
+тотальная функция «Numbered claims of»
+  принимает claims: список «Claim»
+  возвращает список «Numbered»
+  пример «Claims counted from one»
+    дано claims равно [запись «Claim» с «role» равным "" и «words» равным ["a", "да", "человек"]]
+    ожидается [
+      запись «Numbered» с «at» равным 1 и «it» равным (запись «Claim» с «role» равным "" и «words» равным ["a",
+        "да", "человек"])]
+  свёртка claims начиная с (пустой список) как made и said → «Numbered added» от made и said
+
+
+тотальная функция «Open of»
+  принимает depth: число, words: список строки, line: число, children: список «Node»
+  возвращает «Open»
+  пример «An open node»
+    дано depth равно 1
+    дано words равно ["IfStmt", ""]
+    дано line равно 2
+    дано children равно []
+    ожидается запись «Open» с «depth» равным 1 и «words» равным ["IfStmt", ""] и «line» равным 2 и «children» равным []
+  запись «Open» с «depth» равным depth и «words» равным words и «line» равным line и «children» равным children
+
+
+тотальная функция «Joined duties»
+  принимает parts: список список «Duty»
+  возвращает список «Duty»
+  пример «No duties anywhere»
+    дано parts равно [[], []]
+    ожидается []
+  свёртка parts начиная с (пустой список) как found и part → «Соединить списки» от found и part
+
+
+тотальная функция «Leaf of»
+  принимает turns: список «Turn», value: строка, literal: признак
+  возвращает «Leaf»
+  пример «A leaf»
+    дано turns равно []
+    дано value равно "4"
+    дано literal равно да
+    ожидается запись «Leaf» с «turns» равным [] и «value» равным "4" и «literal» равным да
+  запись «Leaf» с «turns» равным turns и «value» равным value и «literal» равным literal
+
+
+тотальная функция «Flow of»
+  принимает lines: список строки, duties: список «Duty», refusals: список строки, leaves: список «Leaf»
+  возвращает «Flow»
+  пример «A flow»
+    дано lines равно ["  0"]
+    дано duties равно []
+    дано refusals равно []
+    дано leaves равно []
+    ожидается запись «Flow» с «lines» равным ["  0"] и «duties» равным [] и «refusals» равным [] и «leaves» равным []
+  запись «Flow» с «lines» равным lines и «duties» равным duties и «refusals» равным refusals и «leaves» равным leaves
+тотальная функция «Joined nodes»
+  принимает parts: список список «Node»
+  возвращает список «Node»
+  пример «No nodes anywhere»
+    дано parts равно [[], []]
+    ожидается []
+  свёртка parts начиная с (пустой список) как found и part → «Соединить списки» от found и part
+
+
+тотальная функция «Function made»
+  принимает name: строка, node: «Node», parameters: список строки, flow: «Flow», refusals: список строки
+  возвращает «Function»
+  пример «A function record»
+    дано name равно "f"
+    дано node равно вариант «Tree» с words равным ["FunctionDecl", ""] и line равным 1 и kids равным []
+    дано parameters равно ["x"]
+    дано flow равно запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [] и «leaves» равным []
+    дано refusals равно []
+    ожидается запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      "x"] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным нет
+  пусть l равно («Line» от node)
+  пусть c равно («Literals of» от node)
+  пусть d равно (не (пусто («Of kind» от "CompoundStmt" и («Kids» от node))))
+  пусть n равно name
+  пусть p равно parameters
+  пусть r равно refusals
+  запись «Function» с «name» равным n и «line» равным l и «parameters» равным («Соединить списки» от p и [
+    ]) и «flow» равным flow и «literals» равным c и «refusals» равным r и «defined» равным d
+
+
+тотальная функция «Smaller»
+  принимает least: строка, value: строка
+  возвращает строка
+  пример «The smaller of two literals»
+    дано least равно "3"
+    дано value равно "-1"
+    ожидается "-1"
+  если (к числу value) меньше (к числу least) то value иначе least
+
+
+тотальная функция «Larger»
+  принимает greatest: строка, value: строка
+  возвращает строка
+  пример «The larger of two literals»
+    дано greatest равно "3"
+    дано value равно "-1"
+    ожидается "3"
+  если (к числу value) больше (к числу greatest) то value иначе greatest
+
+
+тотальная функция «Compared candidates»
+  принимает parameter: строка
+  возвращает список «Claim»
+  пример «The result against one parameter, both ways»
+    дано parameter равно "x"
+    ожидается [запись «Claim» с «role» равным "ensures" и «words» равным ["", "результат не меньше «x»",
+      "сравнение с параметром «x»"], запись «Claim» с «role» равным "ensures" и «words» равным ["",
+      "результат не больше «x»", "сравнение с параметром «x»"]]
+  пусть origin равно (соединить ["сравнение с параметром «", parameter, "»"] по "")
+  [(«Candidate» от (соединить ["результат не меньше «", parameter, "»"] по "") и origin), («Candidate» от (соединить [
+    "результат не больше «", parameter, "»"] по "") и origin)]
+
+
+тотальная функция «Branch candidate»
+  принимает leaf: «Leaf»
+  возвращает «Claim»
+  пример «The value of a branch under its condition»
+    дано leaf равно запись «Leaf» с «turns» равным [
+      запись «Turn» с «test» равным "(x больше 0)" и «taken» равным да] и «value» равным "1" и «literal» равным да
+    ожидается запись «Claim» с «role» равным "ensures" и «words» равным ["",
+      "если (x больше 0) то (результат равен 1) иначе да", "ветвь кода"]
+  «Candidate» от («Last duty claim» от (leaf.«turns») и (соединить ["результат равен ",
+    (leaf.«value»)] по "")) и "ветвь кода"
+
+
+тотальная функция «Candidate added»
+  принимает named: список «Claim», said: «Claim»
+  возвращает список «Claim»
+  пример «A candidate goes last with the next number»
+    дано named равно []
+    дано said равно запись «Claim» с «role» равным "ensures" и «words» равным ["", "да", "знак результата"]
+    ожидается [запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 1", "да", "знак результата"]]
+  добавить («Named candidate» от ((длина named) плюс 1) и said) к named
+
+тотальная функция «Named candidate»
+  принимает number: число, said: «Claim»
+  возвращает «Claim»
+  пример «A candidate gets its number»
+    дано number равно 2
+    дано said равно запись «Claim» с «role» равным "ensures" и «words» равным ["", "результат не меньше 0",
+      "знак результата"]
+    ожидается запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 2", "результат не меньше 0",
+      "знак результата"]
+  запись «Claim» с «role» равным "ensures" и «words» равным [(соединить ["выведено ", (к строке number)] по ""),
+    («Claim text» от said), («Claim origin» от said)]
+
+
+тотальная функция «Joined claims»
+  принимает parts: список список «Claim»
+  возвращает список «Claim»
+  пример «No claims anywhere»
+    дано parts равно [[], []]
+    ожидается []
+  свёртка parts начиная с (пустой список) как found и part → «Соединить списки» от found и part
+
+
+тотальная функция «Own target»
+  принимает words: список строки, wanted: строка
+  возвращает список строки
+  пример «A node of the wanted kind gives its text»
+    дано words равно ["IfStmt", "0x1"]
+    дано wanted равно "IfStmt"
+    ожидается ["0x1"]
+  если («Cell» от 1 и words) равен wanted то [(«Cell» от 2 и words)] иначе пустой список
+
+
+тотальная функция «Mutation of»
+  принимает words: список строки, line: число, kids: список «Node», mutated: список «Node», target: строка
+  возвращает «Node»
+  пример «Operands change places in the chosen operation»
+    дано words равно ["BinaryOperator", "0x1 '-'"]
+    дано line равно 3
+    дано kids равно [вариант «Tree» с words равным ["A", ""] и line равным 3 и kids равным [],
+      вариант «Tree» с words равным ["B", ""] и line равным 3 и kids равным []]
+    дано mutated равно []
+    дано target равно "0x1 '-'"
+    ожидается вариант «Tree» с words равным ["BinaryOperator", "0x1 '-'"] и line равным 3 и kids равным [
+      вариант «Tree» с words равным ["B", ""] и line равным 3 и kids равным [], вариант «Tree» с words равным ["A",
+      ""] и line равным 3 и kids равным []]
+  пусть kind равно («Cell» от 1 и words)
+  пусть rest равно («Cell» от 2 и words)
+  пусть here равно (rest равен target)
+  пусть dropped равно («Without then» от rest и line и kids)
+  пусть shifted равно (вариант «Tree» с words равным [kind, («Shifted» от rest)] и line равным line и kids равным kids)
+  пусть swapped равно (вариант «Tree» с words равным words и line равным line и kids равным («Reversed» от kids))
+  пусть kept равно (вариант «Tree» с words равным words и line равным line и kids равным mutated)
+  пусть rules равно [(«When» от (here и притом (kind равен "IfStmt")) и dropped),
+    («When» от (here и притом (kind равен "IntegerLiteral")) и shifted),
+    («When» от (here и притом (kind равен "BinaryOperator")) и swapped)]
+  «Chosen» от rules и kept
+
+
+тотальная функция «Near number»
+  принимает number: строка
+  возвращает список строки
+  пример «A constant with its neighbours»
+    дано number равно "100"
+    ожидается ["99", "100", "101"]
+  [(к строке ((к числу number) минус 1)), number, (к строке ((к числу number) плюс 1))]
+
+
+тотальная функция «In int»
+  принимает number: строка
+  возвращает признак
+  пример «Above INT_MAX»
+    дано number равно "2147483648"
+    ожидается нет
+  ((к числу number) не меньше -2147483648) и притом ((к числу number) не больше 2147483647)
+
+
+тотальная функция «Seen once»
+  принимает seen: список строки, word: строка
+  возвращает список строки
+  пример «A word already seen is not added again»
+    дано seen равно ["1"]
+    дано word равно "1"
+    ожидается ["1"]
+  если «Holds» от word и seen то seen иначе (добавить word к seen)
+
+
+тотальная функция «Numbers in»
+  принимает text: строка
+  возвращает список строки
+  пример «Numbers written in a claim»
+    дано text равно "если «month» равно 2 то (результат не больше 29) иначе да"
+    ожидается ["2", "29"]
+  пусть open равно (соединить (разделить text по "(") по " ")
+  пусть spaced равно (соединить (разделить open по ")") по " ")
+  отфильтровать («Words» от spaced) где word → «Integer word» от word
+
+
+тотальная функция «Grown rows»
+  принимает grown: список список строки, row: список строки, values: список строки
+  возвращает список список строки
+  пример «A row grows by every value, newest first»
+    дано grown равно []
+    дано row равно ["1"]
+    дано values равно ["a", "b"]
+    ожидается [["1", "b"], ["1", "a"]]
+  свёртка values начиная с grown как more и value → приписать (добавить value к row) к more
+
+
+тотальная функция «Call line»
+  принимает probe: «Probe»
+  возвращает строка
+  пример «A call of a function of two parameters»
+    дано probe равно запись «Probe» с «name» равным "midpoint" и «parameters» равным ["lo", "hi"] и «inputs» равным [
+      ] и «checked» равным []
+    ожидается "  if (strcmp(f, \"midpoint\") == 0) return midpoint((int)a[0], (int)a[1]);"
+  пусть casts равно (свёртка (probe.«parameters») начиная с [""] как made и parameter → добавить (соединить ["(int)a[",
+    (к строке ((длина made) минус 1)), "]"] по "") к made)
+  пусть name равно (probe.«name»)
+  соединить ["  if (strcmp(f, \"", name, "\") == 0) return ", name, "(", (соединить («Without first» от casts) по ", "),
+    ");"] по ""
+
+
+тотальная функция «Requests of input»
+  принимает names: список строки, arguments: список строки
+  возвращает строка
+  пример «Two names for one input»
+    дано names равно ["f", "g"]
+    дано arguments равно ["1"]
+    ожидается "{\"fn\":\"f\",\"args\":[{\"n\":\"1\"}]}\n{\"fn\":\"g\",\"args\":[{\"n\":\"1\"}]}\n"
+  соединить (отобразить names как called → «Request» от called и arguments) по ""
+
+
+тотальная функция «Cut»
+  принимает cut: «Chunking», line: строка, size: число
+  возвращает «Chunking»
+  пример «A full group closes»
+    дано cut равно запись «Chunking» с «open» равным ["a"] и «done» равным []
+    дано line равно "b"
+    дано size равно 2
+    ожидается запись «Chunking» с «open» равным [] и «done» равным [["a", "b"]]
+  пусть open равно (добавить line к (cut.«open»))
+  если (длина open) не меньше size
+    то запись «Chunking» с «open» равным пустой список и «done» равным (приписать open к (cut.«done»))
+    иначе запись «Chunking» с «open» равным open и «done» равным (cut.«done»)
+
+
+тотальная функция «Outcomes made»
+  принимает inputs: список список строки, cs: список строки, groups: список список строки
+  возвращает список «Outcome»
+  пример «Outcomes come newest first»
+    дано inputs равно [["1"]]
+    дано cs равно ["ub"]
+    дано groups равно []
+    ожидается [запись «Outcome» с «arguments» равным [
+      "1"] и «c» равным "ub" и «value» равным "" и «admissible» равным нет и «said» равным []]
+  свёртка inputs начиная с (пустой список) как made и entered → «Outcome pushed» от made и entered и cs и groups
+
+тотальная функция «Outcome pushed»
+  принимает made: список «Outcome», arguments: список строки, cs: список строки, groups: список список строки
+  возвращает список «Outcome»
+  пример «The next input goes first»
+    дано made равно []
+    дано arguments равно ["1"]
+    дано cs равно ["ub"]
+    дано groups равно []
+    ожидается [запись «Outcome» с «arguments» равным [
+      "1"] и «c» равным "ub" и «value» равным "" и «admissible» равным нет и «said» равным []]
+  приписать («Outcome at» от arguments и ((длина made) плюс 1) и cs и groups) к made
+
+тотальная функция «Outcome at»
+  принимает arguments: список строки, position: число, cs: список строки, groups: список список строки
+  возвращает «Outcome»
+  пример «An input past the replies has none»
+    дано arguments равно ["1"]
+    дано position равно 2
+    дано cs равно ["ok 1"]
+    дано groups равно []
+    ожидается запись «Outcome» с «arguments» равным [
+      "1"] и «c» равным "" и «value» равным "" и «admissible» равным нет и «said» равным []
+  пусть group равно (если position не больше (длина groups) то (элемент position в groups) иначе пустой список)
+  «Outcome of» от arguments и («Cell» от position и cs) и group
+
+
+тотальная функция «Mark added»
+  принимает marks: список «Mark», stated: «Claim», said: список строки
+  возвращает список «Mark»
+  пример «The next claim goes last»
+    дано marks равно []
+    дано stated равно запись «Claim» с «role» равным "ensures" и «words» равным ["a", "да", "человек"]
+    дано said равно ["нет"]
+    ожидается [запись «Mark» с «claim» равным (запись «Claim» с «role» равным "ensures" и «words» равным ["a", "да",
+      "человек"]) и «said» равным "нет"]
+  добавить («Mark of» от stated и said и ((длина marks) плюс 1)) к marks
+
+тотальная функция «Mark of»
+  принимает stated: «Claim», said: список строки, position: число
+  возвращает «Mark»
+  пример «What was said about a claim»
+    дано stated равно запись «Claim» с «role» равным "ensures" и «words» равным ["a", "да", "человек"]
+    дано said равно ["да"]
+    дано position равно 1
+    ожидается запись «Mark» с «claim» равным (запись «Claim» с «role» равным "ensures" и «words» равным ["a", "да",
+      "человек"]) и «said» равным "да"
+  запись «Mark» с «claim» равным stated и «said» равным («Cell» от position и said)
+
+
+тотальная функция «Broken duty»
+  принимает mark: «Mark»
+  возвращает признак
+  пример «A duty that was false»
+    дано mark равно запись «Mark» с «claim» равным (запись «Claim» с «role» равным "ensures" и «words» равным ["d",
+      "да", "обязательство C"]) и «said» равным "нет"
+    ожидается да
+  ((mark.«said») равен "нет") и притом ((«Claim origin» от (mark.«claim»)) равен "обязательство C")
+
+
+тотальная функция «Numbered added»
+  принимает made: список «Numbered», said: «Claim»
+  возвращает список «Numbered»
+  пример «The next claim goes last with its number»
+    дано made равно []
+    дано said равно запись «Claim» с «role» равным "" и «words» равным ["a", "да", "человек"]
+    ожидается [
+      запись «Numbered» с «at» равным 1 и «it» равным (запись «Claim» с «role» равным "" и «words» равным ["a",
+        "да", "человек"])]
+  добавить (запись «Numbered» с «at» равным ((длина made) плюс 1) и «it» равным said) к made

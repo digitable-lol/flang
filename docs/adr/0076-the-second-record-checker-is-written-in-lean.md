@@ -16,7 +16,7 @@ fscript вторая реализация зависела бы от прове�
 
 ## 2. Решение
 
-Вторая реализация — на Lean 4, в `flang/proof/checker/second/SecondChecker.lean`.
+Вторая реализация — на Lean 4, в `flang/proof/checker/second/Checker.lean`.
 Lean уже стоит в дереве языком модели (`flang/proof/lean/`), его версия прибита
 `flang/proof/lean/lean-toolchain`, собирает его свой набор (`lean`, `leanc`), а не
 `cc` и не `bootstrap/flang`. Сборка одной командой: `make -C flang/proof/checker second`

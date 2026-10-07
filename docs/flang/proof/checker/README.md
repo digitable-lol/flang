@@ -68,7 +68,7 @@ bootstrap/flang run-script trust:ceiling
 
 ## Вторая реализация
 
-`flang/proof/checker/second/SecondChecker.lean` — та же проверка записи на Lean 4,
+`flang/proof/checker/second/Checker.lean` — та же проверка записи на Lean 4,
 собранная своим набором (`make -C flang/proof/checker second`, решение —
 [ADR-0076](../../../adr/0076-the-second-record-checker-is-written-in-lean.md)). Она
 читает привязку, шапку, полноту, постусловия и блоки «вывод»; блок «вывод» судит

@@ -10,11 +10,11 @@ all: сверщик
 сверщик-san: checker.c
 	$(CC) -std=c99 -Wall -Wextra -pedantic -g -O1 -fsanitize=address,undefined -o $@ $<
 second: $(OUT)/второй-сверщик
-$(OUT)/второй-сверщик: second/SecondChecker.lean $(wildcard ../lean/*.lean)
+$(OUT)/второй-сверщик: second/Checker.lean $(wildcard ../lean/*.lean)
 	rm -rf $(OUT) && mkdir -p $(OUT)
 	for p in $(MODULES); do cp ../lean/$${p%%:*}.lean $(OUT)/$${p##*:}.lean || exit 1; done
-	cp second/SecondChecker.lean $(OUT)/SecondChecker.lean
-	cd $(OUT) && for p in $(MODULES) SecondChecker:SecondChecker; do m=$${p##*:}; \
+	cp second/Checker.lean $(OUT)/Checker.lean
+	cd $(OUT) && for p in $(MODULES) Checker:Checker; do m=$${p##*:}; \
 	  LEAN_PATH=. $(LEAN) --root=. -o $$m.olean -c $$m.c $$m.lean || exit 1; done
 	cd $(OUT) && $(LEANC) -O2 -o второй-сверщик *.c
 пробы: сверщик

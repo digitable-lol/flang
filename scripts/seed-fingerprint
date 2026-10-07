@@ -4,7 +4,7 @@
 предел-глубины 20000
 вход flang/self/bootstrap/compiler.flang
 ключи --cli --repl
-коммит 9c4c266d90372b4ce1422d9f5db87768d817b450
+коммит 1a17aeec321de960075dbe470ae7e15b7e26ece0
 e200119e04672d9c574cd22cb41f6358a9508a1810f8a4f43ad287a8add8f923  flang/core/evaluate.flang
 363ef4fdf66c10a13853083b3aa4aea6b6308c21045171cf5196e02c7871991f  flang/core/json.flang
 1767bca675dfeb0e4366b5f3a015a2520500fb8d3ab011ab25ca4d8890e134b8  flang/self/bootstrap/compiler.flang
@@ -18,7 +18,7 @@ e200119e04672d9c574cd22cb41f6358a9508a1810f8a4f43ad287a8add8f923  flang/core/eva
 05fb1d9dbd2c9eb2f7f7a04d20d406ed401e4a6bfd007f4ad5a98873e40f07bd  flang/self/emit-elixir.flang
 151a8f16b99b7416b6de236e7e868569714386dd163b87a8ff4b174d759917d9  flang/self/emit-go.flang
 7b086d130ad80f9a5b545fbcf44304527f8df35e120da94cd670b42d77418d87  flang/self/emit-java.flang
-ea327e4acc39be0368a5bd18904bbaf5c04fc7048dd4a7e977d65ff57197030b  flang/self/emit-js.flang
+1998aed82b5c4d96e1acc57dca022ea01cfc3e6a68bd486f14aed5c7a2d66ad9  flang/self/emit-js.flang
 15fedf9491248d11c13252484f2926e680ce338a3c2909008fc52e671630d014  flang/self/emit-layout.flang
 6e4dc75d34661e88839adf2d129518d681283a05e2f898ea7990a39346dfe6cf  flang/self/emit-python.flang
 6a5b484d1c77d4b741ee0979257389a008c45dc27fd4a0f5dc54675e0f62b533  flang/self/emit-rust.flang
@@ -59,7 +59,7 @@ a01ffd2be6ef948565119446d1a36da0538377a6b1695103ef7dea5c88b99603  flang/src/emit
 # То, что печать положила в bootstrap/ и из чего соберётся двоичный.
 # Сверяется с рабочим деревом; расхождение красное всегда — довод у SEED_STAMP.
 2cf0a1a7d02f5795886f3e3ec6654850be77f9fb9699b6cdcea0623e9a37ddae  bootstrap/Makefile
-84b743ab035be1257b112b4d8471b8b6d9e042466730efe0b56d8ee4c0f0bc56  bootstrap/compiler_flang.c
+ab826382e96a9cc483f1ef8cd7dd260a912c02bb82a6ae1cee453cdedc660aab  bootstrap/compiler_flang.c
 a0cf58d8b82014696de8ea3ef39d11b09331bf23043b6f55395c69dccb8e2996  bootstrap/compiler_flang.h
 000c71e0993a18cf9418355c58fac28704ad3ae6ecff281a5fe3a630a48c09e9  bootstrap/flang_cli.c
 2daad30b4934df26a2501e8c7f26b748ce5e01615fc9b0003eef9343091d8018  bootstrap/flang_repl.c

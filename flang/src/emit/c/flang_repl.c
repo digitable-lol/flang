@@ -146,6 +146,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -9202,6 +9203,116 @@ static void proof_say_steps(const char *record, size_t bytes) {
   }
 }
 
+static char *proof_checker_path(void) {
+  const char *named = getenv("FLANG_CHECKER");
+  char *self_dir = NULL;
+  char *found = NULL;
+  if (named != NULL && named[0] != '\0') {
+    return repl_say(named);
+  }
+  self_dir = repl_self_dir(repl_self_kept);
+  if (self_dir == NULL) {
+    return NULL;
+  }
+  found = repl_join(self_dir, "../flang/proof/checker/сверщик");
+  free(self_dir);
+  return found;
+}
+
+static void proof_say_independent(const char *path, const char *record, size_t bytes, long proved) {
+  char *checker = proof_checker_path();
+  const char *place = getenv("FLANG_TMP");
+  char *pattern = NULL;
+  repl_buf answer;
+  long checked = 0;
+  int status = 0;
+  int pipes[2];
+  int fd = -1;
+  pid_t child;
+  if (checker == NULL || access(checker, X_OK) != 0) {
+    fprintf(stderr,
+            "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщика нет (%s; собрать: make -C flang/proof/checker"
+            " либо назвать FLANG_CHECKER): все %ld доказанных стоят на слове ядра\n",
+            path, checker == NULL ? "путь к нему не найден" : checker, proved);
+    free(checker);
+    return;
+  }
+  pattern = repl_join(place != NULL && place[0] != '\0' ? place : "/tmp", "flang-record.XXXXXX");
+  fd = mkstemp(pattern);
+  if (fd < 0 || write(fd, record, bytes) != (ssize_t)bytes || pipe(pipes) != 0) {
+    fprintf(stderr, "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — запись для сверщика не положена во временный файл\n", path);
+    if (fd >= 0) {
+      close(fd);
+      unlink(pattern);
+    }
+    free(pattern);
+    free(checker);
+    return;
+  }
+  close(fd);
+  buf_init(&answer);
+  buf_char(&answer, '\n');
+  child = fork();
+  if (child == 0) {
+    char *words[5];
+    int null = open("/dev/null", O_WRONLY);
+    dup2(pipes[1], 1);
+    if (null >= 0) {
+      dup2(null, 2);
+    }
+    close(pipes[0]);
+    words[0] = checker;
+    words[1] = (char *)"--по-утверждениям";
+    words[2] = (char *)path;
+    words[3] = pattern;
+    words[4] = NULL;
+    execv(checker, words);
+    _exit(127);
+  }
+  close(pipes[1]);
+  for (;;) {
+    char chunk[4096];
+    ssize_t read_now = read(pipes[0], chunk, sizeof(chunk));
+    if (read_now <= 0) {
+      break;
+    }
+    buf_add(&answer, chunk, (size_t)read_now);
+  }
+  close(pipes[0]);
+  if (child > 0) {
+    waitpid(child, &status, 0);
+  }
+  unlink(pattern);
+  free(pattern);
+  buf_char(&answer, '\0');
+  {
+    const char *scan = answer.data;
+    while ((scan = strstr(scan, "\n  утверждение «")) != NULL) {
+      const char *end = strchr(scan + 1, '\n');
+      const char *verdict = strstr(scan + 1, "»: ПРОВЕРЕНО (");
+      if (verdict != NULL && (end == NULL || verdict < end)) {
+        checked += 1;
+      }
+      scan += 1;
+    }
+  }
+  if (!WIFEXITED(status) || WEXITSTATUS(status) == 2 || WEXITSTATUS(status) == 127) {
+    fprintf(stderr, "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщик %s не отработал: все %ld доказанных стоят на слове ядра\n",
+            path, checker, proved);
+  } else if (WEXITSTATUS(status) == 1) {
+    fprintf(stderr,
+            "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщик не сошёлся с записью (код 1; файлу с ввозом сверщику нужны"
+            " записи ввезённых модулей ключом --зависимость): все %ld доказанных стоят на слове ядра\n",
+            path, proved);
+  } else {
+    fprintf(stderr,
+            "%s: независимо, сверщиком, проиграно %ld из %ld доказанных; на слове ядра %ld — код сверщика %d\n",
+            path, checked, proved, proved - checked, WEXITSTATUS(status));
+  }
+  buf_free(&answer);
+  free(checker);
+}
+
 static int proof_file(const char *path, bool json, const char *record, bool strict) {
   repl_strings paths;
   repl_strings texts;
@@ -9424,6 +9535,9 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
     } else {
       code = proof_verdict(&tally, strict);
       proof_say_verdict(path, &tally, code, strict);
+      if (!json && val_field(result, "запись", &field) && val_text(field, &utf8, &bytes)) {
+        proof_say_independent(path, utf8, bytes, tally.proved);
+      }
     }
     /* ЗАПИСЬ ДОКАЗАТЕЛЬСТВА кладётся ОТДЕЛЬНЫМ файлом, а не в поток вывода:
        ведомость читает человек, а запись читает сверщик, и смешать их в одной

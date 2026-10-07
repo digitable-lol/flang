@@ -147,6 +147,7 @@ schet2/
 # чекер и написан.
 flang/proof/checker/сверщик
 flang/proof/checker/сверщик-san
+flang/proof/checker/second/out/
 flang/self/bootstrap/collision-probe.flang
 
 # Настройка одного прогона мастера уточнений: две строки — путь к компилятору и

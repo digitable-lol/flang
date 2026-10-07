@@ -87,3 +87,13 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
         run: bootstrap/flang io flang/proof/lean/run.fscript --max-steps 4000000000 --timeout 900000
+
+      - name: Build the second checker
+        run: make -C flang/proof/checker second
+
+      - name: Run the second checker against the first
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+        run: |
+          bootstrap/flang run-script checker:second-forgery
+          bootstrap/flang run-script checker:second

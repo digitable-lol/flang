@@ -85,6 +85,10 @@
 | `statement-closed-goal-computed` | `removed` | утверждение без функции и без связываний: вычисление замкнутой цели (Выч) |
 | `statement-node-own-sum` | `removed` | узел утверждения без функции, носитель algebra по СВОЕЙ сумме |
 | `inference-family-all-elements` | `removed` | вывод по семейству Э: цель «для всех э из Л: П» выведена по построению списка |
+| `node-carrier-segment-form-identity` | `removed` | узел свободного утверждения, носитель segment-form, тождество с допущением индукции |
+| `node-carrier-segment-form-nonnegative` | `removed` | узел свободного утверждения, носитель segment-form, неотрицательность |
+| `inference-family-integer-tightening` | `removed` | вывод Т1, Цел2, Цел3: строгое дно целого довода ужато на единицу |
+| `statement-node-finite-sum` | `removed` | свободное утверждение над суммой без поля своего типа, перебор вариантов |
 
 ## Проверить копию таблицы
 

@@ -1,46 +1,26 @@
 docs/benchmarks/speed/programs/tasks.flang	28 28 0
 docs/benchmarks/proof-cost/probe-forgery.flang	1 1 0
 docs/benchmarks/proof-cost/probe-closed-goal.flang	0 0 0
-docs/benchmark/01-link-key.flang	отказ
-docs/benchmark/02-node-key.flang	отказ
-docs/benchmark/03-insert.flang	отказ
-docs/benchmark/04-dictionary-size.flang	отказ
-docs/benchmark/05-opposite.flang	5 5 0
-docs/benchmark/06-prepend.flang	отказ
-docs/benchmark/07-insert-at.flang	отказ
-docs/benchmark/08-maximum.flang	отказ
-docs/benchmark/09-take-first.flang	отказ
-docs/benchmark/10-binary-search.flang	отказ
-docs/benchmark/11-unique.flang	отказ
-docs/benchmark/12-implies.flang	отказ
-docs/benchmark/13-even.flang	отказ
-docs/benchmark/14-tree-of-numbers.flang	отказ
-docs/benchmark/15-first-or-default.flang	отказ
-docs/benchmark/16-success.flang	отказ
-docs/benchmark/17-member-of-set.flang	отказ
-docs/benchmark/18-prepend-string.flang	отказ
-docs/benchmark/19-lowercase-letter.flang	отказ
-docs/benchmark/20-trim-spaces.flang	отказ
-docs/benchmark2/01-link-key.flang	4 4 0
-docs/benchmark2/02-node-key.flang	3 3 0
-docs/benchmark2/03-insert.flang	отказ
-docs/benchmark2/04-dictionary-size.flang	6 6 0
-docs/benchmark2/05-opposite.flang	5 5 0
-docs/benchmark2/06-prepend.flang	отказ
-docs/benchmark2/07-insert-at.flang	6 6 0
-docs/benchmark2/08-maximum.flang	отказ
-docs/benchmark2/09-take-first.flang	отказ
-docs/benchmark2/10-binary-search.flang	отказ
-docs/benchmark2/11-unique.flang	отказ
-docs/benchmark2/12-implies.flang	4 4 0
-docs/benchmark2/13-even.flang	6 5 1
-docs/benchmark2/14-tree-of-numbers.flang	5 5 0
-docs/benchmark2/15-first-or-default.flang	6 6 0
-docs/benchmark2/16-success.flang	4 4 0
-docs/benchmark2/17-member-of-set.flang	отказ
-docs/benchmark2/18-prepend-string.flang	отказ
-docs/benchmark2/19-lowercase-letter.flang	отказ
-docs/benchmark2/20-trim-spaces.flang	отказ
+docs/benchmarks/proof-cost/functions/01-link-key.flang	4 4 0
+docs/benchmarks/proof-cost/functions/02-node-key.flang	3 3 0
+docs/benchmarks/proof-cost/functions/03-insert.flang	отказ
+docs/benchmarks/proof-cost/functions/04-dictionary-size.flang	6 6 0
+docs/benchmarks/proof-cost/functions/05-opposite.flang	5 5 0
+docs/benchmarks/proof-cost/functions/06-prepend.flang	отказ
+docs/benchmarks/proof-cost/functions/07-insert-at.flang	6 6 0
+docs/benchmarks/proof-cost/functions/08-maximum.flang	отказ
+docs/benchmarks/proof-cost/functions/09-take-first.flang	отказ
+docs/benchmarks/proof-cost/functions/10-binary-search.flang	отказ
+docs/benchmarks/proof-cost/functions/11-unique.flang	отказ
+docs/benchmarks/proof-cost/functions/12-implies.flang	4 4 0
+docs/benchmarks/proof-cost/functions/13-even.flang	6 5 1
+docs/benchmarks/proof-cost/functions/14-tree-of-numbers.flang	5 5 0
+docs/benchmarks/proof-cost/functions/15-first-or-default.flang	6 6 0
+docs/benchmarks/proof-cost/functions/16-success.flang	4 4 0
+docs/benchmarks/proof-cost/functions/17-member-of-set.flang	отказ
+docs/benchmarks/proof-cost/functions/18-prepend-string.flang	отказ
+docs/benchmarks/proof-cost/functions/19-lowercase-letter.flang	отказ
+docs/benchmarks/proof-cost/functions/20-trim-spaces.flang	отказ
 docs/specifications/failure-layer.flang	4 4 0
 examples/cat/crdt-merge.flang	9 9 0
 examples/cat/euler-orders.flang	4 4 0

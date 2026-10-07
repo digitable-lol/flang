@@ -299,44 +299,9 @@
       "зачем": "страница «Четыре поверхности записи»"
     },
     {
-      "маска": "docs/overview.ru.md",
-      "вид": "проза",
-      "зачем": "страница «Что доказано, а что проверено»"
-    },
-    {
-      "маска": "docs/benchmark-speed.md",
-      "вид": "проза",
-      "зачем": "страница замера скорости"
-    },
-    {
-      "маска": "docs/benchmark-proof-cost.md",
-      "вид": "проза",
-      "зачем": "страница цены доказательства"
-    },
-    {
-      "маска": "docs/benchmark-proof-cost-2.md",
-      "вид": "проза",
-      "зачем": "второй замер цены доказательства, опубликован на сайте"
-    },
-    {
       "маска": "docs/scheduler-benchmark.md",
       "вид": "проза",
       "зачем": "страница замера процессов"
-    },
-    {
-      "маска": "docs/memory-and-regions.md",
-      "вид": "проза",
-      "зачем": "страница «Память и области»"
-    },
-    {
-      "маска": "docs/modularity-and-packages.md",
-      "вид": "проза",
-      "зачем": "страница «Модульность и пакеты»"
-    },
-    {
-      "маска": "docs/wasm-via-c.md",
-      "вид": "проза",
-      "зачем": "страница «WebAssembly через C»"
     },
     {
       "маска": "docs/flang/SPEC.md",
@@ -376,10 +341,6 @@
   ],
   "вне запрета": [
     {
-      "маска": "docs/zettel/**",
-      "почему": "лабораторный журнал проекта. Читается тем, кто язык развивает, а не тем, кто его ставит; жаргон здесь короче и точнее, и вычищать его НЕ надо"
-    },
-    {
       "маска": "CHANGELOG.md",
       "почему": "печатается из тем коммитов. Тема коммита пишется для команды, и запрет на ней означал бы запрет на внутреннем тексте"
     },
@@ -398,10 +359,6 @@
     {
       "маска": "AGENTS.md",
       "почему": "задание агентам — внутренний текст"
-    },
-    {
-      "маска": "docs/HANDOFF.md",
-      "почему": "передача состояния между сессиями — внутренний текст"
     },
     {
       "маска": "docs/flang/core/SPEC.md",
@@ -504,9 +461,6 @@
   ],
   "долг": {
     "CONTRIBUTING.md": 5,
-    "docs/benchmark-proof-cost-2.md": 10,
-    "docs/benchmark-proof-cost.md": 9,
-    "docs/benchmark-speed.md": 27,
     "docs/flang/concurrency/SPEC.md": 196,
     "docs/flang/proof/SPEC.md": 478,
     "docs/guide/bootstrap-circle.md": 2,
@@ -517,9 +471,6 @@
     "docs/guide/naming.ru.md": 25,
     "docs/guide/project-layout.md": 1,
     "docs/guide/single-source.ru.md": 1,
-    "docs/memory-and-regions.md": 17,
-    "docs/modularity-and-packages.md": 20,
-    "docs/overview.ru.md": 73,
     "docs/scheduler-benchmark.md": 11,
     "docs/site/browser-app.md": 1,
     "docs/site/browser-app.ru.md": 2,
@@ -533,7 +484,6 @@
     "docs/site/what-is-proved.md": 2,
     "docs/site/what-is-proved.ru.md": 2,
     "docs/surfaces.md": 2,
-    "docs/wasm-via-c.md": 19,
     "flang/src/emit/c/flang_repl.c": 42,
     "fspec/README.md": 1
   }

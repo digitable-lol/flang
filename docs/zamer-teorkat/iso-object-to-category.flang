@@ -1,8 +1,0 @@
-модуль «Measurement isomorphism from object to category»
-  использует «Orders» из "../../flang/ct/modules/orders.flang"
-  использует «Payments» из "../../flang/ct/modules/payments.flang"
-  использует «Shipping» из "../../flang/ct/modules/shipping.flang"
-
-изоморфизм «Заказ и Заказы» из «Заказ» в «Заказы»
-  прямой морфизм «отменить заказ»
-  обратный морфизм «уценить заказ»

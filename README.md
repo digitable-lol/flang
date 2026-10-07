@@ -16,9 +16,9 @@ the result for all inputs, or reports it as not proved, and `flang run` then ref
 takes on the kernel's word.
 
 The kernel does not search. It applies rules from a closed table —
-[`flang/proof/tables/inference-rules.tsv`](flang/proof/tables/inference-rules.tsv): 97 rules and
-15 rows that state what is deliberately not derivable, counted there on 3 October 2026 — and the
-report names the rule that carried each claim. What this does not mean:
+[`flang/proof/tables/inference-rules.tsv`](flang/proof/tables/inference-rules.tsv): one row per
+rule, and rows of kind `ban` for what is deliberately not derivable — and the report names the rule
+that carried each claim. What this does not mean:
 [What is proved and what is not](https://digitable-lol.github.io/flang/en/what-is-proved.html).
 
 ## Install
@@ -132,8 +132,7 @@ names what it did not run; the long ones are CI (`.github/workflows/binary.yml`)
 in [`docs/tasks/`](docs/tasks/README.md), one file per open task; a closed task leaves the tree and
 its number stays taken in `docs/tasks/used-numbers.tsv`. The rules of the tree that are not visible
 from the code are in [`AGENTS.md`](.ai/AGENTS.md); how to build, run the checks and send a change is
-[`CONTRIBUTING.md`](CONTRIBUTING.md). Decisions are recorded in [`docs/adr/`](docs/adr); the
-knowledge base of measured facts and rejected paths is [`docs/zettel/`](docs/zettel/README.md).
+[`CONTRIBUTING.md`](CONTRIBUTING.md). Decisions are recorded in [`docs/adr/`](docs/adr).
 
 Prose in this tree is held to the tree by runs, not by memory: a number written by hand carries a
 note saying how it was measured (`scripts/guards/prose-numbers-guard.fscript`), a path in a link must

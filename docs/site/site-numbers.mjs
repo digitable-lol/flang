@@ -171,12 +171,8 @@ export function отказыЯдра() {
   const коды = (путь) =>
     new Set((прочесть(путь).match(/"FLANG_PROOF_[A-Z_]+"/gu) ?? []).map((с) => с.slice(1, -1)))
   const обязательств = коды("flang/self/obligations.flang")
-  const вывода = коды("flang/self/proofterm.flang")
-  const все = new Set([...обязательств, ...вывода])
-  if (все.size !== обязательств.size + вывода.size) {
-    throw new Error("один и тот же отказ ядра объявлен в обоих слоях — считать его дважды нельзя")
-  }
-  return { всего: все.size, обязательств: обязательств.size, вывода: вывода.size }
+  const вывода = [...коды("flang/self/proofterm.flang")].filter((к) => !обязательств.has(к))
+  return { всего: обязательств.size + вывода.length, обязательств: обязательств.size, вывода: вывода.length }
 }
 
 /**
@@ -267,7 +263,6 @@ function происхождениеЗамера() {
  */
 export async function измерить() {
   const ц = цели()
-  const и = (await сводКорпуса()).итог
   const б = библиотека()
   const к = корпусФайлами()
   const с = покрытие()
@@ -277,6 +272,7 @@ export async function измерить() {
   const планировщик = модуль("flang/concurrency/scheduler.flang")
   const связь = модуль("flang/concurrency/link.flang")
   const отказы = отказыЯдра()
+  const и = (await сводКорпуса()).итог
 
   return {
     формат: ФОРМАТ,

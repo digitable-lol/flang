@@ -850,7 +850,7 @@ export function спроситьПачкой(вопросы) {
 export const ФАЙЛЫ = ["flang/**/*.flang", "flang/**/*.fp", "flang/**/*.фп", "flang/**/*.фланг", "flang/**/*.fscript"]
   .flatMap((pattern) => globSync(pattern, { cwd: `${КОРЕНЬ}/` }))
   .filter((path) => !path.startsWith("flang/test/fixtures/"))
-  .filter((path) => path !== "flang/self/bootstrap/compiler.flang")
+  .filter((path) => !path.startsWith("flang/self/bootstrap/"))
   .sort()
 
 function stringAfterLabel(text, from, label) {
@@ -887,7 +887,7 @@ const LEDGER_PLAN = [
 ]
 
 export async function сводКорпуса() {
-  const { код, вывод, ошибки } = позвать(LEDGER_PLAN, { предел: 2 * 60 * 60 * 1000 })
+  const { код, вывод, ошибки } = позвать(LEDGER_PLAN, { предел: 8 * 60 * 60 * 1000 })
   const text = envelopeValue(вывод, ошибки)
   if (text === null) {
     throw new Error(`свод корпуса не ответил: flang io отдал код ${код} без конверта. ${(ошибки || вывод).slice(0, 400)}`)

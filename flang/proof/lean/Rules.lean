@@ -3069,3 +3069,28 @@ theorem «Инд6» {α : Type} (vs : List α) (hall : ∀ x, x ∈ vs) (P : α 
 theorem «Инд6-без-варианта-ложна» : ∃ (vs : List Bool) (P : Bool → Prop),
     (∀ v ∈ vs, P v) ∧ ¬ (∀ x, P x) :=
   ⟨[true], fun b => b = true, by simp, fun h => Bool.false_ne_true (h false)⟩
+
+def «равноIEEE» : «Знач» → «Знач» → Bool
+  | «минусНоль», «кон» 0 => true
+  | «кон» 0, «минусНоль» => true
+  | a, b => «равен» a b
+
+theorem «Переп1-по-IEEE-ложна» : ∃ l r : «Знач», «равноIEEE» l r = true ∧ l ≠ r :=
+  ⟨«минусНоль», «кон» 0, rfl, by decide⟩
+
+theorem «равен-на-не-числе» : «равен» «неЧисло» «неЧисло» = false := rfl
+
+theorem «Св2» {α : Type} (P : α → Prop) (cs : List α) (h : ∃ t ∈ cs, P t) : ∃ m, P m :=
+  let ⟨t, _, ht⟩ := h
+  ⟨t, ht⟩
+
+theorem «Св2-без-посылки-ложна» : ∃ (P : «Знач» → Prop) (cs : List «Знач»), cs ≠ [] ∧ ¬ ∃ m, P m :=
+  ⟨fun _ => False, [«кон» 0], by simp, by simp⟩
+
+theorem «Кв-в-подформуле» (A : Prop) {α : Type} (P : α → Prop) (t : α) (ha : A) (hp : P t) :
+    A ∧ ∃ m, P m :=
+  ⟨ha, t, hp⟩
+
+theorem «Кв-в-ветви» (c : Bool) {α : Type} (L : List α) (Q : α → Prop)
+    (h : c = true → ∀ e ∈ L, Q e) : (if c = true then ∀ e ∈ L, Q e else True) := by
+  cases c <;> simp_all

@@ -10,15 +10,15 @@ A change to the compiler in `flang/self/` must reprint the bootstrap point in th
 `bootstrap/` starts building the previous compiler silently:
 
 ```bash
-sh scripts/bootstrap-reprint.sh           # reprint bootstrap/ (hours: 7 h 28 min on 11 September 2026, commit 0ce948bfd)
+sh scripts/bootstrap-reprint.sh           # reprint bootstrap/ (hours)
 sh scripts/bootstrap-reprint.sh --check   # compare against the sources byte for byte, exit 1 on drift
-sh scripts/bootstrap-reprint.sh --stroki  # 0.6 s (11 September 2026): every C string literal in the runtime is closed
+sh scripts/bootstrap-reprint.sh --stroki  # under a second: every C string literal in the runtime is closed
 ```
 
 The binary compiler itself does the printing (`bootstrap/flang emit … --target c`); if the binary
 is missing, the script builds it from `bootstrap/` first.
 
-The check re-emits and so costs what the print costs (7 h 28 min on the 11 September 2026 reprint),
+The check re-emits and so costs what the print costs (hours),
 plus a `make` if the binary is not built. Call `--check` before merging a change under `flang/self/` or `flang/src/emit/c/`, not on
 every save.
 

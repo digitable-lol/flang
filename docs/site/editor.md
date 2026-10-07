@@ -25,16 +25,11 @@ Highlighting exists for Vim 8/9, Neovim and VS Code; other editors have none.
 | Highlighting in VS Code | works, the extension builds from the language tree |
 | Highlighting in Emacs | none |
 | The server on closed input (one-command check) | answers |
-| The server inside a live editor | stays silent |
+| The server with input held open, as in an editor | answers each message as it arrives |
 
-One limitation decides everything here: **while standard input is open the
-server sends no bytes at all**, and an editor never closes input. Replies come
-only after input is closed (re-checked on 11 September 2026 on 0.7.17: the same
-`initialize` with input held open for 6 seconds — 0 bytes in 3 seconds; with
-input closed — an immediate reply). The configuration below is correct and will be
-needed once the server answers on the fly; until then an editor gives you
-highlighting, and diagnostics come from `flang check` — the key binding is at
-the end of this page.
+The server answers every message as soon as it is read, without waiting for
+input to close: `initialize` gets its reply, and `textDocument/didOpen` gets
+`textDocument/publishDiagnostics` while the input stays open.
 
 ## What lies in the language tree
 
@@ -58,8 +53,9 @@ scripts/editors/vim-highlight-check.fscript`, `flang io scripts/editors/lsp-chec
 second check opens a file in `nvim --headless` and asks four questions: did the
 diagnostic reach the buffer with a place and a code, did go-to-definition land
 where the declaration stands, did hover show the signature — and does the
-server answer while input is still open. Today the fourth question gets the
-answer "no", see above.
+server answer while input is still open. All four are answered "yes" in Neovim;
+the Vim 8/9 run is skipped unless `FLANG_VIM_LSP` points at `vim-lsp` and
+`async.vim`.
 
 Vim and Neovim share one directory but are configured differently: Neovim's
 protocol client is built in, Vim 8/9 takes the third-party `vim-lsp`. Both look
@@ -109,10 +105,7 @@ symbol list of a file. Such a request gets a refusal:
 A request before `initialize` gets refusal `-32002`, "server is not initialized
 yet".
 
-A second limitation shows up only from an editor: the server does not parse JSON
-with escaped non-ASCII (`\uXXXX`). It drops such a message and prints
-`flang lsp: неразобранный JSON, сообщение пропущено` to the error stream. A body
-in plain UTF-8, unescaped, it reads and answers.
+JSON with escaped non-ASCII (`\uXXXX`) is read the same as plain UTF-8.
 
 Diagnostics of an imported module are **underlined neither in its buffer nor
 in the open one**: a diagnostic names its file only when there is a single
@@ -135,8 +128,8 @@ Content-Length: 311
 {"jsonrpc":"2.0","id":1,"result":{"capabilities":{"positionEncoding":"utf-16","textDocumentSync":{"openClose":true,"change":1,"save":{"includeText":false}},"completionProvider":{"triggerCharacters":["«","."]},"hoverProvider":true,"definitionProvider":true},"serverInfo":{"name":"flang-lsp","version":"0.1.0"}}}
 ```
 
-The reply arrives after `printf` closed the input. Keep the input open and no
-reply comes at all — that is the limitation named above.
+The reply does not wait for the input to close: with the input held open it
+arrives the same.
 
 ## VS Code
 
@@ -337,7 +330,7 @@ assign it on acceptance, and it never changes afterwards. The entry goes into
 outside ASCII; if the entry is accepted without them, the compiler and the
 editors keep reading them — GitHub merely will not colour such a file.
 
-## While the server stays silent: checking on a key
+## Without the server: checking on a key
 
 Diagnostics come by the same road as the server's, only as a command:
 

@@ -24,8 +24,8 @@ concepts, each of them once; there is no difference. Beyond the glossary the map
 has 22 nodes: constructs that the [specification](../spec.html) has and the
 glossary does not. There are 17 layers.
 
-Taken on 27 September 2026 with the binary 0.7.22. The glossary concepts were
-counted with the command below. The nodes of the map were
+The glossary concepts are
+counted with the command below. The nodes of the map are
 counted from the text of the diagrams of this page: for a glossary concept the
 number of the node is the number of its row in the glossary.
 
@@ -564,7 +564,7 @@ flowchart LR
   class c89,c96,c148 vyvod
 ```
 
-The names in guillemets are the input-output vocabulary: three sums that the compiler adds to a program with a plan. They are not in the glossary. The numbers of kinds were taken on 27 September 2026 from `flang/self/parser.flang`, the functions «Варианты поручения», «Варианты отклика», «Варианты продолжения».
+The names in guillemets are the input-output vocabulary: three sums that the compiler adds to a program with a plan. They are not in the glossary. The numbers of kinds come from `flang/self/parser.flang`, the functions «Варианты поручения», «Варианты отклика», «Варианты продолжения».
 
 ## 13. Processes and supervision
 

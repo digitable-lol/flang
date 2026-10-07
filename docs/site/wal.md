@@ -93,9 +93,8 @@ does not is named on [which promises the kernel takes](what-the-kernel-accepts.h
 
 Besides these four, three small ones are on the grid too: «цифра не больше
 девяти» («Цифра числом»), «печать не короче шести знаков» («Напечатать запись»)
-and «разрез не теряет и не добавляет ни знака» («Разрез сходится») — run of
-`check --proof` on 11 September 2026 at commit 2c40752d0: 17 claims, 10 proved,
-7 on the grid.
+and «разрез не теряет и не добавляет ни знака» («Разрез сходится») — `check --proof`
+on `write-ahead-log.flang`: 17 claims, 10 proved, 7 on the grid.
 
 What the kernel proved for all inputs:
 

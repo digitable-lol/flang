@@ -35,20 +35,23 @@ diverged is shown by file and by byte.
 
 ## Where the circle stands today
 
-The seed was reprinted on 10–11 September 2026, commit `0ce948bfd`:
-`sh scripts/bootstrap-reprint.sh` answered «РЕПРИНТ КОД=0, семя годное» — 7 files,
-41 564 839 bytes, 7 h 28 min (start 02:08:53Z, end 09:36:56Z; all of it is in the
-commit message). The sources have moved on since: on 11 September
-`bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` names 3 files and 77 functions (`functor`,
-`monoid`, `svoystva`) that the binary built from the seed does not know.
-`sh scripts/bootstrap-reprint.sh --bystro` on the same day answers «ОТПЕЧАТОК СНЯТ С
-ПРАВЛЕНОГО ДЕРЕВА»: the emission inputs in the reprint tree differed from its
-commit, so the fingerprint names no input commit
-(`docs/reprint-runs-start-from-a-clean-tree.md`).
+Two commands say how the committed seed relates to today's sources.
 
-This section used to say "today the circle is open: 29 diagnostics, `FLANG_PARSE`,
-`FLANG_UNKNOWN_NAME` on `«Вызвать»`, `«Знач»`, `«Итог прогона»`". That was the
-seed before the `0ce948bfd` reprint, and it is gone.
+`sh scripts/bootstrap-reprint.sh --bystro` takes about two seconds and does not
+emit anything. It names the commit the seed answers to, checks that this commit
+is an ancestor of `HEAD`, and compares the seed's fingerprint with the tree:
+
+```
+семя отвечает коммиту …, и он предок HEAD:
+  входов в отпечатке 55, пределы совпали, сводов с тех пор …
+  тело семени сошлось с деревом: файлов 7, байт …
+  входы печати с тех пор не двигались: отставание 0 файлов
+```
+
+`bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000`
+answers the finer question: it names, file by file and function by function, what
+in the sources is newer than the seed, so the binary built from the seed does not
+know it.
 
 ## How to run it
 
@@ -61,33 +64,20 @@ The second command re-emits seven files and compares them with the committed
 ones. A divergence is reported by file, byte and line, not by the word
 "mismatch".
 
-The emission limits matter and are not decoration: `--max-steps 1400000000000
+The emission limits matter and are not decoration: `--max-steps 8000000000000
 --max-depth 20000` (they are typed in `scripts/bootstrap-reprint.sh`, not on this page —
 check against it). Those numbers are stamped into the emitted byte
 (`#define FL_MAX_STEPS`), which means they take part in the equality. Rebuilt
-from memory with different limits, it diverges silently — that is exactly how one
-of the earlier releases drifted.
+from memory with different limits, it diverges silently.
 
 Why the limit is that large is stated as a measurement, not as "just in case".
-Emission runs the same checks as `check`, and what runs out of room is not
-emission itself but the library ledger: `flang check flang/stdlib/json.flang
---proof` (60 promises, 35 functions) did not fit into the previous billion and
-broke off with `FLANG_RECURSION_LIMIT` at call depth 78 out of 20 000 — that is,
-it was not looping, it was not finishing. How much it actually needs was measured
-with a binary built with a raised ceiling: 1 370 430 254 steps, 11 min 31 s,
-823 MiB, exit code 0.
-
-Today's 1 400 000 000 000 no longer comes from that peak but from the measured
-cost of the most expensive emission step: "Kernel judgement on a program" was
-counted to the end on 29 August 2026 and costs 456 857 834 234 steps; the ceiling
-is that cost times three. The price of the headroom is named in the same place: a
-non-terminating program now runs 16.8 hours at 23.16 million steps per second
-before it is stopped. The whole breakdown is in the header of
-`scripts/bootstrap-reprint.sh`.
-
-This paragraph used to say "today's four billion" and "about thirty-four
-minutes"; both numbers had fallen two ceiling changes behind
-`scripts/bootstrap-reprint.sh`.
+Emission runs the same checks as `check`, and the most expensive step is the
+kernel's judgement on the compiler itself. Its measured cost is kept in
+`scripts/bootstrap-reprint.sh` as `MEASURED_COST` — 2 508 501 226 319 steps — and
+the ceiling `MAX_STEPS` is about 3.2 times that. The price of the headroom is named
+in the same place: at 23.16 million steps per second, a non-terminating program
+runs for about 96 hours before it is stopped. The whole breakdown is in the header
+of `scripts/bootstrap-reprint.sh`.
 
 ## What this circle does NOT mean
 
@@ -98,7 +88,7 @@ seed survives the circle unnoticed: the circle compares an implementation with
 itself.
 
 What catches that kind of mistake in the tree are the frozen answer tables
-(`flang/test/fixtures/`, 55 entries on 11 September 2026 — `ls flang/test/fixtures | wc -l`): today's binary is run against them, and
+(`flang/test/fixtures/`, 55 entries — `ls flang/test/fixtures | wc -l`): today's binary is run against them, and
 disagreeing with a recorded answer is red. The run stands in CI as the job
 "Подделки ядра отвергнуты" (`bootstrap/flang io
 flang/scripts/kernel-forgeries.fscript`, `.github/workflows/binary.yml`). That
@@ -115,22 +105,20 @@ sits in `flang/self/*.flang` while the built program DOES NOT RUN IT. Everything
 is green meanwhile: the source parses, the seed builds, and the circle closes on
 whatever the seed contains.
 
-Three changes to the proof kernel were lost this way in a single day, 21–22
-August 2026: the finiteness proviso, the induction principle over strings, and
-the conjunction rule. The guard that used to catch it was deleted along with the JavaScript
-implementation, and from that day nobody checked the seed at all.
+A change to the proof kernel can be lost exactly this way: present in the
+sources, absent from the binary, with every check green.
 
-Two checks do it now, and they answer different questions.
+Two checks catch it, and they answer different questions.
 
-| Command | Question | Cost (measured 22 August, 256 cores) |
+| Command | Question | Cost |
 |---|---|---|
-| `sh scripts/bootstrap-reprint.sh --check` | does the seed match the emission exactly, down to the last byte | 19 min 58 s, 25.1 GiB |
-| `sh scripts/bootstrap-reprint.sh --bystro` | are the emission's inputs the same ones | 0.52 s |
+| `sh scripts/bootstrap-reprint.sh --check` | does the seed match the emission exactly, down to the last byte | a full emission: hours |
+| `sh scripts/bootstrap-reprint.sh --bystro` | are the emission's inputs the same ones | about 2 s |
 
-The expensive one re-emits — that is exactly why nobody called it. The cheap one
-does not emit at all: it compares the contents of the files in the compiler's
-closure (41 on 11 September 2026, one line each in `scripts/seed-fingerprint`), the 4 runtime files that go into the output verbatim,
-and the emission limits that end up in the emitted byte. You can recount them on
+The expensive one re-emits. The cheap one does not emit at all: it compares the
+contents of the files in the compiler's closure, the 4 runtime files that go into
+the output verbatim (55 inputs together), and the emission limits that end up in
+the emitted byte. You can recount them on
 the spot: `scripts/seed-fingerprint` has one line per file. The fingerprint lives in
 `scripts/seed-fingerprint` and is taken by the emission itself, not by a
 separate command someone has to remember.
@@ -141,17 +129,15 @@ byte-for-byte comparison is called before a release and after merges.
 
 **What the cheap one does not prove:** that the files are identical down to the
 last byte. It answers the narrower question — "are these the same inputs" — and
-that is precisely the question that had no answer.
+it is cheap enough to ask on every push.
 
 ## What the circle does not check
 
 **The compiler does not check its own sources in reasonable time.** `flang check
---быстро flang/self/bootstrap/compiler.flang` with the binary from seed `0ce948bfd`
-on 11 September 2026 did not reach an answer in 8 minutes (run ceiling 500 s): it
-was still at «Связать исходники», 19 billion steps, 6.6 GiB. The answer that used
-to stand here ("не проверено — замечаний 29", exit 1) was taken from the seed
-before the reprint. What the seed binary does not know is reported not by `check`
-but by `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` — 3 files, 77 functions.
+--быстро flang/self/bootstrap/compiler.flang` does not reach an answer within a
+500 s run ceiling: it is still at «Связать исходники», past 20 billion steps and
+7 GiB. What the seed binary does not know is reported not by `check` but by
+`bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000`.
 
 **Rebuilding needs the tree, not the seed directory.** Emission reads the C
 runtime sources from disk (`flang/src/emit/c/`), and there are no copies of them

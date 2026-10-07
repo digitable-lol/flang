@@ -53,8 +53,7 @@ ls: cannot access './вывод': No such file or directory
 ## Что приезжает в каталоге
 
 Один прогон на цель, программа одна и та же —
-`docs/examples/rosetta/factorial-english.flang` (списки файлов и числа байт на этой
-странице сняты с двоичного 0.7.17 11 сентября 2026):
+`docs/examples/rosetta/factorial-english.flang`:
 
 | цель | файлы |
 |---|---|
@@ -64,14 +63,14 @@ ls: cannot access './вывод': No such file or directory
 | `elixir` | `flang_runtime.ex` `factorial.ex` `flang_cli.ex` `Makefile` |
 | `go` | `go.mod` `flangrt/flang_runtime.go` `flang/factorial.go` `cli/main.go` `Makefile` |
 | `java` | `Value.java` `Field.java` `FlangError.java` `Ctx.java` `Flang.java` `Factorial.java` `FlangCli.java` `Makefile` |
-| `js` | `factorial.js` `flang_cli.js` |
+| `js` | `factorial.js` `flang_cli.js` `package.json` |
 | `python` | `flang_runtime.py` `factorial.py` `flang_cli.py` `Makefile` |
 | `rust` | `Cargo.toml` `src/runtime.rs` `src/factorial.rs` `src/lib.rs` `src/cli.rs` `src/main.rs` `Makefile` |
-| `ts` | `factorial.ts` `flang_runtime.js` `flang_cli.js` `tsconfig.json` |
+| `ts` | `factorial.ts` `flang_runtime.js` `flang_cli.js` `package.json` `tsconfig.json` |
 
 Раскладка везде одна: **рантайм** (значения, арифметика, диагностики),
 **модуль программы** (по функции на функцию flang), **прогонщик** и сборочный
-файл. С `--no-cli` прогонщика нет: у `js` остаётся один `factorial.js`, у `c` —
+файл. С `--no-cli` прогонщика нет: у `js` остаются `factorial.js` и `package.json`, у `c` —
 пять файлов из шести.
 
 Программа с объявлениями `процесс` и `надзор` печатается с планировщиком только
@@ -83,7 +82,7 @@ ls: cannot access './вывод': No such file or directory
 
 ```bash
 $ flang emit docs/examples/rosetta/factorial-english.flang --target c --out ./вывод-c
-напечатано файлов 6, байт 432289, в ./вывод-c
+напечатано файлов 6, байт …, в ./вывод-c
 $ ls ./вывод-c
 Makefile  factorial.c  factorial.h  flang_cli.c  flang_runtime.c  flang_runtime.h
 ```
@@ -177,8 +176,7 @@ product([1,2,3,4]) = 24
 3. **`fl_ctx` несёт пределы**: глубина, число шагов и проверка остатка стека.
    Один контекст можно переиспользовать между вызовами, как здесь.
 
-Отсюда же берётся WebAssembly: напечатанный C переезжает туда без правок —
-см. [WebAssembly через C](../wasm-via-c.md).
+Отсюда же берётся WebAssembly: напечатанный C переезжает туда без правок.
 
 ## Значение на границе
 
@@ -268,9 +266,9 @@ except rt.FlangError as e:
 
 ```bash
 $ flang emit docs/examples/rosetta/factorial-english.flang --target js --no-cli --out ./вывод-js
-напечатано файлов 1, байт 18624, в ./вывод-js
+напечатано файлов 2, байт …, в ./вывод-js
 $ ls ./вывод-js
-factorial.js
+factorial.js  package.json
 ```
 
 ```js
@@ -401,7 +399,7 @@ $ printf '%s\n' '{"fn":"Factorial","args":[{"n":"10"}]}' \
 | `null`, `true`/`false` | «ничто», признак |
 
 Таблица объявленных типов параметров печатается рядом (`factorial_entry` в C,
-`$PROGRAM.entry` в JS), но в 0.7.17 двоичный оставляет её пустой и говорит об
+`$PROGRAM.entry` в JS), но двоичный оставляет её пустой и говорит об
 этом при каждой печати: «аргументы напечатанной программы по типам не
 проверяются». Поэтому прогонщик отвечает на `{"s":"x"}` тем же словом, что и
 прямой вызов `factorial("x")`, — «сравнения порядка допустимы только для
@@ -419,7 +417,7 @@ $ printf '%s\n' '{"fn":"Factorial","args":[{"n":"10"}]}' \
 - **конкурентность везде.** Процессы работают на `c` и `elixir`, параллелизм —
   на `elixir`;
 - **сверка аргументов по типам** — ни при прямом вызове, ни у прогонщика через
-  трубу: таблица на границе входа в 0.7.17 остаётся пустой, и двоичный говорит
+  трубу: таблица на границе входа остаётся пустой, и двоичный говорит
   об этом при печати. Исключение — дверь `enter` на цели `c`.
 
 ## Дальше

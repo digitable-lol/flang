@@ -51,8 +51,8 @@ flang emit docs/examples/library-api/lib/fine.flang --target python --out выв
 ```
 
 produces `вывод/fine.py` — and there is NO postcondition check in it: the kernel proved
-«Штраф ограничен» for all inputs (`flang check docs/examples/library-api/lib/fine.flang --proof` on
-11 September 2026, binary 0.7.17: «доказано сведением цели с телом функции», exit 0), and what
+«Штраф ограничен» for all inputs (`flang check docs/examples/library-api/lib/fine.flang --proof`: «доказано сведением цели с
+телом функции», exit 0), and what
 is proven is not printed. The door appears when the kernel is not called — `--no-check`; then
 `вывод/fine.py` contains, verbatim:
 
@@ -65,7 +65,3 @@ is proven is not printed. The door appears when the kernel is not called — `--
 `FLANG_PROPERTY` is the language's own diagnostic code, and the message is the language's own
 wording. A Python service, a Go service and a C binary printed from this function refuse the same
 input with the same words. That is what "one source of truth" has to mean to be worth anything.
-
-This page used to say "produces `вывод/shtrafy.py`": the module has since been named «Fine»
-(rule R7 in [Names in code](naming.md)), and the kernel has learned to prove the postcondition,
-so without `--no-check` there is no door in the printed code.

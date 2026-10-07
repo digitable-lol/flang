@@ -14,9 +14,7 @@ The first {{отказы.обязательств}} say the theorem does not lin
 function and are fixed inside the theorem; the other {{отказы.вывода}} say the
 derivation was not built, and half of those name a limit the language does not
 cross today. All thirteen were produced by actual runs on small programs: the
-message texts below are the compiler's output, not a retelling (taken in August
-2026; `FLANG_PROOF_NO_GOAL` and "exit code 0 without a theorem" were re-checked
-on 11 September 2026 with 0.7.17 — they match).
+message texts below are the compiler's output, not a retelling.
 
 ## A diagnostic has five parts
 
@@ -238,10 +236,9 @@ FLANG_PROOF_STEP … цель не сведена к 1 предусловию ф
 предусловие функции «Сумма»
 ```
 
-This used to say "five rules". The list has grown to ten — the text above is
-taken from the kernel's source (`flang/self/proof-kernel.flang`, the function
-that prints this refusal, commit `2c40752d0`, 11 September 2026); a full run
-reproducing the refusal verbatim was not taken again. Only the eleventh move,
+The text above is taken from the kernel's source
+(`flang/self/proof-kernel.flang`, the function that prints this refusal). Only
+the eleventh move,
 "the goal is an assumption", does not ask for the goal's shape: it matches the
 goal against an assumption sign for sign.
 

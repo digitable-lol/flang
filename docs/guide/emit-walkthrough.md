@@ -2,7 +2,7 @@
 
 # Emitting a program: one file printed into C and JavaScript
 
-This is [`docs/examples/leetcode/035-search-insert-position.flang`](docs/examples/leetcode/035-search-insert-position.flang)
+This is [`docs/examples/leetcode/035-search-insert-position.flang`](../examples/leetcode/035-search-insert-position.flang)
 as it stands in the tree — the position where a value belongs in a sorted list:
 
 ```flang
@@ -112,4 +112,4 @@ verbatim, and its header says what it is: *«Правьте исходник н�
 printer writes that string, and the paste is left as printed. Every target's runtime sources are
 copied into the output verbatim from `share/flang/<target>/` next to the binary, or from
 `--runtime <dir>`. How the targets are checked, and how unevenly —
-[Known limits](docs/guide/limits.md).
+[Known limits](limits.md).

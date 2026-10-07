@@ -2,11 +2,10 @@
 
 Every example program in flang lives in one directory — `docs/examples/`: <!-- СНЯТО 2026-10-07 файлов docs/examples/*.flang = 247 --> 247 files in
 twenty-four sets and one full-size project. There is no second directory of examples
-in the repository: until 24 August 2026 a hundred and fifty programs stood a floor
-below, and they could not be found at a glance.
+in the repository.
 
 The number is recounted by one command:
-`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-10-07 файлов docs/examples/*.flang = 247 --> 247 (measured 27 September 2026).
+`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-10-07 файлов docs/examples/*.flang = 247 --> 247.
 
 ## The sets
 
@@ -43,17 +42,14 @@ they are run by the binary:
 
 ```bash
 bootstrap/flang test docs/examples/rosetta/   # one set
-bootstrap/flang test docs/examples/           # the whole catalogue, 185 files
+bootstrap/flang test docs/examples/           # the whole catalogue
 ```
 
 The sets cost very different amounts, and that is worth knowing before you start.
-The run of 24 August 2026: `leetcode` — 82 files, 804 examples, 12 seconds
-(806 examples, 23 s — run of 11 September 2026, binary 0.7.17, commit 2c40752d0);
-`crypto` — 8 files, 1223 examples, 39 minutes, because it computes real AES and
-ECDSA test vectors (that set holds 1802 examples today, and
-`bootstrap/flang test docs/examples/crypto/ --json` took 20 min 30 s, 0 failures —
-measured 3 September 2026 on a loaded machine; the growth comes from the
-library modules `crypto/` pulls in, not from the set itself). A file the
+On a shared machine: `leetcode` — 82 files, 806 examples, about 14 seconds;
+`crypto` — 8 files, 1802 examples (77 of its own, the rest come from the library
+modules it imports), about 19 minutes, because it computes real AES and ECDSA
+test vectors. A file the
 binary did not accept is named together with the
 refusal code rather than skipped in silence.
 
@@ -64,9 +60,8 @@ declarations that carry their own examples (in `frameworks/` a TypeScript host l
 next to such files, see below). `library-api` is a project: seven flang
 modules, one of them its own, with a directory layout of its own. The example shows
 not HTTP but a border: what moves into the language, where a piece of logic has a
-runnable example, and what stays with the host. The host here was on Node and was
-removed on 20 August 2026 together with the rest of the JavaScript scaffolding; the
-flang half remained and is checked by a command. The rules drawn from this layout
+runnable example, and what stays with the host. There is no host in the tree:
+the flang half is what remains, and it is checked by a command. The rules drawn from this layout
 are collected in the [repository layout](project-layout.html).
 
 ## Under JS frameworks
@@ -93,10 +88,9 @@ with Russian keys. Function names are transliterations of the Russian ones:
 «Обработать запрос» → `obrabotatZapros`, «Сумма корзины» → `summaKorziny`,
 «В римские» → `vRimskie`.
 
-What is checked on the tree (measured 8 September 2026): every core passes
-`bootstrap/flang check`; a fresh `emit --target js` matches the code in `printed/`
-(on top of the code there is a header with the licence and the reprint command);
-the printed module answers correctly under `node` by a direct call:
+What is checked on the tree: every core passes `bootstrap/flang check`; the code
+in `printed/` carries a header with the licence and the reprint command; the
+printed module answers correctly under `node` by a direct call:
 
 ```bash
 cd docs/examples/frameworks/vue-roman && node --input-type=module -e \

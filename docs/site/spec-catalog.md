@@ -236,43 +236,47 @@ the main one; a typo in the language tag; a translated function name; one rule
 name carrying two different signatures; a closed falsehood in a function without
 inputs.
 
-## Today the stand is red, and here is what by
+## The stand is red, and here is what by
 
-This is the run on 11 September 2026, binary 0.7.17 (commit 2c40752d0; first taken on 8 September with 0.7.14, unchanged since):
+The guard program itself is not fully proved (133 claims: 80 proved, 53 on the
+grid), so `flang io fspec/guard.flang` refuses to run it without consent and
+exits with code 3. The shortcut `specs:check` runs it with `--на-веру`:
 
 ```
-$ flang io fspec/guard.flang
-бед в системе спек: 79
+$ flang run-script specs:check
+бед в системе спек: 89
 03-urgency-markup.flang: утверждение «скидка с промо не больше 30» функции
 «Скидка с промо» доказано у 02-promo.flang, а здесь его нет или оно ослаблено
 …
-код 1
 ```
 
-All 79 troubles are of one kind, and they have one cause: **the `check --proof`
-report no longer carries the claims of imported modules.** The heir gets a proof
-report saying "CHECKED ON ITS OWN", holding only its own claims — while the second
-acceptance rule demands that the predecessor's claim be found there.
+79 of the 89 troubles are of one kind, and they have one cause: **the
+`check --proof` report carries only the claims of the file itself, not those of
+imported modules.** The heir gets a proof report saying "CHECKED ON ITS OWN",
+holding only its own claims — while the second acceptance rule demands that the
+predecessor's claim be found there. The other ten: four claims whose goal differs
+from the snapshot and the same four goals reported as missing from the snapshot
+(`04-discount-tiers`, `14-tax-rates`, `31-loyalty-tiers`, `37-booking-slots`),
+and two claims of `26-order-invoice` that stand on the grid.
 
 ```
 $ flang check fspec/spec/03-urgency-markup.flang --proof
   утверждений 1: доказано 1 (из них без теоремы 1, объявленным типом 1), сетка 0
 ```
 
-The forgery run answers with "расхождений 7 (подложенных случаев 19)", and six of
-the seven follow from the same change: cases waiting for the words "не доказано —
-declared" and "ЗАМКНУТА" now get a refusal from the language instead.
+The forgery (`flang run-script specs:forgery`) answers "подлог спек ОТКАЗЫВАЕТ,
+расхождений 7 (подложенных случаев 21)". In all seven the expected words are
+missing and the answer quoted instead is the line "на веру: доказанность не
+считалась — запуск по ключу --на-веру": the guard run with `--на-веру` puts that
+line where the case waits for its own words.
 
-The stand does not hide the red: it is recorded in the tree's inventory of checks
-(`docs/ci-inventory.md`) with the words "red on the merits", and the repair is
-tracked as a task. If you are writing your own specs, keep in mind that in this
-state the guard reddens on every heir, not only on your mistake.
+If you are writing your own specs, keep in mind that in this state the guard
+reddens on every heir, not only on your mistake.
 
 ## The boundary: what a lone `flang check` does not see
 
 The programs in `experiments/` show where the compiler speaks and where it stays
-quiet. The codes were taken on 8 September 2026 with binary 0.7.14 and re-checked on 11 September with binary 0.7.17 (commit 2c40752d0) by
-`flang check <file> --proof`:
+quiet. The codes are those of `flang check <file> --proof`:
 
 | program | what is written in it | code |
 |---|---|---:|
@@ -300,14 +304,13 @@ Here is how the table reads.
 Proved ≠ right: the kernel derives what is written, and if a falsehood is
 written, it is an example that catches it, not a derivation. Zero, empty, the end
 of a range, minus zero and "not a number" cost one example line each — cheaper
-than a production run. For "not a number" the kernel now answers outright, with a
+than a production run. For "not a number" the kernel answers outright, with a
 diagnostic of its own, `FLANG_BOUND_ON_NAN`, and names the counterexample in
 words.
 
 **Code 3 means "NOT CHECKED".** The claim is stated, no proof stands with it, and
-the kernel defers it to the runtime. Such a file used to get code 0, and half of
-the argument "a lone `flang check` is not enough" rested on that; today it gets a
-code of its own, and that half is closed by the language itself.
+the kernel defers it to the runtime. Such a file gets a code of its own, so this
+case does not need the catalogue: the language itself reports it.
 
 **The rows with code 0 are what the catalogue is guarded for.** Neither of the
 last two cases is a trouble to the compiler, and it is right: a selective import
@@ -328,7 +331,7 @@ inside the kernel. That is exactly what `policy.flang` is.
    second line is `использует «Спека 42: …» из "./42-….flang"`.
 3. Write a function with `обеспечивает «name» …`. Word the name so that it reads
    well in a trouble report: that is where it will end up.
-4. Run the guard: `flang io fspec/guard.flang`. If a claim came back "declared,
+4. Run the guard: `flang run-script specs:check`. If a claim came back "declared,
    not proved", either the goal is worded too broadly or the body has nothing to
    carry it; weakening acceptance is not allowed, rewriting the goal or the body
    is.

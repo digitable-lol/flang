@@ -77,21 +77,16 @@ cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o flang \
    flang_cli.c flang_repl.c flang_runtime.c compiler_flang.c -lm -lpthread
 ```
 
-## There is no npm path any more
+## Not through npm
 
-There is no fourth one: there is no package, no `bin` entries `flang` and
-`flang-lsp`, no `postinstall` build and no publishing workflow. `npm install @digitable-lol/flang` never
-worked — nothing was ever published under that name — and
-`npm install git+https://github.com/digitable-lol/flang.git` no longer installs
-any command, because the manifest declares none.
+There is no fourth path: there is no npm package and no `package.json` in the
+repository. `npm install @digitable-lol/flang` finds nothing under that name,
+and `npm install git+https://github.com/digitable-lol/flang.git` installs no
+command.
 
-**Windows is what this costs.** `bin` in npm has to be a file Node can start,
-which is the only reason those two launchers were JavaScript — and it was the
-only install path this project ever offered Windows. Homebrew does not install
-on Windows, and the source path wants `cc` and `make`. On Windows that means
-MSYS2, WSL or another C99 toolchain; there is no native path. Nothing here was
-ever tested on Windows either, so what is lost is a promise rather than a
-working road — but it was the only promise there was.
+**On Windows** Homebrew does not install, and the source path wants `cc` and
+`make`: that means MSYS2, WSL or another C99 toolchain; there is no native path.
+Nothing here is tested on Windows.
 
 The language server is unaffected: it is `flang lsp --stdio`, a subcommand of
 the binary itself, on every path above.

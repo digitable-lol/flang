@@ -3002,3 +3002,70 @@ theorem «ГипД-без-снятия-ложно» : ∃ l r : «Факт» Boo
    fun w _ => by cases w <;> simp,
    fun h => Bool.false_ne_true (h false (fun _ hf => by simp at hf)),
    fun h => by have := h true (fun _ hf => by simp at hf); simp at this⟩
+
+def «вОтрезке» (B : Int) : «Знач» → Prop
+  | «минусНоль» => True
+  | «кон» n => 0 ≤ n ∧ n ≤ B
+  | _ => False
+
+theorem «Инд5» (P : «Знач» → Prop) (B : Int)
+    (hb : ∀ v, «вОтрезке» B v → «неБольше» v («кон» 0) = true → P v)
+    (hs : ∀ n : Int, 0 < n → n ≤ B → P («кон» (n - 1)) → P («кон» n)) :
+    ∀ v, «вОтрезке» B v → P v := by
+  have key : ∀ k : Nat, ∀ n : Int, n = k → 0 ≤ n → n ≤ B → P («кон» n) := by
+    intro k
+    induction k with
+    | zero =>
+      intro n hn h0 hB
+      subst hn
+      exact hb _ ⟨Int.le_refl _, hB⟩ (by simp [«неБольше»])
+    | succ k ih =>
+      intro n hn h0 hB
+      apply hs n (by omega) hB
+      exact ih (n - 1) (by omega) (by omega) (by omega)
+  intro v hv
+  cases v with
+  | «минусНоль» => exact hb _ trivial (by simp [«неБольше»])
+  | «кон» n =>
+    obtain ⟨h0, hB⟩ := hv
+    exact key n.toNat n (by omega) h0 hB
+  | «неЧисло» => exact absurd hv id
+  | «минусБеск» => exact absurd hv id
+  | «плюсБеск» => exact absurd hv id
+
+theorem «Инд5-спуск-точен» («о» : «Округление») (n : Int) (h0 : 0 < n) (hB : n ≤ «порог») :
+    «минус» «о» («кон» n) («кон» 1) = «кон» (n - 1) := by
+  have h := «о».«точно» (n + -1) (by unfold «порог» at *; omega) (by unfold «порог» at *; omega)
+  have e : n - 1 = n + -1 := by omega
+  rw [e, ← h]
+  rfl
+
+theorem «Инд5-без-дна-ложна» : ∃ P : «Знач» → Prop,
+    P («кон» 0) ∧ (∀ n : Int, P («кон» (n - 1)) → P («кон» n)) ∧ ¬ (∀ n : Int, P («кон» n)) := by
+  refine ⟨fun v => 0 ≤ «чис» v, by simp [«чис»], ?_, ?_⟩
+  · intro n h; simp [«чис»] at *; omega
+  · intro h; have := h (-1); simp [«чис»] at this
+
+theorem «Инд5-дно-нулём-ложна» : ∃ P : «Знач» → Prop,
+    P («кон» 0) ∧ (∀ n : Int, 0 < n → P («кон» (n - 1)) → P («кон» n)) ∧
+    ¬ (∀ v, «вОтрезке» 1 v → P v) := by
+  refine ⟨fun v => v ≠ «минусНоль», by simp, ?_, ?_⟩
+  · intro n _ _; simp
+  · intro h; exact h «минусНоль» trivial rfl
+
+theorem «Цел3» (k : Int) (t : «Знач»)
+    (h1 : «меньше» («кон» k) t = true) (h2 : «числом» t = true) :
+    «неБольше» («кон» (k + 1)) t = true := by
+  cases t <;> simp_all [«меньше», «неБольше», «числом»] <;> omega
+
+theorem «Цел3-шагом-два-ложна» : ∃ (k : Int) (t : «Знач»),
+    «меньше» («кон» k) t = true ∧ «числом» t = true ∧ «неБольше» («кон» (k + 2)) t = false :=
+  ⟨0, «кон» 1, by decide, rfl, by decide⟩
+
+theorem «Инд6» {α : Type} (vs : List α) (hall : ∀ x, x ∈ vs) (P : α → Prop)
+    (h : ∀ v ∈ vs, P v) : ∀ x, P x :=
+  fun x => h x (hall x)
+
+theorem «Инд6-без-варианта-ложна» : ∃ (vs : List Bool) (P : Bool → Prop),
+    (∀ v ∈ vs, P v) ∧ ¬ (∀ x, P x) :=
+  ⟨[true], fun b => b = true, by simp, fun h => Bool.false_ne_true (h false)⟩

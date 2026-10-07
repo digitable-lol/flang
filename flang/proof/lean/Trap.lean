@@ -599,3 +599,30 @@ theorem «ловушка90» (s : «Знач» → «Знач» → «Знач»
 theorem «ловушка91» (h : «ТермЧ») (r : «Члены») (p z : «ТермЧ») (g x : String) (w : «Мир») :
     «оценить» (.«разбор» (.«выписан» (.«ещё» h r)) p g x z) w = «оценить» p w := by
   simp [«оценить», «оценитьС», «оценитьЧл», «разборСписка»]
+
+/- ИСКАЖЕНИЕ 92 — Инд5 без дна: индукция по всем целым. -/
+theorem «ловушка92» (P : «Знач» → Prop) (hb : P («кон» 0))
+    (hs : ∀ n : Int, P («кон» (n - 1)) → P («кон» n)) : ∀ n : Int, P («кон» n) := by
+  intro n
+  have key : ∀ k : Nat, P («кон» (k : Int)) := by
+    intro k
+    induction k with
+    | zero => exact hb
+    | succ k ih => exact hs _ (by simpa using ih)
+  exact key n.toNat
+
+/- ИСКАЖЕНИЕ 93 — Инд5 с базой только в нуле: минус ноль потерян. -/
+theorem «ловушка93» (P : «Знач» → Prop) (B : Int) (hb : P («кон» 0))
+    (hs : ∀ n : Int, 0 < n → n ≤ B → P («кон» (n - 1)) → P («кон» n)) :
+    ∀ v, «вОтрезке» B v → P v := by
+  intro v hv
+  cases v with
+  | «кон» n => exact «Инд5» P B (fun w hw _ => by cases w <;> simp_all [«вОтрезке»]) hs _ hv
+  | «минусНоль» => exact hb
+  | _ => exact absurd hv id
+
+/- ИСКАЖЕНИЕ 94 — Цел3 ужимает на два. -/
+theorem «ловушка94» (k : Int) (t : «Знач»)
+    (h1 : «меньше» («кон» k) t = true) (h2 : «числом» t = true) :
+    «неБольше» («кон» (k + 2)) t = true := by
+  cases t <;> simp_all [«меньше», «неБольше», «числом»] <;> omega

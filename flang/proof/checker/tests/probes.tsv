@@ -1035,3 +1035,14 @@ C	закон «литерал неотрицателен» к цели «1 не 
 say	── семья «тень образца» (8634): имя образца совпадает с параметром, ядро на семени доказывает ложь ──	-	-	-	-	-	-	-	-	-	-
 P	тень образца, краткий случай: запись ядра на ложном постусловии	flang/proof/checker/tests/families/pattern-shadow/plain-case.flang	flang/proof/checker/tests/families/pattern-shadow/plain-case.record	-	-	-	-	1	случая на вариант «Полный»	-	-
 P	тень образца, случай с вариантом: запись ядра на ложном постусловии — третий исход	flang/proof/checker/tests/families/pattern-shadow/variant-case.flang	flang/proof/checker/tests/families/pattern-shadow/variant-case.record	-	-	-	-	3	узел вердикта не проигран	-	-
+say	── семья «переписка ядром» (4722, ADR-0084): законы склейки и Переп1 печатает ядро ──	-	-	-	-	-	-	-	-	-	-
+C	переписка ядром: три закона склейки, запись ядра	flang/proof/checker/tests/families/rewrite/concat-laws.flang	flang/proof/checker/tests/families/rewrite/concat-laws.kernel-print.record	-	-	-	-	0	-	-	-
+C	переписка ядром: склейка четырёх частей и пустая справа, запись ядра	flang/proof/checker/tests/families/rewrite/rewrite-by-statement.flang	flang/proof/checker/tests/families/rewrite/rewrite-by-statement.kernel-print.record	-	-	-	-	0	-	-	-
+C	переписка ядром: растущее утверждение правилом не берётся	flang/proof/checker/tests/families/rewrite/statement-grows.flang	flang/proof/checker/tests/families/rewrite/statement-grows.record	-	-	-	-	3	-	-	-
+P	Переп1: равенство над числом	flang/proof/checker/tests/families/rewrite/forged/number-rewrite.flang	flang/proof/checker/tests/families/rewrite/forged/number-rewrite.record	-	-	-	-	1	вид вне переписки	-	-
+P	переписка ядром: закон назван чужим	flang/proof/checker/tests/families/rewrite/concat-laws.flang	flang/proof/checker/tests/families/rewrite/concat-laws.kernel-print.record	-	s|законом «Пустая склейка слева»|законом «Пустая склейка справа»|	-	-	1	-	-	-
+say	── семья «найденный свидетель» (1188, ADR-0084): Св2 ──	-	-	-	-	-	-	-	-	-	-
+C	Св2: свидетели найдены среди подтермов	flang/proof/checker/tests/families/existence/found-witness.flang	flang/proof/checker/tests/families/existence/found-witness.record	-	-	-	-	0	-	-	-
+P	Св2: свидетель подменён	flang/proof/checker/tests/families/existence/found-witness.flang	flang/proof/checker/tests/families/existence/found-witness.record	-	s|свидетель «м» ⟨н⟩|свидетель «м» ⟨0⟩|	-	-	1	после подстановки в записи	-	-
+say	── семья «квантор внутри формулы» (1177, ADR-0084) ──	-	-	-	-	-	-	-	-	-	-
+C	квантор под «и притом» и под «если»: на слове ядра	flang/proof/checker/tests/families/nested-quantifier/inside-conjunction.flang	flang/proof/checker/tests/families/nested-quantifier/inside-conjunction.record	-	-	-	-	3	-	-	-

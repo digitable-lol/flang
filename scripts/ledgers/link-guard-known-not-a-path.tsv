@@ -5,7 +5,6 @@ CHANGELOG.md	obligations.mjs	история: заголовок коммита �
 CHANGELOG.md	src/types.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 CHANGELOG.md	flang/src/proof.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 CHANGELOG.md	io.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
-docs/README.md	X.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/course/02-first-program.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/course/09-eight-targets.md	out-c/mesto_vstavki.c	учебный пример docs/course/09-eight-targets.md
 docs/course/README.md	content/post/flang-kurs/NN-slug.md	шаблон курса (нумерованный слаг), не файл
@@ -18,8 +17,6 @@ docs/guide/project-layout.ru.md	X.ru.md	обозначение расширен�
 docs/guide/project-layout.ru.md	credit-limit.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/guide/project-layout.ru.md	isbn-module.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/guide/project-layout.ru.md	late-fee.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/guide/single-source.md	вывод/shtrafy.py	учебный/иллюстративный пример на C или Python, не файл проекта
-docs/guide/single-source.ru.md	вывод/shtrafy.py	учебный/иллюстративный пример на C или Python, не файл проекта
 docs/guide/totality.md	nt1.flang	шаблон нумерованного упражнения, не файл
 docs/guide/totality.md	nt2.flang	шаблон нумерованного упражнения, не файл
 docs/guide/totality.ru.md	nt1.flang	шаблон нумерованного упражнения, не файл
@@ -126,9 +123,6 @@ docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	target-wo
 docs/tasks/4390-the-javascript-inventory-is-not-guarded-by-any-mark.md	scripts/jargon-guard.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
 docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	SECOND_PRINT=scripts/bootstrap-c.sh	присваивание переменной оболочки из scripts/bootstrap-reprint.sh:110, а не путь; про сам путь и написана эта задача
 docs/tasks/5979-the-machine-form-of-the-ledger-has-no-derivation.md	flang/self/proof-ledger.flang	предположительное имя модуля: в той же строке сказано «или тот модуль flang/self, который печатает ведомость машинным видом»
-docs/tasks/6921-docs-are-a-manual-not-a-diary.md	ярлыки.flang	история: файл снят, назван в переписи удалённых документов
-docs/tasks/6921-docs-are-a-manual-not-a-diary.md	binder-goal-share.md	история: документ удалён, назван в переписи удалённых документов
-docs/tasks/6921-docs-are-a-manual-not-a-diary.md	scripts/memory-limit.sh	история: прибор снят, назван в переписи удалённых документов
 docs/site/releases.md	scripts/guards/occupied-names-guard.flang	история: записка выпуска называет сторож тем именем, под которым он тогда лежал; страница печатается из docs/release-notes.json, и правится только историей — сегодня это scripts/guards/occupied-names-guard.fscript
 docs/site/releases.ru.md	scripts/guards/occupied-names-guard.flang	история: записка выпуска называет сторож тем именем, под которым он тогда лежал; страница печатается из docs/release-notes.json, и правится только историей — сегодня это scripts/guards/occupied-names-guard.fscript
 docs/tasks/2680-the-declared-measure-is-watched-at-run-time-and-never-proved.md	проба.flang	имя пробы из прогона задачи, не файл дерева

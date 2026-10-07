@@ -1362,7 +1362,7 @@ jobs:
 
       - name: Probe description census
         run: |
-          if bootstrap/flang run-script description:forgery; then
+          if bootstrap/flang io scripts/guards/description-census-guard.fscript --plan Forgery --на-веру; then
             echo "сторож описания языка промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi

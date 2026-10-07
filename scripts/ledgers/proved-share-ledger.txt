@@ -1544,6 +1544,7 @@ ef40ff2896acbf39dafc13d9db8c1ef9|15|14|0|0|0|scripts/guards/check-before-run.fsc
 0f7f8e1b2b5df23c8ad882e0bf7485e2|27|27|0|0|0|scripts/guards/criterion-score-guard.fscript
 e18baea9c15082521f1073fb2997b62f|8|7|0|0|0|scripts/guards/cyrillic-file-names-guard.fscript
 d45fead194fa7d93bc7afffb0f6b2a04|12|12|0|0|0|scripts/guards/delivery-guard.flang
+60ba6b1b924d9a35ab819f72b0e5d41c|3|2|1|0|0|scripts/guards/description-census-guard.fscript
 9a1d779542ab08a5a1416bbdc99c0563|10|10|0|0|0|scripts/guards/dictionary-guard.fscript
 35bc4b6ceba5235a93625a25ded7023f|12|12|0|0|0|scripts/guards/emit-promises-guard.fscript
 bb9f8dadc0aa937a5fc4dbda79707edd|18|16|2|0|0|scripts/guards/file-extensions.fscript

@@ -48,8 +48,6 @@ $ grep -ln "использует «Печать в Go»" flang/self/*.flang flan
 flang/self/bootstrap/compiler.flang                               код 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026, ствол `09bc6880`.
-
 Семя печатается целью C; остальные девять печатников (файлы `flang/self/emit-cpp.flang`
 … `flang/self/emit-csharp.flang`, по одному на цель) входят в замыкание только через эти строки и
 доказываются ядром при каждой пересборке семени (bootstrap regeneration).

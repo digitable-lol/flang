@@ -42,7 +42,7 @@ $ bootstrap/flang run-script module-names:check
   …",…}                                                           код 1
 ```
 
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
+Версия: flang 0.7.23.
 
 Из 19 нарушений 2 лежат в `docs/editors`, 14 в `docs/examples`, 1 в `docs/site`,
 2 в `flang/self`. Ещё 63 модуля записаны в долг в самой проверке (функция
@@ -61,7 +61,7 @@ $ bootstrap/flang run-script module-names:check
 ## Обходной путь
 
 Автор называет модуль английскими словами сам; напечатанный файл получает имя
-из имени модуля (`docs/zettel/a-generated-file-name-is-fixed-in-the-module-name.md`).
+из имени модуля.
 
 ## Когда задача сделана
 

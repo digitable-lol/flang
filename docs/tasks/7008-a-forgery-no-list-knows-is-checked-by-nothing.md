@@ -35,15 +35,15 @@ flang/scripts/kernel-forgeries.fscript:0
 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 4 октября 2026.
+Версия: flang 0.7.23.
 
 Файл `flang/proof/examples/forgery-if-without-descent-theorem.flang` носит имя
 подделки и содержит заведомо ложное постусловие «итог меньше нуля». Ждут от
 такого файла одного: чтобы его отвергли, и чтобы отказ был виден прогоном. Ни
 одного из трёх следов отказа у него нет — записи доказательства в корпусе нет,
 в описи подделок `flang/proof/forgeries/manifest.tsv` строки нет, в пробе ядра
-`flang/scripts/kernel-forgeries.fscript` имени нет. Единственные упоминания в
-дереве — прозаические: `CHANGELOG.md` и `docs/zettel/`.
+`flang/scripts/kernel-forgeries.fscript` имени нет. Единственное упоминание в
+дереве — прозаическое, в `CHANGELOG.md`.
 
 Соседний файл без слова `theorem` в имени
 (`flang/proof/examples/forgery-if-without-descent.flang`) заведён как надо: у

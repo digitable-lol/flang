@@ -400,3 +400,16 @@ number	state	title
 9999	done	The goal follows from what is declared about the arguments: ready
 3870	done	The totality analysis sees calls made through function values
 1315	done	Forgotten check temporaries redden with their path; six legitimate places are named by the guard with a reason
+0417	done	Converting a day count to a date is wrong below 0001-01-01 because the Hinnant correction is applied twice
+1908	done	The exact integer is missing from the code: no type, no evaluator, no printing to targets
+2459	done	The growth gate judges the length of a line, not its growth, so an old long line cannot even be shortened
+2877	done	The check calls a contradiction between two specs without "uses" an agreement: only 33 of 903 pairs are compared
+3106	done	The name guards look only at the last path segment, and Cyrillic in a directory name is invisible to all of them
+4416	done	The proof checker replays a property step in a theorem over a free statement
+4573	done	The proof checker no longer answers code 1 on honest stdlib records: module types and same-name functions in the dependency set
+5311	done	A theorem hypothesis is checked against the statement
+5877	done	Growth gates read the change without renames, so a renamed file looks appended
+5932	done	The progress-line mark is taken by an unnamed tool that does not always see Cyrillic
+6445	dropped	The knowledge-base index print writes the index file in place and leaves it truncated on a break
+9790	done	The trusted-base ceiling is no longer broken: grown heaps are rewritten into the ceiling with a reason
+6921	done	docs/ reads as a project diary instead of a manual: layout, classification of every file and plan

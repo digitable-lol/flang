@@ -45,17 +45,15 @@ $ timeout 300 bootstrap/flang io scripts/targets/emit-law.fscript --trust
                                                       код 124 за 300,05 с
 ```
 
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026, ствол f909a981.
-
 Корпус проверки — пятнадцать путей, набранных руками в `scripts/targets/emit-law.fscript`
 (функция с постусловием «списки дерева на месте»): восемь из `flang/stdlib/` и семь из
 `docs/examples/`. Каждый файл проходит `flang check` и `flang emit` отдельными
 процессами. Уже `check` одного `flang/stdlib/datetime.flang` не укладывается в минуту,
 так что проверка целиком стоит десятки минут и в наборе быстрых проверок не запускается.
-Сверх того шесть путей корпуса устарели: файлы теории категорий переехали из
-docs/examples/cat/ в `flang/ct/`, и перепись `sh scripts/guards/hand-written-lists.sh`
+Сверх того шесть путей корпуса ведут в несуществующий каталог docs/examples/cat/
+(файлы теории категорий лежат в `flang/ct/`), и перепись `sh scripts/guards/hand-written-lists.sh`
 называет эту строку: `ПУТИ scripts/targets/emit-law.fscript:25   6 из 15   нет:
-docs/examples/cat/crdt-merge.flang … order-shipment.flang` (12 с, код 0).
+docs/examples/cat/crdt-merge.flang … order-shipment.flang` (код 0).
 
 ## Что должно быть
 

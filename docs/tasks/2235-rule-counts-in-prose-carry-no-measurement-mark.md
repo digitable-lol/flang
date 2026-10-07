@@ -1,6 +1,6 @@
 ---
 номер: 2235
-заголовок: число правил вывода в прозе отстало от ведомости (109 и 78 против 112), а приметы «СНЯТО» нет
+заголовок: число правил вывода в прозе отстало от ведомости (109 против 114), а приметы «СНЯТО» нет
 статус: свободна
 приоритет: P2
 исполнитель: —
@@ -13,17 +13,15 @@
 
 # 2235. У числа правил вывода в прозе нет приметы, и оно протухло
 
-В ведомости `flang/proof/tables/inference-rules.tsv` 112 строк правил. Проза называет 109 и
-78, и ни одно из этих чисел не несёт приметы `СНЯТО` — поэтому сторож чисел в прозе их не
-видит и зеленеет, пока числа лгут.
+В ведомости `flang/proof/tables/inference-rules.tsv` больше строк правил, чем называет
+проза: `docs/flang/proof/checker/README.md` пишет 109, и это место не несёт приметы `СНЯТО` — поэтому сторож чисел в прозе его не видит и зеленеет, пока
+числа лгут.
 
 ## Шаги воспроизведения
 
 ```sh
 awk 'NR>1' flang/proof/tables/inference-rules.tsv | wc -l
-sed -n '331p' docs/ROADMAP.md
-sed -n '3p' docs/lean-checks-the-inference-rules.md
-grep -c 'СНЯТО' <(sed -n '331p' docs/ROADMAP.md)
+grep -n -E '109 (строк|правил)' docs/flang/proof/checker/README.md
 bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check
 ```
 
@@ -31,28 +29,17 @@ bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check
 
 ```
 $ awk 'NR>1' flang/proof/tables/inference-rules.tsv | wc -l
-112
-$ sed -n '331p' docs/ROADMAP.md
-**Правила.** 109 строк перечня `flang/proof/tables/inference-rules.tsv`, у всех 109 есть лемма в …
-$ sed -n '3p' docs/lean-checks-the-inference-rules.md
-**Что это.** Отчёт о разовой работе: все 78 строк файла
-$ grep -c 'СНЯТО' <(sed -n '331p' docs/ROADMAP.md)
-0
+114
+$ grep -n -E '109 (строк|правил)' docs/flang/proof/checker/README.md
+docs/flang/proof/checker/README.md:37:| ведомость правил вывода | 109 правил | `flang/proof/tables/inference-rules.tsv` |
 $ bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check
-примет 213: сошлось 213, разошлось 0, негодных 0                            код 0
+… разошлось 0, негодных 0                                                   код 0
 ```
 
-Сторож зелен, и он прав: он сверяет только приметы. Оба числа стоят голыми, поэтому
-расхождение в 3 и в 34 строки живёт в прозе невидимо. Слово «все» при числе 78 делает
-утверждение ложным дважды: строк не 78, и переведены не все.
+Сторож зелен, и он прав: он сверяет только приметы. Числа стоят голыми, поэтому
+расхождение живёт в прозе невидимо.
 
-Соседние числа в тех же файлах приметы не требуют и в задачу не входят: строка
-`docs/road-to-1-0.md:105` и врезка «Сверка 11 сентября 2026» в
-`docs/lean-checks-the-inference-rules.md` названы датой, прибором и коммитом — это снимок,
-а не голое число. Таблица §1 той же страницы (78 / 77) объявлена снимком 9–10 сентября
-в той же врезке.
-
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
+Число в `docs/road-to-1-0.md` уже несёт примету и в задачу не входит.
 
 ## Что должно быть
 
@@ -76,4 +63,4 @@ $ bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check
 
 ## Где живёт правка
 
-`docs/ROADMAP.md`, `docs/lean-checks-the-inference-rules.md`. Перепечатка не нужна.
+`docs/flang/proof/checker/README.md`. Перепечатка не нужна.

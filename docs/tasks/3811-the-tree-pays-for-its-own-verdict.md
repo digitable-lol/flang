@@ -50,8 +50,6 @@ $ bootstrap/flang io scripts/guards/run-verdict-debt-guard.fscript --plan Про
 СОШЛОСЬ: согласие названо ровно там, где нужно                     код 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 3 октября 2026.
-
 В `flang/scripts/run-verdict-debt.tsv` записано 49 инструментов дерева, которые
 вердикта не проходят; больше всего их в `scripts/guards` (23) и `flang/scripts`
 (9). Каждый такой вызов называет ключ `--на-веру`: из 88 вызовов 51 стоит в

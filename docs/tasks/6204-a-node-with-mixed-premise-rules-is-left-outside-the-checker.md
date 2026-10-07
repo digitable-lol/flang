@@ -40,7 +40,7 @@ $ flang/proof/checker/сверщик …/guard.flang <запись> | tail -1
 `docs/flang/proof/checker/tests/families/algebra-domains/README.md` и строкой
 `node-carrier-algebra-guard` в `flang/proof/checker/tests/trap/kinds.tsv`.
 
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
+Версия: flang 0.7.23.
 
 ## Что должно быть
 

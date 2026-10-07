@@ -38,7 +38,7 @@ $ bootstrap/flang io scripts/tutor-probe.fscript --plan Check --timeout 120000 -
 `towc: multibyte conversion failure`), воспроизводится одной переменной среды — и зелёная проба
 её не видит.
 
-Версия: `flang 0.7.23`. Прогон 2 октября 2026.
+Версия: `flang 0.7.23`.
 
 ## Что должно быть
 

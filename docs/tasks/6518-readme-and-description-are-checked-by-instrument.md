@@ -18,7 +18,7 @@
 1406 (закрыты) показали другое: два утверждения о последовательности шагов из
 трёх взятых выражаются имеющимися средствами — последовательность шагов
 записывается свёрткой, инвариант её постусловием. `README.md` и
-`docs/README.ru.md` эту строку уже не держат.
+`docs/README.ru.md` этой строки не держат.
 
 ## Шаги воспроизведения
 
@@ -30,7 +30,7 @@
 
 ```
 $ grep -n 'записать нечем' docs/DESCRIPTION.md
-1291:  side effect или о параллельном исполнении записать нечем: `обеспечивает`
+1340:  side effect или о параллельном исполнении записать нечем: `обеспечивает`
 $ grep -cE 'knows nothing about|Логика не знает о них ничего' README.md docs/README.ru.md
 README.md:0
 docs/README.ru.md:0
@@ -49,7 +49,7 @@ $ grep -n 'DESCRIPTION' scripts/guards/published-vs-tree.sh scripts/guards/prose
 `docs/repository-layout{,.ru}.md`, `docs/ROADMAP.md`, `docs/site/index{,.ru}.md`,
 `docs/site/proofs{,.ru}.md` и `docs/site/learning.ru.md`.
 
-Версия: flang 0.7.23, 2 октября 2026.
+Версия: flang 0.7.23.
 
 ## Что должно быть
 
@@ -64,7 +64,7 @@ $ grep -n 'DESCRIPTION' scripts/guards/published-vs-tree.sh scripts/guards/prose
 
 ## Когда задача сделана
 
-- строка 1291 `docs/DESCRIPTION.md` говорит, что выражается и что нет, по
+- строка `docs/DESCRIPTION.md` из шага 1 говорит, что выражается и что нет, по
   замерам задач 1404, 1405, 1406;
 - та же правка внесена в `README.md` и `docs/README.ru.md`, если к тому времени
   они о времени, эффектах и параллелизме снова заговорят;
@@ -74,4 +74,4 @@ $ grep -n 'DESCRIPTION' scripts/guards/published-vs-tree.sh scripts/guards/prose
 
 ## Где живёт правка
 
-`docs/DESCRIPTION.md`, строки 1290–1292. Перепечатка не нужна.
+`docs/DESCRIPTION.md`, строка из шага 1 и соседние. Перепечатка не нужна.

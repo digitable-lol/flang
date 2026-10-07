@@ -22,8 +22,7 @@
 Значит первый шаг — ввезти и посмотреть, что судья скажет, а уже потом считать,
 чего ему не хватает. Эта задача — про ввоз. Про остаток правил — 6752.
 
-Версия: flang 0.7.24, дерево `5bf477f1e`, двоичный собран в этом дереве
-(`make -C bootstrap`). Дата прогона: 4 октября 2026.
+Двоичный собран в дереве (`make -C bootstrap`).
 
 ## Шаги воспроизведения
 
@@ -90,9 +89,6 @@ monoids. … Часть их в дереве написана слоями, ко
 `только` — за помощниками (`«Значение»`, `«Скаляр»`, `«Поле значения»` и ещё
 сорок с лишним имён), а верхней точки среди ввезённых имён нет.
 
-Дерево этот случай проходило:
-[`docs/zettel/the-category-judge-was-written-and-never-run.md`](../zettel/the-category-judge-was-written-and-never-run.md).
-
 ## Цена, числом
 
 | место | что тронуть | мест |
@@ -108,8 +104,7 @@ monoids. … Часть их в дереве написана слоями, ко
 | `scripts/ledgers/proved-share-ledger.txt` | 1 125 строк, 853 с приговором; «без приговора» 241 в 114 файлах | **пересъёмка** |
 | `flang/ct` и дерево | объявлений: моноид 11 в 8 файлах, монада 5 в 3, функтор 11 в 6, изоморфизм 3 в 3; блоков `закон` 30 в 7 | **ведомость кодов** |
 
-Счёт мест — вхождениями образцов (`grep -oh … | wc -l`), по образцу
-`«Вид веса»` = 13 из `docs/design/nositel-tochnogo-celogo.md:482`.
+Счёт мест — вхождениями образцов (`grep -oh … | wc -l`).
 Прирост замыкания — по `scripts/seed-fingerprint` (входы печати до строки «тело
 семени») и `grep -c '^\(тотальная \)\?функция '`.
 
@@ -125,17 +120,17 @@ monoids. … Часть их в дереве написана слоями, ко
   файлах;
 - `scripts/guards/module-name-guard.fscript` — новые имена модулей в замыкании;
 - `scripts/guards/prose-numbers-guard.fscript` — десять мест с «264 функции»;
-- `scripts/guards/proved-share-vs-tree.sh` и
+- `scripts/guards/proved-share-vs-tree.fscript` и
   `scripts/ledgers/proved-share-ledger.txt` — доля пересъёмкой;
 - `scripts/guards/record-follows-its-source.fscript` и
   `scripts/ledgers/record-source-digests.tsv` — **654** файла `.record`;
-- `flang/proof/checker/tests/run.sh` — переигровка записей;
+- `flang/proof/checker/tests/run.fscript` — переигровка записей;
 - `sh scripts/bootstrap-reprint.sh --check`, `scripts/seed-fingerprint`,
   `scripts/seed/*freshness` — семя.
 
 НЕ краснеет, и это отдельная беда:
 `scripts/guards/checks-nobody-calls.fscript` — он смотрит только на
-`scripts/guards/*`, `flang/proof/probes/*/*` и `flang/proof/*/run.sh`
+`scripts/guards/*`, `flang/proof/probes/*/*` и `flang/proof/*/run.*`
 (задача 4433).
 
 ## Что должно быть
@@ -165,11 +160,11 @@ monoids. … Часть их в дереве написана слоями, ко
 3. Семнадцать файлов `flang/ct` (13 в корне, 4 в `modules/`) отвечают кодами по
    существу законов, а не одним кодом 2 на все.
 4. Ведомость доли (`scripts/ledgers/proved-share-ledger.txt`) переснята, и
-   `sh scripts/guards/proved-share-vs-tree.sh` зелен.
+   `bootstrap/flang run-script proved-share-tree:check` зелен.
 5. `sh scripts/bootstrap-reprint.sh --check` зелен ПОСЛЕ перепечатки, и строка
    захода вписана в `docs/reprint-ledger.tsv`.
-6. Записи проверяющего переиграны: `SVERSCHIK=… sh
-   flang/proof/checker/tests/run.sh` печатает «сошлось всё», и в наборе подделок
+6. Записи проверяющего переиграны: `bootstrap/flang io
+   flang/proof/checker/tests/run.fscript` печатает «сошлось всё», и в наборе подделок
    есть новая — закон о другом носителе.
 
 ## Чего мы не смогли оценить
@@ -204,7 +199,5 @@ monoids. … Часть их в дереве написана слоями, ко
 `flang/proof/checker/checker.c`, `scripts/ledgers/proved-share-ledger.txt`,
 `docs/ct/spec.md`.
 
-**Требует перепечатки семени.** Ведомость `docs/reprint-ledger.tsv`: последняя
-дошедшая печать — 17 сентября 2026, **10 ч 14 мин** (36 839 с); последняя
-дошедшая побайтовая сверка — 8 сентября, 4 ч 41 мин (16 895 с). В тот же день
-работа не сдаётся.
+**Требует перепечатки семени.** Цена перепечатки — в ведомости
+`docs/reprint-ledger.tsv`: печать идёт часами, и в тот же день работа не сдаётся.

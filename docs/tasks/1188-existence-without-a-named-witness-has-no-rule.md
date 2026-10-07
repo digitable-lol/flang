@@ -14,14 +14,9 @@
 # 1188. Существование без названного свидетеля правила не имеет: без «а именно» — отказ разбора, а с негодным свидетелем — «объявлено, не доказано» и код 0 у check
 
 Квантор существования в языке есть: слова `есть такой`/`there is` и
-`а именно`/`namely` стоят в словаре (`flang/self/lexer.flang:1134`), разбор —
-`«Разобрать существование»` (`flang/self/parser.flang:3691`), набор проверяющего
+`а именно`/`namely` стоят в словаре (`flang/self/lexer.flang`), разбор —
+`«Разобрать существование»` (`flang/self/parser.flang`), набор проверяющего
 — `flang/proof/checker/tests/families/existence/`.
-
-ADR-0026 (раздел 2.3) говорил «`exists` ключевым словом 0 раз», и при замере был
-прав: слово вошло в словарь коммитом `147b3e0fc` **9 сентября 2026** — в тот же
-день, когда решение писалось и принималось (`git log --all -S'есть такой:exists'
--- flang/self/lexer.flang`). Замер отстал за часы, а не ошибся.
 
 Чего нет — это ПРАВИЛА ПРЕДЪЯВЛЕНИЯ. Свидетеля обязан назвать автор словом
 `а именно`; построить его ядро не умеет. Отсюда две беды разной породы:
@@ -32,7 +27,7 @@ ADR-0026 (раздел 2.3) говорил «`exists` ключевым слов�
    кодом 0 и словами «замечаний нет»; «объявлено, не доказано» видно только у
    `check --proof` и у `run`.
 
-Версия: flang 0.7.24, дерево `5bf477f1e`. Дата прогона: 4 октября 2026.
+Версия: flang 0.7.24.
 
 ## Шаги воспроизведения
 
@@ -72,8 +67,7 @@ ADR-0026 (раздел 2.3) говорил «`exists` ключевым слов�
 
 ## Цена, числом
 
-Счёт — вхождениями образцов (`grep -oh … | wc -l`), по образцу `«Вид веса»` = 13
-из `docs/design/nositel-tochnogo-celogo.md:482`.
+Счёт — вхождениями образцов (`grep -oh … | wc -l`).
 
 | образец | вхождений в замыкании (45 файлов) | где |
 | --- | ---: | --- |
@@ -97,10 +91,10 @@ ADR-0026 (раздел 2.3) говорил «`exists` ключевым слов�
   `scripts/seed/*freshness` — правка в `flang/self/**`;
 - `scripts/guards/record-follows-its-source.fscript` и
   `scripts/ledgers/record-source-digests.tsv` — **654** `.record`;
-- `flang/proof/checker/tests/run.sh` — набор `families/existence` (8 файлов,
+- `flang/proof/checker/tests/run.fscript` — набор `families/existence` (8 файлов,
   включая `corrupt/` и `fact-with-a-foreign-witness.flang`) придётся
   переснять;
-- `scripts/guards/proved-share-vs-tree.sh` и
+- `scripts/guards/proved-share-vs-tree.fscript` и
   `scripts/ledgers/proved-share-ledger.txt` — доля поедет: цели, которые сейчас
   «объявлено, не доказано», могут стать доказанными;
 - `scripts/provability.fscript`, проверка 1 — ADR-0026, раздел 6, пункт 2:
@@ -168,13 +162,11 @@ ADR-0026 (раздел 2.3) говорил «`exists` ключевым слов�
 
 ## Где живёт правка
 
-`flang/self/parser.flang` (`«Разобрать существование»` 3691–3702,
+`flang/self/parser.flang` (`«Разобрать существование»`,
 `«Ждать части существования»`), `flang/self/proof-kernel.flang`,
 `flang/self/proof-initial.flang`, `flang/self/proofterm.flang`,
 `flang/self/proof-record.flang`, `flang/self/types.flang`,
 `flang/proof/checker/checker.c`,
 `flang/proof/checker/tests/families/existence/`.
 
-**Требует перепечатки семени** (`docs/reprint-ledger.tsv`: последняя дошедшая
-печать — 17 сентября 2026, 10 ч 14 мин; последняя дошедшая побайтовая сверка —
-8 сентября, 4 ч 41 мин).
+**Требует перепечатки семени** (цена печати — в `docs/reprint-ledger.tsv`).

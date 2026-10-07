@@ -33,8 +33,6 @@ flang/proof/checker/checker.c
 flang/proof/lean/RecordReader.lean                                код 0
 ```
 
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026, ствол `09bc6880`.
-
 Независимая проверяющая программа (proof checker) одна —
 `flang/proof/checker/checker.c`, её собирает один вызов `cc`. Две другие
 второй реализацией не считаются:

@@ -57,7 +57,7 @@ docs/site/highlighting.flang  docs/site/markdown.flang  docs/site/numbers.flang
 docs/site/search.flang  docs/site/site-numbers.flang  docs/site/sitemap.flang
 ```
 
-Версия: flang 0.7.23. Дата прогона: 2 октября 2026.
+Версия: flang 0.7.23.
 
 Шесть коротких команд — `site:build`, `site:check`, `surfaces:run`,
 `surfaces:check`, `numbers:build`, `numbers:check` — зовут Node. Программы на

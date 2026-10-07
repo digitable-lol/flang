@@ -40,7 +40,7 @@ FLANG_PACKAGE: в flang.package пакет назван «Скидка», а м�
 пересобрав пакет, нельзя, а пересобрать мешает отказ `flang package` (задачи
 3401 и 3402).
 
-Версия: flang 0.7.23, 30 сентября 2026.
+Версия: flang 0.7.23.
 
 ## Что должно быть
 
@@ -58,7 +58,7 @@ FLANG_PACKAGE: в flang.package пакет назван «Скидка», а м�
    каждом отвечает так же, как до правки.
 2. `docs/examples/package/discount.flang` переименован вместе с пересборкой
    пакета, после починки `flang package`.
-3. `sh scripts/guards/seed-knows-type-words-guard.sh` отвечает «чужих семени 0».
+3. `bootstrap/flang run-script seed:type-words` отвечает кодом 0.
 
 ## Где живёт правка
 

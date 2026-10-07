@@ -221,8 +221,8 @@ $ echo $?
 ```
 
 `--strict` makes only the compiler strict. The independent checker
-`flang/proof/checker/checker.c` has no such flag: on a proof record with
-nothing proved it answers `ПРОВЕРЕНО ВПУСТУЮ` with exit code `0`.
+`flang/proof/checker/checker.c` answers `НЕ ПРОВЕРЕНО — ВПУСТУЮ` with exit code `3`
+on a proof record with nothing proved, without any flag.
 
 `--strict` without `--proof` is a bad call, exit `2`. Test programs for all
 results are in `flang/proof/probes/strict/`; run them with

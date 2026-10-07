@@ -211,6 +211,7 @@ candidate
 cannot
 canon
 canonical
+canons
 cap
 captures
 carried

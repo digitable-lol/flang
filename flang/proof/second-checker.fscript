@@ -297,8 +297,8 @@
 
 тотальная функция «Объявление короткой команды checker:second»
   возвращает строка
-  "bootstrap/flang io --plan Crosscheck — второй сверщик на Lean против сверщика на C; расхождение — код 1"
+  "bootstrap/flang io --plan Crosscheck --timeout 900000 — второй сверщик (Lean) против первого (C)"
 
 тотальная функция «Объявление короткой команды checker:second-forgery»
   возвращает строка
-  "bootstrap/flang io --plan Forgery — второму подана испорченная копия записи, расхождение обязано быть названо"
+  "bootstrap/flang io --plan Forgery --timeout 900000 — испорченная копия второму, расхождение названо"

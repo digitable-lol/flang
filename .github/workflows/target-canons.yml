@@ -1,0 +1,28 @@
+name: Target canons
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canons:
+    name: printed-code-follows-target-canons
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Install target tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y elixir clang-format clang-tidy
+          python3 -m pip install --user black ruff mypy
+          npm install --global prettier typescript
+      - run: make -C bootstrap -j"$(nproc)"
+      - name: Measure printed code against the ledger
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+        run: bootstrap/flang io scripts/targets/target-canons.fscript --plan Measure --timeout 7000000

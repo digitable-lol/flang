@@ -1,0 +1,398 @@
+модуль «Target canons»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+
+объект «Tally»
+  «target»: строка
+  «tool»: строка
+  «count»: число
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Ledger»
+  возвращает строка
+  "scripts/targets/target-canons.tsv"
+
+тотальная функция «Targets»
+  возвращает список строки
+  пример «Ten targets in the order of the emit help»
+    ожидается ["c", "cpp", "go", "rust", "java", "js", "ts", "elixir", "python", "csharp"]
+  ["c", "cpp", "go", "rust", "java", "js", "ts", "elixir", "python", "csharp"]
+
+тотальная функция «Corpus»
+  возвращает список строки
+  обеспечивает «the corpus has twelve programs» (длина результат) равен 12
+  ["flang/stdlib/strings.flang", "flang/stdlib/lists.flang", "flang/stdlib/optional.flang",
+    "flang/stdlib/result.flang", "flang/stdlib/base64.flang", "flang/self/lexer.flang",
+    "docs/examples/genetic/evolution.flang", "docs/examples/allocator/allocator.flang",
+    "docs/examples/guide/rule-list.flang", "docs/examples/guide/choose-by-variant.flang",
+    "docs/examples/leetcode/013-roman-to-integer.flang", "docs/examples/pythagoras/euclid-formula.flang"]
+
+тотальная функция «Tools»
+  принимает target: строка
+  возвращает список строки
+  пример «Python is judged by black, ruff and mypy»
+    дано target равно "python"
+    ожидается ["python3", "black", "ruff", "mypy"]
+  разбор target
+    случай "c"
+      то ["cc", "clang-format", "clang-tidy"]
+    случай "cpp"
+      то ["g++", "clang-format", "clang-tidy"]
+    случай "go"
+      то ["go", "gofmt"]
+    случай "rust"
+      то ["cargo", "rustfmt", "clippy-driver"]
+    случай "java"
+      то ["javac"]
+    случай "js"
+      то ["node", "prettier"]
+    случай "ts"
+      то ["prettier", "tsc"]
+    случай "elixir"
+      то ["mix", "elixirc"]
+    случай "python"
+      то ["python3", "black", "ruff", "mypy"]
+    случай любое
+      то ["dotnet"]
+
+тотальная функция «All tools»
+  возвращает список строки
+  обеспечивает «every target brings a tool» (длина результат) не меньше 10
+  свёртка («Targets») начиная с (пустой список) как all и target → «Соединить списки» от all и («Tools» от target)
+
+тотальная функция «Diff count»
+  возвращает строка
+  соединить [
+    "d() { n=0; u=0; for f in $(find . -type f -name \"$1\"); do ",
+    "if eval \"$2\" < \"$f\" > \"$W/f\" 2>/dev/null; ",
+    "then n=$((n+$(diff \"$f\" \"$W/f\" | grep -c '^[<>]'))); else u=$((u+1)); fi; done; ",
+    "echo \"$3 $n\"; echo \"$3-unparsable $u\"; }; "] по ""
+
+тотальная функция «Build count»
+  возвращает строка
+  соединить [
+    "b() { n=0; for p in */; do (cd \"$p\" && eval \"$1\") >/dev/null 2>&1 || n=$((n+1)); done; ",
+    "echo \"build-failures $n\"; }; "] по ""
+
+тотальная функция «Lint count»
+  возвращает строка
+  соединить [
+    "l() { n=0; for p in */; do n=$((n+$(cd \"$p\" && eval \"$1\" 2>&1 | grep -cE \"$2\"))); done; ",
+    "echo \"$3 $n\"; }; "] по ""
+
+тотальная функция «Target lines»
+  принимает target: строка
+  возвращает список строки
+  пример «Go is built, formatted and vetted»
+    дано target равно "go"
+    ожидается ["b 'go build ./...'", "d '*.go' gofmt gofmt", "l 'go vet ./...' '[.]go:[0-9]' go-vet"]
+  разбор target
+    случай "c"
+      то ["b 'cc -std=c99 -fsyntax-only -I. *.c'",
+        "d '*.[ch]' 'clang-format --style=LLVM --assume-filename=x.c' clang-format",
+        "l 'for f in *.c; do clang-tidy -quiet $f -- -I. -std=c99; done' ': warning:' clang-tidy"]
+    случай "cpp"
+      то ["b 'g++ -std=c++17 -fsyntax-only -I. *.cpp'",
+        "d '*.[ch]pp' 'clang-format --style=LLVM --assume-filename=x.cpp' clang-format",
+        "l 'for f in *.cpp; do clang-tidy -quiet $f -- -I. -std=c++17; done' ': warning:' clang-tidy"]
+    случай "go"
+      то ["b 'go build ./...'", "d '*.go' gofmt gofmt", "l 'go vet ./...' '[.]go:[0-9]' go-vet"]
+    случай "rust"
+      то ["b 'CARGO_TARGET_DIR=$W/cargo cargo build -q'", "d '*.rs' 'rustfmt --edition 2021' rustfmt",
+        "l 'CARGO_TARGET_DIR=$W/cargo cargo clippy -q --message-format=short' '^src/.*: (warning|error)' clippy"]
+    случай "java"
+      то ["b 'javac -encoding UTF-8 -d $W/classes *.java'",
+        "l 'javac -encoding UTF-8 -Xlint:all -d $W/classes *.java' '[.]java:[0-9]+: warning' javac-lint"]
+    случай "js"
+      то ["b 'for f in *.js; do node --check $f || exit 1; done'", "d '*.js' 'prettier --stdin-filepath x.js' prettier"]
+    случай "ts"
+      то ["b 'tsc -p . --noEmit'", "d '*.ts' 'prettier --stdin-filepath x.ts' prettier",
+        "l 'tsc -p . --noEmit --strict' 'error TS' tsc-strict"]
+    случай "elixir"
+      то ["b 'elixirc -o $W/beam *.ex'", "d '*.ex' 'mix format -' mix-format"]
+    случай "python"
+      то ["b 'python3 -B -m py_compile *.py'", "d '*.py' 'black -q -' black",
+        "l 'ruff check --no-cache --output-format concise .' '^[^ ]+:[0-9]+:[0-9]+: ' ruff",
+        "l 'mypy --no-incremental --cache-dir=/dev/null .' ': error:' mypy"]
+    случай любое
+      то ["b 'dotnet build -v q -o $W/dotnet'",
+        "l 'dotnet format --verify-no-changes --severity info' '[.]cs[(][0-9]+,[0-9]+[)]: [a-z]+ ' dotnet-format"]
+
+тотальная функция «Measure script»
+  принимает target: строка
+  возвращает строка
+  пусть start равно "W=\"$1/scratch\"; mkdir -p \"$W\"; cd \"$1/$0\" || exit 1; "
+  пусть helpers равно (соединить [(«Diff count»), («Build count»), («Lint count»)] по "")
+  пусть body равно (соединить («Target lines» от target) по "; ")
+  соединить [start, helpers, body] по ""
+
+тотальная функция «Emit script»
+  возвращает строка
+  соединить [
+    "t=$0; o=$1; shift; for f; do n=$(basename \"$f\" .flang); ",
+    "bootstrap/flang emit \"$f\" --target \"$t\" --out \"$o/$t/$n\" >/dev/null 2>&1 & done; wait"] по ""
+
+тотальная функция «Tree»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "tree" и answers)
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Made of» от "work" и answers
+
+тотальная функция «Temporary»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Setting of» от "temporary" и "/tmp" и answers
+
+тотальная функция «Is recording»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Given of» от "arguments" и answers) содержит "Record"
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"),
+    («Run from» от "tree" и («Root») и "pwd" и ["-P"])]
+
+тотальная функция «Tool question»
+  принимает tool: строка
+  возвращает «Question»
+  обеспечивает «the question is named after the tool» результат.«name» равен (соединить "tool " с tool)
+  «Run» от (соединить "tool " с tool) и "sh" и ["-c", "command -v \"$0\"", tool]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть place равно (соединить [(«Temporary» от answers), "/target-canons."] по "")
+  добавить («Temporary directory» от "work" и place) к (отобразить («All tools») как tool → «Tool question» от tool)
+
+тотальная функция «Emit question»
+  принимает target: строка, answers: список «Answer»
+  возвращает «Question»
+  пусть arguments равно («Соединить списки» от ["-c", («Emit script»), target, («Work» от answers)] и («Corpus»))
+  «Run from» от (соединить "emit " с target) и («Tree» от answers) и "sh" и arguments
+
+тотальная функция «Emitting»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  отобразить («Targets») как target → «Emit question» от target и answers
+
+тотальная функция «Measure question»
+  принимает target: строка, answers: список «Answer»
+  возвращает «Question»
+  «Run» от (соединить "measure " с target) и "sh" и ["-c", («Measure script» от target), target, («Work» от answers)]
+
+тотальная функция «Measuring»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  отобразить («Targets») как target → «Measure question» от target и answers
+
+тотальная функция «Reading the ledger»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Read from» от "ledger" и («Tree» от answers) и («Ledger»))]
+
+тотальная функция «Tally of»
+  принимает target: строка, line: строка
+  возвращает «Tally»
+  пример «A measured line names the tool and its count»
+    дано target равно "go"
+    дано line равно "gofmt 12"
+    ожидается запись «Tally» с «target» равным "go" и «tool» равным "gofmt" и «count» равным 12
+  пусть count равно («Count» от («Word» от 2 и line))
+  запись «Tally» с «target» равным target и «tool» равным («Word» от 1 и line) и «count» равным count
+
+тотальная функция «Tallies of»
+  принимает target: строка, answers: список «Answer»
+  возвращает список «Tally»
+  пусть lines равно («Lines» от («Output of» от (соединить "measure " с target) и answers))
+  отобразить (отфильтровать lines где line → (длина («Words» от line)) равен 2) как line → «Tally of» от target и line
+
+тотальная функция «Measured»
+  принимает answers: список «Answer»
+  возвращает список «Tally»
+  пусть parts равно (отобразить («Targets») как target → «Tallies of» от target и answers)
+  свёртка parts начиная с (пустой список) как all и part → «Соединить списки» от all и part
+
+тотальная функция «Cell»
+  принимает cells: список строки, position: число
+  возвращает строка
+  пример «The second cell»
+    дано cells равно ["go", "gofmt", "12"]
+    дано position равно 2
+    ожидается "gofmt"
+  пример «A missing cell is empty»
+    дано cells равно ["go"]
+    дано position равно 3
+    ожидается ""
+  если (длина cells) не меньше position то элемент position в cells иначе ""
+
+тотальная функция «Ledger tally»
+  принимает line: строка
+  возвращает «Tally»
+  пример «A ledger row is a target, a tool and a count»
+    дано line равно "go\tgofmt\t12"
+    ожидается запись «Tally» с «target» равным "go" и «tool» равным "gofmt" и «count» равным 12
+  пусть cells равно (разделить line по "\t")
+  пусть count равно («Count» от («Cell» от cells и 3))
+  запись «Tally» с «target» равным («Cell» от cells и 1) и «tool» равным («Cell» от cells и 2) и «count» равным count
+
+тотальная функция «Ledger tallies»
+  принимает answers: список «Answer»
+  возвращает список «Tally»
+  отобразить («Lines» от («Output of» от "ledger" и answers)) как line → «Ledger tally» от line
+
+тотальная функция «Same row»
+  принимает row: «Tally», tally: «Tally»
+  возвращает признак
+  ((row.«target») равен (tally.«target»)) и притом ((row.«tool») равен (tally.«tool»))
+
+тотальная функция «Allowed»
+  принимает tally: «Tally», ledger: список «Tally»
+  возвращает число
+  пример «A tool missing from the ledger allows nothing»
+    дано tally равно запись «Tally» с «target» равным "go" и «tool» равным "gofmt" и «count» равным 3
+    дано ledger равно пустой список
+    ожидается -1
+  разбор (отфильтровать ledger где row → «Same row» от row и tally)
+    случай пусто
+      то -1
+    случай голова и хвост
+      то голова.«count»
+
+тотальная функция «Movement»
+  принимает count: число, allowed: число
+  возвращает строка
+  пример «A count under its ledger row fell»
+    дано count равно 3
+    дано allowed равно 5
+    ожидается "fell"
+  «Chosen» от [(«When» от (allowed меньше 0) и "new"), («When» от (count больше allowed) и "ROSE"),
+    («When» от (count меньше allowed) и "fell")] и "same"
+
+тотальная функция «Row line»
+  принимает tally: «Tally», ledger: список «Tally»
+  возвращает строка
+  пример «A count under its ledger row»
+    дано tally равно запись «Tally» с «target» равным "go" и «tool» равным "gofmt" и «count» равным 3
+    дано ledger равно [(запись «Tally» с «target» равным "go" и «tool» равным "gofmt" и «count» равным 5)]
+    ожидается "go\tgofmt\t3\t5\tfell"
+  пусть allowed равно («Allowed» от tally и ledger)
+  пусть count равно (tally.«count»)
+  пусть word равно («Movement» от count и allowed)
+  соединить [(tally.«target»), (tally.«tool»), (к строке count), (к строке allowed), word] по "\t"
+
+тотальная функция «Risen»
+  принимает measured: список «Tally», ledger: список «Tally»
+  возвращает список строки
+  пусть lines равно (отобразить measured как tally → «Row line» от tally и ledger)
+  отфильтровать lines где line → (line содержит "\tROSE") или (line содержит "\tnew")
+
+тотальная функция «Ledger row»
+  принимает tally: «Tally»
+  возвращает строка
+  пример «One row per tally»
+    дано tally равно запись «Tally» с «target» равным "go" и «tool» равным "gofmt" и «count» равным 0
+    ожидается "go\tgofmt\t0\n"
+  соединить [(tally.«target»), "\t", (tally.«tool»), "\t", (к строке (tally.«count»)), "\n"] по ""
+
+тотальная функция «Missing tools»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («All tools») где tool → не ((«Exit code of» от (соединить "tool " с tool) и answers) равен 0)
+
+тотальная функция «Obstacles»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть missing равно («Missing tools» от answers)
+  пусть «no tree» равно («Answered» от "tree" и answers) и притом (пусто («Tree» от answers))
+  пусть «no work» равно («Answered» от "work" и answers) и притом (пусто («Work» от answers))
+  пусть named равно (соединить ["НЕ ИЗМЕРЯЛ: нет инструментов — ", (соединить missing по ", ")] по "")
+  «Gathered words» от («Applying» от [(«When» от «no tree» и ["корень дерева узнать не удалось"]),
+    («When» от (не (пусто missing)) и [named]),
+    («When» от «no work» и ["не создался рабочий каталог"])])
+
+тотальная функция «Is clear»
+  принимает answers: список «Answer»
+  возвращает признак
+  пусто («Obstacles» от answers)
+
+тотальная функция «Recording»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть path равно (соединить [(«Tree» от answers), "/", («Ledger»)] по "")
+  пусть text равно (соединить (отобразить («Measured» от answers) как tally → «Ledger row» от tally) по "")
+  если «Is recording» от answers то [(«Write» от "record" и path и text)] иначе пустой список
+
+тотальная функция «Cleanup»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Run» от "cleanup" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (stages равен 6) и («Setup»)),
+    («When» от (stages равен 5) и («Presence» от answers)),
+    («When» от (stages равен 0) и («Cleanup» от answers)),
+    («When» от (не («Is clear» от answers)) и (пустой список)),
+    («When» от (stages равен 4) и («Emitting» от answers)),
+    («When» от (stages равен 3) и («Measuring» от answers)),
+    («When» от (stages равен 2) и («Reading the ledger» от answers)),
+    («When» от (stages равен 1) и («Recording» от answers))] и (пустой список)
+
+тотальная функция «Table»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть ledger равно («Ledger tallies» от answers)
+  пусть rows равно (отобразить («Measured» от answers) как tally → «Row line» от tally и ledger)
+  приписать "цель\tпроверка\tсейчас\tпо ведомости\tход" к rows
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть obstacles равно («Obstacles» от answers)
+  пусть risen равно («Risen» от («Measured» от answers) и («Ledger tallies» от answers))
+  пусть table равно (соединить («Table» от answers) по "\n")
+  пусть rose равно (соединить ["счёт вырос или проверка новая — храповик держит только падение:",
+    (соединить risen по "\n"), table] по "\n")
+  пусть said равно (соединить obstacles по "\n")
+  пусть blocked равно (вариант «Не проверено» с код равным "FLANG_CANONS_NOT_MEASURED" и сообщение равным said)
+  пусть grown равно (вариант «Не проверено» с код равным "FLANG_CANONS_ROSE" и сообщение равным rose)
+  пусть done равно (вариант «Конец работы» с значение равным table)
+  «Chosen» от [(«When» от (не (пусто obstacles)) и blocked), («When» от («Is recording» от answers) и done),
+    («When» от (не (пусто risen)) и grown)] и done
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 7
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Measure»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

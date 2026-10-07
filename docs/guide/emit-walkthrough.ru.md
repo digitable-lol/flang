@@ -2,7 +2,7 @@
 
 # Печать программы: один файл, напечатанный в C и JavaScript
 
-Это [`docs/examples/leetcode/035-search-insert-position.flang`](examples/leetcode/035-search-insert-position.flang)
+Это [`docs/examples/leetcode/035-search-insert-position.flang`](../examples/leetcode/035-search-insert-position.flang)
 как он лежит в дереве — место, куда значение встаёт в отсортированном списке:
 
 ```flang
@@ -112,4 +112,4 @@ export function mestoVstavki(elementy, cel) {
 которого в дереве больше нет; эту строку пишет печать, и вставка оставлена как напечатана.
 Исходники рантайма каждой цели копируются в вывод дословно — из `share/flang/<цель>/` рядом с
 двоичным или из `--runtime <каталог>`. Как проверяются цели и насколько неровно —
-[Известные ограничения](guide/limits.ru.md).
+[Известные ограничения](limits.ru.md).

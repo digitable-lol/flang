@@ -425,5 +425,4 @@ $ grep -c 'fl_post(' /tmp/out/lists.c
 | `flang emit <файл> --target c --out <каталог>` | генерирует C; видно, какие проверки остались |
 | `flang test <файл>` | прогоняет примеры |
 
-Отчёт о доказательствах по всему репозиторию — [Отчёт о доказательствах по
-дереву](https://github.com/digitable-lol/flang/blob/main/docs/overview.ru.md); зачем всё это — [Зачем и как](proofs.html).
+Зачем всё это — [Зачем и как](proofs.html).

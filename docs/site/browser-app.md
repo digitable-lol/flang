@@ -16,25 +16,18 @@ bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000    # bring 
 No Node, no npm, no `python3 -m http.server`: the binary compiler emits the
 module, and a harness written in flang (`docs/examples/web/stand.flang`) serves the page.
 
-There used to be no build at all — the page imported the parser of the
-JavaScript implementation and parsed `hailstone.flang` right inside the tab. The second implementation of the
-language is no longer in the tree, and with it the page lost all three imports:
-**the application would not open at all**. Now an emitted module travels into the
-tab: 72 952 bytes (`sh docs/examples/web/build.sh` on 11 September 2026 at commit 2c40752d0;
-on the day the page was written, 24 August, it was 61 453) against nearly two
-megabytes that the second implementation weighed.
+The tab does not parse flang: an emitted module travels into it, 78 152 bytes
+(`sh docs/examples/web/build.sh`).
 
 ## How much of what is written
 
 | lines | what | in what |
 |---:|---|---|
-| **318** | `docs/examples/web/browser-app/hailstone.flang` — the whole application | flang |
-| **513** | `docs/examples/web/stand.flang` — the harness that serves the page | flang |
-| 397 | `flang/src/emit/js/flang_host_browser.js` — the tab's host | JavaScript |
-| 241 | `docs/examples/web/browser-probe.sh` — a run in a real browser | shell |
+| **256** | `docs/examples/web/browser-app/hailstone.flang` — the whole application | flang |
+| **395** | `docs/examples/web/stand.flang` — the harness that serves the page | flang |
+| 398 | `flang/src/emit/js/flang_host_browser.js` — the tab's host | JavaScript |
+| 242 | `docs/examples/web/browser-probe.sh` — a run in a real browser | shell |
 | 88 | `docs/examples/web/browser-app/index.html` — markup; lines of JavaScript in it: **zero** | HTML |
-
-<!-- сверено 2026-09-11 на коммите 2c40752d0: wc -l, grep -c, ./bootstrap/flang check --proof, test -->
 
 Lines of JavaScript written by hand for this page: **zero**. The startup tag
 carries two attributes and not a single expression:
@@ -48,11 +41,11 @@ The tab's host is not the application's own code but the body of the "js" emit
 target: it is one for every page in the tree and it must be in the target's
 language, exactly as `flang/src/emit/c/*.c` must be in C.
 
-Of the 318 flang lines, **110** are examples (`пример`, `дано`, `ожидается`) —
-a third of the file is checks lying next to what they check. **16** functions,
+Of the 256 flang lines, **106** are examples (`пример`, `дано`, `ожидается`) —
+over a third of the file is checks lying next to what they check. **16** functions,
 **16 of 16** total, **31** examples, **0** failed.
 
-The host, without comments and blank lines, is **217** lines (`grep` count, 11 September 2026). It contains zero application logic:
+The host, without comments and blank lines, is **218** lines (`grep` count). It contains zero application logic:
 it knows nothing about Collatz and nothing about buttons — it knows about places
 and events.
 
@@ -138,27 +131,15 @@ be exactly the same total step the request handler already was.
 
 ## What checks it without hands
 
-Two runs, and the second found what the first had missed.
-
-**The check without a browser** (removed with the JavaScript implementation on
-20 August 2026). A stand-in document:
-an object with `querySelector`, `querySelectorAll` and `addEventListener`, thirty
-lines. The real host works with it the same way it works with a tab's window — the
-same technique by which `nodeHost` is checked without a network. Six checks, among
-them "the clock wakes the plan by itself" (6 → 1 in 8 steps without a single key
-press) and "presses that happened while the plan was computing are not lost".
-
 **`docs/examples/web/browser-probe.sh` — in a real browser, without Node and without npm.**
 Playwright is taken from the environment, it is not among flang's dependencies.
 Six screen comparisons, all byte-for-byte.
 
-The second run found a fault invisible to the first: a button in HTML **does**
-have a `value` property, and it is an empty string. The host asked for it before
-the declared `данные-значение` and got emptiness from every press — in the browser
-the application answered "unknown key «»" to every digit, and it was 1 comparison
-out of 6. The stand-in page did not catch this, because it had no `value` at all.
-Both were fixed: the host and the check. The mutation is confirmed — with the old
-order, 3 checks out of 6 fail.
+A button in HTML **does** have a `value` property, and it is an empty string.
+So the host reads the declared `данные-значение` first: asked in the other order,
+it gets emptiness from every press, and the application answers "unknown key «»"
+to every digit. A stand-in document without `value` does not show this; the real
+browser does — with the reversed order, 3 checks out of 6 fail.
 
 ## What is left of the seven points of the gap
 
@@ -169,10 +150,7 @@ browser host (250 lines), the event loop (0 edits), agreement (6 files instead o
 **2** are not closed:
 
 * **a markup type** — deliberately, the reason is above: an order carries text;
-* **emitting plans into targets** — in the browser the plan used to be executed by
-  the interpreter, loaded as sixteen modules. That worked and loaded in 245 ms,
-  but an emitted module is many times lighter. For the `js` target this has since
-  been closed — the account of that closure stands in the
+* **emitting plans into targets** — the `js` target emits plans, see the
   [URL shortener](shortener.html); the other nine targets refuse with
-  `FLANG_PLAN_UNSUPPORTED` (checked on 11 September 2026 for `python` and `go`:
-  `flang emit … --target python` exits 1), and that is named there too.
+  `FLANG_PLAN_UNSUPPORTED` (`flang emit … --target python` and `--target go`
+  exit 1), and that is named there too.

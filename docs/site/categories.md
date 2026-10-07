@@ -122,8 +122,7 @@ $ flang check flang/ct/order-shipment.flang
 
 The same file further down also declares an `isomorphism`, which the binary
 does not judge (see the sections below), so the whole command answers with
-exit code 2 and the line «проверено НЕ ДО КОНЦА» ("checked, not to the end") —
-run of `bootstrap/flang` 0.7.17, commit `2c40752d0`, 11 September 2026.
+exit code 2 and the line «проверено НЕ ДО КОНЦА» ("checked, not to the end").
 
 **"Computed over a grid" is not "proved".** Five values are five values; a sixth
 may break the law, and the count says nothing about that. The word "proved" is
@@ -239,7 +238,7 @@ the expected type.
 The full surface contract is `docs/ct/spec.md`: the form of every declaration
 down to the last case ending, the diagnostic code for every trouble, and a
 by-name list of what the compiler does not check. Beside it are the pieces:
-`docs/archive/hof.md`, `docs/archive/poly.md`, `docs/archive/monad.md`, `docs/ct/sets.md`, `docs/ct/zakony.md`.
+`docs/ct/sets.md`, `docs/ct/laws.md`.
 
 It is a contract, not a tutorial, and on the site it sits behind the [for
 contributors](contributing.html) door.

@@ -23,8 +23,7 @@ flowchart LR
 **After this step:** the `flang` command answers `--version`.
 
 Read [Installation](install.html). There are three roads — Homebrew, asdf, from
-source (the npm road was removed on 3 September 2026, commit `5d876b0e2`); the
-shortest is one Homebrew command, with no building from source. None of them
+source; the shortest is one Homebrew command, with no building from source. None of them
 needs Node.
 
 ```bash

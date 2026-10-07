@@ -423,5 +423,4 @@ you would either write these checks by hand or not have them.
 | `flang emit <file> --target c --out <dir>` | generates C; see which checks stayed |
 | `flang test <file>` | runs the examples |
 
-Why this matters: [Proofs: why and how](proofs.html). The proof report over the
-whole repository is in Russian only: [docs/overview.ru.md](https://github.com/digitable-lol/flang/blob/main/docs/overview.ru.md).
+Why this matters: [Proofs: why and how](proofs.html).

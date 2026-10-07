@@ -70,7 +70,7 @@ the functions at the top of the plan.
 | | |
 | --- | --- |
 | `trust` and cleartext password | works |
-| `scram-sha-256` | as a separate plan, `docs/examples/db/postgres-scram-plan.flang`, on top of `flang/stdlib/scram.flang` (with `hmac.flang` and `sha256.flang`; SCRAM client — commit 7bd68b79, 20 August 2026). The `postgres-plan.flang` above knows nothing about SASL: on `md5` and SCRAM it keeps reading and waits |
+| `scram-sha-256` | as a separate plan, `docs/examples/db/postgres-scram-plan.flang`, on top of `flang/stdlib/scram.flang` (with `hmac.flang` and `sha256.flang`). The `postgres-plan.flang` above knows nothing about SASL: on `md5` and SCRAM it keeps reading and waits |
 | `md5` | no: `postgres.flang` parses it as «Вход не поддержан» (example «пятёрка — md5, и он не поддержан») |
 | TLS | no. The library holds `flang/stdlib/tls-handshake.flang` (a TLS 1.3 client, checked against the RFC 8448 vectors), but it is not wired to the PostgreSQL driver: the conversation runs in the clear — for a database on the same machine |
 | column types in `RowDescription` | only the number of columns is taken out. Pass the type number of a column yourself |

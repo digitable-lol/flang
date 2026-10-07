@@ -70,7 +70,7 @@ JSON: в поле `result` — отчёт выше, в `log` — каждое п
 | | |
 | --- | --- |
 | `trust` и пароль открытым текстом | работает |
-| `scram-sha-256` | отдельным планом `docs/examples/db/postgres-scram-plan.flang` на `flang/stdlib/scram.flang` (при нём `hmac.flang`, `sha256.flang`; клиент SCRAM — коммит 7bd68b79, 20 августа 2026). План `postgres-plan.flang` выше про SASL не знает: на `md5` и SCRAM он продолжает читать и ждёт |
+| `scram-sha-256` | отдельным планом `docs/examples/db/postgres-scram-plan.flang` на `flang/stdlib/scram.flang` (при нём `hmac.flang`, `sha256.flang`). План `postgres-plan.flang` выше про SASL не знает: на `md5` и SCRAM он продолжает читать и ждёт |
 | `md5` | нет: `postgres.flang` разбирает его как «Вход не поддержан» (пример «пятёрка — md5, и он не поддержан») |
 | TLS | нет. В библиотеке лежит `flang/stdlib/tls-handshake.flang` (клиент TLS 1.3, сверен с векторами RFC 8448), но к драйверу PostgreSQL он не подключён: разговор идёт открытым текстом — годится для базы на той же машине |
 | типы колонок из `RowDescription` | берётся только число колонок. Номер типа колонки передаёте сами |

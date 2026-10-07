@@ -98,8 +98,7 @@ promise but an inventory of what is already written:
 | base64 | `flang/stdlib/base64.flang` | 19 | 19 |
 | scheduler decisions | `flang/concurrency/scheduler.flang` | 54 | 54 |
 
-The count is of function headers in the file (`grep -c '^функция «\|^тотальная функция «'`,
-tree of 11 September 2026, release 0.7.17). For the scheduler the compiler
+The count is of function headers in the file (`grep -c '^функция «\|^тотальная функция «'`). For the scheduler the compiler
 says the same, counting the imported module as well:
 
 ```
@@ -179,10 +178,10 @@ looks like this:
 
 | what | where | lines |
 | --- | --- | ---: |
-| scheduler: loop, threads, network wait | `flang/src/emit/c/flang_conc.c` | 4650 |
-| decisions about processes, supervision, links | `flang/concurrency/*.flang` | 3350 |
+| scheduler: loop, threads, network wait | `flang/src/emit/c/flang_conc.c` | 4652 |
+| decisions about processes, supervision, links | `flang/concurrency/*.flang` | 2507 |
 
-Line counts taken on 11 September 2026 (`wc -l`). The first file has six loops
+Line counts by `wc -l`. The first file has six loops
 with no exit condition (`for (;;)`), the second has none — and not because they
 are forbidden. Without waiting such a loop has nothing to do,
 and there is nothing in the language to wait with.
@@ -269,16 +268,16 @@ postconditions are proved for all inputs by reducing the goal to the function
 body, some are on the grid of examples — among them «ГЛАВНОЕ: из годных врат
 выходят годные» of «Шаг привратника»: an inequality over record fields is not
 taken by the kernel. How many of each is printed on the last line of the report:
-on 0.7.17 (11 September 2026) — «утверждений 31: доказано 22, сетка 9,
+«утверждений 31: доказано 22, сетка 9,
 объявлено, не доказано 0», exit code 0; 15 examples, 15 passed.
 Proved postconditions are not printed into the generated code as checks — the
 printer says so on its first line («проверок при работе снято …»); an unproved
 promise would ride along as a check on every return.
 
-**The run does not build today.** Since 29 August 2026 the module is named
-«Gatekeeper» — all example modules were given English names so that the printed
-file is not a transliteration — and the printer emits files and functions under
-that name, while the host and the run script expect the old ones:
+**The run does not build.** The module is named «Gatekeeper» — example modules
+carry English names so that the printed file is not a transliteration — and the
+printer emits files and functions under that name, while the host and the run
+script expect the transliterated ones:
 
 ```
 printer: gatekeeper.c  gatekeeper.h      gatekeeper_enter(…)  gatekeeper_sozdat_vrata(…)
@@ -286,12 +285,13 @@ host.c:  #include "privratnik.h"         privratnik_enter(…)  privratnik_sozda
 run.sh:  cc … privratnik.c …
 ```
 
-The first step of the run (printing) and both commands above pass; the second
-step — the build — fails (re-checked on 11 September 2026 on 0.7.17: `bash
-docs/examples/host-boundary/run.sh` → «privratnik.h: No such file or directory»,
-«сборка отказала, код 1»). The output below was recorded before the rename; to
-reproduce it, the names in `docs/examples/host-boundary/host.c` and
-`docs/examples/host-boundary/run.sh` have to be brought to the new ones.
+Besides, `run.sh` looks for the module under `examples/host-boundary/` at the
+root of the tree, not under `docs/examples/`, so `bash
+docs/examples/host-boundary/run.sh` stops at the first step: «FLANG_CLI: не
+прочитан файл …/examples/host-boundary/gatekeeper.flang», «печать отказала, код 2».
+Both commands above pass. The output below is what the run prints once its paths
+and names match the printer; to reproduce it, the paths and names in `docs/examples/host-boundary/host.c` and
+`docs/examples/host-boundary/run.sh` have to be brought in line with it.
 
 ```
 $ bash docs/examples/host-boundary/run.sh

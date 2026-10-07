@@ -266,7 +266,7 @@ turns: the scheduler is infinite, the handler it calls must terminate. A handler
 that is neither `тотальная` nor carries `с запасом N витков` should not get
 through — code `FLANG_HANDLER_NOT_TOTAL`.
 
-Today the binary does judge it, but answers with a different code. Here is what
+The binary judges it, but answers with a different code. Here is what
 it answers on
 [`docs/examples/web/shortener/handler-without-budget.flang`](../examples/web/shortener/handler-without-budget.flang),
 a file written precisely to test this rule:
@@ -279,6 +279,4 @@ docs/examples/web/shortener/handler-without-budget.flang: не проверен�
 
 Exit code 1. `FLANG_HANDLER_NOT_TOTAL` is still not issued: a non-total handler
 without a budget is caught as an uncovered failure (`FLANG_UNCOVERED_FAILURE`),
-not under the name from the specification. This section used to say "the binary
-does not judge `процесс` at all, exit 2" — that was the seed before the
-`0ce948bfd` reprint.
+not under the name from the specification.

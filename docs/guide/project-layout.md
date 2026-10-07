@@ -7,11 +7,10 @@ example — [`docs/examples/library-api`](../examples/library-api), the domain h
 a library REST service: lending books, the catalogue, fines for overdue returns —
 and points at it.
 
-Half of that example has since been removed: the Node host went on 20 August 2026
-along with the rest of the JavaScript tooling. So the rules about what stays with
-the host can no longer be shown on the tree — they are marked as such where they
-stand, and they speak of the removed host in the past tense. The rules about flang
-modules are still checkable on the tree as before.
+The example holds only the flang half of the service. The host — the HTTP server
+and the storage — is not in the tree, so the rules about what stays with the host
+are stated without a file to point at; the rules about flang modules are checkable
+on the tree.
 
 The example is laid out like this:
 
@@ -28,23 +27,11 @@ docs/examples/library-api/
     text.flang         module «Project text» — functions over a list of strings
 ```
 
-There were four directories. `host/` and `test/` were removed on 20 August 2026
-along with the rest of the JavaScript tooling, and they are no longer in the tree.
-What they held:
-
-```
-host/server.mjs             the HTTP server: six routes — GET /health, GET /books (with
-                            selection by author and shelf), GET /books/summary, POST /books,
-                            POST /loans, POST /returns; percent-decoding of the path
-host/storage.mjs            storage in the process memory
-host/flang.mjs              the bridge to the language: loading lib/api.flang and evaluating functions
-test/library-api.test.mjs   the example's run on Node
-```
-
-The removal is commits 8f229280, 501327bb, 22cff289 and 7d95994a. The rules about
-the boundary with the host did not change because of it: a boundary is visible from
-one side too. Where the text below says "in the example's host", it means the
-removed host, and it says so in the past tense.
+A full service adds a host directory next to these two: the HTTP server (routes
+such as GET /health, GET /books with selection by author and shelf, POST /loans,
+POST /returns; percent-decoding of the path), the storage, and the bridge that
+loads `lib/api.flang` and evaluates its functions. In this example that layer is
+not in the tree.
 
 ---
 
@@ -58,11 +45,10 @@ finds them itself and fails when the behaviour has drifted. The same arithmetic
 written inside an HTTP handler is checked only by whatever test somebody bothers
 to write separately.
 
-**Where to look.** The example's host (the file host/server.mjs from the list above,
-removed along with the JavaScript implementation of the language) held not a
-single number from the fine schedule, no ISBN check digit, no query-string
-parsing, and no "who is allowed to borrow" condition. All of that lives in
-`docs/examples/library-api/lib/*.flang`, which a command checks.
+**Where to look.** The fine schedule, the ISBN check digit, the query-string
+parsing and the "who is allowed to borrow" condition all live in
+`docs/examples/library-api/lib/*.flang`, which a command checks. The host keeps
+none of them.
 
 **What stays with the host, and why it is the host's.** I/O in the language is
 DESCRIBED but not performed: `вариант «Прочитать файл» с путь равным …` builds a
@@ -78,13 +64,10 @@ for examples to check. So the server, the routing and the storage stay with the
 host — not because the language cannot say them, but because moving them would not
 make them checkable.
 
-**What this paragraph NO LONGER says, which matters if you read it before.** It
-used to say "functions in flang are not first-class values" and "there is no I/O
-in the language at all". Both are out of date: a function IS a value now
-(defunctionalization after Reynolds, `docs/flang/SPEC.md`, section 3), and I/O orders
-are in the language and are carried out by `flang io`. The rule about the boundary
-survived both changes, because it rests on examples rather than on a list of what
-the language lacks.
+The rule does not rest on a list of what the language lacks: a function is a value
+(defunctionalization after Reynolds, `docs/flang/SPEC.md`, section 3), and I/O
+orders are in the language and are carried out by `flang io`. The boundary is drawn
+by examples.
 
 **You can check that the boundary is drawn right by emitting.** `flang emit` emits
 the whole project library into all ten target languages — `c`, `cpp`, `go`, `rust`,
@@ -93,8 +76,8 @@ there is nothing to emit. If emission broke after you moved another piece into
 `lib/`, you moved the wrong piece.
 
 **The exception that is also a rule.** Do not rewrite in flang what the platform
-already does correctly. Percent-decoding in the example was done by the removed
-host's `decodeURIComponent`, not by a table of code points in flang: a second
+already does correctly. Percent-decoding belongs to the host's platform (in JavaScript,
+`decodeURIComponent`), not to a table of code points in flang: a second
 source of truth for the sake of principle is worse than one foreign source.
 
 ---
@@ -122,16 +105,13 @@ tariff has nothing to do in here.
 `обеспечивает «Штраф ограничен» результат не больше 500`, and the limit equals the
 sum of all the surcharges exactly. Clamping the value instead of promising would
 HIDE going over the schedule; the promise says the opposite — 500 cannot be
-exceeded on any input. The reason is written in the file's header.
+exceeded on any input.
 
-**What this approach no longer gets you.** The right to lend a book was once
-decided not by a function but by a proof: a certificate was built from a snapshot
-of the data, and a refusal was called "the premise was not found" rather than "the
-condition is false". Today it is an ordinary function
-([`lib/loan.flang`](../examples/library-api/lib/loan.flang)) — the same answer
-on the same inputs, but backed only by its body and its examples. The difference
-between "proven" and "computed" is named in the file's header rather than lost
-quietly.
+**What this approach does not get you.** The right to lend a book is decided by an
+ordinary function ([`lib/loan.flang`](../examples/library-api/lib/loan.flang)),
+not by a proof built from a snapshot of the data: the answer is backed only by its
+body and its examples. "Computed" is
+not "proven", and the page says which one this is.
 
 ---
 
@@ -208,9 +188,7 @@ to be recognisable across the whole assembled program, not only within its file.
 client that knows nothing about the model, and they are part of the protocol
 rather than of the domain. JSON body keys stay Russian (`«код»`, `«на полке»`),
 because those are model fields: a second dictionary of names would have to be kept
-in agreement by hand, and no type catches two dictionaries drifting apart (which
-is what happened in the removed host's storage, the file host/storage.mjs from the list above, no longer in
-the tree).
+in agreement by hand, and no type catches two dictionaries drifting apart.
 
 ---
 
@@ -265,8 +243,7 @@ api.flang ──> catalog.flang ──> isbn.flang
 Two of the names in «Каталог»'s `только` list are not called by that file at all —
 `«Минимум»` and `«Все не меньше»`. They are called by the CONTRACT of the imported
 `«Сумма»`, and `только` narrows the name table together with the contracts; without
-them the module did not link at all. The reason is written right in the header of
-`catalog.flang` — and it is the case where a `только` list is read not from the
+them the module did not link at all. This is the case where a `только` list is read not from the
 body of the file but from a linking refusal.
 
 **A project library has one entry module.**
@@ -294,12 +271,12 @@ Take a function that calls a neighbour inside its own module and you get
 declared total, `FLANG_NOT_TOTAL` after it. That is why «ISBN» is taken whole in
 the example (`«Код верен»` calls `«Цифры»` and `«Контрольную сумму»`), while
 «Списки» and «Текст проекта» are taken selectively: there every needed function is
-self-contained. Both reasons are written in the file headers.
+self-contained.
 
-That was true when this was written; on 11 September 2026 it no longer is. `flang check
-docs/examples/library-api/lib/api.flang` (binary 0.7.17) answers «не проверено — замечаний 8»,
-exit 1: `«Сумма»`, `«Минимум»`, `«Максимум»` and `«Все не меньше»` in
-`flang/stdlib/lists.flang` now call helpers `«Шаг суммы»`, `«Шаг минимума»`, `«Шаг
+The example itself runs into this today: `flang check
+docs/examples/library-api/lib/api.flang` answers «не проверено — замечаний 8»,
+exit 1. `«Сумма»`, `«Минимум»`, `«Максимум»` and `«Все не меньше»` in
+`flang/stdlib/lists.flang` call helpers `«Шаг суммы»`, `«Шаг минимума»`, `«Шаг
 максимума»`, `«Шаг все не меньше»`, which are not in the `только` list of `catalog.flang` —
 `FLANG_UNKNOWN_NAME` and then `FLANG_NOT_TOTAL` on each. That is exactly the refusal this
 paragraph warns about; the fix is widening the `только` list in `catalog.flang`, not editing
@@ -326,8 +303,8 @@ non-portable, and there is not one in the example.
 The search goes up as long as the next parent directory holds at least one
 `.flang` — so it can leave the project altogether, and then a stray file one
 directory up shadows the module silently. `FLANG_MODULE_ROOT` sets the limit: it
-names the directory above which the search does not climb. Unset — the old
-behaviour.
+names the directory above which the search does not climb. Unset — the search
+climbs as described above.
 
 ---
 
@@ -337,7 +314,7 @@ behaviour.
 domain** but the project needs it.
 
 **Rule for moving up.** If a function would be useful to anybody writing flang, its
-place is not here but in `flang/stdlib` — with a header, examples and a write-up in
+place is not here but in `flang/stdlib` — with examples and a write-up in
 the common set. A project library is not a dumping ground for "we have not got
 round to it".
 
@@ -407,12 +384,9 @@ entry module: `flang emit docs/examples/library-api/lib/api.flang --target js --
 Printing is cancelled if the program does not pass the check: `emit` looks at the
 same things `check` does and names the same remarks.
 
-**What used to stand here and why it is gone.** It said: "today both answer with a
-refusal, `FLANG_UNKNOWN_NAME`, unknown function `«Все не меньше»`". That function has
-since appeared in the library (`flang/stdlib/lists.flang`), and `catalog.flang`
-imports it by name, so the named cause of the refusal is gone. Today's answer was taken
-by a run on 11 September 2026: `flang check docs/examples/library-api/lib/api.flang` — exit 1,
-«не проверено — замечаний 8»; the cause and the fix are named in section 7.
+Today both commands stop on the example with exit 1 and «не проверено — замечаний 8»
+(`test` adds «примеры не запускались — программа не прошла проверку»); the cause and
+the fix are named in section 7.
 
 ---
 

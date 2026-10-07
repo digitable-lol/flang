@@ -571,7 +571,7 @@ for character. `"first⏎    second"` equals `"first\n    second"`, so a text
 inside a function body would have to start at the first column. For a text over
 several lines inside an indented body there is the text block.
 
-### The text block `"""` — from 0.7.24
+### The text block `"""`
 
 Three double quotes open a block; the text starts on the next line; the common
 indentation is removed:

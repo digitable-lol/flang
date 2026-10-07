@@ -81,11 +81,11 @@ would live in two places and diverge at the first repricing.
 ```
 docs/examples/web/marketplace/
   catalog.flang   113   goods, price, stock, "how many to hand out"
-  cart.flang      111   line items, the bill, tiered discount
+  cart.flang      117   line items, the bill, tiered discount
   orders.flang    225   order states and the transitions between them
   gateway.flang   430   response codes, routes, bytes in — bytes out
                   ─────
-                  879   lines, all of them flang (wc -l, commit 2c40752d0)
+                  885   lines, all of them flang (wc -l)
 ```
 
 What the gateway answers:
@@ -207,8 +207,7 @@ $ flang check docs/examples/web/marketplace/gateway.flang --proof
   утверждений 2: доказано 2 (из них индукцией 2), сетка 0, объявлено, не доказано 0 (шагов в термах 18)
 ```
 
-The summaries are from the run of 11 September 2026, binary 0.7.17, commit 2c40752d0; the
-report counts only the functions and claims of the file itself, the imported
+The report counts only the functions and claims of the file itself, the imported
 HTTP parsing library is not in these numbers. The gateway's own claims are two,
 and both are proved by induction over the declared sum of outcomes:
 
@@ -346,14 +345,15 @@ two people read the code. Here it is one command:
 bootstrap/flang run-script specs:check
 ```
 
-The answer "specs agree" is the goal of this command, not today's run: on the
-run of 11 September 2026, binary 0.7.17, commit 2c40752d0 the command answers
-`бед в системе спек: 79` (79 troubles in the spec system), exit code 1. All 79
-are of one kind — the `check --proof` report no longer carries the claims of
-imported modules, and the rule "the predecessor's claim is still proved" cannot
-find them. What this means and how to read it is laid out on
-[The spec catalogue: the stand, the check and the snapshot](spec-catalog.html),
-section "Today the stand is red". The acceptance rule itself does not change: a
+The answer "specs agree" is the goal of this command, not what it prints on the
+current tree: there the command answers `бед в системе спек: 89` (89 troubles in
+the spec system), exit code 1. 79 of them are of one kind — the `check --proof`
+report does not carry the claims of imported modules, and the rule "the
+predecessor's claim is still proved" cannot find them; the other ten are two
+claims checked only on a grid, four rewritten goals and four goals missing from
+the snapshot. What this means and how to read it is laid out on
+[The spec catalogue: the stand, the check and the snapshot](spec-catalog.html).
+The acceptance rule itself does not change: a
 spec is accepted only if every claim of it is proved, and nothing is taken on
 faith — under every claim there is a chain that reaches the rules of the
 language itself.
@@ -372,8 +372,7 @@ bootstrap/flang run-script specs:forgery
 
 Among the things it catches: a rule weakened under the same name; a spec with no
 predecessor; a translated view promising something the original does not; a typo
-in the language tag; a translated function name. The run of 8 September 2026
-counted 19 forged cases (see the spec catalogue page), and the check must catch each — while staying **silent** on an honest change,
+in the language tag; a translated function name. The check must catch each forged case — while staying **silent** on an honest change,
 otherwise it is not catching forgery, it is catching movement.
 
 ## A rule in another language is the same rule

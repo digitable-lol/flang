@@ -1,12 +1,9 @@
 # A case taken apart: leetcode tasks, their solutions, and what is proved about them
 
-`docs/examples/leetcode/` — 82 files, 6 205 lines, 301 functions and 806 executable
-examples (measured 11 September 2026 at commit `2c40752d0`: `wc -l`, `grep -c`
-over function and example headers; 0.7.14 removed the `//` comments from the
-examples, hence fewer lines than on 29 August). Not an example written for this
-page but code in the tree. The listings and reports below were taken from that
-same tree with binary 0.7.17; since 29 August (commit `03f0359ab`)
-the example modules carry English names.
+`docs/examples/leetcode/` — 82 files, 6 224 lines, 301 functions and 806 executable
+examples (`wc -l`, `grep -c` over function and example headers). Not an example
+written for this page but code in the tree. The listings and reports below are
+taken from that same tree; the example modules carry English names.
 
 Below are five tasks: the statement, the whole solution, and what the compiler
 answers about **exactly what** is proved for it. That last part is the
@@ -423,8 +420,7 @@ the signature.
 
 A task that has not just proved termination but **claims about the result** —
 six `обеспечивает` postconditions on the digit-value function (two about bounds
-and four about the first letters of the table; this used to say "two", the four
-were added in commit `c549be91a`).
+and four about the first letters of the table).
 
 **The whole solution** (`docs/examples/leetcode/013-roman-to-integer.flang`):
 
@@ -661,17 +657,19 @@ flang check docs/examples/leetcode/202-happy-number.flang --proof
 ```
 
 ```
-FLANG_PROPERTY: нарушено свойство «чужой заголовок не признаётся своим» функции «Это заголовок функции записи»
+чем несётся обещание «тотальная»:
+  «Сумма квадратов цифр»  доказано объявленной мерой: убывает «н»; мера объявлена автором, сторож считает её на каждом витке — 1 место
+  «Есть число»            доказано композицией: рекурсии нет, обещание сложено из обещаний тех, кого зовёт
+  «Шаг счастья»           обещания нет: функция обычная, о завершении не сказано ничего
+  «Счастливое»            обещания нет: функция обычная, о завершении не сказано ничего
+…
+итог:
+  функций 4: тотальных 2, обычных 2
+…
 ```
 
-That is what binary 0.7.17 answers on 11 September 2026: there is **no** proof
-report for this file — the `--proof` run stops on a violated postcondition of
-the compiler itself (`flang/self/proof-record.flang`, «чужой заголовок не признаётся
-своим»), exit code 1. It is a compiler bug, not the file's: `flang check`
-without `--proof` passes the same file with exit code 0 and prints `без
-доказанного завершения: «Шаг счастья» «Счастливое»`. The 29 August measurement
-with the same flag did print the report: the two ordinary functions carried
-"no promise: the function is ordinary, nothing is said about termination".
+Exit code 0. The two ordinary functions carry "no promise: the function is
+ordinary, nothing is said about termination".
 
 `«Шаг счастья»` and `«Счастливое»` are the only two functions in the whole
 catalogue written with the word `функция` rather than `тотальная функция`. They
@@ -690,7 +688,7 @@ no promise, and the report says "nothing has been said about termination".
 | | |
 | --- | --- |
 | files | 82 |
-| lines | 6 205 |
+| lines | 6 224 |
 | functions | 301 |
 | of those total | 299 |
 | ordinary | 2 |
@@ -705,9 +703,7 @@ passed". For tasks like "search in a rotated sorted array" or "trapping rain
 water" the infinite loop is closed before the program runs.
 
 Claims about the **result** number 85 across all 82 tasks, and they sit in 37
-files. This page used to say "two, both in task 13": that was the count on the
-day it was measured, and the set has been added to since. The gap itself has not
-closed: 85 postconditions over 301 functions is fewer than half the files, and
+files. That leaves a gap: 85 postconditions over 301 functions is fewer than half the files, and
 while termination is proved for 299 functions, correctness of the result is
 proved for a minority. The rest of the correctness is carried by 806 examples,
 and an example is a claim about one input.

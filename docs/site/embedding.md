@@ -54,8 +54,7 @@ runner over a pipe.
 ## What arrives in the directory
 
 One run per target, the same program every time —
-`docs/examples/rosetta/factorial-english.flang` (the file lists and byte counts on
-this page were taken from binary 0.7.17 on 11 September 2026):
+`docs/examples/rosetta/factorial-english.flang`:
 
 | target | files |
 |---|---|
@@ -65,15 +64,15 @@ this page were taken from binary 0.7.17 on 11 September 2026):
 | `elixir` | `flang_runtime.ex` `factorial.ex` `flang_cli.ex` `Makefile` |
 | `go` | `go.mod` `flangrt/flang_runtime.go` `flang/factorial.go` `cli/main.go` `Makefile` |
 | `java` | `Value.java` `Field.java` `FlangError.java` `Ctx.java` `Flang.java` `Factorial.java` `FlangCli.java` `Makefile` |
-| `js` | `factorial.js` `flang_cli.js` |
+| `js` | `factorial.js` `flang_cli.js` `package.json` |
 | `python` | `flang_runtime.py` `factorial.py` `flang_cli.py` `Makefile` |
 | `rust` | `Cargo.toml` `src/runtime.rs` `src/factorial.rs` `src/lib.rs` `src/cli.rs` `src/main.rs` `Makefile` |
-| `ts` | `factorial.ts` `flang_runtime.js` `flang_cli.js` `tsconfig.json` |
+| `ts` | `factorial.ts` `flang_runtime.js` `flang_cli.js` `package.json` `tsconfig.json` |
 
 The layout is the same everywhere: a **runtime** (values, arithmetic,
 diagnostics), the **program module** (one function per flang function), a
 **runner**, and a build file. With `--no-cli` the runner is gone: `js` is left
-with a single `factorial.js`, `c` with five files out of six.
+with `factorial.js` and `package.json`, `c` with five files out of six.
 
 A program with `процесс` and `надзор` declarations is emitted with a scheduler
 on `c` and `elixir` only; on the other targets the handlers arrive as ordinary
@@ -84,7 +83,7 @@ functions and the calling is yours. Concurrency per target is also named in the
 
 ```bash
 $ flang emit docs/examples/rosetta/factorial-english.flang --target c --out ./out-c
-напечатано файлов 6, байт 432289, в ./out-c
+напечатано файлов 6, байт …, в ./out-c
 $ ls ./out-c
 Makefile  factorial.c  factorial.h  flang_cli.c  flang_runtime.c  flang_runtime.h
 ```
@@ -182,8 +181,7 @@ Three rules are visible right there, and you will have to keep them:
 3. **`fl_ctx` carries the limits**: depth, step count and a check on remaining
    stack. One context can be reused across calls, as above.
 
-WebAssembly comes from the same place: the emitted C moves there without edits —
-see [WebAssembly through C](../wasm-via-c.md).
+WebAssembly comes from the same place: the emitted C moves there without edits.
 
 ## The value at the boundary
 
@@ -277,9 +275,9 @@ dynamically.
 
 ```bash
 $ flang emit docs/examples/rosetta/factorial-english.flang --target js --no-cli --out ./out-js
-напечатано файлов 1, байт 18624, в ./out-js
+напечатано файлов 2, байт …, в ./out-js
 $ ls ./out-js
-factorial.js
+factorial.js  package.json
 ```
 
 ```js
@@ -410,7 +408,7 @@ slug. Values are tagged, because JSON is poorer than the language:
 | `null`, `true`/`false` | "nothing", a flag |
 
 The table of declared parameter types is printed beside the module
-(`factorial_entry` in C, `$PROGRAM.entry` in JS), but in 0.7.17 the binary
+(`factorial_entry` in C, `$PROGRAM.entry` in JS), but the binary
 leaves it empty and says so on every print: «аргументы напечатанной программы по
 типам не проверяются» — "the arguments of the printed program are not checked
 against types". So the runner answers `{"s":"x"}` with the same words as the
@@ -429,7 +427,7 @@ at the `enter` door (see [the host boundary](host-boundary.html)).
 - **concurrency everywhere.** Processes run on `c` and `elixir`, parallelism on
   `elixir`;
 - **type-checked arguments** — neither on a direct call nor in the runner over a
-  pipe: in 0.7.17 the table on the entry boundary is left empty, and the binary
+  pipe: the table on the entry boundary is left empty, and the binary
   says so when printing. The exception is the `enter` door on the `c` target.
 
 ## Next

@@ -14,43 +14,19 @@ else on this site would be believed.
 
 ```
 flang/stdlib/math-classics.flang
-  утверждений 67: доказано 29 (из них без теоремы 29, объявленным типом 12), сетка 38, объявлено, не доказано 0
+  утверждений 70: доказано 37 (из них без теоремы 37, объявленным типом 17), сетка 33, объявлено, не доказано 0
 
 flang/stdlib/math-classics-lists.flang
-  утверждений 37: доказано 16 (из них без теоремы 16), сетка 21, объявлено, не доказано 0
+  утверждений 37: доказано 19 (из них без теоремы 19), сетка 18, объявлено, не доказано 0
 ```
 
-That is **104 claims, 45 proved**. Of the seventy-five classical lemmas the
-kernel takes **twenty-five outright**; **forty-nine stay a grid**, each with a
+That is **107 claims, 56 proved**. Of the seventy-five classical lemmas the
+kernel takes **twenty-nine outright**; **forty-five stay a grid**, each with a
 named reason below; and one more — the termination of Euclid's algorithm — cannot
 be written in flang at all.
 
 There are no axioms in these files: the "taken on faith" column of both reports
 is empty (`принято на веру: ничего`).
-
-> **Measured with what, and when.** The numbers on this page — the tables, the
-> per-lemma verdicts, the stubs — were taken with the binary
-> `/srv/flang-rabota/w-predely/bootstrap/flang` (built 23 August 2026 with a
-> raised step limit). Re-check on 11 September 2026 with 0.7.17 (commit
-> `2c40752d0`, seed reprinted at `0ce948bfd`):
-> `./bootstrap/flang check flang/stdlib/math-classics-lists.flang --proof` →
-> `утверждений 37: доказано 19 (из них без теоремы 19), сетка 18` — three more
-> proved than in the list table below; which three was not worked out again.
-> `./bootstrap/flang check flang/stdlib/math-classics.flang --proof` on 0.7.17
-> prints no report: the run stops with
-> `FLANG_PROPERTY: нарушено свойство «чужой заголовок не признаётся своим»
-> функции «Это заголовок функции записи»` (a postcondition of the compiler
-> itself, `flang/self/proof-record.flang`), exit code 1. Until that is fixed the
-> arithmetic table is the 23 August measurement and there is nothing to
-> re-check it with.
-
-**What changed since the previous measurement.** It was 73 claims and 29 proved,
-forty-seven lemmas of which thirteen were taken outright. The gain came not from
-rewriting old postconditions but from new lemmas and from two measured boundaries
-of the kernel's rules: monotonicity of addition is taken when the addend is a
-**literal** and refused when it is a **term** (exactly like the bound on a
-remainder), and the bounds of min and max are taken when the guard is copied from
-the body word for word.
 
 ## Where the names come from
 
@@ -75,7 +51,7 @@ plainly.** `Nat.le_add_r`, `Nat.le_0_l` and `Nat.sub_add` are **called** in the
 downloaded files (`theories/Arith/PeanoNat.v:411`, `theories/Lists/List.v:506`
 and `:1701`, `theories/Numbers/Natural/Abstract/NOrder.v:25`,
 `theories/Numbers/Natural/Abstract/NParity.v:41`), but they are declared in files
-this measurement did not download (`NBase.v`, `NSub.v`). The name exists; the
+that were not downloaded (`NBase.v`, `NSub.v`). The name exists; the
 declaration line was not checked.
 
 ## Reading a verdict
@@ -107,17 +83,14 @@ So wherever they write `nat` we write `неотрицательное` — the e
 is not cosmetics but a condition of an honest translation; the same argument is
 recorded in `flang/test/fixtures/poddelka-order-arithmetic.flang`.
 
-**A side measurement that cost one run.** In the compiler sources and in
-`docs/flang/SPEC.md` the same type is called `неотрицательное`; `нат` is the outdated
-short spelling of the same name, accepted until 1.0. Before the seed reprint of
-3 September 2026 (v0.7.11) the printed binary did not know the long name:
-`flang check` on `strlists.flang` answered `FLANG_UNKNOWN_NAME … неизвестный тип
-«неотрицательное»`. Since that reprint the binary knows both names and calls the
-type `неотрицательное` in its own refusals and in the proof report; write that one.
+**One type, two spellings.** In the compiler sources and in `docs/flang/SPEC.md`
+the type is called `неотрицательное`; `нат` is the outdated short spelling of the
+same name, accepted until 1.0. The binary takes both and calls the type
+`неотрицательное` in its own refusals and in the proof report; write that one.
 
 ## Table: arithmetic
 
-File — `flang/stdlib/math-classics.flang`, 45 functions, 67 claims. The number in
+File — `flang/stdlib/math-classics.flang`, 45 functions, 70 claims. The number in
 parentheses is the line in the downloaded file.
 
 | lemma | Coq | Lean / Mathlib | ours | verdict |
@@ -127,10 +100,10 @@ parentheses is the line in the downloaded file.
 | zero on the right | `Nat.add_0_r` (NZAdd.v:23) | `Nat.add_zero` | «Прибавить ноль» | grid |
 | zero on the left | `Nat.add_0_l` (PeanoNat.v:107) | `Nat.zero_add` | «Ноль слева» | grid |
 | cancel a summand | `Nat.add_cancel_l` (NZAdd.v:70) | `Nat.add_left_cancel` (Basic.lean:177) | «Сократить общее слагаемое» | grid |
-| summand ≤ sum, addend a **term** | `Nat.le_add_r` | `Nat.le_add_right` (Basic.lean:374) | «Сумма» — two claims | grid (both) |
+| summand ≤ sum, addend a **term** | `Nat.le_add_r` | `Nat.le_add_right` (Basic.lean:374) | «Сумма» — two claims | **proved** (both, by declared type) |
 | same, addend a **literal** | `Nat.le_add_r` | `Nat.le_add_right` | «Прибавить десять» | **proved** |
 | n ≤ n+1 | `Nat.le_succ_diag_r` (NZOrder.v:41) | `Nat.le_succ` (Prelude.lean:2078) | «Следующее» | **proved** |
-| a common addend keeps the order | — | `Nat.add_le_add_left` (Basic.lean:484) | «Прибавить общее к большему» | grid |
+| a common addend keeps the order | — | `Nat.add_le_add_left` (Basic.lean:484) | «Прибавить общее к большему» | **proved** (by declared type) |
 | multiplication commutes | `Nat.mul_comm` (NZMul.v:33) | `Nat.mul_comm` | «Произведение» | **proved** |
 | multiplication associates | `Nat.mul_assoc` (NZMul.v:55) | `Nat.mul_assoc` | «Произведение трёх» | grid |
 | one on the right | `Nat.mul_1_r` (NZMul.v:67) | `Nat.mul_one` | «Умножить на единицу» | grid |
@@ -143,7 +116,7 @@ parentheses is the line in the downloaded file.
 | n − n = 0 | — | `Nat.sub_self` (Basic.lean:290) | «Вычесть само себя» | grid |
 | order is reflexive | `Nat.le_refl` (NZOrder.v:31) | `Nat.le_refl` (Prelude.lean:2081) | «Само себя» | **proved** (by declared type) |
 | zero is least | `Nat.le_0_l` | `Nat.zero_le` (Prelude.lean:2054) | «Само себя» — second claim | **proved** (by declared type) |
-| transitivity | `Nat.le_trans` (NZOrder.v:126) | `Nat.le_trans` (Prelude.lean:2068) | «Через середину» | grid |
+| transitivity | `Nat.le_trans` (NZOrder.v:126) | `Nat.le_trans` (Prelude.lean:2068) | «Через середину» | **proved** (by declared type) |
 | antisymmetry | `Nat.le_antisymm` (NZOrder.v:203) | `Nat.le_antisymm` (Prelude.lean:2144) | «Зажатое между» | grid |
 | trichotomy | `Nat.lt_trichotomy` (NZOrder.v:88) | `Nat.lt_trichotomy` (Basic.lean:452) | «Сравнить» | **proved** |
 | order is total | `Nat.le_ge_cases` (NZOrder.v:282) | `Nat.le_total` (Basic.lean:341) | «Два сравнимы» | grid |
@@ -178,8 +151,10 @@ parentheses is the line in the downloaded file.
 | even times anything | `Nat.even_mul` (PeanoNat.v:213) | `Nat.even_mul` | «Произведение с чётным» | grid |
 
 Fifty-four rows: fifty-three lemmas written in flang and one ("Euclid
-terminates") that cannot be written at all. **Nineteen** are taken outright.
-Trichotomy is split in the file into three branches, and **all three are proved**.
+terminates") that cannot be written at all. **Twenty-two** are taken outright.
+Trichotomy is written in the file as five claims — the answer is one of the three
+branches, exactly one of three, and one claim per branch — and **all five are
+proved**.
 
 ## Table: lists
 
@@ -193,7 +168,7 @@ in the named Lean file.
 | one append step adds one | `List.last_length` (230) | `List.length_concat` (Basic.lean:110) | «Шаг склейки» | **proved** |
 | length of the empty list | `List.length_zero_iff_nil` (103) | `List.length_nil` (Basic.lean:84) | «Пустой список чисел» | **proved** |
 | length of a cons | — | `List.length_cons` (Basic.lean:89) | «Приписать в начало» | **proved** |
-| append with empty on the right | `List.app_nil_r` (139) | `List.append_nil` (Basic.lean:612) | «Склеить с пустым справа» | grid (and the weakening to length — grid too) |
+| append with empty on the right | `List.app_nil_r` (139) | `List.append_nil` (Basic.lean:612) | «Склеить с пустым справа» | **proved** (and the weakening to length — **proved** too) |
 | append with empty on the left | `List.app_nil_l` (134) | `List.nil_append` (Basic.lean:609) | «Склеить с пустым слева» | grid (weakening to length — **proved**) |
 | append associates | `List.app_assoc` (151) | `List.append_assoc` (Basic.lean:627) | «Склеить три» | grid (weakening to length — **proved**) |
 | cons through an append | `List.app_comm_cons` (163) | `List.cons_append` (Basic.lean:610) | «Приписать к склейке» | grid (weakening to length — **proved**) |
@@ -211,16 +186,16 @@ in the named Lean file.
 | a cons keeps a member | `List.in_cons` (277) | `List.mem_cons_of_mem` (Lemmas.lean:389) | «Приписать к вошедшему» | grid |
 | element at index belongs | `List.nth_In` (447) | `List.getElem_mem` | «Элемент по номеру» | grid |
 
-Twenty-one lemmas, six taken outright.
+Twenty-one lemmas, seven taken outright.
 
-**Weakenings, said out loud.** For nine lemmas where full list equality was not
-taken, the same statement **about length only** stands next to it, and eight of
-the nine are proved. This does not replace the lemma — it is strictly weaker, and
+**Weakenings, said out loud.** For nine lemmas the same statement **about length
+only** stands next to the full one, and all nine are proved; for eight of them the
+full list equality is not taken. This does not replace the lemma — it is strictly weaker, and
 the verdict in the table belongs to the full form, not to the weakening.
 
 ## Why it is not taken: the reasons, one by one
 
-The forty-nine unproved lemmas fall into **eight** named reasons, and none of them
+The forty-five unproved lemmas fall into **eight** named reasons, and none of them
 is "the kernel is weak in general".
 
 ### 1. Associativity and distributivity: the kernel matches SYNTACTICALLY
@@ -247,61 +222,54 @@ The same single rule explains `Nat.add_assoc`, `Nat.mul_assoc`,
 match: substituting the body gives `(а плюс 0) равен а`, and those are two
 different trees. On a bare body the kernel has no "fold the neutral element" rule.
 
-**On the path through a callee's postcondition it does have one — on one side
-only.** This explains an asymmetry that the previous edition of this page left
-unsolved: `List.app_nil_l` (append with empty on the LEFT, weakened to length) is
-proved while its mirror `List.app_nil_r` is a grid. Probe, taken from a run:
+**On the path through a callee's postcondition the length weakenings are taken
+on both sides.** `List.app_nil_r` and `List.app_nil_l` both call «Склеить», whose
+postcondition is "length of an append is the sum of lengths", and both weakenings
+to length are proved. The full equality is a different matter:
+«Склеить с пустым справа» (`List.app_nil_r`) is proved, while the mirror
+«Склеить с пустым слева» (`List.app_nil_l`) stays a grid.
 
-```
-«Склеить с пустым справа», body «Склеить» от элементы и пустой список:
-  (длина результат) равен ((длина элементы) плюс (длина пустой список))  — PROVED
-  (длина результат) равен ((длина элементы) плюс 0)                      — PROVED
-  (длина результат) равен (длина элементы)                               — grid
-
-«Склеить с пустым слева», body «Склеить» от пустой список и элементы:
-  (длина результат) равен (0 плюс (длина элементы))                      — PROVED
-  (длина результат) равен (длина элементы)                               — PROVED
-```
-
-The composed form is taken on both sides. The single difference: **a leading zero
-is folded away, a trailing one is not.** Where exactly the kernel walks is not
-visible from the refusal; only this is measurable.
-
-A neighbouring measurement worth knowing: in the lists file the claim "doubling is
+A neighbouring case worth knowing: in the lists file the claim "doubling is
 a sum with itself" over the body `х умножить на 2` is also a **grid**, while
 "adding one is a sum with one" over the body `х плюс 1` is **proved**. The
 difference is exactly whether the goal's tree matched the body's tree.
 
-### 3. Inequalities over a term: the rule exists under zero, under the type, and under a LITERAL
+### 3. Inequalities: the declared type carries the order, combining equalities does not
 
-`Nat.le_add_r` (term addend), `Nat.le_trans`, `Nat.le_antisymm`,
-`Nat.le_ge_cases`, `Nat.add_cancel_l`, `Nat.div_mod_eq`, `Nat.sub_add`,
-`Nat.add_le_add_left`, `Nat.mod_bound_pos` (term divisor) — nine lemmas.
+`Nat.le_antisymm`, `Nat.le_ge_cases`, `Nat.add_cancel_l`, `Nat.div_mod_eq`,
+`Nat.sub_add`, `Nat.mod_bound_pos` (term divisor) — six lemmas.
 
-**The boundary runs along the kind of the addend, and this is a new measurement.**
-One and the same lemma `Nat.le_add_r` yields two different verdicts:
+**What the declared type gives.** Monotonicity of addition is taken whatever the
+addend is — a term or a written number:
 
 ```
 «Сумма», body а плюс б with б: неотрицательное — addend a TERM:
-  а не больше результат   — grid
-  б не больше результат   — grid
+  а не больше результат   — PROVED
+  б не больше результат   — PROVED
 
 «Следующее»,        body а плюс 1  — addend a LITERAL:  а не больше результат — PROVED
 «Прибавить десять», body а плюс 10 — addend a LITERAL:  а не больше результат — PROVED
 ```
 
-Both literal cases came back as "proved **by the declared types of the
-arguments**: the goal was reduced by the rule 'order by construction'". So the
-kernel does read the range that the type `неотрицательное` gives — but only when the second
-summand is a written number. This is **the same dividing line as for the
-remainder** (`Nat.mod_bound_pos`): not the "difficulty" of the lemma but the kind
-of the second argument.
+All of them come back as "proved **by the declared types of the arguments**: the
+goal was reduced by the rule 'order by construction'". The kernel reads the range
+that the type `неотрицательное` gives. The same reading takes `Nat.le_refl`,
+`Nat.le_0_l`, `Nat.add_le_add_left` and `Nat.le_trans` («Через середину», in both
+spellings).
 
-What comes for free: `Nat.le_refl` and `Nat.le_0_l`, both with the same wording
-about declared types. But adding two premises `а не больше б` and `б не больше в`
-into a third is beyond it: its rewriting is single-goal.
+**The remainder is different: there the kind of the divisor decides.** The bounds
+of a remainder are taken when the divisor is a written number («Остаток по
+десяти») and stay a grid when it is a term («Остаток»). To a human both are one
+statement; to the kernel the first reads the bound straight off the number.
 
-**The bounds of min and max were taken, and taken by a guard.** Four claims —
+**What does not follow from order.** `Nat.le_antisymm` asks to turn two
+inequalities into an equality, and the kernel does not glue inequalities into an
+equality (see `Nat.mod_1_r` below). Its mirrored spelling `не (А) или (Б)`
+(technique 6) stands next to it in the file and is a grid too. `Nat.le_ge_cases`
+asks for a disjunction of two orders, `Nat.add_cancel_l` and `Nat.div_mod_eq` for
+equalities of computations.
+
+**The bounds of min and max are taken by a guard.** Four claims —
 `Nat.min_le_left`, `Nat.min_le_right`, `Nat.le_max_left`, `Nat.le_max_right` — are
 written with a guard copied from the body word for word:
 
@@ -313,14 +281,6 @@ written with a guard copied from the body word for word:
 Under the guard the body reduces to `а` and the goal to reflexivity, which the
 type `неотрицательное` supplies. Technique 1 of ["Which promises the kernel
 takes"](what-the-kernel-accepts.html) works on a `не больше` goal too, not only on equalities.
-
-**The mirrored spelling does not help here, measured three times.** For
-`Nat.le_trans`, `Nat.le_antisymm` and `Nat.add_le_add_left` the alternative
-spelling `не (А) или (Б)` was added (technique 6). All three stayed grids: the
-denominator grew, the numerator did not. The one for `Nat.add_le_add_left` was
-rolled back; the first two were kept so the reader can see both spellings. Splitting
-`Nat.le_total` by the three outcomes of a comparison (technique 11) ended in the
-same zero — three claims, no gain, rolled back.
 
 `Nat.sub_add` is a special case: over IEEE-754 the law is **false**, with the
 counterexample `(9007199254740994 минус 1) плюс 1 = 9007199254740992`. Over `неотрицательное`
@@ -335,7 +295,7 @@ from the rest of the numbers in a subtraction, and by the note in
 All of them ask for reasoning about remainders. The kernel has no such rules —
 only bounds on a remainder, and only with a literal divisor.
 
-**A separate measurement worth reading.** For `Nat.mod_1_r` both bounds are proved
+**A case worth reading.** For `Nat.mod_1_r` both bounds are proved
 and the equality is not:
 
 ```
@@ -356,8 +316,9 @@ goal's tree coincided with the body's.
 ### 5. Recursion by remainder: gcd
 
 `Nat.gcd_comm`, `Nat.gcd_divide_l`, `Nat.gcd_divide_r`, `Nat.gcd_self`,
-`Nat.gcd_1_r` — five lemmas with one shared cause: «НОД по Евклиду» is the **only
-non-total function** in both files. The pair `(a, b)` does decrease strictly in
+`Nat.gcd_1_r` — five lemmas with one shared cause: «НОД по Евклиду» is **not total**,
+and neither are the two functions that call it («НОД с самим собой», «НОД с
+единицей»); every other function in both files is total. The pair `(a, b)` does decrease strictly in
 the second argument, but the step is a remainder rather than a constant
 difference, and flang's termination analysis does not read such a step.
 
@@ -393,35 +354,29 @@ takes"](what-the-kernel-accepts.html).
 
 ### 7. Folds: the wall runs along their boundary
 
-`List.app_nil_r`, `List.app_nil_l`, `List.app_assoc`, `List.app_comm_cons`,
+`List.app_nil_l`, `List.app_assoc`, `List.app_comm_cons`,
 `List.rev_involutive`, `List.rev_app_distr`, `List.map_app`, `List.map_map`,
-`List.map_id`, `List.fold_left_app`, `List.fold_right_app` — **eleven** lemmas,
+`List.map_id`, `List.fold_left_app`, `List.fold_right_app` — **ten** lemmas,
 the largest group.
 
 The bodies of «Склеить» and «Обратить» are folds. **The kernel does have a fold
-principle**, as re-measured by neighbouring work (task 0050, commit `b96826d7`):
-it applies when the fold runs over the argument itself, named, at the top level of
-the body, and when the step carries a guard-free claim that the accumulator grows
-by exactly one. Both of our folds meet those conditions, the step has been lifted
-and does carry such a claim — and **the principle still never fired**: both runs,
-with the lifted step and with the lambda, report `доказано 16 (из них без теоремы
-16)` and `доказано 15 (из них без теоремы 15)`, with no "of them by induction" at
-all.
+principle**: it applies when the fold runs over the argument itself, named, at the
+top level of the body, and when the step carries a guard-free claim that the
+accumulator grows by exactly one. Our folds meet those conditions — and **the
+principle does not fire**: the report of the lists file has no "of them by
+induction" at all.
 
 The length of a fold is computed by a different rule — "identity after rewriting
 with a premise" — and that rule suffices for every claim about the measure and for
-not a single claim about the contents. There is still no rule "a fold over the
-empty list is the base": both claims "over the empty list the fold is the base
-itself" (left and right) stayed grids.
+almost no claim about the contents. Of the two claims "over the empty list the
+fold is the base itself", the left one is proved and the right one is a grid.
 
-**Technique 8 was tried and cost minus one — that has to be said plainly.** The
-fold step of «Склеить» was lifted into an ordinary function «Шаг склейки», and on
-it the claim `(длина результат) равен ((длина акк) плюс 1)` (`List.last_length`)
-is **proved**. But once the fold itself started calling the lifted step instead of
-the lambda, the file went **16 → 15 proved**: `List.app_nil_l` in its weakening to
-length was lost. The change was rolled back and «Шаг склейки» left standing beside
-the fold. The warning in the manual ("lifting the step may drop a proof that
-stood") is now confirmed by a number.
+**Lifting the step (technique 8) is not used in the fold.** The step of «Склеить»
+stands beside the fold as an ordinary function «Шаг склейки», and on it the claim
+`(длина результат) равен ((длина акк) плюс 1)` (`List.last_length`) is
+**proved**. The fold itself keeps its lambda: when it calls the lifted step
+instead, the full equality of `List.app_nil_r` is lost (19 → 18 proved) — the
+warning in the manual ("lifting the step may drop a proof that stood").
 
 What **was** taken, and taken everywhere: **length**. "length of an append is the
 sum of lengths", "reversing preserves length", "mapping preserves length", "a cons
@@ -433,27 +388,17 @@ proved. About lists the kernel can count, but it cannot identify.
 `List.in_app_iff`, `List.in_eq`, `List.in_cons`, `List.nth_In` — four lemmas, and
 this is the hole named third among the known ones: **"element N of a list"**. The
 kernel has no bridge between `содержит` and `элемент … в …` in either direction.
-The two lemmas added in this pass — `List.in_eq` and `List.in_cons` — confirmed it
-twice more: both grids, both over real bodies `приписать первый к элементы`.
+`List.in_eq` and `List.in_cons` show it over real bodies
+`приписать первый к элементы`: both are grids.
 
 ## The empty-promise check: four stubs, not two
 
-A promise that holds for any body checks nothing. All 45 proved claims of both
-files were run with their bodies replaced by stubs. The short answer: **none is
-empty**. But finding that out took more than the canonical pair of stubs, and here
-are the numbers.
-
-| stub | arithmetic: proved | lists: proved |
-|---|---:|---:|
-| real bodies | 29 | 16 |
-| zero (`0`, `нет`, empty list) | 19 | 8 |
-| non-zero (`1`, `да`, one-element list) | 13 | 6 |
-| third (`42`, `да`) | 10 | not needed |
-| fourth (`0 минус 1`, `нет`) | 8 | not needed |
-
-For lists the canonical pair sufficed: none of the sixteen proved claims survived
-both. In arithmetic **five claims survived both** — and none of them is empty;
-they are caught only by a stub placed **outside the bound**:
+A promise that holds for any body checks nothing, so a proved claim is checked by
+replacing the body with a stub: if the claim is still proved, it says nothing
+about the function. The canonical pair of stubs is zero (`0`, `нет`, the empty
+list) and non-zero (`1`, `да`, a one-element list). For bound-shaped claims that
+pair is not enough — these five are caught only by a stub placed **outside the
+bound**:
 
 | claim | 0 | 1 | 42 | −1 |
 |---|---|---|---|---|
@@ -469,29 +414,23 @@ inside the bound themselves.** Such a claim needs a stub from outside: above the
 ceiling or below zero. This extends the canon rather than refuting it — two stubs
 are still necessary, they are simply sometimes not enough.
 
-A caveat about the honesty of the measurement: stubbing a whole file at once
+A caveat about the honesty of the check: stubbing a whole file at once
 yields false "empties" wherever a goal refers to a neighbouring stubbed function.
-Those places are discarded in the tables above; in the real file they stand as
-grids anyway.
+Such places have to be discarded.
 
-## What this measurement says about the kernel
+## What this says about the kernel
 
-Four conclusions that were not obvious before the run.
+**First: for a remainder the boundary runs along the kind of the divisor, not the
+"difficulty" of the lemma.** The same lemma `Nat.mod_bound_pos` yields different
+verdicts depending on whether a term or a literal stands there: the first needs a
+range for the divisor, the second reads it straight off the number.
 
-**First: the boundary runs along the kind of the second argument, not the
-"difficulty" of the lemma.** The same lemma yields different verdicts depending on
-whether a term or a literal stands there — measured twice, independently: for the
-remainder (`Nat.mod_bound_pos`) and for monotonicity of addition
-(`Nat.le_add_r`). To a human `а ≤ а + б` and `а ≤ а + 10` are one statement; to
-the kernel the first needs a range for `б` while the second reads the range
-straight off the number.
-
-**Second: an exact type works, and works for free.** Twelve of the twenty-nine
-proved claims in arithmetic came **by declared type** (`объявленным типом 12` in
-the report) — three times more than in the previous measurement. `неотрицательное` gives both
-a floor and a ceiling; on it we got reflexivity, non-negativity, both bounds of a
-remainder by a literal, both bounds of min and max, and monotonicity of addition
-with a literal addend. It is the cheapest technique in the whole file.
+**Second: an exact type works, and works for free.** Seventeen of the
+thirty-seven proved claims in arithmetic came **by declared type** (`объявленным
+типом 17` in the report). `неотрицательное` gives both a floor and a ceiling; on
+it we got reflexivity, non-negativity, transitivity, both bounds of a remainder by
+a literal, both bounds of min and max, and monotonicity of addition. It is the
+cheapest technique in the whole file.
 
 **Third: the definition gets proved, its consequences do not.** Both branches of
 Euclid (`Nat.gcd_zero_right` and `Nat.gcd_rec`) are proved while `Nat.gcd_comm`,
@@ -500,21 +439,18 @@ Euclid (`Nat.gcd_zero_right` and `Nat.gcd_rec`) are proved while `Nat.gcd_comm`,
 are not. The kernel takes what is written in the body and almost nothing that
 follows from it.
 
-**Fourth: about lists the kernel counts but does not identify.** Of the sixteen
-proved claims in the lists file **fourteen are about length**, and the remaining
-two are about the small numeric helpers that feed the examples. Not a single
-equality of two lists was taken. The wall is flat and runs through one place.
+**Fourth: about lists the kernel counts and almost never identifies.** Of the
+nineteen proved claims in the lists file **fifteen are about length**, two are
+about the small numeric helpers that feed the examples, one is the base of the
+left fold over the empty list, and one equality of two lists is taken: append
+with the empty list on the right.
 
-## Reproducing the measurement
+## Reproducing the numbers
 
 ```sh
 ./bootstrap/flang check flang/stdlib/math-classics.flang --proof
 ./bootstrap/flang check flang/stdlib/math-classics-lists.flang --proof
 ```
-
-(The 23 August measurement went through the out-of-tree memory guard
-`flang-vorota`; on 0.7.17 the second file passes in three seconds without it, the
-first stops with a refusal — see the note at the top of the page.)
 
 The line to look at is the last one of the proof report:
 
@@ -525,13 +461,8 @@ The line to look at is the last one of the proof report:
 Count only `доказано`. `сетка` is a finite set of values and says nothing about
 the rest of the inputs.
 
-The measurement was taken with the binary
-`/srv/flang-rabota/w-predely/bootstrap/flang` (built 23 August 2026, with a raised
-step limit). The seed has since been reprinted (`0ce948bfd`), and the 0.7.17
-binary answers differently on the list file — 19 proved instead of 16 (note at
-the top of the page). If your numbers disagree with this page, first check which
-binary you counted with.
-
+If your numbers disagree with this page, first check which binary you counted
+with.
 
 ## Where to go next
 

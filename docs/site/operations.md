@@ -17,8 +17,8 @@ docs/examples/operations.flang: примеров 274, прошло 274, не п�
 
 Six of those examples are written here; the other 268 arrive with the library: an
 imported module carries its own examples, and they run alongside yours. (The
-numbers on this page were taken from binary 0.7.17 on 11 September 2026; the
-library function counts are by `функция «…»` headers in the `flang/stdlib/` files.)
+library function counts on this page are by `функция «…»` headers in the
+`flang/stdlib/` files.)
 
 ## Importing a module
 
@@ -348,7 +348,7 @@ The report says so outright:
 постусловие «общих не больше, чем в первом наборе» функции «Общих меток» — сетка 1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано только их число. Это не доказательство — теоремы при утверждении нет
 ```
 
-In 0.7.17 the report counts only the functions and claims of the file itself; the
+The report counts only the functions and claims of the file itself; the
 claims of the imported library are not in its summary. The words «с опорой, и
 опора не судилась» ("with support, and the support was not judged") in the last
 line mean exactly this: both claims leaned on the grid of examples, and the exit

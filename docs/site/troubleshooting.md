@@ -72,7 +72,7 @@ behaves differently depending on where you emitted it:
 | `cpp`, `csharp`, `go`, `java`, `python`, `rust` | emitting refuses outright, exit code 1, not a single file written |
 
 Taken on `docs/examples/service-on-processes/service.flang` (three processes, a
-supervisor, three runs), run of 11 September 2026, binary 0.7.17, commit 2c40752d0.
+supervisor, three runs).
 
 The refusal for `go` reads verbatim:
 
@@ -90,16 +90,14 @@ What to do: emit a program with processes into `c`, `elixir`, `js` or `ts`
 flang emit your-file.flang --target elixir --out ./output
 ```
 
-## The language server stays silent in the editor
+## The language server in the editor
 
 | Symptom | Cause | What to do |
 | --- | --- | --- |
-| The editor is configured, the server is running, and there are no hints or squiggles | while standard input is open the server sends no bytes, and an editor never closes input | bind `flang check %` to a key — [Setting up your editor](editor.html) |
-| `flang lsp: неразобранный JSON, сообщение пропущено` on the error stream | the client escaped non-ASCII as `\uXXXX`, and the server does not parse those sequences | send the body as plain UTF-8, unescaped |
-| No highlighting in VS Code and Emacs | it was written for Vim and Neovim only | there it installs with one line, see the same page |
+| The editor is configured and there are no hints or squiggles | the editor cannot start `flang lsp`: the binary is not on `PATH` | check the server command in the editor settings — [Setting up your editor](editor.html); `flang check %` on a key works without the server |
+| No highlighting in Emacs | highlighting exists for Vim, Neovim and VS Code only | use `flang check %` on a key — see the same page |
 
-One command tells you whether the server is alive — it closes the input, so the
-reply arrives:
+One command tells you whether the server is alive:
 
 ```bash
 printf 'Content-Length: 75\r\n\r\n{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{}}}' | flang lsp --stdio

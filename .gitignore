@@ -160,3 +160,4 @@ flang/self/bootstrap/collision-probe.flang
 # Соседние `fspec/settings.txt` и `fspec/snapshot.txt` сюда НЕ попадают: их
 # читает `fspec/guard.flang` на каждой проверке каталога, и без них она не идёт.
 fspec/clarifications.txt
+/.flang-cache/

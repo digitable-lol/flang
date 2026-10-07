@@ -6959,6 +6959,438 @@ static bool fl_memo_insert(unsigned long long hash, const unsigned char *key, si
   return true;
 }
 
+typedef struct fl_memo_lasting_state {
+  bool on;
+  const char *salt;
+  size_t salt_bytes;
+  const char *const *functions;
+  size_t function_count;
+  fl_memo_lasting_record *entries;
+  size_t slots;
+  size_t count;
+  fl_memo_lasting_record *fresh;
+  size_t fresh_count;
+  size_t fresh_slots;
+  fl_memo_buffer stable;
+  fl_memo_buffer result;
+  unsigned long long hits;
+  unsigned long long lost;
+} fl_memo_lasting_state;
+
+static fl_memo_lasting_state fl_lasting;
+
+static bool fl_memo_lasting_wanted(const char *function) {
+  size_t index = 0;
+  if (!fl_lasting.on || function == NULL) {
+    return false;
+  }
+  for (index = 0; index < fl_lasting.function_count; index += 1) {
+    if (strcmp(fl_lasting.functions[index], function) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static void fl_memo_lasting_hex_bytes(const char *hex, unsigned char *out) {
+  size_t at = 0;
+  for (at = 0; at < 32; at += 1) {
+    const char high = hex[at * 2];
+    const char low = hex[at * 2 + 1];
+    const unsigned value_high = (unsigned)(high <= '9' ? high - '0' : high - 'a' + 10);
+    const unsigned value_low = (unsigned)(low <= '9' ? low - '0' : low - 'a' + 10);
+    out[at] = (unsigned char)((value_high << 4) | value_low);
+  }
+}
+
+static bool fl_memo_lasting_digest(const char *function, const fl_value *args, size_t count, unsigned char *digest) {
+  fl_memo_buffer *buffer = &fl_lasting.stable;
+  char hex[65];
+  size_t index = 0;
+  buffer->size = 0;
+  buffer->failed = false;
+  fl_memo_put(buffer, fl_lasting.salt, fl_lasting.salt_bytes);
+  fl_memo_put_byte(buffer, 0u);
+  fl_memo_put_text(buffer, function);
+  fl_memo_put_size(buffer, count);
+  for (index = 0; index < count && !buffer->failed; index += 1) {
+    fl_memo_write(buffer, args[index]);
+  }
+  if (buffer->failed) {
+    return false;
+  }
+  fl_sha256_hex(buffer->data, buffer->size, hex);
+  fl_memo_lasting_hex_bytes(hex, digest);
+  return true;
+}
+
+static size_t fl_memo_lasting_at(const unsigned char *digest) {
+  size_t at = 0;
+  unsigned long long start = 0;
+  if (fl_lasting.slots == 0) {
+    return (size_t)-1;
+  }
+  memcpy(&start, digest, sizeof start);
+  at = (size_t)(start & (unsigned long long)(fl_lasting.slots - 1u));
+  while (fl_lasting.entries[at].bytes != NULL) {
+    if (memcmp(fl_lasting.entries[at].digest, digest, 32) == 0) {
+      return at;
+    }
+    at = (at + 1u) & (fl_lasting.slots - 1u);
+  }
+  return (size_t)-1;
+}
+
+typedef struct fl_memo_reader {
+  const unsigned char *bytes;
+  size_t size;
+  size_t at;
+  bool failed;
+} fl_memo_reader;
+
+static bool fl_memo_read_raw(fl_memo_reader *reader, void *out, size_t size) {
+  if (reader->failed || size > reader->size - reader->at) {
+    reader->failed = true;
+    return false;
+  }
+  memcpy(out, reader->bytes + reader->at, size);
+  reader->at += size;
+  return true;
+}
+
+static bool fl_memo_read_size(fl_memo_reader *reader, size_t *out) {
+  unsigned long long wide = 0;
+  if (!fl_memo_read_raw(reader, &wide, sizeof wide)) {
+    return false;
+  }
+  if (wide > (unsigned long long)(reader->size - reader->at)) {
+    reader->failed = true;
+    return false;
+  }
+  *out = (size_t)wide;
+  return true;
+}
+
+static const char *fl_memo_read_name(fl_memo_reader *reader) {
+  size_t size = 0;
+  char *text = NULL;
+  const char *name = NULL;
+  if (!fl_memo_read_size(reader, &size) || size > reader->size - reader->at) {
+    reader->failed = true;
+    return NULL;
+  }
+  text = (char *)malloc(size + 1u);
+  if (text == NULL) {
+    reader->failed = true;
+    return NULL;
+  }
+  memcpy(text, reader->bytes + reader->at, size);
+  text[size] = '\0';
+  reader->at += size;
+  name = fl_memo_name_of(text);
+  free(text);
+  if (name == NULL) {
+    reader->failed = true;
+  }
+  return name;
+}
+
+static bool fl_memo_read_fields(fl_memo_reader *reader, size_t count, const fl_field **out);
+
+static bool fl_memo_read_value(fl_memo_reader *reader, fl_value *out, size_t depth) {
+  unsigned char tag = 0;
+  size_t count = 0;
+  size_t index = 0;
+  *out = fl_nothing();
+  if (depth > 100000u || !fl_memo_read_raw(reader, &tag, 1u)) {
+    reader->failed = true;
+    return false;
+  }
+  out->tag = (fl_tag)tag;
+  switch ((fl_tag)tag) {
+  case FL_NOTHING:
+    return true;
+  case FL_NUMBER:
+    return fl_memo_read_raw(reader, &out->as.number, sizeof out->as.number);
+  case FL_FLAG: {
+    unsigned char flag = 0;
+    if (!fl_memo_read_raw(reader, &flag, 1u) || flag > 1u) {
+      reader->failed = true;
+      return false;
+    }
+    out->as.flag = flag == 1u;
+    return true;
+  }
+  case FL_STRING: {
+    char *text = NULL;
+    if (!fl_memo_read_size(reader, &count) || count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    if (count == 0) {
+      out->as.string.utf8 = "";
+      out->as.string.bytes = 0;
+      out->as.string.points = 0;
+      return true;
+    }
+    text = (char *)fl_memo_take(count);
+    if (text == NULL) {
+      reader->failed = true;
+      return false;
+    }
+    memcpy(text, reader->bytes + reader->at, count);
+    reader->at += count;
+    out->as.string.utf8 = text;
+    out->as.string.bytes = count;
+    out->as.string.points = fl_utf8_points(text, count);
+    return true;
+  }
+  case FL_LIST: {
+    fl_value *items = NULL;
+    out->as.list.grow = NULL;
+    out->as.list.items = NULL;
+    out->as.list.count = 0;
+    if (!fl_memo_read_size(reader, &count) || count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    if (count == 0) {
+      return true;
+    }
+    items = (fl_value *)fl_memo_take(count * sizeof(fl_value));
+    if (items == NULL) {
+      reader->failed = true;
+      return false;
+    }
+    for (index = 0; index < count; index += 1) {
+      if (!fl_memo_read_value(reader, &items[index], depth + 1u)) {
+        return false;
+      }
+    }
+    out->as.list.items = items;
+    out->as.list.count = count;
+    return true;
+  }
+  case FL_RECORD: {
+    fl_record *record = (fl_record *)fl_memo_take(sizeof(fl_record));
+    if (record == NULL || !fl_memo_read_size(reader, &count) || count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    record->count = count;
+    if (!fl_memo_read_fields(reader, count, &record->fields)) {
+      return false;
+    }
+    out->as.record = record;
+    return true;
+  }
+  case FL_VARIANT: {
+    fl_variant *variant = (fl_variant *)fl_memo_take(sizeof(fl_variant));
+    if (variant == NULL) {
+      reader->failed = true;
+      return false;
+    }
+    variant->name = fl_memo_read_name(reader);
+    if (variant->name == NULL || !fl_memo_read_size(reader, &count) || count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    variant->count = count;
+    if (!fl_memo_read_fields(reader, count, &variant->fields)) {
+      return false;
+    }
+    out->as.variant = variant;
+    return true;
+  }
+  default:
+    reader->failed = true;
+    return false;
+  }
+}
+
+static bool fl_memo_read_fields(fl_memo_reader *reader, size_t count, const fl_field **out) {
+  fl_field *fields = NULL;
+  size_t index = 0;
+  *out = NULL;
+  if (count == 0) {
+    return true;
+  }
+  fields = (fl_field *)fl_memo_take(count * sizeof(fl_field));
+  if (fields == NULL) {
+    reader->failed = true;
+    return false;
+  }
+  for (index = 0; index < count; index += 1) {
+    fields[index].name = fl_memo_read_name(reader);
+    if (fields[index].name == NULL || !fl_memo_read_value(reader, &fields[index].value, 0u)) {
+      reader->failed = true;
+      return false;
+    }
+  }
+  *out = fields;
+  return true;
+}
+
+bool fl_memo_lasting_setup(const char *salt, size_t salt_bytes, const char *const *functions, size_t count) {
+  fl_memory_lock();
+  fl_memo_ready();
+  fl_memory_unlock();
+  if (!fl_memo.enabled || salt == NULL || functions == NULL || count == 0) {
+    return false;
+  }
+  fl_lasting.salt = salt;
+  fl_lasting.salt_bytes = salt_bytes;
+  fl_lasting.functions = functions;
+  fl_lasting.function_count = count;
+  fl_lasting.on = true;
+  return true;
+}
+
+bool fl_memo_lasting_add(const unsigned char *digest, const unsigned char *bytes, size_t size, size_t steps,
+                         size_t copied, size_t span, bool counted) {
+  size_t at = 0;
+  unsigned long long start = 0;
+  unsigned char *copy = NULL;
+  if (!fl_lasting.on || bytes == NULL || size == 0) {
+    return false;
+  }
+  if (fl_memo_lasting_at(digest) != (size_t)-1) {
+    return true;
+  }
+  if ((fl_lasting.count + 1u) * 2u > fl_lasting.slots) {
+    const size_t slots = fl_lasting.slots == 0 ? 4096u : fl_lasting.slots * 2u;
+    fl_memo_lasting_record *fresh = (fl_memo_lasting_record *)calloc(slots, sizeof(fl_memo_lasting_record));
+    size_t index = 0;
+    if (fresh == NULL) {
+      return false;
+    }
+    for (index = 0; index < fl_lasting.slots; index += 1) {
+      if (fl_lasting.entries[index].bytes != NULL) {
+        memcpy(&start, fl_lasting.entries[index].digest, sizeof start);
+        at = (size_t)(start & (unsigned long long)(slots - 1u));
+        while (fresh[at].bytes != NULL) {
+          at = (at + 1u) & (slots - 1u);
+        }
+        fresh[at] = fl_lasting.entries[index];
+      }
+    }
+    free(fl_lasting.entries);
+    fl_lasting.entries = fresh;
+    fl_lasting.slots = slots;
+  }
+  copy = (unsigned char *)malloc(size);
+  if (copy == NULL) {
+    return false;
+  }
+  memcpy(copy, bytes, size);
+  memcpy(&start, digest, sizeof start);
+  at = (size_t)(start & (unsigned long long)(fl_lasting.slots - 1u));
+  while (fl_lasting.entries[at].bytes != NULL) {
+    at = (at + 1u) & (fl_lasting.slots - 1u);
+  }
+  memcpy(fl_lasting.entries[at].digest, digest, 32);
+  fl_lasting.entries[at].bytes = copy;
+  fl_lasting.entries[at].size = size;
+  fl_lasting.entries[at].steps = steps;
+  fl_lasting.entries[at].copied = copied;
+  fl_lasting.entries[at].span = span;
+  fl_lasting.entries[at].counted = counted;
+  fl_lasting.entries[at].used = false;
+  fl_lasting.count += 1;
+  return true;
+}
+
+static void fl_memo_lasting_remember(const unsigned char *digest, fl_value value, size_t steps, size_t copied,
+                                     size_t span, bool counted) {
+  fl_memo_lasting_record *entry = NULL;
+  unsigned char *bytes = NULL;
+  fl_memo_buffer *buffer = &fl_lasting.result;
+  if (fl_lasting.fresh_count == fl_lasting.fresh_slots) {
+    const size_t slots = fl_lasting.fresh_slots == 0 ? 256u : fl_lasting.fresh_slots * 2u;
+    fl_memo_lasting_record *grown =
+        (fl_memo_lasting_record *)realloc(fl_lasting.fresh, slots * sizeof(fl_memo_lasting_record));
+    if (grown == NULL) {
+      fl_lasting.lost += 1;
+      return;
+    }
+    fl_lasting.fresh = grown;
+    fl_lasting.fresh_slots = slots;
+  }
+  buffer->size = 0;
+  buffer->failed = false;
+  fl_memo_write(buffer, value);
+  if (buffer->failed || buffer->size == 0) {
+    fl_lasting.lost += 1;
+    return;
+  }
+  bytes = (unsigned char *)malloc(buffer->size);
+  if (bytes == NULL) {
+    fl_lasting.lost += 1;
+    return;
+  }
+  memcpy(bytes, buffer->data, buffer->size);
+  entry = &fl_lasting.fresh[fl_lasting.fresh_count];
+  memcpy(entry->digest, digest, 32);
+  entry->bytes = bytes;
+  entry->size = buffer->size;
+  entry->steps = steps;
+  entry->copied = copied;
+  entry->span = span;
+  entry->counted = counted;
+  entry->used = true;
+  fl_lasting.fresh_count += 1;
+}
+
+size_t fl_memo_lasting_fresh(const fl_memo_lasting_record **out) {
+  *out = fl_lasting.fresh;
+  return fl_lasting.fresh_count;
+}
+
+size_t fl_memo_lasting_used(size_t index, const fl_memo_lasting_record **out) {
+  size_t at = index;
+  *out = NULL;
+  while (at < fl_lasting.slots) {
+    if (fl_lasting.entries[at].bytes != NULL && fl_lasting.entries[at].used) {
+      *out = &fl_lasting.entries[at];
+      return at + 1u;
+    }
+    at += 1u;
+  }
+  return 0;
+}
+
+void fl_memo_lasting_counts(unsigned long long *loaded, unsigned long long *hits, unsigned long long *fresh,
+                            unsigned long long *lost) {
+  *loaded = (unsigned long long)fl_lasting.count;
+  *hits = fl_lasting.hits;
+  *fresh = (unsigned long long)fl_lasting.fresh_count;
+  *lost = fl_lasting.lost;
+}
+
+static bool fl_memo_lasting_take(const unsigned char *digest, fl_value *value, size_t *steps, size_t *copied,
+                                 size_t *span, bool *counted) {
+  const size_t at = fl_memo_lasting_at(digest);
+  fl_memo_reader reader;
+  fl_memo_lasting_record *entry = NULL;
+  if (at == (size_t)-1) {
+    return false;
+  }
+  entry = &fl_lasting.entries[at];
+  reader.bytes = entry->bytes;
+  reader.size = entry->size;
+  reader.at = 0;
+  reader.failed = false;
+  if (!fl_memo_read_value(&reader, value, 0u) || reader.at != reader.size) {
+    return false;
+  }
+  entry->used = true;
+  *steps = entry->steps;
+  *copied = entry->copied;
+  *span = entry->span;
+  *counted = entry->counted;
+  return true;
+}
+
 static void fl_memo_mismatch(const fl_memo_call *call, const char *what);
 
 static void fl_memo_disown(fl_arena *arena) {
@@ -6999,6 +7431,59 @@ static void fl_memo_open(fl_ctx *ctx, fl_memo_call *call) {
   ctx->depth_peak = ctx->depth;
 }
 
+static bool fl_memo_answer(fl_ctx *ctx, fl_memo_call *call, fl_memo_tally *tally, const fl_memo_entry *entry,
+                           fl_value *result) {
+  const bool counting = ctx->max_steps != 0;
+  if (counting && !entry->counted) {
+    tally->over_steps += 1;
+    call->mode = FL_MEMO_PASS;
+  } else if (counting && (entry->steps > ctx->max_steps || ctx->steps > ctx->max_steps - entry->steps)) {
+    tally->over_steps += 1;
+    call->mode = FL_MEMO_PASS;
+  } else if (entry->span > ctx->max_depth || ctx->depth > ctx->max_depth - entry->span) {
+    tally->over_depth += 1;
+    call->mode = FL_MEMO_PASS;
+  } else if (fl_memo.audit) {
+    call->key = (unsigned char *)malloc(fl_memo.key.size == 0 ? 1u : fl_memo.key.size);
+    if (call->key == NULL) {
+      fl_memo_mismatch(call, "no memory to keep the key for the audit");
+    }
+    memcpy(call->key, fl_memo.key.data, fl_memo.key.size);
+    call->key_bytes = fl_memo.key.size;
+    tally->audited += 1;
+    call->mode = FL_MEMO_AUDIT;
+  } else {
+    tally->hits += 1;
+    if (counting) {
+      ctx->steps += entry->steps;
+      ctx->copied += entry->copied;
+    }
+    if (ctx->depth + entry->span > ctx->depth_peak) {
+      ctx->depth_peak = ctx->depth + entry->span;
+    }
+    *result = entry->value;
+    return true;
+  }
+  fl_memo_open(ctx, call);
+  return false;
+}
+
+static size_t fl_memo_from_lasting(fl_memo_call *call) {
+  fl_value value = fl_nothing();
+  size_t steps = 0;
+  size_t copied = 0;
+  size_t span = 0;
+  bool counted = false;
+  if (!fl_memo_lasting_take(call->digest, &value, &steps, &copied, &span, &counted)) {
+    return (size_t)-1;
+  }
+  if (!fl_memo_insert(call->hash, fl_memo.key.data, fl_memo.key.size, value, steps, copied, span, counted)) {
+    return (size_t)-1;
+  }
+  fl_lasting.hits += 1;
+  return fl_memo_lookup(call->hash, fl_memo.key.data, fl_memo.key.size);
+}
+
 bool fl_memo_find(fl_ctx *ctx, const char *function, const fl_value *args, size_t count, fl_memo_call *call,
                   fl_value *result) {
   fl_memo_tally *tally = NULL;
@@ -7007,6 +7492,7 @@ bool fl_memo_find(fl_ctx *ctx, const char *function, const fl_value *args, size_
   call->key = NULL;
   call->key_bytes = 0;
   call->tally = 0;
+  call->lasting = false;
   if (ctx == NULL || result == NULL || function == NULL) {
     return false;
   }
@@ -7022,44 +7508,17 @@ bool fl_memo_find(fl_ctx *ctx, const char *function, const fl_value *args, size_
   }
   call->hash = fl_memo_hash(fl_memo.key.data, fl_memo.key.size);
   at = fl_memo_lookup(call->hash, fl_memo.key.data, fl_memo.key.size);
-  if (at != (size_t)-1) {
-    const fl_memo_entry *entry = &fl_memo.entries[at];
-    const bool counting = ctx->max_steps != 0;
-    if (counting && !entry->counted) {
-      tally->over_steps += 1;
-      call->mode = FL_MEMO_PASS;
-    } else if (counting && (entry->steps > ctx->max_steps || ctx->steps > ctx->max_steps - entry->steps)) {
-      tally->over_steps += 1;
-      call->mode = FL_MEMO_PASS;
-    } else if (entry->span > ctx->max_depth || ctx->depth > ctx->max_depth - entry->span) {
-      tally->over_depth += 1;
-      call->mode = FL_MEMO_PASS;
-    } else if (fl_memo.audit) {
-      call->key = (unsigned char *)malloc(fl_memo.key.size == 0 ? 1u : fl_memo.key.size);
-      if (call->key == NULL) {
-        fl_memo_mismatch(call, "no memory to keep the key for the audit");
-      }
-      memcpy(call->key, fl_memo.key.data, fl_memo.key.size);
-      call->key_bytes = fl_memo.key.size;
-      tally->audited += 1;
-      call->mode = FL_MEMO_AUDIT;
-    } else {
-      tally->hits += 1;
-      if (counting) {
-        ctx->steps += entry->steps;
-        ctx->copied += entry->copied;
-      }
-      if (ctx->depth + entry->span > ctx->depth_peak) {
-        ctx->depth_peak = ctx->depth + entry->span;
-      }
-      *result = entry->value;
-      return true;
+  if (at == (size_t)-1 && fl_memo_lasting_wanted(function)) {
+    call->lasting = fl_memo_lasting_digest(function, args, count, call->digest);
+    if (call->lasting) {
+      at = fl_memo_from_lasting(call);
     }
-    fl_memo_open(ctx, call);
-    return false;
+  }
+  if (at != (size_t)-1) {
+    return fl_memo_answer(ctx, call, tally, &fl_memo.entries[at], result);
   }
   tally->misses += 1;
-  if (fl_memo.full) {
+  if (fl_memo.full && !call->lasting) {
     tally->unkept += 1;
     return false;
   }
@@ -7127,6 +7586,9 @@ fl_status fl_memo_keep(fl_ctx *ctx, fl_memo_call *call, fl_status status, fl_val
     return status;
   }
   if (call->mode == FL_MEMO_STORE) {
+    if (status == FL_OK && result != NULL && call->lasting) {
+      fl_memo_lasting_remember(call->digest, *result, steps, copied, span, ctx->max_steps != 0);
+    }
     if (status == FL_OK && result != NULL) {
       if (fl_memo_insert(call->hash, call->key, call->key_bytes, *result, steps, copied, span, ctx->max_steps != 0)) {
         fl_memo.tallies[call->tally].kept += 1;

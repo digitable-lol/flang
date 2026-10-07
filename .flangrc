@@ -57,6 +57,7 @@ script.axioms:check = bootstrap/flang io flang/scripts/kernel-forgeries.fscript 
 script.proof-record:check = bootstrap/flang run-script seed:freshness --what proof-record:check >&2 && bootstrap/flang io flang/proof/forgeries/run.fscript --max-steps 4000000000 --timeout 14400000
 script.record-source:check = bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Проверка
 script.record-source:forgery = bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Подлог
+script.proof-cache:forgery = bootstrap/flang io scripts/guards/proof-cache-forgeries.fscript --plan Подлоги --timeout 1800000
 script.checker:check = bootstrap/flang io flang/proof/checker/tests/run.fscript --max-steps 4000000000 --timeout 600000
 script.checker:second = bootstrap/flang io flang/proof/second-checker.fscript --plan Crosscheck --timeout 900000
 script.checker:second-forgery = bootstrap/flang io flang/proof/second-checker.fscript --plan Forgery --timeout 900000

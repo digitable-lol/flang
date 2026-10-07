@@ -164,12 +164,6 @@
     ожидается ["-c", "cd ../.. && T=${FLANG_TMP:-/srv/tmp}/checks-nobody-calls.$$ && mkdir -p \"$T\" && git -c core.quotepath=false ls-files -c -o --exclude-standard -- ':(glob)flang/proof/probes/*/*.sh' ':(glob)flang/proof/probes/*/*.fscript' ':(glob)flang/proof/*/run.sh' ':(glob)flang/proof/*/run.fscript' ':(glob)flang/proof/*/*/run.sh' ':(glob)flang/proof/*/*/run.fscript' ':(glob)scripts/guards/*' ':(glob)flang/scripts/*guard*' ':(glob)flang/scripts/*forger*' | LC_ALL=C sort > \"$T/checks\" && sed 's#.*/##' \"$T/checks\" | LC_ALL=C sort -u > \"$T/names\" && echo '@@CHECKS' && cat \"$T/checks\" && echo '@@CALLS' && git -c core.quotepath=false ls-files -c -o --exclude-standard -- '*.yml' '*.yaml' '*.sh' '*.fscript' '*.flang' '*.mjs' '*.py' '.githooks/*' '.flangrc' '*Makefile' | tr '\\n' '\\0' | xargs -0 grep -nH -F -f \"$T/names\" 2>/dev/null; rm -rf \"$T\""]
   ["-c", "cd ../.. && T=${FLANG_TMP:-/srv/tmp}/checks-nobody-calls.$$ && mkdir -p \"$T\" && git -c core.quotepath=false ls-files -c -o --exclude-standard -- ':(glob)flang/proof/probes/*/*.sh' ':(glob)flang/proof/probes/*/*.fscript' ':(glob)flang/proof/*/run.sh' ':(glob)flang/proof/*/run.fscript' ':(glob)flang/proof/*/*/run.sh' ':(glob)flang/proof/*/*/run.fscript' ':(glob)scripts/guards/*' ':(glob)flang/scripts/*guard*' ':(glob)flang/scripts/*forger*' | LC_ALL=C sort > \"$T/checks\" && sed 's#.*/##' \"$T/checks\" | LC_ALL=C sort -u > \"$T/names\" && echo '@@CHECKS' && cat \"$T/checks\" && echo '@@CALLS' && git -c core.quotepath=false ls-files -c -o --exclude-standard -- '*.yml' '*.yaml' '*.sh' '*.fscript' '*.flang' '*.mjs' '*.py' '.githooks/*' '.flangrc' '*Makefile' | tr '\\n' '\\0' | xargs -0 grep -nH -F -f \"$T/names\" 2>/dev/null; rm -rf \"$T\""]
 
-примечание "ЗАЧЕМ опись судей собирает оболочка, а не план: счёт вхождений по всему дереву"
-примечание "внутри flang io в предел шагов не укладывается — задача 4433 об этом и предупреждала."
-примечание "ПОЧЕМУ два вида записи имени. «Имя» в .flang и .fscript — обычный зов; \"Имя\" строкой"
-примечание "в рантайме на C — зов точки входа через repl_call. Считать надо оба, иначе точка,"
-примечание "которую зовёт только рантайм, выглядит незваной."
-
 тотальная функция «Команда описи судей»
   возвращает строка
   обеспечивает «опись берётся у git, а не обходом каталога» результат содержит "ls-files"
@@ -1292,7 +1286,7 @@
 
 тотальная функция «Начать подлог судьи»
   возвращает «Ход»
-  пример «Подлог судьи идёт своим ходом»
+  пример «Judge forgery идёт своим ходом»
     ожидается вариант «Ждём подлог судьи»
   вариант «Ждём подлог судьи»
 
@@ -1346,7 +1340,7 @@
   начинает с «Начать подлог»
   обрабатывает «Дальше»
 
-план «Подлог судьи»
+план «Judge forgery»
   состояние «Ход»
   начинает с «Начать подлог судьи»
   обрабатывает «Дальше»

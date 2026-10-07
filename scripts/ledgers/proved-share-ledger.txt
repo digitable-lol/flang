@@ -965,6 +965,7 @@ bdfed2d3f41e6eb7bee5d707cde1cba5|1|1|0|0|0|docs/site/build.flang
 b57a57345cf23de663529ed06d1b1d58|4|0|1|0|0|docs/site/numbers.flang
 f4d48585e82e235a1f8d25bd19d21afa|6|6|0|0|0|docs/site/sitemap.flang
 e94014e3cb5e300e46424a7f8072899b|1|×|×|×|0|docs/zamer-teorkat/class-string-to-string.flang
+d008844300e06d3061431dd50a06a964|4|4|0|0|0|flang/concurrency/bench/by-cores.fscript
 a8a4bc5a69a3ca169dc935df04d2b9a7|4|4|0|0|0|flang/concurrency/examples/backpressure.flang
 ec1f624e7568f4537f7518b1b4c0d0fd|1|1|0|0|0|flang/concurrency/examples/budget.flang
 06ad4d0486befb5d8b1bf5b7a66e08dc|3|3|0|0|0|flang/concurrency/examples/counter.flang

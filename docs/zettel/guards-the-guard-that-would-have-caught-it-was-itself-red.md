@@ -63,7 +63,7 @@ scripts/guards/tab-host-guard.flang: не проверено — ведомос�
 * прогон `check scripts/guards/tab-host-guard.flang --proof` общим двоичным
   `w-predely/bootstrap/flang` 26 августа 2026 — три несошедшихся примера;
 * прямой перебор двадцати имён `«Варианты поручения»`
-  (`flang/self/parser.flang:5969`) по `flang_host_browser.js` — четыре без
+  (`flang/self/parser.flang:5979`) по `flang_host_browser.js` — четыре без
   ветки;
 * примеры сторожа приведены к нынешним двадцати, после чего файл судится снова.
 

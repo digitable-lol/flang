@@ -17,7 +17,7 @@ bootstrap/flang run-script foreign-c:census   # доля функций C дер
 
 Нужны `clang` и `cc` с `-fsanitize=undefined`. Временные файлы — под `FLANG_TMP`.
 
-## Что лежит в корпусе
+## Что лежит в наборе примеров
 
 * `corpus/*.c` — чужой код, как есть.
 * `corpus/claims.tsv` — что человек утверждает о функции: строки `requires` и `ensures`,

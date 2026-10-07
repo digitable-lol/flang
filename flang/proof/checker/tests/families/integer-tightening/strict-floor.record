@@ -1,5 +1,5 @@
 запись доказательства 1
-исходник flang/proof/checker/tests/families/integer-tightening/positive.flang
+исходник flang/proof/checker/tests/families/integer-tightening/strict-floor.flang
 строк 16
 знаков 381
 отпечаток 23868259 379702833

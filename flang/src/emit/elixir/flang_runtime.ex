@@ -228,6 +228,7 @@ defmodule Flang.Rt do
   @code_match "FLANG_MATCH_NOT_EXHAUSTIVE"
   @code_builtin_args "FLANG_BUILTIN_ARGS"
   @code_recursion_limit "FLANG_RECURSION_LIMIT"
+  @code_property "FLANG_PROPERTY"
 
   def code_type, do: @code_type
   def code_unknown_name, do: @code_unknown_name
@@ -930,27 +931,6 @@ defmodule Flang.Rt do
     raise fail(@code_type, "сравнения порядка допустимы только для чисел")
   end
 
-  # ─────────────────── точное целое: разряды основания 2²² ───────────────────
-  #
-  # Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание
-  # 2²². Представление выбрано задачей 1411, решение — ADR-0036 §11; складывает
-  # разряды вычислитель в `flang/self/interpret.flang` («Основание разрядов»).
-  #
-  # Отличать точное целое от обычного списка по типу здесь нечем: напечатанная
-  # программа типов не носит, и вычислитель сам смотрит только на вид значения
-  # («Сложение знач»: оба операнда — списки чисел). Правило ниже такое же
-  # динамическое, поэтому печать и вычислитель не расходятся.
-  #
-  # Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
-  # собственный пример вычислителя подаёт [4194305], — а на таких разрядах
-  # быстрый путь (до двух разрядов) и общий путь (перенос по столбцам) дают
-  # РАЗНЫЙ ответ. Переписаны оба, порознь.
-  #
-  # Считается через `num_*`, а не целыми Erlang: число flang — IEEE-754 double
-  # вместе с `:nan`, `:inf` и `:ninf`, и целое разошлось бы с вычислителем и на
-  # них, и на разрядах вне диапазона. Потолка значению не нужно: длину даёт
-  # список, и произвольная точность приходит от него, а не от разряда.
-
   @exact_base 4_194_304.0
 
   @doc "Основание разряда точного целого: 2²²."
@@ -959,14 +939,6 @@ defmodule Flang.Rt do
   # «Разряды ли знач»: список, и каждый элемент — число. Пустой годится.
   defp exact_digits?({:list, _, _} = value), do: Enum.all?(items(value), &match?({:num, _}, &1))
   defp exact_digits?(_), do: false
-
-  # «Разряд точного»: номер с единицы, за концом списка — ноль.
-  defp exact_digit(digits, place) do
-    case Enum.at(digits, place - 1) do
-      nil -> 0.0
-      digit -> digit
-    end
-  end
 
   # «Срезать старшие нули»: старший разряд стоит в конце.
   defp exact_trim(digits) do
@@ -981,11 +953,6 @@ defmodule Flang.Rt do
     exact_trim([low, middle, num_div(num_sub(high, middle), @exact_base)])
   end
 
-  # «Значение малых разрядов»: два младших разряда машинным числом.
-  defp exact_small_value(digits) do
-    num_add(exact_digit(digits, 1), num_mul(exact_digit(digits, 2), @exact_base))
-  end
-
   # «Уложить разряды»: перенос по столбцам, затем разряды переноса сверху.
   defp exact_settle(columns) do
     {settled, carry} =
@@ -998,59 +965,197 @@ defmodule Flang.Rt do
     exact_trim(settled ++ exact_small_digits(carry))
   end
 
-  # «Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы и перенос.
-  defp exact_sum(left, right) when length(left) <= 2 and length(right) <= 2 do
-    exact_small_digits(num_add(exact_small_value(left), exact_small_value(right)))
-  end
-
-  defp exact_sum(left, right) do
-    wide = max(length(left), length(right))
-
-    1..wide
-    |> Enum.map(&num_add(exact_digit(left, &1), exact_digit(right, &1)))
-    |> exact_settle()
-  end
-
-  # Разряды значения числами BEAM. Зовётся только после `exact_digits?`.
   defp exact_places(value), do: Enum.map(items(value), fn {:num, digit} -> digit end)
 
-  # «Точное сложение». Витков не тратит — так же, как в вычислителе.
-  defp exact_add(left, right) do
-    list(Enum.map(exact_sum(exact_places(left), exact_places(right)), &{:num, &1}))
+  @exact_base_int 4_194_304
+
+  defp exact_canon(value) do
+    value
+    |> exact_places()
+    |> exact_settle()
+    |> Enum.reverse()
+    |> Enum.reduce(0, fn digit, whole -> whole * @exact_base_int + trunc(digit) end)
   end
 
-  @doc "«плюс»."
-  def add(left, right) do
-    if exact_digits?(left) and exact_digits?(right) do
-      exact_add(left, right)
-    else
-      {a, b, _} = arithmetic("add", left, right)
-      {:num, num_add(a, b)}
+  defp exact_digits_of(0), do: []
+  defp exact_digits_of(whole), do: [rem(whole, @exact_base_int) | exact_digits_of(div(whole, @exact_base_int))]
+
+  defp exact_value(whole), do: list(Enum.map(exact_digits_of(whole), &{:num, &1 * 1.0}))
+
+  defp exact_text(whole), do: "[" <> Enum.map_join(exact_digits_of(whole), ", ", &Integer.to_string/1) <> "]"
+
+  defp exact_fraction?({:list, _, _} = value) do
+    case items(value) do
+      [top, bottom] -> exact_digits?(top) and exact_digits?(bottom)
+      _ -> false
     end
   end
 
-  @doc "«минус»."
+  defp exact_fraction?(_), do: false
+
+  defp fraction_parts(value) do
+    [top, bottom] = items(value)
+    {exact_canon(top), exact_canon(bottom)}
+  end
+
+  defp fraction_value(0, _bottom), do: list([exact_value(0), exact_value(1)])
+
+  defp fraction_value(top, bottom) do
+    common = Integer.gcd(top, bottom)
+    list([exact_value(div(top, common)), exact_value(div(bottom, common))])
+  end
+
+  defp fraction_text({top, bottom}), do: exact_text(top) <> " над " <> exact_text(bottom)
+
+  defp exact_order(left, right) do
+    cond do
+      exact_fraction?(left) and exact_fraction?(right) ->
+        {a, b} = fraction_parts(left)
+        {c, d} = fraction_parts(right)
+        compare_whole(a * d, c * b)
+
+      exact_digits?(left) and exact_digits?(right) ->
+        compare_whole(exact_canon(left), exact_canon(right))
+
+      true ->
+        nil
+    end
+  end
+
+  defp compare_whole(a, b) when a < b, do: :lt
+  defp compare_whole(a, b) when a > b, do: :gt
+  defp compare_whole(_, _), do: :eq
+
+  defp order_of(left, right) do
+    case exact_order(left, right) do
+      nil ->
+        {a, b} = ordered(left, right)
+        num_order(a, b)
+
+      order ->
+        order
+    end
+  end
+
+  def add(left, right) do
+    cond do
+      exact_fraction?(left) and exact_fraction?(right) ->
+        {a, b} = fraction_parts(left)
+        {c, d} = fraction_parts(right)
+        fraction_value(a * d + c * b, b * d)
+
+      exact_digits?(left) and exact_digits?(right) ->
+        exact_value(exact_canon(left) + exact_canon(right))
+
+      true ->
+        {a, b, _} = arithmetic("add", left, right)
+        {:num, num_add(a, b)}
+    end
+  end
+
   def sub(left, right) do
-    {a, b, _} = arithmetic("sub", left, right)
-    {:num, num_sub(a, b)}
+    cond do
+      exact_fraction?(left) and exact_fraction?(right) ->
+        {a, b} = fraction_parts(left)
+        {c, d} = fraction_parts(right)
+
+        if a * d < c * b do
+          raise fail(
+                  @code_property,
+                  "точное дробное ниже нуля значений не имеет: " <>
+                    fraction_text({a, b}) <> " минус " <> fraction_text({c, d}) <> "; молчаливый ноль запрещён"
+                )
+        end
+
+        fraction_value(a * d - c * b, b * d)
+
+      exact_digits?(left) and exact_digits?(right) ->
+        a = exact_canon(left)
+        b = exact_canon(right)
+
+        if a < b do
+          raise fail(
+                  @code_property,
+                  "точное целое ниже нуля значений не имеет: " <>
+                    exact_text(a) <> " минус " <> exact_text(b) <> "; молчаливый ноль запрещён"
+                )
+        end
+
+        exact_value(a - b)
+
+      true ->
+        {a, b, _} = arithmetic("sub", left, right)
+        {:num, num_sub(a, b)}
+    end
   end
 
-  @doc "«умножить на»."
   def mul(left, right) do
-    {a, b, _} = arithmetic("mul", left, right)
-    {:num, num_mul(a, b)}
+    cond do
+      exact_fraction?(left) and exact_fraction?(right) ->
+        {a, b} = fraction_parts(left)
+        {c, d} = fraction_parts(right)
+        fraction_value(a * c, b * d)
+
+      exact_digits?(left) and exact_digits?(right) ->
+        exact_value(exact_canon(left) * exact_canon(right))
+
+      true ->
+        {a, b, _} = arithmetic("mul", left, right)
+        {:num, num_mul(a, b)}
+    end
   end
 
-  @doc "«делить на»."
   def divide(left, right) do
-    {a, b, _} = arithmetic("div", left, right)
-    {:num, num_div(a, b)}
+    if exact_fraction?(left) and exact_fraction?(right) do
+      {a, b} = fraction_parts(left)
+      {c, d} = fraction_parts(right)
+
+      if c == 0 do
+        raise fail(
+                @code_property,
+                "деление на нулевую дробь не определено: " <>
+                  fraction_text({a, b}) <> " делить на " <> fraction_text({c, d})
+              )
+      end
+
+      fraction_value(a * d, b * c)
+    else
+      {a, b, _} = arithmetic("div", left, right)
+      {:num, num_div(a, b)}
+    end
   end
 
-  @doc "«остаток от» как двуместная операция."
   def mod(left, right) do
-    {a, b, _} = arithmetic("mod", left, right)
-    {:num, num_rem(a, b)}
+    if exact_digits?(left) and exact_digits?(right) do
+      a = exact_canon(left)
+      b = exact_canon(right)
+
+      if b == 0 do
+        raise fail(
+                @code_property,
+                "остаток от нулевого точного целого не определён: " <> exact_text(a) <> " остаток от 0"
+              )
+      end
+
+      exact_value(rem(a, b))
+    else
+      {a, b, _} = arithmetic("mod", left, right)
+      {:num, num_rem(a, b)}
+    end
+  end
+
+  def b_integer_part(value) do
+    if not exact_fraction?(value) do
+      raise fail(
+              @code_builtin_args,
+              "«целая часть»: аргумент должен быть точным дробным, получено " <> type_name(value)
+            )
+    end
+
+    case fraction_parts(value) do
+      {_top, 0} -> exact_value(0)
+      {top, bottom} -> exact_value(div(top, bottom))
+    end
   end
 
   @doc """
@@ -1065,28 +1170,16 @@ defmodule Flang.Rt do
   end
 
   @doc "«больше»."
-  def gt(left, right) do
-    {a, b} = ordered(left, right)
-    {:flag, num_order(a, b) == :gt}
-  end
+  def gt(left, right), do: {:flag, order_of(left, right) == :gt}
 
   @doc "«меньше»."
-  def lt(left, right) do
-    {a, b} = ordered(left, right)
-    {:flag, num_order(a, b) == :lt}
-  end
+  def lt(left, right), do: {:flag, order_of(left, right) == :lt}
 
   @doc "«не меньше»."
-  def gte(left, right) do
-    {a, b} = ordered(left, right)
-    {:flag, num_order(a, b) in [:gt, :eq]}
-  end
+  def gte(left, right), do: {:flag, order_of(left, right) in [:gt, :eq]}
 
   @doc "«не больше»."
-  def lte(left, right) do
-    {a, b} = ordered(left, right)
-    {:flag, num_order(a, b) in [:lt, :eq]}
-  end
+  def lte(left, right), do: {:flag, order_of(left, right) in [:lt, :eq]}
 
   @doc "«соединить» как двуместная операция над строками."
   def concat({:str, a}, {:str, b}), do: {:str, a <> b}

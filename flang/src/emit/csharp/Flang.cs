@@ -34,6 +34,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
+using BigInteger = System.Numerics.BigInteger;
 
 /// <summary>Операции языка flang.</summary>
 public static class Flang
@@ -293,28 +294,6 @@ public static class Flang
         }
     }
 
-    /* ─────────────────── точное целое: разряды основания 2²² ───────────────────
-     *
-     * Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание
-     * 2²². Представление выбрано задачей 1411, решение — ADR-0036 §11;
-     * складывает разряды вычислитель в `flang/self/interpret.flang`
-     * («Основание разрядов» и ниже).
-     *
-     * Отличать точное целое от обычного списка по типу здесь нечем:
-     * напечатанная программа типов не носит, и вычислитель сам смотрит только
-     * на вид значения («Сложение знач»: оба операнда — списки чисел). Правило
-     * ниже такое же динамическое, поэтому печать и вычислитель не расходятся.
-     *
-     * Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
-     * собственный пример вычислителя подаёт [4194305], — а на таких разрядах
-     * быстрый путь (до двух разрядов) и общий путь (перенос по столбцам) дают
-     * РАЗНЫЙ ответ. Переписаны оба, порознь.
-     *
-     * Считается в double, а не в System.Numerics.BigInteger: число flang —
-     * IEEE-754 double, и точное целое разошлось бы с вычислителем на разрядах
-     * вне диапазона. Длина растёт списком, поэтому потолка нет и без BigInteger.
-     */
-
     /// <summary>Основание разряда точного целого: 2²².</summary>
     public const double ExactBase = 4194304.0;
 
@@ -334,10 +313,6 @@ public static class Flang
         }
         return true;
     }
-
-    /// <summary>«Разряд точного»: номер с единицы, за концом — ноль.</summary>
-    private static double ExactDigit(double[] digits, int place) =>
-        place < 1 || place > digits.Length ? 0.0 : digits[place - 1];
 
     /// <summary>«Срезать старшие нули»: старший разряд стоит в конце.</summary>
     private static double[] ExactTrim(double[] digits, int count)
@@ -361,10 +336,6 @@ public static class Flang
         return ExactTrim(new double[] { low, middle, (high - middle) / ExactBase }, 3);
     }
 
-    /// <summary>«Значение малых разрядов»: два младших машинным числом.</summary>
-    private static double ExactSmallValue(double[] digits) =>
-        ExactDigit(digits, 1) + ExactDigit(digits, 2) * ExactBase;
-
     /// <summary>«Уложить разряды»: перенос по столбцам, затем перенос сверху.</summary>
     private static double[] ExactSettle(double[] columns)
     {
@@ -385,23 +356,6 @@ public static class Flang
         return ExactTrim(settled, columns.Length + above.Length);
     }
 
-    /// <summary>«Сумма разрядов»: быстрый путь до двух разрядов.</summary>
-    private static double[] ExactSum(double[] left, double[] right)
-    {
-        if (left.Length <= 2 && right.Length <= 2)
-        {
-            return ExactSmallDigits(ExactSmallValue(left) + ExactSmallValue(right));
-        }
-        int wide = left.Length > right.Length ? left.Length : right.Length;
-        double[] columns = new double[wide];
-        for (int index = 0; index < wide; index++)
-        {
-            columns[index] = ExactDigit(left, index + 1) + ExactDigit(right, index + 1);
-        }
-        return ExactSettle(columns);
-    }
-
-    /// <summary>Разряды значения числами C#.</summary>
     private static double[] ExactPlaces(Value value)
     {
         Value[] items = Value.Elements(value);
@@ -413,63 +367,208 @@ public static class Flang
         return digits;
     }
 
-    /// <summary>«Точное сложение». Витков не тратит — как в вычислителе.</summary>
-    private static Value ExactAdd(Value left, Value right)
+    private static readonly BigInteger ExactBaseBig = new BigInteger(4194304);
+
+    private static BigInteger ExactCanon(Value value)
     {
-        double[] digits = ExactSum(ExactPlaces(left), ExactPlaces(right));
-        Value[] items = new Value[digits.Length];
-        for (int index = 0; index < digits.Length; index++)
+        double[] digits = ExactSettle(ExactPlaces(value));
+        BigInteger whole = BigInteger.Zero;
+        for (int index = digits.Length - 1; index >= 0; index--)
+        {
+            whole = whole * ExactBaseBig + new BigInteger((long)digits[index]);
+        }
+        return whole;
+    }
+
+    private static List<long> ExactDigitsOf(BigInteger whole)
+    {
+        List<long> digits = new List<long>();
+        BigInteger rest = whole;
+        while (rest.Sign > 0)
+        {
+            digits.Add((long)(rest % ExactBaseBig));
+            rest /= ExactBaseBig;
+        }
+        return digits;
+    }
+
+    private static Value ExactValue(BigInteger whole)
+    {
+        List<long> digits = ExactDigitsOf(whole);
+        Value[] items = new Value[digits.Count];
+        for (int index = 0; index < digits.Count; index++)
         {
             items[index] = Value.Number(digits[index]);
         }
         return Value.List(items);
     }
 
-    /// <summary>«плюс».</summary>
-    public static Value Add(Ctx ctx, Value left, Value right)
+    private static string ExactText(BigInteger whole)
     {
+        List<long> digits = ExactDigitsOf(whole);
+        StringBuilder text = new StringBuilder("[");
+        for (int index = 0; index < digits.Count; index++)
+        {
+            text.Append(index == 0 ? "" : ", ").Append(digits[index].ToString(CultureInfo.InvariantCulture));
+        }
+        return text.Append(']').ToString();
+    }
+
+    private static bool ExactFraction(Value value)
+    {
+        if (value.Tag != Value.TagList)
+        {
+            return false;
+        }
+        Value[] halves = Value.Elements(value);
+        return halves.Length == 2 && ExactDigits(halves[0]) && ExactDigits(halves[1]);
+    }
+
+    private static BigInteger[] FractionParts(Value value)
+    {
+        Value[] halves = Value.Elements(value);
+        return new BigInteger[] { ExactCanon(halves[0]), ExactCanon(halves[1]) };
+    }
+
+    private static Value FractionValue(BigInteger top, BigInteger bottom)
+    {
+        if (top.IsZero)
+        {
+            return Value.List(new Value[] { ExactValue(top), ExactValue(BigInteger.One) });
+        }
+        BigInteger common = BigInteger.GreatestCommonDivisor(top, bottom);
+        return Value.List(new Value[] { ExactValue(top / common), ExactValue(bottom / common) });
+    }
+
+    private static string FractionText(BigInteger[] parts) => ExactText(parts[0]) + " над " + ExactText(parts[1]);
+
+    private static int? ExactOrder(Value left, Value right)
+    {
+        if (ExactFraction(left) && ExactFraction(right))
+        {
+            BigInteger[] l = FractionParts(left);
+            BigInteger[] r = FractionParts(right);
+            return (l[0] * r[1]).CompareTo(r[0] * l[1]);
+        }
         if (ExactDigits(left) && ExactDigits(right))
         {
-            return ExactAdd(left, right);
+            return ExactCanon(left).CompareTo(ExactCanon(right));
+        }
+        return null;
+    }
+
+    public static Value Add(Ctx ctx, Value left, Value right)
+    {
+        if (ExactFraction(left) && ExactFraction(right))
+        {
+            BigInteger[] l = FractionParts(left);
+            BigInteger[] r = FractionParts(right);
+            return FractionValue(l[0] * r[1] + r[0] * l[1], l[1] * r[1]);
+        }
+        if (ExactDigits(left) && ExactDigits(right))
+        {
+            return ExactValue(ExactCanon(left) + ExactCanon(right));
         }
         Arithmetic("add", left, right);
         return Value.Number(left.Num + right.Num);
     }
 
-    /// <summary>«минус».</summary>
     public static Value Sub(Ctx ctx, Value left, Value right)
     {
+        if (ExactFraction(left) && ExactFraction(right))
+        {
+            BigInteger[] l = FractionParts(left);
+            BigInteger[] r = FractionParts(right);
+            BigInteger ad = l[0] * r[1];
+            BigInteger cb = r[0] * l[1];
+            if (ad < cb)
+            {
+                throw Fail(
+                    FlangError.CodeProperty,
+                    "точное дробное ниже нуля значений не имеет: "
+                        + FractionText(l) + " минус " + FractionText(r) + "; молчаливый ноль запрещён");
+            }
+            return FractionValue(ad - cb, l[1] * r[1]);
+        }
+        if (ExactDigits(left) && ExactDigits(right))
+        {
+            BigInteger a = ExactCanon(left);
+            BigInteger b = ExactCanon(right);
+            if (a < b)
+            {
+                throw Fail(
+                    FlangError.CodeProperty,
+                    "точное целое ниже нуля значений не имеет: "
+                        + ExactText(a) + " минус " + ExactText(b) + "; молчаливый ноль запрещён");
+            }
+            return ExactValue(a - b);
+        }
         Arithmetic("sub", left, right);
         return Value.Number(left.Num - right.Num);
     }
 
-    /// <summary>«умножить на».</summary>
     public static Value Mul(Ctx ctx, Value left, Value right)
     {
+        if (ExactFraction(left) && ExactFraction(right))
+        {
+            BigInteger[] l = FractionParts(left);
+            BigInteger[] r = FractionParts(right);
+            return FractionValue(l[0] * r[0], l[1] * r[1]);
+        }
+        if (ExactDigits(left) && ExactDigits(right))
+        {
+            return ExactValue(ExactCanon(left) * ExactCanon(right));
+        }
         Arithmetic("mul", left, right);
         return Value.Number(left.Num * right.Num);
     }
 
-    /// <summary>
-    /// «делить на». Деление double на ноль в C# даёт ±Infinity, а ноль на ноль —
-    /// NaN, ровно как требует SPEC (раздел 5): деление на ноль — это значение, а
-    /// не ошибка. Никакой обёртки, в отличие от Python.
-    /// </summary>
     public static Value Div(Ctx ctx, Value left, Value right)
     {
+        if (ExactFraction(left) && ExactFraction(right))
+        {
+            BigInteger[] l = FractionParts(left);
+            BigInteger[] r = FractionParts(right);
+            if (r[0].IsZero)
+            {
+                throw Fail(
+                    FlangError.CodeProperty,
+                    "деление на нулевую дробь не определено: " + FractionText(l) + " делить на " + FractionText(r));
+            }
+            return FractionValue(l[0] * r[1], l[1] * r[0]);
+        }
         Arithmetic("div", left, right);
         return Value.Number(left.Num / right.Num);
     }
 
-    /// <summary>
-    /// «остаток от» как двуместная операция. Оператор `%` для double в C# — это
-    /// C fmod, то есть ровно оператор ECMAScript: знак от делимого (−7 % 3 это
-    /// −1), нулевой делитель даёт NaN, бесконечное делимое даёт NaN.
-    /// </summary>
     public static Value Mod(Ctx ctx, Value left, Value right)
     {
+        if (ExactDigits(left) && ExactDigits(right))
+        {
+            BigInteger a = ExactCanon(left);
+            BigInteger b = ExactCanon(right);
+            if (b.IsZero)
+            {
+                throw Fail(
+                    FlangError.CodeProperty,
+                    "остаток от нулевого точного целого не определён: " + ExactText(a) + " остаток от 0");
+            }
+            return ExactValue(a % b);
+        }
         Arithmetic("mod", left, right);
         return Value.Number(left.Num % right.Num);
+    }
+
+    public static Value BIntegerPart(Ctx ctx, Value value)
+    {
+        if (!ExactFraction(value))
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«целая часть»: аргумент должен быть точным дробным, получено " + Value.TypeName(value));
+        }
+        BigInteger[] parts = FractionParts(value);
+        return ExactValue(parts[1].IsZero ? BigInteger.Zero : parts[0] / parts[1]);
     }
 
     /// <summary>
@@ -486,6 +585,11 @@ public static class Flang
     /// <summary>«больше».</summary>
     public static Value Gt(Ctx ctx, Value left, Value right)
     {
+        int? order = ExactOrder(left, right);
+        if (order.HasValue)
+        {
+            return Value.Flag(order.Value > 0);
+        }
         Ordered(left, right);
         return Value.Flag(left.Num > right.Num);
     }
@@ -493,6 +597,11 @@ public static class Flang
     /// <summary>«меньше».</summary>
     public static Value Lt(Ctx ctx, Value left, Value right)
     {
+        int? order = ExactOrder(left, right);
+        if (order.HasValue)
+        {
+            return Value.Flag(order.Value < 0);
+        }
         Ordered(left, right);
         return Value.Flag(left.Num < right.Num);
     }
@@ -500,6 +609,11 @@ public static class Flang
     /// <summary>«не меньше».</summary>
     public static Value Gte(Ctx ctx, Value left, Value right)
     {
+        int? order = ExactOrder(left, right);
+        if (order.HasValue)
+        {
+            return Value.Flag(order.Value >= 0);
+        }
         Ordered(left, right);
         return Value.Flag(left.Num >= right.Num);
     }
@@ -507,6 +621,11 @@ public static class Flang
     /// <summary>«не больше».</summary>
     public static Value Lte(Ctx ctx, Value left, Value right)
     {
+        int? order = ExactOrder(left, right);
+        if (order.HasValue)
+        {
+            return Value.Flag(order.Value <= 0);
+        }
         Ordered(left, right);
         return Value.Flag(left.Num <= right.Num);
     }

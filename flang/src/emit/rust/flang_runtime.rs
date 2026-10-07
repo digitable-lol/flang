@@ -1028,26 +1028,6 @@ fn ordered(left: &Value, right: &Value) -> Result<(f64, f64), Error> {
     }
 }
 
-// ─────────────────── точное целое: разряды основания 2²² ───────────────────
-//
-// Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание 2²².
-// Представление выбрано задачей 1411, решение — ADR-0036 §11; складывает разряды
-// вычислитель в `flang/self/interpret.flang` («Основание разрядов» и ниже).
-//
-// Отличать точное целое от обычного списка по типу здесь нечем: напечатанная
-// программа типов не носит, и вычислитель сам смотрит только на вид значения
-// («Сложение знач»: оба операнда — списки чисел). Правило ниже такое же
-// динамическое, поэтому печать и вычислитель не расходятся.
-//
-// Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
-// собственный пример вычислителя подаёт [4194305], — а на таких разрядах
-// быстрый путь (до двух разрядов, машинным сложением) и общий путь (перенос по
-// столбцам) дают РАЗНЫЙ ответ. Переписаны оба, порознь.
-//
-// Крейта длинной арифметики здесь нет и не будет: ADR-0012 о корнях доверия, и
-// ADR-0036 §6 называет это прямо. Потолка значению не нужно — длину даёт список,
-// а `%` для `f64` в Rust — это fmod, то есть ровно «остаток от» вычислителя.
-
 /// Основание разряда точного целого: 2²².
 pub const EXACT_BASE: f64 = 4194304.0;
 
@@ -1057,14 +1037,6 @@ fn exact_digits(value: &Value) -> bool {
         Value::List(items) => items.as_slice().iter().all(|item| matches!(item, Value::Number(_))),
         _ => false,
     }
-}
-
-/// «Разряд точного»: номер с единицы, за концом списка — ноль.
-fn exact_digit(digits: &[f64], place: usize) -> f64 {
-    if place < 1 || place > digits.len() {
-        return 0.0;
-    }
-    digits[place - 1]
 }
 
 /// «Срезать старшие нули»: старший разряд стоит в конце.
@@ -1083,11 +1055,6 @@ fn exact_small_digits(value: f64) -> Vec<f64> {
     exact_trim(vec![low, middle, (high - middle) / EXACT_BASE])
 }
 
-/// «Значение малых разрядов»: два младших разряда машинным числом.
-fn exact_small_value(digits: &[f64]) -> f64 {
-    exact_digit(digits, 1) + exact_digit(digits, 2) * EXACT_BASE
-}
-
 /// «Уложить разряды»: перенос по столбцам, затем разряды переноса сверху.
 fn exact_settle(columns: &[f64]) -> Vec<f64> {
     let mut settled: Vec<f64> = Vec::with_capacity(columns.len() + 3);
@@ -1102,18 +1069,6 @@ fn exact_settle(columns: &[f64]) -> Vec<f64> {
     exact_trim(settled)
 }
 
-/// «Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы и перенос.
-fn exact_sum(left: &[f64], right: &[f64]) -> Vec<f64> {
-    if left.len() <= 2 && right.len() <= 2 {
-        return exact_small_digits(exact_small_value(left) + exact_small_value(right));
-    }
-    let wide = left.len().max(right.len());
-    let columns: Vec<f64> =
-        (1..=wide).map(|place| exact_digit(left, place) + exact_digit(right, place)).collect();
-    exact_settle(&columns)
-}
-
-/// Разряды значения числами Rust. Зовётся только после `exact_digits`.
 fn exact_places(value: &Value) -> Vec<f64> {
     match value {
         Value::List(items) => items
@@ -1128,47 +1083,266 @@ fn exact_places(value: &Value) -> Vec<f64> {
     }
 }
 
-/// «Точное сложение». Витков не тратит — так же, как в вычислителе.
-fn exact_add(left: &Value, right: &Value) -> Value {
-    let digits = exact_sum(&exact_places(left), &exact_places(right));
-    list(digits.into_iter().map(number).collect())
+fn exact_canon(value: &Value) -> Vec<f64> {
+    exact_settle(&exact_places(value))
 }
 
-/// «плюс».
+fn nat_value(digits: &[f64]) -> Value {
+    list(digits.iter().copied().map(number).collect())
+}
+
+fn nat_cmp(left: &[f64], right: &[f64]) -> std::cmp::Ordering {
+    if left.len() != right.len() {
+        return left.len().cmp(&right.len());
+    }
+    for index in (0..left.len()).rev() {
+        if left[index] != right[index] {
+            return if left[index] < right[index] { std::cmp::Ordering::Less } else { std::cmp::Ordering::Greater };
+        }
+    }
+    std::cmp::Ordering::Equal
+}
+
+fn nat_add(left: &[f64], right: &[f64]) -> Vec<f64> {
+    let wide = left.len().max(right.len());
+    let columns: Vec<f64> = (0..wide)
+        .map(|index| left.get(index).copied().unwrap_or(0.0) + right.get(index).copied().unwrap_or(0.0))
+        .collect();
+    exact_settle(&columns)
+}
+
+fn nat_sub(left: &[f64], right: &[f64]) -> Vec<f64> {
+    let mut borrow = 0.0;
+    let mut out = Vec::with_capacity(left.len());
+    for (index, digit) in left.iter().enumerate() {
+        let column = digit - right.get(index).copied().unwrap_or(0.0) - borrow;
+        borrow = if column < 0.0 { 1.0 } else { 0.0 };
+        out.push(if column < 0.0 { column + EXACT_BASE } else { column });
+    }
+    exact_trim(out)
+}
+
+fn nat_mul_small(left: &[f64], factor: f64) -> Vec<f64> {
+    let columns: Vec<f64> = left.iter().map(|digit| digit * factor).collect();
+    exact_settle(&columns)
+}
+
+fn nat_mul(left: &[f64], right: &[f64]) -> Vec<f64> {
+    if left.is_empty() || right.is_empty() {
+        return Vec::new();
+    }
+    let wide = left.len() + right.len();
+    let mut columns = vec![0.0; wide];
+    for (row, high) in left.iter().enumerate() {
+        for (column, low) in right.iter().enumerate() {
+            columns[row + column] += high * low;
+        }
+        let settled = exact_settle(&columns);
+        columns = vec![0.0; wide];
+        columns[..settled.len()].copy_from_slice(&settled);
+    }
+    exact_trim(columns)
+}
+
+fn nat_divmod(left: &[f64], right: &[f64]) -> (Vec<f64>, Vec<f64>) {
+    if right.is_empty() {
+        return (Vec::new(), left.to_vec());
+    }
+    let mut quotient = vec![0.0; left.len()];
+    let mut rest: Vec<f64> = Vec::new();
+    for place in (0..left.len()).rev() {
+        let mut current = Vec::with_capacity(rest.len() + 1);
+        current.push(left[place]);
+        current.extend_from_slice(&rest);
+        let current = exact_trim(current);
+        let mut low = 0.0;
+        let mut high = EXACT_BASE - 1.0;
+        while low < high {
+            let middle = ((low + high + 1.0) / 2.0).floor();
+            if nat_cmp(&current, &nat_mul_small(right, middle)) == std::cmp::Ordering::Less {
+                high = middle - 1.0;
+            } else {
+                low = middle;
+            }
+        }
+        quotient[place] = low;
+        rest = nat_sub(&current, &nat_mul_small(right, low));
+    }
+    (exact_trim(quotient), rest)
+}
+
+fn nat_gcd(left: &[f64], right: &[f64]) -> Vec<f64> {
+    let mut a = left.to_vec();
+    let mut b = right.to_vec();
+    while !b.is_empty() {
+        let (_, rest) = nat_divmod(&a, &b);
+        a = b;
+        b = rest;
+    }
+    a
+}
+
+fn nat_text(digits: &[f64]) -> String {
+    let parts: Vec<String> = digits.iter().map(|digit| format!("{digit:.0}")).collect();
+    format!("[{}]", parts.join(", "))
+}
+
+fn exact_fraction(value: &Value) -> bool {
+    match value {
+        Value::List(items) => {
+            let halves = items.as_slice();
+            halves.len() == 2 && exact_digits(&halves[0]) && exact_digits(&halves[1])
+        }
+        _ => false,
+    }
+}
+
+fn fraction_parts(value: &Value) -> (Vec<f64>, Vec<f64>) {
+    match value {
+        Value::List(items) => {
+            let halves = items.as_slice();
+            (exact_canon(&halves[0]), exact_canon(&halves[1]))
+        }
+        _ => (Vec::new(), Vec::new()),
+    }
+}
+
+fn fraction_value(top: &[f64], bottom: &[f64]) -> Value {
+    if top.is_empty() {
+        return list(vec![nat_value(&[]), nat_value(&[1.0])]);
+    }
+    let common = nat_gcd(top, bottom);
+    let (upper, _) = nat_divmod(top, &common);
+    let (lower, _) = nat_divmod(bottom, &common);
+    list(vec![nat_value(&upper), nat_value(&lower)])
+}
+
+fn fraction_text(top: &[f64], bottom: &[f64]) -> String {
+    format!("{} над {}", nat_text(top), nat_text(bottom))
+}
+
+fn exact_order(left: &Value, right: &Value) -> Option<std::cmp::Ordering> {
+    if exact_fraction(left) && exact_fraction(right) {
+        let (a, b) = fraction_parts(left);
+        let (c, d) = fraction_parts(right);
+        return Some(nat_cmp(&nat_mul(&a, &d), &nat_mul(&c, &b)));
+    }
+    if exact_digits(left) && exact_digits(right) {
+        return Some(nat_cmp(&exact_canon(left), &exact_canon(right)));
+    }
+    None
+}
+
 pub fn add(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if exact_fraction(&left) && exact_fraction(&right) {
+        let (a, b) = fraction_parts(&left);
+        let (c, d) = fraction_parts(&right);
+        return Ok(fraction_value(&nat_add(&nat_mul(&a, &d), &nat_mul(&c, &b)), &nat_mul(&b, &d)));
+    }
     if exact_digits(&left) && exact_digits(&right) {
-        return Ok(exact_add(&left, &right));
+        return Ok(nat_value(&nat_add(&exact_canon(&left), &exact_canon(&right))));
     }
     let (a, b) = arithmetic("add", &left, &right)?;
     Ok(number(a + b))
 }
 
-/// «минус».
 pub fn sub(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if exact_fraction(&left) && exact_fraction(&right) {
+        let (a, b) = fraction_parts(&left);
+        let (c, d) = fraction_parts(&right);
+        let ad = nat_mul(&a, &d);
+        let cb = nat_mul(&c, &b);
+        if nat_cmp(&ad, &cb) == std::cmp::Ordering::Less {
+            return Err(fail(
+                CODE_PROPERTY,
+                format!(
+                    "точное дробное ниже нуля значений не имеет: {} минус {}; молчаливый ноль запрещён",
+                    fraction_text(&a, &b),
+                    fraction_text(&c, &d)
+                ),
+            ));
+        }
+        return Ok(fraction_value(&nat_sub(&ad, &cb), &nat_mul(&b, &d)));
+    }
+    if exact_digits(&left) && exact_digits(&right) {
+        let a = exact_canon(&left);
+        let b = exact_canon(&right);
+        if nat_cmp(&a, &b) == std::cmp::Ordering::Less {
+            return Err(fail(
+                CODE_PROPERTY,
+                format!(
+                    "точное целое ниже нуля значений не имеет: {} минус {}; молчаливый ноль запрещён",
+                    nat_text(&a),
+                    nat_text(&b)
+                ),
+            ));
+        }
+        return Ok(nat_value(&nat_sub(&a, &b)));
+    }
     let (a, b) = arithmetic("sub", &left, &right)?;
     Ok(number(a - b))
 }
 
-/// «умножить на».
 pub fn mul(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if exact_fraction(&left) && exact_fraction(&right) {
+        let (a, b) = fraction_parts(&left);
+        let (c, d) = fraction_parts(&right);
+        return Ok(fraction_value(&nat_mul(&a, &c), &nat_mul(&b, &d)));
+    }
+    if exact_digits(&left) && exact_digits(&right) {
+        return Ok(nat_value(&nat_mul(&exact_canon(&left), &exact_canon(&right))));
+    }
     let (a, b) = arithmetic("mul", &left, &right)?;
     Ok(number(a * b))
 }
 
-/// «делить на». Деление на ноль даёт ±Infinity, а 0/0 — NaN: это значения
-/// IEEE-754, а не ошибка (SPEC, раздел 5). Rust здесь ведёт себя как JS,
-/// потому что оба делят `f64`.
 pub fn div(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if exact_fraction(&left) && exact_fraction(&right) {
+        let (a, b) = fraction_parts(&left);
+        let (c, d) = fraction_parts(&right);
+        if c.is_empty() {
+            return Err(fail(
+                CODE_PROPERTY,
+                format!(
+                    "деление на нулевую дробь не определено: {} делить на {}",
+                    fraction_text(&a, &b),
+                    fraction_text(&c, &d)
+                ),
+            ));
+        }
+        return Ok(fraction_value(&nat_mul(&a, &d), &nat_mul(&b, &c)));
+    }
     let (a, b) = arithmetic("div", &left, &right)?;
     Ok(number(a / b))
 }
 
-/// «остаток от» как двуместная операция. `%` для `f64` в Rust — это fmod, то
-/// есть ровно оператор `%` из JS: знак берётся от делимого, деление на ноль
-/// даёт NaN.
 pub fn modulo(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if exact_digits(&left) && exact_digits(&right) {
+        let a = exact_canon(&left);
+        let b = exact_canon(&right);
+        if b.is_empty() {
+            return Err(fail(
+                CODE_PROPERTY,
+                format!("остаток от нулевого точного целого не определён: {} остаток от 0", nat_text(&a)),
+            ));
+        }
+        let (_, rest) = nat_divmod(&a, &b);
+        return Ok(nat_value(&rest));
+    }
     let (a, b) = arithmetic("mod", &left, &right)?;
     Ok(number(a % b))
+}
+
+pub fn b_integer_part(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    if !exact_fraction(&value) {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!("«целая часть»: аргумент должен быть точным дробным, получено {}", type_name(&value)),
+        ));
+    }
+    let (top, bottom) = fraction_parts(&value);
+    let (quotient, _) = nat_divmod(&top, &bottom);
+    Ok(nat_value(&quotient))
 }
 
 /// «процентов от». Порядок операций ядра: (процент / 100) * значение.
@@ -1181,24 +1355,36 @@ pub fn percent(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 
 /// «больше».
 pub fn gt(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if let Some(order) = exact_order(&left, &right) {
+        return Ok(flag(order == std::cmp::Ordering::Greater));
+    }
     let (a, b) = ordered(&left, &right)?;
     Ok(flag(a > b))
 }
 
 /// «меньше».
 pub fn lt(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if let Some(order) = exact_order(&left, &right) {
+        return Ok(flag(order == std::cmp::Ordering::Less));
+    }
     let (a, b) = ordered(&left, &right)?;
     Ok(flag(a < b))
 }
 
 /// «не меньше».
 pub fn gte(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if let Some(order) = exact_order(&left, &right) {
+        return Ok(flag(order != std::cmp::Ordering::Less));
+    }
     let (a, b) = ordered(&left, &right)?;
     Ok(flag(a >= b))
 }
 
 /// «не больше».
 pub fn lte(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if let Some(order) = exact_order(&left, &right) {
+        return Ok(flag(order != std::cmp::Ordering::Greater));
+    }
     let (a, b) = ordered(&left, &right)?;
     Ok(flag(a <= b))
 }

@@ -805,26 +805,8 @@ def _ordered(left, right):
     return left.data, right.data
 
 
-# ─────────────────── точное целое: разряды основания 2²² ───────────────────
-#
-# Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание 2²².
-# Представление выбрано задачей 1411, решение — ADR-0036 §11; складывает разряды
-# вычислитель в `flang/self/interpret.flang` («Основание разрядов» и ниже).
-#
-# Отличать точное целое от обычного списка по типу здесь нечем: напечатанная
-# программа типов не носит, и вычислитель сам смотрит только на вид значения
-# («Сложение знач»: оба операнда — списки чисел). Правило ниже такое же
-# динамическое, поэтому печать и вычислитель не расходятся.
-#
-# Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
-# собственный пример вычислителя подаёт [4194305], — а на таких разрядах
-# быстрый путь (до двух разрядов, машинным сложением) и общий путь (перенос по
-# столбцам) дают РАЗНЫЙ ответ. Переписаны оба, порознь.
-#
-# Считается во float, а не в int Python: число flang — IEEE-754 double, и
-# точный int разошёлся бы с вычислителем на разрядах вне диапазона.
-
 EXACT_BASE = 4194304.0
+EXACT_BASE_INT = 4194304
 
 
 def _exact_digits(value):
@@ -832,13 +814,6 @@ def _exact_digits(value):
     if value.tag != TAG_LIST:
         return False
     return all(item.tag == TAG_NUMBER for item in list_items(value))
-
-
-def _exact_digit(digits, number_):
-    """«Разряд точного»: номер с единицы, за концом списка — ноль."""
-    if number_ < 1 or number_ > len(digits):
-        return 0.0
-    return digits[number_ - 1]
 
 
 def _exact_trim(digits):
@@ -857,11 +832,6 @@ def _exact_small_digits(value):
     return _exact_trim([low, middle, (high - middle) / EXACT_BASE])
 
 
-def _exact_small_value(digits):
-    """«Значение малых разрядов»: два младших разряда машинным числом."""
-    return _exact_digit(digits, 1) + _exact_digit(digits, 2) * EXACT_BASE
-
-
 def _exact_settle(columns):
     """«Уложить разряды»: перенос по столбцам, затем разряды переноса сверху."""
     carry = 0.0
@@ -874,40 +844,113 @@ def _exact_settle(columns):
     return _exact_trim(settled + _exact_small_digits(carry))
 
 
-def _exact_sum(left, right):
-    """«Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы."""
-    if len(left) <= 2 and len(right) <= 2:
-        return _exact_small_digits(_exact_small_value(left) + _exact_small_value(right))
-    wide = max(len(left), len(right))
-    columns = [_exact_digit(left, place) + _exact_digit(right, place) for place in range(1, wide + 1)]
-    return _exact_settle(columns)
+def _exact_canon(value):
+    digits = _exact_settle([item.data for item in list_items(value)])
+    whole = 0
+    for digit in reversed(digits):
+        whole = whole * EXACT_BASE_INT + int(digit)
+    return whole
 
 
-def _exact_add(left, right):
-    """«Точное сложение». Витков не тратит — так же, как в вычислителе."""
-    digits = _exact_sum(
-        [item.data for item in list_items(left)],
-        [item.data for item in list_items(right)],
-    )
-    return list_of([number(digit) for digit in digits])
+def _exact_value(whole):
+    digits = []
+    while whole > 0:
+        whole, low = divmod(whole, EXACT_BASE_INT)
+        digits.append(number(float(low)))
+    return list_of(digits)
+
+
+def _exact_text(whole):
+    digits = []
+    while whole > 0:
+        whole, low = divmod(whole, EXACT_BASE_INT)
+        digits.append(str(low))
+    return "[" + ", ".join(digits) + "]"
+
+
+def _exact_fraction(value):
+    if value.tag != TAG_LIST:
+        return False
+    halves = list_items(value)
+    return len(halves) == 2 and _exact_digits(halves[0]) and _exact_digits(halves[1])
+
+
+def _fraction_parts(value):
+    halves = list_items(value)
+    return _exact_canon(halves[0]), _exact_canon(halves[1])
+
+
+def _fraction_value(top, bottom):
+    if top == 0:
+        return list_of([_exact_value(0), _exact_value(1)])
+    common = math.gcd(top, bottom)
+    return list_of([_exact_value(top // common), _exact_value(bottom // common)])
+
+
+def _fraction_text(top, bottom):
+    return _exact_text(top) + " над " + _exact_text(bottom)
+
+
+def _fraction_order(left, right):
+    a, b = _fraction_parts(left)
+    c, d = _fraction_parts(right)
+    return a * d, c * b
+
+
+def _exact_order(left, right):
+    if _exact_fraction(left) and _exact_fraction(right):
+        return _fraction_order(left, right)
+    if _exact_digits(left) and _exact_digits(right):
+        return _exact_canon(left), _exact_canon(right)
+    return _ordered(left, right)
 
 
 def add(ctx, left, right):
     """«плюс»."""
+    if _exact_fraction(left) and _exact_fraction(right):
+        a, b = _fraction_parts(left)
+        c, d = _fraction_parts(right)
+        return _fraction_value(a * d + c * b, b * d)
     if _exact_digits(left) and _exact_digits(right):
-        return _exact_add(left, right)
+        return _exact_value(_exact_canon(left) + _exact_canon(right))
     a, b = _arithmetic("add", left, right)
     return Value(TAG_NUMBER, a + b)
 
 
 def sub(ctx, left, right):
     """«минус»."""
+    if _exact_fraction(left) and _exact_fraction(right):
+        a, b = _fraction_parts(left)
+        c, d = _fraction_parts(right)
+        if a * d < c * b:
+            raise fail(
+                CODE_PROPERTY,
+                "точное дробное ниже нуля значений не имеет: "
+                + _fraction_text(a, b) + " минус " + _fraction_text(c, d) + "; молчаливый ноль запрещён",
+            )
+        return _fraction_value(a * d - c * b, b * d)
+    if _exact_digits(left) and _exact_digits(right):
+        a = _exact_canon(left)
+        b = _exact_canon(right)
+        if a < b:
+            raise fail(
+                CODE_PROPERTY,
+                "точное целое ниже нуля значений не имеет: "
+                + _exact_text(a) + " минус " + _exact_text(b) + "; молчаливый ноль запрещён",
+            )
+        return _exact_value(a - b)
     a, b = _arithmetic("sub", left, right)
     return Value(TAG_NUMBER, a - b)
 
 
 def mul(ctx, left, right):
     """«умножить на»."""
+    if _exact_fraction(left) and _exact_fraction(right):
+        a, b = _fraction_parts(left)
+        c, d = _fraction_parts(right)
+        return _fraction_value(a * c, b * d)
+    if _exact_digits(left) and _exact_digits(right):
+        return _exact_value(_exact_canon(left) * _exact_canon(right))
     a, b = _arithmetic("mul", left, right)
     return Value(TAG_NUMBER, a * b)
 
@@ -930,6 +973,16 @@ def divide_raw(a, b):
 
 def div(ctx, left, right):
     """«делить на»."""
+    if _exact_fraction(left) and _exact_fraction(right):
+        a, b = _fraction_parts(left)
+        c, d = _fraction_parts(right)
+        if c == 0:
+            raise fail(
+                CODE_PROPERTY,
+                "деление на нулевую дробь не определено: "
+                + _fraction_text(a, b) + " делить на " + _fraction_text(c, d),
+            )
+        return _fraction_value(a * d, b * c)
     a, b = _arithmetic("div", left, right)
     return Value(TAG_NUMBER, divide_raw(a, b))
 
@@ -951,6 +1004,14 @@ def remainder_raw(a, b):
 
 def mod(ctx, left, right):
     """«остаток от» как двуместная операция."""
+    if _exact_digits(left) and _exact_digits(right):
+        a = _exact_canon(left)
+        b = _exact_canon(right)
+        if b == 0:
+            raise fail(
+                CODE_PROPERTY, "остаток от нулевого точного целого не определён: " + _exact_text(a) + " остаток от 0"
+            )
+        return _exact_value(a % b)
     a, b = _arithmetic("mod", left, right)
     return Value(TAG_NUMBER, remainder_raw(a, b))
 
@@ -967,25 +1028,25 @@ def percent(ctx, left, right):
 
 def gt(ctx, left, right):
     """«больше»."""
-    a, b = _ordered(left, right)
+    a, b = _exact_order(left, right)
     return TRUE if a > b else FALSE
 
 
 def lt(ctx, left, right):
     """«меньше»."""
-    a, b = _ordered(left, right)
+    a, b = _exact_order(left, right)
     return TRUE if a < b else FALSE
 
 
 def gte(ctx, left, right):
     """«не меньше»."""
-    a, b = _ordered(left, right)
+    a, b = _exact_order(left, right)
     return TRUE if a >= b else FALSE
 
 
 def lte(ctx, left, right):
     """«не больше»."""
-    a, b = _ordered(left, right)
+    a, b = _exact_order(left, right)
     return TRUE if a <= b else FALSE
 
 
@@ -1169,6 +1230,15 @@ def b_char_from_code(ctx, code):
             f"«символ по коду»: код {number_text(point)} — половина суррогатной пары, а не символ",
         )
     return Value(TAG_STRING, chr(int(point)))
+
+
+def b_integer_part(ctx, value):
+    if not _exact_fraction(value):
+        raise fail(
+            CODE_BUILTIN_ARGS, "«целая часть»: аргумент должен быть точным дробным, получено " + type_name(value)
+        )
+    top, bottom = _fraction_parts(value)
+    return _exact_value(top // bottom if bottom else 0)
 
 
 def b_hash256(ctx, text):

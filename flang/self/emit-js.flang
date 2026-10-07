@@ -796,7 +796,7 @@
 
 тотальная функция «Помощники форм JS»
   возвращает список «Пара имён»
-  обеспечивает «помощников форм ровно двадцать два» (длина результат) равен 22
+  обеспечивает «помощников форм ровно двадцать три» (длина результат) равен 23
   [
     (запись «Пара имён» с «ключ» равным "длина" и «значение» равным "$b_dlina"),
     (запись «Пара имён» с «ключ» равным "символ" и «значение» равным "$b_simvol"),
@@ -812,6 +812,7 @@
     (запись «Пара имён» с «ключ» равным "к числу или беда" и «значение» равным "$b_k_chislu_ili_beda"),
     (запись «Пара имён» с «ключ» равным "к строке" и «значение» равным "$b_k_stroke"),
     (запись «Пара имён» с «ключ» равным "хеш256" и «значение» равным "$b_hesh256"),
+    (запись «Пара имён» с «ключ» равным "целая часть" и «значение» равным "$b_integer_part"),
     (запись «Пара имён» с «ключ» равным "пусто" и «значение» равным "$b_pusto"),
     (запись «Пара имён» с «ключ» равным "голова" и «значение» равным "$b_golova"),
     (запись «Пара имён» с «ключ» равным "хвост" и «значение» равным "$b_hvost"),
@@ -840,6 +841,7 @@
     (запись «Метка» с «ключ» равным "к числу или беда" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "к строке" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "хеш256" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "целая часть" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "пусто" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "голова" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "хвост" и «значение» равным 1),
@@ -1212,16 +1214,6 @@
     "}"
   ] по "\n"
 
-тотальная функция «Текст exactDigit JS»
-  возвращает строка
-  обеспечивает «рантайм exactDigit несёт function $exactDigit» результат содержит "function $exactDigit("
-  соединить [
-    "function $exactDigit(digits, place) {",
-    "  /* Номер с единицы, за концом списка — ноль. */",
-    "  return place < 1 || place > digits.length ? 0 : digits[place - 1]",
-    "}"
-  ] по "\n"
-
 тотальная функция «Текст exactTrim JS»
   возвращает строка
   обеспечивает «рантайм exactTrim несёт function $exactTrim» результат содержит "function $exactTrim("
@@ -1248,15 +1240,6 @@
     "}"
   ] по "\n"
 
-тотальная функция «Текст exactSmallValue JS»
-  возвращает строка
-  обеспечивает «рантайм exactSmallValue несёт function $exactSmallValue» результат содержит "function $exactSmallValue("
-  соединить [
-    "function $exactSmallValue(digits) {",
-    "  return $exactDigit(digits, 1) + $exactDigit(digits, 2) * 4194304",
-    "}"
-  ] по "\n"
-
 тотальная функция «Текст exactSettle JS»
   возвращает строка
   обеспечивает «рантайм exactSettle несёт function $exactSettle» результат содержит "function $exactSettle("
@@ -1274,23 +1257,109 @@
     "}"
   ] по "\n"
 
-тотальная функция «Текст exactSum JS»
+тотальная функция «Текст exactCanon JS»
   возвращает строка
-  обеспечивает «рантайм exactSum несёт function $exactSum» результат содержит "function $exactSum("
+  обеспечивает «рантайм exactCanon несёт function $exactCanon» результат содержит "function $exactCanon("
   соединить [
-    "function $exactSum(left, right) {",
-    "  /* Путей ДВА, как в вычислителе («Сумма разрядов»), и слить их нельзя:",
-    "     разряд вне [0, 2**22) законен, а на таких разрядах быстрый путь и",
-    "     перенос по столбцам дают РАЗНЫЙ ответ. */",
-    "  if (left.length <= 2 && right.length <= 2) {",
-    "    return $exactSmallDigits($exactSmallValue(left) + $exactSmallValue(right))",
+    "function $exactCanon(value) {",
+    "  const digits = $exactSettle(value)",
+    "  let whole = 0n",
+    "  for (let index = digits.length - 1; index >= 0; index--) {",
+    "    whole = whole * 4194304n + BigInt(digits[index])",
     "  }",
-    "  const wide = Math.max(left.length, right.length)",
-    "  const columns = []",
-    "  for (let place = 1; place <= wide; place++) {",
-    "    columns.push($exactDigit(left, place) + $exactDigit(right, place))",
+    "  return whole",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст exactOf JS»
+  возвращает строка
+  обеспечивает «рантайм exactOf несёт function $exactOf» результат содержит "function $exactOf("
+  соединить [
+    "function $exactOf(whole) {",
+    "  const digits = []",
+    "  let rest = whole",
+    "  while (rest > 0n) {",
+    "    digits.push(Number(rest % 4194304n))",
+    "    rest = rest / 4194304n",
     "  }",
-    "  return $exactSettle(columns)",
+    "  return digits",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст exactText JS»
+  возвращает строка
+  обеспечивает «рантайм exactText несёт function $exactText» результат содержит "function $exactText("
+  соединить [
+    "function $exactText(whole) {",
+    "  return \"[\" + $exactOf(whole).join(\", \") + \"]\"",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст exactFraction JS»
+  возвращает строка
+  обеспечивает «рантайм exactFraction несёт function $exactFraction» результат содержит "function $exactFraction("
+  соединить [
+    "function $exactFraction(value) {",
+    "  return $isList(value) && value.length === 2 && $exactDigits(value[0]) && $exactDigits(value[1])",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст fractionParts JS»
+  возвращает строка
+  обеспечивает «рантайм fractionParts несёт function $fractionParts» результат содержит "function $fractionParts("
+  соединить [
+    "function $fractionParts(value) {",
+    "  return [$exactCanon(value[0]), $exactCanon(value[1])]",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст fractionValue JS»
+  возвращает строка
+  обеспечивает «рантайм fractionValue несёт function $fractionValue» результат содержит "function $fractionValue("
+  соединить [
+    "function $fractionValue(top, bottom) {",
+    "  if (top === 0n) {",
+    "    return [[], [1]]",
+    "  }",
+    "  let common = top",
+    "  let other = bottom",
+    "  while (other !== 0n) {",
+    "    const rest = common % other",
+    "    common = other",
+    "    other = rest",
+    "  }",
+    "  return [$exactOf(top / common), $exactOf(bottom / common)]",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст fractionText JS»
+  возвращает строка
+  обеспечивает «рантайм fractionText несёт function $fractionText» результат содержит "function $fractionText("
+  соединить [
+    "function $fractionText(top, bottom) {",
+    "  return $exactText(top) + \" над \" + $exactText(bottom)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст exactOrder JS»
+  возвращает строка
+  обеспечивает «рантайм exactOrder несёт function $exactOrder» результат содержит "function $exactOrder("
+  соединить [
+    "function $exactOrder(left, right) {",
+    "  let first = null",
+    "  let second = null",
+    "  if ($exactFraction(left) && $exactFraction(right)) {",
+    "    const [a, b] = $fractionParts(left)",
+    "    const [c, d] = $fractionParts(right)",
+    "    first = a * d",
+    "    second = c * b",
+    "  } else if ($exactDigits(left) && $exactDigits(right)) {",
+    "    first = $exactCanon(left)",
+    "    second = $exactCanon(right)",
+    "  } else {",
+    "    return null",
+    "  }",
+    "  return first < second ? -1 : first > second ? 1 : 0",
     "}"
   ] по "\n"
 
@@ -1300,13 +1369,13 @@
   обеспечивает «сложение спрашивает про разряды прежде, чем про числа» результат содержит "$exactDigits(left)"
   соединить [
     "function $add(left, right) {",
-    "  /* Точное целое — СПИСОК разрядов основания 2**22, младший первым",
-    "     (ADR-0036 §11). Отличить его от числа здесь можно только по ВИДУ",
-    "     значения: типов напечатанная программа не носит. Вычислитель решает",
-    "     так же (flang/self/interpret.flang, «Сложение знач»), поэтому печать",
-    "     с ним не расходится. */",
+    "  if ($exactFraction(left) && $exactFraction(right)) {",
+    "    const [a, b] = $fractionParts(left)",
+    "    const [c, d] = $fractionParts(right)",
+    "    return $fractionValue(a * d + c * b, b * d)",
+    "  }",
     "  if ($exactDigits(left) && $exactDigits(right)) {",
-    "    return $exactSum(left, right)",
+    "    return $exactOf($exactCanon(left) + $exactCanon(right))",
     "  }",
     "  $nums(\"add\", left, right)",
     "  return left + right",
@@ -1318,6 +1387,26 @@
   обеспечивает «рантайм sub несёт function $sub» результат содержит "function $sub("
   соединить [
     "function $sub(left, right) {",
+    "  if ($exactFraction(left) && $exactFraction(right)) {",
+    "    const [a, b] = $fractionParts(left)",
+    "    const [c, d] = $fractionParts(right)",
+    "    if (a * d < c * b) {",
+    "      const pair = $fractionText(a, b) + \" минус \" + $fractionText(c, d)",
+    "      const word = \"точное дробное ниже нуля значений не имеет: \" + pair",
+    "      $fail(\"FLANG_PROPERTY\", word + \"; молчаливый ноль запрещён\")",
+    "    }",
+    "    return $fractionValue(a * d - c * b, b * d)",
+    "  }",
+    "  if ($exactDigits(left) && $exactDigits(right)) {",
+    "    const a = $exactCanon(left)",
+    "    const b = $exactCanon(right)",
+    "    if (a < b) {",
+    "      const pair = $exactText(a) + \" минус \" + $exactText(b)",
+    "      const word = \"точное целое ниже нуля значений не имеет: \" + pair",
+    "      $fail(\"FLANG_PROPERTY\", word + \"; молчаливый ноль запрещён\")",
+    "    }",
+    "    return $exactOf(a - b)",
+    "  }",
     "  $nums(\"sub\", left, right)",
     "  return left - right",
     "}"
@@ -1328,6 +1417,14 @@
   обеспечивает «рантайм mul несёт function $mul» результат содержит "function $mul("
   соединить [
     "function $mul(left, right) {",
+    "  if ($exactFraction(left) && $exactFraction(right)) {",
+    "    const [a, b] = $fractionParts(left)",
+    "    const [c, d] = $fractionParts(right)",
+    "    return $fractionValue(a * c, b * d)",
+    "  }",
+    "  if ($exactDigits(left) && $exactDigits(right)) {",
+    "    return $exactOf($exactCanon(left) * $exactCanon(right))",
+    "  }",
     "  $nums(\"mul\", left, right)",
     "  return left * right",
     "}"
@@ -1338,6 +1435,15 @@
   обеспечивает «рантайм div несёт function $div» результат содержит "function $div("
   соединить [
     "function $div(left, right) {",
+    "  if ($exactFraction(left) && $exactFraction(right)) {",
+    "    const [a, b] = $fractionParts(left)",
+    "    const [c, d] = $fractionParts(right)",
+    "    if (c === 0n) {",
+    "      const pair = $fractionText(a, b) + \" делить на \" + $fractionText(c, d)",
+    "      $fail(\"FLANG_PROPERTY\", \"деление на нулевую дробь не определено: \" + pair)",
+    "    }",
+    "    return $fractionValue(a * d, b * c)",
+    "  }",
     "  $nums(\"div\", left, right)",
     "  return left / right",
     "}"
@@ -1348,6 +1454,15 @@
   обеспечивает «рантайм mod несёт function $mod» результат содержит "function $mod("
   соединить [
     "function $mod(left, right) {",
+    "  if ($exactDigits(left) && $exactDigits(right)) {",
+    "    const a = $exactCanon(left)",
+    "    const b = $exactCanon(right)",
+    "    if (b === 0n) {",
+    "      const word = \"остаток от нулевого точного целого не определён: \" + $exactText(a)",
+    "      $fail(\"FLANG_PROPERTY\", word + \" остаток от 0\")",
+    "    }",
+    "    return $exactOf(a % b)",
+    "  }",
     "  $nums(\"mod\", left, right)",
     "  return left % right",
     "}"
@@ -1368,6 +1483,10 @@
   обеспечивает «рантайм gt несёт function $gt» результат содержит "function $gt("
   соединить [
     "function $gt(left, right) {",
+    "  const order = $exactOrder(left, right)",
+    "  if (order !== null) {",
+    "    return order > 0",
+    "  }",
     "  $ord(left, right)",
     "  return left > right",
     "}"
@@ -1378,6 +1497,10 @@
   обеспечивает «рантайм lt несёт function $lt» результат содержит "function $lt("
   соединить [
     "function $lt(left, right) {",
+    "  const order = $exactOrder(left, right)",
+    "  if (order !== null) {",
+    "    return order < 0",
+    "  }",
     "  $ord(left, right)",
     "  return left < right",
     "}"
@@ -1388,6 +1511,10 @@
   обеспечивает «рантайм gte несёт function $gte» результат содержит "function $gte("
   соединить [
     "function $gte(left, right) {",
+    "  const order = $exactOrder(left, right)",
+    "  if (order !== null) {",
+    "    return order >= 0",
+    "  }",
     "  $ord(left, right)",
     "  return left >= right",
     "}"
@@ -1398,6 +1525,10 @@
   обеспечивает «рантайм lte несёт function $lte» результат содержит "function $lte("
   соединить [
     "function $lte(left, right) {",
+    "  const order = $exactOrder(left, right)",
+    "  if (order !== null) {",
+    "    return order <= 0",
+    "  }",
     "  $ord(left, right)",
     "  return left <= right",
     "}"
@@ -1744,6 +1875,20 @@
     "    }",
     "  }",
     "  return out",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_integer_part JS»
+  возвращает строка
+  обеспечивает «рантайм b_integer_part несёт function $b_integer_part» результат содержит "function $b_integer_part("
+  соединить [
+    "function $b_integer_part(value) {",
+    "  if (!$exactFraction(value)) {",
+    "    const word = \"«целая часть»: аргумент должен быть точным дробным, получено \"",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", word + $typeName(value))",
+    "  }",
+    "  const [top, bottom] = $fractionParts(value)",
+    "  return $exactOf(bottom === 0n ? 0n : top / bottom)",
     "}"
   ] по "\n"
 
@@ -2361,9 +2506,48 @@
     "}"
   ] по "\n"
 
-тотальная функция «Нужда суммы точного JS»
+тотальная функция «Нужда exactOrder JS»
   возвращает список строки
-  ["$exactDigit", "$exactSmallDigits", "$exactSmallValue", "$exactSettle"]
+  [
+    "$exactFraction", "$fractionParts", "$exactDigits", "$exactCanon"
+  ]
+
+тотальная функция «Нужда add JS»
+  возвращает список строки
+  [
+    "$nums", "$exactFraction", "$fractionParts", "$fractionValue", "$exactDigits", "$exactCanon", "$exactOf"
+  ]
+
+тотальная функция «Нужда sub JS»
+  возвращает список строки
+  [
+    "$nums", "$fail", "$exactFraction", "$fractionParts", "$fractionValue", "$fractionText", "$exactDigits",
+    "$exactCanon", "$exactOf", "$exactText"
+  ]
+
+тотальная функция «Нужда mul JS»
+  возвращает список строки
+  [
+    "$nums", "$exactFraction", "$fractionParts", "$fractionValue", "$exactDigits", "$exactCanon", "$exactOf"
+  ]
+
+тотальная функция «Нужда div JS»
+  возвращает список строки
+  [
+    "$nums", "$fail", "$exactFraction", "$fractionParts", "$fractionValue", "$fractionText"
+  ]
+
+тотальная функция «Нужда mod JS»
+  возвращает список строки
+  [
+    "$nums", "$fail", "$exactDigits", "$exactCanon", "$exactOf", "$exactText"
+  ]
+
+тотальная функция «Нужда b_integer_part JS»
+  возвращает список строки
+  [
+    "$fail", "$typeName", "$exactFraction", "$fractionParts", "$exactOf"
+  ]
 
 тотальная функция «Собрать кусок JS»
   принимает «имя»: строка, «нужно»: список строки, «исходник»: строка
@@ -2373,7 +2557,7 @@
 
 тотальная функция «Рантайм JS»
   возвращает список «Кусок рантайма JS»
-  обеспечивает «кусков рантайма ровно сто» (длина результат) равен 100
+  обеспечивает «кусков рантайма ровно сто шесть» (длина результат) равен 106
   [
     (запись «Кусок рантайма JS» с «имя» равным "$FlangError" и «нужно» равным пустой список и «исходник» равным «Текст FlangError JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$fail" и «нужно» равным ["$FlangError"] и «исходник» равным «Текст fail JS»),
@@ -2401,22 +2585,27 @@
     (запись «Кусок рантайма JS» с «имя» равным "$nums" и «нужно» равным ["$fail", "$typeName"] и «исходник» равным «Текст nums JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$ord" и «нужно» равным ["$fail"] и «исходник» равным «Текст ord JS»),
     («Собрать кусок JS» от "$exactDigits" и ["$isList"] и «Текст exactDigits JS»),
-    («Собрать кусок JS» от "$exactDigit" и пустой список и «Текст exactDigit JS»),
     («Собрать кусок JS» от "$exactTrim" и пустой список и «Текст exactTrim JS»),
     («Собрать кусок JS» от "$exactSmallDigits" и ["$exactTrim"] и «Текст exactSmallDigits JS»),
-    («Собрать кусок JS» от "$exactSmallValue" и ["$exactDigit"] и «Текст exactSmallValue JS»),
     («Собрать кусок JS» от "$exactSettle" и ["$exactTrim", "$exactSmallDigits"] и «Текст exactSettle JS»),
-    («Собрать кусок JS» от "$exactSum" и («Нужда суммы точного JS») и «Текст exactSum JS»),
-    («Собрать кусок JS» от "$add" и ["$nums", "$exactDigits", "$exactSum"] и «Текст add JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$sub" и «нужно» равным ["$nums"] и «исходник» равным «Текст sub JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$mul" и «нужно» равным ["$nums"] и «исходник» равным «Текст mul JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$div" и «нужно» равным ["$nums"] и «исходник» равным «Текст div JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$mod" и «нужно» равным ["$nums"] и «исходник» равным «Текст mod JS»),
+    («Собрать кусок JS» от "$exactCanon" и ["$exactSettle"] и «Текст exactCanon JS»),
+    («Собрать кусок JS» от "$exactOf" и пустой список и «Текст exactOf JS»),
+    («Собрать кусок JS» от "$exactText" и ["$exactOf"] и «Текст exactText JS»),
+    («Собрать кусок JS» от "$exactFraction" и ["$isList", "$exactDigits"] и «Текст exactFraction JS»),
+    («Собрать кусок JS» от "$fractionParts" и ["$exactCanon"] и «Текст fractionParts JS»),
+    («Собрать кусок JS» от "$fractionValue" и ["$exactOf"] и «Текст fractionValue JS»),
+    («Собрать кусок JS» от "$fractionText" и ["$exactText"] и «Текст fractionText JS»),
+    («Собрать кусок JS» от "$exactOrder" и («Нужда exactOrder JS») и «Текст exactOrder JS»),
+    («Собрать кусок JS» от "$add" и («Нужда add JS») и «Текст add JS»),
+    («Собрать кусок JS» от "$sub" и («Нужда sub JS») и «Текст sub JS»),
+    («Собрать кусок JS» от "$mul" и («Нужда mul JS») и «Текст mul JS»),
+    («Собрать кусок JS» от "$div" и («Нужда div JS») и «Текст div JS»),
+    («Собрать кусок JS» от "$mod" и («Нужда mod JS») и «Текст mod JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$percent" и «нужно» равным ["$nums"] и «исходник» равным «Текст percent JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$gt" и «нужно» равным ["$ord"] и «исходник» равным «Текст gt JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$lt" и «нужно» равным ["$ord"] и «исходник» равным «Текст lt JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$gte" и «нужно» равным ["$ord"] и «исходник» равным «Текст gte JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$lte" и «нужно» равным ["$ord"] и «исходник» равным «Текст lte JS»),
+    («Собрать кусок JS» от "$gt" и ["$ord", "$exactOrder"] и «Текст gt JS»),
+    («Собрать кусок JS» от "$lt" и ["$ord", "$exactOrder"] и «Текст lt JS»),
+    («Собрать кусок JS» от "$gte" и ["$ord", "$exactOrder"] и «Текст gte JS»),
+    («Собрать кусок JS» от "$lte" и ["$ord", "$exactOrder"] и «Текст lte JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$pairSplits" и «нужно» равным пустой список и «исходник» равным «Текст pairSplits JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$glueCheck" и «нужно» равным ["$fail", "$pairSplits"] и «исходник» равным «Текст glueCheck JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$glue" и «нужно» равным ["$glueCheck"] и «исходник» равным «Текст glue JS»),
@@ -2438,6 +2627,7 @@
     (запись «Кусок рантайма JS» с «имя» равным "$b_simvol_po_kodu" и «нужно» равным ["$fail", "$expectInteger"] и «исходник» равным «Текст b_simvol_po_kodu JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$SHA256_K" и «нужно» равным пустой список и «исходник» равным «Текст SHA256_K JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$utf8Bytes" и «нужно» равным пустой список и «исходник» равным «Текст utf8Bytes JS»),
+    («Собрать кусок JS» от "$b_integer_part" и («Нужда b_integer_part JS») и «Текст b_integer_part JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_hesh256" и «нужно» равным ["$expectString", "$utf8Bytes", "$SHA256_K"] и «исходник» равным «Текст b_hesh256 JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_soderzhit" и «нужно» равным ["$isList", "$equal", "$expectString", "$isTorn", "$findAligned"] и «исходник» равным «Текст b_soderzhit JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_nachinaetsya_s" и «нужно» равным ["$expectString", "$isTorn", "$isBoundary"] и «исходник» равным «Текст b_nachinaetsya_s JS»),

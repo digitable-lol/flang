@@ -497,7 +497,7 @@ bootstrap/flang run-script kernel-word:probes
 осталось на слове ядра и по какой причине (узел с посылками либо правило ядра без
 ходов), и для каждого из семнадцати правил ядра — сколько доказанных утверждений его
 называют и сколько из них проиграно. Устройство доверия и путь к цели «доказано только
-проигранное» — [ADR-0072](../../../adr/0072-a-verdict-counts-as-proved-only-when-the-checker-replays-it.md).
+проигранное» — [ADR-0073](../../../adr/0073-a-verdict-counts-as-proved-only-when-the-checker-replays-it.md).
 
 ## Откуда всё это взято
 

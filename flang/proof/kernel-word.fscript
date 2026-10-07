@@ -1,0 +1,569 @@
+модуль «Kernel word»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Pick»
+  «waiting»: признак
+  «found»: список строки
+
+тотальная функция «Census pieces»
+  возвращает список строки
+  пример «The census command is kept in pieces that fit a line»
+    ожидается ["cd \"$0\" || exit 2; w=\"$2\"; mkdir -p \"$w/r\" || exit 2; case \"$1\" in corpus) for z in fl",
+      "ang/proof/checker/tests/records/corpus/*.record; do grep -a -m1 '^исходник ' \"$z\" | cut -d' ",
+      "' -f2-; done | LC_ALL=C sort -u;; stdlib) ls flang/stdlib/*.flang;; probes) find flang/proof/p",
+      "robes -name '*.flang' | LC_ALL=C sort;; *) exit 3;; esac > \"$w/list\" || exit 4; for f in fla",
+      "ng/stdlib/*.flang; do printf '%s\\t%s\\n' \"$(sed -n 's/^модуль «\\(.*\\)»$/\\1/p' \"$f\" | he",
+      "ad -n 1)\" \"$f\"; done > \"$w/modules\"; xargs -P \"$3\" -I{} sh -c 'k=$(printf %s \"$2\" | t",
+      "r / _); ./bootstrap/flang check --proof \"$2\" --record \"$1/r/$k.record\" > /dev/null 2>&1; e",
+      "cho $? > \"$1/r/$k.kernel\"' x \"$w\" {} < \"$w/list\"; while IFS= read -r f; do k=$(printf %s",
+      " \"$f\" | tr / _); s=\"\"; t=\"$f\"; while [ -n \"$t\" ]; do g=${t%% *}; if [ \"$g\" = \"$t\" ",
+      "]; then t=\"\"; else t=${t#* }; fi; for d in $(grep -h '^ *использует «' \"$g\" | sed 's/^ *ис",
+      "пользует «\\([^»]*\\)».*/\\1/' | while IFS= read -r m; do awk -F '\\t' -v M=\"$m\" '$1==M{prin",
+      "t $2}' \"$w/modules\"; done); do case \" $s $f \" in *\" $d \"*) ;; *) s=\"$s $d\"; t=\"${t:+$",
+      "t }$d\";; esac; done; done; a=\"\"; for d in $s; do e=\"$w/r/$(printf %s \"$d\" | tr / _).reco",
+      "rd\"; [ -s \"$e\" ] && a=\"$a --зависимость $d $e\"; done; printf '\\036 file %s\\t%s\\t%s\\n'",
+      " \"$f\" \"$(cat \"$w/r/$k.kernel\" 2>/dev/null || echo -)\" \"$(echo $a | wc -w)\"; if [ -s \"",
+      "$w/r/$k.record\" ]; then grep -a '^утверждение «\\|^  вердикт \\|^  правило «\\|^  посылка ' ",
+      "\"$w/r/$k.record\"; printf '\\036 checker\\n'; ./flang/proof/checker/сверщик --по-утверждениям",
+      " $a \"$f\" \"$w/r/$k.record\" > \"$w/r/$k.checker\" 2>&1; c=$?; grep -a '^  утверждение «' \"$",
+      "w/r/$k.checker\"; printf '\\036 code %s\\n' \"$c\"; else printf '\\036 checker\\n\\036 code -",
+      "\\n'; fi; done < \"$w/list\" > \"$w/census.txt\""]
+  ["cd \"$0\" || exit 2; w=\"$2\"; mkdir -p \"$w/r\" || exit 2; case \"$1\" in corpus) for z in fl",
+    "ang/proof/checker/tests/records/corpus/*.record; do grep -a -m1 '^исходник ' \"$z\" | cut -d' ",
+    "' -f2-; done | LC_ALL=C sort -u;; stdlib) ls flang/stdlib/*.flang;; probes) find flang/proof/p",
+    "robes -name '*.flang' | LC_ALL=C sort;; *) exit 3;; esac > \"$w/list\" || exit 4; for f in fla",
+    "ng/stdlib/*.flang; do printf '%s\\t%s\\n' \"$(sed -n 's/^модуль «\\(.*\\)»$/\\1/p' \"$f\" | he",
+    "ad -n 1)\" \"$f\"; done > \"$w/modules\"; xargs -P \"$3\" -I{} sh -c 'k=$(printf %s \"$2\" | t",
+    "r / _); ./bootstrap/flang check --proof \"$2\" --record \"$1/r/$k.record\" > /dev/null 2>&1; e",
+    "cho $? > \"$1/r/$k.kernel\"' x \"$w\" {} < \"$w/list\"; while IFS= read -r f; do k=$(printf %s",
+    " \"$f\" | tr / _); s=\"\"; t=\"$f\"; while [ -n \"$t\" ]; do g=${t%% *}; if [ \"$g\" = \"$t\" ",
+    "]; then t=\"\"; else t=${t#* }; fi; for d in $(grep -h '^ *использует «' \"$g\" | sed 's/^ *ис",
+    "пользует «\\([^»]*\\)».*/\\1/' | while IFS= read -r m; do awk -F '\\t' -v M=\"$m\" '$1==M{prin",
+    "t $2}' \"$w/modules\"; done); do case \" $s $f \" in *\" $d \"*) ;; *) s=\"$s $d\"; t=\"${t:+$",
+    "t }$d\";; esac; done; done; a=\"\"; for d in $s; do e=\"$w/r/$(printf %s \"$d\" | tr / _).reco",
+    "rd\"; [ -s \"$e\" ] && a=\"$a --зависимость $d $e\"; done; printf '\\036 file %s\\t%s\\t%s\\n'",
+    " \"$f\" \"$(cat \"$w/r/$k.kernel\" 2>/dev/null || echo -)\" \"$(echo $a | wc -w)\"; if [ -s \"",
+    "$w/r/$k.record\" ]; then grep -a '^утверждение «\\|^  вердикт \\|^  правило «\\|^  посылка ' ",
+    "\"$w/r/$k.record\"; printf '\\036 checker\\n'; ./flang/proof/checker/сверщик --по-утверждениям",
+    " $a \"$f\" \"$w/r/$k.record\" > \"$w/r/$k.checker\" 2>&1; c=$?; grep -a '^  утверждение «' \"$",
+    "w/r/$k.checker\"; printf '\\036 code %s\\n' \"$c\"; else printf '\\036 checker\\n\\036 code -",
+    "\\n'; fi; done < \"$w/list\" > \"$w/census.txt\""]
+
+тотальная функция «Kernel rules»
+  возвращает список строки
+  пример «The seventeen rule names the kernel stamps on a verdict»
+    ожидается ["неотрицательность по построению",
+      "ограниченность точным потолком по построению",
+      "тождество после переписки допущением",
+      "порядок по построению",
+      "строгий порядок по построению",
+      "порядок соседних по построению",
+      "вхождение по построению",
+      "цель есть допущение",
+      "несовместимые допущения",
+      "вычисление замкнутой цели",
+      "разбор цели по условию",
+      "цель-выбор с истинной ветвью",
+      "разбор случаев по дизъюнкции в допущении",
+      "разбор случаев по внутреннему условию цели",
+      "равенство, решённое счётом замкнутых частей",
+      "начало по построению",
+      "все элементы по построению"]
+  ["неотрицательность по построению",
+    "ограниченность точным потолком по построению",
+    "тождество после переписки допущением",
+    "порядок по построению",
+    "строгий порядок по построению",
+    "порядок соседних по построению",
+    "вхождение по построению",
+    "цель есть допущение",
+    "несовместимые допущения",
+    "вычисление замкнутой цели",
+    "разбор цели по условию",
+    "цель-выбор с истинной ветвью",
+    "разбор случаев по дизъюнкции в допущении",
+    "разбор случаев по внутреннему условию цели",
+    "равенство, решённое счётом замкнутых частей",
+    "начало по построению",
+    "все элементы по построению"]
+
+тотальная функция «Picked»
+  принимает pick: «Pick», word: строка, key: строка
+  возвращает «Pick»
+  пример «The word after the key is taken»
+    дано pick равно запись «Pick» с «waiting» равным да и «found» равным пустой список
+    дано word равно "stdlib"
+    дано key равно "--set"
+    ожидается запись «Pick» с «waiting» равным нет и «found» равным ["stdlib"]
+  пусть found равно (если pick.«waiting» то (добавить word к (pick.«found»)) иначе (pick.«found»))
+  запись «Pick» с «waiting» равным (word равен key) и «found» равным found
+
+тотальная функция «Key value»
+  принимает key: строка, words: список строки
+  возвращает строка
+  пример «The word after its key»
+    дано key равно "--set"
+    дано words равно ["--jobs", "8", "--set", "corpus"]
+    ожидается "corpus"
+  пример «A key not given»
+    дано key равно "--jobs"
+    дано words равно ["--set", "corpus"]
+    ожидается ""
+  пусть start равно (запись «Pick» с «waiting» равным нет и «found» равным пустой список)
+  «Cell» от 1 и ((свёртка words начиная с start как pick и word → «Picked» от pick и word и key).«found»)
+
+тотальная функция «Set of»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No set named»
+    дано answers равно пустой список
+    ожидается ""
+  «Key value» от "--set" и («Given of» от "arguments" и answers)
+
+тотальная функция «Jobs of»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «Sixteen jobs unless another number is named»
+    дано answers равно пустой список
+    ожидается "16"
+  пусть named равно («Key value» от "--jobs" и («Given of» от "arguments" и answers))
+  если «Digits» от named то named иначе "16"
+
+тотальная функция «Known set»
+  принимает name: строка
+  возвращает признак
+  пример «The library is a set»
+    дано name равно "stdlib"
+    ожидается да
+  пример «Anything else is not»
+    дано name равно "all"
+    ожидается нет
+  (name равен "corpus") или ((name равен "stdlib") или (name равен "probes"))
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No work directory yet»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP")]
+
+тотальная функция «Probe»
+  принимает name: строка, words: список строки
+  возвращает «Question»
+  «Run» от name и "test" и words
+
+тотальная функция «Start»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing starts before a known set is named»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть place равно (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/kernel-word."] по "")
+  пусть checker равно "checker/сверщик"
+  пусть questions равно [(«Temporary directory» от "work" и place),
+    («Probe» от "binary present" и ["-x", "../../bootstrap/flang"]),
+    («Probe» от "checker present" и ["-x", checker]),
+    («Probe» от "checker stale" и ["checker/checker.c", "-nt", checker])]
+  если «Known set» от («Set of» от answers) то questions иначе пустой список
+
+тотальная функция «Measure»
+  принимает answers: список «Answer», script: строка
+  возвращает список «Question»
+  пример «Nothing is measured without a work directory»
+    дано answers равно пустой список
+    дано script равно "true"
+    ожидается пустой список
+  пусть work равно («Work» от answers)
+  пусть words равно ["-c", script, "../..", («Set of» от answers), work, («Jobs of» от answers)]
+  пусть questions равно [(«Run» от "census" и "sh" и words),
+    («Read» от "census text" и (соединить [work, "/census.txt"] по ""))]
+  если пусто work то пустой список иначе questions
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 9
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 3
+      то «Setup»
+    случай 2
+      то «Start» от answers
+    случай 1
+      то «Measure» от answers и (соединить («Census pieces») по "")
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Between marks»
+  принимает text: строка, opening: строка, closing: строка
+  возвращает строка
+  пример «The name inside the guillemets»
+    дано text равно "утверждение «а б» функции «Ф»"
+    дано opening равно "«"
+    дано closing равно "»"
+    ожидается "а б"
+  «Cell» от 1 и (разделить («Cell» от 2 и (разделить text по opening)) по closing)
+
+тотальная функция «Tail of»
+  принимает items: список строки
+  возвращает список строки
+  пример «The first item is dropped»
+    дано items равно ["1", "a"]
+    ожидается ["a"]
+  разбор items
+    случай голова и хвост
+      то хвост
+    случай пусто
+      то пустой список
+
+тотальная функция «Checker line»
+  принимает line: строка
+  возвращает строка
+  пример «The verdict of one statement»
+    дано line равно "  утверждение «а»: НЕ ПРОВЕРЕНО (на слово ядра: посылок и утверждений 1, шагов 0)"
+    ожидается "а\tНЕ ПРОВЕРЕНО"
+  пусть rest равно («Cell» от 2 и (разделить line по "»: "))
+  соединить [(«Between marks» от line и "«" и "»"), "\t", («Cell» от 1 и (разделить rest по " ("))] по ""
+
+тотальная функция «Stamps»
+  принимает block: строка
+  возвращает строка
+  пример «Every kernel rule a block names, between bars»
+    дано block равно "р»\n  правило «цель есть допущение»\n  посылка «А» правило «порядок по построению»"
+    ожидается "|порядок по построению|цель есть допущение|"
+  пусть named равно (отфильтровать («Kernel rules») где stamp → block содержит (соединить ["«", stamp, "»"] по ""))
+  соединить ["|", (соединить named по "|"), "|"] по ""
+
+тотальная функция «Kind of block»
+  принимает checked: строка, premises: число, stamp: строка
+  возвращает строка
+  пример «A node with premises»
+    дано checked равно "НЕ ПРОВЕРЕНО"
+    дано premises равно 2
+    дано stamp равно ""
+    ожидается "узел с посылками (индукция, разбор по случаям)"
+  пример «A rule without moves»
+    дано checked равно "НЕ ПРОВЕРЕНО"
+    дано premises равно 0
+    дано stamp равно "цель есть допущение"
+    ожидается "правило ядра «цель есть допущение» без ходов"
+  «Chosen» от [(«When» от (checked равен "сверщик отверг запись") и "сверщик отверг запись целиком"),
+    («When» от (checked равен "не сличено") и "строка сверщика не сличена с записью"),
+    («When» от (premises больше 0) и "узел с посылками (индукция, разбор по случаям)"),
+    («When» от (пусто stamp) и "правило ядра не названо")] и (соединить ["правило ядра «", stamp, "» без ходов"] по "")
+
+тотальная функция «Entry»
+  принимает block: строка, said: список строки, refused: признак
+  возвращает список строки
+  пример «A proved statement the checker replayed»
+    дано block равно "р» функции «Ф» строка 3\n  вердикт доказано\n  правило «цель есть допущение»"
+    дано said равно ["р\tПРОВЕРЕНО"]
+    дано refused равно нет
+    ожидается ["да", "ПРОВЕРЕНО", "правило ядра «цель есть допущение» без ходов", "|цель есть допущение|"]
+  пример «The checker refused the whole record»
+    дано block равно "р»\n  вердикт доказано"
+    дано said равно ["р\tПРОВЕРЕНО"]
+    дано refused равно да
+    ожидается ["да", "сверщик отверг запись", "сверщик отверг запись целиком", "||"]
+  пусть lines равно (разделить block по "\n")
+  пусть cells равно (разделить («Cell» от 1 и said) по "\t")
+  пусть named равно (не ((«Cell» от 1 и cells) равен («Cell» от 1 и (разделить block по "»"))))
+  пусть checked равно («Chosen» от [(«When» от refused и "сверщик отверг запись"),
+    («When» от named и "не сличено")] и («Cell» от 2 и cells))
+  пусть proved равно ((«Beginning with» от "  вердикт " и lines) равен "  вердикт доказано")
+  пусть stamp равно («Between marks» от («Beginning with» от "  правило «" и lines) и "«" и "»")
+  пусть premises равно (длина (отфильтровать lines где line → line начинается с "  посылка "))
+  [(если proved то "да" иначе "нет"), checked, («Kind of block» от checked и premises и stamp), («Stamps» от block)]
+
+тотальная функция «Paired»
+  принимает blocks: список строки, said: список строки, refused: признак
+  возвращает список (список строки)
+  пример «Blocks meet the checker lines in their order»
+    дано blocks равно ["р»\n  вердикт нет вердикта"]
+    дано said равно ["р\tвердикта нет — проверять нечего"]
+    дано refused равно нет
+    ожидается [["нет", "вердикта нет — проверять нечего", "правило ядра не названо", "||"]]
+  разбор blocks
+    случай голова и хвост
+      то приписать («Entry» от голова и said и refused) к («Paired» от хвост и («Tail of» от said) и refused)
+    случай пусто
+      то пустой список
+
+тотальная функция «Entries of chunk»
+  принимает chunk: строка
+  возвращает список (список строки)
+  пример «A file whose record has one statement»
+    дано chunk равно "a\t0\t0\nутверждение «р»\n  вердикт доказано\n\u001e checker\n  утверждение «р»: ПРОВЕРЕНО (…)\n"
+    ожидается [["да", "ПРОВЕРЕНО", "правило ядра не названо", "||"]]
+  пусть halves равно (разделить chunk по "\u001e checker\n")
+  пусть tail равно (разделить («Cell» от 2 и halves) по "\u001e code ")
+  пусть said равно (отобразить («Lines» от («Cell» от 1 и tail)) как line → «Checker line» от line)
+  пусть blocks равно («Tail of» от (разделить («Cell» от 1 и halves) по "утверждение «"))
+  «Paired» от blocks и said и ((«Without blanks» от («Cell» от 2 и tail)) равен "1")
+
+тотальная функция «Gathered entries»
+  принимает parts: список (список (список строки))
+  возвращает список (список строки)
+  пример «No parts»
+    дано parts равно пустой список
+    ожидается пустой список
+  свёртка parts начиная с (пустой список) как gathered и part → «Соединить списки» от gathered и part
+
+тотальная функция «Census of»
+  принимает text: строка
+  возвращает список (список строки)
+  пример «Nothing measured»
+    дано text равно ""
+    ожидается пустой список
+  пусть chunks равно («Tail of» от (разделить text по "\u001e file "))
+  «Gathered entries» от (отобразить chunks как chunk → «Entries of chunk» от chunk)
+
+тотальная функция «Kinds»
+  возвращает список строки
+  пример «Nodes first, then the kernel rules, then the rest»
+    ожидается ["узел с посылками (индукция, разбор по случаям)",
+      "правило ядра «неотрицательность по построению» без ходов",
+      "правило ядра «ограниченность точным потолком по построению» без ходов",
+      "правило ядра «тождество после переписки допущением» без ходов",
+      "правило ядра «порядок по построению» без ходов",
+      "правило ядра «строгий порядок по построению» без ходов",
+      "правило ядра «порядок соседних по построению» без ходов",
+      "правило ядра «вхождение по построению» без ходов",
+      "правило ядра «цель есть допущение» без ходов",
+      "правило ядра «несовместимые допущения» без ходов",
+      "правило ядра «вычисление замкнутой цели» без ходов",
+      "правило ядра «разбор цели по условию» без ходов",
+      "правило ядра «цель-выбор с истинной ветвью» без ходов",
+      "правило ядра «разбор случаев по дизъюнкции в допущении» без ходов",
+      "правило ядра «разбор случаев по внутреннему условию цели» без ходов",
+      "правило ядра «равенство, решённое счётом замкнутых частей» без ходов",
+      "правило ядра «начало по построению» без ходов",
+      "правило ядра «все элементы по построению» без ходов",
+      "правило ядра не названо",
+      "сверщик отверг запись целиком",
+      "строка сверщика не сличена с записью"]
+  пусть rules равно (отобразить («Kernel rules») как stamp → соединить ["правило ядра «", stamp, "» без ходов"] по "")
+  пусть rest равно ["правило ядра не названо", "сверщик отверг запись целиком", "строка сверщика не сличена с записью"]
+  «Соединить списки» от (приписать "узел с посылками (индукция, разбор по случаям)" к rules) и rest
+
+тотальная функция «Share text»
+  принимает part: число, whole: число
+  возвращает строка
+  пример «A share in hundredths of a percent»
+    дано part равно 1
+    дано whole равно 3
+    ожидается "33.33 %"
+  пример «Nothing of nothing»
+    дано part равно 0
+    дано whole равно 0
+    ожидается "— %"
+  пусть scaled равно (((part умножить на 10000) делить на whole) плюс 0.5)
+  пусть hundredths равно (scaled минус (scaled остаток от 1))
+  пусть cents равно (hundredths остаток от 100)
+  пусть units равно ((hundredths минус cents) делить на 100)
+  пусть tail равно (если cents меньше 10 то (соединить ["0", (к строке cents)] по "") иначе (к строке cents))
+  если whole больше 0 то (соединить [(к строке units), ".", tail, " %"] по "") иначе "— %"
+
+тотальная функция «Kind line»
+  принимает kind: строка, kinds: список строки
+  возвращает список строки
+  пример «A kind nobody fell into is not shown»
+    дано kind равно "правило ядра не названо"
+    дано kinds равно ["узел"]
+    ожидается пустой список
+  пример «A kind is shown with its count»
+    дано kind равно "узел"
+    дано kinds равно ["узел", "узел"]
+    ожидается ["    2\tузел"]
+  пусть count равно (длина (отфильтровать kinds где other → other равен kind))
+  если count равно 0 то пустой список иначе [(соединить ["    ", (к строке count), "\t", kind] по "")]
+
+тотальная функция «Kind lines»
+  принимает pending: список (список строки)
+  возвращает список строки
+  пример «No pending statement, no lines»
+    дано pending равно пустой список
+    ожидается пустой список
+  пусть kinds равно (отобразить pending как entry → «Cell» от 3 и entry)
+  «Gathered words» от (отобразить («Kinds») как kind → «Kind line» от kind и kinds)
+
+тотальная функция «Is checked»
+  принимает entry: список строки
+  возвращает признак
+  пример «Replayed»
+    дано entry равно ["да", "ПРОВЕРЕНО", "правило ядра не названо", "||"]
+    ожидается да
+  («Cell» от 2 и entry) равен "ПРОВЕРЕНО"
+
+тотальная функция «Rule line»
+  принимает stamp: строка, proved: список (список строки)
+  возвращает строка
+  пример «A rule no statement names»
+    дано stamp равно "цель есть допущение"
+    дано proved равно пустой список
+    ожидается "  «цель есть допущение»\tназвано 0\tпроиграно 0"
+  пусть mark равно (соединить ["|", stamp, "|"] по "")
+  пусть named равно (отфильтровать proved где entry → («Cell» от 4 и entry) содержит mark)
+  пусть replayed равно (длина (отфильтровать named где entry → «Is checked» от entry))
+  соединить ["  «", stamp, "»\tназвано ", (к строке (длина named)), "\tпроиграно ", (к строке replayed)] по ""
+
+тотальная функция «Report»
+  принимает group: строка, entries: список (список строки), files: число
+  возвращает список строки
+  пример «An empty set»
+    дано group равно "corpus"
+    дано entries равно пустой список
+    дано files равно 0
+    ожидается ["═══ НЕЗАВИСИМО ИЛИ НА СЛОВЕ ЯДРА: набор corpus ═══", "файлов\t0", "утверждений в записях\t0",
+      "доказано ядром\t0", "  проиграно сверщиком (независимо)\t0\t— %", "  на слове ядра\t0\t— %",
+      "на слове ядра — по причине:", "правила ядра (17): названо доказанными утверждениями и проиграно сверщиком",
+      "  «неотрицательность по построению»\tназвано 0\tпроиграно 0",
+      "  «ограниченность точным потолком по построению»\tназвано 0\tпроиграно 0",
+      "  «тождество после переписки допущением»\tназвано 0\tпроиграно 0",
+      "  «порядок по построению»\tназвано 0\tпроиграно 0",
+      "  «строгий порядок по построению»\tназвано 0\tпроиграно 0",
+      "  «порядок соседних по построению»\tназвано 0\tпроиграно 0",
+      "  «вхождение по построению»\tназвано 0\tпроиграно 0",
+      "  «цель есть допущение»\tназвано 0\tпроиграно 0",
+      "  «несовместимые допущения»\tназвано 0\tпроиграно 0",
+      "  «вычисление замкнутой цели»\tназвано 0\tпроиграно 0",
+      "  «разбор цели по условию»\tназвано 0\tпроиграно 0",
+      "  «цель-выбор с истинной ветвью»\tназвано 0\tпроиграно 0",
+      "  «разбор случаев по дизъюнкции в допущении»\tназвано 0\tпроиграно 0",
+      "  «разбор случаев по внутреннему условию цели»\tназвано 0\tпроиграно 0",
+      "  «равенство, решённое счётом замкнутых частей»\tназвано 0\tпроиграно 0",
+      "  «начало по построению»\tназвано 0\tпроиграно 0",
+      "  «все элементы по построению»\tназвано 0\tпроиграно 0",
+      "правил ядра названо, но ни одно утверждение не проиграно\t0",
+      "правил ядра не названо ни разу\t17"]
+  пусть proved равно (отфильтровать entries где entry → («Cell» от 1 и entry) равен "да")
+  пусть checked равно (длина (отфильтровать proved где entry → «Is checked» от entry))
+  пусть pending равно (отфильтровать proved где entry → не («Is checked» от entry))
+  пусть rules равно (отобразить («Kernel rules») как stamp → «Rule line» от stamp и proved)
+  пусть absent равно (длина (отфильтровать rules где line → line содержит "\tназвано 0\t"))
+  пусть silent равно ((длина (отфильтровать rules где line → «Ends with» от line и "\tпроиграно 0")) минус absent)
+  пусть whole равно (длина proved)
+  пусть share равно («Share text» от checked и whole)
+  пусть rest равно («Share text» от (длина pending) и whole)
+  пусть head равно [(соединить ["═══ НЕЗАВИСИМО ИЛИ НА СЛОВЕ ЯДРА: набор ", group, " ═══"] по ""),
+    (соединить ["файлов\t", (к строке files)] по ""),
+    (соединить ["утверждений в записях\t", (к строке (длина entries))] по ""),
+    (соединить ["доказано ядром\t", (к строке whole)] по ""),
+    (соединить ["  проиграно сверщиком (независимо)\t", (к строке checked), "\t", share] по ""),
+    (соединить ["  на слове ядра\t", (к строке (длина pending)), "\t", rest] по ""),
+    "на слове ядра — по причине:"]
+  пусть title равно "правила ядра (17): названо доказанными утверждениями и проиграно сверщиком"
+  пусть tail равно [(соединить ["правил ядра названо, но ни одно утверждение не проиграно\t", (к строке silent)] по ""),
+    (соединить ["правил ядра не названо ни разу\t", (к строке absent)] по "")]
+  пусть middle равно («Соединить списки» от head и («Kind lines» от pending))
+  «Соединить списки» от middle и («Соединить списки» от (приписать title к rules) и tail)
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «A census with no file is not a measure»
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_KERNEL_WORD_NOT_MEASURED" и сообщение равным "файлов нет"
+  пусть text равно («Output of» от "census text" и answers)
+  пусть files равно (длина («Tail of» от (разделить text по "\u001e file ")))
+  пусть said равно (соединить («Report» от («Set of» от answers) и («Census of» от text) и files) по "\n")
+  если files равен 0
+    то вариант «Не проверено» с код равным "FLANG_KERNEL_WORD_NOT_MEASURED" и сообщение равным "файлов нет"
+    иначе вариант «Конец работы» с значение равным said
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «No set named»
+    дано asked равно "arguments"
+    дано answers равно пустой список
+    ожидается ["назвать набор: --set corpus|stdlib|probes [--jobs N]"]
+  пусть code равно («Exit code of» от asked и answers)
+  пусть make равно "make -C flang/proof/checker"
+  пусть unknown равно (не («Known set» от («Set of» от answers)))
+  пусть failed равно (не (code равен 0))
+  пусть usage равно "назвать набор: --set corpus|stdlib|probes [--jobs N]"
+  пусть census равно (соединить ["перепись: код ", (к строке code)] по "")
+  пусть homeless равно (пусто («Work» от answers))
+  «Chosen» от [(«When» от ((asked равен "arguments") и притом unknown) и [usage]),
+    («When» от ((asked равен "binary present") и притом failed) и ["нет двоичного — собрать: make -C bootstrap"]),
+    («When» от ((asked равен "checker present") и притом failed) и [(соединить ["нет сверщика — ", make] по "")]),
+    («When» от ((asked равен "checker stale") и притом (не failed)) и [(соединить ["сверщик устарел — ", make] по "")]),
+    («When» от ((asked равен "census") и притом failed) и [census]),
+    («When» от ((asked равен "work") и притом homeless) и ["временный каталог не заведён"])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается вариант «Не проверено» с код равным "FLANG_KERNEL_WORD_NOT_MEASURED" и сообщение равным "файлов нет"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 4
+
+тотальная функция «Stopped»
+  принимает hd: список «Answer», reason: строка
+  возвращает «Продолжение»
+  пример «Nothing to clean, the reason is said at once»
+    дано hd равно пустой список
+    дано reason равно "нет сверщика"
+    ожидается вариант «Не проверено» с код равным "FLANG_KERNEL_WORD_NOT_MEASURED" и сообщение равным "нет сверщика"
+  пусть nt равно (соединить ["stopped: ", reason] по "")
+  пусть nl равно (пустой список)
+  пусть lt равно (запись «Inquiry» с «asked» равным nt и «queue» равным nl и «stages» равным 0 и «answers» равным hd)
+  пусть words равно ["-rf", («Work» от hd)]
+  пусть cleaning равно (вариант «Запустить процесс» с программа равным "rm" и аргументы равным words)
+  пусть quiet равно (вариант «Не проверено» с код равным "FLANG_KERNEL_WORD_NOT_MEASURED" и сообщение равным reason)
+  если пусто («Work» от hd) то quiet иначе вариант «Сделать» с поручение равным cleaning и потом равным lt
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть answers равно («Heard» от inquiry и reply)
+  пусть asked равно (inquiry.«asked»)
+  пусть reason равно («After» от "stopped: " и asked)
+  пусть stopped равно (вариант «Не проверено» с код равным "FLANG_KERNEL_WORD_NOT_MEASURED" и сообщение равным reason)
+  разбор («Obstacles» от asked и answers)
+    случай голова и хвост
+      то «Stopped» от answers и голова
+    случай пусто
+      то если asked начинается с "stopped: "
+        то stopped
+        иначе «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Kernel word»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

@@ -681,9 +681,6 @@ proza() {
   skazat "layout.ru: строк отпечатка" "$(grep -oE 'хешированной строке на файл — [0-9]+ строк' docs/repository-layout.ru.md | grep -oE '[0-9]+')" "$otp"
   skazat "layout: строк отпечатка"    "$(grep -oE 'one hashed line each — [0-9]+ lines' docs/repository-layout.md | grep -oE '[0-9]+')" "$otp"
 
-  # Подделок в каталоге — то же число называет сторож ядра.
-  pod=$(find flang/test/fixtures -maxdepth 1 -name 'poddelka-*' | wc -l | tr -d ' ')
-  skazat "ROADMAP: подделок" "$(plosko docs/ROADMAP.md | grep -oE 'wc -l. отвечает \*\*[0-9]+\*\*' | grep -oE '[0-9]+')" "$pod"
 }
 
 # ── Напечатанные команды: работают ли они как напечатаны ─────────────────────

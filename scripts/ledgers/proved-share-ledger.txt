@@ -1168,6 +1168,10 @@ d75f0d62496543b49b91ab344638ebe3|2|1|1|0|0|flang/proof/checker/tests/families/st
 30f287a613422acd8c8636d42fe95d86|1|×|×|×|0|flang/proof/checker/tests/families/boolean-goal/flag.flang
 8358c893c799244b885734453a1140c9|1|×|×|×|0|flang/proof/checker/tests/families/boolean-goal/corrupt/lie.flang
 c1e460f80b460d4d4ddf809c3de056b7|1|×|×|×|0|flang/proof/checker/tests/families/if-branch/height.flang
+06083f90fdf78f3c059f7e89821f3e65|9|9|0|0|0|flang/proof/checker/tests/families/if-body/lexer-step.flang
+445166e71ce688aa6f45aa67c7b7fcd7|1|1|0|0|0|flang/proof/checker/tests/families/if-body/option-flag.flang
+be5b73b9ed53a4c40775eb35b4bd68a0|5|0|0|5|0|flang/proof/checker/tests/families/if-body/corrupt/lexer-step-lies.flang
+8bc96e9c0bef1ebf264788932b78744c|2|1|0|1|0|flang/proof/checker/tests/families/if-body/corrupt/option-flag-lies.flang
 dcdf98a5c22b7eac4510ef6d47df7db2|1|×|×|×|1|flang/proof/checker/tests/families/nested-quantifier/each-is-in-the-originals.flang
 1bbcfccfab94346174f722d0ce22ab6a|1|×|×|×|1|flang/proof/checker/tests/families/nested-quantifier/each-with-each.flang
 470696935cd27193b14a7ebe288068f5|1|×|×|×|0|flang/proof/checker/tests/families/all-elements/branch-choice.flang

@@ -943,7 +943,7 @@ d4ae0219a73f513c49ded21b2a4ea7a9|0|0|0|0|1|docs/examples/usage/discount-on-call.
 bdfed2d3f41e6eb7bee5d707cde1cba5|1|1|0|0|0|docs/site/build.flang
 8f96129010142d48352032b9d1a52f5c|1|0|1|0|0|docs/site/highlighting.flang
 b57a57345cf23de663529ed06d1b1d58|4|0|1|0|0|docs/site/numbers.flang
-f4d48585e82e235a1f8d25bd19d21afa|6|6|0|0|0|docs/site/sitemap.flang
+a0fb13a944a76b8fc16b17c599bdbe19|5|5|0|0|0|docs/site/sitemap.flang
 d008844300e06d3061431dd50a06a964|4|4|0|0|0|flang/concurrency/bench/by-cores.fscript
 a8a4bc5a69a3ca169dc935df04d2b9a7|4|4|0|0|0|flang/concurrency/examples/backpressure.flang
 ec1f624e7568f4537f7518b1b4c0d0fd|1|1|0|0|0|flang/concurrency/examples/budget.flang
@@ -1583,7 +1583,6 @@ d25c2b3399f45c84d4b13bf0ec83ba1a|6|3|2|0|0|scripts/guards/tab-host-guard.fscript
 0eb8181532ae602de4c212cbde33749e|33|19|5|1|0|scripts/guards/tree-inventory.fscript
 bec73f74945e3fab75a9ae2b31098c1c|15|15|0|0|0|scripts/guards/version-derivations-guard.fscript
 19037f1b3d31fce728a4bd55fa1a4835|23|8|7|8|0|scripts/guards/version-guard.fscript
-b5801f9b34173f51e2b0b0216ba311f4|7|7|0|0|0|scripts/guards/what-blocks-inventory-guard.fscript
 a781034b78cf3d516bd825fa2dfd3b93|10|8|2|0|0|scripts/guards/darwin-guard.fscript
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.fscript
 cb83af3366e1aedcf2980e68974f26bc|21|20|1|0|0|scripts/release/asdf-plugin-published.fscript

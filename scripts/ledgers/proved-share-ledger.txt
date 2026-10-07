@@ -1384,7 +1384,7 @@ a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 5465e1ce911d0cf83e921282f2ce54ec|53|20|33|0|0|flang/stdlib/cli.flang
 ce0a11a05d50f6c51e9b6376747374d8|68|52|15|1|0|flang/stdlib/crl.flang
 340eacba2d4fd792ddad520878aa7bd3|79|36|43|0|0|flang/stdlib/datetime.flang
-940851f35850194f9a0583619631d854|69|48|17|4|0|flang/stdlib/der.flang
+d0a59944c937510534f0e02a4969a4fc|71|57|13|1|0|flang/stdlib/der.flang
 02c99ed3c6fd2fc4ed56eb504ee294f7|34|23|8|3|0|flang/stdlib/dictionary.flang
 da0090976d3836d16366e967c2274c43|64|27|37|0|0|flang/stdlib/dns.flang
 16becdf35d073fac6ec30e8a8a047aa3|35|29|1|5|0|flang/stdlib/ecdsa.flang
@@ -1408,7 +1408,7 @@ d0ec89014403d4de6154229b27e44b24|159|86|65|8|0|flang/stdlib/postgres.flang
 c2752234706e4cf56689f7777343fc4c|92|42|46|4|0|flang/stdlib/redis.flang
 655777cb76c79aec6113f79fd7817514|20|20|0|0|0|flang/stdlib/registry.flang
 ac70063dc57c197117f007fe0d6161fa|15|12|0|3|0|flang/stdlib/result.flang
-a8202687b0ee577697f43c44add4ba7b|17|10|1|6|0|flang/stdlib/rsa.flang
+c1406e265f9e911777ab8cac259403f5|21|18|3|0|0|flang/stdlib/rsa.flang
 e762097dfe6b7486f85ef012ea3cf88d|23|12|9|2|0|flang/stdlib/scram.flang
 caec0e8f9bd5029a3f8b17690491ddc8|43|30|12|1|0|flang/stdlib/sets.flang
 10f573154de900ce6f7318c5e3b91aaf|64|47|8|9|0|flang/stdlib/sha1.flang
@@ -1834,3 +1834,10 @@ fca5a4487b4fbe469b0ff22403c4e3f7|8|8|0|0|0|flang/proof/probes/exact-fraction-in-
 075be434e677d630c10fce0c6b6fa3f4|1|-|-|-|0|docs/examples/io/child-process.flang
 c141f42e94d737f594ca8ec3eccaed3f|12|-|-|-|0|flang/concurrency/bench/limit.fscript
 a5aac9db3e0aa8335191f0da00f99d19|21|-|-|-|0|flang/concurrency/bench/node-death.fscript
+58123d99137740c08a927edcea21dc66|1|1|0|0|0|flang/stdlib/certificate-path.flang
+5ac4bfccf6b9d1704904da08d74eb7fe|5|2|3|0|0|flang/stdlib/tls-client.flang
+eed6754588dbb44bc841e1e81e6df9c5|12|12|0|0|0|docs/examples/crypto/rsa-pss-vectors.flang
+644f37223dac2428ea29d3fe9eb7a1dc|1|1|0|0|0|docs/examples/https/rfc8448-vectors.flang
+ecf3053dd8d4611a9a58a32f9151572d|4|4|0|0|0|docs/examples/https/tls-forgeries.flang
+1f0b1c8a844b8268cc9d4e3d1cee4773|1|0|1|0|0|flang/proof/probes/randomness/programs/octets.fscript
+5c471ed341235d1a2441e33ff642247c|2|2|0|0|0|flang/proof/probes/randomness/run.fscript

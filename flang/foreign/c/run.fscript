@@ -1,0 +1,1755 @@
+модуль «Foreign C run»
+  использует «C translator» из "translator.fscript"
+  использует «Inquiry» из "../../../scripts/inquiry.fscript"
+  использует «Rules» из "../../../scripts/rules.fscript"
+  использует «Reading» из "../../../scripts/reading.fscript"
+  использует «Tables» из "../../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Source»
+  «file»: строка
+  «nodes»: список «Node»
+  «functions»: список «Function»
+
+объект «Prepared»
+  «file»: строка
+  «claims»: список «Claim»
+  «translated»: «Function»
+  «probe»: «Probe»
+
+объект «Report»
+  «failures»: список строки
+  «lines»: список строки
+
+объект «Batch»
+  «names»: список строки
+  «orders»: список «Поручение»
+
+объект «File»
+  «name»: строка
+  «pieces»: список строки
+  «lines»: список строки
+
+объект «Claim result»
+  «words»: список строки
+  «numbers»: список число
+
+объект «Judged»
+  «kind»: строка
+  «held»: признак
+  «counts»: список число
+  «failures»: список строки
+  «spec»: список «Claim result»
+  «lines»: список строки
+
+
+тотальная функция «Corpus»
+  возвращает список строки
+  пример «Five files of the demonstration corpus»
+    ожидается ["stats", "ranges", "pagination", "grading", "calendar"]
+  ["stats", "ranges", "pagination", "grading", "calendar"]
+
+тотальная функция «Modes»
+  возвращает список строки
+  пример «Three lying translators»
+    ожидается ["drop-branch", "shift-constant", "swap-operands"]
+  ["drop-branch", "shift-constant", "swap-operands"]
+
+тотальная функция «Binary»
+  возвращает строка
+  пример «The binary of the tree, seen from this directory»
+    ожидается "../../../bootstrap/flang"
+  "../../../bootstrap/flang"
+
+тотальная функция «Asked»
+  принимает name: строка, order: «Поручение»
+  возвращает «Question»
+  пример «A named order»
+    дано name равно "a"
+    дано order равно вариант «Прочитать доводы»
+    ожидается запись «Question» с «name» равным "a" и «order» равным (вариант «Прочитать доводы»)
+  запись «Question» с «name» равным name и «order» равным order
+
+тотальная функция «Questions of»
+  принимает batch: «Batch»
+  возвращает список «Question»
+  пример «Names and orders in pairs»
+    дано batch равно запись «Batch» с «names» равным ["a"] и «orders» равным [вариант «Прочитать доводы»]
+    ожидается [запись «Question» с «name» равным "a" и «order» равным (вариант «Прочитать доводы»)]
+  пусть names равно (batch.«names»)
+  свёртка (batch.«orders») начиная с (пустой список) как made и order → «Question added» от made и names и order
+
+тотальная функция «Question added»
+  принимает made: список «Question», names: список строки, order: «Поручение»
+  возвращает список «Question»
+  пример «The next order gets the next name»
+    дано made равно []
+    дано names равно ["a"]
+    дано order равно вариант «Прочитать доводы»
+    ожидается [запись «Question» с «name» равным "a" и «order» равным (вариант «Прочитать доводы»)]
+  добавить («Asked» от («Cell» от ((длина made) плюс 1) и names) и order) к made
+
+тотальная функция «Batch of»
+  принимает names: список строки, orders: список «Поручение»
+  возвращает «Batch»
+  пример «A batch of one order»
+    дано names равно ["a"]
+    дано orders равно [вариант «Прочитать доводы»]
+    ожидается запись «Batch» с «names» равным ["a"] и «orders» равным [вариант «Прочитать доводы»]
+  запись «Batch» с «names» равным names и «orders» равным orders
+
+тотальная функция «Joined batches»
+  принимает batches: список «Batch»
+  возвращает «Batch»
+  пример «Two batches in one»
+    дано batches равно [запись «Batch» с «names» равным ["a"] и «orders» равным [вариант «Прочитать доводы»],
+      запись «Batch» с «names» равным [] и «orders» равным []]
+    ожидается запись «Batch» с «names» равным ["a"] и «orders» равным [вариант «Прочитать доводы»]
+  пусть names равно («Joined lists» от [] и (отобразить batches как batch → batch.«names»))
+  пусть orders равно (свёртка batches начиная с (пустой список) как made и batch → «Orders added» от made и batch)
+  «Batch of» от names и orders
+
+тотальная функция «Orders added»
+  принимает made: список «Поручение», batch: «Batch»
+  возвращает список «Поручение»
+  пример «Orders of a batch go last»
+    дано made равно []
+    дано batch равно запись «Batch» с «names» равным ["a"] и «orders» равным [вариант «Прочитать доводы»]
+    ожидается [вариант «Прочитать доводы»]
+  «Соединить списки» от made и (batch.«orders»)
+
+тотальная функция «Shell order»
+  принимает script: строка, arguments: список строки
+  возвращает «Поручение»
+  пример «A shell line with its arguments»
+    дано script равно "\"$0\" < \"$1\""
+    дано arguments равно ["/w/h", "/w/i.txt"]
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "\"$0\" < \"$1\"", "/w/h",
+      "/w/i.txt"]
+  пусть all равно (приписать "-c" к (приписать script к arguments))
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным all
+
+тотальная функция «Dump filter»
+  возвращает список строки
+  пример «Only the functions defined in the file itself are kept, and only int functions with their bodies»
+    ожидается ["/^[|`]-/ { keep = 0; whole = 0 }", "{ if (match($0, /<[^<>, ]+\\.[ch]:[0-9]+/)) {",
+      "s = substr($0, RSTART + 1, RLENGTH - 1); sub(/:[0-9]+$/, \"\", s); file = s } }",
+      "/^[|`]-FunctionDecl/ { keep = (file == main) && ($0 !~ / implicit /);",
+      "whole = ($0 ~ /'int \\(int(, int)*\\)'/) }", "keep && (whole || /^[|`]-/ || /^[| ] [|`]-/) { print }"]
+  ["/^[|`]-/ { keep = 0; whole = 0 }", "{ if (match($0, /<[^<>, ]+\\.[ch]:[0-9]+/)) {",
+    "s = substr($0, RSTART + 1, RLENGTH - 1); sub(/:[0-9]+$/, \"\", s); file = s } }",
+    "/^[|`]-FunctionDecl/ { keep = (file == main) && ($0 !~ / implicit /);",
+    "whole = ($0 ~ /'int \\(int(, int)*\\)'/) }", "keep && (whole || /^[|`]-/ || /^[| ] [|`]-/) { print }"]
+
+тотальная функция «Dump order»
+  принимает path: строка, root: строка
+  возвращает «Поручение»
+  пример «The clang dump of one file, cut to its own functions by awk»
+    дано path равно "s.c"
+    дано root равно ""
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "clang -Xclang -ast-dump -fsyntax-only -I\"${0%/*}\" \"$0\" 2>/dev/null | awk -v main=\"$0\" \"$*\"", "s.c",
+      "/^[|`]-/ { keep = 0; whole = 0 }", "{ if (match($0, /<[^<>, ]+\\.[ch]:[0-9]+/)) {",
+      "s = substr($0, RSTART + 1, RLENGTH - 1); sub(/:[0-9]+$/, \"\", s); file = s } }",
+      "/^[|`]-FunctionDecl/ { keep = (file == main) && ($0 !~ / implicit /);",
+      "whole = ($0 ~ /'int \\(int(, int)*\\)'/) }", "keep && (whole || /^[|`]-/ || /^[| ] [|`]-/) { print }"]
+  пусть clang равно "clang -Xclang -ast-dump -fsyntax-only -I\"${0%/*}\" \"$0\" 2>/dev/null"
+  пусть script равно (соединить [root, clang, " | awk -v main=\"$0\" \"$*\""] по "")
+  «Shell order» от script и (приписать path к («Dump filter»))
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No work directory yet»
+    дано answers равно []
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «Work path»
+  принимает answers: список «Answer», pieces: список строки
+  возвращает строка
+  пример «A path built of pieces»
+    дано answers равно []
+    дано pieces равно ["T-", "f", ".flang"]
+    ожидается "/T-f.flang"
+  соединить [(«Work» от answers), "/", (соединить pieces по "")] по ""
+
+тотальная функция «Name of»
+  принимает one: «Prepared»
+  возвращает строка
+  пример «The name of a prepared function»
+    дано one равно запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      ] и «inputs» равным [] и «checked» равным [])
+    ожидается "f"
+  (one.«translated»).«name»
+
+функция «Source of»
+  принимает file: строка, answers: список «Answer»
+  возвращает «Source»
+  пример «A file without a dump has no functions»
+    дано file равно "stats"
+    дано answers равно []
+    ожидается запись «Source» с «file» равным "stats" и «nodes» равным [] и «functions» равным []
+  пусть nodes равно («Kids» от («Tree of» от («Output of» от (соединить ["dump ", file] по "") и answers)))
+  пусть functions равно (отобразить nodes как node → «Function of» от node)
+  пусть defined равно (отфильтровать functions где each → each.«defined»)
+  запись «Source» с «file» равным file и «nodes» равным nodes и «functions» равным defined
+
+функция «Sources»
+  принимает answers: список «Answer», files: список строки
+  возвращает список «Source»
+  пример «Every file asked for»
+    дано answers равно []
+    дано files равно ["stats"]
+    ожидается [запись «Source» с «file» равным "stats" и «nodes» равным [] и «functions» равным []]
+  отобразить files как file → «Source of» от file и answers
+
+тотальная функция «Checked for»
+  принимает translated: «Function», claims: список «Claim»
+  возвращает список «Claim»
+  пример «Human promises, then the duties of C, then the derived candidates»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да
+    дано claims равно []
+    ожидается [запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 1", "результат не меньше 0",
+      "знак результата"]]
+  пусть duties равно («Duty claims» от ((translated.«flow»).«duties»))
+  «Joined claims» от [(«Of role» от "ensures" и claims), duties, («Candidates» от translated)]
+
+тотальная функция «Prepared of»
+  принимает file: строка, translated: «Function», rows: список список строки
+  возвращает «Prepared»
+  пример «A function made ready for the grid»
+    дано file равно "s"
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да
+    дано rows равно []
+    ожидается запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      ] и «inputs» равным [[]] и «checked» равным [запись «Claim» с «role» равным "ensures" и «words» равным [
+      "выведено 1", "результат не меньше 0", "знак результата"]])
+  пусть name равно (translated.«name»)
+  пусть claims равно («Claims for» от name и rows)
+  пусть inputs равно («Grid of» от translated и claims)
+  пусть checked равно («Checked for» от translated и claims)
+  пусть parameters равно (translated.«parameters»)
+  пусть ps равно parameters
+  пусть probe равно («Probe made» от name и ps и inputs и checked)
+  пусть tr равно translated
+  запись «Prepared» с «file» равным file и «claims» равным claims и «translated» равным tr и «probe» равным probe
+
+тотальная функция «Probe made»
+  принимает name: строка, parameters: список строки, inputs: список список строки, checked: список «Claim»
+  возвращает «Probe»
+  пример «A probe»
+    дано name равно "f"
+    дано parameters равно []
+    дано inputs равно []
+    дано checked равно []
+    ожидается запись «Probe» с «name» равным "f" и «parameters» равным [] и «inputs» равным [] и «checked» равным []
+  пусть ps равно parameters
+  запись «Probe» с «name» равным name и «parameters» равным ps и «inputs» равным inputs и «checked» равным checked
+
+функция «Prepared all»
+  принимает answers: список «Answer», files: список строки
+  возвращает список «Prepared»
+  пример «Nothing read, nothing prepared»
+    дано answers равно []
+    дано files равно ["stats"]
+    ожидается []
+  пусть rows равно («Rows» от («Output of» от "claims" и answers))
+  пусть sources равно («Sources» от answers и files)
+  «Joined prepared» от (отобразить sources как source → «Prepared in» от source и rows)
+
+тотальная функция «Joined prepared»
+  принимает parts: список список «Prepared»
+  возвращает список «Prepared»
+  пример «Nothing prepared anywhere»
+    дано parts равно [[], []]
+    ожидается []
+  свёртка parts начиная с (пустой список) как made и part → «Соединить списки» от made и part
+
+тотальная функция «Prepared in»
+  принимает source: «Source», rows: список список строки
+  возвращает список «Prepared»
+  пример «A file without functions»
+    дано source равно запись «Source» с «file» равным "s" и «nodes» равным [] и «functions» равным []
+    дано rows равно []
+    ожидается []
+  отобразить («Accepted» от (source.«functions»)) как translated → «Prepared of» от (source.«file») и translated и rows
+
+функция «Forged text»
+  принимает source: «Source», mode: строка
+  возвращает список строки
+  пример «A file with no functions has nothing to forge»
+    дано source равно запись «Source» с «file» равным "stats" и «nodes» равным [] и «functions» равным []
+    дано mode равно "drop-branch"
+    ожидается ["модуль «Подделка stats»"]
+  пусть mutated равно (отобразить (source.«nodes») как node → «Mutated» от node и («Forgery target» от node и mode))
+  пусть functions равно (отобразить mutated как node → «Function of» от node)
+  пусть forged равно («Accepted» от (отфильтровать functions где each → each.«defined»))
+  пусть parts равно (отобразить forged как translated → «Probe text» от translated и пустой список и пустой список)
+  «Module text» от (соединить ["Подделка ", (source.«file»)] по "") и («Joined parts» от parts)
+
+тотальная функция «Joined parts»
+  принимает parts: список список список строки
+  возвращает список список строки
+  пример «Parts of every function, one after another»
+    дано parts равно [[["a"]], [["b"], ["c"]]]
+    ожидается [["a"], ["b"], ["c"]]
+  свёртка parts начиная с (пустой список) как made и part → «Соединить списки» от made и part
+
+функция «Forged names»
+  принимает source: «Source», mode: строка
+  возвращает список строки
+  пример «Nothing to forge in an empty file»
+    дано source равно запись «Source» с «file» равным "stats" и «nodes» равным [] и «functions» равным []
+    дано mode равно "drop-branch"
+    ожидается []
+  пусть targets равно (отфильтровать (source.«nodes») где node → не (пусто («Forgery target» от node и mode)))
+  отобразить targets как node → «Declared name» от («Rest» от node)
+
+тотальная функция «Setup»
+  возвращает «Batch»
+  пример «The arguments and the place of temporary files»
+    ожидается запись «Batch» с «names» равным ["arguments", "temporary"] и «orders» равным [вариант «Прочитать доводы»,
+      вариант «Прочитать переменную среды» с имя равным "FLANG_TMP"]
+  «Batch of» от ["arguments", "temporary"] и [(вариант «Прочитать доводы»),
+    (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")]
+
+тотальная функция «Making work»
+  принимает answers: список «Answer»
+  возвращает «Batch»
+  пример «A temporary directory under FLANG_TMP»
+    дано answers равно []
+    ожидается запись «Batch» с «names» равным ["work"] и «orders» равным [
+      вариант «Завести временный каталог» с образец равным "/srv/tmp/fo-foreign-c."]
+  пусть place равно (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/fo-foreign-c."] по "")
+  «Batch of» от ["work"] и [(вариант «Завести временный каталог» с образец равным place)]
+
+тотальная функция «Reading batch»
+  принимает files: список строки
+  возвращает «Batch»
+  пример «The claims and the expectations, then a dump per file»
+    дано files равно []
+    ожидается запись «Batch» с «names» равным ["claims", "expected"] и «orders» равным [
+      вариант «Прочитать файл» с путь равным "corpus/claims.tsv",
+      вариант «Прочитать файл» с путь равным "corpus/expected.tsv"]
+  пусть names равно (отобразить files как file → соединить ["dump ", file] по "")
+  пусть dumps равно (отобразить files как file → «Dump order» от (соединить ["corpus/", file, ".c"] по "") и "")
+  пусть claims равно (вариант «Прочитать файл» с путь равным "corpus/claims.tsv")
+  пусть wanted равно (вариант «Прочитать файл» с путь равным "corpus/expected.tsv")
+  «Batch of» от («Соединить списки» от ["claims",
+    "expected"] и names) и (приписать claims к (приписать wanted к dumps))
+
+тотальная функция «Write order»
+  принимает answers: список «Answer», file: «File»
+  возвращает «Поручение»
+  пример «A file of lines in the work directory»
+    дано answers равно []
+    дано file равно запись «File» с «name» равным "w" и «pieces» равным ["a"] и «lines» равным ["b"]
+    ожидается вариант «Записать файл» с путь равным "/a" и содержимое равным "b\n"
+  пусть path равно («Work path» от answers и (file.«pieces»))
+  вариант «Записать файл» с путь равным path и содержимое равным («Text of lines» от (file.«lines»))
+
+тотальная функция «Batch of files»
+  принимает answers: список «Answer», files: список «File»
+  возвращает «Batch»
+  пример «Every file becomes a named write»
+    дано answers равно []
+    дано files равно [запись «File» с «name» равным "w" и «pieces» равным ["a"] и «lines» равным ["b"]]
+    ожидается запись «Batch» с «names» равным ["w"] и «orders» равным [
+      вариант «Записать файл» с путь равным "/a" и содержимое равным "b\n"]
+  пусть names равно (отобразить files как file → file.«name»)
+  «Batch of» от names и (отобразить files как file → «Write order» от answers и file)
+
+тотальная функция «File of»
+  принимает name: строка, pieces: список строки, lines: список строки
+  возвращает «File»
+  пример «A file record»
+    дано name равно "w"
+    дано pieces равно ["a"]
+    дано lines равно ["b"]
+    ожидается запись «File» с «name» равным "w" и «pieces» равным ["a"] и «lines» равным ["b"]
+  запись «File» с «name» равным name и «pieces» равным pieces и «lines» равным lines
+
+тотальная функция «Function files»
+  принимает one: «Prepared»
+  возвращает список «File»
+  пример «A function without inputs still gets its five files»
+    дано one равно запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным ["  0"] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      ] и «inputs» равным [] и «checked» равным [])
+    ожидается [запись «File» с «name» равным "write T f" и «pieces» равным ["T-", "f", ".flang"] и «lines» равным [
+      "модуль «Перевод f»", "", "тотальная функция «f»", "  принимает ", "  возвращает число", "  0"],
+      запись «File» с «name» равным "write D f" и «pieces» равным ["D-", "f", ".flang"] и «lines» равным [
+      "модуль «Выведено f»", "", "тотальная функция «f»", "  принимает ", "  возвращает число",
+      "  обеспечивает «выведено 1» результат не меньше 0", "  0"],
+      запись «File» с «name» равным "write input f" и «pieces» равным ["input-", "f", ".txt"] и «lines» равным [""],
+      запись «File» с «name» равным "write requests f" и «pieces» равным ["requests-", "f", ".jsonl"] и «lines» равным [
+      ""], запись «File» с «name» равным "write values f" и «pieces» равным ["values-", "f",
+      ".jsonl"] и «lines» равным [""]]
+  пусть name равно («Name of» от one)
+  пусть probe равно (one.«probe»)
+  пусть translated равно (one.«translated»)
+  пусть translation равно («Translation text» от translated и (one.«claims»))
+  пусть derived равно («Derived text» от translated и (one.«claims») и («Candidates» от translated))
+  пусть input равно [(«Without last line end» от («Harness input» от probe))]
+  пусть requests равно [(«Without last line end» от («Requests» от probe и («Called names» от probe)))]
+  пусть values равно [(«Without last line end» от («Requests» от probe и [name]))]
+  пусть t равно («File of» от (соединить ["write T ", name] по "") и ["T-", name, ".flang"] и translation)
+  пусть d равно («File of» от (соединить ["write D ", name] по "") и ["D-", name, ".flang"] и derived)
+  пусть i равно («File of» от (соединить ["write input ", name] по "") и ["input-", name, ".txt"] и input)
+  пусть r равно («File of» от (соединить ["write requests ", name] по "") и ["requests-", name, ".jsonl"] и requests)
+  пусть v равно («File of» от (соединить ["write values ", name] по "") и ["values-", name, ".jsonl"] и values)
+  [t, d, i, r, v]
+
+тотальная функция «Without last line end»
+  принимает text: строка
+  возвращает строка
+  пример «The text without its last line end»
+    дано text равно "a\nb\n"
+    ожидается "a\nb"
+  если («Ends with» от text и "\n") то (подстрока text с 1 по ((длина text) минус 1)) иначе text
+
+функция «File files»
+  принимает source: «Source», prepared: список «Prepared»
+  возвращает список «File»
+  пример «An empty file still gets its probe, harness and forgeries»
+    дано source равно запись «Source» с «file» равным "s" и «nodes» равным [] и «functions» равным []
+    дано prepared равно []
+    ожидается [запись «File» с «name» равным "write probe s" и «pieces» равным ["probe-", "s",
+      ".flang"] и «lines» равным ["модуль «Проба s»"],
+      запись «File» с «name» равным "write harness s" и «pieces» равным ["harness-", "s", ".c"] и «lines» равным [
+      "#define _POSIX_C_SOURCE 200809L", "#include <stdio.h>", "#include <string.h>", "#include <unistd.h>",
+      "#include <sys/wait.h>", "#include \"s.c\"", "static int call(const char *f, const long *a) {", "  return 0;",
+      "}", "int main(void) {", "  char f[256];", "  long a[4];",
+      "  while (scanf(\"%255s %ld %ld %ld %ld\", f, &a[0], &a[1], &a[2], &a[3]) == 5) {", "    fflush(stdout);",
+      "    pid_t p = fork();", "    if (p == 0) { printf(\"ok %d\\n\", call(f, a)); fflush(stdout); _exit(0); }",
+      "    int s = 0;", "    waitpid(p, &s, 0);", "    if (!(WIFEXITED(s) && WEXITSTATUS(s) == 0)) printf(\"ub\\n\");",
+      "    fflush(stdout);", "  }", "  return 0;", "}"],
+      запись «File» с «name» равным "write forged drop-branch s" и «pieces» равным ["forged-", "drop-branch", "-", "s",
+      ".flang"] и «lines» равным ["модуль «Подделка s»"],
+      запись «File» с «name» равным "write forged shift-constant s" и «pieces» равным ["forged-", "shift-constant", "-",
+      "s", ".flang"] и «lines» равным ["модуль «Подделка s»"],
+      запись «File» с «name» равным "write forged swap-operands s" и «pieces» равным ["forged-", "swap-operands", "-",
+      "s", ".flang"] и «lines» равным ["модуль «Подделка s»"]]
+  пусть file равно (source.«file»)
+  пусть mine равно (отфильтровать prepared где one → (one.«file») равен file)
+  пусть parts равно (отобразить mine как one → «Probe of» от one)
+  пусть probe равно («Module text» от (соединить ["Проба ", file] по "") и («Joined parts» от parts))
+  пусть harness равно («Harness text» от (соединить [file, ".c"] по "") и (отобразить mine как one → one.«probe»))
+  пусть p равно («File of» от (соединить ["write probe ", file] по "") и ["probe-", file, ".flang"] и probe)
+  пусть h равно («File of» от (соединить ["write harness ", file] по "") и ["harness-", file, ".c"] и harness)
+  пусть forged равно (отобразить («Modes») как mode → «Forged file» от source и mode)
+  «Соединить списки» от [p, h] и forged
+
+тотальная функция «Probe of»
+  принимает one: «Prepared»
+  возвращает список список строки
+  пример «The probe of a function without parameters»
+    дано one равно запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным ["  0"] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      ] и «inputs» равным [] и «checked» равным [])
+    ожидается [["тотальная функция «f»", "  принимает ", "  возвращает число", "  0"], [
+      "тотальная функция «f admissible»", "  принимает ", "  возвращает признак", "  да"]]
+  «Probe text» от (one.«translated») и (one.«claims») и ((one.«probe»).«checked»)
+
+функция «Forged file»
+  принимает source: «Source», mode: строка
+  возвращает «File»
+  пример «An empty forgery»
+    дано source равно запись «Source» с «file» равным "s" и «nodes» равным [] и «functions» равным []
+    дано mode равно "drop-branch"
+    ожидается запись «File» с «name» равным "write forged drop-branch s" и «pieces» равным ["forged-", "drop-branch",
+      "-", "s", ".flang"] и «lines» равным ["модуль «Подделка s»"]
+  пусть file равно (source.«file»)
+  пусть name равно (соединить ["write forged ", mode, " ", file] по "")
+  «File of» от name и ["forged-", mode, "-", file, ".flang"] и («Forged text» от source и mode)
+
+функция «Writing»
+  принимает answers: список «Answer», files: список строки
+  возвращает «Batch»
+  пример «No file, nothing to write»
+    дано answers равно []
+    дано files равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  пусть prepared равно («Prepared all» от answers и files)
+  пусть perfunction равно («Joined files» от (отобразить prepared как one → «Function files» от one))
+  пусть sources равно («Sources» от answers и files)
+  пусть perfile равно («Joined files» от (отобразить sources как source → «File files» от source и prepared))
+  «Batch of files» от answers и («Соединить списки» от perfunction и perfile)
+
+тотальная функция «Joined files»
+  принимает parts: список список «File»
+  возвращает список «File»
+  пример «No files anywhere»
+    дано parts равно [[], []]
+    ожидается []
+  свёртка parts начиная с (пустой список) как made и part → «Соединить списки» от made и part
+
+тотальная функция «Emit order»
+  принимает printed: строка, out: строка
+  возвращает «Поручение»
+  пример «A module printed in C and its runner built»
+    дано printed равно "/w/p.flang"
+    дано out равно "/w/o"
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "\"$0\" emit \"$1\" --target c --out \"$2\" && make -sC \"$2\" flang_cli CFLAGS=-O1", "../../../bootstrap/flang",
+      "/w/p.flang", "/w/o"]
+  пусть emit равно "\"$0\" emit \"$1\" --target c --out \"$2\""
+  пусть make равно "make -sC \"$2\" flang_cli CFLAGS=-O1"
+  «Shell order» от (соединить [emit, make] по " && ") и [(«Binary»), printed, out]
+
+тотальная функция «Kernel order»
+  принимает path: строка
+  возвращает «Поручение»
+  пример «The kernel judges a file»
+    дано path равно "/w/T-f.flang"
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "\"$0\" check --proof \"$1\"", "../../../bootstrap/flang", "/w/T-f.flang"]
+  «Shell order» от "\"$0\" check --proof \"$1\"" и [(«Binary»), path]
+
+тотальная функция «Kernel batch»
+  принимает one: «Prepared», answers: список «Answer»
+  возвращает «Batch»
+  пример «The kernel judges the translation and the derived draft»
+    дано one равно запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      ] и «inputs» равным [] и «checked» равным [])
+    дано answers равно []
+    ожидается запись «Batch» с «names» равным ["kernel T f", "kernel D f"] и «orders» равным [
+      вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "\"$0\" check --proof \"$1\"",
+      "../../../bootstrap/flang", "/T-f.flang"],
+      вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "\"$0\" check --proof \"$1\"",
+      "../../../bootstrap/flang", "/D-f.flang"]]
+  пусть name равно («Name of» от one)
+  пусть t равно («Kernel order» от («Work path» от answers и ["T-", name, ".flang"]))
+  пусть d равно («Kernel order» от («Work path» от answers и ["D-", name, ".flang"]))
+  «Batch of» от [(соединить ["kernel T ", name] по ""), (соединить ["kernel D ", name] по "")] и [t, d]
+
+тотальная функция «Build batch»
+  принимает file: строка, answers: список «Answer»
+  возвращает «Batch»
+  пример «The probe, the harness and the three forgeries of a file»
+    дано file равно "s"
+    дано answers равно []
+    ожидается запись «Batch» с «names» равным ["emit probe s", "harness s", "emit forged drop-branch s",
+      "emit forged shift-constant s", "emit forged swap-operands s"] и «orders» равным [
+      вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "\"$0\" emit \"$1\" --target c --out \"$2\" && make -sC \"$2\" flang_cli CFLAGS=-O1", "../../../bootstrap/flang",
+      "/probe-s.flang", "/out-probe-s"], вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "cc -std=c99 -O0 -w -fsanitize=undefined -fno-sanitize-recover=all -I corpus -o \"$0\" \"$1\"", "/harness-s",
+      "/harness-s.c"], вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "\"$0\" emit \"$1\" --target c --out \"$2\" && make -sC \"$2\" flang_cli CFLAGS=-O1", "../../../bootstrap/flang",
+      "/forged-drop-branch-s.flang", "/out-forged-drop-branch-s"],
+      вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "\"$0\" emit \"$1\" --target c --out \"$2\" && make -sC \"$2\" flang_cli CFLAGS=-O1", "../../../bootstrap/flang",
+      "/forged-shift-constant-s.flang", "/out-forged-shift-constant-s"],
+      вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "\"$0\" emit \"$1\" --target c --out \"$2\" && make -sC \"$2\" flang_cli CFLAGS=-O1", "../../../bootstrap/flang",
+      "/forged-swap-operands-s.flang", "/out-forged-swap-operands-s"]]
+  пусть probe равно («Emit order» от («Work path» от answers и ["probe-", file, ".flang"]) и («Work path» от answers и [
+    "out-probe-", file]))
+  пусть cc равно "cc -std=c99 -O0 -w -fsanitize=undefined -fno-sanitize-recover=all -I corpus -o \"$0\" \"$1\""
+  пусть binary равно («Work path» от answers и ["harness-", file])
+  пусть harness равно («Shell order» от cc и [binary, («Work path» от answers и ["harness-", file, ".c"])])
+  пусть forged равно (отобразить («Modes») как mode → «Forged build» от file и mode и answers)
+  пусть names равно (отобразить («Modes») как mode → соединить ["emit forged ", mode, " ", file] по "")
+  пусть leading равно [(соединить ["emit probe ", file] по ""), (соединить ["harness ", file] по "")]
+  «Batch of» от («Соединить списки» от leading и names) и (приписать probe к (приписать harness к forged))
+
+тотальная функция «Forged build»
+  принимает file: строка, mode: строка, answers: список «Answer»
+  возвращает «Поручение»
+  пример «A forgery printed and built»
+    дано file равно "s"
+    дано mode равно "drop-branch"
+    дано answers равно []
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "\"$0\" emit \"$1\" --target c --out \"$2\" && make -sC \"$2\" flang_cli CFLAGS=-O1", "../../../bootstrap/flang",
+      "/forged-drop-branch-s.flang", "/out-forged-drop-branch-s"]
+  пусть printed равно («Work path» от answers и ["forged-", mode, "-", file, ".flang"])
+  пусть out равно («Work path» от answers и ["out-forged-", mode, "-", file])
+  «Emit order» от printed и out
+
+функция «Building»
+  принимает answers: список «Answer», files: список строки
+  возвращает «Batch»
+  пример «No file, nothing to build»
+    дано answers равно []
+    дано files равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  пусть prepared равно («Prepared all» от answers и files)
+  пусть kernels равно (отобразить prepared как one → «Kernel batch» от one и answers)
+  пусть builds равно (отобразить files как file → «Build batch» от file и answers)
+  «Joined batches» от («Соединить списки» от kernels и builds)
+
+тотальная функция «Honest batch»
+  принимает one: «Prepared», answers: список «Answer»
+  возвращает «Batch»
+  пример «The harness on the inputs and the printed translation on the requests»
+    дано one равно запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      ] и «inputs» равным [] и «checked» равным [])
+    дано answers равно []
+    ожидается запись «Batch» с «names» равным ["c f", "honest f"] и «orders» равным [
+      вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "\"$0\" < \"$1\"", "/harness-s",
+      "/input-f.txt"], вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "\"$0\" --json < \"$1\"", "/out-probe-s/flang_cli", "/requests-f.jsonl"]]
+  пусть name равно («Name of» от one)
+  пусть file равно (one.«file»)
+  пусть harness равно («Work path» от answers и ["harness-", file])
+  пусть input равно («Work path» от answers и ["input-", name, ".txt"])
+  пусть runner равно («Work path» от answers и ["out-probe-", file, "/flang_cli"])
+  пусть requests равно («Work path» от answers и ["requests-", name, ".jsonl"])
+  пусть c равно («Shell order» от "\"$0\" < \"$1\"" и [harness, input])
+  пусть printed равно («Shell order» от "\"$0\" --json < \"$1\"" и [runner, requests])
+  «Batch of» от [(соединить ["c ", name] по ""), (соединить ["honest ", name] по "")] и [c, printed]
+
+функция «Running»
+  принимает answers: список «Answer», files: список строки
+  возвращает «Batch»
+  пример «No file, nothing to run»
+    дано answers равно []
+    дано files равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  пусть prepared равно («Prepared all» от answers и files)
+  пусть honest равно (отобразить prepared как one → «Honest batch» от one и answers)
+  пусть sources равно («Sources» от answers и files)
+  пусть forged равно (отобразить sources как source → «Forged batch» от source и prepared и answers)
+  «Joined batches» от («Соединить списки» от honest и forged)
+
+функция «Forged batch»
+  принимает source: «Source», prepared: список «Prepared», answers: список «Answer»
+  возвращает «Batch»
+  пример «An empty file has no forged runs»
+    дано source равно запись «Source» с «file» равным "s" и «nodes» равным [] и «functions» равным []
+    дано prepared равно []
+    дано answers равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  пусть names равно (отобразить prepared как one → «Name of» от one)
+  «Joined batches» от (отобразить («Modes») как mode → «Forged runs» от source и mode и names и answers)
+
+функция «Forged runs»
+  принимает source: «Source», mode: строка, names: список строки, answers: список «Answer»
+  возвращает «Batch»
+  пример «An empty file has no forged runs»
+    дано source равно запись «Source» с «file» равным "s" и «nodes» равным [] и «functions» равным []
+    дано mode равно "drop-branch"
+    дано names равно []
+    дано answers равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  пусть forged равно (отфильтровать («Forged names» от source и mode) где name → «Holds» от name и names)
+  пусть asked равно (отобразить forged как name → соединить ["forged ", mode, " ", name] по "")
+  «Batch of» от asked и (отобразить forged как name → «Forged run» от (source.«file») и mode и name и answers)
+
+тотальная функция «Forged run»
+  принимает file: строка, mode: строка, name: строка, answers: список «Answer»
+  возвращает «Поручение»
+  пример «The printed forgery answers the value requests»
+    дано file равно "s"
+    дано mode равно "drop-branch"
+    дано name равно "f"
+    дано answers равно []
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "\"$0\" --json < \"$1\"",
+      "/out-forged-drop-branch-s/flang_cli", "/values-f.jsonl"]
+  пусть runner равно («Work path» от answers и ["out-forged-", mode, "-", file, "/flang_cli"])
+  пусть values равно («Work path» от answers и ["values-", name, ".jsonl"])
+  «Shell order» от "\"$0\" --json < \"$1\"" и [runner, values]
+
+функция «Outcomes for»
+  принимает one: «Prepared», answers: список «Answer»
+  возвращает список «Outcome»
+  пример «Nothing run, every input without replies»
+    дано one равно запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      "x"] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      "x"] и «inputs» равным [["1"]] и «checked» равным [])
+    дано answers равно []
+    ожидается [запись «Outcome» с «arguments» равным [
+      "1"] и «c» равным "" и «value» равным "" и «admissible» равным нет и «said» равным []]
+  пусть name равно («Name of» от one)
+  пусть c равно («Output of» от (соединить ["c ", name] по "") и answers)
+  пусть replies равно («Output of» от (соединить ["honest ", name] по "") и answers)
+  «Outcomes» от (one.«probe») и c и replies и ((длина ((one.«probe»).«checked»)) плюс 2)
+
+тотальная функция «Judged claim»
+  принимает nb: «Numbered»
+  возвращает признак
+  пример «A derived candidate is not a claim judged against the code»
+    дано nb равно запись «Numbered» с «at» равным 1 и «it» равным (запись «Claim» с «role» равным "" и «words» равным [
+      "выведено 1", "да", "знак результата"])
+    ожидается нет
+  пусть origin равно («Claim origin» от (nb.«it»))
+  (origin равен "человек") или (origin равен "обязательство C")
+
+тотальная функция «Counterexamples»
+  принимает probe: «Probe», outcomes: список «Outcome», nb: «Numbered»
+  возвращает список «Outcome»
+  пример «An input in the requirements where the claim was false»
+    дано probe равно запись «Probe» с «name» равным "f" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным [запись «Claim» с «role» равным "e" и «words» равным ["a", "да", "человек"]]
+    дано outcomes равно [запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok 1" и «value» равным "1" и «admissible» равным да и «said» равным ["нет"]]
+    дано nb равно запись «Numbered» с «at» равным 1 и «it» равным (запись «Claim» с «role» равным "" и «words» равным [
+      "a", "да", "человек"])
+    ожидается [запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok 1" и «value» равным "1" и «admissible» равным да и «said» равным ["нет"]]
+  отфильтровать outcomes где outcome → «Breaks» от probe и outcome и nb
+
+тотальная функция «Breaks»
+  принимает probe: «Probe», outcome: «Outcome», nb: «Numbered»
+  возвращает признак
+  пример «A claim false on an input that C defines»
+    дано probe равно запись «Probe» с «name» равным "f" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным [запись «Claim» с «role» равным "e" и «words» равным ["a", "да", "человек"]]
+    дано outcome равно запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok 1" и «value» равным "1" и «admissible» равным да и «said» равным ["нет"]
+    дано nb равно запись «Numbered» с «at» равным 1 и «it» равным (запись «Claim» с «role» равным "" и «words» равным [
+      "a", "да", "человек"])
+    ожидается да
+  пусть isfalse равно ((«Cell» от (nb.«at») и (outcome.«said»)) равен "нет")
+  пусть duty равно ((«Claim origin» от (nb.«it»)) равен "обязательство C")
+  пусть defined равно (не («Undefined» от probe и outcome))
+  (outcome.«admissible») и притом (isfalse и притом (duty или defined))
+
+функция «Confirming»
+  принимает answers: список «Answer», files: список строки
+  возвращает «Batch»
+  пример «No file, nothing to confirm»
+    дано answers равно []
+    дано files равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  пусть prepared равно («Prepared all» от answers и files)
+  «Joined batches» от (отобразить prepared как one → «Confirmations of» от one и answers)
+
+функция «Confirmations of»
+  принимает one: «Prepared», answers: список «Answer»
+  возвращает «Batch»
+  пример «Nothing run, nothing to confirm»
+    дано one равно запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      ] и «inputs» равным [] и «checked» равным [])
+    дано answers равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  «Confirmations» от one и («Outcomes for» от one и answers) и answers
+
+тотальная функция «Confirmations»
+  принимает one: «Prepared», outcomes: список «Outcome», answers: список «Answer»
+  возвращает «Batch»
+  пример «No counterexample, nothing to confirm»
+    дано one равно запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      ] и «inputs» равным [] и «checked» равным [])
+    дано outcomes равно []
+    дано answers равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  пусть numbers равно («Numbered claims of» от ((one.«probe»).«checked»))
+  пусть judged равно (отфильтровать numbers где each → «Judged claim» от each)
+  «Joined batches» от (отобразить judged как nb → «Confirmation» от one и outcomes и nb и answers)
+
+тотальная функция «Confirmation»
+  принимает one: «Prepared», outcomes: список «Outcome», nb: «Numbered», answers: список «Answer»
+  возвращает «Batch»
+  пример «No counterexample, no question»
+    дано one равно запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      ] и «inputs» равным [] и «checked» равным [])
+    дано outcomes равно []
+    дано nb равно запись «Numbered» с «at» равным 1 и «it» равным (запись «Claim» с «role» равным "" и «words» равным [
+      "a", "да", "человек"])
+    дано answers равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  пусть name равно («Name of» от one)
+  пусть script равно "\"$0\" run \"$1\" --function \"$2\" --args \"$3\" --на-веру 2>&1; exit 0"
+  пусть asked равно (соединить ["confirm ", name, " ", (к строке (nb.«at»))] по "")
+  пусть translation равно («Work path» от answers и ["T-", name, ".flang"])
+  пусть parameters равно ((one.«translated»).«parameters»)
+  пусть quoted равно (соединить ["«", name, "»"] по "")
+  разбор («Counterexamples» от (one.«probe») и outcomes и nb)
+    случай пусто
+      то «Batch of» от [] и []
+    случай голова и хвост
+      то «Batch of» от [asked] и [(«Shell order» от script и [(«Binary»), translation, quoted,
+        («Arguments json» от parameters и (голова.«arguments»))])]
+
+тотальная функция «Result word»
+  принимает position: число, judgement: «Claim result»
+  возвращает строка
+  пример «The kernel word of a result»
+    дано position равно 4
+    дано judgement равно запись «Claim result» с «words» равным ["a", "да", "человек", "доказано ядром", "",
+      ""] и «numbers» равным [1, 3]
+    ожидается "доказано ядром"
+  «Cell» от position и (judgement.«words»)
+
+тотальная функция «Result number»
+  принимает position: число, judgement: «Claim result»
+  возвращает число
+  пример «How many inputs a claim held on»
+    дано position равно 2
+    дано judgement равно запись «Claim result» с «words» равным ["a", "да", "человек", "доказано ядром", "",
+      ""] и «numbers» равным [1, 3]
+    ожидается 3
+  пусть numbers равно (judgement.«numbers»)
+  если (position меньше 1) или (position больше (длина numbers)) то 0 иначе (элемент position в numbers)
+
+тотальная функция «Counter text»
+  принимает parameters: список строки, outcomes: список «Outcome»
+  возвращает строка
+  пример «The first counterexample with what C did»
+    дано parameters равно ["x"]
+    дано outcomes равно [запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok -1" и «value» равным "-1" и «admissible» равным да и «said» равным []]
+    ожидается "x = 0 (C вернул -1)"
+  пример «No counterexample»
+    дано parameters равно ["x"]
+    дано outcomes равно []
+    ожидается ""
+  разбор outcomes
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «Counter of» от parameters и голова
+
+тотальная функция «Counter of»
+  принимает parameters: список строки, outcome: «Outcome»
+  возвращает строка
+  пример «A trap in C»
+    дано parameters равно ["x"]
+    дано outcome равно запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ub" и «value» равным "" и «admissible» равным да и «said» равным []
+    ожидается "x = 0 (у C неопределённое поведение, UBSan остановил)"
+  пусть trapped равно ((outcome.«c») равен "ub")
+  пусть returned равно (соединить ["C вернул ", («After» от "ok " и (outcome.«c»))] по "")
+  пусть what равно (если trapped то "у C неопределённое поведение, UBSan остановил" иначе returned)
+  соединить [(«Arguments text» от parameters и (outcome.«arguments»)), " (", what, ")"] по ""
+
+тотальная функция «Confirm text»
+  принимает output: строка
+  возвращает строка
+  пример «The interpreter names the broken property»
+    дано output равно "на веру: доказанность не считалась\nFLANG_PROPERTY: нарушено свойство «a» функции «f»\n"
+    ожидается "нарушено свойство «a» функции «f»"
+  пример «Nothing asked»
+    дано output равно ""
+    ожидается ""
+  пусть broken равно («Holding» от "FLANG_PROPERTY: " и («Lines» от output))
+  если (длина broken) равен 0 то («Last word» от («Lines» от output)) иначе («After» от "FLANG_PROPERTY: " и broken)
+
+тотальная функция «Claim result of»
+  принимает nb: «Numbered», kernel: строка, probe: «Probe», outcomes: список «Outcome», answers: список «Answer»
+  возвращает «Claim result»
+  пример «A claim that held on every input»
+    дано nb равно запись «Numbered» с «at» равным 1 и «it» равным (запись «Claim» с «role» равным "" и «words» равным [
+      "a", "да", "человек"])
+    дано kernel равно "  постусловие «a» функции «f» — доказано\n"
+    дано probe равно запись «Probe» с «name» равным "f" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным [запись «Claim» с «role» равным "e" и «words» равным ["a", "да", "человек"]]
+    дано outcomes равно [запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok 1" и «value» равным "1" и «admissible» равным да и «said» равным ["да"]]
+    дано answers равно []
+    ожидается запись «Claim result» с «words» равным ["a", "да", "человек", "доказано ядром", "",
+      ""] и «numbers» равным [1, 1]
+  пусть stated равно (nb.«it»)
+  пусть counters равно («Counterexamples» от probe и outcomes и nb)
+  пусть held равно (отфильтровать outcomes где outcome → «Holds on» от probe и outcome и nb)
+  пусть name равно («Claim name» от stated)
+  пусть word равно («Kernel word» от kernel и (probe.«name») и name)
+  пусть asked равно (соединить ["confirm ", (probe.«name»), " ", (к строке (nb.«at»))] по "")
+  пусть confirm равно («Confirm text» от («Output of» от asked и answers))
+  пусть counter равно («Counter text» от (probe.«parameters») и counters)
+  пусть words равно [name, («Claim text» от stated), («Claim origin» от stated), word, counter, confirm]
+  запись «Claim result» с «words» равным words и «numbers» равным [(nb.«at»), (длина held)]
+
+тотальная функция «Holds on»
+  принимает probe: «Probe», outcome: «Outcome», nb: «Numbered»
+  возвращает признак
+  пример «A claim true on an input that C defines»
+    дано probe равно запись «Probe» с «name» равным "f" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным [запись «Claim» с «role» равным "e" и «words» равным ["a", "да", "человек"]]
+    дано outcome равно запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok 1" и «value» равным "1" и «admissible» равным да и «said» равным ["да"]
+    дано nb равно запись «Numbered» с «at» равным 1 и «it» равным (запись «Claim» с «role» равным "" и «words» равным [
+      "a", "да", "человек"])
+    ожидается да
+  пусть istrue равно ((«Cell» от (nb.«at») и (outcome.«said»)) равен "да")
+  (outcome.«admissible») и притом ((не («Undefined» от probe и outcome)) и притом istrue)
+
+тотальная функция «Claim line»
+  принимает judgement: «Claim result»
+  возвращает строка
+  пример «A claim with a counterexample confirmed by the interpreter»
+    дано judgement равно запись «Claim result» с «words» равным ["a", "да", "человек", "не доказано ядром", "x = 0",
+      "нарушено"] и «numbers» равным [1, 3]
+    ожидается "  «a» [человек] — не доказано ядром; контрпример x = 0; flang run на нём: нарушено"
+  пусть counter равно («Result word» от 5 и judgement)
+  пусть survived равно (к строке («Result number» от 2 и judgement))
+  пусть held равно (соединить ["; на сетке нарушений нет (", survived, " входов)"] по "")
+  пусть broken равно (соединить ["; контрпример ", counter, "; flang run на нём: ",
+    («Result word» от 6 и judgement)] по "")
+  пусть tail равно (если пусто counter то held иначе broken)
+  пусть head равно (соединить ["  «", («Result word» от 1 и judgement), "» [", («Result word» от 3 и judgement),
+    "] — "] по "")
+  соединить [head, («Result word» от 4 и judgement), tail] по ""
+
+тотальная функция «Spec line»
+  принимает judgement: «Claim result»
+  возвращает строка
+  пример «A derived candidate the kernel proved»
+    дано judgement равно запись «Claim result» с «words» равным ["выведено 1", "результат не меньше 0", "знак",
+      "доказано ядром", "", ""] и «numbers» равным [3, 9]
+    ожидается "  обеспечивает «выведено 1» результат не меньше 0    [ВЫВЕДЕНО из перевода: знак; доказано ядром]"
+  пусть counter равно («Result word» от 5 и judgement)
+  пусть proved равно ((«Result word» от 4 и judgement) равен "доказано ядром")
+  пусть dropped равно (соединить ["отброшено, контрпример ", counter] по "")
+  пусть survived равно (к строке («Result number» от 2 и judgement))
+  пусть asked равно (соединить ["ВОПРОС ЧЕЛОВЕКУ: ядро не доказало, на сетке держится на ", survived, " входах"] по "")
+  пусть status равно («Chosen» от [(«When» от proved и "доказано ядром"),
+    («When» от (не (пусто counter)) и dropped)] и asked)
+  пусть head равно (соединить ["  обеспечивает «", («Result word» от 1 и judgement), "» ",
+    («Result word» от 2 и judgement)] по "")
+  соединить [head, "    [ВЫВЕДЕНО из перевода: ", («Result word» от 3 и judgement), "; ", status, "]"] по ""
+
+тотальная функция «Class counts»
+  принимает classes: список строки
+  возвращает строка
+  пример «How many inputs fell into each class»
+    дано classes равно ["сошлось", "сошлось", "вне требований"]
+    ожидается "сошлось 2, вне требований 1"
+  соединить (отобразить («Distinct» от classes) как class → «Class count» от class и classes) по ", "
+
+тотальная функция «Class count»
+  принимает class: строка, classes: список строки
+  возвращает строка
+  пример «One class and its count»
+    дано class равно "сошлось"
+    дано classes равно ["сошлось", "сошлось"]
+    ожидается "сошлось 2"
+  соединить [class, " ", (к строке (длина (отфильтровать classes где other → other равен class)))] по ""
+
+тотальная функция «Forgery line»
+  принимает mode: строка, applicable: признак, classes: список строки, answered: признак
+  возвращает строка
+  пример «A forgery the round trip caught»
+    дано mode равно "drop-branch"
+    дано applicable равно да
+    дано classes равно ["РАЗОШЛОСЬ", "сошлось"]
+    дано answered равно да
+    ожидается "  подделка drop-branch: разошлось на 1 входах — ПОЙМАНА"
+  пусть wrong равно (длина (отфильтровать classes где class → «Wrong class» от class))
+  пусть head равно (соединить ["  подделка ", mode, ": "] по "")
+  пусть nothing равно (соединить [head, "подделывать нечего"] по "")
+  пусть silent равно (соединить [head, "напечатанная подделка не ответила — опыт не состоялся"] по "")
+  пусть caught равно (соединить [head, "разошлось на ", (к строке wrong), " входах — ПОЙМАНА"] по "")
+  пусть missed равно (соединить [head, "расхождений нет — НЕ ПОЙМАНА"] по "")
+  «Chosen» от [(«When» от (не applicable) и nothing), («When» от (не answered) и silent),
+    («When» от (wrong больше 0) и caught)] и missed
+
+тотальная функция «Forged classes»
+  принимает probe: «Probe», outcomes: список «Outcome», replies: строка
+  возвращает список строки
+  пример «Each input judged by the value of the forged translation»
+    дано probe равно запись «Probe» с «name» равным "f" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным []
+    дано outcomes равно [запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok 1" и «value» равным "1" и «admissible» равным да и «said» равным []]
+    дано replies равно "{\"ok\":true,\"value\":{\"n\":\"2\"}}\n"
+    ожидается ["РАЗОШЛОСЬ"]
+  пусть values равно (отобразить («Lines» от replies) как line → «Reply value» от line)
+  пусть made равно (свёртка outcomes начиная с (пустой список) как m и e → «Class pushed» от m и probe и e и values)
+  «Reversed» от made
+
+тотальная функция «Class pushed»
+  принимает made: список строки, probe: «Probe», outcome: «Outcome», values: список строки
+  возвращает список строки
+  пример «The class of the next input goes first»
+    дано made равно []
+    дано probe равно запись «Probe» с «name» равным "f" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным []
+    дано outcome равно запись «Outcome» с «arguments» равным [
+      "0"] и «c» равным "ok 1" и «value» равным "1" и «admissible» равным да и «said» равным []
+    дано values равно ["1"]
+    ожидается ["сошлось"]
+  приписать («Class» от probe и outcome и («Cell» от ((длина made) плюс 1) и values)) к made
+
+тотальная функция «Indented»
+  принимает lines: список строки
+  возвращает список строки
+  пример «A translation shown inside the report»
+    дано lines равно ["модуль «Перевод f»", "", "тотальная функция «f»"]
+    ожидается ["    модуль «Перевод f»", "    тотальная функция «f»"]
+  отобразить (отфильтровать lines где line → не (пусто line)) как line → соединить ["    ", line] по ""
+
+тотальная функция «Expectation»
+  принимает name: строка, expectations: список список строки
+  возвращает список строки
+  пример «The expectation of one function»
+    дано name равно "sign"
+    дано expectations равно [["sign", "proved", ""]]
+    ожидается ["sign", "proved", ""]
+  разбор (отфильтровать expectations где row → («Cell» от 1 и row) равен name)
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то голова
+
+тотальная функция «Gate»
+  принимает name: строка, wish: список строки, results: список «Claim result»
+  возвращает список строки
+  пример «A correct function is proved and has no counterexample»
+    дано name равно "sign"
+    дано wish равно ["sign", "proved", ""]
+    дано results равно [запись «Claim result» с «words» равным ["a", "да", "человек", "доказано ядром", "",
+      ""] и «numbers» равным [1, 3]]
+    ожидается []
+  пример «A bug the kernel did not prove and the grid broke»
+    дано name равно "f"
+    дано wish равно ["f", "bug", "a"]
+    дано results равно [запись «Claim result» с «words» равным ["a", "да", "человек", "не доказано ядром", "x = 0",
+      "нарушено свойство «a»"] и «numbers» равным [1, 3]]
+    ожидается []
+  пусть wanted равно («Cell» от 3 и wish)
+  пусть key равно (отфильтровать results где judgement → («Result word» от 1 и judgement) содержит wanted)
+  пусть unproved равно (отфильтровать results где judgement → не («Proved result» от judgement))
+  пусть broken равно (отфильтровать results где judgement → не (пусто («Result word» от 5 и judgement)))
+  пусть caught равно (отфильтровать key где judgement → «Caught» от judgement)
+  пусть missed равно [(соединить [name, ": ожидалась найденная ошибка в «", wanted, "», а её не нашли"] по "")]
+  пусть allproved равно [(соединить [name, ": ожидалось утверждение, которое ядро не доказало, а доказано всё"] по "")]
+  пусть unproven равно (отобразить unproved как judgement → соединить [name, ": не доказано «",
+    («Result word» от 1 и judgement), "»"] по "")
+  пусть counters равно (отобразить broken как judgement → соединить [name, ": контрпример к «",
+    («Result word» от 1 и judgement), "»"] по "")
+  разбор («Cell» от 2 и wish)
+    случай "bug"
+      то если пусто caught то missed иначе пустой список
+    случай "proved"
+      то «Соединить списки» от unproven и counters
+    случай "open"
+      то «Соединить списки» от (если пусто unproved то allproved иначе пустой список) и counters
+    случай любое
+      то [(соединить [name, ": нет строки в corpus/expected.tsv"] по "")]
+
+тотальная функция «Caught»
+  принимает judgement: «Claim result»
+  возвращает признак
+  пример «Not proved, broken on the grid and confirmed by the interpreter»
+    дано judgement равно запись «Claim result» с «words» равным ["a", "да", "человек", "не доказано ядром", "x = 0",
+      "нарушено свойство «a»"] и «numbers» равным [1, 3]
+    ожидается да
+  пусть unproved равно (не ((«Result word» от 4 и judgement) равен "доказано ядром"))
+  пусть broken равно (не (пусто («Result word» от 5 и judgement)))
+  unproved и притом (broken и притом ((«Result word» от 6 и judgement) содержит "нарушено свойство"))
+
+тотальная функция «Function head»
+  принимает one: «Prepared», wish: список строки
+  возвращает список строки
+  пример «The head of the report of a function»
+    дано one равно запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      ] и «inputs» равным [] и «checked» равным [])
+    дано wish равно []
+    ожидается ["", "── f (s.c, строка 1) — ожидание: не записано",
+      "  перевод (вердикты ниже — о переводе, а не о самом C):"]
+  пусть line равно (к строке ((one.«translated»).«line»))
+  пусть title равно (соединить ["── ", («Name of» от one), " (", (one.«file»), ".c, строка ", line, ") — ожидание: ",
+    («Wish text» от wish)] по "")
+  ["", title, "  перевод (вердикты ниже — о переводе, а не о самом C):"]
+
+функция «Function judged»
+  принимает one: «Prepared», answers: список «Answer», expectations: список список строки
+  возвращает «Judged»
+  пример «Nothing run: every expectation fails»
+    дано one равно запись «Prepared» с «file» равным "s" и «claims» равным [
+      ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным ["  0"] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+      ] и «inputs» равным [] и «checked» равным [])
+    дано answers равно []
+    дано expectations равно []
+    ожидается запись «Judged» с «kind» равным "" и «held» равным нет и «counts» равным [0, 0, 0] и «failures» равным [
+      "f: нет строки в corpus/expected.tsv"] и «spec» равным [] и «lines» равным ["",
+      "── f (s.c, строка 1) — ожидание: не записано", "  перевод (вердикты ниже — о переводе, а не о самом C):",
+      "    модуль «Перевод f»", "    тотальная функция «f»", "      принимает ", "      возвращает число", "      0",
+      "  утверждения о переводе и что с ними:", "  круговая проверка C → flang → C на 0 входах: ",
+      "  черновик спецификации:", "  подделка drop-branch: подделывать нечего",
+      "  подделка shift-constant: подделывать нечего", "  подделка swap-operands: подделывать нечего"]
+  пусть name равно («Name of» от one)
+  пусть probe равно (one.«probe»)
+  пусть outcomes равно («Outcomes for» от one и answers)
+  пусть classes равно (отобразить outcomes как outcome → «Class» от probe и outcome и (outcome.«value»))
+  пусть numbers равно («Numbered claims of» от (probe.«checked»))
+  пусть kernelt равно («Output of» от (соединить ["kernel T ", name] по "") и answers)
+  пусть kerneld равно («Output of» от (соединить ["kernel D ", name] по "") и answers)
+  пусть judged равно (отфильтровать numbers где each → «Judged claim» от each)
+  пусть derived равно (отфильтровать numbers где each → не («Judged claim» от each))
+  пусть results равно (отобразить judged как each → «Claim result of» от each и kernelt и probe и outcomes и answers)
+  пусть spec равно (отобразить derived как each → «Claim result of» от each и kerneld и probe и outcomes и answers)
+  пусть wrong равно (длина (отфильтровать classes где class → «Wrong class» от class))
+  пусть source равно («Source of» от (one.«file») и answers)
+  пусть forged равно (отобразить («Modes») как mode → «Forgery of» от mode и source и name и probe и outcomes и answers)
+  пусть wish равно («Expectation» от name и expectations)
+  пусть gate равно («Gate» от name и wish и results)
+  пусть badforged равно (отфильтровать forged где line → «Forgery failed» от line)
+  пусть forgeryfailures равно (отобразить badforged как line → соединить [name, ":", line] по "")
+  пусть round равно [(соединить [name, ": круговая проверка разошлась на ", (к строке wrong), " входах"] по "")]
+  пусть roundfailures равно (если wrong больше 0 то round иначе пустой список)
+  пусть failures равно («Joined lists» от gate и [forgeryfailures, roundfailures])
+  пусть translation равно («Indented» от («Translation text» от (one.«translated») и (one.«claims»)))
+  пусть claimlines равно (отобразить results как judgement → «Claim line» от judgement)
+  пусть counted равно («Class counts» от classes)
+  пусть roundline равно (соединить ["  круговая проверка C → flang → C на ", (к строке (длина outcomes)), " входах: ",
+    counted] по "")
+  пусть speclines равно (отобразить spec как judgement → «Spec line» от judgement)
+  пусть middle равно [translation, ["  утверждения о переводе и что с ними:"], claimlines, [roundline,
+    "  черновик спецификации:"], speclines, forged]
+  пусть lines равно («Joined lists» от («Function head» от one и wish) и middle)
+  пусть applicable равно (длина (отфильтровать forged где line → не (line содержит "нечего")))
+  пусть caught равно (длина (отфильтровать forged где line → «Forgery caught» от line))
+  пусть kind равно («Cell» от 2 и wish)
+  запись «Judged» с «kind» равным kind и «held» равным (пусто gate) и «counts» равным [applicable, caught,
+    wrong] и «failures» равным failures и «spec» равным spec и «lines» равным lines
+
+
+функция «Forgery of»
+  принимает mode: строка, source: «Source», name: строка, probe: «Probe», runs: список «Outcome», said: список «Answer»
+  возвращает строка
+  пример «Nothing to forge in an empty file»
+    дано mode равно "drop-branch"
+    дано source равно запись «Source» с «file» равным "s" и «nodes» равным [] и «functions» равным []
+    дано name равно "f"
+    дано probe равно запись «Probe» с «name» равным "f" и «parameters» равным [] и «inputs» равным [
+      ] и «checked» равным []
+    дано runs равно []
+    дано said равно []
+    ожидается "  подделка drop-branch: подделывать нечего"
+  пусть applicable равно («Holds» от name и («Forged names» от source и mode))
+  пусть replies равно («Output of» от (соединить ["forged ", mode, " ", name] по "") и said)
+  «Forgery judged» от mode и applicable и probe и runs и replies
+
+тотальная функция «Wish text»
+  принимает wish: список строки
+  возвращает строка
+  пример «A bug to find»
+    дано wish равно ["f", "bug", "a"]
+    ожидается "найти ошибку, утверждение «a»"
+  разбор («Cell» от 2 и wish)
+    случай "bug"
+      то соединить ["найти ошибку, утверждение «", («Cell» от 3 и wish), "»"] по ""
+    случай "proved"
+      то "доказать все утверждения человека и обязательства C"
+    случай "open"
+      то "код верен, но ядро доказать не может: контрпримера нет, недоказанное остаётся недоказанным"
+    случай любое
+      то "не записано"
+
+тотальная функция «Forgery judged»
+  принимает mode: строка, applicable: признак, probe: «Probe», outcomes: список «Outcome», replies: строка
+  возвращает строка
+  пример «Nothing to forge»
+    дано mode равно "shift-constant"
+    дано applicable равно нет
+    дано probe равно запись «Probe» с «name» равным "f" и «parameters» равным ["x"] и «inputs» равным [
+      ] и «checked» равным []
+    дано outcomes равно []
+    дано replies равно ""
+    ожидается "  подделка shift-constant: подделывать нечего"
+  пусть answered равно ((длина («Lines» от replies)) равен (длина outcomes))
+  «Forgery line» от mode и applicable и («Forged classes» от probe и outcomes и replies) и answered
+
+тотальная функция «Sum of»
+  принимает numbers: список число
+  возвращает число
+  пример «A sum»
+    дано numbers равно [1, 2]
+    ожидается 3
+  свёртка numbers начиная с 0 как sum и each → sum плюс each
+
+тотальная функция «Total lines»
+  принимает judged: список «Judged», expectations: список список строки, spec: список «Claim result»
+  возвращает список строки
+  пример «Nothing judged»
+    дано judged равно []
+    дано expectations равно []
+    дано spec равно []
+    ожидается ["ИТОГ:", "  ошибок найдено 0 из 0 ожидавшихся", "  доказано 0 из 0",
+      "  верных, но недоказуемых сегодня, без ложной тревоги 0 из 0", "  круговая проверка: расхождений 0",
+      "  подделок переводчика поймано 0 из 0",
+      "  черновик спецификации: выведено 0, доказано ядром 0, отброшено контрпримером 0, вопросов человеку 0"]
+  пусть wanted равно (отобразить expectations как row → «Cell» от 2 и row)
+  пусть bugs равно (к строке (длина (отфильтровать wanted где kind → kind равен "bug")))
+  пусть goods равно (к строке (длина (отфильтровать wanted где kind → kind равен "proved")))
+  пусть opens равно (к строке (длина (отфильтровать wanted где kind → kind равен "open")))
+  пусть forgeries равно (к строке («Sum of» от (отобразить judged как each → «Count at» от 1 и each)))
+  пусть caught равно (к строке («Sum of» от (отобразить judged как each → «Count at» от 2 и each)))
+  пусть wrong равно (к строке («Sum of» от (отобразить judged как each → «Count at» от 3 и each)))
+  пусть proved равно (отфильтровать spec где judgement → «Proved result» от judgement)
+  пусть unproved равно (отфильтровать spec где judgement → не («Proved result» от judgement))
+  пусть dropped равно (длина (отфильтровать unproved где judgement → не (пусто («Result word» от 5 и judgement))))
+  пусть asked равно ((длина unproved) минус dropped)
+  пусть found равно (к строке («Held of kind» от "bug" и judged))
+  пусть done равно (к строке («Held of kind» от "proved" и judged))
+  пусть quiet равно (к строке («Held of kind» от "open" и judged))
+  пусть counts равно [(к строке (длина spec)), ", доказано ядром ", (к строке (длина proved)),
+    ", отброшено контрпримером ", (к строке dropped), ", вопросов человеку ", (к строке asked)]
+  пусть row1 равно [(соединить ["  ошибок найдено ", found, " из ", bugs, " ожидавшихся"] по ""), (соединить [
+    "  доказано ", done, " из ", goods] по "")]
+  пусть quietline равно (соединить ["  верных, но недоказуемых сегодня, без ложной тревоги ", quiet, " из ",
+    opens] по "")
+  пусть row2 равно [quietline, (соединить ["  круговая проверка: расхождений ", wrong] по "")]
+  пусть row3 равно [(соединить ["  подделок переводчика поймано ", caught, " из ", forgeries] по ""), (соединить [
+    "  черновик спецификации: выведено ", (соединить counts по "")] по "")]
+  «Joined lists» от ["ИТОГ:"] и [row1, row2, row3]
+
+
+функция «Report of»
+  принимает answers: список «Answer», files: список строки
+  возвращает «Report»
+  пример «No file: an empty corpus is not a demonstration»
+    дано answers равно []
+    дано files равно []
+    ожидается запись «Report» с «failures» равным ["нет файлов"] и «lines» равным []
+  пусть sources равно («Sources» от answers и files)
+  пусть functions равно («Joined functions» от (отобразить sources как source → source.«functions»))
+  пусть refused равно (отфильтровать functions где translated → не (пусто (translated.«refusals»)))
+  пусть prepared равно («Prepared all» от answers и files)
+  пусть expectations равно («Rows» от («Output of» от "expected" и answers))
+  пусть judged равно (отобразить prepared как one → «Function judged» от one и answers и expectations)
+  пусть spec равно («Joined results» от (отобразить judged как each → each.«spec»))
+  пусть vacant равно (если пусто prepared то ["в корпусе нет ни одной переведённой функции"] иначе пустой список)
+  пусть failures равно («Joined lists» от vacant и (отобразить judged как each → each.«failures»))
+  пусть counts равно [(к строке (длина sources)), ", определений функций ", (к строке (длина functions)),
+    ", переведено ", (к строке (длина prepared)), ", вне подмножества ", (к строке (длина refused))]
+  пусть head равно [(соединить ["ПЕРЕВОД C → flang: файлов ", (соединить counts по "")] по "")]
+  пусть refusals равно («Joined lists» от [] и (отобразить refused как translated → «Refusal lines» от translated))
+  пусть body равно («Joined lists» от [] и (отобразить judged как each → each.«lines»))
+  пусть lines равно («Joined lists» от head и [refusals, body, [""], («Total lines» от judged и expectations и spec)])
+  пусть made равно (запись «Report» с «failures» равным failures и «lines» равным lines)
+  если пусто files то (запись «Report» с «failures» равным ["нет файлов"] и «lines» равным []) иначе made
+
+
+тотальная функция «Refusal lines»
+  принимает translated: «Function»
+  возвращает список строки
+  пример «A refused function and its reason»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным ["нет"] и «defined» равным да
+    ожидается ["  отказ «f»: нет"]
+  отобразить (translated.«refusals») как reason → соединить ["  отказ «", (translated.«name»), "»: ", reason] по ""
+
+тотальная функция «Joined functions»
+  принимает parts: список список «Function»
+  возвращает список «Function»
+  пример «No functions anywhere»
+    дано parts равно [[], []]
+    ожидается []
+  свёртка parts начиная с (пустой список) как made и part → «Соединить списки» от made и part
+
+тотальная функция «Joined results»
+  принимает parts: список список «Claim result»
+  возвращает список «Claim result»
+  пример «No results anywhere»
+    дано parts равно [[], []]
+    ожидается []
+  свёртка parts начиная с (пустой список) как made и part → «Соединить списки» от made и part
+
+тотальная функция «Verdict of»
+  принимает report: «Report»
+  возвращает «Продолжение»
+  пример «A report without failures ends the work»
+    дано report равно запись «Report» с «failures» равным [] и «lines» равным ["a"]
+    ожидается вариант «Конец работы» с значение равным "a"
+  пример «A report with failures fails and names them»
+    дано report равно запись «Report» с «failures» равным ["b"] и «lines» равным ["a"]
+    ожидается вариант «Провал» с код равным "FLANG_FOREIGN_C" и сообщение равным "a\nНЕ СОШЛОСЬ:\n  b"
+  пусть text равно (соединить (report.«lines») по "\n")
+  пусть named равно (отобразить (report.«failures») как failure → соединить ["  ", failure] по "")
+  пусть failed равно (соединить (приписать text к (приписать "НЕ СОШЛОСЬ:" к named)) по "\n")
+  если пусто (report.«failures»)
+    то вариант «Конец работы» с значение равным text
+    иначе вариант «Провал» с код равным "FLANG_FOREIGN_C" и сообщение равным failed
+
+
+тотальная функция «Held of kind»
+  принимает kind: строка, judged: список «Judged»
+  возвращает число
+  пример «Functions of a kind whose expectation held»
+    дано kind равно "bug"
+    дано judged равно [запись «Judged» с «kind» равным "bug" и «held» равным да и «counts» равным [0, 0,
+      0] и «failures» равным [] и «spec» равным [] и «lines» равным []]
+    ожидается 1
+  длина (отфильтровать judged где each → ((each.«kind») равен kind) и притом (each.«held»))
+
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает «Batch»
+  пример «No work directory, nothing to clean»
+    дано answers равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  пусть work равно («Work» от answers)
+  если пусто work то («Batch of» от [] и []) иначе («Batch of» от ["cleaned"] и [(«Shell order» от "rm -rf \"$0\"" и [
+    work])])
+
+функция «Stage»
+  принимает stages: число, answers: список «Answer», files: список строки
+  возвращает «Batch»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 9
+    дано answers равно []
+    дано files равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  разбор stages
+    случай 7
+      то «Setup»
+    случай 6
+      то «Making work» от answers
+    случай 5
+      то «Reading batch» от files
+    случай 4
+      то «Writing» от answers и files
+    случай 3
+      то «Building» от answers и files
+    случай 2
+      то «Running» от answers и files
+    случай 1
+      то «Confirming» от answers и files
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то «Batch of» от [] и []
+
+функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer», files: список строки
+  возвращает «Продолжение»
+  пример «An empty corpus at the last stage fails»
+    дано queue равно []
+    дано stages равно 0
+    дано answers равно []
+    дано files равно []
+    ожидается вариант «Провал» с код равным "FLANG_FOREIGN_C" и сообщение равным "\nНЕ СОШЛОСЬ:\n  нет файлов"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict of» от («Report of» от answers и files)
+        иначе «Advance» от stages и answers и files
+
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Eight stages lie ahead»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным [] и «stages» равным 8 и «answers» равным []
+  «Begin with» от 8
+
+тотальная функция «No work»
+  возвращает «Продолжение»
+  пример «Without a work directory nothing can be measured»
+    ожидается вариант «Не проверено» с код равным "FLANG_FOREIGN_C_WORK" и сообщение равным "каталога нет"
+  вариант «Не проверено» с код равным "FLANG_FOREIGN_C_WORK" и сообщение равным "каталога нет"
+
+функция «Advance»
+  принимает stages: число, answers: список «Answer», files: список строки
+  возвращает «Продолжение»
+  пример «The next stage of an empty corpus»
+    дано stages равно 1
+    дано answers равно []
+    дано files равно []
+    ожидается вариант «Провал» с код равным "FLANG_FOREIGN_C" и сообщение равным "\nНЕ СОШЛОСЬ:\n  нет файлов"
+  пусть questions равно («Questions of» от («Stage» от (stages минус 1) и answers и files))
+  «Proceed» от questions и (stages минус 1) и answers и files
+
+функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A work directory that was not made stops the plan»
+    дано inquiry равно запись «Inquiry» с «asked» равным "work" и «queue» равным [
+      ] и «stages» равным 5 и «answers» равным []
+    дано reply равно вариант «Сбой» с код равным "x" и сообщение равным "y"
+    ожидается вариант «Не проверено» с код равным "FLANG_FOREIGN_C_WORK" и сообщение равным "каталога нет"
+  пусть answers равно («Heard» от inquiry и reply)
+  если ((inquiry.«asked») равен "work") и притом (пусто («Work» от answers))
+    то «No work»
+    иначе «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers и («Corpus»)
+
+
+план «Demo»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»
+
+тотальная функция «Census files»
+  возвращает список строки
+  пример «The C files of the tree written by hand, not printed by flang»
+    ожидается ["docs/benchmarks/speed/programs/reference.c", "docs/examples/host-boundary/host.c",
+      "flang/concurrency/bench/sizes.c", "flang/concurrency/bin/node.c", "flang/proof/checker/checker.c",
+      "flang/proof/probes/exact-integer-in-targets/drivers/driver.c", "flang/translation/matcher.c",
+      "flang/src/emit/c/flang_cli.c", "flang/src/emit/c/flang_conc.c", "flang/src/emit/c/flang_repl.c",
+      "flang/src/emit/c/flang_runtime.c", "flang/test/oblast/01-extension.c", "flang/test/oblast/02-inside.c",
+      "flang/test/oblast/03-garbage.c", "flang/test/oblast/04-relayout.c", "flang/test/oblast/05-subgraph.c",
+      "flang/test/oblast/06-past-larger.c", "flang/test/oblast/07-past-smaller.c", "flang/test/oblast/08-small.c",
+      "flang/test/oblast/09-refusal.c", "flang/test/oblast/10-without-arena.c", "flang/test/oblast/11-nested.c",
+      "flang/test/oblast/12-valgrind.c", "flang/test/oblast/13-memo.c"]
+  ["docs/benchmarks/speed/programs/reference.c", "docs/examples/host-boundary/host.c",
+    "flang/concurrency/bench/sizes.c", "flang/concurrency/bin/node.c", "flang/proof/checker/checker.c",
+    "flang/proof/probes/exact-integer-in-targets/drivers/driver.c", "flang/translation/matcher.c",
+    "flang/src/emit/c/flang_cli.c", "flang/src/emit/c/flang_conc.c", "flang/src/emit/c/flang_repl.c",
+    "flang/src/emit/c/flang_runtime.c", "flang/test/oblast/01-extension.c", "flang/test/oblast/02-inside.c",
+    "flang/test/oblast/03-garbage.c", "flang/test/oblast/04-relayout.c", "flang/test/oblast/05-subgraph.c",
+    "flang/test/oblast/06-past-larger.c", "flang/test/oblast/07-past-smaller.c", "flang/test/oblast/08-small.c",
+    "flang/test/oblast/09-refusal.c", "flang/test/oblast/10-without-arena.c", "flang/test/oblast/11-nested.c",
+    "flang/test/oblast/12-valgrind.c", "flang/test/oblast/13-memo.c"]
+
+тотальная функция «Errors order»
+  принимает path: строка
+  возвращает «Поручение»
+  пример «How many errors clang reports on the file, headers included»
+    дано path равно "a/m.c"
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "cd ../../.. && clang -fsyntax-only -I\"${0%/*}\" \"$0\" 2>&1 | grep -c 'error:'; exit 0", "a/m.c"]
+  пусть script равно "cd ../../.. && clang -fsyntax-only -I\"${0%/*}\" \"$0\" 2>&1 | grep -c 'error:'; exit 0"
+  «Shell order» от script и [path]
+
+тотальная функция «Census dumps»
+  принимает files: список строки
+  возвращает «Batch»
+  пример «Nothing to dump»
+    дано files равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  пусть names равно («Joined lists» от [] и (отобразить files как path → [(соединить ["dump ", path] по ""),
+    (соединить ["errors ", path] по "")]))
+  пусть orders равно (свёртка files начиная с (пустой список) как made и path → «Соединить списки» от made и [
+    («Dump order» от path и "cd ../../.. && "), («Errors order» от path)])
+  «Batch of» от names и orders
+
+тотальная функция «Refusal kind»
+  принимает reason: строка
+  возвращает строка
+  пример «A loop»
+    дано reason равно "строка 4: оператор «WhileStmt» вне подмножества"
+    ожидается "оператор «WhileStmt»"
+  пример «A signature»
+    дано reason равно "строка 1: функция «f»: сигнатура «void (int *)» вне подмножества"
+    ожидается "сигнатура не int f(int, …)"
+  пусть marked равно (соединить ["«", («Between» от "«" и "»" и reason), "»"] по "")
+  пусть rules равно [(«When» от (reason содержит ": сигнатура «") и "сигнатура не int f(int, …)"),
+    («When» от (reason содержит ": оператор «") и (соединить ["оператор ", marked] по "")),
+    («When» от (reason содержит ": выражение «") и (соединить ["выражение ", marked] по "")),
+    («When» от (reason содержит ": операция «") и (соединить ["операция ", marked] по "")),
+    («When» от (reason содержит "приведение") и "неявное приведение типа"),
+    («When» от (reason содержит ": литерал") и "литерал не int"),
+    («When» от (reason содержит "не типа int") и "имя не типа int"),
+    («When» от (reason содержит ": имя «") и "имя не параметр и не локальная"),
+    («When» от (reason содержит "без начального значения") и "переменная без начального значения")]
+  «Chosen» от rules и "прочее"
+
+функция «Functions dumped»
+  принимает path: строка, answers: список «Answer»
+  возвращает список «Function»
+  пример «Nothing dumped»
+    дано path равно "a/m.c"
+    дано answers равно []
+    ожидается []
+  пусть nodes равно («Kids» от («Tree of» от («Output of» от (соединить ["dump ", path] по "") и answers)))
+  отфильтровать (отобразить nodes как node → «Function of» от node) где each → each.«defined»
+
+тотальная функция «Census file list»
+  принимает accepted: список «Function»
+  возвращает список «File»
+  пример «A translation of the tree to be written»
+    дано accepted равно [запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным ["  0"] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да]
+    ожидается [запись «File» с «name» равным "write T f" и «pieces» равным ["census-", "0", ".flang"] и «lines» равным [
+      "модуль «Перевод f»", "", "тотальная функция «f»", "  принимает ", "  возвращает число", "  0"]]
+  пусть made равно (свёртка accepted начиная с (пустой список) как made и each → «Census file added» от made и each)
+  made
+
+тотальная функция «Census file added»
+  принимает made: список «File», translated: «Function»
+  возвращает список «File»
+  пример «The next translation gets the next number»
+    дано made равно []
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным ["  0"] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да
+    ожидается [запись «File» с «name» равным "write T f" и «pieces» равным ["census-", "0", ".flang"] и «lines» равным [
+      "модуль «Перевод f»", "", "тотальная функция «f»", "  принимает ", "  возвращает число", "  0"]]
+  пусть name равно (соединить ["write T ", (translated.«name»)] по "")
+  пусть pieces равно ["census-", (к строке (длина made)), ".flang"]
+  добавить («File of» от name и pieces и («Translation text» от translated и пустой список)) к made
+
+функция «Census checks»
+  принимает answers: список «Answer», paths: список строки
+  возвращает «Batch»
+  пример «Nothing in the subset, nothing to check»
+    дано answers равно []
+    дано paths равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  пусть functions равно («Joined functions» от (отобразить paths как path → «Functions dumped» от path и answers))
+  пусть files равно («Census file list» от («Accepted» от functions))
+  пусть names равно (отобразить files как file → «After» от "write T " и (file.«name»))
+  пусть script равно "\"$0\" check \"$1\""
+  пусть checks равно (отобразить files как file → «Shell order» от script и [(«Binary»),
+    («Work path» от answers и (file.«pieces»))])
+  пусть checked равно («Batch of» от (отобразить names как name → соединить ["check ", name] по "") и checks)
+  «Joined batches» от [(«Batch of files» от answers и files), checked]
+
+
+функция «Census report»
+  принимает answers: список «Answer», files: список строки
+  возвращает «Report»
+  пример «No file, nothing counted»
+    дано answers равно []
+    дано files равно []
+    ожидается запись «Report» с «failures» равным ["нет файлов"] и «lines» равным []
+  пусть functions равно («Joined functions» от (отобразить files как path → «Functions dumped» от path и answers))
+  пусть accepted равно («Accepted» от functions)
+  пусть checked равно (отфильтровать accepted где translated → «Census passed» от translated и answers)
+  пусть refused равно (отфильтровать functions где translated → не (пусто (translated.«refusals»)))
+  пусть kinds равно (отобразить refused как translated → «Refusal kind» от («Cell» от 1 и (translated.«refusals»)))
+  пусть broken равно (длина (отфильтровать files где path → «Clang failed» от path и answers))
+  пусть total равно (длина functions)
+  пусть permille равно (если total больше 0 то («Whole part» от ((длина accepted) умножить на 1000) и total) иначе 0)
+  пусть head равно (соединить ["ПЕРЕПИСЬ C ДЕРЕВА: файлов ", (к строке (длина files)), ", clang нашёл ошибки в ",
+    (к строке broken), " (заголовки, которых нет рядом)"] по "")
+  пусть shares равно [(к строке total), ", в подмножестве ", (к строке (длина accepted)), " (",
+    (к строке (permille делить на 10)), " %), перевод прошёл flang check у ", (к строке (длина checked))]
+  пусть second равно (соединить ["  определений функций ", (соединить shares по "")] по "")
+  пусть names равно (отобразить accepted как translated → «Census line» от translated и answers)
+  пусть reasons равно (отобразить («Distinct» от kinds) как kind → «Kind count» от kind и kinds)
+  пусть lines равно («Joined lists» от [head, second] и [names, ["причины отказа (функция считается по первой):"],
+    reasons])
+  пусть fallen равно (((длина accepted) меньше («Census floor»)) или (не ((длина checked) равен (длина accepted))))
+  пусть failure равно (соединить ["в подмножестве меньше ", (к строке («Census floor»)),
+    " функций либо не каждый перевод прошёл flang check"] по "")
+  пусть made равно (запись «Report» с «failures» равным (если fallen то [
+    failure] иначе пустой список) и «lines» равным lines)
+  если пусто files то (запись «Report» с «failures» равным ["нет файлов"] и «lines» равным []) иначе made
+
+
+тотальная функция «Whole part»
+  принимает dividend: число, divisor: число
+  возвращает число
+  пример «Seven by two»
+    дано dividend равно 7
+    дано divisor равно 2
+    ожидается 3
+  (dividend минус (dividend остаток от divisor)) делить на divisor
+
+тотальная функция «Census passed»
+  принимает translated: «Function», answers: список «Answer»
+  возвращает признак
+  пример «Not checked, not passed»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да
+    дано answers равно []
+    ожидается нет
+  («Exit code of» от (соединить ["check ", (translated.«name»)] по "") и answers) равен 0
+
+тотальная функция «Census line»
+  принимает translated: «Function», answers: список «Answer»
+  возвращает строка
+  пример «A function in the subset and the code of its check»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «leaves» равным []) и «literals» равным [] и «refusals» равным [] и «defined» равным да
+    дано answers равно []
+    ожидается "  в подмножестве: f — flang check: код 127"
+  пусть code равно («Exit code of» от (соединить ["check ", (translated.«name»)] по "") и answers)
+  соединить ["  в подмножестве: ", (translated.«name»), " — flang check: код ", (к строке code)] по ""
+
+тотальная функция «Clang failed»
+  принимает path: строка, answers: список «Answer»
+  возвращает признак
+  пример «No answer, no errors counted»
+    дано path равно "a/m.c"
+    дано answers равно []
+    ожидается нет
+  пусть errors равно («Count» от («Without blanks» от («Output of» от (соединить ["errors ", path] по "") и answers)))
+  не (errors равен 0)
+
+тотальная функция «Kind count»
+  принимает kind: строка, kinds: список строки
+  возвращает строка
+  пример «A reason of refusal and how many functions it stopped»
+    дано kind равно "литерал не int"
+    дано kinds равно ["литерал не int"]
+    ожидается "  литерал не int: 1"
+  соединить ["  ", kind, ": ", (к строке (длина (отфильтровать kinds где other → other равен kind)))] по ""
+
+тотальная функция «Census floor»
+  возвращает число
+  пример «Two functions of the tree fall in the subset, and fewer is a fall»
+    ожидается 2
+  2
+
+функция «Census stage»
+  принимает stages: число, answers: список «Answer», files: список строки
+  возвращает «Batch»
+  пример «The last stage cleans nothing without a work directory»
+    дано stages равно 0
+    дано answers равно []
+    дано files равно []
+    ожидается запись «Batch» с «names» равным [] и «orders» равным []
+  разбор stages
+    случай 3
+      то «Setup»
+    случай 2
+      то «Making work» от answers
+    случай 1
+      то «Census dumps» от files
+    случай 0
+      то «Joined batches» от [(«Census checks» от answers и files), («Cleaning» от answers)]
+    случай любое
+      то «Batch of» от [] и []
+
+
+тотальная функция «Census verdict of»
+  принимает report: «Report»
+  возвращает «Продолжение»
+  пример «A report without failures ends the work»
+    дано report равно запись «Report» с «failures» равным [] и «lines» равным ["a"]
+    ожидается вариант «Конец работы» с значение равным "a"
+  пример «A fall of the share fails»
+    дано report равно запись «Report» с «failures» равным ["b"] и «lines» равным ["a"]
+    ожидается вариант «Провал» с код равным "FLANG_FOREIGN_C_SHARE" и сообщение равным "a\nДОЛЯ УПАЛА: b"
+  пусть text равно (соединить (report.«lines») по "\n")
+  пусть fallen равно (соединить [text, "\nДОЛЯ УПАЛА: ", (соединить (report.«failures») по "; ")] по "")
+  если пусто (report.«failures»)
+    то вариант «Конец работы» с значение равным text
+    иначе вариант «Провал» с код равным "FLANG_FOREIGN_C_SHARE" и сообщение равным fallen
+
+
+функция «Census proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer», files: список строки
+  возвращает «Продолжение»
+  пример «An empty census at the last stage fails»
+    дано queue равно []
+    дано stages равно 0
+    дано answers равно []
+    дано files равно []
+    ожидается вариант «Провал» с код равным "FLANG_FOREIGN_C_SHARE" и сообщение равным "\nДОЛЯ УПАЛА: нет файлов"
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Census verdict of» от («Census report» от answers и files)
+        иначе «Census advance» от stages и answers и files
+
+
+тотальная функция «Census begin»
+  возвращает «Inquiry»
+  пример «Four stages»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным [] и «stages» равным 4 и «answers» равным []
+  «Begin with» от 4
+
+функция «Census advance»
+  принимает stages: число, answers: список «Answer», files: список строки
+  возвращает «Продолжение»
+  пример «The next stage of an empty census»
+    дано stages равно 1
+    дано answers равно []
+    дано files равно []
+    ожидается вариант «Провал» с код равным "FLANG_FOREIGN_C_SHARE" и сообщение равным "\nДОЛЯ УПАЛА: нет файлов"
+  пусть questions равно («Questions of» от («Census stage» от (stages минус 1) и answers и files))
+  «Census proceed» от questions и (stages минус 1) и answers и files
+
+функция «Census next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A work directory that was not made stops the census»
+    дано inquiry равно запись «Inquiry» с «asked» равным "work" и «queue» равным [
+      ] и «stages» равным 2 и «answers» равным []
+    дано reply равно вариант «Сбой» с код равным "x" и сообщение равным "y"
+    ожидается вариант «Не проверено» с код равным "FLANG_FOREIGN_C_WORK" и сообщение равным "каталога нет"
+  пусть answers равно («Heard» от inquiry и reply)
+  если ((inquiry.«asked») равен "work") и притом (пусто («Work» от answers))
+    то «No work»
+    иначе «Census proceed» от (inquiry.«queue») и (inquiry.«stages») и answers и («Census files»)
+
+план «Census»
+  состояние «Inquiry»
+  начинает с «Census begin»
+  обрабатывает «Census next»
+
+
+тотальная функция «Count at»
+  принимает position: число, judged: «Judged»
+  возвращает число
+  пример «How many forgeries were caught»
+    дано position равно 2
+    дано judged равно запись «Judged» с «kind» равным "bug" и «held» равным да и «counts» равным [3, 2,
+      0] и «failures» равным [] и «spec» равным [] и «lines» равным []
+    ожидается 2
+  пусть counts равно (judged.«counts»)
+  если (position меньше 1) или (position больше (длина counts)) то 0 иначе (элемент position в counts)
+
+
+тотальная функция «Forgery failed»
+  принимает line: строка
+  возвращает признак
+  пример «A forgery that went through»
+    дано line равно "  подделка drop-branch: расхождений нет — НЕ ПОЙМАНА"
+    ожидается да
+  (line содержит "НЕ ПОЙМАНА") или (line содержит "не состоялся")
+
+
+тотальная функция «Forgery caught»
+  принимает line: строка
+  возвращает признак
+  пример «A forgery the round trip caught»
+    дано line равно "  подделка drop-branch: разошлось на 1 входах — ПОЙМАНА"
+    ожидается да
+  (line содержит "ПОЙМАНА") и притом (не (line содержит "НЕ ПОЙМАНА"))
+
+
+тотальная функция «Proved result»
+  принимает judgement: «Claim result»
+  возвращает признак
+  пример «A result the kernel proved»
+    дано judgement равно запись «Claim result» с «words» равным ["a", "да", "человек", "доказано ядром", "",
+      ""] и «numbers» равным [1, 3]
+    ожидается да
+  («Result word» от 4 и judgement) равен "доказано ядром"

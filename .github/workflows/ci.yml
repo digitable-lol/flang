@@ -1914,26 +1914,7 @@ jobs:
           FLANG_TMP: ${{ runner.temp }}
 
 
-
-  # РЕЕСТР СТЕРЕЖЁТСЯ ПРОГОНОМ, А НЕ ОБЕЩАНИЕМ (задача 4909, ADR-0059 §7).
-  #
-  # До этой работы реестр не звала НИ ОДНА работа CI: поиск `registry` по
-  # .github/workflows и .githooks давал одно вхождение, и оно было комментарием
-  # про `registry-url` у actions/setup-node. Отпечаток — единственное, на чём по
-  # ADR-0021 п. 3 держится доверие к чужому пакету, и он месяц гнил под зелёным
-  # деревом: 4 записи из 7 разошлись с файлами.
-  #
-  # Здесь зовутся два прибора из четырёх свойств ADR-0059 §7:
-  #   · отпечатки ведомости сходятся с файлами — `registry-prints:check`;
-  #   · ответ не зависит от порядка строк ведомости и отказ назван кодом И
-  #     текстом — `registry-resolution:check` над корпусом
-  #     packaging/registry/cases.
-  #
-  # Подлог гоняется ПЕРЕД сверкой, как у сторожа чисел в прозе: сторож,
-  # разучившийся краснеть, в ленте не отличим от чистого дерева. Подлог
-  # разрешения дописывает к каждому ожидаемому ответу слово и снимает из каждой
-  # ожидаемой причины перечень диапазонов — обе сверки обязаны покраснеть.
-  reestr:
+  registry-resolution:
     name: registry-resolution
     runs-on: ubuntu-latest
     steps:
@@ -1944,76 +1925,62 @@ jobs:
       - name: Probe registry resolution by a forged corpus
         run: |
           if bootstrap/flang run-script registry-resolution:forgery; then
-            echo "сторож промолчал на подлоге корпуса — проверять им нечего" >&2
+            echo "the guard stayed green on a forged corpus" >&2
             exit 1
           fi
       - name: Probe registry resolution by a cut ledger
         run: |
-          vedomost=packaging/registry/cases/ledger.list
-          cp "$vedomost" "$RUNNER_TEMP/ledger.list"
-          grep -v '^Логика | 1.2.0' "$RUNNER_TEMP/ledger.list" > "$vedomost"
-          if cmp -s "$vedomost" "$RUNNER_TEMP/ledger.list"; then
-            cp "$RUNNER_TEMP/ledger.list" "$vedomost"
-            echo "строка не снялась — проверять нечем" >&2
+          ledger=packaging/registry/cases/ledger.list
+          cp "$ledger" "$RUNNER_TEMP/ledger.list"
+          grep -v '^Логика | 1.2.0' "$RUNNER_TEMP/ledger.list" > "$ledger"
+          if cmp -s "$ledger" "$RUNNER_TEMP/ledger.list"; then
+            cp "$RUNNER_TEMP/ledger.list" "$ledger"
+            echo "the row was not cut, nothing to probe" >&2
             exit 1
           fi
           if bootstrap/flang run-script registry-resolution:check > "$RUNNER_TEMP/cut.out" 2>&1; then
-            cp "$RUNNER_TEMP/ledger.list" "$vedomost"
+            cp "$RUNNER_TEMP/ledger.list" "$ledger"
             cat "$RUNNER_TEMP/cut.out" >&2
-            echo "сторож промолчал на снятой выбранной версии" >&2
+            echo "the guard stayed green with a chosen version cut out" >&2
             exit 1
           fi
-          cp "$RUNNER_TEMP/ledger.list" "$vedomost"
-          cmp "$vedomost" "$RUNNER_TEMP/ledger.list"
+          cp "$RUNNER_TEMP/ledger.list" "$ledger"
+          cmp "$ledger" "$RUNNER_TEMP/ledger.list"
       - name: Check registry resolution
         run: bootstrap/flang run-script registry-resolution:check
       - name: Probe registry fingerprints
         run: |
-          vedomost=scripts/registry-example/registry.list
-          cp "$vedomost" "$RUNNER_TEMP/registry.list"
-          sed -i '2s/| 1dc6/| Xdc6/' "$vedomost"
-          if cmp -s "$vedomost" "$RUNNER_TEMP/registry.list"; then
-            cp "$RUNNER_TEMP/registry.list" "$vedomost"
-            echo "подлог не лёг в ведомость — проверять нечем" >&2
+          ledger=scripts/registry-example/registry.list
+          cp "$ledger" "$RUNNER_TEMP/registry.list"
+          sed -i '2s/| 1dc6/| Xdc6/' "$ledger"
+          if cmp -s "$ledger" "$RUNNER_TEMP/registry.list"; then
+            cp "$RUNNER_TEMP/registry.list" "$ledger"
+            echo "the forged fingerprint did not land, nothing to probe" >&2
             exit 1
           fi
           if bootstrap/flang run-script registry-prints:check > "$RUNNER_TEMP/probe.out" 2>&1; then
-            cp "$RUNNER_TEMP/registry.list" "$vedomost"
+            cp "$RUNNER_TEMP/registry.list" "$ledger"
             cat "$RUNNER_TEMP/probe.out" >&2
-            echo "сторож промолчал на подкрученном отпечатке" >&2
+            echo "the guard stayed green on a bent fingerprint" >&2
             exit 1
           fi
-          cp "$RUNNER_TEMP/registry.list" "$vedomost"
-          cmp "$vedomost" "$RUNNER_TEMP/registry.list"
+          cp "$RUNNER_TEMP/registry.list" "$ledger"
+          cmp "$ledger" "$RUNNER_TEMP/registry.list"
       - name: Check registry fingerprints
         run: bootstrap/flang run-script registry-prints:check
-      # ЗАМОК ЗАМЫКАЕТ ВСЕ ТРИ ФОРМЫ ЗАВИСИМОСТИ (задача 2031, ADR-0059 §6 п. 4).
-      #
-      # Четвёртое свойство ADR-0059 §7 — «замок замыкает поставленное». До
-      # 4 октября 2026 оно было невозможно ни в одной форме: по имени замок
-      # писал «модули: []» при четырёх файлах у check, пакет по пути отдавал
-      # разбору flang и отвечал FLANG_PARSE. Сторож сверяет длину списка
-      # «модули» с числом «файлов вместе с импортами» минус входной файл.
       - name: Probe lock forms by a forged measurement
         run: |
           if bootstrap/flang run-script lock-forms:forgery; then
-            echo "сторож промолчал на подлоге замера — проверять им нечего" >&2
+            echo "the guard stayed green on a forged measurement" >&2
             exit 1
           fi
-      # ВТОРАЯ ПРОБА ВОЗВРАЩАЕТ ЗАМКУ ПРЕЖНЕЕ ПОВЕДЕНИЕ, а не подменяет замер:
-      # в семени гасится разрешение ввоза ПО ИМЕНИ (`wanted_bytes != 0` →
-      # `== 0`), двоичный пересобирается, и сам `lock-forms:check` обязан
-      # покраснеть. Так проверяется не арифметика сторожа, а то, что он смотрит
-      # на настоящий дефект: на этой машине порченый двоичный даёт «по имени —
-      # модулей 0 при файлах 4» и «из пути — модулей 1 при файлах 4», код 1,
-      # а форма «пакет» остаётся зелёной — её правка другая.
       - name: Probe lock forms by the old binary
         run: |
           cp bootstrap/flang_repl.c "$RUNNER_TEMP/flang_repl.c"
           sed -i 's/wanted_bytes != 0/wanted_bytes == 0/' bootstrap/flang_repl.c
           if cmp -s bootstrap/flang_repl.c "$RUNNER_TEMP/flang_repl.c"; then
             cp "$RUNNER_TEMP/flang_repl.c" bootstrap/flang_repl.c
-            echo "порча не легла в семя — проверять нечем" >&2
+            echo "the old behaviour did not land in the seed, nothing to probe" >&2
             exit 1
           fi
           make -C bootstrap -j"$(nproc)"
@@ -2021,7 +1988,7 @@ jobs:
             cp "$RUNNER_TEMP/flang_repl.c" bootstrap/flang_repl.c
             make -C bootstrap -j"$(nproc)"
             cat "$RUNNER_TEMP/old.out" >&2
-            echo "сторож промолчал на прежнем поведении замка" >&2
+            echo "the guard stayed green on the old lock behaviour" >&2
             exit 1
           fi
           cp "$RUNNER_TEMP/flang_repl.c" bootstrap/flang_repl.c

@@ -38,48 +38,7 @@ import «Приёмка»
 ему (`«утверждение»`), соседние читаются дальше.
 -/
 
-/-! ## Строки Lean 4.34: `drop`/`trim` дают срез, здесь нужна строка -/
-
-def String.«сн» (s : String) (n : Nat) : String := (s.drop n).toString
-def String.«снК» (s : String) (n : Nat) : String := (s.dropEnd n).toString
-def String.«обр» (s : String) : String := s.trimAscii.toString
-
 namespace «Разбор»
-
-
-/-! ## Текст, как его читает сверщик -/
-
-/-- Число вхождений знака. -/
-def «сколькоРаз» (s : String) (c : Char) : Nat := (s.toList.filter (· = c)).length
-
-def «сжатьПробелы» (s : String) : String :=
-  " ".intercalate ((s.splitOn " ").filter (· ≠ ""))
-
-def «расставить» (s : String) : String :=
-  «сжатьПробелы» ((s.replace "(" " ( ").replace ")" " ) ")
-
-def «скобкиСошлись» (s : String) : Bool := «сколькоРаз» s '(' = «сколькоРаз» s ')'
-
-/-- Счёт скобок ни разу не уходит в минус. -/
-def «неПроваливается» (s : String) : Bool :=
-  (s.toList.foldl (fun (acc : Int × Bool) c =>
-    if c = '(' then (acc.1 + 1, acc.2)
-    else if c = ')' then (acc.1 - 1, acc.2 && acc.1 - 1 ≥ 0)
-    else acc) (0, true)).2
-
-def «безКраёв» (s : String) : String := if s.length < 3 then "" else (s.«сн» 1).«снК» 1
-
-def «однаПара» (s : String) : Bool :=
-  s.length ≥ 3 && s.front = '(' && s.back = ')' && «скобкиСошлись» s && «неПроваливается» («безКраёв» s)
-
-/-- Снять внешние скобки, до четырёх раз. -/
-def «ужать» (s : String) : String :=
-  let r0 := s.«обр»
-  let «шаг» := fun (r : String) => if «однаПара» r then («безКраёв» r).«обр» else r
-  «шаг» («шаг» («шаг» («шаг» r0)))
-
-/-- `терм` сверщика: двоеточие разводится пробелами, скобки — тоже. -/
-def «терм» (s : String) : String := «ужать» («расставить» (s.replace ":" " : "))
 
 /-- Части верхнего уровня по знаку: разбить наивно и склеивать, пока скобки не сойдутся. -/
 def «разделитьСверху» (t : String) («знак» : String) : List String :=
@@ -461,6 +420,56 @@ def «объявление?» (l : String) : Bool :=
   ["принимает ", "возвращает ", "обеспечивает ", "требует ", "для всех ", "пример «", "дано ",
    "ожидается ", "теорема «", "использует "].any (fun p => l.startsWith p)
 
+def «текстовыйДовод» («строки» : List String) («блок» : List String) («имя» : String) : Bool :=
+  «блок».any fun l =>
+    let l' := («какЧитаетЯзык» l).«обр»
+    l'.startsWith "принимает " && ((l'.«сн» 10).splitOn ",").any fun k =>
+      match k.splitOn ":" with
+      | [i, t] => «голо» i.«обр» = «имя» && «основаТипа» «строки» («имяТипа» t) = "строка"
+      | _ => false
+
+def «ветвиПоПорядку» : List String → List (String × List String) → List (String × List String)
+  | [], acc => acc
+  | l :: r, acc =>
+    if l.startsWith "случай " then «ветвиПоПорядку» r (acc ++ [(l.«сн» 7, [])])
+    else match acc.getLast? with
+      | some (h, b) => «ветвиПоПорядку» r (acc.dropLast ++ [(h, b ++ [l])])
+      | none => «ветвиПоПорядку» r acc
+
+def «телоВетви» : List String → Option String
+  | [l] => some (if l.startsWith "то " then l.«сн» 3 else l)
+  | _ => none
+
+def «звеноВетви» (h : String) : Option (String × String) :=
+  match h.splitOn " " with
+  | [g, "и", x] => if «имя?» g && «имя?» x then some (g, x) else none
+  | _ => none
+
+def «многострочное» («строки» «блок» : List String) («тип» : String) : List String → Option «Тело»
+  | l0 :: r =>
+    if l0.startsWith "разбор " then
+      let «что» := «ужать» («терм» (l0.«сн» 7))
+      if «текстовыйДовод» «строки» «блок» «что» then none else do
+        let «ветви» := «ветвиПоПорядку» r []
+        let (_, bp) ← «ветви».find? (fun q => q.1 = "пусто")
+        let (gx, bz) ← «ветви».find? (fun q => («звеноВетви» q.1).isSome)
+        let (g, x) ← «звеноВетви» gx
+        let tp ← «телоВетви» bp
+        let tz ← «телоВетви» bz
+        let l ← «список» «что»
+        let t := «голо» («сжатьПробелы» «тип»)
+        if t.startsWith "список" then
+          pure (.«список» (.«разборС» l (← «список» («терм» tp)) g x (← «список» («терм» tz))))
+        else if t = "число" || t = "нат" || t = "натуральное" || t = "неотрицательное" || t = "целое" then
+          pure (.«число» (.«разбор» l (← «число» («терм» tp)) g x (← «число» («терм» tz))))
+        else none
+    else if l0.startsWith "свёртка " && !(r.any fun l => ["разбор ", "пусть ", "случай ", "то ", "иначе ", "если "].any (l.startsWith ·)) then
+      let «хв» := " ".intercalate r
+      let «весь» := if (l0.splitOn "→").length = 1 && («хв».splitOn "→").length = 1 then l0 ++ " → " ++ «хв» else l0 ++ " " ++ «хв»
+      «телоПоТипу» «тип» («терм» «весь»)
+    else none
+  | [] => none
+
 /-- Функция исходника по имени: строки от заголовка до следующего заголовка, тело. -/
 def «функция» («строки» : List String) («чья» : String) : Option «Функция» :=
   let «нум» := «строки».zipIdx 1
@@ -487,25 +496,64 @@ def «функция» («строки» : List String) («чья» : String) : 
     let «тип» := match «блок».find? (fun p => («какЧитаетЯзык» p.1).«обр».startsWith "возвращает ") with
       | some p => («какЧитаетЯзык» p.1).«обр».«сн» 11
       | none => ""
-    let «телоСтроки» := «блок».filter (fun p =>
+    let «телоСтроки» := («блок».foldl (fun (acc : List (String × Nat) × Bool) p =>
       let l := («какЧитаетЯзык» p.1).«обр»
-      l ≠ "" && !(«объявление?» l))
-    let «тело» := match «телоСтроки».getLast? with
-      | some p =>
-        if «телоСтроки».length = 1 then
-          match «телоПоТипу» «тип» («терм» («какЧитаетЯзык» p.1)) with
-          | some t => some (p.2, t)
-          | none => none
-        else none   -- `пусть` и многострочные тела: сверщик подставляет текстом, здесь — не читается
-      | none => none
+      if l = "" then acc
+      else if acc.2 && p.1.startsWith "   " then acc
+      else (if «объявление?» l then acc.1 else acc.1 ++ [p], l.startsWith "обеспечивает ")) ([], false)).1
+    let «тело» := match «телоСтроки» with
+      | [p] => («телоПоТипу» «тип» («терм» («какЧитаетЯзык» p.1))).map (fun t => (p.2, t))
+      | p :: r => («многострочное» «строки» («блок».map (·.1)) «тип» ((p :: r).map fun q => («какЧитаетЯзык» q.1).«обр»)).map (fun t => (p.2, t))
+      | [] => none
     some ⟨«чья», «своё».map «читать» ++ [(a, .«иная»)], «тело»⟩
+
+def «сортаИмён» («строки» : List String) («чья» : String) : List String × List String :=
+  let «нум» := «строки».zipIdx 1
+  match «нум».find? (fun p => «имяФункции» p.1 = «чья») with
+  | none => ([], [])
+  | some (_, a) =>
+    let «блок» := ((«нум».filter (fun p => p.2 > a)).takeWhile (fun p => «имяФункции» p.1 = "")).map
+      (fun p => («какЧитаетЯзык» p.1).«обр»)
+    let «сорт» := fun (t : String) => «основаТипа» «строки» («имяТипа» t)
+    let «доводы» := «блок».flatMap fun l =>
+      if l.startsWith "принимает " then
+        ((l.«сн» 10).splitOn ",").filterMap fun k =>
+          match k.splitOn ":" with
+          | [i, t] => some («голо» i.«обр», «сорт» t)
+          | _ => none
+      else if l.startsWith "возвращает " then [("результат", «сорт» (l.«сн» 11))]
+      else []
+    ((«доводы».filter (·.2 = "список")).map (·.1), («доводы».filter (·.2 = "строка")).map (·.1))
+
+def «поСорту» («сп» «тк» : List String) : «Форм» → «Форм»
+  | .«равен» (.«имя» a) (.«имя» b) =>
+    if a ∈ «сп» ∨ b ∈ «сп» then .«равенС» (.«имяС» a) (.«имяС» b)
+    else if a ∈ «тк» ∨ b ∈ «тк» then .«равенТ» (.«имяТ» a) (.«имяТ» b)
+    else .«равен» (.«имя» a) (.«имя» b)
+  | .«не» f => .«не» («поСорту» «сп» «тк» f)
+  | .«и» f g => .«и» («поСорту» «сп» «тк» f) («поСорту» «сп» «тк» g)
+  | .«или» f g => .«или» («поСорту» «сп» «тк» f) («поСорту» «сп» «тк» g)
+  | .«еслиФ» u f g => .«еслиФ» («поСорту» «сп» «тк» u) («поСорту» «сп» «тк» f) («поСорту» «сп» «тк» g)
+  | f => f
+
+def «починитьСорт» («сп» «тк» : List String) (u : «Утверждение») : «Утверждение» :=
+  let c := «поСорту» «сп» «тк»
+  { u with
+    «цель» := c u.«цель»
+    «вывод» := u.«вывод».map fun v =>
+      { v with «цель» := c v.«цель», «шаги» := v.«шаги».map fun sh => { sh with «формула» := c sh.«формула» } }
+    «функция» := { u.«функция» with «строки» := u.«функция».«строки».map fun q =>
+      (q.1, match q.2 with | .«требует» f => .«требует» (c f) | r => r) }
+    «обязательства» := u.«обязательства».map fun o => { o with «формула» := c o.«формула» } }
 
 /-- Цель постусловия: хвост строки N после `обеспечивает «имя» `. -/
 def «цельСтроки» («строки» : List String) (n : Nat) («имя» : String) : Option «Форм» :=
   match «строки»[n - 1]? with
   | none => none
   | some l =>
-    let l' := «какЧитаетЯзык» l
+    let «хв» := ((«строки».drop n).takeWhile (fun z => z.startsWith "   " && («какЧитаетЯзык» z).«обр» ≠ "")).map
+      (fun z => («какЧитаетЯзык» z).«обр»)
+    let l' := " ".intercalate («какЧитаетЯзык» l :: «хв»)
     match l'.splitOn ("обеспечивает «" ++ «имя» ++ "» ") with
     | [_, «хв»] => «форм» («терм» «хв».«обр»)
     | _ => none
@@ -584,7 +632,7 @@ def «шаг» (l : String) («вне» : Bool := false) : Except String «Ша�
     | none =>
       if «вне» || «внеПриёмки» «правило» «осн» then pure «непрочтено»
       else throw s!"строка «{l}»: формула не читается"
-  pure ⟨«номер», «правило», «ф», «осн»⟩
+  pure ⟨«номер», «правило», «ф», «осн», «терм» («вУголках» l)⟩
 
 /-- Запись, разрезанная на утверждения: заголовок и обрезанные строки под ним. -/
 def «собрать» : List String → Option (String × List String) → List (String × List String) →
@@ -661,7 +709,8 @@ def «утверждение» (h : String) (b : List String) («исходни�
   let «цель» ← match «цельСтроки» «исходник» n «имя» with
     | some c => pure c
     | none => pure «непрочтено»
-  pure ⟨«имя», «ф», «цель», «вердикт», «естьПХ», «обяз», «вывод», «опр»⟩
+  let (sp, tk) := «сортаИмён» «исходник» «чья»
+  pure («починитьСорт» sp tk ⟨«имя», «ф», «цель», «вердикт», «естьПХ», «обяз», «вывод», «опр»⟩)
 
 /-- Разбор записи: все утверждения; не прочлось одно — не прочлась запись. -/
 def «запись» («текст» : String) («исходник» : List String) : Except String «Запись» := do

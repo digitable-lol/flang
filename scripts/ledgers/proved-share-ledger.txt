@@ -1586,6 +1586,7 @@ b227c0ad335b884661247019d31270e6|22|22|0|0|0|scripts/guards/name-splicing-guard.
 c5506e0d519db2384994e5edb50f9ad8|13|7|6|0|0|scripts/guards/no-comments-guard.fscript
 323f8525a0746bf647873edd7ba3eaf7|9|9|0|0|0|scripts/guards/no-package-json-guard.fscript
 76e306cbb502d04abaef8d8b0807eb8d|7|7|0|0|0|scripts/guards/occupancy-check.fscript
+94e4d551c6d849328b8e811c8637354f|6|6|0|0|0|scripts/guards/proof-cache-forgeries.fscript
 01aef169c0bbf946d103d0efc22f3d7e|13|13|0|0|0|scripts/guards/proved-share-vs-tree.fscript
 7feca661ed8e0a679823c1b6f0a431fe|24|24|0|0|0|scripts/guards/occupied-names-guard.fscript
 bcb9a4bd2f77da1cc1fdfe50b7385bed|2|2|0|0|0|scripts/guards/record-follows-its-source.fscript

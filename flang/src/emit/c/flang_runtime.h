@@ -1021,11 +1021,31 @@ typedef struct fl_memo_call {
   size_t peak;
   size_t copied;
   size_t tally;
+  bool lasting;
+  unsigned char digest[32];
 } fl_memo_call;
+
+typedef struct fl_memo_lasting_record {
+  unsigned char digest[32];
+  const unsigned char *bytes;
+  size_t size;
+  size_t steps;
+  size_t copied;
+  size_t span;
+  bool counted;
+  bool used;
+} fl_memo_lasting_record;
 
 bool fl_memo_find(fl_ctx *ctx, const char *function, const fl_value *args, size_t count, fl_memo_call *call,
                   fl_value *result);
 fl_status fl_memo_keep(fl_ctx *ctx, fl_memo_call *call, fl_status status, fl_value *result);
 void fl_memo_setup(int enabled, int audit, size_t cap);
+bool fl_memo_lasting_setup(const char *salt, size_t salt_bytes, const char *const *functions, size_t count);
+bool fl_memo_lasting_add(const unsigned char *digest, const unsigned char *bytes, size_t size, size_t steps,
+                         size_t copied, size_t span, bool counted);
+size_t fl_memo_lasting_fresh(const fl_memo_lasting_record **out);
+size_t fl_memo_lasting_used(size_t index, const fl_memo_lasting_record **out);
+void fl_memo_lasting_counts(unsigned long long *loaded, unsigned long long *hits, unsigned long long *fresh,
+                            unsigned long long *lost);
 
 #endif /* FLANG_RUNTIME_H */

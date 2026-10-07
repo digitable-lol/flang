@@ -1,133 +1,152 @@
-# The kernel's verdict cache
+# The proof cache
 
-The proof kernel passes a verdict on every obligation of a program anew on each
-`flang check`, each `flang emit` and each reprint of the compiler. The verdict
-cache stores those verdicts in a file and, on the next run, hands them back
-from there without asking the kernel again.
+The proof kernel passes a verdict on every obligation of a program on each
+`flang check`, each `flang emit` and each reprint of the compiler. The proof
+cache keeps the kernel's answers between runs in a directory next to the
+project and hands them back on the next run instead of computing them again.
+It works like Lean's `.olean`: an answer, once computed, stays on disk and is
+taken as long as nothing it depends on has changed.
 
-**The whole verdict is cached, refusals included.** An obligation the kernel
-could not close costs the same steps as a proved one and is asked again on
-every pass; a cache of "proved" alone would save the smaller part of the work.
+## How to switch it on
+
+```sh
+FLANG_PROOF_CACHE=on flang check --proof program.flang
+FLANG_PROOF_CACHE=on flang emit program.flang --target c
+FLANG_PROOF_CACHE=/path/to/directory flang check program.flang
+```
+
+Unset, empty, `off` or `0` — no cache, and the kernel takes its old road byte
+for byte. `on` or `1` — the directory `.flang-cache/proofs/` in the project
+root: the nearest directory above with `.flangrc` or `.git`. Any other value is
+the path of the cache directory. The directory never goes into git
+(`.gitignore`) and may be removed at any time.
+
+| variable | what it does |
+|---|---|
+| `FLANG_PROOF_CACHE_STATS=1` | one stderr line: entries taken from disk, hits, new entries, obligations computed on a narrowed program |
+| `FLANG_PROOF_CACHE_AUDIT=1` | the kernel also computes on the whole program and compares the answer with the narrowed one |
+| `FLANG_MEMO_AUDIT=1` | every hit, from disk or from memory, is computed again and compared byte for byte; a mismatch is `abort()` |
+| `FLANG_PROOF_CACHE_RECHECK=0` | do not call the independent checker after a run with hits |
+| `FLANG_PROOF_CACHE_KEY` | the signing key file instead of `~/.config/flang/proof-cache.key` |
+| `FLANG_PROOF_CHECKER` | the checker binary instead of `flang/proof/checker/сверщик` |
+
+A release does not use the cache: setting `FLANG_PROOF_CACHE` on the tag path
+is forbidden, and `.github/actions/release-without-cache` guards it.
+
+## What is cached
+
+The answers of three pure functions of the compiler:
+
+| function | where | what it answers |
+|---|---|---|
+| «Вердикт без теоремы по сужению» | `flang/self/proofterm.flang` | the verdict on a postcondition or statement without a theorem |
+| «Проверить терм по сужению» | `flang/self/proofterm.flang` | the verdict on a theorem: steps, cases, refusals |
+| «Значение терма записи» | `flang/self/proof-record.flang` | the value of a closed term in the proof record |
+
+The ledger and the proof record (`--record`) are built from these answers, so
+both come from the cache.
+
+## The key
+
+The key of an entry is sha256 of:
+
+- the fingerprint of the binary itself: sha256 of `/proc/self/exe`. The kernel,
+  the table of inference rules, the kernel version and the runtime are printed
+  into the binary, and changing any of them changes the fingerprint;
+- the function name;
+- the EXACT bytes of every argument of the call, in the same encoding the
+  in-run call memory compares them with
+  ([ADR-0051](../adr/0051-the-proof-kernel-remembers-pure-calls-within-one-run.md)):
+  the kind of value, a number in all 64 bits, the length and bytes of a string,
+  field names and values in order. Places (`span`) are part of the key as they
+  are.
+
+The functions are pure: the answer is a function of the arguments. A hit gives
+exactly what the kernel would compute on the same bytes.
+
+## Narrowing: what one obligation depends on
+
+Given the whole program, the key of each obligation would depend on the whole
+program, and a one-line edit would miss the entire cache. So the kernel
+computes an obligation on a NARROWED program:
+
+1. The runtime (`proof_closures` in `flang/src/emit/c/flang_repl.c`) collects a
+   closure for every obligation: every string of the obligation node, the
+   declarations with such names among `functions`, `types`, `statements`,
+   `theorems` (a type is named by its own name and the names of its variants),
+   their strings, and so on to a fixed point. It hands the kernel the numbers
+   of the declarations in ascending order.
+2. The kernel («Сужение замкнуто») DOES NOT TRUST the runtime and checks for
+   itself: the numbers strictly grow and lie inside the program, and every
+   reference of every taken declaration and of the obligation itself is inside
+   the set. If not, the obligation is computed on the whole program and without
+   the cache ("без сужения" in the `FLANG_PROOF_CACHE_STATS` line).
+3. The narrowed program is the same record with four fields replaced by the
+   taken declarations in their original order. Of the facts already proved,
+   those of the set's functions remain; of the example runs, those of the set's
+   functions; the list of unpaid `требует` goes whole.
+
+The kernel computes on the narrowed program on a hit and on a miss alike, so a
+cold and a warm run with the cache answer the same. Whether the narrowed
+answer equals the whole-program answer is checked by `FLANG_PROOF_CACHE_AUDIT=1`.
+
+## Why a hit never lets a false proof through
+
+- **A hit is a recomputation of the same bytes.** The key covers every argument
+  of a pure function and the binary itself, so an entry with this key can only
+  come from the same computation. What remains is the assumption that sha256
+  resists collisions.
+- **Narrowing is sound by construction.** The taken declarations are the
+  program's declarations byte for byte, the set is closed under references, and
+  all declarations of one name are in it. A derivation on a subprogram where
+  every mentioned name resolves as it does in the whole program is a
+  derivation in the whole program too.
+- **A file is not taken on trust.** Every cache file is signed with HMAC-SHA256
+  under the machine's key (`~/.config/flang/proof-cache.key`, 32 random bytes,
+  mode 0600; the binary's fingerprint is part of the signed text). A corrupted,
+  truncated or foreign file is refused whole, with a line in stderr, and
+  everything in it is computed again.
+- **The independent checker.** After `flang check --proof --record` with hits
+  the record is checked by `flang/proof/checker/сверщик` by default, and its
+  exit code is compared with its code on a record of the same file taken
+  without hits. If it turned into "НЕ СОШЛОСЬ" where it was otherwise without
+  the cache, the file's cache is removed and the run is repeated without it.
+  The checker rereads the source itself but not everything: it leaves reduction
+  rule names and "по свойству" steps "on the kernel's word"
+  (`docs/flang/proof/checker/README.md`), so only `FLANG_MEMO_AUDIT=1` rechecks
+  in full.
 
 ## Where it lives
 
-The mechanism is split across two layers, and the boundary between them is the
-rule of trust.
-
-- **The kernel computes and compares the key** — `flang/self/proofterm.flang`:
-  the functions «Основа кеша», «Ключ кеша», «Из кеша», «Спросить кеш», «Сложить
-  в кеш» and «Проверить доказательства с кешем». The rule by which a verdict is
-  recognised as one's own does not leave the kernel.
-- **The runtime stores the file** — `flang/src/emit/c/flang_repl.c` (the
-  variable `FLANG_KESH_PRIGOVOROV`, the function `kesh_stamp_read`). It reads
-  the cache file, hands it to the kernel as data together with the fingerprint
-  of the binary itself, and after the judgement writes the updated cache back.
-  The runtime neither sees nor computes the key.
-- **The fingerprint** — «Отпечаток 256 текста» in `flang/self/proof-record.flang`:
-  sha256 through the language's built-in word `хеш256`.
-
-The cache file is JSON: entries are laid out in buckets («Номер корзины» in
-`proofterm.flang`), each entry carries the key under `k` and the verdict under
-`v`.
-
-## How to invoke it
-
-```sh
-FLANG_KESH_PRIGOVOROV=/path/to/cache.json flang check program.flang
-FLANG_KESH_PRIGOVOROV=/path/to/cache.json flang emit program.flang --target c
-FLANG_KESH_PRIGOVOROV=/path/to/cache.json sh scripts/bootstrap-reprint.sh
+```
+.flang-cache/proofs/<16 chars of the binary fingerprint>/<16 chars of sha256 of the entry path>/
+  <pid>-<time>.seg     entries: key digest, steps, depth, answer, signature at the end
+  checker              the checker's code on the last record without hits, signed
 ```
 
-Variable not set — the cache is off, and the kernel takes its former road. The
-binary could not read itself (no checker fingerprint) — the cache is off too: a
-key without the fingerprint would hand out someone else's verdicts silently.
+One directory per binary and per entry file. A run reads every `.seg` file of
+its directory and at the end writes one new file — the entries it took and the
+entries it computed — and removes the files it read. Entries this file does not
+need go away. A file is written under a temporary name and renamed, so two runs
+on one file at once spoil nothing for each other: at worst two whole files
+remain, and the next run merges them.
 
-While the cache is on, every run reports its work in one line on stderr:
+The steps and the depth of a call are stored with the answer and charged on a
+hit, as with the in-run call memory: a hit does not hide the step limit.
 
-```
-кеш приговоров: спросов 1, попаданий 1, промахов 0, доля попаданий 100.0 %
-```
+## Checked by forgery
 
-(asked 1, hits 1, misses 0, hit share 100.0 %). Hits are counted by the kernel
-(«Спросить кеш»); the runtime only prints the count. To measure time by stage
-there is `FLANG_VITKI=1`: it prints to stderr the number of evaluator steps for
-each call into the kernel (`витки: <call name> <number>`).
+`bootstrap/flang run-script proof-cache:forgery`
+(`scripts/guards/proof-cache-forgeries.fscript`, the `proof-cache` job in CI)
+warms the cache on a small program, edits it and demands that the run with the
+cache answers exactly as the run without it:
 
-There is no cache on the `--proof` road: the proof report is built apart from
-the kernel's judgement, and verdicts there are computed anew. Compare a run
-with the cache against one without by printing (`flang emit`) or by
-`flang check` without `--proof`.
-
-## What is in the key
-
-«Вердикт без теоремы» in the kernel is a pure function of three arguments: the
-obligation, the program, and the facts already paid for. The key covers exactly
-those and the code that reads them. The part shared by the whole program
-(«Основа кеша»):
-
-| What | Where from |
-|---|---|
-| checker fingerprint | sha256 of the compiler binary itself |
-| version of the kernel's term format | «Версия ядра» |
-| all functions of the program — bodies, postconditions, preconditions | the field `functions` |
-| type declarations | the field `types` |
-| law declarations | the fields `monoids`, `monads`, `isomorphisms`, `intersections`, `embeddings` |
-| the list of unpaid `требует` | «Оплаченное».«неоплаченные» |
-
-The part per obligation («Ключ кеша»): the obligation node and the set of facts
-already proved («Оплаченное».«доказанные»). Positions are stripped from the
-nodes before printing («Значение без мест рекурсивно»): a shift of lines in the
-file does not miss the cache.
-
-All parts are printed as a string and folded with sha256. The former polynomial
-fingerprint was replaced: it is linear in character codes, two different
-obligations with one key can be constructed on purpose, and a cache with such a
-key hands "proved" to what the kernel without a cache refuses.
-
-Two decisions in the key are named together with their price:
-
-- **The checker fingerprint is of the binary, not of the sources.** Two
-  binaries on one tree with a different kernel rule pass different verdicts; a
-  key over the tree would hand one binary's verdicts to the other. This is
-  checked by `second-kernel.sh`.
-- **Functions are taken as the whole list, not as the call closure.** The list
-  is handed to the kernel whole, and normalisation may unfold any function;
-  narrowing the key to the closure is allowed only after proving that unfolding
-  does not leave it. The price: editing any function of a program misses its
-  whole cache.
-
-## Instruments
-
-Everything lies in `docs/benchmarks/verdict-cache/`:
-
-```sh
-sh docs/benchmarks/verdict-cache/probes.sh <binary> [<second binary>]
-sh docs/benchmarks/verdict-cache/second-kernel.sh [<where to build>]
-sh docs/benchmarks/verdict-cache/three-prints.sh [<working directory>]
-```
-
-- `probes.sh` asks four questions and answers each with a number: does the
-  printing of several programs with and without the cache match to the last byte;
-  does the cache miss when the body of a called function is edited while the
-  function with the postcondition is untouched (`cache-probe.flang` and a corrupted
-  copy produced from it by one line of `sed`); does it hit when the sound one
-  is restored; does a second kernel answer on someone else's cache exactly what
-  it answers on an empty one.
-- `second-kernel.sh` builds from `bootstrap/` a second binary whose printed seed
-  has one kernel rule rewritten («Предел ветвления»); the source tree is not
-  changed.
-- `three-prints.sh` reprints the compiler with `scripts/bootstrap-reprint.sh` three
-  times — without the cache, with a cold one, with a hot one — and compares
-  the seed after each printing with the printing without the cache. This takes
-  hours.
-- `cache.insert` is the inserted
-  piece of the kernel in flang; the extension is not `.flang` on purpose,
-  because it is a piece of a module, not a module.
-
-## The neighbouring directory
-
-`benchmarks/кеш-доказанного/` (removed on 11 September 2026; last state: `git show b5fcb2ae4:benchmarks/кеш-доказанного/`) was earlier work on the same phenomenon: the
-instrument `прибор.c` computes the key and gives the probes something to refute
-it with, but stores nothing; its key is narrower (bodies of called functions
-are taken as the closure of the call graph). The cache that reads and writes a
-file and substitutes the verdict for a repeated judgement is only here.
+- only the body of the called function is edited;
+- only the promise of the called function is edited;
+- an imported module is edited;
+- another binary (the kernel and the rules table are printed into it): not one
+  entry is taken from disk;
+- a byte of a cache file is spoiled: the signature fails, the file is refused;
+- the file is signed with a foreign key: refused;
+- a run with `FLANG_PROOF_CACHE_AUDIT=1` and `FLANG_MEMO_AUDIT=1`: every hit is
+  recomputed, and the narrowed answer equals the whole-program answer.

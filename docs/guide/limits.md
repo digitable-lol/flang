@@ -79,14 +79,15 @@ name. Write `случай вариант «Да»`, or rename the variant.
 **Side effects work through `план` only.** A function never reads a file
 itself: it returns a command as data (`вариант «Прочитать файл» с путь равным
 …`), and `flang io` executes it and calls the function again with the
-response. There are 24 commands, and the list is closed: <!-- СНЯТО 2026-10-04 список flang/self/parser.flang:5985 = 24 -->
+response. There are 25 commands, and the list is closed: <!-- СНЯТО 2026-10-04 список flang/self/parser.flang:5985 = 24 -->
 read and write a file as text and as bytes, delete a file, make a temporary
 directory, list a directory, make an HTTP request, open and accept a
 connection, read and write a connection as text and as bytes, start a process
 with or without input, show on the screen, wait for an event, get the screen
-size, read the clock, get a random number, read an environment variable, read
-the command-line arguments. The list is the function `«Варианты поручения»` in
-`flang/self/parser.flang`, and a postcondition there fixes its length at 23.
+size, read the clock, get a random number, get random octets, read an
+environment variable, read the command-line arguments. The list is the function
+`«Варианты поручения»` in `flang/self/parser.flang`, and a postcondition there
+fixes its length at 25.
 Reading invalid UTF-8 as text fails with `FLANG_IO_NOT_TEXT`; read binary
 files as bytes.
 

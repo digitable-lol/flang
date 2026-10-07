@@ -4358,23 +4358,6 @@ static fl_status fl_order(fl_ctx *ctx, fl_value left, fl_value right, fl_error *
   return FL_OK;
 }
 
-/*
- * ───────────────────── точное целое: разряды основания 2²² ─────────────────────
- *
- * Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание 2²².
- * Выбор представления — задача 1411, решение — ADR-0036 §11; складывает разряды
- * вычислитель в `flang/self/interpret.flang` («Основание разрядов» и ниже).
- *
- * Отличать точное целое от обычного списка по ТИПУ здесь нечем: напечатанная
- * программа типов не носит, а вычислитель и сам смотрит только на вид значения
- * («Сложение знач»: оба операнда — списки чисел). Поэтому правило ниже такое же
- * динамическое, и расхождения между вычислителем и печатью не возникает.
- *
- * Путей в вычислителе ДВА, и слить их в один нельзя. Разряд вне [0, 2²²)
- * законен — собственный пример вычислителя подаёт [4194305], — а на таких
- * разрядах быстрый путь (до двух разрядов, машинным сложением) и общий путь
- * (перенос по столбцам) дают РАЗНЫЙ ответ. Переписаны оба, порознь.
- */
 #define FL_EXACT_BASE 4194304.0
 
 /* «Разряды ли знач»: список, и каждый элемент — число. Пустой список годится. */
@@ -4389,14 +4372,6 @@ static bool fl_exact_digits(fl_value value) {
     }
   }
   return true;
-}
-
-/* «Разряд точного»: номер с единицы, за концом списка — ноль. */
-static double fl_exact_digit(fl_value value, size_t number) {
-  if (number < 1 || number > value.as.list.count) {
-    return 0.0;
-  }
-  return value.as.list.items[number - 1].as.number;
 }
 
 /* «Срезать старшие нули»: старший разряд стоит в конце. */
@@ -4418,11 +4393,6 @@ static size_t fl_exact_small_digits(double value, double *out) {
   return fl_exact_trim(out, 3);
 }
 
-/* «Значение малых разрядов»: два младших разряда — машинным числом. */
-static double fl_exact_small_value(fl_value value) {
-  return fl_exact_digit(value, 1) + fl_exact_digit(value, 2) * FL_EXACT_BASE;
-}
-
 /*
  * «Уложить разряды»: перенос по столбцам, затем разряды переноса сверху.
  * Читает columns[i] до записи out[i], поэтому зовётся и на месте (out == columns).
@@ -4440,44 +4410,374 @@ static size_t fl_exact_settle(const double *columns, size_t count, double *out) 
   return fl_exact_trim(out, count + fl_exact_small_digits(carry, out + count));
 }
 
-/* «Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы и перенос. */
-static size_t fl_exact_sum(fl_value left, fl_value right, double *out) {
-  size_t wide;
-  size_t index;
-  if (left.as.list.count <= 2 && right.as.list.count <= 2) {
-    return fl_exact_small_digits(fl_exact_small_value(left) + fl_exact_small_value(right), out);
-  }
-  wide = left.as.list.count > right.as.list.count ? left.as.list.count : right.as.list.count;
-  for (index = 0; index < wide; index++) {
-    out[index] = fl_exact_digit(left, index + 1) + fl_exact_digit(right, index + 1);
-  }
-  return fl_exact_settle(out, wide, out);
-}
+typedef struct {
+  double *d;
+  size_t n;
+} fl_nat;
 
-/* «Точное сложение». Витков не тратит — так же, как в вычислителе. */
-static fl_status fl_exact_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
-  size_t room = (left.as.list.count > right.as.list.count ? left.as.list.count : right.as.list.count) + 3;
-  double *digits;
-  fl_value *items;
-  size_t count;
+static fl_status fl_nat_room(fl_ctx *ctx, size_t room, fl_nat *out, fl_error *error) {
   size_t index;
-  if (room > ((size_t)-1) / sizeof(double)) {
+  if (room > ((size_t)-1) / sizeof(double) - 4) {
     return fl_no_memory(error);
   }
-  digits = (double *)fl_arena_alloc(ctx->arena, room * sizeof(double));
-  if (digits == NULL) {
+  out->d = (double *)fl_arena_alloc(ctx->arena, (room + 4) * sizeof(double));
+  if (out->d == NULL) {
     return fl_no_memory(error);
   }
-  count = fl_exact_sum(left, right, digits);
-  FL_TRY(fl_list_alloc(ctx, count, &items, error));
-  for (index = 0; index < count; index++) {
-    items[index] = fl_number(digits[index]);
+  for (index = 0; index < room + 4; index++) {
+    out->d[index] = 0.0;
   }
-  *out = fl_list(items, count);
+  out->n = 0;
   return FL_OK;
 }
 
+static fl_status fl_nat_canon(fl_ctx *ctx, fl_value value, fl_nat *out, fl_error *error) {
+  size_t count = value.as.list.count;
+  size_t index;
+  FL_TRY(fl_nat_room(ctx, count, out, error));
+  for (index = 0; index < count; index++) {
+    out->d[index] = value.as.list.items[index].as.number;
+  }
+  out->n = fl_exact_settle(out->d, count, out->d);
+  return FL_OK;
+}
+
+static fl_status fl_nat_value(fl_ctx *ctx, fl_nat nat, fl_value *out, fl_error *error) {
+  fl_value *items = NULL;
+  size_t index;
+  FL_TRY(fl_list_alloc(ctx, nat.n, &items, error));
+  for (index = 0; index < nat.n; index++) {
+    items[index] = fl_number(nat.d[index]);
+  }
+  *out = fl_list(items, nat.n);
+  return FL_OK;
+}
+
+static int fl_nat_cmp(fl_nat left, fl_nat right) {
+  size_t index;
+  if (left.n != right.n) {
+    return left.n < right.n ? -1 : 1;
+  }
+  for (index = left.n; index > 0; index--) {
+    if (left.d[index - 1] != right.d[index - 1]) {
+      return left.d[index - 1] < right.d[index - 1] ? -1 : 1;
+    }
+  }
+  return 0;
+}
+
+static fl_status fl_nat_add(fl_ctx *ctx, fl_nat left, fl_nat right, fl_nat *out, fl_error *error) {
+  size_t wide = left.n > right.n ? left.n : right.n;
+  size_t index;
+  FL_TRY(fl_nat_room(ctx, wide, out, error));
+  for (index = 0; index < wide; index++) {
+    out->d[index] = (index < left.n ? left.d[index] : 0.0) + (index < right.n ? right.d[index] : 0.0);
+  }
+  out->n = fl_exact_settle(out->d, wide, out->d);
+  return FL_OK;
+}
+
+static fl_status fl_nat_sub(fl_ctx *ctx, fl_nat left, fl_nat right, fl_nat *out, fl_error *error) {
+  double borrow = 0.0;
+  size_t index;
+  FL_TRY(fl_nat_room(ctx, left.n, out, error));
+  for (index = 0; index < left.n; index++) {
+    double column = left.d[index] - (index < right.n ? right.d[index] : 0.0) - borrow;
+    borrow = column < 0.0 ? 1.0 : 0.0;
+    out->d[index] = column < 0.0 ? column + FL_EXACT_BASE : column;
+  }
+  out->n = fl_exact_trim(out->d, left.n);
+  return FL_OK;
+}
+
+static fl_status fl_nat_mul_small(fl_ctx *ctx, fl_nat left, double factor, fl_nat *out, fl_error *error) {
+  size_t index;
+  FL_TRY(fl_nat_room(ctx, left.n, out, error));
+  for (index = 0; index < left.n; index++) {
+    out->d[index] = left.d[index] * factor;
+  }
+  out->n = fl_exact_settle(out->d, left.n, out->d);
+  return FL_OK;
+}
+
+static fl_status fl_nat_mul(fl_ctx *ctx, fl_nat left, fl_nat right, fl_nat *out, fl_error *error) {
+  size_t wide = left.n + right.n;
+  size_t row;
+  size_t column;
+  FL_TRY(fl_nat_room(ctx, wide, out, error));
+  if (left.n == 0 || right.n == 0) {
+    return FL_OK;
+  }
+  for (row = 0; row < left.n; row++) {
+    for (column = 0; column < right.n; column++) {
+      out->d[row + column] += left.d[row] * right.d[column];
+    }
+    out->n = fl_exact_settle(out->d, wide, out->d);
+  }
+  return FL_OK;
+}
+
+static fl_status fl_nat_divmod(fl_ctx *ctx, fl_nat left, fl_nat right, fl_nat *quotient, fl_nat *rest,
+                               fl_error *error) {
+  size_t place;
+  FL_TRY(fl_nat_room(ctx, left.n, quotient, error));
+  if (right.n == 0) {
+    *rest = left;
+    return FL_OK;
+  }
+  FL_TRY(fl_nat_room(ctx, 0, rest, error));
+  for (place = left.n; place > 0; place--) {
+    fl_nat current;
+    fl_nat taken;
+    double low = 0.0;
+    double high = FL_EXACT_BASE - 1.0;
+    size_t index;
+    FL_TRY(fl_nat_room(ctx, rest->n + 1, &current, error));
+    current.d[0] = left.d[place - 1];
+    for (index = 0; index < rest->n; index++) {
+      current.d[index + 1] = rest->d[index];
+    }
+    current.n = fl_exact_trim(current.d, rest->n + 1);
+    while (low < high) {
+      double middle = floor((low + high + 1.0) / 2.0);
+      FL_TRY(fl_nat_mul_small(ctx, right, middle, &taken, error));
+      if (fl_nat_cmp(current, taken) < 0) {
+        high = middle - 1.0;
+      } else {
+        low = middle;
+      }
+    }
+    quotient->d[place - 1] = low;
+    FL_TRY(fl_nat_mul_small(ctx, right, low, &taken, error));
+    FL_TRY(fl_nat_sub(ctx, current, taken, rest, error));
+  }
+  quotient->n = fl_exact_trim(quotient->d, left.n);
+  return FL_OK;
+}
+
+static fl_status fl_nat_gcd(fl_ctx *ctx, fl_nat left, fl_nat right, fl_nat *out, fl_error *error) {
+  while (right.n > 0) {
+    fl_nat quotient;
+    fl_nat rest;
+    FL_TRY(fl_nat_divmod(ctx, left, right, &quotient, &rest, error));
+    left = right;
+    right = rest;
+  }
+  *out = left;
+  return FL_OK;
+}
+
+static const char *fl_nat_text(fl_ctx *ctx, fl_nat nat) {
+  char *text;
+  size_t used = 0;
+  size_t index;
+  text = (char *)fl_arena_alloc(ctx->arena, nat.n * 32 + 3);
+  if (text == NULL) {
+    return "[]";
+  }
+  text[used++] = '[';
+  for (index = 0; index < nat.n; index++) {
+    used += (size_t)sprintf(text + used, "%s%.0f", index ? ", " : "", nat.d[index]);
+  }
+  text[used++] = ']';
+  text[used] = '\0';
+  return text;
+}
+
+static bool fl_exact_fraction(fl_value value) {
+  return value.tag == FL_LIST && value.as.list.count == 2 && fl_exact_digits(value.as.list.items[0]) &&
+         fl_exact_digits(value.as.list.items[1]);
+}
+
+static fl_status fl_frac_parts(fl_ctx *ctx, fl_value value, fl_nat *top, fl_nat *bottom, fl_error *error) {
+  FL_TRY(fl_nat_canon(ctx, value.as.list.items[0], top, error));
+  return fl_nat_canon(ctx, value.as.list.items[1], bottom, error);
+}
+
+static fl_status fl_frac_value(fl_ctx *ctx, fl_nat top, fl_nat bottom, fl_value *out, fl_error *error) {
+  fl_value *items = NULL;
+  fl_nat common;
+  fl_nat reduced_top;
+  fl_nat reduced_bottom;
+  fl_nat rest;
+  FL_TRY(fl_list_alloc(ctx, 2, &items, error));
+  if (top.n == 0) {
+    FL_TRY(fl_nat_room(ctx, 1, &reduced_bottom, error));
+    reduced_bottom.d[0] = 1.0;
+    reduced_bottom.n = 1;
+    FL_TRY(fl_nat_value(ctx, top, &items[0], error));
+    FL_TRY(fl_nat_value(ctx, reduced_bottom, &items[1], error));
+    *out = fl_list(items, 2);
+    return FL_OK;
+  }
+  FL_TRY(fl_nat_gcd(ctx, top, bottom, &common, error));
+  FL_TRY(fl_nat_divmod(ctx, top, common, &reduced_top, &rest, error));
+  FL_TRY(fl_nat_divmod(ctx, bottom, common, &reduced_bottom, &rest, error));
+  FL_TRY(fl_nat_value(ctx, reduced_top, &items[0], error));
+  FL_TRY(fl_nat_value(ctx, reduced_bottom, &items[1], error));
+  *out = fl_list(items, 2);
+  return FL_OK;
+}
+
+static const char *fl_frac_text(fl_ctx *ctx, fl_nat top, fl_nat bottom) {
+  const char *upper = fl_nat_text(ctx, top);
+  const char *lower = fl_nat_text(ctx, bottom);
+  char *text = (char *)fl_arena_alloc(ctx->arena, strlen(upper) + strlen(lower) + 16);
+  if (text == NULL) {
+    return upper;
+  }
+  sprintf(text, "%s над %s", upper, lower);
+  return text;
+}
+
+static fl_status fl_exact_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a;
+  fl_nat b;
+  fl_nat sum;
+  FL_TRY(fl_nat_canon(ctx, left, &a, error));
+  FL_TRY(fl_nat_canon(ctx, right, &b, error));
+  FL_TRY(fl_nat_add(ctx, a, b, &sum, error));
+  return fl_nat_value(ctx, sum, out, error);
+}
+
+static fl_status fl_exact_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a;
+  fl_nat b;
+  fl_nat difference;
+  FL_TRY(fl_nat_canon(ctx, left, &a, error));
+  FL_TRY(fl_nat_canon(ctx, right, &b, error));
+  if (fl_nat_cmp(a, b) < 0) {
+    return fl_fail(ctx, error, FL_CODE_PROPERTY,
+                   "точное целое ниже нуля значений не имеет: %s минус %s; молчаливый ноль запрещён",
+                   fl_nat_text(ctx, a), fl_nat_text(ctx, b));
+  }
+  FL_TRY(fl_nat_sub(ctx, a, b, &difference, error));
+  return fl_nat_value(ctx, difference, out, error);
+}
+
+static fl_status fl_exact_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a;
+  fl_nat b;
+  fl_nat product;
+  FL_TRY(fl_nat_canon(ctx, left, &a, error));
+  FL_TRY(fl_nat_canon(ctx, right, &b, error));
+  FL_TRY(fl_nat_mul(ctx, a, b, &product, error));
+  return fl_nat_value(ctx, product, out, error);
+}
+
+static fl_status fl_exact_mod(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a;
+  fl_nat b;
+  fl_nat quotient;
+  fl_nat rest;
+  FL_TRY(fl_nat_canon(ctx, left, &a, error));
+  FL_TRY(fl_nat_canon(ctx, right, &b, error));
+  if (b.n == 0) {
+    return fl_fail(ctx, error, FL_CODE_PROPERTY, "остаток от нулевого точного целого не определён: %s остаток от 0",
+                   fl_nat_text(ctx, a));
+  }
+  FL_TRY(fl_nat_divmod(ctx, a, b, &quotient, &rest, error));
+  return fl_nat_value(ctx, rest, out, error);
+}
+
+static fl_status fl_exact_compare(fl_ctx *ctx, fl_value left, fl_value right, int *out, fl_error *error) {
+  fl_nat a;
+  fl_nat b;
+  FL_TRY(fl_nat_canon(ctx, left, &a, error));
+  FL_TRY(fl_nat_canon(ctx, right, &b, error));
+  *out = fl_nat_cmp(a, b);
+  return FL_OK;
+}
+
+static fl_status fl_frac_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a, b, c, d, ad, cb, top, bottom;
+  FL_TRY(fl_frac_parts(ctx, left, &a, &b, error));
+  FL_TRY(fl_frac_parts(ctx, right, &c, &d, error));
+  FL_TRY(fl_nat_mul(ctx, a, d, &ad, error));
+  FL_TRY(fl_nat_mul(ctx, c, b, &cb, error));
+  FL_TRY(fl_nat_add(ctx, ad, cb, &top, error));
+  FL_TRY(fl_nat_mul(ctx, b, d, &bottom, error));
+  return fl_frac_value(ctx, top, bottom, out, error);
+}
+
+static fl_status fl_frac_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a, b, c, d, ad, cb, top, bottom;
+  FL_TRY(fl_frac_parts(ctx, left, &a, &b, error));
+  FL_TRY(fl_frac_parts(ctx, right, &c, &d, error));
+  FL_TRY(fl_nat_mul(ctx, a, d, &ad, error));
+  FL_TRY(fl_nat_mul(ctx, c, b, &cb, error));
+  if (fl_nat_cmp(ad, cb) < 0) {
+    return fl_fail(ctx, error, FL_CODE_PROPERTY,
+                   "точное дробное ниже нуля значений не имеет: %s минус %s; молчаливый ноль запрещён",
+                   fl_frac_text(ctx, a, b), fl_frac_text(ctx, c, d));
+  }
+  FL_TRY(fl_nat_sub(ctx, ad, cb, &top, error));
+  FL_TRY(fl_nat_mul(ctx, b, d, &bottom, error));
+  return fl_frac_value(ctx, top, bottom, out, error);
+}
+
+static fl_status fl_frac_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a, b, c, d, top, bottom;
+  FL_TRY(fl_frac_parts(ctx, left, &a, &b, error));
+  FL_TRY(fl_frac_parts(ctx, right, &c, &d, error));
+  FL_TRY(fl_nat_mul(ctx, a, c, &top, error));
+  FL_TRY(fl_nat_mul(ctx, b, d, &bottom, error));
+  return fl_frac_value(ctx, top, bottom, out, error);
+}
+
+static fl_status fl_frac_div(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  fl_nat a, b, c, d, top, bottom;
+  FL_TRY(fl_frac_parts(ctx, left, &a, &b, error));
+  FL_TRY(fl_frac_parts(ctx, right, &c, &d, error));
+  if (c.n == 0) {
+    return fl_fail(ctx, error, FL_CODE_PROPERTY, "деление на нулевую дробь не определено: %s делить на %s",
+                   fl_frac_text(ctx, a, b), fl_frac_text(ctx, c, d));
+  }
+  FL_TRY(fl_nat_mul(ctx, a, d, &top, error));
+  FL_TRY(fl_nat_mul(ctx, b, c, &bottom, error));
+  return fl_frac_value(ctx, top, bottom, out, error);
+}
+
+static fl_status fl_frac_compare(fl_ctx *ctx, fl_value left, fl_value right, int *out, fl_error *error) {
+  fl_nat a, b, c, d, ad, cb;
+  FL_TRY(fl_frac_parts(ctx, left, &a, &b, error));
+  FL_TRY(fl_frac_parts(ctx, right, &c, &d, error));
+  FL_TRY(fl_nat_mul(ctx, a, d, &ad, error));
+  FL_TRY(fl_nat_mul(ctx, c, b, &cb, error));
+  *out = fl_nat_cmp(ad, cb);
+  return FL_OK;
+}
+
+static fl_status fl_exact_order(fl_ctx *ctx, fl_value left, fl_value right, bool *exact, int *out, fl_error *error) {
+  *exact = true;
+  if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
+    return fl_frac_compare(ctx, left, right, out, error);
+  }
+  if (fl_exact_digits(left) && fl_exact_digits(right)) {
+    return fl_exact_compare(ctx, left, right, out, error);
+  }
+  *exact = false;
+  return fl_order(ctx, left, right, error);
+}
+
+fl_status fl_b_integer_part(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error) {
+  fl_nat top;
+  fl_nat bottom;
+  fl_nat quotient;
+  fl_nat rest;
+  if (!fl_exact_fraction(value)) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS, "«целая часть»: аргумент должен быть точным дробным, получено %s",
+                   fl_type_name(ctx, value));
+  }
+  FL_TRY(fl_frac_parts(ctx, value, &top, &bottom, error));
+  FL_TRY(fl_nat_divmod(ctx, top, bottom, &quotient, &rest, error));
+  return fl_nat_value(ctx, quotient, out, error);
+}
+
 fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
+    return fl_frac_add(ctx, left, right, out, error);
+  }
   if (fl_exact_digits(left) && fl_exact_digits(right)) {
     return fl_exact_add(ctx, left, right, out, error);
   }
@@ -4487,27 +4787,43 @@ fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_e
 }
 
 fl_status fl_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
+    return fl_frac_sub(ctx, left, right, out, error);
+  }
+  if (fl_exact_digits(left) && fl_exact_digits(right)) {
+    return fl_exact_sub(ctx, left, right, out, error);
+  }
   FL_TRY(fl_numbers(ctx, "sub", left, right, error));
   *out = fl_number(left.as.number - right.as.number);
   return FL_OK;
 }
 
 fl_status fl_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
+    return fl_frac_mul(ctx, left, right, out, error);
+  }
+  if (fl_exact_digits(left) && fl_exact_digits(right)) {
+    return fl_exact_mul(ctx, left, right, out, error);
+  }
   FL_TRY(fl_numbers(ctx, "mul", left, right, error));
   *out = fl_number(left.as.number * right.as.number);
   return FL_OK;
 }
 
-/* Деление на ноль даёт Infinity — это значение IEEE-754, а не ошибка. */
 fl_status fl_div(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
+    return fl_frac_div(ctx, left, right, out, error);
+  }
   FL_TRY(fl_numbers(ctx, "div", left, right, error));
   *out = fl_number(left.as.number / right.as.number);
   return FL_OK;
 }
 
 fl_status fl_mod(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
+  if (fl_exact_digits(left) && fl_exact_digits(right)) {
+    return fl_exact_mod(ctx, left, right, out, error);
+  }
   FL_TRY(fl_numbers(ctx, "mod", left, right, error));
-  /* Оператор % в JS для чисел — это fmod: знак от делимого, без округления. */
   *out = fl_number(fmod(left.as.number, right.as.number));
   return FL_OK;
 }
@@ -4521,26 +4837,34 @@ fl_status fl_percent(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, 
 }
 
 fl_status fl_gt(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
-  FL_TRY(fl_order(ctx, left, right, error));
-  *out = fl_flag(left.as.number > right.as.number);
+  bool exact = false;
+  int order = 0;
+  FL_TRY(fl_exact_order(ctx, left, right, &exact, &order, error));
+  *out = fl_flag(exact ? order > 0 : left.as.number > right.as.number);
   return FL_OK;
 }
 
 fl_status fl_lt(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
-  FL_TRY(fl_order(ctx, left, right, error));
-  *out = fl_flag(left.as.number < right.as.number);
+  bool exact = false;
+  int order = 0;
+  FL_TRY(fl_exact_order(ctx, left, right, &exact, &order, error));
+  *out = fl_flag(exact ? order < 0 : left.as.number < right.as.number);
   return FL_OK;
 }
 
 fl_status fl_gte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
-  FL_TRY(fl_order(ctx, left, right, error));
-  *out = fl_flag(left.as.number >= right.as.number);
+  bool exact = false;
+  int order = 0;
+  FL_TRY(fl_exact_order(ctx, left, right, &exact, &order, error));
+  *out = fl_flag(exact ? order >= 0 : left.as.number >= right.as.number);
   return FL_OK;
 }
 
 fl_status fl_lte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error) {
-  FL_TRY(fl_order(ctx, left, right, error));
-  *out = fl_flag(left.as.number <= right.as.number);
+  bool exact = false;
+  int order = 0;
+  FL_TRY(fl_exact_order(ctx, left, right, &exact, &order, error));
+  *out = fl_flag(exact ? order <= 0 : left.as.number <= right.as.number);
   return FL_OK;
 }
 

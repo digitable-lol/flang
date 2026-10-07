@@ -15,7 +15,7 @@
 # Рантайм берётся НЕ из дерева, а из вывода `flang emit`: пробе нужны те байты,
 # которые цель получает на руки. Печатается программа на точном целом, а если
 # двоичный этого слова ещё не знает — простая, только ради рантайма; тогда у
-# целей «js» и «ts» напечатанного `$exactSum` не будет, и они честно «skip».
+# целей «js» и «ts» напечатанного `$exactCanon` не будет, и они честно «skip».
 
 KOREN := $(abspath ../../../..)
 FLANG := $(KOREN)/bootstrap/flang
@@ -48,7 +48,7 @@ endef
 
 # Есть ли в напечатанном рантайме JS сложение разрядов.
 define EST_JS
-grep -q exactSum "$$d/p/flang_runtime.js" 2> /dev/null || { printf 'skip\t$(BEZSEMENI)\n'; exit 0; };
+grep -q exactCanon "$$d/p/flang_runtime.js" 2> /dev/null || { printf 'skip\t$(BEZSEMENI)\n'; exit 0; };
 endef
 
 .PHONY: c cpp python go java csharp rust elixir js ts

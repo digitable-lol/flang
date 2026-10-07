@@ -59,6 +59,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math"
+	"math/big"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -681,26 +682,6 @@ func ordered(left, right Value) (float64, float64, error) {
 	return left.Num, right.Num, nil
 }
 
-// ─────────────────── точное целое: разряды основания 2²² ───────────────────
-//
-// Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание 2²².
-// Представление выбрано задачей 1411, решение — ADR-0036 §11; складывает разряды
-// вычислитель в `flang/self/interpret.flang` («Основание разрядов» и ниже).
-//
-// Отличать точное целое от обычного списка по типу здесь нечем: напечатанная
-// программа типов не носит, и вычислитель сам смотрит только на вид значения
-// («Сложение знач»: оба операнда — списки чисел). Правило ниже такое же
-// динамическое, поэтому печать и вычислитель не расходятся.
-//
-// Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
-// собственный пример вычислителя подаёт [4194305], — а на таких разрядах
-// быстрый путь (до двух разрядов, машинным сложением) и общий путь (перенос по
-// столбцам) дают РАЗНЫЙ ответ. Переписаны оба, порознь.
-//
-// Считается в float64, а не в math/big: число flang — IEEE-754 double, и точное
-// целое Go разошлось бы с вычислителем на разрядах вне диапазона. Длина растёт
-// списком, поэтому потолка у значения нет и без math/big.
-
 // ExactBase — основание разряда точного целого: 2²².
 const ExactBase = 4194304.0
 
@@ -716,14 +697,6 @@ func exactDigits(value Value) bool {
 		}
 	}
 	return true
-}
-
-// exactDigit — «Разряд точного»: номер с единицы, за концом списка — ноль.
-func exactDigit(digits []float64, place int) float64 {
-	if place < 1 || place > len(digits) {
-		return 0
-	}
-	return digits[place-1]
 }
 
 // exactTrim — «Срезать старшие нули»: старший разряд стоит в конце.
@@ -743,11 +716,6 @@ func exactSmallDigits(value float64) []float64 {
 	return exactTrim([]float64{low, middle, (high - middle) / ExactBase})
 }
 
-// exactSmallValue — «Значение малых разрядов»: два младших машинным числом.
-func exactSmallValue(digits []float64) float64 {
-	return exactDigit(digits, 1) + exactDigit(digits, 2)*ExactBase
-}
-
 // exactSettle — «Уложить разряды»: перенос по столбцам, затем разряды переноса.
 func exactSettle(columns []float64) []float64 {
 	carry := 0.0
@@ -761,23 +729,6 @@ func exactSettle(columns []float64) []float64 {
 	return exactTrim(append(settled, exactSmallDigits(carry)...))
 }
 
-// exactSum — «Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы.
-func exactSum(left, right []float64) []float64 {
-	if len(left) <= 2 && len(right) <= 2 {
-		return exactSmallDigits(exactSmallValue(left) + exactSmallValue(right))
-	}
-	wide := len(left)
-	if len(right) > wide {
-		wide = len(right)
-	}
-	columns := make([]float64, wide)
-	for index := range columns {
-		columns[index] = exactDigit(left, index+1) + exactDigit(right, index+1)
-	}
-	return exactSettle(columns)
-}
-
-// exactPlaces — разряды значения числами Go.
 func exactPlaces(value Value) []float64 {
 	digits := make([]float64, len(value.List))
 	for index, item := range value.List {
@@ -786,20 +737,93 @@ func exactPlaces(value Value) []float64 {
 	return digits
 }
 
-// exactAdd — «Точное сложение». Витков не тратит — как в вычислителе.
-func exactAdd(left, right Value) Value {
-	digits := exactSum(exactPlaces(left), exactPlaces(right))
+var exactBaseBig = big.NewInt(4194304)
+
+func exactCanon(value Value) *big.Int {
+	digits := exactSettle(exactPlaces(value))
+	whole := new(big.Int)
+	for index := len(digits) - 1; index >= 0; index-- {
+		whole.Mul(whole, exactBaseBig)
+		whole.Add(whole, big.NewInt(int64(digits[index])))
+	}
+	return whole
+}
+
+func exactDigitsOf(whole *big.Int) []int64 {
+	rest := new(big.Int).Set(whole)
+	low := new(big.Int)
+	digits := []int64{}
+	for rest.Sign() > 0 {
+		rest.QuoRem(rest, exactBaseBig, low)
+		digits = append(digits, low.Int64())
+	}
+	return digits
+}
+
+func exactValue(whole *big.Int) Value {
+	digits := exactDigitsOf(whole)
 	items := make([]Value, len(digits))
 	for index, digit := range digits {
-		items[index] = Number(digit)
+		items[index] = Number(float64(digit))
 	}
 	return List(items)
 }
 
-// Add — «плюс».
-func Add(ctx *Ctx, left, right Value) (Value, error) {
+func exactText(whole *big.Int) string {
+	digits := exactDigitsOf(whole)
+	parts := make([]string, len(digits))
+	for index, digit := range digits {
+		parts[index] = strconv.FormatInt(digit, 10)
+	}
+	return "[" + strings.Join(parts, ", ") + "]"
+}
+
+func exactFraction(value Value) bool {
+	return value.Tag == TagList && len(value.List) == 2 && exactDigits(value.List[0]) && exactDigits(value.List[1])
+}
+
+func fractionParts(value Value) (*big.Int, *big.Int) {
+	return exactCanon(value.List[0]), exactCanon(value.List[1])
+}
+
+func fractionValue(top, bottom *big.Int) Value {
+	if top.Sign() == 0 {
+		return List([]Value{exactValue(top), exactValue(big.NewInt(1))})
+	}
+	common := new(big.Int).GCD(nil, nil, top, bottom)
+	upper := new(big.Int).Quo(top, common)
+	lower := new(big.Int).Quo(bottom, common)
+	return List([]Value{exactValue(upper), exactValue(lower)})
+}
+
+func fractionText(top, bottom *big.Int) string {
+	return exactText(top) + " над " + exactText(bottom)
+}
+
+func bigMul(left, right *big.Int) *big.Int {
+	return new(big.Int).Mul(left, right)
+}
+
+func exactOrder(left, right Value) (int, bool) {
+	if exactFraction(left) && exactFraction(right) {
+		a, b := fractionParts(left)
+		c, d := fractionParts(right)
+		return bigMul(a, d).Cmp(bigMul(c, b)), true
+	}
 	if exactDigits(left) && exactDigits(right) {
-		return exactAdd(left, right), nil
+		return exactCanon(left).Cmp(exactCanon(right)), true
+	}
+	return 0, false
+}
+
+func Add(ctx *Ctx, left, right Value) (Value, error) {
+	if exactFraction(left) && exactFraction(right) {
+		a, b := fractionParts(left)
+		c, d := fractionParts(right)
+		return fractionValue(new(big.Int).Add(bigMul(a, d), bigMul(c, b)), bigMul(b, d)), nil
+	}
+	if exactDigits(left) && exactDigits(right) {
+		return exactValue(new(big.Int).Add(exactCanon(left), exactCanon(right))), nil
 	}
 	a, b, err := arithmetic("add", left, right)
 	if err != nil {
@@ -808,8 +832,27 @@ func Add(ctx *Ctx, left, right Value) (Value, error) {
 	return Number(a + b), nil
 }
 
-// Sub — «минус».
 func Sub(ctx *Ctx, left, right Value) (Value, error) {
+	if exactFraction(left) && exactFraction(right) {
+		a, b := fractionParts(left)
+		c, d := fractionParts(right)
+		if bigMul(a, d).Cmp(bigMul(c, b)) < 0 {
+			return Nothing(), Fail(CodeProperty,
+				"точное дробное ниже нуля значений не имеет: %s минус %s; молчаливый ноль запрещён",
+				fractionText(a, b), fractionText(c, d))
+		}
+		return fractionValue(new(big.Int).Sub(bigMul(a, d), bigMul(c, b)), bigMul(b, d)), nil
+	}
+	if exactDigits(left) && exactDigits(right) {
+		a := exactCanon(left)
+		b := exactCanon(right)
+		if a.Cmp(b) < 0 {
+			return Nothing(), Fail(CodeProperty,
+				"точное целое ниже нуля значений не имеет: %s минус %s; молчаливый ноль запрещён",
+				exactText(a), exactText(b))
+		}
+		return exactValue(new(big.Int).Sub(a, b)), nil
+	}
 	a, b, err := arithmetic("sub", left, right)
 	if err != nil {
 		return Nothing(), err
@@ -817,8 +860,15 @@ func Sub(ctx *Ctx, left, right Value) (Value, error) {
 	return Number(a - b), nil
 }
 
-// Mul — «умножить на».
 func Mul(ctx *Ctx, left, right Value) (Value, error) {
+	if exactFraction(left) && exactFraction(right) {
+		a, b := fractionParts(left)
+		c, d := fractionParts(right)
+		return fractionValue(bigMul(a, c), bigMul(b, d)), nil
+	}
+	if exactDigits(left) && exactDigits(right) {
+		return exactValue(bigMul(exactCanon(left), exactCanon(right))), nil
+	}
 	a, b, err := arithmetic("mul", left, right)
 	if err != nil {
 		return Nothing(), err
@@ -826,11 +876,16 @@ func Mul(ctx *Ctx, left, right Value) (Value, error) {
 	return Number(a * b), nil
 }
 
-// Div — «делить на». Деление на ноль даёт ±Infinity, а 0/0 — NaN: это значения
-// IEEE-754, а не ошибка (SPEC, раздел 5). Go здесь ведёт себя как JS, потому
-// что оба делят float64, — но только на переменных: деление константы на
-// константный ноль Go не компилирует вовсе.
 func Div(ctx *Ctx, left, right Value) (Value, error) {
+	if exactFraction(left) && exactFraction(right) {
+		a, b := fractionParts(left)
+		c, d := fractionParts(right)
+		if c.Sign() == 0 {
+			return Nothing(), Fail(CodeProperty, "деление на нулевую дробь не определено: %s делить на %s",
+				fractionText(a, b), fractionText(c, d))
+		}
+		return fractionValue(bigMul(a, d), bigMul(b, c)), nil
+	}
 	a, b, err := arithmetic("div", left, right)
 	if err != nil {
 		return Nothing(), err
@@ -838,14 +893,33 @@ func Div(ctx *Ctx, left, right Value) (Value, error) {
 	return Number(a / b), nil
 }
 
-// Mod — «остаток от». math.Mod это fmod, то есть ровно оператор % из JS: знак
-// берётся от делимого, деление на ноль даёт NaN.
 func Mod(ctx *Ctx, left, right Value) (Value, error) {
+	if exactDigits(left) && exactDigits(right) {
+		a := exactCanon(left)
+		b := exactCanon(right)
+		if b.Sign() == 0 {
+			return Nothing(), Fail(CodeProperty,
+				"остаток от нулевого точного целого не определён: %s остаток от 0", exactText(a))
+		}
+		return exactValue(new(big.Int).Rem(a, b)), nil
+	}
 	a, b, err := arithmetic("mod", left, right)
 	if err != nil {
 		return Nothing(), err
 	}
 	return Number(math.Mod(a, b)), nil
+}
+
+func BIntegerPart(ctx *Ctx, value Value) (Value, error) {
+	if !exactFraction(value) {
+		return Nothing(), Fail(CodeBuiltinArgs,
+			"«целая часть»: аргумент должен быть точным дробным, получено %s", TypeName(value))
+	}
+	top, bottom := fractionParts(value)
+	if bottom.Sign() == 0 {
+		return exactValue(new(big.Int)), nil
+	}
+	return exactValue(new(big.Int).Quo(top, bottom)), nil
 }
 
 // Percent — «процентов от». Порядок операций ядра: (процент / 100) * значение.
@@ -860,6 +934,9 @@ func Percent(ctx *Ctx, left, right Value) (Value, error) {
 
 // Gt — «больше».
 func Gt(ctx *Ctx, left, right Value) (Value, error) {
+	if order, exact := exactOrder(left, right); exact {
+		return Flag(order > 0), nil
+	}
 	a, b, err := ordered(left, right)
 	if err != nil {
 		return Nothing(), err
@@ -869,6 +946,9 @@ func Gt(ctx *Ctx, left, right Value) (Value, error) {
 
 // Lt — «меньше».
 func Lt(ctx *Ctx, left, right Value) (Value, error) {
+	if order, exact := exactOrder(left, right); exact {
+		return Flag(order < 0), nil
+	}
 	a, b, err := ordered(left, right)
 	if err != nil {
 		return Nothing(), err
@@ -878,6 +958,9 @@ func Lt(ctx *Ctx, left, right Value) (Value, error) {
 
 // Gte — «не меньше».
 func Gte(ctx *Ctx, left, right Value) (Value, error) {
+	if order, exact := exactOrder(left, right); exact {
+		return Flag(order >= 0), nil
+	}
 	a, b, err := ordered(left, right)
 	if err != nil {
 		return Nothing(), err
@@ -887,6 +970,9 @@ func Gte(ctx *Ctx, left, right Value) (Value, error) {
 
 // Lte — «не больше».
 func Lte(ctx *Ctx, left, right Value) (Value, error) {
+	if order, exact := exactOrder(left, right); exact {
+		return Flag(order <= 0), nil
+	}
 	a, b, err := ordered(left, right)
 	if err != nil {
 		return Nothing(), err

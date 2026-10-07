@@ -276,27 +276,6 @@ public final class Flang {
     }
   }
 
-  /* ─────────────────── точное целое: разряды основания 2²² ───────────────────
-   *
-   * Значение точного целого — СПИСОК ЧИСЕЛ, младший разряд первым, основание
-   * 2²². Представление выбрано задачей 1411, решение — ADR-0036 §11; складывает
-   * разряды вычислитель в `flang/self/interpret.flang` («Основание разрядов»).
-   *
-   * Отличать точное целое от обычного списка по типу здесь нечем: напечатанная
-   * программа типов не носит, и вычислитель сам смотрит только на вид значения
-   * («Сложение знач»: оба операнда — списки чисел). Правило ниже такое же
-   * динамическое, поэтому печать и вычислитель не расходятся.
-   *
-   * Путей в вычислителе ДВА, и слить их нельзя: разряд вне [0, 2²²) законен —
-   * собственный пример вычислителя подаёт [4194305], — а на таких разрядах
-   * быстрый путь (до двух разрядов) и общий путь (перенос по столбцам) дают
-   * РАЗНЫЙ ответ. Переписаны оба, порознь.
-   *
-   * Считается в double, а не в BigInteger: число flang — IEEE-754 double, и
-   * точное целое Java разошлось бы с вычислителем на разрядах вне диапазона.
-   * Длина растёт списком, поэтому потолка у значения нет и без BigInteger.
-   */
-
   /** Основание разряда точного целого: 2²². */
   public static final double EXACT_BASE = 4194304.0;
 
@@ -311,14 +290,6 @@ public final class Flang {
       }
     }
     return true;
-  }
-
-  /** «Разряд точного»: номер с единицы, за концом списка — ноль. */
-  private static double exactDigit(double[] digits, int place) {
-    if (place < 1 || place > digits.length) {
-      return 0.0;
-    }
-    return digits[place - 1];
   }
 
   /** «Срезать старшие нули»: старший разряд стоит в конце. */
@@ -338,11 +309,6 @@ public final class Flang {
     return exactTrim(new double[] {low, middle, (high - middle) / EXACT_BASE}, 3);
   }
 
-  /** «Значение малых разрядов»: два младших разряда машинным числом. */
-  private static double exactSmallValue(double[] digits) {
-    return exactDigit(digits, 1) + exactDigit(digits, 2) * EXACT_BASE;
-  }
-
   /** «Уложить разряды»: перенос по столбцам, затем разряды переноса сверху. */
   private static double[] exactSettle(double[] columns) {
     double[] settled = new double[columns.length + 3];
@@ -360,20 +326,6 @@ public final class Flang {
     return exactTrim(settled, columns.length + above.length);
   }
 
-  /** «Сумма разрядов»: быстрый путь до двух разрядов, иначе столбцы. */
-  private static double[] exactSum(double[] left, double[] right) {
-    if (left.length <= 2 && right.length <= 2) {
-      return exactSmallDigits(exactSmallValue(left) + exactSmallValue(right));
-    }
-    int wide = Math.max(left.length, right.length);
-    double[] columns = new double[wide];
-    for (int index = 0; index < wide; index++) {
-      columns[index] = exactDigit(left, index + 1) + exactDigit(right, index + 1);
-    }
-    return exactSettle(columns);
-  }
-
-  /** Разряды значения числами Java. */
   private static double[] exactPlaces(Value value) {
     Value[] items = Value.elements(value);
     double[] digits = new double[items.length];
@@ -383,59 +335,183 @@ public final class Flang {
     return digits;
   }
 
-  /** «Точное сложение». Витков не тратит — так же, как в вычислителе. */
-  private static Value exactAdd(Value left, Value right) {
-    double[] digits = exactSum(exactPlaces(left), exactPlaces(right));
+  private static final java.math.BigInteger EXACT_BASE_BIG = java.math.BigInteger.valueOf(4194304L);
+
+  private static java.math.BigInteger exactCanon(Value value) {
+    double[] digits = exactSettle(exactPlaces(value));
+    java.math.BigInteger whole = java.math.BigInteger.ZERO;
+    for (int index = digits.length - 1; index >= 0; index--) {
+      whole = whole.multiply(EXACT_BASE_BIG).add(java.math.BigInteger.valueOf((long) digits[index]));
+    }
+    return whole;
+  }
+
+  private static long[] exactDigitsOf(java.math.BigInteger whole) {
+    java.util.ArrayList<Long> digits = new java.util.ArrayList<>();
+    java.math.BigInteger rest = whole;
+    while (rest.signum() > 0) {
+      java.math.BigInteger[] step = rest.divideAndRemainder(EXACT_BASE_BIG);
+      digits.add(step[1].longValue());
+      rest = step[0];
+    }
+    long[] out = new long[digits.size()];
+    for (int index = 0; index < out.length; index++) {
+      out[index] = digits.get(index);
+    }
+    return out;
+  }
+
+  private static Value exactValue(java.math.BigInteger whole) {
+    long[] digits = exactDigitsOf(whole);
     Value[] items = new Value[digits.length];
     for (int index = 0; index < digits.length; index++) {
-      items[index] = Value.number(digits[index]);
+      items[index] = Value.number((double) digits[index]);
     }
     return Value.list(items);
   }
 
-  /** «плюс». */
-  public static Value add(Ctx ctx, Value left, Value right) {
+  private static String exactText(java.math.BigInteger whole) {
+    long[] digits = exactDigitsOf(whole);
+    StringBuilder out = new StringBuilder("[");
+    for (int index = 0; index < digits.length; index++) {
+      out.append(index == 0 ? "" : ", ").append(digits[index]);
+    }
+    return out.append("]").toString();
+  }
+
+  private static boolean exactFraction(Value value) {
+    if (value.tag != Value.TAG_LIST) {
+      return false;
+    }
+    Value[] halves = Value.elements(value);
+    return halves.length == 2 && exactDigits(halves[0]) && exactDigits(halves[1]);
+  }
+
+  private static java.math.BigInteger[] fractionParts(Value value) {
+    Value[] halves = Value.elements(value);
+    return new java.math.BigInteger[] {exactCanon(halves[0]), exactCanon(halves[1])};
+  }
+
+  private static Value fractionValue(java.math.BigInteger top, java.math.BigInteger bottom) {
+    if (top.signum() == 0) {
+      return Value.list(new Value[] {exactValue(top), exactValue(java.math.BigInteger.ONE)});
+    }
+    java.math.BigInteger common = top.gcd(bottom);
+    return Value.list(new Value[] {exactValue(top.divide(common)), exactValue(bottom.divide(common))});
+  }
+
+  private static String fractionText(java.math.BigInteger[] parts) {
+    return exactText(parts[0]) + " над " + exactText(parts[1]);
+  }
+
+  private static Integer exactOrder(Value left, Value right) {
+    if (exactFraction(left) && exactFraction(right)) {
+      java.math.BigInteger[] l = fractionParts(left);
+      java.math.BigInteger[] r = fractionParts(right);
+      return l[0].multiply(r[1]).compareTo(r[0].multiply(l[1]));
+    }
     if (exactDigits(left) && exactDigits(right)) {
-      return exactAdd(left, right);
+      return exactCanon(left).compareTo(exactCanon(right));
+    }
+    return null;
+  }
+
+  public static Value add(Ctx ctx, Value left, Value right) {
+    if (exactFraction(left) && exactFraction(right)) {
+      java.math.BigInteger[] l = fractionParts(left);
+      java.math.BigInteger[] r = fractionParts(right);
+      return fractionValue(l[0].multiply(r[1]).add(r[0].multiply(l[1])), l[1].multiply(r[1]));
+    }
+    if (exactDigits(left) && exactDigits(right)) {
+      return exactValue(exactCanon(left).add(exactCanon(right)));
     }
     arithmetic("add", left, right);
     return Value.number(left.num + right.num);
   }
 
-  /** «минус». */
   public static Value sub(Ctx ctx, Value left, Value right) {
+    if (exactFraction(left) && exactFraction(right)) {
+      java.math.BigInteger[] l = fractionParts(left);
+      java.math.BigInteger[] r = fractionParts(right);
+      java.math.BigInteger ad = l[0].multiply(r[1]);
+      java.math.BigInteger cb = r[0].multiply(l[1]);
+      if (ad.compareTo(cb) < 0) {
+        throw fail(
+            FlangError.CODE_PROPERTY,
+            "точное дробное ниже нуля значений не имеет: "
+                + fractionText(l) + " минус " + fractionText(r) + "; молчаливый ноль запрещён");
+      }
+      return fractionValue(ad.subtract(cb), l[1].multiply(r[1]));
+    }
+    if (exactDigits(left) && exactDigits(right)) {
+      java.math.BigInteger a = exactCanon(left);
+      java.math.BigInteger b = exactCanon(right);
+      if (a.compareTo(b) < 0) {
+        throw fail(
+            FlangError.CODE_PROPERTY,
+            "точное целое ниже нуля значений не имеет: "
+                + exactText(a) + " минус " + exactText(b) + "; молчаливый ноль запрещён");
+      }
+      return exactValue(a.subtract(b));
+    }
     arithmetic("sub", left, right);
     return Value.number(left.num - right.num);
   }
 
-  /** «умножить на». */
   public static Value mul(Ctx ctx, Value left, Value right) {
+    if (exactFraction(left) && exactFraction(right)) {
+      java.math.BigInteger[] l = fractionParts(left);
+      java.math.BigInteger[] r = fractionParts(right);
+      return fractionValue(l[0].multiply(r[0]), l[1].multiply(r[1]));
+    }
+    if (exactDigits(left) && exactDigits(right)) {
+      return exactValue(exactCanon(left).multiply(exactCanon(right)));
+    }
     arithmetic("mul", left, right);
     return Value.number(left.num * right.num);
   }
 
-  /**
-   * «делить на».
-   *
-   * Деление double на ноль в Java даёт ±Infinity, а ноль на ноль — NaN, ровно
-   * как требует SPEC (раздел 5): деление на ноль — это значение, а не ошибка.
-   * Никакой обёртки, в отличие от Python.
-   */
   public static Value div(Ctx ctx, Value left, Value right) {
+    if (exactFraction(left) && exactFraction(right)) {
+      java.math.BigInteger[] l = fractionParts(left);
+      java.math.BigInteger[] r = fractionParts(right);
+      if (r[0].signum() == 0) {
+        throw fail(
+            FlangError.CODE_PROPERTY,
+            "деление на нулевую дробь не определено: " + fractionText(l) + " делить на " + fractionText(r));
+      }
+      return fractionValue(l[0].multiply(r[1]), l[1].multiply(r[0]));
+    }
     arithmetic("div", left, right);
     return Value.number(left.num / right.num);
   }
 
-  /**
-   * «остаток от» как двуместная операция.
-   *
-   * Оператор `%` для double в Java — это C fmod, то есть ровно оператор
-   * ECMAScript: знак берётся от делимого (−7 % 3 это −1), нулевой делитель даёт
-   * NaN, бесконечное делимое даёт NaN. Переписывать нечего.
-   */
   public static Value mod(Ctx ctx, Value left, Value right) {
+    if (exactDigits(left) && exactDigits(right)) {
+      java.math.BigInteger a = exactCanon(left);
+      java.math.BigInteger b = exactCanon(right);
+      if (b.signum() == 0) {
+        throw fail(
+            FlangError.CODE_PROPERTY,
+            "остаток от нулевого точного целого не определён: " + exactText(a) + " остаток от 0");
+      }
+      return exactValue(a.mod(b));
+    }
     arithmetic("mod", left, right);
     return Value.number(left.num % right.num);
+  }
+
+  public static Value bIntegerPart(Ctx ctx, Value value) {
+    if (!exactFraction(value)) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«целая часть»: аргумент должен быть точным дробным, получено " + Value.typeName(value));
+    }
+    java.math.BigInteger[] parts = fractionParts(value);
+    if (parts[1].signum() == 0) {
+      return exactValue(java.math.BigInteger.ZERO);
+    }
+    return exactValue(parts[0].divide(parts[1]));
   }
 
   /**
@@ -451,24 +527,40 @@ public final class Flang {
 
   /** «больше». */
   public static Value gt(Ctx ctx, Value left, Value right) {
+    Integer order = exactOrder(left, right);
+    if (order != null) {
+      return Value.flag(order > 0);
+    }
     ordered(left, right);
     return Value.flag(left.num > right.num);
   }
 
   /** «меньше». */
   public static Value lt(Ctx ctx, Value left, Value right) {
+    Integer order = exactOrder(left, right);
+    if (order != null) {
+      return Value.flag(order < 0);
+    }
     ordered(left, right);
     return Value.flag(left.num < right.num);
   }
 
   /** «не меньше». */
   public static Value gte(Ctx ctx, Value left, Value right) {
+    Integer order = exactOrder(left, right);
+    if (order != null) {
+      return Value.flag(order >= 0);
+    }
     ordered(left, right);
     return Value.flag(left.num >= right.num);
   }
 
   /** «не больше». */
   public static Value lte(Ctx ctx, Value left, Value right) {
+    Integer order = exactOrder(left, right);
+    if (order != null) {
+      return Value.flag(order <= 0);
+    }
     ordered(left, right);
     return Value.flag(left.num <= right.num);
   }

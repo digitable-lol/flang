@@ -57,7 +57,6 @@ docs/site/embedding.ru.md	src/factorial.rs	пример на чужом язык
 docs/site/embedding.ru.md	src/lib.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	src/main.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	src/runtime.rs	пример на чужом языке (embedding/rosetta), не файл проекта
-docs/site/examples.md	ЗАМЕР.md	план: пример react-ts-pure живёт на ветке r/react-ts-pure и в ствол не влит; страница уехала вперёд дерева
 docs/site/getting-started.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/getting-started.ru.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/index.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл

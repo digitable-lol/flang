@@ -11,3 +11,19 @@ bucket	bug	номер корзины меньше числа корзин
 grade_points	proved	
 days_in_month	bug	в феврале 29 дней в високосный год и 28 в обычный
 quarter_of	proved	
+factorial	bug	(result * i) не выше INT_MAX
+sum_to	bug	сумма от единицы до n
+count_multiples	bug	делитель в (i % step) не ноль
+power_of_two	open	
+digits	refused	цикл без выводимой меры
+abs_diff	bug	(a - b) не выше INT_MAX
+distance	bug	вызов abs_diff(a, b) без неопределённого поведения внутри
+larger	proved	
+at_least_zero	open	
+fib	refused	рекурсия вне подмножества
+span_end	bug	(s.start + s.length) не выше INT_MAX
+span_last	bug	вызов span_end(s) без неопределённого поведения внутри
+span_empty	proved	
+at_least	proved	
+absolute	bug	-x не выше INT_MAX
+saturating_increment	open	

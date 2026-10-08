@@ -9406,6 +9406,10 @@ static int check_file(const char *path, bool fast) {
       fprintf(stderr, "%.*s\n", (int)obstacle_bytes, utf8);
       unjudged = true;
     }
+    if (repl_call("Суд моноидов", obstacle_args, 1, &obstacle) == FL_OK
+        && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
+      fprintf(stderr, "%.*s", (int)obstacle_bytes, utf8);
+    }
     /*
      * ВТОРОЕ ПРЕПЯТСТВИЕ, И ОНО НЕ ТО ЖЕ САМОЕ.
      *
@@ -14235,6 +14239,10 @@ static int emit_file(int argc, char **argv, const char *self) {
           if (repl_call("Чего печать не судила", obstacle_args, 2, &obstacle) == FL_OK
               && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
             unjudged = val_copy(obstacle);
+          }
+          if (repl_call("Суд моноидов", obstacle_args, 1, &obstacle) == FL_OK
+              && val_text(obstacle, &utf8, &obstacle_bytes) && obstacle_bytes > 0) {
+            fprintf(stderr, "%.*s", (int)obstacle_bytes, utf8);
           }
         }
         /*

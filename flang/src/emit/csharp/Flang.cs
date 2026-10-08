@@ -39,6 +39,180 @@ using BigInteger = System.Numerics.BigInteger;
 /// <summary>Операции языка flang.</summary>
 public static class Flang
 {
+    private static readonly int ParThreads = ParCount();
+
+    private static readonly object ParBusy = new object();
+
+    private static int ParCount()
+    {
+        string? told = Environment.GetEnvironmentVariable("FLANG_THREADS");
+        if (int.TryParse(told, NumberStyles.None, CultureInfo.InvariantCulture, out int threads) && threads > 0)
+        {
+            return Math.Min(threads, 256);
+        }
+        return Math.Min(Environment.ProcessorCount, 64);
+    }
+
+    private static bool ParOffer(int index, int count, System.Diagnostics.Stopwatch clock, ref int next)
+    {
+        if (index != next)
+        {
+            return false;
+        }
+        next *= 2;
+        double spent = clock.Elapsed.TotalMilliseconds * 1000000.0;
+        if (spent < 20000.0)
+        {
+            return false;
+        }
+        next = -1;
+        return spent / index * (count - index) >= 100000.0;
+    }
+
+    private static (int Chunks, int Size) ParChunks(int count)
+    {
+        int chunks = Math.Min(ParThreads * 4, count);
+        int size = (count + chunks - 1) / chunks;
+        return ((count + size - 1) / size, size);
+    }
+
+    private static bool ParRun(Ctx ctx, int count, Action<Ctx, int, int, int> work, out long steps)
+    {
+        steps = 0;
+        if (!Monitor.TryEnter(ParBusy))
+        {
+            return false;
+        }
+        try
+        {
+            long budget = 0;
+            if (ctx.MaxSteps > 0)
+            {
+                budget = ctx.MaxSteps - ctx.Steps;
+                if (budget <= 0)
+                {
+                    return false;
+                }
+            }
+            var (chunks, size) = ParChunks(count);
+            var lanes = new Ctx[chunks];
+            int failed = 0;
+            var options = new System.Threading.Tasks.ParallelOptions { MaxDegreeOfParallelism = ParThreads };
+            System.Threading.Tasks.Parallel.For(0, chunks, options, chunk =>
+            {
+                var lane = new Ctx
+                {
+                    IndexBase = ctx.IndexBase,
+                    MaxDepth = ctx.MaxDepth,
+                    MaxSteps = budget,
+                    Depth = ctx.Depth,
+                    Lane = chunk + 1,
+                };
+                lanes[chunk] = lane;
+                if (Volatile.Read(ref failed) != 0)
+                {
+                    return;
+                }
+                try
+                {
+                    work(lane, chunk, chunk * size, Math.Min(chunk * size + size, count));
+                }
+                catch (Exception)
+                {
+                    Interlocked.Exchange(ref failed, 1);
+                }
+            });
+            if (failed != 0)
+            {
+                return false;
+            }
+            foreach (Ctx lane in lanes)
+            {
+                steps += lane.Steps;
+            }
+            return budget == 0 || steps <= budget;
+        }
+        finally
+        {
+            Monitor.Exit(ParBusy);
+        }
+    }
+
+    public static Value[] ParMap(Ctx ctx, Value[] items, Func<Ctx, Value, Value> body)
+    {
+        var output = new Value[items.Length];
+        bool may = ctx.Lane == 0 && items.Length > 2 && ParThreads > 1;
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        int next = may ? 1 : -1;
+        for (int index = 0; index < items.Length; index++)
+        {
+            if (ParOffer(index, items.Length, clock, ref next))
+            {
+                int from = index;
+                var got = new Value[items.Length - from];
+                if (ParRun(ctx, got.Length, (lane, chunk, start, stop) =>
+                {
+                    for (int at = start; at < stop; at++)
+                    {
+                        got[at] = body(lane, items[from + at]);
+                    }
+                }, out long steps))
+                {
+                    ctx.Steps += steps;
+                    Array.Copy(got, 0, output, from, got.Length);
+                    return output;
+                }
+            }
+            output[index] = body(ctx, items[index]);
+        }
+        return output;
+    }
+
+    public static Value ParFold(Ctx ctx, Value[] items, Value start, Func<Ctx, Value, Value, Value> step)
+    {
+        Value acc = start;
+        bool may = ctx.Lane == 0 && items.Length > 2 && ParThreads > 1;
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        int next = may ? 1 : -1;
+        for (int index = 0; index < items.Length; index++)
+        {
+            if (ParOffer(index, items.Length, clock, ref next))
+            {
+                int from = index;
+                int count = items.Length - from;
+                var parts = new Value[ParChunks(count).Chunks];
+                long before = ctx.Steps;
+                if (ParRun(ctx, count, (lane, chunk, first, stop) =>
+                {
+                    Value part = items[from + first];
+                    for (int at = first + 1; at < stop; at++)
+                    {
+                        part = step(lane, part, items[from + at]);
+                    }
+                    parts[chunk] = part;
+                }, out long steps))
+                {
+                    ctx.Steps += steps;
+                    try
+                    {
+                        Value total = acc;
+                        foreach (Value part in parts)
+                        {
+                            total = step(ctx, total, part);
+                        }
+                        return total;
+                    }
+                    catch (FlangError)
+                    {
+                        ctx.Steps = before;
+                    }
+                }
+            }
+            acc = step(ctx, acc, items[index]);
+        }
+        return acc;
+    }
+
     /* ───────────────────────────── диагностика ───────────────────────────── */
 
     /// <summary>Собирает диагностику. Возвращает исключение — бросает вызывающий.</summary>
@@ -1443,7 +1617,7 @@ public static class Flang
         Value list = ExpectList("добавить", value, "второй аргумент");
         int end = Value.Size(list);
         Value.Grow? spare = list.Spare;
-        if (spare is not null && end == spare.Filled && end < list.Items.Length)
+        if (spare is not null && spare.Owner == ctx && end == spare.Filled && end < list.Items.Length)
         {
             list.Items[end] = item;
             spare.Filled = end + 1;
@@ -1458,7 +1632,7 @@ public static class Flang
         var cells = new Value[capacity];
         Array.Copy(list.Items, cells, end);
         cells[end] = item;
-        return Value.Grown(cells, end + 1, new Value.Grow(end + 1));
+        return Value.Grown(cells, end + 1, new Value.Grow(end + 1) { Owner = ctx });
     }
 
     /// <summary>
@@ -1480,7 +1654,7 @@ public static class Flang
         var next = new Value[size + 1];
         next[0] = item;
         Array.Copy(list.Items, 0, next, 1, size);
-        return Value.Grown(next, size + 1, new Value.Grow(size + 1));
+        return Value.Grown(next, size + 1, new Value.Grow(size + 1) { Owner = ctx });
     }
 
     /// <summary>«остаток от».</summary>

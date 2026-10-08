@@ -48,6 +48,8 @@ public final class Ctx {
   /** Сделано шагов. */
   public long steps;
 
+  public int lane;
+
   /** Вход в функцию, способную к рекурсии. */
   public void enter(String function) {
     step(function);

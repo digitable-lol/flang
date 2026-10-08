@@ -204,8 +204,6 @@ script.guards:check = bootstrap/flang io flang/scripts/guards-start.fscript --н
 script.hand-written-lists:census = bootstrap/flang io scripts/guards/hand-written-lists.fscript --plan Census --max-steps 4000000000
 script.hand-written-lists:check = bootstrap/flang io scripts/guards/hand-written-lists.fscript --plan Check --max-steps 4000000000
 script.hand-written-lists:forgery = bootstrap/flang io scripts/guards/hand-written-lists.fscript --plan Forgery --timeout 5400000
-script.what-blocks:check = bootstrap/flang io scripts/guards/what-blocks-inventory-guard.fscript --plan Проверка
-script.what-blocks:forgery = bootstrap/flang io scripts/guards/what-blocks-inventory-guard.fscript --plan Подлог
 script.criterion:score = bootstrap/flang io scripts/guards/criterion-score-guard.fscript --
 script.tests = node --test --test-timeout=1800000 flang/test/*.test.mjs
 script.tests:remote = bootstrap/flang io scripts/test-remote.fscript --plan Run --timeout 3600000

@@ -1413,6 +1413,7 @@ reprints
 repro
 reproducible
 request
+required
 requires
 reseed
 reserved

@@ -1470,3 +1470,767 @@
   пусть «начало» равно («Vector of» от пустой список и "" и "" и пустой список и пустой список)
   пусть «итог» равно (свёртка (разделить «текст» по "\n") начиная с «начало» как «а» и «с» → «Vector step» от «а» и «с»)
   соединить («Vector flushed» от «итог») по "\n"
+
+объект «C pair»
+  «open»: число
+  «close»: число
+  «commas»: список число
+
+объект «C scan»
+  «at»: число
+  «depth»: число
+  «state»: строка
+  «pair»: «C pair»
+
+объект «C pack»
+  «done»: список строки
+  «cur»: строка
+  «fresh»: признак
+  «col»: число
+
+объект «C item»
+  «text»: строка
+  «last»: признак
+
+объект «C split»
+  «pieces»: список строки
+  «cur»: строка
+  «limit»: число
+
+объект «C words»
+  «done»: список строки
+  «cur»: строка
+
+объект «C join»
+  «done»: список строки
+  «pend»: строка
+  «has»: признак
+
+объект «C braces»
+  «out»: строка
+  «state»: строка
+  «pending»: признак
+  «brace»: признак
+  «prev»: строка
+
+объект «C kept»
+  «done»: список строки
+  «last»: строка
+  «any»: признак
+
+тотальная функция «C width»
+  возвращает число
+  80
+
+тотальная функция «C spaces»
+  принимает count: число
+  возвращает строка
+  пример «Four spaces»
+    дано count равно 4
+    ожидается "    "
+  пусть forty равно "                                        "
+  «Piece» от (соединить [forty, forty, forty] по "") и 1 и count
+
+тотальная функция «C pair made»
+  принимает o: число, c: число, m: список число
+  возвращает «C pair»
+  запись «C pair» с «open» равным o и «close» равным c и «commas» равным m
+
+тотальная функция «C scan made»
+  принимает a: число, d: число, s: строка, o: число, c: число, m: список число
+  возвращает «C scan»
+  запись «C scan» с «at» равным a и «depth» равным d и «state» равным s и «pair» равным («C pair made» от o и c и m)
+
+тотальная функция «C open of»
+  принимает scan: «C scan»
+  возвращает число
+  (scan.«pair»).«open»
+
+тотальная функция «C close of»
+  принимает scan: «C scan»
+  возвращает число
+  (scan.«pair»).«close»
+
+тотальная функция «C commas of»
+  принимает scan: «C scan»
+  возвращает список число
+  (scan.«pair»).«commas»
+
+тотальная функция «C quote state»
+  принимает mode: строка, sign: строка
+  возвращает строка
+  пример «A backslash escapes the next sign»
+    дано mode равно "q"
+    дано sign равно "\\"
+    ожидается "e"
+  пример «A quote closes the literal»
+    дано mode равно "q"
+    дано sign равно "\""
+    ожидается ""
+  разбор mode
+    случай "e"
+      то "q"
+    случай "q"
+      то «C inside quote» от sign
+    случай любое
+      то (если sign равен "\"" то "q" иначе "")
+
+тотальная функция «C inside quote»
+  принимает sign: строка
+  возвращает строка
+  пример «An ordinary sign stays inside»
+    дано sign равно "a"
+    ожидается "q"
+  разбор sign
+    случай "\\"
+      то "e"
+    случай "\""
+      то ""
+    случай любое
+      то "q"
+
+тотальная функция «C opened»
+  принимает scan: «C scan»
+  возвращает «C scan»
+  пусть d равно (scan.«depth»)
+  пусть fresh равно (d равен 0) и притом ((«C open of» от scan) равен 0)
+  пусть o равно (если fresh то (scan.«at») иначе («C open of» от scan))
+  «C scan made» от (scan.«at») и (d плюс 1) и (scan.«state») и o и («C close of» от scan) и («C commas of» от scan)
+
+тотальная функция «C closed»
+  принимает scan: «C scan»
+  возвращает «C scan»
+  пусть d равно (scan.«depth») минус 1
+  пусть fresh равно (d равен 0) и притом ((«C close of» от scan) равен 0) и притом ((«C open of» от scan) больше 0)
+  пусть c равно (если fresh то (scan.«at») иначе («C close of» от scan))
+  «C scan made» от (scan.«at») и d и (scan.«state») и («C open of» от scan) и c и («C commas of» от scan)
+
+тотальная функция «C comma»
+  принимает scan: «C scan»
+  возвращает «C scan»
+  пусть opened равно ((«C open of» от scan) больше 0) и притом ((«C close of» от scan) равен 0)
+  пусть top равно ((scan.«depth») равен 1) и притом opened
+  пусть m равно (если top то (добавить (scan.«at») к («C commas of» от scan)) иначе («C commas of» от scan))
+  «C scan made» от (scan.«at») и (scan.«depth») и (scan.«state») и («C open of» от scan) и («C close of» от scan) и m
+
+тотальная функция «C plain step»
+  принимает scan: «C scan», sign: строка
+  возвращает «C scan»
+  разбор sign
+    случай "("
+      то «C opened» от scan
+    случай ")"
+      то «C closed» от scan
+    случай ","
+      то «C comma» от scan
+    случай любое
+      то scan
+
+тотальная функция «C scan step»
+  принимает scan: «C scan», sign: строка
+  возвращает «C scan»
+  пусть a равно ((scan.«at») плюс 1)
+  пусть s равно («C quote state» от (scan.«state») и sign)
+  пусть d равно (scan.«depth»)
+  пусть p равно (scan.«pair»)
+  пусть moved равно (запись «C scan» с «at» равным a и «depth» равным d и «state» равным s и «pair» равным p)
+  если (scan.«state») равен "" то «C plain step» от moved и sign иначе moved
+
+тотальная функция «C scan of»
+  принимает text: строка
+  возвращает «C scan»
+  пусть start равно («C scan made» от 0 и 0 и "" и 0 и 0 и пустой список)
+  свёртка (разложить text на символы) начиная с start как scan и sign → «C scan step» от scan и sign
+
+тотальная функция «C scan summary»
+  принимает text: строка
+  возвращает строка
+  пример «The first pair and its commas»
+    дано text равно "f(a, \"(,\", g(b, c)) x"
+    ожидается "2-19 [4, 10] 0"
+  пусть scan равно («C scan of» от text)
+  пусть pair равно (соединить [(к строке («C open of» от scan)), "-", (к строке («C close of» от scan))] по "")
+  соединить [pair, («Numbers text» от («C commas of» от scan)), (к строке (scan.«depth»))] по " "
+
+тотальная функция «C args»
+  принимает text: строка
+  возвращает список строки
+  пример «Arguments of a call»
+    дано text равно "f(a, \"x, y\", g(b, c))"
+    ожидается ["a", "\"x, y\"", "g(b, c)"]
+  пусть scan равно («C scan of» от text)
+  пусть low равно ((«C open of» от scan) плюс 1)
+  пусть high равно ((«C close of» от scan) минус 1)
+  «Cut between» от text и low и high и («C commas of» от scan) и 1
+
+тотальная функция «C flagged step»
+  принимает acc: список «C item», text: строка
+  возвращает список «C item»
+  приписать (запись «C item» с «text» равным text и «last» равным (пусто acc)) к acc
+
+тотальная функция «C flagged»
+  принимает items: список строки
+  возвращает список «C item»
+  пример «Only the last item is flagged»
+    дано items равно ["a", "b"]
+    ожидается [(запись «C item» с «text» равным "a" и «last» равным нет),
+      (запись «C item» с «text» равным "b" и «last» равным да)]
+  свёртка («Reversed» от items) начиная с (пустой список) как acc и text → «C flagged step» от acc и text
+
+тотальная функция «C words step»
+  принимает acc: «C words», sign: строка
+  возвращает «C words»
+  пусть cur равно (соединить (acc.«cur») с sign)
+  если sign равен " "
+    то запись «C words» с «done» равным (добавить cur к (acc.«done»)) и «cur» равным ""
+    иначе запись «C words» с «done» равным (acc.«done») и «cur» равным cur
+
+тотальная функция «C words of»
+  принимает text: строка
+  возвращает список строки
+  пример «Every word keeps the space after it»
+    дано text равно "a  bc d"
+    ожидается ["a ", " ", "bc ", "d"]
+  пусть start равно (запись «C words» с «done» равным пустой список и «cur» равным "")
+  пусть words равно (свёртка (разложить text на символы) начиная с start как acc и sign → «C words step» от acc и sign)
+  если пусто (words.«cur») то words.«done» иначе (добавить (words.«cur») к (words.«done»))
+
+тотальная функция «C quoted»
+  принимает text: строка
+  возвращает строка
+  пример «Quotes around»
+    дано text равно "a"
+    ожидается "\"a\""
+  соединить ["\"", text, "\""] по ""
+
+тотальная функция «C sliced step»
+  принимает acc: «C split», word: «C item», room: число, tail: строка
+  возвращает «C split»
+  пусть extra равно (если (word.«last») то (длина tail) иначе 0)
+  пусть need равно ((длина (acc.«cur»)) плюс (длина (word.«text»))) плюс (2 плюс extra)
+  пусть breaks равно (не (пусто (acc.«cur»))) и притом (need больше (acc.«limit»))
+  пусть pieces равно (добавить («C quoted» от (acc.«cur»)) к (acc.«pieces»))
+  пусть longer равно (соединить (acc.«cur») с (word.«text»))
+  если breaks
+    то запись «C split» с «pieces» равным pieces и «cur» равным (word.«text») и «limit» равным room
+    иначе запись «C split» с «pieces» равным (acc.«pieces») и «cur» равным longer и «limit» равным (acc.«limit»)
+
+тотальная функция «C sliced string»
+  принимает literal: строка, room: число, rest: число, tail: строка
+  возвращает список строки
+  пример «A long literal breaks after a space»
+    дано literal равно "\"aaa bbb ccc\""
+    дано room равно 10
+    дано rest равно 10
+    дано tail равно ");"
+    ожидается ["\"aaa bbb \"", "\"ccc\""]
+  пусть body равно («Piece» от literal и 2 и ((длина literal) минус 1))
+  пусть words равно («C flagged» от («C words of» от body))
+  пусть start равно (запись «C split» с «pieces» равным пустой список и «cur» равным "" и «limit» равным room)
+  пусть sliced равно (свёртка words начиная с start как acc и word → «C sliced step» от acc и word и rest и tail)
+  добавить («C quoted» от (sliced.«cur»)) к (sliced.«pieces»)
+
+тотальная функция «C is literal»
+  принимает text: строка
+  возвращает признак
+  пример «A string literal with a space»
+    дано text равно "\"a b\""
+    ожидается да
+  пример «A name is not a literal»
+    дано text равно "ctx"
+    ожидается нет
+  пусть ends равно («Ends with any» от text и ["\""])
+  (text начинается с "\"") и притом ends и притом (text содержит " ") и притом ((длина text) больше 1)
+
+тотальная функция «C pack made»
+  принимает d: список строки, c: строка, f: признак, n: число
+  возвращает «C pack»
+  запись «C pack» с «done» равным d и «cur» равным c и «fresh» равным f и «col» равным n
+
+тотальная функция «C pack break»
+  принимает acc: «C pack», line: строка
+  возвращает «C pack»
+  пусть done равно (добавить line к (acc.«done»))
+  «C pack made» от done и («C spaces» от (acc.«col»)) и да и (acc.«col»)
+
+тотальная функция «C gap»
+  принимает acc: «C pack»
+  возвращает строка
+  если (acc.«fresh») то "" иначе " "
+
+тотальная функция «C pack piece»
+  принимает acc: «C pack», piece: строка
+  возвращает «C pack»
+  «C pack break» от acc и (соединить [(acc.«cur»), («C gap» от acc), piece] по "")
+
+тотальная функция «C pack step»
+  принимает acc: «C pack», entry: «C item», tail: строка
+  возвращает «C pack»
+  пусть suffix равно (если (entry.«last») то tail иначе ",")
+  пусть bare равно (entry.«text»)
+  пусть size равно ((длина bare) плюс (длина suffix))
+  пусть over равно (не (acc.«fresh»)) и притом (((длина (acc.«cur»)) плюс (1 плюс size)) больше («C width»))
+  пусть placed равно (если over то («C pack break» от acc и (acc.«cur»)) иначе acc)
+  пусть used равно ((длина (placed.«cur»)) плюс (длина («C gap» от placed)))
+  пусть splits равно ((used плюс size) больше («C width»)) и притом («C is literal» от bare)
+  пусть room равно («C width») минус used
+  пусть rest равно («C width») минус (placed.«col»)
+  пусть pieces равно (если splits то («C sliced string» от bare и room и rest и suffix) иначе [bare])
+  пусть broken равно (свёртка («C all but last» от pieces) начиная с placed как a и p → «C pack piece» от a и p)
+  пусть cur равно (соединить [(broken.«cur»), («C gap» от broken), («C last of» от pieces), suffix] по "")
+  «C pack made» от (broken.«done») и cur и нет и (broken.«col»)
+
+тотальная функция «C tail of»
+  принимает items: список строки
+  возвращает список строки
+  пример «All but the head»
+    дано items равно ["a", "b"]
+    ожидается ["b"]
+  разбор items
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «C all but last»
+  принимает items: список строки
+  возвращает список строки
+  пример «Two of three»
+    дано items равно ["a", "b", "c"]
+    ожидается ["a", "b"]
+  «Reversed» от («C tail of» от («Reversed» от items))
+
+тотальная функция «C last of»
+  принимает items: список строки
+  возвращает строка
+  пример «The last of three»
+    дано items равно ["a", "b", "c"]
+    ожидается "c"
+  «First of» от («Reversed» от items)
+
+тотальная функция «C pack»
+  принимает head: строка, args: список строки, tail: строка, col: число
+  возвращает список строки
+  пример «Arguments fill the line and continue under the parenthesis»
+    дано head равно "fl_status long_function_name_for_test("
+    дано args равно ["fl_ctx *ctx", "fl_value first", "fl_value second", "fl_value *result"]
+    дано tail равно ") {"
+    дано col равно 38
+    ожидается ["fl_status long_function_name_for_test(fl_ctx *ctx, fl_value first,",
+      "                                      fl_value second, fl_value *result) {"]
+  пусть start равно («C pack made» от (пустой список) и head и да и col)
+  пусть packed равно (свёртка («C flagged» от args) начиная с start как a и e → «C pack step» от a и e и tail)
+  пусть closed равно (если пусто args то (соединить head с tail) иначе (packed.«cur»))
+  добавить closed к (packed.«done»)
+
+тотальная функция «C indent»
+  принимает line: строка
+  возвращает число
+  пример «Four spaces before the code»
+    дано line равно "    x;"
+    ожидается 4
+  (длина line) минус (длина («Without leading spaces» от line))
+
+тотальная функция «C fits»
+  принимает lines: список строки
+  возвращает признак
+  пример «A short line fits»
+    дано lines равно ["a", "b"]
+    ожидается да
+  пусто (отфильтровать lines где line → (длина line) больше («C width»))
+
+тотальная функция «C opens a comment»
+  принимает line: строка
+  возвращает признак
+  пример «A preprocessor line»
+    дано line равно "  #include <x.h>,"
+    ожидается да
+  «Starts with any» от («Without leading spaces» от line) и ["/*", "*", "#"]
+
+тотальная функция «C continues»
+  принимает line: строка
+  возвращает признак
+  пример «An open call continues on the next line»
+    дано line равно "  return f(a,"
+    ожидается да
+  пусть open равно ((«C scan of» от line).«depth») больше 0
+  open и притом («Ends with any» от line и [","]) и притом (не («C opens a comment» от line))
+
+тотальная функция «C join step»
+  принимает acc: «C join», line: строка
+  возвращает «C join»
+  пусть joins равно (acc.«has») и притом («C continues» от (acc.«pend»))
+  пусть longer равно (соединить [(acc.«pend»), " ", («Trimmed» от line)] по "")
+  пусть done равно (если (acc.«has») то (добавить (acc.«pend») к (acc.«done»)) иначе (acc.«done»))
+  если joins
+    то запись «C join» с «done» равным (acc.«done») и «pend» равным longer и «has» равным да
+    иначе запись «C join» с «done» равным done и «pend» равным line и «has» равным да
+
+тотальная функция «C joined»
+  принимает lines: список строки
+  возвращает список строки
+  пример «A call printed over two lines becomes one statement»
+    дано lines равно ["  return f(a,", "           b);", "}"]
+    ожидается ["  return f(a, b);", "}"]
+  пусть start равно (запись «C join» с «done» равным пустой список и «pend» равным "" и «has» равным нет)
+  пусть joined равно (свёртка lines начиная с start как acc и line → «C join step» от acc и line)
+  если (joined.«has») то (добавить (joined.«pend») к (joined.«done»)) иначе (joined.«done»)
+
+тотальная функция «C trace prefixes»
+  возвращает список строки
+  обеспечивает «a bare name is a trace» результат содержит " /* «"
+  [" /* «", " /* пусть «", " /* голова «", " /* хвост «", " /* постусловие «", " /* требует «"]
+
+тотальная функция «C trace cut»
+  принимает line: строка, prefix: строка
+  возвращает список строки
+  пример «The trailing name goes»
+    дано line равно "  x = y; /* «икс» */"
+    дано prefix равно " /* «"
+    ожидается ["  x = y;"]
+  пример «Another prefix leaves the line alone»
+    дано line равно "  x = y; /* «икс» */"
+    дано prefix равно " /* пусть «"
+    ожидается пустой список
+  пусть parts равно (разделить line по prefix)
+  пусть last равно («C last of» от parts)
+  пусть name равно («Piece» от last и 1 и ((длина last) минус 4))
+  пусть closes равно («Ends with any» от last и ["» */"]) и притом (не (name содержит "»"))
+  пусть cuts равно ((длина parts) больше 1) и притом closes
+  если cuts то [(соединить («C all but last» от parts) по prefix)] иначе пустой список
+
+тотальная функция «C without trace»
+  принимает line: строка
+  возвращает строка
+  пример «A let trace goes»
+    дано line равно "  const fl_value a = b; /* пусть «а» */"
+    ожидается "  const fl_value a = b;"
+  пусть found равно (отобразить («C trace prefixes») как p → «C trace cut» от line и p)
+  пусть cuts равно (свёртка found начиная с (пустой список) как a и c → «Соединить списки» от a и c)
+  разбор cuts
+    случай пусто
+      то line
+    случай голова и хвост
+      то голова
+
+тотальная функция «C full trace»
+  принимает line: строка
+  возвращает признак
+  пример «A postcondition trace on its own line»
+    дано line равно "  /* постусловие «правил три» */"
+    ожидается да
+  пример «A comment that explains something stays»
+    дано line равно "  /* виток цикла — тоже шаг */"
+    ожидается нет
+  пусть text равно («Without leading spaces» от line)
+  пусть heads равно (отфильтровать ["/* постусловие «", "/* требует «"] где head → text начинается с head)
+  пусть head равно («First of» от heads)
+  пусть name равно («Piece» от text и ((длина head) плюс 1) и ((длина text) минус 4))
+  пусть closes равно («Ends with any» от text и ["» */"]) и притом (не (name содержит "»"))
+  (не (пусто heads)) и притом closes
+
+тотальная функция «C braces made»
+  принимает o: строка, s: строка, p: признак, b: признак, v: строка
+  возвращает «C braces»
+  запись «C braces» с «out» равным o и «state» равным s и «pending» равным p и «brace» равным b и «prev» равным v
+
+тотальная функция «C held space»
+  принимает acc: «C braces», sign: строка
+  возвращает признак
+  пусть keeps равно (если sign равен "}" то (acc.«brace») иначе (не (acc.«brace»)))
+  (acc.«pending») и притом keeps
+
+тотальная функция «C brace step»
+  принимает acc: «C braces», sign: строка
+  возвращает «C braces»
+  пусть out равно (если «C held space» от acc и sign то (соединить (acc.«out») с " ") иначе (acc.«out»))
+  пусть mode равно («C quote state» от (acc.«state») и sign)
+  пусть plain равно (acc.«state») равен ""
+  пусть space равно plain и притом (sign равен " ")
+  пусть text равно (если space то out иначе (соединить out с sign))
+  пусть brace равно space и притом ((acc.«prev») равен "{")
+  «C braces made» от text и mode и space и brace и sign
+
+тотальная функция «C tight braces»
+  принимает line: строка
+  возвращает строка
+  пример «Braces hug what they hold, strings stay»
+    дано line равно "x = { FL_STRING, { .string = { \"{ a }\", 5, 5 } } };"
+    ожидается "x = {FL_STRING, {.string = {\"{ a }\", 5, 5}}};"
+  пример «An empty pair keeps its space»
+    дано line равно "x = { };"
+    ожидается "x = { };"
+  пусть start равно («C braces made» от "" и "" и нет и нет и "")
+  пусть tight равно (свёртка (разложить line на символы) начиная с start как acc и sign → «C brace step» от acc и sign)
+  если (tight.«pending») то (соединить (tight.«out») с " ") иначе (tight.«out»)
+
+тотальная функция «C if split»
+  принимает line: строка
+  возвращает список строки
+  пример «A guard and its call go on two lines»
+    дано line равно "  if (a.tag != FL_NUMBER) FL_TRY(fl_not_order(ctx, a, b, error));"
+    ожидается ["  if (a.tag != FL_NUMBER)", "    FL_TRY(fl_not_order(ctx, a, b, error));"]
+  пусть indent равно («C indent» от line)
+  пусть scan равно («C scan of» от line)
+  пусть close равно («C close of» от scan)
+  пусть rest равно («Piece» от line и (close плюс 1) и (длина line))
+  пусть opens равно (line начинается с (соединить («C spaces» от indent) с "if ("))
+  пусть guard равно opens и притом ((«C open of» от scan) равен (indent плюс 4)) и притом (close больше 0)
+  пусть call равно (rest начинается с " FL_TRY(") и притом («Ends with any» от line и [");"])
+  пусть moved равно (соединить («C spaces» от (indent плюс 2)) с («Piece» от rest и 2 и (длина rest)))
+  если guard и притом call то [(«Piece» от line и 1 и close), moved] иначе [line]
+
+тотальная функция «C forms»
+  принимает line: строка
+  возвращает список строки
+  пример «A trace line disappears»
+    дано line равно "  /* требует «x» */"
+    ожидается пустой список
+  пусть bare равно («C without trace» от line)
+  пусть tight равно (если bare начинается с "static const " то («C tight braces» от bare) иначе bare)
+  если «C full trace» от line то пустой список иначе («C if split» от tight)
+
+тотальная функция «C keep step»
+  принимает acc: «C kept», line: строка
+  возвращает «C kept»
+  пусть twice равно (acc.«any») и притом ((acc.«last») равен "") и притом (line равен "")
+  пусть done равно (добавить line к (acc.«done»))
+  пусть kept равно (запись «C kept» с «done» равным done и «last» равным line и «any» равным да)
+  если twice то acc иначе kept
+
+тотальная функция «C single blanks»
+  принимает lines: список строки
+  возвращает список строки
+  пример «Two blank lines become one»
+    дано lines равно ["a", "", "", "b"]
+    ожидается ["a", "", "b"]
+  пусть start равно (запись «C kept» с «done» равным пустой список и «last» равным "" и «any» равным нет)
+  (свёртка lines начиная с start как acc и line → «C keep step» от acc и line).«done»
+
+тотальная функция «C first list»
+  принимает choices: список (список строки)
+  возвращает список строки
+  пример «The first of two»
+    дано choices равно [["a"], ["b"]]
+    ожидается ["a"]
+  разбор choices
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то голова
+
+тотальная функция «C first fitting»
+  принимает allowed: признак, choices: список (список строки)
+  возвращает список строки
+  пример «Nothing is chosen when the shape does not hold»
+    дано allowed равно нет
+    дано choices равно [["a"]]
+    ожидается пустой список
+  пусть fitting равно (отфильтровать choices где choice → «C fits» от choice)
+  если allowed то («C first list» от fitting) иначе пустой список
+
+тотальная функция «C call forms»
+  принимает lead: строка, call: строка, tail: строка, indent: число
+  возвращает список строки
+  пример «Arguments continue under the parenthesis»
+    дано lead равно "  return "
+    дано call равно "fl_fail(ctx, error, FL_CODE_TYPE, \"функция «%s» принимает %lu аргум., получено %lu\")"
+    дано tail равно ";"
+    дано indent равно 2
+    ожидается ["  return fl_fail(ctx, error, FL_CODE_TYPE,",
+      "                 \"функция «%s» принимает %lu аргум., получено %lu\");"]
+  пусть scan равно («C scan of» от call)
+  пусть head равно (соединить lead с («Piece» от call и 1 и («C open of» от scan)))
+  пусть args равно («C args» от call)
+  пусть ends равно (соединить ")" с tail)
+  пусть below равно (indent плюс 4)
+  пусть aligned равно («C pack» от head и args и ends и ((длина lead) плюс («C open of» от scan)))
+  пусть under равно (приписать head к («C pack» от («C spaces» от below) и args и ends и below))
+  пусть whole равно ((«C open of» от scan) больше 0) и притом ((«C close of» от scan) равен (длина call))
+  «C first fitting» от whole и [aligned, under]
+
+тотальная функция «C name only»
+  принимает text: строка
+  возвращает признак
+  пример «A name of a function»
+    дано text равно "rule_list_call"
+    ожидается да
+  пример «Two words are not a name»
+    дано text равно "a b"
+    ожидается нет
+  пусть allowed равно "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789"
+  пусть strange равно (отфильтровать (разложить text на символы) где sign → не (allowed содержит sign))
+  (пусто strange) и притом ((длина text) больше 0)
+
+тотальная функция «C signature ends»
+  принимает line: строка, close: число
+  возвращает признак
+  пример «A definition ends with its brace»
+    дано line равно "fl_status f(fl_ctx *ctx) {"
+    дано close равно 24
+    ожидается да
+  пусть size равно (длина line)
+  пусть brace равно («Ends with any» от line и [") {"]) и притом (close равен (size минус 2))
+  пусть semi равно («Ends with any» от line и [");"]) и притом (close равен (size минус 1))
+  brace или semi
+
+тотальная функция «C wrap signature»
+  принимает line: строка
+  возвращает список строки
+  пример «A long signature breaks after a comma»
+    дано line равно "fl_status rule_list_slovo(fl_ctx *ctx, fl_value trebovanie, fl_value *result, fl_error *error) {"
+    ожидается ["fl_status rule_list_slovo(fl_ctx *ctx, fl_value trebovanie, fl_value *result,",
+      "                          fl_error *error) {"]
+  пусть scan равно («C scan of» от line)
+  пусть head равно («Piece» от line и 1 и («C open of» от scan))
+  пусть parts равно (разделить head по "fl_status ")
+  пусть front равно («First of» от parts)
+  пусть name равно («C last of» от parts)
+  пусть plain равно («C name only» от («Piece» от name и 1 и ((длина name) минус 1)))
+  пусть kinds равно (["", "static ", "const ", "static const "] содержит front) и притом ((длина parts) равен 2)
+  пусть ends равно («Piece» от line и («C close of» от scan) и (длина line))
+  пусть args равно («C args» от line)
+  пусть aligned равно («C pack» от head и args и ends и (длина head))
+  пусть alone равно (приписать (соединить front с "fl_status") к («C pack» от name и args и ends и (длина name)))
+  пусть shorter равно (((длина alone) плюс 1) меньше (длина aligned)) и притом («C fits» от alone)
+  пусть closes равно («C signature ends» от line и («C close of» от scan))
+  пусть holds равно kinds и притом plain и притом ((«C open of» от scan) больше 0) и притом closes
+  пусть chosen равно (если shorter то alone иначе aligned)
+  если holds то chosen иначе пустой список
+
+тотальная функция «C wrap constant»
+  принимает line: строка
+  возвращает список строки
+  пример «A text constant breaks after its kind»
+    дано line равно "static const fl_value rule_list_text_4 = {FL_STRING, {.string = {\"короче \", 13, 7}}};"
+    ожидается ["static const fl_value rule_list_text_4 = {FL_STRING,",
+      "                                          {.string = {\"короче \", 13, 7}}};"]
+  пусть parts равно (разделить line по " = {FL_STRING, ")
+  пусть front равно («First of» от parts)
+  пусть head равно (соединить front с " = {")
+  пусть body равно («C last of» от parts)
+  пусть name равно («Piece» от front и 23 и (длина front))
+  пусть kind равно (line начинается с "static const fl_value ") и притом ((длина parts) равен 2)
+  пусть value равно (body начинается с "{.string = {") и притом («Ends with any» от body и ["}}};"])
+  пусть beside равно [(соединить head с "FL_STRING,"), (соединить («C spaces» от (длина head)) с body)]
+  пусть under равно [head, (соединить "    FL_STRING, " с body)]
+  пусть apart равно [head, "    FL_STRING,", (соединить "    " с body)]
+  «C first fitting» от (kind и притом value и притом («C name only» от name)) и [beside, under, apart]
+
+тотальная функция «C assignment shape»
+  принимает lead: строка, value: строка, body: строка
+  возвращает признак
+  пример «A declaration with a call»
+    дано lead равно "const fl_status status"
+    дано value равно "f(x)"
+    дано body равно "const fl_status status = f(x);"
+    ожидается да
+  пусть allowed равно "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789 *"
+  пусть strange равно (отфильтровать (разложить lead на символы) где sign → не (allowed содержит sign))
+  пусть initial равно («Piece» от lead и 1 и 1)
+  пусть starts равно (не ((" *0123456789" содержит initial))) и притом (не (lead начинается с "return"))
+  пусть ends равно («Ends with any» от body и [";"]) и притом (value содержит "(")
+  (пусто strange) и притом starts и притом ends и притом ((длина lead) больше 0)
+
+тотальная функция «C assignment»
+  принимает line: строка
+  возвращает список строки
+  пример «A call that fits after the equals sign moves under it»
+    дано line равно "    const fl_status status = genetic_body(ctx, geny, obrazec, rodstvo, result, error);"
+    ожидается ["    const fl_status status =", "        genetic_body(ctx, geny, obrazec, rodstvo, result, error);"]
+  пусть indent равно («C indent» от line)
+  пусть body равно («Without leading spaces» от line)
+  пусть parts равно (разделить body по " = ")
+  пусть lead равно («First of» от parts)
+  пусть value равно («Piece» от body и ((длина lead) плюс 4) и ((длина body) минус 1))
+  пусть shape равно ((длина parts) больше 1) и притом («C assignment shape» от lead и value и body)
+  пусть short равно ((indent плюс 4) плюс ((длина value) плюс 1)) не больше («C width»)
+  пусть left равно (соединить [(«C spaces» от indent), lead, " ="] по "")
+  пусть moved равно [left, (соединить [(«C spaces» от (indent плюс 4)), value, ";"] по "")]
+  пусть forms равно («C call forms» от (соединить left с " ") и value и ";" и indent)
+  пусть chosen равно (если short то moved иначе forms)
+  если shape то chosen иначе пустой список
+
+тотальная функция «C guarded call»
+  принимает line: строка
+  возвращает список строки
+  пример «The call moves under the guard when it fits there»
+    дано line равно "    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t5, 3), rule_list_text_6, &fl_t7, error));"
+    ожидается ["    FL_TRY(", "        fl_b_soedinit(ctx, fl_list(fl_t5, 3), rule_list_text_6, &fl_t7, error));"]
+  пусть indent равно («C indent» от line)
+  пусть body равно («Without leading spaces» от line)
+  пусть inner равно («Piece» от body и 8 и ((длина body) минус 2))
+  пусть shape равно (body начинается с "FL_TRY(") и притом («Ends with any» от body и [");"])
+  пусть short равно ((indent плюс 4) плюс ((длина inner) плюс 2)) не больше («C width»)
+  пусть lead равно (соединить («C spaces» от indent) с "FL_TRY(")
+  пусть moved равно [lead, (соединить [(«C spaces» от (indent плюс 4)), inner, ");"] по "")]
+  пусть chosen равно (если short то moved иначе («C call forms» от lead и inner и ");" и indent))
+  если shape то chosen иначе пустой список
+
+тотальная функция «C plain call»
+  принимает line: строка
+  возвращает список строки
+  пример «A long return breaks between arguments»
+    дано line равно "  return fl_variant_new(ctx, \"Не начинается с\", rule_list_names_3, values, 1, out, error);"
+    ожидается ["  return fl_variant_new(ctx, \"Не начинается с\", rule_list_names_3, values, 1,",
+      "                        out, error);"]
+  пусть indent равно («C indent» от line)
+  пусть body равно («Without leading spaces» от line)
+  пусть lead равно («First of» от (отфильтровать ["return ", "*result = "] где l → body начинается с l))
+  пусть rest равно («Piece» от body и ((длина lead) плюс 1) и (длина body))
+  пусть call равно («Piece» от rest и 1 и ((длина rest) минус 1))
+  пусть open равно («C open of» от («C scan of» от call))
+  пусть named равно («C name only» от («Piece» от call и 1 и (open минус 1)))
+  пусть shape равно («Ends with any» от rest и [");"]) и притом (open больше 1) и притом named
+  если shape то («C call forms» от (соединить («C spaces» от indent) с lead) и call и ";" и indent) иначе пустой список
+
+тотальная функция «C call statement»
+  принимает line: строка
+  возвращает список строки
+  пример «A guarded call»
+    дано line равно "    FL_TRY(fl_b_soedinit(ctx, fl_list(fl_t5, 3), rule_list_text_6, &fl_t7, error));"
+    ожидается ["    FL_TRY(", "        fl_b_soedinit(ctx, fl_list(fl_t5, 3), rule_list_text_6, &fl_t7, error));"]
+  пусть forms равно [(«C assignment» от line), («C guarded call» от line), («C plain call» от line)]
+  «C first list» от (отфильтровать forms где form → не (пусто form))
+
+тотальная функция «C wrap»
+  принимает line: строка
+  возвращает список строки
+  пример «A short line stays»
+    дано line равно "  return x;"
+    ожидается ["  return x;"]
+  пусть forms равно [(«C wrap signature» от line), («C wrap constant» от line), («C call statement» от line)]
+  пусть found равно (отфильтровать forms где form → не (пусто form))
+  пусть wrapped равно (если пусто found то [line] иначе («C first list» от found))
+  если (длина line) не больше («C width») то [line] иначе wrapped
+
+тотальная функция «C dead store»
+  принимает line: «Coded line»
+  возвращает строка
+  пример «A value every branch assigns is declared bare»
+    дано line равно запись «Coded line» с «text» равным "  fl_value fl_t7 = fl_nothing();" и «next» равным "  if (a) {"
+    ожидается "  fl_value fl_t7;"
+  пример «A value filled by a call keeps its start»
+    дано line равно запись «Coded line» с «text» равным "  fl_value fl_t7 = fl_nothing();" и «next» равным "  f();"
+    ожидается "  fl_value fl_t7 = fl_nothing();"
+  пусть text равно (line.«text»)
+  пусть indent равно («C spaces» от («C indent» от text))
+  пусть body равно («Without leading spaces» от text)
+  пусть name равно («Piece» от body и 14 и ((длина body) минус 16))
+  пусть digits равно (пусто (отфильтровать (разложить name на символы) где sign → не ("0123456789" содержит sign)))
+  пусть shape равно (body начинается с "fl_value fl_t") и притом («Ends with any» от body и [" = fl_nothing();"])
+  пусть branches равно ((line.«next») начинается с (соединить indent с "if ("))
+  пусть bare равно (соединить [indent, "fl_value fl_t", name, ";"] по "")
+  если shape и притом digits и притом ((длина name) больше 0) и притом branches то bare иначе text
+
+тотальная функция «Tidy C»
+  принимает «текст»: строка
+  возвращает строка
+  пример «Trace comments go and a guard gets its own line»
+    дано «текст» равно "  x = y; /* «длина» */\n  if (a) FL_TRY(f(ctx, a, error));\n\n\n}"
+    ожидается "  x = y;\n  if (a)\n    FL_TRY(f(ctx, a, error));\n\n}"
+  пусть lines равно («C joined» от (разделить «текст» по "\n"))
+  пусть formed равно (свёртка lines начиная с (пустой список) как a и l → «Соединить списки» от a и («C forms» от l))
+  пусть kept равно («C single blanks» от formed)
+  пусть wrapped равно (свёртка kept начиная с (пустой список) как a и l → «Соединить списки» от a и («C wrap» от l))
+  соединить (отобразить («Raw lines» от wrapped) как l → «C dead store» от l) по "\n"

@@ -247,7 +247,7 @@ public static class FlangCli
                         break;
                     case 'u':
                         output.Append((char)int.Parse(
-                            source.Substring(at, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture));
+                            source.AsSpan(at, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture));
                         at += 4;
                         break;
                     default:
@@ -278,7 +278,7 @@ public static class FlangCli
             {
                 throw new FormatException("не значение JSON");
             }
-            return source.Substring(from, at - from);
+            return source[from..at];
         }
 
         private void Expect(char symbol)
@@ -470,14 +470,14 @@ public static class FlangCli
         {
             Type type = Type.GetType(name, throwOnError: true)!;
             contextMethod = type.GetMethod("NewContext", Type.EmptyTypes)!;
-            callMethod = type.GetMethod("Call", new[] { typeof(Ctx), typeof(string), typeof(Value[]) })!;
+            callMethod = type.GetMethod("Call", [typeof(Ctx), typeof(string), typeof(Value[])])!;
             entryMethod = type.GetMethod("Entry", Type.EmptyTypes)!;
         }
 
         public Ctx NewContext() => (Ctx)contextMethod.Invoke(null, null)!;
 
         public Value Call(Ctx ctx, string name, Value[] args) =>
-            (Value)callMethod.Invoke(null, new object[] { ctx, name, args })!;
+            (Value)callMethod.Invoke(null, [ctx, name, args])!;
 
         public Flang.EntryTable Entry() => (Flang.EntryTable)entryMethod.Invoke(null, null)!;
     }
@@ -518,7 +518,7 @@ public static class FlangCli
         {
             var raw = query.TryGetValue("args", out object? given) && given is not null
                 ? (List<object?>)given
-                : new List<object?>();
+                : [];
             args = new Value[raw.Count];
             for (int index = 0; index < args.Length; index++)
             {

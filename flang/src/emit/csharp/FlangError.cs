@@ -24,7 +24,7 @@
 using System;
 
 /// <summary>Диагностика flang: код и текст.</summary>
-public sealed class FlangError : Exception
+public sealed class FlangError(string code, string message) : Exception(message)
 {
     /// <summary>Коды диагностик (SPEC, раздел 7) — константами.</summary>
     public const string CodeType = "FLANG_TYPE";
@@ -36,13 +36,7 @@ public sealed class FlangError : Exception
     public const string CodeParse = "FLANG_PARSE";
 
     /// <summary>Код диагностики: «FLANG_TYPE», «FTS_UTILITY_PROPERTY» и прочие.</summary>
-    public string Code { get; }
-
-    public FlangError(string code, string message)
-        : base(message)
-    {
-        Code = code;
-    }
+    public string Code { get; } = code;
 
     /// <summary>Текст диагностики; никогда не null, в отличие от Message вообще.</summary>
     public string Text => Message ?? "";

@@ -13,9 +13,9 @@
  * любой язык, у которого есть трубы, — Python, Node, shell. Ни FFI, ни ABI.
  *
  * ── Протокол ───────────────────────────────────────────────────────────────
- * Запрос — одна строка:  {"fn":"Имя функции","args":[…],"depth":"10000","steps":"1000000"}
- * Ответ  — одна строка:  {"ok":true,"value":…}
- *                    или {"ok":false,"code":"FLANG_TYPE","message":"…"}
+ * Запрос — одна строка:  {"fn":"Имя
+ * функции","args":[…],"depth":"10000","steps":"1000000"} Ответ  — одна строка:
+ * {"ok":true,"value":…} или {"ok":false,"code":"FLANG_TYPE","message":"…"}
  *
  * У программы с процессами есть второй запрос — прогон:
  *   {"run":"имя прогона","seed":"4172","turns":"10000","journal":"1"}
@@ -29,13 +29,14 @@
  * проверяется, а не обещается.
  *
  * `journal` — наблюдение, и оно НЕОБЯЗАТЕЛЬНО. По умолчанию единица: прогон
- * ведёт журнал целиком, иначе сверять со свидетелем было бы нечего. `"journal":"0"`
- * — рабочий режим: журнала нет ни в памяти, ни в ответе, и поля «журнал» в
- * ответе тоже нет (пустой список означал бы «пробегов не было»). Разница не в
- * удобстве вывода: запись журнала стоит памяти на КАЖДОМ пробеге, а арена
- * рантайма не возвращает ничего, поэтому долгоживущий процесс с журналом течёт
- * тем быстрее, чем дольше живёт. Наблюдаемое поведение от признака не зависит
- * ничем — те же исходы, состояния и решения надзора при том же семени.
+ * ведёт журнал целиком, иначе сверять со свидетелем было бы нечего.
+ * `"journal":"0"` — рабочий режим: журнала нет ни в памяти, ни в ответе, и поля
+ * «журнал» в ответе тоже нет (пустой список означал бы «пробегов не было»).
+ * Разница не в удобстве вывода: запись журнала стоит памяти на КАЖДОМ пробеге,
+ * а арена рантайма не возвращает ничего, поэтому долгоживущий процесс с
+ * журналом течёт тем быстрее, чем дольше живёт. Наблюдаемое поведение от
+ * признака не зависит ничем — те же исходы, состояния и решения надзора при том
+ * же семени.
  *
  * Значения размечены тегами, потому что JSON беднее flang:
  *   null            «ничто»
@@ -96,7 +97,8 @@
 #define FL_PROGRAM_CALL fl_program_call
 #endif
 
-extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *args, size_t count,
+extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name,
+                                 const fl_value *args, size_t count,
                                  fl_value *result, fl_error *error);
 
 /*
@@ -105,13 +107,13 @@ extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *
  * из JSON ДО вызова.
  *
  * Почему это здесь, а не внутри функций. Значения приходят СНАРУЖИ, а типов в
- * напечатанном коде нет вовсе — и `«Факториал» принимает н: неотрицательное` спокойно
- * считался при `н` равном −3 и 2.5. Хуже того, при 1e300 он упирался в
+ * напечатанном коде нет вовсе — и `«Факториал» принимает н: неотрицательное`
+ * спокойно считался при `н` равном −3 и 2.5. Хуже того, при 1e300 он упирался в
  * FLANG_RECURSION_LIMIT: доказательство завершения `тотальной` стоит НА ТИПЕ (у
- * `неотрицательное` есть потолок 2^53−1, ниже которого `н минус 1` точно меньше `н`), и
- * сторож убывания в такую функцию не печатается вовсе. Значение вне типа
- * выносит вместе с типом и доказательство — цепочка вечна, ловить её нечем.
- * Поэтому дверь стоит ДО вычисления и ровно одна.
+ * `неотрицательное` есть потолок 2^53−1, ниже которого `н минус 1` точно меньше
+ * `н`), и сторож убывания в такую функцию не печатается вовсе. Значение вне
+ * типа выносит вместе с типом и доказательство — цепочка вечна, ловить её
+ * нечем. Поэтому дверь стоит ДО вычисления и ровно одна.
  */
 #ifndef FL_PROGRAM_ENTRY
 #define FL_PROGRAM_ENTRY fl_program_entry
@@ -190,9 +192,11 @@ extern const fl_conc_plan *FL_PROGRAM_CONC_PLAN(void);
 /* Отказ «строка не текст»: номер строки, номер октета в ней (с единицы), длина
    строки в октетах и значение негодного октета. Текст один на семь целей —
    сторож сверяет его байт в байт. */
-static void cli_not_text(size_t line, const char *bytes, size_t length, size_t at) {
+static void cli_not_text(size_t line, const char *bytes, size_t length,
+                         size_t at) {
   fprintf(stderr,
-          "FLANG_IO_NOT_TEXT: строка %lu не текст: октет %lu из %lu (0x%02X) не складывается в UTF-8; запрос обязан ехать в UTF-8\n",
+          "FLANG_IO_NOT_TEXT: строка %lu не текст: октет %lu из %lu (0x%02X) "
+          "не складывается в UTF-8; запрос обязан ехать в UTF-8\n",
           (unsigned long)line, (unsigned long)at, (unsigned long)length,
           (unsigned)(unsigned char)bytes[at - 1]);
 }
@@ -249,7 +253,8 @@ static void skip_spaces(fl_reader *reader) {
 
 static bool expect(fl_reader *reader, char symbol) {
   skip_spaces(reader);
-  if (reader->offset < reader->bytes && reader->text[reader->offset] == symbol) {
+  if (reader->offset < reader->bytes &&
+      reader->text[reader->offset] == symbol) {
     reader->offset += 1;
     return true;
   }
@@ -258,13 +263,15 @@ static bool expect(fl_reader *reader, char symbol) {
 
 static bool peek(fl_reader *reader, char symbol) {
   skip_spaces(reader);
-  return reader->offset < reader->bytes && reader->text[reader->offset] == symbol;
+  return reader->offset < reader->bytes &&
+         reader->text[reader->offset] == symbol;
 }
 
 static bool read_literal(fl_reader *reader, const char *word) {
   const size_t length = strlen(word);
   skip_spaces(reader);
-  if (reader->offset + length > reader->bytes || memcmp(reader->text + reader->offset, word, length) != 0) {
+  if (reader->offset + length > reader->bytes ||
+      memcmp(reader->text + reader->offset, word, length) != 0) {
     return false;
   }
   reader->offset += length;
@@ -323,13 +330,15 @@ static bool read_text(fl_reader *reader, char **out, size_t *bytes) {
     return false;
   }
   start = reader->offset;
-  while (reader->offset < reader->bytes && reader->text[reader->offset] != '"') {
+  while (reader->offset < reader->bytes &&
+         reader->text[reader->offset] != '"') {
     reader->offset += reader->text[reader->offset] == '\\' ? 2 : 1;
   }
   if (reader->offset > reader->bytes) {
     return false;
   }
-  data = (char *)fl_arena_alloc(reader->ctx->arena, (reader->offset - start) + 1);
+  data =
+      (char *)fl_arena_alloc(reader->ctx->arena, (reader->offset - start) + 1);
   if (data == NULL) {
     return false;
   }
@@ -348,34 +357,66 @@ static bool read_text(fl_reader *reader, char **out, size_t *bytes) {
         return false;
       }
       switch (reader->text[index]) {
-        case 'n': data[used] = '\n'; used += 1; index += 1; break;
-        case 't': data[used] = '\t'; used += 1; index += 1; break;
-        case 'r': data[used] = '\r'; used += 1; index += 1; break;
-        case 'b': data[used] = '\b'; used += 1; index += 1; break;
-        case 'f': data[used] = '\f'; used += 1; index += 1; break;
-        case '"': data[used] = '"'; used += 1; index += 1; break;
-        case '\\': data[used] = '\\'; used += 1; index += 1; break;
-        case '/': data[used] = '/'; used += 1; index += 1; break;
-        case 'u': {
-          unsigned long code = 0;
-          if (index + 5 > reader->offset) {
-            return false;
-          }
-          code = read_hex4(reader->text + index + 1);
-          index += 5;
-          if (code >= 0xD800u && code <= 0xDBFFu && index + 6 <= reader->offset &&
-              reader->text[index] == '\\' && reader->text[index + 1] == 'u') {
-            const unsigned long low = read_hex4(reader->text + index + 2);
-            if (low >= 0xDC00u && low <= 0xDFFFu) {
-              code = 0x10000u + ((code - 0xD800u) << 10) + (low - 0xDC00u);
-              index += 6;
-            }
-          }
-          used += encode_utf8(code, data + used);
-          break;
-        }
-        default:
+      case 'n':
+        data[used] = '\n';
+        used += 1;
+        index += 1;
+        break;
+      case 't':
+        data[used] = '\t';
+        used += 1;
+        index += 1;
+        break;
+      case 'r':
+        data[used] = '\r';
+        used += 1;
+        index += 1;
+        break;
+      case 'b':
+        data[used] = '\b';
+        used += 1;
+        index += 1;
+        break;
+      case 'f':
+        data[used] = '\f';
+        used += 1;
+        index += 1;
+        break;
+      case '"':
+        data[used] = '"';
+        used += 1;
+        index += 1;
+        break;
+      case '\\':
+        data[used] = '\\';
+        used += 1;
+        index += 1;
+        break;
+      case '/':
+        data[used] = '/';
+        used += 1;
+        index += 1;
+        break;
+      case 'u': {
+        unsigned long code = 0;
+        if (index + 5 > reader->offset) {
           return false;
+        }
+        code = read_hex4(reader->text + index + 1);
+        index += 5;
+        if (code >= 0xD800u && code <= 0xDBFFu && index + 6 <= reader->offset &&
+            reader->text[index] == '\\' && reader->text[index + 1] == 'u') {
+          const unsigned long low = read_hex4(reader->text + index + 2);
+          if (low >= 0xDC00u && low <= 0xDFFFu) {
+            code = 0x10000u + ((code - 0xD800u) << 10) + (low - 0xDC00u);
+            index += 6;
+          }
+        }
+        used += encode_utf8(code, data + used);
+        break;
+      }
+      default:
+        return false;
       }
     }
   }
@@ -404,11 +445,14 @@ static bool read_number_text(fl_reader *reader, double *out) {
   return true;
 }
 
-static bool read_pairs(fl_reader *reader, const char ***names, fl_value **values, size_t *count) {
+static bool read_pairs(fl_reader *reader, const char ***names,
+                       fl_value **values, size_t *count) {
   size_t capacity = 8;
   size_t used = 0;
-  const char **name_list = (const char **)fl_arena_alloc(reader->ctx->arena, capacity * sizeof(const char *));
-  fl_value *value_list = (fl_value *)fl_arena_alloc(reader->ctx->arena, capacity * sizeof(fl_value));
+  const char **name_list = (const char **)fl_arena_alloc(
+      reader->ctx->arena, capacity * sizeof(const char *));
+  fl_value *value_list = (fl_value *)fl_arena_alloc(
+      reader->ctx->arena, capacity * sizeof(fl_value));
   if (name_list == NULL || value_list == NULL) {
     return false;
   }
@@ -426,8 +470,10 @@ static bool read_pairs(fl_reader *reader, const char ***names, fl_value **values
     char *name = NULL;
     size_t bytes = 0;
     if (used == capacity) {
-      const char **bigger_names = (const char **)fl_arena_alloc(reader->ctx->arena, capacity * 2 * sizeof(const char *));
-      fl_value *bigger_values = (fl_value *)fl_arena_alloc(reader->ctx->arena, capacity * 2 * sizeof(fl_value));
+      const char **bigger_names = (const char **)fl_arena_alloc(
+          reader->ctx->arena, capacity * 2 * sizeof(const char *));
+      fl_value *bigger_values = (fl_value *)fl_arena_alloc(
+          reader->ctx->arena, capacity * 2 * sizeof(fl_value));
       if (bigger_names == NULL || bigger_values == NULL) {
         return false;
       }
@@ -437,7 +483,8 @@ static bool read_pairs(fl_reader *reader, const char ***names, fl_value **values
       value_list = bigger_values;
       capacity *= 2;
     }
-    if (!expect(reader, '[') || !read_text(reader, &name, &bytes) || !expect(reader, ',')) {
+    if (!expect(reader, '[') || !read_text(reader, &name, &bytes) ||
+        !expect(reader, ',')) {
       return false;
     }
     if (!read_value(reader, &value_list[used]) || !expect(reader, ']')) {
@@ -462,7 +509,8 @@ static bool read_pairs(fl_reader *reader, const char ***names, fl_value **values
 static bool read_items(fl_reader *reader, fl_value *out) {
   size_t capacity = 8;
   size_t used = 0;
-  fl_value *items = (fl_value *)fl_arena_alloc(reader->ctx->arena, capacity * sizeof(fl_value));
+  fl_value *items = (fl_value *)fl_arena_alloc(reader->ctx->arena,
+                                               capacity * sizeof(fl_value));
   if (items == NULL) {
     return false;
   }
@@ -476,7 +524,8 @@ static bool read_items(fl_reader *reader, fl_value *out) {
   }
   for (;;) {
     if (used == capacity) {
-      fl_value *bigger = (fl_value *)fl_arena_alloc(reader->ctx->arena, capacity * 2 * sizeof(fl_value));
+      fl_value *bigger = (fl_value *)fl_arena_alloc(
+          reader->ctx->arena, capacity * 2 * sizeof(fl_value));
       if (bigger == NULL) {
         return false;
       }
@@ -556,7 +605,8 @@ static bool read_value(fl_reader *reader, fl_value *out) {
       if (!read_pairs(reader, &names, &values, &count)) {
         return false;
       }
-      if (fl_record_new(reader->ctx, names, values, count, out, NULL) != FL_OK) {
+      if (fl_record_new(reader->ctx, names, values, count, out, NULL) !=
+          FL_OK) {
         return false;
       }
       return expect(reader, '}');
@@ -573,14 +623,16 @@ static bool read_value(fl_reader *reader, fl_value *out) {
       if (expect(reader, ',')) {
         char *key = NULL;
         size_t key_bytes = 0;
-        if (!read_text(reader, &key, &key_bytes) || strcmp(key, "f") != 0 || !expect(reader, ':')) {
+        if (!read_text(reader, &key, &key_bytes) || strcmp(key, "f") != 0 ||
+            !expect(reader, ':')) {
           return false;
         }
         if (!read_pairs(reader, &names, &values, &count)) {
           return false;
         }
       }
-      if (fl_variant_new(reader->ctx, name, names, values, count, out, NULL) != FL_OK) {
+      if (fl_variant_new(reader->ctx, name, names, values, count, out, NULL) !=
+          FL_OK) {
         return false;
       }
       return expect(reader, '}');
@@ -597,19 +649,33 @@ static void write_text(const char *utf8, size_t bytes) {
   for (index = 0; index < bytes; index += 1) {
     const unsigned char symbol = (unsigned char)utf8[index];
     switch (symbol) {
-      case '"': fputs("\\\"", stdout); break;
-      case '\\': fputs("\\\\", stdout); break;
-      case '\n': fputs("\\n", stdout); break;
-      case '\r': fputs("\\r", stdout); break;
-      case '\t': fputs("\\t", stdout); break;
-      case '\b': fputs("\\b", stdout); break;
-      case '\f': fputs("\\f", stdout); break;
-      default:
-        if (symbol < 0x20u) {
-          printf("\\u%04x", (unsigned)symbol);
-        } else {
-          putchar((char)symbol);
-        }
+    case '"':
+      fputs("\\\"", stdout);
+      break;
+    case '\\':
+      fputs("\\\\", stdout);
+      break;
+    case '\n':
+      fputs("\\n", stdout);
+      break;
+    case '\r':
+      fputs("\\r", stdout);
+      break;
+    case '\t':
+      fputs("\\t", stdout);
+      break;
+    case '\b':
+      fputs("\\b", stdout);
+      break;
+    case '\f':
+      fputs("\\f", stdout);
+      break;
+    default:
+      if (symbol < 0x20u) {
+        printf("\\u%04x", (unsigned)symbol);
+      } else {
+        putchar((char)symbol);
+      }
     }
   }
   putchar('"');
@@ -619,78 +685,81 @@ static void write_value(fl_value value) {
   size_t index = 0;
   char number[FL_NUMBER_TEXT_MAX];
   switch (value.tag) {
-    case FL_NOTHING:
-      fputs("null", stdout);
-      return;
-    case FL_FLAG:
-      fputs(value.as.flag ? "true" : "false", stdout);
-      return;
-    case FL_NUMBER:
-      /* −0 обязан доехать до сверки со знаком: Object.is(0, −0) ложно. */
-      fl_number_text(value.as.number, number);
-      fputs("{\"n\":", stdout);
-      if (value.as.number == 0.0 && !(1.0 / value.as.number > 0.0)) {
-        write_text("-0", 2);
-      } else {
-        write_text(number, strlen(number));
-      }
-      putchar('}');
-      return;
-    case FL_STRING:
-      fputs("{\"s\":", stdout);
-      write_text(value.as.string.utf8, value.as.string.bytes);
-      putchar('}');
-      return;
-    case FL_LIST:
-      fputs("{\"l\":[", stdout);
-      for (index = 0; index < value.as.list.count; index += 1) {
-        if (index > 0) {
-          putchar(',');
-        }
-        write_value(value.as.list.items[index]);
-      }
-      fputs("]}", stdout);
-      return;
-    case FL_RECORD:
-      fputs("{\"r\":[", stdout);
-      for (index = 0; index < value.as.record->count; index += 1) {
-        if (index > 0) {
-          putchar(',');
-        }
-        putchar('[');
-        write_text(value.as.record->fields[index].name, strlen(value.as.record->fields[index].name));
+  case FL_NOTHING:
+    fputs("null", stdout);
+    return;
+  case FL_FLAG:
+    fputs(value.as.flag ? "true" : "false", stdout);
+    return;
+  case FL_NUMBER:
+    /* −0 обязан доехать до сверки со знаком: Object.is(0, −0) ложно. */
+    fl_number_text(value.as.number, number);
+    fputs("{\"n\":", stdout);
+    if (value.as.number == 0.0 && !(1.0 / value.as.number > 0.0)) {
+      write_text("-0", 2);
+    } else {
+      write_text(number, strlen(number));
+    }
+    putchar('}');
+    return;
+  case FL_STRING:
+    fputs("{\"s\":", stdout);
+    write_text(value.as.string.utf8, value.as.string.bytes);
+    putchar('}');
+    return;
+  case FL_LIST:
+    fputs("{\"l\":[", stdout);
+    for (index = 0; index < value.as.list.count; index += 1) {
+      if (index > 0) {
         putchar(',');
-        write_value(value.as.record->fields[index].value);
-        putchar(']');
       }
-      fputs("]}", stdout);
-      return;
-    case FL_VARIANT:
-      fputs("{\"v\":", stdout);
-      write_text(value.as.variant->name, strlen(value.as.variant->name));
-      fputs(",\"f\":[", stdout);
-      for (index = 0; index < value.as.variant->count; index += 1) {
-        if (index > 0) {
-          putchar(',');
-        }
-        putchar('[');
-        write_text(value.as.variant->fields[index].name, strlen(value.as.variant->fields[index].name));
+      write_value(value.as.list.items[index]);
+    }
+    fputs("]}", stdout);
+    return;
+  case FL_RECORD:
+    fputs("{\"r\":[", stdout);
+    for (index = 0; index < value.as.record->count; index += 1) {
+      if (index > 0) {
         putchar(',');
-        write_value(value.as.variant->fields[index].value);
-        putchar(']');
       }
-      fputs("]}", stdout);
-      return;
+      putchar('[');
+      write_text(value.as.record->fields[index].name,
+                 strlen(value.as.record->fields[index].name));
+      putchar(',');
+      write_value(value.as.record->fields[index].value);
+      putchar(']');
+    }
+    fputs("]}", stdout);
+    return;
+  case FL_VARIANT:
+    fputs("{\"v\":", stdout);
+    write_text(value.as.variant->name, strlen(value.as.variant->name));
+    fputs(",\"f\":[", stdout);
+    for (index = 0; index < value.as.variant->count; index += 1) {
+      if (index > 0) {
+        putchar(',');
+      }
+      putchar('[');
+      write_text(value.as.variant->fields[index].name,
+                 strlen(value.as.variant->fields[index].name));
+      putchar(',');
+      write_value(value.as.variant->fields[index].value);
+      putchar(']');
+    }
+    fputs("]}", stdout);
+    return;
   }
   fputs("null", stdout);
 }
 
-/* ───────────────────────────── прогон конкурентной программы ─────────────────────────────
-   Ответ отличается от ответа на вызов функции не украшением, а существом: у
-   конкурентной программы нет одного значения, есть исход, состояния всех
-   процессов и ЖУРНАЛ ДОСТАВОК — то самое чередование, которое обязано совпасть
-   со свидетелем побайтово при том же семени (контракт, «Что проверяется и чем»,
-   пункт 2). Ради этого журнал и печатается целиком, а не сводкой. */
+/* ───────────────────────────── прогон конкурентной программы
+   ───────────────────────────── Ответ отличается от ответа на вызов функции не
+   украшением, а существом: у конкурентной программы нет одного значения, есть
+   исход, состояния всех процессов и ЖУРНАЛ ДОСТАВОК — то самое чередование,
+   которое обязано совпасть со свидетелем побайтово при том же семени (контракт,
+   «Что проверяется и чем», пункт 2). Ради этого журнал и печатается целиком, а
+   не сводкой. */
 
 #ifdef FL_WITH_CONC
 /* Число едет строкой по той же причине, что и в «n»: иначе потерялись бы NaN,
@@ -856,25 +925,25 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
      у `turns`: это настройка запроса, а не потолок модели. */
   double processes = 0.0;
   /* Сколько потоков ведут прогон. Ноль и единица — проверочный режим: один
-     поток, чередование по семени, побайтовая сверка со свидетелем. Больше единицы —
-     рабочий: столько потоков ОС, и семя больше НЕ ОПРЕДЕЛЯЕТ чередования.
-     Умолчание — проверочный, и это не осторожность: воспроизводимость здесь
-     часть договора языка, и терять её молча, «потому что машина многоядерная»,
-     нельзя. Кто хочет ядер, говорит об этом вслух — и получает в ответе поле
-     «рабочих», чтобы не спутать один режим с другим.
+     поток, чередование по семени, побайтовая сверка со свидетелем. Больше
+     единицы — рабочий: столько потоков ОС, и семя больше НЕ ОПРЕДЕЛЯЕТ
+     чередования. Умолчание — проверочный, и это не осторожность:
+     воспроизводимость здесь часть договора языка, и терять её молча, «потому
+     что машина многоядерная», нельзя. Кто хочет ядер, говорит об этом вслух — и
+     получает в ответе поле «рабочих», чтобы не спутать один режим с другим.
 
      Слово «все» просит столько потоков, сколько у машины ядер: «параллельно,
      сколько даёт среда» из контракта — это число, а не оборот речи. */
   double workers = 0.0;
-  /* Журнал по умолчанию ВЕДЁТСЯ: прогон — основной способ звать эту программу, и
-     по журналу он сверяется со свидетелем. Выключает его тот, кто знает, что зовёт
-     не прогон, а работу, — и знает, что платит за наблюдение памятью на каждом
-     пробеге. Умолчание наоборот сломало бы сверку молча. */
+  /* Журнал по умолчанию ВЕДЁТСЯ: прогон — основной способ звать эту программу,
+     и по журналу он сверяется со свидетелем. Выключает его тот, кто знает, что
+     зовёт не прогон, а работу, — и знает, что платит за наблюдение памятью на
+     каждом пробеге. Умолчание наоборот сломало бы сверку молча. */
   double journal = 1.0;
-  /* Хозяин ввода-вывода (седьмое действие, `поручить`). По умолчанию ВЫКЛЮЧЕН, и
-     это не осторожность: прогон — свидетель, с которым побайтово сверяется журнал
-     `flang/src/conc.mjs`, а хозяин, читающий настоящие файлы, сделал бы журнал
-     зависящим от содержимого диска. Просит его тот, кто зовёт программу
+  /* Хозяин ввода-вывода (седьмое действие, `поручить`). По умолчанию ВЫКЛЮЧЕН,
+     и это не осторожность: прогон — свидетель, с которым побайтово сверяется
+     журнал `flang/src/conc.mjs`, а хозяин, читающий настоящие файлы, сделал бы
+     журнал зависящим от содержимого диска. Просит его тот, кто зовёт программу
      РАБОТАТЬ, а не проверяться, — и просит вслух, полем `"host": 1`. */
   double host = 0.0;
 #endif
@@ -890,32 +959,42 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
   reader.ctx = &ctx;
 
   if (!expect(&reader, '{')) {
-    fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"ожидался объект запроса\"}\n", stdout);
+    fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"ожидался объект "
+          "запроса\"}\n",
+          stdout);
     return;
   }
   for (;;) {
     char *key = NULL;
     size_t key_bytes = 0;
     if (!read_text(&reader, &key, &key_bytes) || !expect(&reader, ':')) {
-      fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый запрос\"}\n", stdout);
+      fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый "
+            "запрос\"}\n",
+            stdout);
       return;
     }
     if (strcmp(key, "fn") == 0) {
       if (!read_text(&reader, &name, &name_bytes)) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивое имя функции\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивое имя "
+              "функции\"}\n",
+              stdout);
         return;
       }
     } else if (strcmp(key, "depth") == 0) {
       double depth = 0.0;
       if (!read_number_text(&reader, &depth)) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый предел глубины\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый "
+              "предел глубины\"}\n",
+              stdout);
         return;
       }
       ctx.max_depth = (size_t)depth;
     } else if (strcmp(key, "steps") == 0) {
       double steps = 0.0;
       if (!read_number_text(&reader, &steps)) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый предел шагов\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый "
+              "предел шагов\"}\n",
+              stdout);
         return;
       }
       ctx.max_steps = (size_t)steps;
@@ -923,49 +1002,67 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
     } else if (strcmp(key, "run") == 0) {
       size_t run_bytes = 0;
       if (!read_text(&reader, &run, &run_bytes)) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивое имя прогона\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивое имя "
+              "прогона\"}\n",
+              stdout);
         return;
       }
     } else if (strcmp(key, "seed") == 0) {
       if (!read_number_text(&reader, &seed)) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивое семя\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивое "
+              "семя\"}\n",
+              stdout);
         return;
       }
     } else if (strcmp(key, "turns") == 0) {
       if (!read_number_text(&reader, &turns)) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый предел пробегов\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый "
+              "предел пробегов\"}\n",
+              stdout);
         return;
       }
     } else if (strcmp(key, "processes") == 0) {
       if (!read_number_text(&reader, &processes)) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый предел числа процессов\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый "
+              "предел числа процессов\"}\n",
+              stdout);
         return;
       }
     } else if (strcmp(key, "workers") == 0) {
       if (!read_number_text(&reader, &workers)) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивое число потоков\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивое "
+              "число потоков\"}\n",
+              stdout);
         return;
       }
     } else if (strcmp(key, "journal") == 0) {
       if (!read_number_text(&reader, &journal)) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый признак журнала\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый "
+              "признак журнала\"}\n",
+              stdout);
         return;
       }
     } else if (strcmp(key, "host") == 0) {
       if (!read_number_text(&reader, &host)) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый признак хозяина\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый "
+              "признак хозяина\"}\n",
+              stdout);
         return;
       }
 #endif
     } else if (strcmp(key, "cost") == 0) {
       if (!read_number_text(&reader, &cost)) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый признак цены\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый "
+              "признак цены\"}\n",
+              stdout);
         return;
       }
     } else if (strcmp(key, "args") == 0) {
       fl_value list = fl_nothing();
       if (!read_items(&reader, &list) || list.as.list.count > FL_MAX_ARGS) {
-        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивые аргументы\"}\n", stdout);
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивые "
+              "аргументы\"}\n",
+              stdout);
         return;
       }
       count = list.as.list.count;
@@ -973,7 +1070,9 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
         args[name_bytes] = list.as.list.items[name_bytes];
       }
     } else {
-      fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неизвестное поле запроса\"}\n", stdout);
+      fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неизвестное поле "
+            "запроса\"}\n",
+            stdout);
       return;
     }
     if (expect(&reader, ',')) {
@@ -995,14 +1094,17 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
     size_t turn_limit = 0;
     size_t process_limit = 0;
     size_t worker_count = 0;
-    if (!limit_from_number(turns, &turn_limit) || !limit_from_number(processes, &process_limit) ||
+    if (!limit_from_number(turns, &turn_limit) ||
+        !limit_from_number(processes, &process_limit) ||
         !limit_from_number(workers, &worker_count)) {
-      fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"предел в запросе отрицателен или не число\"}\n",
+      fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"предел в запросе "
+            "отрицателен или не число\"}\n",
             stdout);
       return;
     }
-    if (fl_conc_run_host(&ctx, plan, run, seed, turn_limit, process_limit, worker_count, journal != 0.0,
-                         host != 0.0, &outcome, &error) == FL_OK) {
+    if (fl_conc_run_host(&ctx, plan, run, seed, turn_limit, process_limit,
+                         worker_count, journal != 0.0, host != 0.0, &outcome,
+                         &error) == FL_OK) {
       write_run(run, &outcome);
       return;
     }
@@ -1016,7 +1118,9 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
 #endif
 
   if (name == NULL) {
-    fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"в запросе нет имени функции\"}\n", stdout);
+    fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"в запросе нет имени "
+          "функции\"}\n",
+          stdout);
     return;
   }
 
@@ -1032,17 +1136,21 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
     fputs("{\"ok\":true,\"value\":", stdout);
     write_value(result);
     if (cost != 0.0) {
-      printf(",\"steps\":\"%lu\",\"handed\":\"%lu\",\"reserved\":\"%lu\"", (unsigned long)ctx.steps,
-             (unsigned long)arena->handed, (unsigned long)arena->reserved);
-      printf(",\"depth\":\"%lu\",\"seconds\":\"%.6f\"", (unsigned long)ctx.depth_peak, spent);
+      printf(",\"steps\":\"%lu\",\"handed\":\"%lu\",\"reserved\":\"%lu\"",
+             (unsigned long)ctx.steps, (unsigned long)arena->handed,
+             (unsigned long)arena->reserved);
+      printf(",\"depth\":\"%lu\",\"seconds\":\"%.6f\"",
+             (unsigned long)ctx.depth_peak, spent);
     }
     fputs("}\n", stdout);
     return;
   }
   fputs("{\"ok\":false,\"code\":", stdout);
-  write_text(error.code == NULL ? "FLANG_UNKNOWN" : error.code, strlen(error.code == NULL ? "FLANG_UNKNOWN" : error.code));
+  write_text(error.code == NULL ? "FLANG_UNKNOWN" : error.code,
+             strlen(error.code == NULL ? "FLANG_UNKNOWN" : error.code));
   fputs(",\"message\":", stdout);
-  write_text(error.message == NULL ? "" : error.message, strlen(error.message == NULL ? "" : error.message));
+  write_text(error.message == NULL ? "" : error.message,
+             strlen(error.message == NULL ? "" : error.message));
   fputs("}\n", stdout);
 }
 
@@ -1074,7 +1182,8 @@ static int run_main(int argc, char **argv) {
 #endif
   input = read_all(stdin, &length);
   if (input == NULL) {
-    fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"не прочитан вход\"}\n", stdout);
+    fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"не прочитан вход\"}\n",
+          stdout);
     return 1;
   }
   fl_arena_init(&arena);
@@ -1133,10 +1242,10 @@ static int run_main(int argc, char **argv) {
  * несут его с запасом в 2,5 раза.
  *
  * Предел берётся впечатанный (`--max-depth` при печати) либо названный ключом
- * `--предел-глубины` — но НЕ тот, что приедет в запросе: стек заводится один раз
- * на процесс, а запросов в трубе сколько угодно. Запрос, попросивший больше
- * заведённого, упрётся в сторож `fl_enter` и получит объявленный отказ с честным
- * текстом про хозяина — не молчаливую смерть.
+ * `--предел-глубины` — но НЕ тот, что приедет в запросе: стек заводится один
+ * раз на процесс, а запросов в трубе сколько угодно. Запрос, попросивший больше
+ * заведённого, упрётся в сторож `fl_enter` и получит объявленный отказ с
+ * честным текстом про хозяина — не молчаливую смерть.
  *
  * Если потока с таким стеком система не даёт (не POSIX, `ulimit -v`, контейнер
  * с пределом адресного пространства), расчёт идёт здесь же. Обещание держится и
@@ -1207,14 +1316,16 @@ static int cli_depth_key(int *argc, char **argv, size_t *depth) {
   int count = *argc;
   while (read < count) {
     const char *word = argv[read];
-    if (strcmp(word, "--предел-глубины") == 0 || strcmp(word, "--depth-limit") == 0) {
+    if (strcmp(word, "--предел-глубины") == 0 ||
+        strcmp(word, "--depth-limit") == 0) {
       if (read + 1 >= count) {
         fputs("flang --предел-глубины: не названо число кадров\n", stderr);
         return 2;
       }
       if (!cli_whole(argv[read + 1], depth)) {
         fprintf(stderr,
-                "flang --предел-глубины: «%s» — не целое число кадров больше нуля\n",
+                "flang --предел-глубины: «%s» — не целое число кадров больше "
+                "нуля\n",
                 argv[read + 1]);
         return 2;
       }
@@ -1263,15 +1374,17 @@ static int cli_steps_key(int *argc, char **argv, size_t *steps) {
   int count = *argc;
   while (read < count) {
     const char *word = argv[read];
-    if (strcmp(word, "--предел-шагов") == 0 || strcmp(word, "--step-limit") == 0) {
+    if (strcmp(word, "--предел-шагов") == 0 ||
+        strcmp(word, "--step-limit") == 0) {
       if (read + 1 >= count) {
         fputs("flang --предел-шагов: не названо число шагов\n", stderr);
         return 2;
       }
       if (!cli_whole(argv[read + 1], steps)) {
-        fprintf(stderr,
-                "flang --предел-шагов: «%s» — не целое число шагов больше нуля\n",
-                argv[read + 1]);
+        fprintf(
+            stderr,
+            "flang --предел-шагов: «%s» — не целое число шагов больше нуля\n",
+            argv[read + 1]);
         return 2;
       }
       read += 2;
@@ -1303,7 +1416,8 @@ static int cli_bytes(const char *text, size_t *out) {
   }
   if (text[at] != 0) {
     size_t power = 0;
-    while (index < sizeof(units) / sizeof(units[0]) && strcmp(text + at, units[index]) != 0) {
+    while (index < sizeof(units) / sizeof(units[0]) &&
+           strcmp(text + at, units[index]) != 0) {
       index += 1;
     }
     if (index == sizeof(units) / sizeof(units[0])) {
@@ -1329,14 +1443,16 @@ static int cli_memory_key(int *argc, char **argv, size_t *bytes, int *given) {
   int count = *argc;
   while (read < count) {
     const char *word = argv[read];
-    if (strcmp(word, "--предел-памяти") == 0 || strcmp(word, "--memory-limit") == 0) {
+    if (strcmp(word, "--предел-памяти") == 0 ||
+        strcmp(word, "--memory-limit") == 0) {
       if (read + 1 >= count) {
         fputs("flang --предел-памяти: не названо число байт\n", stderr);
         return 2;
       }
       if (!cli_bytes(argv[read + 1], bytes)) {
         fprintf(stderr,
-                "flang --предел-памяти: «%s» — не целое число байт; можно с буквой K, M, G или T "
+                "flang --предел-памяти: «%s» — не целое число байт; можно с "
+                "буквой K, M, G или T "
                 "(К, М, Г, Т), 0 — без предела\n",
                 argv[read + 1]);
         return 2;

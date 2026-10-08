@@ -48,10 +48,11 @@
  *
  * И следствие, которое дороже всех остальных: раз арена ничего не отдаёт до
  * конца вызова, каждая промежуточная копия остаётся лежать. Поэтому «добавить»
- * не копирует список — он дописывает в хвостовой запас массива, а неизменяемость
- * держит счётчик занятых ячеек `fl_grow` (полное объяснение — над
- * `fl_b_dobavit` в flang_runtime.c). Без этого список из n элементов, собранный
- * n вызовами «добавить», оставлял бы ~16·n² байт неотбираемого мусора.
+ * не копирует список — он дописывает в хвостовой запас массива, а
+ * неизменяемость держит счётчик занятых ячеек `fl_grow` (полное объяснение —
+ * над `fl_b_dobavit` в flang_runtime.c). Без этого список из n элементов,
+ * собранный n вызовами «добавить», оставлял бы ~16·n² байт неотбираемого
+ * мусора.
  *
  * ── Область на вызов: арена, которую откатывают ────────────────────────────
  * Одной арены на всё вычисление мало, и это ЗАМЕРЕНО, а не предположено:
@@ -68,10 +69,10 @@
  *
  * Лечение — `fl_region_open`/`fl_region_close` вокруг тела каждой функции,
  * способной к рекурсии. Довод законности ровно тот же, которым законна арена
- * на пробег процесса (`flang/concurrency/RESILIENCE.md`, шаг А2): значения flang
- * неизменяемы, замыканий нет, ссылок наружу нет — значит в момент возврата из
- * вызова достижимо ровно то, что лежит в результате, а аргументы вызова
- * построил вызывающий и лежат они НИЖЕ отметки. Поэтому результат можно
+ * на пробег процесса (`flang/concurrency/RESILIENCE.md`, шаг А2): значения
+ * flang неизменяемы, замыканий нет, ссылок наружу нет — значит в момент
+ * возврата из вызова достижимо ровно то, что лежит в результате, а аргументы
+ * вызова построил вызывающий и лежат они НИЖЕ отметки. Поэтому результат можно
  * переложить, а всё остальное отдать одним движением.
  *
  * Полное описание правил и того, когда область отказывается работать, —
@@ -89,9 +90,9 @@
  * *error. `error` можно передать NULL, если текст не нужен.
  *
  * `fl_error.code` — не enum, а строка: коды flang («FLANG_TYPE») перечислимы,
- * но код нарушенного постусловия приезжает данными из AST («FTS_UTILITY_PROPERTY»
- * у моделей FTS), и перечисление перестало бы быть источником истины ровно там,
- * где важнее всего совпасть с ядром.
+ * но код нарушенного постусловия приезжает данными из AST
+ * («FTS_UTILITY_PROPERTY» у моделей FTS), и перечисление перестало бы быть
+ * источником истины ровно там, где важнее всего совпасть с ядром.
  */
 #ifndef FLANG_RUNTIME_H
 #define FLANG_RUNTIME_H
@@ -117,7 +118,8 @@
 #define FL_MAX_STEPS 1000000
 #endif
 #ifndef FL_MAX_TAIL_ARGS
-/* Ширина отскока батута: наибольшая арность среди взаимно рекурсивных функций. */
+/* Ширина отскока батута: наибольшая арность среди взаимно рекурсивных функций.
+ */
 #define FL_MAX_TAIL_ARGS 4
 #endif
 #ifndef FL_MAX_ARGS
@@ -162,8 +164,8 @@ typedef struct fl_arena {
   size_t staging_size;
   /*
    * Отказная памятка обмера: одно доказанное «этому значению мало столько-то».
-   * Заполняется `fl_region_close`/`fl_region_recycle` при отказе обмера, читается
-   * самим обмером. Разбор — над `fl_region_deny` в flang_runtime.c.
+   * Заполняется `fl_region_close`/`fl_region_recycle` при отказе обмера,
+   * читается самим обмером. Разбор — над `fl_region_deny` в flang_runtime.c.
    */
   struct fl_deny *deny;
   /*
@@ -207,10 +209,11 @@ typedef struct fl_arena {
  * вызывающего — своей памяти у отметки нет.
  */
 typedef struct fl_mark {
-  fl_chunk *chunk;       /* кусок, из которого шла выдача на отметке */
-  size_t used;           /* сколько в нём было занято */
-  size_t handed;         /* сколько всего было выдано ареной */
-  fl_chunk *guard_chunk; /* граница ОБЪЕМЛЮЩЕЙ области — восстановить на выходе */
+  fl_chunk *chunk; /* кусок, из которого шла выдача на отметке */
+  size_t used;     /* сколько в нём было занято */
+  size_t handed;   /* сколько всего было выдано ареной */
+  fl_chunk
+      *guard_chunk; /* граница ОБЪЕМЛЮЩЕЙ области — восстановить на выходе */
   size_t guard_used;
 } fl_mark;
 
@@ -240,12 +243,15 @@ void *fl_arena_alloc(fl_arena *arena, size_t size);
  * Нужна ровно одному месту — «добавить» (см. fl_b_dobavit): накопление списка
  * в цикле не выделяет ничего, пока хватает куска.
  */
-bool fl_arena_extend(fl_arena *arena, const void *block, size_t size, size_t extra);
+bool fl_arena_extend(fl_arena *arena, const void *block, size_t size,
+                     size_t extra);
 
-/** Освобождает всё выданное, но оставляет куски себе: следующий вызов дешевле. */
+/** Освобождает всё выданное, но оставляет куски себе: следующий вызов дешевле.
+ */
 void fl_arena_reset(fl_arena *arena);
 
-/** Возвращает память системе. После неё арена снова пригодна к fl_arena_init. */
+/** Возвращает память системе. После неё арена снова пригодна к fl_arena_init.
+ */
 void fl_arena_release(fl_arena *arena);
 
 /* ───────────────────────────── значения ───────────────────────────── */
@@ -318,7 +324,8 @@ struct fl_variant {
   const fl_field *fields;
 };
 
-/* ───────────────────────────── статус и ошибка ───────────────────────────── */
+/* ───────────────────────────── статус и ошибка ─────────────────────────────
+ */
 
 typedef enum fl_status {
   FL_OK = 0,
@@ -343,10 +350,12 @@ const char *fl_status_text(fl_status status);
 #define FL_CODE_RECURSION_LIMIT "FLANG_RECURSION_LIMIT"
 #define FL_CODE_PROPERTY "FLANG_PROPERTY"
 #define FL_CODE_PARSE "FLANG_PARSE"
-/* Не из SPEC: у интерпретатора кончиться памяти не может, у программы на C — да. */
+/* Не из SPEC: у интерпретатора кончиться памяти не может, у программы на C —
+ * да. */
 #define FL_CODE_MEMORY "FLANG_MEMORY"
 
-/* ───────────────────────────── контекст вызова ───────────────────────────── */
+/* ───────────────────────────── контекст вызова ─────────────────────────────
+ */
 
 /*
  * Арена плюс два счётчика: глубина и шаги. Ни один не украшение.
@@ -370,17 +379,17 @@ const char *fl_status_text(fl_status status);
  * интерпретатор досчитал до конца. Тот же порядок выбран в бэкендах Go, Rust и
  * Python — иначе три из пяти целей печати расходились бы с двумя.
  *
- * Стек: третье поле того же прибора, а не третий прибор. Счётчик глубины считает
- * КАДРЫ, а несёт их стек, и сколько их влезет — зависит от программы: замер
- * холодными процессами при стеке 8 МиБ дал 23 807 кадров у функции с одним
- * параметром и 1 518 у функции с сорока связываниями (5 526 байт на кадр против
- * 352 — разница шестнадцатикратная). При объявленном пределе 10 000 вторая
- * умирала по SIGSEGV — без кода, без текста, без возможности перехвата, — то
- * есть объявленный предел глубины пределом НЕ БЫЛ.
- * Поэтому `fl_enter` — та же и единственная точка, где сходятся все пределы, —
- * смотрит ещё и на то, сколько стека осталось, и переводит его исчерпание в
- * объявленный FLANG_RECURSION_LIMIT. Заводить для стека отдельный механизм
- * незачем: место проверки одно, вид отказа один, набор видов отказа закрыт.
+ * Стек: третье поле того же прибора, а не третий прибор. Счётчик глубины
+ * считает КАДРЫ, а несёт их стек, и сколько их влезет — зависит от программы:
+ * замер холодными процессами при стеке 8 МиБ дал 23 807 кадров у функции с
+ * одним параметром и 1 518 у функции с сорока связываниями (5 526 байт на кадр
+ * против 352 — разница шестнадцатикратная). При объявленном пределе 10 000
+ * вторая умирала по SIGSEGV — без кода, без текста, без возможности перехвата,
+ * — то есть объявленный предел глубины пределом НЕ БЫЛ. Поэтому `fl_enter` — та
+ * же и единственная точка, где сходятся все пределы, — смотрит ещё и на то,
+ * сколько стека осталось, и переводит его исчерпание в объявленный
+ * FLANG_RECURSION_LIMIT. Заводить для стека отдельный механизм незачем: место
+ * проверки одно, вид отказа один, набор видов отказа закрыт.
  */
 typedef struct fl_ctx {
   fl_arena *arena;
@@ -428,7 +437,8 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena);
  * Потолок. Просить у системы стек под `--max-depth 100000000` бессмысленно:
  * mmap откажет, и вместо диагностики выйдет отказ на ровном месте. Выше потолка
  * предел просто не несётся стеком — и тогда о его недостижимости честно говорит
- * сторож, а не сегфолт. Ровно так же поступает бэкенд Python (MAX_RECURSION_LIMIT).
+ * сторож, а не сегфолт. Ровно так же поступает бэкенд Python
+ * (MAX_RECURSION_LIMIT).
  */
 #ifndef FL_STACK_MAX
 #define FL_STACK_MAX ((size_t)1024u * 1024u * 1024u)
@@ -465,11 +475,12 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena);
  *
  * ── Почему одного занижения оказалось МАЛО, и это предъявлено прогоном ──────
  *
- * WebAssembly — та самая «неизвестная платформа», и на ней занижение до мегабайта
- * оказалось ЗАВЫШЕНИЕМ в шестнадцать раз: `wasm-ld` отводит теневой стек 64 КиБ.
- * Замер (Chrome 151, `web/wasm/`, спуск на 1000 при пределе 10 000): глубина 30 —
- * объявленный FLANG_RECURSION_LIMIT, глубина 60 — СМЕРТЬ ВКЛАДКИ. Между ними
- * сторож молчал, потому что считал по мегабайту, которого нет.
+ * WebAssembly — та самая «неизвестная платформа», и на ней занижение до
+ * мегабайта оказалось ЗАВЫШЕНИЕМ в шестнадцать раз: `wasm-ld` отводит теневой
+ * стек 64 КиБ. Замер (Chrome 151, `web/wasm/`, спуск на 1000 при пределе 10
+ * 000): глубина 30 — объявленный FLANG_RECURSION_LIMIT, глубина 60 — СМЕРТЬ
+ * ВКЛАДКИ. Между ними сторож молчал, потому что считал по мегабайту, которого
+ * нет.
  *
  * Хуже того, в WebAssembly нет сторожевой страницы: теневой стек не падает, а
  * заезжает в кучу и молча портит данные. Под `node:wasi` тот же двоичный файл
@@ -490,18 +501,20 @@ void fl_ctx_init(fl_ctx *ctx, fl_arena *arena);
 
 /**
  * Предел шагов, с которым заводится КАЖДЫЙ новый контекст.
- * По умолчанию — `FL_MAX_STEPS`, напечатанный бэкендом; `fl_max_steps_default_set`
- * поднимает его на весь процесс (ключ `--предел-шагов` у `flang check`).
- * Ноль в `_set` возвращает умолчание бэкенда, а не выключает счёт.
+ * По умолчанию — `FL_MAX_STEPS`, напечатанный бэкендом;
+ * `fl_max_steps_default_set` поднимает его на весь процесс (ключ
+ * `--предел-шагов` у `flang check`). Ноль в `_set` возвращает умолчание
+ * бэкенда, а не выключает счёт.
  */
 size_t fl_max_steps_default(void);
 void fl_max_steps_default_set(size_t steps);
 
 /**
  * Предел ГЛУБИНЫ, с которым заводится КАЖДЫЙ новый контекст.
- * По умолчанию — `FL_MAX_DEPTH`, напечатанный бэкендом; `fl_max_depth_default_set`
- * поднимает его на весь процесс (ключ `--предел-глубины` у самого бинарника).
- * Ноль в `_set` возвращает умолчание бэкенда, а не снимает предел.
+ * По умолчанию — `FL_MAX_DEPTH`, напечатанный бэкендом;
+ * `fl_max_depth_default_set` поднимает его на весь процесс (ключ
+ * `--предел-глубины` у самого бинарника). Ноль в `_set` возвращает умолчание
+ * бэкенда, а не снимает предел.
  *
  * Поднявший предел обязан поднять и стек: глубину несёт он, а заводится он один
  * раз на процесс (`fl_call_deep`). Ключ `--предел-глубины` делает оба движения
@@ -567,7 +580,8 @@ void fl_stack_room_set(size_t bytes);
  */
 bool fl_call_deep(size_t stack_bytes, void (*work)(void *), void *state);
 
-/* Вход в функцию, способную к рекурсии; на превышении даёт FLANG_RECURSION_LIMIT. */
+/* Вход в функцию, способную к рекурсии; на превышении даёт
+ * FLANG_RECURSION_LIMIT. */
 fl_status fl_enter(fl_ctx *ctx, const char *function, fl_error *error);
 void fl_leave(fl_ctx *ctx);
 
@@ -650,7 +664,8 @@ size_t fl_say_size(char *out, size_t room, size_t at, unsigned long bytes);
 /** Сколько памяти держит процесс, байтами. 0 — узнать нечем (нет /proc). */
 unsigned long fl_say_resident(void);
 
-/** Размер страницы, снятый ВНЕ обработчика: `sysconf` внутри сигнала незаконен. */
+/** Размер страницы, снятый ВНЕ обработчика: `sysconf` внутри сигнала незаконен.
+ */
 void fl_say_page_ready(void);
 
 /* ─────────────────────── область на вызов ─────────────────────── */
@@ -674,7 +689,8 @@ fl_mark fl_region_open(fl_ctx *ctx);
  * `status` — то, чем кончилось тело. При отказе откат не делается: текст
  * диагностики лежит в арене выше отметки.
  */
-fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value *result, fl_error *error);
+fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status,
+                          fl_value *result, fl_error *error);
 
 /**
  * Закрывает область и тут же открывает её заново той же отметкой.
@@ -685,7 +701,8 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status, fl_value 
  * `fl_arena_extend` продлил бы на месте блок, лежащий ниже отметки, а его
  * вот-вот откатят.
  */
-fl_status fl_region_recycle(fl_ctx *ctx, fl_mark mark, fl_value *result, fl_error *error);
+fl_status fl_region_recycle(fl_ctx *ctx, fl_mark mark, fl_value *result,
+                            fl_error *error);
 
 /*
  * Виток вычисления: вход в функцию, оборот цикла хвостового самовызова, отскок
@@ -711,12 +728,12 @@ void fl_charge(fl_ctx *ctx, size_t count);
  * Ранний возврат по ошибке. Сгенерированный код состоит из него на треть,
  * поэтому макрос: без него каждая строка обросла бы четырьмя.
  */
-#define FL_TRY(expression)                 \
-  do {                                     \
-    const fl_status fl_try_status_ = (expression); \
-    if (fl_try_status_ != FL_OK) {         \
-      return fl_try_status_;               \
-    }                                      \
+#define FL_TRY(expression)                                                     \
+  do {                                                                         \
+    const fl_status fl_try_status_ = (expression);                             \
+    if (fl_try_status_ != FL_OK) {                                             \
+      return fl_try_status_;                                                   \
+    }                                                                          \
   } while (0)
 
 /* ───────────────────────────── конструкторы ───────────────────────────── */
@@ -729,7 +746,8 @@ fl_value fl_flag(bool flag);
 fl_value fl_text_borrow(const char *utf8, size_t bytes, size_t points);
 
 /** Строка с копированием в арену; кодовые точки считаются здесь. */
-fl_status fl_text(fl_ctx *ctx, const char *utf8, size_t bytes, fl_value *out, fl_error *error);
+fl_status fl_text(fl_ctx *ctx, const char *utf8, size_t bytes, fl_value *out,
+                  fl_error *error);
 
 /**
  * Номер (от 1) первого октета, который не складывается в правильный UTF-8; 0 —
@@ -744,7 +762,8 @@ size_t fl_utf8_not_text_at(const char *utf8, size_t bytes);
 fl_value fl_list(const fl_value *items, size_t count);
 
 /** Массив под список: заполняется вызывающим, затем оборачивается в fl_list. */
-fl_status fl_list_alloc(fl_ctx *ctx, size_t count, fl_value **items, fl_error *error);
+fl_status fl_list_alloc(fl_ctx *ctx, size_t count, fl_value **items,
+                        fl_error *error);
 
 /** Хвост списка — срез без копирования (значения неизменяемы, память общая). */
 fl_value fl_list_slice(fl_value list, size_t from);
@@ -760,12 +779,15 @@ bool fl_chain_cons(fl_value value);
 fl_value fl_chain_head(fl_value value);
 fl_value fl_chain_tail(fl_value value);
 
-fl_status fl_record_new(fl_ctx *ctx, const char *const *names, const fl_value *values, size_t count,
-                        fl_value *out, fl_error *error);
-fl_status fl_variant_new(fl_ctx *ctx, const char *name, const char *const *names, const fl_value *values,
+fl_status fl_record_new(fl_ctx *ctx, const char *const *names,
+                        const fl_value *values, size_t count, fl_value *out,
+                        fl_error *error);
+fl_status fl_variant_new(fl_ctx *ctx, const char *name,
+                         const char *const *names, const fl_value *values,
                          size_t count, fl_value *out, fl_error *error);
 
-/* ───────────────────────────── предикаты и описание ───────────────────────────── */
+/* ───────────────────────────── предикаты и описание
+ * ───────────────────────────── */
 
 bool fl_is_list(fl_value value);
 bool fl_is_record(fl_value value);
@@ -773,7 +795,8 @@ bool fl_is_variant(fl_value value);
 bool fl_is_scalar(fl_value value);
 bool fl_variant_is(fl_value value, const char *name);
 
-/** «ничто», «строка», «число», «признак», «список», «вариант «Имя»», «запись». */
+/** «ничто», «строка», «число», «признак», «список», «вариант «Имя»», «запись».
+ */
 const char *fl_type_name(fl_ctx *ctx, fl_value value);
 
 /** Короткое описание значения для диагностик (describeValue интерпретатора). */
@@ -781,8 +804,8 @@ const char *fl_describe(fl_ctx *ctx, fl_value value);
 
 /**
  * Число в текст ровно по правилам ECMAScript Number::toString — потому что
- * «к строке» и тексты диагностик обязаны совпасть с интерпретатором посимвольно.
- * Буфера в 40 байт хватает на любой double.
+ * «к строке» и тексты диагностик обязаны совпасть с интерпретатором
+ * посимвольно. Буфера в 40 байт хватает на любой double.
  */
 #define FL_NUMBER_TEXT_MAX 40
 size_t fl_number_text(double value, char *buffer);
@@ -792,8 +815,10 @@ bool fl_equal(fl_value left, fl_value right);
 
 /* ───────────────────────────── ошибки ───────────────────────────── */
 
-/** Всегда возвращает FL_ERROR: `return fl_fail(ctx, error, FL_CODE_TYPE, "…", …);` */
-fl_status fl_fail(fl_ctx *ctx, fl_error *error, const char *code, const char *format, ...);
+/** Всегда возвращает FL_ERROR: `return fl_fail(ctx, error, FL_CODE_TYPE, "…",
+ * …);` */
+fl_status fl_fail(fl_ctx *ctx, fl_error *error, const char *code,
+                  const char *format, ...);
 
 /* ───────────────────────────── граница входа ─────────────────────────────
  *
@@ -801,12 +826,12 @@ fl_status fl_fail(fl_ctx *ctx, fl_error *error, const char *code, const char *fo
  * пришедшие снаружи, ДО вызова функции.
  *
  * Зачем это здесь, а не в самих функциях. Доказательство завершения
- * `тотальной` стоит НА ТИПЕ: у `неотрицательное` есть дно 0 и потолок 2^53−1, ниже
- * которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию не
- * печатается вовсе. Значение вне типа выносит вместе с типом и доказательство:
- * 1e300 минус 1 равно 1e300, цепочка вечна, а ловить её нечем — сторожа нет.
- * Поэтому дверь одна и стоит она ДО вычисления; внутри функции проверять было
- * бы уже поздно и не тем.
+ * `тотальной` стоит НА ТИПЕ: у `неотрицательное` есть дно 0 и потолок 2^53−1,
+ * ниже которого `н минус 1` точно меньше `н`, и сторож убывания в такую функцию
+ * не печатается вовсе. Значение вне типа выносит вместе с типом и
+ * доказательство: 1e300 минус 1 равно 1e300, цепочка вечна, а ловить её нечем —
+ * сторожа нет. Поэтому дверь одна и стоит она ДО вычисления; внутри функции
+ * проверять было бы уже поздно и не тем.
  *
  * Таблица печатается бэкендом вместе с программой (см. `<модуль>_entry`), а
  * строит её `flang/src/types.mjs` (`таблицаВхода`) — тем же пониманием слов
@@ -848,14 +873,16 @@ typedef struct fl_type_variant {
  */
 typedef struct fl_type {
   fl_type_kind kind;
-  const char *name;  /* печатное имя типа: «неотрицательное», «список числа», «Позиция» */
-  const char *owner; /* имя записи или суммы без кавычек — для текстов о полях */
-  bool optional;     /* «… или ничто»: отсутствие значения законно */
-  bool integral;     /* целое ли */
-  bool bounded;      /* есть ли конечный отрезок (у `число` его нет) */
+  const char *name; /* печатное имя типа: «неотрицательное», «список числа»,
+                       «Позиция» */
+  const char
+      *owner;    /* имя записи или суммы без кавычек — для текстов о полях */
+  bool optional; /* «… или ничто»: отсутствие значения законно */
+  bool integral; /* целое ли */
+  bool bounded;  /* есть ли конечный отрезок (у `число` его нет) */
   double low;
   double high;
-  size_t of;         /* тип элемента списка — индекс в той же таблице */
+  size_t of; /* тип элемента списка — индекс в той же таблице */
   size_t field_from;
   size_t field_count;
   size_t variant_from;
@@ -888,44 +915,60 @@ typedef struct fl_entry_table {
  * `checkValue` свидетеля, потому что расхождение здесь означало бы, что у языка
  * два ответа на вопрос «подходит ли значение типу».
  */
-fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table, const char *name, const fl_value *args,
-                         size_t count, fl_error *error);
+fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table,
+                         const char *name, const fl_value *args, size_t count,
+                         fl_error *error);
 
 /* ───────────────────────────── операции языка ───────────────────────────── */
 
-fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name, fl_value *out, fl_error *error);
-fl_status fl_variant_field(fl_ctx *ctx, fl_value target, const char *name, fl_value *out, fl_error *error);
+fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name,
+                       fl_value *out, fl_error *error);
+fl_status fl_variant_field(fl_ctx *ctx, fl_value target, const char *name,
+                           fl_value *out, fl_error *error);
 fl_status fl_cond(fl_ctx *ctx, fl_value value, bool *out, fl_error *error);
 fl_status fl_keep(fl_ctx *ctx, fl_value value, bool *out, fl_error *error);
-fl_status fl_post(fl_ctx *ctx, fl_value value, const char *property, const char *function, bool *out,
-                  fl_error *error);
-/* Предусловие — отдельно от постусловия, а не тот же помощник со вторым текстом:
-   слова отказа дословно те же, что у интерпретатора (checkPreconditions в
-   flang/src/interpret.mjs). Зовёт это ТОЛЬКО дверь программы — вызов по имени
-   (prefix_call): внутри программы предусловие снял вызывающий на проверке. */
-fl_status fl_pre(fl_ctx *ctx, fl_value value, const char *property, const char *function, bool *out,
-                 fl_error *error);
+fl_status fl_post(fl_ctx *ctx, fl_value value, const char *property,
+                  const char *function, bool *out, fl_error *error);
+/* Предусловие — отдельно от постусловия, а не тот же помощник со вторым
+   текстом: слова отказа дословно те же, что у интерпретатора
+   (checkPreconditions в flang/src/interpret.mjs). Зовёт это ТОЛЬКО дверь
+   программы — вызов по имени (prefix_call): внутри программы предусловие снял
+   вызывающий на проверке. */
+fl_status fl_pre(fl_ctx *ctx, fl_value value, const char *property,
+                 const char *function, bool *out, fl_error *error);
 fl_status fl_match_fail(fl_ctx *ctx, fl_value value, fl_error *error);
-fl_status fl_require_list(fl_ctx *ctx, fl_value value, const char *label, fl_value *out, fl_error *error);
+fl_status fl_require_list(fl_ctx *ctx, fl_value value, const char *label,
+                          fl_value *out, fl_error *error);
 
-fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_div(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_mod(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_percent(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_gt(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_lt(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_gte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_lte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_concat(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                 fl_error *error);
+fl_status fl_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                 fl_error *error);
+fl_status fl_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                 fl_error *error);
+fl_status fl_div(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                 fl_error *error);
+fl_status fl_mod(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                 fl_error *error);
+fl_status fl_percent(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                     fl_error *error);
+fl_status fl_gt(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                fl_error *error);
+fl_status fl_lt(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                fl_error *error);
+fl_status fl_gte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                 fl_error *error);
+fl_status fl_lte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                 fl_error *error);
+fl_status fl_concat(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                    fl_error *error);
 
 /*
  * ── Отказ без проверки: для мест, где проверку делает сам напечатанный код ──
  *
  * Там, где вывод типов доказал тип обоих операндов, печать считает арифметику
- * выражением C, а сверку тегов ставит сама — одним `if`, который остаётся в теле
- * вызывающего и потому не мешает компилятору держать значения в регистрах.
+ * выражением C, а сверку тегов ставит сама — одним `if`, который остаётся в
+ * теле вызывающего и потому не мешает компилятору держать значения в регистрах.
  * Зовутся эти две ТОЛЬКО с ветви отказа и всегда возвращают FL_ERROR: текст
  * отказа обязан быть тем же самым, что у `fl_add` и соседей, и писать его во
  * второй раз значило бы завести второе место, где он может разойтись.
@@ -939,35 +982,62 @@ fl_status fl_concat(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, f
  * вместо отказа. Измерено на корпусе: `«Отобразить» от Удвоить и [1, "два"]`
  * давало 1.32e-309 вместо FLANG_TYPE.
  */
-fl_status fl_not_numbers(fl_ctx *ctx, const char *op, fl_value left, fl_value right, fl_error *error);
-fl_status fl_not_order(fl_ctx *ctx, fl_value left, fl_value right, fl_error *error);
+fl_status fl_not_numbers(fl_ctx *ctx, const char *op, fl_value left,
+                         fl_value right, fl_error *error);
+fl_status fl_not_order(fl_ctx *ctx, fl_value left, fl_value right,
+                       fl_error *error);
 
-/* ───────────────────────────── встроенные формы ───────────────────────────── */
+/* ───────────────────────────── встроенные формы ─────────────────────────────
+ */
 
-fl_status fl_b_dlina(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
-fl_status fl_b_simvol(fl_ctx *ctx, fl_value index, fl_value text, fl_value *out, fl_error *error);
-fl_status fl_b_podstroka(fl_ctx *ctx, fl_value text, fl_value from, fl_value to, fl_value *out, fl_error *error);
-fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_b_razdelit(fl_ctx *ctx, fl_value text, fl_value separator, fl_value *out, fl_error *error);
-fl_status fl_b_simvoly(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
-fl_status fl_b_kod_simvola(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
-fl_status fl_b_simvol_po_kodu(fl_ctx *ctx, fl_value code, fl_value *out, fl_error *error);
-fl_status fl_b_hesh256(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
-fl_status fl_b_integer_part(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
-fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix, fl_value *out, fl_error *error);
-fl_status fl_b_k_chislu(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
-/* Та же «к числу», но отказ возвращается значением «Не разобрано», а не статусом. */
-fl_status fl_b_k_chislu_ili_beda(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
-fl_status fl_b_k_stroke(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
-fl_status fl_b_pusto(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
-fl_status fl_b_golova(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
-fl_status fl_b_hvost(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
-fl_status fl_b_element(fl_ctx *ctx, fl_value index, fl_value list, fl_value *out, fl_error *error);
-fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out, fl_error *error);
-fl_status fl_b_pripisat(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out, fl_error *error);
-fl_status fl_b_ostatok_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
-fl_status fl_b_procentov_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out, fl_error *error);
+fl_status fl_b_dlina(fl_ctx *ctx, fl_value value, fl_value *out,
+                     fl_error *error);
+fl_status fl_b_simvol(fl_ctx *ctx, fl_value index, fl_value text, fl_value *out,
+                      fl_error *error);
+fl_status fl_b_podstroka(fl_ctx *ctx, fl_value text, fl_value from, fl_value to,
+                         fl_value *out, fl_error *error);
+fl_status fl_b_soedinit(fl_ctx *ctx, fl_value left, fl_value right,
+                        fl_value *out, fl_error *error);
+fl_status fl_b_razdelit(fl_ctx *ctx, fl_value text, fl_value separator,
+                        fl_value *out, fl_error *error);
+fl_status fl_b_simvoly(fl_ctx *ctx, fl_value text, fl_value *out,
+                       fl_error *error);
+fl_status fl_b_kod_simvola(fl_ctx *ctx, fl_value text, fl_value *out,
+                           fl_error *error);
+fl_status fl_b_simvol_po_kodu(fl_ctx *ctx, fl_value code, fl_value *out,
+                              fl_error *error);
+fl_status fl_b_hesh256(fl_ctx *ctx, fl_value text, fl_value *out,
+                       fl_error *error);
+fl_status fl_b_integer_part(fl_ctx *ctx, fl_value value, fl_value *out,
+                            fl_error *error);
+fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right,
+                         fl_value *out, fl_error *error);
+fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix,
+                              fl_value *out, fl_error *error);
+fl_status fl_b_k_chislu(fl_ctx *ctx, fl_value text, fl_value *out,
+                        fl_error *error);
+/* Та же «к числу», но отказ возвращается значением «Не разобрано», а не
+ * статусом. */
+fl_status fl_b_k_chislu_ili_beda(fl_ctx *ctx, fl_value text, fl_value *out,
+                                 fl_error *error);
+fl_status fl_b_k_stroke(fl_ctx *ctx, fl_value value, fl_value *out,
+                        fl_error *error);
+fl_status fl_b_pusto(fl_ctx *ctx, fl_value value, fl_value *out,
+                     fl_error *error);
+fl_status fl_b_golova(fl_ctx *ctx, fl_value value, fl_value *out,
+                      fl_error *error);
+fl_status fl_b_hvost(fl_ctx *ctx, fl_value value, fl_value *out,
+                     fl_error *error);
+fl_status fl_b_element(fl_ctx *ctx, fl_value index, fl_value list,
+                       fl_value *out, fl_error *error);
+fl_status fl_b_dobavit(fl_ctx *ctx, fl_value item, fl_value list, fl_value *out,
+                       fl_error *error);
+fl_status fl_b_pripisat(fl_ctx *ctx, fl_value item, fl_value list,
+                        fl_value *out, fl_error *error);
+fl_status fl_b_ostatok_ot(fl_ctx *ctx, fl_value left, fl_value right,
+                          fl_value *out, fl_error *error);
+fl_status fl_b_procentov_ot(fl_ctx *ctx, fl_value left, fl_value right,
+                            fl_value *out, fl_error *error);
 
 /* ── Доказанный путь четырёх форм: то же действие без сторожа частичности ──
  *
@@ -975,10 +1045,14 @@ fl_status fl_b_procentov_ot(fl_ctx *ctx, fl_value left, fl_value right, fl_value
  * ДОКАЗАНА проверкой типов (`flang/src/types.mjs`, `длинаНиз`), узел приезжает
  * с отметкой `доказана`, и печать зовёт эти функции. Сверка типа остаётся:
  * `fl_expect_list` ловит не пустоту, а другой вид значения. */
-fl_status fl_b_razdelit_dokazano(fl_ctx *ctx, fl_value text, fl_value separator, fl_value *out, fl_error *error);
-fl_status fl_b_kod_simvola_dokazano(fl_ctx *ctx, fl_value text, fl_value *out, fl_error *error);
-fl_status fl_b_golova_dokazano(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
-fl_status fl_b_hvost_dokazano(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_razdelit_dokazano(fl_ctx *ctx, fl_value text, fl_value separator,
+                                 fl_value *out, fl_error *error);
+fl_status fl_b_kod_simvola_dokazano(fl_ctx *ctx, fl_value text, fl_value *out,
+                                    fl_error *error);
+fl_status fl_b_golova_dokazano(fl_ctx *ctx, fl_value value, fl_value *out,
+                               fl_error *error);
+fl_status fl_b_hvost_dokazano(fl_ctx *ctx, fl_value value, fl_value *out,
+                              fl_error *error);
 
 /* ───────────────────────────── батут ───────────────────────────── */
 
@@ -994,7 +1068,8 @@ fl_status fl_b_hvost_dokazano(fl_ctx *ctx, fl_value value, fl_value *out, fl_err
  */
 typedef struct fl_bounce fl_bounce;
 
-typedef fl_status (*fl_step)(fl_ctx *ctx, const fl_value *args, fl_bounce *bounce, fl_value *result,
+typedef fl_status (*fl_step)(fl_ctx *ctx, const fl_value *args,
+                             fl_bounce *bounce, fl_value *result,
                              fl_error *error);
 
 struct fl_bounce {
@@ -1009,8 +1084,9 @@ struct fl_bounce {
  * каждом витке, а интерпретатор называет ту функцию, с которой вычисление
  * началось.
  */
-fl_status fl_trampoline(fl_ctx *ctx, fl_step step, const fl_value *args, size_t count, const char *function,
-                        fl_value *result, fl_error *error);
+fl_status fl_trampoline(fl_ctx *ctx, fl_step step, const fl_value *args,
+                        size_t count, const char *function, fl_value *result,
+                        fl_error *error);
 
 typedef struct fl_memo_call {
   int mode;
@@ -1037,27 +1113,34 @@ typedef struct fl_memo_lasting_record {
   bool used;
 } fl_memo_lasting_record;
 
-bool fl_memo_find(fl_ctx *ctx, const char *function, const fl_value *args, size_t count, fl_memo_call *call,
-                  fl_value *result);
-fl_status fl_memo_keep(fl_ctx *ctx, fl_memo_call *call, fl_status status, fl_value *result);
+bool fl_memo_find(fl_ctx *ctx, const char *function, const fl_value *args,
+                  size_t count, fl_memo_call *call, fl_value *result);
+fl_status fl_memo_keep(fl_ctx *ctx, fl_memo_call *call, fl_status status,
+                       fl_value *result);
 void fl_memo_setup(int enabled, int audit, size_t cap);
-bool fl_memo_lasting_setup(const char *salt, size_t salt_bytes, const char *const *functions, size_t count);
-bool fl_memo_lasting_add(const unsigned char *digest, const unsigned char *bytes, size_t size, size_t steps,
+bool fl_memo_lasting_setup(const char *salt, size_t salt_bytes,
+                           const char *const *functions, size_t count);
+bool fl_memo_lasting_add(const unsigned char *digest,
+                         const unsigned char *bytes, size_t size, size_t steps,
                          size_t copied, size_t span, bool counted);
 size_t fl_memo_lasting_fresh(const fl_memo_lasting_record **out);
 size_t fl_memo_lasting_used(size_t index, const fl_memo_lasting_record **out);
-void fl_memo_lasting_counts(unsigned long long *loaded, unsigned long long *hits, unsigned long long *fresh,
+void fl_memo_lasting_counts(unsigned long long *loaded,
+                            unsigned long long *hits, unsigned long long *fresh,
                             unsigned long long *lost);
 
-typedef fl_status (*fl_par_item)(fl_ctx *ctx, fl_value item, const fl_value *env, fl_value *result,
+typedef fl_status (*fl_par_item)(fl_ctx *ctx, fl_value item,
+                                 const fl_value *env, fl_value *result,
                                  fl_error *error);
-typedef fl_status (*fl_par_pair)(fl_ctx *ctx, fl_value left, fl_value right, const fl_value *env,
-                                 fl_value *result, fl_error *error);
+typedef fl_status (*fl_par_pair)(fl_ctx *ctx, fl_value left, fl_value right,
+                                 const fl_value *env, fl_value *result,
+                                 fl_error *error);
 
 size_t fl_par_threads(void);
-fl_status fl_par_map(fl_ctx *ctx, fl_value list, fl_par_item body, const fl_value *env, fl_value *items,
-                     fl_error *error);
-fl_status fl_par_fold(fl_ctx *ctx, fl_value list, fl_value start, fl_par_pair step, const fl_value *env,
-                      fl_value *result, fl_error *error);
+fl_status fl_par_map(fl_ctx *ctx, fl_value list, fl_par_item body,
+                     const fl_value *env, fl_value *items, fl_error *error);
+fl_status fl_par_fold(fl_ctx *ctx, fl_value list, fl_value start,
+                      fl_par_pair step, const fl_value *env, fl_value *result,
+                      fl_error *error);
 
 #endif /* FLANG_RUNTIME_H */

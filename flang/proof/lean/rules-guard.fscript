@@ -382,6 +382,130 @@
   пусть named равно (отфильтровать rows где row → «Has lemma» от («Cell» от 1 и row) и theorems)
   соединить ["   ", kernel, "\tстрок ", (к строке (длина rows)), "\tс леммой ", (к строке (длина named))] по ""
 
+тотальная функция «Half start»
+  возвращает строка
+  пример «The first move of the half opens the region»
+    ожидается "static int зеркало_отношения("
+  "static int зеркало_отношения("
+
+тотальная функция «Half end»
+  возвращает строка
+  пример «The body reader closes the region»
+    ожидается "static char *тело_без_пуст("
+  "static char *тело_без_пуст("
+
+тотальная функция «Is definition»
+  принимает line: строка
+  возвращает признак
+  пример «A function header is a definition»
+    дано line равно "static int а(int x) {"
+    ожидается да
+  пример «A header that goes on is a definition»
+    дано line равно "static int а(int x,"
+    ожидается да
+  пример «A prototype is no definition»
+    дано line равно "static int а(int x);"
+    ожидается нет
+  пусть opened равно ((line содержит "{") или (не (line содержит ");")))
+  (line начинается с "static ") и притом ((line содержит "(") и притом opened)
+
+тотальная функция «Defined name»
+  принимает line: строка
+  возвращает строка
+  пример «The name of a defined function»
+    дано line равно "static int деление(const char *t, const char *u,"
+    ожидается "деление"
+  пример «A pointer result keeps the name clean»
+    дано line равно "static char *с_фактом(const char *t) {"
+    ожидается "с_фактом"
+  пример «A prototype is no definition»
+    дано line равно "static int деление(const char *t);"
+    ожидается ""
+  пример «A variable is no definition»
+    дано line равно "static long ПОЛОВИН_ВЫЗОВОВ = 0;"
+    ожидается ""
+  пусть words равно (разделить («Before» от line и "(") по " ")
+  пусть last равно (свёртка words начиная с "" как kept и word → если пусто word то kept иначе word)
+  если («Is definition» от line) то (соединить (разделить last по "*") по "") иначе ""
+
+тотальная функция «Half region»
+  принимает checker: строка
+  возвращает строка
+  пример «The text from the first move to the body reader»
+    дано checker равно "x\nstatic int зеркало_отношения(a)\nb\nstatic char *тело_без_пуст(c"
+    ожидается "static int зеркало_отношения(a)\nb\n"
+  пример «Without the first move there is no region»
+    дано checker равно "static char *тело_без_пуст(c"
+    ожидается ""
+  пусть tail равно («After first» от checker и («Half start»))
+  если (пусто tail) то "" иначе («Before» от (соединить («Half start») с tail) и («Half end»))
+
+тотальная функция «Half moves»
+  принимает checker: строка
+  возвращает список строки
+  пример «Every function defined in the region of the half, once each»
+    дано checker равно "static int зеркало_отношения(int от) {\nstatic long Н = 0;\nstatic int б(int t,\n  int g) {\n"
+    ожидается ["зеркало_отношения", "б"]
+  пример «Without the region there are no moves»
+    дано checker равно "static int деление(int a) {"
+    ожидается пустой список
+  пусть names равно (отобразить (разделить («Half region» от checker) по "\n") как line → «Defined name» от line)
+  «Unique» от (отфильтровать names где name → не (пусто name))
+
+тотальная функция «Half heading»
+  возвращает строка
+  пример «The heading of the half view»
+    ожидается "── ходы половины (разбор цели в половине) против Lean: теорема ──"
+  "── ходы половины (разбор цели в половине) против Lean: теорема ──"
+
+тотальная функция «Half row»
+  принимает name: строка, theorems: список строки
+  возвращает строка
+  пример «A move with its theorem»
+    дано name равно "б"
+    дано theorems равно ["б-верно"]
+    ожидается "б\tтеорема"
+  соединить [name, "\t", («Mark» от («Has lemma» от name и theorems) и "теорема")] по ""
+
+тотальная функция «Half lines»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «Each move of the half with its theorem or a dash»
+    дано inputs равно ["static int зеркало_отношения(int от) {\nstatic char *б(int t) {", "", "", "", "", "",
+      "theorem «зеркало_отношения» (r : «Отн»)"]
+    ожидается ["── ходы половины (разбор цели в половине) против Lean: теорема ──", "зеркало_отношения\tтеорема",
+      "б\t—", "ходов половины 2, с теоремой 1"]
+  пусть moves равно («Half moves» от («Cell» от 1 и inputs))
+  пусть theorems равно («Theorems» от («Cell» от 7 и inputs))
+  пусть rows равно (отобразить moves как name → «Half row» от name и theorems)
+  пусть proved равно (отфильтровать moves где name → «Has lemma» от name и theorems)
+  пусть numbers равно (соединить ["ходов половины ", (к строке (длина moves)), ", с теоремой ",
+    (к строке (длина proved))] по "")
+  «Соединить списки» от (приписать («Half heading») к rows) и [numbers]
+
+тотальная функция «Half few»
+  принимает moves: список строки
+  возвращает список строки
+  пример «Fewer than ten moves means the reading broke»
+    дано moves равно ["а"]
+    ожидается ["ходов половины вычитано 1 — разбор области ходов половины сломан"]
+  пусть said равно (соединить ["ходов половины вычитано ", (к строке (длина moves)),
+    " — разбор области ходов половины сломан"] по "")
+  если (длина moves) не меньше 10 то (пустой список) иначе [said]
+
+тотальная функция «Half troubles»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «A move of the half without a theorem is a trouble»
+    дано inputs равно ["static int зеркало_отношения(int от) {\nstatic char *б(int t) {", "", "", "", "", "",
+      "theorem «зеркало_отношения» (r : «Отн»)"]
+    ожидается ["ходов половины вычитано 2 — разбор области ходов половины сломан",
+      "ход половины «б» без теоремы в Half.lean"]
+  пусть moves равно («Half moves» от («Cell» от 1 и inputs))
+  пусть theorems равно («Theorems» от («Cell» от 7 и inputs))
+  пусть bare равно (отфильтровать moves где name → не («Has lemma» от name и theorems))
+  «Соединить списки» от («Half few» от moves) и («Named» от "ход половины «" и bare и "» без теоремы в Half.lean")
+
 тотальная функция «Census head»
   возвращает строка
   пример «The heading of the census table»
@@ -403,7 +527,8 @@
       "h\nО1\tО\trule\tпорядок\ta\tcode\n"]
     ожидается ["── приёмы сверщика (шаг_вывода) против Lean: лемма, приёмка, долг ──", "Н6\tлемма\tприёмка\t—", "",
       "приёмов 1, с леммой 1, в приёмке 1, вне приёмки 0, в долге 0", "вне приёмки: —", "",
-      "── правила ядра ПРАВИЛА[] сверщика: строк ведомости и лемм к ним ──"]
+      "── правила ядра ПРАВИЛА[] сверщика: строк ведомости и лемм к ним ──", "",
+      "── ходы половины (разбор цели в половине) против Lean: теорема ──", "ходов половины 0, с теоремой 0"]
   пусть rows равно («Census rows» от inputs)
   пусть theorems равно («All theorems» от inputs)
   пусть table равно («Cell» от 6 и inputs)
@@ -413,7 +538,8 @@
   пусть tail равно ["", («Numbers line» от rows), outside, "",
     («Kernel head»)]
   пусть body равно (приписать («Census head») к (отобразить rows как row → «Row line» от row))
-  «Соединить списки» от body и («Соединить списки» от tail и kernel)
+  пусть half равно (приписать "" к («Half lines» от inputs))
+  «Соединить списки» от body и («Соединить списки» от tail и («Соединить списки» от kernel и half))
 
 тотальная функция «Broken»
   принимает rows: список «Row», accepted: список строки
@@ -466,7 +592,8 @@
     ожидается ["сверщик: вычитано 1 приёмов — разбор области шаг_вывода сломан",
       "Acceptance.lean: вычитано 1 правил — разбор списка «правила» сломан",
       "приём «Н6» без приёмки Lean и без строки долга",
-      "приёмка Lean знает «Т1», а сверщик такого приёма не ведёт", "долг «Р5» о приёме, которого в сверщике нет"]
+      "приёмка Lean знает «Т1», а сверщик такого приёма не ведёт", "долг «Р5» о приёме, которого в сверщике нет",
+      "ходов половины вычитано 0 — разбор области ходов половины сломан"]
   пусть rows равно («Census rows» от inputs)
   пусть accepted равно («Accepted» от («Cell» от 2 и inputs))
   пусть unpaid равно («Named» от "приём «" и («Unpaid» от rows) и "» без приёмки Lean и без строки долга")
@@ -477,7 +604,7 @@
   пусть rowless равно («Named» от "правило ядра «" и bare и "» без строки в ведомости правил вывода")
   пусть tail равно («Соединить списки» от paid и («Соединить списки» от drift и rowless))
   пусть rest равно («Соединить списки» от unpaid и («Соединить списки» от lemmaless и tail))
-  «Соединить списки» от («Broken» от rows и accepted) и rest
+  «Соединить списки» от («Broken» от rows и accepted) и («Соединить списки» от rest и («Half troubles» от inputs))
 
 тотальная функция «Red»
   принимает trouble: строка
@@ -494,9 +621,11 @@
     дано inputs равно пустой список
     ожидается ["КРАСНО  сверщик: вычитано 0 приёмов — разбор области шаг_вывода сломан",
       "КРАСНО  Acceptance.lean: вычитано 0 правил — разбор списка «правила» сломан",
-      "приёмов 0, с леммой 0, в приёмке 0, вне приёмки 0, в долге 0"]
+      "КРАСНО  ходов половины вычитано 0 — разбор области ходов половины сломан",
+      "приёмов 0, с леммой 0, в приёмке 0, вне приёмки 0, в долге 0", "ходов половины 0, с теоремой 0"]
   пусть reds равно (отобразить («Troubles» от inputs) как trouble → «Red» от trouble)
-  «Соединить списки» от reds и [(«Numbers line» от («Census rows» от inputs))]
+  пусть half равно («Half lines» от inputs)
+  «Соединить списки» от reds и [(«Numbers line» от («Census rows» от inputs)), («Cell» от (длина half) и half)]
 
 тотальная функция «Forged acceptance»
   принимает inputs: список строки
@@ -510,11 +639,12 @@
   принимает inputs: список строки
   возвращает список строки
   пример «The copy of the checker gains a move nobody proved, right inside the region»
-    дано inputs равно ["static char *правило_т1(x", "", "", "", "", ""]
-    ожидается ["static char *правило_т1( strcmp(имя, \"Ъ1\") x", "", "", "", "", ""]
+    дано inputs равно ["a\nstatic char *правило_т1(x", "", "", "", "", ""]
+    ожидается ["a\nstatic char *правило_т1( strcmp(имя, \"Ъ1\") x", "", "", "", "", ""]
   пусть rest равно («After first» от («Cell» от 1 и inputs) и («Region start»))
+  пусть before равно («Before» от («Cell» от 1 и inputs) и («Region start»))
   пусть head равно (соединить («Region start») с " strcmp(имя, \"Ъ1\") ")
-  «Replaced» от inputs и 1 и (соединить [head, rest] по "")
+  «Replaced» от inputs и 1 и (соединить [before, head, rest] по "")
 
 тотальная функция «Forged debt»
   принимает inputs: список строки
@@ -532,6 +662,27 @@
     ожидается ["", "", "", "", "", "h\nВ1\tВ\trule\tподлог\ta\tcode\n"]
   пусть parts равно (разделить («Cell» от 6 и inputs) по "\tвхождение по построению\t")
   «Replaced» от inputs и 6 и (соединить parts по "\tподлог\t")
+
+тотальная функция «Forged half move»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «The copy of the checker gains a move of the half nobody proved, right inside the region»
+    дано inputs равно ["a\nstatic int зеркало_отношения(x", "", "", "", "", "", ""]
+    ожидается ["a\nstatic int зеркало_отношения(\nstatic int ъ_ход(void) {\n}\nstatic int зеркало_отношения(x",
+      "", "", "", "", "", ""]
+  пусть rest равно («After first» от («Cell» от 1 и inputs) и («Half start»))
+  пусть before равно («Before» от («Cell» от 1 и inputs) и («Half start»))
+  пусть head равно (соединить («Half start») с "\nstatic int ъ_ход(void) {\n}\nstatic int зеркало_отношения(")
+  «Replaced» от inputs и 1 и (соединить [before, head, rest] по "")
+
+тотальная функция «Forged half theorem»
+  принимает inputs: список строки
+  возвращает список строки
+  пример «The copy of Half.lean loses the theorem of the split»
+    дано inputs равно ["", "", "", "", "", "", "theorem «деление» (F : x)\ntheorem «деление-x» y"]
+    ожидается ["", "", "", "", "", "", "theorem «деление_снято» (F : x)\ntheorem «деление_снято-x» y"]
+  пусть parts равно (разделить («Cell» от 7 и inputs) по "theorem «деление")
+  «Replaced» от inputs и 7 и (соединить parts по "theorem «деление_снято")
 
 тотальная функция «Probe lines»
   принимает number: строка, what: строка, troubles: список строки
@@ -557,25 +708,28 @@
   пример «Only the troubles the forgery added are its own»
     дано forged равно пустой список
     дано clean равно ["сверщик: вычитано 0 приёмов — разбор области шаг_вывода сломан"]
-    ожидается ["Acceptance.lean: вычитано 0 правил — разбор списка «правила» сломан"]
+    ожидается ["Acceptance.lean: вычитано 0 правил — разбор списка «правила» сломан",
+      "ходов половины вычитано 0 — разбор области ходов половины сломан"]
   отфильтровать («Troubles» от forged) где t → не («Has» от t и clean)
 
 тотальная функция «Forgery head»
   возвращает строка
   пример «The heading of the forgery report»
-    ожидается "── четыре подлога на КОПИЯХ, дерево не тронуто ──"
-  "── четыре подлога на КОПИЯХ, дерево не тронуто ──"
+    ожидается "── шесть подлогов на КОПИЯХ, дерево не тронуто ──"
+  "── шесть подлогов на КОПИЯХ, дерево не тронуто ──"
 
 тотальная функция «Forgery lines»
   принимает inputs: список строки
   возвращает список строки
-  пример «Four forgeries on copies, the tree untouched»
+  пример «Six forgeries on copies, the tree untouched»
     дано inputs равно пустой список
-    ожидается ["── четыре подлога на КОПИЯХ, дерево не тронуто ──",
+    ожидается ["── шесть подлогов на КОПИЯХ, дерево не тронуто ──",
       "ПРОВАЛ   подлог 1 (Н5 убран из приёмки Lean) — сторож остался зелёным",
       "ПРОВАЛ   подлог 2 (в сверщике приём Ъ1 без теоремы) — сторож остался зелёным",
       "ПРОВАЛ   подлог 3 (долг на Н5, который в приёмке есть) — сторож остался зелёным",
-      "ПРОВАЛ   подлог 4 (у правила ядра «вхождение по построению» нет строк ведомости) — сторож остался зелёным"]
+      "ПРОВАЛ   подлог 4 (у правила ядра «вхождение по построению» нет строк ведомости) — сторож остался зелёным",
+      "ПРОВАЛ   подлог 5 (в области ходов половины ход ъ_ход без теоремы) — сторож остался зелёным",
+      "ПРОВАЛ   подлог 6 (у хода половины «деление» снята теорема) — сторож остался зелёным"]
   пусть clean равно («Troubles» от inputs)
   пусть fa равно («New troubles» от («Forged acceptance» от inputs) и clean)
   пусть fc равно («New troubles» от («Forged checker» от inputs) и clean)
@@ -585,7 +739,11 @@
   пусть two равно («Probe lines» от "2" и "в сверщике приём Ъ1 без теоремы" и fc)
   пусть three равно («Probe lines» от "3" и "долг на Н5, который в приёмке есть" и fd)
   пусть four равно («Probe lines» от "4" и "у правила ядра «вхождение по построению» нет строк ведомости" и ft)
-  пусть rest равно («Соединить списки» от three и four)
+  пусть fh равно («New troubles» от («Forged half move» от inputs) и clean)
+  пусть fl равно («New troubles» от («Forged half theorem» от inputs) и clean)
+  пусть five равно («Probe lines» от "5" и "в области ходов половины ход ъ_ход без теоремы" и fh)
+  пусть six равно («Probe lines» от "6" и "у хода половины «деление» снята теорема" и fl)
+  пусть rest равно («Соединить списки» от three и («Соединить списки» от four и («Соединить списки» от five и six)))
   «Соединить списки» от [(«Forgery head»)] и («Соединить списки» от one и («Соединить списки» от two и rest))
 
 тотальная функция «Reds of»
@@ -613,11 +771,13 @@
 
 тотальная функция «Files»
   возвращает список список строки
-  пример «Six files, named and placed relative to this plan»
+  пример «Seven files, named and placed relative to this plan»
     ожидается [["checker", "../checker/checker.c"], ["acceptance", "Acceptance.lean"], ["rules", "Rules.lean"],
-      ["term", "Term.lean"], ["debt", "../tables/lean-acceptance-debt.tsv"], ["table", "../tables/inference-rules.tsv"]]
+      ["term", "Term.lean"], ["debt", "../tables/lean-acceptance-debt.tsv"], ["table", "../tables/inference-rules.tsv"],
+      ["half", "Half.lean"]]
   [["checker", "../checker/checker.c"], ["acceptance", "Acceptance.lean"], ["rules", "Rules.lean"],
-    ["term", "Term.lean"], ["debt", "../tables/lean-acceptance-debt.tsv"], ["table", "../tables/inference-rules.tsv"]]
+    ["term", "Term.lean"], ["debt", "../tables/lean-acceptance-debt.tsv"], ["table", "../tables/inference-rules.tsv"],
+    ["half", "Half.lean"]]
 
 тотальная функция «Reading»
   возвращает список «Question»
@@ -628,7 +788,7 @@
   возвращает список строки
   пример «Unanswered files are empty»
     дано answers равно пустой список
-    ожидается ["", "", "", "", "", ""]
+    ожидается ["", "", "", "", "", "", ""]
   отобразить («Files») как file → «Output of» от («Cell» от 1 и file) и answers
 
 тотальная функция «Mode»
@@ -761,4 +921,4 @@
 
 тотальная функция «Объявление короткой команды lean-rules:forgery»
   возвращает строка
-  "bootstrap/flang io --plan Forgery — четыре подлога на копиях: сторож обязан покраснеть на каждом"
+  "bootstrap/flang io --plan Forgery — шесть подлогов на копиях: сторож обязан покраснеть на каждом"

@@ -3178,8 +3178,8 @@ if [ "$mode" = fast ]; then
     exit 1
   fi
 
-  SDIR=$(mktemp -d -p "${FLANG_TMP:-/srv/tmp}" seed-fingerprint.XXXXXX) || {
-    err "ПРОВЕРИТЬ НЕ УДАЛОСЬ: не создался каталог в ${FLANG_TMP:-/srv/tmp}"; exit 5; }
+  SDIR=$(mktemp -d -p "${FLANG_TMP:-${TMPDIR:-/tmp}}" seed-fingerprint.XXXXXX) || {
+    err "ПРОВЕРИТЬ НЕ УДАЛОСЬ: не создался каталог в ${FLANG_TMP:-${TMPDIR:-/tmp}}"; exit 5; }
   trap 'rm -rf "$SDIR"' EXIT INT TERM
 
   KOMMIT=$(stamp_commit_of "$ROOT/$SEED_STAMP")

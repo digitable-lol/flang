@@ -70,7 +70,7 @@ def «судитьОглавление» (s : «Исх») («шапка» : List
     r := r.«еслиНе» ((«стр».filter (fun x => «ёлочка» x 1 = n)).length = 1) s!"оглавление называет «{n}» не один раз"
   for t in «печать» do
     if !(«стр».any (fun l => «ёлочка» l 1 = t.«имя»)) then
-      r := r.«не» s!"оглавление молчит о таблице «{t.«имя»}»"
+      r := r.«беда» s!"оглавление молчит о таблице «{t.«имя»}»"
   return r
 
 def «числоСтроки?» (s : String) : Bool := s ≠ "" && s.all Char.isDigit
@@ -353,11 +353,11 @@ def «судитьСнятие» (s : «Исх») (h : Array String) («стро
   for l in «хвост».drop 1 do
     if !(l = "" || l = "конец записи" || l = "конец снятия") then r := r.«не» s!"строка «{l}» после снятия не прочтена"
   r := r.«еслиНе» («сколькоРаз» «внутри» "вид precondition-at-call" = 1) s!"{«место»}: строка «вид precondition-at-call» не одна"
-  let «вл» := «внутри».filter (·.startsWith "вердикт ")
+  let «вл» := «внутри».filter (fun l => l.startsWith "вердикт " || l = "вердикт")
   let «пл» := «внутри».filter (·.startsWith "правило «")
   r := r.«еслиНе» («вл».length = 1 && «пл».length = 1) s!"{«место»}: строк вердикта {«вл».length}, правила {«пл».length} — обязано по одной"
   for l in «внутри» do
-    if !(l = "вид precondition-at-call" || l.startsWith "вердикт " || l.startsWith "правило «" || l.startsWith "вывод " || l.startsWith "ход ") then
+    if !(l = "вид precondition-at-call" || l.startsWith "вердикт " || l = "вердикт" || l.startsWith "правило «" || l.startsWith "вывод " || l.startsWith "ход ") then
       r := r.«беда» s!"{«место»}: строка «{l}» не узнана"
   let «естьВывод» := «внутри».any (·.startsWith "вывод ")
   let «естьХоды» := «внутри».any (·.startsWith "ход ")
@@ -377,7 +377,7 @@ def «судитьСнятие» (s : «Исх») (h : Array String) («стро
   let some «у» := «у» | return r.«беда» s!"{«место»}: у «{c.«зовёт»}» нет требования «{c.«имя»}»"
   if «арги».length ≠ «парам».length then
     return r.«беда» s!"{«место»}: у «{c.«зовёт»}» параметров {«парам».length}, а в вызове доводов {«арги».length}"
-  if «вл» ≠ ["вердикт доказано"] then return r.«не» s!"{«место»}: «{«вл».headD ""}» — снятие не доказано"
+  if «вл» ≠ ["вердикт доказано"] then return r.«слово» s!"{«место»}: «{«вл».headD ""}» — снятие не доказано"
   let «пары» := «парам».zip «арги»
   let «захват» := (List.range «парам».length).any fun i =>
     (List.range' (i + 1) («парам».length - i - 1)).any fun j => «естьТ» («т» («арги».getD i "")) («парам».getD j "")

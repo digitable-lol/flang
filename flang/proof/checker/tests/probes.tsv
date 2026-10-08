@@ -226,7 +226,7 @@ P	9984 подделанный reduction-вердикт	flang/proof/map/substanti
 C	9984 честная substantive на том же исходнике	flang/proof/map/substantive.flang	flang/proof/checker/tests/records/corpus/substantive.record	-	-	-	-	0	-	-	-
 P	9984 тот же вердикт с пустыми ходами	flang/proof/map/substantive.flang	flang/proof/checker/tests/records/v1-g2/9984-moves-hide-the-debt.record	-	-	-	-	1	-	-	-
 say	── 9984, ВТОРАЯ ПОЛОВИНА: пустой «ход конец» не снимает посылку с долга (задача 2718) ──	-	-	-	-	-	-	-	-	-	-
-P	9984 честная запись с дописанными пустыми ходами	flang/proof/map/substantive.flang	flang/proof/checker/tests/records/9984/empty-move-among-honest-ones.record	-	-	-	-	3	-	-	word>@9984 честная substantive на том же исходнике
+P	9984 честная запись с дописанными пустыми ходами	flang/proof/map/substantive.flang	flang/proof/checker/tests/records/9984/empty-move-among-honest-ones.record	-	-	-	-	1	ход под посылкой не сходится	-	-
 say	── 9984: вид посылки не свободен — база и шаг не меняются местами ──	-	-	-	-	-	-	-	-	-	-
 P	9984 segment: база и шаг переставлены	flang/proof/examples/if-over-a-segment.flang	flang/proof/checker/tests/records/corrupt/if-over-a-segment-kind-inverted.record	-	-	-	-	1	-	-	-
 P	9984 algebra: база и шаг переставлены	flang/proof/examples/corpus-tree.flang	flang/proof/checker/tests/records/corrupt/corpus-tree-kind-inverted.record	-	-	-	-	1	-	-	-
@@ -245,7 +245,7 @@ D	2718: ветвь на месте, а цель ядру не по зубам	fl
 say	  (честная запись на том же исходнике даёт 3 — разница и есть остаток)	-	-	-	-	-	-	-	-	-	-
 D	6341: цель та же знак в знак, а ветвь лжёт	flang/test/fixtures/poddelka-dlina.flang	flang/proof/checker/tests/records/6341/same-goal-but-the-branch-lies.record	-	-	-	-	-	-	-	proved=4
 say	  (честная запись на том же исходнике даёт 3 — разница и есть остаток)	-	-	-	-	-	-	-	-	-	-
-P	7113 ходы без теоремы не прячут долг	flang/test/fixtures/poddelka-dlina.flang	flang/proof/checker/tests/records/7113/moves-without-theorem-hide-the-debt.record	-	-	-	-	3	-	-	word>=@6190 честная: poddelka-dlina (тождество под разбором)
+P	7113 ходы без теоремы не прячут долг	flang/test/fixtures/poddelka-dlina.flang	flang/proof/checker/tests/records/7113/moves-without-theorem-hide-the-debt.record	-	-	-	-	1	ход под посылкой не сходится	-	-
 say		-	-	-	-	-	-	-	-	-	-
 say	── свои пробы (работник 5044): R6b «дано «имя»» и V2 «список в одну строку» ──	-	-	-	-	-	-	-	-	-	-
 M	R6b исходная пара corpus-carrier	flang/proof/examples/corpus-carrier.flang	flang/proof/checker/tests/records/corpus/corpus-carrier.record	-	-	-	-	-	-	-	-
@@ -260,8 +260,8 @@ C	Ч7104 накрутка: шаг «по предположению» при т�
 P	Ч7104 накрутка: теорема из одного «по предположению» при непроверяемом теле не даёт кода 0	flang/proof/checker/tests/programs/measure-not-value-inflation-unverifiable.flang	flang/proof/checker/tests/records/measure-not-value/inflation-unverifiable.record	-	-	-	-	3	-	-	-
 say		-	-	-	-	-	-	-	-	-	-
 say	── ложные ходы больше не снимают долг там, где ходы никто не проигрывает ──	-	-	-	-	-	-	-	-	-	-
-P	7111 2718-with-false-moves	flang/proof/map/substantive.flang	flang/proof/checker/tests/records/7111/2718-with-false-moves.record	-	-	-	-	3	-	-	word>=@9984 честная substantive на том же исходнике
-P	7111 2718-all-premises-false-moves	flang/proof/map/substantive.flang	flang/proof/checker/tests/records/7111/2718-all-premises-false-moves.record	-	-	-	-	3	-	-	word>=@9984 честная substantive на том же исходнике
+P	7111 2718-with-false-moves	flang/proof/map/substantive.flang	flang/proof/checker/tests/records/7111/2718-with-false-moves.record	-	-	-	-	1	ход под посылкой не сходится	-	-
+P	7111 2718-all-premises-false-moves	flang/proof/map/substantive.flang	flang/proof/checker/tests/records/7111/2718-all-premises-false-moves.record	-	-	-	-	1	ход под посылкой не сходится	-	-
 P	7111 ложные ходы ПОД теоремой — ловятся по существу	flang/proof/examples/corpus-depth.flang	flang/proof/checker/tests/records/7111/corpus-depth-false-moves.record	-	-	-	-	1	-	-	-
 say		-	-	-	-	-	-	-	-	-	-
 say	── свои пробы (задача 1573): что вычислитель считает САМ ──	-	-	-	-	-	-	-	-	-	-
@@ -503,7 +503,7 @@ C	ограничение: теорема «дано н: … таких что �
 P	ограничение: гипотеза «дано н больше 0», которой у постусловия нет	flang/proof/checker/tests/families/restriction/k2b-direct-theorem-hypothesis.flang	flang/proof/checker/tests/families/restriction/k2b-direct-theorem-hypothesis.record	-	-	-	-	1	не является допущением утверждения	-	-
 P	ограничение: потеряно — запись З10 матрицы (прежде код 3)	flang/proof/checker/tests/families/restriction/f09-restricted.flang	flang/proof/checker/tests/families/restriction/corrupt/z10-restriction-lost.record	-	-	-	-	1	ограничение потеряно	-	-
 P	ограничение: другое	flang/proof/checker/tests/families/restriction/f09-restricted.flang	flang/proof/checker/tests/families/restriction/corrupt/other-restriction.record	-	-	-	-	1	«1⟩» вместо «0⟩»	-	-
-P	ограничение: не под «для всех»	flang/proof/checker/tests/families/restriction/f09-restricted.flang	flang/proof/checker/tests/families/restriction/corrupt/restriction-not-under-the-quantifier.record	-	-	-	-	1	стоит не сразу под строкой «для всех»	-	-
+P	ограничение: не под «для всех»	flang/proof/checker/tests/families/restriction/f09-restricted.flang	flang/proof/checker/tests/families/restriction/corrupt/restriction-not-under-the-quantifier.record	-	-	-	-	1	а у постусловия квантор один	-	-
 P	ограничение: шаг закрыт допущением, которого нет	flang/proof/checker/tests/families/restriction/k2bk-theorem-such-that.flang	flang/proof/checker/tests/families/restriction/corrupt/assumption-outside-the-list.record	-	-	-	-	1	закрыт допущением 2, а допущений в записи 1	-	-
 P	ограничение: допущение теоремы потеряно	flang/proof/checker/tests/families/restriction/k2bk-theorem-such-that.flang	flang/proof/checker/tests/families/restriction/corrupt/assumption-lost.record	-	-	-	-	1	дано 15, допущение 15	-	-
 P	ограничение: другое допущение	flang/proof/checker/tests/families/restriction/k2bk-theorem-such-that.flang	flang/proof/checker/tests/families/restriction/corrupt/other-assumption.record	-	-	-	-	1	допущение 1 — в записи ⟨н больше 1⟩	-	-
@@ -1017,3 +1017,17 @@ say	── семья «перебор» (7328, ADR-0075): свободное у
 C	перебор честная: три варианта проиграны заново	flang/proof/checker/tests/families/finite-enumeration/number.flang	flang/proof/checker/tests/families/finite-enumeration/number.record	-	-	-	-	0	-	-	-
 P	перебор: вариант подменён	flang/proof/checker/tests/families/finite-enumeration/number.flang	flang/proof/checker/tests/families/finite-enumeration/number.record	-	s/посылка «Жёлтый» вид base вариант «Жёлтый»/посылка «Синий» вид base вариант «Синий»/	-	-	1	-	-	-
 P	перебор: вариант пропущен	flang/proof/checker/tests/families/finite-enumeration/number.flang	flang/proof/checker/tests/families/finite-enumeration/number.record	-	/посылка «Жёлтый»/d	-	-	1	-	-	-
+say	── пробелы, найденные второй реализацией: подделки → 1 или 3, строки печати узнаются ──	-	-	-	-	-	-	-	-	-	-
+P	две записи как значения считались равными: «все звенья равны первому» на двух разных звеньях	flang/proof/checker/tests/programs/record-values-compared.flang	flang/proof/checker/tests/records/twin-gaps/record-values-compared.record	-	-	-	-	3	-	-	-
+P	оглавление называет таблицу, которой в исходнике нет и которую никто не читает	flang/proof/examples/corpus-bytes.flang	flang/proof/checker/tests/records/twin-gaps/table-nobody-reads.record	-	-	-	-	1	оглавление зовёт таблицей «Трёхбайтовые»	-	-
+P	снятие без строки «вид precondition-at-call»	flang/proof/examples/precondition.flang	flang/proof/checker/tests/records/twin-gaps/discharge-without-kind.record	-	-	-	-	1	строка «вид precondition-at-call» не одна	-	-
+P	снятие без строки «правило»	flang/proof/examples/precondition.flang	flang/proof/checker/tests/records/twin-gaps/discharge-without-rule.record	-	-	-	-	1	строк вердикта и правила обязано быть по одной	-	-
+P	вторая строка «сведение», которой не закрыта ни одна посылка	flang/proof/checker/tests/families/constructor/copy.flang	flang/proof/checker/tests/records/twin-gaps/extra-reduction-nobody-reads.record	-	-	-	-	1	сведение названо «вычисление замкнутой цели»	-	-
+P	ложные ходы под посылкой утверждения без теоремы, узел которого проигран по телу	flang/proof/checker/tests/families/constructor/copy.flang	flang/proof/checker/tests/records/twin-gaps/false-moves-under-a-replayed-node.record	-	-	-	-	1	ход под посылкой не сходится	-	-
+P	вердикт утверждения «сетка» узнан и доказанным не числится	flang/proof/examples/precondition.flang	flang/proof/checker/tests/records/twin-gaps/statement-verdict-grid.record	-	-	-	-	3	-	-	-
+P	вердикт утверждения «отвергнуто» узнан и доказанным не числится	flang/proof/examples/precondition.flang	flang/proof/checker/tests/records/twin-gaps/statement-verdict-refuted.record	-	-	-	-	3	-	-	-
+P	вердикт посылки «сетка» узнан	flang/proof/examples/precondition.flang	flang/proof/checker/tests/records/twin-gaps/premise-verdict-grid.record	-	-	-	-	3	-	-	-
+P	снятие с пустой строкой «вердикт», как печатает печать без записи discharge, — на слове ядра	flang/proof/examples/precondition.flang	flang/proof/checker/tests/records/twin-gaps/discharge-verdict-empty.record	-	-	-	-	3	вердикт не «доказано»	-	-
+C	два ограничения «таких что» подряд, как ставит печать	flang/proof/checker/tests/programs/two-restricted-bindings.flang	flang/proof/checker/tests/records/twin-gaps/two-restricted-bindings.record	-	-	-	-	3	-	-	-
+C	все «дано» теоремы перед всеми «допущение», как ставит печать	flang/proof/checker/tests/programs/assumption-above-a-given.flang	flang/proof/checker/tests/records/twin-gaps/assumption-above-a-given.record	-	-	-	-	0	-	-	-
+P	разбор признака с ветвью варианта: значение признака без текста не читается	flang/proof/checker/tests/programs/boolean-split-variant-branch.flang	flang/proof/checker/tests/records/twin-gaps/boolean-split-variant-branch.record	-	-	-	-	3	-	-	-

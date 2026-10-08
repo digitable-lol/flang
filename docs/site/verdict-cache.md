@@ -25,7 +25,7 @@ the path of the cache directory. The directory never goes into git
 |---|---|
 | `FLANG_PROOF_CACHE_STATS=1` | one stderr line: entries taken from disk, hits, new entries, obligations computed on a narrowed program |
 | `FLANG_PROOF_CACHE_AUDIT=1` | the kernel also computes on the whole program and compares the answer with the narrowed one |
-| `FLANG_MEMO_AUDIT=1` | every hit, from disk or from memory, is computed again and compared byte for byte; a mismatch is `abort()` |
+| `FLANG_MEMO_AUDIT=1` | every hit, from disk or from memory, is computed again and compared with the stored answer; a mismatch is `abort()` |
 | `FLANG_PROOF_CACHE_RECHECK=0` | do not call the independent checker after a run with hits |
 | `FLANG_PROOF_CACHE_KEY` | the signing key file instead of `~/.config/flang/proof-cache.key` |
 | `FLANG_PROOF_CHECKER` | the checker binary instead of `flang/proof/checker/сверщик` |
@@ -43,7 +43,7 @@ The answers of three pure functions of the compiler:
 | «Проверить терм по сужению» | `flang/self/proofterm.flang` | the verdict on a theorem: steps, cases, refusals |
 | «Значение терма записи» | `flang/self/proof-record.flang` | the value of a closed term in the proof record |
 
-The ledger and the proof record (`--record`) are built from these answers, so
+The proof report and the proof record (`--record`) are built from these answers, so
 both come from the cache.
 
 ## The key
@@ -74,7 +74,7 @@ computes an obligation on a NARROWED program:
    closure for every obligation: every string of the obligation node, the
    declarations with such names among `functions`, `types`, `statements`,
    `theorems` (a type is named by its own name and the names of its variants),
-   their strings, and so on to a fixed point. It hands the kernel the numbers
+   their strings, and so on until a pass adds nothing new. It hands the kernel the numbers
    of the declarations in ascending order.
 2. The kernel («Сужение замкнуто») DOES NOT TRUST the runtime and checks for
    itself: the numbers strictly grow and lie inside the program, and every
@@ -97,7 +97,7 @@ answer equals the whole-program answer is checked by `FLANG_PROOF_CACHE_AUDIT=1`
   come from the same computation. What remains is the assumption that sha256
   resists collisions.
 - **Narrowing is sound by construction.** The taken declarations are the
-  program's declarations byte for byte, the set is closed under references, and
+  program's declarations unchanged, the set is closed under references, and
   all declarations of one name are in it. A derivation on a subprogram where
   every mentioned name resolves as it does in the whole program is a
   derivation in the whole program too.

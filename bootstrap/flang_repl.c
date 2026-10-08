@@ -5845,6 +5845,23 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
       return false;
     }
   }
+  {
+    fl_value plans = fl_nothing();
+    fl_status said = FL_OK;
+    repl_call_quiet = true;
+    said = repl_call("Проверить планы", program, 1, &plans);
+    repl_call_quiet = false;
+    if (said == FL_OK) {
+      if (plans.tag == FL_LIST) {
+        for (index = 0; index < plans.as.list.count; index += 1) {
+          bads_take(bads, plans.as.list.items[index]);
+        }
+      }
+    } else if (strcmp(repl_call_code, "FLANG_UNKNOWN_NAME") != 0) {
+      bads_say(bads, "суд над планами прекращён");
+      return false;
+    }
+  }
   /*
    * СТОЛКНОВЕНИЕ ИМЁН ПОСЛЕ ТРАНСЛИТЕРАЦИИ — ПОСЛЕДНИМ ПЕРЕД ЯДРОМ.
    *
@@ -9504,7 +9521,7 @@ static int check_file(const char *path, bool fast) {
       size_t theorems = 0;
       check_skipped(program, &obligations, &examples, &theorems);
       printf("ПРОВЕРЕНО: связывание имён и повторы объявлений, типы, исчерпываемость разбора,\n"
-             "           завершаемость (в том числе взаимная рекурсия по компонентам), процессы.\n");
+             "           завершаемость (в том числе взаимная рекурсия по компонентам), процессы, планы.\n");
       printf("НЕ СМОТРЕЛИ НА ЭТОМ ПРОГОНЕ: ядро доказательств — обязательств %lu, теорем %lu;\n"
              "           законы категории на сетке; прогон примеров — примеров %lu.\n",
              (unsigned long)obligations, (unsigned long)theorems, (unsigned long)examples);

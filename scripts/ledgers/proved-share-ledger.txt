@@ -1172,6 +1172,9 @@ c1e460f80b460d4d4ddf809c3de056b7|1|×|×|×|0|flang/proof/checker/tests/families
 445166e71ce688aa6f45aa67c7b7fcd7|1|1|0|0|0|flang/proof/checker/tests/families/if-body/option-flag.flang
 be5b73b9ed53a4c40775eb35b4bd68a0|5|0|0|5|0|flang/proof/checker/tests/families/if-body/corrupt/lexer-step-lies.flang
 8bc96e9c0bef1ebf264788932b78744c|2|1|0|1|0|flang/proof/checker/tests/families/if-body/corrupt/option-flag-lies.flang
+88c5e5918ea4cc16d1cc5a9044e36aac|6|6|0|0|0|flang/proof/checker/tests/families/case-split-facts/linked-facts.flang
+4ad21ab2a834fa2904000c09e97b810d|7|1|6|0|0|flang/proof/checker/tests/families/case-split-facts/corrupt/linked-facts-lies.flang
+46828a7f4d52520f82a2080de478bb4f|1|0|1|0|0|flang/proof/checker/tests/families/case-split-facts/corrupt/pattern-name-hides-required-fact.flang
 dcdf98a5c22b7eac4510ef6d47df7db2|1|×|×|×|1|flang/proof/checker/tests/families/nested-quantifier/each-is-in-the-originals.flang
 1bbcfccfab94346174f722d0ce22ab6a|1|×|×|×|1|flang/proof/checker/tests/families/nested-quantifier/each-with-each.flang
 470696935cd27193b14a7ebe288068f5|1|×|×|×|0|flang/proof/checker/tests/families/all-elements/branch-choice.flang

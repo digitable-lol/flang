@@ -50,9 +50,13 @@
 
 тотальная функция «Modules»
   возвращает список список строки
-  пример «Eight files in the order of their imports»
-    ожидается [["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"], ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"]]
-  [["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"], ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"]]
+  пример «Nine files in the order of their imports»
+    ожидается [["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"], ["Record", "Запись"],
+      ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
+      ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"]]
+  [["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"], ["Record", "Запись"],
+    ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
+    ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"]]
 
 тотальная функция «Standard axioms»
   возвращает список строки
@@ -208,9 +212,26 @@
   пример «Nothing is tried until everything is built»
     дано answers равно пустой список
     ожидается пустой список
+  пусть text равно "import «Половина»\n#print axioms «состоятельность»\n#print axioms «половина-верно»\n"
+  пусть axioms равно [(«Write» от "axioms file" и («In work» от "axioms.lean" и answers) и text),
+    («Lean run» от "axioms" и "axioms.lean" и answers)]
+  пусть compiler равно («Setting of» от "compiler" и "cc" и answers)
+  пусть build равно [(«Run» от "cc" и compiler и ["-std=c99", "-O2", "-o", («In work» от "checker" и answers),
+    "../checker/checker.c"]), («Write» от "wrapper" и («In work» от "wrapper.sh" и answers) и («Wrapper»)),
+    («Run» от "wrapper mode" и "chmod" и ["+x", («In work» от "wrapper.sh" и answers)])]
+  пусть command равно (соединить ["mkdir -p \"$0/calls\" && CALLS=\"$0/calls\" REAL=\"$0/checker\"",
+    "FLANG_CHECKER=\"$0/wrapper.sh\" FLANG_TMP=\"$0\" && export CALLS REAL FLANG_CHECKER FLANG_TMP &&",
+    "exec \"$1\" io ../checker/tests/run.fscript --max-steps 4000000000 --timeout 600000 --",
+    "\"$0/probes.report\" > \"$0/probes.out\" 2>&1"] по " ")
+  пусть probes равно [(«Run» от "probes" и "sh" и ["-c", command, («Work» от answers), («Binary» от answers)]),
+    («Read» от "report" и («In work» от "probes.report" и answers))]
+  пусть calls равно [(«Write» от "calls script" и («In work» от "calls.sh" и answers) и («Calls script»)),
+    («Run» от "calls" и "sh" и [(«In work» от "calls.sh" и answers), («In work» от "calls" и answers),
+      («In work» от "calls.txt" и answers)]), («Read» от "calls text" и («In work» от "calls.txt" и answers))]
+  пусть tail равно («Соединить списки» от build и («Соединить списки» от probes и calls))
   если не («Built» от answers)
     то пустой список
-    иначе «Соединить списки» от [(«Write» от "axioms file" и («In work» от "axioms.lean" и answers) и "import «Состоятельность»\n#print axioms «состоятельность»\n"), («Lean run» от "axioms" и "axioms.lean" и answers)] и («Соединить списки» от («Trap files» от answers) и [(«Run» от "cc" и («Setting of» от "compiler" и "cc" и answers) и ["-std=c99", "-O2", "-o", («In work» от "checker" и answers), "../checker/checker.c"]), («Write» от "wrapper" и («In work» от "wrapper.sh" и answers) и («Wrapper»)), («Run» от "wrapper mode" и "chmod" и ["+x", («In work» от "wrapper.sh" и answers)]), («Run» от "probes" и "sh" и ["-c", "mkdir -p \"$0/calls\" && CALLS=\"$0/calls\" REAL=\"$0/checker\" FLANG_CHECKER=\"$0/wrapper.sh\" FLANG_TMP=\"$0\" && export CALLS REAL FLANG_CHECKER FLANG_TMP && exec \"$1\" io ../checker/tests/run.fscript --max-steps 4000000000 --timeout 600000 -- \"$0/probes.report\" > \"$0/probes.out\" 2>&1", («Work» от answers), («Binary» от answers)]), («Read» от "report" и («In work» от "probes.report" и answers)), («Write» от "calls script" и («In work» от "calls.sh" и answers) и («Calls script»)), («Run» от "calls" и "sh" и [(«In work» от "calls.sh" и answers), («In work» от "calls" и answers), («In work» от "calls.txt" и answers)]), («Read» от "calls text" и («In work» от "calls.txt" и answers))])
+    иначе «Соединить списки» от axioms и («Соединить списки» от («Trap files» от answers) и tail)
 
 тотальная функция «Visit of»
   принимает chunk: строка
@@ -582,17 +603,63 @@
     дано answers равно пустой список
     ожидается запись «Section» с «lines» равным ["Lean: ", "", "Model.lean НЕ СОБРАЛСЯ:"] и «bad» равным да и «fatal» равным да
   пусть built равно (свёртка («Modules») начиная с (запись «Section» с «lines» равным [(соединить ["Lean: ", («First line» от («Output of» от "version" и answers))] по ""), ""] и «bad» равным нет и «fatal» равным нет) как part и pair → «Build step» от part и pair и answers)
-  если built.«fatal» то built иначе (запись «Section» с «lines» равным (добавить "сборка — Model, Rules, Term, Record, Acceptance, Consistency, RecordReader, VerdictCheck: без сообщений" к (built.«lines»)) и «bad» равным (built.«bad») и «fatal» равным нет)
+  пусть names равно "Model, Rules, Term, Record, Acceptance, Consistency, Half, RecordReader, VerdictCheck"
+  пусть lines равно (добавить (соединить ["сборка — ", names, ": без сообщений"] по "") к (built.«lines»))
+  пусть quiet равно (запись «Section» с «lines» равным lines и «bad» равным (built.«bad») и «fatal» равным нет)
+  если built.«fatal» то built иначе quiet
+
+тотальная функция «All but first»
+  принимает parts: список строки
+  возвращает список строки
+  пример «The pieces after the first»
+    дано parts равно ["a", "b", "c"]
+    ожидается ["b", "c"]
+  пример «Nothing gives nothing»
+    дано parts равно пустой список
+    ожидается пустой список
+  разбор parts
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Axiom words»
+  принимает piece: строка
+  возвращает список строки
+  пример «The names before the closing bracket»
+    дано piece равно "propext, Quot.sound] tail"
+    ожидается ["propext", "Quot.sound"]
+  пусть inside равно («Cell» от 1 и (разделить piece по "]"))
+  отфильтровать (отобразить (разделить inside по ",") как word → «Without blanks» от word) где word → не (пусто word)
+
+тотальная функция «Keep once»
+  принимает kept: список строки, word: строка
+  возвращает список строки
+  пример «A new word is kept»
+    дано kept равно ["propext"]
+    дано word равно "Quot.sound"
+    ожидается ["propext", "Quot.sound"]
+  пример «A known word is not kept twice»
+    дано kept равно ["propext"]
+    дано word равно "propext"
+    ожидается ["propext"]
+  если («Has» от word и kept) то kept иначе (добавить word к kept)
 
 тотальная функция «Axioms of»
   принимает said: строка
   возвращает строка
   пример «The axioms Lean printed»
     дано said равно "'«состоятельность»' depends on axioms: [propext,\n Classical.choice]\n"
-    ожидается "propext,  Classical.choice"
+    ожидается "propext, Classical.choice"
+  пример «The axioms of every printed theorem, each once»
+    дано said равно "'«а»' depends on axioms: [propext]\n'«б»' depends on axioms: [propext, Quot.sound]\n"
+    ожидается "propext, Quot.sound"
   пусть joined равно (соединить (разделить said по "\n") по " ")
   пусть parts равно (разделить joined по "depends on axioms: [")
-  если (длина parts) меньше 2 то "" иначе («Cell» от 1 и (разделить («Cell» от (длина parts) и parts) по "]"))
+  пусть lists равно («All but first» от parts)
+  пусть none равно (пустой список)
+  пусть words равно (свёртка lists начиная с none как acc и p → «Соединить списки» от acc и («Axiom words» от p))
+  соединить (свёртка words начиная с none как kept и word → «Keep once» от kept и word) по ", "
 
 тотальная функция «Axioms section»
   принимает answers: список «Answer»
@@ -603,9 +670,18 @@
   пусть said равно (соединить [(«Output of» от "axioms" и answers), («Errors of» от "axioms" и answers)] по "")
   пусть none равно (said содержит "does not depend on any axioms")
   пусть found равно (если none то "" иначе («Axioms of» от said))
-  пусть extra равно (отфильтровать (отобразить (разделить found по ",") как word → «Without blanks» от word) где word → (не (пусто word)) и притом (не («Has» от word и («Standard axioms»))))
-  «Chosen» от [(«When» от ((пусто found) и притом (не none)) и (запись «Section» с «lines» равным (приписать "аксиомы — вывод Lean не разобран:" к («Said lines» от "axioms" и answers)) и «bad» равным да и «fatal» равным нет)),
-    («When» от (не (пусто extra)) и (запись «Section» с «lines» равным [(соединить ["аксиомы «состоятельность» — лишние: ", (соединить (отобразить extra как word → соединить [word, " "] по "") по "")] по "")] и «bad» равным да и «fatal» равным нет))] и (запись «Section» с «lines» равным [(соединить ["аксиомы «состоятельность» — [", found, "], сверх трёх стандартных ни одной"] по "")] и «bad» равным нет и «fatal» равным нет)
+  пусть words равно (отобразить (разделить found по ",") как word → «Without blanks» от word)
+  пусть named равно (отфильтровать words где word → не (пусто word))
+  пусть extra равно (отфильтровать named где word → не («Has» от word и («Standard axioms»)))
+  пусть head равно "аксиомы «состоятельность» и «половина-верно» — "
+  пусть spare равно (соединить (отобразить extra как word → соединить [word, " "] по "") по "")
+  пусть excess равно [(соединить [head, "лишние: ", spare] по "")]
+  пусть plain равно [(соединить [head, "[", found, "], сверх трёх стандартных ни одной"] по "")]
+  пусть unread равно (приписать "аксиомы — вывод Lean не разобран:" к («Said lines» от "axioms" и answers))
+  пусть blind равно (запись «Section» с «lines» равным unread и «bad» равным да и «fatal» равным нет)
+  пусть loud равно (запись «Section» с «lines» равным excess и «bad» равным да и «fatal» равным нет)
+  пусть quiet равно (запись «Section» с «lines» равным plain и «bad» равным нет и «fatal» равным нет)
+  «Chosen» от [(«When» от ((пусто found) и притом (не none)) и blind), («When» от (не (пусто extra)) и loud)] и quiet
 
 тотальная функция «Trap section»
   принимает answers: список «Answer»

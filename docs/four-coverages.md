@@ -61,8 +61,8 @@ bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 90000
    (тело функции не собрано в терм, мера свёртки через реестр доказанного), уходит «вне модели»
    вместе со всем блоком.
 
-Файлов Lean в дереве 9.
-<!-- СНЯТО 2026-09-19 файлов flang/proof/lean/*.lean = 9 -->
+Файлов Lean в дереве 10.
+<!-- СНЯТО 2026-10-08 файлов flang/proof/lean/*.lean = 10 -->
 Снимается целиком: `bootstrap/flang io flang/proof/lean/run.fscript --max-steps 4000000000 --timeout 900000` (нужен Lean в PATH, версия — в
 `flang/proof/lean/lean-toolchain`). Первый из двух вопросов прибор четырёх покрытий считает и без
 Lean: это счёт текста, а не доказательство.

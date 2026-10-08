@@ -95,6 +95,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 /*
  * Единственная связь прогонщика с конкретной программой — вызов функции по
@@ -853,6 +854,9 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
   size_t name_bytes = 0;
   size_t count = 0;
   fl_status status = FL_OK;
+  double cost = 0.0;
+  clock_t started = 0;
+  double spent = 0.0;
 #ifdef FL_WITH_CONC
   char *run = NULL;
   double seed = 0.0;
@@ -963,6 +967,11 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
         return;
       }
 #endif
+    } else if (strcmp(key, "cost") == 0) {
+      if (!read_number_text(&reader, &cost)) {
+        fputs("{\"ok\":false,\"code\":\"CLI\",\"message\":\"неразборчивый признак цены\"}\n", stdout);
+        return;
+      }
     } else if (strcmp(key, "args") == 0) {
       fl_value list = fl_nothing();
       if (!read_items(&reader, &list) || list.as.list.count > FL_MAX_ARGS) {
@@ -1023,13 +1032,20 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
 
   /* Граница входа — ДО вызова: значение вне объявленного типа выносит вместе с
      типом и доказательство завершения, и поймать вечную цепочку потом нечем. */
+  started = clock();
   status = fl_check_entry(&ctx, FL_PROGRAM_ENTRY(), name, args, count, &error);
   if (status == FL_OK) {
     status = FL_PROGRAM_CALL(&ctx, name, args, count, &result, &error);
   }
+  spent = (double)(clock() - started) / (double)CLOCKS_PER_SEC;
   if (status == FL_OK) {
     fputs("{\"ok\":true,\"value\":", stdout);
     write_value(result);
+    if (cost != 0.0) {
+      printf(",\"steps\":\"%lu\",\"handed\":\"%lu\",\"reserved\":\"%lu\"", (unsigned long)ctx.steps,
+             (unsigned long)arena->handed, (unsigned long)arena->reserved);
+      printf(",\"depth\":\"%lu\",\"seconds\":\"%.6f\"", (unsigned long)ctx.depth_peak, spent);
+    }
     fputs("}\n", stdout);
     return;
   }

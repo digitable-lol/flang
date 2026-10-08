@@ -216,7 +216,7 @@ public static class Flang
     /* ───────────────────────────── диагностика ───────────────────────────── */
 
     /// <summary>Собирает диагностику. Возвращает исключение — бросает вызывающий.</summary>
-    public static FlangError Fail(string code, string message) => new FlangError(code, message);
+    public static FlangError Fail(string code, string message) => new(code, message);
 
     /* ───────────────────────────── глубокий стек ─────────────────────────── */
 
@@ -278,7 +278,7 @@ public static class Flang
         public Step? Next;
 
         /// <summary>Аргументы отскока.</summary>
-        public Value[] Args = Array.Empty<Value>();
+        public Value[] Args = [];
     }
 
     /// <summary>Шаг батута: считает своё тело либо заполняет отскок.</summary>
@@ -329,12 +329,8 @@ public static class Flang
                 FlangError.CodeType,
                 "поле «" + name + "» можно взять только у записи, получено " + Value.TypeName(target));
         }
-        Value? found = Value.Lookup(target.Fields, name);
-        if (found is null)
-        {
-            throw Fail(FlangError.CodeUnknownName, "запись не содержит поле «" + name + "»");
-        }
-        return found;
+        return Value.Lookup(target.Fields, name)
+            ?? throw Fail(FlangError.CodeUnknownName, "запись не содержит поле «" + name + "»");
     }
 
     /// <summary>
@@ -344,14 +340,10 @@ public static class Flang
     /// </summary>
     public static Value VariantField(Ctx ctx, Value target, string name)
     {
-        Value? found = Value.Lookup(target.Fields, name);
-        if (found is null)
-        {
-            throw Fail(
+        return Value.Lookup(target.Fields, name)
+            ?? throw Fail(
                 FlangError.CodeUnknownName,
                 "вариант «" + target.Str + "» не содержит поле «" + name + "»");
-        }
-        return found;
     }
 
     /// <summary>Условие «если»: обязано быть признаком.</summary>
@@ -507,7 +499,7 @@ public static class Flang
         double low = value % ExactBase;
         double high = (value - low) / ExactBase;
         double middle = high % ExactBase;
-        return ExactTrim(new double[] { low, middle, (high - middle) / ExactBase }, 3);
+        return ExactTrim([low, middle, (high - middle) / ExactBase], 3);
     }
 
     /// <summary>«Уложить разряды»: перенос по столбцам, затем перенос сверху.</summary>
@@ -541,7 +533,7 @@ public static class Flang
         return digits;
     }
 
-    private static readonly BigInteger ExactBaseBig = new BigInteger(4194304);
+    private static readonly BigInteger ExactBaseBig = new(4194304);
 
     private static BigInteger ExactCanon(Value value)
     {
@@ -556,7 +548,7 @@ public static class Flang
 
     private static List<long> ExactDigitsOf(BigInteger whole)
     {
-        List<long> digits = new List<long>();
+        List<long> digits = [];
         BigInteger rest = whole;
         while (rest.Sign > 0)
         {
@@ -580,7 +572,7 @@ public static class Flang
     private static string ExactText(BigInteger whole)
     {
         List<long> digits = ExactDigitsOf(whole);
-        StringBuilder text = new StringBuilder("[");
+        StringBuilder text = new("[");
         for (int index = 0; index < digits.Count; index++)
         {
             text.Append(index == 0 ? "" : ", ").Append(digits[index].ToString(CultureInfo.InvariantCulture));
@@ -601,17 +593,17 @@ public static class Flang
     private static BigInteger[] FractionParts(Value value)
     {
         Value[] halves = Value.Elements(value);
-        return new BigInteger[] { ExactCanon(halves[0]), ExactCanon(halves[1]) };
+        return [ExactCanon(halves[0]), ExactCanon(halves[1])];
     }
 
     private static Value FractionValue(BigInteger top, BigInteger bottom)
     {
         if (top.IsZero)
         {
-            return Value.List(new Value[] { ExactValue(top), ExactValue(BigInteger.One) });
+            return Value.List([ExactValue(top), ExactValue(BigInteger.One)]);
         }
         BigInteger common = BigInteger.GreatestCommonDivisor(top, bottom);
-        return Value.List(new Value[] { ExactValue(top / common), ExactValue(bottom / common) });
+        return Value.List([ExactValue(top / common), ExactValue(bottom / common)]);
     }
 
     private static string FractionText(BigInteger[] parts) => ExactText(parts[0]) + " над " + ExactText(parts[1]);
@@ -815,7 +807,7 @@ public static class Flang
         {
             return false;
         }
-        return char.IsHighSurrogate(left[left.Length - 1]) && char.IsLowSurrogate(right[0]);
+        return char.IsHighSurrogate(left[^1]) && char.IsLowSurrogate(right[0]);
     }
 
     /// <summary>
@@ -845,7 +837,7 @@ public static class Flang
         {
             return false;
         }
-        return char.IsLowSurrogate(part[0]) || char.IsHighSurrogate(part[part.Length - 1]);
+        return char.IsLowSurrogate(part[0]) || char.IsHighSurrogate(part[^1]);
     }
 
     /// <summary>Стоит ли позиция на границе знака, а не в середине пары.</summary>
@@ -1062,7 +1054,7 @@ public static class Flang
         }
         int from = OffsetOf(value, (int)begin);
         int to = OffsetOf(value, (int)end);
-        return Value.Text(value.Substring(from, to - from));
+        return Value.Text(value[from..to]);
     }
 
     /// <summary>
@@ -1138,7 +1130,7 @@ public static class Flang
             points.Add(Value.Text(value.Substring(index, width)));
             index += width;
         }
-        return Value.List(points.ToArray());
+        return Value.List([.. points]);
     }
 
     /// <summary>«код символа»: кодовая точка первого символа строки.</summary>
@@ -1201,7 +1193,7 @@ public static class Flang
     {
         string body = ExpectString("хеш256", text, "строка");
         byte[] svod = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(body));
-        StringBuilder outText = new StringBuilder(64);
+        StringBuilder outText = new(64);
         foreach (byte one in svod)
         {
             outText.Append(one.ToString("x2", CultureInfo.InvariantCulture));
@@ -1227,13 +1219,13 @@ public static class Flang
                 : value.IndexOf(mark, from, StringComparison.Ordinal);
             if (found < 0)
             {
-                parts.Add(Value.Text(value.Substring(from)));
+                parts.Add(Value.Text(value[from..]));
                 break;
             }
-            parts.Add(Value.Text(value.Substring(from, found - from)));
+            parts.Add(Value.Text(value[from..found]));
             from = found + mark.Length;
         }
-        return Value.List(parts.ToArray());
+        return Value.List([.. parts]);
     }
 
     /// <summary>«содержит»: подстрока в строке либо значение в списке.</summary>
@@ -1283,26 +1275,25 @@ public static class Flang
     {
         /* Коды записаны числами, а не литералами: половина этих знаков невидима,
            и литерал в исходнике нельзя ни прочитать, ни отличить от соседнего. */
-        switch (symbol)
+        return symbol switch
         {
-            case '\t':          // U+0009 табуляция
-            case '\n':          // U+000A перевод строки
-            case (char)0x000B:  // вертикальная табуляция
-            case '\f':          // U+000C перевод страницы
-            case '\r':          // U+000D возврат каретки
-            case ' ':           // U+0020 пробел
-            case (char)0x00A0:  // неразрывный пробел
-            case (char)0x1680:
-            case (char)0x2028:  // разделитель строк
-            case (char)0x2029:  // разделитель абзацев
-            case (char)0x202F:
-            case (char)0x205F:
-            case (char)0x3000:
-            case (char)0xFEFF:  // метка порядка байтов: в наборе ECMAScript есть
-                return true;
-            default:
-                return symbol >= (char)0x2000 && symbol <= (char)0x200A;
-        }
+            '\t'               // U+0009 табуляция
+            or '\n'            // U+000A перевод строки
+            or (char)0x000B    // вертикальная табуляция
+            or '\f'            // U+000C перевод страницы
+            or '\r'            // U+000D возврат каретки
+            or ' '             // U+0020 пробел
+            or (char)0x00A0    // неразрывный пробел
+            or (char)0x1680
+            or (char)0x2028    // разделитель строк
+            or (char)0x2029    // разделитель абзацев
+            or (char)0x202F
+            or (char)0x205F
+            or (char)0x3000
+            or (char)0xFEFF    // метка порядка байтов: в наборе ECMAScript есть
+                => true,
+            _ => symbol >= (char)0x2000 && symbol <= (char)0x200A,
+        };
     }
 
     private static string TrimJs(string value)
@@ -1317,7 +1308,7 @@ public static class Flang
         {
             to -= 1;
         }
-        return value.Substring(from, to - from);
+        return value[from..to];
     }
 
     /// <summary>
@@ -1427,17 +1418,16 @@ public static class Flang
     {
         try
         {
-            return Value.Variant("Разобрано", new[] { new Field("значение", BToNumber(ctx, source)) });
+            return Value.Variant("Разобрано", [new Field("значение", BToNumber(ctx, source))]);
         }
         catch (FlangError failure)
         {
             return Value.Variant(
                 "Не разобрано",
-                new[]
-                {
+                [
                     new Field("код", Value.Text(failure.Code)),
                     new Field("сообщение", Value.Text(failure.Text)),
-                });
+                ]);
         }
     }
 
@@ -1448,21 +1438,16 @@ public static class Flang
     /// </summary>
     public static Value BToString(Ctx ctx, Value value)
     {
-        switch (value.Tag)
+        return value.Tag switch
         {
-            case Value.TagString:
-                return value;
-            case Value.TagNumber:
-                return Value.Text(Value.NumberText(value.Num));
-            case Value.TagFlag:
-                return Value.Text(value.Bit ? "да" : "нет");
-            case Value.TagNothing:
-                return Value.Text("ничто");
-            default:
-                throw Fail(
-                    FlangError.CodeBuiltinArgs,
-                    "«к строке»: ожидается скаляр, получено " + Value.TypeName(value));
-        }
+            Value.TagString => value,
+            Value.TagNumber => Value.Text(Value.NumberText(value.Num)),
+            Value.TagFlag => Value.Text(value.Bit ? "да" : "нет"),
+            Value.TagNothing => Value.Text("ничто"),
+            _ => throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«к строке»: ожидается скаляр, получено " + Value.TypeName(value)),
+        };
     }
 
     /// <summary>«пусто».</summary>
@@ -1531,13 +1516,13 @@ public static class Flang
                 : value.IndexOf(mark, from, StringComparison.Ordinal);
             if (found < 0)
             {
-                parts.Add(Value.Text(value.Substring(from)));
+                parts.Add(Value.Text(value[from..]));
                 break;
             }
-            parts.Add(Value.Text(value.Substring(from, found - from)));
+            parts.Add(Value.Text(value[from..found]));
             from = found + mark.Length;
         }
-        return Value.List(parts.ToArray());
+        return Value.List([.. parts]);
     }
 
     /// <summary>«код символа» доказанно непустой строки.</summary>
@@ -1707,164 +1692,123 @@ public static class Flang
     public const int TypeSum = 7;
 
     /// <summary>Поле записи или варианта: имя и место его типа в таблице типов.</summary>
-    public readonly struct TypeField
+    /// <remarks>Собирает описание поля.</remarks>
+    public readonly struct TypeField(string name, int type)
     {
         /// <summary>Имя поля в исходной программе flang.</summary>
-        public readonly string Name;
+        public readonly string Name = name;
 
         /// <summary>Индекс типа поля в таблице типов.</summary>
-        public readonly int Type;
-
-        /// <summary>Собирает описание поля.</summary>
-        public TypeField(string name, int type)
-        {
-            Name = name;
-            Type = type;
-        }
+        public readonly int Type = type;
     }
 
     /// <summary>Вариант суммы: имя дискриминанта и отрезок его полей.</summary>
-    public readonly struct TypeVariant
+    /// <remarks>Собирает описание варианта.</remarks>
+    public readonly struct TypeVariant(string name, int fieldFrom, int fieldCount)
     {
         /// <summary>Имя варианта.</summary>
-        public readonly string Name;
+        public readonly string Name = name;
 
         /// <summary>Начало отрезка полей в общем массиве.</summary>
-        public readonly int FieldFrom;
+        public readonly int FieldFrom = fieldFrom;
 
         /// <summary>Длина отрезка полей.</summary>
-        public readonly int FieldCount;
-
-        /// <summary>Собирает описание варианта.</summary>
-        public TypeVariant(string name, int fieldFrom, int fieldCount)
-        {
-            Name = name;
-            FieldFrom = fieldFrom;
-            FieldCount = fieldCount;
-        }
+        public readonly int FieldCount = fieldCount;
     }
 
     /// <summary>
     /// Объявленный тип. Поля и варианты лежат сплошными отрезками общих
     /// массивов, а тип называет своё начало и длину.
     /// </summary>
-    public readonly struct TypeSpec
+    /// <remarks>Собирает описание типа.</remarks>
+    public readonly struct TypeSpec(
+        int kind,
+        string name,
+        string owner,
+        bool optional,
+        bool integral,
+        bool bounded,
+        double low,
+        double high,
+        int of,
+        int fieldFrom,
+        int fieldCount,
+        int variantFrom,
+        int variantCount)
     {
         /// <summary>Вид типа.</summary>
-        public readonly int Kind;
+        public readonly int Kind = kind;
 
         /// <summary>Печатное имя типа: «неотрицательное», «список числа».</summary>
-        public readonly string Name;
+        public readonly string Name = name;
 
         /// <summary>Имя записи или суммы без кавычек — для текстов о полях.</summary>
-        public readonly string Owner;
+        public readonly string Owner = owner;
 
         /// <summary>«… или ничто»: отсутствие значения законно.</summary>
-        public readonly bool Optional;
+        public readonly bool Optional = optional;
 
         /// <summary>Целое ли.</summary>
-        public readonly bool Integral;
+        public readonly bool Integral = integral;
 
         /// <summary>Есть ли конечный отрезок (у `число` его нет).</summary>
-        public readonly bool Bounded;
+        public readonly bool Bounded = bounded;
 
         /// <summary>Нижняя граница отрезка.</summary>
-        public readonly double Low;
+        public readonly double Low = low;
 
         /// <summary>Верхняя граница отрезка.</summary>
-        public readonly double High;
+        public readonly double High = high;
 
         /// <summary>Тип элемента списка.</summary>
-        public readonly int Of;
+        public readonly int Of = of;
 
         /// <summary>Начало отрезка полей записи.</summary>
-        public readonly int FieldFrom;
+        public readonly int FieldFrom = fieldFrom;
 
         /// <summary>Длина отрезка полей записи.</summary>
-        public readonly int FieldCount;
+        public readonly int FieldCount = fieldCount;
 
         /// <summary>Начало отрезка вариантов.</summary>
-        public readonly int VariantFrom;
+        public readonly int VariantFrom = variantFrom;
 
         /// <summary>Длина отрезка вариантов.</summary>
-        public readonly int VariantCount;
-
-        /// <summary>Собирает описание типа.</summary>
-        public TypeSpec(
-            int kind,
-            string name,
-            string owner,
-            bool optional,
-            bool integral,
-            bool bounded,
-            double low,
-            double high,
-            int of,
-            int fieldFrom,
-            int fieldCount,
-            int variantFrom,
-            int variantCount)
-        {
-            Kind = kind;
-            Name = name;
-            Owner = owner;
-            Optional = optional;
-            Integral = integral;
-            Bounded = bounded;
-            Low = low;
-            High = high;
-            Of = of;
-            FieldFrom = fieldFrom;
-            FieldCount = fieldCount;
-            VariantFrom = variantFrom;
-            VariantCount = variantCount;
-        }
+        public readonly int VariantCount = variantCount;
     }
 
     /// <summary>Параметр функции: чей он, как называется и какого он типа.</summary>
-    public readonly struct EntryParam
+    /// <remarks>Собирает описание параметра.</remarks>
+    public readonly struct EntryParam(string function, string name, int type)
     {
         /// <summary>Имя функции flang.</summary>
-        public readonly string Function;
+        public readonly string Function = function;
 
         /// <summary>Имя параметра.</summary>
-        public readonly string Name;
+        public readonly string Name = name;
 
         /// <summary>Индекс типа в таблице типов.</summary>
-        public readonly int Type;
-
-        /// <summary>Собирает описание параметра.</summary>
-        public EntryParam(string function, string name, int type)
-        {
-            Function = function;
-            Name = name;
-            Type = type;
-        }
+        public readonly int Type = type;
     }
 
     /// <summary>Граница входа программы целиком.</summary>
-    public sealed class EntryTable
+    /// <remarks>Собирает границу входа.</remarks>
+    public sealed class EntryTable(
+        TypeSpec[] types,
+        TypeField[] fields,
+        TypeVariant[] variants,
+        EntryParam[] parameters)
     {
         /// <summary>Объявленные типы.</summary>
-        public readonly TypeSpec[] Types;
+        public readonly TypeSpec[] Types = types;
 
         /// <summary>Поля записей и вариантов, сплошным массивом.</summary>
-        public readonly TypeField[] Fields;
+        public readonly TypeField[] Fields = fields;
 
         /// <summary>Варианты сумм, сплошным массивом.</summary>
-        public readonly TypeVariant[] Variants;
+        public readonly TypeVariant[] Variants = variants;
 
         /// <summary>Параметры функций в объявленном порядке.</summary>
-        public readonly EntryParam[] Params;
-
-        /// <summary>Собирает границу входа.</summary>
-        public EntryTable(TypeSpec[] types, TypeField[] fields, TypeVariant[] variants, EntryParam[] parameters)
-        {
-            Types = types;
-            Fields = fields;
-            Variants = variants;
-            Params = parameters;
-        }
+        public readonly EntryParam[] Params = parameters;
     }
 
     private static void CheckNumberType(TypeSpec spec, Value value, string label)

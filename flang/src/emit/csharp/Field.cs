@@ -17,17 +17,11 @@
 #nullable enable
 
 /// <summary>Поле записи или варианта.</summary>
-public readonly struct Field
+public readonly struct Field(string name, Value value)
 {
     /// <summary>Имя поля — как в модели flang, кириллицей и с пробелами.</summary>
-    public readonly string Name;
+    public readonly string Name = name;
 
     /// <summary>Значение поля.</summary>
-    public readonly Value Value;
-
-    public Field(string name, Value value)
-    {
-        Name = name;
-        Value = value;
-    }
+    public readonly Value Value = value;
 }

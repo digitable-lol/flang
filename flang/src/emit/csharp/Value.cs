@@ -151,8 +151,8 @@ public sealed class Value
     /// <summary>Поля записи или варианта в порядке объявления.</summary>
     public readonly Field[] Fields;
 
-    private static readonly Value[] NoItems = Array.Empty<Value>();
-    private static readonly Field[] NoFields = Array.Empty<Field>();
+    private static readonly Value[] NoItems = [];
+    private static readonly Field[] NoFields = [];
 
     private Value(int tag, double num, bool bit, string str, Value[] items, Field[] fields)
         : this(tag, num, bit, str, items, items.Length, null, fields)
@@ -175,31 +175,31 @@ public sealed class Value
 
     /// <summary>«ничто» — единственное на всю программу.</summary>
     public static readonly Value NothingValue =
-        new Value(TagNothing, 0.0, false, "", NoItems, NoFields);
+        new(TagNothing, 0.0, false, "", NoItems, NoFields);
 
     /// <summary>Признак «да».</summary>
-    public static readonly Value True = new Value(TagFlag, 0.0, true, "", NoItems, NoFields);
+    public static readonly Value True = new(TagFlag, 0.0, true, "", NoItems, NoFields);
 
     /// <summary>Признак «нет».</summary>
-    public static readonly Value False = new Value(TagFlag, 0.0, false, "", NoItems, NoFields);
+    public static readonly Value False = new(TagFlag, 0.0, false, "", NoItems, NoFields);
 
     /// <summary>«ничто».</summary>
     public static Value Nothing() => NothingValue;
 
     /// <summary>Число. Всегда double: целых чисел в flang нет (SPEC, раздел 2).</summary>
     public static Value Number(double value) =>
-        new Value(TagNumber, value, false, "", NoItems, NoFields);
+        new(TagNumber, value, false, "", NoItems, NoFields);
 
     /// <summary>Признак.</summary>
     public static Value Flag(bool value) => value ? True : False;
 
     /// <summary>Строка.</summary>
     public static Value Text(string value) =>
-        new Value(TagString, 0.0, false, value, NoItems, NoFields);
+        new(TagString, 0.0, false, value, NoItems, NoFields);
 
     /// <summary>Список. Массив переходит во владение и после этого не меняется.</summary>
     public static Value List(Value[] items) =>
-        new Value(TagList, 0.0, false, "", items, NoFields);
+        new(TagList, 0.0, false, "", items, NoFields);
 
     /// <summary>
     /// Список из первых count ячеек общего массива, с отметкой занятого.
@@ -207,7 +207,7 @@ public sealed class Value
     /// его разбор лежат при Grow.
     /// </summary>
     internal static Value Grown(Value[] cells, int count, Grow spare) =>
-        new Value(TagList, 0.0, false, "", cells, count, spare, NoFields);
+        new(TagList, 0.0, false, "", cells, count, spare, NoFields);
 
     /// <summary>Длина списка.</summary>
     public static int Size(Value list) => list.Count;
@@ -237,18 +237,18 @@ public sealed class Value
     }
 
     /// <summary>Пустой список без выделения памяти.</summary>
-    public static Value EmptyList() => new Value(TagList, 0.0, false, "", NoItems, NoFields);
+    public static Value EmptyList() => new(TagList, 0.0, false, "", NoItems, NoFields);
 
     /// <summary>Запись: поля в порядке объявления.</summary>
     public static Value Record(Field[] fields) =>
-        new Value(TagRecord, 0.0, false, "", NoItems, fields);
+        new(TagRecord, 0.0, false, "", NoItems, fields);
 
     /// <summary>Запись без полей.</summary>
-    public static Value EmptyRecord() => new Value(TagRecord, 0.0, false, "", NoItems, NoFields);
+    public static Value EmptyRecord() => new(TagRecord, 0.0, false, "", NoItems, NoFields);
 
     /// <summary>Вариант суммы типов: дискриминант плюс поля.</summary>
     public static Value Variant(string name, Field[] fields) =>
-        new Value(TagVariant, 0.0, false, name, NoItems, fields);
+        new(TagVariant, 0.0, false, name, NoItems, fields);
 
     /// <summary>Скаляр ли значение (строка, число, признак, ничто).</summary>
     public static bool IsScalar(Value value) => value.Tag <= TagString;
@@ -297,34 +297,26 @@ public sealed class Value
 
     /// <summary>Голова цепочки: первый элемент списка или первый символ строки.</summary>
     public static Value ChainHead(Value value) =>
-        value.Tag == TagString ? Text(value.Str.Substring(0, FirstPointWidth(value.Str))) : value.Items[0];
+        value.Tag == TagString ? Text(value.Str[..FirstPointWidth(value.Str)]) : value.Items[0];
 
     /// <summary>Хвост цепочки: остаток списка или остаток строки.</summary>
     public static Value ChainTail(Value value) =>
-        value.Tag == TagString ? Text(value.Str.Substring(FirstPointWidth(value.Str))) : List(value.Items[1..value.Count]);
+        value.Tag == TagString ? Text(value.Str[FirstPointWidth(value.Str)..]) : List(value.Items[1..value.Count]);
 
     /// <summary>Имя типа значения для диагностик (typeName интерпретатора).</summary>
     public static string TypeName(Value value)
     {
-        switch (value.Tag)
+        return value.Tag switch
         {
-            case TagNothing:
-                return "ничто";
-            case TagString:
-                return "строка";
-            case TagNumber:
-                return "число";
-            case TagFlag:
-                return "признак";
-            case TagList:
-                return "список";
-            case TagVariant:
-                return "вариант «" + value.Str + "»";
-            case TagRecord:
-                return "запись";
-            default:
-                return "неизвестное значение";
-        }
+            TagNothing => "ничто",
+            TagString => "строка",
+            TagNumber => "число",
+            TagFlag => "признак",
+            TagList => "список",
+            TagVariant => "вариант «" + value.Str + "»",
+            TagRecord => "запись",
+            _ => "неизвестное значение",
+        };
     }
 
     /// <summary>
@@ -335,25 +327,18 @@ public sealed class Value
     /// </summary>
     public static string Describe(Value value)
     {
-        switch (value.Tag)
+        return value.Tag switch
         {
-            case TagString:
-                return QuoteJson(value.Str);
-            case TagVariant:
-                return value.Fields.Length == 0
-                    ? value.Str
-                    : value.Str + "(" + FieldNames(value.Fields) + ")";
-            case TagList:
-                return "список из " + value.Count.ToString(CultureInfo.InvariantCulture);
-            case TagRecord:
-                return "запись {" + FieldNames(value.Fields) + "}";
-            case TagNothing:
-                return "ничто";
-            case TagFlag:
-                return value.Bit ? "да" : "нет";
-            default:
-                return NumberText(value.Num);
-        }
+            TagString => QuoteJson(value.Str),
+            TagVariant => value.Fields.Length == 0
+                ? value.Str
+                : value.Str + "(" + FieldNames(value.Fields) + ")",
+            TagList => "список из " + value.Count.ToString(CultureInfo.InvariantCulture),
+            TagRecord => "запись {" + FieldNames(value.Fields) + "}",
+            TagNothing => "ничто",
+            TagFlag => value.Bit ? "да" : "нет",
+            _ => NumberText(value.Num),
+        };
     }
 
     private static string FieldNames(Field[] fields)
@@ -540,7 +525,7 @@ public sealed class Value
         }
         if (n > 0 && n <= 21)
         {
-            return sign + body.Substring(0, n) + "." + body.Substring(n);
+            return sign + body[..n] + "." + body[n..];
         }
         if (n > -6 && n <= 0)
         {
@@ -557,7 +542,7 @@ public sealed class Value
         string tail = "e" + mark + power.ToString(CultureInfo.InvariantCulture);
         return k == 1
             ? sign + body + tail
-            : sign + body.Substring(0, 1) + "." + body.Substring(1) + tail;
+            : sign + body[..1] + "." + body[1..] + tail;
     }
 
     /// <summary>
@@ -567,9 +552,9 @@ public sealed class Value
     private static void SplitExponential(string text, out string digits, out int point)
     {
         int marker = text.IndexOf('E');
-        string mantissa = text.Substring(0, marker);
+        string mantissa = text[..marker];
         int exponent = int.Parse(
-            text.Substring(marker + 1), NumberStyles.Integer, CultureInfo.InvariantCulture);
+            text[(marker + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture);
         var body = new StringBuilder();
         foreach (char symbol in mantissa)
         {
@@ -578,7 +563,7 @@ public sealed class Value
                 body.Append(symbol);
             }
         }
-        while (body.Length > 1 && body[body.Length - 1] == '0')
+        while (body.Length > 1 && body[^1] == '0')
         {
             body.Length -= 1;
         }

@@ -1,0 +1,13 @@
+machine = dev
+cores = 256
+load = 8.91
+interpreter.step.low = 0.0000024884236842105263
+interpreter.step.high = 0.000002536234210526316
+interpreter.charge.low = 9.557338264940602e-10
+interpreter.charge.high = 1.82538713636343e-7
+interpreter.byte = 1525.0270315789473
+c.step.low = 7.381578947368422e-9
+c.step.high = 9.155263157894736e-9
+c.charge.low = 2.8901551123773344e-11
+c.charge.high = 1.1092064860532981e-8
+c.byte = 2.5493325333733314

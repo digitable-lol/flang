@@ -1,0 +1,32 @@
+модуль «Cost rules»
+
+объект «Rule»
+  holds: признак
+  label: строка
+
+тотальная функция «Rule of»
+  принимает holds: признак, label: строка
+  возвращает «Rule»
+  пример «A rule carries its label»
+    дано holds равно да
+    дано label равно "zero"
+    ожидается запись «Rule» с holds равным да и label равным "zero"
+  запись «Rule» с holds равным holds и label равным label
+
+тотальная функция «First holding»
+  принимает rules: список «Rule», fallback: строка
+  возвращает строка
+  пример «No rule holds»
+    дано rules равно [запись «Rule» с holds равным нет и label равным "zero"]
+    дано fallback равно "other"
+    ожидается "other"
+  пример «The first rule that holds wins»
+    дано rules равно [запись «Rule» с holds равным нет и label равным "zero",
+      запись «Rule» с holds равным да и label равным "like", запись «Rule» с holds равным да и label равным "new"]
+    дано fallback равно "other"
+    ожидается "like"
+  разбор (отфильтровать rules где one → one.holds)
+    случай пусто
+      то fallback
+    случай голова winner и хвост others
+      то winner.label

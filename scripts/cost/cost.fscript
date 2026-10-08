@@ -1,0 +1,225 @@
+модуль «Cost»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Cost commands» из "commands.fscript"
+
+тотальная функция «Keys»
+  возвращает список строки
+  пример «The keys that take a value»
+    ожидается ["--function", "--sizes", "--profile", "--promise"]
+  ["--function", "--sizes", "--profile", "--promise"]
+
+тотальная функция «Usage»
+  возвращает строка
+  пример «How to call the plan»
+    ожидается "нужны файл и --function «Имя»"
+  "нужны файл и --function «Имя»"
+
+тотальная функция «Words given»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «No arguments yet»
+    дано answers равно []
+    ожидается []
+  «Given of» от "arguments" и answers
+
+тотальная функция «Root path»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No root before the shell has answered»
+    дано answers равно []
+    ожидается ""
+  «First line» от («Output of» от "root" и answers)
+
+тотальная функция «Temporary»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The default temporary directory»
+    дано answers равно []
+    ожидается "/srv/tmp"
+  «Setting of» от "temporary" и "/srv/tmp" и answers
+
+тотальная функция «Program file»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No file named»
+    дано answers равно []
+    ожидается ""
+  пусть named равно («File argument» от («Words given» от answers) и («Keys»))
+  если пусто named то "" иначе «Located» от («Setting of» от "here" и "" и answers) и named
+
+тотальная функция «Profile file»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No profile named»
+    дано answers равно []
+    ожидается ""
+  пусть named равно («Option» от "--profile" и («Words given» от answers))
+  если пусто named то "" иначе «Located» от («Setting of» от "here" и "" и answers) и named
+
+тотальная функция «Middle questions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing is asked without a root»
+    дано answers равно []
+    ожидается []
+  пусть root равно («Root path» от answers)
+  пусть analyzer равно («Run» от "analyzer" и "sh" и («Joined words» от ["-c",
+    («Glued» от («Analyzer script»))] и («Joined words» от [root,
+    («Temporary» от answers)] и («Sources»))))
+  пусть guards равно («Run» от "guards" и "sh" и («Joined words» от ["-c", («Glued» от («Guards script»))] и [root,
+    («Temporary» от answers),
+    («Program file» от answers)]))
+  пусть printed равно (не («Words given» от answers содержит "--no-printed"))
+  пусть profile равно («Profile file» от answers)
+  «Chosen» от [(«When» от (пусто root) и пустой список)] и («Gathered» от [[analyzer],
+    (если printed то [guards] иначе пустой список), (если пусто profile то пустой список иначе [
+      («Read» от "profile" и profile)])])
+
+тотальная функция «Last questions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing is asked without an analyzer»
+    дано answers равно []
+    ожидается []
+  пусть words1 равно («Words given» от answers)
+  пусть analyzer равно («First line» от («Output of» от "analyzer" и answers))
+  пусть mode равно (если words1 содержит "--all" то "all" иначе "one")
+  пусть words равно [(«Root path» от answers), («Program file» от answers), («Glued» от («Tokenizer»)),
+    («Option» от "--function" и words1),
+    («Option» от "--sizes" и words1), («Output of» от "profile" и answers), («Option» от "--promise" и words1),
+    («Output of» от "guards" и answers), mode, («Glued» от («Request program»)), analyzer]
+  если пусто analyzer то пустой список иначе [(«Run» от "report" и "sh" и («Joined words» от ["-c",
+    («Glued» от («Report script»))] и words))]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «The last stage asks nothing without an analyzer»
+    дано stages равно 0
+    дано answers равно []
+    ожидается []
+  пусть start равно [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"),
+    («Environment» от "here" и "PWD"),
+    («Run» от "root" и "sh" и ["-c", "cd \"$0\" && pwd -P", («Root»)])]
+  пусть rules равно [(«When» от (stages равен 2) и start),
+    («When» от (stages равен 1) и («Middle questions» от answers)),
+    («When» от (stages равен 0) и («Last questions» от answers))]
+  «Chosen» от rules и пустой список
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Nothing was asked»
+    дано answers равно []
+    ожидается вариант «Не проверено» с код равным "FLANG_COST_USAGE" и сообщение равным "нужны файл и --function «Имя»"
+  пусть words1 равно («Words given» от answers)
+  пусть text равно («Output of» от "report" и answers)
+  пусть broken равно (соединить [(«Process failure» от "analyzer" и answers),
+    («Process failure» от "report" и answers)] по "")
+  пусть unnamed равно (пусто («Program file» от answers)) или (пусто («Option» от "--function" и words1))
+  пусть usage равно (вариант «Не проверено» с код равным "FLANG_COST_USAGE" и сообщение равным («Usage»))
+  пусть tool равно (вариант «Не проверено» с код равным "FLANG_COST_TOOL" и сообщение равным broken)
+  пусть refused равно (вариант «Провал» с код равным "FLANG_COST_PROMISE" и сообщение равным text)
+  пусть done равно (вариант «Конец работы» с значение равным text)
+  «Chosen» от [(«When» от unnamed и usage), («When» от (не (пусто broken)) и tool),
+    («When» от (text начинается с "ОТКАЗ") и refused)] и done
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  убывает stages
+  пример «Nothing left to ask gives the verdict»
+    дано queue равно []
+    дано stages равно 0
+    дано answers равно []
+    ожидается вариант «Не проверено» с код равным "FLANG_COST_USAGE" и сообщение равным "нужны файл и --function «Имя»"
+  разбор queue
+    случай голова question и хвост rest
+      то «Ask» от question и rest и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Three stages, nothing asked»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным [] и «stages» равным 3 и «answers» равным []
+  «Begin with» от 3
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A failure of the host stops the plan»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным [
+      ] и «stages» равным 0 и «answers» равным []
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Не проверено» с код равным "FLANG_COST_USAGE" и сообщение равным "нужны файл и --function «Имя»"
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Cost»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»
+
+тотальная функция «Forgery script»
+  возвращает список строки
+  пример «A promise below the bound and a step limit below it are both refused»
+    ожидается ["cd \"$0\" && p='scripts/cost/cost.fscript' && f='scripts/cost/calibration.flang' && ",
+      "bootstrap/flang io \"$p\" --plan Cost --timeout 900000 -- \"$f\" --function Calls ",
+      "--promise '18·н + 9' --no-printed ",
+      "> /dev/null 2>&1; a=$?; bootstrap/flang io \"$p\" --plan Cost --timeout 900000 -- \"$f\" --function Calls ",
+      "--promise '19·н + 20' --no-printed > /dev/null 2>&1; b=$?; bootstrap/flang run \"$f\" --function Calls ",
+      "--args '{\"н\":1000}' --trust --max-steps 19021 > /dev/null 2>&1; c=$?; ",
+      "bootstrap/flang run \"$f\" --function Calls ",
+      "--args '{\"н\":1000}' --trust --max-steps 18009 > /dev/null 2>&1; d=$?; echo \"$a $b $c $d\""]
+  ["cd \"$0\" && p='scripts/cost/cost.fscript' && f='scripts/cost/calibration.flang' && ",
+    "bootstrap/flang io \"$p\" --plan Cost --timeout 900000 -- \"$f\" --function Calls ",
+      "--promise '18·н + 9' --no-printed ",
+    "> /dev/null 2>&1; a=$?; bootstrap/flang io \"$p\" --plan Cost --timeout 900000 -- \"$f\" --function Calls ",
+    "--promise '19·н + 20' --no-printed > /dev/null 2>&1; b=$?; bootstrap/flang run \"$f\" --function Calls ",
+    "--args '{\"н\":1000}' --trust --max-steps 19021 > /dev/null 2>&1; c=$?; ",
+      "bootstrap/flang run \"$f\" --function Calls ",
+    "--args '{\"н\":1000}' --trust --max-steps 18009 > /dev/null 2>&1; d=$?; echo \"$a $b $c $d\""]
+
+тотальная функция «Forgery start»
+  возвращает «Inquiry»
+  пример «One question for the shell»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным [] и «stages» равным 1 и «answers» равным []
+  «Begin with» от 1
+
+тотальная функция «Forgery verdict»
+  принимает codes: строка
+  возвращает «Продолжение»
+  пример «Every forgery refused, every honest claim accepted»
+    дано codes равно "1 0 0 1\n"
+    ожидается вариант «Конец работы» с значение равным "подлог пойман: коды 1 0 0 1"
+  пример «A forgery that passed»
+    дано codes равно "0 0 0 1\n"
+    ожидается вариант «Провал» с код равным "FLANG_COST_FORGERY" и сообщение равным "подлог не пойман: коды 0 0 0 1"
+  пусть said равно («First line» от codes)
+  пусть caught равно "подлог пойман: коды 1 0 0 1"
+  пусть missed равно (соединить ["подлог не пойман: коды ", said] по "")
+  пусть failed равно (вариант «Провал» с код равным "FLANG_COST_FORGERY" и сообщение равным missed)
+  если said равен "1 0 0 1" то вариант «Конец работы» с значение равным caught иначе failed
+
+тотальная функция «Forgery next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The codes of the shell decide»
+    дано inquiry равно запись «Inquiry» с «asked» равным "codes" и «queue» равным [
+      ] и «stages» равным 0 и «answers» равным []
+    дано reply равно вариант «Процесс завершён» с код равным 0 и вывод равным "0 0 0 0\n" и ошибки равным ""
+    ожидается вариант «Провал» с код равным "FLANG_COST_FORGERY" и сообщение равным "подлог не пойман: коды 0 0 0 0"
+  пусть answers равно («Heard» от inquiry и reply)
+  если inquiry.«stages» больше 0
+    то «Ask» от («Run» от "codes" и "sh" и ["-c", («Glued» от («Forgery script»)),
+      («Root»)]) и пустой список и 0 и answers
+    иначе «Forgery verdict» от («Output of» от "codes" и answers)
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Forgery start»
+  обрабатывает «Forgery next»

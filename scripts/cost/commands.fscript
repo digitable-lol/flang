@@ -1,0 +1,169 @@
+модуль «Cost commands»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The tree root seen from the plans»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Sources»
+  возвращает список строки
+  пример «The analyzer is printed from five files»
+    ожидается ["scripts/cost/rules.flang", "scripts/cost/polynomial.flang", "scripts/cost/tree.flang",
+      "scripts/cost/bound.flang", "scripts/cost/report.flang"]
+  ["scripts/cost/rules.flang", "scripts/cost/polynomial.flang", "scripts/cost/tree.flang",
+    "scripts/cost/bound.flang", "scripts/cost/report.flang"]
+
+тотальная функция «Tokenizer»
+  возвращает список строки
+  пример «The program turns the tree into tokens, one function per line»
+    ожидается ["def keep: to_entries | map(select(.key != \"span\" and .key != \"examples\")); ",
+      "def t: if type == \"object\" then (keep | ((.[] | (.value | t), ",
+      "(\"@\" + (.key | gsub(\"\\\\s\"; \"\\u00a0\")))), (\"}\" + (length | tostring)))) ",
+      "elif type == \"array\" then ((.[] | t), (\"]\" + (length | tostring))) ",
+      "elif type == \"string\" then \"\\\"\" + gsub(\"\\\\s\"; \"\\u00a0\") ",
+      "elif type == \"number\" then \"#\" + tostring ",
+      "elif . == true then \"t\" elif . == false then \"f\" else \"n\" end; .functions[] | [t] | join(\" \")"]
+  ["def keep: to_entries | map(select(.key != \"span\" and .key != \"examples\")); ",
+    "def t: if type == \"object\" then (keep | ((.[] | (.value | t), ",
+    "(\"@\" + (.key | gsub(\"\\\\s\"; \"\\u00a0\")))), (\"}\" + (length | tostring)))) ",
+    "elif type == \"array\" then ((.[] | t), (\"]\" + (length | tostring))) ",
+    "elif type == \"string\" then \"\\\"\" + gsub(\"\\\\s\"; \"\\u00a0\") ",
+      "elif type == \"number\" then \"#\" + tostring ",
+    "elif . == true then \"t\" elif . == false then \"f\" else \"n\" end; .functions[] | [t] | join(\" \")"]
+
+тотальная функция «Analyzer script»
+  возвращает список строки
+  пример «The analyzer is printed to C once per change of its sources»
+    ожидается [
+      "cd \"$0\" && t=\"$1\" && shift && h=$(cat \"$@\" | sha256sum | cut -c1-16) && d=\"$t/cost-analyzer-$h\" && ",
+      "if [ ! -x \"$d/flang_cli\" ]; then rm -rf \"$d.part\" && ",
+      "bootstrap/flang emit scripts/cost/report.flang --target c --out \"$d.part\" --cli --max-steps 4000000000000 ",
+      "> \"$d.log\" 2>&1 && make -C \"$d.part\" >> \"$d.log\" 2>&1 && mv \"$d.part\" \"$d\"; fi && ",
+      "echo \"$d/flang_cli\""]
+  ["cd \"$0\" && t=\"$1\" && shift && h=$(cat \"$@\" | sha256sum | cut -c1-16) && d=\"$t/cost-analyzer-$h\" && ",
+    "if [ ! -x \"$d/flang_cli\" ]; then rm -rf \"$d.part\" && ",
+    "bootstrap/flang emit scripts/cost/report.flang --target c --out \"$d.part\" --cli --max-steps 4000000000000 ",
+    "> \"$d.log\" 2>&1 && make -C \"$d.part\" >> \"$d.log\" 2>&1 && mv \"$d.part\" \"$d\"; fi && ",
+      "echo \"$d/flang_cli\""]
+
+тотальная функция «Guards script»
+  возвращает список строки
+  пример «Guards the printed code keeps, as function and property per line»
+    ожидается [
+      "cd \"$0\" && d=\"$1/cost-guards-$$\" && ",
+      "bootstrap/flang emit \"$2\" --target c --out \"$d\" --cli > /dev/null 2>&1; ",
+      "grep -h 'fl_post(ctx' \"$d\"/*.c 2> /dev/null | ",
+      "sed -n 's/.*, \"\\([^\"]*\\)\", \"\\([^\"]*\\)\", &fl_t[0-9]*, error));.*/\\2\\t\\1/p'; rm -rf \"$d\"; true"]
+  [
+    "cd \"$0\" && d=\"$1/cost-guards-$$\" && ",
+      "bootstrap/flang emit \"$2\" --target c --out \"$d\" --cli > /dev/null 2>&1; ",
+    "grep -h 'fl_post(ctx' \"$d\"/*.c 2> /dev/null | ",
+    "sed -n 's/.*, \"\\([^\"]*\\)\", \"\\([^\"]*\\)\", &fl_t[0-9]*, error));.*/\\2\\t\\1/p'; rm -rf \"$d\"; true"]
+
+тотальная функция «Request program»
+  возвращает список строки
+  пример «The request to the analyzer»
+    ожидается ["if $w == \"all\" then {fn: \"Report all\", args: [{s: .}, {s: $f}, {s: $g}]} ",
+      "else {fn: \"Report\", args: [{s: .}, {s: $f}, {s: $z}, {s: $p}, {s: $q}, {s: $g}]} end"]
+  ["if $w == \"all\" then {fn: \"Report all\", args: [{s: .}, {s: $f}, {s: $g}]} ",
+    "else {fn: \"Report\", args: [{s: .}, {s: $f}, {s: $z}, {s: $p}, {s: $q}, {s: $g}]} end"]
+
+тотальная функция «Report script»
+  возвращает список строки
+  пример «Tree, tokens, request, analyzer, text»
+    ожидается ["cd \"$0\" && bootstrap/flang ast \"$1\" | jq -r \"$2\" | ",
+      "jq -Rsc --arg f \"$3\" --arg z \"$4\" --arg p \"$5\" --arg q \"$6\" --arg g \"$7\" --arg w \"$8\" \"$9\" | ",
+      "\"${10}\" | jq -r '.value.s // (.code + \": \" + .message)'"]
+  ["cd \"$0\" && bootstrap/flang ast \"$1\" | jq -r \"$2\" | ",
+    "jq -Rsc --arg f \"$3\" --arg z \"$4\" --arg p \"$5\" --arg q \"$6\" --arg g \"$7\" --arg w \"$8\" \"$9\" | ",
+    "\"${10}\" | jq -r '.value.s // (.code + \": \" + .message)'"]
+
+тотальная функция «Glued»
+  принимает pieces: список строки
+  возвращает строка
+  пример «Pieces of one command»
+    дано pieces равно ["a ", "b"]
+    ожидается "a b"
+  соединить pieces по ""
+
+тотальная функция «Joined words»
+  принимает left: список строки, right: список строки
+  возвращает список строки
+  пример «Two lists of texts»
+    дано left равно ["a"]
+    дано right равно ["b"]
+    ожидается ["a", "b"]
+  свёртка right начиная с left как joined и one → добавить one к joined
+
+тотальная функция «Located»
+  принимает here: строка, path: строка
+  возвращает строка
+  пример «A relative path is taken from where the command was run»
+    дано here равно "/srv/flang"
+    дано path равно "docs/a.flang"
+    ожидается "/srv/flang/docs/a.flang"
+  пример «An absolute path stays»
+    дано here равно "/srv/flang"
+    дано path равно "/x/a.flang"
+    ожидается "/x/a.flang"
+  «Chosen» от [(«When» от (path начинается с "/") и path), («When» от (пусто here) и path)] и (соединить [here, "/",
+    path] по "")
+
+тотальная функция «Option»
+  принимает key: строка, arguments: список строки
+  возвращает строка
+  пример «The value after a key»
+    дано key равно "--function"
+    дано arguments равно ["a.flang", "--function", "Ф"]
+    ожидается "Ф"
+  пример «A missing key»
+    дано key равно "--sizes"
+    дано arguments равно ["a.flang"]
+    ожидается ""
+  разбор arguments
+    случай пусто
+      то ""
+    случай голова one и хвост rest
+      то если one равен key то «First line» от (соединить rest по "\n") иначе «Option» от key и rest
+
+тотальная функция «File argument»
+  принимает arguments: список строки, keys: список строки
+  возвращает строка
+  пример «The first word that is neither a key nor the value of one»
+    дано arguments равно ["--function", "Ф", "a.flang"]
+    дано keys равно ["--function"]
+    ожидается "a.flang"
+  разбор arguments
+    случай пусто
+      то ""
+    случай голова one и хвост rest
+      то разбор rest
+        случай пусто
+          то «Plain word» от one
+        случай голова two и хвост more
+          то «Chosen» от [(«When» от (keys содержит one) и («File argument» от more и keys)),
+            («When» от (one начинается с "--") и («File argument» от rest и keys))] и one
+
+тотальная функция «Plain word»
+  принимает word: строка
+  возвращает строка
+  пример «A key is not a file»
+    дано word равно "--all"
+    ожидается ""
+  если word начинается с "--" то "" иначе word
+
+тотальная функция «Process failure»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A process that was not asked is no failure»
+    дано name равно "x"
+    дано answers равно []
+    ожидается ""
+  пусть code равно («Exit code of» от name и answers)
+  пусть said равно (соединить ["«", name, "» ответил кодом ", (к строке code), ": ",
+    («Errors of» от name и answers)] по "")
+  если (code равен 0) или (не («Answered» от name и answers)) то "" иначе said

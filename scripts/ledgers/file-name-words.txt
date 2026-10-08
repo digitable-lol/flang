@@ -199,6 +199,7 @@ c1
 c99
 cache
 caching
+calibration
 call
 called
 callee
@@ -427,6 +428,7 @@ descend
 descent
 detached
 determine
+dev
 diagnostics
 diagram
 diamond
@@ -1227,6 +1229,7 @@ plus
 point
 pointer
 points
+polynomial
 ponens
 poorest
 popular
@@ -1840,6 +1843,7 @@ use
 utf8
 v
 valgrind
+validation
 valuable
 value
 vanished

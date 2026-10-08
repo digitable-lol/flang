@@ -41,7 +41,7 @@ public static class Flang
 {
     private static readonly int ParThreads = ParCount();
 
-    private static readonly object ParBusy = new object();
+    private static readonly object ParBusy = new();
 
     private static int ParCount()
     {

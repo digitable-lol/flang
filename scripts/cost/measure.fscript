@@ -1,0 +1,1039 @@
+модуль «Cost measure»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Cost commands» из "commands.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Case»
+  name: строка
+  sizes: список число
+
+объект «Sample»
+  words: список строки
+  values: список число
+
+объект «Guess row»
+  words: список строки
+  values: список число
+
+тотальная функция «Both»
+  принимает left: список строки, right: список строки
+  возвращает список строки
+  пример «Two lists of lines»
+    дано left равно ["a"]
+    дано right равно ["b"]
+    ожидается ["a", "b"]
+  «Соединить списки» от left и right
+
+тотальная функция «Validation cases»
+  возвращает список «Case»
+  пример «The cases in order»
+    ожидается [запись «Case» с name равным "Reverse list" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Sort list" и sizes равным [0, 20, 80, 200],
+      запись «Case» с name равным "Sum list" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Max list" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Unique list" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Search list" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Index in list" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Numbers up to" и sizes равным [0, 20, 80, 200],
+      запись «Case» с name равным "Join labels" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Split labels" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Replace letters" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Reverse letters" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Palindrome letters" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Repeat text" и sizes равным [0, 20, 80, 200],
+      запись «Case» с name равным "Find letter" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Factorial of" и sizes равным [0, 10, 100, 170],
+      запись «Case» с name равным "Power of two" и sizes равным [0, 100, 1000, 4000],
+      запись «Case» с name равным "Set of labels" и sizes равным [0, 20, 80, 200],
+      запись «Case» с name равным "Labels without labels" и sizes равным [0, 20, 80, 200],
+      запись «Case» с name равным "Dictionary of labels" и sizes равным [0, 5, 10, 20],
+      запись «Case» с name равным "Handle request" и sizes равным [0, 5, 10, 20]]
+  [(запись «Case» с name равным "Reverse list" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Sort list" и sizes равным [0, 20, 80, 200]),
+    (запись «Case» с name равным "Sum list" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Max list" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Unique list" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Search list" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Index in list" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Numbers up to" и sizes равным [0, 20, 80, 200]),
+    (запись «Case» с name равным "Join labels" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Split labels" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Replace letters" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Reverse letters" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Palindrome letters" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Repeat text" и sizes равным [0, 20, 80, 200]),
+    (запись «Case» с name равным "Find letter" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Factorial of" и sizes равным [0, 10, 100, 170]),
+    (запись «Case» с name равным "Power of two" и sizes равным [0, 100, 1000, 4000]),
+    (запись «Case» с name равным "Set of labels" и sizes равным [0, 20, 80, 200]),
+    (запись «Case» с name равным "Labels without labels" и sizes равным [0, 20, 80, 200]),
+    (запись «Case» с name равным "Dictionary of labels" и sizes равным [0, 5, 10, 20]),
+    (запись «Case» с name равным "Handle request" и sizes равным [0, 5, 10, 20])]
+
+тотальная функция «Calibration cases»
+  возвращает список «Case»
+  пример «Four workloads, each three times without and with work»
+    ожидается [запись «Case» с name равным "Calls" и sizes равным [0, 20000, 0, 20000, 0, 20000],
+      запись «Case» с name равным "Texts" и sizes равным [0, 20000, 0, 20000, 0, 20000],
+      запись «Case» с name равным "Lists" и sizes равным [0, 20000, 0, 20000, 0, 20000],
+      запись «Case» с name равным "Scans" и sizes равным [0, 4000, 0, 4000, 0, 4000]]
+  [(запись «Case» с name равным "Calls" и sizes равным [0, 20000, 0, 20000, 0, 20000]),
+    (запись «Case» с name равным "Texts" и sizes равным [0, 20000, 0, 20000, 0, 20000]),
+    (запись «Case» с name равным "Lists" и sizes равным [0, 20000, 0, 20000, 0, 20000]),
+    (запись «Case» с name равным "Scans" и sizes равным [0, 4000, 0, 4000, 0, 4000])]
+
+тотальная функция «Case lines»
+  принимает one: «Case»
+  возвращает список строки
+  пример «Two sizes»
+    дано one равно запись «Case» с name равным "F" и sizes равным [0, 10]
+    ожидается ["F\t0\n", "F\t10\n"]
+  отобразить one.sizes как size → соединить [one.name, "\t", (к строке size), "\n"] по ""
+
+тотальная функция «Requests»
+  принимает cases: список «Case»
+  возвращает строка
+  пример «Each size of each case on its own line»
+    дано cases равно [запись «Case» с name равным "F" и sizes равным [0, 10]]
+    ожидается "F\t0\nF\t10\n"
+  соединить (свёртка cases начиная с пустой список как lines и one → «Both» от lines и («Case lines» от one)) по ""
+
+тотальная функция «Program script»
+  возвращает список строки
+  пример «The program is printed to C and built, its kept guards listed»
+    ожидается ["cd \"$0\" && d=\"$1/cost-program-$$\" && bootstrap/flang emit \"$2\" --target c --out \"$d\" --cli ",
+      "--max-steps 4000000000000 --max-depth 100000 > \"$d.log\" 2>&1; make -C \"$d\" >> \"$d.log\" 2>&1; ",
+      "test -x \"$d/flang_cli\" && echo \"$d/flang_cli\" && grep -h 'fl_post(ctx' \"$d\"/*.c | ",
+      "sed -n 's/.*, \"\\([^\"]*\\)\", \"\\([^\"]*\\)\", &fl_t[0-9]*, error));.*/\\2\\t\\1/p'; ",
+      "test -x \"$d/flang_cli\""]
+  ["cd \"$0\" && d=\"$1/cost-program-$$\" && bootstrap/flang emit \"$2\" --target c --out \"$d\" --cli ",
+    "--max-steps 4000000000000 --max-depth 100000 > \"$d.log\" 2>&1; make -C \"$d\" >> \"$d.log\" 2>&1; ",
+    "test -x \"$d/flang_cli\" && echo \"$d/flang_cli\" && grep -h 'fl_post(ctx' \"$d\"/*.c | ",
+    "sed -n 's/.*, \"\\([^\"]*\\)\", \"\\([^\"]*\\)\", &fl_t[0-9]*, error));.*/\\2\\t\\1/p'; ",
+    "test -x \"$d/flang_cli\""]
+
+тотальная функция «Measure script»
+  возвращает список строки
+  пример «Every request is run by the interpreter and by the printed program»
+    ожидается ["cd \"$0\"; bin=\"$1\"; prog=\"$2\"; tab=$(printf '\\t'); ",
+      "printf '%s' \"$3\" | while IFS=\"$tab\" read -r f n; do ",
+      "r=$(bootstrap/flang run \"$prog\" --function \"$f\" --args \"{\\\"н\\\":$n}\" --trust --cost ",
+      "--max-steps 4000000000000 --max-depth 100000 2>&1 > /dev/null | grep 'цена прогона' | head -1); ",
+      "printf 'I\\t%s\\t%s\\t%s\\n' \"$f\" \"$n\" \"$r\"; ",
+      "o=$(printf '{\"fn\":\"%s\",\"args\":[{\"n\":\"%s\"}],\"cost\":\"1\"}\\n' \"$f\" \"$n\" | \"$bin\"); ",
+      "printf 'C\\t%s\\t%s\\t%s\\n' \"$f\" \"$n\" \"$o\"; done; rm -rf \"$(dirname \"$bin\")\""]
+  ["cd \"$0\"; bin=\"$1\"; prog=\"$2\"; tab=$(printf '\\t'); ",
+    "printf '%s' \"$3\" | while IFS=\"$tab\" read -r f n; do ",
+    "r=$(bootstrap/flang run \"$prog\" --function \"$f\" --args \"{\\\"н\\\":$n}\" --trust --cost ",
+    "--max-steps 4000000000000 --max-depth 100000 2>&1 > /dev/null | grep 'цена прогона' | head -1); ",
+    "printf 'I\\t%s\\t%s\\t%s\\n' \"$f\" \"$n\" \"$r\"; ",
+    "o=$(printf '{\"fn\":\"%s\",\"args\":[{\"n\":\"%s\"}],\"cost\":\"1\"}\\n' \"$f\" \"$n\" | \"$bin\"); ",
+    "printf 'C\\t%s\\t%s\\t%s\\n' \"$f\" \"$n\" \"$o\"; done; rm -rf \"$(dirname \"$bin\")\""]
+
+тотальная функция «Predict script»
+  возвращает список строки
+  пример «Tokens, guards and requests go to the analyzer»
+    ожидается ["cd \"$0\" && bootstrap/flang ast \"$1\" | jq -r \"$2\" | ",
+      "jq -Rsc --arg g \"$3\" --arg r \"$4\" '{fn: \"Predict\", args: [{s: .}, {s: $g}, {s: $r}]}' | ",
+      "\"$5\" | jq -r '.value.s // (.code + \": \" + .message)'"]
+  ["cd \"$0\" && bootstrap/flang ast \"$1\" | jq -r \"$2\" | ",
+    "jq -Rsc --arg g \"$3\" --arg r \"$4\" '{fn: \"Predict\", args: [{s: .}, {s: $g}, {s: $r}]}' | ",
+    "\"$5\" | jq -r '.value.s // (.code + \": \" + .message)'"]
+
+тотальная функция «Text at»
+  принимает texts: список строки, place: число
+  возвращает строка
+  пример «The second text»
+    дано texts равно ["a", "b"]
+    дано place равно 2
+    ожидается "b"
+  если (длина texts) не меньше place то элемент place в texts иначе ""
+
+тотальная функция «Value at»
+  принимает values: список число, place: число
+  возвращает число
+  пример «The third value»
+    дано values равно [1, 2, 3]
+    дано place равно 3
+    ожидается 3
+  если (длина values) не меньше place то элемент place в values иначе 0
+
+тотальная функция «Number of»
+  принимает text: строка
+  возвращает число
+  пример «A number»
+    дано text равно "12"
+    ожидается 12
+  разбор (к числу или беда text)
+    случай вариант «Разобрано» с значение как value
+      то value
+    случай любое
+      то 0
+
+тотальная функция «Digit step»
+  принимает kept: строка, glyph: строка
+  возвращает строка
+  пример «A digit is kept»
+    дано kept равно "1"
+    дано glyph равно "2"
+    ожидается "12"
+  пример «Anything else stops the number»
+    дано kept равно "12"
+    дано glyph равно ","
+    ожидается "12|"
+  пусть digit равно ("0123456789." содержит glyph)
+  пусть longer равно (соединить kept с glyph)
+  «Chosen» от [(«When» от (kept содержит "|") и kept), («When» от digit и longer)] и (соединить kept с "|")
+
+тотальная функция «Leading number»
+  принимает text: строка
+  возвращает число
+  пример «Digits and a point up to the first other sign»
+    дано text равно "0.082371 с"
+    ожидается 0.082371
+  пусть digits равно (свёртка (разложить text на символы) начиная с "" как kept и glyph → «Digit step» от kept и glyph)
+  пусть clean равно (соединить (разделить digits по "|") по "")
+  «Number of» от (если пусто clean то "0" иначе clean)
+
+тотальная функция «Number behind»
+  принимает marker: строка, text: строка
+  возвращает число
+  пример «The number after its marker»
+    дано marker равно "шагов "
+    дано text равно "цена прогона: шагов 19009, пик памяти 30949376 байт, секунд 0.082371"
+    ожидается 19009
+  пример «No marker gives zero»
+    дано marker равно "шагов "
+    дано text равно ""
+    ожидается 0
+  разбор (разделить text по marker)
+    случай пусто
+      то 0
+    случай голова one и хвост rest
+      то «Leading number» от (соединить rest по marker)
+
+тотальная функция «Markers»
+  принимает target: строка
+  возвращает список строки
+  пример «What the interpreter prints»
+    дано target равно "I"
+    ожидается ["шагов ", "секунд ", "пик памяти "]
+  пусть printed равно ["\"steps\":\"", "\"seconds\":\"", "\"reserved\":\""]
+  если target равен "I" то ["шагов ", "секунд ", "пик памяти "] иначе printed
+
+тотальная функция «Sample of line»
+  принимает line: строка
+  возвращает список «Sample»
+  пример «An interpreter line»
+    дано line равно "I\tF\t10\tцена прогона: шагов 199, пик памяти 1000 байт, секунд 0.5"
+    ожидается [запись «Sample» с words равным ["I", "F"] и values равным [10, 199, 0.5, 1000]]
+  пример «A printed program line»
+    дано line равно "C\tF\t10\t{\"ok\":true,\"steps\":\"11\",\"reserved\":\"65568\",\"seconds\":\"0.001\"}"
+    ожидается [запись «Sample» с words равным ["C", "F"] и values равным [10, 11, 0.001, 65568]]
+  пусть parts равно (разделить line по "\t")
+  пусть said равно («Text at» от parts и 4)
+  пусть marks равно («Markers» от («Text at» от parts и 1))
+  пусть numbers равно (отобразить marks как mark → «Number behind» от mark и said)
+  пусть size равно («Number of» от («Text at» от parts и 3))
+  пусть words равно [(«Text at» от parts и 1), («Text at» от parts и 2)]
+  пусть sample равно (запись «Sample» с words равным words и values равным (приписать size к numbers))
+  если (длина parts) не меньше 4 то [sample] иначе пустой список
+
+тотальная функция «Samples»
+  принимает text: строка
+  возвращает список «Sample»
+  пример «Nothing measured»
+    дано text равно ""
+    ожидается []
+  пусть lines равно («Lines» от text)
+  свёртка lines начиная с пустой список как found и line → «Joined samples» от found и («Sample of line» от line)
+
+тотальная функция «Guess of line»
+  принимает line: строка
+  возвращает список «Guess row»
+  пример «A predicted row»
+    дано line равно "F\t10\t209\t11\t0\t0\t19·н + 19\t"
+    ожидается [запись «Guess row» с words равным ["F", "19·н + 19", ""] и values равным [10, 209, 11, 0, 0]]
+  пусть parts равно (разделить line по "\t")
+  пусть numbers равно (отобразить [2, 3, 4, 5, 6] как place → «Number of» от («Text at» от parts и place))
+  пусть words равно [(«Text at» от parts и 1), («Text at» от parts и 7), («Text at» от parts и 8)]
+  пусть row равно (запись «Guess row» с words равным words и values равным numbers)
+  если (длина parts) не меньше 7 то [row] иначе пустой список
+
+тотальная функция «Guesses of»
+  принимает text: строка
+  возвращает список «Guess row»
+  пример «Nothing predicted»
+    дано text равно ""
+    ожидается []
+  пусть lines равно («Lines» от text)
+  свёртка lines начиная с пустой список как found и line → «Joined guesses» от found и («Guess of line» от line)
+
+тотальная функция «Joined samples»
+  принимает left: список «Sample», right: список «Sample»
+  возвращает список «Sample»
+  пример «Nothing joins nothing»
+    дано left равно []
+    дано right равно []
+    ожидается []
+  «Соединить списки» от left и right
+
+тотальная функция «Joined guesses»
+  принимает left: список «Guess row», right: список «Guess row»
+  возвращает список «Guess row»
+  пример «Nothing joins nothing»
+    дано left равно []
+    дано right равно []
+    ожидается []
+  «Соединить списки» от left и right
+
+тотальная функция «Both numbers»
+  принимает left: список число, right: список число
+  возвращает список число
+  пример «Two lists of numbers»
+    дано left равно [1]
+    дано right равно [2]
+    ожидается [1, 2]
+  «Соединить списки» от left и right
+
+тотальная функция «Found or value»
+  принимает found: число, values: список число, place: число
+  возвращает число
+  пример «A value already found stays»
+    дано found равно 3
+    дано values равно [1, 2]
+    дано place равно 2
+    ожидается 3
+  если found не меньше 0 то found иначе «Value at» от values и place
+
+тотальная функция «Broken more»
+  принимает found: список строки, row: «Guess row», samples: список «Sample»
+  возвращает список строки
+  пример «Nothing broken»
+    дано found равно []
+    дано row равно запись «Guess row» с words равным ["F", "1", ""] и values равным [3, 10, 4, 0, 0]
+    дано samples равно []
+    ожидается []
+  «Both» от found и («Broken bound» от row и samples)
+
+тотальная функция «Join texts»
+  принимает parts: список список строки
+  возвращает список строки
+  пример «Lines of three parts»
+    дано parts равно [["a"], [], ["b"]]
+    ожидается ["a", "b"]
+  свёртка parts начиная с пустой список как joined и part → «Both» от joined и part
+
+тотальная функция «Is sample of»
+  принимает sample: «Sample», target: строка, name: строка
+  возвращает признак
+  пример «A sample of the interpreter»
+    дано sample равно запись «Sample» с words равным ["I", "F"] и values равным [0, 9, 0.1, 5]
+    дано target равно "I"
+    дано name равно "F"
+    ожидается да
+  sample.words равен [target, name]
+
+тотальная функция «Of target»
+  принимает samples: список «Sample», target: строка, name: строка
+  возвращает список «Sample»
+  пример «Only samples of one function on one target»
+    дано samples равно [запись «Sample» с words равным ["I", "F"] и values равным [0, 9, 0.1, 5]]
+    дано target равно "C"
+    дано name равно "F"
+    ожидается []
+  отфильтровать samples где sample → «Is sample of» от sample и target и name
+
+тотальная функция «Reading»
+  принимает samples: список «Sample», size: число, place: число
+  возвращает число
+  пример «Steps of the first sample at a size»
+    дано samples равно [запись «Sample» с words равным ["I", "F"] и values равным [3, 9, 0.1, 5]]
+    дано size равно 3
+    дано place равно 2
+    ожидается 9
+  пусть there равно (отфильтровать samples где sample → («Value at» от sample.values и 1) равен size)
+  свёртка there начиная с (-1) как found и sample → «Found or value» от found и sample.values и place
+
+тотальная функция «Pairs»
+  принимает samples: список «Sample»
+  возвращает список список число
+  пример «A run without and a run with work make a pair of differences»
+    дано samples равно [запись «Sample» с words равным ["I", "F"] и values равным [0, 9, 0.1, 5],
+      запись «Sample» с words равным ["I", "F"] и values равным [9, 99, 0.3, 50]]
+    ожидается [[90, 0.3, 45]]
+  разбор samples
+    случай пусто
+      то пустой список
+    случай голова one и хвост rest
+      то разбор rest
+        случай пусто
+          то пустой список
+        случай голова two и хвост more
+          то приписать («Difference» от one и two) к («Pairs» от more)
+
+тотальная функция «Difference»
+  принимает base: «Sample», full: «Sample»
+  возвращает список число
+  пример «Steps and memory as differences, seconds of the full run»
+    дано base равно запись «Sample» с words равным ["I", "F"] и values равным [0, 9, 0.1, 5]
+    дано full равно запись «Sample» с words равным ["I", "F"] и values равным [9, 99, 0.3, 50]
+    ожидается [90, 0.3, 45]
+  пусть steps равно ((«Value at» от full.values и 2) минус («Value at» от base.values и 2))
+  пусть memory равно ((«Value at» от full.values и 4) минус («Value at» от base.values и 4))
+  [steps, («Value at» от full.values и 3), memory]
+
+тотальная функция «Least»
+  принимает values: список число
+  возвращает число
+  пример «The smallest»
+    дано values равно [3, 1, 2]
+    ожидается 1
+  пусть start равно (если пусто values то 0 иначе голова values)
+  свёртка values начиная с start как low и one → если one меньше low то one иначе low
+
+тотальная функция «Most»
+  принимает values: список число
+  возвращает число
+  пример «The largest»
+    дано values равно [3, 1, 2]
+    ожидается 3
+  пусть start равно (если пусто values то 0 иначе голова values)
+  свёртка values начиная с start как high и one → если one больше high то one иначе high
+
+тотальная функция «Ratio»
+  принимает top: число, bottom: число
+  возвращает число
+  пример «A ratio»
+    дано top равно 6
+    дано bottom равно 3
+    ожидается 2
+  пример «Nothing to divide by»
+    дано top равно 6
+    дано bottom равно 0
+    ожидается 0
+  если bottom больше 0 то top делить на bottom иначе 0
+
+тотальная функция «Average»
+  принимает values: список число
+  возвращает число
+  пример «The mean»
+    дано values равно [1, 3]
+    ожидается 2
+  «Ratio» от (свёртка values начиная с 0 как sum и one → sum плюс one) и (длина values)
+
+тотальная функция «Above zero»
+  принимает value: число
+  возвращает число
+  пример «Noise below zero counts as zero»
+    дано value равно -0.5
+    ожидается 0
+  если value больше 0 то value иначе 0
+
+тотальная функция «Per step»
+  принимает pairs: список список число, place: число
+  возвращает список число
+  пример «Seconds per step of each pair»
+    дано pairs равно [[100, 0.5, 2000]]
+    дано place равно 2
+    ожидается [0.005]
+  отобразить pairs как pair → «Ratio» от («Value at» от pair и place) и («Value at» от pair и 1)
+
+тотальная функция «Per charge»
+  принимает pairs: список список число, charged: список список число, step: число, work: число
+  возвращает список число
+  пример «What the steps do not explain is put on the length charges»
+    дано pairs равно [[100, 0.5, 0]]
+    дано charged равно [[1000, 0, 0]]
+    дано step равно 0.004
+    дано work равно 25
+    ожидается [0.0004]
+  разбор pairs
+    случай пусто
+      то пустой список
+    случай голова one и хвост rest
+      то разбор charged
+        случай пусто
+          то пустой список
+        случай голова two и хвост more
+          то приписать («Charge part» от one и two и step и work) к («Per charge» от rest и more и step и work)
+
+тотальная функция «Charge part»
+  принимает seconds: список число, charged: список число, step: число, work: число
+  возвращает число
+  пример «The rest of the seconds over the charges»
+    дано seconds равно [100, 0.5, 0]
+    дано charged равно [1000, 0, 0]
+    дано step равно 0.004
+    дано work равно 25
+    ожидается 0.0004
+  пусть rest равно ((«Value at» от seconds и 2) минус (step умножить на work))
+  «Above zero» от («Ratio» от rest и («Value at» от charged и 1))
+
+тотальная функция «First steps»
+  принимает pairs: список список число
+  возвращает число
+  пример «No pairs, no work»
+    дано pairs равно []
+    ожидается 0
+  свёртка pairs начиная с 0 как found и pair → если found больше 0 то found иначе «Value at» от pair и 1
+
+объект «Machine»
+  name: строка
+  cores: строка
+  load: строка
+
+тотальная функция «Profile line»
+  принимает key: строка, value: число
+  возвращает строка
+  пример «A key and its value»
+    дано key равно "c.byte"
+    дано value равно 1.5
+    ожидается "c.byte = 1.5\n"
+  соединить [key, " = ", (к строке value), "\n"] по ""
+
+тотальная функция «Workload»
+  принимает samples: список «Sample», target: строка, name: строка
+  возвращает список список число
+  пример «No samples»
+    дано samples равно []
+    дано target равно "I"
+    дано name равно "Calls"
+    ожидается []
+  «Pairs» от («Of target» от samples и target и name)
+
+тотальная функция «Charge times»
+  принимает samples: список «Sample», target: строка, step: число
+  возвращает список число
+  пример «No samples, no charges»
+    дано samples равно []
+    дано target равно "I"
+    дано step равно 0
+    ожидается []
+  пусть texts равно («Workload» от samples и "I" и "Texts")
+  пусть scans равно («Workload» от samples и "I" и "Scans")
+  пусть ctexts равно («Workload» от samples и "C" и "Texts")
+  пусть cscans равно («Workload» от samples и "C" и "Scans")
+  пусть mine равно (если target равен "I" то [texts, scans] иначе [ctexts, cscans])
+  пусть front равно («Per charge» от («Value at list» от mine и 1) и ctexts и step и («First steps» от texts))
+  пусть back равно («Per charge» от («Value at list» от mine и 2) и cscans и step и («First steps» от scans))
+  «Соединить списки» от front и back
+
+тотальная функция «Value at list»
+  принимает lists: список список список число, place: число
+  возвращает список список число
+  пример «The second list»
+    дано lists равно [[], [[1]]]
+    дано place равно 2
+    ожидается [[1]]
+  если (длина lists) не меньше place то элемент place в lists иначе пустой список
+
+тотальная функция «Printed step times»
+  принимает samples: список «Sample»
+  возвращает список число
+  пример «No samples»
+    дано samples равно []
+    ожидается []
+  пусть work равно («First steps» от («Workload» от samples и "I" и "Calls"))
+  отобразить («Workload» от samples и "C" и "Calls") как pair → «Ratio» от («Value at» от pair и 2) и work
+
+тотальная функция «Profile lines»
+  принимает samples: список «Sample», machine: «Machine», bytes: число
+  возвращает список строки
+  пример «A profile from no samples is all zeros»
+    дано samples равно []
+    дано machine равно запись «Machine» с name равным "m" и cores равным "8" и load равным "0.5"
+    дано bytes равно 0
+    ожидается ["machine = m\n", "cores = 8\n", "load = 0.5\n", "interpreter.step.low = 0\n",
+      "interpreter.step.high = 0\n",
+      "interpreter.charge.low = 0\n", "interpreter.charge.high = 0\n", "interpreter.byte = 0\n", "c.step.low = 0\n",
+      "c.step.high = 0\n", "c.charge.low = 0\n", "c.charge.high = 0\n", "c.byte = 0\n"]
+  пусть step равно («Per step» от («Workload» от samples и "I" и "Calls") и 2)
+  пусть charge равно («Charge times» от samples и "I" и («Average» от step))
+  пусть cstep равно («Printed step times» от samples)
+  пусть ccharge равно («Charge times» от samples и "C" и («Average» от cstep))
+  пусть calls равно («Per step» от («Workload» от samples и "I" и "Calls") и 3)
+  пусть texts равно («Per step» от («Workload» от samples и "I" и "Texts") и 3)
+  пусть lists равно («Per step» от («Workload» от samples и "I" и "Lists") и 3)
+  пусть memory равно («Most» от («Both numbers» от calls и («Both numbers» от texts и lists)))
+  пусть built равно («Workload» от samples и "C" и "Lists")
+  пусть cbyte равно («Most» от (отобразить built как pair → «Ratio» от («Value at» от pair и 3) и bytes))
+  пусть named равно [(соединить ["machine = ", machine.name, "\n"] по ""), (соединить ["cores = ", machine.cores,
+    "\n"] по ""),
+    (соединить ["load = ", machine.load, "\n"] по "")]
+  «Соединить списки» от named и [(«Profile line» от "interpreter.step.low" и («Least» от step)),
+    («Profile line» от "interpreter.step.high" и («Most» от step)),
+    («Profile line» от "interpreter.charge.low" и («Least» от charge)),
+    («Profile line» от "interpreter.charge.high" и («Most» от charge)), («Profile line» от "interpreter.byte" и memory),
+    («Profile line» от "c.step.low" и («Least» от cstep)), («Profile line» от "c.step.high" и («Most» от cstep)),
+    («Profile line» от "c.charge.low" и («Least» от ccharge)),
+    («Profile line» от "c.charge.high" и («Most» от ccharge)),
+    («Profile line» от "c.byte" и cbyte)]
+
+тотальная функция «Profile value»
+  принимает profile: строка, key: строка
+  возвращает число
+  пример «A value from the profile»
+    дано profile равно "c.byte = 1.5\nload = 2\n"
+    дано key равно "c.byte"
+    ожидается 1.5
+  «Number of» от («Value after» от (соединить [key, " = "] по "") и profile)
+
+тотальная функция «Rounded»
+  принимает amount: число
+  возвращает число
+  пример «Half goes up»
+    дано amount равно 2.5
+    ожидается 3
+  (amount плюс 0.5) минус ((amount плюс 0.5) остаток от 1)
+
+тотальная функция «Kib»
+  принимает bytes: число
+  возвращает строка
+  пример «Mebibytes with one decimal»
+    дано bytes равно 1572864
+    ожидается "1.5 МиБ"
+  пример «Small amounts in kibibytes»
+    дано bytes равно 2048
+    ожидается "2 КиБ"
+  пусть mebibytes равно («Rounded» от (bytes делить на 104857.6) делить на 10)
+  если bytes не меньше 1048576
+    то соединить [(к строке mebibytes), " МиБ"] по ""
+    иначе соединить [(к строке («Rounded» от (bytes делить на 1024))), " КиБ"] по ""
+
+тотальная функция «Millis»
+  принимает seconds: число
+  возвращает строка
+  пример «Milliseconds with one decimal»
+    дано seconds равно 0.01234
+    ожидается "12.3 мс"
+  соединить [(к строке («Rounded» от (seconds умножить на 10000) делить на 10)), " мс"] по ""
+
+тотальная функция «Times»
+  принимает bound: число, measured: число
+  возвращает строка
+  пример «How many times the bound is above the measure»
+    дано bound равно 300
+    дано measured равно 200
+    ожидается "1.5"
+  пример «Nothing measured»
+    дано bound равно 300
+    дано measured равно 0
+    ожидается "—"
+  если measured больше 0 то к строке («Rounded» от ((bound делить на measured) умножить на 100) делить на 100) иначе "—"
+
+тотальная функция «Holds»
+  принимает bound: число, measured: число
+  возвращает строка
+  пример «A bound that holds»
+    дано bound равно 3
+    дано measured равно 2
+    ожидается "да"
+  если measured не больше bound то "да" иначе "НЕТ"
+
+тотальная функция «Guess name»
+  принимает guess: «Guess row»
+  возвращает строка
+  пример «The function of a row»
+    дано guess равно запись «Guess row» с words равным ["F", "1", ""] и values равным [3, 10, 4, 0, 0]
+    ожидается "F"
+  «Text at» от guess.words и 1
+
+тотальная функция «Measured steps»
+  принимает samples: список «Sample», target: строка, guess: «Guess row»
+  возвращает число
+  пример «Nothing measured counts as zero steps»
+    дано samples равно []
+    дано target равно "I"
+    дано guess равно запись «Guess row» с words равным ["F", "1", ""] и values равным [3, 10, 4, 0, 0]
+    ожидается 0
+  пусть size равно («Value at» от guess.values и 1)
+  «Above zero» от («Reading» от («Of target» от samples и target и («Guess name» от guess)) и size и 2)
+
+тотальная функция «Steps line»
+  принимает guess: «Guess row», samples: список «Sample»
+  возвращает строка
+  пример «No samples at all»
+    дано guess равно запись «Guess row» с words равным ["F", "3·н + 1", ""] и values равным [3, 10, 4, 0, 0]
+    дано samples равно []
+    ожидается "| F | 3 | 0 | 10 | — | да | 0 | 4 | — | да |"
+  пусть interpreted равно («Measured steps» от samples и "I" и guess)
+  пусть printed равно («Measured steps» от samples и "C" и guess)
+  пусть bound равно («Value at» от guess.values и 2)
+  пусть cbound равно («Value at» от guess.values и 3)
+  пусть left равно [(«Guess name» от guess), (к строке («Value at» от guess.values и 1)), (к строке interpreted),
+    (к строке bound),
+    («Times» от bound и interpreted), («Holds» от bound и interpreted)]
+  пусть right равно [(к строке printed), (к строке cbound), («Times» от cbound и printed),
+    («Holds» от cbound и printed)]
+  соединить ["| ", (соединить («Both» от left и right) по " | "), " |"] по ""
+
+тотальная функция «Broken bound»
+  принимает guess: «Guess row», samples: список «Sample»
+  возвращает список строки
+  пример «A bound below the measure is named»
+    дано guess равно запись «Guess row» с words равным ["F", "1", ""] и values равным [3, 1, 4, 0, 0]
+    дано samples равно [запись «Sample» с words равным ["I", "F"] и values равным [3, 9, 0, 0]]
+    ожидается ["«F» при н = 3: толкователь сделал 9 шагов, граница 1"]
+  пусть interpreted равно («Measured steps» от samples и "I" и guess)
+  пусть printed равно («Measured steps» от samples и "C" и guess)
+  пусть size равно (к строке («Value at» от guess.values и 1))
+  пусть head1 равно (соединить ["«", («Guess name» от guess), "» при н = ", size, ": "] по "")
+  пусть bound равно («Value at» от guess.values и 2)
+  пусть cbound равно («Value at» от guess.values и 3)
+  пусть former равно [head1, "толкователь сделал ", (к строке interpreted), " шагов, граница ", (к строке bound)]
+  пусть latter равно [head1, "напечатанный C сделал ", (к строке printed), " шагов, граница ", (к строке cbound)]
+  пусть first1 равно (если interpreted больше bound то [соединить former по ""] иначе пустой список)
+  пусть second1 равно (если printed больше cbound то [соединить latter по ""] иначе пустой список)
+  пусть broken равно («Both» от first1 и second1)
+  если пусто («Text at» от guess.words и 3) то broken иначе пустой список
+
+тотальная функция «Marginal»
+  принимает samples: список «Sample», target: строка, guess: «Guess row», place: число
+  возвращает число
+  пример «Nothing measured»
+    дано samples равно []
+    дано target равно "I"
+    дано guess равно запись «Guess row» с words равным ["F", "1", ""] и values равным [3, 10, 4, 0, 0]
+    дано place равно 3
+    ожидается 0
+  пусть mine равно («Of target» от samples и target и («Guess name» от guess))
+  пусть top равно («Above zero» от («Reading» от mine и («Value at» от guess.values и 1) и place))
+  пусть bottom равно («Above zero» от («Reading» от mine и 0 и place))
+  если (target равен "C") и притом (place равен 3) то top иначе top минус bottom
+
+тотальная функция «Interval»
+  принимает guess: «Guess row», profile: строка, target: строка
+  возвращает строка
+  пример «An empty profile predicts nothing»
+    дано guess равно запись «Guess row» с words равным ["F", "1", ""] и values равным [3, 10, 4, 0, 0]
+    дано profile равно ""
+    дано target равно "c"
+    ожидается "0 мс – 0 мс"
+  пусть steps равно («Value at» от guess.values и 2)
+  пусть charges равно («Value at» от guess.values и 4)
+  пусть low равно («Seconds of» от steps и charges и profile и target и "low")
+  пусть high равно («Seconds of» от steps и charges и profile и target и "high")
+  соединить [(«Millis» от low), " – ", («Millis» от high)] по ""
+
+тотальная функция «Seconds of»
+  принимает steps: число, charges: число, profile: строка, target: строка, edge: строка
+  возвращает число
+  пример «Seconds from a profile»
+    дано steps равно 10
+    дано charges равно 100
+    дано profile равно "c.step.low = 0.5\nc.charge.low = 0.01\n"
+    дано target равно "c"
+    дано edge равно "low"
+    ожидается 6
+  пусть step равно («Profile value» от profile и (соединить [target, ".step.", edge] по ""))
+  пусть charge равно («Profile value» от profile и (соединить [target, ".charge.", edge] по ""))
+  (steps умножить на step) плюс (charges умножить на charge)
+
+тотальная функция «Time line»
+  принимает guess: «Guess row», samples: список «Sample», profile: строка
+  возвращает строка
+  пример «An empty profile predicts nothing»
+    дано guess равно запись «Guess row» с words равным ["F", "1", ""] и values равным [3, 10, 4, 0, 0]
+    дано samples равно []
+    дано profile равно ""
+    ожидается "| F | 3 | 0 мс | 0 мс – 0 мс | 0 КиБ | 0 КиБ | 0 мс | 0 мс – 0 мс | 0 КиБ | 0 КиБ |"
+  пусть memory равно ((«Value at» от guess.values и 2) умножить на («Profile value» от profile и "interpreter.byte"))
+  пусть cmemory равно ((«Value at» от guess.values и 5) умножить на («Profile value» от profile и "c.byte"))
+  пусть left равно [(«Guess name» от guess), (к строке («Value at» от guess.values и 1)),
+    («Millis» от («Marginal» от samples и "I" и guess и 3)), («Interval» от guess и profile и "interpreter"),
+    («Kib» от («Marginal» от samples и "I" и guess и 4)), («Kib» от memory)]
+  пусть right равно [(«Millis» от («Marginal» от samples и "C" и guess и 3)), («Interval» от guess и profile и "c"),
+    («Kib» от («Marginal» от samples и "C" и guess и 4)), («Kib» от cmemory)]
+  соединить ["| ", (соединить («Both» от left и right) по " | "), " |"] по ""
+
+тотальная функция «Mode»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The mode of a run»
+    дано answers равно [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [
+      "validate"])]
+    ожидается "validate"
+  «First line» от (соединить («Given of» от "mode" и answers) по "\n")
+
+тотальная функция «Is calibration»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «A validation run»
+    дано answers равно []
+    ожидается нет
+  («Mode» от answers) равен "calibrate"
+
+тотальная функция «Root of»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No root yet»
+    дано answers равно []
+    ожидается ""
+  «First line» от («Output of» от "root" и answers)
+
+тотальная функция «Program of»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «Validation runs the wrappers»
+    дано answers равно []
+    ожидается "scripts/cost/validation.flang"
+  если «Is calibration» от answers то "scripts/cost/calibration.flang" иначе "scripts/cost/validation.flang"
+
+тотальная функция «Cases of»
+  принимает answers: список «Answer»
+  возвращает список «Case»
+  пример «Calibration cases»
+    дано answers равно [запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [
+      "calibrate"])]
+    ожидается [запись «Case» с name равным "Calls" и sizes равным [0, 20000, 0, 20000, 0, 20000],
+      запись «Case» с name равным "Texts" и sizes равным [0, 20000, 0, 20000, 0, 20000],
+      запись «Case» с name равным "Lists" и sizes равным [0, 20000, 0, 20000, 0, 20000],
+      запись «Case» с name равным "Scans" и sizes равным [0, 4000, 0, 4000, 0, 4000]]
+  если «Is calibration» от answers то «Calibration cases» иначе «Validation cases»
+
+тотальная функция «Machine script»
+  возвращает строка
+  пример «The name, the cores and the load of the machine»
+    ожидается "uname -n; nproc; cut -d ' ' -f 1 /proc/loadavg"
+  "uname -n; nproc; cut -d ' ' -f 1 /proc/loadavg"
+
+тотальная функция «Machine of»
+  принимает answers: список «Answer»
+  возвращает «Machine»
+  пример «A machine that did not answer»
+    дано answers равно []
+    ожидается запись «Machine» с name равным "" и cores равным "" и load равным ""
+  пусть lines равно («Lines» от («Output of» от "machine" и answers))
+  пусть name равно («Text at» от lines и 1)
+  запись «Machine» с name равным name и cores равным («Text at» от lines и 2) и load равным («Text at» от lines и 3)
+
+тотальная функция «Profile path»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The profile of a machine that has not answered»
+    дано answers равно []
+    ожидается "profiles/.profile"
+  соединить ["profiles/", («Machine of» от answers).name, ".profile"] по ""
+
+тотальная функция «Build questions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing without a root»
+    дано answers равно []
+    ожидается []
+  пусть root равно («Root of» от answers)
+  пусть temporary равно («Setting of» от "temporary" и "/srv/tmp" и answers)
+  пусть words равно («Joined words» от [root, temporary] и («Sources»))
+  пусть analyzer равно («Run» от "analyzer" и "sh" и («Joined words» от ["-c",
+    («Glued» от («Analyzer script»))] и words))
+  пусть building равно [root, temporary, («Program of» от answers)]
+  пусть program равно («Run» от "program" и "sh" и («Joined words» от ["-c",
+    («Glued» от («Program script»))] и building))
+  если пусто root то пустой список иначе [analyzer, program, («Read» от "profile" и («Profile path» от answers))]
+
+тотальная функция «Kept guards»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No printed program, no guards»
+    дано answers равно []
+    ожидается ""
+  соединить (отфильтровать («Lines» от («Output of» от "program" и answers)) где line → line содержит "\t") по "\n"
+
+тотальная функция «Measure questions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing without a printed program»
+    дано answers равно []
+    ожидается []
+  пусть root равно («Root of» от answers)
+  пусть binary равно («First line» от («Output of» от "program" и answers))
+  пусть requests равно («Requests» от («Cases of» от answers))
+  пусть analyzer равно («First line» от («Output of» от "analyzer" и answers))
+  пусть program равно («Program of» от answers)
+  пусть words равно [root, program, («Glued» от («Tokenizer»)), («Kept guards» от answers), requests, analyzer]
+  пусть predict равно («Run» от "predict" и "sh" и («Joined words» от ["-c", («Glued» от («Predict script»))] и words))
+  пусть measure равно («Run» от "measure" и "sh" и («Joined words» от ["-c", («Glued» от («Measure script»))] и [root,
+    binary, program, requests]))
+  если (пусто binary) или (пусто analyzer) то пустой список иначе [predict, measure]
+
+тотальная функция «Guesses»
+  принимает answers: список «Answer»
+  возвращает список «Guess row»
+  пример «No prediction»
+    дано answers равно []
+    ожидается []
+  «Guesses of» от («Output of» от "predict" и answers)
+
+тотальная функция «Lists bytes»
+  принимает answers: список «Answer»
+  возвращает число
+  пример «No prediction»
+    дано answers равно []
+    ожидается 0
+  пусть rows равно (отфильтровать («Guesses» от answers) где row → («Guess name» от row) равен "Lists")
+  свёртка rows начиная с 0 как found и row → «Most» от [found, («Value at» от row.values и 5)]
+
+тотальная функция «Calibration profile»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «A profile of nothing»
+    дано answers равно []
+    ожидается ["machine = \n", "cores = \n", "load = \n", "interpreter.step.low = 0\n", "interpreter.step.high = 0\n",
+      "interpreter.charge.low = 0\n", "interpreter.charge.high = 0\n", "interpreter.byte = 0\n", "c.step.low = 0\n",
+      "c.step.high = 0\n", "c.charge.low = 0\n", "c.charge.high = 0\n", "c.byte = 0\n"]
+  пусть samples равно («Samples» от («Output of» от "measure" и answers))
+  «Profile lines» от samples и («Machine of» от answers) и («Lists bytes» от answers)
+
+тотальная функция «Write questions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Validation writes nothing»
+    дано answers равно []
+    ожидается []
+  пусть text равно (соединить («Calibration profile» от answers) по "")
+  если «Is calibration» от answers то [(«Write» от "written" и («Profile path» от answers) и text)] иначе пустой список
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «The last stage of a validation writes nothing»
+    дано stages равно 0
+    дано answers равно []
+    ожидается []
+  пусть start равно [(«Environment» от "temporary" и "FLANG_TMP"),
+    («Run» от "root" и "sh" и («Joined words» от ["-c", "cd \"$0\" && pwd -P"] и [(«Root»)])),
+    («Run» от "machine" и "sh" и («Joined words» от ["-c", («Machine script»)] и пустой список))]
+  пусть rules равно [(«When» от (stages равен 3) и start),
+    («When» от (stages равен 2) и («Build questions» от answers)),
+    («When» от (stages равен 1) и («Measure questions» от answers)),
+    («When» от (stages равен 0) и («Write questions» от answers))]
+  «Chosen» от rules и пустой список
+
+тотальная функция «Steps header»
+  возвращает список строки
+  пример «The header of the table of steps»
+    ожидается ["| функция | н | шагов толкователя | граница | раз | держит | шагов C | граница C | раз | держит |",
+      "|---|---|---|---|---|---|---|---|---|---|"]
+  ["| функция | н | шагов толкователя | граница | раз | держит | шагов C | граница C | раз | держит |",
+    "|---|---|---|---|---|---|---|---|---|---|"]
+
+тотальная функция «Time header»
+  возвращает список строки
+  пример «The header of the table of seconds and bytes»
+    ожидается [
+      "| функция | н | время толк. | прогноз | память толк. | прогноз | время C | прогноз | память C | прогноз |",
+      "|---|---|---|---|---|---|---|---|---|---|"]
+  ["| функция | н | время толк. | прогноз | память толк. | прогноз | время C | прогноз | память C | прогноз |",
+    "|---|---|---|---|---|---|---|---|---|---|"]
+
+тотальная функция «Unbounded line»
+  принимает row: «Guess row»
+  возвращает строка
+  пример «A function without a bound»
+    дано row равно запись «Guess row» с words равным ["F", "0", "x"] и values равным [3, 0, 0, 0, 0]
+    ожидается "оценки нет: «F» при н = 3 — x"
+  пусть size равно (к строке («Value at» от row.values и 1))
+  соединить ["оценки нет: «", («Guess name» от row), "» при н = ", size, " — ", («Text at» от row.words и 3)] по ""
+
+тотальная функция «Empty measure»
+  возвращает «Продолжение»
+  пример «Nothing measured is not checked»
+    ожидается вариант «Не проверено» с код равным "FLANG_COST_TOOL" и сообщение равным "замера нет"
+  вариант «Не проверено» с код равным "FLANG_COST_TOOL" и сообщение равным "замера нет"
+
+тотальная функция «Validation report»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Nothing measured is not checked»
+    дано answers равно []
+    ожидается вариант «Не проверено» с код равным "FLANG_COST_TOOL" и сообщение равным "замера нет"
+  пусть samples равно («Samples» от («Output of» от "measure" и answers))
+  пусть profile равно («Output of» от "profile" и answers)
+  пусть bounded равно (отфильтровать («Guesses» от answers) где row → пусто («Text at» от row.words и 3))
+  пусть unbounded равно (отфильтровать («Guesses» от answers) где row → не (пусто («Text at» от row.words и 3)))
+  пусть steps равно («Both» от («Steps header») и (отобразить bounded как row → «Steps line» от row и samples))
+  пусть timing равно («Both» от («Time header») и (отобразить bounded как row → «Time line» от row и samples и profile))
+  пусть failed равно (отобразить unbounded как row → «Unbounded line» от row)
+  пусть broken равно (свёртка bounded начиная с пустой список как found и row → «Broken more» от found и row и samples)
+  пусть text равно (соединить («Join texts» от [steps, [""], timing, [""], failed]) по "\n")
+  пусть said равно (соединить («Both» от broken и [text]) по "\n")
+  пусть refused равно (вариант «Провал» с код равным "FLANG_COST_BOUND_BROKEN" и сообщение равным said)
+  пусть done равно (вариант «Конец работы» с значение равным text)
+  «Chosen» от [(«When» от (пусто samples) и («Empty measure»)), («When» от (не (пусто broken)) и refused)] и done
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Nothing measured»
+    дано answers равно []
+    ожидается вариант «Не проверено» с код равным "FLANG_COST_TOOL" и сообщение равным "замера нет"
+  пусть failures равно [(«Process failure» от "analyzer" и answers), («Process failure» от "program" и answers)]
+  пусть broken равно (соединить failures по "")
+  пусть done равно (вариант «Конец работы» с значение равным (соединить («Calibration profile» от answers) по ""))
+  пусть tool равно (вариант «Не проверено» с код равным "FLANG_COST_TOOL" и сообщение равным broken)
+  пусть report равно («Validation report» от answers)
+  «Chosen» от [(«When» от (не (пусто broken)) и tool), («When» от («Is calibration» от answers) и done)] и report
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  убывает stages
+  пример «Nothing left to ask gives the verdict»
+    дано queue равно []
+    дано stages равно 0
+    дано answers равно []
+    ожидается вариант «Не проверено» с код равным "FLANG_COST_TOOL" и сообщение равным "замера нет"
+  разбор queue
+    случай голова question и хвост rest
+      то «Ask» от question и rest и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin in mode»
+  принимает mode: строка
+  возвращает «Inquiry»
+  пример «A calibration run»
+    дано mode равно "calibrate"
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным [] и «stages» равным 4 и «answers» равным [
+      запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным ["calibrate"])]
+  пусть said равно (запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode]))
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 4 и «answers» равным [said]
+
+тотальная функция «Begin validation»
+  возвращает «Inquiry»
+  пример «Validation»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным [] и «stages» равным 4 и «answers» равным [
+      запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным ["validate"])]
+  «Begin in mode» от "validate"
+
+тотальная функция «Begin calibration»
+  возвращает «Inquiry»
+  пример «Calibration»
+    ожидается запись «Inquiry» с «asked» равным "" и «queue» равным [] и «stages» равным 4 и «answers» равным [
+      запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным ["calibrate"])]
+  «Begin in mode» от "calibrate"
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A reply is filed and the inquiry goes on»
+    дано inquiry равно запись «Inquiry» с «asked» равным "" и «queue» равным [
+      ] и «stages» равным 0 и «answers» равным []
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Не проверено» с код равным "FLANG_COST_TOOL" и сообщение равным "замера нет"
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Validate»
+  состояние «Inquiry»
+  начинает с «Begin validation»
+  обрабатывает «Next»
+
+план «Calibrate»
+  состояние «Inquiry»
+  начинает с «Begin calibration»
+  обрабатывает «Next»

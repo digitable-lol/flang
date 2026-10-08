@@ -1,0 +1,976 @@
+модуль «Cost tree»
+  использует «Cost rules» из "rules.flang"
+
+тип «Shape»
+  вариант «Number shape»
+  вариант «Natural shape»
+  вариант «Text shape»
+  вариант «Truth shape»
+  вариант «List shape» содержит inner: «Shape»
+  вариант «Other shape» содержит label: строка
+
+тип «Pattern»
+  вариант «Empty pattern»
+  вариант «Cons pattern» содержит opening: строка, rest: строка
+  вариант «Variant pattern» содержит label: строка, names: список строки
+  вариант «Any pattern»
+
+тип «Expr»
+  вариант «Literal» содержит bytes: число, amount: число
+  вариант «Name» содержит name: строка
+  вариант «Binary» содержит operator: строка, left: «Expr», right: «Expr»
+  вариант «Builtin» содержит name: строка, arguments: список «Expr»
+  вариант «Call» содержит name: строка, arguments: список «Expr»
+  вариант «Choice» содержит test: «Expr», yea: «Expr», nay: «Expr»
+  вариант «Let» содержит name: строка, value: «Expr», body: «Expr»
+  вариант «Match» содержит target: «Expr», arms: список «Arm»
+  вариант «Access» содержит target: «Expr»
+  вариант «Items» содержит items: список «Expr»
+  вариант «Composite» содержит label: строка, parts: список «Expr»
+  вариант «Fold» содержит step: «Lambda», over: «Expr», start: «Expr»
+  вариант «Walk» содержит step: «Lambda», over: «Expr», keep: признак
+  вариант «Unknown» содержит kind: строка
+  вариант «Gap»
+
+объект «Arm»
+  pattern: «Pattern»
+  body: «Expr»
+
+объект «Lambda»
+  names: список строки
+  body: «Expr»
+
+объект «Parameter»
+  name: строка
+  shape: «Shape»
+
+тип «Node»
+  вариант «Str» содержит text: строка
+  вариант «Num» содержит amount: число
+  вариант «Bool» содержит truth: признак
+  вариант «Nil»
+  вариант «Key» содержит key: строка, val: «Node»
+  вариант «Arr» содержит items: список «Node»
+  вариант «Obj» содержит fields: список «Node»
+  вариант «Ex» содержит expression: «Expr»
+  вариант «Pat» содержит pattern: «Pattern»
+  вариант «Case» содержит pattern: «Pattern», body: «Expr»
+  вариант «Param» содержит name: строка, shape: «Shape»
+  вариант «Form» содержит shape: «Shape»
+  вариант «Check» содержит name: строка, expression: «Expr»
+
+объект «Popped»
+  got: список «Node»
+  rest: список «Node»
+  need: число
+
+тотальная функция «Char bytes»
+  принимает code: число
+  возвращает число
+  пример «Latin takes one byte»
+    дано code равно 97
+    ожидается 1
+  пример «Cyrillic takes two bytes»
+    дано code равно 1078
+    ожидается 2
+  пример «Most of the plane takes three bytes»
+    дано code равно 8212
+    ожидается 3
+  пример «Beyond the plane four bytes»
+    дано code равно 128512
+    ожидается 4
+  пусть two равно (если code не меньше 128 то 1 иначе 0)
+  пусть three равно (если code не меньше 2048 то 1 иначе 0)
+  пусть four равно (если code не меньше 65536 то 1 иначе 0)
+  1 плюс two плюс three плюс four
+
+тотальная функция «Text bytes»
+  принимает text: строка
+  возвращает число
+  пример «A Cyrillic word»
+    дано text равно "дом"
+    ожидается 6
+  пример «An empty text»
+    дано text равно ""
+    ожидается 0
+  свёртка (разложить text на символы) начиная с 0 как sum и glyph → sum плюс («Char bytes» от (код символа glyph))
+
+тотальная функция «Pick»
+  принимает found: «Node», node: «Node», wanted: строка
+  возвращает «Node»
+  пример «The wanted key gives its value»
+    дано found равно вариант «Nil»
+    дано node равно вариант «Key» с key равным "name" и val равным (вариант «Str» с text равным "Ф")
+    дано wanted равно "name"
+    ожидается вариант «Str» с text равным "Ф"
+  пример «Another key keeps what was found»
+    дано found равно вариант «Nil»
+    дано node равно вариант «Key» с key равным "kind" и val равным (вариант «Str» с text равным "var")
+    дано wanted равно "name"
+    ожидается вариант «Nil»
+  разбор node
+    случай вариант «Key» с key как key и val как val
+      то если key равен wanted то val иначе found
+    случай любое
+      то found
+
+тотальная функция «Get»
+  принимает fields: список «Node», wanted: строка
+  возвращает «Node»
+  пример «A present key gives its value»
+    дано fields равно [вариант «Key» с key равным "name" и val равным (вариант «Str» с text равным "Ф")]
+    дано wanted равно "name"
+    ожидается вариант «Str» с text равным "Ф"
+  пример «An absent key gives nothing»
+    дано fields равно []
+    дано wanted равно "name"
+    ожидается вариант «Nil»
+  свёртка fields начиная с (вариант «Nil») как found и node → «Pick» от found и node и wanted
+
+тотальная функция «Is key»
+  принимает node: «Node», wanted: строка
+  возвращает признак
+  пример «The wanted key»
+    дано node равно вариант «Key» с key равным "pattern" и val равным (вариант «Nil»)
+    дано wanted равно "pattern"
+    ожидается да
+  пример «Not a key at all»
+    дано node равно вариант «Nil»
+    дано wanted равно "pattern"
+    ожидается нет
+  разбор node
+    случай вариант «Key» с key как key и val как val
+      то key равен wanted
+    случай любое
+      то нет
+
+тотальная функция «Has»
+  принимает fields: список «Node», wanted: строка
+  возвращает признак
+  пример «A present key»
+    дано fields равно [вариант «Key» с key равным "pattern" и val равным (вариант «Nil»)]
+    дано wanted равно "pattern"
+    ожидается да
+  пример «An absent key»
+    дано fields равно []
+    дано wanted равно "pattern"
+    ожидается нет
+  свёртка fields начиная с нет как found и node → found или («Is key» от node и wanted)
+
+тотальная функция «Text of»
+  принимает node: «Node»
+  возвращает строка
+  пример «A text node gives its text»
+    дано node равно вариант «Str» с text равным "Ф"
+    ожидается "Ф"
+  пример «Anything else gives an empty text»
+    дано node равно вариант «Nil»
+    ожидается ""
+  разбор node
+    случай вариант «Str» с text как text
+      то text
+    случай любое
+      то ""
+
+тотальная функция «Word»
+  принимает fields: список «Node», wanted: строка
+  возвращает строка
+  пример «The text under a key»
+    дано fields равно [вариант «Key» с key равным "name" и val равным (вариант «Str» с text равным "Ф")]
+    дано wanted равно "name"
+    ожидается "Ф"
+  «Text of» от («Get» от fields и wanted)
+
+тотальная функция «Expression of»
+  принимает node: «Node»
+  возвращает «Expr»
+  пример «An expression node gives its expression»
+    дано node равно вариант «Ex» с expression равным (вариант «Name» с name равным "x")
+    ожидается вариант «Name» с name равным "x"
+  пример «A missing part»
+    дано node равно вариант «Nil»
+    ожидается вариант «Gap»
+  разбор node
+    случай вариант «Ex» с expression как expression
+      то expression
+    случай вариант «Check» с name как name и expression как expression
+      то expression
+    случай любое
+      то вариант «Gap»
+
+тотальная функция «Part»
+  принимает fields: список «Node», wanted: строка
+  возвращает «Expr»
+  пример «The expression under a key»
+    дано fields равно [вариант «Key» с key равным "left" и val равным (вариант «Nil»)]
+    дано wanted равно "left"
+    ожидается вариант «Gap»
+  «Expression of» от («Get» от fields и wanted)
+
+тотальная функция «Nodes of»
+  принимает node: «Node»
+  возвращает список «Node»
+  пример «An array gives its items»
+    дано node равно вариант «Arr» с items равным [вариант «Nil»]
+    ожидается [вариант «Nil»]
+  пример «Anything else gives no items»
+    дано node равно вариант «Nil»
+    ожидается []
+  разбор node
+    случай вариант «Arr» с items как items
+      то items
+    случай любое
+      то пустой список
+
+тотальная функция «Parts»
+  принимает fields: список «Node», wanted: строка
+  возвращает список «Expr»
+  пример «An array of expressions under a key»
+    дано fields равно [вариант «Key» с key равным "args" и val равным (вариант «Arr» с items равным [])]
+    дано wanted равно "args"
+    ожидается []
+  отобразить («Nodes of» от («Get» от fields и wanted)) как part → «Expression of» от part
+
+тотальная функция «Unkeyed»
+  принимает node: «Node»
+  возвращает «Node»
+  пример «A key gives its value»
+    дано node равно вариант «Key» с key равным "a" и val равным (вариант «Nil»)
+    ожидается вариант «Nil»
+  пример «Anything else stays itself»
+    дано node равно вариант «Num» с amount равным 1
+    ожидается вариант «Num» с amount равным 1
+  разбор node
+    случай вариант «Key» с key как key и val как val
+      то val
+    случай любое
+      то node
+
+тотальная функция «Values of»
+  принимает node: «Node»
+  возвращает список «Node»
+  пример «The values of an object in order»
+    дано node равно вариант «Obj» с fields равным [вариант «Key» с key равным "a" и val равным (вариант «Nil»)]
+    ожидается [вариант «Nil»]
+  пример «Not an object gives no values»
+    дано node равно вариант «Nil»
+    ожидается []
+  разбор node
+    случай вариант «Obj» с fields как fields
+      то отобразить fields как part → «Unkeyed» от part
+    случай любое
+      то пустой список
+
+тотальная функция «Fields of»
+  принимает node: «Node»
+  возвращает список «Node»
+  пример «The fields of an object»
+    дано node равно вариант «Obj» с fields равным []
+    ожидается []
+  пример «Anything else has no fields»
+    дано node равно вариант «Nil»
+    ожидается []
+  разбор node
+    случай вариант «Obj» с fields как fields
+      то fields
+    случай любое
+      то пустой список
+
+тотальная функция «Pattern of»
+  принимает node: «Node»
+  возвращает «Pattern»
+  пример «A pattern node gives its pattern»
+    дано node равно вариант «Pat» с pattern равным (вариант «Empty pattern»)
+    ожидается вариант «Empty pattern»
+  пример «A literal case matches like any value»
+    дано node равно вариант «Nil»
+    ожидается вариант «Any pattern»
+  разбор node
+    случай вариант «Pat» с pattern как pattern
+      то pattern
+    случай любое
+      то вариант «Any pattern»
+
+тотальная функция «Shape of»
+  принимает node: «Node»
+  возвращает «Shape»
+  пример «A shape node gives its shape»
+    дано node равно вариант «Form» с shape равным (вариант «Text shape»)
+    ожидается вариант «Text shape»
+  пример «Anything else is another shape»
+    дано node равно вариант «Nil»
+    ожидается вариант «Other shape» с label равным "?"
+  разбор node
+    случай вариант «Form» с shape как shape
+      то shape
+    случай любое
+      то вариант «Other shape» с label равным "?"
+
+тотальная функция «Named shape»
+  принимает label: строка
+  возвращает «Shape»
+  пример «A natural number»
+    дано label равно "нат"
+    ожидается вариант «Natural shape»
+  пример «A named record»
+    дано label равно "Ответ"
+    ожидается вариант «Other shape» с label равным "Ответ"
+  разбор label
+    случай "нат"
+      то вариант «Natural shape»
+    случай "неотрицательное"
+      то вариант «Natural shape»
+    случай "натуральное"
+      то вариант «Natural shape»
+    случай "целое"
+      то вариант «Number shape»
+    случай "вес"
+      то вариант «Number shape»
+    случай "стоимость"
+      то вариант «Number shape»
+    случай любое
+      то вариант «Other shape» с label равным label
+
+тотальная функция «Literal bytes»
+  принимает node: «Node»
+  возвращает число
+  пример «A text literal costs its bytes»
+    дано node равно вариант «Str» с text равным "да"
+    ожидается 4
+  пример «A number literal has no bytes at all»
+    дано node равно вариант «Num» с amount равным 5
+    ожидается -1
+  разбор node
+    случай вариант «Str» с text как text
+      то «Text bytes» от text
+    случай любое
+      то -1
+
+тотальная функция «Literal amount»
+  принимает node: «Node»
+  возвращает число
+  пример «A number literal keeps its value»
+    дано node равно вариант «Num» с amount равным 5
+    ожидается 5
+  пример «A text literal has no value»
+    дано node равно вариант «Str» с text равным "да"
+    ожидается 0
+  разбор node
+    случай вариант «Num» с amount как amount
+      то amount
+    случай любое
+      то 0
+
+тотальная функция «Bound names»
+  принимает node: «Node»
+  возвращает список строки
+  пример «Names a variant pattern binds»
+    дано node равно вариант «Obj» с fields равным [
+      вариант «Key» с key равным "тон" и val равным (вариант «Str» с text равным "т")]
+    ожидается ["т"]
+  отобразить («Values of» от node) как value → «Text of» от value
+
+тотальная функция «Add parameter»
+  принимает found: список «Parameter», node: «Node»
+  возвращает список «Parameter»
+  пример «A parameter node is kept»
+    дано found равно []
+    дано node равно вариант «Param» с name равным "x" и shape равным (вариант «Truth shape»)
+    ожидается [запись «Parameter» с name равным "x" и shape равным (вариант «Truth shape»)]
+  пример «Anything else is skipped»
+    дано found равно []
+    дано node равно вариант «Nil»
+    ожидается []
+  разбор node
+    случай вариант «Param» с name как name и shape как shape
+      то добавить (запись «Parameter» с name равным name и shape равным shape) к found
+    случай любое
+      то found
+
+тотальная функция «Measure list»
+  принимает node: «Node»
+  возвращает список «Expr»
+  пример «A declared measure»
+    дано node равно вариант «Ex» с expression равным (вариант «Name» с name равным "б")
+    ожидается [вариант «Name» с name равным "б"]
+  пример «No measure»
+    дано node равно вариант «Nil»
+    ожидается []
+  разбор node
+    случай вариант «Ex» с expression как expression
+      то [expression]
+    случай любое
+      то пустой список
+
+тотальная функция «Add arm»
+  принимает found: список «Arm», node: «Node»
+  возвращает список «Arm»
+  пример «A case gives its arm»
+    дано found равно []
+    дано node равно вариант «Case» с pattern равным (вариант «Any pattern») и body равным (вариант «Gap»)
+    ожидается [запись «Arm» с pattern равным (вариант «Any pattern») и body равным (вариант «Gap»)]
+  пример «Anything else is skipped»
+    дано found равно []
+    дано node равно вариант «Nil»
+    ожидается []
+  разбор node
+    случай вариант «Case» с pattern как pattern и body как body
+      то добавить (запись «Arm» с pattern равным pattern и body равным body) к found
+    случай любое
+      то found
+
+тотальная функция «Parameters in»
+  принимает fields: список «Node»
+  возвращает список «Parameter»
+  пример «No parameters»
+    дано fields равно []
+    ожидается []
+  пусть nodes равно («Nodes of» от («Get» от fields и "params"))
+  свёртка nodes начиная с пустой список как found и node → «Add parameter» от found и node
+
+тотальная функция «Case node»
+  принимает fields: список «Node»
+  возвращает «Node»
+  пример «A case of any value»
+    дано fields равно [
+      вариант «Key» с key равным "pattern" и val равным (вариант «Pat» с pattern равным (вариант «Any pattern»))]
+    ожидается вариант «Case» с pattern равным (вариант «Any pattern») и body равным (вариант «Gap»)
+  пусть pattern равно («Pattern of» от («Get» от fields и "pattern"))
+  вариант «Case» с pattern равным pattern и body равным («Part» от fields и "body")
+
+тотальная функция «Leaf node»
+  принимает fields: список «Node»
+  возвращает «Node»
+  пример «A postcondition is its expression»
+    дано fields равно [
+      вариант «Key» с key равным "expr" и val равным (вариант «Nil»),
+      вариант «Key» с key равным "code" и val равным (вариант «Nil»)]
+    ожидается вариант «Check» с name равным "" и expression равным (вариант «Gap»)
+  пример «A parameter has a name and a type»
+    дано fields равно [
+      вариант «Key» с key равным "name" и val равным (вариант «Str» с text равным "н"),
+      вариант «Key» с key равным "type" и val равным (вариант «Nil»)]
+    ожидается вариант «Param» с name равным "н" и shape равным (вариант «Other shape» с label равным "?")
+  пример «Other objects keep their fields»
+    дано fields равно []
+    ожидается вариант «Obj» с fields равным []
+  пусть shape равно («Shape of» от («Get» от fields и "type"))
+  пусть named равно («Has» от fields и "type") и притом («Has» от fields и "name")
+  пусть checked равно («Has» от fields и "expr") и притом («Has» от fields и "code")
+  разбор «First holding» от [(«Rule of» от checked и "check"), («Rule of» от named и "param")] и "object"
+    случай "check"
+      то вариант «Check» с name равным («Word» от fields и "name") и expression равным («Part» от fields и "expr")
+    случай "param"
+      то вариант «Param» с name равным («Word» от fields и "name") и shape равным shape
+    случай любое
+      то вариант «Obj» с fields равным fields
+
+тотальная функция «Kindless»
+  принимает fields: список «Node»
+  возвращает «Node»
+  пример «Other objects keep their fields»
+    дано fields равно []
+    ожидается вариант «Obj» с fields равным []
+  если «Has» от fields и "pattern"
+    то «Case node» от fields
+    иначе «Leaf node» от fields
+
+тотальная функция «Simple shape»
+  принимает kind: строка, fields: список «Node»
+  возвращает «Shape»
+  пример «A text type»
+    дано kind равно "string"
+    дано fields равно []
+    ожидается вариант «Text shape»
+  разбор kind
+    случай "number"
+      то вариант «Number shape»
+    случай "string"
+      то вариант «Text shape»
+    случай "flag"
+      то вариант «Truth shape»
+    случай "named"
+      то «Named shape» от («Word» от fields и "name")
+    случай любое
+      то вариант «List shape» с inner равным («Shape of» от («Get» от fields и "of"))
+
+тотальная функция «Simple pattern»
+  принимает kind: строка, fields: список «Node»
+  возвращает «Pattern»
+  пример «An empty pattern»
+    дано kind равно "empty"
+    дано fields равно []
+    ожидается вариант «Empty pattern»
+  пример «A cons pattern names its parts»
+    дано kind равно "cons"
+    дано fields равно [
+      вариант «Key» с key равным "head" и val равным (вариант «Str» с text равным "г"),
+      вариант «Key» с key равным "tail" и val равным (вариант «Str» с text равным "х")]
+    ожидается вариант «Cons pattern» с opening равным "г" и rest равным "х"
+  пусть names равно («Bound names» от («Get» от fields и "bind"))
+  пусть opening равно («Word» от fields и "head")
+  разбор kind
+    случай "empty"
+      то вариант «Empty pattern»
+    случай "cons"
+      то вариант «Cons pattern» с opening равным opening и rest равным («Word» от fields и "tail")
+    случай "variant"
+      то вариант «Variant pattern» с label равным («Word» от fields и "name") и names равным names
+    случай любое
+      то вариант «Any pattern»
+
+тотальная функция «Lambda of»
+  принимает fields: список «Node», names: список строки
+  возвращает «Lambda»
+  пример «A lambda binds its names over the body»
+    дано fields равно []
+    дано names равно ["x"]
+    ожидается запись «Lambda» с names равным ["x"] и body равным (вариант «Gap»)
+  запись «Lambda» с names равным names и body равным («Part» от fields и "body")
+
+тотальная функция «Loop expression»
+  принимает kind: строка, fields: список «Node»
+  возвращает «Expr»
+  пример «A map over a name binds the element»
+    дано kind равно "map"
+    дано fields равно [
+    вариант «Key» с key равным "over" и val равным (вариант «Ex» с expression равным вариант «Name» с name равным "x")]
+    ожидается вариант «Walk» с step равным (запись «Lambda» с names равным [
+      ""] и body равным (вариант «Gap»)) и over равным (вариант «Name» с name равным "x") и keep равным нет
+  пусть over равно («Part» от fields и "over")
+  пусть both равно («Lambda of» от fields и [(«Word» от fields и "acc"), («Word» от fields и "item")])
+  пусть one равно («Lambda of» от fields и [(«Word» от fields и "item")])
+  пусть start равно («Part» от fields и "init")
+  пусть named равно («Named» от over и "§o")
+  пусть begun равно («Named» от start и "§s")
+  разбор kind
+    случай "fold"
+      то «Wrapped» от "§o" и over и («Wrapped» от "§s" и start и («Folded» от both и named и begun))
+    случай "map"
+      то «Wrapped» от "§o" и over и (вариант «Walk» с step равным one и over равным named и keep равным нет)
+    случай любое
+      то «Wrapped» от "§o" и over и (вариант «Walk» с step равным one и over равным named и keep равным да)
+
+тотальная функция «Is plain»
+  принимает expr: «Expr»
+  возвращает признак
+  пример «A name needs no binding»
+    дано expr равно вариант «Name» с name равным "x"
+    ожидается да
+  пример «A call does»
+    дано expr равно вариант «Call» с name равным "Ф" и arguments равным []
+    ожидается нет
+  разбор expr
+    случай вариант «Name» с name как name
+      то да
+    случай вариант «Literal» с bytes как bytes и amount как amount
+      то да
+    случай любое
+      то нет
+
+тотальная функция «Named»
+  принимает expr: «Expr», hidden: строка
+  возвращает «Expr»
+  пример «A call is replaced by a hidden name»
+    дано expr равно вариант «Call» с name равным "Ф" и arguments равным []
+    дано hidden равно "§o"
+    ожидается вариант «Name» с name равным "§o"
+  если «Is plain» от expr то expr иначе вариант «Name» с name равным hidden
+
+тотальная функция «Wrapped»
+  принимает hidden: строка, value: «Expr», inner: «Expr»
+  возвращает «Expr»
+  пример «A plain value needs no binding»
+    дано hidden равно "§o"
+    дано value равно вариант «Name» с name равным "x"
+    дано inner равно вариант «Gap»
+    ожидается вариант «Gap»
+  если «Is plain» от value то inner иначе вариант «Let» с name равным hidden и value равным value и body равным inner
+
+тотальная функция «Arms in»
+  принимает fields: список «Node»
+  возвращает список «Arm»
+  пример «No cases»
+    дано fields равно []
+    ожидается []
+  пусть nodes равно («Nodes of» от («Get» от fields и "cases"))
+  свёртка nodes начиная с пустой список как found и node → «Add arm» от found и node
+
+тотальная функция «Composite of»
+  принимает fields: список «Node», label: строка
+  возвращает «Expr»
+  пример «A record without fields»
+    дано fields равно []
+    дано label равно "Точка"
+    ожидается вариант «Composite» с label равным "Точка" и parts равным []
+  пусть parts равно (отобразить («Values of» от («Get» от fields и "fields")) как part → «Expression of» от part)
+  вариант «Composite» с label равным label и parts равным parts
+
+тотальная функция «Plain expression»
+  принимает kind: строка, fields: список «Node»
+  возвращает «Expr»
+  пример «A variable»
+    дано kind равно "var"
+    дано fields равно [вариант «Key» с key равным "name" и val равным (вариант «Str» с text равным "н")]
+    ожидается вариант «Name» с name равным "н"
+  пример «An unknown kind is named»
+    дано kind равно "apply"
+    дано fields равно []
+    ожидается вариант «Unknown» с kind равным "apply"
+  пусть name равно («Word» от fields и "name")
+  пусть value равно («Get» от fields и "value")
+  пусть target равно («Part» от fields и "target")
+  разбор kind
+    случай "var"
+      то вариант «Name» с name равным name
+    случай "literal"
+      то вариант «Literal» с bytes равным («Literal bytes» от value) и amount равным («Literal amount» от value)
+    случай "builtin"
+      то вариант «Builtin» с name равным name и arguments равным («Parts» от fields и "args")
+    случай "call"
+      то вариант «Call» с name равным name и arguments равным («Parts» от fields и "args")
+    случай "field"
+      то вариант «Access» с target равным target
+    случай "list"
+      то вариант «Items» с items равным («Parts» от fields и "items")
+    случай "match"
+      то «Wrapped» от "§m" и target и («Matched» от («Named» от target и "§m") и («Arms in» от fields))
+    случай "record"
+      то «Composite of» от fields и («Word» от fields и "type")
+    случай "construct"
+      то «Composite of» от fields и («Word» от fields и "variant")
+    случай любое
+      то «Branching expression» от kind и fields
+
+тотальная функция «Branching expression»
+  принимает kind: строка, fields: список «Node»
+  возвращает «Expr»
+  пример «A let binds a name»
+    дано kind равно "let"
+    дано fields равно []
+    ожидается вариант «Let» с name равным "" и value равным (вариант «Gap») и body равным (вариант «Gap»)
+  пример «An unknown kind is named»
+    дано kind равно "apply"
+    дано fields равно []
+    ожидается вариант «Unknown» с kind равным "apply"
+  пусть left равно («Part» от fields и "left")
+  пусть right равно («Part» от fields и "right")
+  пусть condition равно («Part» от fields и "cond")
+  пусть positive равно («Part» от fields и "then")
+  пусть negative равно («Part» от fields и "else")
+  пусть value равно («Part» от fields и "value")
+  пусть body равно («Part» от fields и "in")
+  разбор kind
+    случай "binary"
+      то вариант «Binary» с operator равным («Word» от fields и "op") и left равным left и right равным right
+    случай "if"
+      то вариант «Choice» с test равным condition и yea равным positive и nay равным negative
+    случай "let"
+      то вариант «Let» с name равным («Word» от fields и "name") и value равным value и body равным body
+    случай "fold"
+      то «Loop expression» от kind и fields
+    случай "map"
+      то «Loop expression» от kind и fields
+    случай "filter"
+      то «Loop expression» от kind и fields
+    случай любое
+      то вариант «Unknown» с kind равным kind
+
+тотальная функция «Typed node»
+  принимает kind: строка, fields: список «Node»
+  возвращает «Node»
+  пример «A list of items is an expression»
+    дано kind равно "list"
+    дано fields равно [вариант «Key» с key равным "items" и val равным (вариант «Arr» с items равным [])]
+    ожидается вариант «Ex» с expression равным (вариант «Items» с items равным [])
+  пример «A list of shapes is a shape»
+    дано kind равно "list"
+    дано fields равно [
+      вариант «Key» с key равным "of" и val равным (вариант «Form» с shape равным (вариант «Text shape»))]
+    ожидается вариант «Form» с shape равным (вариант «List shape» с inner равным (вариант «Text shape»))
+  пример «An empty pattern»
+    дано kind равно "empty"
+    дано fields равно []
+    ожидается вариант «Pat» с pattern равным (вариант «Empty pattern»)
+  пусть listed равно (kind равен "list") и притом («Has» от fields и "of")
+  пусть typed равно (["number", "string", "flag", "named"] содержит kind) или listed
+  пусть bound равно (kind равен "variant") и притом («Has» от fields и "bind")
+  пусть patterned равно (["empty", "cons", "any"] содержит kind) или bound
+  разбор «First holding» от [(«Rule of» от typed и "form"), («Rule of» от patterned и "pattern")] и "expression"
+    случай "form"
+      то вариант «Form» с shape равным («Simple shape» от kind и fields)
+    случай "pattern"
+      то вариант «Pat» с pattern равным («Simple pattern» от kind и fields)
+    случай любое
+      то вариант «Ex» с expression равным («Plain expression» от kind и fields)
+
+тотальная функция «Object node»
+  принимает fields: список «Node»
+  возвращает «Node»
+  пример «A variable object becomes a name»
+    дано fields равно [
+      вариант «Key» с key равным "kind" и val равным (вариант «Str» с text равным "var"),
+      вариант «Key» с key равным "name" и val равным (вариант «Str» с text равным "н")]
+    ожидается вариант «Ex» с expression равным (вариант «Name» с name равным "н")
+  пример «An object without a kind»
+    дано fields равно []
+    ожидается вариант «Obj» с fields равным []
+  если «Has» от fields и "kind"
+    то «Typed node» от («Word» от fields и "kind") и fields
+    иначе «Kindless» от fields
+
+тотальная функция «Pop step»
+  принимает popped: «Popped», node: «Node»
+  возвращает «Popped»
+  пример «A wanted node is taken in front»
+    дано popped равно запись «Popped» с got равным [вариант «Nil»] и rest равным [] и need равным 1
+    дано node равно вариант «Num» с amount равным 1
+    ожидается запись «Popped» с got равным [
+      вариант «Num» с amount равным 1, вариант «Nil»] и rest равным [] и need равным 0
+  пример «The rest stays in its order»
+    дано popped равно запись «Popped» с got равным [] и rest равным [вариант «Nil»] и need равным 0
+    дано node равно вариант «Num» с amount равным 1
+    ожидается запись «Popped» с got равным [] и rest равным [
+      вариант «Nil», вариант «Num» с amount равным 1] и need равным 0
+  пусть kept равно (добавить node к popped.rest)
+  пусть taken равно (приписать node к popped.got)
+  если popped.need больше 0
+    то запись «Popped» с got равным taken и rest равным popped.rest и need равным (popped.need минус 1)
+    иначе запись «Popped» с got равным popped.got и rest равным kept и need равным 0
+
+тотальная функция «Pop»
+  принимает stack: список «Node», wanted: число
+  возвращает «Popped»
+  пример «Two nodes come off the top in their first order»
+    дано stack равно [вариант «Num» с amount равным 2, вариант «Num» с amount равным 1, вариант «Nil»]
+    дано wanted равно 2
+    ожидается запись «Popped» с got равным [
+      вариант «Num» с amount равным 1, вариант «Num» с amount равным 2] и rest равным [вариант «Nil»] и need равным 0
+  пусть start равно (запись «Popped» с got равным пустой список и rest равным пустой список и need равным wanted)
+  свёртка stack начиная с start как popped и node → «Pop step» от popped и node
+
+тотальная функция «Rest of token»
+  принимает token: строка
+  возвращает строка
+  пример «The mark is dropped»
+    дано token равно "@name"
+    ожидается "name"
+  соединить (разделить (подстрока token с 2 по (длина token)) по (символ по коду 160)) по " "
+
+тотальная функция «Count after»
+  принимает token: строка
+  возвращает число
+  пример «The count after the mark»
+    дано token равно "]12"
+    ожидается 12
+  к числу («Rest of token» от token)
+
+тотальная функция «Keyed»
+  принимает stack: список «Node», key: строка
+  возвращает список «Node»
+  пример «The top value gets its key»
+    дано stack равно [вариант «Nil», вариант «Nil»]
+    дано key равно "name"
+    ожидается [вариант «Key» с key равным "name" и val равным (вариант «Nil»), вариант «Nil»]
+  пример «A key on an empty stack is lost»
+    дано stack равно []
+    дано key равно "name"
+    ожидается []
+  разбор stack
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то приписать (вариант «Key» с key равным key и val равным голова) к хвост
+
+тотальная функция «Closed»
+  принимает stack: список «Node», token: строка
+  возвращает список «Node»
+  пример «An array closes over its items»
+    дано stack равно [вариант «Nil»]
+    дано token равно "]1"
+    ожидается [вариант «Arr» с items равным [вариант «Nil»]]
+  пример «An object closes over its keys»
+    дано stack равно [вариант «Key» с key равным "line" и val равным (вариант «Nil»)]
+    дано token равно "}1"
+    ожидается [вариант «Obj» с fields равным [вариант «Key» с key равным "line" и val равным (вариант «Nil»)]]
+  пусть popped равно («Pop» от stack и («Count after» от token))
+  если token начинается с "]"
+    то приписать (вариант «Arr» с items равным popped.got) к popped.rest
+    иначе приписать («Object node» от popped.got) к popped.rest
+
+тотальная функция «Read token»
+  принимает stack: список «Node», token: строка
+  возвращает список «Node»
+  пример «A text token»
+    дано stack равно []
+    дано token равно "\"Ф"
+    ожидается [вариант «Str» с text равным "Ф"]
+  пример «A number token»
+    дано stack равно []
+    дано token равно "#3"
+    ожидается [вариант «Num» с amount равным 3]
+  пример «A key token»
+    дано stack равно [вариант «Nil»]
+    дано token равно "@x"
+    ожидается [вариант «Key» с key равным "x" и val равным (вариант «Nil»)]
+  пример «A truth token»
+    дано stack равно []
+    дано token равно "t"
+    ожидается [вариант «Bool» с truth равным да]
+  разбор (подстрока token с 1 по 1)
+    случай "\""
+      то приписать (вариант «Str» с text равным («Rest of token» от token)) к stack
+    случай "#"
+      то приписать (вариант «Num» с amount равным («Count after» от token)) к stack
+    случай "@"
+      то «Keyed» от stack и («Rest of token» от token)
+    случай "]"
+      то «Closed» от stack и token
+    случай "}"
+      то «Closed» от stack и token
+    случай "t"
+      то приписать (вариант «Bool» с truth равным да) к stack
+    случай "f"
+      то приписать (вариант «Bool» с truth равным нет) к stack
+    случай любое
+      то приписать (вариант «Nil») к stack
+
+тотальная функция «Read node»
+  принимает line: строка
+  возвращает «Node»
+  пример «A variable read from tokens»
+    дано line равно "\"var @kind \"н @name }2"
+    ожидается вариант «Ex» с expression равным (вариант «Name» с name равным "н")
+  пример «An empty line gives nothing»
+    дано line равно ""
+    ожидается вариант «Nil»
+  пусть tokens равно (отфильтровать (разделить line по " ") где token → не (пусто token))
+  разбор (свёртка tokens начиная с пустой список как stack и token → «Read token» от stack и token)
+    случай пусто
+      то вариант «Nil»
+    случай голова и хвост
+      то голова
+
+тотальная функция «Function from»
+  принимает line: строка
+  возвращает список «Node»
+  пример «A function object from its line»
+    дано line равно "\"Ф @name ]0 @params }2"
+    ожидается [вариант «Obj» с fields равным [
+      вариант «Key» с key равным "name" и val равным (вариант «Str» с text равным "Ф"),
+      вариант «Key» с key равным "params" и val равным (вариант «Arr» с items равным [])]]
+  пример «A broken line gives no function»
+    дано line равно "#1"
+    ожидается []
+  пусть node равно («Read node» от line)
+  если «Has» от («Fields of» от node) и "params"
+    то [node]
+    иначе пустой список
+
+тотальная функция «Join nodes»
+  принимает left: список «Node», right: список «Node»
+  возвращает список «Node»
+  пример «One node joins none»
+    дано left равно []
+    дано right равно [вариант «Nil»]
+    ожидается [вариант «Nil»]
+  свёртка right начиная с left как joined и node → добавить node к joined
+
+тотальная функция «Functions from»
+  принимает text: строка
+  возвращает список «Node»
+  пример «Broken lines give nothing»
+    дано text равно "#1\n#2\n"
+    ожидается []
+  пусть lines равно (разделить text по "\n")
+  свёртка lines начиная с пустой список как found и line → «Join nodes» от found и («Function from» от line)
+
+тотальная функция «Function name»
+  принимает routine: «Node»
+  возвращает строка
+  пример «The name of a function object»
+    дано routine равно вариант «Obj» с fields равным [
+      вариант «Key» с key равным "name" и val равным (вариант «Str» с text равным "Ф")]
+    ожидается "Ф"
+  «Word» от («Fields of» от routine) и "name"
+
+тотальная функция «Function parameters»
+  принимает routine: «Node»
+  возвращает список «Parameter»
+  пример «No parameters»
+    дано routine равно вариант «Obj» с fields равным []
+    ожидается []
+  «Parameters in» от («Fields of» от routine)
+
+тотальная функция «Function yields»
+  принимает routine: «Node»
+  возвращает «Shape»
+  пример «An unknown result shape»
+    дано routine равно вариант «Obj» с fields равным []
+    ожидается вариант «Other shape» с label равным "?"
+  «Shape of» от («Get» от («Fields of» от routine) и "returns")
+
+тотальная функция «Function body»
+  принимает routine: «Node»
+  возвращает «Expr»
+  пример «A missing body»
+    дано routine равно вариант «Obj» с fields равным []
+    ожидается вариант «Gap»
+  «Part» от («Fields of» от routine) и "body"
+
+тотальная функция «Function checks»
+  принимает routine: «Node»
+  возвращает список «Expr»
+  пример «No postconditions»
+    дано routine равно вариант «Obj» с fields равным []
+    ожидается []
+  «Parts» от («Fields of» от routine) и "postconditions"
+
+тотальная функция «Function measures»
+  принимает routine: «Node»
+  возвращает список «Expr»
+  пример «No declared measure»
+    дано routine равно вариант «Obj» с fields равным []
+    ожидается []
+  «Measure list» от («Get» от («Fields of» от routine) и "decreases")
+
+тотальная функция «Check name»
+  принимает node: «Node»
+  возвращает список строки
+  пример «The name of a postcondition»
+    дано node равно вариант «Check» с name равным "п" и expression равным (вариант «Gap»)
+    ожидается ["п"]
+  разбор node
+    случай вариант «Check» с name как name и expression как expression
+      то [name]
+    случай любое
+      то [""]
+
+тотальная функция «Function check names»
+  принимает routine: «Node»
+  возвращает список строки
+  пример «No postconditions»
+    дано routine равно вариант «Obj» с fields равным []
+    ожидается []
+  пусть nodes равно («Nodes of» от («Get» от («Fields of» от routine) и "postconditions"))
+  свёртка nodes начиная с пустой список как found и node → добавить (элемент 1 в («Check name» от node)) к found
+
+тотальная функция «Folded»
+  принимает step: «Lambda», over: «Expr», start: «Expr»
+  возвращает «Expr»
+  пример «A fold of nothing known»
+    дано step равно запись «Lambda» с names равным [] и body равным (вариант «Gap»)
+    дано over равно вариант «Gap»
+    дано start равно вариант «Gap»
+    ожидается вариант «Fold» с step равным (запись «Lambda» с names равным [
+      ] и body равным (вариант «Gap»)) и over равным (вариант «Gap») и start равным (вариант «Gap»)
+  вариант «Fold» с step равным step и over равным over и start равным start
+
+тотальная функция «Matched»
+  принимает target: «Expr», arms: список «Arm»
+  возвращает «Expr»
+  пример «A match without arms»
+    дано target равно вариант «Gap»
+    дано arms равно []
+    ожидается вариант «Match» с target равным (вариант «Gap») и arms равным []
+  вариант «Match» с target равным target и arms равным arms

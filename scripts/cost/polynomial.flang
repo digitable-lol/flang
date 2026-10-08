@@ -1,0 +1,430 @@
+модуль «Cost polynomial»
+  использует «Cost rules» из "rules.flang"
+  использует «Lists» только «Соединить списки»
+
+объект «Term»
+  coef: число
+  vars: список строки
+
+объект «Binding»
+  name: строка
+  amount: число
+
+тотальная функция «Constant»
+  принимает amount: число
+  возвращает список «Term»
+  пример «Zero is the empty polynomial»
+    дано amount равно 0
+    ожидается []
+  пример «A number is one term without variables»
+    дано amount равно 7
+    ожидается [запись «Term» с coef равным 7 и vars равным []]
+  если amount равен 0
+    то пустой список
+    иначе [запись «Term» с coef равным amount и vars равным пустой список]
+
+тотальная функция «Variable»
+  принимает name: строка
+  возвращает список «Term»
+  пример «A size is one term of degree one»
+    дано name равно "n"
+    ожидается [запись «Term» с coef равным 1 и vars равным ["n"]]
+  [запись «Term» с coef равным 1 и vars равным [name]]
+
+тотальная функция «Occurrences»
+  принимает vars: список строки, name: строка
+  возвращает число
+  пример «A square counts twice»
+    дано vars равно ["n", "m", "n"]
+    дано name равно "n"
+    ожидается 2
+  длина (отфильтровать vars где one → one равен name)
+
+тотальная функция «Same count»
+  принимает left: список строки, right: список строки, name: строка
+  возвращает признак
+  пример «Both have the variable twice»
+    дано left равно ["a", "a"]
+    дано right равно ["a", "b", "a"]
+    дано name равно "a"
+    ожидается да
+  («Occurrences» от left и name) равен («Occurrences» от right и name)
+
+тотальная функция «Same vars»
+  принимает left: список строки, right: список строки
+  возвращает признак
+  пример «Order does not matter»
+    дано left равно ["a", "b", "a"]
+    дано right равно ["a", "a", "b"]
+    ожидается да
+  пример «Degrees must agree»
+    дано left равно ["a", "b"]
+    дано right равно ["a", "a"]
+    ожидается нет
+  пусть sized равно ((длина left) равен (длина right))
+  sized и притом (свёртка left начиная с да как all и one → all и притом («Same count» от left и right и one))
+
+тотальная функция «Has like»
+  принимает poly: список «Term», term: «Term»
+  возвращает признак
+  пример «A like term is found»
+    дано poly равно [запись «Term» с coef равным 2 и vars равным ["n"]]
+    дано term равно запись «Term» с coef равным 5 и vars равным ["n"]
+    ожидается да
+  пример «Another degree is not like»
+    дано poly равно [запись «Term» с coef равным 2 и vars равным ["n"]]
+    дано term равно запись «Term» с coef равным 5 и vars равным ["n", "n"]
+    ожидается нет
+  свёртка poly начиная с нет как found и old → found или («Same vars» от old.vars и term.vars)
+
+тотальная функция «Add like»
+  принимает old: «Term», term: «Term»
+  возвращает «Term»
+  пример «A like term adds its coefficient»
+    дано old равно запись «Term» с coef равным 2 и vars равным ["n"]
+    дано term равно запись «Term» с coef равным 3 и vars равным ["n"]
+    ожидается запись «Term» с coef равным 5 и vars равным ["n"]
+  пример «An unlike term changes nothing»
+    дано old равно запись «Term» с coef равным 2 и vars равным ["n"]
+    дано term равно запись «Term» с coef равным 3 и vars равным []
+    ожидается запись «Term» с coef равным 2 и vars равным ["n"]
+  если «Same vars» от old.vars и term.vars
+    то запись «Term» с coef равным (old.coef плюс term.coef) и vars равным old.vars
+    иначе old
+
+тотальная функция «Add term»
+  принимает poly: список «Term», term: «Term»
+  возвращает список «Term»
+  пример «A like term adds its coefficient»
+    дано poly равно [запись «Term» с coef равным 2 и vars равным []]
+    дано term равно запись «Term» с coef равным 3 и vars равным []
+    ожидается [запись «Term» с coef равным 5 и vars равным []]
+  пример «A new term is appended»
+    дано poly равно [запись «Term» с coef равным 2 и vars равным []]
+    дано term равно запись «Term» с coef равным 1 и vars равным ["n"]
+    ожидается [запись «Term» с coef равным 2 и vars равным [], запись «Term» с coef равным 1 и vars равным ["n"]]
+  пример «A zero term changes nothing»
+    дано poly равно []
+    дано term равно запись «Term» с coef равным 0 и vars равным []
+    ожидается []
+  пусть like равно («Has like» от poly и term)
+  разбор «First holding» от [(«Rule of» от (term.coef равен 0) и "zero"), («Rule of» от like и "like")] и "new"
+    случай "zero"
+      то poly
+    случай "like"
+      то отобразить poly как old → «Add like» от old и term
+    случай любое
+      то добавить term к poly
+
+тотальная функция «Add»
+  принимает left: список «Term», right: список «Term»
+  возвращает список «Term»
+  пример «Sums of like terms»
+    дано left равно [запись «Term» с coef равным 1 и vars равным ["n"]]
+    дано right равно [запись «Term» с coef равным 1 и vars равным ["n"], запись «Term» с coef равным 4 и vars равным []]
+    ожидается [запись «Term» с coef равным 2 и vars равным ["n"], запись «Term» с coef равным 4 и vars равным []]
+  свёртка right начиная с left как sum и term → «Add term» от sum и term
+
+тотальная функция «Scale»
+  принимает poly: список «Term», factor: число
+  возвращает список «Term»
+  пример «Every coefficient is multiplied»
+    дано poly равно [запись «Term» с coef равным 1 и vars равным ["n"], запись «Term» с coef равным 2 и vars равным []]
+    дано factor равно 3
+    ожидается [запись «Term» с coef равным 3 и vars равным ["n"], запись «Term» с coef равным 6 и vars равным []]
+  пример «Scaling by zero leaves nothing»
+    дано poly равно [запись «Term» с coef равным 1 и vars равным ["n"]]
+    дано factor равно 0
+    ожидается []
+  если factor равен 0
+    то пустой список
+    иначе отобразить poly как term → запись «Term» с coef равным (term.coef умножить на factor) и vars равным term.vars
+
+тотальная функция «Multiply terms»
+  принимает left: «Term», right: «Term»
+  возвращает «Term»
+  пример «Coefficients multiply and variables join»
+    дано left равно запись «Term» с coef равным 2 и vars равным ["n"]
+    дано right равно запись «Term» с coef равным 3 и vars равным ["n"]
+    ожидается запись «Term» с coef равным 6 и vars равным ["n", "n"]
+  пусть joined равно («Соединить списки» от left.vars и right.vars)
+  запись «Term» с coef равным (left.coef умножить на right.coef) и vars равным joined
+
+тотальная функция «Add products»
+  принимает poly: список «Term», outer: «Term», right: список «Term»
+  возвращает список «Term»
+  пример «One term times a binomial»
+    дано poly равно []
+    дано outer равно запись «Term» с coef равным 2 и vars равным ["n"]
+    дано right равно [запись «Term» с coef равным 1 и vars равным ["n"], запись «Term» с coef равным 1 и vars равным []]
+    ожидается [запись «Term» с coef равным 2 и vars равным ["n", "n"],
+      запись «Term» с coef равным 2 и vars равным ["n"]]
+  свёртка right начиная с poly как inner и term → «Add term» от inner и («Multiply terms» от outer и term)
+
+тотальная функция «Multiply»
+  принимает left: список «Term», right: список «Term»
+  возвращает список «Term»
+  пример «A binomial squared»
+    дано left равно [запись «Term» с coef равным 1 и vars равным ["n"], запись «Term» с coef равным 1 и vars равным []]
+    дано right равно [запись «Term» с coef равным 1 и vars равным ["n"], запись «Term» с coef равным 1 и vars равным []]
+    ожидается [запись «Term» с coef равным 1 и vars равным ["n", "n"],
+      запись «Term» с coef равным 2 и vars равным ["n"],
+      запись «Term» с coef равным 1 и vars равным []]
+  свёртка left начиная с пустой список как product и outer → «Add products» от product и outer и right
+
+тотальная функция «Larger like»
+  принимает old: «Term», term: «Term»
+  возвращает «Term»
+  пример «The larger coefficient wins»
+    дано old равно запись «Term» с coef равным 2 и vars равным []
+    дано term равно запись «Term» с coef равным 5 и vars равным []
+    ожидается запись «Term» с coef равным 5 и vars равным []
+  пример «A smaller coefficient changes nothing»
+    дано old равно запись «Term» с coef равным 5 и vars равным []
+    дано term равно запись «Term» с coef равным 2 и vars равным []
+    ожидается запись «Term» с coef равным 5 и vars равным []
+  если («Same vars» от old.vars и term.vars) и притом (term.coef больше old.coef)
+    то term
+    иначе old
+
+тотальная функция «Maximum»
+  принимает left: список «Term», right: список «Term»
+  возвращает список «Term»
+  пример «Coefficientwise maximum bounds both»
+    дано left равно [запись «Term» с coef равным 3 и vars равным ["n"], запись «Term» с coef равным 1 и vars равным []]
+    дано right равно [запись «Term» с coef равным 1 и vars равным ["n"], запись «Term» с coef равным 9 и vars равным []]
+    ожидается [запись «Term» с coef равным 3 и vars равным ["n"], запись «Term» с coef равным 9 и vars равным []]
+  свёртка right начиная с left как most и term → если «Has like» от most и term
+    то отобразить most как old → «Larger like» от old и term
+    иначе «Add term» от most и term
+
+тотальная функция «Substitute term»
+  принимает term: «Term», name: строка, value: список «Term»
+  возвращает список «Term»
+  пример «A size is replaced by a polynomial»
+    дано term равно запись «Term» с coef равным 2 и vars равным ["n", "n"]
+    дано name равно "n"
+    дано value равно [запись «Term» с coef равным 3 и vars равным []]
+    ожидается [запись «Term» с coef равным 18 и vars равным []]
+  пусть others равно (отфильтровать term.vars где one → не (one равен name))
+  пусть kept равно [запись «Term» с coef равным term.coef и vars равным others]
+  пусть hits равно (отфильтровать term.vars где one → one равен name)
+  свёртка hits начиная с kept как product и one → «Multiply» от product и value
+
+тотальная функция «Substitute»
+  принимает poly: список «Term», name: строка, value: список «Term»
+  возвращает список «Term»
+  пример «A whole polynomial is rewritten»
+    дано poly равно [запись «Term» с coef равным 1 и vars равным ["n"], запись «Term» с coef равным 1 и vars равным []]
+    дано name равно "n"
+    дано value равно [запись «Term» с coef равным 4 и vars равным []]
+    ожидается [запись «Term» с coef равным 5 и vars равным []]
+  свёртка poly начиная с пустой список как sum и term → «Add» от sum и («Substitute term» от term и name и value)
+
+тотальная функция «Amount of»
+  принимает name: строка, sizes: список «Binding»
+  возвращает число
+  пример «A named size is read»
+    дано name равно "n"
+    дано sizes равно [запись «Binding» с name равным "n" и amount равным 10]
+    ожидается 10
+  пример «An unnamed size counts as zero»
+    дано name равно "m"
+    дано sizes равно []
+    ожидается 0
+  свёртка sizes начиная с 0 как found и binding → если binding.name равен name то binding.amount иначе found
+
+тотальная функция «Term value»
+  принимает term: «Term», sizes: список «Binding»
+  возвращает число
+  пример «Two n squared at three»
+    дано term равно запись «Term» с coef равным 2 и vars равным ["n", "n"]
+    дано sizes равно [запись «Binding» с name равным "n" и amount равным 3]
+    ожидается 18
+  свёртка term.vars начиная с term.coef как product и one → product умножить на («Amount of» от one и sizes)
+
+тотальная функция «Value at»
+  принимает poly: список «Term», sizes: список «Binding»
+  возвращает число
+  пример «Nineteen n plus nine at ten»
+    дано poly равно [запись «Term» с coef равным 19 и vars равным ["n"], запись «Term» с coef равным 9 и vars равным []]
+    дано sizes равно [запись «Binding» с name равным "n" и amount равным 10]
+    ожидается 199
+  свёртка poly начиная с 0 как sum и term → sum плюс («Term value» от term и sizes)
+
+тотальная функция «Covers like»
+  принимает old: «Term», term: «Term»
+  возвращает признак
+  пример «A like term with a larger coefficient»
+    дано old равно запись «Term» с coef равным 5 и vars равным ["n"]
+    дано term равно запись «Term» с coef равным 3 и vars равным ["n"]
+    ожидается да
+  («Same vars» от old.vars и term.vars) и притом (old.coef не меньше term.coef)
+
+тотальная функция «Covers term»
+  принимает promise: список «Term», term: «Term»
+  возвращает признак
+  пример «A larger coefficient covers»
+    дано promise равно [запись «Term» с coef равным 5 и vars равным []]
+    дано term равно запись «Term» с coef равным 3 и vars равным []
+    ожидается да
+  пример «A missing term does not cover»
+    дано promise равно [запись «Term» с coef равным 5 и vars равным []]
+    дано term равно запись «Term» с coef равным 1 и vars равным ["n"]
+    ожидается нет
+  (term.coef не больше 0) или (свёртка promise начиная с нет как found и old → found или («Covers like» от old и term))
+
+тотальная функция «Dominates»
+  принимает promise: список «Term», bound: список «Term»
+  возвращает признак
+  пример «Twenty n plus ten dominates nineteen n plus nine»
+    дано promise равно [запись «Term» с coef равным 20 и vars равным ["n"],
+      запись «Term» с coef равным 10 и vars равным []]
+    дано bound равно [запись «Term» с coef равным 19 и vars равным ["n"],
+      запись «Term» с coef равным 9 и vars равным []]
+    ожидается да
+  пример «Eighteen n does not dominate nineteen n»
+    дано promise равно [запись «Term» с coef равным 18 и vars равным ["n"],
+      запись «Term» с coef равным 99 и vars равным []]
+    дано bound равно [запись «Term» с coef равным 19 и vars равным ["n"],
+      запись «Term» с coef равным 9 и vars равным []]
+    ожидается нет
+  свёртка bound начиная с да как all и term → all и притом («Covers term» от promise и term)
+
+тотальная функция «Mentions»
+  принимает poly: список «Term», name: строка
+  возвращает признак
+  пример «A variable is mentioned»
+    дано poly равно [запись «Term» с coef равным 1 и vars равным ["n"]]
+    дано name равно "n"
+    ожидается да
+  пример «A constant mentions nothing»
+    дано poly равно [запись «Term» с coef равным 1 и vars равным []]
+    дано name равно "n"
+    ожидается нет
+  свёртка poly начиная с нет как found и term → found или ((«Occurrences» от term.vars и name) больше 0)
+
+тотальная функция «Without»
+  принимает poly: список «Term», name: строка
+  возвращает список «Term»
+  пример «Terms with the variable are dropped»
+    дано poly равно [запись «Term» с coef равным 1 и vars равным ["r"], запись «Term» с coef равным 3 и vars равным []]
+    дано name равно "r"
+    ожидается [запись «Term» с coef равным 3 и vars равным []]
+  отфильтровать poly где term → («Occurrences» от term.vars и name) равен 0
+
+тотальная функция «Plain step»
+  принимает term: «Term», name: строка
+  возвращает признак
+  пример «The bare variable is a plain step»
+    дано term равно запись «Term» с coef равным 1 и vars равным ["r"]
+    дано name равно "r"
+    ожидается да
+  пример «Twice the variable is not»
+    дано term равно запись «Term» с coef равным 2 и vars равным ["r"]
+    дано name равно "r"
+    ожидается нет
+  пусть seen равно («Occurrences» от term.vars и name)
+  (seen равен 0) или ((seen равен 1) и притом ((длина term.vars) равен 1) и притом (term.coef не больше 1))
+
+тотальная функция «Linear in»
+  принимает poly: список «Term», name: строка
+  возвращает признак
+  пример «r plus three grows by three»
+    дано poly равно [запись «Term» с coef равным 1 и vars равным ["r"], запись «Term» с coef равным 3 и vars равным []]
+    дано name равно "r"
+    ожидается да
+  пример «r times n is not a plain step»
+    дано poly равно [запись «Term» с coef равным 1 и vars равным ["r", "n"]]
+    дано name равно "r"
+    ожидается нет
+  свёртка poly начиная с да как all и term → all и притом («Plain step» от term и name)
+
+тотальная функция «Distinct»
+  принимает names: список строки
+  возвращает список строки
+  пример «Each name once, in the order of first sight»
+    дано names равно ["n", "m", "n"]
+    ожидается ["n", "m"]
+  свёртка names начиная с пустой список как seen и one → если seen содержит one то seen иначе добавить one к seen
+
+тотальная функция «Factor text»
+  принимает name: строка, vars: список строки
+  возвращает строка
+  пример «Degree one is the bare name»
+    дано name равно "n"
+    дано vars равно ["n"]
+    ожидается "n"
+  пример «A higher degree is written after a caret»
+    дано name равно "n"
+    дано vars равно ["n", "n"]
+    ожидается "n^2"
+  пусть seen равно («Occurrences» от vars и name)
+  если seen равен 1
+    то name
+    иначе соединить [name, "^", (к строке seen)] по ""
+
+тотальная функция «Term text»
+  принимает term: «Term»
+  возвращает строка
+  пример «A constant is its number»
+    дано term равно запись «Term» с coef равным 9 и vars равным []
+    ожидается "9"
+  пример «A unit coefficient is not written»
+    дано term равно запись «Term» с coef равным 1 и vars равным ["n"]
+    ожидается "n"
+  пример «A coefficient stands before the factors»
+    дано term равно запись «Term» с coef равным 19 и vars равным ["n", "m", "m"]
+    ожидается "19·n·m^2"
+  пусть factors равно (отобразить («Distinct» от term.vars) как one → «Factor text» от one и term.vars)
+  пусть unit равно (term.coef равен 1)
+  разбор «First holding» от [(«Rule of» от (пусто factors) и "constant"), («Rule of» от unit и "unit")] и "scaled"
+    случай "constant"
+      то к строке term.coef
+    случай "unit"
+      то соединить factors по "·"
+    случай любое
+      то соединить (приписать (к строке term.coef) к factors) по "·"
+
+тотальная функция «Highest degree»
+  принимает poly: список «Term»
+  возвращает число
+  пример «The largest degree of all terms»
+    дано poly равно [запись «Term» с coef равным 1 и vars равным ["n", "n"],
+      запись «Term» с coef равным 1 и vars равным []]
+    ожидается 2
+  свёртка poly начиная с 0 как most и term → если (длина term.vars) больше most то длина term.vars иначе most
+
+тотальная функция «Ordered»
+  принимает poly: список «Term», degree: число
+  возвращает список «Term»
+  убывает degree
+  пример «Higher degrees go first»
+    дано poly равно [запись «Term» с coef равным 1 и vars равным [], запись «Term» с coef равным 1 и vars равным ["n"]]
+    дано degree равно 1
+    ожидается [запись «Term» с coef равным 1 и vars равным ["n"], запись «Term» с coef равным 1 и vars равным []]
+  пусть here равно (отфильтровать poly где term → (длина term.vars) равен degree)
+  если degree не больше 0
+    то here
+    иначе «Соединить списки» от here и («Ordered» от poly и (degree минус 1))
+
+тотальная функция «Term texts»
+  принимает poly: список «Term»
+  возвращает список строки
+  пример «Higher degrees are written first»
+    дано poly равно [запись «Term» с coef равным 9 и vars равным [], запись «Term» с coef равным 19 и vars равным ["n"]]
+    ожидается ["19·n", "9"]
+  отобразить («Ordered» от poly и («Highest degree» от poly)) как term → «Term text» от term
+
+тотальная функция «Text»
+  принимает poly: список «Term»
+  возвращает строка
+  пример «A linear bound»
+    дано poly равно [запись «Term» с coef равным 9 и vars равным [], запись «Term» с coef равным 19 и vars равным ["n"]]
+    ожидается "19·n + 9"
+  пример «Zero is written as a zero»
+    дано poly равно []
+    ожидается "0"
+  если пусто poly
+    то "0"
+    иначе соединить («Term texts» от poly) по " + "

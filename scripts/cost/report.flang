@@ -1,0 +1,522 @@
+модуль «Cost report»
+  использует «Cost polynomial» из "polynomial.flang"
+  использует «Cost tree» из "tree.flang"
+  использует «Cost bound» из "bound.flang"
+  использует «Cost rules» из "rules.flang"
+  использует «Lists» только «Соединить списки»
+
+объект «Setting»
+  key: строка
+  value: строка
+
+тотальная функция «Trimmed»
+  принимает text: строка
+  возвращает строка
+  пример «Spaces around go»
+    дано text равно "  a b "
+    ожидается "a b"
+  соединить (отфильтровать (разделить text по " ") где word → не (пусто word)) по " "
+
+тотальная функция «Setting of line»
+  принимает line: строка
+  возвращает список «Setting»
+  пример «A key and a value»
+    дано line равно "c.step.low = 2e-9"
+    ожидается [запись «Setting» с key равным "c.step.low" и value равным "2e-9"]
+  пример «A line without an equals sign»
+    дано line равно "машина"
+    ожидается []
+  разбор (разделить line по "=")
+    случай пусто
+      то пустой список
+    случай голова key и хвост rest
+      то если пусто rest то пустой список иначе [
+        запись «Setting» с key равным («Trimmed» от key) и value равным («Trimmed» от (соединить rest по "="))]
+
+тотальная функция «Settings»
+  принимает text: строка, glue: строка
+  возвращает список «Setting»
+  пример «Two settings in one line»
+    дано text равно "n=10,m=2"
+    дано glue равно ","
+    ожидается [запись «Setting» с key равным "n" и value равным "10",
+      запись «Setting» с key равным "m" и value равным "2"]
+  пусть lines равно (разделить text по glue)
+  свёртка lines начиная с пустой список как found и line → «Joined settings» от found и («Setting of line» от line)
+
+тотальная функция «Number in»
+  принимает settings: список «Setting», key: строка
+  возвращает число
+  пример «A known key»
+    дано settings равно [запись «Setting» с key равным "a" и value равным "2.5"]
+    дано key равно "a"
+    ожидается 2.5
+  пример «A missing key counts as zero»
+    дано settings равно []
+    дано key равно "a"
+    ожидается 0
+  свёртка settings начиная с 0 как found и setting → «Number if key» от found и setting и key
+
+тотальная функция «Number of»
+  принимает text: строка
+  возвращает число
+  пример «A number in scientific notation»
+    дано text равно "2e-3"
+    ожидается 0.002
+  пример «Not a number»
+    дано text равно "x"
+    ожидается 0
+  разбор (к числу или беда text)
+    случай вариант «Разобрано» с значение как value
+      то value
+    случай любое
+      то 0
+
+тотальная функция «Word in»
+  принимает settings: список «Setting», key: строка
+  возвращает строка
+  пример «A known key»
+    дано settings равно [запись «Setting» с key равным "machine" и value равным "dev"]
+    дано key равно "machine"
+    ожидается "dev"
+  свёртка settings начиная с "" как found и setting → если setting.key равен key то setting.value иначе found
+
+тотальная функция «Bindings»
+  принимает settings: список «Setting»
+  возвращает список «Binding»
+  пример «A bare name sets both its value and its size»
+    дано settings равно [запись «Setting» с key равным "n" и value равным "10"]
+    ожидается [запись «Binding» с name равным "n" и amount равным 10,
+      запись «Binding» с name равным "|n|" и amount равным 10]
+  свёртка settings начиная с пустой список как a и setting → «Joined bindings» от a и («Setting bindings» от setting)
+
+тотальная функция «Setting bindings»
+  принимает setting: «Setting»
+  возвращает список «Binding»
+  пример «A size between bars is taken as it is»
+    дано setting равно запись «Setting» с key равным "|xs|" и value равным "3"
+    ожидается [запись «Binding» с name равным "|xs|" и amount равным 3]
+  пусть amount равно («Number of» от setting.value)
+  если setting.key начинается с "|"
+    то [запись «Binding» с name равным setting.key и amount равным amount]
+    иначе [(запись «Binding» с name равным setting.key и amount равным amount),
+      (запись «Binding» с name равным («Bars» от setting.key) и amount равным amount)]
+
+тотальная функция «Factor of»
+  принимает text: строка
+  возвращает «Term»
+  пример «A number»
+    дано text равно "19"
+    ожидается запись «Term» с coef равным 19 и vars равным []
+  пример «A power of a size»
+    дано text равно "n^2"
+    ожидается запись «Term» с coef равным 1 и vars равным ["n", "n"]
+  пусть parts равно (разделить («Trimmed» от text) по "^")
+  пусть base равно («Text at» от parts и 1)
+  пусть power равно (если (длина parts) больше 1 то «Number of» от («Text at» от parts и 2) иначе 1)
+  разбор (к числу или беда base)
+    случай вариант «Разобрано» с значение как value
+      то запись «Term» с coef равным value и vars равным пустой список
+    случай любое
+      то запись «Term» с coef равным 1 и vars равным («Repeated» от base и power)
+
+тотальная функция «Text at»
+  принимает texts: список строки, place: число
+  возвращает строка
+  пример «The first text»
+    дано texts равно ["a", "b"]
+    дано place равно 1
+    ожидается "a"
+  если (длина texts) не меньше place то элемент place в texts иначе ""
+
+тотальная функция «Repeated»
+  принимает name: строка, count: число
+  возвращает список строки
+  убывает count
+  пример «A name three times»
+    дано name равно "n"
+    дано count равно 3
+    ожидается ["n", "n", "n"]
+  если count не больше 0
+    то пустой список
+    иначе приписать name к («Repeated» от name и (count минус 1))
+
+тотальная функция «Term of»
+  принимает text: строка
+  возвращает «Term»
+  пример «A coefficient and two factors»
+    дано text равно "2·n·m"
+    ожидается запись «Term» с coef равным 2 и vars равным ["n", "m"]
+  пусть written равно (разделить (соединить (разделить text по "*") по "·") по "·")
+  пусть factors равно (отобразить written как one → «Factor of» от one)
+  пусть unit равно (запись «Term» с coef равным 1 и vars равным пустой список)
+  свёртка factors начиная с unit как done и one → «Multiply terms» от done и one
+
+тотальная функция «Poly of»
+  принимает text: строка
+  возвращает список «Term»
+  пример «A linear promise»
+    дано text равно "20·n + 10"
+    ожидается [запись «Term» с coef равным 20 и vars равным ["n"], запись «Term» с coef равным 10 и vars равным []]
+  свёртка (разделить text по "+") начиная с пустой список как sum и part → «Add term» от sum и («Term of» от part)
+
+тотальная функция «Kib»
+  принимает bytes: число
+  возвращает строка
+  пример «Mebibytes with one decimal»
+    дано bytes равно 1572864
+    ожидается "1.5 МиБ"
+  пример «Small amounts in kibibytes»
+    дано bytes равно 2048
+    ожидается "2 КиБ"
+  если bytes не меньше 1048576
+    то соединить [(к строке («Rounded» от (bytes делить на 104857.6) делить на 10)), " МиБ"] по ""
+    иначе соединить [(к строке («Rounded» от (bytes делить на 1024))), " КиБ"] по ""
+
+тотальная функция «Rounded»
+  принимает amount: число
+  возвращает число
+  пример «Half goes up»
+    дано amount равно 2.5
+    ожидается 3
+  (amount плюс 0.5) минус ((amount плюс 0.5) остаток от 1)
+
+тотальная функция «Seconds»
+  принимает amount: число
+  возвращает строка
+  пример «Milliseconds with two decimals»
+    дано amount равно 0.0123456
+    ожидается "12.35 мс"
+  пример «Whole seconds»
+    дано amount равно 2.5
+    ожидается "2.50 с"
+  пусть scaled равно (если amount не меньше 1 то amount иначе amount умножить на 1000)
+  пусть unit равно (если amount не меньше 1 то " с" иначе " мс")
+  пусть hundredths равно («Rounded» от (scaled умножить на 100))
+  пусть whole равно ((hundredths минус (hundredths остаток от 100)) делить на 100)
+  пусть rest равно (hundredths остаток от 100)
+  соединить [(к строке whole), ".", (если rest меньше 10 то "0" иначе ""), (к строке rest), unit] по ""
+
+тотальная функция «Effect lines»
+  принимает facts: список «Fact»
+  возвращает список строки
+  пример «No effects»
+    дано facts равно []
+    ожидается ["  действий с миром: нет"]
+  пусть kinds равно (отфильтровать («Meter kinds» от facts) где kind → kind начинается с "effect:")
+  пусть lines равно (отобразить kinds как kind → «Effect line» от facts и kind)
+  если пусто lines то [
+    "  действий с миром: нет"] иначе приписать "  действий с миром (число, а не время):" к lines
+
+тотальная функция «Effect line»
+  принимает facts: список «Fact», kind: строка
+  возвращает строка
+  пример «An effect and its count»
+    дано facts равно [вариант «Meter» с kind равным "effect:Запустить процесс" и poly равным [
+      запись «Term» с coef равным 2 и vars равным []]]
+    дано kind равно "effect:Запустить процесс"
+    ожидается "    «Запустить процесс» ≤ 2"
+  соединить ["    «", (подстрока kind с 8 по (длина kind)), "» ≤ ", («Text» от («Meter of» от facts и kind))] по ""
+
+тотальная функция «Variable line»
+  принимает param: «Parameter»
+  возвращает строка
+  пример «A text parameter is measured in bytes»
+    дано param равно запись «Parameter» с name равным "s" и shape равным (вариант «Text shape»)
+    ожидается "    |s| — байтов в строке «s»"
+  пример «A natural number is its own value»
+    дано param равно запись «Parameter» с name равным "n" и shape равным (вариант «Natural shape»)
+    ожидается "    n — значение числа «n»"
+  разбор param.shape
+    случай «Number shape»
+      то соединить ["    ", param.name, " — значение числа «", param.name, "»"] по ""
+    случай «Natural shape»
+      то соединить ["    ", param.name, " — значение числа «", param.name, "»"] по ""
+    случай «Text shape»
+      то соединить ["    |", param.name, "| — байтов в строке «", param.name, "»"] по ""
+    случай «Truth shape»
+      то соединить ["    «", param.name, "» — признак, размера нет"] по ""
+    случай вариант «List shape» с inner как inner
+      то соединить ["    |", param.name, "| — элементов в списке «", param.name, "», |", param.name,
+        "[]| — размер элемента"] по ""
+    случай любое
+      то соединить ["    |", param.name, "| — размер значения «", param.name, "» (ячеек и байтов вместе)"] по ""
+
+тотальная функция «Bound lines»
+  принимает facts: список «Fact»
+  возвращает список строки
+  пример «A constant bound»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 3 и vars равным []]]
+    ожидается ["  шагов толкователя (flang run) ≤ 3", "  шагов напечатанного C ≤ 0 (вызовов 0 + зарядов длиной 0)",
+      "  памяти напечатанного C ≈ 0 байт (оценка)", "  вызовов функции ≤ 1"]
+  пусть ticks равно («Meter of» от facts и "ticks")
+  пусть charges равно («Meter of» от facts и "charges")
+  пусть invocations равно («Meter of» от facts и "invocations")
+  [(соединить ["  шагов толкователя (flang run) ≤ ", («Text» от («Meter of» от facts и "steps"))] по ""),
+    (соединить ["  шагов напечатанного C ≤ ", («Text» от («Add» от ticks и charges)), " (вызовов ", («Text» от ticks),
+      " + зарядов длиной ", («Text» от charges), ")"] по ""),
+    (соединить ["  памяти напечатанного C ≈ ", («Text» от («Meter of» от facts и "bytes")), " байт (оценка)"] по ""),
+    (соединить ["  вызовов функции ≤ ", (если пусто invocations то "1" иначе «Text» от invocations)] по "")]
+
+тотальная функция «Status lines»
+  принимает facts: список «Fact»
+  возвращает список строки
+  пример «A bound derived from the structure»
+    дано facts равно []
+    ожидается ["  граница выведена из устройства функции; проверяющей программой не переиграна (ADR-0083)"]
+  пусть guesses равно («Notes of» от facts и "guess")
+  пусть derived равно "  граница выведена из устройства функции; проверяющей программой не переиграна (ADR-0083)"
+  если пусто guesses
+    то [derived]
+    иначе приписать "  граница ОЦЕНЕНА, а не выведена целиком:" к (отобразить guesses как guess → соединить ["    ",
+      guess] по "")
+
+тотальная функция «Interval»
+  принимает low: число, high: число
+  возвращает строка
+  пример «A range of seconds»
+    дано low равно 0.001
+    дано high равно 0.002
+    ожидается "1.00 мс – 2.00 мс"
+  соединить [(«Seconds» от low), " – ", («Seconds» от high)] по ""
+
+тотальная функция «Prediction lines»
+  принимает facts: список «Fact», sizes: список «Binding», profile: список «Setting»
+  возвращает список строки
+  пример «Without a profile only the steps»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 3 и vars равным []]]
+    дано sizes равно []
+    дано profile равно []
+    ожидается ["  flang run: шагов ≤ 3", "  напечатанный C: шагов ≤ 0",
+      "  секунд и байтов нет: не назван профиль машины (--profile)"]
+  пусть steps равно («Value at» от («Meter of» от facts и "steps") и sizes)
+  пусть charges равно («Value at» от («Meter of» от facts и "charges") и sizes)
+  пусть printed равно (charges плюс («Value at» от («Meter of» от facts и "ticks") и sizes))
+  пусть bytes равно («Value at» от («Meter of» от facts и "bytes") и sizes)
+  пусть counts равно [(соединить ["  flang run: шагов ≤ ", (к строке steps)] по ""),
+    (соединить ["  напечатанный C: шагов ≤ ", (к строке printed)] по "")]
+  если пусто profile
+    то добавить "  секунд и байтов нет: не назван профиль машины (--profile)" к counts
+    иначе «Соединить списки» от counts и («Timed lines» от steps и charges и bytes и profile)
+
+тотальная функция «Timed lines»
+  принимает steps: число, charges: число, bytes: число, profile: список «Setting»
+  возвращает список строки
+  пример «An empty profile gives zeros»
+    дано steps равно 10
+    дано charges равно 0
+    дано bytes равно 0
+    дано profile равно []
+    ожидается ["  машина «»: снята при загрузке  из  ядер",
+      "  flang run: время 0.00 мс – 0.00 мс, память сверх старта программы ≈ 0 КиБ",
+      "  напечатанный C: время 0.00 мс – 0.00 мс, память ≈ 0 КиБ"]
+  пусть part1 равно («Number in» от profile и "interpreter.charge.low")
+  пусть part2 равно («Number in» от profile и "interpreter.step.low")
+  пусть low равно ((steps умножить на part2) плюс (charges умножить на part1))
+  пусть part3 равно («Number in» от profile и "interpreter.charge.high")
+  пусть part4 равно («Number in» от profile и "interpreter.step.high")
+  пусть high равно ((steps умножить на part4) плюс (charges умножить на part3))
+  пусть part5 равно («Number in» от profile и "c.charge.low")
+  пусть clow равно ((steps умножить на («Number in» от profile и "c.step.low")) плюс (charges умножить на part5))
+  пусть part6 равно («Number in» от profile и "c.charge.high")
+  пусть chigh равно ((steps умножить на («Number in» от profile и "c.step.high")) плюс (charges умножить на part6))
+  пусть memory равно (steps умножить на («Number in» от profile и "interpreter.byte"))
+  пусть cmemory равно (bytes умножить на («Number in» от profile и "c.byte"))
+  [(соединить ["  машина «", («Word in» от profile и "machine"), "»: снята при загрузке ",
+    («Word in» от profile и "load"), " из ",
+      («Word in» от profile и "cores"), " ядер"] по ""),
+    (соединить ["  flang run: время ", («Interval» от low и high), ", память сверх старта программы ≈ ",
+      («Kib» от memory)] по ""),
+    (соединить ["  напечатанный C: время ", («Interval» от clow и chigh), ", память ≈ ", («Kib» от cmemory)] по "")]
+
+тотальная функция «Promise lines»
+  принимает facts: список «Fact», promise: строка
+  возвращает список строки
+  пример «No promise was made»
+    дано facts равно []
+    дано promise равно ""
+    ожидается []
+  пример «A promise below the derived bound is refused»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 3 и vars равным []]]
+    дано promise равно "2"
+    ожидается ["ОТКАЗ: обещание «2» меньше выведенной границы шагов толкователя «3»"]
+  пусть bound равно («Meter of» от facts и "steps")
+  пусть kept равно («Dominates» от («Poly of» от promise) и bound)
+  разбор «First holding» от [(«Rule of» от (пусто promise) и "none"), («Rule of» от kept и "kept")] и "refused"
+    случай "none"
+      то пустой список
+    случай "kept"
+      то [соединить ["обещание «", promise, "» покрывает выведенную границу «", («Text» от bound), "»"] по ""]
+    случай любое
+      то [соединить ["ОТКАЗ: обещание «", promise, "» меньше выведенной границы шагов толкователя «",
+        («Text» от bound), "»"] по ""]
+
+тотальная функция «Report»
+  принимает tokens: строка, entry: строка, sizes: строка, profile: строка, promise: строка, guards: строка
+  возвращает строка
+  пример «A function that is not in the program»
+    дано guards равно ""
+    дано tokens равно ""
+    дано entry равно "Ф"
+    дано sizes равно ""
+    дано profile равно ""
+    дано promise равно ""
+    ожидается "цена «Ф»\n  оценки нет: функции «Ф» в программе нет"
+  пусть summaries равно («Summaries» от («Functions from» от tokens) и entry и («Guard keys» от guards))
+  пусть facts равно («Entry facts» от summaries и entry)
+  пусть named равно («Summary named» от summaries и entry)
+  пусть params равно (свёртка named начиная с пустой список как found и summary → summary.params)
+  пусть troubles равно («Notes of» от facts и "trouble")
+  пусть head1 равно (соединить ["цена «", entry, "»"] по "")
+  пусть failed равно (отобразить troubles как trouble → соединить ["  оценки нет: ", trouble] по "")
+  пусть bindings равно («Bindings» от («Settings» от sizes и ","))
+  пусть lines равно («Prediction lines» от facts и bindings и («Settings» от profile и "\n"))
+  пусть predicted равно (если пусто sizes то пустой список иначе приписать (соединить ["при размерах ", sizes,
+    ":"] по "") к lines)
+  пусть named равно (приписать "  размеры:" к (отобразить params как param → «Variable line» от param))
+  пусть body равно («Join texts» от [named, («Status lines» от facts), («Bound lines» от facts),
+    («Effect lines» от facts), predicted])
+  пусть told равно («Promise lines» от facts и promise)
+  если не (пусто troubles)
+    то соединить (приписать head1 к failed) по "\n"
+    иначе соединить («Join texts» от [told, [head1], body]) по "\n"
+
+тотальная функция «Join texts»
+  принимает parts: список список строки
+  возвращает список строки
+  пример «Two lists of lines»
+    дано parts равно [["a"], ["b"]]
+    ожидается ["a", "b"]
+  свёртка parts начиная с пустой список как joined и part → «Соединить списки» от joined и part
+
+тотальная функция «Summary line»
+  принимает summary: «Summary»
+  возвращает строка
+  пример «A function without a bound»
+    дано summary равно запись «Summary» с name равным "Ф" и params равным [] и facts равным [
+      вариант «Trouble» с reason равным "x"]
+    ожидается "«Ф»: оценки нет — x"
+  пусть troubles равно («Notes of» от summary.facts и "trouble")
+  пусть steps равно («Text» от («Meter of» от summary.facts и "steps"))
+  пусть size равно («Size text» от («Size in» от summary.facts))
+  если пусто troubles
+    то соединить ["«", summary.name, "»: шагов толкователя ≤ ", steps, " (без кадра возврата); результат ", size] по ""
+    иначе соединить ["«", summary.name, "»: оценки нет — ", (соединить troubles по "; ")] по ""
+
+тотальная функция «Size text»
+  принимает size: «Size»
+  возвращает строка
+  пример «A list of texts»
+    дано size равно вариант «List size» с count равным [] и inner равным (вариант «Text size» с bytes равным [])
+    ожидается "список: элементов ≤ 0, элемент — строка ≤ 0 байт"
+  разбор size
+    случай «Scalar size»
+      то "число или признак"
+    случай вариант «Count size» с value как value
+      то соединить ["число ≤ ", («Text» от value)] по ""
+    случай вариант «Text size» с bytes как bytes
+      то соединить ["строка ≤ ", («Text» от bytes), " байт"] по ""
+    случай вариант «List size» с count как count и inner как inner
+      то соединить ["список: элементов ≤ ", («Text» от count), ", элемент — ", («Size text» от inner)] по ""
+    случай вариант «Whole size» с whole как whole
+      то соединить ["значение ≤ ", («Text» от whole), " ячеек и байт"] по ""
+    случай «Nothing size»
+      то "пусто"
+    случай любое
+      то "размер не выведен"
+
+тотальная функция «Report all»
+  принимает tokens: строка, entry: строка, guards: строка
+  возвращает строка
+  пример «Nothing reachable»
+    дано tokens равно ""
+    дано entry равно "Ф"
+    дано guards равно ""
+    ожидается ""
+  пусть summaries равно («Summaries» от («Functions from» от tokens) и entry и («Guard keys» от guards))
+  соединить (отобразить summaries как summary → «Summary line» от summary) по "\n"
+
+тотальная функция «Guard keys»
+  принимает guards: строка
+  возвращает список строки
+  пример «Guards kept in the printed code, one per line»
+    дано guards равно "Ф\tп\n"
+    ожидается ["Ф\tп"]
+  отфильтровать (разделить guards по "\n") где line → не (пусто line)
+
+тотальная функция «Prediction row»
+  принимает summaries: список «Summary», request: строка
+  возвращает строка
+  пример «A function that is not there»
+    дано summaries равно []
+    дано request равно "Ф\t3"
+    ожидается "Ф\t3\t0\t0\t0\t0\t0\tфункции «Ф» в программе нет"
+  пусть parts равно (разделить request по "\t")
+  пусть entry равно («Text at» от parts и 1)
+  пусть size равно («Text at» от parts и 2)
+  пусть facts равно («Entry facts» от summaries и entry)
+  пусть sizes равно («Bindings» от [запись «Setting» с key равным "н" и value равным size])
+  пусть steps равно («Value at» от («Meter of» от facts и "steps") и sizes)
+  пусть ticks равно («Value at» от («Meter of» от facts и "ticks") и sizes)
+  пусть charges равно («Value at» от («Meter of» от facts и "charges") и sizes)
+  пусть bytes равно («Value at» от («Meter of» от facts и "bytes") и sizes)
+  пусть troubles равно (соединить («Notes of» от facts и "trouble") по "; ")
+  соединить [entry, size, (к строке steps), (к строке (ticks плюс charges)), (к строке charges), (к строке bytes),
+    («Text» от («Meter of» от facts и "steps")), troubles] по "\t"
+
+тотальная функция «Predict»
+  принимает tokens: строка, guards: строка, requests: строка
+  возвращает строка
+  пример «Nothing asked»
+    дано tokens равно ""
+    дано guards равно ""
+    дано requests равно ""
+    ожидается ""
+  пусть routines равно («Functions from» от tokens)
+  пусть keys равно («Guard keys» от guards)
+  пусть asked равно (отфильтровать (разделить requests по "\n") где line → не (пусто line))
+  пусть entries равно («Distinct» от (отобразить asked как line → «Text at» от (разделить line по "\t") и 1))
+  пусть made равно (свёртка entries начиная с пустой список как a и e → «More summaries» от a и routines и e и keys)
+  соединить (отобразить asked как line → «Prediction row» от made и line) по "\n"
+
+тотальная функция «Joined settings»
+  принимает left: список «Setting», right: список «Setting»
+  возвращает список «Setting»
+  пример «Nothing joins nothing»
+    дано left равно []
+    дано right равно []
+    ожидается []
+  «Соединить списки» от left и right
+
+тотальная функция «Joined bindings»
+  принимает left: список «Binding», right: список «Binding»
+  возвращает список «Binding»
+  пример «Nothing joins nothing»
+    дано left равно []
+    дано right равно []
+    ожидается []
+  «Соединить списки» от left и right
+
+тотальная функция «Number if key»
+  принимает found: число, setting: «Setting», key: строка
+  возвращает число
+  пример «The setting of the key»
+    дано found равно 0
+    дано setting равно запись «Setting» с key равным "a" и value равным "2"
+    дано key равно "a"
+    ожидается 2
+  если setting.key равен key то «Number of» от setting.value иначе found
+
+тотальная функция «More summaries»
+  принимает found: список «Summary», routines: список «Node», entry: строка, keys: список строки
+  возвращает список «Summary»
+  пример «Nothing more»
+    дано found равно []
+    дано routines равно []
+    дано entry равно "Ф"
+    дано keys равно []
+    ожидается []
+  «Соединить списки» от found и («Summaries» от routines и entry и keys)

@@ -1,0 +1,3539 @@
+модуль «Cost bound»
+  использует «Cost polynomial» из "polynomial.flang"
+  использует «Cost tree» из "tree.flang"
+  использует «Cost rules» из "rules.flang"
+
+тип «Size»
+  вариант «Scalar size»
+  вариант «Count size» содержит value: список «Term»
+  вариант «Text size» содержит bytes: список «Term»
+  вариант «List size» содержит count: список «Term», inner: «Size»
+  вариант «Whole size» содержит whole: список «Term»
+  вариант «No size»
+  вариант «Nothing size»
+
+тип «Amount»
+  вариант «Bounded» содержит poly: список «Term»
+  вариант «Unbounded»
+
+объект «Move»
+  kind: строка
+  amount: число
+  size: «Size»
+
+тип «Fact»
+  вариант «Meter» содержит kind: строка, poly: список «Term»
+  вариант «Sized» содержит size: «Size»
+  вариант «Calls» содержит count: число
+  вариант «Site» содержит moves: список «Move»
+  вариант «Trouble» содержит reason: строка
+  вариант «Guess» содержит reason: строка
+
+объект «Known»
+  name: строка
+  size: «Size»
+  origin: строка
+
+объект «Self»
+  name: строка
+  yields: «Shape»
+  params: список «Parameter»
+
+объект «Summary»
+  name: строка
+  params: список «Parameter»
+  facts: список «Fact»
+
+объект «Assign»
+  name: строка
+  amount: «Amount»
+
+тотальная функция «Both» от «А»
+  принимает left: список «А», right: список «А»
+  возвращает список «А»
+  пример «Two lists one after the other»
+    дано left равно ["a"]
+    дано right равно ["b"]
+    ожидается ["a", "b"]
+  свёртка right начиная с left как joined и one → добавить one к joined
+
+тотальная функция «Bars»
+  принимает name: строка
+  возвращает строка
+  пример «A size variable is written between bars»
+    дано name равно "xs"
+    ожидается "|xs|"
+  соединить ["|", name, "|"] по ""
+
+тотальная функция «Metered»
+  принимает kind: строка, poly: список «Term»
+  возвращает список «Fact»
+  пример «One meter»
+    дано kind равно "steps"
+    дано poly равно []
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным []]
+  [вариант «Meter» с kind равным kind и poly равным poly]
+
+тотальная функция «Steps»
+  принимает amount: число
+  возвращает список «Fact»
+  пример «Three steps»
+    дано amount равно 3
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 3 и vars равным []]]
+  «Metered» от "steps" и («Constant» от amount)
+
+тотальная функция «Stuck»
+  принимает reason: строка
+  возвращает список «Fact»
+  пример «A reason why there is no bound»
+    дано reason равно "x"
+    ожидается [вариант «Trouble» с reason равным "x"]
+  [вариант «Trouble» с reason равным reason]
+
+тотальная функция «Guessed»
+  принимает reason: строка
+  возвращает список «Fact»
+  пример «A reason why a term is estimated»
+    дано reason равно "x"
+    ожидается [вариант «Guess» с reason равным "x"]
+  [вариант «Guess» с reason равным reason]
+
+тотальная функция «Fact poly»
+  принимает fact: «Fact», wanted: строка
+  возвращает список «Term»
+  пример «A meter of the wanted kind»
+    дано fact равно вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 2 и vars равным []]
+    дано wanted равно "steps"
+    ожидается [запись «Term» с coef равным 2 и vars равным []]
+  пример «Another kind gives nothing»
+    дано fact равно вариант «Calls» с count равным 1
+    дано wanted равно "steps"
+    ожидается []
+  разбор fact
+    случай вариант «Meter» с kind как kind и poly как poly
+      то если kind равен wanted то poly иначе пустой список
+    случай любое
+      то пустой список
+
+тотальная функция «Meter of»
+  принимает facts: список «Fact», wanted: строка
+  возвращает список «Term»
+  пример «Meters of one kind add up»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 2 и vars равным []],
+      вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 3 и vars равным []]]
+    дано wanted равно "steps"
+    ожидается [запись «Term» с coef равным 5 и vars равным []]
+  свёртка facts начиная с пустой список как sum и fact → «Add» от sum и («Fact poly» от fact и wanted)
+
+тотальная функция «Fact kind»
+  принимает fact: «Fact»
+  возвращает строка
+  пример «The kind of a meter»
+    дано fact равно вариант «Meter» с kind равным "ticks" и poly равным []
+    ожидается "ticks"
+  пример «Not a meter»
+    дано fact равно вариант «Calls» с count равным 1
+    ожидается ""
+  разбор fact
+    случай вариант «Meter» с kind как kind и poly как poly
+      то kind
+    случай любое
+      то ""
+
+тотальная функция «Meter kinds»
+  принимает facts: список «Fact»
+  возвращает список строки
+  пример «Each kind once»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [], вариант «Calls» с count равным 1,
+      вариант «Meter» с kind равным "steps" и poly равным []]
+    ожидается ["steps"]
+  «Distinct» от (отфильтровать (отобразить facts как fact → «Fact kind» от fact) где kind → не (пусто kind))
+
+тотальная функция «Fact calls»
+  принимает fact: «Fact»
+  возвращает число
+  пример «Calls of a calls fact»
+    дано fact равно вариант «Calls» с count равным 2
+    ожидается 2
+  пример «Other facts make no calls»
+    дано fact равно вариант «Guess» с reason равным "x"
+    ожидается 0
+  разбор fact
+    случай вариант «Calls» с count как count
+      то count
+    случай любое
+      то 0
+
+тотальная функция «Calls of»
+  принимает facts: список «Fact»
+  возвращает число
+  пример «Calls add up»
+    дано facts равно [вариант «Calls» с count равным 2, вариант «Calls» с count равным 1]
+    ожидается 3
+  свёртка facts начиная с 0 как sum и fact → sum плюс («Fact calls» от fact)
+
+тотальная функция «Is note»
+  принимает fact: «Fact»
+  возвращает признак
+  пример «A trouble is a note»
+    дано fact равно вариант «Trouble» с reason равным "x"
+    ожидается да
+  пример «A meter is not»
+    дано fact равно вариант «Meter» с kind равным "steps" и poly равным []
+    ожидается нет
+  разбор fact
+    случай вариант «Site» с moves как moves
+      то да
+    случай вариант «Trouble» с reason как reason
+      то да
+    случай вариант «Guess» с reason как reason
+      то да
+    случай любое
+      то нет
+
+тотальная функция «Fact reason»
+  принимает fact: «Fact», wanted: строка
+  возвращает список строки
+  пример «A trouble gives its reason»
+    дано fact равно вариант «Trouble» с reason равным "x"
+    дано wanted равно "trouble"
+    ожидается ["x"]
+  пример «A guess is not a trouble»
+    дано fact равно вариант «Guess» с reason равным "x"
+    дано wanted равно "trouble"
+    ожидается []
+  разбор fact
+    случай вариант «Trouble» с reason как reason
+      то если wanted равен "trouble" то [reason] иначе пустой список
+    случай вариант «Guess» с reason как reason
+      то если wanted равен "guess" то [reason] иначе пустой список
+    случай любое
+      то пустой список
+
+тотальная функция «Notes of»
+  принимает facts: список «Fact», wanted: строка
+  возвращает список строки
+  пример «Each reason once»
+    дано facts равно [вариант «Trouble» с reason равным "x", вариант «Trouble» с reason равным "x"]
+    дано wanted равно "trouble"
+    ожидается ["x"]
+  пусть reasons равно (отобразить facts как fact → «Fact reason» от fact и wanted)
+  «Distinct» от (свёртка reasons начиная с пустой список как found и part → «Both» от found и part)
+
+тотальная функция «Fact sites»
+  принимает fact: «Fact»
+  возвращает список список «Move»
+  пример «A site gives its moves»
+    дано fact равно вариант «Site» с moves равным []
+    ожидается [[]]
+  пример «Other facts have no sites»
+    дано fact равно вариант «Calls» с count равным 1
+    ожидается []
+  разбор fact
+    случай вариант «Site» с moves как moves
+      то [moves]
+    случай любое
+      то пустой список
+
+тотальная функция «Sites of»
+  принимает facts: список «Fact»
+  возвращает список список «Move»
+  пример «Two sites»
+    дано facts равно [вариант «Site» с moves равным [], вариант «Site» с moves равным []]
+    ожидается [[], []]
+  свёртка facts начиная с пустой список как found и fact → «Both» от found и («Fact sites» от fact)
+
+тотальная функция «Fact size»
+  принимает found: «Size», fact: «Fact»
+  возвращает «Size»
+  пример «A size fact replaces what was found»
+    дано found равно вариант «No size»
+    дано fact равно вариант «Sized» с size равным (вариант «Scalar size»)
+    ожидается вариант «Scalar size»
+  пример «Other facts keep it»
+    дано found равно вариант «Scalar size»
+    дано fact равно вариант «Calls» с count равным 1
+    ожидается вариант «Scalar size»
+  разбор fact
+    случай вариант «Sized» с size как size
+      то size
+    случай любое
+      то found
+
+тотальная функция «Size in»
+  принимает facts: список «Fact»
+  возвращает «Size»
+  пример «The last size wins»
+    дано facts равно [вариант «Sized» с size равным (вариант «No size»),
+      вариант «Sized» с size равным (вариант «Scalar size»)]
+    ожидается вариант «Scalar size»
+  свёртка facts начиная с (вариант «No size») как found и fact → «Fact size» от found и fact
+
+тотальная функция «Join all»
+  принимает parts: список список «Fact»
+  возвращает список «Fact»
+  пример «Two lists become one»
+    дано parts равно [[вариант «Calls» с count равным 1], [вариант «Calls» с count равным 2]]
+    ожидается [вариант «Calls» с count равным 1, вариант «Calls» с count равным 2]
+  свёртка parts начиная с пустой список как joined и part → «Both» от joined и part
+
+тотальная функция «Normal»
+  принимает facts: список «Fact»
+  возвращает список «Fact»
+  пример «Meters add up and sizes go»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 2 и vars равным []],
+      вариант «Sized» с size равным (вариант «Scalar size»),
+      вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 3 и vars равным []]]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 5 и vars равным []],
+      вариант «Calls» с count равным 0]
+  пусть meters равно (отобразить («Meter kinds» от facts) как kind → «Meter fact» от facts и kind)
+  пусть calls равно [вариант «Calls» с count равным («Calls of» от facts)]
+  пусть sites равно (отобразить («Sites of» от facts) как moves → вариант «Site» с moves равным moves)
+  пусть said равно («Notes of» от facts и "trouble")
+  пусть troubles равно (отобразить said как reason → вариант «Trouble» с reason равным reason)
+  пусть guesses равно (отобразить («Notes of» от facts и "guess") как reason → вариант «Guess» с reason равным reason)
+  «Join all» от [meters, calls, sites, troubles, guesses]
+
+тотальная функция «Meter fact»
+  принимает facts: список «Fact», kind: строка
+  возвращает «Fact»
+  пример «The sum of one kind»
+    дано facts равно []
+    дано kind равно "steps"
+    ожидается вариант «Meter» с kind равным "steps" и poly равным []
+  вариант «Meter» с kind равным kind и poly равным («Meter of» от facts и kind)
+
+тотальная функция «Then»
+  принимает left: список «Fact», right: список «Fact»
+  возвращает список «Fact»
+  пример «Sequential costs add»
+    дано left равно [вариант «Calls» с count равным 1]
+    дано right равно [вариант «Calls» с count равным 1]
+    ожидается [вариант «Calls» с count равным 2]
+  «Normal» от («Both» от left и right)
+
+тотальная функция «Sum of»
+  принимает parts: список список «Fact»
+  возвращает список «Fact»
+  пример «Nothing costs nothing»
+    дано parts равно []
+    ожидается [вариант «Calls» с count равным 0]
+  «Normal» от («Join all» от parts)
+
+тотальная функция «Without size»
+  принимает facts: список «Fact»
+  возвращает список «Fact»
+  пример «Size facts are dropped»
+    дано facts равно [вариант «Sized» с size равным (вариант «Scalar size»), вариант «Calls» с count равным 1]
+    ожидается [вариант «Calls» с count равным 1]
+  отфильтровать facts где fact → не («Is sized» от fact)
+
+тотальная функция «Is sized»
+  принимает fact: «Fact»
+  возвращает признак
+  пример «A size fact»
+    дано fact равно вариант «Sized» с size равным (вариант «Scalar size»)
+    ожидается да
+  разбор fact
+    случай вариант «Sized» с size как size
+      то да
+    случай любое
+      то нет
+
+тотальная функция «With size»
+  принимает facts: список «Fact», size: «Size»
+  возвращает список «Fact»
+  пример «A size is attached»
+    дано facts равно []
+    дано size равно вариант «Scalar size»
+    ожидается [вариант «Sized» с size равным (вариант «Scalar size»)]
+  добавить (вариант «Sized» с size равным size) к («Without size» от facts)
+
+тотальная функция «Larger meter»
+  принимает kind: строка, left: список «Fact», right: список «Fact»
+  возвращает «Fact»
+  пример «The coefficientwise maximum of two branches»
+    дано kind равно "steps"
+    дано left равно [вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 2 и vars равным []]]
+    дано right равно [вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 5 и vars равным []]]
+    ожидается вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 5 и vars равным []]
+  пусть part1 равно («Maximum» от («Meter of» от left и kind) и («Meter of» от right и kind))
+  вариант «Meter» с kind равным kind и poly равным part1
+
+тотальная функция «Either»
+  принимает left: список «Fact», right: список «Fact»
+  возвращает список «Fact»
+  пример «The larger branch bounds both»
+    дано left равно [вариант «Calls» с count равным 1]
+    дано right равно [вариант «Calls» с count равным 0]
+    ожидается [вариант «Calls» с count равным 1, вариант «Sized» с size равным (вариант «No size»)]
+  пусть kinds равно («Distinct» от («Both» от («Meter kinds» от left) и («Meter kinds» от right)))
+  пусть meters равно (отобразить kinds как kind → «Larger meter» от kind и left и right)
+  пусть most равно («Larger» от («Calls of» от left) и («Calls of» от right))
+  пусть notes равно (отфильтровать («Both» от left и right) где fact → «Is note» от fact)
+  пусть size равно («Join size» от («Size in» от left) и («Size in» от right))
+  «With size» от («Normal» от («Join all» от [meters, [вариант «Calls» с count равным most], notes])) и size
+
+тотальная функция «Larger»
+  принимает left: число, right: число
+  возвращает число
+  пример «The larger of two»
+    дано left равно 2
+    дано right равно 5
+    ожидается 5
+  если left больше right то left иначе right
+
+тотальная функция «Fact scaled»
+  принимает fact: «Fact», factor: список «Term»
+  возвращает «Fact»
+  пример «A meter is multiplied»
+    дано fact равно вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 2 и vars равным []]
+    дано factor равно [запись «Term» с coef равным 3 и vars равным []]
+    ожидается вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 6 и vars равным []]
+  разбор fact
+    случай вариант «Meter» с kind как kind и poly как poly
+      то вариант «Meter» с kind равным kind и poly равным («Multiply» от poly и factor)
+    случай любое
+      то fact
+
+тотальная функция «Scaled»
+  принимает facts: список «Fact», factor: список «Term»
+  возвращает список «Fact»
+  пример «Every meter is multiplied»
+    дано facts равно [вариант «Calls» с count равным 1]
+    дано factor равно []
+    ожидается [вариант «Calls» с count равным 1]
+  отобразить facts как fact → «Fact scaled» от fact и factor
+
+тотальная функция «Size rewritten»
+  принимает size: «Size», name: строка, value: список «Term»
+  возвращает «Size»
+  пример «A size variable is replaced»
+    дано size равно вариант «Text size» с bytes равным [запись «Term» с coef равным 1 и vars равным ["|s|"]]
+    дано name равно "|s|"
+    дано value равно [запись «Term» с coef равным 4 и vars равным []]
+    ожидается вариант «Text size» с bytes равным [запись «Term» с coef равным 4 и vars равным []]
+  разбор size
+    случай вариант «Count size» с value как poly
+      то вариант «Count size» с value равным («Substitute» от poly и name и value)
+    случай вариант «Text size» с bytes как poly
+      то вариант «Text size» с bytes равным («Substitute» от poly и name и value)
+    случай вариант «List size» с count как poly и inner как inner
+      то «List of» от («Substitute» от poly и name и value) и («Size rewritten» от inner и name и value)
+    случай вариант «Whole size» с whole как poly
+      то вариант «Whole size» с whole равным («Substitute» от poly и name и value)
+    случай любое
+      то size
+
+тотальная функция «Fact rewritten»
+  принимает fact: «Fact», name: строка, value: список «Term»
+  возвращает «Fact»
+  пример «A meter is rewritten»
+    дано fact равно вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 2 и vars равным [
+      "n"]]
+    дано name равно "n"
+    дано value равно [запись «Term» с coef равным 3 и vars равным []]
+    ожидается вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 6 и vars равным []]
+  разбор fact
+    случай вариант «Meter» с kind как kind и poly как poly
+      то вариант «Meter» с kind равным kind и poly равным («Substitute» от poly и name и value)
+    случай вариант «Sized» с size как size
+      то вариант «Sized» с size равным («Size rewritten» от size и name и value)
+    случай любое
+      то fact
+
+тотальная функция «Rewritten»
+  принимает facts: список «Fact», name: строка, value: список «Term»
+  возвращает список «Fact»
+  пример «Nothing to rewrite»
+    дано facts равно []
+    дано name равно "n"
+    дано value равно []
+    ожидается []
+  отобразить facts как fact → «Fact rewritten» от fact и name и value
+
+тотальная функция «Size mentions»
+  принимает size: «Size», name: строка
+  возвращает признак
+  пример «A list mentions its count variable»
+    дано size равно вариант «List size» с count равным [запись «Term» с coef равным 1 и vars равным [
+      "|x|"]] и inner равным (вариант «Scalar size»)
+    дано name равно "|x|"
+    ожидается да
+  разбор size
+    случай вариант «Count size» с value как poly
+      то «Mentions» от poly и name
+    случай вариант «Text size» с bytes как poly
+      то «Mentions» от poly и name
+    случай вариант «List size» с count как poly и inner как inner
+      то («Mentions» от poly и name) или («Size mentions» от inner и name)
+    случай вариант «Whole size» с whole как poly
+      то «Mentions» от poly и name
+    случай любое
+      то нет
+
+тотальная функция «Fact mentions»
+  принимает fact: «Fact», name: строка
+  возвращает признак
+  пример «A meter mentions a variable»
+    дано fact равно вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным [
+      "n"]]
+    дано name равно "n"
+    ожидается да
+  разбор fact
+    случай вариант «Meter» с kind как kind и poly как poly
+      то «Mentions» от poly и name
+    случай вариант «Sized» с size как size
+      то «Size mentions» от size и name
+    случай любое
+      то нет
+
+тотальная функция «Mentioned»
+  принимает facts: список «Fact», name: строка
+  возвращает признак
+  пример «Nothing mentioned»
+    дано facts равно []
+    дано name равно "n"
+    ожидается нет
+  свёртка facts начиная с нет как found и fact → found или («Fact mentions» от fact и name)
+
+тотальная функция «Size total»
+  принимает size: «Size»
+  возвращает «Amount»
+  пример «A scalar takes one cell»
+    дано size равно вариант «Scalar size»
+    ожидается вариант «Bounded» с poly равным [запись «Term» с coef равным 1 и vars равным []]
+  пример «No size has no total»
+    дано size равно вариант «No size»
+    ожидается вариант «Unbounded»
+  разбор size
+    случай «Scalar size»
+      то вариант «Bounded» с poly равным («Constant» от 1)
+    случай вариант «Count size» с value как value
+      то вариант «Bounded» с poly равным («Constant» от 1)
+    случай вариант «Text size» с bytes как bytes
+      то вариант «Bounded» с poly равным bytes
+    случай вариант «List size» с count как count и inner как inner
+      то «List total» от count и («Size total» от inner)
+    случай вариант «Whole size» с whole как whole
+      то вариант «Bounded» с poly равным whole
+    случай «Nothing size»
+      то вариант «Bounded» с poly равным пустой список
+    случай любое
+      то вариант «Unbounded»
+
+тотальная функция «List total»
+  принимает count: список «Term», inner: «Amount»
+  возвращает «Amount»
+  пример «A list of scalars»
+    дано count равно [запись «Term» с coef равным 1 и vars равным ["|x|"]]
+    дано inner равно вариант «Bounded» с poly равным [запись «Term» с coef равным 1 и vars равным []]
+    ожидается вариант «Bounded» с poly равным [запись «Term» с coef равным 2 и vars равным ["|x|"]]
+  разбор inner
+    случай вариант «Bounded» с poly как poly
+      то вариант «Bounded» с poly равным («Multiply» от count и («Add» от poly и («Constant» от 1)))
+    случай любое
+      то вариант «Unbounded»
+
+тотальная функция «Size count»
+  принимает size: «Size»
+  возвращает «Amount»
+  пример «The count of a list»
+    дано size равно вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+    ожидается вариант «Bounded» с poly равным []
+  пример «A number has no count»
+    дано size равно вариант «Scalar size»
+    ожидается вариант «Unbounded»
+  разбор size
+    случай вариант «List size» с count как count и inner как inner
+      то вариант «Bounded» с poly равным count
+    случай вариант «Text size» с bytes как bytes
+      то вариант «Bounded» с poly равным bytes
+    случай вариант «Whole size» с whole как whole
+      то вариант «Bounded» с poly равным whole
+    случай «Nothing size»
+      то вариант «Bounded» с poly равным пустой список
+    случай любое
+      то вариант «Unbounded»
+
+тотальная функция «Size inner»
+  принимает size: «Size»
+  возвращает «Size»
+  пример «The element of a list»
+    дано size равно вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+    ожидается вариант «Scalar size»
+  пример «A part of a whole is bounded by the whole»
+    дано size равно вариант «Whole size» с whole равным []
+    ожидается вариант «Whole size» с whole равным []
+  разбор size
+    случай вариант «List size» с count как count и inner как inner
+      то inner
+    случай вариант «Whole size» с whole как whole
+      то вариант «Whole size» с whole равным whole
+    случай вариант «Text size» с bytes как bytes
+      то вариант «Text size» с bytes равным («Constant» от 4)
+    случай «Nothing size»
+      то вариант «Nothing size»
+    случай любое
+      то вариант «No size»
+
+тотальная функция «Size value»
+  принимает size: «Size»
+  возвращает «Amount»
+  пример «A counted number»
+    дано size равно вариант «Count size» с value равным []
+    ожидается вариант «Bounded» с poly равным []
+  пример «A scalar has no known value»
+    дано size равно вариант «Scalar size»
+    ожидается вариант «Unbounded»
+  разбор size
+    случай вариант «Count size» с value как value
+      то вариант «Bounded» с poly равным value
+    случай «Nothing size»
+      то вариант «Bounded» с poly равным пустой список
+    случай любое
+      то вариант «Unbounded»
+
+тотальная функция «Size bytes»
+  принимает size: «Size»
+  возвращает «Amount»
+  пример «The bytes of a text»
+    дано size равно вариант «Text size» с bytes равным []
+    ожидается вариант «Bounded» с poly равным []
+  пример «A counted literal is an empty text»
+    дано size равно вариант «Count size» с value равным []
+    ожидается вариант «Bounded» с poly равным []
+  разбор size
+    случай вариант «Text size» с bytes как bytes
+      то вариант «Bounded» с poly равным bytes
+    случай вариант «Whole size» с whole как whole
+      то вариант «Bounded» с poly равным whole
+    случай вариант «Count size» с value как value
+      то вариант «Bounded» с poly равным пустой список
+    случай «Nothing size»
+      то вариант «Bounded» с poly равным пустой список
+    случай любое
+      то вариант «Unbounded»
+
+тотальная функция «Amount poly»
+  принимает amount: «Amount»
+  возвращает список «Term»
+  пример «A bounded amount»
+    дано amount равно вариант «Bounded» с poly равным [запись «Term» с coef равным 2 и vars равным []]
+    ожидается [запись «Term» с coef равным 2 и vars равным []]
+  пример «An unbounded amount counts as nothing»
+    дано amount равно вариант «Unbounded»
+    ожидается []
+  разбор amount
+    случай вариант «Bounded» с poly как poly
+      то poly
+    случай любое
+      то пустой список
+
+тотальная функция «Is bounded»
+  принимает amount: «Amount»
+  возвращает признак
+  пример «Bounded»
+    дано amount равно вариант «Bounded» с poly равным []
+    ожидается да
+  пример «Unbounded»
+    дано amount равно вариант «Unbounded»
+    ожидается нет
+  разбор amount
+    случай вариант «Bounded» с poly как poly
+      то да
+    случай любое
+      то нет
+
+тотальная функция «Needed»
+  принимает amount: «Amount», reason: строка
+  возвращает список «Fact»
+  пример «A bounded amount needs nothing»
+    дано amount равно вариант «Bounded» с poly равным []
+    дано reason равно "x"
+    ожидается []
+  пример «An unbounded amount stops the bound»
+    дано amount равно вариант «Unbounded»
+    дано reason равно "x"
+    ожидается [вариант «Trouble» с reason равным "x"]
+  если «Is bounded» от amount то пустой список иначе «Stuck» от reason
+
+тотальная функция «Literal size»
+  принимает bytes: число, amount: число
+  возвращает «Size»
+  пример «A text literal»
+    дано bytes равно 4
+    дано amount равно 0
+    ожидается вариант «Text size» с bytes равным [запись «Term» с coef равным 4 и vars равным []]
+  пример «A number literal keeps its value»
+    дано bytes равно -1
+    дано amount равно 2
+    ожидается вариант «Count size» с value равным [запись «Term» с coef равным 2 и vars равным []]
+  пример «An empty text literal is still a text»
+    дано bytes равно 0
+    дано amount равно 0
+    ожидается вариант «Text size» с bytes равным []
+  если bytes не меньше 0
+    то вариант «Text size» с bytes равным («Constant» от bytes)
+    иначе вариант «Count size» с value равным («Constant» от («Larger» от amount и 0))
+
+тотальная функция «Join size»
+  принимает left: «Size», right: «Size»
+  возвращает «Size»
+  пример «Two texts take the larger»
+    дано left равно вариант «Text size» с bytes равным [запись «Term» с coef равным 2 и vars равным []]
+    дано right равно вариант «Text size» с bytes равным [запись «Term» с coef равным 5 и vars равным []]
+    ожидается вариант «Text size» с bytes равным [запись «Term» с coef равным 5 и vars равным []]
+  пример «An empty text literal joins a text»
+    дано left равно вариант «Count size» с value равным []
+    дано right равно вариант «Text size» с bytes равным []
+    ожидается вариант «Text size» с bytes равным []
+  пример «Nothing joins anything»
+    дано left равно вариант «Scalar size»
+    дано right равно вариант «Nothing size»
+    ожидается вариант «Scalar size»
+  разбор left
+    случай «Nothing size»
+      то right
+    случай вариант «Count size» с value как value
+      то «Join count» от value и right
+    случай вариант «Text size» с bytes как bytes
+      то «Join text» от bytes и right
+    случай вариант «List size» с count как count и inner как inner
+      то разбор right
+        случай вариант «List size» с count как other и inner как more
+          то «List of» от («Maximum» от count и other) и («Join size» от inner и more)
+        случай любое
+          то «Join plain» от left и right
+    случай вариант «Whole size» с whole как whole
+      то «Join whole» от whole и right
+    случай любое
+      то «Join plain» от left и right
+
+тотальная функция «Join plain»
+  принимает left: «Size», right: «Size»
+  возвращает «Size»
+  пример «Scalars stay scalar»
+    дано left равно вариант «Scalar size»
+    дано right равно вариант «Scalar size»
+    ожидается вариант «Scalar size»
+  пример «A list joined with a scalar keeps the list»
+    дано left равно вариант «Scalar size»
+    дано right равно вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+    ожидается вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+  разбор right
+    случай «Scalar size»
+      то («Plain or» от left и right)
+    случай «Nothing size»
+      то left
+    случай «No size»
+      то вариант «No size»
+    случай любое
+      то «Plain or» от right и left
+
+тотальная функция «Plain or»
+  принимает kept: «Size», other: «Size»
+  возвращает «Size»
+  пример «A scalar gives way to a list»
+    дано kept равно вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+    дано other равно вариант «Scalar size»
+    ожидается вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+  пример «No size spoils the join»
+    дано kept равно вариант «No size»
+    дано other равно вариант «Scalar size»
+    ожидается вариант «No size»
+  разбор other
+    случай «Scalar size»
+      то kept
+    случай вариант «Count size» с value как value
+      то kept
+    случай любое
+      то вариант «No size»
+
+тотальная функция «Join count»
+  принимает value: список «Term», right: «Size»
+  возвращает «Size»
+  пример «Two counted numbers take the larger»
+    дано value равно [запись «Term» с coef равным 2 и vars равным []]
+    дано right равно вариант «Count size» с value равным []
+    ожидается вариант «Count size» с value равным [запись «Term» с coef равным 2 и vars равным []]
+  пример «A number joined with a scalar loses its value»
+    дано value равно []
+    дано right равно вариант «Scalar size»
+    ожидается вариант «Scalar size»
+  разбор right
+    случай «Nothing size»
+      то вариант «Count size» с value равным value
+    случай вариант «Count size» с value как other
+      то вариант «Count size» с value равным («Maximum» от value и other)
+    случай «Scalar size»
+      то вариант «Scalar size»
+    случай любое
+      то right
+
+тотальная функция «Join text»
+  принимает bytes: список «Term», right: «Size»
+  возвращает «Size»
+  пример «A text joined with an empty literal stays»
+    дано bytes равно []
+    дано right равно вариант «Count size» с value равным []
+    ожидается вариант «Text size» с bytes равным []
+  разбор right
+    случай «Nothing size»
+      то вариант «Text size» с bytes равным bytes
+    случай вариант «Text size» с bytes как other
+      то вариант «Text size» с bytes равным («Maximum» от bytes и other)
+    случай вариант «Count size» с value как value
+      то вариант «Text size» с bytes равным bytes
+    случай «Scalar size»
+      то вариант «Text size» с bytes равным bytes
+    случай любое
+      то «Join wholes» от bytes и right
+
+тотальная функция «Join whole»
+  принимает whole: список «Term», right: «Size»
+  возвращает «Size»
+  пример «Two wholes take the larger»
+    дано whole равно []
+    дано right равно вариант «Whole size» с whole равным []
+    ожидается вариант «Whole size» с whole равным []
+  разбор right
+    случай «Nothing size»
+      то вариант «Whole size» с whole равным whole
+    случай вариант «Whole size» с whole как other
+      то вариант «Whole size» с whole равным («Maximum» от whole и other)
+    случай любое
+      то «Join wholes» от whole и right
+
+тотальная функция «Join wholes»
+  принимает whole: список «Term», right: «Size»
+  возвращает «Size»
+  пример «Mixed kinds are bounded by their totals»
+    дано whole равно []
+    дано right равно вариант «Scalar size»
+    ожидается вариант «Whole size» с whole равным [запись «Term» с coef равным 1 и vars равным []]
+  пример «No size spoils it»
+    дано whole равно []
+    дано right равно вариант «No size»
+    ожидается вариант «No size»
+  разбор («Size total» от right)
+    случай вариант «Bounded» с poly как poly
+      то вариант «Whole size» с whole равным («Maximum» от whole и poly)
+    случай любое
+      то вариант «No size»
+
+тотальная функция «Parameter size»
+  принимает shape: «Shape», base: строка
+  возвращает «Size»
+  пример «A natural number is its own value»
+    дано shape равно вариант «Natural shape»
+    дано base равно "n"
+    ожидается вариант «Count size» с value равным [запись «Term» с coef равным 1 и vars равным ["n"]]
+  пример «A text is its bytes»
+    дано shape равно вариант «Text shape»
+    дано base равно "s"
+    ожидается вариант «Text size» с bytes равным [запись «Term» с coef равным 1 и vars равным ["|s|"]]
+  разбор shape
+    случай «Number shape»
+      то вариант «Count size» с value равным («Variable» от base)
+    случай «Natural shape»
+      то вариант «Count size» с value равным («Variable» от base)
+    случай «Text shape»
+      то вариант «Text size» с bytes равным («Variable» от («Bars» от base))
+    случай «Truth shape»
+      то вариант «Scalar size»
+    случай вариант «List shape» с inner как inner
+      то «List of» от («Variable» от («Bars» от base)) и («Inner parameter size» от inner и base)
+    случай любое
+      то вариант «Whole size» с whole равным («Variable» от («Bars» от base))
+
+тотальная функция «Element name»
+  принимает base: строка
+  возвращает строка
+  пример «The element of xs»
+    дано base равно "xs"
+    ожидается "xs[]"
+  соединить [base, "[]"] по ""
+
+тотальная функция «Inner parameter size»
+  принимает shape: «Shape», base: строка
+  возвращает «Size»
+  пример «Numbers inside a list have no tracked value»
+    дано shape равно вариант «Number shape»
+    дано base равно "xs"
+    ожидается вариант «Scalar size»
+  пример «Texts inside a list have their own bytes»
+    дано shape равно вариант «Text shape»
+    дано base равно "xs"
+    ожидается вариант «Text size» с bytes равным [запись «Term» с coef равным 1 и vars равным ["|xs[]|"]]
+  разбор shape
+    случай «Number shape»
+      то вариант «Scalar size»
+    случай «Natural shape»
+      то вариант «Scalar size»
+    случай «Truth shape»
+      то вариант «Scalar size»
+    случай «Text shape»
+      то вариант «Text size» с bytes равным («Variable» от («Bars» от («Element name» от base)))
+    случай любое
+      то вариант «Whole size» с whole равным («Variable» от («Bars» от («Element name» от base)))
+
+тотальная функция «Parameter vars»
+  принимает shape: «Shape», base: строка
+  возвращает список строки
+  пример «A list of texts has two variables»
+    дано shape равно вариант «List shape» с inner равным (вариант «Text shape»)
+    дано base равно "xs"
+    ожидается ["|xs|", "|xs[]|"]
+  пример «A truth has none»
+    дано shape равно вариант «Truth shape»
+    дано base равно "b"
+    ожидается []
+  разбор shape
+    случай «Number shape»
+      то [base]
+    случай «Natural shape»
+      то [base]
+    случай «Truth shape»
+      то пустой список
+    случай вариант «List shape» с inner как inner
+      то приписать («Bars» от base) к («Inner vars» от inner и base)
+    случай любое
+      то [«Bars» от base]
+
+тотальная функция «Inner vars»
+  принимает shape: «Shape», base: строка
+  возвращает список строки
+  пример «Numbers inside a list are not tracked»
+    дано shape равно вариант «Number shape»
+    дано base равно "xs"
+    ожидается []
+  разбор shape
+    случай «Number shape»
+      то пустой список
+    случай «Natural shape»
+      то пустой список
+    случай «Truth shape»
+      то пустой список
+    случай любое
+      то [«Bars» от («Element name» от base)]
+
+тотальная функция «Assignments»
+  принимает shape: «Shape», base: строка, size: «Size»
+  возвращает список «Assign»
+  пример «A text argument gives its bytes»
+    дано shape равно вариант «Text shape»
+    дано base равно "s"
+    дано size равно вариант «Text size» с bytes равным []
+    ожидается [запись «Assign» с name равным "|s|" и amount равным (вариант «Bounded» с poly равным [])]
+  пусть element равно («Size inner» от size)
+  разбор shape
+    случай «Number shape»
+      то [запись «Assign» с name равным base и amount равным («Size value» от size)]
+    случай «Natural shape»
+      то [запись «Assign» с name равным base и amount равным («Size value» от size)]
+    случай «Text shape»
+      то [запись «Assign» с name равным («Bars» от base) и amount равным («Size bytes» от size)]
+    случай «Truth shape»
+      то пустой список
+    случай вариант «List shape» с inner как inner
+      то приписать («Count assign» от base и size) к («Inner assignments» от inner и base и element)
+    случай любое
+      то [запись «Assign» с name равным («Bars» от base) и amount равным («Size total» от size)]
+
+тотальная функция «Count assign»
+  принимает base: строка, size: «Size»
+  возвращает «Assign»
+  пример «The count of a list argument»
+    дано base равно "xs"
+    дано size равно вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+    ожидается запись «Assign» с name равным "|xs|" и amount равным (вариант «Bounded» с poly равным [])
+  запись «Assign» с name равным («Bars» от base) и amount равным («Size count» от size)
+
+тотальная функция «Inner assignments»
+  принимает shape: «Shape», base: строка, size: «Size»
+  возвращает список «Assign»
+  пример «Numbers inside a list are not tracked»
+    дано shape равно вариант «Number shape»
+    дано base равно "xs"
+    дано size равно вариант «Scalar size»
+    ожидается []
+  пусть name равно («Bars» от («Element name» от base))
+  разбор shape
+    случай «Number shape»
+      то пустой список
+    случай «Natural shape»
+      то пустой список
+    случай «Truth shape»
+      то пустой список
+    случай «Text shape»
+      то [запись «Assign» с name равным name и amount равным («Size bytes» от size)]
+    случай любое
+      то [запись «Assign» с name равным name и amount равным («Size total» от size)]
+
+тотальная функция «Argument size»
+  принимает sizes: список «Size», place: число
+  возвращает «Size»
+  пример «The second argument»
+    дано sizes равно [вариант «Scalar size», вариант «No size»]
+    дано place равно 2
+    ожидается вариант «No size»
+  пример «A missing argument has no size»
+    дано sizes равно []
+    дано place равно 1
+    ожидается вариант «No size»
+  если (длина sizes) не меньше place
+    то элемент place в sizes
+    иначе вариант «No size»
+
+тотальная функция «Charged»
+  принимает poly: список «Term»
+  возвращает список «Fact»
+  пример «A length charge of the printed program»
+    дано poly равно []
+    ожидается [вариант «Meter» с kind равным "charges" и poly равным []]
+  «Metered» от "charges" и poly
+
+тотальная функция «Allocated»
+  принимает poly: список «Term»
+  возвращает список «Fact»
+  пример «Bytes taken from the arena»
+    дано poly равно []
+    ожидается [вариант «Meter» с kind равным "bytes" и poly равным []]
+  «Metered» от "bytes" и poly
+
+тотальная функция «Cells»
+  принимает count: список «Term»
+  возвращает список «Term»
+  пример «A list cell takes forty eight bytes with its reserve»
+    дано count равно [запись «Term» с coef равным 1 и vars равным ["n"]]
+    ожидается [запись «Term» с coef равным 48 и vars равным ["n"]]
+  «Scale» от count и 48
+
+тотальная функция «List facts»
+  принимает name: строка, sizes: список «Size»
+  возвращает список «Fact»
+  пример «Appending to a list of n elements»
+    дано name равно "добавить"
+    дано sizes равно [вариант «Scalar size»,
+      вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)]
+    ожидается [вариант «Meter» с kind равным "charges" и poly равным [],
+      вариант «Meter» с kind равным "bytes" и poly равным [
+      запись «Term» с coef равным 48 и vars равным []],
+      вариант «Sized» с size равным (вариант «List size» с count равным [
+      запись «Term» с coef равным 1 и vars равным []] и inner равным (вариант «Scalar size»))]
+  пусть entry равно («Argument size» от sizes и 1)
+  пусть listed равно («Argument size» от sizes и 2)
+  пусть count равно («Size count» от listed)
+  пусть longer равно («Add» от («Amount poly» от count) и («Constant» от 1))
+  пусть inner равно («Join size» от («Size inner» от listed) и entry)
+  пусть made равно (вариант «List size» с count равным longer и inner равным inner)
+  пусть facts равно («Join all» от [(«Charged» от («Amount poly» от count)), («Allocated» от («Constant» от 48))])
+  «Join all» от [(«Needed» от count и (соединить ["«", name, "»: длина списка не выведена"] по "")),
+    («With size» от facts и made)]
+
+тотальная функция «Text facts»
+  принимает name: строка, sizes: список «Size»
+  возвращает список «Fact»
+  пример «A substring of a text»
+    дано name равно "подстрока"
+    дано sizes равно [вариант «Text size» с bytes равным []]
+    ожидается [вариант «Meter» с kind равным "charges" и poly равным [],
+      вариант «Sized» с size равным (вариант «Text size» с bytes равным [])]
+  пусть text равно («Argument size» от sizes и 1)
+  пусть bytes равно («Size bytes» от text)
+  пусть poly равно («Amount poly» от bytes)
+  пусть need равно («Needed» от bytes и (соединить ["«", name, "»: длина строки не выведена"] по ""))
+  разбор name
+    случай "подстрока"
+      то «Join all» от [need, («With size» от («Charged» от poly) и (вариант «Text size» с bytes равным poly))]
+    случай "символы"
+      то «Join all» от [need, («Pieces facts» от poly и (вариант «Text size» с bytes равным («Constant» от 4)))]
+    случай "разделить"
+      то «Join all» от [need, («Pieces facts» от poly и (вариант «Text size» с bytes равным poly))]
+    случай "к числу"
+      то «Join all» от [need, («With size» от («Charged» от poly) и (вариант «Scalar size»))]
+    случай любое
+      то «Join all» от [need, («With size» от («Charged» от poly) и (вариант «Scalar size»))]
+
+тотальная функция «Pieces facts»
+  принимает bytes: список «Term», piece: «Size»
+  возвращает список «Fact»
+  пример «An empty text in pieces»
+    дано bytes равно []
+    дано piece равно вариант «Scalar size»
+    ожидается [вариант «Meter» с kind равным "charges" и poly равным [],
+      вариант «Meter» с kind равным "bytes" и poly равным [
+      запись «Term» с coef равным 48 и vars равным []],
+      вариант «Sized» с size равным (вариант «List size» с count равным [
+      запись «Term» с coef равным 1 и vars равным []] и inner равным (вариант «Scalar size»))]
+  пусть count равно («Add» от bytes и («Constant» от 1))
+  пусть facts равно («Join all» от [(«Charged» от («Scale» от bytes и 2)),
+    («Allocated» от («Add» от («Cells» от count) и bytes))])
+  «With size» от facts и (вариант «List size» с count равным count и inner равным piece)
+
+тотальная функция «Joined facts»
+  принимает sizes: список «Size»
+  возвращает список «Fact»
+  пример «Joining no pieces»
+    дано sizes равно [вариант «List size» с count равным [] и inner равным (вариант «Text size» с bytes равным []),
+      вариант «Text size» с bytes равным []]
+    ожидается [вариант «Meter» с kind равным "charges" и poly равным [],
+      вариант «Meter» с kind равным "bytes" и poly равным [],
+      вариант «Sized» с size равным (вариант «Text size» с bytes равным [])]
+  пусть listed равно («Argument size» от sizes и 1)
+  пусть count равно («Size count» от listed)
+  пусть piece равно («Size bytes» от («Size inner» от listed))
+  пусть glue равно («Size bytes» от («Argument size» от sizes и 2))
+  пусть each равно («Add» от («Amount poly» от piece) и («Amount poly» от glue))
+  пусть total равно («Multiply» от («Amount poly» от count) и each)
+  пусть need равно («Join all» от [(«Needed» от count и "«соединить»: длина списка не выведена"),
+    («Needed» от piece и "«соединить»: длина строки не выведена"),
+    («Needed» от glue и "«соединить»: длина строки не выведена")])
+  пусть facts равно («Join all» от [(«Charged» от («Add» от («Amount poly» от count) и total)), («Allocated» от total)])
+  «Join all» от [need, («With size» от facts и (вариант «Text size» с bytes равным total))]
+
+тотальная функция «Concat facts»
+  принимает left: «Size», right: «Size»
+  возвращает список «Fact»
+  пример «Two texts become one»
+    дано left равно вариант «Text size» с bytes равным [запись «Term» с coef равным 1 и vars равным []]
+    дано right равно вариант «Text size» с bytes равным []
+    ожидается [вариант «Meter» с kind равным "charges" и poly равным [запись «Term» с coef равным 1 и vars равным []],
+      вариант «Meter» с kind равным "bytes" и poly равным [запись «Term» с coef равным 1 и vars равным []],
+      вариант «Sized» с size равным (вариант «Text size» с bytes равным [
+        запись «Term» с coef равным 1 и vars равным []])]
+  пусть former равно («Size bytes» от left)
+  пусть latter равно («Size bytes» от right)
+  пусть total равно («Add» от («Amount poly» от former) и («Amount poly» от latter))
+  пусть need равно («Join all» от [(«Needed» от former и "склейка: длина строки не выведена"),
+    («Needed» от latter и "склейка: длина строки не выведена")])
+  пусть facts равно («Join all» от [(«Charged» от total), («Allocated» от total)])
+  «Join all» от [need, («With size» от facts и (вариант «Text size» с bytes равным total))]
+
+тотальная функция «Builtin extra»
+  принимает name: строка, sizes: список «Size»
+  возвращает список «Fact»
+  пример «The length of a list is a counted number»
+    дано name равно "длина"
+    дано sizes равно [вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)]
+    ожидается [вариант «Sized» с size равным (вариант «Count size» с value равным [])]
+  пусть former равно («Argument size» от sizes и 1)
+  пусть latter равно («Argument size» от sizes и 2)
+  разбор name
+    случай "длина"
+      то «With size» от пустой список и («Counted» от («Size count» от former))
+    случай "добавить"
+      то «List facts» от name и sizes
+    случай "приписать"
+      то «List facts» от name и sizes
+    случай "элемент"
+      то «With size» от пустой список и («Size inner» от latter)
+    случай "голова"
+      то «With size» от пустой список и («Size inner» от former)
+    случай "хвост"
+      то «With size» от пустой список и former
+    случай "пусто"
+      то «With size» от пустой список и (вариант «Scalar size»)
+    случай "соединить"
+      то «Join builtin» от sizes
+    случай любое
+      то «Scan builtin» от name и sizes
+
+тотальная функция «Counted»
+  принимает amount: «Amount»
+  возвращает «Size»
+  пример «A known count»
+    дано amount равно вариант «Bounded» с poly равным []
+    ожидается вариант «Count size» с value равным []
+  пример «An unknown count is a plain number»
+    дано amount равно вариант «Unbounded»
+    ожидается вариант «Scalar size»
+  разбор amount
+    случай вариант «Bounded» с poly как poly
+      то вариант «Count size» с value равным poly
+    случай любое
+      то вариант «Scalar size»
+
+тотальная функция «Join builtin»
+  принимает sizes: список «Size»
+  возвращает список «Fact»
+  пример «Two texts glued by the builtin»
+    дано sizes равно [вариант «Text size» с bytes равным [], вариант «Text size» с bytes равным []]
+    ожидается [вариант «Meter» с kind равным "charges" и poly равным [],
+      вариант «Meter» с kind равным "bytes" и poly равным [],
+      вариант «Sized» с size равным (вариант «Text size» с bytes равным [])]
+  пусть former равно («Argument size» от sizes и 1)
+  разбор former
+    случай вариант «List size» с count как count и inner как inner
+      то «Joined facts» от sizes
+    случай любое
+      то «Concat facts» от former и («Argument size» от sizes и 2)
+
+тотальная функция «Scan builtin»
+  принимает name: строка, sizes: список «Size»
+  возвращает список «Fact»
+  пример «A number becomes a short text»
+    дано name равно "к строке"
+    дано sizes равно [вариант «Scalar size»]
+    ожидается [вариант «Meter» с kind равным "charges" и poly равным [запись «Term» с coef равным 17 и vars равным []],
+      вариант «Meter» с kind равным "bytes" и poly равным [запись «Term» с coef равным 32 и vars равным []],
+      вариант «Sized» с size равным (вариант «Text size» с bytes равным [
+        запись «Term» с coef равным 32 и vars равным []])]
+  пусть former равно («Argument size» от sizes и 1)
+  пусть latter равно («Argument size» от sizes и 2)
+  пусть scanned равно («Size count» от former)
+  пусть need равно («Needed» от scanned и (соединить ["«", name, "»: длина не выведена"] по ""))
+  пусть looked равно («Join all» от [need,
+    («With size» от («Charged» от («Amount poly» от scanned)) и (вариант «Scalar size»))])
+  пусть short равно (вариант «Text size» с bytes равным («Constant» от 32))
+  пусть hashed равно («Amount poly» от («Size bytes» от former))
+  разбор name
+    случай "содержит"
+      то looked
+    случай "начинается с"
+      то «With size» от («Charged» от («Amount poly» от («Size bytes» от latter))) и (вариант «Scalar size»)
+    случай "символ"
+      то «Join all» от [(«Charged» от («Amount poly» от («Size bytes» от latter))), («Sized one» от 4)]
+    случай "к строке"
+      то «With size» от («Join all» от [(«Charged» от («Constant» от 17)), («Allocated» от («Constant» от 32))]) и short
+    случай "символ по коду"
+      то «Sized one» от 4
+    случай "код символа"
+      то «With size» от пустой список и (вариант «Scalar size»)
+    случай "к числу или беда"
+      то «With size» от пустой список и (вариант «Whole size» с whole равным («Constant» от 3))
+    случай "остаток от"
+      то «With size» от пустой список и (вариант «Scalar size»)
+    случай "процентов от"
+      то «With size» от пустой список и (вариант «Scalar size»)
+    случай "хеш256"
+      то «With size» от («Charged» от («Add» от hashed и («Constant» от 1))) и short
+    случай любое
+      то «Text or guess» от name и sizes
+
+тотальная функция «Sized one»
+  принимает bytes: число
+  возвращает список «Fact»
+  пример «A one character text»
+    дано bytes равно 4
+    ожидается [вариант «Sized» с size равным (вариант «Text size» с bytes равным [
+      запись «Term» с coef равным 4 и vars равным []])]
+  «With size» от пустой список и (вариант «Text size» с bytes равным («Constant» от bytes))
+
+тотальная функция «Text or guess»
+  принимает name: строка, sizes: список «Size»
+  возвращает список «Fact»
+  пример «An unknown form is guessed»
+    дано name равно "новая форма"
+    дано sizes равно []
+    ожидается [вариант «Guess» с reason равным "«новая форма»: заряд формы не известен, принят нулём"]
+  если ["подстрока", "символы", "разделить", "к числу"] содержит name
+    то «Text facts» от name и sizes
+    иначе «Guessed» от (соединить ["«", name, "»: заряд формы не известен, принят нулём"] по "")
+
+тотальная функция «Steps of args»
+  принимает results: список список «Fact»
+  возвращает список «Fact»
+  пример «Arguments add up with a step each»
+    дано results равно [[вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 1 и vars равным []]]]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 2 и vars равным []],
+      вариант «Calls» с count равным 0]
+  «Then» от («Steps» от (длина results)) и («Sum of» от results)
+
+тотальная функция «Sizes of»
+  принимает results: список список «Fact»
+  возвращает список «Size»
+  пример «The size of each argument»
+    дано results равно [[вариант «Sized» с size равным (вариант «Scalar size»)]]
+    ожидается [вариант «Scalar size»]
+  отобразить results как result1 → «Size in» от result1
+
+тотальная функция «Builtin facts»
+  принимает name: строка, results: список список «Fact»
+  возвращает список «Fact»
+  пример «The length of a list costs its argument and two steps»
+    дано name равно "длина"
+    дано results равно [[вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 1 и vars равным []],
+      вариант «Sized» с size равным (вариант «List size» с count равным [] и inner равным (вариант «Scalar size»))]]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 3 и vars равным []],
+      вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «Count size» с value равным [])]
+  пусть extra равно («Builtin extra» от name и («Sizes of» от results))
+  «With size» от («Then» от («Then» от («Steps» от 1) и («Steps of args» от results)) и extra) и («Size in» от extra)
+
+тотальная функция «Arithmetic size»
+  принимает operator: строка, left: «Size», right: «Size»
+  возвращает «Size»
+  пример «A sum of counted numbers»
+    дано operator равно "add"
+    дано left равно вариант «Count size» с value равным [запись «Term» с coef равным 1 и vars равным ["n"]]
+    дано right равно вариант «Count size» с value равным [запись «Term» с coef равным 1 и vars равным []]
+    ожидается вариант «Count size» с value равным [запись «Term» с coef равным 1 и vars равным ["n"],
+      запись «Term» с coef равным 1 и vars равным []]
+  пример «A comparison is a plain value»
+    дано operator равно "lt"
+    дано left равно вариант «Scalar size»
+    дано right равно вариант «Scalar size»
+    ожидается вариант «Scalar size»
+  пусть former равно («Size value» от left)
+  пусть latter равно («Size value» от right)
+  пусть both равно («Is bounded» от former) и притом («Is bounded» от latter)
+  пусть sum равно («Add» от («Amount poly» от former) и («Amount poly» от latter))
+  пусть product равно («Multiply» от («Amount poly» от former) и («Amount poly» от latter))
+  разбор operator
+    случай "add"
+      то если both то вариант «Count size» с value равным sum иначе вариант «Scalar size»
+    случай "mul"
+      то если both то вариант «Count size» с value равным product иначе вариант «Scalar size»
+    случай "sub"
+      то «Counted» от former
+    случай "mod"
+      то «Counted» от latter
+    случай любое
+      то вариант «Scalar size»
+
+тотальная функция «Binary facts»
+  принимает operator: строка, left: список «Fact», right: список «Fact»
+  возвращает список «Fact»
+  пример «A comparison of two names»
+    дано operator равно "lt"
+    дано left равно [вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 1 и vars равным []]]
+    дано right равно [вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 1 и vars равным []]]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 5 и vars равным []],
+      вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «Scalar size»)]
+  пусть base равно («Then» от («Steps» от 3) и («Then» от left и right))
+  пусть former равно («Size in» от left)
+  пусть latter равно («Size in» от right)
+  пусть glued равно («Concat facts» от former и latter)
+  если operator равен "concat"
+    то «With size» от («Then» от base и glued) и («Size in» от glued)
+    иначе «With size» от base и («Arithmetic size» от operator и former и latter)
+
+тотальная функция «Choice facts»
+  принимает condition: список «Fact», positive: список «Fact», negative: список «Fact»
+  возвращает список «Fact»
+  пример «A branch costs two steps more than its larger side»
+    дано condition равно []
+    дано positive равно [вариант «Meter» с kind равным "steps" и poly равным [
+      запись «Term» с coef равным 1 и vars равным []]]
+    дано negative равно []
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 3 и vars равным []],
+      вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «No size»)]
+  пусть either равно («Either» от positive и negative)
+  «With size» от («Then» от («Steps» от 2) и («Then» от condition и either)) и («Size in» от either)
+
+тотальная функция «Let facts»
+  принимает value: список «Fact», body: список «Fact»
+  возвращает список «Fact»
+  пример «A binding costs two steps»
+    дано value равно []
+    дано body равно [вариант «Sized» с size равным (вариант «Scalar size»)]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 2 и vars равным []],
+      вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «Scalar size»)]
+  «With size» от («Then» от («Steps» от 2) и («Then» от value и body)) и («Size in» от body)
+
+тотальная функция «Match facts»
+  принимает target: список «Fact», arms: список список «Fact»
+  возвращает список «Fact»
+  пример «A match with one arm»
+    дано target равно []
+    дано arms равно [[вариант «Sized» с size равным (вариант «Scalar size»)]]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 2 и vars равным []],
+      вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «Scalar size»)]
+  пусть widest равно («Widest» от arms)
+  «With size» от («Then» от («Steps» от 2) и («Then» от target и widest)) и («Size in» от widest)
+
+тотальная функция «Widest»
+  принимает arms: список список «Fact»
+  возвращает список «Fact»
+  пример «The larger arm bounds the rest»
+    дано arms равно [[вариант «Calls» с count равным 1], [вариант «Calls» с count равным 0]]
+    ожидается [вариант «Calls» с count равным 1, вариант «Sized» с size равным (вариант «No size»)]
+  разбор arms
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то свёртка хвост начиная с голова как widest и arm → «Either» от widest и arm
+
+тотальная функция «Access facts»
+  принимает target: список «Fact»
+  возвращает список «Fact»
+  пример «A field of a record»
+    дано target равно [вариант «Sized» с size равным (вариант «Whole size» с whole равным [])]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 2 и vars равным []],
+      вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «Whole size» с whole равным [])]
+  «With size» от («Then» от («Steps» от 2) и target) и («Size inner» от («Size in» от target))
+
+тотальная функция «Joined sizes»
+  принимает sizes: список «Size»
+  возвращает «Size»
+  пример «No items have no size at all»
+    дано sizes равно []
+    ожидается вариант «Nothing size»
+  разбор sizes
+    случай пусто
+      то вариант «Nothing size»
+    случай голова и хвост
+      то свёртка хвост начиная с голова как joined и size → «Join size» от joined и size
+
+тотальная функция «Items facts»
+  принимает results: список список «Fact»
+  возвращает список «Fact»
+  пример «An empty list literal»
+    дано results равно []
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным []],
+      вариант «Meter» с kind равным "bytes" и poly равным [], вариант «Calls» с count равным 0,
+      вариант «Sized» с size равным (вариант «List size» с count равным [] и inner равным (вариант «Nothing size»))]
+  пусть count равно («Constant» от (длина results))
+  пусть size равно (вариант «List size» с count равным count и inner равным («Joined sizes» от («Sizes of» от results)))
+  пусть part1 равно («Then» от («Steps» от 1) и («Allocated» от («Scale» от count и 32)))
+  пусть facts равно («Then» от part1 и («Steps of args» от results))
+  «With size» от facts и size
+
+тотальная функция «Io orders»
+  возвращает список строки
+  пример «Every order a plan may give the host»
+    ожидается ["Прочитать файл", "Записать файл", "Прочитать октеты из файла", "Записать октеты в файл", "Запросить",
+      "Текущее время", "Случайное число", "Перечислить каталог", "Запустить процесс", "Запустить процесс с вводом",
+      "Запустить процесс с пределом", "Открыть соединение", "Принять соединение", "Прочитать из соединения",
+      "Ответить в соединение", "Прочитать октеты из соединения", "Ответить октетами в соединение", "Удалить файл",
+      "Завести временный каталог", "Прочитать переменную среды"]
+  ["Прочитать файл", "Записать файл", "Прочитать октеты из файла", "Записать октеты в файл", "Запросить",
+    "Текущее время", "Случайное число", "Перечислить каталог", "Запустить процесс", "Запустить процесс с вводом",
+    "Запустить процесс с пределом", "Открыть соединение", "Принять соединение", "Прочитать из соединения",
+    "Ответить в соединение", "Прочитать октеты из соединения", "Ответить октетами в соединение", "Удалить файл",
+    "Завести временный каталог", "Прочитать переменную среды"]
+
+тотальная функция «Effect facts»
+  принимает label: строка
+  возвращает список «Fact»
+  пример «Running a process is an effect»
+    дано label равно "Запустить процесс"
+    ожидается [вариант «Meter» с kind равным "effect:Запустить процесс" и poly равным [
+      запись «Term» с coef равным 1 и vars равным []]]
+  пример «A plain record is not»
+    дано label равно "Точка"
+    ожидается []
+  если «Io orders» содержит label
+    то «Metered» от (соединить ["effect:", label] по "") и («Constant» от 1)
+    иначе пустой список
+
+тотальная функция «Composite facts»
+  принимает label: строка, results: список список «Fact»
+  возвращает список «Fact»
+  пример «A record without fields»
+    дано label равно "Точка"
+    дано results равно []
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным []],
+      вариант «Meter» с kind равным "bytes" и poly равным [запись «Term» с coef равным 16 и vars равным []],
+      вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «Whole size» с whole равным [])]
+  пусть totals равно (отобразить («Sizes of» от results) как size → «Size total» от size)
+  пусть known равно (свёртка totals начиная с да как all и amount → all и притом («Is bounded» от amount))
+  пусть cells равно («Constant» от (длина results))
+  пусть sum равно (свёртка totals начиная с cells как all и amount → «Add» от all и («Amount poly» от amount))
+  пусть size равно (если known то вариант «Whole size» с whole равным sum иначе вариант «No size»)
+  пусть taken равно («Allocated» от («Constant» от (16 плюс (40 умножить на (длина results)))))
+  пусть own равно («Then» от («Steps» от 1) и taken)
+  пусть part1 равно («Then» от own и («Then» от («Steps of args» от results) и («Effect facts» от label)))
+  «With size» от part1 и size
+
+тотальная функция «Tail origin»
+  принимает origin: строка
+  возвращает строка
+  пример «The tail of a parameter is smaller than it»
+    дано origin равно "param:xs"
+    ожидается "tail:xs"
+  пример «A local list has no descent»
+    дано origin равно ""
+    ожидается ""
+  если (origin начинается с "param:") или (origin начинается с "tail:")
+    то соединить ["tail:", («Origin name» от origin)] по ""
+    иначе ""
+
+тотальная функция «Part origin»
+  принимает origin: строка
+  возвращает строка
+  пример «A field of a parameter is part of it»
+    дано origin равно "param:t"
+    ожидается "part:t"
+  если (origin начинается с "param:") или (origin начинается с "part:")
+    то соединить ["part:", («Origin name» от origin)] по ""
+    иначе ""
+
+тотальная функция «Origin name»
+  принимает origin: строка
+  возвращает строка
+  пример «The parameter behind an origin»
+    дано origin равно "tail:xs"
+    ожидается "xs"
+  разбор (разделить origin по ":")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то соединить хвост по ":"
+
+тотальная функция «Find known»
+  принимает known: список «Known», name: строка
+  возвращает «Known»
+  пример «An unbound name has no size»
+    дано known равно []
+    дано name равно "x"
+    ожидается запись «Known» с name равным "x" и size равным (вариант «No size») и origin равным ""
+  пусть missing равно (запись «Known» с name равным name и size равным (вариант «No size») и origin равным "")
+  разбор (отфильтровать known где entry → entry.name равен name)
+    случай пусто
+      то missing
+    случай голова и хвост
+      то голова
+
+тотальная функция «Origin of»
+  принимает expr: «Expr», known: список «Known»
+  возвращает строка
+  пример «A name keeps its origin»
+    дано expr равно вариант «Name» с name равным "xs"
+    дано known равно [запись «Known» с name равным "xs" и size равным (вариант «No size») и origin равным "param:xs"]
+    ожидается "param:xs"
+  разбор expr
+    случай вариант «Name» с name как name
+      то («Find known» от known и name).origin
+    случай вариант «Builtin» с name как name и arguments как arguments
+      то если name равен "хвост" то «Tail origin» от («Args origin» от arguments и known) иначе ""
+    случай любое
+      то ""
+
+тотальная функция «Args origin»
+  принимает arguments: список «Expr», known: список «Known»
+  возвращает строка
+  пример «The origin of the only argument»
+    дано arguments равно [вариант «Name» с name равным "xs"]
+    дано known равно [запись «Known» с name равным "xs" и size равным (вариант «No size») и origin равным "param:xs"]
+    ожидается "param:xs"
+  разбор arguments
+    случай пусто
+      то ""
+    случай голова и хвост
+      то разбор голова
+        случай вариант «Name» с name как name
+          то («Find known» от known и name).origin
+        случай любое
+          то ""
+
+тотальная функция «Tail size»
+  принимает size: «Size»
+  возвращает «Size»
+  пример «The tail of a list is no longer than it»
+    дано size равно вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+    ожидается вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+  пример «The tail of a whole is bounded by the whole»
+    дано size равно вариант «Whole size» с whole равным []
+    ожидается вариант «List size» с count равным [] и inner равным (вариант «Whole size» с whole равным [])
+  разбор size
+    случай вариант «List size» с count как count и inner как inner
+      то size
+    случай вариант «Whole size» с whole как whole
+      то вариант «List size» с count равным whole и inner равным size
+    случай любое
+      то вариант «No size»
+
+тотальная функция «Arm known»
+  принимает pattern: «Pattern», size: «Size», origin: строка
+  возвращает список «Known»
+  пример «A cons pattern binds a head and a smaller tail»
+    дано pattern равно вариант «Cons pattern» с opening равным "h" и rest равным "t"
+    дано size равно вариант «No size»
+    дано origin равно "param:xs"
+    ожидается [запись «Known» с name равным "h" и size равным (вариант «No size») и origin равным "",
+      запись «Known» с name равным "t" и size равным (вариант «No size») и origin равным "tail:xs"]
+  пусть inner равно («Size inner» от size)
+  пусть smaller равно («Tail size» от size)
+  пусть part равно («Part origin» от origin)
+  разбор pattern
+    случай вариант «Cons pattern» с opening как opening и rest как rest
+      то [(запись «Known» с name равным opening и size равным inner и origin равным ""),
+        (запись «Known» с name равным rest и size равным smaller и origin равным («Tail origin» от origin))]
+    случай вариант «Variant pattern» с label как label и names как names
+      то отобразить names как name → запись «Known» с name равным name и size равным inner и origin равным part
+    случай любое
+      то пустой список
+
+тотальная функция «Symbol»
+  принимает name: строка
+  возвращает строка
+  пример «A callee variable is renamed before it is replaced»
+    дано name равно "|xs|"
+    ожидается "§|xs|"
+  соединить ["§", name] по ""
+
+тотальная функция «Pair assignments»
+  принимает params: список «Parameter», sizes: список «Size»
+  возвращает список «Assign»
+  пример «A text parameter and its argument»
+    дано params равно [запись «Parameter» с name равным "s" и shape равным (вариант «Text shape»)]
+    дано sizes равно [вариант «Text size» с bytes равным []]
+    ожидается [запись «Assign» с name равным "|s|" и amount равным (вариант «Bounded» с poly равным [])]
+  разбор params
+    случай пусто
+      то пустой список
+    случай голова param и хвост others
+      то разбор sizes
+        случай пусто
+          то пустой список
+        случай голова size и хвост rest
+          то «Both» от («Assignments» от param.shape и param.name и size) и («Pair assignments» от others и rest)
+
+тотальная функция «All vars»
+  принимает params: список «Parameter»
+  возвращает список строки
+  пример «Variables of two parameters»
+    дано params равно [запись «Parameter» с name равным "s" и shape равным (вариант «Text shape»),
+      запись «Parameter» с name равным "n" и shape равным (вариант «Natural shape»)]
+    ожидается ["|s|", "n"]
+  свёртка params начиная с пустой список как found и param → «Both» от found и («Vars of» от param)
+
+тотальная функция «Assigned»
+  принимает facts: список «Fact», assign: «Assign»
+  возвращает список «Fact»
+  пример «A known argument size replaces the variable»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным [
+      "§n"]]]
+    дано assign равно запись «Assign» с name равным "n" и amount равным (вариант «Bounded» с poly равным [])
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным []]
+  пример «An unknown argument size the cost needs stops the bound»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным [
+      "§n"]]]
+    дано assign равно запись «Assign» с name равным "n" и amount равным (вариант «Unbounded»)
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным ["§n"]],
+      вариант «Trouble» с reason равным "размер довода «n» не выведен"]
+  пусть symbol равно («Symbol» от assign.name)
+  пусть reason равно (соединить ["размер довода «", assign.name, "» не выведен"] по "")
+  разбор assign.amount
+    случай вариант «Bounded» с poly как poly
+      то «Rewritten» от facts и symbol и poly
+    случай любое
+      то «Forgotten unless needed» от facts и symbol и reason
+
+тотальная функция «Forgotten unless needed»
+  принимает facts: список «Fact», name: строка, reason: строка
+  возвращает список «Fact»
+  пример «A size that needs an unknown value is forgotten, the cost stays bounded»
+    дано facts равно [вариант «Sized» с size равным (вариант «Count size» с value равным [
+      запись «Term» с coef равным 1 и vars равным ["§n"]])]
+    дано name равно "§n"
+    дано reason равно "x"
+    ожидается [вариант «Sized» с size равным (вариант «Scalar size»)]
+  пусть forgotten равно (отобразить facts как fact → «Fact forgotten» от fact и name)
+  пусть stuck равно (добавить (вариант «Trouble» с reason равным reason) к forgotten)
+  если «Metered mentions» от forgotten и name то stuck иначе forgotten
+
+тотальная функция «Metered mentions»
+  принимает facts: список «Fact», name: строка
+  возвращает признак
+  пример «A size does not count»
+    дано facts равно [вариант «Sized» с size равным (вариант «Count size» с value равным [
+      запись «Term» с coef равным 1 и vars равным ["n"]])]
+    дано name равно "n"
+    ожидается нет
+  свёртка facts начиная с нет как found и fact → found или («Fact metered» от fact и name)
+
+тотальная функция «Fact forgotten»
+  принимает fact: «Fact», name: строка
+  возвращает «Fact»
+  пример «A meter stays»
+    дано fact равно вариант «Calls» с count равным 1
+    дано name равно "n"
+    ожидается вариант «Calls» с count равным 1
+  разбор fact
+    случай вариант «Sized» с size как size
+      то вариант «Sized» с size равным («Size forgotten» от size и name)
+    случай любое
+      то fact
+
+тотальная функция «Size forgotten»
+  принимает size: «Size», name: строка
+  возвращает «Size»
+  пример «A number of unknown value is a plain number»
+    дано size равно вариант «Count size» с value равным [запись «Term» с coef равным 1 и vars равным ["n"]]
+    дано name равно "n"
+    ожидается вариант «Scalar size»
+  пример «A text of unknown length has no size»
+    дано size равно вариант «Text size» с bytes равным [запись «Term» с coef равным 1 и vars равным ["n"]]
+    дано name равно "n"
+    ожидается вариант «No size»
+  разбор size
+    случай вариант «Count size» с value как value
+      то если «Mentions» от value и name то вариант «Scalar size» иначе size
+    случай вариант «List size» с count как count и inner как inner
+      то «Unless mentioned» от count и name и («List of» от count и («Size forgotten» от inner и name))
+    случай любое
+      то если «Size mentions» от size и name то вариант «No size» иначе size
+
+тотальная функция «Renamed»
+  принимает facts: список «Fact», name: строка
+  возвращает список «Fact»
+  пример «A callee variable gets its mark»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным [
+      "n"]]]
+    дано name равно "n"
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным ["§n"]]]
+  «Rewritten» от facts и name и («Variable» от («Symbol» от name))
+
+тотальная функция «Applied»
+  принимает facts: список «Fact», params: список «Parameter», sizes: список «Size»
+  возвращает список «Fact»
+  пример «A callee cost in its own sizes becomes a cost in the caller sizes»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 2 и vars равным [
+      "n"]]]
+    дано params равно [запись «Parameter» с name равным "n" и shape равным (вариант «Natural shape»)]
+    дано sizes равно [вариант «Count size» с value равным [запись «Term» с coef равным 1 и vars равным ["m"]]]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 2 и vars равным ["m"]]]
+  пусть renamed равно (свёртка («All vars» от params) начиная с facts как done и name → «Renamed» от done и name)
+  свёртка («Pair assignments» от params и sizes) начиная с renamed как done и assign → «Assigned» от done и assign
+
+тотальная функция «Summary named»
+  принимает world: список «Summary», name: строка
+  возвращает список «Summary»
+  пример «No summary for an unknown function»
+    дано world равно []
+    дано name равно "Ф"
+    ожидается []
+  отфильтровать world где summary → summary.name равен name
+
+тотальная функция «Call overhead»
+  принимает results: список список «Fact», tailed: признак
+  возвращает список «Fact»
+  пример «A call in tail position needs no return frame»
+    дано results равно []
+    дано tailed равно да
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным []],
+      вариант «Calls» с count равным 0]
+  «Then» от («Steps» от (если tailed то 1 иначе 2)) и («Steps of args» от results)
+
+тотальная функция «Call facts»
+  принимает name: строка, results: список список «Fact», scope: «Scope», tailed: признак
+  возвращает список «Fact»
+  пример «A call of a function without a summary has no bound»
+    дано name равно "Ф"
+    дано results равно []
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    дано tailed равно да
+    ожидается [вариант «Trouble» с reason равным "вызов «Ф»: оценки нет — взаимная рекурсия или функция вне программы"]
+  пусть missing равно (соединить ["вызов «", name, "»: оценки нет — взаимная рекурсия или функция вне программы"] по "")
+  разбор («Summary named» от scope.world и name)
+    случай пусто
+      то «Stuck» от missing
+    случай голова и хвост
+      то «Callee facts» от голова и results и tailed
+
+тотальная функция «Callee facts»
+  принимает summary: «Summary», results: список список «Fact», tailed: признак
+  возвращает список «Fact»
+  пример «A callee of constant cost»
+    дано summary равно запись «Summary» с name равным "Ф" и params равным [] и facts равным [
+      вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 3 и vars равным []]]
+    дано results равно []
+    дано tailed равно да
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 4 и vars равным []],
+      вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «No size»)]
+  пусть applied равно («Applied» от summary.facts и summary.params и («Sizes of» от results))
+  «With size» от («Then» от («Call overhead» от results и tailed) и applied) и («Size in» от applied)
+
+тотальная функция «Origin kind»
+  принимает origin: строка
+  возвращает строка
+  пример «The kind before the colon»
+    дано origin равно "tail:xs"
+    ожидается "tail"
+  разбор (разделить origin по ":")
+    случай пусто
+      то "other"
+    случай голова и хвост
+      то голова
+
+тотальная функция «Move kind»
+  принимает origin: строка, param: строка
+  возвращает строка
+  пример «A tail of the parameter»
+    дано origin равно "tail:xs"
+    дано param равно "xs"
+    ожидается "tail"
+  пример «The parameter itself»
+    дано origin равно "param:xs"
+    дано param равно "xs"
+    ожидается "same"
+  пример «Something else»
+    дано origin равно "param:ys"
+    дано param равно "xs"
+    ожидается "other"
+  пусть kind равно («Origin kind» от origin)
+  если не («Origin name» от origin равен param)
+    то "other"
+    иначе разбор kind
+      случай "tail"
+        то "tail"
+      случай "part"
+        то "part"
+      случай "param"
+        то "same"
+      случай любое
+        то "other"
+
+тотальная функция «Move of»
+  принимает expr: «Expr», size: «Size», param: «Parameter», known: список «Known»
+  возвращает «Move»
+  пример «The parameter passed as it is»
+    дано expr равно вариант «Name» с name равным "n"
+    дано size равно вариант «Scalar size»
+    дано param равно запись «Parameter» с name равным "n" и shape равным (вариант «Natural shape»)
+    дано known равно [запись «Known» с name равным "n" и size равным (вариант «Scalar size») и origin равным "param:n"]
+    ожидается запись «Move» с kind равным "same" и amount равным 0 и size равным (вариант «Scalar size»)
+  пусть part1 равно («Move kind» от («Origin of» от expr и known) и param.name)
+  пусть plain равно (запись «Move» с kind равным part1 и amount равным 0 и size равным size)
+  разбор expr
+    случай вариант «Binary» с operator как operator и left как left и right как right
+      то «Minus move» от operator и («Origin of» от left и known) и right и param и size
+    случай любое
+      то plain
+
+тотальная функция «Minus move»
+  принимает operator: строка, origin: строка, right: «Expr», param: «Parameter», size: «Size»
+  возвращает «Move»
+  пример «Subtracting a positive constant from the parameter»
+    дано operator равно "sub"
+    дано origin равно "param:n"
+    дано right равно вариант «Literal» с bytes равным -1 и amount равным 2
+    дано param равно запись «Parameter» с name равным "n" и shape равным (вариант «Natural shape»)
+    дано size равно вариант «Scalar size»
+    ожидается запись «Move» с kind равным "minus" и amount равным 2 и size равным (вариант «Scalar size»)
+  пусть other равно (запись «Move» с kind равным "other" и amount равным 0 и size равным size)
+  пусть own равно (operator равен "sub") и притом (origin равен (соединить ["param:", param.name] по ""))
+  разбор right
+    случай вариант «Literal» с bytes как bytes и amount как amount
+      то если own и притом (amount больше 0) то «Minus of» от amount и size иначе other
+    случай любое
+      то other
+
+тотальная функция «Moves»
+  принимает params: список «Parameter», arguments: список «Expr», sizes: список «Size», known: список «Known»
+  возвращает список «Move»
+  пример «No arguments make no moves»
+    дано params равно []
+    дано arguments равно []
+    дано sizes равно []
+    дано known равно []
+    ожидается []
+  разбор params
+    случай пусто
+      то пустой список
+    случай голова param и хвост others
+      то разбор arguments
+        случай пусто
+          то пустой список
+        случай голова one и хвост rest
+          то «Flat moves» от [[(«Move of» от one и («Argument size» от sizes и 1) и param и known)],
+            («Moves» от others и rest и («Rest sizes» от sizes) и known)]
+
+тотальная функция «Rest sizes»
+  принимает sizes: список «Size»
+  возвращает список «Size»
+  пример «All but the first»
+    дано sizes равно [вариант «Scalar size», вариант «No size»]
+    ожидается [вариант «No size»]
+  разбор sizes
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Own call»
+  принимает arguments: список «Expr», results: список список «Fact», scope: «Scope», tailed: признак
+  возвращает список «Fact»
+  пример «A call of the function itself is a site, its body is counted by the recursion»
+    дано arguments равно []
+    дано results равно []
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    дано tailed равно да
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным []],
+      вариант «Calls» с count равным 1, вариант «Site» с moves равным [],
+      вариант «Sized» с size равным (вариант «Scalar size»)]
+  пусть moves равно («Moves» от («Self of» от scope).params и arguments и («Sizes of» от results) и scope.known)
+  пусть site равно [вариант «Calls» с count равным 1, вариант «Site» с moves равным moves]
+  пусть part1 равно («Then» от («Call overhead» от results и tailed) и site)
+  «With size» от part1 и («Parameter size» от («Self of» от scope).yields и "ρ")
+
+тотальная функция «Symbolic size»
+  принимает size: «Size», base: строка
+  возвращает «Size»
+  пример «A text accumulator»
+    дано size равно вариант «Text size» с bytes равным []
+    дано base равно "α"
+    ожидается вариант «Text size» с bytes равным [запись «Term» с coef равным 1 и vars равным ["|α|"]]
+  разбор size
+    случай вариант «Count size» с value как value
+      то вариант «Count size» с value равным («Variable» от base)
+    случай вариант «Text size» с bytes как bytes
+      то вариант «Text size» с bytes равным («Variable» от («Bars» от base))
+    случай вариант «List size» с count как count и inner как inner
+      то «List of» от («Variable» от («Bars» от base)) и («Symbolic size» от inner и («Element name» от base))
+    случай вариант «Whole size» с whole как whole
+      то вариант «Whole size» с whole равным («Variable» от («Bars» от base))
+    случай любое
+      то size
+
+тотальная функция «Symbolic vars»
+  принимает size: «Size», base: строка
+  возвращает список строки
+  пример «A list of texts has two variables»
+    дано size равно вариант «List size» с count равным [] и inner равным (вариант «Text size» с bytes равным [])
+    дано base равно "α"
+    ожидается ["|α|", "|α[]|"]
+  разбор size
+    случай вариант «Count size» с value как value
+      то [base]
+    случай вариант «Text size» с bytes как bytes
+      то [«Bars» от base]
+    случай вариант «List size» с count как count и inner как inner
+      то приписать («Bars» от base) к («Symbolic vars» от inner и («Element name» от base))
+    случай вариант «Whole size» с whole как whole
+      то [«Bars» от base]
+    случай любое
+      то пустой список
+
+тотальная функция «Size polys»
+  принимает size: «Size»
+  возвращает список список «Term»
+  пример «The polynomials of a list of texts in order»
+    дано size равно вариант «List size» с count равным [] и inner равным (вариант «Text size» с bytes равным [])
+    ожидается [[], []]
+  разбор size
+    случай вариант «Count size» с value как value
+      то [value]
+    случай вариант «Text size» с bytes как bytes
+      то [bytes]
+    случай вариант «List size» с count как count и inner как inner
+      то приписать count к («Size polys» от inner)
+    случай вариант «Whole size» с whole как whole
+      то [whole]
+    случай любое
+      то пустой список
+
+тотальная функция «Stripped»
+  принимает size: «Size», names: список строки
+  возвращает «Size»
+  пример «Terms of the accumulator are dropped»
+    дано size равно вариант «Text size» с bytes равным [запись «Term» с coef равным 1 и vars равным ["|α|"]]
+    дано names равно ["|α|"]
+    ожидается вариант «Text size» с bytes равным []
+  свёртка names начиная с size как done и name → «Size rewritten» от done и name и пустой список
+
+тотальная функция «Grown poly»
+  принимает start: список «Term», body: список «Term», name: строка, count: список «Term»
+  возвращает «Amount»
+  пример «Adding one per element»
+    дано start равно []
+    дано body равно [запись «Term» с coef равным 1 и vars равным ["|α|"],
+      запись «Term» с coef равным 1 и vars равным []]
+    дано name равно "|α|"
+    дано count равно [запись «Term» с coef равным 1 и vars равным ["n"]]
+    ожидается вариант «Bounded» с poly равным [запись «Term» с coef равным 1 и vars равным ["n"]]
+  пример «Doubling is not bounded by a polynomial»
+    дано start равно []
+    дано body равно [запись «Term» с coef равным 2 и vars равным ["|α|"]]
+    дано name равно "|α|"
+    дано count равно []
+    ожидается вариант «Unbounded»
+  если «Linear in» от body и name
+    то вариант «Bounded» с poly равным («Add» от start и («Multiply» от count и («Without» от body и name)))
+    иначе вариант «Unbounded»
+
+тотальная функция «Grown»
+  принимает start: «Size», body: «Size», base: строка, count: список «Term»
+  возвращает «Size»
+  пример «A text grown by one byte per element»
+    дано start равно вариант «Text size» с bytes равным []
+    дано body равно вариант «Text size» с bytes равным [запись «Term» с coef равным 1 и vars равным ["|α|"],
+      запись «Term» с coef равным 1 и vars равным []]
+    дано base равно "α"
+    дано count равно [запись «Term» с coef равным 1 и vars равным ["n"]]
+    ожидается вариант «Text size» с bytes равным [запись «Term» с coef равным 1 и vars равным ["n"]]
+  разбор start
+    случай вариант «Count size» с value как value
+      то разбор body
+        случай вариант «Count size» с value как more
+          то «Counted» от («Grown poly» от value и more и base и count)
+        случай любое
+          то «Join size» от start и body
+    случай вариант «Text size» с bytes как bytes
+      то «Text amount» от («Grown amount» от bytes и («Size bytes» от body) и («Bars» от base) и count)
+    случай вариант «List size» с count как length1 и inner как inner
+      то «Grown list» от length1 и inner и («List view» от body) и base и count
+    случай вариант «Whole size» с whole как whole
+      то «Whole amount» от («Grown amount» от whole и («Size total» от body) и («Bars» от base) и count)
+    случай любое
+      то «Join size» от start и body
+
+тотальная функция «Grown amount»
+  принимает start: список «Term», body: «Amount», name: строка, count: список «Term»
+  возвращает «Amount»
+  пример «An unknown body size»
+    дано start равно []
+    дано body равно вариант «Unbounded»
+    дано name равно "|α|"
+    дано count равно []
+    ожидается вариант «Unbounded»
+  разбор body
+    случай вариант «Bounded» с poly как poly
+      то «Grown poly» от start и poly и name и count
+    случай любое
+      то вариант «Unbounded»
+
+тотальная функция «List view»
+  принимает size: «Size»
+  возвращает «Size»
+  пример «A whole seen as a list of its parts»
+    дано size равно вариант «Whole size» с whole равным []
+    ожидается вариант «List size» с count равным [] и inner равным (вариант «Whole size» с whole равным [])
+  разбор size
+    случай вариант «Whole size» с whole как whole
+      то вариант «List size» с count равным whole и inner равным size
+    случай любое
+      то size
+
+тотальная функция «Text amount»
+  принимает amount: «Amount»
+  возвращает «Size»
+  пример «Known bytes»
+    дано amount равно вариант «Bounded» с poly равным []
+    ожидается вариант «Text size» с bytes равным []
+  разбор amount
+    случай вариант «Bounded» с poly как poly
+      то вариант «Text size» с bytes равным poly
+    случай любое
+      то вариант «No size»
+
+тотальная функция «Whole amount»
+  принимает amount: «Amount»
+  возвращает «Size»
+  пример «Known total»
+    дано amount равно вариант «Bounded» с poly равным []
+    ожидается вариант «Whole size» с whole равным []
+  разбор amount
+    случай вариант «Bounded» с poly как poly
+      то вариант «Whole size» с whole равным poly
+    случай любое
+      то вариант «No size»
+
+тотальная функция «Grown list»
+  принимает length1: список «Term», inner: «Size», body: «Size», base: строка, count: список «Term»
+  возвращает «Size»
+  пример «Appending one element per step»
+    дано length1 равно []
+    дано inner равно вариант «Scalar size»
+    дано body равно вариант «List size» с count равным [запись «Term» с coef равным 1 и vars равным ["|α|"],
+      запись «Term» с coef равным 1 и vars равным []] и inner равным (вариант «Scalar size»)
+    дано base равно "α"
+    дано count равно [запись «Term» с coef равным 1 и vars равным ["n"]]
+    ожидается вариант «List size» с count равным [запись «Term» с coef равным 1 и vars равным [
+      "n"]] и inner равным (вариант «Scalar size»)
+  пусть names равно («Symbolic vars» от (вариант «List size» с count равным length1 и inner равным inner) и base)
+  разбор body
+    случай вариант «List size» с count как more и inner как element
+      то «Grown elements» от length1 и more и base и count и («Join size» от inner и («Stripped» от element и names))
+    случай любое
+      то вариант «No size»
+
+тотальная функция «Listed»
+  принимает amount: «Amount», inner: «Size»
+  возвращает «Size»
+  пример «A known count»
+    дано amount равно вариант «Bounded» с poly равным []
+    дано inner равно вариант «Scalar size»
+    ожидается вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+  разбор amount
+    случай вариант «Bounded» с poly как poly
+      то вариант «List size» с count равным poly и inner равным inner
+    случай любое
+      то вариант «No size»
+
+тотальная функция «Bind names»
+  принимает facts: список «Fact», names: список строки, polys: список список «Term»
+  возвращает список «Fact»
+  пример «A symbolic size is replaced by the final one»
+    дано facts равно [вариант «Meter» с kind равным "charges" и poly равным [
+      запись «Term» с coef равным 1 и vars равным ["|α|"]]]
+    дано names равно ["|α|"]
+    дано polys равно [[запись «Term» с coef равным 5 и vars равным []]]
+    ожидается [вариант «Meter» с kind равным "charges" и poly равным [запись «Term» с coef равным 5 и vars равным []]]
+  разбор names
+    случай пусто
+      то facts
+    случай голова name и хвост others
+      то разбор polys
+        случай пусто
+          то facts
+        случай голова poly и хвост rest
+          то «Bind names» от («Rewritten» от facts и name и poly) и others и rest
+
+тотальная функция «Leftover»
+  принимает facts: список «Fact», names: список строки, reason: строка
+  возвращает список «Fact»
+  пример «A cost that still mentions the accumulator has no bound»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным [
+      "|α|"]]]
+    дано names равно ["|α|"]
+    дано reason равно "x"
+    ожидается [вариант «Trouble» с reason равным "x"]
+  если свёртка names начиная с нет как found и name → found или («Metered mentions» от facts и name)
+    то «Stuck» от reason
+    иначе пустой список
+
+тотальная функция «Fold facts»
+  принимает over: список «Fact», start: список «Fact», body: список «Fact»
+  возвращает список «Fact»
+  пример «A fold over an empty list»
+    дано over равно [
+      вариант «Sized» с size равным (вариант «List size» с count равным [] и inner равным (вариант «Scalar size»))]
+    дано start равно [вариант «Sized» с size равным (вариант «Scalar size»)]
+    дано body равно [вариант «Sized» с size равным (вариант «Scalar size»)]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 4 и vars равным []],
+      вариант «Meter» с kind равным "charges" и poly равным [], вариант «Calls» с count равным 0,
+      вариант «Sized» с size равным (вариант «Scalar size»)]
+  пусть counted равно («Size count» от («Size in» от over))
+  пусть count равно («Amount poly» от counted)
+  пусть template равно («Symbolic size» от («Size in» от start) и "α")
+  пусть names равно («Symbolic vars» от («Size in» от start) и "α")
+  пусть final равно («Grown» от («Size in» от start) и («Size in» от body) и "α" и count)
+  пусть bound равно («Bind names» от body и names и («Size polys» от final))
+  пусть each равно («Scaled» от («Then» от («Steps» от 1) и bound) и count)
+  пусть need равно («Needed» от counted и "свёртка: длина списка не выведена")
+  пусть rest равно («Leftover» от bound и names и "свёртка: рост накопителя не выведен")
+  пусть inside равно («Inside» от body и "рекурсивный вызов внутри свёртки")
+  пусть total равно («Sum of» от [(«Steps» от 4), over, start, («Without calls» от each), («Charged» от count), need,
+    rest, inside])
+  «With size» от total и final
+
+тотальная функция «Without calls»
+  принимает facts: список «Fact»
+  возвращает список «Fact»
+  пример «Calls are dropped»
+    дано facts равно [вариант «Calls» с count равным 1]
+    ожидается []
+  отфильтровать facts где fact → («Fact calls» от fact) равен 0
+
+тотальная функция «Walk facts»
+  принимает over: список «Fact», body: список «Fact», keep: признак
+  возвращает список «Fact»
+  пример «A map over an empty list»
+    дано over равно [
+      вариант «Sized» с size равным (вариант «List size» с count равным [] и inner равным (вариант «Scalar size»))]
+    дано body равно [вариант «Sized» с size равным (вариант «Scalar size»)]
+    дано keep равно нет
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 3 и vars равным []],
+      вариант «Meter» с kind равным "charges" и poly равным [], вариант «Meter» с kind равным "bytes" и poly равным [],
+      вариант «Calls» с count равным 0,
+      вариант «Sized» с size равным (вариант «List size» с count равным [] и inner равным (вариант «Scalar size»))]
+  пусть counted равно («Size count» от («Size in» от over))
+  пусть count равно («Amount poly» от counted)
+  пусть element равно (если keep то «Size inner» от («Size in» от over) иначе «Size in» от body)
+  пусть each равно («Scaled» от («Then» от («Steps» от 1) и body) и count)
+  пусть need равно («Needed» от counted и "обход: длина списка не выведена")
+  пусть inside равно («Inside» от body и "рекурсивный вызов внутри обхода")
+  пусть total равно («Sum of» от [(«Steps» от 3), over, («Without calls» от each), («Charged» от count),
+    («Allocated» от («Scale» от count и 32)), need, inside])
+  «With size» от total и («Listed» от counted и element)
+
+тотальная функция «Fold known»
+  принимает names: список строки, start: «Size», over: «Size»
+  возвращает список «Known»
+  пример «The accumulator gets a symbolic size, the element the size of an element»
+    дано names равно ["a", "e"]
+    дано start равно вариант «Scalar size»
+    дано over равно вариант «No size»
+    ожидается [запись «Known» с name равным "a" и size равным (вариант «Scalar size») и origin равным "",
+      запись «Known» с name равным "e" и size равным (вариант «No size») и origin равным ""]
+  пусть part1 равно («Symbolic size» от start и "α")
+  пусть accumulator равно (запись «Known» с name равным («Name at» от names и 1) и size равным part1 и origin равным "")
+  пусть item1 равно («Name at» от names и 2)
+  пусть element равно (запись «Known» с name равным item1 и size равным («Size inner» от over) и origin равным "")
+  [accumulator, element]
+
+тотальная функция «Walk known»
+  принимает names: список строки, over: «Size»
+  возвращает список «Known»
+  пример «The element gets the size of an element»
+    дано names равно ["e"]
+    дано over равно вариант «No size»
+    ожидается [запись «Known» с name равным "e" и size равным (вариант «No size») и origin равным ""]
+  [запись «Known» с name равным («Name at» от names и 1) и size равным («Size inner» от over) и origin равным ""]
+
+тотальная функция «Name at»
+  принимает names: список строки, place: число
+  возвращает строка
+  пример «The second name»
+    дано names равно ["a", "e"]
+    дано place равно 2
+    ожидается "e"
+  пример «A missing name»
+    дано names равно []
+    дано place равно 1
+    ожидается ""
+  если (длина names) не меньше place то элемент place в names иначе ""
+
+
+объект «Scope»
+  world: список «Summary»
+  self: список «Self»
+  known: список «Known»
+
+тотальная функция «Self of»
+  принимает scope: «Scope»
+  возвращает «Self»
+  пример «A scope without a function»
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    ожидается запись «Self» с name равным "" и params равным [] и yields равным (вариант «Truth shape»)
+  пусть truth равно (вариант «Truth shape»)
+  пусть nobody равно (запись «Self» с name равным "" и params равным пустой список и yields равным truth)
+  свёртка scope.self начиная с nobody как found и one → one
+
+тотальная функция «Size here»
+  принимает expr: «Expr», scope: «Scope»
+  возвращает «Size»
+  пример «The size of a bound name»
+    дано expr равно вариант «Name» с name равным "x"
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    ожидается вариант «No size»
+  разбор expr
+    случай вариант «Name» с name как name
+      то («Find known» от scope.known и name).size
+    случай вариант «Literal» с bytes как bytes и amount как amount
+      то «Literal size» от bytes и amount
+    случай любое
+      то вариант «No size»
+
+тотальная функция «Widened»
+  принимает scope: «Scope», more: список «Known»
+  возвращает «Scope»
+  пример «Nothing new»
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    дано more равно []
+    ожидается запись «Scope» с known равным [] и world равным [] и self равным []
+  пусть part1 равно («Both» от more и scope.known)
+  запись «Scope» с known равным part1 и world равным scope.world и self равным scope.self
+
+тотальная функция «Fold scope»
+  принимает names: список строки, over: «Expr», start: «Expr», scope: «Scope»
+  возвращает «Scope»
+  пример «A fold over a name»
+    дано names равно []
+    дано over равно вариант «Gap»
+    дано start равно вариант «Gap»
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    ожидается запись «Scope» с world равным [] и self равным [] и known равным [
+      запись «Known» с name равным "" и size равным (вариант «No size») и origin равным "",
+      запись «Known» с name равным "" и size равным (вариант «No size») и origin равным ""]
+  «Widened» от scope и («Fold known» от names и («Size here» от start и scope) и («Size here» от over и scope))
+
+тотальная функция «Walk scope»
+  принимает names: список строки, over: «Expr», scope: «Scope»
+  возвращает «Scope»
+  пример «A walk over nothing known»
+    дано names равно []
+    дано over равно вариант «Gap»
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    ожидается запись «Scope» с world равным [] и self равным [] и known равным [
+      запись «Known» с name равным "" и size равным (вариант «No size») и origin равным ""]
+  «Widened» от scope и («Walk known» от names и («Size here» от over и scope))
+
+тотальная функция «Bound»
+  принимает name: строка, value: «Expr», facts: список «Fact», scope: «Scope»
+  возвращает «Scope»
+  пример «A binding keeps the size of its value»
+    дано name равно "t"
+    дано value равно вариант «Gap»
+    дано facts равно [вариант «Sized» с size равным (вариант «Scalar size»)]
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    ожидается запись «Scope» с world равным [] и self равным [] и known равным [
+      запись «Known» с name равным "t" и size равным (вариант «Scalar size») и origin равным ""]
+  пусть origin равно («Origin of» от value и scope.known)
+  «Widened» от scope и [запись «Known» с name равным name и size равным («Size in» от facts) и origin равным origin]
+
+тотальная функция «Arm scope»
+  принимает arm: «Arm», target: «Expr», scope: «Scope»
+  возвращает «Scope»
+  пример «An arm of any value binds nothing»
+    дано arm равно запись «Arm» с pattern равным (вариант «Any pattern») и body равным (вариант «Gap»)
+    дано target равно вариант «Gap»
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    ожидается запись «Scope» с known равным [] и world равным [] и self равным []
+  пусть origin равно («Origin of» от target и scope.known)
+  «Widened» от scope и («Arm known» от arm.pattern и («Size here» от target и scope) и origin)
+
+тотальная функция «Hidden»
+  принимает name: строка
+  возвращает признак
+  пример «A name the reader made up»
+    дано name равно "§m"
+    ожидается да
+  name начинается с "§"
+
+тотальная функция «Name facts»
+  принимает name: строка, scope: «Scope»
+  возвращает список «Fact»
+  пример «A name costs one step»
+    дано name равно "x"
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным []],
+      вариант «Sized» с size равным (вариант «No size»)]
+  пусть size равно («Find known» от scope.known и name).size
+  если «Hidden» от name то «With size» от пустой список и size иначе «With size» от («Steps» от 1) и size
+
+тотальная функция «Binding facts»
+  принимает name: строка, parts: список список «Fact»
+  возвращает список «Fact»
+  пример «A binding the reader made up costs nothing more»
+    дано name равно "§m"
+    дано parts равно []
+    ожидается [вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «No size»)]
+  пусть value равно («Part at» от parts и 1)
+  пусть body равно («Part at» от parts и 2)
+  если «Hidden» от name
+    то «With size» от («Then» от value и body) и («Size in» от body)
+    иначе «Let facts» от value и body
+
+тотальная функция «Part at»
+  принимает parts: список список «Fact», place: число
+  возвращает список «Fact»
+  пример «The second part»
+    дано parts равно [[], [вариант «Calls» с count равным 1]]
+    дано place равно 2
+    ожидается [вариант «Calls» с count равным 1]
+  пример «A missing part»
+    дано parts равно []
+    дано place равно 1
+    ожидается []
+  если (длина parts) не меньше place то элемент place в parts иначе пустой список
+
+тотальная функция «Choice of»
+  принимает parts: список список «Fact»
+  возвращает список «Fact»
+  пример «A branch of three parts»
+    дано parts равно [[], [], []]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 2 и vars равным []],
+      вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «No size»)]
+  «Choice facts» от («Part at» от parts и 1) и («Part at» от parts и 2) и («Part at» от parts и 3)
+
+тотальная функция «Binary of»
+  принимает operator: строка, parts: список список «Fact»
+  возвращает список «Fact»
+  пример «A sum of two literals»
+    дано operator равно "add"
+    дано parts равно [[], []]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 3 и vars равным []],
+      вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «Scalar size»)]
+  «Binary facts» от operator и («Part at» от parts и 1) и («Part at» от parts и 2)
+
+тотальная функция «Match of parts»
+  принимает parts: список список список «Fact»
+  возвращает список «Fact»
+  пример «A match with no arms»
+    дано parts равно [[[]], []]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 2 и vars равным []],
+      вариант «Calls» с count равным 0, вариант «Sized» с size равным (вариант «No size»)]
+  «Match facts» от («Part at» от («Target part» от parts) и 1) и («Arms part» от parts)
+
+тотальная функция «Target part»
+  принимает parts: список список список «Fact»
+  возвращает список список «Fact»
+  пример «The target comes first»
+    дано parts равно [[[вариант «Calls» с count равным 1]], []]
+    ожидается [[вариант «Calls» с count равным 1]]
+  разбор parts
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то голова
+
+тотальная функция «Arms part»
+  принимает parts: список список список «Fact»
+  возвращает список список «Fact»
+  пример «The arms come second»
+    дано parts равно [[[]], [[вариант «Calls» с count равным 1]]]
+    ожидается [[вариант «Calls» с count равным 1]]
+  если (длина parts) не меньше 2 то элемент 2 в parts иначе пустой список
+
+тотальная функция «Fold of»
+  принимает parts: список список «Fact»
+  возвращает список «Fact»
+  пример «A fold over nothing known has no bound»
+    дано parts равно [[], [], []]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 4 и vars равным []],
+      вариант «Meter» с kind равным "charges" и poly равным [], вариант «Calls» с count равным 0,
+      вариант «Trouble» с reason равным "свёртка: длина списка не выведена",
+      вариант «Sized» с size равным (вариант «No size»)]
+  «Fold facts» от («Part at» от parts и 1) и («Part at» от parts и 2) и («Part at» от parts и 3)
+
+тотальная функция «Walk of»
+  принимает parts: список список «Fact», keep: признак
+  возвращает список «Fact»
+  пример «A walk over nothing known has no bound»
+    дано parts равно [[], []]
+    дано keep равно да
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 3 и vars равным []],
+      вариант «Meter» с kind равным "charges" и poly равным [], вариант «Meter» с kind равным "bytes" и poly равным [],
+      вариант «Calls» с count равным 0, вариант «Trouble» с reason равным "обход: длина списка не выведена",
+      вариант «Sized» с size равным (вариант «No size»)]
+  «Walk facts» от («Part at» от parts и 1) и («Part at» от parts и 2) и keep
+
+тотальная функция «Cost of»
+  принимает expr: «Expr», scope: «Scope», tailed: признак
+  возвращает список «Fact»
+  пример «A literal costs one step»
+    дано expr равно вариант «Literal» с bytes равным -1 и amount равным 0
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    дано tailed равно да
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным []],
+      вариант «Sized» с size равным (вариант «Count size» с value равным [])]
+  разбор expr
+    случай вариант «Literal» с bytes как bytes и amount как amount
+      то «With size» от («Steps» от 1) и («Literal size» от bytes и amount)
+    случай вариант «Name» с name как name
+      то «Name facts» от name и scope
+    случай вариант «Binary» с operator как operator и left как left и right как right
+      то «Binary of» от operator и [(«Cost of» от left и scope и нет), («Cost of» от right и scope и нет)]
+    случай вариант «Builtin» с name как name и arguments как arguments
+      то «Builtin facts» от name и (отобразить arguments как argument → «Cost of» от argument и scope и нет)
+    случай вариант «Call» с name как name и arguments как arguments
+      то если name равен («Self of» от scope).name
+        то «Own call» от arguments и (отобразить arguments как one → «Cost of» от one и scope и нет) и scope и tailed
+        иначе «Call facts» от name и (отобразить arguments как one → «Cost of» от one и scope и нет) и scope и tailed
+    случай вариант «Choice» с test как condition и yea как positive и nay как negative
+      то «Choice of» от [(«Cost of» от condition и scope и нет), («Cost of» от positive и scope и tailed),
+        («Cost of» от negative и scope и tailed)]
+    случай вариант «Let» с name как name и value как value и body как body
+      то «Binding facts» от name и [(«Cost of» от value и scope и нет),
+        («Cost of» от body и («Bound» от name и value и («Cost of» от value и scope и нет) и scope) и tailed)]
+    случай вариант «Match» с target как target и arms как arms
+      то «Match of parts» от [[(«Cost of» от target и scope и нет)],
+        (отобразить arms как arm → «Cost of» от arm.body и («Arm scope» от arm и target и scope) и tailed)]
+    случай вариант «Access» с target как target
+      то «Access facts» от («Cost of» от target и scope и нет)
+    случай вариант «Items» с items как items
+      то «Items facts» от (отобразить items как entry → «Cost of» от entry и scope и нет)
+    случай вариант «Composite» с label как label и parts как parts
+      то «Composite facts» от label и (отобразить parts как part → «Cost of» от part и scope и нет)
+    случай вариант «Fold» с step как step и over как over и start как start
+      то «Fold of» от [(«Cost of» от over и scope и нет), («Cost of» от start и scope и нет),
+        («Cost of» от step.body и («Fold scope» от step.names и over и start и scope) и нет)]
+    случай вариант «Walk» с step как step и over как over и keep как keep
+      то «Walk of» от [(«Cost of» от over и scope и нет),
+        («Cost of» от step.body и («Walk scope» от step.names и over и scope) и нет)] и keep
+    случай вариант «Unknown» с kind как kind
+      то «Stuck» от (соединить ["конструкция «", kind, "» не оценивается"] по "")
+    случай любое
+      то «Stuck» от "часть дерева не прочитана"
+
+объект «Pending»
+  routine: «Node»
+  name: строка
+  callees: список строки
+
+объект «Progress»
+  done: список «Summary»
+  waiting: список «Pending»
+
+объект «Descent»
+  count: «Amount»
+  reason: строка
+  guess: строка
+
+тотальная функция «Callees»
+  принимает expr: «Expr»
+  возвращает список строки
+  пример «A call inside a branch»
+    дано expr равно вариант «Call» с name равным "Г" и arguments равным []
+    ожидается ["Г"]
+  разбор expr
+    случай вариант «Call» с name как name и arguments как arguments
+      то свёртка arguments начиная с [name] как found и one → «Both» от found и («Callees» от one)
+    случай вариант «Builtin» с name как name и arguments как arguments
+      то свёртка arguments начиная с пустой список как found и one → «Both» от found и («Callees» от one)
+    случай вариант «Binary» с operator как operator и left как left и right как right
+      то «Both» от («Callees» от left) и («Callees» от right)
+    случай вариант «Choice» с test как condition и yea как positive и nay как negative
+      то «Both» от («Callees» от condition) и («Both» от («Callees» от positive) и («Callees» от negative))
+    случай вариант «Let» с name как name и value как value и body как body
+      то «Both» от («Callees» от value) и («Callees» от body)
+    случай вариант «Match» с target как target и arms как arms
+      то свёртка arms начиная с («Callees» от target) как found и arm → «Both» от found и («Callees» от arm.body)
+    случай вариант «Access» с target как target
+      то «Callees» от target
+    случай вариант «Items» с items как items
+      то свёртка items начиная с пустой список как found и one → «Both» от found и («Callees» от one)
+    случай вариант «Composite» с label как label и parts как parts
+      то свёртка parts начиная с пустой список как found и one → «Both» от found и («Callees» от one)
+    случай вариант «Fold» с step как step и over как over и start как start
+      то «Both» от («Callees» от over) и («Both» от («Callees» от start) и («Callees» от step.body))
+    случай вариант «Walk» с step как step и over как over и keep как keep
+      то «Both» от («Callees» от over) и («Callees» от step.body)
+    случай любое
+      то пустой список
+
+тотальная функция «Pending of»
+  принимает routine: «Node»
+  возвращает «Pending»
+  пример «A function without calls»
+    дано routine равно вариант «Obj» с fields равным []
+    ожидается запись «Pending» с routine равным (вариант «Obj» с fields равным []) и name равным "" и callees равным []
+  пусть body равно («Callees» от («Function body» от routine))
+  пусть written равно («Function checks» от routine)
+  пусть checks равно (свёртка written начиная с body как found и one → «Both» от found и («Callees» от one))
+  пусть part1 равно («Function name» от routine)
+  запись «Pending» с routine равным routine и name равным part1 и callees равным («Distinct» от checks)
+
+тотальная функция «Reach step»
+  принимает names: список строки, pendings: список «Pending»
+  возвращает список строки
+  пример «A caller brings its callees»
+    дано names равно ["Ф"]
+    дано pendings равно [запись «Pending» с routine равным (вариант «Nil») и name равным "Ф" и callees равным ["Г"]]
+    ожидается ["Ф", "Г"]
+  свёртка pendings начиная с names как found и pending → «Reached» от found и pending
+
+тотальная функция «Reachable»
+  принимает pendings: список «Pending», entry: строка
+  возвращает список «Pending»
+  пример «Only what the entry reaches»
+    дано pendings равно [запись «Pending» с routine равным (вариант «Nil») и name равным "Ф" и callees равным [],
+      запись «Pending» с routine равным (вариант «Nil») и name равным "Г" и callees равным []]
+    дано entry равно "Ф"
+    ожидается [запись «Pending» с routine равным (вариант «Nil») и name равным "Ф" и callees равным []]
+  пусть names равно (свёртка pendings начиная с [entry] как found и pending → «Reach step» от found и pendings)
+  отфильтровать pendings где pending → names содержит pending.name
+
+тотальная функция «Ready»
+  принимает pending: «Pending», done: список «Summary»
+  возвращает признак
+  пример «A function whose callees are all summarized»
+    дано pending равно запись «Pending» с routine равным (вариант «Nil») и name равным "Ф" и callees равным ["Ф"]
+    дано done равно []
+    ожидается да
+  пусть names равно (отобразить done как summary → summary.name)
+  пусть own равно pending.name
+  свёртка pending.callees начиная с да как all и callee → all и притом ((callee равен own) или (names содержит callee))
+
+тотальная функция «Pass step»
+  принимает progress: «Progress», pending: «Pending», guards: список строки
+  возвращает «Progress»
+  пример «A function not ready waits»
+    дано progress равно запись «Progress» с done равным [] и waiting равным []
+    дано guards равно []
+    дано pending равно запись «Pending» с routine равным (вариант «Nil») и name равным "Ф" и callees равным ["Г"]
+    ожидается запись «Progress» с done равным [] и waiting равным [
+      запись «Pending» с routine равным (вариант «Nil») и name равным "Ф" и callees равным ["Г"]]
+  пусть summarized равно (добавить («Summarize» от pending.routine и progress.done и guards) к progress.done)
+  если «Ready» от pending и progress.done
+    то запись «Progress» с done равным summarized и waiting равным progress.waiting
+    иначе запись «Progress» с done равным progress.done и waiting равным (добавить pending к progress.waiting)
+
+тотальная функция «Pass»
+  принимает progress: «Progress», guards: список строки
+  возвращает «Progress»
+  пример «Nothing waits»
+    дано progress равно запись «Progress» с done равным [] и waiting равным []
+    дано guards равно []
+    ожидается запись «Progress» с done равным [] и waiting равным []
+  пусть start равно (запись «Progress» с done равным progress.done и waiting равным пустой список)
+  свёртка progress.waiting начиная с start как next1 и pending → «Pass step» от next1 и pending и guards
+
+тотальная функция «Cycle summary»
+  принимает pending: «Pending»
+  возвращает «Summary»
+  пример «A function in a cycle of calls»
+    дано pending равно запись «Pending» с routine равным (вариант «Nil») и name равным "" и callees равным [
+      ]
+    ожидается запись «Summary» с name равным "" и params равным [] и facts равным [
+      вариант «Trouble» с reason равным "взаимная рекурсия: функции зовут друг друга по кругу"]
+  пусть part1 равно («Stuck» от "взаимная рекурсия: функции зовут друг друга по кругу")
+  пусть part2 равно («Function parameters» от pending.routine)
+  запись «Summary» с name равным pending.name и params равным part2 и facts равным part1
+
+тотальная функция «Summaries»
+  принимает routines: список «Node», entry: строка, guards: список строки
+  возвращает список «Summary»
+  пример «Nothing to summarize»
+    дано routines равно []
+    дано entry равно "Ф"
+    дано guards равно []
+    ожидается []
+  пусть prepared равно («Prepared» от routines)
+  пусть pendings равно («Reachable» от (отобразить prepared как routine → «Pending of» от routine) и entry)
+  пусть start равно (запись «Progress» с done равным пустой список и waiting равным pendings)
+  пусть last равно (свёртка pendings начиная с start как progress и pending → «Pass» от progress и guards)
+  «Both» от last.done и (отобразить last.waiting как pending → «Cycle summary» от pending)
+
+тотальная функция «Parameter known»
+  принимает param: «Parameter»
+  возвращает «Known»
+  пример «A text parameter»
+    дано param равно запись «Parameter» с name равным "s" и shape равным (вариант «Truth shape»)
+    ожидается запись «Known» с name равным "s" и size равным (вариант «Scalar size») и origin равным "param:s"
+  пусть part1 равно («Parameter size» от param.shape и param.name)
+  запись «Known» с name равным param.name и size равным part1 и origin равным (соединить ["param:", param.name] по "")
+
+тотальная функция «Function self»
+  принимает routine: «Node»
+  возвращает «Self»
+  пример «An empty function object»
+    дано routine равно вариант «Obj» с fields равным []
+    ожидается запись «Self» с name равным "" и params равным [
+      ] и yields равным (вариант «Other shape» с label равным "?")
+  пусть part1 равно («Function parameters» от routine)
+  пусть part2 равно («Function yields» от routine)
+  запись «Self» с name равным («Function name» от routine) и params равным part1 и yields равным part2
+
+тотальная функция «Check facts»
+  принимает checks: список «Expr», scope: «Scope»
+  возвращает список «Fact»
+  пример «No postconditions cost nothing»
+    дано checks равно []
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    ожидается []
+  пусть each равно (отобразить checks как check → «Then» от («Steps» от 1) и («Cost of» от check и scope и нет))
+  если пусто checks то пустой список иначе «Then» от («Steps» от 1) и («Sum of» от each)
+
+тотальная функция «Invocation»
+  принимает routine: «Node», world: список «Summary», guards: список строки
+  возвращает список «Fact»
+  пример «An empty function object has no readable body»
+    дано routine равно вариант «Obj» с fields равным []
+    дано world равно []
+    дано guards равно []
+    ожидается [вариант «Calls» с count равным 0, вариант «Trouble» с reason равным "часть дерева не прочитана",
+      вариант «Sized» с size равным (вариант «No size»)]
+  пусть self равно («Function self» от routine)
+  пусть known равно (отобразить self.params как param → «Parameter known» от param)
+  пусть scope равно (запись «Scope» с known равным known и world равным world и self равным [self])
+  пусть checks равно («Function checks» от routine)
+  пусть body равно («Cost of» от («Function body» от routine) и scope и (пусто checks))
+  пусть result1 равно (запись «Known» с name равным "результат" и size равным («Size in» от body) и origin равным "")
+  пусть widened равно («Widened» от scope и [result1])
+  пусть kept равно («Kept checks» от routine и guards)
+  пусть told равно («Only meters» от («Check facts» от checks и widened) и ["steps"])
+  пусть guarded равно («Only meters» от («Check facts» от kept и widened) и ["ticks", "charges", "bytes"])
+  «With size» от («Sum of» от [body, told, guarded]) и («Size in» от body)
+
+тотальная функция «Only meters»
+  принимает facts: список «Fact», kinds: список строки
+  возвращает список «Fact»
+  пример «Only the steps of the interpreter»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [],
+      вариант «Meter» с kind равным "ticks" и poly равным []]
+    дано kinds равно ["steps"]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным []]
+  отфильтровать facts где fact → («Is note» от fact) или (kinds содержит («Fact kind» от fact))
+
+тотальная функция «Kept checks»
+  принимает routine: «Node», guards: список строки
+  возвращает список «Expr»
+  пример «No guard is kept in printed code»
+    дано routine равно вариант «Obj» с fields равным []
+    дано guards равно []
+    ожидается []
+  пусть name равно («Function name» от routine)
+  пусть names равно («Function check names» от routine)
+  пусть checks равно («Function checks» от routine)
+  «Kept pairs» от names и checks и name и guards
+
+тотальная функция «Kept pairs»
+  принимает names: список строки, checks: список «Expr», name: строка, guards: список строки
+  возвращает список «Expr»
+  пример «A guard the printed code keeps»
+    дано names равно ["п"]
+    дано checks равно [вариант «Gap»]
+    дано name равно "Ф"
+    дано guards равно ["Ф\tп"]
+    ожидается [вариант «Gap»]
+  разбор names
+    случай пусто
+      то пустой список
+    случай голова one и хвост others
+      то разбор checks
+        случай пусто
+          то пустой список
+        случай голова c и хвост cs
+          то «Both» от («Kept check» от guards и name и one и c) и («Kept pairs» от others и cs и name и guards)
+
+тотальная функция «Kept check»
+  принимает guards: список строки, name: строка, one: строка, check: «Expr»
+  возвращает список «Expr»
+  пример «A guard the printed code keeps»
+    дано guards равно ["Ф\tп"]
+    дано name равно "Ф"
+    дано one равно "п"
+    дано check равно вариант «Gap»
+    ожидается [вариант «Gap»]
+  пример «A guard the printed code drops»
+    дано guards равно []
+    дано name равно "Ф"
+    дано one равно "п"
+    дано check равно вариант «Gap»
+    ожидается []
+  если guards содержит (соединить [name, "\t", one] по "") то [check] иначе пустой список
+
+тотальная функция «Summarize»
+  принимает routine: «Node», world: список «Summary», guards: список строки
+  возвращает «Summary»
+  пример «An empty function object»
+    дано routine равно вариант «Obj» с fields равным []
+    дано world равно []
+    дано guards равно []
+    ожидается запись «Summary» с name равным "" и params равным [] и facts равным [вариант «Calls» с count равным 0,
+      вариант «Trouble» с reason равным "часть дерева не прочитана", вариант «Sized» с size равным (вариант «No size»)]
+  пусть self равно («Function self» от routine)
+  пусть facts равно («Invocation» от routine и world и guards)
+  пусть known равно (отобразить self.params как param → «Parameter known» от param)
+  пусть scope равно (запись «Scope» с known равным known и world равным world и self равным [self])
+  пусть declared равно («Function measures» от routine)
+  пусть measures равно (отобразить declared как measure → «Size in» от («Cost of» от measure и scope и нет))
+  пусть recursive равно ((«Calls of» от facts) больше 0) и притом (пусто («Notes of» от facts и "trouble"))
+  пусть promised равно («Promised count» от («Function checks» от routine) и scope)
+  пусть plain равно («With size» от facts и («With count» от («Size in» от facts) и promised))
+  пусть looped равно («Recursive facts» от self и facts и measures и promised)
+  пусть facts1 равно (если recursive то looped иначе plain)
+  запись «Summary» с name равным self.name и params равным self.params и facts равным facts1
+
+тотальная функция «Length promise»
+  принимает check: «Expr», scope: «Scope»
+  возвращает «Amount»
+  пример «Not a promise about the length of the result»
+    дано check равно вариант «Gap»
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    ожидается вариант «Unbounded»
+  разбор check
+    случай вариант «Binary» с operator как operator и left как left и right как right
+      то «Promised by» от («Is result length» от left) и operator и («Cost of» от right и scope и нет)
+    случай любое
+      то вариант «Unbounded»
+
+тотальная функция «Is result length»
+  принимает expr: «Expr»
+  возвращает признак
+  пример «The length of the result»
+    дано expr равно вариант «Builtin» с name равным "длина" и arguments равным [
+      вариант «Name» с name равным "результат"]
+    ожидается да
+  разбор expr
+    случай вариант «Builtin» с name как name и arguments как arguments
+      то (name равен "длина") и притом (arguments равен [вариант «Name» с name равным "результат"])
+    случай любое
+      то нет
+
+тотальная функция «Promised count»
+  принимает checks: список «Expr», scope: «Scope»
+  возвращает «Amount»
+  пример «No promises»
+    дано checks равно []
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    ожидается вариант «Unbounded»
+  свёртка checks начиная с (вариант «Unbounded») как found и check → «Promise or found» от found и check и scope
+
+тотальная функция «With count»
+  принимает size: «Size», promised: «Amount»
+  возвращает «Size»
+  пример «A promised length replaces the derived one»
+    дано size равно вариант «List size» с count равным [
+      запись «Term» с coef равным 9 и vars равным []] и inner равным (вариант «Scalar size»)
+    дано promised равно вариант «Bounded» с poly равным [запись «Term» с coef равным 2 и vars равным []]
+    ожидается вариант «List size» с count равным [
+      запись «Term» с coef равным 2 и vars равным []] и inner равным (вариант «Scalar size»)
+  разбор promised
+    случай вариант «Bounded» с poly как poly
+      то разбор size
+        случай вариант «List size» с count как count и inner как inner
+          то вариант «List size» с count равным poly и inner равным inner
+        случай «No size»
+          то вариант «List size» с count равным poly и inner равным (вариант «No size»)
+        случай любое
+          то size
+    случай любое
+      то size
+
+тотальная функция «Move at»
+  принимает moves: список «Move», place: число
+  возвращает «Move»
+  пример «A missing move is another move»
+    дано moves равно []
+    дано place равно 1
+    ожидается запись «Move» с kind равным "other" и amount равным 0 и size равным (вариант «No size»)
+  пусть other равно (запись «Move» с kind равным "other" и amount равным 0 и size равным (вариант «No size»))
+  если (длина moves) не меньше place то элемент place в moves иначе other
+
+тотальная функция «Kinds at»
+  принимает sites: список список «Move», place: число
+  возвращает список строки
+  пример «The kinds of moves at one place»
+    дано sites равно [[запись «Move» с kind равным "tail" и amount равным 0 и size равным (вариант «No size»)]]
+    дано place равно 1
+    ожидается ["tail"]
+  отобразить sites как moves → («Move at» от moves и place).kind
+
+тотальная функция «Least step»
+  принимает sites: список список «Move», place: число
+  возвращает число
+  пример «The smallest constant subtracted»
+    дано sites равно [[запись «Move» с kind равным "minus" и amount равным 2 и size равным (вариант «No size»)],
+      [запись «Move» с kind равным "minus" и amount равным 1 и size равным (вариант «No size»)]]
+    дано place равно 1
+    ожидается 1
+  свёртка sites начиная с 1 как least и moves → «Smaller» от least и («Move at» от moves и place).amount
+
+тотальная функция «All in»
+  принимает kinds: список строки, allowed: список строки
+  возвращает признак
+  пример «Every site moves along a tail»
+    дано kinds равно ["tail", "tail"]
+    дано allowed равно ["tail"]
+    ожидается да
+  пример «No sites prove no descent»
+    дано kinds равно []
+    дано allowed равно ["tail"]
+    ожидается нет
+  (не (пусто kinds)) и притом (свёртка kinds начиная с да как all и kind → all и притом (allowed содержит kind))
+
+тотальная функция «Plus one»
+  принимает amount: «Amount»
+  возвращает «Amount»
+  пример «One more call than the descent»
+    дано amount равно вариант «Bounded» с poly равным []
+    ожидается вариант «Bounded» с poly равным [запись «Term» с coef равным 1 и vars равным []]
+  разбор amount
+    случай вариант «Bounded» с poly как poly
+      то вариант «Bounded» с poly равным («Add» от poly и («Constant» от 1))
+    случай любое
+      то вариант «Unbounded»
+
+тотальная функция «Descent at»
+  принимает name: строка, shape: «Shape», sites: список список «Move», place: число, calls: число
+  возвращает «Amount»
+  пример «Recursion on the tail of a list»
+    дано name равно "x"
+    дано shape равно вариант «List shape» с inner равным (вариант «Truth shape»)
+    дано sites равно [[запись «Move» с kind равным "tail" и amount равным 0 и size равным (вариант «No size»)]]
+    дано place равно 1
+    дано calls равно 1
+    ожидается вариант «Bounded» с poly равным [запись «Term» с coef равным 1 и vars равным ["|x|"],
+      запись «Term» с coef равным 1 и vars равным []]
+  пусть size равно («Parameter size» от shape и name)
+  пусть kinds равно («Kinds at» от sites и place)
+  пусть least равно («Least step» от sites и place)
+  пусть valued равно («Plus one» от («Size value» от size))
+  пусть part1 равно («Scaled amount» от («Size value» от size) и (1 делить на least))
+  пусть stepped равно (если least не меньше 1 то valued иначе «Plus one» от part1)
+  пусть counted равно («Plus one» от («Size count» от size))
+  пусть tailed1 равно («All in» от kinds и ["tail"]) и притом (calls не больше 1)
+  пусть parted равно («All in» от kinds и ["part", "tail"])
+  пусть lowered равно («All in» от kinds и ["minus"]) и притом (calls не больше 1)
+  пусть rules равно [(«Rule of» от tailed1 и "tail"), («Rule of» от parted и "part"), («Rule of» от lowered и "minus")]
+  разбор «First holding» от rules и "none"
+    случай "tail"
+      то counted
+    случай "part"
+      то «Part descent» от kinds и size
+    случай "minus"
+      то stepped
+    случай любое
+      то вариант «Unbounded»
+
+тотальная функция «Part descent»
+  принимает kinds: список строки, size: «Size»
+  возвращает «Amount»
+  пример «Recursion into parts of a value is bounded by the value»
+    дано kinds равно ["part"]
+    дано size равно вариант «Whole size» с whole равным []
+    ожидается вариант «Bounded» с poly равным [запись «Term» с coef равным 1 и vars равным []]
+  «Plus one» от («Size total» от size)
+
+тотальная функция «Scaled amount»
+  принимает amount: «Amount», factor: число
+  возвращает «Amount»
+  пример «Half steps double the calls»
+    дано amount равно вариант «Bounded» с poly равным [запись «Term» с coef равным 1 и vars равным ["n"]]
+    дано factor равно 2
+    ожидается вариант «Bounded» с poly равным [запись «Term» с coef равным 2 и vars равным ["n"]]
+  разбор amount
+    случай вариант «Bounded» с poly как poly
+      то вариант «Bounded» с poly равным («Scale» от poly и factor)
+    случай любое
+      то вариант «Unbounded»
+
+объект «Search»
+  place: число
+  found: «Amount»
+
+тотальная функция «Search step»
+  принимает search: «Search», param: «Parameter», sites: список список «Move», calls: число
+  возвращает «Search»
+  пример «A descent already found stays»
+    дано search равно запись «Search» с place равным 1 и found равным (вариант «Bounded» с poly равным [])
+    дано param равно запись «Parameter» с name равным "n" и shape равным (вариант «Natural shape»)
+    дано sites равно []
+    дано calls равно 1
+    ожидается запись «Search» с place равным 2 и found равным (вариант «Bounded» с poly равным [])
+  пусть here равно («Descent at» от param.name и param.shape и sites и search.place и calls)
+  пусть found равно (если «Is bounded» от search.found то search.found иначе here)
+  запись «Search» с place равным (search.place плюс 1) и found равным found
+
+тотальная функция «Descent of»
+  принимает self: «Self», sites: список список «Move», calls: число, measures: список «Size»
+  возвращает «Descent»
+  пример «Counting down a natural number by one»
+    дано self равно запись «Self» с name равным "Ф" и yields равным (вариант «Number shape») и params равным [
+      запись «Parameter» с name равным "n" и shape равным (вариант «Natural shape»)]
+    дано sites равно [[запись «Move» с kind равным "minus" и amount равным 1 и size равным (вариант «No size»)]]
+    дано calls равно 1
+    дано measures равно []
+    ожидается запись «Descent» с count равным (вариант «Bounded» с poly равным [
+      запись «Term» с coef равным 1 и vars равным [
+      "n"], запись «Term» с coef равным 1 и vars равным []]) и reason равным "" и guess равным ""
+  пусть start равно (запись «Search» с place равным 1 и found равным (вариант «Unbounded»))
+  пусть params равно self.params
+  пусть search равно (свёртка params начиная с start как done и param → «Search step» от done и param и sites и calls)
+  пусть measured равно («Plus one» от («Size value» от («Measure size» от measures)))
+  пусть guess равно "мера объявлена «убывает»: принято, что она убывает не меньше чем на 1 за вызов"
+  пусть branching равно "ветвящаяся рекурсия без спуска по частям значения"
+  пусть reason равно (если calls больше 1 то branching иначе "спуск по параметру не найден")
+  пусть guessed равно (запись «Descent» с count равным measured и reason равным "" и guess равным guess)
+  пусть failed равно (запись «Descent» с count равным (вариант «Unbounded») и reason равным reason и guess равным "")
+  пусть found равно («Is bounded» от search.found)
+  пусть sized равно («Is bounded» от measured)
+  разбор «First holding» от [(«Rule of» от found и "found"), («Rule of» от sized и "measured")] и "none"
+    случай "found"
+      то запись «Descent» с count равным search.found и reason равным "" и guess равным ""
+    случай "measured"
+      то guessed
+    случай любое
+      то failed
+
+тотальная функция «Measure size»
+  принимает measures: список «Size»
+  возвращает «Size»
+  пример «No declared measure»
+    дано measures равно []
+    ожидается вариант «No size»
+  разбор measures
+    случай пусто
+      то вариант «No size»
+    случай голова size и хвост rest
+      то size
+
+тотальная функция «Growth»
+  принимает var: строка, polys: список «Amount», count: список «Term»
+  возвращает «Amount»
+  пример «An accumulator grows by one each call»
+    дано var равно "|acc|"
+    дано polys равно [вариант «Bounded» с poly равным [запись «Term» с coef равным 1 и vars равным ["|acc|"],
+      запись «Term» с coef равным 1 и vars равным []]]
+    дано count равно [запись «Term» с coef равным 1 и vars равным ["n"]]
+    ожидается вариант «Bounded» с poly равным [запись «Term» с coef равным 1 и vars равным ["|acc|"],
+      запись «Term» с coef равным 1 и vars равным ["n"]]
+  пусть bounded равно (свёртка polys начиная с да как all и amount → all и притом («Plain growth» от amount и var))
+  пусть most равно (свёртка polys начиная с пустой список как top и amount → «Larger growth» от top и amount и var)
+  если bounded
+    то вариант «Bounded» с poly равным («Add» от («Variable» от var) и («Multiply» от count и most))
+    иначе вариант «Unbounded»
+
+тотальная функция «Assigned amount»
+  принимает assigns: список «Assign», var: строка
+  возвращает список «Amount»
+  пример «The amount assigned to a variable»
+    дано assigns равно [запись «Assign» с name равным "n" и amount равным (вариант «Unbounded»)]
+    дано var равно "n"
+    ожидается [вариант «Unbounded»]
+  отобразить (отфильтровать assigns где assign → assign.name равен var) как assign → assign.amount
+
+тотальная функция «Param growth»
+  принимает param: «Parameter», sites: список список «Move», place: число, count: список «Term»
+  возвращает список «Assign»
+  пример «A parameter passed unchanged does not grow»
+    дано param равно запись «Parameter» с name равным "n" и shape равным (вариант «Natural shape»)
+    дано sites равно [[запись «Move» с kind равным "same" и amount равным 0 и size равным (вариант «No size»)]]
+    дано place равно 1
+    дано count равно []
+    ожидается []
+  пусть others равно (отфильтровать sites где moves → («Move at» от moves и place).kind равен "other")
+  пусть assigns равно (свёртка others начиная с пустой список как a и ms → «More assigned» от a и param и ms и place)
+  если пусто others
+    то пустой список
+    иначе отобразить («Vars of» от param) как var → «Grown assign» от var и assigns и count
+
+объект «Growing»
+  place: число
+  assigns: список «Assign»
+
+тотальная функция «Growths»
+  принимает params: список «Parameter», sites: список список «Move», count: список «Term»
+  возвращает список «Assign»
+  пример «No parameters, no growth»
+    дано params равно []
+    дано sites равно []
+    дано count равно []
+    ожидается []
+  пусть start равно (запись «Growing» с place равным 1 и assigns равным пустой список)
+  пусть last равно (свёртка params начиная с start как done и param → «Growing step» от done и param и sites и count)
+  last.assigns
+
+тотальная функция «Growing step»
+  принимает done: «Growing», param: «Parameter», sites: список список «Move», count: список «Term»
+  возвращает «Growing»
+  пример «A parameter without other moves»
+    дано done равно запись «Growing» с place равным 1 и assigns равным []
+    дано param равно запись «Parameter» с name равным "n" и shape равным (вариант «Natural shape»)
+    дано sites равно []
+    дано count равно []
+    ожидается запись «Growing» с place равным 2 и assigns равным []
+  пусть more равно («Param growth» от param и sites и done.place и count)
+  запись «Growing» с place равным (done.place плюс 1) и assigns равным («Both» от done.assigns и more)
+
+тотальная функция «Grow facts»
+  принимает facts: список «Fact», assigns: список «Assign»
+  возвращает список «Fact»
+  пример «An accumulator at its largest»
+    дано facts равно [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным [
+      "|a|"]]]
+    дано assigns равно [запись «Assign» с name равным "|a|" и amount равным (вариант «Bounded» с poly равным [
+      запись «Term» с coef равным 1 и vars равным ["n"]])]
+    ожидается [вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным ["n"]]]
+  пусть renamed равно (свёртка assigns начиная с facts как done и assign → «Renamed» от done и assign.name)
+  свёртка assigns начиная с renamed как done и assign → «Assigned» от done и assign
+
+тотальная функция «Zeroed»
+  принимает size: «Size»
+  возвращает «Size»
+  пример «A list of nothing»
+    дано size равно вариант «List size» с count равным [запись «Term» с coef равным 1 и vars равным [
+      "n"]] и inner равным (вариант «Scalar size»)
+    ожидается вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+  разбор size
+    случай вариант «Count size» с value как value
+      то вариант «Count size» с value равным пустой список
+    случай вариант «Text size» с bytes как bytes
+      то вариант «Text size» с bytes равным пустой список
+    случай вариант «List size» с count как count и inner как inner
+      то вариант «List size» с count равным пустой список и inner равным («Zeroed» от inner)
+    случай вариант «Whole size» с whole как whole
+      то вариант «Whole size» с whole равным пустой список
+    случай любое
+      то size
+
+тотальная функция «Recursive facts»
+  принимает self: «Self», facts: список «Fact», measures: список «Size», promised: «Amount»
+  возвращает список «Fact»
+  пример «Recursion without any descent has no bound»
+    дано self равно запись «Self» с name равным "Ф" и params равным [] и yields равным (вариант «Truth shape»)
+    дано facts равно [вариант «Calls» с count равным 1, вариант «Site» с moves равным []]
+    дано measures равно []
+    дано promised равно вариант «Unbounded»
+    ожидается [вариант «Trouble» с reason равным "спуск по параметру не найден"]
+  пусть descent равно («Descent of» от self и («Sites of» от facts) и («Calls of» от facts) и measures)
+  пусть count равно («Amount poly» от descent.count)
+  пусть grown равно («Grow facts» от facts и («Growths» от self.params и («Sites of» от facts) и count))
+  пусть template равно («Parameter size» от self.yields и "ρ")
+  пусть names равно («Symbolic vars» от template и "ρ")
+  пусть part1 равно («Grown» от («Zeroed» от template) и («Size in» от grown) и "ρ" и count)
+  пусть final равно («With count» от part1 и promised)
+  пусть bound равно («Bind names» от grown и names и («Size polys» от final))
+  пусть kept равно (отфильтровать bound где fact → не («Is recursion fact» от fact))
+  пусть total равно («Sum of» от [(«Scaled» от kept и count), («Metered» от "ticks" и count),
+    («Metered» от "invocations" и count),
+    («Leftover» от bound и names и "рекурсия: рост результата не выведен"), («Guess list» от descent.guess)])
+  если «Is bounded» от descent.count то «With size» от total и final иначе «Stuck» от descent.reason
+
+тотальная функция «Guess list»
+  принимает guess: строка
+  возвращает список «Fact»
+  пример «No guess»
+    дано guess равно ""
+    ожидается []
+  если пусто guess то пустой список иначе «Guessed» от guess
+
+тотальная функция «Is recursion fact»
+  принимает fact: «Fact»
+  возвращает признак
+  пример «A site belongs to the recursion»
+    дано fact равно вариант «Site» с moves равным []
+    ожидается да
+  пример «A meter does not»
+    дано fact равно вариант «Meter» с kind равным "steps" и poly равным []
+    ожидается нет
+  разбор fact
+    случай вариант «Site» с moves как moves
+      то да
+    случай вариант «Calls» с count как count
+      то да
+    случай вариант «Sized» с size как size
+      то да
+    случай любое
+      то нет
+
+тотальная функция «Entry facts»
+  принимает summaries: список «Summary», entry: строка
+  возвращает список «Fact»
+  пример «An unknown entry has no bound»
+    дано summaries равно []
+    дано entry равно "Ф"
+    ожидается [вариант «Trouble» с reason равным "функции «Ф» в программе нет"]
+  разбор («Summary named» от summaries и entry)
+    случай пусто
+      то «Stuck» от (соединить ["функции «", entry, "» в программе нет"] по "")
+    случай голова summary и хвост rest
+      то «With size» от («Then» от («Steps» от 1) и summary.facts) и («Size in» от summary.facts)
+
+объект «Edge»
+  name: строка
+  body: список строки
+  checks: список строки
+
+тотальная функция «Edge of»
+  принимает routine: «Node»
+  возвращает «Edge»
+  пример «A function without calls»
+    дано routine равно вариант «Obj» с fields равным []
+    ожидается запись «Edge» с name равным "" и body равным [] и checks равным []
+  пусть written равно («Function checks» от routine)
+  пусть checks равно (свёртка written начиная с пустой список как found и one → «Both» от found и («Callees» от one))
+  пусть part1 равно («Distinct» от («Callees» от («Function body» от routine)))
+  запись «Edge» с name равным («Function name» от routine) и body равным part1 и checks равным («Distinct» от checks)
+
+тотальная функция «Edge step»
+  принимает names: список строки, edge: «Edge», checked: признак
+  возвращает список строки
+  пример «A reached function brings its callees»
+    дано names равно ["Ф"]
+    дано edge равно запись «Edge» с name равным "Ф" и body равным ["Г"] и checks равным ["Х"]
+    дано checked равно нет
+    ожидается ["Ф", "Г"]
+  пусть more равно (если checked то «Both» от edge.body и edge.checks иначе edge.body)
+  если names содержит edge.name то «Distinct» от («Both» от names и more) иначе names
+
+тотальная функция «Closed names»
+  принимает names: список строки, edges: список «Edge», checked: признак
+  возвращает список строки
+  пример «Callees of callees»
+    дано names равно ["Ф"]
+    дано edges равно [запись «Edge» с name равным "Г" и body равным ["Х"] и checks равным [],
+      запись «Edge» с name равным "Ф" и body равным ["Г"] и checks равным []]
+    дано checked равно нет
+    ожидается ["Ф", "Г", "Х"]
+  свёртка edges начиная с names как found и pass → «Edge pass» от found и edges и checked
+
+тотальная функция «Is cyclic»
+  принимает edge: «Edge», edges: список «Edge»
+  возвращает признак
+  пример «A postcondition that calls the function itself»
+    дано edge равно запись «Edge» с name равным "Ф" и body равным [] и checks равным ["Ф"]
+    дано edges равно []
+    ожидается да
+  (не (пусто edge.checks)) и притом ((«Closed names» от edge.checks и edges и да) содержит edge.name)
+
+тотальная функция «Twin names»
+  принимает edges: список «Edge»
+  возвращает список строки
+  пример «No cyclic postconditions, no twins»
+    дано edges равно [запись «Edge» с name равным "Ф" и body равным [] и checks равным ["Г"]]
+    ожидается []
+  пусть cyclic равно (отфильтровать edges где edge → «Is cyclic» от edge и edges)
+  пусть called равно (свёртка cyclic начиная с пустой список как found и edge → «Both» от found и edge.checks)
+  пусть seeds равно («Distinct» от called)
+  если пусто seeds то пустой список иначе «Closed names» от seeds и edges и нет
+
+тотальная функция «Twin name»
+  принимает name: строка
+  возвращает строка
+  пример «The twin without postconditions»
+    дано name равно "Ф"
+    ожидается "Ф (двойник без постусловий)"
+  соединить [name, " (двойник без постусловий)"] по ""
+
+тотальная функция «Twinned»
+  принимает expr: «Expr», names: список строки
+  возвращает «Expr»
+  пример «A call of a twinned function goes to its twin»
+    дано expr равно вариант «Call» с name равным "Ф" и arguments равным []
+    дано names равно ["Ф"]
+    ожидается вариант «Call» с name равным "Ф (двойник без постусловий)" и arguments равным []
+  разбор expr
+    случай вариант «Call» с name как name и arguments как arguments
+      то «Call of» от («Twin if» от name и names) и (отобразить arguments как one → «Twinned» от one и names)
+    случай вариант «Builtin» с name как name и arguments как arguments
+      то «Builtin of» от name и (отобразить arguments как one → «Twinned» от one и names)
+    случай вариант «Binary» с operator как operator и left как left и right как right
+      то «Binary from» от operator и («Twinned» от left и names) и («Twinned» от right и names)
+    случай вариант «Choice» с test как condition и yea как positive и nay как negative
+      то «Fork» от («Twinned» от condition и names) и («Twinned» от positive и names) и («Twinned» от negative и names)
+    случай вариант «Let» с name как name и value как value и body как body
+      то «Let from» от name и («Twinned» от value и names) и («Twinned» от body и names)
+    случай вариант «Match» с target как target и arms как arms
+      то «Matched» от («Twinned» от target и names) и (отобразить arms как arm → «Twinned arm» от arm и names)
+    случай вариант «Access» с target как target
+      то вариант «Access» с target равным («Twinned» от target и names)
+    случай вариант «Items» с items как items
+      то вариант «Items» с items равным (отобразить items как one → «Twinned» от one и names)
+    случай вариант «Composite» с label как label и parts как parts
+      то вариант «Composite» с label равным label и parts равным (отобразить parts как one → «Twinned» от one и names)
+    случай вариант «Fold» с step как step и over как over и start как start
+      то «Folded» от («Twinned step» от step и names) и («Twinned» от over и names) и («Twinned» от start и names)
+    случай вариант «Walk» с step как step и over как over и keep как keep
+      то «Walk from» от («Twinned step» от step и names) и («Twinned» от over и names) и keep
+    случай любое
+      то expr
+
+тотальная функция «Renamed node»
+  принимает node: «Node», names: список строки
+  возвращает «Node»
+  пример «An expression node is renamed inside»
+    дано node равно вариант «Ex» с expression равным (вариант «Call» с name равным "Г" и arguments равным [])
+    дано names равно []
+    ожидается вариант «Ex» с expression равным (вариант «Call» с name равным "Г" и arguments равным [])
+  разбор node
+    случай вариант «Ex» с expression как expression
+      то вариант «Ex» с expression равным («Twinned» от expression и names)
+    случай вариант «Arr» с items как items
+      то вариант «Arr» с items равным (отобразить items как one → «Renamed node» от one и names)
+    случай вариант «Check» с name как name и expression как expression
+      то вариант «Check» с name равным name и expression равным («Twinned» от expression и names)
+    случай любое
+      то node
+
+тотальная функция «Field rewritten»
+  принимает slot: «Node», names: список строки, twin: признак
+  возвращает «Node»
+  пример «A twin has no postconditions»
+    дано slot равно вариант «Key» с key равным "postconditions" и val равным (вариант «Arr» с items равным [
+      вариант «Nil»])
+    дано names равно []
+    дано twin равно да
+    ожидается вариант «Key» с key равным "postconditions" и val равным (вариант «Arr» с items равным [])
+  разбор slot
+    случай вариант «Key» с key как key и val как val
+      то вариант «Key» с key равным key и val равным («Value rewritten» от key и val и names и twin)
+    случай любое
+      то slot
+
+тотальная функция «Value rewritten»
+  принимает key: строка, val: «Node», names: список строки, twin: признак
+  возвращает «Node»
+  пример «The name of a twin»
+    дано key равно "name"
+    дано val равно вариант «Str» с text равным "Ф"
+    дано names равно []
+    дано twin равно да
+    ожидается вариант «Str» с text равным "Ф (двойник без постусловий)"
+  разбор key
+    случай "name"
+      то если twin то вариант «Str» с text равным («Twin name» от («Text of» от val)) иначе val
+    случай "postconditions"
+      то если twin то вариант «Arr» с items равным пустой список иначе «Renamed node» от val и names
+    случай "body"
+      то если twin то «Renamed node» от val и names иначе val
+    случай любое
+      то val
+
+тотальная функция «Rewritten routine»
+  принимает routine: «Node», names: список строки, twin: признак
+  возвращает «Node»
+  пример «An object without fields»
+    дано routine равно вариант «Obj» с fields равным []
+    дано names равно []
+    дано twin равно нет
+    ожидается вариант «Obj» с fields равным []
+  пусть fields равно («Fields of» от routine)
+  вариант «Obj» с fields равным (отобразить fields как slot → «Field rewritten» от slot и names и twin)
+
+тотальная функция «Prepared»
+  принимает routines: список «Node»
+  возвращает список «Node»
+  пример «Nothing to prepare»
+    дано routines равно []
+    ожидается []
+  пусть names равно («Twin names» от (отобразить routines как routine → «Edge of» от routine))
+  пусть checked равно (отобразить routines как routine → «Rewritten routine» от routine и names и нет)
+  пусть twins равно (отфильтровать routines где routine → names содержит («Function name» от routine))
+  «Both» от checked и (отобразить twins как routine → «Rewritten routine» от routine и names и да)
+
+тотальная функция «List of»
+  принимает count: список «Term», inner: «Size»
+  возвращает «Size»
+  пример «A list of numbers»
+    дано count равно []
+    дано inner равно вариант «Scalar size»
+    ожидается вариант «List size» с count равным [] и inner равным (вариант «Scalar size»)
+  вариант «List size» с count равным count и inner равным inner
+
+тотальная функция «Vars of»
+  принимает param: «Parameter»
+  возвращает список строки
+  пример «A text parameter»
+    дано param равно запись «Parameter» с name равным "s" и shape равным (вариант «Text shape»)
+    ожидается ["|s|"]
+  «Parameter vars» от param.shape и param.name
+
+тотальная функция «Fact metered»
+  принимает fact: «Fact», name: строка
+  возвращает признак
+  пример «A meter mentions its variable»
+    дано fact равно вариант «Meter» с kind равным "steps" и poly равным [запись «Term» с coef равным 1 и vars равным [
+      "n"]]
+    дано name равно "n"
+    ожидается да
+  «Mentions» от («Fact poly» от fact и («Fact kind» от fact)) и name
+
+тотальная функция «Minus of»
+  принимает amount: число, size: «Size»
+  возвращает «Move»
+  пример «Counting down by two»
+    дано amount равно 2
+    дано size равно вариант «Scalar size»
+    ожидается запись «Move» с kind равным "minus" и amount равным 2 и size равным (вариант «Scalar size»)
+  запись «Move» с kind равным "minus" и amount равным amount и size равным size
+
+тотальная функция «Move and moves»
+  принимает move: «Move», moves: список «Move»
+  возвращает список «Move»
+  пример «A move in front»
+    дано move равно запись «Move» с kind равным "same" и amount равным 0 и size равным (вариант «Scalar size»)
+    дано moves равно []
+    ожидается [запись «Move» с kind равным "same" и amount равным 0 и size равным (вариант «Scalar size»)]
+  приписать move к moves
+
+тотальная функция «Grown elements»
+  принимает length1: список «Term», more: список «Term», base: строка, count: список «Term», inner: «Size»
+  возвращает «Size»
+  пример «Appending one element per step»
+    дано length1 равно []
+    дано more равно [запись «Term» с coef равным 1 и vars равным ["|α|"],
+      запись «Term» с coef равным 1 и vars равным []]
+    дано base равно "α"
+    дано count равно [запись «Term» с coef равным 1 и vars равным ["n"]]
+    дано inner равно вариант «Scalar size»
+    ожидается вариант «List size» с count равным [
+      запись «Term» с coef равным 1 и vars равным ["n"]] и inner равным (вариант «Scalar size»)
+  «Listed» от («Grown poly» от length1 и more и («Bars» от base) и count) и inner
+
+тотальная функция «Inside»
+  принимает body: список «Fact», reason: строка
+  возвращает список «Fact»
+  пример «A body without calls of the function itself»
+    дано body равно []
+    дано reason равно "x"
+    ожидается []
+  если («Calls of» от body) больше 0 то «Stuck» от reason иначе пустой список
+
+тотальная функция «Unless mentioned»
+  принимает count: список «Term», name: строка, size: «Size»
+  возвращает «Size»
+  пример «A count of an unknown value loses the size»
+    дано count равно [запись «Term» с coef равным 1 и vars равным ["n"]]
+    дано name равно "n"
+    дано size равно вариант «Scalar size»
+    ожидается вариант «No size»
+  если «Mentions» от count и name то вариант «No size» иначе size
+
+тотальная функция «Flat moves»
+  принимает parts: список список «Move»
+  возвращает список «Move»
+  пример «Moves of two parts»
+    дано parts равно [[], []]
+    ожидается []
+  свёртка parts начиная с пустой список как joined и part → «Both» от joined и part
+
+тотальная функция «Reached»
+  принимает found: список строки, pending: «Pending»
+  возвращает список строки
+  пример «A function not reached adds nothing»
+    дано found равно []
+    дано pending равно запись «Pending» с routine равным (вариант «Nil») и name равным "Ф" и callees равным ["Г"]
+    ожидается []
+  если found содержит pending.name то «Distinct» от («Both» от found и pending.callees) иначе found
+
+тотальная функция «Promise or found»
+  принимает found: «Amount», check: «Expr», scope: «Scope»
+  возвращает «Amount»
+  пример «A promise already found stays»
+    дано found равно вариант «Bounded» с poly равным []
+    дано check равно вариант «Gap»
+    дано scope равно запись «Scope» с known равным [] и world равным [] и self равным []
+    ожидается вариант «Bounded» с poly равным []
+  если «Is bounded» от found то found иначе «Length promise» от check и scope
+
+тотальная функция «Smaller»
+  принимает least: число, amount: число
+  возвращает число
+  пример «The smaller of two»
+    дано least равно 1
+    дано amount равно 2
+    ожидается 1
+  если amount меньше least то amount иначе least
+
+тотальная функция «Plain growth»
+  принимает amount: «Amount», var: строка
+  возвращает признак
+  пример «Growth by a constant»
+    дано amount равно вариант «Bounded» с poly равным [запись «Term» с coef равным 1 и vars равным ["a"]]
+    дано var равно "a"
+    ожидается да
+  («Is bounded» от amount) и притом («Linear in» от («Amount poly» от amount) и var)
+
+тотальная функция «Growth part»
+  принимает amount: «Amount», var: строка
+  возвращает список «Term»
+  пример «What is added each call»
+    дано amount равно вариант «Bounded» с poly равным [запись «Term» с coef равным 1 и vars равным ["a"]]
+    дано var равно "a"
+    ожидается []
+  «Without» от («Amount poly» от amount) и var
+
+тотальная функция «More assigned»
+  принимает found: список «Assign», param: «Parameter», moves: список «Move», place: число
+  возвращает список «Assign»
+  пример «A truth parameter assigns nothing»
+    дано found равно []
+    дано param равно запись «Parameter» с name равным "b" и shape равным (вариант «Truth shape»)
+    дано moves равно []
+    дано place равно 1
+    ожидается []
+  «Both» от found и («Assignments» от param.shape и param.name и («Move at» от moves и place).size)
+
+тотальная функция «Grown assign»
+  принимает var: строка, assigns: список «Assign», count: список «Term»
+  возвращает «Assign»
+  пример «Nothing assigned, nothing grows»
+    дано var равно "n"
+    дано assigns равно []
+    дано count равно []
+    ожидается запись «Assign» с name равным "n" и amount равным (вариант «Bounded» с poly равным [
+      запись «Term» с coef равным 1 и vars равным ["n"]])
+  запись «Assign» с name равным var и amount равным («Growth» от var и («Assigned amount» от assigns и var) и count)
+
+тотальная функция «Edge pass»
+  принимает found: список строки, edges: список «Edge», checked: признак
+  возвращает список строки
+  пример «No edges»
+    дано found равно ["Ф"]
+    дано edges равно []
+    дано checked равно нет
+    ожидается ["Ф"]
+  свёртка edges начиная с found как more и edge → «Edge step» от more и edge и checked
+
+тотальная функция «Twin if»
+  принимает name: строка, names: список строки
+  возвращает строка
+  пример «A function without a twin»
+    дано name равно "Ф"
+    дано names равно []
+    ожидается "Ф"
+  если names содержит name то «Twin name» от name иначе name
+
+тотальная функция «Twinned arm»
+  принимает arm: «Arm», names: список строки
+  возвращает «Arm»
+  пример «An arm whose body calls nothing twinned»
+    дано arm равно запись «Arm» с pattern равным (вариант «Any pattern») и body равным (вариант «Gap»)
+    дано names равно []
+    ожидается запись «Arm» с pattern равным (вариант «Any pattern») и body равным (вариант «Gap»)
+  запись «Arm» с pattern равным arm.pattern и body равным («Twinned» от arm.body и names)
+
+тотальная функция «Twinned step»
+  принимает step: «Lambda», names: список строки
+  возвращает «Lambda»
+  пример «A step whose body calls nothing twinned»
+    дано step равно запись «Lambda» с names равным [] и body равным (вариант «Gap»)
+    дано names равно []
+    ожидается запись «Lambda» с names равным [] и body равным (вариант «Gap»)
+  запись «Lambda» с names равным step.names и body равным («Twinned» от step.body и names)
+
+тотальная функция «Call of»
+  принимает name: строка, arguments: список «Expr»
+  возвращает «Expr»
+  пример «A call without arguments»
+    дано name равно "Ф"
+    дано arguments равно []
+    ожидается вариант «Call» с name равным "Ф" и arguments равным []
+  вариант «Call» с name равным name и arguments равным arguments
+
+тотальная функция «Builtin of»
+  принимает name: строка, arguments: список «Expr»
+  возвращает «Expr»
+  пример «A form without arguments»
+    дано name равно "пусто"
+    дано arguments равно []
+    ожидается вариант «Builtin» с name равным "пусто" и arguments равным []
+  вариант «Builtin» с name равным name и arguments равным arguments
+
+тотальная функция «Binary from»
+  принимает operator: строка, left: «Expr», right: «Expr»
+  возвращает «Expr»
+  пример «A sum of nothing known»
+    дано operator равно "add"
+    дано left равно вариант «Gap»
+    дано right равно вариант «Gap»
+    ожидается вариант «Binary» с operator равным "add" и left равным (вариант «Gap») и right равным (вариант «Gap»)
+  вариант «Binary» с operator равным operator и left равным left и right равным right
+
+тотальная функция «Fork»
+  принимает condition: «Expr», positive: «Expr», negative: «Expr»
+  возвращает «Expr»
+  пример «A choice whose parts are known»
+    дано condition равно вариант «Gap»
+    дано positive равно вариант «Gap»
+    дано negative равно вариант «Gap»
+    ожидается вариант «Choice» с test равным (вариант «Gap») и yea равным (вариант «Gap») и nay равным (вариант «Gap»)
+  вариант «Choice» с test равным condition и yea равным positive и nay равным negative
+
+тотальная функция «Let from»
+  принимает name: строка, value: «Expr», body: «Expr»
+  возвращает «Expr»
+  пример «A binding of nothing known»
+    дано name равно "x"
+    дано value равно вариант «Gap»
+    дано body равно вариант «Gap»
+    ожидается вариант «Let» с name равным "x" и value равным (вариант «Gap») и body равным (вариант «Gap»)
+  вариант «Let» с name равным name и value равным value и body равным body
+
+тотальная функция «Walk from»
+  принимает step: «Lambda», over: «Expr», keep: признак
+  возвращает «Expr»
+  пример «A walk of nothing known»
+    дано step равно запись «Lambda» с names равным [] и body равным (вариант «Gap»)
+    дано over равно вариант «Gap»
+    дано keep равно нет
+    ожидается вариант «Walk» с step равным (запись «Lambda» с names равным [
+      ] и body равным (вариант «Gap»)) и over равным (вариант «Gap») и keep равным нет
+  вариант «Walk» с step равным step и over равным over и keep равным keep
+
+тотальная функция «Promised by»
+  принимает length: признак, operator: строка, facts: список «Fact»
+  возвращает «Amount»
+  пример «Not a promise about the length of the result»
+    дано length равно нет
+    дано operator равно "eq"
+    дано facts равно []
+    ожидается вариант «Unbounded»
+  пусть compared равно (["eq", "lte", "lt"] содержит operator)
+  если length и притом compared то «Size value» от («Size in» от facts) иначе вариант «Unbounded»
+
+тотальная функция «Larger growth»
+  принимает top: список «Term», amount: «Amount», var: строка
+  возвращает список «Term»
+  пример «The larger of two growths»
+    дано top равно []
+    дано amount равно вариант «Unbounded»
+    дано var равно "a"
+    ожидается []
+  «Maximum» от top и («Growth part» от amount и var)

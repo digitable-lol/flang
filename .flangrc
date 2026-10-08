@@ -217,3 +217,4 @@ script.hand-written-lists:forgery = bootstrap/flang io scripts/guards/hand-writt
 script.criterion:score = bootstrap/flang io scripts/guards/criterion-score-guard.fscript --
 script.tests = node --test --test-timeout=1800000 flang/test/*.test.mjs
 script.tests:remote = bootstrap/flang io scripts/test-remote.fscript --plan Run --timeout 3600000
+script.parallel:check = bootstrap/flang io flang/concurrency/bench/parallel-map.fscript --plan Проверка --timeout 1800000

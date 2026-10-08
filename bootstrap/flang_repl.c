@@ -19421,6 +19421,26 @@ static bool lock_scan(const char *full, const char *text, size_t bytes, char **n
       char *relative = NULL;
       char *target = NULL;
       if (!zn_field_text(imports[inner], "from", &from, &from_bytes)) {
+        const char *wanted = NULL;
+        size_t wanted_bytes = 0;
+        if (zn_field_text(imports[inner], "category", &wanted, &wanted_bytes) && wanted_bytes != 0) {
+          repl_strings found;
+          char *asked = repl_dup(wanted, wanted_bytes);
+          size_t place = 0;
+          strings_init(&found);
+          repl_find_module(full, asked, &found);
+          for (place = 0; place < found.count; place += 1) {
+            const char *target = found.items[place];
+            if (strings_has(seen, target, strlen(target))) {
+              continue;
+            }
+            strings_say(seen, target);
+            strings_say(queue_paths, target);
+            strings_add(queue_names, wanted, wanted_bytes);
+          }
+          strings_free(&found);
+          free(asked);
+        }
         continue;
       }
       relative = repl_dup(from, from_bytes);
@@ -19443,6 +19463,9 @@ static bool lock_scan(const char *full, const char *text, size_t bytes, char **n
   free(directory);
   return true;
 }
+
+static bool pkg_is_package(const char *path);
+static bool pkg_take_nested(const char *file, const char *root, lock_modules *out);
 
 /*
  * Обход замыкания «использует» с чтением файлов — то же, что делает
@@ -19472,7 +19495,12 @@ static bool lock_collect(const char *entry, const char *root, const char *entry_
     char *name = NULL;
     size_t functions = 0;
     size_t bytes = 0;
-    char *text = repl_read_file(file, &bytes);
+    char *text = NULL;
+    if (at > 0 && pkg_is_package(file)) {
+      ok = pkg_take_nested(file, root, out);
+      continue;
+    }
+    text = repl_read_file(file, &bytes);
     if (text == NULL) {
       fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", file);
       ok = false;

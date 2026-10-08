@@ -108,8 +108,11 @@ public final class Value {
     /** Сколько ячеек общего массива уже занято. Только растёт. */
     public int filled;
 
-    Grow(int filled) {
+    public Ctx owner;
+
+    Grow(int filled, Ctx owner) {
       this.filled = filled;
+      this.owner = owner;
     }
   }
 

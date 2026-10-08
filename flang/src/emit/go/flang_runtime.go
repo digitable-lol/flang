@@ -60,8 +60,12 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"os"
+	"runtime"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 	"unicode/utf8"
 )
 
@@ -130,6 +134,7 @@ type Field struct {
 // занимается не более одного раза за жизнь массива: второе «добавить» к тому же
 // значению видит Filled больше своего конца и уходит на копию.
 type Grow struct {
+	Owner *Ctx
 	// Total — ёмкость исходного выделения: по ней и по cap среза считается,
 	// на каком месте массива этот срез начинается.
 	Total int
@@ -494,6 +499,7 @@ type Ctx struct {
 	Steps     int
 	MaxSteps  int
 	IndexBase int
+	Lane      int
 }
 
 // NewCtx — контекст с пределами интерпретатора и индексацией строк с 1.
@@ -1590,7 +1596,7 @@ func BAppend(ctx *Ctx, item, value Value) (Value, error) {
 		// оставшаяся от этого места до конца.
 		start := grow.Total - cap(items)
 		end := start + len(items)
-		if end == grow.Filled && end < grow.Total {
+		if grow.Owner == ctx && end == grow.Filled && end < grow.Total {
 			grown := items[:len(items)+1]
 			grown[len(items)] = item
 			grow.Filled = end + 1
@@ -1604,7 +1610,7 @@ func BAppend(ctx *Ctx, item, value Value) (Value, error) {
 	result := make([]Value, len(items)+1, capacity)
 	copy(result, items)
 	result[len(items)] = item
-	return Value{Tag: TagList, List: result, Grow: &Grow{Total: capacity, Filled: len(result)}}, nil
+	return Value{Tag: TagList, List: result, Grow: &Grow{Owner: ctx, Total: capacity, Filled: len(result)}}, nil
 }
 
 // BPrepend — «приписать … к …»: тот же список с элементом впереди.
@@ -1880,4 +1886,202 @@ func CheckEntry(table *EntryTable, name string, args []Value) error {
 		at++
 	}
 	return nil
+}
+
+type ParItem func(ctx *Ctx, item Value) (Value, error)
+
+type ParPair func(ctx *Ctx, left, right Value) (Value, error)
+
+var parThreads = parCount()
+
+var parBusy sync.Mutex
+
+func parCount() int {
+	if told, err := strconv.Atoi(os.Getenv("FLANG_THREADS")); err == nil && told > 0 {
+		if told > 256 {
+			return 256
+		}
+		return told
+	}
+	online := runtime.NumCPU()
+	if online > 64 {
+		return 64
+	}
+	return online
+}
+
+func parOffer(index, count int, started time.Time, next *int) bool {
+	if index != *next {
+		return false
+	}
+	*next *= 2
+	spent := time.Since(started)
+	if spent < 20*time.Microsecond {
+		return false
+	}
+	*next = -1
+	return float64(spent)/float64(index)*float64(count-index) >= float64(100*time.Microsecond)
+}
+
+func parRun(ctx *Ctx, count int, work func(lane *Ctx, chunk, from, to int) error) (int, bool) {
+	if !parBusy.TryLock() {
+		return 0, false
+	}
+	defer parBusy.Unlock()
+	budget := 0
+	if ctx.MaxSteps > 0 {
+		budget = ctx.MaxSteps - ctx.Steps
+		if budget <= 0 {
+			return 0, false
+		}
+	}
+	chunks, size := parChunks(count)
+	lanes := make([]*Ctx, parThreads)
+	var lock sync.Mutex
+	var wait sync.WaitGroup
+	nextChunk := 0
+	failed := false
+	for index := range lanes {
+		lane := &Ctx{Depth: ctx.Depth, MaxDepth: ctx.MaxDepth, MaxSteps: budget, IndexBase: ctx.IndexBase, Lane: index + 1}
+		lanes[index] = lane
+		wait.Add(1)
+		go func() {
+			defer wait.Done()
+			for {
+				lock.Lock()
+				if failed || nextChunk >= chunks {
+					lock.Unlock()
+					return
+				}
+				chunk := nextChunk
+				nextChunk++
+				lock.Unlock()
+				from := chunk * size
+				to := from + size
+				if to > count {
+					to = count
+				}
+				if work(lane, chunk, from, to) != nil {
+					lock.Lock()
+					failed = true
+					lock.Unlock()
+					return
+				}
+			}
+		}()
+	}
+	wait.Wait()
+	if failed {
+		return 0, false
+	}
+	steps := 0
+	for _, lane := range lanes {
+		steps += lane.Steps
+	}
+	if budget > 0 && steps > budget {
+		return 0, false
+	}
+	return steps, true
+}
+
+func ParMap(ctx *Ctx, items []Value, body ParItem) ([]Value, error) {
+	out := make([]Value, len(items))
+	may := ctx.Lane == 0 && len(items) > 2 && parThreads > 1
+	started := time.Now()
+	next := 1
+	if !may {
+		next = -1
+	}
+	for index := 0; index < len(items); index++ {
+		if parOffer(index, len(items), started, &next) {
+			rest := items[index:]
+			got := make([]Value, len(rest))
+			steps, ok := parRun(ctx, len(rest), func(lane *Ctx, chunk, from, to int) error {
+				for at := from; at < to; at++ {
+					value, err := body(lane, rest[at])
+					if err != nil {
+						return err
+					}
+					got[at] = value
+				}
+				return nil
+			})
+			if ok {
+				ctx.Steps += steps
+				copy(out[index:], got)
+				return out, nil
+			}
+		}
+		value, err := body(ctx, items[index])
+		if err != nil {
+			return nil, err
+		}
+		out[index] = value
+	}
+	return out, nil
+}
+
+func parCombine(ctx *Ctx, acc Value, parts []Value, step ParPair) (Value, bool) {
+	before := ctx.Steps
+	for _, part := range parts {
+		next, err := step(ctx, acc, part)
+		if err != nil {
+			ctx.Steps = before
+			return Nothing(), false
+		}
+		acc = next
+	}
+	return acc, true
+}
+
+func ParFold(ctx *Ctx, items []Value, start Value, step ParPair) (Value, error) {
+	acc := start
+	may := ctx.Lane == 0 && len(items) > 2 && parThreads > 1
+	started := time.Now()
+	next := 1
+	if !may {
+		next = -1
+	}
+	for index := 0; index < len(items); index++ {
+		if parOffer(index, len(items), started, &next) {
+			rest := items[index:]
+			chunks, _ := parChunks(len(rest))
+			parts := make([]Value, chunks)
+			steps, ok := parRun(ctx, len(rest), func(lane *Ctx, chunk, from, to int) error {
+				part := rest[from]
+				for at := from + 1; at < to; at++ {
+					value, err := step(lane, part, rest[at])
+					if err != nil {
+						return err
+					}
+					part = value
+				}
+				parts[chunk] = part
+				return nil
+			})
+			if ok {
+				ctx.Steps += steps
+				total, combined := parCombine(ctx, acc, parts, step)
+				if combined {
+					return total, nil
+				}
+				ctx.Steps -= steps
+			}
+		}
+		value, err := step(ctx, acc, items[index])
+		if err != nil {
+			return Nothing(), err
+		}
+		acc = value
+	}
+	return acc, nil
+}
+
+func parChunks(count int) (int, int) {
+	chunks := parThreads * 4
+	if chunks > count {
+		chunks = count
+	}
+	size := (count + chunks - 1) / chunks
+	return (count + size - 1) / size, size
 }

@@ -106,6 +106,8 @@ public sealed class Value
         /// <summary>Сколько ячеек общего массива уже занято. Только растёт.</summary>
         public int Filled;
 
+        public Ctx? Owner;
+
         internal Grow(int filled)
         {
             Filled = filled;

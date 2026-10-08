@@ -52,6 +52,8 @@ public sealed class Ctx
     /// <summary>Сделано шагов.</summary>
     public long Steps;
 
+    public int Lane;
+
     /// <summary>Вход в функцию, способную к рекурсии.</summary>
     public void Enter(string function)
     {

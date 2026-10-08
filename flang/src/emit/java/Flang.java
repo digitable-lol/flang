@@ -29,6 +29,185 @@
  * вычисление считается в потоке с явно заданным стеком (withDeepStack).
  */
 public final class Flang {
+  public interface ParItem {
+    Value apply(Ctx ctx, Value item);
+  }
+
+  public interface ParPair {
+    Value apply(Ctx ctx, Value left, Value right);
+  }
+
+  private static final int PAR_THREADS = parCount();
+
+  private static final java.util.concurrent.locks.ReentrantLock PAR_BUSY =
+      new java.util.concurrent.locks.ReentrantLock();
+
+  private static java.util.concurrent.ExecutorService parPool;
+
+  private static int parCount() {
+    String told = System.getenv("FLANG_THREADS");
+    if (told != null) {
+      try {
+        int threads = Integer.parseInt(told);
+        if (threads > 0) {
+          return Math.min(threads, 256);
+        }
+      } catch (NumberFormatException ignored) {
+        return Math.min(Runtime.getRuntime().availableProcessors(), 64);
+      }
+    }
+    return Math.min(Runtime.getRuntime().availableProcessors(), 64);
+  }
+
+  private interface ParWork {
+    void run(Ctx lane, int chunk, int from, int to);
+  }
+
+  private static int[] parChunks(int count) {
+    int chunks = Math.min(PAR_THREADS * 4, count);
+    int size = (count + chunks - 1) / chunks;
+    return new int[] {(count + size - 1) / size, size};
+  }
+
+  private static boolean parOffer(int index, int count, long started, int[] next) {
+    if (index != next[0]) {
+      return false;
+    }
+    next[0] *= 2;
+    long spent = System.nanoTime() - started;
+    if (spent < 20000L) {
+      return false;
+    }
+    next[0] = -1;
+    return (double) spent / index * (count - index) >= 100000.0;
+  }
+
+  private static long parRun(Ctx ctx, int count, ParWork work) {
+    if (!PAR_BUSY.tryLock()) {
+      return -1;
+    }
+    try {
+      long budget = 0;
+      if (ctx.maxSteps > 0) {
+        budget = ctx.maxSteps - ctx.steps;
+        if (budget <= 0) {
+          return -1;
+        }
+      }
+      if (parPool == null) {
+        parPool = java.util.concurrent.Executors.newFixedThreadPool(PAR_THREADS, runnable -> {
+          Thread thread = new Thread(null, runnable, "flang-par", 1L << 30);
+          thread.setDaemon(true);
+          return thread;
+        });
+      }
+      int[] shape = parChunks(count);
+      int chunks = shape[0];
+      int size = shape[1];
+      Ctx[] lanes = new Ctx[chunks];
+      java.util.concurrent.atomic.AtomicBoolean failed = new java.util.concurrent.atomic.AtomicBoolean(false);
+      java.util.List<java.util.concurrent.Future<?>> waits = new java.util.ArrayList<>();
+      for (int chunk = 0; chunk < chunks; chunk++) {
+        Ctx lane = new Ctx();
+        lane.indexBase = ctx.indexBase;
+        lane.maxDepth = ctx.maxDepth;
+        lane.maxSteps = budget;
+        lane.depth = ctx.depth;
+        lane.lane = chunk + 1;
+        lanes[chunk] = lane;
+        int number = chunk;
+        waits.add(parPool.submit(() -> {
+          if (failed.get()) {
+            return;
+          }
+          try {
+            work.run(lane, number, number * size, Math.min(number * size + size, count));
+          } catch (RuntimeException | StackOverflowError problem) {
+            failed.set(true);
+          }
+        }));
+      }
+      for (java.util.concurrent.Future<?> wait : waits) {
+        try {
+          wait.get();
+        } catch (InterruptedException | java.util.concurrent.ExecutionException problem) {
+          failed.set(true);
+        }
+      }
+      if (failed.get()) {
+        return -1;
+      }
+      long steps = 0;
+      for (Ctx lane : lanes) {
+        steps += lane.steps;
+      }
+      return budget > 0 && steps > budget ? -1 : steps;
+    } finally {
+      PAR_BUSY.unlock();
+    }
+  }
+
+  public static Value[] parMap(Ctx ctx, Value[] items, ParItem body) {
+    Value[] output = new Value[items.length];
+    boolean may = ctx.lane == 0 && items.length > 2 && PAR_THREADS > 1;
+    long started = System.nanoTime();
+    int[] next = {may ? 1 : -1};
+    for (int index = 0; index < items.length; index++) {
+      if (parOffer(index, items.length, started, next)) {
+        int from = index;
+        Value[] got = new Value[items.length - from];
+        long steps = parRun(ctx, got.length, (lane, chunk, start, stop) -> {
+          for (int at = start; at < stop; at++) {
+            got[at] = body.apply(lane, items[from + at]);
+          }
+        });
+        if (steps >= 0) {
+          ctx.steps += steps;
+          System.arraycopy(got, 0, output, from, got.length);
+          return output;
+        }
+      }
+      output[index] = body.apply(ctx, items[index]);
+    }
+    return output;
+  }
+
+  public static Value parFold(Ctx ctx, Value[] items, Value start, ParPair step) {
+    Value acc = start;
+    boolean may = ctx.lane == 0 && items.length > 2 && PAR_THREADS > 1;
+    long started = System.nanoTime();
+    int[] next = {may ? 1 : -1};
+    for (int index = 0; index < items.length; index++) {
+      if (parOffer(index, items.length, started, next)) {
+        int from = index;
+        int count = items.length - from;
+        Value[] parts = new Value[parChunks(count)[0]];
+        long before = ctx.steps;
+        long steps = parRun(ctx, count, (lane, chunk, first, stop) -> {
+          Value part = items[from + first];
+          for (int at = first + 1; at < stop; at++) {
+            part = step.apply(lane, part, items[from + at]);
+          }
+          parts[chunk] = part;
+        });
+        if (steps >= 0) {
+          ctx.steps += steps;
+          try {
+            Value total = acc;
+            for (Value part : parts) {
+              total = step.apply(ctx, total, part);
+            }
+            return total;
+          } catch (RuntimeException problem) {
+            ctx.steps = before;
+          }
+        }
+      }
+      acc = step.apply(ctx, acc, items[index]);
+    }
+    return acc;
+  }
+
 
   private Flang() {}
 
@@ -1248,7 +1427,7 @@ public final class Flang {
     Value list = expectList("добавить", value, "второй аргумент");
     int end = Value.size(list);
     Value.Grow grow = list.grow;
-    if (grow != null && end == grow.filled && end < list.items.length) {
+    if (grow != null && grow.owner == ctx && end == grow.filled && end < list.items.length) {
       list.items[end] = item;
       grow.filled = end + 1;
       return Value.grown(list.items, end + 1, grow);
@@ -1261,7 +1440,7 @@ public final class Flang {
     Value[] cells = new Value[capacity];
     System.arraycopy(list.items, 0, cells, 0, end);
     cells[end] = item;
-    return Value.grown(cells, end + 1, new Value.Grow(end + 1));
+    return Value.grown(cells, end + 1, new Value.Grow(end + 1, ctx));
   }
 
   /**
@@ -1282,7 +1461,7 @@ public final class Flang {
     Value[] next = new Value[size + 1];
     next[0] = item;
     System.arraycopy(list.items, 0, next, 1, size);
-    return Value.grown(next, size + 1, new Value.Grow(size + 1));
+    return Value.grown(next, size + 1, new Value.Grow(size + 1, ctx));
   }
 
   /** «остаток от». */

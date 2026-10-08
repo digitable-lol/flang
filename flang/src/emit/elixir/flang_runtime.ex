@@ -821,6 +821,156 @@ defmodule Flang.Rt do
     :ok
   end
 
+  def par_threads do
+    case :persistent_term.get(:flang_threads, nil) do
+      nil ->
+        threads = par_count(System.get_env("FLANG_THREADS"))
+        :persistent_term.put(:flang_threads, threads)
+        threads
+
+      threads ->
+        threads
+    end
+  end
+
+  defp par_count(told) do
+    case told && Integer.parse(told) do
+      {threads, ""} when threads > 0 -> min(threads, 256)
+      _ -> min(System.schedulers_online(), 64)
+    end
+  end
+
+  defp par_may(list) do
+    Process.get(:flang_lane, false) == false and length(list) > 2 and par_threads() > 1
+  end
+
+  defp par_offer(index, count, started, next) do
+    cond do
+      index != next ->
+        {false, next}
+
+      System.monotonic_time(:nanosecond) - started < 20_000 ->
+        {false, next * 2}
+
+      true ->
+        spent = System.monotonic_time(:nanosecond) - started
+        {spent / index * (count - index) >= 100_000, -1}
+    end
+  end
+
+  defp par_lane({base, depth_limit, budget, depth}, chunk, work) do
+    Process.put(:flang_index_base, base)
+    Process.put(:flang_max_depth, depth_limit)
+    Process.put(:flang_max_steps, budget)
+    Process.put(:flang_depth, depth)
+    Process.put(:flang_steps, 0)
+    Process.put(:flang_lane, true)
+
+    try do
+      value = work.(chunk)
+      {:ok, value, Process.get(:flang_steps, 0)}
+    rescue
+      _ -> :error
+    end
+  end
+
+  defp par_run(items, work) do
+    steps = Process.get(:flang_steps, 0)
+    limit = Process.get(:flang_max_steps, @default_max_steps)
+    budget = if limit > 0, do: limit - steps, else: 0
+
+    if limit > 0 and budget <= 0 do
+      :error
+    else
+      threads = par_threads()
+      count = length(items)
+      chunks = min(threads * 4, count)
+      size = div(count + chunks - 1, chunks)
+      shape = {index_base(), Process.get(:flang_max_depth, @default_max_depth), budget, Process.get(:flang_depth, 0)}
+
+      results =
+        items
+        |> Enum.chunk_every(size)
+        |> Task.async_stream(fn chunk -> par_lane(shape, chunk, work) end,
+          max_concurrency: threads,
+          ordered: true,
+          timeout: :infinity
+        )
+        |> Enum.map(fn {:ok, result} -> result end)
+
+      par_tally(results, steps, budget)
+    end
+  end
+
+  defp par_tally(results, steps, budget) do
+    if Enum.all?(results, &match?({:ok, _, _}, &1)) do
+      total = results |> Enum.map(fn {:ok, _, used} -> used end) |> Enum.sum()
+
+      if budget > 0 and total > budget do
+        :error
+      else
+        Process.put(:flang_steps, steps + total)
+        {:ok, Enum.map(results, fn {:ok, value, _} -> value end)}
+      end
+    else
+      :error
+    end
+  end
+
+  def par_map(list, fun) do
+    if par_may(list) do
+      par_map_from(list, fun, [], 0, length(list), System.monotonic_time(:nanosecond), 1)
+    else
+      Enum.map(list, fun)
+    end
+  end
+
+  defp par_map_from([], _fun, done, _index, _count, _started, _next), do: Enum.reverse(done)
+
+  defp par_map_from([head | tail] = rest, fun, done, index, count, started, next) do
+    {offer, next} = par_offer(index, count, started, next)
+
+    with true <- offer,
+         {:ok, parts} <- par_run(rest, fn chunk -> Enum.map(chunk, fun) end) do
+      Enum.reverse(done, Enum.concat(parts))
+    else
+      _ -> par_map_from(tail, fun, [fun.(head) | done], index + 1, count, started, next)
+    end
+  end
+
+  def par_fold(list, start, fun) do
+    if par_may(list) do
+      par_fold_from(list, fun, start, 0, length(list), System.monotonic_time(:nanosecond), 1)
+    else
+      Enum.reduce(list, start, fun)
+    end
+  end
+
+  defp par_fold_from([], _fun, acc, _index, _count, _started, _next), do: acc
+
+  defp par_fold_from([head | tail] = rest, fun, acc, index, count, started, next) do
+    {offer, next} = par_offer(index, count, started, next)
+    before = Process.get(:flang_steps, 0)
+
+    with true <- offer,
+         {:ok, parts} <- par_run(rest, fn [first | others] -> Enum.reduce(others, first, fun) end),
+         {:ok, total} <- par_combine(parts, acc, fun) do
+      total
+    else
+      _ ->
+        Process.put(:flang_steps, before)
+        par_fold_from(tail, fun, fun.(head, acc), index + 1, count, started, next)
+    end
+  end
+
+  defp par_combine(parts, acc, fun) do
+    try do
+      {:ok, Enum.reduce(parts, acc, fun)}
+    rescue
+      _ -> :error
+    end
+  end
+
   # ───────────────────────────── операции языка ─────────────────────────────
 
   @doc "Доступ к полю записи."

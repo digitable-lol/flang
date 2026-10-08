@@ -14,7 +14,7 @@
 ```
 bootstrap/      компилятор, напечатанный в C99, и его Makefile: «make -C bootstrap» собирает двоичный
 flang/          язык: self/ (компилятор), core/, stdlib/, experimental/ (опытные модули), proof/, concurrency/, ct/, src/emit/ (рантаймы целей), scripts/, test/, bin/ (flangtutor) — только код; его контракты лежат в docs/flang/
-docs/examples/  242 программ на flang в 28 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
+docs/examples/  247 программ на flang в 28 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
 docs/editors/   языковой сервер, подсветка для Vim и VS Code, заявка в github-linguist
 packaging/      формула Homebrew, плагин asdf, страница flang.1, проверки установки
 scripts/        проверки дерева, перепечатка точки раскрутки, релизный архив, журнал изменений
@@ -31,7 +31,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 65 файлов на flang —
 <!-- СНЯТО 2026-10-07 файлов flang/self/*.flang = 65 -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель.
-[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **55 модуля, 1793 функции и 3954
+[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **55 модуля, 1929 функции и 3954
 примеров**, которые прогоняются при каждой проверке:
 <!-- СНЯТО 2026-10-07 файлов flang/stdlib/*.flang = 55 -->
 <!-- СНЯТО 2026-10-07 примеров-в flang/stdlib/*.flang = 3954 -->
@@ -49,7 +49,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 [`docs/examples/web/shortener`](examples/web/shortener/README.md), сокращатель ссылок, где между
 байтами запроса и байтами ответа нет ничего, кроме flang, и
 [`docs/examples/library-api`](examples/library-api/README.md), предметная половина библиотечной
-службы; ещё 227 программ в остальных наборах — отдельные файлы, среди них набор LeetCode: 82
+службы; ещё 232 программ в остальных наборах — отдельные файлы, среди них набор LeetCode: 82
 решения с 806 примерами.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
 <!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->
@@ -57,7 +57,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 **Точка раскрутки.** В `bootstrap/` лежит компилятор, уже напечатанный в C99, — поэтому один
 `make` даёт рабочий `flang`. Этот двоичный печатает исходники компилятора заново, и результат
 сверяется с закоммиченным: `sh scripts/bootstrap-reprint.sh --check`. Входы последней печати записаны в
-`scripts/seed-fingerprint`, по хешированной строке на файл — 48 строк во входной половине; вместе
+`scripts/seed-fingerprint`, по хешированной строке на файл — 50 строк во входной половине; вместе
 со второй половиной, телом семени, в файле 67 строк.
 <!-- СНЯТО 2026-10-07 строк scripts/seed-fingerprint = 67 -->
 Семя отстаёт от исходников: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` перечисляет, какие файлы и

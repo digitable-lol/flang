@@ -15,7 +15,7 @@ against the tree on every push.
 ```
 bootstrap/      the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
 flang/          the language: self/ (the compiler), core/, stdlib/, experimental/ (experimental modules), proof/, concurrency/, ct/, src/emit/ (target runtimes), scripts/, test/, bin/ (flangtutor) — code only; its contracts are in docs/flang/
-docs/examples/  242 flang programs in 28 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
+docs/examples/  247 flang programs in 28 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
 docs/editors/   the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/      the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
 scripts/        guards of the tree, the reprint of the bootstrap point, the release archive, the changelog
@@ -32,7 +32,7 @@ docs/tasks/     the open and closed work of the tree, one file per task
 Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 65 files of flang —
 <!-- СНЯТО 2026-10-07 файлов flang/self/*.flang = 65 -->
 lexer, parser, types, totality, proof kernel and one printer per target.
-[`flang/stdlib/`](../flang/stdlib) is the standard library — **55 modules, 1793 functions and 3954
+[`flang/stdlib/`](../flang/stdlib) is the standard library — **55 modules, 1929 functions and 3954
 examples** that run on every check:
 <!-- СНЯТО 2026-10-07 файлов flang/stdlib/*.flang = 55 -->
 <!-- СНЯТО 2026-10-07 примеров-в flang/stdlib/*.flang = 3954 -->
@@ -51,7 +51,7 @@ Two of the example sets are full-size projects —
 [`docs/examples/web/shortener`](examples/web/shortener/README.md), a link shortener with
 nothing but flang between the request bytes and the response bytes, and
 [`docs/examples/library-api`](examples/library-api/README.md), the domain half of a library
-service; the 227 more programs in the other sets are single files, the LeetCode set among them:
+service; the 232 more programs in the other sets are single files, the LeetCode set among them:
 82 solutions carrying 806 examples.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
 <!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->
@@ -59,7 +59,7 @@ service; the 227 more programs in the other sets are single files, the LeetCode 
 **The bootstrap point.** `bootstrap/` holds the compiler already printed to C99, which is why
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the
 result is compared with what is committed: `sh scripts/bootstrap-reprint.sh --check`. The inputs of the
-last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 48 lines in the
+last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 50 lines in the
 input half; with the second half, the seed body, the file is 67 lines.
 <!-- СНЯТО 2026-10-07 строк scripts/seed-fingerprint = 67 -->
 The seed lags the sources: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` lists which files and functions

@@ -75,10 +75,9 @@ namespace flang {
  * ровно одну строку, а терять при этом код нельзя.
  */
 class Error : public std::exception {
- public:
+public:
   Error(fl_status status, const char *code, const char *message)
-      : status_(status),
-        code_(code == nullptr ? "" : code),
+      : status_(status), code_(code == nullptr ? "" : code),
         message_(message == nullptr ? "" : message),
         what_(code_.empty() ? message_ : code_ + ": " + message_) {}
 
@@ -87,7 +86,7 @@ class Error : public std::exception {
   const std::string &message() const noexcept { return message_; }
   const char *what() const noexcept override { return what_.c_str(); }
 
- private:
+private:
   fl_status status_;
   std::string code_;
   std::string message_;
@@ -99,7 +98,7 @@ class Error : public std::exception {
  * копировать её нельзя — две копии закрыли бы одну память дважды.
  */
 class Arena {
- public:
+public:
   Arena() { fl_arena_init(&arena_); }
   ~Arena() { fl_arena_release(&arena_); }
 
@@ -114,7 +113,7 @@ class Arena {
 
   fl_arena *raw() noexcept { return &arena_; }
 
- private:
+private:
   fl_arena arena_;
 };
 
@@ -124,9 +123,9 @@ class Arena {
  * своим разбором тега.
  */
 class Value {
- public:
+public:
   Value() : value_(fl_nothing()) {}
-  Value(fl_value value) : value_(value) {}  // NOLINT: обёртка нарочно неявная
+  Value(fl_value value) : value_(value) {} // NOLINT: обёртка нарочно неявная
 
   fl_value raw() const noexcept { return value_; }
   operator fl_value() const noexcept { return value_; }
@@ -138,7 +137,9 @@ class Value {
   bool is_list() const noexcept { return fl_is_list(value_); }
   bool is_record() const noexcept { return fl_is_record(value_); }
   bool is_variant() const noexcept { return fl_is_variant(value_); }
-  bool is(const char *name) const noexcept { return fl_variant_is(value_, name); }
+  bool is(const char *name) const noexcept {
+    return fl_variant_is(value_, name);
+  }
 
   /* Число и признак — по значению; вид не тот, значит спрашивали не то, и
      ответом будет отказ, а не тихий ноль. */
@@ -215,7 +216,7 @@ class Value {
     return value_.as.variant->name;
   }
 
- private:
+private:
   fl_value value_;
 };
 
@@ -267,7 +268,8 @@ inline Value list(Arena &arena, std::initializer_list<Value> items) {
   return Value(fl_list(room, items.size()));
 }
 
-/* ────────────────────────────── печать в поток ───────────────────────────── */
+/* ────────────────────────────── печать в поток ─────────────────────────────
+ */
 
 /*
  * Раскладка JSON здесь ТА ЖЕ, что у `write_value` прогонщика на C, и это не
@@ -281,21 +283,35 @@ inline void write_json_text(std::ostream &out, const char *utf8, size_t bytes) {
   for (size_t index = 0; index < bytes; index += 1) {
     const unsigned char symbol = static_cast<unsigned char>(utf8[index]);
     switch (symbol) {
-      case '"': out << "\\\""; break;
-      case '\\': out << "\\\\"; break;
-      case '\n': out << "\\n"; break;
-      case '\r': out << "\\r"; break;
-      case '\t': out << "\\t"; break;
-      case '\b': out << "\\b"; break;
-      case '\f': out << "\\f"; break;
-      default:
-        if (symbol < 0x20u) {
-          out << "\\u00";
-          out.put(digits[(symbol >> 4) & 0xfu]);
-          out.put(digits[symbol & 0xfu]);
-        } else {
-          out.put(static_cast<char>(symbol));
-        }
+    case '"':
+      out << "\\\"";
+      break;
+    case '\\':
+      out << "\\\\";
+      break;
+    case '\n':
+      out << "\\n";
+      break;
+    case '\r':
+      out << "\\r";
+      break;
+    case '\t':
+      out << "\\t";
+      break;
+    case '\b':
+      out << "\\b";
+      break;
+    case '\f':
+      out << "\\f";
+      break;
+    default:
+      if (symbol < 0x20u) {
+        out << "\\u00";
+        out.put(digits[(symbol >> 4) & 0xfu]);
+        out.put(digits[symbol & 0xfu]);
+      } else {
+        out.put(static_cast<char>(symbol));
+      }
     }
   }
   out.put('"');
@@ -305,59 +321,60 @@ inline std::ostream &operator<<(std::ostream &out, const Value &value) {
   const fl_value raw = value.raw();
   char digits[FL_NUMBER_TEXT_MAX];
   switch (raw.tag) {
-    case FL_NOTHING:
-      return out << "null";
-    case FL_FLAG:
-      return out << (raw.as.flag ? "true" : "false");
-    case FL_NUMBER:
-      fl_number_text(raw.as.number, digits);
-      out << "{\"n\":";
-      /* −0 обязан доехать до сверки со знаком: Object.is(0, −0) ложно. */
-      if (raw.as.number == 0.0 && !(1.0 / raw.as.number > 0.0)) {
-        write_json_text(out, "-0", 2);
-      } else {
-        write_json_text(out, digits, std::strlen(digits));
+  case FL_NOTHING:
+    return out << "null";
+  case FL_FLAG:
+    return out << (raw.as.flag ? "true" : "false");
+  case FL_NUMBER:
+    fl_number_text(raw.as.number, digits);
+    out << "{\"n\":";
+    /* −0 обязан доехать до сверки со знаком: Object.is(0, −0) ложно. */
+    if (raw.as.number == 0.0 && !(1.0 / raw.as.number > 0.0)) {
+      write_json_text(out, "-0", 2);
+    } else {
+      write_json_text(out, digits, std::strlen(digits));
+    }
+    return out << '}';
+  case FL_STRING:
+    out << "{\"s\":";
+    write_json_text(out, raw.as.string.utf8, raw.as.string.bytes);
+    return out << '}';
+  case FL_LIST:
+    out << "{\"l\":[";
+    for (size_t index = 0; index < raw.as.list.count; index += 1) {
+      if (index > 0) {
+        out << ',';
       }
-      return out << '}';
-    case FL_STRING:
-      out << "{\"s\":";
-      write_json_text(out, raw.as.string.utf8, raw.as.string.bytes);
-      return out << '}';
-    case FL_LIST:
-      out << "{\"l\":[";
-      for (size_t index = 0; index < raw.as.list.count; index += 1) {
-        if (index > 0) {
-          out << ',';
-        }
-        out << Value(raw.as.list.items[index]);
+      out << Value(raw.as.list.items[index]);
+    }
+    return out << "]}";
+  case FL_RECORD:
+    out << "{\"r\":[";
+    for (size_t index = 0; index < raw.as.record->count; index += 1) {
+      const fl_field &field = raw.as.record->fields[index];
+      if (index > 0) {
+        out << ',';
       }
-      return out << "]}";
-    case FL_RECORD:
-      out << "{\"r\":[";
-      for (size_t index = 0; index < raw.as.record->count; index += 1) {
-        const fl_field &field = raw.as.record->fields[index];
-        if (index > 0) {
-          out << ',';
-        }
-        out << '[';
-        write_json_text(out, field.name, std::strlen(field.name));
-        out << ',' << Value(field.value) << ']';
+      out << '[';
+      write_json_text(out, field.name, std::strlen(field.name));
+      out << ',' << Value(field.value) << ']';
+    }
+    return out << "]}";
+  case FL_VARIANT:
+    out << "{\"v\":";
+    write_json_text(out, raw.as.variant->name,
+                    std::strlen(raw.as.variant->name));
+    out << ",\"f\":[";
+    for (size_t index = 0; index < raw.as.variant->count; index += 1) {
+      const fl_field &field = raw.as.variant->fields[index];
+      if (index > 0) {
+        out << ',';
       }
-      return out << "]}";
-    case FL_VARIANT:
-      out << "{\"v\":";
-      write_json_text(out, raw.as.variant->name, std::strlen(raw.as.variant->name));
-      out << ",\"f\":[";
-      for (size_t index = 0; index < raw.as.variant->count; index += 1) {
-        const fl_field &field = raw.as.variant->fields[index];
-        if (index > 0) {
-          out << ',';
-        }
-        out << '[';
-        write_json_text(out, field.name, std::strlen(field.name));
-        out << ',' << Value(field.value) << ']';
-      }
-      return out << "]}";
+      out << '[';
+      write_json_text(out, field.name, std::strlen(field.name));
+      out << ',' << Value(field.value) << ']';
+    }
+    return out << "]}";
   }
   return out << "null";
 }
@@ -375,8 +392,8 @@ inline std::ostream &operator<<(std::ostream &out, const Value &value) {
  * Отказ приезжает исключением. Второй дороги — «вернуть код и переспросить» —
  * здесь нет нарочно: две дороги к одному отказу разошлись бы текстом.
  */
-using Entry = fl_status (*)(fl_ctx *, const char *, const fl_value *, size_t, fl_value *,
-                            fl_error *);
+using Entry = fl_status (*)(fl_ctx *, const char *, const fl_value *, size_t,
+                            fl_value *, fl_error *);
 
 inline Value call(Arena &arena, Entry entry, const char *name,
                   std::initializer_list<Value> args) {
@@ -392,13 +409,14 @@ inline Value call(Arena &arena, Entry entry, const char *name,
   }
   fl_ctx_init(&ctx, arena.raw());
   const fl_status status =
-      entry(&ctx, name, room.empty() ? nullptr : room.data(), room.size(), &result, &error);
+      entry(&ctx, name, room.empty() ? nullptr : room.data(), room.size(),
+            &result, &error);
   if (status != FL_OK) {
     throw Error(status, error.code, error.message);
   }
   return Value(result);
 }
 
-}  // namespace flang
+} // namespace flang
 
 #endif /* FLANG_CPP_HPP */

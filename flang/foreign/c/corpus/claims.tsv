@@ -33,3 +33,19 @@ quarter_of	requires	месяц не раньше января	«month» не м�
 quarter_of	requires	месяц не позже декабря	«month» не больше 12
 quarter_of	ensures	квартал не меньше первого	результат не меньше 1
 quarter_of	ensures	квартал не больше четвёртого	результат не больше 4
+factorial	requires	n не меньше нуля	«n» не меньше 0
+sum_to	requires	n не меньше нуля	«n» не меньше 0
+sum_to	requires	n не больше тысячи	«n» не больше 1000
+sum_to	ensures	сумма от единицы до n	результат равен ((«n» умножить на («n» плюс 1)) делить на 2)
+power_of_two	requires	степень не меньше нуля	«k» не меньше 0
+power_of_two	requires	степень не больше тридцати	«k» не больше 30
+power_of_two	ensures	степень двойки положительна	результат больше 0
+abs_diff	ensures	расстояние не отрицательно	результат не меньше 0
+larger	ensures	первое, если оно больше	если «a» больше «b» то результат равен «a» иначе да
+larger	ensures	иначе второе	если «a» больше «b» то да иначе результат равен «b»
+at_least_zero	ensures	не меньше нуля	результат не меньше 0
+span_empty	ensures	признак не меньше нуля	результат не меньше 0
+span_empty	ensures	признак не больше единицы	результат не больше 1
+at_least	ensures	ниже lo — значит lo	если «x» меньше «lo» то результат равен «lo» иначе да
+at_least	ensures	не ниже lo — значит x	если «x» меньше «lo» то да иначе результат равен «x»
+saturating_increment	ensures	не меньше x	результат не меньше «x»

@@ -257,7 +257,7 @@ poschitat() { # каталог-корень -> строки «ключ<TAB>зн�
   # Корпус — тот же набор, что у flang/scripts/proof-ledger.mjs (ФАЙЛЫ).
   kf=0; kstrok=0
   for f in $(find flang -type f \( -name '*.flang' -o -name '*.fp' -o -name '*.фп' -o -name '*.фланг' -o -name '*.fscript' \) \
-             | grep -v '^flang/test/fixtures/' | grep -v '^flang/self/bootstrap/compiler\.flang$' | sort); do
+             | grep -v '^flang/test/fixtures/' | grep -v '^flang/self/bootstrap/' | sort); do
     kf=$((kf + 1)); kstrok=$((kstrok + $(strok "$f")))
   done
   printf 'корпус.файлов\t%s\n' "$kf"
@@ -289,10 +289,10 @@ poschitat() { # каталог-корень -> строки «ключ<TAB>зн�
   printf 'выпуск.версия\t%s\n'  "$(flangrc_klyuch version)"
 
   o1=$(grep -oE 'FLANG_PROOF_[A-Z_]+' flang/self/obligations.flang 2>/dev/null | sort -u | wc -l | tr -d ' ')
-  o2=$(grep -oE 'FLANG_PROOF_[A-Z_]+' flang/self/proofterm.flang 2>/dev/null | sort -u | wc -l | tr -d ' ')
+  ov=$(cat flang/self/obligations.flang flang/self/proofterm.flang 2>/dev/null | grep -oE 'FLANG_PROOF_[A-Z_]+' | sort -u | wc -l | tr -d ' ')
   printf 'отказы.обязательств\t%s\n' "$o1"
-  printf 'отказы.вывода\t%s\n'       "$o2"
-  printf 'отказы.всего\t%s\n'        "$((o1 + o2))"
+  printf 'отказы.вывода\t%s\n'       "$((ov - o1))"
+  printf 'отказы.всего\t%s\n'        "$ov"
   )
 }
 

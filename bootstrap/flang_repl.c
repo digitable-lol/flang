@@ -154,9 +154,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <termios.h>
+#include <time.h>
 #include <unistd.h>
 
 /*
@@ -554,6 +556,7 @@ static const char HELP_TEST[] =
 static const char HELP_RUN[] =
     "flang run <файл.flang> --function «Имя» [--args '{\"н\":10}'] [--max-steps N]\n"
     "                       [--max-depth N] [--trust] [--unproven refuse|warn|allow]\n"
+    "                       [--cost]\n"
     "\n"
     "Вычисляет ОДНУ функцию и печатает значение. Считает сам flang — ни Node, ни\n"
     "«cc» для этого не нужны.\n"
@@ -578,6 +581,10 @@ static const char HELP_RUN[] =
     "  --memory-limit N   предел памяти прогона (умолчание — три четверти памяти\n"
     "                     машины); на пределе — код 5 с именем функции и числом\n"
     "                     шагов. Кириллицей: --предел-памяти\n"
+    "  --cost             после значения одной строкой в поток ошибок: шагов\n"
+    "                     вычислителя (тот же счётчик, что у «--max-steps»), пик\n"
+    "                     памяти процесса в байтах и секунды всего прогона.\n"
+    "                     Кириллицей — «--цена»\n"
     "  --trust            считать недоказанную: вердикт не считается вовсе, и об\n"
     "                     этом говорится своей строкой. Кириллицей — «--на-веру»\n"
     "  --unproven СЛОВО   что делать с недоказанной, все три исхода сразу:\n"
@@ -12428,6 +12435,29 @@ static void unproven_detail(fl_value sources, const char *full, const verdict_sa
           full);
 }
 
+static double run_clock(void) {
+  struct timespec point;
+  if (clock_gettime(CLOCK_MONOTONIC, &point) != 0) {
+    return 0.0;
+  }
+  return (double)point.tv_sec + (double)point.tv_nsec / 1000000000.0;
+}
+
+static void run_cost_say(fl_value result, double started) {
+  fl_value field = fl_nothing();
+  struct rusage usage;
+  double steps = -1.0;
+  long peak = -1;
+  if (val_field(result, "витки", &field) && field.tag == FL_NUMBER) {
+    steps = field.as.number;
+  }
+  if (getrusage(RUSAGE_SELF, &usage) == 0) {
+    peak = usage.ru_maxrss * 1024L;
+  }
+  fprintf(stderr, "цена прогона: шагов %.0f, пик памяти %ld байт, секунд %.6f\n", steps, peak,
+          run_clock() - started);
+}
+
 static int run_file(int argc, char **argv) {
   repl_strings paths;
   repl_strings texts;
@@ -12443,6 +12473,8 @@ static int run_file(int argc, char **argv) {
   const char *given = NULL;
   const char *steps = "40000000";
   const char *depth = "20000";
+  bool cost = false;
+  double started = run_clock();
   unproven_choice how;
   verdict_said said;
   char *base = NULL;
@@ -12468,6 +12500,8 @@ static int run_file(int argc, char **argv) {
     } else if (strcmp(argv[index], "--max-depth") == 0 && index + 1 < argc) {
       index += 1;
       depth = argv[index];
+    } else if (strcmp(argv[index], "--цена") == 0 || strcmp(argv[index], "--cost") == 0) {
+      cost = true;
     } else if (strcmp(argv[index], "--на-веру") == 0 || strcmp(argv[index], "--trust") == 0) {
       how.mode = UNPROVEN_ALLOW;
       how.given = true;
@@ -12616,6 +12650,9 @@ static int run_file(int argc, char **argv) {
       fprintf(stderr, "%.*s: %.*s\n", (int)word_bytes, word == NULL ? "" : word, (int)say_bytes,
               say == NULL ? "" : say);
       code = 1;
+    }
+    if (cost) {
+      run_cost_say(result, started);
     }
   }
 

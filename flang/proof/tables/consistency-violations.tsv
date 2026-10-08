@@ -9,3 +9,4 @@ case-split-substitutes-under-a-binder	closed
 checker-refutes-evaluation-of-an-open-term	open
 checker-refutes-a-sum-bottom-past-the-exact-ceiling	open
 checker-refuses-a-conjunction-as-a-hypothesis	open
+kernel-proves-a-pattern-name-shadowing-a-parameter	open

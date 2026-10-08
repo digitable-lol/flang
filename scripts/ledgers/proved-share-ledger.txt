@@ -1101,6 +1101,7 @@ f21adab22639a55dcc9bea8976078b1f|1|1|0|0|0|flang/proof/checker/tests/programs/15
 9ec72e6af85db8de825af373b2af32e3|1|×|×|×|0|flang/proof/checker/tests/programs/boolean-split-variant-branch.flang
 ef5448b0c855ea1f2c04275fdf9b89d4|1|×|×|×|0|flang/proof/checker/tests/programs/record-values-compared.flang
 87d21be7dbd94fca2d48171329544309|1|1|0|0|0|flang/proof/checker/tests/programs/two-restricted-bindings.flang
+36ceede599823c8a2d90789b6e29e1f0|1|1|0|0|0|flang/proof/checker/tests/programs/literal-law-goal-in-parentheses.flang
 a6e9181a884b6e526350c26dede97f28|1|×|×|×|0|flang/proof/checker/tests/programs/lie-collision.flang
 65fd4d58d4c474d7f73df2a56c16290f|4|×|×|×|0|flang/proof/checker/tests/programs/note-instead-of-postcondition.flang
 1044061302a1b418d56d31d8ca6164e9|1|×|×|×|0|flang/proof/checker/tests/programs/intermediate-step-by-note.flang

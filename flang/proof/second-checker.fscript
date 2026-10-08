@@ -161,24 +161,34 @@
     judged, declined, closing] и (t.«disagreements»)
 
 тотальная функция «Judged»
-  принимает mode: строка, lines: список строки, found: список строки
+  принимает mode: строка, lines: список строки, found: список строки, declined: число
   возвращает «Продолжение»
-  пример «A crosscheck without disagreements ends the work»
+  пример «A crosscheck without disagreements and without declined records ends the work»
     дано mode равно "crosscheck"
     дано lines равно ["x"]
     дано found равно пустой список
+    дано declined равно 0
     ожидается вариант «Конец работы» с значение равным "x\nсошлось"
+  пример «A record the second checker declines fails the crosscheck»
+    дано mode равно "crosscheck"
+    дано lines равно ["x"]
+    дано found равно пустой список
+    дано declined равно 2
+    ожидается вариант «Провал» с код равным "FLANG_SECOND" и сообщение равным "x\nНЕ ВЗЯЛСЯ ЦЕЛИКОМ: 2"
   пример «A forgery the crosscheck did not name fails the plan»
     дано mode равно "forgery"
     дано lines равно ["x"]
     дано found равно пустой список
+    дано declined равно 0
     ожидается вариант «Провал» с код равным "FLANG_SECOND" и сообщение равным "x\nПРОВАЛ: подлог не назван"
   пусть named равно (отфильтровать found где line → line содержит («Forged record»))
   пусть caught равно ((длина found) равен 1) и притом ((длина named) равен 1)
   пусть forgery равно (mode равен "forgery")
-  пусть ok равно (если forgery то caught иначе (пусто found))
+  пусть whole равно (пусто found) и притом (declined равен 0)
+  пусть ok равно (если forgery то caught иначе whole)
   пусть good равно (если forgery то "ПОДЛОГ ПОЙМАН: расхождение на испорченной копии названо" иначе "сошлось")
-  пусть bad равно (если forgery то "ПРОВАЛ: подлог не назван" иначе "РАЗОШЛОСЬ")
+  пусть partial равно (соединить ["НЕ ВЗЯЛСЯ ЦЕЛИКОМ: ", (к строке declined)] по "")
+  пусть bad равно (если forgery то "ПРОВАЛ: подлог не назван" иначе (если пусто found то partial иначе "РАЗОШЛОСЬ"))
   пусть text равно (соединить lines по "\n")
   если ok
     то вариант «Конец работы» с значение равным (соединить [text, "\n", good] по "")
@@ -258,7 +268,7 @@
   принимает mode: строка, codes: строка
   возвращает «Продолжение»
   пусть t равно («Tally of» от (соединить ["c\tl\tзапись\n", codes] по ""))
-  «Judged» от mode и («Report lines» от t) и (t.«disagreements»)
+  «Judged» от mode и («Report lines» от t) и (t.«disagreements») и («At» от 7 и (t.«counts»))
 
 тотальная функция «Started»
   принимает mode: строка

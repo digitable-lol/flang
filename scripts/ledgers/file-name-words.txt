@@ -1487,6 +1487,7 @@ search
 second
 seconds
 section
+sections
 security
 see
 seed

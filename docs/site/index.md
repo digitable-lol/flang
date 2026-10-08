@@ -143,7 +143,7 @@ recounted on every push by `sh scripts/guards/published-vs-tree.sh --числа`
 steps: `дано` (given), `утверждаем` (we claim), `затем … по свойству «…»` (then …
 by property …), `индукция по …` (induction on …), `следовательно доказано`
 (hence proved). It reads like a proof in Isabelle's Isar, not like a script of
-tactics. There are **350** such theorems in the repository, 55 of them in the
+tactics. There are **353** such theorems in the repository, 55 of them in the
 standard library (`grep -rac '^\s*теорема ' flang --include='*.flang'`, summed
 with `awk`).
 

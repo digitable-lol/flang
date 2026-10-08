@@ -66,7 +66,7 @@ proof by hand**, as in Coq or Isabelle. A `теорема` (theorem) is written 
 steps: `дано` (given), `утверждаем` (we claim), `затем … по свойству «…»` (then
 … by property …), `индукция по …` (induction on …), `следовательно доказано`
 (hence proved). It reads like Isar in Isabelle, and the prover checks each step;
-it searches for nothing. There are 350 such theorems in the repository, 55 of
+it searches for nothing. There are 353 such theorems in the repository, 55 of
 them in the standard library (`grep -rac '^\s*теорема ' flang
 --include='*.flang'`). Most postconditions need no theorem: the proof report
 shows, as a separate number, how many were proved **without a written proof**.

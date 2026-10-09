@@ -1,7 +1,4 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # ОТКУДА ВЗЯТ КАЖДЫЙ МОДУЛЬ — поимённо, ДО сборки и без двоичного.
 #
 #   sh scripts/guards/module-origin-guard.sh              # опись: модуль → файл, из которого он приедет

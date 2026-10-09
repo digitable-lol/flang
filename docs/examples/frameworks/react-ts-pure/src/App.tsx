@@ -1,6 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
-
 import { useReducer } from 'react'
 import { nachalnayaKorzina, shag, strokiVitriny, itogi, Sbrosit } from '../printed/storefront.js'
 import { Stroka } from './Stroka.tsx'

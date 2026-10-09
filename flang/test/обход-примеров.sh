@@ -1,7 +1,4 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # Обходчик ПРИМЕРОВ корпуса: зовёт `flang test` двоичного на каждом `.flang`
 # дерева и сверяет полную ведомость — файл, число примеров, сколько прошло.
 #

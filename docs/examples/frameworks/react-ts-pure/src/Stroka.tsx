@@ -1,6 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
-
 import type { Dispatch } from 'react'
 import { Bolshe, Menshe, shag, strokiVitriny } from '../printed/storefront.js'
 

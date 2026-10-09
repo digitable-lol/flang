@@ -1,6 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
-
 // Хозяин — React. Он держит состояние корзины (сколько чего) и рисует счёт.
 // Решение — flang: все суммы, скидку и строки счёта считает доказанно-тотальное
 // ядро cart_service.js. Цены и суммы в КОПЕЙКАХ, целым числом: 0,1 + 0,2 в

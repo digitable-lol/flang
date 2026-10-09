@@ -1,6 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
-
 import { itogi } from '../printed/storefront.js'
 
 type Props = { itogi: ReturnType<typeof itogi> }

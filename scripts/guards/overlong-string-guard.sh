@@ -1,7 +1,4 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # ПЕЧАТЬ ОБЯЗАНА ПЕЧАТАТЬ КОД, КОТОРЫЙ ПРИНИМАЕТ ЕЁ ЖЕ СБОРОЧНЫЙ ФАЙЛ.
 #
 # ── ПОЧЕМУ ЭТОТ ФАЙЛ НА ОБОЛОЧКЕ, А НЕ НА flang ────────────────────────────

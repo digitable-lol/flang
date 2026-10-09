@@ -1,7 +1,4 @@
 #!/bin/bash
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # Рост памяти арены на «Сортировке вставками» из docs/examples/rosetta/quicksort.flang.
 #
 # Задача выбрана нарочно самая невыгодная: она тотальна и написана прямо, без

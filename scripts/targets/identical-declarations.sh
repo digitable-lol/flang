@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # Сколько столкнувшихся объявлений можно не переименовывать, а ввезти: объявления
 # семи генераторов сличаются с замыканием двоичного по разобранному дереву без мест.
 #

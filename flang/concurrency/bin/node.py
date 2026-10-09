@@ -1,5 +1,3 @@
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
 """ПОЛНЫЙ УЗЕЛ на второй цели печати: таблица процессов, планировщик и связь.
 
 Сосед по этой работе предъявил цену второй цели КОНЦОМ СВЯЗИ (`peer.py`): сокет,

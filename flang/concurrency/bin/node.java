@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-// SPDX-License-Identifier: BSD-2-Clause
-//
 // ПОЛНЫЙ УЗЕЛ на цели java: таблица процессов, планировщик и связь.
 //
 // ── Из чего он собран ───────────────────────────────────────────────────────

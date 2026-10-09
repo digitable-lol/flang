@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * Числа сайта: один замер, один файл, одно место правды.
  *

@@ -1,7 +1,4 @@
 #!/bin/bash
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # Собирает всё, что нужно замеру, в один каталог.
 #
 #   base/            напечатанный C как есть

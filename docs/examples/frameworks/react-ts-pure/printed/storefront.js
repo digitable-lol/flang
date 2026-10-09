@@ -1,6 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
-
 // СГЕНЕРИРОВАНО flang — НЕ ПРАВИТЬ РУКАМИ. Переиздать из корня дерева flang:
 // bootstrap/flang emit examples/frameworks/react-ts-pure/core/storefront.flang --target js --out examples/frameworks/react-ts-pure/printed
 // Сгенерировано flang (бэкенд JavaScript, flang/self/emit-js.flang). Не редактировать руками.

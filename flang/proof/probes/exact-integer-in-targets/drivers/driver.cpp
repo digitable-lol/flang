@@ -1,6 +1,4 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
- * SPDX-License-Identifier: BSD-2-Clause
- *
+/*
  * Проба цели «cpp» — тот же текст, что у цели «c», но через flang_runtime.hpp: точное целое складывается
  * разрядами основания 2²², и сумма за 2⁵³ печатается ДЕСЯТИЧНОЙ записью.
  *

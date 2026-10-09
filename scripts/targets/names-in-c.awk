@@ -1,6 +1,3 @@
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # Таблица «идентификатор C → русское объявление» из напечатанного заголовка.
 #
 # Соответствие пишет сам flang: над каждым объявлением в `.h` стоит его имя из

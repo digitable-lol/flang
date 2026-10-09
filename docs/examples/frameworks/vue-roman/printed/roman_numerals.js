@@ -1,6 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
-
 // СГЕНЕРИРОВАНО flang — НЕ ПРАВИТЬ РУКАМИ. Переиздать из корня дерева flang:
 // bootstrap/flang emit docs/examples/frameworks/vue-roman/core/roman-numerals.flang --target js --out docs/examples/frameworks/vue-roman/printed
 // Сгенерировано flang (бэкенд JavaScript, flang/self/emit-js.flang). Не редактировать руками.

@@ -1,5 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
 /* Независимый сверщик записи доказательства: один файл на C99, из внешнего —
  * только libc.
  *

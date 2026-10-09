@@ -1,11 +1,11 @@
 c	build-failures	0
-c	clang-format	50303
+c	clang-format	3083
 c	clang-format-unparsable	0
-c	clang-tidy	356
+c	clang-tidy	85
 cpp	build-failures	0
-cpp	clang-format	51012
+cpp	clang-format	1656
 cpp	clang-format-unparsable	0
-cpp	clang-tidy	72
+cpp	clang-tidy	84
 go	build-failures	0
 go	gofmt	0
 go	gofmt-unparsable	0
@@ -32,4 +32,4 @@ python	black-unparsable	0
 python	ruff	7
 python	mypy	0
 csharp	build-failures	0
-csharp	dotnet-format	2404
+csharp	dotnet-format	597

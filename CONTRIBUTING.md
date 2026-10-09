@@ -167,7 +167,7 @@ Both run as `bootstrap/flang run-script scripts:check`.
 | `bootstrap/flang run-script tests:remote` | the same suite on a host of your choosing, over ssh |
 | `bootstrap/flang run-script reprint` · `bootstrap/flang run-script reprint:check` · `bootstrap/flang run-script seed-lines:check` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
 | `bootstrap/flang run-script claims:check` · `bootstrap/flang run-script counts:check` · `bootstrap/flang run-script codes:check` · `bootstrap/flang run-script emit-promises:check` · `bootstrap/flang run-script names:check` | the five prose guards below |
-| `bootstrap/flang run-script licenses:check` | SPDX marking of every code file under `flang/` and `docs/examples/` (not `bootstrap/` — see below); **CI runs the file directly** (`bootstrap/flang io scripts/guards/license-guard.fscript`), not through the short command |
+| `bootstrap/flang run-script licenses:check` | `LICENSE` at the root carries the text of the licence named by `license` in `.flangrc` and the Digitable copyright line; **CI runs the file directly** (`bootstrap/flang io scripts/guards/license-guard.fscript`), not through the short command |
 | `bootstrap/flang run-script links:check` | every Markdown link in the tree that points at a file; **CI runs the file directly** (`bootstrap/flang io scripts/guards/link-guard.fscript`) |
 | `bootstrap/flang run-script site:build` · `bootstrap/flang run-script site:check` | build the documentation site and check its links; **Pages runs the file directly** |
 | `bootstrap/flang run-script numbers:build` · `bootstrap/flang run-script numbers:check` | reprint the site pages' own numbers from the measurer, and check them against it |
@@ -245,16 +245,13 @@ What this means when you write:
 - **Cost claims.** The one cost table is in `docs/flang/SPEC.md`. Each cell is backed by
   an exact snippet of the target's runtime in `scripts/guards/emit-promises-guard.fscript`;
   change the runtime and the guard demands the table be revisited.
-- **Licence headers.** Every source file under `flang/` and `docs/examples/` with one
-  of thirteen code extensions carries an SPDX header — 75 files as of 29 August
-  2026. The list is derived from the tree, not written down, so a new file
-  without a header fails the gate rather than leaving the repository quietly
-  unmarked. Say the area precisely: the guard walks those two directories, and
-  `bootstrap/` — which the release archive is printed from — is **not** among
-  them. Three
-  files there carry no header (`compiler_flang.c`, `compiler_flang.h`,
-  `flang_runtime.h`); they are printed by the compiler, so a header appears there
-  only through the printer, not by hand.
+- **Licence.** The licence lives in one file, `LICENSE` at the root. A source
+  file needs no licence header or SPDX line, and the guard does not look for
+  one. It reads the `license` key of `.flangrc`, then reads `LICENSE` and
+  requires the Digitable copyright line and the key sentences of that licence's
+  text; a licence the guard has no text for
+  fails the gate rather than passing unchecked. CI also removes `LICENSE` and
+  swaps its copyright line, and requires the guard to fail on both.
 
 None of them may be "fixed" by loosening the guard. The tree is the measurer.
 

@@ -1365,6 +1365,10 @@ jobs:
             make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
           fi
       - run: ./bootstrap/flang io scripts/guards/name-splicing-guard.fscript --на-веру --max-orders 2000
+      - name: Parallel map and monoid fold
+        run: bootstrap/flang run-script parallel:check
+        env:
+          FLANG_TMP: ${{ runner.temp }}
       - name: Report memory
         if: always() && hashFiles('bootstrap/flang') != ''
         run: bootstrap/flang io scripts/memory-headroom.fscript --plan Report -- --status "${{ job.status }}"

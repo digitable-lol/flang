@@ -1562,7 +1562,7 @@ baa3170dc90958c56352eb9b3f49ab9b|62|49|10|3|0|scripts/guards/homebrew-formula-gu
 b00f9a812077e3b8497c15864acff995|11|7|3|0|0|scripts/guards/io-dictionary-copies-guard.fscript
 38cfa9e534117545dbc14c8afb46262b|2|0|2|0|0|scripts/guards/jargon-guard.fscript
 ea1518a801b7e78ee25788b065921aff|23|11|2|3|0|scripts/guards/kernel-abilities-guard.fscript
-5ab01492f40c7c4a19b89433856c1786|6|6|0|0|0|scripts/guards/license-guard.fscript
+25b6cee98abe43fb155693a170fe8ae4|1|1|0|0|0|scripts/guards/license-guard.fscript
 b162a51d6ae08b12527da153f5957d56|85|37|48|0|0|scripts/guards/link-guard.fscript
 d3c200fe9be648a3eb699ba7d7fb237d|3|3|0|0|0|scripts/guards/lock-closes-every-form.fscript
 3eea8a647996e57cc3e492c8f4e4763e|15|13|2|0|0|scripts/guards/manpage-guard.fscript

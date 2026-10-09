@@ -622,11 +622,6 @@ jobs:
           FTS_REQUIRE_TOOLCHAINS: c
           FTS_REQUIRE_BINARY: 1
 
-  # Лицензионная разметка проверяется отдельной работой по той же причине, что
-  # и подсветка ниже: она не зависит от версии Node и в матрице прогонялась бы
-  # трижды впустую. Node ей больше не нужен вовсе — проверка написана на самом
-  # языке, — но нужен компилятор, а он в дереве не лежит: `bootstrap/flang` это
-  # продукт сборки, и без `make` его бы просто не было.
   licensing:
     name: licensing
     runs-on: ubuntu-latest
@@ -635,26 +630,27 @@ jobs:
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       - run: make -C bootstrap -j"$(nproc)"
-      # Порча — снятая строка SPDX-License-Identifier у одного публикуемого
-      # исходника. Сторож обязан назвать файл. Задача 6612.
       - name: Probe license guard
         run: |
           set -u
-          podlog=flang/src/emit/c/flang_runtime.c
-          cp "$podlog" "$podlog.do"
-          sed -i '/SPDX-License-Identifier/d' "$podlog"
-          if cmp -s "$podlog.do" "$podlog"; then
-            rm -f "$podlog.do"; git checkout -- "$podlog"
-            echo "ПОДЛОГ НЕ СОБРАЛСЯ: строки SPDX в $podlog уже нет — поправить подлог, сторож ни при чём" >&2
+          sed -i 's/Digitable/Someone/' LICENSE
+          if git diff --quiet -- LICENSE; then
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: в LICENSE нет строки копирайта Digitable — поправить подлог, сторож ни при чём" >&2
             exit 1
           fi
-          rm -f "$podlog.do"
           if bootstrap/flang io scripts/guards/license-guard.fscript; then
-            git checkout -- "$podlog"
-            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+            git checkout -- LICENSE
+            echo "сторож промолчал на подменённом копирайте в LICENSE" >&2
             exit 1
           fi
-          git checkout -- "$podlog"
+          git checkout -- LICENSE
+          rm LICENSE
+          if bootstrap/flang io scripts/guards/license-guard.fscript; then
+            git checkout -- LICENSE
+            echo "сторож промолчал, когда LICENSE в корне нет" >&2
+            exit 1
+          fi
+          git checkout -- LICENSE
       - run: bootstrap/flang io scripts/guards/license-guard.fscript
 
   # ── ССЫЛКИ: НАЗАД НА ОБЫЧНЫЙ РАННЕР, НО ПОКА СОВЕТОМ, А НЕ ПРИГОВОРОМ ────

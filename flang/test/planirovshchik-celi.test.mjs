@@ -1,5 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * Таблица процессов и планировщик узла у ВОСЬМИ целей печати.
  *

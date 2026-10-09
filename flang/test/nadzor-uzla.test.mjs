@@ -1,5 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * НАДЗОР НА ЖИВОМ УЗЛЕ: процесс упал — надзор поднял его, и он снова работает
  * через провод.

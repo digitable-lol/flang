@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # НА НЕГОДНОМ ОКТЕТЕ ПРОГОНЩИК ОБЯЗАН ОТКАЗАТЬ, А НЕ ЗАМОЛЧАТЬ.
 #
 #   scripts/guards/bad-octet-guard.sh              судить все девять целей

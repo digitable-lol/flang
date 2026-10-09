@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-// SPDX-License-Identifier: BSD-2-Clause
-
 // Полный узел на ЧЕТВЁРТОЙ цели печати. Замер, а не пример.
 //
 // Вопрос тот же, что у соседей на Python и Go: сколько стоит мир на новой цели,

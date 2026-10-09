@@ -1,7 +1,4 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # У СТРОКИ ОДНА МЕРА — проверка прогоном, а не обещанием.
 #
 # ── Зачем ────────────────────────────────────────────────────────────────────

@@ -1,7 +1,4 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # Обходчик проверок, написанных НА FLANG. Тонкий — и это не скромность, а
 # граница, взятая из `fspec/README.md`: на flang пишется всё, что ПРОВЕРЯЕТ
 # предъявленного свидетеля; оснасткой остаётся всё, что свидетеля ИЩЕТ или ВОЗИТ.

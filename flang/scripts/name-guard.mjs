@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * Сторож ИМЁН: правило про имя проверяется прогоном, а не читается в наставлении.
  *

@@ -1,5 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
 /*
  * Те же пять задач на обычном C — эталон «чего стоит эта задача, если
  * писать её руками».

@@ -1,5 +1,3 @@
-<!-- SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) -->
-<!-- SPDX-License-Identifier: BSD-2-Clause -->
 <script setup lang="ts">
 // Хозяин — Vue. Он держит поля ввода, реактивность и разметку.
 // Решение — flang: перевод чисел в римскую запись и обратно считает

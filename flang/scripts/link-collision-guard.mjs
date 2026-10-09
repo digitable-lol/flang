@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
 /**
  * Сторож СТОЛКНОВЕНИЙ ИМЁН: два модуля завели одно имя — сказать до сборки.
  *

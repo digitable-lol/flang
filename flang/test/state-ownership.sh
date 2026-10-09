@@ -1,7 +1,4 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # ВЛАДЕНИЕ СОСТОЯНИЕМ: обработчик процесса принимает РОВНО своё состояние.
 #
 #   sh flang/test/state-ownership.sh

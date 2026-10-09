@@ -1,7 +1,4 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # ПРИМЕРЫ `flang/self/` — обходчик и ведомость.
 #
 # ── Зачем он заведён ────────────────────────────────────────────────────────

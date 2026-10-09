@@ -1,5 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
 /* СЛИЧИТЕЛЬ ПЕРЕВОДА В C (ADR-0030, задача 1401).
  *
  *   matcher <исходник.flang> <напечатанный.c> <протокол>

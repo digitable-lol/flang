@@ -1,7 +1,4 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # Точка раскрутки: перепечатать её двоичным компилятором и сверить с деревом.
 #
 # ── Зачем ────────────────────────────────────────────────────────────────────

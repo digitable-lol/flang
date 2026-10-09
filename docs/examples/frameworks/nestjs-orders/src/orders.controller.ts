@@ -1,6 +1,3 @@
-/* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
-/* SPDX-License-Identifier: BSD-2-Clause */
-
 // Хозяин — NestJS. Он принимает HTTP-соединение, разбирает метод/путь/строку
 // запроса и отдаёт ответ. Решение — flang: маршрут, коды, проверка
 // обязательных полей считает доказанно-тотальное ядро orders_api.js. Ни разбора

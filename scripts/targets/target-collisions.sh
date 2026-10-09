@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov)
-# SPDX-License-Identifier: BSD-2-Clause
-#
 # Замер столкновений имён при втаскивании семи генераторов в замыкание двоичного.
 # Судит flang: связывание (flang ast), печать в C (flang emit) и проверка типов;
 # оболочка раскладывает ответы по трём стопкам и печатает карту переименований.

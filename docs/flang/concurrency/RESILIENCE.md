@@ -1,6 +1,3 @@
-<!-- SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) -->
-<!-- SPDX-License-Identifier: BSD-2-Clause -->
-
 # Путь к отказоустойчивости — карта с ценами и проверками
 
 Заказано: «чтобы это был крутейший язык, как Elixir мог в отказоустойчивость,

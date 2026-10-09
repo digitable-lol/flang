@@ -1035,7 +1035,7 @@ C	два ограничения «таких что» подряд, как ст�
 C	все «дано» теоремы перед всеми «допущение», как ставит печать	flang/proof/checker/tests/programs/assumption-above-a-given.flang	flang/proof/checker/tests/records/twin-gaps/assumption-above-a-given.record	-	-	-	-	0	-	-	-
 P	разбор признака с ветвью варианта: значение признака без текста не читается	flang/proof/checker/tests/programs/boolean-split-variant-branch.flang	flang/proof/checker/tests/records/twin-gaps/boolean-split-variant-branch.record	-	-	-	-	3	-	-	-
 C	закон «литерал неотрицателен» к цели «1 не меньше ( 0 )» под посылкой суммы без теоремы — честная запись ядра	flang/proof/checker/tests/programs/literal-law-goal-in-parentheses.flang	flang/proof/checker/tests/records/twin-gaps/literal-law-goal-in-parentheses.record	-	-	-	-	3	-	-	-
-say	── семья «тень образца» (8634): имя образца совпадает с параметром, ядро на семени доказывает ложь ──	-	-	-	-	-	-	-	-	-	-
+say	── семья «тень образца» (8634): имя образца совпадает с параметром, запись прежнего ядра, доказавшего ложь ──	-	-	-	-	-	-	-	-	-	-
 P	тень образца, краткий случай: запись ядра на ложном постусловии	flang/proof/checker/tests/families/pattern-shadow/plain-case.flang	flang/proof/checker/tests/families/pattern-shadow/plain-case.record	-	-	-	-	1	случая на вариант «Полный»	-	-
 P	тень образца, случай с вариантом: запись ядра на ложном постусловии — третий исход	flang/proof/checker/tests/families/pattern-shadow/variant-case.flang	flang/proof/checker/tests/families/pattern-shadow/variant-case.record	-	-	-	-	3	узел вердикта не проигран	-	-
 say	── семья «переписка ядром» (4722, ADR-0084): законы склейки и Переп1 печатает ядро ──	-	-	-	-	-	-	-	-	-	-

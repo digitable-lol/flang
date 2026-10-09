@@ -886,7 +886,10 @@ defmodule Flang.Rt do
       count = length(items)
       chunks = min(threads * 4, count)
       size = div(count + chunks - 1, chunks)
-      shape = {index_base(), Process.get(:flang_max_depth, @default_max_depth), budget, Process.get(:flang_depth, 0)}
+
+      shape =
+        {index_base(), Process.get(:flang_max_depth, @default_max_depth), budget,
+         Process.get(:flang_depth, 0)}
 
       results =
         items

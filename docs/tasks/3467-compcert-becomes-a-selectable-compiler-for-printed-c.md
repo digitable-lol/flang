@@ -7,7 +7,7 @@
 ветка: —
 команда: первая
 карта: Чего в языке нет вовсе
-рядом: 1402, 1401, 9969, 9970
+рядом: 9969, 9970, 3984
 нужность: сборка проверенным компилятором закрывает доверие к переводу C в машинный код, а сегодня для неё рантайм приходится править копией вне дерева
 ---
 
@@ -35,17 +35,20 @@ grep -c ccomp flang/self/emit-c.flang bootstrap/Makefile .github/workflows/binar
 
 ```
 $ grep -anE '^[[:space:]]*(const )?(size_t|bool|FILE \*const) [а-яё]+ =' …
-flang_runtime.c:733:    const size_t измерено = fl_wasm_room(&here);
-flang_runtime.c:4950:    const bool конец = index == text.as.string.bytes;
-flang_runtime.c:4951:    const bool ведущий =
-flang_repl.c:13861:  FILE *const поток = stdout_or_stderr;               код 0
+flang_runtime.c:745:    const size_t измерено = fl_wasm_room(&here);
+flang_runtime.c:5306:   const bool конец = index == text.as.string.bytes;
+flang_runtime.c:5307:   const bool ведущий =
+flang_repl.c:14822:  FILE *const поток = stdout_or_stderr;               код 0
 $ grep -c ccomp flang/self/emit-c.flang bootstrap/Makefile .github/workflows/binary.yml
 bootstrap/Makefile:0
 .github/workflows/binary.yml:0
 flang/self/emit-c.flang:0                                         код 1
 ```
 
-Ответ CompCert 3.18 на кириллическое имя — `invalid symbol '\'`.
+Ответ CompCert 3.18 на кириллическое имя — `invalid symbol '\'`. Снято
+2026-10-11 на дереве 1149c78f7: те же четыре строки (номера строк сдвинулись),
+`ccomp` ни в одном из трёх файлов; сам CompCert на этой машине не стоит, шаг 3
+не мерен.
 
 Кириллица в идентификаторах — расширение GCC и Clang; CompCert не читает ни
 её, ни запись `\uXXXX`. Кроме того, ключи `-pedantic` и `-flto` из
@@ -92,3 +95,11 @@ flang/self/emit-c.flang:0                                         код 1
 Ключ `-fstruct-passing` включает непроверенный проход CompCert: передача
 `fl_value` по значению остаётся на доверии, пока печать в C передаёт структуры
 по значению.
+
+## Следующий шаг
+
+`flang/src/emit/c/flang_runtime.c:745, 5306–5307` и `flang_repl.c:14822`: переименовать
+четыре переменные латиницей (`measured`, `at_end`, `leading`, `stream`), не трогая
+строки сообщений; затем шапка Makefile в `flang/self/emit-c.flang` с набором ключей
+`ccomp`. Проба, которая краснеет сегодня: первая команда шагов воспроизведения находит
+четыре строки, а должна отвечать кодом 1.

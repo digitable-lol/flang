@@ -22,7 +22,7 @@
 
 1. `grep -rl 'NECHEM_SMOTRET' scripts flang/scripts | xargs grep -L 'вариант «Не проверено»' | wc -l`
 2. `grep -c 'kod=\$?' .github/workflows/ci.yml .github/workflows/binary.yml`
-3. `sed -n 192,199p .github/workflows/ci.yml`
+3. `sed -n 198,205p .github/workflows/ci.yml`
 4. Тот же сторож подделкой — дважды, с рабочим и с несуществующим `FLANG_TMP`:
 
 ```
@@ -39,8 +39,8 @@ $ grep -rl 'NECHEM_SMOTRET' scripts flang/scripts | xargs grep -L 'вариан�
 33
 $ grep -c 'kod=\$?' .github/workflows/ci.yml .github/workflows/binary.yml
 .github/workflows/ci.yml:0
-.github/workflows/binary.yml:0
-$ sed -n 192,199p .github/workflows/ci.yml
+.github/workflows/binary.yml:1
+$ sed -n 198,205p .github/workflows/ci.yml
       - name: Probe seed words
         run: |
           if bootstrap/flang io scripts/guards/seed-knows-type-words-guard.fscript --plan Forgery; then
@@ -77,7 +77,9 @@ M» и выходит кодом 0, пока `РАЗОШЛОСЬ` равно н�
 `docs/editors/vim/checks/vim8.sh` — печатает «ПРОПУЩЕНА — не задан
 FLANG_VIM_LSP» и тут же `exit 0`.
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25 (шаги 1–3 и 5 повторены 11 октября 2026: 33 проверки, в `binary.yml` один
+разбор кода — строка 1590; счёт шага 5 — `vim8.sh` 1, `release-guard` 5, `memory-guard` 6,
+`bootstrap-reprint.sh` 2).
 
 ## Что должно быть
 
@@ -96,7 +98,8 @@ FLANG_VIM_LSP» и тут же `exit 0`.
 1. Команда из шага 1 печатает 0.
 2. Каждая проба подделкой в `.github/workflows/*.yml` (`if … --подлог; then`,
    `--plan Forgery`, `--plan 'Подлог'`) читает код отдельной строкой и
-   принимает только код отказа на подделке. Проба различает: прогон из шага 4 с
+   принимает только код отказа на подделке (сегодня так устроен один шаг —
+   `binary.yml`, строка 1590). Проба различает: прогон из шага 4 с
    несуществующим `FLANG_TMP` обязан шаг РОНЯТЬ, а не зеленить.
 3. Шаги, зовущие проверки с тремя и более исходами
    (`scripts/seed/binary-origin.fscript`, `scripts/bootstrap-reprint.sh`,
@@ -104,7 +107,7 @@ FLANG_VIM_LSP» и тут же `exit 0`.
    `flang/proof/checker/tests/run.fscript`), различают «беда» и «не проверено».
 4. Разбор кода написан один раз и зовётся из шагов, а не скопирован в каждый.
    Образец разбора — шаги с `kod=$?` в `.github/workflows/reprint.yml`
-   (строки 522, 555 и 593).
+   (строки 522, 555, 590 и 593).
 5. Четыре проверки из шага 5 на «не проверено» отвечают кодом 3, а не 0.
 
 ## Где живёт правка
@@ -116,3 +119,8 @@ FLANG_VIM_LSP» и тут же `exit 0`.
 `.github/workflows/ci.yml`, `binary.yml`, `install-path.yml`,
 `stdlib-proof.yml`. В шаге нужен `set +e`, и вывод проверки идёт в файл, а не в
 конвейер, иначе `$?` — код не той команды. Перепечатка не нужна.
+
+Следующий шаг: `.github/workflows/ci.yml`, шаг «Probe seed words» (строки 198–205) — читать
+код в переменную и принимать только 1; затем 33 проверки с `…_NECHEM_SMOTRET` переводить на
+исход «Не проверено» по образцу `seed-knows-type-words-guard.fscript`. Проба, которая красна
+сегодня: шаг 4 с несуществующим `FLANG_TMP` — код 3, и шаг CI на нём зелен.

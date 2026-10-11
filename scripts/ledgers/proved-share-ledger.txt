@@ -1334,7 +1334,7 @@ f13484b53a5c82fb325806ab879986a2|644|584|24|38|0|flang/self/emit-python.flang
 72150e5aad967e98fb24fdecbaedd803|1|1|0|0|0|flang/self/emit-ts.flang
 44e846ef996390de2dc8f73b3fab2bf4|156|79|24|53|0|flang/self/factcheck.flang
 04095860964e3e5ec6e910c41115b3a3|138|90|3|45|0|flang/self/failures.flang
-a91ae4dd453568a691d07c06503f7344|38|17|21|0|0|flang/self/functor-oracle.flang
+a91ae4dd453568a691d07c06503f7344|34|17|21|0|0|flang/self/functor-oracle.flang
 e408818a261e1abb800309bbb6550470|2|2|0|0|0|flang/self/functor.flang
 2aa0890af1f39b383cdb0d890405c80c|21|21|0|0|0|flang/self/grid.flang
 77a1b2038be162508f2e4c621bdcbe6b|85|55|2|28|0|flang/self/hotswap.flang
@@ -1353,7 +1353,7 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 83313e045b2b5dc3ae770467aec9d9e6|21|11|0|10|0|flang/self/monotone.flang
 72a97dbf214a6c37b7de0e3b1e144702|3|0|2|0|0|flang/self/obligations-and-kernel-examples.flang
 301c10cee2d4e63f7fcdb86d634edb44|55|44|0|0|0|flang/self/obligations.flang
-3f8970a696cb0bc0b668c6e31668b8bf|41|11|0|30|0|flang/self/oracle.flang
+3f8970a696cb0bc0b668c6e31668b8bf|43|11|0|30|0|flang/self/oracle.flang
 54cfb1a8e907051aafea33efa6ac337d|781|446|22|261|0|flang/self/parser.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
@@ -1363,7 +1363,7 @@ c8dbb7179b35f785da41f5990dd41238|80|44|0|0|0|flang/self/proof-kernel.flang
 6caf41ec0a767163f46212d635157227|339|268|26|41|0|flang/self/proof.flang
 c9e3ee258bfab2a0503a1214f8d1034f|186|46|1|91|0|flang/self/proofterm.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|×|×|×|0|flang/self/repl/repl.flang
-bddb9033aaa4c5848f9eb45f5b8780b7|88|24|0|64|0|flang/self/setoid-oracle.flang
+bddb9033aaa4c5848f9eb45f5b8780b7|86|24|0|64|0|flang/self/setoid-oracle.flang
 283bcb74a49880f90b1aa8497a73236d|101|79|0|22|0|flang/self/setoid.flang
 a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 2c8ea5e4a5fe329bc74c90238b627639|42|42|0|0|0|flang/self/sets.flang

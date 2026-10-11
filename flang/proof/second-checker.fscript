@@ -7,25 +7,30 @@
 объект «Tally»
   «counts»: список число
   «disagreements»: список строки
+  «forged»: строка
 
 тотальная функция «Loop parts»
   возвращает список строки
-  пример «Both checkers on every record, the second one fed a forged copy of the record named second»
+  пример «The forged copy goes to the second checker, or to both when the fifth word is both»
     ожидается ["cd \"$0\" || exit 2", "c=flang/proof/checker/сверщик",
       "l=flang/proof/checker/second/out/второй-сверщик", "[ -x \"$c\" ] && [ -x \"$l\" ] || exit 3",
       "r=$(find flang/proof/checker/tests flang/proof/forgeries -name '*.record' | sort)",
       "for z in $r; do d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-)",
       "if [ ! -f \"$d\" ]; then printf -- '-\\t-\\t%s\\n' \"$z\"; continue; fi",
-      "\"$c\" \"$d\" \"$z\" >/dev/null 2>&1; k=$?; w=\"$z\"",
+      "w=\"$z\"; x=\"$z\"",
       "if [ \"$z\" = \"$2\" ]; then w=\"$3\"; sed 's/^знаков \\([0-9]*\\)$/знаков 1\\1/' \"$z\" > \"$w\"; fi",
+      "if [ \"$4\" = both ]; then x=\"$w\"; fi",
+      "\"$c\" \"$d\" \"$x\" >/dev/null 2>&1; k=$?",
       "\"$l\" \"$d\" \"$w\" >/dev/null 2>&1; m=$?; printf '%s\\t%s\\t%s\\n' \"$k\" \"$m\" \"$z\"", "done > \"$1\""]
   ["cd \"$0\" || exit 2", "c=flang/proof/checker/сверщик",
     "l=flang/proof/checker/second/out/второй-сверщик", "[ -x \"$c\" ] && [ -x \"$l\" ] || exit 3",
     "r=$(find flang/proof/checker/tests flang/proof/forgeries -name '*.record' | sort)",
     "for z in $r; do d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-)",
     "if [ ! -f \"$d\" ]; then printf -- '-\\t-\\t%s\\n' \"$z\"; continue; fi",
-    "\"$c\" \"$d\" \"$z\" >/dev/null 2>&1; k=$?; w=\"$z\"",
+    "w=\"$z\"; x=\"$z\"",
     "if [ \"$z\" = \"$2\" ]; then w=\"$3\"; sed 's/^знаков \\([0-9]*\\)$/знаков 1\\1/' \"$z\" > \"$w\"; fi",
+    "if [ \"$4\" = both ]; then x=\"$w\"; fi",
+    "\"$c\" \"$d\" \"$x\" >/dev/null 2>&1; k=$?",
     "\"$l\" \"$d\" \"$w\" >/dev/null 2>&1; m=$?; printf '%s\\t%s\\t%s\\n' \"$k\" \"$m\" \"$z\"", "done > \"$1\""]
 
 тотальная функция «Forged record»
@@ -37,8 +42,10 @@
 тотальная функция «Empty tally»
   возвращает «Tally»
   пример «Ten counts, all zero, and no disagreement»
-    ожидается запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
-  запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+    ожидается запись «Tally» с «counts» равным [0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0] и «disagreements» равным пустой список и «forged» равным ""
+  запись «Tally» с «counts» равным [0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0] и «disagreements» равным пустой список и «forged» равным ""
 
 тотальная функция «At»
   принимает position: число, counts: список число
@@ -84,18 +91,29 @@
   принимает t: «Tally», row: список строки
   возвращает «Tally»
   пример «A record without its source is only counted»
-    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0] и «disagreements» равным пустой список и «forged» равным ""
     дано row равно ["-", "-", "a.record"]
-    ожидается запись «Tally» с «counts» равным [1, 1, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+    ожидается запись «Tally» с «counts» равным [1, 1, 0, 0, 0,
+      0, 0, 0, 0, 0] и «disagreements» равным пустой список и «forged» равным ""
   пример «A verdict of the second checker unlike the first one is a disagreement»
-    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0] и «disagreements» равным пустой список и «forged» равным ""
     дано row равно ["0", "1", "a.record"]
     ожидается запись «Tally» с «counts» равным [1, 0, 1, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным [
-      "  РАСХОЖДЕНИЕ  a.record: сверщик на C — 0, второй — 1"]
+      "  РАСХОЖДЕНИЕ  a.record: сверщик на C — 0, второй — 1"] и «forged» равным ""
+  пример «The codes of the record the forgery spoils are kept apart»
+    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0] и «disagreements» равным пустой список и «forged» равным ""
+    дано row равно ["1", "1", "flang/proof/checker/tests/families/type-families/families.record"]
+    ожидается запись «Tally» с «counts» равным [1, 0, 1, 1, 0,
+      0, 0, 0, 0, 0] и «disagreements» равным пустой список и «forged» равным "1/1"
   пример «A record the second checker declines is counted by the answer of the first one»
-    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0] и «disagreements» равным пустой список и «forged» равным ""
     дано row равно ["1", "4", "a.record"]
-    ожидается запись «Tally» с «counts» равным [1, 0, 0, 0, 0, 0, 1, 0, 1, 0] и «disagreements» равным пустой список
+    ожидается запись «Tally» с «counts» равным [1, 0, 0, 0, 0,
+      0, 1, 0, 1, 0] и «disagreements» равным пустой список и «forged» равным ""
   пусть c равно («Cell» от 1 и row)
   пусть l равно («Cell» от 2 и row)
   пусть none равно (c равен "-")
@@ -108,14 +126,18 @@
     same и притом (c равен "3"), declined, declined и притом (c равен "0"), declined и притом (c равен "1"),
     declined и притом (c равен "3")]
   пусть found равно (если apart то (добавить said к (t.«disagreements»)) иначе (t.«disagreements»))
-  запись «Tally» с «counts» равным («Added» от (t.«counts») и more) и «disagreements» равным found
+  пусть spoiled равно ((«Cell» от 3 и row) равен («Forged record»))
+  пусть codes равно (если spoiled то (соединить [c, "/", l] по "") иначе (t.«forged»))
+  пусть grown равно («Added» от (t.«counts») и more)
+  запись «Tally» с «counts» равным grown и «disagreements» равным found и «forged» равным codes
 
 тотальная функция «Tally of»
   принимает text: строка
   возвращает «Tally»
   пример «Two records, one of them without a source»
     дано text равно "header\n1\t1\ta.record\n-\t-\tb.record\n"
-    ожидается запись «Tally» с «counts» равным [2, 1, 1, 1, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+    ожидается запись «Tally» с «counts» равным [2, 1, 1, 1, 0,
+      0, 0, 0, 0, 0] и «disagreements» равным пустой список и «forged» равным ""
   свёртка («Rows» от text) начиная с («Empty tally») как t и row → «Tallied» от t и row
 
 тотальная функция «Labelled»
@@ -142,7 +164,8 @@
   принимает t: «Tally»
   возвращает список строки
   пример «Nothing compared»
-    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] и «disagreements» равным пустой список
+    дано t равно запись «Tally» с «counts» равным [0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0] и «disagreements» равным пустой список и «forged» равным ""
     ожидается ["── второй сверщик (Lean) против сверщика на C: записи проб и подделок ──",
       "записей 0, без исходника 0, сличено 0", "второй дал вердикт 0: НЕ СОШЛОСЬ 0, ПРОВЕРЕНО 0, НЕ ПРОВЕРЕНО 0",
       "второй не взялся целиком 0: у сверщика на C ПРОВЕРЕНО 0, НЕ СОШЛОСЬ 0, НЕ ПРОВЕРЕНО 0", "расхождений 0"]
@@ -161,34 +184,65 @@
     judged, declined, closing] и (t.«disagreements»)
 
 тотальная функция «Judged»
-  принимает mode: строка, lines: список строки, found: список строки, declined: число
+  принимает mode: строка, lines: список строки, found: список строки, declined: число, forged: строка
   возвращает «Продолжение»
   пример «A crosscheck without disagreements and without declined records ends the work»
     дано mode равно "crosscheck"
     дано lines равно ["x"]
     дано found равно пустой список
     дано declined равно 0
+    дано forged равно ""
     ожидается вариант «Конец работы» с значение равным "x\nсошлось"
   пример «A record the second checker declines fails the crosscheck»
     дано mode равно "crosscheck"
     дано lines равно ["x"]
     дано found равно пустой список
     дано declined равно 2
+    дано forged равно ""
     ожидается вариант «Провал» с код равным "FLANG_SECOND" и сообщение равным "x\nНЕ ВЗЯЛСЯ ЦЕЛИКОМ: 2"
   пример «A forgery the crosscheck did not name fails the plan»
     дано mode равно "forgery"
     дано lines равно ["x"]
     дано found равно пустой список
     дано declined равно 0
+    дано forged равно "0/1"
     ожидается вариант «Провал» с код равным "FLANG_SECOND" и сообщение равным "x\nПРОВАЛ: подлог не назван"
+  пример «A forgery named among other disagreements is a disagreement, not a silent forgery»
+    дано mode равно "forgery"
+    дано lines равно ["x"]
+    дано found равно ["  РАСХОЖДЕНИЕ  a.record: сверщик на C — 0, второй — 3",
+      "  РАСХОЖДЕНИЕ  flang/proof/checker/tests/families/type-families/families.record: сверщик на C — 0, второй — 1"]
+    дано declined равно 0
+    дано forged равно "0/1"
+    ожидается вариант «Провал» с код равным "FLANG_SECOND" и сообщение равным "x\nРАЗОШЛОСЬ"
+  пример «A forged copy both checkers answer with code 1 is rejected by both»
+    дано mode равно "both"
+    дано lines равно ["x"]
+    дано found равно пустой список
+    дано declined равно 0
+    дано forged равно "1/1"
+    ожидается вариант «Конец работы» с значение равным "x\nПОДЛОГ ОТВЕРГНУТ ОБОИМИ: сверщик на C — 1, второй — 1"
+  пример «A forged copy one checker lets through fails the plan»
+    дано mode равно "both"
+    дано lines равно ["x"]
+    дано found равно пустой список
+    дано declined равно 0
+    дано forged равно "0/0"
+    ожидается вариант «Провал» с код равным "FLANG_SECOND" и сообщение равным "x\nПРОВАЛ: не отвергнут обоими: 0/0"
   пусть named равно (отфильтровать found где line → line содержит («Forged record»))
   пусть caught равно ((длина found) равен 1) и притом ((длина named) равен 1)
   пусть forgery равно (mode равен "forgery")
+  пусть both равно (mode равен "both")
   пусть whole равно (пусто found) и притом (declined равен 0)
-  пусть ok равно (если forgery то caught иначе whole)
-  пусть good равно (если forgery то "ПОДЛОГ ПОЙМАН: расхождение на испорченной копии названо" иначе "сошлось")
+  пусть rejected равно whole и притом (forged равен "1/1")
+  пусть ok равно (если forgery то caught иначе (если both то rejected иначе whole))
+  пусть good равно («Chosen» от [(«When» от forgery и "ПОДЛОГ ПОЙМАН: расхождение на испорченной копии названо"),
+    («When» от both и "ПОДЛОГ ОТВЕРГНУТ ОБОИМИ: сверщик на C — 1, второй — 1")] и "сошлось")
   пусть partial равно (соединить ["НЕ ВЗЯЛСЯ ЦЕЛИКОМ: ", (к строке declined)] по "")
-  пусть bad равно (если forgery то "ПРОВАЛ: подлог не назван" иначе (если пусто found то partial иначе "РАЗОШЛОСЬ"))
+  пусть kept равно (соединить ["ПРОВАЛ: не отвергнут обоими: ", forged] по "")
+  пусть bad равно («Chosen» от [(«When» от (forgery и притом (пусто named)) и "ПРОВАЛ: подлог не назван"),
+    («When» от (both и притом whole) и kept),
+    («When» от ((не forgery) и притом (пусто found)) и partial)] и "РАЗОШЛОСЬ")
   пусть text равно (соединить lines по "\n")
   если ok
     то вариант «Конец работы» с значение равным (соединить [text, "\n", good] по "")
@@ -218,10 +272,12 @@
 тотальная функция «Questions»
   принимает answers: список «Answer»
   возвращает список «Question»
-  пусть forged равно (если («Mode of» от answers) равен "forgery" то («Forged record») иначе "-")
+  пусть mode равно («Mode of» от answers)
+  пусть forged равно (если mode равен "crosscheck" то "-" иначе («Forged record»))
+  пусть fed равно (если mode равен "both" то "both" иначе "-")
   пусть codes равно («In work» от "codes.tsv" и answers)
   [(«Run» от "loop" и "sh" и ["-c", (соединить («Loop parts») по "; "), "../..", codes, forged,
-    («In work» от "forged.record" и answers)]), («Read» от "codes" и codes)]
+    («In work» от "forged.record" и answers), fed]), («Read» от "codes" и codes)]
 
 тотальная функция «Obstacle»
   принимает asked: признак, code: число
@@ -268,7 +324,7 @@
   принимает mode: строка, codes: строка
   возвращает «Продолжение»
   пусть t равно («Tally of» от (соединить ["c\tl\tзапись\n", codes] по ""))
-  «Judged» от mode и («Report lines» от t) и (t.«disagreements») и («At» от 7 и (t.«counts»))
+  «Judged» от mode и («Report lines» от t) и (t.«disagreements») и («At» от 7 и (t.«counts»)) и (t.«forged»)
 
 тотальная функция «Started»
   принимает mode: строка
@@ -285,6 +341,10 @@
 тотальная функция «Begin forgery»
   возвращает «Inquiry»
   «Started» от "forgery"
+
+тотальная функция «Begin both»
+  возвращает «Inquiry»
+  «Started» от "both"
 
 тотальная функция «Next»
   принимает inquiry: «Inquiry», reply: «Отклик»
@@ -304,6 +364,15 @@
   состояние «Inquiry»
   начинает с «Begin forgery»
   обрабатывает «Next»
+
+план «Forgery both»
+  состояние «Inquiry»
+  начинает с «Begin both»
+  обрабатывает «Next»
+
+тотальная функция «Объявление короткой команды checker:second-both»
+  возвращает строка
+  "bootstrap/flang io --plan 'Forgery both' --timeout 900000 — испорченная копия обоим, оба отвечают кодом 1"
 
 тотальная функция «Объявление короткой команды checker:second»
   возвращает строка

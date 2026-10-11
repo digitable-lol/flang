@@ -24,7 +24,7 @@
 арифметика уже рассматривалась и была отклонена (§10 отвечает ему).
 **Новые задачи:** 1411 (закрыта),
 [1412](../tasks/1412-ring-rules-only-for-the-exact-integer.md),
-[1413](../tasks/1413-long-integers-in-ten-print-targets.md).
+1413 (закрыта).
 
 ---
 

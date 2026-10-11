@@ -124,8 +124,5 @@ docs/tasks/5979-the-machine-form-of-the-ledger-has-no-derivation.md	flang/self/p
 docs/site/releases.md	scripts/guards/occupied-names-guard.flang	история: записка выпуска называет сторож тем именем, под которым он тогда лежал; страница печатается из docs/release-notes.json, и правится только историей — сегодня это scripts/guards/occupied-names-guard.fscript
 docs/site/releases.ru.md	scripts/guards/occupied-names-guard.flang	история: записка выпуска называет сторож тем именем, под которым он тогда лежал; страница печатается из docs/release-notes.json, и правится только историей — сегодня это scripts/guards/occupied-names-guard.fscript
 docs/tasks/2680-the-declared-measure-is-watched-at-run-time-and-never-proved.md	проба.flang	имя пробы из прогона задачи, не файл дерева
-docs/tasks/5771-integrality-does-not-tighten-a-strict-order-by-one.md	проба.flang	имя пробы из прогона задачи, не файл дерева
-docs/tasks/7328-a-free-statement-over-a-finite-sum-has-no-way-to-exhaust-its-cases.md	проба.flang	имя пробы из прогона задачи, не файл дерева
-docs/tasks/7367-induction-in-a-free-statement-refuses-the-nonnegative-segment.md	проба.flang	имя пробы из прогона задачи, не файл дерева
 docs/tasks/4717-lists-typed-by-hand-in-guards-are-counted-and-taken-from-the-tree.md	scripts/guards/hand-written-lists.sh	история: задача называет прибор того дня; он снят 4 октября 2026 (задача 5821), перепись ведёт план scripts/guards/hand-written-lists.fscript — прогон обоих на одном дереве дал одну строку знак в знак
 docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	hand-written-lists.sh	история: пункт задачи про снятый сторож; имя оставлено зачёркнутым, чтобы было видно, ЧТО снято и чем заменено

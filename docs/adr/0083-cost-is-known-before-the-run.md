@@ -7,7 +7,7 @@
 **Код:** `scripts/cost/` (анализатор, калибровка, сверка, проба на подлог),
 `flang/src/emit/c/flang_repl.c` (ключ `flang run --cost`),
 `flang/src/emit/c/flang_cli.c` (поле `"cost"` запроса напечатанного прогонщика).
-**Задачи:** [1409](../tasks/1409-step-estimate-units-match-the-runtime-and-seconds-name-the-machine.md)
+**Задачи:** 1409 (закрыта)
 (этим документом закрывается по существу, кроме места правки),
 [1408](../tasks/1408-the-step-bound-is-printed-into-the-proof-record.md) (остаётся: переигровка
 границы проверяющей программой).

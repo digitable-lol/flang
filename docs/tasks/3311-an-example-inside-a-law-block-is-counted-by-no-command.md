@@ -157,7 +157,7 @@ $ bootstrap/flang check <проба, 777> --proof
 Ветка `a/the-law-judges-are-called-at-last` отстала от `dev` на 253 коммита;
 из её собственных коммитов не влит один — `0b57c126a` «wip: snapshot of the
 stranded agent's working tree, not for merge» (76 строк в
-`flang/self/bootstrap/compiler.flang`, 22 — `flang/proof/law-example-probe.flang`).
+`flang/self/bootstrap/compiler.flang` и новая проба примеров закона на 22 строки).
 Работы по задаче нет, задача свободна.
 
 ## Следующий шаг

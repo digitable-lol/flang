@@ -108,7 +108,10 @@ $ bootstrap/flang run narrow-first.flang --function «Проба»   код 3
 с разными списками) меняет ещё и числа ведомости: «функций 4, доказано 2» при
 одном порядке и «функций 5, доказано 3» при другом — на тех же файлах.
 
-Версия: flang 0.7.24 (`bootstrap/flang` из дерева).
+Версия: flang 0.7.25, прогон 11 октября 2026. Все семь программ набора
+`flang/proof/probes/import-list-order/programs/` отвечают как в его
+`expected.tsv`: `wide-first` и `direct-wide-first` — код 0, `narrow`,
+`narrow-first` и `direct-narrow-first` — код 1.
 
 ## Что должно быть
 
@@ -171,3 +174,11 @@ $ bootstrap/flang run narrow-first.flang --function «Проба»   код 3
 Отказ о столкновении, если выбран он, называется словами из
 `flang/self/failures.flang`. До двоичного правка доезжает пересборкой семени
 (часы, `scripts/bootstrap-reprint.sh`).
+
+Следующий шаг — `flang/self/link.flang`: «Пройти импорты» (строка 575) берёт
+просьбу к файлу один раз, а «Загрузить» (строка 540) на уже загруженном пути
+возвращается, не применяя выросшую просьбу из «Слить просьбы» (строка 499); либо
+переслить область имён при росте просьбы, либо собрать все просьбы до обхода.
+Краснеющая сегодня проба: `bootstrap/flang check
+flang/proof/probes/import-list-order/programs/wide-first.flang` отвечает кодом
+0, тогда как `narrow.flang` в одиночку — кодом 1 (прогон 11 октября 2026).

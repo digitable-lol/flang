@@ -7,7 +7,7 @@
 ветка: —
 команда: вторая
 карта: Куда идём
-рядом: 0062, 4143, 1414, 5821
+рядом: 5821
 нужность: файл скрипта выпадает из обхода молча, и его примеры не прогоняются, хотя команда отвечает успехом
 ---
 
@@ -54,13 +54,16 @@ bootstrap/flang check <каталог>/by-name.flang
 ```
 $ bootstrap/flang run-script file-extensions:check
 … расширения сведены: списка два (языка: .flang, .fp, .фп, .фланг; скрипта:
-.fscript), мест отбора 43 — все называют оба целиком; ждут своей работы 5, и
+.fscript), мест отбора 42 — все называют оба целиком; ждут своей работы 5, и
 каждое названо в «Осталось»; …                                     код 0
 $ bootstrap/flang check <каталог>/by-name.flang
 FLANG_IMPORT_NOT_FOUND … строка 1, столбец 1: не найден модуль «Полка»: ни
 рядом с файлом, ни выше по каталогам, ни в библиотеке компилятора
 <каталог>/by-name.flang: не проверено — замечаний 3                 код 1
 ```
+
+Версия: flang 0.7.25, прогон 11 октября 2026. Проба с `lib.fscript` и
+`by-name.flang` отвечает тем же `FLANG_IMPORT_NOT_FOUND`, замечаний 3, код 1.
 
 Пять ждущих мест перечислены в функции «Осталось» файла
 `scripts/guards/file-extensions.fscript`. Четыре из них отбирают файлы по
@@ -114,3 +117,13 @@ bootstrap/flang run-script file-extensions:check     → «ждут своей �
 
 Отдельная задача, здесь не решается: 90 файлов с объявлением `план` остаются
 под расширением «.flang» (счёт — `git grep -l -E '^план «' -- '*.flang'`).
+
+Следующий шаг — два места, что не ждут пересборки семени:
+`scripts/bootstrap-reprint.sh` (`find` по трём расширениям) и
+`scripts/editors/vscode-highlight-check.fscript` («Три расширения»), с переносом
+их записей из «Осталось» в «Места отбора» в
+`scripts/guards/file-extensions.fscript`; `repl_place_read` в
+`flang/src/emit/c/flang_repl.c` и «Заканчивается расширением» в
+`flang/self/bootstrap/corpus.flang` — в партию печати. Краснеющая сегодня проба:
+`bootstrap/flang check <каталог>/by-name.flang` — `FLANG_IMPORT_NOT_FOUND`, код
+1 (11 октября 2026).

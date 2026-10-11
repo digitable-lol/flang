@@ -122,7 +122,7 @@
 **Решение.** Граница шагов печатается в запись и переигрывается сверщиком (задача
 [1408](tasks/1408-the-step-bound-is-printed-into-the-proof-record.md)); единицы оценки
 сходятся с рантаймом, секунды печатаются для названной машины (задача
-[1409](tasks/1409-step-estimate-units-match-the-runtime-and-seconds-name-the-machine.md));
+1409, закрыта — см. [used-numbers.tsv](tasks/used-numbers.tsv));
 поведение при отказе описано одной страницей, а проглоченные «Сбой» считаются (задача
 [1410](tasks/1410-failure-behaviour-is-listed-on-one-page-and-swallowed-failures-are-counted.md)).
 

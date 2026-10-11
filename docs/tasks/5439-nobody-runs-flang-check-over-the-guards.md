@@ -24,13 +24,13 @@ ls scripts/guards/*.fscript | wc -l
 
 ```
 0
-51
+56
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026.
 
 Ни одна работа CI и ни один хук не зовут `flang check` по `scripts/guards/`:
-сторожей 51, зовов проверки — ноль. Ложный пример в стороже поэтому никого не
+сторожей 56, зовов проверки — ноль. Ложный пример в стороже поэтому никого не
 красит: так пример «Номер после двоеточия» в
 `scripts/guards/traceability-guard.fscript` после замены `abilities.flang:34` на
 `abilities.flang:11` ждал `34` при входе `:11`, и `bootstrap/flang check` на
@@ -64,3 +64,9 @@ ls scripts/guards/*.fscript | wc -l
 
 - `.github/workflows/` либо `.githooks/pre-push.fscript` — место зова;
 - `scripts/ledgers/` — ведомость красных, если долг остаётся.
+
+**Следующий шаг.** Новый план в `scripts/guards/`, который зовёт `flang check` по
+каждому из 56 файлов `scripts/guards/*.fscript` и пишет красных в ведомость
+`scripts/ledgers/`; зов — в `.githooks/pre-push.fscript` или в работу CI, чтобы его
+увидел `guard-calls:check`. Проба, которая краснеет сегодня, — первая команда из
+шагов воспроизведения: `grep … | grep -c 'scripts/guards'` даёт 0.

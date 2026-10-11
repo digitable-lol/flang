@@ -15,11 +15,12 @@
 
 ## Шаги воспроизведения
 
-1. Перепись перечней, набранных руками, и её сверка с отчётом известных расхождений:
+1. Перепись перечней, набранных руками, и её сверка с отчётом известных расхождений
+   (план на flang; скрипт оболочки с тем же именем снят):
 
 ```
-sh scripts/guards/hand-written-lists.sh
-sh scripts/guards/hand-written-lists.sh --check
+bootstrap/flang run-script hand-written-lists:census
+bootstrap/flang run-script hand-written-lists:check
 ```
 
 2. Смотреть два числа переписи («набрано руками», «расходятся с деревом сегодня»),
@@ -28,22 +29,22 @@ sh scripts/guards/hand-written-lists.sh --check
 ## Что происходит
 
 ```
-$ sh scripts/guards/hand-written-lists.sh
-перечней набрано руками: 369   (целей 78, путей 291)
-из них расходятся с деревом сегодня: 166   (целей 53, путей 113)
-…
-  ПУТИ	scripts/targets/emit-law.fscript:25	6 из 15	нет: docs/examples/cat/crdt-merge.flang:26 …
-                                                                 код 0
-$ sh scripts/guards/hand-written-lists.sh --check
-перепись: новых 131, мёртвых записей 64                         код 1
+$ bootstrap/flang run-script hand-written-lists:census
+перечней набрано руками: 367   (целей 74, путей 293)
+из них расходятся с деревом сегодня: 149   (целей 43, путей 106)
+…                                                                код 0
+$ bootstrap/flang run-script hand-written-lists:check
+перепись: новых 120, мёртвых записей 62                         код 1
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026. Перепись идёт планами `Census`, `Check`,
+`Targets`, `Forgery` файла `scripts/guards/hand-written-lists.fscript`; план `Check`
+на этом дереве стоит около десяти минут.
 
 Перепись есть и работает: считает перечни целей печати и перечни путей, называет файл,
 строку и чем разошлось. Но расходящиеся перечни никто не чинит: в
-`scripts/ledgers/hand-written-lists-ledger.tsv` записано 99 расхождений с доводами,
-а переписью найдено 131 новое без довода и 64 записи о расхождениях, которых уже нет. Больше
+`scripts/ledgers/hand-written-lists-ledger.tsv` записано 90 расхождений с доводами,
+а переписью найдено 120 новых без довода и 62 записи о расхождениях, которых уже нет. Больше
 всего расходящихся перечней путей в `scripts/guards/checks-nobody-calls.fscript` (12),
 `scripts/guards/who-calls-the-guards.fscript` (7), `scripts/site/changelog.flang`,
 `scripts/release/bump-version.fscript` и `flang/self/bootstrap/compiler.flang` (по 5);
@@ -56,7 +57,7 @@ $ sh scripts/guards/hand-written-lists.sh --check
 печати в `flang/self/`), берётся из источника, а не набирается руками; перечень без
 источника получает нижнюю границу и проверку существования каждого элемента:
 перечень, набранный руками, переживает дерево. Сверка
-`sh scripts/guards/hand-written-lists.sh --check` отвечает кодом 0: каждое оставшееся
+`bootstrap/flang run-script hand-written-lists:check` отвечает кодом 0: каждое оставшееся
 расхождение названо в отчёте с доводом, почему остаётся, и ни одной мёртвой записи.
 
 ## Обходной путь
@@ -67,11 +68,11 @@ $ sh scripts/guards/hand-written-lists.sh --check
 ## Когда задача сделана
 
 ```
-sh scripts/guards/hand-written-lists.sh --check
+bootstrap/flang run-script hand-written-lists:check
 перепись сошлась с ведомостью: N расхождений, все названы с доводом    код 0
 ```
 
-Число «расходятся с деревом сегодня» ниже 166, и разность названа в коммите. Каждая
+Число «расходятся с деревом сегодня» ниже 149, и разность названа в коммите. Каждая
 запись отчёта известных расхождений несёт довод. Проба: `bootstrap/flang run-script hand-written-lists:check`
 краснеет на новом расхождении и на записи, переставшей быть расхождением; после
 починки её ставят в набор проверок перед отправкой, чтобы число снова не росло молча.
@@ -83,6 +84,12 @@ sh scripts/guards/hand-written-lists.sh --check
 
 Перечни в самих файлах, названных переписью (полный список даёт первая команда);
 отчёт `scripts/ledgers/hand-written-lists-ledger.tsv`; правило признания строки
-перечнем — `scripts/guards/hand-written-lists.sh`. Правки сценариев, проверок и отчёта
+перечнем — `scripts/guards/hand-written-lists.fscript`. Правки сценариев, проверок и отчёта
 до двоичного не касаются; перечни в `flang/self/bootstrap/compiler.flang` доезжают до
 двоичного только пересборкой семени (bootstrap regeneration).
+
+**Следующий шаг.** Перечни в файлах, которые называет план `Census`
+(`scripts/guards/hand-written-lists.fscript`, строка 2522), и отчёт
+`scripts/ledgers/hand-written-lists-ledger.tsv` (90 строк). Проба, которая краснеет
+сегодня, — `bootstrap/flang run-script hand-written-lists:check`: «перепись: новых
+120, мёртвых записей 62», код 1.

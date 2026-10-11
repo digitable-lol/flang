@@ -7,7 +7,7 @@
 ветка: —
 команда: первая
 карта: Сколько доказано на самом деле
-рядом: 9526, 6203
+рядом: 3593
 нужность: у файлов со свободными утверждениями в перечне долей стоят кресты вместо чисел, хотя двоичный эти утверждения доказывает
 ---
 
@@ -46,9 +46,13 @@ $ bootstrap/flang io scripts/ledgers/proved-share-of-a-file.fscript --plan Share
   доказано 0 (цепочкой 0, индукцией 0), сетка 0, объявлено 0
   два счёта сошлись: доказано 0 из 0 = 0,0 %                           код 0
 $ grep -an 'own-type' scripts/ledgers/proved-share-ledger.txt
-1226:fe1c85c8bcff3ec8d97f6f817fa23f67|2|×|×|×|0|flang/proof/checker/tests/families/own-type/natural.flang
-1227:7872cceb7f330d8be0a2d279eb89fb30|3|×|×|×|0|flang/proof/checker/tests/families/own-type/corrupt/lie-without-theorem.flang
+1236:fe1c85c8bcff3ec8d97f6f817fa23f67|2|×|×|×|0|flang/proof/checker/tests/families/own-type/natural.flang
+1237:7872cceb7f330d8be0a2d279eb89fb30|3|×|×|×|0|flang/proof/checker/tests/families/own-type/corrupt/lie-without-theorem.flang
 ```
+
+Снято 2026-10-11 на flang 0.7.25: машинный отчёт отвечает за 1,9 с, счётчик —
+кодом 0 с теми же нулями; `bootstrap/flang run-script proved-share-tree:check`
+зелен (код 0, 13 с), потому что крест в описи дозволен, пока счета не сошлись.
 
 Двоичный свободные утверждения в машинный отчёт уже кладёт. Ошибается счётчик:
 он считает приговор своим, только если поле `of` называет функцию файла, а у
@@ -90,3 +94,11 @@ $ bootstrap/flang io scripts/ledgers/proved-share-of-a-file.fscript --plan Share
 утверждения);
 `scripts/ledgers/proved-share-ledger.txt`. Пересборка семени (bootstrap
 regeneration) не нужна.
+
+## Следующий шаг
+
+Открыть `scripts/ledgers/proved-share-of-a-file.fscript`, функцию «Учесть
+приговор»: приговор с `"kind": "утверждение"` и `"of": null` сегодня уходит в
+ветвь «Ввезённый». Проба, которая краснеет: прогон из шагов воспроизведения
+печатает «ввезённых 2» вместо «своих 2»; после правки той же командой снять
+числа в строки 1236–1237 описи и убрать над ними пояснение о задаче 2040.

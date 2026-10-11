@@ -71,6 +71,7 @@ name	family	kind	kernel-rule	anchor	status
 Э6	Э	rule	все элементы по построению	proof-kernel.flang:5360 «Отображённое всё»	code
 Св1	Св	rule	—	proof-kernel.flang:5404 «Свести свидетелем»	code
 Св2	Св	rule	—	proof-kernel.flang:6341 «Свидетели из подтермов»	code
+Св✗	Св	ban	—	proof-kernel.flang:6348 «Отказ названного свидетеля»	code
 Ч1	Ч	rule	начало по построению	proof-kernel.flang:3799 «Начинается по построению», случай «Одинаковы»	code
 Ч2	Ч	rule	начало по построению	proof-kernel.flang:3663 «Пустой литерал строки»	code
 Ч3	Ч	rule	начало по построению	proof-kernel.flang:3799 «Начинается по построению», случай "concat"	code

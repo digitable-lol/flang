@@ -1,0 +1,20 @@
+program	surface	code	word	контракт задач 1177 и 1188: слова и коды сняты с двоичного семени 0.7.26 (11 октября 2026) и со связывания из исходника flang/self/proofterm.flang толкователем (ADR-0094); семя до перепечатки расходится ровно на строках named-witness-is-wrong — негодный названный свидетель у семени «замечаний нет», а у исходника отказ FLANG_PROOF_STEP; это и есть снятый дефект
+inside-conjunction.flang	check	0	замечаний нет
+inside-conjunction.flang	proof	0	правило «разбор цели по условию»
+inside-conjunction.flang	proof	0	утверждений 3: доказано 3
+nested-each-has-a-witness.flang	proof	0	правило «все элементы по построению»
+nested-exists-under-for-all-inside-conjunction.flang	check	0	замечаний нет
+nested-exists-under-for-all-inside-conjunction.flang	proof	0	правило «разбор цели по условию»
+false-goal-under-conjunction.flang	check	0	замечаний нет
+false-goal-under-conjunction.flang	proof	3	доказано 0, сетка 1
+found-witness.flang	check	0	замечаний нет
+found-witness.flang	proof	0	утверждений 2: доказано 2
+found-witness.flang	proof	0	правило «тождество после переписки допущением»
+no-witness-fits.flang	check	0	замечаний нет
+no-witness-fits.flang	proof	3	доказано 0, сетка 1
+named-witness.flang	check	0	замечаний нет
+named-witness.flang	proof	0	утверждений 1: доказано 1
+named-witness-is-wrong.flang	check	1	FLANG_PROOF_STEP
+named-witness-is-wrong.flang	check	1	свидетель «м», названный после «а именно» как ⟨0⟩, цели не сводит
+named-witness-is-wrong.flang	check	1	среди подтермов цели годен ⟨н⟩
+named-witness-is-wrong.flang	proof	1	FLANG_PROOF_STEP

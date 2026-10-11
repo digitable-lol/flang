@@ -3,5 +3,5 @@ forgery-numerator 187
 forgery-probes 656
 checker-code-lines 8527
 checker-primitives 15
-trap-kinds 43
+trap-kinds 44
 trap-goals-on-kernel-word 3

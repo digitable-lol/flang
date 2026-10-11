@@ -33,7 +33,9 @@ FLANG_TRACE='неотрицательно' bootstrap/flang run-script traceabili
       flang/proof/map/sources.flang:15 функция «Без примеров» — «К2 объявлено, не доказано (примеров нет)»
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, дерево 1149c78f7; прогон 11 октября 2026 называет те же
+четыре места, строка «требование → проверка вне подделок» в
+`scripts/ledgers/traceability-debt.tsv` равна 4.
 
 Из 62 разрывов «требование → проверка» 58 приходятся на подделки, где
 недоказанность и есть требуемый итог. Честных остаётся четыре, и они разной
@@ -80,3 +82,12 @@ FLANG_TRACE='неотрицательно' bootstrap/flang run-script traceabili
   `flang/proof/checker/tests/records/corpus/`;
 - `flang/proof/map/sources.flang`;
 - `scripts/ledgers/traceability-debt.tsv`.
+
+## Следующий шаг
+
+Дописать трём функциям `flang/test/fixtures/granica-nad-chislom-chestnaya.flang` по
+примеру на постусловие «неотрицательно», переснять запись
+`flang/proof/checker/tests/records/corpus/granica-nad-chislom-chestnaya.record` тем же
+заходом (`record-source:check` обязан остаться зелёным) и вынести «Без примеров» из
+`flang/proof/map/sources.flang` строкой ведомости с доводом. Проба, которая краснеет
+сегодня: `traceability:check` печатает «вне подделок 4».

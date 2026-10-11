@@ -72,4 +72,5 @@ https://digitable-lol.github.io/flang/registry.list
 
 Проверка заведена не впрок: отпечатки в примере однажды разошлись с
 файлами, и увидеть это было некому — реестр не звала ни одна работа сборки
-(задача [4909](../tasks/4909-the-registry-resolution-rule-has-no-guard-and-example-fingerprints-rotted.md)).
+(задача 4909, сделана: сторож `scripts/guards/registry-resolution-guard.fscript`
+и работа CI `registry-resolution`).

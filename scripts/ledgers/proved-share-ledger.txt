@@ -1050,6 +1050,7 @@ bd86e5b4cf90f30f13d03daba1bfee3f|8|×|×|×|7|flang/proof/map/refusal-order.flan
 1dac20b72245fc2680df72c8481f8ff7|5|3|2|0|1|flang/proof/map/types.flang
 55542d98506dabe4a15448e0e861d770|1|×|×|×|0|flang/proof/midpoint-verdicts.flang
 c24e3a74d21704429b8ec237e2504883|9|9|0|0|0|flang/proof/probes/function-values/run.fscript
+7a2aef421a2513c7e1fb98006e314184|1|1|0|0|0|flang/proof/probes/import-helper-binding/programs/step-second.flang
 0dbd8c3aca5c041211fc3702f1a64840|52|52|0|0|0|flang/proof/small-reducer.flang
 a075e8a26bed6fd0228f15824bad848a|1|0|0|1|0|flang/proof/forgeries/by-division.flang
 ab1156261b804cb48ee0df2e25cad46f|1|1|0|0|0|flang/proof/forgeries/base-with-field.flang

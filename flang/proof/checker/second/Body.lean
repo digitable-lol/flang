@@ -399,25 +399,176 @@ def «простойИлиНе» (t : String) : Bool :=
   let u := «обрезать» t
   «простойС» u || (u.startsWith "не " && «простойС» (u.«сн» 3))
 
+def «числоТ» (x : String) : Option Int :=
+  let u := «ужатьТ» x
+  if u.startsWith "-" then («целоеТ?» (u.«сн» 1)).map (fun n => -(n : Int)) else («целоеТ?» u).map (fun n => (n : Int))
+
+def «вариантТ» (x : String) : String :=
+  let u := «ужатьТ» x
+  if u.startsWith "вариант «" then «ёлочка» u 1 else ""
+
+structure «Границы» where
+  «низ» : Option (Int × Bool) := none
+  «верх» : Option (Int × Bool) := none
+
+def «сНизом» (g : «Границы») (b : Int × Bool) : «Границы» :=
+  match g.«низ» with
+  | none => { g with «низ» := some b }
+  | some a => if b.1 > a.1 || (b.1 = a.1 && !b.2 && a.2) then { g with «низ» := some b } else g
+
+def «сВерхом» (g : «Границы») (b : Int × Bool) : «Границы» :=
+  match g.«верх» with
+  | none => { g with «верх» := some b }
+  | some a => if b.1 < a.1 || (b.1 = a.1 && !b.2 && a.2) then { g with «верх» := some b } else g
+
+def «сравнениеБ» (t : String) : Option (String × Nat × String) :=
+  let ops := [" не меньше ", " не больше ", " равен ", " меньше ", " больше "]
+  match «найтиСв» t ops with
+  | none => none
+  | some (g, k) => some («безВнешних» («доЗнака» t g), k, «безВнешних» («отЗнака» t (g + (ops.getD k "").length)))
+
+def «границыПоФактам» («факты» : List (String × Bool)) (x : String) : «Границы» :=
+  «факты».foldl (fun g (f, v) =>
+    if («найтиСв» f [" не равен "]).isSome then g else
+    match «сравнениеБ» f with
+    | none => g
+    | some (l, k, p) =>
+      if «ужатьТ» l ≠ x then g else
+      match «числоТ» p with
+      | none => g
+      | some b =>
+        match k, v with
+        | 0, true => «сНизом» g (b, true)
+        | 0, false => «сВерхом» g (b, false)
+        | 1, true => «сВерхом» g (b, true)
+        | 1, false => «сНизом» g (b, false)
+        | 2, true => «сНизом» («сВерхом» g (b, true)) (b, true)
+        | 3, true => «сВерхом» g (b, false)
+        | 3, false => «сНизом» g (b, true)
+        | 4, true => «сНизом» g (b, false)
+        | 4, false => «сВерхом» g (b, true)
+        | _, _ => g) {}
+
+def «точноБольше» (g : «Границы») (b : Int) : Bool :=
+  match g.«низ» with | some (a, incl) => a > b || (a = b && !incl) | none => false
+def «точноНеМеньше» (g : «Границы») (b : Int) : Bool :=
+  match g.«низ» with | some (a, _) => a ≥ b | none => false
+def «точноМеньше» (g : «Границы») (b : Int) : Bool :=
+  match g.«верх» with | some (a, incl) => a < b || (a = b && !incl) | none => false
+def «точноНеБольше» (g : «Границы») (b : Int) : Bool :=
+  match g.«верх» with | some (a, _) => a ≤ b | none => false
+
+def «вариантФакта» (f : String) : Option (String × String) :=
+  match «сравнениеБ» f with
+  | some (l, 2, p) => if «вариантТ» p ≠ "" then some («ужатьТ» l, «вариантТ» p) else none
+  | _ => none
+
+def «поФактам» («факты» : List (String × Bool)) («атом» : String) : Option Bool :=
+  let a := «ужатьТ» «атом»
+  match «факты».find? (fun (f, _) => «ужатьТ» f = a) with
+  | some (_, v) => some v
+  | none =>
+    if («найтиСв» a [" не равен "]).isSome then none else
+    match «сравнениеБ» a with
+    | none => none
+    | some (l, k, p) =>
+      let x := «ужатьТ» l
+      if k = 2 && «вариантТ» p ≠ "" then
+        match «факты».findSome? (fun (q : String × Bool) => if q.2 then (match «вариантФакта» q.1 with
+            | some (y, w) => if y = x then some w else none
+            | none => none) else none) with
+        | some w => some (w = «вариантТ» p)
+        | none => none
+      else match «числоТ» p with
+      | none => none
+      | some b =>
+        let g := «границыПоФактам» «факты» x
+        if g.«низ».isNone && g.«верх».isNone then none else
+        let «гт» := «точноБольше» g b
+        let «нм» := «точноНеМеньше» g b
+        let «мн» := «точноМеньше» g b
+        let «нб» := «точноНеБольше» g b
+        match k with
+        | 0 => if «нм» then some true else if «мн» then some false else none
+        | 1 => if «нб» then some true else if «гт» then some false else none
+        | 2 => if «нм» && «нб» then some true else if «мн» || «гт» then some false else none
+        | 3 => if «мн» then some true else if «нм» then some false else none
+        | _ => if «гт» then some true else if «нб» then some false else none
+
+def «слитьЛин» (a b : List (String × Int)) : List (String × Int) :=
+  let «ключи» := ((a ++ b).map (·.1)).eraseDups
+  («ключи».map (fun k => (k, ((a ++ b).filter (·.1 = k)).foldl (fun s p => s + p.2) 0))).filter (·.2 ≠ 0)
+
+partial def «линейноПоДлинам» (t0 : String) («гл» : Nat) : Option (List (String × Int) × Int) :=
+  let t := «ужатьТ» t0
+  if «гл» > 12 || t = "" then none else
+  match «числоТ» t with
+  | some n => some ([], n)
+  | none =>
+    match «найтиСв» t [" плюс ", " минус "] with
+    | some (g, k) =>
+      let l := «доЗнака» t g
+      let r := «отЗнака» t (g + (if k = 0 then 6 else 7))
+      match «линейноПоДлинам» l («гл» + 1), «линейноПоДлинам» r («гл» + 1) with
+      | some (la, lc), some (ra, rc) =>
+        if k = 0 then some («слитьЛин» la ra, lc + rc)
+        else some («слитьЛин» la (ra.map (fun p => (p.1, -p.2))), lc - rc)
+      | _, _ => none
+    | none =>
+      if !t.startsWith "длина " then none else
+      let x := «ужатьТ» (t.«сн» 6)
+      if x = "пустой список" || x = "\"\"" then some ([], 0)
+      else if («найтиСв» x [" плюс ", " минус ", " равен ", " если ", " то ", " к ", " с "]).isSome || x.startsWith "если " then none
+      else some ([(x, 1)], 0)
+
+def «поДлинам» (t : String) : Option Bool :=
+  if (t.splitOn "длина ").length < 2 then none else
+  let ops := [" не меньше ", " не больше ", " не равен ", " равен ", " меньше ", " больше "]
+  match «найтиСв» t ops with
+  | none => none
+  | some (g, k) =>
+    let l := «доЗнака» t g
+    let r := «отЗнака» t (g + (ops.getD k "").length)
+    match «линейноПоДлинам» l 0, «линейноПоДлинам» r 0 with
+    | some (la, lc), some (ra, rc) =>
+      let d := «слитьЛин» ra (la.map (fun p => (p.1, -p.2)))
+      let dc := rc - lc
+      let «неотр» := d.all (·.2 ≥ 0)
+      let «непол» := d.all (·.2 ≤ 0)
+      let «ге» := «неотр» && dc ≥ 0
+      let «гт» := «неотр» && dc > 0
+      let «ле» := «непол» && dc ≤ 0
+      let «лт» := «непол» && dc < 0
+      let «ек» := d.isEmpty && dc = 0
+      match k with
+      | 0 => if «ле» then some true else if «гт» then some false else none
+      | 1 => if «ге» then some true else if «лт» then some false else none
+      | 2 => if «гт» || «лт» then some true else if «ек» then some false else none
+      | 3 => if «ек» then some true else if «гт» || «лт» then some false else none
+      | 4 => if «гт» then some true else if «ле» then some false else none
+      | _ => if «лт» then some true else if «ге» then some false else none
+    | _, _ => none
+
 mutual
 
-partial def «половинаЗакрыта» (c : «Счёт») («сырой» : String) («делений» : Nat) («конечен» : Option String) : Bool :=
+partial def «половинаЗакрыта» (c : «Счёт») («сырой» : String) («делений» : Nat) («конечен» : Option String)
+    («факты» : List (String × Bool)) : Bool :=
   let t := «безВнешних» («сжатьВыборы» («безВнешних» «сырой»))
   if t = "да" then true
   else if t = "нет" then false
   else match «разрезВыбора» t with
   | some (u, a, b) =>
     let uu := «безВнешних» u
-    if uu = "да" then «половинаЗакрыта» c a «делений» «конечен»
-    else if uu = "нет" then «половинаЗакрыта» c b «делений» «конечен»
+    if uu = "да" then «половинаЗакрыта» c a «делений» «конечен» «факты»
+    else if uu = "нет" then «половинаЗакрыта» c b «делений» «конечен» «факты»
     else match «значМоё» c uu 0 with
-    | .«приз» v => «половинаЗакрыта» c (if v then a else b) «делений» «конечен»
+    | .«приз» v => «половинаЗакрыта» c (if v then a else b) «делений» «конечен» «факты»
     | _ =>
       let (au, par) := «атомУсловия» uu
       if au = "да" || au = "нет" then
         let lit := au = "да"
-        «половинаЗакрыта» c (if lit == par then b else a) «делений» «конечен»
-      else «деление» c t au «делений» «конечен»
+        «половинаЗакрыта» c (if lit == par then b else a) «делений» «конечен» «факты»
+      else «деление» c t au «делений» «конечен» «факты»
   | none =>
     match «значМоё» c t 0 with
     | .«приз» v => v
@@ -426,7 +577,7 @@ partial def «половинаЗакрыта» (c : «Счёт») («сырой�
         (match «значМоё» c (t.«сн» 3) 0 with | .«приз» v => !v | _ => false)
       if notFalse then true else
       match «оговоркаОКонечности» c t with
-      | some (tk, pod) => «половинаЗакрыта» c pod «делений» (some tk)
+      | some (tk, pod) => «половинаЗакрыта» c pod «делений» (some tk) «факты»
       | none =>
         if «квадратПодОговоркой» c t «конечен» then true else
         let viaConn := match «найтиСв» t [" и притом ", " или "] with
@@ -434,8 +585,8 @@ partial def «половинаЗакрыта» (c : «Счёт») («сырой�
             let l := «доЗнака» t g
             let p := «отЗнака» t (g + (if k = 0 then 10 else 5))
             «простойИлиНе» l && «простойИлиНе» p &&
-              (let el := «половинаЗакрыта» c l «делений» «конечен»
-               let ep := «половинаЗакрыта» c p «делений» «конечен»
+              (let el := «половинаЗакрыта» c l «делений» «конечен» «факты»
+               let ep := «половинаЗакрыта» c p «делений» «конечен» «факты»
                if k = 0 then el && ep else el || ep)
           | none => false
         if viaConn then true else
@@ -446,25 +597,42 @@ partial def «половинаЗакрыта» (c : «Счёт») («сырой�
             «простойС» l && «простойС» p && «тождественны» c l p 0
           | none => false
         if viaEq then true
+        else if «поДлинам» t = some true then true
         else if «мераНеотрицательна» t then true
         else if «началоПоПостроению» c t then true
         else if (match «первоеУсловие» t with
-            | some u => «деление» c t («атомУсловия» u).1 «делений» «конечен»
+            | some u => «деление» c t («атомУсловия» u).1 «делений» «конечен» «факты»
             | none => false) then true
         else match «первыйАтом» c t with
-          | some u => «деление» c t u «делений» «конечен»
+          | some u => «деление» c t u «делений» «конечен» «факты»
           | none => false
 
-partial def «деление» (c : «Счёт») (t u : String) («делений» : Nat) («конечен» : Option String) : Bool :=
+partial def «деление» (c : «Счёт») (t u : String) («делений» : Nat) («конечен» : Option String)
+    («факты» : List (String × Bool)) : Bool :=
   if «делений» ≥ 4 || «естьСвязыватель» t then false else
-  let (da, n1) := «подставитьУсловие» t u "да"
-  let (net, n2) := «подставитьУсловие» t u "нет"
-  if n1 < 1 || n1 ≠ n2 then false
-  else «половинаЗакрыта» c da («делений» + 1) «конечен» && «половинаЗакрыта» c net («делений» + 1) «конечен»
+  match «поФактам» «факты» u with
+  | some v =>
+    let (s1, n1) := «подставитьУсловие» t u (if v then "да" else "нет")
+    n1 ≥ 1 && «половинаЗакрыта» c s1 «делений» «конечен» «факты»
+  | none =>
+    let (da, n1) := «подставитьУсловие» t u "да"
+    let (net, n2) := «подставитьУсловие» t u "нет"
+    if n1 < 1 || n1 ≠ n2 then false
+    else
+      let «ф» := «ужатьТ» u
+      let da := match «разрезРавенства» «ф» with
+        | some (x, v) =>
+          let xs := «ужатьТ» x
+          if («числоТ» v).isSome && (xs.splitOn " ").length = 1 && («числоТ» xs).isNone && !xs.startsWith "\"" then «вместо» da xs («ужатьТ» v) else da
+        | none => da
+      «половинаЗакрыта» c da («делений» + 1) «конечен» («факты» ++ [(«ф», true)]) &&
+      «половинаЗакрыта» c net («делений» + 1) «конечен» («факты» ++ [(«ф», false)])
 
 end
 
-def «закрыта» (c : «Счёт») (t : String) : Bool := «половинаЗакрыта» c t 0 none
+def «закрыта» (c : «Счёт») (t : String) : Bool := «половинаЗакрыта» c t 0 none []
+
+def «закрытаПри» (c : «Счёт») (t : String) («факты» : List (String × Bool)) : Bool := «половинаЗакрыта» c t 0 none «факты»
 
 def «отступСтроки» (s : String) : Nat := (s.toList.takeWhile (· = ' ')).length
 
@@ -489,9 +657,15 @@ partial def «Исх».«выражениеСтрок» (s : «Исх») («го
       if l = "" then
         k := k + 1
         continue
-      if «отступСтроки» (s.«сырая» k) ≠ d1 || br.size ≥ 2 || !l.startsWith (marks.getD br.size "") then return ""
+      let mark := marks.getD br.size ""
+      let bare := l = «обрезать» mark
+      if «отступСтроки» (s.«сырая» k) ≠ d1 || br.size ≥ 2 || !(l.startsWith mark || bare) then return ""
       let kon := s.«концаПодгруппы» (k + 1) j d1
-      let v := s.«выражениеСтрок» («после» l (marks.getD br.size "")) (k + 1) kon d1 («глубина» + 1)
+      let v := if bare then
+          match ((List.range' (k + 1) (kon - k - 1)).filter (fun q => s.«строка» q ≠ "")).head? with
+          | none => ""
+          | some k1 => s.«выражениеСтрок» (s.«строка» k1) (k1 + 1) kon («отступСтроки» (s.«сырая» k1)) («глубина» + 1)
+        else s.«выражениеСтрок» («после» l mark) (k + 1) kon d1 («глубина» + 1)
       if v = "" then return ""
       br := br.push v
       k := kon
@@ -687,6 +861,82 @@ def «Исх».«телоРазбора» (s : «Исх») (a b : Nat) : String 
   let t := s.«телоБезПуст» a b
   if t ≠ "" then t else s.«телоМногострочное» a b
 
+def «Исх».«именаДоводовФункции» (s : «Исх») (f : String) : List String :=
+  match s.«блокС» f with
+  | none => []
+  | some (a, b) =>
+    match (List.range' a (b - a)).find? (fun i => (s.«строка» i).startsWith "принимает ") with
+    | none => []
+    | some i => ((«словаС» (s.«строка» i) 1).splitOn ",").map fun k =>
+        «голо» («обрезать» ((k.splitOn ":").headD k))
+
+def «Исх».«плоскоеТело» (s : «Исх») (f : String) : String :=
+  match s.«блокС» f with
+  | none => ""
+  | some (a, b) =>
+    let t := s.«телоБезПуст» a b
+    let t := if t ≠ "" then t else
+      let ls := (s.«меж» a b).filterMap (fun i => let l := s.«строка» i; if l = "" || «объявление?С» l then none else some l)
+      let sk := " ".intercalate ls
+      if sk = "" then "" else
+      let tt := «т» sk
+      if («разрезВыбора» tt).isSome then tt else ""
+    if (t.splitOn "» от ").length > 1 then "" else t
+
+def «закрывающаяБ» (cs : Array Char) (p : Nat) : Option Nat := Id.run do
+  let mut gl : Int := 0
+  let mut q := false
+  let mut i := p
+  while i < cs.size do
+    let c := cs[i]!
+    if q then
+      if c = '\\' && i + 1 < cs.size then i := i + 1
+      else if c = '"' then q := false
+    else if c = '"' then q := true
+    else if c = '(' then gl := gl + 1
+    else if c = ')' then
+      gl := gl - 1
+      if gl = 0 then return some i
+    i := i + 1
+  return none
+
+def «простойДовод» (f : String) : Bool :=
+  let u := «ужатьТ» f
+  u ≠ "" && (u.splitOn " ").length = 1 && !u.startsWith "«"
+
+def «Исх».«развернутьПлоскоеБ» (s : «Исх») (t «чья» : String) : String :=
+  let n := «ёлочка» t 1
+  if n = "" || n = «чья» || !t.startsWith s!"«{n}» от " then t else
+  let tail := «обрезать» («после» t s!"«{n}» от ")
+  let body := s.«плоскоеТело» n
+  let ds := s.«именаДоводовФункции» n
+  let fs := «сверху» tail "и"
+  if body = "" || ds.isEmpty || ds.length ≠ fs.length || !fs.all «простойДовод» then t
+  else (ds.zip fs).foldl (fun acc (d, f) => «вместо» acc d («т» («обрезать» f))) body
+
+def «Исх».«развернутьВызовыРаз» (s : «Исх») (t «чья» : String) : String := Id.run do
+  let u := «ужатьТ» t
+  let «целиком» := s.«развернутьПлоскоеБ» u «чья»
+  if «целиком» ≠ u then return «т» «целиком»
+  let mut r := «т» t
+  for _ in [0:16] do
+    let cs := r.toList.toArray
+    let mut p := 0
+    let mut changed := false
+    while p < cs.size && !changed do
+      if «стоитНа» cs p "( «".toList then
+        match «закрывающаяБ» cs p with
+        | none => p := cs.size
+        | some q =>
+          let inner := «обрезать» (String.ofList (cs.extract (p + 1) q).toList)
+          let nn := s.«развернутьПлоскоеБ» inner «чья»
+          if nn ≠ inner then
+            r := «т» (String.ofList (cs.extract 0 p).toList ++ «вСкобки» nn ++ String.ofList (cs.extract (q + 1) cs.size).toList)
+            changed := true
+      p := p + 1
+    if !changed then break
+  return r
+
 def «разборомЦели» (c : «Счёт») («свои» : List String) («чья» «цель» : String) : Bool :=
   let s := c.«исх»
   if «свои».any (·.startsWith "принцип тип ") || «свои».any (·.startsWith "посылка ") then false
@@ -699,7 +949,11 @@ def «разборомЦели» (c : «Счёт») («свои» : List String)
     if body = "" || !«кавычкиЧисты» body then false else
     let g := «вместо» («поляРезультатаВыбором» («поляРезультата» («т» «цель») body) body) "результат" body
     if «естьСвязыватель» g then false
-    else «закрыта» c g || s.«изОбъявленного» c g a b || s.«невыполнимаяПосылка» c a b
+    else
+      let g1 := s.«развернутьВызовыРаз» g «чья»
+      let g2 := s.«развернутьВызовыРаз» g1 «чья»
+      «закрыта» c g || (g1 ≠ g && «закрыта» c g1) || (g2 ≠ g1 && «закрыта» c g2) ||
+        s.«изОбъявленного» c g a b || s.«невыполнимаяПосылка» c a b
 
 def «Исх».«телоОднойСтрокой» (s : «Исх») (a b : Nat) : String :=
   let ls := (s.«меж» a b).filter (fun i => s.«строка» i ≠ "" && !«объявление?С» (s.«строка» i))
@@ -782,28 +1036,6 @@ def «мераПростого» (t : String) : Bool :=
 def «шагСМерой» (w «акк» : String) : Bool :=
   let r := «разрез» («ужатьТ» w) "плюс"
   r.«есть» && ((«ужатьТ» r.«лево» = «акк» && «мераПростого» r.«право») || («ужатьТ» r.«право» = «акк» && «мераПростого» r.«лево»))
-
-def «Исх».«именаДоводовФункции» (s : «Исх») (f : String) : List String :=
-  match s.«блокС» f with
-  | none => []
-  | some (a, b) =>
-    match (List.range' a (b - a)).find? (fun i => (s.«строка» i).startsWith "принимает ") with
-    | none => []
-    | some i => ((«словаС» (s.«строка» i) 1).splitOn ",").map fun k =>
-        «голо» («обрезать» ((k.splitOn ":").headD k))
-
-def «Исх».«плоскоеТело» (s : «Исх») (f : String) : String :=
-  match s.«блокС» f with
-  | none => ""
-  | some (a, b) =>
-    let t := s.«телоБезПуст» a b
-    let t := if t ≠ "" then t else
-      let ls := (s.«меж» a b).filterMap (fun i => let l := s.«строка» i; if l = "" || «объявление?С» l then none else some l)
-      let sk := " ".intercalate ls
-      if sk = "" then "" else
-      let tt := «т» sk
-      if («разрезВыбора» tt).isSome then tt else ""
-    if (t.splitOn "» от ").length > 1 then "" else t
 
 def «Исх».«требуетНеотр» (s : «Исх») («чья» t : String) : Bool :=
   match s.«блокС» «чья» with

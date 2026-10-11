@@ -116,9 +116,9 @@ lists the known soundness problems by name.
 
 ## How the prover is built
 
-The prover has thirteen decision rules, each short enough to read in one
+The prover has fourteen decision rules, each short enough to read in one
 sitting; refusals name them. The count comes from the prover itself
-(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 13).
+(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 14).
 Each rule proves one shape of goal: non-negativity, an upper bound, equality
 after substituting an assumption, order, strict order, membership, a prefix,
 order of neighbouring elements, an equality decided by computing closed parts,

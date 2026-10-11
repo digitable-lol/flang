@@ -94,6 +94,7 @@ bootstrap/flang run-script trust:ceiling
 ```
 bootstrap/flang run-script checker:second           # обе реализации на всех записях проб
 bootstrap/flang run-script checker:second-forgery   # испорченная копия второй — расхождение названо
+bootstrap/flang run-script checker:second-both      # испорченная копия обоим — оба отвечают кодом 1
 ```
 
 Расхождение — запись, где вторая дала вердикт, а код первой другой. Прогон

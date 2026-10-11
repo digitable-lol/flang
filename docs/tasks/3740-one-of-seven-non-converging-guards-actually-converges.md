@@ -55,11 +55,12 @@ $ timeout 300 bootstrap/flang io scripts/targets/emit-law.fscript --trust
 file or directory», а `grep -n 'docs/examples/cat' scripts/targets/emit-law.fscript`
 находит строки 26, 33–36 и 45–47. Перепись рукописных списков теперь план, а не
 сценарий оболочки: `bootstrap/flang run-script hand-written-lists:census`
-(`scripts/guards/hand-written-lists.fscript`); при заведении задачи прежний
-`hand-written-lists.sh` называл эту строку как `6 из 15 нет`.
+(`scripts/guards/hand-written-lists.fscript`), и она называет ту же строку:
+`ПУТИ scripts/targets/emit-law.fscript:25  6 из 15  нет: docs/examples/cat/crdt-merge.flang …
+order-shipment.flang` (код 0 за 697 с).
 
 Снято 2026-10-11 на flang 0.7.25: `timeout 300 … emit-law.fscript --trust` — код 124
-за 300,06 с; перепись-план за 15 минут до конца не дошла (ответ не снят).
+за 300,06 с.
 
 ## Что должно быть
 

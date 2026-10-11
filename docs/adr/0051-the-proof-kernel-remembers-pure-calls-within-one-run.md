@@ -1,7 +1,8 @@
 # ADR-0051. Ядро доказательств помнит ответы своих чистых функций внутри одного прогона
 
-**Состояние:** принято; выполняется задачей
-[5709](../tasks/5709-the-stage-that-eats-the-print-has-a-cache-and-it-is-off.md). Память
+**Состояние:** принято; задача 5709, которая его выполняла, закрыта как перекрытая
+[ADR-0080](0080-a-proof-cache-remembers-pure-calls-across-runs.md) — см.
+[`docs/tasks/used-numbers.tsv`](../tasks/used-numbers.tsv). Память
 вызовов лежит в копируемой части (`flang/src/emit/c/flang_runtime.[ch]`) и доезжает до
 семени быстрым пересевом. Обёртки вокруг трёх функций печатает `flang/self/emit-c.flang`;
 эта правка едет партией печати (задача 2200, закрыта — см. [`docs/tasks/used-numbers.tsv`](../tasks/used-numbers.tsv)),

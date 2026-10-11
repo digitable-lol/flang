@@ -51,7 +51,7 @@ $ grep -a 'имя' docs/examples/package/flang.package
 $ grep -a 'использует' docs/examples/package/shop/shop.flang
   использует «Скидка» из "discount.flang-package"
 $ grep -an 'разрешения версий' docs/road-to-1-0.md
-160:**Чего нет.** Почти всего: установки, разрешения версий, замыкания зависимостей.
+125:**Чего нет.** Установки пакета по имени из сети и разрешения версий.
 $ bootstrap/flang io scripts/registry-tool.fscript --plan 'Разрешить' --trust
 {"plan":"Разрешить","result":"запрос «Множество строк: не ниже 1.1» разрешён:
  пакетов 3 …",…}                                                  код 0
@@ -68,6 +68,11 @@ $ bootstrap/flang io scripts/registry-tool.fscript --plan 'Разрешить' -
 Раздел 6 `docs/road-to-1-0.md` в «чего нет» называет разрешение версий, хотя
 план «Разрешить» разрешает запрос транзитивно и отвечает кодом 0: пакетов 3,
 поручений 2.
+
+Снято 2026-10-11 на flang 0.7.25: `flang package` на примере отвечает тем же
+`FLANG_PACKAGE`, код 1; три имени разошлись так же; `check shop/shop.flang` — код 0;
+строка 125 `docs/road-to-1-0.md` по-прежнему называет разрешение версий (план
+«Разрешить» сегодня не прогонялся).
 
 ## Что должно быть
 
@@ -101,3 +106,11 @@ bootstrap/flang package docs/examples/package/discount.flang     код 0
 `docs/examples/package/shop/discount.flang-package` (пересобрать командой, не
 руками), `docs/road-to-1-0.md`, `docs/site/packages.md`,
 `docs/site/packages.ru.md`. Пересборка семени (bootstrap regeneration) не нужна.
+
+## Следующий шаг
+
+`docs/examples/package/flang.package`: поле `"имя"` → «Discount» (либо модуль →
+«Скидка»), затем `bootstrap/flang package docs/examples/package/discount.flang >
+docs/examples/package/shop/discount.flang-package` и правка строки `использует` в
+`shop/shop.flang`. Проба, которая краснеет сегодня: `bootstrap/flang package
+docs/examples/package/discount.flang` — `FLANG_PACKAGE`, код 1.

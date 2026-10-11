@@ -1,6 +1,6 @@
 ---
 номер: 2235
-заголовок: число правил вывода в прозе отстало от ведомости (109 против 114), а приметы «СНЯТО» нет
+заголовок: число правил вывода в прозе отстало от ведомости (109 против 118), а приметы «СНЯТО» нет
 статус: свободна
 приоритет: P2
 исполнитель: —
@@ -29,7 +29,7 @@ bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check
 
 ```
 $ awk 'NR>1' flang/proof/tables/inference-rules.tsv | wc -l
-114
+118
 $ grep -n -E '109 (строк|правил)' docs/flang/proof/checker/README.md
 docs/flang/proof/checker/README.md:37:| ведомость правил вывода | 109 правил | `flang/proof/tables/inference-rules.tsv` |
 $ bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check
@@ -37,7 +37,9 @@ $ bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check
 ```
 
 Сторож зелен, и он прав: он сверяет только приметы. Числа стоят голыми, поэтому
-расхождение живёт в прозе невидимо.
+расхождение живёт в прозе невидимо. Снято 2026-10-11 на flang 0.7.25: в ведомости
+118 строк (правил 102, запретов 16), в `docs/flang/proof/checker/README.md:37`
+по-прежнему 109, примет `СНЯТО` в этом файле 0 (`grep -c 'СНЯТО'`).
 
 Число в `docs/road-to-1-0.md` уже несёт примету и в задачу не входит.
 
@@ -64,3 +66,10 @@ $ bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check
 ## Где живёт правка
 
 `docs/flang/proof/checker/README.md`. Перепечатка не нужна.
+
+## Следующий шаг
+
+Строка 37 `docs/flang/proof/checker/README.md`: заменить «109 правил» на отсылку к
+ведомости без числа либо поставить число с приметой `СНЯТО` по `docs/prose-numbers.md`.
+Проба, которая краснеет сегодня: `grep -n -E '109 (строк|правил)' docs/flang/proof/checker/README.md`
+находит строку, а ведомость даёт 118.

@@ -1,10 +1,10 @@
 ---
 номер: 1419
 заголовок: Вне flang/proof остаются файлы с кириллическими именами, а правило требует английских
-статус: в работе
+статус: свободна
 приоритет: P3
-исполнитель: a
-ветка: a/1419-file-names-outside-proof-are-english
+исполнитель: —
+ветка: —
 команда: вторая
 карта: Что мешает больше всего
 рядом: 1420, 1186, 1418
@@ -82,3 +82,38 @@ walk.sh. Правило касается имени файла, а не язык
 семени (bootstrap regeneration) не нужна для тех, что уже переименованы: ни один из них не
 лежит под `flang/self` и `flang/src/emit`. Четыре оставшихся, наоборот, именно
 в это и упираются — они идут вместе с пересборкой семени.
+
+## Ревизия 11 октября 2026
+
+Дерево `dev` 1149c78f7. Шаги воспроизведения повторены дословно:
+
+```
+$ git -c core.quotepath=false ls-files | grep -P '[А-Яа-яЁё][^/]*$' | grep -v '^flang/proof/' | wc -l
+4
+$ bootstrap/flang run-script cyrillic:check
+… "result":"кириллица в путях: 5, все в ведомости — новых нет" …   код 0
+```
+
+Те же четыре имени в `flang/test` (`обход.sh`, `обход-примеров.sh`,
+`обход-self.sh`, `встроенные-формы.flang`). Кто их называет сегодня
+(`git grep -n` по дереву): `.github/workflows/binary.yml` — строки 338, 804,
+808, 2147 и шапка; `docs/README.ru.md:193`; `flang/self/processes.flang`;
+`flang/self/bootstrap/corpus.flang`; `flang/src/emit/c/flang_repl.c` и его
+дословная копия `bootstrap/flang_repl.c`. Довод «семя 0.7.24 печатается прямо
+сейчас» из ведомости долга устарел: печать 4 дошла 8 октября
+(`docs/reprint-ledger.tsv`), следующая партия печати собирается в ветке
+`a/print-batch-after-0-7-26`. План «Подлог» проверки имён сегодня не гонялся.
+Ветки `a/1419-file-names-outside-proof-are-english` нет ни локально, ни на
+`origin`, задача свободна.
+
+## Следующий шаг
+
+Четыре `git mv` одним коммитом в партии перепечатки: `walk.sh`,
+`walk-examples.sh`, `walk-self.sh`, `builtin-forms.flang`, и тем же коммитом —
+три места в `flang/self/processes.flang`, `flang/self/bootstrap/corpus.flang`
+(дважды) и `flang/src/emit/c/flang_repl.c`, пять строк `binary.yml`,
+`docs/README.ru.md:193`, четыре записи в
+`scripts/ledgers/cyrillic-file-names-debt.txt`. Проба, которая краснеет
+сегодня: команда шага 1 печатает 4, по критерию — 0; после правки
+`cyrillic:check` обязан ответить «кириллица в путях: 1» (образец расширения
+под `flang/proof`).

@@ -5015,6 +5015,18 @@ compiler_flang_sozdat_programma_s_bedami(fl_ctx *ctx, fl_value programma,
                                          fl_value otbirat, fl_value *out,
                                          fl_error *error);
 
+/* Запись FTS «Скрытые имена»: «файл», «имена». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_skrytye_imena(fl_ctx *ctx, fl_value fayl,
+                                              fl_value imena, fl_value *out,
+                                              fl_error *error);
+
+/* Запись FTS «Ход нумерации»: «номер», «список». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_hod_numeracii(fl_ctx *ctx, fl_value nomer,
+                                              fl_value spisok, fl_value *out,
+                                              fl_error *error);
+
 /* Запись FTS «Ход постусловий»: «номер», «имена». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_hod_postusloviy(fl_ctx *ctx, fl_value nomer,
@@ -113826,11 +113838,13 @@ fl_status compiler_flang_beda_svyazyvaniya(fl_ctx *ctx, fl_value kod,
  * @param kod — «код»: строка
  * @param soobschenie — «сообщение»: строка
  * @param uzel — «узел»: «Значение»
+ * @param fayl — «файл»: строка
  * @return значение: «Беда»
  */
 fl_status compiler_flang_beda_uzla(fl_ctx *ctx, fl_value kod,
                                    fl_value soobschenie, fl_value uzel,
-                                   fl_value *result, fl_error *error);
+                                   fl_value fayl, fl_value *result,
+                                   fl_error *error);
 
 /*
  * Функция flang «Беда шапки».
@@ -114905,7 +114919,7 @@ fl_status compiler_flang_imena_pervogo_prohoda(fl_ctx *ctx, fl_value shag,
 /*
  * Функция flang «Собрать итог».
  *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  * @param shag — «шаг»: «Шаг связки»
  * @param razbory — «разборы»: список: «Разобранное»
  * @param vhod — «вход»: строка
@@ -114914,6 +114928,162 @@ fl_status compiler_flang_imena_pervogo_prohoda(fl_ctx *ctx, fl_value shag,
 fl_status compiler_flang_sobrat_itog(fl_ctx *ctx, fl_value shag,
                                      fl_value razbory, fl_value vhod,
                                      fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Собрать итог связки».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param shag — «шаг»: «Шаг связки»
+ * @param itog — «итог»: «Связывание»
+ * @param rz — «рз»: список: «Разобранное»
+ * @param vhod — «вход»: строка
+ * @param bedy — «беды»: список: «Беда»
+ * @return значение: «Программа с бедами»
+ */
+fl_status compiler_flang_sobrat_itog_svyazki(fl_ctx *ctx, fl_value shag,
+                                             fl_value itog, fl_value rz,
+                                             fl_value vhod, fl_value bedy,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Скрытые файла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param razbor — «разбор»: «Разобранное»
+ * @param prosby — «просьбы»: список: «Просьба»
+ * @return значение: «Скрытые имена»
+ */
+fl_status compiler_flang_skrytye_fayla(fl_ctx *ctx, fl_value razbor,
+                                       fl_value prosby, fl_value *result,
+                                       fl_error *error);
+
+/*
+ * Функция flang «Скрытые в файле».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param svody — «своды»: список: «Скрытые имена»
+ * @param fayl — «файл»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_skrytye_v_fayle(fl_ctx *ctx, fl_value svody,
+                                         fl_value fayl, fl_value *result,
+                                         fl_error *error);
+
+/*
+ * Функция flang «Перехвачен».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param otkuda — «откуда»: список: «Пара имён»
+ * @param skrytye — «скрытые»: список: строка
+ * @param fayl — «файл»: строка
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_perehvachen(fl_ctx *ctx, fl_value otkuda,
+                                     fl_value skrytye, fl_value fayl,
+                                     fl_value imya, fl_value *result,
+                                     fl_error *error);
+
+/*
+ * Функция flang «Беда перехвата».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param f — «ф»: «Значение»
+ * @param fayl — «файл»: строка
+ * @param imya — «имя»: строка
+ * @param otkuda — «откуда»: список: «Пара имён»
+ * @return значение: «Беда»
+ */
+fl_status compiler_flang_beda_perehvata(fl_ctx *ctx, fl_value f, fl_value fayl,
+                                        fl_value imya, fl_value otkuda,
+                                        fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Функция с файлом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param f — «ф»: «Значение»
+ * @param fayl — «файл»: строка
+ * @return значение: «Категорное»
+ */
+fl_status compiler_flang_funkciya_s_faylom(fl_ctx *ctx, fl_value f,
+                                           fl_value fayl, fl_value *result,
+                                           fl_error *error);
+
+/*
+ * Функция flang «Шаг нумерации».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param h — «х»: «Ход нумерации»
+ * @param f — «ф»: «Значение»
+ * @param fayly — «файлы»: список: строка
+ * @return значение: «Ход нумерации»
+ */
+fl_status compiler_flang_shag_numeracii(fl_ctx *ctx, fl_value h, fl_value f,
+                                        fl_value fayly, fl_value *result,
+                                        fl_error *error);
+
+/*
+ * Функция flang «Функции с файлами».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param svyazka — «связка»: «Связывание»
+ * @return значение: список: «Категорное»
+ */
+fl_status compiler_flang_funkcii_s_faylami(fl_ctx *ctx, fl_value svyazka,
+                                           fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Беды перехватов».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param f — «ф»: «Значение»
+ * @param fayl — «файл»: строка
+ * @param skrytye — «скрытые»: список: строка
+ * @param svyazka — «связка»: «Связывание»
+ * @return значение: список: «Беда»
+ */
+fl_status compiler_flang_bedy_perehvatov(fl_ctx *ctx, fl_value f, fl_value fayl,
+                                         fl_value skrytye, fl_value svyazka,
+                                         fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Перехваты функции».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param k — «к»: «Категорное»
+ * @param svyazka — «связка»: «Связывание»
+ * @param svody — «своды»: список: «Скрытые имена»
+ * @return значение: список: «Беда»
+ */
+fl_status compiler_flang_perehvaty_funkcii(fl_ctx *ctx, fl_value k,
+                                           fl_value svyazka, fl_value svody,
+                                           fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Перехваты по функциям».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazka — «связка»: «Связывание»
+ * @param svody — «своды»: список: «Скрытые имена»
+ * @return значение: список: «Беда»
+ */
+fl_status compiler_flang_perehvaty_po_funkciyam(fl_ctx *ctx, fl_value svyazka,
+                                                fl_value svody,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Беды перехвата».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param svyazka — «связка»: «Связывание»
+ * @param razbory — «разборы»: список: «Разобранное»
+ * @return значение: список: «Беда»
+ */
+fl_status compiler_flang_bedy_perehvata(fl_ctx *ctx, fl_value svyazka,
+                                        fl_value razbory, fl_value *result,
+                                        fl_error *error);
 
 /*
  * Функция flang «Теоремы программы».

@@ -121,5 +121,5 @@ name	family	kind	kernel-rule	anchor	status
 М1	М	rule	тождество после переписки допущением|строгий порядок по построению	proof-kernel.flang:2176 «Длина от конструкции»	code-wider
 М2	М	rule	тождество после переписки допущением	proof-kernel.flang:2867 «Свёртка ровно на один»	code
 Кол1	Кол	rule	—	proof-kernel.flang:5914 «Сумма точных сошлась»	code
-Кол2	Кол	rule	—	proof-kernel.flang:6479 «Сумма над отрезком сошлась»	code
+Кол5	Кол	rule	—	proof-kernel.flang:6479 «Сумма над отрезком сошлась»	code
 Кол✗	Кол	ban	тождество после переписки допущением	proof-kernel.flang:5839 «Листья кольца точные», отсутствие случая для листа, который не есть имя, объявленное точным целым	not-in-adr

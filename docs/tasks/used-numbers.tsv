@@ -417,3 +417,6 @@ number	state	title
 1571	rejected	The course measurement version is typed by hand
 5243	done	Exact fraction type arithmetic and literal canon
 1413	done	Long integers in ten print targets
+5771	done	Integrality does not tighten a strict order by one
+7328	done	A free statement over a finite sum has no way to exhaust its cases
+7367	done	Induction in a free statement refuses the nonnegative segment

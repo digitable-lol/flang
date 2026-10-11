@@ -53,6 +53,10 @@ small-reducer.flang кончил кодом 3: не доказано: утвер
                               FLANG_SMALL_REDUCTION_NOT_MEASURED, код 3, 8,5 с
 ```
 
+Шаг 3 повторён 11 октября 2026 — тот же ответ и код 3. Часовой прогон шага 2 не повторялся:
+`flang/proof/check.fscript` и `flang/proof/checker.flang` с тех пор не менялись
+(последняя правка — `f878def96`).
+
 Проверка записи до конца не дошла. Прогон снят рукой на 62 мин 40 с — 35 мин
 28 с своего времени и 27 мин 09 с системного, память ходила между 0,5 и 1,2 ГиБ.
 Проверяющая программа к этому времени насчитала 22 678 746 573 шага, то есть
@@ -68,7 +72,7 @@ small-reducer.flang кончил кодом 3: не доказано: утвер
 `flang/proof/rules-match.fscript` — дают ему `--timeout 14400000`, то есть четыре
 часа. `reduce.fscript` не зовёт никто.
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25.
 
 ## Что должно быть
 
@@ -79,7 +83,9 @@ small-reducer.flang кончил кодом 3: не доказано: утвер
 
 ## Обходной путь
 
-Записи проверяет программа на C: `flang/proof/checker/checker.c`.
+Записи проверяет программа на C: `flang/proof/checker/checker.c`; по ADR-0073 она и есть
+судья — `flang check` сам пишет «независимо, сверщиком, проиграно 2 из 2». Второй сличитель
+записей по ADR-0076 пишется на Lean, а не на flang.
 
 ## Когда задача сделана
 
@@ -99,3 +105,9 @@ small-reducer.flang кончил кодом 3: не доказано: утвер
 и `flang/proof/reduce.fscript` (во втором нет согласия на запуск недоказанной
 программы), общий запуск — `flang/proof/errand.fscript`. Перепечатка не нужна:
 обе программы исполняются через `flang io`.
+
+Следующий шаг: `flang/proof/reduce.fscript`, запись «Errand» (строки 8–9) — дать соседу то же
+согласие `--на-веру`, что стоит у `check.fscript`, чтобы он вообще запускался; затем снять цену
+`checker.flang` прибором `FLANG_WATCH=<файл> FLANG_PULSE=<N>` на `stack.flang`. Проба, которая
+красна сегодня: `bootstrap/flang io flang/proof/reduce.fscript -- flang/proof/examples/stack.flang`
+— `FLANG_SMALL_REDUCTION_NOT_MEASURED`, код 3.

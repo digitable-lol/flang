@@ -45,7 +45,8 @@ $ bootstrap/flang run sum.flang --function '«Ф»' --args '{"н":0}' --trust
 ```
 
 Версия: flang 0.7.25, checker собран из `flang/proof/checker/checker.c` того же
-дерева.
+дерева; шаги 1–3 повторены 11 октября 2026 — тот же ответ, код 1, и строка причины
+стоит в `flang/proof/probes/falsifier/expected-failures.tsv` второй.
 
 Утверждение верно: `9007199254740991 плюс 2` даёт 9007199254740992. Шаг ядра
 тоже верен: точная сумма не меньше суммы доньев, а округление к ближайшему
@@ -73,3 +74,8 @@ $ bootstrap/flang run sum.flang --function '«Ф»' --args '{"н":0}' --trust
 
 `flang/proof/checker/checker.c`, проверка шагов Д3 и Д5. Двоичный компилятора не
 затрагивается.
+
+Следующий шаг: `flang/proof/checker/checker.c`, ветки «Д3» и «Д5» — за 2⁵³−1 сверять дно с
+округлённой суммой в `double` либо отвечать кодом 3; затем убрать строку 2 из
+`flang/proof/probes/falsifier/expected-failures.tsv`. Проба, которая красна сегодня:
+`flang/proof/checker/сверщик sum.flang sum.rec` — «НЕ СОШЛОСЬ … Д3», код 1.

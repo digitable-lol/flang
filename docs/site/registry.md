@@ -73,5 +73,5 @@ and the site build goes red on it instead of reaching the reader.
 
 The check is not a precaution: the fingerprints in the example did part
 from the files once, and there was nobody to see it — no CI job called the
-registry at all (task
-[4909](../tasks/4909-the-registry-resolution-rule-has-no-guard-and-example-fingerprints-rotted.md)).
+registry at all (task 4909, done: the guard
+`scripts/guards/registry-resolution-guard.fscript` and the CI job `registry-resolution`).

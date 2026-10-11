@@ -22,7 +22,7 @@
 Записка «замок без хранилища» — схема 2 замка и запрет чужого в основании.
 Разбор модульности и пакетов — «библиотеки Борхеса», шаг 3.
 **Новые задачи:** [2031](../tasks/2031-no-form-of-dependency-a-registry-delivers-reaches-the-lock.md),
-[4909](../tasks/4909-the-registry-resolution-rule-has-no-guard-and-example-fingerprints-rotted.md),
+4909 (сделана — см. [`docs/tasks/used-numbers.tsv`](../tasks/used-numbers.tsv)),
 [6990](../tasks/6990-the-manifest-drops-the-needs-field-without-a-word.md).
 
 ---

@@ -1,8 +1,10 @@
 /*
- * Сгенерировано flang (бэкенд C, flang/self/emit-c.flang). Не редактировать руками.
+ * Сгенерировано flang (бэкенд C, flang/self/emit-c.flang).
+ * Не редактировать руками.
  * Модуль flang: «Compiler flang».
  * Файл: прогонщик: JSON на входе, JSON на выходе.
- * Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.
+ * Правьте исходник на flang и печатайте заново:
+ * любая правка здесь потеряется.
  */
 #define FL_PROGRAM_CALL compiler_flang_call
 #define FL_PROGRAM_ENTRY compiler_flang_entry

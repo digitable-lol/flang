@@ -77,6 +77,12 @@ $ bootstrap/flang io .../syllogism/sentences/run.fscript --plan Judge -- diplom.
 Слова «средний терм» в наборе нет ни одного раза: `grep -ric средн flang/proof/probes/syllogism/`
 — 0 строк; `grep -c терм …/sentences/translator.flang` — 0.
 
+Снято 2026-10-11 на flang 0.7.25: шаг 3 отвечает тем же текстом (код
+`FLANG_REASONING_DOES_NOT_FOLLOW`, код возврата 1); `grep -ric средн` — ни одного
+файла с вхождением. Ответ приходит двумя строками: первая — `доказано: утверждений 1`,
+вторая — JSON, и текст лежит в поле `error`, а не `result`, так что команда шага 4
+читается как `… | sed -n 2p | python3 -c 'import json,sys;print(json.load(sys.stdin)["error"])'`.
+
 ## Что должно быть
 
 Отказ называет беду поимённо, одной строкой рядом с «НЕ СЛЕДУЕТ»: средний терм рассуждения
@@ -105,8 +111,8 @@ bootstrap/flang io flang/proof/probes/syllogism/sentences/run.fscript --plan Bin
   --max-steps 40000000
 ```
 
-Этот прогон сегодня отвечает `syllogism/sentences: проб 62, разошлось 0`,
-код 0, 43 с. Ключ `--max-steps` обязателен: на 62 текстах предел по умолчанию
+Этот прогон 2026-10-11 отвечает `syllogism/sentences: проб 62, разошлось 0`,
+код 0, 42 с. Ключ `--max-steps` обязателен: на 62 текстах предел по умолчанию
 (10 000 000 шагов) исчерпывается в «Spaced words», нужно между 12 и 14 млн.
 
 ## Где живёт правка
@@ -116,3 +122,11 @@ bootstrap/flang io flang/proof/probes/syllogism/sentences/run.fscript --plan Bin
 `flang/proof/probes/syllogism/sentences/expected.tsv` и новый текст в `texts/`. Переводчик
 лежит вне `flang/self/**` и вне доверенной базы, поэтому перепечатки семени правка не требует:
 двоичный её получает пересборкой `bootstrap`.
+
+## Следующий шаг
+
+`flang/proof/probes/syllogism/sentences/translator.flang`, «Verdict of», ветвь
+«Does not follow»: чистая функция над `список «Judgment»` — найти терм, общий двум
+посылкам, и сказать, распределён ли он хоть в одной; печатать строку рядом с
+«НЕ СЛЕДУЕТ». Проба, которая краснеет сегодня: прогон шага 3 на `diplom.txt` не
+содержит слов «средний терм», и в `expected.tsv` нет строки с ними.

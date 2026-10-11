@@ -415,3 +415,5 @@ number	state	title
 6921	done	docs/ reads as a project diary instead of a manual: layout, classification of every file and plan
 1424	rejected	Site and course pages carry measurements taken by older binaries
 1571	rejected	The course measurement version is typed by hand
+5243	done	Exact fraction type arithmetic and literal canon
+1413	done	Long integers in ten print targets

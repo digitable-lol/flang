@@ -425,3 +425,4 @@ number	state	title
 6131	dropped	The second record checker does not read the derivation block
 6702	dropped	The verdict cache file keeps every binary and evicts nothing
 4909	done	The registry resolution rule has no guard and example fingerprints rotted
+5709	dropped	The stage that eats the print has a cache and it is off

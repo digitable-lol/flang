@@ -18,8 +18,10 @@
 естественности (`FLANG_TRANSFORM_NOT_NATURAL`) и постусловия при функциях на их
 примерах (`FLANG_PROPERTY`), а функторы и моноиды не судит и отвечает кодом 2
 со словами «monoids, functors». Все три программы этой страницы отвечают кодом 2
-<!-- СНЯТО 2026-10-11 список bootstrap/flang check flang/ct/{mon-free-forgetful,maybe-forgetful-adjunction,yoneda-preorder}.flang = 3 -->
-и проходят `test` без единого красного примера. Ведомость `check --proof` у
+и проходят `test` без единого красного примера (прогон 11 октября 2026:
+`bootstrap/flang check` и `bootstrap/flang test` по
+`flang/ct/{mon-free-forgetful,maybe-forgetful-adjunction,yoneda-preorder}.flang`
+— код 2 на каждой и 39/39, 42/42, 17/17 примеров). Ведомость `check --proof` у
 программы с кодом 2 не печатается, поэтому постусловия треугольников видны
 двумя путями: зелёным `test` и красным подлогом.
 

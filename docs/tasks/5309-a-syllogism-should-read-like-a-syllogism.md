@@ -25,7 +25,8 @@
 1. `wc -l flang/proof/probes/syllogism/programs/honest.flang`
 2. `bootstrap/flang io flang/proof/probes/syllogism/run.fscript --plan Binary`
 3. `bootstrap/flang check flang/proof/probes/syllogism/programs/removal-strict.flang --proof`
-4. `bootstrap/flang run-script word:occupancy род закон факт`
+4. Слова — по одному на строку в `flang/scripts/word-occupancy.words` (файл не в дереве,
+   доводами команда их больше не берёт), затем `bootstrap/flang run-script word:occupancy`
 
 ## Что происходит
 
@@ -33,11 +34,12 @@
 $ wc -l flang/proof/probes/syllogism/programs/honest.flang
 23
 $ bootstrap/flang io flang/proof/probes/syllogism/run.fscript --plan Binary
-syllogism: проб 6, разошлось 0                                           код 0
+syllogism: проб 9, разошлось 0                                           код 0
 $ bootstrap/flang check …/programs/removal-strict.flang --proof
-ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 2: доказано 2, условно 0 …        код 0
-$ bootstrap/flang run-script word:occupancy род закон факт
-«род»    голым именем 43 — СЛОМАЕТСЯ столько мест
+… независимо, сверщиком, проиграно 2 из 2 доказанных …                   код 0
+$ bootstrap/flang run-script word:occupancy      (слова: род, закон, факт)
+файлов прочитано: 1380
+«род»    голым именем 47 — СЛОМАЕТСЯ столько мест
 «закон»  ЗАНЯТО: слово уже ключевое — конструкция «lawBlock»; цепочкой 9
 «факт»   голым именем 0 — свободно                                       код 1
 ```
@@ -52,20 +54,23 @@ $ bootstrap/flang run-script word:occupancy род закон факт
 `flang/proof/probes/syllogism/sentences/translator.flang` стоит ПЕРЕД компилятором.
 Что понадобится печати, чтобы его убрать, перечислено в ADR-0050 §9.
 
-Занятость `род` — 43 голых имени в пяти файлах:
-`flang/scripts/link-collision-tree.fscript` (14),
-`scripts/guards/name-collision-guard.fscript` (14),
-`flang/scripts/name-guard.fscript` (9), `fspec/guard.flang` (4),
-`flang/stdlib/registry.flang` (2); три из них — живые сторожа. Ключевое слово в
+Занятость `род` — 47 голых имён; прибор называет первые двенадцать мест
+(все в `flang/scripts/link-collision-tree.fscript`) и «ещё 35», поимённый разбор по
+файлам снят на 0.7.23: `link-collision-tree.fscript`,
+`scripts/guards/name-collision-guard.fscript`, `flang/scripts/name-guard.fscript`,
+`fspec/guard.flang`, `flang/stdlib/registry.flang`; три из них — живые сторожа. Ключевое слово в
 flang не может быть именем, и компилятор говорит это дословно: «это слово занято
 языком, именем оно быть не может». Лечится переименованием в ёлочки, но это 43
 правки в чужом коде за одну сэкономленную строку.
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026. Строка `removal-strict.flang` в
+`expected.tsv` (строка 6) по-прежнему ждёт «доказано 2» в обоих столбцах. Числа
+разделов ниже о наборах `assumptions/` и `sentences/` сняты на 0.7.23; на 0.7.25
+пересчитаны только программы (9) и тексты (62).
 
 ## Что лежит в дереве и зелено
 
-* `flang/proof/probes/syllogism/` — шесть программ против `expected.tsv` в двух
+* `flang/proof/probes/syllogism/` — девять программ против `expected.tsv` в двух
   столбцах: слово в ответе двоичного и слово в ответе компилятора, напечатанного
   в JavaScript (план `JavaScript`, каталог печати — в `PRINTED_COMPILER`).
   Столбцы не слиты нарочно: таблица сверяет две реализации, и расхождение между
@@ -122,7 +127,7 @@ flang не может быть именем, и компилятор говор�
 
 **Слово берётся только после `word:occupancy`.** Есть у слова голые вхождения вне
 проб этой задачи — слово не берётся: ломается каждое такое место. Проба
-различает: `word:occupancy род` печатает 43 и отвечает кодом 1, `факт` — 0.
+различает: `word:occupancy` на слове `род` печатает 47 и отвечает кодом 1, на `факт` — 0.
 
 **Изъятие посылки.** `removal.flang` (посылка снесена, теорема оставлена) обязан
 отвечать кодом 1 «ни одного шага» — отвечает. `removal-strict.flang` обязан
@@ -147,3 +152,11 @@ flang не может быть именем, и компилятор говор�
 (`sh scripts/bootstrap-reprint.sh`). Пробы и таблицы —
 `flang/proof/probes/syllogism/**`, шаги — `.github/workflows/binary.yml`, пример
 — `fspec/spec/`.
+
+**Следующий шаг.** Пункт 2 — `flang/proof/probes/syllogism/expected.tsv`, строка 6:
+решить, что обязан отвечать `removal-strict.flang`, и переписать ожидание; пункты
+1 и 3 — решения владельца в `docs/adr/` (ADR-0057 говорит о печати хода, не о
+рассуждении как файле языка). Проба, которая краснеет сегодня, — не прогон, а
+сама таблица: `grep -n removal-strict flang/proof/probes/syllogism/expected.tsv`
+даёт «доказано 2 | доказано 2», и `--plan Binary` отвечает кодом 0 с этим
+ожиданием.

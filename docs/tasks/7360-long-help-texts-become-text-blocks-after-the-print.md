@@ -2,6 +2,7 @@
 номер: 7360
 заголовок: Длинные справки и шаблоны собираются из кусков `"…\n"`, а не блоками текста
 статус: свободна
+приоритет: P3
 исполнитель: —
 ветка: —
 команда: любая
@@ -30,8 +31,13 @@
 | `scripts/editors/vim-rules.flang` — то же для Vim | 3 | 45 |
 | `flang/self/repl/repl.flang` — `«Справка оболочки»` | 1 | 26 |
 | `flang/test/jargon-guard.test.flang` | 1 | 12 |
-| `flang/scripts/kernel-lines-to-trust.fscript` | 1 | 7 |
-| `scripts/targets/region-in-c-target.fscript`, `flang/self/mcp.flang`, `flang/self/emit-js.flang`, `flang/concurrency/bench/gen.flang` | по 1 | по 5 |
+| `flang/scripts/kernel-lines-to-trust.fscript` | 1 | 8 |
+| `scripts/targets/region-in-c-target.fscript` | 1 | 6 |
+| `flang/self/mcp.flang`, `flang/self/emit-js.flang`, `flang/concurrency/bench/gen.flang` | по 1 | по 5 |
+
+Числа сняты 11 октября 2026 на дереве 1149c78f7 (flang 0.7.25) счётом подряд
+идущих строк вида `"…\n",`; блоков `"""` в `flang/self/cli.flang` и
+`flang/self/repl/repl.flang` ноль.
 
 Первой идёт `«Справка оболочки»`: значение её блока должно побайтово совпасть со
 склейкой 27 кусков (1369 знаков). Шаблоны `emit-rust.flang` и грамматики
@@ -56,3 +62,11 @@
 Подсветка блока на сайте (`docs/site/highlighting.mjs` ищет конец строки по одной
 кавычке) и в строке ввода оболочки (`flang/src/emit/c/flang_repl.c`, раскраска по
 одной строке) — отдельные правки, и первая упирается в запрет роста файлов `.mjs`.
+
+## Следующий шаг
+
+Первой переписать «Справку оболочки» в `flang/self/repl/repl.flang` блоком `"""`,
+снять значение до и после через `bootstrap/flang run … --function «Справка оболочки»` и
+сверить `cmp`. Проба, которая различает работу сегодня:
+`grep -c '"""' flang/self/repl/repl.flang` отвечает 0, а список из 26 кусков на месте.
+Доезжает до двоичного перепечаткой самосборной части.

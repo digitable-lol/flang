@@ -31,20 +31,21 @@ git grep -l 'flang/\(src\|bin\)/[a-z0-9/-]*\.mjs' -- . \
 $ git ls-files 'flang/src/*.mjs' 'flang/bin/*.mjs' | wc -l
 0
 $ git grep -l … | wc -l
-69
+60
 ```
 
-Файлов нет, а вне летописи (задачи, журналы изменений) их называют 69 файлов,
-188 упоминаний — в `docs/`, `docs/adr`, `flang/src/emit/c`, `flang/scripts`,
-`.github/workflows`, `bootstrap`, `scripts/site`, `scripts/guards`,
-`scripts/registry-example`, `flang/src/emit/js`.
+Файлов нет, а вне летописи (задачи, журналы изменений) их называют 60 файлов,
+169 упоминаний (11 октября 2026) — в `docs/adr`, `docs/editors`,
+`docs/examples/frameworks`, `flang/src/emit/*` и их копиях в `bootstrap/`,
+`flang/scripts`, `flang/test`, `.github/workflows`, `scripts/site`,
+`scripts/guards`, `scripts/ledgers`, `scripts/registry-example`, `.ai/`.
 
 Проверка ссылок (`bootstrap/flang run-script links:check`) смотрит только `.md`
 (функция «Markdown дерева»), пропускает цитаты и пропускает целиком файл, у
 которого в первых восьми строках стоит месяц с годом (функция «Дата в шапке»).
 Комментарии в `.flang`, `.c`, `.yml` и датированные отчёты она не видит.
 
-Версия: flang 0.7.24.
+Версия: flang 0.7.25, дерево 1149c78f7.
 
 ## Что должно быть
 
@@ -78,3 +79,12 @@ $ git grep -l … | wc -l
 (функции «Запись о прошлом» и «Markdown дерева») либо отдельный план рядом.
 Правка `flang/src/emit/**` требует перепечатки самосборной части, остальное —
 нет.
+
+## Следующий шаг
+
+Пройти 60 файлов из вывода команды по трём исходам и начать с девяти файлов
+`flang/src/emit/**` и их копий в `bootstrap/`: там комментарии с путями снятых `.mjs`
+просто снимаются. Затем в `scripts/guards/link-guard.fscript`, функция «Markdown
+дерева», добавить к обходу комментарии `.flang`, `.c` и `.yml`. Проба, которая
+краснеет сегодня: вторая команда шагов воспроизведения отвечает 60, а должна называть
+только файлы с явным «удалён» рядом с путём.

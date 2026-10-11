@@ -736,6 +736,7 @@ height
 held
 help
 hid
+hidden
 hide
 hides
 highlight
@@ -1839,6 +1840,7 @@ unstatable
 untied
 until
 untouched
+unused
 unverifiable
 unwatched
 unwritable

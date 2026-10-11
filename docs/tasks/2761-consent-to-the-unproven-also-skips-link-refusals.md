@@ -22,12 +22,12 @@
 
 ## Шаги воспроизведения
 
-Файлы `step-v.flang` и `own-step.flang` из
+Файлы `step-first.flang` и `own-step.flang` из
 `flang/proof/probes/import-helper-binding/programs/`, рядом третий:
 
 ```flang
 модуль «Своя и В»
-  использует «В» из "step-v.flang"
+  использует «В» из "step-first.flang"
 
 тотальная функция «Шаг»
   возвращает строка
@@ -39,14 +39,14 @@
 ```
 $ bootstrap/flang run own-and-v.flang --function «Шаг»
 не доказано: … замечаний проверки 1, первое — FLANG_DUPLICATE_NAME: функция «Шаг»
-объявлена в двух модулях: …/step-v.flang и …/own-and-v.flang — запуск только по
+объявлена в двух модулях: …/step-first.flang и …/own-and-v.flang — запуск только по
 явному согласию: --на-веру                                                код 3
 $ bootstrap/flang run own-and-v.flang --function «Шаг» --на-веру
 на веру: доказанность не считалась — запуск по ключу --на-веру
 "в"                                                                       код 0
 ```
 
-Ответила функция из `step-v.flang`, а не та, что объявлена во входном файле.
+Ответила функция из `step-first.flang`, а не та, что объявлена во входном файле.
 `flang test` и `flang emit` на том же файле отказывают с кодом 1.
 
 Версия: flang 0.7.25 (`bootstrap/flang` из дерева), снято 11 октября 2026.

@@ -975,8 +975,9 @@ c9ada194623f84cf972701a608568544|40|21|8|11|1|flang/concurrency/wire.flang
 901cbe1e264431fc3f9b3c78be0cde39|4|4|0|0|0|flang/core/lexer.flang
 b50fa0f915bcdd3f4ad2d5330a39bec7|32|22|0|10|0|flang/core/parser.flang
 ffc0184f83e59cd8b172ef67b28742d2|4|×|×|×|0|flang/ct/grp-clock-shifts.flang
+a9c20814afb089fb04101b5c3836f1d4|4|×|×|×|0|flang/ct/maybe-forgetful-adjunction.flang
 588c8e29d920e58aad94759543a57ada|0|0|0|0|2|flang/ct/modules/orders.flang
-f7c2a36f3b5d690600431dbbeaeff6f6|1|×|×|×|0|flang/ct/mon-free-forgetful.flang
+4e5cc0938eabdd45f7071c2b65feec09|5|×|×|×|0|flang/ct/mon-free-forgetful.flang
 128489ee024ef84c3f552e6264a968cf|1|×|×|×|0|flang/ct/monoid-and-monad.flang
 096bdeaf265157e0d04c9ff9390d578b|0|×|×|×|3|flang/ct/order-shipment.flang
 fc7a77af11f020be6d3ba57f7efe6909|6|×|×|×|0|flang/ct/pos-approval.flang
@@ -985,6 +986,7 @@ bdff7b7e5851be32fe218a7ca696ebca|2|×|×|×|0|flang/ct/set-mail-routing.flang
 db2407a96916376a0d6e1580c2012df8|0|×|×|×|1|flang/ct/set-product.flang
 e9a3d9a8aa3d7815196676e8b815eb92|0|×|×|×|1|flang/ct/set-pullback.flang
 df8d71ded0766702962164b5cb394f16|3|×|×|×|0|flang/ct/vect-plane.flang
+7725bdbcc815f429157bb76cf545ff19|2|×|×|×|0|flang/ct/yoneda-preorder.flang
 1d006f9b2b52c120f06e942fbf885a82|51|51|0|0|0|flang/experimental/ru-morphology.flang
 886389f8de8cb5fceb9c7cb7130fcdcf|2|2|0|0|0|flang/proof/examples/binder-hides-the-condition.flang
 f76a4dfae4a54bf3ac9b38d1d4237bb2|6|5|0|1|0|flang/proof/examples/binder-wall-map.flang

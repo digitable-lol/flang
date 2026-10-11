@@ -1520,6 +1520,29 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
 
+  # ── СТОРОЖ ТАБЛИЦ: ВЕДОМОСТЬ ПРАВИЛ И ПОТОЛОК ДОВЕРЕННОЙ БАЗЫ (ADR-0097) ──
+  #
+  # `flang/proof/tables-guard.fscript` сверяет ведомость правил с ядром и обоими
+  # сверщиками (С-1), непротиворечивость записи (С-2), отпечаток (С-4), имена
+  # отрезка (С-5) и потолок строк C доверенной базы (С-6). До 11 октября 2026
+  # его не звала ни одна работа: потолок 8527 был пробит на 831 строку, и
+  # увидел это агент, прогнавший сторож руками. Замер 11 октября 2026 на
+  # рабочей машине: 2 мин 10 с.
+  tables-guard:
+    name: tables-guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Build proof checker
+        run: make -C flang/proof/checker
+      - name: Build flang from the seed
+        run: make -C bootstrap -j4
+      - name: Check the rule tables and the trusted base ceiling
+        run: bootstrap/flang io flang/proof/tables-guard.fscript --max-steps 4000000000 --timeout 900000
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+
   # ── СЛИЧИТЕЛЬ ПЕРЕВОДА: ПРОТОКОЛ ПЕЧАТНИКА ПЕРЕИГРЫВАЕТСЯ НА C ──────────────
   #
   # ADR-0030, задача 1401: печатник C ведёт протокол перевода, и отдельная

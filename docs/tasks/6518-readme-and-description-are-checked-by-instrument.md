@@ -30,7 +30,7 @@
 
 ```
 $ grep -n 'записать нечем' docs/DESCRIPTION.md
-1340:  side effect или о параллельном исполнении записать нечем: `обеспечивает`
+1657:  side effect или о параллельном исполнении записать нечем: `обеспечивает`
 $ grep -cE 'knows nothing about|Логика не знает о них ничего' README.md docs/README.ru.md
 README.md:0
 docs/README.ru.md:0
@@ -39,17 +39,18 @@ $ grep -n 'DESCRIPTION' scripts/guards/published-vs-tree.sh scripts/guards/prose
 ```
 
 Утверждения этой страницы не сверяет никто. Числа у неё держать нечем и не
-нужно: вне оград кода там 38 строк с числами, и все они — коды возврата,
-литералы языка и разрядность, а не счёт по дереву; примет «СНЯТО» ноль, и
-`scripts/guards/prose-numbers-guard.fscript` (план `Check`, код 0) читает только
-числа с приметой. Работа `published-check` файла `.github/workflows/binary.yml`
+нужно: вне оград кода там 71 строка с числами (11 октября 2026), и все они —
+коды возврата, литералы языка и разрядность, а не счёт по дереву; примет замера
+ноль, и `scripts/guards/prose-numbers-guard.fscript` (план `Check`, код 0)
+читает только числа с приметой. Работа `published-check` файла `.github/workflows/binary.yml`
 зовёт `scripts/guards/published-vs-tree.sh` шесть раз (`--числа`, `--выпуск`,
 `--карта`, `--команды`, `--проза`, `--перепись`), и `docs/DESCRIPTION.md` ни в
 одном разделе не читается: `--проза` читает
 `docs/repository-layout{,.ru}.md`, `docs/ROADMAP.md`, `docs/site/index{,.ru}.md`,
 `docs/site/proofs{,.ru}.md` и `docs/site/learning.ru.md`.
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, дерево 1149c78f7; перепись `docs/DESCRIPTION.md` после
+0.7.23 строку сохранила, только сдвинула её с 1340 на 1657.
 
 ## Что должно быть
 
@@ -75,3 +76,10 @@ $ grep -n 'DESCRIPTION' scripts/guards/published-vs-tree.sh scripts/guards/prose
 ## Где живёт правка
 
 `docs/DESCRIPTION.md`, строка из шага 1 и соседние. Перепечатка не нужна.
+
+## Следующий шаг
+
+Переписать абзац `docs/DESCRIPTION.md` у строки 1657 по замерам задач 1404–1406 и
+положить программу замера 1404 (постусловие свёртки о последовательности шагов) в
+`docs/examples/` с прогоном `bootstrap/flang check --proof`, код 0. Проба, которая
+краснеет сегодня: `grep -c 'записать нечем' docs/DESCRIPTION.md` отвечает 1.

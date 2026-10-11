@@ -35,7 +35,9 @@ $ grep -c 'memory-limit' docs/site/cli.ru.md
 4                                                           код 0
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, дерево 1149c78f7; прогон 11 октября 2026 отвечает теми же
+числами, записи о пределе памяти стоят в `flang/scripts/cli-keys-debt.json`
+строками 40–41.
 
 Ключ знают двоичный и страницы команд: `flang --предел-памяти`/`--memory-limit`
 разбирается в `flang/src/emit/c/flang_cli.c`, справка называет его числом
@@ -68,3 +70,10 @@ $ grep -c 'memory-limit' docs/site/cli.ru.md
 
 `flang/self/cli.flang`; разбор ключа в двоичном — `flang/src/emit/c/flang_cli.c`.
 Требует перепечатки самосборной части.
+
+## Следующий шаг
+
+В `flang/self/cli.flang` рядом с восемью местами `step-limit` завести разбор
+`--memory-limit`/`--предел-памяти` с примерами на оба написания, букву множителя и отказ
+на «lots», и снять строки 40–41 из `flang/scripts/cli-keys-debt.json`. Проба, которая
+краснеет сегодня: шаг 1 отвечает 0.

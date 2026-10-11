@@ -631,6 +631,7 @@ floor
 fmath
 fold
 folds
+follow
 follows
 for
 foreign
@@ -1551,6 +1552,7 @@ six
 sixths
 size
 sized
+skills
 skip
 skips
 slashes

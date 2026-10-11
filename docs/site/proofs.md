@@ -107,13 +107,15 @@ The checker itself has a second opinion. A second reader of the same record,
 written separately in Lean 4 (`flang/proof/checker/second/`, built by `lean` and
 `leanc`, not by `cc` and not by the compiler), gives its own verdict on every
 block of the record, and `bootstrap/flang run-script checker:second` runs both
-over every record of the probes and forgeries and compares the codes. Run of
-11 October 2026 on the tree `77cdc709b`: 686 records, 52 without a source in
-the tree, 634 compared, 7 disagreements — all seven are records of rules the C
-checker learned that same day and the Lean reader has not yet, and each one is
-printed, not hidden. A forged copy of an honest record fed to both is refused by
-both with code 1. A disagreement is a finding; neither implementation is edited
-to match the other (ADR-0096).
+over every record of the probes and forgeries and compares the codes. Runs of
+11 October 2026 on the corpus of `dev` `8897f2350`: 686 records, 52 without a
+source in the tree, 634 compared. The first run gave 7 disagreements — all
+seven were records of rules the C checker had learned that same day and the Lean
+reader had not — and each one was printed, not hidden; the Lean reader was then
+taught from the record format description, not from the C code, and the second
+run gave 0 disagreements. A forged copy of an honest record fed to both is
+refused by both with code 1. A disagreement is a finding; neither
+implementation is edited to match the other's answer (ADR-0096).
 
 The price: without the excluded middle some classical statements cannot be
 proved. For programs this rarely matters: programs compute.

@@ -41,7 +41,10 @@ flang/self/proof-kernel.flang:1
 flang/self/totality.flang:11
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026. Те же числа: `|нат|` — 1, 1 и 11; в
+`flang/proof/checker/checker.c` слово стоит в перечне имён строки 367, в
+`flang/proof/lean/RecordReader.lean` — 5 упоминаний; файлов под `flang/proof`, где
+`нат` стоит отдельным словом, — 64.
 
 ## Что должно быть
 
@@ -74,14 +77,14 @@ flang/self/totality.flang:11
   `flang/self/totality.flang` (вместе с примерами на `"|нат|"`);
 - списки числовых имён в `flang/self/io.flang` и `flang/self/emit-js.flang`;
 - `flang/scripts/word-guard.fscript`, `flang/scripts/emptiness-guard.fscript`;
-- `flang/proof/checker/checker.c`, перечень имён в строке 658: правка доверенной
+- `flang/proof/checker/checker.c`, перечень имён в строке 367: правка доверенной
   базы, нужно отдельное решение владельца;
 - таблица `flang/proof/tables/segments.tsv` (строка `нат`) — её и массив ядра
   `flang/proof/tables-guard.fscript` сличает в обе стороны, поэтому снимать
   имя надо из обеих сразу;
 - второй сверщик на Lean: тот же перечень имён в
-  `flang/proof/lean/RecordReader.lean` (строка 436) и упоминания в
-  `Record.lean` и `Rules.lean`;
+  `flang/proof/lean/RecordReader.lean` (функция «натуральноеИмя», строка 399) и
+  упоминания в `Record.lean` и `Rules.lean`;
 - пробы и корпус, где `нат` стоит нарочно: 64 файла под `flang/proof` (три
   файла Lean выше в их числе), из них 9 записей, привязанных к sha256 исходника; список
   снимается командой
@@ -90,3 +93,10 @@ flang/self/totality.flang:11
   `recursion-step-grows`, все семь пар `tests/records/case-split-segment/`.
 
 Правка в `flang/self/**` требует перепечатки самосборной части.
+
+**Следующий шаг.** Решение владельца о сроке (0.8.0 или перед 1.0), затем перечни
+`"|неотрицательное|нат|…|"` в `flang/self/types.flang`, `flang/self/proof-kernel.flang`
+и `flang/self/totality.flang` — вместе с `checker.c:367`, `RecordReader.lean:399` и
+`flang/proof/tables/segments.tsv`. Проба, которая краснеет сегодня, —
+`bootstrap/flang check nat.flang`: «проверено … замечаний нет», код 0 вместо
+`FLANG_UNKNOWN_NAME`.

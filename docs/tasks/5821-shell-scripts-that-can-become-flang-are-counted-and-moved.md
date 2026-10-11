@@ -1,6 +1,6 @@
 ---
 номер: 5821
-заголовок: В scripts/ остаётся 9 скриптов оболочки, хотя скрипты дерева должны быть планами на flang
+заголовок: В scripts/ остаётся 8 скриптов оболочки, хотя скрипты дерева должны быть планами на flang
 статус: свободна
 приоритет: P2
 исполнитель: —
@@ -11,7 +11,7 @@
 нужность: требование владельца — в дереве только fscript, без скриптов оболочки
 ---
 
-# 5821. В scripts/ остаётся 9 скриптов оболочки, хотя скрипты дерева должны быть планами на flang
+# 5821. В scripts/ остаётся 8 скриптов оболочки, хотя скрипты дерева должны быть планами на flang
 
 Уклад переноса: старый `.sh` снимается, план зовётся из того же ярлыка, хука
 или работы CI, равенство показывается парой прогонов на одних входах, и у плана
@@ -28,7 +28,6 @@
 $ git ls-files scripts | grep '\.sh$'
 scripts/bootstrap-reprint.sh
 scripts/guards/bad-octet-guard.sh
-scripts/guards/hand-written-lists.sh
 scripts/guards/module-origin-guard.sh
 scripts/guards/one-string-measure-guard.sh
 scripts/guards/overlong-string-guard.sh
@@ -36,10 +35,12 @@ scripts/guards/published-vs-tree.sh
 scripts/targets/identical-declarations.sh
 scripts/targets/target-collisions.sh
 $ git ls-files | grep -c '\.sh$'
-45
+37
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026. `scripts/guards/hand-written-lists.sh` с
+прошлого замера перенесён на план `scripts/guards/hand-written-lists.fscript`
+(коммит `964aab0c3`) — укладом, описанным выше.
 
 Что делать с каждым:
 
@@ -56,10 +57,9 @@ $ git ls-files | grep -c '\.sh$'
    — в план.
 3. `scripts/targets/identical-declarations.sh` — в план, без `jq` и без
    node-библиотеки замыкания.
-4. Шесть проверок в `scripts/guards/`: `bad-octet-guard.sh`,
-   `hand-written-lists.sh`, `module-origin-guard.sh`,
-   `one-string-measure-guard.sh`, `overlong-string-guard.sh`,
-   `published-vs-tree.sh`.
+4. Пять проверок в `scripts/guards/`: `bad-octet-guard.sh`,
+   `module-origin-guard.sh`, `one-string-measure-guard.sh`,
+   `overlong-string-guard.sh`, `published-vs-tree.sh`.
 
 Чего не хватает в `flang io`, чтобы перенос шёл дальше: ключ, сужающий журнал
 поручений; проброс чужого кода возврата; слияние потоков потомка.
@@ -87,3 +87,10 @@ $ git ls-files | grep -c '\.sh$'
 `scripts/reading.fscript`, `scripts/rules.fscript`. Проброс кода возврата и
 слияние потоков — в `flang/src/emit/c/flang_repl.c` (хозяин `flang io`),
 доезжает перепечаткой. После переноса переснять `docs/tree-inventory.md`.
+
+**Следующий шаг.** Самый короткий перенос — `scripts/guards/module-origin-guard.sh`
+(ярлык `module-origin:check` в `.flangrc`, строка 40): план рядом, пара прогонов,
+проба на подлоге, снятие `.sh`. Проба, которая краснеет сегодня, —
+`git ls-files scripts | grep -c '\.sh$'` даёт 8, а названных исключений в этой
+задаче пока ноль; строка 107 `scripts/bootstrap-reprint.sh` по-прежнему указывает
+на снятый `scripts/bootstrap-c.sh`.

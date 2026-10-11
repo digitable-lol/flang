@@ -40,24 +40,26 @@ ls docs/site/*.flang
 $ git ls-files 'docs/site/*.mjs' 'flang/concurrency/bench/*.mjs' | wc -l
 14
 $ grep -an 'node ' .github/workflows/pages.yml
-122:        run: node scripts/site/build-changelog-page.mjs
-141:        run: node docs/site/build.mjs --check
-158:          if node docs/site/build.mjs --check > "$RUNNER_TEMP/probe.out" 2>&1; then
-176:        run: node docs/site/build.mjs
+125:        run: node scripts/site/build-changelog-page.mjs
+191:        run: node docs/site/build.mjs --check
+202:          if node docs/site/build.mjs --check > "$RUNNER_TEMP/probe.out" 2>&1; then
+220:        run: node docs/site/build.mjs
 $ grep -n ' = node docs/site' .flangrc
-141:script.site:build = node docs/site/build.mjs
-142:script.site:check = node docs/site/build.mjs --check
-146:script.surfaces:run = node docs/site/surfaces-run.mjs
-147:script.surfaces:check = node docs/site/surfaces-run.mjs --check
-149:script.numbers:build = node docs/site/site-numbers.mjs --write
-150:script.numbers:check = node docs/site/site-numbers.mjs --check
+181:script.site:build = node docs/site/build.mjs
+182:script.site:check = node docs/site/build.mjs --check
+188:script.surfaces:run = node docs/site/surfaces-run.mjs
+189:script.surfaces:check = node docs/site/surfaces-run.mjs --check
+191:script.numbers:build = node docs/site/site-numbers.mjs --write
+192:script.numbers:check = node docs/site/site-numbers.mjs --check
 $ ls docs/site/*.flang
 docs/site/build.flang  docs/site/contrast-guard.flang  docs/site/diagram.flang
 docs/site/highlighting.flang  docs/site/markdown.flang  docs/site/numbers.flang
 docs/site/search.flang  docs/site/site-numbers.flang  docs/site/sitemap.flang
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026. Файлов те же 14, программ на flang
+рядом те же девять; `flang/concurrency/bench/assemble.sh` (строка 25) по-прежнему
+зовёт отсутствующий `build.mjs`.
 
 Шесть коротких команд — `site:build`, `site:check`, `surfaces:run`,
 `surfaces:check`, `numbers:build`, `numbers:check` — зовут Node. Программы на
@@ -124,3 +126,9 @@ $ grep -c ' = node docs/site' .flangrc
 
 Отдельная задача, здесь не решается: оснастка в `scripts/`, `flang/scripts/` и
 `flang/test/` — задача 0049; измеренные числа сайта устарели — задача 0044.
+
+**Следующий шаг.** Первая пара — `docs/site/build.flang` против `docs/site/build.mjs`:
+сверить вывод и код `--check` на дереве и на подложенной ошибке, переключить
+`script.site:check` (`.flangrc`, строка 182) и шаги 191–220 `pages.yml`. Проба,
+которая краснеет сегодня, — `git ls-files 'docs/site/*.mjs' 'flang/concurrency/bench/*.mjs' | wc -l`
+даёт 14, `grep -ac 'node ' .github/workflows/pages.yml` — 4.

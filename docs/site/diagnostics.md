@@ -189,7 +189,7 @@ FLANG_LEX в файле lex.flang, строка 5, столбец 3: не зак
 | `FLANG_AMBIGUOUS_NAME` | two imports bring the same name | drop one import or narrow it with `только` |
 | `FLANG_BAD_NAME` | the name is not written the way names are written | rename: function names go in guillemets, parameters are plain words |
 | `FLANG_NAME_TAKEN` | the name is used by another declaration | pick another name |
-| `FLANG_DUPLICATE_NAME` | the same name is declared twice in one place | remove the second declaration |
+| `FLANG_DUPLICATE_NAME` | the same name is declared twice: in one place or in two modules of one program, including a namesake helper of an imported function hidden by an `only` list | remove the second declaration, list the helper in `only` or rename |
 | `FLANG_IMPORT_NOT_FOUND` | the imported module was not found | check the module name and the path in `из "…"` |
 | `FLANG_IMPORT_CYCLE` | modules import each other in a circle | move the shared part into a third module |
 | `FLANG_IMPORT_AMBIGUOUS` | one name comes from two modules | narrow the import with `только` |

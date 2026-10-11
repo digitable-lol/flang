@@ -53,7 +53,7 @@ use-fmath.flang: не проверено — замечаний 1               
 ```
 
 `Fmath` — единственный модуль библиотеки, который держит отдельные `утверждение` (их четыре);
-остальные 52 модуля не держат ни одного. Именно он и есть «проверялка с аксиомами», за которой
+остальные 54 модуля не держат ни одного. Именно он и есть «проверялка с аксиомами», за которой
 профиль `mathematician` берут, и именно его этот профиль отказывается ввозить.
 
 ```
@@ -79,13 +79,17 @@ $ flang new proba2 && ls -a proba2
 
 | что считали | число |
 | --- | --- |
-| модулей в `flang/stdlib` | 53 |
+| модулей в `flang/stdlib` | 55 |
 | профилей в `flang/stdlib/profiles.flangrc` | 3 |
-| модулей в объединении трёх профилей | 51 — вне всех `Fmath` и `Samples` |
+| модулей в объединении трёх профилей | 51 — вне всех `Fmath`, `Samples`, `TLS client`, `Certificate path` |
 | проверок и сторожей, которые читают `profiles.flangrc` | 0 |
 | ключей, которые называет `flang --help` | 0 из 16 |
 
-Версия: `flang 0.7.23`.
+Версия: flang 0.7.25, прогон 11 октября 2026. Строка `profile.mathematician` в
+`flang/stdlib/profiles.flangrc` называет 13 модулей, `Fmath` среди них нет; обеспечение
+«there are exactly thirteen keys» стоит в `scripts/flangrc.fscript`, строка 112;
+`scripts/guards/profiles-guard.fscript` в дереве нет; `flang new proba2` по-прежнему
+кладёт `README.md`, `flang.package`, `fspec`, `proba2.flang` и не кладёт `.flangrc`.
 
 ## Что должно быть
 
@@ -162,3 +166,11 @@ flang: модуль «Fmath» библиотеки не входит в проф
 Первые шесть доезжают до двоичного быстрым пересевом: ни один не трогает `flang/self/**`.
 Строка `profile = programmer` в `flang new` живёт в `flang/src/emit/c/flang_repl.c` рядом с
 остальными файлами нового проекта — тоже без перепечатки самосборной части.
+
+**Следующий шаг.** `flang/stdlib/profiles.flangrc`, строка 1 — дописать `Fmath` в
+`profile.mathematician`; затем новый `scripts/guards/profiles-guard.fscript` с планами
+`Проверка` и `Подлог`. Проба, которая краснеет сегодня, — шаг 2 воспроизведения:
+`flang check use-fmath.flang` при `profile = mathematician` отвечает «модуль «Fmath»
+библиотеки не входит в профиль», код 1; четыре модуля библиотеки (`Fmath`,
+`Samples`, `TLS client`, `Certificate path`) не входят ни в один профиль, и ни один
+сторож этого не видит.

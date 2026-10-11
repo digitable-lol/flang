@@ -34,16 +34,16 @@ grep -ac "fl_trampoline\|for (;;)" scripts/seed/new-binary-acceptance.fscript
 
 ```
 $ grep -ac "fl_trampoline" bootstrap/compiler_flang.c
-125
+132
 $ grep -ac "for (;;)" bootstrap/compiler_flang.c
-228
+238
 $ grep -ac "fl_post" bootstrap/compiler_flang.c
-3312
+3451
 $ grep -ac "fl_trampoline\|for (;;)" scripts/seed/new-binary-acceptance.fscript
 0
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026.
 
 Хвостовой вызов печатается в C батутом или циклом и стека не занимает. Стоит
 функции получить постусловие, которое считается при работе, — она печатается
@@ -51,8 +51,9 @@ $ grep -ac "fl_trampoline\|for (;;)" scripts/seed/new-binary-acceptance.fscript
 расходовать стек. После пересборки семени (bootstrap regeneration) это видно в
 `bootstrap/compiler_flang.c` обычным `grep`, но план «Accept» в
 `scripts/seed/new-binary-acceptance.fscript` принимает двоичный по шести
-приметам (функция «All signs»: Names, Condition, Progress, Rules, Types, Live), и
-этих чисел среди них нет.
+приметам (функция «All signs», строка 378: Names, Condition, Progress, Rules, Types,
+Live), и этих чисел среди них нет; объявление короткой команды в строке 475 так и
+говорит — «по шести приметам».
 
 ## Что должно быть
 
@@ -95,3 +96,9 @@ bootstrap/flang run-script binary:acceptance
 приметам» станет «по семи»); сама короткая команда объявлена строкой
 `script.binary:acceptance` в `.flangrc`.
 Это скрипты: двоичный читает их с диска, пересборка семени не нужна.
+
+**Следующий шаг.** `scripts/seed/new-binary-acceptance.fscript`, функция «All signs»
+(строка 378): седьмая примета — три счёта по тексту `bootstrap/compiler_flang.c`
+«было и стало» и поимённый список функций без батута. Проба, которая краснеет
+сегодня, — `grep -ac "fl_trampoline\|for (;;)" scripts/seed/new-binary-acceptance.fscript`
+даёт 0: приёмка этих слов не знает.

@@ -27,7 +27,7 @@
 $ bootstrap/flang run-script guards:check
 файлов проверок «*.test.mjs» в дереве 3; заводятся 3; НЕ ЗАВОДЯТСЯ 0; досмотреть не удалось 0     код 0 за 15 с
 $ grep -oE '(bootstrap/flang io|node|sh) [^ =]+' .flangrc | awk '{print $NF}' | sort -u | wc -l
-111
+132
 $ sed -i '1s/^/СЛОМАНО /' scripts/guards/homebrew-formula-guard.fscript
 $ bootstrap/flang run-script guards:check
 файлов проверок «*.test.mjs» в дереве 3; заводятся 3; НЕ ЗАВОДЯТСЯ 0; досмотреть не удалось 0     код 0
@@ -36,12 +36,15 @@ $ bootstrap/flang run-script guards:check
 Объявление ярлыка в самом сценарии (функция «Объявление короткой команды
 guards:check» в `flang/scripts/guards-start.fscript`) обещает: «каждый файл
 проверок дерева ЗАВОДИТСЯ; не завёлся — назван поимённо и дословно». Отбор в том
-же сценарии идёт только по образцу `*.test.mjs`, поэтому из 111 файлов команд,
+же сценарии идёт только по образцу `*.test.mjs`, поэтому из 132 файлов команд,
 стоящих за ярлыками `.flangrc`, просмотрены три. Обратная проба это и
 показывает: сторож на `.fscript`, нарочно сломанный так, что не заводится, не
 назван, и ярлык по-прежнему отвечает кодом 0.
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026. Обратная проба с порчей
+`homebrew-formula-guard.fscript` на этом дереве не повторялась: отбор по `*.test.mjs`
+виден в самом сценарии (`flang/scripts/guards-start.fscript`, примеры в строках
+13–38), и ярлык (`.flangrc`, строка 213) зовёт его без доводов.
 
 ## Что должно быть
 
@@ -66,3 +69,9 @@ guards:check» в `flang/scripts/guards-start.fscript`) обещает: «каж
 `flang/scripts/guards-start.fscript` (отбор файлов по образцу `*.test.mjs`,
 строка итога и функция объявления ярлыка), запись `script.guards:check` в
 `.flangrc`. Перепечатка не нужна.
+
+**Следующий шаг.** `flang/scripts/guards-start.fscript`: отбор файлов по образцу
+`*.test.mjs` заменить списком файлов команд из `.flangrc`, строку итога и
+объявление ярлыка переписать по охвату. Проба, которая краснеет сегодня, —
+`bootstrap/flang run-script guards:check`: «файлов проверок «*.test.mjs» в дереве
+3; заводятся 3», тогда как файлов команд в `.flangrc` — 132.

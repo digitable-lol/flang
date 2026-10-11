@@ -53,11 +53,13 @@ $ git add -f .flang-storozh-tracked/проба.flang
 $ git status --short | grep storozh
 A  ".flang-storozh-tracked/\320\277\321\200\320\276\320\261\320\260.flang"
 $ bootstrap/flang io ... --plan Проверка; echo $?                      (та же времянка, но в индексе)
-забытых времянок проверок нет: путей просмотрено 1
+забытых времянок проверок нет: путей просмотрено 5
                                                                         код 0
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, дерево 1149c78f7; прогон 11 октября 2026 повторяет оба
+ответа дословно, а в `.githooks/pre-commit` по-прежнему два плана — `no-growth`
+и `lint-growth`.
 
 Один и тот же файл на одном и том же месте: пока он неотслеживаемый — **код 1** и
 путь; стоит взять его в индекс — **код 0** и «забытых нет». Это не ошибка сторожа,
@@ -143,3 +145,11 @@ $ git -c user.name='X' -c user.email='x@x' commit -m 'test(probe): a stray must 
 `bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check`
 краснеют, пока примета, число в прозе рядом с ней и таблица описи
 (`bootstrap/flang run-script inventory:languages`) не поправлены вместе.
+
+## Следующий шаг
+
+В `scripts/guards/stray-temporaries-guard.fscript` рядом с двумя поручениями
+`git ls-files --others` (строки 10–17) добавить третье —
+`git diff --cached --name-only --diff-filter=A` — и влить его пути в тот же перечень;
+затем одна строка зова в `.githooks/pre-commit`. Проба, которая краснеет сегодня:
+шаг 2 — времянка в индексе, а сторож отвечает «забытых времянок проверок нет», код 0.

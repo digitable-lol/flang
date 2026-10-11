@@ -2,16 +2,12 @@
   использует «Rules» из "../rules.fscript"
   использует «Inquiry» из "../inquiry.fscript"
   использует «Reading» из "../reading.fscript"
-  использует «Seed runtime is source» из "seed-runtime-is-source.fscript" только «Runtime files», «Seed path», «Source path», «Opening», «Position», «Opened», «Found», «Openings», «Positions», «Header end»
+  использует «Seed runtime is source» из "seed-runtime-is-source.fscript" только «Root», «Runtime files», «Seed path», «Source path», «Opening», «Position», «Opened», «Found», «Openings», «Positions», «Header end»
   использует «Lists» только «Соединить списки»
 
 объект «Input»
   «hash»: строка
   «path»: строка
-
-тотальная функция «Root»
-  возвращает строка
-  "../.."
 
 тотальная функция «Fingerprint»
   возвращает строка

@@ -160,7 +160,8 @@
    "",
    "Проверка заведена не впрок: отпечатки в примере однажды разошлись с",
    "файлами, и увидеть это было некому — реестр не звала ни одна работа сборки",
-   "(задача [4909](../tasks/4909-the-registry-resolution-rule-has-no-guard-and-example-fingerprints-rotted.md)).",
+   "(задача 4909, сделана: сторож `scripts/guards/registry-resolution-guard.fscript`",
+   "и работа CI `registry-resolution`).",
    ""]
 
 тотальная функция «Вступление по-английски»
@@ -235,8 +236,8 @@
    "",
    "The check is not a precaution: the fingerprints in the example did part",
    "from the files once, and there was nobody to see it — no CI job called the",
-   "registry at all (task",
-   "[4909](../tasks/4909-the-registry-resolution-rule-has-no-guard-and-example-fingerprints-rotted.md)).",
+   "registry at all (task 4909, done: the guard",
+   "`scripts/guards/registry-resolution-guard.fscript` and the CI job `registry-resolution`).",
    ""]
 
 тотальная функция «Вступление»

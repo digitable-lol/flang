@@ -28,7 +28,10 @@
 $ clang -std=c99 -Wall -Wextra -Werror -pedantic -fsyntax-only bootstrap/*.c
                                                                     код 0, 11,8 с
 $ grep -rn 'fsanitize\|cppcheck\|clang-tidy' --exclude-dir=.git --exclude-dir=docs .
-flang/proof/checker/Makefile:7:	$(CC) -std=c99 -Wall -Wextra -pedantic -g -O1 -fsanitize=address,undefined -o $@ $<
+flang/foreign/c/run.fscript:578:      "cc -std=c99 -O0 -w -fsanitize=undefined -fno-sanitize-recover=all …
+flang/proof/checker/Makefile:12:	$(CC) -std=c99 -Wall -Wextra -pedantic -g -O1 -fsanitize=address,undefined -o $@ $<
+scripts/targets/target-canons.tsv:4:c	clang-tidy	356
+scripts/targets/target-canons.tsv:8:cpp	clang-tidy	72
                                                                     код 0
 $ grep -rn 'сверщик-san' --exclude-dir=.git .
 .gitignore:140:flang/proof/checker/сверщик-san
@@ -54,12 +57,17 @@ $ command -v cppcheck clang-tidy gcc clang
 /usr/bin/cppcheck /usr/bin/clang-tidy /usr/bin/gcc /usr/bin/clang   код 0
 ```
 
-Прогон под sanitizer в дереве ЕСТЬ — но он один, и его не зовёт никто. Цель
+Прогон под sanitizer в дереве ЕСТЬ — но его не зовёт никто. Цель
 `сверщик-san` в `flang/proof/checker/Makefile` собирает проверяющую программу с
 `-fsanitize=address,undefined`; на неё не ссылается ни `.flangrc`, ни одна
 работа в `.github/`, и в `.gitignore` она стоит только как имя двоичного. Ни для
-двоичного `bootstrap/flang`, ни для напечатанного C такой цели нет вовсе.
-cppcheck и clang-tidy не зовёт никто и нигде, хотя оба стоят на машине.
+двоичного `bootstrap/flang`, ни для напечатанного C такой цели нет вовсе. Что
+прибавилось к 11 октября 2026: чужой корпус C (`flang/foreign/c/run.fscript`) собирается с
+`-fsanitize=undefined` — но это проверка чтения чужого C, а не нашего; и канон целей
+(ADR-0081, `scripts/targets/target-canons.fscript`, работа `target-canons.yml`) гоняет
+`clang-tidy` по напечатанным образцам C и C++ и держит потолок находок — 356 для `c` и 72 для
+`cpp` в `scripts/targets/target-canons.tsv`. По рукописному C (`bootstrap/*.c`,
+`flang/src/emit/c/*.c`) cppcheck и clang-tidy по-прежнему не зовёт никто.
 
 Первая находка видна уже этой целью, без новой правки: на одном и том же файле
 `-O2 -Werror` молчит, а `-O1` с sanitizer предупреждает — `checker.c:50`,
@@ -74,7 +82,8 @@ cppcheck и clang-tidy не зовёт никто и нигде, хотя оба
 `_POSIX_C_SOURCE` стоит в трёх файлах рантайма и в
 `flang/proof/checker/checker.c`; в последнем он без парного `_DARWIN_C_SOURCE`.
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25 (шаги 1, 4 и 6 повторены 11 октября 2026: clang за 12,3 с без ошибок,
+`сверщик-san` — то же одно предупреждение `checker.c:50`; `cc` — gcc 15.2.0, clang 21.1.8).
 
 ## Что должно быть
 
@@ -95,7 +104,8 @@ cppcheck и clang-tidy не зовёт никто и нигде, хотя оба
    основным (`cc` → gcc 15.2.0), вторым остаётся clang. Расхождения в
    предупреждениях названы файлом и строкой.
 3. cppcheck или clang-tidy прогнан по `bootstrap/*.c` и `flang/src/emit/c/*.c`;
-   находки разобраны.
+   находки разобраны (по напечатанному C и C++ `clang-tidy` уже гоняет канон целей — 356 и 72
+   находки под потолком; разобрать их — тоже сюда).
 4. Проверено прогоном или чтением кода печати: знаковость `char`, размеры
    `int` и `long`, порядок вычисления аргументов, строгое совмещение указателей.
 5. Макросы видимости сверены для glibc, musl и Darwin; для `checker.c` решено,
@@ -111,3 +121,8 @@ cppcheck и clang-tidy не зовёт никто и нигде, хотя оба
 (быстрый пересев семени). Находки в напечатанном — `flang/self/emit-c.flang`
 (перепечатка самосборной части). Ярлык — `.flangrc`; цель sanitizer для
 проверяющей программы уже лежит в `flang/proof/checker/Makefile`.
+
+Следующий шаг: `.flangrc` — короткая команда, которая зовёт `make -C flang/proof/checker
+сверщик-san` и собирает `bootstrap/flang` с `-fsanitize=undefined,address`, затем `check` и `test`
+по `flang/stdlib` этим двоичным (пункты 1 и 7). Проба, которая красна сегодня: `grep -n 'san'
+.flangrc` молчит — цель `сверщик-san` не зовёт ни ярлык, ни CI.

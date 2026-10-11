@@ -36,6 +36,9 @@ $ grep -c 'bottle' packaging/homebrew/flang.rb
 0                                                               код 1
 ```
 
+Прогон 11 октября 2026 на дереве 1149c78f7 отвечает так же; шаг 4 (время
+шага «Update formula» в прогоне выпуска) без сети не повторялся.
+
 Плагин знает одно имя архива и один путь — `make` с `-Werror`. Шаг «Update
 formula» (это `brew install --build-from-source`) на `macos-latest` занимает
 около 3,5 мин; плюс `brew install gnu-tar` и скачивание. Формула не несёт блока `bottle`,
@@ -91,3 +94,9 @@ macOS, бутылки — вложениями выпуска КРАНА, бло
 (коммит и push в `digitable-lol/asdf-flang` — руками владельца); при бутылках —
 `packaging/homebrew/flang.rb`, сабмодуль `packaging/homebrew-tap`,
 `.github/workflows/release.yml`. Перепечатка не нужна.
+
+Следующий шаг — `packaging/asdf/bin/download`: узнать тройку через `uname -s` и
+`uname -m` (`arm64` → `aarch64`), качать `flang-<версия>-<ось>-<арх>.tar.gz` и
+`SHA256SUMS`, сверять хеш, откатываться на архив C в трёх названных случаях;
+ждёт матрицы выпуска. Краснеющая сегодня проба: `grep -c 'uname'
+packaging/asdf/bin/download` печатает 0.

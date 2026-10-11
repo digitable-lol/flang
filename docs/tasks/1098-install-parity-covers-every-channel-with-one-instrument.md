@@ -30,8 +30,9 @@
 
 ```
 $ grep -n 'sverka-nastroyka' packaging/install-parity.flang
+389:  обеспечивает «ход вида Читаем настройку уходит своей ветвью» … "sverka-nastroyka.txt" …
 397:    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "sverka-nastroyka.txt") …
-405:      то вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "sverka-nastroyka.txt") …
+408:      то вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "sverka-nastroyka.txt") …
                                                                 код 0
 $ grep -rc 'install-parity' .github/workflows/*.yml .flangrc | grep -v ':0'
                                                                 код 1
@@ -44,7 +45,8 @@ $ grep -rc 'install-parity' .github/workflows/*.yml .flangrc | grep -v ':0'
 клона отвечает на десять вызовов `emit` корпуса иначе, чем brew и asdf
 (рантайма нет), и этого не видит никто.
 
-Версия: `flang 0.7.24`.
+Версия: flang 0.7.25, прогон 11 октября 2026. Шаг 3 (установки brew и asdf)
+здесь не повторялся: он требует сети и раннеров.
 
 ## Что должно быть
 
@@ -91,3 +93,10 @@ brew, asdf, готовый архив, клон. Порог — `расхожд�
 отдельный отказ на `--version`), `.flangrc` (команда `install-parity:check`),
 `.github/workflows/install-path.yml` (работа на теге), `docs/ci-inventory.md`.
 Перепечатка не нужна: прибор исполняется `flang io`, а не живёт в семени.
+
+Следующий шаг — `packaging/install-parity.flang`, функция «Поле настройки»:
+настройка из N установок (первая — эталон) вместо шести строк на две, попарная
+сверка тем же корпусом и отдельный отказ на расхождение `--version`; затем ярлык
+`install-parity:check` в `.flangrc`. Краснеющая сегодня проба: `grep -rc
+'install-parity' .github/workflows/*.yml .flangrc | grep -v ':0'` молчит и
+отвечает кодом 1 (11 октября 2026).

@@ -1879,3 +1879,9 @@ dcdf98a5c22b7eac4510ef6d47df7db2|1|1|0|0|0|flang/proof/probes/quantifier-inside-
 c218b0c6b08465319ece2a61e3598862|1|1|0|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/nested-exists-under-for-all-inside-conjunction.flang
 1646758aea547d9cdf049f06c94b5586|1|0|1|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/no-witness-fits.flang
 c8dbb7179b35f785da41f5990dd41238|82|44|0|0|0|flang/self/proof-kernel.flang
+16be58c2df9f4e5f41fecc556cd10aeb|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/false-law.flang
+5e7a909cd8e20d5169ba7ff77e753d78|2|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/over-number.flang
+1c40267274311ec4479e99c16fed524f|7|×|×|×|0|flang/proof/checker/tests/families/exact-ring/ring-laws.flang
+c8dbb7179b35f785da41f5990dd41238|85|44|0|0|0|flang/self/proof-kernel.flang
+16be58c2df9f4e5f41fecc556cd10aeb|1|×|×|×|0|flang/proof/probes/ring-laws/programs/ring-false-over-exact.flang
+5e7a909cd8e20d5169ba7ff77e753d78|2|×|×|×|0|flang/proof/probes/ring-laws/programs/ring-laws-over-number.flang

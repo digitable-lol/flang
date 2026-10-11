@@ -1,4 +1,8 @@
 record	source	sha256
+flang/proof/checker/tests/families/link/manifest-only.record	flang/proof/examples/corpus-tables.flang	d3e73d337d1920ee9763af9b8383fc648eb7c6e89d96fe37fd0c7c5351d12136
+flang/proof/checker/tests/families/link/recursion.record	flang/proof/checker/tests/families/link/recursion.flang	bd856d709a82108665102bab2a741e472842ff53556e30a5a18aa2b0f6369d2a
+flang/proof/checker/tests/families/link/same-name.record	flang/proof/checker/tests/families/link/same-name.flang	6f2737d1e8dad9b9d7ffc0dacf67ca7ec84a96310351506fbcfc33ead2f54511
+flang/proof/checker/tests/families/link/word-of-list-names.record	flang/proof/examples/corpus-tables.flang	d3e73d337d1920ee9763af9b8383fc648eb7c6e89d96fe37fd0c7c5351d12136
 flang/proof/checker/tests/records/9986/variant-not-from-the-source-base.record	flang/proof/examples/body-forms.flang	9894e1ab3699984a46d165a388675c8ee977daee08e6851d7d3396386c9dad99
 flang/proof/checker/tests/records/9986/variant-not-from-the-source-step.record	flang/proof/examples/body-forms.flang	9894e1ab3699984a46d165a388675c8ee977daee08e6851d7d3396386c9dad99
 flang/proof/checker/tests/records/case-split-segment/00-untouched.record	flang/proof/checker/tests/records/case-split-segment/00-untouched.flang	ad84fcaedb5d8475450c7be81140ad541251261fe3a0a21ab46824954dc8c9f4
@@ -9,8 +13,6 @@ flang/proof/checker/tests/records/case-split-segment/04-form-unknown.record	flan
 flang/proof/checker/tests/records/case-split-segment/05-branches-swapped.record	flang/proof/checker/tests/records/case-split-segment/05-branches-swapped.flang	76d4502bc55fec76799c3fb18400464e898589d66402252d5df838f96917d59d
 flang/proof/checker/tests/records/case-split-segment/06-foreign-summand.record	flang/proof/checker/tests/records/case-split-segment/06-foreign-summand.flang	b9f39bdce0f7900badaedaf823f896e3e8fa3256fe5f6c0020e6e8ae76bd8c24
 flang/proof/checker/tests/records/goal-split-by-condition/00-untouched.record	flang/proof/checker/tests/records/goal-split-by-condition/00-untouched.flang	fd98c2ccfd45da36b96e950d077d17bddc839d7c652e668b930b3a1b01695164
-flang/proof/checker/tests/records/goal-split-by-condition/p1-order-instead-of-equality.record	flang/proof/checker/tests/records/goal-split-by-condition/p1-order-instead-of-equality.flang	2adcdb1a08157217d9bcd964b9d23518554d0c262d5840cf94e1c8b57b283dc4
-flang/proof/checker/tests/records/goal-split-by-condition/p2-goal-guard-misses-the-body.record	flang/proof/checker/tests/records/goal-split-by-condition/p2-goal-guard-misses-the-body.flang	88406b9c1ae60d1498eec3d0554de69bde619a818c6a0fd6fb7f50a24d3fcba7
 flang/proof/checker/tests/records/goal-split-by-condition/p3-let-binds-a-foreign-name.record	flang/proof/checker/tests/records/goal-split-by-condition/p3-let-binds-a-foreign-name.flang	149b7c65239a9e0890476f32c75b8c6fd679032a2b0dd698e262fc9bb5bfa43e
 flang/proof/checker/tests/records/goal-split-by-condition/p4-binder-left-in-place.record	flang/proof/checker/tests/records/goal-split-by-condition/p4-binder-left-in-place.flang	1fc13631912762b466083798cb3846fb848b9f6a057b44070770334fc643feb2
 flang/proof/checker/tests/records/goal-split-by-condition/p5-law-outside-the-closed-list.record	flang/proof/checker/tests/records/goal-split-by-condition/p5-law-outside-the-closed-list.flang	43d2b7a49f7f763e02497eb6a1d43b91721d0791777da0e0707dd21f24ce5f91

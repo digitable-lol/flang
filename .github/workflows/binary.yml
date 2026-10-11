@@ -1980,6 +1980,11 @@ jobs:
           LC_ALL: C.UTF-8
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 
+      - name: Check the binary judges every declared law of the category surface
+        # ADR-0088: expectations are those of a binary printed from these sources;
+        # with an older binary the set must diverge (negative control through FLANG_BIN).
+        run: bootstrap/flang io flang/proof/probes/ct-laws/run.fscript --plan Binary --timeout 900000
+
       - name: Check the exact integer type is in the compiler
         run: bootstrap/flang io flang/proof/probes/exact-integer/run.fscript --plan Binary
 

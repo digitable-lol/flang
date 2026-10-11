@@ -1835,3 +1835,5 @@ eed6754588dbb44bc841e1e81e6df9c5|12|12|0|0|0|docs/examples/crypto/rsa-pss-vector
 ecf3053dd8d4611a9a58a32f9151572d|4|4|0|0|0|docs/examples/https/tls-forgeries.flang
 1f0b1c8a844b8268cc9d4e3d1cee4773|1|0|1|0|0|flang/proof/probes/randomness/programs/octets.fscript
 5c471ed341235d1a2441e33ff642247c|2|2|0|0|0|flang/proof/probes/randomness/run.fscript
+4ad21ab2a834fa2904000c09e97b810d|7|1|6|0|0|flang/proof/checker/tests/families/case-split-facts/corrupt/linked-facts-lies.flang
+88c5e5918ea4cc16d1cc5a9044e36aac|6|6|0|0|0|flang/proof/checker/tests/families/case-split-facts/linked-facts.flang

@@ -42,7 +42,7 @@ grep -rc -a 'tables-guard' .github/workflows .githooks
 $ bootstrap/flang io scripts/guards/who-calls-the-guards.fscript --plan Check
 сторожа без зова: 28, все названы в ведомости — сходится                   код 0
 $ git ls-files | grep -c -a -- '-guard\.fscript$'
-53
+56
 $ for f in … ; done
 flang/proof/tables-guard.fscript
 flang/scripts/count-guard.fscript
@@ -53,18 +53,18 @@ $ grep -rc -a 'tables-guard' .github/workflows .githooks
 0
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, дерево 1149c78f7; числа сняты 11 октября 2026.
 
 Перепись берёт список сторожей из `.flangrc` (строки `script.*`) и сверяет его с
 работами `.github/workflows`. Сторож, у которого строки в `.flangrc` нет вовсе,
 в список не попадает и «без зова» числиться не может: файлов `*-guard.fscript` в
-дереве 53, в `.flangrc` не названы 12. Один из этих 12 —
+дереве 56, в `.flangrc` не названы 12. Один из этих 12 —
 `flang/proof/tables-guard.fscript`, сторож С-6 «потолок доверенной базы — строк
-кода и примитивов сверщика на C»: код 0, «checker.c: 8127 строк
-кода, до потолка 0 (потолок 8127); примитивов 15 (названо 15)», 112 опор правил.
+кода и примитивов сверщика на C»: код 0, «checker.c: 8475 строк
+кода, до потолка 0 (потолок 8475); примитивов 15 (названо 15)».
 Его не зовёт ни `.flangrc`, ни работа CI, ни хук; единственное упоминание вне
 самого файла — строка подсказки в `flang/scripts/kernel-lines-to-trust.fscript`.
-В ведомостях `scripts/ledgers/uncalled-guards.json` (43 имени) и
+В ведомостях `scripts/ledgers/uncalled-guards.json` (28 имён) и
 `scripts/ledgers/checks-nobody-calls.tsv` его тоже нет. Перепись при этом зелена.
 
 ## Что должно быть
@@ -94,3 +94,11 @@ $ grep -rc -a 'tables-guard' .github/workflows .githooks
 ведомости в `scripts/ledgers/`. Пересборка семени (bootstrap regeneration) не
 нужна. Что сторож С-6 стоит у исчерпанного потолка (запас 0 строк) — предмет
 задачи 2159, здесь не решается.
+
+## Следующий шаг
+
+В `scripts/guards/who-calls-the-guards.fscript` заменить источник списка: вместо строк
+`script.*` из `.flangrc` — поручение `git ls-files` с отбором `-guard.fscript`, а
+`.flangrc`, работы CI и хуки читать как места зова. Проба, которая краснеет сегодня:
+перепись отвечает «сторожа без зова: 28 — сходится», код 0, а по дереву сторожей 56 и
+`flang/proof/tables-guard.fscript` не назван нигде.

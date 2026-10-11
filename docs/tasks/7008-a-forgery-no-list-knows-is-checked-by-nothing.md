@@ -35,7 +35,9 @@ flang/scripts/kernel-forgeries.fscript:0
 0
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, дерево 1149c78f7; прогон 11 октября 2026 отвечает теми же
+числами: «НЕ ПРОВЕРЕНО НИЧЕМ 1», строка «требование → проверка без записи и без
+пробы» в `scripts/ledgers/traceability-debt.tsv` равна 1.
 
 Файл `flang/proof/examples/forgery-if-without-descent-theorem.flang` носит имя
 подделки и содержит заведомо ложное постусловие «итог меньше нуля». Ждут от
@@ -83,3 +85,11 @@ flang/scripts/kernel-forgeries.fscript:0
   — там, где подделка объявляется;
 - `flang/proof/checker/tests/records/corpus/` — если выбран путь записи;
 - `scripts/ledgers/traceability-debt.tsv` — храповик долга.
+
+## Следующий шаг
+
+Дописать строку о `flang/proof/examples/forgery-if-without-descent-theorem.flang` в
+`flang/proof/forgeries/manifest.tsv` по образцу соседней строки о
+`forgery-if-without-descent.flang`, прогнать `kernel-forgeries:check` и выписать код и
+слова отказа; затем опустить строку долга до 0. Проба, которая краснеет сегодня:
+`traceability:check` печатает «НЕ ПРОВЕРЕНО НИЧЕМ 1».

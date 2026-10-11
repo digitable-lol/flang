@@ -29,19 +29,22 @@ git ls-files -z 'scripts/*.sh' 'scripts/**/*.sh' | sort -zu \
 
 ```
 $ git ls-files -z 'scripts/*.sh' 'scripts/**/*.sh' | sort -zu | xargs -0 awk '/^[[:space:]]*#/{c++} {t++} END{print c, t}'
-2201 6169                                                         код 0
+2061 5766                                                         код 0
 $ git ls-files 'scripts/*.sh' 'scripts/**/*.sh' | sort -u | wc -l
-9
+8
 ```
 
-Двоичный flang в замере не участвует.
+Прогон 11 октября 2026 на дереве 1149c78f7; двоичный flang в замере не
+участвует.
 
-2201 из 6169 — это 36 %. Ниже 20 % только два файла из 9:
-`scripts/targets/identical-declarations.sh` (17 %) и
-`scripts/targets/target-collisions.sh` (15 %). Самые тяжёлые —
+2061 из 5766 — это 36 %. Ниже 20 % только два файла из 8:
+`scripts/targets/identical-declarations.sh` (14 %) и
+`scripts/targets/target-collisions.sh` (14 %); на границе
+`scripts/guards/module-origin-guard.sh` (20 %). Самые тяжёлые —
 `scripts/guards/published-vs-tree.sh` (41 %),
-`scripts/guards/overlong-string-guard.sh` (41 %).
-Один `scripts/bootstrap-reprint.sh` несёт 1346 строк комментариев из 2201.
+`scripts/guards/overlong-string-guard.sh` (40 %), `scripts/bootstrap-reprint.sh`
+и `scripts/guards/bad-octet-guard.sh` (по 37 %).
+Один `scripts/bootstrap-reprint.sh` несёт 1343 строки комментариев из 2061.
 
 ## Что должно быть
 
@@ -74,8 +77,8 @@ $ git ls-files 'scripts/*.sh' 'scripts/**/*.sh' | sort -u | wc -l
 
 `scripts/bootstrap-reprint.sh` и `scripts/seed-fingerprint` эта задача не
 правит. Если первый оставить как есть, доля ниже 20 % недостижима вовсе: его
-1346 комментариев при 3592 строках держат общую долю не ниже 21,8 % даже при
-нулевых комментариях у остальных 8 файлов. Значит решение одно из двух —
+1343 комментария при 3589 строках держат общую долю не ниже 23,3 % даже при
+нулевых комментариях у остальных 7 файлов. Значит решение одно из двух —
 править его шапки тоже или мерить долю без него — и принимается в начале работы.
 
 Справка, на которую ссылается сообщение `.githooks/pre-push.fscript`: обход
@@ -83,3 +86,9 @@ $ git ls-files 'scripts/*.sh' 'scripts/**/*.sh' | sort -u | wc -l
 не сливают напрямую в `dev`; чинится сам хук; дерево заведомо красно по
 названному долгу, и пушащий об этом знает. Во всех прочих случаях обход
 перекладывает проверку на CI.
+
+Следующий шаг — решение о `scripts/bootstrap-reprint.sh` (править или мерить без
+него), затем шапка `scripts/guards/published-vs-tree.sh` (330 строк комментариев
+из 801): оставить три ответа — что делает, ключи, коды возврата, — а историю
+правок снять. Краснеющая сегодня проба: команда из шагов печатает `2061 5766`,
+то есть 36 %, а не меньше 20 % (11 октября 2026).

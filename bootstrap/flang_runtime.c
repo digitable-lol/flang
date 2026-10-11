@@ -1,8 +1,10 @@
 /*
- * Сгенерировано flang (бэкенд C, flang/self/emit-c.flang). Не редактировать руками.
+ * Сгенерировано flang (бэкенд C, flang/self/emit-c.flang).
+ * Не редактировать руками.
  * Модуль flang: «Compiler flang».
  * Файл: рантайм: реализация.
- * Правьте исходник на flang и печатайте заново: любая правка здесь потеряется.
+ * Правьте исходник на flang и печатайте заново:
+ * любая правка здесь потеряется.
  */
 /* SPDX-FileCopyrightText: 2026 Digitable (Marat Zimnurov) */
 /* SPDX-License-Identifier: BSD-2-Clause */

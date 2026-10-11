@@ -7,7 +7,7 @@
 ветка: —
 команда: любая
 карта: Что мешает больше всего
-рядом: 0037, 1745
+рядом: —
 нужность: новый подкаталог docs/ заводится молча — карта его не называет, и ни одна проверка не краснеет
 ---
 
@@ -38,6 +38,8 @@ $ sh scripts/guards/published-vs-tree.sh --карта | head -1
 КАРТА РАСКЛАДКИ (docs/repository-layout против корня дерева):
 ```
 
+Прогон 11 октября 2026 на дереве 1149c78f7: шаг 1 не печатает ни строки
+(все подкаталоги `docs/` сегодня названы руками), шаг 2 отвечает кодом 0.
 Функция `karta` в `scripts/guards/published-vs-tree.sh` сверяет состав корня
 дерева с блоком между метками КАРТА-НАЧАЛО и КАРТА-КОНЕЦ в
 `docs/repository-layout.md` и `docs/repository-layout.ru.md`. Внутрь `docs/` она
@@ -71,3 +73,9 @@ sh scripts/guards/published-vs-tree.sh --карта      код 0
 `docs/README.md` (карта подкаталогов) и функция `karta` в
 `scripts/guards/published-vs-tree.sh` (второй проход, по `docs/`). Двоичного
 правка не касается, пересборка семени (bootstrap regeneration) не нужна.
+
+Следующий шаг — функция `karta` в `scripts/guards/published-vs-tree.sh`: второй
+проход, который собирает подкаталоги верхнего уровня `docs/` из `git ls-files` и
+ищет каждый в `docs/README.md`. Краснеющая сегодня проба: подложенный в `docs/`
+каталог с файлом не красит `sh scripts/guards/published-vs-tree.sh --карта` —
+код 0 (11 октября 2026).

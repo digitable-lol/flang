@@ -7,7 +7,7 @@
 ветка: —
 команда: вторая
 карта: Как перепроверить всё это самому
-рядом: 9612, 9967
+рядом: 9612
 нужность: запись без SHA-256 привязана к программе только числом строк и знаков, и подмену того же размера сама не замечает
 ---
 
@@ -38,7 +38,7 @@ cp <дерево>/flang/proof/checker/tests/records/record-fields/natural-00-hon
 
 ```
 $ bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Проверка
-{"plan":"Проверка","result":"записей 654: с sha256 539, со слабой привязкой 74,
+{"plan":"Проверка","result":"записей 676: с sha256 561, со слабой привязкой 74,
  без исходника в дереве 41; отвязанных нарочно 11, все названы в ведомости —
  сходится",…}                                                     код 0
 $ wc -l scripts/ledgers/record-source-digests.tsv
@@ -48,7 +48,8 @@ $ ./checker flang/proof/examples/corpus-natural.flang natural-00-honest.record
 в записи нет), и записанное доказательством не является: …        код 3
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026. Проверяющая программа на C собрана
+`make -C flang/proof/checker` из того же дерева.
 
 У 74 записей в шапке нет строки `отпечаток256`. Число строк, число знаков и
 многочленный отпечаток у подменённой программы совпадают с честной, поэтому
@@ -109,3 +110,11 @@ bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Пр�
 программе отвечает «сошлось», код 0: копия `lie-collision.flang` с записью
 `natural-00-honest.record` принята, тогда как программа на C на той же паре
 отвечает кодом 3.
+
+Следующий шаг — записи
+`flang/proof/checker/tests/records/record-fields/*.record`: перевыпустить
+честные командой `bootstrap/flang check <исходник> --proof --record <запись>`, у
+подделок заново внести порчу из `flang/proof/checker/tests/probes.tsv`, затем
+план `Снять`. Краснеющая сегодня проба: план `Проверка` печатает «со слабой
+привязкой 74», а `./сверщик` на паре `lie-collision.flang` /
+`natural-00-honest.record` отвечает кодом 3 (прогон 11 октября 2026).

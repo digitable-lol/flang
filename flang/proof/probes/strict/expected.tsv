@@ -13,7 +13,7 @@ declared-not-proved.flang	--proof	3	НЕ ПРОВЕРЕНО
 declared-not-proved.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
 precedence.flang	--proof	3	НЕ ПРОВЕРЕНО
 precedence.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
-not-judged.flang	--proof	2	бинарник не считает — monoids
+not-judged.flang	--proof	2	бинарник не считает — monads
 not-judged.flang	--proof --строго	2	НЕ ПОДДЕРЖИВАЕТСЯ
 refuted.flang	--proof	1	FLANG_PROPERTY: нарушено свойство
 refuted.flang	--proof --строго	1	FLANG_PROPERTY: нарушено свойство

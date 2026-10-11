@@ -1,10 +1,10 @@
 ---
 номер: 1117
 заголовок: Workflow CI выключен, и какие из его работ красны на нынешнем дереве, не измерено
-статус: в работе
+статус: свободна
 приоритет: P2
-исполнитель: a
-ветка: a/1117-ci-jobs-measured-locally
+исполнитель: —
+ветка: —
 команда: вторая
 карта: Что мешает больше всего
 рядом: 1425, 8651
@@ -111,3 +111,46 @@ gh run list --repo digitable-lol/flang --workflow target-twins.yml --limit 1
 читаются; правки красных работ идут в те проверки, которые они зовут
 (`scripts/guards`, `flang/proof/rules-match.fscript`, страницы `docs/site`).
 Пересборка семени (bootstrap regeneration) не нужна.
+
+## Ревизия 11 октября 2026
+
+Дерево `dev` 1149c78f7. Шаги 1–2 повторены, шаг 3 (локальный прогон каждой
+работы) — не повторён: он занимает часы, и его итог на дереве 85cc976a (2
+октября) из задачи убран коммитом `f23463f3d` вместе с остальным журналом.
+
+```
+$ gh workflow list --repo digitable-lol/flang --all
+…
+Target twins	active	365382689
+CI	disabled_manually	326607079                                 код 0
+$ grep -ac 'runs-on' .github/workflows/ci.yml
+28                                                                код 0
+$ grep -n "if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'" .github/workflows/ci.yml
+513 (stolknoveniya), 562 (test), 1200 (pravila), 1290 (stale-pages)
+$ gh run list --repo digitable-lol/flang --workflow target-twins.yml --limit 1
+completed	failure	Target twins	main	schedule	37299573749	2026-10-05
+$ gh run view 37299573749 … --json jobs
+scheduler-across-targets	success
+supervisor-across-targets	success
+conc-link-emit	failure
+node-across-targets	failure                                       код 0
+```
+
+Работ в `ci.yml` стало 28 (была 27, прибавилась `registry-resolution`), CI
+по-прежнему выключен, четыре работы идут только по метке и по кнопке, у
+`links` стоит `continue-on-error: true` (задача 9807 — и сегодня он красен,
+битых ссылок 1). В «Target twins» красны те же две работы, что и в разделе
+«Что происходит»; задачи на них нет (их называет только 4412 — мимоходом).
+Ветки `a/1117-ci-jobs-measured-locally` нет ни локально, ни на `origin`, задача
+свободна.
+
+## Следующий шаг
+
+Две красные работы «Target twins» без задачи — вот что держит критерий
+«красных работ без задачи нет»: `node-across-targets` (полный узел на 8 целях
+из 9, не сходится `elixir`: «ответ с узла опоры не поменял состояния
+«Счётчика»») и `conc-link-emit` (`flang/concurrency/node-benchmark.flang` не
+печатается в JavaScript — отказ печати связи). Завести по задаче на каждую или
+починить; проба, которая краснеет сегодня: заход `target-twins.yml` от 5
+октября, два `failure` из четырёх. Локальный прогон 28 работ повторять только
+после этого — иначе таблица снова уйдёт в журнал.

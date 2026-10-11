@@ -1927,6 +1927,14 @@ jobs:
       - name: Check import list order
         run: cd flang/proof/probes/import-list-order && ../../../../bootstrap/flang io run.fscript --plan Binary
 
+      # ПОМОЩНИК ВВЕЗЁННОЙ ФУНКЦИИ НЕ СМЕЕТ СВЯЗАТЬСЯ С ЧУЖИМ ТЁЗКОЙ (заявки 349 и
+      # 350, ADR-0090). Таблица набора — контракт, а не фотография: она снята с
+      # связывания из исходника `flang/self/link.flang`, и семя, напечатанное до
+      # этой правки, на ней краснеет, пока его не перепечатают. Таймаут назван
+      # явно: набор зовёт двоичный девятью программами по три поверхности.
+      - name: Check imported helpers bind in their own module
+        run: cd flang/proof/probes/import-helper-binding && ../../../../bootstrap/flang io run.fscript --plan Binary --timeout 900000
+
       # ПАМЯТЬ ВЫЗОВОВ ЯДРА НЕ СМЕЕТ МЕНЯТЬ ОТВЕТ, и до 4 октября 2026 этого не
       # спрашивал никто. Проба лежала в дереве с ветки задачи 5709 и не звалась
       # ниоткуда: ни работой, ни ярлыком, ни хуком, — на неё и краснела работа

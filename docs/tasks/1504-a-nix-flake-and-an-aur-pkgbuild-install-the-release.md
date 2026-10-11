@@ -33,6 +33,9 @@ $ command -v nix makepkg
                                                                 код 1
 ```
 
+Прогон 11 октября 2026 на дереве 1149c78f7 отвечает так же; страница AUR без
+сети не открывалась.
+
 Ни флейка, ни PKGBUILD в дереве нет; на машине разработки нет ни `nix`, ни
 `makepkg`, то есть проверять оба канала можно только в CI. В AUR пакет `flang` — «ground-up implementation of a Fortran front end
 written in modern C++» (LLVM Flang); в `homebrew-core` имя `flang` занято им
@@ -83,3 +86,9 @@ written in modern C++» (LLVM Flang); в `homebrew-core` имя `flang` заня
 `scripts/release/bump-version.fscript`, новая работа в `.github/workflows/`
 (по образцу `install-path.yml`), страницы установки — строки Nix и AUR в
 таблице каналов. Перепечатка не нужна.
+
+Следующий шаг — ждёт матрицы выпуска и имени пакета от владельца; первым файлом
+— `flake.nix` в корне по раскладке `packaging/homebrew/flang.rb` (`fetchurl`
+архива C, `make`, установка в `bin`, `lib`, `include`, `share/flang`,
+`share/man`). Краснеющая сегодня проба: `ls flake.nix packaging/aur` отвечает
+кодом 2.

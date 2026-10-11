@@ -33,20 +33,21 @@ grep -c 'xargs' flang/scripts/ledger-summary.fscript flang/scripts/proof-ledger.
 
 ```
 $ grep -n 'proofs:report\|proofs:summary' .flangrc
-88:script.proofs:report = … flang/scripts/proof-ledger.fscript --plan 'Свод корпуса' …
-89:script.proofs:summary = … flang/scripts/ledger-summary.fscript --plan 'Свод' --timeout 900000
+120:script.proofs:report = … flang/scripts/proof-ledger.fscript --plan 'Свод корпуса' --timeout 3600000 …
+121:script.proofs:summary = … flang/scripts/ledger-summary.fscript --plan 'Свод' --timeout 900000
 $ grep -n '^план ' flang/scripts/proof-ledger.fscript flang/scripts/ledger-summary.fscript
 flang/scripts/ledger-summary.fscript:270:план «Свод»
-flang/scripts/proof-ledger.fscript:1469:план «Свод корпуса»
-flang/scripts/proof-ledger.fscript:1474:план «Свод корпуса по файлам»
-flang/scripts/proof-ledger.fscript:1479:план «Свод корпуса машине»
+flang/scripts/proof-ledger.fscript:1486:план «Свод корпуса»
+flang/scripts/proof-ledger.fscript:1491:план «Свод корпуса по файлам»
+flang/scripts/proof-ledger.fscript:1496:план «Свод корпуса машине»
 $ grep -c 'xargs' flang/scripts/ledger-summary.fscript flang/scripts/proof-ledger.fscript
 flang/scripts/ledger-summary.fscript:0
 flang/scripts/proof-ledger.fscript:3
                                                                  код 0
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026. Оба ярлыка теперь начинаются с
+`seed:freshness`, сами прогоны сводок на этом дереве не повторялись: цена часы.
 
 Ярлык `proofs:report` зовёт `flang/scripts/proof-ledger.fscript`:
 он раздаёт файлы по ядрам, вычитает подключённые объявления, умеет машинный
@@ -91,3 +92,9 @@ flang/scripts/proof-ledger.fscript:3
 кроме упоминания скрипта в `flang/self/bootstrap/compiler.flang`.
 
 Отдельная задача, здесь не решается: упоминания снятых реализаций сводки и сторожа слов на JavaScript в дереве — задача 6201.
+
+**Следующий шаг.** Решить исход: снять строку `script.proofs:summary` из `.flangrc`
+(строка 121) вместе с `flang/scripts/ledger-summary.fscript` и строкой 104
+`docs/ci-inventory.md`, либо положить сверку двух сводок проверкой. Проба, которая
+краснеет сегодня, — `grep -c 'proofs:summary' .flangrc` даёт 1, файл сводки на
+месте, и ни одна проверка не сличает его числа с `proofs:report`.

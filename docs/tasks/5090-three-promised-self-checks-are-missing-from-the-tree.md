@@ -29,15 +29,16 @@ flang/test/svyaz-celi.test.mjs
 
 | кто ссылается | на что | файл есть |
 |---|---|---|
-| `flang/scripts/name-guard.mjs:151` | flang/test/name-guard.test.mjs | нет |
-| `flang/scripts/count-guard.mjs:15` | flang/test/manpage.test.mjs | нет |
+| `flang/scripts/name-guard.mjs:149` | flang/test/name-guard.test.mjs | нет |
+| `flang/scripts/count-guard.mjs:13` | flang/test/manpage.test.mjs | нет |
 | `flang/scripts/tempdir-guard.fscript:293` | flang/test/uzel-celi.test.mjs | нет |
 
 Первые два называют файл в тексте как свою самопроверку. Третий ставит его в
 строку запуска `node --test …` рядом с тремя существующими файлами: сначала в
 ожидаемом значении (строка 293), затем в самой строке запуска (строка 295).
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026. Команда из раздела «Когда задача
+сделана» печатает те же три строки «нет: …».
 
 ## Что должно быть
 
@@ -66,3 +67,9 @@ grep -rhoE 'flang/test/[a-z-]+\.test\.mjs' flang/scripts/name-guard.mjs flang/sc
 `flang/scripts/name-guard.mjs`, `flang/scripts/count-guard.mjs`,
 `flang/scripts/tempdir-guard.fscript` (функция со строкой запуска `node --test`
 и её пример), `.flangrc`. Перепечатка не нужна.
+
+**Следующий шаг.** `flang/scripts/tempdir-guard.fscript`, строки 293–295: убрать
+`flang/test/uzel-celi.test.mjs` из ожидаемого значения и из строки запуска
+`node --test`; затем снять две ссылки в текстах `name-guard.mjs:149` и
+`count-guard.mjs:13`. Проба, которая краснеет сегодня, — команда из раздела «Когда
+задача сделана»: три строки `нет: …` вместо тишины.

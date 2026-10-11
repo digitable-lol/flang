@@ -113,7 +113,7 @@ FLANG_PROOF_INDUCTION_TYPE … строка 10, столбец 3: утвержд
 | --- | --- | --- |
 | выбор носителя принципа | `flang/self/proof-kernel.flang`, анкер `Инд1 proof-kernel.flang:1012` «Имя конструктора образца» | носителей два, перебор закрытый |
 | отказ, который снимается | `flang/self/proof-kernel.flang` либо `flang/self/proof.flang`: место, печатающее `FLANG_PROOF_INDUCTION_TYPE` | один код беды |
-| печать и чтение хода | `flang/self/proof-record.flang`, `flang/proof/checker/checker.c` (<!-- СНЯТО 2026-10-11 строк flang/proof/checker/checker.c = 10918 (задача 4791: разбор случаев отказывает условию под связывателем; до них 10497, снято 2026-10-04) --> 10 918 строк), `flang/proof/checker.flang` | список ходов закрытый |
+| печать и чтение хода | `flang/self/proof-record.flang`, `flang/proof/checker/checker.c` (<!-- СНЯТО 2026-10-11 строк flang/proof/checker/checker.c = 11872 (задача 4791: разбор случаев отказывает условию под связывателем; до них 10497, снято 2026-10-04) --> 11 872 строк), `flang/proof/checker.flang` | список ходов закрытый |
 | перечень и лемма | `flang/proof/tables/inference-rules.tsv` (<!-- СНЯТО 2026-10-11 строк flang/proof/tables/inference-rules.tsv = 124 (задача 1412: над точным целым заведены правило Кол1 «Сумма точных сошлась» и запрет Кол✗ «Листья кольца точные» — две строки таблицы; до них 113, снято 2026-10-04) --> 124 строк с шапкой), `flang/proof/lean/Rules.lean` | семья `Инд` — четыре строки перечня (`awk -F'\t' '$2=="Инд"'`, 4 октября 2026) |
 
 Ядро решений — `flang/self/proof-kernel.flang`,

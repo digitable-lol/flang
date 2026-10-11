@@ -544,6 +544,32 @@ jobs:
       - name: Test jargon guard
         run: LC_ALL=C.UTF-8 bootstrap/flang test flang/test/jargon.flang
 
+  # НАВЫК ДЛЯ ИИ ОБЯЗАН ПОВТОРЯТЬ СТРАНИЦУ, А НЕ ПЕРЕСКАЗЫВАТЬ ЕЁ ПО ПАМЯТИ.
+  #
+  # Заявка 293: навыки .ai/.claude/skills не знали схемы выбора конструкции со
+  # страницы docs/site/which-construct.ru.md, а абзац навыка flang-code об
+  # `если` противоречил и странице, и компилятору. Таблица «Быстрый выбор»
+  # теперь стоит в навыке дословно, и сторож scripts/guards/skills-follow-the-page.flang
+  # сверяет её со страницей строка в строку и требует в навыке имя правила
+  # «разбор цели по условию». Подлог — план «Forgery» того же файла: он в
+  # памяти вычёркивает последнюю строку таблицы навыка и стирает имя правила,
+  # и обязан ответить провалом «подлог пойман» на обеих порчах; код 0 здесь
+  # значит «сторож промолчал», и шаг падает.
+  skills:
+    name: skills-follow-the-page
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - run: make -C bootstrap -j"$(nproc)"
+      - name: Probe skills follow the page
+        run: |
+          if bootstrap/flang io scripts/guards/skills-follow-the-page.flang --plan Forgery; then
+            echo "сторож навыка промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: Check skills follow the page
+        run: bootstrap/flang run-script skills-page:check
+
   # ⚠ ДОРОГА: 11 МИНУТ НА ОДНОЙ ВЕРСИИ NODE, ТРИДЦАТЬ ТРИ НА ТРЁХ.
   #
   # Замер 31 августа 2026, ствол `03fb4060`, двоичный 0.6.2, один прогон

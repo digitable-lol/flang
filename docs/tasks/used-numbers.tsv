@@ -423,3 +423,4 @@ number	state	title
 1409	done	Step estimate units match the runtime and seconds name the machine
 2325	done	The registry page is printed with internal words and the uncalled-guards job is red because of it
 6131	dropped	The second record checker does not read the derivation block
+6702	dropped	The verdict cache file keeps every binary and evicts nothing

@@ -727,6 +727,44 @@ def «проигратьУзел» (c : «Счёт») (m : «Место») : «�
   if nos = "fold" then return s.«узелСвёртки» m.«чья» g pr pos
   return s.«узелОтрезка» m.«имя» m.«чья» g pr pos
 
+def «атомВарианта» (x «тег» : String) : String := «ужатьТ» («т» s!"{x} равен ( вариант «{«тег»}» )")
+
+def «Исх».«разборомСлучаев» (s : «Исх») (c : «Счёт») («свои» : List String) («чья» «цель» : String) : Bool := Id.run do
+  if «чья» = "" || «цель» = "" || !«кавычкиЧисты» «цель» then return false
+  if «свои».any (·.startsWith "принцип тип ") || «свои».any (·.startsWith "посылка ") then return false
+  match s.«блокС» «чья» with
+  | none => return false
+  | some (a, b) =>
+    match s.«строкаРазбора» a b with
+    | none => return false
+    | some (_, x0) =>
+      let x := «обрезать» x0
+      if (x.splitOn " ").length > 1 then return false
+      let «случаи» := (s.«меж» a b).filter (fun j => (s.«строка» j).startsWith "случай ")
+      if «случаи».isEmpty then return false
+      let d := s.«доводы» «чья»
+      let «тип» := match (d.«голые».zip d.«типы»).find? (·.1 = x) with
+        | some (_, t) => «обрезать» t
+        | none => ""
+      let «варианты» := if «тип» = "" then [] else s.«вариантыТипа» «тип»
+      let mut «прежние» : List String := []
+      for j in «случаи» do
+        let «хвост» := «обрезать» («словаС» (s.«строка» j) 1)
+        if !(«связанныеСлучая» «хвост»).isEmpty then return false
+        let «тело» := s.«телоСлучая» j b
+        if «тело» = "" then return false
+        let «тег» := «вариантСлучая» «хвост»
+        if «хвост» ≠ "любое" && («тег» = "" || «тег» = "голова и хвост") then return false
+        let «против» := «прежние».map (fun w => («атомВарианта» x w, false))
+        let «факты» := if «хвост» = "любое" then
+            let «остаток» := «варианты».filter (fun v => !«прежние».contains v)
+            «против» ++ (match «остаток» with | [v] => [(«атомВарианта» x v, true)] | _ => [])
+          else («атомВарианта» x «тег», true) :: «против»
+        let g := «т» («вместо» («т» «цель») "результат" «тело»)
+        if «естьСвязыватель» g || !«закрытаПри» c g «факты» then return false
+        if «хвост» ≠ "любое" then «прежние» := «прежние» ++ [«тег»]
+      return true
+
 structure «ИтогКрюков» where
   «снял» : String := ""
   «беды» : List String := []
@@ -744,6 +782,7 @@ def «крюкиПоТелу» (c : «Счёт») (m : «Место») : «Ит�
   | some (a, b) => r := { r with «беды» := r.«беды» ++ [s!"утверждение «{m.«имя»}»: обе стороны равенства замкнуты и посчитаны, и это РАЗНЫЕ значения — «{a}» против «{b}»"] }
   | none => pure ()
   if «разборомЦели» c m.«свои» m.«чья» m.«цель» then return { r with «снял» := "разбор" }
+  if s.«разборомСлучаев» c m.«свои» m.«чья» m.«цель» then return { r with «снял» := "разбор_случаев" }
   if m.«свои».any (·.startsWith "посылка ") then return r
   if s.«свёрткаНеДлиннее» m.«чья» m.«цель» then return { r with «снял» := "свёртка" }
   if s.«началоОтВызванной» m.«доказанные» m.«чья» m.«цель» then return { r with «снял» := "начало_от_вызванной" }

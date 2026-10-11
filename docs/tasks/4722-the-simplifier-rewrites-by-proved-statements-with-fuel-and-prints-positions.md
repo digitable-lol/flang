@@ -58,7 +58,7 @@ flang/self/proof-record.flang:0
 flang/proof/tables/inference-rules.tsv:0
 ```
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026.
 
 «Переписать до неподвижной» в `flang/self/proof-kernel.flang` переписывает цель
 только равенствами из фактов самой функции. Доказанное утверждение программы
@@ -120,3 +120,9 @@ ADR-0040: ядро применяет правило «замена равног
 Леммы Lean (`flang/proof/lean/Rules.lean`) и приём шага в `flang/proof/checker/checker.c` уже
 стоят в дереве, пробы к ним — в `flang/proof/checker/tests/families/rewrite`;
 заново их писать не нужно.
+
+**Следующий шаг.** `flang/self/proof-kernel.flang`, функция «Переписать до
+неподвижной»: собрать доказанные равенства программы и ввезённых модулей и
+подставлять их в цель слева направо с ограничением шагов. Проба, которая краснеет
+сегодня, — `bootstrap/flang check flang/proof/checker/tests/families/rewrite/concat-laws.flang --proof`:
+доказано 0 из 3, код 3; `grep -c 'Переп1'` по трём файлам из шагов даёт 0.

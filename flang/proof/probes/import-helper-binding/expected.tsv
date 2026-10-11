@@ -1,6 +1,6 @@
 program	surface	code	word	контракт заявок 349 и 350: слова и коды сняты со связывания из исходника flang/self/link.flang (гарнитура-толкователь, 11 октября 2026) и с поверхностей семени 0.7.25 на уже отказанных тёзках; семя до перепечатки на строках probe, probe-example и own-step расходится — это и есть снятый дефект
-step-v.flang	check	0	замечаний нет
-step-g.flang	check	0	замечаний нет
+step-first.flang	check	0	замечаний нет
+step-second.flang	check	0	замечаний нет
 pairs-a.flang	check	0	замечаний нет
 pairs-b.flang	check	0	замечаний нет
 honest.flang	check	0	замечаний нет

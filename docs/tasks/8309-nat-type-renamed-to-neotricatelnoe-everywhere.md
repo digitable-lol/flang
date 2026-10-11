@@ -40,7 +40,10 @@ FLANG_PACKAGE: в flang.package пакет назван «Скидка», а м�
 пересобрав пакет, нельзя, а пересобрать мешает отказ `flang package` (задачи
 3401 и 3402).
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25 (обе команды повторены 11 октября 2026: те же пять файлов, тот же отказ
+`FLANG_PACKAGE`). `bootstrap/flang run-script seed:type-words` сегодня красен, но не из-за «нат»:
+он не знает слова «точное» в пробах `flang/proof/probes/exact-fraction-in-targets/` — это
+отставание семени, задачи 8309 не касается.
 
 ## Что должно быть
 
@@ -64,3 +67,10 @@ FLANG_PACKAGE: в flang.package пакет назван «Скидка», а м�
 
 Пять файлов из вывода выше и `docs/examples/package/shop/discount.flang-package`.
 Перепечатка не нужна.
+
+Следующий шаг: четыре файла — `docs/examples/pythagoras/euclid-formula.flang`,
+`docs/examples/pythagoras/hypotenuse-square.flang`, `docs/examples/io/progress-bar-on-screen.flang`,
+`docs/benchmarks/verdict-cache/cache-probe.flang` — заменить `нат` на `неотрицательное` и
+прогнать `bootstrap/flang check` на каждом; пятый, `docs/examples/package/discount.flang`, ждёт
+починки `flang package` (задачи 3401 и 3402). Красно сегодня: первая команда шагов печатает
+пять строк вместо пустого вывода.

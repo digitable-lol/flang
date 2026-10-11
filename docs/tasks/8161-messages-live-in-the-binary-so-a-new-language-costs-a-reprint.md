@@ -35,7 +35,8 @@ flang/src/emit/c/flang_repl.c
 литералы в слое C, справка `--help` и диагностика в `flang/self/**` — лежит
 внутри двоичного и написан по-русски.
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25 (снято 11 октября 2026; в `flang/scripts/code-guard.fscript` имя
+`FLANG_MESSAGE_DIR` по-прежнему стоит трижды как отсроченное).
 
 ## Что должно быть
 
@@ -73,3 +74,8 @@ flang/src/emit/c/flang_repl.c
 разбором `FLANG_MODULE_DIR`; тексты диагностики — `flang/self/**`. Перепечатка
 нужна один раз, чтобы двоичный научился читать таблицу; дальше языки
 добавляются без неё.
+
+Следующий шаг: `flang/src/emit/c/flang_repl.c`, рядом с `repl_library_places` (разбор
+`FLANG_MODULE_DIR`) — функция поиска каталога сообщений и подстановка перевода по русской
+строке; первый файл — `share/flang/сообщения/en.txt`. Проба, которая красна сегодня:
+`grep -rn 'FLANG_MESSAGE_DIR' flang/src flang/self bootstrap` молчит, код 1.

@@ -7,7 +7,7 @@
 ветка: —
 команда: любая
 карта: Что мешает больше всего
-рядом: 3397
+рядом: 8466
 нужность: закон «печать не печатает того, что проверка отвергает» стоит ярлыком `emit-law:check`, но прогнать его до вердикта никто не может — проверка мертва
 ---
 
@@ -50,10 +50,16 @@ $ timeout 300 bootstrap/flang io scripts/targets/emit-law.fscript --trust
 `docs/examples/`. Каждый файл проходит `flang check` и `flang emit` отдельными
 процессами. Уже `check` одного `flang/stdlib/datetime.flang` не укладывается в минуту,
 так что проверка целиком стоит десятки минут и в наборе быстрых проверок не запускается.
-Сверх того шесть путей корпуса ведут в несуществующий каталог docs/examples/cat/
-(файлы теории категорий лежат в `flang/ct/`), и перепись `sh scripts/guards/hand-written-lists.sh`
-называет эту строку: `ПУТИ scripts/targets/emit-law.fscript:25   6 из 15   нет:
-docs/examples/cat/crdt-merge.flang … order-shipment.flang` (код 0).
+Сверх того шесть путей корпуса ведут в несуществующий каталог `docs/examples/cat/`
+(файлы теории категорий лежат в `flang/ct/`): `ls docs/examples/cat` отвечает «No such
+file or directory», а `grep -n 'docs/examples/cat' scripts/targets/emit-law.fscript`
+находит строки 26, 33–36 и 45–47. Перепись рукописных списков теперь план, а не
+сценарий оболочки: `bootstrap/flang run-script hand-written-lists:census`
+(`scripts/guards/hand-written-lists.fscript`); при заведении задачи прежний
+`hand-written-lists.sh` называл эту строку как `6 из 15 нет`.
+
+Снято 2026-10-11 на flang 0.7.25: `timeout 300 … emit-law.fscript --trust` — код 124
+за 300,06 с; перепись-план за 15 минут до конца не дошла (ответ не снят).
 
 ## Что должно быть
 
@@ -74,8 +80,8 @@ timeout 300 bootstrap/flang io scripts/targets/emit-law.fscript --trust
                                                                  код 0
 ```
 
-Все пути корпуса существуют в дереве (перепись `sh scripts/guards/hand-written-lists.sh`
-эту строку больше не называет). Причина медленности названа числом: сколько секунд
+Все пути корпуса существуют в дереве (перепись `bootstrap/flang run-script
+hand-written-lists:census` эту строку больше не называет). Причина медленности названа числом: сколько секунд
 стоит каждый файл корпуса и какой из них держит общую цену. Проба: у функции корпуса
 есть пример, который краснеет, если в корпус попадает файл дороже названного порога,
 либо проверка получает ключ предела времени на файл и отвечает кодом 1 с именем
@@ -90,4 +96,13 @@ timeout 300 bootstrap/flang io scripts/targets/emit-law.fscript --trust
 (bootstrap regeneration); правка одного сценария пересборки не требует.
 
 Отдельная задача, здесь не решается: цена независимой проверяющей программы (proof
-checker) за `запись:проверка` — задача 8466; `точка:проверка` — задача 6267.
+checker) за `запись:проверка` — задача 8466.
+
+## Следующий шаг
+
+`scripts/targets/emit-law.fscript`, функция корпуса с постусловием «списки дерева на
+месте»: заменить шесть путей `docs/examples/cat/*` на `flang/ct/*` и снять время
+`bootstrap/flang check` по каждому из 15 файлов, чтобы назвать, какой держит цену
+(первый подозреваемый — `flang/stdlib/datetime.flang`). Проба, которая краснеет
+сегодня: `timeout 300 bootstrap/flang io scripts/targets/emit-law.fscript --trust`
+отвечает кодом 124.

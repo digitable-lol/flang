@@ -1462,6 +1462,64 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
 
+  # ── ВТОРОЙ СВЕРЩИК: ЗАПИСЬ СУДЯТ ДВЕ РЕАЛИЗАЦИИ, НАПИСАННЫЕ ВРОЗЬ ──────────
+  #
+  # ADR-0076, ADR-0096, задача 1313: кроме сверщика на C запись доказательства
+  # читает вторая реализация на Lean 4 (`flang/proof/checker/second/`), собранная
+  # своим набором (`lean`, `leanc`), а не `cc` и не `bootstrap/flang`. План
+  # `flang/proof/second-checker.fscript` зовёт обе на каждой записи проб и
+  # подделок и сравнивает коды. Расхождение — находка, а не повод править одну
+  # реализацию под другую: 11 октября 2026 сверщик на C за день получил десять
+  # приёмов (разбор цели по условию, счёт длин, вычислитель), а второй — нет, и
+  # три честные записи разошлись кодами 0 и 3. Работа по расписанию
+  # (`lean-crosscheck.yml`) показала бы это назавтра; здесь — на том же пуше.
+  #
+  # ЦЕНА, замер 11 октября 2026 на дереве 77cdc709b (машина разработки, 8
+  # потоков): сборка второго сверщика `make -C flang/proof/checker second` —
+  # 3 мин 20 с; каждый из трёх планов на 686 записях — около минуты; установка
+  # Lean на работнике по журналу `lean-crosscheck` — 10 с. Вместе с семенем
+  # (6 мин на работнике) — укладывается в четверть часа, поэтому работа стоит
+  # на каждом пуше рядом с `proof-checker`, а не только по расписанию.
+  #
+  # ТРИ ПЛАНА, И ВСЕ ТРИ ОБЯЗАНЫ ОТВЕТИТЬ НУЛЁМ. `checker:second-forgery` даёт
+  # испорченную копию честной записи только второму и ждёт ровно одного
+  # названного расхождения; `checker:second-both` даёт ту же копию обоим и
+  # ждёт от обоих кода 1; `checker:second` сличает честные записи и падает и на
+  # расхождении, и на записи, за которую второй не взялся целиком.
+  second-checker:
+    name: second-checker
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Install Lean
+        run: |
+          set -eu
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain "$(cat flang/proof/lean/lean-toolchain)"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Check Lean version
+        run: lean --version
+      - name: Build proof checker
+        run: make -C flang/proof/checker
+      - name: Build the second checker
+        run: make -C flang/proof/checker second
+      - name: Build flang from the seed
+        run: make -C bootstrap -j4
+      - name: Forged copy to the second checker is named
+        run: bootstrap/flang run-script checker:second-forgery
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Forged copy to both checkers is refused by both
+        run: bootstrap/flang run-script checker:second-both
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Both checkers agree on every record
+        run: bootstrap/flang run-script checker:second
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+
   # ── СЛИЧИТЕЛЬ ПЕРЕВОДА: ПРОТОКОЛ ПЕЧАТНИКА ПЕРЕИГРЫВАЕТСЯ НА C ──────────────
   #
   # ADR-0030, задача 1401: печатник C ведёт протокол перевода, и отдельная

@@ -45,11 +45,15 @@ git grep -l "fl_next_first" -- scripts flang/proof flang/test .github
 $ bootstrap/flang io <план> --plan Split --trust
 {"plan":"Split","result":67,"orders":1, …}             код 0, 0,21 с, пик 121 МиБ
 $ grep -an "fl_utf8_points(piece" flang/src/emit/c/flang_runtime.c
-4887:      items[count] = fl_text_borrow(piece, bytes, fl_utf8_points(piece, bytes));
-4898:    items[count] = fl_text_borrow(piece, bytes, fl_utf8_points(piece, bytes));
+5243:      items[count] = fl_text_borrow(piece, bytes, fl_utf8_points(piece, bytes));
+5254:    items[count] = fl_text_borrow(piece, bytes, fl_utf8_points(piece, bytes));
 $ git grep -l "fl_next_first" -- scripts flang/proof flang/test .github
                                                                   код 1
 ```
+
+Два вопроса к дереву сняты 2026-10-11 (дерево 1149c78f7): оба места на месте,
+пробы скорости нет. Времена и счёт инструкций ниже сняты при заведении задачи
+на flang 0.7.2x и сегодня не пересняты — им нужен текст в 10 МиБ и `valgrind`.
 
 Прогон Split трижды подряд: 0,21 с каждый, пик 121 МиБ (`/usr/bin/time -f`).
 
@@ -133,3 +137,11 @@ $ git grep -l "fl_next_first" -- scripts flang/proof flang/test .github
 
 Отдельная задача, здесь не решается: свёртка, копящая список записей, берёт
 около 247 байт памяти на запись — решить, снижать это или записать как цену.
+
+## Следующий шаг
+
+`flang/src/emit/c/flang_runtime.c`, `fl_razdelit_kuski` (строки 5243 и 5254): когда у
+исходной строки знаков столько же, сколько октетов, подставлять `bytes` вместо
+`fl_utf8_points(piece, bytes)`; затем проба скорости по РАЗНИЦЕ двух планов из раздела
+выше в `flang/proof/probes/`. Проба, которая краснеет сегодня: её нет —
+`git grep -l fl_next_first -- scripts flang/proof flang/test .github` отвечает кодом 1.

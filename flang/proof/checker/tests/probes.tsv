@@ -1058,3 +1058,8 @@ C	Св2: свидетели найдены среди подтермов	flang/p
 P	Св2: свидетель подменён	flang/proof/checker/tests/families/existence/found-witness.flang	flang/proof/checker/tests/families/existence/found-witness.record	-	s|свидетель «м» ⟨н⟩|свидетель «м» ⟨0⟩|	-	-	1	после подстановки в записи	-	-
 say	── семья «квантор внутри формулы» (1177, ADR-0084) ──	-	-	-	-	-	-	-	-	-	-
 C	квантор под «и притом» и под «если»: на слове ядра	flang/proof/checker/tests/families/nested-quantifier/inside-conjunction.flang	flang/proof/checker/tests/families/nested-quantifier/inside-conjunction.record	-	-	-	-	3	-	-	-
+say	── семья «кольцо точного целого» (1412, ADR-0095): Кол1–Кол4 печатает ядро, сверщик раскрывает стороны в многочлен ──	-	-	-	-	-	-	-	-	-	-
+C	кольцо: семь законов над точным целым, пять из них правилом «кольцо точного целого»	flang/proof/checker/tests/families/exact-ring/ring-laws.flang	flang/proof/checker/tests/families/exact-ring/ring-laws.record	-	-	-	-	0	-	-	-
+P	кольцо: ложный закон — сумма «распределена» над произведением	flang/proof/checker/tests/families/exact-ring/forged/false-law.flang	flang/proof/checker/tests/families/exact-ring/forged/false-law.record	-	-	-	-	1	многочлены сторон разные	-	-
+P	кольцо: правило названо над «число»	flang/proof/checker/tests/families/exact-ring/forged/over-number.flang	flang/proof/checker/tests/families/exact-ring/forged/over-number.record	-	-	-	-	1	объявлен «число»	-	-
+P	кольцо: честная запись, одночлен вычеркнут из цели записью не спрячешь — цель берётся из исходника, а правило переименовано в тождество	flang/proof/checker/tests/families/exact-ring/ring-laws.flang	flang/proof/checker/tests/families/exact-ring/ring-laws.record	-	s|правило «кольцо точного целого»|правило «тождество после переписки допущением»|	-	-	3	-	-	-

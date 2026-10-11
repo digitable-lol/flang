@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "голова": "6286aafedde5dbc32e00f4c91e26916baa98f1e2",
-  "головаКоротко": "6286aafed",
-  "головаДата": "2026-10-06",
-  "шаговСтвола": 3469,
-  "всегоКоммитов": 8473,
+  "голова": "daf89c5c901bd425b9e45b636610718a8e404a4c",
+  "головаКоротко": "daf89c5c9",
+  "головаДата": "2026-10-11",
+  "шаговСтвола": 3743,
+  "всегоКоммитов": 8747,
   "измерители": [
     {
       "ключ": "js",
@@ -49,18 +49,22 @@
   ],
   "сейчас": {
     "js": 0,
-    "bliznec": 115645,
-    "programm": 760,
-    "totalnyh": 12622,
-    "obychnyh": 2550,
-    "teorem": 310,
+    "bliznec": 121085,
+    "programm": 800,
+    "totalnyh": 13940,
+    "obychnyh": 3088,
+    "teorem": 353,
     "proverok": 3,
-    "zametok": 730
+    "zametok": 0
   },
   "неизвестныеКорни": [
     {
       "корень": "flang/translation",
       "путей": 21
+    },
+    {
+      "корень": "flang/foreign",
+      "путей": 13
     },
     {
       "корень": "flang/experimental",
@@ -80,11 +84,15 @@
     }
   ],
   "дни": [
+    "2026-10-11",
+    "2026-10-09",
+    "2026-10-08",
+    "2026-10-07",
+    "2026-10-04",
+    "2026-10-02",
     "2026-10-06",
     "2026-10-05",
-    "2026-10-04",
     "2026-10-03",
-    "2026-10-02",
     "2026-10-01",
     "2026-09-30",
     "2026-09-29",
@@ -40771,92 +40779,424 @@
   ],
   "прямые": [
     {
-      "дата": "2026-10-06",
+      "дата": "2026-10-11",
       "записи": [
         {
-          "текст": "chore(release): point the Homebrew tap at 0.7.25",
-          "коммит": "6286aafed"
+          "текст": "feat(ct): monoidal routes, maybe as monoid, kleisli arrows",
+          "коммит": "8c21827b0"
         },
         {
-          "текст": "chore(release): the Homebrew formula knows the 0.7.25 archive hash",
-          "коммит": "84da55071"
+          "текст": "test(ct): two adjunctions and yoneda are judged on the grid",
+          "коммит": "fe6a8507b"
         },
         {
-          "текст": "chore(release): version 0.7.25 and its release notes",
-          "коммит": "40d302537"
+          "текст": "test(ct): product, coproduct and pullback are declared cones in flang/ct",
+          "коммит": "683ad13f4"
         },
         {
-          "текст": "fix(proof): the new forgery is named and the zettel link resolves",
-          "коммит": "fa1b622c0"
+          "текст": "chore(release): point the Homebrew tap at 0.7.26",
+          "коммит": "83e848cae"
+        },
+        {
+          "текст": "chore(release): the Homebrew formula knows the 0.7.26 archive hash",
+          "коммит": "530b5c5b0"
+        },
+        {
+          "текст": "chore(release): version 0.7.26 and its release notes",
+          "коммит": "80f0d86d0"
+        },
+        {
+          "текст": "test(probes): the strict probe keeps an unjudged surface",
+          "коммит": "a18d45a20"
+        },
+        {
+          "текст": "chore(marks): the numbers follow the batch after the rebase",
+          "коммит": "721110a82"
+        },
+        {
+          "текст": "chore(seed): reprint the seed by its own printer (print 2)",
+          "коммит": "4dfbb7ffb"
+        },
+        {
+          "текст": "test(probes): greeting is replayed by the checker and the counts follow",
+          "коммит": "2be924621"
         }
       ],
-      "скрыто": 6
+      "скрыто": 69
     },
     {
-      "дата": "2026-10-05",
+      "дата": "2026-10-09",
       "записи": [
         {
-          "текст": "fix(checker): a case split refuses its condition under a binder",
-          "коммит": "25b95f1d1"
+          "текст": "chore(targets): the canons ledger follows the seed of this batch",
+          "коммит": "70c078d1b"
         },
         {
-          "текст": "feat(lean): moves n6 and o9 enter the acceptance with their theorems",
-          "коммит": "703f16bc5"
+          "текст": "test(proof): the new seed closes the pattern-shadow hole",
+          "коммит": "cec9fc593"
         },
         {
-          "текст": "feat(proof): a guard counts checker moves against the lean acceptance",
-          "коммит": "9dfecf521"
+          "текст": "chore(seed): reprint the seed from the batch after 0.7.26",
+          "коммит": "ee49268a0"
         },
         {
-          "текст": "fix(ci): the ten-target probe waits for dotnet and names a missing tsc",
-          "коммит": "d0961a18f"
-        },
-        {
-          "текст": "chore(seed): reprint the seed after the line-length pass (print 5)",
-          "коммит": "cba8740de"
-        },
-        {
-          "текст": "chore(ledger): marks and share rows follow the shortened lines",
-          "коммит": "ca28a90c4"
-        },
-        {
-          "текст": "style(guards): the last ten long lines of the batch are under 120 chars",
-          "коммит": "fe1e81bcc"
-        },
-        {
-          "текст": "style(bench): the two ADR-0061 plans keep lines under 120 chars",
-          "коммит": "3fa1ed684"
-        },
-        {
-          "текст": "style(self): the batch keeps every added line under 120 characters",
-          "коммит": "c07c53267"
-        },
-        {
-          "текст": "test(probes): the generator probe is named in English words",
-          "коммит": "176d800cc"
-        },
-        {
-          "текст": "chore(ledger): the proved-share rows count the fraction promises",
-          "коммит": "ff1b3c44a"
-        },
-        {
-          "текст": "test(probes): the exact-integer division refusal names the remainder",
-          "коммит": "b1a8e9c72"
-        },
-        {
-          "текст": "chore(seed): reprint the seed with the exact fraction (print 4)",
-          "коммит": "0c46d19a2"
-        },
-        {
-          "текст": "fix(self): the order over two exact fractions passes the typechecker",
-          "коммит": "cf278244a"
+          "текст": "chore(licenses): drop SPDX header lines from source files",
+          "коммит": "1149c78f7"
         }
       ],
-      "скрыто": 17
+      "скрыто": 2
+    },
+    {
+      "дата": "2026-10-08",
+      "записи": [
+        {
+          "текст": "style(emit): the chunked map lock in C# follows dotnet format too",
+          "коммит": "d728f8677"
+        },
+        {
+          "текст": "chore(ledgers): rule anchors and share rows follow the merged batch",
+          "коммит": "3dc92d9e5"
+        },
+        {
+          "текст": "feat(self): lay out printed C and C++ the way clang-format LLVM does",
+          "коммит": "39d82d0d1"
+        },
+        {
+          "текст": "feat(self): print C# arrays and lists as collection expressions",
+          "коммит": "ede306a19"
+        },
+        {
+          "текст": "style(emit): lay out the C and C++ runtimes with clang-format LLVM",
+          "коммит": "1d78d954a"
+        },
+        {
+          "текст": "style(emit): the C# runtime follows dotnet format at severity info",
+          "коммит": "56ca59543"
+        },
+        {
+          "текст": "test(bench): a gate for the parallel map and the monoid fold",
+          "коммит": "1aa961380"
+        },
+        {
+          "текст": "feat(emit): map and fold in chunks in Go, Java, C# and Elixir too",
+          "коммит": "13058c3bd"
+        },
+        {
+          "текст": "feat(check): the kernel judges monoid laws and marks the folds they cut",
+          "коммит": "0692c99e2"
+        },
+        {
+          "текст": "feat(kernel): the exact ring drops a written empty list from a sum",
+          "коммит": "e63dfdbfb"
+        },
+        {
+          "текст": "feat(emit): print a total map and a monoid fold in chunks in C",
+          "коммит": "7c2173903"
+        },
+        {
+          "текст": "chore(ledgers): pattern-shadow probes get English names and share rows",
+          "коммит": "5b17b4812"
+        },
+        {
+          "текст": "test(proof): register the pattern-shadow hole with probes and a template",
+          "коммит": "b2ee86685"
+        },
+        {
+          "текст": "fix(kernel): a pattern name that shadows a parameter refuses induction",
+          "коммит": "fe25a76aa"
+        },
+        {
+          "текст": "build(seed): reseed the runtime mirror for the plain check messages",
+          "коммит": "ee5404123"
+        },
+        {
+          "текст": "fix(cli): check messages name the proof report in plain words",
+          "коммит": "3190d01e7"
+        },
+        {
+          "текст": "fix(checker): the literal law reads a zero in parentheses",
+          "коммит": "9f0181997"
+        },
+        {
+          "текст": "chore(proof): forgery-probes ratchet follows the verdict",
+          "коммит": "5da1af503"
+        },
+        {
+          "текст": "fix(checker): close the gaps the second checker found",
+          "коммит": "d9a885669"
+        },
+        {
+          "текст": "feat(checker): the second checker gives a verdict on every record",
+          "коммит": "b99af39db"
+        },
+        {
+          "текст": "build(seed): reseed the runtime mirror after rebase",
+          "коммит": "6df405902"
+        },
+        {
+          "текст": "build(seed): reseed the runtime mirror after rebase",
+          "коммит": "ce2d4d12c"
+        },
+        {
+          "текст": "build(seed): reseed the runtime mirror for the cost report",
+          "коммит": "3585b88c9"
+        },
+        {
+          "текст": "feat(run): flang run --cost and the runner's cost field report the price",
+          "коммит": "9a807e1e5"
+        },
+        {
+          "текст": "test(probes): keep the conditional syllogism premise unproved",
+          "коммит": "7ca01eba8"
+        }
+      ],
+      "скрыто": 39
+    },
+    {
+      "дата": "2026-10-07",
+      "записи": [
+        {
+          "текст": "feat(runtime): the C runtime maps and folds a list in chunks on a pool",
+          "коммит": "65864e766"
+        },
+        {
+          "текст": "docs(adr): 0084 adds Perep1, Skl1-Skl3 and Sv2 with their ledger rows",
+          "коммит": "ebbc1a94e"
+        },
+        {
+          "текст": "test(checker): rewriting, found witness and inner quantifier probes",
+          "коммит": "17227d358"
+        },
+        {
+          "текст": "fix(self): rewriting helpers defined once and named apart",
+          "коммит": "a2e3f40a1"
+        },
+        {
+          "текст": "feat(lean): measure of the concat laws, Sv2 and the IEEE counterexample",
+          "коммит": "fb7553c77"
+        },
+        {
+          "текст": "feat(checker): kinds of a rewrite rule and a witness found by the kernel",
+          "коммит": "77cdc709b"
+        },
+        {
+          "текст": "feat(self): rewrite by proved equality, inner and found witness",
+          "коммит": "9f62c53b2"
+        },
+        {
+          "текст": "fix(checker): no length laws and reductions keep their place",
+          "коммит": "a17fb376f"
+        },
+        {
+          "текст": "test(checker): probes for case splits that use facts",
+          "коммит": "8c4860e4d"
+        },
+        {
+          "текст": "feat(checker): evaluator knows or, not, element and character",
+          "коммит": "5b9783ca5"
+        },
+        {
+          "текст": "feat(checker): lengths are counted and split facts follow the half",
+          "коммит": "b54dc0268"
+        },
+        {
+          "текст": "feat(checker): requires and replayed callee promises as facts",
+          "коммит": "dd9dcd856"
+        },
+        {
+          "текст": "feat(checker): a half that does not close unfolds calls once",
+          "коммит": "a9d533c09"
+        },
+        {
+          "текст": "feat(checker): algebra node cases read like the goal split",
+          "коммит": "309a7c0d1"
+        },
+        {
+          "текст": "fix(checker): substitution skips field names and string literals",
+          "коммит": "1712db391"
+        },
+        {
+          "текст": "feat(checker): case split over match bodies and quoted strings",
+          "коммит": "348e48293"
+        },
+        {
+          "текст": "feat(checker): case split reads more bodies and links atoms",
+          "коммит": "425b8a103"
+        },
+        {
+          "текст": "refactor(registry): the lock fix and the registry job carry no comments",
+          "коммит": "d9d6304db"
+        },
+        {
+          "текст": "refactor(repl): the plan judge call and its CI job carry no comments",
+          "коммит": "fe5c30037"
+        },
+        {
+          "текст": "chore(seed): reprint the seed by its own printer (print 2)",
+          "коммит": "2c25eea58"
+        },
+        {
+          "текст": "fix(emit): printed JS arithmetic returns any to the TypeScript checker",
+          "коммит": "dcb7e1772"
+        },
+        {
+          "текст": "test(probes): the integer part of a fraction agrees in ten targets",
+          "коммит": "aaf81b243"
+        },
+        {
+          "текст": "chore(proof): ratchets follow the verdict on the 0.7.26 seed",
+          "коммит": "1b0632ccf"
+        },
+        {
+          "текст": "chore(seed): reprint the seed from the 0.7.26 batch",
+          "коммит": "a8e8b4d6c"
+        },
+        {
+          "текст": "docs(tls): an HTTPS GET plan, RFC 8448 vectors, forgeries and ADR-0078",
+          "коммит": "358116491"
+        },
+        {
+          "текст": "feat(stdlib): a TLS 1.3 client and a certificate path check",
+          "коммит": "42666cd4c"
+        },
+        {
+          "текст": "feat(stdlib): verify RSA-PSS and fix the modulus remainder in rsa",
+          "коммит": "5951f9c68"
+        },
+        {
+          "текст": "feat(host): hand out random octets from the system source",
+          "коммит": "5088b6216"
+        },
+        {
+          "текст": "perf(runtime): only the watching thread writes names on the call path",
+          "коммит": "d4f7978e5"
+        },
+        {
+          "текст": "feat(proof): cache kernel answers across runs in a signed directory",
+          "коммит": "c4fbf7bb0"
+        },
+        {
+          "текст": "feat(emit): lay printed code out the way each target's formatter does",
+          "коммит": "70c21594a"
+        },
+        {
+          "текст": "fix(emit): escape characters the targets refuse in string literals",
+          "коммит": "9a8b2da70"
+        },
+        {
+          "текст": "test(probes): exact actions agree between the evaluator and ten targets",
+          "коммит": "f78b3af94"
+        },
+        {
+          "текст": "feat(self): the integer part of an exact fraction is a built-in form",
+          "коммит": "fef758fa1"
+        },
+        {
+          "текст": "feat(emit): every target runtime computes exact integers and fractions",
+          "коммит": "dd8d86a37"
+        },
+        {
+          "текст": "chore(ledger): test names in English words, counts follow the tree",
+          "коммит": "4fe633bae"
+        },
+        {
+          "текст": "docs(adr): 0075 adds Ind5, Ind6 and Cel3 with their ledger rows",
+          "коммит": "52e2c8f6d"
+        },
+        {
+          "текст": "test(checker): three families for segment-form, Cel3 and enumeration",
+          "коммит": "50c6220c9"
+        },
+        {
+          "текст": "feat(lean): lemmas and traps for Ind5, Ind6 and Cel3, Cel3 accepted",
+          "коммит": "8dfe55a19"
+        },
+        {
+          "текст": "feat(checker): replay segment-form principles and the Cel3 move",
+          "коммит": "956398e76"
+        },
+        {
+          "текст": "feat(self): segment induction, integer tightening and enumeration",
+          "коммит": "b71f1f76a"
+        },
+        {
+          "текст": "test(falsifier): keep only the findings trunk still has",
+          "коммит": "ca79e11d7"
+        },
+        {
+          "текст": "refactor(falsifier): rewrite the probe sources to pass flang lint",
+          "коммит": "2bd57976c"
+        },
+        {
+          "текст": "chore(proof): ratchets and the default row after the kernel-trust merge",
+          "коммит": "c2bd85b40"
+        },
+        {
+          "текст": "fix(checker): the second checker file is named in English words",
+          "коммит": "81964a1bd"
+        },
+        {
+          "текст": "feat(checker): a second record checker in Lean, crosschecked with C",
+          "коммит": "437e4e1d8"
+        },
+        {
+          "текст": "test(share): the empty-record probes expect the checker to refuse",
+          "коммит": "54f3edb3b"
+        },
+        {
+          "текст": "fix(checker): a record with nothing proved answers 3, not 0",
+          "коммит": "b4943a1d2"
+        },
+        {
+          "текст": "fix(proof): every kernel rule has a table row, and the guard says so",
+          "коммит": "4fbbe709d"
+        },
+        {
+          "текст": "feat(lean): the last five checker moves enter the acceptance",
+          "коммит": "05ac67c2b"
+        },
+        {
+          "текст": "build(seed): reseed the runtime mirror after rebase",
+          "коммит": "47626c560"
+        },
+        {
+          "текст": "feat(cli): check --proof says how much the checker replayed",
+          "коммит": "c7970184c"
+        },
+        {
+          "текст": "feat(proof): count proved statements the checker replays, set by set",
+          "коммит": "f7d0fba38"
+        },
+        {
+          "текст": "feat(checker): replay conditional bodies the kernel closes by case split",
+          "коммит": "7f357fe27"
+        },
+        {
+          "текст": "feat(bench): pool scaling bench is a plan, ADR-0072 on parallelism",
+          "коммит": "07407b8b7"
+        }
+      ],
+      "скрыто": 51
     },
     {
       "дата": "2026-10-04",
       "записи": [
+        {
+          "текст": "fix(lock): every form of a dependency reaches the lock file",
+          "коммит": "1f2f8ea9b"
+        },
+        {
+          "текст": "feat(guards): registry resolution is proved by a corpus and a forgery",
+          "коммит": "52f86a2aa"
+        },
+        {
+          "текст": "fix(repl): check asks the plan judge and twelve forgeries fail",
+          "коммит": "c12bcbbb0"
+        },
+        {
+          "текст": "feat(probes): a user story is written in nine fixed sentence forms",
+          "коммит": "00ec96a68"
+        },
         {
           "текст": "test(probes): thirteen programs ask the exact fraction before the print",
           "коммит": "e1875be71"
@@ -40966,61 +41306,31 @@
           "коммит": "efdab6497"
         }
       ],
-      "скрыто": 95
-    },
-    {
-      "дата": "2026-10-03",
-      "записи": [
-        {
-          "текст": "chore(release): point the Homebrew tap at 0.7.24",
-          "коммит": "1eaf6a593"
-        },
-        {
-          "текст": "chore(release): the Homebrew formula knows the 0.7.24 archive hash",
-          "коммит": "73bbd80d8"
-        },
-        {
-          "текст": "chore(release): version 0.7.24 and its release notes",
-          "коммит": "c7226d395"
-        },
-        {
-          "текст": "build(seed): reprint the seed after the reflow",
-          "коммит": "4dbdc2d71"
-        },
-        {
-          "текст": "fix(lexer): the new complaint helper gets a name of its own",
-          "коммит": "7dcfccfba"
-        },
-        {
-          "текст": "style(self): reflow the lines the 0.7.24 gate flagged",
-          "коммит": "a1b84be1f"
-        },
-        {
-          "текст": "chore(ledgers): the ceilings and the inventory follow the new seed",
-          "коммит": "591797e0a"
-        },
-        {
-          "текст": "fix(proof): three soundness violations are closed by the new seed",
-          "коммит": "b95064d7a"
-        },
-        {
-          "текст": "build(seed): reprint the seed for 0.7.24",
-          "коммит": "15a64f627"
-        },
-        {
-          "текст": "fix(probes): the checker finds no record when the kernel refuses",
-          "коммит": "8c67fb3ad"
-        },
-        {
-          "текст": "test(probes): measure that the exact integer is absent",
-          "коммит": "d36dadb1d"
-        }
-      ],
-      "скрыто": 72
+      "скрыто": 103
     },
     {
       "дата": "2026-10-02",
       "записи": [
+        {
+          "текст": "style(falsifier): wrap the probe sources where the grammar allows",
+          "коммит": "0dd2575f4"
+        },
+        {
+          "текст": "test(falsifier): count the checker refusing theorem-only hypotheses",
+          "коммит": "fad0c0a47"
+        },
+        {
+          "текст": "docs(proof): name the parenthesised shape of the open-term record",
+          "коммит": "09c4dccb3"
+        },
+        {
+          "текст": "docs(proof): register what the falsifier found",
+          "коммит": "3b9c66ed8"
+        },
+        {
+          "текст": "test(proof): search for false proofs with a falsifier probe",
+          "коммит": "5110733d0"
+        },
         {
           "текст": "refactor(self): english file names and no comments in compiler sources",
           "коммит": "10f514368"
@@ -41078,7 +41388,141 @@
           "коммит": "66b6d82ce"
         }
       ],
-      "скрыто": 89
+      "скрыто": 90
+    },
+    {
+      "дата": "2026-10-06",
+      "записи": [
+        {
+          "текст": "chore(release): point the Homebrew tap at 0.7.25",
+          "коммит": "6286aafed"
+        },
+        {
+          "текст": "chore(release): the Homebrew formula knows the 0.7.25 archive hash",
+          "коммит": "84da55071"
+        },
+        {
+          "текст": "chore(release): version 0.7.25 and its release notes",
+          "коммит": "40d302537"
+        },
+        {
+          "текст": "fix(proof): the new forgery is named and the zettel link resolves",
+          "коммит": "fa1b622c0"
+        }
+      ],
+      "скрыто": 7
+    },
+    {
+      "дата": "2026-10-05",
+      "записи": [
+        {
+          "текст": "fix(checker): a case split refuses its condition under a binder",
+          "коммит": "25b95f1d1"
+        },
+        {
+          "текст": "feat(lean): moves n6 and o9 enter the acceptance with their theorems",
+          "коммит": "703f16bc5"
+        },
+        {
+          "текст": "feat(proof): a guard counts checker moves against the lean acceptance",
+          "коммит": "9dfecf521"
+        },
+        {
+          "текст": "fix(ci): the ten-target probe waits for dotnet and names a missing tsc",
+          "коммит": "d0961a18f"
+        },
+        {
+          "текст": "chore(seed): reprint the seed after the line-length pass (print 5)",
+          "коммит": "cba8740de"
+        },
+        {
+          "текст": "chore(ledger): marks and share rows follow the shortened lines",
+          "коммит": "ca28a90c4"
+        },
+        {
+          "текст": "style(guards): the last ten long lines of the batch are under 120 chars",
+          "коммит": "fe1e81bcc"
+        },
+        {
+          "текст": "style(bench): the two ADR-0061 plans keep lines under 120 chars",
+          "коммит": "3fa1ed684"
+        },
+        {
+          "текст": "style(self): the batch keeps every added line under 120 characters",
+          "коммит": "c07c53267"
+        },
+        {
+          "текст": "test(probes): the generator probe is named in English words",
+          "коммит": "176d800cc"
+        },
+        {
+          "текст": "chore(ledger): the proved-share rows count the fraction promises",
+          "коммит": "ff1b3c44a"
+        },
+        {
+          "текст": "test(probes): the exact-integer division refusal names the remainder",
+          "коммит": "b1a8e9c72"
+        },
+        {
+          "текст": "chore(seed): reprint the seed with the exact fraction (print 4)",
+          "коммит": "0c46d19a2"
+        },
+        {
+          "текст": "fix(self): the order over two exact fractions passes the typechecker",
+          "коммит": "cf278244a"
+        }
+      ],
+      "скрыто": 17
+    },
+    {
+      "дата": "2026-10-03",
+      "записи": [
+        {
+          "текст": "chore(release): point the Homebrew tap at 0.7.24",
+          "коммит": "1eaf6a593"
+        },
+        {
+          "текст": "chore(release): the Homebrew formula knows the 0.7.24 archive hash",
+          "коммит": "73bbd80d8"
+        },
+        {
+          "текст": "chore(release): version 0.7.24 and its release notes",
+          "коммит": "c7226d395"
+        },
+        {
+          "текст": "build(seed): reprint the seed after the reflow",
+          "коммит": "4dbdc2d71"
+        },
+        {
+          "текст": "fix(lexer): the new complaint helper gets a name of its own",
+          "коммит": "7dcfccfba"
+        },
+        {
+          "текст": "style(self): reflow the lines the 0.7.24 gate flagged",
+          "коммит": "a1b84be1f"
+        },
+        {
+          "текст": "chore(ledgers): the ceilings and the inventory follow the new seed",
+          "коммит": "591797e0a"
+        },
+        {
+          "текст": "fix(proof): three soundness violations are closed by the new seed",
+          "коммит": "b95064d7a"
+        },
+        {
+          "текст": "build(seed): reprint the seed for 0.7.24",
+          "коммит": "15a64f627"
+        },
+        {
+          "текст": "fix(probes): the checker finds no record when the kernel refuses",
+          "коммит": "8c67fb3ad"
+        },
+        {
+          "текст": "test(probes): measure that the exact integer is absent",
+          "коммит": "d36dadb1d"
+        }
+      ],
+      "скрыто": 72
     },
     {
       "дата": "2026-10-01",

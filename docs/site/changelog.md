@@ -12,7 +12,7 @@
 
 Под вливанием перечислены заголовки его коммитов — но не все. Правка, от которой язык снаружи не меняется (план, спецификация, проверка, скрипт), сосчитана и не названа: правило то же самое, что у журнала коммитов, и взято из него же, а не написано заново. Числа рядом с вливанием считаются по ВСЕМУ дереву и никакой правки не теряют.
 
-Правило видимости не знает корней: `flang/translation` (путей 21), `flang/experimental` (путей 5), `.flangrc` (путей 1), `"docs` (путей 1), `flangtutor` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
+Правило видимости не знает корней: `flang/translation` (путей 21), `flang/foreign` (путей 13), `flang/experimental` (путей 5), `.flangrc` (путей 1), `"docs` (путей 1), `flangtutor` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
 
 ## Чем считано
 
@@ -33,66 +33,151 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `6286aafed` от 6 октября 2026. Шагов ствола 3469, из них вливаний 1212; коммитов в истории 8473.
+Дерево на коммите `daf89c5c9` от 11 октября 2026. Шагов ствола 3743, из них вливаний 1212; коммитов в истории 8747.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 115645 | −17986 | −15727 |
-| Программ на flang | 760 | +135 | +199 |
-| Объявлений `тотальная функция` | 12622 | +677 | −1428 |
-| Объявлений `функция` | 2550 | +53 | +108 |
-| Объявлений `теорема` | 310 | +22 | +26 |
+| Эталон компилятора на flang | 121085 | −17986 | −10287 |
+| Программ на flang | 800 | +135 | +239 |
+| Объявлений `тотальная функция` | 13940 | +677 | −110 |
+| Объявлений `функция` | 3088 | +53 | +646 |
+| Объявлений `теорема` | 353 | +22 | +69 |
 | Файлов проверок | 3 | 0 | 0 |
-| Заметок базы знаний | 730 | +8 | +58 |
+| Заметок базы знаний | 0 | +8 | −672 |
 
 «За десять последних» считается от дерева на десятом снизу вливании этого списка до сегодняшнего — то есть ровно то, что видно ниже в первых десяти записях.
 
-## 6 октября 2026
-
-**Merge main into dev before release 0.7.25**
-
-`97c319105` · коммитов 3
-
-Сдвинулось: эталон компилятора на flang 133631 → 115645 (−17986); программ на flang 624 → 759 (+135); объявлений `тотальная функция` 11944 → 12621 (+677); объявлений `функция` 2497 → 2550 (+53); объявлений `теорема` 288 → 310 (+22); заметок базы знаний 720 → 728 (+8).
-
-- build(seed): reprint the seed for the LSP read fix (`5f0ae6adc`)
-- fix(lsp): answer while stdin is open and decode \uXXXX in JSON (`d6e973303`)
+## 11 октября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
-- chore(release): point the Homebrew tap at 0.7.25 (`6286aafed`)
-- chore(release): the Homebrew formula knows the 0.7.25 archive hash (`84da55071`)
-- chore(release): version 0.7.25 and its release notes (`40d302537`)
-- fix(proof): the new forgery is named and the zettel link resolves (`fa1b622c0`)
+- feat(ct): monoidal routes, maybe as monoid, kleisli arrows (`8c21827b0`)
+- test(ct): two adjunctions and yoneda are judged on the grid (`fe6a8507b`)
+- test(ct): product, coproduct and pullback are declared cones in flang/ct (`683ad13f4`)
+- chore(release): point the Homebrew tap at 0.7.26 (`83e848cae`)
+- chore(release): the Homebrew formula knows the 0.7.26 archive hash (`530b5c5b0`)
+- chore(release): version 0.7.26 and its release notes (`80f0d86d0`)
+- test(probes): the strict probe keeps an unjudged surface (`a18d45a20`)
+- chore(marks): the numbers follow the batch after the rebase (`721110a82`)
+- chore(seed): reprint the seed by its own printer (print 2) (`4dfbb7ffb`)
+- test(probes): greeting is replayed by the checker and the counts follow (`2be924621`)
 
-Ещё 6 правок языка снаружи не меняют.
+Ещё 69 правок языка снаружи не меняют.
 
-## 5 октября 2026
+## 9 октября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
-- fix(checker): a case split refuses its condition under a binder (`25b95f1d1`)
-- feat(lean): moves n6 and o9 enter the acceptance with their theorems (`703f16bc5`)
-- feat(proof): a guard counts checker moves against the lean acceptance (`9dfecf521`)
-- fix(ci): the ten-target probe waits for dotnet and names a missing tsc (`d0961a18f`)
-- chore(seed): reprint the seed after the line-length pass (print 5) (`cba8740de`)
-- chore(ledger): marks and share rows follow the shortened lines (`ca28a90c4`)
-- style(guards): the last ten long lines of the batch are under 120 chars (`fe1e81bcc`)
-- style(bench): the two ADR-0061 plans keep lines under 120 chars (`3fa1ed684`)
-- style(self): the batch keeps every added line under 120 characters (`c07c53267`)
-- test(probes): the generator probe is named in English words (`176d800cc`)
-- chore(ledger): the proved-share rows count the fraction promises (`ff1b3c44a`)
-- test(probes): the exact-integer division refusal names the remainder (`b1a8e9c72`)
-- chore(seed): reprint the seed with the exact fraction (print 4) (`0c46d19a2`)
-- fix(self): the order over two exact fractions passes the typechecker (`cf278244a`)
+- chore(targets): the canons ledger follows the seed of this batch (`70c078d1b`)
+- test(proof): the new seed closes the pattern-shadow hole (`cec9fc593`)
+- chore(seed): reprint the seed from the batch after 0.7.26 (`ee49268a0`)
+- chore(licenses): drop SPDX header lines from source files (`1149c78f7`)
 
-Ещё 17 правок языка снаружи не меняют.
+Ещё 2 правки языка снаружи не меняют.
+
+## 8 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- style(emit): the chunked map lock in C# follows dotnet format too (`d728f8677`)
+- chore(ledgers): rule anchors and share rows follow the merged batch (`3dc92d9e5`)
+- feat(self): lay out printed C and C++ the way clang-format LLVM does (`39d82d0d1`)
+- feat(self): print C# arrays and lists as collection expressions (`ede306a19`)
+- style(emit): lay out the C and C++ runtimes with clang-format LLVM (`1d78d954a`)
+- style(emit): the C# runtime follows dotnet format at severity info (`56ca59543`)
+- test(bench): a gate for the parallel map and the monoid fold (`1aa961380`)
+- feat(emit): map and fold in chunks in Go, Java, C# and Elixir too (`13058c3bd`)
+- feat(check): the kernel judges monoid laws and marks the folds they cut (`0692c99e2`)
+- feat(kernel): the exact ring drops a written empty list from a sum (`e63dfdbfb`)
+- feat(emit): print a total map and a monoid fold in chunks in C (`7c2173903`)
+- chore(ledgers): pattern-shadow probes get English names and share rows (`5b17b4812`)
+- test(proof): register the pattern-shadow hole with probes and a template (`b2ee86685`)
+- fix(kernel): a pattern name that shadows a parameter refuses induction (`fe25a76aa`)
+- build(seed): reseed the runtime mirror for the plain check messages (`ee5404123`)
+- fix(cli): check messages name the proof report in plain words (`3190d01e7`)
+- fix(checker): the literal law reads a zero in parentheses (`9f0181997`)
+- chore(proof): forgery-probes ratchet follows the verdict (`5da1af503`)
+- fix(checker): close the gaps the second checker found (`d9a885669`)
+- feat(checker): the second checker gives a verdict on every record (`b99af39db`)
+- build(seed): reseed the runtime mirror after rebase (`6df405902`)
+- build(seed): reseed the runtime mirror after rebase (`ce2d4d12c`)
+- build(seed): reseed the runtime mirror for the cost report (`3585b88c9`)
+- feat(run): flang run --cost and the runner's cost field report the price (`9a807e1e5`)
+- test(probes): keep the conditional syllogism premise unproved (`7ca01eba8`)
+
+Ещё 39 правок языка снаружи не меняют.
+
+## 7 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- feat(runtime): the C runtime maps and folds a list in chunks on a pool (`65864e766`)
+- docs(adr): 0084 adds Perep1, Skl1-Skl3 and Sv2 with their ledger rows (`ebbc1a94e`)
+- test(checker): rewriting, found witness and inner quantifier probes (`17227d358`)
+- fix(self): rewriting helpers defined once and named apart (`a2e3f40a1`)
+- feat(lean): measure of the concat laws, Sv2 and the IEEE counterexample (`fb7553c77`)
+- feat(checker): kinds of a rewrite rule and a witness found by the kernel (`77cdc709b`)
+- feat(self): rewrite by proved equality, inner and found witness (`9f62c53b2`)
+- fix(checker): no length laws and reductions keep their place (`a17fb376f`)
+- test(checker): probes for case splits that use facts (`8c4860e4d`)
+- feat(checker): evaluator knows or, not, element and character (`5b9783ca5`)
+- feat(checker): lengths are counted and split facts follow the half (`b54dc0268`)
+- feat(checker): requires and replayed callee promises as facts (`dd9dcd856`)
+- feat(checker): a half that does not close unfolds calls once (`a9d533c09`)
+- feat(checker): algebra node cases read like the goal split (`309a7c0d1`)
+- fix(checker): substitution skips field names and string literals (`1712db391`)
+- feat(checker): case split over match bodies and quoted strings (`348e48293`)
+- feat(checker): case split reads more bodies and links atoms (`425b8a103`)
+- refactor(registry): the lock fix and the registry job carry no comments (`d9d6304db`)
+- refactor(repl): the plan judge call and its CI job carry no comments (`fe5c30037`)
+- chore(seed): reprint the seed by its own printer (print 2) (`2c25eea58`)
+- fix(emit): printed JS arithmetic returns any to the TypeScript checker (`dcb7e1772`)
+- test(probes): the integer part of a fraction agrees in ten targets (`aaf81b243`)
+- chore(proof): ratchets follow the verdict on the 0.7.26 seed (`1b0632ccf`)
+- chore(seed): reprint the seed from the 0.7.26 batch (`a8e8b4d6c`)
+- docs(tls): an HTTPS GET plan, RFC 8448 vectors, forgeries and ADR-0078 (`358116491`)
+- feat(stdlib): a TLS 1.3 client and a certificate path check (`42666cd4c`)
+- feat(stdlib): verify RSA-PSS and fix the modulus remainder in rsa (`5951f9c68`)
+- feat(host): hand out random octets from the system source (`5088b6216`)
+- perf(runtime): only the watching thread writes names on the call path (`d4f7978e5`)
+- feat(proof): cache kernel answers across runs in a signed directory (`c4fbf7bb0`)
+- feat(emit): lay printed code out the way each target's formatter does (`70c21594a`)
+- fix(emit): escape characters the targets refuse in string literals (`9a8b2da70`)
+- test(probes): exact actions agree between the evaluator and ten targets (`f78b3af94`)
+- feat(self): the integer part of an exact fraction is a built-in form (`fef758fa1`)
+- feat(emit): every target runtime computes exact integers and fractions (`dd8d86a37`)
+- chore(ledger): test names in English words, counts follow the tree (`4fe633bae`)
+- docs(adr): 0075 adds Ind5, Ind6 and Cel3 with their ledger rows (`52e2c8f6d`)
+- test(checker): three families for segment-form, Cel3 and enumeration (`50c6220c9`)
+- feat(lean): lemmas and traps for Ind5, Ind6 and Cel3, Cel3 accepted (`8dfe55a19`)
+- feat(checker): replay segment-form principles and the Cel3 move (`956398e76`)
+- feat(self): segment induction, integer tightening and enumeration (`b71f1f76a`)
+- test(falsifier): keep only the findings trunk still has (`ca79e11d7`)
+- refactor(falsifier): rewrite the probe sources to pass flang lint (`2bd57976c`)
+- chore(proof): ratchets and the default row after the kernel-trust merge (`c2bd85b40`)
+- fix(checker): the second checker file is named in English words (`81964a1bd`)
+- feat(checker): a second record checker in Lean, crosschecked with C (`437e4e1d8`)
+- test(share): the empty-record probes expect the checker to refuse (`54f3edb3b`)
+- fix(checker): a record with nothing proved answers 3, not 0 (`b4943a1d2`)
+- fix(proof): every kernel rule has a table row, and the guard says so (`4fbbe709d`)
+- feat(lean): the last five checker moves enter the acceptance (`05ac67c2b`)
+- build(seed): reseed the runtime mirror after rebase (`47626c560`)
+- feat(cli): check --proof says how much the checker replayed (`c7970184c`)
+- feat(proof): count proved statements the checker replays, set by set (`f7d0fba38`)
+- feat(checker): replay conditional bodies the kernel closes by case split (`7f357fe27`)
+- feat(bench): pool scaling bench is a plan, ADR-0072 on parallelism (`07407b8b7`)
+
+Ещё 51 правка языка снаружи не меняет.
 
 ## 4 октября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
+- fix(lock): every form of a dependency reaches the lock file (`1f2f8ea9b`)
+- feat(guards): registry resolution is proved by a corpus and a forgery (`52f86a2aa`)
+- fix(repl): check asks the plan judge and twelve forgeries fail (`c12bcbbb0`)
+- feat(probes): a user story is written in nine fixed sentence forms (`00ec96a68`)
 - test(probes): thirteen programs ask the exact fraction before the print (`e1875be71`)
 - feat(self): the exact fraction is a reduced pair of exact integers (`f9a3de01f`)
 - docs(adr): the process-limit decision takes number 0061, 0056 is on dev (`a98f29eae`)
@@ -121,7 +206,74 @@
 - test(probes): run verdict surfaces and import order get probes (`76b68dd49`)
 - fix(ledger): all 112 rule anchors point at real kernel lines again (`efdab6497`)
 
-Ещё 95 правок языка снаружи не меняют.
+Ещё 103 правки языка снаружи не меняют.
+
+## 2 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- style(falsifier): wrap the probe sources where the grammar allows (`0dd2575f4`)
+- test(falsifier): count the checker refusing theorem-only hypotheses (`fad0c0a47`)
+- docs(proof): name the parenthesised shape of the open-term record (`09c4dccb3`)
+- docs(proof): register what the falsifier found (`3b9c66ed8`)
+- test(proof): search for false proofs with a falsifier probe (`5110733d0`)
+- refactor(self): english file names and no comments in compiler sources (`10f514368`)
+- fix(tutor): pick a locale and an awk that keep UTF-8 whole (`e8f7187ce`)
+- refactor(names): the lesson extension of the tutor becomes english (`60d9e41b9`)
+- refactor(names): 14 cyrillic names and 4 fixture dirs become english (`8f964e711`)
+- fix(checker): a property step over a free statement is replayed (`9dea6fd5a`)
+- fix(test): name the scenario blocks nothing ran and exit 3 (`293767169`)
+- fix(stdlib): date from days holds below year one (`eaaf74ea8`)
+- fix(tutor): the word list of the tutor catches up with the lexer (`d746cdc90`)
+- feat(checker): a strict key tells an empty ledger from a proof (`319c9800e`)
+- fix(tutor): the lesson value is read from stdout alone (`c94e49c4f`)
+- fix(checker): an identity over an open term is replayed, not a lie (`cec6de523`)
+- build(seed): copy the lint runtime after the rebase onto profiles (`aee445bda`)
+- test(probes): expect the checker to refuse the theorem-only hypothesis (`a91b02ed0`)
+- chore(numbers): raise checker ratchets after the rebase onto fmath (`66b6d82ce`)
+
+Ещё 90 правок языка снаружи не меняют.
+
+## 6 октября 2026
+
+**Merge main into dev before release 0.7.25**
+
+`97c319105` · коммитов 3
+
+Сдвинулось: эталон компилятора на flang 133631 → 115645 (−17986); программ на flang 624 → 759 (+135); объявлений `тотальная функция` 11944 → 12621 (+677); объявлений `функция` 2497 → 2550 (+53); объявлений `теорема` 288 → 310 (+22); заметок базы знаний 720 → 728 (+8).
+
+- build(seed): reprint the seed for the LSP read fix (`5f0ae6adc`)
+- fix(lsp): answer while stdin is open and decode \uXXXX in JSON (`d6e973303`)
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): point the Homebrew tap at 0.7.25 (`6286aafed`)
+- chore(release): the Homebrew formula knows the 0.7.25 archive hash (`84da55071`)
+- chore(release): version 0.7.25 and its release notes (`40d302537`)
+- fix(proof): the new forgery is named and the zettel link resolves (`fa1b622c0`)
+
+Ещё 7 правок языка снаружи не меняют.
+
+## 5 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- fix(checker): a case split refuses its condition under a binder (`25b95f1d1`)
+- feat(lean): moves n6 and o9 enter the acceptance with their theorems (`703f16bc5`)
+- feat(proof): a guard counts checker moves against the lean acceptance (`9dfecf521`)
+- fix(ci): the ten-target probe waits for dotnet and names a missing tsc (`d0961a18f`)
+- chore(seed): reprint the seed after the line-length pass (print 5) (`cba8740de`)
+- chore(ledger): marks and share rows follow the shortened lines (`ca28a90c4`)
+- style(guards): the last ten long lines of the batch are under 120 chars (`fe1e81bcc`)
+- style(bench): the two ADR-0061 plans keep lines under 120 chars (`3fa1ed684`)
+- style(self): the batch keeps every added line under 120 characters (`c07c53267`)
+- test(probes): the generator probe is named in English words (`176d800cc`)
+- chore(ledger): the proved-share rows count the fraction promises (`ff1b3c44a`)
+- test(probes): the exact-integer division refusal names the remainder (`b1a8e9c72`)
+- chore(seed): reprint the seed with the exact fraction (print 4) (`0c46d19a2`)
+- fix(self): the order over two exact fractions passes the typechecker (`cf278244a`)
+
+Ещё 17 правок языка снаружи не меняют.
 
 ## 3 октября 2026
 
@@ -140,27 +292,6 @@
 - test(probes): measure that the exact integer is absent (`d36dadb1d`)
 
 Ещё 72 правки языка снаружи не меняют.
-
-## 2 октября 2026
-
-Приехало прямо в ствол, мимо ветки:
-
-- refactor(self): english file names and no comments in compiler sources (`10f514368`)
-- fix(tutor): pick a locale and an awk that keep UTF-8 whole (`e8f7187ce`)
-- refactor(names): the lesson extension of the tutor becomes english (`60d9e41b9`)
-- refactor(names): 14 cyrillic names and 4 fixture dirs become english (`8f964e711`)
-- fix(checker): a property step over a free statement is replayed (`9dea6fd5a`)
-- fix(test): name the scenario blocks nothing ran and exit 3 (`293767169`)
-- fix(stdlib): date from days holds below year one (`eaaf74ea8`)
-- fix(tutor): the word list of the tutor catches up with the lexer (`d746cdc90`)
-- feat(checker): a strict key tells an empty ledger from a proof (`319c9800e`)
-- fix(tutor): the lesson value is read from stdout alone (`c94e49c4f`)
-- fix(checker): an identity over an open term is replayed, not a lie (`cec6de523`)
-- build(seed): copy the lint runtime after the rebase onto profiles (`aee445bda`)
-- test(probes): expect the checker to refuse the theorem-only hypothesis (`a91b02ed0`)
-- chore(numbers): raise checker ratchets after the rebase onto fmath (`66b6d82ce`)
-
-Ещё 89 правок языка снаружи не меняют.
 
 ## 1 октября 2026
 

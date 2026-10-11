@@ -6,6 +6,40 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.26 — 11 October 2026
+
+**TLS in the language, host entropy, cost before the run, a kernel cache and a second checker in Lean**
+
+### What appeared
+
+- **TLS 1.3 is assembled in the language and runs printed** (ADR-0078). `flang/stdlib/tls-client.flang` and `certificate-path.flang`: the handshake, the server signature RSA-PSS (all 60 vectors of `pss-vect.txt` accepted, forgeries refused), the chain to a root, the validity window, `basicConstraints` and the host name, against the live host `www.google.com` up to GTS Root R1. The `«Запросить»` order over https still goes through curl: named, not hidden.
+- **The host hands out octets from the system random source** (ADR-0077): the order «Случайные октеты» with a `сколько` field answers «Октеты». The main argument of ADR-0007, that a program has nowhere to take a secret from, is gone.
+- **Exact integers and exact fractions print into all ten targets**; every target runtime computes them itself; `целая часть` is a built-in unary form (ADR-0074); the remainder over the exact integer; probes compare the evaluator with the ten targets byte for byte.
+- **The cost of a function is known before the run** (ADR-0083): `flang run --cost` and the runner's `cost` field print the step and memory bound from the input sizes.
+- **A proof cache remembers kernel answers across runs** in a signed directory (ADR-0080); the one-run memo of ADR-0051 became memory between runs.
+- **The second record checker is written in Lean 4** (ADR-0076) and crosschecked with the C checker; only what the checker replays counts as proved (ADR-0073); `check --proof` says how much was replayed.
+- **Kernel rules**: segment induction, integer tightening and enumeration of a finite sum (ADR-0075: Инд5, Инд6, Цел3) and rewriting a goal by a proved equality with a quantifier inside a formula (ADR-0084: Переп1, Скл1–Скл3, Св2), each with a Lean lemma and a trap.
+- **Normal parallelism** (ADR-0072): the pool, the pure map and a proved monoid; printed C, Go, Java, C# and Elixir map and fold a list in chunks; the kernel judges monoid laws and marks the folds it cuts.
+- **A foreign language enters through an untrusted translator** (ADR-0058): C loops, assignments, calls and structs are translated to flang and judged by the kernel.
+- **Printed code follows the canon of its target** (ADR-0081): the formatter and the linter of each of the ten targets accept the print without edits; C and C++ are laid out like clang-format LLVM, C# like dotnet format.
+- **DESCRIPTION.md mirrors the language**: it names every lexer word, every `flang --help` command and every settings key, a census guard keeps it so, and the release body lists the changed sections of the description.
+- **The checker's case split reads more bodies and links atoms**: `требует` hypotheses and replayed callee promises are facts, lengths are counted and split by the half; the user program `greeting` is now replayed by the checker.
+
+### What changed
+
+- **The licence lives in one `LICENSE` file**: SPDX lines left the sources (112 files), the licence guard checks one root file.
+- **The seed was reprinted twice** by the batch after 0.7.26: a print by its own printer and a second print that is the fixed point (`compiler_flang.c` 43 917 383 bytes).
+- **The site number guard measures what `numbers:build` prints**; the corpus numbers on the site were retaken on the current tree.
+- **The package lock**: every form of a dependency reaches the lock file; registry resolution is proved by a corpus and a forgery.
+- **`check` messages name the proof report in plain words**; the registry page is printed without internal words.
+- **Census guards are flang plans proved by the kernel**, not shell: the hand-written list census, the judge census, the uncalled-check census.
+
+### What broke
+
+- **A record with nothing proved answers 3, not 0**: the checker no longer stays silent on an empty record.
+- **The second checker module and the hand-written-list forgery code are English words**; the old names are not read.
+- **The kernel refuses induction when a pattern name shadows a parameter**: programs that lived on that hole stop proving.
+
 ## 0.7.25 — 6 October 2026
 
 **Exact integer and exact fraction, a child's limit named by the order, the registry page**

@@ -2,12 +2,425 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.25",
-  "latest": "0.7.25",
+  "declared": "0.7.26",
+  "latest": "0.7.26",
   "unclassified": [
-    "flang/experimental"
+    "flang/experimental",
+    "flang/foreign"
   ],
   "releases": [
+    {
+      "version": "0.7.26",
+      "tag": "v0.7.26",
+      "date": "2026-10-11",
+      "human": "11 октября 2026",
+      "commit": "83e848c",
+      "title": null,
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): point the Homebrew tap at 0.7.26",
+          "commit": "83e848c"
+        },
+        {
+          "text": "chore(release): the Homebrew formula knows the 0.7.26 archive hash",
+          "commit": "530b5c5"
+        },
+        {
+          "text": "chore(release): version 0.7.26 and its release notes",
+          "commit": "80f0d86"
+        },
+        {
+          "text": "test(probes): the strict probe keeps an unjudged surface",
+          "commit": "a18d45a"
+        },
+        {
+          "text": "chore(marks): the numbers follow the batch after the rebase",
+          "commit": "721110a"
+        },
+        {
+          "text": "chore(seed): reprint the seed by its own printer (print 2)",
+          "commit": "4dfbb7f"
+        },
+        {
+          "text": "chore(targets): the canons ledger follows the seed of this batch",
+          "commit": "70c078d"
+        },
+        {
+          "text": "test(proof): the new seed closes the pattern-shadow hole",
+          "commit": "cec9fc5"
+        },
+        {
+          "text": "chore(seed): reprint the seed from the batch after 0.7.26",
+          "commit": "ee49268"
+        },
+        {
+          "text": "style(emit): the chunked map lock in C# follows dotnet format too",
+          "commit": "d728f86"
+        },
+        {
+          "text": "chore(ledgers): rule anchors and share rows follow the merged batch",
+          "commit": "3dc92d9"
+        },
+        {
+          "text": "feat(self): lay out printed C and C++ the way clang-format LLVM does",
+          "commit": "39d82d0"
+        },
+        {
+          "text": "feat(self): print C# arrays and lists as collection expressions",
+          "commit": "ede306a"
+        },
+        {
+          "text": "style(emit): lay out the C and C++ runtimes with clang-format LLVM",
+          "commit": "1d78d95"
+        },
+        {
+          "text": "style(emit): the C# runtime follows dotnet format at severity info",
+          "commit": "56ca595"
+        },
+        {
+          "text": "test(bench): a gate for the parallel map and the monoid fold",
+          "commit": "1aa9613"
+        },
+        {
+          "text": "feat(emit): map and fold in chunks in Go, Java, C# and Elixir too",
+          "commit": "13058c3"
+        },
+        {
+          "text": "feat(check): the kernel judges monoid laws and marks the folds they cut",
+          "commit": "0692c99"
+        },
+        {
+          "text": "feat(kernel): the exact ring drops a written empty list from a sum",
+          "commit": "e63dfdb"
+        },
+        {
+          "text": "feat(emit): print a total map and a monoid fold in chunks in C",
+          "commit": "7c21739"
+        },
+        {
+          "text": "feat(runtime): the C runtime maps and folds a list in chunks on a pool",
+          "commit": "65864e7"
+        },
+        {
+          "text": "docs(adr): 0084 adds Perep1, Skl1-Skl3 and Sv2 with their ledger rows",
+          "commit": "ebbc1a9"
+        },
+        {
+          "text": "test(checker): rewriting, found witness and inner quantifier probes",
+          "commit": "17227d3"
+        },
+        {
+          "text": "fix(self): rewriting helpers defined once and named apart",
+          "commit": "a2e3f40"
+        },
+        {
+          "text": "feat(lean): measure of the concat laws, Sv2 and the IEEE counterexample",
+          "commit": "fb7553c"
+        },
+        {
+          "text": "feat(checker): kinds of a rewrite rule and a witness found by the kernel",
+          "commit": "77cdc70"
+        },
+        {
+          "text": "feat(self): rewrite by proved equality, inner and found witness",
+          "commit": "9f62c53"
+        },
+        {
+          "text": "chore(ledgers): pattern-shadow probes get English names and share rows",
+          "commit": "5b17b48"
+        },
+        {
+          "text": "test(proof): register the pattern-shadow hole with probes and a template",
+          "commit": "b2ee866"
+        },
+        {
+          "text": "fix(kernel): a pattern name that shadows a parameter refuses induction",
+          "commit": "fe25a76"
+        },
+        {
+          "text": "test(probes): greeting is replayed by the checker and the counts follow",
+          "commit": "2be9246"
+        },
+        {
+          "text": "fix(checker): no length laws and reductions keep their place",
+          "commit": "a17fb37"
+        },
+        {
+          "text": "test(checker): probes for case splits that use facts",
+          "commit": "8c4860e"
+        },
+        {
+          "text": "feat(checker): evaluator knows or, not, element and character",
+          "commit": "5b9783c"
+        },
+        {
+          "text": "feat(checker): lengths are counted and split facts follow the half",
+          "commit": "b54dc02"
+        },
+        {
+          "text": "feat(checker): requires and replayed callee promises as facts",
+          "commit": "dd9dcd8"
+        },
+        {
+          "text": "feat(checker): a half that does not close unfolds calls once",
+          "commit": "a9d533c"
+        },
+        {
+          "text": "feat(checker): algebra node cases read like the goal split",
+          "commit": "309a7c0"
+        },
+        {
+          "text": "fix(checker): substitution skips field names and string literals",
+          "commit": "1712db3"
+        },
+        {
+          "text": "feat(checker): case split over match bodies and quoted strings",
+          "commit": "348e482"
+        },
+        {
+          "text": "feat(checker): case split reads more bodies and links atoms",
+          "commit": "425b8a1"
+        },
+        {
+          "text": "chore(licenses): drop SPDX header lines from source files",
+          "commit": "1149c78"
+        },
+        {
+          "text": "build(seed): reseed the runtime mirror for the plain check messages",
+          "commit": "ee54041"
+        },
+        {
+          "text": "fix(cli): check messages name the proof report in plain words",
+          "commit": "3190d01"
+        },
+        {
+          "text": "fix(checker): the literal law reads a zero in parentheses",
+          "commit": "9f01819"
+        },
+        {
+          "text": "chore(proof): forgery-probes ratchet follows the verdict",
+          "commit": "5da1af5"
+        },
+        {
+          "text": "fix(checker): close the gaps the second checker found",
+          "commit": "d9a8856"
+        },
+        {
+          "text": "feat(checker): the second checker gives a verdict on every record",
+          "commit": "b99af39"
+        },
+        {
+          "text": "build(seed): reseed the runtime mirror after rebase",
+          "commit": "6df4059"
+        },
+        {
+          "text": "refactor(registry): the lock fix and the registry job carry no comments",
+          "commit": "d9d6304"
+        },
+        {
+          "text": "fix(lock): every form of a dependency reaches the lock file",
+          "commit": "1f2f8ea"
+        },
+        {
+          "text": "feat(guards): registry resolution is proved by a corpus and a forgery",
+          "commit": "52f86a2"
+        },
+        {
+          "text": "build(seed): reseed the runtime mirror after rebase",
+          "commit": "ce2d4d1"
+        },
+        {
+          "text": "refactor(repl): the plan judge call and its CI job carry no comments",
+          "commit": "fe5c300"
+        },
+        {
+          "text": "fix(repl): check asks the plan judge and twelve forgeries fail",
+          "commit": "c12bcbb"
+        },
+        {
+          "text": "build(seed): reseed the runtime mirror for the cost report",
+          "commit": "3585b88"
+        },
+        {
+          "text": "feat(run): flang run --cost and the runner's cost field report the price",
+          "commit": "9a807e1"
+        },
+        {
+          "text": "test(probes): keep the conditional syllogism premise unproved",
+          "commit": "7ca01eb"
+        },
+        {
+          "text": "chore(seed): reprint the seed by its own printer (print 2)",
+          "commit": "2c25eea"
+        },
+        {
+          "text": "fix(emit): printed JS arithmetic returns any to the TypeScript checker",
+          "commit": "dcb7e17"
+        },
+        {
+          "text": "test(probes): the integer part of a fraction agrees in ten targets",
+          "commit": "aaf81b2"
+        },
+        {
+          "text": "chore(proof): ratchets follow the verdict on the 0.7.26 seed",
+          "commit": "1b0632c"
+        },
+        {
+          "text": "chore(seed): reprint the seed from the 0.7.26 batch",
+          "commit": "a8e8b4d"
+        },
+        {
+          "text": "docs(tls): an HTTPS GET plan, RFC 8448 vectors, forgeries and ADR-0078",
+          "commit": "3581164"
+        },
+        {
+          "text": "feat(stdlib): a TLS 1.3 client and a certificate path check",
+          "commit": "42666cd"
+        },
+        {
+          "text": "feat(stdlib): verify RSA-PSS and fix the modulus remainder in rsa",
+          "commit": "5951f9c"
+        },
+        {
+          "text": "feat(host): hand out random octets from the system source",
+          "commit": "5088b62"
+        },
+        {
+          "text": "perf(runtime): only the watching thread writes names on the call path",
+          "commit": "d4f7978"
+        },
+        {
+          "text": "feat(proof): cache kernel answers across runs in a signed directory",
+          "commit": "c4fbf7b"
+        },
+        {
+          "text": "feat(emit): lay printed code out the way each target's formatter does",
+          "commit": "70c2159"
+        },
+        {
+          "text": "fix(emit): escape characters the targets refuse in string literals",
+          "commit": "9a8b2da"
+        },
+        {
+          "text": "test(probes): exact actions agree between the evaluator and ten targets",
+          "commit": "f78b3af"
+        },
+        {
+          "text": "feat(self): the integer part of an exact fraction is a built-in form",
+          "commit": "fef758f"
+        },
+        {
+          "text": "feat(emit): every target runtime computes exact integers and fractions",
+          "commit": "dd8d86a"
+        },
+        {
+          "text": "chore(ledger): test names in English words, counts follow the tree",
+          "commit": "4fe633b"
+        },
+        {
+          "text": "docs(adr): 0075 adds Ind5, Ind6 and Cel3 with their ledger rows",
+          "commit": "52e2c8f"
+        },
+        {
+          "text": "test(checker): three families for segment-form, Cel3 and enumeration",
+          "commit": "50c6220"
+        },
+        {
+          "text": "feat(lean): lemmas and traps for Ind5, Ind6 and Cel3, Cel3 accepted",
+          "commit": "8dfe55a"
+        },
+        {
+          "text": "feat(checker): replay segment-form principles and the Cel3 move",
+          "commit": "956398e"
+        },
+        {
+          "text": "feat(self): segment induction, integer tightening and enumeration",
+          "commit": "b71f1f7"
+        },
+        {
+          "text": "feat(probes): a user story is written in nine fixed sentence forms",
+          "commit": "00ec96a"
+        },
+        {
+          "text": "test(falsifier): keep only the findings trunk still has",
+          "commit": "ca79e11"
+        },
+        {
+          "text": "refactor(falsifier): rewrite the probe sources to pass flang lint",
+          "commit": "2bd5797"
+        },
+        {
+          "text": "style(falsifier): wrap the probe sources where the grammar allows",
+          "commit": "0dd2575"
+        },
+        {
+          "text": "test(falsifier): count the checker refusing theorem-only hypotheses",
+          "commit": "fad0c0a"
+        },
+        {
+          "text": "docs(proof): name the parenthesised shape of the open-term record",
+          "commit": "09c4dcc"
+        },
+        {
+          "text": "docs(proof): register what the falsifier found",
+          "commit": "3b9c66e"
+        },
+        {
+          "text": "test(proof): search for false proofs with a falsifier probe",
+          "commit": "5110733"
+        },
+        {
+          "text": "chore(proof): ratchets and the default row after the kernel-trust merge",
+          "commit": "c2bd85b"
+        },
+        {
+          "text": "fix(checker): the second checker file is named in English words",
+          "commit": "81964a1"
+        },
+        {
+          "text": "feat(checker): a second record checker in Lean, crosschecked with C",
+          "commit": "437e4e1"
+        },
+        {
+          "text": "test(share): the empty-record probes expect the checker to refuse",
+          "commit": "54f3edb"
+        },
+        {
+          "text": "fix(checker): a record with nothing proved answers 3, not 0",
+          "commit": "b4943a1"
+        },
+        {
+          "text": "fix(proof): every kernel rule has a table row, and the guard says so",
+          "commit": "4fbbe70"
+        },
+        {
+          "text": "feat(lean): the last five checker moves enter the acceptance",
+          "commit": "05ac67c"
+        },
+        {
+          "text": "build(seed): reseed the runtime mirror after rebase",
+          "commit": "47626c5"
+        },
+        {
+          "text": "feat(cli): check --proof says how much the checker replayed",
+          "commit": "c797018"
+        },
+        {
+          "text": "feat(proof): count proved statements the checker replays, set by set",
+          "commit": "f7d0fba"
+        },
+        {
+          "text": "feat(checker): replay conditional bodies the kernel closes by case split",
+          "commit": "7f357fe"
+        },
+        {
+          "text": "feat(bench): pool scaling bench is a plan, ADR-0072 on parallelism",
+          "commit": "07407b8"
+        }
+      ],
+      "hidden": 112
+    },
     {
       "version": "0.7.25",
       "tag": "v0.7.25",
@@ -12487,6 +12900,19 @@
     }
   ],
   "unreleased": {
-    "entries": []
+    "entries": [
+      {
+        "text": "feat(ct): monoidal routes, maybe as monoid, kleisli arrows",
+        "commit": "8c21827"
+      },
+      {
+        "text": "test(ct): two adjunctions and yoneda are judged on the grid",
+        "commit": "fe6a850"
+      },
+      {
+        "text": "test(ct): product, coproduct and pullback are declared cones in flang/ct",
+        "commit": "683ad13"
+      }
+    ]
   }
 }

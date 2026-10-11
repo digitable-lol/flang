@@ -38,9 +38,11 @@ $ grep -n 'uses:' .github/workflows/*.yml | grep -v '@[0-9a-f]\{40\}' | grep -v 
 .github/workflows/binary.yml:1195:        uses: actions/cache@v4
 .github/workflows/binary.yml:1348:        uses: actions/cache@v4
 .github/workflows/binary.yml:1503:        uses: actions/cache@v4
-.github/workflows/binary.yml:1569:        uses: actions/cache@v4
-.github/workflows/binary.yml:1938:        uses: actions/cache@v4
-.github/workflows/binary.yml:2004:        uses: actions/cache@v4
+.github/workflows/binary.yml:1556:        uses: actions/cache@v4
+.github/workflows/binary.yml:1617:        uses: actions/cache@v4
+.github/workflows/binary.yml:1990:        uses: actions/cache@v4
+.github/workflows/binary.yml:2042:        uses: actions/cache@v4
+.github/workflows/binary.yml:2118:        uses: actions/cache@v4
 .github/workflows/commit-messages.yml:24:        uses: actions/cache@v4
 $ grep -n 'run:.*\${{ *github\.' .github/workflows/*.yml | cut -c1-150
 .github/workflows/commit-messages.yml:34:        run: bootstrap/flang io .githooks/commit-msg.fscript --plan "Commit range" -- "origin/${{ github.base
@@ -78,8 +80,8 @@ ls: cannot access 'SECURITY.md': No such file or directory           код 2
 `reprint.yml:453`) пускают запрос на вливание только из веток этого же
 репозитория.
 
-`actions/cache@v4` плавает в десяти местах: девять в `binary.yml`, одно в
-`commit-messages.yml`. Значения контекста GitHub подставляются прямо в тело
+`actions/cache@v4` плавает в двенадцати местах: одиннадцать в `binary.yml`, одно в
+`commit-messages.yml` (шаги 1, 2 и 7 повторены 11 октября 2026; шаги 3–6 не повторялись). Значения контекста GitHub подставляются прямо в тело
 команды в ТРЁХ шагах `commit-messages.yml` (строки 34, 39, 44): во всех трёх —
 `github.base_ref`, в первом ещё и `github.event.pull_request.head.sha`. У
 каждого из трёх шагов блок `env:` УЖЕ стоит (`LC_ALL`, `FLANG_TMP`) — правка в
@@ -99,7 +101,7 @@ ls: cannot access 'SECURITY.md': No such file or directory           код 2
 Чего нет: описания того, что дерево обнаруживает при подменённой сборочной
 машине, а что нет. `SECURITY.md` в дереве нет.
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25.
 
 ## Что должно быть
 
@@ -129,3 +131,8 @@ GitHub попадают в команды только через `env:`. Гра
 
 `.github/workflows/binary.yml`, `.github/workflows/commit-messages.yml`, новая
 страница в `docs/`. Перепечатка не нужна.
+
+Следующий шаг: `.github/workflows/commit-messages.yml`, строки 34, 39, 44 — `github.base_ref` и
+`github.event.pull_request.head.sha` в уже стоящие блоки `env:`; затем двенадцать
+`actions/cache@v4` на полный хеш коммита. Проба, которая красна сегодня: команда шага 1
+печатает двенадцать строк вместо пустого вывода.

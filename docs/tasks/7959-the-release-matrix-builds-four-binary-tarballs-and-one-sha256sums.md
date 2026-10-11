@@ -19,7 +19,7 @@
 ## Шаги воспроизведения
 
 1. Спросить у GitHub вложения последнего выпуска:
-   `gh release view v0.7.24 --json assets --jq '.assets[] | "\(.name) \(.size)"'`
+   `gh release view v0.7.25 --json assets --jq '.assets[] | "\(.name) \(.size)"'`
 2. Посчитать работы и раннеры в работе выпуска:
    `grep -n 'runs-on' .github/workflows/release.yml`
 3. Поискать общий файл хешей: `grep -c 'SHA256SUMS' .github/workflows/release.yml`
@@ -28,14 +28,14 @@
 ## Что происходит
 
 ```
-$ gh release view v0.7.24 --json assets --jq '.assets[] | "\(.name) \(.size)"'
-flang-0.7.24-c.tar.gz 5410663                                   код 0
+$ gh release view v0.7.25 --json assets --jq '.assets[] | "\(.name) \(.size)"'
+flang-0.7.25-c.tar.gz 5483859                                   код 0
 $ grep -n 'runs-on' .github/workflows/release.yml
 74:    runs-on: ubuntu-latest                                   код 0
 $ grep -c 'SHA256SUMS' .github/workflows/release.yml
 0                                                               код 1
 $ bootstrap/flang --version
-flang 0.7.24
+flang 0.7.25
 оболочка 9f361fce: правит строку (стрелки, слова, история, Tab), цвет digitable
                                                                 код 0
 ```
@@ -49,7 +49,7 @@ flang 0.7.24
 3 ядра, без `-flto`) — около 2,5 мин. На `ubuntu-24.04-arm` и `macos-15-intel`
 семя не собиралось, времени сборки там нет.
 
-Версия: `flang 0.7.24`.
+Версия: `flang 0.7.25` (снято 11 октября 2026).
 
 ## Что должно быть
 
@@ -72,7 +72,7 @@ GitHub снял — его в матрице быть не может.
 
 Три канала собирают из исходников сами: `brew install digitable-lol/tap/flang`
 (сборка около 3,5 мин на `macos-latest`),
-`asdf install flang 0.7.24`, клон и `make -C bootstrap -j4` (около 2 мин
+`asdf install flang 0.7.25`, клон и `make -C bootstrap -j4` (около 2 мин
 в 4 потока, gcc 15).
 
 ## Когда задача сделана
@@ -97,3 +97,8 @@ GitHub снял — его в матрице быть не может.
 и `LICENSE` едут как есть. Перепечатка не нужна. Строка семени и тройки в
 `flang --version` — отдельно (ADR-0067, раздел 2.1, ступень 2): правка
 `flang/src/emit/c/flang_repl.c` доезжает до двоичного только перепечаткой.
+
+Следующий шаг: `.github/workflows/release.yml` — работа `release` (одна, `runs-on: ubuntu-latest`,
+строка 74) делится на матрицу четырёх троек, и рядом с `.github/actions/release-archive/`
+заводится `.github/actions/release-binary/`. Проба, которая красна сегодня:
+`gh release view v0.7.25 --json assets --jq '.assets | length'` отвечает 1, а не 6.

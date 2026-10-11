@@ -23,7 +23,7 @@
 2. Поискать на трёх страницах установки готовые двоичные и файл хешей:
    `grep -c 'tar\.gz\|SHA256SUMS' README.md docs/site/install.md docs/site/install.ru.md`
 3. Поставить из клона в чистый префикс и напечатать из другого каталога:
-   `make -C bootstrap install PREFIX=/tmp/p >/dev/null; cd /tmp/w && /tmp/p/bin/flang emit проба.flang --target c --out out-c`
+   `make -C bootstrap install PREFIX=<префикс> >/dev/null; cd <другой каталог> && <префикс>/bin/flang emit проба.flang --target c --out out-c`
 
 ## Что происходит
 
@@ -34,10 +34,15 @@ $ grep -c 'tar\.gz\|SHA256SUMS' README.md docs/site/install.md docs/site/install
 README.md:0
 docs/site/install.md:0
 docs/site/install.ru.md:0                                       код 1
-$ cd /tmp/w && /tmp/p/bin/flang emit проба.flang --target c --out out-c
+$ cd <другой каталог> && <префикс>/bin/flang emit проба.flang --target c --out out-c
 flang emit: не найдены исходники рантайма C — они уезжают в вывод ДОСЛОВНО, и
-без них печать соврала бы. …                                    код 2
+без них печать соврала бы. Узнаются они по flang_runtime.h без шапки «Сгенерировано flang».
+                                                                код 2
 ```
+
+Снято 11 октября 2026: `make -C bootstrap install` кладёт `bin/flang`, `include/*.h`,
+`lib/libcompiler_flang.a` и `share/man/man1/flang.1` (если `flang.1` есть; строка 37
+`bootstrap/Makefile`), каталога `share/flang` в префиксе нет.
 
 README перечисляет три пути одним блоком кода; `docs/site/install.md` и
 `install.ru.md` несут таблицу из трёх строк (Homebrew, asdf, из исходников) и
@@ -47,7 +52,7 @@ README перечисляет три пути одним блоком кода; 
 поставленный из клона `flang emit` отказывает кодом 2 на всех целях. Страница
 говорит об этом только про `man`.
 
-Версия: `flang 0.7.24`.
+Версия: `flang 0.7.25`.
 
 ## Что должно быть
 
@@ -88,3 +93,8 @@ ADR-0067, раздел 2.6: в README и на обеих страницах ус
 `README.md` (раздел «Install»), `docs/site/install.md`, `docs/site/install.ru.md`;
 прибор сверки имён — `scripts/site/`, вызов — `.github/workflows/pages.yml`.
 Перепечатка не нужна.
+
+Следующий шаг: `README.md`, раздел «Install» (строка 24), затем `docs/site/install.md` и
+`docs/site/install.ru.md` — таблица каналов по ADR-0067, раздел 2.6; строка готовых двоичных
+появится только после задачи 7959. Проба, которая красна сегодня:
+`awk '/^## Install/{p=1;next} /^## /{p=0} p' README.md | grep -c '^|'` — 0 при пороге 6.

@@ -33,7 +33,7 @@
 $ cmp a.txt b.txt; cmp a.txt c.txt
                                                    код 0, код 0: вывод тот же
 $ bootstrap/flang --version            (рядом лежит .flangrc с language = eo)
-flang 0.7.23
+flang 0.7.25
 оболочка 9f361fce: правит строку (стрелки, слова, история, Tab), цвет digitable
 $ grep -c 'FLANG_LANG' bootstrap/flang_cli.c bootstrap/flang_repl.c
 bootstrap/flang_cli.c:0
@@ -43,7 +43,8 @@ bootstrap/flang_repl.c:0
 Все три вызова `--help` отвечают кодом 0 и одним и тем же текстом; о том, что
 ключ языка не понят, не сказано ничего.
 
-Версия: flang 0.7.23.
+Версия: flang 0.7.25, прогон 11 октября 2026. `grep -c 'FLANG_LANG'` даёт 0 и в
+`flang/src/emit/c/flang_repl.c`.
 
 ## Что должно быть
 
@@ -76,3 +77,10 @@ bootstrap/flang_repl.c:0
 `flang/src/emit/c/flang_repl.c` и его близнец в `bootstrap/` (там уже есть
 `flangrc_key` и `flangrc_project` для ключа `unproven`), `flang/self/cli.flang`
 (разбор ключей). Правка `flang/self/**` требует перепечатки.
+
+**Следующий шаг.** `flang/src/emit/c/flang_repl.c`: рядом с `flangrc_key` и
+`flangrc_project` для ключа `unproven` читать `language` из `.flangrc`, переменную
+`FLANG_LANG` и ключ `--язык`/`--lang` по старшинству ADR-0024; разбор ключа — в
+`flang/self/cli.flang`. Проба, которая краснеет сегодня, — шаги 1–2: три файла
+справки побайтово равны (`cmp` молчит), и `--язык en` принят кодом 0 без единого
+слова.

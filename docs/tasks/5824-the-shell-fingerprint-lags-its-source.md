@@ -39,15 +39,15 @@
 
 ```
 $ bootstrap/flang io scripts/repl-probe.fscript --plan Fingerprint
-{"plan":"Fingerprint","result":"#define FLANG_SHELL_ID \"df4cdde6\"", …}          код 0
+{"plan":"Fingerprint","result":"#define FLANG_SHELL_ID \"abc007cb\"", …}          код 0
 $ grep -n '^#define FLANG_SHELL_ID' flang/src/emit/c/flang_repl.c bootstrap/flang_repl.c
-flang/src/emit/c/flang_repl.c:272:#define FLANG_SHELL_ID "9f361fce"
-bootstrap/flang_repl.c:281:#define FLANG_SHELL_ID "9f361fce"
+flang/src/emit/c/flang_repl.c:275:#define FLANG_SHELL_ID "9f361fce"
+bootstrap/flang_repl.c:284:#define FLANG_SHELL_ID "9f361fce"
 $ bootstrap/flang --version
-flang 0.7.23
+flang 0.7.25
 оболочка 9f361fce: правит строку (стрелки, слова, история, Tab), цвет digitable
 $ bootstrap/flang io scripts/repl-probe.fscript --plan Check --timeout 120000
-отпечаток: в файле «9f361fce», а исходник даёт «df4cdde6» — поставьте строку:
+отпечаток: в файле «9f361fce», а исходник даёт «abc007cb» — поставьте строку:
   bootstrap/flang io scripts/repl-probe.fscript --plan Fingerprint
   зелен  pty: Home/End/Backspace/↑/⌥b/Ctrl-←/Ctrl-U сработали, ответы 5, 5, 9
   зелен  pty: Ctrl-L очистил экран и вернул набранное на место, ответ 8
@@ -59,7 +59,11 @@ $ bootstrap/flang io scripts/repl-probe.fscript --plan Check --timeout 120000
 Красная строка одна — отпечаток; четыре строки pty зелены. Число плана
 `Fingerprint` меняется с каждой правкой исходника.
 
-Версия: `flang 0.7.23`.
+Версия: flang 0.7.25, прогон 11 октября 2026. Планы `Fingerprint` и `grep` сняты на
+этом дереве; план `Check` на нём не гонялся — `bootstrap/libcompiler_flang.a` не
+собрана, и без неё проба краснеет трубой, а не отпечатком (строки pty в примере
+выше — с прогона на 0.7.23). Пробу по-прежнему не зовёт ни `.flangrc`, ни хук, ни
+работа CI.
 
 ## Что должно быть
 
@@ -96,3 +100,9 @@ $ bootstrap/flang io scripts/repl-probe.fscript --plan Check --timeout 120000
 которого в дереве нет. Верная команда —
 `bootstrap/flang io scripts/repl-probe.fscript --plan Fingerprint`. Править
 комментарий отдельно от строки нельзя: любая правка файла меняет отпечаток.
+
+**Следующий шаг.** `flang/src/emit/c/flang_repl.c`, строка 275, и
+`bootstrap/flang_repl.c`, строка 284: поставить число плана `Fingerprint`, снятое на
+том же дереве (сегодня `abc007cb`), пересобрать семя быстрым пересевом. Проба,
+которая краснеет сегодня, — сам план `Fingerprint`: его число не равно
+`9f361fce`, которое печатает `bootstrap/flang --version`.

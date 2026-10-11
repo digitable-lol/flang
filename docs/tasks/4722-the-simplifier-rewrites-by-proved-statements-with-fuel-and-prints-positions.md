@@ -121,12 +121,10 @@ ADR-0040: ядро применяет правило «замена равног
 стоят в дереве, пробы к ним — в `flang/proof/checker/tests/families/rewrite`;
 заново их писать не нужно.
 
-**Следующий шаг.** Перепечатать семя с правками ADR-0084 и ADR-0092, после чего
-снять числом время `check --proof` по файлам `flang/stdlib` до и после и прогнать
-двоичным `flang/proof/probes/postcondition-rewrite/run.fscript --plan Binary`;
-затем провести причину отказа от ядра к `flang/self/proof.flang`, чтобы при
-исчерпании предела ведомость называла «предел переписки 64 шага», а не общий
-текст «ни теоремы, ни примеров». Проба, которая краснеет сегодня, —
-`bootstrap/flang check flang/proof/checker/tests/families/postcondition-rewrite/chain-of-eighteen.flang --proof`:
+**Следующий шаг.** После перепечатки семени — закрыть по критерию прогоном
+двоичного: обе команды `check … --proof` из шагов, сличитель на свежих записях
+(3 и 4 сведений), `flang/proof/probes/postcondition-rewrite/run.fscript --plan Binary`,
+время `check --proof` по `flang/stdlib` до и после числом. Проба, которая краснеет
+сегодня, — `bootstrap/flang check flang/proof/checker/tests/families/postcondition-rewrite/chain-of-eighteen.flang --proof`:
 объявлено, не доказано 1, код 3 на двоичном 0.7.26; на исходнике ядра та же
 программа доказана правилом Переп2 (запись `chain-of-eighteen.record`).

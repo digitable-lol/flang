@@ -1,5 +1,5 @@
 program	judge	code	word
-chain-within-fuel.flang	run --trust --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 2
-chain-beyond-fuel.flang	run --trust --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 1, сетка 0, объявлено, не доказано 1
-unproved-callee.flang	run --trust --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 0, сетка 0, объявлено, не доказано 2
-with-requires.flang	run --trust --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 2
+chain-within-fuel.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 2
+chain-beyond-fuel.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 1, сетка 0, объявлено, не доказано 1
+unproved-callee.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 0, сетка 0, объявлено, не доказано 2
+with-requires.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 2

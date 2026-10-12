@@ -1,0 +1,13 @@
+program	surface	code	word	контракт задачи 2680 (ADR-0093): слова и коды сняты с проверки исходным компилятором (check-with-source-compiler.flang, 11 октября 2026, журнал /home/b/projects/flang-cluster/line-2680/after-*.log) и с поверхности run семени 0.7.25 там, где сторож проходит; семя до перепечатки расходится на строках collatz (check даёт 0, run — FLANG_MEASURE) и на словах ведомости mutual/half/gcd — это и есть снятый дефект; строка collatz/run выведена из отказа check по образцу probe.flang/run набора import-helper-binding, прогоном не снята
+mutual.flang	check	0	спуск выведен ядром на каждом витке (1) — сторожа нет
+mutual.flang	check	0	сторожей в рантайме: 0 мест
+mutual.flang	run	0	false
+half.flang	check	0	«Чёт»             доказано объявленной мерой: убывает «н» в цикле с «Нечет»; спуск выведен ядром на каждом витке (1) — сторожа нет
+half.flang	check	0	«Нечет»           доказано объявленной мерой: убывает «м» в цикле с «Чёт»; спуск ядром не выведен — на веру: мера объявлена автором, сторож считает её при работе на каждом витке — 1 место
+half.flang	check	0	сторожей в рантайме: 1 место
+half.flang	run	0	false
+gcd.flang	check	0	спуск ядром не выведен — на веру: мера объявлена автором, сторож считает её при работе на каждом витке — 1 место
+gcd.flang	run	0	7
+collatz.flang	check	1	FLANG_NOT_TOTAL
+collatz.flang	check	1	аргумент 3 умножить на «н» плюс 1 не меньше меры при любом её неотрицательном значении (Мер✗
+collatz.flang	run	3	FLANG_NOT_TOTAL

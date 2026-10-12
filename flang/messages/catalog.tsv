@@ -1,0 +1,145 @@
+# Message catalog of the flang compiler (ADR-0102).
+# key: the FLANG_* code of a diagnostic, the name of a summary line (check.*, proof.*, place.*, ledger),
+#      or {stem} for the vocabulary of a placeholder (the part of its name before a dot).
+# ru: the Russian template, matched against what the compiler says; en: the English template.
+# A placeholder is {name}: lowercase Latin letters, digits, '-' and '.'; both templates of a row name the same set.
+# Checked by: bootstrap/flang run-script messages:check
+key	ru	en
+place.input-column	{code}, строка {line}, столбец {column}: {message}	{code}, line {line}, column {column}: {message}
+place.input	{code}, строка {line}: {message}	{code}, line {line}: {message}
+place.file	{code} в файле {file}, строка {line}: {message}	{code} in file {file}, line {line}: {message}
+place.file-column	{code} в файле {file}, строка {line}, столбец {column}: {message}	{code} in file {file}, line {line}, column {column}: {message}
+place.module-header	{code}, заголовок модуля, строка {line}: {message}	{code}, module header, line {line}: {message}
+place.declaration	{code} в объявлении ({name}), строка {line}: {message}	{code} in declaration ({name}), line {line}: {message}
+check.module	модуль «{module}»: функций {functions}, из них с доказанным завершением {total}; типов {types}	module «{module}»: functions {functions}, with termination proved {total}; types {types}
+check.module	без имени модуля: функций {functions}, из них с доказанным завершением {total}; типов {types}	no module name: functions {functions}, with termination proved {total}; types {types}
+check.module-files	модуль «{module}»: функций {functions}, из них с доказанным завершением {total}; типов {types}; файлов вместе с импортами {files}	module «{module}»: functions {functions}, with termination proved {total}; types {types}; files including imports {files}
+check.module-files	без имени модуля: функций {functions}, из них с доказанным завершением {total}; типов {types}; файлов вместе с импортами {files}	no module name: functions {functions}, with termination proved {total}; types {types}; files including imports {files}
+check.not-total	без доказанного завершения: {names}	termination not proved: {names}
+check.not-total-more	без доказанного завершения: {names} и ещё {more}	termination not proved: {names} and {more} more
+check.verified	{file}: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет	{file}: verified — parsing, types, termination, proof kernel and examples; no problems found
+check.partly	{file}: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли	{file}: verified only IN PART — parsing, types, termination, proof kernel and examples passed
+check.not-verified	{file}: не проверено — замечаний {count}	{file}: not verified — problems found: {count}
+check.fast	{file}: часть проверок НЕ ЗАПУСКАЛАСЬ — код возврата 4, а не 0	{file}: some checks DID NOT RUN — exit code 4, not 0
+check.fast-unjudged	{file}: часть объявлений НЕ СУДИТСЯ ВОВСЕ, и часть проверок не запускалась — код возврата 2	{file}: some declarations ARE NOT JUDGED AT ALL, and some checks did not run — exit code 2
+check.no-ledger	{file}: не проверено — ведомость не печатается у программы с замечаниями	{file}: not verified — no proof ledger is printed for a program with problems
+check.place-without-file	место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов {files}, а диагностика компилятора имени файла не несёт	the place is given as a line and a column but without a file: {files} files were checked together with imports, and the compiler's diagnostics do not carry a file name
+proof.verdict	{file}: {verdict} — утверждений {claims}: доказано {proved}, условно {conditional}, сетка {grid}, объявлено, не доказано {declared}, отвергнуто {refused}, нарушено {violated}; законов на сетке {laws-grid}, на веру {laws-trusted} — код возврата {code}	{file}: {verdict} — claims {claims}: proved {proved}, conditionally {conditional}, grid {grid}, declared but not proved {declared}, refused {refused}, violated {violated}; laws on a grid {laws-grid}, on trust {laws-trusted} — exit code {code}
+{verdict}	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО	VERIFIED ON ITS OWN
+{verdict}	ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ (спросить: --строго)	VERIFIED WITH A SUPPORT THAT WAS NOT JUDGED (to ask: --strict)
+{verdict}	НЕ ПРОВЕРЕНО	NOT VERIFIED
+{verdict}	НЕ СОШЛОСЬ	DID NOT HOLD
+{verdict}	ОПРОВЕРГНУТО	REFUTED
+{verdict}	ДОКАЗАНО	PROVED
+proof.no-checker	{file}: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщика нет ({checker}; собрать: make -C flang/proof/checker либо назвать FLANG_CHECKER): все {proved} доказанных стоят на слове ядра	{file}: NOT INDEPENDENTLY VERIFIED — no checker ({checker}; build it with make -C flang/proof/checker or name one in FLANG_CHECKER): all {proved} proved claims rest on the kernel's word
+{checker}	путь к нему не найден	its path was not found
+proof.checker-replayed	{file}: независимо, сверщиком, проиграно {checked} из {proved} доказанных; на слове ядра {kernel} — код сверщика {code}	{file}: independently replayed by the checker: {checked} of {proved} proved claims; on the kernel's word: {kernel} — checker exit code {code}
+ledger	── ведомость доказательства модуля {module} ──	── proof ledger of module {module} ──
+ledger	слова ведомости, и они не взаимозаменяемы:	the words of the ledger, and they are not interchangeable:
+ledger	  «доказано» — утверждение обо ВСЕХ входах, выведенное из объявлений и структуры;	  «proved» — a claim about ALL inputs, derived from the declarations and the structure;
+ledger	  «доказано индукцией по «Т»» — то же обо всех входах типа «Т», а не о написанных.	  «proved by induction on «T»» — the same about all inputs of type «T», not only the written ones.
+ledger	      Принцип читается с ОБЪЯВЛЕНИЯ, и носителей у него два: у объявленной суммы —	      The principle is read from the DECLARATION, and it has two carriers: for a declared sum —
+ledger	      начальность (часть значения меньше значения, шаг идёт при допущении на частях);	      initiality (a part of a value is smaller than the value, a step assumes the claim on the parts);
+ledger	      у отрезка «неотрицательное» — конечность [0, 2⁵³−1] и СТРОГИЙ спуск на единицу, и спуск	      for the «неотрицательное» range — finiteness of [0, 2⁵³−1] and a STRICT descent by one, and the kernel
+ledger	      этот ядро читает в теле функции, а не принимает на слово;	      reads that descent in the function body instead of taking it on trust;
+ledger	  «сетка N» — посчитано на N значениях автора, нарушений не найдено; это НЕ доказательство;	  «grid N» — computed on N values chosen by the author, no violation found; this is NOT a proof;
+ledger	  «объявлено, не доказано» — утверждение высказано, доказательства при нём нет;	  «declared, not proved» — the claim is stated, and there is no proof for it;
+ledger	  «на веру» — не посчитано ничем, допущение автора.	  «on trust» — not computed by anything, an assumption of the author.
+ledger	чем несётся обещание «тотальная»:	what carries the promise «тотальная» (total):
+ledger	  {function}  доказано композицией: рекурсии нет, обещание сложено из обещаний тех, кого зовёт	  {function}  proved by composition: there is no recursion, the promise is built from the promises of the functions it calls
+ledger	законы (сетка конечна, доказательством не является):	laws (a grid is finite and is not a proof):
+ledger	  нет объявленных законов	  no laws are declared
+ledger	что высказано и чем это несётся:	what is claimed and what carries it:
+ledger	  {kind} «{claim}» функции «{function}» — {how}	  {kind} «{claim}» of function «{function}» — {how}
+{kind}	постусловие	postcondition
+{kind}	предусловие	precondition
+{how}	объявлено, не доказано: ни теоремы, ни примеров. Его считает рантайм после каждого возврата — на тех входах, которые придут	declared, not proved: no theorem and no examples. The runtime computes it after every return, on whatever inputs arrive
+ledger	принято на веру:	taken on trust:
+ledger	  ничего	  nothing
+ledger	итог:	summary:
+ledger	  функций {functions}: тотальных {total}, обычных {plain}	  functions {functions}: total {total}, ordinary {plain}
+ledger	  обещание несёт: композиция {composition}, структура {structure}, точный шаг {exact-step}, постоянный шаг {constant-step}, объявленная мера {measure}	  the promise is carried by: composition {composition}, structure {structure}, exact step {exact-step}, constant step {constant-step}, declared measure {measure}
+ledger	  сторожей в рантайме: {guards} мест	  runtime guards: {guards} places
+ledger	  законов на сетке: {laws} (значений в сетках {values}); на веру: {trusted}	  laws on a grid: {laws} (values in the grids {values}); on trust: {trusted}
+ledger	  утверждений {claims}: доказано {proved} (из них без теоремы {bare}), сетка {grid}, объявлено, не доказано {declared}	  claims {claims}: proved {proved} (of them without a theorem {bare}), grid {grid}, declared but not proved {declared}
+ledger	  утверждений {claims}: доказано {proved}, сетка {grid}, объявлено, не доказано {declared}	  claims {claims}: proved {proved}, grid {grid}, declared but not proved {declared}
+ledger	чем получен каждый шаг (правило и основания — строками записи доказательства):	how each step was obtained (the rule and its grounds, as lines of the proof record):
+ledger	  ничего: ни одно утверждение не назвало ни правила, ни шага	  nothing: no claim named a rule or a step
+ledger	  утверждение «{claim}» функции «{function}» строка {line}	  claim «{claim}» of function «{function}», line {line}
+ledger	    правило «{rule}»	    rule «{rule}»
+{where}	функция «{name}»	function «{name}»
+{where}	постусловие	postcondition
+{label}	пример «{name}»	example «{name}»
+{label}	постусловие «{name}»	postcondition «{name}»
+{label}	предусловие «{name}»	precondition «{name}»
+{type}	число	number
+{type}	строка	string
+{type}	признак	flag
+{type}	ничто	nothing
+{type}	вес	weight
+{type}	неотрицательное	non-negative
+{type}	целое	integer
+{type}	сотых	hundredths
+{type}	тысячных	thousandths
+{type}	точное целое	exact integer
+{type}	точное дробное	exact fraction
+{type}	неизвестный тип	unknown type
+{type}	{type} или ничто	{type} or nothing
+{type}	список {element}	list of {element}
+{element}	числа	numbers
+{element}	строки	strings
+{element}	признака	flags
+{element}	неотрицательного	non-negative numbers
+{element}	целого	integers
+{element}	точного целого	exact integers
+{element}	точного дробного	exact fractions
+{element}	списка {element}	lists of {element}
+FLANG_TYPE	{where} объявлена как {type.declared}, а тело даёт {type.body}	{where} is declared to return {type.declared}, but its body gives {type.body}
+FLANG_TYPE	{where} объявлена дважды	{where} is declared twice
+FLANG_TYPE	{where} не имеет тела	{where} has no body
+FLANG_TYPE	аргумент «{parameter}» функции «{function}»: ожидался {type.wanted}, получен {type.got}	argument «{parameter}» of function «{function}»: expected {type.wanted}, got {type.got}
+FLANG_TYPE	{side} операнд «{operation}»: ожидался {type.wanted}, получен {type.got}	{side} operand of «{operation}»: expected {type.wanted}, got {type.got}
+{side}	левый	left
+{side}	правый	right
+FLANG_TYPE	условие «если» должно быть признаком, а не {type}	the condition of «если» must be a flag, not {type}
+FLANG_TYPE	ветви «если» разных типов: {type.then} и {type.else}	the branches of «если» have different types: {type.then} and {type.else}
+FLANG_TYPE	запись «{record}» не имеет поля «{field}»	record «{record}» has no field «{field}»
+FLANG_TYPE	запись «{record}» требует поле «{field}» ({type})	record «{record}» requires field «{field}» ({type})
+FLANG_TYPE	поле «{field}» объявлено дважды	field «{field}» is declared twice
+FLANG_TYPE	функция «{function}» принимает {count} арг. ({parameters}), а вызвана с {given}	function «{function}» takes {count} argument(s) ({parameters}), but is called with {given}
+FLANG_TYPE	вызов функции «{function}»: аргумент «{parameter}»: {value} вне {type}	call of function «{function}»: argument «{parameter}»: {value} is outside {type}
+FLANG_TYPE	{label} функции «{function}» не задаёт аргумент «{parameter}»	{label} of function «{function}» does not give argument «{parameter}»
+FLANG_TYPE	{label}: {value} вне {type}	{label}: {value} is outside {type}
+FLANG_TYPE	{label} не соответствует типу {type}	{label} does not match type {type}
+FLANG_UNKNOWN_NAME	неизвестная функция «{name}»	unknown function «{name}»
+FLANG_UNKNOWN_NAME	неизвестный тип «{name}»	unknown type «{name}»
+FLANG_UNKNOWN_NAME	неизвестная запись «{name}»	unknown record «{name}»
+FLANG_UNKNOWN_NAME	неизвестный вариант «{name}»	unknown variant «{name}»
+FLANG_UNKNOWN_NAME	неизвестный конструктор варианта «{name}»	unknown variant constructor «{name}»
+FLANG_UNKNOWN_NAME	не найдена функция «{name}»	function «{name}» is not found
+FLANG_UNKNOWN_NAME	запись не содержит поле «{field}»	the record has no field «{field}»
+FLANG_UNKNOWN_NAME	имя «{name}» не связано	name «{name}» is not bound
+FLANG_UNKNOWN_NAME	имя «{name}» не связано: имя вводят 'принимает', 'пусть' или образец 'случай'; а действия языка ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') пишутся МЕЖДУ значениями — «3.14 умножить на р», а не «умножить 3.14 на р»	name «{name}» is not bound: a name is introduced by 'принимает', 'пусть' or a 'случай' pattern; and the operations of the language ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') go BETWEEN values — «3.14 умножить на р», not «умножить 3.14 на р»
+FLANG_DUPLICATE_NAME	в файле {file}: функция «{name}» объявлена в двух модулях: {first} и {second}	in file {file}: function «{name}» is declared in two modules: {first} and {second}
+FLANG_DUPLICATE_NAME	функция «{name}» объявлена в двух модулях: {first} и {second}	function «{name}» is declared in two modules: {first} and {second}
+FLANG_DUPLICATE_NAME	в файле {file}: тип «{name}» объявлен в двух модулях: {first} и {second}	in file {file}: type «{name}» is declared in two modules: {first} and {second}
+FLANG_DUPLICATE_NAME	тип «{name}» объявлен в двух модулях: {first} и {second}	type «{name}» is declared in two modules: {first} and {second}
+FLANG_NOT_TOTAL	тотальная функция «{function}» вызывает неизвестную функцию «{callee}»: завершение доказать нельзя	total function «{function}» calls an unknown function «{callee}»: termination cannot be proved
+FLANG_NOT_TOTAL	тотальная функция «{function}»: рекурсивный вызов «{callee}» не убывает — аргумент {position} ({argument}) увеличивает параметр «{parameter}». Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции	total function «{function}»: the recursive call «{callee}» does not decrease — argument {position} ({argument}) increases parameter «{parameter}». Pass a part of the argument: the tail of a list from the pattern «голова и хвост», a variant field from a pattern, a record field or an element of a collection
+FLANG_MATCH_NOT_EXHAUSTIVE	разбор {subject} не покрывает {cases}	the match on {subject} does not cover {cases}
+{subject}	списка	a list
+{subject}	строки	a string
+{subject}	признака	a flag
+{cases}	«{first}» и {cases.rest}	«{first}» and {cases.rest}
+FLANG_MATCH_NOT_EXHAUSTIVE	разбор без случаев не покрывает ничего	a match without cases covers nothing
+FLANG_PARSE	у 'если' нет ветки 'иначе'	'если' has no 'иначе' branch
+FLANG_PARSE	не разобрана конструкция: неожиданное '{word}' — это слово занято языком, именем оно быть не может: напишите имя в ёлочках («{word.quoted}») или переименуйте; а если слово попало в форму лишним — уберите его	construct not parsed: unexpected '{word}' — this word is taken by the language and cannot be a name: write the name in guillemets («{word.quoted}») or rename it; and if the word got into the form by mistake, remove it
+FLANG_EXAMPLE	пример «{example}» функции «{function}»: значение не совпало с ожидаемым: ожидалось {wanted}, получено {got}	example «{example}» of function «{function}»: the value does not match the expected one: expected {wanted}, got {got}
+FLANG_PRECONDITION_CALL	вызов «{callee}» в функции «{function}» не снимает предусловие «{precondition}»: {reason}	the call of «{callee}» in function «{function}» does not discharge precondition «{precondition}»: {reason}
+FLANG_PROPERTY	нарушено свойство «{claim}» функции «{function}»	property «{claim}» of function «{function}» is violated
+FLANG_PROOF_STEP	шаг {step}, теорема «{theorem}»: {reason}	step {step}, theorem «{theorem}»: {reason}
+FLANG_PROOF_INDUCTION_STEP	шаг {step}, шаг «{case}» теоремы «{theorem}»: {reason}	step {step}, inductive case «{case}» of theorem «{theorem}»: {reason}
+FLANG_PROOF_INDUCTION_STEP	шаг {step}, база «{case}» теоремы «{theorem}»: {reason}	step {step}, base case «{case}» of theorem «{theorem}»: {reason}
+FLANG_PROOF_INDUCTION_BRANCH	шаг {step}, шаг «{case}» теоремы «{theorem}»: {reason}	step {step}, inductive case «{case}» of theorem «{theorem}»: {reason}
+FLANG_PROOF_INDUCTION_BRANCH	шаг {step}, база «{case}» теоремы «{theorem}»: {reason}	step {step}, base case «{case}» of theorem «{theorem}»: {reason}
+FLANG_BOUND_ON_NAN	постусловие «{claim}» функции «{function}» ЛОЖНО, и контрпример назван: {reason}	postcondition «{claim}» of function «{function}» is FALSE, and a counterexample is named: {reason}

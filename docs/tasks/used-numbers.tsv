@@ -427,3 +427,4 @@ number	state	title
 4909	done	The registry resolution rule has no guard and example fingerprints rotted
 5709	dropped	The stage that eats the print has a cache and it is off
 1313	done	The independent checker has a second implementation written apart in another language
+8161	done	Messages live in the binary so a new language costs a reprint

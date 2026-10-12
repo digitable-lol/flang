@@ -1,0 +1,49 @@
+program	surface	function	input	code	word	объявленные типы на входе напечатанной программы и у flang run (ADR-0099): строки целей и строка «-1 вне вес» у run ждут печати семени после 12 октября 2026; до неё семя 0.7.26 на них расходится, и это и есть снятый дефект. Строки check с кодом 0 — зазор FLANG_INFINITY и FLANG_SCALE, названный в docs/tasks
+weight-args.flang	run	Удвоить вес	{"а":-1}	1	аргумент «а»: -1 вне вес
+weight-args.flang	run	Удвоить вес	{"а":21}	0	42
+weight-args.flang	run	Удвоить натуральное	{"н":-1}	1	аргумент «н»: -1 вне неотрицательное
+weight-args.flang	run	Копейки	{"коп":0.5}	1	0.5 не целое, а тип сотых — целый
+weight-args.flang	c	Удвоить вес	-1	-	аргумент «а»: -1 вне вес
+weight-args.flang	c	Удвоить вес	21	-	{"n":"42"}
+weight-args.flang	c	Удвоить натуральное	-1	-	аргумент «н»: -1 вне неотрицательное
+weight-args.flang	c	Строка	5	-	аргумент «т» не соответствует типу строка
+weight-args.flang	cpp	Удвоить вес	-1	-	аргумент «а»: -1 вне вес
+weight-args.flang	cpp	Удвоить вес	21	-	{"n":"42"}
+weight-args.flang	cpp	Удвоить натуральное	-1	-	аргумент «н»: -1 вне неотрицательное
+weight-args.flang	cpp	Строка	5	-	аргумент «т» не соответствует типу строка
+weight-args.flang	csharp	Удвоить вес	-1	-	аргумент «а»: -1 вне вес
+weight-args.flang	csharp	Удвоить вес	21	-	{"n":"42"}
+weight-args.flang	csharp	Удвоить натуральное	-1	-	аргумент «н»: -1 вне неотрицательное
+weight-args.flang	csharp	Строка	5	-	аргумент «т» не соответствует типу строка
+weight-args.flang	elixir	Удвоить вес	-1	-	аргумент «а»: -1 вне вес
+weight-args.flang	elixir	Удвоить вес	21	-	{"n":"42"}
+weight-args.flang	elixir	Удвоить натуральное	-1	-	аргумент «н»: -1 вне неотрицательное
+weight-args.flang	elixir	Строка	5	-	аргумент «т» не соответствует типу строка
+weight-args.flang	go	Удвоить вес	-1	-	аргумент «а»: -1 вне вес
+weight-args.flang	go	Удвоить вес	21	-	{"n":"42"}
+weight-args.flang	go	Удвоить натуральное	-1	-	аргумент «н»: -1 вне неотрицательное
+weight-args.flang	go	Строка	5	-	аргумент «т» не соответствует типу строка
+weight-args.flang	java	Удвоить вес	-1	-	аргумент «а»: -1 вне вес
+weight-args.flang	java	Удвоить вес	21	-	{"n":"42"}
+weight-args.flang	java	Удвоить натуральное	-1	-	аргумент «н»: -1 вне неотрицательное
+weight-args.flang	java	Строка	5	-	аргумент «т» не соответствует типу строка
+weight-args.flang	js	Удвоить вес	-1	-	аргумент «а»: -1 вне вес
+weight-args.flang	js	Удвоить вес	21	-	{"n":"42"}
+weight-args.flang	js	Удвоить натуральное	-1	-	аргумент «н»: -1 вне неотрицательное
+weight-args.flang	js	Строка	5	-	аргумент «т» не соответствует типу строка
+weight-args.flang	python	Удвоить вес	-1	-	аргумент «а»: -1 вне вес
+weight-args.flang	python	Удвоить вес	21	-	{"n":"42"}
+weight-args.flang	python	Удвоить натуральное	-1	-	аргумент «н»: -1 вне неотрицательное
+weight-args.flang	python	Строка	5	-	аргумент «т» не соответствует типу строка
+weight-args.flang	rust	Удвоить вес	-1	-	аргумент «а»: -1 вне вес
+weight-args.flang	rust	Удвоить вес	21	-	{"n":"42"}
+weight-args.flang	rust	Удвоить натуральное	-1	-	аргумент «н»: -1 вне неотрицательное
+weight-args.flang	rust	Строка	5	-	аргумент «т» не соответствует типу строка
+weight-args.flang	ts	Удвоить вес	-1	-	аргумент «а»: -1 вне вес
+weight-args.flang	ts	Удвоить вес	21	-	{"n":"42"}
+weight-args.flang	ts	Удвоить натуральное	-1	-	аргумент «н»: -1 вне неотрицательное
+weight-args.flang	ts	Строка	5	-	аргумент «т» не соответствует типу строка
+weight-minus.flang	check	-	-	1	объявлена как вес, а тело даёт число
+weight-minus-into-number.flang	check	-	-	0	замечаний нет
+scale-mix.flang	check	-	-	0	замечаний нет
+scale-mix-into-number.flang	check	-	-	0	замечаний нет

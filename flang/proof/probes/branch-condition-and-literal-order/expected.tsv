@@ -1,0 +1,8 @@
+program	surface	code	word	контракт ADR-0098: слова и коды сняты 12 октября 2026 с ядра из исходника flang/self (гарнитура check-with-source-compiler) и с двоичного 0.7.25 на неизменённых строках; семя до перепечатки на строках absolute-integer, strict-literal и на слове отказа strict-literal-zero расходится — это и есть снятая граница
+absolute-integer.flang	proof	0	«разбор цели по условию»
+absolute-number.flang	proof	3	объявлено, не доказано
+wrong-branch.flang	proof	3	объявлено, не доказано
+strict-literal.flang	check	0	замечаний нет
+strict-literal-zero.flang	check	1	FLANG_PRECONDITION_CALL
+strict-literal-zero.flang	check	1	вычисление замкнутой цели не проходит
+strict-literal-equal.flang	check	1	FLANG_PRECONDITION_CALL

@@ -3,6 +3,7 @@ abilities
 about
 above
 absent
+absolute
 abyss
 accept
 acceptance

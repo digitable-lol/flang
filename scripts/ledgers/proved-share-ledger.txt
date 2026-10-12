@@ -1053,6 +1053,12 @@ c24e3a74d21704429b8ec237e2504883|9|9|0|0|0|flang/proof/probes/function-values/ru
 7a2aef421a2513c7e1fb98006e314184|1|1|0|0|0|flang/proof/probes/import-helper-binding/programs/step-second.flang
 ccf79296c7ca4b9e14030c7619367fd2|0|0|0|0|1|flang/proof/probes/message-language/programs/precondition-call.flang
 f576ef59fb727973057323258bee048c|1|1|0|0|0|flang/proof/probes/message-language/programs/checked.flang
+d1904783bf9e67c54add5731ca6cc8dc|1|0|0|1|0|flang/proof/probes/branch-condition-and-literal-order/programs/absolute-integer.flang
+2a788de7b1d437888003ff01e8f0752b|1|0|0|1|0|flang/proof/probes/branch-condition-and-literal-order/programs/absolute-number.flang
+fd7ebc29409ae75ab82bd0b48345589e|1|0|0|1|0|flang/proof/probes/branch-condition-and-literal-order/programs/wrong-branch.flang
+c516038d4d659e5e8b1c5c45c4551f5a|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal.flang
+c3f8f76fb04c59f18e25a52133487f98|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal-equal.flang
+17e31c2c96a2eaad4a92c212fb725ef6|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal-zero.flang
 0dbd8c3aca5c041211fc3702f1a64840|52|52|0|0|0|flang/proof/small-reducer.flang
 a075e8a26bed6fd0228f15824bad848a|1|0|0|1|0|flang/proof/forgeries/by-division.flang
 ab1156261b804cb48ee0df2e25cad46f|1|1|0|0|0|flang/proof/forgeries/base-with-field.flang
@@ -1358,7 +1364,7 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|100|82|2|10|0|flang/self/proof-initial.flang
-0671f904ac2c1b423ee51e1562ed2a08|90|44|0|0|0|flang/self/proof-kernel.flang
+0671f904ac2c1b423ee51e1562ed2a08|91|44|0|0|0|flang/self/proof-kernel.flang
 94902a6939c9331164c3fdd856ef2a93|231|98|57|3|0|flang/self/proof-record.flang
 6caf41ec0a767163f46212d635157227|341|268|26|41|0|flang/self/proof.flang
 ef9ed6468f2ee47584e2653aefa44b54|188|46|1|91|0|flang/self/proofterm.flang

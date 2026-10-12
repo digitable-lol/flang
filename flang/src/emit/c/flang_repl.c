@@ -11474,7 +11474,7 @@ typedef struct {
   bool loaded;
   bool told;
   char lang[16];
-  char whence[4400];
+  char whence[4480]; /* "language = " + value (63) + " (" + path (4351) + ")" + NUL = 4429 */
   char *path;
   msg_row head;
   msg_row *rows;
@@ -11513,7 +11513,7 @@ static const char *msg_language(void) {
   value[0] = '\0';
   if (env != NULL && env[0] != '\0') {
     snprintf(value, sizeof(value), "%s", env);
-    snprintf(msg_state.whence, sizeof(msg_state.whence), "FLANG_LANG=%s", env);
+    snprintf(msg_state.whence, sizeof(msg_state.whence), "FLANG_LANG=%.63s", env);
     found = true;
   } else if (flangrc_project(path, sizeof(path)) && flangrc_key(path, "language", value, sizeof(value))) {
     snprintf(msg_state.whence, sizeof(msg_state.whence), "language = %s (%s)", value, path);

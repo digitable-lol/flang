@@ -7,9 +7,12 @@ FLANG_TYPE в файле type.flang, строка 6, столбец 3: функ�
 ```
 
 The line gives the code, the file, the line and the column, and says what is
-wrong. The compiler prints its messages in Russian; this page translates each
-code into what it means and what to do about it. Codes are grouped by the stage
-that reports them: parsing first, then names, types, termination and proofs.
+wrong. The compiler prints its messages in Russian unless `.flangrc` says
+`language = en` (or `FLANG_LANG=en` is set): then `flang check` prints the code
+unchanged and the text in English for the codes that have an English template
+(ADR-0102). This page explains each code: what it means and what to do about
+it. Codes are grouped by the stage that reports them: parsing first, then names,
+types, termination and proofs.
 
 Exit codes of `flang check`: `0` — no errors; `1` — errors found; `2` — bad
 call (unknown flag, no such file); `3` — with `--proof`, a guarantee is not

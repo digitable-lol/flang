@@ -78,9 +78,14 @@ bootstrap/flang_repl.c:0
 `flangrc_key` и `flangrc_project` для ключа `unproven`), `flang/self/cli.flang`
 (разбор ключей). Правка `flang/self/**` требует перепечатки.
 
-**Следующий шаг.** `flang/src/emit/c/flang_repl.c`: рядом с `flangrc_key` и
-`flangrc_project` для ключа `unproven` читать `language` из `.flangrc`, переменную
-`FLANG_LANG` и ключ `--язык`/`--lang` по старшинству ADR-0024; разбор ключа — в
-`flang/self/cli.flang`. Проба, которая краснеет сегодня, — шаги 1–2: три файла
-справки побайтово равны (`cmp` молчит), и `--язык en` принят кодом 0 без единого
-слова.
+**Часть сделана в исходниках 12 октября 2026, ждёт перепечатки**
+([ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md)):
+`flang check` читает `FLANG_LANG`, затем `language` ближнего `.flangrc`, затем
+домашнего; негодное значение — строка на stderr и ответ по-русски, а не код 2.
+Локаль не спрашивается — довод в ADR-0102, раздел 3.
+
+**Следующий шаг.** Ключ `--язык`/`--lang` в `flang/self/cli.flang` и перевод
+справки `--help`, `--version` и итогов `test`, `run`, `io`, `lint` через
+`msg_printf` в `flang/src/emit/c/flang_repl.c`. Проба, которая краснеет сегодня, —
+шаги 1–2: три файла справки побайтово равны (`cmp` молчит), и `--язык en`
+принят кодом 0 без единого слова.

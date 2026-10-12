@@ -74,7 +74,7 @@ flang: /work/.flangrc: запись «недоказанное = разреше�
 
 | ключ | значения | умолчание | кто читает |
 | --- | --- | --- | --- |
-| `language` | `ru` `en` `eo` `zh` | `ru` (сперва спрошена локаль) | `scripts/flangrc.fscript`, проводник `flang/bin/flangtutor`; сам компилятор — пока нет, задача [5413](../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md) |
+| `language` | `ru` `en` `eo` `zh` | `ru` (сперва спрошена локаль) | `scripts/flangrc.fscript`, проводник `flang/bin/flangtutor`; компилятор — `flang check` после перепечатки семени ([ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md)), локаль он не спрашивает |
 | `surface` | `ru` `en` `eo` `zh` | `ru` | `scripts/flangrc.fscript` |
 | `color` | `always` `never` `auto` | `auto` | `scripts/flangrc.fscript` |
 | `page` | `ru` `en` | `ru` (сперва спрошена локаль) | `scripts/flangrc.fscript` |
@@ -108,10 +108,18 @@ bootstrap/flang run-script version <НОВОЕ ЧИСЛО>
 раздел `lint` [справочника команд](../site/cli.ru.md#lint).
 
 **Что из этого работает сегодня.** Сам двоичный читает из файла ключ
-`unproven`, ключи профиля — `profile`, `modules`, `profile.<имя>` — и три ключа линтера. Отвечает он по-русски всегда: выбор языка вывода — задача
-[5413](../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md),
-и она требует правки самосборной части. Ключ `language` уже меняет язык
-проводника `flangtutor`.
+`unproven`, ключи профиля — `profile`, `modules`, `profile.<имя>` — и три ключа линтера.
+Ключ `language` (и переменную `FLANG_LANG`, она старше файла) читает
+`flang check` — с перепечатки семени после
+[ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md):
+код `FLANG_*` остаётся прежним, текст берётся из каталога
+`flang/messages/catalog.tsv`. Английский шаблон есть у 13 кодов из 129
+(`bootstrap/flang run-script messages:check`, 12 октября 2026), остальные
+отвечают по-русски — задача
+[2510](../tasks/2510-most-compiler-messages-have-no-english-template.md).
+Прочие команды отвечают по-русски всегда — задача
+[5413](../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md).
+Ключ `language` меняет и язык проводника `flangtutor`.
 
 ## Что делать с недоказанным
 

@@ -1,0 +1,19 @@
+program	setting	code	word	ADR-0102, 12 октября 2026: одна программа при language = ru и language = en (.flangrc у рабочего каталога или FLANG_LANG) отвечает тем же кодом FLANG_* и текстом на своём языке; семя 0.7.26 до перепечатки отвечает по-русски на оба, и строки en до перепечатки расходятся — это и есть снимаемое ограничение
+type-error.flang	file-ru	1	FLANG_TYPE в файле ../../programs/type-error.flang, строка 6, столбец 5: функция «Удвоить» объявлена как строка, а тело даёт число
+type-error.flang	file-ru	1	../../programs/type-error.flang: не проверено — замечаний 1
+type-error.flang	file-en	1	FLANG_TYPE in file ../../programs/type-error.flang, line 6, column 5: function «Удвоить» is declared to return string, but its body gives number
+type-error.flang	file-en	1	../../programs/type-error.flang: not verified — problems found: 1
+type-error.flang	env-en	1	FLANG_TYPE in file flang/proof/probes/message-language/programs/type-error.flang, line 6, column 5: function «Удвоить» is declared to return string
+type-error.flang	env-fr	1	язык не из списка ru, en, eo, zh; ответ по-русски
+type-error.flang	env-fr	1	FLANG_TYPE в файле flang/proof/probes/message-language/programs/type-error.flang, строка 6, столбец 5: функция «Удвоить» объявлена как строка
+unknown-name.flang	env-ru	1	FLANG_UNKNOWN_NAME в файле flang/proof/probes/message-language/programs/unknown-name.flang, строка 6, столбец 3: неизвестная функция «Утроить»
+unknown-name.flang	env-en	1	FLANG_UNKNOWN_NAME in file flang/proof/probes/message-language/programs/unknown-name.flang, line 6, column 3: unknown function «Утроить»
+unknown-name.flang	env-ru	1	FLANG_NOT_TOTAL в файле flang/proof/probes/message-language/programs/unknown-name.flang, строка 6, столбец 3: тотальная функция «Удвоить» вызывает неизвестную функцию «Утроить»: завершение доказать нельзя
+unknown-name.flang	env-en	1	FLANG_NOT_TOTAL in file flang/proof/probes/message-language/programs/unknown-name.flang, line 6, column 3: total function «Удвоить» calls an unknown function «Утроить»: termination cannot be proved
+precondition-call.flang	env-ru	1	FLANG_PRECONDITION_CALL в файле flang/proof/probes/message-language/programs/precondition-call.flang, строка 12, столбец 3: вызов «Делить» в функции «Пробовать» не снимает предусловие «не ноль»:
+precondition-call.flang	env-en	1	FLANG_PRECONDITION_CALL in file flang/proof/probes/message-language/programs/precondition-call.flang, line 12, column 3: the call of «Делить» in function «Пробовать» does not discharge precondition «не ноль»:
+verified.flang	file-ru	0	verified.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+verified.flang	file-en	0	verified.flang: verified — parsing, types, termination, proof kernel and examples; no problems found
+verified.flang	env-ru-proof	0	verified.flang: ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 1: доказано 1
+verified.flang	env-en-proof	0	verified.flang: VERIFIED ON ITS OWN — claims 1: proved 1
+verified.flang	env-en-proof	0	── proof ledger of module «Проверено» ──

@@ -75,7 +75,16 @@ flang/src/emit/c/flang_repl.c
 нужна один раз, чтобы двоичный научился читать таблицу; дальше языки
 добавляются без неё.
 
-Следующий шаг: `flang/src/emit/c/flang_repl.c`, рядом с `repl_library_places` (разбор
-`FLANG_MODULE_DIR`) — функция поиска каталога сообщений и подстановка перевода по русской
-строке; первый файл — `share/flang/сообщения/en.txt`. Проба, которая красна сегодня:
-`grep -rn 'FLANG_MESSAGE_DIR' flang/src flang/self bootstrap` молчит, код 1.
+**Сделано в исходниках 12 октября 2026, ждёт перепечатки**
+([ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md)):
+каталог `flang/messages/catalog.tsv` (ключ — код `FLANG_*` или имя строки
+итога, столбец на язык, подстановки по именам; это поправка к разделу 7
+ADR-0024, где ключом была русская строка), поиск каталога через
+`FLANG_MESSAGE_DIR` и рядом с двоичным, сторож
+`bootstrap/flang run-script messages:check` без двоичного, отсрочка
+`FLANG_MESSAGE_DIR` в `flang/scripts/code-guard.fscript` снята.
+
+Следующий шаг: перепечатка семени, после неё
+`bootstrap/flang io flang/proof/probes/message-language/run.fscript --plan Binary`
+обязан ответить «проб 18, разошлось 0» без `FLANG_BIN` — тогда задачу закрыть.
+На семени 0.7.26 тот же прогон расходится на 10 строках из 18.

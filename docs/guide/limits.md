@@ -104,6 +104,16 @@ files as bytes.
 eight targets refuse with `FLANG_PLAN_UNSUPPORTED`, name the plan and write no
 files. To run such a program elsewhere, run it with `flang io`.
 
+**The compiler answers in English only in part.** With `language = en` in
+`.flangrc` (or `FLANG_LANG=en`), `flang check` prints the location, the summary
+and the proof ledger in English and the text of a refusal from the catalog
+`flang/messages/catalog.tsv`: 13 of 129 codes have an English template
+(`bootstrap/flang run-script messages:check`, 12 October 2026). A refusal without
+a template and the kernel's explanation after the colon stay in Russian; the
+`FLANG_*` code is the same in every language. Help, `test`, `run`, `io` and
+`lint` answer in Russian. The binary learns the catalog with the seed reprint
+([ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md)).
+
 **There is no I/O monad.** Steps are chained by returning a command together
 with the next step as a declared value, not as a hidden closure. How this
 differs from a monad: [`docs/ct/spec.md`](../ct/spec.md).

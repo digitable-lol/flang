@@ -3062,6 +3062,12 @@ static void bads_take_analysis(repl_bads *list, fl_value bad) {
             column.tag == FL_NUMBER ? (size_t)column.as.number : 0);
 }
 
+/* Язык ответа (ADR-0102): определены ниже, у чтения `.flangrc`. */
+static char *msg_from_russian(const char *key, const char *russian);
+static void msg_print(FILE *out, const char *key, const char *russian);
+static void msg_printf(FILE *out, const char *key, const char *format, ...);
+static void msg_print_lines(FILE *out, const char *key, const char *text, size_t bytes);
+
 static void repl_print_bad_plain(const char *code, const char *message, const char *where, const char *name,
                                  size_t line, size_t column) {
   if (where == NULL) {
@@ -3070,14 +3076,16 @@ static void repl_print_bad_plain(const char *code, const char *message, const ch
   }
   if (strcmp(where, "ввод") == 0) {
     if (column > 0) {
-      fprintf(stderr, "%s, строка %lu, столбец %lu: %s\n", code, (unsigned long)line, (unsigned long)column, message);
+      msg_printf(stderr, "place.input-column", "%s, строка %lu, столбец %lu: %s\n", code, (unsigned long)line,
+                 (unsigned long)column, message);
     } else {
-      fprintf(stderr, "%s, строка %lu: %s\n", code, (unsigned long)line, message);
+      msg_printf(stderr, "place.input", "%s, строка %lu: %s\n", code, (unsigned long)line, message);
     }
     return;
   }
   if (strcmp(where, "файл") == 0) {
-    fprintf(stderr, "%s в файле %s, строка %lu: %s\n", code, name == NULL ? "?" : name, (unsigned long)line, message);
+    msg_printf(stderr, "place.file", "%s в файле %s, строка %lu: %s\n", code, name == NULL ? "?" : name,
+               (unsigned long)line, message);
     return;
   }
   /*
@@ -3089,26 +3097,30 @@ static void repl_print_bad_plain(const char *code, const char *message, const ch
    */
   if (strcmp(where, "проверка") == 0) {
     if (column > 0) {
-      fprintf(stderr, "%s в файле %s, строка %lu, столбец %lu: %s\n", code, name == NULL ? "?" : name,
-              (unsigned long)line, (unsigned long)column, message);
+      msg_printf(stderr, "place.file-column", "%s в файле %s, строка %lu, столбец %lu: %s\n", code,
+                 name == NULL ? "?" : name, (unsigned long)line, (unsigned long)column, message);
     } else {
-      fprintf(stderr, "%s в файле %s, строка %lu: %s\n", code, name == NULL ? "?" : name, (unsigned long)line, message);
+      msg_printf(stderr, "place.file", "%s в файле %s, строка %lu: %s\n", code, name == NULL ? "?" : name,
+                 (unsigned long)line, message);
     }
     return;
   }
   if (strcmp(where, "модуль") == 0) {
-    fprintf(stderr, "%s, заголовок модуля, строка %lu: %s\n", code, (unsigned long)line, message);
+    msg_printf(stderr, "place.module-header", "%s, заголовок модуля, строка %lu: %s\n", code, (unsigned long)line,
+               message);
     return;
   }
-  fprintf(stderr, "%s в объявлении (%s), строка %lu: %s\n", code, name == NULL ? "?" : name, (unsigned long)line,
-          message);
+  msg_printf(stderr, "place.declaration", "%s в объявлении (%s), строка %lu: %s\n", code,
+             name == NULL ? "?" : name, (unsigned long)line, message);
 }
 
 /* Код отказа — красным, когда за stderr терминал; текст места и сообщения — как есть. */
 static void repl_print_bad(const char *code, const char *message, const char *where, const char *name, size_t line,
                            size_t column) {
   char *painted = repl_painted(repl_depth_err, HUE_RED, true, code);
-  repl_print_bad_plain(painted, message, where, name, line, column);
+  char *spoken = msg_from_russian(code, message); /* код тот же, текст — на языке ответа (ADR-0102) */
+  repl_print_bad_plain(painted, spoken != NULL ? spoken : message, where, name, line, column);
+  free(spoken);
   free(painted);
 }
 
@@ -9171,7 +9183,7 @@ static void check_skipped(fl_value program, size_t *obligations, size_t *example
 static void check_print_bads(const repl_bads *bads, const char *file, size_t sources) {
   size_t index = 0;
   if (sources > 1 && bads->count > 0) {
-    fprintf(stderr,
+    msg_printf(stderr, "check.place-without-file",
             "место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов %lu, "
             "а диагностика компилятора имени файла не несёт\n",
             (unsigned long)sources);
@@ -9280,17 +9292,28 @@ static int check_file(const char *path, bool fast) {
     size_t name_bytes = 0;
     /* Программа приезжает узлом («Значение»), а не записью C, поэтому поля у
        неё достаются `zn_*`, как и у всего остального разобранного. */
+    repl_buf said;
+    buf_init(&said);
     if (zn_field_text(program, "module", &name, &name_bytes) && name_bytes > 0) {
-      printf("модуль «%.*s»", (int)name_bytes, name);
+      buf_put(&said, "модуль «");
+      buf_add(&said, name, name_bytes);
+      buf_put(&said, "»");
     } else {
-      printf("без имени модуля");
+      buf_put(&said, "без имени модуля");
     }
-    printf(": функций %lu, из них с доказанным завершением %lu; типов %lu",
-           (unsigned long)functions, (unsigned long)proved, (unsigned long)types);
+    buf_put(&said, ": функций ");
+    buf_number(&said, functions);
+    buf_put(&said, ", из них с доказанным завершением ");
+    buf_number(&said, proved);
+    buf_put(&said, "; типов ");
+    buf_number(&said, types);
     if (paths.count > 1) {
-      printf("; файлов вместе с импортами %lu", (unsigned long)paths.count);
+      buf_put(&said, "; файлов вместе с импортами ");
+      buf_number(&said, paths.count);
     }
-    printf("\n");
+    buf_char(&said, '\n');
+    msg_print(stdout, paths.count > 1 ? "check.module-files" : "check.module", said.data);
+    buf_free(&said);
     /*
      * ЧЬЁ ЗАВЕРШЕНИЕ НЕ ДОКАЗАНО — ПОИМЁННО, А НЕ ЧИСЛОМ.
      *
@@ -9309,8 +9332,9 @@ static int check_file(const char *path, bool fast) {
       size_t count = 0;
       size_t index = 0;
       size_t shown = 0;
+      repl_buf names;
+      buf_init(&names);
       zn_field_items(program, "functions", &items, &count);
-      printf("без доказанного завершения:");
       for (index = 0; index < count; index += 1) {
         const char *fname = NULL;
         size_t fbytes = 0;
@@ -9318,14 +9342,21 @@ static int check_file(const char *path, bool fast) {
           continue;
         }
         if (shown < REPL_VERBOSE) {
-          printf(" «%.*s»", (int)fbytes, fname);
+          buf_put(&names, shown == 0 ? "«" : " «");
+          buf_add(&names, fname, fbytes);
+          buf_put(&names, "»");
         }
         shown += 1;
       }
       if (shown > REPL_VERBOSE) {
-        printf(" и ещё %lu", (unsigned long)(shown - REPL_VERBOSE));
+        msg_printf(stdout, "check.not-total-more", "без доказанного завершения: %s и ещё %lu\n", names.data,
+                   (unsigned long)(shown - REPL_VERBOSE));
+      } else if (shown > 0) {
+        msg_printf(stdout, "check.not-total", "без доказанного завершения: %s\n", names.data);
+      } else {
+        printf("без доказанного завершения:\n");
       }
-      printf("\n");
+      buf_free(&names);
     }
   }
   /* Потоки разные — stdout под ответ, stderr под диагностику, — и порядок между
@@ -9552,16 +9583,18 @@ static int check_file(const char *path, bool fast) {
    * важнее названного пробела.
    */
   if (fast && ok && !unjudged) {
-    printf("%s: часть проверок НЕ ЗАПУСКАЛАСЬ — код возврата 4, а не 0\n", path);
+    msg_printf(stdout, "check.fast", "%s: часть проверок НЕ ЗАПУСКАЛАСЬ — код возврата 4, а не 0\n", path);
   } else if (fast && ok) {
-    printf("%s: часть объявлений НЕ СУДИТСЯ ВОВСЕ, и часть проверок не запускалась — код возврата 2\n",
-           path);
+    msg_printf(stdout, "check.fast-unjudged",
+               "%s: часть объявлений НЕ СУДИТСЯ ВОВСЕ, и часть проверок не запускалась — код возврата 2\n", path);
   } else if (ok && !unjudged) {
-    printf("%s: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет\n", path);
+    msg_printf(stdout, "check.verified", "%s: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет\n",
+               path);
   } else if (ok) {
-    printf("%s: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли\n", path);
+    msg_printf(stdout, "check.partly", "%s: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли\n",
+               path);
   } else {
-    printf("%s: не проверено — замечаний %lu\n", path, (unsigned long)bads.count);
+    msg_printf(stdout, "check.not-verified", "%s: не проверено — замечаний %lu\n", path, (unsigned long)bads.count);
   }
   fflush(stdout);
 
@@ -9812,7 +9845,7 @@ static void proof_say_verdict(const char *path, const proof_tally *t, int code, 
                      : strict    ? "ДОКАЗАНО"
                      : leaning   ? "ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ (спросить: --строго)"
                                  : "ПРОВЕРЕНО САМОСТОЯТЕЛЬНО";
-  fprintf(stderr,
+  msg_printf(stderr, "proof.verdict",
           "%s: %s — утверждений %ld: доказано %ld, условно %ld, сетка %ld, объявлено, не доказано %ld, "
           "отвергнуто %ld, нарушено %ld; законов на сетке %ld, на веру %ld — код возврата %d\n",
           path, word, t->total, t->proved, t->conditional, t->grid, t->declared, t->refused,
@@ -9959,7 +9992,8 @@ static void proof_say_steps(const char *record, size_t bytes) {
   bool inside = false;
   bool header_said = false;
   bool found = false;
-  fputs("\nчем получен каждый шаг (правило и основания — строками записи доказательства):\n", stdout);
+  fputc('\n', stdout);
+  msg_print(stdout, "ledger", "чем получен каждый шаг (правило и основания — строками записи доказательства):\n");
   while (at < bytes) {
     const char *line = record + at;
     size_t end = at;
@@ -9997,14 +10031,14 @@ static void proof_say_steps(const char *record, size_t bytes) {
       continue;
     }
     if (!header_said) {
-      printf("  %.*s\n", (int)header_bytes, header);
+      msg_printf(stdout, "ledger", "  %.*s\n", (int)header_bytes, header);
       header_said = true;
     }
-    printf("    %.*s\n", (int)length, line);
+    msg_printf(stdout, "ledger", "    %.*s\n", (int)length, line);
     found = true;
   }
   if (!found) {
-    fputs("  ничего: ни одно утверждение не назвало ни правила, ни шага\n", stdout);
+    msg_print(stdout, "ledger", "  ничего: ни одно утверждение не назвало ни правила, ни шага\n");
   }
 }
 
@@ -10035,9 +10069,9 @@ static void proof_say_independent(const char *path, const char *record, size_t b
   int fd = -1;
   pid_t child;
   if (checker == NULL || access(checker, X_OK) != 0) {
-    fprintf(stderr,
-            "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщика нет (%s; собрать: make -C flang/proof/checker"
-            " либо назвать FLANG_CHECKER): все %ld доказанных стоят на слове ядра\n",
+    msg_printf(stderr, "proof.no-checker",
+            "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщика нет (%s"
+            "; собрать: make -C flang/proof/checker либо назвать FLANG_CHECKER): все %ld доказанных стоят на слове ядра\n",
             path, checker == NULL ? "путь к нему не найден" : checker, proved);
     free(checker);
     return;
@@ -10110,7 +10144,7 @@ static void proof_say_independent(const char *path, const char *record, size_t b
             " записи ввезённых модулей ключом --зависимость): все %ld доказанных стоят на слове ядра\n",
             path, proved);
   } else {
-    fprintf(stderr,
+    msg_printf(stderr, "proof.checker-replayed",
             "%s: независимо, сверщиком, проиграно %ld из %ld доказанных; на слове ядра %ld — код сверщика %d\n",
             path, checked, proved, proved - checked, WEXITSTATUS(status));
   }
@@ -10225,7 +10259,8 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
     if (!judged) {
       check_print_bads(&bads, path, paths.count);
       fflush(stderr);
-      printf("%s: не проверено — ведомость не печатается у программы с замечаниями\n", path);
+      msg_printf(stdout, "check.no-ledger",
+                 "%s: не проверено — ведомость не печатается у программы с замечаниями\n", path);
       fflush(stdout);
       bads_free(&bads);
       strings_free(&paths);
@@ -10338,7 +10373,11 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
     proof_tally tally;
     bool counted = false;
     if (val_field(result, json ? "в JSON" : "словами", &field) && val_text(field, &utf8, &bytes)) {
-      fwrite(utf8, 1, bytes, stdout);
+      if (json) {
+        fwrite(utf8, 1, bytes, stdout);
+      } else {
+        msg_print_lines(stdout, "ledger", utf8, bytes);
+      }
       if (json) {
         fputc('\n', stdout);
       }
@@ -10416,7 +10455,8 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
       }
     }
     fflush(stderr);
-    printf("%s: не проверено — ведомость не печатается у программы с замечаниями\n", path);
+    msg_printf(stdout, "check.no-ledger",
+               "%s: не проверено — ведомость не печатается у программы с замечаниями\n", path);
     fflush(stdout);
     code = 1;
   }
@@ -11401,6 +11441,473 @@ static bool flangrc_project(char *out, size_t room) {
       continue;
     }
     *slash = '\0';
+  }
+}
+
+/* ═══════════════════ язык сообщений: каталог переводов ═══════════════════ */
+/*
+ * ЯЗЫК ОТВЕТА ВЫБИРАЕТ ЧЕЛОВЕК, КОД ОТКАЗА ОСТАЁТСЯ ПРЕЖНИМ (ADR-0102).
+ *
+ * Русский текст собирается там же, где собирался всегда: в `flang/self/` и в
+ * этом файле. Перевод — ОДНА точка, печать. Русская строка сличается с русским
+ * шаблоном каталога по КЛЮЧУ (у отказа ключ — его код FLANG_*, у строки итога —
+ * её имя вида `check.verified`), подстановки снимаются по именам и ставятся в
+ * шаблон выбранного языка. Ветвления «если английский» по компилятору нет ни
+ * одного: новый язык — новый столбец каталога, без перепечатки семени.
+ *
+ * Каталог — `catalog.tsv`: строка заголовка `key<TAB>ru<TAB>en…`, дальше по
+ * строке на шаблон; `#` в начале — примечание; `\n`, `\t`, `\\` экранированы.
+ * Подстановка — `{имя}` из строчной латиницы, цифр, дефиса и точки. Значение
+ * подстановки само переводится строками ключа `{основа}` (часть имени до точки):
+ * так «функция «Удвоить»» становится «function «Удвоить»», а тип «число» в
+ * `{type.got}` — «number» по строкам ключа `{type}`.
+ *
+ * Ищется ровно как библиотека: `FLANG_MESSAGE_DIR`, затем
+ * `<каталог двоичного>/../flang/messages` и `…/share/flang/messages`.
+ * Язык: `FLANG_LANG`, затем ключ `language` ближнего `.flangrc` проекта, затем
+ * `.flangrc` дома, затем `ru`. Локаль НЕ читается — довод в ADR-0102.
+ *
+ * РУССКИЙ ПУТЬ НЕ ТРОНУТ НИ БАЙТОМ: при `ru` каталог не открывается вовсе и
+ * печать идёт прежним `fprintf`. Шаблона нет, строка не сошлась, каталога нет —
+ * печатается русский текст: ни один прогон из-за настроек не онемеет.
+ */
+
+#define MSG_HOLES 12
+#define MSG_DEPTH 3
+
+typedef struct {
+  char **cells;
+  size_t count;
+} msg_row;
+
+typedef struct {
+  bool lang_ready;
+  bool loaded;
+  bool told;
+  char lang[16];
+  char whence[4400];
+  char *path;
+  msg_row head;
+  msg_row *rows;
+  size_t count;
+  size_t room;
+  long ru_column;
+  long lang_column;
+} msg_state_t;
+
+static msg_state_t msg_state;
+
+typedef struct {
+  const char *name[MSG_HOLES];
+  size_t name_bytes[MSG_HOLES];
+  const char *start[MSG_HOLES];
+  size_t bytes[MSG_HOLES];
+  size_t count;
+} msg_holes;
+
+/** Языки ответа — те же коды, что у поверхностей записи (ADR-0024, раздел 2). */
+static bool msg_known_language(const char *code) {
+  return strcmp(code, "ru") == 0 || strcmp(code, "en") == 0 || strcmp(code, "eo") == 0 || strcmp(code, "zh") == 0;
+}
+
+static const char *msg_language(void) {
+  char path[4352];
+  char value[64];
+  const char *env = getenv("FLANG_LANG");
+  const char *home = getenv("HOME");
+  bool found = false;
+  if (msg_state.lang_ready) {
+    return msg_state.lang;
+  }
+  msg_state.lang_ready = true;
+  snprintf(msg_state.lang, sizeof(msg_state.lang), "ru");
+  value[0] = '\0';
+  if (env != NULL && env[0] != '\0') {
+    snprintf(value, sizeof(value), "%s", env);
+    snprintf(msg_state.whence, sizeof(msg_state.whence), "FLANG_LANG=%s", env);
+    found = true;
+  } else if (flangrc_project(path, sizeof(path)) && flangrc_key(path, "language", value, sizeof(value))) {
+    snprintf(msg_state.whence, sizeof(msg_state.whence), "language = %s (%s)", value, path);
+    found = true;
+  } else if (home != NULL && home[0] != '\0') {
+    snprintf(path, sizeof(path), "%s/.flangrc", home);
+    if (flangrc_key(path, "language", value, sizeof(value))) {
+      snprintf(msg_state.whence, sizeof(msg_state.whence), "language = %s (%s)", value, path);
+      found = true;
+    }
+  }
+  if (!found) {
+    return msg_state.lang;
+  }
+  if (!msg_known_language(value)) {
+    fprintf(stderr, "flang: %s — язык не из списка ru, en, eo, zh; ответ по-русски\n", msg_state.whence);
+    return msg_state.lang;
+  }
+  snprintf(msg_state.lang, sizeof(msg_state.lang), "%s", value);
+  return msg_state.lang;
+}
+
+static char *msg_catalog_path(void) {
+  static const char *const SUBS[2] = {"flang/messages/catalog.tsv", "share/flang/messages/catalog.tsv"};
+  const char *named = getenv("FLANG_MESSAGE_DIR");
+  char *self_dir = NULL;
+  char *parent = NULL;
+  size_t index = 0;
+  if (named != NULL && named[0] != '\0') {
+    char *candidate = repl_join(named, "catalog.tsv");
+    if (repl_exists(candidate)) {
+      return candidate;
+    }
+    free(candidate);
+  }
+  self_dir = repl_self_dir(repl_self_kept);
+  if (self_dir == NULL) {
+    return NULL;
+  }
+  parent = repl_dirname(self_dir);
+  free(self_dir);
+  for (index = 0; index < 2; index += 1) {
+    char *candidate = repl_join(parent, SUBS[index]);
+    if (repl_exists(candidate)) {
+      free(parent);
+      return candidate;
+    }
+    free(candidate);
+  }
+  free(parent);
+  return NULL;
+}
+
+/** Ячейка каталога без экранирования: `\n`, `\t`, `\\`. */
+static char *msg_cell(const char *text, size_t bytes) {
+  repl_buf out;
+  size_t at = 0;
+  char *result = NULL;
+  buf_init(&out);
+  for (at = 0; at < bytes; at += 1) {
+    if (text[at] == '\\' && at + 1 < bytes) {
+      const char next = text[at + 1];
+      if (next == 'n' || next == 't' || next == '\\') {
+        buf_char(&out, next == 'n' ? '\n' : next == 't' ? '\t' : '\\');
+        at += 1;
+        continue;
+      }
+    }
+    buf_char(&out, text[at]);
+  }
+  result = repl_dup(out.data, out.used);
+  buf_free(&out);
+  return result;
+}
+
+static msg_row msg_split_row(const char *line, size_t bytes) {
+  msg_row row;
+  size_t start = 0;
+  size_t at = 0;
+  size_t room = 4;
+  row.count = 0;
+  row.cells = (char **)repl_alloc(room * sizeof(char *));
+  for (at = 0; at <= bytes; at += 1) {
+    if (at == bytes || line[at] == '\t') {
+      if (row.count == room) {
+        room *= 2;
+        row.cells = (char **)repl_grow(row.cells, room * sizeof(char *));
+      }
+      row.cells[row.count] = msg_cell(line + start, at - start);
+      row.count += 1;
+      start = at + 1;
+    }
+  }
+  return row;
+}
+
+static void msg_load(void) {
+  size_t bytes = 0;
+  size_t at = 0;
+  char *text = NULL;
+  bool headed = false;
+  if (msg_state.loaded) {
+    return;
+  }
+  msg_state.loaded = true;
+  msg_state.ru_column = -1;
+  msg_state.lang_column = -1;
+  msg_state.path = msg_catalog_path();
+  if (msg_state.path == NULL) {
+    return;
+  }
+  text = repl_read_file(msg_state.path, &bytes);
+  if (text == NULL) {
+    return;
+  }
+  while (at < bytes) {
+    size_t end = at;
+    size_t cut = 0;
+    while (end < bytes && text[end] != '\n') {
+      end += 1;
+    }
+    cut = end;
+    if (cut > at && text[cut - 1] == '\r') {
+      cut -= 1;
+    }
+    if (cut > at && text[at] != '#') {
+      msg_row row = msg_split_row(text + at, cut - at);
+      if (!headed) {
+        size_t column = 0;
+        headed = true;
+        msg_state.head = row;
+        for (column = 0; column < row.count; column += 1) {
+          if (strcmp(row.cells[column], "ru") == 0) {
+            msg_state.ru_column = (long)column;
+          }
+          if (strcmp(row.cells[column], msg_state.lang) == 0) {
+            msg_state.lang_column = (long)column;
+          }
+        }
+      } else {
+        if (msg_state.count == msg_state.room) {
+          msg_state.room = msg_state.room == 0 ? 256 : msg_state.room * 2;
+          msg_state.rows = (msg_row *)repl_grow(msg_state.rows, msg_state.room * sizeof(msg_row));
+        }
+        msg_state.rows[msg_state.count] = row;
+        msg_state.count += 1;
+      }
+    }
+    at = end + 1;
+  }
+  free(text);
+}
+
+/**
+ * Переводить ли вообще. При `ru` — нет, и каталог не открывается. При другом
+ * языке без каталога или без его столбца — нет, и человеку это сказано ОДИН раз:
+ * молчаливый русский ответ на `language = en` читался бы как «ключ сломан».
+ */
+static bool msg_foreign(void) {
+  const char *lang = msg_language();
+  if (strcmp(lang, "ru") == 0) {
+    return false;
+  }
+  msg_load();
+  if (msg_state.ru_column >= 0 && msg_state.lang_column >= 0) {
+    return true;
+  }
+  if (!msg_state.told) {
+    msg_state.told = true;
+    if (msg_state.path == NULL) {
+      fprintf(stderr,
+              "flang: %s, but no message catalog was found (FLANG_MESSAGE_DIR, or flang/messages next to the "
+              "binary) — answering in Russian\n",
+              msg_state.whence);
+    } else {
+      fprintf(stderr, "flang: %s, but the catalog %s has no column «%s» — answering in Russian\n", msg_state.whence,
+              msg_state.path, lang);
+    }
+  }
+  return false;
+}
+
+/** `{имя}` в начале `tpl`: строчная латиница, цифры, дефис и точка. */
+static bool msg_hole_name(const char *tpl, size_t *name_bytes) {
+  size_t at = 1;
+  if (tpl[0] != '{') {
+    return false;
+  }
+  while ((tpl[at] >= 'a' && tpl[at] <= 'z') || (tpl[at] >= '0' && tpl[at] <= '9') || tpl[at] == '-' ||
+         tpl[at] == '.') {
+    at += 1;
+  }
+  if (at == 1 || tpl[at] != '}') {
+    return false;
+  }
+  *name_bytes = at - 1;
+  return true;
+}
+
+/*
+ * Сличение строки с шаблоном. Подстановка берёт НАИМЕНЬШИЙ непустой кусок, за
+ * которым сходится остаток шаблона: «{где} объявлена как {тип}, а тело даёт
+ * {тело}» на «функция «Удвоить» объявлена как строка, а тело даёт число» снимает
+ * где = «функция «Удвоить»», тип = «строка», тело = «число».
+ */
+static bool msg_match_at(const char *tpl, const char *text, msg_holes *holes) {
+  size_t name_bytes = 0;
+  for (;;) {
+    if (*tpl == '\0') {
+      return *text == '\0';
+    }
+    if (*tpl == '{' && msg_hole_name(tpl, &name_bytes)) {
+      const char *after = tpl + name_bytes + 2;
+      const size_t index = holes->count;
+      const size_t rest = strlen(text);
+      size_t take = 0;
+      if (index >= MSG_HOLES) {
+        return false;
+      }
+      for (take = 1; take <= rest; take += 1) {
+        if (*after != '\0' && *after != '{' && text[take] != *after) {
+          continue;
+        }
+        if (*after == '\0' && take != rest) {
+          continue;
+        }
+        holes->name[index] = tpl + 1;
+        holes->name_bytes[index] = name_bytes;
+        holes->start[index] = text;
+        holes->bytes[index] = take;
+        holes->count = index + 1;
+        if (msg_match_at(after, text + take, holes)) {
+          return true;
+        }
+      }
+      holes->count = index;
+      return false;
+    }
+    if (*tpl != *text) {
+      return false;
+    }
+    tpl += 1;
+    text += 1;
+  }
+}
+
+static char *msg_by_key(const char *key, const char *russian, int depth);
+
+static char *msg_render(const char *tpl, const msg_holes *holes, int depth) {
+  repl_buf out;
+  char *result = NULL;
+  size_t name_bytes = 0;
+  buf_init(&out);
+  while (*tpl != '\0') {
+    if (*tpl == '{' && msg_hole_name(tpl, &name_bytes)) {
+      size_t index = 0;
+      bool filled = false;
+      for (index = 0; index < holes->count && !filled; index += 1) {
+        if (holes->name_bytes[index] == name_bytes && memcmp(holes->name[index], tpl + 1, name_bytes) == 0) {
+          char *value = repl_dup(holes->start[index], holes->bytes[index]);
+          char *key = (char *)repl_alloc(name_bytes + 3);
+          char *spoken = NULL;
+          const char *dot = (const char *)memchr(tpl + 1, '.', name_bytes);
+          const size_t stem = dot == NULL ? name_bytes : (size_t)(dot - (tpl + 1));
+          /* Словарь подстановки — по основе имени: `{type.got}` и `{type.wanted}` берут строки `{type}`. */
+          key[0] = '{';
+          memcpy(key + 1, tpl + 1, stem);
+          key[stem + 1] = '}';
+          key[stem + 2] = '\0';
+          spoken = msg_by_key(key, value, depth + 1);
+          buf_put(&out, spoken != NULL ? spoken : value);
+          free(spoken);
+          free(key);
+          free(value);
+          filled = true;
+        }
+      }
+      if (!filled) {
+        buf_add(&out, tpl, name_bytes + 2);
+      }
+      tpl += name_bytes + 2;
+      continue;
+    }
+    buf_char(&out, *tpl);
+    tpl += 1;
+  }
+  result = repl_dup(out.data, out.used);
+  buf_free(&out);
+  return result;
+}
+
+static char *msg_by_key(const char *key, const char *russian, int depth) {
+  size_t index = 0;
+  if (depth > MSG_DEPTH || msg_state.ru_column < 0 || msg_state.lang_column < 0) {
+    return NULL;
+  }
+  for (index = 0; index < msg_state.count; index += 1) {
+    const msg_row *row = &msg_state.rows[index];
+    msg_holes holes;
+    if (row->count <= (size_t)msg_state.ru_column || row->count <= (size_t)msg_state.lang_column ||
+        strcmp(row->cells[0], key) != 0) {
+      continue;
+    }
+    if (row->cells[msg_state.ru_column][0] == '\0' || row->cells[msg_state.lang_column][0] == '\0') {
+      continue;
+    }
+    holes.count = 0;
+    if (msg_match_at(row->cells[msg_state.ru_column], russian, &holes)) {
+      return msg_render(row->cells[msg_state.lang_column], &holes, depth);
+    }
+  }
+  return NULL;
+}
+
+/** Перевод русского текста по ключу; NULL — печатать русский как есть. */
+static char *msg_from_russian(const char *key, const char *russian) {
+  if (!msg_foreign()) {
+    return NULL;
+  }
+  return msg_by_key(key, russian, 0);
+}
+
+/** Строка целиком: последний перевод строки снимается перед сличением и ставится обратно. */
+static void msg_print(FILE *out, const char *key, const char *russian) {
+  const size_t bytes = strlen(russian);
+  const bool newline = bytes > 0 && russian[bytes - 1] == '\n';
+  char *bare = repl_dup(russian, newline ? bytes - 1 : bytes);
+  char *spoken = msg_from_russian(key, bare);
+  fputs(spoken != NULL ? spoken : bare, out);
+  if (newline) {
+    fputc('\n', out);
+  }
+  free(spoken);
+  free(bare);
+}
+
+static void msg_printf(FILE *out, const char *key, const char *format, ...) {
+  va_list args;
+  int need = 0;
+  char *russian = NULL;
+  if (!msg_foreign()) {
+    va_start(args, format);
+    vfprintf(out, format, args);
+    va_end(args);
+    return;
+  }
+  va_start(args, format);
+  need = vsnprintf(NULL, 0, format, args);
+  va_end(args);
+  if (need < 0) {
+    return;
+  }
+  russian = (char *)repl_alloc((size_t)need + 1);
+  va_start(args, format);
+  vsnprintf(russian, (size_t)need + 1, format, args);
+  va_end(args);
+  msg_print(out, key, russian);
+  free(russian);
+}
+
+/** Текст из многих строк (ведомость): каждая строка сличается отдельно. */
+static void msg_print_lines(FILE *out, const char *key, const char *text, size_t bytes) {
+  size_t at = 0;
+  if (!msg_foreign()) {
+    fwrite(text, 1, bytes, out);
+    return;
+  }
+  while (at < bytes) {
+    size_t end = at;
+    char *line = NULL;
+    char *spoken = NULL;
+    while (end < bytes && text[end] != '\n') {
+      end += 1;
+    }
+    line = repl_dup(text + at, end - at);
+    spoken = msg_from_russian(key, line);
+    fputs(spoken != NULL ? spoken : line, out);
+    if (end < bytes) {
+      fputc('\n', out);
+    }
+    free(spoken);
+    free(line);
+    at = end + 1;
   }
 }
 

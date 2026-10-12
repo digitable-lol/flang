@@ -119,6 +119,24 @@ a template and the kernel's explanation after the colon stay in Russian; the
 with the next step as a declared value, not as a hidden closure. How this
 differs from a monad: [`docs/ct/spec.md`](../ct/spec.md).
 
+**Not every arithmetic rule of `вес`, `сотых` and `тысячных` holds.** On
+`вес` (weight), subtraction, multiplication, weight-by-weight division,
+remainder and percent produce `число`: `а минус б` with `возвращает вес` is a
+`FLANG_TYPE` error ("тело даёт число"), but with `возвращает число` the check
+passes, although the specification promises `FLANG_INFINITY`. Hundredths and
+thousandths add up without a `FLANG_SCALE` refusal: `сотых плюс тысячных` with
+bounded operands passes even with `возвращает сотых`. Of the 12 rules of the
+specification the binary holds 7, does not hold 4, and one is not checked (run
+of 12 October 2026, ADR-0099, task 1747). Workaround: declare the result with the
+same type and do not mix scales in one expression.
+
+**`flang emit` does not run the examples.** `flang check` and `flang test` run
+them; `emit` prints even a program with a false example (task 8397). Run
+`flang test <file>` before printing. The compiler sources check the arguments of
+the printed runner against the declared types in all ten targets; the binary
+0.7.26, until the seed is reprinted, prints the type table into target `c` only
+and does not look at the floor of `вес`.
+
 ## Category declarations
 
 `категория`, `морфизм`, `функтор`, `моноид`, `монада`, `изоморфизм`,

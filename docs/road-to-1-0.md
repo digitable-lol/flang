@@ -120,7 +120,7 @@
 ссылками; реестр имён ([ADR-0059](adr/0059-the-registry-is-a-ledger-of-names-not-a-store-of-code.md)),
 образец описания пакета — `scripts/registry-example/`. Профили в `.flangrc`
 выбирают модули библиотеки ([ADR-0054](adr/0054-a-profile-in-the-settings-file-selects-library-modules.md)).
-Библиотека `flang/stdlib` — <!-- СНЯТО 2026-10-08 файлов flang/stdlib/*.flang = 55 --> 55 файла, <!-- СНЯТО 2026-10-08 строк-в flang/stdlib/*.flang = 35187 --> 35 187 строк.
+Библиотека `flang/stdlib` — <!-- СНЯТО 2026-10-08 файлов flang/stdlib/*.flang = 55 --> 55 файла, <!-- СНЯТО 2026-10-12 строк-в flang/stdlib/*.flang = 35221 --> 35 221 строк.
 
 **Чего нет.** Установки пакета по имени из сети и разрешения версий.
 

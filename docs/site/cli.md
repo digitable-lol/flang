@@ -809,11 +809,21 @@ height in characters. Without a terminal (output piped, CI, nohup) these
 commands answer `FLANG_IO_NO_SCREEN`; with `--no-screen` they answer
 `FLANG_IO_DENIED`.
 
-**HTTPS.** The «Запросить» command supports `https`, but through an external
-`curl`: the binary has no TLS of its own. Without `curl` the answer is
-`FLANG_IO_NO_TLS`; `--no-spawn` forbids `https` too (`FLANG_IO_DENIED`). `curl`
-checks the certificate (expiry, chain, host name); certificate revocation (OCSP,
-CRL) is not checked. «Открыть соединение» is plain TCP.
+**HTTPS.** The «Запросить» command supports `https`. In the runtime sources it
+is executed by the TLS 1.3 client written in the language
+(`flang/stdlib/tls-client.flang`), printed to C and built into the binary; a
+binary printed before this change goes through an external `curl` and answers
+`FLANG_IO_NO_TLS` without it
+([ADR-0101](../adr/0101-the-binary-host-speaks-tls-with-the-printed-language-client.md)).
+The client checks the chain up to a root, expiry, the host name and the
+server's signature; a certificate failure is `FLANG_IO_TLS_CERT`, any other TLS
+failure `FLANG_IO_TLS`. Roots come from `--trust-roots <PEM file>` or the
+system bundle. Certificate revocation (OCSP, CRL) is not checked.
+«Открыть соединение» is plain TCP.
+
+**Datagrams.** «Отправить датаграмму» and «Принять датаграмму» are UDP over
+IPv4 with octets as a list of numbers; the answer is «Записано», «Датаграмма»
+or «Срок вышел».
 
 ## lock
 

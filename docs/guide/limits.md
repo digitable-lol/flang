@@ -89,17 +89,31 @@ name. Write `случай вариант «Да»`, or rename the variant.
 **Side effects work through `план` only.** A function never reads a file
 itself: it returns a command as data (`вариант «Прочитать файл» с путь равным
 …`), and `flang io` executes it and calls the function again with the
-response. There are 13 commands, and the list is closed: <!-- СНЯТО 2026-10-11 список flang/self/parser.flang:5995 = 13 -->
+response. There are 27 commands, and the list is closed: <!-- СНЯТО 2026-10-12 список flang/self/parser.flang:6079 = 27 -->
 read and write a file as text and as bytes, delete a file, make a temporary
 directory, list a directory, make an HTTP request, open and accept a
-connection, read and write a connection as text and as bytes, start a process
-with or without input, show on the screen, wait for an event, get the screen
+connection, read and write a connection as text and as bytes, send and
+receive a datagram, start a process with or without input, show on the screen, wait for an event, get the screen
 size, read the clock, get a random number, get random octets, read an
 environment variable, read the command-line arguments. The list is the function
 `«Варианты поручения»` in `flang/self/parser.flang`, and a postcondition there
-fixes its length at 25.
+fixes its length at 27.
 Reading invalid UTF-8 as text fails with `FLANG_IO_NOT_TEXT`; read binary
 files as bytes.
+
+**`https` uses the language's own client, after a seed reprint.** In the
+runtime sources, «Запросить» over `https` is executed by the TLS 1.3 client
+written in the language (`flang/stdlib/tls-client.flang`), printed to C and
+built into the binary itself
+([ADR-0101](../adr/0101-the-binary-host-speaks-tls-with-the-printed-language-client.md)).
+The binary in `bootstrap/` gets it only with a seed reprint; until then it
+still calls `curl`. The client supports only `TLS_AES_128_GCM_SHA256`, x25519,
+`rsa_pss_rsae_sha256` and an `sha256WithRSAEncryption` chain; a server without
+them is refused with `FLANG_IO_TLS`. Certificate revocation is not checked.
+Roots come from `--trust-roots <PEM file>` or the system bundle. A plan has no
+raw TLS socket: «Открыть соединение» is plain TCP. Datagrams are IPv4 only.
+Run of 12 October 2026 with a private build: a local `openssl s_server`
+answered in 1.66 s, against 0.015 s for `curl` (`flang/proof/probes/network`).
 
 **A program with `план` is generated only into `js` and `ts`.** The other
 eight targets refuse with `FLANG_PLAN_UNSUPPORTED`, name the plan and write no

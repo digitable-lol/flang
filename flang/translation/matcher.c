@@ -196,6 +196,7 @@ struct node {
   size_t count, cap;
   size_t proto_line; /* номер строки протокола, где узел открыт */
   node_t *parent;
+  int guard_checked; /* узел сторожа меры, сличённый по образцу (ADR-0104) */
 };
 
 typedef struct {
@@ -350,7 +351,7 @@ static int read_protocol(const char *text, size_t len, protocol_t *pr) {
 
 /* ── закрытый список правил ───────────────────────────────────────────────────
  * Те же имена, что в первом столбце PRINT-RULES.tsv, в том же порядке; сходство
- * двух списков стережёт run.sh. Имя, которого здесь нет, — отказ.
+ * двух списков стережёт run.fscript. Имя, которого здесь нет, — отказ.
  */
 static const char *const RULES[] = {
     "литерал",
@@ -1066,11 +1067,13 @@ static int is_ident(const char *s) {
  * хвостовой вызов, убывающий довод или строка «убывает», и слова своего вида
  * там нет по построению.
  *
- * Поблажка узкая и считаная: место такого узла не сличается, зато он назван
- * числом в итоге, и итог становится «НЕ ПРОВЕРЕНО». ЧЕГО ЭТО НЕ ПРОВЕРЯЕТ:
- * строгости сравнения (lt против lte — правило «операция-вызовом» их не
- * переигрывает) и того, какая ветвь сторожа продолжает виток. Блок функции
- * сторожа принимается, если его кто-то зовёт, — ровно как блок «применить N».
+ * С ADR-0104 сторож самовызова сличается по образцу (ниже, «сторож меры:
+ * переигрывается по образцу»): место, строгость сравнения мер и ветвь,
+ * продолжающая виток. Поблажка ниже осталась для того, чего образец не знает,
+ * — сторожа у вызова ДРУГОЙ функции (взаимная рекурсия): место такого узла не
+ * сличается, он назван числом в итоге, и итог становится «НЕ ПРОВЕРЕНО». Блок
+ * функции сторожа принимается, если его кто-то зовёт, — ровно как блок
+ * «применить N».
  */
 static int is_measure_guard_name(const char *name) {
   static const char *const bases[] = {"мера убывает", "объявленная мера убывает"};
@@ -1179,6 +1182,7 @@ static int function_id(const char *name, char *out, size_t cap) {
 
 static int is_arg_slot(const char *s);
 static int measure_born_node(const node_t *n);
+static int replay_helper_operation(const node_t *n, const char *op);
 
 static void rule_mismatch(const node_t *n, const char *fmt, const char *a, const char *b) {
   char who[512];
@@ -1503,6 +1507,12 @@ static int check_anchor(const node_t *n) {
 wrong: {
   char seen[64];
   size_t k = rest < 24 ? rest : 24;
+  if (n->guard_checked) return 1;
+  /* Обёртка («число-распакованное», «положить») берёт вид и место того, что
+   * обёртывает; обёрнут узел сторожа, сличённый по образцу, — место его. */
+  if (child_count(n) == 1 && child_at(n, 0)->guard_checked && child_at(n, 0)->line == n->line &&
+      child_at(n, 0)->column == n->column && strcmp(child_at(n, 0)->kind, n->kind) == 0)
+    return 1;
   if (measure_born_node(n)) {
     measure_born += 1;
     return 1;
@@ -1694,6 +1704,8 @@ static int replay_literal(const node_t *n) {
   const char *p = source_at(n->line, n->column, &rest);
   const item_t *part = find_part(n, "литерал");
   value_of(n, value, sizeof value);
+  /* Литерал без места кладёт сторож меры; его значение сличил образец. */
+  if (p == NULL && n->guard_checked && child_count(n) == 0 && (part == NULL || part->text_len == 0)) return 1;
   if (child_count(n) != 0 || p == NULL || (part != NULL && part->text_len != 0)) return -1;
   if (strncmp(value, "fl_number(", 10) == 0) {
     char inner[256];
@@ -1765,12 +1777,19 @@ static int replay_numeric(const node_t *n, const char *box, const char *checker)
   const char *sign;
   if (!extra_word(n, "операция", op, sizeof op) || child_count(n) != 2) return 0;
   sign = c_operator(op);
-  if (sign == NULL) return -1;
+  if (sign == NULL && strcmp(op, "mod") != 0 && strcmp(op, "percent") != 0) return -1;
   value_of(child_at(n, 0), l, sizeof l);
   value_of(child_at(n, 1), r, sizeof r);
   value_of(n, value, sizeof value);
-  if (box[0] != '\0') snprintf(want, sizeof want, "%s(%s %s %s)", box, l, sign, r);
-  else snprintf(want, sizeof want, "(%s %s %s)", l, sign, r);
+  {
+    /* «Прямая арифметика» печатника: остаток — fmod, процент — (l / 100.0) * r. */
+    char inner[2100];
+    if (strcmp(op, "mod") == 0) snprintf(inner, sizeof inner, "fmod(%s, %s)", l, r);
+    else if (strcmp(op, "percent") == 0) snprintf(inner, sizeof inner, "(%s / 100.0) * %s", l, r);
+    else snprintf(inner, sizeof inner, "%s %s %s", l, sign, r);
+    if (box[0] != '\0') snprintf(want, sizeof want, "%s(%s)", box, inner);
+    else snprintf(want, sizeof want, "(%s)", inner);
+  }
   if (strcmp(value, want) != 0) {
     rule_mismatch(n, "значение «%s», а по правилу «%s»", value, want);
     return 0;
@@ -1793,7 +1812,7 @@ static int replay_operation_call(const node_t *n) {
     }
     return 1;
   }
-  return -1;
+  return replay_helper_operation(n, op);
 }
 
 static int replay_build(const node_t *n, const char *ctor, const char *variant) {
@@ -1900,9 +1919,14 @@ static int replay_promise(const node_t *n, const char *word, const char *helper)
   if (!extra_word(n, "имя", name, sizeof name) || child_count(n) != 1 || enclosing_function(n, fn, sizeof fn) == NULL)
     return 0;
   if (n->line < 1 || (size_t)n->line > source_lines.count) {
-    /* Обещание без места автор не писал: такие печатает сторож меры о себе. */
-    if (!measure_born_node(n)) return 0;
-    measure_born += 1;
+    /* Обещание без места автор не писал: такие печатает сторож меры о себе;
+     * сличённое по образцу сторожа (ADR-0104) поблажкой уже не считается. */
+    if (n->guard_checked) {
+    } else if (!measure_born_node(n)) {
+      return 0;
+    } else {
+      measure_born += 1;
+    }
   } else {
     s = source_lines.items[n->line - 1];
     snprintf(want, sizeof want, "%s «%s»", word, name);
@@ -2096,6 +2120,640 @@ static int replay_filter(const node_t *n) {
   return 1;
 }
 
+/* ── хвостовые правила: «хвост-пусть», «хвост-если», «хвост-цикл», «хвост-возврат» ──
+ *
+ * Хвост — узел, который сам кончает функцию: кладёт ответ и возвращает или
+ * уходит на следующий виток. Значения у хвоста нет, поэтому переигрываются
+ * строки его частей по значениям детей.
+ */
+
+/* Подпись C функции из части «шапка» её блока: первая строка вида
+ * «… <ид>(fl_ctx *ctx, fl_value a, …, fl_value *result, fl_error *error) {».
+ * Имена параметров C — по порядку; (size_t)-1 — подписи нет. */
+static size_t signature_params(const node_t *block, char names[][128], size_t max) {
+  size_t i;
+  for (i = 0; i < block->count; i += 1) {
+    const item_t *it = &block->items[i];
+    line_t got;
+    size_t k;
+    if (!label_is(it, "шапка")) continue;
+    for (k = 0; part_line(it, k, &got); k += 1) {
+      const char *open = strstr(got.text, "(fl_ctx *ctx"), *tail = ", fl_value *result, fl_error *error) {";
+      const char *p, *end;
+      size_t count = 0, len = strlen(got.text);
+      if (open == NULL || len < strlen(tail) || strcmp(got.text + len - strlen(tail), tail) != 0) continue;
+      p = open + strlen("(fl_ctx *ctx");
+      end = got.text + len - strlen(tail);
+      while (p < end) {
+        const char *q;
+        if (strncmp(p, ", fl_value ", 11) != 0) return (size_t)-1;
+        p += 11;
+        q = p;
+        while (q < end && strncmp(q, ", ", 2) != 0) q += 1;
+        if (count >= max) return (size_t)-1;
+        copy_field(names[count], 128, p, (size_t)(q - p));
+        if (!is_ident(names[count])) return (size_t)-1;
+        count += 1;
+        p = q;
+      }
+      return count;
+    }
+  }
+  return (size_t)-1;
+}
+
+/* Блок функции, внутри которого стоит узел. */
+static const node_t *enclosing_block(const node_t *n) {
+  for (; n != NULL; n = n->parent) {
+    if (is_function_block(n)) return n;
+  }
+  return NULL;
+}
+
+static int is_tail_rule(const node_t *n) {
+  return n != NULL && !n->is_block && strncmp(n->rule, "хвост-", strlen("хвост-")) == 0;
+}
+
+static int replay_tail_let(const node_t *n) {
+  const item_t *decl = find_part(n, "объявление"), *quench = find_part(n, "гашение");
+  char name[512], value[1024], id[512], want[4096];
+  line_t got;
+  const char *eq;
+  size_t k;
+  if (!extra_word(n, "имя", name, sizeof name) || child_count(n) != 2 || !is_tail_rule(child_at(n, 1)) ||
+      decl == NULL || part_lines(decl) != 1 || !part_line(decl, 0, &got) || n->value != NULL) {
+    rule_mismatch(n, "у «хвост-пусть» нет имени, объявления или двух детей (значение и хвост)%s%s", "", "");
+    return 0;
+  }
+  eq = strstr(got.text, " = ");
+  if (strncmp(got.text, "const fl_value ", 15) != 0 || eq == NULL) {
+    rule_mismatch(n, "объявление «хвост-пусть» не по форме: «%s»%s", got.text, "");
+    return 0;
+  }
+  copy_field(id, sizeof id, got.text + 15, (size_t)(eq - got.text - 15));
+  value_of(child_at(n, 0), value, sizeof value);
+  snprintf(want, sizeof want, "const fl_value %s = %s; /* пусть «%s» */", id, value, name);
+  if (!is_ident(id) || !expect_line(n, decl, 0, want)) return 0;
+  if (quench != NULL) {
+    if (part_lines(quench) > 1) return 0;
+    for (k = 0; k < part_lines(quench); k += 1) {
+      snprintf(want, sizeof want, "(void)%s;", id);
+      if (!expect_line(n, quench, k, want)) return 0;
+    }
+  }
+  return 1;
+}
+
+static int replay_tail_if(const node_t *n) {
+  const node_t *cond = child_at(n, 0);
+  const item_t *head = find_part(n, "шапка"), *other = find_part(n, "иначе"), *end = find_part(n, "конец");
+  char flag[1024], helper[64], want[1200];
+  if (child_count(n) != 3 || cond == NULL || strcmp(cond->rule, "признак") != 0 ||
+      !extra_word(cond, "помощник", helper, sizeof helper) || strcmp(helper, "fl_cond") != 0 ||
+      !is_tail_rule(child_at(n, 1)) || !is_tail_rule(child_at(n, 2)) || n->value != NULL) {
+    rule_mismatch(n, "у «хвост-если» не три ветви (признак с fl_cond, хвост «то», хвост «иначе»)%s%s", "", "");
+    return 0;
+  }
+  value_of(cond, flag, sizeof flag);
+  snprintf(want, sizeof want, "if (%s) {", flag);
+  return head != NULL && other != NULL && end != NULL && part_lines(head) == 1 && part_lines(other) == 1 &&
+         part_lines(end) == 1 && expect_line(n, head, 0, want) && expect_line(n, other, 0, "} else {") &&
+         expect_line(n, end, 0, "}");
+}
+
+/* Самовызов в хвосте — виток цикла. Довод, который не имя C или совпадает с
+ * параметром, сперва ложится во временное (иначе присвоение параметров по
+ * порядку прочло бы уже переписанный); затем параметрам по порядку подписи
+ * присваиваются доводы, пояснение, тик счётчика шагов и continue. */
+static int replay_tail_loop(const node_t *n) {
+  const item_t *tail = find_part(n, "хвост");
+  const node_t *block = enclosing_block(n);
+  char name[512], fn[512], params[64][128], parts[64][1024], want[2400];
+  size_t count, i, j, k = 0;
+  line_t got;
+  if (block == NULL || !extra_word(n, "имя", name, sizeof name) || !block_function_name(block, fn, sizeof fn) ||
+      strcmp(name, fn) != 0) {
+    rule_mismatch(n, "«хвост-цикл» зовёт не свою функцию%s%s", "", "");
+    return 0;
+  }
+  count = signature_params(block, params, 64);
+  if (count == (size_t)-1 || count != child_count(n) || tail == NULL) {
+    rule_mismatch(n, "доводов у витка не столько, сколько параметров в подписи функции%s%s", "", "");
+    return 0;
+  }
+  if (strchr(name, '"') != NULL || strchr(name, '\\') != NULL) return -1;
+  for (i = 0; i < count; i += 1) {
+    int keep;
+    value_of(child_at(n, i), parts[i], sizeof parts[i]);
+    keep = is_ident(parts[i]);
+    for (j = 0; j < count && keep; j += 1) keep = strcmp(parts[i], params[j]) != 0;
+    if (!keep) {
+      char temp[256];
+      if (!part_line(tail, k, &got) || strncmp(got.text, "const fl_value ", 15) != 0) {
+        rule_mismatch(n, "довод витка «%s» не отложен во временное%s", parts[i], "");
+        return 0;
+      }
+      copy_field(temp, sizeof temp, got.text + 15, strcspn(got.text + 15, " "));
+      snprintf(want, sizeof want, "const fl_value %s = %s;", temp, parts[i]);
+      if (!is_ident(temp) || !expect_line(n, tail, k, want)) return 0;
+      copy_field(parts[i], sizeof parts[i], temp, strlen(temp));
+      k += 1;
+    }
+  }
+  for (i = 0; i < count; i += 1) {
+    snprintf(want, sizeof want, "%.127s = %.1023s;", params[i], parts[i]);
+    if (!expect_line(n, tail, k, want)) return 0;
+    k += 1;
+  }
+  if (!part_line(tail, k, &got) || strncmp(got.text, "/* ", 3) != 0 || strstr(got.text, "*/") == NULL ||
+      strstr(got.text, "*/") != got.text + strlen(got.text) - 2) {
+    rule_mismatch(n, "у витка нет пояснения%s%s", "", "");
+    return 0;
+  }
+  k += 1;
+  snprintf(want, sizeof want, "FL_TRY(fl_tick(ctx, \"%s\", error));", name);
+  if (!expect_line(n, tail, k, want) || !expect_line(n, tail, k + 1, "continue;")) return 0;
+  return part_lines(tail) == k + 2;
+}
+
+/* Чужая функция в хвосте — возврат её ответа: одна строка. */
+static int replay_tail_return(const node_t *n) {
+  const item_t *tail = find_part(n, "хвост");
+  char callee[512], id[512], args[8192], want[9400];
+  long want_args;
+  if (!extra_word(n, "имя", callee, sizeof callee) || !function_id(callee, id, sizeof id) || tail == NULL) {
+    rule_mismatch(n, "у хвостового возврата не названа функция протокола%s%s", "", "");
+    return 0;
+  }
+  want_args = source_params(callee);
+  if (want_args >= 0 && (size_t)want_args != child_count(n)) {
+    rule_mismatch(n, "доводов у хвостового возврата не столько, сколько параметров у «%s»%s", callee, "");
+    return 0;
+  }
+  joined_values(n, 0, child_count(n), args, sizeof args);
+  snprintf(want, sizeof want, "return %s(ctx%s%s, result, error);", id, args[0] ? ", " : "", args);
+  return expect_line(n, tail, 0, want) && part_lines(tail) == 1;
+}
+
+/* Операция вызовом помощника: «fl_value T = fl_nothing();» и
+ * «FL_TRY(fl_<оп>(ctx, l, r, &T, error));»; значение — T. Таблица помощников —
+ * та же, что «Помощники операций» печатника. */
+static const char *operation_helper(const char *op) {
+  static const char *const table[][2] = {{"add", "fl_add"}, {"sub", "fl_sub"},         {"mul", "fl_mul"},
+                                         {"div", "fl_div"}, {"mod", "fl_mod"},         {"percent", "fl_percent"},
+                                         {"gt", "fl_gt"},   {"lt", "fl_lt"},           {"gte", "fl_gte"},
+                                         {"lte", "fl_lte"}, {"concat", "fl_concat"}};
+  size_t i;
+  for (i = 0; i < sizeof table / sizeof table[0]; i += 1) {
+    if (strcmp(table[i][0], op) == 0) return table[i][1];
+  }
+  return NULL;
+}
+
+static int replay_helper_operation(const node_t *n, const char *op) {
+  const item_t *part = find_part(n, "вызов");
+  const char *helper = operation_helper(op);
+  char temp[1024], l[1024], r[1024], want[4200];
+  if (helper == NULL) return -1;
+  value_of(n, temp, sizeof temp);
+  value_of(child_at(n, 0), l, sizeof l);
+  value_of(child_at(n, 1), r, sizeof r);
+  if (!is_ident(temp)) {
+    rule_mismatch(n, "значение операции «%s» — не имя временного%s", temp, "");
+    return 0;
+  }
+  if (!replay_temp_decl(n, part, temp)) return 0;
+  snprintf(want, sizeof want, "FL_TRY(%s(ctx, %s, %s, &%s, error));", helper, l, r, temp);
+  return expect_line(n, part, 1, want) && part_lines(part) == 2;
+}
+
+/* ── сторож меры: переигрывается по образцу (ADR-0104) ───────────────────────
+ *
+ * Сторож печатается не из исходника, а понижением (flang/self/defunc.flang), и
+ * форма его закрыта: у постоянного шага «пусть шаг = довод; если шаг < п то шаг
+ * иначе «мера убывает» от шаг и п» и функция «мера убывает» с одним обещанием
+ * «результат < мера»; у объявленной меры доводы связаны «пусть», затем «мера
+ * витка» и «мера шага», первый довод вызова — «если (Мера убыла от шага и витка)
+ * то довод 1 иначе «объявленная мера убывает» от шага, витка и довода 1», а
+ * функция сторожа обещает три вещи: шаг < мера, шаг ≥ 0, шаг − (шаг остаток от
+ * 1) = шаг. Здесь эта форма сличается узел в узел:
+ *   · МЕСТО — узлы, которые сторож кладёт вокруг вызова, стоят ровно на месте
+ *     этого вызова (у постоянного шага — на месте довода); мера витка — узлы
+ *     строки «убывает» своей функции, начиная с первого знака выражения; мера
+ *     шага — та же мера, где каждый параметр вызываемой функции заменён своим
+ *     доводом (у самовызова — узел в узел);
+ *   · СТРОГОСТЬ — сравнение мер операцией lt, и в «если» витка, и в обещании
+ *     функции сторожа; lte на этом месте — отказ;
+ *   · ВЕТВЬ — виток продолжает ветвь «то» (довод как есть), а вызов сторожа
+ *     стоит в «иначе»; функция сторожа отдаёт свой довод «значение» («шаг»).
+ * Сверх того имена C сравниваемых мер — те, что объявлены их «пусть» и
+ * подписью функции сторожа. Узел, сличённый по образцу, помечается; его место
+ * больше не поблажка. Чего образец не знает — самовызова нет (вызывается
+ * другая функция) — то остаётся прежней поблажкой и называется числом.
+ */
+
+static unsigned long measure_replayed = 0; /* узлы сторожа, сличённые по образцу */
+
+static void measure_mark(const node_t *n) {
+  size_t i;
+  ((node_t *)n)->guard_checked = 1;
+  for (i = 0; i < n->count; i += 1) {
+    if (!n->items[i].is_part) measure_mark(n->items[i].child);
+  }
+}
+
+static int measure_refuse(const node_t *n, const char *fmt, const char *a, const char *b) {
+  rule_mismatch(n, fmt, a, b);
+  return 0;
+}
+
+static int rule_is(const node_t *n, const char *rule) { return n != NULL && !n->is_block && strcmp(n->rule, rule) == 0; }
+
+static int word_is(const node_t *n, const char *word, const char *want) {
+  char got[512];
+  return n != NULL && extra_word(n, word, got, sizeof got) && strcmp(got, want) == 0;
+}
+
+static int value_is(const node_t *n, const char *want) {
+  char got[1024];
+  if (n == NULL || n->value == NULL) return 0;
+  value_of(n, got, sizeof got);
+  return strcmp(got, want) == 0;
+}
+
+static int same_place(const node_t *a, const node_t *b) {
+  return a != NULL && b != NULL && a->line == b->line && a->column == b->column;
+}
+
+/* «переменная «имя»» со значением C — ровно cid. */
+static int measure_var(const node_t *n, const char *name, const char *cid) {
+  return rule_is(n, "переменная") && child_count(n) == 0 && word_is(n, "имя", name) && value_is(n, cid);
+}
+
+static int measure_number(const node_t *n, double want) {
+  char v[256], inner[256];
+  double got;
+  size_t k;
+  if (!rule_is(n, "литерал") || child_count(n) != 0 || n->value == NULL) return 0;
+  value_of(n, v, sizeof v);
+  k = strlen(v);
+  if (strncmp(v, "fl_number(", 10) != 0 || k < 12 || v[k - 1] != ')') return 0;
+  copy_field(inner, sizeof inner, v + 10, k - 11);
+  return c_number(inner, &got) && got == want;
+}
+
+static int measure_false(const node_t *n) {
+  return rule_is(n, "литерал") && child_count(n) == 0 && value_is(n, "fl_flag(false)");
+}
+
+static int measure_op(const node_t *n, const char *op) {
+  return rule_is(n, "операция-вызовом") && child_count(n) == 2 && word_is(n, "операция", op);
+}
+
+static const node_t *measure_cond(const node_t *n) {
+  if (!rule_is(n, "признак") || child_count(n) != 1 || !word_is(n, "помощник", "fl_cond")) return NULL;
+  return child_at(n, 0);
+}
+
+static const node_t *measure_put(const node_t *n) {
+  if (!rule_is(n, "положить") || child_count(n) != 1) return NULL;
+  return child_at(n, 0);
+}
+
+/* Имя C, которое объявил «пусть»: «const fl_value X = …». */
+static int let_c_name(const node_t *let, char *out, size_t cap) {
+  const item_t *decl = find_part(let, "объявление");
+  line_t got;
+  const char *eq;
+  if (decl == NULL || !part_line(decl, 0, &got) || strncmp(got.text, "const fl_value ", 15) != 0) return 0;
+  eq = strstr(got.text, " = ");
+  if (eq == NULL) return 0;
+  copy_field(out, cap, got.text + 15, (size_t)(eq - got.text - 15));
+  return is_ident(out);
+}
+
+static int is_let(const node_t *n) { return rule_is(n, "пусть") || rule_is(n, "хвост-пусть"); }
+
+static int is_call_rule(const node_t *n) {
+  return rule_is(n, "вызов") || rule_is(n, "хвост-цикл") || rule_is(n, "хвост-возврат") || rule_is(n, "хвост-отскок");
+}
+
+/* Строгость: «шаг < мера» — операция lt над двумя именами. */
+static int measure_strict(const node_t *n, const char *step, const char *step_c, const char *measure,
+                          const char *measure_c) {
+  char op[32];
+  if (!rule_is(n, "операция-вызовом") || child_count(n) != 2 || !extra_word(n, "операция", op, sizeof op))
+    return measure_refuse(n, "сторож меры: мера сравнивается не операцией двух мест%s%s", "", "");
+  if (strcmp(op, "lt") != 0)
+    return measure_refuse(n, "сторож меры: строгость сравнения мер — ждали «lt», напечатано «%s»%s", op, "");
+  if (!measure_var(child_at(n, 0), step, step_c) || !measure_var(child_at(n, 1), measure, measure_c))
+    return measure_refuse(n, "сторож меры: сравниваются не «%s» и «%s» с их именами C", step, measure);
+  return 1;
+}
+
+/* Неотрицательность «шаг ≥ 0» и целость «шаг − (шаг остаток от 1) = шаг». */
+static int measure_nonnegative(const node_t *n, const char *step, const char *step_c) {
+  if (!measure_op(n, "gte") || !measure_var(child_at(n, 0), step, step_c) || !measure_number(child_at(n, 1), 0.0))
+    return measure_refuse(n, "сторож меры: неотрицательность — ждали «%s» gte 0%s", step, "");
+  return 1;
+}
+
+static int measure_whole(const node_t *n, const char *step, const char *step_c) {
+  const node_t *sub = child_at(n, 0), *mod = sub == NULL ? NULL : child_at(sub, 1);
+  if (!measure_op(n, "eq") || !measure_var(child_at(n, 1), step, step_c) || !measure_op(sub, "sub") ||
+      !measure_var(child_at(sub, 0), step, step_c) || !measure_op(mod, "mod") ||
+      !measure_var(child_at(mod, 0), step, step_c) || !measure_number(child_at(mod, 1), 1.0))
+    return measure_refuse(n, "сторож меры: целость — ждали «%s» минус («%s» остаток от 1) равно ему же", step, step);
+  return 1;
+}
+
+static int measure_declared(const char *name) {
+  return strncmp(name, "объявленная мера убывает", strlen("объявленная мера убывает")) == 0;
+}
+
+/* Функция сторожа: подпись, ответ, обещания — по образцу. */
+static int replay_measure_function(const node_t *block, const char *name) {
+  int declared = measure_declared(name);
+  const char *promise = declared ? "объявленная мера убывает" : "мера убывает";
+  const item_t *res = find_part(block, "результат"), *ret = find_part(block, "возврат");
+  char params[4][128], temp[256], want[1200];
+  size_t want_params = declared ? 3 : 2, k;
+  const node_t *answer = child_at(block, 0);
+  line_t got;
+  if (signature_params(block, params, 4) != want_params)
+    return measure_refuse(block, "сторож меры: у функции «%s» не %s параметров", name, declared ? "три" : "два");
+  if (child_count(block) != (declared ? 4u : 2u))
+    return measure_refuse(block, "сторож меры: у функции «%s» не ответ и %s", name,
+                          declared ? "три обещания" : "одно обещание");
+  if (!measure_var(answer, declared ? "значение" : "шаг", params[declared ? 2 : 0]))
+    return measure_refuse(block, "сторож меры: функция «%s» отдаёт не свой довод «%s»", name,
+                          declared ? "значение" : "шаг");
+  if (res == NULL || part_lines(res) != 1 || !part_line(res, 0, &got) || strncmp(got.text, "const fl_value ", 15) != 0)
+    return measure_refuse(block, "сторож меры: у функции «%s» нет ответа во временном%s", name, "");
+  copy_field(temp, sizeof temp, got.text + 15, strcspn(got.text + 15, " "));
+  snprintf(want, sizeof want, "const fl_value %s = %s;", temp, params[declared ? 2 : 0]);
+  if (!is_ident(temp) || strcmp(got.text, want) != 0)
+    return measure_refuse(block, "сторож меры: ответ функции «%s» не «%s»", name, want);
+  snprintf(want, sizeof want, "*result = %s;", temp);
+  if (ret == NULL || part_lines(ret) != 2 || !expect_line(block, ret, 0, want) ||
+      !expect_line(block, ret, 1, "return FL_OK;"))
+    return 0;
+  for (k = 1; k < child_count(block); k += 1) {
+    const node_t *p = child_at(block, k), *expr = child_at(p, 0);
+    if (!rule_is(p, "постусловие") || child_count(p) != 1 || !word_is(p, "имя", promise))
+      return measure_refuse(block, "сторож меры: у функции «%s» узел не обещание «%s»", name, promise);
+    if (k == 1 && !(declared ? measure_strict(expr, "шаг", params[0], "мера", params[1])
+                             : measure_strict(expr, "результат", temp, "мера", params[1])))
+      return 0;
+    if (k == 2 && !measure_nonnegative(expr, "шаг", params[0])) return 0;
+    if (k == 3 && !measure_whole(expr, "шаг", params[0])) return 0;
+  }
+  measure_mark(block);
+  ((node_t *)block)->guard_checked = 0; /* блок не узел: в счёт не идёт */
+  return 1;
+}
+
+/* Имя k-го (с 0) параметра функции «имя» исходника — из строки «принимает»:
+ * у каждого «:» имя стоит между предыдущей «, » (или словом «принимает») и им. */
+static int source_param_name(const char *fname, size_t k, char *out, size_t cap) {
+  size_t i, len = strlen(fname);
+  const char *key = "  принимает ";
+  for (i = 0; i < source_lines.count; i += 1) {
+    const char *found;
+    size_t found_len, j;
+    if (!source_function_name(source_lines.items[i], &found, &found_len) || found_len != len ||
+        memcmp(found, fname, len) != 0)
+      continue;
+    for (j = i + 1; j < source_lines.count; j += 1) {
+      span_t s = source_lines.items[j];
+      size_t c, start = strlen(key), seen = 0;
+      if (s.len < strlen(key) || memcmp(s.text, key, strlen(key)) != 0) continue;
+      for (c = start; c < s.len; c += 1) {
+        size_t from = start, b;
+        if (s.text[c] != ':') continue;
+        for (b = start; b + 1 < c; b += 1) {
+          if (s.text[b] == ',' && s.text[b + 1] == ' ') from = b + 2;
+        }
+        if (seen == k) {
+          const char *p = s.text + from, *q = s.text + c;
+          if (q - p >= 4 && strncmp(p, "«", 2) == 0 && strncmp(q - 2, "»", 2) == 0) {
+            p += 2;
+            q -= 2;
+          }
+          copy_field(out, cap, p, (size_t)(q - p));
+          return 1;
+        }
+        seen += 1;
+        start = c + 1;
+      }
+      return 0;
+    }
+    return 0;
+  }
+  return 0;
+}
+
+/* Индекс параметра «имя» у функции исходника; -1 — нет такого. */
+static long source_param_index(const char *fname, const char *param) {
+  char got[512];
+  size_t k;
+  for (k = 0; source_param_name(fname, k, got, sizeof got); k += 1) {
+    if (strcmp(got, param) == 0) return (long)k;
+  }
+  return -1;
+}
+
+/* Постоянный шаг: «пусть шаг = довод; если шаг < п то шаг иначе сторож». */
+static int replay_measure_step(const node_t *g, const char *name, const node_t *iff, const node_t *other) {
+  const node_t *let = iff->parent, *call = let == NULL ? NULL : let->parent, *block = enclosing_block(g);
+  const node_t *arg = let == NULL ? NULL : child_at(let, 0);
+  char step[512], step_c[512], callee[512], fn[512], measure[512], measure_c[128], params[64][128];
+  size_t k, count;
+  long at;
+  if (!is_let(let) || child_count(let) != 2 || child_at(let, 1) != iff || !extra_word(let, "имя", step, sizeof step) ||
+      !let_c_name(let, step_c, sizeof step_c) || !is_call_rule(call) || block == NULL ||
+      !block_function_name(block, fn, sizeof fn) || !extra_word(call, "имя", callee, sizeof callee))
+    return measure_refuse(g, "сторож меры: вызов «%s» стоит не в «пусть шаг» довода%s", name, "");
+  if (strcmp(callee, fn) != 0) return 1; /* не самовызов: образца нет, остаётся поблажка */
+  if (!same_place(let, arg) || !same_place(iff, let) || !same_place(g, let) || !same_place(other, let))
+    return measure_refuse(g, "сторож меры: «%s» и его «если» стоят не на месте довода вызова «%s»", name, callee);
+  for (k = 0; k < child_count(call) && child_at(call, k) != let; k += 1) continue;
+  count = signature_params(block, params, 64);
+  if (k == child_count(call) || !source_param_name(callee, k, measure, sizeof measure) ||
+      (at = source_param_index(fn, measure)) < 0 || count == (size_t)-1 || (size_t)at >= count)
+    return measure_refuse(g, "сторож меры: шаг «%s» не довод параметра функции «%s»", step, fn);
+  copy_field(measure_c, sizeof measure_c, params[at], strlen(params[at]));
+  if (!measure_strict(measure_cond(child_at(iff, 0)), step, step_c, measure, measure_c)) return 0;
+  if (!measure_var(measure_put(child_at(iff, 1)), step, step_c))
+    return measure_refuse(iff, "сторож меры: ветвь «то», которая продолжает виток, отдаёт не шаг «%s»%s", step, "");
+  if (child_count(g) != 2 || !measure_var(child_at(g, 0), step, step_c) || !measure_var(child_at(g, 1), measure, measure_c))
+    return measure_refuse(g, "сторож меры: «%s» зовётся не от шага «%s» и параметра", name, step);
+  ((node_t *)let)->guard_checked = 1;
+  ((node_t *)iff)->guard_checked = 1;
+  measure_mark(child_at(iff, 0));
+  measure_mark(child_at(iff, 1));
+  measure_mark(other);
+  return 1;
+}
+
+/* Мера шага — мера витка, где параметр i заменён доводом i: узел в узел. */
+static int measure_renamed(const node_t *was, const node_t *now, const char *fn, char lets[][512], char cids[][512],
+                           size_t count) {
+  size_t k;
+  if (was == NULL || now == NULL || strcmp(was->rule, now->rule) != 0 || strcmp(was->kind, now->kind) != 0 ||
+      !same_place(was, now) || child_count(was) != child_count(now))
+    return 0;
+  if (rule_is(was, "переменная")) {
+    char name[512], value[1024];
+    long at;
+    if (!extra_word(was, "имя", name, sizeof name)) return 0;
+    at = source_param_index(fn, name);
+    if (at < 0 || (size_t)at >= count) {
+      value_of(was, value, sizeof value);
+      return measure_var(now, name, value);
+    }
+    return measure_var(now, lets[at], cids[at]);
+  }
+  if (was->extra_len != now->extra_len || memcmp(was->extra, now->extra, was->extra_len) != 0) return 0;
+  for (k = 0; k < child_count(was); k += 1) {
+    if (!measure_renamed(child_at(was, k), child_at(now, k), fn, lets, cids, count)) return 0;
+  }
+  return 1;
+}
+
+/* Мера витка стоит на строке «убывает» и начинается с первого знака выражения. */
+static int measure_on_line(const node_t *n, long line, long *leftmost) {
+  size_t k;
+  if (n->line != 0 || n->column != 0) {
+    if (n->line != line) return 0;
+    if (*leftmost == 0 || n->column < *leftmost) *leftmost = n->column;
+  }
+  for (k = 0; k < child_count(n); k += 1) {
+    if (!measure_on_line(child_at(n, k), line, leftmost)) return 0;
+  }
+  return 1;
+}
+
+static long measure_start_column(long line) {
+  span_t s;
+  const char *key = "  убывает ";
+  size_t k = strlen(key);
+  if (line < 1 || (size_t)line > source_lines.count) return 0;
+  s = source_lines.items[line - 1];
+  if (s.len < k || memcmp(s.text, key, k) != 0) return 0;
+  while (k < s.len && s.text[k] == ' ') k += 1;
+  return (long)utf8_len(s.text, k) + 1;
+}
+
+/* Объявленная мера: доводы, мера витка, мера шага, «если (Мера убыла …)». */
+static int replay_measure_declared(const node_t *g, const char *name, const node_t *iff, const node_t *other) {
+  const node_t *call = iff->parent, *block = enclosing_block(g), *step_let, *turn_let, *cur, *mu, *inner;
+  const node_t *lets[64];
+  char callee[512], fn[512], names[64][512], cids[64][512], step[512], step_c[512], turn[512], turn_c[512];
+  size_t count, i;
+  long line, leftmost = 0;
+  if (!is_call_rule(call) || child_at(call, 0) != iff || block == NULL || !block_function_name(block, fn, sizeof fn) ||
+      !extra_word(call, "имя", callee, sizeof callee))
+    return measure_refuse(g, "сторож меры: «если» сторожа «%s» не первый довод вызова%s", name, "");
+  if (strcmp(callee, fn) != 0) return 1; /* не самовызов: образца нет, остаётся поблажка */
+  count = child_count(call);
+  step_let = call->parent;
+  turn_let = step_let == NULL ? NULL : step_let->parent;
+  if (count == 0 || count > 64 || source_params(callee) != (long)count || !is_let(step_let) || !is_let(turn_let) ||
+      child_count(step_let) != 2 || child_count(turn_let) != 2 || child_at(step_let, 1) != call ||
+      child_at(turn_let, 1) != step_let || !extra_word(step_let, "имя", step, sizeof step) ||
+      !let_c_name(step_let, step_c, sizeof step_c) || !extra_word(turn_let, "имя", turn, sizeof turn) ||
+      !let_c_name(turn_let, turn_c, sizeof turn_c))
+    return measure_refuse(g, "сторож меры: вокруг вызова «%s» нет «пусть» меры витка и меры шага%s", callee, "");
+  cur = turn_let;
+  for (i = count; i > 0; i -= 1) {
+    const node_t *up = cur->parent;
+    if (!is_let(up) || child_count(up) != 2 || child_at(up, 1) != cur || !extra_word(up, "имя", names[i - 1], 512) ||
+        !let_c_name(up, cids[i - 1], 512))
+      return measure_refuse(g, "сторож меры: доводы вызова «%s» связаны «пусть» не все%s", callee, "");
+    lets[i - 1] = up;
+    cur = up;
+  }
+  for (i = 0; i < count; i += 1) {
+    const node_t *arg = child_at(lets[i], 0), *prev = i == 0 ? call : child_at(lets[i - 1], 0);
+    if (!same_place(lets[i], call)) break;
+    if (arg->line != 0 && (arg->line < prev->line || (arg->line == prev->line && arg->column <= prev->column))) break;
+  }
+  if (i < count || !same_place(turn_let, call) || !same_place(step_let, call) || !same_place(iff, call) ||
+      !same_place(g, call) || !same_place(other, call))
+    return measure_refuse(g, "сторож меры: «пусть» и «если» сторожа стоят не на месте вызова «%s» или доводы не по порядку%s",
+                          callee, "");
+  for (i = 1; i < count; i += 1) {
+    if (!measure_var(child_at(call, i), names[i], cids[i]))
+      return measure_refuse(call, "сторож меры: довод витка не «%s»%s", names[i], "");
+  }
+  line = measure_line(fn);
+  if (line == 0 || !measure_on_line(child_at(turn_let, 0), line, &leftmost) || leftmost != measure_start_column(line))
+    return measure_refuse(turn_let, "сторож меры: мера витка «%s» — не выражение строки «убывает» функции «%s»", turn, fn);
+  if (!measure_renamed(child_at(turn_let, 0), child_at(step_let, 0), fn, names, cids, count))
+    return measure_refuse(step_let, "сторож меры: мера шага «%s» — не мера витка на доводах вызова «%s»", step, callee);
+  mu = measure_cond(child_at(iff, 0));
+  inner = rule_is(mu, "если") && child_count(mu) == 3 ? measure_put(child_at(mu, 1)) : NULL;
+  if (!rule_is(mu, "если") || child_count(mu) != 3)
+    return measure_refuse(iff, "сторож меры: признак сторожа — не «Мера убыла»%s%s", "", "");
+  if (!measure_strict(measure_cond(child_at(mu, 0)), step, step_c, turn, turn_c)) return 0;
+  if (!rule_is(inner, "если") || child_count(inner) != 3 || !measure_false(measure_put(child_at(mu, 2))) ||
+      !measure_false(measure_put(child_at(inner, 2))))
+    return measure_refuse(mu, "сторож меры: ветви «Мера убыла» не по образцу%s%s", "", "");
+  if (!measure_nonnegative(measure_cond(child_at(inner, 0)), step, step_c) ||
+      !measure_whole(measure_put(child_at(inner, 1)), step, step_c))
+    return 0;
+  if (!measure_var(measure_put(child_at(iff, 1)), names[0], cids[0]))
+    return measure_refuse(iff, "сторож меры: ветвь «то», которая продолжает виток, отдаёт не первый довод «%s»%s",
+                          names[0], "");
+  if (child_count(g) != 3 || !measure_var(child_at(g, 0), step, step_c) || !measure_var(child_at(g, 1), turn, turn_c) ||
+      !measure_var(child_at(g, 2), names[0], cids[0]))
+    return measure_refuse(g, "сторож меры: «%s» зовётся не от меры шага, меры витка и первого довода%s", name, "");
+  for (i = 0; i < count; i += 1) ((node_t *)lets[i])->guard_checked = 1;
+  ((node_t *)turn_let)->guard_checked = 1;
+  ((node_t *)step_let)->guard_checked = 1;
+  ((node_t *)iff)->guard_checked = 1;
+  measure_mark(child_at(step_let, 0));
+  measure_mark(child_at(iff, 0));
+  measure_mark(child_at(iff, 1));
+  measure_mark(other);
+  return 1;
+}
+
+static int replay_measure_call(const node_t *g, const char *name) {
+  const node_t *other = g->parent, *iff = other == NULL ? NULL : other->parent;
+  if (!rule_is(other, "положить") || child_count(other) != 1 || !rule_is(iff, "если") || child_count(iff) != 3)
+    return measure_refuse(g, "сторож меры: вызов «%s» стоит не в ветви своего «если»%s", name, "");
+  if (child_at(iff, 1) == other)
+    return measure_refuse(iff, "сторож меры: ветви перепутаны — вызов «%s» стоит в «то», а виток продолжает «иначе»%s",
+                          name, "");
+  if (child_at(iff, 2) != other)
+    return measure_refuse(g, "сторож меры: вызов «%s» стоит не в ветви «иначе»%s", name, "");
+  return measure_declared(name) ? replay_measure_declared(g, name, iff, other) : replay_measure_step(g, name, iff, other);
+}
+
+static void replay_measure_guards(const protocol_t *pr, const node_t *n) {
+  char name[512], fn[512];
+  size_t i;
+  if (n->is_block && is_generated_measure(pr, n) && block_function_name(n, name, sizeof name))
+    replay_measure_function(n, name);
+  if (rule_is(n, "вызов") && extra_word(n, "имя", name, sizeof name) && is_measure_guard_name(name) &&
+      (enclosing_function(n, fn, sizeof fn) == NULL || !is_measure_guard_name(fn)))
+    replay_measure_call(n, name);
+  for (i = 0; i < n->count; i += 1) {
+    if (!n->items[i].is_part) replay_measure_guards(pr, n->items[i].child);
+  }
+}
+
+static unsigned long count_measure_checked(const node_t *n) {
+  unsigned long total = n->guard_checked ? 1 : 0;
+  size_t i;
+  for (i = 0; i < n->count; i += 1) {
+    if (!n->items[i].is_part) total += count_measure_checked(n->items[i].child);
+  }
+  return total;
+}
+
 /* ── порядок детей: по местам исходника, а не по порядку протокола ────────────
  *
  * Значение узла правило считает по значениям детей В ПОРЯДКЕ ПРОТОКОЛА. Пока
@@ -2155,6 +2813,10 @@ static void replay_node(const node_t *n) {
   else if (strcmp(n->rule, "число-распакованное") == 0) ok = replay_unboxed(n);
   else if (strcmp(n->rule, "литерал") == 0) ok = replay_literal(n);
   else if (strcmp(n->rule, "хвост-значение") == 0) ok = replay_tail_value(n);
+  else if (strcmp(n->rule, "хвост-пусть") == 0) ok = replay_tail_let(n);
+  else if (strcmp(n->rule, "хвост-если") == 0) ok = replay_tail_if(n);
+  else if (strcmp(n->rule, "хвост-цикл") == 0) ok = replay_tail_loop(n);
+  else if (strcmp(n->rule, "хвост-возврат") == 0) ok = replay_tail_return(n);
   else if (strcmp(n->rule, "сравнение-числом") == 0) ok = replay_numeric(n, "fl_flag", "fl_not_order");
   else if (strcmp(n->rule, "арифметика-числом") == 0) ok = replay_numeric(n, "fl_number", "fl_not_numbers");
   else if (strcmp(n->rule, "число-арифметика") == 0) ok = replay_numeric(n, "", NULL);
@@ -2267,6 +2929,8 @@ int main(int argc, char **argv) {
   c_file_len = c_len;
   source_len = src_len;
   source_lines = split_lines(src, src_len);
+  replay_measure_guards(&pr, &pr.root);
+  measure_replayed = count_measure_checked(&pr.root);
   walk(&pr.root);
   if (refused) return 1;
   lay_out_file(&pr);
@@ -2280,6 +2944,9 @@ int main(int argc, char **argv) {
   }
   printf("узлов в протоколе %lu; переиграно правилом %lu, принято на слово %lu\n", (unsigned long)pr.node_count,
          total_replayed, total_unreplayed);
+  if (measure_replayed > 0)
+    printf("узлов сторожа меры %lu: место, строгость сравнения мер и ветвь, продолжающая виток, сличены по образцу\n",
+           measure_replayed);
   if (pr.digest[0] == '\0' || total_unreplayed > 0 || measure_born > 0) {
     printf("НЕ ПРОВЕРЕНО — текст C сошёлся с протоколом байт в байт, противоречий нет, но:\n");
     if (pr.digest[0] == '\0') printf("  привязка к исходнику не криптографическая: в протоколе нет отпечатка\n");

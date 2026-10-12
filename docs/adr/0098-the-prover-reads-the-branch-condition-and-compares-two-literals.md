@@ -147,7 +147,7 @@ precondition prover на literal-аргументе не доказывает».
 
 Ядро из исходника, `bootstrap/flang run flang/self/bootstrap/check-with-source-compiler.flang
 --function 'Проверить исходным компилятором' --trust --max-steps 20000000000`,
-10 мин 39 с — 10 мин 55 с и 14—19 ГиБ на программу. «До» — двоичный 0.7.26 (для
+10 мин 29 с — 10 мин 55 с и 14—20 ГиБ на программу (последний перепрогон — на окончательном исходнике, коммит be61d581a). «До» — двоичный 0.7.26 (для
 `absolute-integer` — также ядро из исходника на `973a31f3e`, тот же ответ). Программы —
 `flang/proof/probes/branch-condition-and-literal-order/programs/`.
 
@@ -182,6 +182,10 @@ precondition prover на literal-аргументе не доказывает».
 проб 7, разошлось 3 — `absolute-integer`, `strict-literal` и слово отказа
 `strict-literal-zero`; это и есть снятая граница, после перепечатки семени проба
 обязана сойтись целиком.
+
+Замыкание: `bootstrap/flang check flang/self/bootstrap/compiler.flang --предел-шагов 100000000000`
+на дереве `be61d581a` — строк `FLANG_TYPE` и `FLANG_DUPLICATE_NAME` 0; прогон упёрся в предел
+шагов на «Проверить доказательства» (`FLANG_RECURSION_LIMIT`), как и положено ему здесь.
 
 Lean 4.34.0: «Н13», «меньше-влечёт-неБольше», «Н13-без-конечности-ложна», «Р8»,
 «Выч2», «Выч2-равные-не-берутся», «Отр1», «Отр1-не-больше»,

@@ -11530,7 +11530,7 @@ static const char *msg_language(void) {
     snprintf(msg_state.whence, sizeof(msg_state.whence), "language = %s (%s)", value, path);
     found = true;
   } else if (home != NULL && home[0] != '\0') {
-    snprintf(path, sizeof(path), "%s/.flangrc", home);
+    snprintf(path, sizeof(path), "%.4300s/.flangrc", home);
     if (flangrc_key(path, "language", value, sizeof(value))) {
       snprintf(msg_state.whence, sizeof(msg_state.whence), "language = %s (%s)", value, path);
       found = true;
@@ -11543,7 +11543,7 @@ static const char *msg_language(void) {
     fprintf(stderr, "flang: %s — язык не из списка ru, en, eo, zh; ответ по-русски\n", msg_state.whence);
     return msg_state.lang;
   }
-  snprintf(msg_state.lang, sizeof(msg_state.lang), "%s", value);
+  snprintf(msg_state.lang, sizeof(msg_state.lang), "%.15s", value);
   return msg_state.lang;
 }
 

@@ -21,6 +21,10 @@
     "  «Голова строки» от текст"
   ] по "\n"
 
+функция «Путь программы»
+  возвращает строка
+  "flang/proof/probes/postcondition-rewrite/programs/with-requires.flang"
+
 функция «Свод»
   возвращает строка
-  «Проверить исходным компилятором» от "flang/proof/probes/postcondition-rewrite/programs/subjects/with-requires.flang" и («Текст программы»)
+  «Проверить исходным компилятором» от («Путь программы») и («Текст программы»)

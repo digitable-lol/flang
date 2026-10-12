@@ -73,6 +73,8 @@ script.ru-syllogism:demo = bootstrap/flang io flang/experimental/ru-syllogism-de
 script.ring-rules:probe = bootstrap/flang io flang/proof/probes/ring-laws/run.fscript --plan Binary --max-steps 4000000000 --timeout 1800000
 script.randomness:probe = bootstrap/flang io flang/proof/probes/randomness/run.fscript --plan Binary
 script.randomness:forgery = bootstrap/flang io flang/proof/probes/randomness/run.fscript --plan Forgery
+script.network:probe = bootstrap/flang io flang/proof/probes/network/run.fscript --plan Binary --timeout 120000
+script.network:forgery = bootstrap/flang io flang/proof/probes/network/run.fscript --plan Forgery --timeout 120000
 script.tls:engine = d="${FLANG_TMP:-${TMPDIR:-/tmp}}/tls-engine" && bootstrap/flang emit flang/stdlib/tls-client.flang --target c --cli --no-check --no-postconditions --out "$d" && make -C "$d" -j8
 script.tls:get = d="${FLANG_TMP:-${TMPDIR:-/tmp}}/tls-engine" && bootstrap/flang io docs/examples/https/https-get.flang --timeout 600000 -- www.google.com /generate_204 - - "$d/flang_cli" "$d/request"
 script.tls:rfc8448 = d="${FLANG_TMP:-${TMPDIR:-/tmp}}/tls-rfc8448" && bootstrap/flang emit docs/examples/https/rfc8448-vectors.flang --target c --cli --no-check --no-postconditions --out "$d" && make -C "$d" -j8 && printf '%s\n' '{"fn":"Отчёт сверки RFC 8448","args":[],"steps":"100000000000000","depth":"1000000"}' | "$d/flang_cli"

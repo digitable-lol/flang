@@ -389,6 +389,7 @@ dangling
 darwin
 data
 database
+datagram
 dated
 dead
 deadline
@@ -1492,6 +1493,7 @@ second
 seconds
 section
 sections
+secure
 security
 see
 seed

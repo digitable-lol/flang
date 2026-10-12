@@ -1,0 +1,6 @@
+program	scenario	code	word
+secure-request.fscript	honest	0	код 200; тело flang speaks tls itself
+secure-request.fscript	rogue	1	"code":"FLANG_IO_TLS_CERT","message":"FLANG_TLS_CHAIN
+secure-request.fscript	name	1	"code":"FLANG_IO_TLS_CERT","message":"FLANG_TLS_NAME
+secure-request.fscript	expired	1	"code":"FLANG_IO_TLS_CERT","message":"FLANG_TLS_EXPIRED
+datagram-loop.fscript	udp	0	датаграмма 0,7,255 от 127.0.0.1; потом срок вышел

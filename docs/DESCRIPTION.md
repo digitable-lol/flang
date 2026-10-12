@@ -1672,9 +1672,14 @@ script.site:build = node docs/site/build.mjs
   морфизмами, моноидами или монадами — кодом 3. На программе с процессами
   `flang check --proof` отвечает кодом 0, хотя `flang check` — кодом 2.
 - Независимый checker перепроверяет не каждое доказательство: часть мест он
-  принимает со слов ядра и называет их в отчёте. На пробе
-  [`step-by-restricted-postcondition.flang`](../flang/proof/checker/tests/families/citation/step-by-restricted-postcondition.flang)
-  компилятор отвечает кодом 0, а checker — кодом 3.
+  принимает со слов ядра, называет их в отчёте и отвечает кодом 3. 12 октября
+  2026 `bootstrap/flang run-script checker:second` на 634 записях проб и
+  подделок давал «не проверено» 144 записям, мест на слове ядра в них было 232;
+  после ADR-0103 на тех же записях — 142 записи и 229 мест. Ссылку на
+  постусловие с `таких что`, снятым типом довода, checker теперь переигрывает
+  сам: на пробе
+  [`step-by-restricted-postcondition-discharged.flang`](../flang/proof/checker/tests/families/citation/step-by-restricted-postcondition-discharged.flang)
+  компилятор и checker отвечают кодом 0. Остальные виды мест — задача 6786.
 - Доказательство относится к исходной программе. Соответствие сгенерированного
   кода исходнику в общем виде не доказано. Для цели `c` ключ `--protocol <файл>`
   печатает протокол перевода, который сверяет программа

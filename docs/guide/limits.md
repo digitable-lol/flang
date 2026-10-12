@@ -20,6 +20,15 @@ results. They are not the same thing:
 Termination of `тотальная` functions, types and exhaustive pattern matching
 (`разбор`) are always proved, not tested.
 
+The checker does not re-check every place of a proof: it takes some on the
+kernel's word, names them in its report and answers with code 3. On 12 October
+2026 `bootstrap/flang run-script checker:second` counted 142 such records and
+229 places on the kernel's word among 634 probe and forgery records (144 and 232
+before ADR-0103). A postcondition with `таких что` whose restriction the
+argument's type discharges is now re-checked by the checker itself:
+[`step-by-restricted-postcondition-discharged.flang`](../../flang/proof/checker/tests/families/citation/step-by-restricted-postcondition-discharged.flang)
+gives code 0 from both the compiler and the checker.
+
 ## What you cannot prove
 
 | Does not work | What to do instead |

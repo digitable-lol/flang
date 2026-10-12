@@ -169,11 +169,11 @@ extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *
  * Второй мост к программе — ЕЁ СОБСТВЕННАЯ ГРАНИЦА ВХОДА: объявленные типы
  * параметров, впечатанные в программу данными (fl_entry_table).
  *
- * Таблицу печатаемой программы строит сам компилятор на flang («Таблица входа»
- * в `flang/self/types.flang`) и впечатывает её во все десять целей
- * (ADR-0099). Своя таблица бинарника годится только тогда, когда печатается он
- * сам, и это ПРОВЕРЯЕТСЯ парами «функция, параметр» (`emit_entry_fits`); она
- * подаётся печати по-прежнему, но печать заменяет её построенной.
+ * Таблицу печатаемой программы строит компилятор на flang («Таблица входа»
+ * в `flang/self/types.flang`), а подаёт её печати каждой из десяти целей этот
+ * хозяин (`emit_entry_part`, ADR-0099). Своя таблица бинарника годится только
+ * тогда, когда печатается он сам, и это ПРОВЕРЯЕТСЯ парами «функция,
+ * параметр» (`emit_entry_fits`).
  */
 #ifndef FL_PROGRAM_ENTRY
 #define FL_PROGRAM_ENTRY fl_program_entry
@@ -13191,10 +13191,10 @@ static int run_file(int argc, char **argv) {
  *    сверху шапкой. Свидетель читает их с диска (`flang/src/emit/c.mjs`), и здесь
  *    читаются они же и оттуда же — иначе байты разошлись бы.
  *
- * 2. ГРАНИЦА ВХОДА — объявленные типы параметров таблицей. Её строит печать
- *    на flang («Таблица входа» в `flang/self/types.flang`) для всех десяти
- *    целей (ADR-0099); здесь только подаётся собственная таблица бинарника,
- *    когда печатается он сам (`emit_entry_fits`).
+ * 2. ГРАНИЦА ВХОДА — объявленные типы параметров таблицей. Её строит
+ *    компилятор на flang («Таблица входа» в `flang/self/types.flang`), и этот
+ *    хозяин подаёт её печати всех десяти целей (ADR-0099); собственная таблица
+ *    бинарника идёт в дело, когда печатается он сам (`emit_entry_fits`).
  *
  * 3. ПРЕДЕЛЫ — `--max-steps` и `--max-depth`: они впечатываются в
  *    `#define FL_MAX_STEPS`, то есть в байт вывода. Умолчания здесь — умолчания
@@ -14281,10 +14281,29 @@ static int emit_take_protocol(fl_value *files, const char *protocol) {
   return 0;
 }
 
-static int emit_call(const emit_target *target, fl_value subject, bool fits, const fl_entry_table *table,
-                     const char *runtime, const emit_wish *wish, bool with_plans, fl_value *files,
-                     const char *protocol, const char *source_path, const char *source_sha) {
+/*
+ * Граница входа ПЕЧАТАЕМОЙ программы: её строит компилятор на flang
+ * («Таблица входа» в `flang/self/types.flang`), и строит одинаково для всех
+ * десяти целей (ADR-0099). Своя таблица бинарника идёт в дело, только когда
+ * печатается он сам (`fits`). Не построилась — пустая таблица, как прежде.
+ */
+static fl_value emit_entry_part(bool fits, fl_value own, bool built, fl_value border, const char *part) {
+  fl_value found = fl_nothing();
+  if (fits) {
+    return own;
+  }
+  if (built && val_field(border, part, &found) && found.tag == FL_LIST) {
+    return found;
+  }
+  return fl_list(NULL, 0);
+}
+
+static int emit_call(const emit_target *target, fl_value subject, fl_value program, bool fits,
+                     const fl_entry_table *table, const char *runtime, const emit_wish *wish, bool with_plans,
+                     fl_value *files, const char *protocol, const char *source_path, const char *source_sha) {
   fl_value values[EMIT_FIELD_MAX];
+  fl_value border = fl_nothing();
+  bool built = false;
   fl_value args[4];
   fl_value result = fl_nothing();
   fl_value failure = fl_nothing();
@@ -14315,6 +14334,10 @@ static int emit_call(const emit_target *target, fl_value subject, bool fits, con
     }
   }
 
+  if (!fits) {
+    built = repl_call("Таблица входа", &program, 1, &border) == FL_OK;
+  }
+
   for (index = 0; code == 0 && index < target->field_count; index += 1) {
     const char *name = target->fields[index];
     if (strcmp(name, "путь") == 0) {
@@ -14332,13 +14355,15 @@ static int emit_call(const emit_target *target, fl_value subject, bool fits, con
     } else if (strcmp(name, "оболочка") == 0) {
       values[index] = fl_flag(wish->shell);
     } else if (strcmp(name, "типы входа") == 0) {
-      values[index] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
+      values[index] = emit_entry_part(fits, fits ? emit_entry_types(table) : fl_nothing(), built, border, "типы");
     } else if (strcmp(name, "поля входа") == 0) {
-      values[index] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
+      values[index] = emit_entry_part(fits, fits ? emit_entry_fields(table) : fl_nothing(), built, border, "поля");
     } else if (strcmp(name, "варианты входа") == 0) {
-      values[index] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
+      values[index] =
+          emit_entry_part(fits, fits ? emit_entry_variants(table) : fl_nothing(), built, border, "варианты");
     } else if (strcmp(name, "параметры входа") == 0) {
-      values[index] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
+      values[index] =
+          emit_entry_part(fits, fits ? emit_entry_params(table) : fl_nothing(), built, border, "параметры");
     } else if (taken < target->runtime_count) {
       values[index] = repl_value_text(texts[taken], sizes[taken]);
       taken += 1;
@@ -14813,7 +14838,7 @@ static int emit_file(int argc, char **argv, const char *self) {
             sha256_add(&sha, text, bytes);
             sha256_hex(&sha, source_sha);
             code = emit_call(&EMIT_TARGET_TABLE[chosen],
-                             EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, fits, table,
+                             EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, program, fits, table,
                              runtime, &wish, with_plans, &files, protocol, path, source_sha);
           }
           if (code == 0 && protocol != NULL) {
@@ -14839,7 +14864,7 @@ static int emit_file(int argc, char **argv, const char *self) {
       }
       /*
        * Про границу входа здесь не сказано ничего, и это не умолчание: таблицу
-       * объявленных типов печать строит сама во всех десяти целях (ADR-0099),
+       * объявленных типов печать получает во всех десяти целях (ADR-0099),
        * и напечатанный прогонщик сверяет по ней аргументы до вызова. Прежде
        * здесь стояла строка «аргументы напечатанной программы по типам не
        * проверяются» — после ADR-0099 она была бы ложью.

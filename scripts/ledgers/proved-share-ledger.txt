@@ -631,6 +631,10 @@
 // «написано»: 276 → 286, 783 → 784 и 424 → 430 (обещания деления разрядов,
 // дроби, остатка, узла типа exactFraction и канона дроби); md5 и числитель
 // НЕ ТРОНУТЫ — они датируют прежний приговор, новый переснимет перепечатка.
+// ⚑ 12 октября 2026, ветка a/declared-types-hold-at-the-cli-and-emit-runs-the-examples:
+// ADR-0099 — дно веса на входе. У flang/self/types.flang пересчитано только
+// «написано»: 431 → 433 (обещания «Проверить дно веса на входе» и «Потолок веса
+// на входе»); md5 и числитель НЕ ТРОНУТЫ — их переснимет перепечатка семени.
 // ⚑ 4 октября 2026, над dev 89f16bd87: задача 1908, заход 1 — точное целое вошло
 // в компилятор. У flang/self/types.flang, flang/self/interpret.flang и
 // flang/self/parser.flang пересчитано только «написано»: 410 → 420, 256 → 264 и
@@ -1377,7 +1381,7 @@ bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 6c68e5bf49b6c4f3e184ef519b324d7a|3|0|2|1|0|flang/self/totality-refusals.flang
 5244f474a7f26171786a1690f79a98e9|319|257|16|42|0|flang/self/totality.flang
 5fffa3b0c7a035479c3b55c3731fb99a|1|0|1|0|0|flang/self/type-refusals.flang
-6f5995562eb91e54ecbcd9bde4c4853e|431|119|4|265|0|flang/self/types.flang
+6f5995562eb91e54ecbcd9bde4c4853e|433|119|4|265|0|flang/self/types.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang

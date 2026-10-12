@@ -207,6 +207,15 @@ The practical rule: if termination has to be proven rather than watched, use the
 first or the second way. The `сторожей в рантайме` line of the report counts the
 places in your program that are not proven all the way.
 
+This is what the printed seed answers today. In the compiler sources (ADR-0093,
+not yet reprinted into the seed) the kernel reads every such place by the form of
+the argument and gives one of three answers: a call that passes `н минус К` for
+a measure declared on a `неотрицательное` parameter is proved (rule Мер1) and
+gets no guard; a call that cannot lower the measure — `н` itself, `н плюс 1`,
+`(3 умножить на н) плюс 1` — is refused at `check` time (rule Мер✗), naming the
+call and the argument; everything else keeps the guard, and the report says so in
+words: «спуск ядром не выведен — на веру».
+
 ## Counting up is not a measure
 
 ```flang

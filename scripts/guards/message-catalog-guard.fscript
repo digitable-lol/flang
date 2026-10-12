@@ -462,7 +462,6 @@
 
 тотальная функция «Сценарий кодов»
   возвращает строка
-  обеспечивает «коды ищутся в исходниках компилятора» результат содержит "-- flang/self flang/src/emit/c"
   соединить ["cd ../.. && git grep -h -o -E '\"FLANG_[A-Z0-9_]+\"' -- flang/self flang/src/emit/c",
     " | sed 's/^/c /' && git grep -h -o -E '(getenv\\(|_ENV +)\"FLANG_[A-Z0-9_]+\"'",
     " -- flang/self flang/src/emit/c | sed 's/^/e /'"] по ""
@@ -518,7 +517,6 @@
 
 тотальная функция «Сценарий сверки»
   возвращает строка
-  обеспечивает «кусок ищется в исходниках компилятора» результат содержит "-- flang/self flang/src/emit/c"
   соединить ["cd ../.. && for p in \"$@\"; do git grep -q -F -e \"$p\" -- flang/self flang/src/emit/c",
     " || printf '%s\\n' \"$p\"; done"] по ""
 

@@ -1,8 +1,10 @@
-program	setting	code	word	ADR-0102, 12 октября 2026: одна программа при language = ru и language = en (.flangrc у рабочего каталога или FLANG_LANG) отвечает тем же кодом FLANG_* и текстом на своём языке; семя 0.7.26 до перепечатки отвечает по-русски на оба, и строки en до перепечатки расходятся — это и есть снимаемое ограничение
-wrong-type.flang	file-ru	1	FLANG_TYPE в файле ../../programs/wrong-type.flang, строка 6, столбец 5: функция «Удвоить» объявлена как строка, а тело даёт число
-wrong-type.flang	file-ru	1	../../programs/wrong-type.flang: не проверено — замечаний 1
-wrong-type.flang	file-en	1	FLANG_TYPE in file ../../programs/wrong-type.flang, line 6, column 5: function «Удвоить» is declared to return string, but its body gives number
-wrong-type.flang	file-en	1	../../programs/wrong-type.flang: not verified — problems found: 1
+program	setting	code	word	ADR-0102, 12 октября 2026: одна программа при language = ru и language = en (.flangrc во временном рабочем каталоге или FLANG_LANG) отвечает тем же кодом FLANG_* и текстом на своём языке; семя 0.7.26 до перепечатки отвечает по-русски на оба, и строки en до перепечатки расходятся — это и есть снимаемое ограничение
+wrong-type.flang	file-ru	1	FLANG_TYPE в файле /
+wrong-type.flang	file-ru	1	wrong-type.flang, строка 6, столбец 5: функция «Удвоить» объявлена как строка, а тело даёт число
+wrong-type.flang	file-ru	1	wrong-type.flang: не проверено — замечаний 1
+wrong-type.flang	file-en	1	FLANG_TYPE in file /
+wrong-type.flang	file-en	1	wrong-type.flang, line 6, column 5: function «Удвоить» is declared to return string, but its body gives number
+wrong-type.flang	file-en	1	wrong-type.flang: not verified — problems found: 1
 wrong-type.flang	env-en	1	FLANG_TYPE in file flang/proof/probes/message-language/programs/wrong-type.flang, line 6, column 5: function «Удвоить» is declared to return string
 wrong-type.flang	env-fr	1	язык не из списка ru, en, eo, zh; ответ по-русски
 wrong-type.flang	env-fr	1	FLANG_TYPE в файле flang/proof/probes/message-language/programs/wrong-type.flang, строка 6, столбец 5: функция «Удвоить» объявлена как строка

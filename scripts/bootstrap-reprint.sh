@@ -95,7 +95,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 INPUT=flang/self/bootstrap/compiler.flang
 DIR=bootstrap
 RUNTIME=flang/src/emit/c
-
+ENGINE_INPUT=flang/stdlib/tls-client.flang  # второй вход: клиент TLS, печать в bootstrap/tls_client.[ch], ADR-0101
 # Файл дерева, которым спрашивают собранный двоичный, и ответ, который он обязан
 # дать. Файл выбран самый дешёвый из осмысленных: ввозов у него нет вовсе, замер
 # на двоичном из семени ствола — 0,63 с и 50,1 МиБ.
@@ -1033,7 +1033,7 @@ closure_files() {
   # ввезённый файл с русским расширением молча выпал бы из отпечатка, а
   # молчаливый пропуск в замыкании — ровно та болезнь, о которой пояснение выше.
   spisok=$( cd "$CROOT" && find flang \( -name '*.flang' -o -name '*.fp' -o -name '*.фп' \) -type f | LC_ALL=C sort |
-    LC_ALL=C awk -v start="$INPUT" '
+    LC_ALL=C awk -v start="$INPUT $ENGINE_INPUT" '
       { files[++nf] = $0 }
       END {
         for (i = 1; i <= nf; i++) {
@@ -1065,7 +1065,7 @@ closure_files() {
           close(f)
         }
         bad = 0
-        qn = 1; q[1] = start; head = 1
+        qn = split(start, q, " "); head = 1
         while (head <= qn) {
           f = q[head++]
           if (f in seen) continue
@@ -3466,7 +3466,7 @@ esac
 # случайность и делает рецепт полным.
 ( cd "$ROOT" && "$BINARY" emit "$INPUT" --target c --out "$TMP" \
     --cli --repl --runtime "$ROOT/$RUNTIME" \
-    --max-steps "$MAX_STEPS" --max-depth "$MAX_DEPTH" ) >&2
+    --max-steps "$MAX_STEPS" --max-depth "$MAX_DEPTH" && "$BINARY" emit "$ENGINE_INPUT" --target c --out "$TMP/tls-engine" --no-check --no-postconditions && mv "$TMP/tls-engine/tls_client.c" "$TMP/tls-engine/tls_client.h" "$TMP/" && rm -rf "$TMP/tls-engine" ) >&2
 
 PRINTED=$(cd "$TMP" && ls | sort)
 TOTAL=0

@@ -1779,10 +1779,12 @@ f51c5ea1191c9bfa24242bf7c08d01db|1|×|×|×|0|flang/proof/checker/tests/families
 0d43cb4f7d74933b220ad332c21d1879|1|1|0|0|0|flang/proof/checker/tests/families/citation/lemmas.flang
 42c4aec6ee34fc2f8c018ce087a02d5d|1|1|0|0|0|flang/proof/checker/tests/families/citation/measures.flang
 9019e480de2f86f3cbedb1d522cab9a5|1|1|0|0|0|flang/proof/checker/tests/families/citation/namesake-measures.flang
+1d8eb38aaafcc0ec29754bfe4e1477c9|2|2|0|0|0|flang/proof/checker/tests/families/citation/postcondition-by-restricted-callee.flang
 f7593b53bb5c1feea6448642d7a93ee4|2|×|×|×|0|flang/proof/checker/tests/families/citation/step-by-bound-subtracts.flang
 b909a78d4e203dc3d28d6e934804122d|2|2|0|0|0|flang/proof/checker/tests/families/citation/step-by-bound.flang
 bee24a1757bb2379e78abcc1ee919cf6|2|2|0|0|0|flang/proof/checker/tests/families/citation/step-by-postcondition.flang
 c25faaf80c68feb10f948be8dd2b761e|2|2|0|0|0|flang/proof/checker/tests/families/citation/step-by-restricted-postcondition.flang
+d392e8749b4483ebfd9db1f559a20cec|2|2|0|0|0|flang/proof/checker/tests/families/citation/step-by-restricted-postcondition-discharged.flang
 a848b074fe267661bfe3f1316aa8b2fd|2|×|×|×|0|flang/proof/checker/tests/families/citation/step-by-unrelated-postcondition.flang
 cba7ff01e5be6222aa70291cf1823888|1|×|×|×|0|flang/proof/checker/tests/families/field-projection/accessor-other-field.flang
 1afa256a140ade1fb4f0710f556d01cb|1|×|×|×|0|flang/proof/checker/tests/families/field-projection/accessor-swapped-binding.flang

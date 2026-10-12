@@ -35,7 +35,7 @@ gives code 0 from both the compiler and the checker.
 | --- | --- |
 | "there exists x such that …" without naming x: the prover does not search for a value | name the value: `есть такой м, а именно н, что …` |
 | a property of state over time, of side effects or of concurrency: there is no way to write it in the language (ADR-0026, ADR-0032) | test it with `пример` and, for processes, with `прогон` scenarios |
-| a property of the generated C, Go, Rust and other code: the proof covers the flang program, the code generator is not proved (ADR-0030) | test the generated program on its own |
+| a property of the generated C, Go, Rust and other code: the proof covers the flang program, the code generator is not proved (ADR-0030) | test the generated program on its own; for the `c` target, check each printing run with the `--protocol` file and `flang/translation/matcher.c`, which replays the nodes, the measure guard included (ADR-0104), and names what it did not replay |
 | a postcondition the prover does not accept | see [What the prover accepts](../site/what-the-kernel-accepts.md); write a `теорема`, or rephrase the postcondition |
 
 No external SMT solver is used. Do not write software for medicine, aviation or

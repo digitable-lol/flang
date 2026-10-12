@@ -5,7 +5,7 @@
 **Основание:** раздел «Ограничения» в `docs/DESCRIPTION.md`, пункт «Компилятор
 отвечает по-русски; ключ `language` файла настроек язык его сообщений не
 меняет»; задачи [5413](../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md)
-и [8161](../tasks/8161-messages-live-in-the-binary-so-a-new-language-costs-a-reprint.md).
+и 8161 (сделана 12 октября 2026: проба `message-language` на двоичном после `seed:refresh` — проб 20, разошлось 0).
 **Рядом:** [ADR-0024](0024-the-settings-file-and-the-language-of-output.md) —
 файл настроек и язык вывода; это решение исполняет его раздел 7 и в одном месте
 его меняет (ключ каталога — код, а не русская строка, раздел 2.3 ниже).

@@ -107,22 +107,25 @@ Node октетов не заводит (`FLANG_IO_NOT_WIRED`), и строка 
 
 ### 4.1. Как получен вывод «после правки»
 
-Пробу гонял `bootstrap/flang io run.fscript` из каталога набора с переменной
-`PLANS_EMITTED_DIR`: печать целей c, go, rust, python берётся оттуда, а не у
-семени. Вывод собран так: программа без строки `план` печатается семенем с
-рантаймом из дерева (`--runtime flang/src/emit/<цель>`), а таблица планов
-дописывается в том виде, в каком её печатают правленые `emit-c.flang`,
-`emit-go.flang`, `emit-rust.flang`, `emit-python.flang`. Итог — «проб 21,
-разошлось 0». Сборка: `make` с `-std=c99 -Wall -Wextra -Werror -pedantic`
-для C, `go build` и `go vet` (замечаний 0, `gofmt -l` пусто) для Go, `cargo
-build` для Rust, `python3 -B` для Python.
+Три программы набора напечатал в c, go, rust и python компилятор из
+исходника: гарнитура-план, ввозящая «Compiler flang» и зовущая «Напечатать
+связанное», «…в Go», «…в Rust», «…в Python» с рантаймами из дерева, прогнана
+`bootstrap/flang io … --trust` (два прогона, около полутора часов каждый,
+до 50 ГиБ памяти). Её вывод подан пробе переменной `PLANS_EMITTED_DIR`:
+`bootstrap/flang io run.fscript` — «проб 21, разошлось 0». Сборка: `make` с
+`-std=c99 -Wall -Wextra -Werror -pedantic` для C, `go build` (и `go vet`,
+`gofmt -l` — пусто) для Go, `cargo build` для Rust, `python3 -B` для Python.
 
-Сами правленые печатники проверены семенем: `bootstrap/flang check
-flang/self/emit-python.flang`, `…/emit-go.flang`, `…/emit-rust.flang` — «проверено
-— разбор, типы, завершаемость, ядро и примеры; замечаний нет». Печать программы
-с планом компилятором из исходника (гарнитура-толкователь, по образцу
-`emit-from-source.flang`) на момент записи шла: толкователю на неё нужен час и
-десятки ГиБ на программу.
+Напечатанные таблицы — ровно те, что описаны в разделе 2, например у Go:
+`{Name: "Октеты туда и обратно", Initial: "Начать октеты", Step: "Дальше по октетам"},`
+в `flang/plans.go`, у C — `#define FL_PROGRAM_IO_PLANS {{"Октеты туда и обратно", "Начать октеты", "Дальше по октетам"}}`.
+
+Правленые печатники проверены семенем: `bootstrap/flang check
+flang/self/emit-python.flang`, `…/emit-go.flang`, `…/emit-rust.flang` —
+«проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет».
+Замыкание `bootstrap/flang check flang/self/bootstrap/compiler.flang
+--предел-шагов 100000000000`: строк FLANG_TYPE и FLANG_DUPLICATE_NAME — 0,
+упор в предел шагов («Искать признак», FLANG_RECURSION_LIMIT).
 
 ## 5. Встречные примеры и отрицательный контроль
 

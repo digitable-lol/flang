@@ -151,6 +151,6 @@ browser host (250 lines), the event loop (0 edits), agreement (6 files instead o
 
 * **a markup type** — deliberately, the reason is above: an order carries text;
 * **emitting plans into targets** — the `js` target emits plans, see the
-  [URL shortener](shortener.html); the other nine targets refuse with
-  `FLANG_PLAN_UNSUPPORTED` (`flang emit … --target python` and `--target go`
-  exit 1), and that is named there too.
+  [URL shortener](shortener.html); since ADR-0100 so do `ts`, `c`, `go`,
+  `python` and `rust`, while `cpp`, `csharp`, `elixir` and `java` refuse with
+  `FLANG_PLAN_UNSUPPORTED` and exit 1, and that is named there too.

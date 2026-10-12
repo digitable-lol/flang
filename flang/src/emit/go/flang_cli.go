@@ -36,6 +36,8 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -363,6 +365,10 @@ func refuseNotText(line int, raw []byte, at int) {
 }
 
 func main() {
+	// `--plan <имя> [довод…]` — исполнить план программы (ADR-0100).
+	if len(os.Args) > 1 && (os.Args[1] == "--plan" || os.Args[1] == "--план") {
+		os.Exit(runPlan(os.Args[2:]))
+	}
 	reader := bufio.NewScanner(os.Stdin)
 	// Строка запроса бывает длинной: список из тысяч элементов приезжает одной
 	// строкой, а буфер Scanner по умолчанию — 64 КиБ.
@@ -394,4 +400,371 @@ func main() {
 		fmt.Fprintf(os.Stderr, "FLANG_IO_READ: вход прогонщика не читается: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+// ───────────────────────────── план ─────────────────────────────
+//
+// Исполнитель плана — порт `flang/src/emit/js/flang_io.js` на значения
+// рантайма Go: тот же цикл «шаг → поручение → отклик», те же исходы и коды
+// возврата, что у `flang io`: 0 — конец работы, 1 — «Провал» (план сдался
+// сам), 3 — «Не проверено» либо сломанный инструмент. Хозяин ниже исполняет
+// девять родов поручений — файлы текстом и октетами, каталоги, среду и доводы; на остальные он
+// отвечает отказом с кодом, называющим род. Пути считаются от каталога запуска.
+
+// Сколько поручений исполнитель выдаёт, прежде чем сдаться, — то же число,
+// что у свидетеля и у цели JavaScript.
+const ioLimit = 10000
+
+// ioOrders — роды поручений словаря языка: поручение не из списка до хозяина
+// не доходит.
+var ioOrders = map[string]bool{
+	"Прочитать файл": true, "Записать файл": true, "Прочитать октеты из файла": true,
+	"Записать октеты в файл": true, "Запросить": true, "Текущее время": true,
+	"Случайное число": true, "Случайные октеты": true, "Показать": true,
+	"Ждать событие": true, "Перечислить каталог": true, "Запустить процесс": true,
+	"Запустить процесс с вводом": true, "Запустить процесс с пределом": true,
+	"Открыть соединение": true, "Принять соединение": true, "Прочитать из соединения": true,
+	"Ответить в соединение": true, "Прочитать октеты из соединения": true,
+	"Ответить октетами в соединение": true, "Удалить файл": true,
+	"Завести временный каталог": true, "Прочитать переменную среды": true,
+	"Прочитать доводы": true, "Размер экрана": true,
+}
+
+// planError — беда прогона плана; gaveUp ставится только «Провалу».
+type planError struct {
+	code    string
+	message string
+	gaveUp  bool
+}
+
+func planFail(code, message string) *planError {
+	return &planError{code: code, message: message}
+}
+
+func ioField(value rt.Value, name string) rt.Value {
+	for _, field := range value.Fields {
+		if field.Name == name {
+			return field.Value
+		}
+	}
+	return rt.Nothing()
+}
+
+func ioSay(value rt.Value, spare string, allowEmpty bool) string {
+	if value.Tag == rt.TagString && (allowEmpty || value.Str != "") {
+		return value.Str
+	}
+	return spare
+}
+
+func findPlan(name string) (rt.Plan, *planError) {
+	if len(rt.Plans) == 0 {
+		return rt.Plan{}, planFail("FLANG_UNKNOWN_PLAN", "в программе нет ни одного плана: исполнять нечего")
+	}
+	if name == "" {
+		if len(rt.Plans) == 1 {
+			return rt.Plans[0], nil
+		}
+		names := make([]string, 0, len(rt.Plans))
+		for _, plan := range rt.Plans {
+			names = append(names, "«"+plan.Name+"»")
+		}
+		return rt.Plan{}, planFail("FLANG_UNKNOWN_PLAN", "планов несколько ("+strings.Join(names, ", ")+") — назовите нужный")
+	}
+	for _, plan := range rt.Plans {
+		if plan.Name == name {
+			return plan, nil
+		}
+	}
+	return rt.Plan{}, planFail("FLANG_UNKNOWN_PLAN", "не найден план «"+name+"»")
+}
+
+// planCall зовёт функцию программы в свежем контексте: пределы шагов и глубины
+// — на одно обращение плана, как у `flang io`.
+func planCall(name string, args []rt.Value) (rt.Value, *planError) {
+	value, err := flang.Call(flang.NewContext(), name, args)
+	if err != nil {
+		if bad, ok := err.(*rt.Error); ok {
+			return rt.Value{}, planFail(bad.Code, bad.Message)
+		}
+		return rt.Value{}, planFail("FLANG_IO", err.Error())
+	}
+	return value, nil
+}
+
+func ioRun(name string, perform func(rt.Value) rt.Value) (rt.Value, int, *planError) {
+	plan, bad := findPlan(name)
+	if bad != nil {
+		return rt.Value{}, 0, bad
+	}
+	state, bad := planCall(plan.Initial, nil)
+	if bad != nil {
+		return rt.Value{}, 0, bad
+	}
+	response := rt.Variant("Пока ничего", nil)
+	given := 0
+	for {
+		step, bad := planCall(plan.Step, []rt.Value{state, response})
+		if bad != nil {
+			return rt.Value{}, given, bad
+		}
+		if step.Tag != rt.TagVariant {
+			return rt.Value{}, given, planFail("FLANG_IO", "шаг плана «"+plan.Name+"» вернул не «Продолжение»")
+		}
+		switch step.Str {
+		case "Конец работы":
+			return ioField(step, "значение"), given, nil
+		case "Провал":
+			bad := planFail(ioSay(ioField(step, "код"), "FLANG_IO_FAILED", false),
+				ioSay(ioField(step, "сообщение"), "план «"+plan.Name+"» отказался продолжать", true))
+			bad.gaveUp = true
+			return rt.Value{}, given, bad
+		case "Не проверено":
+			return rt.Value{}, given, planFail(ioSay(ioField(step, "код"), "FLANG_IO_NOT_CHECKED", false),
+				ioSay(ioField(step, "сообщение"), "план «"+plan.Name+"» не смог проверить предмет", true))
+		case "Сделать":
+		default:
+			return rt.Value{}, given, planFail("FLANG_IO", "шаг плана «"+plan.Name+"» вернул не «Продолжение»")
+		}
+		if given >= ioLimit {
+			return rt.Value{}, given, planFail("FLANG_IO_LIMIT",
+				fmt.Sprintf("план «%s» исчерпал предел поручений (%d)", plan.Name, ioLimit))
+		}
+		order := ioField(step, "поручение")
+		if order.Tag != rt.TagVariant || !ioOrders[order.Str] {
+			what := "не вариант суммы"
+			if order.Tag == rt.TagVariant {
+				what = "вариант «" + order.Str + "»"
+			}
+			return rt.Value{}, given, planFail("FLANG_IO", "план «"+plan.Name+"» просит выполнить не поручение: "+what)
+		}
+		state = ioField(step, "потом")
+		response = perform(order)
+		given++
+	}
+}
+
+// ioHost — хозяин: функция «поручение → отклик» над каталогом запуска.
+func ioHost(args []string) func(rt.Value) rt.Value {
+	fault := func(code, message string) rt.Value {
+		return rt.Variant("Сбой", []rt.Field{{Name: "код", Value: rt.Text(code)}, {Name: "сообщение", Value: rt.Text(message)}})
+	}
+	why := func(err error) string {
+		var cause error = err
+		if bad, ok := err.(*os.PathError); ok {
+			cause = bad.Err
+		}
+		text := cause.Error()
+		if text != "" {
+			text = strings.ToUpper(text[:1]) + text[1:]
+		}
+		return text
+	}
+	text := func(order rt.Value, name string) (string, bool) {
+		value := ioField(order, name)
+		return value.Str, value.Tag == rt.TagString
+	}
+	path := func(order rt.Value, name string) (string, *rt.Value) {
+		given, ok := text(order, name)
+		if !ok || given == "" {
+			bad := fault("FLANG_IO_PATH", "поручению нужен непустой путь")
+			return "", &bad
+		}
+		return given, nil
+	}
+	return func(order rt.Value) rt.Value {
+		switch order.Str {
+		case "Прочитать файл":
+			full, bad := path(order, "путь")
+			if bad != nil {
+				return *bad
+			}
+			octets, err := os.ReadFile(full)
+			if err != nil {
+				return fault("FLANG_IO_READ", "файл не прочитан: "+why(err))
+			}
+			if notTextAt(octets) > 0 {
+				return fault("FLANG_IO_NOT_TEXT", fmt.Sprintf("файл не текст: %d октет(ов) не складываются в UTF-8; октеты возит «Прочитать октеты из файла»", len(octets)))
+			}
+			return rt.Variant("Прочитано", []rt.Field{{Name: "содержимое", Value: rt.Text(string(octets))}})
+		case "Записать файл":
+			body, _ := text(order, "содержимое")
+			full, bad := path(order, "путь")
+			if bad != nil {
+				return *bad
+			}
+			if err := os.WriteFile(full, []byte(body), 0o644); err != nil {
+				return fault("FLANG_IO_WRITE", "файл не записан: "+why(err))
+			}
+			// Кодовые точки, а не октеты: «сколько» обязано совпасть с `длина`.
+			return rt.Variant("Записано", []rt.Field{{Name: "сколько", Value: rt.Number(float64(len([]rune(body))))}})
+		case "Прочитать октеты из файла":
+			full, bad := path(order, "путь")
+			if bad != nil {
+				return *bad
+			}
+			octets, err := os.ReadFile(full)
+			if err != nil {
+				return fault("FLANG_IO_READ", "файл не прочитан: "+why(err))
+			}
+			items := make([]rt.Value, len(octets))
+			for at, octet := range octets {
+				items[at] = rt.Number(float64(octet))
+			}
+			return rt.Variant("Октеты", []rt.Field{{Name: "октеты", Value: rt.List(items)}})
+		case "Записать октеты в файл":
+			given := ioField(order, "октеты")
+			if given.Tag != rt.TagList {
+				return fault("FLANG_IO_OCTETS", "поручению нужен список октетов, а дан не список")
+			}
+			octets := make([]byte, len(given.List))
+			for at, item := range given.List {
+				if item.Tag != rt.TagNumber || item.Num < 0 || item.Num > 255 || item.Num != float64(int(item.Num)) {
+					return fault("FLANG_IO_OCTETS", fmt.Sprintf("октет %d не годится: нужно целое от 0 до 255", at+1))
+				}
+				octets[at] = byte(item.Num)
+			}
+			full, bad := path(order, "путь")
+			if bad != nil {
+				return *bad
+			}
+			if err := os.WriteFile(full, octets, 0o644); err != nil {
+				return fault("FLANG_IO_WRITE", "файл не записан: "+why(err))
+			}
+			return rt.Variant("Записано", []rt.Field{{Name: "сколько", Value: rt.Number(float64(len(octets)))}})
+		case "Перечислить каталог":
+			full, bad := path(order, "путь")
+			if bad != nil {
+				return *bad
+			}
+			entries, err := os.ReadDir(full)
+			if err != nil {
+				return fault("FLANG_IO_LIST", "каталог не открыт: "+why(err))
+			}
+			names := make([]string, 0, len(entries))
+			for _, entry := range entries {
+				names = append(names, entry.Name())
+			}
+			// По байтам UTF-8, то есть по кодовым точкам, — как у двоичного хозяина.
+			sort.Strings(names)
+			items := make([]rt.Value, 0, len(names))
+			for _, name := range names {
+				items = append(items, rt.Text(name))
+			}
+			return rt.Variant("Перечислено", []rt.Field{{Name: "имена", Value: rt.List(items)}})
+		case "Удалить файл":
+			full, bad := path(order, "путь")
+			if bad != nil {
+				return *bad
+			}
+			if err := os.Remove(full); err != nil {
+				return fault("FLANG_IO_REMOVE", "имя не убрано: "+why(err))
+			}
+			return rt.Variant("Убрано", nil)
+		case "Завести временный каталог":
+			given, bad := path(order, "образец")
+			if bad != nil {
+				return *bad
+			}
+			made, err := os.MkdirTemp(filepath.Dir(given), filepath.Base(given)+"*")
+			if err != nil {
+				return fault("FLANG_IO_TEMPDIR", "временный каталог не заведён: "+why(err))
+			}
+			// Обратно — образец плюс хвост, в координатах плана.
+			tail := filepath.Base(made)[len(filepath.Base(given)):]
+			return rt.Variant("Заведено", []rt.Field{{Name: "путь", Value: rt.Text(given + tail)}})
+		case "Прочитать переменную среды":
+			name, ok := text(order, "имя")
+			if !ok || name == "" {
+				return fault("FLANG_IO_ENV", "поручению нужно непустое имя переменной")
+			}
+			value, found := os.LookupEnv(name)
+			if !found {
+				return rt.Variant("Переменной среды нет", nil)
+			}
+			return rt.Variant("Значение среды", []rt.Field{{Name: "значение", Value: rt.Text(value)}})
+		case "Прочитать доводы":
+			items := make([]rt.Value, 0, len(args))
+			for _, arg := range args {
+				items = append(items, rt.Text(arg))
+			}
+			return rt.Variant("Доводы", []rt.Field{{Name: "доводы", Value: rt.List(items)}})
+		case "Показать", "Ждать событие", "Размер экрана":
+			return fault("FLANG_IO_NO_SCREEN", "у хозяина Go нет экрана: поручение «"+order.Str+"» исполнить нечем")
+		default:
+			return fault("FLANG_IO_NOT_WIRED", "поручение «"+order.Str+"» в этом хозяине не заведено; исполните план двоичным: flang io <файл.flang>")
+		}
+	}
+}
+
+// writePlain — значение в JSON того же вида, каким `flang io` печатает итог.
+func writePlain(out *strings.Builder, value rt.Value) {
+	switch value.Tag {
+	case rt.TagFlag:
+		if value.Flag {
+			out.WriteString("true")
+		} else {
+			out.WriteString("false")
+		}
+	case rt.TagNumber:
+		out.WriteString(rt.NumberText(value.Num))
+	case rt.TagString:
+		out.WriteString(rt.QuoteJSON(value.Str))
+	case rt.TagList:
+		out.WriteString("[")
+		for index, item := range value.List {
+			if index > 0 {
+				out.WriteString(",")
+			}
+			writePlain(out, item)
+		}
+		out.WriteString("]")
+	case rt.TagRecord:
+		writePlainFields(out, value.Fields)
+	case rt.TagVariant:
+		out.WriteString("{\"variant\":")
+		out.WriteString(rt.QuoteJSON(value.Str))
+		out.WriteString(",\"fields\":")
+		writePlainFields(out, value.Fields)
+		out.WriteString("}")
+	default:
+		out.WriteString("null")
+	}
+}
+
+func writePlainFields(out *strings.Builder, fields []rt.Field) {
+	out.WriteString("{")
+	for index, field := range fields {
+		if index > 0 {
+			out.WriteString(",")
+		}
+		out.WriteString(rt.QuoteJSON(field.Name))
+		out.WriteString(":")
+		writePlain(out, field.Value)
+	}
+	out.WriteString("}")
+}
+
+func runPlan(argv []string) int {
+	name := ""
+	if len(argv) > 0 {
+		name = argv[0]
+		argv = argv[1:]
+	}
+	value, given, bad := ioRun(name, ioHost(argv))
+	if bad != nil {
+		fmt.Fprintf(os.Stderr, "{\"error\":%s,\"code\":%s}\n", rt.QuoteJSON(bad.message), rt.QuoteJSON(bad.code))
+		if bad.gaveUp {
+			return 1
+		}
+		return 3
+	}
+	var out strings.Builder
+	out.WriteString("{\"result\":")
+	writePlain(&out, value)
+	out.WriteString(",\"orders\":")
+	out.WriteString(strconv.Itoa(given))
+	out.WriteString("}\n")
+	fmt.Print(out.String())
+	return 0
 }

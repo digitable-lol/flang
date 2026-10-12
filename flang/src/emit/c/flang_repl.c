@@ -13327,7 +13327,8 @@ typedef struct {
      в программе есть план: тогда же рядом с выводом ложится хозяин. Отдельной
      строкой, а не хвостом `build_say`, потому что программе без плана хозяина
      не кладут, и обещать его ей значило бы назвать файл, которого нет. NULL —
-     цель плана не печатает вовсе (сегодня таких восемь из девяти). */
+     цель плана не печатает вовсе (с ADR-0100 таких четыре из десяти: cpp, java,
+     elixir, csharp). */
   const char *plan_say;
   /* Имя обёртки на flang, которой у цели проверяются столкновения имён после
      транслитерации, — или NULL, если проверки у цели нет. Зовётся она из
@@ -13368,21 +13369,23 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
      {"flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c", "flang_conc.h", "flang_conc.c"},
      NULL,
      {"make", "cc", NULL},
-     NULL,
+     "план исполняет прогонщик: cd <каталог> && make && ./flang_cli --plan <имя> [довод…]",
      "Столкновения имён"},
     {"go", "Go", "flang_runtime.go", {"flang/src/emit/go", "share/flang/go"}, "Напечатать связанное в Go",
      true,
      15, EMIT_FIELDS_GO, 4, {"", "flang_runtime.go", "flang_cli.go", ""},
      "собрать: cd <каталог> && go build ./...",
      {"go", NULL, NULL},
-     NULL, NULL},
+     "план исполняет прогонщик: cd <каталог> && go build -o flang_cli ./cli && ./flang_cli --plan <имя> [довод…]",
+     NULL},
     {"rust", "Rust", "flang_runtime.rs", {"flang/src/emit/rust", "share/flang/rust"},
      "Напечатать связанное в Rust", true, 12,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
       "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
      2, {"flang_runtime.rs", "flang_cli.rs"}, "собрать: cd <каталог> && cargo build, запустить target/debug/flang_cli <модуль>",
      {"cargo", NULL, NULL},
-     NULL, NULL},
+     "план исполняет прогонщик: cd <каталог> && cargo build && target/debug/flang_cli --plan <имя> [довод…]",
+     NULL},
     {"java", "Java", "Value.java", {"flang/src/emit/java", "share/flang/java"},
      "Напечатать связанное в Java",
      true, 16,
@@ -13464,20 +13467,10 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
      NULL, NULL},
     /* ТРЕТИЙ ФАЙЛ У PYTHON — `flang_io.py`, исполнитель плана: тот же цикл
        «поручение → отклик», что и `flang_io.js` у JavaScript, портированный на
-       значения рантайма Python. Здесь он положен ВПЕРЁД печати: цель `python`
-       объявление «план» ещё не печатает (её `emit-python.flang` не просит поля
-       «исходник исполнителя», и `flang emit --target python` на программе с
-       планом отвечает кодом 1 и текстом FLANG_PLAN_UNSUPPORTED). Порядок
-       обратен порядку у JavaScript, где сперва просили поле, а таблица о нём не
-       знала, и печать ЛЮБОЙ программы с планом обрывалась замечанием про
-       недостающее поле.
-
-       ПОЧЕМУ ЛИШНЕЕ ПОЛЕ БЕЗВРЕДНО, пока его никто не читает: запись настроек
-       уезжает в компилятор через `compiler_flang_call`, а не через
-       `compiler_flang_enter` (см. `#define FL_PROGRAM_CALL` в начале этого
-       файла), то есть БЕЗ границы входа, где лишнее поле записи считалось бы
-       несоответствием типу. Печать читает поля по имени, и незапрошенное просто
-       не читается.
+       значения рантайма Python, и хозяин на девять родов поручений. Он лёг сюда
+       ВПЕРЁД печати, а с ADR-0100 `emit-python.flang` просит поле «исходник
+       исполнителя» и кладёт файл рядом с модулем программе, у которой есть
+       `план`.
 
        ПОРЯДОК ИМЁН ЗДЕСЬ ЗНАЧИМ: поля, которых `emit_call` не знает по имени,
        разбирают `runtime_files` подряд. Их три и они идут в том же порядке, что
@@ -13490,7 +13483,8 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
      3, {"flang_runtime.py", "flang_cli.py", "flang_io.py"},
      "запустить: cd <каталог> && python3 flang_cli.py <модуль>",
      {"python3", NULL, NULL},
-     NULL, NULL},
+     "план исполняет прогонщик: cd <каталог> && python3 flang_cli.py <модуль> --plan <имя> [довод…]",
+     NULL},
     {"csharp", "C#", "Value.cs", {"flang/src/emit/csharp", "share/flang/csharp"},
      "Напечатать связанное в CSharp", true, 16,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм значение",

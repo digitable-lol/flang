@@ -281,6 +281,15 @@ def serve(program, source, sink):
 def main(argv):
     name = argv[1] if len(argv) > 1 else DEFAULT_PROGRAM_MODULE
     program = importlib.import_module(name)
+    # `--plan <имя> [довод…]` — исполнить план модуля (ADR-0100). Исполнитель
+    # ввозится только здесь: программе без плана его не кладут вовсе.
+    if len(argv) > 2 and argv[2] in ("--plan", "--план"):
+        import flang_io
+
+        plan = argv[3] if len(argv) > 3 else ""
+        return rt.call_with_deep_stack(
+            lambda: flang_io.io_main(program, plan, argv[4:], sys.stdout, sys.stderr)
+        )
     # Вход — октетами, вывод — знаками: судить о UTF-8 можно только там, где
     # октеты ещё есть.
     return rt.call_with_deep_stack(

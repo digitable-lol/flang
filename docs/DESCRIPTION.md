@@ -1504,7 +1504,7 @@ $ printf '%s\n' '{"fn":"НОД","args":[{"n":"12"},{"n":"18"}]}' | out/flang_cli
 | --- | --- |
 | функции, типы, теоремы | все десять |
 | `процесс`, `надзор`, `прогон` | `c`, `elixir`, `js`, `ts`; у остальных — ошибка, код 1 |
-| `план` | `js`, `ts`; у остальных — `FLANG_PLAN_UNSUPPORTED`, код 1 |
+| `план` | `c`, `go`, `js`, `python`, `rust`, `ts`; у `cpp`, `csharp`, `elixir`, `java` — `FLANG_PLAN_UNSUPPORTED`, код 1 |
 
 Сгенерированные файлы по целям — [`guide/emit-walkthrough.ru.md`](guide/emit-walkthrough.ru.md),
 встраивание в чужую программу — [`site/embedding.ru.md`](site/embedding.ru.md).
@@ -1720,8 +1720,14 @@ script.site:build = node docs/site/build.mjs
   целях (ответ `FLANG_TYPE` с причиной); двоичный 0.7.26 до печати семени
   впечатывает таблицу типов только в цель `c`, и в девяти остальных аргументы
   не сверяются.
-- `план` генерируется только для `js` и `ts`, процессы — для `c`, `elixir`,
-  `js` и `ts`.
+- `план` генерируется для `c`, `go`, `js`, `python`, `rust` и `ts`; `cpp`,
+  `csharp`, `elixir` и `java` отказывают `FLANG_PLAN_UNSUPPORTED` (ADR-0100,
+  проба `flang/proof/probes/plans-in-targets`, 12 октября 2026). В `c`, `go`,
+  `python` и `rust` план исполняет прогонщик (`flang_cli --plan <имя>`), и его
+  хозяин знает 9 родов поручений из 27 — файлы текстом и октетами, каталоги,
+  среду, доводы; на остальные он отвечает «Сбой» `FLANG_IO_NOT_WIRED`. Двоичный
+  0.7.25 печатает план в эти четыре цели только после перепечатки семени.
+  Процессы генерируются для `c`, `elixir`, `js` и `ts`.
 - `https` у «Запросить» в исходниках рантайма `flang io` исполняет клиент
   TLS 1.3 на языке (`flang/stdlib/tls-client.flang`), напечатанный в C и
   собранный в сам двоичный; `curl` не нужен

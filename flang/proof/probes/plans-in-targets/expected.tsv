@@ -1,0 +1,22 @@
+program	surface	code	word	контракт ADR-0100, снят 12 октября 2026: один план исполняют flang io и прогонщики шести целей печати; итог и число поручений сходятся словом, отказ плана — кодом 1 и словами беды. На семени до перепечатки цели c, go, rust и python отвечают FLANG_PLAN_UNSUPPORTED кодом 2 — это и есть снимаемое ограничение
+round-trip.flang	io	0	"result":"записано 17; прочитано «привет, план — ёж»; имена note.txt; повтор — FLANG_IO_READ; среды нет; доводов 2","orders":9
+round-trip.flang	c	0	"result":"записано 17; прочитано «привет, план — ёж»; имена note.txt; повтор — FLANG_IO_READ; среды нет; доводов 2","orders":9
+round-trip.flang	go	0	"result":"записано 17; прочитано «привет, план — ёж»; имена note.txt; повтор — FLANG_IO_READ; среды нет; доводов 2","orders":9
+round-trip.flang	rust	0	"result":"записано 17; прочитано «привет, план — ёж»; имена note.txt; повтор — FLANG_IO_READ; среды нет; доводов 2","orders":9
+round-trip.flang	python	0	"result":"записано 17; прочитано «привет, план — ёж»; имена note.txt; повтор — FLANG_IO_READ; среды нет; доводов 2","orders":9
+round-trip.flang	js	0	"result":"записано 17; прочитано «привет, план — ёж»; имена note.txt; повтор — FLANG_IO_READ; среды нет; доводов 2","orders":9
+round-trip.flang	ts	0	"result":"записано 17; прочитано «привет, план — ёж»; имена note.txt; повтор — FLANG_IO_READ; среды нет; доводов 2","orders":9
+gives-up.flang	io	1	"error":"файла нет: FLANG_IO_READ"
+gives-up.flang	c	1	"error":"файла нет: FLANG_IO_READ"
+gives-up.flang	go	1	"error":"файла нет: FLANG_IO_READ"
+gives-up.flang	rust	1	"error":"файла нет: FLANG_IO_READ"
+gives-up.flang	python	1	"error":"файла нет: FLANG_IO_READ"
+gives-up.flang	js	1	"error":"файла нет: FLANG_IO_READ"
+gives-up.flang	ts	1	"error":"файла нет: FLANG_IO_READ"
+octets.flang	io	0	"result":"записано 5; прочитано 0,1,128,255,10; совпало да","orders":3
+octets.flang	c	0	"result":"записано 5; прочитано 0,1,128,255,10; совпало да","orders":3
+octets.flang	go	0	"result":"записано 5; прочитано 0,1,128,255,10; совпало да","orders":3
+octets.flang	rust	0	"result":"записано 5; прочитано 0,1,128,255,10; совпало да","orders":3
+octets.flang	python	0	"result":"записано 5; прочитано 0,1,128,255,10; совпало да","orders":3
+octets.flang	js	1	"code":"FLANG_PROBE_OCTETS"
+octets.flang	ts	1	"code":"FLANG_PROBE_OCTETS"

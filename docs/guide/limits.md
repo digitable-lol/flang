@@ -115,9 +115,15 @@ raw TLS socket: «Открыть соединение» is plain TCP. Datagrams 
 Run of 12 October 2026 with a private build: a local `openssl s_server`
 answered in 1.66 s, against 0.015 s for `curl` (`flang/proof/probes/network`).
 
-**A program with `план` is generated only into `js` and `ts`.** The other
-eight targets refuse with `FLANG_PLAN_UNSUPPORTED`, name the plan and write no
-files. To run such a program elsewhere, run it with `flang io`.
+**A program with `план` is generated into `c`, `go`, `js`, `python`, `rust`
+and `ts`** (ADR-0100). `cpp`, `csharp`, `elixir` and `java` refuse with
+`FLANG_PLAN_UNSUPPORTED`, name the plan and write no files. In `c`, `go`,
+`python` and `rust` the runner runs the plan: `flang_cli --plan <name>
+[arg…]`; its host performs 9 kinds of orders out of 27 (files as text and as
+bytes, directories, environment, arguments) and answers network, processes,
+clock, dice and screen with «Сбой» and `FLANG_IO_NOT_WIRED` or
+`FLANG_IO_NO_SCREEN`. Run such a plan with `flang io`. The 0.7.25 binary
+prints a plan into these four targets only after the seed is reprinted.
 
 **The compiler answers in English only in part.** With `language = en` in
 `.flangrc` (or `FLANG_LANG=en`), `flang check` prints the location, the summary

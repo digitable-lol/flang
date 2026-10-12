@@ -389,8 +389,9 @@ together with the application's functions:
   the way the concurrency scheduler is: the module stays self-contained;
 * **no silent loss**: a target must either emit the plan or refuse, naming the
   plan — there is no third outcome. That rule is written in `docs/ct/spec.md`:
-  `emit --target js` emits the declaration and answers 0, the other nine targets
-  refuse with `FLANG_PLAN_UNSUPPORTED` and code 1 without writing a file.
+  `emit --target js` emits the declaration and answers 0; since ADR-0100 so do
+  `ts`, `c`, `go`, `python` and `rust`, while `cpp`, `csharp`, `elixir` and
+  `java` refuse with `FLANG_PLAN_UNSUPPORTED` and code 1 without writing a file.
   `scripts/targets/plan-across-targets.fscript` checks this.
 
 The tab's host is `flang/src/emit/js/flang_host_browser.js`, with zero imports.

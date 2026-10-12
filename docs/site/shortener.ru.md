@@ -371,9 +371,10 @@ bootstrap/flang emit docs/examples/web/shortener-client/client.flang \
   печатается планировщик конкурентности: модуль остаётся самодостаточным;
 * **молча потерять план нельзя**: цель обязана либо напечатать план, либо
   отказать, назвав план по имени, — третьего исхода нет. Правило записано в
-  `docs/ct/spec.md`: `emit --target js` печатает объявление и отвечает 0,
-  остальные девять целей отказывают `FLANG_PLAN_UNSUPPORTED` кодом 1, не записав
-  ни файла. Сверяет это `scripts/targets/plan-across-targets.fscript`.
+  `docs/ct/spec.md`: `emit --target js` печатает объявление и отвечает 0;
+  с ADR-0100 печатают ещё `ts`, `c`, `go`, `python`, `rust`, а `cpp`, `csharp`,
+  `elixir`, `java` отказывают `FLANG_PLAN_UNSUPPORTED` кодом 1, не записав ни
+  файла. Сверяет это `scripts/targets/plan-across-targets.fscript`.
 
 Хозяин вкладки — `flang/src/emit/js/flang_host_browser.js`, ввозов ноль.
 

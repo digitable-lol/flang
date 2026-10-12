@@ -2045,6 +2045,15 @@ jobs:
       - name: Check imported helpers bind in their own module
         run: cd flang/proof/probes/import-helper-binding && ../../../../bootstrap/flang io run.fscript --plan Binary --timeout 900000
 
+      # ПЛАН ПЕЧАТАЕТСЯ В C, GO, RUST И PYTHON (ADR-0100). Три программы с планом
+      # идут через `flang io` и через прогонщики шести целей, итог и код обязаны
+      # сойтись. Таблица снята с печати компилятором из исходника; семя,
+      # напечатанное до правки, отказывает FLANG_PLAN_UNSUPPORTED на двенадцати
+      # строках из 21 и краснеет здесь, пока его не перепечатают. Нет компилятора
+      # цели — набор отвечает «не проверено», а не расхождением.
+      - name: Check plans run in the print targets
+        run: cd flang/proof/probes/plans-in-targets && ../../../../bootstrap/flang io run.fscript --plan Binary --timeout 900000
+
       # ПАМЯТЬ ВЫЗОВОВ ЯДРА НЕ СМЕЕТ МЕНЯТЬ ОТВЕТ, и до 4 октября 2026 этого не
       # спрашивал никто. Проба лежала в дереве с ветки задачи 5709 и не звалась
       # ниоткуда: ни работой, ни ярлыком, ни хуком, — на неё и краснела работа

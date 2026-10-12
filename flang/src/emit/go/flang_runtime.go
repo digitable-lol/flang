@@ -157,6 +157,19 @@ type Value struct {
 	Grow *Grow
 }
 
+// Plan — объявление «план» напечатанной программы: имя плана и исходные имена
+// функций начального состояния и шага (ADR-0100). Таблицу заполняет файл
+// flang/plans.go, который печать кладёт ТОЛЬКО программе с планом; у прочих
+// она пуста, и прогонщик на ключ --plan отвечает «в программе нет плана».
+type Plan struct {
+	Name    string
+	Initial string
+	Step    string
+}
+
+// Plans — планы программы в порядке объявления.
+var Plans []Plan
+
 // Nothing возвращает «ничто».
 func Nothing() Value { return Value{Tag: TagNothing} }
 

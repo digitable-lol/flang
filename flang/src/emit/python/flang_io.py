@@ -46,12 +46,23 @@
 «Поручение», но не типы полей. Долг тот же, что у JavaScript, и закрывается он
 тем же переносом `check_entry` из `flang_cli.py` в общего соседа.
 
-И ВТОРОЙ ДОЛГ, БОЛЬШЕ ПЕРВОГО: цель `python` этот файл пока не печатает
-вовсе. Печать объявления «план» умеет одна цель — `js`; `flang emit --target
-python` на программе с планом отвечает кодом 1 и текстом
-FLANG_PLAN_UNSUPPORTED. Файл лежит и проверен отдельно; чтобы он поехал,
-нужны правка `flang/self/emit-python.flang` и перепечатка семени.
+── Как файл едет к программе (ADR-0100) ────────────────────────────────────
+
+Печать `flang/self/emit-python.flang` кладёт его рядом с модулем ТОЛЬКО
+программе, у которой есть `план`, и вписывает в модуль таблицу `PLANS`: имя
+плана, имя функции начального состояния и имя функции шага — исходными
+именами flang. Функции зовутся через `call` модуля, тот же вход, которым
+ходит прогонщик, и потому второго словаря имён здесь нет.
+
+Запуск — тем же прогонщиком: `python3 flang_cli.py <модуль> --plan <имя>
+[довод…]`; пустое имя — единственный план. Хозяин ниже (`io_host`) исполняет
+девять родов поручений — файлы текстом и октетами, каталоги, среду и доводы,
+— остальным отвечает отказом с кодом, называющим род.
 """
+
+import os
+import random
+import string
 
 import flang_runtime as rt
 
@@ -270,3 +281,234 @@ def io_run(io, name, perform, orders=None, log_wanted=False):
         given += 1
         if log_wanted:
             log.append({"поручение": order, "отклик": response})
+
+
+# ───────────────────────────── описатель планов модуля ─────────────────────
+
+
+def io_descriptor(program):
+    """Описатель планов напечатанного модуля: тот же вид, что ждёт `io_run`.
+
+    Каждый шаг зовётся в СВЕЖЕМ контексте модуля: пределы шагов и глубины —
+    на одно обращение плана, как у `flang io`, а не на весь прогон.
+    """
+    plans = []
+    for name, initial, step in getattr(program, "PLANS", []):
+        plans.append({
+            "имя": name,
+            "начало": (lambda initial=initial: program.call(program.new_context(), initial, [])),
+            "шаг": (lambda state, response, step=step: program.call(program.new_context(), step, [state, response])),
+        })
+    return {"планы": plans, "вариант": lambda name, fields: rt.variant(name, fields)}
+
+
+# ───────────────────────────── хозяин ──────────────────────────────────────
+
+# Роды словаря, которые этот хозяин знает, но не заводит. Отказ на них —
+# FLANG_IO_NOT_WIRED: род известен, Python его умеет, хозяин — нет; исполняет
+# их сегодня двоичный `flang io`.
+IO_NOT_WIRED = (
+    "Запросить",
+    "Текущее время", "Случайное число", "Случайные октеты",
+    "Запустить процесс", "Запустить процесс с вводом", "Запустить процесс с пределом",
+    "Открыть соединение", "Принять соединение", "Прочитать из соединения",
+    "Ответить в соединение", "Прочитать октеты из соединения", "Ответить октетами в соединение",
+)
+
+# Роды экрана: у процесса нет мест и событий, тот же отказ, что у Node.
+IO_NO_SCREEN = ("Показать", "Ждать событие", "Размер экрана")
+
+
+def io_text_field(order, name):
+    value = order.data.get(name, rt.NOTHING)
+    if isinstance(value, rt.Value) and value.tag == rt.TAG_STRING:
+        return value.data
+    return None
+
+
+def io_host(root, args):
+    """Хозяин: функция «поручение → отклик» над каталогом `root`."""
+
+    def fault(code, message):
+        return rt.variant("Сбой", {"код": rt.text(code), "сообщение": rt.text(message)})
+
+    def why(error):
+        return os.strerror(error.errno) if getattr(error, "errno", None) else str(error)
+
+    def full(order, field):
+        given = io_text_field(order, field)
+        if given is None or given == "":
+            return None, fault("FLANG_IO_PATH", "поручению нужен непустой путь")
+        return os.path.join(root, given), None
+
+    def perform(order):
+        kind = order.name
+        if kind == "Прочитать файл":
+            path, bad = full(order, "путь")
+            if bad is not None:
+                return bad
+            try:
+                with open(path, "rb") as handle:
+                    octets = handle.read()
+            except OSError as error:
+                return fault("FLANG_IO_READ", "файл не прочитан: " + why(error))
+            try:
+                return rt.variant("Прочитано", {"содержимое": rt.text(octets.decode("utf-8"))})
+            except UnicodeDecodeError:
+                return fault(
+                    "FLANG_IO_NOT_TEXT",
+                    "файл не текст: " + str(len(octets)) + " октет(ов) не складываются в UTF-8; "
+                    "октеты возит «Прочитать октеты из файла»",
+                )
+        if kind == "Записать файл":
+            body = io_text_field(order, "содержимое") or ""
+            try:
+                octets = body.encode("utf-8")
+            except UnicodeEncodeError:
+                return fault("FLANG_IO_NOT_TEXT", "содержимое не текст: одинокая половина суррогатной пары")
+            path, bad = full(order, "путь")
+            if bad is not None:
+                return bad
+            try:
+                with open(path, "wb") as handle:
+                    handle.write(octets)
+            except OSError as error:
+                return fault("FLANG_IO_WRITE", "файл не записан: " + why(error))
+            # Кодовые точки, а не октеты: «сколько» обязано совпасть с `длина`.
+            return rt.variant("Записано", {"сколько": rt.number(float(len(body)))})
+        if kind == "Прочитать октеты из файла":
+            path, bad = full(order, "путь")
+            if bad is not None:
+                return bad
+            try:
+                with open(path, "rb") as handle:
+                    octets = handle.read()
+            except OSError as error:
+                return fault("FLANG_IO_READ", "файл не прочитан: " + why(error))
+            return rt.variant("Октеты", {"октеты": rt.list_of([rt.number(float(octet)) for octet in octets])})
+        if kind == "Записать октеты в файл":
+            given = order.data.get("октеты", rt.NOTHING)
+            if not (isinstance(given, rt.Value) and given.tag == rt.TAG_LIST):
+                return fault("FLANG_IO_OCTETS", "поручению нужен список октетов, а дан не список")
+            octets = bytearray()
+            for at, item in enumerate(rt.list_items(given)):
+                number = item.data if item.tag == rt.TAG_NUMBER else -1.0
+                if not (0 <= number <= 255 and float(number).is_integer()):
+                    return fault("FLANG_IO_OCTETS", "октет " + str(at + 1) + " не годится: нужно целое от 0 до 255")
+                octets.append(int(number))
+            path, bad = full(order, "путь")
+            if bad is not None:
+                return bad
+            try:
+                with open(path, "wb") as handle:
+                    handle.write(bytes(octets))
+            except OSError as error:
+                return fault("FLANG_IO_WRITE", "файл не записан: " + why(error))
+            return rt.variant("Записано", {"сколько": rt.number(float(len(octets)))})
+        if kind == "Перечислить каталог":
+            path, bad = full(order, "путь")
+            if bad is not None:
+                return bad
+            try:
+                names = os.listdir(path)
+            except OSError as error:
+                return fault("FLANG_IO_LIST", "каталог не открыт: " + why(error))
+            # По кодовым точкам — тот же порядок, что у двоичного хозяина.
+            names.sort()
+            return rt.variant("Перечислено", {"имена": rt.list_of([rt.text(name) for name in names])})
+        if kind == "Удалить файл":
+            path, bad = full(order, "путь")
+            if bad is not None:
+                return bad
+            try:
+                if os.path.isdir(path) and not os.path.islink(path):
+                    os.rmdir(path)
+                else:
+                    os.remove(path)
+            except OSError as error:
+                return fault("FLANG_IO_REMOVE", "имя не убрано: " + why(error))
+            return rt.variant("Убрано", {})
+        if kind == "Завести временный каталог":
+            given = io_text_field(order, "образец")
+            path, bad = full(order, "образец")
+            if bad is not None:
+                return bad
+            letters = string.ascii_letters + string.digits
+            for _ in range(100):
+                tail = "".join(random.choice(letters) for _ in range(6))
+                try:
+                    os.mkdir(path + tail, 0o700)
+                except FileExistsError:
+                    continue
+                except OSError as error:
+                    return fault("FLANG_IO_TEMPDIR", "временный каталог не заведён: " + why(error))
+                # Обратно — образец плюс хвост, в координатах плана.
+                return rt.variant("Заведено", {"путь": rt.text(given + tail)})
+            return fault("FLANG_IO_TEMPDIR", "временный каталог не заведён: имена заняты")
+        if kind == "Прочитать переменную среды":
+            name = io_text_field(order, "имя")
+            if name is None or name == "":
+                return fault("FLANG_IO_ENV", "поручению нужно непустое имя переменной")
+            if name not in os.environ:
+                return rt.variant("Переменной среды нет", {})
+            return rt.variant("Значение среды", {"значение": rt.text(os.environ[name])})
+        if kind == "Прочитать доводы":
+            return rt.variant("Доводы", {"доводы": rt.list_of([rt.text(arg) for arg in args])})
+        if kind in IO_NO_SCREEN:
+            return fault("FLANG_IO_NO_SCREEN", "у хозяина Python нет экрана: поручение «" + kind + "» исполнить нечем")
+        if kind in IO_NOT_WIRED:
+            return fault(
+                "FLANG_IO_NOT_WIRED",
+                "поручение «" + kind + "» в этом хозяине не заведено; исполните план двоичным: flang io <файл.flang>",
+            )
+        return fault("FLANG_IO_UNKNOWN", "хозяин не знает поручения «" + kind + "»")
+
+    return perform
+
+
+# ───────────────────────────── итог плана словами flang io ────────────────
+
+
+def io_plain(value):
+    """Значение в JSON того же вида, каким `flang io` печатает итог плана."""
+    tag = value.tag
+    if tag == rt.TAG_NOTHING:
+        return None
+    if tag == rt.TAG_FLAG:
+        return bool(value.data)
+    if tag == rt.TAG_NUMBER:
+        return io_number(value.data)
+    if tag == rt.TAG_STRING:
+        return value.data
+    if tag == rt.TAG_LIST:
+        return [io_plain(item) for item in rt.list_items(value)]
+    if tag == rt.TAG_RECORD:
+        return {name: io_plain(item) for name, item in value.data.items()}
+    if tag == rt.TAG_VARIANT:
+        return {"variant": value.name, "fields": {name: io_plain(item) for name, item in value.data.items()}}
+    return None
+
+
+def io_number(number):
+    """Число так, как его печатает `flang io`: целое — без «.0»."""
+    if number == number and abs(number) < 2.0 ** 53 and float(number).is_integer():
+        return int(number)
+    return number
+
+
+def io_main(program, name, args, out, err):
+    """Прогнать план модуля и сказать итог; код возврата — как у `flang io`."""
+    import json
+
+    def say(stream, payload):
+        text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+        stream.write(text + "\n")
+        stream.flush()
+
+    try:
+        outcome = io_run(io_descriptor(program), name, io_host(os.getcwd(), args))
+    except rt.FlangError as bad:
+        say(err, {"error": str(getattr(bad, "message", bad)), "code": getattr(bad, "code", "FLANG_IO")})
+        return 1 if getattr(bad, "сдался", False) else 3
+    say(out, {"result": io_plain(outcome["значение"]), "orders": outcome["поручений"]})
+    return 0

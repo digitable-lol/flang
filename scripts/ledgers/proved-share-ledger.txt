@@ -1888,5 +1888,6 @@ c8dbb7179b35f785da41f5990dd41238|85|44|0|0|0|flang/self/proof-kernel.flang
 16be58c2df9f4e5f41fecc556cd10aeb|1|×|×|×|0|flang/proof/probes/ring-laws/programs/ring-false-over-exact.flang
 5e7a909cd8e20d5169ba7ff77e753d78|2|×|×|×|0|flang/proof/probes/ring-laws/programs/ring-laws-over-number.flang
 91ac4cc44b324360041a8eb79081efcd|2|1|0|1|0|flang/proof/checker/tests/families/postcondition-rewrite/chain-of-eighteen.flang
+9f96fc3c55a095888820e399e0cdecc1|2|×|×|×|0|flang/proof/checker/tests/families/postcondition-rewrite/wrapped-goals.flang
 ea97c8462f3ac5e25711aafe553eac21|2|0|0|2|0|flang/proof/checker/tests/families/postcondition-rewrite/unproved-callee.flang
 f3763de1610e7a19dd41984c22bc0180|2|2|0|0|0|flang/proof/checker/tests/families/postcondition-rewrite/forged/with-requires.flang

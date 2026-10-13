@@ -1880,6 +1880,8 @@ c218b0c6b08465319ece2a61e3598862|1|1|0|0|0|flang/proof/probes/quantifier-inside-
 1646758aea547d9cdf049f06c94b5586|1|0|1|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/no-witness-fits.flang
 c8dbb7179b35f785da41f5990dd41238|82|44|0|0|0|flang/self/proof-kernel.flang
 16be58c2df9f4e5f41fecc556cd10aeb|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/false-law.flang
+1880ce56bb426cf1802c224455273e46|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/false-zero.flang
+9f4af10b6f645ab264cd446665d22220|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/non-canon-literal.flang
 5e7a909cd8e20d5169ba7ff77e753d78|2|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/over-number.flang
 1c40267274311ec4479e99c16fed524f|7|×|×|×|0|flang/proof/checker/tests/families/exact-ring/ring-laws.flang
 c8dbb7179b35f785da41f5990dd41238|85|44|0|0|0|flang/self/proof-kernel.flang

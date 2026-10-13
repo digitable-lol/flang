@@ -1258,17 +1258,12 @@
       то вариант «Unbound» с code равным code и message равным message
 
 тотальная функция «Bound names»
-  принимает ns: список строки, t: строка, sy: строка, su: список «Formula»
+  принимает ns: список строки, t: строка, y: строка, u: список «Formula»
   возвращает список «Binder»
   разбор ns
     случай пусто то пустой список
     случай голова и хвост
-      то «Bound head» от голова и t и sy и su и хвост
-
-тотальная функция «Bound head»
-  принимает n: строка, t: строка, sy: строка, su: список «Formula», others: список строки
-  возвращает список «Binder»
-  приписать («Binder of» от n и t и sy и («Last such» от others и su)) к («Bound names» от others и t и sy и su)
+      то приписать («Binder of» от голова и t и y и («Last such» от хвост и u)) к («Bound names» от хвост и t и y и u)
 
 тотальная функция «Last such»
   принимает others: список строки, such: список «Formula»

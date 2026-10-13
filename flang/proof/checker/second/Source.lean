@@ -16,6 +16,37 @@ def «Исх».«число» (s : «Исх») : Nat := s.«сырые».size
 
 def «Исх».«строка» (s : «Исх») (n : Nat) : String := («какЧитаетЯзык» (s.«сырая» n)).«обр»
 
+/-- ADR-0105: сколько скобок `(`, `[`, `{` осталось незакрытыми. Литералы `"…"`, `'…'`,
+    `«…»` с экраном `\\` проходятся тем же шагом, что у снятия примечания: скобка внутри
+    литерала не скобка. -/
+def «скобокОткрыто» (s : String) : Nat :=
+  let rec «идти» : List Char → Option Char → Bool → Nat → Nat
+    | [], _, _, d => d
+    | c :: r, none, _, d =>
+      let z := if c = '"' then some '"' else if c = '\'' then some '\'' else if c = '«' then some '»' else none
+      match z with
+      | some _ => «идти» r z false d
+      | none =>
+        if c = '(' || c = '[' || c = '{' then «идти» r none false (d + 1)
+        else if (c = ')' || c = ']' || c = '}') && d > 0 then «идти» r none false (d - 1)
+        else «идти» r none false d
+    | c :: r, some z, e, d => «идти» r (if !e && c = z then none else some z) (!e && c = '\\') d
+  «идти» s.toList none false 0
+
+/-- ADR-0105: строка с незакрытой скобкой продолжается следующими строками до закрытия —
+    так читает язык. Отдаёт номер последней взятой строки и склеенный текст. -/
+def «Исх».«доЗакрытия» (s : «Исх») (n0 : Nat) (t0 : String) : Nat × String := Id.run do
+  let mut n := n0
+  let mut t := t0
+  for _ in [0:s.«число»] do
+    if n ≥ 1 && n < s.«число» && «скобокОткрыто» t > 0 then
+      n := n + 1
+      t := t ++ " " ++ s.«строка» n
+    else break
+  return (n, t)
+
+def «Исх».«доЗакрытияСкобок» (s : «Исх») (n0 : Nat) (t0 : String) : String := (s.«доЗакрытия» n0 t0).2
+
 def «отКрая» (raw : String) : Bool :=
   raw ≠ "" && !raw.startsWith " " && !raw.startsWith "\t" && !raw.startsWith "\r" && !raw.startsWith "//"
 

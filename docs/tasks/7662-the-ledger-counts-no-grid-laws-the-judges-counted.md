@@ -67,7 +67,7 @@ flang/ct/monoid-and-monad.flang: ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
 12 октября 2026»): каждый судья отдаёт в «Суд категорий» поле «сетки», а
 ведомость (`flang/self/bootstrap/compiler.flang`, «Итоги с сетками суда»)
 дописывает их к своим законам. Толкователем из исходника 13 октября 2026
-программа `flang/proof/probes/strict/programs/monad-with-kleisli-example.flang`
+программа `flang/proof/probes/strict/programs/monad-with-arrow-example.flang`
 получает «законов на сетке: 1 (значений в сетках 1, троек 4)». После
 перепечатки: прогнать `bootstrap/flang io flang/proof/probes/strict/run.fscript
 --plan Binary` и `flang/proof/probes/ct-laws/run.fscript` (новые строки обязаны

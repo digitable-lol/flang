@@ -625,6 +625,11 @@
 // node-death.fscript 17 → 21, io-dictionary-copies-guard.fscript 10 → 11,
 // tab-host-guard.fscript 5 → 6 (обещания новых помощников и близнецов примеров);
 // md5 и числитель НЕ ТРОНУТЫ — их переснимет перепечатка.
+// ⚑ 13 октября 2026, над партией печати 5 (fa1e69081): задача 7662 — судьи
+// законов отдают свои сетки ведомости. У flang/self/bootstrap/compiler.flang
+// пересчитано только «написано»: 21 → 39 (обещания «Сетки суда», «Исход суда
+// сеткой», «Итоги с сетками суда» и преобразователей сеток судей); md5 и числитель
+// НЕ ТРОНУТЫ — они датируют прежний приговор, новый переснимет перепечатка.
 // ⚑ 5 октября 2026, над партией печати 2 (9233077a3): ADR-0062, задача 5243 —
 // точное дробное вошло в компилятор. У flang/self/interpret.flang,
 // flang/self/parser.flang и flang/self/types.flang пересчитано только
@@ -1319,7 +1324,7 @@ f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.fscript
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.fscript
 e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/jargon-samples.flang
 75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/generate-atom-table.fscript
-af296a5839d250342ca4c8cf67e66060|21|×|×|×|0|flang/self/bootstrap/compiler.flang
+af296a5839d250342ca4c8cf67e66060|39|×|×|×|0|flang/self/bootstrap/compiler.flang
 fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-source.flang
 ecd81513258fe500beadfeab45b681e5|153|84|32|37|0|flang/self/bounded.flang
 81def025878dbf7d4983ba958afcf0dd|98|48|22|28|0|flang/self/builtins.flang

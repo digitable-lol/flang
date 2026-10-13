@@ -4,4 +4,4 @@ monoid-false-unit.flang	check	-	моноид «Сумма»: единица не
 flang/ct/monoid-and-monad.flang	check	-	моноид «Склейка»: сетка 5 значений, троек 125, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 monoid-false-unit.flang	check	-	моноид «Сумма»: сочетательность и единица ядром НЕ доказаны — свёртка операцией «Сложить» идёт по порядку на одном потоке
 flang/ct/monoid-and-monad.flang	check --proof	-	законов на сетке: 4 (значений в сетках 20
-flang/ct/monoid-and-monad.flang	check --proof	-	монада «Возможно»: сетка 3 значений (предел 6), 27 троек
+flang/ct/monoid-and-monad.flang	check --proof	-	монада «Возможно» — сетка 3 значения (предел 6), 27 троек

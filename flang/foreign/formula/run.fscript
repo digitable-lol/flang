@@ -48,9 +48,11 @@
   вариант «Print parsed» содержит file: строка
   вариант «Print shown» содержит done: число, whole: число
   вариант «Trip begun»
+  вариант «Trip asked»
   вариант «Trip listed»
   вариант «Trip temp» содержит files: список строки
-  вариант «Trip source» содержит trip: «Trip»
+  вариант «Trip read» содержит trip: «Trip»
+  вариант «Trip source» содержит trip: «Trip», text: строка
   вариант «Trip written» содержит trip: «Trip»
   вариант «Trip judged» содержит trip: «Trip»
   вариант «Trip shown» содержит trip: «Trip»
@@ -495,10 +497,12 @@
   принимает stage: «Stage», reply: «Отклик»
   возвращает «Продолжение»
   разбор stage
-    случай вариант «Trip begun» то «Do» от («Corpus order») и (вариант «Trip listed»)
+    случай вариант «Trip begun» то «Do» от (вариант «Прочитать доводы») и (вариант «Trip asked»)
+    случай вариант «Trip asked» то «Trip after args» от reply
     случай вариант «Trip listed» то «Trip after list» от reply
     случай вариант «Trip temp» с files как files то «Trip after temp» от files и reply
-    случай вариант «Trip source» с trip как trip то «Trip after source» от trip и reply
+    случай вариант «Trip read» с trip как trip то «Trip after read» от trip и reply
+    случай вариант «Trip source» с trip как trip и text как text то «Trip after source» от trip и text и reply
     случай вариант «Trip written» с trip как trip то «Trip after written» от trip и reply
     случай вариант «Trip judged» с trip как trip то «Trip after judged» от trip и reply
     случай вариант «Trip shown» с trip как trip то «Trip finish» от trip
@@ -515,6 +519,22 @@
   возвращает «Поручение»
   пусть args равно ["-C", («Root»), "grep", "-l", "-a", "-E", "^утверждение «", "--", "*.flang"]
   вариант «Запустить процесс» с программа равным "git" и аргументы равным args
+
+функция «Trip after args»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Доводы» с доводы как args
+      то «Trip chosen» от (отфильтровать args где a → не (a равен "--"))
+    случай любое
+      то «Unexpected» от reply и "доводы"
+
+функция «Trip chosen»
+  принимает files: список строки
+  возвращает «Продолжение»
+  если (длина files) равен 0
+    то «Do» от («Corpus order») и (вариант «Trip listed»)
+    иначе «Trip files» от files
 
 функция «Trip after list»
   принимает reply: «Отклик»
@@ -547,7 +567,31 @@
     случай пусто
       то «Trip report» от trip
     случай голова и хвост
-      то «Run flang» от ["ast", (соединить [(«Root»), "/", голова] по "")] и (вариант «Trip source» с trip равным trip)
+      то «Do» от (вариант «Прочитать файл» с путь равным («Rooted» от голова)) и («Trip read of» от trip)
+
+тотальная функция «Trip read of»
+  принимает trip: «Trip»
+  возвращает «Stage»
+  вариант «Trip read» с trip равным trip
+
+тотальная функция «Trip source of»
+  принимает trip: «Trip», text: строка
+  возвращает «Stage»
+  вариант «Trip source» с trip равным trip и text равным text
+
+тотальная функция «Rooted»
+  принимает file: строка
+  возвращает строка
+  соединить [(«Root»), "/", file] по ""
+
+функция «Trip after read»
+  принимает trip: «Trip», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Run flang» от ["ast", («Rooted» от («Current file» от trip))] и («Trip source of» от trip и text)
+    случай любое
+      то «Trip step» от («Trip skipped» от trip и («Current file» от trip))
 
 тотальная функция «Current file»
   принимает trip: «Trip»
@@ -564,20 +608,20 @@
     случай голова и хвост то хвост
 
 функция «Trip after source»
-  принимает trip: «Trip», reply: «Отклик»
+  принимает trip: «Trip», text: строка, reply: «Отклик»
   возвращает «Продолжение»
   разбор reply
     случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как err
-      то «Trip source parsed» от trip и code и out
+      то «Trip source parsed» от trip и code и out и text
     случай любое
       то «Unexpected» от reply и "дерево разбора"
 
 функция «Trip source parsed»
-  принимает trip: «Trip», code: число, out: строка
+  принимает trip: «Trip», code: число, out: строка, text: строка
   возвращает «Продолжение»
   пусть file равно («Current file» от trip)
   если code равен 0
-    то «Trip prepared» от trip и («Statements of» от out)
+    то «Trip prepared» от trip и («Statements of» от out) и text
     иначе «Trip step» от («Trip skipped» от trip и file)
 
 тотальная функция «Trip skipped»
@@ -587,10 +631,10 @@
   «Trip of» от («Later files» от trip) и (trip.«dir») и (добавить entry к (trip.«entries»)) и []
 
 функция «Trip prepared»
-  принимает trip: «Trip», statements: список «Значение json»
+  принимает trip: «Trip», statements: список «Значение json», text: строка
   возвращает «Продолжение»
   пусть file равно («Current file» от trip)
-  пусть made равно («Regenerated» от file и statements)
+  пусть made равно («Regenerated» от file и statements и text)
   пусть path равно (соединить [trip.«dir», "/round-trip.flang"] по "")
   пусть later равно («Trip of» от (trip.«files») и (trip.«dir») и (trip.«entries») и (made.«pending»))
   «Do» от («Write order» от path и (made.«module»)) и (вариант «Trip written» с trip равным later)
@@ -605,9 +649,9 @@
   «pending»: список «Entry»
 
 функция «Regenerated»
-  принимает file: строка, statements: список «Значение json»
+  принимает file: строка, statements: список «Значение json», text: строка
   возвращает «Made»
-  пусть start равно («Regeneration of» от 0 и ["модуль «Round trip»"] и [])
+  пусть start равно («Regeneration of» от 0 и [text] и [])
   пусть done равно (свёртка statements начиная с start как acc и s → «Regenerate one» от acc и s и file)
   запись «Made» с «module» равным (соединить (добавить "" к (done.«lines»)) по "\n") и «pending» равным (done.«pending»)
 
@@ -766,7 +810,7 @@
   пусть met равно (длина (отфильтровать entries где e → (e.«verdict») равен "сошлось"))
   пусть outside равно (длина (отфильтровать entries где e → (e.«verdict») начинается с "вне записи: "))
   пусть summary равно («Trip summary» от met и outside и (длина entries))
-  пусть text равно (соединить (добавить "" к (добавить summary к lines)) по "\n")
+  пусть text равно (соединить (добавить "" к (приписать summary к lines)) по "\n")
   «Do» от («Show» от text) и (вариант «Trip shown» с trip равным trip)
 
 тотальная функция «Entry line»

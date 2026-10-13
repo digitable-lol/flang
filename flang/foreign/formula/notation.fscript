@@ -1,0 +1,1762 @@
+модуль «Formula notation»
+
+примечание "Запись с кванторами и LaTeX: разбор в дерево, печать дерева обратно и в исходник flang."
+примечание "Переводчик стоит вне доверенной основы (ADR-0106): его вывод судит ядро, печать сверяет круг."
+
+объект «Token»
+  «kind»: строка
+  «text»: строка
+
+объект «Lexer»
+  «tokens»: список «Token»
+  «mode»: строка
+  «buffer»: строка
+  «code»: строка
+  «message»: строка
+
+тип «Formula»
+  вариант «Var» содержит name: строка
+  вариант «Number» содержит text: строка
+  вариант «Text» содержит text: строка
+  вариант «Truth» содержит value: признак
+  вариант «Binary» содержит op: строка, left: «Formula», right: «Formula»
+  вариант «Negation» содержит body: «Formula»
+  вариант «Exists» содержит name: строка, witness: список «Formula», body: «Formula»
+  вариант «Call» содержит name: строка, args: список «Formula»
+  вариант «Length» содержит arg: «Formula»
+  вариант «Field» содержит target: «Formula», member: строка
+  вариант «Items» содержит items: список «Formula»
+
+тип «Parsed»
+  вариант «Got» содержит tree: «Formula», rest: список «Token»
+  вариант «Refused» содержит code: строка, message: строка
+
+объект «Binder»
+  «name»: строка
+  «type»: строка
+  «symbol»: строка
+  «such»: список «Formula»
+
+объект «Claim»
+  «binders»: список «Binder»
+  «body»: «Formula»
+
+тип «Binding»
+  вариант «Bound» содержит binders: список «Binder», rest: список «Token»
+  вариант «Unbound» содержит code: строка, message: строка
+
+тип «Carrier»
+  вариант «Carried by» содержит sort: строка, symbol: строка, rest: список «Token»
+  вариант «No carrier» содержит code: строка, message: строка
+
+тип «Claim result»
+  вариант «Claim read» содержит said: «Claim»
+  вариант «Claim refused» содержит code: строка, message: строка
+
+объект «Translation»
+  «out»: строка
+  «mode»: строка
+  «parts»: список строки
+  «depth»: число
+
+тотальная функция «Got of»
+  принимает tree: «Formula», rest: список «Token»
+  возвращает «Parsed»
+  вариант «Got» с tree равным tree и rest равным rest
+
+тотальная функция «Refusal»
+  принимает code: строка, message: строка
+  возвращает «Parsed»
+  вариант «Refused» с code равным code и message равным message
+
+тотальная функция «Binary of»
+  принимает op: строка, left: «Formula», right: «Formula»
+  возвращает «Formula»
+  вариант «Binary» с op равным op и left равным left и right равным right
+
+тотальная функция «Token of»
+  принимает kind: строка, text: строка
+  возвращает «Token»
+  запись «Token» с «kind» равным kind и «text» равным text
+
+тотальная функция «Code of»
+  принимает c: строка
+  возвращает число
+  пример «Latin a»
+    дано c равно "a"
+    ожидается 97
+  если (длина c) равен 1
+    то код символа c
+    иначе 0
+
+тотальная функция «Letter»
+  принимает c: строка
+  возвращает признак
+  пример «Cyrillic is a letter»
+    дано c равно "ж"
+    ожидается да
+  пример «A digit is not»
+    дано c равно "7"
+    ожидается нет
+  пусть n равно («Code of» от c)
+  («Latin» от c) или (n равен 95) или («Between» от n и 913 и 969) или («Between» от n и 1024 и 1279)
+
+тотальная функция «Between»
+  принимает n: число, low: число, high: число
+  возвращает признак
+  (n не меньше low) и притом (n не больше high)
+
+тотальная функция «Digit»
+  принимает c: строка
+  возвращает признак
+  пример «Seven»
+    дано c равно "7"
+    ожидается да
+  пусть n равно («Code of» от c)
+  (n не меньше 48) и притом (n не больше 57)
+
+тотальная функция «Word sign»
+  принимает c: строка
+  возвращает признак
+  («Letter» от c) или («Digit» от c)
+
+тотальная функция «Blank»
+  принимает c: строка
+  возвращает признак
+  [" ", "\t", "\n", "\r"] содержит c
+
+тотальная функция «Symbol sign»
+  принимает c: строка
+  возвращает признак
+  пример «A minus sign of ASCII»
+    дано c равно "-"
+    ожидается да
+  ["-", "<", ">", "=", ":", "!", "/", "\\", "+", "|", "~", "*", "^"] содержит c
+
+тотальная функция «Single kind»
+  принимает c: строка
+  возвращает строка
+  пример «The universal quantifier»
+    дано c равно "∀"
+    ожидается "forall"
+  пример «An unknown sign has no kind»
+    дано c равно "@"
+    ожидается ""
+  разбор c
+    случай "(" то "lparen"
+    случай ")" то "rparen"
+    случай "[" то "lbrack"
+    случай "]" то "rbrack"
+    случай "," то "comma"
+    случай "." то "dot"
+    случай "∀" то "forall"
+    случай "∃" то "exists"
+    случай "∈" то "in"
+    случай "→" то "implies"
+    случай "⇒" то "implies"
+    случай "⟹" то "implies"
+    случай "↔" то "iff"
+    случай "⇔" то "iff"
+    случай "⟺" то "iff"
+    случай "∧" то "and"
+    случай "∨" то "or"
+    случай "¬" то "not"
+    случай "≠" то "neq"
+    случай "≤" то "lte"
+    случай "≥" то "gte"
+    случай "·" то "mul"
+    случай "⋅" то "mul"
+    случай "×" то "mul"
+    случай "÷" то "div"
+    случай "−" то "sub"
+    случай "⊤" то "true"
+    случай "⊥" то "false"
+    случай "⧺" то "concat"
+    случай "≔" то "assign"
+    случай "∣" то "bar"
+    случай "⁄" то "frac"
+    случай любое то «Set kind» от c
+
+тотальная функция «Set kind»
+  принимает c: строка
+  возвращает строка
+  разбор c
+    случай "ℕ" то "setN"
+    случай "ℤ" то "setZ"
+    случай "ℚ" то "setQ"
+    случай "ℝ" то "setR"
+    случай "ℂ" то "setC"
+    случай любое то ""
+
+тотальная функция «Word kind»
+  принимает word: строка
+  возвращает строка
+  пример «An ASCII quantifier»
+    дано word равно "forall"
+    ожидается "forall"
+  пример «A plain name has no kind»
+    дано word равно "x"
+    ожидается ""
+  разбор word
+    случай "forall" то "forall"
+    случай "exists" то "exists"
+    случай "in" то "in"
+    случай "and" то "and"
+    случай "or" то "or"
+    случай "not" то "not"
+    случай "true" то "true"
+    случай "false" то "false"
+    случай "NN" то "setN"
+    случай "ZZ" то "setZ"
+    случай "QQ" то "setQ"
+    случай "RR" то "setR"
+    случай "CC" то "setC"
+    случай любое то ""
+
+тотальная функция «Symbol kind»
+  принимает text: строка
+  возвращает строка
+  пример «An ASCII arrow»
+    дано text равно "->"
+    ожидается "implies"
+  разбор text
+    случай "<->" то "iff"
+    случай "<=>" то "iff"
+    случай "->" то "implies"
+    случай "=>" то "implies"
+    случай "<=" то "lte"
+    случай ">=" то "gte"
+    случай "!=" то "neq"
+    случай ":=" то "assign"
+    случай "/\\" то "and"
+    случай "\\/" то "or"
+    случай "++" то "concat"
+    случай "-" то "sub"
+    случай "<" то "lt"
+    случай ">" то "gt"
+    случай "=" то "eq"
+    случай ":" то "colon"
+    случай "/" то "div"
+    случай "+" то "add"
+    случай "|" то "bar"
+    случай "~" то "not"
+    случай "*" то "mul"
+    случай "^" то "pow"
+    случай любое то ""
+
+тотальная функция «Lexer with»
+  принимает t: список «Token», m: строка, b: строка
+  возвращает «Lexer»
+  запись «Lexer» с «tokens» равным t и «mode» равным m и «buffer» равным b и «code» равным "" и «message» равным ""
+
+тотальная функция «Lexer refused»
+  принимает c: строка, m: строка
+  возвращает «Lexer»
+  запись «Lexer» с «tokens» равным [] и «mode» равным "" и «buffer» равным "" и «code» равным c и «message» равным m
+
+тотальная функция «Emitted»
+  принимает lexer: «Lexer», kind: строка, text: строка
+  возвращает «Lexer»
+  «Lexer with» от (добавить («Token of» от kind и text) к (lexer.«tokens»)) и "" и ""
+
+тотальная функция «Buffered»
+  принимает lexer: «Lexer», c: строка
+  возвращает «Lexer»
+  «Lexer with» от (lexer.«tokens») и (lexer.«mode») и (соединить [lexer.«buffer», c] по "")
+
+тотальная функция «Started»
+  принимает lexer: «Lexer», mode: строка, c: строка
+  возвращает «Lexer»
+  «Lexer with» от (lexer.«tokens») и mode и c
+
+тотальная функция «Closed name»
+  принимает lexer: «Lexer»
+  возвращает «Lexer»
+  пусть kind равно («Word kind» от (lexer.«buffer»))
+  если kind равен ""
+    то «Emitted» от lexer и "name" и (lexer.«buffer»)
+    иначе «Emitted» от lexer и kind и (lexer.«buffer»)
+
+функция «Split symbols»
+  принимает lexer: «Lexer», text: строка
+  возвращает «Lexer»
+  если (длина text) равен 0
+    то «Lexer with» от (lexer.«tokens») и "" и ""
+    иначе «Split by length» от lexer и text и (если (длина text) больше 2 то 3 иначе (длина text))
+
+функция «Split by length»
+  принимает lexer: «Lexer», text: строка, size: число
+  возвращает «Lexer»
+  пусть top равно (подстрока text с 1 по size)
+  пусть kind равно («Symbol kind» от top)
+  если не (kind равен "")
+    то «Split symbols» от («Emitted» от lexer и kind и top) и («After» от text и size)
+    иначе «Split shorter» от lexer и text и size
+
+функция «Split shorter»
+  принимает lexer: «Lexer», text: строка, size: число
+  возвращает «Lexer»
+  если size больше 1
+    то «Split by length» от lexer и text и (size минус 1)
+    иначе «Lexer refused» от "FLANG_FORMULA_SIGN" и (соединить ["знак «", (подстрока text с 1 по 1),
+      "» не входит в запись формул"] по "")
+
+тотальная функция «After»
+  принимает text: строка, size: число
+  возвращает строка
+  пример «The tail after two signs»
+    дано text равно "<=-"
+    дано size равно 2
+    ожидается "-"
+  если (длина text) больше size
+    то подстрока text с (size плюс 1) по (длина text)
+    иначе ""
+
+функция «Closed»
+  принимает lexer: «Lexer»
+  возвращает «Lexer»
+  разбор lexer.«mode»
+    случай "name" то «Closed name» от lexer
+    случай "number" то «Emitted» от lexer и "number" и (lexer.«buffer»)
+    случай "symbols" то «Split symbols» от lexer и (lexer.«buffer»)
+    случай "string" то «Lexer refused» от "FLANG_FORMULA_SYNTAX" и "строка в кавычках не закрыта"
+    случай "quoted" то «Lexer refused» от "FLANG_FORMULA_SYNTAX" и "имя в «ёлочках» не закрыто"
+    случай любое то lexer
+
+функция «Lex step»
+  принимает lexer: «Lexer», c: строка
+  возвращает «Lexer»
+  если не (lexer.«code» равен "")
+    то lexer
+    иначе «Lex mode» от lexer и c
+
+функция «Lex mode»
+  принимает lexer: «Lexer», c: строка
+  возвращает «Lexer»
+  разбор lexer.«mode»
+    случай "string" то «Lex until» от lexer и c и "\"" и "string"
+    случай "quoted" то «Lex until» от lexer и c и "»" и "quoted"
+    случай "name" то «Lex run» от lexer и c и («Word sign» от c)
+    случай "number" то «Lex number» от lexer и c
+    случай "symbols" то «Lex run» от lexer и c и («Symbol sign» от c)
+    случай любое то «Lex fresh» от lexer и c
+
+функция «Lex until»
+  принимает lexer: «Lexer», c: строка, closer: строка, kind: строка
+  возвращает «Lexer»
+  если c равен closer
+    то «Emitted» от lexer и kind и (lexer.«buffer»)
+    иначе «Buffered» от lexer и c
+
+функция «Lex run»
+  принимает lexer: «Lexer», c: строка, inside: признак
+  возвращает «Lexer»
+  если inside
+    то «Buffered» от lexer и c
+    иначе «Lex fresh» от («Closed» от lexer) и c
+
+функция «Lex number»
+  принимает lexer: «Lexer», c: строка
+  возвращает «Lexer»
+  если («Digit» от c) или (c равен ".")
+    то «Buffered» от lexer и c
+    иначе если «Letter» от c
+      то «Lexer refused» от "FLANG_FORMULA_AMBIGUOUS" и (соединить ["«", lexer.«buffer», c,
+        "»: умножение без знака не читается — напишите ", lexer.«buffer», " · ", c] по "")
+      иначе «Lex fresh» от («Closed» от lexer) и c
+
+функция «Lex fresh»
+  принимает lexer: «Lexer», c: строка
+  возвращает «Lexer»
+  если не (lexer.«code» равен "")
+    то lexer
+    иначе «Lex sign» от lexer и c
+
+функция «Lex sign»
+  принимает lexer: «Lexer», c: строка
+  возвращает «Lexer»
+  если «Blank» от c
+    то lexer
+    иначе если «Letter» от c
+      то «Started» от lexer и "name" и c
+      иначе «Lex other» от lexer и c
+
+функция «Lex other»
+  принимает lexer: «Lexer», c: строка
+  возвращает «Lexer»
+  если «Digit» от c
+    то «Started» от lexer и "number" и c
+    иначе если «Symbol sign» от c
+      то «Started» от lexer и "symbols" и c
+      иначе «Lex opener» от lexer и c
+
+функция «Lex opener»
+  принимает lexer: «Lexer», c: строка
+  возвращает «Lexer»
+  разбор c
+    случай "\"" то «Started» от lexer и "string" и ""
+    случай "«" то «Started» от lexer и "quoted" и ""
+    случай любое то «Lex single» от lexer и c
+
+функция «Lex single»
+  принимает lexer: «Lexer», c: строка
+  возвращает «Lexer»
+  пусть kind равно («Single kind» от c)
+  если kind равен ""
+    то «Lexer refused» от "FLANG_FORMULA_SIGN" и (соединить ["знак «", c, "» не входит в запись формул"] по "")
+    иначе «Emitted» от lexer и kind и c
+
+функция «Unicode tokens»
+  принимает text: строка
+  возвращает «Lexer»
+  пусть start равно («Lexer with» от [] и "" и "")
+  пусть lexer равно (свёртка (разложить text на символы) начиная с start как l и c → «Lex step» от l и c)
+  если lexer.«code» равен ""
+    то «Closed» от lexer
+    иначе lexer
+
+тотальная функция «Translation with»
+  принимает o: строка, m: строка, c: строка, b: строка, d: число
+  возвращает «Translation»
+  запись «Translation» с «out» равным o и «mode» равным m и «parts» равным [c, b, "", ""] и «depth» равным d
+
+тотальная функция «Translation refused»
+  принимает message: строка
+  возвращает «Translation»
+  пусть parts равно ["", "", "FLANG_FORMULA_LATEX", message]
+  запись «Translation» с «out» равным "" и «mode» равным "" и «parts» равным parts и «depth» равным 0
+
+тотальная функция «Translation ambiguous»
+  принимает message: строка
+  возвращает «Translation»
+  пусть parts равно ["", "", "FLANG_FORMULA_AMBIGUOUS", message]
+  запись «Translation» с «out» равным "" и «mode» равным "" и «parts» равным parts и «depth» равным 0
+
+тотальная функция «Part»
+  принимает t: «Translation», n: число
+  возвращает строка
+  пусть parts равно (t.«parts»)
+  если (длина parts) не меньше n
+    то элемент n в parts
+    иначе ""
+
+тотальная функция «Written»
+  принимает t: «Translation», text: строка
+  возвращает «Translation»
+  «Translation with» от (соединить [t.«out», text] по "") и "" и "" и "" и 0
+
+тотальная функция «Latex word»
+  принимает command: строка
+  возвращает строка
+  пример «Forall becomes its sign»
+    дано command равно "forall"
+    ожидается " ∀ "
+  разбор command
+    случай "forall" то " ∀ "
+    случай "exists" то " ∃ "
+    случай "in" то " ∈ "
+    случай "land" то " ∧ "
+    случай "wedge" то " ∧ "
+    случай "lor" то " ∨ "
+    случай "vee" то " ∨ "
+    случай "lnot" то " ¬ "
+    случай "neg" то " ¬ "
+    случай любое то «Latex arrow» от command
+
+тотальная функция «Latex arrow»
+  принимает command: строка
+  возвращает строка
+  разбор command
+    случай "to" то " → "
+    случай "rightarrow" то " → "
+    случай "implies" то " → "
+    случай "Rightarrow" то " → "
+    случай "longrightarrow" то " → "
+    случай "Longrightarrow" то " → "
+    случай "iff" то " ↔ "
+    случай "leftrightarrow" то " ↔ "
+    случай "Leftrightarrow" то " ↔ "
+    случай "Longleftrightarrow" то " ↔ "
+    случай любое то «Latex relation» от command
+
+тотальная функция «Latex relation»
+  принимает command: строка
+  возвращает строка
+  разбор command
+    случай "leq" то " ≤ "
+    случай "le" то " ≤ "
+    случай "geq" то " ≥ "
+    случай "ge" то " ≥ "
+    случай "neq" то " ≠ "
+    случай "ne" то " ≠ "
+    случай "cdot" то " · "
+    случай "times" то " · "
+    случай "top" то " ⊤ "
+    случай "bot" то " ⊥ "
+    случай "mid" то " | "
+    случай "colon" то " : "
+    случай "coloneqq" то " := "
+    случай "frac" то " ⁄ "
+    случай "quad" то " "
+    случай "qquad" то " "
+    случай "left" то " "
+    случай "right" то " "
+    случай любое то ""
+
+тотальная функция «Latex argument command»
+  принимает command: строка
+  возвращает признак
+  ["text", "mathrm", "textrm", "mathit", "operatorname", "mathsf", "mathtt", "mathbb", "mathbin", "_"] содержит command
+
+тотальная функция «Latex set»
+  принимает letter: строка
+  возвращает строка
+  разбор letter
+    случай "N" то " ℕ "
+    случай "Z" то " ℤ "
+    случай "Q" то " ℚ "
+    случай "R" то " ℝ "
+    случай "C" то " ℂ "
+    случай любое то ""
+
+тотальная функция «Without blanks»
+  принимает text: строка
+  возвращает строка
+  соединить (разделить text по " ") по ""
+
+тотальная функция «Ends with set Q»
+  принимает out: строка
+  возвращает признак
+  пример «A rational carrier just written»
+    дано out равно "∀ x ∈ ℚ "
+    ожидается да
+  пусть bare равно («Without blanks» от out)
+  если (длина bare) равен 0
+    то нет
+    иначе (подстрока bare с (длина bare) по (длина bare)) равен "ℚ"
+
+функция «Latex argument»
+  принимает t: «Translation», command: строка, argument: строка
+  возвращает «Translation»
+  разбор command
+    случай "mathbb" то «Latex set argument» от t и argument
+    случай "mathbin" то «Latex concat argument» от t и argument
+    случай "_" то «Latex subscript» от t и argument
+    случай любое то «Written» от t и (соединить [" ", argument, " "] по "")
+
+функция «Latex set argument»
+  принимает t: «Translation», argument: строка
+  возвращает «Translation»
+  пусть set равно («Latex set» от argument)
+  если set равен ""
+    то «Translation refused» от (соединить ["\\mathbb{", argument, "}: из множеств читаются только ℕ, ℤ и ℚ"] по "")
+    иначе «Written» от t и set
+
+функция «Latex concat argument»
+  принимает t: «Translation», argument: строка
+  возвращает «Translation»
+  если («Without blanks» от argument) равен "+\\!\\!+"
+    то «Written» от t и " ⧺ "
+    иначе «Translation refused» от (соединить ["\\mathbin{", argument,
+      "}: читается только склейка \\mathbin{+\\!\\!+}"] по "")
+
+функция «Latex subscript»
+  принимает t: «Translation», argument: строка
+  возвращает «Translation»
+  пусть bare равно («Without blanks» от argument)
+  если («Ends with set Q» от (t.«out»)) и притом (["\\geq0", "\\ge0", "\\geqslant0"] содержит bare)
+    то «Written» от t и " ≥ 0 "
+    иначе «Translation refused» от (соединить ["нижний индекс _{", argument,
+      "} читается только у ℚ: \\mathbb{Q}_{\\geq 0}"] по "")
+
+функция «Latex step»
+  принимает t: «Translation», c: строка
+  возвращает «Translation»
+  если не ((«Part» от t и 3) равен "")
+    то t
+    иначе «Latex mode» от t и c
+
+функция «Latex mode»
+  принимает t: «Translation», c: строка
+  возвращает «Translation»
+  разбор t.«mode»
+    случай "command" то «Latex command sign» от t и c
+    случай "wait" то «Latex wait» от t и c
+    случай "argument" то «Latex argument sign» от t и c
+    случай "letters" то «Latex letters» от t и c
+    случай любое то «Latex plain» от t и c
+
+функция «Latex plain»
+  принимает t: «Translation», c: строка
+  возвращает «Translation»
+  разбор c
+    случай "\\" то «Translation with» от (t.«out») и "command" и "" и "" и 0
+    случай "_" то «Translation with» от (t.«out») и "wait" и "_" и "" и 0
+    случай "{" то «Written» от t и " ( "
+    случай "}" то «Written» от t и " ) "
+    случай "~" то «Written» от t и " "
+    случай любое то «Latex other» от t и c
+
+функция «Latex other»
+  принимает t: «Translation», c: строка
+  возвращает «Translation»
+  если «Letter» от c
+    то «Translation with» от (t.«out») и "letters" и "" и c и 0
+    иначе «Written» от t и c
+
+функция «Latex letters»
+  принимает t: «Translation», c: строка
+  возвращает «Translation»
+  если «Letter» от c
+    то «Translation ambiguous» от (соединить ["в LaTeX «", («Part» от t и 2), c,
+      "» — это произведение букв; имя из нескольких букв пишите \\text{", («Part» от t и 2), c,
+      "}, произведение — со знаком \\cdot"] по "")
+    иначе «Latex plain» от («Written» от t и (соединить [" ", («Part» от t и 2), " "] по "")) и c
+
+функция «Latex command sign»
+  принимает t: «Translation», c: строка
+  возвращает «Translation»
+  если «Letter» от c
+    то «Translation with» от (t.«out») и "command" и (соединить [(«Part» от t и 1), c] по "") и "" и 0
+    иначе «Latex command end» от t и c
+
+функция «Latex command end»
+  принимает t: «Translation», c: строка
+  возвращает «Translation»
+  если («Part» от t и 1) равен ""
+    то «Latex control symbol» от t и c
+    иначе «Latex step» от («Latex command» от t и («Part» от t и 1)) и c
+
+функция «Latex control symbol»
+  принимает t: «Translation», c: строка
+  возвращает «Translation»
+  если [",", ";", ":", "!", " "] содержит c
+    то «Written» от t и " "
+    иначе «Translation refused» от (соединить ["команда \\", c, " вне подмножества LaTeX"] по "")
+
+функция «Latex command»
+  принимает t: «Translation», command: строка
+  возвращает «Translation»
+  если «Latex argument command» от command
+    то «Translation with» от (t.«out») и "wait" и command и "" и 0
+    иначе «Latex simple command» от t и command
+
+функция «Latex simple command»
+  принимает t: «Translation», command: строка
+  возвращает «Translation»
+  пусть word равно («Latex word» от command)
+  если word равен ""
+    то «Translation refused» от (соединить ["команда \\", command, " вне подмножества LaTeX"] по "")
+    иначе «Written» от t и word
+
+функция «Latex wait»
+  принимает t: «Translation», c: строка
+  возвращает «Translation»
+  если c равен "{"
+    то «Translation with» от (t.«out») и "argument" и («Part» от t и 1) и "" и 1
+    иначе «Latex wait other» от t и c
+
+функция «Latex wait other»
+  принимает t: «Translation», c: строка
+  возвращает «Translation»
+  если «Blank» от c
+    то t
+    иначе «Translation refused» от (соединить ["после ", («Shown command» от («Part» от t и 1)),
+      " ждали «{», а стоит «", c, "»"] по "")
+
+тотальная функция «Shown command»
+  принимает command: строка
+  возвращает строка
+  если command равен "_"
+    то "«_»"
+    иначе соединить ["\\", command] по ""
+
+функция «Latex argument sign»
+  принимает t: «Translation», c: строка
+  возвращает «Translation»
+  разбор c
+    случай "{" то «Latex nested» от t и c и 1
+    случай "}" то «Latex argument close» от t
+    случай любое то «Latex nested» от t и c и 0
+
+функция «Latex nested»
+  принимает t: «Translation», c: строка, deeper: число
+  возвращает «Translation»
+  пусть kept равно (соединить [(«Part» от t и 2), c] по "")
+  «Translation with» от (t.«out») и "argument" и («Part» от t и 1) и kept и ((t.«depth») плюс deeper)
+
+функция «Latex argument close»
+  принимает t: «Translation»
+  возвращает «Translation»
+  если (t.«depth») больше 1
+    то «Latex nested» от t и "}" и -1
+    иначе «Latex argument» от t и («Part» от t и 1) и («Part» от t и 2)
+
+функция «Latex end»
+  принимает t: «Translation»
+  возвращает «Translation»
+  разбор t.«mode»
+    случай "command" то «Latex command end» от t и " "
+    случай "letters" то «Written» от t и (соединить [" ", («Part» от t и 2), " "] по "")
+    случай "wait" то «Translation refused» от (соединить ["после ", («Shown command» от («Part» от t и 1)),
+      " формула оборвалась"] по "")
+    случай "argument" то «Translation refused» от "фигурная скобка не закрыта"
+    случай любое то t
+
+функция «Latex to unicode»
+  принимает text: строка
+  возвращает «Translation»
+  пусть start равно («Translation with» от "" и "" и "" и "" и 0)
+  пусть t равно (свёртка (разложить text на символы) начиная с start как acc и c → «Latex step» от acc и c)
+  если («Part» от t и 3) равен ""
+    то «Latex end» от t
+    иначе t
+
+функция «Latex tokens»
+  принимает text: строка
+  возвращает «Lexer»
+  пусть t равно («Latex to unicode» от text)
+  если («Part» от t и 3) равен ""
+    то «Unicode tokens» от (t.«out»)
+    иначе «Lexer refused» от («Part» от t и 3) и («Part» от t и 4)
+
+тотальная функция «Peek»
+  принимает tokens: список «Token»
+  возвращает строка
+  разбор tokens
+    случай пусто то "end"
+    случай голова и хвост то голова.«kind»
+
+тотальная функция «Peek text»
+  принимает tokens: список «Token»
+  возвращает строка
+  разбор tokens
+    случай пусто то ""
+    случай голова и хвост то голова.«text»
+
+тотальная функция «Rest»
+  принимает tokens: список «Token»
+  возвращает список «Token»
+  разбор tokens
+    случай пусто то пустой список
+    случай голова и хвост то хвост
+
+тотальная функция «Shown»
+  принимает tokens: список «Token»
+  возвращает строка
+  если («Peek» от tokens) равен "end"
+    то "конец формулы"
+    иначе соединить ["«", («Peek text» от tokens), "»"] по ""
+
+тотальная функция «Is name»
+  принимает tokens: список «Token»
+  возвращает признак
+  ["name", "quoted"] содержит («Peek» от tokens)
+
+тотальная функция «Refused syntax»
+  принимает wanted: строка, tokens: список «Token»
+  возвращает «Parsed»
+  вариант «Refused» с code равным "FLANG_FORMULA_SYNTAX" и message равным (соединить ["ждали ", wanted,
+    ", а стоит ", («Shown» от tokens)] по "")
+
+тотальная функция «Ambiguous»
+  принимает message: строка
+  возвращает «Parsed»
+  вариант «Refused» с code равным "FLANG_FORMULA_AMBIGUOUS" и message равным message
+
+тотальная функция «Chain message»
+  принимает level: строка
+  возвращает строка
+  разбор level
+    случай "body" то "цепочка «↔» без скобок неоднозначна: напишите (A ↔ B) ↔ C или A ↔ (B ↔ C)"
+    случай "implication" то "цепочка «→» без скобок неоднозначна: напишите A → (B → C) или (A → B) → C"
+    случай любое то "цепочка сравнений без скобок неоднозначна: вместо a < b < c напишите a < b ∧ b < c"
+
+тотальная функция «Mixed»
+  принимает scheme: строка, previous: строка, op: строка
+  возвращает строка
+  пример «Conjunction then disjunction»
+    дано scheme равно "junction"
+    дано previous равно "and"
+    дано op равно "or"
+    ожидается "«∧» и «∨» без скобок неоднозначны: напишите (A ∧ B) ∨ C или A ∧ (B ∨ C)"
+  если (scheme равен "junction") и притом (не (previous равен "")) и притом (не (previous равен op))
+    то "«∧» и «∨» без скобок неоднозначны: напишите (A ∧ B) ∨ C или A ∧ (B ∨ C)"
+    иначе если (scheme равен "product") и притом (previous равен "div")
+      то "после «/» знак «·» или «/» без скобок неоднозначен: напишите (a / b) · c или a / (b · c)"
+      иначе ""
+
+функция «Level»
+  принимает level: строка, tokens: список «Token»
+  возвращает «Parsed»
+  разбор level
+    случай "body" то «Lone» от "implication" и ["iff"] и level и tokens
+    случай "implication" то «Lone» от "junction" и ["implies"] и level и tokens
+    случай "junction" то «Chain» от "unary" и ["and", "or"] и level и tokens
+    случай "unary" то «Unary» от tokens
+    случай "comparison" то «Lone» от "sum" и ["eq", "neq", "lt", "lte", "gt", "gte"] и level и tokens
+    случай "sum" то «Chain» от "product" и ["add", "sub", "concat"] и level и tokens
+    случай "product" то «Chain» от "power" и ["mul", "div"] и level и tokens
+    случай "power" то «Power» от tokens
+    случай "signed" то «Signed» от tokens
+    случай "postfix" то «Postfix after» от («Primary» от tokens)
+    случай любое то «Primary» от tokens
+
+функция «Lone»
+  принимает operand: строка, ops: список строки, level: строка, tokens: список «Token»
+  возвращает «Parsed»
+  «Lone after» от operand и ops и level и («Level» от operand и tokens)
+
+функция «Lone after»
+  принимает operand: строка, ops: список строки, level: строка, left: «Parsed»
+  возвращает «Parsed»
+  разбор left
+    случай вариант «Got» с tree как tree и rest как rest
+      то если ops содержит («Peek» от rest)
+        то «Lone right» от tree и («Peek» от rest) и ops и level и («Level» от operand и («Rest» от rest))
+        иначе left
+    случай любое
+      то left
+
+функция «Lone right»
+  принимает left: «Formula», op: строка, ops: список строки, level: строка, right: «Parsed»
+  возвращает «Parsed»
+  разбор right
+    случай вариант «Got» с tree как tree и rest как rest
+      то если ops содержит («Peek» от rest)
+        то «Ambiguous» от («Chain message» от level)
+        иначе «Got of» от («Binary of» от op и left и tree) и rest
+    случай любое
+      то right
+
+функция «Chain»
+  принимает operand: строка, ops: список строки, scheme: строка, tokens: список «Token»
+  возвращает «Parsed»
+  «Chain after» от operand и ops и scheme и "" и («Level» от operand и tokens)
+
+функция «Chain after»
+  принимает operand: строка, ops: список строки, scheme: строка, previous: строка, left: «Parsed»
+  возвращает «Parsed»
+  разбор left
+    случай вариант «Got» с tree как tree и rest как rest
+      то если ops содержит («Peek» от rest)
+        то «Chain next» от operand и ops и scheme и previous и tree и rest
+        иначе left
+    случай любое
+      то left
+
+функция «Chain next»
+  принимает operand: строка, ops: список строки, scheme: строка, previous: строка, tree: «Formula», rest: список «Token»
+  возвращает «Parsed»
+  пусть op равно («Peek» от rest)
+  пусть mixed равно («Mixed» от scheme и previous и op)
+  если mixed равен ""
+    то «Chain after» от operand и ops и scheme и op и («Joined» от op и tree и («Level» от operand и («Rest» от rest)))
+    иначе «Ambiguous» от mixed
+
+функция «Joined»
+  принимает op: строка, left: «Formula», right: «Parsed»
+  возвращает «Parsed»
+  разбор right
+    случай вариант «Got» с tree как tree и rest как rest
+      то «Got of» от («Binary of» от op и left и tree) и rest
+    случай любое
+      то right
+
+функция «Unary»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  разбор («Peek» от tokens)
+    случай "not" то «Negated» от («Level» от "unary" и («Rest» от tokens))
+    случай "exists" то «Existential» от («Rest» от tokens)
+    случай "forall" то «Refusal» от "FLANG_FORMULA_QUANTIFIER" и («Inner forall»)
+    случай любое то «Level» от "comparison" и tokens
+
+функция «Negated»
+  принимает body: «Parsed»
+  возвращает «Parsed»
+  разбор body
+    случай вариант «Got» с tree как tree и rest как rest
+      то вариант «Got» с tree равным (вариант «Negation» с body равным tree) и rest равным rest
+    случай любое
+      то body
+
+функция «Existential»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  если «Is name» от tokens
+    то «Existential named» от («Peek text» от tokens) и («Rest» от tokens)
+    иначе «Refused syntax» от "имя после «∃»" и tokens
+
+функция «Existential named»
+  принимает name: строка, rest: список «Token»
+  возвращает «Parsed»
+  разбор («Peek» от rest)
+    случай "comma" то «Existential body» от name и [] и («Level» от "body" и («Rest» от rest))
+    случай "assign" то «Existential witness» от name и («Level» от "sum" и («Rest» от rest))
+    случай "in" то «Existential carrier»
+    случай "colon" то «Existential carrier»
+    случай любое то «Refused syntax» от "«,» или «:=» после имени у «∃»" и rest
+
+тотальная функция «Inner forall»
+  возвращает строка
+  "квантор «∀» стоит только в начале формулы: внутри формулы квантора всеобщности над носителем в flang нет"
+
+тотальная функция «Existential carrier»
+  возвращает «Parsed»
+  «Refusal» от "FLANG_FORMULA_QUANTIFIER" и (соединить ["у «∃» в flang нет носителя: тип выводит ядро; ",
+    "напишите ∃ m, … или ∃ m := t, …"] по "")
+
+функция «Existential witness»
+  принимает name: строка, witness: «Parsed»
+  возвращает «Parsed»
+  разбор witness
+    случай вариант «Got» с tree как tree и rest как rest
+      то если («Peek» от rest) равен "comma"
+        то «Existential body» от name и [tree] и («Level» от "body" и («Rest» от rest))
+        иначе «Refused syntax» от "«,» после свидетеля у «∃»" и rest
+    случай любое
+      то witness
+
+функция «Existential body»
+  принимает name: строка, witness: список «Formula», body: «Parsed»
+  возвращает «Parsed»
+  разбор body
+    случай вариант «Got» с tree как tree и rest как rest
+      то «Got of» от (вариант «Exists» с name равным name и witness равным witness и body равным tree) и rest
+    случай любое
+      то body
+
+функция «Power»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  «Power after» от («Level» от "signed" и tokens)
+
+функция «Power after»
+  принимает base: «Parsed»
+  возвращает «Parsed»
+  разбор base
+    случай вариант «Got» с tree как tree и rest как rest
+      то если («Peek» от rest) равен "pow"
+        то «Power exponent» от tree и («Level» от "signed" и («Rest» от rest))
+        иначе base
+    случай любое
+      то base
+
+функция «Power exponent»
+  принимает base: «Formula», exponent: «Parsed»
+  возвращает «Parsed»
+  разбор exponent
+    случай вариант «Got» с tree как tree и rest как rest
+      то «Powered» от base и («Exponent» от tree) и rest
+    случай любое
+      то exponent
+
+тотальная функция «Exponent»
+  принимает tree: «Formula»
+  возвращает число
+  пример «Two»
+    дано tree равно вариант «Number» с text равным "2"
+    ожидается 2
+  пример «A name is no exponent»
+    дано tree равно вариант «Var» с name равным "n"
+    ожидается 0
+  разбор tree
+    случай вариант «Number» с text как text
+      то если ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"] содержит text
+        то к числу text
+        иначе 0
+    случай любое
+      то 0
+
+функция «Powered»
+  принимает base: «Formula», n: число, rest: список «Token»
+  возвращает «Parsed»
+  если n равен 0
+    то «Refusal» от "FLANG_FORMULA_POWER" и («No power»)
+    иначе если («Peek» от rest) равен "pow"
+      то «Ambiguous» от "цепочка «^» без скобок неоднозначна: напишите (a^b)^c или a^(b^c)"
+      иначе вариант «Got» с tree равным («Product of» от base и n) и rest равным rest
+
+тотальная функция «No power»
+  возвращает строка
+  "в flang нет возведения в степень: читается только показатель-число от 1 до 16, он раскрывается умножением"
+
+функция «Product of»
+  принимает base: «Formula», n: число
+  возвращает «Formula»
+  если n больше 1
+    то вариант «Binary» с op равным "mul" и left равным («Product of» от base и (n минус 1)) и right равным base
+    иначе base
+
+функция «Signed»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  если («Peek» от tokens) равен "sub"
+    то «Negative» от («Rest» от tokens)
+    иначе «Level» от "postfix" и tokens
+
+функция «Negative»
+  принимает rest: список «Token»
+  возвращает «Parsed»
+  если («Peek» от rest) равен "number"
+    то «Got of» от (вариант «Number» с text равным (соединить ["-", («Peek text» от rest)] по "")) и («Rest» от rest)
+    иначе «Refusal» от "FLANG_FORMULA_MINUS" и («No minus»)
+
+тотальная функция «No minus»
+  возвращает строка
+  "унарного минуса у выражения в flang нет: напишите 0 − x; минус прямо перед числом читается отрицательным числом"
+
+функция «Postfix after»
+  принимает target: «Parsed»
+  возвращает «Parsed»
+  разбор target
+    случай вариант «Got» с tree как tree и rest как rest
+      то если («Peek» от rest) равен "dot"
+        то «Field after» от tree и («Rest» от rest)
+        иначе target
+    случай любое
+      то target
+
+функция «Field after»
+  принимает target: «Formula», rest: список «Token»
+  возвращает «Parsed»
+  если «Is name» от rest
+    то «Postfix after» от («Got of» от («Field of» от target и («Peek text» от rest)) и («Rest» от rest))
+    иначе «Refused syntax» от "имя поля после «.»" и rest
+
+тотальная функция «Field of»
+  принимает target: «Formula», member: строка
+  возвращает «Formula»
+  вариант «Field» с target равным target и member равным member
+
+функция «Primary»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  пусть rest равно («Rest» от tokens)
+  разбор («Peek» от tokens)
+    случай "number" то «Got of» от (вариант «Number» с text равным («Peek text» от tokens)) и rest
+    случай "string" то «Got of» от (вариант «Text» с text равным («Peek text» от tokens)) и rest
+    случай "true" то «Got of» от (вариант «Truth» с value равным да) и rest
+    случай "false" то «Got of» от (вариант «Truth» с value равным нет) и rest
+    случай "name" то «Named» от tokens
+    случай "quoted" то «Named» от tokens
+    случай "lparen" то «Grouped» от («Level» от "body" и rest)
+    случай "lbrack" то «Arguments» от "rbrack" и rest
+    случай "frac" то «Fraction» от («Primary» от rest)
+    случай любое то «Primary refused» от tokens
+
+функция «Primary refused»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  если ["setN", "setZ", "setQ", "setR", "setC"] содержит («Peek» от tokens)
+    то вариант «Refused» с code равным "FLANG_FORMULA_CARRIER" и message равным (соединить ["носитель ",
+      («Shown» от tokens), " стоит только после «∈» в кванторе «∀»"] по "")
+    иначе «Refused syntax» от "значение" и tokens
+
+функция «Grouped»
+  принимает inner: «Parsed»
+  возвращает «Parsed»
+  разбор inner
+    случай вариант «Got» с tree как tree и rest как rest
+      то если («Peek» от rest) равен "rparen"
+        то вариант «Got» с tree равным tree и rest равным («Rest» от rest)
+        иначе «Refused syntax» от "«)»" и rest
+    случай любое
+      то inner
+
+функция «Fraction»
+  принимает numerator: «Parsed»
+  возвращает «Parsed»
+  разбор numerator
+    случай вариант «Got» с tree как tree и rest как rest
+      то «Joined» от "div" и tree и («Primary» от rest)
+    случай любое
+      то numerator
+
+функция «Named»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  пусть rest равно («Rest» от tokens)
+  если («Peek» от rest) равен "lparen"
+    то «Called» от («Peek text» от tokens) и («Peek» от tokens) и («Arguments» от "rparen" и («Rest» от rest))
+    иначе вариант «Got» с tree равным (вариант «Var» с name равным («Peek text» от tokens)) и rest равным rest
+
+функция «Called»
+  принимает name: строка, kind: строка, args: «Parsed»
+  возвращает «Parsed»
+  разбор args
+    случай вариант «Got» с tree как tree и rest как rest
+      то вариант «Got» с tree равным («Call made» от name и kind и tree) и rest равным rest
+    случай любое
+      то args
+
+тотальная функция «Call made»
+  принимает name: строка, kind: строка, args: «Formula»
+  возвращает «Formula»
+  разбор args
+    случай вариант «Items» с items как items
+      то «Call or length» от name и kind и items
+    случай любое
+      то вариант «Call» с name равным name и args равным [args]
+
+тотальная функция «Call or length»
+  принимает name: строка, kind: строка, items: список «Formula»
+  возвращает «Formula»
+  если (name равен "длина") и притом (kind равен "name") и притом ((длина items) равен 1)
+    то вариант «Length» с arg равным (голова items)
+    иначе вариант «Call» с name равным name и args равным items
+
+функция «Arguments»
+  принимает closer: строка, tokens: список «Token»
+  возвращает «Parsed»
+  если («Peek» от tokens) равен closer
+    то вариант «Got» с tree равным (вариант «Items» с items равным []) и rest равным («Rest» от tokens)
+    иначе «Argument loop» от [] и closer и («Level» от "body" и tokens)
+
+функция «Argument loop»
+  принимает done: список «Formula», closer: строка, piece: «Parsed»
+  возвращает «Parsed»
+  разбор piece
+    случай вариант «Got» с tree как tree и rest как rest
+      то «Argument next» от (добавить tree к done) и closer и rest
+    случай любое
+      то piece
+
+функция «Argument next»
+  принимает done: список «Formula», closer: строка, rest: список «Token»
+  возвращает «Parsed»
+  если («Peek» от rest) равен "comma"
+    то «Argument loop» от done и closer и («Level» от "body" и («Rest» от rest))
+    иначе если («Peek» от rest) равен closer
+      то вариант «Got» с tree равным (вариант «Items» с items равным done) и rest равным («Rest» от rest)
+      иначе «Refused syntax» от («Closer wanted» от closer) и rest
+
+тотальная функция «Closer wanted»
+  принимает closer: строка
+  возвращает строка
+  если closer равен "rbrack"
+    то "«,» или «]»"
+    иначе "«,» или «)»"
+
+функция «Binders»
+  принимает done: список «Binder», tokens: список «Token»
+  возвращает «Binding»
+  если («Peek» от tokens) равен "forall"
+    то «Binder names» от done и [] и («Rest» от tokens)
+    иначе вариант «Bound» с binders равным done и rest равным tokens
+
+функция «Binder names»
+  принимает done: список «Binder», names: список строки, tokens: список «Token»
+  возвращает «Binding»
+  если «Is name» от tokens
+    то «Binder name next» от done и (добавить («Peek text» от tokens) к names) и («Rest» от tokens)
+    иначе «Unbound syntax» от "имя после «∀»" и tokens
+
+тотальная функция «Unbound syntax»
+  принимает wanted: строка, tokens: список «Token»
+  возвращает «Binding»
+  вариант «Unbound» с code равным "FLANG_FORMULA_SYNTAX" и message равным (соединить ["ждали ", wanted, ", а стоит ",
+    («Shown» от tokens)] по "")
+
+тотальная функция «Name follows»
+  принимает tokens: список «Token»
+  возвращает признак
+  («Is name» от tokens) и притом (["comma", "in", "colon"] содержит («Peek» от («Rest» от tokens)))
+
+функция «Binder name next»
+  принимает done: список «Binder», names: список строки, rest: список «Token»
+  возвращает «Binding»
+  если (("comma" равен («Peek» от rest)) и притом («Name follows» от («Rest» от rest)))
+    то «Binder names» от done и names и («Rest» от rest)
+    иначе «Binder carrier» от done и names и rest
+
+функция «Binder carrier»
+  принимает done: список «Binder», names: список строки, rest: список «Token»
+  возвращает «Binding»
+  разбор («Peek» от rest)
+    случай "in" то «Carried» от done и names и («Carrier of» от («Rest» от rest))
+    случай "colon" то «Carried» от done и names и («Typed» от [] и («Rest» от rest))
+    случай любое то вариант «Unbound» с code равным "FLANG_FORMULA_QUANTIFIER" и message равным («No forall carrier»)
+
+тотальная функция «No forall carrier»
+  возвращает строка
+  "у «∀» нет носителя: напишите ∀ x ∈ ℤ, … или ∀ x : строка, …"
+
+функция «Carrier of»
+  принимает tokens: список «Token»
+  возвращает «Carrier»
+  пусть rest равно («Rest» от tokens)
+  разбор («Peek» от tokens)
+    случай "setN" то вариант «Carried by» с sort равным "точное целое" и symbol равным "ℕ" и rest равным rest
+    случай "setZ" то вариант «Carried by» с sort равным "целое" и symbol равным "ℤ" и rest равным rest
+    случай "setQ" то «Rational carrier» от rest
+    случай "setR" то «Carrier refused» от (соединить ["ℝ в flang нет: «число» — double IEEE-754, ",
+      "законы поля на нём ложны (ADR-0036)"] по "")
+    случай "setC" то «Carrier refused» от "ℂ в flang нет"
+    случай любое то «Carrier refused» от (соединить ["после «∈» в кванторе ждали ℕ, ℤ или ℚ≥0, а стоит ",
+      («Shown» от tokens), "; квантора по элементам списка в записи нет"] по "")
+
+тотальная функция «Carrier refused»
+  принимает message: строка
+  возвращает «Carrier»
+  вариант «No carrier» с code равным "FLANG_FORMULA_CARRIER" и message равным message
+
+тотальная функция «Rational carrier»
+  принимает rest: список «Token»
+  возвращает «Carrier»
+  пусть beyond равно («Rest» от rest)
+  если (("gte" равен («Peek» от rest)) и притом ("0" равен («Peek text» от beyond)))
+    то вариант «Carried by» с sort равным "точное дробное" и symbol равным "ℚ≥0" и rest равным («Rest» от beyond)
+    иначе «Carrier refused» от (соединить ["ℚ со знаком в flang нет: «точное дробное» неотрицательно (ADR-0062); ",
+      "пишите ℚ≥0 или \\mathbb{Q}_{\\geq 0}"] по "")
+
+функция «Typed»
+  принимает words: список строки, tokens: список «Token»
+  возвращает «Carrier»
+  разбор («Peek» от tokens)
+    случай "name" то «Typed» от (добавить («Peek text» от tokens) к words) и («Rest» от tokens)
+    случай "quoted" то «Typed» от (добавить («Quoted name» от («Peek text» от tokens)) к words) и («Rest» от tokens)
+    случай любое то «Typed end» от words и tokens
+
+тотальная функция «Quoted name»
+  принимает name: строка
+  возвращает строка
+  соединить ["«", name, "»"] по ""
+
+тотальная функция «Typed end»
+  принимает words: список строки, tokens: список «Token»
+  возвращает «Carrier»
+  если (длина words) равен 0
+    то вариант «No carrier» с code равным "FLANG_FORMULA_SYNTAX" и message равным (соединить [
+      "ждали тип после «:», а стоит ", («Shown» от tokens)] по "")
+    иначе вариант «Carried by» с sort равным (соединить words по " ") и symbol равным "" и rest равным tokens
+
+функция «Carried»
+  принимает done: список «Binder», names: список строки, carried: «Carrier»
+  возвращает «Binding»
+  разбор carried
+    случай вариант «Carried by» с sort как sort и symbol как symbol и rest как rest
+      то «Such» от done и names и sort и symbol и rest
+    случай вариант «No carrier» с code как code и message как message
+      то вариант «Unbound» с code равным code и message равным message
+
+функция «Such»
+  принимает done: список «Binder», names: список строки, sort: строка, symbol: строка, rest: список «Token»
+  возвращает «Binding»
+  если («Peek» от rest) равен "bar"
+    то «Such parsed» от done и names и sort и symbol и («Level» от "body" и («Rest» от rest))
+    иначе «Binder closed» от done и («Bound names» от names и sort и symbol и []) и rest
+
+функция «Such parsed»
+  принимает done: список «Binder», names: список строки, sort: строка, symbol: строка, such: «Parsed»
+  возвращает «Binding»
+  разбор such
+    случай вариант «Got» с tree как tree и rest как rest
+      то «Binder closed» от done и («Bound names» от names и sort и symbol и [tree]) и rest
+    случай вариант «Refused» с code как code и message как message
+      то вариант «Unbound» с code равным code и message равным message
+
+тотальная функция «Bound names»
+  принимает ns: список строки, t: строка, sy: строка, su: список «Formula»
+  возвращает список «Binder»
+  разбор ns
+    случай пусто то пустой список
+    случай голова и хвост
+      то «Bound head» от голова и t и sy и su и хвост
+
+тотальная функция «Bound head»
+  принимает n: строка, t: строка, sy: строка, su: список «Formula», others: список строки
+  возвращает список «Binder»
+  приписать («Binder of» от n и t и sy и («Last such» от others и su)) к («Bound names» от others и t и sy и su)
+
+тотальная функция «Last such»
+  принимает others: список строки, such: список «Formula»
+  возвращает список «Formula»
+  если (длина others) равен 0
+    то such
+    иначе пустой список
+
+тотальная функция «Binder of»
+  принимает name: строка, sort: строка, symbol: строка, such: список «Formula»
+  возвращает «Binder»
+  запись «Binder» с «name» равным name и «type» равным sort и «symbol» равным symbol и «such» равным such
+
+функция «Binder closed»
+  принимает done: список «Binder», bound: список «Binder», rest: список «Token»
+  возвращает «Binding»
+  если («Peek» от rest) равен "comma"
+    то «Binders» от (свёртка bound начиная с done как acc и b → добавить b к acc) и («Rest» от rest)
+    иначе «Unbound syntax» от "«,» после квантора" и rest
+
+функция «Claim of tokens»
+  принимает lexer: «Lexer»
+  возвращает «Claim result»
+  если lexer.«code» равен ""
+    то «Claim of binding» от («Binders» от [] и (lexer.«tokens»))
+    иначе вариант «Claim refused» с code равным (lexer.«code») и message равным (lexer.«message»)
+
+функция «Claim of binding»
+  принимает binding: «Binding»
+  возвращает «Claim result»
+  разбор binding
+    случай вариант «Bound» с binders как binders и rest как rest
+      то «Claim finished» от binders и («Level» от "body" и rest)
+    случай вариант «Unbound» с code как code и message как message
+      то вариант «Claim refused» с code равным code и message равным message
+
+функция «Claim finished»
+  принимает binders: список «Binder», body: «Parsed»
+  возвращает «Claim result»
+  разбор body
+    случай вариант «Got» с tree как tree и rest как rest
+      то если («Peek» от rest) равен "end"
+        то вариант «Claim read» с said равным (запись «Claim» с «binders» равным binders и «body» равным tree)
+        иначе вариант «Claim refused» с code равным "FLANG_FORMULA_SYNTAX" и message равным (соединить [
+          "лишнее после формулы: ", («Shown» от rest)] по "")
+    случай вариант «Refused» с code как code и message как message
+      то вариант «Claim refused» с code равным code и message равным message
+
+функция «Read formula»
+  принимает notation: строка, text: строка
+  возвращает «Claim result»
+  если («Without blanks» от text) равен ""
+    то вариант «Claim refused» с code равным "FLANG_FORMULA_EMPTY" и message равным "формула пуста"
+    иначе «Claim of tokens» от (если notation равен "latex" то «Latex tokens» от text иначе «Unicode tokens» от text)
+
+тотальная функция «Reserved»
+  принимает name: строка
+  возвращает признак
+  ["forall", "exists", "in", "and", "or", "not", "true", "false", "NN", "ZZ", "QQ", "RR", "CC", "длина"] содержит name
+
+тотальная функция «Plain name»
+  принимает name: строка
+  возвращает признак
+  пример «A Cyrillic word»
+    дано name равно "длина1"
+    ожидается да
+  пример «A name with a blank»
+    дано name равно "предмет посылки 2"
+    ожидается нет
+  разбор name
+    случай пусто то нет
+    случай голова и хвост
+      то («Letter» от голова) и притом («Word signs» от хвост)
+
+тотальная функция «Word signs»
+  принимает text: строка
+  возвращает признак
+  свёртка (разложить text на символы) начиная с да как ok и c → ok и притом («Word sign» от c)
+
+тотальная функция «Name shown»
+  принимает name: строка
+  возвращает строка
+  пример «A plain name is bare»
+    дано name равно "x"
+    ожидается "x"
+  пример «A name with a blank goes into quotes»
+    дано name равно "предмет посылки 2"
+    ожидается "«предмет посылки 2»"
+  если («Plain name» от name) и притом (не («Reserved» от name))
+    то name
+    иначе соединить ["«", name, "»"] по ""
+
+тотальная функция «Latex name»
+  принимает name: строка
+  возвращает строка
+  пример «A Latin letter stays bare»
+    дано name равно "x"
+    ожидается "x"
+  пример «A Cyrillic name goes into text»
+    дано name равно "л"
+    ожидается "\\text{л}"
+  если ((длина name) равен 1) и притом («Latin» от name)
+    то name
+    иначе соединить ["\\text{", («Name shown» от name), "}"] по ""
+
+тотальная функция «Latin»
+  принимает c: строка
+  возвращает признак
+  пусть n равно («Code of» от c)
+  («Between» от n и 65 и 90) или («Between» от n и 97 и 122)
+
+тотальная функция «Precedence»
+  принимает tree: «Formula»
+  возвращает число
+  разбор tree
+    случай вариант «Binary» с op как op и left как l и right как r то «Op precedence» от op
+    случай вариант «Negation» с body как b то 4
+    случай вариант «Exists» с name как n и witness как w и body как b то 0
+    случай вариант «Number» с text как text то (если text начинается с "-" то 8 иначе 9)
+    случай любое то 9
+
+тотальная функция «Op precedence»
+  принимает op: строка
+  возвращает число
+  разбор op
+    случай "iff" то 1
+    случай "implies" то 2
+    случай "and" то 3
+    случай "or" то 3
+    случай "add" то 6
+    случай "sub" то 6
+    случай "concat" то 6
+    случай "mul" то 7
+    случай "div" то 7
+    случай любое то 5
+
+тотальная функция «Op of»
+  принимает tree: «Formula»
+  возвращает строка
+  разбор tree
+    случай вариант «Binary» с op как op и left как l и right как r то op
+    случай любое то ""
+
+тотальная функция «Is proposition»
+  принимает tree: «Formula»
+  возвращает признак
+  пусть p равно («Precedence» от tree)
+  пусть truths равно [(вариант «Truth» с value равным да), (вариант «Truth» с value равным нет)]
+  (p меньше 6) или (truths содержит tree)
+
+тотальная функция «Shown op»
+  принимает op: строка, left: «Formula», right: «Formula»
+  возвращает строка
+  если (op равен "eq") и притом (((«Is proposition» от left)) или («Is proposition» от right))
+    то "iff"
+    иначе op
+
+тотальная функция «Left needs parens»
+  принимает op: строка, child: «Formula»
+  возвращает признак
+  пусть p равно («Op precedence» от op)
+  пусть c равно («Precedence» от child)
+  если (p равен 3) или (p равен 6)
+    то (c меньше p) или ((c равен p) и притом (p равен 3) и притом (не («Op of» от child равен op)))
+    иначе если p равен 7
+      то (c меньше 7) или («Op of» от child равен "div") или (c равен 8)
+      иначе (c не больше p) или (c равен 8)
+
+тотальная функция «Right needs parens»
+  принимает op: строка, child: «Formula»
+  возвращает признак
+  пусть c равно («Precedence» от child)
+  (c не больше («Op precedence» от op)) или (c равен 8)
+
+тотальная функция «Sign of»
+  принимает op: строка, style: строка
+  возвращает строка
+  пример «A conjunction in LaTeX»
+    дано op равно "and"
+    дано style равно "latex"
+    ожидается "\\land"
+  если style равен "latex"
+    то «Latex sign of» от op
+    иначе «Unicode sign of» от op
+
+тотальная функция «Unicode sign of»
+  принимает op: строка
+  возвращает строка
+  разбор op
+    случай "iff" то "↔"
+    случай "implies" то "→"
+    случай "and" то "∧"
+    случай "or" то "∨"
+    случай "eq" то "="
+    случай "neq" то "≠"
+    случай "lt" то "<"
+    случай "lte" то "≤"
+    случай "gt" то ">"
+    случай "gte" то "≥"
+    случай "add" то "+"
+    случай "sub" то "−"
+    случай "mul" то "·"
+    случай "div" то "/"
+    случай любое то "⧺"
+
+тотальная функция «Latex sign of»
+  принимает op: строка
+  возвращает строка
+  разбор op
+    случай "iff" то "\\leftrightarrow"
+    случай "implies" то "\\to"
+    случай "and" то "\\land"
+    случай "or" то "\\lor"
+    случай "eq" то "="
+    случай "neq" то "\\neq"
+    случай "lt" то "<"
+    случай "lte" то "\\leq"
+    случай "gt" то ">"
+    случай "gte" то "\\geq"
+    случай "add" то "+"
+    случай "sub" то "-"
+    случай "mul" то "\\cdot"
+    случай "div" то "/"
+    случай любое то "\\mathbin{+\\!\\!+}"
+
+тотальная функция «Wrapped»
+  принимает text: строка, needed: признак, style: строка
+  возвращает строка
+  если needed
+    то соединить [(если style равен "latex" то "\\left(" иначе "("), text,
+      (если style равен "latex" то "\\right)" иначе ")")] по ""
+    иначе text
+
+тотальная функция «Printed»
+  принимает tree: «Formula», style: строка
+  возвращает строка
+  разбор tree
+    случай вариант «Var» с name как name то «Shown name» от name и style
+    случай вариант «Number» с text как text то «Shown number» от text и style
+    случай вариант «Text» с text как text то «Shown text» от text и style
+    случай вариант «Truth» с value как value то «Shown truth» от value и style
+    случай вариант «Binary» с op как op и left как l и right как r
+      то «Printed binary» от («Shown op» от op и l и r) и [(«Printed» от l и style),
+        («Printed» от r и style)] и l и r и style
+    случай вариант «Negation» с body как b
+      то «Printed negation» от («Printed» от b и style) и b и style
+    случай вариант «Exists» с name как n и witness как w и body как b
+      то «Printed exists» от n и (отобразить w как x → «Printed» от x и style) и («Printed» от b и style) и style
+    случай вариант «Call» с name как n и args как a
+      то «Printed call» от («Shown name» от n и style) и (отобразить a как x → «Printed» от x и style)
+    случай вариант «Length» с arg как a
+      то «Printed call» от (если style равен "latex" то "\\text{длина}" иначе "длина") и [(«Printed» от a и style)]
+    случай вариант «Field» с target как t и member как f
+      то соединить [(«Wrapped» от («Printed» от t и style) и ((«Precedence» от t) меньше 9) и style), ".",
+        («Shown name» от f и style)] по ""
+    случай вариант «Items» с items как i
+      то соединить ["[", (соединить (отобразить i как x → «Printed» от x и style) по ", "), "]"] по ""
+
+тотальная функция «Printed negation»
+  принимает text: строка, b: «Formula», style: строка
+  возвращает строка
+  пусть sign равно (если style равен "latex" то "\\lnot " иначе "¬")
+  соединить [sign, («Wrapped» от text и («Negated needs parens» от b) и style)] по ""
+
+тотальная функция «Negated needs parens»
+  принимает b: «Formula»
+  возвращает признак
+  ((«Precedence» от b) меньше 4) или (не ((«Op of» от b) равен ""))
+
+тотальная функция «Printed binary»
+  принимает op: строка, sides: список строки, l: «Formula», r: «Formula», style: строка
+  возвращает строка
+  пусть left равно («Wrapped» от (голова sides) и («Left needs parens» от op и l) и style)
+  пусть right равно («Wrapped» от («Last of» от sides) и («Right needs parens» от op и r) и style)
+  соединить [left, " ", («Sign of» от op и style), " ", right] по ""
+
+тотальная функция «Last of»
+  принимает items: список строки
+  возвращает строка
+  свёртка items начиная с "" как last и piece → piece
+
+тотальная функция «Printed exists»
+  принимает name: строка, witness: список строки, body: строка, style: строка
+  возвращает строка
+  пусть shown равно («Shown name» от name и style)
+  пусть named равно (соединить (отобразить witness как w → соединить [" := ", w] по "") по "")
+  если style равен "latex"
+    то соединить ["\\exists ", shown, named, ",\\ ", body] по ""
+    иначе соединить ["∃ ", shown, named, ", ", body] по ""
+
+тотальная функция «Printed call»
+  принимает name: строка, args: список строки
+  возвращает строка
+  соединить [name, "(", (соединить args по ", "), ")"] по ""
+
+тотальная функция «Shown name»
+  принимает name: строка, style: строка
+  возвращает строка
+  если style равен "latex"
+    то «Latex name» от name
+    иначе «Name shown» от name
+
+тотальная функция «Shown number»
+  принимает text: строка, style: строка
+  возвращает строка
+  если (text начинается с "-") и притом (style равен "unicode")
+    то соединить ["−", (подстрока text с 2 по (длина text))] по ""
+    иначе text
+
+тотальная функция «Shown text»
+  принимает text: строка, style: строка
+  возвращает строка
+  если style равен "latex"
+    то соединить ["\\text{\"", text, "\"}"] по ""
+    иначе соединить ["\"", text, "\""] по ""
+
+тотальная функция «Shown truth»
+  принимает value: признак, style: строка
+  возвращает строка
+  если style равен "latex"
+    то (если value то "\\top" иначе "\\bot")
+    иначе (если value то "⊤" иначе "⊥")
+
+тотальная функция «Printed binder»
+  принимает binder: «Binder», style: строка
+  возвращает строка
+  пусть name равно («Shown name» от (binder.«name») и style)
+  пусть such равно (соединить (отобразить (binder.«such») как s → соединить [(если style равен "latex" то " \\mid "
+    иначе " | "), («Printed» от s и style)] по "") по "")
+  пусть sign равно (если style равен "latex" то "\\forall " иначе "∀ ")
+  соединить [sign, name, («Printed carrier» от binder и style), such] по ""
+
+тотальная функция «Printed carrier»
+  принимает binder: «Binder», style: строка
+  возвращает строка
+  если binder.«symbol» равен ""
+    то соединить [" : ", («Shown type» от (binder.«type») и style)] по ""
+    иначе соединить [(если style равен "latex" то " \\in " иначе " ∈ "),
+      («Shown symbol» от (binder.«symbol») и style)] по ""
+
+тотальная функция «Shown type»
+  принимает sort: строка, style: строка
+  возвращает строка
+  если style равен "latex"
+    то соединить ["\\text{", sort, "}"] по ""
+    иначе sort
+
+тотальная функция «Shown symbol»
+  принимает symbol: строка, style: строка
+  возвращает строка
+  если style равен "unicode"
+    то symbol
+    иначе «Latex symbol» от symbol
+
+тотальная функция «Latex symbol»
+  принимает symbol: строка
+  возвращает строка
+  разбор symbol
+    случай "ℕ" то "\\mathbb{N}"
+    случай "ℤ" то "\\mathbb{Z}"
+    случай любое то "\\mathbb{Q}_{\\geq 0}"
+
+тотальная функция «Printed claim»
+  принимает said: «Claim», style: строка
+  возвращает строка
+  пусть binders равно (отобразить (said.«binders») как b → «Printed binder» от b и style)
+  пусть parts равно (добавить («Printed» от (said.«body») и style) к binders)
+  соединить parts по (если style равен "latex" то ",\\ " иначе ", ")
+
+тотальная функция «Flang atom»
+  принимает tree: «Formula»
+  возвращает признак
+  разбор tree
+    случай вариант «Var» с name как n то да
+    случай вариант «Number» с text как t то да
+    случай вариант «Text» с text как t то да
+    случай вариант «Truth» с value как v то да
+    случай вариант «Items» с items как i то да
+    случай любое то нет
+
+тотальная функция «Wrap flang»
+  принимает text: строка, tree: «Formula»
+  возвращает строка
+  если «Flang atom» от tree
+    то text
+    иначе соединить ["(", text, ")"] по ""
+
+тотальная функция «Flang of»
+  принимает tree: «Formula»
+  возвращает строка
+  разбор tree
+    случай вариант «Var» с name как n то соединить ["«", n, "»"] по ""
+    случай вариант «Number» с text как t то t
+    случай вариант «Text» с text как t то соединить ["\"", t, "\""] по ""
+    случай вариант «Truth» с value как v то (если v то "да" иначе "нет")
+    случай вариант «Binary» с op как op и left как l и right как r
+      то «Flang binary» от op и («Wrap flang» от («Flang of» от l) и l) и («Wrap flang» от («Flang of» от r) и r)
+    случай вариант «Negation» с body как b то соединить ["не ", («Wrap flang» от («Flang of» от b) и b)] по ""
+    случай вариант «Exists» с name как n и witness как w и body как b
+      то соединить ["есть такой «", n, "»", (соединить (отобразить w как x → соединить [", а именно ",
+        («Wrap flang» от («Flang of» от x) и x)] по "") по ""), ", что ", («Wrap flang» от («Flang of» от b) и b)] по ""
+    случай вариант «Call» с name как n и args как a
+      то «Flang call» от n и (отобразить a как x → «Wrap flang» от («Flang of» от x) и x)
+    случай вариант «Length» с arg как a то соединить ["длина ", («Wrap flang» от («Flang of» от a) и a)] по ""
+    случай вариант «Field» с target как t и member как f
+      то соединить [(«Wrap flang» от («Flang of» от t) и t), ".«", f, "»"] по ""
+    случай вариант «Items» с items как i
+      то соединить ["[", (соединить (отобразить i как x → «Flang of» от x) по ", "), "]"] по ""
+
+тотальная функция «Flang call»
+  принимает name: строка, args: список строки
+  возвращает строка
+  если (длина args) равен 0
+    то соединить ["«", name, "»"] по ""
+    иначе соединить ["«", name, "» от ", (соединить args по " и ")] по ""
+
+тотальная функция «Flang binary»
+  принимает op: строка, left: строка, right: строка
+  возвращает строка
+  пример «An implication»
+    дано op равно "implies"
+    дано left равно "а"
+    дано right равно "б"
+    ожидается "если а то б иначе да"
+  разбор op
+    случай "implies" то соединить ["если ", left, " то ", right, " иначе да"] по ""
+    случай "concat" то соединить ["соединить ", left, " с ", right] по ""
+    случай любое то соединить [left, " ", («Flang word» от op), " ", right] по ""
+
+тотальная функция «Flang word»
+  принимает op: строка
+  возвращает строка
+  разбор op
+    случай "iff" то "равен"
+    случай "and" то "и притом"
+    случай "or" то "или"
+    случай "eq" то "равен"
+    случай "neq" то "не равен"
+    случай "lt" то "меньше"
+    случай "lte" то "не больше"
+    случай "gt" то "больше"
+    случай "gte" то "не меньше"
+    случай "add" то "плюс"
+    случай "sub" то "минус"
+    случай "mul" то "умножить на"
+    случай любое то "делить на"
+
+тотальная функция «Such text»
+  принимает s: «Formula»
+  возвращает строка
+  соединить [" таких что ", («Wrap flang» от («Flang of» от s) и s)] по ""
+
+тотальная функция «Flang binder»
+  принимает binder: «Binder»
+  возвращает строка
+  пусть parts равно (отобразить (binder.«such») как s → «Such text» от s)
+  пусть such равно (соединить parts по "")
+  соединить ["  для всех «", binder.«name», "»: ", binder.«type», such] по ""
+
+тотальная функция «Flang statement»
+  принимает name: строка, said: «Claim»
+  возвращает список строки
+  пусть top равно [(соединить ["утверждение «", name, "»"] по "")]
+  пусть vars равно (отобразить (said.«binders») как b → «Flang binder» от b)
+  пусть lines равно (свёртка vars начиная с top как acc и v → добавить v к acc)
+  добавить (соединить ["  утверждаем ", («Flang of» от (said.«body»))] по "") к lines
+
+тотальная функция «Carrier notes»
+  принимает said: «Claim»
+  возвращает список строки
+  пусть symbols равно (отобразить (said.«binders») как b → b.«symbol»)
+  пусть z равно (если symbols содержит "ℤ" то [(«Note on Z»)] иначе [])
+  пусть n равно (если symbols содержит "ℕ" то [(«Note on N»)] иначе [])
+  свёртка n начиная с z как acc и line → добавить line к acc
+
+тотальная функция «Note on Z»
+  возвращает строка
+  "примечание \"ℤ читается как «целое»: отрезок [−(2⁵³−1), 2⁵³−1], а не всё ℤ; переполнение уводит в «число»\""
+
+тотальная функция «Note on N»
+  возвращает строка
+  "примечание \"ℕ читается как «точное целое» — без потолка (ADR-0036)\""
+
+тотальная функция «Flang module»
+  принимает name: строка, said: «Claim»
+  возвращает строка
+  пусть notes равно («Carrier notes» от said)
+  пусть top равно (свёртка notes начиная с ["модуль «Formula»", ""] как acc и line → добавить line к acc)
+  пусть start равно (добавить "" к top)
+  пусть lines равно (свёртка («Flang statement» от name и said) начиная с start как acc и line → добавить line к acc)
+  соединить (добавить "" к lines) по "\n"

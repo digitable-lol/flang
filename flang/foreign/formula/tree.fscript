@@ -1,0 +1,447 @@
+модуль «Formula from tree»
+  использует «JSON» из "../../stdlib/json.flang"
+  использует «Formula notation» из "notation.fscript"
+
+примечание "Дерево разбора утверждения (вывод «flang ast») становится деревом формулы."
+примечание "Что в запись формул не ложится, называется причиной, а не печатается наугад."
+
+тип «Converted»
+  вариант «Converted to» содержит tree: «Formula»
+  вариант «Outside» содержит reason: строка
+
+тип «Claim converted»
+  вариант «Claim converted to» содержит said: «Claim»
+  вариант «Claim outside» содержит reason: строка
+
+объект «Gathered»
+  «count»: число
+  «binders»: список «Binder»
+
+тотальная функция «Member»
+  принимает value: «Значение json», key: строка
+  возвращает «Значение json»
+  разбор value
+    случай вариант «Объект json» с состав как fields
+      то свёртка fields начиная с (вариант «Ничто json») как found и f → «Member found» от found и f и key
+    случай любое
+      то вариант «Ничто json»
+
+тотальная функция «Member found»
+  принимает found: «Значение json», f: «Поле json», key: строка
+  возвращает «Значение json»
+  если («Имя поля json» от f) равен key
+    то «Содержимое поля json» от f
+    иначе found
+
+тотальная функция «Text in»
+  принимает value: «Значение json», key: строка
+  возвращает строка
+  разбор («Member» от value и key)
+    случай вариант «Текст json» с текст как t то t
+    случай любое то ""
+
+тотальная функция «List in»
+  принимает value: «Значение json», key: строка
+  возвращает список «Значение json»
+  разбор («Member» от value и key)
+    случай вариант «Массив json» с элементы как items то items
+    случай любое то пустой список
+
+тотальная функция «Has member»
+  принимает value: «Значение json», key: строка
+  возвращает признак
+  разбор («Member» от value и key)
+    случай вариант «Ничто json» то нет
+    случай любое то да
+
+тотальная функция «Bool literal»
+  принимает value: «Значение json»
+  возвращает строка
+  разбор («Member» от value и "value")
+    случай вариант «Признак json» с истина как b то (если b то "true" иначе "false")
+    случай любое то ""
+
+тотальная функция «If kind»
+  принимает thenward: строка, elseward: строка
+  возвращает строка
+  пример «Then false, else true is a negation»
+    дано thenward равно "false"
+    дано elseward равно "true"
+    ожидается "not"
+  если (thenward равен "false") и притом (elseward равен "true")
+    то "not"
+    иначе «If kind rest» от thenward и elseward
+
+тотальная функция «If kind rest»
+  принимает thenward: строка, elseward: строка
+  возвращает строка
+  если elseward равен "false"
+    то "and"
+    иначе «If kind last» от thenward и elseward
+
+тотальная функция «If kind last»
+  принимает thenward: строка, elseward: строка
+  возвращает строка
+  если thenward равен "true"
+    то "or"
+    иначе (если elseward равен "true" то "implies" иначе "")
+
+тотальная функция «Allowed op»
+  принимает op: строка
+  возвращает признак
+  ["add", "sub", "mul", "div", "eq", "neq", "lt", "lte", "gt", "gte", "concat"] содержит op
+
+тотальная функция «Converted of»
+  принимает t: «Formula»
+  возвращает «Converted»
+  вариант «Converted to» с tree равным t
+
+тотальная функция «Outside of»
+  принимает reason: строка
+  возвращает «Converted»
+  вариант «Outside» с reason равным reason
+
+функция «Formula of»
+  принимает value: «Значение json»
+  возвращает «Converted»
+  пусть kind равно («Text in» от value и "kind")
+  разбор kind
+    случай "var" то вариант «Converted to» с tree равным (вариант «Var» с name равным («Text in» от value и "name"))
+    случай "literal" то «Literal of» от («Member» от value и "value")
+    случай "binary" то «Binary node» от value
+    случай "if" то «If node» от value
+    случай "exists" то «Exists node» от value
+    случай "call" то «Call node» от («Text in» от value и "name") и («List in» от value и "args")
+    случай "apply" то «Apply node» от value
+    случай "builtin" то «Builtin node» от value
+    случай "field" то «Field node» от value
+    случай "list" то «Items node» от («List in» от value и "items")
+    случай любое то «Outside of» от (соединить ["узел «", kind, "» вне записи формул"] по "")
+
+тотальная функция «Literal of»
+  принимает value: «Значение json»
+  возвращает «Converted»
+  разбор value
+    случай вариант «Число json» с величина как n
+      то вариант «Converted to» с tree равным (вариант «Number» с text равным (к строке n))
+    случай вариант «Признак json» с истина как b
+      то вариант «Converted to» с tree равным (вариант «Truth» с value равным b)
+    случай вариант «Текст json» с текст как t
+      то «Text literal» от t
+    случай любое
+      то «Outside of» от "литерал без значения"
+
+тотальная функция «Text literal»
+  принимает t: строка
+  возвращает «Converted»
+  если (t содержит "\"") или (t содержит "\n") или (t содержит "\\")
+    то «Outside of» от "строка с кавычкой, переводом строки или обратной чертой вне записи формул"
+    иначе вариант «Converted to» с tree равным (вариант «Text» с text равным t)
+
+функция «Binary node»
+  принимает value: «Значение json»
+  возвращает «Converted»
+  пусть op равно («Text in» от value и "op")
+  если «Allowed op» от op
+    то «Both» от op и («Formula of» от («Member» от value и "left")) и («Formula of» от («Member» от value и "right"))
+    иначе «Outside of» от (соединить ["действие «", op, "» вне записи формул"] по "")
+
+тотальная функция «Both»
+  принимает op: строка, left: «Converted», right: «Converted»
+  возвращает «Converted»
+  разбор left
+    случай вариант «Converted to» с tree как l
+      то «Both right» от op и l и right
+    случай любое
+      то left
+
+тотальная функция «Both right»
+  принимает op: строка, l: «Formula», right: «Converted»
+  возвращает «Converted»
+  разбор right
+    случай вариант «Converted to» с tree как r
+      то вариант «Converted to» с tree равным (вариант «Binary» с op равным op и left равным l и right равным r)
+    случай любое
+      то right
+
+функция «If node»
+  принимает value: «Значение json»
+  возвращает «Converted»
+  пусть thenward равно («Bool literal» от («Member» от value и "then"))
+  пусть elseward равно («Bool literal» от («Member» от value и "else"))
+  «If shaped» от («If kind» от thenward и elseward) и value
+
+функция «If shaped»
+  принимает kind: строка, value: «Значение json»
+  возвращает «Converted»
+  пусть cond равно («Formula of» от («Member» от value и "cond"))
+  разбор kind
+    случай "not" то «Negation of» от cond
+    случай "and" то «Both» от "and" и cond и («Formula of» от («Member» от value и "then"))
+    случай "or" то «Both» от "or" и cond и («Formula of» от («Member» от value и "else"))
+    случай "implies" то «Both» от "implies" и cond и («Formula of» от («Member» от value и "then"))
+    случай любое то «Outside of» от "условное «если … то … иначе …» не связка: вне записи формул"
+
+тотальная функция «Negation of»
+  принимает cond: «Converted»
+  возвращает «Converted»
+  разбор cond
+    случай вариант «Converted to» с tree как t
+      то вариант «Converted to» с tree равным (вариант «Negation» с body равным t)
+    случай любое то cond
+
+функция «Exists node»
+  принимает value: «Значение json»
+  возвращает «Converted»
+  пусть name равно («Text in» от value и "name")
+  пусть body равно («Formula of» от («Member» от value и "body"))
+  если «Has member» от value и "witness"
+    то «Exists made» от name и («Formula of» от («Member» от value и "witness")) и body
+    иначе «Exists made» от name и (вариант «Converted to» с tree равным (вариант «Items» с items равным [])) и body
+
+тотальная функция «Exists made»
+  принимает name: строка, witness: «Converted», body: «Converted»
+  возвращает «Converted»
+  разбор witness
+    случай вариант «Converted to» с tree как w
+      то «Exists body» от name и («Witness list» от w) и body
+    случай любое
+      то witness
+
+тотальная функция «Witness list»
+  принимает w: «Formula»
+  возвращает список «Formula»
+  разбор w
+    случай вариант «Items» с items как i то (если (длина i) равен 0 то пустой список иначе [w])
+    случай любое то [w]
+
+тотальная функция «Exists body»
+  принимает name: строка, witness: список «Formula», body: «Converted»
+  возвращает «Converted»
+  разбор body
+    случай вариант «Converted to» с tree как b
+      то «Converted of» от (вариант «Exists» с name равным name и witness равным witness и body равным b)
+    случай любое
+      то body
+
+функция «Converted list»
+  принимает values: список «Значение json»
+  возвращает «Converted»
+  пусть start равно (вариант «Converted to» с tree равным (вариант «Items» с items равным []))
+  свёртка values начиная с start как acc и v → «Converted added» от acc и v
+
+функция «Converted added»
+  принимает acc: «Converted», v: «Значение json»
+  возвращает «Converted»
+  разбор acc
+    случай вариант «Converted to» с tree как t
+      то «Items joined» от t и («Formula of» от v)
+    случай любое
+      то acc
+
+тотальная функция «Items joined»
+  принимает t: «Formula», later: «Converted»
+  возвращает «Converted»
+  разбор later
+    случай вариант «Converted to» с tree как x
+      то вариант «Converted to» с tree равным (вариант «Items» с items равным (добавить x к («Items of» от t)))
+    случай любое
+      то later
+
+тотальная функция «Items of»
+  принимает t: «Formula»
+  возвращает список «Formula»
+  разбор t
+    случай вариант «Items» с items как i то i
+    случай любое то [t]
+
+функция «Items node»
+  принимает values: список «Значение json»
+  возвращает «Converted»
+  «Converted list» от values
+
+функция «Call node»
+  принимает name: строка, values: список «Значение json»
+  возвращает «Converted»
+  разбор («Converted list» от values)
+    случай вариант «Converted to» с tree как t
+      то вариант «Converted to» с tree равным (вариант «Call» с name равным name и args равным («Items of» от t))
+    случай вариант «Outside» с reason как r
+      то «Outside of» от r
+
+функция «Apply node»
+  принимает value: «Значение json»
+  возвращает «Converted»
+  пусть target равно («Member» от value и "fn")
+  если («Text in» от target и "kind") равен "var"
+    то «Call node» от («Text in» от target и "name") и («List in» от value и "args")
+    иначе «Outside of» от "применение вычисленной функции вне записи формул"
+
+функция «Builtin node»
+  принимает value: «Значение json»
+  возвращает «Converted»
+  пусть name равно («Text in» от value и "name")
+  пусть args равно («List in» от value и "args")
+  если (name равен "длина") и притом ((длина args) равен 1)
+    то «Length of» от («Formula of» от (голова args))
+    иначе «Outside of» от (соединить ["встроенная форма «", name, "» вне записи формул"] по "")
+
+тотальная функция «Length of»
+  принимает arg: «Converted»
+  возвращает «Converted»
+  разбор arg
+    случай вариант «Converted to» с tree как t то вариант «Converted to» с tree равным (вариант «Length» с arg равным t)
+    случай любое то arg
+
+функция «Field node»
+  принимает value: «Значение json»
+  возвращает «Converted»
+  разбор («Formula of» от («Member» от value и "target"))
+    случай вариант «Converted to» с tree как t
+      то «Converted of» от (вариант «Field» с target равным t и member равным («Text in» от value и "field"))
+    случай вариант «Outside» с reason как r
+      то «Outside of» от r
+
+тотальная функция «Lower word»
+  принимает name: строка
+  возвращает признак
+  пример «A built-in type word»
+    дано name равно "неотрицательное"
+    ожидается да
+  пример «A declared type»
+    дано name равно "Предмет"
+    ожидается нет
+  свёртка (разложить name на символы) начиная с да как ok и c → ok и притом («Lower letter» от c)
+
+тотальная функция «Lower letter»
+  принимает c: строка
+  возвращает признак
+  пусть n равно («Code of» от c)
+  ((n не меньше 1072) и притом (n не больше 1103)) или (n равен 1105) или (c равен " ")
+
+функция «Type text»
+  принимает sort: «Значение json»
+  возвращает строка
+  разбор («Text in» от sort и "kind")
+    случай "number" то "число"
+    случай "string" то "строка"
+    случай "flag" то "признак"
+    случай "exactInt" то "точное целое"
+    случай "exactFraction" то "точное дробное"
+    случай "named" то «Named type» от («Text in» от sort и "name")
+    случай "list" то «Joined type» от ["список ", («Type text» от («Member» от sort и "of"))]
+    случай "fn" то «Function type» от sort
+    случай любое то ""
+
+тотальная функция «Named type»
+  принимает name: строка
+  возвращает строка
+  если «Lower word» от name
+    то name
+    иначе соединить ["«", name, "»"] по ""
+
+тотальная функция «Joined type»
+  принимает parts: список строки
+  возвращает строка
+  если parts содержит ""
+    то ""
+    иначе соединить parts по ""
+
+функция «Function type»
+  принимает sort: «Значение json»
+  возвращает строка
+  пусть params равно (отобразить («List in» от sort и "params") как p → «Type text» от p)
+  пусть back равно («Type text» от («Member» от sort и "returns"))
+  если (params содержит "") или ((длина params) равен 0)
+    то ""
+    иначе «Joined type» от ["функция из ", (соединить params по " и "), " в ", back]
+
+тотальная функция «Type symbol»
+  принимает sort: «Значение json»
+  возвращает строка
+  разбор («Text in» от sort и "kind")
+    случай "exactInt" то "ℕ"
+    случай "exactFraction" то "ℚ≥0"
+    случай "named" то (если («Text in» от sort и "name") равен "целое" то "ℤ" иначе "")
+    случай любое то ""
+
+функция «Claim of statement»
+  принимает node: «Значение json»
+  возвращает «Claim converted»
+  пусть vars равно («List in» от node и "vars")
+  пусть such равно (отобразить («List in» от node и "such") как s → «Member» от s и "expr")
+  если (длина such) больше (длина vars)
+    то вариант «Claim outside» с reason равным "условий «таких что» больше, чем связанных имён"
+    иначе «Claim with such» от node и vars и («Converted list» от such)
+
+функция «Claim with such»
+  принимает node: «Значение json», vars: список «Значение json», such: «Converted»
+  возвращает «Claim converted»
+  разбор such
+    случай вариант «Converted to» с tree как t
+      то «Claim with binders» от node и («Binders of vars» от vars и («Items of» от t))
+    случай вариант «Outside» с reason как r
+      то вариант «Claim outside» с reason равным r
+
+функция «Claim with binders»
+  принимает node: «Значение json», binders: список «Binder»
+  возвращает «Claim converted»
+  пусть types равно (отобразить binders как b → b.«type»)
+  если types содержит ""
+    то вариант «Claim outside» с reason равным "тип связанного имени вне записи формул"
+    иначе «Claim with body» от binders и («Formula of» от («Member» от node и "expr"))
+
+тотальная функция «Claim with body»
+  принимает binders: список «Binder», body: «Converted»
+  возвращает «Claim converted»
+  разбор body
+    случай вариант «Converted to» с tree как t
+      то вариант «Claim converted to» с said равным (запись «Claim» с «binders» равным binders и «body» равным t)
+    случай вариант «Outside» с reason как r
+      то вариант «Claim outside» с reason равным r
+
+функция «Binders of vars»
+  принимает vars: список «Значение json», such: список «Formula»
+  возвращает список «Binder»
+  пусть skip равно ((длина vars) минус (длина such))
+  пусть start равно (запись «Gathered» с «count» равным 0 и «binders» равным [])
+  пусть gathered равно (свёртка vars начиная с start как acc и v → «Gathered next» от acc и v и skip и such)
+  gathered.«binders»
+
+функция «Gathered next»
+  принимает acc: «Gathered», v: «Значение json», skip: число, such: список «Formula»
+  возвращает «Gathered»
+  пусть n равно ((acc.«count») плюс 1)
+  пусть own равно (если n больше skip то [(элемент (n минус skip) в such)] иначе [])
+  пусть sort равно («Member» от v и "type")
+  пусть b равно («Binder of» от («Text in» от v и "name") и («Type text» от sort) и («Type symbol» от sort) и own)
+  запись «Gathered» с «count» равным n и «binders» равным (добавить b к (acc.«binders»))
+
+функция «Without places»
+  принимает value: «Значение json»
+  возвращает «Значение json»
+  разбор value
+    случай вариант «Объект json» с состав как fields
+      то вариант «Объект json» с состав равным («Fields without places» от fields)
+    случай вариант «Массив json» с элементы как items
+      то вариант «Массив json» с элементы равным (отобразить items как x → «Without places» от x)
+    случай любое
+      то value
+
+функция «Fields without places»
+  принимает fields: список «Поле json»
+  возвращает список «Поле json»
+  пусть kept равно (отфильтровать fields где f → не ((«Имя поля json» от f) равен "span"))
+  отобразить kept как f → «Field without places» от f
+
+функция «Field without places»
+  принимает f: «Поле json»
+  возвращает «Поле json»
+  пусть inner равно («Without places» от («Содержимое поля json» от f))
+  вариант «Поле json» с имя равным («Имя поля json» от f) и содержимое равным inner
+
+функция «Statement core»
+  принимает node: «Значение json»
+  возвращает «Значение json»
+  пусть parts равно [(«Member» от node и "vars"), («Member» от node и "such"), («Member» от node и "expr")]
+  «Without places» от (вариант «Массив json» с элементы равным parts)

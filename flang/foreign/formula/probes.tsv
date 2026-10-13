@@ -1,0 +1,39 @@
+notation	formula	code	wanted	word
+unicode	∀ x ∈ ℤ, ∀ y ∈ ℤ, x + y = y + x	0	(«x» плюс «y») равен («y» плюс «x»)	доказано
+latex	\forall x \in \mathbb{Z},\ \forall y \in \mathbb{Z},\ x + y = y + x	0	(«x» плюс «y») равен («y» плюс «x»)	доказано
+unicode	forall x in ZZ, forall y in ZZ, x > 0 /\ y > 0 -> x + y > 0	0	если ((«x» больше 0) и притом («y» больше 0)) то ((«x» плюс «y») больше 0) иначе да	доказано
+unicode	∀ a ∈ ℕ, ∀ b ∈ ℕ, ∀ c ∈ ℕ, (a + b) + c = a + (b + c)	0	((«a» плюс «b») плюс «c») равен («a» плюс («b» плюс «c»))	доказано
+latex	\forall a \in \mathbb{N},\ \forall b \in \mathbb{N},\ \forall c \in \mathbb{N},\ a \cdot (b + c) = a \cdot b + a \cdot c	0	(«a» умножить на («b» плюс «c»)) равен ((«a» умножить на «b») плюс («a» умножить на «c»))	доказано
+unicode	∀ x ∈ ℕ, ∀ y ∈ ℕ, (x + y)^2 = x^2 + x · y + y · x + y^2	0	((«x» плюс «y») умножить на («x» плюс «y»)) равен ((((«x» умножить на «x») плюс («x» умножить на «y»)) плюс («y» умножить на «x»)) плюс («y» умножить на «y»))	доказано
+unicode	∀ a ∈ ℕ, ∃ m := a, m = a	0	есть такой «m», а именно «a», что («m» равен «a»)	доказано
+unicode	∀ a ∈ ℕ, ∃ m, m = a	0	есть такой «m», что («m» равен «a»)	доказано
+unicode	∀ x ∈ ℤ, x > 0 ↔ 0 < x	0	(«x» больше 0) равен (0 меньше «x»)	объявлено, не доказано
+unicode	∀ x ∈ ℤ, ¬(x < x)	0	не («x» меньше «x»)	объявлено, не доказано
+unicode	∀ л : список число, длина(л) ≥ 0	0	(длина «л») не меньше 0	доказано
+latex	\forall a \in \mathbb{Q}_{\geq 0},\ \forall b \in \mathbb{Q}_{\geq 0},\ a + b = b + a	0	(«a» плюс «b») равен («b» плюс «a»)	доказано
+unicode	∀ x ∈ ℤ, ∀ y ∈ ℤ | y > x, y − x > 0	0	(«y» минус «x») больше 0	объявлено, не доказано
+latex	\forall x \in \mathbb{Q}_{\geq 0},\ \forall y \in \mathbb{Q}_{\geq 0},\ \frac{x}{y} = x / y	0	(«x» делить на «y») равен («x» делить на «y»)	доказано
+unicode	∀ x, y ∈ ℤ, x · y = y · x	0	(«x» умножить на «y») равен («y» умножить на «x»)	доказано
+unicode	∀ x ∈ ℤ, x = x = x	FLANG_FORMULA_AMBIGUOUS	цепочка сравнений без скобок неоднозначна: вместо a < b < c напишите a < b ∧ b < c	
+unicode	∀ x ∈ ℤ, x > 0 ∧ x < 5 ∨ x = 7	FLANG_FORMULA_AMBIGUOUS	«∧» и «∨» без скобок неоднозначны: напишите (A ∧ B) ∨ C или A ∧ (B ∨ C)	
+unicode	∀ x ∈ ℤ, x > 0 → x > 1 → x > 2	FLANG_FORMULA_AMBIGUOUS	цепочка «→» без скобок неоднозначна: напишите A → (B → C) или (A → B) → C	
+unicode	∀ p ∈ ℤ, ∀ q ∈ ℤ, p > 0 ↔ q > 0 ↔ p = q	FLANG_FORMULA_AMBIGUOUS	цепочка «↔» без скобок неоднозначна: напишите (A ↔ B) ↔ C или A ↔ (B ↔ C)	
+unicode	∀ x ∈ ℤ, ∀ y ∈ ℤ, x / y · x = x	FLANG_FORMULA_AMBIGUOUS	после «/» знак «·» или «/» без скобок неоднозначен: напишите (a / b) · c или a / (b · c)	
+unicode	∀ x ∈ ℤ, 2x = x + x	FLANG_FORMULA_AMBIGUOUS	«2x»: умножение без знака не читается — напишите 2 · x	
+latex	\forall x \in \mathbb{Z},\ \forall y \in \mathbb{Z},\ xy = yx	FLANG_FORMULA_AMBIGUOUS	в LaTeX «xy» — это произведение букв; имя из нескольких букв пишите \text{xy}, произведение — со знаком \cdot	
+unicode	∀ x ∈ ℤ, x^2^3 = x	FLANG_FORMULA_AMBIGUOUS	цепочка «^» без скобок неоднозначна: напишите (a^b)^c или a^(b^c)	
+unicode	∀ x ∈ ℝ, x = x	FLANG_FORMULA_CARRIER	ℝ в flang нет: «число» — double IEEE-754, законы поля на нём ложны (ADR-0036)	
+unicode	∀ x ∈ ℚ, x = x	FLANG_FORMULA_CARRIER	ℚ со знаком в flang нет: «точное дробное» неотрицательно (ADR-0062); пишите ℚ≥0 или \mathbb{Q}_{\geq 0}	
+unicode	∀ x, x = x	FLANG_FORMULA_QUANTIFIER	у «∀» нет носителя: напишите ∀ x ∈ ℤ, … или ∀ x : строка, …	
+unicode	∀ x ∈ ℤ, x = 0 ∨ ∀ y ∈ ℤ, y = x	FLANG_FORMULA_QUANTIFIER	квантор «∀» стоит только в начале формулы: внутри формулы квантора всеобщности над носителем в flang нет	
+unicode	∀ x ∈ ℤ, ∃ y ∈ ℤ, y = x	FLANG_FORMULA_QUANTIFIER	у «∃» в flang нет носителя: тип выводит ядро; напишите ∃ m, … или ∃ m := t, …	
+unicode	∀ n ∈ ℕ, n^n = n	FLANG_FORMULA_POWER	в flang нет возведения в степень: читается только показатель-число от 1 до 16, он раскрывается умножением	
+unicode	∀ x ∈ ℤ, -x = x	FLANG_FORMULA_MINUS	унарного минуса у выражения в flang нет: напишите 0 − x; минус прямо перед числом читается отрицательным числом	
+unicode	∀ x ∈ ℤ, x @ 1	FLANG_FORMULA_SIGN	знак «@» не входит в запись формул	
+latex	\forall x \in \mathbb{Z},\ \sqrt{x} = x	FLANG_FORMULA_LATEX	команда \sqrt вне подмножества LaTeX	
+latex	\forall x \in \mathbb{Z}_{\geq 0},\ x = x	FLANG_FORMULA_LATEX	нижний индекс _{\geq 0} читается только у ℚ: \mathbb{Q}_{\geq 0}	
+unicode	∀ x ∈ ℤ, (x + 1 = x	FLANG_FORMULA_SYNTAX	ждали «)», а стоит конец формулы	
+unicode	∀ x ∈ ℤ, x = x)	FLANG_FORMULA_SYNTAX	лишнее после формулы: «)»	
+unicode	∀ x ∈ ℤ, x = ℤ	FLANG_FORMULA_CARRIER	носитель «ℤ» стоит только после «∈» в кванторе «∀»	
+unicode	   	FLANG_FORMULA_EMPTY	формула пуста	
+

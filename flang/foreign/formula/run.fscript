@@ -1,0 +1,1023 @@
+модуль «Formula run»
+  использует «JSON» из "../../stdlib/json.flang"
+  использует «Formula notation» из "notation.fscript"
+  использует «Formula from tree» из "tree.fscript"
+
+примечание "Четыре плана: Read — формула в утверждение flang и слово ядра; Print — утверждения файла в обе записи;"
+примечание "Round trip — круг по всем утверждениям дерева; Probes — таблица проб, отказы и слово ядра."
+
+объект «Job»
+  «text»: строка
+  «module»: строка
+  «path»: строка
+  «temp»: строка
+  «lines»: список строки
+
+объект «Entry»
+  «file»: строка
+  «name»: строка
+  «index»: число
+  «verdict»: строка
+  «core»: «Значение json»
+
+объект «Trip»
+  «files»: список строки
+  «dir»: строка
+  «entries»: список «Entry»
+  «pending»: список «Entry»
+
+объект «Options»
+  «parts»: список строки
+
+объект «Probe»
+  «parts»: список строки
+
+тип «Stage»
+  вариант «Read begun»
+  вариант «Read asked»
+  вариант «Read where» содержит job: «Job», out: строка
+  вариант «Read temp» содержит job: «Job»
+  вариант «Read written» содержит job: «Job»
+  вариант «Read checked» содержит job: «Job»
+  вариант «Read shown» содержит job: «Job», code: число
+  вариант «Read cleaned» содержит job: «Job», code: число
+  вариант «Read removed» содержит code: число
+  вариант «Print begun»
+  вариант «Print asked»
+  вариант «Print where» содержит file: строка
+  вариант «Print parsed» содержит file: строка
+  вариант «Print shown» содержит done: число, whole: число
+  вариант «Trip begun»
+  вариант «Trip listed»
+  вариант «Trip temp» содержит files: список строки
+  вариант «Trip source» содержит trip: «Trip»
+  вариант «Trip written» содержит trip: «Trip»
+  вариант «Trip judged» содержит trip: «Trip»
+  вариант «Trip shown» содержит trip: «Trip»
+  вариант «Trip cleaned» содержит trip: «Trip»
+  вариант «Trip removed» содержит trip: «Trip»
+  вариант «Probes begun»
+  вариант «Probes read»
+  вариант «Probes temp» содержит probes: список «Probe», lines: список строки
+  вариант «Probes written» содержит probes: список «Probe», lines: список строки, temp: строка
+  вариант «Probes checked» содержит probes: список «Probe», lines: список строки, temp: строка
+  вариант «Probes shown» содержит failures: число, whole: число, temp: строка
+  вариант «Probes cleaned» содержит failures: число, whole: число, temp: строка
+  вариант «Probes removed» содержит failures: число, whole: число
+
+тотальная функция «Binary»
+  возвращает строка
+  пример «The binary of the tree, seen from this directory»
+    ожидается "../../../bootstrap/flang"
+  "../../../bootstrap/flang"
+
+тотальная функция «Root»
+  возвращает строка
+  "../../.."
+
+тотальная функция «Usage»
+  возвращает строка
+  "звать: run.fscript --plan Read -- [--latex] [--name <имя>] [--out <файл.flang>] <формула>"
+
+тотальная функция «Absolute»
+  принимает directory: строка, path: строка
+  возвращает строка
+  пример «A relative path is counted from the directory»
+    дано directory равно "/srv/tree"
+    дано path равно "a.flang"
+    ожидается "/srv/tree/a.flang"
+  если path начинается с "/"
+    то path
+    иначе соединить [directory, "/", path] по ""
+
+тотальная функция «Temp order»
+  принимает pattern: строка
+  возвращает «Поручение»
+  вариант «Завести временный каталог» с образец равным pattern
+
+тотальная функция «Pwd order»
+  возвращает «Поручение»
+  вариант «Прочитать переменную среды» с имя равным "PWD"
+
+тотальная функция «Remove order»
+  принимает path: строка
+  возвращает «Поручение»
+  вариант «Удалить файл» с путь равным path
+
+тотальная функция «Write order»
+  принимает path: строка, text: строка
+  возвращает «Поручение»
+  вариант «Записать файл» с путь равным path и содержимое равным text
+
+тотальная функция «Show»
+  принимает text: строка
+  возвращает «Поручение»
+  вариант «Записать файл» с путь равным "/dev/stdout" и содержимое равным text
+
+тотальная функция «Do»
+  принимает order: «Поручение», later: «Stage»
+  возвращает «Продолжение»
+  вариант «Сделать» с поручение равным order и потом равным later
+
+тотальная функция «Run flang»
+  принимает args: список строки, later: «Stage»
+  возвращает «Продолжение»
+  «Do» от (вариант «Запустить процесс» с программа равным («Binary») и аргументы равным args) и later
+
+тотальная функция «Fail»
+  принимает code: строка, message: строка
+  возвращает «Продолжение»
+  вариант «Провал» с код равным code и сообщение равным message
+
+тотальная функция «Unexpected»
+  принимает reply: «Отклик», wanted: строка
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Сбой» с код как code и сообщение как message то «Fail» от code и message
+    случай любое то «Fail» от "FLANG_IO_ORDER" и (соединить ["ждали ", wanted] по "")
+
+тотальная функция «Nth»
+  принимает items: список строки, n: число
+  возвращает строка
+  пример «Beyond the end there is nothing»
+    дано items равно ["a"]
+    дано n равно 2
+    ожидается ""
+  если (длина items) не меньше n
+    то элемент n в items
+    иначе ""
+
+тотальная функция «Opt»
+  принимает o: «Options», n: число
+  возвращает строка
+  «Nth» от (o.«parts») и n
+
+тотальная функция «Options of»
+  принимает parts: список строки
+  возвращает «Options»
+  запись «Options» с «parts» равным parts
+
+тотальная функция «Options from»
+  принимает args: список строки
+  возвращает «Options»
+  пример «A LaTeX formula with a name»
+    дано args равно ["--latex", "--name", "сумма", "x = x"]
+    ожидается запись «Options» с «parts» равным ["latex", "сумма", "", "x = x", ""]
+  пусть start равно («Options of» от ["unicode", "формула", "", "", ""])
+  свёртка args начиная с start как o и a → «Option added» от o и a
+
+тотальная функция «Option added»
+  принимает o: «Options», a: строка
+  возвращает «Options»
+  пусть waiting равно («Opt» от o и 5)
+  разбор a
+    случай "--latex" то «Options of» от ["latex", («Opt» от o и 2), («Opt» от o и 3), («Opt» от o и 4), ""]
+    случай "--" то o
+    случай любое то «Option value» от o и a и waiting
+
+тотальная функция «Option value»
+  принимает o: «Options», a: строка, waiting: строка
+  возвращает «Options»
+  разбор waiting
+    случай "name" то «Options of» от [(«Opt» от o и 1), a, («Opt» от o и 3), («Opt» от o и 4), ""]
+    случай "out" то «Options of» от [(«Opt» от o и 1), («Opt» от o и 2), a, («Opt» от o и 4), ""]
+    случай любое то «Option word» от o и a
+
+тотальная функция «Option word»
+  принимает o: «Options», a: строка
+  возвращает «Options»
+  разбор a
+    случай "--name" то «Options of» от [(«Opt» от o и 1), («Opt» от o и 2), («Opt» от o и 3), («Opt» от o и 4), "name"]
+    случай "--out" то «Options of» от [(«Opt» от o и 1), («Opt» от o и 2), («Opt» от o и 3), («Opt» от o и 4), "out"]
+    случай любое то «Options of» от [(«Opt» от o и 1), («Opt» от o и 2), («Opt» от o и 3),
+      («Joined text» от («Opt» от o и 4) и a), ""]
+
+тотальная функция «Joined text»
+  принимает before: строка, a: строка
+  возвращает строка
+  если before равен ""
+    то a
+    иначе соединить [before, " ", a] по ""
+
+тотальная функция «Job of»
+  принимает x: строка, u: строка, p: строка, t: строка, l: список строки
+  возвращает «Job»
+  запись «Job» с «text» равным x и «module» равным u и «path» равным p и «temp» равным t и «lines» равным l
+
+тотальная функция «Job at»
+  принимает job: «Job», path: строка, temp: строка
+  возвращает «Job»
+  «Job of» от (job.«text») и (job.«module») и path и temp и (job.«lines»)
+
+тотальная функция «Job with lines»
+  принимает job: «Job», lines: список строки
+  возвращает «Job»
+  «Job of» от (job.«text») и (job.«module») и (job.«path») и (job.«temp») и lines
+
+тотальная функция «Plain options»
+  принимает o: «Options»
+  возвращает признак
+  не ((«Opt» от o и 4) равен "")
+
+функция «Read next»
+  принимает stage: «Stage», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Read begun» то «Do» от (вариант «Прочитать доводы») и (вариант «Read asked»)
+    случай вариант «Read asked» то «Read after args» от reply
+    случай вариант «Read where» с job как job и out как out то «Read after where» от job и out и reply
+    случай вариант «Read temp» с job как job то «Read after temp» от job и reply
+    случай вариант «Read written» с job как job то «Read after written» от job и reply
+    случай вариант «Read checked» с job как job то «Read after check» от job и reply
+    случай вариант «Read shown» с job как job и code как code то «Read clean» от job и code
+    случай вариант «Read cleaned» с job как job и code как code то «Read clean dir» от job и code
+    случай вариант «Read removed» с code как code то «Read finish» от code
+    случай любое то «Fail» от "FLANG_IO_ORDER" и "план Read зашёл не в свою ветвь"
+
+функция «Read after args»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Доводы» с доводы как args
+      то «Read options» от («Options from» от args)
+    случай любое
+      то «Unexpected» от reply и "доводы"
+
+функция «Read options»
+  принимает o: «Options»
+  возвращает «Продолжение»
+  если «Plain options» от o
+    то «Read claim» от o и («Read formula» от («Opt» от o и 1) и («Opt» от o и 4))
+    иначе «Fail» от "FLANG_FORMULA_USAGE" и («Usage»)
+
+функция «Read claim»
+  принимает o: «Options», outcome: «Claim result»
+  возвращает «Продолжение»
+  разбор outcome
+    случай вариант «Claim read» с said как said
+      то «Read place» от o и («Read job» от o и said)
+    случай вариант «Claim refused» с code как code и message как message
+      то «Fail» от code и message
+
+тотальная функция «Read job»
+  принимает o: «Options», said: «Claim»
+  возвращает «Job»
+  пусть unit равно («Flang module» от («Opt» от o и 2) и said)
+  пусть lines равно [(соединить ["запись с кванторами: ", («Printed claim» от said и "unicode")] по ""),
+    (соединить ["LaTeX: ", («Printed claim» от said и "latex")] по ""),
+    "перевод на flang (вне доверенной основы; судит ядро, ADR-0106):", unit]
+  «Job of» от («Opt» от o и 4) и unit и "" и "" и lines
+
+функция «Read place»
+  принимает o: «Options», job: «Job»
+  возвращает «Продолжение»
+  если («Opt» от o и 3) равен ""
+    то «Do» от («Temp order» от "/tmp/flang-formula-") и (вариант «Read temp» с job равным job)
+    иначе «Do» от («Pwd order») и (вариант «Read where» с job равным job и out равным («Opt» от o и 3))
+
+функция «Read after where»
+  принимает job: «Job», out: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Значение среды» с значение как pwd
+      то «Read write» от («Job at» от job и («Absolute» от pwd и out) и "")
+    случай любое
+      то «Unexpected» от reply и "переменную PWD"
+
+функция «Read after temp»
+  принимает job: «Job», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Заведено» с путь как dir
+      то «Read write» от («Job at» от job и (соединить [dir, "/formula.flang"] по "") и dir)
+    случай любое
+      то «Unexpected» от reply и "временный каталог"
+
+функция «Read write»
+  принимает job: «Job»
+  возвращает «Продолжение»
+  пусть order равно (вариант «Записать файл» с путь равным (job.«path») и содержимое равным (job.«module»))
+  «Do» от order и (вариант «Read written» с job равным job)
+
+функция «Read after written»
+  принимает job: «Job», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Записано» с сколько как n
+      то «Run flang» от ["check", (job.«path»), "--proof"] и (вариант «Read checked» с job равным job)
+    случай любое
+      то «Unexpected» от reply и "запись перевода"
+
+функция «Read after check»
+  принимает job: «Job», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как err
+      то «Read report» от job и code и («Kernel lines» от (соединить [out, err] по "\n"))
+    случай любое
+      то «Unexpected» от reply и "слово ядра"
+
+тотальная функция «Kernel lines»
+  принимает text: строка
+  возвращает список строки
+  пример «Only the verdicts are kept»
+    дано text равно "── ведомость ──\n  утверждение «а» — доказано\nитог:"
+    ожидается ["  утверждение «а» — доказано"]
+  отфильтровать (разделить text по "\n") где line → «Kernel line» от line
+
+тотальная функция «Kernel line»
+  принимает line: строка
+  возвращает признак
+  пусть marks равно ["утверждение «", "FLANG_", "ПРОВЕРЕНО", "правило «"]
+  длина (отфильтровать marks где m → line содержит m) больше 0
+
+функция «Read report»
+  принимает job: «Job», code: число, kernel: список строки
+  возвращает «Продолжение»
+  пусть said равно (соединить ["слово ядра (flang check --proof), код ", (к строке code), ":"] по "")
+  пусть head равно (добавить said к (job.«lines»))
+  пусть lines равно (свёртка kernel начиная с head как acc и line → добавить line к acc)
+  пусть text равно (соединить (добавить "" к lines) по "\n")
+  «Do» от («Show» от text) и (вариант «Read shown» с job равным job и code равным code)
+
+функция «Read clean»
+  принимает job: «Job», code: число
+  возвращает «Продолжение»
+  если (job.«temp») равен ""
+    то «Read finish» от code
+    иначе «Do» от («Remove order» от (job.«path»)) и (вариант «Read cleaned» с job равным job и code равным code)
+
+функция «Read clean dir»
+  принимает job: «Job», code: число
+  возвращает «Продолжение»
+  «Do» от («Remove order» от (job.«temp»)) и (вариант «Read removed» с code равным code)
+
+тотальная функция «Read finish»
+  принимает code: число
+  возвращает «Продолжение»
+  разбор code
+    случай 0 то вариант «Конец работы» с значение равным "перевод принят ядром; слово ядра — выше"
+    случай 3 то вариант «Конец работы» с значение равным "перевод принят ядром, но не доказан: «объявлено, не доказано»"
+    случай любое то «Fail» от "FLANG_FORMULA_KERNEL" и (соединить [
+      "ядро не приняло перевод: flang check --proof вернул код ", (к строке code)] по "")
+
+тотальная функция «Read begin»
+  возвращает «Stage»
+  вариант «Read begun»
+
+план «Read»
+  состояние «Stage»
+  начинает с «Read begin»
+  обрабатывает «Read next»
+
+функция «Print next»
+  принимает stage: «Stage», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Print begun» то «Do» от (вариант «Прочитать доводы») и (вариант «Print asked»)
+    случай вариант «Print asked» то «Print after args» от reply
+    случай вариант «Print where» с file как file то «Print after where» от file и reply
+    случай вариант «Print parsed» с file как file то «Print after ast» от file и reply
+    случай вариант «Print shown» с done как done и whole как whole то «Print finish» от done и whole
+    случай любое то «Fail» от "FLANG_IO_ORDER" и "план Print зашёл не в свою ветвь"
+
+функция «Print after args»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Доводы» с доводы как args
+      то «Print file» от args
+    случай любое
+      то «Unexpected» от reply и "доводы"
+
+функция «Print file»
+  принимает args: список строки
+  возвращает «Продолжение»
+  если (длина args) равен 1
+    то «Do» от («Pwd order») и (вариант «Print where» с file равным (голова args))
+    иначе «Fail» от "FLANG_FORMULA_USAGE" и "звать: run.fscript --plan Print -- <файл.flang>"
+
+функция «Print after where»
+  принимает file: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Значение среды» с значение как pwd
+      то «Run flang» от ["ast", («Absolute» от pwd и file)] и (вариант «Print parsed» с file равным file)
+    случай любое
+      то «Unexpected» от reply и "переменную PWD"
+
+функция «Print after ast»
+  принимает file: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как err
+      то «Print statements» от file и code и out и err
+    случай любое
+      то «Unexpected» от reply и "дерево разбора"
+
+функция «Print statements»
+  принимает file: строка, code: число, out: строка, err: строка
+  возвращает «Продолжение»
+  если code равен 0
+    то «Print report» от («Statements of» от out)
+    иначе «Fail» от "FLANG_FORMULA_FILE" и (соединить ["файл ", file, " не разобран: ", («First line» от err)] по "")
+
+тотальная функция «First line»
+  принимает text: строка
+  возвращает строка
+  голова (разделить text по "\n")
+
+функция «Statements of»
+  принимает out: строка
+  возвращает список «Значение json»
+  разбор («Разобрать json» от out)
+    случай вариант «Разобран json» с значение как v то «List in» от v и "statements"
+    случай любое то пустой список
+
+функция «Print report»
+  принимает statements: список «Значение json»
+  возвращает «Продолжение»
+  пусть shown равно (отобразить statements как s → «Statement shown» от s)
+  пусть done равно (длина (отфильтровать shown где x → не (x содержит "вне записи: ")))
+  пусть head равно [(соединить ["утверждений ", (к строке (длина statements)), ", напечатано ", (к строке done)] по "")]
+  пусть text равно (соединить (добавить "" к (свёртка shown начиная с head как acc и x → добавить x к acc)) по "\n")
+  «Do» от («Show» от text) и (вариант «Print shown» с done равным done и whole равным (длина statements))
+
+функция «Statement shown»
+  принимает s: «Значение json»
+  возвращает строка
+  пусть title равно (соединить ["утверждение «", («Text in» от s и "name"), "»"] по "")
+  разбор («Claim of statement» от s)
+    случай вариант «Claim converted to» с said как said
+      то соединить [title, "\n  ", («Printed claim» от said и "unicode"), "\n  ",
+        («Printed claim» от said и "latex")] по ""
+    случай вариант «Claim outside» с reason как r
+      то соединить [title, "\n  вне записи: ", r] по ""
+
+тотальная функция «Print finish»
+  принимает done: число, whole: число
+  возвращает «Продолжение»
+  пусть said равно (соединить ["напечатано ", (к строке done), " из ", (к строке whole)] по "")
+  если done равен whole
+    то вариант «Конец работы» с значение равным said
+    иначе «Fail» от "FLANG_FORMULA_OUTSIDE" и said
+
+тотальная функция «Print begin»
+  возвращает «Stage»
+  вариант «Print begun»
+
+план «Print»
+  состояние «Stage»
+  начинает с «Print begin»
+  обрабатывает «Print next»
+
+тотальная функция «Trip of»
+  принимает files: список строки, dir: строка, entries: список «Entry», pending: список «Entry»
+  возвращает «Trip»
+  запись «Trip» с «files» равным files и «dir» равным dir и «entries» равным entries и «pending» равным pending
+
+тотальная функция «Entry of»
+  принимает file: строка, name: строка, index: число, verdict: строка
+  возвращает «Entry»
+  «Entry full» от file и name и index и verdict и (вариант «Ничто json»)
+
+тотальная функция «Entry full»
+  принимает f: строка, n: строка, i: число, v: строка, c: «Значение json»
+  возвращает «Entry»
+  запись «Entry» с «file» равным f и «name» равным n и «index» равным i и «verdict» равным v и «core» равным c
+
+тотальная функция «Entry judged»
+  принимает e: «Entry», verdict: строка
+  возвращает «Entry»
+  «Entry full» от (e.«file») и (e.«name») и (e.«index») и verdict и (e.«core»)
+
+функция «Trip next»
+  принимает stage: «Stage», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Trip begun» то «Do» от («Corpus order») и (вариант «Trip listed»)
+    случай вариант «Trip listed» то «Trip after list» от reply
+    случай вариант «Trip temp» с files как files то «Trip after temp» от files и reply
+    случай вариант «Trip source» с trip как trip то «Trip after source» от trip и reply
+    случай вариант «Trip written» с trip как trip то «Trip after written» от trip и reply
+    случай вариант «Trip judged» с trip как trip то «Trip after judged» от trip и reply
+    случай вариант «Trip shown» с trip как trip то «Trip finish» от trip
+    случай вариант «Trip cleaned» с trip как trip то «Do» от («Remove order» от (trip.«dir»)) и («Removed» от trip)
+    случай вариант «Trip removed» с trip как trip то «Trip verdict» от trip
+    случай любое то «Fail» от "FLANG_IO_ORDER" и "план Round trip зашёл не в свою ветвь"
+
+тотальная функция «Removed»
+  принимает trip: «Trip»
+  возвращает «Stage»
+  вариант «Trip removed» с trip равным trip
+
+тотальная функция «Corpus order»
+  возвращает «Поручение»
+  пусть args равно ["-C", («Root»), "grep", "-l", "-a", "-E", "^утверждение «", "--", "*.flang"]
+  вариант «Запустить процесс» с программа равным "git" и аргументы равным args
+
+функция «Trip after list»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как err
+      то «Trip files» от (отфильтровать (разделить out по "\n") где f → не (f равен ""))
+    случай любое
+      то «Unexpected» от reply и "список файлов"
+
+функция «Trip files»
+  принимает files: список строки
+  возвращает «Продолжение»
+  пусть order равно (вариант «Завести временный каталог» с образец равным "/tmp/flang-formula-trip-")
+  «Do» от order и (вариант «Trip temp» с files равным files)
+
+функция «Trip after temp»
+  принимает files: список строки, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Заведено» с путь как dir
+      то «Trip step» от («Trip of» от files и dir и [] и [])
+    случай любое
+      то «Unexpected» от reply и "временный каталог"
+
+функция «Trip step»
+  принимает trip: «Trip»
+  возвращает «Продолжение»
+  разбор trip.«files»
+    случай пусто
+      то «Trip report» от trip
+    случай голова и хвост
+      то «Run flang» от ["ast", (соединить [(«Root»), "/", голова] по "")] и (вариант «Trip source» с trip равным trip)
+
+тотальная функция «Current file»
+  принимает trip: «Trip»
+  возвращает строка
+  разбор trip.«files»
+    случай пусто то ""
+    случай голова и хвост то голова
+
+тотальная функция «Later files»
+  принимает trip: «Trip»
+  возвращает список строки
+  разбор trip.«files»
+    случай пусто то пустой список
+    случай голова и хвост то хвост
+
+функция «Trip after source»
+  принимает trip: «Trip», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как err
+      то «Trip source parsed» от trip и code и out
+    случай любое
+      то «Unexpected» от reply и "дерево разбора"
+
+функция «Trip source parsed»
+  принимает trip: «Trip», code: число, out: строка
+  возвращает «Продолжение»
+  пусть file равно («Current file» от trip)
+  если code равен 0
+    то «Trip prepared» от trip и («Statements of» от out)
+    иначе «Trip step» от («Trip skipped» от trip и file)
+
+тотальная функция «Trip skipped»
+  принимает trip: «Trip», file: строка
+  возвращает «Trip»
+  пусть entry равно («Entry of» от file и "" и 0 и "исходник не разобран двоичным")
+  «Trip of» от («Later files» от trip) и (trip.«dir») и (добавить entry к (trip.«entries»)) и []
+
+функция «Trip prepared»
+  принимает trip: «Trip», statements: список «Значение json»
+  возвращает «Продолжение»
+  пусть file равно («Current file» от trip)
+  пусть made равно («Regenerated» от file и statements)
+  пусть path равно (соединить [trip.«dir», "/round-trip.flang"] по "")
+  пусть later равно («Trip of» от (trip.«files») и (trip.«dir») и (trip.«entries») и (made.«pending»))
+  «Do» от («Write order» от path и (made.«module»)) и (вариант «Trip written» с trip равным later)
+
+объект «Made»
+  «module»: строка
+  «pending»: список «Entry»
+
+объект «Regeneration»
+  «count»: число
+  «lines»: список строки
+  «pending»: список «Entry»
+
+функция «Regenerated»
+  принимает file: строка, statements: список «Значение json»
+  возвращает «Made»
+  пусть start равно («Regeneration of» от 0 и ["модуль «Round trip»"] и [])
+  пусть done равно (свёртка statements начиная с start как acc и s → «Regenerate one» от acc и s и file)
+  запись «Made» с «module» равным (соединить (добавить "" к (done.«lines»)) по "\n") и «pending» равным (done.«pending»)
+
+функция «Regenerate one»
+  принимает acc: «Regeneration», s: «Значение json», file: строка
+  возвращает «Regeneration»
+  пусть n равно ((acc.«count») плюс 1)
+  пусть name равно («Text in» от s и "name")
+  разбор («Claim of statement» от s)
+    случай вариант «Claim converted to» с said как said
+      то «Regenerate both» от acc и n и («Entry full» от file и name и n и "" и («Statement core» от s)) и said
+    случай вариант «Claim outside» с reason как r
+      то «Regeneration outside» от acc и n и («Entry of» от file и name и n и («Outside verdict» от r))
+
+тотальная функция «Regeneration outside»
+  принимает acc: «Regeneration», n: число, entry: «Entry»
+  возвращает «Regeneration»
+  «Regeneration of» от n и (acc.«lines») и («Pending» от acc и entry)
+
+тотальная функция «Outside verdict»
+  принимает reason: строка
+  возвращает строка
+  соединить ["вне записи: ", reason] по ""
+
+тотальная функция «Regeneration of»
+  принимает n: число, lines: список строки, pending: список «Entry»
+  возвращает «Regeneration»
+  запись «Regeneration» с «count» равным n и «lines» равным lines и «pending» равным pending
+
+функция «Regenerate both»
+  принимает acc: «Regeneration», n: число, entry: «Entry», said: «Claim»
+  возвращает «Regeneration»
+  пусть u равно («Read formula» от "unicode" и («Printed claim» от said и "unicode"))
+  пусть l равно («Read formula» от "latex" и («Printed claim» от said и "latex"))
+  пусть failed равно («Reread failure» от u и l)
+  если failed равен ""
+    то «Regeneration of» от n и («Joined reread» от acc и n и u и l) и («Pending» от acc и entry)
+    иначе «Regeneration of» от n и (acc.«lines») и (добавить («Entry judged» от entry и failed) к (acc.«pending»))
+
+тотальная функция «Joined reread»
+  принимает acc: «Regeneration», n: число, u: «Claim result», l: «Claim result»
+  возвращает список строки
+  «Lines joined» от (acc.«lines») и («Reread lines» от n и u и l)
+
+тотальная функция «Pending»
+  принимает acc: «Regeneration», entry: «Entry»
+  возвращает список «Entry»
+  добавить entry к (acc.«pending»)
+
+тотальная функция «Lines joined»
+  принимает a: список строки, b: список строки
+  возвращает список строки
+  свёртка b начиная с a как acc и x → добавить x к acc
+
+тотальная функция «Reread failure»
+  принимает u: «Claim result», l: «Claim result»
+  возвращает строка
+  разбор u
+    случай вариант «Claim refused» с code как code и message как message
+      то соединить ["напечатанное с кванторами не читается: ", code, " ", message] по ""
+    случай любое
+      то «Reread latex failure» от l
+
+тотальная функция «Reread latex failure»
+  принимает l: «Claim result»
+  возвращает строка
+  разбор l
+    случай вариант «Claim refused» с code как code и message как message
+      то соединить ["напечатанное в LaTeX не читается: ", code, " ", message] по ""
+    случай любое
+      то ""
+
+тотальная функция «Reread lines»
+  принимает n: число, u: «Claim result», l: «Claim result»
+  возвращает список строки
+  пусть former равно («Reread statement» от (соединить ["u ", (к строке n)] по "") и u)
+  «Lines joined» от former и («Reread statement» от (соединить ["l ", (к строке n)] по "") и l)
+
+тотальная функция «Reread statement»
+  принимает name: строка, outcome: «Claim result»
+  возвращает список строки
+  разбор outcome
+    случай вариант «Claim read» с said как said то приписать "" к («Flang statement» от name и said)
+    случай любое то пустой список
+
+функция «Trip after written»
+  принимает trip: «Trip», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Записано» с сколько как n
+      то «Run flang» от ["ast", («Trip path» от trip)] и (вариант «Trip judged» с trip равным trip)
+    случай любое
+      то «Unexpected» от reply и "запись перепечатки"
+
+тотальная функция «Trip path»
+  принимает trip: «Trip»
+  возвращает строка
+  соединить [trip.«dir», "/round-trip.flang"] по ""
+
+функция «Trip after judged»
+  принимает trip: «Trip», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как err
+      то «Trip compared» от trip и code и out и err
+    случай любое
+      то «Unexpected» от reply и "дерево перепечатки"
+
+функция «Trip compared»
+  принимает trip: «Trip», code: число, out: строка, err: строка
+  возвращает «Продолжение»
+  пусть again равно (если code равен 0 то «Statements of» от out иначе [])
+  пусть judged равно (отобразить (trip.«pending») как e → «Judged» от e и again и code и err)
+  пусть entries равно («Entries joined» от (trip.«entries») и judged)
+  «Trip step» от («Trip of» от («Later files» от trip) и (trip.«dir») и entries и [])
+
+тотальная функция «Entries joined»
+  принимает a: список «Entry», b: список «Entry»
+  возвращает список «Entry»
+  свёртка b начиная с a как acc и x → добавить x к acc
+
+функция «Judged»
+  принимает e: «Entry», again: список «Значение json», code: число, err: строка
+  возвращает «Entry»
+  если не ((e.«verdict») равен "")
+    то e
+    иначе «Entry judged» от e и («Verdict of» от e и again и code и err)
+
+функция «Verdict of»
+  принимает e: «Entry», again: список «Значение json», code: число, err: строка
+  возвращает строка
+  если не (code равен 0)
+    то соединить ["перепечатка не разобрана: ", («First line» от err)] по ""
+    иначе «Cores verdict» от e и again
+
+функция «Named cores»
+  принимает statements: список «Значение json», name: строка
+  возвращает список «Значение json»
+  пусть found равно (отфильтровать statements где s → («Text in» от s и "name") равен name)
+  отобразить found как s → «Statement core» от s
+
+функция «Cores verdict»
+  принимает e: «Entry», again: список «Значение json»
+  возвращает строка
+  пусть u равно («Named cores» от again и (соединить ["u ", (к строке (e.«index»))] по ""))
+  пусть l равно («Named cores» от again и (соединить ["l ", (к строке (e.«index»))] по ""))
+  если не (u равен [(e.«core»)])
+    то "перепечатка с кванторами дала другое утверждение"
+    иначе (если l равен [(e.«core»)] то "сошлось" иначе "перепечатка из LaTeX дала другое утверждение")
+
+функция «Trip report»
+  принимает trip: «Trip»
+  возвращает «Продолжение»
+  пусть entries равно (trip.«entries»)
+  пусть lines равно (отобразить entries как e → «Entry line» от e)
+  пусть met равно (длина (отфильтровать entries где e → (e.«verdict») равен "сошлось"))
+  пусть outside равно (длина (отфильтровать entries где e → (e.«verdict») начинается с "вне записи: "))
+  пусть summary равно («Trip summary» от met и outside и (длина entries))
+  пусть text равно (соединить (добавить "" к (добавить summary к lines)) по "\n")
+  «Do» от («Show» от text) и (вариант «Trip shown» с trip равным trip)
+
+тотальная функция «Entry line»
+  принимает e: «Entry»
+  возвращает строка
+  соединить [e.«file», " «", e.«name», "»: ", e.«verdict»] по ""
+
+тотальная функция «Trip summary»
+  принимает met: число, outside: число, whole: число
+  возвращает строка
+  соединить ["сошлось ", (к строке met), " из ", (к строке whole), "; вне записи формул ", (к строке outside),
+    "; разошлось ", (к строке ((whole минус met) минус outside))] по ""
+
+функция «Trip finish»
+  принимает trip: «Trip»
+  возвращает «Продолжение»
+  пусть path равно (соединить [trip.«dir», "/round-trip.flang"] по "")
+  «Do» от (вариант «Удалить файл» с путь равным path) и (вариант «Trip cleaned» с trip равным trip)
+
+функция «Trip verdict»
+  принимает trip: «Trip»
+  возвращает «Продолжение»
+  пусть bad равно (отфильтровать (trip.«entries») где e → «Diverged» от e)
+  если (длина bad) равен 0
+    то вариант «Конец работы» с значение равным "круг сошёлся у всех утверждений в записи формул"
+    иначе «Fail» от "FLANG_FORMULA_ROUND_TRIP" и (соединить ["круг разошёлся у ", (к строке (длина bad)),
+      " утверждений"] по "")
+
+тотальная функция «Diverged»
+  принимает e: «Entry»
+  возвращает признак
+  не (((e.«verdict») равен "сошлось") или ((e.«verdict») начинается с "вне записи: "))
+
+тотальная функция «Trip begin»
+  возвращает «Stage»
+  вариант «Trip begun»
+
+план «Round trip»
+  состояние «Stage»
+  начинает с «Trip begin»
+  обрабатывает «Trip next»
+
+тотальная функция «Probe of»
+  принимает fields: список строки
+  возвращает «Probe»
+  запись «Probe» с «parts» равным fields
+
+тотальная функция «Pf»
+  принимает p: «Probe», n: число
+  возвращает строка
+  «Nth» от (p.«parts») и n
+
+тотальная функция «Probe lines»
+  принимает text: строка
+  возвращает список строки
+  пример «The header and comments are skipped»
+    дано text равно "notation\tformula\n# note\nunicode\tx = x\n"
+    ожидается ["unicode\tx = x"]
+  пусть lines равно (отфильтровать (разделить text по "\n") где line → не ((line равен "") или (line начинается с "#")))
+  разбор lines
+    случай пусто то пустой список
+    случай голова и хвост то хвост
+
+тотальная функция «Probes of»
+  принимает text: строка
+  возвращает список «Probe»
+  отобразить («Probe lines» от text) как line → «Probe of» от (разделить line по "\t")
+
+функция «Probe outcome»
+  принимает probe: «Probe»
+  возвращает строка
+  разбор («Read formula» от («Pf» от probe и 1) и («Pf» от probe и 2))
+    случай вариант «Claim read» с said как said
+      то соединить ["0\t", («Flang of» от (said.«body»))] по ""
+    случай вариант «Claim refused» с code как code и message как message
+      то соединить [code, "\t", message] по ""
+
+функция «Probe failure»
+  принимает probe: «Probe»
+  возвращает список строки
+  пусть got равно («Probe outcome» от probe)
+  пусть wanted равно (соединить [(«Pf» от probe и 3), "\t", («Pf» от probe и 4)] по "")
+  если got равен wanted
+    то пустой список
+    иначе [(соединить ["проба «", («Pf» от probe и 2), "»: ждали «", wanted, "», вышло «", got, "»"] по "")]
+
+функция «Kernel probes»
+  принимает probes: список «Probe»
+  возвращает список «Probe»
+  отфильтровать probes где p → ((«Pf» от p и 3) равен "0") и притом (не ((«Pf» от p и 5) равен ""))
+
+функция «Probe statement»
+  принимает probe: «Probe», n: число
+  возвращает список строки
+  разбор («Read formula» от («Pf» от probe и 1) и («Pf» от probe и 2))
+    случай вариант «Claim read» с said как said то приписать "" к («Flang statement» от («Probe name» от n) и said)
+    случай любое то пустой список
+
+тотальная функция «Probe name»
+  принимает n: число
+  возвращает строка
+  соединить ["проба ", (к строке n)] по ""
+
+объект «Numbered»
+  «count»: число
+  «lines»: список строки
+
+функция «Probe module»
+  принимает probes: список «Probe»
+  возвращает строка
+  пусть start равно (запись «Numbered» с «count» равным 0 и «lines» равным ["модуль «Formula probes»"])
+  пусть done равно (свёртка probes начиная с start как acc и p → «Probe module step» от acc и p)
+  соединить (добавить "" к (done.«lines»)) по "\n"
+
+функция «Probe module step»
+  принимает acc: «Numbered», p: «Probe»
+  возвращает «Numbered»
+  пусть n равно ((acc.«count») плюс 1)
+  запись «Numbered» с «count» равным n и «lines» равным («Lines joined» от (acc.«lines») и («Probe statement» от p и n))
+
+функция «Kernel failures»
+  принимает probes: список «Probe», out: строка
+  возвращает список строки
+  пусть start равно (запись «Numbered» с «count» равным 0 и «lines» равным [])
+  пусть done равно (свёртка probes начиная с start как acc и p → «Kernel step» от acc и p и out)
+  done.«lines»
+
+функция «Kernel step»
+  принимает acc: «Numbered», p: «Probe», out: строка
+  возвращает «Numbered»
+  пусть n равно ((acc.«count») плюс 1)
+  пусть said равно (соединить ["утверждение «", («Probe name» от n), "» — ", («Pf» от p и 5)] по "")
+  пусть miss равно (если out содержит said то [] иначе [(«Kernel miss» от p и said)])
+  пусть lines равно («Lines joined» от (acc.«lines») и miss)
+  запись «Numbered» с «count» равным n и «lines» равным lines
+
+тотальная функция «Kernel miss»
+  принимает p: «Probe», said: строка
+  возвращает строка
+  соединить ["проба «", («Pf» от p и 2), "»: ядро не сказало «", said, "»"] по ""
+
+тотальная функция «Probes read stage»
+  возвращает «Stage»
+  вариант «Probes read»
+
+функция «Probes next»
+  принимает stage: «Stage», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Probes begun»
+      то «Do» от (вариант «Прочитать файл» с путь равным "probes.tsv") и («Probes read stage»)
+    случай вариант «Probes read» то «Probes after read» от reply
+    случай вариант «Probes temp» с probes как probes и lines как lines то «Probes after temp» от probes и lines и reply
+    случай вариант «Probes written» с probes как probes и lines как lines и temp как temp
+      то «Run flang» от ["check", («Probes path» от temp), "--proof"] и («Probes checked of» от probes и lines и temp)
+    случай вариант «Probes checked» с probes как probes и lines как lines и temp как temp
+      то «Probes after check» от probes и lines и temp и reply
+    случай вариант «Probes shown» с failures как f и whole как t и temp как temp то «Probes clean» от f и t и temp
+    случай вариант «Probes cleaned» с failures как f и whole как t и temp как temp то «Probes clean dir» от f и t и temp
+    случай вариант «Probes removed» с failures как f и whole как t то «Probes verdict» от f и t
+    случай любое то «Fail» от "FLANG_IO_ORDER" и "план Probes зашёл не в свою ветвь"
+
+тотальная функция «Probes checked of»
+  принимает probes: список «Probe», lines: список строки, temp: строка
+  возвращает «Stage»
+  вариант «Probes checked» с probes равным probes и lines равным lines и temp равным temp
+
+тотальная функция «Probes path»
+  принимает temp: строка
+  возвращает строка
+  соединить [temp, "/probes.flang"] по ""
+
+функция «Probes after read»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Probes judged» от («Probes of» от text)
+    случай любое
+      то «Unexpected» от reply и "таблицу проб"
+
+функция «Probes judged»
+  принимает probes: список «Probe»
+  возвращает «Продолжение»
+  пусть failures равно (свёртка probes начиная с [] как acc и p → «Lines joined» от acc и («Probe failure» от p))
+  пусть order равно (вариант «Завести временный каталог» с образец равным "/tmp/flang-formula-probes-")
+  «Do» от order и (вариант «Probes temp» с probes равным probes и lines равным failures)
+
+функция «Probes after temp»
+  принимает probes: список «Probe», lines: список строки, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Заведено» с путь как temp
+      то «Probes write» от probes и lines и temp
+    случай любое
+      то «Unexpected» от reply и "временный каталог"
+
+функция «Probes write»
+  принимает probes: список «Probe», lines: список строки, temp: строка
+  возвращает «Продолжение»
+  пусть order равно («Write order» от («Probes path» от temp) и («Probe module» от («Kernel probes» от probes)))
+  «Do» от order и (вариант «Probes written» с probes равным probes и lines равным lines и temp равным temp)
+
+функция «Probes after check»
+  принимает probes: список «Probe», lines: список строки, temp: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как err
+      то «Probes report» от probes и («Probes all failures» от probes и lines и out) и temp
+    случай любое
+      то «Unexpected» от reply и "слово ядра"
+
+функция «Probes all failures»
+  принимает probes: список «Probe», lines: список строки, out: строка
+  возвращает список строки
+  «Lines joined» от lines и («Kernel failures» от («Kernel probes» от probes) и out)
+
+функция «Probes report»
+  принимает probes: список «Probe», failures: список строки, temp: строка
+  возвращает «Продолжение»
+  пусть kernel равно (длина («Kernel probes» от probes))
+  пусть head равно (соединить ["проб ", (к строке (длина probes)), " (из них со словом ядра ", (к строке kernel),
+    "), не сошлось ", (к строке (длина failures))] по "")
+  пусть text равно (соединить (добавить "" к (приписать head к failures)) по "\n")
+  пусть f равно (длина failures)
+  пусть n равно (длина probes)
+  «Do» от («Show» от text) и (вариант «Probes shown» с failures равным f и whole равным n и temp равным temp)
+
+функция «Probes clean»
+  принимает f: число, t: число, temp: строка
+  возвращает «Продолжение»
+  пусть later равно (вариант «Probes cleaned» с failures равным f и whole равным t и temp равным temp)
+  «Do» от (вариант «Удалить файл» с путь равным («Probes path» от temp)) и later
+
+функция «Probes clean dir»
+  принимает f: число, t: число, temp: строка
+  возвращает «Продолжение»
+  «Do» от (вариант «Удалить файл» с путь равным temp) и (вариант «Probes removed» с failures равным f и whole равным t)
+
+тотальная функция «Probes verdict»
+  принимает f: число, t: число
+  возвращает «Продолжение»
+  если f равен 0
+    то вариант «Конец работы» с значение равным (соединить ["пробы сошлись: ", (к строке t)] по "")
+    иначе «Fail» от "FLANG_FORMULA_PROBE" и (соединить ["не сошлось проб: ", (к строке f), " из ", (к строке t)] по "")
+
+тотальная функция «Probes begin»
+  возвращает «Stage»
+  вариант «Probes begun»
+
+план «Probes»
+  состояние «Stage»
+  начинает с «Probes begin»
+  обрабатывает «Probes next»

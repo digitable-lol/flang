@@ -82,6 +82,10 @@ script.tls:forgeries = d="${FLANG_TMP:-${TMPDIR:-/tmp}}/tls-forgeries" && bootst
 script.translation:check = bootstrap/flang io flang/translation/run.fscript --plan Проверка
 script.foreign-c:demo = bootstrap/flang io flang/foreign/c/run.fscript --plan Demo --timeout 1800000 --max-steps 4000000000
 script.foreign-c:census = bootstrap/flang io flang/foreign/c/run.fscript --plan Census --timeout 3600000 --max-steps 40000000000
+script.formula:read = bootstrap/flang io flang/foreign/formula/run.fscript --plan Read --timeout 600000 --на-веру --
+script.formula:print = bootstrap/flang io flang/foreign/formula/run.fscript --plan Print --timeout 600000 --на-веру --
+script.formula:probes = bootstrap/flang io flang/foreign/formula/run.fscript --plan Probes --timeout 600000 --на-веру
+script.formula:round-trip = bootstrap/flang io flang/foreign/formula/run.fscript --plan 'Round trip' --timeout 600000 --на-веру
 script.proved-share:check = bootstrap/flang io flang/proof/share-measure.fscript --max-steps 4000000000 --timeout 900000 -- --set corpus
 script.proved-share:forgery = bootstrap/flang io flang/proof/share-ledger-forgery.fscript --max-steps 4000000000 --timeout 900000
 script.lean-rules:check = bootstrap/flang io flang/proof/lean/rules-guard.fscript --plan Check

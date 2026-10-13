@@ -1,0 +1,7 @@
+program	judge	code	word
+wrapped-goal.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	замечаний 0; ноль стоит на строке 11, столбце 9: да
+wrapped-body.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	замечаний 0; тройка стоит на строке 12, столбце 1: да
+paren-in-literal.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	замечаний 0; вторая функция разобрана отдельно: да
+wrong-word-on-continued-line.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	FLANG_PARSE строка 7 столбец 6
+expression-across-a-list-line.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	FLANG_PARSE строка 5 столбец 10
+unclosed-parenthesis.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	FLANG_PARSE строка 8 столбец 1: ожидался знак

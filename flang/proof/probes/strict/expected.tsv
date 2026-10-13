@@ -13,6 +13,9 @@ declared-not-proved.flang	--proof	3	НЕ ПРОВЕРЕНО
 declared-not-proved.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
 precedence.flang	--proof	3	НЕ ПРОВЕРЕНО
 precedence.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
+monad-with-kleisli-example.flang	--proof	0	законов на сетке: 1 (значений в сетках 1
+monad-with-kleisli-example.flang	--proof	0	ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ
+monad-with-kleisli-example.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ
 not-judged.flang	--proof	1	сетку строить не из чего
 not-judged.flang	--proof --строго	1	FLANG_MONAD
 refuted.flang	--proof	1	FLANG_PROPERTY: нарушено свойство

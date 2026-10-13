@@ -1906,3 +1906,6 @@ c8dbb7179b35f785da41f5990dd41238|85|44|0|0|0|flang/self/proof-kernel.flang
 9f96fc3c55a095888820e399e0cdecc1|2|×|×|×|0|flang/proof/checker/tests/families/postcondition-rewrite/wrapped-goals.flang
 ea97c8462f3ac5e25711aafe553eac21|2|0|0|2|0|flang/proof/checker/tests/families/postcondition-rewrite/unproved-callee.flang
 f3763de1610e7a19dd41984c22bc0180|2|2|0|0|0|flang/proof/checker/tests/families/postcondition-rewrite/forged/with-requires.flang
+c218b0c6b08465319ece2a61e3598862|1|×|×|×|2|flang/proof/checker/tests/families/nested-quantifier/exists-under-for-all-inside-conjunction.flang
+7d10df9d9c1f5160df1ea5f9e2970291|1|×|×|×|0|flang/proof/checker/tests/families/nested-quantifier/false-goal-under-conjunction.flang
+3f9a447c2d5585803d05051024560eb2|1|×|×|×|0|flang/proof/checker/tests/families/existence/named-witness-is-wrong.flang

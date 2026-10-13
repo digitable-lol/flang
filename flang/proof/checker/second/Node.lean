@@ -780,6 +780,116 @@ def «Исх».«цельЕстьОграничение» (s : «Исх») («в
     «тело» ≠ "" && !«естьСвязыватель» «тело» &&
       «совпали» («т» («вместо» («т» «цель») "результат" («вСкобки» («т» «тело»)))) («т» «огр»)
 
+/-! ADR-0107, квантор под связкой — зеркало `квантор_под_связкой_проигран` сверщика на C.
+Половины `и притом` и ветви `если` закрываются порознь; `есть такой м, а именно Т, что У` —
+У[м:=Т]; `для всех э из Л : У` — Э1 (пустой), Э2 (отбор тем же условием), Э3 (`приписать`) либо
+У при свободном э; лист — замыканием с фактами требований. Иное правило записи — беда. -/
+def «кванторВ» (t : String) : Bool := «естьТ» t "есть такой" || «естьТ» t "для всех"
+
+def «кванторПодСвязкой» («цель» : String) : Bool :=
+  let t := «безВнешних» («т» «цель»)
+  if !«кванторВ» t || t.startsWith "есть такой " || t.startsWith "для всех " then false
+  else («найтиСв» t [" и притом "]).isSome || (t.startsWith "если " && («разрезЦепочкой» t).isSome)
+
+def «захватВСв» («у» «п» «чем» : String) : Bool :=
+  let ws := «у».splitOn " "
+  let names := (List.range ws.length).filterMap fun i =>
+    if (ws.getD i "" = "для" && ws.getD (i + 1) "" = "всех") || (ws.getD i "" = "есть" && ws.getD (i + 1) "" = "такой")
+    then some («заменить» (ws.getD (i + 2) "") "," "") else none
+  «естьСвязыватель» «у» || names.any fun n => n = «п» || «естьТ» «чем» n
+
+def «всеЭлементыВ» (o : String) : Option (String × String × String) :=
+  match «сверху» («ужатьТ» o) ":" with
+  | l :: r :: rest =>
+    let u := «ужатьТ» (" : ".intercalate (r :: rest))
+    let lv := «ужатьТ» l
+    if !lv.startsWith "для всех " then none else
+    match «надвоеВ» (lv.«сн» 9) "из" with
+    | some (p, ls) => if p ≠ "" && !((p.splitOn " ").length > 1) && ls ≠ "" && u ≠ "" then some (p, ls, u) else none
+    | none => none
+  | _ => none
+
+def «отборВ» (l : String) : Option (String × String × String) :=
+  let u := «ужатьТ» l
+  if !u.startsWith "отфильтровать " then none else
+  match «надвоеВ» (u.«сн» 14) "где" with
+  | none => none
+  | some (nad, hv) =>
+    match («надвоеВ» hv "→").orElse (fun _ => «надвоеВ» hv ":") with
+    | some (x, y) => if x ≠ "" && !((x.splitOn " ").length > 1) && y ≠ "" then some (nad, x, y) else none
+    | none => none
+
+def «приписатьВ» (l : String) : Option (String × String) :=
+  let u := «ужатьТ» l
+  if !u.startsWith "приписать " || («сверху» u "к").length ≠ 2 then none else
+  let r := «разрез» u "к"
+  let e := «ужатьТ» («словаС» r.«лево» 1)
+  let ls := «ужатьТ» r.«право»
+  if e ≠ "" && ls ≠ "" then some (e, ls) else none
+
+def «вместоУЗапятой» (t «что» «на» : String) : String :=
+  «заменить» («вместо» («заменить» t "," " ,") «что» «на») " ," ","
+
+def «связывательКромеРазбора» (t : String) : Bool :=
+  «естьСвязыватель» («обрезать» («заменить» («заменить» (" " ++ t ++ " ") " разбор " " ") " случай " " "))
+
+partial def «Исх».«подСвязкойЗакрыто» (s : «Исх») (c : «Счёт») («сырой» «тело» «чья» : String)
+    («факты» «дно» : List String) («гл» : Nat) : Bool :=
+  let t := «безВнешних» («т» «сырой»)
+  let «дальше» := fun (x : String) => s.«подСвязкойЗакрыто» c x «тело» «чья» «факты» «дно» («гл» + 1)
+  if «гл» > 16 then false
+  else if !«кванторВ» t then
+    let g := «вместо» («поляРезультатаВыбором» («поляРезультата» t «тело») «тело») "результат" «тело»
+    if (match «разрезСл» g " не меньше " with
+        | some (l, p) => «ужатьТ» p = "0" && (match «неотрицательно» s l «чья» «дно» 0 with | Except.ok () => true | Except.error _ => false)
+        | none => false) then true
+    else if (match «разрезСл» g " не больше " with
+        | some (l, p) =>
+          let l := «ужатьТ» l; let p := «ужатьТ» p
+          l.startsWith "длина " && p.startsWith "длина " &&
+            (match «отборВ» («ужатьТ» (l.«сн» 6)) with
+             | some (nad, _, _) => «ужатьТ» nad = «ужатьТ» (p.«сн» 6)
+             | none => false)
+        | none => false) then true
+    else if «связывательКромеРазбора» g then false
+    else «закрыта» c g || (!«факты».isEmpty && «закрытаПри» c g («факты».map (·, true)))
+  else match «найтиСв» t [" и притом "] with
+  | some (g, _) => «дальше» («доЗнака» t g) && «дальше» («отЗнака» t (g + 10))
+  | none =>
+    match (if t.startsWith "если " then «разрезЦепочкой» t else none) with
+    | some (_, a, b) => «дальше» a && «дальше» b
+    | none =>
+      match «существование» t with
+      | some (m, tt, u) => !«захватВСв» («т» u) m («т» tt) && «дальше» («обещанная» t)
+      | none =>
+        match «всеЭлементыВ» t with
+        | none => false
+        | some (p, l0, u) =>
+          let l := «ужатьТ» («вместо» («поляРезультатаВыбором» («поляРезультата» («т» l0) «тело») «тело») "результат" «тело»)
+          if l = "пустой список" || «заменить» l " " "" = "[]" then true
+          else if (match «отборВ» l with
+              | some (_, r, a) => !«захватВСв» a r p && (p = r || !«естьТ» a p) && «т» («вместо» a r p) = «т» u
+              | none => false) then true
+          else match «приписатьВ» l with
+          | some (x, b) => !«захватВСв» u p x && «дальше» («вместоУЗапятой» u p x) &&
+              «дальше» s!"для всех {p} из {«вСкобки» b} : {u}"
+          | none => !«естьТ» «тело» p && !«естьТ» l p && «дальше» u
+
+/-- 1 — место снято, 0 — не взялся, 2 — правило записи не то (беда). -/
+def «кванторПодСвязкойПроигран» (c : «Счёт») (m : «Место») : Nat × String :=
+  let s := c.«исх»
+  let pr := «ёлочка» ((m.«свои».find? (·.startsWith "правило «")).getD "") 1
+  if m.«чья» = "" || !«кванторПодСвязкой» m.«цель» then (0, "") else
+  if pr ≠ "разбор цели по условию" then
+    (2, s!"утверждение «{m.«имя»}»: квантор под связкой ядро сводит только правилом «разбор цели по условию» (ADR-0094 §2.1, ADR-0107), а запись зовёт «{pr}»")
+  else match s.«блокС» m.«чья» with
+  | none => (0, "")
+  | some (a, b) =>
+    let body := s.«телоРазбора» a b
+    if body = "" || !«кавычкиЧисты» body then (0, "") else
+    let dno := (s.«именаДоводовФункции» m.«чья»).filter (s.«доводСДном» a b ·)
+    if s.«подСвязкойЗакрыто» c m.«цель» body m.«чья» (s.«требованияФункции» a b) dno 0 then (1, "") else (0, "")
+
 structure «ИтогКрюков» where
   «снял» : String := ""
   «беды» : List String := []
@@ -788,6 +898,11 @@ structure «ИтогКрюков» where
 def «крюкиПоТелу» (c : «Счёт») (m : «Место») : «ИтогКрюков» := Id.run do
   let s := c.«исх»
   let mut r : «ИтогКрюков» := {}
+  if !m.«свои».any (fun l => l.startsWith "посылка " || l.startsWith "принцип ") then
+    match «кванторПодСвязкойПроигран» c m with
+    | (1, _) => return { r with «снял» := "разбор" }
+    | (2, b) => return { r with «беды» := [b] }
+    | _ => pure ()
   match «проигратьУзел» c m with
   | .«проигран» _ => return { r with «снял» := "узел" }
   | .«ложь» bs => r := { r with «беды» := bs }

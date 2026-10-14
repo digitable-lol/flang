@@ -211,8 +211,8 @@
 тотальная функция «Разница»
   возвращает список «Запись разницы»
   [
-    запись «Запись разницы» с «поверхность» равным "стрелка" и «слово» равным "морфизм" и «ключи» равным ["morphisms"] и «коды» равным ["FLANG_COMPOSE_MISMATCH", "FLANG_MORPHISM_SHAPE"] и «зазор» равным "",
-    запись «Запись разницы» с «поверхность» равным "категория" и «слово» равным "категория" и «ключи» равным ["categories"] и «коды» равным ["FLANG_CATEGORY_ARROW_TWICE", "FLANG_CATEGORY_EQUALITY_OUTSIDE", "FLANG_CATEGORY_EQUALITY_SHAPE", "FLANG_CATEGORY_EQUALITY_TWICE", "FLANG_CATEGORY_NOT_CLOSED", "FLANG_CATEGORY_NO_IDENTITY", "FLANG_CATEGORY_UNKNOWN_ARROW"] и «зазор» равным "",
+    запись «Запись разницы» с «поверхность» равным "стрелка" и «слово» равным "морфизм" и «ключи» равным ["morphisms"] и «коды» равным пустой список и «зазор» равным "",
+    запись «Запись разницы» с «поверхность» равным "категория" и «слово» равным "категория" и «ключи» равным ["categories"] и «коды» равным пустой список и «зазор» равным "",
     запись «Запись разницы» с «поверхность» равным "связь двух модулей" и «слово» равным "связь модулей" и «ключи» равным ["functors"] и «коды» равным ["FLANG_FUNCTOR_ARROW_MISMATCH", "FLANG_FUNCTOR_COMPOSITION", "FLANG_FUNCTOR_DICTIONARY", "FLANG_FUNCTOR_FIELD_TYPE", "FLANG_FUNCTOR_IDENTITY", "FLANG_FUNCTOR_IMAGE_OUTSIDE", "FLANG_FUNCTOR_NOT_TOTAL", "FLANG_FUNCTOR_OBJECT_MISSING", "FLANG_FUNCTOR_OBJECT_TWICE", "FLANG_FUNCTOR_SPEC_MISSING", "FLANG_FUNCTOR_SPEC_NAME", "FLANG_FUNCTOR_TRANSLATION"] и «зазор» равным "",
     запись «Запись разницы» с «поверхность» равным "связь по двум входам" и «слово» равным "бифунктор" и «ключи» равным ["bifunctors"] и «коды» равным ["FLANG_BIFUNCTOR_ARROW_MISMATCH", "FLANG_BIFUNCTOR_COMPOSITION", "FLANG_BIFUNCTOR_IDENTITY", "FLANG_BIFUNCTOR_OBJECT_MISSING", "FLANG_BIFUNCTOR_OBJECT_TWICE"] и «зазор» равным "",
     запись «Запись разницы» с «поверхность» равным "преобразование двух связей" и «слово» равным "преобразование" и «ключи» равным ["transformations"] и «коды» равным ["FLANG_TRANSFORM_COMPONENT", "FLANG_TRANSFORM_NOT_TOTAL", "FLANG_TRANSFORM_SHAPE"] и «зазор» равным "",
@@ -962,7 +962,7 @@
   пусть сообщение равно «Сообщение приговора» от числа и нарушения
   если пусто нарушения
     то вариант «Конец работы» с значение равным сообщение
-    иначе вариант «Провал» с код равным "FLANG_BINARY_RULES_NARUSHENIYA" и сообщение равным сообщение
+    иначе вариант «Провал» с код равным "FLANG_BINARY_RULES_VIOLATIONS" и сообщение равным сообщение
 
 тотальная функция «Дальше»
   принимает ход: «Ход», отклик: «Отклик»

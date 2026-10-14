@@ -1,10 +1,10 @@
 ---
 номер: 0048
 заголовок: Двоичный ствола ведёт https через curl — клиент TLS на flang входит в него только перепечаткой семени
-статус: свободна
+статус: сделана — двоичный из семени партии 6 говорит https клиентом TLS на flang: набор network «проб 5, разошлось 0» и с curl, подменённым отказом в PATH, план Forgery «разошлось 5», сторож seed-runtime-is-source зелёный (14 октября 2026)
 приоритет: P2
-исполнитель: —
-ветка: —
+исполнитель: a
+ветка: a/print-batch-6
 команда: первая
 карта: Чего в языке нет вовсе
 рядом: 6375
@@ -61,10 +61,16 @@ bootstrap/flang io flang/proof/probes/network/run.fscript --plan Binary --timeou
 
 Правка лежит в исходниках: `flang/src/emit/c/flang_repl.c`,
 `flang/stdlib/tls-client.flang`, `flang/self/parser.flang`,
-`scripts/bootstrap-reprint.sh`. Остаётся перепечатка семени.
+`scripts/bootstrap-reprint.sh`; печать партии 6 положила `tls_client.c` и
+`tls_client.h` в `bootstrap/`.
 
-Следующий шаг — перепечатка (`sh scripts/bootstrap-reprint.sh`): она печатает
-`tls_client.c` и `tls_client.h` в `bootstrap/`, и `flang_repl.c` включает их сам.
-После неё — прогон набора `network` двоичным ствола; строка датаграмм проверена
-до этого только по частям (исполнение — обвязкой на C, разбор и типы —
-исходным компилятором).
+## Что сделано
+
+Прогон двоичного из семени партии 6, 14 октября 2026:
+
+- `bootstrap/flang io flang/proof/probes/network/run.fscript --plan Binary --timeout 120000` —
+  «network: проб 5, разошлось 0», код 0; четыре строки TLS и строка датаграмм;
+- тот же прогон с `curl` в начале PATH, который только отказывает кодом 99, — «проб 5,
+  разошлось 0», обращений к нему 0;
+- `--plan Forgery` — «подлог отвергнут: network forgery: проб 5, разошлось 5»;
+- сторож `seed-runtime-is-source` в хуке перед пушем зелёный.

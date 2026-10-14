@@ -33,15 +33,15 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `a59116aed` от 14 октября 2026. Шагов ствола 3894, из них вливаний 1212; коммитов в истории 8898.
+Дерево на коммите `4cf15a31f` от 14 октября 2026. Шагов ствола 3923, из них вливаний 1212; коммитов в истории 8927.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 122842 | −17986 | −8530 |
-| Программ на flang | 870 | +135 | +309 |
-| Объявлений `тотальная функция` | 14252 | +677 | +202 |
-| Объявлений `функция` | 3206 | +53 | +764 |
+| Эталон компилятора на flang | 122924 | −17986 | −8448 |
+| Программ на flang | 876 | +135 | +315 |
+| Объявлений `тотальная функция` | 14304 | +677 | +254 |
+| Объявлений `функция` | 3221 | +53 | +779 |
 | Объявлений `теорема` | 355 | +22 | +71 |
 | Файлов проверок | 3 | 0 | 0 |
 | Заметок базы знаний | 0 | +8 | −672 |
@@ -52,6 +52,14 @@
 
 Приехало прямо в ствол, мимо ветки:
 
+- chore(release): point the Homebrew tap at 0.7.28 (`4cf15a31f`)
+- chore(release): the Homebrew formula knows the 0.7.28 archive hash (`48ca7c399`)
+- chore(release): version 0.7.28 and its release notes (`b4e30f74d`)
+- test(ct): the law probe set checks exit codes of the batch seven rows (`85a591d36`)
+- chore(seed): print batch seven (`0ddadb92c`)
+- test(ct): probe set ct-laws asks for law examples and shape rules (`c4c0a4aba`)
+- feat(ct): law examples run and the shape of categories is judged (`2e0f9f347`)
+- fix(tables): eleven kernel anchors follow the rewrite limit lines (`37967bb5a`)
 - chore(release): point the Homebrew tap at 0.7.27 (`a59116aed`)
 - chore(release): the Homebrew formula knows the 0.7.27 archive hash (`02ed83418`)
 - chore(release): version 0.7.27 and its release notes (`36ad75826`)
@@ -59,12 +67,15 @@
 - test(probes): the batch six binary meets the probes it was printed for (`c85424b50`)
 - chore(seed): print batch six with the record lines broken (`181ba1f7f`)
 
-Ещё 9 правок языка снаружи не меняют.
+Ещё 25 правок языка снаружи не меняют.
 
 ## 13 октября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
+- feat(kernel): the ledger names the rewrite limit when rewriting runs out (`44654ae1c`)
+- perf(kernel): rewrite rules come only from functions the goal calls (`55657f7d7`)
+- feat(proof): both checkers replay a quantifier under a connective (`29fc4a72f`)
 - style(compiler): long record lines break inside parentheses (`970a79ddc`)
 - chore(marks): the marks and visible counts follow batch six (`e8d189e5b`)
 - fix(proof): the checker ceiling counts adr-0092 and adr-0105 (`81eeb0974`)
@@ -81,7 +92,7 @@
 - feat(checker): the second checker replays the exact integer ring (`3c2e5d26d`)
 - fix(proof): the checker ceiling counts adr-0103 from dev (`1ac46f4f7`)
 
-Ещё 18 правок языка снаружи не меняют.
+Ещё 20 правок языка снаружи не меняют.
 
 ## 12 октября 2026
 

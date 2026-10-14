@@ -2,14 +2,70 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.27",
-  "latest": "0.7.27",
+  "declared": "0.7.28",
+  "latest": "0.7.28",
   "unclassified": [
     "flang/experimental",
     "flang/foreign",
     "flang/messages"
   ],
   "releases": [
+    {
+      "version": "0.7.28",
+      "tag": "v0.7.28",
+      "date": "2026-10-14",
+      "human": "14 октября 2026",
+      "commit": "4cf15a3",
+      "title": "Примеры в законах проверяются, ошибки в категориях находятся при компиляции",
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): point the Homebrew tap at 0.7.28",
+          "commit": "4cf15a3"
+        },
+        {
+          "text": "chore(release): the Homebrew formula knows the 0.7.28 archive hash",
+          "commit": "48ca7c3"
+        },
+        {
+          "text": "chore(release): version 0.7.28 and its release notes",
+          "commit": "b4e30f7"
+        },
+        {
+          "text": "test(ct): the law probe set checks exit codes of the batch seven rows",
+          "commit": "85a591d"
+        },
+        {
+          "text": "chore(seed): print batch seven",
+          "commit": "0ddadb9"
+        },
+        {
+          "text": "test(ct): probe set ct-laws asks for law examples and shape rules",
+          "commit": "c4c0a4a"
+        },
+        {
+          "text": "feat(ct): law examples run and the shape of categories is judged",
+          "commit": "2e0f9f3"
+        },
+        {
+          "text": "fix(tables): eleven kernel anchors follow the rewrite limit lines",
+          "commit": "37967bb"
+        },
+        {
+          "text": "feat(kernel): the ledger names the rewrite limit when rewriting runs out",
+          "commit": "44654ae"
+        },
+        {
+          "text": "perf(kernel): rewrite rules come only from functions the goal calls",
+          "commit": "55657f7"
+        },
+        {
+          "text": "feat(proof): both checkers replay a quantifier under a connective",
+          "commit": "29fc4a7"
+        }
+      ],
+      "hidden": 18
+    },
     {
       "version": "0.7.27",
       "tag": "v0.7.27",

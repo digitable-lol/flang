@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "голова": "a59116aed7438ce96c153a1b5324d61adb40b330",
-  "головаКоротко": "a59116aed",
+  "голова": "4cf15a31f408ac8ead2e2b67bd5c37da66870a00",
+  "головаКоротко": "4cf15a31f",
   "головаДата": "2026-10-14",
-  "шаговСтвола": 3894,
-  "всегоКоммитов": 8898,
+  "шаговСтвола": 3923,
+  "всегоКоммитов": 8927,
   "измерители": [
     {
       "ключ": "js",
@@ -49,10 +49,10 @@
   ],
   "сейчас": {
     "js": 0,
-    "bliznec": 122842,
-    "programm": 870,
-    "totalnyh": 14252,
-    "obychnyh": 3206,
+    "bliznec": 122924,
+    "programm": 876,
+    "totalnyh": 14304,
+    "obychnyh": 3221,
     "teorem": 355,
     "proverok": 3,
     "zametok": 0
@@ -40789,6 +40789,38 @@
       "дата": "2026-10-14",
       "записи": [
         {
+          "текст": "chore(release): point the Homebrew tap at 0.7.28",
+          "коммит": "4cf15a31f"
+        },
+        {
+          "текст": "chore(release): the Homebrew formula knows the 0.7.28 archive hash",
+          "коммит": "48ca7c399"
+        },
+        {
+          "текст": "chore(release): version 0.7.28 and its release notes",
+          "коммит": "b4e30f74d"
+        },
+        {
+          "текст": "test(ct): the law probe set checks exit codes of the batch seven rows",
+          "коммит": "85a591d36"
+        },
+        {
+          "текст": "chore(seed): print batch seven",
+          "коммит": "0ddadb92c"
+        },
+        {
+          "текст": "test(ct): probe set ct-laws asks for law examples and shape rules",
+          "коммит": "c4c0a4aba"
+        },
+        {
+          "текст": "feat(ct): law examples run and the shape of categories is judged",
+          "коммит": "2e0f9f347"
+        },
+        {
+          "текст": "fix(tables): eleven kernel anchors follow the rewrite limit lines",
+          "коммит": "37967bb5a"
+        },
+        {
           "текст": "chore(release): point the Homebrew tap at 0.7.27",
           "коммит": "a59116aed"
         },
@@ -40813,11 +40845,23 @@
           "коммит": "181ba1f7f"
         }
       ],
-      "скрыто": 9
+      "скрыто": 25
     },
     {
       "дата": "2026-10-13",
       "записи": [
+        {
+          "текст": "feat(kernel): the ledger names the rewrite limit when rewriting runs out",
+          "коммит": "44654ae1c"
+        },
+        {
+          "текст": "perf(kernel): rewrite rules come only from functions the goal calls",
+          "коммит": "55657f7d7"
+        },
+        {
+          "текст": "feat(proof): both checkers replay a quantifier under a connective",
+          "коммит": "29fc4a72f"
+        },
         {
           "текст": "style(compiler): long record lines break inside parentheses",
           "коммит": "970a79ddc"
@@ -40879,7 +40923,7 @@
           "коммит": "1ac46f4f7"
         }
       ],
-      "скрыто": 18
+      "скрыто": 20
     },
     {
       "дата": "2026-10-12",

@@ -11,6 +11,24 @@
 готовая запись журнала. Правки, от которых язык снаружи не меняется, —
 планы, спецификации, тесты, скрипты, — сосчитаны, но не перечислены.
 
+## 0.7.28 — 14 октября 2026
+
+**Примеры в законах проверяются, ошибки в категориях находятся при компиляции**
+
+- chore(release): point the Homebrew tap at 0.7.28 (`4cf15a3`)
+- chore(release): the Homebrew formula knows the 0.7.28 archive hash (`48ca7c3`)
+- chore(release): version 0.7.28 and its release notes (`b4e30f7`)
+- test(ct): the law probe set checks exit codes of the batch seven rows (`85a591d`)
+- chore(seed): print batch seven (`0ddadb9`)
+- test(ct): probe set ct-laws asks for law examples and shape rules (`c4c0a4a`)
+- feat(ct): law examples run and the shape of categories is judged (`2e0f9f3`)
+- fix(tables): eleven kernel anchors follow the rewrite limit lines (`37967bb`)
+- feat(kernel): the ledger names the rewrite limit when rewriting runs out (`44654ae`)
+- perf(kernel): rewrite rules come only from functions the goal calls (`55657f7`)
+- feat(proof): both checkers replay a quantifier under a connective (`29fc4a7`)
+
+Ещё 18 правок языка снаружи не меняют.
+
 ## 0.7.27 — 14 октября 2026
 
 **Печать партий 5 и 6: кольцо точного целого у двух сличителей, мера и постусловия в ядре, TLS вшит в двоичный, формулы с кванторами и LaTeX**

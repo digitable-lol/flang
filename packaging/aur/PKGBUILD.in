@@ -1,0 +1,31 @@
+# Maintainer: the-homeless-god <zimtir@mail.ru>
+#@ AUR package of the prebuilt flang. packaging/prebuilt/manifests.sh fills
+#@ this template with the checksums of a release; lines starting with #@ are
+#@ dropped from the result.
+# The AUR name `flang` belongs to LLVM Flang (Fortran); both install
+# /usr/bin/flang, hence `conflicts`.
+pkgname=flang-package-bin
+pkgver=@VERSION@
+pkgrel=1
+pkgdesc='Verifiable programming language that prints programs into ten languages (prebuilt)'
+arch=('x86_64' 'aarch64')
+url='https://github.com/digitable-lol/flang'
+license=('BSD-2-Clause')
+provides=('flang-package')
+conflicts=('flang-package' 'flang')
+options=('!strip' '!debug')
+source_x86_64=("@BASE_URL@/flang-package-${pkgver}-linux-x86_64.tar.gz")
+source_aarch64=("@BASE_URL@/flang-package-${pkgver}-linux-aarch64.tar.gz")
+sha256sums_x86_64=('@SHA_LINUX_X86_64@')
+sha256sums_aarch64=('@SHA_LINUX_AARCH64@')
+
+package() {
+  cd "flang-package-${pkgver}-linux-${CARCH}"
+  install -Dm755 bin/flang "${pkgdir}/usr/bin/flang"
+  install -Dm755 bin/flangtutor "${pkgdir}/usr/bin/flangtutor"
+  install -d "${pkgdir}/usr/share/flang" "${pkgdir}/usr/share/flang-tutor"
+  cp -R share/flang/. "${pkgdir}/usr/share/flang/"
+  cp -R share/flang-tutor/. "${pkgdir}/usr/share/flang-tutor/"
+  install -Dm644 share/man/man1/flang.1 "${pkgdir}/usr/share/man/man1/flang.1"
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

@@ -1,0 +1,19 @@
+pkgbase = flang-package-bin
+	pkgdesc = Verifiable programming language that prints programs into ten languages (prebuilt)
+	pkgver = @VERSION@
+	pkgrel = 1
+	url = https://github.com/digitable-lol/flang
+	arch = x86_64
+	arch = aarch64
+	license = BSD-2-Clause
+	provides = flang-package
+	conflicts = flang-package
+	conflicts = flang
+	options = !strip
+	options = !debug
+	source_x86_64 = @BASE_URL@/flang-package-@VERSION@-linux-x86_64.tar.gz
+	sha256sums_x86_64 = @SHA_LINUX_X86_64@
+	source_aarch64 = @BASE_URL@/flang-package-@VERSION@-linux-aarch64.tar.gz
+	sha256sums_aarch64 = @SHA_LINUX_AARCH64@
+
+pkgname = flang-package-bin

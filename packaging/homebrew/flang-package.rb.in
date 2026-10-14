@@ -1,0 +1,65 @@
+#@ Template of the Homebrew formula on prebuilt builds. The release workflow
+#@ fills it from SHA256SUMS (packaging/prebuilt/manifests.sh) and keeps the
+#@ result as a workflow artifact; it goes into digitable-lol/homebrew-tap as
+#@ Formula/flang-package.rb, with Aliases/flang pointing at it, so that
+#@ `brew install digitable-lol/tap/flang` keeps working.
+class FlangPackage < Formula
+  desc "Verifiable programming language that prints programs into ten languages"
+  homepage "https://github.com/digitable-lol/flang"
+  version "@VERSION@"
+  license "BSD-2-Clause"
+
+  on_macos do
+    on_arm do
+      url "@BASE_URL@/flang-package-@VERSION@-macos-arm64.tar.gz"
+      sha256 "@SHA_MACOS_ARM64@"
+    end
+    on_intel do
+      url "@BASE_URL@/flang-package-@VERSION@-macos-x86_64.tar.gz"
+      sha256 "@SHA_MACOS_X86_64@"
+    end
+  end
+
+  on_linux do
+    on_arm do
+      url "@BASE_URL@/flang-package-@VERSION@-linux-aarch64.tar.gz"
+      sha256 "@SHA_LINUX_AARCH64@"
+    end
+    on_intel do
+      url "@BASE_URL@/flang-package-@VERSION@-linux-x86_64.tar.gz"
+      sha256 "@SHA_LINUX_X86_64@"
+    end
+  end
+
+  def install
+    bin.install "bin/flang"
+    bin.install "bin/flangtutor" if File.exist?("bin/flangtutor")
+    lib.install Dir["lib/*"] if Dir.exist?("lib")
+    include.install Dir["include/*"] if Dir.exist?("include")
+    (share/"flang").install Dir["share/flang/*"]
+    (share/"flang-tutor").install Dir["share/flang-tutor/*"] if Dir.exist?("share/flang-tutor")
+    man1.install "share/man/man1/flang.1"
+  end
+
+  def caveats
+    <<~EOS
+      The command is `flang`. LLVM Flang (the Fortran compiler, formula `flang`
+      in homebrew/core) has the same name; if both are installed, the one
+      earlier on PATH wins. Check with: flang --version
+    EOS
+  end
+
+  test do
+    assert_match "flang #{version}", shell_output("#{bin}/flang --version")
+    (testpath/"probe.flang").write <<~FLANG
+      модуль «Проба»
+
+      тотальная функция «Два»
+        возвращает число
+        2
+    FLANG
+    system bin/"flang", "check", "probe.flang"
+    system bin/"flang", "emit", "probe.flang", "--target", "c", "--out", "out"
+    assert_path_exists testpath/"out/flang_runtime.c"
+  end
+end

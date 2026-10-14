@@ -3,103 +3,91 @@
   "выпуски": {
     "0.7.28": {
       "ru": {
-        "заголовок": "Печать партии 7: примеры законов прогоняются, устройство категорий судится, переписка называет свой предел, квантор под связкой у обоих сверщиков",
+        "заголовок": "Примеры в законах проверяются, ошибки в категориях находятся при компиляции",
         "появилось": [
-          "**Пример внутри блока `закон` прогоняется у `check` и у `test`** (ADR-0108): `flang test flang/ct/order-shipment.flang` — «примеров 4, прошло 4» (у 0.7.27 — «примеров 0»); ложное ожидание в примере закона — код 1 у обеих команд, `FLANG_EXAMPLE` с именем закона и примера, ожидаемым и полученным значением.",
-          "**Устройство категорий и стрелок сверяется сличением объявлений** (ADR-0108): незамкнутая композиция, неизвестная или дважды названная стрелка, несходящиеся концы — код 1 с названной стрелкой (`FLANG_CATEGORY_*`, `FLANG_MORPHISM_SHAPE`, `FLANG_COMPOSE_MISMATCH`). Файлы `flang/ct`: 16 из 25 — код 0, 9 — код 2 с поимённо названным несчитанным законом (у 0.7.27 — 7 и 18).",
-          "**Ведомость называет «Предел переписки»** (ADR-0092 §7): когда переписка доказанными равенствами исчерпала 64 шага, утверждение остаётся «объявлено, не доказано», и ответ говорит, почему.",
-          "**Оба сверщика переигрывают квантор под связкой** (ADR-0107): квантор под `и притом` и под `если` переигрывается по исходнику и сверщиком на C, и сверщиком на Lean; подделка с подменённым правилом — код 1 у обоих."
+          "**`flang test` и `flang check` прогоняют примеры внутри блока `закон`.** Раньше такие примеры не запускались вовсе, и неверное ожидание в них проходило молча. Теперь пример с неверным ожиданием даёт код 1, а сообщение называет закон, пример, ожидаемое и полученное значение: `ожидалось {\"номер\":777}, получено {\"номер\":500}`.",
+          "**`check` проверяет, как собрана категория.** Стрелка, которой нет среди объявленных, стрелка, названная дважды, композиция через стрелку не из этой категории, концы стрелок, которые не сходятся, — всё это теперь ошибка с кодом 1 и номером строки. Например: `FLANG_CATEGORY_UNKNOWN_ARROW в файле warehouse.flang, строка 9, столбец 1: категория «Склад»: стрелки «потерять» не объявлено`.",
+          "**`check --proof` объясняет, почему не доказал равенство из длинной цепочки вызовов.** Подстановка доказанных свойств функций делает не больше 64 шагов. Если их не хватило, утверждение остаётся недоказанным, и ответ говорит прямо: `переписка доказанными равенствами исчерпала «Предел переписки» — 64 шага`. Раньше было только «объявлено, не доказано» без причины.",
+          "**Обе проверяющие программы (на C и на Lean 4) перепроверяют утверждения с квантором внутри `и притом` и `если`.** Такие утверждения ядро доказывало и раньше, теперь их доказательство перепроверяется независимо."
         ],
         "изменилось": [
-          "**Правила переписки берутся только у функций, которые цель вызывает** (ADR-0092 §7), а не со всей программы на каждую попытку. `check --proof` по `flang/stdlib` (55 файлов, по 12 разом): 5773 с у 0.7.27 против 5518 с, коды и итоговые строки ведомостей у всех файлов те же.",
-          "**Семя перепечатано партией 7**: `bootstrap/compiler_flang.c` 953 165 строк (было 949 212).",
-          "**Сторож `binary-rules-guard`**: 29 кодов, которые двоичный уже несёт, сняты со списка разницы; два транслитных кода сторожа заменены английскими (`FLANG_BINARY_RULES_NOTHING_TO_SEE`, `FLANG_BINARY_RULES_VIOLATIONS`)."
+          "**Файл с категориями, где все законы проверены, проходит `check` с кодом 0.** Раньше любой такой файл получал код 2 с припиской, что устройство категорий не проверяется. Из 25 примеров в `flang/ct` с кодом 0 теперь проходят 16, было 7. Остальные 9 получают код 2 и называют закон, который не удалось проверить.",
+          "**`check --proof` по стандартной библиотеке стал немного быстрее.** Ядро берёт доказанные свойства только у тех функций, которые встречаются в доказываемом утверждении. На 55 файлах `flang/stdlib` суммарное время 5773 с у 0.7.27 и 5518 с теперь; результаты проверки те же."
         ],
         "сломалось": [
-          "**Ложный пример в блоке `закон` теперь краснит `test` и `check`** (код 1); прежде такие примеры не прогонялись вовсе.",
-          "**Категория с незамкнутой композицией или неизвестной стрелкой — код 1 у `check`**; прежде двоичный устройство категорий не судил и отвечал кодом 2."
+          "**Неверный пример в блоке `закон` теперь роняет `test` и `check` с кодом 1.** Исправьте ожидаемое значение в примере или саму функцию: сообщение называет оба значения.",
+          "**Ошибка в устройстве категории — теперь код 1 у `check`, а не 2.** Объявите недостающую стрелку через `морфизм` или уберите её из блока `категория`; повторную строку удалите."
         ]
       },
       "en": {
-        "заголовок": "Print batch 7: law examples run, the shape of categories is judged, rewriting names its limit, both checkers replay a quantifier under a connective",
+        "заголовок": "Examples inside laws run, mistakes in categories are caught at compile time",
         "появилось": [
-          "**An example inside a `закон` block runs in both `check` and `test`** (ADR-0108): `flang test flang/ct/order-shipment.flang` reports 4 examples, 4 passed (0.7.27 reported 0); a false expectation in a law example is code 1 in both commands, `FLANG_EXAMPLE` naming the law, the example, the expected and the actual value.",
-          "**The shape of categories and arrows is checked against the declarations** (ADR-0108): a composition that leaves the category, an unknown or twice-named arrow, ends that do not meet — code 1 naming the arrow (`FLANG_CATEGORY_*`, `FLANG_MORPHISM_SHAPE`, `FLANG_COMPOSE_MISMATCH`). Files in `flang/ct`: 16 of 25 answer 0 and 9 answer 2 naming the law that was not counted (0.7.27: 7 and 18).",
-          "**The ledger names the rewrite limit** (ADR-0092 sec. 7): when rewriting by proved equalities runs out of its 64 steps, the statement stays declared, not proved, and the answer says why.",
-          "**Both checkers replay a quantifier under a connective** (ADR-0107): a quantifier under `и притом` and under `если` is replayed from the source by the C checker and by the Lean checker; a forgery with a swapped rule is code 1 in both."
+          "**`flang test` and `flang check` run the examples inside a `закон` (law) block.** These examples never ran before, so a wrong expectation passed silently. Now a wrong expectation is exit code 1, and the message names the law, the example, the expected and the actual value: `ожидалось {\"номер\":777}, получено {\"номер\":500}`.",
+          "**`check` verifies how a category is put together.** An arrow that was never declared, an arrow listed twice, a composition through an arrow outside the category, arrow ends that do not meet are now errors with exit code 1 and a line number. For example: `FLANG_CATEGORY_UNKNOWN_ARROW в файле warehouse.flang, строка 9, столбец 1: категория «Склад»: стрелки «потерять» не объявлено`.",
+          "**`check --proof` says why an equality over a long chain of calls was not proved.** Substituting proved properties of functions takes at most 64 steps. When that is not enough, the statement stays unproved and the answer says so: `переписка доказанными равенствами исчерпала «Предел переписки» — 64 шага` (rewriting ran out of its 64-step limit). Before, you only got \"declared, not proved\" with no reason.",
+          "**Both proof checkers (in C and in Lean 4) re-check statements with a quantifier inside `и притом` (and) and `если` (if).** The kernel proved such statements before; now their proofs are re-checked independently."
         ],
         "изменилось": [
-          "**Rewrite rules come only from the functions the goal calls** (ADR-0092 sec. 7), not from the whole program on every attempt. `check --proof` over `flang/stdlib` (55 files, 12 at a time): 5773 s on 0.7.27 against 5518 s, with the same codes and ledger totals on every file.",
-          "**The seed is reprinted by batch 7**: `bootstrap/compiler_flang.c` has 953,165 lines (was 949,212).",
-          "**The `binary-rules-guard`**: 29 codes the binary already carries leave the difference list; two transliterated guard codes are now English (`FLANG_BINARY_RULES_NOTHING_TO_SEE`, `FLANG_BINARY_RULES_VIOLATIONS`)."
+          "**A file with categories whose laws were all checked passes `check` with exit code 0.** Before, every such file got code 2 with a note that category structure is not checked. Of the 25 examples in `flang/ct`, 16 now pass with code 0, up from 7. The other 9 get code 2 and name the law that could not be checked.",
+          "**`check --proof` over the standard library is a little faster.** The kernel takes proved properties only from the functions that appear in the statement being proved. Over the 55 files of `flang/stdlib` the total time is 5773 s on 0.7.27 and 5518 s now, with the same results."
         ],
         "сломалось": [
-          "**A false example in a `закон` block now fails `test` and `check`** (code 1); such examples were not run before.",
-          "**A category whose composition leaves it or names an unknown arrow is code 1 at `check`**; the binary did not judge category shape before and answered code 2."
+          "**A wrong example in a `закон` block now fails `test` and `check` with exit code 1.** Fix the expected value in the example or the function itself; the message names both values.",
+          "**A mistake in how a category is built is now exit code 1 from `check`, not 2.** Declare the missing arrow with `морфизм` or drop it from the `категория` block; delete a repeated line."
         ]
       }
     },
     "0.7.27": {
       "ru": {
-        "заголовок": "Печать партий 5 и 6: кольцо точного целого у двух сличителей, мера и постусловия в ядре, TLS вшит в двоичный, формулы с кванторами и LaTeX",
+        "заголовок": "Доказательства по-взрослому: алгебра, завершение рекурсии, формулы в LaTeX; HTTPS без curl",
         "появилось": [
-          "**Кольцо точного целого — одно правило ядра, и оба сличителя его переигрывают** (ADR-0095): обе стороны равенства раскрываются в многочлен и сличаются как многомножества одночленов; над `число` — отказ с причиной. Второй сличитель на Lean получил модуль `Ring.lean` и переигрывает это правило по описанию формата записи, а не по коду сличителя на C; две подделки семейства `exact-ring` оба сличителя отвергают кодом 1.",
-          "**Второй сличитель на Lean стал полноценным** (ADR-0096): читает запись до вердикта, семь расхождений с сличителем на C закрыты, работа `second-checker` идёт в CI на каждом пуше рядом с `proof-checker`; оба сличителя переигрывают ограниченные ссылки и допущения на слове ядра (ADR-0103).",
-          "**Объявленная мера доказывается ядром или отвергается** (ADR-0093): спуск `н минус К` по отрезку с дном 0 выводится ядром, и сторож для такого места не печатается; аргумент, который не меньше меры (`3 умножить на н плюс 1`), — `FLANG_NOT_TOTAL` у `check`; прочие формы остаются на веру, и ведомость говорит это словами. Проба `declared-measure-descent` — 12 из 12 на двоичном этого выпуска.",
-          "**Доказанное постусловие-равенство переписывает свой вызов** (ADR-0092, правило Переп2): цепочка из восемнадцати вызовов доказывается, оба сличителя переигрывают ход «переписать по постусловию», подделки семейства отвергнуты кодом 1.",
-          "**Строка с открытой круглой скобкой продолжается до её закрытия** (ADR-0105): отступ продолжения не значим, место отказа — настоящие строка и столбец; оба сличителя читают цель утверждения и обещания до закрытия скобок. Квадратные скобки — как прежде.",
-          "**Судьи законов категорной поверхности** (ADR-0088): моноид, группа, функтор, монада, изоморфизм, пять свойств, вложение и общая часть судятся при компиляции на сетке; исход назван словами «ПОСЧИТАНО НА СЕТКЕ, не доказано», нарушение — код 1, недосчитанное — код 2. Ведомость считает законы, посчитанные судьями (задача 7662): `законов на сетке: 4` у `monoid-and-monad.flang` при четырёх строках суда.",
-          "**Категорная поверхность: конусы, сопряжения, Йонеда, моноидальная структура** (ADR-0085–0087) — объявлениями без новых слов языка; восемь новых программ в `flang/ct` (произведение, копроизведение, пулбэк, сопряжение, Йонеда на предпорядке, моноидальные маршруты, `Maybe` как моноид, стрелки Клейсли).",
-          "**`https` в двоичном — клиент TLS на языке** (ADR-0101): `flang/stdlib/tls-client.flang` печатается в `bootstrap/tls_client.c` и собирается в двоичный; хозяин только соединяет, берёт случайность и часы и двигает октеты. Корни доверия — ключ `--trust-roots <PEM>` или системная связка. Новые поручения UDP: «Отправить датаграмму», «Принять датаграмму».",
-          "**План печатается в C, Go, Rust и Python** (ADR-0100) и исполняется прогонщиком цели: `flang_cli --plan <имя>`; хозяин цели исполняет 9 родов поручений из 25 (файлы, каталоги, среда, доводы), остальные отвечают «Сбой» `FLANG_IO_NOT_WIRED`.",
-          "**Компилятор отвечает на языке настроек** (ADR-0102): `FLANG_LANG` или ключ `language` в `.flangrc`; каталог `flang/messages/catalog.tsv` (столбцы ru и en) — данные, новый язык не требует перепечатки. Русский путь не изменился ни байтом.",
-          "**Объявленные типы держатся на входе каждой цели** (ADR-0099): таблица входа печатается во все десять целей, `вес` меньше нуля на входе — `FLANG_TYPE`.",
-          "**Ядро читает условие ветви и сравнивает литералы** (ADR-0098); **квантор под связкой доказывается, неверный названный свидетель отвергается** (ADR-0094).",
-          "**Переводчик формул с кванторами и LaTeX** (ADR-0106): формула (Юникод или ASCII) или подмножество LaTeX становится `утверждение`, которое судит ядро, и утверждение печатается обратно в обе записи. Переводчик вне доверенной основы, на fscript (`flang/foreign/formula/`), команды `formula:read`, `formula:print`, `formula:probes`, `formula:round-trip`. ℕ — `точное целое`, ℤ — `целое`-отрезок с пометкой, ℚ≥0 — `точное дробное`; голые ℚ, ℝ, ℂ — отказ `FLANG_FORMULA_*`. 37 проб, 0 расхождений; круг по всем утверждениям дерева — 129 из 137 сошлись, 8 вне записи.",
-          "**Сличитель перевода переигрывает сторож меры по закрытому образцу** (ADR-0104)."
+          "**Ядро доказывает алгебраические тождества над целыми.** `check --proof` раскрывает обе стороны равенства в многочлен и сравнивает их. Это аналог тактики `ring` в Lean. Например, `(a + b)·(a + b) = a·a + a·b + b·a + b·b` доказывается для всех точных целых `a` и `b`. Для `число`, то есть для double, такие законы ложны, поэтому там будет отказ с объяснением.",
+          "**Доказательства перепроверяют две независимые программы, на C и на Lean 4.** Ядро записывает доказательство в файл, а обе программы перепроверяют его каждая по-своему. Если ядро ошибётся или запись подделают, это поймают. Что перепроверить не удалось, `check --proof` называет прямо. Обе проверки идут в CI на каждом пуше.",
+          "**Компилятор доказывает, что рекурсия завершается.** Пишете у функции `убывает н`, и `check` либо доказывает, что `н` уменьшается при каждом вызове, либо отказывает с кодом `FLANG_NOT_TOTAL`. Так, `н минус 1` на неотрицательных доказывается, а шаг вида `3·н + 1` (Коллатц) отвергается сразу, ещё до запуска.",
+          "**Доказанное свойство функции используется в других доказательствах.** Если доказано, что `f(x)` равно какому-то выражению, ядро подставит это выражение везде, где встретится вызов `f`. Это аналог `simp`. Цепочка из 18 вложенных вызовов доказывается.",
+          "**Формулы можно писать как в учебнике.** `formula:read '∀ a ∈ ℤ, ∀ b ∈ ℤ, a + b = b + a'` или та же формула в LaTeX превращается в утверждение flang, и его сразу проверяет ядро. Работает и обратно: `formula:print файл.flang` печатает утверждения файла как формулы и как LaTeX. ℕ означает точные целые, ℤ — 53-битные целые (переводчик об этом предупреждает), ℚ≥0 — точные дроби. ℝ и ℂ не поддерживаются: double не подчиняется законам поля.",
+          "**Длинное выражение можно переносить на новую строку внутри круглых скобок.** Отступ продолжения не важен, ошибка указывает настоящие строку и столбец.",
+          "**Законы моноида, функтора, монады и изоморфизма проверяются при компиляции.** Компилятор подставляет набор значений и ищет контрпример. Нарушенный закон даёт код 1, непроверенный — код 2. Это проверка на примерах, а не доказательство, и компилятор пишет это прямо. В `flang/ct` добавлено восемь примеров по теории категорий: произведение, копроизведение, пулбэк, сопряжение, лемма Йонеды на предпорядке, моноидальная категория, `Maybe` как моноид, стрелки Клейсли.",
+          "**HTTPS работает без curl.** Клиент TLS 1.3 написан на flang и встроен в двоичный файл. Корневые сертификаты берутся из системы или из `--trust-roots файл.pem`. Добавлены отправка и приём UDP.",
+          "**Скрипты (`.fscript`) компилируются в C, Go, Rust и Python.** `flang_cli --plan <имя>` запускает план в выбранном языке. Работают файлы, каталоги, переменные среды и аргументы. Остальные операции пока отвечают ошибкой `FLANG_IO_NOT_WIRED`.",
+          "**Сообщения компилятора по-английски.** Задайте `FLANG_LANG=en` или `language = en` в `.flangrc`. Переводы лежат в обычной таблице `flang/messages/catalog.tsv`.",
+          "**Сгенерированный код проверяет типы на входе.** Во всех десяти целевых языках программа отвергает вход, который не подходит под объявленный тип. Например, отрицательное число там, где объявлено `неотрицательное`."
         ],
         "изменилось": [
-          "**Семя перепечатано трижды** после 0.7.26: партия после правки ввоза (11 октября), партия 5 (12 октября), партия 6 — двумя печатями, давшими одни и те же байты (`compiler_flang.c` 46 272 951 байт против 43 917 383 у 0.7.26).",
-          "**Потолок строк сличителя растёт только вместе с ADR**, называющим правило (ADR-0097); сторож таблиц `tables-guard` идёт в CI на каждом пуше.",
-          "**Беда связывания называет файл**: сообщение начинается словами `в файле <путь>:` (ADR-0090)."
+          "**Ошибка связывания модулей называет файл**: сообщение начинается с `в файле <путь>:`."
         ],
         "сломалось": [
-          "**curl из хозяина убран целиком**: `https` идёт только клиентом TLS на языке; двоичный, собранный без `tls_client.c` (в том числе программа, напечатанная `flang emit --repl`), отвечает `FLANG_IO_NO_TLS`. Переменной среды для корней доверия нет, выключить проверку нечем; `--no-spawn` к `https` больше отношения не имеет.",
-          "**Определение с мерой, которая не убывает, отвергается при проверке** (`FLANG_NOT_TOTAL`, код 1), а не сторожем при прогоне.",
-          "**Ввезённая функция, которая зовёт спрятанного помощника своего модуля при тёзке в другом файле, больше не собирается** (`FLANG_DUPLICATE_NAME`, ADR-0090): помощника вписать в `только` или переименовать.",
-          "**Ложный закон моноида, монады, функтора, изоморфизма или свойства на категорной поверхности — код 1 у `check`** (ADR-0088); прежде двоичный эти законы не судил.",
-          "**Отрицательный `вес` на входе напечатанной программы — `FLANG_TYPE`** у всех десяти целей (ADR-0099)."
+          "**HTTPS больше не вызывает curl.** Если двоичный собран без встроенного клиента TLS (в том числе `flang emit --repl`), запрос по https отвечает `FLANG_IO_NO_TLS`. Отключить проверку сертификатов нельзя.",
+          "**Функция с `убывает`, у которой мера не уменьшается, теперь не проходит `check`** (`FLANG_NOT_TOTAL`, код 1). Раньше она падала только при запуске.",
+          "**Конфликт имён при импорте теперь ошибка.** Это случай, когда импортированная функция зовёт скрытого помощника своего модуля, а в другом файле есть одноимённый. Ошибка — `FLANG_DUPLICATE_NAME`. Чтобы исправить, добавьте помощника в список `только` или переименуйте его.",
+          "**Неверный закон моноида, монады или функтора — теперь код 1 у `check`.** Раньше такие законы не проверялись.",
+          "**Неверный по типу вход сгенерированной программы — теперь `FLANG_TYPE`** во всех целевых языках."
         ]
       },
       "en": {
-        "заголовок": "Print batches 5 and 6: the exact integer ring in both checkers, measure and postconditions in the kernel, TLS built into the binary, formulas with quantifiers and LaTeX",
+        "заголовок": "Grown-up proofs: algebra, terminating recursion, LaTeX formulas; HTTPS without curl",
         "появилось": [
-          "**The exact integer ring is one kernel rule, and both checkers replay it** (ADR-0095): both sides of an equality expand into a polynomial and are compared as multisets of monomials; over `число` the answer is a refusal with a cause. The Lean second checker gained `Ring.lean` and replays the rule from the record format description, not from the C checker; both checkers refuse the two `exact-ring` forgeries with code 1.",
-          "**The Lean second checker is complete** (ADR-0096): it reads a record to a verdict, the seven disagreements with the C checker are closed, and the `second-checker` job runs in CI on every push next to `proof-checker`; both checkers replay restricted citations and hypotheses taken on the kernel word (ADR-0103).",
-          "**A declared measure is proved by the kernel or refused** (ADR-0093): a descent `н минус К` over a segment with floor 0 is derived by the kernel and no guard is printed for that site; an argument not below the measure (`3 умножить на н плюс 1`) is `FLANG_NOT_TOTAL` at `check`; other forms stay on faith and the ledger says so in words. The `declared-measure-descent` probe gives 12 of 12 on this release's binary.",
-          "**A proved equality postcondition rewrites its call** (ADR-0092, rule Переп2): a chain of eighteen calls is proved, both checkers replay the rewrite move, the forgeries of the family are refused with code 1.",
-          "**A line with an open parenthesis continues to its close** (ADR-0105): the continuation indent does not matter and a refusal names the real line and column; both checkers read a statement goal and a promise to the closing bracket. Square brackets are unchanged.",
-          "**Law judges of the category surface** (ADR-0088): monoid, group, functor, monad, isomorphism, the five properties, inclusion and intersection are judged at compile time on a grid; the outcome says «ПОСЧИТАНО НА СЕТКЕ, не доказано», a violation is code 1, an incomplete count code 2. The ledger counts the laws the judges counted (task 7662): `законов на сетке: 4` for `monoid-and-monad.flang` beside four judge lines.",
-          "**The category surface gains cones, adjunctions, Yoneda and monoidal structure** (ADR-0085 to 0087) as declarations without new words; eight new programs in `flang/ct` (product, coproduct, pullback, an adjunction, Yoneda on a preorder, monoidal routes, `Maybe` as a monoid, Kleisli arrows).",
-          "**`https` in the binary goes through the TLS client written in the language** (ADR-0101): `flang/stdlib/tls-client.flang` is printed into `bootstrap/tls_client.c` and built into the binary; the host only connects, draws randomness and the clock, and moves octets. Trust roots come from `--trust-roots <PEM>` or the system bundle. New UDP orders: «Отправить датаграмму» and «Принять датаграмму».",
-          "**A plan prints into C, Go, Rust and Python** (ADR-0100) and runs from the target runner: `flang_cli --plan <name>`; the target host serves 9 of the 25 order kinds (files, directories, environment, arguments), the others answer a «Сбой» with `FLANG_IO_NOT_WIRED`.",
-          "**The compiler answers in the language of the settings** (ADR-0102): `FLANG_LANG` or the `language` key of `.flangrc`; the catalog `flang/messages/catalog.tsv` (columns ru and en) is data, a new language needs no reprint. The Russian path is unchanged byte for byte.",
-          "**Declared types hold at the input of every target** (ADR-0099): the entry table prints into all ten targets, a negative `вес` at the input is `FLANG_TYPE`.",
-          "**The kernel reads the branch condition and compares literals** (ADR-0098); **a quantifier under a connective is proved and a wrong named witness is refused** (ADR-0094).",
-          "**A formula translator for quantifiers and LaTeX** (ADR-0106): a formula (Unicode or ASCII) or a LaTeX subset becomes an `утверждение` the kernel judges, and a statement prints back into both notations. The translator is outside the trusted base, in fscript (`flang/foreign/formula/`), with the commands `formula:read`, `formula:print`, `formula:probes`, `formula:round-trip`. ℕ is `точное целое`, ℤ a bounded `целое` segment with a note, ℚ≥0 `точное дробное`; bare ℚ, ℝ, ℂ are refused with `FLANG_FORMULA_*`. 37 probes, 0 diverged; the round trip over every statement in the tree: 129 of 137 converged, 8 outside the notation.",
-          "**The translation matcher replays the measure guard by its closed shape** (ADR-0104)."
+          "**The kernel proves algebraic identities over integers.** `check --proof` expands both sides of an equality into a polynomial and compares them, like Lean's `ring`. For example, `(a + b)·(a + b) = a·a + a·b + b·a + b·b` is proved for all exact integers `a` and `b`. Over `число` (double) these laws are false, so you get a refusal that says why.",
+          "**Proofs are re-checked by two independent programs, one in C and one in Lean 4.** The kernel writes the proof to a file, and each checker replays it on its own. A kernel bug or a forged record gets caught; whatever could not be replayed, `check --proof` names. Both checks run in CI on every push.",
+          "**The compiler proves that recursion terminates.** Write `убывает н` (decreases n) on a function, and `check` either proves that `н` shrinks on every call or refuses with `FLANG_NOT_TOTAL`. `н минус 1` over non-negative numbers is proved; a `3·н + 1` step (Collatz) is rejected at compile time, before anything runs.",
+          "**A proved property of a function is used in other proofs.** Once `f(x)` is proved equal to some expression, the kernel substitutes that expression wherever `f` is called, like `simp`. A chain of 18 nested calls is proved.",
+          "**Write formulas as in a textbook.** `formula:read '∀ a ∈ ℤ, ∀ b ∈ ℤ, a + b = b + a'`, or the same formula in LaTeX, becomes a flang statement that the kernel checks right away. It also works the other way: `formula:print file.flang` prints a file's statements as formulas and as LaTeX. ℕ means exact integers, ℤ means 53-bit integers (the translator warns you), ℚ≥0 means exact fractions. ℝ and ℂ are not supported, because double does not obey the field laws.",
+          "**A long expression can wrap onto the next line inside parentheses.** The continuation indent does not matter, and errors point at the real line and column.",
+          "**Monoid, functor, monad and isomorphism laws are checked at compile time.** The compiler tries a set of values and looks for a counterexample. A broken law is exit code 1, an unchecked one is code 2. This is testing, not proof, and the compiler says so. `flang/ct` gains eight category theory examples: product, coproduct, pullback, an adjunction, the Yoneda lemma on a preorder, a monoidal category, `Maybe` as a monoid, Kleisli arrows.",
+          "**HTTPS works without curl.** A TLS 1.3 client written in flang is built into the binary. Root certificates come from the system or from `--trust-roots file.pem`. UDP send and receive were added.",
+          "**Scripts (`.fscript`) compile to C, Go, Rust and Python.** `flang_cli --plan <name>` runs a plan in the chosen language. Files, directories, environment variables and arguments work; other operations answer `FLANG_IO_NOT_WIRED` for now.",
+          "**Compiler messages in English.** Set `FLANG_LANG=en` or `language = en` in `.flangrc`. Translations live in a plain table, `flang/messages/catalog.tsv`.",
+          "**Generated code checks types at its input.** In all ten target languages the program rejects input that does not match the declared type, such as a negative number where `неотрицательное` (non-negative) is declared."
         ],
         "изменилось": [
-          "**The seed was reprinted three times** after 0.7.26: the batch after the import fix (11 October), batch 5 (12 October), batch 6 by two prints that gave the same bytes (`compiler_flang.c` 46 272 951 bytes against 43 917 383 in 0.7.26).",
-          "**The checker line ceiling grows only with an ADR** that names the rule (ADR-0097); the `tables-guard` job runs in CI on every push.",
-          "**A link error names the file**: the message starts with `в файле <path>:` (ADR-0090)."
+          "**A module linking error names the file**: the message starts with `в файле <path>:`."
         ],
         "сломалось": [
-          "**curl is gone from the host**: `https` goes only through the TLS client in the language; a binary built without `tls_client.c` (including a program printed by `flang emit --repl`) answers `FLANG_IO_NO_TLS`. There is no environment variable for trust roots and no way to switch the check off; `--no-spawn` no longer concerns `https`.",
-          "**A definition whose measure does not descend is refused at check** (`FLANG_NOT_TOTAL`, code 1), not by a guard at run time.",
-          "**An imported function that calls a hidden helper of its module while a namesake lives in another file no longer links** (`FLANG_DUPLICATE_NAME`, ADR-0090): add the helper to `только` or rename one of them.",
-          "**A false monoid, monad, functor, isomorphism or property law on the category surface is code 1 at `check`** (ADR-0088); before, the binary did not judge these laws.",
-          "**A negative `вес` at the input of a printed program is `FLANG_TYPE`** in all ten targets (ADR-0099)."
+          "**HTTPS no longer calls curl.** A binary built without the embedded TLS client (including `flang emit --repl`) answers an https request with `FLANG_IO_NO_TLS`. Certificate checking cannot be turned off.",
+          "**A function with `убывает` whose measure does not shrink now fails `check`** (`FLANG_NOT_TOTAL`, code 1). Before, it only failed at run time.",
+          "**An import name clash is now an error.** This is the case where an imported function calls a hidden helper of its own module and another file has a helper of the same name. The error is `FLANG_DUPLICATE_NAME`. Fix it by listing the helper in `только` or renaming it.",
+          "**A wrong monoid, monad or functor law is now exit code 1 from `check`.** These laws were not checked before.",
+          "**Badly typed input to a generated program is now `FLANG_TYPE`** in every target language."
         ]
       }
     },

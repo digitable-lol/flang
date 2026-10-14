@@ -1,6 +1,44 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.28": {
+      "ru": {
+        "заголовок": "Печать партии 7: примеры законов прогоняются, устройство категорий судится, переписка называет свой предел, квантор под связкой у обоих сверщиков",
+        "появилось": [
+          "**Пример внутри блока `закон` прогоняется у `check` и у `test`** (ADR-0108): `flang test flang/ct/order-shipment.flang` — «примеров 4, прошло 4» (у 0.7.27 — «примеров 0»); ложное ожидание в примере закона — код 1 у обеих команд, `FLANG_EXAMPLE` с именем закона и примера, ожидаемым и полученным значением.",
+          "**Устройство категорий и стрелок сверяется сличением объявлений** (ADR-0108): незамкнутая композиция, неизвестная или дважды названная стрелка, несходящиеся концы — код 1 с названной стрелкой (`FLANG_CATEGORY_*`, `FLANG_MORPHISM_SHAPE`, `FLANG_COMPOSE_MISMATCH`). Файлы `flang/ct`: 16 из 25 — код 0, 9 — код 2 с поимённо названным несчитанным законом (у 0.7.27 — 7 и 18).",
+          "**Ведомость называет «Предел переписки»** (ADR-0092 §7): когда переписка доказанными равенствами исчерпала 64 шага, утверждение остаётся «объявлено, не доказано», и ответ говорит, почему.",
+          "**Оба сверщика переигрывают квантор под связкой** (ADR-0107): квантор под `и притом` и под `если` переигрывается по исходнику и сверщиком на C, и сверщиком на Lean; подделка с подменённым правилом — код 1 у обоих."
+        ],
+        "изменилось": [
+          "**Правила переписки берутся только у функций, которые цель вызывает** (ADR-0092 §7), а не со всей программы на каждую попытку. `check --proof` по `flang/stdlib` (55 файлов, по 12 разом): 5773 с у 0.7.27 против 5518 с, коды и итоговые строки ведомостей у всех файлов те же.",
+          "**Семя перепечатано партией 7**: `bootstrap/compiler_flang.c` 953 165 строк (было 949 212).",
+          "**Сторож `binary-rules-guard`**: 29 кодов, которые двоичный уже несёт, сняты со списка разницы; два транслитных кода сторожа заменены английскими (`FLANG_BINARY_RULES_NOTHING_TO_SEE`, `FLANG_BINARY_RULES_VIOLATIONS`)."
+        ],
+        "сломалось": [
+          "**Ложный пример в блоке `закон` теперь краснит `test` и `check`** (код 1); прежде такие примеры не прогонялись вовсе.",
+          "**Категория с незамкнутой композицией или неизвестной стрелкой — код 1 у `check`**; прежде двоичный устройство категорий не судил и отвечал кодом 2."
+        ]
+      },
+      "en": {
+        "заголовок": "Print batch 7: law examples run, the shape of categories is judged, rewriting names its limit, both checkers replay a quantifier under a connective",
+        "появилось": [
+          "**An example inside a `закон` block runs in both `check` and `test`** (ADR-0108): `flang test flang/ct/order-shipment.flang` reports 4 examples, 4 passed (0.7.27 reported 0); a false expectation in a law example is code 1 in both commands, `FLANG_EXAMPLE` naming the law, the example, the expected and the actual value.",
+          "**The shape of categories and arrows is checked against the declarations** (ADR-0108): a composition that leaves the category, an unknown or twice-named arrow, ends that do not meet — code 1 naming the arrow (`FLANG_CATEGORY_*`, `FLANG_MORPHISM_SHAPE`, `FLANG_COMPOSE_MISMATCH`). Files in `flang/ct`: 16 of 25 answer 0 and 9 answer 2 naming the law that was not counted (0.7.27: 7 and 18).",
+          "**The ledger names the rewrite limit** (ADR-0092 sec. 7): when rewriting by proved equalities runs out of its 64 steps, the statement stays declared, not proved, and the answer says why.",
+          "**Both checkers replay a quantifier under a connective** (ADR-0107): a quantifier under `и притом` and under `если` is replayed from the source by the C checker and by the Lean checker; a forgery with a swapped rule is code 1 in both."
+        ],
+        "изменилось": [
+          "**Rewrite rules come only from the functions the goal calls** (ADR-0092 sec. 7), not from the whole program on every attempt. `check --proof` over `flang/stdlib` (55 files, 12 at a time): 5773 s on 0.7.27 against 5518 s, with the same codes and ledger totals on every file.",
+          "**The seed is reprinted by batch 7**: `bootstrap/compiler_flang.c` has 953,165 lines (was 949,212).",
+          "**The `binary-rules-guard`**: 29 codes the binary already carries leave the difference list; two transliterated guard codes are now English (`FLANG_BINARY_RULES_NOTHING_TO_SEE`, `FLANG_BINARY_RULES_VIOLATIONS`)."
+        ],
+        "сломалось": [
+          "**A false example in a `закон` block now fails `test` and `check`** (code 1); such examples were not run before.",
+          "**A category whose composition leaves it or names an unknown arrow is code 1 at `check`**; the binary did not judge category shape before and answered code 2."
+        ]
+      }
+    },
     "0.7.27": {
       "ru": {
         "заголовок": "Печать партий 5 и 6: кольцо точного целого у двух сличителей, мера и постусловия в ядре, TLS вшит в двоичный, формулы с кванторами и LaTeX",

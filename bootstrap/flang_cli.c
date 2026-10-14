@@ -93,12 +93,34 @@
  * `--json` нужно тому, кто зовёт прогонщик из скрипта и хочет сказать это
  * вслух, а не полагаться на то, что аргументов случайно не оказалось.
  */
+/*
+ * Исполнитель плана (ADR-0100) есть только у программы, в которой объявлен
+ * `план`: печать ставит перед этим файлом `#define FL_PROGRAM_IO_PLANS` с
+ * таблицей «имя плана, функция начала, функция шага» — исходными именами
+ * flang. Каталоги (`opendir`, `mkdtemp`) в C99 не входят, поэтому POSIX
+ * открывает только такая программа; обещание переносимого C99 у остальных не
+ * тронуто. `_DARWIN_C_SOURCE` — по той же причине, что в `flang_conc.c`:
+ * `_POSIX_C_SOURCE` на Darwin закрывает `mkdtemp`.
+ */
+#if defined(FL_PROGRAM_IO_PLANS) && !defined(_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE 200809L
+#endif
+#if defined(FL_PROGRAM_IO_PLANS) && defined(__APPLE__) &&                      \
+    !defined(_DARWIN_C_SOURCE)
+#define _DARWIN_C_SOURCE
+#endif
+
 #include "flang_runtime.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#ifdef FL_PROGRAM_IO_PLANS
+#include <dirent.h>
+#include <errno.h>
+#endif
 
 /*
  * Единственная связь прогонщика с конкретной программой — вызов функции по
@@ -1166,6 +1188,665 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
   fputs("}\n", stdout);
 }
 
+#ifdef FL_PROGRAM_IO_PLANS
+/* ───────────────────────────── план ───────────────────────────── */
+
+/*
+ * Порт `flang/src/emit/js/flang_io.js` на значения рантайма C: тот же цикл
+ * «шаг → поручение → отклик», те же исходы и коды возврата, что у `flang io`:
+ * 0 — конец работы, 1 — «Провал» (план сдался сам), 3 — «Не проверено» либо
+ * сломанный инструмент. Хозяин исполняет девять родов поручений — файлы
+ * текстом и октетами, каталоги, среду и доводы; на остальные он отвечает
+ * отказом с кодом, называющим род. Пути считаются от каталога запуска.
+ *
+ * Все значения плана живут в ОДНОЙ арене на весь прогон: состояние плана
+ * переходит из шага в шаг, и сбросить арену между шагами значило бы оставить
+ * его висеть на освобождённой памяти. Контекст — свежий на каждый шаг:
+ * пределы шагов и глубины — на одно обращение плана, как у `flang io`.
+ */
+
+typedef struct {
+  const char *name;
+  const char *initial;
+  const char *step;
+} cli_io_plan;
+
+static const cli_io_plan CLI_IO_PLANS[] = FL_PROGRAM_IO_PLANS;
+
+#define CLI_IO_PLAN_COUNT (sizeof(CLI_IO_PLANS) / sizeof(CLI_IO_PLANS[0]))
+
+/* Сколько поручений исполнитель выдаёт, прежде чем сдаться. */
+#define CLI_IO_LIMIT 10000
+
+static const char *const CLI_IO_ORDERS[] = {
+    "Прочитать файл",
+    "Записать файл",
+    "Прочитать октеты из файла",
+    "Записать октеты в файл",
+    "Запросить",
+    "Текущее время",
+    "Случайное число",
+    "Случайные октеты",
+    "Показать",
+    "Ждать событие",
+    "Перечислить каталог",
+    "Запустить процесс",
+    "Запустить процесс с вводом",
+    "Запустить процесс с пределом",
+    "Открыть соединение",
+    "Принять соединение",
+    "Прочитать из соединения",
+    "Ответить в соединение",
+    "Прочитать октеты из соединения",
+    "Ответить октетами в соединение",
+    "Удалить файл",
+    "Завести временный каталог",
+    "Прочитать переменную среды",
+    "Прочитать доводы",
+    "Размер экрана"};
+
+static bool cli_io_is_order(fl_value value) {
+  size_t index = 0;
+  if (value.tag != FL_VARIANT) {
+    return false;
+  }
+  for (index = 0; index < sizeof(CLI_IO_ORDERS) / sizeof(CLI_IO_ORDERS[0]);
+       index += 1) {
+    if (strcmp(value.as.variant->name, CLI_IO_ORDERS[index]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static fl_value cli_io_field(fl_value value, const char *name) {
+  size_t index = 0;
+  if (value.tag != FL_VARIANT) {
+    return fl_nothing();
+  }
+  for (index = 0; index < value.as.variant->count; index += 1) {
+    if (strcmp(value.as.variant->fields[index].name, name) == 0) {
+      return value.as.variant->fields[index].value;
+    }
+  }
+  return fl_nothing();
+}
+
+/* Строка поля, заканчивающаяся нулём, — malloc; NULL, если поле не строка. */
+static char *cli_io_text(fl_value order, const char *name) {
+  fl_value value = cli_io_field(order, name);
+  char *copy = NULL;
+  if (value.tag != FL_STRING) {
+    return NULL;
+  }
+  copy = (char *)malloc(value.as.string.bytes + 1);
+  if (copy == NULL) {
+    return NULL;
+  }
+  memcpy(copy, value.as.string.utf8, value.as.string.bytes);
+  copy[value.as.string.bytes] = '\0';
+  return copy;
+}
+
+static fl_status cli_io_variant(fl_ctx *ctx, const char *name,
+                                const char *field, fl_value value,
+                                fl_value *out, fl_error *error) {
+  const char *names[1];
+  names[0] = field;
+  return fl_variant_new(ctx, name, names, &value, field == NULL ? 0 : 1, out,
+                        error);
+}
+
+static fl_status cli_io_string(fl_ctx *ctx, const char *text, fl_value *out,
+                               fl_error *error) {
+  return fl_text(ctx, text, strlen(text), out, error);
+}
+
+static fl_status cli_io_fault(fl_ctx *ctx, const char *code,
+                              const char *message, const char *cause,
+                              fl_value *out, fl_error *error) {
+  static const char *const names[2] = {"код", "сообщение"};
+  fl_value values[2];
+  char *whole = NULL;
+  size_t bytes = strlen(message) + (cause == NULL ? 0 : strlen(cause) + 2);
+  fl_status status = FL_OK;
+  whole = (char *)malloc(bytes + 1);
+  if (whole == NULL) {
+    return fl_fail(ctx, error, "FLANG_MEMORY", "не хватило памяти");
+  }
+  strcpy(whole, message);
+  if (cause != NULL) {
+    strcat(whole, ": ");
+    strcat(whole, cause);
+  }
+  status = cli_io_string(ctx, code, &values[0], error);
+  if (status == FL_OK) {
+    status = cli_io_string(ctx, whole, &values[1], error);
+  }
+  free(whole);
+  if (status != FL_OK) {
+    return status;
+  }
+  return fl_variant_new(ctx, "Сбой", names, values, 2, out, error);
+}
+
+static int cli_io_by_points(const void *left, const void *right) {
+  return strcmp(*(const char *const *)left, *(const char *const *)right);
+}
+
+static fl_status cli_io_list_names(fl_ctx *ctx, const char *path,
+                                   fl_value *out, fl_error *error) {
+  DIR *directory = opendir(path);
+  char **names = NULL;
+  size_t count = 0;
+  size_t room = 0;
+  size_t index = 0;
+  fl_value *items = NULL;
+  fl_value list = fl_nothing();
+  fl_status status = FL_OK;
+  if (directory == NULL) {
+    return cli_io_fault(ctx, "FLANG_IO_LIST", "каталог не открыт",
+                        strerror(errno), out, error);
+  }
+  for (;;) {
+    const struct dirent *entry = readdir(directory);
+    if (entry == NULL) {
+      break;
+    }
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+      continue;
+    }
+    if (count == room) {
+      char **grown = NULL;
+      room = room == 0 ? 8 : room * 2;
+      grown = (char **)realloc(names, room * sizeof(char *));
+      if (grown == NULL) {
+        break;
+      }
+      names = grown;
+    }
+    names[count] = (char *)malloc(strlen(entry->d_name) + 1);
+    if (names[count] == NULL) {
+      break;
+    }
+    strcpy(names[count], entry->d_name);
+    count += 1;
+  }
+  closedir(directory);
+  /* По байтам UTF-8, то есть по кодовым точкам, — как у двоичного хозяина. */
+  if (count > 0) {
+    qsort(names, count, sizeof(char *), cli_io_by_points);
+  }
+  status = fl_list_alloc(ctx, count, &items, error);
+  for (index = 0; index < count; index += 1) {
+    if (status == FL_OK) {
+      status = cli_io_string(ctx, names[index], &items[index], error);
+    }
+    free(names[index]);
+  }
+  free(names);
+  if (status != FL_OK) {
+    return status;
+  }
+  list = fl_list(items, count);
+  return cli_io_variant(ctx, "Перечислено", "имена", list, out, error);
+}
+
+static fl_status cli_io_read(fl_ctx *ctx, const char *path, fl_value *out,
+                             fl_error *error) {
+  FILE *file = fopen(path, "rb");
+  char *body = NULL;
+  size_t bytes = 0;
+  fl_value text = fl_nothing();
+  fl_status status = FL_OK;
+  if (file == NULL) {
+    return cli_io_fault(ctx, "FLANG_IO_READ", "файл не прочитан",
+                        strerror(errno), out, error);
+  }
+  body = read_all(file, &bytes);
+  fclose(file);
+  if (body == NULL) {
+    return cli_io_fault(ctx, "FLANG_IO_READ", "файл не прочитан", NULL, out,
+                        error);
+  }
+  if (fl_utf8_not_text_at(body, bytes) > 0) {
+    free(body);
+    return cli_io_fault(ctx, "FLANG_IO_NOT_TEXT",
+                        "файл не текст: октеты не складываются в UTF-8; "
+                        "октеты возит «Прочитать октеты из файла»",
+                        NULL, out, error);
+  }
+  status = fl_text(ctx, body, bytes, &text, error);
+  free(body);
+  if (status != FL_OK) {
+    return status;
+  }
+  return cli_io_variant(ctx, "Прочитано", "содержимое", text, out, error);
+}
+
+static fl_status cli_io_read_octets(fl_ctx *ctx, const char *path,
+                                    fl_value *out, fl_error *error) {
+  FILE *file = fopen(path, "rb");
+  char *body = NULL;
+  size_t bytes = 0;
+  size_t at = 0;
+  fl_value *items = NULL;
+  fl_status status = FL_OK;
+  if (file == NULL) {
+    return cli_io_fault(ctx, "FLANG_IO_READ", "файл не прочитан",
+                        strerror(errno), out, error);
+  }
+  body = read_all(file, &bytes);
+  fclose(file);
+  if (body == NULL) {
+    return cli_io_fault(ctx, "FLANG_IO_READ", "файл не прочитан", NULL, out,
+                        error);
+  }
+  status = fl_list_alloc(ctx, bytes, &items, error);
+  for (at = 0; status == FL_OK && at < bytes; at += 1) {
+    items[at] = fl_number((double)(unsigned char)body[at]);
+  }
+  free(body);
+  if (status != FL_OK) {
+    return status;
+  }
+  return cli_io_variant(ctx, "Октеты", "октеты", fl_list(items, bytes), out,
+                        error);
+}
+
+static fl_status cli_io_write_octets(fl_ctx *ctx, const char *path,
+                                     fl_value order, fl_value *out,
+                                     fl_error *error) {
+  fl_value list = cli_io_field(order, "октеты");
+  unsigned char *bytes = NULL;
+  FILE *file = NULL;
+  size_t at = 0;
+  size_t count = 0;
+  if (list.tag != FL_LIST) {
+    return cli_io_fault(ctx, "FLANG_IO_OCTETS",
+                        "поручению нужен список октетов, а дан не список", NULL,
+                        out, error);
+  }
+  count = list.as.list.count;
+  bytes = (unsigned char *)malloc(count == 0 ? 1 : count);
+  if (bytes == NULL) {
+    return fl_fail(ctx, error, "FLANG_MEMORY", "не хватило памяти");
+  }
+  for (at = 0; at < count; at += 1) {
+    fl_value item = list.as.list.items[at];
+    if (item.tag != FL_NUMBER || item.as.number < 0.0 ||
+        item.as.number > 255.0 ||
+        item.as.number != (double)(long)item.as.number) {
+      free(bytes);
+      return cli_io_fault(ctx, "FLANG_IO_OCTETS",
+                          "октет не годится: нужно целое от 0 до 255", NULL,
+                          out, error);
+    }
+    bytes[at] = (unsigned char)(long)item.as.number;
+  }
+  file = fopen(path, "wb");
+  if (file == NULL) {
+    free(bytes);
+    return cli_io_fault(ctx, "FLANG_IO_WRITE", "файл не открыт на запись",
+                        strerror(errno), out, error);
+  }
+  if (count > 0 && fwrite(bytes, 1, count, file) != count) {
+    fclose(file);
+    free(bytes);
+    return cli_io_fault(ctx, "FLANG_IO_WRITE", "файл не записан", NULL, out,
+                        error);
+  }
+  fclose(file);
+  free(bytes);
+  return cli_io_variant(ctx, "Записано", "сколько", fl_number((double)count),
+                        out, error);
+}
+
+static fl_status cli_io_write(fl_ctx *ctx, const char *path, fl_value order,
+                              fl_value *out, fl_error *error) {
+  fl_value body = cli_io_field(order, "содержимое");
+  FILE *file = NULL;
+  size_t bytes = body.tag == FL_STRING ? body.as.string.bytes : 0;
+  size_t points = body.tag == FL_STRING ? body.as.string.points : 0;
+  file = fopen(path, "wb");
+  if (file == NULL) {
+    return cli_io_fault(ctx, "FLANG_IO_WRITE", "файл не записан",
+                        strerror(errno), out, error);
+  }
+  if (bytes > 0 && fwrite(body.as.string.utf8, 1, bytes, file) != bytes) {
+    fclose(file);
+    return cli_io_fault(ctx, "FLANG_IO_WRITE", "файл не записан", NULL, out,
+                        error);
+  }
+  if (fclose(file) != 0) {
+    return cli_io_fault(ctx, "FLANG_IO_WRITE", "файл не записан",
+                        strerror(errno), out, error);
+  }
+  /* Кодовые точки, а не октеты: «сколько» обязано совпасть с `длина`. */
+  return cli_io_variant(ctx, "Записано", "сколько", fl_number((double)points),
+                        out, error);
+}
+
+static fl_status cli_io_tempdir(fl_ctx *ctx, const char *given, fl_value *out,
+                                fl_error *error) {
+  size_t bytes = strlen(given);
+  char *pattern = (char *)malloc(bytes + 7);
+  fl_value made = fl_nothing();
+  fl_status status = FL_OK;
+  if (pattern == NULL) {
+    return fl_fail(ctx, error, "FLANG_MEMORY", "не хватило памяти");
+  }
+  memcpy(pattern, given, bytes);
+  memcpy(pattern + bytes, "XXXXXX", 7);
+  if (mkdtemp(pattern) == NULL) {
+    free(pattern);
+    return cli_io_fault(ctx, "FLANG_IO_TEMPDIR", "временный каталог не заведён",
+                        strerror(errno), out, error);
+  }
+  /* Обратно — образец плюс хвост, в координатах плана. */
+  status = cli_io_string(ctx, pattern, &made, error);
+  free(pattern);
+  if (status != FL_OK) {
+    return status;
+  }
+  return cli_io_variant(ctx, "Заведено", "путь", made, out, error);
+}
+
+typedef struct {
+  int count;
+  char **items;
+} cli_io_args;
+
+static fl_status cli_io_perform(fl_ctx *ctx, fl_value order,
+                                const cli_io_args *args, fl_value *out,
+                                fl_error *error) {
+  const char *kind = order.as.variant->name;
+  char *path = NULL;
+  fl_status status = FL_OK;
+  if (strcmp(kind, "Прочитать доводы") == 0) {
+    fl_value *items = NULL;
+    int index = 0;
+    status = fl_list_alloc(ctx, (size_t)args->count, &items, error);
+    for (index = 0; status == FL_OK && index < args->count; index += 1) {
+      status = cli_io_string(ctx, args->items[index], &items[index], error);
+    }
+    if (status != FL_OK) {
+      return status;
+    }
+    return cli_io_variant(ctx, "Доводы", "доводы",
+                          fl_list(items, (size_t)args->count), out, error);
+  }
+  if (strcmp(kind, "Прочитать переменную среды") == 0) {
+    char *name = cli_io_text(order, "имя");
+    const char *value = NULL;
+    fl_value text = fl_nothing();
+    if (name == NULL || name[0] == '\0') {
+      free(name);
+      return cli_io_fault(ctx, "FLANG_IO_ENV",
+                          "поручению нужно непустое имя переменной", NULL, out,
+                          error);
+    }
+    value = getenv(name);
+    free(name);
+    if (value == NULL) {
+      return cli_io_variant(ctx, "Переменной среды нет", NULL, fl_nothing(),
+                            out, error);
+    }
+    status = cli_io_string(ctx, value, &text, error);
+    if (status != FL_OK) {
+      return status;
+    }
+    return cli_io_variant(ctx, "Значение среды", "значение", text, out, error);
+  }
+  if (strcmp(kind, "Показать") == 0 || strcmp(kind, "Ждать событие") == 0 ||
+      strcmp(kind, "Размер экрана") == 0) {
+    return cli_io_fault(ctx, "FLANG_IO_NO_SCREEN",
+                        "у хозяина C нет экрана: поручение исполнить нечем",
+                        kind, out, error);
+  }
+  if (strcmp(kind, "Прочитать файл") != 0 &&
+      strcmp(kind, "Записать файл") != 0 &&
+      strcmp(kind, "Прочитать октеты из файла") != 0 &&
+      strcmp(kind, "Записать октеты в файл") != 0 &&
+      strcmp(kind, "Перечислить каталог") != 0 &&
+      strcmp(kind, "Удалить файл") != 0 &&
+      strcmp(kind, "Завести временный каталог") != 0) {
+    return cli_io_fault(ctx, "FLANG_IO_NOT_WIRED",
+                        "поручение в этом хозяине не заведено; исполните план "
+                        "двоичным: flang io <файл.flang>",
+                        kind, out, error);
+  }
+  path = cli_io_text(order, strcmp(kind, "Завести временный каталог") == 0
+                                ? "образец"
+                                : "путь");
+  if (path == NULL || path[0] == '\0') {
+    free(path);
+    return cli_io_fault(ctx, "FLANG_IO_PATH", "поручению нужен непустой путь",
+                        NULL, out, error);
+  }
+  if (strcmp(kind, "Прочитать файл") == 0) {
+    status = cli_io_read(ctx, path, out, error);
+  } else if (strcmp(kind, "Записать файл") == 0) {
+    status = cli_io_write(ctx, path, order, out, error);
+  } else if (strcmp(kind, "Прочитать октеты из файла") == 0) {
+    status = cli_io_read_octets(ctx, path, out, error);
+  } else if (strcmp(kind, "Записать октеты в файл") == 0) {
+    status = cli_io_write_octets(ctx, path, order, out, error);
+  } else if (strcmp(kind, "Перечислить каталог") == 0) {
+    status = cli_io_list_names(ctx, path, out, error);
+  } else if (strcmp(kind, "Удалить файл") == 0) {
+    if (remove(path) != 0) {
+      status = cli_io_fault(ctx, "FLANG_IO_REMOVE", "имя не убрано",
+                            strerror(errno), out, error);
+    } else {
+      status = cli_io_variant(ctx, "Убрано", NULL, fl_nothing(), out, error);
+    }
+  } else {
+    status = cli_io_tempdir(ctx, path, out, error);
+  }
+  free(path);
+  return status;
+}
+
+/* Значение в JSON того же вида, каким `flang io` печатает итог плана. */
+static void cli_io_plain(fl_value value, FILE *sink);
+
+static void cli_io_plain_fields(const fl_field *fields, size_t count,
+                                FILE *sink) {
+  size_t index = 0;
+  fputc('{', sink);
+  for (index = 0; index < count; index += 1) {
+    if (index > 0) {
+      fputc(',', sink);
+    }
+    write_text(fields[index].name, strlen(fields[index].name));
+    fputc(':', sink);
+    cli_io_plain(fields[index].value, sink);
+  }
+  fputc('}', sink);
+}
+
+static void cli_io_plain(fl_value value, FILE *sink) {
+  size_t index = 0;
+  char number[FL_NUMBER_TEXT_MAX];
+  switch (value.tag) {
+  case FL_NOTHING:
+    fputs("null", sink);
+    return;
+  case FL_FLAG:
+    fputs(value.as.flag ? "true" : "false", sink);
+    return;
+  case FL_NUMBER:
+    fl_number_text(value.as.number, number);
+    fputs(number, sink);
+    return;
+  case FL_STRING:
+    write_text(value.as.string.utf8, value.as.string.bytes);
+    return;
+  case FL_LIST:
+    fputc('[', sink);
+    for (index = 0; index < value.as.list.count; index += 1) {
+      if (index > 0) {
+        fputc(',', sink);
+      }
+      cli_io_plain(value.as.list.items[index], sink);
+    }
+    fputc(']', sink);
+    return;
+  case FL_RECORD:
+    cli_io_plain_fields(value.as.record->fields, value.as.record->count, sink);
+    return;
+  case FL_VARIANT:
+    fputs("{\"variant\":", sink);
+    write_text(value.as.variant->name, strlen(value.as.variant->name));
+    fputs(",\"fields\":", sink);
+    cli_io_plain_fields(value.as.variant->fields, value.as.variant->count,
+                        sink);
+    fputc('}', sink);
+    return;
+  }
+}
+
+/* Строка JSON в поток ошибок: кавычка, обратная черта и управляющие знаки. */
+static void cli_io_quote(const char *text) {
+  const unsigned char *at = (const unsigned char *)text;
+  fputc('"', stderr);
+  for (; *at != '\0'; at += 1) {
+    if (*at == '"' || *at == '\\') {
+      fputc('\\', stderr);
+      fputc(*at, stderr);
+    } else if (*at < 0x20u) {
+      fprintf(stderr, "\\u%04x", (unsigned)*at);
+    } else {
+      fputc(*at, stderr);
+    }
+  }
+  fputc('"', stderr);
+}
+
+/* Беда прогона: в поток ошибок, и код возврата по тому, кто решил. */
+static int cli_io_refuse(const char *code, const char *message, int exit_code) {
+  fflush(stdout);
+  fputs("{\"error\":", stderr);
+  cli_io_quote(message == NULL ? "" : message);
+  fputs(",\"code\":", stderr);
+  cli_io_quote(code == NULL ? "FLANG_IO" : code);
+  fputs("}\n", stderr);
+  return exit_code;
+}
+
+static const char *cli_io_say(fl_value value, const char *spare,
+                              bool allow_empty, fl_ctx *ctx) {
+  char *copy = NULL;
+  if (value.tag != FL_STRING ||
+      (!allow_empty && value.as.string.bytes == 0)) {
+    return spare;
+  }
+  copy = (char *)fl_arena_alloc(ctx->arena, value.as.string.bytes + 1);
+  if (copy == NULL) {
+    return spare;
+  }
+  memcpy(copy, value.as.string.utf8, value.as.string.bytes);
+  copy[value.as.string.bytes] = '\0';
+  return copy;
+}
+
+static int cli_io_run(const char *name, const cli_io_args *args) {
+  fl_arena arena;
+  fl_ctx ctx;
+  fl_error error;
+  fl_value state = fl_nothing();
+  fl_value response = fl_nothing();
+  fl_value step_args[2];
+  const cli_io_plan *plan = NULL;
+  size_t index = 0;
+  size_t given = 0;
+  int code = 0;
+  error.code = NULL;
+  error.message = NULL;
+  for (index = 0; index < CLI_IO_PLAN_COUNT; index += 1) {
+    if (name[0] == '\0' ? CLI_IO_PLAN_COUNT == 1
+                        : strcmp(CLI_IO_PLANS[index].name, name) == 0) {
+      plan = &CLI_IO_PLANS[index];
+      break;
+    }
+  }
+  if (plan == NULL) {
+    return cli_io_refuse("FLANG_UNKNOWN_PLAN",
+                         name[0] == '\0'
+                             ? "планов несколько — назовите нужный"
+                             : "не найден план",
+                         3);
+  }
+  fl_arena_init(&arena);
+  fl_ctx_init(&ctx, &arena);
+  if (FL_PROGRAM_CALL(&ctx, plan->initial, NULL, 0, &state, &error) != FL_OK ||
+      cli_io_variant(&ctx, "Пока ничего", NULL, fl_nothing(), &response,
+                     &error) != FL_OK) {
+    code = cli_io_refuse(error.code, error.message, 3);
+    fl_arena_release(&arena);
+    return code;
+  }
+  for (;;) {
+    fl_value step = fl_nothing();
+    fl_value order = fl_nothing();
+    const char *kind = NULL;
+    fl_ctx_init(&ctx, &arena);
+    step_args[0] = state;
+    step_args[1] = response;
+    if (FL_PROGRAM_CALL(&ctx, plan->step, step_args, 2, &step, &error) !=
+        FL_OK) {
+      code = cli_io_refuse(error.code, error.message, 3);
+      break;
+    }
+    kind = step.tag == FL_VARIANT ? step.as.variant->name : "";
+    if (strcmp(kind, "Конец работы") == 0) {
+      fputs("{\"result\":", stdout);
+      cli_io_plain(cli_io_field(step, "значение"), stdout);
+      printf(",\"orders\":%lu}\n", (unsigned long)given);
+      code = 0;
+      break;
+    }
+    if (strcmp(kind, "Провал") == 0 || strcmp(kind, "Не проверено") == 0) {
+      bool gave_up = strcmp(kind, "Провал") == 0;
+      code = cli_io_refuse(
+          cli_io_say(cli_io_field(step, "код"),
+                     gave_up ? "FLANG_IO_FAILED" : "FLANG_IO_NOT_CHECKED",
+                     false, &ctx),
+          cli_io_say(cli_io_field(step, "сообщение"),
+                     gave_up ? "план отказался продолжать"
+                             : "план не смог проверить предмет",
+                     true, &ctx),
+          gave_up ? 1 : 3);
+      break;
+    }
+    if (strcmp(kind, "Сделать") != 0) {
+      code = cli_io_refuse("FLANG_IO", "шаг плана вернул не «Продолжение»", 3);
+      break;
+    }
+    if (given >= CLI_IO_LIMIT) {
+      code = cli_io_refuse("FLANG_IO_LIMIT",
+                           "план исчерпал предел поручений (10000)", 3);
+      break;
+    }
+    order = cli_io_field(step, "поручение");
+    if (!cli_io_is_order(order)) {
+      code = cli_io_refuse("FLANG_IO", "план просит выполнить не поручение", 3);
+      break;
+    }
+    state = cli_io_field(step, "потом");
+    if (cli_io_perform(&ctx, order, args, &response, &error) != FL_OK) {
+      code = cli_io_refuse(error.code, error.message, 3);
+      break;
+    }
+    given += 1;
+  }
+  fflush(stdout);
+  fl_arena_release(&arena);
+  return code;
+}
+#endif
+
 static int run_main(int argc, char **argv) {
   fl_arena arena;
   size_t length = 0;
@@ -1191,6 +1872,16 @@ static int run_main(int argc, char **argv) {
 #else
   (void)argc;
   (void)argv;
+#endif
+#ifdef FL_PROGRAM_IO_PLANS
+  /* `--plan <имя> [довод…]` — исполнить план программы (ADR-0100). */
+  if (argc > 1 &&
+      (strcmp(argv[1], "--plan") == 0 || strcmp(argv[1], "--план") == 0)) {
+    cli_io_args args;
+    args.count = argc > 3 ? argc - 3 : 0;
+    args.items = argv + 3;
+    return cli_io_run(argc > 2 ? argv[2] : "", &args);
+  }
 #endif
   input = read_all(stdin, &length);
   if (input == NULL) {

@@ -178,25 +178,13 @@ extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *
 
 /*
  * Второй мост к программе — ЕЁ СОБСТВЕННАЯ ГРАНИЦА ВХОДА: объявленные типы
- * параметров, впечатанные в программу данными (fl_entry_table). Нужен он ровно
- * одному месту — `flang emit --target c`, печатающей САМ КОМПИЛЯТОР.
+ * параметров, впечатанные в программу данными (fl_entry_table).
  *
- * Зачем. Таблицу строит слой типов свидетеля (`таблицаВхода`, flang/src/types.mjs),
- * и на flang его нет: `flang/self/types.flang` эту таблицу не строит. Значит
- * бинарнику взять её неоткуда — кроме одного случая, когда она у него уже есть:
- * когда печатаемая программа и есть та программа, которой бинарник является.
- * Тогда его собственная таблица и есть искомая, байт в байт.
- *
- * Случай этот не угадывается, а ПРОВЕРЯЕТСЯ: печать берёт таблицу только если
- * список пар «функция, параметр» связанной программы совпадает с впечатанным
- * — по порядку, по числу и по именам (`emit_entry_fits`). Не совпал — таблица
- * пуста, и об этом сказано на stderr, а не умолчанием.
- *
- * СКАЗАНО ПРИ ЭТОМ ПРО ДЕЛО ЧЕЛОВЕКА, А НЕ ПРО УСТРОЙСТВО: одной строкой, что
- * аргументы напечатанной программы по типам не проверяются и где взять полную
- * проверку. Прежде здесь печатались четыре строки про слой типов, имя нашей
- * функции и число параметров ЧУЖОЙ программы — попросившему код на C ни одно из
- * трёх не говорит ничего.
+ * Таблицу печатаемой программы строит компилятор на flang («Таблица входа»
+ * в `flang/self/types.flang`), а подаёт её печати каждой из десяти целей этот
+ * хозяин (`emit_entry_part`, ADR-0099). Своя таблица бинарника годится только
+ * тогда, когда печатается он сам, и это ПРОВЕРЯЕТСЯ парами «функция,
+ * параметр» (`emit_entry_fits`).
  */
 #ifndef FL_PROGRAM_ENTRY
 #define FL_PROGRAM_ENTRY fl_program_entry
@@ -835,6 +823,7 @@ static const char HELP_IO[] =
     "                  «Случайные октеты» берут его всегда, а под семенем\n"
     "                  отказывают кодом FLANG_IO_ENTROPY\n"
     "  --in-dir        запретить пути за пределы каталога входного файла\n"
+    "  --trust-roots Ф связка корней PEM для «https»; без ключа — системная\n"
     "  --max-steps N   предел шагов вычисления на один виток\n"
     "  --timeout МС    срок ТИШИНЫ процесса из «Запустить процесс», миллисекундами\n"
     "                  (по умолчанию 30000): отсчёт от последнего байта в stdout\n"
@@ -912,20 +901,14 @@ static const char HELP_IO_3[] =
     "выдуманной ширине рисуется молча и неверно.\n"
     "\n"
     "Терминала нет — вывод уведён в трубу или в файл, CI, nohup — и все три\n"
-    "поручения отвечают FLANG_IO_NO_SCREEN, ровно как отвечали всегда. Чего у\n"
-    "двоичного хозяина нет по-прежнему — СВОЕГО шифрования. Нехватка названа\n"
-    "отказом, а не молчанием.\n"
+    "поручения отвечают FLANG_IO_NO_SCREEN, ровно как отвечали всегда.\n"
     "\n"
-    "«https» У ПОРУЧЕНИЯ «Запросить» РАБОТАЕТ, но исполняет его не двоичный, а\n"
-    "внешняя программа «curl»: своей криптографии здесь нет ни байта. Отсюда три\n"
-    "следствия, и все три видны программе.\n"
-    "  • curl обязан быть на машине; нет его — отказ FLANG_IO_NO_TLS;\n"
-    "  • это ЗАПУСК ПРОЦЕССА, поэтому --no-spawn запрещает и «https» тоже —\n"
-    "    громко, отказом FLANG_IO_DENIED, а не тайным дитятей;\n"
-    "  • сертификат проверяет curl: срок, цепочка и имя узла. Не сошлось —\n"
-    "    FLANG_IO_TLS_CERT его же словами; прочая беда TLS — FLANG_IO_TLS.\n"
-    "ОТЗЫВ СЕРТИФИКАТА НЕ ПРОВЕРЯЕТСЯ (ни OCSP, ни CRL) — названо, а не умолчано.\n"
-    "Сырого TLS-сокета нет вовсе: «Открыть соединение» — голый TCP.";
+    "«https» у «Запросить» исполняет САМ ДВОИЧНЫЙ: клиент TLS 1.3 на языке\n"
+    "(flang/stdlib/tls-client.flang), напечатанный в C и собранный в него; curl\n"
+    "не нужен. Беда сертификата — FLANG_IO_TLS_CERT, прочая — FLANG_IO_TLS, код\n"
+    "клиента первым словом. Корни — --trust-roots <PEM>, иначе системная связка.\n"
+    "ОТЗЫВ СЕРТИФИКАТА НЕ ПРОВЕРЯЕТСЯ. «Открыть соединение» — голый TCP.\n"
+    "UDP (IPv4): «Отправить датаграмму» и «Принять датаграмму» (ADR-0101).";
 
 static const char HELP_FACTS[] =
     "flang facts <файл.flang> --claims '[\"…\"]' [--facts факты.json] [--steps N] [--pretty]\n"
@@ -13214,13 +13197,10 @@ static int run_file(int argc, char **argv) {
  *    сверху шапкой. Свидетель читает их с диска (`flang/src/emit/c.mjs`), и здесь
  *    читаются они же и оттуда же — иначе байты разошлись бы.
  *
- * 2. ГРАНИЦА ВХОДА — объявленные типы параметров таблицей. Её строит слой типов
- *    свидетеля (`таблицаВхода`), которого на flang нет вовсе. Один случай, когда
- *    таблица у бинарника уже есть, — печать САМОГО СЕБЯ: тогда годится его
- *    собственная, впечатанная (`FL_PROGRAM_ENTRY`). Годность не предполагается,
- *    а проверяется парами «функция, параметр» (`emit_entry_fits`); не сошлось —
- *    таблица пуста, и человеку сказано одной строкой, что аргументы
- *    напечатанной программы по типам не проверяются.
+ * 2. ГРАНИЦА ВХОДА — объявленные типы параметров таблицей. Её строит
+ *    компилятор на flang («Таблица входа» в `flang/self/types.flang`), и этот
+ *    хозяин подаёт её печати всех десяти целей (ADR-0099); собственная таблица
+ *    бинарника идёт в дело, когда печатается он сам (`emit_entry_fits`).
  *
  * 3. ПРЕДЕЛЫ — `--max-steps` и `--max-depth`: они впечатываются в
  *    `#define FL_MAX_STEPS`, то есть в байт вывода. Умолчания здесь — умолчания
@@ -13358,7 +13338,8 @@ typedef struct {
      в программе есть план: тогда же рядом с выводом ложится хозяин. Отдельной
      строкой, а не хвостом `build_say`, потому что программе без плана хозяина
      не кладут, и обещать его ей значило бы назвать файл, которого нет. NULL —
-     цель плана не печатает вовсе (сегодня таких восемь из девяти). */
+     цель плана не печатает вовсе (с ADR-0100 таких четыре из десяти: cpp, java,
+     elixir, csharp). */
   const char *plan_say;
   /* Имя обёртки на flang, которой у цели проверяются столкновения имён после
      транслитерации, — или NULL, если проверки у цели нет. Зовётся она из
@@ -13399,21 +13380,23 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
      {"flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c", "flang_conc.h", "flang_conc.c"},
      NULL,
      {"make", "cc", NULL},
-     NULL,
+     "план исполняет прогонщик: cd <каталог> && make && ./flang_cli --plan <имя> [довод…]",
      "Столкновения имён"},
     {"go", "Go", "flang_runtime.go", {"flang/src/emit/go", "share/flang/go"}, "Напечатать связанное в Go",
      true,
      15, EMIT_FIELDS_GO, 4, {"", "flang_runtime.go", "flang_cli.go", ""},
      "собрать: cd <каталог> && go build ./...",
      {"go", NULL, NULL},
-     NULL, NULL},
+     "план исполняет прогонщик: cd <каталог> && go build -o flang_cli ./cli && ./flang_cli --plan <имя> [довод…]",
+     NULL},
     {"rust", "Rust", "flang_runtime.rs", {"flang/src/emit/rust", "share/flang/rust"},
      "Напечатать связанное в Rust", true, 12,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм исходник",
       "исходник прогонщика", "типы входа", "поля входа", "варианты входа", "параметры входа"},
      2, {"flang_runtime.rs", "flang_cli.rs"}, "собрать: cd <каталог> && cargo build, запустить target/debug/flang_cli <модуль>",
      {"cargo", NULL, NULL},
-     NULL, NULL},
+     "план исполняет прогонщик: cd <каталог> && cargo build && target/debug/flang_cli --plan <имя> [довод…]",
+     NULL},
     {"java", "Java", "Value.java", {"flang/src/emit/java", "share/flang/java"},
      "Напечатать связанное в Java",
      true, 16,
@@ -13495,20 +13478,10 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
      NULL, NULL},
     /* ТРЕТИЙ ФАЙЛ У PYTHON — `flang_io.py`, исполнитель плана: тот же цикл
        «поручение → отклик», что и `flang_io.js` у JavaScript, портированный на
-       значения рантайма Python. Здесь он положен ВПЕРЁД печати: цель `python`
-       объявление «план» ещё не печатает (её `emit-python.flang` не просит поля
-       «исходник исполнителя», и `flang emit --target python` на программе с
-       планом отвечает кодом 1 и текстом FLANG_PLAN_UNSUPPORTED). Порядок
-       обратен порядку у JavaScript, где сперва просили поле, а таблица о нём не
-       знала, и печать ЛЮБОЙ программы с планом обрывалась замечанием про
-       недостающее поле.
-
-       ПОЧЕМУ ЛИШНЕЕ ПОЛЕ БЕЗВРЕДНО, пока его никто не читает: запись настроек
-       уезжает в компилятор через `compiler_flang_call`, а не через
-       `compiler_flang_enter` (см. `#define FL_PROGRAM_CALL` в начале этого
-       файла), то есть БЕЗ границы входа, где лишнее поле записи считалось бы
-       несоответствием типу. Печать читает поля по имени, и незапрошенное просто
-       не читается.
+       значения рантайма Python, и хозяин на девять родов поручений. Он лёг сюда
+       ВПЕРЁД печати, а с ADR-0100 `emit-python.flang` просит поле «исходник
+       исполнителя» и кладёт файл рядом с модулем программе, у которой есть
+       `план`.
 
        ПОРЯДОК ИМЁН ЗДЕСЬ ЗНАЧИМ: поля, которых `emit_call` не знает по имени,
        разбирают `runtime_files` подряд. Их три и они идут в том же порядке, что
@@ -13521,7 +13494,8 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
      3, {"flang_runtime.py", "flang_cli.py", "flang_io.py"},
      "запустить: cd <каталог> && python3 flang_cli.py <модуль>",
      {"python3", NULL, NULL},
-     NULL, NULL},
+     "план исполняет прогонщик: cd <каталог> && python3 flang_cli.py <модуль> --plan <имя> [довод…]",
+     NULL},
     {"csharp", "C#", "Value.cs", {"flang/src/emit/csharp", "share/flang/csharp"},
      "Напечатать связанное в CSharp", true, 16,
      {"путь", "есть путь", "база", "предел глубины", "предел шагов", "прогонщик", "рантайм значение",
@@ -14307,10 +14281,29 @@ static int emit_take_protocol(fl_value *files, const char *protocol) {
   return 0;
 }
 
-static int emit_call(const emit_target *target, fl_value subject, bool fits, const fl_entry_table *table,
-                     const char *runtime, const emit_wish *wish, bool with_plans, fl_value *files,
-                     const char *protocol, const char *source_path, const char *source_sha) {
+/*
+ * Граница входа ПЕЧАТАЕМОЙ программы: её строит компилятор на flang
+ * («Таблица входа» в `flang/self/types.flang`), и строит одинаково для всех
+ * десяти целей (ADR-0099). Своя таблица бинарника идёт в дело, только когда
+ * печатается он сам (`fits`). Не построилась — пустая таблица, как прежде.
+ */
+static fl_value emit_entry_part(bool fits, fl_value own, bool built, fl_value border, const char *part) {
+  fl_value found = fl_nothing();
+  if (fits) {
+    return own;
+  }
+  if (built && val_field(border, part, &found) && found.tag == FL_LIST) {
+    return found;
+  }
+  return fl_list(NULL, 0);
+}
+
+static int emit_call(const emit_target *target, fl_value subject, fl_value program, bool fits,
+                     const fl_entry_table *table, const char *runtime, const emit_wish *wish, bool with_plans,
+                     fl_value *files, const char *protocol, const char *source_path, const char *source_sha) {
   fl_value values[EMIT_FIELD_MAX];
+  fl_value border = fl_nothing();
+  bool built = false;
   fl_value args[4];
   fl_value result = fl_nothing();
   fl_value failure = fl_nothing();
@@ -14341,6 +14334,10 @@ static int emit_call(const emit_target *target, fl_value subject, bool fits, con
     }
   }
 
+  if (!fits) {
+    built = repl_call("Таблица входа", &program, 1, &border) == FL_OK;
+  }
+
   for (index = 0; code == 0 && index < target->field_count; index += 1) {
     const char *name = target->fields[index];
     if (strcmp(name, "путь") == 0) {
@@ -14358,13 +14355,15 @@ static int emit_call(const emit_target *target, fl_value subject, bool fits, con
     } else if (strcmp(name, "оболочка") == 0) {
       values[index] = fl_flag(wish->shell);
     } else if (strcmp(name, "типы входа") == 0) {
-      values[index] = fits ? emit_entry_types(table) : fl_list(NULL, 0);
+      values[index] = emit_entry_part(fits, fits ? emit_entry_types(table) : fl_nothing(), built, border, "типы");
     } else if (strcmp(name, "поля входа") == 0) {
-      values[index] = fits ? emit_entry_fields(table) : fl_list(NULL, 0);
+      values[index] = emit_entry_part(fits, fits ? emit_entry_fields(table) : fl_nothing(), built, border, "поля");
     } else if (strcmp(name, "варианты входа") == 0) {
-      values[index] = fits ? emit_entry_variants(table) : fl_list(NULL, 0);
+      values[index] =
+          emit_entry_part(fits, fits ? emit_entry_variants(table) : fl_nothing(), built, border, "варианты");
     } else if (strcmp(name, "параметры входа") == 0) {
-      values[index] = fits ? emit_entry_params(table) : fl_list(NULL, 0);
+      values[index] =
+          emit_entry_part(fits, fits ? emit_entry_params(table) : fl_nothing(), built, border, "параметры");
     } else if (taken < target->runtime_count) {
       values[index] = repl_value_text(texts[taken], sizes[taken]);
       taken += 1;
@@ -14839,7 +14838,7 @@ static int emit_file(int argc, char **argv, const char *self) {
             sha256_add(&sha, text, bytes);
             sha256_hex(&sha, source_sha);
             code = emit_call(&EMIT_TARGET_TABLE[chosen],
-                             EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, fits, table,
+                             EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, program, fits, table,
                              runtime, &wish, with_plans, &files, protocol, path, source_sha);
           }
           if (code == 0 && protocol != NULL) {
@@ -14864,21 +14863,12 @@ static int emit_file(int argc, char **argv, const char *self) {
                 (unsigned long)written, out);
       }
       /*
-       * ЧТО ЗДЕСЬ СКАЗАНО ЧЕЛОВЕКУ, А ЧТО — НЕТ.
-       *
-       * Прежде здесь стояли четыре строки про устройство инструмента: про слой
-       * типов, про имя нашей функции и про число параметров ЧУЖОЙ программы,
-       * впечатанной в двоичный. Человеку, попросившему код на C, ни одно из
-       * трёх не говорит ничего и делать ему с этим нечего.
-       *
-       * Остаётся ровно то, что меняет его работу: у напечатанного прогонщика
-       * аргументы по типам не проверяются, и где взять проверку.
+       * Про границу входа здесь не сказано ничего, и это не умолчание: таблицу
+       * объявленных типов печать получает во всех десяти целях (ADR-0099),
+       * и напечатанный прогонщик сверяет по ней аргументы до вызова. Прежде
+       * здесь стояла строка «аргументы напечатанной программы по типам не
+       * проверяются» — после ADR-0099 она была бы ложью.
        */
-      if (!fits) {
-        fputs("аргументы напечатанной программы по типам не проверяются: это ограничение "
-              "двоичного flang, полная проверка есть в версии для Node\n",
-              stderr);
-      }
       /*
        * ЧТО ПРОВЕРЕНО ПЕРЕД ПЕЧАТЬЮ, А ЧТО НЕТ — СЛОВАМИ И ВСЕГДА.
        *
@@ -16460,6 +16450,7 @@ static int facts_file(int argc, char **argv) {
  * программы догадываться, что означает ноль.
  */
 
+#include <arpa/inet.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -17033,6 +17024,9 @@ typedef struct {
   unsigned long seed_state;
   long timeout_ms;
   char *root;
+  /* Связка корней для «https», названная ключом --trust-roots; NULL — искать
+     системную. Память — argv, живёт дольше хозяина. */
+  const char *trust_roots;
   /* Доводы ПЛАНА, а не двоичного. Память здесь чужая — это сам argv, который
      живёт дольше хозяина, — и потому не освобождается ни здесь, ни в io_close. */
   char **plan_args;
@@ -17042,6 +17036,11 @@ typedef struct {
   io_link links[IO_MAX_LINKS];
   size_t link_count;
   int next_link;
+  /* Сокеты датаграмм, привязанные к своему порту: один порт — один сокет, и
+     «Отправить датаграмму» с «откуда» равным P шлёт с того же сокета, на
+     котором «Принять датаграмму» с портом P ждёт ответа. */
+  io_listen datagrams[IO_MAX_PORTS];
+  size_t datagram_count;
 } io_host;
 
 /* ── сборка значений «Значение» ──────────────────────────────────────────── */
@@ -17607,6 +17606,52 @@ static void io_close(io_host *host) {
     close(host->listens[index].fd);
   }
   host->listen_count = 0;
+  for (index = 0; index < host->datagram_count; index += 1) {
+    close(host->datagrams[index].fd);
+  }
+  host->datagram_count = 0;
+}
+
+/*
+ * ДАТАГРАММЫ. Сокет UDP, привязанный к своему порту на всех адресах IPv4, —
+ * тот же выбор, что у «Принять соединение». Порт привязывается при первом
+ * поручении, которое его называет, и живёт до конца прогона: послать с порта P
+ * и ждать ответа на P — один сокет, иначе ответ пришёл бы на чужой. Только
+ * IPv4: адрес назначения разрешается `getaddrinfo` с AF_INET.
+ */
+static int io_datagram_on(io_host *host, int port, char *why, size_t why_size) {
+  size_t index = 0;
+  int fd = -1;
+  int yes = 1;
+  struct sockaddr_in address;
+  for (index = 0; index < host->datagram_count; index += 1) {
+    if (host->datagrams[index].port == port) {
+      return host->datagrams[index].fd;
+    }
+  }
+  if (host->datagram_count == IO_MAX_PORTS) {
+    snprintf(why, why_size, "у хозяина уже %d портов датаграмм — больше некуда", IO_MAX_PORTS);
+    return -1;
+  }
+  fd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (fd < 0) {
+    snprintf(why, why_size, "сокет датаграмм не заведён: %s", strerror(errno));
+    return -1;
+  }
+  setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+  memset(&address, 0, sizeof(address));
+  address.sin_family = AF_INET;
+  address.sin_addr.s_addr = htonl(INADDR_ANY);
+  address.sin_port = htons((unsigned short)port);
+  if (bind(fd, (struct sockaddr *)&address, sizeof(address)) != 0) {
+    snprintf(why, why_size, "порт датаграмм %d не занят хозяином: %s", port, strerror(errno));
+    close(fd);
+    return -1;
+  }
+  host->datagrams[host->datagram_count].port = port;
+  host->datagrams[host->datagram_count].fd = fd;
+  host->datagram_count += 1;
+  return fd;
 }
 
 /*
@@ -17893,383 +17938,583 @@ static fl_value io_http_answer(const repl_buf *answer) {
   }
 }
 
-/* ── сеть: «https» исполняется НЕ ЗДЕСЬ ──────────────────────────────────── */
+/* ── сеть: «https» своим клиентом TLS на языке ───────────────────────────── */
 
 /*
- * ОТКУДА БЕРЁТСЯ ШИФРОВАНИЕ. Не отсюда. Криптографии в этом файле не прибавилось
- * ни байта, и `bootstrap/Makefile` по-прежнему линкует `-lm -lpthread` и ничего
- * сверх: точка раскрутки как собиралась одним `cc`, так и собирается. Три пути
- * взвешены числом в `docs/adr/0007-encryption-by-request-to-an-external-host.md`,
- * и выбран третий — ТОТ ЖЕ, каким в словаре живут процессы: поручение уходит
- * НАРУЖУ, чужая проверенная программа его исполняет, мы разбираем ответ.
+ * ОТКУДА БЕРЁТСЯ ШИФРОВАНИЕ. Из `flang/stdlib/tls-client.flang` — клиента
+ * TLS 1.3, написанного на самом языке (ADR-0078), НАПЕЧАТАННОГО в C той же
+ * печатью, что печатает компилятор, и собранного в ЭТОТ ЖЕ двоичный. Внешней
+ * программы на пути нет: ни curl, ни openssl, ни libssl. Решение и замеры —
+ * `docs/adr/0101-the-binary-host-speaks-tls-with-the-printed-language-client.md`.
  *
- * ЧЕМ ИСПОЛНЯЕТСЯ: `curl`, найденный по PATH. Имя зашито и ключи зашиты, и
- * переменной среды, которая бы их подменила, здесь нет НАМЕРЕННО: «чем ходить в
- * сеть», названное снаружи, есть тихий способ снять проверку сертификата.
+ * КАК ДВИГАТЕЛЬ ПОПАДАЕТ СЮДА. Перепечатка семени кладёт рядом с этим файлом
+ * `tls_client.c` и `tls_client.h` (печать `flang/stdlib/tls-client.flang`,
+ * `scripts/bootstrap-reprint.sh`), и этот файл включает их одной единицей
+ * трансляции: напечатанный Makefile остаётся прежним, а все имена двигателя
+ * несут приставку `tls_client_` и с именами компилятора не встречаются.
+ * Нет файла рядом — двигателя в двоичном нет, и «https» отвечает отказом
+ * FLANG_IO_NO_TLS с этой причиной, а не тайным походом за чужой программой.
+ * Так и с программой, напечатанной `flang emit --repl`: оболочка уезжает в неё
+ * дословно, а двигатель — нет.
  *
- * КЛЮЧИ, И ПОЧЕМУ КАЖДЫЙ:
- *   -q                    НЕ читать ~/.curlrc. Стоит первым, до всего: строка
- *                         `insecure` в чужом файле настроек сняла бы проверку
- *                         сертификата, и НИ ОДИН прогон этого бы не показал.
- *                         Главный ключ здесь — этот, а не те, что про TLS.
- *   -sS                   без счётчика, но с текстом ошибки на stderr.
- *   -i                    заголовки в поток: ответ разбирает тот же
- *                         `io_http_answer`, что и незашифрованный путь.
- *   -g                    НЕ считать «[», «]», «{», «}» в адресе перечислением:
- *                         адрес приходит из программы, а не из руки человека, и
- *                         `?ids[]=1` не должен превращаться в другой запрос.
- *   --http1.1             разбор ждёт «HTTP/1.», а поверх TLS curl по умолчанию
- *                         договаривается на HTTP/2 и печатает «HTTP/2 200».
- *   -H "Content-Type:"    СНЯТЬ заголовок, который curl дописывает к телу сам
- *                         («application/x-www-form-urlencoded»). Поручение
- *                         «Запросить» заголовков не возит вовсе, и наш сокет по
- *                         «http» не шлёт ни одного: чужая служба обязана видеть
- *                         одно и то же тело обоими путями. Замерено на
- *                         postman-echo: без этого ключа тело приезжало полем
- *                         формы, а не телом.
- *   --proto =https        только https: ни file, ни gopher, ни подмены схемы.
- *   --proto-redir =https  перенаправления и так не исполняются, но если завтра
- *                         их включат — вниз по схеме уйти будет нельзя.
- *   --tlsv1.2             нижняя граница версии.
- *   --max-time            из `--timeout` хозяина, секундами.
- *   --                    конец ключей: адрес не станет ключом, начнись он с «-».
+ * ЧТО ДЕЛАЕТ ХОЗЯИН, А ЧТО ДВИГАТЕЛЬ. Хозяин — только трубы: разбирает адрес,
+ * открывает TCP, берёт 64 октета из системного источника случайности (32 на
+ * тайный скаляр X25519, 32 на случайное ClientHello), читает связку корней и
+ * часы, пишет и читает октеты. Весь счёт — привет, расписание секретов,
+ * расшифровка полёта, Finished, цепочка, CertificateVerify, запись запроса и
+ * расшифровка ответа — четыре вызова двигателя, те же функции, какими
+ * пользуется `docs/examples/https/https-get.flang`:
+ *   «Привет клиента шестнадцатеричным», «Финиш словом»,
+ *   «Запрос по полёту октетами», «Ответ сервера октетами».
  *
- * ЧЕГО ЗДЕСЬ НЕТ И НЕ БУДЕТ: ключа `-k` (`--insecure`), ключа
- * `--proxy-insecure`, `--cacert` из среды — ни одного способа сказать
- * «сертификат не проверять». Тихо принять чужой сертификат ХУЖЕ, чем не уметь
- * вовсе, и потому проверка не выключается ничем, что скажет программа на flang.
+ * ЧТО ПРОВЕРЯЕТСЯ: цепочка подписей sha256WithRSAEncryption до корня из
+ * связки, срок каждого звена по часам хозяина, basicConstraints у звеньев выше
+ * листа, имя узла по subjectAltName, подпись CertificateVerify
+ * (rsa_pss_rsae_sha256) над стенограммой, Finished сервера, тег GCM каждой
+ * записи. ЧЕГО НЕТ: отзыва (ни OCSP, ни CRL), ECDSA и P-384 в цепочке, наборов
+ * кроме TLS_AES_128_GCM_SHA256, групп кроме x25519, HelloRetryRequest,
+ * возобновления, ALPN и HTTP/2. Узел, который требует чего-то из этого, —
+ * отказ с причиной двигателя, а не тихое понижение.
  *
- * КТО ПРОВЕРЯЕТ СЕРТИФИКАТ: curl своим хранилищем корней. Срок, цепочка и имя
- * узла — его работа, не наша, и отказ приезжает ЕГО словами (первая строка
- * stderr) под нашим кодом. Проверено подделкой: expired, wrong.host,
- * self-signed и untrusted-root с badssl.com отвергнуты все четыре.
+ * СВЯЗКА КОРНЕЙ: ключ `--trust-roots <файл>`, без него — первая найденная из
+ * системных (`/etc/ssl/certs/ca-certificates.crt`, `/etc/pki/tls/certs/ca-bundle.crt`,
+ * `/etc/ssl/cert.pem`). Переменной среды нет НАМЕРЕННО: «чему верить»,
+ * сказанное средой, есть тихий способ подменить доверие. Выключить проверку
+ * нечем вовсе.
  *
- * ★ ЧЕГО ПРОВЕРКА НЕ ДЕЛАЕТ, И ЭТО НАЗВАНО, А НЕ УМОЛЧАНО: ОТЗЫВ СЕРТИФИКАТА НЕ
- * ПРОВЕРЯЕТСЯ. Пятая подделка, `revoked.badssl.com`, прошла с кодом 200 —
- * отозванный лист принят. Ни OCSP, ни CRL curl с OpenSSL по умолчанию не
- * спрашивает. Ключ `--cert-status` (OCSP-скрепка) ЗАМЕРЕН и НЕ ВЗЯТ: с ним
- * отказ «No OCSP response received» приезжает не только от revoked.badssl.com,
- * но и от rosettacode.org, и от api.github.com — скрепку не отдаёт почти никто,
- * то есть ключ закрывает не дыру, а весь выход в сеть. Отзыв остаётся ДОЛГОМ, и
- * долг записан здесь, в `--help` команды `io` и в ADR-0007.
- *
- * ЧТО ЧЕСТНО НАЗВАТЬ ДОЛГОМ ЭТОГО ПУТИ:
- *   • «https» требует ЗАПУСКА ПРОЦЕССА, значит `--no-spawn` его запрещает — и
- *     запрещает громко: молча завести дитя у хозяина, которому это запрещено,
- *     значит соврать в ключе;
- *   • тело не совпадает побайтово с незашифрованным путём: curl снимает кусочную
- *     упаковку (`Transfer-Encoding: chunked`), а наш сокет отдаёт её как есть;
- *   • сырого TLS-сокета по-прежнему нет: «Открыть соединение» — голый TCP, и
- *     клиент к базе, требующей шифрования, этим не пишется;
- *   • curl обязан быть на машине. Нет его — прежний отказ FLANG_IO_NO_TLS, но с
- *     названной причиной.
+ * Ответ разбирает тот же `io_http_answer`, что и незашифрованный путь, и тело
+ * доезжает так же, как по «http»: кусочная упаковка не снимается ни там, ни тут.
  */
-#define IO_TLS_PROGRAM "curl"
 
-/* Первая строка чужого вывода: ровно она и есть «внятные слова» отказа, всё
-   остальное у curl — присказка про то, куда сходить почитать.
-   Обрез по длине мог прийтись на середину знака: имя узла приезжает из
-   программы на flang и бывает не в латинице, а половина знака сломала бы UTF-8
-   в отклике. Снимается ТОЛЬКО НЕПОЛНАЯ последовательность — ищется последний
-   ведущий байт, и обещанная им длина сверяется с тем, сколько байт дошло.
-   Первая редакция снимала хвост БЕЗУСЛОВНО и тем съедала последний знак у
-   всякой строки, кончавшейся не латиницей. */
-static void io_first_line(const char *text, size_t bytes, char *out, size_t out_size) {
-  size_t index = 0;
-  size_t taken = 0;
-  if (out_size == 0) return;
-  if (text != NULL) {
-    while (index < bytes && text[index] != '\n' && text[index] != '\r' && taken + 1 < out_size) {
-      out[taken] = text[index];
-      taken += 1;
-      index += 1;
+#if defined(__has_include)
+#if __has_include("tls_client.c") && __has_include("tls_client.h")
+#define IO_TLS_ENGINE 1
+#endif
+#endif
+
+#ifdef IO_TLS_ENGINE
+#include "tls_client.c"
+#endif
+
+/* Связки корней, которые ищутся без ключа, — в порядке поиска. */
+static const char *const io_tls_bundles[] = {
+    "/etc/ssl/certs/ca-certificates.crt",
+    "/etc/pki/tls/certs/ca-bundle.crt",
+    "/etc/ssl/cert.pem",
+};
+
+#ifdef IO_TLS_ENGINE
+
+/* Сколько тишины узла ждать, прежде чем спросить двигатель, не закрыт ли уже
+   ответ тревогой. */
+#define IO_TLS_IDLE_MS 200
+
+static void io_hex_put(repl_buf *out, const unsigned char *bytes, size_t count) {
+  static const char digits[] = "0123456789ABCDEF";
+  size_t at = 0;
+  for (at = 0; at < count; at += 1) {
+    buf_char(out, digits[bytes[at] >> 4]);
+    buf_char(out, digits[bytes[at] & 15]);
+  }
+}
+
+static int io_hex_digit(char symbol) {
+  if (symbol >= '0' && symbol <= '9') return symbol - '0';
+  if (symbol >= 'A' && symbol <= 'F') return symbol - 'A' + 10;
+  if (symbol >= 'a' && symbol <= 'f') return symbol - 'a' + 10;
+  return -1;
+}
+
+/* Шестнадцатеричное слово двигателя → октеты. Нечётная длина или чужой знак —
+   ложь, а не обрезка: двигатель такого не печатает, и молча чинить его вывод
+   значило бы спрятать поломку печати. */
+static bool io_hex_take(const char *text, size_t length, repl_buf *out) {
+  size_t at = 0;
+  if (length % 2 != 0) return false;
+  for (at = 0; at < length; at += 2) {
+    const int high = io_hex_digit(text[at]);
+    const int low = io_hex_digit(text[at + 1]);
+    if (high < 0 || low < 0) return false;
+    buf_char(out, (char)((high << 4) | low));
+  }
+  return true;
+}
+
+static fl_value io_tls_word(const char *text, size_t bytes) {
+  return fl_text_borrow(text, bytes, bytes);
+}
+
+/* Один вызов двигателя: своя арена, свой контекст, ответ — строка, скопированная
+   в `answer` до того, как арена освобождена. Предел шагов поднят до потолка
+   рантайма: двигатель — доказанно тотальные функции над конечными октетами, и
+   оборвать счёт на середине рукопожатия значило бы отказать узлу без причины. */
+static bool io_tls_call(const char *function, const fl_value *args, size_t count, repl_buf *answer,
+                        char *why, size_t why_size) {
+  fl_arena arena;
+  fl_ctx ctx;
+  fl_error error;
+  fl_value result = fl_nothing();
+  fl_status status = FL_OK;
+  fl_arena_init(&arena);
+  fl_ctx_init(&ctx, &arena);
+  ctx.max_steps = (size_t)FL_MAX_STEPS;
+  error.code = NULL;
+  error.message = NULL;
+  status = tls_client_call(&ctx, function, args, count, &result, &error);
+  if (status != FL_OK || result.tag != FL_STRING) {
+    snprintf(why, why_size, "двигатель TLS, «%s»: %s %s", function,
+             error.code == NULL ? "FLANG_TLS_ENGINE" : error.code,
+             error.message == NULL ? "ответил не строкой" : error.message);
+    fl_arena_release(&arena);
+    return false;
+  }
+  buf_add(answer, result.as.string.utf8, result.as.string.bytes);
+  fl_arena_release(&arena);
+  return true;
+}
+
+/* Отказ двигателя «ОТКАЗ <код> <слова>» → отказ поручения. Код двигателя
+   остаётся в сообщении первым словом: программа на flang вправе различать
+   «чужое имя» и «просроченный лист», и различает по нему. Беды сертификата —
+   FLANG_IO_TLS_CERT, прочие — FLANG_IO_TLS, как было при прежнем исполнителе. */
+static fl_value io_tls_refusal(const char *word) {
+  const char *code = word + strlen("ОТКАЗ ");
+  const bool certificate = strncmp(code, "FLANG_TLS_CHAIN", 15) == 0 || strncmp(code, "FLANG_TLS_EXPIRED", 17) == 0 ||
+                           strncmp(code, "FLANG_TLS_NAME", 14) == 0 || strncmp(code, "FLANG_TLS_SIGNATURE", 19) == 0;
+  return io_fail(certificate ? "FLANG_IO_TLS_CERT" : "FLANG_IO_TLS", code);
+}
+
+static bool io_tls_starts(const repl_buf *word, const char *head) {
+  const size_t length = strlen(head);
+  return word->used >= length && memcmp(word->data, head, length) == 0;
+}
+
+/* Слово «ГОТОВО» двигателя, разрезанное по пробелам. Указатели смотрят внутрь
+   `word`, и живут, пока жив он. */
+static size_t io_tls_split(repl_buf *word, char **parts, size_t room) {
+  size_t count = 0;
+  size_t at = 0;
+  char *start = word->data;
+  for (at = 0; at <= word->used && count < room; at += 1) {
+    if (at == word->used || word->data[at] == ' ') {
+      if (at < word->used) word->data[at] = '\0';
+      parts[count] = start;
+      count += 1;
+      start = word->data + at + 1;
     }
+  }
+  return count;
+}
+
+/* Ждать октетов не дольше остатка срока; 0 — конец связи, -1 — срок вышел или
+   беда чтения (errno сказан), -2 — тишина дольше `idle_ms` (0 — не ждать тишины). */
+static ssize_t io_tls_read(int fd, unsigned char *chunk, size_t room, struct timeval *deadline, long idle_ms) {
+  for (;;) {
+    fd_set reading;
+    struct timeval now;
+    struct timeval wait;
+    long left_ms = 0;
+    int ready = 0;
+    gettimeofday(&now, NULL);
+    left_ms = (long)(deadline->tv_sec - now.tv_sec) * 1000L + (long)(deadline->tv_usec - now.tv_usec) / 1000L;
+    if (left_ms <= 0) {
+      errno = ETIMEDOUT;
+      return -1;
+    }
+    if (idle_ms > 0 && idle_ms < left_ms) {
+      wait.tv_sec = idle_ms / 1000;
+      wait.tv_usec = (idle_ms % 1000) * 1000;
+    } else {
+      wait.tv_sec = left_ms / 1000;
+      wait.tv_usec = (left_ms % 1000) * 1000;
+    }
+    FD_ZERO(&reading);
+    FD_SET(fd, &reading);
+    ready = select(fd + 1, &reading, NULL, NULL, &wait);
+    if (ready < 0 && errno == EINTR) continue;
+    if (ready == 0 && idle_ms > 0 && idle_ms < left_ms) {
+      return -2;
+    }
+    if (ready == 0) {
+      errno = ETIMEDOUT;
+      return -1;
+    }
+    if (ready < 0) return -1;
     {
-      size_t lead = taken;
-      while (lead > 0 && ((unsigned char)out[lead - 1] & 0xC0) == 0x80) {
-        lead -= 1;
-      }
-      if (lead > 0) {
-        const unsigned char first = (unsigned char)out[lead - 1];
-        size_t need = 1;
-        if ((first & 0xF8) == 0xF0) {
-          need = 4;
-        } else if ((first & 0xF0) == 0xE0) {
-          need = 3;
-        } else if ((first & 0xE0) == 0xC0) {
-          need = 2;
-        }
-        if (need > 1 && (taken - lead + 1) < need) {
-          taken = lead - 1;
-        }
-      }
+      const ssize_t got = read(fd, chunk, room);
+      if (got < 0 && errno == EINTR) continue;
+      return got;
     }
   }
-  out[taken] = '\0';
 }
 
-/* Код возврата curl → код отказа языка. Различать обязательно: «сертификат не
-   принят» и «не дозвонился» — разные беды, и программа вправе поступить с ними
-   по-разному. Числа — из curl(1), раздел «EXIT CODES». */
-static const char *io_tls_code(int code) {
-  switch (code) {
-    case 60: /* сертификат узла не проверился */
-    case 90: /* открытый ключ не совпал с приколотым */
-    case 91: /* ответ OCSP негоден */
-      return "FLANG_IO_TLS_CERT";
-    case 3:  /* адрес разобрать не вышло */
-    case 6:  /* имя не разрешилось */
-    case 7:  /* не соединилось */
-    case 28: /* время вышло */
-      return "FLANG_IO_NET";
-    default:
-      return "FLANG_IO_TLS";
+static bool io_tls_write(int fd, const char *data, size_t bytes) {
+  size_t sent = 0;
+  while (sent < bytes) {
+    const ssize_t put = write(fd, data + sent, bytes - sent);
+    if (put < 0 && errno == EINTR) continue;
+    if (put <= 0) return false;
+    sent += (size_t)put;
   }
+  return true;
 }
+
+#endif
 
 static fl_value io_https(io_host *host, const char *method, const char *address, const char *body) {
-  /* Больше всего ключей у запроса с телом: 21 слово и замыкающий NULL. Запас
-     здесь не «на всякий случай», а на следующий ключ — переполнение массива
-     аргументов не заметит ни один прогон. */
-  char *args[32];
-  size_t count = 0;
-  char timeout[32];
-  int out_pipe[2];
-  int err_pipe[2];
-  int in_pipe[2];
-  pid_t child = 0;
-  repl_buf out;
-  repl_buf err;
-  int status = 0;
-  bool too_much = false;
-  bool no_time = false;
-  size_t sent = 0;
-  size_t to_send = 0;
+#ifndef IO_TLS_ENGINE
+  (void)host;
+  (void)method;
+  (void)address;
+  (void)body;
+  (void)io_tls_bundles;
+  return io_fail("FLANG_IO_NO_TLS",
+                 "в этот двоичный не собран клиент TLS на языке (tls_client.c рядом с flang_repl.c при "
+                 "сборке): адрес по «https» исполнить нечем, а идти за чужой программой хозяин не станет");
+#else
+  char host_name[512];
+  char path[2048];
+  int port = 443;
+  const char *rest = address + strlen("https://");
+  const char *slash = strchr(rest, '/');
+  const char *bundle_path = host->trust_roots;
+  char *bundle = NULL;
+  size_t bundle_bytes = 0;
+  unsigned char secret[64];
+  repl_buf secret_hex;
+  repl_buf random_hex;
+  repl_buf hello;
+  repl_buf hello_octets;
+  repl_buf stream;
+  repl_buf stream_hex;
+  repl_buf word;
+  repl_buf request;
+  repl_buf request_hex;
+  repl_buf plain;
+  char why[1024];
+  char *parts[16];
+  size_t part_count = 0;
+  struct timeval deadline;
+  fl_value result = fl_nothing();
   void (*was_pipe)(int) = NULL;
-  const bool with_body =
-      body != NULL && body[0] != '\0' && strcmp(method, "GET") != 0 && strcmp(method, "HEAD") != 0;
+  int fd = -1;
 
-  if (!host->spawn) {
-    return io_fail("FLANG_IO_DENIED",
-                   "«https» здесь исполняет ВНЕШНЯЯ программа, а хозяину запрещено их запускать "
-                   "(--no-spawn): своего шифрования у двоичного нет, и завести дитя молча значило бы "
-                   "соврать в ключе");
-  }
-
-  snprintf(timeout, sizeof(timeout), "%ld", host->timeout_ms > 0 ? (host->timeout_ms + 999) / 1000 : 30L);
-  args[count] = IO_TLS_PROGRAM;         count += 1;
-  args[count] = "-q";                   count += 1;
-  args[count] = "-sS";                  count += 1;
-  args[count] = "-i";                   count += 1;
-  args[count] = "-g";                   count += 1;
-  args[count] = "--http1.1";            count += 1;
-  args[count] = "-H";                   count += 1;
-  args[count] = "Content-Type:";        count += 1;
-  args[count] = "--proto";              count += 1;
-  args[count] = "=https";               count += 1;
-  args[count] = "--proto-redir";        count += 1;
-  args[count] = "=https";               count += 1;
-  args[count] = "--tlsv1.2";            count += 1;
-  args[count] = "--max-time";           count += 1;
-  args[count] = timeout;                count += 1;
-  if (strcmp(method, "HEAD") == 0) {
-    args[count] = "--head";             count += 1;
+  if (slash == NULL) {
+    snprintf(host_name, sizeof(host_name), "%s", rest);
+    snprintf(path, sizeof(path), "/");
   } else {
-    args[count] = "-X";                 count += 1;
-    args[count] = (char *)method;       count += 1;
+    const size_t length = (size_t)(slash - rest);
+    snprintf(host_name, sizeof(host_name), "%.*s", (int)(length < sizeof(host_name) ? length : sizeof(host_name) - 1),
+             rest);
+    snprintf(path, sizeof(path), "%s", slash);
   }
-  if (with_body) {
-    args[count] = "--data-binary";      count += 1;
-    args[count] = "@-";                 count += 1;
-    to_send = strlen(body);
-  }
-  args[count] = "--";                   count += 1;
-  args[count] = (char *)address;        count += 1;
-  args[count] = NULL;
-
-  if (pipe(out_pipe) != 0) {
-    return io_fail_errno("FLANG_IO_TLS", "труба вывода не заведена");
-  }
-  if (pipe(err_pipe) != 0) {
-    close(out_pipe[0]);
-    close(out_pipe[1]);
-    return io_fail_errno("FLANG_IO_TLS", "труба ошибок не заведена");
-  }
-  if (pipe(in_pipe) != 0) {
-    close(out_pipe[0]);
-    close(out_pipe[1]);
-    close(err_pipe[0]);
-    close(err_pipe[1]);
-    return io_fail_errno("FLANG_IO_TLS", "труба ввода не заведена");
-  }
-  child = fork();
-  if (child < 0) {
-    close(out_pipe[0]);
-    close(out_pipe[1]);
-    close(err_pipe[0]);
-    close(err_pipe[1]);
-    close(in_pipe[0]);
-    close(in_pipe[1]);
-    return io_fail_errno("FLANG_IO_TLS", "внешний хозяин не порождён");
-  }
-  if (child == 0) {
-    dup2(in_pipe[0], 0);
-    dup2(out_pipe[1], 1);
-    dup2(err_pipe[1], 2);
-    close(in_pipe[0]);
-    close(in_pipe[1]);
-    close(out_pipe[0]);
-    close(out_pipe[1]);
-    close(err_pipe[0]);
-    close(err_pipe[1]);
-    /* 126 — «каталог не сменился», 127 — «программы нет». Слить их нельзя:
-       вторая означает «шифрования здесь нет», а первая — нашу же беду. */
-    if (chdir(host->root) != 0) {
-      _exit(126);
-    }
-    execvp(IO_TLS_PROGRAM, args);
-    _exit(127);
-  }
-  close(in_pipe[0]);
-  close(out_pipe[1]);
-  close(err_pipe[1]);
-  if (!with_body) {
-    close(in_pipe[1]);
-    in_pipe[1] = -1;
-  }
-  /* Дитя вправе закрыть свой конец раньше, чем мы дописали тело; без этого
-     SIGPIPE снял бы НАС, а не его. Прежний обработчик возвращается на место. */
-  was_pipe = signal(SIGPIPE, SIG_IGN);
-
-  buf_init(&out);
-  buf_init(&err);
   {
-    int fds[2];
-    bool alive[2];
-    char chunk[4096];
-    fds[0] = out_pipe[0];
-    fds[1] = err_pipe[0];
-    alive[0] = true;
-    alive[1] = true;
-    while (alive[0] || alive[1] || in_pipe[1] >= 0) {
-      fd_set reading;
-      fd_set writing;
-      int top = -1;
-      int index = 0;
-      struct timeval wait;
-      FD_ZERO(&reading);
-      FD_ZERO(&writing);
-      for (index = 0; index < 2; index += 1) {
-        if (alive[index]) {
-          FD_SET(fds[index], &reading);
-          if (fds[index] > top) top = fds[index];
-        }
+    char *colon = strchr(host_name, ':');
+    if (colon != NULL) {
+      char *end = NULL;
+      const long given = strtol(colon + 1, &end, 10);
+      if (end == colon + 1 || *end != '\0' || given < 1 || given > 65535) {
+        return io_fail("FLANG_IO_NET", "порт в адресе «https» не годится: нужно целое от 1 до 65535");
       }
-      if (in_pipe[1] >= 0) {
-        FD_SET(in_pipe[1], &writing);
-        if (in_pipe[1] > top) top = in_pipe[1];
-      }
-      wait.tv_sec = host->timeout_ms / 1000;
-      wait.tv_usec = (host->timeout_ms % 1000) * 1000;
-      if (select(top + 1, &reading, &writing, NULL, &wait) <= 0) {
-        no_time = true;
-        kill(child, SIGKILL);
+      port = (int)given;
+      *colon = '\0';
+    }
+  }
+  if (host_name[0] == '\0') {
+    return io_fail("FLANG_IO_NET", "в адресе «https» нет имени узла");
+  }
+
+  if (bundle_path == NULL) {
+    size_t index = 0;
+    for (index = 0; index < sizeof(io_tls_bundles) / sizeof(io_tls_bundles[0]); index += 1) {
+      if (access(io_tls_bundles[index], R_OK) == 0) {
+        bundle_path = io_tls_bundles[index];
         break;
       }
-      if (in_pipe[1] >= 0 && FD_ISSET(in_pipe[1], &writing)) {
-        const ssize_t put = write(in_pipe[1], body + sent, to_send - sent);
-        if (put <= 0) {
-          close(in_pipe[1]);
-          in_pipe[1] = -1;
-        } else {
-          sent += (size_t)put;
-          if (sent >= to_send) {
-            close(in_pipe[1]);
-            in_pipe[1] = -1;
-          }
-        }
-      }
-      for (index = 0; index < 2; index += 1) {
-        if (alive[index] && FD_ISSET(fds[index], &reading)) {
-          const ssize_t got = read(fds[index], chunk, sizeof(chunk));
-          if (got <= 0) {
-            alive[index] = false;
-          } else {
-            buf_add(index == 0 ? &out : &err, chunk, (size_t)got);
-            if (out.used + err.used > IO_OUT_LIMIT) {
-              too_much = true;
-              kill(child, SIGKILL);
-              alive[0] = false;
-              alive[1] = false;
-            }
-          }
-        }
-      }
     }
   }
-  if (in_pipe[1] >= 0) close(in_pipe[1]);
-  close(out_pipe[0]);
-  close(err_pipe[0]);
-  signal(SIGPIPE, was_pipe);
-  while (waitpid(child, &status, 0) < 0 && errno == EINTR) {
-    /* повтор */
+  if (bundle_path == NULL) {
+    return io_fail("FLANG_IO_TLS_CERT",
+                   "связки корней доверия нет: ни ключа --trust-roots, ни системной связки на месте — "
+                   "проверить сертификат узла не по чему, а без проверки хозяин не ходит");
+  }
+  bundle = repl_read_file(bundle_path, &bundle_bytes);
+  if (bundle == NULL) {
+    snprintf(why, sizeof(why), "связка корней «%s» не прочитана", bundle_path);
+    return io_fail_errno("FLANG_IO_TLS_CERT", why);
+  }
+  if (fl_utf8_not_text_at(bundle, bundle_bytes) > 0) {
+    free(bundle);
+    snprintf(why, sizeof(why), "связка корней «%s» — не текст PEM", bundle_path);
+    return io_fail("FLANG_IO_TLS_CERT", why);
   }
 
-  if (no_time) {
-    buf_free(&out);
-    buf_free(&err);
-    return io_fail("FLANG_IO_NET", "внешний хозяин «" IO_TLS_PROGRAM "» не уложился в срок");
+  if (!io_entropy(secret, sizeof(secret))) {
+    free(bundle);
+    return io_fail_errno("FLANG_IO_ENTROPY", "источник случайности /dev/urandom не ответил");
   }
-  if (too_much) {
-    char buffer[256];
-    snprintf(buffer, sizeof(buffer), "ответ по «https» больше %d байт", IO_OUT_LIMIT);
-    buf_free(&out);
-    buf_free(&err);
-    return io_fail("FLANG_IO_TLS", buffer);
+  buf_init(&secret_hex);
+  buf_init(&random_hex);
+  buf_init(&hello);
+  buf_init(&hello_octets);
+  buf_init(&stream);
+  buf_init(&stream_hex);
+  buf_init(&word);
+  buf_init(&request);
+  buf_init(&request_hex);
+  buf_init(&plain);
+  io_hex_put(&secret_hex, secret, 32);
+  io_hex_put(&random_hex, secret + 32, 32);
+  memset(secret, 0, sizeof(secret));
+
+  gettimeofday(&deadline, NULL);
+  deadline.tv_sec += host->timeout_ms / 1000;
+  deadline.tv_usec += (host->timeout_ms % 1000) * 1000;
+  if (deadline.tv_usec >= 1000000) {
+    deadline.tv_sec += 1;
+    deadline.tv_usec -= 1000000;
   }
-  if (WIFSIGNALED(status)) {
-    char buffer[256];
-    snprintf(buffer, sizeof(buffer), "внешний хозяин «%s» снят сигналом %d", IO_TLS_PROGRAM, WTERMSIG(status));
-    buf_free(&out);
-    buf_free(&err);
-    return io_fail("FLANG_IO_TLS", buffer);
-  }
+  was_pipe = signal(SIGPIPE, SIG_IGN);
+
   {
-    const int code = WEXITSTATUS(status);
-    if (code == 127) {
-      buf_free(&out);
-      buf_free(&err);
-      return io_fail("FLANG_IO_NO_TLS",
-                     "своего шифрования у двоичного хозяина нет, а внешней программы «" IO_TLS_PROGRAM
-                     "» на машине не нашлось: адрес по «https» исполнить нечем, "
-                     "а притворяться, что сходил, — хуже отказа");
+    fl_value args[3];
+    args[0] = io_tls_word(secret_hex.data, secret_hex.used);
+    args[1] = io_tls_word(random_hex.data, random_hex.used);
+    args[2] = fl_text_borrow(host_name, strlen(host_name), io_points(host_name, strlen(host_name)));
+    if (!io_tls_call("Привет клиента шестнадцатеричным", args, 3, &hello, why, sizeof(why))) {
+      result = io_fail("FLANG_IO_TLS", why);
+      goto done;
     }
-    if (code == 126) {
-      buf_free(&out);
-      buf_free(&err);
-      return io_fail("FLANG_IO_TLS", "внешнему хозяину не сменился рабочий каталог");
+  }
+  if (!io_hex_take(hello.data, hello.used, &hello_octets)) {
+    result = io_fail("FLANG_IO_TLS", "двигатель TLS отдал привет не шестнадцатеричным словом");
+    goto done;
+  }
+
+  fd = io_connect_to(host, host_name, port, why, sizeof(why));
+  if (fd < 0) {
+    result = io_fail("FLANG_IO_NET", why);
+    goto done;
+  }
+  if (!io_tls_write(fd, hello_octets.data, hello_octets.used)) {
+    result = io_fail_errno("FLANG_IO_NET", "привет клиента не отправлен");
+    goto done;
+  }
+
+  /* ПОЛЁТ СЕРВЕРА: читать, пока двигатель говорит «ЕЩЁ». Каждый кусок — новый
+     вызов по всей ленте: двигатель не хранит состояния между вызовами, и потому
+     одна и та же функция судит и неполный, и полный полёт. */
+  for (;;) {
+    unsigned char chunk[16384];
+    const ssize_t got = io_tls_read(fd, chunk, sizeof(chunk), &deadline, 0);
+    if (got < 0) {
+      result = io_fail_errno("FLANG_IO_NET", "полёт сервера не дочитан");
+      goto done;
     }
-    if (code != 0) {
-      char line[512];
-      char buffer[768];
-      io_first_line(err.data, err.used, line, sizeof(line));
-      if (line[0] == '\0') {
-        snprintf(buffer, sizeof(buffer), "внешний хозяин «%s» вернул код %d и ничего не сказал", IO_TLS_PROGRAM,
-                 code);
-      } else {
-        snprintf(buffer, sizeof(buffer), "%s", line);
+    if (got == 0) {
+      result = io_fail("FLANG_IO_TLS", "узел закрыл соединение посреди рукопожатия");
+      goto done;
+    }
+    buf_add(&stream, (const char *)chunk, (size_t)got);
+    if (stream.used > IO_OUT_LIMIT) {
+      result = io_fail("FLANG_IO_TLS", "полёт сервера больше предела ответа");
+      goto done;
+    }
+    buf_reset(&stream_hex);
+    io_hex_put(&stream_hex, (const unsigned char *)stream.data, stream.used);
+    buf_reset(&word);
+    {
+      fl_value args[3];
+      args[0] = io_tls_word(secret_hex.data, secret_hex.used);
+      args[1] = io_tls_word(hello.data, hello.used);
+      args[2] = io_tls_word(stream_hex.data, stream_hex.used);
+      if (!io_tls_call("Финиш словом", args, 3, &word, why, sizeof(why))) {
+        result = io_fail("FLANG_IO_TLS", why);
+        goto done;
       }
-      buf_free(&out);
-      buf_free(&err);
-      return io_fail(io_tls_code(code), buffer);
+    }
+    if (io_tls_starts(&word, "ЕЩЁ")) continue;
+    break;
+  }
+  if (io_tls_starts(&word, "ОТКАЗ ")) {
+    result = io_tls_refusal(word.data);
+    goto done;
+  }
+  part_count = io_tls_split(&word, parts, 16);
+  if (part_count != 8 || strcmp(parts[0], "ГОТОВО") != 0) {
+    result = io_fail("FLANG_IO_TLS", "двигатель TLS отдал Finished не в обещанной форме");
+    goto done;
+  }
+  {
+    repl_buf finished;
+    bool sent = false;
+    buf_init(&finished);
+    sent = io_hex_take(parts[1], strlen(parts[1]), &finished) && io_tls_write(fd, finished.data, finished.used);
+    buf_free(&finished);
+    if (!sent) {
+      result = io_fail_errno("FLANG_IO_NET", "Finished клиента не отправлен");
+      goto done;
+    }
+  }
+
+  /* ЗАПРОС уходит только после цепочки, имени, срока и CertificateVerify:
+     данных приложения узел до проверки не получает ни октета. */
+  buf_put(&request, method);
+  buf_put(&request, " ");
+  buf_put(&request, path);
+  buf_put(&request, " HTTP/1.1\r\nHost: ");
+  buf_put(&request, host_name);
+  buf_put(&request, "\r\nConnection: close\r\n");
+  if (body != NULL && body[0] != '\0' && strcmp(method, "GET") != 0 && strcmp(method, "HEAD") != 0) {
+    char length[64];
+    snprintf(length, sizeof(length), "Content-Length: %lu\r\n", (unsigned long)strlen(body));
+    buf_put(&request, length);
+    buf_put(&request, "\r\n");
+    buf_put(&request, body);
+  } else {
+    buf_put(&request, "\r\n");
+  }
+  io_hex_put(&request_hex, (const unsigned char *)request.data, request.used);
+  {
+    fl_value flight[6];
+    fl_value args[6];
+    struct timeval now;
+    size_t index = 0;
+    for (index = 0; index < 6; index += 1) {
+      flight[index] = io_tls_word(parts[index + 2], strlen(parts[index + 2]));
+    }
+    gettimeofday(&now, NULL);
+    args[0] = io_tls_word(hello.data, hello.used);
+    args[1] = fl_list(flight, 6);
+    args[2] = io_tls_word(bundle, bundle_bytes);
+    args[3] = fl_number((double)now.tv_sec * 1000.0 + (double)(now.tv_usec / 1000));
+    args[4] = fl_text_borrow(host_name, strlen(host_name), io_points(host_name, strlen(host_name)));
+    args[5] = io_tls_word(request_hex.data, request_hex.used);
+    /* Связка — текст PEM, то есть ASCII; число знаков равно числу октетов. */
+    {
+      repl_buf answer;
+      buf_init(&answer);
+      if (!io_tls_call("Запрос по полёту октетами", args, 6, &answer, why, sizeof(why))) {
+        buf_free(&answer);
+        result = io_fail("FLANG_IO_TLS", why);
+        goto done;
+      }
+      buf_free(&word);
+      word = answer;
+    }
+  }
+  if (io_tls_starts(&word, "ОТКАЗ ")) {
+    result = io_tls_refusal(word.data);
+    goto done;
+  }
+  part_count = io_tls_split(&word, parts, 16);
+  if (part_count != 5 || strcmp(parts[0], "ГОТОВО") != 0) {
+    result = io_fail("FLANG_IO_TLS", "двигатель TLS отдал запрос не в обещанной форме");
+    goto done;
+  }
+  {
+    repl_buf records;
+    bool sent = false;
+    buf_init(&records);
+    sent = io_hex_take(parts[1], strlen(parts[1]), &records) && io_tls_write(fd, records.data, records.used);
+    buf_free(&records);
+    if (!sent) {
+      result = io_fail_errno("FLANG_IO_NET", "запрос не отправлен");
+      goto done;
+    }
+  }
+
+  /* ОТВЕТ: читать до конца связи (запрос просит «Connection: close») или до
+     закрывающей тревоги. Узел, пославший close_notify, вправе ждать нашей
+     тревоги и связь не рвать (`openssl s_server` так и делает), а тревога
+     зашифрована, и увидеть её может только двигатель. Звать его на каждый
+     кусок значило бы расшифровывать ленту заново квадрат раз; он зовётся,
+     когда узел замолчал на IO_TLS_IDLE_MS, и в конце связи. Конец связи без
+     close_notify ответ не отменяет — длину тела судит HTTP, а не TLS. */
+  for (;;) {
+    unsigned char chunk[16384];
+    bool ask = false;
+    bool last = false;
+    const ssize_t got = io_tls_read(fd, chunk, sizeof(chunk), &deadline, IO_TLS_IDLE_MS);
+    if (got == -2) {
+      ask = true;
+    } else if (got < 0) {
+      if (errno == ETIMEDOUT) {
+        result = io_fail("FLANG_IO_NET", "ответ по «https» не уложился в срок хозяина");
+        goto done;
+      }
+      ask = true;
+      last = true;
+    } else if (got == 0) {
+      ask = true;
+      last = true;
+    } else {
+      buf_add(&stream, (const char *)chunk, (size_t)got);
+      if (stream.used > IO_OUT_LIMIT) {
+        char buffer[256];
+        snprintf(buffer, sizeof(buffer), "ответ по «https» больше %d байт", IO_OUT_LIMIT);
+        result = io_fail("FLANG_IO_TLS", buffer);
+        goto done;
+      }
+    }
+    if (!ask) continue;
+    {
+      fl_value args[4];
+      repl_buf answer;
+      char *end = NULL;
+      const double records = strtod(parts[4], &end);
+      buf_reset(&stream_hex);
+      io_hex_put(&stream_hex, (const unsigned char *)stream.data, stream.used);
+      args[0] = io_tls_word(parts[2], strlen(parts[2]));
+      args[1] = io_tls_word(parts[3], strlen(parts[3]));
+      args[2] = io_tls_word(stream_hex.data, stream_hex.used);
+      args[3] = fl_number(records);
+      buf_init(&answer);
+      if (!io_tls_call("Ответ сервера октетами", args, 4, &answer, why, sizeof(why))) {
+        buf_free(&answer);
+        result = io_fail("FLANG_IO_TLS", why);
+        goto done;
+      }
+      if (io_tls_starts(&answer, "ОТКАЗ ")) {
+        result = io_tls_refusal(answer.data);
+        buf_free(&answer);
+        goto done;
+      }
+      if (last || io_tls_starts(&answer, "ГОТОВО")) {
+        buf_free(&word);
+        word = answer;
+        break;
+      }
+      buf_free(&answer);
     }
   }
   {
-    fl_value result = io_http_answer(&out);
-    buf_free(&out);
-    buf_free(&err);
-    return result;
+    const char *space = memchr(word.data, ' ', word.used);
+    const size_t from = space == NULL ? word.used : (size_t)(space - word.data) + 1;
+    if (space == NULL || !io_hex_take(word.data + from, word.used - from, &plain)) {
+      result = io_fail("FLANG_IO_TLS", "двигатель TLS отдал ответ не в обещанной форме");
+      goto done;
+    }
   }
+  result = io_http_answer(&plain);
+
+done:
+  if (fd >= 0) close(fd);
+  signal(SIGPIPE, was_pipe);
+  memset(secret_hex.data, 0, secret_hex.used);
+  buf_free(&secret_hex);
+  buf_free(&random_hex);
+  buf_free(&hello);
+  buf_free(&hello_octets);
+  buf_free(&stream);
+  buf_free(&stream_hex);
+  buf_free(&word);
+  buf_free(&request);
+  buf_free(&request_hex);
+  buf_free(&plain);
+  free(bundle);
+  return result;
+#endif
 }
 
 /* ── сеть: запрос по HTTP ────────────────────────────────────────────────── */
@@ -18278,11 +18523,9 @@ static fl_value io_https(io_host *host, const char *method, const char *address,
  * Клиент HTTP/1.1 БЕЗ ШИФРОВАНИЯ, своим сокетом, — ровно столько, сколько нужно
  * поручению «Запросить» по «http://».
  *
- * `https` разбирается ЗДЕСЬ ЖЕ, но исполняется не здесь: он уходит в
- * `io_https` внешней программе. Втащить TLS в это основание значило бы положить
- * в него чужую криптографию — путь отвергнутый, а не забытый; отдать поручение
- * наружу — тот же путь, каким в словаре живут процессы. Довод целиком —
- * `docs/adr/0007-encryption-by-request-to-an-external-host.md`.
+ * `https` уходит в `io_https` выше: тот же запрос, но октеты шифрует и
+ * проверяет клиент TLS на языке, собранный в этот двоичный (ADR-0101). Чужой
+ * криптографии в основании по-прежнему нет — ни библиотеки, ни программы.
  */
 static fl_value io_request(io_host *host, const char *method, const char *address, const char *body) {
   char host_name[512];
@@ -19066,6 +19309,167 @@ static fl_value io_perform(io_host *host, fl_value order) {
   }
 
   /*
+   * ── ДАТАГРАММЫ (UDP) ──────────────────────────────────────────────────────
+   * Октеты — списком чисел, как у октетной пары соединения: длина берётся из
+   * списка, нулевой октет — обычное число 0. Датаграмма больше 65 507 октетов
+   * в IPv4 не помещается и отвергается до отправки, а не обрезается.
+   */
+  if (io_order_is(order, "Отправить датаграмму")) {
+    double port = 0;
+    double from = 0;
+    char *address = NULL;
+    fl_value list = fl_nothing();
+    const fl_value *items = NULL;
+    size_t count = 0;
+    char why[256];
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    if (!io_order_number(order, "порт", &port) || port < 1 || port > 65535 || port != (double)(long)port) {
+      return io_fail("FLANG_IO_NET", "порт не годится: нужно целое от 1 до 65535");
+    }
+    if (!io_order_number(order, "откуда", &from) || from < 0 || from > 65535 || from != (double)(long)from) {
+      return io_fail("FLANG_IO_NET", "«откуда» не годится: нужно целое от 0 до 65535; 0 — любой свободный порт");
+    }
+    if (!io_order_field(order, "октеты", &list) || !zn_items(list, &items, &count)) {
+      return io_fail("FLANG_IO_OCTETS", "поручению нужен список октетов, а дан не список");
+    }
+    if (count > 65507) {
+      return io_fail("FLANG_IO_OCTETS", "датаграмма больше 65507 октетов в IPv4 не помещается");
+    }
+    address = io_order_text(order, "адрес");
+    if (address == NULL || address[0] == '\0') {
+      free(address);
+      return io_fail("FLANG_IO_NET", "поручению «Отправить датаграмму» нужен непустой адрес");
+    }
+    {
+      unsigned char *bytes = (unsigned char *)repl_alloc(count == 0 ? 1 : count);
+      struct addrinfo hints;
+      struct addrinfo *found = NULL;
+      char service[8];
+      int failed = 0;
+      int fd = -1;
+      bool own = false;
+      ssize_t sent = 0;
+      size_t at = 0;
+      for (at = 0; at < count; at += 1) {
+        double octet = 0;
+        if (!zn_number(items[at], &octet) || octet < 0 || octet > 255 || octet != (double)(long)octet) {
+          snprintf(why, sizeof(why), "октет %lu не годится: нужно целое от 0 до 255", (unsigned long)(at + 1));
+          free(bytes);
+          free(address);
+          return io_fail("FLANG_IO_OCTETS", why);
+        }
+        bytes[at] = (unsigned char)octet;
+      }
+      snprintf(service, sizeof(service), "%d", (int)port);
+      memset(&hints, 0, sizeof(hints));
+      hints.ai_family = AF_INET;
+      hints.ai_socktype = SOCK_DGRAM;
+      failed = getaddrinfo(address, service, &hints, &found);
+      if (failed != 0 || found == NULL) {
+        snprintf(why, sizeof(why), "адрес «%s» не разрешён: %s", address, gai_strerror(failed));
+        free(bytes);
+        free(address);
+        return io_fail("FLANG_IO_NET", why);
+      }
+      if (from > 0) {
+        fd = io_datagram_on(host, (int)from, why, sizeof(why));
+      } else {
+        fd = socket(AF_INET, SOCK_DGRAM, 0);
+        own = true;
+        if (fd < 0) snprintf(why, sizeof(why), "сокет датаграмм не заведён: %s", strerror(errno));
+      }
+      if (fd < 0) {
+        freeaddrinfo(found);
+        free(bytes);
+        free(address);
+        return io_fail("FLANG_IO_NET", why);
+      }
+      sent = sendto(fd, bytes, count, 0, found->ai_addr, found->ai_addrlen);
+      freeaddrinfo(found);
+      free(bytes);
+      free(address);
+      if (own) close(fd);
+      if (sent < 0 || (size_t)sent != count) {
+        return io_fail_errno("FLANG_IO_WRITE", "датаграмма не отправлена");
+      }
+      {
+        fl_value fields[1];
+        fields[0] = io_pair("сколько", io_number((double)count));
+        return io_variant("Записано", fields, 1);
+      }
+    }
+  }
+
+  if (io_order_is(order, "Принять датаграмму")) {
+    double port = 0;
+    double wait_ms = 0;
+    char why[256];
+    int fd = -1;
+    if (!host->net) {
+      return io_fail("FLANG_IO_DENIED", "хозяину запрещено ходить в сеть");
+    }
+    if (!io_order_number(order, "порт", &port) || port < 1 || port > 65535 || port != (double)(long)port) {
+      return io_fail("FLANG_IO_NET", "порт не годится: нужно целое от 1 до 65535");
+    }
+    /* Нуль — срок хозяина (--timeout), а не «вечно»: хозяин обязан ответить. */
+    if (!io_order_number(order, "срок", &wait_ms) || wait_ms < 0 || wait_ms != (double)(long)wait_ms) {
+      return io_fail("FLANG_IO_NET", "срок — целое число миллисекунд, не меньше нуля; 0 — срок хозяина");
+    }
+    fd = io_datagram_on(host, (int)port, why, sizeof(why));
+    if (fd < 0) {
+      return io_fail("FLANG_IO_NET", why);
+    }
+    {
+      const long limit = wait_ms > 0 ? (long)wait_ms : host->timeout_ms;
+      fd_set reading;
+      struct timeval wait;
+      int ready = 0;
+      wait.tv_sec = limit / 1000;
+      wait.tv_usec = (limit % 1000) * 1000;
+      FD_ZERO(&reading);
+      FD_SET(fd, &reading);
+      do {
+        ready = select(fd + 1, &reading, NULL, NULL, &wait);
+      } while (ready < 0 && errno == EINTR);
+      if (ready < 0) {
+        return io_fail_errno("FLANG_IO_READ", "датаграмма не принята");
+      }
+      if (ready == 0) {
+        return io_variant("Срок вышел", NULL, 0);
+      }
+    }
+    {
+      unsigned char chunk[65536];
+      struct sockaddr_in peer;
+      socklen_t peer_size = sizeof(peer);
+      char peer_text[INET_ADDRSTRLEN];
+      const ssize_t got = recvfrom(fd, chunk, sizeof(chunk), 0, (struct sockaddr *)&peer, &peer_size);
+      fl_value *values = NULL;
+      fl_value fields[3];
+      size_t count = 0;
+      size_t at = 0;
+      if (got < 0) {
+        return io_fail_errno("FLANG_IO_READ", "датаграмма не принята");
+      }
+      count = (size_t)got;
+      values = count == 0 ? NULL : (fl_value *)repl_alloc(count * sizeof(fl_value));
+      for (at = 0; at < count; at += 1) {
+        values[at] = io_number((double)chunk[at]);
+      }
+      if (inet_ntop(AF_INET, &peer.sin_addr, peer_text, sizeof(peer_text)) == NULL) {
+        snprintf(peer_text, sizeof(peer_text), "?");
+      }
+      fields[0] = io_pair("октеты", io_list(values, count));
+      fields[1] = io_pair("адрес", io_say(peer_text));
+      fields[2] = io_pair("порт", io_number((double)ntohs(peer.sin_port)));
+      free(values);
+      return io_variant("Датаграмма", fields, 3);
+    }
+  }
+
+  /*
    * ── ОКТЕТЫ ────────────────────────────────────────────────────────────────
    * Та же труба, что у пары выше, но без единого решения о том, что байты
    * значат. У двоичного хозяина порча своя, не такая, как у хозяина на Node, и
@@ -19620,6 +20024,11 @@ static int io_file(int argc, char **argv) {
         fputs("flang io: --timeout должен быть целым положительным числом миллисекунд\n", stderr);
         return 2;
       }
+    } else if (strcmp(argv[index], "--trust-roots") == 0 && index + 1 < argc) {
+      /* ЧЕМУ ВЕРИТЬ по «https» — файл PEM с корнями. Ключом командной строки, а
+         не средой: подмена доверия обязана быть видна в самой команде. */
+      index += 1;
+      host.trust_roots = argv[index];
     } else if (strcmp(argv[index], "--max-orders") == 0 && index + 1 < argc) {
       index += 1;
       orders_limit = strtod(argv[index], NULL);

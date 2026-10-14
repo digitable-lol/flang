@@ -16,10 +16,53 @@
   возвращает строка
   "../.."
 
-тотальная функция «Seed files»
+тотальная функция «Seed list»
+  возвращает строка
+  "../seed-fingerprint"
+
+тотальная функция «Body mark»
+  возвращает строка
+  "# ── тело семени ──\n"
+
+тотальная функция «Seed source»
+  принимает line: строка
+  возвращает строка
+  пример «A printed C file of the body is a seed source»
+    дано line равно "d7f9cc39ede8  bootstrap/tls_client.c"
+    ожидается "bootstrap/tls_client.c"
+  пример «A printed header is a seed source»
+    дано line равно "e50c69601  bootstrap/tls_client.h"
+    ожидается "bootstrap/tls_client.h"
+  пример «The Makefile holds no names of the program»
+    дано line равно "2cf0a1a7d  bootstrap/Makefile"
+    ожидается ""
+  пример «A comment names nothing»
+    дано line равно "# То, что печать положила в bootstrap/"
+    ожидается ""
+  пусть path равно («Word» от 2 и line)
+  если (path начинается с "bootstrap/") и притом ((«Ends with» от path и ".c") или («Ends with» от path и ".h"))
+    то path
+    иначе ""
+
+тотальная функция «Seed sources»
+  принимает fingerprint: строка
   возвращает список строки
-  ["bootstrap/compiler_flang.c", "bootstrap/compiler_flang.h", "bootstrap/flang_cli.c", "bootstrap/flang_repl.c",
-    "bootstrap/flang_runtime.c", "bootstrap/flang_runtime.h"]
+  пример «Every C file of the body is read, the inputs before the mark are not»
+    дано fingerprint равно "11  flang/self/lexer.flang\n# ── тело семени ──\n# comment\n22  bootstrap/Makefile\n33  bootstrap/compiler_flang.c\n44  bootstrap/tls_client.c\n55  bootstrap/tls_client.h\n"
+    ожидается ["bootstrap/compiler_flang.c", "bootstrap/tls_client.c", "bootstrap/tls_client.h"]
+  пример «A list without a body names nothing»
+    дано fingerprint равно "11  flang/self/lexer.flang\n"
+    ожидается пустой список
+  разбор (разделить fingerprint по («Body mark»))
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то отфильтровать (отобразить («Lines» от (соединить хвост по («Body mark»))) как line → «Seed source» от line) где path → не (пусто path)
+
+тотальная функция «Seed files»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Seed sources» от («Output of» от "seed list" и answers)
 
 тотальная функция «Linker names»
   возвращает список строки
@@ -209,7 +252,8 @@
    («Environment» от "no memory" и "FLANG_BINARY_ORIGIN_NO_MEMORY"),
    («Environment» от "compiler" и "CC"),
    («Environment» от "temporary" и "TMPDIR"),
-   («Run from» от "root path" и («Root») и "pwd" и пустой список)]
+   («Run from» от "root path" и («Root») и "pwd" и пустой список),
+   («Read» от "seed list" и («Seed list»))]
 
 тотальная функция «Tools»
   принимает answers: список «Answer»
@@ -226,7 +270,7 @@
   «Gathered» от [
     [(«Run» от "binary is a file" и "test" и ["-f", («Binary» от answers)]),
     («Run» от "binary runs" и "test" и ["-x", («Binary» от answers)])],
-    (отобразить («Seed files») как file → «Run from» от (соединить ["seed ", file] по "") и («Root») и "test" и ["-f", file]),
+    (отобразить («Seed files» от answers) как file → «Run from» от (соединить ["seed ", file] по "") и («Root») и "test" и ["-f", file]),
     («Tools» от answers)]
 
 тотальная функция «Fingerprints»
@@ -234,7 +278,7 @@
   возвращает список «Question»
   [(«Run» от "binary sum" и "md5sum" и [(«Binary» от answers)]),
    («Run» от "binary size" и "wc" и ["-c", («Binary» от answers)]),
-   («Run from» от "seed sum" и («Root») и "sh" и (приписать "-c" к (приписать "cat \"$@\" | md5sum" к (приписать "sh" к («Seed files»))))),
+   («Run from» от "seed sum" и («Root») и "sh" и (приписать "-c" к (приписать "cat \"$@\" | md5sum" к (приписать "sh" к («Seed files» от answers))))),
    («Run» от "plan sum" и "md5sum" и ["binary-origin.fscript"]),
    («Run from» от "git directory" и («Root») и "git" и ["rev-parse", "--git-dir"])]
 
@@ -295,7 +339,7 @@
   принимает answers: список «Answer»
   возвращает список «Question»
   если («Mode» от answers) равен "exact"
-    то [(«Run from» от "copy" и («Root») и "cp" и («Соединить списки» от (приписать "bootstrap/Makefile" к («Seed files»)) и [(«Work» от answers)])),
+    то [(«Run from» от "copy" и («Root») и "cp" и («Соединить списки» от (приписать "bootstrap/Makefile" к («Seed files» от answers)) и [(«Work» от answers)])),
         («Run» от "cores" и "getconf" и ["_NPROCESSORS_ONLN"])]
     иначе [(«Run» от "sections" и "readelf" и ["-SW", («Binary» от answers)]),
         («Run» от "table" и "sh" и ["-c", "readelf -sW \"$0\" > \"$1\" 2>/dev/null", («Binary» от answers),
@@ -323,7 +367,7 @@
         («Run» от "built size" и "wc" и ["-c", (соединить [work, "/flang"] по "")])]
     иначе [(«Write» от "binary names" и (соединить [work, "/binary-names"] по "") и (соединить (добавить "" к («Binary names» от («Output of» от "symbols" и answers))) по "\n")),
         («Write» от "linker names" и (соединить [work, "/linker-names"] по "") и (соединить (добавить "" к («Linker names»)) по "\n")),
-        («Run from» от "foreign" и («Root») и "env" и (приписать "LC_ALL=C" к (приписать "sh" к (приписать "-c" к (приписать («Foreign names command») к (приписать work к («Seed files»)))))))]
+        («Run from» от "foreign" и («Root») и "env" и (приписать "LC_ALL=C" к (приписать "sh" к (приписать "-c" к (приписать («Foreign names command») к (приписать work к («Seed files» от answers)))))))]
 
 тотальная функция «Bypass»
   возвращает строка
@@ -384,7 +428,14 @@
 тотальная функция «Missing seed files»
   принимает answers: список «Answer»
   возвращает список строки
-  отфильтровать («Seed files») где file → «Failed» от (соединить ["seed ", file] по "") и answers
+  отфильтровать («Seed files» от answers) где file → «Failed» от (соединить ["seed ", file] по "") и answers
+
+тотальная функция «Unlisted seed»
+  принимает answers: список «Answer»
+  возвращает список строки
+  если пусто («Seed files» от answers)
+    то ["не прочесть, из чего состоит семя: в scripts/seed-fingerprint нет тела семени с файлами bootstrap/*.c и bootstrap/*.h — сверять не с чем"]
+    иначе пустой список
 
 тотальная функция «Missing tools»
   принимает answers: список «Answer»
@@ -404,6 +455,7 @@
     иначе пустой список),
     (если «Failed» от "binary runs" и answers то [
       (соединить ["двоичный есть, но не запускается: ", («Binary» от answers)] по "")] иначе пустой список),
+    («Unlisted seed» от answers),
     (отобразить («Missing seed files» от answers) как file → соединить ["в дереве нет файла семени ", file,
       " — сверять не с чем"] по ""),
     («Missing tools» от answers)]
